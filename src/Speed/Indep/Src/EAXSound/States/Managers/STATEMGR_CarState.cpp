@@ -150,8 +150,8 @@ void CSTATEMGR_CarState::ResolveCarBanks() {
     }
 
     if (DEBUG_CAR_BANK_TEST_CASE != -1 ||
-        (!CopsCanBeInGame ? NumEnginesWeWantToLoad + static_cast<int>(FinalEngines.size()) > 4
-                          : NumEnginesWeWantToLoad + static_cast<int>(FinalEngines.size()) > 3)) {
+        (CopsCanBeInGame ? NumEnginesWeWantToLoad + static_cast<int>(FinalEngines.size()) > 3
+                         : NumEnginesWeWantToLoad + static_cast<int>(FinalEngines.size()) > 4)) {
         std::sort(AIEnginesWeWantToLoad.begin(), AIEnginesWeWantToLoad.end(), sort_engine_priority);
 
         for (const unsigned int *iter = AIEnginesWeWantToLoad.begin(); iter != AIEnginesWeWantToLoad.end(); ++iter) {
@@ -306,12 +306,14 @@ void CSTATEMGR_CarState::ResolveCarBanks() {
             for (const EngineMappingPair *iter = FinalMapping.begin();
                  iter != FinalMapping.end() && !found;
                  ++iter) {
-                if (eax_car->GetEngineInfo()->GetCollection() == iter->Start) {
-                    eax_car->GetEngineInfo()->ChangeWithDefault(iter->Finish);
+                EngineMappingPair mapping = *iter;
+
+                if (eax_car->GetEngineInfo()->GetCollection() == mapping.Start) {
+                    eax_car->GetEngineInfo()->ChangeWithDefault(mapping.Finish);
                     found = true;
 
                     EngToCarStruct carmapping;
-                    carmapping.EngineKey = iter->Finish;
+                    carmapping.EngineKey = mapping.Finish;
                     carmapping.pCar = eax_car;
                     EngineToCarMapping.push_back(carmapping);
                 }
