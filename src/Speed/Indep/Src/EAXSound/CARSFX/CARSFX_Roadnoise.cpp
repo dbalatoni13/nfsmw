@@ -345,7 +345,9 @@ void CARSFX_RoadNoise::ProcessUpdate() {
             m_pRoadNoiseControl[n]->SetAzimuth(GetDMixOutput(AzSlot, DMX_AZIM));
             m_pRoadNoiseControl[n]->SetFilter_Effects_Wet_FX(GetDMixOutput(eVRB_ROADNOISE_VERB, DMX_VOL));
             if (currentterrain.GetCollection() == 0xD929E923 || currentterrain.GetCollection() == 0xC1C577D6) {
-                m_pRoadNoiseControl[n]->SetSecondaryNoise(1);
+                if (m_pRoadNoiseControl[n]) {
+                    m_pRoadNoiseControl[n]->SetSecondaryNoise(1);
+                }
             }
             m_pRoadNoiseControl[n]->CommitMemberData();
         }
@@ -357,7 +359,8 @@ void CARSFX_RoadNoise::ProcessUpdate() {
         }
 
         if (m_pWetRoad[n]) {
-            tempVol = (GeneratedVolume * RoadNoiseVolumes[4] >> 15) * GetDMixOutput(eVOL_ROADNOISE_WET_ROAD, DMX_VOL) >> 15;
+            tempVol = GeneratedVolume * RoadNoiseVolumes[4] >> 15;
+            tempVol = tempVol * GetDMixOutput(eVOL_ROADNOISE_WET_ROAD, DMX_VOL) >> 15;
             m_pWetRoad[n]->SetVolume(tempVol);
             m_pWetRoad[n]->SetPitch(GeneratedPitch);
             m_pWetRoad[n]->SetAzimuth(GetDMixOutput(AzSlot, DMX_AZIM));
@@ -365,10 +368,13 @@ void CARSFX_RoadNoise::ProcessUpdate() {
         }
 
         if (m_pTransition[n]) {
-            if (m_pTransition[n]->GetRefCount() > 1 && g_EAXIsPaused()) {
-                tempPitch = 0x1000;
-                m_pTransition[n]->SetPitch(tempPitch);
+            tempPitch = 0;
+            if (m_pTransition[n]->mpClass) {
+                m_pTransition[n]->mpClass->GetRefCount(&tempPitch);
+            }
+            if (tempPitch > 1 && g_EAXIsPaused()) {
                 m_pTransition[n]->SetVolume(0);
+                m_pTransition[n]->SetPitch(0x1000);
                 m_pTransition[n]->CommitMemberData();
             }
         }
