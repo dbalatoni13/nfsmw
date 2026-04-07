@@ -5,12 +5,18 @@
 #include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_CarState.cpp"
 
 #include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_DriveBy.cpp"
+#include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_Main.cpp"
+#include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_Music.cpp"
+#include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_Helicopter.cpp"
 
 #include "Speed/Indep/Src/EAXSound/States/Registration.cpp"
 
 #include "Speed/Indep/Src/EAXSound/States/STATE_Base.cpp"
 
 #include "Speed/Indep/Src/EAXSound/States/STATE_DriveBy.cpp"
+#include "Speed/Indep/Src/EAXSound/States/STATE_Main.cpp"
+#include "Speed/Indep/Src/EAXSound/States/STATE_Music.cpp"
+#include "Speed/Indep/Src/EAXSound/States/STATE_Helicopter.cpp"
 
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_NISStream.cpp"
 

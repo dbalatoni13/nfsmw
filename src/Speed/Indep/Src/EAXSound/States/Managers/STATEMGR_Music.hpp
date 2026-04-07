@@ -10,6 +10,9 @@
 // total size: 0x1C
 struct CSTATEMGR_Music : public CSTATEMGR_Base {
     CSTATEMGR_Music();
+    ~CSTATEMGR_Music() override;
+
+    void EnterWorld(eSndGameMode esgm) override;
 };
 
 #endif

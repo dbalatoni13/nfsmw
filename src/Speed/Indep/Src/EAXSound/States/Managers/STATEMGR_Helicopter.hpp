@@ -10,6 +10,9 @@
 // total size: 0x1C
 struct CSTATEMGR_Helicopter : public CSTATEMGR_Base {
     CSTATEMGR_Helicopter();
+    ~CSTATEMGR_Helicopter() override;
+
+    void EnterWorld(eSndGameMode esgm) override;
 };
 
 #endif
