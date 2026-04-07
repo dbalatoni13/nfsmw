@@ -10,9 +10,9 @@ static inline int IntFloor(float x) {
         return static_cast<int>(x);
     }
 
-    int i = static_cast<int>(x);
-    if (static_cast<float>(i) != x) {
-        i--;
+    int i = static_cast<int>(x) - 1;
+    if (static_cast<float>(i + 1) == x) {
+        i++;
     }
 
     return i;
@@ -23,9 +23,9 @@ static inline int IntCeil(float x) {
         return static_cast<int>(x);
     }
 
-    int i = static_cast<int>(x);
-    if (static_cast<float>(i) != x) {
-        i++;
+    int i = static_cast<int>(x) + 1;
+    if (static_cast<float>(i - 1) == x) {
+        i--;
     }
 
     return i;

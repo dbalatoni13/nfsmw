@@ -164,23 +164,29 @@ int GinsuSynthData::FrequencyToSample(float freq) const {
     float a;
     int samp;
 
-    if (mSegCount < 1) {
-        samp = 0;
-    } else if (mMinFrequency < freq) {
-        if (freq < mMaxFrequency) {
-            seg = (static_cast<float>(mSegCount) * (freq - mMinFrequency)) / (mMaxFrequency - mMinFrequency);
-            i = IntFloor(seg);
-            samp = mFreqPos[i];
-            a = static_cast<float>(samp) + (seg - static_cast<float>(i)) * static_cast<float>(mFreqPos[i + 1] - samp);
-            samp = IntRound(a);
-        } else {
-            samp = mFreqPos[mSegCount];
-        }
-    } else {
-        samp = mFreqPos[0];
+    i = mSegCount;
+    if (i < 1) {
+        return 0;
     }
 
-    return samp;
+    seg = mMinFrequency;
+    if (freq <= seg) {
+        return mFreqPos[0];
+    }
+
+    if (freq < mMaxFrequency) {
+        seg = (static_cast<float>(i) * (freq - seg)) / (mMaxFrequency - seg);
+        i = IntFloor(seg);
+        samp = mFreqPos[i];
+        a = static_cast<float>(samp) + (seg - static_cast<float>(i)) * static_cast<float>(mFreqPos[i + 1] - samp);
+        if (0.0f < a) {
+            return static_cast<int>(a + 0.5f);
+        }
+
+        return static_cast<int>(a - 0.5f);
+    }
+
+    return mFreqPos[i];
 }
 
 int GinsuSynthData::CycleToSample(float cycle) const {
@@ -188,19 +194,25 @@ int GinsuSynthData::CycleToSample(float cycle) const {
     float a;
     int samp;
 
-    if (mCycleCount < 1) {
-        samp = 0;
-    } else if (0.0f < cycle) {
-        if (cycle < static_cast<float>(mCycleCount)) {
-            i = IntFloor(cycle);
-            samp = mCyclePos[i];
-            a = static_cast<float>(samp) + (cycle - static_cast<float>(i)) * static_cast<float>(mCyclePos[i + 1] - samp);
-            samp = IntRound(a);
-        } else {
-            samp = mCyclePos[mCycleCount];
+    i = mCycleCount;
+    samp = 0;
+    if (i > 0) {
+        if (cycle <= 0.0f) {
+            return mCyclePos[0];
         }
-    } else {
-        samp = mCyclePos[0];
+
+        if (static_cast<float>(i) <= cycle) {
+            return mCyclePos[i];
+        }
+
+        i = IntFloor(cycle);
+        samp = mCyclePos[i];
+        a = static_cast<float>(samp) + (cycle - static_cast<float>(i)) * static_cast<float>(mCyclePos[i + 1] - samp);
+        if (a <= 0.0f) {
+            return static_cast<int>(a - 0.5f);
+        }
+
+        samp = static_cast<int>(a + 0.5f);
     }
 
     return samp;
