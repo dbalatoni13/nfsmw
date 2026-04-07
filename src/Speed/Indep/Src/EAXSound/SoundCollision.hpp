@@ -113,6 +113,7 @@ class CollisionEvent : public AudioEvent {
     bVector3 *GetCurrentContactPoint() { return &CurrentContactPoint; }
     bVector3 *GetCurrentVelocity() { return &CurrentVelocity; }
     bool IsDescribed(unsigned int desc) { return (Description & desc) == desc; }
+    float GetAge() { return (WorldTimer - CollisionTime).GetSeconds(); }
     int GetVolume() { return mVolume; }
     int GetIntensity() { return Intensity; }
     int IsStillActive() { return mActive; }

@@ -13,6 +13,7 @@ struct CSTATEMGR_Collision : public CSTATEMGR_Base {
     ~CSTATEMGR_Collision() override;
 
     void EnterWorld(eSndGameMode esgm) override;
+    CSTATE_Base *GetFreeState(void *ObjectPtr) override;
     void UpdateParams(float t) override;
 };
 
