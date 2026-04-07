@@ -5,11 +5,8 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/Src/EAXSound/SoundCollision.hpp"
 #include "Speed/Indep/Src/EAXSound/States/STATE_Base.hpp"
-
-namespace Sound {
-class CollisionEvent;
-}
 
 struct CSTATE_Collision : public CSTATE_Base {
     static StateInfo s_StateInfo;

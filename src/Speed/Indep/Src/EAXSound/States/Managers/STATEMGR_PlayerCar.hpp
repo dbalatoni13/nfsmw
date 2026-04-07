@@ -9,7 +9,13 @@
 
 // total size: 0x1C
 struct CSTATEMGR_PlayerCar : public CSTATEMGR_Base {
+    static bool IsTruck;
+
     CSTATEMGR_PlayerCar();
+    ~CSTATEMGR_PlayerCar() override;
+
+    void EnterWorld(eSndGameMode esgm) override;
+    void UpdateParams(float t) override;
 };
 
 #endif

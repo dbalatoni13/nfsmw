@@ -10,6 +10,10 @@
 // total size: 0x1C
 struct CSTATEMGR_Collision : public CSTATEMGR_Base {
     CSTATEMGR_Collision();
+    ~CSTATEMGR_Collision() override;
+
+    void EnterWorld(eSndGameMode esgm) override;
+    void UpdateParams(float t) override;
 };
 
 #endif

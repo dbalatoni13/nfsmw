@@ -8,9 +8,15 @@
 #include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_CarState.hpp"
 
 // total size: 0x24
-class CSTATEMGR_TrafficCar : public CSTATEMGR_CarState {
-  public:
+struct CSTATEMGR_TrafficCar : public CSTATEMGR_CarState {
     CSTATEMGR_TrafficCar();
+    ~CSTATEMGR_TrafficCar() override;
+
+    void EnterWorld(eSndGameMode esgm) override;
+    void UpdateParams(float t) override;
+
+  private:
+    void DebugDisplayTrafficConnections();
 };
 
 #endif

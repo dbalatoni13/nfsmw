@@ -4,15 +4,22 @@
 
 #include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_CarState.cpp"
 
+#include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_Collision.cpp"
 #include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_DriveBy.cpp"
+#include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_PlayerCar.cpp"
+#include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_TrafficCar.cpp"
+#include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_AICar.cpp"
+#include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_CopCar.cpp"
 #include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_Main.cpp"
 #include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_Music.cpp"
 #include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_Helicopter.cpp"
+#include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_Truck.cpp"
 
 #include "Speed/Indep/Src/EAXSound/States/Registration.cpp"
 
 #include "Speed/Indep/Src/EAXSound/States/STATE_Base.cpp"
 
+#include "Speed/Indep/Src/EAXSound/States/STATE_Collision.cpp"
 #include "Speed/Indep/Src/EAXSound/States/STATE_DriveBy.cpp"
 #include "Speed/Indep/Src/EAXSound/States/STATE_Main.cpp"
 #include "Speed/Indep/Src/EAXSound/States/STATE_Music.cpp"

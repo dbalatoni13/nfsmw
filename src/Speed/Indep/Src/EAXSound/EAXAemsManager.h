@@ -205,6 +205,9 @@ struct EAXAemsManager : public AudioMemBase {
     static void *AsyncResidentAllocCB(int size);
     static void *ResidentAllocCB(void *pbank, int residentsize, int totalsize);
     static void DataLoadCB(int param, int error_status);
+    static void QueueSlots(eBANK_SLOT_TYPE Type, int NumSlots) {
+        m_RequiredSlots[Type] += NumSlots;
+    }
     void DestroySlots(bool bDoPFSlot);
     int IsAssetInList(Attrib::StringKey filename);
     int IsAssetLoaded(Attrib::StringKey filename);

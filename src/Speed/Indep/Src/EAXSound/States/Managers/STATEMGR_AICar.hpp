@@ -8,10 +8,18 @@
 #include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_CarState.hpp"
 
 // total size: 0x24
-class CSTATEMGR_AICar : public CSTATEMGR_CarState {
-  public:
+struct CSTATEMGR_AICar : public CSTATEMGR_CarState {
+    static bool bUsingGinsu;
+
     CSTATEMGR_AICar();
+    ~CSTATEMGR_AICar() override;
+
+    void UpdateParams(float t) override;
+    void EnterWorld(eSndGameMode esgm) override;
     static void QueueSlots();
+
+  private:
+    void DebugDisplayAIConnections();
 };
 
 #endif
