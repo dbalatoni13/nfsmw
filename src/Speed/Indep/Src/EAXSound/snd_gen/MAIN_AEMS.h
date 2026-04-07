@@ -269,6 +269,11 @@ struct FX_PURGE {
     }
 
     void SetPURGE_pitch(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x3FFF) {
+            x = 0x3FFF;
+        }
         mData.pURGE_pitch = x;
     }
 

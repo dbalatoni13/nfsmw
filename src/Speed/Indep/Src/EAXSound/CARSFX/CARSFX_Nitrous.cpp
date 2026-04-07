@@ -52,11 +52,11 @@ int CARSFX_Nitrous::GetController(int Index) {
 
 void CARSFX_Nitrous::AttachController(SFXCTL *psfxctl) {
     switch (psfxctl->GetObjectIndex()) {
-    case 2:
-        m_pShiftCtl = static_cast<SFXCTL_Shifting *>(psfxctl);
-        break;
     case 7:
         m_p3DCarPosCtl = static_cast<SFXCTL_3DCarPos *>(psfxctl);
+        break;
+    case 2:
+        m_pShiftCtl = static_cast<SFXCTL_Shifting *>(psfxctl);
         break;
     }
 }
@@ -136,7 +136,7 @@ void CARSFX_Nitrous::PlayPurge() {
     }
 
     g_pEAXSound->SetCsisName(this);
-    m_NitrousPurge = new FX_PURGE(0, 0, 0, 0x61A8, 0, 0, 0x7FFF, 0);
+    m_NitrousPurge = new FX_PURGE(0, 0, 0, 0, 0x61A8, 0, 0x7FFF, 0);
 
     if (INIS::Get()) {
         SetDMIX_Input(2, 0);
