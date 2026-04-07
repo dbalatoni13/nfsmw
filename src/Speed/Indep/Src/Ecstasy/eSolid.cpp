@@ -10,9 +10,9 @@
 #include <types.h>
 
 int eUnloadSolidListPlatChunks(bChunk *chunk);
-eSolidIndexEntry *GetSolidIndexEntry(eSolidListHeader *list_header, unsigned int name_hash);
-eSolid *eFindSolid(unsigned int name_hash);
-eSolid *eFindSolid(unsigned int name_hash, eSolidListHeader *solid_list_header);
+eSolidIndexEntry *GetSolidIndexEntry(eSolidListHeader *list_header, uint32 name_hash);
+eSolid *eFindSolid(uint32 name_hash);
+eSolid *eFindSolid(uint32 name_hash, eSolidListHeader *solid_list_header);
 
 LoadedTable SolidLoadedTable;
 bTList<eSolidListHeader> SolidListHeaderList;
@@ -131,12 +131,12 @@ void eSolid::NotifyTextureMoving(TexturePack *texture_pack, TextureInfo *texture
     }
 }
 
-void eSolid::ReplaceLightMaterial(unsigned int old_name_hash, eLightMaterial *new_light_material) {
+void eSolid::ReplaceLightMaterial(uint32 old_name_hash, eLightMaterial *new_light_material) {
     if (!new_light_material) {
         return;
     }
     eLightMaterialEntry *elme = this->LightMaterialTable;
-    unsigned int new_name_hash;
+    uint32 new_name_hash;
     int num_light_materials = this->NumLightMaterials;
 
     for (int i = 0; i < num_light_materials; i++) {
@@ -168,7 +168,7 @@ ePositionMarker *eSolid::GetPostionMarker(ePositionMarker *prev_marker /* r11 */
 }
 
 // UNSOLVED
-ePositionMarker *eSolid::GetPostionMarker(unsigned int namehash /* r31 */) {
+ePositionMarker *eSolid::GetPostionMarker(uint32 namehash /* r31 */) {
     ePositionMarker *position_marker = nullptr;
     for (position_marker = this->GetPostionMarker(position_marker); position_marker; position_marker = this->GetPostionMarker(position_marker)) {
         if (position_marker->NameHash == namehash) {
@@ -186,7 +186,7 @@ eSolidListHeader *InternalUnloaderSolidHeaderChunks(bChunk *chunk) {
     bChunk *current_chunk = chunk->GetFirstChunk();
     bChunk *last_chunk = chunk->GetLastChunk();
     while (current_chunk < last_chunk) {
-        unsigned int current_chunk_id = current_chunk->GetID();
+        uint32 current_chunk_id = current_chunk->GetID();
 
         if (current_chunk_id == BCHUNK_MESH_CONTAINER_HEADER) {
             solid_list_header = reinterpret_cast<eSolidListHeader *>(current_chunk->GetData());
@@ -210,7 +210,7 @@ eSolidListHeader *InternalLoaderSolidHeaderChunks(bChunk *chunk) {
     bChunk *last_chunk = chunk->GetLastChunk();
 
     while (current_chunk < last_chunk) {
-        unsigned int current_chunk_id = current_chunk->GetID();
+        uint32 current_chunk_id = current_chunk->GetID();
         if (current_chunk_id == BCHUNK_MESH_CONTAINER_HEADER) {
             solid_list_header = reinterpret_cast<eSolidListHeader *>(current_chunk->GetData());
             if (!solid_list_header->EndianSwapped) {
@@ -255,7 +255,7 @@ void InternalUnloaderSolidChunks(bChunk *chunk, eSolidListHeader *solid_list_hea
     bChunk *solid_last_chunk = chunk->GetLastChunk();
     eSolid *solid = nullptr;
     while (solid_chunk < solid_last_chunk) {
-        unsigned int current_chunk_id = solid_chunk->GetID();
+        uint32 current_chunk_id = solid_chunk->GetID();
         if (current_chunk_id == BCHUNK_SOLID_INFO) {
             solid = reinterpret_cast<eSolid *>(solid_chunk->GetAlignedData(16));
             solid->UnFixPlatInfo();
@@ -296,7 +296,7 @@ int LoaderSolidList(bChunk *chunk) {
     bChunk *current_chunk = chunk->GetFirstChunk();
     bChunk *last_chunk = chunk->GetLastChunk();
     while (current_chunk < last_chunk) {
-        unsigned int current_chunk_id = current_chunk->GetID();
+        uint32 current_chunk_id = current_chunk->GetID();
         if (current_chunk_id == BCHUNK_MESH_CONTAINER_INFO) {
             if (solid_list_header) {
                 NotifySolidLoader(solid_list_header);
@@ -321,7 +321,7 @@ int UnloaderSolidList(bChunk *chunk) {
     bChunk *current_chunk = chunk->GetFirstChunk();
     bChunk *last_chunk = chunk->GetLastChunk();
     while (current_chunk < last_chunk) {
-        unsigned int current_chunk_id = current_chunk->GetID();
+        uint32 current_chunk_id = current_chunk->GetID();
         if (current_chunk_id == BCHUNK_MESH_CONTAINER_INFO) {
             solid_list_header = InternalUnloaderSolidHeaderChunks(current_chunk);
         } else if (current_chunk_id == BCHUNK_SOLID_PACK) {
@@ -348,11 +348,11 @@ void SolidUnloadedStreamingEntryCallback(bChunk *chunk, eStreamingEntry *streami
     }
 }
 
-void eLoadStreamingSolid(unsigned int *name_hash_table, int num_hashes, void (*callback)(void *), void *param0, int memory_pool_num) {
+void eLoadStreamingSolid(uint32 *name_hash_table, int num_hashes, void (*callback)(void *), void *param0, int memory_pool_num) {
     StreamingSolidPackLoader.LoadStreamingEntry(name_hash_table, num_hashes, callback, param0, memory_pool_num);
 }
 
-void eUnloadStreamingSolid(unsigned int *name_hash_table, int num_hashes) {
+void eUnloadStreamingSolid(uint32 *name_hash_table, int num_hashes) {
     StreamingSolidPackLoader.UnloadStreamingEntry(name_hash_table, num_hashes);
 }
 
@@ -365,7 +365,7 @@ int eLoadStreamingSolidPack(const char *filename, void (*callback_function)(void
     return streaming_pack != nullptr;
 }
 
-eSolidIndexEntry *GetSolidIndexEntry(eSolidListHeader *list_header, unsigned int name_hash) {
+eSolidIndexEntry *GetSolidIndexEntry(eSolidListHeader *list_header, uint32 name_hash) {
     if (!list_header) {
         return nullptr;
     } else {
@@ -416,16 +416,16 @@ void eInitSolids() {
     InitStreamingPacks();
 }
 
-eSolid *eFindSolid(unsigned int name_hash) {
+eSolid *eFindSolid(uint32 name_hash) {
     return eFindSolid(name_hash, nullptr);
 }
 
 // UNSOLVED
-eSolid *eFindSolid(unsigned int name_hash /* r31 */, eSolidListHeader *solid_list_header /* r30 */) {
+eSolid *eFindSolid(uint32 name_hash /* r31 */, eSolidListHeader *solid_list_header /* r30 */) {
     if (SolidLoadedTable.IsLoaded(name_hash)) {
         return nullptr;
     }
-    unsigned int start_time = bGetTicker();
+    uint32 start_time = bGetTicker();
     eSolid *solid = nullptr; // r27
     if (solid_list_header) {
         eSolidIndexEntry *index_entry = GetSolidIndexEntry(solid_list_header, name_hash);

@@ -5,6 +5,8 @@
 #pragma once
 #endif
 
+#include "types.h"
+
 enum SUN_TEXTURE {
     NUM_SUN_TEXTURES = 5,
     SUNTEX_RING = 4,
@@ -19,23 +21,25 @@ enum SUN_ALPHA {
     SUNALPHA_BLEND = 0,
 };
 
-struct SunLayer {
+class SunLayer {
     // total size: 0x24
-    SUN_TEXTURE Texture;     // offset 0x0, size 0x4
-    SUN_ALPHA AlphaType;     // offset 0x4, size 0x4
-    float IntensityScale;    // offset 0x8, size 0x4
-    float Size;              // offset 0xC, size 0x4
-    float OffsetX;           // offset 0x10, size 0x4
-    float OffsetY;           // offset 0x14, size 0x4
-    unsigned char Colour[4]; // offset 0x18, size 0x4
-    int Angle;               // offset 0x1C, size 0x4
-    float SweepAngleAmount;  // offset 0x20, size 0x4
+  public:
+    SUN_TEXTURE Texture;    // offset 0x0, size 0x4
+    SUN_ALPHA AlphaType;    // offset 0x4, size 0x4
+    float IntensityScale;   // offset 0x8, size 0x4
+    float Size;             // offset 0xC, size 0x4
+    float OffsetX;          // offset 0x10, size 0x4
+    float OffsetY;          // offset 0x14, size 0x4
+    uint8 Colour[4];        // offset 0x18, size 0x4
+    int32 Angle;            // offset 0x1C, size 0x4
+    float SweepAngleAmount; // offset 0x20, size 0x4
 };
 
-struct SunChunkInfo {
+class SunChunkInfo {
     // total size: 0x110
-    int Version;              // offset 0x0, size 0x4
-    unsigned int NameHash;    // offset 0x4, size 0x4
+  public:
+    int32 Version;            // offset 0x0, size 0x4
+    uint32 NameHash;          // offset 0x4, size 0x4
     char Name[24];            // offset 0x8, size 0x18
     float PositionX;          // offset 0x20, size 0x4
     float PositionY;          // offset 0x24, size 0x4

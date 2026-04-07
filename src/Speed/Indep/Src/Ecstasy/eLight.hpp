@@ -32,10 +32,11 @@ enum flareType {
     FLARE_NORM = 0,
 };
 
-struct eLightFlare : public bTNode<eLightFlare> {
+class eLightFlare : public bTNode<eLightFlare> {
     // total size: 0x30
-    unsigned int NameHash;      // offset 0x8, size 0x4
-    unsigned int ColourTint;    // offset 0xC, size 0x4
+  public:
+    uint32 NameHash;            // offset 0x8, size 0x4
+    uint32 ColourTint;          // offset 0xC, size 0x4
     float PositionX;            // offset 0x10, size 0x4
     float PositionY;            // offset 0x14, size 0x4
     float PositionZ;            // offset 0x18, size 0x4
@@ -43,29 +44,31 @@ struct eLightFlare : public bTNode<eLightFlare> {
     float DirectionX;           // offset 0x20, size 0x4
     float DirectionY;           // offset 0x24, size 0x4
     float DirectionZ;           // offset 0x28, size 0x4
-    char Type;                  // offset 0x2C, size 0x1
-    char Flags;                 // offset 0x2D, size 0x1
-    short ScenerySectionNumber; // offset 0x2E, size 0x2
+    int8 Type;                  // offset 0x2C, size 0x1
+    int8 Flags;                 // offset 0x2D, size 0x1
+    int16 ScenerySectionNumber; // offset 0x2E, size 0x2
 };
 
-struct eLightFlarePackHeader : public bTNode<eLightFlarePackHeader> {
+class eLightFlarePackHeader : public bTNode<eLightFlarePackHeader> {
     // total size: 0x60
-    unsigned int Version;               // offset 0x8, size 0x4
-    unsigned int NameHash;              // offset 0xC, size 0x4
+  public:
+    uint32 Version;                     // offset 0x8, size 0x4
+    uint32 NameHash;                    // offset 0xC, size 0x4
     char Name[32];                      // offset 0x10, size 0x20
     bVector3 BBoxMin;                   // offset 0x30, size 0x10
     bVector3 BBoxMax;                   // offset 0x40, size 0x10
-    unsigned short NumLightFlares;      // offset 0x50, size 0x2
-    char EndianSwapped;                 // offset 0x52, size 0x1
-    char Pad;                           // offset 0x53, size 0x1
-    unsigned int ScenerySectionNumber;  // offset 0x54, size 0x4
+    uint16 NumLightFlares;              // offset 0x50, size 0x2
+    int8 EndianSwapped;                 // offset 0x52, size 0x1
+    int8 Pad;                           // offset 0x53, size 0x1
+    uint32 ScenerySectionNumber;        // offset 0x54, size 0x4
     bTList<eLightFlare> LightFlareList; // offset 0x58, size 0x8
 
     void EndianSwap() {}
 };
 
-struct eLightMaterialData {
+class eLightMaterialData {
     // total size: 0x78
+  public:
     float DiffuseMinScale;  // offset 0x0, size 0x4
     float DiffuseMinR;      // offset 0x4, size 0x4
     float DiffuseMinG;      // offset 0x8, size 0x4
@@ -98,10 +101,11 @@ struct eLightMaterialData {
     float SpecularHotSpot;  // offset 0x74, size 0x4
 };
 
-struct eLightMaterial : public eLightMaterialPlatInterface, public bTNode<eLightMaterial> {
+class eLightMaterial : public eLightMaterialPlatInterface, public bTNode<eLightMaterial> {
     // total size: 0xA8
-    unsigned int NameHash;     // offset 0xC, size 0x4
-    unsigned int Version;      // offset 0x10, size 0x4
+  public:
+    uint32 NameHash;           // offset 0xC, size 0x4
+    uint32 Version;            // offset 0x10, size 0x4
     char Name[28];             // offset 0x14, size 0x1C
     eLightMaterialData feData; // offset 0x30, size 0x78
 
@@ -110,58 +114,62 @@ struct eLightMaterial : public eLightMaterialPlatInterface, public bTNode<eLight
     void EndianSwap() {}
 };
 
-struct eLight {
+class eLight {
     // total size: 0x60
-    unsigned int NameHash;         // offset 0x0, size 0x4
-    unsigned char Type;            // offset 0x4, size 0x1
-    unsigned char AttenuationType; // offset 0x5, size 0x1
-    unsigned char Shape;           // offset 0x6, size 0x1
-    unsigned char State;           // offset 0x7, size 0x1
-    unsigned int ExcludeNameHash;  // offset 0x8, size 0x4
-    unsigned int Colour;           // offset 0xC, size 0x4
-    float PositionX;               // offset 0x10, size 0x4
-    float PositionY;               // offset 0x14, size 0x4
-    float PositionZ;               // offset 0x18, size 0x4
-    float Size;                    // offset 0x1C, size 0x4
-    float DirectionX;              // offset 0x20, size 0x4
-    float DirectionY;              // offset 0x24, size 0x4
-    float DirectionZ;              // offset 0x28, size 0x4
-    float Intensity;               // offset 0x2C, size 0x4
-    float FarStart;                // offset 0x30, size 0x4
-    float FarEnd;                  // offset 0x34, size 0x4
-    float Falloff;                 // offset 0x38, size 0x4
-    short ScenerySectionNumber;    // offset 0x3C, size 0x2
-    char Name[34];                 // offset 0x3E, size 0x22
+  public:
+    uint32 NameHash;            // offset 0x0, size 0x4
+    uint8 Type;                 // offset 0x4, size 0x1
+    uint8 AttenuationType;      // offset 0x5, size 0x1
+    uint8 Shape;                // offset 0x6, size 0x1
+    uint8 State;                // offset 0x7, size 0x1
+    uint32 ExcludeNameHash;     // offset 0x8, size 0x4
+    uint32 Colour;              // offset 0xC, size 0x4
+    float PositionX;            // offset 0x10, size 0x4
+    float PositionY;            // offset 0x14, size 0x4
+    float PositionZ;            // offset 0x18, size 0x4
+    float Size;                 // offset 0x1C, size 0x4
+    float DirectionX;           // offset 0x20, size 0x4
+    float DirectionY;           // offset 0x24, size 0x4
+    float DirectionZ;           // offset 0x28, size 0x4
+    float Intensity;            // offset 0x2C, size 0x4
+    float FarStart;             // offset 0x30, size 0x4
+    float FarEnd;               // offset 0x34, size 0x4
+    float Falloff;              // offset 0x38, size 0x4
+    int16 ScenerySectionNumber; // offset 0x3C, size 0x2
+    char Name[34];              // offset 0x3E, size 0x22
 };
 
-struct eLightPack : public bTNode<eLightPack> {
+class eLightPack : public bTNode<eLightPack> {
     // total size: 0x20
-    short Version;            // offset 0x8, size 0x2
-    char EndianSwapped;       // offset 0xA, size 0x1
-    char Pad;                 // offset 0xB, size 0x1
-    int ScenerySectionNumber; // offset 0xC, size 0x4
-    vAABBTree *LightTree;     // offset 0x10, size 0x4
-    int NumTreeNodes;         // offset 0x14, size 0x4
-    eLight *LightArray;       // offset 0x18, size 0x4
-    int NumLights;            // offset 0x1C, size 0x4
+  public:
+    int16 Version;              // offset 0x8, size 0x2
+    int8 EndianSwapped;         // offset 0xA, size 0x1
+    int8 Pad;                   // offset 0xB, size 0x1
+    int32 ScenerySectionNumber; // offset 0xC, size 0x4
+    vAABBTree *LightTree;       // offset 0x10, size 0x4
+    int32 NumTreeNodes;         // offset 0x14, size 0x4
+    eLight *LightArray;         // offset 0x18, size 0x4
+    int32 NumLights;            // offset 0x1C, size 0x4
 
     void EndianSwap() {}
 };
 
-struct eLightContext {
-    int Type;
+class eLightContext {
+  public:
+    int32 Type;
 };
 
-struct eDynamicLightContext : public eLightContext {
+class eDynamicLightContext : public eLightContext {
     // total size: 0x124
+  public:
     bMatrix4 LocalColourMatrix;    // offset 0x4, size 0x40
     bMatrix4 LocalDirectionMatrix; // offset 0x44, size 0x40
     bMatrix4 LocalLightPositions;  // offset 0x84, size 0x40
     bVector4 LocalEyePosition;     // offset 0xC4, size 0x10
-    int NumLights;                 // offset 0xD4, size 0x4
+    int32 NumLights;               // offset 0xD4, size 0x4
     float SunlightIntensity;       // offset 0xD8, size 0x4
-    int pad1;                      // offset 0xDC, size 0x4
-    int pad2;                      // offset 0xE0, size 0x4
+    int32 pad1;                    // offset 0xDC, size 0x4
+    int32 pad2;                    // offset 0xE0, size 0x4
     bMatrix4 EnvMapMatrix;         // offset 0xE4, size 0x40
 };
 
@@ -174,8 +182,9 @@ enum ESHAPER_LIGHT_MODE {
     LIGHT_WORLD_SPACE = 0,
 };
 
-struct eShaperLight {
+class eShaperLight {
     // total size: 0x1C
+  public:
     ESHAPER_LIGHT_MODE CameraSpace; // offset 0x0, size 0x4
     float Theta;                    // offset 0x4, size 0x4
     float Phi;                      // offset 0x8, size 0x4
@@ -185,9 +194,10 @@ struct eShaperLight {
     float Scale;                    // offset 0x18, size 0x4
 };
 
-struct eShaperLightRig {
+class eShaperLightRig {
     // total size: 0x88
-    unsigned int NameHash;  // offset 0x0, size 0x4
+  public:
+    uint32 NameHash;        // offset 0x0, size 0x4
     eShaperLight Lights[4]; // offset 0x4, size 0x70
     bVector3 position;      // offset 0x74, size 0x10
     int NumOverideSlots;    // offset 0x84, size 0x4
@@ -200,7 +210,7 @@ class eSceneryLightContext : public eLightContext {
         bPlatEndianSwap(&NumLights);
         bPlatEndianSwap(&LightingContextNumber);
 
-        for (unsigned int i = 0; i < NumLights; i++) {
+        for (uint32 i = 0; i < NumLights; i++) {
             bPlatEndianSwap(&LocalLights[i].v0);
             bPlatEndianSwap(&LocalLights[i].v1);
             bPlatEndianSwap(&LocalLights[i].v2);
@@ -209,18 +219,18 @@ class eSceneryLightContext : public eLightContext {
     }
 
     char Name[34];
-    short LightingContextNumber;
+    int16 LightingContextNumber;
     bMatrix4 *LocalLights;
-    unsigned int NumLights;
+    uint32 NumLights;
 };
 
 void elInit();
 void UpdateLightFlareParameters();
 void eResestLightFlarePool();
-eLightFlare *eGetNextLightFlareInPool(unsigned int XcludeViewIDs);
+eLightFlare *eGetNextLightFlareInPool(uint32 XcludeViewIDs);
 int eRenderLightFlare(eView *view, eLightFlare *light_flare, bMatrix4 *local_world, float intensity_scale, enum eLightReflexionType ReflexionAction,
-                      flareType destinationType, float RefelectionOverride, unsigned int ColourOverRide, float sizescale);
-eLightMaterial *elGetLightMaterial(unsigned int name_hash);
+                      flareType destinationType, float RefelectionOverride, uint32 ColourOverRide, float sizescale);
+eLightMaterial *elGetLightMaterial(uint32 name_hash);
 void eLightUpdateTextures();
 
 #endif

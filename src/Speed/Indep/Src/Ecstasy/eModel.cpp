@@ -9,8 +9,8 @@
 struct ReplacementTextureTableFixup {
     // total size: 0x8
     eReplacementTextureTable *pReplacementTextureTable; // offset 0x0, size 0x4
-    short NumReplacementTextures;                       // offset 0x4, size 0x2
-    short RefCount;                                     // offset 0x6, size 0x2
+    int16 NumReplacementTextures;                       // offset 0x4, size 0x2
+    int16 RefCount;                                     // offset 0x6, size 0x2
 };
 
 int NumReplacementTextureTableFixups;
@@ -66,7 +66,7 @@ void eFixupReplacementTextureTables() {
         ReplacementTextureTableFixup *fixup = &ReplacementTextureTableFixups[index];
         if (fixup->pReplacementTextureTable) {
             for (int n = 0; n < fixup->NumReplacementTextures; n++) {
-                TextureInfo *texture_info = reinterpret_cast<TextureInfo *>(gDefragFixer.Fix(fixup->pReplacementTextureTable[n].pTextureInfo));
+                TextureInfo *texture_info = reinterpret_cast<TextureInfo *>(gDefragFixer.Fix(fixup->pReplacementTextureTable[n].GetCurrentTexture()));
                 fixup->pReplacementTextureTable[n].SetCurrentTexture(texture_info);
             }
         }
@@ -159,10 +159,10 @@ void eModel::RestoreReplacementTextureTable(TextureInfo ***replaced_textures) {
         TextureInfo **replaced_texture = replaced_textures[n];
         if (replaced_texture) {
             TextureInfo *new_texture_info = *replaced_texture;
-            TextureInfo *old_texture_info = replacement_texture_entry->pTextureInfo;
+            TextureInfo *old_texture_info = replacement_texture_entry->GetCurrentTexture();
 
             *replaced_texture = old_texture_info;
-            replacement_texture_entry->pTextureInfo = new_texture_info;
+            replacement_texture_entry->SetCurrentTexture(new_texture_info);
         }
         replacement_texture_entry++;
     }
@@ -181,8 +181,8 @@ void eModel::ApplyReplacementTextureTable(TextureInfo ***replaced_textures) {
 
     for (int u = 0; u < num_replacement_textures; u++) {
         replaced_textures[u] = nullptr;
-        if (replacement_texture_entry->pTextureInfo == reinterpret_cast<TextureInfo *>(-1)) {
-            replacement_texture_entry->pTextureInfo = GetTextureInfo(replacement_texture_entry->hNewNameHash, 1, 0);
+        if (replacement_texture_entry->GetCurrentTexture() == reinterpret_cast<TextureInfo *>(-1)) {
+            replacement_texture_entry->SetCurrentTexture(GetTextureInfo(replacement_texture_entry->GetNewNameHash(), 1, 0));
         }
         replacement_texture_entry++;
     }
@@ -190,13 +190,13 @@ void eModel::ApplyReplacementTextureTable(TextureInfo ***replaced_textures) {
         uint32 solid_tex_namehash = solid->pTextureTable[index].NameHash;
         replacement_texture_entry = replacement_texture_table;
         for (int n = 0; n < num_replacement_textures; n++) {
-            if ((replacement_texture_entry->hNewNameHash != 0) && (replacement_texture_entry->hOldNameHash == solid_tex_namehash)) {
-                TextureInfo *new_texture_info = replacement_texture_entry->pTextureInfo;
+            if ((replacement_texture_entry->GetNewNameHash() != 0) && (replacement_texture_entry->GetOldNameHash() == solid_tex_namehash)) {
+                TextureInfo *new_texture_info = replacement_texture_entry->GetCurrentTexture();
                 TextureInfo *old_texture_info = solid->pTextureTable[index].pTextureInfo;
 
                 solid->pTextureTable[index].pTextureInfo = new_texture_info;
                 replaced_textures[n] = &solid->pTextureTable[index].pTextureInfo;
-                replacement_texture_entry->pTextureInfo = old_texture_info;
+                replacement_texture_entry->SetCurrentTexture(old_texture_info);
                 break;
             }
             replacement_texture_entry++;

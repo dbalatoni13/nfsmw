@@ -22,12 +22,12 @@ SlotPool *EmitterSlotPool;
 SlotPool *EmitterGroupSlotPool;
 EmitterSystem gEmitterSystem;
 
-unsigned int CrappyStuffThatCantShip[3];
+uint32 CrappyStuffThatCantShip[3];
 
-bool IsAShittyEffect(unsigned int group_key) {
+bool IsAShittyEffect(uint32 group_key) {
     int num_shitty_effects = 3;
     for (int i = 0; i < num_shitty_effects; i++) {
-        unsigned int crap_group_key = CrappyStuffThatCantShip[i];
+        uint32 crap_group_key = CrappyStuffThatCantShip[i];
         if (group_key == crap_group_key) {
             return true;
         }
@@ -58,19 +58,18 @@ void NotifyLibOfDeletion(void *lib, EmitterGroup *grp) {
     emlib->mGroup = nullptr;
 }
 
-unsigned int EmitterGroup::GetNumParticles() {
+uint32 EmitterGroup::GetNumParticles() {
     if (this->mNumEmitters == 0) {
         return 0;
     }
-    unsigned int cnt = 0;
+    uint32 cnt = 0;
     for (Emitter *em = this->mEmitters.GetHead(); em != this->mEmitters.EndOfList(); em = em->GetNext()) {
         cnt += em->GetNumParticles();
     }
     return cnt;
 }
 
-bool GetConstraintBasis(EffectParticleConstraint constraint, bVector4 &x_basis, bVector4 &y_basis, unsigned short &particle_angle,
-                        bMatrix4 *world_view) {
+bool GetConstraintBasis(EffectParticleConstraint constraint, bVector4 &x_basis, bVector4 &y_basis, bAngle &particle_angle, bMatrix4 *world_view) {
     bool res = true;
 
     switch (constraint) {
@@ -310,11 +309,11 @@ EmitterDataAttribWrapper::EmitterDataAttribWrapper(const Attrib::Collection *spe
 
 EmitterGroupAttribWrapper::EmitterGroupAttribWrapper(const Attrib::Collection *spec) : mStaticData(spec, 0, nullptr) {}
 
-void GetFloatColor(unsigned int clr, bVector4 &clr_out) {
-    unsigned int rr = clr >> 0x18;
-    unsigned int gg = clr >> 0x10 & 0xff;
-    unsigned int bb = clr >> 8 & 0xff;
-    unsigned int aa = clr & 0xff;
+void GetFloatColor(uint32 clr, bVector4 &clr_out) {
+    uint32 rr = clr >> 0x18;
+    uint32 gg = clr >> 0x10 & 0xff;
+    uint32 bb = clr >> 8 & 0xff;
+    uint32 aa = clr & 0xff;
 
     clr_out.x = rr * 0.003921569f;
     clr_out.y = gg * 0.003921569f;
@@ -327,10 +326,10 @@ void EmitterDataAttribWrapper::CalculateBases() {
         return;
     }
     bMatrix4 ColourMatrix;
-    unsigned int clr1 = this->mStaticData.Color1();
-    unsigned int clr2 = this->mStaticData.Color2();
-    unsigned int clr3 = this->mStaticData.Color3();
-    unsigned int clr4 = this->mStaticData.Color4();
+    uint32 clr1 = this->mStaticData.Color1();
+    uint32 clr2 = this->mStaticData.Color2();
+    uint32 clr3 = this->mStaticData.Color3();
+    uint32 clr4 = this->mStaticData.Color4();
 
     GetFloatColor(clr1, ColourMatrix.v0);
     GetFloatColor(clr2, ColourMatrix.v1);
@@ -361,7 +360,7 @@ void EmitterDataAttribWrapper::CalculateBases() {
     hermite_basis(&this->mExtraBasis, &extra_control_matrix, key0, key1, key2, key3);
 }
 
-unsigned int EmitterRandomSeed;
+uint32 EmitterRandomSeed;
 
 Emitter::Emitter(const Attrib::Collection *spec, EmitterGroup *parent_group) {
     this->mDynamicData = gEmitterSystem.GetEmitterData(spec);
@@ -396,8 +395,8 @@ void Emitter::GetInitialParticleColorAndSize(const bMatrix4 *xtra_basis, const b
     hermite_parameter(&extra_params, ExtraBasis, 0.0f);
     outParticle->mSize = extra_params.x;
 
-    unsigned short pangle = outParticle->mAngle;
-    unsigned short adelta = static_cast<unsigned short>(extra_params.y);
+    bAngle pangle = outParticle->mAngle;
+    bAngle adelta = static_cast<bAngle>(extra_params.y);
     if (pangle % 2 == 0) {
         pangle += adelta;
     } else {
@@ -432,14 +431,14 @@ void Emitter::GetInitialParticleColorAndSize(const bMatrix4 *xtra_basis, const b
     if (col.w > 255.0f) {
         col.w = 255.0f;
     }
-    unsigned int r = static_cast<int>(col.x);
-    unsigned int g = static_cast<int>(col.y);
-    unsigned int b = static_cast<int>(col.z);
-    unsigned int a = static_cast<int>(col.w);
+    uint32 r = static_cast<int>(col.x);
+    uint32 g = static_cast<int>(col.y);
+    uint32 b = static_cast<int>(col.z);
+    uint32 a = static_cast<int>(col.w);
     outParticle->mColour = r << 24 | g << 16 | b << 8 | a;
 }
 
-void Emitter::GetDiscVelocity(float &x, float &y, float &z, unsigned int &rand_seed) const {
+void Emitter::GetDiscVelocity(float &x, float &y, float &z, uint32 &rand_seed) const {
     float full_spread_angle = this->mDynamicData->GetAttributes().SpreadAngle();
     float half_spread_angle = full_spread_angle * 0.5f;
 
@@ -452,8 +451,8 @@ void Emitter::GetDiscVelocity(float &x, float &y, float &z, unsigned int &rand_s
     bMatrix4 *identity = eGetIdentityMatrix();
     bMatrix4 rott;
     bVector4 pdir;
-    unsigned short angle_t = bDegToAng(bRandom(full_spread_angle, &rand_seed) - half_spread_angle);
-    unsigned short angle_z = bDegToAng(bRandom(360.0f, &rand_seed) - 180.0f);
+    bAngle angle_t = bDegToAng(bRandom(full_spread_angle, &rand_seed) - half_spread_angle);
+    bAngle angle_z = bDegToAng(bRandom(360.0f, &rand_seed) - 180.0f);
 
     pdir.x = bCos(angle_z);
     pdir.y = bSin(angle_z);
@@ -476,9 +475,9 @@ void Emitter::GetConeVelocity(float &x, float &y, float &z, unsigned int &rand_s
     bMatrix4 rot;
     bVector4 pdir;
 
-    unsigned short angle_x = bDegToAng(bRandom(full_spread_angle, &rand_seed) - half_spread_angle);
-    unsigned short angle_y = bDegToAng(bRandom(full_spread_angle, &rand_seed) - half_spread_angle);
-    unsigned short angle_z = bDegToAng(bRandom(full_spread_angle, &rand_seed) - half_spread_angle);
+    bAngle angle_x = bDegToAng(bRandom(full_spread_angle, &rand_seed) - half_spread_angle);
+    bAngle angle_y = bDegToAng(bRandom(full_spread_angle, &rand_seed) - half_spread_angle);
+    bAngle angle_z = bDegToAng(bRandom(full_spread_angle, &rand_seed) - half_spread_angle);
     eRotateX(&rot, identity, angle_x);
     eRotateY(&rot, &rot, angle_y);
     eRotateZ(&rot, &rot, angle_z);
@@ -489,19 +488,19 @@ void Emitter::GetConeVelocity(float &x, float &y, float &z, unsigned int &rand_s
     z = pdir.z;
 }
 
-unsigned short Emitter::CalcParticleListIndex() {
-    unsigned short list_index = this->mDynamicData->GetAttributes().Texture().mIndex;
+uint16 Emitter::CalcParticleListIndex() {
+    uint16 list_index = this->mDynamicData->GetAttributes().Texture().mIndex;
     return list_index + 2;
 }
 
-void GetAnimatedUVs(EffectParticleAnimation texture_layout_type, int frame, unsigned int *uvS, unsigned int *uvE) {
+void GetAnimatedUVs(EffectParticleAnimation texture_layout_type, int frame, uint32 *uvS, uint32 *uvE) {
     if (texture_layout_type != ANIMATE_PARTICLE_NONE) {
         float startu = (*uvS >> 16) / 65535.0f;
         float startv = (*uvS & 0xffff) / 65535.0f;
         float endu = (*uvE >> 16) / 65535.0f;
         float endv = (*uvE & 0xffff) / 65535.0f;
         // TODO some names might be wrong
-        int square_width;
+        int32 square_width;
         int num_sub_squares = frame / texture_layout_type;
         float xdiff = endu - startu;
         float fsquarewidth = xdiff / texture_layout_type;
@@ -512,12 +511,12 @@ void GetAnimatedUVs(EffectParticleAnimation texture_layout_type, int frame, unsi
     }
 }
 
-void Emitter::GetStandardUVs(unsigned int *mUVStart, unsigned int *mUVEnd) {
+void Emitter::GetStandardUVs(uint32 *mUVStart, uint32 *mUVEnd) {
     *mUVStart = 0;
     *mUVEnd = 0xffffffff;
 }
 
-EmitterGroup::EmitterGroup(const Attrib::Collection *spec, unsigned int creation_context_flags) {
+EmitterGroup::EmitterGroup(const Attrib::Collection *spec, uint32 creation_context_flags) {
     this->mDynamicData = gEmitterSystem.GetEmitterGroup(spec);
     this->mNumEmitters = 0;
     this->mIntensity = 1.0f;
@@ -546,7 +545,7 @@ EmitterGroup::~EmitterGroup() {
     }
 }
 
-bool EmitterGroup::SetEmitters(unsigned int creation_context_flags) {
+bool EmitterGroup::SetEmitters(uint32 creation_context_flags) {
     const Attrib::Gen::emittergroup &grpatr = this->GetAttribs();
     if (grpatr.IsValid()) {
         int num_emitters = grpatr.Num_Emitters();
@@ -602,7 +601,7 @@ void EmitterGroup::UnloadEmitters(bool kill_particles) {
     }
 }
 
-unsigned int EmitterGroup::NumEmitters() const {
+uint32 EmitterGroup::NumEmitters() const {
     return this->GetAttribs().Num_Emitters();
 }
 
@@ -795,7 +794,7 @@ void EmitterSystem::KillParticle(Emitter *em, EmitterParticle *particle) {
 
 bool EnableParticleSystem;
 
-EmitterGroup *EmitterSystem::CreateEmitterGroup(const Attrib::StringKey &group_name, unsigned int creation_context_flags) {
+EmitterGroup *EmitterSystem::CreateEmitterGroup(const Attrib::StringKey &group_name, uint32 creation_context_flags) {
     if (!EnableParticleSystem) {
         return nullptr;
     }
@@ -808,7 +807,7 @@ EmitterGroup *EmitterSystem::CreateEmitterGroup(const Attrib::StringKey &group_n
     return nullptr;
 }
 
-EmitterGroup *EmitterSystem::CreateEmitterGroup(const Attrib::Key &group_key, unsigned int creation_context_flags) {
+EmitterGroup *EmitterSystem::CreateEmitterGroup(const Attrib::Key &group_key, uint32 creation_context_flags) {
     if (!EnableParticleSystem) {
         return nullptr;
     }
@@ -821,7 +820,7 @@ EmitterGroup *EmitterSystem::CreateEmitterGroup(const Attrib::Key &group_key, un
     return nullptr;
 }
 
-EmitterGroup *EmitterSystem::CreateEmitterGroup(const Attrib::Collection *group_spec, unsigned int creation_context_flags) {
+EmitterGroup *EmitterSystem::CreateEmitterGroup(const Attrib::Collection *group_spec, uint32 creation_context_flags) {
     int ThisIsNISCondition;
     EmitterGroup *grp;
 
@@ -957,7 +956,7 @@ void EmitterSystem::UpdateParticles(float dt) {
     if (!EnableParticleSystem || this->mTotalNumParticles == 0) {
         return;
     }
-    int time_step = static_cast<int>(dt * 1024.0f);              // r19
+    int32 time_step = static_cast<int>(dt * 1024.0f);            // r19
     float ed_drag = 0.0f;                                        // f26
     float ed_gravity = 0.0f;                                     // f27
     float ed_life = 0.0f;                                        // f24
@@ -1054,8 +1053,8 @@ void EmitterSystem::UpdateParticles(float dt) {
                         t.x = t.z * t.y;
                         RotateTranslate(t, *reinterpret_cast<const UMath::Matrix4 *>(ExtraBasis), extra_params);
                         particle->mSize = extra_params.x;
-                        unsigned short pangle = static_cast<unsigned int>(particle->mInitialAngle) * 257.0f;
-                        unsigned short adelta = extra_params.y + static_cast<float>(particle->mRotOffset) / 255.0f * extra_params.y;
+                        bAngle pangle = static_cast<uint32>(particle->mInitialAngle) * 257.0f;
+                        bAngle adelta = extra_params.y + static_cast<float>(particle->mRotOffset) / 255.0f * extra_params.y;
                         if (pangle % 2 == 0) {
                             pangle += adelta;
                         } else {
@@ -1070,7 +1069,7 @@ void EmitterSystem::UpdateParticles(float dt) {
                         uint32 a = bClamp(static_cast<int>(col.w), 0, 255);
                         particle->mColour = r << 24 | g << 16 | b << 8 | a;
                         bool ignore_programmer_badness = em->GetAttributes().NoKillAtAlpha();
-                        unsigned int alpha_value_to_kill_at = em->GetAttributes().AlphaToKillAt();
+                        uint32 alpha_value_to_kill_at = em->GetAttributes().AlphaToKillAt();
                         if (ignore_programmer_badness || (a > alpha_value_to_kill_at)) {
                             particle = particle->GetNext();
                             continue;
@@ -1147,8 +1146,9 @@ void afxGetWorldViewMatrix(eView *view, bMatrix4 *world_view) {
 
 // TODO move
 void PlatGetViewVectors(eView *view, UMath::Vector3 &rightVec, UMath::Vector3 &upVec, UMath::Vector3 &fwdVec);
-bool PlatStartParticleRender(eView *view, TextureInfo *mTextureInfo, unsigned int mNumParticles);
+bool PlatStartParticleRender(eView *view, TextureInfo *mTextureInfo, uint32 mNumParticles);
 void PlatEndParticleRender();
+// TODO: typedef COORD3
 void PlatAddParticle(const EmitterParticle &particle, const UMath::Vector3 &upVec, const UMath::Vector3 &rightVec, unsigned int hack_flags,
                      bVector4 *x_constrain_basis, bVector4 *y_constrain_basis);
 void DrawXenonEmitters(eView *view);
@@ -1158,8 +1158,8 @@ void EmitterSystem::Render(eView *view) {
     if (!EnableParticleSystem) {
         return;
     }
-    int num_textures;
-    int total_num_textures;
+    int32 num_textures;
+    int32 total_num_textures;
     if (this->mTotalNumParticles > 0) {
         bMatrix4 world_view;
         num_textures = 0;
@@ -1172,7 +1172,7 @@ void EmitterSystem::Render(eView *view) {
                     continue;
                 }
                 num_textures++;
-                unsigned int texture_hash = em->GetAttributes().Texture().mEnum;
+                uint32 texture_hash = em->GetAttributes().Texture().mEnum;
                 this->mCurrentTexture = GetTextureInfo(texture_hash, 1, 0);
                 if (!this->mCurrentTexture) {
                     continue;
@@ -1252,20 +1252,20 @@ EmitterGroupAttribWrapper *EmitterSystem::GetEmitterGroup(const Attrib::Collecti
 
 bool EmitterSystem::IsCloseEnough(const bVector3 *group_pos, float farclip, int frustrum, float cos_angle_fov) const {
     const bVector3 *group_position = group_pos;
-    int num_points = 1;
+    int32 num_points = 1;
 
     if (eGetCurrentViewMode() == EVIEWMODE_TWOH) {
         num_points = 2;
     }
     if (frustrum == 0) {
-        for (int i = 0; i < num_points; i++) {
+        for (int32 i = 0; i < num_points; i++) {
             float distance = bDistBetween(group_position, &this->mInterestPoints[i]);
             if (distance < farclip) {
                 return true;
             }
         }
     } else {
-        for (int i = 0; i < num_points; i++) {
+        for (int32 i = 0; i < num_points; i++) {
             float distance = bDistBetween(group_position, &this->mInterestPoints[i]);
             if (distance < farclip) {
                 bVector3 toGroup = *group_position - this->mInterestPoints[i];
@@ -1310,8 +1310,8 @@ void UpdateTriggers() {
 }
 
 int GetEmitterGroupsToTrigger(bVector3 &pos, EmitterLibrary **lib_buffer_out) {
-    int ix = 0;
-    int num_ret = 0;
+    int32 ix = 0;
+    int32 num_ret = 0;
     bTList<WorldFXTrigger> &trigger_list = gEmitterSystem.GetTriggers();
     for (WorldFXTrigger *trig = trigger_list.GetHead(); trig != trigger_list.EndOfList(); trig = trig->GetNext()) {
         EmitterLibrary *lib = trig->mLib;
@@ -1361,7 +1361,7 @@ int GetEmitterGroupsToTrigger(bVector3 &pos, EmitterLibrary **lib_buffer_out) {
     return num_ret;
 }
 
-int EmitterSystem::Loader(bChunk *bchunk) {
+int32 EmitterSystem::Loader(bChunk *bchunk) {
     if (bchunk->GetID() == 0x3bb00) {
         return true;
     } else if (bchunk->GetID() == BCHUNK_EMITTER_SYSTEM) {
@@ -1404,12 +1404,12 @@ int EmitterSystem::Loader(bChunk *bchunk) {
     return false;
 }
 
-BOOL EmitterSystem::Unloader(bChunk *bchunk) {
+int32 EmitterSystem::Unloader(bChunk *bchunk) {
     // TODO hash
     if (bchunk->GetID() == 0x3bb00) {
         EmitterPackHeader *pack_header = reinterpret_cast<EmitterPackHeader *>(bchunk->GetAlignedData(16));
         EmitterGroup *emitter_group = reinterpret_cast<EmitterGroup *>(&pack_header[1]);
-        for (int num_emitter_groups = pack_header->NumEmitterGroups; num_emitter_groups != 0; num_emitter_groups--) {
+        for (int32 num_emitter_groups = pack_header->NumEmitterGroups; num_emitter_groups != 0; num_emitter_groups--) {
             gEmitterSystem.RemoveEmitterGroup(emitter_group);
             emitter_group++;
         }
@@ -1435,13 +1435,13 @@ BOOL EmitterSystem::Unloader(bChunk *bchunk) {
     return false;
 }
 
-int EmitterSystem::TexturePageLoader(bChunk *bchunk) {
+int32 EmitterSystem::TexturePageLoader(bChunk *bchunk) {
     if (bchunk->GetID() == BCHUNK_TPK_SETTINGS) {
-        int size = bchunk->GetAlignedSize(16);
-        int num = size / sizeof(TexturePageRange);
+        int32 size = bchunk->GetAlignedSize(16);
+        int32 num = size / sizeof(TexturePageRange);
         TexturePageRange *ranges = reinterpret_cast<TexturePageRange *>(bchunk->GetAlignedData(16));
         EmitterSystem::SetTexturePageRanges(num, ranges);
-        for (int i = 0; i < num; i++) {
+        for (int32 i = 0; i < num; i++) {
             TexturePageRange *range = &ranges[i];
             bPlatEndianSwap(&range->flags);
             bPlatEndianSwap(&range->texture_namehash);
@@ -1455,7 +1455,7 @@ int EmitterSystem::TexturePageLoader(bChunk *bchunk) {
     return false;
 }
 
-int EmitterSystem::TexturePageUnloader(bChunk *bchunk) {
+int32 EmitterSystem::TexturePageUnloader(bChunk *bchunk) {
     if (bchunk->GetID() == BCHUNK_TPK_SETTINGS) {
         EmitterSystem::SetTexturePageRanges(0, nullptr);
         return true;

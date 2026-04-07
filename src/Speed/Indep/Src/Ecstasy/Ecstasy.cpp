@@ -15,18 +15,18 @@
 
 // EAXSound2
 float renderModifier = 1.0f;
-unsigned int numCopsActiveCherry;
-unsigned int numCopsActiveTotal;
-unsigned int numCopsActiveView;
-unsigned char *FrameMemoryBuffer[2];
-unsigned int FrameMemoryBufferSize = 0;
+uint32 numCopsActiveCherry;
+uint32 numCopsActiveTotal;
+uint32 numCopsActiveView;
+uint8 *FrameMemoryBuffer[2];
+uint32 FrameMemoryBufferSize = 0;
 int FrameMemoryBufferAmountUsed[2];
 //
-unsigned int FrameMallocAllocNum = 0;
-unsigned int FrameMallocFailed = 0;
-unsigned int FrameMallocFailAmount = 0;
+uint32 FrameMallocAllocNum = 0;
+uint32 FrameMallocFailed = 0;
+uint32 FrameMallocFailAmount = 0;
 //
-unsigned int FrameMallocMaxFailAmount = 0;
+uint32 FrameMallocMaxFailAmount = 0;
 
 int Eframelargest = 0;
 int Eframecurrent = 0;
@@ -34,7 +34,7 @@ int Eframecurrent = 0;
 TextureInfo *OtherEcstacyTextures[30];
 unsigned int OtherEcstacyTextures_name_hash[30];
 
-unsigned int numOtherTex = 0;
+uint32 numOtherTex = 0;
 
 void eAllocateFrameMallocBuffers(uint32 total_size /* r3 */);
 
@@ -103,11 +103,11 @@ void eFixUpTables() {
     }
 }
 
-void eAllocateFrameMallocBuffers(unsigned int total_size) {
-    unsigned int buffer_size = (total_size >> 1) & 0x7FFFFFF0; // r29
+void eAllocateFrameMallocBuffers(uint32 total_size) {
+    uint32 buffer_size = (total_size >> 1) & 0x7FFFFFF0; // r29
 
-    FrameMemoryBuffer[0] = new (__FILE__, __LINE__) unsigned char[buffer_size];
-    FrameMemoryBuffer[1] = new (__FILE__, __LINE__) unsigned char[buffer_size];
+    FrameMemoryBuffer[0] = new (__FILE__, __LINE__) uint8[buffer_size];
+    FrameMemoryBuffer[1] = new (__FILE__, __LINE__) uint8[buffer_size];
 
     FrameMemoryBufferSize = buffer_size;
     CurrentBufferPos = FrameMemoryBuffer[0];
@@ -119,9 +119,9 @@ void eAllocateFrameMallocBuffers(unsigned int total_size) {
 void eFreeFrameMallocBuffers() {}
 
 void eSwapFrameMallocBuffers() {
-    unsigned char *buffer0; // r30
-    unsigned char *buffer1; // r3
-    int amount_used;        // r4
+    uint8 *buffer0;  // r30
+    uint8 *buffer1;  // r3
+    int amount_used; // r4
 
     if (FrameMallocFailed != 0 && FrameMallocFailAmount > FrameMallocMaxFailAmount) {
         FrameMallocMaxFailAmount = FrameMallocFailAmount;
@@ -154,7 +154,7 @@ int eGetSizeofFrameMallocBuffers(int *pamount_used /* r3 */) {}
 
 void SetupSceneryCullInfo(eView *view /* r30 */, SceneryCullInfo &info /* r29 */, int exclude_flags /* r31 */) {
     EVIEWMODE view_mode; // r3
-    int view_id;         // r11
+    int32 view_id;       // r11
 
     view_mode = eGetCurrentViewMode();
     exclude_flags |= 0x10;
@@ -193,13 +193,13 @@ void RenderMWDebugTopology(eView *view /* r3 */) {};
 void eDebugRender(eView *view /* r4 */) {}
 
 // STRIPPED
-void eAddOtherEcstacyTexture(unsigned int name_hash /* r3 */, TextureInfo *tex /* r4 */) {};
+void eAddOtherEcstacyTexture(uint32 name_hash /* r3 */, TextureInfo *tex /* r4 */) {};
 
-struct TextureInfo *eGetOtherEcstacyTexture(unsigned int name_hash) {
+struct TextureInfo *eGetOtherEcstacyTexture(uint32 name_hash) {
     if (numOtherTex < 0)
         return NULL;
 
-    for (unsigned int i = 0; i < numOtherTex; i++) {
+    for (uint32 i = 0; i < numOtherTex; i++) {
         if (OtherEcstacyTextures_name_hash[i] == name_hash) {
             return OtherEcstacyTextures[i];
         }
@@ -209,7 +209,7 @@ struct TextureInfo *eGetOtherEcstacyTexture(unsigned int name_hash) {
 }
 
 // STRIPPED
-void eRemoveOtherEcstacyTexture(unsigned int name_hash /* r3 */) {}
+void eRemoveOtherEcstacyTexture(uint32 name_hash /* r3 */) {}
 
 bool eIsWidescreen() {
     return false;

@@ -50,7 +50,7 @@ int LoaderSun(bChunk *chunk) {
     return 1;
 }
 
-void SetCurrentSunInfo(unsigned int name_hash) {
+void SetCurrentSunInfo(uint32 name_hash) {
     SunInfo = nullptr;
     if (name_hash != 0) {
         for (int n = 0; n < NumSunInfo; n++) {
@@ -81,7 +81,7 @@ void SetCurrentSunInfo(unsigned int name_hash) {
 }
 
 void SetCurrentSunInfo() {
-    unsigned int name_hash = bStringHash("MIDDAY");
+    uint32 name_hash = bStringHash("MIDDAY");
     if (GetCurrentTimeOfDay() == eTOD_SUNSET) {
         name_hash = bStringHash("SUNSET");
     }
