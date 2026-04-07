@@ -271,12 +271,16 @@ void CARSFX_BottomOut::UpdateParams(float t) {
             PlayJumpLanding = true;
             if (RearHangTime > 0.1f) {
                 IsHardLanding = true;
+            } else {
+                IsHardLanding = false;
             }
         }
     } else {
         PlayJumpLanding = true;
         if ((FrontHangTime > 0.1f) || (BackTouching && (RearHangTime > 0.1f))) {
             IsHardLanding = true;
+        } else {
+            IsHardLanding = false;
         }
     }
 
@@ -312,35 +316,35 @@ void CARSFX_BottomOut::UpdateParams(float t) {
         IsCarLeaningHeavily = false;
     }
 
-    if (!GetPhysCar()->IsWheelTouchingGround(0) || !GetPhysCar()->IsWheelTouchingGround(1)) {
-        FrontWheelsTouched = false;
-        FrontHangTime += t;
-    } else {
+    if (GetPhysCar()->IsWheelTouchingGround(0) && GetPhysCar()->IsWheelTouchingGround(1)) {
         FrontWheelsTouched = true;
         FrontHangTime = 0.0f;
+    } else {
+        FrontWheelsTouched = false;
+        FrontHangTime += t;
     }
 
-    if (!GetPhysCar()->IsWheelTouchingGround(2) || !GetPhysCar()->IsWheelTouchingGround(3)) {
-        RearWheelsTouched = false;
-        RearHangTime += t;
-    } else {
+    if (GetPhysCar()->IsWheelTouchingGround(2) && GetPhysCar()->IsWheelTouchingGround(3)) {
         RearWheelsTouched = true;
         RearHangTime = 0.0f;
+    } else {
+        RearWheelsTouched = false;
+        RearHangTime += t;
     }
 
-    if (!GetPhysCar()->IsWheelTouchingGround(1) || !GetPhysCar()->IsWheelTouchingGround(2)) {
-        RightWheelsTouched = false;
-        RightHangTime += t;
-    } else {
+    if (GetPhysCar()->IsWheelTouchingGround(1) && GetPhysCar()->IsWheelTouchingGround(2)) {
         RightWheelsTouched = true;
         RightHangTime = 0.0f;
+    } else {
+        RightWheelsTouched = false;
+        RightHangTime += t;
     }
 
-    if (!GetPhysCar()->IsWheelTouchingGround(0) || !GetPhysCar()->IsWheelTouchingGround(3)) {
-        LeftWheelsTouched = false;
-        LeftHangTime += t;
-    } else {
+    if (GetPhysCar()->IsWheelTouchingGround(0) && GetPhysCar()->IsWheelTouchingGround(3)) {
         LeftWheelsTouched = true;
         LeftHangTime = 0.0f;
+    } else {
+        LeftWheelsTouched = false;
+        LeftHangTime += t;
     }
 }
