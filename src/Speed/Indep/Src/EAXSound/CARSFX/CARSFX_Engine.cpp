@@ -5,6 +5,11 @@
 #include "Speed/Indep/Src/EAXSound/Stream/SndStrmWrapper.hpp"
 
 extern "C" int SNDvol(int sndHandle, int vol);
+extern "C" int SND3dpos(int sndHandle, int azimuth, int elevation);
+extern "C" int SNDpitchmult(int sndHandle, int pitchmult);
+extern "C" int SNDCTRL_lowpass(int sndHandle, int lowpasscutoff);
+extern "C" int SNDCTRL_drylevel(int sndHandle, int drylevel);
+extern "C" int SNDfxlevel(int sndHandle, int effect, int level);
 extern stSndDataLoadParams g_SndAssetList[];
 char *GetGinsuData(const char *filename);
 int ntestrefcount;
@@ -356,4 +361,117 @@ void CARSFX_AEMSEngine::SetupLoadData() {
         SPU_or_EE = 1;
         LoadAsset(m_pEAXCar->GetEngineAttributes().BankName_mainRAM(), SNDPATH_ENGINE, EAXSND_DT_AEMS_ASYNCSPUMEM, type, true);
     }
+}
+
+SndBase::TypeInfo CARSFX_DualGinsuEng::s_TypeInfo = { 0x00020020, "CARSFX_DualGinsuEng", &SndBase::s_TypeInfo,
+                                                      CARSFX_DualGinsuEng::CreateObject };
+
+SndBase::TypeInfo *CARSFX_DualGinsuEng::GetTypeInfo() const { return &s_TypeInfo; }
+
+const char *CARSFX_DualGinsuEng::GetTypeName() const { return s_TypeInfo.typeName; }
+
+SndBase *CARSFX_DualGinsuEng::CreateObject(unsigned int allocator) {
+    if (allocator == 0) {
+        return new (s_TypeInfo.typeName, false) CARSFX_DualGinsuEng();
+    }
+    return new (s_TypeInfo.typeName, true) CARSFX_DualGinsuEng();
+}
+
+CARSFX_DualGinsuEng::CARSFX_DualGinsuEng()
+    : CARSFX_GinsuEngine() {}
+
+CARSFX_DualGinsuEng::~CARSFX_DualGinsuEng() {}
+
+void CARSFX_DualGinsuEng::SetGinsuParams() {
+    int nDMixOut;
+    int TmpVol;
+    int LowPassFilter;
+    float freq;
+    float fPitchBelowMinFreq;
+    int nFXDryVol;
+    int nFXWetVol;
+
+    if (!GinsuInitialized) {
+        return;
+    }
+
+    fPitchBelowMinFreq = 1.0f;
+    nDMixOut = GetDMixOutput(2, DMX_VOL);
+    TmpVol = m_pHybridEngCtl->m_EngVolAccelGinsu * nDMixOut;
+    LowPassFilter = bMin(static_cast<int>(m_pHybridEngCtl->m_GinsuLPFVal), GetDMixOutput(5, DMX_FREQ));
+    freq = m_GinsuRPM;
+    if (freq < m_GinsuData[0].mMinFrequency) {
+        fPitchBelowMinFreq = freq / m_GinsuData[0].mMinFrequency;
+        freq = m_GinsuData[0].mMinFrequency;
+    }
+
+    nFXDryVol = m_pTunnelCtl->m_GinsuDryVol >> 8;
+    if (nFXDryVol < 0) {
+        nFXDryVol = 0;
+    } else if (nFXDryVol > 0x7F) {
+        nFXDryVol = 0x7F;
+    }
+
+    m_GinsuAccelVol = TmpVol >> 23;
+    if (m_GinsuAccelVol < 0) {
+        m_GinsuAccelVol = 0;
+    } else if (m_GinsuAccelVol > 0x7F) {
+        m_GinsuAccelVol = 0x7F;
+    }
+
+    nFXWetVol = m_pTunnelCtl->m_GinsuWetVol * nDMixOut >> 23;
+    if (nFXWetVol < 0) {
+        nFXWetVol = 0;
+    } else if (nFXWetVol > 0x7F) {
+        nFXWetVol = 0x7F;
+    }
+
+    SNDSYS_entercritical();
+    SNDvol(m_GinsuData[0].mSNDhandle, m_GinsuAccelVol);
+    nDMixOut = GetDMixOutput(0, DMX_AZIM);
+    SND3dpos(m_GinsuData[0].mSNDhandle, nDMixOut, 0);
+    SNDpitchmult(m_GinsuData[0].mSNDhandle, static_cast<int>(fPitchBelowMinFreq * PitchMultipli * 4096.0f));
+    SNDCTRL_lowpass(m_GinsuData[0].mSNDhandle, LowPassFilter);
+    SNDCTRL_drylevel(m_GinsuData[0].mSNDhandle, nFXDryVol);
+    SNDfxlevel(m_GinsuData[0].mSNDhandle, 0, nFXWetVol);
+    m_GinsuData[0].mSynth->UpdateFrequency(freq, 60.0f);
+    m_GinsuRPM = m_GinsuData[0].mSynth->GetCurrentPitch() * fPitchBelowMinFreq * 120.0f;
+
+    nFXDryVol = m_pTunnelCtl->m_GinsuDryVol >> 8;
+    if (nFXDryVol < 0) {
+        nFXDryVol = 0;
+    } else if (nFXDryVol > 0x7F) {
+        nFXDryVol = 0x7F;
+    }
+
+    m_GinsuDecelVol = m_pHybridEngCtl->m_EngVolDecelGinsu * nDMixOut >> 23;
+    if (m_GinsuDecelVol < 0) {
+        m_GinsuDecelVol = 0;
+    } else if (m_GinsuDecelVol > 0x7F) {
+        m_GinsuDecelVol = 0x7F;
+    }
+
+    nFXWetVol = nDMixOut * m_pTunnelCtl->m_GinsuWetVol >> 23;
+    if (nFXWetVol < 0) {
+        nFXWetVol = 0;
+    } else if (nFXWetVol > 0x7F) {
+        nFXWetVol = 0x7F;
+    }
+
+    SNDvol(m_GinsuData[1].mSNDhandle, m_GinsuDecelVol);
+    nDMixOut = GetDMixOutput(0, DMX_AZIM);
+    SND3dpos(m_GinsuData[1].mSNDhandle, nDMixOut, 0);
+    SNDpitchmult(m_GinsuData[1].mSNDhandle, static_cast<int>(fPitchBelowMinFreq * PitchMultipli * 4096.0f));
+    SNDCTRL_lowpass(m_GinsuData[1].mSNDhandle, LowPassFilter);
+    SNDCTRL_drylevel(m_GinsuData[1].mSNDhandle, nFXDryVol);
+    SNDfxlevel(m_GinsuData[1].mSNDhandle, 0, nFXWetVol);
+    m_GinsuData[1].mSynth->UpdateFrequency(freq, 60.0f);
+    SNDSYS_leavecritical();
+}
+
+void CARSFX_DualGinsuEng::SetupLoadData() {
+    SPU_or_EE = 1;
+    LoadAsset(m_pEAXCar->GetEngineAttributes().BankName_mainRAM(), SNDPATH_ENGINE, EAXSND_DT_AEMS_AUDIOMEM, eBANK_SLOT_NONE, true);
+    LoadAsset(m_pEAXCar->GetEngineAttributes().Filename_GinsuAccel(), SNDPATH_ENGINE, EAXSND_DT_GENERIC_DATA, eBANK_SLOT_NONE, true);
+    LoadAsset(m_pEAXCar->GetEngineAttributes().Filename_GinsuDecel(), SNDPATH_ENGINE, EAXSND_DT_GENERIC_DATA, eBANK_SLOT_NONE, true);
 }
