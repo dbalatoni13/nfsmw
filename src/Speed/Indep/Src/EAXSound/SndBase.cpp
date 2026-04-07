@@ -23,7 +23,40 @@ SndBase::SndBase() {
     m_fRunningTime = 0.0f;
 }
 
-SndBase::~SndBase() {}
+SndBase::~SndBase() {
+ReprocessQueue:
+    SndAssetQueue::iterator p_Var4 = gAEMSMgr.mWaitForResolve.begin();
+    SndBase *pSVar8;
+    int iVar5;
+    int iVar7;
+
+    while (true) {
+        if (p_Var4 == gAEMSMgr.mWaitForResolve.end()) {
+            return;
+        }
+
+        iVar5 = (*p_Var4).Asset.FileName.GetHash32();
+        iVar7 = reinterpret_cast<int>((*p_Var4).Asset.FileName.GetString());
+        pSVar8 = (*p_Var4).pThis;
+        if (pSVar8 == this) {
+            break;
+        }
+        ++p_Var4;
+    }
+
+    p_Var4 = gAEMSMgr.mWaitForResolve.begin();
+    while (p_Var4 != gAEMSMgr.mWaitForResolve.end()) {
+        SndAssetQueue::iterator ptr = p_Var4;
+        ++p_Var4;
+        if (pSVar8 == (*ptr).pThis &&
+            iVar5 == (*ptr).Asset.FileName.GetHash32() &&
+            iVar7 == reinterpret_cast<int>((*ptr).Asset.FileName.GetString())) {
+            gAEMSMgr.mWaitForResolve.remove(*ptr);
+        }
+    }
+
+    goto ReprocessQueue;
+}
 
 int SndBase::GetDMixOutput(int idx, DMX_PRESET_TYPE etype) {
     if (m_pInputBlock) {
