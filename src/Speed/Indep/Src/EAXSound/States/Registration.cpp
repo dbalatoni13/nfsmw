@@ -80,11 +80,6 @@ struct CARSFX_TruckHorn : public CARSFX_TrafficHorn {
     static TypeInfo s_TypeInfo;
 };
 
-struct SFXCTL_3DRearPos : public SFXCTL_3DCarPos {
-  protected:
-    static TypeInfo s_TypeInfo;
-};
-
 struct SFXCTL_3DFountainPos : public SFXCTL_3DObjPos {
   protected:
     static TypeInfo s_TypeInfo;

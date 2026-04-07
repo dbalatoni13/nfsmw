@@ -21,4 +21,21 @@ struct SFXCTL_3DCarPos : public SFXCTL_3DObjPos {
     void InitSFX() override;
 };
 
+struct SFXCTL_3DRearPos : public SFXCTL_3DCarPos {
+  protected:
+    static TypeInfo s_TypeInfo;
+
+  public:
+    SFXCTL_3DRearPos() {}
+    ~SFXCTL_3DRearPos() override {}
+    TypeInfo *GetTypeInfo() const override;
+    const char *GetTypeName() const override;
+    static SndBase *CreateObject(unsigned int allocator);
+    void InitSFX() override;
+    void UpdateParams(float t) override;
+
+  private:
+    bVector3 vRearPos; // offset 0x64, size 0x10
+};
+
 #endif
