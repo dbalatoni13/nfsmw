@@ -62,6 +62,8 @@
 
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_MomentStrm.cpp"
 
+#include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_WorldObject.cpp"
+
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_Woosh.cpp"
 
 #include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX_PreColWoosh.cpp"

@@ -16,6 +16,7 @@ struct CSTATE_WorldObject : public CSTATE_Base {
     }
 
     static StateInfo s_StateInfo;
+    ISndAttachable *mSndAttachment; // offset 0x44, size 0x4
 };
 
 // total size: 0x24
