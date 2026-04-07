@@ -16,7 +16,7 @@ ClassHandle gFX_SHIFTING_01Handle;
 
 extern int IsSoundEnabled;
 extern int g_nArrayCosTable[0x201];
-extern Slope ShiftingAttackVolSlope;
+Slope ShiftingAttackVolSlope(1.0f, 32767.0f, 4000.0f, 7000.0f);
 
 CARSFX_Shift::TypeInfo CARSFX_Shift::s_TypeInfo = {
     0x00020030,

@@ -5,9 +5,9 @@
 #include "Speed/Indep/Src/EAXSound/STICH_Playback.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
-extern float DOT_PROD_FOR_HEAVY_LEAN;
-extern int JumpLandingVolumes[4];
-extern Slope JumpLandingIntensity;
+float DOT_PROD_FOR_HEAVY_LEAN = 0.65f;
+int JumpLandingVolumes[4] = {13000, 15000, 24000, 32767};
+Slope JumpLandingIntensity(0.0f, 1.0f, 0.0f, 0.65f);
 
 SndBase::TypeInfo CARSFX_BottomOut::s_TypeInfo = { 0, "CARSFX_BottomOut", nullptr, CARSFX_BottomOut::CreateObject };
 
