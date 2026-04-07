@@ -22,7 +22,14 @@ extern ClassHandle gFX_CameraHandle;
 extern InterfaceId FX_CameraId;
 extern ClassHandle gFX_UVESHandle;
 extern InterfaceId FX_UVESId;
+extern ClassHandle gFX_SHIFTING_01Handle;
+extern InterfaceId FX_SHIFTING_01Id;
 } // namespace Csis
+
+enum FXSHIFTING01TypeType {
+    FXSHIFTING01TYPETYPE_SHIFT = 0,
+    FXSHIFTING01TYPETYPE_ATTACK_ = 1,
+};
 
 struct FX_RadarStruct {
     int iD;           // offset 0x0, size 0x4
@@ -1140,6 +1147,115 @@ class FX_Camera {
   private:
     Csis::Class *mpClass;   // offset 0x0, size 0x4
     FX_CameraStruct mData;  // offset 0x4, size 0x20
+};
+
+struct FX_SHIFTING_01Struct {
+    int id;                  // offset 0x0, size 0x4
+    int volume;              // offset 0x4, size 0x4
+    int pitch;               // offset 0x8, size 0x4
+    int azimuth;             // offset 0xC, size 0x4
+    FXSHIFTING01TypeType type; // offset 0x10, size 0x4
+    int cAM;                 // offset 0x14, size 0x4
+};
+
+struct FX_SHIFTING_01 {
+  public:
+    void SetId(int x) {
+        mData.id = x;
+    }
+
+    int GetId() {
+        return mData.id;
+    }
+
+    void SetVolume(int x) {
+        mData.volume = x;
+    }
+
+    int GetVolume() {
+        return mData.volume;
+    }
+
+    void SetPitch(int x) {
+        mData.pitch = x;
+    }
+
+    int GetPitch() {
+        return mData.pitch;
+    }
+
+    void SetAzimuth(int x) {
+        mData.azimuth = x;
+    }
+
+    int GetAzimuth() {
+        return mData.azimuth;
+    }
+
+    void SetType(FXSHIFTING01TypeType x) {
+        mData.type = x;
+    }
+
+    FXSHIFTING01TypeType GetType() {
+        return mData.type;
+    }
+
+    void SetCAM(int x) {
+        mData.cAM = x;
+    }
+
+    int GetCAM() {
+        return mData.cAM;
+    }
+
+    int GetRefCount() {
+        int refCount = 0;
+
+        if (mpClass) {
+            mpClass->GetRefCount(&refCount);
+        }
+
+        return refCount;
+    }
+
+    static void *operator new(unsigned int size) {
+        return Csis::System::Alloc(size);
+    }
+
+    static void operator delete(void *ptr) {
+        Csis::System::Free(ptr);
+    }
+
+    FX_SHIFTING_01(int id, int volume, int pitch, int azimuth, FXSHIFTING01TypeType type, int cAM) {
+        SetId(id);
+        SetVolume(volume);
+        SetPitch(pitch);
+        SetAzimuth(azimuth);
+        SetType(type);
+        SetCAM(cAM);
+
+        int result = Csis::Class::CreateInstance(&Csis::gFX_SHIFTING_01Handle, &mData, &mpClass);
+        if (result < 0) {
+            Csis::gFX_SHIFTING_01Handle.Set(&Csis::FX_SHIFTING_01Id);
+            Csis::Class::CreateInstance(&Csis::gFX_SHIFTING_01Handle, &mData, &mpClass);
+        }
+    }
+
+    ~FX_SHIFTING_01() {
+        if (mpClass) {
+            mpClass->Release();
+        }
+    }
+
+    void CommitMemberData() {
+        if (mpClass) {
+            mpClass->SetMemberData(&mData);
+        }
+    }
+
+  private:
+    Csis::Class *mpClass;         // offset 0x0, size 0x4
+    FX_SHIFTING_01Struct mData;   // offset 0x4, size 0x18
 };
 
 

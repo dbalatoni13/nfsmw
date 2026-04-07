@@ -12,6 +12,10 @@ extern ClassHandle gCARHandle;
 extern InterfaceId CARId;
 extern ClassHandle gCAR_TRANNYHandle;
 extern InterfaceId CAR_TRANNYId;
+extern ClassHandle gCAR_SWTNHandle;
+extern InterfaceId CAR_SWTNId;
+extern ClassHandle gCAR_WHINEHandle;
+extern InterfaceId CAR_WHINEId;
 } // namespace Csis
 
 struct CARStruct {
@@ -416,6 +420,267 @@ class CAR_TRANNY {
   private:
     Csis::Class *mpClass;       // offset 0x0, size 0x4
     CAR_TRANNYStruct mData;     // offset 0x4, size 0x24
+};
+
+struct CAR_SWTNStruct {
+    int id;                                 // offset 0x0, size 0x4
+    int car_class;                          // offset 0x4, size 0x4
+    int rPM;                                // offset 0x8, size 0x4
+    int vOL;                                // offset 0xC, size 0x4
+    int cOMMON_PARAMETERS_AZIMUTH;          // offset 0x10, size 0x4
+    int cOMMON_PARAMETERS_PITCH_OFFSET;     // offset 0x14, size 0x4
+    int cOMMON_PARAMETERS_ROTATION;         // offset 0x18, size 0x4
+};
+
+struct CAR_SWTN {
+  public:
+    void SetId(int x) {
+        mData.id = x;
+    }
+
+    int GetId() {
+        return mData.id;
+    }
+
+    void SetCar_class(int x) {
+        mData.car_class = x;
+    }
+
+    int GetCar_class() {
+        return mData.car_class;
+    }
+
+    void SetRPM(int x) {
+        mData.rPM = x;
+    }
+
+    int GetRPM() {
+        return mData.rPM;
+    }
+
+    void SetVOL(int x) {
+        mData.vOL = x;
+    }
+
+    int GetVOL() {
+        return mData.vOL;
+    }
+
+    void SetCOMMON_PARAMETERS_AZIMUTH(int x) {
+        mData.cOMMON_PARAMETERS_AZIMUTH = x;
+    }
+
+    int GetCOMMON_PARAMETERS_AZIMUTH() {
+        return mData.cOMMON_PARAMETERS_AZIMUTH;
+    }
+
+    void SetCOMMON_PARAMETERS_PITCH_OFFSET(int x) {
+        mData.cOMMON_PARAMETERS_PITCH_OFFSET = x;
+    }
+
+    int GetCOMMON_PARAMETERS_PITCH_OFFSET() {
+        return mData.cOMMON_PARAMETERS_PITCH_OFFSET;
+    }
+
+    void SetCOMMON_PARAMETERS_ROTATION(int x) {
+        mData.cOMMON_PARAMETERS_ROTATION = x;
+    }
+
+    int GetCOMMON_PARAMETERS_ROTATION() {
+        return mData.cOMMON_PARAMETERS_ROTATION;
+    }
+
+    int GetRefCount() {
+        int refCount = 0;
+
+        if (mpClass) {
+            mpClass->GetRefCount(&refCount);
+        }
+
+        return refCount;
+    }
+
+    static void *operator new(unsigned int size) {
+        return Csis::System::Alloc(size);
+    }
+
+    static void operator delete(void *ptr) {
+        Csis::System::Free(ptr);
+    }
+
+    CAR_SWTN(int id, int car_class, int rPM, int vOL, int cOMMON_PARAMETERS_AZIMUTH, int cOMMON_PARAMETERS_PITCH_OFFSET,
+             int cOMMON_PARAMETERS_ROTATION) {
+        SetId(id);
+        SetCar_class(car_class);
+        SetRPM(rPM);
+        SetVOL(vOL);
+        SetCOMMON_PARAMETERS_AZIMUTH(cOMMON_PARAMETERS_AZIMUTH);
+        SetCOMMON_PARAMETERS_PITCH_OFFSET(cOMMON_PARAMETERS_PITCH_OFFSET);
+        SetCOMMON_PARAMETERS_ROTATION(cOMMON_PARAMETERS_ROTATION);
+
+        int result = Csis::Class::CreateInstance(&Csis::gCAR_SWTNHandle, &mData, &mpClass);
+        if (result < 0) {
+            Csis::gCAR_SWTNHandle.Set(&Csis::CAR_SWTNId);
+            Csis::Class::CreateInstance(&Csis::gCAR_SWTNHandle, &mData, &mpClass);
+        }
+    }
+
+    ~CAR_SWTN() {
+        if (mpClass) {
+            mpClass->Release();
+        }
+    }
+
+    void CommitMemberData() {
+        if (mpClass) {
+            mpClass->SetMemberData(&mData);
+        }
+    }
+
+  private:
+    Csis::Class *mpClass;        // offset 0x0, size 0x4
+    CAR_SWTNStruct mData;        // offset 0x4, size 0x1C
+};
+
+struct CAR_WHINEStruct {
+    int car_class;                          // offset 0x0, size 0x4
+    int rPM;                                // offset 0x4, size 0x4
+    int vOL;                                // offset 0x8, size 0x4
+    int cOMMON_PARAMETERS_AZIMUTH;          // offset 0xC, size 0x4
+    int cOMMON_PARAMETERS_PITCH_OFFSET;     // offset 0x10, size 0x4
+    int cOMMON_PARAMETERS_ROTATION;         // offset 0x14, size 0x4
+    int rEVERB_AND_FILTERS_LoPass;          // offset 0x18, size 0x4
+    int rEVERB_AND_FILTERS_Wet;             // offset 0x1C, size 0x4
+    int rEVERB_AND_FILTERS_Dry;             // offset 0x20, size 0x4
+};
+
+struct CAR_WHINE {
+  public:
+    void SetCar_class(int x) {
+        mData.car_class = x;
+    }
+
+    int GetCar_class() {
+        return mData.car_class;
+    }
+
+    void SetRPM(int x) {
+        mData.rPM = x;
+    }
+
+    int GetRPM() {
+        return mData.rPM;
+    }
+
+    void SetVOL(int x) {
+        mData.vOL = x;
+    }
+
+    int GetVOL() {
+        return mData.vOL;
+    }
+
+    void SetCOMMON_PARAMETERS_AZIMUTH(int x) {
+        mData.cOMMON_PARAMETERS_AZIMUTH = x;
+    }
+
+    int GetCOMMON_PARAMETERS_AZIMUTH() {
+        return mData.cOMMON_PARAMETERS_AZIMUTH;
+    }
+
+    void SetCOMMON_PARAMETERS_PITCH_OFFSET(int x) {
+        mData.cOMMON_PARAMETERS_PITCH_OFFSET = x;
+    }
+
+    int GetCOMMON_PARAMETERS_PITCH_OFFSET() {
+        return mData.cOMMON_PARAMETERS_PITCH_OFFSET;
+    }
+
+    void SetCOMMON_PARAMETERS_ROTATION(int x) {
+        mData.cOMMON_PARAMETERS_ROTATION = x;
+    }
+
+    int GetCOMMON_PARAMETERS_ROTATION() {
+        return mData.cOMMON_PARAMETERS_ROTATION;
+    }
+
+    void SetREVERB_AND_FILTERS_LoPass(int x) {
+        mData.rEVERB_AND_FILTERS_LoPass = x;
+    }
+
+    int GetREVERB_AND_FILTERS_LoPass() {
+        return mData.rEVERB_AND_FILTERS_LoPass;
+    }
+
+    void SetREVERB_AND_FILTERS_Wet(int x) {
+        mData.rEVERB_AND_FILTERS_Wet = x;
+    }
+
+    int GetREVERB_AND_FILTERS_Wet() {
+        return mData.rEVERB_AND_FILTERS_Wet;
+    }
+
+    void SetREVERB_AND_FILTERS_Dry(int x) {
+        mData.rEVERB_AND_FILTERS_Dry = x;
+    }
+
+    int GetREVERB_AND_FILTERS_Dry() {
+        return mData.rEVERB_AND_FILTERS_Dry;
+    }
+
+    int GetRefCount() {
+        int refCount = 0;
+
+        if (mpClass) {
+            mpClass->GetRefCount(&refCount);
+        }
+
+        return refCount;
+    }
+
+    static void *operator new(unsigned int size) {
+        return Csis::System::Alloc(size);
+    }
+
+    static void operator delete(void *ptr) {
+        Csis::System::Free(ptr);
+    }
+
+    CAR_WHINE(int car_class, int rPM, int vOL, int cOMMON_PARAMETERS_AZIMUTH, int cOMMON_PARAMETERS_PITCH_OFFSET,
+              int cOMMON_PARAMETERS_ROTATION, int rEVERB_AND_FILTERS_LoPass, int rEVERB_AND_FILTERS_Wet,
+              int rEVERB_AND_FILTERS_Dry) {
+        SetCar_class(car_class);
+        SetRPM(rPM);
+        SetVOL(vOL);
+        SetCOMMON_PARAMETERS_AZIMUTH(cOMMON_PARAMETERS_AZIMUTH);
+        SetCOMMON_PARAMETERS_PITCH_OFFSET(cOMMON_PARAMETERS_PITCH_OFFSET);
+        SetCOMMON_PARAMETERS_ROTATION(cOMMON_PARAMETERS_ROTATION);
+        SetREVERB_AND_FILTERS_LoPass(rEVERB_AND_FILTERS_LoPass);
+        SetREVERB_AND_FILTERS_Wet(rEVERB_AND_FILTERS_Wet);
+        SetREVERB_AND_FILTERS_Dry(rEVERB_AND_FILTERS_Dry);
+
+        int result = Csis::Class::CreateInstance(&Csis::gCAR_WHINEHandle, &mData, &mpClass);
+        if (result < 0) {
+            Csis::gCAR_WHINEHandle.Set(&Csis::CAR_WHINEId);
+            Csis::Class::CreateInstance(&Csis::gCAR_WHINEHandle, &mData, &mpClass);
+        }
+    }
+
+    ~CAR_WHINE() {
+        if (mpClass) {
+            mpClass->Release();
+        }
+    }
+
+    void CommitMemberData() {
+        if (mpClass) {
+            mpClass->SetMemberData(&mData);
+        }
+    }
+
+  private:
+    Csis::Class *mpClass;         // offset 0x0, size 0x4
+    CAR_WHINEStruct mData;        // offset 0x4, size 0x24
 };
 
 #endif
