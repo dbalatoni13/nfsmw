@@ -405,7 +405,7 @@ VisibleSectionManager::VisibleSectionManager() {
     bMemSet(UserInfoTable, 0, sizeof(UserInfoTable));
     NumAllocatedUserInfo = 0;
 
-    bNode *head = &UnallocatedUserInfoList.HeadNode;
+    bNode *head = UnallocatedUserInfoList.GetHead();
     for (int n = 0; n < 512; n++) {
         UnallocatedVisibleSectionUserInfo *unallocated_info = reinterpret_cast<UnallocatedVisibleSectionUserInfo *>(&UserInfoStorageTable[n]);
         UnallocatedUserInfoList.AddTail(unallocated_info);
