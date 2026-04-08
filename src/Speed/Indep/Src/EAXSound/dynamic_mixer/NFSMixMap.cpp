@@ -211,17 +211,14 @@ void NFSMixMap::SetupStateRefCount() {
 }
 
 void NFSMixMap::PreProcessMixMap() {
-    int n;
-    int ntotalcurveprocs;
-    int ns;
-    char *pMixMapBase;
     stMixMapHeader *pmmhdr;
     int *pStateOffsetTable;
+    int ntotalcurveprocs;
+    int n;
 
     n = 0;
     pmmhdr = reinterpret_cast<stMixMapHeader *>(m_pMixMap);
-    pMixMapBase = reinterpret_cast<char *>(pmmhdr);
-    pStateOffsetTable = reinterpret_cast<int *>(pMixMapBase + pmmhdr->StateTableOffset);
+    pStateOffsetTable = reinterpret_cast<int *>(reinterpret_cast<char *>(pmmhdr) + pmmhdr->StateTableOffset);
 
     ResetMapData();
     SetupStateRefCount();
@@ -229,6 +226,7 @@ void NFSMixMap::PreProcessMixMap() {
 
     if (pmmhdr->NumStates > 0) {
         do {
+            int ns;
             stMixMapStateHdr *pmmsthdr;
 
             ns = n + 1;
@@ -239,73 +237,72 @@ void NFSMixMap::PreProcessMixMap() {
                 int subMixOffset;
                 int masterMixOffset;
 
-                pmmsthdr = reinterpret_cast<stMixMapStateHdr *>(pMixMapBase + *pStateOffsetTable);
+                pmmsthdr =
+                    reinterpret_cast<stMixMapStateHdr *>(reinterpret_cast<char *>(pmmhdr) + *pStateOffsetTable);
                 m_nStateMapCount += m_StateRefCount[n];
 
                 mixCtlOffset = pmmsthdr->OffsetMixCtlData;
                 if (mixCtlOffset != -1) {
                     stMixCtlHdr *pmctlhdr;
-                    unsigned int *pCurveWord;
-                    unsigned int *pCurveIds;
-                    int ctlCount;
-                    int ctlIndex;
+                    int *InputIDs;
+                    stMixCtlParams *pctlparms;
+                    int nctl;
 
                     pmctlhdr = reinterpret_cast<stMixCtlHdr *>(reinterpret_cast<char *>(pmmsthdr) + mixCtlOffset);
-                    ctlCount = pmctlhdr->NumMixCtls;
-                    pCurveWord = reinterpret_cast<unsigned int *>(pmctlhdr + 1);
-                    pCurveIds = static_cast<unsigned int *>(
-                        gAudioMemoryManager.AllocateMemory(ctlCount << 2, "Temp MIXMAP ALLOC", false));
+                    InputIDs = static_cast<int *>(gAudioMemoryManager.AllocateMemory(
+                        pmctlhdr->NumMixCtls << 2, "Temp MIXMAP ALLOC", false));
+                    pctlparms = reinterpret_cast<stMixCtlParams *>(pmctlhdr + 1);
 
-                    m_MixCtlsAdded += m_StateRefCount[n] * ctlCount;
-                    m_SharedMixCtlCount += ctlCount;
+                    m_MixCtlsAdded += m_StateRefCount[n] * pmctlhdr->NumMixCtls;
+                    m_SharedMixCtlCount += pmctlhdr->NumMixCtls;
                     m_DataProcsAdded += m_StateRefCount[n] * pmctlhdr->NumNewMixDataProcs;
 
-                    for (ctlIndex = 0; ctlIndex < ctlCount; ctlIndex++) {
-                        bool uniqueCurve;
-                        int scaleParamsAdded;
-                        int existingCurveIndex;
-                        int scaleIndex;
-                        int scaleCount;
-                        unsigned int curveType;
-                        unsigned int curveId;
-                        unsigned int *pScaleWord;
+                    for (nctl = 0; nctl < pmctlhdr->NumMixCtls; nctl++) {
+                        int ncurve;
+                        int nscale;
+                        bool bunique;
+                        int *pscaleid;
+                        int ntotaladded;
+                        int ntest;
+                        int s;
 
-                        curveId = *pCurveWord;
-                        curveType = (curveId >> 24) & 0xF;
-                        scaleCount = static_cast<int>(*reinterpret_cast<short *>(pCurveWord + 1)) & 0xF;
-                        pCurveIds[ctlIndex] = curveId;
+                        ncurve = (pctlparms->nINPUTID >> 24) & 0xF;
+                        nscale = pctlparms->nUScaleCntSwing & 0xF;
+                        InputIDs[nctl] = pctlparms->nINPUTID;
 
-                        uniqueCurve = true;
-                        for (existingCurveIndex = 0; existingCurveIndex < ctlIndex; existingCurveIndex++) {
-                            if ((pCurveIds[existingCurveIndex] & 0xE0FFFFF0U) == (curveId & 0xE0FFFFF0U)) {
-                                uniqueCurve = false;
+                        bunique = true;
+                        for (ntest = 0; ntest < nctl; ntest++) {
+                            if ((InputIDs[ntest] & 0xE0FFFFF0) == (pctlparms->nINPUTID & 0xE0FFFFF0)) {
+                                bunique = false;
                             }
                         }
 
-                        if (uniqueCurve) {
-                            m_CurveProcsTotal[curveType][0] += m_StateRefCount[n];
+                        if (bunique == true) {
+                            m_CurveProcsTotal[ncurve][0] += m_StateRefCount[n];
                         }
 
-                        scaleParamsAdded = 0;
-                        pScaleWord = pCurveWord + 2;
-                        for (scaleIndex = 0; scaleIndex < scaleCount; scaleIndex++) {
-                            unsigned char inputState;
+                        ntotaladded = 0;
+                        pscaleid = reinterpret_cast<int *>(pctlparms + 1);
+                        for (s = 0; s < nscale; s++) {
+                            int ID;
+                            int state;
 
-                            inputState = *(reinterpret_cast<unsigned char *>(pScaleWord) + 1);
-                            if (inputState != n) {
-                                scaleParamsAdded += m_StateRefCount[inputState];
+                            ID = *pscaleid;
+                            state = (ID >> 16) & 0xFF;
+                            if (state != n) {
+                                ntotaladded += m_StateRefCount[state];
                             } else {
-                                scaleParamsAdded++;
+                                ntotaladded++;
                             }
 
-                            pScaleWord++;
+                            pscaleid++;
                         }
 
-                        pCurveWord += scaleCount + 2;
-                        m_ScaleParamsAdded += scaleParamsAdded * m_StateRefCount[n];
+                        m_ScaleParamsAdded += ntotaladded * m_StateRefCount[n];
+                        pctlparms = reinterpret_cast<stMixCtlParams *>(pscaleid);
                     }
 
-                    gAudioMemoryManager.FreeMemory(pCurveIds);
+                    gAudioMemoryManager.FreeMemory(InputIDs);
                 }
 
                 threeDMixCtlOffset = pmmsthdr->Offset3DMixCtlData;
@@ -461,7 +458,7 @@ void NFSMixMap::PreProcessMixMap() {
 
             pStateOffsetTable++;
             n = ns;
-        } while (ns < pmmhdr->NumStates);
+        } while (n < pmmhdr->NumStates);
     }
 
     ntotalcurveprocs = 0;
@@ -774,55 +771,51 @@ void NFSMixMap::AllocateInputArrays() {
     ntotaluniqueEvents = 0;
 
     for (n = 0; n < m_CurveProcsAdded; n++) {
-        unsigned int ntype;
-        bool bUniqueCurveID;
+            unsigned int ntype;
+            bool bUniqueCurveID;
 
-        ntype = m_pCurveDataArray[n].nINPUTID & 0xE0000000;
-        bUniqueCurveID = true;
+            ntype = m_pCurveDataArray[n].nINPUTID & 0xE0000000;
+            bUniqueCurveID = true;
+            if ((ntype == 0x40000000) || (ntype == 0x60000000) || (ntype == 0x80000000)) {
+                int k;
 
-        if ((ntype == 0x40000000) || (ntype == 0x60000000) || (ntype == 0x80000000)) {
-            int k;
-
-            for (k = 0; k < n; k++) {
-                if ((m_pCurveDataArray[k].nINPUTID & 0xE0FFFFF0U) ==
-                    (m_pCurveDataArray[n].nINPUTID & 0xE0FFFFF0U)) {
-                    bUniqueCurveID = false;
+                for (k = 0; k < n; k++) {
+                    if ((m_pCurveDataArray[k].nINPUTID & 0xE0FFFFF0U) ==
+                        (m_pCurveDataArray[n].nINPUTID & 0xE0FFFFF0U)) {
+                        bUniqueCurveID = false;
+                    }
                 }
+            } else {
+                bUniqueCurveID = false;
             }
-        } else {
-            bUniqueCurveID = false;
-        }
-
-        if (bUniqueCurveID) {
-            nTotalUniqueCurveIDs++;
-        }
+            if (bUniqueCurveID) {
+                nTotalUniqueCurveIDs++;
+            }
     }
 
     for (n = 0; n < m_ScaleParamsAdded; n++) {
-        unsigned int ntype;
-        bool buniquescale;
-        int *psc;
+            unsigned int ntype;
+            bool buniquescale;
+            int *psc;
 
-        psc = m_pScalePtrArray[n];
-        ntype = reinterpret_cast<unsigned int>(psc) & 0xE0000000;
-        buniquescale = true;
+            psc = m_pScalePtrArray[n];
+            ntype = reinterpret_cast<unsigned int>(psc) & 0xE0000000;
+            buniquescale = true;
+            if ((ntype == 0x40000000) || (ntype == 0x60000000) || (ntype == 0x80000000)) {
+                int m;
 
-        if ((ntype == 0x40000000) || (ntype == 0x60000000) || (ntype == 0x80000000)) {
-            int m;
-
-            for (m = 0; m < n; m++) {
-                if ((reinterpret_cast<unsigned int>(psc) & 0xE0FFFFF0) ==
-                    (reinterpret_cast<unsigned int>(m_pScalePtrArray[m]) & 0xE0FFFFF0)) {
-                    buniquescale = false;
+                for (m = 0; m < n; m++) {
+                    if ((reinterpret_cast<unsigned int>(psc) & 0xE0FFFFF0) ==
+                        (reinterpret_cast<unsigned int>(m_pScalePtrArray[m]) & 0xE0FFFFF0)) {
+                        buniquescale = false;
+                    }
                 }
+            } else {
+                buniquescale = false;
             }
-        } else {
-            buniquescale = false;
-        }
-
-        if (buniquescale) {
-            ntotaluniqueScaleID++;
-        }
+            if (buniquescale) {
+                ntotaluniqueScaleID++;
+            }
     }
 
     for (n = 0; n < m_3DMixCtlsAdded; n++) {

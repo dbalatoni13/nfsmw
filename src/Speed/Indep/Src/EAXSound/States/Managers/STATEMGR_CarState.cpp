@@ -39,7 +39,7 @@ CSTATEMGR_CarState::CSTATEMGR_CarState() {
 CSTATEMGR_CarState::~CSTATEMGR_CarState() {}
 
 void CSTATEMGR_CarState::AddMapping(unsigned int key1, unsigned int key2) {
-    EngineMappingPair mapping;
+    EngineMappingPair mapping = {0, 0};
     EngineMappingPair *finditer;
 
     mapping.Start = key1;
