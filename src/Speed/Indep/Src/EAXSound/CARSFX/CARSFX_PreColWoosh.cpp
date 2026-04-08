@@ -61,9 +61,9 @@ CARSFX_PreColWoosh::~CARSFX_PreColWoosh() {
 
 void CARSFX_PreColWoosh::InitSFX() {
     SndBase::InitSFX();
-    bBarrierDetected = false;
     bGoingToCollide = false;
     bBailOnAll = false;
+    bBarrierDetected = false;
     WooshFadeOut.Initialize(1.0f, 1.0f, 1, LINEAR);
 }
 
@@ -89,9 +89,9 @@ void CARSFX_PreColWoosh::MsgBarrierHit(const MAudioReflection &message) {
 }
 
 void CARSFX_PreColWoosh::BailOnWoosh() {
-    bGoingToCollide = false;
     bBailOnAll = true;
-    WooshFadeOut.Initialize(WooshFadeOut.CurValue, 0.0f, 0x82, LINEAR);
+    bGoingToCollide = false;
+    WooshFadeOut.Initialize(WooshFadeOut.GetValue(), 0.0f, 0x82, LINEAR);
     mResetTime = 0.4f;
 }
 
