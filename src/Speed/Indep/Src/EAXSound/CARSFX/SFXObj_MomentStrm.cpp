@@ -162,20 +162,18 @@ void SFXObj_MomentStrm::UpdateParams(float t) {
 
             if (bHoldStream == 0) {
                 nismgr->GetStreamChannel()->PurgeStream();
-                mCarsID = 0;
                 m_CurMoment = 0;
                 mHeldMoment = nullptr;
+                mCarsID = 0;
             }
         }
 
-        if (nismgr->GetStreamType() == STRM_SFX_MOMENT) {
-            if (!nismgr->GetStreamChannel()->IsPlaying()) {
-                mCarsID = 0;
-                m_CurMoment = 0;
-            }
-        } else {
-            mCarsID = 0;
+        if (nismgr->GetStreamType() == STRM_SFX_MOMENT && !nismgr->GetStreamChannel()->IsPlaying()) {
             m_CurMoment = 0;
+            mCarsID = 0;
+        } else if (nismgr->GetStreamType() != STRM_SFX_MOMENT) {
+            m_CurMoment = 0;
+            mCarsID = 0;
         }
 
         if (UseUserPos == 0) {
@@ -395,9 +393,9 @@ void SFXObj_MomentStrm::InitSFX() {
                     newmoment.key = 0;
                     newmoment.vPos.z = marker->Position.x;
                     newmoment.vPos.x = -marker->Position.y;
-                    newmoment.key = g_MomentMappings[n].key;
                     newmoment.vPos.y = marker->Position.z;
                     newmoment.vPos.w = 0.0f;
+                    newmoment.key = g_MomentMappings[n].key;
                     mMomentPositonsList.push_back(newmoment);
                 }
             }
