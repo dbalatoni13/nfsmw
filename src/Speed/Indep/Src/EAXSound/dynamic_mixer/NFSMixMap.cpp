@@ -1600,22 +1600,24 @@ void NFSMixMap::Update3DMixCtls() {
             int found;
             int numstates;
             eCamStates testcamstate;
+            st3DStateParams *pstateparamsbase;
 
             found = 0;
             numstates = (p3dsp->pMapParams->nINPUTID >> 24) & 0xF;
             testcamstate = m_CurCamState;
+            pstateparamsbase = &p3dsp->pMapParams->StateParams;
 
         RestartLoop:
             for (n = 0; n < numstates; n++) {
                 st3DStateParams *pstateparams;
 
-                pstateparams = (&p3dsp->pMapParams->StateParams) + n;
+                pstateparams = pstateparamsbase + n;
                 if (((pstateparams->n3DSTATEINFOID >> 24) & 0xF) == testcamstate) {
                     p3dsp->pCurStateParams = pstateparams;
-                    p3dsp->msSinceCamTrans = 0;
-                    p3dsp->PrevCamState = m_PrevCamState;
-                    p3dsp->CurCamState = m_CurCamState;
                     found = 1;
+                    p3dsp->PrevCamState = m_PrevCamState;
+                    p3dsp->msSinceCamTrans = 0;
+                    p3dsp->CurCamState = m_CurCamState;
                     break;
                 }
             }
