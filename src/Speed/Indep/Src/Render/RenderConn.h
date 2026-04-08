@@ -14,6 +14,24 @@ namespace RenderConn {
 
 class Pkt_Smackable_Open : public Sim::Packet {
   public:
+    UCrc32 ConnectionClass() override {
+        static UCrc32 hash = "SmackableRenderConn";
+        return hash;
+    }
+
+    unsigned int Size() override {
+        return sizeof(*this);
+    }
+
+    unsigned int Type() override {
+        return SType();
+    }
+
+    static unsigned int SType() {
+        static UCrc32 hash = "Pkt_Smackable_Open";
+        return hash.GetValue();
+    }
+
     // total size: 0x18
     bHash32 mModelHash;                              // offset 0x4, size 0x4
     unsigned int mObjectWUID;                        // offset 0x8, size 0x4
@@ -28,6 +46,24 @@ class Pkt_Smackable_Service : public Sim::Packet {
         this->mVisible = visible;
         this->mDistanceToView = distancetoview;
         this->mChildVisibility = 0xFFFFFF;
+    }
+
+    UCrc32 ConnectionClass() override {
+        static UCrc32 hash = "SmackableRenderConn";
+        return hash;
+    }
+
+    unsigned int Size() override {
+        return sizeof(*this);
+    }
+
+    unsigned int Type() override {
+        return SType();
+    }
+
+    static unsigned int SType() {
+        static UCrc32 hash = "Pkt_Smackable_Service";
+        return hash.GetValue();
     }
 
     // total size: 0x10

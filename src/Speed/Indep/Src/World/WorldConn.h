@@ -57,6 +57,23 @@ class Pkt_Effect_Send : public Sim::Packet {
           mContext(context),              //
           mActee(actee) {}
 
+    UCrc32 ConnectionClass() override {
+        return UCrc32(0x998c21c0);
+    }
+
+    unsigned int Size() override {
+        return sizeof(*this);
+    }
+
+    unsigned int Type() override {
+        return SType();
+    }
+
+    static unsigned int SType() {
+        static UCrc32 hash = "Pkt_Effect_Send";
+        return hash.GetValue();
+    }
+
     // Virtual functions
     // Packet
     ~Pkt_Effect_Send() override {}
@@ -73,6 +90,23 @@ class Pkt_Effect_Send : public Sim::Packet {
 // total size: 0x20
 class Pkt_Effect_Service : public Sim::Packet {
   public:
+    UCrc32 ConnectionClass() override {
+        return UCrc32(0x998c21c0);
+    }
+
+    unsigned int Size() override {
+        return sizeof(*this);
+    }
+
+    unsigned int Type() override {
+        return SType();
+    }
+
+    static unsigned int SType() {
+        static UCrc32 hash = "Pkt_Effect_Service";
+        return hash.GetValue();
+    }
+
     void SetPosition(const UMath::Vector3 &pos) {
         mPosition = pos;
     }
@@ -106,7 +140,24 @@ class Pkt_Effect_Open : public Sim::Packet {
           mContext(context),              //
           mActee(actee) {}
 
-    ~Pkt_Effect_Open() {}
+    UCrc32 ConnectionClass() override {
+        return UCrc32(0x998c21c0);
+    }
+
+    unsigned int Size() override {
+        return sizeof(*this);
+    }
+
+    unsigned int Type() override {
+        return SType();
+    }
+
+    static unsigned int SType() {
+        static UCrc32 hash = "Pkt_Effect_Open";
+        return hash.GetValue();
+    }
+
+    ~Pkt_Effect_Open() override {}
 
   private:
     const Attrib::Collection *mEffectGroup;     // offset 0x4, size 0x4

@@ -115,7 +115,7 @@ void cPathLine::Update(float delta_time) {
     if (CurveTypes[cur_stage] == EQ_PWR_SQ) {
         float s = Finish[cur_stage] - Start[cur_stage];
         int Delta = bClamp(static_cast<int>((delta_time * 32767.0f) / Length[cur_stage]), 0, 0x7fff);
-        float Result = static_cast<float>(NFSMixShape::GetCurveOutput(NFSMixShape::SHAPE_UP_EQPWR_SQ, Delta, false));
+        float Result = static_cast<float>(NFSMixShape::GetCurveOutput(::SHAPE_UP_EQPWR_SQ, Delta, false));
         CurValue = s * Result * 3.051851e-05f + Start[cur_stage];
     }
 }
@@ -182,7 +182,7 @@ void cInterpLine::Update(float delta_time) {
     case EQ_PWR_SQ: {
         float range = Finish - Start;
         int Delta = bClamp(static_cast<int>((elapsed * 32767.0f) / length), 0, 0x7fff);
-        float Result = static_cast<float>(NFSMixShape::GetCurveOutput(NFSMixShape::SHAPE_UP_EQPWR_SQ, Delta, false));
+        float Result = static_cast<float>(NFSMixShape::GetCurveOutput(::SHAPE_UP_EQPWR_SQ, Delta, false));
         CurValue = Start + range * Result * 3.051851e-05f;
         break;
     }
