@@ -193,10 +193,10 @@ void CARSFX_Skids::ProcessUpdate() {
     }
     m_pSkidControl->SetSurface(skid_type);
 
-    Speed = GetPhysCar()->GetVelocityMagnitudeMPH();
+    Speed = m_pStateBase->GetPhysCar()->GetVelocityMagnitudeMPH();
     m_pSkidControl->SetSPEED(static_cast<int>(Speed));
-    m_pSkidControl->SetUNDERSTEER(static_cast<int>(GetPhysCar()->mUndersteer));
-    m_pSkidControl->SetOVERSTEER(static_cast<int>(GetPhysCar()->mOversteer));
+    m_pSkidControl->SetUNDERSTEER(static_cast<int>(m_pStateBase->GetPhysCar()->mUndersteer));
+    m_pSkidControl->SetOVERSTEER(static_cast<int>(m_pStateBase->GetPhysCar()->mOversteer));
 
     if (!m_pWheelCtl->RightSideTouchingGround && !m_pWheelCtl->LeftSideTouchingGround) {
         m_pSkidControl->SetFront_FB(0);
@@ -294,4 +294,3 @@ void CARSFX_Skids::SetupLoadData() {
 SFXCTL_3DLeftWheelPos::~SFXCTL_3DLeftWheelPos() {}
 
 SFXCTL_3DRightWheelPos::~SFXCTL_3DRightWheelPos() {}
-
