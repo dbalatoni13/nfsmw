@@ -1177,7 +1177,22 @@ void SFXObj_PFEATrax::GenNextMusicTrackID() {
                 n = m_EATrax[m_EATraxState].LastPlaylistSong;
                 do {
                     ++n;
-                    if (g_MaxSongs <= n) {
+                    if (n < g_MaxSongs) {
+                        {
+                            int nSongindex;
+
+                            nSongindex = puser->Playlist[n].SongIndex;
+                            if ((m_EATrax[m_EATraxState].PlayBits & 1 << (nSongindex & 0x1F)) != 0) {
+                                m_EATrax[m_EATraxState].PlayTrackIndex = nSongindex;
+                                m_EATrax[m_EATraxState].PlayBits ^= 1 << (nSongindex & 0x1F);
+                                if (m_EATrax[m_EATraxState].PlayBits == 0) {
+                                    m_EATrax[m_EATraxState].PlayBits = m_EATrax[m_EATraxState].TraxMask & 0x0FFFFFFF;
+                                    m_EATrax[m_EATraxState].PlayBits ^= 1 << (n & 0x1F);
+                                }
+                                return;
+                            }
+                        }
+                    } else {
                         if (m_EATrax[m_EATraxState].NumEnabledSongs == 0) {
                             return;
                         }
@@ -1185,20 +1200,6 @@ void SFXObj_PFEATrax::GenNextMusicTrackID() {
                         m_EATrax[m_EATraxState].LastPlaylistSong = -1;
                         GenNextMusicTrackID();
                         return;
-                    }
-                    {
-                        int nSongindex;
-
-                        nSongindex = puser->Playlist[n].SongIndex;
-                        if ((m_EATrax[m_EATraxState].PlayBits & 1 << (nSongindex & 0x1F)) != 0) {
-                            m_EATrax[m_EATraxState].PlayTrackIndex = nSongindex;
-                            m_EATrax[m_EATraxState].PlayBits ^= 1 << (nSongindex & 0x1F);
-                            if (m_EATrax[m_EATraxState].PlayBits == 0) {
-                                m_EATrax[m_EATraxState].PlayBits = m_EATrax[m_EATraxState].TraxMask & 0x0FFFFFFF;
-                                m_EATrax[m_EATraxState].PlayBits ^= 1 << (n & 0x1F);
-                            }
-                            return;
-                        }
                     }
                 } while (true);
             }
