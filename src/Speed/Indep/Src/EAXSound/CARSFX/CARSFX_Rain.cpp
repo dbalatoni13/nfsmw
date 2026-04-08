@@ -50,7 +50,7 @@ CARSFX_Rain::~CARSFX_Rain() {
 }
 
 int CARSFX_Rain::GetController(int Index) {
-    return Index == 0 ? 6 : -1;
+    return Index != 0 ? -1 : 6;
 }
 
 void CARSFX_Rain::AttachController(SFXCTL *psfxctl) {
@@ -91,15 +91,15 @@ void CARSFX_Rain::Destroy() {
     if (m_pCsisRain) {
         delete m_pCsisRain;
     }
-    *reinterpret_cast<int *>(&bFadingOut) = 0;
     m_pCsisRain = nullptr;
+    *reinterpret_cast<int *>(&bFadingOut) = 0;
 }
 
 void CARSFX_Rain::QueueWeatherStream() {
-    int nweathertype;
+    int nweathertype = 0;
 
     if (*reinterpret_cast<int *>(&m_bWeatherStreamQueued) != 1) {
-        if (Speech::Manager::GetSpeechModule(0)->DonePlaying()) {
+        if (Speech::Manager::GetSpeechModule(0)->DonePlaying() == 1) {
             if (m_fWeatherIntensity < 0.5f) {
                 nweathertype = 0x016C4FA1;
                 MGamePlayMoment(UMath::Vector4::kZero, UMath::Vector4::kZero, UMath::Vector4::kZero, 0, nweathertype)
