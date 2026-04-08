@@ -6,28 +6,28 @@
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribHash.h"
 
 int SndCamera::NumPlayers = 0;
-Attrib::StringKey SndCamera::m_CamAction[2];
-Attrib::StringKey SndCamera::m_NewCamAction[2];
+Attrib::StringKey SndCamera::m_CamAction[2] = {Attrib::StringKey("CDActionDrive"), Attrib::StringKey("CDActionDrive")};
+Attrib::StringKey SndCamera::m_NewCamAction[2] = {Attrib::StringKey("CDActionDrive"), Attrib::StringKey("CDActionDrive")};
 Camera *SndCamera::m_pCams[2] = {nullptr, nullptr};
 eCamStates SndCamera::m_CurCamState[2] = {DMIX_DEFAULT_CAM, DMIX_DEFAULT_CAM};
 eCamStates SndCamera::m_PrevCamState[2] = {DMIX_DEFAULT_CAM, DMIX_DEFAULT_CAM};
-bVector3 SndCamera::m_CurCamPos[2];
-bVector3 SndCamera::m_CurCamDir[2];
-bVector3 SndCamera::m_CurCamTarget[2];
-bVector2 SndCamera::m_NormCamDir[2];
-bVector2 SndCamera::m_AvergeCamDir[2];
-bVector3 SndCamera::m_v3WorldCarPos[2];
-bVector3 SndCamera::m_v3WorldCarDir[2];
-bVector2 SndCamera::m_WorldCarPos[2];
-bVector2 SndCamera::m_CenteredCarPos[2];
-bVector2 SndCamera::m_AverageCarPos[2];
-bVector2 SndCamera::m_WorldCamPos[2];
-bVector2 SndCamera::m_CenteredCamPos[2];
-bVector2 SndCamera::m_AveragedCamPos[2];
-bVector2 SndCamera::m_NormCarDir[2];
-bVector2 SndCamera::m_NormCarPos[2];
-bVector3 SndCamera::m_v3WorldCarVel[2];
-bVector3 SndCamera::m_v3WorldCamVel[2];
+bVector3 SndCamera::m_CurCamPos[2] = {bVector3(0.0f, 0.0f, 0.0f), bVector3(0.0f, 0.0f, 0.0f)};
+bVector3 SndCamera::m_CurCamDir[2] = {bVector3(0.0f, 0.0f, 0.0f), bVector3(0.0f, 0.0f, 0.0f)};
+bVector3 SndCamera::m_CurCamTarget[2] = {bVector3(0.0f, 0.0f, 0.0f), bVector3(0.0f, 0.0f, 0.0f)};
+bVector2 SndCamera::m_NormCamDir[2] = {bVector2(0.0f, 0.0f), bVector2(0.0f, 0.0f)};
+bVector2 SndCamera::m_AvergeCamDir[2] = {bVector2(0.0f, 0.0f), bVector2(0.0f, 0.0f)};
+bVector3 SndCamera::m_v3WorldCarPos[2] = {bVector3(0.0f, 0.0f, 0.0f), bVector3(0.0f, 0.0f, 0.0f)};
+bVector3 SndCamera::m_v3WorldCarDir[2] = {bVector3(0.0f, 0.0f, 0.0f), bVector3(0.0f, 0.0f, 0.0f)};
+bVector2 SndCamera::m_WorldCarPos[2] = {bVector2(0.0f, 0.0f), bVector2(0.0f, 0.0f)};
+bVector2 SndCamera::m_CenteredCarPos[2] = {bVector2(0.0f, 0.0f), bVector2(0.0f, 0.0f)};
+bVector2 SndCamera::m_AverageCarPos[2] = {bVector2(0.0f, 0.0f), bVector2(0.0f, 0.0f)};
+bVector2 SndCamera::m_WorldCamPos[2] = {bVector2(0.0f, 0.0f), bVector2(0.0f, 0.0f)};
+bVector2 SndCamera::m_CenteredCamPos[2] = {bVector2(0.0f, 0.0f), bVector2(0.0f, 0.0f)};
+bVector2 SndCamera::m_AveragedCamPos[2] = {bVector2(0.0f, 0.0f), bVector2(0.0f, 0.0f)};
+bVector2 SndCamera::m_NormCarDir[2] = {bVector2(0.0f, 0.0f), bVector2(0.0f, 0.0f)};
+bVector2 SndCamera::m_NormCarPos[2] = {bVector2(0.0f, 0.0f), bVector2(0.0f, 0.0f)};
+bVector3 SndCamera::m_v3WorldCarVel[2] = {bVector3(0.0f, 0.0f, 0.0f), bVector3(0.0f, 0.0f, 0.0f)};
+bVector3 SndCamera::m_v3WorldCamVel[2] = {bVector3(0.0f, 0.0f, 0.0f), bVector3(0.0f, 0.0f, 0.0f)};
 float SndCamera::m_WorldCarVel[2] = {0.0f, 0.0f};
 EAXCar *SndCamera::m_PLayerCars[2] = {nullptr, nullptr};
 

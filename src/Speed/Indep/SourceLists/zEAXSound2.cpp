@@ -1,5 +1,7 @@
 #include "Speed/Indep/Src/EAXSound/SndBase.cpp"
 
+#include "Speed/Indep/Src/EAXSound/SndCamera.cpp"
+
 #include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_Base.cpp"
 
 #include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_CarState.cpp"
@@ -81,8 +83,6 @@
 #include "Speed/Indep/Src/EAXSound/EAXCar.cpp"
 
 #include "Speed/Indep/Src/EAXSound/SFX_Common.cpp"
-
-#include "Speed/Indep/Src/EAXSound/SndCamera.cpp"
 
 #include "Speed/Indep/Src/EAXSound/dynamic_mixer/NFSMixMaster.cpp"
 
