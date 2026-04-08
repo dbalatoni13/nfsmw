@@ -370,3 +370,40 @@ void CSTATEMGR_CarState::DestroyCar(EAX_CarState *eax_car) {
         }
     }
 }
+
+template class UTL::Vector<EngineMappingPair, 16>;
+template class UTL::FixedVector<EngineMappingPair, 24, 16>;
+template class UTL::Vector<CSTATEMGR_CarState::EngToCarStruct, 16>;
+template class UTL::FixedVector<CSTATEMGR_CarState::EngToCarStruct, 24, 16>;
+template class UTL::Vector<unsigned int, 16>;
+template class UTL::FixedVector<unsigned int, 8, 16>;
+
+namespace _STL {
+template EngineMappingPair *find<EngineMappingPair *, EngineMappingPair>(
+    EngineMappingPair *, EngineMappingPair *, EngineMappingPair const &);
+
+template void sort<unsigned int *, bool (*)(unsigned int, unsigned int)>(
+    unsigned int *, unsigned int *, bool (*)(unsigned int, unsigned int));
+template void __partial_sort<unsigned int *, unsigned int, bool (*)(unsigned int, unsigned int)>(
+    unsigned int *, unsigned int *, unsigned int *, unsigned int *, bool (*)(unsigned int, unsigned int));
+template void partial_sort<unsigned int *, bool (*)(unsigned int, unsigned int)>(
+    unsigned int *, unsigned int *, unsigned int *, bool (*)(unsigned int, unsigned int));
+template unsigned int *__unguarded_partition<unsigned int *, unsigned int, bool (*)(unsigned int, unsigned int)>(
+    unsigned int *, unsigned int *, unsigned int, bool (*)(unsigned int, unsigned int));
+template void __insertion_sort<unsigned int *, bool (*)(unsigned int, unsigned int)>(
+    unsigned int *, unsigned int *, bool (*)(unsigned int, unsigned int));
+template void __final_insertion_sort<unsigned int *, bool (*)(unsigned int, unsigned int)>(
+    unsigned int *, unsigned int *, bool (*)(unsigned int, unsigned int));
+template void __introsort_loop<unsigned int *, unsigned int, int, bool (*)(unsigned int, unsigned int)>(
+    unsigned int *, unsigned int *, unsigned int *, int, bool (*)(unsigned int, unsigned int));
+template void __adjust_heap<unsigned int *, int, unsigned int, bool (*)(unsigned int, unsigned int)>(
+    unsigned int *, int, int, unsigned int, bool (*)(unsigned int, unsigned int));
+template void make_heap<unsigned int *, bool (*)(unsigned int, unsigned int)>(
+    unsigned int *, unsigned int *, bool (*)(unsigned int, unsigned int));
+template void pop_heap<unsigned int *, bool (*)(unsigned int, unsigned int)>(
+    unsigned int *, unsigned int *, bool (*)(unsigned int, unsigned int));
+template void __unguarded_linear_insert<unsigned int *, unsigned int, bool (*)(unsigned int, unsigned int)>(
+    unsigned int *, unsigned int, bool (*)(unsigned int, unsigned int));
+template void __unguarded_insertion_sort_aux<unsigned int *, unsigned int, bool (*)(unsigned int, unsigned int)>(
+    unsigned int *, unsigned int *, unsigned int *, bool (*)(unsigned int, unsigned int));
+}
