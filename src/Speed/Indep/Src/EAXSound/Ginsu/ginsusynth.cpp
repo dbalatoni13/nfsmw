@@ -72,25 +72,7 @@ void GinsuSynthesis::HandlePacketRelease(short *samples) {
         float nojumpDist = posDiff + rateDiff * nojumpTime;
         float packetDist = posDiff + rateDiff;
 
-        if (IntFloor(nojumpDist) == IntFloor(packetDist)) {
-            float maxDist = rateDiff * 0.99999994f;
-
-            if (maxDist < 0.0f) {
-                maxDist = -maxDist;
-            }
-
-            if (nojumpDist < 0.0f) {
-                if (static_cast<float>(IntCeil(maxDist)) < -nojumpDist) {
-                    jumpTime = nojumpTime;
-                    jumpDist = static_cast<int>(nojumpDist);
-                }
-            } else {
-                if (static_cast<float>(IntCeil(maxDist)) < nojumpDist) {
-                    jumpTime = nojumpTime;
-                    jumpDist = static_cast<int>(nojumpDist);
-                }
-            }
-        } else {
+        if (IntFloor(nojumpDist) != IntFloor(packetDist)) {
             if (packetDist <= nojumpDist) {
                 if (0.0f <= nojumpDist) {
                     jumpDist = static_cast<int>(nojumpDist);
@@ -105,6 +87,17 @@ void GinsuSynthesis::HandlePacketRelease(short *samples) {
                 }
             }
             jumpTime = (static_cast<float>(jumpDist) - posDiff) / rateDiff;
+        } else {
+            float maxDist = bAbs(rateDiff * 0.99999994f);
+
+            if (static_cast<float>(IntCeil(maxDist)) < bAbs(nojumpDist)) {
+                jumpTime = nojumpTime;
+                if (0.0f <= nojumpDist) {
+                    jumpDist = IntCeil(nojumpDist);
+                } else {
+                    jumpDist = static_cast<int>(nojumpDist);
+                }
+            }
         }
     }
 
