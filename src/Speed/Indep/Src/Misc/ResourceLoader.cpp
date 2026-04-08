@@ -19,7 +19,7 @@
 bChunkLoaderFunction LoaderTable[LOADER_AMOUNT];
 bChunkLoaderFunction UnloaderTable[LOADER_AMOUNT];
 
-int LoaderStub(bChunk *chunk) {
+static int LoaderStub(bChunk *chunk) {
     switch (chunk->ID) {
         case BCHUNK_SMOKEABLES:
         case BCHUNK_STYLE_MOMENTS_INFO:
@@ -134,7 +134,7 @@ void MoveChunksRange(bChunk *source_chunks, int sizeof_chunks, int movement_offs
 
 extern int ChunkMovementOffset;
 
-void MoveChunks(bChunk *dest_chunks, bChunk *source_chunks, int sizeof_chunks, const char *debug_name) {
+void MoveChunks(bChunk *dest_chunks, bChunk *source_chunks, int32 sizeof_chunks, const char *debug_name) {
     int num_chunk_ranges = 0;
     bChunk *chunk_range_table[128];
     int current_chunk_class = -1;
@@ -177,7 +177,7 @@ void MoveChunks(bChunk *dest_chunks, bChunk *source_chunks, int sizeof_chunks, c
     ChunkMovementOffset = 0;
 }
 
-void LoadEmbeddedChunks(bChunk *chunk, int sizeof_chunks, const char *debug_name) {
+void LoadEmbeddedChunks(bChunk *chunk, int32 sizeof_chunks, const char *debug_name) {
     EndianSwapChunkHeadersRecursive(chunk, sizeof_chunks);
     LoadChunks(chunk, sizeof_chunks, debug_name);
 }
@@ -187,7 +187,7 @@ void EndianSwapChunkHeader(bChunk *chunk) {
     bPlatEndianSwap(&chunk->Size);
 }
 
-void EndianSwapChunkHeadersRecursive(bChunk *chunks, int sizeof_chunks) {
+void EndianSwapChunkHeadersRecursive(bChunk *chunks, int32 sizeof_chunks) {
     bChunk *last_chunk = GetLastChunk(chunks, sizeof_chunks);
     EndianSwapChunkHeadersRecursive(chunks, last_chunk);
 }
@@ -306,7 +306,7 @@ bool LoadTempPermChunks(bChunk **ppchunks, int *psizeof_chunks, int allocation_p
 
 // TODO
 extern bool PostLoadFixupDisabled;
-extern int eDirtyTextures;
+extern int32 eDirtyTextures;
 
 void PostLoadFixup() {
     if (!PostLoadFixupDisabled) {

@@ -104,14 +104,14 @@ void EasterEggs::HandleJoy() {
         while (!EasterEggActionQ[port]->IsEmpty()) {
             ActionRef aRef = EasterEggActionQ[port]->GetAction();
             if (aRef.Data() == 1.0f && NumberOfCurrentButtons < 8) {
-                unsigned int button_buffer_index = (CurrentStartButton + NumberOfCurrentButtons) & 7;
+                uint32 button_buffer_index = (CurrentStartButton + NumberOfCurrentButtons) & 7;
                 ButtonBuffer[button_buffer_index] = static_cast<EasterEggButtons>(aRef.ID());
                 NumberOfCurrentButtons++;
                 if (NumberOfCurrentButtons == 8) {
                     bool found = false;
-                    for (unsigned int egg = 0; egg < NumberOfEasterEggs; egg++) {
+                    for (uint32 egg = 0; egg < NumberOfEasterEggs; egg++) {
                         found = true;
-                        for (unsigned int button = 0; button < 8; button++) {
+                        for (uint32 button = 0; button < 8; button++) {
                             if (EasterEggsTable[egg].buttons[button] != ButtonBuffer[(CurrentStartButton + button) & 7]) {
                                 found = false;
                                 break;
@@ -137,8 +137,8 @@ void EasterEggs::ClearButtons() {
     NumberOfCurrentButtons = 0;
 }
 
-bool EasterEggs::IsEasterEggUnlocked(unsigned int type, unsigned int item) {
-    for (unsigned int egg = 0; egg < NumberOfEasterEggs; egg++) {
+bool EasterEggs::IsEasterEggUnlocked(uint32 type, uint32 item) {
+    for (uint32 egg = 0; egg < NumberOfEasterEggs; egg++) {
         if (EasterEggsTable[egg].type == type && EasterEggsTable[egg].item == item) {
             return EasterEggsTable[egg].unlocked;
         }
@@ -147,18 +147,18 @@ bool EasterEggs::IsEasterEggUnlocked(unsigned int type, unsigned int item) {
 }
 
 bool EasterEggs::IsEasterEggUnlocked(EasterEggsSpecial egg) {
-    return IsEasterEggUnlocked(static_cast<unsigned int>(egg), 0);
+    return IsEasterEggUnlocked(static_cast<uint32>(egg), 0);
 }
 
-void EasterEggs::ClearGroup(unsigned int group) {
+void EasterEggs::ClearGroup(uint32 group) {
     if (group == 0) {
         return;
     }
-    for (unsigned int egg = 0; egg < NumberOfEasterEggs; egg++) {
+    for (uint32 egg = 0; egg < NumberOfEasterEggs; egg++) {
         if (EasterEggsTable[egg].group == group) {
             EasterEggsTable[egg].unlocked = false;
         }
     }
 }
 
-void EasterEggs::TriggerSpecial(unsigned int special) {}
+void EasterEggs::TriggerSpecial(uint32 special) {}

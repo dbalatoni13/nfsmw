@@ -31,7 +31,7 @@ class Message {
   public:
     Message() {}
 
-    Message(UCrc32 kind, std::size_t size, unsigned int id) : mKind(kind), mSize(size), mID(id) {}
+    Message(UCrc32 kind, std::size_t size, uint32 id) : mKind(kind), mSize(size), mID(id) {}
 
     ~Message() {}
 
@@ -51,11 +51,11 @@ class Message {
         return mKind;
     }
 
-    unsigned int GetID() const {
+    uint32 GetID() const {
         return mID;
     }
 
-    Message &SetID(unsigned int id) {
+    Message &SetID(uint32 id) {
         mID = id;
         return *this;
     }
@@ -64,7 +64,7 @@ class Message {
     UCrc32 mKind;      // offset 0x0, size 0x4
     UCrc32 mPort;      // offset 0x4, size 0x4
     std::size_t mSize; // offset 0x8, size 0x4
-    unsigned int mID;  // offset 0xC, size 0x4
+    uint32 mID;        // offset 0xC, size 0x4
 };
 
 // total size: 0x4
@@ -146,13 +146,13 @@ class Handler {
         }
     }
 
-    static unsigned int mKeyNext;
+    static uint32 mKeyNext;
 
     uintptr_t Buffer[4];                        // offset 0x0, size 0x10
     void (*CallFn)(const Message *, Handler *); // offset 0x10, size 0x4
     UCrc32 mKind;                               // offset 0x14, size 0x4
     HHANDLER mKey;                              // offset 0x18, size 0x4
-    unsigned int mID;                           // offset 0x1C, size 0x4
+    uint32 mID;                                 // offset 0x1C, size 0x4
     bool mNoFilter;                             // offset 0x20, size 0x1
 };
 

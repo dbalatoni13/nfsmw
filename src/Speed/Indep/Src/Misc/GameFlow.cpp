@@ -729,7 +729,7 @@ GameFlowManager::GameFlowManager()
       pCallbackName(nullptr),        //
       CallbackPhase(0) {}
 
-void GameFlowManager::SetSingleFunction(void (*function)(int), const char *debug_name, int param) {
+void GameFlowManager::SetSingleFunction(void (*function)(int32), const char *debug_name, int32 param) {
     if (pSingleFunction) {
         pSingleFunction = nullptr;
     }
@@ -741,7 +741,7 @@ void GameFlowManager::SetSingleFunction(void (*function)(int), const char *debug
     SingleFunctionParam = param;
 }
 
-void GameFlowManager::SetWaitingForCallback(const char *name, int phase) {
+void GameFlowManager::SetWaitingForCallback(const char *name, int debug_phase) {
     if (pSingleFunction) {
         pSingleFunction = nullptr;
     }
@@ -750,7 +750,7 @@ void GameFlowManager::SetWaitingForCallback(const char *name, int phase) {
     }
     WaitingForCallback = true;
     pCallbackName = name;
-    CallbackPhase = phase;
+    CallbackPhase = debug_phase;
 }
 
 void GameFlowManager::ClearWaitingForCallback() {
@@ -761,8 +761,8 @@ void GameFlowManager::ClearWaitingForCallback() {
 
 void GameFlowManager::Service() {
     while (pSingleFunction) {
-        void (*function)(int) = pSingleFunction;
-        int param = SingleFunctionParam;
+        void (*function)(int32) = pSingleFunction;
+        int32 param = SingleFunctionParam;
 
         pSingleFunction = nullptr;
         SingleFunctionParam = 0;
@@ -818,7 +818,7 @@ void LoadFrontEndVault(bool allocHigh) {
         allocFlagsPack = 0;
     }
     allocFlagsPack |= 0x1000;
-    int buf_size;
+    int32 buf_size;
     void *buf = bGetFile("GLOBAL\\FE_ATTRIB.BIN", &buf_size, allocFlagsPack);
 
     unsigned int allocFlagsBin = 0;
@@ -906,7 +906,7 @@ void LoadGlobalChunks() {
     GlobalMemoryFile = LoadMemoryFile("Global\\GlobalMemoryFile.bin");
     BlockUntilMemoryFileLoaded(GlobalMemoryFile);
     InitLocalization();
-    int buf_size;
+    int32 buf_size;
     void *buf = bGetFile("GLOBAL\\ATTRIBUTES.BIN", &buf_size, 0x1040);
 
     unsigned int allocFlags = GetVirtualMemoryAllocParams();

@@ -41,9 +41,9 @@ class JoylogBuffer {
 
     void LoadBuffer(int position);
 
-    void AddData(int data, int data_size, int channel_number);
+    void AddData(int32 data, int data_size, int channel_number);
 
-    unsigned int GetData(int data_size, int channel_number);
+    uint32 GetData(int data_size, int channel_number);
 
     int AddEntry(JoylogBufferEntry *entry, int position);
 
@@ -72,13 +72,13 @@ class JoylogBuffer {
     void SetPosition(int position) {}
 
   private:
-    int32 CurrentPosition;       // offset 0x0, size 0x4
-    int32 NumBytesInBuffer;      // offset 0x4, size 0x4
-    int32 CurrentLoadPosition;   // offset 0x8, size 0x4
-    int32 BufferStartPosition;   // offset 0xC, size 0x4
-    int32 TopPosition;           // offset 0x10, size 0x4
-    char Filename[260];          // offset 0x14, size 0x104
-    unsigned char Buffer[16384]; // offset 0x118, size 0x4000
+    int32 CurrentPosition;     // offset 0x0, size 0x4
+    int32 NumBytesInBuffer;    // offset 0x4, size 0x4
+    int32 CurrentLoadPosition; // offset 0x8, size 0x4
+    int32 BufferStartPosition; // offset 0xC, size 0x4
+    int32 TopPosition;         // offset 0x10, size 0x4
+    char Filename[260];        // offset 0x14, size 0x104
+    uint8 Buffer[16384];       // offset 0x118, size 0x4000
 };
 
 // total size: 0x1
@@ -100,27 +100,27 @@ class Joylog {
 
     static void FreeReadAheadBuffer();
 
-    static unsigned int GetData(int data_size, JoylogChannel channel_number);
+    static uint32 GetData(int data_size, JoylogChannel channel_number);
 
-    static int GetSignedData(int data_size, JoylogChannel channel_number);
+    static int32 GetSignedData(int data_size, JoylogChannel channel_number);
 
     static void GetData(void *data, int data_size_bytes, JoylogChannel channel_number);
 
-    static void AddData(int data, int data_size_bits, JoylogChannel channel_number);
+    static void AddData(int32 data, int data_size_bits, JoylogChannel channel_number);
 
     static void AddData(const void *data, int data_size_bytes, JoylogChannel channel_number);
 
-    static unsigned int AddOrGetData(unsigned int data, int data_size, JoylogChannel channel_number);
+    static uint32 AddOrGetData(uint32 data, int data_size, JoylogChannel channel_number);
 
-    static int AddOrGetSignedData(int data, int data_size, JoylogChannel channel_number);
+    static int32 AddOrGetSignedData(int data, int data_size, JoylogChannel channel_number);
 
     static float AddOrGetData(float data, JoylogChannel channel_number);
 
     static void AddOrGetData(char *string, JoylogChannel channel_number);
 
-    static void AddOrGetData(unsigned short *string, JoylogChannel channel_number);
+    static void AddOrGetData(uint16 *string, JoylogChannel channel_number);
 
-    static void VerifyData(int data, int data_size, JoylogChannel channel_number);
+    static void VerifyData(int32 data, int data_size, JoylogChannel channel_number);
 
     static void Init();
 
@@ -130,7 +130,7 @@ class Joylog {
 
     static void Resume();
 
-    static unsigned int IsCapturing();
+    static uint32 IsCapturing();
 
     static int IsReplaying();
 
@@ -164,8 +164,8 @@ class Joylog {
 struct JoylogChannelInfo {
     JoylogChannel ChannelNumber; // offset 0x0, size 0x4
     char *Name;                  // offset 0x4, size 0x4
-    char YieldRepeatCount;       // offset 0x8, size 0x1
-    char ReadAheadOnly;          // offset 0x9, size 0x1
+    int8 YieldRepeatCount;       // offset 0x8, size 0x1
+    int8 ReadAheadOnly;          // offset 0x9, size 0x1
 };
 
 extern JoylogChannelInfo NFSJoylogChannelInfoTable[14];

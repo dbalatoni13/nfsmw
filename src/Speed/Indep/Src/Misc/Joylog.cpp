@@ -98,7 +98,7 @@ void JoylogBuffer::LoadBuffer(int position) {
     }
 }
 
-void JoylogBuffer::AddData(int data, int data_size, int channel_number) {
+void JoylogBuffer::AddData(int32 data, int data_size, int channel_number) {
     JoylogBufferEntry buffer_entry;
     buffer_entry.DataSize = (data_size + 7) >> 3;
     buffer_entry.Data = data;
@@ -123,7 +123,7 @@ void JoylogBuffer::AddData(int data, int data_size, int channel_number) {
     }
 }
 
-unsigned int JoylogBuffer::GetData(int data_size, int channel_number) {
+uint32 JoylogBuffer::GetData(int data_size, int channel_number) {
     JoylogBufferEntry buffer_entry;
     int prev_position = CurrentPosition;
 
@@ -159,12 +159,12 @@ unsigned int JoylogBuffer::GetData(int data_size, int channel_number) {
 
 int JoylogBuffer::AddEntry(JoylogBufferEntry *entry, int position) {
     int buffer_index = (position - BufferStartPosition) + 0x118;
-    unsigned char *pbuf = reinterpret_cast<unsigned char *>(this) + buffer_index;
-    pbuf[0] = static_cast<unsigned char>(entry->ChannelNumber + static_cast<unsigned char>(entry->DataSize) * 16);
-    unsigned int data = entry->Data;
+    uint8 *pbuf = reinterpret_cast<uint8 *>(this) + buffer_index;
+    pbuf[0] = static_cast<uint8>(entry->ChannelNumber + static_cast<uint8>(entry->DataSize) * 16);
+    uint32 data = entry->Data;
     pbuf++;
     for (int byte_num = 0; byte_num < entry->DataSize; byte_num++) {
-        pbuf[byte_num] = static_cast<unsigned char>(data);
+        pbuf[byte_num] = static_cast<uint8>(data);
         data >>= 8;
     }
     return 1 + position + entry->DataSize;
@@ -172,16 +172,15 @@ int JoylogBuffer::AddEntry(JoylogBufferEntry *entry, int position) {
 
 int JoylogBuffer::GetEntry(JoylogBufferEntry *entry, int position) {
     int buffer_index = (position - BufferStartPosition) + 0x118;
-    unsigned char *pbuf = reinterpret_cast<unsigned char *>(this) + buffer_index;
+    uint8 *pbuf = reinterpret_cast<uint8 *>(this) + buffer_index;
     return position + GetEntry(entry, pbuf);
 }
 
-// UNSOLVED, I CHECKED THIS WAS LAST
 int JoylogBuffer::GetEntry(JoylogBufferEntry *entry, uint8 *pbuf) {
     entry->DataSize = pbuf[0] >> 4;
     entry->ChannelNumber = pbuf[0] & 0xF;
     pbuf++;
-    unsigned int data = 0;
+    uint32 data = 0;
     for (int byte_num = 0; byte_num < entry->DataSize; byte_num++) {
         data = (data << 8);
         data |= pbuf[entry->DataSize - byte_num - 1];
@@ -234,7 +233,7 @@ int Joylog::ReadAheadFromChannel(void *buf, int size, int channel_number) {
         ReadAheadBufferPos += size;
         if (entry.ChannelNumber == channel_number) {
             for (int byte_num = 0; byte_num < entry.DataSize; byte_num++) {
-                static_cast<unsigned char *>(buf)[num_read] = static_cast<unsigned char>(entry.Data >> (byte_num * 8));
+                static_cast<uint8 *>(buf)[num_read] = static_cast<uint8>(entry.Data >> (byte_num * 8));
                 num_read++;
             }
         }
@@ -249,28 +248,28 @@ void Joylog::FreeReadAheadBuffer() {
     ReadAheadBufferSize = 0;
 }
 
-unsigned int Joylog::GetData(int data_size, JoylogChannel channel_number) {
+uint32 Joylog::GetData(int data_size, JoylogChannel channel_number) {
     if (!IsReplaying()) {
         return 0;
     }
-    unsigned int data = pReplayingBuffer->GetData(data_size, channel_number);
+    uint32 data = pReplayingBuffer->GetData(data_size, channel_number);
     if (pReplayingBuffer->IsMoreData() == 0) {
         StopReplaying();
     }
     return data;
 }
 
-int Joylog::GetSignedData(int data_size, JoylogChannel channel_number) {
-    return (static_cast<int>(GetData(data_size, channel_number)) << (32 - data_size)) >> (32 - data_size);
+int32 Joylog::GetSignedData(int data_size, JoylogChannel channel_number) {
+    return (static_cast<int32>(GetData(data_size, channel_number)) << (32 - data_size)) >> (32 - data_size);
 }
 
 void Joylog::GetData(void *data, int data_size_bytes, JoylogChannel channel_number) {
     for (int n = 0; n < data_size_bytes; n++) {
-        static_cast<unsigned char *>(data)[n] = static_cast<unsigned char>(GetData(8, channel_number));
+        static_cast<uint8 *>(data)[n] = static_cast<uint8>(GetData(8, channel_number));
     }
 }
 
-void Joylog::AddData(int data, int data_size_bits, JoylogChannel channel_number) {
+void Joylog::AddData(int32 data, int data_size_bits, JoylogChannel channel_number) {
     if (CapturingFlag) {
         pCapturingBuffer->AddData(data, data_size_bits, channel_number);
     }
@@ -278,16 +277,16 @@ void Joylog::AddData(int data, int data_size_bits, JoylogChannel channel_number)
 
 void Joylog::AddData(const void *data, int data_size_bytes, JoylogChannel channel_number) {
     for (int n = 0; n < data_size_bytes; n++) {
-        AddData(static_cast<int>(static_cast<const char *>(data)[n]), 8, channel_number);
+        AddData(static_cast<int32>(static_cast<const char *>(data)[n]), 8, channel_number);
     }
 }
 
-unsigned int Joylog::AddOrGetData(unsigned int data, int data_size, JoylogChannel channel_number) {
+uint32 Joylog::AddOrGetData(uint32 data, int data_size, JoylogChannel channel_number) {
     if (IsReplaying()) {
         data = GetData(data_size, channel_number);
     }
     if (IsCapturing()) {
-        AddData(static_cast<int>(data), data_size, channel_number);
+        AddData(static_cast<int32>(data), data_size, channel_number);
     }
     return data;
 }
@@ -320,20 +319,20 @@ void Joylog::AddOrGetData(char *string, JoylogChannel channel_number) {
     }
 }
 
-void Joylog::AddOrGetData(unsigned short *string, JoylogChannel channel_number) {
+void Joylog::AddOrGetData(uint16 *string, JoylogChannel channel_number) {
     if (IsReplaying()) {
         int len = static_cast<int>(GetData(16, channel_number));
         int n;
         for (n = 0; n < len; n++) {
-            string[n] = static_cast<unsigned short>(GetData(16, channel_number));
+            string[n] = static_cast<uint16>(GetData(16, channel_number));
         }
         string[n] = 0;
     }
     if (IsCapturing()) {
-        unsigned int len = bStrLen(string);
-        AddData(static_cast<int>(len), 16, channel_number);
-        for (int n = 0; n < static_cast<int>(len); n++) {
-            AddData(static_cast<int>(string[n]), 16, channel_number);
+        int len = bStrLen(string);
+        AddData(len, 16, channel_number);
+        for (int n = 0; n < len; n++) {
+            AddData(static_cast<int32>(string[n]), 16, channel_number);
         }
     }
 }
@@ -370,7 +369,7 @@ void Joylog::Save() {
     }
 }
 
-unsigned int Joylog::IsCapturing() {
+uint32 Joylog::IsCapturing() {
     return CapturingFlag;
 }
 

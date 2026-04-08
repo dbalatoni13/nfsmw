@@ -2,7 +2,7 @@
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 
 void MD5::Update(const void *buffer, int length) {
-    unsigned int uIndex;
+    uint32 uIndex;
     const unsigned char *_buffer = static_cast<const unsigned char *>(buffer);
 
     if (computed == true) {

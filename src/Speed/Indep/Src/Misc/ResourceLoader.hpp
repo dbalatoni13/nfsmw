@@ -171,7 +171,7 @@ struct VMFile {
 };
 
 void InitResourceLoader();
-void LoadEmbeddedChunks(struct bChunk *chunk, int sizeof_chunks, const char *debug_name);
+void LoadEmbeddedChunks(struct bChunk *chunk, int32 sizeof_chunks, const char *debug_name);
 void WaitForResourceLoadingComplete();
 int ServiceResourceLoading();
 
@@ -184,7 +184,7 @@ VMFile *LoadFileIntoVirtualMemory(const char *filename, bool compressed, bool us
 void UnloadFileFromVirtualMemory(VMFile *vm_file);
 
 void EndianSwapChunkHeader(bChunk *chunk);
-void EndianSwapChunkHeadersRecursive(bChunk *chunks, int sizeof_chunks);
+void EndianSwapChunkHeadersRecursive(bChunk *chunks, int32 sizeof_chunks);
 void EndianSwapChunkHeadersRecursive(bChunk *first_chunk, bChunk *last_chunk);
 
 int ServiceResourceLoading();
@@ -193,7 +193,7 @@ void UnloadResourceFile(ResourceFile *resource_file);
 void SetDelayedResourceCallback(void (*callback)(void *), void *param);
 
 bool LoadTempPermChunks(bChunk **ppchunks, int *psizeof_chunks, int allocation_params, const char *debug_name);
-void MoveChunks(bChunk *dest_chunks, bChunk *source_chunks, int sizeof_chunks, const char *debug_name);
+void MoveChunks(bChunk *dest_chunks, bChunk *source_chunks, int32 sizeof_chunks, const char *debug_name);
 void UnloadChunks(bChunk *chunks, int sizeof_chunks, const char *debug_name);
 void PostLoadFixup();
 
