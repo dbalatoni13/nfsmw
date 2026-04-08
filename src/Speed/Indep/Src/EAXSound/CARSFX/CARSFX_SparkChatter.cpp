@@ -133,8 +133,8 @@ void CARSFX_SparkChatter::Destroy() {
         delete m_pSparkChatterControl;
         m_pSparkChatterControl = nullptr;
     }
-    m_pSparkChatterOutput = nullptr;
     m_pShiftingCTL = nullptr;
+    m_pSparkChatterOutput = nullptr;
 }
 
 void CARSFX_SparkChatter::UpdateParams(float t) {

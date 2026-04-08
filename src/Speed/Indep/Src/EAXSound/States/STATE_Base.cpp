@@ -420,10 +420,10 @@ void CSTATE_Base::Destroy() {
         CurSFXOBj = TmpSFXOBj;
     }
 
-    m_NumLoadedSFXCTL = 0;
     m_pHeadSFXCTL = nullptr;
     m_pHeadSFXObj = nullptr;
     m_NumLoadedSFXObj = 0;
+    m_NumLoadedSFXCTL = 0;
 }
 
 SndBase *CSTATE_Base::GetSFXObject(int SFXId) {

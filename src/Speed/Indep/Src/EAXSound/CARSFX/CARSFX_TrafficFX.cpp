@@ -108,8 +108,8 @@ void CARSFX_TrafficEngine::Destroy() {
     if (m_pcsisTranfficEng) {
         delete m_pcsisTranfficEng;
     }
-    refCnt = 0;
     m_pcsisTranfficEng = nullptr;
+    refCnt = 0;
 }
 
 void CARSFX_TrafficEngine::ProcessUpdate() {
