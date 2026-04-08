@@ -10,7 +10,6 @@ extern "C" int SNDpitchmult(int sndHandle, int pitchmult);
 extern "C" int SNDCTRL_lowpass(int sndHandle, int lowpasscutoff);
 extern "C" int SNDCTRL_drylevel(int sndHandle, int drylevel);
 extern "C" int SNDfxlevel(int sndHandle, int effect, int level);
-extern stSndDataLoadParams g_SndAssetList[];
 char *GetGinsuData(const char *filename);
 int ntestrefcount;
 static int AI_ENGINE_PITCH_OFFSET;

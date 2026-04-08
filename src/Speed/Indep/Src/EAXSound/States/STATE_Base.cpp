@@ -5,6 +5,7 @@
 
 extern int g_DMIX_DummyOutputBlock[];
 extern int g_DMIX_DummyInputBlock[];
+extern bool g_EAXIsPaused(void);
 const char *CSTATE_Base::GetStateName(void) const {
     return s_StateInfo.stateName;
 }
@@ -468,7 +469,6 @@ ReprocessQueue:
 }
 
 void CSTATE_Base::PreLoadAssets() {}
-extern bool g_EAXIsPaused(void);
 
 CSTATE_Base::StateInfo *CSTATE_Base::GetStateInfo(void) const {
     return &s_StateInfo;

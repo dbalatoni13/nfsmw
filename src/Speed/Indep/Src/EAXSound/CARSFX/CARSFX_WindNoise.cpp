@@ -2,6 +2,7 @@
 
 #include "Speed/Indep/Src/EAXSound/EAXCarState.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
+#include "Speed/Indep/Src/Misc/Config.h"
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/bWare/Inc/bDebug.hpp"
 
@@ -9,8 +10,6 @@ namespace Csis {
 extern ClassHandle gFX_WINDHandle;
 extern InterfaceId FX_WINDId;
 } // namespace Csis
-
-extern int IsSoundEnabled;
 
 struct FX_WINDStruct {
     int pitch;             // offset 0x0, size 0x4

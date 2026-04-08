@@ -33,4 +33,6 @@ struct EAXS_StreamManager : public AudioMemBase {
     EAXS_StreamChannel *m_pStrmCh[4]; // offset 0x18, size 0x10
 };
 
+bool IsWorldDataStreaming(unsigned int strmhandle);
+
 #endif

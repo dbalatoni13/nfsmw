@@ -2,8 +2,8 @@
 
 #include "Speed/Indep/Src/EAXSound/EAXCarState.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
+#include "Speed/Indep/Src/Misc/Config.h"
 
-extern int IsSoundEnabled;
 namespace Sound {
 float DistanceToView(const bVector3 *position);
 }

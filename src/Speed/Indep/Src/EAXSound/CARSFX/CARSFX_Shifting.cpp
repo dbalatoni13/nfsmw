@@ -3,6 +3,7 @@
 #include "Speed/Indep/Src/EAXSound/EAXCar.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSndUtil.h"
+#include "Speed/Indep/Src/Misc/Config.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 namespace Csis {
@@ -14,7 +15,6 @@ InterfaceId FX_SHIFTING_01Id = {"FX_SHIFTING_01", 0x3EE6, 0x7937};
 ClassHandle gFX_SHIFTING_01Handle;
 } // namespace Csis
 
-extern int IsSoundEnabled;
 extern int g_nArrayCosTable[0x201];
 extern Slope ShiftingAttackVolSlope;
 CARSFX_Shift::TypeInfo *CARSFX_Shift::GetTypeInfo() const {

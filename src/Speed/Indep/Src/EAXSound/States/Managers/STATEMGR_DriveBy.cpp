@@ -10,12 +10,12 @@
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Interfaces/SimModels/IModel.h"
 #include "Speed/Indep/Src/Misc/Profiler.hpp"
+#include "Speed/Indep/Src/Misc/Config.h"
 #include "Speed/Indep/Src/World/EventManager.hpp"
 #include "Speed/Indep/Src/World/VisibleSection.hpp"
 #include "Speed/Indep/Src/World/WTrigger.h"
 
 extern float CAMERA_WOOSH_OFFSET;
-extern int IsSoundEnabled;
 CSTATEMGR_DriveBy::CSTATEMGR_DriveBy()
     : CSTATEMGR_Base() {
     WooshCheckFrameCntr = 4;
@@ -272,5 +272,3 @@ CSTATE_Base *CSTATEMGR_DriveBy::GetFreeState(void *ObjectPtr) {
 
     return nullptr;
 }
-
-bool g_EAXIsPaused(void);

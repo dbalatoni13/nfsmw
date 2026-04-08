@@ -34,7 +34,6 @@ extern void InitializeEATrax(bool breset);
 extern int g_MaxSongs;
 extern unsigned int g_ActiveSFXStates;
 extern unsigned int SoundRandomSeed;
-extern stSndDataLoadParams g_SndAssetList[];
 extern SongInfoList Songs;
 extern void SummonChyron(char *title, char *artist, char *album);
 extern void SNDSYS_service();
@@ -1369,4 +1368,3 @@ ParameterAccessor AmbientAccessor("Ambience");
 SndBase::TypeInfo SFXObj_Pathfinder::s_TypeInfo = { 0, "SFXObj_Pathfinder", nullptr, SFXObj_Pathfinder::CreateObject };
 SndBase::TypeInfo SFXObj_PFEATrax::s_TypeInfo = { 0, "SFXObj_PFEATrax", nullptr, SFXObj_PFEATrax::CreateObject };
 stEATraxParms SFXObj_PFEATrax::m_EATrax[2];
-

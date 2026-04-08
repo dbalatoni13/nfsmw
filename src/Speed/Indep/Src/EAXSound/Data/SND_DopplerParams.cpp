@@ -1,7 +1,6 @@
 #include "Speed/Indep/Src/EAXSound/Data/SND_DopplerParams.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Tunnel.hpp"
 
-// TODO: Dwarf/PS2 do not currently surface better member names for this local parameter carrier.
 struct DopplerParam {
     float unk0;
     int unk4;
@@ -14,7 +13,6 @@ struct DopplerParamTable {
 };
 
 DopplerParamTable g_DOPPLER_PARAMS;
-extern stREVERB_PARAMS g_REVERBFXMODULES[];
 
 DopplerParamTable::DopplerParamTable() {
     entries[0].unk0 = 0.35f;

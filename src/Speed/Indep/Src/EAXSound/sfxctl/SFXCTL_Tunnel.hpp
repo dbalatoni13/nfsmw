@@ -34,6 +34,8 @@ struct stREVERB_PARAMS {
     int FadeIn;    // offset 0x14, size 0x4
 };
 
+extern stREVERB_PARAMS g_REVERBFXMODULES[];
+
 struct SFXCTL_Tunnel : public SFXCTL {
   protected:
     static TypeInfo s_TypeInfo;

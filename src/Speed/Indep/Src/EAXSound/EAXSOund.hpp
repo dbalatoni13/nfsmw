@@ -277,6 +277,7 @@ bool g_EAXIsPaused(void);
 
 void SetSoundControlState(bool bON, eSNDCTLSTATE esndstate, const char *Reason);
 
+extern stSndDataLoadParams g_SndAssetList[];
 extern EAXSound *g_pEAXSound;
 
 // TODO move these to Ecstasy

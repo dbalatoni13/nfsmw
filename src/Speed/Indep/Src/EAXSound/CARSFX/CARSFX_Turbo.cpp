@@ -2,6 +2,7 @@
 
 #include "Speed/Indep/Src/EAXSound/EAXCar.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
+#include "Speed/Indep/Src/Misc/Config.h"
 
 namespace Csis {
 InterfaceId FX_TURBO_01Id = {"FX_TURBO_01", 0x5EF2, 0x5EF2};
@@ -11,7 +12,6 @@ ClassHandle gFX_TURBO_01Handle;
 int gnMemLeakTurboBLOWOFFCountTest = 0;
 int gnMemLeakTurboSPOOLCountTest = 0;
 float MIN_TORQUE_FOR_BLOWOFF = 20.0f;
-extern int IsSoundEnabled;
 extern int g_nArrayCosTable[0x201];
 
 CARSFX_Turbo::TypeInfo CARSFX_Turbo::s_TypeInfo = {
@@ -318,4 +318,3 @@ void CARSFX_Turbo::SetupLoadData() {
         LoadAsset(m_pEAXCar->mTurboInfo.BankName(), SNDPATH_TURBO, EAXSND_DT_AEMS_ASYNCSPUMEM, eBANK_SLOT_NONE, true);
     }
 }
-

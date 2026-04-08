@@ -5,6 +5,7 @@
 #include "Speed/Indep/Src/EAXSound/EAXCarState.hpp"
 #include "Speed/Indep/Src/EAXSound/SndCamera.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSndUtil.h"
+#include "Speed/Indep/Src/EAXSound/Stream/EAXS_StreamManager.h"
 #include "Speed/Indep/Src/EAXSound/Stream/NISSFXModule.hpp"
 #include "Speed/Indep/Src/Generated/Messages/MGamePlayMoment.h"
 #include "Speed/Indep/Src/Generated/Messages/MMiscSound.h"
@@ -447,9 +448,7 @@ SndBase *SFXCTL_3DMomentPos::CreateObject(unsigned int allocator) {
 
 template class UTL::Vector<SFXObj_MomentStrm::stMomentDecription, 16>;
 template class UTL::FixedVector<SFXObj_MomentStrm::stMomentDecription, 64, 16>;
-extern bool IsWorldDataStreaming(unsigned int strmhandle);
 
 SFXObj_MomentStrm::TypeInfo *SFXObj_MomentStrm::GetTypeInfo() const {
     return &s_TypeInfo;
 }
-

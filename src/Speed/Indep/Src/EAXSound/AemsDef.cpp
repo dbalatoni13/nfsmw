@@ -1,6 +1,5 @@
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 
-// TODO: Dwarf/PS2 do not currently surface better member names for this local table carrier.
 struct AemsClass1Entry {
     float unk0;
     int unk4;

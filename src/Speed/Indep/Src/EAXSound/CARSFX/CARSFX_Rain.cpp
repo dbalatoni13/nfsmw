@@ -2,6 +2,7 @@
 
 #include "Speed/Indep/Src/EAXSound/EAXCar.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
+#include "Speed/Indep/Src/EAXSound/Stream/EAXS_StreamManager.h"
 #include "Speed/Indep/Src/EAXSound/Stream/SpeechManager.hpp"
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/Src/Generated/Messages/MGamePlayMoment.h"
@@ -10,8 +11,6 @@ namespace Csis {
 InterfaceId FX_WeatherId = {"FX_Weather", 0x3EE6, 0x5390};
 ClassHandle gFX_WeatherHandle;
 } // namespace Csis
-
-extern bool IsWorldDataStreaming(unsigned int strmhandle);
 
 CARSFX_Rain::TypeInfo CARSFX_Rain::s_TypeInfo = {
     0x000200B0,

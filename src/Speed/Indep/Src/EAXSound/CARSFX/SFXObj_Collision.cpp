@@ -3,14 +3,13 @@
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/Src/EAXSound/STICH_Playback.h"
+#include "Speed/Indep/Src/EAXSound/Stream/EAXS_StreamManager.h"
 #include "Speed/Indep/Src/EAXSound/States/STATE_Collision.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Collision.hpp"
 #include "Speed/Indep/Src/EAXSound/snd_gen/MAIN_AEMS.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/audioimpact.h"
 #include "Speed/Indep/Src/Generated/Messages/MAudioReflection.h"
 #include "Speed/Indep/Src/Generated/Events/EMomentStrm.hpp"
-
-extern bool IsWorldDataStreaming(unsigned int strmhandle);
 
 SndBase::TypeInfo SFXObj_Collision::s_TypeInfo = { 0, "SFXObj_Collision", nullptr, SFXObj_Collision::CreateObject };
 

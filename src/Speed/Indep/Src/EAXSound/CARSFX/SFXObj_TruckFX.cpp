@@ -3,14 +3,13 @@
 #include "Speed/Indep/Src/EAXSound/EAXCarState.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/Src/EAXSound/SoundCollision.hpp"
+#include "Speed/Indep/Src/Misc/Config.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 namespace Csis {
 extern ClassHandle gFX_TRUCK_FXHandle;
 extern InterfaceId FX_TRUCK_FXId;
 } // namespace Csis
-
-extern int IsSoundEnabled;
 
 struct FX_TRUCK_FXStruct {
     int id;           // offset 0x0, size 0x4
@@ -360,4 +359,3 @@ SndBase *SFXCTL_3DTrailerPos::CreateObject(unsigned int allocator) {
 }
 
 SFXCTL_3DTrailerPos::~SFXCTL_3DTrailerPos() {}
-

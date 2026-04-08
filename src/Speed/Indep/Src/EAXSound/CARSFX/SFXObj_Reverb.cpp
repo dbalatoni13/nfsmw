@@ -21,7 +21,6 @@ class GlobalFxProcessor {
 ParameterAccessor ReverbAccessor("Reverb");
 
 extern const char *csfxedit[];
-extern stSndDataLoadParams g_SndAssetList[];
 extern void SNDSYS_service();
 SFXObj_Reverb::TypeInfo *SFXObj_Reverb::GetTypeInfo() const {
     return &s_TypeInfo;

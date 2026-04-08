@@ -6,9 +6,6 @@
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/pvehicle.h"
 #include "Speed/Indep/Src/World/RaceParameters.hpp"
 
-extern bool IsPlayerGoingFastEnough(float, int);
-extern void GetWooshBlockSizeParams(eDRIVE_BY_TYPE type, STICH_WHOOSH_TYPE &base, int &numblocks, int &sizeperblock);
-
 namespace {
 int HonkingCarCnt = 0;
 }
