@@ -19,6 +19,13 @@ enum eRACETYPE {
     eRACE_TWODRG = 3,
 };
 
+enum eMMTYPE {
+    MMTYPE_MAIN = 0,
+    MMTYPE_SECONDARY = 1,
+    MMTYPE_DYNAMIC = 2,
+    MMTYPE_SECONDARYDYNAMIC = 3,
+};
+
 struct NFSMixMaster : AudioMemBase {
     // total size: 0x74
     int m_LoadMapID;                   // offset 0x04, size 0x4
@@ -51,6 +58,8 @@ struct NFSMixMaster : AudioMemBase {
     void ConnectMap();
     void DestroyMainMainMap();
     void CreateMainMainMap(eRACETYPE eMapType);
+    void LoadMixMapFile(eMMTYPE etype, char *pfilename);
+    static void LoadDataCallback(int param, int error_status);
     void DestroyMap();
     void InitMixMap(int param);
     void ProcessMixMap(float dt, eCamStates ecam);
