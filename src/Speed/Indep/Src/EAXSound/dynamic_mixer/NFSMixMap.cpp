@@ -904,11 +904,15 @@ void NFSMixMap::AllocateInputArrays() {
 
                     if (buniqueevent) {
                         int nt3d;
+                        st3DMixCtlProc *p3d;
 
+                        p3d = m_p3DMixCtlProc;
                         for (nt3d = 0; nt3d < m_3DMixCtlsAdded; nt3d++) {
-                            if (m_p3DMixCtlProc[nt3d].p3DMixCtlData_U->nINPUTID == static_cast<int>(nID)) {
+                            if (p3d->p3DMixCtlData_U->nINPUTID == static_cast<int>(nID)) {
                                 buniqueevent = false;
                             }
+
+                            p3d++;
                         }
 
                         if (buniqueevent) {
