@@ -121,8 +121,8 @@ void CARSFX_Rain::UpdateParams(float t) {
     view = &eViews[1];
     if (view) {
         m_fPrevWeatherIntensity = m_fWeatherIntensity;
-        if (view->Precipitation) {
-            m_fWeatherIntensity = view->Precipitation->GetRainIntensity();
+        if (eViews[1].Precipitation) {
+            m_fWeatherIntensity = eViews[1].Precipitation->GetRainIntensity();
         } else {
             m_fWeatherIntensity = 0.0f;
         }
