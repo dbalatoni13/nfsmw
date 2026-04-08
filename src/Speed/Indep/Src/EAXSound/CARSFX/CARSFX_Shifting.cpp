@@ -332,7 +332,13 @@ void CARSFX_Shift::PlayShiftSnd() {
     }
 
     RPM = GetPhysRPM();
-    RPMDifScale = bClamp((RPM - 1500.0f) * 0.00015384615f, 0.0f, 1.0f);
+    RPMDifScale = (static_cast<float>(static_cast<int>(RPM)) - 1500.0f) * 0.00015384615f;
+    if (RPMDifScale < 0.0f) {
+        RPMDifScale = 0.0f;
+    }
+    if (1.0f < RPMDifScale) {
+        RPMDifScale = 1.0f;
+    }
     tempVol = g_nArrayCosTable[static_cast<int>(512.0f - (RPMDifScale * 0.9f + 0.1f) * 512.0f)];
 
     if (m_pShiftCtl->eShiftState - SHFT_UP_DISENGAGE < 3) {
