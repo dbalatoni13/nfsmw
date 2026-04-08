@@ -1615,14 +1615,14 @@ void NFSMixMap::Update3DMixCtls() {
                 if (((pstateparams->n3DSTATEINFOID >> 24) & 0xF) == testcamstate) {
                     p3dsp->pCurStateParams = pstateparams;
                     found = 1;
-                    p3dsp->PrevCamState = m_PrevCamState;
                     p3dsp->msSinceCamTrans = 0;
+                    p3dsp->PrevCamState = m_PrevCamState;
                     p3dsp->CurCamState = m_CurCamState;
                     break;
                 }
             }
 
-            if (!found && testcamstate != DMIX_DEFAULT_CAM) {
+            if (!found) {
                 testcamstate = DMIX_DEFAULT_CAM;
                 goto RestartLoop;
             }
@@ -1661,21 +1661,29 @@ void NFSMixMap::Update3DMixCtls() {
             nDistType = (nid >> 12) & 0xF;
             nAzimType = (nid >> 8) & 0xF;
             ntables = psparams->nCURVEID_DOPPLER;
-            if (nDistType == 0) {
+            switch (nDistType) {
+            case 0:
                 fdist[0] = static_cast<float>(p3Du->pInputs[1]) * 0.01f;
-            } else if (nDistType == 1) {
+                break;
+            case 1:
                 fdist[0] = static_cast<float>(p3Du->pInputs[0]) * 0.01f;
-            } else {
+                break;
+            default:
                 fdist[0] = -1.0f;
+                break;
             }
             fdist[1] = fdist[0];
 
-            if (nAzimType == 0) {
+            switch (nAzimType) {
+            case 0:
                 nazim = p3Du->pInputs[3];
-            } else if (nAzimType == 1) {
+                break;
+            case 1:
                 nazim = p3Du->pInputs[2];
-            } else {
+                break;
+            default:
                 nazim = 0;
+                break;
             }
 
             AzimOut = nazim;
