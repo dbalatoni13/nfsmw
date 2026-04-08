@@ -203,30 +203,18 @@ void CARSFX_BottomOut::UpdateParams(float t) {
 
     IsHardLanding = false;
     PlayJumpLanding = false;
-    FrontTouching = false;
-    if (TmpFrontTouched && (FrontHangTime > 0.05f) && !FrontWheelsTouched) {
-        FrontTouching = true;
-    }
-    BackTouching = false;
-    if (TmpBackTouched && (RearHangTime > 0.05f) && !RearWheelsTouched) {
-        BackTouching = true;
-    }
+    FrontTouching = TmpFrontTouched && (FrontHangTime > 0.05f) && !FrontWheelsTouched;
+    BackTouching = TmpBackTouched && (RearHangTime > 0.05f) && !RearWheelsTouched;
 
-    if (!FrontTouching) {
-        if (BackTouching && !IsCarLeaningHeavily) {
-            PlayJumpLanding = true;
-            if (RearHangTime > 0.1f) {
-                IsHardLanding = true;
-            } else {
-                IsHardLanding = false;
-            }
+    if (!FrontTouching && BackTouching && !IsCarLeaningHeavily) {
+        PlayJumpLanding = true;
+        if (RearHangTime > 0.1f) {
+            IsHardLanding = true;
         }
-    } else {
+    } else if (FrontTouching) {
         PlayJumpLanding = true;
         if ((FrontHangTime > 0.1f) || (BackTouching && (RearHangTime > 0.1f))) {
             IsHardLanding = true;
-        } else {
-            IsHardLanding = false;
         }
     }
 
