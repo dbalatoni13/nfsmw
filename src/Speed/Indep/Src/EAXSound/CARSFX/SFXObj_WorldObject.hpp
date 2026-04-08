@@ -15,7 +15,7 @@ enum WORLDOBJECT_TYPES {
 
 struct ISndAttachable : public UTL::Collections::Listable<ISndAttachable, 15> {
     ISndAttachable();
-    virtual ~ISndAttachable() {}
+    virtual ~ISndAttachable();
     virtual const bVector3 *GetPosition() = 0;
     virtual int GetType() = 0;
 };
@@ -26,8 +26,8 @@ struct WorldObject : public ISndAttachable {
         , Types(_type)
     {}
 
-    const bVector3 *GetPosition() override { return &m_3DPosition; }
-    int GetType() override { return Types; }
+    const bVector3 *GetPosition() override;
+    int GetType() override;
 
     bVector3 m_3DPosition;      // offset 0x8, size 0x10
     WORLDOBJECT_TYPES Types;    // offset 0x18, size 0x4

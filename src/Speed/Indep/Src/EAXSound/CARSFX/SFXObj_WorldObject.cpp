@@ -8,6 +8,15 @@
 #line 20 "src/eaxsound/States/Managers/STATEMGR_Enviro.hpp"
 ISndAttachable::ISndAttachable()
     : UTL::Collections::Listable<ISndAttachable, 15>() {}
+ISndAttachable::~ISndAttachable() {}
+
+const bVector3 *WorldObject::GetPosition() {
+    return &m_3DPosition;
+}
+
+int WorldObject::GetType() {
+    return Types;
+}
 #line 8 "/home/kabiskac/Documents/clankers/eaxsound/nfsmw/src/Speed/Indep/Src/EAXSound/CARSFX/SFXObj_WorldObject.cpp"
 
 SndBase::TypeInfo SFXObj_WorldObject::s_TypeInfo = {
@@ -105,3 +114,7 @@ void SFXObj_WorldObject::Detach() {
     delete m_pcsisSFX;
     m_pcsisSFX = nullptr;
 }
+
+template class UTL::Collections::Listable<ISndAttachable, 15>::List;
+template class UTL::Vector<ISndAttachable *, 16>;
+template class UTL::FixedVector<ISndAttachable *, 15, 16>;

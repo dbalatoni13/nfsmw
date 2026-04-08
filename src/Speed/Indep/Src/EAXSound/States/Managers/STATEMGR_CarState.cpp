@@ -396,4 +396,14 @@ template void __final_insertion_sort<unsigned int *, bool (*)(unsigned int, unsi
     unsigned int *, unsigned int *, bool (*)(unsigned int, unsigned int));
 template void __introsort_loop<unsigned int *, unsigned int, int, bool (*)(unsigned int, unsigned int)>(
     unsigned int *, unsigned int *, unsigned int *, int, bool (*)(unsigned int, unsigned int));
+template void __adjust_heap<unsigned int *, int, unsigned int, bool (*)(unsigned int, unsigned int)>(
+    unsigned int *, int, int, unsigned int, bool (*)(unsigned int, unsigned int));
+template void make_heap<unsigned int *, bool (*)(unsigned int, unsigned int)>(
+    unsigned int *, unsigned int *, bool (*)(unsigned int, unsigned int));
+template void pop_heap<unsigned int *, bool (*)(unsigned int, unsigned int)>(
+    unsigned int *, unsigned int *, bool (*)(unsigned int, unsigned int));
+template void __unguarded_linear_insert<unsigned int *, unsigned int, bool (*)(unsigned int, unsigned int)>(
+    unsigned int *, unsigned int, bool (*)(unsigned int, unsigned int));
+template void __unguarded_insertion_sort_aux<unsigned int *, unsigned int, bool (*)(unsigned int, unsigned int)>(
+    unsigned int *, unsigned int *, unsigned int *, bool (*)(unsigned int, unsigned int));
 }
