@@ -14,10 +14,10 @@ int DUMMYINPUT = 0;
 
 NFSMixMap::NFSMixMap()
     : AudioMemBase() {
-    m_nStateMapCount = 0;
-    m_fDeltaTimeRatio[0] = 0.0f;
     m_pStateProcs = nullptr;
     m_fDeltaTimeRatio[1] = 0.0f;
+    m_nStateMapCount = 0;
+    m_fDeltaTimeRatio[0] = 0.0f;
 }
 
 NFSMixMap::~NFSMixMap() {}
