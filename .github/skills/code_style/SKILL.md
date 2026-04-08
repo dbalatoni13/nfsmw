@@ -19,30 +19,6 @@ In this repo, style cleanup must preserve decomp progress.
 - If a style tweak changes codegen or match status, revert it.
 - Extend this skill only from patterns you actually verified in the repo.
 
-## Quick Tooling
-
-Use the repo-local helper before doing a style pass:
-
-```sh
-python tools/code_style.py audit --base origin/main
-```
-
-- `audit` classifies changed files into default-format vs match-sensitive buckets and reports repo-specific findings.
-- `audit` also checks touched `class` / `struct` declarations against known header declarations and, when no header exists, against the PS2 visibility rule.
-- `audit` warns on touched local forward declarations when the repo already has a header for that type.
-- `audit` warns on touched type members that look like invented padding or placeholder names such as `pad`, `unk`, or `field_1234`.
-- `audit` also checks touched style-guide rules that clang-format cannot enforce for you, such as cast spacing, `using namespace`, `NULL`, and missing `EA_PRAGMA_ONCE_SUPPORTED` guard blocks when a header's guard region is touched.
-- `audit` groups repeated findings by file so branch-wide output stays readable.
-- Use `audit --category safe-cpp` when you want a smaller Frontend/FEng-focused subset and `audit --category match-sensitive-cpp` when you want a conservative review queue for decomp code.
-- `format --check` is an opt-in wrapper around the repo's `.clang-format`, and by default it targets eligible changed C/C++ files, including match-sensitive code.
-- Use `format --check --base origin/main` for a branch-wide formatter pass over all changed C/C++ files.
-- Use `format --check --base origin/main --category safe-cpp` when you want a branch-level formatter probe instead of spelling every file path out.
-- `format --check` labels whitespace-only formatter output separately from other non-whitespace changes.
-- `format` also accepts `SourceLists/z*.cpp` and other repo C/C++ files; if a formatting pass touches match-sensitive code, verify the affected unit afterwards.
-- Files that use initializer-list guard comments (`//`) are still formatter targets; if a formatting pass touches match-sensitive code, verify the affected unit afterwards.
-- `clang-format` itself is optional. If it is not on `PATH`, install it locally or point the helper at it with `CLANG_FORMAT=/path/to/clang-format`.
-- Do not assume a formatting-only change is automatically byte-stable; verify affected units when the formatter touches match-sensitive code.
-
 ## Phase 1: Classify the File Before Cleaning
 
 Decide which bucket the file belongs to:
@@ -95,7 +71,7 @@ Foo::Foo()
 - Use `nullptr` exclusively for null pointers.
 - Prefer `if (ptr)` / `if (!ptr)` over explicit null comparisons when the change is local and verified safe.
 - When a match-sensitive TU has many explicit `nullptr` checks and you decide to normalize them, prefer one mechanical full-TU pass over piecemeal cleanup. Rebuild the unit and re-check its status before keeping the rewrite.
-- Inline assembly is acceptable when it is needed to preserve dead-code compares, ordering, or other compiler behavior that source alone cannot reproduce.
+- Inline assembly is strictly only allowed in math functions.
 
 ### Forward declarations and local prototypes
 
@@ -114,16 +90,12 @@ Foo::Foo()
 
 - Use the repo's header guard form when writing headers: `#ifndef` / `#define` plus the `#ifdef EA_PRAGMA_ONCE_SUPPORTED` / `#pragma once` block.
 - Keep member layout comments aligned and intact in decomp headers.
-- Preserve the original `class` / `struct` kind from existing headers or Dwarf / PS2 evidence; do not treat it as a cosmetic style choice.
 - Treat header declarations as the repo source of truth. If the repo only has local `.cpp` partial declarations, verify the kind with the PS2 dump instead of copying them blindly.
-- Even forward declarations and local partial declarations should use the accurate keyword when known.
 - Preserve the member naming style that DWARF shows. Some types use `mMember`, others use `m_member`; do not normalize them.
 - Preserve recovered member names, types, order, and offset comments. Do not invent placeholder members named `pad`, `unk`, `unknown`, or `field_XXXX` for game code just to make a layout compile.
 - If a member is genuinely unknown, stop and verify it with `find-symbol.py`, GC Dwarf, and PS2 data. If the layout is still incomplete, add a short TODO above the type instead of burying uncertainty in fake member names.
 - Add offset / size comments when you are writing recovered type layouts from DWARF.
 - Define inline member functions in headers only when DWARF shows that they are genuinely inlined in the binary.
-- Use `struct` for POD-like data carriers with public fields; use `class` for behavior-heavy types only when that matches the recovered type information.
-- Keep tiny placeholder methods as concise inline bodies when that is already the local pattern.
 
 ### Namespaces and container aliases
 
@@ -175,4 +147,6 @@ Keep the cleanup only if the build succeeds and the relevant match status is unc
 
 The Ghidra output of boolean logic is messy, use `bFadingOut = false;` instead of `*reinterpret_cast<int *>(&bFadingOut) = 0;`
 
-Use implicit conversion: Directly pass strings instead of `UCrc32(string)` 
+Use implicit conversion: Directly pass strings instead of `UCrc32(string)`
+
+You are strictly not allowed to use made up local names which aren't in the DWARF, especially ones straight from the Ghidra output (e.g. `p_Var4`).
