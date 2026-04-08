@@ -53,9 +53,9 @@ SndBase *CARSFX_TrafficEngine::CreateObject(unsigned int allocator) {
 
 CARSFX_TrafficEngine::CARSFX_TrafficEngine()
     : CARSFX() {
-    refCnt = 0;
     m_pcsisTranfficEng = nullptr;
     m_p3DCarPosCtl = nullptr;
+    refCnt = 0;
 }
 
 CARSFX_TrafficEngine::~CARSFX_TrafficEngine() {

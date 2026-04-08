@@ -23,10 +23,10 @@ SndBase *SFX_Common::CreateObject(unsigned int allocator) {
 SFX_Common::SFX_Common() {
     mMsgMiscSound =
         Hermes::Handler::Create<MMiscSound, SFX_Common, SFX_Common>(this, &SFX_Common::MsgPlayMiscSound, "Snd", 0);
-    m_pPursuitBreakEnd = nullptr;
     m_pcsisCameraShot = nullptr;
     m_pUves = nullptr;
     m_pPursuitBreakStart = nullptr;
+    m_pPursuitBreakEnd = nullptr;
 }
 
 SFX_Common::~SFX_Common() {

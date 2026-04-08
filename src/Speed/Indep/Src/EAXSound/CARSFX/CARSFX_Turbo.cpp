@@ -41,7 +41,6 @@ CARSFX_Turbo::CARSFX_Turbo()
     , m_BlowoffRampDown() //
     , m_SpoolDuck() //
     , m_fDeltaTurbo(3) {
-    m_pTurboData = nullptr;
     tLastBlowoffTime = 0.0f;
     m_pTurboBlowoffControl = nullptr;
     m_pTurboSplControl = nullptr;
@@ -50,6 +49,7 @@ CARSFX_Turbo::CARSFX_Turbo()
     m_pShiftingCtl = nullptr;
     m_pEngineCtl = nullptr;
     eTurboState = SFXTURBO_NONE;
+    m_pTurboData = nullptr;
 }
 
 CARSFX_Turbo::~CARSFX_Turbo() {

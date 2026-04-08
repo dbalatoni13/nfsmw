@@ -18,11 +18,11 @@ static int AI_ENGINE_PITCH_OFFSET;
 CARSFX_EngineBase::CARSFX_EngineBase()
     : CARSFX() {
     PitchMultipli = 0.0f;
-    SPU_or_EE = 0;
     m_pcsisCarCtrl = nullptr;
     m_pTranny = nullptr;
     m_pEngineCtl = nullptr;
     m_p3DCarPosCtl = nullptr;
+    SPU_or_EE = 0;
 }
 
 CARSFX_EngineBase::~CARSFX_EngineBase() {

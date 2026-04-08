@@ -42,7 +42,6 @@ SndBase *CARSFX_Shift::CreateObject(unsigned int allocator) {
 
 CARSFX_Shift::CARSFX_Shift()
     : CARSFX() {
-    m_pSweetnersData = nullptr;
     m_ShiftGear = nullptr;
     m_BrakePedal = nullptr;
     m_Disengage = nullptr;
@@ -52,6 +51,7 @@ CARSFX_Shift::CARSFX_Shift()
     m_Whine = nullptr;
     m_pShiftCtl = nullptr;
     m_pShiftingPatternData = nullptr;
+    m_pSweetnersData = nullptr;
 }
 
 CARSFX_Shift::~CARSFX_Shift() {
