@@ -118,24 +118,29 @@ void CARSFX_Rain::UpdateParams(float t) {
     eView *view;
 
     SndBase::UpdateParams(t);
-    view = eGetView(1, false);
-    m_fPrevWeatherIntensity = m_fWeatherIntensity;
-    if (view->Precipitation) {
-        m_fWeatherIntensity = view->Precipitation->GetRainIntensity();
+    view = &eViews[1];
+    if (view) {
+        m_fPrevWeatherIntensity = m_fWeatherIntensity;
+        if (view->Precipitation) {
+            m_fWeatherIntensity = view->Precipitation->GetRainIntensity();
+        } else {
+            m_fWeatherIntensity = 0.0f;
+        }
     } else {
         m_fWeatherIntensity = 0.0f;
+        m_fPrevWeatherIntensity = 0.0f;
     }
 
-    if (m_fWeatherIntensity <= 0.01f) {
-        if (m_pCsisRain && *reinterpret_cast<int *>(&bFadingOut) == 0) {
-            Stop();
+    if (0.01f < m_fWeatherIntensity) {
+        if (!m_pCsisRain) {
+            Play();
         }
-    } else if (!m_pCsisRain) {
-        Play();
+    } else if (m_pCsisRain && *reinterpret_cast<int *>(&bFadingOut) == 0) {
+        Stop();
     }
 
     m_fThunderTime = m_fThunderTime + t;
-    if (0.25f < m_fWeatherIntensity && !IsWorldDataStreaming(0) && m_fThunderDeltaTime < m_fThunderTime) {
+    if (0.25f < m_fWeatherIntensity && !IsWorldDataStreaming(0) && m_fThunderTime > m_fThunderDeltaTime) {
         if (m_BlockStrmTest == 0) {
             m_fThunderTime = 0.0f;
             if (*reinterpret_cast<int *>(&m_bWeatherStreamQueued) == 1) {
