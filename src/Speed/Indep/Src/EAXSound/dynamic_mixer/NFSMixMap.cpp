@@ -1373,28 +1373,39 @@ void NFSMixMap::UpdateSubChannels() {
 
 void NFSMixMap::UpdateMasterChannels() {
     int nmst;
+    stMasterMixChProc *pMChP;
+    stMasterMixChSharedData *pMChD_S;
+    stMasterMixChUniqueData *pMChD_U;
 
-    for (nmst = 0; nmst < m_MasterChannelsAdded; nmst++) {
-        int mix;
-        int numin;
-        stMasterMixChProc *pMChP;
-        stMasterMixChSharedData *pMChD_S;
-        stMasterMixChUniqueData *pMChD_U;
-
-        pMChP = m_pMasterChProc + nmst;
-        pMChD_S = pMChP->pMixChData_S;
-        pMChD_U = pMChP->pMixChData_U;
-        if ((pMChD_U->pOutputs[0xF] & 1U) == 0) {
-            pMChD_U->Output = -10000;
-        } else {
-            pMChD_U->Output = static_cast<short>(pMChD_S->pMapParams->MixData & 0xFFFF);
-            if (pMChD_U->pInputs) {
-                numin = pMChD_S->NumInputs & 0xFF;
-                for (mix = 0; mix < numin; mix++) {
-                    pMChD_U->Output = pMChD_U->Output + *reinterpret_cast<int *>(pMChD_U->pInputs[mix]);
+    nmst = 0;
+    pMChP = m_pMasterChProc;
+    if (nmst < m_MasterChannelsAdded) {
+        do {
+            pMChD_U = pMChP->pMixChData_U;
+            pMChD_S = pMChP->pMixChData_S;
+            if (pMChD_U->pOutputs[0xF] & 1U) {
+                pMChD_U->Output = *reinterpret_cast<short *>(&pMChD_S->pMapParams->MixData);
+                pMChD_U->Output &= 0xFFFF;
+                if ((*reinterpret_cast<short *>(&pMChD_S->pMapParams->MixData) & 0x8000) != 0) {
+                    pMChD_U->Output |= 0xFFFF0000;
                 }
+                if (pMChP->pMixChData_U->pInputs) {
+                    int numin;
+                    int mix;
+
+                    numin = pMChD_S->NumInputs & 0xFF;
+                    mix = 0;
+                    while (mix < numin) {
+                        pMChD_U->Output = pMChD_U->Output + *reinterpret_cast<int *>(pMChD_U->pInputs[mix]);
+                        mix++;
+                    }
+                }
+            } else {
+                pMChD_U->Output = -10000;
             }
-        }
+            pMChP++;
+            nmst++;
+        } while (nmst < m_MasterChannelsAdded);
     }
 }
 
