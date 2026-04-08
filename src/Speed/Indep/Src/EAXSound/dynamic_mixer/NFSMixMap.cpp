@@ -764,31 +764,44 @@ void NFSMixMap::CreateMainMapState(eMAINMAPSTATES estate, int numstates, int obj
 }
 
 void NFSMixMap::AllocateInputArrays() {
+    int ntotalcurveprocs;
     int nTotalUniqueCurveIDs;
     int ntotaluniqueScaleID;
     int ntotalunique3DID;
     int ntotaluniqueEvents;
     int n;
+    stCurveDataProc *pcdp;
+    int ntotalsize;
 
+    ntotalcurveprocs = m_CurveProcsAdded;
     nTotalUniqueCurveIDs = 0;
     ntotaluniqueScaleID = 0;
     ntotalunique3DID = 0;
     ntotaluniqueEvents = 0;
 
-    for (n = 0; n < m_CurveProcsAdded; n++) {
+    pcdp = m_pCurveDataArray;
+    for (n = 0; n < ntotalcurveprocs; n++) {
+            int sfxid;
             unsigned int ntype;
             bool bUniqueCurveID;
 
-            ntype = m_pCurveDataArray[n].nINPUTID & 0xE0000000;
+            sfxid = pcdp->nINPUTID & 0xE0FFFFF0;
+            ntype = pcdp->nINPUTID & 0xE0000000;
             bUniqueCurveID = true;
             if ((ntype == 0x40000000) || (ntype == 0x60000000) || (ntype == 0x80000000)) {
                 int k;
+                stCurveDataProc *ptestcdp;
 
+                ptestcdp = m_pCurveDataArray;
                 for (k = 0; k < n; k++) {
-                    if ((m_pCurveDataArray[k].nINPUTID & 0xE0FFFFF0U) ==
-                        (m_pCurveDataArray[n].nINPUTID & 0xE0FFFFF0U)) {
+                    int testID;
+
+                    testID = ptestcdp->nINPUTID & 0xE0FFFFF0;
+                    if (testID == sfxid) {
                         bUniqueCurveID = false;
                     }
+
+                    ptestcdp++;
                 }
             } else {
                 bUniqueCurveID = false;
@@ -796,6 +809,8 @@ void NFSMixMap::AllocateInputArrays() {
             if (bUniqueCurveID) {
                 nTotalUniqueCurveIDs++;
             }
+
+            pcdp++;
     }
 
     for (n = 0; n < m_ScaleParamsAdded; n++) {
@@ -905,9 +920,9 @@ void NFSMixMap::AllocateInputArrays() {
         }
     }
 
-    m_pDynMixInputBlocks = static_cast<int **>(gAudioMemoryManager.AllocateMemory(
-        (nTotalUniqueCurveIDs + ntotaluniqueScaleID + ntotalunique3DID + ntotaluniqueEvents) * 0x40,
-        "DMIX SFXOBJ, SFXCTL Input Block", false));
+    ntotalsize = nTotalUniqueCurveIDs + ntotaluniqueScaleID + ntotalunique3DID + ntotaluniqueEvents;
+    m_pDynMixInputBlocks = static_cast<int **>(
+        gAudioMemoryManager.AllocateMemory(ntotalsize * 0x40, "DMIX SFXOBJ, SFXCTL Input Block", false));
 }
 
 int *NFSMixMap::GetObjectPtr(int sfxid, bool busedB, bool bHACKINIT) {
