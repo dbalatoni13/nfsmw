@@ -258,13 +258,7 @@ void CARSFX_TrafficHorn::ProcessUpdate() {
 }
 
 int CARSFX_TrafficHorn::GetController(int Index) {
-    int iVar1;
-
-    iVar1 = -1;
-    if (Index == 0) {
-        iVar1 = 0;
-    }
-    return iVar1;
+    return Index != 0 ? -1 : 0;
 }
 
 void CARSFX_TrafficHorn::AttachController(SFXCTL *psfxctl) {

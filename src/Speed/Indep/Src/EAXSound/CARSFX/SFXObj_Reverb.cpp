@@ -67,7 +67,7 @@ SFXObj_Reverb::~SFXObj_Reverb() {
 }
 
 int SFXObj_Reverb::GetController(int Index) {
-    return Index == 0 ? 6 : -1;
+    return Index != 0 ? -1 : 6;
 }
 
 void SFXObj_Reverb::AttachController(SFXCTL *psfxctl) {

@@ -111,7 +111,7 @@ void SFXObj_MomentStrm::SetupSFX(CSTATE_Base *_StateBase) {
 }
 
 int SFXObj_MomentStrm::GetController(int Index) {
-    return Index == 0 ? 2 : -1;
+    return Index != 0 ? -1 : 2;
 }
 
 void SFXObj_MomentStrm::AttachController(SFXCTL *psfxctl) {
