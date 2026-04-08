@@ -340,13 +340,14 @@ void CARSFX_Shift::PlayShiftSnd() {
         RPMDifScale = 1.0f;
     }
     tempVol = g_nArrayCosTable[static_cast<int>(512.0f - (RPMDifScale * 0.9f + 0.1f) * 512.0f)];
+    tempVol = static_cast<int>(ShiftVolScale) * tempVol >> 15;
 
     if (m_pShiftCtl->eShiftState - SHFT_UP_DISENGAGE < 3) {
         nDMixOut = GetDMixOutput(1, DMX_VOL);
     } else {
         nDMixOut = GetDMixOutput(2, DMX_VOL);
     }
-    tempVol = (static_cast<int>(ShiftVolScale) * tempVol >> 15) * nDMixOut >> 15;
+    tempVol = tempVol * nDMixOut >> 15;
 
     if (m_ShiftGear) {
         delete m_ShiftGear;
