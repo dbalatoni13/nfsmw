@@ -100,14 +100,15 @@ void CARSFX_Rain::QueueWeatherStream() {
 
     if (*reinterpret_cast<int *>(&m_bWeatherStreamQueued) != 1) {
         if (Speech::Manager::GetSpeechModule(0)->DonePlaying()) {
-            if (0.5f <= m_fWeatherIntensity) {
-                nweathertype = 0xD2C5E045;
-            } else {
+            if (m_fWeatherIntensity < 0.5f) {
                 nweathertype = 0x016C4FA1;
+                MGamePlayMoment(UMath::Vector4::kZero, UMath::Vector4::kZero, UMath::Vector4::kZero, 0, nweathertype)
+                    .Send(UCrc32("MomentStrm"));
+            } else {
+                nweathertype = 0xD2C5E045;
+                MGamePlayMoment(UMath::Vector4::kZero, UMath::Vector4::kZero, UMath::Vector4::kZero, 0, nweathertype)
+                    .Send(UCrc32("MomentStrm"));
             }
-
-            MGamePlayMoment moment(UMath::Vector4::kZero, UMath::Vector4::kZero, UMath::Vector4::kZero, 0, nweathertype);
-            moment.Send(UCrc32("MomentStrm"));
             *reinterpret_cast<int *>(&m_bWeatherStreamQueued) = 1;
         }
     }
