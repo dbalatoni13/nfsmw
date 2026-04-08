@@ -358,7 +358,6 @@ bool SFXObj_NISStream::QueueNISStream(unsigned int anim_id, int camera_track_num
                                       bool btracktime) {
     Speech::Module *nismgr;
     Type_NIS_Track csiscamtrack;
-    bool breturn = false;
     int CSISindex = 0;
     int id = 0;
     SFXObj_Pathfinder *ppf = nullptr;
@@ -372,13 +371,16 @@ bool SFXObj_NISStream::QueueNISStream(unsigned int anim_id, int camera_track_num
 
     nismgr = Speech::Manager::GetSpeechModule(0);
     m_bIsButtonThrough = bbuttonthrough;
-    if (bbuttonthrough || nismgr->GetStreamChannel()->IsPlaying()) {
+    if (bbuttonthrough == true || nismgr->GetStreamChannel()->IsPlaying()) {
         nismgr = Speech::Manager::GetSpeechModule(0);
         nismgr->PurgeSpeech();
     }
 
     csiscamtrack = Type_NIS_Track_Track00;
     switch (camera_track_number) {
+    case 0:
+        csiscamtrack = Type_NIS_Track_Track00;
+        break;
     case 1:
         csiscamtrack = Type_NIS_Track_Track01;
         break;
@@ -440,8 +442,8 @@ bool SFXObj_NISStream::QueueNISStream(unsigned int anim_id, int camera_track_num
     ppf = static_cast<SFXObj_Pathfinder *>(g_pEAXSound->GetSFXBase_Object(0x40010010));
     if (CSISindex < 0x12) {
         g_bWasLastNISaStart = true;
-        if (bbuttonthrough) {
-            g_laststartanimid = anim_id;
+        g_laststartanimid = anim_id;
+        if (bbuttonthrough == true) {
             SetSoundControlState(false, SNDSTATE_NIS_321, "NIS 321");
 
             {
@@ -458,15 +460,12 @@ bool SFXObj_NISStream::QueueNISStream(unsigned int anim_id, int camera_track_num
                 }
             }
 
-            nismgr = Speech::Manager::GetSpeechModule(0);
-            id = nismgr->QueStream(STRM_NIS_RACE_START, &SFXObj_NISStream::PlayNISStream, false);
+            id = Speech::Manager::GetSpeechModule(0)->QueStream(STRM_NIS_RACE_START, &SFXObj_NISStream::PlayNISStream, false);
             SetDMIX_Input(6, 0);
             if (ppf) {
                 ppf->SetNISPlaying(false);
             }
         } else {
-            g_laststartanimid = anim_id;
-
             {
                 Csis::System::Result result;
                 NIS_Select_StartStruct data;
@@ -481,8 +480,7 @@ bool SFXObj_NISStream::QueueNISStream(unsigned int anim_id, int camera_track_num
                 }
             }
 
-            nismgr = Speech::Manager::GetSpeechModule(0);
-            id = nismgr->QueStream(STRM_NIS_RACE_START, &SFXObj_NISStream::PlayNISStream, false);
+            id = Speech::Manager::GetSpeechModule(0)->QueStream(STRM_NIS_RACE_START, &SFXObj_NISStream::PlayNISStream, false);
             SetDMIX_Input(6, 0x7FFF);
             if (ppf) {
                 ppf->SetNISPlaying(true);
@@ -498,8 +496,8 @@ bool SFXObj_NISStream::QueueNISStream(unsigned int anim_id, int camera_track_num
         }
 
         g_bWasLastNISaStart = true;
-        if (bbuttonthrough) {
-            g_laststartanimid = anim_id;
+        g_laststartanimid = anim_id;
+        if (bbuttonthrough == true) {
             SetSoundControlState(false, SNDSTATE_NIS_321, "NIS 321");
 
             {
@@ -516,15 +514,12 @@ bool SFXObj_NISStream::QueueNISStream(unsigned int anim_id, int camera_track_num
                 }
             }
 
-            nismgr = Speech::Manager::GetSpeechModule(0);
-            id = nismgr->QueStream(STRM_NIS_RACE_START, &SFXObj_NISStream::PlayNISStream, false);
+            id = Speech::Manager::GetSpeechModule(0)->QueStream(STRM_NIS_RACE_START, &SFXObj_NISStream::PlayNISStream, false);
             SetDMIX_Input(6, 0);
             if (ppf) {
                 ppf->SetNISPlaying(false);
             }
         } else {
-            g_laststartanimid = anim_id;
-
             {
                 Csis::System::Result result;
                 NIS_Select_BlacklistStruct data;
@@ -539,8 +534,7 @@ bool SFXObj_NISStream::QueueNISStream(unsigned int anim_id, int camera_track_num
                 }
             }
 
-            nismgr = Speech::Manager::GetSpeechModule(0);
-            id = nismgr->QueStream(STRM_NIS_RACE_START, &SFXObj_NISStream::PlayNISStream, false);
+            id = Speech::Manager::GetSpeechModule(0)->QueStream(STRM_NIS_RACE_START, &SFXObj_NISStream::PlayNISStream, false);
             SetDMIX_Input(6, 0x7FFF);
             if (ppf) {
                 ppf->SetNISPlaying(true);
@@ -563,19 +557,18 @@ bool SFXObj_NISStream::QueueNISStream(unsigned int anim_id, int camera_track_num
             }
         }
 
-        nismgr = Speech::Manager::GetSpeechModule(0);
-        id = nismgr->QueStream(STRM_NIS_BUSTED, &SFXObj_NISStream::PlayNISStream, false);
+        id = Speech::Manager::GetSpeechModule(0)->QueStream(STRM_NIS_BUSTED, &SFXObj_NISStream::PlayNISStream, false);
         SetDMIX_Input(7, 0x7FFF);
         if (ppf) {
             ppf->SetNISPlaying(true);
         }
     }
 
-    breturn = id != 0;
-    if (!breturn) {
+    if (id == 0) {
         m_bNISAudioStreamReady = true;
     }
-    return breturn;
+
+    return id;
 }
 
 void SFXObj_NISStream::NISActivityDone() {

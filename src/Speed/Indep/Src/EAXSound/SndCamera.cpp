@@ -54,7 +54,8 @@ void SndCamera::UpdateCameras() {
             Camera *pcam;
             EAX_CarState *pcar;
             EVIEW_ID vwID;
-            bVector2 v2Temp;
+            bVector2 v2CamDir;
+            bVector2 v2CarDir;
 
             pcar = nullptr;
             pEaxCar = g_pEAXSound->GetPlayerTunerCar(k);
@@ -81,10 +82,10 @@ void SndCamera::UpdateCameras() {
             m_pCams[k] = pcam;
             m_CurCamPos[k] = *pcam->GetPosition();
             m_CurCamDir[k] = *pcam->GetDirection();
-            v2Temp.x = m_CurCamDir[k].x;
-            v2Temp.y = m_CurCamDir[k].y;
+            v2CamDir.x = m_CurCamDir[k].x;
+            v2CamDir.y = m_CurCamDir[k].y;
             m_CurCamTarget[k] = *pcam->GetTarget();
-            bNormalize(m_NormCamDir + k, &v2Temp);
+            bNormalize(m_NormCamDir + k, &v2CamDir);
             m_WorldCamPos[k].x = m_CurCamPos[k].x;
             m_WorldCamPos[k].y = m_CurCamPos[k].y;
             m_AvergeCamDir[k].x = m_NormCamDir[k].x;
@@ -100,9 +101,9 @@ void SndCamera::UpdateCameras() {
             m_v3WorldCarPos[k] = *pcar->GetPosition();
             m_v3WorldCarVel[k] = *pcar->GetVelocity();
             m_WorldCarVel[k] = bLength(m_v3WorldCarVel + k);
-            v2Temp.x = pcar->GetForwardVector()->x;
-            v2Temp.y = pcar->GetForwardVector()->y;
-            bNormalize(m_NormCarDir + k, &v2Temp);
+            v2CarDir.x = pcar->GetForwardVector()->x;
+            v2CarDir.y = pcar->GetForwardVector()->y;
+            bNormalize(m_NormCarDir + k, &v2CarDir);
 
             m_PrevCamState[k] = m_CurCamState[k];
             if (m_CamAction[k] != m_NewCamAction[k]) {
