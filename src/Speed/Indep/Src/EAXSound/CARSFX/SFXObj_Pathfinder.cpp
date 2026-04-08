@@ -107,9 +107,9 @@ SndBase *SFXObj_Pathfinder::CreateObject(unsigned int allocator) {
 }
 
 SFXObj_Pathfinder::SFXObj_Pathfinder()
-    : CARSFX()
-    , m_Flags(0x40) {
+    : CARSFX() {
     m_pSFXCTL_Pathfinder = nullptr;
+    m_Flags = 0x40;
     m_PFParms[0].pmapfile = nullptr;
     m_PFParms[1].pmapfile = nullptr;
 }
