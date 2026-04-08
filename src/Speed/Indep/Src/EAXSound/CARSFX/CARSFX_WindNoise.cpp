@@ -392,13 +392,13 @@ void CARSFX_WindNoise::UpdateCSISParams() {
     nRightVolume = GetDMixOutput(3, DMX_VOL) * m_nVelocityWeightedVolume >> 15;
     nRumbleVolume = GetDMixOutput(4, DMX_VOL) * m_nVelocityWeightedVolume >> 15;
     refcount = m_pCsisWind->GetRefCount();
-    m_pCsisWind->SetVolume_left(bClamp(nLeftVolume, 0, 0x7FFF));
-    m_pCsisWind->SetVolume_right(bClamp(nRightVolume, 0, 0x7FFF));
-    m_pCsisWind->SetRumble_Volume(bClamp(nRumbleVolume, 0, 0x7FFF));
-    m_pCsisWind->SetPitch(bClamp(GetDMixOutput(5, DMX_PITCH), 0, 0x4000));
-    m_pCsisWind->SetAzimuth_left(bClamp(GetDMixOutput(0, DMX_AZIM), 0, 0xFFFF));
-    m_pCsisWind->SetAzimuth_right(bClamp(GetDMixOutput(1, DMX_AZIM), 0, 0xFFFF));
-    m_pCsisWind->SetIntensity(bClamp(m_stWindParams[0].nCrossFadeWeight, 0, 0x410));
+    m_pCsisWind->SetVolume_left(nLeftVolume);
+    m_pCsisWind->SetVolume_right(nRightVolume);
+    m_pCsisWind->SetRumble_Volume(nRumbleVolume);
+    m_pCsisWind->SetPitch(GetDMixOutput(5, DMX_PITCH));
+    m_pCsisWind->SetAzimuth_left(GetDMixOutput(0, DMX_AZIM));
+    m_pCsisWind->SetAzimuth_right(GetDMixOutput(1, DMX_AZIM));
+    m_pCsisWind->SetIntensity(m_stWindParams[0].nCrossFadeWeight);
     m_pCsisWind->SetFX_Dry(0x7FFF);
     m_pCsisWind->CommitMemberData();
 }
