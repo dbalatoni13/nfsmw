@@ -9,7 +9,78 @@
 #include "Speed/Indep/Src/World/RaceParameters.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
+SndBase::TypeInfo SFXCTL_3DRightWheelPos::s_TypeInfo = {
+    0x000200B0, "SFXCTL_3DRightWheelPos", &SFXCTL_3DObjPos::s_TypeInfo, SFXCTL_3DRightWheelPos::CreateObject};
+SndBase::TypeInfo SFXCTL_3DLeftWheelPos::s_TypeInfo = {
+    0x000200C0, "SFXCTL_3DLeftWheelPos", &SFXCTL_3DObjPos::s_TypeInfo, SFXCTL_3DLeftWheelPos::CreateObject};
+SndBase::TypeInfo CARSFX_TrafficSkids::s_TypeInfo = {
+    0x00050030, "CARSFX_TrafficSkids", &CARSFX_Skids::s_TypeInfo, CARSFX_TrafficSkids::CreateObject};
 SndBase::TypeInfo CARSFX_Skids::s_TypeInfo = { 0, "CARSFX_Skids", nullptr, CARSFX_Skids::CreateObject };
+
+SFXCTL_3DRightWheelPos::~SFXCTL_3DRightWheelPos() {}
+
+SndBase::TypeInfo *SFXCTL_3DRightWheelPos::GetTypeInfo() const {
+    return &s_TypeInfo;
+}
+
+const char *SFXCTL_3DRightWheelPos::GetTypeName() const {
+    return s_TypeInfo.typeName;
+}
+
+SndBase *SFXCTL_3DRightWheelPos::CreateObject(unsigned int allocator) {
+    if (allocator == 0) {
+        return new (s_TypeInfo.typeName, false) SFXCTL_3DRightWheelPos();
+    }
+    return new (s_TypeInfo.typeName, true) SFXCTL_3DRightWheelPos();
+}
+
+SFXCTL_3DLeftWheelPos::~SFXCTL_3DLeftWheelPos() {}
+
+SndBase::TypeInfo *SFXCTL_3DLeftWheelPos::GetTypeInfo() const {
+    return &s_TypeInfo;
+}
+
+const char *SFXCTL_3DLeftWheelPos::GetTypeName() const {
+    return s_TypeInfo.typeName;
+}
+
+SndBase *SFXCTL_3DLeftWheelPos::CreateObject(unsigned int allocator) {
+    if (allocator == 0) {
+        return new (s_TypeInfo.typeName, false) SFXCTL_3DLeftWheelPos();
+    }
+    return new (s_TypeInfo.typeName, true) SFXCTL_3DLeftWheelPos();
+}
+
+SndBase::TypeInfo *CARSFX_TrafficSkids::GetTypeInfo() const {
+    return &s_TypeInfo;
+}
+
+const char *CARSFX_TrafficSkids::GetTypeName() const {
+    return s_TypeInfo.typeName;
+}
+
+SndBase *CARSFX_TrafficSkids::CreateObject(unsigned int allocator) {
+    if (allocator == 0) {
+        return new (s_TypeInfo.typeName, false) CARSFX_TrafficSkids();
+    }
+    return new (s_TypeInfo.typeName, true) CARSFX_TrafficSkids();
+}
+
+CARSFX_TrafficSkids::CARSFX_TrafficSkids()
+    : CARSFX_Skids() {}
+
+CARSFX_TrafficSkids::~CARSFX_TrafficSkids() {}
+
+void CARSFX_TrafficSkids::Detach() {
+    CARSFX_Skids::Detach();
+}
+
+int CARSFX_TrafficSkids::GetController(int Index) {
+    if (Index == 0) {
+        return 1;
+    }
+    return -1;
+}
 
 SndBase::TypeInfo *CARSFX_Skids::GetTypeInfo() const { return &s_TypeInfo; }
 

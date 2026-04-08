@@ -129,7 +129,26 @@ struct FX_TRUCK_FX {
     FX_TRUCK_FXStruct mData; // offset 0x4, size 0x20
 };
 
+SndBase::TypeInfo SFXCTL_3DTrailerPos::s_TypeInfo = {
+    0x000C00F0, "SFXCTL_3DTrailerPos", &SFXCTL_3DCarPos::s_TypeInfo, SFXCTL_3DTrailerPos::CreateObject};
 SndBase::TypeInfo SFXObj_TruckFX::s_TypeInfo = { 0, "SFXObj_TruckFX", nullptr, SFXObj_TruckFX::CreateObject };
+
+SFXCTL_3DTrailerPos::~SFXCTL_3DTrailerPos() {}
+
+SndBase::TypeInfo *SFXCTL_3DTrailerPos::GetTypeInfo() const {
+    return &s_TypeInfo;
+}
+
+const char *SFXCTL_3DTrailerPos::GetTypeName() const {
+    return s_TypeInfo.typeName;
+}
+
+SndBase *SFXCTL_3DTrailerPos::CreateObject(unsigned int allocator) {
+    if (allocator == 0) {
+        return new (s_TypeInfo.typeName, false) SFXCTL_3DTrailerPos();
+    }
+    return new (s_TypeInfo.typeName, true) SFXCTL_3DTrailerPos();
+}
 
 SndBase::TypeInfo *SFXObj_TruckFX::GetTypeInfo() const { return &s_TypeInfo; }
 

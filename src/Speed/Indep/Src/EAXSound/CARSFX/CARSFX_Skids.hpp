@@ -14,11 +14,37 @@ struct SFXCTL_Wheel;
 struct SFXCTL_3DLeftWheelPos : public SFXCTL_3DObjPos {
   protected:
     static TypeInfo s_TypeInfo;
+
+    static TypeInfo *GetStaticTypeInfo() {
+        return &s_TypeInfo;
+    }
+
+  public:
+    SFXCTL_3DLeftWheelPos() {}
+    ~SFXCTL_3DLeftWheelPos() override;
+
+    TypeInfo *GetTypeInfo() const override;
+    const char *GetTypeName() const override;
+
+    static SndBase *CreateObject(unsigned int allocator);
 };
 
 struct SFXCTL_3DRightWheelPos : public SFXCTL_3DObjPos {
   protected:
     static TypeInfo s_TypeInfo;
+
+    static TypeInfo *GetStaticTypeInfo() {
+        return &s_TypeInfo;
+    }
+
+  public:
+    SFXCTL_3DRightWheelPos() {}
+    ~SFXCTL_3DRightWheelPos() override;
+
+    TypeInfo *GetTypeInfo() const override;
+    const char *GetTypeName() const override;
+
+    static SndBase *CreateObject(unsigned int allocator);
 };
 
 struct CARSFX_Skids : public CARSFX {
@@ -51,6 +77,24 @@ struct CARSFX_Skids : public CARSFX {
     bool mDataLoaded;                           // offset 0x44, size 0x1
 };
 
+struct CARSFX_TrafficSkids : public CARSFX_Skids {
+  protected:
+    static TypeInfo s_TypeInfo;
 
+    static TypeInfo *GetStaticTypeInfo() {
+        return &s_TypeInfo;
+    }
+
+  public:
+    CARSFX_TrafficSkids();
+    ~CARSFX_TrafficSkids() override;
+
+    static SndBase *CreateObject(unsigned int allocator);
+
+    TypeInfo *GetTypeInfo() const override;
+    const char *GetTypeName() const override;
+    void Detach() override;
+    int GetController(int Index) override;
+};
 
 #endif

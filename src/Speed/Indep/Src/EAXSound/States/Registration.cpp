@@ -53,26 +53,6 @@ struct CARSFX_TruckWoosh : public CARSFX_TrafficWoosh {
     static TypeInfo s_TypeInfo;
 };
 
-struct CARSFX_TrafficSkids : public CARSFX_Skids {
-  protected:
-    static TypeInfo s_TypeInfo;
-};
-
-struct CARSFX_TruckHorn : public CARSFX_TrafficHorn {
-  protected:
-    static TypeInfo s_TypeInfo;
-};
-
-struct SFXCTL_3DFountainPos : public SFXCTL_3DObjPos {
-  protected:
-    static TypeInfo s_TypeInfo;
-};
-
-struct SFXCTL_3DTrailerPos : private SFXCTL_3DCarPos {
-  protected:
-    static TypeInfo s_TypeInfo;
-};
-
 #define REGISTER_TYPEINFO(RegisterMethod, Type)                     \
     do {                                                            \
         struct Type##RegistrationAccessor : public Type {           \

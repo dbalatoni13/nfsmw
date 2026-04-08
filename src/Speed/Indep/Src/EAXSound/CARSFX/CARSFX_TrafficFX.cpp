@@ -366,6 +366,34 @@ bool CARSFX_TrafficHorn::IsPlayerCarInRange(int nplayer) {
     return bCos(40.0f) < DotProd || (DotProd < -bCos(40.0f) && m_fObjectToPlayerDistance < 10.0f);
 }
 
+CARSFX_TruckHorn::TypeInfo CARSFX_TruckHorn::s_TypeInfo = {
+    0x000C0140,
+    "CARSFX_TruckHorn",
+    &CARSFX_TrafficHorn::s_TypeInfo,
+    CARSFX_TruckHorn::CreateObject,
+};
+
+SndBase::TypeInfo *CARSFX_TruckHorn::GetTypeInfo() const {
+    return &s_TypeInfo;
+}
+
+const char *CARSFX_TruckHorn::GetTypeName() const {
+    return s_TypeInfo.typeName;
+}
+
+SndBase *CARSFX_TruckHorn::CreateObject(unsigned int allocator) {
+    if (allocator == 0) {
+        return new (s_TypeInfo.typeName, false) CARSFX_TruckHorn();
+    }
+    return new (s_TypeInfo.typeName, true) CARSFX_TruckHorn();
+}
+
+CARSFX_TruckHorn::~CARSFX_TruckHorn() {}
+
+int CARSFX_TruckHorn::GetController(int) {
+    return -1;
+}
+
 CARSFX_TrafficWoosh::TypeInfo CARSFX_TrafficWoosh::s_TypeInfo = {
     0x00050010,
     "CARSFX_TrafficWoosh",

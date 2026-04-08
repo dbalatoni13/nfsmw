@@ -7,6 +7,7 @@
 
 #include "Speed/Indep/Libs/Support/Utility/UStandard.h"
 #include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX.hpp"
+#include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_3DObjPos.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 enum WORLDOBJECT_TYPES {
@@ -33,8 +34,25 @@ struct WorldObject : public ISndAttachable {
     WORLDOBJECT_TYPES Types;    // offset 0x18, size 0x4
 };
 
+struct SFXCTL_3DFountainPos : public SFXCTL_3DObjPos {
+  protected:
+    static TypeInfo s_TypeInfo;
+
+    static TypeInfo *GetStaticTypeInfo() {
+        return &s_TypeInfo;
+    }
+
+  public:
+    SFXCTL_3DFountainPos() {}
+    ~SFXCTL_3DFountainPos() override;
+
+    TypeInfo *GetTypeInfo() const override;
+    const char *GetTypeName() const override;
+
+    static SndBase *CreateObject(unsigned int allocator);
+};
+
 struct ENV_STATIC;
-struct SFXCTL_3DObjPos;
 
 struct SFXObj_WorldObject : public CARSFX {
   protected:

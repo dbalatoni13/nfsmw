@@ -19,12 +19,31 @@ int WorldObject::GetType() {
 }
 #line 8 "/home/kabiskac/Documents/clankers/eaxsound/nfsmw/src/Speed/Indep/Src/EAXSound/CARSFX/SFXObj_WorldObject.cpp"
 
+SndBase::TypeInfo SFXCTL_3DFountainPos::s_TypeInfo = {
+    0x00060000, "SFXCTL_3DFountainPos", &SFXCTL_3DObjPos::s_TypeInfo, SFXCTL_3DFountainPos::CreateObject};
 SndBase::TypeInfo SFXObj_WorldObject::s_TypeInfo = {
     0x00060000,
     "SFXObj_WorldObject",
     &SndBase::s_TypeInfo,
     SFXObj_WorldObject::CreateObject,
 };
+
+SFXCTL_3DFountainPos::~SFXCTL_3DFountainPos() {}
+
+SndBase::TypeInfo *SFXCTL_3DFountainPos::GetTypeInfo() const {
+    return &s_TypeInfo;
+}
+
+const char *SFXCTL_3DFountainPos::GetTypeName() const {
+    return s_TypeInfo.typeName;
+}
+
+SndBase *SFXCTL_3DFountainPos::CreateObject(unsigned int allocator) {
+    if (allocator == 0) {
+        return new (s_TypeInfo.typeName, false) SFXCTL_3DFountainPos();
+    }
+    return new (s_TypeInfo.typeName, true) SFXCTL_3DFountainPos();
+}
 
 SndBase::TypeInfo *SFXObj_WorldObject::GetTypeInfo() const {
     return &s_TypeInfo;

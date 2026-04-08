@@ -108,6 +108,26 @@ struct CARSFX_TrafficWoosh : public CARSFX {
     float tSinceLastWoosh;         // offset 0x2C, size 0x4
 };
 
+struct CARSFX_TruckHorn : public CARSFX_TrafficHorn {
+  protected:
+    static TypeInfo s_TypeInfo;
+
+    static TypeInfo *GetStaticTypeInfo() {
+        return &s_TypeInfo;
+    }
+
+  public:
+    CARSFX_TruckHorn() {}
+    ~CARSFX_TruckHorn() override;
+
+    TypeInfo *GetTypeInfo() const override;
+    const char *GetTypeName() const override;
+
+    static SndBase *CreateObject(unsigned int allocator);
+
+    int GetController(int Index) override;
+};
+
 struct SFXCTL_3DTrafficPos : public SFXCTL_3DCarPos {
   protected:
     static TypeInfo s_TypeInfo;
