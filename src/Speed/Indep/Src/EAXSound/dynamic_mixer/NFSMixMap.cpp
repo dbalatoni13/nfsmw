@@ -105,7 +105,6 @@ void NFSMixMap::InitMixMap(int *pmixmap, NFSMixMap *pMasterMixMap) {
 void NFSMixMap::ResetMapData() {
     int n;
 
-    m_ScaleParamsIDCount = 0;
     m_nAssignedMixMapStates = 0;
     m_MixCtlsAdded = 0;
     m_SharedMixCtlCount = 0;
@@ -113,6 +112,7 @@ void NFSMixMap::ResetMapData() {
     m_AssignedMixCtlsShared = 0;
     m_AssignedMixCtlsUnique = 0;
     m_ScaleParamsAdded = 0;
+    m_ScaleParamsIDCount = 0;
 
     for (n = 0; n < 10; n++) {
         m_CurveProcsTotal[n][0] = 0;
@@ -151,7 +151,6 @@ void NFSMixMap::ResetMapData() {
     m_CurrentSubChannelPtrBlockOffset = 0;
     m_Current3DMixCtlPtrBlockOffset = 0;
     m_CurrentEvtMixCtlPtrBlockOffset = 0;
-    m_nTotalMasterChannel3DOutputs = 0;
     m_nTotalSubChannelInputs = 0;
     m_pMasterChannelOutputArrayBlock = nullptr;
     m_nTotalSubChannel3DOutputs = 0;
@@ -186,6 +185,7 @@ void NFSMixMap::ResetMapData() {
     m_pMasterChProc = nullptr;
     m_pMasterChannelInputs = nullptr;
     m_pSubChannelInputs = nullptr;
+    m_nTotalMasterChannel3DOutputs = 0;
 }
 
 void NFSMixMap::SetupStateRefCount() {
