@@ -114,13 +114,16 @@ void CARSFX_Siren::UpdateParams(float) {
 void CARSFX_Siren::ProcessUpdate() {
     int CurDist;
     int input;
+    SIREN *siren;
 
     if (IsEnabled()) {
         SetDMIX_Input(5, 0x7FFF);
-        if (!mSiren) {
+        siren = mSiren;
+        if (!siren) {
             g_pEAXSound->SetCsisName(this);
-            mSiren = new SIREN(0, 0, 0, 0, 0, 25000, 0, 0x7FFF, 0);
-            if (!mSiren) {
+            siren = new SIREN(0, 0, 0, 0, 0, 25000, 0, 0x7FFF, 0);
+            mSiren = siren;
+            if (!siren) {
                 return;
             }
         }
@@ -131,7 +134,7 @@ void CARSFX_Siren::ProcessUpdate() {
         } else if (input > 0x7FFF) {
             input = 0x7FFF;
         }
-        mSiren->mData.vOL = input;
+        siren->mData.vOL = input;
 
         input = GetDMixOutput(0, DMX_AZIM);
         if (input < 0) {
@@ -139,7 +142,7 @@ void CARSFX_Siren::ProcessUpdate() {
         } else if (input > 0xFFFF) {
             input = 0xFFFF;
         }
-        mSiren->mData.pAN = input;
+        siren->mData.pAN = input;
 
         input = GetDMixOutput(3, DMX_PITCH) - 0x1000;
         if (input < -0x4000) {
@@ -147,7 +150,7 @@ void CARSFX_Siren::ProcessUpdate() {
         } else if (input > 0x4000) {
             input = 0x4000;
         }
-        mSiren->mData.pITCH_OFFS = input;
+        siren->mData.pITCH_OFFS = input;
 
         CurDist = static_cast<int>(Sound::DistanceToView(m_pStateBase->GetPhysCar()->GetPosition()) * 12.8f);
         if (CurDist < 0) {
@@ -155,7 +158,7 @@ void CARSFX_Siren::ProcessUpdate() {
         } else if (CurDist > 0x400) {
             CurDist = 0x400;
         }
-        mSiren->mData.dISTANCE = CurDist;
+        siren->mData.dISTANCE = CurDist;
 
         m_PrevSirenState = m_SirenState;
         m_SirenState = UpdateSirenState(m_pStateBase->GetDeltaTime());
@@ -185,17 +188,18 @@ void CARSFX_Siren::ProcessUpdate() {
         } else if (input > 7) {
             input = 7;
         }
-        mSiren->mData.tYPE = input;
-        mSiren->CommitMemberData();
+        siren->mData.tYPE = input;
+        siren->CommitMemberData();
     } else {
         SetDMIX_Input(5, 0);
-        if (!mSiren) {
+        siren = mSiren;
+        if (!siren) {
             return;
         }
-        if (mSiren->mpClass) {
-            mSiren->mpClass->Release();
+        if (siren->mpClass) {
+            siren->mpClass->Release();
         }
-        Csis::System::Free(mSiren);
+        Csis::System::Free(siren);
         mSiren = nullptr;
     }
 }
@@ -205,9 +209,9 @@ SirenState CARSFX_Siren::UpdateSirenState(float t) {
 
     fVar2 = tSirenState - t;
     tSirenState = fVar2;
-    if (fVar2 < 0.0f || GetPhysCar()->mSirenState == SIREN_SCREAM) {
+    if (fVar2 < 0.0f || m_pStateBase->GetPhysCar()->mSirenState == SIREN_SCREAM) {
         tSirenState = g_pEAXSound->Random(3.0f);
-        return GetPhysCar()->mSirenState;
+        return m_pStateBase->GetPhysCar()->mSirenState;
     }
     return m_SirenState;
 }

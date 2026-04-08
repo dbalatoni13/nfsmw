@@ -632,11 +632,11 @@ bool SFXObj_PFEATrax::TestToAmbience() {
             bool interactive_on;
             SoundAI *ai;
 
-            interactive_on = false;
+            interactive_on = true;
             ai = SoundAI::Get();
-            if (ai && ai->IsMusicActive() && g_pEAXSound->GetCurMusicVolume() > 0.0f &&
-                g_pEAXSound->GetCurAudioSettings()->InteractiveMusicMode != 0) {
-                interactive_on = true;
+            if (!ai || !ai->IsMusicActive() || g_pEAXSound->GetCurMusicVolume() <= 0.0f ||
+                g_pEAXSound->GetCurAudioSettings()->InteractiveMusicMode <= 0) {
+                interactive_on = false;
             }
             if (interactive_on) {
                 return false;
@@ -652,7 +652,7 @@ bool SFXObj_PFEATrax::TestToAmbience() {
                     unsigned int fegm;
 
                     fegm = FEDatabase->GetGameMode();
-                    if ((fegm & 0x200) == 0 && !FEDatabase->IsRapSheetMode()) {
+                    if ((fegm & 0x200) == 0) {
                         return false;
                     }
                 }
