@@ -166,23 +166,23 @@ void CARSFX_RoadNoise::ProcessUpdate() {
             GeneratedVolume = m_nRTRoadNoiseVol;
             GeneratedPitch = m_nRTRoadNoisePitch;
 
-            if (GetPhysCar()->DidTireJustPucture(1)) {
+            if (m_pStateBase->GetPhysCar()->DidTireJustPucture(1)) {
                 bPuncturedTire = true;
-            } else if (GetPhysCar()->DidTireJustPucture(2)) {
+            } else if (m_pStateBase->GetPhysCar()->DidTireJustPucture(2)) {
                 bPuncturedTire = true;
             }
 
-            if (GetPhysCar()->DidTireJustBlow(1)) {
+            if (m_pStateBase->GetPhysCar()->DidTireJustBlow(1)) {
                 bBlownTire = true;
-            } else if (GetPhysCar()->DidTireJustBlow(2)) {
+            } else if (m_pStateBase->GetPhysCar()->DidTireJustBlow(2)) {
                 bBlownTire = true;
             }
 
             for (int tire_num = 1; tire_num <= 2; tire_num++) {
-                if (GetPhysCar()->GetWheelTerrain(tire_num).GetCollection() !=
-                    GetPhysCar()->GetPrevWheelTerrain(tire_num).GetCollection()) {
-                    if (GetPhysCar()->GetWheelTerrain(tire_num).Aud_Roadnoise_LOOP() !=
-                        GetPhysCar()->GetPrevWheelTerrain(tire_num).Aud_Roadnoise_LOOP()) {
+                if (m_pStateBase->GetPhysCar()->GetWheelTerrain(tire_num).GetCollection() !=
+                    m_pStateBase->GetPhysCar()->GetPrevWheelTerrain(tire_num).GetCollection()) {
+                    if (m_pStateBase->GetPhysCar()->GetWheelTerrain(tire_num).Aud_Roadnoise_LOOP() !=
+                        m_pStateBase->GetPhysCar()->GetPrevWheelTerrain(tire_num).Aud_Roadnoise_LOOP()) {
                         TireTransition = tire_num;
                     }
                 }
@@ -193,23 +193,23 @@ void CARSFX_RoadNoise::ProcessUpdate() {
             GeneratedVolume = m_nLTRoadNoiseVol;
             GeneratedPitch = m_nLTRoadNoisePitch;
 
-            if (GetPhysCar()->DidTireJustPucture(0)) {
+            if (m_pStateBase->GetPhysCar()->DidTireJustPucture(0)) {
                 bPuncturedTire = true;
-            } else if (GetPhysCar()->DidTireJustPucture(3)) {
+            } else if (m_pStateBase->GetPhysCar()->DidTireJustPucture(3)) {
                 bPuncturedTire = true;
             }
 
-            if (GetPhysCar()->DidTireJustBlow(0)) {
+            if (m_pStateBase->GetPhysCar()->DidTireJustBlow(0)) {
                 bBlownTire = true;
-            } else if (GetPhysCar()->DidTireJustBlow(3)) {
+            } else if (m_pStateBase->GetPhysCar()->DidTireJustBlow(3)) {
                 bBlownTire = true;
             }
 
             for (int tire_num = 0; tire_num <= 3; tire_num += 3) {
-                if (GetPhysCar()->GetWheelTerrain(tire_num).GetCollection() !=
-                    GetPhysCar()->GetPrevWheelTerrain(tire_num).GetCollection()) {
-                    if (GetPhysCar()->GetWheelTerrain(tire_num).Aud_Roadnoise_LOOP() !=
-                        GetPhysCar()->GetPrevWheelTerrain(tire_num).Aud_Roadnoise_LOOP()) {
+                if (m_pStateBase->GetPhysCar()->GetWheelTerrain(tire_num).GetCollection() !=
+                    m_pStateBase->GetPhysCar()->GetPrevWheelTerrain(tire_num).GetCollection()) {
+                    if (m_pStateBase->GetPhysCar()->GetWheelTerrain(tire_num).Aud_Roadnoise_LOOP() !=
+                        m_pStateBase->GetPhysCar()->GetPrevWheelTerrain(tire_num).Aud_Roadnoise_LOOP()) {
                         TireTransition = tire_num;
                     }
                 }
@@ -232,9 +232,10 @@ void CARSFX_RoadNoise::ProcessUpdate() {
         }
 
         if (wheelstouchingground && TireTransition != -1) {
-            FXROADNOISE_TRANSITION OntoTransitionID = GetPhysCar()->GetWheelTerrain(TireTransition).Aud_RoadNoise_TransON();
+            FXROADNOISE_TRANSITION OntoTransitionID =
+                m_pStateBase->GetPhysCar()->GetWheelTerrain(TireTransition).Aud_RoadNoise_TransON();
             FXROADNOISE_TRANSITION OffTransitionID =
-                GetPhysCar()->GetPrevWheelTerrain(TireTransition).Aud_RoadNoise_TransOFF();
+                m_pStateBase->GetPhysCar()->GetPrevWheelTerrain(TireTransition).Aud_RoadNoise_TransOFF();
 
             if (OffTransitionID != FXROADNOISE_TRANSITION_DONTPLAY && OntoTransitionID != FXROADNOISE_TRANSITION_DONTPLAY) {
                 if (OntoTransitionID != FXROADNOISE_TRANSITION_NONE) {
