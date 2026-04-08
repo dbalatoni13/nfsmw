@@ -1,6 +1,7 @@
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_Reverb.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXAemsManager.h"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
+#include "Speed/Indep/Src/World/ParameterMaps.hpp"
 
 namespace Snd {
 enum Device {
@@ -16,6 +17,8 @@ class GlobalFxProcessor {
     int SetCustom(void *pFxDefinition);
 };
 } // namespace Snd
+
+ParameterAccessor ReverbAccessor("Reverb");
 
 extern const char *csfxedit[];
 extern stSndDataLoadParams g_SndAssetList[];

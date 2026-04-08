@@ -25,11 +25,32 @@ SFXObj_MomentStrm *g_MomentStream = nullptr;
 SFXCTL_3DMomentPos::TypeInfo SFXCTL_3DMomentPos::s_TypeInfo = {0x20, "SFXCTL_3DMomentPos", nullptr, SFXCTL_3DMomentPos::CreateObject};
 
 struct MomentMapping {
+    MomentMapping(int momentMarkerType, unsigned int momentKey)
+        : markerType(momentMarkerType), //
+          key(momentKey) {}
+
     int markerType;
     unsigned int key;
 };
 
-extern MomentMapping g_MomentMappings[15];
+MomentMapping g_MomentMappings[15] = {
+    MomentMapping(1, 0xA1794C23),
+    MomentMapping(2, 0xC4C2230E),
+    MomentMapping(15, 0xC4C2230E),
+    MomentMapping(4, 0xEC97C63A),
+    MomentMapping(5, 0x375065D3),
+    MomentMapping(6, 0xC2234D09),
+    MomentMapping(7, 0x4291B502),
+    MomentMapping(8, 0x8CF8029C),
+    MomentMapping(9, 0xE54952A5),
+    MomentMapping(10, 0x017D41E5),
+    MomentMapping(17, 0x260DF980),
+    MomentMapping(19, 0xF2A1800E),
+    MomentMapping(20, 0x549D3924),
+    MomentMapping(16, 0x4702A79E),
+    MomentMapping(18, 0x2E44C2E3),
+};
+
 extern bool IsWorldDataStreaming(unsigned int strmhandle);
 
 SFXObj_MomentStrm::TypeInfo *SFXObj_MomentStrm::GetTypeInfo() const {

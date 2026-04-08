@@ -15,6 +15,10 @@ class ParameterAccessor : public bTNode<ParameterAccessor> {
     // TODO: Dwarf/PS2 show a larger virtual interface here; keep this owner-header
     // declaration source-compatible with zEAXSound's original call shape until the
     // broader ParameterMaps header can be restored without regressions.
+    ParameterAccessor();
+    ParameterAccessor(const char *layer_name);
+    virtual ~ParameterAccessor();
+
     ParameterMapLayer *Layer;         // offset 0x8, size 0x4
     unsigned int AutoAttachLayerNamehash; // offset 0xC, size 0x4
     const char *DebugName;            // offset 0x10, size 0x4

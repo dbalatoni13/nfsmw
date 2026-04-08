@@ -41,6 +41,8 @@ extern void SNDSYS_service();
 extern ParameterAccessor AmbientAccessor;
 extern MoviePlayer *gMoviePlayer;
 
+ParameterAccessor AmbientAccessor("Ambience");
+
 SndBase::TypeInfo SFXObj_Pathfinder::s_TypeInfo = { 0, "SFXObj_Pathfinder", nullptr, SFXObj_Pathfinder::CreateObject };
 SndBase::TypeInfo SFXObj_PFEATrax::s_TypeInfo = { 0, "SFXObj_PFEATrax", nullptr, SFXObj_PFEATrax::CreateObject };
 stEATraxParms SFXObj_PFEATrax::m_EATrax[2];
