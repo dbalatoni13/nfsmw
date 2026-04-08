@@ -183,7 +183,7 @@ void SFXObj_TruckFX::SetupSFX(CSTATE_Base *_StateBase) {
 
 void SFXObj_TruckFX::UpdateParams(float t) {
     if (!m_pTruckFX) {
-        if (GetPhysCar()->IsShifting()) {
+        if (m_pStateBase->GetPhysCar()->IsShifting()) {
             int rand_puff_ID;
 
             rand_puff_ID = bRandom(4) + 2;
@@ -194,8 +194,8 @@ void SFXObj_TruckFX::UpdateParams(float t) {
                 m_pTruckFX = nullptr;
                 return;
             }
-        } else if ((GetPhysCar()->GetBrake() > 0.0f || GetPhysCar()->GetEBrake() > 0.0f) &&
-                   GetPhysCar()->GetVelocityMagnitudeMPH() < 1.0f &&
+        } else if ((m_pStateBase->GetPhysCar()->GetBrake() > 0.0f || m_pStateBase->GetPhysCar()->GetEBrake() > 0.0f) &&
+                   m_pStateBase->GetPhysCar()->GetVelocityMagnitudeMPH() < 1.0f &&
                    m_fSpeed >= 1.0f) {
             if (!m_bStopped) {
                 int rand_brake_ID;
@@ -214,12 +214,12 @@ void SFXObj_TruckFX::UpdateParams(float t) {
     }
 
     if (m_bStopped) {
-        if (m_fSpeed < GetPhysCar()->GetVelocityMagnitudeMPH()) {
+        if (m_fSpeed < m_pStateBase->GetPhysCar()->GetVelocityMagnitudeMPH()) {
             m_bStopped = false;
         }
     }
 
-    m_fSpeed = GetPhysCar()->GetVelocityMagnitudeMPH();
+    m_fSpeed = m_pStateBase->GetPhysCar()->GetVelocityMagnitudeMPH();
 }
 
 void SFXObj_TruckFX::ProcessUpdate() {
