@@ -8,7 +8,7 @@ SFXObj_Woosh::TypeInfo SFXObj_Woosh::s_TypeInfo = {0x00080000, "SFXObj_Woosh", &
 SFXCTL_3DWooshPos::TypeInfo SFXCTL_3DWooshPos::s_TypeInfo = {
     0x00080000, "SFXCTL_3DWooshPos", &SFXCTL_3DObjPos::s_TypeInfo, SFXCTL_3DWooshPos::CreateObject};
 
-extern Slope g_WooshVol_vs_Vel;
+Slope g_WooshVol_vs_Vel(0.0f, 1.0f, 18.0f, 45.0f);
 
 void GetWooshBlockSizeParams(eDRIVE_BY_TYPE type, STICH_WHOOSH_TYPE &base, int &numblocks, int &sizeperblock) {
     switch (type) {

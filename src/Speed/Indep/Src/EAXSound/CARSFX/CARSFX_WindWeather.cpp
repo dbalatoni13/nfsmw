@@ -10,7 +10,7 @@ InterfaceId FX_WIND_WeatherId = {"FX_WIND_Weather", 0x1981, 0x31ED};
 ClassHandle gFX_WIND_WeatherHandle;
 } // namespace Csis
 
-extern Slope WeatherWindVolSlope;
+Slope WeatherWindVolSlope(1.0f, 0.25f, 0.0f, 70.0f);
 
 struct FX_WIND_WeatherStruct {
     int volume;         // offset 0x0, size 0x4

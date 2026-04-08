@@ -6,6 +6,8 @@
 #include "Speed/Indep/Src/EAXSound/SoundCollision.hpp"
 #include "Speed/Indep/Src/EAXSound/Stream/SpeechManager.hpp"
 
+bVector3 v3NULL(0.0f, 0.0f, 0.0f);
+
 SndBase::TypeInfo SFXObj_Speech::s_TypeInfo = {
     0x00000010,
     "SFXObj_Speech",

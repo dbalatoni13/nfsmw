@@ -35,16 +35,24 @@
 
 #include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX_Roadnoise.cpp"
 
+#include "Speed/Indep/Src/EAXSound/snd_gen/ENVIRO_AEMS.cpp"
+
 #include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX_WindNoise.cpp"
 #include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX_WindWeather.cpp"
+
+#include "Speed/Indep/Src/EAXSound/AemsDef.cpp"
 
 #include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX_Skids.cpp"
 
 #include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX_Engine.cpp"
 
+#include "Speed/Indep/Src/EAXSound/snd_gen/ENGINES_AEMS2.cpp"
+
 #include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX_Nitrous.cpp"
 
 #include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX_Rain.cpp"
+
+#include "Speed/Indep/Src/EAXSound/Data/SND_ReverbFXParams.cpp"
 
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_Reverb.cpp"
 
@@ -69,12 +77,19 @@
 
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_MomentStrm.cpp"
 
+#include "Speed/Indep/Src/EAXSound/Data/SND_DopplerParams.cpp"
+
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_WorldObject.cpp"
 
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_Woosh.cpp"
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_Ambience.cpp"
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_Speech.cpp"
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_FEHUD.cpp"
+
+#include "Speed/Indep/Src/EAXSound/snd_gen/FE_AEMS.cpp"
+#include "Speed/Indep/Src/EAXSound/snd_gen/MAIN_AEMS.cpp"
+#include "Speed/Indep/Src/EAXSound/snd_gen/STITCH_AEMS.cpp"
+#include "Speed/Indep/Src/EAXSound/snd_gen/NISAudio.cpp"
 
 #include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX_PreColWoosh.cpp"
 

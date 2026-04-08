@@ -36,14 +36,27 @@ struct FX_TRUCK_FX {
         : mpClass(nullptr) {
         Csis::System::Result result;
 
-        SetId(id);
-        SetVolume(volume);
-        SetPitch_OFFSET(pitch_OFFSET);
-        SetAzimuth(azimuth);
-        SetLoPass(loPass);
-        SetHiPass(hiPass);
-        SetFX_Dry(fX_Dry);
-        SetFX_Wet(fX_Wet);
+        if (id < 0) {
+            id = 0;
+        } else if (id > 0xF) {
+            id = 0xF;
+        }
+        mData.id = id;
+
+        mData.pitch_OFFSET = pitch_OFFSET;
+        mData.volume = volume;
+
+        if (azimuth < 0) {
+            azimuth = 0;
+        } else if (azimuth > 0xFFFF) {
+            azimuth = 0xFFFF;
+        }
+        mData.azimuth = azimuth;
+
+        mData.hiPass = hiPass;
+        mData.fX_Wet = fX_Wet;
+        mData.loPass = loPass;
+        mData.fX_Dry = fX_Dry;
 
         result = static_cast<Csis::System::Result>(Csis::Class::CreateInstance(&Csis::gFX_TRUCK_FXHandle, &mData, &mpClass));
         if (result < Csis::System::kResult_Ok) {
