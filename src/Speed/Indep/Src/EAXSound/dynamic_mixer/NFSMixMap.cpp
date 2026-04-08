@@ -1593,7 +1593,7 @@ void NFSMixMap::Update3DMixCtls() {
     int n;
     int i;
 
-    if (m_CurCamState != m_PrevCamState && m_nAssigned3DMixCtlShared > 0) {
+    if (m_CurCamState != m_PrevCamState) {
         st3DMixCtlSharedData *p3dsp = m_p3DMixCtlData_S;
 
         for (i = 0; i < m_nAssigned3DMixCtlShared; i++) {
