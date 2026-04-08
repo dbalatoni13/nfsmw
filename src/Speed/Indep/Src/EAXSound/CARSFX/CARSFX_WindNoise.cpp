@@ -331,7 +331,7 @@ void CARSFX_WindNoise::UpdateParams(float t) {
     m_nLastTickUpdate = bGetTicker();
     pcam = eGetView(1, false)->GetCamera();
     if (pcam) {
-        pcar = GetPhysCar();
+        pcar = m_pStateBase->GetPhysCar();
         fcurvel = pcar->GetVelocityMagnitude();
         if (fcurvel < 2.0f) {
             fcurvel = 2.0f;
