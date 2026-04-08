@@ -118,17 +118,17 @@ void CARSFX_Rain::UpdateParams(float t) {
     eView *view;
 
     SndBase::UpdateParams(t);
-    view = &eViews[1];
+    view = eGetView(1, false);
     if (view) {
         m_fPrevWeatherIntensity = m_fWeatherIntensity;
         if (eViews[1].Precipitation) {
-            m_fWeatherIntensity = eViews[1].Precipitation->GetRainIntensity();
+            m_fWeatherIntensity = view->Precipitation->GetRainIntensity();
         } else {
             m_fWeatherIntensity = 0.0f;
         }
     } else {
-        m_fWeatherIntensity = 0.0f;
         m_fPrevWeatherIntensity = 0.0f;
+        m_fWeatherIntensity = 0.0f;
     }
 
     if (0.01f < m_fWeatherIntensity) {
@@ -147,8 +147,8 @@ void CARSFX_Rain::UpdateParams(float t) {
                 *reinterpret_cast<int *>(&m_bWeatherStreamQueued) = 0;
             }
             QueueWeatherStream();
-            m_BlockStrmTest = m_BlockStrmTest + 1;
             m_fThunderDeltaTime = static_cast<float>(g_pEAXSound->Random(0x14)) + 25.0f;
+            m_BlockStrmTest = m_BlockStrmTest + 1;
         } else {
             m_BlockStrmTest = m_BlockStrmTest + 1;
             if (m_BlockStrmTest > 0x20) {
@@ -158,12 +158,14 @@ void CARSFX_Rain::UpdateParams(float t) {
     }
 
     if (*reinterpret_cast<int *>(&bFadingOut) != 0) {
-        float fdt;
+        {
+            float fdt;
 
-        fdt = m_fTimeLeftToFadeOut - t;
-        m_fTimeLeftToFadeOut = fdt;
-        if (fdt < 0.0f) {
-            Destroy();
+            fdt = m_fTimeLeftToFadeOut - t;
+            m_fTimeLeftToFadeOut = fdt;
+            if (fdt < 0.0f) {
+                Destroy();
+            }
         }
     }
 }
