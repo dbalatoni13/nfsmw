@@ -308,150 +308,155 @@ void NFSMixMap::PreProcessMixMap() {
                 threeDMixCtlOffset = pmmsthdr->Offset3DMixCtlData;
                 if (threeDMixCtlOffset != -1) {
                     st3DMixCtlHdr *p3Dmctlhdr;
-                    int ctlCount;
-                    int totalCamStates;
-                    int ctlIndex;
-                    unsigned int *p3DMixCtlWord;
+                    int num3d;
+                    int *p3DMixCtlData;
+                    int nTotal3DCamStates;
+                    int j;
 
                     p3Dmctlhdr = reinterpret_cast<st3DMixCtlHdr *>(reinterpret_cast<char *>(pmmsthdr) + threeDMixCtlOffset);
-                    ctlCount = p3Dmctlhdr->Num3DMixCtls;
-                    p3DMixCtlWord = reinterpret_cast<unsigned int *>(p3Dmctlhdr + 1);
-                    totalCamStates = 0;
+                    num3d = p3Dmctlhdr->Num3DMixCtls & 0xFF;
+                    p3DMixCtlData = reinterpret_cast<int *>(p3Dmctlhdr + 1);
+                    nTotal3DCamStates = 0;
 
-                    m_Shared3DMixCtlCount += p3Dmctlhdr->Num3DMixCtls & 0xFF;
-                    m_3DMixCtlsAdded += m_StateRefCount[n] * (p3Dmctlhdr->Num3DMixCtls & 0xFF);
+                    m_Shared3DMixCtlCount += num3d;
+                    m_3DMixCtlsAdded += m_StateRefCount[n] * num3d;
 
-                    for (ctlIndex = 0; ctlIndex < ctlCount; ctlIndex++) {
-                        int camStatesAdded;
+                    for (j = 0; j < num3d; j++) {
+                        int n3DCamStates;
 
-                        camStatesAdded = (*p3DMixCtlWord >> 24) & 0xF;
-                        totalCamStates += camStatesAdded;
-                        p3DMixCtlWord += camStatesAdded * 6;
+                        n3DCamStates = static_cast<int>(*(reinterpret_cast<unsigned char *>(p3DMixCtlData) + 3)) & 0xF;
+                        nTotal3DCamStates += n3DCamStates;
+                        p3DMixCtlData += n3DCamStates * 6;
                     }
 
-                    m_n3DCamStatesAdded += totalCamStates;
+                    m_n3DCamStatesAdded += nTotal3DCamStates;
                 }
 
                 eventCtlOffset = pmmsthdr->OffsetEventCtlData;
                 if (eventCtlOffset != -1) {
                     stMixEventHdr *pevtctlhdr;
-                    int ctlCount;
-                    int ctlIndex;
-                    int scaleParamsAdded;
-                    char *pEventCtlData;
+                    stMixEvtParams *pevtctlparms;
+                    int ntotaladded;
+                    int nctl;
 
                     pevtctlhdr = reinterpret_cast<stMixEventHdr *>(reinterpret_cast<char *>(pmmsthdr) + eventCtlOffset);
-                    ctlCount = pevtctlhdr->NumEvents;
-                    pEventCtlData = reinterpret_cast<char *>(pevtctlhdr + 1);
-                    scaleParamsAdded = 0;
+                    pevtctlparms = reinterpret_cast<stMixEvtParams *>(pevtctlhdr + 1);
+                    ntotaladded = 0;
 
-                    m_EventCtlsAdded += m_StateRefCount[n] * ctlCount;
-                    m_SharedEvtMixCtlCount += ctlCount;
+                    m_EventCtlsAdded += m_StateRefCount[n] * pevtctlhdr->NumEvents;
+                    m_SharedEvtMixCtlCount += pevtctlhdr->NumEvents;
 
-                    for (ctlIndex = 0; ctlIndex < ctlCount; ctlIndex++) {
-                        int scaleCount;
-                        int scaleIndex;
-                        char *pScaleData;
+                    for (nctl = 0; nctl < pevtctlhdr->NumEvents; nctl++) {
+                        int nscale;
+                        int *pscaleid;
+                        int s;
 
-                        pScaleData = pEventCtlData + 0x18;
-                        scaleCount = static_cast<int>(*reinterpret_cast<short *>(pEventCtlData + 4)) & 0xF;
-                        for (scaleIndex = 0; scaleIndex < scaleCount; scaleIndex++) {
-                            unsigned char inputState;
+                        nscale = pevtctlparms->nUScaleCntSwing & 0xF;
+                        pscaleid = reinterpret_cast<int *>(pevtctlparms + 1);
+                        for (s = 0; s < nscale; s++) {
+                            int ID;
+                            int state;
 
-                            inputState = *(reinterpret_cast<unsigned char *>(pScaleData) + 1);
-                            if (inputState != n) {
-                                scaleParamsAdded += m_StateRefCount[inputState];
+                            ID = *pscaleid;
+                            state = (ID >> 16) & 0xFF;
+                            if (state != n) {
+                                ntotaladded += m_StateRefCount[state];
                             } else {
-                                scaleParamsAdded++;
+                                ntotaladded++;
                             }
 
-                            pScaleData += 4;
+                            pscaleid++;
                         }
 
-                        pEventCtlData += (scaleCount * 4) + 0x18;
+                        pevtctlparms = reinterpret_cast<stMixEvtParams *>(pscaleid);
                     }
 
-                    m_ScaleParamsAdded += scaleParamsAdded * m_StateRefCount[n];
+                    m_ScaleParamsAdded += ntotaladded * m_StateRefCount[n];
                 }
 
                 subMixOffset = pmmsthdr->OffsetSubMixData;
                 if (subMixOffset != -1) {
                     stMixChHdr *pmsubchhdr;
-                    int subMixCount;
-                    int subMixIndex;
-                    int *pInputData;
+                    int *pSubChData;
+                    int nsc;
 
                     pmsubchhdr = reinterpret_cast<stMixChHdr *>(reinterpret_cast<char *>(pmmsthdr) + subMixOffset);
-                    subMixCount = pmsubchhdr->NumMixChannels;
-                    pInputData = reinterpret_cast<int *>(pmsubchhdr + 1);
+                    pSubChData = reinterpret_cast<int *>(pmsubchhdr + 1);
 
-                    m_SharedSubMixCount += subMixCount;
-                    m_SubMixChannelsAdded += m_StateRefCount[n] * subMixCount;
+                    m_SharedSubMixCount += pmsubchhdr->NumMixChannels;
+                    m_SubMixChannelsAdded += m_StateRefCount[n] * pmsubchhdr->NumMixChannels;
 
-                    for (subMixIndex = 0; subMixIndex < subMixCount; subMixIndex++) {
-                        int inputIndex;
-                        int totalInputs;
-                        unsigned char inputCount;
+                    for (nsc = 0; nsc < pmsubchhdr->NumMixChannels; nsc++) {
+                        int nMIXCHID;
+                        int numinputs;
+                        int ntotalchannelinputs;
+                        int nin;
 
-                        inputCount = *(reinterpret_cast<unsigned char *>(pInputData) + 1);
-                        pInputData += 2;
-                        totalInputs = 0;
+                        nMIXCHID = *pSubChData;
+                        numinputs = (nMIXCHID >> 16) & 0xFF;
+                        pSubChData += 2;
+                        ntotalchannelinputs = 0;
 
-                        for (inputIndex = 0; inputIndex < inputCount; inputIndex++) {
-                            unsigned char inputState;
+                        for (nin = 0; nin < numinputs; nin++) {
+                            int ninputid;
+                            int nstate;
 
-                            inputState = *(reinterpret_cast<unsigned char *>(pInputData) + 1);
-                            if (inputState != n) {
-                                totalInputs += m_StateRefCount[inputState];
+                            ninputid = *pSubChData;
+                            nstate = (ninputid >> 16) & 0xFF;
+                            if (nstate != n) {
+                                ntotalchannelinputs += m_StateRefCount[nstate];
                             } else {
-                                totalInputs++;
+                                ntotalchannelinputs++;
                             }
 
-                            pInputData++;
+                            pSubChData++;
                         }
 
-                        m_nTotalSubChannelInputs += totalInputs * m_StateRefCount[n];
+                        m_nTotalSubChannelInputs += ntotalchannelinputs * m_StateRefCount[n];
                     }
                 }
 
                 masterMixOffset = pmmsthdr->OffsetMasterMixData;
                 if (masterMixOffset != -1) {
                     stMixChHdr *pmasterchhdr;
-                    int masterMixCount;
-                    int masterMixIndex;
-                    int *pInputData;
+                    int *pMstChData;
+                    int nmc;
 
                     pmasterchhdr = reinterpret_cast<stMixChHdr *>(reinterpret_cast<char *>(pmmsthdr) + masterMixOffset);
-                    masterMixCount = pmasterchhdr->NumMixChannels;
-                    pInputData = reinterpret_cast<int *>(pmasterchhdr + 1);
+                    pMstChData = reinterpret_cast<int *>(pmasterchhdr + 1);
 
-                    m_nTotalUniqueMasterChannels += pmasterchhdr->NumUniqueSFXOBJs + (m_StateRefCount[n] * pmasterchhdr->NumUniqueSFXOBJs);
-                    m_SharedMasterMixCount += masterMixCount;
-                    m_MasterChannelsAdded += m_StateRefCount[n] * masterMixCount;
+                    m_nTotalUniqueMasterChannels +=
+                        (m_StateRefCount[n] * pmasterchhdr->NumUniqueSFXOBJs) + pmasterchhdr->NumUniqueSFXOBJs;
+                    m_SharedMasterMixCount += pmasterchhdr->NumMixChannels;
+                    m_MasterChannelsAdded += m_StateRefCount[n] * pmasterchhdr->NumMixChannels;
 
-                    for (masterMixIndex = 0; masterMixIndex < masterMixCount; masterMixIndex++) {
-                        int inputIndex;
-                        int totalInputs;
-                        unsigned char inputCount;
+                    for (nmc = 0; nmc < pmasterchhdr->NumMixChannels; nmc++) {
+                        int nMIXCHID;
+                        int numinputs;
+                        int ntotalchannelinputs;
+                        int nin;
 
-                        inputCount = *(reinterpret_cast<unsigned char *>(pInputData) + 1);
-                        pInputData += 3;
-                        totalInputs = 0;
+                        nMIXCHID = *pMstChData;
+                        numinputs = (nMIXCHID >> 16) & 0xFF;
+                        pMstChData += 3;
+                        ntotalchannelinputs = 0;
 
-                        for (inputIndex = 0; inputIndex < inputCount; inputIndex++) {
-                            unsigned char inputState;
+                        for (nin = 0; nin < numinputs; nin++) {
+                            int ninputid;
+                            int nstate;
 
-                            inputState = *(reinterpret_cast<unsigned char *>(pInputData) + 1);
-                            if (inputState != n) {
-                                totalInputs += m_StateRefCount[inputState];
+                            ninputid = *pMstChData;
+                            nstate = (ninputid >> 16) & 0xFF;
+                            if (nstate != n) {
+                                ntotalchannelinputs += m_StateRefCount[nstate];
                             } else {
-                                totalInputs++;
+                                ntotalchannelinputs++;
                             }
 
-                            pInputData++;
+                            pMstChData++;
                         }
 
-                        m_nTotalMasterChannelInputs += totalInputs * m_StateRefCount[n];
+                        m_nTotalMasterChannelInputs += ntotalchannelinputs * m_StateRefCount[n];
                     }
                 }
             }
