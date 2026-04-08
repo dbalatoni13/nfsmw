@@ -431,3 +431,6 @@ SndBase *SFXCTL_3DMomentPos::CreateObject(unsigned int allocator) {
 
     return new (SFXCTL_3DMomentPos::GetStaticTypeInfo()->typeName, true) SFXCTL_3DMomentPos();
 }
+
+template class UTL::Vector<SFXObj_MomentStrm::stMomentDecription, 16>;
+template class UTL::FixedVector<SFXObj_MomentStrm::stMomentDecription, 64, 16>;
