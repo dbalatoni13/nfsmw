@@ -35,10 +35,12 @@ struct audioscrape;
 } // namespace Attrib
 
 struct CSTATE_Base;
+struct EAXCar;
 struct EAX_CarState;
 struct SND_Stich;
 
 EAX_CarState *GetClosestCopCarToCamera();
+EAXCar *GetPlayerCarInRadius(bVector3 &objectpos, float distance);
 
 namespace Sound {
 

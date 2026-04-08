@@ -48,11 +48,6 @@
 #include "Speed/Indep/Src/EAXSound/sfxctl/sfxctl_helicopter.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/sfxctl_mastervol.hpp"
 
-struct CARSFX_TruckWoosh : public CARSFX_TrafficWoosh {
-  protected:
-    static TypeInfo s_TypeInfo;
-};
-
 #define REGISTER_TYPEINFO(RegisterMethod, Type)                     \
     do {                                                            \
         struct Type##RegistrationAccessor : public Type {           \

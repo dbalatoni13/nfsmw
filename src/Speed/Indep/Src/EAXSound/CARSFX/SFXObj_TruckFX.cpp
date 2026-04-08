@@ -2,6 +2,7 @@
 
 #include "Speed/Indep/Src/EAXSound/EAXCarState.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
+#include "Speed/Indep/Src/EAXSound/SoundCollision.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 namespace Csis {
@@ -131,6 +132,8 @@ struct FX_TRUCK_FX {
 
 SndBase::TypeInfo SFXCTL_3DTrailerPos::s_TypeInfo = {
     0x000C00F0, "SFXCTL_3DTrailerPos", &SFXCTL_3DCarPos::s_TypeInfo, SFXCTL_3DTrailerPos::CreateObject};
+SndBase::TypeInfo CARSFX_TruckWoosh::s_TypeInfo = {
+    0x000C00E0, "CARSFX_TruckWoosh", &CARSFX_TrafficWoosh::s_TypeInfo, CARSFX_TruckWoosh::CreateObject};
 SndBase::TypeInfo SFXObj_TruckFX::s_TypeInfo = { 0, "SFXObj_TruckFX", nullptr, SFXObj_TruckFX::CreateObject };
 
 SFXCTL_3DTrailerPos::~SFXCTL_3DTrailerPos() {}
@@ -148,6 +151,98 @@ SndBase *SFXCTL_3DTrailerPos::CreateObject(unsigned int allocator) {
         return new (s_TypeInfo.typeName, false) SFXCTL_3DTrailerPos();
     }
     return new (s_TypeInfo.typeName, true) SFXCTL_3DTrailerPos();
+}
+
+SndBase::TypeInfo *CARSFX_TruckWoosh::GetTypeInfo() const {
+    return &s_TypeInfo;
+}
+
+const char *CARSFX_TruckWoosh::GetTypeName() const {
+    return s_TypeInfo.typeName;
+}
+
+SndBase *CARSFX_TruckWoosh::CreateObject(unsigned int allocator) {
+    if (allocator == 0) {
+        return new (CARSFX_TruckWoosh::GetStaticTypeInfo()->typeName, false) CARSFX_TruckWoosh();
+    }
+    return new (CARSFX_TruckWoosh::GetStaticTypeInfo()->typeName, true) CARSFX_TruckWoosh();
+}
+
+CARSFX_TruckWoosh::CARSFX_TruckWoosh()
+    : CARSFX_TrafficWoosh()
+    , m_TrailerRef(0) {
+    m_p3DTrailerPos = nullptr;
+    m_vTrailerPos = bVector3(0.0f, 0.0f, 0.0f);
+    m_vTrailerVel = bVector3(0.0f, 0.0f, 0.0f);
+}
+
+CARSFX_TruckWoosh::~CARSFX_TruckWoosh() {}
+
+int CARSFX_TruckWoosh::GetController(int Index) {
+    int iVar1;
+
+    iVar1 = 0xF;
+    if (Index != 0) {
+        iVar1 = -1;
+    }
+    return iVar1;
+}
+
+void CARSFX_TruckWoosh::AttachController(SFXCTL *psfxctl) {
+    if (psfxctl->GetObjectIndex() == 0xF) {
+        m_p3DTrailerPos = static_cast<SFXCTL_3DCarPos *>(psfxctl);
+    }
+}
+
+void CARSFX_TruckWoosh::InitSFX() {
+    SndBase::InitSFX();
+    m_p3DTrailerPos->AssignPositionVector(&m_vTrailerPos);
+    m_p3DTrailerPos->AssignVelocityVector(&m_vTrailerVel);
+}
+
+bool CARSFX_TruckWoosh::IsPlayerCarInRadius() {
+    return GetPlayerCarInRadius(m_vTrailerPos, 10.0f) != nullptr;
+}
+
+void CARSFX_TruckWoosh::UpdateParams(float t) {
+    if (GetPhysCar()->GetContext() == Sound::CONTEXT_TRACTOR) {
+        unsigned int worldid = GetPhysCar()->mTrailerID;
+
+        if (worldid != 0) {
+            m_TrailerRef.Set(worldid);
+            if (m_TrailerRef.IsValid()) {
+                m_vTrailerPos = *static_cast<const bVector3 *>(static_cast<const void *>(&m_TrailerRef.GetMatrix()->v3));
+                m_vTrailerVel = *GetPhysCar()->GetVelocity();
+            }
+        }
+    }
+    CARSFX_TrafficWoosh::UpdateParams(t);
+}
+
+eDRIVE_BY_TYPE CARSFX_TruckWoosh::GetWooshSample() {
+    EAX_CarState *pcar;
+    bVector3 normalvel;
+    float dotprod;
+    const eDRIVE_BY_TYPE *resultptr;
+
+    pcar = GetClosestPlayerCar(GetPhysCar()->GetPosition());
+    if (!pcar) {
+        return DRIVE_BY_TREE;
+    }
+
+    normalvel = bNormalize(m_vTrailerVel);
+    dotprod = bAbs(bDot(*pcar->GetForwardVector(), normalvel));
+    if (0.2f <= dotprod) {
+        SetDMIX_Input(6, 0);
+        return DRIVE_BY_AI_CAR;
+    }
+
+    SetDMIX_Input(6, 0x7FFF);
+    resultptr = reinterpret_cast<const eDRIVE_BY_TYPE *>(GetPhysCar()->GetAttributes()->GetAttributePointer(0x7e744600, 0));
+    if (!resultptr) {
+        resultptr = reinterpret_cast<const eDRIVE_BY_TYPE *>(Attrib::DefaultDataArea(sizeof(eDRIVE_BY_TYPE)));
+    }
+    return *resultptr;
 }
 
 SndBase::TypeInfo *SFXObj_TruckFX::GetTypeInfo() const { return &s_TypeInfo; }
