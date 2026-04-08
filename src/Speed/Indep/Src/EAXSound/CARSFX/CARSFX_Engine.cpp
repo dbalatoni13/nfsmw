@@ -15,6 +15,26 @@ char *GetGinsuData(const char *filename);
 int ntestrefcount;
 static int AI_ENGINE_PITCH_OFFSET;
 
+CARSFX_EngineBase::CARSFX_EngineBase()
+    : CARSFX() {
+    PitchMultipli = 0.0f;
+    SPU_or_EE = 0;
+    m_pcsisCarCtrl = nullptr;
+    m_pTranny = nullptr;
+    m_pEngineCtl = nullptr;
+    m_p3DCarPosCtl = nullptr;
+}
+
+CARSFX_EngineBase::~CARSFX_EngineBase() {
+    if (m_pcsisCarCtrl) {
+        delete m_pcsisCarCtrl;
+    }
+
+    if (m_pTranny) {
+        delete m_pTranny;
+    }
+}
+
 void CARSFX_EngineBase::UpdateParams(float) {}
 
 void CARSFX_EngineBase::SetupSFX(CSTATE_Base *_StateBase) {
@@ -45,6 +65,55 @@ void CARSFX_EngineBase::ProcessUpdate() {
 void CARSFX_EngineBase::InitializeEngine() {}
 
 void CARSFX_EngineBase::SetEngineParams() {}
+
+void CARSFX_EngineBase::Debug() {}
+
+CARSFX_GinsuEngine::CARSFX_GinsuEngine()
+    : CARSFX_EngineBase() {
+    m_pHybridEngCtl = nullptr;
+
+    for (int i = 0; i < 2; i++) {
+        m_GinsuData[i].mSynthData = nullptr;
+        m_GinsuData[i].mSynth = nullptr;
+        m_GinsuData[i].mSynthBlock = nullptr;
+        m_GinsuData[i].mMaxFrequency = 0.0f;
+        m_GinsuData[i].mMinFrequency = 0.0f;
+        m_GinsuData[i].mSNDhandle = -1;
+    }
+
+    m_pEngineCtl = nullptr;
+    *reinterpret_cast<int *>(&GinsuInitialized) = 0;
+    InitCnt = 0;
+    m_pShiftingCtl = nullptr;
+}
+
+CARSFX_GinsuEngine::~CARSFX_GinsuEngine() {
+    for (int Index = 0;
+         (m_pEAXCar->m_EngineType == eGINSU_ENG_SINGLE && Index < 1) ||
+             (m_pEAXCar->m_EngineType == eGINSU_ENG_DUAL && Index < 2);
+         Index++) {
+        stGinsuData *pData = &m_GinsuData[Index];
+
+        if (pData->mSynth) {
+            pData->mSynth->StopSynthesis();
+            delete pData->mSynth;
+        }
+
+        pData->mSynth = nullptr;
+
+        if (pData->mSynthData) {
+            delete pData->mSynthData;
+        }
+
+        pData->mSynthData = nullptr;
+
+        if (pData->mSynthBlock) {
+            gAudioMemoryManager.FreeMemory(pData->mSynthBlock);
+        }
+
+        pData->mSynthBlock = nullptr;
+    }
+}
 
 int CARSFX_GinsuEngine::GetController(int Index) {
     switch (Index) {

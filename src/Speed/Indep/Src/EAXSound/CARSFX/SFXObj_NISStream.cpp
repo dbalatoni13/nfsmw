@@ -217,6 +217,15 @@ SndBase::TypeInfo SFXObj_NISStream::s_TypeInfo = { 0, "SFXObj_NISStream", nullpt
 
 NISStringHashMapEntry uNIS_STRINGHASHMAP[68];
 
+int GetCsisEventIndex(unsigned int hashid) {
+    for (int n = 0; n < 68; n++) {
+        if (uNIS_STRINGHASHMAP[n].Hash == hashid) {
+            return n;
+        }
+    }
+    return -1;
+}
+
 #define INIT_NIS_ENTRY(index, flags, name) \
     uNIS_STRINGHASHMAP[index].Flags = flags; \
     uNIS_STRINGHASHMAP[index].Name = name; \

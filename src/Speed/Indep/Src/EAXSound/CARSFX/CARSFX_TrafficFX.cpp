@@ -13,6 +13,13 @@ namespace {
 int HonkingCarCnt = 0;
 }
 
+bool IsPlayerGoingFastEnough(float Speed, int nplayer) {
+    if (nplayer < SndCamera::NumPlayers && SndCamera::GetPlayerCar(nplayer)) {
+        return Speed < SndCamera::GetPlayerCar(nplayer)->GetPhysCar()->mFWSpeed;
+    }
+    return false;
+}
+
 namespace Csis {
 InterfaceId ENV_STATICId = {"ENV_STATIC", 0x1981, 0x0002};
 ClassHandle gENV_STATICHandle;

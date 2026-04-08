@@ -114,6 +114,16 @@ SFXObj_Pathfinder::SFXObj_Pathfinder()
 
 SFXObj_Pathfinder::~SFXObj_Pathfinder() {}
 
+int SFXObj_Pathfinder::GetController(int Index) {
+    return Index == 0 ? 0 : -1;
+}
+
+void SFXObj_Pathfinder::AttachController(SFXCTL *psfxctl) {
+    if (psfxctl->GetObjectIndex() == 0) {
+        m_pSFXCTL_Pathfinder = static_cast<SFXCTL_Pathfinder *>(psfxctl);
+    }
+}
+
 SndBase::TypeInfo *SFXObj_PFEATrax::GetTypeInfo() const {
     return &s_TypeInfo;
 }

@@ -14,14 +14,36 @@ class GlobalFxProcessor;
 
 struct SFXObj_Reverb : public CARSFX {
   protected:
+    struct ReverbStructure {
+        void *Alloc; // offset 0x0, size 0x4
+        int Size;    // offset 0x4, size 0x4
+
+        void Clear();
+    };
+
     static TypeInfo s_TypeInfo;
+    static TypeInfo *GetStaticTypeInfo() { return &s_TypeInfo; }
 
   public:
     static Snd::GlobalFxProcessor *m_pFXEditModule[2];
     static char *m_pFXEditPatch[12];
-    SFXCTL_Tunnel *m_pTunnelCtl; // offset 0x28, size 0x4
+    static void *m_EchoBuffer;
+    static ReverbStructure m_EchoAllocs[4];
 
+    TypeInfo *GetTypeInfo() const override;
+    const char *GetTypeName() const override;
+    static SndBase *CreateObject(unsigned int allocator);
+    SFXObj_Reverb();
+    ~SFXObj_Reverb() override;
+    int GetController(int Index) override;
+    void AttachController(SFXCTL *psfxctl) override;
+    void SetupLoadData() override;
+    void SetupSFX(CSTATE_Base *_StateBase) override;
+    SFXCTL_Tunnel *m_pTunnelCtl; // offset 0x28, size 0x4
     void InitSFX() override;
+    void UpdateParams(float t) override;
+    void ProcessUpdate() override;
+    void Destroy() override;
 };
 
 #endif
