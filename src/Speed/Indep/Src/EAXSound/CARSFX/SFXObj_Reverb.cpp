@@ -36,8 +36,8 @@ void *SFXObj_Reverb::m_EchoBuffer;
 SFXObj_Reverb::ReverbStructure SFXObj_Reverb::m_EchoAllocs[4];
 
 void SFXObj_Reverb::ReverbStructure::Clear() {
-    Size = 0;
     Alloc = nullptr;
+    Size = 0;
 }
 
 SFXObj_Reverb::TypeInfo *SFXObj_Reverb::GetTypeInfo() const {
