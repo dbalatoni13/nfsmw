@@ -85,13 +85,13 @@ SFXObj_Woosh::SFXObj_Woosh()
     : CARSFX() {
     m_SndParams.Vol = 0x7FFF;
     m_SndParams.Pitch = 0x1000;
-    m_pWooshStich = nullptr;
     m_SndParams.ID = 0;
     m_SndParams.Az = 0;
     m_SndParams.Mag = 0;
     m_SndParams.RVerb = 0;
     m_pDriveByState = nullptr;
     m_pStitchData = nullptr;
+    m_pWooshStich = nullptr;
 }
 
 SFXObj_Woosh::~SFXObj_Woosh() {
