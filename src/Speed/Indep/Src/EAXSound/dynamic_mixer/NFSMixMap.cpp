@@ -558,6 +558,10 @@ stEvtMixCtlUniqueData *NFSMixMap::GetNextEvtMixCtlUnique(bool bincrement) {
     stEvtMixCtlUniqueData *pAddr;
 
     pAddr = m_pEvtMixCtlData_U + m_nAssignedEvtMixCtlUnique;
+    pAddr->qoutput = 0x7FFF;
+    pAddr->reset = 0;
+    pAddr->reset_level = -10000;
+    pAddr->output = 0;
     if (bincrement) {
         ++m_nAssignedEvtMixCtlUnique;
     }
@@ -676,21 +680,21 @@ stMixCtlProc *NFSMixMap::GetProcessMixCtlPtr(bool bincrement) {
 }
 
 int *NFSMixMap::GetNextInputBlock(bool bincrement) {
-    int blockIndex;
     int n;
+    int *pAddr;
     int *pclear;
 
-    blockIndex = m_nAssignedInputBlocks;
+    pAddr = reinterpret_cast<int *>(m_pDynMixInputBlocks) + (m_nAssignedInputBlocks * 0x10);
     if (bincrement) {
-        m_nAssignedInputBlocks = blockIndex + 1;
+        ++m_nAssignedInputBlocks;
     }
 
-    pclear = reinterpret_cast<int *>(m_pDynMixInputBlocks) + (blockIndex * 0x10);
-    for (n = 0; n < 0x10; n++) {
+    pclear = pAddr;
+    for (n = 0; n <= 0xF; n++) {
         *pclear++ = 0;
     }
 
-    return reinterpret_cast<int *>(m_pDynMixInputBlocks) + (blockIndex * 0x10);
+    return pAddr;
 }
 
 NFSMixMapState *NFSMixMap::GetNextMapState(bool bincrement) {
