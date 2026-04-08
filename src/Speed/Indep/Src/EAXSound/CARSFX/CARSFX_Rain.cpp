@@ -96,10 +96,12 @@ void CARSFX_Rain::Destroy() {
 }
 
 void CARSFX_Rain::QueueWeatherStream() {
+    int donePlaying;
     int nweathertype = 0;
 
     if (*reinterpret_cast<int *>(&m_bWeatherStreamQueued) != 1) {
-        if (Speech::Manager::GetSpeechModule(0)->DonePlaying() == 1) {
+        donePlaying = Speech::Manager::GetSpeechModule(0)->DonePlaying();
+        if (donePlaying == 1) {
             if (m_fWeatherIntensity < 0.5f) {
                 nweathertype = 0x016C4FA1;
                 MGamePlayMoment(UMath::Vector4::kZero, UMath::Vector4::kZero, UMath::Vector4::kZero, 0, nweathertype)
@@ -109,7 +111,7 @@ void CARSFX_Rain::QueueWeatherStream() {
                 MGamePlayMoment(UMath::Vector4::kZero, UMath::Vector4::kZero, UMath::Vector4::kZero, 0, nweathertype)
                     .Send(UCrc32("MomentStrm"));
             }
-            *reinterpret_cast<int *>(&m_bWeatherStreamQueued) = 1;
+            *reinterpret_cast<int *>(&m_bWeatherStreamQueued) = donePlaying;
         }
     }
 }
