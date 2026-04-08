@@ -172,3 +172,7 @@ Keep the cleanup only if the build succeeds and the relevant match status is unc
 - The trailing `//` initializer-list markers are an intentional repo convention, not noise to remove.
 - Small `if (ptr)` cleanup batches can be kept in match-sensitive code, but only after rebuilding the affected unit.
 - Dense frontend shim files benefit from multiline struct/prototype/function formatting.
+
+The Ghidra output of boolean logic is messy, use `bFadingOut = false;` instead of `*reinterpret_cast<int *>(&bFadingOut) = 0;`
+
+Use implicit conversion: Directly pass strings instead of `UCrc32(string)` 
