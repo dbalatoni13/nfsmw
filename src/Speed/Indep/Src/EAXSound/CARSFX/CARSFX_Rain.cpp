@@ -68,12 +68,12 @@ void CARSFX_Rain::InitSFX() {
 }
 
 void CARSFX_Rain::Play() {
-    if (!m_pCsisRain) {
-        g_pEAXSound->SetCsisName(this);
-        m_pCsisRain = new FX_Weather(0, 0, 0, 0, 0, 0, 25000, 0, 0x7FFF, 0);
+    if (m_pCsisRain) {
+        Destroy();
         *reinterpret_cast<int *>(&bFadingOut) = 0;
     } else {
-        Destroy();
+        g_pEAXSound->SetCsisName(this);
+        m_pCsisRain = new FX_Weather(0, 0, 0, 0, 0, 0, 25000, 0, 0x7FFF, 0);
         *reinterpret_cast<int *>(&bFadingOut) = 0;
     }
 }

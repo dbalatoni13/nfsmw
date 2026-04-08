@@ -1529,7 +1529,7 @@ struct FX_Weather {
         SetFilter_Effects_Dry_FX(filter_Effects_Dry_FX);
         SetFilter_Effects_Wet_FX(filter_Effects_Wet_FX);
 
-        int result = Csis::Class::CreateInstance(&Csis::gFX_WeatherHandle, &mData, &mpClass);
+        Csis::System::Result result = static_cast<Csis::System::Result>(Csis::Class::CreateInstance(&Csis::gFX_WeatherHandle, &mData, &mpClass));
         if (result < 0) {
             Csis::gFX_WeatherHandle.Set(&Csis::FX_WeatherId);
             Csis::Class::CreateInstance(&Csis::gFX_WeatherHandle, &mData, &mpClass);
