@@ -277,7 +277,7 @@ void NFSMixMap::PreProcessMixMap() {
 
                         uniqueCurve = true;
                         for (existingCurveIndex = 0; existingCurveIndex < ctlIndex; existingCurveIndex++) {
-                            if (pCurveIds[existingCurveIndex] == curveId) {
+                            if ((pCurveIds[existingCurveIndex] & 0xE0FFFFF0U) == (curveId & 0xE0FFFFF0U)) {
                                 uniqueCurve = false;
                             }
                         }
@@ -292,10 +292,10 @@ void NFSMixMap::PreProcessMixMap() {
                             unsigned char inputState;
 
                             inputState = *(reinterpret_cast<unsigned char *>(pScaleWord) + 1);
-                            if (inputState == n) {
-                                scaleParamsAdded++;
-                            } else {
+                            if (inputState != n) {
                                 scaleParamsAdded += m_StateRefCount[inputState];
+                            } else {
+                                scaleParamsAdded++;
                             }
 
                             pScaleWord++;
@@ -362,10 +362,10 @@ void NFSMixMap::PreProcessMixMap() {
                             unsigned char inputState;
 
                             inputState = *(reinterpret_cast<unsigned char *>(pScaleData) + 1);
-                            if (inputState == n) {
-                                scaleParamsAdded++;
-                            } else {
+                            if (inputState != n) {
                                 scaleParamsAdded += m_StateRefCount[inputState];
+                            } else {
+                                scaleParamsAdded++;
                             }
 
                             pScaleData += 4;
@@ -404,10 +404,10 @@ void NFSMixMap::PreProcessMixMap() {
                             unsigned char inputState;
 
                             inputState = *(reinterpret_cast<unsigned char *>(pInputData) + 1);
-                            if (inputState == n) {
-                                totalInputs++;
-                            } else {
+                            if (inputState != n) {
                                 totalInputs += m_StateRefCount[inputState];
+                            } else {
+                                totalInputs++;
                             }
 
                             pInputData++;
@@ -445,10 +445,10 @@ void NFSMixMap::PreProcessMixMap() {
                             unsigned char inputState;
 
                             inputState = *(reinterpret_cast<unsigned char *>(pInputData) + 1);
-                            if (inputState == n) {
-                                totalInputs++;
-                            } else {
+                            if (inputState != n) {
                                 totalInputs += m_StateRefCount[inputState];
+                            } else {
+                                totalInputs++;
                             }
 
                             pInputData++;
