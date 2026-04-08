@@ -331,14 +331,8 @@ void CARSFX_Shift::PlayShiftSnd() {
         ShiftVolScale = static_cast<float>(m_pShiftingPatternData->Down_Vol_Shift());
     }
 
-    RPM = GetPhysRPM();
-    RPMDifScale = (static_cast<float>(static_cast<int>(RPM)) - 1500.0f) * 0.00015384615f;
-    if (RPMDifScale < 0.0f) {
-        RPMDifScale = 0.0f;
-    }
-    if (1.0f < RPMDifScale) {
-        RPMDifScale = 1.0f;
-    }
+    RPM = m_pEAXCar->PhysRPM;
+    RPMDifScale = bClamp((static_cast<float>(static_cast<int>(RPM)) - 1500.0f) * 0.00015384615f, 0.0f, 1.0f);
     tempVol = g_nArrayCosTable[static_cast<int>(512.0f - (RPMDifScale * 0.9f + 0.1f) * 512.0f)];
     tempVol = static_cast<int>(ShiftVolScale) * tempVol >> 15;
 
@@ -354,8 +348,9 @@ void CARSFX_Shift::PlayShiftSnd() {
         m_ShiftGear = nullptr;
     }
 
-    CameraView = m_pEAXCar->GetPOV() == 0;
-    SampleID = static_cast<AEMS_SHIFTING_SAMPLES>((m_pShiftCtl->eShiftState - SHFT_UP_DISENGAGE < 3) ^ 1);
+    CameraView = m_pEAXCar->m_PovType == 0;
+    SampleID =
+        static_cast<AEMS_SHIFTING_SAMPLES>((m_pShiftCtl->eShiftState - SHFT_UP_DISENGAGE < 3) ? 1 : 0);
     g_pEAXSound->SetCsisName("SND: Shift");
     m_ShiftGear = new FX_SHIFTING_01(SampleID, tempVol, 0x1000, GetDMixOutput(0, DMX_AZIM), FXSHIFTING01TYPETYPE_SHIFT,
                                      CameraView);
