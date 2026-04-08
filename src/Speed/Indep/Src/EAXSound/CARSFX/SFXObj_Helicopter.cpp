@@ -17,21 +17,21 @@ SndBase *SFXObj_Helicopter::CreateObject(unsigned int allocator) {
 }
 
 SFXObj_Helicopter::SFXObj_Helicopter()
-    : CARSFX()
-    , m_pCsisHeli(nullptr) //
-    , m_pHeliCtl(nullptr) {
-    m_HeliAemsData.hELI_ID = 0;
-    m_HeliAemsData.hELI_Pitch_Offset = 0;
-    m_HeliAemsData.hELI_Stop = 0;
-    m_HeliAemsData.hELI_Volume = 0;
-    m_HeliAemsData.hELI_Azmuth = 0;
-    m_HeliAemsData.hELI_Speed = 0;
-    m_HeliAemsData.hELI_Distance = 0;
+    : CARSFX() {
     m_HeliAemsData.hELI_LowPass = 16000;
-    m_HeliAemsData.hELI_HiPass = 0;
+    m_pCsisHeli = nullptr;
+    m_HeliAemsData.hELI_Azmuth = 0;
+    m_HeliAemsData.hELI_Distance = 0;
     m_HeliAemsData.hELI_FX_Dry = 0;
     m_HeliAemsData.hELI_FX_Wet = 0;
+    m_HeliAemsData.hELI_ID = 0;
+    m_HeliAemsData.hELI_HiPass = 0;
+    m_HeliAemsData.hELI_Pitch_Offset = 0;
+    m_HeliAemsData.hELI_Speed = 0;
+    m_HeliAemsData.hELI_Stop = 0;
+    m_HeliAemsData.hELI_Volume = 0;
     m_HeliAemsData.hELI_Rotation = 0;
+    m_pHeliCtl = nullptr;
 }
 
 SFXObj_Helicopter::~SFXObj_Helicopter() {
