@@ -561,9 +561,9 @@ stEvtMixCtlUniqueData *NFSMixMap::GetNextEvtMixCtlUnique(bool bincrement) {
 
     pAddr = m_pEvtMixCtlData_U + m_nAssignedEvtMixCtlUnique;
     pAddr->qoutput = 0x7FFF;
+    pAddr->output = 0;
     pAddr->reset = 0;
     pAddr->reset_level = -10000;
-    pAddr->output = 0;
     if (bincrement) {
         ++m_nAssignedEvtMixCtlUnique;
     }
