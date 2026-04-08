@@ -9,6 +9,7 @@
 #include "Speed/Indep/Src/EAXSound/EAXCarState.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSndUtil.h"
 #include "Speed/Indep/Src/EAXSound/STICH_Playback.h"
+#include "Speed/Indep/Src/EAXSound/States/STATE_DriveBy.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_3DCarPos.hpp"
 #include "Speed/Indep/Src/EAXSound/snd_gen/ENVIRO_AEMS.h"
 

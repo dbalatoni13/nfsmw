@@ -158,6 +158,68 @@ void CARSFX_Turbo::UpdateParams(float t) {
     }
 }
 
+void CARSFX_Turbo::ProcessUpdate() {
+    if (m_pTurboBlowoffControl) {
+        int nDMixOut;
+        int Az;
+        int TmpBlowoffVol;
+
+        if (BlowoffID == 1) {
+            TmpBlowoffVol = GetDMixOutput(2, DMX_VOL);
+            Az = GetDMixOutput(0, DMX_AZIM);
+        } else {
+            TmpBlowoffVol = GetDMixOutput(3, DMX_VOL);
+            Az = GetDMixOutput(0, DMX_AZIM);
+        }
+
+        nDMixOut = static_cast<int>(static_cast<float>((BlowoffVol * TmpBlowoffVol) >> 15) * m_BlowoffRampDown.GetValue());
+        m_pTurboBlowoffControl->SetAzimuth(Az);
+        m_pTurboBlowoffControl->SetVolume(nDMixOut);
+        m_pTurboBlowoffControl->CommitMemberData();
+    }
+
+    if (m_pTurboSplControl) {
+        int Az;
+        int nDMixOut;
+        int Tmpvol_Spool;
+
+        Az = GetDMixOutput(0, DMX_AZIM);
+        nDMixOut = GetDMixOutput(1, DMX_VOL);
+        Tmpvol_Spool = vol_Spool * nDMixOut >> 15;
+        m_pTurboSplControl->SetVolume(Tmpvol_Spool);
+        m_pTurboSplControl->SetPSI(static_cast<int>(SpoolPercent * 1024.0f));
+        m_pTurboSplControl->SetAzimuth(Az);
+        m_pTurboSplControl->SetRotation(static_cast<int>(GetPhysTRQ() * 10.24f));
+        m_pTurboSplControl->SetRPM(static_cast<int>(GetPhysRPM()));
+        m_pTurboSplControl->CommitMemberData();
+    }
+}
+
+int CARSFX_Turbo::PlayBlowoff(int, int, int, int, int rotation) {
+    if (IsEnabled() && IsSoundEnabled == 1 && !m_pTurboBlowoffControl) {
+        BlowoffID = 1;
+        if (SpoolPercent > 0.75f) {
+            BlowoffID = g_pEAXSound->Random(2) + 2;
+        }
+
+        if (BlowoffID == 1) {
+            BlowoffVol = static_cast<int>(m_pTurboData->Vol_Blowoff1() * SpoolPercent);
+        } else {
+            BlowoffVol = static_cast<int>(m_pTurboData->Vol_Blowoff2() * SpoolPercent);
+        }
+
+        g_pEAXSound->SetCsisName("SND: Turbo");
+        m_pTurboBlowoffControl =
+            new FX_TURBO_01(BlowoffID, 0, static_cast<int>(SpoolPercent * 1024.0f), 0, rotation, static_cast<int>(GetPhysRPM()));
+        gnMemLeakTurboBLOWOFFCountTest++;
+        m_refCount = static_cast<unsigned short>(m_pTurboBlowoffControl ? m_pTurboBlowoffControl->GetRefCount() : 0);
+        tLastBlowoffTime = m_pStateBase->GetCurTime();
+        m_BlowoffRampDown.Initialize(1.0f, 1.0f, 1, LINEAR);
+    }
+
+    return 0;
+}
+
 bool CARSFX_Turbo::IsBlowOffDone() {
     if (!m_pTurboBlowoffControl) {
         return true;
@@ -191,31 +253,6 @@ void CARSFX_Turbo::StopBlowOff() {
     }
 }
 
-int CARSFX_Turbo::PlayBlowoff(int, int, int, int, int rotation) {
-    if (IsEnabled() && IsSoundEnabled == 1 && !m_pTurboBlowoffControl) {
-        BlowoffID = 1;
-        if (SpoolPercent > 0.75f) {
-            BlowoffID = g_pEAXSound->Random(2) + 2;
-        }
-
-        if (BlowoffID == 1) {
-            BlowoffVol = static_cast<int>(m_pTurboData->Vol_Blowoff1() * SpoolPercent);
-        } else {
-            BlowoffVol = static_cast<int>(m_pTurboData->Vol_Blowoff2() * SpoolPercent);
-        }
-
-        g_pEAXSound->SetCsisName("SND: Turbo");
-        m_pTurboBlowoffControl =
-            new FX_TURBO_01(BlowoffID, 0, static_cast<int>(SpoolPercent * 1024.0f), 0, rotation, static_cast<int>(GetPhysRPM()));
-        gnMemLeakTurboBLOWOFFCountTest++;
-        m_refCount = static_cast<unsigned short>(m_pTurboBlowoffControl ? m_pTurboBlowoffControl->GetRefCount() : 0);
-        tLastBlowoffTime = m_pStateBase->GetCurTime();
-        m_BlowoffRampDown.Initialize(1.0f, 1.0f, 1, LINEAR);
-    }
-
-    return 0;
-}
-
 int CARSFX_Turbo::PlaySpl(int _ID, int Vol, int PSI, int, int rotation) {
     int nDMixOut;
 
@@ -230,6 +267,9 @@ int CARSFX_Turbo::PlaySpl(int _ID, int Vol, int PSI, int, int rotation) {
     return 0;
 }
 
+void CARSFX_Turbo::ResetSpool() {
+    SpoolCharge = 0.0f;
+}
 int CARSFX_Turbo::UpdateSpool(float t) {
     int RPM;
     float SpoolChargeRPMScale;
@@ -271,43 +311,6 @@ int CARSFX_Turbo::UpdateSpool(float t) {
     return 0;
 }
 
-void CARSFX_Turbo::ProcessUpdate() {
-    if (m_pTurboBlowoffControl) {
-        int nDMixOut;
-        int Az;
-        int TmpBlowoffVol;
-
-        if (BlowoffID == 1) {
-            TmpBlowoffVol = GetDMixOutput(2, DMX_VOL);
-            Az = GetDMixOutput(0, DMX_AZIM);
-        } else {
-            TmpBlowoffVol = GetDMixOutput(3, DMX_VOL);
-            Az = GetDMixOutput(0, DMX_AZIM);
-        }
-
-        nDMixOut = static_cast<int>(static_cast<float>((BlowoffVol * TmpBlowoffVol) >> 15) * m_BlowoffRampDown.GetValue());
-        m_pTurboBlowoffControl->SetAzimuth(Az);
-        m_pTurboBlowoffControl->SetVolume(nDMixOut);
-        m_pTurboBlowoffControl->CommitMemberData();
-    }
-
-    if (m_pTurboSplControl) {
-        int Az;
-        int nDMixOut;
-        int Tmpvol_Spool;
-
-        Az = GetDMixOutput(0, DMX_AZIM);
-        nDMixOut = GetDMixOutput(1, DMX_VOL);
-        Tmpvol_Spool = vol_Spool * nDMixOut >> 15;
-        m_pTurboSplControl->SetVolume(Tmpvol_Spool);
-        m_pTurboSplControl->SetPSI(static_cast<int>(SpoolPercent * 1024.0f));
-        m_pTurboSplControl->SetAzimuth(Az);
-        m_pTurboSplControl->SetRotation(static_cast<int>(GetPhysTRQ() * 10.24f));
-        m_pTurboSplControl->SetRPM(static_cast<int>(GetPhysRPM()));
-        m_pTurboSplControl->CommitMemberData();
-    }
-}
-
 void CARSFX_Turbo::SetupLoadData() {
     if (EAXCar::g_TurboInfo) {
         LoadAsset(EAXCar::g_TurboInfo->BankName(), SNDPATH_TURBO, EAXSND_DT_AEMS_ASYNCSPUMEM, eBANK_SLOT_NONE, true);
@@ -316,6 +319,3 @@ void CARSFX_Turbo::SetupLoadData() {
     }
 }
 
-void CARSFX_Turbo::ResetSpool() {
-    SpoolCharge = 0.0f;
-}

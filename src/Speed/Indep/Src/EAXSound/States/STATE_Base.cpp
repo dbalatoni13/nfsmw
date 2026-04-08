@@ -5,11 +5,6 @@
 
 extern int g_DMIX_DummyOutputBlock[];
 extern int g_DMIX_DummyInputBlock[];
-extern bool g_EAXIsPaused(void);
-
-CSTATE_Base::StateInfo *CSTATE_Base::GetStateInfo(void) const {
-    return &s_StateInfo;
-}
 const char *CSTATE_Base::GetStateName(void) const {
     return s_StateInfo.stateName;
 }
@@ -39,58 +34,6 @@ void CSTATE_Base::Setup(int _m_SFXFlags) {
     bIsAttached = false;
     CreateSFXObjs();
     CreateSFXCtrls();
-}
-
-bool CSTATE_Base::Detach() {
-    SndBase *CurSFXObj;
-    SndBase *CurSFXCtl;
-
-    bIsAttached = false;
-    m_pAttachment = nullptr;
-
-    CurSFXObj = m_pHeadSFXObj;
-    while (CurSFXObj) {
-        int iVar7 = 0;
-        int iVar9 = 0;
-        SndAssetQueue::iterator ptr = gAEMSMgr.mWaitForResolve.begin();
-
-        CurSFXObj->Detach();
-        CurSFXObj->GetInputBlockPtr()[15] = 0;
-
-        while (ptr != gAEMSMgr.mWaitForResolve.end()) {
-            if ((*ptr).pThis == CurSFXObj) {
-                iVar7 = (*ptr).Asset.FileName.GetHash32();
-                iVar9 = reinterpret_cast<int>((*ptr).Asset.FileName.GetString());
-                break;
-            }
-            ++ptr;
-        }
-
-        if (iVar7 != 0 || iVar9 != 0) {
-ReprocessQueue:
-            ptr = gAEMSMgr.mWaitForResolve.begin();
-            while (ptr != gAEMSMgr.mWaitForResolve.end()) {
-                if ((*ptr).Asset.FileName.GetHash32() == iVar7 &&
-                    reinterpret_cast<int>((*ptr).Asset.FileName.GetString()) == iVar9) {
-                    gAEMSMgr.mWaitForResolve.remove(*ptr);
-                    goto ReprocessQueue;
-                }
-                ++ptr;
-            }
-        }
-
-        bMemSet(CurSFXObj->GetOutputBlockPtr(), 0, 0x40);
-        CurSFXObj = CurSFXObj->m_pNextSFX;
-    }
-
-    CurSFXCtl = m_pHeadSFXCTL;
-    while (CurSFXCtl) {
-        CurSFXCtl->Detach();
-        bMemSet(CurSFXCtl->GetOutputBlockPtr(), 0, 0x40);
-        CurSFXCtl = CurSFXCtl->m_pNextSFX;
-    }
-
-    return true;
 }
 
 CSTATE_Base::~CSTATE_Base() {
@@ -195,52 +138,6 @@ void CSTATE_Base::CreateSFXObjs() {
     }
 }
 
-void CSTATE_Base::NewSFXObj(int ecarsfx) {
-    int groupID = m_InstNum;
-    SndBase *NewlyCreatedSFXObj = m_pStateMgr->CreateSFX(groupID, ecarsfx);
-    if (NewlyCreatedSFXObj) {
-        NewlyCreatedSFXObj->SetupSFX(this);
-        m_NumLoadedSFXObj++;
-        if (!m_pHeadSFXObj) {
-            m_pHeadSFXObj = NewlyCreatedSFXObj;
-        } else {
-            SndBase *LastSFXObj = m_pHeadSFXObj;
-            while (LastSFXObj->m_pNextSFX) {
-                LastSFXObj = LastSFXObj->m_pNextSFX;
-            }
-
-            LastSFXObj->m_pNextSFX = NewlyCreatedSFXObj;
-        }
-    }
-}
-
-SFXCTL *CSTATE_Base::NewSFXCtrl(int esfxctl) {
-    int groupID;
-    SndBase *NewSFXCTL = HasCtrlBeenAdded(esfxctl);
-    if (!NewSFXCTL) {
-        if (esfxctl == -1) {
-            return nullptr;
-        }
-
-        groupID = m_InstNum;
-        NewSFXCTL = m_pStateMgr->CreateSFXCTL(groupID, esfxctl);
-        NewSFXCTL->SetupSFX(this);
-        if (!m_pHeadSFXCTL) {
-            m_pHeadSFXCTL = NewSFXCTL;
-        } else {
-            SndBase *LastSFX = m_pHeadSFXCTL;
-            while (LastSFX->m_pNextSFX) {
-                LastSFX = LastSFX->m_pNextSFX;
-            }
-
-            LastSFX->m_pNextSFX = NewSFXCTL;
-        }
-
-        m_NumLoadedSFXCTL++;
-    }
-    return static_cast<SFXCTL *>(NewSFXCTL);
-}
-
 void CSTATE_Base::ForceCreateSFXCtrls(int iSFXCtrls) {
     for (int n = 0; n < 32; n++) {
         if ((iSFXCtrls >> n) & 1) {
@@ -328,6 +225,52 @@ void CSTATE_Base::SortSFXCtl() {
     } while (bFound);
 }
 
+void CSTATE_Base::NewSFXObj(int ecarsfx) {
+    int groupID = m_InstNum;
+    SndBase *NewlyCreatedSFXObj = m_pStateMgr->CreateSFX(groupID, ecarsfx);
+    if (NewlyCreatedSFXObj) {
+        NewlyCreatedSFXObj->SetupSFX(this);
+        m_NumLoadedSFXObj++;
+        if (!m_pHeadSFXObj) {
+            m_pHeadSFXObj = NewlyCreatedSFXObj;
+        } else {
+            SndBase *LastSFXObj = m_pHeadSFXObj;
+            while (LastSFXObj->m_pNextSFX) {
+                LastSFXObj = LastSFXObj->m_pNextSFX;
+            }
+
+            LastSFXObj->m_pNextSFX = NewlyCreatedSFXObj;
+        }
+    }
+}
+
+SFXCTL *CSTATE_Base::NewSFXCtrl(int esfxctl) {
+    int groupID;
+    SndBase *NewSFXCTL = HasCtrlBeenAdded(esfxctl);
+    if (!NewSFXCTL) {
+        if (esfxctl == -1) {
+            return nullptr;
+        }
+
+        groupID = m_InstNum;
+        NewSFXCTL = m_pStateMgr->CreateSFXCTL(groupID, esfxctl);
+        NewSFXCTL->SetupSFX(this);
+        if (!m_pHeadSFXCTL) {
+            m_pHeadSFXCTL = NewSFXCTL;
+        } else {
+            SndBase *LastSFX = m_pHeadSFXCTL;
+            while (LastSFX->m_pNextSFX) {
+                LastSFX = LastSFX->m_pNextSFX;
+            }
+
+            LastSFX->m_pNextSFX = NewSFXCTL;
+        }
+
+        m_NumLoadedSFXCTL++;
+    }
+    return static_cast<SFXCTL *>(NewSFXCTL);
+}
+
 SFXCTL *CSTATE_Base::HasCtrlBeenAdded(int esfxctrl) {
     SndBase *CurSFXCtl = m_pHeadSFXCTL;
     while (CurSFXCtl) {
@@ -338,17 +281,6 @@ SFXCTL *CSTATE_Base::HasCtrlBeenAdded(int esfxctrl) {
         CurSFXCtl = CurSFXCtl->m_pNextSFX;
     }
     return nullptr;
-}
-
-bool CSTATE_Base::IsDataLoaded(void) {
-    SndAssetQueue &cbs = gAEMSMgr.mWaitForResolve;
-    for (SndAssetQueue::iterator i = cbs.begin(); i != cbs.end(); i++) {
-        stSndAssetQueue &data = *i;
-        if (data.pThis && data.pThis->GetStateBase() == this) {
-            return false;
-        }
-    }
-    return true;
 }
 
 void CSTATE_Base::LoadData() {
@@ -456,6 +388,17 @@ SndBase *CSTATE_Base::GetSFXCTLObject(int SFXId) {
     return CurSFXCtl;
 }
 
+bool CSTATE_Base::IsDataLoaded(void) {
+    SndAssetQueue &cbs = gAEMSMgr.mWaitForResolve;
+    for (SndAssetQueue::iterator i = cbs.begin(); i != cbs.end(); i++) {
+        stSndAssetQueue &data = *i;
+        if (data.pThis && data.pThis->GetStateBase() == this) {
+            return false;
+        }
+    }
+    return true;
+}
+
 void CSTATE_Base::Attach(void *pAttachment) {
     SndBase *CurSFXCtl = m_pHeadSFXCTL;
 
@@ -472,4 +415,61 @@ void CSTATE_Base::Attach(void *pAttachment) {
     LoadData();
 }
 
+bool CSTATE_Base::Detach() {
+    SndBase *CurSFXObj;
+    SndBase *CurSFXCtl;
+
+    bIsAttached = false;
+    m_pAttachment = nullptr;
+
+    CurSFXObj = m_pHeadSFXObj;
+    while (CurSFXObj) {
+        int iVar7 = 0;
+        int iVar9 = 0;
+        SndAssetQueue::iterator ptr = gAEMSMgr.mWaitForResolve.begin();
+
+        CurSFXObj->Detach();
+        CurSFXObj->GetInputBlockPtr()[15] = 0;
+
+        while (ptr != gAEMSMgr.mWaitForResolve.end()) {
+            if ((*ptr).pThis == CurSFXObj) {
+                iVar7 = (*ptr).Asset.FileName.GetHash32();
+                iVar9 = reinterpret_cast<int>((*ptr).Asset.FileName.GetString());
+                break;
+            }
+            ++ptr;
+        }
+
+        if (iVar7 != 0 || iVar9 != 0) {
+ReprocessQueue:
+            ptr = gAEMSMgr.mWaitForResolve.begin();
+            while (ptr != gAEMSMgr.mWaitForResolve.end()) {
+                if ((*ptr).Asset.FileName.GetHash32() == iVar7 &&
+                    reinterpret_cast<int>((*ptr).Asset.FileName.GetString()) == iVar9) {
+                    gAEMSMgr.mWaitForResolve.remove(*ptr);
+                    goto ReprocessQueue;
+                }
+                ++ptr;
+            }
+        }
+
+        bMemSet(CurSFXObj->GetOutputBlockPtr(), 0, 0x40);
+        CurSFXObj = CurSFXObj->m_pNextSFX;
+    }
+
+    CurSFXCtl = m_pHeadSFXCTL;
+    while (CurSFXCtl) {
+        CurSFXCtl->Detach();
+        bMemSet(CurSFXCtl->GetOutputBlockPtr(), 0, 0x40);
+        CurSFXCtl = CurSFXCtl->m_pNextSFX;
+    }
+
+    return true;
+}
+
 void CSTATE_Base::PreLoadAssets() {}
+extern bool g_EAXIsPaused(void);
+
+CSTATE_Base::StateInfo *CSTATE_Base::GetStateInfo(void) const {
+    return &s_StateInfo;
+}

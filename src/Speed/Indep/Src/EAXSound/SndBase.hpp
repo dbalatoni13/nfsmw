@@ -120,8 +120,4 @@ struct SndBase : public AudioMemBase {
 
 #include "Speed/Indep/Src/EAXSound/States/STATE_Base.hpp"
 
-inline EAX_CarState *SndBase::GetPhysCar() {
-    return m_pStateBase->GetPhysCar();
-}
-
 #endif

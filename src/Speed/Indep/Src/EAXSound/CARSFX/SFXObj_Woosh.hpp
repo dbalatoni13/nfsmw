@@ -7,9 +7,8 @@
 
 #include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX.hpp"
 #include "Speed/Indep/Src/EAXSound/STICH_Playback.h"
+#include "Speed/Indep/Src/EAXSound/States/STATE_DriveBy.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_3DObjPos.hpp"
-
-struct CSTATE_DriveBy;
 
 enum STICH_WHOOSH_TYPE {
     WHSH_Bridge_Slow_01 = 0,
@@ -103,6 +102,8 @@ enum STICH_WHOOSH_TYPE {
     WHSH_TunOut_Fast_02 = 88,
     WHSH_TunOut_Fast_03 = 89,
 };
+
+void GetWooshBlockSizeParams(eDRIVE_BY_TYPE type, STICH_WHOOSH_TYPE &base, int &numblocks, int &sizeperblock);
 
 struct SFXObj_Woosh : public CARSFX {
   protected:

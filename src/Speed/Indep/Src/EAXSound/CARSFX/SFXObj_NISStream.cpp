@@ -217,6 +217,22 @@ SndBase::TypeInfo SFXObj_NISStream::s_TypeInfo = { 0, "SFXObj_NISStream", nullpt
 
 NISStringHashMapEntry uNIS_STRINGHASHMAP[68];
 
+SndBase::TypeInfo *SFXObj_NISStream::GetTypeInfo() const {
+    return &s_TypeInfo;
+}
+
+const char *SFXObj_NISStream::GetTypeName() const {
+    return s_TypeInfo.typeName;
+}
+
+SndBase *SFXObj_NISStream::CreateObject(unsigned int allocator) {
+    if (!allocator) {
+        return new (SFXObj_NISStream::GetStaticTypeInfo()->typeName, false) SFXObj_NISStream();
+    }
+
+    return new (SFXObj_NISStream::GetStaticTypeInfo()->typeName, true) SFXObj_NISStream();
+}
+
 int GetCsisEventIndex(unsigned int hashid) {
     for (int n = 0; n < 68; n++) {
         if (uNIS_STRINGHASHMAP[n].Hash == hashid) {
@@ -302,22 +318,6 @@ void GenerateNISAnimHashMap() {
     INIT_NIS_ENTRY(0x43, 0x100000, "EndingNis04");
 }
 
-SndBase::TypeInfo *SFXObj_NISStream::GetTypeInfo() const {
-    return &s_TypeInfo;
-}
-
-const char *SFXObj_NISStream::GetTypeName() const {
-    return s_TypeInfo.typeName;
-}
-
-SndBase *SFXObj_NISStream::CreateObject(unsigned int allocator) {
-    if (!allocator) {
-        return new (SFXObj_NISStream::GetStaticTypeInfo()->typeName, false) SFXObj_NISStream();
-    }
-
-    return new (SFXObj_NISStream::GetStaticTypeInfo()->typeName, true) SFXObj_NISStream();
-}
-
 SFXObj_NISStream::SFXObj_NISStream()
     : CARSFX() {
     m_bNISAnimationReady = false;
@@ -348,10 +348,6 @@ bool SFXObj_NISStream::QueueNISStream(unsigned int anim_id, int camera_track_num
     m_mselapsedtimecb = setmstimecb;
     m_mstimeelapsed = 0;
     return QueueNISStream(anim_id, camera_track_number, bbuttonthrough, true);
-}
-
-void SFXObj_NISStream::StopStream() {
-    Speech::Manager::GetSpeechModule(0)->PurgeSpeech();
 }
 
 bool SFXObj_NISStream::QueueNISStream(unsigned int anim_id, int camera_track_number, bool bbuttonthrough,
@@ -571,6 +567,10 @@ bool SFXObj_NISStream::QueueNISStream(unsigned int anim_id, int camera_track_num
     return id;
 }
 
+void SFXObj_NISStream::StopStream() {
+    Speech::Manager::GetSpeechModule(0)->PurgeSpeech();
+}
+
 void SFXObj_NISStream::NISActivityDone() {
     SFXObj_Pathfinder *ppf;
 
@@ -594,24 +594,6 @@ void SFXObj_NISStream::StartNIS() {
         Speech::Manager::GetSpeechModule(0)->PlayStream(2);
         SNDSYS_service();
         m_bNISAudioStreamReady = false;
-    }
-}
-
-void SFXObj_NISStream::PlayNISStream() {
-    Speech::Module *nismgr;
-    EAXS_StreamChannel *pch;
-
-    m_bNISAudioStreamReady = true;
-    m_bNISButtonThroughReady = false;
-    m_mstimeelapsed = 0;
-    m_mslengthofstream = 0;
-    nismgr = Speech::Manager::GetSpeechModule(0);
-    pch = nismgr->GetStreamChannel();
-    m_mslengthofstream = pch->GetTimeRemaining();
-
-    if (m_bIsButtonThrough) {
-        nismgr = Speech::Manager::GetSpeechModule(0);
-        nismgr->PlayStream(2);
     }
 }
 
@@ -652,6 +634,24 @@ void SFXObj_NISStream::UpdateParams(float t) {
             m_bNISAudioStreamReady = false;
             m_bBackupStreamCleared = false;
         }
+    }
+}
+
+void SFXObj_NISStream::PlayNISStream() {
+    Speech::Module *nismgr;
+    EAXS_StreamChannel *pch;
+
+    m_bNISAudioStreamReady = true;
+    m_bNISButtonThroughReady = false;
+    m_mstimeelapsed = 0;
+    m_mslengthofstream = 0;
+    nismgr = Speech::Manager::GetSpeechModule(0);
+    pch = nismgr->GetStreamChannel();
+    m_mslengthofstream = pch->GetTimeRemaining();
+
+    if (m_bIsButtonThrough) {
+        nismgr = Speech::Manager::GetSpeechModule(0);
+        nismgr->PlayStream(2);
     }
 }
 

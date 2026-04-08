@@ -34,12 +34,6 @@ SFXObj_FEHUD::~SFXObj_FEHUD() {
     g_pEAXSound->SetSFXBaseObject(nullptr, eMM_MAIN, 7, 0);
 }
 
-int SFXObj_FEHUD::GetController(int Index) {
-    return -1;
-}
-
-void SFXObj_FEHUD::AttachController(SFXCTL *psfxctl) {}
-
 void SFXObj_FEHUD::InitSFX() {
     SndBase::InitSFX();
     g_pEAXSound->SetSFXBaseObject(this, eMM_MAIN, 7, 0);
@@ -51,3 +45,9 @@ void SFXObj_FEHUD::UpdateMixerOutputs() {
     bMemSet(GetOutputBlockPtr(), '\0', 0x3C);
     bMemCpy(GetOutputBlockPtr(), GameFlowSndState, 0x3C);
 }
+int SFXObj_FEHUD::GetController(int Index) {
+    return -1;
+}
+
+void SFXObj_FEHUD::AttachController(SFXCTL *psfxctl) {}
+

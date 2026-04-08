@@ -15,52 +15,6 @@ SndBase::TypeInfo SFXCTL_3DRearPos::s_TypeInfo = {
     SFXCTL_3DRearPos::CreateObject,
 };
 
-SndBase::TypeInfo *SFXCTL_3DRearPos::GetTypeInfo() const {
-    return &s_TypeInfo;
-}
-
-const char *SFXCTL_3DRearPos::GetTypeName() const {
-    return s_TypeInfo.typeName;
-}
-
-SndBase *SFXCTL_3DRearPos::CreateObject(unsigned int allocator) {
-    if (allocator == 0) {
-        return new (s_TypeInfo.typeName, false) SFXCTL_3DRearPos();
-    }
-    return new (s_TypeInfo.typeName, true) SFXCTL_3DRearPos();
-}
-
-void SFXCTL_3DRearPos::InitSFX() {
-    SFXCTL_3DCarPos::InitSFX();
-}
-
-void SFXCTL_3DRearPos::UpdateParams(float t) {
-    bVector3 vfwrd;
-    float OffsetToUse;
-
-    vRearPos = *GetPhysCar()->GetPosition();
-    vfwrd = *GetPhysCar()->GetForwardVector();
-    OffsetToUse = 2.0f;
-    if (m_pEAXCar->GetPOV() != 0 && m_pEAXCar->GetPOV() != 1) {
-        int id;
-        bVector3 cpos;
-        bVector3 tempRearPos;
-        float distbetween;
-
-        id = bClamp(m_pStateBase->m_InstNum, 0, 1);
-        cpos = *SndCamera::GetCamPos(id);
-        tempRearPos = vRearPos;
-        tempRearPos.z = 0.0f;
-        cpos.z = 0.0f;
-        distbetween = bDistBetween(&tempRearPos, &cpos);
-        OffsetToUse = bMin(distbetween - 10.0f, 2.0f);
-    }
-    vRearPos = bAdd(vRearPos, bScale(vfwrd, -OffsetToUse));
-    SFXCTL_3DObjPos::UpdateParams(t);
-}
-
-bool CSTATEMGR_PlayerCar::IsTruck = false;
-
 CSTATEMGR_PlayerCar::CSTATEMGR_PlayerCar() {}
 
 CSTATEMGR_PlayerCar::~CSTATEMGR_PlayerCar() {}
@@ -113,4 +67,50 @@ void CSTATEMGR_PlayerCar::UpdateParams(float t) {
     ProfileNode profile_node("TODO", 0);
 
     CSTATEMGR_Base::UpdateParams(t);
+}
+
+SndBase::TypeInfo *SFXCTL_3DRearPos::GetTypeInfo() const {
+    return &s_TypeInfo;
+}
+
+bool CSTATEMGR_PlayerCar::IsTruck = false;
+
+const char *SFXCTL_3DRearPos::GetTypeName() const {
+    return s_TypeInfo.typeName;
+}
+
+SndBase *SFXCTL_3DRearPos::CreateObject(unsigned int allocator) {
+    if (allocator == 0) {
+        return new (s_TypeInfo.typeName, false) SFXCTL_3DRearPos();
+    }
+    return new (s_TypeInfo.typeName, true) SFXCTL_3DRearPos();
+}
+
+void SFXCTL_3DRearPos::InitSFX() {
+    SFXCTL_3DCarPos::InitSFX();
+}
+
+void SFXCTL_3DRearPos::UpdateParams(float t) {
+    bVector3 vfwrd;
+    float OffsetToUse;
+
+    vRearPos = *GetPhysCar()->GetPosition();
+    vfwrd = *GetPhysCar()->GetForwardVector();
+    OffsetToUse = 2.0f;
+    if (m_pEAXCar->GetPOV() != 0 && m_pEAXCar->GetPOV() != 1) {
+        int id;
+        bVector3 cpos;
+        bVector3 tempRearPos;
+        float distbetween;
+
+        id = bClamp(m_pStateBase->m_InstNum, 0, 1);
+        cpos = *SndCamera::GetCamPos(id);
+        tempRearPos = vRearPos;
+        tempRearPos.z = 0.0f;
+        cpos.z = 0.0f;
+        distbetween = bDistBetween(&tempRearPos, &cpos);
+        OffsetToUse = bMin(distbetween - 10.0f, 2.0f);
+    }
+    vRearPos = bAdd(vRearPos, bScale(vfwrd, -OffsetToUse));
+    SFXCTL_3DObjPos::UpdateParams(t);
 }

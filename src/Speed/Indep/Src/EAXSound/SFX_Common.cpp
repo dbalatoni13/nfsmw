@@ -61,19 +61,36 @@ SFX_Common::~SFX_Common() {
 
 void SFX_Common::AttachController(SFXCTL *) {}
 
-void SFX_Common::SetupLoadData() {
-    LoadAsset(g_pEAXSound->GetAttributes()->AEMS_FEBanks(1), SNDPATH_GLOBAL, EAXSND_DT_AEMS_ASYNCSPUMEM, eBANK_SLOT_NONE,
-              true);
-    if (g_pEAXSound->GetSndGameMode() == SND_FRONTEND) {
-        LoadAsset(g_pEAXSound->GetAttributes()->AEMS_FEBanks(0), SNDPATH_FE, EAXSND_DT_AEMS_ASYNCSPUMEM, eBANK_SLOT_NONE,
-                  true);
-    }
-}
-
-void SFX_Common::InitSFX() {}
-
 void SFX_Common::Destroy() {}
 
+void SFX_Common::MsgPlayMiscSound(const MMiscSound &message) {
+    SetDMIX_Input(message.GetSoundID(), 0x7FFF);
+
+    switch (message.GetSoundID()) {
+    case 1:
+        if (!m_pUves) {
+            m_pUves = new FX_UVES(0, 0, 0, 0, 0, 0);
+        }
+        break;
+    case 2:
+        if (!m_pcsisCameraShot) {
+            m_pcsisCameraShot = new FX_Camera(0, GetDMixOutput(0, DMX_VOL), 0, 0, 0, 0, 0, 0);
+        }
+        break;
+    case 3:
+        delete m_pPursuitBreakStart;
+        m_pPursuitBreakStart = new FX_UVES(2, 0, 0, 0, 0, 0);
+        m_pPursuitBreakStart->GetRefCount();
+        break;
+    case 4:
+        delete m_pPursuitBreakEnd;
+        m_pPursuitBreakEnd = new FX_UVES(1, 0, 0, 0, 0, 0);
+        m_pPursuitBreakEnd->GetRefCount();
+        break;
+    default:
+        break;
+    }
+}
 void SFX_Common::UpdateParams(float) {}
 
 void SFX_Common::ProcessUpdate() {
@@ -128,31 +145,14 @@ void SFX_Common::ProcessUpdate() {
     bMemSet(GetOutputBlockPtr(), '\0', 0x14);
 }
 
-void SFX_Common::MsgPlayMiscSound(const MMiscSound &message) {
-    SetDMIX_Input(message.GetSoundID(), 0x7FFF);
-
-    switch (message.GetSoundID()) {
-    case 1:
-        if (!m_pUves) {
-            m_pUves = new FX_UVES(0, 0, 0, 0, 0, 0);
-        }
-        break;
-    case 2:
-        if (!m_pcsisCameraShot) {
-            m_pcsisCameraShot = new FX_Camera(0, GetDMixOutput(0, DMX_VOL), 0, 0, 0, 0, 0, 0);
-        }
-        break;
-    case 3:
-        delete m_pPursuitBreakStart;
-        m_pPursuitBreakStart = new FX_UVES(2, 0, 0, 0, 0, 0);
-        m_pPursuitBreakStart->GetRefCount();
-        break;
-    case 4:
-        delete m_pPursuitBreakEnd;
-        m_pPursuitBreakEnd = new FX_UVES(1, 0, 0, 0, 0, 0);
-        m_pPursuitBreakEnd->GetRefCount();
-        break;
-    default:
-        break;
+void SFX_Common::SetupLoadData() {
+    LoadAsset(g_pEAXSound->GetAttributes()->AEMS_FEBanks(1), SNDPATH_GLOBAL, EAXSND_DT_AEMS_ASYNCSPUMEM, eBANK_SLOT_NONE,
+              true);
+    if (g_pEAXSound->GetSndGameMode() == SND_FRONTEND) {
+        LoadAsset(g_pEAXSound->GetAttributes()->AEMS_FEBanks(0), SNDPATH_FE, EAXSND_DT_AEMS_ASYNCSPUMEM, eBANK_SLOT_NONE,
+                  true);
     }
 }
+
+void SFX_Common::InitSFX() {}
+

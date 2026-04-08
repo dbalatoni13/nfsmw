@@ -16,15 +16,7 @@ ClassHandle gFX_SHIFTING_01Handle;
 
 extern int IsSoundEnabled;
 extern int g_nArrayCosTable[0x201];
-Slope ShiftingAttackVolSlope(1.0f, 32767.0f, 4000.0f, 7000.0f);
-
-CARSFX_Shift::TypeInfo CARSFX_Shift::s_TypeInfo = {
-    0x00020030,
-    "CARSFX_Shift",
-    &SndBase::s_TypeInfo,
-    CARSFX_Shift::CreateObject,
-};
-
+extern Slope ShiftingAttackVolSlope;
 CARSFX_Shift::TypeInfo *CARSFX_Shift::GetTypeInfo() const {
     return &s_TypeInfo;
 }
@@ -196,20 +188,6 @@ void CARSFX_Shift::UpdateParams(float t) {
         }
     } else {
         PlayBrakesMashed();
-    }
-}
-
-void CARSFX_Shift::SetupLoadData() {
-    unsigned int i;
-
-    if (EAXCar::g_ShiftInfo) {
-        LoadAsset(EAXCar::g_ShiftInfo->BankName(), SNDPATH_SHIFT, EAXSND_DT_AEMS_ASYNCSPUMEM, eBANK_SLOT_NONE, true);
-    } else {
-        LoadAsset(m_pEAXCar->GetShiftInfo().BankName(), SNDPATH_SHIFT, EAXSND_DT_AEMS_ASYNCSPUMEM, eBANK_SLOT_NONE, true);
-    }
-
-    for (i = 0; i < m_pEAXCar->GetAttributes().Num_SweetBank(); i++) {
-        LoadAsset(m_pEAXCar->GetAttributes().SweetBank(i), SNDPATH_ENGINE, EAXSND_DT_AEMS_ASYNCSPUMEM, eBANK_SLOT_NONE, true);
     }
 }
 
@@ -408,3 +386,25 @@ void CARSFX_Shift::ProcessUpdate() {
         }
     }
 }
+void CARSFX_Shift::SetupLoadData() {
+    unsigned int i;
+
+    if (EAXCar::g_ShiftInfo) {
+        LoadAsset(EAXCar::g_ShiftInfo->BankName(), SNDPATH_SHIFT, EAXSND_DT_AEMS_ASYNCSPUMEM, eBANK_SLOT_NONE, true);
+    } else {
+        LoadAsset(m_pEAXCar->GetShiftInfo().BankName(), SNDPATH_SHIFT, EAXSND_DT_AEMS_ASYNCSPUMEM, eBANK_SLOT_NONE, true);
+    }
+
+    for (i = 0; i < m_pEAXCar->GetAttributes().Num_SweetBank(); i++) {
+        LoadAsset(m_pEAXCar->GetAttributes().SweetBank(i), SNDPATH_ENGINE, EAXSND_DT_AEMS_ASYNCSPUMEM, eBANK_SLOT_NONE, true);
+    }
+}
+
+Slope ShiftingAttackVolSlope(1.0f, 32767.0f, 4000.0f, 7000.0f);
+
+CARSFX_Shift::TypeInfo CARSFX_Shift::s_TypeInfo = {
+    0x00020030,
+    "CARSFX_Shift",
+    &SndBase::s_TypeInfo,
+    CARSFX_Shift::CreateObject,
+};

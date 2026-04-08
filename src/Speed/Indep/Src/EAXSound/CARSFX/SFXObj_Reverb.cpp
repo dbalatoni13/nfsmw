@@ -23,23 +23,6 @@ ParameterAccessor ReverbAccessor("Reverb");
 extern const char *csfxedit[];
 extern stSndDataLoadParams g_SndAssetList[];
 extern void SNDSYS_service();
-
-SndBase::TypeInfo SFXObj_Reverb::s_TypeInfo = {
-    0x00020100,
-    "SFXObj_Reverb",
-    &SndBase::s_TypeInfo,
-    SFXObj_Reverb::CreateObject,
-};
-Snd::GlobalFxProcessor *SFXObj_Reverb::m_pFXEditModule[2];
-char *SFXObj_Reverb::m_pFXEditPatch[12];
-void *SFXObj_Reverb::m_EchoBuffer;
-SFXObj_Reverb::ReverbStructure SFXObj_Reverb::m_EchoAllocs[4];
-
-void SFXObj_Reverb::ReverbStructure::Clear() {
-    Alloc = nullptr;
-    Size = 0;
-}
-
 SFXObj_Reverb::TypeInfo *SFXObj_Reverb::GetTypeInfo() const {
     return &s_TypeInfo;
 }
@@ -177,3 +160,20 @@ void SFXObj_Reverb::Destroy() {
         m_EchoBuffer = nullptr;
     }
 }
+void SFXObj_Reverb::ReverbStructure::Clear() {
+    Alloc = nullptr;
+    Size = 0;
+}
+
+extern void SNDSYS_service();
+
+SndBase::TypeInfo SFXObj_Reverb::s_TypeInfo = {
+    0x00020100,
+    "SFXObj_Reverb",
+    &SndBase::s_TypeInfo,
+    SFXObj_Reverb::CreateObject,
+};
+Snd::GlobalFxProcessor *SFXObj_Reverb::m_pFXEditModule[2];
+char *SFXObj_Reverb::m_pFXEditPatch[12];
+void *SFXObj_Reverb::m_EchoBuffer;
+SFXObj_Reverb::ReverbStructure SFXObj_Reverb::m_EchoAllocs[4];

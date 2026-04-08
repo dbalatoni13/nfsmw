@@ -17,71 +17,6 @@ SndBase::TypeInfo CARSFX_TrafficSkids::s_TypeInfo = {
     0x00050030, "CARSFX_TrafficSkids", &CARSFX_Skids::s_TypeInfo, CARSFX_TrafficSkids::CreateObject};
 SndBase::TypeInfo CARSFX_Skids::s_TypeInfo = { 0, "CARSFX_Skids", nullptr, CARSFX_Skids::CreateObject };
 
-SFXCTL_3DRightWheelPos::~SFXCTL_3DRightWheelPos() {}
-
-SndBase::TypeInfo *SFXCTL_3DRightWheelPos::GetTypeInfo() const {
-    return &s_TypeInfo;
-}
-
-const char *SFXCTL_3DRightWheelPos::GetTypeName() const {
-    return s_TypeInfo.typeName;
-}
-
-SndBase *SFXCTL_3DRightWheelPos::CreateObject(unsigned int allocator) {
-    if (allocator == 0) {
-        return new (s_TypeInfo.typeName, false) SFXCTL_3DRightWheelPos();
-    }
-    return new (s_TypeInfo.typeName, true) SFXCTL_3DRightWheelPos();
-}
-
-SFXCTL_3DLeftWheelPos::~SFXCTL_3DLeftWheelPos() {}
-
-SndBase::TypeInfo *SFXCTL_3DLeftWheelPos::GetTypeInfo() const {
-    return &s_TypeInfo;
-}
-
-const char *SFXCTL_3DLeftWheelPos::GetTypeName() const {
-    return s_TypeInfo.typeName;
-}
-
-SndBase *SFXCTL_3DLeftWheelPos::CreateObject(unsigned int allocator) {
-    if (allocator == 0) {
-        return new (s_TypeInfo.typeName, false) SFXCTL_3DLeftWheelPos();
-    }
-    return new (s_TypeInfo.typeName, true) SFXCTL_3DLeftWheelPos();
-}
-
-SndBase::TypeInfo *CARSFX_TrafficSkids::GetTypeInfo() const {
-    return &s_TypeInfo;
-}
-
-const char *CARSFX_TrafficSkids::GetTypeName() const {
-    return s_TypeInfo.typeName;
-}
-
-SndBase *CARSFX_TrafficSkids::CreateObject(unsigned int allocator) {
-    if (allocator == 0) {
-        return new (s_TypeInfo.typeName, false) CARSFX_TrafficSkids();
-    }
-    return new (s_TypeInfo.typeName, true) CARSFX_TrafficSkids();
-}
-
-CARSFX_TrafficSkids::CARSFX_TrafficSkids()
-    : CARSFX_Skids() {}
-
-CARSFX_TrafficSkids::~CARSFX_TrafficSkids() {}
-
-void CARSFX_TrafficSkids::Detach() {
-    CARSFX_Skids::Detach();
-}
-
-int CARSFX_TrafficSkids::GetController(int Index) {
-    if (Index == 0) {
-        return 1;
-    }
-    return -1;
-}
-
 SndBase::TypeInfo *CARSFX_Skids::GetTypeInfo() const { return &s_TypeInfo; }
 
 const char *CARSFX_Skids::GetTypeName() const { return s_TypeInfo.typeName; }
@@ -125,6 +60,29 @@ int CARSFX_Skids::GetController(int Index) {
     }
 }
 
+void CARSFX_Skids::AttachController(SFXCTL *psfxctl) {
+    unsigned int objIndex;
+
+    objIndex = psfxctl->GetObjectIndex();
+    switch (objIndex) {
+    case 1:
+        m_pWheelCtl = static_cast<SFXCTL_Wheel *>(psfxctl);
+        break;
+    case 0xB:
+        m_pRightWheelPos = static_cast<SFXCTL_3DRightWheelPos *>(psfxctl);
+        m_pRightWheelPos->AssignPositionVector(m_pWheelCtl->GetWheelPos(1, 2));
+        m_pRightWheelPos->AssignVelocityVector(nullptr);
+        break;
+    case 0xC:
+        m_pLeftWheelPos = static_cast<SFXCTL_3DLeftWheelPos *>(psfxctl);
+        m_pLeftWheelPos->AssignPositionVector(m_pWheelCtl->GetWheelPos(0, 2));
+        m_pLeftWheelPos->AssignVelocityVector(nullptr);
+        break;
+    default:
+        break;
+    }
+}
+
 void CARSFX_Skids::SetupSFX(CSTATE_Base *_StateBase) {
     SndBase::SetupSFX(_StateBase);
 }
@@ -156,29 +114,6 @@ void CARSFX_Skids::InitSFX() {
     m_pSkidControl = new FX_SKID(0, 0, 0, 0, numskids, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 25000, 0, 0x7FFF, 0);
     numskids = m_pSkidControl->GetRefCount();
     Enable();
-}
-
-void CARSFX_Skids::AttachController(SFXCTL *psfxctl) {
-    unsigned int objIndex;
-
-    objIndex = psfxctl->GetObjectIndex();
-    switch (objIndex) {
-    case 1:
-        m_pWheelCtl = static_cast<SFXCTL_Wheel *>(psfxctl);
-        break;
-    case 0xB:
-        m_pRightWheelPos = static_cast<SFXCTL_3DRightWheelPos *>(psfxctl);
-        m_pRightWheelPos->AssignPositionVector(m_pWheelCtl->GetWheelPos(1, 2));
-        m_pRightWheelPos->AssignVelocityVector(nullptr);
-        break;
-    case 0xC:
-        m_pLeftWheelPos = static_cast<SFXCTL_3DLeftWheelPos *>(psfxctl);
-        m_pLeftWheelPos->AssignPositionVector(m_pWheelCtl->GetWheelPos(0, 2));
-        m_pLeftWheelPos->AssignVelocityVector(nullptr);
-        break;
-    default:
-        break;
-    }
 }
 
 void CARSFX_Skids::Detach() {
@@ -282,6 +217,67 @@ void CARSFX_Skids::ProcessUpdate() {
     m_pSkidControl->CommitMemberData();
 }
 
+SndBase::TypeInfo *SFXCTL_3DRightWheelPos::GetTypeInfo() const {
+    return &s_TypeInfo;
+}
+
+const char *SFXCTL_3DRightWheelPos::GetTypeName() const {
+    return s_TypeInfo.typeName;
+}
+
+SndBase *SFXCTL_3DRightWheelPos::CreateObject(unsigned int allocator) {
+    if (allocator == 0) {
+        return new (s_TypeInfo.typeName, false) SFXCTL_3DRightWheelPos();
+    }
+    return new (s_TypeInfo.typeName, true) SFXCTL_3DRightWheelPos();
+}
+
+SndBase::TypeInfo *SFXCTL_3DLeftWheelPos::GetTypeInfo() const {
+    return &s_TypeInfo;
+}
+
+const char *SFXCTL_3DLeftWheelPos::GetTypeName() const {
+    return s_TypeInfo.typeName;
+}
+
+SndBase *SFXCTL_3DLeftWheelPos::CreateObject(unsigned int allocator) {
+    if (allocator == 0) {
+        return new (s_TypeInfo.typeName, false) SFXCTL_3DLeftWheelPos();
+    }
+    return new (s_TypeInfo.typeName, true) SFXCTL_3DLeftWheelPos();
+}
+
+SndBase::TypeInfo *CARSFX_TrafficSkids::GetTypeInfo() const {
+    return &s_TypeInfo;
+}
+
+const char *CARSFX_TrafficSkids::GetTypeName() const {
+    return s_TypeInfo.typeName;
+}
+
+SndBase *CARSFX_TrafficSkids::CreateObject(unsigned int allocator) {
+    if (allocator == 0) {
+        return new (s_TypeInfo.typeName, false) CARSFX_TrafficSkids();
+    }
+    return new (s_TypeInfo.typeName, true) CARSFX_TrafficSkids();
+}
+
+CARSFX_TrafficSkids::CARSFX_TrafficSkids()
+    : CARSFX_Skids() {}
+
+CARSFX_TrafficSkids::~CARSFX_TrafficSkids() {}
+
+void CARSFX_TrafficSkids::Detach() {
+    CARSFX_Skids::Detach();
+}
+
+int CARSFX_TrafficSkids::GetController(int Index) {
+    if (Index == 0) {
+        return 1;
+    }
+    return -1;
+}
+
 void CARSFX_Skids::SetupLoadData() {
     int nlvl;
 
@@ -295,3 +291,7 @@ void CARSFX_Skids::SetupLoadData() {
 
     LoadAsset(g_pEAXSound->GetAttributes()->AEMS_SkidBanks(nlvl), SNDPATH_SKIDS, EAXSND_DT_AEMS_ASYNCSPUMEM, eBANK_SLOT_NONE, true);
 }
+SFXCTL_3DLeftWheelPos::~SFXCTL_3DLeftWheelPos() {}
+
+SFXCTL_3DRightWheelPos::~SFXCTL_3DRightWheelPos() {}
+

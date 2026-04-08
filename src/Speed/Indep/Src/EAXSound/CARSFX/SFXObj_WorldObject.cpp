@@ -6,34 +6,9 @@
 #include "Speed/Indep/Src/EAXSound/snd_gen/ENVIRO_AEMS.h"
 
 #line 20 "src/eaxsound/States/Managers/STATEMGR_Enviro.hpp"
-ISndAttachable::ISndAttachable()
-    : UTL::Collections::Listable<ISndAttachable, 15>() {}
-ISndAttachable::~ISndAttachable() {}
-
-const bVector3 *WorldObject::GetPosition() {
-    return &m_3DPosition;
-}
-
-int WorldObject::GetType() {
-    return Types;
-}
-#line 8 "/home/kabiskac/Documents/clankers/eaxsound/nfsmw/src/Speed/Indep/Src/EAXSound/CARSFX/SFXObj_WorldObject.cpp"
-
-SndBase::TypeInfo SFXCTL_3DFountainPos::s_TypeInfo = {
-    0x00060000, "SFXCTL_3DFountainPos", &SFXCTL_3DObjPos::s_TypeInfo, SFXCTL_3DFountainPos::CreateObject};
-SndBase::TypeInfo SFXObj_WorldObject::s_TypeInfo = {
-    0x00060000,
-    "SFXObj_WorldObject",
-    &SndBase::s_TypeInfo,
-    SFXObj_WorldObject::CreateObject,
-};
-
-SFXCTL_3DFountainPos::~SFXCTL_3DFountainPos() {}
-
 SndBase::TypeInfo *SFXCTL_3DFountainPos::GetTypeInfo() const {
     return &s_TypeInfo;
 }
-
 const char *SFXCTL_3DFountainPos::GetTypeName() const {
     return s_TypeInfo.typeName;
 }
@@ -48,6 +23,16 @@ SndBase *SFXCTL_3DFountainPos::CreateObject(unsigned int allocator) {
 SndBase::TypeInfo *SFXObj_WorldObject::GetTypeInfo() const {
     return &s_TypeInfo;
 }
+#line 8 "/home/kabiskac/Documents/clankers/eaxsound/nfsmw/src/Speed/Indep/Src/EAXSound/CARSFX/SFXObj_WorldObject.cpp"
+
+SndBase::TypeInfo SFXCTL_3DFountainPos::s_TypeInfo = {
+    0x00060000, "SFXCTL_3DFountainPos", &SFXCTL_3DObjPos::s_TypeInfo, SFXCTL_3DFountainPos::CreateObject};
+SndBase::TypeInfo SFXObj_WorldObject::s_TypeInfo = {
+    0x00060000,
+    "SFXObj_WorldObject",
+    &SndBase::s_TypeInfo,
+    SFXObj_WorldObject::CreateObject,
+};
 
 const char *SFXObj_WorldObject::GetTypeName() const {
     return s_TypeInfo.typeName;
@@ -132,6 +117,21 @@ void SFXObj_WorldObject::Detach() {
     m_p3DObjPos->AssignVelocityVector(nullptr);
     delete m_pcsisSFX;
     m_pcsisSFX = nullptr;
+}
+
+ISndAttachable::~ISndAttachable() {}
+
+ISndAttachable::ISndAttachable()
+    : UTL::Collections::Listable<ISndAttachable, 15>() {}
+
+SFXCTL_3DFountainPos::~SFXCTL_3DFountainPos() {}
+
+const bVector3 *WorldObject::GetPosition() {
+    return &m_3DPosition;
+}
+
+int WorldObject::GetType() {
+    return Types;
 }
 
 template class UTL::Collections::Listable<ISndAttachable, 15>::List;

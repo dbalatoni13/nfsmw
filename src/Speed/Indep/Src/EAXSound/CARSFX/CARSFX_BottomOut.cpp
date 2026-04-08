@@ -7,10 +7,7 @@
 
 float DOT_PROD_FOR_HEAVY_LEAN = 0.65f;
 int JumpLandingVolumes[4] = {13000, 15000, 24000, 32767};
-Slope JumpLandingIntensity(0.0f, 1.0f, 0.0f, 0.65f);
-
-SndBase::TypeInfo CARSFX_BottomOut::s_TypeInfo = { 0, "CARSFX_BottomOut", nullptr, CARSFX_BottomOut::CreateObject };
-
+extern Slope JumpLandingIntensity;
 SndBase::TypeInfo *CARSFX_BottomOut::GetTypeInfo() const { return &s_TypeInfo; }
 
 const char *CARSFX_BottomOut::GetTypeName() const { return s_TypeInfo.typeName; }
@@ -66,26 +63,6 @@ void CARSFX_BottomOut::Destroy() {
     m_pJumpCamCrash = nullptr;
 }
 
-void CARSFX_BottomOut::BottomOutPlay(unsigned int Intensity) {
-    if (!m_pBottomOut) {
-        static int LastRandom = 0;
-
-        float fIntensity;
-        int sampleOffset;
-
-        fIntensity = bClamp(static_cast<float>(Intensity), 0.0f, 127.0f);
-        sampleOffset = LastRandom % 4;
-        LastRandom = sampleOffset + 1;
-        sampleOffset += 0x51;
-        fIntensity *= 0.03125f;
-        SND_Stich &StichData = g_pEAXSound->GetStichPlayer()->GetStich(
-            STICH_TYPE_COLLISION, static_cast<int>(fIntensity) * 4 + sampleOffset);
-        m_pBottomOut = new cStichWrapper(StichData);
-        m_pBottomOut->Play(0, 0, 0);
-        SetDMIX_Input(2, 0x7FFF);
-    }
-}
-
 void CARSFX_BottomOut::LandJumpPlay(float Intensity, bool HardLanding) {
     int Index;
     int n;
@@ -127,6 +104,26 @@ void CARSFX_BottomOut::LandJumpPlay(float Intensity, bool HardLanding) {
     }
 }
 
+void CARSFX_BottomOut::BottomOutPlay(unsigned int Intensity) {
+    if (!m_pBottomOut) {
+        static int LastRandom = 0;
+
+        float fIntensity;
+        int sampleOffset;
+
+        fIntensity = bClamp(static_cast<float>(Intensity), 0.0f, 127.0f);
+        sampleOffset = LastRandom % 4;
+        LastRandom = sampleOffset + 1;
+        sampleOffset += 0x51;
+        fIntensity *= 0.03125f;
+        SND_Stich &StichData = g_pEAXSound->GetStichPlayer()->GetStich(
+            STICH_TYPE_COLLISION, static_cast<int>(fIntensity) * 4 + sampleOffset);
+        m_pBottomOut = new cStichWrapper(StichData);
+        m_pBottomOut->Play(0, 0, 0);
+        SetDMIX_Input(2, 0x7FFF);
+    }
+}
+
 void CARSFX_BottomOut::Detach() {
     int n;
 
@@ -146,57 +143,6 @@ void CARSFX_BottomOut::Detach() {
         delete m_pJumpCamCrash;
     }
     m_pJumpCamCrash = nullptr;
-}
-
-void CARSFX_BottomOut::ProcessUpdate() {
-    int n;
-
-    SetDMIX_Input(2, 0);
-    SetDMIX_Input(1, 0);
-    if (m_pBottomOut) {
-        SND_Params TmpParams;
-
-        TmpParams.Az = GetDMixOutput(1, DMX_AZIM);
-        TmpParams.Vol = GetDMixOutput(1, DMX_VOL);
-        TmpParams.Pitch = 0x1000;
-        m_pBottomOut->Update(&TmpParams);
-        if (!m_pBottomOut->IsPlaying()) {
-            delete m_pBottomOut;
-            m_pBottomOut = nullptr;
-        }
-    }
-
-    if (m_pJumpCamCrash) {
-        SND_Params TmpParams;
-
-        TmpParams.Az = GetDMixOutput(0, DMX_AZIM);
-        TmpParams.Vol = GetDMixOutput(3, DMX_VOL);
-        TmpParams.Pitch = 0x1000;
-        m_pJumpCamCrash->Update(&TmpParams);
-        if (!m_pJumpCamCrash->IsPlaying()) {
-            delete m_pJumpCamCrash;
-            m_pJumpCamCrash = nullptr;
-        }
-    }
-
-    for (n = 0; n < 3; n++) {
-        if (m_pStichLandJump[n]) {
-            SND_Params TmpParams;
-            int VolToUse;
-            int volume;
-
-            TmpParams.Az = GetDMixOutput(0, DMX_AZIM);
-            volume = GetDMixOutput(1, DMX_VOL);
-            VolToUse = bClamp(static_cast<int>(m_Intesity[n]) >> 5, 0, 3);
-            TmpParams.Pitch = 0x1000;
-            TmpParams.Vol = (JumpLandingVolumes[VolToUse] * volume) >> 15;
-            m_pStichLandJump[n]->Update(&TmpParams);
-            if (!m_pStichLandJump[n]->IsPlaying() || g_EAXIsPaused()) {
-                delete m_pStichLandJump[n];
-                m_pStichLandJump[n] = nullptr;
-            }
-        }
-    }
 }
 
 void CARSFX_BottomOut::UpdateParams(float t) {
@@ -348,3 +294,57 @@ void CARSFX_BottomOut::UpdateParams(float t) {
         LeftHangTime += t;
     }
 }
+void CARSFX_BottomOut::ProcessUpdate() {
+    int n;
+
+    SetDMIX_Input(2, 0);
+    SetDMIX_Input(1, 0);
+    if (m_pBottomOut) {
+        SND_Params TmpParams;
+
+        TmpParams.Az = GetDMixOutput(1, DMX_AZIM);
+        TmpParams.Vol = GetDMixOutput(1, DMX_VOL);
+        TmpParams.Pitch = 0x1000;
+        m_pBottomOut->Update(&TmpParams);
+        if (!m_pBottomOut->IsPlaying()) {
+            delete m_pBottomOut;
+            m_pBottomOut = nullptr;
+        }
+    }
+
+    if (m_pJumpCamCrash) {
+        SND_Params TmpParams;
+
+        TmpParams.Az = GetDMixOutput(0, DMX_AZIM);
+        TmpParams.Vol = GetDMixOutput(3, DMX_VOL);
+        TmpParams.Pitch = 0x1000;
+        m_pJumpCamCrash->Update(&TmpParams);
+        if (!m_pJumpCamCrash->IsPlaying()) {
+            delete m_pJumpCamCrash;
+            m_pJumpCamCrash = nullptr;
+        }
+    }
+
+    for (n = 0; n < 3; n++) {
+        if (m_pStichLandJump[n]) {
+            SND_Params TmpParams;
+            int VolToUse;
+            int volume;
+
+            TmpParams.Az = GetDMixOutput(0, DMX_AZIM);
+            volume = GetDMixOutput(1, DMX_VOL);
+            VolToUse = bClamp(static_cast<int>(m_Intesity[n]) >> 5, 0, 3);
+            TmpParams.Pitch = 0x1000;
+            TmpParams.Vol = (JumpLandingVolumes[VolToUse] * volume) >> 15;
+            m_pStichLandJump[n]->Update(&TmpParams);
+            if (!m_pStichLandJump[n]->IsPlaying() || g_EAXIsPaused()) {
+                delete m_pStichLandJump[n];
+                m_pStichLandJump[n] = nullptr;
+            }
+        }
+    }
+}
+
+Slope JumpLandingIntensity(0.0f, 1.0f, 0.0f, 0.65f);
+
+SndBase::TypeInfo CARSFX_BottomOut::s_TypeInfo = { 0, "CARSFX_BottomOut", nullptr, CARSFX_BottomOut::CreateObject };

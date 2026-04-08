@@ -17,11 +17,10 @@ static const unsigned int V8CopEngines[4] = {0xF6A7F776, 0x6F1563C2, 0xEFF995DD,
 int DEBUG_CAR_BANK_TEST_CASE = -1;
 bool ForcePrintResolveInfo = false;
 
-bool sort_engine_priority(unsigned int firstkey, unsigned int secondkey) {
-    Attrib::Gen::engineaudio First(firstkey, 0, nullptr);
-    Attrib::Gen::engineaudio Second(secondkey, 0, nullptr);
-
-    return First.Priority() > Second.Priority();
+CSTATEMGR_CarState::CSTATEMGR_CarState() {
+    m_fConnectDistance = 135.0f;
+    m_CarContext = Sound::CONTEXT_AIRACER;
+    CopsCanBeInGame = true;
 }
 
 UTL::FixedVector<EngineMappingPair, 24, 16> CSTATEMGR_CarState::FinalMapping;
@@ -30,27 +29,7 @@ UTL::FixedVector<unsigned int, 8, 16> CSTATEMGR_CarState::FinalCopV8Engines;
 UTL::FixedVector<CSTATEMGR_CarState::EngToCarStruct, 24, 16> CSTATEMGR_CarState::EngineToCarMapping;
 bool CSTATEMGR_CarState::CopsCanBeInGame = true;
 
-CSTATEMGR_CarState::CSTATEMGR_CarState() {
-    m_fConnectDistance = 135.0f;
-    m_CarContext = Sound::CONTEXT_AIRACER;
-    CopsCanBeInGame = true;
-}
-
 CSTATEMGR_CarState::~CSTATEMGR_CarState() {}
-
-void CSTATEMGR_CarState::AddMapping(unsigned int key1, unsigned int key2) {
-    EngineMappingPair mapping = {0, 0};
-    EngineMappingPair *finditer;
-
-    mapping.Start = key1;
-    mapping.Finish = key2;
-    finditer = std::find(FinalMapping.begin(), FinalMapping.end(), mapping);
-    if (finditer == FinalMapping.end()) {
-        FinalMapping.push_back(mapping);
-    } else {
-        int break_here;
-    }
-}
 
 void CSTATEMGR_CarState::UpdateParams(float t) {
     ProfileNode profile_node("TODO", 0);
@@ -102,6 +81,20 @@ void CSTATEMGR_CarState::UpdateParams(float t) {
     }
 
     CSTATEMGR_Base::UpdateParams(t);
+}
+
+bool sort_engine_priority(unsigned int firstkey, unsigned int secondkey) {
+    Attrib::Gen::engineaudio First(firstkey, 0, nullptr);
+    Attrib::Gen::engineaudio Second(secondkey, 0, nullptr);
+
+    return First.Priority() > Second.Priority();
+}
+
+void CSTATEMGR_CarState::ResetCarBanks() {
+    FinalMapping.clear();
+    FinalEngines.clear();
+    FinalCopV8Engines.clear();
+    EngineToCarMapping.clear();
 }
 
 void CSTATEMGR_CarState::ResolveCarBanks() {
@@ -337,13 +330,6 @@ void CSTATEMGR_CarState::ResolveCarBanks() {
     }
 }
 
-void CSTATEMGR_CarState::ResetCarBanks() {
-    FinalMapping.clear();
-    FinalEngines.clear();
-    FinalCopV8Engines.clear();
-    EngineToCarMapping.clear();
-}
-
 void CSTATEMGR_CarState::DestroyCar(EAX_CarState *eax_car) {
     if (static_cast<int>(eax_car->GetContext()) == kRaceContext_Online ||
         static_cast<int>(eax_car->GetContext()) == kRaceContext_Career) {
@@ -382,6 +368,20 @@ void CSTATEMGR_CarState::DestroyCar(EAX_CarState *eax_car) {
                 }
             }
         }
+    }
+}
+
+void CSTATEMGR_CarState::AddMapping(unsigned int key1, unsigned int key2) {
+    EngineMappingPair mapping = {0, 0};
+    EngineMappingPair *finditer;
+
+    mapping.Start = key1;
+    mapping.Finish = key2;
+    finditer = std::find(FinalMapping.begin(), FinalMapping.end(), mapping);
+    if (finditer == FinalMapping.end()) {
+        FinalMapping.push_back(mapping);
+    } else {
+        int break_here;
     }
 }
 

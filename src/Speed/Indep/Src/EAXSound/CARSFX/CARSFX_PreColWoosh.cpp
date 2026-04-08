@@ -8,15 +8,6 @@
 
 extern Slope g_WooshVol_vs_Vel;
 
-void GetWooshBlockSizeParams(eDRIVE_BY_TYPE type, STICH_WHOOSH_TYPE &base, int &numblocks, int &sizeperblock);
-
-CARSFX_PreColWoosh::TypeInfo CARSFX_PreColWoosh::s_TypeInfo = {
-    0x00020120,
-    "CARSFX_PreColWoosh",
-    &SndBase::s_TypeInfo,
-    CARSFX_PreColWoosh::CreateObject,
-};
-
 CARSFX_PreColWoosh::TypeInfo *CARSFX_PreColWoosh::GetTypeInfo() const {
     return &s_TypeInfo;
 }
@@ -181,3 +172,9 @@ void CARSFX_PreColWoosh::ProcessUpdate() {
 
     bBarrierDetected = false;
 }
+CARSFX_PreColWoosh::TypeInfo CARSFX_PreColWoosh::s_TypeInfo = {
+    0x00020120,
+    "CARSFX_PreColWoosh",
+    &SndBase::s_TypeInfo,
+    CARSFX_PreColWoosh::CreateObject,
+};

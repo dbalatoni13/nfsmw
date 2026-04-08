@@ -6,22 +6,6 @@
 #include "Speed/Indep/Src/EAXSound/SoundCollision.hpp"
 #include "Speed/Indep/Src/EAXSound/Stream/SpeechManager.hpp"
 
-bVector3 v3NULL(0.0f, 0.0f, 0.0f);
-
-SndBase::TypeInfo SFXObj_Speech::s_TypeInfo = {
-    0x00000010,
-    "SFXObj_Speech",
-    &SndBase::s_TypeInfo,
-    SFXObj_Speech::CreateObject,
-};
-
-SndBase::TypeInfo SFXCTL_3DVoiceActorPos::s_TypeInfo = {
-    0x00000030,
-    "SFXCTL_3DVoiceActorPos",
-    &SFXCTL_3DObjPos::s_TypeInfo,
-    SFXCTL_3DVoiceActorPos::CreateObject,
-};
-
 SndBase::TypeInfo *SFXObj_Speech::GetTypeInfo() const {
     return &s_TypeInfo;
 }
@@ -105,8 +89,6 @@ void SFXObj_Speech::UpdateParams(float t) {
     }
 }
 
-void SFXObj_Speech::ProcessUpdate() {}
-
 SndBase::TypeInfo *SFXCTL_3DVoiceActorPos::GetTypeInfo() const {
     return &s_TypeInfo;
 }
@@ -122,4 +104,22 @@ SndBase *SFXCTL_3DVoiceActorPos::CreateObject(unsigned int allocator) {
     return new (GetStaticTypeInfo()->typeName, true) SFXCTL_3DVoiceActorPos();
 }
 
+void SFXObj_Speech::ProcessUpdate() {}
+
 SFXCTL_3DVoiceActorPos::~SFXCTL_3DVoiceActorPos() {}
+bVector3 v3NULL(0.0f, 0.0f, 0.0f);
+
+SndBase::TypeInfo SFXObj_Speech::s_TypeInfo = {
+    0x00000010,
+    "SFXObj_Speech",
+    &SndBase::s_TypeInfo,
+    SFXObj_Speech::CreateObject,
+};
+
+SndBase::TypeInfo SFXCTL_3DVoiceActorPos::s_TypeInfo = {
+    0x00000030,
+    "SFXCTL_3DVoiceActorPos",
+    &SFXCTL_3DObjPos::s_TypeInfo,
+    SFXCTL_3DVoiceActorPos::CreateObject,
+};
+

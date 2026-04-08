@@ -21,6 +21,7 @@ struct cStitchLoop {
 };
 
 int RoadNoiseVolumes[9] = {15000, 24000, 32000, 24000, 24000, 12000, 19000, 32500, 32500};
+extern int GetRoadNoiseTransitionVol(FXROADNOISE_TRANSITION ID);
 
 Slope RoadNoiseTransitionVolSlope(20000.0f, 32767.0f, 12.0f, 60.0f);
 Slope RoadNoiseTransitionPitchSlope(3600.0f, 4400.0f, 12.0f, 60.0f);
@@ -33,11 +34,6 @@ bVector2 RoadNoiseVolumeCurve[5] = {
 };
 Graph RoadNoiseVolGraph(RoadNoiseVolumeCurve, 5);
 Slope RoadNoiseSpeedToPitch(1500.0f, 4500.0f, 0.0f, 100.0f);
-
-extern int GetRoadNoiseTransitionVol(FXROADNOISE_TRANSITION ID);
-
-SndBase::TypeInfo CARSFX_RoadNoise::s_TypeInfo = {
-    0x00020080, "CARSFX_RoadNoise", &SndBase::s_TypeInfo, CARSFX_RoadNoise::CreateObject};
 
 SndBase::TypeInfo *CARSFX_RoadNoise::GetTypeInfo() const { return &s_TypeInfo; }
 
@@ -63,6 +59,10 @@ CARSFX_RoadNoise::CARSFX_RoadNoise() {
 }
 
 CARSFX_RoadNoise::~CARSFX_RoadNoise() {
+    Destroy();
+}
+
+void CARSFX_RoadNoise::Detach() {
     Destroy();
 }
 
@@ -122,10 +122,6 @@ void CARSFX_RoadNoise::InitSFX() {
     }
 }
 
-void CARSFX_RoadNoise::UpdateParams(float t) {
-    GenerateRoadNoise();
-}
-
 void CARSFX_RoadNoise::Destroy() {
     for (int n = 0; n < 2; n++) {
         delete m_pWetRoad[n];
@@ -141,143 +137,8 @@ void CARSFX_RoadNoise::Destroy() {
     }
 }
 
-void CARSFX_RoadNoise::Detach() {
-    Destroy();
-}
-
-eVOL_ROADNOISE CARSFX_RoadNoise::MapLoopToVolume(FXROADNOISE_LOOP ID) {
-    switch (ID) {
-    case FXROADNOISE_LOOP_GRAVEL00:
-        return eVOL_ROADNOISE_GRAVEL;
-    case FXROADNOISE_LOOP_SIDEWALK:
-        return eVOL_ROADNOISE_SIDEWALK;
-    case FXROADNOISE_LOOP_COBBLESTONE00:
-        return eVOL_ROADNOISE_COBBLESTONE;
-    case FXROADNOISE_LOOP_DEEPWATER:
-        return eVOL_ROADNOISE_DEEPWATER;
-    case FXROADNOISE_LOOP_WETROAD:
-        return eVOL_ROADNOISE_WETROAD;
-    case FXROADNOISE_LOOP_METAL:
-        return eVOL_ROADNOISE_METAL;
-    case FXROADNOISE_LOOP_STITCH_LOOP:
-        return eVOL_ROADNOISE_STITCH_LOOP;
-    default:
-        return eVOL_ROADNOISE_ASHPHALT;
-    }
-}
-
-void CARSFX_RoadNoise::PlayTransition(FXROADNOISE_TRANSITION ID, int side) {
-    float Speed = GetPhysCar()->GetVelocityMagnitudeMPH();
-    int Vol = GetRoadNoiseTransitionVol(ID);
-    int Pitch;
-
-    Vol = Vol * 0x7FFF >> 15;
-    if (ID == FXROADNOISE_TRANSITION_SPIKESTRIP) {
-        Vol = Vol * GetDMixOutput(eVOL_ROADNOISE_SPIKE, DMX_VOL) >> 15;
-    } else if (ID == FXROADNOISE_TRANSITION_BLOWN) {
-        Vol = Vol * GetDMixOutput(eVOL_ROADNOISE_BLOWN, DMX_VOL) >> 15;
-    } else {
-        Vol = Vol * GetDMixOutput(eVOL_ROADNOISE_TRANSITION, DMX_VOL) >> 15;
-    }
-
-    TransitionVol[side] = Vol;
-    Pitch = static_cast<int>(RoadNoiseTransitionPitchSlope.GetValue(Speed));
-    g_pEAXSound->SetCsisName(this);
-    delete m_pTransition[side];
-    m_pTransition[side] = new FX_ROADNOISE_TRANS(ID, Vol, Pitch, GetDMixOutput(side != 0, DMX_AZIM),
-                                                 FXROADNOISETRANSTYPETYPE_TRANSITION_, 0, 0, 25000, 0, 0x7FFF,
-                                                 GetDMixOutput(eVRB_ROADNOISE_VERB, DMX_VOL));
-}
-
-void CARSFX_RoadNoise::GenerateRoadNoise() {
-    float fRightVol;
-    float fLeftVol;
-    float fRightPitch;
-    float fLeftPitch;
-    float speed;
-    float ftemp;
-
-    speed = GetPhysCar()->GetVelocityMagnitudeMPH();
-    ftemp = static_cast<float>(static_cast<int>(RoadNoiseVolGraph.GetValue(speed)) * 0x7FFF >> 15);
-
-    fRightVol = bLength(&m_pWheelCtl->m_bvTotalRightWheelSlip) * 0.01f;
-    if (fRightVol > 0.15f) {
-        fRightVol = 0.15f;
-    }
-    fRightVol = ftemp + ftemp * fRightVol;
-    fRightVol = fRightVol + fRightVol * 0.1f;
-
-    fLeftVol = bLength(&m_pWheelCtl->m_bvTotalLeftWheelSlip) * 0.01f;
-    if (fLeftVol > 0.15f) {
-        fLeftVol = 0.15f;
-    }
-    fLeftVol = ftemp + ftemp * fLeftVol;
-    ftemp = (m_pWheelCtl->m_fWheelTractionMag[0] + m_pWheelCtl->m_fWheelTractionMag[3]) * 0.5f * 0.1f;
-    if (ftemp > 0.1f) {
-        ftemp = 0.1f;
-    }
-    fLeftVol = fLeftVol + fLeftVol * ftemp;
-    if (fLeftVol > 32000.0f) {
-        fLeftVol = 32000.0f;
-    }
-    if (fRightVol > 32000.0f) {
-        fRightVol = 32000.0f;
-    }
-
-    fRightPitch = RoadNoiseSpeedToPitch.GetValue(speed);
-    fLeftPitch = bLength(&m_pWheelCtl->m_bvTotalLeftWheelSlip) * 0.01f;
-    if (fLeftPitch > 0.2f) {
-        fLeftPitch = 0.2f;
-    }
-    ftemp = (m_pWheelCtl->m_fWheelTractionMag[0] + m_pWheelCtl->m_fWheelTractionMag[3]) * 0.5f * 0.15f;
-    fLeftPitch = fRightPitch + fRightPitch * fLeftPitch;
-    if (ftemp > 0.15f) {
-        ftemp = 0.15f;
-    }
-    fLeftPitch = fLeftPitch + fLeftPitch * ftemp;
-    if (fLeftPitch > 6000.0f) {
-        fLeftPitch = 6000.0f;
-    }
-
-    ftemp = bLength(&m_pWheelCtl->m_bvTotalRightWheelSlip) * 0.01f;
-    if (ftemp > 0.2f) {
-        ftemp = 0.2f;
-    }
-    fRightPitch = fRightPitch + fRightPitch * ftemp;
-    ftemp = (m_pWheelCtl->m_fWheelTractionMag[1] + m_pWheelCtl->m_fWheelTractionMag[2]) * 0.5f * 0.15f;
-    if (ftemp > 0.15f) {
-        ftemp = 0.15f;
-    }
-    fRightPitch = fRightPitch + fRightPitch * ftemp;
-    if (fRightPitch > 6000.0f) {
-        fRightPitch = 6000.0f;
-    }
-
-    m_nLTRoadNoiseVol = static_cast<int>(fLeftVol);
-    m_nRTRoadNoiseVol = static_cast<int>(fRightVol);
-    m_nRTRoadNoisePitch = static_cast<int>(fRightPitch);
-    m_nLTRoadNoisePitch = static_cast<int>(fLeftPitch);
-}
-
-void CARSFX_RoadNoise::Play(FXROADNOISE_LOOP ID, int side) {
-    int refcnt;
-
-    delete m_pRoadNoiseControl[side];
-    if (m_pStitchLoopControl[side]) {
-        delete m_pStitchLoopControl[side];
-    }
-
-    if (ID > FXROADNOISE_LOOP_METAL) {
-        m_pStitchLoopControl[side] = new ("Stitch Loop", 0) cStitchLoop(0x4B41DEC8);
-    } else {
-        g_pEAXSound->SetCsisName(this);
-        m_pRoadNoiseControl[side] =
-            new FX_ROADNOISE(ID, 0, 0x1000, 0, FXROADNOISETYPETYPE_LOOP, 0, 0, 25000, 0, 0x7FFF, 0);
-        refcnt = 0;
-        if (m_pRoadNoiseControl[side]->mpClass) {
-            m_pRoadNoiseControl[side]->mpClass->GetRefCount(&refcnt);
-        }
-    }
+void CARSFX_RoadNoise::UpdateParams(float t) {
+    GenerateRoadNoise();
 }
 
 void CARSFX_RoadNoise::ProcessUpdate() {
@@ -443,3 +304,140 @@ void CARSFX_RoadNoise::ProcessUpdate() {
         }
     }
 }
+eVOL_ROADNOISE CARSFX_RoadNoise::MapLoopToVolume(FXROADNOISE_LOOP ID) {
+    switch (ID) {
+    case FXROADNOISE_LOOP_GRAVEL00:
+        return eVOL_ROADNOISE_GRAVEL;
+    case FXROADNOISE_LOOP_SIDEWALK:
+        return eVOL_ROADNOISE_SIDEWALK;
+    case FXROADNOISE_LOOP_COBBLESTONE00:
+        return eVOL_ROADNOISE_COBBLESTONE;
+    case FXROADNOISE_LOOP_DEEPWATER:
+        return eVOL_ROADNOISE_DEEPWATER;
+    case FXROADNOISE_LOOP_WETROAD:
+        return eVOL_ROADNOISE_WETROAD;
+    case FXROADNOISE_LOOP_METAL:
+        return eVOL_ROADNOISE_METAL;
+    case FXROADNOISE_LOOP_STITCH_LOOP:
+        return eVOL_ROADNOISE_STITCH_LOOP;
+    default:
+        return eVOL_ROADNOISE_ASHPHALT;
+    }
+}
+
+void CARSFX_RoadNoise::PlayTransition(FXROADNOISE_TRANSITION ID, int side) {
+    float Speed = GetPhysCar()->GetVelocityMagnitudeMPH();
+    int Vol = GetRoadNoiseTransitionVol(ID);
+    int Pitch;
+
+    Vol = Vol * 0x7FFF >> 15;
+    if (ID == FXROADNOISE_TRANSITION_SPIKESTRIP) {
+        Vol = Vol * GetDMixOutput(eVOL_ROADNOISE_SPIKE, DMX_VOL) >> 15;
+    } else if (ID == FXROADNOISE_TRANSITION_BLOWN) {
+        Vol = Vol * GetDMixOutput(eVOL_ROADNOISE_BLOWN, DMX_VOL) >> 15;
+    } else {
+        Vol = Vol * GetDMixOutput(eVOL_ROADNOISE_TRANSITION, DMX_VOL) >> 15;
+    }
+
+    TransitionVol[side] = Vol;
+    Pitch = static_cast<int>(RoadNoiseTransitionPitchSlope.GetValue(Speed));
+    g_pEAXSound->SetCsisName(this);
+    delete m_pTransition[side];
+    m_pTransition[side] = new FX_ROADNOISE_TRANS(ID, Vol, Pitch, GetDMixOutput(side != 0, DMX_AZIM),
+                                                 FXROADNOISETRANSTYPETYPE_TRANSITION_, 0, 0, 25000, 0, 0x7FFF,
+                                                 GetDMixOutput(eVRB_ROADNOISE_VERB, DMX_VOL));
+}
+
+void CARSFX_RoadNoise::GenerateRoadNoise() {
+    float fRightVol;
+    float fLeftVol;
+    float fRightPitch;
+    float fLeftPitch;
+    float speed;
+    float ftemp;
+
+    speed = GetPhysCar()->GetVelocityMagnitudeMPH();
+    ftemp = static_cast<float>(static_cast<int>(RoadNoiseVolGraph.GetValue(speed)) * 0x7FFF >> 15);
+
+    fRightVol = bLength(&m_pWheelCtl->m_bvTotalRightWheelSlip) * 0.01f;
+    if (fRightVol > 0.15f) {
+        fRightVol = 0.15f;
+    }
+    fRightVol = ftemp + ftemp * fRightVol;
+    fRightVol = fRightVol + fRightVol * 0.1f;
+
+    fLeftVol = bLength(&m_pWheelCtl->m_bvTotalLeftWheelSlip) * 0.01f;
+    if (fLeftVol > 0.15f) {
+        fLeftVol = 0.15f;
+    }
+    fLeftVol = ftemp + ftemp * fLeftVol;
+    ftemp = (m_pWheelCtl->m_fWheelTractionMag[0] + m_pWheelCtl->m_fWheelTractionMag[3]) * 0.5f * 0.1f;
+    if (ftemp > 0.1f) {
+        ftemp = 0.1f;
+    }
+    fLeftVol = fLeftVol + fLeftVol * ftemp;
+    if (fLeftVol > 32000.0f) {
+        fLeftVol = 32000.0f;
+    }
+    if (fRightVol > 32000.0f) {
+        fRightVol = 32000.0f;
+    }
+
+    fRightPitch = RoadNoiseSpeedToPitch.GetValue(speed);
+    fLeftPitch = bLength(&m_pWheelCtl->m_bvTotalLeftWheelSlip) * 0.01f;
+    if (fLeftPitch > 0.2f) {
+        fLeftPitch = 0.2f;
+    }
+    ftemp = (m_pWheelCtl->m_fWheelTractionMag[0] + m_pWheelCtl->m_fWheelTractionMag[3]) * 0.5f * 0.15f;
+    fLeftPitch = fRightPitch + fRightPitch * fLeftPitch;
+    if (ftemp > 0.15f) {
+        ftemp = 0.15f;
+    }
+    fLeftPitch = fLeftPitch + fLeftPitch * ftemp;
+    if (fLeftPitch > 6000.0f) {
+        fLeftPitch = 6000.0f;
+    }
+
+    ftemp = bLength(&m_pWheelCtl->m_bvTotalRightWheelSlip) * 0.01f;
+    if (ftemp > 0.2f) {
+        ftemp = 0.2f;
+    }
+    fRightPitch = fRightPitch + fRightPitch * ftemp;
+    ftemp = (m_pWheelCtl->m_fWheelTractionMag[1] + m_pWheelCtl->m_fWheelTractionMag[2]) * 0.5f * 0.15f;
+    if (ftemp > 0.15f) {
+        ftemp = 0.15f;
+    }
+    fRightPitch = fRightPitch + fRightPitch * ftemp;
+    if (fRightPitch > 6000.0f) {
+        fRightPitch = 6000.0f;
+    }
+
+    m_nLTRoadNoiseVol = static_cast<int>(fLeftVol);
+    m_nRTRoadNoiseVol = static_cast<int>(fRightVol);
+    m_nRTRoadNoisePitch = static_cast<int>(fRightPitch);
+    m_nLTRoadNoisePitch = static_cast<int>(fLeftPitch);
+}
+
+void CARSFX_RoadNoise::Play(FXROADNOISE_LOOP ID, int side) {
+    int refcnt;
+
+    delete m_pRoadNoiseControl[side];
+    if (m_pStitchLoopControl[side]) {
+        delete m_pStitchLoopControl[side];
+    }
+
+    if (ID > FXROADNOISE_LOOP_METAL) {
+        m_pStitchLoopControl[side] = new ("Stitch Loop", 0) cStitchLoop(0x4B41DEC8);
+    } else {
+        g_pEAXSound->SetCsisName(this);
+        m_pRoadNoiseControl[side] =
+            new FX_ROADNOISE(ID, 0, 0x1000, 0, FXROADNOISETYPETYPE_LOOP, 0, 0, 25000, 0, 0x7FFF, 0);
+        refcnt = 0;
+        if (m_pRoadNoiseControl[side]->mpClass) {
+            m_pRoadNoiseControl[side]->mpClass->GetRefCount(&refcnt);
+        }
+    }
+}
+
+SndBase::TypeInfo CARSFX_RoadNoise::s_TypeInfo = {
+    0x00020080, "CARSFX_RoadNoise", &SndBase::s_TypeInfo, CARSFX_RoadNoise::CreateObject};

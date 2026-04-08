@@ -4,20 +4,6 @@
 
 NFSMixMapState::NFSMixMapState() {}
 
-NFSMixMapState::~NFSMixMapState() {}
-
-int NFSMixMapState::GetStateRefCount() {
-    return m_pFirstInstance->m_ThisStateRefCnt;
-}
-
-NFSMixMapState *NFSMixMapState::GetMixMapProc(int refcnt) {
-    return m_pFirstInstance + refcnt;
-}
-
-void NFSMixMapState::SetFirstStateInst(NFSMixMapState *pstate) {
-    m_pFirstInstance = pstate;
-}
-
 void NFSMixMapState::Initialize(NFSMixMap *pmm, int stateindex, int numstatecopies, int objnum) {
     m_pNFSMixMap = pmm;
     m_StateIndex = stateindex;
@@ -38,6 +24,12 @@ void NFSMixMapState::Initialize(NFSMixMap *pmm, int stateindex, int numstatecopi
         }
     }
 }
+
+int NFSMixMapState::GetStateRefCount() {
+    return m_pFirstInstance->m_ThisStateRefCnt;
+}
+
+NFSMixMapState::~NFSMixMapState() {}
 
 stMixCtlProc *NFSMixMapState::GetMixCtlProc(int nMIXCTLIN_ID, int nInstance) {
     NFSMixMapState *pstate;
@@ -150,62 +142,6 @@ void NFSMixMapState::CreateMixCtls() {
                 pparams = reinterpret_cast<stMixCtlParams *>(
                     reinterpret_cast<char *>(&pparams[1].nINPUTID) + ((mixctlparm.nUScaleCntSwing >> 14) & 0x7CU));
                 ctlcount++;
-            }
-        }
-    }
-}
-
-void NFSMixMapState::Create3DMixCtls() {
-    int offset;
-
-    m_3DMixCtlsAdded = 0;
-    offset = m_pMMStateHdr->Offset3DMixCtlData;
-
-    if (offset > -1) {
-        st3DMixCtlHdr *pHdr;
-
-        pHdr = reinterpret_cast<st3DMixCtlHdr *>(reinterpret_cast<char *>(&m_pMMStateHdr->StateIndex) + offset);
-        m_p3DMixCtlHdr = pHdr;
-        if (pHdr->Num3DMixCtls > 0) {
-            int n;
-            st3DMixCtlParams *pparams;
-
-            pparams = reinterpret_cast<st3DMixCtlParams *>(pHdr + 1);
-            n = 0;
-            m_MixStateParams.p3DMixCtlProc = m_pNFSMixMap->GetNext3DMixCtlProc(false);
-            while (n < m_p3DMixCtlHdr->Num3DMixCtls) {
-                st3DMixCtlProc *p3DCP;
-                st3DMixCtlSharedData *p3DSD;
-                st3DMixCtlUniqueData *p3DUD;
-
-                if (m_ObjectIndex == 0) {
-                    p3DSD = m_pNFSMixMap->GetNext3DMixCtlShared(true);
-                    p3DSD->pMapParams = pparams;
-                    p3DSD->msSinceCamTrans = 0;
-                    p3DSD->CurCamState = 0;
-                    p3DSD->PrevCamState = 0;
-                } else {
-                    p3DSD = m_pFirstInstance->m_MixStateParams.p3DMixCtlProc[n].p3DMixCtlData_S;
-                }
-
-                n++;
-                p3DCP = m_pNFSMixMap->GetNext3DMixCtlProc(true);
-                p3DUD = m_pNFSMixMap->GetNext3DMixCtlUnique(true);
-                p3DUD->azimuth = 0;
-                p3DUD->q15Rolloff = 0x7FFF;
-                p3DUD->dBRolloff = 0;
-                p3DUD->DopplerCents = 0;
-                p3DSD->pCurStateParams = &pparams->StateParams;
-                p3DCP->p3DMixCtlData_U = p3DUD;
-                p3DUD->nINPUTID = (m_ObjectIndex << 11) | (p3DSD->pMapParams->nINPUTID & 0xFFFF07FF);
-                p3DUD->fPrevDist = 1.0f;
-                p3DCP->p3DMixCtlData_S = p3DSD;
-                m_3DMixCtlsAdded++;
-                p3DUD->fPrevDeltaDist = 1.0f;
-                p3DUD->pInputs = reinterpret_cast<int *>(
-                    ((p3DSD->pMapParams->nINPUTID | (m_ObjectIndex << 11)) & 0x1FFFFFFFU) | 0x60000000);
-                pparams = reinterpret_cast<st3DMixCtlParams *>(
-                    &pparams->StateParams + ((pparams->nINPUTID >> 24) & 0xF));
             }
         }
     }
@@ -436,6 +372,62 @@ void NFSMixMapState::CreateEvtMixCtls() {
     }
 }
 
+void NFSMixMapState::Create3DMixCtls() {
+    int offset;
+
+    m_3DMixCtlsAdded = 0;
+    offset = m_pMMStateHdr->Offset3DMixCtlData;
+
+    if (offset > -1) {
+        st3DMixCtlHdr *pHdr;
+
+        pHdr = reinterpret_cast<st3DMixCtlHdr *>(reinterpret_cast<char *>(&m_pMMStateHdr->StateIndex) + offset);
+        m_p3DMixCtlHdr = pHdr;
+        if (pHdr->Num3DMixCtls > 0) {
+            int n;
+            st3DMixCtlParams *pparams;
+
+            pparams = reinterpret_cast<st3DMixCtlParams *>(pHdr + 1);
+            n = 0;
+            m_MixStateParams.p3DMixCtlProc = m_pNFSMixMap->GetNext3DMixCtlProc(false);
+            while (n < m_p3DMixCtlHdr->Num3DMixCtls) {
+                st3DMixCtlProc *p3DCP;
+                st3DMixCtlSharedData *p3DSD;
+                st3DMixCtlUniqueData *p3DUD;
+
+                if (m_ObjectIndex == 0) {
+                    p3DSD = m_pNFSMixMap->GetNext3DMixCtlShared(true);
+                    p3DSD->pMapParams = pparams;
+                    p3DSD->msSinceCamTrans = 0;
+                    p3DSD->CurCamState = 0;
+                    p3DSD->PrevCamState = 0;
+                } else {
+                    p3DSD = m_pFirstInstance->m_MixStateParams.p3DMixCtlProc[n].p3DMixCtlData_S;
+                }
+
+                n++;
+                p3DCP = m_pNFSMixMap->GetNext3DMixCtlProc(true);
+                p3DUD = m_pNFSMixMap->GetNext3DMixCtlUnique(true);
+                p3DUD->azimuth = 0;
+                p3DUD->q15Rolloff = 0x7FFF;
+                p3DUD->dBRolloff = 0;
+                p3DUD->DopplerCents = 0;
+                p3DSD->pCurStateParams = &pparams->StateParams;
+                p3DCP->p3DMixCtlData_U = p3DUD;
+                p3DUD->nINPUTID = (m_ObjectIndex << 11) | (p3DSD->pMapParams->nINPUTID & 0xFFFF07FF);
+                p3DUD->fPrevDist = 1.0f;
+                p3DCP->p3DMixCtlData_S = p3DSD;
+                m_3DMixCtlsAdded++;
+                p3DUD->fPrevDeltaDist = 1.0f;
+                p3DUD->pInputs = reinterpret_cast<int *>(
+                    ((p3DSD->pMapParams->nINPUTID | (m_ObjectIndex << 11)) & 0x1FFFFFFFU) | 0x60000000);
+                pparams = reinterpret_cast<st3DMixCtlParams *>(
+                    &pparams->StateParams + ((pparams->nINPUTID >> 24) & 0xF));
+            }
+        }
+    }
+}
+
 void NFSMixMapState::InitializeSubChannels() {
     int n;
 
@@ -582,6 +574,14 @@ void NFSMixMapState::InitializeMasterChannels() {
         pPresetTable = pPresetTable + (totalPresets & 0x1F) + 1;
         n++;
     }
+}
+
+NFSMixMapState *NFSMixMapState::GetMixMapProc(int refcnt) {
+    return m_pFirstInstance + refcnt;
+}
+
+void NFSMixMapState::SetFirstStateInst(NFSMixMapState *pstate) {
+    m_pFirstInstance = pstate;
 }
 
 void NFSMixMapState::AddMixState(int objnum, NFSMixMapState *pinst0) {

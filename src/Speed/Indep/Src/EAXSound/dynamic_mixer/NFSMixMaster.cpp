@@ -56,6 +56,46 @@ void NFSMixMaster::DestroyMainMainMap() {
     *reinterpret_cast<int *>(&m_bMapReady) = 0;
 }
 
+void NFSMixMaster::CreateMainMainMap(eRACETYPE eMapType) {
+    *reinterpret_cast<int *>(&m_bMapReady) = 0;
+    m_pMainMixMap = new NFSMixMap();
+    LoadMixMapFile(MMTYPE_MAIN, szMixMapFiles[eMapType]);
+}
+
+void NFSMixMaster::LoadMixMapFile(eMMTYPE etype, char *pfilename) {
+    int nfilesize;
+    char *memptr;
+    bFile *file;
+
+    nfilesize = bFileSize(pfilename);
+    memptr = nullptr;
+
+    if (etype == MMTYPE_SECONDARY) {
+        memptr = new char[nfilesize];
+        m_pSecondaryMixMapData = reinterpret_cast<int *>(memptr);
+    } else if (etype > MMTYPE_SECONDARY) {
+        if (etype != MMTYPE_DYNAMIC) {
+            return;
+        }
+    } else if (etype == MMTYPE_MAIN) {
+        memptr = static_cast<char *>(gAudioMemoryManager.AllocateMemory(nfilesize, "Main Dyn MixMap", false));
+        m_pMainMixMapData = reinterpret_cast<int *>(memptr);
+    } else {
+        return;
+    }
+
+    m_LoadMapID = etype;
+    file = bOpen(pfilename, 1, 1);
+    if (file) {
+        bRead(file, memptr, nfilesize);
+        bClose(file);
+    }
+
+    LoadDataCallback((int)this, 0);
+}
+
+void NFSMixMaster::LoadDataCallback(int, int) {}
+
 void NFSMixMaster::DestroyMap() {
     m_pMainMixMap->DestroyMainMixMap();
 }
@@ -118,43 +158,3 @@ void NFSMixMaster::AssignSFXCallbacks(int *(*GetPointerCB)(int), void (*SetSFXOu
                                       void (*MixReadyCB)()) {
     NFSMixMap::AssignSFXCallbacks(GetPointerCB, SetSFXOutCB, SetSFXInputCB, GetStateRefCountCB, MixReadyCB);
 }
-
-void NFSMixMaster::CreateMainMainMap(eRACETYPE eMapType) {
-    *reinterpret_cast<int *>(&m_bMapReady) = 0;
-    m_pMainMixMap = new NFSMixMap();
-    LoadMixMapFile(MMTYPE_MAIN, szMixMapFiles[eMapType]);
-}
-
-void NFSMixMaster::LoadMixMapFile(eMMTYPE etype, char *pfilename) {
-    int nfilesize;
-    char *memptr;
-    bFile *file;
-
-    nfilesize = bFileSize(pfilename);
-    memptr = nullptr;
-
-    if (etype == MMTYPE_SECONDARY) {
-        memptr = new char[nfilesize];
-        m_pSecondaryMixMapData = reinterpret_cast<int *>(memptr);
-    } else if (etype > MMTYPE_SECONDARY) {
-        if (etype != MMTYPE_DYNAMIC) {
-            return;
-        }
-    } else if (etype == MMTYPE_MAIN) {
-        memptr = static_cast<char *>(gAudioMemoryManager.AllocateMemory(nfilesize, "Main Dyn MixMap", false));
-        m_pMainMixMapData = reinterpret_cast<int *>(memptr);
-    } else {
-        return;
-    }
-
-    m_LoadMapID = etype;
-    file = bOpen(pfilename, 1, 1);
-    if (file) {
-        bRead(file, memptr, nfilesize);
-        bClose(file);
-    }
-
-    LoadDataCallback((int)this, 0);
-}
-
-void NFSMixMaster::LoadDataCallback(int, int) {}

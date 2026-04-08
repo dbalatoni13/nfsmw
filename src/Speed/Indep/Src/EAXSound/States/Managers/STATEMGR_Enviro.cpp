@@ -25,6 +25,22 @@ CSTATE_Base *CSTATE_WorldObject::CreateState(unsigned int allocator) {
         sizeof(CSTATE_WorldObject), GetStaticStateInfo()->stateName, true)) CSTATE_WorldObject;
 }
 
+void CSTATEMGR_Enviro::AddWorldObject(float x, float y, float z, WORLDOBJECT_TYPES type) {
+    bVector3 Vec(x, y, z);
+    WorldObject *newworldobj;
+
+    newworldobj = new ("AUD: WorldObject", 0) WorldObject(Vec, type);
+    m_WorldObjects.push_back(newworldobj);
+}
+
+void CSTATEMGR_Enviro::RegisterWorldObjects() {
+    m_WorldObjects.clear();
+    AddWorldObject(4734.0f, 933.0f, 17.0f, WORLDOBJECT_FOUNTAIN);
+    AddWorldObject(3415.0f, 1024.0f, 76.0f, WORLDOBJECT_FOUNTAIN);
+    AddWorldObject(3550.0f, 1359.0f, 92.0f, WORLDOBJECT_FOUNTAIN);
+    AddWorldObject(3582.0f, 1079.0f, 85.0f, WORLDOBJECT_FOUNTAIN);
+}
+
 CSTATE_WorldObject::CSTATE_WorldObject()
     : CSTATE_Base()
     , mSndAttachment(nullptr) {}
@@ -43,6 +59,10 @@ bool CSTATE_WorldObject::Detach() {
     return CSTATE_Base::Detach();
 }
 
+CSTATEMGR_Enviro::CSTATEMGR_Enviro() {
+    RegisterWorldObjects();
+}
+
 CSTATEMGR_Enviro::~CSTATEMGR_Enviro() {
     UTL::Std::list<WorldObject *, _type_list>::iterator i;
 
@@ -53,26 +73,6 @@ CSTATEMGR_Enviro::~CSTATEMGR_Enviro() {
     }
 
     m_WorldObjects.clear();
-}
-
-void CSTATEMGR_Enviro::AddWorldObject(float x, float y, float z, WORLDOBJECT_TYPES type) {
-    bVector3 Vec(x, y, z);
-    WorldObject *newworldobj;
-
-    newworldobj = new ("AUD: WorldObject", 0) WorldObject(Vec, type);
-    m_WorldObjects.push_back(newworldobj);
-}
-
-void CSTATEMGR_Enviro::RegisterWorldObjects() {
-    m_WorldObjects.clear();
-    AddWorldObject(4734.0f, 933.0f, 17.0f, WORLDOBJECT_FOUNTAIN);
-    AddWorldObject(3415.0f, 1024.0f, 76.0f, WORLDOBJECT_FOUNTAIN);
-    AddWorldObject(3550.0f, 1359.0f, 92.0f, WORLDOBJECT_FOUNTAIN);
-    AddWorldObject(3582.0f, 1079.0f, 85.0f, WORLDOBJECT_FOUNTAIN);
-}
-
-CSTATEMGR_Enviro::CSTATEMGR_Enviro() {
-    RegisterWorldObjects();
 }
 
 void CSTATEMGR_Enviro::EnterWorld(eSndGameMode esgm) {

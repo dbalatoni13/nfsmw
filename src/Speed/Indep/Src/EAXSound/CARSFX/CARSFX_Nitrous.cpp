@@ -67,24 +67,6 @@ void CARSFX_Nitrous::SetupSFX(CSTATE_Base *_StateBase) {
     m_NitrousPitchBoost.Initialize(0.0f, 0.0f, 1, LINEAR);
 }
 
-void CARSFX_Nitrous::SetupLoadData() {
-    eNFSSndNOSClass nbankindex;
-
-    nbankindex = AEMS_NOS_00;
-    if (m_UGL != AEMS_LEVEL1) {
-        if (m_UGL > AEMS_LEVEL1) {
-            if (m_UGL == AEMS_LEVEL2) {
-                nbankindex = AEMS_NOS_01;
-            } else if (m_UGL == AEMS_LEVEL3) {
-                nbankindex = AEMS_NOS_01;
-            }
-        }
-    }
-
-    LoadAsset(
-        g_pEAXSound->GetAttributes()->AEMS_NOSBanks(nbankindex), SNDPATH_NOS, EAXSND_DT_AEMS_ASYNCSPUMEM, eBANK_SLOT_NONE, true);
-}
-
 void CARSFX_Nitrous::InitSFX() {
     SndBase::InitSFX();
     Enable();
@@ -233,3 +215,21 @@ void CARSFX_Nitrous::ProcessUpdate() {
         }
     }
 }
+void CARSFX_Nitrous::SetupLoadData() {
+    eNFSSndNOSClass nbankindex;
+
+    nbankindex = AEMS_NOS_00;
+    if (m_UGL != AEMS_LEVEL1) {
+        if (m_UGL > AEMS_LEVEL1) {
+            if (m_UGL == AEMS_LEVEL2) {
+                nbankindex = AEMS_NOS_01;
+            } else if (m_UGL == AEMS_LEVEL3) {
+                nbankindex = AEMS_NOS_01;
+            }
+        }
+    }
+
+    LoadAsset(
+        g_pEAXSound->GetAttributes()->AEMS_NOSBanks(nbankindex), SNDPATH_NOS, EAXSND_DT_AEMS_ASYNCSPUMEM, eBANK_SLOT_NONE, true);
+}
+

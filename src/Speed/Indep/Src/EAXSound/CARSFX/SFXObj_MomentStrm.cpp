@@ -51,12 +51,6 @@ MomentMapping g_MomentMappings[15] = {
     MomentMapping(18, 0x2E44C2E3),
 };
 
-extern bool IsWorldDataStreaming(unsigned int strmhandle);
-
-SFXObj_MomentStrm::TypeInfo *SFXObj_MomentStrm::GetTypeInfo() const {
-    return &s_TypeInfo;
-}
-
 const char *SFXObj_MomentStrm::GetTypeName() const {
     return s_TypeInfo.typeName;
 }
@@ -110,6 +104,43 @@ void SFXObj_MomentStrm::SetupSFX(CSTATE_Base *_StateBase) {
     SndBase::SetupSFX(_StateBase);
 }
 
+void SFXObj_MomentStrm::InitSFX() {
+    SndBase::InitSFX();
+    m_p3DPos->AssignPositionVector(&fPosition);
+    m_p3DPos->AssignDirectionVector(&fVector);
+    m_p3DPos->AssignVelocityVector(&fVelocity);
+    g_pEAXSound->SetSFXBaseObject(this, eMM_MAIN, 6, 0);
+    m_TimeBeforeRetrigger = 0.0f;
+    mMomentPositonsList.clear();
+
+    for (int n = 0; n <= 14; n++) {
+        const char *markerName = CAnimCandidateData::GetMomentMarkerName(g_MomentMappings[n].markerType);
+
+        if (markerName[0] != '\0') {
+            unsigned int markerHash = bStringHash(markerName);
+            int numTrackMarkers = GetNumTrackPositionMarkers(0, markerHash);
+            float closestMarkerDist;
+
+            for (int index = 0; index < numTrackMarkers; index++) {
+                TrackPositionMarker *marker = GetTrackPositionMarker(markerHash, index);
+
+                if (marker) {
+                    stMomentDecription newmoment;
+
+                    newmoment.vPos = UMath::Vector4::kZero;
+                    newmoment.key = 0;
+                    newmoment.vPos.z = marker->Position.x;
+                    newmoment.vPos.x = -marker->Position.y;
+                    newmoment.vPos.y = marker->Position.z;
+                    newmoment.vPos.w = 0.0f;
+                    newmoment.key = g_MomentMappings[n].key;
+                    mMomentPositonsList.push_back(newmoment);
+                }
+            }
+        }
+    }
+}
+
 int SFXObj_MomentStrm::GetController(int Index) {
     return Index != 0 ? -1 : 2;
 }
@@ -121,160 +152,6 @@ void SFXObj_MomentStrm::AttachController(SFXCTL *psfxctl) {
 }
 
 void SFXObj_MomentStrm::Destroy() {}
-
-void SFXObj_MomentStrm::UpdateParams(float t) {
-    Speech::SED_NISSFX *nismgr;
-
-    SndBase::UpdateParams(t);
-    m_TimeBeforeRetrigger -= t;
-    if (m_TimeBeforeRetrigger < 0.0f) {
-        m_TimeBeforeRetrigger = 0.0f;
-    }
-
-    if (UseUserPos != 0) {
-        fPosition = *SndCamera::GetWorldCarPos3(0);
-    }
-
-    if (mCarsID != 0) {
-        {
-            EAX_CarState *pcar = EAX_CarState::Find(mCarsID);
-
-            if (pcar) {
-                fPosition = *pcar->GetPosition();
-            }
-        }
-    }
-
-    nismgr = static_cast<Speech::SED_NISSFX *>(Speech::Manager::GetSpeechModule(0));
-    if (m_CurMoment != 0) {
-        if (bHoldStream != 0 && mHeldMoment) {
-            bHoldStream = false;
-
-            for (int num_play = 0; num_play < SndCamera::NumPlayers; num_play++) {
-                float xdist = bAbs(SndCamera::GetWorldCarPos(num_play)->x - mHeldMoment->vPos.z);
-                float ydist = bAbs(SndCamera::GetWorldCarPos(num_play)->y + mHeldMoment->vPos.x);
-
-                if (xdist < 20.0f || ydist < 20.0f) {
-                    bHoldStream = true;
-                    break;
-                }
-            }
-
-            if (bHoldStream == 0) {
-                nismgr->GetStreamChannel()->PurgeStream();
-                m_CurMoment = 0;
-                mHeldMoment = nullptr;
-                mCarsID = 0;
-            }
-        }
-
-        if (nismgr->GetStreamType() == STRM_SFX_MOMENT && !nismgr->GetStreamChannel()->IsPlaying()) {
-            m_CurMoment = 0;
-            mCarsID = 0;
-        } else if (nismgr->GetStreamType() != STRM_SFX_MOMENT) {
-            m_CurMoment = 0;
-            mCarsID = 0;
-        }
-
-        if (UseUserPos == 0) {
-            {
-                EAX_CarState *pcar;
-
-                pcar = GetClosestPlayerCar(&fPosition);
-                if (bDistBetween(&fPosition, pcar->GetPosition()) > 120.0f) {
-                    m_CurMoment = 0;
-                    nismgr->GetStreamChannel()->PurgeStream();
-                }
-            }
-        }
-    }
-
-    for (int num_play = 0; num_play < SndCamera::NumPlayers; num_play++) {
-        for (int n = 0; n < static_cast<int>(mMomentPositonsList.size()); n++) {
-            if (mMomentPositonsList[n].key != m_CurMoment) {
-                float xdist = bAbs(SndCamera::GetWorldCarPos(num_play)->x - mMomentPositonsList[n].vPos.z);
-                float ydist = bAbs(SndCamera::GetWorldCarPos(num_play)->y + mMomentPositonsList[n].vPos.x);
-
-                if (xdist <= 20.0f && ydist <= 20.0f &&
-                    ShouldStreamPlay(mMomentPositonsList[n].key, true, xdist * xdist + ydist * ydist)) {
-                    CommitStreamReq(mMomentPositonsList[n].vPos, mMomentPositonsList[n].key);
-                    bHoldStream = true;
-                    mHeldMoment = &mMomentPositonsList[n];
-                }
-            }
-        }
-    }
-}
-
-void SFXObj_MomentStrm::ProcessUpdate() {
-    SetDMIX_Input(5, 0);
-}
-
-void SFXObj_MomentStrm::CBPlayMomentStream() {
-    if (bHoldStream == 0) {
-        bool bresult;
-
-        if (g_MomentStream) {
-            Attrib::Gen::aud_moment_strm momentstrm(g_MomentStream->m_CurMoment, 0, nullptr);
-
-            if (momentstrm.GetParent() == 0x5A3E90B0) {
-                g_MomentStream->SetDMIX_Input(5, 0x7FFF);
-            }
-        }
-
-        bresult = Speech::Manager::GetSpeechModule(0)->PlayStream(2);
-        Speech::Manager::GetSpeechModule(0)->UnPause();
-        m_TimeBeforeRetrigger = 2.0f;
-    }
-}
-
-void SFXObj_MomentStrm::ReceiveMoment(const MGamePlayMoment &message) {
-    unsigned int collectionkey;
-    unsigned int unpause;
-
-    if (IsAudioStreamingEnabled == 0) {
-        return;
-    }
-
-    if (IsNISAudioEnabled == 0) {
-        return;
-    }
-
-    collectionkey = message.GetAttribKey();
-    unpause = Attrib::StringToKey("unpause");
-
-    if (collectionkey == unpause) {
-        UMath::Vector4 pos4 = message.GetPosition();
-
-        for (int n = 0; n < static_cast<int>(mMomentPositonsList.size()); n++) {
-            if (bAbs(pos4.x - mMomentPositonsList[n].vPos.x) < 25.0f &&
-                bAbs(pos4.z - mMomentPositonsList[n].vPos.z) < 25.0f) {
-                collectionkey = mMomentPositonsList[n].key;
-            }
-        }
-
-        if (collectionkey == unpause) {
-            return;
-        }
-    }
-
-    if (bHoldStream != 0 && m_CurMoment != 0 && collectionkey == m_CurMoment) {
-        bHoldStream = false;
-        mHeldMoment = nullptr;
-        CBPlayMomentStream();
-    } else if (ShouldStreamPlay(collectionkey, false, 0.0f)) {
-        CommitStreamReq(message.GetPosition(), collectionkey);
-
-        if (collectionkey == 0x0D6D4198 || collectionkey == 0xA6E3EF3E) {
-            mCarsID = message.GethSimable();
-        } else {
-            mCarsID = 0;
-        }
-
-        bHoldStream = false;
-        mHeldMoment = nullptr;
-    }
-}
 
 bool SFXObj_MomentStrm::ShouldStreamPlay(unsigned int key, bool IsQueueing, float dist_sqrd) {
     Speech::SED_NISSFX *nismgr;
@@ -366,41 +243,158 @@ void SFXObj_MomentStrm::CommitStreamReq(UMath::Vector4 pos4, unsigned int collec
     }
 }
 
-void SFXObj_MomentStrm::InitSFX() {
-    SndBase::InitSFX();
-    m_p3DPos->AssignPositionVector(&fPosition);
-    m_p3DPos->AssignDirectionVector(&fVector);
-    m_p3DPos->AssignVelocityVector(&fVelocity);
-    g_pEAXSound->SetSFXBaseObject(this, eMM_MAIN, 6, 0);
-    m_TimeBeforeRetrigger = 0.0f;
-    mMomentPositonsList.clear();
+void SFXObj_MomentStrm::ReceiveMoment(const MGamePlayMoment &message) {
+    unsigned int collectionkey;
+    unsigned int unpause;
 
-    for (int n = 0; n <= 14; n++) {
-        const char *markerName = CAnimCandidateData::GetMomentMarkerName(g_MomentMappings[n].markerType);
+    if (IsAudioStreamingEnabled == 0) {
+        return;
+    }
 
-        if (markerName[0] != '\0') {
-            unsigned int markerHash = bStringHash(markerName);
-            int numTrackMarkers = GetNumTrackPositionMarkers(0, markerHash);
-            float closestMarkerDist;
+    if (IsNISAudioEnabled == 0) {
+        return;
+    }
 
-            for (int index = 0; index < numTrackMarkers; index++) {
-                TrackPositionMarker *marker = GetTrackPositionMarker(markerHash, index);
+    collectionkey = message.GetAttribKey();
+    unpause = Attrib::StringToKey("unpause");
 
-                if (marker) {
-                    stMomentDecription newmoment;
+    if (collectionkey == unpause) {
+        UMath::Vector4 pos4 = message.GetPosition();
 
-                    newmoment.vPos = UMath::Vector4::kZero;
-                    newmoment.key = 0;
-                    newmoment.vPos.z = marker->Position.x;
-                    newmoment.vPos.x = -marker->Position.y;
-                    newmoment.vPos.y = marker->Position.z;
-                    newmoment.vPos.w = 0.0f;
-                    newmoment.key = g_MomentMappings[n].key;
-                    mMomentPositonsList.push_back(newmoment);
+        for (int n = 0; n < static_cast<int>(mMomentPositonsList.size()); n++) {
+            if (bAbs(pos4.x - mMomentPositonsList[n].vPos.x) < 25.0f &&
+                bAbs(pos4.z - mMomentPositonsList[n].vPos.z) < 25.0f) {
+                collectionkey = mMomentPositonsList[n].key;
+            }
+        }
+
+        if (collectionkey == unpause) {
+            return;
+        }
+    }
+
+    if (bHoldStream != 0 && m_CurMoment != 0 && collectionkey == m_CurMoment) {
+        bHoldStream = false;
+        mHeldMoment = nullptr;
+        CBPlayMomentStream();
+    } else if (ShouldStreamPlay(collectionkey, false, 0.0f)) {
+        CommitStreamReq(message.GetPosition(), collectionkey);
+
+        if (collectionkey == 0x0D6D4198 || collectionkey == 0xA6E3EF3E) {
+            mCarsID = message.GethSimable();
+        } else {
+            mCarsID = 0;
+        }
+
+        bHoldStream = false;
+        mHeldMoment = nullptr;
+    }
+}
+
+void SFXObj_MomentStrm::CBPlayMomentStream() {
+    if (bHoldStream == 0) {
+        bool bresult;
+
+        if (g_MomentStream) {
+            Attrib::Gen::aud_moment_strm momentstrm(g_MomentStream->m_CurMoment, 0, nullptr);
+
+            if (momentstrm.GetParent() == 0x5A3E90B0) {
+                g_MomentStream->SetDMIX_Input(5, 0x7FFF);
+            }
+        }
+
+        bresult = Speech::Manager::GetSpeechModule(0)->PlayStream(2);
+        Speech::Manager::GetSpeechModule(0)->UnPause();
+        m_TimeBeforeRetrigger = 2.0f;
+    }
+}
+
+void SFXObj_MomentStrm::UpdateParams(float t) {
+    Speech::SED_NISSFX *nismgr;
+
+    SndBase::UpdateParams(t);
+    m_TimeBeforeRetrigger -= t;
+    if (m_TimeBeforeRetrigger < 0.0f) {
+        m_TimeBeforeRetrigger = 0.0f;
+    }
+
+    if (UseUserPos != 0) {
+        fPosition = *SndCamera::GetWorldCarPos3(0);
+    }
+
+    if (mCarsID != 0) {
+        {
+            EAX_CarState *pcar = EAX_CarState::Find(mCarsID);
+
+            if (pcar) {
+                fPosition = *pcar->GetPosition();
+            }
+        }
+    }
+
+    nismgr = static_cast<Speech::SED_NISSFX *>(Speech::Manager::GetSpeechModule(0));
+    if (m_CurMoment != 0) {
+        if (bHoldStream != 0 && mHeldMoment) {
+            bHoldStream = false;
+
+            for (int num_play = 0; num_play < SndCamera::NumPlayers; num_play++) {
+                float xdist = bAbs(SndCamera::GetWorldCarPos(num_play)->x - mHeldMoment->vPos.z);
+                float ydist = bAbs(SndCamera::GetWorldCarPos(num_play)->y + mHeldMoment->vPos.x);
+
+                if (xdist < 20.0f || ydist < 20.0f) {
+                    bHoldStream = true;
+                    break;
+                }
+            }
+
+            if (bHoldStream == 0) {
+                nismgr->GetStreamChannel()->PurgeStream();
+                m_CurMoment = 0;
+                mHeldMoment = nullptr;
+                mCarsID = 0;
+            }
+        }
+
+        if (nismgr->GetStreamType() == STRM_SFX_MOMENT && !nismgr->GetStreamChannel()->IsPlaying()) {
+            m_CurMoment = 0;
+            mCarsID = 0;
+        } else if (nismgr->GetStreamType() != STRM_SFX_MOMENT) {
+            m_CurMoment = 0;
+            mCarsID = 0;
+        }
+
+        if (UseUserPos == 0) {
+            {
+                EAX_CarState *pcar;
+
+                pcar = GetClosestPlayerCar(&fPosition);
+                if (bDistBetween(&fPosition, pcar->GetPosition()) > 120.0f) {
+                    m_CurMoment = 0;
+                    nismgr->GetStreamChannel()->PurgeStream();
                 }
             }
         }
     }
+
+    for (int num_play = 0; num_play < SndCamera::NumPlayers; num_play++) {
+        for (int n = 0; n < static_cast<int>(mMomentPositonsList.size()); n++) {
+            if (mMomentPositonsList[n].key != m_CurMoment) {
+                float xdist = bAbs(SndCamera::GetWorldCarPos(num_play)->x - mMomentPositonsList[n].vPos.z);
+                float ydist = bAbs(SndCamera::GetWorldCarPos(num_play)->y + mMomentPositonsList[n].vPos.x);
+
+                if (xdist <= 20.0f && ydist <= 20.0f &&
+                    ShouldStreamPlay(mMomentPositonsList[n].key, true, xdist * xdist + ydist * ydist)) {
+                    CommitStreamReq(mMomentPositonsList[n].vPos, mMomentPositonsList[n].key);
+                    bHoldStream = true;
+                    mHeldMoment = &mMomentPositonsList[n];
+                }
+            }
+        }
+    }
+}
+
+void SFXObj_MomentStrm::ProcessUpdate() {
+    SetDMIX_Input(5, 0);
 }
 
 void SFXObj_MomentStrm::ReceivePursuitBreaker(const MPursuitBreaker &message) {
@@ -453,3 +447,9 @@ SndBase *SFXCTL_3DMomentPos::CreateObject(unsigned int allocator) {
 
 template class UTL::Vector<SFXObj_MomentStrm::stMomentDecription, 16>;
 template class UTL::FixedVector<SFXObj_MomentStrm::stMomentDecription, 64, 16>;
+extern bool IsWorldDataStreaming(unsigned int strmhandle);
+
+SFXObj_MomentStrm::TypeInfo *SFXObj_MomentStrm::GetTypeInfo() const {
+    return &s_TypeInfo;
+}
+

@@ -16,8 +16,12 @@
 
 extern float CAMERA_WOOSH_OFFSET;
 extern int IsSoundEnabled;
+CSTATEMGR_DriveBy::CSTATEMGR_DriveBy()
+    : CSTATEMGR_Base() {
+    WooshCheckFrameCntr = 4;
+}
 
-bool g_EAXIsPaused(void);
+CSTATEMGR_DriveBy::~CSTATEMGR_DriveBy() {}
 
 void TestSmackableForWoosh(IModel *model, int carid) {
     eDRIVE_BY_TYPE bytype;
@@ -98,6 +102,8 @@ CreateWoosh:
     }
 }
 
+
+
 void TestAllSmackablesForWhoosh() {
     int numcars;
 
@@ -133,13 +139,6 @@ void TestAllSmackablesForWhoosh() {
         }
     }
 }
-
-CSTATEMGR_DriveBy::CSTATEMGR_DriveBy()
-    : CSTATEMGR_Base() {
-    WooshCheckFrameCntr = 4;
-}
-
-CSTATEMGR_DriveBy::~CSTATEMGR_DriveBy() {}
 
 void CSTATEMGR_DriveBy::UpdateParams(float t) {
     ProfileNode profile_node("TODO", 0);
@@ -273,3 +272,5 @@ CSTATE_Base *CSTATEMGR_DriveBy::GetFreeState(void *ObjectPtr) {
 
     return nullptr;
 }
+
+bool g_EAXIsPaused(void);

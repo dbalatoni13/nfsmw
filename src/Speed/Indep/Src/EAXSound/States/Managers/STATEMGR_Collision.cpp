@@ -1,6 +1,24 @@
 #include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_Collision.hpp"
 #include "Speed/Indep/Src/EAXSound/States/STATE_Collision.hpp"
 
+CSTATEMGR_Collision::CSTATEMGR_Collision() {}
+
+CSTATEMGR_Collision::~CSTATEMGR_Collision() {}
+
+void CSTATEMGR_Collision::EnterWorld(eSndGameMode esgm) {
+    int ColSFXID = 1;
+
+    for (int n = 0; n < 10; n++) {
+        CSTATE_Base *NewState = CreateState(0, ColSFXID);
+        NewState->Setup(ColSFXID);
+    }
+
+    CSTATEMGR_Base::EnterWorld(esgm);
+}
+
+void CSTATEMGR_Collision::UpdateParams(float t) {
+    CSTATEMGR_Base::UpdateParams(t);
+}
 static int GetCollisionPriority(Sound::CollisionEvent *collision) {
     if (collision->IsDescribed(0x400)) {
         return 10;
@@ -42,21 +60,6 @@ static int GetCollisionPriority(Sound::CollisionEvent *collision) {
         return 4;
     }
     return 3;
-}
-
-CSTATEMGR_Collision::CSTATEMGR_Collision() {}
-
-CSTATEMGR_Collision::~CSTATEMGR_Collision() {}
-
-void CSTATEMGR_Collision::EnterWorld(eSndGameMode esgm) {
-    int ColSFXID = 1;
-
-    for (int n = 0; n < 10; n++) {
-        CSTATE_Base *NewState = CreateState(0, ColSFXID);
-        NewState->Setup(ColSFXID);
-    }
-
-    CSTATEMGR_Base::EnterWorld(esgm);
 }
 
 CSTATE_Base *CSTATEMGR_Collision::GetFreeState(void *ObjectPtr) {
@@ -118,6 +121,3 @@ CSTATE_Base *CSTATEMGR_Collision::GetFreeState(void *ObjectPtr) {
     return CurReturn;
 }
 
-void CSTATEMGR_Collision::UpdateParams(float t) {
-    CSTATEMGR_Base::UpdateParams(t);
-}
