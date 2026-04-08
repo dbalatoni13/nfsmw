@@ -642,7 +642,10 @@ bool SFXObj_PFEATrax::TestToAmbience() {
                 return false;
             }
         }
-    } else if (m_MusicType == eMUSIC_TYPE_LICENCED) {
+    } else {
+        if (m_MusicType != eMUSIC_TYPE_LICENCED) {
+            return false;
+        }
         if (g_pEAXSound->GetSndGameMode() == SND_FRONTEND) {
             if (g_pEAXSound->GetCurMusicVolume() == 0.0f || g_pEAXSound->GetCurAudioSettings()->EATraxMode == 0 ||
                 m_EATrax[m_EATraxState].TraxMask == 0) {
@@ -673,8 +676,6 @@ bool SFXObj_PFEATrax::TestToAmbience() {
             }
             PATH_stop(m_PFParms[m_ActiveProject].PATH_TRACK);
         }
-    } else {
-        return false;
     }
     UpdateAmbience(0.1f);
     StartAmbience(AmbientCrossMap[m_nAmbientZone]);
