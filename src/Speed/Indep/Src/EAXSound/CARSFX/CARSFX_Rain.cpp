@@ -185,15 +185,15 @@ void CARSFX_Rain::ProcessUpdate() {
             bInsideRain = true;
         }
 
-        if (!bInsideRain) {
-            Tmp = GetDMixOutput(0, DMX_VOL);
-        } else {
+        if (bInsideRain) {
             Tmp = GetDMixOutput(1, DMX_VOL);
+        } else {
+            Tmp = GetDMixOutput(0, DMX_VOL);
         }
 
         m_pCsisRain->SetVolume(Tmp);
         m_pCsisRain->SetPitch_Offset(0);
-        m_pCsisRain->SetHood_Rain(bInsideRain);
+        m_pCsisRain->SetHood_Rain(bInsideRain ? 1 : 0);
         m_pCsisRain->SetHood_Rain_Vol_Substract(0);
         m_pCsisRain->SetWidth(7000);
         m_pCsisRain->CommitMemberData();
