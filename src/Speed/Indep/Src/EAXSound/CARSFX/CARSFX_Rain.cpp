@@ -121,11 +121,7 @@ void CARSFX_Rain::UpdateParams(float t) {
     view = eGetView(1, false);
     if (view) {
         m_fPrevWeatherIntensity = m_fWeatherIntensity;
-        if (eViews[1].Precipitation) {
-            m_fWeatherIntensity = view->Precipitation->GetRainIntensity();
-        } else {
-            m_fWeatherIntensity = 0.0f;
-        }
+        m_fWeatherIntensity = eViews[1].Precipitation ? view->Precipitation->GetRainIntensity() : 0.0f;
     } else {
         m_fPrevWeatherIntensity = 0.0f;
         m_fWeatherIntensity = 0.0f;
@@ -158,7 +154,7 @@ void CARSFX_Rain::UpdateParams(float t) {
     }
 
     if (*reinterpret_cast<int *>(&bFadingOut) != 0) {
-        {
+        if (1) {
             float fdt;
 
             fdt = m_fTimeLeftToFadeOut - t;
