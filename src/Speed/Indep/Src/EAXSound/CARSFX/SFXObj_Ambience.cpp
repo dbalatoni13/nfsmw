@@ -23,9 +23,9 @@ const char *SFXObj_Ambience::GetTypeName() const {
 
 SndBase *SFXObj_Ambience::CreateObject(unsigned int allocator) {
     if (allocator == 0) {
-        return new (s_TypeInfo.typeName, false) SFXObj_Ambience();
+        return new (GetStaticTypeInfo()->typeName, false) SFXObj_Ambience();
     }
-    return new (s_TypeInfo.typeName, true) SFXObj_Ambience();
+    return new (GetStaticTypeInfo()->typeName, true) SFXObj_Ambience();
 }
 
 SFXObj_Ambience::SFXObj_Ambience()

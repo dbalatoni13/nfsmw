@@ -15,8 +15,9 @@
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/shiftpattern.h"
 
 class CARSFX_Shift : public CARSFX {
-  protected:
+  public:
     static TypeInfo s_TypeInfo;
+    static TypeInfo *GetStaticTypeInfo() { return &s_TypeInfo; }
 
   public:
     CARSFX_Shift();

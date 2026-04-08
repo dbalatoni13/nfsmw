@@ -21,7 +21,7 @@ struct CARSFX_SparkChatter : public CARSFX {
         Csis::ClassDestructorClient DestroyClient; // offset 0x24, size 0x10
     };
 
-  protected:
+  public:
     static TypeInfo s_TypeInfo;
 
   public:

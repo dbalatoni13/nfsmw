@@ -17,7 +17,7 @@ enum eSFX_NITROUS {
 };
 
 class CARSFX_Nitrous : public CARSFX {
-  protected:
+  public:
     static TypeInfo s_TypeInfo;
 
     static TypeInfo *GetStaticTypeInfo() {

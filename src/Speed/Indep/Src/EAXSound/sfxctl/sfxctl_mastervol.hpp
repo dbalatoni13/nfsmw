@@ -9,7 +9,7 @@
 
 // total size: 0x28
 struct SFXCTL_MasterVol : public SFXCTL {
-  protected:
+  public:
     static TypeInfo s_TypeInfo;
 
   public:
@@ -24,7 +24,7 @@ struct SFXCTL_MasterVol : public SFXCTL {
 
 // total size: 0x28
 struct SFXCTL_GameState : public SFXCTL {
-  protected:
+  public:
     static TypeInfo s_TypeInfo;
 
   public:

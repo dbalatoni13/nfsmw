@@ -37,7 +37,7 @@ enum eVOL_ROADNOISE {
 };
 
 class CARSFX_RoadNoise : public CARSFX {
-  protected:
+  public:
     static TypeInfo s_TypeInfo;
     static TypeInfo *GetStaticTypeInfo() { return &s_TypeInfo; }
 

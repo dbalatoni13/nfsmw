@@ -71,9 +71,9 @@ const char *CARSFX_AEMSEngine::GetTypeName() const { return s_TypeInfo.typeName;
 
 SndBase *CARSFX_AEMSEngine::CreateObject(unsigned int allocator) {
     if (allocator == 0) {
-        return new (s_TypeInfo.typeName, false) CARSFX_AEMSEngine();
+        return new (GetStaticTypeInfo()->typeName, false) CARSFX_AEMSEngine();
     }
-    return new (s_TypeInfo.typeName, true) CARSFX_AEMSEngine();
+    return new (GetStaticTypeInfo()->typeName, true) CARSFX_AEMSEngine();
 }
 
 CARSFX_AEMSEngine::CARSFX_AEMSEngine()
@@ -420,9 +420,9 @@ SndBase::TypeInfo CARSFX_SingleGinsuEng::s_TypeInfo = {0x00020010, "CARSFX_Singl
 
 SndBase *CARSFX_SingleGinsuEng::CreateObject(unsigned int allocator) {
     if (allocator == 0) {
-        return new (s_TypeInfo.typeName, false) CARSFX_SingleGinsuEng();
+        return new (GetStaticTypeInfo()->typeName, false) CARSFX_SingleGinsuEng();
     }
-    return new (s_TypeInfo.typeName, true) CARSFX_SingleGinsuEng();
+    return new (GetStaticTypeInfo()->typeName, true) CARSFX_SingleGinsuEng();
 }
 
 CARSFX_SingleGinsuEng::CARSFX_SingleGinsuEng()
@@ -491,9 +491,9 @@ const char *CARSFX_DualGinsuEng::GetTypeName() const { return s_TypeInfo.typeNam
 
 SndBase *CARSFX_DualGinsuEng::CreateObject(unsigned int allocator) {
     if (allocator == 0) {
-        return new (s_TypeInfo.typeName, false) CARSFX_DualGinsuEng();
+        return new (GetStaticTypeInfo()->typeName, false) CARSFX_DualGinsuEng();
     }
-    return new (s_TypeInfo.typeName, true) CARSFX_DualGinsuEng();
+    return new (GetStaticTypeInfo()->typeName, true) CARSFX_DualGinsuEng();
 }
 
 SndBase::TypeInfo CARSFX_DualGinsuEng::s_TypeInfo = { 0x00020020, "CARSFX_DualGinsuEng", &SndBase::s_TypeInfo,

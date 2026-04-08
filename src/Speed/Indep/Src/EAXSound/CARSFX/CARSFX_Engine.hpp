@@ -73,8 +73,9 @@ struct CARSFX_GinsuEngine : public CARSFX_EngineBase {
 };
 
 struct CARSFX_AEMSEngine : public CARSFX_EngineBase {
-  protected:
+  public:
     static TypeInfo s_TypeInfo;
+    static TypeInfo *GetStaticTypeInfo() { return &s_TypeInfo; }
 
   public:
     CARSFX_AEMSEngine();
@@ -94,8 +95,9 @@ struct CARSFX_AEMSEngine : public CARSFX_EngineBase {
 };
 
 struct CARSFX_SingleGinsuEng : public CARSFX_GinsuEngine {
-  protected:
+  public:
     static TypeInfo s_TypeInfo;
+    static TypeInfo *GetStaticTypeInfo() { return &s_TypeInfo; }
 
   public:
     CARSFX_SingleGinsuEng();
@@ -108,8 +110,9 @@ struct CARSFX_SingleGinsuEng : public CARSFX_GinsuEngine {
 };
 
 struct CARSFX_DualGinsuEng : public CARSFX_GinsuEngine {
-  protected:
+  public:
     static TypeInfo s_TypeInfo;
+    static TypeInfo *GetStaticTypeInfo() { return &s_TypeInfo; }
 
   public:
     CARSFX_DualGinsuEng();

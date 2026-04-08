@@ -28,9 +28,9 @@ const char *CARSFX_SparkChatter::GetTypeName() const {
 
 SndBase *CARSFX_SparkChatter::CreateObject(unsigned int allocator) {
     if (allocator == 0) {
-        return new (s_TypeInfo.typeName, false) CARSFX_SparkChatter();
+        return new (GetStaticTypeInfo()->typeName, false) CARSFX_SparkChatter();
     }
-    return new (s_TypeInfo.typeName, true) CARSFX_SparkChatter();
+    return new (GetStaticTypeInfo()->typeName, true) CARSFX_SparkChatter();
 }
 
 CARSFX_SparkChatter::CARSFX_SparkChatter()

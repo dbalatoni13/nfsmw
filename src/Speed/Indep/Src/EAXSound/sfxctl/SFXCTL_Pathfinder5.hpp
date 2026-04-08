@@ -110,7 +110,7 @@ struct IPathTrack {
 };
 
 struct SFXCTL_Pathfinder : public SFXCTL {
-  protected:
+  public:
     static TypeInfo s_TypeInfo;
     static TypeInfo *GetStaticTypeInfo() { return &s_TypeInfo; }
 

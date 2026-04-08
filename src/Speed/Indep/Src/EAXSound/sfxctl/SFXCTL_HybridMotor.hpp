@@ -26,7 +26,7 @@ struct EngineMix {
 };
 
 struct SFXCTL_HybridMotor : public SFXCTL {
-  protected:
+  public:
     static TypeInfo s_TypeInfo;
     static TypeInfo *GetStaticTypeInfo() { return &s_TypeInfo; }
 

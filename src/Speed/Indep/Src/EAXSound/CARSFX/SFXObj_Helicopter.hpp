@@ -10,7 +10,7 @@
 #include "Speed/Indep/Src/EAXSound/snd_gen/MAIN_AEMS.h"
 
 class SFXObj_Helicopter : public CARSFX {
-  protected:
+  public:
     static TypeInfo s_TypeInfo;
     static TypeInfo *GetStaticTypeInfo() { return &s_TypeInfo; }
 

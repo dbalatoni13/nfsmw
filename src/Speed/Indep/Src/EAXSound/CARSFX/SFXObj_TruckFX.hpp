@@ -36,7 +36,7 @@ struct SFXObj_TruckFX : public CARSFX {
 };
 
 struct CARSFX_TruckWoosh : public CARSFX_TrafficWoosh {
-  protected:
+  public:
     static TypeInfo s_TypeInfo;
 
     static TypeInfo *GetStaticTypeInfo() {
@@ -66,7 +66,7 @@ struct CARSFX_TruckWoosh : public CARSFX_TrafficWoosh {
 };
 
 struct SFXCTL_3DTrailerPos : public SFXCTL_3DCarPos {
-  protected:
+  public:
     static TypeInfo s_TypeInfo;
 
     static TypeInfo *GetStaticTypeInfo() {

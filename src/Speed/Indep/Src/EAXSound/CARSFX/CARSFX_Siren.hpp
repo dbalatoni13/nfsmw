@@ -12,8 +12,9 @@
 
 // total size: 0x40
 class CARSFX_Siren : public CARSFX {
-  protected:
+  public:
     static TypeInfo s_TypeInfo;
+    static TypeInfo *GetStaticTypeInfo() { return &s_TypeInfo; }
 
   private:
     SIREN *mSiren;               // offset 0x28, size 0x4

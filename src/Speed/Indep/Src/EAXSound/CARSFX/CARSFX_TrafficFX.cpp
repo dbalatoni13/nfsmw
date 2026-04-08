@@ -43,9 +43,9 @@ const char *CARSFX_TrafficEngine::GetTypeName() const {
 
 SndBase *CARSFX_TrafficEngine::CreateObject(unsigned int allocator) {
     if (allocator == 0) {
-        return new (s_TypeInfo.typeName, false) CARSFX_TrafficEngine();
+        return new (GetStaticTypeInfo()->typeName, false) CARSFX_TrafficEngine();
     }
-    return new (s_TypeInfo.typeName, true) CARSFX_TrafficEngine();
+    return new (GetStaticTypeInfo()->typeName, true) CARSFX_TrafficEngine();
 }
 
 CARSFX_TrafficEngine::CARSFX_TrafficEngine()
@@ -153,9 +153,9 @@ const char *SFXCTL_3DTrafficPos::GetTypeName() const {
 
 SndBase *SFXCTL_3DTrafficPos::CreateObject(unsigned int allocator) {
     if (allocator == 0) {
-        return new (s_TypeInfo.typeName, false) SFXCTL_3DTrafficPos();
+        return new (GetStaticTypeInfo()->typeName, false) SFXCTL_3DTrafficPos();
     }
-    return new (s_TypeInfo.typeName, true) SFXCTL_3DTrafficPos();
+    return new (GetStaticTypeInfo()->typeName, true) SFXCTL_3DTrafficPos();
 }
 
 CARSFX_TrafficHorn::TypeInfo CARSFX_TrafficHorn::s_TypeInfo = {
@@ -175,9 +175,9 @@ const char *CARSFX_TrafficHorn::GetTypeName() const {
 
 SndBase *CARSFX_TrafficHorn::CreateObject(unsigned int allocator) {
     if (allocator == 0) {
-        return new (s_TypeInfo.typeName, false) CARSFX_TrafficHorn();
+        return new (GetStaticTypeInfo()->typeName, false) CARSFX_TrafficHorn();
     }
-    return new (s_TypeInfo.typeName, true) CARSFX_TrafficHorn();
+    return new (GetStaticTypeInfo()->typeName, true) CARSFX_TrafficHorn();
 }
 
 SndBase::TypeInfo *CARSFX_TruckHorn::GetTypeInfo() const {
@@ -190,9 +190,9 @@ const char *CARSFX_TruckHorn::GetTypeName() const {
 
 SndBase *CARSFX_TruckHorn::CreateObject(unsigned int allocator) {
     if (allocator == 0) {
-        return new (s_TypeInfo.typeName, false) CARSFX_TruckHorn();
+        return new (GetStaticTypeInfo()->typeName, false) CARSFX_TruckHorn();
     }
-    return new (s_TypeInfo.typeName, true) CARSFX_TruckHorn();
+    return new (GetStaticTypeInfo()->typeName, true) CARSFX_TruckHorn();
 }
 
 CARSFX_TrafficHorn::CARSFX_TrafficHorn()
@@ -403,9 +403,9 @@ CARSFX_TrafficWoosh::TypeInfo CARSFX_TrafficWoosh::s_TypeInfo = {
 
 SndBase *CARSFX_TrafficWoosh::CreateObject(unsigned int allocator) {
     if (allocator == 0) {
-        return new (s_TypeInfo.typeName, false) CARSFX_TrafficWoosh();
+        return new (GetStaticTypeInfo()->typeName, false) CARSFX_TrafficWoosh();
     }
-    return new (s_TypeInfo.typeName, true) CARSFX_TrafficWoosh();
+    return new (GetStaticTypeInfo()->typeName, true) CARSFX_TrafficWoosh();
 }
 
 CARSFX_TrafficWoosh::CARSFX_TrafficWoosh()

@@ -35,7 +35,7 @@ struct WorldObject : public ISndAttachable {
 };
 
 struct SFXCTL_3DFountainPos : public SFXCTL_3DObjPos {
-  protected:
+  public:
     static TypeInfo s_TypeInfo;
 
     static TypeInfo *GetStaticTypeInfo() {
@@ -55,7 +55,7 @@ struct SFXCTL_3DFountainPos : public SFXCTL_3DObjPos {
 struct ENV_STATIC;
 
 struct SFXObj_WorldObject : public CARSFX {
-  protected:
+  public:
     static TypeInfo s_TypeInfo;
     static TypeInfo *GetStaticTypeInfo() { return &s_TypeInfo; }
 

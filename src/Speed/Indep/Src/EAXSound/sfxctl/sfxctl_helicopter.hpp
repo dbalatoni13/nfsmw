@@ -8,7 +8,7 @@
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_3DObjPos.hpp"
 
 struct SFXCTL_3DHeliPos : public SFXCTL_3DObjPos {
-  protected:
+  public:
     static TypeInfo s_TypeInfo;
     static TypeInfo *GetStaticTypeInfo() { return &s_TypeInfo; }
 
@@ -22,7 +22,7 @@ struct SFXCTL_3DHeliPos : public SFXCTL_3DObjPos {
 struct EAX_HeliState;
 
 struct SFXCTL_Helicopter : public SFXCTL {
-  protected:
+  public:
     static TypeInfo s_TypeInfo;
     static TypeInfo *GetStaticTypeInfo() { return &s_TypeInfo; }
 

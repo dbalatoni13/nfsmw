@@ -17,7 +17,7 @@ struct MCountdownDone;
 class MNotifyVehicleDestroyed;
 
 struct SFXCTL_Engine : public SFXCTL {
-  protected:
+  public:
     static TypeInfo s_TypeInfo;
     static TypeInfo *GetStaticTypeInfo() { return &s_TypeInfo; }
 

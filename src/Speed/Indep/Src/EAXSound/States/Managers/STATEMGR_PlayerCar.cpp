@@ -81,9 +81,9 @@ const char *SFXCTL_3DRearPos::GetTypeName() const {
 
 SndBase *SFXCTL_3DRearPos::CreateObject(unsigned int allocator) {
     if (allocator == 0) {
-        return new (s_TypeInfo.typeName, false) SFXCTL_3DRearPos();
+        return new (GetStaticTypeInfo()->typeName, false) SFXCTL_3DRearPos();
     }
-    return new (s_TypeInfo.typeName, true) SFXCTL_3DRearPos();
+    return new (GetStaticTypeInfo()->typeName, true) SFXCTL_3DRearPos();
 }
 
 void SFXCTL_3DRearPos::InitSFX() {

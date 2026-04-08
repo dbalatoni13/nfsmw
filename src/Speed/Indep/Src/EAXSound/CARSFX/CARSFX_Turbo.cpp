@@ -31,9 +31,9 @@ const char *CARSFX_Turbo::GetTypeName() const {
 
 SndBase *CARSFX_Turbo::CreateObject(unsigned int allocator) {
     if (allocator == 0) {
-        return new (s_TypeInfo.typeName, false) CARSFX_Turbo();
+        return new (GetStaticTypeInfo()->typeName, false) CARSFX_Turbo();
     }
-    return new (s_TypeInfo.typeName, true) CARSFX_Turbo();
+    return new (GetStaticTypeInfo()->typeName, true) CARSFX_Turbo();
 }
 
 CARSFX_Turbo::CARSFX_Turbo()

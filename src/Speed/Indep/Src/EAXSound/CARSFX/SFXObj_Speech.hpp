@@ -11,7 +11,7 @@
 struct EAX_CarState;
 
 class SFXCTL_3DVoiceActorPos : private SFXCTL_3DObjPos {
-  protected:
+  public:
     static TypeInfo s_TypeInfo;
     static TypeInfo *GetStaticTypeInfo() { return &s_TypeInfo; }
 
@@ -24,7 +24,7 @@ class SFXCTL_3DVoiceActorPos : private SFXCTL_3DObjPos {
 };
 
 class SFXObj_Speech : public CARSFX {
-  protected:
+  public:
     static TypeInfo s_TypeInfo;
     static TypeInfo *GetStaticTypeInfo() { return &s_TypeInfo; }
 

@@ -15,9 +15,9 @@ const char *SFXCTL_3DFountainPos::GetTypeName() const {
 
 SndBase *SFXCTL_3DFountainPos::CreateObject(unsigned int allocator) {
     if (allocator == 0) {
-        return new (s_TypeInfo.typeName, false) SFXCTL_3DFountainPos();
+        return new (GetStaticTypeInfo()->typeName, false) SFXCTL_3DFountainPos();
     }
-    return new (s_TypeInfo.typeName, true) SFXCTL_3DFountainPos();
+    return new (GetStaticTypeInfo()->typeName, true) SFXCTL_3DFountainPos();
 }
 
 SndBase::TypeInfo *SFXObj_WorldObject::GetTypeInfo() const {
@@ -40,9 +40,9 @@ const char *SFXObj_WorldObject::GetTypeName() const {
 
 SndBase *SFXObj_WorldObject::CreateObject(unsigned int allocator) {
     if (allocator == 0) {
-        return new (s_TypeInfo.typeName, false) SFXObj_WorldObject();
+        return new (GetStaticTypeInfo()->typeName, false) SFXObj_WorldObject();
     }
-    return new (s_TypeInfo.typeName, true) SFXObj_WorldObject();
+    return new (GetStaticTypeInfo()->typeName, true) SFXObj_WorldObject();
 }
 
 SFXObj_WorldObject::SFXObj_WorldObject()

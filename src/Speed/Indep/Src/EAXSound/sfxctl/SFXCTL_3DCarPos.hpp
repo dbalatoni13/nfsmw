@@ -8,7 +8,7 @@
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_3DObjPos.hpp"
 
 struct SFXCTL_3DCarPos : public SFXCTL_3DObjPos {
-  protected:
+  public:
     static TypeInfo s_TypeInfo;
     static TypeInfo *GetStaticTypeInfo() { return &s_TypeInfo; }
 
@@ -22,8 +22,9 @@ struct SFXCTL_3DCarPos : public SFXCTL_3DObjPos {
 };
 
 struct SFXCTL_3DRearPos : public SFXCTL_3DCarPos {
-  protected:
+  public:
     static TypeInfo s_TypeInfo;
+    static TypeInfo *GetStaticTypeInfo() { return &s_TypeInfo; }
 
   public:
     SFXCTL_3DRearPos() {}

@@ -22,8 +22,9 @@ enum eSFX_TURBO {
 
 // total size: 0x148
 class CARSFX_Turbo : public CARSFX {
-  protected:
+  public:
     static TypeInfo s_TypeInfo;
+    static TypeInfo *GetStaticTypeInfo() { return &s_TypeInfo; }
 
   public:
     CARSFX_Turbo();

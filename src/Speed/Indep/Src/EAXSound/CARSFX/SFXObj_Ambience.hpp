@@ -8,7 +8,7 @@
 #include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX.hpp"
 
 struct SFXObj_Ambience : public CARSFX {
-  protected:
+  public:
     static TypeInfo s_TypeInfo;
     static TypeInfo *GetStaticTypeInfo();
 

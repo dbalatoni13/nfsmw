@@ -32,9 +32,9 @@ const char *CARSFX_Siren::GetTypeName() const {
 
 SndBase *CARSFX_Siren::CreateObject(unsigned int allocator) {
     if (allocator == 0) {
-        return new (s_TypeInfo.typeName, false) CARSFX_Siren();
+        return new (GetStaticTypeInfo()->typeName, false) CARSFX_Siren();
     }
-    return new (s_TypeInfo.typeName, true) CARSFX_Siren();
+    return new (GetStaticTypeInfo()->typeName, true) CARSFX_Siren();
 }
 
 CARSFX_Siren::CARSFX_Siren()

@@ -23,9 +23,9 @@ const char *CARSFX_Skids::GetTypeName() const { return s_TypeInfo.typeName; }
 
 SndBase *CARSFX_Skids::CreateObject(unsigned int allocator) {
     if (allocator == 0) {
-        return new (s_TypeInfo.typeName, false) CARSFX_Skids();
+        return new (GetStaticTypeInfo()->typeName, false) CARSFX_Skids();
     }
-    return new (s_TypeInfo.typeName, true) CARSFX_Skids();
+    return new (GetStaticTypeInfo()->typeName, true) CARSFX_Skids();
 }
 
 CARSFX_Skids::CARSFX_Skids()
@@ -227,9 +227,9 @@ const char *SFXCTL_3DRightWheelPos::GetTypeName() const {
 
 SndBase *SFXCTL_3DRightWheelPos::CreateObject(unsigned int allocator) {
     if (allocator == 0) {
-        return new (s_TypeInfo.typeName, false) SFXCTL_3DRightWheelPos();
+        return new (GetStaticTypeInfo()->typeName, false) SFXCTL_3DRightWheelPos();
     }
-    return new (s_TypeInfo.typeName, true) SFXCTL_3DRightWheelPos();
+    return new (GetStaticTypeInfo()->typeName, true) SFXCTL_3DRightWheelPos();
 }
 
 SndBase::TypeInfo *SFXCTL_3DLeftWheelPos::GetTypeInfo() const {
@@ -242,9 +242,9 @@ const char *SFXCTL_3DLeftWheelPos::GetTypeName() const {
 
 SndBase *SFXCTL_3DLeftWheelPos::CreateObject(unsigned int allocator) {
     if (allocator == 0) {
-        return new (s_TypeInfo.typeName, false) SFXCTL_3DLeftWheelPos();
+        return new (GetStaticTypeInfo()->typeName, false) SFXCTL_3DLeftWheelPos();
     }
-    return new (s_TypeInfo.typeName, true) SFXCTL_3DLeftWheelPos();
+    return new (GetStaticTypeInfo()->typeName, true) SFXCTL_3DLeftWheelPos();
 }
 
 SndBase::TypeInfo *CARSFX_TrafficSkids::GetTypeInfo() const {
@@ -257,9 +257,9 @@ const char *CARSFX_TrafficSkids::GetTypeName() const {
 
 SndBase *CARSFX_TrafficSkids::CreateObject(unsigned int allocator) {
     if (allocator == 0) {
-        return new (s_TypeInfo.typeName, false) CARSFX_TrafficSkids();
+        return new (GetStaticTypeInfo()->typeName, false) CARSFX_TrafficSkids();
     }
-    return new (s_TypeInfo.typeName, true) CARSFX_TrafficSkids();
+    return new (GetStaticTypeInfo()->typeName, true) CARSFX_TrafficSkids();
 }
 
 CARSFX_TrafficSkids::CARSFX_TrafficSkids()

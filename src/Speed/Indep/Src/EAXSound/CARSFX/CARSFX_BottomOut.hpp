@@ -10,7 +10,7 @@
 struct cStichWrapper;
 
 class CARSFX_BottomOut : public CARSFX {
-  protected:
+  public:
     static TypeInfo s_TypeInfo;
     static TypeInfo *GetStaticTypeInfo() { return &s_TypeInfo; }
 

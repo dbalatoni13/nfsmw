@@ -106,7 +106,7 @@ enum STICH_WHOOSH_TYPE {
 void GetWooshBlockSizeParams(eDRIVE_BY_TYPE type, STICH_WHOOSH_TYPE &base, int &numblocks, int &sizeperblock);
 
 struct SFXObj_Woosh : public CARSFX {
-  protected:
+  public:
     static TypeInfo s_TypeInfo;
 
     static TypeInfo *GetStaticTypeInfo() {
@@ -141,7 +141,7 @@ struct SFXObj_Woosh : public CARSFX {
 
 // total size: 0x64
 struct SFXCTL_3DWooshPos : public SFXCTL_3DObjPos {
-  protected:
+  public:
     static TypeInfo s_TypeInfo;
 
     static TypeInfo *GetStaticTypeInfo() {

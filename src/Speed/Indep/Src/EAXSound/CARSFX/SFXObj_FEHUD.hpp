@@ -7,7 +7,7 @@
 #include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX.hpp"
 
 class SFXObj_FEHUD : public CARSFX {
-  protected:
+  public:
     static TypeInfo s_TypeInfo;
     static TypeInfo *GetStaticTypeInfo() { return &s_TypeInfo; }
 

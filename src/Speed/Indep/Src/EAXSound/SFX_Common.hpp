@@ -14,7 +14,7 @@ class FX_Camera;
 class FX_UVES;
 
 class SFX_Common : public SFX_Base {
-  protected:
+  public:
     static TypeInfo s_TypeInfo;
 
     static TypeInfo *GetStaticTypeInfo() {

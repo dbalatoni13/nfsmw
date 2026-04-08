@@ -13,7 +13,7 @@ class GlobalFxProcessor;
 }
 
 struct SFXObj_Reverb : public CARSFX {
-  protected:
+  public:
     struct ReverbStructure {
         void *Alloc; // offset 0x0, size 0x4
         int Size;    // offset 0x4, size 0x4

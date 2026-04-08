@@ -50,12 +50,7 @@
 
 #define REGISTER_TYPEINFO(RegisterMethod, Type)                     \
     do {                                                            \
-        struct Type##RegistrationAccessor : public Type {           \
-            static SndBase::TypeInfo *GetStaticTypeInfo() {         \
-                return &Type::s_TypeInfo;                           \
-            }                                                       \
-        };                                                          \
-        CSTATEMGR_Base::RegisterMethod(Type##RegistrationAccessor::GetStaticTypeInfo()); \
+        CSTATEMGR_Base::RegisterMethod(Type::GetStaticTypeInfo());  \
     } while (0)
 
 void RegisterSFX() {

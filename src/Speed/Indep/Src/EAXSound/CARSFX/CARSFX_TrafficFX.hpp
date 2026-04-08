@@ -14,8 +14,9 @@
 #include "Speed/Indep/Src/EAXSound/snd_gen/ENVIRO_AEMS.h"
 
 struct CARSFX_TrafficHorn : public CARSFX {
-  protected:
+  public:
     static TypeInfo s_TypeInfo;
+    static TypeInfo *GetStaticTypeInfo() { return &s_TypeInfo; }
 
   public:
     CARSFX_TrafficHorn();
@@ -58,8 +59,9 @@ struct CARSFX_TrafficHorn : public CARSFX {
 };
 
 class CARSFX_TrafficEngine : public CARSFX {
-  protected:
+  public:
     static TypeInfo s_TypeInfo;
+    static TypeInfo *GetStaticTypeInfo() { return &s_TypeInfo; }
 
   public:
     CARSFX_TrafficEngine();
@@ -85,8 +87,9 @@ class CARSFX_TrafficEngine : public CARSFX {
 };
 
 struct CARSFX_TrafficWoosh : public CARSFX {
-  protected:
+  public:
     static TypeInfo s_TypeInfo;
+    static TypeInfo *GetStaticTypeInfo() { return &s_TypeInfo; }
 
   public:
     CARSFX_TrafficWoosh();
@@ -110,7 +113,7 @@ struct CARSFX_TrafficWoosh : public CARSFX {
 };
 
 struct CARSFX_TruckHorn : public CARSFX_TrafficHorn {
-  protected:
+  public:
     static TypeInfo s_TypeInfo;
 
     static TypeInfo *GetStaticTypeInfo() {
@@ -130,8 +133,9 @@ struct CARSFX_TruckHorn : public CARSFX_TrafficHorn {
 };
 
 struct SFXCTL_3DTrafficPos : public SFXCTL_3DCarPos {
-  protected:
+  public:
     static TypeInfo s_TypeInfo;
+    static TypeInfo *GetStaticTypeInfo() { return &s_TypeInfo; }
 
   public:
     SFXCTL_3DTrafficPos() {}

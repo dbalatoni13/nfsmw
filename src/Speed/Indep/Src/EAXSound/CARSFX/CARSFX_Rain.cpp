@@ -29,9 +29,9 @@ const char *CARSFX_Rain::GetTypeName() const {
 
 SndBase *CARSFX_Rain::CreateObject(unsigned int allocator) {
     if (allocator == 0) {
-        return new (s_TypeInfo.typeName, false) CARSFX_Rain();
+        return new (GetStaticTypeInfo()->typeName, false) CARSFX_Rain();
     }
-    return new (s_TypeInfo.typeName, true) CARSFX_Rain();
+    return new (GetStaticTypeInfo()->typeName, true) CARSFX_Rain();
 }
 
 CARSFX_Rain::CARSFX_Rain()

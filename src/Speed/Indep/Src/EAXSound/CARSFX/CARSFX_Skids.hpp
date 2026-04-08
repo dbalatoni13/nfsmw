@@ -12,7 +12,7 @@ struct FX_SKID;
 struct SFXCTL_Wheel;
 
 struct SFXCTL_3DLeftWheelPos : public SFXCTL_3DObjPos {
-  protected:
+  public:
     static TypeInfo s_TypeInfo;
 
     static TypeInfo *GetStaticTypeInfo() {
@@ -30,7 +30,7 @@ struct SFXCTL_3DLeftWheelPos : public SFXCTL_3DObjPos {
 };
 
 struct SFXCTL_3DRightWheelPos : public SFXCTL_3DObjPos {
-  protected:
+  public:
     static TypeInfo s_TypeInfo;
 
     static TypeInfo *GetStaticTypeInfo() {
@@ -48,8 +48,9 @@ struct SFXCTL_3DRightWheelPos : public SFXCTL_3DObjPos {
 };
 
 struct CARSFX_Skids : public CARSFX {
-  protected:
+  public:
     static TypeInfo s_TypeInfo;
+    static TypeInfo *GetStaticTypeInfo() { return &s_TypeInfo; }
 
   public:
     CARSFX_Skids();
@@ -78,7 +79,7 @@ struct CARSFX_Skids : public CARSFX {
 };
 
 struct CARSFX_TrafficSkids : public CARSFX_Skids {
-  protected:
+  public:
     static TypeInfo s_TypeInfo;
 
     static TypeInfo *GetStaticTypeInfo() {

@@ -18,9 +18,9 @@ const char *CARSFX_PreColWoosh::GetTypeName() const {
 
 SndBase *CARSFX_PreColWoosh::CreateObject(unsigned int allocator) {
     if (allocator == 0) {
-        return new (s_TypeInfo.typeName, false) CARSFX_PreColWoosh();
+        return new (GetStaticTypeInfo()->typeName, false) CARSFX_PreColWoosh();
     }
-    return new (s_TypeInfo.typeName, true) CARSFX_PreColWoosh();
+    return new (GetStaticTypeInfo()->typeName, true) CARSFX_PreColWoosh();
 }
 
 CARSFX_PreColWoosh::CARSFX_PreColWoosh()

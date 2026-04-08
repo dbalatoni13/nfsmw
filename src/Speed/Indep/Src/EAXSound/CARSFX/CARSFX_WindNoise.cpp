@@ -199,9 +199,9 @@ const char *SFXCTL_3DLeftWindPos::GetTypeName() const {
 
 SndBase *SFXCTL_3DLeftWindPos::CreateObject(unsigned int allocator) {
     if (allocator == 0) {
-        return new (s_TypeInfo.typeName, false) SFXCTL_3DLeftWindPos();
+        return new (GetStaticTypeInfo()->typeName, false) SFXCTL_3DLeftWindPos();
     }
-    return new (s_TypeInfo.typeName, true) SFXCTL_3DLeftWindPos();
+    return new (GetStaticTypeInfo()->typeName, true) SFXCTL_3DLeftWindPos();
 }
 
 SndBase::TypeInfo *SFXCTL_3DRightWindPos::GetTypeInfo() const {
@@ -214,9 +214,9 @@ const char *SFXCTL_3DRightWindPos::GetTypeName() const {
 
 SndBase *SFXCTL_3DRightWindPos::CreateObject(unsigned int allocator) {
     if (allocator == 0) {
-        return new (s_TypeInfo.typeName, false) SFXCTL_3DRightWindPos();
+        return new (GetStaticTypeInfo()->typeName, false) SFXCTL_3DRightWindPos();
     }
-    return new (s_TypeInfo.typeName, true) SFXCTL_3DRightWindPos();
+    return new (GetStaticTypeInfo()->typeName, true) SFXCTL_3DRightWindPos();
 }
 
 SndBase::TypeInfo *CARSFX_WindNoise::GetTypeInfo() const {
@@ -229,9 +229,9 @@ const char *CARSFX_WindNoise::GetTypeName() const {
 
 SndBase *CARSFX_WindNoise::CreateObject(unsigned int allocator) {
     if (allocator == 0) {
-        return new (s_TypeInfo.typeName, false) CARSFX_WindNoise();
+        return new (GetStaticTypeInfo()->typeName, false) CARSFX_WindNoise();
     }
-    return new (s_TypeInfo.typeName, true) CARSFX_WindNoise();
+    return new (GetStaticTypeInfo()->typeName, true) CARSFX_WindNoise();
 }
 
 CARSFX_WindNoise::CARSFX_WindNoise()

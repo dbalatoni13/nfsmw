@@ -16,7 +16,7 @@ class MGamePlayMoment;
 class MPursuitBreaker;
 
 class SFXObj_MomentStrm : public CARSFX {
-  protected:
+  public:
     static TypeInfo s_TypeInfo;
 
     static TypeInfo *GetStaticTypeInfo() {
@@ -75,7 +75,7 @@ class SFXObj_MomentStrm : public CARSFX {
 };
 
 class SFXCTL_3DMomentPos : public SFXCTL_3DObjPos {
-  protected:
+  public:
     static TypeInfo s_TypeInfo;
 
     static TypeInfo *GetStaticTypeInfo() {

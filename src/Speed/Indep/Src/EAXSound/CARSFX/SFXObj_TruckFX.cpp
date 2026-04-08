@@ -353,9 +353,9 @@ const char *SFXCTL_3DTrailerPos::GetTypeName() const {
 
 SndBase *SFXCTL_3DTrailerPos::CreateObject(unsigned int allocator) {
     if (allocator == 0) {
-        return new (s_TypeInfo.typeName, false) SFXCTL_3DTrailerPos();
+        return new (GetStaticTypeInfo()->typeName, false) SFXCTL_3DTrailerPos();
     }
-    return new (s_TypeInfo.typeName, true) SFXCTL_3DTrailerPos();
+    return new (GetStaticTypeInfo()->typeName, true) SFXCTL_3DTrailerPos();
 }
 
 SFXCTL_3DTrailerPos::~SFXCTL_3DTrailerPos() {}

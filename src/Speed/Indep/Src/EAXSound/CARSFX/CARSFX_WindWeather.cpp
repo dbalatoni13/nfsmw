@@ -112,9 +112,9 @@ const char *CARSFX_WindWeather::GetTypeName() const {
 
 SndBase *CARSFX_WindWeather::CreateObject(unsigned int allocator) {
     if (allocator == 0) {
-        return new (s_TypeInfo.typeName, false) CARSFX_WindWeather();
+        return new (GetStaticTypeInfo()->typeName, false) CARSFX_WindWeather();
     }
-    return new (s_TypeInfo.typeName, true) CARSFX_WindWeather();
+    return new (GetStaticTypeInfo()->typeName, true) CARSFX_WindWeather();
 }
 
 CARSFX_WindWeather::CARSFX_WindWeather()

@@ -10,8 +10,9 @@
 #include "Speed/Indep/Src/EAXSound/snd_gen/MAIN_AEMS.h"
 
 struct CARSFX_Rain : public CARSFX {
-  protected:
+  public:
     static TypeInfo s_TypeInfo;
+    static TypeInfo *GetStaticTypeInfo() { return &s_TypeInfo; }
 
   public:
     CARSFX_Rain();

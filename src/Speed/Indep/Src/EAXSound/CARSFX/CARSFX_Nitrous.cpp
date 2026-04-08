@@ -22,9 +22,9 @@ const char *CARSFX_Nitrous::GetTypeName() const { return s_TypeInfo.typeName; }
 
 SndBase *CARSFX_Nitrous::CreateObject(unsigned int allocator) {
     if (allocator == 0) {
-        return new (s_TypeInfo.typeName, false) CARSFX_Nitrous();
+        return new (GetStaticTypeInfo()->typeName, false) CARSFX_Nitrous();
     }
-    return new (s_TypeInfo.typeName, true) CARSFX_Nitrous();
+    return new (GetStaticTypeInfo()->typeName, true) CARSFX_Nitrous();
 }
 
 CARSFX_Nitrous::CARSFX_Nitrous()

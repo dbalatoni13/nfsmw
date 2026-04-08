@@ -9,7 +9,7 @@
 
 // total size: 0x64
 struct SFXCTL_3DColPos : public SFXCTL_3DObjPos {
-  protected:
+  public:
     static TypeInfo s_TypeInfo;
     static TypeInfo *GetStaticTypeInfo() { return &s_TypeInfo; }
 
@@ -22,7 +22,7 @@ struct SFXCTL_3DColPos : public SFXCTL_3DObjPos {
 
 // total size: 0x64
 struct SFXCTL_3DScrapePos : public SFXCTL_3DObjPos {
-  protected:
+  public:
     static TypeInfo s_TypeInfo;
     static TypeInfo *GetStaticTypeInfo() { return &s_TypeInfo; }
 

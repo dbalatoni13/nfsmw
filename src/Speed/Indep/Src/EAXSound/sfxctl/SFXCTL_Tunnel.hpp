@@ -37,7 +37,7 @@ struct stREVERB_PARAMS {
 extern stREVERB_PARAMS g_REVERBFXMODULES[];
 
 struct SFXCTL_Tunnel : public SFXCTL {
-  protected:
+  public:
     static TypeInfo s_TypeInfo;
     static TypeInfo *GetStaticTypeInfo() { return &s_TypeInfo; }
     static eTrackPathZoneType m_PlayerZoneType;

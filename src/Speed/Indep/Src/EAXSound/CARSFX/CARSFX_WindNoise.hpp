@@ -19,7 +19,7 @@ struct stEAX_WindParams {
 
 // total size: 0x64
 struct SFXCTL_3DLeftWindPos : public SFXCTL_3DObjPos {
-  protected:
+  public:
     static TypeInfo s_TypeInfo;
 
     static TypeInfo *GetStaticTypeInfo() {
@@ -38,7 +38,7 @@ struct SFXCTL_3DLeftWindPos : public SFXCTL_3DObjPos {
 
 // total size: 0x64
 struct SFXCTL_3DRightWindPos : public SFXCTL_3DObjPos {
-  protected:
+  public:
     static TypeInfo s_TypeInfo;
 
     static TypeInfo *GetStaticTypeInfo() {
@@ -57,7 +57,7 @@ struct SFXCTL_3DRightWindPos : public SFXCTL_3DObjPos {
 
 // total size: 0x124
 struct CARSFX_WindNoise : public CARSFX {
-  protected:
+  public:
     static TypeInfo s_TypeInfo;
 
     static TypeInfo *GetStaticTypeInfo() {
@@ -120,7 +120,7 @@ struct CARSFX_WindNoise : public CARSFX {
 
 // total size: 0x38
 struct CARSFX_WindWeather : public CARSFX {
-  protected:
+  public:
     static TypeInfo s_TypeInfo;
 
     static TypeInfo *GetStaticTypeInfo() {

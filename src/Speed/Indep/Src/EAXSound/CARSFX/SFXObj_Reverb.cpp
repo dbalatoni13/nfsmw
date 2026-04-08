@@ -32,9 +32,9 @@ const char *SFXObj_Reverb::GetTypeName() const {
 
 SndBase *SFXObj_Reverb::CreateObject(unsigned int allocator) {
     if (allocator == 0) {
-        return new (s_TypeInfo.typeName, false) SFXObj_Reverb();
+        return new (GetStaticTypeInfo()->typeName, false) SFXObj_Reverb();
     }
-    return new (s_TypeInfo.typeName, true) SFXObj_Reverb();
+    return new (GetStaticTypeInfo()->typeName, true) SFXObj_Reverb();
 }
 
 SFXObj_Reverb::SFXObj_Reverb()

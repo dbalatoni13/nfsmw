@@ -29,7 +29,7 @@ typedef Hermes::_h_HHANDLER__ *HHANDLER;
 struct bMatrix4;
 
 struct SFXCTL_Physics : public SFXCTL {
-  protected:
+  public:
     static TypeInfo s_TypeInfo;
     static TypeInfo *GetStaticTypeInfo() { return &s_TypeInfo; }
 
@@ -90,7 +90,7 @@ struct SndAIStateManager;
 struct SFXCTL_Shifting;
 
 struct SFXCTL_AIPhysics : public SFXCTL_Physics {
-  protected:
+  public:
     static TypeInfo s_TypeInfo;
     static TypeInfo *GetStaticTypeInfo() { return &s_TypeInfo; }
 
@@ -130,7 +130,7 @@ struct SFXCTL_AIPhysics : public SFXCTL_Physics {
 };
 
 struct SFXCTL_TruckPhysics : public SFXCTL_AIPhysics {
-  protected:
+  public:
     static TypeInfo s_TypeInfo;
     static TypeInfo *GetStaticTypeInfo() { return &s_TypeInfo; }
 

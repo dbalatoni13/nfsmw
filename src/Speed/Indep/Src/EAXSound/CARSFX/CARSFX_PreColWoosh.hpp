@@ -13,7 +13,7 @@
 
 // total size: 0x64
 struct CARSFX_PreColWoosh : public CARSFX {
-  protected:
+  public:
     static TypeInfo s_TypeInfo;
 
     static TypeInfo *GetStaticTypeInfo() {

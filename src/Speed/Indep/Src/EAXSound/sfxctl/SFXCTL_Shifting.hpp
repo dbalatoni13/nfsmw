@@ -36,7 +36,7 @@ struct shiftpattern;
 struct SFXCTL_Engine;
 
 struct SFXCTL_Shifting : public SFXCTL {
-  protected:
+  public:
     static TypeInfo s_TypeInfo;
     static TypeInfo *GetStaticTypeInfo() { return &s_TypeInfo; }
 

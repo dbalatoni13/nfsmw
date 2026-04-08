@@ -27,9 +27,9 @@ const char *CARSFX_Shift::GetTypeName() const {
 
 SndBase *CARSFX_Shift::CreateObject(unsigned int allocator) {
     if (allocator == 0) {
-        return new (s_TypeInfo.typeName, false) CARSFX_Shift();
+        return new (GetStaticTypeInfo()->typeName, false) CARSFX_Shift();
     }
-    return new (s_TypeInfo.typeName, true) CARSFX_Shift();
+    return new (GetStaticTypeInfo()->typeName, true) CARSFX_Shift();
 }
 
 CARSFX_Shift::CARSFX_Shift()
