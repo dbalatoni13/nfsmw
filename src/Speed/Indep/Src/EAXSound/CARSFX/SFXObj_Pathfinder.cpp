@@ -703,9 +703,9 @@ void SFXObj_PFEATrax::StartAmbience(unsigned int PathEvent) {
     }
     m_PrevPathEvent = m_CurPathEvent;
     m_PFParms[0].queue_next = 1;
-    m_bClearSkipUpdate = false;
     m_CurPathEvent = PathEvent;
     m_bSkipUpdate = true;
+    m_bClearSkipUpdate = false;
     pch = g_pEAXSound->GetStreamManager()->GetStreamChannel(1);
     if (pch) {
         pch->SetVol(0, false);
