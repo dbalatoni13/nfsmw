@@ -1787,8 +1787,8 @@ void NFSMixMap::UpdateASREvent(stEvtMixCtlProc *pProc) {
     float ftstage_1;
     float ftstage_2;
     NFSMixShape::eMIXTABLEID ncurvestage_2;
-    float nratio;
     int nSwing;
+    float nratio;
 
     ncurvestage_0 = static_cast<NFSMixShape::eMIXTABLEID>((pProc->pData_S->pMapParms->nParam_00 >> 12) & 0xF);
     ftstage_0 = static_cast<float>(pProc->pData_S->pMapParms->nParam_00 & 0xFFF) * 16.66667f;
@@ -1813,25 +1813,28 @@ void NFSMixMap::UpdateASREvent(stEvtMixCtlProc *pProc) {
             }
         }
     } else {
-        if ((nratio - ftstage_0) <= ftstage_1) {
+        nratio = nratio - ftstage_0;
+        if (ftstage_1 < nratio) {
+            nratio = nratio - ftstage_1;
+            if (nratio < ftstage_2) {
+                nratio = 32767.0f - ((nratio * 32767.0f) / ftstage_2);
+                {
+                    int ndt = static_cast<int>(nratio);
+
+                    if (nSwing < 0) {
+                        pProc->pData_U->qoutput = NFSMixShape::GetCurveOutput(ncurvestage_2, ndt, false);
+                    } else {
+                        pProc->pData_U->qoutput = 0x7FFF - NFSMixShape::GetCurveOutput(ncurvestage_2, ndt, false);
+                    }
+                }
+            } else {
+                pProc->pData_U->msTimeElapsed = 0.0f;
+                pProc->pData_U->qoutput = 0x7FFF;
+                goto set_output;
+            }
+        } else {
             pProc->pData_U->qoutput = 0;
             goto set_output;
-        }
-        nratio = nratio - (ftstage_0 + ftstage_1);
-        if (ftstage_2 <= nratio) {
-            pProc->pData_U->msTimeElapsed = 0.0f;
-            pProc->pData_U->qoutput = 0x7FFF;
-            goto set_output;
-        }
-        nratio = 32767.0f - ((nratio * 32767.0f) / ftstage_2);
-        {
-            int ndt = static_cast<int>(nratio);
-
-            if (nSwing < 0) {
-                pProc->pData_U->qoutput = NFSMixShape::GetCurveOutput(ncurvestage_2, ndt, false);
-            } else {
-                pProc->pData_U->qoutput = 0x7FFF - NFSMixShape::GetCurveOutput(ncurvestage_2, ndt, false);
-            }
         }
     }
 
