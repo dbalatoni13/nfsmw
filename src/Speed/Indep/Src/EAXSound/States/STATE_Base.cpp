@@ -377,11 +377,11 @@ void CSTATE_Base::UpdateParams(float t) {
     SndBase *CurSFXCtl;
     SndBase *CurSFXOBj;
 
-    if (g_EAXIsPaused()) {
-        t_DeltaTime = 0.0f;
-    } else {
+    if (!g_EAXIsPaused()) {
         t_DeltaTime = t;
         t_CurTime = t_CurTime + t;
+    } else {
+        t_DeltaTime = 0.0f;
     }
 
     if (bIsAttached) {

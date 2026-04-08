@@ -1525,57 +1525,49 @@ void NFSMixMap::Update3DMixCtls() {
     if (m_CurCamState != m_PrevCamState) {
         if (m_nAssigned3DMixCtlShared > 0) {
             int i;
+            st3DMixCtlSharedData *p3dsp = m_p3DMixCtlData_S;
 
             for (i = 0; i < m_nAssigned3DMixCtlShared; i++) {
-                bool found;
-                eCamStates camstate;
-                st3DMixCtlParams *pMapParams;
-                st3DMixCtlSharedData *p3Ds;
+                int found;
+                int numstates;
+                eCamStates testcamstate;
 
-                p3Ds = m_p3DMixCtlData_S + i;
-                pMapParams = p3Ds->pMapParams;
-                camstate = m_CurCamState;
-                found = false;
-                while (true) {
-                    int ns;
-                    int numstates;
+                found = 0;
+                numstates = (p3dsp->pMapParams->nINPUTID >> 24) & 0xF;
+                testcamstate = m_CurCamState;
 
-                    numstates = (pMapParams->nINPUTID >> 24) & 0xF;
-                    for (ns = 0; ns < numstates; ns++) {
-                        st3DStateParams *pstateparams;
+            RestartLoop:
+                for (n = 0; n < numstates; n++) {
+                    st3DStateParams *pstateparams;
 
-                        pstateparams = (&pMapParams->StateParams) + ns;
-                        if (((pstateparams->n3DSTATEINFOID >> 24) & 0xF) == camstate) {
-                            p3Ds->pCurStateParams = pstateparams;
-                            p3Ds->PrevCamState = m_PrevCamState;
-                            p3Ds->CurCamState = m_CurCamState;
-                            p3Ds->msSinceCamTrans = 0;
-                            found = true;
-                            break;
-                        }
-                    }
-
-                    if (found || (camstate == DMIX_DEFAULT_CAM)) {
+                    pstateparams = (&p3dsp->pMapParams->StateParams) + n;
+                    if (((pstateparams->n3DSTATEINFOID >> 24) & 0xF) == testcamstate) {
+                        p3dsp->pCurStateParams = pstateparams;
+                        p3dsp->PrevCamState = m_PrevCamState;
+                        p3dsp->msSinceCamTrans = 0;
+                        p3dsp->CurCamState = m_CurCamState;
+                        found = 1;
                         break;
                     }
-                    camstate = DMIX_DEFAULT_CAM;
                 }
+
+                if (!found && testcamstate != DMIX_DEFAULT_CAM) {
+                    testcamstate = DMIX_DEFAULT_CAM;
+                    goto RestartLoop;
+                }
+
+                p3dsp++;
             }
         }
     }
 
-    for (n = 0; n < m_3DMixCtlsAdded; n++) {
-        st3DMixCtlProc *p3Dproc;
+    st3DMixCtlProc *p3Dproc = m_p3DMixCtlProc;
+
+    for (n = 0; n < m_3DMixCtlsAdded; n++, p3Dproc++) {
         st3DMixCtlUniqueData *p3Du;
 
-        p3Dproc = m_p3DMixCtlProc + n;
         p3Du = p3Dproc->p3DMixCtlData_U;
-        if ((p3Du->pInputs[0xF] & 1U) == 0) {
-            p3Du->dBRolloff = -10000;
-            p3Du->q15Rolloff = 0;
-            p3Du->azimuth = 0;
-            p3Du->DopplerCents = 0;
-        } else {
+        if (p3Du->pInputs[0xF] & 1U) {
             st3DStateParams *psparams;
             int nid;
             int nDistType;
@@ -1748,6 +1740,11 @@ void NFSMixMap::Update3DMixCtls() {
                 p3Du->q15Rolloff = 0;
                 p3Du->DopplerCents = 0;
             }
+        } else {
+            p3Du->dBRolloff = -10000;
+            p3Du->q15Rolloff = 0;
+            p3Du->azimuth = 0;
+            p3Du->DopplerCents = 0;
         }
     }
 }

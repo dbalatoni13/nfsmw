@@ -19,6 +19,8 @@ enum eSFXOBJ_MAIN_TYPES {
 };
 
 // total size: 0x24
-struct SFX_Base : public SndBase {};
+struct SFX_Base : public SndBase {
+    ~SFX_Base() override {}
+};
 
 #endif

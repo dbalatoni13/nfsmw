@@ -316,9 +316,12 @@ void CARSFX_RoadNoise::ProcessUpdate() {
             }
 
             for (int tire_num = 0; tire_num <= 3; tire_num += 3) {
-                if (GetPhysCar()->GetWheelTerrain(tire_num).Aud_Roadnoise_LOOP() !=
-                    GetPhysCar()->GetPrevWheelTerrain(tire_num).Aud_Roadnoise_LOOP()) {
-                    TireTransition = tire_num;
+                if (GetPhysCar()->GetWheelTerrain(tire_num).GetCollection() !=
+                    GetPhysCar()->GetPrevWheelTerrain(tire_num).GetCollection()) {
+                    if (GetPhysCar()->GetWheelTerrain(tire_num).Aud_Roadnoise_LOOP() !=
+                        GetPhysCar()->GetPrevWheelTerrain(tire_num).Aud_Roadnoise_LOOP()) {
+                        TireTransition = tire_num;
+                    }
                 }
             }
         } else {
@@ -340,9 +343,12 @@ void CARSFX_RoadNoise::ProcessUpdate() {
             }
 
             for (int tire_num = 1; tire_num <= 2; tire_num++) {
-                if (GetPhysCar()->GetWheelTerrain(tire_num).Aud_Roadnoise_LOOP() !=
-                    GetPhysCar()->GetPrevWheelTerrain(tire_num).Aud_Roadnoise_LOOP()) {
-                    TireTransition = tire_num;
+                if (GetPhysCar()->GetWheelTerrain(tire_num).GetCollection() !=
+                    GetPhysCar()->GetPrevWheelTerrain(tire_num).GetCollection()) {
+                    if (GetPhysCar()->GetWheelTerrain(tire_num).Aud_Roadnoise_LOOP() !=
+                        GetPhysCar()->GetPrevWheelTerrain(tire_num).Aud_Roadnoise_LOOP()) {
+                        TireTransition = tire_num;
+                    }
                 }
             }
         }
@@ -362,7 +368,8 @@ void CARSFX_RoadNoise::ProcessUpdate() {
 
         if (wheelstouchingground && TireTransition != -1) {
             FXROADNOISE_TRANSITION OntoTransitionID = GetPhysCar()->GetWheelTerrain(TireTransition).Aud_RoadNoise_TransON();
-            FXROADNOISE_TRANSITION OffTransitionID = GetPhysCar()->GetWheelTerrain(TireTransition).Aud_RoadNoise_TransOFF();
+            FXROADNOISE_TRANSITION OffTransitionID =
+                GetPhysCar()->GetPrevWheelTerrain(TireTransition).Aud_RoadNoise_TransOFF();
 
             if (OffTransitionID != FXROADNOISE_TRANSITION_DONTPLAY && OntoTransitionID != FXROADNOISE_TRANSITION_DONTPLAY) {
                 if (OntoTransitionID != FXROADNOISE_TRANSITION_NONE) {
