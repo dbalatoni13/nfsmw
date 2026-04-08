@@ -909,76 +909,110 @@ void NFSMixMap::AllocateInputArrays() {
 }
 
 int *NFSMixMap::GetObjectPtr(int sfxid, bool busedB, bool bHACKINIT) {
-    unsigned int rawId;
-    int type;
-    int stateIndex;
-    int instance;
-    int objIndex;
+    int *ptr;
+    int ntype;
 
-    rawId = static_cast<unsigned int>(sfxid);
-    type = rawId & 0xE0000000;
-    stateIndex = (rawId >> 16) & 0xFF;
-    instance = (rawId >> 11) & 0x1F;
-    objIndex = rawId & 0xFF;
+    ptr = &DUMMYINPUT;
+    ntype = sfxid & 0xE0000000;
 
-    if (type == 0) {
-        stMixCtlProc *pmixctl;
+    if (ntype == 0) {
+        int nstate;
+        int ninst;
+        int nidx;
+        stMixCtlProc *pmxctlproc;
 
-        pmixctl = m_pStateProcs[stateIndex]->GetMixCtlProc(objIndex, instance);
+        nstate = (sfxid >> 16) & 0xFF;
+        ninst = (sfxid >> 11) & 0x1F;
+        nidx = sfxid & 0xFF;
+        pmxctlproc = m_pStateProcs[nstate]->GetMixCtlProc(nidx, ninst);
         if (!busedB) {
-            return &pmixctl->pudata->pstCurveData->Q15Output;
+            return &pmxctlproc->pudata->pstCurveData->Q15Output;
         }
 
-        return &pmixctl->pudata->CmpdBOut;
+        return &pmxctlproc->pudata->CmpdBOut;
     }
 
-    if (type == static_cast<int>(0x80000000U)) {
+    if (ntype > 0) {
+        if (ntype == 0x20000000) {
+            int nstate;
+            int ninst;
+            int ntype;
+            int nidx;
+
+            nstate = (sfxid >> 16) & 0xFF;
+            ninst = (sfxid >> 11) & 0x1F;
+            ntype = sfxid & 0x10000000;
+            nidx = sfxid & 0xFF;
+            stMasterMixChProc *pmch;
+
+            if (ntype == 0) {
+                pmch = m_pStateProcs[nstate]->GetMasterMixChProc(nidx, ninst);
+                return &pmch->pMixChData_U->Output;
+            }
+
+            stSubMixChProc *psch;
+
+            psch = m_pStateProcs[nstate]->GetSubMixChProc(nidx, ninst);
+            return &psch->pMixChData_U->Output;
+        }
+
+        if (ntype == 0x40000000 || ntype == 0x60000000) {
+            int idx;
+
+            ptr = (*mGetOutPtrCB)(sfxid);
+            if (!ptr) {
+                ptr = GetNextInputBlock(true);
+                (*mSetSFXOutCB)(sfxid, ptr);
+            }
+
+            idx = sfxid & 0xF;
+            return ptr + idx;
+        }
+
+        return ptr;
+    }
+
+    if (ntype == static_cast<int>(0x80000000U)) {
+        int nState;
+        int ninst;
+        int nidx;
         st3DMixCtlProc *p3d;
 
-        p3d = m_pStateProcs[stateIndex]->Get3DMixCtlProc(objIndex, instance);
         if (bHACKINIT) {
+            nState = (sfxid >> 16) & 0xFF;
+            ninst = (sfxid >> 11) & 0x1F;
+            nidx = sfxid & 0xFF;
+            p3d = m_pStateProcs[nState]->Get3DMixCtlProc(nidx, ninst);
             return reinterpret_cast<int *>(p3d);
         }
+
+        nState = (sfxid >> 16) & 0xFF;
+        ninst = (sfxid >> 11) & 0x1F;
+        nidx = sfxid & 0xFF;
+        p3d = m_pStateProcs[nState]->Get3DMixCtlProc(nidx, ninst);
         if (busedB) {
             return &p3d->p3DMixCtlData_U->dBRolloff;
         }
         return &p3d->p3DMixCtlData_U->q15Rolloff;
     }
 
-    if (type == static_cast<int>(0xA0000000U)) {
-        stEvtMixCtlProc *pevtproc;
+    if (ntype == static_cast<int>(0xA0000000U)) {
+        int nState;
+        int ninst;
+        int nidx;
+        stEvtMixCtlProc *pevt;
 
-        pevtproc = m_pStateProcs[stateIndex]->GetEvtMixCtlProc(objIndex, instance);
+        nState = (sfxid >> 16) & 0xFF;
+        ninst = (sfxid >> 11) & 0x1F;
+        nidx = sfxid & 0xFF;
+        pevt = m_pStateProcs[nState]->GetEvtMixCtlProc(nidx, ninst);
         if (busedB) {
-            return &pevtproc->pData_U->output;
+            return &pevt->pData_U->output;
         }
-        return &pevtproc->pData_U->qoutput;
+        return &pevt->pData_U->qoutput;
     }
 
-    if (type == 0x20000000) {
-        if ((rawId & 0x10000000) != 0) {
-            stSubMixChProc *psubmix;
-
-            psubmix = m_pStateProcs[stateIndex]->GetSubMixChProc(objIndex, instance);
-            return &psubmix->pMixChData_U->Output;
-        }
-
-        return &m_pStateProcs[stateIndex]->GetMasterMixChProc(objIndex, instance)->pMixChData_U->Output;
-    }
-
-    if ((type == 0x40000000) || (type == 0x60000000)) {
-        int *pinput;
-
-        pinput = (*mGetOutPtrCB)(sfxid);
-        if (!pinput) {
-            pinput = GetNextInputBlock(true);
-            (*mSetSFXOutCB)(sfxid, pinput);
-        }
-
-        return pinput + (rawId & 0xF);
-    }
-
-    return &DUMMYINPUT;
+    return ptr;
 }
 
 void NFSMixMap::ConnectMixMap() {
@@ -1521,43 +1555,41 @@ void NFSMixMap::MixMasterChannels() {
 
 void NFSMixMap::Update3DMixCtls() {
     int n;
+    int i;
 
-    if (m_CurCamState != m_PrevCamState) {
-        if (m_nAssigned3DMixCtlShared > 0) {
-            int i;
-            st3DMixCtlSharedData *p3dsp = m_p3DMixCtlData_S;
+    if (m_CurCamState != m_PrevCamState && m_nAssigned3DMixCtlShared > 0) {
+        st3DMixCtlSharedData *p3dsp = m_p3DMixCtlData_S;
 
-            for (i = 0; i < m_nAssigned3DMixCtlShared; i++) {
-                int found;
-                int numstates;
-                eCamStates testcamstate;
+        for (i = 0; i < m_nAssigned3DMixCtlShared; i++) {
+            int found;
+            int numstates;
+            eCamStates testcamstate;
 
-                found = 0;
-                numstates = (p3dsp->pMapParams->nINPUTID >> 24) & 0xF;
-                testcamstate = m_CurCamState;
+            found = 0;
+            numstates = (p3dsp->pMapParams->nINPUTID >> 24) & 0xF;
+            testcamstate = m_CurCamState;
 
-            RestartLoop:
-                for (n = 0; n < numstates; n++) {
-                    st3DStateParams *pstateparams;
+        RestartLoop:
+            for (n = 0; n < numstates; n++) {
+                st3DStateParams *pstateparams;
 
-                    pstateparams = (&p3dsp->pMapParams->StateParams) + n;
-                    if (((pstateparams->n3DSTATEINFOID >> 24) & 0xF) == testcamstate) {
-                        p3dsp->pCurStateParams = pstateparams;
-                        p3dsp->PrevCamState = m_PrevCamState;
-                        p3dsp->msSinceCamTrans = 0;
-                        p3dsp->CurCamState = m_CurCamState;
-                        found = 1;
-                        break;
-                    }
+                pstateparams = (&p3dsp->pMapParams->StateParams) + n;
+                if (((pstateparams->n3DSTATEINFOID >> 24) & 0xF) == testcamstate) {
+                    p3dsp->pCurStateParams = pstateparams;
+                    p3dsp->msSinceCamTrans = 0;
+                    p3dsp->PrevCamState = m_PrevCamState;
+                    p3dsp->CurCamState = m_CurCamState;
+                    found = 1;
+                    break;
                 }
-
-                if (!found && testcamstate != DMIX_DEFAULT_CAM) {
-                    testcamstate = DMIX_DEFAULT_CAM;
-                    goto RestartLoop;
-                }
-
-                p3dsp++;
             }
+
+            if (!found && testcamstate != DMIX_DEFAULT_CAM) {
+                testcamstate = DMIX_DEFAULT_CAM;
+                goto RestartLoop;
+            }
+
+            p3dsp++;
         }
     }
 

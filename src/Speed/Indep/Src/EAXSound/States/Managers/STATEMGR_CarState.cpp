@@ -114,7 +114,7 @@ void CSTATEMGR_CarState::ResolveCarBanks() {
     AIEnginesWeWantToLoad.clear();
     EnginesThatCanUpgradeToV8.clear();
     EnginesThatAreV8.clear();
-    bool CopsCanBeInGame = !FEDatabase->IsQuickRaceMode();
+    bool CopsCanBeInGame = !FEDatabase->IsSplitScreenMode();
     ForcePrintResolveInfo = false;
 
     typedef UTL::Collections::Listable<CarSoundConn, 10> CarList;
