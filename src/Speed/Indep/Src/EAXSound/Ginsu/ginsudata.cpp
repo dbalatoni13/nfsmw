@@ -265,11 +265,11 @@ float GinsuSynthData::SampleToCycle(int sample) const {
         return 0.0f;
     }
 
-    if (!(mCyclePos[0] < sample)) {
+    if (sample <= mCyclePos[0]) {
         return 0.0f;
     }
 
-    if (!(sample < mCyclePos[high])) {
+    if (sample >= mCyclePos[high]) {
         return static_cast<float>(high);
     }
 
@@ -279,14 +279,15 @@ float GinsuSynthData::SampleToCycle(int sample) const {
             cycle = (static_cast<float>(sample - mCyclePos[low]) / static_cast<float>(mCyclePos[high] - mCyclePos[low])) *
                     static_cast<float>(high - low);
             guess = low + IntFloor(cycle);
-            if (mCyclePos[guess] <= sample) {
+            if (sample >= mCyclePos[guess]) {
                 break;
             }
 
             {
-                int newlow = guess - IntCeil(static_cast<float>(mCyclePos[guess] - sample) / mMinPeriod);
+                cycle = static_cast<float>(mCyclePos[guess] - sample) / mMinPeriod;
+                int newlow = guess - IntCeil(cycle);
                 high = guess;
-                if (low < newlow) {
+                if (newlow > low) {
                     low = newlow;
                 }
             }
@@ -297,7 +298,8 @@ float GinsuSynthData::SampleToCycle(int sample) const {
         }
 
         {
-            int newhigh = guess + IntCeil(static_cast<float>(sample - mCyclePos[guess]) / mMinPeriod) + 1;
+            cycle = static_cast<float>(sample - mCyclePos[guess]) / mMinPeriod;
+            int newhigh = guess + IntCeil(cycle) + 1;
             low = guess + 1;
             if (newhigh < high) {
                 high = newhigh;
@@ -307,7 +309,8 @@ float GinsuSynthData::SampleToCycle(int sample) const {
 
     s1 = static_cast<float>(mCyclePos[guess]);
     s2 = static_cast<float>(mCyclePos[guess + 1]);
-    return static_cast<float>(guess) + (static_cast<float>(sample) - s1) / (s2 - s1);
+    cycle = (static_cast<float>(sample) - s1) / (s2 - s1);
+    return cycle + static_cast<float>(guess);
 }
 
 bool GinsuSynthData::GetSamples(int startSample, int numSamples, short *dest) {
