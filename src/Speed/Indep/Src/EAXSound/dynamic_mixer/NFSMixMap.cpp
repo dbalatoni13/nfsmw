@@ -1186,36 +1186,39 @@ int **NFSMixMap::AddScaleIDs(stMixEvtParams *pevtmixctl, int instance) {
 }
 
 void NFSMixMap::AssignMixCtlDataPtrs(stMixCtlProc *pmixctl, stMixCtlParams *pparms, int nstateindex, int ctlcount) {
-    int nunique;
-
     if (nstateindex == 0) {
-        int nshared;
-
-        nshared = m_AssignedMixCtlsShared;
-        nunique = m_AssignedMixCtlsUnique;
-        m_AssignedMixCtlsShared = nshared + 1;
-        pmixctl->psdata = m_pMixCtlData_S + nshared;
+        pmixctl->psdata = m_pMixCtlData_S + m_AssignedMixCtlsShared;
+        m_AssignedMixCtlsShared = m_AssignedMixCtlsShared + 1;
     } else {
         int n;
-        int mapType;
-        int nshared;
-        stMixCtlSharedData *ps;
+        int ncurveid;
+        int nOBJIDType;
+        int nstateid;
+        int MIXCTLOBJID;
+        bool bfound;
 
-        mapType = m_MapType;
-        nshared = m_AssignedMixCtlsShared;
-        nunique = m_AssignedMixCtlsUnique;
-        ps = m_pMixCtlData_S;
-        for (n = 0; n < nshared; n++) {
-            if (ps[n].MIXCTLOBJID ==
-                ((pparms->nINPUTID & 0x0F000000U) | (mapType << 8) | ((pparms->nINPUTID >> 16) & 0xE000U) |
-                 (pparms->nINPUTID & 0x00FF0000) | ctlcount)) {
-                pmixctl->psdata = ps + n;
-            }
+        ncurveid = pparms->nINPUTID & 0x00FF0000;
+        nOBJIDType = pparms->nINPUTID & 0x0F000000U;
+        nstateid = (pparms->nINPUTID >> 16) & 0xE000U;
+        MIXCTLOBJID = nOBJIDType | (GetMapType() << 8) | nstateid | ncurveid | ctlcount;
+        bfound = false;
+        n = 0;
+        if (n < m_AssignedMixCtlsShared) {
+            do {
+                stMixCtlSharedData *ps;
+
+                ps = m_pMixCtlData_S + n;
+                if (ps->MIXCTLOBJID == MIXCTLOBJID) {
+                    pmixctl->psdata = ps;
+                    bfound = true;
+                }
+                n++;
+            } while (n < m_AssignedMixCtlsShared);
         }
     }
 
-    pmixctl->pudata = m_pMixCtlData_U + nunique;
-    m_AssignedMixCtlsUnique = nunique + 1;
+    pmixctl->pudata = m_pMixCtlData_U + m_AssignedMixCtlsUnique;
+    m_AssignedMixCtlsUnique = m_AssignedMixCtlsUnique + 1;
 }
 
 void NFSMixMap::UpdateEvtMixCtls() {
