@@ -155,8 +155,8 @@ class cPoint {
     float mZBias;                         // offset 0x160, size 0x4
     void (*mCallBackFunc)(int, int);      // offset 0x164, size 0x4
     void (*mUpdateFunc)(cPoint *, float); // offset 0x168, size 0x4
-    int mCBParam1;                        // offset 0x16C, size 0x4
-    int mCBParam2;                        // offset 0x170, size 0x4
+    int32 mCBParam1;                      // offset 0x16C, size 0x4
+    int32 mCBParam2;                      // offset 0x170, size 0x4
 };
 
 #endif

@@ -180,9 +180,9 @@ void SetSoundControlState(bool bON, eSNDCTLSTATE esndstate, const char *Reason);
 extern EAXSound *g_pEAXSound;
 
 // TODO move these to Ecstasy
-extern int eDisableFixUpTables;
-extern int eDirtySolids;
-extern int eDirtyTextures;
-extern int eDirtyAnimations;
+extern int32 eDisableFixUpTables;
+extern int32 eDirtySolids;
+extern int32 eDirtyTextures;
+extern int32 eDirtyAnimations;
 
 #endif

@@ -26,8 +26,8 @@ class GameFlowManager {
     GameFlowManager();
     ~GameFlowManager() {}
 
-    void SetSingleFunction(void (*function)(int), const char *debug_name, int param);
-    void SetWaitingForCallback(const char *debug_name, int phase);
+    void SetSingleFunction(void (*function)(int32), const char *debug_name, int param);
+    void SetWaitingForCallback(const char *debug_name, int debug_phase);
     void ClearWaitingForCallback();
     void Service();
     void SetState(GameFlowState state);
@@ -40,7 +40,7 @@ class GameFlowManager {
     bool IsPaused();
 
     void SetSingleFunction(void (*function)(), const char *debug_name) {
-        SetSingleFunction(reinterpret_cast<void (*)(int)>(function), debug_name, 0);
+        SetSingleFunction(reinterpret_cast<void (*)(int32)>(function), debug_name, 0);
     }
 
     GameFlowState GetState() {
@@ -60,8 +60,8 @@ class GameFlowManager {
     }
 
   private:
-    void (*pSingleFunction)(int);       // offset 0x0, size 0x4
-    int SingleFunctionParam;            // offset 0x4, size 0x4
+    void (*pSingleFunction)(int32);     // offset 0x0, size 0x4
+    int32 SingleFunctionParam;          // offset 0x4, size 0x4
     const char *pSingleFunctionName;    // offset 0x8, size 0x4
     void (*pLoopingFunction)();         // offset 0xC, size 0x4
     const char *pLoopingFunctionName;   // offset 0x10, size 0x4

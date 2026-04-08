@@ -17,7 +17,7 @@ typedef HashInt TypeID;
 
 class IGarbageCollector {
   public:
-    virtual void ReleaseData(unsigned int id, void *data, size_t bytes) = 0;
+    virtual void ReleaseData(AssetID id, void *data, size_t bytes) = 0;
 };
 
 }; // namespace Attrib

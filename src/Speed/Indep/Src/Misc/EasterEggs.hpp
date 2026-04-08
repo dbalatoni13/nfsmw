@@ -74,24 +74,24 @@ class EasterEggs {
     void ClearNonPersistent();
     void HandleJoy();
     void ClearButtons();
-    bool IsEasterEggUnlocked(unsigned int type, unsigned int item);
+    bool IsEasterEggUnlocked(uint32 type, uint32 item);
     bool IsEasterEggUnlocked(EasterEggsSpecial egg);
 
     ActionQueue *EasterEggActionQ[2]; // offset 0x0, size 0x8
 
   private:
-    void ClearGroup(unsigned int group);
-    void TriggerSpecial(unsigned int special);
+    void ClearGroup(uint32 group);
+    void TriggerSpecial(uint32 special);
     void ActivateEasterEgg(int egg);
 
-    bool ButtonsEnabled;                 // offset 0x8, size 0x1
-    bool HaveUnlockMessage;              // offset 0xC, size 0x1
-    unsigned int UnlockMessage;          // offset 0x10, size 0x4
-    EasterEggsData *EasterEggsTable;     // offset 0x14, size 0x4
-    unsigned int NumberOfEasterEggs;     // offset 0x18, size 0x4
-    EasterEggButtons ButtonBuffer[8];    // offset 0x1C, size 0x20
-    unsigned int NumberOfCurrentButtons; // offset 0x3C, size 0x4
-    unsigned int CurrentStartButton;     // offset 0x40, size 0x4
+    bool ButtonsEnabled;              // offset 0x8, size 0x1
+    bool HaveUnlockMessage;           // offset 0xC, size 0x1
+    uint32 UnlockMessage;             // offset 0x10, size 0x4
+    EasterEggsData *EasterEggsTable;  // offset 0x14, size 0x4
+    uint32 NumberOfEasterEggs;        // offset 0x18, size 0x4
+    EasterEggButtons ButtonBuffer[8]; // offset 0x1C, size 0x20
+    uint32 NumberOfCurrentButtons;    // offset 0x3C, size 0x4
+    uint32 CurrentStartButton;        // offset 0x40, size 0x4
 };
 
 extern EasterEggs gEasterEggs;

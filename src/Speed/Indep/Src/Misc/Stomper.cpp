@@ -5,21 +5,21 @@
 #include "types.h"
 
 // TODO move these
-extern int DrawSky;
-extern int DrawWireframe;
-extern int EnableTexturing;
-extern int WeatherUseCoolFogValues;
-extern int egAlphaA;
-extern int egAlphaB;
-extern int egAlphaC;
-extern int egAlphaD;
-extern int egAlphaF;
+extern int32 DrawSky;
+extern int32 DrawWireframe;
+extern int32 EnableTexturing;
+extern int32 WeatherUseCoolFogValues;
+extern int32 egAlphaA;
+extern int32 egAlphaB;
+extern int32 egAlphaC;
+extern int32 egAlphaD;
+extern int32 egAlphaF;
 
 static const float fCutiePetootieX = 0.5f;
 static const float fCutiePetootieY = 0.5f;
 static const float fCutiePetootieZ = 0.5f;
 
-int bCartoonMode = false;
+int32 bCartoonMode = false;
 // static const eStomper nStomper;
 // static const eStomper nStomperOld;
 // static const int nStomperStackSize;

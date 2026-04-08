@@ -14,7 +14,7 @@
 // total size: 0x10
 class TableBase {
   public:
-    TableBase(int num, float min, float max) {
+    TableBase(int32 num, float min, float max) {
         NumEntries = num;
         SetMinMax(min, max);
     }
@@ -30,7 +30,7 @@ class TableBase {
     }
 
   protected:
-    int NumEntries;        // offset 0x0, size 0x4
+    int32 NumEntries;      // offset 0x0, size 0x4
     float MinArg;          // offset 0x4, size 0x4
     float MaxArg;          // offset 0x8, size 0x4
     float IndexMultiplier; // offset 0xC, size 0x4
@@ -41,7 +41,7 @@ class Table : public TableBase {
     float GetValue(float arg);
     float InverseLookup(float value);
 
-    Table(const float *table, int num, float min, float max) : TableBase(num, min, max), pTable(table) {}
+    Table(const float *table, int32 num, float min, float max) : TableBase(num, min, max), pTable(table) {}
 
     const float *GetData() const {
         return pTable;
@@ -96,17 +96,17 @@ class AverageBase {
 
     // bool FullySampled() {}
 
-    unsigned char GetNumSamples() {
+    uint8 GetNumSamples() {
         return nSamples;
     }
 
     virtual void Recalculate() {}
 
   protected:
-    unsigned char nSize;
-    unsigned char nSlots;
-    unsigned char nSamples;
-    unsigned char nCurrentSlot;
+    uint8 nSize;
+    uint8 nSlots;
+    uint8 nSamples;
+    uint8 nCurrentSlot;
 };
 
 class Average : public AverageBase {
@@ -159,7 +159,7 @@ class AverageWindow : public Average {
     float fTimeWindow;
     int iOldestValue;
     float *pTimeData;
-    unsigned int AllocSize;
+    uint32 AllocSize;
 };
 
 class Graph {

@@ -54,9 +54,9 @@
 #include "bFile.hpp"
 
 int ExitTheGameFlag = false;
-static int last_frame_count = 0;
-int CurrentLoopCounter = 0;
-unsigned int TimeDifferenceInMicroseconds = 0;
+static int32 last_frame_count = 0;
+int32 CurrentLoopCounter = 0;
+uint32 TimeDifferenceInMicroseconds = 0;
 float TimeDifferenceInMiliseconds = 0.0f;
 float TimeDifferenceInSeconds = 0.0f;
 float MicrosecondsToMiliseconds = 0.001f;
@@ -279,8 +279,8 @@ static float Main_AnimateFrame(float real_dT) {
     if (TweakerPauseCamera == 0) {
         camera_dt += real_dT;
     }
-    static unsigned int last_sim_tick_animated = 0;
-    static unsigned int last_render_frame_animated = 0;
+    static uint32 last_sim_tick_animated = 0;
+    static uint32 last_render_frame_animated = 0;
     if (Sim::Exists() && Sim::GetState() == Sim::STATE_ACTIVE && last_sim_tick_animated != Sim::GetTick() &&
         last_render_frame_animated != eGetFrameCounter()) {
         game_dT = Sim::GetFrameTimeElapsed();
@@ -477,9 +477,9 @@ int MainThreadFunction(int argc, char **argv)
     while (!ExitTheGameFlag) {
         const float minumum_time_step = 0.25f;
 
-        unsigned int current_tick = bGetTicker();
+        uint32 current_tick = bGetTicker();
         float milliseconds = bGetTickerDifference(loop_ticker, current_tick);
-        int milliseconds_fix;
+        bFix milliseconds_fix;
 
         if (current_tick != loop_ticker && milliseconds <= 0.0f) {
             loop_ticker = current_tick;
@@ -488,7 +488,7 @@ int MainThreadFunction(int argc, char **argv)
             if (milliseconds > 32000.0f)
                 milliseconds = 32000.0f;
 
-            milliseconds_fix = (int)(milliseconds * 65536.0f); // this is used on other platforms
+            milliseconds_fix = (bFix)(milliseconds * 65536.0f); // this is used on other platforms
 
             MainLoop(milliseconds);
 

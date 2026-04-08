@@ -781,7 +781,7 @@ void bWrite(bFile *f, const void *buf, int num_bytes) {
     f->Write(buf, num_bytes);
 }
 
-void *bGetFile(const char *filename, int *size_out, int flags) {
+void *bGetFile(const char *filename, int32 *size_out, int flags) {
     bFile *f = bOpen(filename, BOPEN_MODE_READONLY, true);
     if (!f) {
         return nullptr;
