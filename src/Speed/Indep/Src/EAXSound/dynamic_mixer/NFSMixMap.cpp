@@ -1417,8 +1417,15 @@ void NFSMixMap::MixMasterChannels() {
     for (nmst = 0; nmst < m_MasterChannelsAdded; nmst++, pMChP++) {
         int *pPresets;
         int NumPresets;
+        int mask;
+        int maskshift;
         int masterindex;
+        int out;
+        int *pSlot;
+        int shift;
         int type;
+        int tmpvol;
+        unsigned int slot;
 
         pPresets = pMChP->pMixChData_S->pPRESETS;
         masterindex = *pPresets;
@@ -1430,22 +1437,17 @@ void NFSMixMap::MixMasterChannels() {
             int np;
 
             for (np = 0; np < NumPresets; np++, pPresets++) {
-                int maskshift;
-                int out;
-                int shift;
-                int *pSlot;
-                int tmpvol;
                 st3DMixCtlProc *p3d;
                 unsigned int n3DIndex;
                 unsigned int num3d;
                 unsigned int preset;
-                unsigned int slot;
 
                 preset = static_cast<unsigned int>(*pPresets);
                 slot = (preset >> 26) & 0x1F;
                 pSlot = pMChP->pMixChData_U->pOutputs + (slot >> 1);
                 shift = (slot & 1) << 4;
                 maskshift = ((slot + 1) & 1) << 4;
+                mask = 0xFFFF << maskshift;
                 num3d = (pMChP->pMixChData_S->NumInputs >> 16) & 0x1F;
                 n3DIndex = (preset >> 21) & 0x1F;
                 tmpvol = static_cast<short>(*pPresets);
@@ -1542,13 +1544,9 @@ void NFSMixMap::MixMasterChannels() {
                     }
                 }
 
-                *pSlot = (*pSlot & (0xFFFF << maskshift)) | ((out & 0xFFFF) << shift);
+                *pSlot = (*pSlot & mask) | ((out & 0xFFFF) << shift);
             }
         } else {
-            int out;
-            int *pSlot;
-            unsigned int slot;
-
             if (type == 1) {
                 out = 0;
             } else if (type == 2) {
@@ -1559,7 +1557,10 @@ void NFSMixMap::MixMasterChannels() {
 
             slot = (static_cast<unsigned int>(*pPresets) >> 26) & 0x1F;
             pSlot = pMChP->pMixChData_U->pOutputs + (slot >> 1);
-            *pSlot = (*pSlot & (0xFFFF << (((slot + 1) & 1) << 4))) | ((out & 0xFFFF) << ((slot & 1) << 4));
+            shift = (slot & 1) << 4;
+            maskshift = ((slot + 1) & 1) << 4;
+            mask = 0xFFFF << maskshift;
+            *pSlot = (*pSlot & mask) | ((out & 0xFFFF) << shift);
         }
     }
 }
