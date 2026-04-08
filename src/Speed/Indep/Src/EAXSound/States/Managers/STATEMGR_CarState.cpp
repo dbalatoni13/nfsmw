@@ -168,18 +168,15 @@ void CSTATEMGR_CarState::ResolveCarBanks() {
 
         if (CopsCanBeInGame && FinalCopV8Engines.size() == 0) {
             int V8ToLoad;
+            EngineMappingPair mapping;
 
-            if (EnginesThatAreV8.size() == 0) {
-                unsigned int copengkey = V8CopEngines[g_pEAXSound->Random(4)];
-                EnginesThatAreV8.push_back(copengkey);
-                FinalEngines.push_back(copengkey);
-                FinalCopV8Engines.push_back(copengkey);
-                AddMapping(copengkey, copengkey);
-            } else {
+            if (EnginesThatAreV8.size() != 0) {
                 V8ToLoad = LastV8Used % EnginesThatAreV8.size();
                 FinalEngines.push_back(EnginesThatAreV8[V8ToLoad]);
                 FinalCopV8Engines.push_back(EnginesThatAreV8[V8ToLoad]);
-                AddMapping(EnginesThatAreV8[V8ToLoad], EnginesThatAreV8[V8ToLoad]);
+                mapping.Start = EnginesThatAreV8[V8ToLoad];
+                mapping.Finish = EnginesThatAreV8[V8ToLoad];
+                AddMapping(mapping.Start, mapping.Finish);
 
                 unsigned int *found = std::find(AIEnginesWeWantToLoad.begin(),
                                                 AIEnginesWeWantToLoad.end(),
@@ -188,6 +185,14 @@ void CSTATEMGR_CarState::ResolveCarBanks() {
                     AIEnginesWeWantToLoad.erase(found);
                 }
                 ++LastV8Used;
+            } else {
+                unsigned int copengkey = V8CopEngines[g_pEAXSound->Random(4)];
+                EnginesThatAreV8.push_back(copengkey);
+                FinalEngines.push_back(copengkey);
+                FinalCopV8Engines.push_back(copengkey);
+                mapping.Start = copengkey;
+                mapping.Finish = copengkey;
+                AddMapping(mapping.Start, mapping.Finish);
             }
 
             while (FinalEngines.size() + AIEnginesWeWantToLoad.size() > 4) {
@@ -196,7 +201,9 @@ void CSTATEMGR_CarState::ResolveCarBanks() {
                     break;
                 }
 
-                AddMapping(EnginesThatCanUpgradeToV8[0], FinalEngines[0]);
+                mapping.Start = EnginesThatCanUpgradeToV8[0];
+                mapping.Finish = FinalEngines[0];
+                AddMapping(mapping.Start, mapping.Finish);
 
                 unsigned int *found = std::find(AIEnginesWeWantToLoad.begin(),
                                                 AIEnginesWeWantToLoad.end(),
@@ -250,13 +257,16 @@ void CSTATEMGR_CarState::ResolveCarBanks() {
         while (AIEnginesWeWantToLoad.size() > 0) {
             int n = static_cast<int>(AIEnginesWeWantToLoad.size()) - 1;
             Attrib::Gen::engineaudio wantstoload(AIEnginesWeWantToLoad[n], 0, nullptr);
+            EngineMappingPair mapping;
             int m;
 
             for (m = 0; m < static_cast<int>(FinalEngines.size()); ++m) {
                 Attrib::Gen::engineaudio LowerPriority(FinalEngines[m], 0, nullptr);
 
                 if (wantstoload.EngType() == LowerPriority.EngType()) {
-                    AddMapping(AIEnginesWeWantToLoad[n], FinalEngines[m]);
+                    mapping.Start = AIEnginesWeWantToLoad[n];
+                    mapping.Finish = FinalEngines[m];
+                    AddMapping(mapping.Start, mapping.Finish);
 
                     unsigned int *first =
                         std::find(AIEnginesWeWantToLoad.begin(),
@@ -270,8 +280,9 @@ void CSTATEMGR_CarState::ResolveCarBanks() {
             }
 
             if (m >= static_cast<int>(FinalEngines.size())) {
-                AddMapping(AIEnginesWeWantToLoad[n],
-                           FinalEngines[g_pEAXSound->Random(static_cast<int>(FinalEngines.size()))]);
+                mapping.Start = AIEnginesWeWantToLoad[n];
+                mapping.Finish = FinalEngines[g_pEAXSound->Random(static_cast<int>(FinalEngines.size()))];
+                AddMapping(mapping.Start, mapping.Finish);
 
                 unsigned int *first = std::find(AIEnginesWeWantToLoad.begin(),
                                                 AIEnginesWeWantToLoad.end(),
@@ -289,9 +300,12 @@ void CSTATEMGR_CarState::ResolveCarBanks() {
 
     while (AIEnginesWeWantToLoad.size() != 0) {
         unsigned int eng = AIEnginesWeWantToLoad[0];
+        EngineMappingPair mapping;
 
         FinalEngines.push_back(eng);
-        AddMapping(eng, eng);
+        mapping.Start = eng;
+        mapping.Finish = eng;
+        AddMapping(mapping.Start, mapping.Finish);
         AIEnginesWeWantToLoad.erase(AIEnginesWeWantToLoad.begin());
     }
 
