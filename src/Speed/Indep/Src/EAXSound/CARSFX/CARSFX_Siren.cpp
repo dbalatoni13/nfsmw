@@ -149,7 +149,7 @@ void CARSFX_Siren::ProcessUpdate() {
         }
         mSiren->mData.pITCH_OFFS = input;
 
-        CurDist = static_cast<int>(Sound::DistanceToView(GetPhysCar()->GetPosition()) * 12.8f);
+        CurDist = static_cast<int>(Sound::DistanceToView(m_pStateBase->GetPhysCar()->GetPosition()) * 12.8f);
         if (CurDist < 0) {
             CurDist = 0;
         } else if (CurDist > 0x400) {
@@ -160,18 +160,24 @@ void CARSFX_Siren::ProcessUpdate() {
         m_PrevSirenState = m_SirenState;
         m_SirenState = UpdateSirenState(m_pStateBase->GetDeltaTime());
         input = 0;
-        if (m_SirenState > SIREN_SCREAM) {
-            if (m_SirenState == SIREN_DIE) {
-                input = SIREN_DIE;
-                if (m_PrevSirenState != SIREN_DIE) {
-                    mT_death = WorldTimer;
-                }
-            }
-        } else if (m_SirenState >= SIREN_WAIL) {
+        switch (m_SirenState) {
+        case SIREN_WAIL:
+        case SIREN_YELP:
+        case SIREN_SCREAM:
             input = m_SirenState;
             mT_death = WorldTimer;
-        } else if (m_SirenState == SIREN_OFF) {
+            break;
+        case SIREN_DIE:
+            input = SIREN_DIE;
+            if (m_PrevSirenState != SIREN_DIE) {
+                mT_death = WorldTimer;
+            }
+            break;
+        case SIREN_OFF:
             Disable();
+            break;
+        default:
+            break;
         }
 
         if (input < SIREN_WAIL) {
