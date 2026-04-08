@@ -20,10 +20,7 @@ extern int IsSoundEnabled;
 bool g_EAXIsPaused(void);
 
 void TestSmackableForWoosh(IModel *model, int carid) {
-    UMath::Matrix4 transform;
     eDRIVE_BY_TYPE bytype;
-    int numcars;
-    int foundcarid;
 
     if (!IsSoundEnabled) {
         return;
@@ -40,43 +37,46 @@ void TestSmackableForWoosh(IModel *model, int carid) {
     Attrib::Gen::smackable smackattribs(model->GetAttributes());
 
     if (smackattribs.IsWooshable()) {
+        UMath::Matrix4 transform;
+
         model->GetTransform(transform);
 
-        {
+        if (transform[1].y > 0.8f) {
             float maxradius = 12.0f;
             UMath::Vector4 cam_pos;
             UMath::Vector4 objpos;
             bVector3 WorldCarPos;
             float dissquared;
 
-            if (transform[1].y > 0.8f) {
-                if (bLength(*SndCamera::GetV3WorldCarVel(carid)) >= 3.0f) {
-                    WorldCarPos = bVector3(SndCamera::GetWorldCarPos(carid)->x, SndCamera::GetWorldCarPos(carid)->y, 0.0f);
-                    cam_pos.x = -WorldCarPos.y;
-                    cam_pos.y = 0.0f;
-                    cam_pos.z = WorldCarPos.x;
-                    objpos = transform.v3;
-                    objpos.y = 0.0f;
-                    dissquared = VU0_v4distancesquarexyz(objpos, cam_pos);
-                    if (dissquared <= maxradius * maxradius) {
-                        bytype = smackattribs.WooshType();
-                        goto CreateWoosh;
-                    }
-                }
-            } else {
-                bVector3 bcam_pos;
-
-                maxradius = 4.0f;
+            if (bLength(*SndCamera::GetV3WorldCarVel(carid)) >= 3.0f) {
+                WorldCarPos = bVector3(SndCamera::GetWorldCarPos(carid)->x, SndCamera::GetWorldCarPos(carid)->y, 0.0f);
+                cam_pos.x = -WorldCarPos.y;
+                cam_pos.y = 0.0f;
+                cam_pos.z = WorldCarPos.x;
                 objpos = transform.v3;
-                bScaleAdd(&bcam_pos, SndCamera::GetCamPos(carid), SndCamera::GetCamDir(carid), CAMERA_WOOSH_OFFSET);
-                cam_pos.x = -bcam_pos.y;
-                cam_pos.y = bcam_pos.z;
-                cam_pos.z = bcam_pos.x;
+                objpos.y = 0.0f;
                 dissquared = VU0_v4distancesquarexyz(objpos, cam_pos);
                 if (dissquared <= maxradius * maxradius) {
-                    bytype = DRIVE_BY_CAMERA_BY;
+                    bytype = smackattribs.WooshType();
                     goto CreateWoosh;
                 }
+            }
+        } else {
+            float maxradius = 4.0f;
+            UMath::Vector4 cam_pos;
+            UMath::Vector4 objpos;
+            bVector3 bcam_pos;
+            float dissquared;
+
+            objpos = transform.v3;
+            bScaleAdd(&bcam_pos, SndCamera::GetCamPos(carid), SndCamera::GetCamDir(carid), CAMERA_WOOSH_OFFSET);
+            cam_pos.x = -bcam_pos.y;
+            cam_pos.y = bcam_pos.z;
+            cam_pos.z = bcam_pos.x;
+            dissquared = VU0_v4distancesquarexyz(objpos, cam_pos);
+            if (dissquared <= maxradius * maxradius) {
+                bytype = DRIVE_BY_CAMERA_BY;
+                goto CreateWoosh;
             }
         }
     }
