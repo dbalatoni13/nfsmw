@@ -285,7 +285,8 @@ void CARSFX_GinsuEngine::SetEngineParams() {
 
     if (m_pcsisCarCtrl) {
         nDMixOut = GetDMixOutput(1, DMX_VOL);
-        TmpVol = (m_pHybridEngCtl->m_EngVolAEMS * nDMixOut >> 15) * 0x7FFF >> 15;
+        TmpVol = m_pHybridEngCtl->m_EngVolAEMS * nDMixOut >> 15;
+        TmpVol = TmpVol * 0x7FFF >> 15;
         m_pcsisCarCtrl->SetVOL_ENG(TmpVol - 0x7FFF);
         m_pcsisCarCtrl->SetVOL_EXH(TmpVol - 0x7FFF);
         TmpRpmVol = m_pHybridEngCtl->m_EngVolRedLine * nDMixOut >> 15;
