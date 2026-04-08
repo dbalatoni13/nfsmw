@@ -1,4 +1,5 @@
 #include "./CARSFX_RoadNoise.hpp"
+#include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX_Skids.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXCarState.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSndUtil.h"
@@ -100,13 +101,19 @@ void CARSFX_RoadNoise::SetupSFX(CSTATE_Base *_StateBase) {
 
 void CARSFX_RoadNoise::InitSFX() {
     SndBase::InitSFX();
-    if (GetInputBlockPtr()) {
-        GetInputBlockPtr()[eVRB_ROADNOISE_VERB] = 1;
-    }
-
     if (!m_pWheelCtl) {
         Disable();
     } else {
+        if (m_pLeftWheelPos) {
+            m_pLeftWheelPos->AssignPositionVector(m_pWheelCtl->GetWheelPos(0, 2));
+            m_pLeftWheelPos->AssignVelocityVector(nullptr);
+        }
+
+        if (m_pRightWheelPos) {
+            m_pRightWheelPos->AssignPositionVector(m_pWheelCtl->GetWheelPos(1, 2));
+            m_pRightWheelPos->AssignVelocityVector(nullptr);
+        }
+
         for (int n = 0; n < 2; n++) {
             g_pEAXSound->SetCsisName(this);
             m_pWetRoad[n] =

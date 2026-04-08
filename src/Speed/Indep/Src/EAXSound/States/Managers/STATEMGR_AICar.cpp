@@ -30,10 +30,14 @@ void CSTATEMGR_AICar::DebugDisplayAIConnections() {}
 
 void CSTATEMGR_AICar::EnterWorld(eSndGameMode esgm) {
     int SFXIDs = 0x91;
-    int numopponents = bMin(UTL::Collections::ListableSet<IVehicle, 10, eVehicleList, 10>::Count(VEHICLE_AIRACERS) +
-                                UTL::Collections::ListableSet<IVehicle, 10, eVehicleList, 10>::Count(VEHICLE_REMOTE),
-                            4);
-    int SFXCTRLS = 0xC0;
+    int numopponents = 4;
+    int n = UTL::Collections::ListableSet<IVehicle, 10, eVehicleList, 10>::Count(VEHICLE_AIRACERS);
+
+    n += UTL::Collections::ListableSet<IVehicle, 10, eVehicleList, 10>::Count(VEHICLE_REMOTE);
+    if (n >= 4) {
+    } else {
+        numopponents = n;
+    }
 
     if (bUsingGinsu) {
         SFXIDs = 0x92;
@@ -42,7 +46,7 @@ void CSTATEMGR_AICar::EnterWorld(eSndGameMode esgm) {
     for (int n = 0; n < numopponents; n++) {
         CSTATE_Base *NewAICar = CreateState(0, SFXIDs);
         NewAICar->Setup(SFXIDs);
-        NewAICar->ForceCreateSFXCtrls(SFXCTRLS);
+        NewAICar->ForceCreateSFXCtrls(0xC0);
     }
 
     CSTATEMGR_Base::EnterWorld(esgm);
