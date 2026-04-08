@@ -5,6 +5,7 @@
 
 extern int g_DMIX_DummyOutputBlock[];
 extern int g_DMIX_DummyInputBlock[];
+extern bool g_EAXIsPaused(void);
 
 CSTATE_Base::StateInfo *CSTATE_Base::GetStateInfo(void) const {
     return &s_StateInfo;
@@ -349,3 +350,126 @@ bool CSTATE_Base::IsDataLoaded(void) {
     }
     return true;
 }
+
+void CSTATE_Base::LoadData() {
+    SndBase *CurSFXOBj = m_pHeadSFXObj;
+
+    if (CurSFXOBj) {
+        do {
+            CurSFXOBj->SetupLoadData();
+            CurSFXOBj = CurSFXOBj->m_pNextSFX;
+        } while (CurSFXOBj);
+    }
+}
+
+void CSTATE_Base::ProcessUpdate() {
+    SndBase *CurSFXOBj = m_pHeadSFXObj;
+
+    if (CurSFXOBj) {
+        do {
+            CurSFXOBj->ProcessUpdate();
+            CurSFXOBj = CurSFXOBj->m_pNextSFX;
+        } while (CurSFXOBj);
+    }
+}
+
+void CSTATE_Base::UpdateParams(float t) {
+    SndBase *CurSFXCtl;
+    SndBase *CurSFXOBj;
+
+    if (g_EAXIsPaused()) {
+        t_DeltaTime = 0.0f;
+    } else {
+        t_DeltaTime = t;
+        t_CurTime = t_CurTime + t;
+    }
+
+    if (bIsAttached) {
+        CurSFXCtl = m_pHeadSFXCTL;
+        if (CurSFXCtl) {
+            do {
+                CurSFXCtl->UpdateParams(t);
+                CurSFXCtl->UpdateMixerOutputs();
+                CurSFXCtl = CurSFXCtl->m_pNextSFX;
+            } while (CurSFXCtl);
+        }
+
+        CurSFXOBj = m_pHeadSFXObj;
+        if (CurSFXOBj) {
+            do {
+                CurSFXOBj->UpdateParams(t);
+                CurSFXOBj->UpdateMixerOutputs();
+                CurSFXOBj = CurSFXOBj->m_pNextSFX;
+            } while (CurSFXOBj);
+        }
+    }
+}
+
+void CSTATE_Base::Destroy() {
+    SndBase *CurSFXCtl = m_pHeadSFXCTL;
+    while (CurSFXCtl) {
+        SndBase *TmpSFXCtl = CurSFXCtl->m_pNextSFX;
+        delete CurSFXCtl;
+        CurSFXCtl = TmpSFXCtl;
+    }
+
+    SndBase *CurSFXOBj = m_pHeadSFXObj;
+    while (CurSFXOBj) {
+        SndBase *TmpSFXOBj = CurSFXOBj->m_pNextSFX;
+        delete CurSFXOBj;
+        CurSFXOBj = TmpSFXOBj;
+    }
+
+    m_NumLoadedSFXCTL = 0;
+    m_pHeadSFXCTL = nullptr;
+    m_pHeadSFXObj = nullptr;
+    m_NumLoadedSFXObj = 0;
+}
+
+SndBase *CSTATE_Base::GetSFXObject(int SFXId) {
+    SndBase *CurSFXOBj = m_pHeadSFXObj;
+
+    if (CurSFXOBj) {
+        do {
+            if (CurSFXOBj->GetSFX_ID() == SFXId) {
+                return CurSFXOBj;
+            }
+            CurSFXOBj = CurSFXOBj->m_pNextSFX;
+        } while (CurSFXOBj);
+    }
+
+    return nullptr;
+}
+
+SndBase *CSTATE_Base::GetSFXCTLObject(int SFXId) {
+    SndBase *CurSFXCtl = m_pHeadSFXCTL;
+
+    if (CurSFXCtl) {
+        do {
+            if (CurSFXCtl->GetSFX_ID() == SFXId) {
+                return CurSFXCtl;
+            }
+            CurSFXCtl = CurSFXCtl->m_pNextSFX;
+        } while (CurSFXCtl);
+    }
+
+    return CurSFXCtl;
+}
+
+void CSTATE_Base::Attach(void *pAttachment) {
+    SndBase *CurSFXCtl = m_pHeadSFXCTL;
+
+    m_pAttachment = pAttachment;
+    bIsAttached = true;
+
+    if (CurSFXCtl) {
+        do {
+            CurSFXCtl->InitSFX();
+            CurSFXCtl = CurSFXCtl->m_pNextSFX;
+        } while (CurSFXCtl);
+    }
+
+    LoadData();
+}
+
+void CSTATE_Base::PreLoadAssets() {}

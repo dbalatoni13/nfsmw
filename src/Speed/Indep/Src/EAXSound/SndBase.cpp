@@ -90,3 +90,42 @@ int SndBase::GetDMixOutput(int idx, DMX_PRESET_TYPE etype) {
 const char *SndBase::GetTypeName(void) const {
     return s_TypeInfo.typeName;
 }
+
+void SndBase::SetupSFX(CSTATE_Base *_StateBase) {
+    eMAINMAPSTATES eVar1 = _StateBase->m_eStateType;
+
+    if (static_cast<unsigned int>(eVar1 - eMM_PLAYERCAR) < 3 ||
+        eVar1 == eMM_TRUCK || eVar1 == eMM_TRAFFIC) {
+        m_pEAXCar = reinterpret_cast<EAXCar *>(_StateBase);
+    } else {
+        m_pEAXCar = nullptr;
+    }
+
+    m_pStateBase = _StateBase;
+}
+
+void SndBase::LoadAsset(Attrib::StringKey filename,
+                        eSNDDATAPATH path,
+                        eSNDDATATYPE datatype,
+                        eBANK_SLOT_TYPE SlotType,
+                        bool LoadToTop) {
+    stSndAssetQueue requeststruct;
+
+    requeststruct.Asset.Clear();
+    requeststruct.Asset.FileName = filename;
+    requeststruct.pCar = GetPhysCar();
+    requeststruct.pThis = this;
+
+    if (!requeststruct.pCar && static_cast<unsigned int>(objectID >> 16) == eMM_PLAYERCAR) {
+        requeststruct.pThis = nullptr;
+    }
+
+    requeststruct.Asset.eDataType = datatype;
+    requeststruct.Asset.DataPath = path;
+    requeststruct.Asset.bLoadToTop = LoadToTop;
+    LoadAsset(requeststruct, SlotType);
+}
+
+void SndBase::LoadAsset(stSndAssetQueue &queueitem, eBANK_SLOT_TYPE SlotType) {
+    gAEMSMgr.QueueFileLoad(queueitem, SlotType);
+}
