@@ -115,7 +115,73 @@ void CARSFX_Siren::ProcessUpdate() {
     int CurDist;
     int input;
 
-    if (!IsEnabled()) {
+    if (IsEnabled()) {
+        SetDMIX_Input(5, 0x7FFF);
+        if (!mSiren) {
+            g_pEAXSound->SetCsisName(this);
+            mSiren = new SIREN(0, 0, 0, 0, 0, 25000, 0, 0x7FFF, 0);
+            if (!mSiren) {
+                return;
+            }
+        }
+
+        input = GetDMixOutput(1, DMX_VOL);
+        if (input < 0) {
+            input = 0;
+        } else if (input > 0x7FFF) {
+            input = 0x7FFF;
+        }
+        mSiren->mData.vOL = input;
+
+        input = GetDMixOutput(0, DMX_AZIM);
+        if (input < 0) {
+            input = 0;
+        } else if (input > 0xFFFF) {
+            input = 0xFFFF;
+        }
+        mSiren->mData.pAN = input;
+
+        input = GetDMixOutput(3, DMX_PITCH) - 0x1000;
+        if (input < -0x4000) {
+            input = -0x4000;
+        } else if (input > 0x4000) {
+            input = 0x4000;
+        }
+        mSiren->mData.pITCH_OFFS = input;
+
+        CurDist = static_cast<int>(Sound::DistanceToView(GetPhysCar()->GetPosition()) * 12.8f);
+        if (CurDist < 0) {
+            CurDist = 0;
+        } else if (CurDist > 0x400) {
+            CurDist = 0x400;
+        }
+        mSiren->mData.dISTANCE = CurDist;
+
+        m_PrevSirenState = m_SirenState;
+        m_SirenState = UpdateSirenState(m_pStateBase->GetDeltaTime());
+        input = 0;
+        if (m_SirenState > SIREN_SCREAM) {
+            if (m_SirenState == SIREN_DIE) {
+                input = SIREN_DIE;
+                if (m_PrevSirenState != SIREN_DIE) {
+                    mT_death = WorldTimer;
+                }
+            }
+        } else if (m_SirenState >= SIREN_WAIL) {
+            input = m_SirenState;
+            mT_death = WorldTimer;
+        } else if (m_SirenState == SIREN_OFF) {
+            Disable();
+        }
+
+        if (input < SIREN_WAIL) {
+            input = SIREN_WAIL;
+        } else if (input > 7) {
+            input = 7;
+        }
+        mSiren->mData.tYPE = input;
+        mSiren->CommitMemberData();
+    } else {
         SetDMIX_Input(5, 0);
         if (!mSiren) {
             return;
@@ -125,74 +191,7 @@ void CARSFX_Siren::ProcessUpdate() {
         }
         Csis::System::Free(mSiren);
         mSiren = nullptr;
-        return;
     }
-
-    SetDMIX_Input(5, 0x7FFF);
-    if (!mSiren) {
-        g_pEAXSound->SetCsisName(this);
-        mSiren = new SIREN(0, 0, 0, 0, 0, 25000, 0, 0x7FFF, 0);
-        if (!mSiren) {
-            return;
-        }
-    }
-
-    input = GetDMixOutput(1, DMX_VOL);
-    if (input < 0) {
-        input = 0;
-    } else if (input > 0x7FFF) {
-        input = 0x7FFF;
-    }
-    mSiren->mData.vOL = input;
-
-    input = GetDMixOutput(0, DMX_AZIM);
-    if (input < 0) {
-        input = 0;
-    } else if (input > 0xFFFF) {
-        input = 0xFFFF;
-    }
-    mSiren->mData.pAN = input;
-
-    input = GetDMixOutput(3, DMX_PITCH) - 0x1000;
-    if (input < -0x4000) {
-        input = -0x4000;
-    } else if (input > 0x4000) {
-        input = 0x4000;
-    }
-    mSiren->mData.pITCH_OFFS = input;
-
-    CurDist = static_cast<int>(Sound::DistanceToView(GetPhysCar()->GetPosition()) * 12.8f);
-    if (CurDist < 0) {
-        CurDist = 0;
-    } else if (CurDist > 0x400) {
-        CurDist = 0x400;
-    }
-    mSiren->mData.dISTANCE = CurDist;
-
-    m_PrevSirenState = m_SirenState;
-    m_SirenState = UpdateSirenState(m_pStateBase->GetDeltaTime());
-    input = 0;
-    if (m_SirenState > SIREN_SCREAM) {
-        if (m_SirenState == SIREN_DIE) {
-            input = SIREN_DIE;
-            if (m_PrevSirenState != SIREN_DIE) {
-                mT_death = WorldTimer;
-            }
-        }
-    } else if (m_SirenState >= SIREN_WAIL) {
-        input = m_SirenState;
-        mT_death = WorldTimer;
-    } else if (m_SirenState == SIREN_OFF) {
-        Disable();
-    }
-
-    if (input < SIREN_WAIL) {
-        input = SIREN_WAIL;
-    } else if (input > 7) {
-        input = 7;
-    }
-    mSiren->mData.tYPE = input;
-    mSiren->CommitMemberData();
 }
 
 SirenState CARSFX_Siren::UpdateSirenState(float t) {
