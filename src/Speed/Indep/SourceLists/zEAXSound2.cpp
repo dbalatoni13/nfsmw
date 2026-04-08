@@ -72,6 +72,8 @@
 
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_Collision.cpp"
 
+#include "Speed/Indep/Src/EAXSound/AemsDef.cpp"
+
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_Woosh.cpp"
 
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_Ambience.cpp"
@@ -113,8 +115,6 @@
 #include "Speed/Indep/Src/EAXSound/dynamic_mixer/NFSMixShape.cpp"
 
 #include "Speed/Indep/Src/EAXSound/snd_gen/ENVIRO_AEMS.cpp"
-
-#include "Speed/Indep/Src/EAXSound/AemsDef.cpp"
 
 #include "Speed/Indep/Src/EAXSound/snd_gen/ENGINES_AEMS2.cpp"
 

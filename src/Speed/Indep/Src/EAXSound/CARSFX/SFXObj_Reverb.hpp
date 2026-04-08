@@ -18,6 +18,10 @@ struct SFXObj_Reverb : public CARSFX {
         void *Alloc; // offset 0x0, size 0x4
         int Size;    // offset 0x4, size 0x4
 
+        ReverbStructure() {
+            Clear();
+        }
+
         void Clear();
     };
 

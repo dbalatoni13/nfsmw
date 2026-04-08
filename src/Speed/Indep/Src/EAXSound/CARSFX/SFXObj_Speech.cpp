@@ -5,6 +5,9 @@
 #include "Speed/Indep/Src/EAXSound/SndCamera.hpp"
 #include "Speed/Indep/Src/EAXSound/SoundCollision.hpp"
 #include "Speed/Indep/Src/EAXSound/Stream/SpeechManager.hpp"
+#include "Speed/Indep/Src/World/ParameterMaps.hpp"
+
+ParameterAccessor SPAMAccessorSpeech("Speech");
 
 SndBase::TypeInfo *SFXObj_Speech::GetTypeInfo() const {
     return &s_TypeInfo;
@@ -122,4 +125,3 @@ SndBase::TypeInfo SFXCTL_3DVoiceActorPos::s_TypeInfo = {
     &SFXCTL_3DObjPos::s_TypeInfo,
     SFXCTL_3DVoiceActorPos::CreateObject,
 };
-

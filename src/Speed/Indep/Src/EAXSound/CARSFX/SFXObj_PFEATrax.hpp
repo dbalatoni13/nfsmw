@@ -19,7 +19,14 @@ struct stEATraxParms {
     int PlayTrackIndex;          // offset 0x10, size 0x4
     int PBMode;                  // offset 0x14, size 0x4
 
-    stEATraxParms() {}
+    stEATraxParms() {
+        TraxMask = 0;
+        PlayBits = -1;
+        NumEnabledSongs = 0;
+        LastPlaylistSong = -1;
+        PlayTrackIndex = -1;
+        PBMode = -1;
+    }
 };
 
 enum eEATRAXSTATES {
