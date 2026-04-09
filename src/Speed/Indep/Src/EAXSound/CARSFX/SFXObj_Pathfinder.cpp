@@ -627,64 +627,69 @@ bool SFXObj_PFEATrax::TestToAmbience() {
         return false;
     }
     UpdateAmbience(0.1f);
-    if (m_MusicType == eMUSIC_TYPE_INTERACTIVE) {
-        {
-            bool interactive_on;
-            SoundAI *ai;
+    do {
+        if (m_MusicType == eMUSIC_TYPE_INTERACTIVE) {
+            {
+                bool interactive_on;
+                SoundAI *ai;
 
-            interactive_on = true;
-            ai = SoundAI::Get();
-            if (!ai || !ai->IsMusicActive() || g_pEAXSound->GetCurMusicVolume() <= 0.0f ||
-                g_pEAXSound->GetCurAudioSettings()->InteractiveMusicMode <= 0) {
-                interactive_on = false;
+                interactive_on = true;
+                ai = SoundAI::Get();
+                if (!ai || !ai->IsMusicActive() || g_pEAXSound->GetCurMusicVolume() <= 0.0f ||
+                    g_pEAXSound->GetCurAudioSettings()->InteractiveMusicMode <= 0) {
+                    interactive_on = false;
+                }
+                if (interactive_on) {
+                    break;
+                }
             }
-            if (interactive_on) {
-                return false;
-            }
-        }
-    } else if (m_MusicType == eMUSIC_TYPE_LICENCED) {
-        if (g_pEAXSound->GetSndGameMode() == SND_FRONTEND) {
-            if (g_pEAXSound->GetCurMusicVolume() == 0.0f || g_pEAXSound->GetCurAudioSettings()->EATraxMode == 0 ||
-                m_EATrax[m_EATraxState].TraxMask == 0) {
-                PATH_stop(m_PFParms[m_ActiveProject].PATH_TRACK);
-            } else {
-                {
-                    unsigned int fegm;
+        } else if (m_MusicType == eMUSIC_TYPE_LICENCED) {
+            if (g_pEAXSound->GetSndGameMode() == SND_FRONTEND) {
+                if (g_pEAXSound->GetCurMusicVolume() == 0.0f || g_pEAXSound->GetCurAudioSettings()->EATraxMode == 0 ||
+                    m_EATrax[m_EATraxState].TraxMask == 0) {
+                    PATH_stop(m_PFParms[m_ActiveProject].PATH_TRACK);
+                } else {
+                    {
+                        unsigned int fegm;
 
-                    fegm = FEDatabase->GetGameMode();
-                    if ((fegm & 0x200) == 0) {
-                        return false;
+                        fegm = FEDatabase->GetGameMode();
+                        if ((fegm & 0x200) == 0) {
+                            break;
+                        }
+                    }
+                    if (g_pEAXSound->GetCurMusicVolume() != 0.0f && g_pEAXSound->GetCurAudioSettings()->EATraxMode != 0 &&
+                        m_EATrax[m_EATraxState].TraxMask != 0) {
+                        if (FEDatabase->IsRapSheetMode()) {
+                            int ntmp;
+
+                            ntmp = (m_InteractiveProj + PF_INTERACTIVE_01) & PF_INTERACTIVE_03;
+                            if (ntmp == 3) {
+                                ntmp = 2;
+                            }
+                            PATH_setnamedvalue(m_PFParms[0].PATH_TRACK, "rapsheet", ntmp + 1);
+                        }
                     }
                 }
+            } else {
                 if (g_pEAXSound->GetCurMusicVolume() != 0.0f && g_pEAXSound->GetCurAudioSettings()->EATraxMode != 0 &&
                     m_EATrax[m_EATraxState].TraxMask != 0) {
-                    if (FEDatabase->IsRapSheetMode()) {
-                        int ntmp;
-
-                        ntmp = (m_InteractiveProj + PF_INTERACTIVE_01) & PF_INTERACTIVE_03;
-                        if (ntmp == 3) {
-                            ntmp = 2;
-                        }
-                        PATH_setnamedvalue(m_PFParms[0].PATH_TRACK, "rapsheet", ntmp + 1);
-                    }
+                    break;
                 }
+                PATH_stop(m_PFParms[m_ActiveProject].PATH_TRACK);
             }
         } else {
-            if (g_pEAXSound->GetCurMusicVolume() != 0.0f && g_pEAXSound->GetCurAudioSettings()->EATraxMode != 0 &&
-                m_EATrax[m_EATraxState].TraxMask != 0) {
-                return false;
+            if (g_pEAXSound->GetCurMusicVolume() != 0.0f && g_pEAXSound->GetCurAudioSettings()->InteractiveMusicMode != 0) {
+                break;
             }
             PATH_stop(m_PFParms[m_ActiveProject].PATH_TRACK);
         }
-    } else {
-        if (g_pEAXSound->GetCurMusicVolume() != 0.0f && g_pEAXSound->GetCurAudioSettings()->InteractiveMusicMode != 0) {
-            return false;
-        }
-        PATH_stop(m_PFParms[m_ActiveProject].PATH_TRACK);
-    }
-    UpdateAmbience(0.1f);
-    StartAmbience(AmbientCrossMap[m_nAmbientZone]);
-    return true;
+
+        UpdateAmbience(0.1f);
+        StartAmbience(AmbientCrossMap[m_nAmbientZone]);
+        return true;
+    } while (0);
+
+    return false;
 }
 
 void SFXObj_PFEATrax::UpdateInGame(float t) {
