@@ -1367,10 +1367,9 @@ void NFSMixMap::UpdateMasterChannels() {
 
 void NFSMixMap::MixMasterChannels() {
     stMasterMixChProc *pMChP;
-    int nmst;
 
     pMChP = m_pMasterChProc;
-    for (nmst = 0; nmst < m_MasterChannelsAdded; nmst++, pMChP++) {
+    for (int nmst = 0; nmst < m_MasterChannelsAdded; nmst++, pMChP++) {
         int *pPresets;
         int NumPresets;
         int mask;
@@ -1390,38 +1389,58 @@ void NFSMixMap::MixMasterChannels() {
         type = (masterindex >> 24) & 0xF;
 
         if ((pMChP->pMixChData_U->pOutputs[0xF] & 1U) != 0) {
-            int np;
-
-            for (np = 0; np < NumPresets; np++, pPresets++) {
-                st3DMixCtlProc *p3d;
+            for (int np = 0; np < NumPresets; np++, pPresets++) {
+                int nmasteridx;
                 unsigned int n3DIndex;
                 unsigned int num3d;
-                unsigned int preset;
 
-                preset = static_cast<unsigned int>(*pPresets);
-                slot = (preset >> 26) & 0x1F;
+                nmasteridx = *pPresets;
+                slot = (nmasteridx >> 26) & 0x1F;
                 pSlot = pMChP->pMixChData_U->pOutputs + (slot >> 1);
                 shift = (slot & 1) << 4;
                 maskshift = ((slot + 1) & 1) << 4;
                 mask = 0xFFFF << maskshift;
                 num3d = (pMChP->pMixChData_S->NumInputs >> 16) & 0x1F;
-                n3DIndex = (preset >> 21) & 0x1F;
-                tmpvol = static_cast<short>(*pPresets);
+                n3DIndex = (nmasteridx >> 21) & 0x1F;
+                tmpvol = static_cast<short>(nmasteridx);
 
                 if ((num3d != 0) && (n3DIndex < num3d)) {
-                    p3d = pMChP->pMixChData_U->p3DData[n3DIndex];
-                    if (*pPresets < 0) {
-                        out = static_cast<unsigned short>(p3d->p3DMixCtlData_U->azimuth);
-                    } else if (type == 1) {
-                        out = p3d->p3DMixCtlData_U->DopplerCents + pMChP->pMixChData_U->Output + tmpvol;
-                        if (out > 0x960) {
-                            out = 0x960;
-                        }
-                        if (out < -0x12C0) {
-                            out = 0;
-                        }
-                    } else if (type < 2) {
-                        if (type == 0) {
+                    {
+                        st3DMixCtlProc *p3d;
+
+                        p3d = pMChP->pMixChData_U->p3DData[n3DIndex];
+                        if (nmasteridx < 0) {
+                            out = static_cast<unsigned short>(p3d->p3DMixCtlData_U->azimuth);
+                        } else if (type == 1) {
+                            out = p3d->p3DMixCtlData_U->DopplerCents + pMChP->pMixChData_U->Output + tmpvol;
+                            if (out > 0x960) {
+                                out = 0x960;
+                            }
+                            if (out < -0x12C0) {
+                                out = 0;
+                            }
+                        } else if (type < 2) {
+                            if (type == 0) {
+                                out = p3d->p3DMixCtlData_U->dBRolloff + pMChP->pMixChData_U->Output + tmpvol;
+                                if (out < -10000) {
+                                    out = -10000;
+                                }
+                                if (out > 0) {
+                                    out = 0;
+                                }
+                                out = NFSMixShape::GetQ15FromHundredthsdB(out);
+                            } else {
+                                out = pMChP->pMixChData_U->Output;
+                            }
+                        } else if (type == 2) {
+                            out = pMChP->pMixChData_U->Output + tmpvol;
+                            if (out < -10000) {
+                                out = -10000;
+                            }
+                            if (out > 0) {
+                                out = 0;
+                            }
+                        } else if (type == 4) {
                             out = p3d->p3DMixCtlData_U->dBRolloff + pMChP->pMixChData_U->Output + tmpvol;
                             if (out < -10000) {
                                 out = -10000;
@@ -1433,25 +1452,6 @@ void NFSMixMap::MixMasterChannels() {
                         } else {
                             out = pMChP->pMixChData_U->Output;
                         }
-                    } else if (type == 2) {
-                        out = pMChP->pMixChData_U->Output + tmpvol;
-                        if (out < -10000) {
-                            out = -10000;
-                        }
-                        if (out > 0) {
-                            out = 0;
-                        }
-                    } else if (type == 4) {
-                        out = p3d->p3DMixCtlData_U->dBRolloff + pMChP->pMixChData_U->Output + tmpvol;
-                        if (out < -10000) {
-                            out = -10000;
-                        }
-                        if (out > 0) {
-                            out = 0;
-                        }
-                        out = NFSMixShape::GetQ15FromHundredthsdB(out);
-                    } else {
-                        out = pMChP->pMixChData_U->Output;
                     }
                 } else {
                     out = pMChP->pMixChData_U->Output + tmpvol;
@@ -1480,7 +1480,12 @@ void NFSMixMap::MixMasterChannels() {
                             if (out > 0) {
                                 out = 0;
                             }
-                            out = static_cast<int>(NFSMixShape::GetPitchMultFromCents(out) * 25000.0f);
+                            {
+                                float ftmp;
+
+                                ftmp = NFSMixShape::GetPitchMultFromCents(out);
+                                out = static_cast<int>(ftmp * 25000.0f);
+                            }
                         } else if (type == 4) {
                             if (out < -10000) {
                                 out = -10000;
