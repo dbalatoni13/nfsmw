@@ -1392,6 +1392,7 @@ void NFSMixMap::MixMasterChannels() {
             for (int np = 0; np < NumPresets; np++, pPresets++) {
                 int nmasteridx;
                 unsigned int n3DIndex;
+                short vol;
                 unsigned int num3d;
 
                 nmasteridx = *pPresets;
@@ -1402,7 +1403,8 @@ void NFSMixMap::MixMasterChannels() {
                 mask = 0xFFFF << maskshift;
                 num3d = (pMChP->pMixChData_S->NumInputs >> 16) & 0x1F;
                 n3DIndex = (nmasteridx >> 21) & 0x1F;
-                tmpvol = static_cast<short>(nmasteridx);
+                vol = static_cast<short>(*pPresets);
+                tmpvol = vol;
 
                 if ((num3d != 0) && (n3DIndex < num3d)) {
                     {
