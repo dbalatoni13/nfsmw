@@ -148,7 +148,7 @@ void bList::MergeSort(SortFunc cmp) {
 }
 
 SlotPool *bPNodeSlotPool = nullptr;
-BOOL bPListWantToClose = false;
+int bPListWantToClose = false;
 
 void bPListInit(int num_expected_bpnodes) {
     if (!bPNodeSlotPool) {

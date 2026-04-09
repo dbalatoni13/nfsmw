@@ -10,17 +10,17 @@
 
 struct bFunkPacketHeader {
     // total size: 0x1C
-    unsigned short TotalSize;         // offset 0x0, size 0x2
-    unsigned char Type;               // offset 0x2, size 0x1
-    unsigned char FunctionNum;        // offset 0x3, size 0x1
-    unsigned int DestServer;          // offset 0x4, size 0x4
-    unsigned int SourceServer;        // offset 0x8, size 0x4
-    unsigned short PacketID;          // offset 0xC, size 0x2
-    unsigned short Checksum;          // offset 0xE, size 0x2
-    unsigned int ReturnBufferAddress; // offset 0x10, size 0x4
-    unsigned int ReturnCodeAddress;   // offset 0x14, size 0x4
-    short ReturnCode;                 // offset 0x18, size 0x2
-    short MaxReturnSize;              // offset 0x1A, size 0x2
+    uint16 TotalSize;           // offset 0x0, size 0x2
+    uint8 Type;                 // offset 0x2, size 0x1
+    uint8 FunctionNum;          // offset 0x3, size 0x1
+    uint32 DestServer;          // offset 0x4, size 0x4
+    uint32 SourceServer;        // offset 0x8, size 0x4
+    uint16 PacketID;            // offset 0xC, size 0x2
+    uint16 Checksum;            // offset 0xE, size 0x2
+    uint32 ReturnBufferAddress; // offset 0x10, size 0x4
+    uint32 ReturnCodeAddress;   // offset 0x14, size 0x4
+    int16 ReturnCode;           // offset 0x18, size 0x2
+    int16 MaxReturnSize;        // offset 0x1A, size 0x2
 
     int GetType() {}
 
@@ -28,9 +28,9 @@ struct bFunkPacketHeader {
 
     int GetDataSize() {}
 
-    unsigned char *GetData() {}
+    uint8 *GetData() {}
 
-    unsigned char *GetData(int pos) {}
+    uint8 *GetData(int pos) {}
 
     void SetDataSize(int size) {}
 
@@ -38,83 +38,107 @@ struct bFunkPacketHeader {
 
     void InitReturnPacketHeader(const bFunkPacketHeader *sync_packet, int return_code) {}
 
-    void SetChecksumParameters(int packet_id, unsigned short checksum) {}
+    void SetChecksumParameters(int packet_id, uint16 checksum) {}
 
-    unsigned short CalculateChecksum() {}
+    uint16 CalculateChecksum() {}
+
+    static uint16 CalculateChecksum(void *data, int data_size);
 };
 
 // total size: 0x7FC
 struct bFunkPacket : public bFunkPacketHeader {
-    unsigned char Data[2016]; // offset 0x1C, size 0x7E0
+    uint8 Data[2016]; // offset 0x1C, size 0x7E0
 };
 
-struct bFunkServer : public bTNode<bFunkServer> {
+typedef void bFunkHandleASyncFunction(const void *, int32);
+typedef int bFunkHandleSyncFunction(const void *, int32, void *);
+
+class bFunkServer : public bTNode<bFunkServer> {
     // total size: 0x2D0
-    unsigned int NameHash;    // offset 0x8, size 0x4
+    uint32 NameHash;          // offset 0x8, size 0x4
     char Name[64];            // offset 0xC, size 0x40
     char FunctionTypes[128];  // offset 0x4C, size 0x80
     void *FunctionTable[128]; // offset 0xCC, size 0x200
 
-    unsigned int GetNameHash() {}
+  public:
+    bFunkServer(const char *name) {}
 
-    const char *GetName() {}
+    uint32 GetNameHash() {
+        return NameHash;
+    }
 
-    void AddASync(int function_num, void (*function)(const void *, long)) {}
+    const char *GetName() {
+        return Name;
+    }
 
-    void AddSync(int function_num, long (*function)(const void *, long, void *)) {}
+    void AddASync(int function_num, bFunkHandleASyncFunction) {}
 
+    void AddSync(int function_num, bFunkHandleSyncFunction) {}
+
+    void Remove(int function_num);
+
+    void ProcessPacket(bFunkPacket *packet);
+
+    virtual ~bFunkServer();
+    virtual bool CanDeliverPacket(uint32 server_hash);
+    virtual bool DeliverPacket(bFunkPacket *packet);
     virtual int Service() {}
 };
 
 // total size: 0x2E0
-struct bFunkServerPlatform : public bFunkServer {
+class bFunkServerPlatform : public bFunkServer {
     // Members
     int MaxReceivePackets;        // offset 0x2D0, size 0x4
     int NextReceivePacketNum;     // offset 0x2D4, size 0x4
     bool ProcessingPacket;        // offset 0x2D8, size 0x1
     bFunkPacket *pReceivePackets; // offset 0x2DC, size 0x4
+  public:
+    bFunkServerPlatform();
+    override ~bFunkServerPlatform();
+    override bool DeliverPacket(bFunkPacket *packet);
+    override int Service();
 };
 
 struct bFileOpenPacket {
-    char OpenFlags;          // offset 0x0, size 0x1
-    char Obsolete1;          // offset 0x1, size 0x1
-    char WarnIfCantOpen;     // offset 0x2, size 0x1
-    char FutureExpansion;    // offset 0x3, size 0x1
-    int FileID;              // offset 0x4, size 0x4
-    int FilePositionAddress; // offset 0x8, size 0x4
-    int CachedFileSize;      // offset 0xC, size 0x4
-    int Obsolete2;           // offset 0x10, size 0x4
-    char Filename[200];      // offset 0x14, size 0xC8
+    int8 OpenFlags;            // offset 0x0, size 0x1
+    int8 Obsolete1;            // offset 0x1, size 0x1
+    int8 WarnIfCantOpen;       // offset 0x2, size 0x1
+    int8 FutureExpansion;      // offset 0x3, size 0x1
+    int32 FileID;              // offset 0x4, size 0x4
+    int32 FilePositionAddress; // offset 0x8, size 0x4
+    int32 CachedFileSize;      // offset 0xC, size 0x4
+    int32 Obsolete2;           // offset 0x10, size 0x4
+    char Filename[200];        // offset 0x14, size 0xC8
 };
 
 struct bCodeineDirEntry {
-    unsigned int NameHash; // offset 0x0, size 0x4
-    int FileSize;          // offset 0x4, size 0x4
+    uint32 NameHash; // offset 0x0, size 0x4
+    int32 FileSize;  // offset 0x4, size 0x4
 };
 
 struct bFileCacheDirsPacket {
-    int DirEntryAddress; // offset 0x0, size 0x4
-    int MaxEntries;      // offset 0x4, size 0x4
-    int DirNamesSize;    // offset 0x8, size 0x4
-    char DirNames[1024]; // offset 0xC, size 0x400
+    int32 DirEntryAddress; // offset 0x0, size 0x4
+    int32 MaxEntries;      // offset 0x4, size 0x4
+    int32 DirNamesSize;    // offset 0x8, size 0x4
+    char DirNames[1024];   // offset 0xC, size 0x400
 };
 
 struct bFileReadPacket {
-    int FileID;   // offset 0x0, size 0x4
-    int Position; // offset 0x4, size 0x4
-    int Address;  // offset 0x8, size 0x4
-    int NumBytes; // offset 0xC, size 0x4
+    int32 FileID;   // offset 0x0, size 0x4
+    int32 Position; // offset 0x4, size 0x4
+    int32 Address;  // offset 0x8, size 0x4
+    int32 NumBytes; // offset 0xC, size 0x4
 };
 
 struct bFileWritePacket {
-    int FileID;               // offset 0x0, size 0x4
-    int Position;             // offset 0x4, size 0x4
-    unsigned char Data[2008]; // offset 0x8, size 0x7D8
+    int32 FileID;     // offset 0x0, size 0x4
+    int32 Position;   // offset 0x4, size 0x4
+    uint8 Data[2008]; // offset 0x8, size 0x7D8
 };
 
 // total size: 0x4
 struct bFileClosePacket {
-    int FileID; // offset 0x0, size 0x4
+    int32 FileID; // offset 0x0, size 0x4
 };
 
 // total size: 0x88
