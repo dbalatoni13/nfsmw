@@ -1795,18 +1795,18 @@ set_output:
 
 void NFSMixMap::Update3DMixCtls() {
     if (m_CurCamState != m_PrevCamState) {
-        st3DMixCtlSharedData *p3dsp = m_p3DMixCtlData_S;
+        st3DMixCtlSharedData *p3Ds = m_p3DMixCtlData_S;
 
         for (int ns = 0; ns < m_nAssigned3DMixCtlShared; ns++) {
-            bool found;
             int numstates;
-            eCamStates camstate;
             st3DStateParams *pstateparams;
+            eCamStates camstate;
+            bool found;
 
             found = false;
-            numstates = (p3dsp->pMapParams->nINPUTID >> 24) & 0xF;
+            numstates = (p3Ds->pMapParams->nINPUTID >> 24) & 0xF;
+            pstateparams = &p3Ds->pMapParams->StateParams;
             camstate = m_CurCamState;
-            pstateparams = &p3dsp->pMapParams->StateParams;
 
         RestartLoop:
             {
@@ -1814,17 +1814,17 @@ void NFSMixMap::Update3DMixCtls() {
 
                 for (nsp = 0; nsp < numstates; nsp++) {
                     {
-                        st3DStateParams *p3dspstate;
+                        st3DStateParams *p3dsp;
                         eCamStates testcamstate;
 
-                        p3dspstate = pstateparams + nsp;
-                        testcamstate = static_cast<eCamStates>((p3dspstate->n3DSTATEINFOID >> 24) & 0xF);
+                        p3dsp = pstateparams + nsp;
+                        testcamstate = static_cast<eCamStates>((p3dsp->n3DSTATEINFOID >> 24) & 0xF);
                         if (testcamstate == camstate) {
-                            p3dsp->pCurStateParams = p3dspstate;
+                            p3Ds->pCurStateParams = p3dsp;
                             found = true;
-                            p3dsp->msSinceCamTrans = 0;
-                            p3dsp->PrevCamState = m_PrevCamState;
-                            p3dsp->CurCamState = m_CurCamState;
+                            p3Ds->msSinceCamTrans = 0;
+                            p3Ds->PrevCamState = m_PrevCamState;
+                            p3Ds->CurCamState = m_CurCamState;
                             break;
                         }
                     }
@@ -1836,17 +1836,14 @@ void NFSMixMap::Update3DMixCtls() {
                 goto RestartLoop;
             }
 
-            p3dsp++;
+            p3Ds++;
         }
     }
 
     st3DMixCtlProc *p3Dproc = m_p3DMixCtlProc;
 
     for (int n = 0; n < m_3DMixCtlsAdded; n++, p3Dproc++) {
-        st3DMixCtlUniqueData *p3Du;
-
-        p3Du = p3Dproc->p3DMixCtlData_U;
-        if (p3Du->pInputs[0xF] & 1U) {
+        if (p3Dproc->p3DMixCtlData_U->pInputs[0xF] & 1U) {
             st3DStateParams *psparams;
             int nid;
             int nDistType;
@@ -1872,10 +1869,10 @@ void NFSMixMap::Update3DMixCtls() {
             ntables = psparams->nCURVEID_DOPPLER;
             switch (nDistType) {
             case 0:
-                fdist[0] = static_cast<float>(p3Du->pInputs[1]) * 0.01f;
+                fdist[0] = static_cast<float>(p3Dproc->p3DMixCtlData_U->pInputs[1]) * 0.01f;
                 break;
             case 1:
-                fdist[0] = static_cast<float>(p3Du->pInputs[0]) * 0.01f;
+                fdist[0] = static_cast<float>(p3Dproc->p3DMixCtlData_U->pInputs[0]) * 0.01f;
                 break;
             default:
                 fdist[0] = -1.0f;
@@ -1885,10 +1882,10 @@ void NFSMixMap::Update3DMixCtls() {
 
             switch (nAzimType) {
             case 0:
-                nazim = p3Du->pInputs[3];
+                nazim = p3Dproc->p3DMixCtlData_U->pInputs[3];
                 break;
             case 1:
-                nazim = p3Du->pInputs[2];
+                nazim = p3Dproc->p3DMixCtlData_U->pInputs[2];
                 break;
             default:
                 nazim = 0;
@@ -1896,7 +1893,7 @@ void NFSMixMap::Update3DMixCtls() {
             }
 
             AzimOut = nazim;
-            p3Du->azimuth = AzimOut;
+            p3Dproc->p3DMixCtlData_U->azimuth = AzimOut;
             nQuad = (static_cast<unsigned int>(AzimOut) >> 14) & 3;
             uAverage = AzimOut;
 
@@ -1942,7 +1939,15 @@ void NFSMixMap::Update3DMixCtls() {
             }
 
             if ((fdist[0] <= fmaxdist[0]) || (fdist[0] <= fmaxdist[1])) {
+                float fdopplerboost;
+                float fvelsound;
+                float fvel;
+                float ftratio;
+                float fdoppler;
+                float fdeltanewdist;
+                float fcurdist;
                 float fdistratio;
+                float fcents;
 
                 if (fdist[0] < fmindist[0]) {
                     fdist[0] = fmindist[0];
@@ -1958,31 +1963,39 @@ void NFSMixMap::Update3DMixCtls() {
                     fdist[1] = fmaxdist[1];
                 }
 
-                fdistratio = (fdist[0] - fmindist[0]) / (fmaxdist[0] - fmindist[0]);
-                fdist[1] = (fdist[1] - fmindist[1]) / (fmaxdist[1] - fmindist[1]);
+                {
+                    float divisor;
+
+                    divisor = fmaxdist[0] - fmindist[0];
+                    fdistratio = (fdist[0] - fmindist[0]) / divisor;
+                }
+
+                {
+                    float divisor;
+
+                    divisor = fmaxdist[1] - fmindist[1];
+                    fdist[1] = (fdist[1] - fmindist[1]) / divisor;
+                }
+
                 qDist[0] = static_cast<int>(fdistratio * 32767.0f);
                 qDist[1] = static_cast<int>(fdist[1] * 32767.0f);
-                p3Du->q15Rolloff = NFSMixShape::GetAzimShapeOutput(nqOne, nqTwo, qDist, uAverage);
-                p3Du->dBRolloff = NFSMixShape::GetdBFromQ15(p3Du->q15Rolloff);
+                p3Dproc->p3DMixCtlData_U->q15Rolloff = NFSMixShape::GetAzimShapeOutput(nqOne, nqTwo, qDist, uAverage);
+                p3Dproc->p3DMixCtlData_U->dBRolloff =
+                    NFSMixShape::GetdBFromQ15(p3Dproc->p3DMixCtlData_U->q15Rolloff);
 
                 if ((ntables & 0xFFFF) != 0) {
-                    float fcents;
-                    float fcurdist;
-                    float fdeltanewdist;
-                    float ftratio;
-                    float fvel;
-                    float fvelsound;
                     unsigned int velocity;
 
                     fvelsound = static_cast<float>(ntables & 0xFFFF);
                     fcents = 0.0f;
 
                     if ((m_CurCamState < 3) || (m_CurCamState == DMIX_NFS_NIS_CAM)) {
-                        velocity = static_cast<unsigned int>(p3Du->pInputs[0xD]);
-                        fcurdist = static_cast<float>(p3Du->pInputs[0]) * 0.01f;
-                        if (p3Du->pInputs[0xF] < 0) {
-                            velocity = static_cast<unsigned int>(p3Du->pInputs[0xF] & 0x7FFFFFFF);
-                            p3Du->pInputs[0xF] = velocity;
+                        velocity = static_cast<unsigned int>(p3Dproc->p3DMixCtlData_U->pInputs[0xD]);
+                        fcurdist = static_cast<float>(p3Dproc->p3DMixCtlData_U->pInputs[0]) * 0.01f;
+                        if (p3Dproc->p3DMixCtlData_U->pInputs[0xF] < 0) {
+                            velocity =
+                                static_cast<unsigned int>(p3Dproc->p3DMixCtlData_U->pInputs[0xF] & 0x7FFFFFFF);
+                            p3Dproc->p3DMixCtlData_U->pInputs[0xF] = velocity;
                         } else {
                             fvel = fvelsound + (static_cast<float>(velocity) * 0.01f);
                             if (fvel <= 0.01f) {
@@ -1992,11 +2005,12 @@ void NFSMixMap::Update3DMixCtls() {
                             fcents = static_cast<float>(NFSMixShape::GetCentsFromPitchMult(ftratio));
                         }
                     } else {
-                        velocity = static_cast<unsigned int>(p3Du->pInputs[0xE]);
-                        fcurdist = static_cast<float>(p3Du->pInputs[1]) * 0.01f;
-                        if ((p3Du->pInputs[0xF] & 0x40000000) != 0) {
-                            velocity = static_cast<unsigned int>(p3Du->pInputs[0xF] & 0xBFFFFFFF);
-                            p3Du->pInputs[0xF] = velocity;
+                        velocity = static_cast<unsigned int>(p3Dproc->p3DMixCtlData_U->pInputs[0xE]);
+                        fcurdist = static_cast<float>(p3Dproc->p3DMixCtlData_U->pInputs[1]) * 0.01f;
+                        if ((p3Dproc->p3DMixCtlData_U->pInputs[0xF] & 0x40000000) != 0) {
+                            velocity =
+                                static_cast<unsigned int>(p3Dproc->p3DMixCtlData_U->pInputs[0xF] & 0xBFFFFFFF);
+                            p3Dproc->p3DMixCtlData_U->pInputs[0xF] = velocity;
                         } else {
                             fvel = fvelsound + (static_cast<float>(velocity) * 0.01f);
                             if (fvel <= 0.01f) {
@@ -2007,31 +2021,32 @@ void NFSMixMap::Update3DMixCtls() {
                         }
                     }
 
-                    if (p3Du->fPrevDeltaDist == 0.01f) {
-                        p3Du->fPrevDeltaDist = 1.0f;
+                    if (p3Dproc->p3DMixCtlData_U->fPrevDeltaDist == 0.01f) {
+                        p3Dproc->p3DMixCtlData_U->fPrevDeltaDist = 1.0f;
                     }
 
-                    fdeltanewdist = fcurdist - p3Du->fPrevDist;
+                    fdeltanewdist = fcurdist - p3Dproc->p3DMixCtlData_U->fPrevDist;
                     if (fdeltanewdist < 0.0f) {
                         fdeltanewdist = -fdeltanewdist;
                     }
 
-                    p3Du->fPrevDeltaDist = fdeltanewdist;
-                    p3Du->fPrevDist = fcurdist;
-                    p3Du->DopplerCents =
-                        p3Du->DopplerCents +
-                        static_cast<int>((fcents - static_cast<float>(p3Du->DopplerCents)) * DOPPLER_SMOOTHING_FACTOR);
+                    p3Dproc->p3DMixCtlData_U->fPrevDeltaDist = fdeltanewdist;
+                    p3Dproc->p3DMixCtlData_U->fPrevDist = fcurdist;
+                    fdoppler = fcents - static_cast<float>(p3Dproc->p3DMixCtlData_U->DopplerCents);
+                    fdopplerboost = fdoppler * DOPPLER_SMOOTHING_FACTOR;
+                    p3Dproc->p3DMixCtlData_U->DopplerCents =
+                        p3Dproc->p3DMixCtlData_U->DopplerCents + static_cast<int>(fdopplerboost);
                 }
             } else {
-                p3Du->dBRolloff = -10000;
-                p3Du->q15Rolloff = 0;
-                p3Du->DopplerCents = 0;
+                p3Dproc->p3DMixCtlData_U->dBRolloff = -10000;
+                p3Dproc->p3DMixCtlData_U->q15Rolloff = 0;
+                p3Dproc->p3DMixCtlData_U->DopplerCents = 0;
             }
         } else {
-            p3Du->dBRolloff = -10000;
-            p3Du->q15Rolloff = 0;
-            p3Du->azimuth = 0;
-            p3Du->DopplerCents = 0;
+            p3Dproc->p3DMixCtlData_U->dBRolloff = -10000;
+            p3Dproc->p3DMixCtlData_U->q15Rolloff = 0;
+            p3Dproc->p3DMixCtlData_U->azimuth = 0;
+            p3Dproc->p3DMixCtlData_U->DopplerCents = 0;
         }
     }
 }
