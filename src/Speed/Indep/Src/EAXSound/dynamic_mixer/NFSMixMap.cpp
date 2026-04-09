@@ -1858,6 +1858,7 @@ void NFSMixMap::Update3DMixCtls() {
             eMIXTABLEID nqTwo;
             int AzimOut;
             int nQuad;
+            int nNextQuad;
             int qDist[2];
 
             nqOne = SHAPE_DWN_LINEAR;
@@ -1899,6 +1900,7 @@ void NFSMixMap::Update3DMixCtls() {
 
             switch (nQuad) {
             case 1:
+                nNextQuad = 2;
                 nqTwo = static_cast<eMIXTABLEID>((ntables >> 24) & 0xF);
                 nqOne = static_cast<eMIXTABLEID>((ntables >> 16) & 0xF);
                 fmindist[0] = static_cast<float>(psparams->nQ1MinMax & 0x7FFF);
@@ -1908,7 +1910,18 @@ void NFSMixMap::Update3DMixCtls() {
                 uAverage = AzimOut - 0x4000;
                 break;
 
+            default:
+                nNextQuad = 1;
+                nqTwo = static_cast<eMIXTABLEID>((ntables >> 16) & 0xF);
+                nqOne = static_cast<eMIXTABLEID>((ntables >> 28) & 0xF);
+                fmindist[0] = static_cast<float>(psparams->nQ0MinMax & 0x7FFF);
+                fmaxdist[0] = static_cast<float>((static_cast<unsigned int>(psparams->nQ0MinMax) >> 16) & 0x7FFF);
+                fmindist[1] = static_cast<float>(psparams->nQ1MinMax & 0x7FFF);
+                fmaxdist[1] = static_cast<float>((static_cast<unsigned int>(psparams->nQ1MinMax) >> 16) & 0x7FFF);
+                break;
+
             case 2:
+                nNextQuad = 3;
                 nqTwo = static_cast<eMIXTABLEID>((ntables >> 20) & 0xF);
                 nqOne = static_cast<eMIXTABLEID>((ntables >> 24) & 0xF);
                 fmindist[0] = static_cast<float>(psparams->nQ2MinMax & 0x7FFF);
@@ -1919,6 +1932,7 @@ void NFSMixMap::Update3DMixCtls() {
                 break;
 
             case 3:
+                nNextQuad = 0;
                 nqTwo = static_cast<eMIXTABLEID>((ntables >> 28) & 0xF);
                 nqOne = static_cast<eMIXTABLEID>((ntables >> 20) & 0xF);
                 fmindist[0] = static_cast<float>(psparams->nQ3MinMax & 0x7FFF);
@@ -1926,15 +1940,6 @@ void NFSMixMap::Update3DMixCtls() {
                 fmindist[1] = static_cast<float>(psparams->nQ0MinMax & 0x7FFF);
                 fmaxdist[1] = static_cast<float>((static_cast<unsigned int>(psparams->nQ0MinMax) >> 16) & 0x7FFF);
                 uAverage = AzimOut - 0xC000;
-                break;
-
-            default:
-                nqTwo = static_cast<eMIXTABLEID>((ntables >> 16) & 0xF);
-                nqOne = static_cast<eMIXTABLEID>((ntables >> 28) & 0xF);
-                fmindist[0] = static_cast<float>(psparams->nQ0MinMax & 0x7FFF);
-                fmaxdist[0] = static_cast<float>((static_cast<unsigned int>(psparams->nQ0MinMax) >> 16) & 0x7FFF);
-                fmindist[1] = static_cast<float>(psparams->nQ1MinMax & 0x7FFF);
-                fmaxdist[1] = static_cast<float>((static_cast<unsigned int>(psparams->nQ1MinMax) >> 16) & 0x7FFF);
                 break;
             }
 
