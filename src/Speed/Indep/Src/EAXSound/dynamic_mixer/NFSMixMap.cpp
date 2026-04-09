@@ -1794,40 +1794,45 @@ set_output:
 }
 
 void NFSMixMap::Update3DMixCtls() {
-    int n;
-    int i;
-
     if (m_CurCamState != m_PrevCamState) {
         st3DMixCtlSharedData *p3dsp = m_p3DMixCtlData_S;
 
-        for (i = 0; i < m_nAssigned3DMixCtlShared; i++) {
-            int found;
+        for (int ns = 0; ns < m_nAssigned3DMixCtlShared; ns++) {
+            bool found;
             int numstates;
-            eCamStates testcamstate;
-            st3DStateParams *pstateparamsbase;
+            eCamStates camstate;
+            st3DStateParams *pstateparams;
 
-            found = 0;
+            found = false;
             numstates = (p3dsp->pMapParams->nINPUTID >> 24) & 0xF;
-            testcamstate = m_CurCamState;
-            pstateparamsbase = &p3dsp->pMapParams->StateParams;
+            camstate = m_CurCamState;
+            pstateparams = &p3dsp->pMapParams->StateParams;
 
         RestartLoop:
-            for (n = 0; n < numstates; n++) {
-                st3DStateParams *pstateparams;
+            {
+                int nsp;
 
-                pstateparams = pstateparamsbase + n;
-                if (((pstateparams->n3DSTATEINFOID >> 24) & 0xF) == testcamstate) {
-                    p3dsp->pCurStateParams = pstateparams;
-                    found = 1;
-                    p3dsp->msSinceCamTrans = 0;
-                    p3dsp->PrevCamState = m_PrevCamState;
-                    p3dsp->CurCamState = m_CurCamState;
-                    break;
+                for (nsp = 0; nsp < numstates; nsp++) {
+                    {
+                        st3DStateParams *p3dspstate;
+                        eCamStates testcamstate;
+
+                        p3dspstate = pstateparams + nsp;
+                        testcamstate = static_cast<eCamStates>((p3dspstate->n3DSTATEINFOID >> 24) & 0xF);
+                        if (testcamstate == camstate) {
+                            p3dsp->pCurStateParams = p3dspstate;
+                            found = true;
+                            p3dsp->msSinceCamTrans = 0;
+                            p3dsp->PrevCamState = m_PrevCamState;
+                            p3dsp->CurCamState = m_CurCamState;
+                            break;
+                        }
+                    }
                 }
             }
 
             if (!found) {
-                testcamstate = DMIX_DEFAULT_CAM;
+                camstate = DMIX_DEFAULT_CAM;
                 goto RestartLoop;
             }
 
@@ -1837,7 +1842,7 @@ void NFSMixMap::Update3DMixCtls() {
 
     st3DMixCtlProc *p3Dproc = m_p3DMixCtlProc;
 
-    for (n = 0; n < m_3DMixCtlsAdded; n++, p3Dproc++) {
+    for (int n = 0; n < m_3DMixCtlsAdded; n++, p3Dproc++) {
         st3DMixCtlUniqueData *p3Du;
 
         p3Du = p3Dproc->p3DMixCtlData_U;
