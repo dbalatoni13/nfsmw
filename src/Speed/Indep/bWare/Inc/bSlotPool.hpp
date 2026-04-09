@@ -13,13 +13,17 @@ enum SlotPoolFlags {
     SLOTPOOL_FLAG_ZERO_ALLOCATED_MEMORY = 2,
     SLOTPOOL_FLAG_OVERFLOW_IF_FULL = 1,
 };
-struct SlotPoolEntry {
+class SlotPoolEntry {
     // total size: 0x4
+  public:
     SlotPoolEntry *Next; // offset 0x0, size 0x4
 };
 
-struct SlotPool : public bTNode<SlotPool> {
+class SlotPool : public bTNode<SlotPool> {
     // total size: 0x34
+
+    friend class SlotPoolManager; // only way I can think to allow SlotPoolManager::DeleteSlotPool to access NextSlotPool
+
     SlotPool *NextSlotPool;    // offset 0x8, size 0x4
     const char *DebugName;     // offset 0xC, size 0x4
     SlotPoolEntry *FreeSlots;  // offset 0x10, size 0x4
@@ -32,6 +36,7 @@ struct SlotPool : public bTNode<SlotPool> {
     int TotalNumSlots;         // offset 0x2C, size 0x4
     SlotPoolEntry Slots[1];    // offset 0x30, size 0x4
 
+  public:
     static SlotPool *NewSlotPool(int slot_size, int num_slots, const char *debug_name, int memory_pool);
     static void DeleteSlotPool(SlotPool *slot_pool);
 
@@ -54,21 +59,23 @@ struct SlotPool : public bTNode<SlotPool> {
         Flags = static_cast<SlotPoolFlags>((static_cast<int>(Flags)) & ~flag);
     }
 
-    SlotPoolFlags GetFlags();
+    SlotPoolFlags GetFlags() {
+        return Flags;
+    };
 
     bool IsInPool(void *p);
 
     const char *GetName();
 
-    BOOL IsFull() {
+    int IsFull() {
         return this->NumAllocatedSlots == this->TotalNumSlots;
     }
 
-    BOOL IsEmpty() {
+    int IsEmpty() {
         return this->NumAllocatedSlots == 0;
     }
 
-    BOOL HasOverflowed() {
+    int HasOverflowed() {
         return !(this->TotalNumSlots == this->NumSlots);
     }
 
@@ -89,11 +96,12 @@ struct SlotPool : public bTNode<SlotPool> {
     }
 };
 
-struct SlotPoolManager {
+class SlotPoolManager {
     // total size: 0xC
-    BOOL Initialized;              // offset 0x0, size 0x4
+    int Initialized;               // offset 0x0, size 0x4
     bTList<SlotPool> SlotPoolList; // offset 0x4, size 0x8
 
+  public:
     SlotPoolManager();
     ~SlotPoolManager();
     SlotPool *NewSlotPool(int slot_size, int num_slots, const char *debug_name, int memory_pool);
@@ -113,9 +121,9 @@ void bFree(SlotPool *slot_pool, void *first_slot, void *last_slot);
 
 extern SlotPool *ePolySlotPool;
 
-extern unsigned char *CurrentBufferStart;
-extern unsigned char *CurrentBufferPos;
-extern unsigned char *CurrentBufferEnd;
+extern uint8 *CurrentBufferStart;
+extern uint8 *CurrentBufferPos;
+extern uint8 *CurrentBufferEnd;
 
 extern SlotPoolManager TheSlotPoolManager;
 
