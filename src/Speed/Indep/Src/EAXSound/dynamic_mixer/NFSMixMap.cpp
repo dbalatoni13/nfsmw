@@ -1512,13 +1512,17 @@ void NFSMixMap::MixMasterChannels() {
         } else {
             if (type == 1) {
                 out = 0;
-            } else if (type == 2) {
-                out = 25000;
+            } else if (type > 1) {
+                if (type == 2) {
+                    out = 25000;
+                } else {
+                    out = -10000;
+                }
             } else {
                 out = -10000;
             }
 
-            slot = (static_cast<unsigned int>(*pPresets) >> 26) & 0x1F;
+            slot = (*pPresets >> 26) & 0x1F;
             pSlot = pMChP->pMixChData_U->pOutputs + (slot >> 1);
             shift = (slot & 1) << 4;
             maskshift = ((slot + 1) & 1) << 4;
