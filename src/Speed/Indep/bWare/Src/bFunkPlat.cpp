@@ -17,15 +17,15 @@ int bFunkCallSync(const char *server_name, int function_num, const void *data, i
 }
 
 int bFunkDoesServerExist(const char *server_name) {
-    int server_hash;
+    uint32 server_hash = bStringHash(server_name);
     int result;
-    bStringHash(server_name);
-    server_hash = bFunkCallSync("CODEINE", 0x16, server_name, bStrLen(server_name) + 1, &result, 4);
-    int return_code = 0;
-    if (server_hash == 4) {
-        return_code = result;
+    int return_code = bFunkCallSync("CODEINE", 0x16, server_name, bStrLen(server_name) + 1, &result, 4);
+
+    if (return_code == 4) {
+        return result;
     }
-    return return_code;
+
+    return 0;
 }
 
 void bRefreshTweaker() {
