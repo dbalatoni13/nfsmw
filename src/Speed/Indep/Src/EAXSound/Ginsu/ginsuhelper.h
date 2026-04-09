@@ -10,25 +10,27 @@ static inline int IntFloor(float x) {
         return static_cast<int>(x);
     }
 
-    int i = static_cast<int>(x) - 1;
-    if (static_cast<float>(i + 1) == x) {
-        i++;
-    }
+    {
+        int i = static_cast<int>(x) - 1;
+        if (static_cast<float>(i + 1) == x) {
+            i++;
+        }
 
-    return i;
+        return i;
+    }
 }
 
 static inline int IntCeil(float x) {
-    if (x <= 0.0f) {
-        return static_cast<int>(x);
+    if (0.0f < x) {
+        int i = static_cast<int>(x) + 1;
+        if (static_cast<float>(i - 1) == x) {
+            i--;
+        }
+
+        return i;
     }
 
-    int i = static_cast<int>(x) + 1;
-    if (static_cast<float>(i - 1) == x) {
-        i--;
-    }
-
-    return i;
+    return static_cast<int>(x);
 }
 
 static inline int IntRound(float x) {
