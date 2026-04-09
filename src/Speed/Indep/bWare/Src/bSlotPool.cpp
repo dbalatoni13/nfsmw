@@ -297,7 +297,10 @@ SlotPoolManager::SlotPoolManager() {
     Initialized = true;
 }
 
-SlotPoolManager::~SlotPoolManager() {}
+SlotPoolManager::~SlotPoolManager() {
+    this->SlotPoolList.InitList();
+    this->Initialized = false;
+}
 
 SlotPool *SlotPoolManager::NewSlotPool(int slot_size, int num_slots, const char *debug_name, int memory_pool) {
     SlotPool *new_slot_pool = SlotPool::NewSlotPool((slot_size + 3) & ~3, num_slots, debug_name, memory_pool);
