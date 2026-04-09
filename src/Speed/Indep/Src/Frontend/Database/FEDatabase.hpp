@@ -304,8 +304,7 @@ class cFrontendDatabase {
     }
 
     bool IsRapSheetMode() {
-        unsigned int fegm = GetGameMode();
-        return fegm & 0x200;
+        return FEGameMode & 0x200;
     }
 
     unsigned char iNumPlayers; // offset 0x0, size 0x1
