@@ -360,7 +360,7 @@ bool CARSFX_TrafficHorn::IsPlayerCarInRange(int nplayer) {
 
     pPlayerCar = SndCamera::GetPlayerCar(nplayer)->GetPhysCar();
     m_pPlayerPosition = *pPlayerCar->GetPosition();
-    m_pObjectPosition = *GetPhysCar()->GetPosition();
+    m_pObjectPosition = *m_pStateBase->GetPhysCar()->GetPosition();
     bSub(&vPlayerDirection, &m_pPlayerPosition, &m_pObjectPosition);
     m_fObjectToPlayerDistance = bLength(&vPlayerDirection);
 
@@ -373,11 +373,11 @@ bool CARSFX_TrafficHorn::IsPlayerCarInRange(int nplayer) {
     }
 
     vPlayerDirection.z = 0.0f;
-    vPlayerDirection = bNormalize(vPlayerDirection);
-    ObjFwdDirection = *GetPhysCar()->GetForwardVector();
+    bNormalize(&vPlayerDirection, &vPlayerDirection);
+    ObjFwdDirection = *m_pStateBase->GetPhysCar()->GetForwardVector();
     ObjFwdDirection.z = 0.0f;
-    ObjFwdDirection = bNormalize(ObjFwdDirection);
-    DotProd = bDot(vPlayerDirection, ObjFwdDirection);
+    bNormalize(&ObjFwdDirection, &ObjFwdDirection);
+    DotProd = bDot(&vPlayerDirection, &ObjFwdDirection);
 
     if (TheRaceParameters.IsDragRace()) {
         return bCos(115.0f) <= DotProd;

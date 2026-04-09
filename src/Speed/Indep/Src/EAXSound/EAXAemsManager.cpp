@@ -209,21 +209,6 @@ static void ResetSndAssetParams(stSndDataLoadParams &params) {
 
 } // namespace
 
-inline void stAssetDescription::Clear() {
-    eDataType = EAXSND_DT_NONE;
-    FileName = Attrib::StringKey("");
-    DataPath = SNDPATH_ROUTE;
-}
-
-inline stAssetDescription &stAssetDescription::operator=(const stAssetDescription &copy) {
-    eDataType = copy.eDataType;
-    FileName = copy.FileName;
-    DataPath = copy.DataPath;
-    bLoadToTop = copy.bLoadToTop;
-    return *this;
-}
-
-
 stBankSlot *BankSlotSystem::GetFreeSlot(eBANK_SLOT_TYPE Type) {
     for (BankSlotSystem::iterator i = begin(); i != end(); i++) {
         if ((*i).Type == Type && (*i).pAssetParams == nullptr) {
@@ -232,60 +217,6 @@ stBankSlot *BankSlotSystem::GetFreeSlot(eBANK_SLOT_TYPE Type) {
     }
 
     return nullptr;
-}
-
-inline void stSndDataLoadParams::Clear() {
-    AssetDescription.Clear();
-    Handle = -1;
-    bResolvedSync = false;
-    MemLocation = TMP_ALLOC_NONE;
-    mBankSlot = nullptr;
-    pmem = nullptr;
-    plocmem = nullptr;
-    nSize = 0;
-    bResolvedAsync = false;
-    resallocs.clear();
-    RefCount.clear();
-    t_req = Timer(0);
-    t_load = Timer(0);
-}
-
-inline stSndDataLoadParams &stSndDataLoadParams::operator=(stSndDataLoadParams &copy) {
-    AssetDescription = copy.AssetDescription;
-    MemLocation = copy.MemLocation;
-    mBankSlot = copy.mBankSlot;
-    if (mBankSlot != nullptr && mBankSlot->pAssetParams == &copy) {
-        mBankSlot->pAssetParams = this;
-    }
-
-    pmem = copy.pmem;
-    plocmem = copy.plocmem;
-    nSize = copy.nSize;
-    Handle = copy.Handle;
-    *static_cast<unsigned int *>(static_cast<void *>(&bResolvedAsync)) =
-        *static_cast<unsigned int *>(static_cast<void *>(&copy.bResolvedAsync));
-    *static_cast<unsigned int *>(static_cast<void *>(&bResolvedSync)) =
-        *static_cast<unsigned int *>(static_cast<void *>(&copy.bResolvedSync));
-
-    resallocs.clear();
-    resallocs.reserve(copy.resallocs.size());
-    const unsigned int *i;
-    for (i = copy.resallocs.begin(); i != copy.resallocs.end(); ++i) {
-        resallocs.push_back(*i);
-    }
-    copy.resallocs.clear();
-
-    RefCount.clear();
-    RefCount.reserve(copy.RefCount.size());
-    EAX_CarState **j;
-    for (j = copy.RefCount.begin(); j != copy.RefCount.end(); ++j) {
-        RefCount.push_back(*j);
-    }
-    copy.RefCount.clear();
-
-    t_req = copy.t_req;
-    t_load = copy.t_load;
-    return *this;
 }
 
 void BankSlotSystem::DestroySlots() {
