@@ -659,14 +659,17 @@ bool SFXObj_PFEATrax::TestToAmbience() {
                         return false;
                     }
                 }
-                {
-                    int ntmp;
+                if (g_pEAXSound->GetCurMusicVolume() != 0.0f && g_pEAXSound->GetCurAudioSettings()->EATraxMode != 0 &&
+                    m_EATrax[m_EATraxState].TraxMask != 0) {
+                    if (FEDatabase->IsRapSheetMode()) {
+                        int ntmp;
 
-                    ntmp = (m_InteractiveProj + PF_INTERACTIVE_01) & PF_INTERACTIVE_03;
-                    if (ntmp == 3) {
-                        ntmp = 2;
+                        ntmp = (m_InteractiveProj + PF_INTERACTIVE_01) & PF_INTERACTIVE_03;
+                        if (ntmp == 3) {
+                            ntmp = 2;
+                        }
+                        PATH_setnamedvalue(m_PFParms[0].PATH_TRACK, "rapsheet", ntmp + 1);
                     }
-                    PATH_setnamedvalue(m_PFParms[0].PATH_TRACK, "rapsheet", ntmp + 1);
                 }
             }
         } else {
