@@ -91,7 +91,7 @@ void SlotPool::ExpandSlotPool(int num_extra_slots) {
     }
     last_slot_pool->NextSlotPool = new_slot_pool;
 
-    SlotPoolEntry *last_slot = &new_slot_pool->Slots[((num_extra_slots - 1) * SlotSize) / sizeof(SlotPoolEntry *)];
+    SlotPoolEntry *last_slot = &new_slot_pool->Slots[(((num_extra_slots - 1) * SlotSize) / 4 * 4) / sizeof(SlotPoolEntry *)];
     last_slot->Next = FreeSlots;
 
     FreeSlots = new_slot_pool->FreeSlots;
