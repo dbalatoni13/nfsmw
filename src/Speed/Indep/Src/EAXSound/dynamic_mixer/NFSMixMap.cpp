@@ -1868,7 +1868,7 @@ void NFSMixMap::Update3DMixCtls() {
 
     for (int n = 0; n < m_3DMixCtlsAdded; n++, p3Dproc++) {
         if (p3Dproc->p3DMixCtlData_U->pInputs[0xF] & 1U) {
-            st3DStateParams *psparams;
+            st3DStateParams *psparams = p3Dproc->p3DMixCtlData_S->pCurStateParams;
             int nid;
             int nDistType;
             int nAzimType;
@@ -1885,7 +1885,6 @@ void NFSMixMap::Update3DMixCtls() {
             int nNextQuad;
             int qDist[2];
 
-            psparams = p3Dproc->p3DMixCtlData_S->pCurStateParams;
             nid = psparams->n3DSTATEINFOID;
             nDistType = (nid >> 12) & 0xF;
             nAzimType = (nid >> 8) & 0xF;
