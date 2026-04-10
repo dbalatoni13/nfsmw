@@ -234,11 +234,11 @@ void SFXObj_PFEATrax::StartLicensedMusic(unsigned int PathEvent) {
     }
     esgm = g_pEAXSound->GetSndGameMode();
     if (esgm != SND_FRONTEND && esgm != SND_FREEROAM) {
-        if (esgm == SND_CHALLENGERACE) {
-            if (g_pEAXSound->GetCurAudioSettings()->InteractiveMusicMode != 0) {
+        if (esgm != SND_CHALLENGERACE) {
+            if ((m_Flags & 0x201) != 1) {
                 return;
             }
-        } else if ((m_Flags & 1) == 0 || (m_Flags & 0x200) != 0) {
+        } else if (g_pEAXSound->GetCurAudioSettings()->InteractiveMusicMode != 0) {
             return;
         }
     }
@@ -255,20 +255,7 @@ void SFXObj_PFEATrax::StartLicensedMusic(unsigned int PathEvent) {
                 m_EATrax[m_EATraxState].LastPlaylistSong = m_EATrax[m_EATraxState].PlayTrackIndex;
             }
             PathEventToUse = 0;
-            if (PathEvent == 0) {
-                {
-                    stSongInfo *CurSong;
-
-                    GenNextMusicTrackID();
-                    if (m_EATrax[m_EATraxState].PlayTrackIndex == -1) {
-                        return;
-                    }
-                    CurSong = Songs[m_EATrax[m_EATraxState].PlayTrackIndex];
-                    PathEventToUse = CurSong->PathEvent;
-                    m_Flags &= ~0x40u;
-                    m_PrevPathEvent = 0;
-                }
-            } else {
+            if (PathEvent != 0) {
                 bool foundevent;
                 int n;
 
@@ -294,6 +281,17 @@ void SFXObj_PFEATrax::StartLicensedMusic(unsigned int PathEvent) {
                     m_EATrax[m_EATraxState].PlayBits ^= 1;
                     PathEventToUse = static_cast<int>(PathEvent);
                 }
+            } else {
+                stSongInfo *CurSong;
+
+                GenNextMusicTrackID();
+                if (m_EATrax[m_EATraxState].PlayTrackIndex == -1) {
+                    return;
+                }
+                CurSong = Songs[m_EATrax[m_EATraxState].PlayTrackIndex];
+                PathEventToUse = CurSong->PathEvent;
+                m_Flags &= ~0x40u;
+                m_PrevPathEvent = 0;
             }
             m_CurPathEvent = static_cast<unsigned int>(PathEventToUse);
             m_PFParms[0].queue_next = 1;
