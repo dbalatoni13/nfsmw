@@ -45,27 +45,27 @@ struct SED_NISSFX : public Module {
     SyncAudioObject m_SyncObject;       // offset 0x98, size 0x14
     EAXS_StreamChannel *m_backupstrm;   // offset 0xAC, size 0x4
 
-    inline bool IsInitted() {
+    bool IsInitted() {
         return m_moduleIsInitted;
     }
 
-    inline char *GetCSIptr() override {
+    char *GetCSIptr() override {
         return m_csisData;
     }
 
-    inline int GetChannel() override {
+    int GetChannel() override {
         return m_channel;
     }
 
-    inline char *GetEventDat() override {
+    char *GetEventDat() override {
         return m_eventDat;
     }
 
-    inline bool IsDataLoaded() override {
+    bool IsDataLoaded() override {
         return m_dataIsLoaded;
     }
 
-    inline eNISSFX_TYPE GetStreamType() {
+    eNISSFX_TYPE GetStreamType() {
         return m_SyncObject.id;
     }
 
