@@ -252,13 +252,18 @@ Speed/GameCube/bWare/GameCube/dolphinsdk/src/base/PPCArch.c:
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OS.c:
 	.text       start:0x80321810 end:0x803222DC
+	.data       start:0x80439F40 end:0x8043A138
 	.bss        start:0x804BA040 end:0x804BA0B0
+	.sdata      start:0x804FF3B0 end:0x804FF3C0
+	.sbss       start:0x804FF8D8 end:0x804FF910
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSAlarm.c:
-	.text       start:0x803222DC end:0x80322A14
+	.text       start:0x803222DC end:0x80322AB4
+	.data       start:0x8043A138 end:0x8043A330
+	.sbss       start:0x804FF910 end:0x804FF918
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSAlloc.c:
-	.text       start:0x80322A14 end:0x80322C9C
+	.text       start:0x80322AB4 end:0x80322C9C
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSArena.c:
 	.text       start:0x80322C9C end:0x80322CE8
@@ -271,14 +276,17 @@ Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSAudioSystem.c:
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSCache.c:
 	.text       start:0x80322F7C end:0x803233E0
+	.data       start:0x8043A748 end:0x8043A978
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSContext.c:
 	.text       start:0x803233E0 end:0x80323C50
+	.data       start:0x8043A978 end:0x8043AB50
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSError.c:
 	.text       start:0x80323C50 end:0x803242FC
+	.data       start:0x8043AB50 end:0x8043AE70
 	.bss        start:0x804BA0B0 end:0x804BA0F4
-	.sdata      start:0x804FF3D0 end:0x804FF3D4
+	.sdata      start:0x804FF3D0 end:0x804FF3D8
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSExec.c:
 	.text       start:0x803242FC end:0x80324C5C
