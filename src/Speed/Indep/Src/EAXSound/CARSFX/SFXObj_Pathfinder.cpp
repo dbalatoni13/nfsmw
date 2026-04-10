@@ -234,11 +234,14 @@ void SFXObj_PFEATrax::StartLicensedMusic(unsigned int PathEvent) {
     }
     esgm = g_pEAXSound->GetSndGameMode();
     if (esgm != SND_FRONTEND && esgm != SND_FREEROAM) {
-        if (esgm == SND_CHALLENGERACE) {
-            if (g_pEAXSound->GetCurAudioSettings()->InteractiveMusicMode != 0) {
+        if ((m_Flags & 1) == 0) {
+            if (esgm != SND_CHALLENGERACE) {
                 return;
             }
-        } else if ((m_Flags & 1) == 0 || (m_Flags & 0x200) != 0) {
+        } else if (esgm != SND_CHALLENGERACE && (m_Flags & 0x200) != 0) {
+            return;
+        }
+        if (esgm == SND_CHALLENGERACE && g_pEAXSound->GetCurAudioSettings()->InteractiveMusicMode != 0) {
             return;
         }
     }
