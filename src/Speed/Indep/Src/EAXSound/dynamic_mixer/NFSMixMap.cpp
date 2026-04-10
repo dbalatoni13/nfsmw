@@ -1147,18 +1147,15 @@ int *NFSMixMap::GetObjectPtr(int sfxid, bool busedB, bool bHACKINIT) {
         int nidx;
         st3DMixCtlProc *p3d;
 
+        nState = (sfxid >> 16) & 0xFF;
+        ninst = (sfxid >> 11) & 0x1F;
+        nidx = sfxid & 0xFF;
         if (bHACKINIT) {
-            nState = (sfxid >> 16) & 0xFF;
-            ninst = (sfxid >> 11) & 0x1F;
-            nidx = sfxid & 0xFF;
             p3d = m_pStateProcs[nState]->Get3DMixCtlProc(nidx, ninst);
             ptr = reinterpret_cast<int *>(p3d);
             break;
         }
 
-        nState = (sfxid >> 16) & 0xFF;
-        ninst = (sfxid >> 11) & 0x1F;
-        nidx = sfxid & 0xFF;
         p3d = m_pStateProcs[nState]->Get3DMixCtlProc(nidx, ninst);
         if (busedB) {
             ptr = &p3d->p3DMixCtlData_U->dBRolloff;
