@@ -177,16 +177,11 @@ void CSTATEMGR_DriveBy::UpdateParams(float t) {
                             tmpdrivebypackage.ClosingVelocity = 0.0f;
                             tmpdrivebypackage.UniqueID = 0;
                             uhash = event_trigger->GetNameHash();
-                            switch (uhash) {
-                            case 0xF40A48EF:
-                            case 0x72F66B23:
-                            case 0xB6BD9C95:
-                            case 0xF3ABE1C2:
-                                tmpdrivebypackage.eDriveByType = DRIVE_BY_LAMPPOST;
-                                break;
-                            case 0x001D5D4F:
-                                tmpdrivebypackage.eDriveByType = DRIVE_BY_TREE;
-                                break;
+                            if ((uhash != 0xF40A48EF) && (uhash != 0x72F66B23) && (uhash != 0xB6BD9C95) &&
+                                (uhash != 0xF3ABE1C2)) {
+                                if (uhash == 0x001D5D4F) {
+                                    tmpdrivebypackage.eDriveByType = DRIVE_BY_TREE;
+                                }
                             }
 
                             tmpdrivebypackage.pEAXCar = SndCamera::GetPlayerCar(n);
