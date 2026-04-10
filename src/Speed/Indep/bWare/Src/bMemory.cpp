@@ -133,7 +133,7 @@ class MemoryPool {
 
 int bMemoryAutomaticVerifyPoolIntegrity = 0;                                          // size: 0x4, address: 0x80416418
 int bMemoryRandomFillPattern = 0;                                                     // size: 0x4, address: 0x80416430
-BOOL bMemoryTracing = false;                                                          // size: 0x4, address: 0x80416438
+int bMemoryTracing = false;                                                           // size: 0x4, address: 0x80416438
 int bMemoryBreakOnAllocationNumber = -1;                                              // size: 0x4, address: 0x8041643C
 int bMemoryAllocationNumber = 0;                                                      // size: 0x4, address: 0x80416440
 bMemoryAllocator TheMemoryAllocator;                                                  // size: 0xC, address: 0x8045790C
