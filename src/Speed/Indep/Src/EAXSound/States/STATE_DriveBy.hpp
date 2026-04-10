@@ -34,7 +34,9 @@ struct stDriveByInfo {
     bVector3 vLocation;          // offset 0xC, size 0x10
     unsigned int UniqueID;       // offset 0x1C, size 0x4
 
-    stDriveByInfo() {}
+    stDriveByInfo() {
+        vLocation = bVector3(0.0f, 0.0f, 0.0f);
+    }
 
     stDriveByInfo &operator=(const stDriveByInfo &from) {
         eDriveByType = from.eDriveByType;

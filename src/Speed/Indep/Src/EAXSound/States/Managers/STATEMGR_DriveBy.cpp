@@ -94,7 +94,6 @@ CreateWoosh:
     tmpdrivebypackage.eDriveByType = bytype;
     tmpdrivebypackage.pEAXCar = SndCamera::GetPlayerCar(carid);
     tmpdrivebypackage.ClosingVelocity = tmpdrivebypackage.pEAXCar->GetPhysCar()->GetVelocityMagnitude();
-    tmpdrivebypackage.vLocation = bVector3(0.0f, 0.0f, 0.0f);
     tmpdrivebypackage.UniqueID = reinterpret_cast<unsigned int>(model->GetInstanceHandle());
     ReturnedObj = EAXSound::GetStateMgr(eMM_DRIVEBY)->GetFreeState(&tmpdrivebypackage);
     if (ReturnedObj) {
@@ -180,7 +179,6 @@ void CSTATEMGR_DriveBy::UpdateParams(float t) {
                             tmpdrivebypackage.eDriveByType = DRIVE_BY_LAMPPOST;
                             tmpdrivebypackage.pEAXCar = nullptr;
                             tmpdrivebypackage.ClosingVelocity = 0.0f;
-                            tmpdrivebypackage.vLocation = bVector3(0.0f, 0.0f, 0.0f);
                             tmpdrivebypackage.UniqueID = 0;
                             uhash = event_trigger->GetNameHash();
                             switch (uhash) {
