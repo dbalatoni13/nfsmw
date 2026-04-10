@@ -255,8 +255,8 @@ void NFSMixMapState::CreateMasterMixChannels() {
                         pMMCP = m_pNFSMixMap->GetNextMasterMixProc(true);
                         pMMUD = m_pNFSMixMap->GetNextMasterMixUnique(true);
                         pMMSD->pMapParams = pMasterParms;
-                        pMMSD->pPRESETS = nullptr;
                         MixInID = pMasterParms->MIXCHID;
+                        pMMSD->pPRESETS = nullptr;
                         nstate = (MixInID & 0xFF00U) << 8;
                         MixInID &= 0x10000000U;
                         MixInID |= nstate;
