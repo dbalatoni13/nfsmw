@@ -261,6 +261,7 @@ float GinsuSynthData::SampleToCycle(int sample) const {
     float cycle;
 
     high = mCycleCount;
+    low = 0;
     if (high <= 0) {
         return 0.0f;
     }
@@ -273,7 +274,6 @@ float GinsuSynthData::SampleToCycle(int sample) const {
         return static_cast<float>(high);
     }
 
-    low = 0;
     while (true) {
         while (true) {
             cycle = (static_cast<float>(sample - mCyclePos[low]) / static_cast<float>(mCyclePos[high] - mCyclePos[low])) *
