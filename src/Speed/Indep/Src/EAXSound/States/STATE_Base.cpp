@@ -425,10 +425,6 @@ bool CSTATE_Base::Detach() {
 
     CurSFXObj = m_pHeadSFXObj;
     while (CurSFXObj) {
-        int iVar7 = 0;
-        int iVar9 = 0;
-        SndAssetQueue::iterator ptr = gAEMSMgr.mWaitForResolve.begin();
-
         CurSFXObj->Detach();
         {
             int *pIn = CurSFXObj->GetInputBlockPtr();
@@ -436,6 +432,10 @@ bool CSTATE_Base::Detach() {
                 pIn[15] = 0;
             }
         }
+
+        int iVar7 = 0;
+        int iVar9 = 0;
+        SndAssetQueue::iterator ptr = gAEMSMgr.mWaitForResolve.begin();
 
         while (ptr != gAEMSMgr.mWaitForResolve.end()) {
             if ((*ptr).pThis == CurSFXObj) {

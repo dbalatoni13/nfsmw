@@ -150,17 +150,13 @@ void CSTATEMGR_DriveBy::UpdateParams(float t) {
 
         n = player_idx;
         if (SndCamera::GetWorldCarVel(n) >= 5.0f) {
-            float predict_ahead_time;
-            bVector3 futurepos3d;
-            bVector2 futurepos2d;
-            DrivableScenerySection *scenery_section;
+            float predict_ahead_time = 0.15f;
+            bVector3 futurepos3d = bScaleAdd(*SndCamera::GetWorldCarPos3(n), *SndCamera::GetV3WorldCarVel(n), predict_ahead_time);
+            bVector2 futurepos2d(futurepos3d.x, futurepos3d.y);
+            DrivableScenerySection *scenery_section = TheVisibleSectionManager.FindDrivableSection(&futurepos2d);
             int LODOffset;
             emEvent **current_event;
 
-            predict_ahead_time = 0.15f;
-            futurepos3d = bScaleAdd(*SndCamera::GetWorldCarPos3(n), *SndCamera::GetV3WorldCarVel(n), predict_ahead_time);
-            futurepos2d = bVector2(futurepos3d.x, futurepos3d.y);
-            scenery_section = TheVisibleSectionManager.FindDrivableSection(&futurepos2d);
             if (scenery_section) {
                 LODOffset = TheVisibleSectionManager.GetLODOffset();
                 current_event = emTriggerEventsInSection(&futurepos3d, scenery_section->GetSectionNumber() + LODOffset);
