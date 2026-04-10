@@ -1089,10 +1089,12 @@ int *NFSMixMap::GetObjectPtr(int sfxid, bool busedB, bool bHACKINIT) {
         nidx = sfxid & 0xFF;
         pmxctlproc = m_pStateProcs[nstate]->GetMixCtlProc(nidx, ninst);
         if (!busedB) {
-            return &pmxctlproc->pudata->pstCurveData->Q15Output;
+            ptr = &pmxctlproc->pudata->pstCurveData->Q15Output;
+            break;
         }
 
-        return &pmxctlproc->pudata->CmpdBOut;
+        ptr = &pmxctlproc->pudata->CmpdBOut;
+        break;
     }
     case 0x20000000:
     {
@@ -1110,14 +1112,16 @@ int *NFSMixMap::GetObjectPtr(int sfxid, bool busedB, bool bHACKINIT) {
             stMasterMixChProc *pmch;
 
             pmch = m_pStateProcs[nstate]->GetMasterMixChProc(nidx, ninst);
-            return &pmch->pMixChData_U->Output;
+            ptr = &pmch->pMixChData_U->Output;
+            break;
         }
 
         {
             stSubMixChProc *psch;
 
             psch = m_pStateProcs[nstate]->GetSubMixChProc(nidx, ninst);
-            return &psch->pMixChData_U->Output;
+            ptr = &psch->pMixChData_U->Output;
+            break;
         }
     }
     case 0x40000000:
@@ -1133,7 +1137,8 @@ int *NFSMixMap::GetObjectPtr(int sfxid, bool busedB, bool bHACKINIT) {
             (*mSetSFXOutCB)(sfxid, pinput);
         }
 
-        return pinput + idx;
+        ptr = pinput + idx;
+        break;
     }
     case static_cast<int>(0x80000000U):
     {
@@ -1147,7 +1152,8 @@ int *NFSMixMap::GetObjectPtr(int sfxid, bool busedB, bool bHACKINIT) {
             ninst = (sfxid >> 11) & 0x1F;
             nidx = sfxid & 0xFF;
             p3d = m_pStateProcs[nState]->Get3DMixCtlProc(nidx, ninst);
-            return reinterpret_cast<int *>(p3d);
+            ptr = reinterpret_cast<int *>(p3d);
+            break;
         }
 
         nState = (sfxid >> 16) & 0xFF;
@@ -1155,9 +1161,11 @@ int *NFSMixMap::GetObjectPtr(int sfxid, bool busedB, bool bHACKINIT) {
         nidx = sfxid & 0xFF;
         p3d = m_pStateProcs[nState]->Get3DMixCtlProc(nidx, ninst);
         if (busedB) {
-            return &p3d->p3DMixCtlData_U->dBRolloff;
+            ptr = &p3d->p3DMixCtlData_U->dBRolloff;
+            break;
         }
-        return &p3d->p3DMixCtlData_U->q15Rolloff;
+        ptr = &p3d->p3DMixCtlData_U->q15Rolloff;
+        break;
     }
     case static_cast<int>(0xA0000000U):
     {
@@ -1171,13 +1179,17 @@ int *NFSMixMap::GetObjectPtr(int sfxid, bool busedB, bool bHACKINIT) {
         nidx = sfxid & 0xFF;
         pevt = m_pStateProcs[nState]->GetEvtMixCtlProc(nidx, ninst);
         if (busedB) {
-            return &pevt->pData_U->output;
+            ptr = &pevt->pData_U->output;
+            break;
         }
-        return &pevt->pData_U->qoutput;
+        ptr = &pevt->pData_U->qoutput;
+        break;
     }
     default:
-        return ptr;
+        break;
     }
+
+    return ptr;
 }
 
 void NFSMixMap::ConnectMixMap() {
