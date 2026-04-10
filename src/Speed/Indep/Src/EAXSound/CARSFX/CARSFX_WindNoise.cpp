@@ -37,34 +37,6 @@ struct FX_WIND {
         Csis::System::Free(ptr);
     }
 
-    FX_WIND(int pitch, int volume_left, int volume_right, int azimuth_left, int azimuth_right, int intensity,
-            int camera, int override_Trigger, int rumble_Volume, int lowPass, int hiPass, int fX_Dry, int fX_wet,
-            int panning_Depth)
-        : mpClass(nullptr) {
-        Csis::System::Result result;
-
-        SetPitch(pitch);
-        SetVolume_left(volume_left);
-        SetVolume_right(volume_right);
-        SetAzimuth_left(azimuth_left);
-        SetAzimuth_right(azimuth_right);
-        SetIntensity(intensity);
-        SetCamera(camera);
-        SetOverride_Trigger(override_Trigger);
-        SetRumble_Volume(rumble_Volume);
-        SetLowPass(lowPass);
-        SetHiPass(hiPass);
-        SetFX_Dry(fX_Dry);
-        SetFX_wet(fX_wet);
-        SetPanning_Depth(panning_Depth);
-
-        result = static_cast<Csis::System::Result>(Csis::Class::CreateInstance(&Csis::gFX_WINDHandle, &mData, &mpClass));
-        if (result < Csis::System::kResult_Ok) {
-            Csis::gFX_WINDHandle.Set(&Csis::FX_WINDId);
-            Csis::Class::CreateInstance(&Csis::gFX_WINDHandle, &mData, &mpClass);
-        }
-    }
-
     ~FX_WIND() {
         if (mpClass) {
             mpClass->Release();
@@ -176,6 +148,33 @@ struct FX_WIND {
 
     void SetPanning_Depth(int x) {
         mData.panning_Depth = x;
+    }
+
+    FX_WIND(int pitch, int volume_left, int volume_right, int azimuth_left, int azimuth_right, int intensity,
+            int camera, int override_Trigger, int rumble_Volume, int lowPass, int hiPass, int fX_Dry, int fX_wet,
+            int panning_Depth) {
+        Csis::System::Result result;
+
+        SetPitch(pitch);
+        SetVolume_left(volume_left);
+        SetVolume_right(volume_right);
+        SetAzimuth_left(azimuth_left);
+        SetAzimuth_right(azimuth_right);
+        SetIntensity(intensity);
+        SetCamera(camera);
+        SetOverride_Trigger(override_Trigger);
+        SetRumble_Volume(rumble_Volume);
+        SetLowPass(lowPass);
+        SetHiPass(hiPass);
+        SetFX_Dry(fX_Dry);
+        SetFX_wet(fX_wet);
+        SetPanning_Depth(panning_Depth);
+
+        result = static_cast<Csis::System::Result>(Csis::Class::CreateInstance(&Csis::gFX_WINDHandle, &mData, &mpClass));
+        if (result < Csis::System::kResult_Ok) {
+            Csis::gFX_WINDHandle.Set(&Csis::FX_WINDId);
+            Csis::Class::CreateInstance(&Csis::gFX_WINDHandle, &mData, &mpClass);
+        }
     }
 
     Csis::Class *mpClass;  // offset 0x0, size 0x4
