@@ -1097,35 +1097,39 @@ int *NFSMixMap::GetObjectPtr(int sfxid, bool busedB, bool bHACKINIT) {
             int ninst;
             int ntype;
             int nidx;
-
+            
             nstate = (sfxid >> 16) & 0xFF;
             ninst = (sfxid >> 11) & 0x1F;
             ntype = sfxid & 0x10000000;
             nidx = sfxid & 0xFF;
-            stMasterMixChProc *pmch;
 
             if (ntype == 0) {
+                stMasterMixChProc *pmch;
+
                 pmch = m_pStateProcs[nstate]->GetMasterMixChProc(nidx, ninst);
                 return &pmch->pMixChData_U->Output;
             }
 
-            stSubMixChProc *psch;
+            {
+                stSubMixChProc *psch;
 
-            psch = m_pStateProcs[nstate]->GetSubMixChProc(nidx, ninst);
-            return &psch->pMixChData_U->Output;
+                psch = m_pStateProcs[nstate]->GetSubMixChProc(nidx, ninst);
+                return &psch->pMixChData_U->Output;
+            }
         }
 
         if (ntype == 0x40000000 || ntype == 0x60000000) {
+            int *pinput;
             int idx;
 
             idx = sfxid & 0xF;
-            ptr = (*mGetOutPtrCB)(sfxid);
-            if (!ptr) {
-                ptr = GetNextInputBlock(true);
-                (*mSetSFXOutCB)(sfxid, ptr);
+            pinput = (*mGetOutPtrCB)(sfxid);
+            if (!pinput) {
+                pinput = GetNextInputBlock(true);
+                (*mSetSFXOutCB)(sfxid, pinput);
             }
 
-            return ptr + idx;
+            return pinput + idx;
         }
 
         return ptr;
