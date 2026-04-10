@@ -244,7 +244,6 @@ char *bToUpper(char *s) {
     return s;
 }
 
-// UNSOLVED, ProStreet scratch: https://decomp.me/scratch/nX5XJ
 int bStrToLong(const char *s) {
     if ((s[0] == '0') && (s[1] == 'x')) {
         s += 2;
@@ -252,16 +251,21 @@ int bStrToLong(const char *s) {
         int n = 0;
         while (*s != '\0') {
             char c = *s;
-            int value = c - '0';
-            if (!bIsDigit(c)) {
+            int value = 0;
+            if (bIsDigit(c)) {
+                value = c - '0';
+            } else {
                 c = bToUpper(c);
-                if (static_cast<unsigned int>(c - 'A') > 5) {
+
+                if (!('A' <= c && c <= 'F')) {
                     return n;
                 }
-                value = c - '7';
+
+                value = c - 'A' + 10;
             }
-            c = *++s;
-            n = n * 16 + value;
+
+            n = n * 0x10 + value;
+            s++;
         }
         return n;
     } else {
@@ -279,7 +283,7 @@ int bStrToLong(const char *s) {
             if (!bIsDigit(*s)) {
                 break;
             }
-            n = n * 10 + *s - '0';
+            n = n * 10 + (*s - '0');
             s++;
         }
 
