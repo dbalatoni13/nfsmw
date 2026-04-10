@@ -197,10 +197,11 @@ void NFSMixMapState::CreateSubMixChannels() {
                     pSMUD->Output = 0;
                     pSMUD->pInputs = nullptr;
                     pSMCP->pMixChData_U = pSMUD;
-                    m_SubMixChannelsAdded++;
                     numin = *reinterpret_cast<unsigned char *>(reinterpret_cast<char *>(&pSubMixParms->MIXCHID) + 1);
+                    m_SubMixChannelsAdded++;
                     pSubMixParms = reinterpret_cast<stSubMixChParams *>(
-                        reinterpret_cast<char *>(pSubMixParms) + sizeof(stSubMixChParams) + (numin << 2));
+                        reinterpret_cast<char *>(reinterpret_cast<int *>(pSubMixParms) + numin)
+                        + sizeof(stSubMixChParams));
                 }
             }
         }
