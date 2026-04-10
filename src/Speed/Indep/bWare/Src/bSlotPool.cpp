@@ -146,50 +146,72 @@ void *SlotPool::GetAllocatedSlot(int n) {
     return found_slot;
 }
 
-// UNSOLVED
 void SlotPool::CleanupExpandedSlotPools() {
-    SlotPool *pSVar1;
-    SlotPoolEntry **ppSVar2;
-    SlotPoolEntry **p;
-    SlotPoolEntry *slot;
-    SlotPool *slot_pool = NextSlotPool;
-    SlotPool *previous_slot_pool;
+    if (!NextSlotPool) {
+        return;
+    }
 
-    if (slot_pool) {
-        while (slot_pool) {
-            slot_pool->NumAllocatedSlots = slot_pool->NumSlots;
-            slot_pool = slot_pool->NextSlotPool;
-        }
-        for (slot = FreeSlots; slot; slot = slot->Next) {
-            for (SlotPool *slot_pool = NextSlotPool; slot_pool; slot_pool = slot_pool->NextSlotPool) {
-                int slot_number = slot_pool->GetSlotNumber(slot);
-                if ((slot_number >= 0) && (slot_number < slot_pool->NumSlots)) {
-                    slot_pool->NumAllocatedSlots--;
-                    break;
-                }
+    SlotPool *first_slot_pool = this; // unused
+    SlotPool *slot_pool = NextSlotPool;
+
+    while (slot_pool) {
+        slot_pool->NumAllocatedSlots = slot_pool->NumSlots;
+        slot_pool = slot_pool->NextSlotPool;
+    }
+
+    for (SlotPoolEntry *slot = first_slot_pool->FreeSlots; slot; slot = slot->Next) {
+        for (SlotPool *slot_pool = this->NextSlotPool; slot_pool; slot_pool = slot_pool->NextSlotPool) {
+            int slot_number = slot_pool->GetSlotNumber(slot);
+            if (0 <= slot_number && slot_number < slot_pool->NumSlots) {
+                slot_pool->NumAllocatedSlots--;
+                break;
             }
         }
-        SlotPool *next_slot_pool = NextSlotPool;
-        previous_slot_pool = this;
-        while (pSVar1 = slot_pool, slot_pool = next_slot_pool, slot_pool) {
-            next_slot_pool = slot_pool->NextSlotPool;
-            if (slot_pool->NumAllocatedSlots == 0) {
-                p = &FreeSlots;
-                for (SlotPoolEntry *next_slot = FreeSlots; ppSVar2 = p, p = &next_slot->Next, p;) {
-                    next_slot = *p;
-                    int slot_number = slot_pool->GetSlotNumber(p);
-                    if ((slot_number >= 0) && (slot_number < slot_pool->NumSlots)) {
-                        *ppSVar2 = next_slot;
-                        p = ppSVar2;
-                    }
-                }
-                TotalNumSlots -= slot_pool->NumSlots;
-                previous_slot_pool->NextSlotPool = slot_pool->NextSlotPool;
-                SlotPool::DeleteSlotPool(slot_pool);
+    }
+
+    slot_pool = this->NextSlotPool;
+    SlotPool *previous_slot_pool = this;
+
+    while (slot_pool) {
+        SlotPool *next_slot_pool = slot_pool->NextSlotPool;
+
+        if (slot_pool->NumAllocatedSlots) {
+            if (this->Flags & SLOTPOOL_FLAG_WARN_IF_OVERFLOW) {
+#if 0
+                            bPrintf("WARNING:  SlotPool::CleanupExpandedSlotPools() unable to cleanup %d expanded slots from %s\n",
+                            slot_pool->NumSlots,
+                                    this->DebugName);
+#endif
             }
-            previous_slot_pool = slot_pool;
-            slot_pool = pSVar1;
+        } else {
+            int num_removed = 0;
+            SlotPoolEntry *slot = reinterpret_cast<SlotPoolEntry *>(&this->FreeSlots);
+            SlotPoolEntry *previous_slot = this->FreeSlots;
+            while (previous_slot) {
+                SlotPoolEntry *next_slot = previous_slot->Next;
+                int slot_number = slot_pool->GetSlotNumber(previous_slot);
+                if (slot_number >= 0 && slot_number < slot_pool->NumSlots) {
+                    slot->Next = next_slot;
+                    previous_slot = slot;
+                    ++num_removed;
+                }
+                slot = previous_slot;
+                previous_slot = next_slot;
+            }
+
+            if (num_removed != slot_pool->NumSlots) {
+#if 0
+                DebugBreak();
+#endif
+            }
+
+            this->TotalNumSlots -= slot_pool->NumSlots;
+            previous_slot_pool->NextSlotPool = slot_pool->NextSlotPool;
+            DeleteSlotPool(slot_pool);
+            slot_pool = previous_slot_pool;
         }
+        previous_slot_pool = slot_pool;
+        slot_pool = next_slot_pool;
     }
 }
 
