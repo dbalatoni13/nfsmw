@@ -1919,7 +1919,7 @@ void NFSMixMap::Update3DMixCtls() {
                 uAverage = AzimOut - 0x4000;
                 break;
 
-            default:
+            case 0:
                 nNextQuad = 1;
                 nqTwo = static_cast<eMIXTABLEID>((ntables >> 16) & 0xF);
                 nqOne = static_cast<eMIXTABLEID>((ntables >> 28) & 0xF);
