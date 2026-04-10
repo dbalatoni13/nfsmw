@@ -153,47 +153,55 @@ void NFSMixMapState::CreateSubMixChannels() {
     offset = m_pMMStateHdr->OffsetSubMixData;
     m_SubMixChannelsAdded = 0;
 
-    if (offset > -1) {
-        stMixChHdr *pHdr;
-
-        pHdr = reinterpret_cast<stMixChHdr *>(reinterpret_cast<char *>(&m_pMMStateHdr->StateIndex) + offset);
-        m_pSubChHdr = pHdr;
-        if (pHdr->NumMixChannels > 0) {
-            unsigned int n;
+    if (offset >= 0) {
+        m_pSubChHdr = reinterpret_cast<stMixChHdr *>(reinterpret_cast<char *>(&m_pMMStateHdr->StateIndex) + offset);
+        if (m_pSubChHdr->NumMixChannels > 0) {
             stSubMixChParams *pSubMixParms;
+            {
+                int n;
 
-            n = 0;
-            m_MixStateParams.pSubMixChProcs = m_pNFSMixMap->GetNextSubMixProc(false);
-            pSubMixParms = reinterpret_cast<stSubMixChParams *>(pHdr + 1);
-            while (static_cast<int>(n) < m_pSubChHdr->NumMixChannels) {
-                stSubMixChProc *pSMCP;
-                stMixChSharedData *pSMSD;
-                stMixChUniqueData *pSMUD;
-                unsigned int mixChId;
+                n = 0;
+                m_MixStateParams.pSubMixChProcs = m_pNFSMixMap->GetNextSubMixProc(false);
+                pSubMixParms = reinterpret_cast<stSubMixChParams *>(m_pSubChHdr + 1);
+                while (n < m_pSubChHdr->NumMixChannels) {
+                    stSubMixChProc *pSMCP;
+                    stMixChSharedData *pSMSD;
+                    stMixChUniqueData *pSMUD;
+                    int numin;
 
-                if (m_ObjectIndex == 0) {
-                    pSMSD = m_pNFSMixMap->GetNextSubMixShared(true);
-                    pSMCP = m_pNFSMixMap->GetNextSubMixProc(true);
-                    pSMUD = m_pNFSMixMap->GetNextSubMixUnique(true);
-                    mixChId = pSubMixParms->MIXCHID;
-                    pSMSD->pMapParams = pSubMixParms;
-                    pSMSD->MIXCHINID = (mixChId & 0x10000000U) | ((mixChId & 0xFF00U) << 8) | 0x20000000 | n;
-                    pSMSD->NumInputs = (mixChId & 0xFF0000U) >> 16;
-                } else {
-                    pSMSD = m_pFirstInstance->m_MixStateParams.pSubMixChProcs[n].pMixChData_S;
-                    pSMCP = m_pNFSMixMap->GetNextSubMixProc(true);
-                    pSMUD = m_pNFSMixMap->GetNextSubMixUnique(true);
-                    mixChId = pSubMixParms->MIXCHID;
+                    if (m_ObjectIndex != 0) {
+                        pSMSD = m_pFirstInstance->m_MixStateParams.pSubMixChProcs[n].pMixChData_S;
+                        pSMCP = m_pNFSMixMap->GetNextSubMixProc(true);
+                        pSMUD = m_pNFSMixMap->GetNextSubMixUnique(true);
+                    } else {
+                        int MixInID;
+                        int nstate;
+
+                        pSMSD = m_pNFSMixMap->GetNextSubMixShared(true);
+                        pSMCP = m_pNFSMixMap->GetNextSubMixProc(true);
+                        pSMUD = m_pNFSMixMap->GetNextSubMixUnique(true);
+                        MixInID = pSubMixParms->MIXCHID;
+                        nstate = (MixInID & 0xFF00U) << 8;
+                        MixInID &= 0x10000000U;
+                        MixInID |= nstate;
+                        MixInID |= 0x20000000;
+                        MixInID |= n;
+                        numin = *reinterpret_cast<unsigned char *>(reinterpret_cast<char *>(&pSubMixParms->MIXCHID) + 1);
+                        pSMSD->MIXCHINID = MixInID;
+                        pSMSD->pMapParams = pSubMixParms;
+                        pSMSD->NumInputs = numin;
+                    }
+
+                    pSMCP->pMixChData_S = pSMSD;
+                    n++;
+                    pSMUD->Output = 0;
+                    pSMUD->pInputs = nullptr;
+                    pSMCP->pMixChData_U = pSMUD;
+                    m_SubMixChannelsAdded++;
+                    numin = *reinterpret_cast<unsigned char *>(reinterpret_cast<char *>(&pSubMixParms->MIXCHID) + 1);
+                    pSubMixParms = reinterpret_cast<stSubMixChParams *>(
+                        reinterpret_cast<char *>(pSubMixParms) + sizeof(stSubMixChParams) + (numin << 2));
                 }
-
-                pSMUD->Output = 0;
-                n++;
-                pSMCP->pMixChData_U = pSMUD;
-                m_SubMixChannelsAdded++;
-                pSMCP->pMixChData_S = pSMSD;
-                pSubMixParms = reinterpret_cast<stSubMixChParams *>(
-                    reinterpret_cast<char *>(pSubMixParms) + sizeof(stSubMixChParams) + ((mixChId & 0xFF0000U) >> 14));
-                pSMUD->pInputs = nullptr;
             }
         }
     }
