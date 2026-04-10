@@ -1903,9 +1903,8 @@ void NFSMixMap::Update3DMixCtls() {
             }
 
             AzimOut = nazim;
-            p3Dproc->p3DMixCtlData_U->azimuth = AzimOut;
             nQuad = (static_cast<unsigned int>(AzimOut) >> 14) & 3;
-            uAverage = AzimOut;
+            p3Dproc->p3DMixCtlData_U->azimuth = AzimOut;
 
             switch (nQuad) {
             case 1:
@@ -1927,6 +1926,7 @@ void NFSMixMap::Update3DMixCtls() {
                 fmaxdist[0] = static_cast<float>((static_cast<unsigned int>(psparams->nQ0MinMax) >> 16) & 0x7FFF);
                 fmindist[1] = static_cast<float>(psparams->nQ1MinMax & 0x7FFF);
                 fmaxdist[1] = static_cast<float>((static_cast<unsigned int>(psparams->nQ1MinMax) >> 16) & 0x7FFF);
+                uAverage = AzimOut;
                 break;
 
             case 2:
