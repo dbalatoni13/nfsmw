@@ -186,8 +186,8 @@ void NFSMixMapState::CreateSubMixChannels() {
                         MixInID |= nstate;
                         MixInID |= 0x20000000;
                         MixInID |= n;
-                        numin = *reinterpret_cast<unsigned char *>(reinterpret_cast<char *>(&pSubMixParms->MIXCHID) + 1);
                         pSMSD->MIXCHINID = MixInID;
+                        numin = *reinterpret_cast<unsigned char *>(reinterpret_cast<char *>(&pSubMixParms->MIXCHID) + 1);
                         pSMSD->pMapParams = pSubMixParms;
                         pSMSD->NumInputs = numin;
                     }
