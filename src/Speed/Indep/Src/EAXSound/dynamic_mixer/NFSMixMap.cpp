@@ -1091,9 +1091,7 @@ int *NFSMixMap::GetObjectPtr(int sfxid, bool busedB, bool bHACKINIT) {
         }
 
         return &pmxctlproc->pudata->CmpdBOut;
-    }
-
-    if (ntype > 0) {
+    } else if (ntype > 0) {
         if (ntype == 0x20000000) {
             int nstate;
             int ninst;
@@ -1120,20 +1118,18 @@ int *NFSMixMap::GetObjectPtr(int sfxid, bool busedB, bool bHACKINIT) {
         if (ntype == 0x40000000 || ntype == 0x60000000) {
             int idx;
 
+            idx = sfxid & 0xF;
             ptr = (*mGetOutPtrCB)(sfxid);
             if (!ptr) {
                 ptr = GetNextInputBlock(true);
                 (*mSetSFXOutCB)(sfxid, ptr);
             }
 
-            idx = sfxid & 0xF;
             return ptr + idx;
         }
 
         return ptr;
-    }
-
-    if (ntype == static_cast<int>(0x80000000U)) {
+    } else if (ntype == static_cast<int>(0x80000000U)) {
         int nState;
         int ninst;
         int nidx;
@@ -1155,9 +1151,7 @@ int *NFSMixMap::GetObjectPtr(int sfxid, bool busedB, bool bHACKINIT) {
             return &p3d->p3DMixCtlData_U->dBRolloff;
         }
         return &p3d->p3DMixCtlData_U->q15Rolloff;
-    }
-
-    if (ntype == static_cast<int>(0xA0000000U)) {
+    } else if (ntype == static_cast<int>(0xA0000000U)) {
         int nState;
         int ninst;
         int nidx;
