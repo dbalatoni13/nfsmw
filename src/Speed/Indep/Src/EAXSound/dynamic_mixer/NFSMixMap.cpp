@@ -1076,7 +1076,9 @@ int *NFSMixMap::GetObjectPtr(int sfxid, bool busedB, bool bHACKINIT) {
     ptr = &DUMMYINPUT;
     ntype = sfxid & 0xE0000000;
 
-    if (ntype == 0) {
+    switch (ntype) {
+    case 0:
+    {
         int nstate;
         int ninst;
         int nidx;
@@ -1091,49 +1093,50 @@ int *NFSMixMap::GetObjectPtr(int sfxid, bool busedB, bool bHACKINIT) {
         }
 
         return &pmxctlproc->pudata->CmpdBOut;
-    } else if (ntype > 0) {
-        if (ntype == 0x20000000) {
-            int nstate;
-            int ninst;
-            int ntype;
-            int nidx;
-            
-            nstate = (sfxid >> 16) & 0xFF;
-            ninst = (sfxid >> 11) & 0x1F;
-            ntype = sfxid & 0x10000000;
-            nidx = sfxid & 0xFF;
+    }
+    case 0x20000000:
+    {
+        int nstate;
+        int ninst;
+        int ntype;
+        int nidx;
 
-            if (ntype == 0) {
-                stMasterMixChProc *pmch;
+        nstate = (sfxid >> 16) & 0xFF;
+        ninst = (sfxid >> 11) & 0x1F;
+        ntype = sfxid & 0x10000000;
+        nidx = sfxid & 0xFF;
 
-                pmch = m_pStateProcs[nstate]->GetMasterMixChProc(nidx, ninst);
-                return &pmch->pMixChData_U->Output;
-            }
+        if (ntype == 0) {
+            stMasterMixChProc *pmch;
 
-            {
-                stSubMixChProc *psch;
-
-                psch = m_pStateProcs[nstate]->GetSubMixChProc(nidx, ninst);
-                return &psch->pMixChData_U->Output;
-            }
+            pmch = m_pStateProcs[nstate]->GetMasterMixChProc(nidx, ninst);
+            return &pmch->pMixChData_U->Output;
         }
 
-        if (ntype == 0x40000000 || ntype == 0x60000000) {
-            int *pinput;
-            int idx;
+        {
+            stSubMixChProc *psch;
 
-            idx = sfxid & 0xF;
-            pinput = (*mGetOutPtrCB)(sfxid);
-            if (!pinput) {
-                pinput = GetNextInputBlock(true);
-                (*mSetSFXOutCB)(sfxid, pinput);
-            }
+            psch = m_pStateProcs[nstate]->GetSubMixChProc(nidx, ninst);
+            return &psch->pMixChData_U->Output;
+        }
+    }
+    case 0x40000000:
+    case 0x60000000:
+    {
+        int *pinput;
+        int idx;
 
-            return pinput + idx;
+        idx = sfxid & 0xF;
+        pinput = (*mGetOutPtrCB)(sfxid);
+        if (!pinput) {
+            pinput = GetNextInputBlock(true);
+            (*mSetSFXOutCB)(sfxid, pinput);
         }
 
-        return ptr;
-    } else if (ntype == static_cast<int>(0x80000000U)) {
+        return pinput + idx;
+    }
+    case static_cast<int>(0x80000000U):
+    {
         int nState;
         int ninst;
         int nidx;
@@ -1155,7 +1158,9 @@ int *NFSMixMap::GetObjectPtr(int sfxid, bool busedB, bool bHACKINIT) {
             return &p3d->p3DMixCtlData_U->dBRolloff;
         }
         return &p3d->p3DMixCtlData_U->q15Rolloff;
-    } else if (ntype == static_cast<int>(0xA0000000U)) {
+    }
+    case static_cast<int>(0xA0000000U):
+    {
         int nState;
         int ninst;
         int nidx;
@@ -1170,8 +1175,9 @@ int *NFSMixMap::GetObjectPtr(int sfxid, bool busedB, bool bHACKINIT) {
         }
         return &pevt->pData_U->qoutput;
     }
-
-    return ptr;
+    default:
+        return ptr;
+    }
 }
 
 void NFSMixMap::ConnectMixMap() {
