@@ -297,8 +297,8 @@ void NFSMixMapState::CreateMasterMixChannels() {
 
                     pMMCP->pMixChData_U = pMMUD;
                     nid = pMMSD->pMapParams->SFXOBJID;
-                    m_MasterChannelsAdded++;
                     numin = *reinterpret_cast<unsigned char *>(reinterpret_cast<char *>(&pMasterParms->MIXCHID) + 1);
+                    m_MasterChannelsAdded++;
                     pMasterParms = reinterpret_cast<stMasterMixChParams *>(
                         reinterpret_cast<char *>(pMasterParms) + sizeof(stMasterMixChParams) + (numin << 2));
                 }
