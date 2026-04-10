@@ -209,90 +209,99 @@ void NFSMixMapState::CreateSubMixChannels() {
 
 void NFSMixMapState::CreateMasterMixChannels() {
     int offset;
+    stMixChHdr *pMixChHdr;
+    int nUnique;
+    int nUniqueMastersAdded;
 
     offset = m_pMMStateHdr->OffsetMasterMixData;
     m_MasterChannelsAdded = 0;
 
     if (offset >= 0) {
-        stMixChHdr *pMixChHdr;
-
         pMixChHdr = reinterpret_cast<stMixChHdr *>(reinterpret_cast<char *>(&m_pMMStateHdr->StateIndex) + offset);
         m_pMixChHdr = pMixChHdr;
-        m_pChOutArrays = m_pNFSMixMap->GetMasterChannelOutputArrayPtr(pMixChHdr->NumUniqueSFXOBJs);
-        m_MasterChannelsAdded = 0;
+        nUnique = pMixChHdr->NumUniqueSFXOBJs;
+        m_pChOutArrays = m_pNFSMixMap->GetMasterChannelOutputArrayPtr(nUnique);
+        nUniqueMastersAdded = 0;
+        m_MasterChannelsAdded = nUniqueMastersAdded;
         if (m_pMixChHdr->NumMixChannels > 0) {
             stMasterMixChParams *pMasterParms;
             int *pOutputs;
             int nid;
             int nuniqueout;
-            int n;
+            {
+                int n;
 
-            nid = 0;
-            m_MixStateParams.pMasterMixChProcs = m_pNFSMixMap->GetNextMasterMixProc(false);
-            nuniqueout = 0;
-            pMasterParms = reinterpret_cast<stMasterMixChParams *>(m_pMixChHdr + 1);
-            n = 0;
-            while (n < m_pMixChHdr->NumMixChannels) {
-                stMasterMixChProc *pMMCP;
-                stMasterMixChSharedData *pMMSD;
-                stMasterMixChUniqueData *pMMUD;
-                bool bisattached;
-                int numin;
+                nid = 0;
+                m_MixStateParams.pMasterMixChProcs = m_pNFSMixMap->GetNextMasterMixProc(false);
+                nuniqueout = 0;
+                pMasterParms = reinterpret_cast<stMasterMixChParams *>(m_pMixChHdr + 1);
+                n = 0;
+                while (n < m_pMixChHdr->NumMixChannels) {
+                    stMasterMixChProc *pMMCP;
+                    stMasterMixChSharedData *pMMSD;
+                    stMasterMixChUniqueData *pMMUD;
+                    bool bisattached;
+                    int numin;
 
-                if (m_ObjectIndex != 0) {
-                    pMMSD = m_pFirstInstance->m_MixStateParams.pMasterMixChProcs[n].pMixChData_S;
-                    pMMCP = m_pNFSMixMap->GetNextMasterMixProc(true);
-                    pMMUD = m_pNFSMixMap->GetNextMasterMixUnique(true);
-                } else {
-                    int MixInID;
-                    int nstate;
+                    if (m_ObjectIndex != 0) {
+                        pMMSD = m_pFirstInstance->m_MixStateParams.pMasterMixChProcs[n].pMixChData_S;
+                        pMMCP = m_pNFSMixMap->GetNextMasterMixProc(true);
+                        pMMUD = m_pNFSMixMap->GetNextMasterMixUnique(true);
+                    } else {
+                        int MixInID;
+                        int nstate;
 
-                    pMMSD = m_pNFSMixMap->GetNextMasterMixShared(true);
-                    pMMCP = m_pNFSMixMap->GetNextMasterMixProc(true);
-                    pMMUD = m_pNFSMixMap->GetNextMasterMixUnique(true);
-                    pMMSD->pMapParams = pMasterParms;
-                    nstate = pMasterParms->MIXCHID;
-                    pMMSD->pPRESETS = nullptr;
-                    MixInID = (nstate & 0x10000000U) | ((nstate & 0xFF00U) << 8) | 0x20000000 | n;
-                    pMMSD->MIXCHINID = MixInID;
-                    numin = (nstate & 0xFF0000U) >> 16;
-                    pMMSD->NumInputs = numin;
+                        pMMSD = m_pNFSMixMap->GetNextMasterMixShared(true);
+                        pMMCP = m_pNFSMixMap->GetNextMasterMixProc(true);
+                        pMMUD = m_pNFSMixMap->GetNextMasterMixUnique(true);
+                        pMMSD->pMapParams = pMasterParms;
+                        pMMSD->pPRESETS = nullptr;
+                        MixInID = pMasterParms->MIXCHID;
+                        nstate = (MixInID & 0xFF00U) << 8;
+                        MixInID &= 0x10000000U;
+                        MixInID |= nstate;
+                        MixInID |= 0x20000000;
+                        MixInID |= n;
+                        pMMSD->MIXCHINID = MixInID;
+                        numin = *reinterpret_cast<unsigned char *>(reinterpret_cast<char *>(&pMasterParms->MIXCHID) + 1);
+                        pMMSD->NumInputs = numin;
+                    }
+
+                    pMMCP->pMixChData_S = pMMSD;
+                    pMMUD->Output = -10000;
+                    pMMUD->p3DData = nullptr;
+                    pMMUD->pInputs = nullptr;
+                    pMMUD->outputID = pMMSD->pMapParams->SFXOBJID | (m_ObjectIndex << 11);
+
+                    if (nid != pMMSD->pMapParams->SFXOBJID) {
+                        pOutputs = m_pChOutArrays + (nuniqueout * 0x10);
+                        nuniqueout++;
+                        bisattached = m_pNFSMixMap->SETSFXID(pMMUD->outputID, pOutputs);
+                    } else {
+                        pOutputs = m_pChOutArrays + ((nuniqueout - 1) * 0x10);
+                        bisattached = m_pNFSMixMap->SETSFXID(pMMUD->outputID, pOutputs);
+                    }
+
+                    pMMUD->pOutputs = pOutputs;
+                    n++;
+
+                    for (int out = 0; out < 0xF; out++) {
+                        *pOutputs++ = 0;
+                    }
+
+                    if (bisattached) {
+                        *pOutputs = 1;
+                    } else {
+                        *pOutputs = 0;
+                    }
+
+                    pMMCP->pMixChData_U = pMMUD;
+                    nid = pMMSD->pMapParams->SFXOBJID;
+                    m_MasterChannelsAdded++;
+                    numin = *reinterpret_cast<unsigned char *>(reinterpret_cast<char *>(&pMasterParms->MIXCHID) + 1);
+                    pMasterParms = reinterpret_cast<stMasterMixChParams *>(
+                        reinterpret_cast<char *>(pMasterParms) + sizeof(stMasterMixChParams) + (numin << 2));
                 }
-
-                pMMCP->pMixChData_S = pMMSD;
-                pMMUD->Output = -10000;
-                pMMUD->p3DData = nullptr;
-                pMMUD->pInputs = nullptr;
-                pMMUD->outputID = pMMSD->pMapParams->SFXOBJID | (m_ObjectIndex << 11);
-
-                if (nid != pMMSD->pMapParams->SFXOBJID) {
-                    pOutputs = m_pChOutArrays + (nuniqueout * 0x10);
-                    nuniqueout++;
-                    bisattached = m_pNFSMixMap->SETSFXID(pMMUD->outputID, pOutputs);
-                } else {
-                    pOutputs = m_pChOutArrays + ((nuniqueout - 1) * 0x10);
-                    bisattached = m_pNFSMixMap->SETSFXID(pMMUD->outputID, pOutputs);
-                }
-
-                pMMUD->pOutputs = pOutputs;
-                n++;
-
-                for (int out = 0; out < 0xF; out++) {
-                    *pOutputs++ = 0;
-                }
-
-                if (bisattached) {
-                    *pOutputs = 1;
-                } else {
-                    *pOutputs = 0;
-                }
-
-                pMMCP->pMixChData_U = pMMUD;
-                nid = pMMSD->pMapParams->SFXOBJID;
-                m_MasterChannelsAdded++;
-                pMasterParms = reinterpret_cast<stMasterMixChParams *>(
-                    reinterpret_cast<char *>(pMasterParms) + sizeof(stMasterMixChParams) +
-                    (((pMasterParms->MIXCHID >> 16) & 0xFF) << 2));
             }
         }
     }
