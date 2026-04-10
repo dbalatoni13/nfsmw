@@ -965,8 +965,12 @@ void NFSMixMap::AllocateInputArrays() {
                 int m;
 
                 for (m = 0; m < n; m++) {
-                    if ((reinterpret_cast<unsigned int>(psc) & 0xE0FFFFF0) ==
-                        (reinterpret_cast<unsigned int>(m_pScalePtrArray[m]) & 0xE0FFFFF0)) {
+                    int *ptid;
+                    int ntestid;
+
+                    ptid = m_pScalePtrArray[m];
+                    ntestid = reinterpret_cast<unsigned int>(ptid) & 0xE0FFFFF0;
+                    if ((reinterpret_cast<unsigned int>(psc) & 0xE0FFFFF0) == ntestid) {
                         buniquescale = false;
                     }
                 }
@@ -979,27 +983,39 @@ void NFSMixMap::AllocateInputArrays() {
     }
 
     for (n = 0; n < m_3DMixCtlsAdded; n++) {
+        st3DMixCtlProc *p3d;
         bool bunique3d;
         unsigned int nID;
         int k;
 
-        nID = m_p3DMixCtlProc[n].p3DMixCtlData_U->nINPUTID & 0xE0FFFFF0;
+        p3d = m_p3DMixCtlProc + n;
+        nID = p3d->p3DMixCtlData_U->nINPUTID & 0xE0FFFFF0;
         bunique3d = true;
 
         for (k = 0; k < n; k++) {
-            if (nID == (m_p3DMixCtlProc[k].p3DMixCtlData_U->nINPUTID & 0xE0FFFFF0U)) {
+            st3DMixCtlProc *ptest3d;
+            int testID;
+
+            ptest3d = m_p3DMixCtlProc + k;
+            testID = ptest3d->p3DMixCtlData_U->nINPUTID & 0xE0FFFFF0U;
+            if (nID == testID) {
                 bunique3d = false;
             }
         }
 
-        if (bunique3d) {
-            int s;
+            if (bunique3d) {
+                int s;
 
-            for (s = 0; s < m_ScaleParamsAdded; s++) {
-                if ((reinterpret_cast<unsigned int>(m_pScalePtrArray[s]) & 0xE0FFFFF0) == nID) {
-                    bunique3d = false;
+                for (s = 0; s < m_ScaleParamsAdded; s++) {
+                    int *ptestsc;
+                    int nsid;
+
+                    ptestsc = m_pScalePtrArray[s];
+                    nsid = reinterpret_cast<unsigned int>(ptestsc) & 0xE0FFFFF0;
+                    if (nsid == nID) {
+                        bunique3d = false;
+                    }
                 }
-            }
 
             if (bunique3d) {
                 ntotalunique3DID++;
@@ -1037,7 +1053,12 @@ void NFSMixMap::AllocateInputArrays() {
                     int s;
 
                     for (s = 0; s < m_ScaleParamsAdded; s++) {
-                        if ((reinterpret_cast<unsigned int>(m_pScalePtrArray[s]) & 0xE0FFFFF0) == nID) {
+                        int *ptestsc;
+                        int nsid;
+
+                        ptestsc = m_pScalePtrArray[s];
+                        nsid = reinterpret_cast<unsigned int>(ptestsc) & 0xE0FFFFF0;
+                        if (nsid == nID) {
                             buniqueevent = false;
                         }
                     }
@@ -1048,7 +1069,10 @@ void NFSMixMap::AllocateInputArrays() {
 
                         p3d = m_p3DMixCtlProc;
                         for (nt3d = 0; nt3d < m_3DMixCtlsAdded; nt3d++) {
-                            if (p3d->p3DMixCtlData_U->nINPUTID == static_cast<int>(nID)) {
+                            int ntestID;
+
+                            ntestID = p3d->p3DMixCtlData_U->nINPUTID;
+                            if (ntestID == static_cast<int>(nID)) {
                                 buniqueevent = false;
                             }
 
