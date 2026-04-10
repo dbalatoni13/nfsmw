@@ -420,8 +420,8 @@ bool CSTATE_Base::Detach() {
     SndBase *CurSFXObj;
     SndBase *CurSFXCtl;
 
-    bIsAttached = false;
     m_pAttachment = nullptr;
+    bIsAttached = false;
 
     CurSFXObj = m_pHeadSFXObj;
     while (CurSFXObj) {
@@ -430,7 +430,12 @@ bool CSTATE_Base::Detach() {
         SndAssetQueue::iterator ptr = gAEMSMgr.mWaitForResolve.begin();
 
         CurSFXObj->Detach();
-        CurSFXObj->GetInputBlockPtr()[15] = 0;
+        {
+            int *pIn = CurSFXObj->GetInputBlockPtr();
+            if (pIn) {
+                pIn[15] = 0;
+            }
+        }
 
         while (ptr != gAEMSMgr.mWaitForResolve.end()) {
             if ((*ptr).pThis == CurSFXObj) {
@@ -454,14 +459,24 @@ ReprocessQueue:
             }
         }
 
-        bMemSet(CurSFXObj->GetOutputBlockPtr(), 0, 0x40);
+        {
+            int *pout = CurSFXObj->GetOutputBlockPtr();
+            if (pout) {
+                bMemSet(pout, 0, 0x40);
+            }
+        }
         CurSFXObj = CurSFXObj->m_pNextSFX;
     }
 
     CurSFXCtl = m_pHeadSFXCTL;
     while (CurSFXCtl) {
         CurSFXCtl->Detach();
-        bMemSet(CurSFXCtl->GetOutputBlockPtr(), 0, 0x40);
+        {
+            int *pout = CurSFXCtl->GetOutputBlockPtr();
+            if (pout) {
+                bMemSet(pout, 0, 0x40);
+            }
+        }
         CurSFXCtl = CurSFXCtl->m_pNextSFX;
     }
 
