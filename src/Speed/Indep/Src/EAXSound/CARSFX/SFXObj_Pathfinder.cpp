@@ -257,24 +257,27 @@ void SFXObj_PFEATrax::StartLicensedMusic(unsigned int PathEvent) {
             PathEventToUse = 0;
             if (PathEvent != 0) {
                 bool foundevent;
-                int n;
 
                 foundevent = false;
-                n = 0;
-                while (n < g_MaxSongs) {
-                    {
-                        stSongInfo *CurSong;
+                {
+                    int n;
 
-                        CurSong = Songs[n];
-                        if (CurSong->PathEvent == static_cast<int>(PathEvent)) {
-                            foundevent = true;
-                            m_EATrax[m_EATraxState].PlayTrackIndex = n;
-                            PathEventToUse = CurSong->PathEvent;
-                            m_Flags &= ~0x40u;
-                            m_PrevPathEvent = 0;
+                    n = 0;
+                    while (n < g_MaxSongs) {
+                        {
+                            stSongInfo *CurSong;
+
+                            CurSong = Songs[n];
+                            if (CurSong->PathEvent == static_cast<int>(PathEvent)) {
+                                foundevent = true;
+                                m_EATrax[m_EATraxState].PlayTrackIndex = n;
+                                PathEventToUse = CurSong->PathEvent;
+                                m_Flags &= ~0x40u;
+                                m_PrevPathEvent = 0;
+                            }
                         }
+                        ++n;
                     }
-                    ++n;
                 }
                 if (!foundevent) {
                     m_EATrax[m_EATraxState].PlayTrackIndex = 0;
