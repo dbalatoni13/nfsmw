@@ -1874,19 +1874,17 @@ void NFSMixMap::Update3DMixCtls() {
             int nAzimType;
             int ntables;
             int nazim;
-            float fdist[2];
+            float fdist[2] = {0.0f, 0.0f};
             float fmindist[2];
             float fmaxdist[2];
             int uAverage;
-            eMIXTABLEID nqOne;
-            eMIXTABLEID nqTwo;
+            eMIXTABLEID nqOne = SHAPE_DWN_LINEAR;
+            eMIXTABLEID nqTwo = SHAPE_DWN_LINEAR;
             int AzimOut;
             int nQuad;
             int nNextQuad;
             int qDist[2];
 
-            nqOne = SHAPE_DWN_LINEAR;
-            nqTwo = SHAPE_DWN_LINEAR;
             psparams = p3Dproc->p3DMixCtlData_S->pCurStateParams;
             nid = psparams->n3DSTATEINFOID;
             nDistType = (nid >> 12) & 0xF;
