@@ -935,15 +935,11 @@ void _stuff_char(bOutputInfo *output_info, const char ch, int *outLen) {
             return;
         }
 
-        char *dest = output_info->DestString;
-        if (dest) {
-            *dest = ch;
-            // TODO why doesn't this work without a temporary?
-            output_info->DestString = dest + 1;
+        if (output_info->DestString) {
+            *output_info->DestString++ = ch;
         }
     }
-
-    *outLen = *outLen + 1;
+    *outLen += 1;
 }
 
 void _stuff_str(bOutputInfo *output_info, const char *str, int strLen, int *outLen) {
