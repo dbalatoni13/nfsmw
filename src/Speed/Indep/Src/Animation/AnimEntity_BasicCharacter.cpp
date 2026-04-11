@@ -17,11 +17,16 @@ struct BoneMapping {
     int Head;
 };
 
-extern BoneMapping BoneMap[];
 extern unsigned int skel_ROOT_hash;
-extern int RenderCharacterShadows;
 
+int RenderCharacterShadows = 1;
 TextureInfo *CharacterShadowTexture = nullptr;
+BoneMapping BoneMap[] = {
+    { 0x05, 0x09, 0x12, 0x1C, 0x1E },
+    { 0x05, 0x08, 0x0F, 0x15, 0x1E },
+    { 0x04, 0x08, 0x0F, 0x15, 0x1C },
+    { 0x04, 0x08, 0x0F, 0x15, 0x1C },
+};
 
 void InitCharacterEffects() {
     CharacterShadowTexture = GetTextureInfo(bStringHash("CHARACTERSHADOW"), true, false);
