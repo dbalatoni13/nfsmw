@@ -338,7 +338,6 @@ class CarLoader {
         return LoadingInProgress;
     }
 
-    bool MakeSpaceInPool(int size);
     void *AllocateUserMemory(int size, const char *debug_name);
     void FreeUserMemory(void *mem);
 
