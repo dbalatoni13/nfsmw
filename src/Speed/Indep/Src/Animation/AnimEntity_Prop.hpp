@@ -20,19 +20,6 @@ typedef struct {
 // total size: 0x18
 class CPropAnimEntity : public IAnimEntity {
   public:
-    static void EndianSwapEntityData(void *data, int size);
-
-    CPropAnimEntity();
-
-    // Overrides: IAnimEntity
-    ~CPropAnimEntity() override;
-
-    // Overrides: IAnimEntity
-    bool Init(void *init_data, SpaceNode *parent_space_node) override;
-
-    // Overrides: IAnimEntity
-    void Purge() override;
-
     virtual unsigned int GetTypeID() {
         return mTypeID;
     }
@@ -48,15 +35,28 @@ class CPropAnimEntity : public IAnimEntity {
     }
 
     // Overrides: IAnimEntity
+    WorldModel *GetWorldModel() override {
+        return mWorldModel;
+    }
+
+    static void EndianSwapEntityData(void *data, int size);
+
+    CPropAnimEntity();
+
+    // Overrides: IAnimEntity
+    ~CPropAnimEntity() override;
+
+    // Overrides: IAnimEntity
+    bool Init(void *init_data, SpaceNode *parent_space_node) override;
+
+    // Overrides: IAnimEntity
+    void Purge() override;
+
+    // Overrides: IAnimEntity
     void SetTime(float time) override;
 
     // Overrides: IAnimEntity
     void UpdateTimeStep(float time_step) override;
-
-    // Overrides: IAnimEntity
-    WorldModel *GetWorldModel() override {
-        return mWorldModel;
-    }
 
   private:
     uint32 mTypeID;               // offset 0x4, size 0x4

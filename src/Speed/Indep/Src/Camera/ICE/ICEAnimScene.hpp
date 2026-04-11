@@ -20,8 +20,8 @@ class ICEScene {
     virtual float GetTimeStart();
     virtual float GetTimeTotalLength();
     virtual float GetTimeElapsed();
-    virtual bMatrix4 &GetSceneRotationMatrix();
-    virtual bMatrix4 &GetSceneTransformMatrix();
+    virtual const bMatrix4 &GetSceneRotationMatrix();
+    virtual const bMatrix4 &GetSceneTransformMatrix();
 };
 
 #endif

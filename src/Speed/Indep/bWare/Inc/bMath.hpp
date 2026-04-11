@@ -340,6 +340,11 @@ inline bVector2 bVector2::operator*(float f) const {
     return bScale(*this, f);
 }
 
+inline bVector2 &bVector2::operator*=(float scale) {
+    bScale(this, this, scale);
+    return *this;
+}
+
 inline float bLength(const bVector2 *v) {
     float x = v->x;
     float y = v->y;
