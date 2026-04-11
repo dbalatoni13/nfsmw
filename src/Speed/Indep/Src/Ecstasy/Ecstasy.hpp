@@ -286,7 +286,9 @@ class ePoly {
 
     void SetFlags(uint8 i) {}
 
-    void SetFlailer(uint8 i) {}
+    void SetFlailer(unsigned char i) {
+        Flailer = i;
+    }
 
     uint8 GetFlags() {}
 

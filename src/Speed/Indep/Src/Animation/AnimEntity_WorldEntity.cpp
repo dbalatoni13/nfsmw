@@ -12,9 +12,9 @@
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "WorldAnimInstanceDirectory.hpp"
 
-// TODO move? they are static though
 static int NumWorldAnimEntities;           // size: 0x4, address: 0x804156F4
 static int MaxNumWorldAnimEntities;        // size: 0x4, address: 0x804156F8
+// TODO move? they are static though
 static int NumWorldAnimEntityTrees;        // size: 0x4, address: 0x804156FC
 static int MaxNumWorldAnimEntityTrees;     // size: 0x4, address: 0x80415700
 static int NumWorldAnimEntityTreeInfos;    // size: 0x4, address: 0x80415704
@@ -60,7 +60,7 @@ void WorldAnimEntityTreeInfo::operator delete(void *ptr) {
 }
 
 void CWorldAnimEntity::EndianSwapEntityData(void *data, int size) {
-    WorldAnimEntityInfo *info;
+    WorldAnimEntityInfo *info = static_cast<WorldAnimEntityInfo *>(data);
     bPlatEndianSwap(&info->mTypeID);
     bPlatEndianSwap(&info->mThisInstanceNameHash);
     bPlatEndianSwap(&info->mParentInstanceNameHash);
@@ -69,8 +69,6 @@ void CWorldAnimEntity::EndianSwapEntityData(void *data, int size) {
     bPlatEndianSwap(&info->mLODZ);
     bPlatEndianSwap(&info->mAnimTreeHash);
     bPlatEndianSwap(&info->mAnimNameHash);
-    bPlatEndianSwap(&info->mAnimContentFlags);
-    bPlatEndianSwap(&info->mParentIndex);
     bPlatEndianSwap(&info->mLocalMatrix);
 }
 
@@ -82,7 +80,7 @@ CWorldAnimEntity::CWorldAnimEntity()
       mWorldModel(nullptr),       //
       mAnimCtrl(nullptr) {}
 
-CWorldAnimEntity::~CWorldAnimEntity() {}
+CWorldAnimEntity::~CWorldAnimEntity() { Purge(); }
 
 uint32 GetAnimChannelHash(uint32 anim_hash, uint32 dof) {
     if (dof == 0) {
@@ -94,6 +92,102 @@ uint32 GetAnimChannelHash(uint32 anim_hash, uint32 dof) {
     } else {
         return 0;
     }
+}
+
+bool CWorldAnimEntity::Init(void *init_data, SpaceNode *parent_space_node) {
+    unsigned int play_flags = 0;
+
+    Purge();
+
+    WorldAnimEntityInfo *info = static_cast<WorldAnimEntityInfo *>(init_data);
+    mEntityInfo = info;
+    mTypeID = info->mTypeID;
+    mThisInstanceNameHash = info->mThisInstanceNameHash;
+    mParentInstanceNameHash = info->mParentInstanceNameHash;
+
+    mSpaceNode = CreateSpaceNode(nullptr);
+    mSpaceNode->SetParent(parent_space_node);
+    mSpaceNode->SetNameHash(mThisInstanceNameHash);
+    mSpaceNode->SetLocalMatrix(&info->mLocalMatrix);
+
+    if (info->mModelHash != 0 && info->mAnimTreeHash != info->mThisInstanceNameHash) {
+        unsigned int lods[4];
+        lods[0] = info->mModelHash;
+        lods[1] = info->mLODB;
+        lods[2] = 0;
+        lods[3] = info->mLODZ;
+        WorldModel *model = new WorldModel(mSpaceNode, lods, false);
+        mWorldModel = model;
+    } else {
+        mWorldModel = nullptr;
+    }
+
+    mAnimCtrl = new ("CWorldAnimCtrl") CWorldAnimCtrl();
+    mAnimCtrl->SetNameHash(mSpaceNode->GetNameHash());
+    mAnimCtrl->SetTimeScale(info->instance_data->speed);
+    if (mAnimCtrl->GetTimeScale() == 0.0f) {
+        mAnimCtrl->SetTimeScale(1.0f);
+    }
+
+    mAnimCtrl->SetMasterDelayTime(info->instance_data->master_delay);
+    mAnimCtrl->SetLocalDelayTime(info->instance_data->loop_delay);
+
+    CAnimPart *anim_part = mAnimCtrl->GetAnimPart();
+    CAnimSkeleton *skel = GetSkeletonFromList(bStringHash("ROOT"));
+    play_flags = info->instance_data->play_flags;
+    anim_part->Init(skel);
+
+    if (play_flags == 0) {
+        mAnimCtrl->SetFlags(0x28);
+    } else {
+        mAnimCtrl->SetFlags(play_flags);
+    }
+
+    if (info->mAnimContentFlags & 1) {
+        unsigned int TransAnimNameHash = GetAnimChannelHash(info->mAnimNameHash, 0);
+        mAnimCtrl->CreateFnAnimFromNamehash(TransAnimNameHash, 0);
+    }
+    if (info->mAnimContentFlags & 2) {
+        unsigned int QuatsAnimNameHash = GetAnimChannelHash(info->mAnimNameHash, 1);
+        mAnimCtrl->CreateFnAnimFromNamehash(QuatsAnimNameHash, 1);
+    }
+    if (info->mAnimContentFlags & 4) {
+        unsigned int ScaleAnimNameHash = GetAnimChannelHash(info->mAnimNameHash, 2);
+        mAnimCtrl->CreateFnAnimFromNamehash(ScaleAnimNameHash, 2);
+    }
+
+    if (mAnimCtrl->GetAllocated() == 0 || skel == nullptr) {
+        mAnimCtrl->GetAnimPart()->Purge();
+        mAnimCtrl->Cleanup();
+        if (mAnimCtrl != nullptr) {
+            delete mAnimCtrl;
+        }
+        mAnimCtrl = nullptr;
+    }
+
+    if (mAnimCtrl != nullptr) {
+        if (info->instance_data->play_flags & 0x40) {
+            mAnimCtrl->SetLoopRange(info->instance_data->begin_range, info->instance_data->end_range);
+        }
+        if (info->instance_data->play_flags & 0x200) {
+            unsigned int seed = 0x69babe69;
+            float anim_len_sec = mAnimCtrl->GetAnimLengthInSeconds();
+            float rand_delay = bRandom(anim_len_sec * 0.5f, &seed);
+            CWorldAnimCtrl *ctrl = mAnimCtrl;
+            ctrl->SetLocalDelayTime(rand_delay);
+        }
+        if (info->instance_data->play_flags & 0x400) {
+            unsigned int seed = 0x69babe69;
+            float rand_start = bRandom(mAnimCtrl->GetAnimLength(), &seed);
+            mAnimCtrl->SetEvalTime(rand_start);
+        }
+        if (info->instance_data->start_trigger_hash != 0 || info->instance_data->stop_trigger_hash != 0) {
+            mAnimCtrl->ClearFlags(0x8);
+            mAnimCtrl->SetFlags(0x810);
+        }
+    }
+
+    return true;
 }
 
 void CWorldAnimEntity::Purge() {
@@ -417,9 +511,14 @@ int UnloaderWorldAnimDirectoryData(bChunk *chunk) {
     return 1;
 }
 
-// STRIPPED
 CWorldAnimEntity *CWorldAnimEntityTree::GetEntityByNameHash(unsigned int namehash) {
     // TODO
+    for (bPNode *node = instantiated_world_anim_entities.GetHead(); node != instantiated_world_anim_entities.EndOfList(); node = node->GetNext()) {
+        CWorldAnimEntity *entity = reinterpret_cast<CWorldAnimEntity *>(node->GetObject());
+        if (entity->GetInstanceNameHash() == namehash) {
+            return entity;
+        }
+    }
     return nullptr;
 }
 

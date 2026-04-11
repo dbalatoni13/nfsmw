@@ -68,6 +68,10 @@ template <typename T> class bTNode : public bNode {
         return (T *)bNode::GetPrev();
     }
 
+    T *AddBefore(T *insert_point) {
+        return (T *)bNode::AddBefore(insert_point);
+    }
+
     T *AddAfter(T *insert_point) {
         return (T *)bNode::AddAfter(insert_point);
     }
@@ -139,11 +143,9 @@ class bList {
     bNode *RemoveHead() {
         return this->GetHead()->Remove();
     }
-
     bNode *RemoveTail() {
-        return GetTail()->Remove();
+        return this->GetTail()->Remove();
     }
-
     int GetNodeNumber(bNode *node); // TODO
 
     int IsInList(bNode *node) {
@@ -308,6 +310,17 @@ template <typename T> class bTList : public bList {
     }
 };
 
+template <typename T> T *bTList<T>::AddSorted(typename bTList<T>::SortFuncT check_flip, T *node) {
+    T *insert_point = GetHead();
+    while (insert_point != EndOfList()) {
+        if (check_flip(node, insert_point) == 0) {
+            return node->AddBefore(insert_point);
+        }
+        insert_point = insert_point->GetNext();
+    }
+    return AddTail(node);
+}
+
 // total size: 0xC
 class bPNode : public bTNode<bPNode> {
   public:
@@ -360,7 +373,7 @@ template <typename T> class bPList : public bTList<bPNode> {
     }
 
     void RemoveTail() {
-        bList::RemoveTail();
+        delete reinterpret_cast<bPNode *>(bList::RemoveTail());
     }
 };
 

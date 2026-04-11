@@ -50,17 +50,25 @@ class CAnimCtrl : public bTNode<CAnimCtrl> {
         m_NameHash = name_hash;
     }
 
-    unsigned int GetFlags() {}
+    unsigned int GetFlags() {
+        return m_flags;
+    }
 
     unsigned int IsCyclic() {}
 
     unsigned int IsHalted() {}
 
-    int IsPlaying() {}
+    int IsPlaying() {
+        return PlayState == eACPS_PLAYING;
+    }
 
-    int IsStopped() {}
+    int IsStopped() {
+        return PlayState == eACPS_STOPPED;
+    }
 
-    int IsPaused() {}
+    int IsPaused() {
+        return PlayState == eACPS_PAUSED;
+    }
 
     int IsDone() {}
 
@@ -69,12 +77,16 @@ class CAnimCtrl : public bTNode<CAnimCtrl> {
     int IsMirror() {}
 
     void SetFlags(int flags) {
-        m_flags = flags;
+        m_flags |= flags;
     }
 
-    void ClearFlags(int flags) {}
+    void ClearFlags(int flags) {
+        m_flags &= ~flags;
+    }
 
-    void XorFlags(int flags) {}
+    void XorFlags(int flags) {
+        m_flags ^= flags;
+    }
 
     void HaltAnim() {}
 
