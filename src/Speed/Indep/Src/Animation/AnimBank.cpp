@@ -2,11 +2,13 @@
 #include "AnimInternal.hpp"
 #include "Speed/Indep/Src/EAGL4Anim/FnDefaultAnimBank.h"
 #include "Speed/Indep/Src/EAGL4Anim/eagl4AnimBank.h"
+#include "Speed/Indep/Src/EAGL4Anim/eagl4supportdlopen.h"
 #include "Speed/Indep/Src/Misc/SpeedChunks.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bMemory.hpp"
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
+#include "Speed/Indep/Libs/Support/Utility/UMath.h"
 
 SlotPool *AnimBankSlotPool = nullptr;
 bool AnimBankSlotPoolInitialized = false;
@@ -29,7 +31,7 @@ CAnimBank::~CAnimBank() {}
 
 EAGL4Anim::AnimBank *GetNextAnimBank(const EAGL4::DynamicLoader *loader, int &index) {
     void *addr;
-    bool symFound = loader->GetNextAddr("AnimationBank", index, addr);
+    bool symFound = loader->GetNextAddr(EAGL4::DynamicLoader::AnimBankType, index, addr);
     if (symFound) {
         return reinterpret_cast<EAGL4Anim::AnimBank *>(addr);
     } else {

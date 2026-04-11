@@ -8,7 +8,7 @@
 #include "Speed/Indep/Src/World/WWorldPos.h"
 
 bVector3 gNISSceneOrigin;
-unsigned short gNISSceneAngle;
+unsigned short gNISSceneAngle = 0;
 
 bool ANIM_GetWorldHeight(const UMath::Vector3 &pt, float &height, UMath::Vector3 &norm);
 
@@ -34,8 +34,6 @@ bool CAnimLocator::GetAnimOriginPosition(bVector3 *nis_scene_origin, unsigned sh
     return true;
 }
 
-static UMath::Vector3 kUpVector = {0.0f, 1.0f, 0.0f};
-
 bool CAnimLocator::GetInitialAnimMatricies(bMatrix4 *scene_rotation_matrix, bMatrix4 *scene_translation_matrix, bool at_start_line) {
     bIdentity(scene_rotation_matrix);
     bIdentity(scene_translation_matrix);
@@ -51,7 +49,7 @@ bool CAnimLocator::GetInitialAnimMatricies(bMatrix4 *scene_rotation_matrix, bMat
     eUnSwizzleWorldVector(start_line_position, unswizzled_position);
 
     float ground_elevation = start_line_position.z;
-    UMath::Vector3 planeNormal = kUpVector;
+    UMath::Vector3 planeNormal = {0.0f, 1.0f, 0.0f};
 
     if (ANIM_GetWorldHeight(reinterpret_cast<const UMath::Vector3 &>(unswizzled_position), ground_elevation, planeNormal)) {
         start_line_position.z = ground_elevation;

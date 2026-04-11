@@ -3,7 +3,106 @@
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
-CAnimCandidateData *TheAnimCandidateData;
+int SpecialCarList1[] = {
+    0x9537ACB7,
+	0x5D6E3E54,
+	0x5D6E3E54,
+	0xE6D4BEE9,
+	0xA3A1D182,
+	0x3E8EA090,
+	0x43CE4BC3,
+	0xD601789E
+};
+
+int SpecialCarList2[] = {
+	0x5D6E3E54,
+	0x5D6E3E54,
+	0x531A3488,
+	0xEBAF2926,
+	0xE6D4BEE9,
+	0x43CE4BC3,
+	0x3E8EA090,
+	0xD601789E,
+};
+
+int SpecialCarList3[] = {
+	0x5D6E3E54,
+	0x5D6E3E54,
+	0x5D6E3E54,
+	0x38B38226,
+	0x5D6E3E54,
+	0x38B38226,
+	0x9537ACB7,
+	0x0A92CC67,
+};
+
+int SpecialCarList4[] = {
+	0xA2D70BBD,
+	0x5F3B560D,
+	0x531A3488,
+	0x531A3488,
+	0xEBAF2926,
+	0xE6D4BEE9,
+	0xA9B509C4,
+	0xEBAF2926,
+};
+
+int SpecialCarList5[] = {
+	0xA2D70BBD,
+	0xA2D70BBD,
+	0x0A92CC67,
+	0x531A3488,
+	0x5EC98756,
+	0xE6D4BEE9,
+	0x9537ACB7,
+	0x43CE4BC3,
+};
+
+int SpecialCarList6[] = {
+	0xA4EB6688,
+	0xA4EB6688,
+	0xA4EB6688,
+	0xA4EB6688,
+	0xA4EB6688,
+	0xA4EB6688,
+	0xA4EB6688,
+	0xD37C806D,
+};
+
+int SpecialCarList7[] = {
+	0x5D6E3E54,
+	0x5D6E3E54,
+	0x5D6E3E54,
+	0x43CE4BC3,
+	0x531A3488,
+	0x5EC98756,
+	0xE6D4BEE9,
+	0xEBAF2926,
+};
+
+int SpecialCarList8[] = {
+	0x6F67F7F5,
+	0x43CE4BC3,
+	0xEBAF2926,
+	0xE6D4BEE9,
+	0x531A3488,
+	0x5EC98756,
+	0x43CE4BC3,
+	0xEBAF2926,
+};
+
+int SpecialCarList9[] = {
+	0x5D6E3E54,
+	0x5D6E3E54,
+	0x5D6E3E54,
+	0xE6D4BEE9,
+	0x531A3488,
+	0x5EC98756,
+	0x43CE4BC3,
+	0xEBAF2926,
+};
+
+CAnimCandidateData *TheAnimCandidateData = nullptr;
 
 int CAnimCandidateData::GetSceneMomentMarkerType(unsigned int sceneHash) {
     for (int slotIndex = 0; slotIndex < (int)mMomentAnimCount; slotIndex++) {
