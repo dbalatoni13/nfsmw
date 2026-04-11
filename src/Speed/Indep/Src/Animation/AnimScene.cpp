@@ -27,10 +27,10 @@ void DumpAnimBanks();
 bTList<CAnimSceneData> g_loadedAnimSceneDataList;
 CarAnimationState gCarAnimationStates[16];
 
-float gCopCarDoorAnim_CurrentTime[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-float gCopCarDoorAnim_AnimLength[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-float gCopCarDoorAnim_StartPos[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-float gCopCarDoorAnim_Delta[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+float gCopCarDoorAnim_CurrentTime[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+float gCopCarDoorAnim_AnimLength[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+float gCopCarDoorAnim_StartPos[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+float gCopCarDoorAnim_Delta[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 
 SlotPool *AnimPartSlotPool = nullptr;
 
@@ -40,22 +40,8 @@ bool CAnimEntityCreationContext::mIsRaceStart = false;
 int CAnimScene::mHandleCounter = 0;
 
 char Car_Name[16][16] = {
-    "ZPM_Car1",
-    "ZPM_Car2",
-    "ZPM_Car3",
-    "ZPM_Car4",
-    "ZPM_Car5",
-    "ZPM_Car6",
-    "ZPM_Car7",
-    "ZPM_Car8",
-    "ZPM_Cop1",
-    "ZPM_Cop2",
-    "ZPM_Cop3",
-    "ZPM_Cop4",
-    "ZPM_Cop5",
-    "ZPM_Cop6",
-    "ZPM_Cop7",
-    "ZPM_Cop8",
+    "ZPM_Car1", "ZPM_Car2", "ZPM_Car3", "ZPM_Car4", "ZPM_Car5", "ZPM_Car6", "ZPM_Car7", "ZPM_Car8",
+    "ZPM_Cop1", "ZPM_Cop2", "ZPM_Cop3", "ZPM_Cop4", "ZPM_Cop5", "ZPM_Cop6", "ZPM_Cop7", "ZPM_Cop8",
 };
 
 CarAnimationState::CarAnimationState() {
@@ -208,7 +194,7 @@ int UnloaderAnimSceneData(bChunk *chunk) {
 }
 
 CAnimProperty::CAnimProperty(eAnimProperty type, bool enabled)
-    : mType(type),          //
+    : mType(type), //
       mEnabled(enabled) {}
 
 CAnimProperty::~CAnimProperty() {}
@@ -230,17 +216,17 @@ int CAnimScene::GetHandle() {
 }
 
 CAnimScene::CAnimScene(CAnimSceneData *anim_scene_data, int camera_track_number, int anim_candidate_type, int anim_candidate_index)
-    : mHandle(0),                            //
-      mAnimSceneData(anim_scene_data),       //
-      mPlayStatus(Stopped),                  //
-      mTimeElapsed(0.0f),                    //
-      mTimeDelta(0.0f),                      //
-      mTimeStart(0.0f),                      //
-      mTimeTotalLength(0.0f),                //
-      mIsBoundToGame(false),                 //
+    : mHandle(0),                              //
+      mAnimSceneData(anim_scene_data),         //
+      mPlayStatus(Stopped),                    //
+      mTimeElapsed(0.0f),                      //
+      mTimeDelta(0.0f),                        //
+      mTimeStart(0.0f),                        //
+      mTimeTotalLength(0.0f),                  //
+      mIsBoundToGame(false),                   //
       mCameraTrackNumber(camera_track_number), //
-      mControllingCamera(false),             //
-      mSpaceNode(nullptr),                   //
+      mControllingCamera(false),               //
+      mSpaceNode(nullptr),                     //
       mAnimCandidateType(anim_candidate_type), //
       mAnimCandidateIndex(anim_candidate_index) {
     mHandle = GenerateHandle();
@@ -421,13 +407,9 @@ void CAnimScene::RenderEffects(eView *view, int is_reflection) {
 void CAnimScene::AddProperty(eAnimProperty property_id, bool enabled) {
     CAnimProperty *anim_property = FindProperty(property_id);
 
-    if (anim_property == nullptr) {
-        anim_property = new CAnimProperty(property_id, enabled);
-        bNode *tail = mAnimPropertyList.HeadNode.Prev;
-        tail->Next = anim_property;
-        mAnimPropertyList.HeadNode.Prev = anim_property;
-        anim_property->Prev = tail;
-        anim_property->Next = &mAnimPropertyList.HeadNode;
+    if (!anim_property) {
+        CAnimProperty *anim_property = new CAnimProperty(property_id, enabled);
+        mAnimPropertyList.AddTail(anim_property);
     }
 }
 
@@ -447,49 +429,49 @@ void CAnimScene::ChangePlayStatus(ePlayStatus new_status) {
     ePlayStatus current_status = mPlayStatus;
 
     switch (current_status) {
-    case Stopped:
-        if (new_status < Stopped) {
-            return;
-        }
-        if (new_status <= Paused) {
-            return;
-        }
-        if (new_status != Playing) {
-            return;
-        }
-        ResetTime();
-        BindToGame();
-        mPlayStatus = new_status;
-        return;
-    case Paused:
-        switch (new_status) {
-        case Paused:
-            return;
         case Stopped:
-            goto do_stop;
-        case Playing:
+            if (new_status < Stopped) {
+                return;
+            }
+            if (new_status <= Paused) {
+                return;
+            }
+            if (new_status != Playing) {
+                return;
+            }
+            ResetTime();
+            BindToGame();
+            mPlayStatus = new_status;
+            return;
+        case Paused:
+            switch (new_status) {
+                case Paused:
+                    return;
+                case Stopped:
+                    goto do_stop;
+                case Playing:
+                    break;
+                default:
+                    return;
+            }
             break;
+        case Playing:
+            if (new_status == Paused) {
+                break;
+            }
+            if (new_status > Paused) {
+                return;
+            }
+            if (new_status != Stopped) {
+                return;
+            }
+        do_stop:
+            mPlayStatus = new_status;
+            UnBindToGame();
+            ResetTime();
+            return;
         default:
             return;
-        }
-        break;
-    case Playing:
-        if (new_status == Paused) {
-            break;
-        }
-        if (new_status > Paused) {
-            return;
-        }
-        if (new_status != Stopped) {
-            return;
-        }
-    do_stop:
-        mPlayStatus = new_status;
-        UnBindToGame();
-        ResetTime();
-        return;
-    default:
-        return;
     }
     mPlayStatus = new_status;
 }
@@ -705,8 +687,8 @@ void CAnimScene::AnimatedCars_SetMainAndWheels(int current_car, CAnimCtrl *main_
     bConvertToBond(animated_car_matrix, animated_car_matrix);
 
     float ground_elevation = 0.0f;
-    bool point_valid = WCollisionMgr(0, 3).GetWorldHeightAtPointRigorous(
-        *reinterpret_cast<UMath::Vector3 *>(&animated_car_matrix.v3), ground_elevation, nullptr);
+    bool point_valid =
+        WCollisionMgr(0, 3).GetWorldHeightAtPointRigorous(*reinterpret_cast<UMath::Vector3 *>(&animated_car_matrix.v3), ground_elevation, nullptr);
 
     if (point_valid) {
         animated_car_matrix.v3.y = ground_elevation + 5.0f;
@@ -716,9 +698,7 @@ void CAnimScene::AnimatedCars_SetMainAndWheels(int current_car, CAnimCtrl *main_
     bool initial = haveLastPos == 0;
     INISCarControl *iniscar;
     if (gCarAnimationStates[current_car].mIVehicle->QueryInterface(&iniscar)) {
-        if (!iniscar->SetNISPosition(
-                reinterpret_cast<UMath::Matrix4 &>(animated_car_matrix),
-                initial, time_step)) {
+        if (!iniscar->SetNISPosition(reinterpret_cast<UMath::Matrix4 &>(animated_car_matrix), initial, time_step)) {
             gCarAnimationStates[current_car].HaveLastCarPosition = -1;
         }
     }
