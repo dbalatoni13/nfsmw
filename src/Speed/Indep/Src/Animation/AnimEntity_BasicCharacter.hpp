@@ -9,35 +9,35 @@
 #include "AnimEntity.hpp"
 
 typedef struct {
-    unsigned int mTypeID;                  // offset 0x0, size 0x4
-    unsigned int mThisInstanceNameHash;    // offset 0x4, size 0x4
-    unsigned int mParentInstanceNameHash;  // offset 0x8, size 0x4
-    unsigned int mPlayFlags;               // offset 0xC, size 0x4
-    bMatrix4 mLocalMatrix;                 // offset 0x10, size 0x40
-    unsigned int mLODNameHash[4];          // offset 0x50, size 0x10
-    unsigned int mTransAnimNameHash;       // offset 0x60, size 0x4
-    unsigned int mQuatsAnimNameHash;       // offset 0x64, size 0x4
-    unsigned int mScaleAnimNameHash;       // offset 0x68, size 0x4
-    unsigned int mSkelAnimNameHash;        // offset 0x6C, size 0x4
-    unsigned int mSkelNameHash;            // offset 0x70, size 0x4
-    float mPlaySpeed;                      // offset 0x74, size 0x4
-    float mPlayDelay;                      // offset 0x78, size 0x4
-    unsigned int mWorldObjectTypeNameHash; // offset 0x7C, size 0x4
-    unsigned int mLoopRangeStart;          // offset 0x80, size 0x4
-    unsigned int mLoopRangeEnd;            // offset 0x84, size 0x4
-    unsigned int mPad1;                    // offset 0x88, size 0x4
-    unsigned int mPad2;                    // offset 0x8C, size 0x4
+    uint32 mTypeID;                  // offset 0x0, size 0x4
+    uint32 mThisInstanceNameHash;    // offset 0x4, size 0x4
+    uint32 mParentInstanceNameHash;  // offset 0x8, size 0x4
+    uint32 mPlayFlags;               // offset 0xC, size 0x4
+    bMatrix4 mLocalMatrix;           // offset 0x10, size 0x40
+    uint32 mLODNameHash[4];          // offset 0x50, size 0x10
+    uint32 mTransAnimNameHash;       // offset 0x60, size 0x4
+    uint32 mQuatsAnimNameHash;       // offset 0x64, size 0x4
+    uint32 mScaleAnimNameHash;       // offset 0x68, size 0x4
+    uint32 mSkelAnimNameHash;        // offset 0x6C, size 0x4
+    uint32 mSkelNameHash;            // offset 0x70, size 0x4
+    float mPlaySpeed;                // offset 0x74, size 0x4
+    float mPlayDelay;                // offset 0x78, size 0x4
+    uint32 mWorldObjectTypeNameHash; // offset 0x7C, size 0x4
+    uint32 mLoopRangeStart;          // offset 0x80, size 0x4
+    uint32 mLoopRangeEnd;            // offset 0x84, size 0x4
+    uint32 mPad1;                    // offset 0x88, size 0x4
+    uint32 mPad2;                    // offset 0x8C, size 0x4
 } BasicCharacterAnimEntityInfo;
 
 // total size: 0x38
 class CBasicCharacterAnimEntity : public IAnimEntity {
   public:
-    virtual unsigned int GetTypeID() {
+    virtual uint32 GetTypeID() {
         return mTypeID;
     }
 
     // Overrides: IAnimEntity
-    unsigned int GetInstanceNameHash() override {
+    uint32 GetInstanceNameHash() override {
         return mThisInstanceNameHash;
     }
 
@@ -106,5 +106,9 @@ class CBasicCharacterAnimEntity : public IAnimEntity {
     int mBoneMapType;                                  // offset 0x28, size 0x4
     eReplacementTextureTable mReplacementTextureTable; // offset 0x2C, size 0xC
 };
+
+void InitCharacterEffects();
+
+void CloseCharacterEffects();
 
 #endif

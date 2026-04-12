@@ -119,7 +119,7 @@ void DumpAnimBanks() {
     CAnimBank *bank;
     int num_anims;
     const char *animation_item_name;
-    unsigned int anim_hash;
+    uint32 anim_hash;
 
     for (bank = g_loadedAnimBankList.GetHead(); bank != g_loadedAnimBankList.EndOfList(); bank = bank->GetNext()) {
         EAGL4Anim::AnimBank *eagl_anim_bank = bank->GetAnimBank();
@@ -135,11 +135,11 @@ void DumpAnimBanks() {
     }
 }
 
-int GetAnimFromBankByNamehash(unsigned int namehash, EAGL4Anim::AnimBank **animBank, int *item_index) {
+int GetAnimFromBankByNamehash(uint32 namehash, EAGL4Anim::AnimBank **animBank, int *item_index) {
     CAnimBank *bank;
     int num_anims;
     const char *animation_item_name;
-    unsigned int anim_hash;
+    uint32 anim_hash;
 
     for (bank = g_loadedAnimBankList.GetHead(); bank != g_loadedAnimBankList.EndOfList(); bank = bank->GetNext()) {
         EAGL4Anim::AnimBank *eagl_anim_bank = bank->GetAnimBank();

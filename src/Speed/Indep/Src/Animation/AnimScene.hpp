@@ -19,27 +19,29 @@ enum eAnimProperty {
     eAnimProp_MaxAnimProperty = 3,
 };
 
+typedef int AnimHandle;
+
 // total size: 0x40
 class NisScene {
   public:
     static const int MaxSceneNameLength;
 
-    unsigned int mSceneNameHash;   // offset 0x0, size 0x4
+    uint32 mSceneNameHash;         // offset 0x0, size 0x4
     char mSceneName[16];           // offset 0x4, size 0x10
     char *Description;             // offset 0x14, size 0x4
-    int SceneType;                 // offset 0x18, size 0x4
-    int HaveLayout;                // offset 0x1C, size 0x4
-    int HaveCarAnimation;          // offset 0x20, size 0x4
-    int NumberOfCars;              // offset 0x24, size 0x4
-    int StartFrame;                // offset 0x28, size 0x4
-    int VanishFrame;               // offset 0x2C, size 0x4
+    int32 SceneType;               // offset 0x18, size 0x4
+    int32 HaveLayout;              // offset 0x1C, size 0x4
+    int32 HaveCarAnimation;        // offset 0x20, size 0x4
+    int32 NumberOfCars;            // offset 0x24, size 0x4
+    int32 StartFrame;              // offset 0x28, size 0x4
+    int32 VanishFrame;             // offset 0x2C, size 0x4
     char SeeulatorOverlayName[16]; // offset 0x30, size 0x10
 };
 
 // total size: 0x14
 class CAnimEntityData : public bTNode<CAnimEntityData> {
   public:
-    CAnimEntityData(unsigned int type, void *data, int size) : mType(type), mData(data), mSize(size) {}
+    CAnimEntityData(int32 type, void *data, int size) : mType(type), mData(data), mSize(size) {}
     ~CAnimEntityData() {}
     int GetType() {
         return mType;
@@ -64,7 +66,7 @@ class CAnimSceneData : public bTNode<CAnimSceneData> {
         return mChunk;
     }
 
-    unsigned int GetAnimID() {
+    uint32 GetAnimID() {
         return mNisScene->mSceneNameHash;
     }
 
@@ -76,7 +78,7 @@ class CAnimSceneData : public bTNode<CAnimSceneData> {
         return &mAnimEntityDataList;
     }
 
-    static CAnimSceneData *FindAnimSceneData(unsigned int anim_id);
+    static CAnimSceneData *FindAnimSceneData(uint32 anim_id);
 
     CAnimSceneData(bChunk *chunk);
     virtual ~CAnimSceneData();
@@ -124,9 +126,9 @@ class CAnimScene : public ICEScene, public bTNode<CAnimScene> {
 
     bool Init();
     bool Purge();
-    int GetHandle();
-    unsigned int GetAnimID();
-    int GetSceneType();
+    AnimHandle GetHandle();
+    uint32 GetAnimID();
+    int32 GetSceneType();
     void GetSceneName(char *ret_name);
     const char *GetAnimDescription();
     bool SetPropertyEnabled(eAnimProperty property_id, bool enable);
@@ -176,7 +178,7 @@ class CAnimScene : public ICEScene, public bTNode<CAnimScene> {
     // Virtual overrides from ICEScene
     // TODO are all of these really overridden?
     virtual ~CAnimScene();
-    unsigned int GetSceneHash() override;
+    uint32 GetSceneHash() override;
     int GetCameraTrackNumber() override;
     void SetTime(float time) override;
     bool Pause() override;
@@ -216,7 +218,7 @@ class CAnimScene : public ICEScene, public bTNode<CAnimScene> {
     void CreateAnimEntities();
     void ClearAnimEntities();
 
-    int mHandle;                                  // offset 0xC, size 0x4
+    AnimHandle mHandle;                           // offset 0xC, size 0x4
     CAnimSceneData *mAnimSceneData;               // offset 0x10, size 0x4
     bPList<IAnimEntity> mInstancedAnimEntityList; // offset 0x14, size 0x8
     ePlayStatus mPlayStatus;                      // offset 0x1C, size 0x4
@@ -250,7 +252,7 @@ class CAnimMomentScene : public ICEScene {
     virtual ~CAnimMomentScene();
 
     // TODO are all of these really overridden?
-    unsigned int GetSceneHash() override {
+    uint32 GetSceneHash() override {
         return mSceneHash;
     }
     int GetCameraTrackNumber() override {
@@ -296,7 +298,7 @@ class CAnimMomentScene : public ICEScene {
         return mSceneTransformMatrix;
     }
 
-    unsigned int mSceneHash;        // offset 0x4, size 0x4
+    uint32 mSceneHash;              // offset 0x4, size 0x4
     int mCamera_track_number;       // offset 0x8, size 0x4
     float mTimeElapsed;             // offset 0xC, size 0x4
     float mTotalTime;               // offset 0x10, size 0x4

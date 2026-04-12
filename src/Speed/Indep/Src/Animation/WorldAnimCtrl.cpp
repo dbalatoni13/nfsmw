@@ -53,7 +53,7 @@ void CWorldAnimCtrl::Stop() {
     PlayState = eACPS_STOPPED;
 }
 
-void CWorldAnimCtrl::SetLoopRange(unsigned int loop_range_start, unsigned int loop_range_end) {
+void CWorldAnimCtrl::SetLoopRange(uint32 loop_range_start, uint32 loop_range_end) {
     m_loop_range_end = loop_range_end;
     m_loop_range_start = loop_range_start;
     m_flags |= 0x40;
@@ -108,7 +108,6 @@ void CWorldAnimCtrl::Clear() {
     __asm__ volatile("" : : : "memory");
     PlayState = eACPS_STOPPED;
 }
-
 
 void CWorldAnimCtrl::Cleanup() {
     m_animPart.Purge();
@@ -316,15 +315,14 @@ int CWorldAnimCtrl::UpdateAnimPose() {
 
         for (int bone_index = 0; bone_index < number_of_bones; bone_index++) {
             EAGL4Anim::BoneData *bone_data = &pSkeleton->GetBoneData(bone_index);
-            bMulMatrix(&blended_matrices[bone_index], &blended_matrices[bone_index],
-                reinterpret_cast<bMatrix4 *>(&bone_data->mInvBaseMatrix));
+            bMulMatrix(&blended_matrices[bone_index], &blended_matrices[bone_index], reinterpret_cast<bMatrix4 *>(&bone_data->mInvBaseMatrix));
         }
     }
 
     return 0;
 }
 
-int CWorldAnimCtrl::CreateFnAnimFromNamehash(unsigned int namehash, int dof) {
+int CWorldAnimCtrl::CreateFnAnimFromNamehash(uint32 namehash, int dof) {
     EAGL4Anim::AnimBank *animBank = nullptr;
     int item_index = 0;
     if (GetAnimFromBankByNamehash(namehash, &animBank, &item_index)) {

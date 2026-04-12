@@ -1,4 +1,5 @@
 #include "ControlScenario.hpp"
+#include "Speed/Indep/Src/Animation/GenericNISControlScenario.hpp"
 
 void bMemSet(void *dest, unsigned char pattern, unsigned int size);
 

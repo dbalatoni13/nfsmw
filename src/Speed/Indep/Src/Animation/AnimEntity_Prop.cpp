@@ -26,7 +26,7 @@ CPropAnimEntity::~CPropAnimEntity() { Purge(); }
 // Functionally matching
 bool CPropAnimEntity::Init(void *init_data, SpaceNode *parent_space_node) {
     Purge();
-    unsigned int play_flags;
+    uint32 play_flags;
     PropAnimEntityInfo *info = reinterpret_cast<PropAnimEntityInfo *>(init_data);
     mTypeID = info->mTypeID;
     mThisInstanceNameHash = info->mThisInstanceNameHash;

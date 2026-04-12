@@ -49,7 +49,7 @@ class CWorldAnimCtrl : public bTNode<CWorldAnimCtrl> {
 
     void Cleanup();
 
-    void SetLoopRange(unsigned int loop_range_start, unsigned int loop_range_end);
+    void SetLoopRange(uint32 loop_range_start, uint32 loop_range_end);
 
     float GetLoopRangeScaledStart();
 
@@ -59,7 +59,7 @@ class CWorldAnimCtrl : public bTNode<CWorldAnimCtrl> {
 
     int CreateFnAnimFromBank(EAGL4Anim::AnimBank *animBank, int animIndex, int dof);
 
-    int CreateFnAnimFromNamehash(unsigned int namehash, int dof);
+    int CreateFnAnimFromNamehash(uint32 namehash, int dof);
 
     void Play();
 
@@ -69,7 +69,7 @@ class CWorldAnimCtrl : public bTNode<CWorldAnimCtrl> {
 
     void AdvanceAnim();
 
-    void GetFlagString(unsigned int flag, char *buffer, int size);
+    void GetFlagString(uint32 flag, char *buffer, int size);
 
     void JumpToEndForTrigger();
 
@@ -107,15 +107,15 @@ class CWorldAnimCtrl : public bTNode<CWorldAnimCtrl> {
         return &m_animPart;
     }
 
-    unsigned int GetNameHash() {
+    uint32 GetNameHash() {
         return m_NameHash;
     }
 
-    void SetNameHash(unsigned int name_hash) {
+    void SetNameHash(uint32 name_hash) {
         m_NameHash = name_hash;
     }
 
-    unsigned int GetFlags() {
+    uint32 GetFlags() {
         return m_flags;
     }
 
@@ -131,11 +131,17 @@ class CWorldAnimCtrl : public bTNode<CWorldAnimCtrl> {
         return PlayState == eACPS_PAUSED;
     }
 
-    void SetFlags(int flags) { m_flags |= flags; }
+    void SetFlags(int flags) {
+        m_flags |= flags;
+    }
 
-    void ClearFlags(int flags) { m_flags &= ~flags; }
+    void ClearFlags(int flags) {
+        m_flags &= ~flags;
+    }
 
-    void XorFlags(int flags) { m_flags ^= flags; }
+    void XorFlags(int flags) {
+        m_flags ^= flags;
+    }
 
     int GetCurIntFrame() {}
 
@@ -206,9 +212,9 @@ class CWorldAnimCtrl : public bTNode<CWorldAnimCtrl> {
     float LocalDelayElapsed;             // offset 0x18, size 0x4
 
   private:
-    unsigned int m_NameHash;         // offset 0x1C, size 0x4
+    uint32 m_NameHash;               // offset 0x1C, size 0x4
     CAnimPart m_animPart;            // offset 0x20, size 0x14
-    unsigned int m_flags;            // offset 0x34, size 0x4
+    uint32 m_flags;                  // offset 0x34, size 0x4
     int m_loop_range_start;          // offset 0x38, size 0x4
     int m_loop_range_end;            // offset 0x3C, size 0x4
     float m_f_speed_modifier;        // offset 0x40, size 0x4

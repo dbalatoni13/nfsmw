@@ -22,7 +22,7 @@ class IAnimEntity {
 
     virtual bool Init(void *init_data, struct SpaceNode *parent_space_node) = 0;
     virtual void Purge() = 0;
-    virtual unsigned int GetInstanceNameHash() = 0;
+    virtual uint32 GetInstanceNameHash() = 0;
     virtual SpaceNode *GetSpaceNode() = 0;
     virtual void SetTime(float time) = 0;
     virtual void UpdateTimeStep(float time_step) = 0;

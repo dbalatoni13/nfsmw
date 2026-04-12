@@ -69,6 +69,6 @@ class CNFSAnimBank : public CAnimBank {
     bChunk *Chunk; // offset 0x38, size 0x4
 };
 
-int GetAnimFromBankByNamehash(unsigned int namehash, EAGL4Anim::AnimBank **animBank, int *item_index);
+int GetAnimFromBankByNamehash(uint32 namehash, EAGL4Anim::AnimBank **animBank, int *item_index);
 
 #endif

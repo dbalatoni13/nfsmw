@@ -39,7 +39,7 @@ class CAnimSkeleton : public bTNode<CAnimSkeleton> {
         return m_pName;
     }
 
-    unsigned int GetSkeletonNameHash() {
+    uint32 GetSkeletonNameHash() {
         return m_NameHash;
     }
 
@@ -53,13 +53,13 @@ class CAnimSkeleton : public bTNode<CAnimSkeleton> {
     int m_loaded;                       // offset 0x8, size 0x4
     bChunk *mAssocChunk;                // offset 0xC, size 0x4
     const char *m_pName;                // offset 0x10, size 0x4
-    unsigned int m_NameHash;            // offset 0x14, size 0x4
+    uint32 m_NameHash;                  // offset 0x14, size 0x4
     int m_internalDynLoader;            // offset 0x18, size 0x4
     EAGL4::DynamicLoader *m_pDynLoader; // offset 0x1C, size 0x4
     int m_DynLoaderSize;                // offset 0x20, size 0x4
     EAGL4Anim::Skeleton *m_pSkeleton;   // offset 0x24, size 0x4
 };
 
-CAnimSkeleton *GetSkeletonFromList(unsigned int namehash);
+CAnimSkeleton *GetSkeletonFromList(uint32 namehash);
 
 #endif

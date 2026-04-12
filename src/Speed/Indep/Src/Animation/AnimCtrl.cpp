@@ -91,7 +91,7 @@ int CAnimCtrl::CreateFnAnimFromBank(EAGL4Anim::AnimBank *animBank, int animIndex
     }
 }
 
-int CAnimCtrl::CreateFnAnimFromNamehash(unsigned int namehash, int dof) {
+int CAnimCtrl::CreateFnAnimFromNamehash(uint32 namehash, int dof) {
     EAGL4Anim::AnimBank *animBank = nullptr;
     int item_index = 0;
     if (GetAnimFromBankByNamehash(namehash, &animBank, &item_index)) {
@@ -110,7 +110,7 @@ void CAnimCtrl::SetPlay() {}
 void CAnimCtrl::AdvanceAnim() {}
 
 // STRIPPED
-void CAnimCtrl::GetFlagString(unsigned int flag, char *buffer, int size) {}
+void CAnimCtrl::GetFlagString(uint32 flag, char *buffer, int size) {}
 
 // UNSOLVED
 int CAnimCtrl::AdvanceAnimTime(float timestep) {
@@ -199,7 +199,7 @@ int Anim_Apply_Rots = 1;   // size: 0x4, address: 0x8041568C
 int Anim_Apply_Scales = 1; // size: 0x4, address: 0x80415690
 
 // TODO
-extern unsigned int eFrameCounter;
+extern uint32 eFrameCounter;
 
 int CAnimCtrl::UpdateAnimPose(bool force_calc) {
     if (!force_calc && m_eFrameCounterTimeStamp == eFrameCounter) {

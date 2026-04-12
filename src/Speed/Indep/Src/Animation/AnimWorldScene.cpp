@@ -10,8 +10,7 @@ extern bool DisableWorldAnimations;
 extern bool PrintWorldAnimationStuff;
 extern RaceParameters TheRaceParameters;
 
-CAnimWorldScene::CAnimWorldScene()
-    : mHandle(0) {
+CAnimWorldScene::CAnimWorldScene() : mHandle(0) {
     mHandle = bStringHash("WorldAnimations");
 }
 
@@ -21,7 +20,7 @@ void CAnimWorldScene::ClearAllAnimations() {
     }
 }
 
-CWorldAnimEntityTree *CAnimWorldScene::GetAnimTreeFromHash(unsigned int instanceHash) {
+CWorldAnimEntityTree *CAnimWorldScene::GetAnimTreeFromHash(uint32 instanceHash) {
     for (CWorldAnimEntityTree *tree = mInstancedAnimTreeList.GetHead(); tree != mInstancedAnimTreeList.EndOfList(); tree = tree->GetNext()) {
         if (tree->tree_name_hash == instanceHash) {
             return tree;
@@ -53,22 +52,21 @@ CWorldAnimEntityTree *CAnimWorldScene::InstantiateAnimTree(WorldAnimInstance *in
         }
     }
 
-    WorldAnimEntityTreeInfo *treeinfo =
-        TheWorldAnimInstanceDirectory.GetAnimTreeInfo(instance->anim_tree_name_hash);
+    WorldAnimEntityTreeInfo *treeinfo = TheWorldAnimInstanceDirectory.GetAnimTreeInfo(instance->anim_tree_name_hash);
     bMatrix4 *instance_mat = &instance->instance_matrix;
     if (treeinfo == nullptr) {
         return nullptr;
     }
 
-    unsigned int begin_range = 0xFFFFFFFF;
-    unsigned int end_range = 0xFFFFFFFF;
+    uint32 begin_range = 0xFFFFFFFF;
+    uint32 end_range = 0xFFFFFFFF;
 
     if (instance->named_range_hash != 0) {
         for (int i = 0; i < 4; i++) {
             WorldAnimNamedRange *range_array = treeinfo->named_ranges;
             WorldAnimNamedRange &namedrange = range_array[i];
             if (namedrange.name_hash == instance->named_range_hash) {
-                unsigned int range = namedrange.range;
+                uint32 range = namedrange.range;
                 begin_range = range >> 16;
                 end_range = range & 0xFFFF;
             }
@@ -82,14 +80,13 @@ CWorldAnimEntityTree *CAnimWorldScene::InstantiateAnimTree(WorldAnimInstance *in
     }
 
     CWorldAnimEntityTree *new_tree = new ("CWorldAnimEntityTree") CWorldAnimEntityTree();
-    unsigned int tree_name_hash = treeinfo->tree_name_hash;
+    uint32 tree_name_hash = treeinfo->tree_name_hash;
     new_tree->mInstanceData = instance;
     new_tree->tree_name_hash = tree_name_hash;
     new_tree->mControlScenarioType = eCST_ERROR;
 
     int num_entities = treeinfo->loaded_world_anim_entity_chunks.CountElements();
-    CWorldAnimEntity **arr_of_ptrs =
-        new ("CWorldAnimEntity*", 0) CWorldAnimEntity *[num_entities];
+    CWorldAnimEntity **arr_of_ptrs = new ("CWorldAnimEntity*", 0) CWorldAnimEntity *[num_entities];
     bMemSet(arr_of_ptrs, 0, num_entities * static_cast<int>(sizeof(CWorldAnimEntity *)));
 
     if (instance->play_flags & 0x400) {
@@ -102,10 +99,9 @@ CWorldAnimEntityTree *CAnimWorldScene::InstantiateAnimTree(WorldAnimInstance *in
     CWorldAnimEntity *root_entity = nullptr;
     int ix = 0;
 
-    for (bPNode *node = treeinfo->loaded_world_anim_entity_chunks.GetHead();
-         node != treeinfo->loaded_world_anim_entity_chunks.EndOfList(); node = node->GetNext()) {
-        WorldAnimEntityInfo *entinfo =
-            reinterpret_cast<WorldAnimEntityInfo *>(node->GetObject());
+    for (bPNode *node = treeinfo->loaded_world_anim_entity_chunks.GetHead(); node != treeinfo->loaded_world_anim_entity_chunks.EndOfList();
+         node = node->GetNext()) {
+        WorldAnimEntityInfo *entinfo = reinterpret_cast<WorldAnimEntityInfo *>(node->GetObject());
         SpaceNode *parent_space_node = nullptr;
 
         if (entinfo->mParentIndex != -1) {
@@ -114,8 +110,7 @@ CWorldAnimEntityTree *CAnimWorldScene::InstantiateAnimTree(WorldAnimInstance *in
             parent_space_node = arr_of_ptrs[entinfo->mParentIndex]->GetSpaceNode();
         }
 
-        CWorldAnimEntity *new_entity_instantiation =
-            new ("CWorldAnimEntity") CWorldAnimEntity();
+        CWorldAnimEntity *new_entity_instantiation = new ("CWorldAnimEntity") CWorldAnimEntity();
         arr_of_ptrs[ix] = new_entity_instantiation;
         new_entity_instantiation->mAnimTree = new_tree;
 

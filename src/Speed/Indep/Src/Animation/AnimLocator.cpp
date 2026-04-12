@@ -8,18 +8,18 @@
 #include "Speed/Indep/Src/World/WWorldPos.h"
 
 bVector3 gNISSceneOrigin;
-unsigned short gNISSceneAngle = 0;
+bAngle gNISSceneAngle = 0;
 
 bool ANIM_GetWorldHeight(const UMath::Vector3 &pt, float &height, UMath::Vector3 &norm);
 
-void CAnimLocator::SetAnimOriginPosition(const bVector3 &nis_scene_origin, unsigned short pnis_scene_angle) {
+void CAnimLocator::SetAnimOriginPosition(const bVector3 &nis_scene_origin, bAngle pnis_scene_angle) {
     gNISSceneOrigin.x = nis_scene_origin.x;
     gNISSceneOrigin.y = nis_scene_origin.y;
     gNISSceneOrigin.z = nis_scene_origin.z;
     gNISSceneAngle = pnis_scene_angle;
 }
 
-bool CAnimLocator::GetAnimOriginPosition(bVector3 *nis_scene_origin, unsigned short *pnis_scene_angle, bool at_start_line) {
+bool CAnimLocator::GetAnimOriginPosition(bVector3 *nis_scene_origin, bAngle *pnis_scene_angle, bool at_start_line) {
     if (at_start_line) {
         nis_scene_origin->x = gNISSceneOrigin.x;
         nis_scene_origin->y = gNISSceneOrigin.y;
@@ -29,7 +29,7 @@ bool CAnimLocator::GetAnimOriginPosition(bVector3 *nis_scene_origin, unsigned sh
         nis_scene_origin->x = 0.0f;
         nis_scene_origin->y = 0.0f;
         nis_scene_origin->z = 0.0f;
-        *pnis_scene_angle = static_cast<unsigned short>(at_start_line);
+        *pnis_scene_angle = static_cast<bAngle>(at_start_line);
     }
     return true;
 }
@@ -39,7 +39,7 @@ bool CAnimLocator::GetInitialAnimMatricies(bMatrix4 *scene_rotation_matrix, bMat
     bIdentity(scene_translation_matrix);
 
     bVector3 start_line_position(0.0f, 0.0f, 0.0f);
-    unsigned short start_line_angle = 0;
+    bAngle start_line_angle = 0;
 
     if (!GetAnimOriginPosition(&start_line_position, &start_line_angle, at_start_line)) {
         return false;

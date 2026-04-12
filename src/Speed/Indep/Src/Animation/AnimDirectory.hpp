@@ -9,27 +9,29 @@
 #define ANIM_SCENE_MAX (256)
 
 // total size: 0x4004
-struct AnimFileLoadInfo {
+class AnimFileLoadInfo {
+  public:
     AnimFileLoadInfo() {}
 
-    unsigned int mAnimFileCount;                 // offset 0x0, size 0x4
+    uint32 mAnimFileCount;                       // offset 0x0, size 0x4
     char mAnimFileNameTable[ANIM_SCENE_MAX][64]; // offset 0x4, size 0x4000
 };
 
 // total size: 0x8
-struct AnimSceneLoadInfo {
+class AnimSceneLoadInfo {
+  public:
     AnimSceneLoadInfo()
-        : mAnimSceneHash(0), //
-          mSharedFileCount(0), //
+        : mAnimSceneHash(0),        //
+          mSharedFileCount(0),      //
           mSharedFileStartIndex(0), //
-          mSceneFileCount(0), //
+          mSceneFileCount(0),       //
           mSceneFileStartIndex(0) {}
 
-    unsigned int mAnimSceneHash;         // offset 0x0, size 0x4
-    unsigned char mSharedFileCount;      // offset 0x4, size 0x1
-    unsigned char mSharedFileStartIndex; // offset 0x5, size 0x1
-    unsigned char mSceneFileCount;       // offset 0x6, size 0x1
-    unsigned char mSceneFileStartIndex;  // offset 0x7, size 0x1
+    uint32 mAnimSceneHash;       // offset 0x0, size 0x4
+    uint8 mSharedFileCount;      // offset 0x4, size 0x1
+    uint8 mSharedFileStartIndex; // offset 0x5, size 0x1
+    uint8 mSceneFileCount;       // offset 0x6, size 0x1
+    uint8 mSceneFileStartIndex;  // offset 0x7, size 0x1
 };
 
 // total size: 0x4808
@@ -39,19 +41,25 @@ class AnimDirectory {
 
     ~AnimDirectory() {}
 
-    unsigned int GetFileCount() { return mAnimFileLoadInfo.mAnimFileCount; }
+    uint32 GetFileCount() {
+        return mAnimFileLoadInfo.mAnimFileCount;
+    }
 
-    char *GetFileName(unsigned int file_slot_position) {
+    char *GetFileName(uint32 file_slot_position) {
         return mAnimFileLoadInfo.mAnimFileNameTable[file_slot_position];
     }
 
-    unsigned int GetSceneCount() { return mAnimSceneCount; }
+    uint32 GetSceneCount() {
+        return mAnimSceneCount;
+    }
 
-    void GetSceneLoadInfo(unsigned int scene_slot_position, AnimSceneLoadInfo &info) {
+    void GetSceneLoadInfo(uint32 scene_slot_position, AnimSceneLoadInfo &info) {
         info = mAnimSceneLoadInfo[scene_slot_position];
     }
 
-    AnimSceneLoadInfo *GetSceneLoadInfo(int slot) { return &mAnimSceneLoadInfo[slot]; }
+    AnimSceneLoadInfo *GetSceneLoadInfo(int slot) {
+        return &mAnimSceneLoadInfo[slot];
+    }
 
     void GetNameOfSceneNumber(int scene_slot_position, char *buffer) {
         AnimSceneLoadInfo info;
@@ -77,9 +85,9 @@ class AnimDirectory {
         *buffer = '\0';
     }
 
-    void GetNameOfSceneHash(unsigned int scene_hash, char *buffer) {
+    void GetNameOfSceneHash(uint32 scene_hash, char *buffer) {
         *buffer = '\0';
-        for (unsigned int i = 0; i < GetSceneCount(); i++) {
+        for (uint32 i = 0; i < GetSceneCount(); i++) {
             AnimSceneLoadInfo *info = GetSceneLoadInfo(i);
             if (scene_hash == info->mAnimSceneHash) {
                 GetNameOfSceneNumber(i, buffer);
@@ -88,13 +96,13 @@ class AnimDirectory {
         }
     }
 
-    void SetFileCount(unsigned int file_count) {}
+    void SetFileCount(uint32 file_count) {}
 
-    void SetFileName(unsigned int file_slot_position, char *file_name) {}
+    void SetFileName(uint32 file_slot_position, char *file_name) {}
 
-    void SetSceneCount(unsigned int count) {}
+    void SetSceneCount(uint32 count) {}
 
-    void SetSceneLoadInfo(unsigned int scene_slot_position, const AnimSceneLoadInfo &info) {}
+    void SetSceneLoadInfo(uint32 scene_slot_position, const AnimSceneLoadInfo &info) {}
 
     void EndianSwap() {
         bPlatEndianSwap(&mAnimSceneCount);
@@ -111,7 +119,7 @@ class AnimDirectory {
     }
 
   private:
-    unsigned int mAnimSceneCount;                         // offset 0x0, size 0x4
+    uint32 mAnimSceneCount;                               // offset 0x0, size 0x4
     AnimSceneLoadInfo mAnimSceneLoadInfo[ANIM_SCENE_MAX]; // offset 0x4, size 0x800
     AnimFileLoadInfo mAnimFileLoadInfo;                   // offset 0x804, size 0x4004
 };

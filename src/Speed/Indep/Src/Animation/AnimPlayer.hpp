@@ -10,6 +10,24 @@
 #include "AnimWorldScene.hpp"
 #include "Speed/Indep/Src/Misc/ResourceLoader.hpp"
 
+class CAnimMarker : bTNode<CAnimMarker> {
+  public:
+    CAnimMarker();
+    virtual ~CAnimMarker();
+    uint32 GetNameHash() {
+        return mNameHash;
+    };
+    float GetTime() {
+        return mTime;
+    };
+
+    static uint32 mMarkerHash_StartCountdown;
+
+  private:
+    uint32 mNameHash; // offset 0x8, size 0x4
+    float mTime;      // offset 0xC, size 0x4
+};
+
 // total size: 0x1
 class CAnimSettings {
   public:
@@ -38,53 +56,53 @@ class CAnimPlayer {
 
     static void StreamCued();
 
-    bool Load(unsigned int anim_id, int camera_track_number, bool DisableZoneSwitching);
+    bool Load(uint32 anim_id, int camera_track_number, bool DisableZoneSwitching);
 
-    bool Unload(unsigned int anim_id);
+    bool Unload(uint32 anim_id);
 
     bool UnloadAll();
 
     bool UnloadCategory(eAnimCategory category_id);
 
-    bool IsLoaded(unsigned int anim_id);
+    bool IsLoaded(uint32 anim_id);
 
-    int CreateAnimInstance(unsigned int anim_id, int camera_track_number, int anim_candidate_type, int anim_candidate_index);
+    int CreateAnimInstance(uint32 anim_id, int camera_track_number, int anim_candidate_type, int anim_candidate_index);
 
-    void DeleteAnimInstance(int anim_handle);
+    void DeleteAnimInstance(AnimHandle anim_handle);
 
     int CreateAnimScene(CAnimSceneData *anim_scene_data, int camera_track_number, int anim_candidate_type, int anim_candidate_index);
 
-    void DestroyAnimScene(int anim_handle);
+    void DestroyAnimScene(AnimHandle anim_handle);
 
-    int CreateAndPlayAnim(unsigned int anim_id, int camera_track_number, int anim_candidate_type, int anim_candidate_index);
+    int CreateAndPlayAnim(uint32 anim_id, int camera_track_number, int anim_candidate_type, int anim_candidate_index);
 
-    CAnimScene *FindAnimScene(int anim_handle);
+    CAnimScene *FindAnimScene(AnimHandle anim_handle);
 
     int FindHandle(eAnimCategory category_id);
 
-    int GetSceneType(int anim_handle);
+    int GetSceneType(AnimHandle anim_handle);
 
-    bool SetPropertyEnabled(int anim_handle, eAnimProperty property_id, bool enable);
+    bool SetPropertyEnabled(AnimHandle anim_handle, eAnimProperty property_id, bool enable);
 
-    bool IsPropertyEnabled(int anim_handle, eAnimProperty property_id);
+    bool IsPropertyEnabled(AnimHandle anim_handle, eAnimProperty property_id);
 
     bool AreAnyWithThisPropertyEnabled(eAnimProperty property_id);
 
     bool AreAnyControllingCamera();
 
-    bool SetTime(int anim_handle, float time);
+    bool SetTime(AnimHandle anim_handle, float time);
 
-    bool GetTime(int anim_handle, float &time);
+    bool GetTime(AnimHandle anim_handle, float &time);
 
-    bool Cue(int anim_handle);
+    bool Cue(AnimHandle anim_handle);
 
-    bool Play(int anim_handle);
+    bool Play(AnimHandle anim_handle);
 
-    bool Stop(int anim_handle, bool delete_instance);
+    bool Stop(AnimHandle anim_handle, bool delete_instance);
 
-    bool Pause(int anim_handle);
+    bool Pause(AnimHandle anim_handle);
 
-    bool UnPause(int anim_handle);
+    bool UnPause(AnimHandle anim_handle);
 
     bool StopAll(bool delete_instances);
 
@@ -94,15 +112,15 @@ class CAnimPlayer {
 
     bool UnPauseAll();
 
-    bool IsCued(int anim_handle);
+    bool IsCued(AnimHandle anim_handle);
 
-    bool IsPlaying(int anim_handle);
+    bool IsPlaying(AnimHandle anim_handle);
 
-    bool IsStopped(int anim_handle);
+    bool IsStopped(AnimHandle anim_handle);
 
-    bool IsPaused(int anim_handle);
+    bool IsPaused(AnimHandle anim_handle);
 
-    bool IsFinished(int anim_handle);
+    bool IsFinished(AnimHandle anim_handle);
 
     bool AreAllPlaying();
 
@@ -126,7 +144,7 @@ class CAnimPlayer {
 
     void KillWorldAnimScene(bool full_unload, bool quickrace_drag_restart);
 
-    bool GetWorlAnim(unsigned int name_hash);
+    bool GetWorlAnim(uint32 name_hash);
 
   private:
     static bool m_audioQueued; // size: 0x1, address: 0x80415710
@@ -135,12 +153,13 @@ class CAnimPlayer {
     CAnimWorldScene *mWorldAnimScene;           // offset 0x8, size 0x4
 };
 
-struct CarAnimationState {
+class CarAnimationState {
+  public:
     CarAnimationState();
-    CAnimCtrl *AnimCtrl;   // offset 0x0
-    IVehicle *mIVehicle;   // offset 0x4
+    CAnimCtrl *AnimCtrl;     // offset 0x0
+    IVehicle *mIVehicle;     // offset 0x4
     int HaveLastCarPosition; // offset 0x8
-    int CarIndex;          // offset 0xC
+    int CarIndex;            // offset 0xC
 };
 
 extern CAnimPlayer TheAnimPlayer;
