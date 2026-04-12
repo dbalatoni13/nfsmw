@@ -56,7 +56,7 @@ Collection::Collection(const CollectionLoadData &loadData, Vault *v) : mTable(lo
     const unsigned int *typeList = loadData.GetTypes();
     const CollectionLoadData::AttribEntry *entries = loadData.GetEntries();
 
-    for (std::size_t i = 0; i < loadData.mNumEntries; i++) {
+    for (unsigned int i = 0; i < loadData.mNumEntries; i++) {
         const CollectionLoadData::AttribEntry &entry = entries[i];
         if (entry.mNodeFlags & Node::Flag_IsByValue) {
             unsigned int bytes = Database::Get().GetTypeDesc(typeList[entry.mType]).GetSize();
@@ -201,9 +201,10 @@ bool Collection::AddAttribute(Key attributeKey, unsigned int count) {
     if (Contains(attributeKey)) {
         return false;
     }
+    const Class *c = mClass;
     bool result = false;
     unsigned char flags = 0;
-    const Attrib::Definition *d = mClass->GetDefinition(attributeKey);
+    const Attrib::Definition *d = c->GetDefinition(attributeKey);
     if (d) {
         d->InLayout();
         if (d->IsArray()) {

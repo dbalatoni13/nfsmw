@@ -12,7 +12,15 @@ ninja all_source       # build all objects
 ninja                  # build all objects, hash check and progress report
 ninja baseline         # generates baseline report for regression checking
 ninja changes          # check for regressions after code changes (empty = no regressions)
+python tools/build_matrix.py              # sequential full `ninja` across GC/Xbox/PS2, then restore GOWE69
+python tools/build_matrix.py --all-source # sequential compile-only smoke check across GC/Xbox/PS2
 ```
+
+Use `python tools/build_matrix.py` when you want one command that verifies the current
+worktree across all supported platforms. It runs `configure.py --version ...` and the
+selected ninja target sequentially, writes per-platform logs under `build/<VERSION>/logs/`,
+prints failure tails with the exact failing command, and restores the worktree to
+`GOWE69` by default when it finishes.
 
 ## Project Layout
 
@@ -31,16 +39,7 @@ objdiff.json           Generated build/diff configuration
 
 ## Sub-Agent Usage
 
-Sub-agents are allowed only for **read-only exploration** tasks such as:
-
-- searching the codebase for symbols, call sites, or include relationships
-- inspecting decomp output, assembly, DWARF, PS2 dumps, or line mappings
-- gathering context from Ghidra, `tools/decomp-workflow.py`, `lookup.py`, `decomp-diff.py`, or similar tools
-- summarizing findings that help the main worker decide what to change
-
-Sub-agents must **not** write or edit code files, headers, configs, or other repository files.
-All persistent file changes, decomp implementations, scaffolding, and follow-up fixes must be
-done by the main worker after reviewing the read-only findings.
+Sub-agents are **strictly prohibited**. Do not use sub-agents for any tasks (whether read-only exploration or editing). All work must be performed by the main worker directly.
 
 ## Forbidden Changes
 
@@ -259,6 +258,94 @@ It also compares the debug-line ownership of each `// Range:` block. Treat the
 strong evidence that an inline body came from the wrong header or owner file. The exact
 file+line count is stricter and mainly useful as a secondary hint, not as the main gate.
 
+### dwarf1_subroutine_tree.py — Raw DWARF subroutine fallback
+
+When `dtk dwarf dump` prints `// ERROR: Failed to process tag ...` and
+`dwarf-compare.py` cannot find the rebuilt wrapper function, inspect the raw
+relocated `.debug` tree directly with:
+
+```sh
+python tools/dwarf1_subroutine_tree.py -u main/Path/To/TU -f FunctionName
+python tools/dwarf1_subroutine_tree.py build/GOWE69/src/Path/To/TU.o --tag 0xTAG
+python tools/dwarf1_subroutine_tree.py -u main/Path/To/TU -f FunctionName --json
+python tools/dwarf1_subroutine_tree.py -u main/Path/To/TU -f FunctionName --compare-original
+python tools/dwarf1_subroutine_tree.py -u main/Path/To/TU -f FunctionName --show-non-subroutine
+```
+
+This prints the nested inline-subroutine / lexical-block ownership tree straight
+from the raw MWCC DWARF tags, so it is the fastest way to answer:
+
+- does the rebuilt top-level wrapper DIE still exist at all?
+- which inline owner changed (`VecHashMap<...>::Remove` vs `CollectionHashMap::Remove`, etc.)?
+- did a wrapper disappear only because the dumper/parser skipped it, or because the
+  source really changed the raw DWARF tree?
+- with `--compare-original`, which owner/name rows are actually inserted, replaced, or
+  missing relative to the original `symbols/Dwarf/functions.nothpp` tree?
+
+Treat `--compare-original` primarily as an owner/name drift check. By default it compares
+owner + bare function names, so overload-only mismatches can still hide behind a clean
+depth/label pass. When a candidate adds an overloaded inline helper or reuses the same
+base name with a different signature, run `--show-non-subroutine` too and inspect the
+rebuilt parameter/local rows directly before trusting the raw-tree result.
+
+### prodg_dump.py — ProDG compiler-state dump helper
+
+When you need the exact ProDG compiler state for one unit, prefer this helper over
+reconstructing long `ngccc` / `cc1plus` command lines by hand. It recovers the real
+`ngccc.exe` invocation from `ninja -t commands`, derives the matching preprocess step,
+passes the real optimization / target / warning flags through to `cc1plus.exe`
+(`-fdump-unnumbered` included), and can extract, summarize, or diff one function across
+dump sets.
+
+```sh
+python tools/prodg_dump.py command -u main/Speed/Indep/SourceLists/zAttribSys
+python tools/prodg_dump.py dump -u main/Speed/Indep/SourceLists/zAttribSys -o /tmp/zattrib_base
+python tools/prodg_dump.py extract /tmp/zattrib_base --stage lreg \
+    -f 'VecHashMap<unsigned int,Attrib::Class,Attrib::Class::TablePolicy,false,16>::UpdateSearchLength'
+python tools/prodg_dump.py summary /tmp/zattrib_base --stage rtl \
+    -f 'VecHashMap<unsigned int,Attrib::Class,Attrib::Class::TablePolicy,false,16>::UpdateSearchLength'
+python tools/prodg_dump.py trace /tmp/zattrib_base --stage greg \
+    -f 'void Attrib::Database::RemoveClass(const Attrib::Class *)' --pseudo 318,319
+python tools/prodg_dump.py diff /tmp/zattrib_dumps /tmp/zattrib_dumps \
+    --left-base-name base --right-base-name preinc --stages lreg,greg,rtl \
+    -f 'VecHashMap<unsigned int,Attrib::Class,Attrib::Class::TablePolicy,false,16>::UpdateSearchLength'
+python tools/prodg_dump.py diff /tmp/zattrib_oldfloor_dump /tmp/zattrib_block_dump \
+    --exact --summary-only --stages rtl,greg,lreg \
+    -f 'unsigned int VecHashMap<unsigned int,Attrib::Class,Attrib::Class::TablePolicy,false,16>::UpdateSearchLength(unsigned int, unsigned int)'
+python tools/prodg_dump.py diff /tmp/zattrib_block_dump /tmp/zattrib_trial_dump \
+    --exact --stages s \
+    -f 'UpdateSearchLength__t10VecHashMap5ZUiZQ26Attrib5ClassZQ36Attrib5Class11TablePolicyb0Ui16UiUi'
+build/tools/dtk elf disasm build/GOWE69/src/Speed/Indep/SourceLists/zAttribSys.o /tmp/zattrib_objdisasm.txt
+python tools/prodg_dump.py diff /tmp/zattrib_oldfloor_objdisasm.txt /tmp/zattrib_objdisasm.txt \
+    -f 'RemoveCollection__Q26Attrib5ClassPQ26Attrib10Collection'
+```
+
+Use `extract --grep ... -C <n>` when you only want a few interesting lines inside a
+function block, such as stack-slot references or one pseudo register family. `summary`
+prints one function's user pseudos, hard-register refs, frame-slot traffic, and compare
+signatures for a given stage. `trace` is the quickest way to follow a few pseudo-register
+families through a post-allocation dump: it prints each requested pseudo's current home,
+conflict/preference summary, and the matching dump entries, including entries where the
+pseudo only survives via its assigned hard register. Use it in `greg`/`lreg` when you are
+trying to answer "what kept pseudo 318 on r6 instead of r7?" without hand-grepping a full
+function dump. `diff --summary-only` is the quickest way to compare two variants
+structurally without drowning in full unified diffs; it highlights changed frame-slot
+counts and compare operand/order signatures, while plain `diff` still prints the raw
+stage diff underneath. `diff --skip-missing` is useful when one side is a partial saved
+dump set that only contains some stages or functions. For `lreg`, `diff` also summarizes
+register-preference and final hard-register assignment changes so allocator/regclass
+shifts stand out immediately. The helper now also understands final assembly (`--stages s`)
+by extracting blocks from `.type/.size` symbol ranges; use that when ProDG's late text
+dumps (`regmove` / `sched` / `sched2`) are empty in this setup. Assembly-stage queries are
+by mangled symbol name, not the demangled `;; Function ...` header used by RTL-style
+dumps. Plain `.s` diffs are normalized automatically now: `diff` strips `.line` /
+`.debug_srcinfo` scaffolding and renumbers local `.L*` labels so you see emitted-code
+movement instead of debug-section churn. It also understands `dtk elf disasm` text
+directly: when you pass a disassembly text file with `.fn ...` / `.endfn ...` blocks,
+`extract` and `diff` can operate on real object-level symbols without another ad hoc
+extractor, and `diff` also normalizes object-local `.L_*` label tokens so
+rebuilt-vs-reference wrapper diffs are easier to read.
+
 When working with these tools, do not just work around recurring friction silently. If you
 notice a clear, safe workflow or tooling improvement that would make future decomp work
 faster, shorter, or more reliable, prefer implementing that improvement as part of the task
@@ -343,8 +430,15 @@ This is a **C++98** codebase compiled with ProDG GC 3.9.3 (GCC 2.95 under the ho
 - Inline assembly is acceptable when needed to reproduce dead code or compiler scheduling that source alone cannot express cleanly
 - Preserve the original `class` vs `struct` kind. Check existing headers first, then Dwarf / PS2 info when needed. Even forward declarations and local partial declarations should use the accurate keyword when known.
 - Prefer including the real repo header over introducing a local forward declaration for a project type. If a type already has a header in `src/`, include it instead of redeclaring it locally.
-- If a subsystem already has a stub owner header and the debug line info points back at that subsystem, fill the owner header instead of keeping a recovered project type declaration in a `.cpp`.
+- If a subsystem already has a stub or umbrella owner header and the debug line info points back at that subsystem, fill the owner header instead of keeping a recovered project type declaration in a `.cpp` or spinning up a one-off micro-header just for that type.
+- Apply the same owner-header rule to shared enums, globals, callback typedefs, and free functions. If multiple TUs need the declaration, put it in the canonical owner header once and include that header instead of duplicating enum bodies or `extern` blocks across `.cpp`s.
 - Preserve original member names, types, order, and proven layout comments. Do not invent `pad`, `unk`, or `field_XXXX` members just to satisfy a guessed size or offset; verify the real members with `find-symbol.py`, GC Dwarf, and PS2 data, and leave a short TODO if a layout detail is still uncertain.
+- When recovering a type, start by copying the GC DWARF struct/class body into the canonical owner header. Treat that dump as the source of truth for declaration order too; only apply targeted fixes that are backed by existing repo headers or PS2 data, such as visibility, virtual/function order, duplicate-inline cleanup, or owner-header placement.
+- Do not hand-reconstruct recovered layouts from scattered field accesses, guessed semantics, or a "cleaned up" reordering. If you do not have enough evidence to paste the type confidently, stop and gather more DWARF / PS2 info first.
+- Preserve the original scope and nesting of recovered declarations too. Keep class-owned enums/types nested when the original did, and move subsystem/global enums into their real owner header instead of flattening or duplicating them near one caller.
+- Use the narrowest correct home for recovered declarations: shared project-facing types in headers, TU-private helper structs/classes and allocator metadata in the `.cpp`. Do not dump implementation-only helpers into public headers just because they were convenient to write there.
+- Prefer real subsystem or vendor headers over ad-hoc local typedef/prototype blocks. If an external API is shared and the project is missing the proper header, add that header in the correct subtree instead of stashing declarations in an unrelated gameplay file.
+- Do not leave repeated `// TODO move`, `// TODO where should this go`, or "I just made this up" markers around declarations. Either move the declaration to its owner now or leave one short targeted TODO above the owner declaration if ownership is still genuinely unresolved.
 - Follow DWARF member naming exactly (`mMember` vs `m_member`) instead of normalizing names
 - Omit the `this` pointer.
 - Use `nullptr` and `override`. If they are missing, you need to include `types.h`.
@@ -363,44 +457,26 @@ python tools/decomp-status.py --unit main/Path/To/TU
 Commit whenever the match percentage increases (e.g. you matched a new function). Use this format for the commit message:
 
 ```
-n.n%: short description of what was matched or changed
+n.n[n]%: short description of what was matched or changed
 ```
 
 Examples:
 
 - `42.1%: match UpdateCamera`
-- `78.5%: match PlayerController constructor and destructor`
+- `78.56%: match PlayerController constructor and destructor`
 - `100.0%: full match for zAnim`
 
 Do not batch up multiple percentage milestones into one commit — commit as each improvement lands.
-
-## Parallel Sub-Agent Matching
-
-When working on a translation unit with multiple non-matching functions, use sub-agents selectively for **read-only exploration** around individual functions. Each sub-agent should focus on **exactly one function** — do not assign a sub-agent more than one function at a time.
-
-**Limit: never run more than 5 sub-agents concurrently.** Spawning too many at once causes resource contention and makes it harder to reason about progress.
-
-Guidelines:
-
-- Prefer solving difficult matching work in the main worker. Use sub-agents to inspect one function's context, diff, DWARF, or related call paths without editing files.
-- Spawn a sub-agent per function only when the functions are independent (no shared edits to the same source lines).
-- Sub-agents stay read-only. Let them inspect existing diff/context output rather than compiling or rebuilding.
-- Do not sit idle waiting for sub-agents to finish. Continue with other independent investigation while they run.
-- After a useful result lands and you make a real improvement, check the updated match percentage and commit if it improved.
 
 ## Matching Philosophy
 
 You should take the Ghidra decompiler output for the initial translation step, get it to compile, make sure that the dwarf of the function matches and only then look for binary matching problems in the assembly. Be aware Ghidra usually gets the order of branches incorrect in if statements (it inverts the logic and the two bodies are swapped), this needs to be fixed to achieve bytematching status.
 
-You may use sub-agents to gather read-only context during this process, but they must not
-edit files. Treat their output as analysis input for the main worker, not as a path to
-delegate source changes.
-
 A function is only done when both objdiff and normalized DWARF are exact. Treat a
 100% instruction match with a DWARF mismatch as unfinished work, not a near-complete
 result.
 
-The dwarf of your structs doesn't have to neccessarily match the original due to various reasons, just make sure that you copied everything correctly.
+The DWARF of your structs does not always compare cleanly in every detail, but the recovery process still starts by copying the dumped layout correctly. Do not freehand-reconstruct a struct from call sites or guessed semantics; paste the DWARF body into the real owner header first, then make only the minimal PS2/header-backed fixes such as visibility, function order, vtable order, or duplicate-inline cleanup.
 
 Never dismiss a diff as "close enough" or "just register allocation." Every mismatched
 instruction is a signal that the source doesn't perfectly represent the original. Even
@@ -435,6 +511,8 @@ The dwarf (lookup skill using symbols/Dwarf) is your main source of information,
 Virtual table layout is also missing from the dwarf but there on PS2. Be aware that the PS2 version might be missing things because it's an alpha build.
 
 The inline information in the dwarf is incredibly useful. When you encounter one, you should look up its body in the project. If it doesn't exist yet, deduce how the code should look like and add it to the correct header (you can use your address lookup skill or if that doesn't succeed and the inline is a member function, just find the corresponding class in the project).
+
+For recovered structs and classes, treat DWARF as copied source material rather than a loose sketch. Paste the dumped type into the owner header first and keep its declaration/member order unless PS2 or an existing repo header proves a specific correction.
 
 It's very important that you use math inlines from bMath and UMath as shown in the dwarf. UVector inlines use temporaries that the compiler couldn't optimize out. You can see in the dwarf on which stack address they are and deduce final destination they are copied to.
 
@@ -481,6 +559,20 @@ register assignments but does NOT affect integer register assignments (and vice 
   Every local that is NOT in the DWARF is a spurious temporary — remove it.
 - Every local that IS in the DWARF must exist in the source, even if you don't use the name.
   Name it exactly as the DWARF shows.
+- When objdiff is already exact but a local only differs by lexical scope, try an equivalent
+  loop form that keeps the temporary inside the same block as the original DWARF. In practice,
+  changing a `for (...; ...; x = next)` into a `while (...) { T *next = ...; ...; x = next; }`
+  can fix DWARF-only scope mismatches without changing codegen.
+
+### Slot-pooled delete paths
+
+- If a recovered local/project type participates in `delete` paths or container/list teardown,
+  check whether the original type exposed inline `operator new` / `operator delete`. Missing
+  slot-pool-backed operators often makes GCC emit `__builtin_delete` instead of the original
+  allocator/free path and can also move destructor/delete DWARF ownership out of the TU.
+- This applies even when the TU mostly allocates the type manually through `bOMalloc` or a
+  pool helper. Restoring the inline operators can still be necessary so `delete` expressions
+  and synthesized cleanup paths match the original code and DWARF.
 
 ### Virtual vs direct calls
 
@@ -502,6 +594,19 @@ register assignments but does NOT affect integer register assignments (and vice 
   them as normal function bodies; their presence in source is controlled by `#include`.
 - If an inline appears in the DWARF but does not exist in `src/`, deduce its body and add
   it to the correct header (use `line-lookup` skill to find the header file).
+
+### Concrete template specializations
+
+- Do not assume ProDG rejects explicit member-function specializations of concrete template
+  instantiations. Forms like
+  `template <> inline ReturnType VecHashMap<...>::RemoveIndex(...)`
+  do compile here.
+- When you use that lane, expand dependent names inside the specialized body:
+  replace `Policy::` with the concrete owner, replace non-type template params like `Unk2`
+  with literal `true` / `false`, and replace aliases like `T *` / `KeyType` with the
+  concrete instantiation types.
+- Prefer this over owner-specific derived helper classes when you need per-instantiation
+  source bodies but want to preserve the original `VecHashMap<...>` owner names in DWARF.
 
 ---
 
@@ -525,7 +630,77 @@ TU: <translation-unit-name> | Function: <FunctionName>
 TU: zAttribSys | Function: \_STL::\_Rb_tree<Attrib::TypeDesc, ...>::\_M_insert
 If an STL node insertion path refuses to match, check whether the element type is missing explicit inline special members that the original source exposed. Adding the Dwarf-backed `operator new`, `operator delete`, placement `new`, copy constructor, and tiny accessors to `TypeDesc` made the tree node creation/insertion path match exactly.
 
+### WrapperOwnedVecHashMapHelpers
+
+TU: zAttribSys | Function: Class::SetTableBuffer / Class::AddCollection / Database::AddClass
+For `VecHashMap`-backed wrapper tables, keep `VecHashMap::Clear()` as a named helper, keep the `CollectionHashMap` constructor and scan helpers on the thin wrapper in `AttribPrivate.h`, and rely on the global placement `operator new` from SN's `<new>` instead of adding a `Node::operator new` member. That combination restored `Class::SetTableBuffer`, `Class::AddCollection`, and `Database::AddClass` to PASS/PASS without changing objdiff.
+
+### FirstFunctionAnchorsKeyedConstructors
+
+TU: zAttribSys | Function: global constructors keyed to Attrib::Class::Class / ClassPrivate::CollectionHashMap::~CollectionHashMap
+In a jumbo TU, do not move a newly restored out-of-line wrapper special member above the file's first real top-level function without rechecking symbol order. In `AttribClass.cpp`, restoring `CollectionHashMap::~CollectionHashMap()` was necessary to emit the destructor and keep `Class::Delete` matched, but placing it above `Class::Class` renamed the 44-byte `global constructors keyed to ...` helper. Keeping `Class::Class` first and moving the wrapper dtor below it restored the helper name and the TU's `99.91143%` floor.
+
+### SharedInlineParameterNamesMatter
+
+TU: zAttribSys | Function: Collection::Contains / Collection::NextKey / Collection::GetNode / HashMap::UpdateSearchLength
+When a byte-exact mismatch fans out through the same shared inline helper, verify the helper's recovered parameter names before restructuring callers. Renaming `HashMapTablePolicy::WrapIndex`'s first parameter from `k` back to DWARF's `index` cleared four matched-function DWARF mismatches at once without changing objdiff.
+
+### TernaryNodeGetClearsWrapperDWARFNoise
+
+TU: zAttribSys | Function: Class::RemoveCollection / VecHashMap::RemoveIndex
+When `VecHashMap::Node::Get()` is written as `return IsValid() ? mPtr : nullptr;` instead of an `if (IsValid()) return mPtr; return nullptr;` ladder, `Class::RemoveCollection` drops the stray `RemoveIndex::result // r26` DWARF mismatch while leaving objdiff and `Database::RemoveClass` unchanged. This is a safe retained cleanup, but it does not touch the remaining `Database::RemoveClass` first-inline `newMaxSearch r31 -> r30` DWARF debt.
+
+### MaxSearchGreaterFixesRemoveCollectionDwarf
+
+TU: zAttribSys | Function: Class::RemoveCollection / VecHashMap::UpdateSearchLength
+Writing the second `UpdateSearchLength` search loop as `for (unsigned int searchLen = 1; maxSearch > searchLen; searchLen++)` instead of `searchLen < maxSearch` was the first real retained partial win. On `zAttribSys` it made `Class::RemoveCollection` DWARF-exact, improved that wrapper's objdiff slightly, and nudged the unit text floor from `99.91143%` to `99.9116%`, but it did not help `Database::RemoveClass`.
+
+### SearchFirstHoistIsFalseFriend
+
+TU: zAttribSys | Function: Database::RemoveClass / VecHashMap::UpdateSearchLength
+Hoisting the second-loop `searchLen` declaration above `newMaxSearch` (`unsigned int searchLen = 1; unsigned int newMaxSearch = 0; for (; maxSearch > searchLen; searchLen++)`) is a DWARF-only false friend. On real forced rebuilds, direct `dtk elf disasm` diffs show that both wrapper symbols are text-identical to the retained block-scoped floor, so it does **not** buy real code progress. What it does change is DWARF: it hoists `searchLen` out of the anonymous loop block in both inlined `UpdateSearchLength` bodies and drops normalized DWARF to about `86.6%`, so do not keep or build on that variant.
+
+### BlockScopedSearchLenRaisesTextButSharesR6Debt
+
+TU: zAttribSys | Function: Class::RemoveCollection / Database::RemoveClass / VecHashMap::UpdateSearchLength
+The block-scoped variant `unsigned int newMaxSearch; { unsigned int searchLen = 1; newMaxSearch = 0; for (; maxSearch > searchLen; searchLen++) ... }` is the current best-known text floor. On `zAttribSys` it fixes `Database::RemoveClass`'s **second-inline** `newMaxSearch // r31` placement, raises both remaining wrappers to `98.6%`, and lifts the TU to `99.91307%` (`42B` remaining), but it also collapses the remaining debt in **both** wrappers to the same single mismatch: the shared second-inline `searchLen // r7 -> r6` register-home swap.
+On that `99.91307%` plateau, a whole batch of "safe" follow-up nudges stayed completely inert: empty `if (Unk2)` / `if (!Unk2)` hooks inside the late loop, `searchLen = searchLen + 0`, `newMaxSearch = newMaxSearch + 0`, `register` hints on `searchLen` / `newMaxSearch`, typed-pointer `IsValid()`, `Move`'s C-style cast, `Key()`'s zero spellings, local `asm("r7")` register variables, and even an empty `asm volatile("" : "+r"(searchLen))` constraint. If you revisit this plateau, skip those low-risk hooks and look for a genuinely different source shape.
+
+### SplitSearchLenInitIsAsmIdenticalNoise
+
+TU: zAttribSys | Function: Class::RemoveCollection / Database::RemoveClass / VecHashMap::UpdateSearchLength
+Splitting the retained block-scoped `searchLen` initializer into declaration plus assignment (`unsigned int searchLen; searchLen = 1;`) is a false signal. It can make `verify` and the per-function `decomp-status` estimates wobble slightly, but `python tools/prodg_dump.py diff --stages s` shows the emitted assembly for the shared `UpdateSearchLength` template and for both wrapper symbols is identical to the retained block floor, so do not treat that variant as real progress.
+
+### PreincrementLessThanFixesHeaderButMovesGlobalRegs
+
+TU: zAttribSys | Function: Class::RemoveCollection / Database::RemoveClass / VecHashMap::UpdateSearchLength
+Writing the late scan as `for (unsigned int searchLen = 0; ++searchLen < maxSearch; )` is the first condition-only rewrite that makes the second `UpdateSearchLength` loop header itself line up: it fixes the `cmplwi r4, 1` fold, restores the `li r7, 1` / `cmplw r7, r4` shape, and also fixes `Database::RemoveClass`'s `newMaxSearch // r31` placement in that late inline. But it is still a false friend overall: it moves both wrappers onto a broader `r6`/`r7` swap family, drops `Class::RemoveCollection` to `98.6% / 99.6%`, leaves `Database::RemoveClass` at `98.5% / 99.6%`, and changes the remaining mismatches rather than removing them.
+
+### ObjectDisasmResolvesWrapperDrift
+
+TU: zAttribSys | Function: Class::RemoveCollection / Database::RemoveClass
+When wrapper `verify` / `objdiff` movement disagrees with `.s`-level or dump-summary comparisons, disassemble the rebuilt object with `build/tools/dtk elf disasm` and diff the `.fn/.endfn` blocks directly with `python tools/prodg_dump.py diff`. On `zAttribSys`, that direct object diff corrected a stale assumption: the commonly revisited `search-first` late-loop variant is object-identical to the retained block-scoped floor in both wrapper symbols and only changes DWARF. Use the object-level symbol diff when you need the truth about wrapper-emitted code, not just helper `.s` output or status churn.
+
+### Unk2SelectiveLoopBodyHooksAreRealButUnsafe
+
+TU: zAttribSys | Function: Class::RemoveCollection / Database::RemoveClass / VecHashMap::RemoveIndex
+The second empty `for` body in `VecHashMap::RemoveIndex` is a real per-instantiation regalloc lever via the `Unk2` template boolean, but the obvious source shapes are false friends. In this endgame, baseline `if (Unk2) {}` inside that empty body perturbs only `Database::RemoveClass` while leaving `Class::RemoveCollection` at the retained baseline, and baseline `if (!Unk2) {}` perturbs only `Class::RemoveCollection` while leaving `Database::RemoveClass` at the retained baseline. On top of the block-scoped `UpdateSearchLength` near-miss, `if (!Unk2) {}` still perturbs only `Class::RemoveCollection` while leaving `Database::RemoveClass` at the block state. That proves the `Unk2` polarity and the body-CFG selectivity are real, but the tested body forms (`{}`, expression statements, `switch (0)`, `continue`) all regressed, so do not assume an `Unk2`-guarded loop-body tweak is a safe hybrid fix by itself. By contrast, wrapping an empty body as `if (Unk2) { do {} while (0); }` or `if (!Unk2) { do {} while (0); }` was fully inert on the retained floor and is not a useful perturbation.
+
+### HeaderOnlyZAttribSweepsNeedForcedRebuild
+
+TU: zAttribSys | Function: any header-defined inline in `VecHashMap64.h`
+Header-only sweeps against `VecHashMap64.h` can silently compare stale code unless you force a rebuild of the rebuilt jumbo object first. The generated `build.ninja` rule for `build/GOWE69/src/Speed/Indep/SourceLists/zAttribSys.o` tracks only `src/Speed/Indep/SourceLists/zAttribSys.cpp`, so after editing included headers you must delete that rebuilt `.o` (and, if needed for tooling, refresh the `.ctx`) before trusting `verify` or `diff` output.
+
+### SizedDeletePathBeatsStrayUnsizedDelete
+
+TU: zAttribSys | Function: Collection::~Collection / Class::Delete / HashMap::PreFlightAdd
+If delete-path DWARF keeps collapsing to an empty unsized `operator delete()` helper, re-check whether the type still has a stray unsized `operator delete(void *)` overload that the original source never exposed. In `AttribHashMap.h`, removing the unsized `HashMap::operator delete(void *)` let ProDG reuse the sized delete path again and made `Collection::~Collection` and `Class::Delete` DWARF-exact without moving objdiff.
+
 ### RegisterAllocatorTieBreakDeadEnd
 
 TU: zAttribSys | Function: Class::RemoveCollection / Database::RemoveClass
-If two near-matching functions differ only because the same inlined helper chain lands `mTableSize` in `r6` in the original but `r7` in the rebuild, treat it as a likely ProDG/GCC 2.95 register-allocation tie-break, not a normal source mismatch. In `zAttribSys`, `VecHashMap::FindIndex` inlined through `Remove -> RemoveIndex -> UpdateSearchLength` produced a stable `lwz r6, 4(r3)` vs `lwz r7, 4(r3)` split, which then propagated into later `UpdateSearchLength` control-flow differences. This survived 300+ source experiments: loop-form changes, adding/removing temporaries, splitting/merging expressions, helper inline/outline changes, declaration-order tweaks, member type changes, access-control changes, template method reorderings, and inline vs out-of-line ctor/dtor placement. Once the diff has collapsed to this kind of isolated register swap and DWARF locals/inlining already match, stop attacking each caller separately. Document the functions as `NON_MATCHING`, note the shared inlined root cause, and only consider flag permutation or compiler-level investigation as a last resort.
+If two near-matching functions differ only because the same inlined helper chain lands long-lived locals in different caller-saved registers, treat it as a likely ProDG/GCC 2.95 register-allocation tie-break, not a normal source mismatch. In `zAttribSys`, the earlier retained `maxSearch > searchLen` rewrite moved the live endgame debt into the **second** `UpdateSearchLength` inline reached from `RemoveIndex`'s empty follow-up loop, and the current retained block-scoped floor collapses the remaining debt even further: **both** `Class::RemoveCollection` and `Database::RemoveClass` now fail on the same shared `searchLen // r7 -> r6` swap in that late inline. This survived 300+ source experiments plus later focused sweeps of `RemoveIndex` statement order, `FindIndex` local declaration order, wrapper-result liveness, first-call shapes, second-loop declaration/scope variants, second-call expression sugar, `UpdateSearchLength` prelude condition forms, `register` hints on params/locals, per-instantiation `UpdateSearchLength` specializations with identical bodies, and combination searches across individually neutral source toggles. Temporary compiler-side probing was no better: single-flag ProDG toggles around `gcse`/scheduling/CSE/regmove/caller-saves/thread-jumps/delayed-branch either regressed or produced no change, local register variables did not reserve hard registers, empty asm constraints on the loop-carried local were inert, and explicit `UpdateSearchLength` specialization was catastrophic even with an identical body. Once the remaining diff has collapsed to this kind of isolated shared register-home swap, stop attacking each caller separately. Document the wrappers as `NON_MATCHING`, note the shared inlined root cause, and only revisit the area if you have a genuinely new source shape or stronger compiler evidence than the dead ends above.
+
+### NamedRodataForInlinedAllocatorStrings
+TU: zAttribSys | Function: DatabaseExportPolicy::Initialize
+When an inlined allocator path must reference a specific rodata symbol, replace a repeated string literal with a named `static const char[]` so the compiler preserves the expected rodata label and relocation pattern.

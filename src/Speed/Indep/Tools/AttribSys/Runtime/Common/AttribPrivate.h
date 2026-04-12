@@ -13,6 +13,14 @@
 // Credit: Brawltendo
 namespace Attrib {
 
+inline unsigned int Class::TablePolicy::KeyIndex(unsigned int k, unsigned int tableSize, unsigned int keyShift) {
+    return RotateNTo32(k, keyShift) % tableSize;
+}
+
+inline unsigned int Class::TablePolicy::WrapIndex(unsigned int index, unsigned int tableSize, unsigned int keyShift) {
+    return index % tableSize;
+}
+
 // total size: 0x20
 class CollectionLoadData {
   public:
@@ -197,6 +205,91 @@ class ClassPrivate : public Class {
 
         ~CollectionHashMap();
 
+        unsigned int UpdateSearchLengthSameIndex(unsigned int index) {
+            unsigned int targetIndex = index;
+            unsigned int freeIndex = index;
+            unsigned int currentIndex;
+            if (targetIndex == freeIndex && mTable[targetIndex].MaxSearch() == 0) {
+                goto special_case;
+            }
+            currentIndex = targetIndex;
+            goto after_special_case;
+        special_case:
+            currentIndex = Class::TablePolicy::WrapIndex(targetIndex + mTableSize - mWorstCollision, mTableSize, 0);
+            {
+                unsigned int distance = mWorstCollision;
+                while (mTable[currentIndex].MaxSearch() < distance && distance > 0) {
+                    currentIndex = Class::TablePolicy::WrapIndex(currentIndex + 1, mTableSize, 0);
+                    distance--;
+                }
+                if (distance == 0) {
+                    return static_cast<unsigned int>(-1);
+                }
+            }
+        after_special_case:
+            unsigned int maxSearch = mTable[currentIndex].MaxSearch();
+            unsigned int worstIndex = Class::TablePolicy::WrapIndex(currentIndex + maxSearch, mTableSize, 0);
+            targetIndex = currentIndex;
+            if (mTable[worstIndex].IsValid()) {
+                Class::TablePolicy::KeyIndex(mTable[worstIndex].Key(), mTableSize, 0);
+            }
+
+            if (mTable[freeIndex].IsValid()) {
+            }
+
+            if (freeIndex != worstIndex) {
+                mTable[freeIndex].Move(mTable[worstIndex]);
+            }
+            if (mTable[worstIndex].IsValid()) {
+            }
+
+            unsigned int newMaxSearch;
+            {
+                unsigned int searchLen = 1;
+                newMaxSearch = 0;
+                asm("" : : "r"(newMaxSearch));
+                for (; searchLen < maxSearch; searchLen++) {
+                    unsigned int loopIndex = Class::TablePolicy::WrapIndex(targetIndex + searchLen, mTableSize, 0);
+                    if (Class::TablePolicy::KeyIndex(mTable[loopIndex].Key(), mTableSize, 0) == targetIndex) {
+                        newMaxSearch = searchLen;
+                    }
+                }
+            }
+            mTable[targetIndex].ResetSearchLength(newMaxSearch);
+
+            if (maxSearch == mWorstCollision && mTable[freeIndex].MaxSearch() < maxSearch && newMaxSearch < maxSearch) {
+                mWorstCollision = 0;
+                unsigned int prevWorst;
+                for (unsigned int i = 0; i < mTableSize && mWorstCollision < maxSearch; i++) {
+                    if (mTable[i].MaxSearch() > mWorstCollision) {
+                        prevWorst = mWorstCollision = mTable[i].MaxSearch();
+                    }
+                }
+            }
+
+            return worstIndex;
+        }
+
+        Collection *RemoveIndex(unsigned int actualIndex) {
+            if (!ValidIndex(actualIndex)) {
+                return nullptr;
+            }
+            Collection *result = mTable[actualIndex].Get();
+            unsigned int key = mTable[actualIndex].Key();
+            mTable[actualIndex].Invalidate();
+            mNumEntries--;
+
+            unsigned int freedIndex = UpdateSearchLength(Class::TablePolicy::KeyIndex(key, mTableSize, 0), actualIndex);
+            for (; freedIndex < mTableSize; freedIndex = UpdateSearchLengthSameIndex(freedIndex)) {
+            }
+            return result;
+        }
+
+        Collection *Remove(unsigned int key) {
+            unsigned int actualIndex = FindIndex(key);
+            return RemoveIndex(actualIndex);
+        }
+
         unsigned int GetNextValidIndex(unsigned int startPoint) const {
             unsigned int index = startPoint + 1;
             for (; index < mTableSize && !mTable[index].IsValid(); index++) {
@@ -243,6 +336,92 @@ class ClassPrivate : public Class {
 class ClassTable : public VecHashMap<unsigned int, Class, Class::TablePolicy, false, 16> {
   public:
     ClassTable(std::size_t capacity) : VecHashMap<unsigned int, Class, Class::TablePolicy, false, 16>(capacity) {}
+    ~ClassTable();
+
+    unsigned int UpdateSearchLengthSameIndex(unsigned int index) {
+        unsigned int targetIndex = index;
+        unsigned int freeIndex = index;
+        unsigned int currentIndex;
+        if (targetIndex == freeIndex && mTable[targetIndex].MaxSearch() == 0) {
+            goto special_case;
+        }
+        currentIndex = targetIndex;
+        goto after_special_case;
+    special_case:
+        currentIndex = Class::TablePolicy::WrapIndex(targetIndex + mTableSize - mWorstCollision, mTableSize, 0);
+        {
+            unsigned int distance = mWorstCollision;
+            while (mTable[currentIndex].MaxSearch() < distance && distance > 0) {
+                currentIndex = Class::TablePolicy::WrapIndex(currentIndex + 1, mTableSize, 0);
+                distance--;
+            }
+            if (distance == 0) {
+                return static_cast<unsigned int>(-1);
+            }
+        }
+    after_special_case:
+        unsigned int maxSearch = mTable[currentIndex].MaxSearch();
+        unsigned int worstIndex = Class::TablePolicy::WrapIndex(currentIndex + maxSearch, mTableSize, 0);
+        targetIndex = currentIndex;
+        if (mTable[worstIndex].IsValid()) {
+            Class::TablePolicy::KeyIndex(mTable[worstIndex].Key(), mTableSize, 0);
+        }
+
+        if (mTable[freeIndex].IsValid()) {
+        }
+
+        if (freeIndex != worstIndex) {
+            mTable[freeIndex].Move(mTable[worstIndex]);
+        }
+        if (mTable[worstIndex].IsValid()) {
+        }
+
+        unsigned int newMaxSearch;
+        {
+            newMaxSearch = 0;
+            unsigned int searchLen = 1;
+            asm("" : : "r"(newMaxSearch));
+            for (; searchLen < maxSearch; searchLen++) {
+                unsigned int loopIndex = Class::TablePolicy::WrapIndex(targetIndex + searchLen, mTableSize, 0);
+                if (Class::TablePolicy::KeyIndex(mTable[loopIndex].Key(), mTableSize, 0) == targetIndex) {
+                    newMaxSearch = searchLen;
+                }
+            }
+        }
+        mTable[targetIndex].ResetSearchLength(newMaxSearch);
+
+        if (maxSearch == mWorstCollision && mTable[freeIndex].MaxSearch() < maxSearch && newMaxSearch < maxSearch) {
+            mWorstCollision = 0;
+            unsigned int prevWorst;
+            for (unsigned int i = 0; i < mTableSize && mWorstCollision < maxSearch; i++) {
+                if (mTable[i].MaxSearch() > mWorstCollision) {
+                    prevWorst = mWorstCollision = mTable[i].MaxSearch();
+                }
+            }
+        }
+
+        return worstIndex;
+    }
+
+    Class *RemoveIndex(unsigned int actualIndex) {
+        if (!ValidIndex(actualIndex)) {
+            return nullptr;
+        }
+        Class *result = mTable[actualIndex].Get();
+        unsigned int key = mTable[actualIndex].Key();
+        mTable[actualIndex].Invalidate();
+        mNumEntries--;
+
+        unsigned int freedIndex = UpdateSearchLength(Class::TablePolicy::KeyIndex(key, mTableSize, 0), actualIndex);
+        for (; freedIndex < mTableSize; freedIndex = UpdateSearchLengthSameIndex(freedIndex)) {
+        }
+        return result;
+    }
+
+    Class *Remove(unsigned int key) {
+        unsigned int actualIndex = FindIndex(key);
+        return RemoveIndex(actualIndex);
+    }
 
     void operator delete(void *ptr, std::size_t bytes) {
         Free(ptr, bytes, "Attrib::ClassTable");

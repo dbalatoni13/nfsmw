@@ -9,6 +9,11 @@ Your goal is to decompile a specific function: writing C++ source that compiles 
 
 A function is not done until it is exact in both objdiff and normalized DWARF.
 
+Reviewers should not be spending their time rediscovering DWARF mismatches. Before you
+report progress, ask for review, hand the function off, or switch to another target, you
+must run the per-function verification gate yourself and treat any DWARF failure as your
+next task, not as review debt.
+
 ## Phase 1: Gather Context
 
 Collect data from **all** of these sources in parallel where possible.
@@ -85,6 +90,8 @@ Reference the skill for the usage. It gives info based on the virtual address of
 - If a repo header already exists for the type, include that header instead of introducing a local forward declaration.
 - Preserve the original `class` vs `struct` kind. If the existing header is missing or incomplete, verify the type kind from GC Dwarf and PS2 info before writing a local declaration.
 - Preserve real member names and field types too. Do not introduce `pad`, `unk`, or `field_XXXX` members as placeholders for guessed layout; verify the member list from GC Dwarf / PS2 data and leave a TODO when something is still uncertain.
+- When a type is missing or incomplete, dump the full class/struct body from GC DWARF and paste that as the starting point. Do not reconstruct the layout from one function's field accesses or from guessed semantics.
+- Preserve the dumped declaration order as well as the member order. Do not re-sort methods, group fields by guessed meaning, or otherwise "clean up" the layout unless an existing repo header or PS2 evidence proves a specific correction.
 
 ### 1e. Assembly reference
 
@@ -125,6 +132,8 @@ and assembly:
 
 Utilize the dwarf information that you get from the lookup skill heavily.
 
+For any recovered type you touch while implementing the function, treat the DWARF body as source material to copy, not prose to paraphrase. Start from the dumped layout in the canonical owner header, then make only the minimal verified fixes.
+
 Don't add explanatory comments during implementation unless you need to document a remaining DWARF mismatch.
 
 Don't use any temporary local variables that don't exist in the dwarf.
@@ -155,6 +164,16 @@ python tools/decomp-workflow.py verify -u main/Path/To/TU -f FunctionName
 ```
 
 If the build fails, fix compilation errors first.
+
+As soon as you have a compiling draft, run the combined verification gate immediately:
+
+```sh
+python tools/decomp-workflow.py verify -u main/Path/To/TU -f FunctionName
+```
+
+Do this before you spend a long time polishing late instruction mismatches. If `verify`
+already shows a DWARF failure, fix that first so you are not polishing code the reviewer
+will bounce anyway.
 
 ### Check the diff
 
@@ -203,6 +222,17 @@ debug-line owner files for each DWARF `// Range:` block, which makes it much eas
 spot inlines that are coming from the wrong header or owner file. Exact line-number
 agreement is a useful secondary hint, but file ownership is the first thing to check.
 
+Use this as the default loop when the function compiles but `verify` is still failing:
+
+1. Run `verify`.
+2. If DWARF fails, run `dwarf`.
+3. Fix the structural issue the DWARF diff is pointing at first: missing/extra locals,
+   wrong qualifiers or parameter types, wrong inline ownership, wrong helper/header owner,
+   or a source shape that outlined something that should be inlined.
+4. Rebuild and rerun `verify`.
+5. Only return to instruction-by-instruction cleanup once the remaining failures are no
+   longer obvious DWARF-compare issues.
+
 Manual fallback:
 
 After writing your code, you can also run the dwarf dump on the compiled output and then query your output dump with lookup.py to compare your decompiled functions against the originals. Since the address of the function you're working on can keep changing
@@ -232,6 +262,9 @@ python tools/decomp-workflow.py diff -u main/Path/To/TU -d FunctionName
 Every mismatched instruction is a signal — don't settle for "close enough".
 Reaching 100% instruction matching status is not enough. Stay in the loop until `verify`
 passes, which means the DWARF of the function also matches after normalization.
+
+Do not leave a function in a "review-ready" or "good enough for now" state with a known
+DWARF failure unless you are explicitly blocked and you document that blocker clearly.
 
 ## Phase 5: Report
 

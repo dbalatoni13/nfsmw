@@ -18,8 +18,8 @@ class HashMap {
             return RotateNTo32(k, keyShift) % tableSize;
         }
 
-        static std::size_t WrapIndex(Key k, std::size_t tableSize, unsigned int keyShift) {
-            return k % tableSize;
+        static std::size_t WrapIndex(Key index, std::size_t tableSize, unsigned int keyShift) {
+            return index % tableSize;
         }
 
         static void *Alloc(std::size_t bytes) {
@@ -43,8 +43,16 @@ class HashMap {
         }
     };
 
+    void *operator new(std::size_t bytes) {
+        return Alloc(bytes, "Attrib::HashMap");
+    }
+
     void operator delete(void *ptr, std::size_t bytes) {
         Free(ptr, bytes, "Attrib::HashMap");
+    }
+
+    void *operator new(std::size_t, void *ptr) {
+        return ptr;
     }
 
     HashMap(std::size_t reservationSize, unsigned int keyShift, bool exactFit)
@@ -58,6 +66,36 @@ class HashMap {
         if (mTable) {
             HashMapTablePolicy::Free(mTable, sizeof(*mTable) * mTableSize);
         }
+    }
+
+    bool ValidIndex(unsigned int index) const {
+        return index < mTableSize && mTable[index].IsValid();
+    }
+
+    unsigned int GetKeyAtIndex(unsigned int index) const {
+        if (ValidIndex(index)) {
+            (void)ValidIndex(index);
+            return mTable[index].GetKey();
+        }
+        return 0;
+    }
+
+    Node *GetNodeAtIndex(unsigned int index) const {
+        if (ValidIndex(index)) {
+            return &mTable[index];
+        }
+        return nullptr;
+    }
+
+    bool IsArrayAtIndex(unsigned int index) const {
+        if (ValidIndex(index)) {
+            return mTable[index].IsArray();
+        }
+        return false;
+    }
+
+    std::size_t Size() const {
+        return mNumEntries;
     }
 
     bool Add(Key key, unsigned int type, void *ptr, bool ptrIsRaw, unsigned char flags, bool exactFit, void *layoutptr) {
@@ -80,41 +118,25 @@ class HashMap {
         }
     }
 
-    void RebuildTable(std::size_t requestedCount) {
-        if (requestedCount == 0) {
-            return;
+    void *Remove(Node *node, void *layoutptr, bool maintainTableInvariant) {
+        if (node->IsValid()) {
+            // useless but needed to match
         }
-        std::size_t tableSize = HashMapTablePolicy::TableSize(requestedCount);
-        Node *oldTable = mTable;
-        std::size_t oldSize = mTableSize;
-        mTableSize = tableSize;
-        mNumEntries = 0;
-        mWorstCollision = 0;
-        mTable = new (HashMapTablePolicy::Alloc(mTableSize * sizeof(Node))) Node();
-        for (int i = 1; i < mTableSize; i++) {
-            new (&mTable[i]) Node();
-        }
-        if (oldTable) {
-            for (int i = 0; i < oldSize; i++) {
-                if (oldTable[i].IsValid()) {
-                    oldTable[i].ResetSearchLength(0);
-                    Transfer(oldTable[i]);
-                }
+        Key key = node->GetKey();
+        void *result = node->GetPointer(layoutptr);
+        node->Invalidate();
+        mNumEntries--;
+
+        if (maintainTableInvariant) {
+            std::size_t actualIndex = node - mTable;
+            std::size_t freedIndex = UpdateSearchLength(HashMapTablePolicy::KeyIndex(key, mTableSize, mKeyShift), actualIndex);
+            while (freedIndex < mTableSize) {
+                freedIndex = UpdateSearchLength(freedIndex, freedIndex);
             }
-            HashMapTablePolicy::Free(oldTable, oldSize * sizeof(Node));
+        } else {
+            node->ResetSearchLength(0);
         }
-    }
-
-    void ClearForRelease() {
-        mNumEntries = 0;
-    }
-
-    std::size_t Size() const {
-        return mNumEntries;
-    }
-
-    bool ValidIndex(unsigned int index) const {
-        return index < mTableSize && mTable[index].IsValid();
+        return result;
     }
 
     std::size_t FindIndex(Key key) const {
@@ -124,8 +146,8 @@ class HashMap {
         Node *table = mTable;
         unsigned int actualIndex = HashMapTablePolicy::KeyIndex(key, mTableSize, mKeyShift);
         unsigned int searchLen = 0;
-        unsigned int maxSearchLen = table[actualIndex].MaxSearch();
-        while (searchLen < maxSearchLen && table[actualIndex].GetKey() != key) {
+        unsigned int maxSearchlen = table[actualIndex].MaxSearch();
+        while (searchLen < maxSearchlen && table[actualIndex].GetKey() != key) {
             if (table[actualIndex].IsValid()) {
             }
             actualIndex = HashMapTablePolicy::WrapIndex(actualIndex + 1, mTableSize, 0);
@@ -153,74 +175,91 @@ class HashMap {
         return index;
     }
 
-    Node *GetNodeAtIndex(unsigned int index) const {
-        // TODO
-        if (ValidIndex(index)) {
-            return &mTable[index];
+    void RebuildTable(std::size_t requestedCount) {
+        if (requestedCount == 0) {
+            return;
         }
-        return nullptr;
-    }
-
-    unsigned int GetKeyAtIndex(unsigned int index) const {
-        if (ValidIndex(index)) {
-            (void)ValidIndex(index);
-            return mTable[index].GetKey();
+        std::size_t tableSize = HashMapTablePolicy::TableSize(requestedCount);
+        Node *oldTable = mTable;
+        std::size_t oldSize = mTableSize;
+        mTableSize = tableSize;
+        mNumEntries = 0;
+        mWorstCollision = 0;
+        mTable = new (HashMapTablePolicy::Alloc(mTableSize * sizeof(Node))) Node();
+        for (int i = 1; i < mTableSize; i++) {
+            new (&mTable[i]) Node();
         }
-        return 0;
-    }
-
-    void *Remove(Node *node, void *layoutptr, bool maintainTableInvariant) {
-        if (node->IsValid()) {
-            // useless but needed to match
-        }
-        Key key = node->GetKey();
-        void *result = node->GetPointer(layoutptr);
-        node->Invalidate();
-        mNumEntries--;
-
-        if (maintainTableInvariant) {
-            std::size_t actualIndex = node - mTable; // or directly and actualIndex is used for something else?
-            std::size_t freedIndex = UpdateSearchLength(HashMapTablePolicy::KeyIndex(key, mTableSize, mKeyShift), actualIndex);
-            while (freedIndex < mTableSize) {
-                freedIndex = UpdateSearchLength(freedIndex, freedIndex);
+        if (oldTable) {
+            for (int i = 0; i < oldSize; i++) {
+                if (oldTable[i].IsValid()) {
+                    oldTable[i].ResetSearchLength(0);
+                    Transfer(oldTable[i]);
+                }
             }
-        } else {
-            node->ResetSearchLength(0);
+            HashMapTablePolicy::Free(oldTable, oldSize * sizeof(Node));
         }
-        return result;
+    }
+
+    void Reserve(std::size_t requestedCount) {
+        RebuildTable(requestedCount);
+    }
+
+    std::size_t Capacity() const {
+        return mTableSize;
+    }
+
+    std::size_t Count() const {
+        return mNumEntries;
+    }
+
+    unsigned short WorstCollision() const {
+        return mWorstCollision;
+    }
+
+    unsigned short KeyShift() const {
+        return mKeyShift;
     }
 
     // UNSOLVED
-    unsigned int CountSearchCacheLines(Key key, unsigned int lineSize) {
+    unsigned int CountSearchCacheLines(Key key, unsigned int lineSize) const {
         unsigned int result = 0;
         if (mNumEntries == 0 || key == 0) {
             return result;
         }
 
         unsigned int prevline = 0;
+        unsigned int currline;
         Node *table = mTable;
         unsigned int actualIndex = HashMapTablePolicy::KeyIndex(key, mTableSize, mKeyShift);
         unsigned int searchLen = 0;
-        unsigned int maxSearchLen = table[actualIndex].MaxSearch();
-        unsigned int currline = (uintptr_t)&table[actualIndex] >> (lineSize & 0x3f); // TODO huh?
+        unsigned int maxSearchlen = table[actualIndex].MaxSearch();
+        currline = (uintptr_t)&table[actualIndex] >> (lineSize & 0x3f);
 
         if (currline != 0) {
-            result = 1; // commenting this out improves the score
             prevline = currline;
+            result = 1;
         }
-        for (; searchLen < maxSearchLen; searchLen++) {
-            if (table[actualIndex].GetKey() == key) {
-                return result;
+        for (;;) {
+            if (searchLen >= maxSearchlen) {
+                break;
             }
-            actualIndex = HashMapTablePolicy::WrapIndex(actualIndex + 1, mTableSize, mKeyShift);
-            currline = (uintptr_t)&table[actualIndex] >> (lineSize & 0x3f);
+            if (table[actualIndex].GetKey() == key) {
+                break;
+            }
+            actualIndex = HashMapTablePolicy::WrapIndex(actualIndex + 1, mTableSize, 0);
+            currline = (uintptr_t)&mTable[actualIndex] >> (lineSize & 0x3f);
             if (currline != prevline) {
                 prevline = currline;
                 result++;
             }
+            searchLen++;
         }
 
         return result;
+    }
+
+    void ClearForRelease() {
+        mNumEntries = 0;
     }
 
   private:
@@ -287,14 +326,15 @@ class HashMap {
 
     std::size_t PreFlightAdd(Key key, std::size_t targetIndex, std::size_t &searchLen) {
         searchLen = 0;
-        while (mTable[targetIndex].IsValid()) {
-            if (mTable[targetIndex].GetKey() == key) {
+        std::size_t actualIndex = targetIndex;
+        while (mTable[actualIndex].IsValid()) {
+            if (mTable[actualIndex].GetKey() == key) {
                 return static_cast<std::size_t>(-1);
             }
-            targetIndex = HashMapTablePolicy::WrapIndex(targetIndex + 1, mTableSize, 0);
+            actualIndex = HashMapTablePolicy::WrapIndex(actualIndex + 1, mTableSize, 0);
             searchLen++;
         }
-        return targetIndex;
+        return actualIndex;
     }
 
     void PostFlightAdd(std::size_t targetIndex, std::size_t searchLen) {

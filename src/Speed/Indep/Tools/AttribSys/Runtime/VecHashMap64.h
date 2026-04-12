@@ -8,15 +8,10 @@
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 
 // total size: 0x10
-template <typename KeyType, typename T, typename Policy, bool Unk2, std::size_t Unk3> class VecHashMap {
-  public:
+template <typename KeyType, typename T, typename Policy, bool Unk2, unsigned int Unk3> class VecHashMap {
     // total size: 0xC or 0x10
     class Node {
       public:
-        void *operator new(std::size_t, void *place) {
-            return place;
-        }
-
         Node() : mKey(0), mPtr(reinterpret_cast<T *>(this)), mMax(0) {}
 
         Node(KeyType key, T *ptr) : mKey(key), mPtr(ptr) {}
@@ -39,10 +34,7 @@ template <typename KeyType, typename T, typename Policy, bool Unk2, std::size_t 
         }
 
         T *Get() const {
-            if (IsValid()) {
-                return mPtr;
-            }
-            return nullptr;
+            return IsValid() ? mPtr : nullptr;
         }
 
         KeyType Key() const {
@@ -74,18 +66,6 @@ template <typename KeyType, typename T, typename Policy, bool Unk2, std::size_t 
         }
     }
 
-    ~VecHashMap() {
-        Clear();
-    }
-
-    std::size_t Size() const {
-        return mNumEntries;
-    }
-
-    std::size_t Capacity() const {
-        return mTableSize;
-    }
-
     void Clear() {
         if (Unk2) {
             for (std::size_t i = 0; i < mTableSize && mNumEntries != 0; i++) {
@@ -104,90 +84,10 @@ template <typename KeyType, typename T, typename Policy, bool Unk2, std::size_t 
         mWorstCollision = 0;
     }
 
-    bool Add(KeyType key, T *ptr) {
-        bool result = InternalAdd(key, ptr);
-        if (mWorstCollision > Unk3) {
-            RebuildTable(Policy::GrowRequest(mTableSize, true));
-        }
-        return result;
+    ~VecHashMap() {
+        Clear();
     }
 
-    T *RemoveIndex(std::size_t actualIndex) {
-        if (!ValidIndex(actualIndex)) {
-            return nullptr;
-        }
-        T *result = mTable[actualIndex].Get();
-        KeyType key = mTable[actualIndex].Key();
-        mTable[actualIndex].Invalidate();
-        mNumEntries--;
-
-        std::size_t freedIndex = UpdateSearchLength(Policy::KeyIndex(key, mTableSize, 0), actualIndex);
-        // TODO UNSOLVED making it a while loop changes the output, in AttribHashMap.h it's a while loop
-        for (; freedIndex < mTableSize; freedIndex = UpdateSearchLength(freedIndex, freedIndex)) {
-        }
-        return result;
-    }
-
-    T *Remove(KeyType key) {
-        std::size_t actualIndex = FindIndex(key);
-        return RemoveIndex(actualIndex);
-    }
-
-    std::size_t FindIndex(KeyType key) const {
-        if (mNumEntries == 0) {
-            return mTableSize;
-        }
-        Node *table = mTable;
-        std::size_t actualIndex = Policy::KeyIndex(key, mTableSize, 0);
-        std::size_t searchLen = 0;
-        std::size_t maxSearchLen = table[actualIndex].MaxSearch();
-        while (searchLen < maxSearchLen && table[actualIndex].Key() != key) {
-            // TODO why is there a Node::IsValid call somewhere here?
-            if (table[actualIndex].IsValid()) {
-            }
-            actualIndex = Policy::WrapIndex(actualIndex + 1, mTableSize, 0);
-            searchLen++;
-        }
-        return table[actualIndex].Key() != key ? mTableSize : actualIndex;
-    }
-
-    bool ValidIndex(std::size_t index) const {
-        return index < mTableSize && mTable[index].IsValid();
-    }
-
-    T *Find(KeyType key) const {
-        if (key == 0) {
-            return nullptr;
-        }
-        unsigned int index = FindIndex(key);
-        return ValidIndex(index) ? mTable[index].Get() : nullptr;
-    }
-
-    void Reserve(std::size_t reservationSize) {
-        RebuildTable(reservationSize);
-    }
-
-    void SetTableBuffer(void *fixedAlloc, std::size_t bytes) {
-        std::size_t capacity = bytes / sizeof(Node);
-        Node *oldTable = mTable;
-        std::size_t oldSize = mTableSize;
-        bool needFree = !mFixedAlloc;
-
-        mNumEntries = 0;
-        mWorstCollision = 0;
-        if (!fixedAlloc) {
-            mFixedAlloc = false;
-            mTableSize = capacity;
-            mTable = reinterpret_cast<Node *>(Policy::Alloc(mTableSize * sizeof(Node)));
-        } else {
-            mFixedAlloc = true;
-            mTableSize = capacity;
-            mTable = reinterpret_cast<Node *>(fixedAlloc);
-        }
-        CopyFromOldTable(oldTable, oldSize, needFree);
-    }
-
-  private:
     bool InternalAdd(KeyType key, T *ptr) {
         if (mNumEntries == mTableSize) {
             RebuildTable(Policy::GrowRequest(mTableSize, false));
@@ -212,55 +112,6 @@ template <typename KeyType, typename T, typename Policy, bool Unk2, std::size_t 
         }
         mNumEntries++;
         return true;
-    }
-
-    // TODO might this be faulty?
-    std::size_t UpdateSearchLength(std::size_t targetIndex, std::size_t freeIndex) {
-        if (targetIndex == freeIndex && mTable[targetIndex].MaxSearch() == 0) {
-            targetIndex = Policy::WrapIndex(targetIndex + mTableSize - mWorstCollision, mTableSize, 0);
-            std::size_t distance = mWorstCollision;
-            while (mTable[targetIndex].MaxSearch() < distance && distance > 0) {
-                targetIndex = Policy::WrapIndex(targetIndex + 1, mTableSize, 0);
-                distance--;
-            }
-            if (distance == 0) {
-                return static_cast<std::size_t>(-1);
-            }
-        }
-
-        std::size_t maxSearch = mTable[targetIndex].MaxSearch();
-        std::size_t worstIndex = Policy::WrapIndex(targetIndex + maxSearch, mTableSize, 0);
-        if (mTable[worstIndex].IsValid()) {
-            Policy::KeyIndex(mTable[worstIndex].Key(), mTableSize, 0);
-        }
-
-        if (freeIndex != worstIndex && mTable[freeIndex].IsValid()) {
-            mTable[freeIndex].Move(mTable[worstIndex]);
-        }
-        if (mTable[worstIndex].IsValid()) {
-        }
-
-        std::size_t newMaxSearch = 0;
-        for (std::size_t searchLen = 1; searchLen < maxSearch; searchLen++) {
-            std::size_t index = Policy::WrapIndex(targetIndex + searchLen, mTableSize, 0);
-            if (Policy::KeyIndex(mTable[index].Key(), mTableSize, 0) == targetIndex) {
-                newMaxSearch = searchLen;
-            }
-        }
-
-        mTable[targetIndex].ResetSearchLength(newMaxSearch);
-
-        if (maxSearch == mWorstCollision && mTable[freeIndex].MaxSearch() < maxSearch && newMaxSearch < maxSearch) {
-            mWorstCollision = 0;
-            std::size_t prevWorst; // unused
-            for (std::size_t i = 0; i < mTableSize && mWorstCollision < maxSearch; i++) {
-                if (mTable[i].MaxSearch() > mWorstCollision) {
-                    prevWorst = mWorstCollision = mTable[i].MaxSearch();
-                }
-            }
-        }
-
-        return worstIndex;
     }
 
     void CopyFromOldTable(Node *oldTable, std::size_t oldSize, bool needFree) {
@@ -301,11 +152,175 @@ template <typename KeyType, typename T, typename Policy, bool Unk2, std::size_t 
         }
     }
 
-    // TODO private
+    unsigned int FindIndex(KeyType key) const {
+        if (mNumEntries == 0) {
+            return mTableSize;
+        }
+        Node *table = mTable;
+        unsigned int actualIndex = Policy::KeyIndex(key, mTableSize, 0);
+        unsigned int searchLen = 0;
+        unsigned int maxSearchlen = table[actualIndex].MaxSearch();
+        while (searchLen < maxSearchlen && table[actualIndex].Key() != key) {
+            if (table[actualIndex].IsValid()) {
+            }
+            actualIndex = Policy::WrapIndex(actualIndex + 1, mTableSize, 0);
+            searchLen++;
+        }
+        return table[actualIndex].Key() != key ? mTableSize : actualIndex;
+    }
+
+    bool ValidIndex(unsigned int index) const {
+        return index < mTableSize && mTable[index].IsValid();
+    }
+
+    T *Find(KeyType key) const {
+        if (key == 0) {
+            return nullptr;
+        }
+        unsigned int index = FindIndex(key);
+        return ValidIndex(index) ? mTable[index].Get() : nullptr;
+    }
+
+    std::size_t Size() const {
+        return mNumEntries;
+    }
+
+    void Reserve(std::size_t reservationSize) {
+        RebuildTable(reservationSize);
+    }
+
+    void SetTableBuffer(void *fixedAlloc, std::size_t bytes) {
+        std::size_t capacity = bytes / sizeof(Node);
+        Node *oldTable = mTable;
+        std::size_t oldSize = mTableSize;
+        bool needFree = !mFixedAlloc;
+
+        mNumEntries = 0;
+        mWorstCollision = 0;
+        if (!fixedAlloc) {
+            mFixedAlloc = false;
+            mTableSize = capacity;
+            mTable = reinterpret_cast<Node *>(Policy::Alloc(mTableSize * sizeof(Node)));
+        } else {
+            mFixedAlloc = true;
+            mTableSize = capacity;
+            mTable = reinterpret_cast<Node *>(fixedAlloc);
+        }
+        CopyFromOldTable(oldTable, oldSize, needFree);
+    }
+
+    std::size_t GetTableNodeSize() const {
+        return sizeof(Node);
+    }
+
+    bool Add(KeyType key, T *ptr) {
+        bool result = InternalAdd(key, ptr);
+        if (mWorstCollision > Unk3) {
+            RebuildTable(Policy::GrowRequest(mTableSize, true));
+        }
+        return result;
+    }
+
+    unsigned int UpdateSearchLength(unsigned int targetIndex, unsigned int freeIndex) {
+        if (targetIndex == freeIndex && mTable[targetIndex].MaxSearch() == 0) {
+            targetIndex = Policy::WrapIndex(targetIndex + mTableSize - mWorstCollision, mTableSize, 0);
+            unsigned int distance = mWorstCollision;
+            while (mTable[targetIndex].MaxSearch() < distance && distance > 0) {
+                targetIndex = Policy::WrapIndex(targetIndex + 1, mTableSize, 0);
+                distance--;
+            }
+            if (distance == 0) {
+                return static_cast<unsigned int>(-1);
+            }
+        }
+
+        unsigned int maxSearch = mTable[targetIndex].MaxSearch();
+        unsigned int worstIndex = Policy::WrapIndex(targetIndex + maxSearch, mTableSize, 0);
+        if (mTable[worstIndex].IsValid()) {
+            Policy::KeyIndex(mTable[worstIndex].Key(), mTableSize, 0);
+        }
+
+        if (mTable[freeIndex].IsValid()) {
+        }
+
+        if (freeIndex != worstIndex) {
+            mTable[freeIndex].Move(mTable[worstIndex]);
+        }
+        if (mTable[worstIndex].IsValid()) {
+        }
+
+        unsigned int newMaxSearch;
+        {
+            if (Unk2) {
+                newMaxSearch = 0;
+            }
+            unsigned int searchLen = 1;
+            asm("" : : "r"(targetIndex));
+            if (!Unk2) {
+                newMaxSearch = 0;
+            }
+            for (; searchLen < maxSearch; searchLen++) {
+                unsigned int index = Policy::WrapIndex(targetIndex + searchLen, mTableSize, 0);
+                if (Policy::KeyIndex(mTable[index].Key(), mTableSize, 0) == targetIndex) {
+                    newMaxSearch = searchLen;
+                }
+            }
+        }
+
+        mTable[targetIndex].ResetSearchLength(newMaxSearch);
+
+        if (maxSearch == mWorstCollision && mTable[freeIndex].MaxSearch() < maxSearch && newMaxSearch < maxSearch) {
+            mWorstCollision = 0;
+            unsigned int prevWorst; // unused
+            for (unsigned int i = 0; i < mTableSize && mWorstCollision < maxSearch; i++) {
+                if (mTable[i].MaxSearch() > mWorstCollision) {
+                    prevWorst = mWorstCollision = mTable[i].MaxSearch();
+                }
+            }
+        }
+
+        return worstIndex;
+    }
+
+    T *RemoveIndex(unsigned int actualIndex) {
+        if (!ValidIndex(actualIndex)) {
+            return nullptr;
+        }
+        T *result = mTable[actualIndex].Get();
+        KeyType key = mTable[actualIndex].Key();
+        mTable[actualIndex].Invalidate();
+        mNumEntries--;
+
+        unsigned int freedIndex = UpdateSearchLength(Policy::KeyIndex(key, mTableSize, 0), actualIndex);
+        for (; freedIndex < mTableSize; freedIndex = UpdateSearchLength(freedIndex, freedIndex)) {
+        }
+        return result;
+    }
+
+    T *Remove(KeyType key) {
+        unsigned int actualIndex = FindIndex(key);
+        return RemoveIndex(actualIndex);
+    }
+
+    std::size_t GetNextValidIndex(std::size_t startPoint) const {
+        std::size_t index = startPoint + 1;
+        for (; index < mTableSize && !mTable[index].IsValid(); index++) {
+        }
+        return index;
+    }
+
+    KeyType GetKeyAtIndex(std::size_t index) const {
+        if (ValidIndex(index)) {
+            (void)ValidIndex(index);
+            return mTable[index].Key();
+        }
+        return 0;
+    }
+
   protected:
     Node *mTable;                      // offset 0x0, size 0x4
-    std::size_t mTableSize;            // offset 0x4, size 0x4
-    std::size_t mNumEntries;           // offset 0x8, size 0x4
+    unsigned int mTableSize;           // offset 0x4, size 0x4
+    unsigned int mNumEntries;          // offset 0x8, size 0x4
     unsigned int mFixedAlloc : 1;      // offset 0xC, size 0x4
     unsigned int mWorstCollision : 31; // offset 0xC, size 0x4
 };

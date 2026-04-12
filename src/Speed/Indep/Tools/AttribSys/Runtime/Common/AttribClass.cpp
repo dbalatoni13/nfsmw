@@ -13,6 +13,8 @@ Class::~Class() {
     Database::Get().RemoveClass(this);
 }
 
+ClassPrivate::CollectionHashMap::~CollectionHashMap() {}
+
 const Definition *Class::GetDefinition(Key key) const {
     Definition target(key);
     const Definition *b = mPrivates.mDefinitions;
@@ -77,12 +79,16 @@ Key Class::GetNextCollection(Key prev) const {
     return 0;
 }
 
+inline void Class::Reserve(unsigned int spaceForAdditionalCollections) {
+    mPrivates.mCollections.Reserve(mPrivates.mCollections.Size() + spaceForAdditionalCollections);
+}
+
 void Class::SetTableBuffer(void *fixedAlloc, std::size_t bytes) {
     mPrivates.mCollections.SetTableBuffer(fixedAlloc, bytes);
 }
 
 unsigned int Class::GetTableNodeSize() const {
-    return 12;
+    return mPrivates.mCollections.GetTableNodeSize();
 }
 
 void Class::Delete() const {
@@ -93,6 +99,7 @@ bool Class::AddCollection(Collection *c) {
     return mPrivates.mCollections.Add(c->GetKey(), c);
 }
 
+// NON_MATCHING: 98.6% / 99.6% - best known floor uses the block-scoped late VecHashMap::UpdateSearchLength scan, but the shared searchLen local still lands in r6 instead of r7
 bool Class::RemoveCollection(Collection *c) {
     return mPrivates.mCollections.Remove(c->GetKey());
 }
@@ -104,7 +111,7 @@ void *Class::AllocLayout() const {
         void *data = Attrib::Alloc(mPrivates.mLayoutSize, "Attrib::Class");
         memset(data, 0, mPrivates.mLayoutSize);
 
-        Definition *defs = mPrivates.mDefinitions;
+        const Definition *defs = mPrivates.mDefinitions;
         for (std::size_t d = 0; d < mPrivates.mNumDefinitions; d++) {
             if (defs[d].IsArray() && defs[d].InLayout()) {
                 char *arrayptr = (char *)data + defs[d].GetOffset(); // or maybe the offset is added later
