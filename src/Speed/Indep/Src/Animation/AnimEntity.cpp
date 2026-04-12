@@ -15,8 +15,8 @@ IAnimEntity *CAnimEntityFactory::CreateAnimEntity(int anim_entity_type) {
 }
 
 void CAnimEntityFactory::EndianSwapEntityData(void *data, int size) {
-    bPlatEndianSwap(reinterpret_cast<unsigned int *>(data));
-    unsigned int anim_entity_type = *reinterpret_cast<unsigned int *>(data);
+    bPlatEndianSwap(reinterpret_cast<uint32 *>(data));
+    uint32 anim_entity_type = *reinterpret_cast<uint32 *>(data);
     switch (anim_entity_type) {
         case eAnimEntityType_BasicCharacter:
             CBasicCharacterAnimEntity::EndianSwapEntityData(data, size);

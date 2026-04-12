@@ -10,7 +10,8 @@
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 // total size: 0xC
-struct CRaceStartAnimCandidate {
+class CRaceStartAnimCandidate {
+  public:
     CRaceStartAnimCandidate() {}
 
     ~CRaceStartAnimCandidate() {}
@@ -19,9 +20,13 @@ struct CRaceStartAnimCandidate {
         bPlatEndianSwap(&mSceneHash);
     }
 
-    unsigned int GetSceneHash() {}
+    uint32 GetSceneHash() {
+        return mSceneHash;
+    }
 
-    int GetCameraTrack() {}
+    int GetCameraTrack() {
+        return mCameraTrack;
+    }
 
     bool IsLive() {}
 
@@ -39,7 +44,8 @@ struct CRaceStartAnimCandidate {
 };
 
 // total size: 0x8
-struct CRaceEndAnimCandidate {
+class CRaceEndAnimCandidate {
+  public:
     CRaceEndAnimCandidate() {}
 
     ~CRaceEndAnimCandidate() {}
@@ -48,9 +54,13 @@ struct CRaceEndAnimCandidate {
         bPlatEndianSwap(&mSceneHash);
     }
 
-    unsigned int GetSceneHash() {}
+    uint32 GetSceneHash() {
+        return mSceneHash;
+    }
 
-    int GetCameraTrack() {}
+    int GetCameraTrack() {
+        return mCameraTrack;
+    }
 
     bool IsLive() {}
 
@@ -68,7 +78,8 @@ struct CRaceEndAnimCandidate {
 };
 
 // total size: 0x14
-struct COnlineRaceStartAnimCandidate {
+class COnlineRaceStartAnimCandidate {
+  public:
     COnlineRaceStartAnimCandidate() {}
 
     ~COnlineRaceStartAnimCandidate() {}
@@ -77,28 +88,33 @@ struct COnlineRaceStartAnimCandidate {
         bPlatEndianSwap(&mSceneHash);
     }
 
-    unsigned int GetSceneHash() {}
+    uint32 GetSceneHash() {
+        return mSceneHash;
+    }
 
-    int GetCameraTrack() {}
+    int GetCameraTrack() {
+        return mCameraTrack;
+    }
 
     bool IsLive() {}
 
     bool PlayerCanBeInThisPosition(int position) {}
 
-    uint32 mSceneHash;                    // offset 0x0, size 0x4
-    uint8 mCameraTrack;                   // offset 0x4, size 0x1
-    uint8 mFlags;                         // offset 0x5, size 0x1
-    uint8 mMinimumNumberOfCars;           // offset 0x6, size 0x1
-    uint8 mMaximumNumberOfCars;           // offset 0x7, size 0x1
-    uint8 mCarConfig;                     // offset 0x8, size 0x1
-    uint8 mPad2;                          // offset 0x9, size 0x1
-    uint8 mPad3;                          // offset 0xA, size 0x1
-    uint8 mPad4;                          // offset 0xB, size 0x1
-    unsigned char mPerCarCameraTracks[8]; // offset 0xC, size 0x8
+    uint32 mSceneHash;            // offset 0x0, size 0x4
+    uint8 mCameraTrack;           // offset 0x4, size 0x1
+    uint8 mFlags;                 // offset 0x5, size 0x1
+    uint8 mMinimumNumberOfCars;   // offset 0x6, size 0x1
+    uint8 mMaximumNumberOfCars;   // offset 0x7, size 0x1
+    uint8 mCarConfig;             // offset 0x8, size 0x1
+    uint8 mPad2;                  // offset 0x9, size 0x1
+    uint8 mPad3;                  // offset 0xA, size 0x1
+    uint8 mPad4;                  // offset 0xB, size 0x1
+    uint8 mPerCarCameraTracks[8]; // offset 0xC, size 0x8
 };
 
 // total size: 0x8
-struct CMomentAnim {
+class CMomentAnim {
+  public:
     CMomentAnim() {}
 
     ~CMomentAnim() {}
@@ -113,7 +129,8 @@ struct CMomentAnim {
 };
 
 // total size: 0x8
-struct CSpecialCarListAnimCandidate {
+class CSpecialCarListAnimCandidate {
+  public:
     enum SpecialCarList {
         NONE = -1,
         ONE_COP = 0,
@@ -144,7 +161,8 @@ struct CSpecialCarListAnimCandidate {
 };
 
 // total size: 0xC
-struct CTrackRaceAnimEnableMask {
+class CTrackRaceAnimEnableMask {
+  public:
     CTrackRaceAnimEnableMask() {}
 
     ~CTrackRaceAnimEnableMask() {}
@@ -190,7 +208,8 @@ enum eMomentMarkerTypes {
 };
 
 // total size: 0x1054
-struct CAnimCandidateData {
+class CAnimCandidateData {
+  public:
     CAnimCandidateData() {}
 
     ~CAnimCandidateData() {}
@@ -220,7 +239,7 @@ struct CAnimCandidateData {
         bPlatEndianSwap(&mMomentAnimCount);
         bPlatEndianSwap(&mSpecialCarListCount);
 
-        unsigned int i;
+        uint32 i;
         for (i = 0; i < mRaceStartAnimCandidateCount; i++) {
             mRaceStartAnimCandidates[i].EndianSwap();
         }
@@ -244,13 +263,13 @@ struct CAnimCandidateData {
         }
     }
 
-    int GetSpecialCarList(unsigned int sceneHash) {}
+    int GetSpecialCarList(uint32 sceneHash) {}
 
-    int GetSceneMomentMarkerType(unsigned int sceneHash);
+    int GetSceneMomentMarkerType(uint32 sceneHash);
 
     static const char *GetMomentMarkerName(int markerType);
 
-    TrackPositionMarker *GetClosestMarker(unsigned int sceneHash, bVector3 &position, int *ID, float *markerDist, unsigned short angle);
+    TrackPositionMarker *GetClosestMarker(uint32 sceneHash, bVector3 &position, int *ID, float *markerDist, bAngle angle);
 
     uint32 mRaceStartAnimCandidateCount;                             // offset 0x0, size 0x4
     uint32 mRaceEndAnimCandidateCount;                               // offset 0x4, size 0x4

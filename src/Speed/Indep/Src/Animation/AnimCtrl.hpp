@@ -42,21 +42,21 @@ class CAnimCtrl : public bTNode<CAnimCtrl> {
         return &m_animPart;
     }
 
-    unsigned int GetNameHash() {
+    uint32 GetNameHash() {
         return m_NameHash;
     }
 
-    void SetNameHash(unsigned int name_hash) {
+    void SetNameHash(uint32 name_hash) {
         m_NameHash = name_hash;
     }
 
-    unsigned int GetFlags() {
+    uint32 GetFlags() {
         return m_flags;
     }
 
-    unsigned int IsCyclic() {}
+    uint32 IsCyclic() {}
 
-    unsigned int IsHalted() {}
+    uint32 IsHalted() {}
 
     int IsPlaying() {
         return PlayState == eACPS_PLAYING;
@@ -168,19 +168,19 @@ class CAnimCtrl : public bTNode<CAnimCtrl> {
 
     void Cleanup();
 
-    void SetLoopRange(unsigned int loop_range_start, unsigned int loop_range_end);
+    void SetLoopRange(uint32 loop_range_start, uint32 loop_range_end);
 
     int CreateFnAnim(EAGL4Anim::AnimMemoryMap *memMap, int dof);
 
     int CreateFnAnimFromBank(EAGL4Anim::AnimBank *animBank, int animIndex, int dof);
 
-    int CreateFnAnimFromNamehash(unsigned int namehash, int dof);
+    int CreateFnAnimFromNamehash(uint32 namehash, int dof);
 
     void SetPlay();
 
     void AdvanceAnim();
 
-    void GetFlagString(unsigned int flag, char *buffer, int size);
+    void GetFlagString(uint32 flag, char *buffer, int size);
 
     int AdvanceAnimTime(float timestep);
 

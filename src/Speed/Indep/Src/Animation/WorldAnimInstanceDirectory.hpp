@@ -19,7 +19,8 @@ struct WorldAnimInstanceEntryInfo {
 };
 
 // total size: 0x10
-struct WorldAnimInstanceEntry : public bTNode<WorldAnimInstanceEntry> {
+class WorldAnimInstanceEntry : public bTNode<WorldAnimInstanceEntry> {
+  public:
     void *operator new(size_t size, const char *debug_name);
 
     void operator delete(void *ptr);
@@ -37,17 +38,17 @@ class WorldAnimInstanceDirectory {
   public:
     WorldAnimInstanceDirectory();
 
-    WorldAnimEntityTreeInfo *GetAnimTreeInfo(unsigned int anim_tree_name_hash);
+    WorldAnimEntityTreeInfo *GetAnimTreeInfo(uint32 anim_tree_name_hash);
 
     void AddLoadedAnimTreeInfo(WorldAnimEntityTreeInfo *anim_tree_info);
 
-    WorldAnimEntityInfo *GetAnimEntityInfo(unsigned int anim_entity_name_hash);
+    WorldAnimEntityInfo *GetAnimEntityInfo(uint32 anim_entity_name_hash);
 
     void AddLoadedAnimEntityInfo(WorldAnimEntityInfo *anim_entity_info);
 
     void RemoveAndDeleteAllAnimTreeInfos();
 
-    void RemoveAndDeleteAnimTreeInfo(unsigned int tree_name_hash);
+    void RemoveAndDeleteAnimTreeInfo(uint32 tree_name_hash);
 
     void RemoveEntityInfo(WorldAnimEntityInfo *entity_info);
 
@@ -75,7 +76,7 @@ class WorldAnimInstanceDirectory {
 
     IControlScenario *GetControlScenario(eControlScenarioType cst);
 
-    CWorldAnimEntityTree *GetAnimationAssociatedWithTriggerZone(unsigned int trigger_zone_hash);
+    CWorldAnimEntityTree *GetAnimationAssociatedWithTriggerZone(uint32 trigger_zone_hash);
 
     bool IsInitialized() {
         return mInitialized;

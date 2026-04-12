@@ -37,7 +37,7 @@ class CWorldAnimEntity : public IAnimEntity {
         return mAnimCtrl;
     }
 
-    unsigned int GetParentInstanceNameHash() {
+    uint32 GetParentInstanceNameHash() {
         return mParentInstanceNameHash;
     }
 
@@ -107,7 +107,7 @@ class CWorldAnimEntityTree : public bTNode<CWorldAnimEntityTree> {
 
     virtual ~CWorldAnimEntityTree();
 
-    CWorldAnimEntity *GetEntityByNameHash(unsigned int namehash);
+    CWorldAnimEntity *GetEntityByNameHash(uint32 namehash);
 
     void SetTime(float time);
 
@@ -129,13 +129,14 @@ class CWorldAnimEntityTree : public bTNode<CWorldAnimEntityTree> {
 };
 
 // total size: 0x58
-struct WorldAnimEntityTreeInfo : public bTNode<WorldAnimEntityTreeInfo> {
+class WorldAnimEntityTreeInfo : public bTNode<WorldAnimEntityTreeInfo> {
+  public:
     void *operator new(size_t size, const char *debug_name);
     void operator delete(void *ptr);
 
     WorldAnimEntityTreeInfo() {}
 
-    WorldAnimEntityTreeInfo(unsigned int treenamehash, bPList<WorldAnimEntityInfo> &temp_list, WorldAnimNamedRange *ranges);
+    WorldAnimEntityTreeInfo(uint32 treenamehash, bPList<WorldAnimEntityInfo> &temp_list, WorldAnimNamedRange *ranges);
 
     virtual ~WorldAnimEntityTreeInfo();
 
@@ -150,10 +151,10 @@ struct WorldAnimEntityTreeInfo : public bTNode<WorldAnimEntityTreeInfo> {
 
 // total size: 0x50
 struct WorldAnimEntityTreeMarker {
-    unsigned int anim_tree_name_hash;    // offset 0x0, size 0x4
-    unsigned int pad0;                   // offset 0x4, size 0x4
-    unsigned int pad1;                   // offset 0x8, size 0x4
-    unsigned int pad2;                   // offset 0xC, size 0x4
+    uint32 anim_tree_name_hash;          // offset 0x0, size 0x4
+    uint32 pad0;                         // offset 0x4, size 0x4
+    uint32 pad1;                         // offset 0x8, size 0x4
+    uint32 pad2;                         // offset 0xC, size 0x4
     WorldAnimNamedRange named_ranges[4]; // offset 0x10, size 0x40
 };
 

@@ -1,7 +1,15 @@
-#include "ControlScenario.hpp"
 #include "GenericNISControlScenario.hpp"
 
-void GenericNISControlScenario::HandleEventMessage(CWorldAnimEntityTree *entity_tree, unsigned int wa_msg, void *data) {
+static unsigned int WAM_START_TRIGGER = bStringHash("WAM_START_TRIGGER");
+static unsigned int WAM_STOP_TRIGGER = bStringHash("WAM_STOP_TRIGGER");
+static unsigned int WAM_FIRST_FRAME = bStringHash("WAM_FIRST_FRAME");
+static unsigned int WAM_LAST_FRAME = bStringHash("WAM_LAST_FRAME");
+static unsigned int WAM_SOUND_TRIGGER_START = bStringHash("WAM_SOUND_TRIGGER_START");
+static unsigned int WAM_SOUND_TRIGGER_STOP = bStringHash("WAM_SOUND_TRIGGER_STOP");
+static unsigned int WAM_NIS_GENERIC_CONTROL_MSG = bStringHash("WAM_NIS_GENERIC_CONTROL_MSG");
+static unsigned int WAM_FWD_REV_TRACK_CONTROL_MSG = bStringHash("WAM_FWD_REV_TRACK_CONTROL_MSG");
+
+void GenericNISControlScenario::HandleEventMessage(CWorldAnimEntityTree *entity_tree, uint32 wa_msg, void *data) {
     if (wa_msg != WAM_NIS_GENERIC_CONTROL_MSG) {
         return;
     }
@@ -19,8 +27,7 @@ void GenericNISControlScenario::HandleEventMessage(CWorldAnimEntityTree *entity_
     }
     float frame_len = gcsi->len;
 
-    for (bPNode *node = entity_tree->instantiated_world_anim_entities.GetHead();
-         node != entity_tree->instantiated_world_anim_entities.EndOfList();
+    for (bPNode *node = entity_tree->instantiated_world_anim_entities.GetHead(); node != entity_tree->instantiated_world_anim_entities.EndOfList();
          node = node->GetNext()) {
         CWorldAnimEntity *entity = reinterpret_cast<CWorldAnimEntity *>(node->GetObject());
         if (gcsi->entity_hash == entity->GetInstanceNameHash()) {

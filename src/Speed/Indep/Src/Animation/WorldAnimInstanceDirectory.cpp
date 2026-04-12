@@ -15,8 +15,8 @@ WorldAnimInstanceDirectory TheWorldAnimInstanceDirectory; // size: 0x50, address
 bool PrintWorldAnimationStuff = false;                    // size: 0x1, address: 0x8041589C
 bool DisableWorldAnimations = false;                      // size: 0x1, address: 0x804156F0
 
-static int NumWorldAnimInstanceEntries = 0;  // size: 0x4, address: 0x80415898
-static int MaxWorldAnimInstances = 0;        // size: 0x4, address: 0x80415894
+static int NumWorldAnimInstanceEntries = 0; // size: 0x4, address: 0x80415898
+static int MaxWorldAnimInstances = 0;       // size: 0x4, address: 0x80415894
 
 void *WorldAnimInstanceEntry::operator new(size_t size, const char *debug_name) {
     NumWorldAnimInstanceEntries++;
@@ -41,16 +41,14 @@ WorldAnimInstanceEntry::WorldAnimInstanceEntry() {
     mInstanceEntryInfo = nullptr;
 }
 
-WorldAnimEntityTreeInfo *WorldAnimInstanceDirectory::GetAnimTreeInfo(unsigned int anim_tree_name_hash) {
+WorldAnimEntityTreeInfo *WorldAnimInstanceDirectory::GetAnimTreeInfo(uint32 anim_tree_name_hash) {
     if (AnimCfg_DisableWorldAnimations || DisableWorldAnimations) {
         return nullptr;
     }
     if (!mInitialized) {
         Init();
     }
-    for (WorldAnimEntityTreeInfo *tree = mLoadedWorldAnimTrees.GetHead();
-         tree != mLoadedWorldAnimTrees.EndOfList();
-         tree = tree->GetNext()) {
+    for (WorldAnimEntityTreeInfo *tree = mLoadedWorldAnimTrees.GetHead(); tree != mLoadedWorldAnimTrees.EndOfList(); tree = tree->GetNext()) {
         if (tree->tree_name_hash == anim_tree_name_hash) {
             return tree;
         }
@@ -89,13 +87,14 @@ void WorldAnimInstanceDirectory::RemoveAndDeleteAllAnimTreeInfos() {
     }
 }
 
-void WorldAnimInstanceDirectory::RemoveAndDeleteAnimTreeInfo(unsigned int tree_name_hash) {
+void WorldAnimInstanceDirectory::RemoveAndDeleteAnimTreeInfo(uint32 tree_name_hash) {
     if (AnimCfg_DisableWorldAnimations || DisableWorldAnimations) {
         return;
     }
     WorldAnimEntityTreeInfo *tree = mLoadedWorldAnimTrees.GetHead();
     while (tree != mLoadedWorldAnimTrees.EndOfList()) {
-        if (tree->tree_name_hash == tree_name_hash) goto found;
+        if (tree->tree_name_hash == tree_name_hash)
+            goto found;
         tree = tree->GetNext();
     }
     return;
@@ -108,9 +107,7 @@ void WorldAnimInstanceDirectory::RemoveEntityInfo(WorldAnimEntityInfo *entity_in
     if (AnimCfg_DisableWorldAnimations || DisableWorldAnimations) {
         return;
     }
-    for (bPNode *node = mLoadedWorldAnimEntityInfos.GetHead();
-         node != mLoadedWorldAnimEntityInfos.EndOfList();
-         node = node->GetNext()) {
+    for (bPNode *node = mLoadedWorldAnimEntityInfos.GetHead(); node != mLoadedWorldAnimEntityInfos.EndOfList(); node = node->GetNext()) {
         WorldAnimEntityInfo *waei = reinterpret_cast<WorldAnimEntityInfo *>(node->GetpObject());
         if (waei == entity_info) {
             mLoadedWorldAnimEntityInfos.Remove(node);
@@ -133,9 +130,7 @@ void WorldAnimInstanceDirectory::RemoveAnimInstance(WorldAnimInstance *instance)
     if (AnimCfg_DisableWorldAnimations || DisableWorldAnimations) {
         return;
     }
-    for (bPNode *node = mLoadedWorldAnimInstance.GetHead();
-         node != mLoadedWorldAnimInstance.EndOfList();
-         node = node->GetNext()) {
+    for (bPNode *node = mLoadedWorldAnimInstance.GetHead(); node != mLoadedWorldAnimInstance.EndOfList(); node = node->GetNext()) {
         WorldAnimInstance *wai = reinterpret_cast<WorldAnimInstance *>(node->GetpObject());
         if (wai == instance) {
             mLoadedWorldAnimInstance.Remove(node);
@@ -191,8 +186,7 @@ void WorldAnimInstanceDirectory::RemoveInstanceEntryAndInfo(WorldAnimInstanceEnt
     if (AnimCfg_DisableWorldAnimations || DisableWorldAnimations) {
         return;
     }
-    for (WorldAnimInstanceEntry *entry = mResidentWorldAnimInstanceEntries.GetHead();
-         entry != mResidentWorldAnimInstanceEntries.EndOfList();
+    for (WorldAnimInstanceEntry *entry = mResidentWorldAnimInstanceEntries.GetHead(); entry != mResidentWorldAnimInstanceEntries.EndOfList();
          entry = entry->GetNext()) {
         if (entry->mInstanceEntryInfo == entry_info) {
             entry->Remove();
@@ -203,7 +197,8 @@ void WorldAnimInstanceDirectory::RemoveInstanceEntryAndInfo(WorldAnimInstanceEnt
     bPNode *node = mResidentWorldAnimInstanceEntryInfos.GetHead();
     while (node != mResidentWorldAnimInstanceEntryInfos.EndOfList()) {
         WorldAnimInstanceEntryInfo *info = reinterpret_cast<WorldAnimInstanceEntryInfo *>(node->GetpObject());
-        if (info == entry_info) goto found;
+        if (info == entry_info)
+            goto found;
         node = node->GetNext();
     }
     return;

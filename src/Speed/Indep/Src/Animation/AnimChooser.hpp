@@ -6,8 +6,6 @@
 #endif
 
 // total size: 0x4
-
-// total size: 0x4
 class CAnimChooser {
   public:
     enum eType {

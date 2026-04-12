@@ -17,7 +17,7 @@ struct BoneMapping {
     int Head;
 };
 
-extern unsigned int skel_ROOT_hash;
+extern uint32 skel_ROOT_hash;
 
 int RenderCharacterShadows = 1;
 TextureInfo *CharacterShadowTexture = nullptr;
@@ -76,7 +76,7 @@ CBasicCharacterAnimEntity::~CBasicCharacterAnimEntity() {
 }
 
 bool CBasicCharacterAnimEntity::Init(void *init_data, SpaceNode *parent_space_node) {
-    unsigned int play_flags = 0;
+    uint32 play_flags = 0;
     BasicCharacterAnimEntityInfo *info = reinterpret_cast<BasicCharacterAnimEntityInfo *>(init_data);
 
     Purge();

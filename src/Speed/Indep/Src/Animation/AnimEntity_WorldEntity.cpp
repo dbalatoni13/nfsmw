@@ -12,8 +12,8 @@
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "WorldAnimInstanceDirectory.hpp"
 
-static int NumWorldAnimEntities = 0;           // size: 0x4, address: 0x804156F4
-static int MaxNumWorldAnimEntities = 0;        // size: 0x4, address: 0x804156F8
+static int NumWorldAnimEntities = 0;    // size: 0x4, address: 0x804156F4
+static int MaxNumWorldAnimEntities = 0; // size: 0x4, address: 0x804156F8
 // TODO move? they are static though
 static int NumWorldAnimEntityTrees = 0;        // size: 0x4, address: 0x804156FC
 static int MaxNumWorldAnimEntityTrees = 0;     // size: 0x4, address: 0x80415700
@@ -80,7 +80,9 @@ CWorldAnimEntity::CWorldAnimEntity()
       mWorldModel(nullptr),       //
       mAnimCtrl(nullptr) {}
 
-CWorldAnimEntity::~CWorldAnimEntity() { Purge(); }
+CWorldAnimEntity::~CWorldAnimEntity() {
+    Purge();
+}
 
 uint32 GetAnimChannelHash(uint32 anim_hash, uint32 dof) {
     if (dof == 0) {
@@ -95,7 +97,7 @@ uint32 GetAnimChannelHash(uint32 anim_hash, uint32 dof) {
 }
 
 bool CWorldAnimEntity::Init(void *init_data, SpaceNode *parent_space_node) {
-    unsigned int play_flags = 0;
+    uint32 play_flags = 0;
 
     Purge();
 
@@ -111,7 +113,7 @@ bool CWorldAnimEntity::Init(void *init_data, SpaceNode *parent_space_node) {
     mSpaceNode->SetLocalMatrix(&info->mLocalMatrix);
 
     if (info->mModelHash != 0 && info->mAnimTreeHash != info->mThisInstanceNameHash) {
-        unsigned int lods[4];
+        uint32 lods[4];
         lods[0] = info->mModelHash;
         lods[1] = info->mLODB;
         lods[2] = 0;
@@ -144,15 +146,15 @@ bool CWorldAnimEntity::Init(void *init_data, SpaceNode *parent_space_node) {
     }
 
     if (info->mAnimContentFlags & 1) {
-        unsigned int TransAnimNameHash = GetAnimChannelHash(info->mAnimNameHash, 0);
+        uint32 TransAnimNameHash = GetAnimChannelHash(info->mAnimNameHash, 0);
         mAnimCtrl->CreateFnAnimFromNamehash(TransAnimNameHash, 0);
     }
     if (info->mAnimContentFlags & 2) {
-        unsigned int QuatsAnimNameHash = GetAnimChannelHash(info->mAnimNameHash, 1);
+        uint32 QuatsAnimNameHash = GetAnimChannelHash(info->mAnimNameHash, 1);
         mAnimCtrl->CreateFnAnimFromNamehash(QuatsAnimNameHash, 1);
     }
     if (info->mAnimContentFlags & 4) {
-        unsigned int ScaleAnimNameHash = GetAnimChannelHash(info->mAnimNameHash, 2);
+        uint32 ScaleAnimNameHash = GetAnimChannelHash(info->mAnimNameHash, 2);
         mAnimCtrl->CreateFnAnimFromNamehash(ScaleAnimNameHash, 2);
     }
 
@@ -292,7 +294,7 @@ int CompareParentIndex(bPNode *node_before, bPNode *node_after) {
     return res;
 }
 
-WorldAnimEntityTreeInfo::WorldAnimEntityTreeInfo(unsigned int treenamehash, bPList<WorldAnimEntityInfo> &temp_list, WorldAnimNamedRange *ranges) {
+WorldAnimEntityTreeInfo::WorldAnimEntityTreeInfo(uint32 treenamehash, bPList<WorldAnimEntityInfo> &temp_list, WorldAnimNamedRange *ranges) {
     tree_name_hash = treenamehash;
 
     while (!temp_list.IsEmpty()) {
@@ -358,7 +360,7 @@ int LoaderWorldAnimTreeMarker(bChunk *chunk) {
             bPlatEndianSwap(&marker->named_ranges[i].range);
         }
 
-        unsigned int anim_tree_name_hash = marker->anim_tree_name_hash;
+        uint32 anim_tree_name_hash = marker->anim_tree_name_hash;
 
         if (temp_loaded_world_anim_entity_chunks.IsEmpty()) {
             return 1;

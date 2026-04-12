@@ -7,6 +7,7 @@
 
 #include "AnimEntity_WorldEntity.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
+#include "Speed/Indep/Src/Animation/AnimScene.hpp"
 
 // total size: 0x18
 class CAnimWorldScene : public bTNode<CAnimWorldScene> {
@@ -17,7 +18,7 @@ class CAnimWorldScene : public bTNode<CAnimWorldScene> {
 
     CWorldAnimEntityTree *GetAnimTree(int instance_id);
 
-    CWorldAnimEntityTree *GetAnimTreeFromHash(unsigned int instanceHash);
+    CWorldAnimEntityTree *GetAnimTreeFromHash(uint32 instanceHash);
 
     virtual ~CAnimWorldScene();
 
@@ -30,7 +31,7 @@ class CAnimWorldScene : public bTNode<CAnimWorldScene> {
     void DoSnapshot(ReplaySnapshot *snapshot);
 
   private:
-    int mHandle;                                         // offset 0x8, size 0x4
+    AnimHandle mHandle;                                  // offset 0x8, size 0x4
     bTList<CWorldAnimEntityTree> mInstancedAnimTreeList; // offset 0xC, size 0x8
 };
 

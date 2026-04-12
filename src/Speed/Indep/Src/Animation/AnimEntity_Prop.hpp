@@ -9,23 +9,23 @@
 
 // total size: 0x60
 typedef struct {
-    unsigned int mTypeID;                 // offset 0x0, size 0x4
-    unsigned int mThisInstanceNameHash;   // offset 0x4, size 0x4
-    unsigned int mParentInstanceNameHash; // offset 0x8, size 0x4
-    unsigned int mPlayFlags;              // offset 0xC, size 0x4
-    struct bMatrix4 mLocalMatrix;         // offset 0x10, size 0x40
-    unsigned int mLODNameHash[4];         // offset 0x50, size 0x10
+    uint32 mTypeID;                 // offset 0x0, size 0x4
+    uint32 mThisInstanceNameHash;   // offset 0x4, size 0x4
+    uint32 mParentInstanceNameHash; // offset 0x8, size 0x4
+    uint32 mPlayFlags;              // offset 0xC, size 0x4
+    struct bMatrix4 mLocalMatrix;   // offset 0x10, size 0x40
+    uint32 mLODNameHash[4];         // offset 0x50, size 0x10
 } PropAnimEntityInfo;
 
 // total size: 0x18
 class CPropAnimEntity : public IAnimEntity {
   public:
-    virtual unsigned int GetTypeID() {
+    virtual uint32 GetTypeID() {
         return mTypeID;
     }
 
     // Overrides: IAnimEntity
-    unsigned int GetInstanceNameHash() override {
+    uint32 GetInstanceNameHash() override {
         return mThisInstanceNameHash;
     }
 
