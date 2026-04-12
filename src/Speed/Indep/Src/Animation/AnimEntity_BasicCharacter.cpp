@@ -22,10 +22,10 @@ extern uint32 skel_ROOT_hash;
 int RenderCharacterShadows = 1;
 TextureInfo *CharacterShadowTexture = nullptr;
 BoneMapping BoneMap[] = {
-    { 0x05, 0x09, 0x12, 0x1C, 0x1E },
-    { 0x05, 0x08, 0x0F, 0x15, 0x1E },
-    { 0x04, 0x08, 0x0F, 0x15, 0x1C },
-    { 0x04, 0x08, 0x0F, 0x15, 0x1C },
+    {0x05, 0x09, 0x12, 0x1C, 0x1E},
+    {0x05, 0x08, 0x0F, 0x15, 0x1E},
+    {0x04, 0x08, 0x0F, 0x15, 0x1C},
+    {0x04, 0x08, 0x0F, 0x15, 0x1C},
 };
 
 void InitCharacterEffects() {
@@ -83,8 +83,12 @@ bool CBasicCharacterAnimEntity::Init(void *init_data, SpaceNode *parent_space_no
 
     mTypeID = info->mTypeID;
     mThisInstanceNameHash = info->mThisInstanceNameHash;
-    asm("cmpw 7, %0, %1" : : "r"(mThisInstanceNameHash), "r"(info->mParentInstanceNameHash) : "cr7");
-    if (info->mParentInstanceNameHash == 0) {
+
+    if (mThisInstanceNameHash == info->mParentInstanceNameHash) {
+        // maybe a debug print
+    }
+
+    if (info->mParentInstanceNameHash == 0 || mThisInstanceNameHash == info->mParentInstanceNameHash) {
         mSpaceNode = CreateSpaceNode(nullptr);
     } else {
         mSpaceNode = CreateSpaceNode(nullptr);
@@ -194,8 +198,7 @@ bool CBasicCharacterAnimEntity::Init(void *init_data, SpaceNode *parent_space_no
         float non_adjusted_z = mSpaceNode->GetWorldMatrix()->v3.z;
         eUnSwizzleWorldVector(pelvis_position, pelvis_position);
         float ground_elevation;
-        if (WCollisionMgr(0, 3).GetWorldHeightAtPointRigorous(
-                *reinterpret_cast<UMath::Vector3 *>(&pelvis_position), ground_elevation, nullptr)) {
+        if (WCollisionMgr(0, 3).GetWorldHeightAtPointRigorous(*reinterpret_cast<UMath::Vector3 *>(&pelvis_position), ground_elevation, nullptr)) {
             mPreviousElevation = ground_elevation;
             mHavePreviousElevation = true;
             bMatrix4 local_matrix(*mSpaceNode->GetLocalMatrix());
@@ -259,8 +262,8 @@ void CBasicCharacterAnimEntity::UpdateTimeStep(float time_step) {
                 eUnSwizzleWorldVector(pelvis_position, pelvis_position);
                 pelvis_position.y += 2.0f;
                 float ground_elevation;
-                if (WCollisionMgr(0, 3).GetWorldHeightAtPointRigorous(
-                        *reinterpret_cast<UMath::Vector3 *>(&pelvis_position), ground_elevation, nullptr)) {
+                if (WCollisionMgr(0, 3).GetWorldHeightAtPointRigorous(*reinterpret_cast<UMath::Vector3 *>(&pelvis_position), ground_elevation,
+                                                                      nullptr)) {
                     if (mHavePreviousElevation) {
                         mPreviousElevation = ground_elevation * 0.5f + mPreviousElevation * 0.5f;
                     } else {
