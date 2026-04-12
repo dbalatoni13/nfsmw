@@ -21,7 +21,9 @@ CPropAnimEntity::CPropAnimEntity()
       mThisInstanceNameHash(0), //
       mSpaceNode(nullptr) {}
 
-CPropAnimEntity::~CPropAnimEntity() { Purge(); }
+CPropAnimEntity::~CPropAnimEntity() {
+    Purge();
+}
 
 // Functionally matching
 bool CPropAnimEntity::Init(void *init_data, SpaceNode *parent_space_node) {
@@ -30,8 +32,12 @@ bool CPropAnimEntity::Init(void *init_data, SpaceNode *parent_space_node) {
     PropAnimEntityInfo *info = reinterpret_cast<PropAnimEntityInfo *>(init_data);
     mTypeID = info->mTypeID;
     mThisInstanceNameHash = info->mThisInstanceNameHash;
-    asm("cmpw 7, %0, %1" : : "r"(mThisInstanceNameHash), "r"(info->mParentInstanceNameHash) : "cr7");
-    if (info->mParentInstanceNameHash == 0) {
+
+    if (mThisInstanceNameHash == info->mParentInstanceNameHash) {
+        // maybe a debug print
+    }
+
+    if (info->mParentInstanceNameHash == 0 || mThisInstanceNameHash == info->mParentInstanceNameHash) {
         mSpaceNode = CreateSpaceNode(nullptr);
     } else {
         mSpaceNode = CreateSpaceNode(nullptr);

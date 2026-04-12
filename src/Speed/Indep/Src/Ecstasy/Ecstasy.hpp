@@ -286,13 +286,19 @@ class ePoly {
 
     void SetFlags(uint8 i) {}
 
-    void SetFlailer(unsigned char i) {
+    void SetFlailer(uint8 i) {
+#ifndef EA_BUILD_A124
         Flailer = i;
+#endif
     }
 
     uint8 GetFlags() {}
 
-    uint8 GetFlailer() {}
+    uint8 GetFlailer() {
+#ifndef EA_BUILD_A124
+        return Flailer;
+#endif
+    }
 };
 
 enum CurtainStatus {

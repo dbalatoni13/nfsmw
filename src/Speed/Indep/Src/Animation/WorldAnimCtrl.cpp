@@ -158,35 +158,18 @@ int CWorldAnimCtrl::AdvanceAnimTime(float timestep) {
     int result_anim_is_done = 0;
 
     float effective_time_scale = GetEffectiveTimeScale();
-    float ets30 = effective_time_scale * 30.0f;
-    float this_time_step = timestep * ets30;
-    register float raw_master asm("fr9") = MasterDelayElapsed;
+    effective_time_scale *= 30.0f;
+    float this_time_step = timestep * effective_time_scale;
+    float this_master_delay_elapsed = MasterDelayElapsed * effective_time_scale;
     float this_master_delay_len = m_masterDelayTime * 30.0f;
-    register float raw_local asm("fr10") = LocalDelayElapsed;
+    float this_local_delay_elapsed = LocalDelayElapsed * effective_time_scale;
     float this_local_delay_len = m_localDelayTime * 30.0f;
-    register float this_local_delay_elapsed asm("fr29") = raw_local * ets30;
-    register float this_master_delay_elapsed asm("fr30") = raw_master * ets30;
 
-    float range_len;
-    if (m_flags & 0x40) {
-        range_len = GetLoopRangeScaledEnd() - GetLoopRangeScaledStart();
-    } else {
-        range_len = m_animLength;
-    }
+    float range_len = m_flags & 0x40 ? GetLoopRangeScaledEnd() - GetLoopRangeScaledStart() : m_animLength;
 
-    float begin_of_anim;
-    if (m_flags & 0x40) {
-        begin_of_anim = GetLoopRangeScaledStart();
-    } else {
-        begin_of_anim = 0.0f;
-    }
+    float begin_of_anim = m_flags & 0x40 ? GetLoopRangeScaledStart() : 0.0f;
 
-    float end_of_anim;
-    if (m_flags & 0x40) {
-        end_of_anim = GetLoopRangeScaledEnd();
-    } else {
-        end_of_anim = m_animLength;
-    }
+    float end_of_anim = m_flags & 0x40 ? GetLoopRangeScaledEnd() : m_animLength;
 
     bool triggered = (m_flags >> 11) & 1;
     bool linear = (m_flags >> 3) & 1;
