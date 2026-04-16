@@ -60,9 +60,9 @@ void CARSFX_Shift::UpdateMixerOutputs() {
 
 void CARSFX_Shift::SetupSFX(CSTATE_Base *_StateBase) {
     SndBase::SetupSFX(_StateBase);
-    m_pSweetnersData = &m_pEAXCar->mEngineInfo;
     m_UGL = m_pEAXCar->m_TransmissionUGL;
-    m_pShiftingPatternData = &m_pEAXCar->mShiftInfo;
+    m_pSweetnersData = &m_pEAXCar->GetAttributes();
+    m_pShiftingPatternData = &m_pEAXCar->GetShiftInfo();
 }
 
 void CARSFX_Shift::InitSFX() {
