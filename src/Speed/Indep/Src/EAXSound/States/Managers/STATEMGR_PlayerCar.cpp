@@ -87,7 +87,12 @@ SndBase *SFXCTL_3DRearPos::CreateObject(unsigned int allocator) {
 }
 
 void SFXCTL_3DRearPos::InitSFX() {
-    SFXCTL_3DCarPos::InitSFX();
+    SFXCTL::InitSFX();
+    vRearPos.x = 0.0f;
+    vRearPos.y = 0.0f;
+    vRearPos.z = 0.0f;
+    AssignPositionVector(&vRearPos);
+    AssignDirectionVector(GetPhysCar()->GetForwardVector());
 }
 
 void SFXCTL_3DRearPos::UpdateParams(float t) {
