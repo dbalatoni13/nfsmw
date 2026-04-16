@@ -21,9 +21,9 @@ const char *EAXCar::GetStateName(void) const {
     return s_StateInfo.stateName;
 }
 
-CSTATE_Base *EAXCar::CreateState(unsigned int) {
-    return new (gAudioMemoryManager.AllocateMemory(
-        sizeof(EAXCar), s_StateInfo.stateName, false)) EAXCar;
+CSTATE_Base *EAXCar::CreateState(unsigned int allocator) {
+    return new (AudioMemBase::operator new(
+        sizeof(EAXCar), GetStaticStateInfo()->stateName)) EAXCar;
 }
 
 EAXCar::EAXCar()

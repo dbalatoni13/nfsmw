@@ -29,7 +29,6 @@ CSTATE_DriveBy::CSTATE_DriveBy()
     m_DriveByInfo.eDriveByType = DRIVE_BY_LAMPPOST;
     m_DriveByInfo.pEAXCar = nullptr;
     m_DriveByInfo.ClosingVelocity = 0.0f;
-    m_DriveByInfo.vLocation = bVector3(0.0f, 0.0f, 0.0f);
     m_DriveByInfo.UniqueID = 0;
 }
 
