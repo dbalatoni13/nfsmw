@@ -53,10 +53,7 @@ void CARSFX_Siren::Detach() {
 
 void CARSFX_Siren::Destroy() {
     if (mSiren) {
-        if (mSiren->mpClass) {
-            mSiren->mpClass->Release();
-        }
-        Csis::System::Free(mSiren);
+        delete mSiren;
     }
     mSiren = nullptr;
 }
