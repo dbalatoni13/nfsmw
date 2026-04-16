@@ -28,7 +28,13 @@ CSTATE_Collision::CSTATE_Collision()
     : m_pCollisionEvent(nullptr)
 {}
 
-CSTATE_Collision::~CSTATE_Collision() {}
+CSTATE_Collision::~CSTATE_Collision() {
+    if (m_pCollisionEvent) {
+        m_pCollisionEvent->SetOwner(nullptr);
+        m_pCollisionEvent->Release();
+        m_pCollisionEvent = nullptr;
+    }
+}
 
 void CSTATE_Collision::Attach(void *pAttachment) {
     m_pCollisionEvent = static_cast<Sound::CollisionEvent *>(pAttachment);
