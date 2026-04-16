@@ -67,9 +67,9 @@ void CSTATE_Helicopter::Attach(void *pAttachment) {
 }
 
 bool CSTATE_Helicopter::Detach() {
-    bool bVar1 = CSTATE_Base::Detach();
-    if (bVar1) {
-        m_pHeliState = nullptr;
+    if (CSTATE_Base::Detach() == 0) {
+        return false;
     }
-    return bVar1;
+    m_pHeliState = nullptr;
+    return true;
 }
