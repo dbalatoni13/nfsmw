@@ -40,5 +40,8 @@ void CSTATE_DriveBy::Attach(void *pAttachment) {
 }
 
 bool CSTATE_DriveBy::Detach() {
-    return CSTATE_Base::Detach();
+    if (CSTATE_Base::Detach() == 0) {
+        return false;
+    }
+    return true;
 }
