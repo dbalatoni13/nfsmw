@@ -58,8 +58,8 @@ EAXCar::~EAXCar() {
 }
 
 Attrib::Gen::engineaudio &EAXCar::GetEngineAttributes() {
-    if (m_pCar) {
-        return mEngineInfo;
+    if (GetPhysCar()) {
+        return GetAttributes();
     }
     return m_FEEngineAttribs;
 }
