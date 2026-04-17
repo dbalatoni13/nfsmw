@@ -12,7 +12,6 @@ extern "C" int SNDCTRL_drylevel(int sndHandle, int drylevel);
 extern "C" int SNDfxlevel(int sndHandle, int effect, int level);
 char *GetGinsuData(const char *filename);
 int ntestrefcount;
-static int AI_ENGINE_PITCH_OFFSET;
 
 CARSFX_EngineBase::CARSFX_EngineBase()
     : CARSFX() {
@@ -82,6 +81,8 @@ SndBase *CARSFX_AEMSEngine::CreateObject(unsigned int allocator) {
 
 CARSFX_AEMSEngine::CARSFX_AEMSEngine()
     : CARSFX_EngineBase() {
+    static int AI_ENGINE_PITCH_OFFSET;
+
     AI_ENGINE_PITCH_OFFSET = (AI_ENGINE_PITCH_OFFSET + 500) % 3000;
     m_iAIPitchOffset = AI_ENGINE_PITCH_OFFSET - 1500;
 }
