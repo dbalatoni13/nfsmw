@@ -62,7 +62,7 @@ int SFXObj_Helicopter::GetController(int Index) {
 }
 
 void SFXObj_Helicopter::AttachController(SFXCTL *psfxctl) {
-    if ((psfxctl->GetTypeInfo()->ObjectID & 0xFFF0) == 0) {
+    if (psfxctl->GetObjectIndex() == 0) {
         m_pHeliCtl = static_cast<SFXCTL_Helicopter *>(psfxctl);
     }
 }

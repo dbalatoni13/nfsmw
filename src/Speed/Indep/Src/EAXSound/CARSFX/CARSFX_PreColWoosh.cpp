@@ -58,7 +58,9 @@ void CARSFX_PreColWoosh::InitSFX() {
     WooshFadeOut.Initialize(1.0f, 1.0f, 1, LINEAR);
 }
 
-void CARSFX_PreColWoosh::Destroy() {}
+void CARSFX_PreColWoosh::Destroy() {
+    SndBase::Destroy();
+}
 
 void CARSFX_PreColWoosh::MsgBarrier(const MAudioReflection &message) {
     if (message.GetPlayerNum() != m_pStateBase->m_StateInstType) {
@@ -86,7 +88,9 @@ void CARSFX_PreColWoosh::BailOnWoosh() {
     mResetTime = 0.4f;
 }
 
-void CARSFX_PreColWoosh::Detach() {}
+void CARSFX_PreColWoosh::Detach() {
+    SndBase::Detach();
+}
 
 void CARSFX_PreColWoosh::UpdateParams(float t) {
     SND_Stich *NewStichData;
