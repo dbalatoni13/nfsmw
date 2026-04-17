@@ -38,7 +38,7 @@ class SFX_Common : public SFX_Base {
 
     void AttachController(SFXCTL *psfxctl) override;
     void SetupLoadData() override;
-    void InitSFX() override;
+    void InitSFX() override {}
     void Destroy() override;
     void UpdateParams(float t) override;
     void ProcessUpdate() override;

@@ -153,6 +153,3 @@ void SFX_Common::SetupLoadData() {
                   true);
     }
 }
-
-void SFX_Common::InitSFX() {}
-
