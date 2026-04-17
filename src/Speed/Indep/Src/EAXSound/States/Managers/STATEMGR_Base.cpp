@@ -97,104 +97,114 @@ bool CSTATEMGR_Base::IsDataLoaded() {
 
 SFX_Base *CSTATEMGR_Base::CreateSFX(int Instance, int SFXObjID) {
     SndBase::TypeInfo *FoundTypeInfo = nullptr;
-    bPNode *CurNode = m_SFXClassList.GetHead();
-    bPNode *EndNode = m_SFXClassList.EndOfList();
-    while (CurNode != EndNode) {
-        SndBase::TypeInfo *CurTypeInfo = reinterpret_cast<SndBase::TypeInfo *>(CurNode->GetObject());
-        if (((CurTypeInfo->ObjectID >> 4) & 0xFFF) == SFXObjID) {
-            if ((((m_eStateType == eMM_AIRACECAR) || (m_eStateType == eMM_TRAFFIC) || (m_eStateType == eMM_TRUCK) ||
-                  (m_eStateType == eMM_COPCAR)) &&
-                 (static_cast<unsigned char>(CurTypeInfo->ObjectID >> 16) == eMM_PLAYERCAR)) ||
-                (static_cast<unsigned char>(CurTypeInfo->ObjectID >> 16) == m_eStateType)) {
-                if (!FoundTypeInfo) {
-                    FoundTypeInfo = CurTypeInfo;
-                }
-
-                if (static_cast<unsigned char>(CurTypeInfo->ObjectID >> 16) == m_eStateType) {
+    {
+        bPNode *CurNode = m_SFXClassList.GetHead();
+        while (CurNode != m_SFXClassList.EndOfList()) {
+            SndBase::TypeInfo *CurTypeInfo = reinterpret_cast<SndBase::TypeInfo *>(CurNode->GetObject());
+            if (((CurTypeInfo->ObjectID >> 4) & 0xFFF) == SFXObjID) {
+                if ((((m_eStateType == eMM_AIRACECAR) || (m_eStateType == eMM_TRAFFIC) || (m_eStateType == eMM_TRUCK) ||
+                      (m_eStateType == eMM_COPCAR)) &&
+                     (static_cast<unsigned char>(CurTypeInfo->ObjectID >> 16) == eMM_PLAYERCAR)) ||
+                    (static_cast<unsigned char>(CurTypeInfo->ObjectID >> 16) == m_eStateType)) {
                     if (!FoundTypeInfo) {
                         FoundTypeInfo = CurTypeInfo;
                     }
 
-                    if (static_cast<unsigned char>(FoundTypeInfo->ObjectID >> 16) == m_eStateType) {
-                        SndBase::TypeInfo *BaseClassInfo = CurTypeInfo->baseTypeInfo;
-                        while (BaseClassInfo) {
-                            if (BaseClassInfo == FoundTypeInfo) {
-                                break;
-                            }
-                            BaseClassInfo = BaseClassInfo->baseTypeInfo;
-                        }
-
-                        if (BaseClassInfo != FoundTypeInfo) {
+                    if (static_cast<unsigned char>(CurTypeInfo->ObjectID >> 16) == m_eStateType) {
+                        if (!FoundTypeInfo) {
                             FoundTypeInfo = CurTypeInfo;
                         }
-                    } else {
-                        FoundTypeInfo = CurTypeInfo;
+
+                        if (static_cast<unsigned char>(FoundTypeInfo->ObjectID >> 16) == m_eStateType) {
+                            {
+                                SndBase::TypeInfo *BaseClassInfo = CurTypeInfo->baseTypeInfo;
+                                while (BaseClassInfo) {
+                                    if (BaseClassInfo == FoundTypeInfo) {
+                                        break;
+                                    }
+                                    BaseClassInfo = BaseClassInfo->baseTypeInfo;
+                                }
+
+                                if (BaseClassInfo != FoundTypeInfo) {
+                                    FoundTypeInfo = CurTypeInfo;
+                                }
+                            }
+                        } else {
+                            FoundTypeInfo = CurTypeInfo;
+                        }
                     }
                 }
             }
-        }
 
-        CurNode = CurNode->GetNext();
+            CurNode = CurNode->GetNext();
+        }
     }
 
     if (!FoundTypeInfo) {
         return nullptr;
     }
 
-    SFX_Base *theObject = static_cast<SFX_Base *>(FoundTypeInfo->CreateObject((FoundTypeInfo->ObjectID >> 28) & 0xF));
-    theObject->SetObjectID((m_eStateType << 16) | (Instance << 11) | (SFXObjID << 4));
-    return theObject;
+    {
+        SFX_Base *theObject = static_cast<SFX_Base *>(FoundTypeInfo->CreateObject((FoundTypeInfo->ObjectID >> 28) & 0xF));
+        theObject->SetObjectID((m_eStateType << 16) | (Instance << 11) | (SFXObjID << 4));
+        return theObject;
+    }
 }
 
 SFXCTL *CSTATEMGR_Base::CreateSFXCTL(int Instance, int SFXCtrlID) {
     SndBase::TypeInfo *FoundTypeInfo = nullptr;
-    bPNode *CurNode = m_SFXCTRLClassList.GetHead();
-    bPNode *EndNode = m_SFXCTRLClassList.EndOfList();
-    while (CurNode != EndNode) {
-        SndBase::TypeInfo *CurTypeInfo = reinterpret_cast<SndBase::TypeInfo *>(CurNode->GetObject());
-        if (((CurTypeInfo->ObjectID >> 4) & 0xFFF) == SFXCtrlID) {
-            if ((((m_eStateType == eMM_AIRACECAR) || (m_eStateType == eMM_TRAFFIC) || (m_eStateType == eMM_TRUCK) ||
-                  (m_eStateType == eMM_COPCAR)) &&
-                 (static_cast<unsigned char>(CurTypeInfo->ObjectID >> 16) == eMM_PLAYERCAR)) ||
-                (static_cast<unsigned char>(CurTypeInfo->ObjectID >> 16) == m_eStateType)) {
-                if (!FoundTypeInfo) {
-                    FoundTypeInfo = CurTypeInfo;
-                }
-
-                if (static_cast<unsigned char>(CurTypeInfo->ObjectID >> 16) == m_eStateType) {
+    {
+        bPNode *CurNode = m_SFXCTRLClassList.GetHead();
+        while (CurNode != m_SFXCTRLClassList.EndOfList()) {
+            SndBase::TypeInfo *CurTypeInfo = reinterpret_cast<SndBase::TypeInfo *>(CurNode->GetObject());
+            if (((CurTypeInfo->ObjectID >> 4) & 0xFFF) == SFXCtrlID) {
+                if ((((m_eStateType == eMM_AIRACECAR) || (m_eStateType == eMM_TRAFFIC) || (m_eStateType == eMM_TRUCK) ||
+                      (m_eStateType == eMM_COPCAR)) &&
+                     (static_cast<unsigned char>(CurTypeInfo->ObjectID >> 16) == eMM_PLAYERCAR)) ||
+                    (static_cast<unsigned char>(CurTypeInfo->ObjectID >> 16) == m_eStateType)) {
                     if (!FoundTypeInfo) {
                         FoundTypeInfo = CurTypeInfo;
                     }
 
-                    if (static_cast<unsigned char>(FoundTypeInfo->ObjectID >> 16) == m_eStateType) {
-                        SndBase::TypeInfo *BaseClassInfo = CurTypeInfo->baseTypeInfo;
-                        while (BaseClassInfo) {
-                            if (BaseClassInfo == FoundTypeInfo) {
-                                break;
-                            }
-                            BaseClassInfo = BaseClassInfo->baseTypeInfo;
-                        }
-
-                        if (BaseClassInfo != FoundTypeInfo) {
+                    if (static_cast<unsigned char>(CurTypeInfo->ObjectID >> 16) == m_eStateType) {
+                        if (!FoundTypeInfo) {
                             FoundTypeInfo = CurTypeInfo;
                         }
-                    } else {
-                        FoundTypeInfo = CurTypeInfo;
+
+                        if (static_cast<unsigned char>(FoundTypeInfo->ObjectID >> 16) == m_eStateType) {
+                            {
+                                SndBase::TypeInfo *BaseClassInfo = CurTypeInfo->baseTypeInfo;
+                                while (BaseClassInfo) {
+                                    if (BaseClassInfo == FoundTypeInfo) {
+                                        break;
+                                    }
+                                    BaseClassInfo = BaseClassInfo->baseTypeInfo;
+                                }
+
+                                if (BaseClassInfo != FoundTypeInfo) {
+                                    FoundTypeInfo = CurTypeInfo;
+                                }
+                            }
+                        } else {
+                            FoundTypeInfo = CurTypeInfo;
+                        }
                     }
                 }
             }
-        }
 
-        CurNode = CurNode->GetNext();
+            CurNode = CurNode->GetNext();
+        }
     }
 
     if (!FoundTypeInfo) {
         return nullptr;
     }
 
-    SFXCTL *theObject = static_cast<SFXCTL *>(FoundTypeInfo->CreateObject((FoundTypeInfo->ObjectID >> 28) & 0xF));
-    theObject->SetObjectID((m_eStateType << 16) | (Instance << 11) | (SFXCtrlID << 4));
-    return theObject;
+    {
+        SFXCTL *theObject = static_cast<SFXCTL *>(FoundTypeInfo->CreateObject((FoundTypeInfo->ObjectID >> 28) & 0xF));
+        theObject->SetObjectID((m_eStateType << 16) | (Instance << 11) | (SFXCtrlID << 4));
+        return theObject;
+    }
 }
 
 CSTATE_Base *CSTATEMGR_Base::CreateState(int StateInstType, int _SFXFlags) {
