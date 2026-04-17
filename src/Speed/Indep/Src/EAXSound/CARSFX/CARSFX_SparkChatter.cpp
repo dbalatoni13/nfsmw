@@ -158,10 +158,10 @@ void CARSFX_SparkChatter::UpdateParams(float t) {
 }
 
 void CARSFX_SparkChatter::ProcessUpdate() {
-    int TmpVol;
-
     if (m_pSparkChatterControl) {
-        TmpVol = GetDMixOutput(1, DMX_VOL) * m_pEAXCar->GetAttributes().Vol_Sputters() >> 15;
+        int TmpVol;
+
+        TmpVol = GetDMixOutput(1, DMX_VOL) * m_pSweetnersData->Vol_Sputters() >> 15;
         m_pSparkChatterControl->SetCOMMON_PARAMETERS_AZIMUTH(GetDMixOutput(0, DMX_AZIM));
         m_pSparkChatterControl->SetCOMMON_PARAMETERS_PITCH_OFFSET(0);
         m_pSparkChatterControl->SetCOMMON_PARAMETERS_ROTATION(0);

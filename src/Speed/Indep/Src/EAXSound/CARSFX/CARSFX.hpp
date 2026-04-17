@@ -6,13 +6,14 @@
 #endif
 
 #include "Speed/Indep/Src/EAXSound/SFX_base.hpp"
+#include "Speed/Indep/Src/EAXSound/EAXCar.hpp"
 
 struct CARSFX : SFX_Base {
   public:
     CARSFX();
     virtual ~CARSFX();
-    float GetPhysTRQ();
-    float GetPhysRPM();
+    float GetPhysTRQ() { return m_pEAXCar->GetPhysTRQ(); }
+    float GetPhysRPM() { return m_pEAXCar->GetPhysRPM(); }
 
   protected:
     // total size: 0x28
