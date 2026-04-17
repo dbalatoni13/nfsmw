@@ -129,7 +129,7 @@ struct CARSFX_TruckHorn : public CARSFX_TrafficHorn {
 
     static SndBase *CreateObject(unsigned int allocator);
 
-    int GetController(int Index) override;
+    int GetController(int Index) override { return -1; }
 };
 
 struct SFXCTL_3DTrafficPos : public SFXCTL_3DCarPos {

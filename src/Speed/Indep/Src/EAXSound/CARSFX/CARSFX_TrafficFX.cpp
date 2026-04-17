@@ -524,7 +524,3 @@ float CARSFX_TrafficWoosh::GetPlayerSpeedRelativeToUs() {
 }
 
 CARSFX_TruckHorn::~CARSFX_TruckHorn() {}
-
-int CARSFX_TruckHorn::GetController(int) {
-    return -1;
-}
