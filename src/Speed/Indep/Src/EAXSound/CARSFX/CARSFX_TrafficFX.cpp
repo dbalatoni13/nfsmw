@@ -279,7 +279,15 @@ void CARSFX_TrafficHorn::AttachController(SFXCTL *psfxctl) {
     }
 }
 
-void CARSFX_TrafficHorn::StartHonkHorn() {}
+void CARSFX_TrafficHorn::StartHonkHorn() {
+    int ID;
+
+    if (false) {
+        if (m_pStateBase->GetCurTime() < 0.0f) {
+            ID = GetPhysCar()->GetAttributes()->HornType();
+        }
+    }
+}
 
 void CARSFX_TrafficHorn::StopHonkHorn() {
     if (*reinterpret_cast<int *>(&AIPlayingHonk) != 0 && *reinterpret_cast<int *>(&IsEndingHonk) == 0) {
