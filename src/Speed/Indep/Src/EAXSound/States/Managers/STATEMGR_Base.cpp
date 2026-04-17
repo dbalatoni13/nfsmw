@@ -1,6 +1,7 @@
 #include "./STATEMGR_Base.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/Src/EAXSound/States/STATE_Base.hpp"
+#include "Speed/Indep/Src/Misc/Profiler.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 
 bPList<SndBase::TypeInfo> CSTATEMGR_Base::m_SFXCTRLClassList;
@@ -262,6 +263,9 @@ CSTATE_Base *CSTATEMGR_Base::GetFreeState(void *ObjectPtr) {
 }
 
 void CSTATEMGR_Base::UpdateParams(float t) {
+    ProfileNode profile_node("TODO", 0);
+    CSTATE_Base *CurStateObj;
+
     if (bIsInitialized) {
         if (!g_EAXIsPaused()) {
             m_DeltaTime = t;
@@ -269,20 +273,23 @@ void CSTATEMGR_Base::UpdateParams(float t) {
         } else {
             m_DeltaTime = 0.0f;
         }
-        CSTATE_Base *obj = m_pHeadStateObj;
-        while (obj) {
-            obj->UpdateParams(t);
-            obj = obj->m_pNextState;
+
+        CurStateObj = m_pHeadStateObj;
+        while (CurStateObj) {
+            CurStateObj->UpdateParams(t);
+            CurStateObj = CurStateObj->m_pNextState;
         }
     }
 }
 
 void CSTATEMGR_Base::ProcessUpdate() {
+    CSTATE_Base *CurStateObj;
+
     if (bIsInitialized) {
-        CSTATE_Base *obj = m_pHeadStateObj;
-        while (obj) {
-            obj->ProcessUpdate();
-            obj = obj->m_pNextState;
+        CurStateObj = m_pHeadStateObj;
+        while (CurStateObj) {
+            CurStateObj->ProcessUpdate();
+            CurStateObj = CurStateObj->m_pNextState;
         }
     }
 }
