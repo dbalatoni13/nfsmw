@@ -27,6 +27,10 @@ struct AudioMemBase {
         return gAudioMemoryManager.AllocateMemory(size, debug_name, bfromtop);
     }
 
+    void *AllocateMemory(int size, const char *debug_name) {
+        return gAudioMemoryManager.AllocateMemory(size, debug_name, false);
+    }
+
     void FreeMemory(void *mem) {
         gAudioMemoryManager.FreeMemory(mem);
     }
