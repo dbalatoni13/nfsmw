@@ -34,10 +34,7 @@ SFXObj_Ambience::SFXObj_Ambience()
 SFXObj_Ambience::~SFXObj_Ambience() {}
 
 void SFXObj_Ambience::InitSFX() {
-    int *inputBlock = GetInputBlockPtr();
-    if (inputBlock) {
-        inputBlock[15] = 1;
-    }
+    SndBase::InitSFX();
     g_pEAXSound->SetSFXBaseObject(this, eMM_MAIN, 2, 0);
 }
 
