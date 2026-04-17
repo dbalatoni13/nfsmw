@@ -448,64 +448,89 @@ void NFSMixMapState::Create3DMixCtls() {
 }
 
 void NFSMixMapState::InitializeSubChannels() {
-    int n;
+    {
+        int n;
 
-    n = 0;
-    while (n < m_SubMixChannelsAdded) {
-        int j;
-        int numfixedinputs;
-        int numin;
-        int *pinputs;
-        int *pstore;
-        int *pmapinputs;
-        stSubMixChProc *psbmxchproc;
+        n = 0;
+        while (n < m_SubMixChannelsAdded) {
+            stSubMixChProc *psbmxchproc;
+            int *pinputs;
+            int numinputs;
+            int numfixedinputs;
+            int j;
+            int *pstore;
 
-        psbmxchproc = m_MixStateParams.pSubMixChProcs + n;
-        numfixedinputs = 0;
-        pmapinputs = &psbmxchproc->pMixChData_S->pMapParams[1].MIXCHID;
-        numin = (static_cast<unsigned int>(psbmxchproc->pMixChData_S->pMapParams->MIXCHID) >> 16) & 0xFF;
+            psbmxchproc = m_MixStateParams.pSubMixChProcs + n;
+            numfixedinputs = 0;
+            j = numfixedinputs;
+            pinputs = &psbmxchproc->pMixChData_S->pMapParams[1].MIXCHID;
+            numinputs = (static_cast<unsigned int>(psbmxchproc->pMixChData_S->pMapParams->MIXCHID) >> 16) & 0xFF;
+            if (j < numinputs) {
+                do {
+                    int chid;
 
-        for (j = 0; j < numin; j++) {
-            int chid;
-            int nstate;
+                    chid = *pinputs++;
+                    {
+                        int nstate;
+                        int numdups;
 
-            chid = *pmapinputs++;
-            nstate = (chid >> 16) & 0xFF;
-            if (nstate == m_StateIndex) {
-                numfixedinputs++;
-            } else {
-                numfixedinputs += m_pNFSMixMap->m_StateRefCount[nstate];
+                        nstate = (chid >> 16) & 0xFF;
+                        if (nstate == m_StateIndex) {
+                            numfixedinputs++;
+                        } else {
+                            numdups = m_pNFSMixMap->m_StateRefCount[nstate];
+                            numfixedinputs += numdups;
+                        }
+                    }
+
+                    j++;
+                } while (j < numinputs);
             }
-        }
 
-        pinputs = m_pNFSMixMap->GetSubChannelInputPtr(numfixedinputs);
-        psbmxchproc->pMixChData_U->pInputs = pinputs;
-        psbmxchproc->pMixChData_S->NumInputs = numfixedinputs;
-        pstore = psbmxchproc->pMixChData_U->pInputs;
-        pmapinputs = &psbmxchproc->pMixChData_S->pMapParams[1].MIXCHID;
+            pinputs = m_pNFSMixMap->GetSubChannelInputPtr(numfixedinputs);
+            psbmxchproc->pMixChData_U->pInputs = pinputs;
+            psbmxchproc->pMixChData_S->NumInputs = numfixedinputs;
+            pstore = psbmxchproc->pMixChData_U->pInputs;
+            pinputs = &psbmxchproc->pMixChData_S->pMapParams[1].MIXCHID;
+            j = 0;
+            if (j < numfixedinputs) {
+                do {
+                    int chid;
+                    int ncnt;
+                    int newid;
 
-        for (j = 0; j < numin; j++) {
-            int chid;
-            int newid;
-            int nstate;
+                    chid = *pinputs++;
+                    ncnt = (chid >> 16) & 0xFF;
+                    newid = chid & 0xFFFF07FF;
+                    if (ncnt == m_StateIndex) {
+                        *pstore++ = newid | (m_ObjectIndex << 11);
+                    } else {
+                        int nstate;
+                        int numdups;
+                        int usethisid;
 
-            chid = *pmapinputs++;
-            nstate = (chid >> 16) & 0xFF;
-            newid = chid & 0xFFFF07FF;
-            if (nstate == m_StateIndex) {
-                *pstore++ = newid | (m_ObjectIndex << 11);
-            } else {
-                int nd;
-                int numdups;
+                        nstate = ncnt;
+                        usethisid = chid & 0xFFFF07FF;
+                        j = j - 1;
+                        numdups = m_pNFSMixMap->m_StateRefCount[nstate];
+                        {
+                            int nd;
 
-                numdups = m_pNFSMixMap->m_StateRefCount[nstate];
-                for (nd = 0; nd < numdups; nd++) {
-                    *pstore++ = newid | (nd << 11);
-                }
+                            nd = 0;
+                            while (nd < numdups) {
+                                *pstore++ = usethisid | (nd << 11);
+                                j++;
+                                nd++;
+                            }
+                        }
+                    }
+
+                    j++;
+                } while (j < numfixedinputs);
             }
-        }
 
-        n++;
+            n++;
+        }
     }
 }
 
