@@ -102,37 +102,38 @@ void CARSFX_PreColWoosh::UpdateParams(float t) {
 
     SetDMIX_Input(2, 0);
     if (bGoingToCollide) {
-        SND_Stich *NewStichData;
-        int iVar3;
-        float fVar4;
-        float fVar5 = 0.0f;
-        SND_Params sndparams;
-        STICH_WHOOSH_TYPE base;
-        int numblocks;
-        int sizeperblock;
-
         SetDMIX_Input(2, 0x7FFF);
         mDurationActive += t;
         if (!m_pWoosh) {
-            fVar4 = bClamp(g_WooshVol_vs_Vel.GetValue(GetPhysCar()->GetVelocityMagnitude()), fVar5, 0.99f);
-            fVar4 = bClamp(fVar4 * 127.0f, fVar5, 127.0f);
+            float fVelRatio = bClamp(g_WooshVol_vs_Vel.GetValue(GetPhysCar()->GetVelocityMagnitude()), 0.0f, 0.99f);
+            float fVelInensity = bClamp(fVelRatio * 127.0f, 0.0f, 127.0f);
+            int StitchID;
+            (void)&StitchID;
+            int numblocks;
+            int sizeperblock;
+            STICH_WHOOSH_TYPE base;
+            SND_Stich *stitchdata;
+
             GetWooshBlockSizeParams(DRIVE_BY_PRE_COL, base, numblocks, sizeperblock);
             {
                 static int LastRandom;
 
-                iVar3 = LastRandom - (LastRandom / sizeperblock) * sizeperblock;
-                LastRandom = iVar3 + 1;
+                StitchID = LastRandom - (LastRandom / sizeperblock) * sizeperblock;
+                LastRandom = StitchID + 1;
             }
 
-            NewStichData = &g_pEAXSound->GetStichPlayer()->GetStich(
-                STICH_TYPE_WOOSH, base + static_cast<int>(fVar4 * static_cast<float>(numblocks) * 0.0078125f) * sizeperblock + iVar3);
+            stitchdata = &g_pEAXSound->GetStichPlayer()->GetStich(
+                STICH_TYPE_WOOSH,
+                base + static_cast<int>(fVelInensity * static_cast<float>(numblocks) * 0.0078125f) * sizeperblock + StitchID);
+
+            SND_Params sndparams;
             sndparams.ID = 0;
             sndparams.Mag = 0;
             sndparams.RVerb = 0;
             sndparams.Az = 0;
             sndparams.Pitch = 0;
             sndparams.Vol = 0;
-            m_pWoosh = new cStichWrapper(*NewStichData);
+            m_pWoosh = new cStichWrapper(*stitchdata);
             m_pWoosh->Play(&sndparams);
         }
 
@@ -148,6 +149,8 @@ void CARSFX_PreColWoosh::UpdateParams(float t) {
         bBailOnAll = false;
         m_pWoosh = nullptr;
     }
+
+    WooshFadeOut.GetValue();
 }
 
 void CARSFX_PreColWoosh::ProcessUpdate() {
