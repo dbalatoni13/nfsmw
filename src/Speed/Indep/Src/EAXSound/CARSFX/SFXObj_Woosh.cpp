@@ -261,7 +261,7 @@ int SFXObj_Woosh::GetController(int Index) {
 }
 
 void SFXObj_Woosh::AttachController(SFXCTL *psfxctl) {
-    if ((psfxctl->GetTypeInfo()->ObjectID & 0xFFF0) == 0) {
+    if (psfxctl->GetObjectIndex() == 0) {
         m_p3DPos = static_cast<SFXCTL_3DObjPos *>(psfxctl);
     }
 }
