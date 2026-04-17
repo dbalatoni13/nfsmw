@@ -1322,7 +1322,8 @@ void NFSMixMap::InitMainMapStates() {
 }
 
 void NFSMixMap::ProcessMixMap(float dt, eCamStates camstate) {
-    int n;
+    stCurveDataProc *pcvdp;
+    stMixCtlProc *pmxdp;
 
     m_msDeltaTime = dt * 1000.0f;
     m_fDeltaTimeRatio[1] = m_fDeltaTimeRatio[0];
@@ -1331,45 +1332,76 @@ void NFSMixMap::ProcessMixMap(float dt, eCamStates camstate) {
     m_fDeltaTimeRatio[0] = dt / F_DT_FRAME_LOCK;
     m_fDeltaTime = dt;
 
-    for (n = 0; n < m_CurveProcsAdded; n++) {
-        stCurveDataProc *pcvdp;
-        int q15;
+    {
+        int ncv;
 
-        pcvdp = m_pCurveDataArray + n;
-        q15 = NFSMixShape::GetCurveOutput(static_cast<NFSMixShape::eMIXTABLEID>((pcvdp->nINPUTID >> 24) & 0xF),
-                                         *pcvdp->pInputParam, false);
-        pcvdp->Q15Output = q15;
-        pcvdp->dBOutput = NFSMixShape::GetdBFromQ15(q15);
+        ncv = 0;
+        pcvdp = m_pCurveDataArray;
+        while (ncv < m_CurveProcsAdded) {
+            {
+                NFSMixShape::eMIXTABLEID ncurve;
+
+                ncurve = static_cast<NFSMixShape::eMIXTABLEID>((pcvdp->nINPUTID >> 24) & 0xF);
+                pcvdp->Q15Output = NFSMixShape::GetCurveOutput(ncurve, *pcvdp->pInputParam, false);
+            }
+            pcvdp->dBOutput = NFSMixShape::GetdBFromQ15(pcvdp->Q15Output);
+            ncv++;
+            pcvdp++;
+        }
     }
 
-    for (n = 0; n < m_MixCtlsAdded; n++) {
-        int numscale;
-        int nout;
-        int ns;
-        int scaleby;
-        stMixCtlProc *pmxdp;
-        stMixCtlUniqueData *pudata;
+    {
+        int nmxctl;
 
-        pmxdp = m_pMixCtlProc + n;
-        nout = NFSMixShape::GetdBFromQ15(
-            0x7FFF - (((0x7FFF - pmxdp->pudata->pstCurveData->Q15Output) * pmxdp->psdata->nRatio) >> 15));
-        nout = nout + pmxdp->psdata->nOffset;
-        scaleby = 0x7FFF;
-        pudata = pmxdp->pudata;
-        if (!pudata->ppScaleRatios) {
-            scaleby = nout * 0x7FFF;
-        } else {
-            numscale = (pmxdp->psdata->pstMixCtlParms->nUScaleCntSwing >> 24) & 0xFF;
-            if (numscale == 0) {
-                scaleby = nout * 0x7FFF;
-            } else {
-                for (ns = 0; ns < numscale; ns++) {
-                    scaleby = (*pudata->ppScaleRatios[ns] * scaleby) >> 15;
+        nmxctl = 0;
+        pmxdp = m_pMixCtlProc;
+        while (nmxctl < m_MixCtlsAdded) {
+            {
+                short swing;
+                int nout;
+                int scaleby;
+                int scale;
+
+                {
+                    int Q15Val;
+
+                    Q15Val = 0x7FFF - pmxdp->pudata->pstCurveData->Q15Output;
+                    Q15Val = (Q15Val * pmxdp->psdata->nRatio) >> 15;
+                    Q15Val = 0x7FFF - Q15Val;
+                    nout = NFSMixShape::GetdBFromQ15(Q15Val);
                 }
-                scaleby = scaleby * nout;
+                nout = nout + pmxdp->psdata->nOffset;
+                scaleby = 0x7FFF;
+                if (pmxdp->pudata->ppScaleRatios) {
+                    {
+                        int Q15Val;
+
+                        Q15Val = (pmxdp->psdata->pstMixCtlParms->nUScaleCntSwing >> 24) & 0xFF;
+                        scale = Q15Val;
+                    }
+                    {
+                        int numscale;
+
+                        numscale = scale;
+                        {
+                            int ns;
+
+                            ns = 0;
+                            while (ns < numscale) {
+                                scaleby = (*pmxdp->pudata->ppScaleRatios[ns] * scaleby) >> 15;
+                                ns++;
+                            }
+                        }
+                    }
+                }
+
+                swing = static_cast<short>((scaleby * nout) >> 15);
+                pmxdp->pudata->CmpdBOut = (scaleby * nout) >> 15;
             }
+
+            nmxctl++;
+            pmxdp++;
         }
-        pudata->CmpdBOut = scaleby >> 15;
     }
 
     Update3DMixCtls();
@@ -1378,7 +1410,6 @@ void NFSMixMap::ProcessMixMap(float dt, eCamStates camstate) {
     UpdateMasterChannels();
     MixMasterChannels();
 }
-
 void NFSMixMap::UpdateSubChannels() {
     int nsub;
 
