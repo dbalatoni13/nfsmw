@@ -70,10 +70,7 @@ int CARSFX_Turbo::GetController(int Index) {
 }
 
 void CARSFX_Turbo::AttachController(SFXCTL *psfxctl) {
-    int nindex;
-
-    nindex = psfxctl->GetObjectIndex();
-    switch (nindex) {
+    switch (psfxctl->GetObjectIndex()) {
     case 2:
         m_pShiftingCtl = static_cast<SFXCTL_Shifting *>(psfxctl);
         break;
