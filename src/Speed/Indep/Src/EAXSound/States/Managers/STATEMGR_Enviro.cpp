@@ -77,15 +77,18 @@ CSTATEMGR_Enviro::~CSTATEMGR_Enviro() {
 
 void CSTATEMGR_Enviro::EnterWorld(eSndGameMode esgm) {
     int worldsfx;
-    int n;
 
     worldsfx = 1;
-    n = 0;
-    do {
-        CSTATE_Base *NewState = CreateState(0, worldsfx);
-        NewState->Setup(worldsfx);
-        n = n + 1;
-    } while (n < 5);
+    {
+        int n = 0;
+        do {
+            {
+                CSTATE_Base *NewState = CreateState(0, worldsfx);
+                NewState->Setup(worldsfx);
+            }
+            n = n + 1;
+        } while (n < 5);
+    }
     CSTATEMGR_Base::EnterWorld(esgm);
 }
 
