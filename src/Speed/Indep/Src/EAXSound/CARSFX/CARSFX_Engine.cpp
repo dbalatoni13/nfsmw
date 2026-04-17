@@ -184,11 +184,13 @@ CARSFX_GinsuEngine::CARSFX_GinsuEngine()
 SndBase::TypeInfo CARSFX_AEMSEngine::s_TypeInfo = { 0x00020000, "CARSFX_AEMSEngine", &SndBase::s_TypeInfo, CARSFX_AEMSEngine::CreateObject };
 
 CARSFX_GinsuEngine::~CARSFX_GinsuEngine() {
-    for (int Index = 0;
-         (m_pEAXCar->m_EngineType == eGINSU_ENG_SINGLE && Index < 1) ||
-             (m_pEAXCar->m_EngineType == eGINSU_ENG_DUAL && Index < 2);
-         Index++) {
-        stGinsuData *pData = &m_GinsuData[Index];
+    int Index = 0;
+
+    while ((m_pEAXCar->m_EngineType == eGINSU_ENG_SINGLE && Index < 1) ||
+           (m_pEAXCar->m_EngineType == eGINSU_ENG_DUAL && Index < 2)) {
+        stGinsuData *pData;
+
+        pData = &m_GinsuData[Index];
 
         if (pData->mSynth) {
             pData->mSynth->StopSynthesis();
@@ -208,6 +210,7 @@ CARSFX_GinsuEngine::~CARSFX_GinsuEngine() {
         }
 
         pData->mSynthBlock = nullptr;
+        Index++;
     }
 }
 
