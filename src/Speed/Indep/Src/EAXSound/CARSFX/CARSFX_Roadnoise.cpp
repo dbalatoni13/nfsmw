@@ -138,6 +138,7 @@ void CARSFX_RoadNoise::Destroy() {
 }
 
 void CARSFX_RoadNoise::UpdateParams(float t) {
+    SndBase::UpdateParams(t);
     GenerateRoadNoise();
 }
 
