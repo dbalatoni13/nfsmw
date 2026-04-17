@@ -63,8 +63,8 @@ struct NFSMixMaster : AudioMemBase {
     void DestroyMap();
     void InitMixMap(int param);
     void ProcessMixMap(float dt, eCamStates ecam);
-    static void AssignSFXCallbacks(int *(*GetPointerCB)(int), void (*SetSFXOutCB)(int, int *),
-                                   bool (*SetSFXInputCB)(int, int *), int (*GetStateRefCountCB)(int), void (*MixReadyCB)());
+    static void AssignSFXCallbacks(int *(*getptrcb)(int), void (*setsfxoutcb)(int, int *),
+                                   bool (*setsfxincb)(int, int *), int (*getstaterefcnt)(int), void (*mapreadycb)());
 };
 
 #endif

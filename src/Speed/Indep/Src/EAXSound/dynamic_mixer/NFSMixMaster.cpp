@@ -94,7 +94,7 @@ void NFSMixMaster::LoadMixMapFile(eMMTYPE etype, char *pfilename) {
     LoadDataCallback((int)this, 0);
 }
 
-void NFSMixMaster::LoadDataCallback(int, int) {}
+void NFSMixMaster::LoadDataCallback(int param, int error_status) {}
 
 void NFSMixMaster::DestroyMap() {
     m_pMainMixMap->DestroyMainMixMap();
@@ -153,8 +153,8 @@ void NFSMixMaster::ProcessMixMap(float dt, eCamStates ecam) {
     }
 }
 
-void NFSMixMaster::AssignSFXCallbacks(int *(*GetPointerCB)(int), void (*SetSFXOutCB)(int, int *),
-                                      bool (*SetSFXInputCB)(int, int *), int (*GetStateRefCountCB)(int),
-                                      void (*MixReadyCB)()) {
-    NFSMixMap::AssignSFXCallbacks(GetPointerCB, SetSFXOutCB, SetSFXInputCB, GetStateRefCountCB, MixReadyCB);
+void NFSMixMaster::AssignSFXCallbacks(int *(*getptrcb)(int), void (*setsfxoutcb)(int, int *),
+                                      bool (*setsfxincb)(int, int *), int (*getstaterefcnt)(int),
+                                      void (*mapreadycb)()) {
+    NFSMixMap::AssignSFXCallbacks(getptrcb, setsfxoutcb, setsfxincb, getstaterefcnt, mapreadycb);
 }
