@@ -45,9 +45,4 @@ void SFXObj_FEHUD::UpdateMixerOutputs() {
     bMemSet(GetOutputBlockPtr(), '\0', 0x3C);
     bMemCpy(GetOutputBlockPtr(), GameFlowSndState, 0x3C);
 }
-int SFXObj_FEHUD::GetController(int Index) {
-    return -1;
-}
-
 void SFXObj_FEHUD::AttachController(SFXCTL *psfxctl) {}
-
