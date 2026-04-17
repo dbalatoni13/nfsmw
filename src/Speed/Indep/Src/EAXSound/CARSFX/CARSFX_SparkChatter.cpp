@@ -91,20 +91,22 @@ void CARSFX_SparkChatter::InitSFX() {
 }
 
 void CARSFX_SparkChatter::SparkChatCreateCallBack(Csis::Class *pSparkChatClass, Csis::Parameter *pParameters, void *pClientData) {
-    SparkChatOutputInstance *pSparkChatOutput = static_cast<SparkChatOutputInstance *>(pClientData);
+    SparkChatOutputInstance *pSparkChatInstance = static_cast<SparkChatOutputInstance *>(pClientData);
+    Csis::CAR_SputOutputStruct *pSparkData = reinterpret_cast<Csis::CAR_SputOutputStruct *>(pParameters);
 
-    if (pParameters[2].iVal == reinterpret_cast<int>(pSparkChatOutput->m_pThis)) {
-        Csis::Class::UnsubscribeConstructor(&Csis::gCAR_SputOutputHandle, &pSparkChatOutput->CreateClient);
-        pSparkChatOutput->UpdateClient.pClientFunc = SparkChatUpdateCallBack;
-        pSparkChatClass->SubscribeMemberData(&pSparkChatOutput->UpdateClient);
-        pSparkChatClass->SubscribeDestructor(&pSparkChatOutput->DestroyClient);
+    if (reinterpret_cast<Csis::Parameter *>(pSparkData)[2].iVal == reinterpret_cast<int>(pSparkChatInstance->m_pThis)) {
+        Csis::Class::UnsubscribeConstructor(&Csis::gCAR_SputOutputHandle, &pSparkChatInstance->CreateClient);
+        pSparkChatInstance->UpdateClient.pClientFunc = SparkChatUpdateCallBack;
+        pSparkChatClass->SubscribeMemberData(&pSparkChatInstance->UpdateClient);
+        pSparkChatClass->SubscribeDestructor(&pSparkChatInstance->DestroyClient);
     }
 }
 
 void CARSFX_SparkChatter::SparkChatUpdateCallBack(Csis::Parameter *pParameters, void *pClientData) {
-    SparkChatOutputInstance *pSparkChatOutput = static_cast<SparkChatOutputInstance *>(pClientData);
+    SparkChatOutputInstance *pSparkChatInstance = static_cast<SparkChatOutputInstance *>(pClientData);
+    Csis::CAR_SputOutputStruct *pSparkData = reinterpret_cast<Csis::CAR_SputOutputStruct *>(pParameters);
 
-    pSparkChatOutput->m_pThis->ReceiveSparkChatterInputs(reinterpret_cast<Csis::CAR_SputOutputStruct *>(pParameters));
+    pSparkChatInstance->m_pThis->ReceiveSparkChatterInputs(pSparkData);
 }
 
 void CARSFX_SparkChatter::SparkChatDestroyCallBack(Csis::Class *pSparkChatClass, void *pClientData) {
