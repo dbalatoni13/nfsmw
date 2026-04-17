@@ -71,6 +71,7 @@ struct CSTATE_Base : public AudioMemBase {
     void ForceCreateSFXCtrls(int iSFXCtrls);
 
     bool IsAttached() { return bIsAttached; }
+    bool IsAttachedToThis(void *testattachment) { return testattachment == m_pAttachment; }
     EAX_CarState *GetPhysCar() { return m_pCar; }
     float GetCurTime() { return t_CurTime; }
     float GetDeltaTime() { return t_DeltaTime; }

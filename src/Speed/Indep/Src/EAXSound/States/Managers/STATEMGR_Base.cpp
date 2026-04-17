@@ -86,11 +86,11 @@ void CSTATEMGR_Base::ClearClassLists() {
 }
 
 bool CSTATEMGR_Base::IsDataLoaded() {
-    CSTATE_Base *obj = m_pHeadStateObj;
-    while (obj) {
-        if (!obj->IsDataLoaded())
+    CSTATE_Base *CurStateObj = m_pHeadStateObj;
+    while (CurStateObj) {
+        if (!CurStateObj->IsDataLoaded())
             return false;
-        obj = obj->m_pNextState;
+        CurStateObj = CurStateObj->m_pNextState;
     }
     return true;
 }
@@ -309,11 +309,11 @@ CSTATE_Base *CSTATEMGR_Base::GetStateObj(int nInstance) {
 }
 
 CSTATE_Base *CSTATEMGR_Base::GetStateObj(void *testattachment) {
-    CSTATE_Base *obj = m_pHeadStateObj;
-    while (obj) {
-        if (testattachment == obj->m_pAttachment)
-            return obj;
-        obj = obj->m_pNextState;
+    CSTATE_Base *CurStateObj = m_pHeadStateObj;
+    while (CurStateObj) {
+        if (CurStateObj->IsAttachedToThis(testattachment))
+            return CurStateObj;
+        CurStateObj = CurStateObj->m_pNextState;
     }
     return nullptr;
 }
