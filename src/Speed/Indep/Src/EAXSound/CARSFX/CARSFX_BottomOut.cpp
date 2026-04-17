@@ -43,24 +43,27 @@ void CARSFX_BottomOut::InitSFX() {
 }
 
 void CARSFX_BottomOut::Destroy() {
-    int n;
+    SndBase::Destroy();
+    {
+        int n;
 
-    for (n = 0; n < 3; n++) {
-        if (m_pStichLandJump[n]) {
-            delete m_pStichLandJump[n];
+        for (n = 0; n < 3; n++) {
+            if (m_pStichLandJump[n]) {
+                delete m_pStichLandJump[n];
+            }
+            m_pStichLandJump[n] = nullptr;
         }
-        m_pStichLandJump[n] = nullptr;
-    }
 
-    if (m_pBottomOut) {
-        delete m_pBottomOut;
-    }
-    m_pBottomOut = nullptr;
+        if (m_pBottomOut) {
+            delete m_pBottomOut;
+        }
+        m_pBottomOut = nullptr;
 
-    if (m_pJumpCamCrash) {
-        delete m_pJumpCamCrash;
+        if (m_pJumpCamCrash) {
+            delete m_pJumpCamCrash;
+        }
+        m_pJumpCamCrash = nullptr;
     }
-    m_pJumpCamCrash = nullptr;
 }
 
 void CARSFX_BottomOut::LandJumpPlay(float Intensity, bool HardLanding) {
@@ -125,24 +128,26 @@ void CARSFX_BottomOut::BottomOutPlay(unsigned int Intensity) {
 }
 
 void CARSFX_BottomOut::Detach() {
-    int n;
+    {
+        int n;
 
-    for (n = 0; n < 3; n++) {
-        if (m_pStichLandJump[n]) {
-            delete m_pStichLandJump[n];
+        for (n = 0; n < 3; n++) {
+            if (m_pStichLandJump[n]) {
+                delete m_pStichLandJump[n];
+            }
+            m_pStichLandJump[n] = nullptr;
         }
-        m_pStichLandJump[n] = nullptr;
-    }
 
-    if (m_pBottomOut) {
-        delete m_pBottomOut;
-    }
-    m_pBottomOut = nullptr;
+        if (m_pBottomOut) {
+            delete m_pBottomOut;
+        }
+        m_pBottomOut = nullptr;
 
-    if (m_pJumpCamCrash) {
-        delete m_pJumpCamCrash;
+        if (m_pJumpCamCrash) {
+            delete m_pJumpCamCrash;
+        }
+        m_pJumpCamCrash = nullptr;
     }
-    m_pJumpCamCrash = nullptr;
 }
 
 void CARSFX_BottomOut::UpdateParams(float t) {
