@@ -870,24 +870,36 @@ int NFSMixMap::GetMapStateCopies(int nstate) {
 }
 
 void NFSMixMap::CreateMainMapState(eMAINMAPSTATES estate, int numstates, int objnum) {
-    NFSMixMapState *pstate;
+    int refcnt;
+    int *psmp;
     int smoffset;
-    int *pStateOffsets;
+    int ntemp;
+    stMixMapStateHdr *psmhdr;
+    NFSMixMapState *pmmp;
 
-    if (!m_pStateProcs[estate]) {
-        pstate = GetNextMapState(true);
-        m_pStateProcs[estate] = pstate;
-        m_pStateProcs[estate]->Initialize(this, estate, numstates, objnum);
+    refcnt = estate;
+    ntemp = objnum;
+    {
+        NFSMixMapState *pstates;
+
+        pstates = m_pStateProcs[estate];
+        if (!pstates) {
+            pstates = GetNextMapState(true);
+            m_pStateProcs[estate] = pstates;
+            pstates->Initialize(this, estate, numstates, ntemp);
+        }
     }
 
-    m_pStateProcs[estate]->AddMixState(objnum, m_pStateProcs[estate]);
-    pStateOffsets = reinterpret_cast<int *>(reinterpret_cast<char *>(m_pMMHdr) + m_pMMHdr->StateTableOffset);
-    smoffset = pStateOffsets[estate];
-    pstate = m_pStateProcs[estate]->GetMixMapProc(objnum);
-    pstate->m_pMMStateHdr = reinterpret_cast<stMixMapStateHdr *>(reinterpret_cast<char *>(m_pMMHdr) + smoffset);
-    pstate->CreateMixCtls();
-    pstate->Create3DMixCtls();
-    pstate->CreateEvtMixCtls();
+    m_pStateProcs[estate]->AddMixState(ntemp, m_pStateProcs[estate]);
+    psmhdr = reinterpret_cast<stMixMapStateHdr *>(m_pMMHdr);
+    psmp = reinterpret_cast<int *>(reinterpret_cast<char *>(psmhdr) + m_pMMHdr->StateTableOffset);
+    smoffset = psmp[refcnt];
+    psmhdr = reinterpret_cast<stMixMapStateHdr *>(reinterpret_cast<char *>(psmhdr) + smoffset);
+    pmmp = m_pStateProcs[estate]->GetMixMapProc(ntemp);
+    pmmp->SetStateHdr(psmhdr);
+    pmmp->CreateMixCtls();
+    pmmp->Create3DMixCtls();
+    pmmp->CreateEvtMixCtls();
 }
 
 void NFSMixMap::AllocateInputArrays() {
