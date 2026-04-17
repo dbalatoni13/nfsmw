@@ -421,22 +421,23 @@ void CARSFX_RoadNoise::GenerateRoadNoise() {
 }
 
 void CARSFX_RoadNoise::Play(FXROADNOISE_LOOP ID, int side) {
-    int refcnt;
-
     delete m_pRoadNoiseControl[side];
     if (m_pStitchLoopControl[side]) {
         delete m_pStitchLoopControl[side];
     }
 
     if (ID > FXROADNOISE_LOOP_METAL) {
-        m_pStitchLoopControl[side] = new ("Stitch Loop", 0) cStitchLoop(0x4B41DEC8);
+        {
+            unsigned int attribID = 0x4B41DEC8;
+            m_pStitchLoopControl[side] = new ("Stitch Loop", 0) cStitchLoop(attribID);
+        }
     } else {
         g_pEAXSound->SetCsisName(this);
         m_pRoadNoiseControl[side] =
             new FX_ROADNOISE(ID, 0, 0x1000, 0, FXROADNOISETYPETYPE_LOOP, 0, 0, 25000, 0, 0x7FFF, 0);
-        refcnt = 0;
-        if (m_pRoadNoiseControl[side]->mpClass) {
-            m_pRoadNoiseControl[side]->mpClass->GetRefCount(&refcnt);
+        {
+            int refcnt = m_pRoadNoiseControl[side]->GetRefCount();
+            (void)refcnt;
         }
     }
 }
