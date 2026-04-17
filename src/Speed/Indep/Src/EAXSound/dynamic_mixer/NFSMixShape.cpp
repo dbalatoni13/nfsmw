@@ -12,19 +12,21 @@ extern int ndBRem;
 extern int lbl_803DAFF0[12];
 
 int NFSMixShape::GetCentsFromPitchMult(float ratio) {
-    if (ratio <= 1.0f) {
-        float lookup;
+    if (ratio > 1.0f) {
+        {
+            float lookup;
 
-        lookup = 1.9931569f;
-        return static_cast<int>(static_cast<float>(GetdBFromQ15(static_cast<int>(ratio * 32767.0f))) * lookup);
+            lookup = -1.9931569f;
+        }
+        return static_cast<int>(static_cast<float>(GetdBFromQ15(static_cast<int>(32767.0f / ratio))) * -1.9931569f);
     }
 
     {
         float lookup;
 
-        lookup = -1.9931569f;
-        return static_cast<int>(static_cast<float>(GetdBFromQ15(static_cast<int>(32767.0f / ratio))) * lookup);
+        lookup = 1.9931569f;
     }
+    return static_cast<int>(static_cast<float>(GetdBFromQ15(static_cast<int>(ratio * 32767.0f))) * 1.9931569f);
 }
 
 int NFSMixShape::GetIntPitchMultFromCents(int cents) {
