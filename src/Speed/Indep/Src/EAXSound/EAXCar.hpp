@@ -49,11 +49,11 @@ struct EAXCar : public CSTATE_Base {
     virtual StateInfo *GetStateInfo(void) const override;
     virtual const char *GetStateName(void) const override;
 
-    virtual void ProcessSoundSphere(unsigned int unamehash, int nparamid, bVector3 *pv3pos, float fradius);
-    virtual void UpdateCarPhysics();
-    virtual void StartHonkHorn();
-    virtual void StopHonkHorn();
-    virtual bool IsHonking();
+    virtual void ProcessSoundSphere(unsigned int unamehash, int nparamid, bVector3 *pv3pos, float fradius) {}
+    virtual void UpdateCarPhysics() {}
+    virtual void StartHonkHorn() {}
+    virtual void StopHonkHorn() {}
+    virtual bool IsHonking() { return false; }
     virtual eAemsUpgradeLevel GetEngineUpgradeLevel() { return m_EngUGL; }
     virtual int SFXMessage(eSFXMessageType SFXMessageType, unsigned int param1, unsigned int param2);
     virtual void UpdatePov();

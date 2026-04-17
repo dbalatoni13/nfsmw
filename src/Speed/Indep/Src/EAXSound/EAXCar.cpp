@@ -260,19 +260,3 @@ int EAXCar::SFXMessage(eSFXMessageType SFXMessageType, unsigned int, unsigned in
 
 void EAXCar::PreLoadAssets() {
 }
-
-void EAXCar::ProcessSoundSphere(unsigned int, int, bVector3 *, float) {
-}
-
-void EAXCar::UpdateCarPhysics() {
-}
-
-void EAXCar::StartHonkHorn() {
-}
-
-void EAXCar::StopHonkHorn() {
-}
-
-bool EAXCar::IsHonking() {
-    return false;
-}
