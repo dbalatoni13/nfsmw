@@ -22,8 +22,7 @@ CSTATEMGR_PlayerCar::~CSTATEMGR_PlayerCar() {}
 void CSTATEMGR_PlayerCar::EnterWorld(eSndGameMode esgm) {
     int SFXIDs = 0x53BFA;
     bool bIsTruck = false;
-    typedef UTL::Collections::Listable<EAX_CarState, 10> CarList;
-    const CarList::List &carlist = CarList::GetList();
+    const UTL::Collections::Listable<EAX_CarState, 10>::List &carlist = UTL::Collections::Listable<EAX_CarState, 10>::GetList();
 
     for (EAX_CarState *const *iter = carlist.begin(); iter != carlist.end(); ++iter) {
         if (bIsTruck) {
@@ -32,7 +31,7 @@ void CSTATEMGR_PlayerCar::EnterWorld(eSndGameMode esgm) {
 
         EAX_CarState *state = *iter;
         if (state->GetContext() == Sound::CONTEXT_PLAYER) {
-            Attrib::Gen::pvehicle veh(state->GetAttributes()->GetCollection(), 0, nullptr);
+            Attrib::Gen::pvehicle veh(state->mAttributes.GetCollection(), 0, nullptr);
             if (veh.TruckSndFX()) {
                 bIsTruck = true;
             }
@@ -41,23 +40,32 @@ void CSTATEMGR_PlayerCar::EnterWorld(eSndGameMode esgm) {
 
     if (bIsTruck) {
         IsTruck = true;
-        SFXIDs = 0xD3BFA;
+        SFXIDs |= 0x80000;
     } else {
         IsTruck = false;
     }
 
-    for (int n = 0;; n++) {
-        if (Sim::GetUserMode() == Sim::USER_SPLIT_SCREEN) {
-            if (n > 1) {
+    {
+        int n = 0;
+        while (1) {
+            {
+                EAXCar *NewPlayerCar = static_cast<EAXCar *>(CreateState(0, SFXIDs));
+                int SFXCTRLS = 0x100;
+
+                NewPlayerCar->Setup(SFXIDs);
+                NewPlayerCar->ForceCreateSFXCtrls(SFXCTRLS);
+            }
+
+            n++;
+
+            if (Sim::GetUserMode() == Sim::USER_SPLIT_SCREEN) {
+                if (n > 1) {
+                    break;
+                }
+            } else if (n > 0) {
                 break;
             }
-        } else if (n > 0) {
-            break;
         }
-
-        CSTATE_Base *NewPlayerCar = CreateState(0, SFXIDs);
-        NewPlayerCar->Setup(SFXIDs);
-        NewPlayerCar->ForceCreateSFXCtrls(0x100);
     }
 
     CSTATEMGR_Base::EnterWorld(esgm);
