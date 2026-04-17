@@ -93,26 +93,25 @@ void CARSFX_PreColWoosh::Detach() {
 }
 
 void CARSFX_PreColWoosh::UpdateParams(float t) {
-    SND_Stich *NewStichData;
-    int iVar3;
-    float fVar4;
-    float fVar5;
-    SND_Params sndparams;
-    STICH_WHOOSH_TYPE base;
-    int numblocks;
-    int sizeperblock;
-
     SndBase::UpdateParams(t);
     WooshFadeOut.Update(t);
-    fVar5 = 0.0f;
     mResetTime -= t;
     if (mResetTime < 0.0f) {
         mResetTime = 0.0f;
     }
 
-    GetOutputBlockPtr()[2] = 0;
+    SetDMIX_Input(2, 0);
     if (bGoingToCollide) {
-        GetOutputBlockPtr()[2] = 0x7FFF;
+        SND_Stich *NewStichData;
+        int iVar3;
+        float fVar4;
+        float fVar5 = 0.0f;
+        SND_Params sndparams;
+        STICH_WHOOSH_TYPE base;
+        int numblocks;
+        int sizeperblock;
+
+        SetDMIX_Input(2, 0x7FFF);
         mDurationActive += t;
         if (!m_pWoosh) {
             fVar4 = bClamp(g_WooshVol_vs_Vel.GetValue(GetPhysCar()->GetVelocityMagnitude()), fVar5, 0.99f);
