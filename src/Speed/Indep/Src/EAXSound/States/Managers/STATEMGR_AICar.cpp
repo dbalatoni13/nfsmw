@@ -35,6 +35,7 @@ void CSTATEMGR_AICar::EnterWorld(eSndGameMode esgm) {
     int n = UTL::Collections::ListableSet<IVehicle, 10, eVehicleList, 10>::Count(VEHICLE_AIRACERS);
 
     n += UTL::Collections::ListableSet<IVehicle, 10, eVehicleList, 10>::Count(VEHICLE_REMOTE);
+    (void)bMin(4, 4);
     if (n >= 4) {
     } else {
         numopponents = n;
