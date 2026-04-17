@@ -317,7 +317,7 @@ void CSTATE_Base::UpdateParams(float t) {
         t_DeltaTime = 0.0f;
     }
 
-    if (bIsAttached) {
+    if (IsAttached()) {
         CurSFXCtl = m_pHeadSFXCTL;
         if (CurSFXCtl) {
             do {
