@@ -1201,32 +1201,85 @@ int *NFSMixMap::GetObjectPtr(int sfxid, bool busedB, bool bHACKINIT) {
 }
 
 void NFSMixMap::ConnectMixMap() {
-    int n;
+    stCurveDataProc *pcdp;
+    int k;
+    st3DMixCtlProc *p3DProc;
+    stEvtMixCtlProc *pEVP;
 
-    for (n = 0; n < m_CurveProcsAdded; n++) {
-        m_pCurveDataArray[n].pInputParam = GetObjectPtr(m_pCurveDataArray[n].nINPUTID, false, false);
+    k = 0;
+    pcdp = m_pCurveDataArray;
+    if (k < m_CurveProcsAdded) {
+        do {
+            int sfxid;
+
+            sfxid = pcdp->nINPUTID;
+            pcdp->pInputParam = GetObjectPtr(sfxid, false, false);
+            pcdp++;
+            k++;
+        } while (k < m_CurveProcsAdded);
     }
 
-    for (n = 0; n < m_ScaleParamsAdded; n++) {
-        m_pScalePtrArray[n] = GetObjectPtr(reinterpret_cast<int>(m_pScalePtrArray[n]), false, false);
+    if (m_ScaleParamsAdded > 0) {
+        k = 0;
+        do {
+            int sfxid;
+
+            sfxid = reinterpret_cast<int>(m_pScalePtrArray[k]);
+            m_pScalePtrArray[k] = GetObjectPtr(sfxid, false, false);
+            k++;
+        } while (k < m_ScaleParamsAdded);
     }
 
-    for (n = 0; n < m_3DMixCtlsAdded; n++) {
-        m_p3DMixCtlProc[n].p3DMixCtlData_U->pInputs = GetObjectPtr(
-            reinterpret_cast<int>(m_p3DMixCtlProc[n].p3DMixCtlData_U->pInputs), false, false);
+    k = 0;
+    p3DProc = m_p3DMixCtlProc;
+    if (k < m_3DMixCtlsAdded) {
+        do {
+            int nID;
+
+            nID = reinterpret_cast<int>(p3DProc->p3DMixCtlData_U->pInputs);
+            p3DProc->p3DMixCtlData_U->pInputs = GetObjectPtr(nID, false, false);
+            p3DProc++;
+            k++;
+        } while (k < m_3DMixCtlsAdded);
     }
 
-    for (n = 0; n < m_EventCtlsAdded; n++) {
-        m_pEvtMixCtlProc[n].pData_U->pTriggerPtr =
-            GetObjectPtr(reinterpret_cast<int>(m_pEvtMixCtlProc[n].pData_U->pTriggerPtr), false, false);
+    k = 0;
+    pEVP = m_pEvtMixCtlProc;
+    if (k < m_EventCtlsAdded) {
+        do {
+            int nID;
+
+            nID = reinterpret_cast<int>(pEVP->pData_U->pTriggerPtr);
+            pEVP->pData_U->pTriggerPtr = GetObjectPtr(nID, false, false);
+            pEVP++;
+            k++;
+        } while (k < m_EventCtlsAdded);
     }
 
-    for (n = 0; n < m_nTotalSubChannelInputs; n++) {
-        m_pSubChannelInputs[n] = reinterpret_cast<int>(GetObjectPtr(m_pSubChannelInputs[n], true, false));
+    if (m_nTotalSubChannelInputs > 0) {
+        k = 0;
+        do {
+            int *newptr;
+            int sfxid;
+
+            newptr = m_pSubChannelInputs + k;
+            k++;
+            sfxid = *newptr;
+            *newptr = reinterpret_cast<int>(GetObjectPtr(sfxid, true, false));
+        } while (k < m_nTotalSubChannelInputs);
     }
 
-    for (n = 0; n < m_nTotalMasterChannelInputs; n++) {
-        m_pMasterChannelInputs[n] = reinterpret_cast<int>(GetObjectPtr(m_pMasterChannelInputs[n], true, true));
+    if (m_nTotalMasterChannelInputs > 0) {
+        k = 0;
+        do {
+            int *newptr;
+            int sfxid;
+
+            newptr = m_pMasterChannelInputs + k;
+            k++;
+            sfxid = *newptr;
+            *newptr = reinterpret_cast<int>(GetObjectPtr(sfxid, true, true));
+        } while (k < m_nTotalMasterChannelInputs);
     }
 }
 
