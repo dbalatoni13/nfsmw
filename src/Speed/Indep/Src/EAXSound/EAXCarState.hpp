@@ -187,6 +187,14 @@ struct EAX_CarState : public UTL::Collections::Listable<EAX_CarState, 10> {
         return mEngine.mNOSFlag != 0;
     }
 
+    float GetNosPercentageLeft() {
+        return mEngine.mNOS;
+    }
+
+    bool GetNosEmptyFlag() {
+        return mNosEmptyFlag;
+    }
+
     EAX_CarState *GetState() {
         return this;
     }

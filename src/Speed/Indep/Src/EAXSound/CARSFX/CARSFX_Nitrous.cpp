@@ -140,11 +140,16 @@ void CARSFX_Nitrous::Destroy() {
     m_NitrousPurge = nullptr;
 }
 
-void CARSFX_Nitrous::UpdateParams(float) {
+void CARSFX_Nitrous::UpdateParams(float t) {
     int nSTATE;
     unsigned int uNOSHash;
 
-    if (reinterpret_cast<unsigned char *>(&objectID)[1] != 2 || !IsEnabled()) {
+    if (GetGroupID() != 2) {
+        return;
+    }
+
+    SndBase::UpdateParams(t);
+    if (!IsEnabled()) {
         return;
     }
 
@@ -154,7 +159,7 @@ void CARSFX_Nitrous::UpdateParams(float) {
     case SFX_NITROUS_NONE:
         if (m_pEAXCar->GetPhysCar()->GetNitroFlag()) {
             eNitrousState = SFX_NITROUS_ON;
-            Play(0, 0, m_pEAXCar->m_Rotation);
+            Play(0, 0, m_pEAXCar->GetRotation());
             m_NitrousPitchBoost.Initialize(0.0f, 1.0f, 400, LINEAR);
         }
         break;
@@ -163,13 +168,13 @@ void CARSFX_Nitrous::UpdateParams(float) {
             if (m_NitrousControl) {
                 Stop();
             }
-            m_NitrousPitchBoost.Initialize(m_NitrousPitchBoost.CurValue, 0.0f, 1000, LINEAR);
+            m_NitrousPitchBoost.Initialize(m_NitrousPitchBoost.GetValue(), 0.0f, 1000, LINEAR);
             eNitrousState = SFX_NITROUS_NONE;
         }
         break;
     }
 
-    if (GetPhysCar()->mNosEmptyFlag && !m_NitrousPurge) {
+    if (GetPhysCar()->GetNosEmptyFlag() && !m_NitrousPurge) {
         PlayPurge();
     }
 }
@@ -232,4 +237,3 @@ void CARSFX_Nitrous::SetupLoadData() {
     LoadAsset(
         g_pEAXSound->GetAttributes()->AEMS_NOSBanks(nbankindex), SNDPATH_NOS, EAXSND_DT_AEMS_ASYNCSPUMEM, eBANK_SLOT_NONE, true);
 }
-

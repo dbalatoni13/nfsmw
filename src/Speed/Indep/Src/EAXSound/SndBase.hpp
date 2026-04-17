@@ -82,6 +82,7 @@ struct SndBase : public AudioMemBase {
     int GetDMIX_InputValue(int index) { return m_pOutPutBlock[index]; }
     void Enable() { m_bIsEnabled = true; }
     void Disable() { m_bIsEnabled = false; }
+    bool IsEnabled() { return m_bIsEnabled; }
     bool IsEnabled() const { return m_bIsEnabled; }
     void SetOutputsPtr(int *ptr) { m_pOutPutBlock = ptr; }
     void SetDMIX_Input(int index, int value) { m_pOutPutBlock[index] = value; }
@@ -95,6 +96,7 @@ struct SndBase : public AudioMemBase {
     CSTATE_Base *GetStateBase() { return m_pStateBase; }
     EAX_CarState *GetPhysCar();
     int GetSFX_ID() { return (objectID >> 4) & 0x7F; }
+    int GetGroupID() { return reinterpret_cast<unsigned char *>(&objectID)[1]; }
     int GetUniqueID() { return objectID; }
     void SetObjectID(int id) { objectID = id; }
 

@@ -73,6 +73,7 @@ struct EAXCar : public CSTATE_Base {
     float GetPhysTRQ() { return PhysTRQ; }
     float GetVelocityMagnitudeMPH();
     int GetPOV() { return m_PovType; }
+    int GetRotation() { return m_Rotation; }
     void SetPhysTRQ(float _TRQ) { PhysTRQ = _TRQ; }
     void SetPhysRPM(float _RPM) { PhysRPM = _RPM; }
     void SetIsAccelerating(float _IsAccelerating) { bIsAccelerating = _IsAccelerating != 0.0f; }
