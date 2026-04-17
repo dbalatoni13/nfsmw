@@ -1,4 +1,5 @@
 #include "Speed/Indep/Src/EAXSound/EAXSndUtil.h"
+#include <string.h>
 
 extern int g_dBToQ15XForm[0x25A];
 extern int g_Q15todBXForm[0x200];
@@ -8,6 +9,7 @@ extern float g_fPitchCentTable[100];
 extern int nDBreturn;
 extern int ndBShift;
 extern int ndBRem;
+extern int lbl_803DAFF0[12];
 
 int NFSMixShape::GetCentsFromPitchMult(float ratio) {
     if (ratio <= 1.0f) {
@@ -89,37 +91,42 @@ int NFSMixShape::GetQ15FromHundredthsdB(int ndB) {
 }
 
 int NFSMixShape::GetdBFromQ15(int nQ15) {
-    unsigned int n;
+    int nTest;
+    int n;
+    int nRem;
     int ndB;
+    int fillin[12];
 
     nDBreturn = -1;
     n = 0;
-    ndB = -10000;
-    if (nQ15 != 0) {
-        if ((nQ15 & 0x4000U) == 0) {
-            n = 1;
-            do {
-                if (((0x4000 >> (n & 0x1FU)) & nQ15) != 0) {
-                    goto found;
-                }
-                n = n + 1;
-            } while (n != 0x11);
-        } else {
-found:
-            int index;
-            int nRem;
+    nTest = 0x4000;
+    if (nQ15 == 0) {
+        return -10000;
+    }
 
-            nRem = nQ15 - (0x4000 >> (n & 0x1FU));
-            if (static_cast<int>(n) < 5) {
-                index = nRem >> (5 - n);
-            } else {
-                index = (nRem << (n - 5)) | ((1 << (n - 5)) - 1);
+    if ((nQ15 & 0x4000U) == 0) {
+        do {
+            n = n + 1;
+            if (((nTest >> n) & nQ15) != 0) {
+                goto found;
             }
-            ndB = ((n + 1) * -0x25A) + g_Q15todBXForm[index];
-            if (ndB <= -0x2711) {
-                ndB = -10000;
-            }
-        }
+        } while (n != 0x10);
+
+        return -10000;
+    }
+
+found:
+    ndB = (n + 1) * -0x25A;
+    nRem = nQ15 - (0x4000 >> n);
+    memcpy(fillin, lbl_803DAFF0, sizeof(fillin));
+    if (n > 4) {
+        nRem = (nRem << (n - 5)) | fillin[n - 5];
+    } else {
+        nRem = nRem >> (5 - n);
+    }
+    ndB = ndB + g_Q15todBXForm[nRem];
+    if (ndB < -0x2710) {
+        ndB = -10000;
     }
 
     return ndB;
