@@ -39,7 +39,7 @@ class SFXObj_Speech : public CARSFX {
     void InitSFX() override;
     void Destroy() override;
     void UpdateParams(float t) override;
-    void ProcessUpdate() override;
+    void ProcessUpdate() override {}
 
     SFXCTL_3DObjPos *m_pActorPos; // offset 0x28, size 0x4
     bVector3 fPosition;           // offset 0x2C, size 0x10

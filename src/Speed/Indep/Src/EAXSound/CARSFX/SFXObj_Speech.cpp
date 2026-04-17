@@ -107,7 +107,6 @@ SndBase *SFXCTL_3DVoiceActorPos::CreateObject(unsigned int allocator) {
     return new (GetStaticTypeInfo()->typeName, true) SFXCTL_3DVoiceActorPos();
 }
 
-void SFXObj_Speech::ProcessUpdate() {}
 
 SFXCTL_3DVoiceActorPos::~SFXCTL_3DVoiceActorPos() {}
 bVector3 v3NULL(0.0f, 0.0f, 0.0f);
