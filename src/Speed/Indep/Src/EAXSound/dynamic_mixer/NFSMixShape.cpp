@@ -130,11 +130,6 @@ float NFSMixShape::GetFloatFromHundredthsdB(int ndB) {
 }
 
 int NFSMixShape::GetCurveOutput(eMIXTABLEID etable, int nQ15Ratio, bool bdBOut) {
-    int nQ15;
-    int ndB;
-    int nindex;
-    eMIXTABLEID opposite;
-
 retry:
     switch (etable) {
     case ::SHAPE_DWN_LINEAR:
@@ -143,108 +138,135 @@ retry:
         }
         return 0x7FFF - nQ15Ratio;
 
-    case ::SHAPE_DWN_EQPWR:
+    case ::SHAPE_DWN_EQPWR: {
+        int nrem;
+        int nindex;
+        int nMain;
+        int nDiff;
+
         nindex = nQ15Ratio >> 6;
-        nQ15 = g_nArrayCosTable[nindex];
-        if (nQ15 != 0) {
-            nQ15 = nQ15 + (((g_nArrayCosTable[nindex + 1] - nQ15) * (((nQ15Ratio & 0x1F) << 9) | 0x3FF)) >> 15);
+        nMain = g_nArrayCosTable[nindex];
+        if (nMain != 0) {
+            nrem = ((nQ15Ratio & 0x1F) << 9) | 0x3FF;
+            nDiff = g_nArrayCosTable[nindex + 1] - nMain;
+            nMain = nMain + ((nDiff * nrem) >> 15);
         }
         if (bdBOut) {
-            ndB = GetdBFromQ15(nQ15);
-            if (ndB < -0x2580) {
-                ndB = -10000;
+            int ndbout;
+
+            ndbout = GetdBFromQ15(nMain);
+            if (ndbout < -0x2580) {
+                ndbout = -10000;
             }
-            return ndB;
+            return ndbout;
         }
-        return nQ15;
+        return nMain;
+    }
 
     case ::SHAPE_DWN_EQPWR_SQ:
         if (bdBOut) {
-            ndB = GetCurveOutput(::SHAPE_DWN_EQPWR, nQ15Ratio, true) << 1;
-            if (ndB < -0x2580) {
-                ndB = -10000;
-            }
-            return ndB;
-        }
-        nQ15 = GetCurveOutput(::SHAPE_DWN_EQPWR, nQ15Ratio, false);
-        return (nQ15 * nQ15) >> 15;
+            int nOut;
 
-    case ::SHAPE_DWN_ONE_MIN_EQPWR:
-        nindex = nQ15Ratio >> 6;
-        nQ15 = (0x7FFF - g_nArrayCosTable[0x1FF - nindex]) +
-               (((g_nArrayCosTable[0x1FF - nindex] - g_nArrayCosTable[0x200 - nindex]) *
-                 (((nQ15Ratio & 0x1F) << 9) | 0x3FF)) >>
-                15);
-        if (bdBOut) {
-            ndB = GetdBFromQ15(nQ15);
-            if (ndB < -0x2580) {
-                ndB = -10000;
+            nOut = GetCurveOutput(::SHAPE_DWN_EQPWR, nQ15Ratio, true) << 1;
+            if (nOut < -0x2580) {
+                nOut = -10000;
             }
-            return ndB;
+            return nOut;
         }
-        return nQ15;
+        {
+            int nOut;
+
+            nOut = GetCurveOutput(::SHAPE_DWN_EQPWR, nQ15Ratio, false);
+            return (nOut * nOut) >> 15;
+        }
+
+    case ::SHAPE_DWN_ONE_MIN_EQPWR: {
+        int nrem;
+        int nindex;
+        int nout;
+        int nDiff;
+        int nScaledDiff;
+        int nQOut;
+
+        nindex = nQ15Ratio >> 6;
+        nrem = 0x1FF - nindex;
+        nindex = 0x200 - nindex;
+        nout = g_nArrayCosTable[nrem];
+        nDiff = g_nArrayCosTable[nrem] - g_nArrayCosTable[nindex];
+        nScaledDiff = (nDiff * (((nQ15Ratio & 0x1F) << 9) | 0x3FF)) >> 15;
+        nQOut = (0x7FFF - nout) + nScaledDiff;
+        if (bdBOut) {
+            int ndbout;
+
+            ndbout = GetdBFromQ15(nQOut);
+            if (ndbout < -0x2580) {
+                ndbout = -10000;
+            }
+            return ndbout;
+        }
+        return nQOut;
+    }
 
     case ::SHAPE_DWN_ONE_MIN_EQPWR_SQ:
         if (bdBOut) {
-            ndB = GetCurveOutput(::SHAPE_DWN_ONE_MIN_EQPWR, nQ15Ratio, true) << 1;
-            if (ndB < -0x2580) {
-                ndB = -10000;
+            int nOut;
+
+            nOut = GetCurveOutput(::SHAPE_DWN_ONE_MIN_EQPWR, nQ15Ratio, true) << 1;
+            if (nOut < -0x2580) {
+                nOut = -10000;
             }
-            return ndB;
+            return nOut;
         }
-        nQ15 = GetCurveOutput(::SHAPE_DWN_ONE_MIN_EQPWR, nQ15Ratio, false);
-        return (nQ15 * nQ15) >> 15;
+        {
+            int nOut;
+
+            nOut = GetCurveOutput(::SHAPE_DWN_ONE_MIN_EQPWR, nQ15Ratio, false);
+            return (nOut * nOut) >> 15;
+        }
 
     case ::SHAPE_UP_ONE_MIN_EQPWR_SQ:
-        opposite = ::SHAPE_DWN_ONE_MIN_EQPWR_SQ;
         if (bdBOut) {
-            break;
+            return -GetCurveOutput(::SHAPE_DWN_ONE_MIN_EQPWR_SQ, nQ15Ratio, true);
         }
-        etable = opposite;
+        etable = ::SHAPE_DWN_ONE_MIN_EQPWR_SQ;
         nQ15Ratio = 0x7FFF - nQ15Ratio;
         goto retry;
 
     case ::SHAPE_UP_EQPWR:
-        opposite = ::SHAPE_DWN_EQPWR;
         if (bdBOut) {
-            break;
+            return -GetCurveOutput(::SHAPE_DWN_EQPWR, nQ15Ratio, true);
         }
-        etable = opposite;
+        etable = ::SHAPE_DWN_EQPWR;
         nQ15Ratio = 0x7FFF - nQ15Ratio;
         goto retry;
 
     case ::SHAPE_UP_ONE_MIN_EQPWR:
-        opposite = ::SHAPE_DWN_ONE_MIN_EQPWR;
         if (bdBOut) {
-            break;
+            return -GetCurveOutput(::SHAPE_DWN_ONE_MIN_EQPWR, nQ15Ratio, true);
         }
-        etable = opposite;
+        etable = ::SHAPE_DWN_ONE_MIN_EQPWR;
         nQ15Ratio = 0x7FFF - nQ15Ratio;
         goto retry;
 
     case ::SHAPE_UP_EQPWR_SQ:
-        opposite = ::SHAPE_DWN_EQPWR_SQ;
         if (bdBOut) {
-            break;
+            return -GetCurveOutput(::SHAPE_DWN_EQPWR_SQ, nQ15Ratio, true);
         }
-        etable = opposite;
+        etable = ::SHAPE_DWN_EQPWR_SQ;
         nQ15Ratio = 0x7FFF - nQ15Ratio;
         goto retry;
 
     case ::SHAPE_UP_LINEAR:
-        opposite = ::SHAPE_DWN_LINEAR;
         if (bdBOut) {
-            break;
+            return -GetCurveOutput(::SHAPE_DWN_LINEAR, nQ15Ratio, true);
         }
-        etable = opposite;
+        etable = ::SHAPE_DWN_LINEAR;
         nQ15Ratio = 0x7FFF - nQ15Ratio;
         goto retry;
 
     default:
         return 0;
     }
-
-    return -GetCurveOutput(opposite, nQ15Ratio, true);
 }
 
 int NFSMixShape::GetAzimShapeOutput(eMIXTABLEID etable1, eMIXTABLEID etable2, int *pdistances, int nmixratio) {
