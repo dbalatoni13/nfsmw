@@ -79,7 +79,7 @@ void CARSFX_SparkChatter::AttachController(SFXCTL *psfxctl) {
 void CARSFX_SparkChatter::SetupSFX(CSTATE_Base *_StateBase) {
     SndBase::SetupSFX(_StateBase);
     m_UGL = m_pEAXCar->GetEngineUpgradeLevel();
-    m_pSweetnersData = &m_pEAXCar->mEngineInfo;
+    m_pSweetnersData = &m_pEAXCar->GetAttributes();
 }
 
 void CARSFX_SparkChatter::InitSFX() {
@@ -159,13 +159,13 @@ void CARSFX_SparkChatter::ProcessUpdate() {
     int TmpVol;
 
     if (m_pSparkChatterControl) {
-        TmpVol = GetDMixOutput(1, DMX_VOL) * m_pSweetnersData->Vol_Sputters() >> 15;
+        TmpVol = GetDMixOutput(1, DMX_VOL) * m_pEAXCar->GetAttributes().Vol_Sputters() >> 15;
         m_pSparkChatterControl->SetCOMMON_PARAMETERS_AZIMUTH(GetDMixOutput(0, DMX_AZIM));
         m_pSparkChatterControl->SetCOMMON_PARAMETERS_PITCH_OFFSET(0);
         m_pSparkChatterControl->SetCOMMON_PARAMETERS_ROTATION(0);
         m_pSparkChatterControl->SetForce_Trigger(0);
-        m_pSparkChatterControl->SetRPM(static_cast<int>(m_pEAXCar->PhysRPM));
-        m_pSparkChatterControl->SetTORQUE(static_cast<int>(m_pEAXCar->PhysTRQ * 10.24f));
+        m_pSparkChatterControl->SetRPM(static_cast<int>(GetPhysRPM()));
+        m_pSparkChatterControl->SetTORQUE(static_cast<int>(m_pEAXCar->GetPhysTRQ() * 10.24f));
         m_pSparkChatterControl->SetVOL(TmpVol);
         m_pSparkChatterControl->SetAccel_true(m_pEAXCar->IsAccelerating());
         m_pSparkChatterControl->SetShifting_true(m_pShiftingCTL->IsActive());
