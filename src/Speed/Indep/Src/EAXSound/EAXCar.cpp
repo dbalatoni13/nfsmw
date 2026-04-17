@@ -276,7 +276,3 @@ void EAXCar::StopHonkHorn() {
 bool EAXCar::IsHonking() {
     return false;
 }
-
-eAemsUpgradeLevel EAXCar::GetEngineUpgradeLevel() {
-    return m_EngUGL;
-}

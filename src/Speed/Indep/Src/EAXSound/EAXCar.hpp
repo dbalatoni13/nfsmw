@@ -54,7 +54,7 @@ struct EAXCar : public CSTATE_Base {
     virtual void StartHonkHorn();
     virtual void StopHonkHorn();
     virtual bool IsHonking();
-    virtual eAemsUpgradeLevel GetEngineUpgradeLevel();
+    virtual eAemsUpgradeLevel GetEngineUpgradeLevel() { return m_EngUGL; }
     virtual int SFXMessage(eSFXMessageType SFXMessageType, unsigned int param1, unsigned int param2);
     virtual void UpdatePov();
     virtual int UpdateRotation();
