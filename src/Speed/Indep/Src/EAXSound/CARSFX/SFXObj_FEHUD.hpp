@@ -18,7 +18,7 @@ class SFXObj_FEHUD : public CARSFX {
     static SndBase *CreateObject(unsigned int allocator);
     ~SFXObj_FEHUD() override;
     int GetController(int Index) override { return -1; }
-    void AttachController(SFXCTL *psfxctl) override;
+    void AttachController(SFXCTL *psfxctl) override {}
     void InitSFX() override;
     void Destroy() override;
     void UpdateMixerOutputs() override;

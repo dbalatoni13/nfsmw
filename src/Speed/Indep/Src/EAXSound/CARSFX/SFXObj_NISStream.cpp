@@ -343,6 +343,8 @@ void SFXObj_NISStream::InitSFX() {
     g_pEAXSound->SetSFXBaseObject(this, eMM_MAIN, 5, 0);
 }
 
+void SFXObj_NISStream::Destroy() {}
+
 bool SFXObj_NISStream::QueueNISStream(unsigned int anim_id, int camera_track_number,
                                       void (*setmstimecb)(unsigned int, int), bool bbuttonthrough) {
     m_mselapsedtimecb = setmstimecb;

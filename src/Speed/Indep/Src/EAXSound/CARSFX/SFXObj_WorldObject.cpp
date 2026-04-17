@@ -126,10 +126,6 @@ ISndAttachable::ISndAttachable()
 
 SFXCTL_3DFountainPos::~SFXCTL_3DFountainPos() {}
 
-const bVector3 *WorldObject::GetPosition() {
-    return &m_3DPosition;
-}
-
 int WorldObject::GetType() {
     return Types;
 }
