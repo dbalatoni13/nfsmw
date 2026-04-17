@@ -205,13 +205,13 @@ bool EAXCar::Detach() {
 }
 
 void EAXCar::ProcessUpdate() {
-    if (m_pCar) {
+    if (GetPhysCar()) {
         CSTATE_Base::ProcessUpdate();
     }
 }
 
 void EAXCar::UpdateParams(float t) {
-    if (m_pCar) {
+    if (GetPhysCar()) {
         UpdateCarPhysics();
         CSTATE_Base::UpdateParams(t);
     }
@@ -256,7 +256,4 @@ int EAXCar::SFXMessage(eSFXMessageType SFXMessageType, unsigned int, unsigned in
         break;
     }
     return 0;
-}
-
-void EAXCar::PreLoadAssets() {
 }

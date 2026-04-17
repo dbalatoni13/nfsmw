@@ -41,7 +41,7 @@ struct EAXCar : public CSTATE_Base {
     EAXCar();
     virtual ~EAXCar();
 
-    virtual void PreLoadAssets() override;
+    virtual void PreLoadAssets() override {}
     virtual void Attach(void *pAttachment) override;
     virtual void UpdateParams(float t) override;
     virtual void ProcessUpdate() override;
