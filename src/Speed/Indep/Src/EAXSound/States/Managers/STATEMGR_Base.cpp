@@ -28,12 +28,14 @@ void CSTATEMGR_Base::DisconnectMixMap() { // thanks chippy
         return;
     }
 
-    CSTATE_Base *obj = m_pHeadStateObj;
-    obj->DisconnectMixMap();
+    {
+        CSTATE_Base *CurStateObj = m_pHeadStateObj;
+        CurStateObj->DisconnectMixMap();
 
-    while (obj->m_pNextState) {
-        obj = obj->m_pNextState;
-        obj->DisconnectMixMap();
+        while (CurStateObj->m_pNextState) {
+            CurStateObj = CurStateObj->m_pNextState;
+            CurStateObj->DisconnectMixMap();
+        }
     }
 }
 
@@ -42,12 +44,14 @@ void CSTATEMGR_Base::SafeConnectOrphanObjects() { // thanks chippy
         return;
     }
 
-    CSTATE_Base *obj = m_pHeadStateObj;
-    obj->SafeConnectOrphanObjects();
+    {
+        CSTATE_Base *CurStateObj = m_pHeadStateObj;
+        CurStateObj->SafeConnectOrphanObjects();
 
-    while (obj->m_pNextState) {
-        obj = obj->m_pNextState;
-        obj->SafeConnectOrphanObjects();
+        while (CurStateObj->m_pNextState) {
+            CurStateObj = CurStateObj->m_pNextState;
+            CurStateObj->SafeConnectOrphanObjects();
+        }
     }
 }
 
@@ -295,11 +299,11 @@ void CSTATEMGR_Base::ProcessUpdate() {
 }
 
 CSTATE_Base *CSTATEMGR_Base::GetStateObj(int nInstance) {
-    CSTATE_Base *obj = m_pHeadStateObj;
-    while (obj) {
-        if (obj->m_InstNum == nInstance)
-            return obj;
-        obj = obj->m_pNextState;
+    CSTATE_Base *CurStateObj = m_pHeadStateObj;
+    while (CurStateObj) {
+        if (CurStateObj->m_InstNum == nInstance)
+            return CurStateObj;
+        CurStateObj = CurStateObj->m_pNextState;
     }
     return nullptr;
 }
@@ -317,12 +321,12 @@ CSTATE_Base *CSTATEMGR_Base::GetStateObj(void *testattachment) {
 void CSTATEMGR_Base::ExitWorld() {
     bIsInitialized = false;
     m_CurNumStates = 0;
-    CSTATE_Base *obj = m_pHeadStateObj;
-    while (obj) {
-        CSTATE_Base *del = obj;
-        obj = obj->m_pNextState;
-        del->Detach();
-        delete del;
+    CSTATE_Base *CurStateObj = m_pHeadStateObj;
+    while (CurStateObj) {
+        CSTATE_Base *DeletedStateObj = CurStateObj;
+        CurStateObj = CurStateObj->m_pNextState;
+        DeletedStateObj->Detach();
+        delete DeletedStateObj;
     }
     m_pHeadStateObj = nullptr;
     m_CurNumStates = 0;
