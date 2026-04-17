@@ -80,31 +80,35 @@ void CARSFX_Siren::InitSFX() {
 
 void CARSFX_Siren::UpdateParams(float t) {
     EAX_CarState *thisCar;
-    float t_death;
-    SirenState state;
 
+    SndBase::UpdateParams(t);
     thisCar = GetPhysCar();
     if (!thisCar) {
         return;
     }
 
-    t_death = (WorldTimer - mT_death).GetSeconds();
-    state = thisCar->mSirenState;
-    if (state == SIREN_OFF || (m_SirenState == SIREN_DIE && t_death > 10.0f)) {
-        Disable();
-    } else {
-        Enable();
-    }
+    {
+        float t_death;
+        SirenState state;
 
-    if (state == SIREN_OFF) {
-        if (IsEnabled()) {
+        t_death = (WorldTimer - mT_death).GetSeconds();
+        state = thisCar->GetSirenState();
+        if (state == SIREN_OFF || (m_SirenState == SIREN_DIE && t_death > 10.0f)) {
             Disable();
+        } else {
+            Enable();
         }
-        return;
-    }
 
-    if (!IsEnabled()) {
-        Enable();
+        if (state == SIREN_OFF) {
+            if (IsEnabled()) {
+                Disable();
+            }
+            return;
+        }
+
+        if (!IsEnabled()) {
+            Enable();
+        }
     }
 }
 

@@ -38,27 +38,39 @@ int NFSMixShape::GetIntPitchMultFromCents(int cents) {
 }
 
 float NFSMixShape::GetPitchMultFromCents(int cents) {
-    int num;
     float octaveMulti;
+    bool Neg;
 
     octaveMulti = 1.0f;
-    num = cents;
+    Neg = cents < 0;
     if (cents > 0x4AF) {
         do {
-            num = num - 0x4B0;
+            cents = cents - 0x4B0;
             octaveMulti = octaveMulti + octaveMulti;
-        } while (num > 0x4AF);
+        } while (cents > 0x4AF);
     }
 
-    for (; num < -0x4AF; num = num + 0x4B0) {
+    for (; cents < -0x4AF; cents = cents + 0x4B0) {
         octaveMulti = octaveMulti + octaveMulti;
     }
 
-    if (cents > -1) {
-        return g_fPitchSemitoneTable[num / 100] * g_fPitchCentTable[num % 100] * octaveMulti;
+    if (!Neg) {
+        float semip;
+        float centp;
+
+        semip = g_fPitchSemitoneTable[cents / 100];
+        centp = g_fPitchCentTable[cents % 100];
+        return semip * centp * octaveMulti;
     }
 
-    return ((1.0f / g_fPitchSemitoneTable[-num / 100]) * (1.0f / g_fPitchCentTable[-num % 100])) / octaveMulti;
+    {
+        float semip;
+        float centp;
+
+        semip = 1.0f / g_fPitchSemitoneTable[-cents / 100];
+        centp = 1.0f / g_fPitchCentTable[-cents % 100];
+        return (semip * centp) / octaveMulti;
+    }
 }
 
 int NFSMixShape::GetQ15FromHundredthsdB(int ndB) {

@@ -108,23 +108,27 @@ void CARSFX_BottomOut::LandJumpPlay(float Intensity, bool HardLanding) {
 }
 
 void CARSFX_BottomOut::BottomOutPlay(unsigned int Intensity) {
-    if (!m_pBottomOut) {
+    float fIntensity;
+    int sampleOffset;
+
+    if (m_pBottomOut) {
+        return;
+    }
+
+    fIntensity = bClamp(Intensity, 0.0f, 127.0f);
+    {
         static int LastRandom = 0;
 
-        float fIntensity;
-        int sampleOffset;
-
-        fIntensity = bClamp(static_cast<float>(Intensity), 0.0f, 127.0f);
         sampleOffset = LastRandom % 4;
         LastRandom = sampleOffset + 1;
-        sampleOffset += 0x51;
-        fIntensity *= 0.03125f;
-        SND_Stich &StichData = g_pEAXSound->GetStichPlayer()->GetStich(
-            STICH_TYPE_COLLISION, static_cast<int>(fIntensity) * 4 + sampleOffset);
-        m_pBottomOut = new cStichWrapper(StichData);
-        m_pBottomOut->Play(0, 0, 0);
-        SetDMIX_Input(2, 0x7FFF);
     }
+    sampleOffset += 0x51;
+    fIntensity *= 0.03125f;
+    SND_Stich &StichData = g_pEAXSound->GetStichPlayer()->GetStich(
+        STICH_TYPE_COLLISION, static_cast<int>(fIntensity) * 4 + sampleOffset);
+    m_pBottomOut = new cStichWrapper(StichData);
+    m_pBottomOut->Play(0, 0, 0);
+    SetDMIX_Input(2, 0x7FFF);
 }
 
 void CARSFX_BottomOut::Detach() {
