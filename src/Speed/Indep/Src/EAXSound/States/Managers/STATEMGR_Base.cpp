@@ -251,11 +251,12 @@ void CSTATEMGR_Base::EnterWorld(eSndGameMode esgm) {
 }
 
 CSTATE_Base *CSTATEMGR_Base::GetFreeState(void *ObjectPtr) {
-    CSTATE_Base *obj = m_pHeadStateObj;
-    while (obj) {
-        if (!obj->bIsAttached)
-            return obj;
-        obj = obj->m_pNextState;
+    CSTATE_Base *CurStateObj = m_pHeadStateObj;
+    while (CurStateObj) {
+        if (!CurStateObj->IsAttached()) {
+            return CurStateObj;
+        }
+        CurStateObj = CurStateObj->m_pNextState;
     }
     return nullptr;
 }
@@ -321,12 +322,13 @@ void CSTATEMGR_Base::ExitWorld() {
 }
 
 int CSTATEMGR_Base::GetAttachedStateCount() {
-    int i = 0;
-    CSTATE_Base *obj = m_pHeadStateObj;
-    while (obj) {
-        if (obj->bIsAttached)
-            i++;
-        obj = obj->m_pNextState;
+    int cnt = 0;
+    CSTATE_Base *CurStateObj = m_pHeadStateObj;
+    while (CurStateObj) {
+        if (CurStateObj->IsAttached()) {
+            cnt++;
+        }
+        CurStateObj = CurStateObj->m_pNextState;
     }
-    return i;
+    return cnt;
 }
