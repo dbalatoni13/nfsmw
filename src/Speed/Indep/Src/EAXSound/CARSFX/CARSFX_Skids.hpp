@@ -21,7 +21,7 @@ struct SFXCTL_3DLeftWheelPos : public SFXCTL_3DObjPos {
 
   public:
     SFXCTL_3DLeftWheelPos() {}
-    ~SFXCTL_3DLeftWheelPos() override;
+    ~SFXCTL_3DLeftWheelPos() override {}
 
     TypeInfo *GetTypeInfo() const override;
     const char *GetTypeName() const override;
@@ -39,7 +39,7 @@ struct SFXCTL_3DRightWheelPos : public SFXCTL_3DObjPos {
 
   public:
     SFXCTL_3DRightWheelPos() {}
-    ~SFXCTL_3DRightWheelPos() override;
+    ~SFXCTL_3DRightWheelPos() override {}
 
     TypeInfo *GetTypeInfo() const override;
     const char *GetTypeName() const override;

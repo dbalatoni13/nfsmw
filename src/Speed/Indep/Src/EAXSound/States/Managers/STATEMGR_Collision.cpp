@@ -19,7 +19,7 @@ void CSTATEMGR_Collision::EnterWorld(eSndGameMode esgm) {
 void CSTATEMGR_Collision::UpdateParams(float t) {
     CSTATEMGR_Base::UpdateParams(t);
 }
-static int GetCollisionPriority(Sound::CollisionEvent *collision) {
+int GetCollisionPriority(Sound::CollisionEvent *collision) {
     if (collision->IsDescribed(0x400)) {
         return 10;
     }
@@ -120,4 +120,3 @@ CSTATE_Base *CSTATEMGR_Collision::GetFreeState(void *ObjectPtr) {
 
     return CurReturn;
 }
-

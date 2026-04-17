@@ -45,7 +45,9 @@ void CARSFX_EngineBase::Detach() {
     }
 }
 
-void CARSFX_EngineBase::UpdateParams(float) {}
+void CARSFX_EngineBase::UpdateParams(float t) {
+    SndBase::UpdateParams(t);
+}
 
 void CARSFX_EngineBase::SetupSFX(CSTATE_Base *_StateBase) {
     SndBase::SetupSFX(_StateBase);
@@ -55,7 +57,9 @@ void CARSFX_EngineBase::InitSFX() {
     SndBase::InitSFX();
 }
 
-void CARSFX_EngineBase::Destroy() {}
+void CARSFX_EngineBase::Destroy() {
+    SndBase::Destroy();
+}
 
 void CARSFX_EngineBase::ProcessUpdate() {
     SetEngineParams();

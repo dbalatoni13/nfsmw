@@ -351,5 +351,3 @@ bool GinsuSynthData::GetSamples(int startSample, int numSamples, short *dest) {
 
     return true;
 }
-
-GinsuSynthData::~GinsuSynthData() {}

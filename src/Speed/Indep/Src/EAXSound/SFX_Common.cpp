@@ -59,7 +59,7 @@ SFX_Common::~SFX_Common() {
     m_pPursuitBreakEnd = nullptr;
 }
 
-void SFX_Common::AttachController(SFXCTL *) {}
+void SFX_Common::AttachController(SFXCTL *psfxctl) {}
 
 void SFX_Common::Destroy() {}
 
@@ -91,7 +91,7 @@ void SFX_Common::MsgPlayMiscSound(const MMiscSound &message) {
         break;
     }
 }
-void SFX_Common::UpdateParams(float) {}
+void SFX_Common::UpdateParams(float t) {}
 
 void SFX_Common::ProcessUpdate() {
     if (m_pcsisCameraShot) {

@@ -44,7 +44,7 @@ struct SFXCTL_3DFountainPos : public SFXCTL_3DObjPos {
 
   public:
     SFXCTL_3DFountainPos() {}
-    ~SFXCTL_3DFountainPos() override;
+    ~SFXCTL_3DFountainPos() override {}
 
     TypeInfo *GetTypeInfo() const override;
     const char *GetTypeName() const override;

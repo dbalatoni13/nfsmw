@@ -1382,8 +1382,6 @@ void SFXObj_PFEATrax::MessageSwapInteractive(const MControlPathfinder &message) 
     m_PFParms[m_ActiveProject].queue_next = 1;
 }
 
-SFXObj_Pathfinder::~SFXObj_Pathfinder() {}
-
 ParameterAccessor AmbientAccessor("Ambience");
 
 SndBase::TypeInfo SFXObj_Pathfinder::s_TypeInfo = { 0, "SFXObj_Pathfinder", nullptr, SFXObj_Pathfinder::CreateObject };

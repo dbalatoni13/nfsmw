@@ -9,7 +9,7 @@
 
 class GinsuSynthData : public AudioMemBase {
   public:
-    ~GinsuSynthData() override;
+    ~GinsuSynthData() override {}
 
     float GetMinFrequency() const { return mMinFrequency; }
     float GetMaxFrequency() const { return mMaxFrequency; }

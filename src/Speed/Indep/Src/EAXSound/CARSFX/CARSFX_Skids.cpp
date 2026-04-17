@@ -291,6 +291,3 @@ void CARSFX_Skids::SetupLoadData() {
 
     LoadAsset(g_pEAXSound->GetAttributes()->AEMS_SkidBanks(nlvl), SNDPATH_SKIDS, EAXSND_DT_AEMS_ASYNCSPUMEM, eBANK_SLOT_NONE, true);
 }
-SFXCTL_3DLeftWheelPos::~SFXCTL_3DLeftWheelPos() {}
-
-SFXCTL_3DRightWheelPos::~SFXCTL_3DRightWheelPos() {}

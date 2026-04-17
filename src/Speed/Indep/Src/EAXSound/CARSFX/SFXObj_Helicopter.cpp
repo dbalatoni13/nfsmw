@@ -74,7 +74,7 @@ void SFXObj_Helicopter::Destroy() {
     m_pCsisHeli = nullptr;
 }
 
-void SFXObj_Helicopter::UpdateParams(float) {}
+void SFXObj_Helicopter::UpdateParams(float t) {}
 
 void SFXObj_Helicopter::ProcessUpdate() {
     if (m_pHeliCtl && m_pHeliCtl->m_pHeliState->IsSimUpdating()) {

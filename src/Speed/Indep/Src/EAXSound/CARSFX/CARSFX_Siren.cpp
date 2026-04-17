@@ -58,11 +58,11 @@ void CARSFX_Siren::Destroy() {
     mSiren = nullptr;
 }
 
-int CARSFX_Siren::GetController(int) {
+int CARSFX_Siren::GetController(int Index) {
     return -1;
 }
 
-void CARSFX_Siren::AttachController(SFXCTL *) {}
+void CARSFX_Siren::AttachController(SFXCTL *psfxctl) {}
 
 void CARSFX_Siren::SetupSFX(CSTATE_Base *_StateBase) {
     SndBase::SetupSFX(_StateBase);
@@ -78,7 +78,7 @@ void CARSFX_Siren::InitSFX() {
     }
 }
 
-void CARSFX_Siren::UpdateParams(float) {
+void CARSFX_Siren::UpdateParams(float t) {
     EAX_CarState *thisCar;
     float t_death;
     SirenState state;

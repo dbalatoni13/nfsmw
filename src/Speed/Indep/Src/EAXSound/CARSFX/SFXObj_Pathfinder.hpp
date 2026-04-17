@@ -23,7 +23,7 @@ struct SFXObj_Pathfinder : CARSFX {
     }
 
     SFXObj_Pathfinder();
-    ~SFXObj_Pathfinder() override;
+    ~SFXObj_Pathfinder() override {}
     TypeInfo *GetTypeInfo() const override;
     const char *GetTypeName() const override;
     static SndBase *CreateObject(unsigned int allocator);

@@ -124,8 +124,6 @@ ISndAttachable::~ISndAttachable() {}
 ISndAttachable::ISndAttachable()
     : UTL::Collections::Listable<ISndAttachable, 15>() {}
 
-SFXCTL_3DFountainPos::~SFXCTL_3DFountainPos() {}
-
 int WorldObject::GetType() {
     return Types;
 }
