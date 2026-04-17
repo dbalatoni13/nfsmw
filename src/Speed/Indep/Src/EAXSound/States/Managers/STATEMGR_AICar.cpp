@@ -31,10 +31,11 @@ void CSTATEMGR_AICar::DebugDisplayAIConnections() {}
 void CSTATEMGR_AICar::EnterWorld(eSndGameMode esgm) {
     int SFXIDs = 0x91;
     int numopponents = 4;
+    int SFXCTRLS = 0xC0;
     int n = UTL::Collections::ListableSet<IVehicle, 10, eVehicleList, 10>::Count(VEHICLE_AIRACERS);
 
     n += UTL::Collections::ListableSet<IVehicle, 10, eVehicleList, 10>::Count(VEHICLE_REMOTE);
-    if (n > 3) {
+    if (n >= 4) {
     } else {
         numopponents = n;
     }
@@ -44,9 +45,9 @@ void CSTATEMGR_AICar::EnterWorld(eSndGameMode esgm) {
     }
 
     for (int n = 0; n < numopponents; n++) {
-        CSTATE_Base *NewAICar = CreateState(0, SFXIDs);
+        EAXCar *NewAICar = static_cast<EAXCar *>(CreateState(0, SFXIDs));
         NewAICar->Setup(SFXIDs);
-        NewAICar->ForceCreateSFXCtrls(0xC0);
+        NewAICar->ForceCreateSFXCtrls(SFXCTRLS);
     }
 
     CSTATEMGR_Base::EnterWorld(esgm);

@@ -1658,7 +1658,8 @@ struct FX_SHIFTING_01 {
         SetType(type);
         SetCAM(cAM);
 
-        int result = Csis::Class::CreateInstance(&Csis::gFX_SHIFTING_01Handle, &mData, &mpClass);
+        Csis::System::Result result = static_cast<Csis::System::Result>(
+            Csis::Class::CreateInstance(&Csis::gFX_SHIFTING_01Handle, &mData, &mpClass));
         if (result < 0) {
             Csis::gFX_SHIFTING_01Handle.Set(&Csis::FX_SHIFTING_01Id);
             Csis::Class::CreateInstance(&Csis::gFX_SHIFTING_01Handle, &mData, &mpClass);

@@ -61,8 +61,8 @@ void CARSFX_Shift::UpdateMixerOutputs() {
 void CARSFX_Shift::SetupSFX(CSTATE_Base *_StateBase) {
     SndBase::SetupSFX(_StateBase);
     m_UGL = m_pEAXCar->m_TransmissionUGL;
-    m_pSweetnersData = &m_pEAXCar->GetAttributes();
     m_pShiftingPatternData = &m_pEAXCar->GetShiftInfo();
+    m_pSweetnersData = &m_pEAXCar->GetAttributes();
 }
 
 void CARSFX_Shift::InitSFX() {
@@ -340,14 +340,13 @@ void CARSFX_Shift::PlayBrakesMashed() {
 
     if (IsSoundEnabled != 0) {
         if (!m_BrakePedal) {
-            int refcount;
-
             nDMixOut = GetDMixOutput(10, DMX_VOL);
             CameraView = m_pEAXCar->GetPOV() == 0;
             g_pEAXSound->SetCsisName("SND: BrakeMash");
             m_BrakePedal = new FX_SHIFTING_01(2, nDMixOut, 0x1000, GetDMixOutput(0, DMX_AZIM), FXSHIFTING01TYPETYPE_SHIFT,
                                               CameraView);
             if (m_BrakePedal) {
+                int refcount;
                 refcount = m_BrakePedal->GetRefCount();
             }
         }
