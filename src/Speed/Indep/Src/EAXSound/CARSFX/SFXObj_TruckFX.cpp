@@ -277,13 +277,10 @@ CARSFX_TruckWoosh::CARSFX_TruckWoosh()
 CARSFX_TruckWoosh::~CARSFX_TruckWoosh() {}
 
 int CARSFX_TruckWoosh::GetController(int Index) {
-    int iVar1;
-
-    iVar1 = 0xF;
-    if (Index != 0) {
-        iVar1 = -1;
+    if (Index == 0) {
+        return 0xF;
     }
-    return iVar1;
+    return -1;
 }
 
 void CARSFX_TruckWoosh::AttachController(SFXCTL *psfxctl) {
