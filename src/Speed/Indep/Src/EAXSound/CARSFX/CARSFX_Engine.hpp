@@ -28,7 +28,7 @@ struct CARSFX_EngineBase : public CARSFX {
     bool IsEngineFinishedLoading();
     virtual void InitializeEngine();
     virtual void SetEngineParams();
-    virtual void Debug();
+    virtual void Debug() {}
 
     CAR *m_pcsisCarCtrl;                   // offset 0x28, size 0x4
     int SPU_or_EE;                         // offset 0x2C, size 0x4

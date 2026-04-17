@@ -483,8 +483,6 @@ ReprocessQueue:
     return true;
 }
 
-void CSTATE_Base::PreLoadAssets() {}
-
 CSTATE_Base::StateInfo *CSTATE_Base::GetStateInfo(void) const {
     return &s_StateInfo;
 }

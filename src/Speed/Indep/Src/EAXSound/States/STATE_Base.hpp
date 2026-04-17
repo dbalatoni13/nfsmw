@@ -48,7 +48,7 @@ struct CSTATE_Base : public AudioMemBase {
     CSTATE_Base();
     virtual ~CSTATE_Base();
     virtual void Setup(int _m_SFXFlags);
-    virtual void PreLoadAssets();
+    virtual void PreLoadAssets() {}
     virtual void Attach(void *pAttachment);
     virtual void LoadData();
     virtual void UpdateParams(float t);

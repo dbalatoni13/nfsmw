@@ -622,5 +622,3 @@ void CARSFX_DualGinsuEng::SetupLoadData() {
     LoadAsset(m_pEAXCar->GetEngineAttributes().Filename_GinsuAccel(), SNDPATH_ENGINE, EAXSND_DT_GENERIC_DATA, eBANK_SLOT_NONE, true);
     LoadAsset(m_pEAXCar->GetEngineAttributes().Filename_GinsuDecel(), SNDPATH_ENGINE, EAXSND_DT_GENERIC_DATA, eBANK_SLOT_NONE, true);
 }
-
-void CARSFX_EngineBase::Debug() {}
