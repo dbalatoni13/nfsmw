@@ -202,13 +202,10 @@ void CARSFX_Siren::ProcessUpdate() {
 }
 
 SirenState CARSFX_Siren::UpdateSirenState(float t) {
-    float fVar2;
-
-    fVar2 = tSirenState - t;
-    tSirenState = fVar2;
-    if (fVar2 < 0.0f || m_pStateBase->GetPhysCar()->mSirenState == SIREN_SCREAM) {
+    tSirenState = tSirenState - t;
+    if (tSirenState < 0.0f || GetPhysCar()->GetSirenState() == SIREN_SCREAM) {
         tSirenState = g_pEAXSound->Random(3.0f);
-        return m_pStateBase->GetPhysCar()->mSirenState;
+        return GetPhysCar()->GetSirenState();
     }
     return m_SirenState;
 }
