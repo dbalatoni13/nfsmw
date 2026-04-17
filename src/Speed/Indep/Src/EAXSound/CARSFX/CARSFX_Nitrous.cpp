@@ -72,11 +72,11 @@ void CARSFX_Nitrous::InitSFX() {
     Enable();
 }
 
-int CARSFX_Nitrous::Play(int type, int, int) {
-    int nDMixOut;
-    int m_NitrousControl_ref;
-
+int CARSFX_Nitrous::Play(int type, int Vol, int Azimuth) {
     if (IsEnabled() && IsSoundEnabled == 1) {
+        int nDMixOut;
+        int m_NitrousControl_ref = 0;
+
         nDMixOut = GetDMixOutput(1, DMX_VOL);
         if (m_NitrousControl) {
             delete m_NitrousControl;
@@ -86,7 +86,6 @@ int CARSFX_Nitrous::Play(int type, int, int) {
         g_pEAXSound->SetCsisName(this);
         m_NitrousControl = new FX_NITROUS(type, nDMixOut, GetDMixOutput(0, DMX_AZIM), 0, 0, 25000, 0, 0x7FFF, 0);
 
-        m_NitrousControl_ref = 0;
         if (m_NitrousControl) {
             m_NitrousControl_ref = m_NitrousControl->GetRefCount();
         }

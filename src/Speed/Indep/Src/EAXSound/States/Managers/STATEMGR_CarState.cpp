@@ -338,10 +338,13 @@ void CSTATEMGR_CarState::DestroyCar(EAX_CarState *eax_car) {
 
         EngToCarStruct *iter = EngineToCarMapping.begin();
         while (iter != EngineToCarMapping.end()) {
-            if (iter->pCar == eax_car) {
+            unsigned int EngineKey = iter->EngineKey;
+            EAX_CarState *pCar = iter->pCar;
+
+            if (pCar == eax_car) {
                 iter = EngineToCarMapping.erase(iter);
             } else {
-                if (iter->EngineKey == engkey) {
+                if (EngineKey == engkey) {
                     IsStillRefed = true;
                 }
                 ++iter;
@@ -361,7 +364,9 @@ void CSTATEMGR_CarState::DestroyCar(EAX_CarState *eax_car) {
 
             EngineMappingPair *iter3 = FinalMapping.begin();
             while (iter3 != FinalMapping.end()) {
-                if (iter3->Finish == engkey) {
+                unsigned int Finish = iter3->Finish;
+
+                if (Finish == engkey) {
                     iter3 = FinalMapping.erase(iter3);
                 } else {
                     ++iter3;

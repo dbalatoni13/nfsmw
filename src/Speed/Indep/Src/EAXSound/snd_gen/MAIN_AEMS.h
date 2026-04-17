@@ -210,8 +210,8 @@ struct FX_NITROUS {
         SetFilter_Effects_Dry_FX(filter_Effects_Dry_FX);
         SetFilter_Effects_Wet_FX(filter_Effects_Wet_FX);
 
-        int result = Csis::Class::CreateInstance(&Csis::gFX_NITROUSHandle, &mData, &mpClass);
-        if (result < 0) {
+        Csis::System::Result result = static_cast<Csis::System::Result>(Csis::Class::CreateInstance(&Csis::gFX_NITROUSHandle, &mData, &mpClass));
+        if (result < Csis::System::kResult_Ok) {
             Csis::gFX_NITROUSHandle.Set(&Csis::FX_NITROUSId);
             Csis::Class::CreateInstance(&Csis::gFX_NITROUSHandle, &mData, &mpClass);
         }
