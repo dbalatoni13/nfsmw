@@ -340,6 +340,7 @@ void SFXObj_NISStream::InitSFX() {
     m_bNISButtonThroughAnimationReady = false;
     m_bNISAudioStreamReady = false;
     m_bBackupStreamCleared = true;
+    (void)g_pEAXSound->GetSndGameMode();
     g_pEAXSound->SetSFXBaseObject(this, eMM_MAIN, 5, 0);
 }
 
