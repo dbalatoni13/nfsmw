@@ -22,7 +22,10 @@ struct SFXObj_Reverb : public CARSFX {
             Clear();
         }
 
-        void Clear();
+        void Clear() {
+            Alloc = nullptr;
+            Size = 0;
+        }
     };
 
     static TypeInfo s_TypeInfo;

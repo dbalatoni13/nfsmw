@@ -159,11 +159,6 @@ void SFXObj_Reverb::Destroy() {
         m_EchoBuffer = nullptr;
     }
 }
-void SFXObj_Reverb::ReverbStructure::Clear() {
-    Alloc = nullptr;
-    Size = 0;
-}
-
 extern void SNDSYS_service();
 
 SndBase::TypeInfo SFXObj_Reverb::s_TypeInfo = {
