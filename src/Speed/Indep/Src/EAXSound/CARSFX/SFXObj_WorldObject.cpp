@@ -124,10 +124,6 @@ ISndAttachable::~ISndAttachable() {}
 ISndAttachable::ISndAttachable()
     : UTL::Collections::Listable<ISndAttachable, 15>() {}
 
-int WorldObject::GetType() {
-    return Types;
-}
-
 template class UTL::Collections::Listable<ISndAttachable, 15>::List;
 template class UTL::Vector<ISndAttachable *, 16>;
 template class UTL::FixedVector<ISndAttachable *, 15, 16>;

@@ -28,7 +28,7 @@ struct WorldObject : public ISndAttachable {
     {}
 
     const bVector3 *GetPosition() override { return &m_3DPosition; }
-    int GetType() override;
+    int GetType() override { return Types; }
 
     bVector3 m_3DPosition;      // offset 0x8, size 0x10
     WORLDOBJECT_TYPES Types;    // offset 0x18, size 0x4
