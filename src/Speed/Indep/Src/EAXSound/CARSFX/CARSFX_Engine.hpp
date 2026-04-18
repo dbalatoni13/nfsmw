@@ -40,6 +40,14 @@ struct CARSFX_EngineBase : public CARSFX {
 
 struct CARSFX_GinsuEngine : public CARSFX_EngineBase {
     struct stGinsuData {
+        stGinsuData()
+            : mSynthData(nullptr) //
+            , mSynth(nullptr) //
+            , mSynthBlock(nullptr) //
+            , mMaxFrequency(0.0f) //
+            , mMinFrequency(0.0f) //
+            , mSNDhandle(-1) {}
+
         GinsuSynthData *mSynthData;        // offset 0x0, size 0x4
         GinsuSynthesis *mSynth;            // offset 0x4, size 0x4
         void *mSynthBlock;                 // offset 0x8, size 0x4

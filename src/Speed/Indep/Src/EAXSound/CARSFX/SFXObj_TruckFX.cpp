@@ -301,10 +301,8 @@ bool CARSFX_TruckWoosh::IsPlayerCarInRadius() {
 
 void CARSFX_TruckWoosh::UpdateParams(float t) {
     if (GetPhysCar()->GetContext() == Sound::CONTEXT_TRACTOR) {
-        unsigned int worldid = GetPhysCar()->mTrailerID;
-
-        if (worldid != 0) {
-            m_TrailerRef.Set(worldid);
+        if (GetPhysCar()->mTrailerID != 0) {
+            m_TrailerRef.Set(GetPhysCar()->mTrailerID);
             if (m_TrailerRef.IsValid()) {
                 m_vTrailerPos = *static_cast<const bVector3 *>(static_cast<const void *>(&m_TrailerRef.GetMatrix()->v3));
                 m_vTrailerVel = *GetPhysCar()->GetVelocity();

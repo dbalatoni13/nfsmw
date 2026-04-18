@@ -163,18 +163,8 @@ void CARSFX_AEMSEngine::SetEngineParams() {
 }
 
 CARSFX_GinsuEngine::CARSFX_GinsuEngine()
-    : CARSFX_EngineBase() {
-    m_pHybridEngCtl = nullptr;
-
-    for (int i = 0; i < 2; i++) {
-        m_GinsuData[i].mSynthData = nullptr;
-        m_GinsuData[i].mSynth = nullptr;
-        m_GinsuData[i].mSynthBlock = nullptr;
-        m_GinsuData[i].mMaxFrequency = 0.0f;
-        m_GinsuData[i].mMinFrequency = 0.0f;
-        m_GinsuData[i].mSNDhandle = -1;
-    }
-
+    : CARSFX_EngineBase() //
+    , m_pHybridEngCtl(nullptr) {
     m_pEngineCtl = nullptr;
     *reinterpret_cast<int *>(&GinsuInitialized) = 0;
     InitCnt = 0;
