@@ -575,6 +575,7 @@ void SFXObj_NISStream::StopStream() {
 }
 
 void SFXObj_NISStream::NISActivityDone() {
+    int id;
     SFXObj_Pathfinder *ppf;
 
     SetDMIX_Input(6, 0);
