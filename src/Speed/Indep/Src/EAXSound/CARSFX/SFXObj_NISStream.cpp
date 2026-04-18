@@ -591,13 +591,15 @@ void SFXObj_NISStream::NISActivityDone() {
 }
 
 void SFXObj_NISStream::StartNIS() {
-    bool bresult = m_bNISAudioStreamReady;
+    {
+        bool bresult = m_bNISAudioStreamReady;
 
-    m_bNISAnimationReady = true;
-    if (bresult) {
-        Speech::Manager::GetSpeechModule(0)->PlayStream(2);
-        SNDSYS_service();
-        m_bNISAudioStreamReady = false;
+        m_bNISAnimationReady = true;
+        if (bresult) {
+            Speech::Manager::GetSpeechModule(0)->PlayStream(2);
+            SNDSYS_service();
+            m_bNISAudioStreamReady = false;
+        }
     }
 }
 
