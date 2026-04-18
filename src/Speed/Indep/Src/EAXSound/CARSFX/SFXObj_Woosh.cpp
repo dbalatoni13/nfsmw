@@ -200,10 +200,13 @@ void SFXObj_Woosh::InitSFX() {
 }
 
 void SFXObj_Woosh::UpdateParams(float t) {
-    if (m_pDriveByState->IsAttached() && m_pWooshStich && !m_pWooshStich->IsPlaying()) {
-        delete m_pWooshStich;
-        m_pWooshStich = nullptr;
-        m_pDriveByState->Detach();
+    if (m_pDriveByState->IsAttached()) {
+        SndBase::UpdateParams(t);
+        if (m_pWooshStich && !m_pWooshStich->IsPlaying()) {
+            delete m_pWooshStich;
+            m_pWooshStich = nullptr;
+            m_pDriveByState->Detach();
+        }
     }
 }
 
