@@ -113,16 +113,15 @@ void SndBase::LoadAsset(Attrib::StringKey filename,
                         bool LoadToTop) {
     stSndAssetQueue requeststruct;
 
-    requeststruct.Asset.Clear();
     requeststruct.pCar = nullptr;
     requeststruct.pThis = this;
+    requeststruct.pCar = GetPhysCar();
     requeststruct.Asset.FileName = filename;
     requeststruct.Asset.DataPath = path;
     requeststruct.Asset.eDataType = datatype;
     requeststruct.Asset.bLoadToTop = LoadToTop;
-    requeststruct.pCar = GetPhysCar();
 
-    if (!requeststruct.pCar && reinterpret_cast<unsigned char *>(&objectID)[1] == eMM_PLAYERCAR) {
+    if (!requeststruct.pCar && GetGroupID() == eMM_PLAYERCAR) {
         requeststruct.pThis = nullptr;
     }
     LoadAsset(requeststruct, SlotType);
