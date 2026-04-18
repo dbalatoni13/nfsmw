@@ -92,16 +92,14 @@ const char *SndBase::GetTypeName(void) const {
 }
 
 void SndBase::SetupSFX(CSTATE_Base *_StateBase) {
-    eMAINMAPSTATES eVar1 = _StateBase->m_eStateType;
-
-    if (static_cast<unsigned int>(eVar1 - eMM_PLAYERCAR) < 3 ||
-        eVar1 == eMM_TRUCK || eVar1 == eMM_TRAFFIC) {
+    if (static_cast<unsigned int>(_StateBase->m_eStateType - eMM_PLAYERCAR) < 3 ||
+        _StateBase->m_eStateType == eMM_TRUCK || _StateBase->m_eStateType == eMM_TRAFFIC) {
         m_pEAXCar = reinterpret_cast<EAXCar *>(_StateBase);
     } else {
         m_pEAXCar = nullptr;
     }
 
-    m_pStateBase = _StateBase;
+    SetStateBase(_StateBase);
 }
 
 inline EAX_CarState *SndBase::GetPhysCar() {

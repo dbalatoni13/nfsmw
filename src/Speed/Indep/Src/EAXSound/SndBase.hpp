@@ -94,6 +94,7 @@ struct SndBase : public AudioMemBase {
         }
     }
     CSTATE_Base *GetStateBase() { return m_pStateBase; }
+    void SetStateBase(CSTATE_Base *_StateBase) { m_pStateBase = _StateBase; }
     EAX_CarState *GetPhysCar();
     int GetSFX_ID() { return (objectID >> 4) & 0x7F; }
     int GetGroupID() { return reinterpret_cast<unsigned char *>(&objectID)[1]; }
