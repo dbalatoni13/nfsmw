@@ -107,7 +107,7 @@ struct FX_TURBO_01 {
         SetRotation(rotation);
         SetRPM(rPM);
 
-        int result = Csis::Class::CreateInstance(&Csis::gFX_TURBO_01Handle, &mData, &mpClass);
+        Csis::System::Result result = static_cast<Csis::System::Result>(Csis::Class::CreateInstance(&Csis::gFX_TURBO_01Handle, &mData, &mpClass));
         if (result < 0) {
             Csis::gFX_TURBO_01Handle.Set(&Csis::FX_TURBO_01Id);
             Csis::Class::CreateInstance(&Csis::gFX_TURBO_01Handle, &mData, &mpClass);

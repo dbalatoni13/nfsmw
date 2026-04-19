@@ -192,7 +192,12 @@ void CARSFX_Turbo::ProcessUpdate() {
     }
 }
 
-int CARSFX_Turbo::PlayBlowoff(int, int, int, int, int rotation) {
+int CARSFX_Turbo::PlayBlowoff(int _ID, int Vol, int PSI, int Azimuth, int rotation) {
+    (void)_ID;
+    (void)Vol;
+    (void)PSI;
+    (void)Azimuth;
+
     if (IsEnabled() && IsSoundEnabled == 1 && !m_pTurboBlowoffControl) {
         BlowoffID = 1;
         if (SpoolPercent > 0.75f) {
@@ -210,7 +215,7 @@ int CARSFX_Turbo::PlayBlowoff(int, int, int, int, int rotation) {
             new FX_TURBO_01(BlowoffID, 0, static_cast<int>(SpoolPercent * 1024.0f), 0, rotation, static_cast<int>(GetPhysRPM()));
         gnMemLeakTurboBLOWOFFCountTest++;
         m_refCount = static_cast<unsigned short>(m_pTurboBlowoffControl ? m_pTurboBlowoffControl->GetRefCount() : 0);
-        tLastBlowoffTime = m_pStateBase->GetCurTime();
+        tLastBlowoffTime = m_pEAXCar->GetCurTime();
         m_BlowoffRampDown.Initialize(1.0f, 1.0f, 1, LINEAR);
     }
 
