@@ -35,18 +35,16 @@ SndBase *CARSFX_SparkChatter::CreateObject(unsigned int allocator) {
 
 CARSFX_SparkChatter::CARSFX_SparkChatter()
     : CARSFX() {
-    SparkChatOutputInstance *pSVar1 = &SparkChatOutputClients;
-
-    SparkChatOutputClients.DestroyClient.pClientData = pSVar1;
+    SparkChatOutputClients.DestroyClient.pClientData = &SparkChatOutputClients;
     SparkChatOutputClients.CreateClient.pClientFunc = SparkChatCreateCallBack;
     SparkChatOutputClients.DestroyClient.pClientFunc = SparkChatDestroyCallBack;
     BlipVol = 0;
     m_pSparkChatterControl = nullptr;
     m_pSparkChatterOutput = nullptr;
-    m_pShiftingCTL = nullptr;
     SparkChatOutputClients.m_pThis = this;
-    SparkChatOutputClients.CreateClient.pClientData = pSVar1;
-    SparkChatOutputClients.UpdateClient.pClientData = pSVar1;
+    m_pShiftingCTL = nullptr;
+    SparkChatOutputClients.CreateClient.pClientData = &SparkChatOutputClients;
+    SparkChatOutputClients.UpdateClient.pClientData = &SparkChatOutputClients;
     m_pSweetnersData = nullptr;
 }
 
