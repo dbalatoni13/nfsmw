@@ -40,4 +40,17 @@ class CAnimEntityFactory {
     static void EndianSwapEntityData(void *data, int size);
 };
 
+class CAnimEntityCreationContext {
+  public:
+    static void SetRaceStartContext(bool enable) {
+        mIsRaceStart = enable;
+    }
+    static bool IsRaceStartContext() {
+        return mIsRaceStart;
+    }
+
+  private:
+    static bool mIsRaceStart;
+};
+
 #endif

@@ -17,6 +17,8 @@ enum CarLoadState {
 
 typedef int32 CarLoaderHandle;
 
+extern int CarLoaderMemoryPoolNumber;
+
 // total size: 0x18
 class LoadedSolidPack : public bTNode<LoadedSolidPack> {
   public:
@@ -338,7 +340,10 @@ class CarLoader {
         return LoadingInProgress;
     }
 
-    void *AllocateUserMemory(int size, const char *debug_name);
+    void *AllocateUserMemory(int size, const char *debug_name) {
+        return bMalloc(size, debug_name, 0, CarLoaderMemoryPoolNumber & 0xF | 0x2000);
+    };
+
     void FreeUserMemory(void *mem);
 
   private:

@@ -70,5 +70,6 @@ class CNFSAnimBank : public CAnimBank {
 };
 
 int GetAnimFromBankByNamehash(uint32 namehash, EAGL4Anim::AnimBank **animBank, int *item_index);
+void DumpAnimBanks();
 
 #endif

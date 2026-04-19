@@ -1,11 +1,11 @@
 #ifndef WORLD_WCOLLIDER_H
 #define WORLD_WCOLLIDER_H
 
-#include "types.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
 
+#include "types.h"
 #include "Speed/Indep/Libs/Support/Utility/UListable.h"
 #include "Speed/Indep/Libs/Support/Utility/UStandard.h"
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"

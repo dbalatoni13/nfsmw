@@ -17,4 +17,7 @@ class IControlScenario {
     virtual void HandleEventMessage(CWorldAnimEntityTree *entity_tree, uint32 wa_msg, void *data) {}
 };
 
+void InitAnimControlScenarios(IControlScenario **arr_ptrs);
+void CleanControlScenarios(IControlScenario **arr_ptrs);
+
 #endif

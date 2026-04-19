@@ -15,8 +15,12 @@ void InitNFSAnimEngine() {
 void CloseNFSAnimEngine() {}
 
 void *MyEAGLMallocOverride(size_t size, const char *name) {
+#ifdef EA_BUILD_A124
+    char *buf = reinterpret_cast<char *>(bMalloc(size, name ? name : "Unnamed MyEAGLNewOverride", 0, 0));
+#else
     bool is_main_pool = name ? bStrCmp(name, "EAGL4Anim Memory Pool") == 0 : false;
     char *buf = reinterpret_cast<char *>(bMalloc(size, name, 0, is_main_pool ? GetVirtualMemoryAllocParams() : 0));
+#endif
 
     return buf;
 }

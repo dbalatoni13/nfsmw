@@ -19,12 +19,12 @@ void *CWorldAnimCtrl::operator new(size_t size, const char *debug_name) {
     if (NumWorldAnimCtrls > MaxNumWorldAnimCtrls) {
         MaxNumWorldAnimCtrls = NumWorldAnimCtrls;
     }
-    return bOMalloc(reinterpret_cast<WorldAnimInstanceDirectoryLayout *>(&TheWorldAnimInstanceDirectory)->WorldAnimCtrlSlotPool);
+    return bOMalloc(TheWorldAnimInstanceDirectory.GetWorldAnimCtrlSlotPool());
 }
 
 void CWorldAnimCtrl::operator delete(void *ptr) {
     NumWorldAnimCtrls--;
-    bFree(reinterpret_cast<WorldAnimInstanceDirectoryLayout *>(&TheWorldAnimInstanceDirectory)->WorldAnimCtrlSlotPool, ptr);
+    bFree(TheWorldAnimInstanceDirectory.GetWorldAnimCtrlSlotPool(), ptr);
 }
 
 CWorldAnimCtrl::CWorldAnimCtrl() {
@@ -87,32 +87,29 @@ void CWorldAnimCtrl::Clear() {
     for (int i = 0; i < 4; i++) {
         m_pFnAnim[i] = nullptr;
     }
-    MasterDelayElapsed = 0.0f;
-    m_f_speed_modifier = 1.0f;
-    StartType = eACST_IMMEDIATE;
     m_flags = 0;
     m_loop_range_start = 0;
     m_loop_range_end = 0;
     m_fframe = 0.0f;
     m_startTime = 0;
-    __asm__ volatile("" : : : "memory");
     m_timeScale = 1.0f;
     m_animLength = 0.0f;
     m_evalTime = 0.0f;
     m_masterDelayTime = 0.0f;
     m_localDelayTime = 0.0f;
     m_isAllocated = 0;
-    __asm__ volatile("" : : : "memory");
     LocalDelayElapsed = 0.0f;
+    m_f_speed_modifier = 1.0f;
     PlayDirection = eACPD_FWD;
-    __asm__ volatile("" : : : "memory");
     PlayState = eACPS_STOPPED;
+    StartType = eACST_IMMEDIATE;
+    MasterDelayElapsed = 0.0f;
 }
 
 void CWorldAnimCtrl::Cleanup() {
     m_animPart.Purge();
     for (int i = 0; i < 4; i++) {
-        if (m_pFnAnim[i] != nullptr) {
+        if (m_pFnAnim[i]) {
             EAGL4Anim::MemoryPoolManager::DeleteFnAnim(m_pFnAnim[i]);
             m_pFnAnim[i] = nullptr;
         }
@@ -124,23 +121,21 @@ void CWorldAnimCtrl::SetEvalTime(float time) {
     PlayDirection = eACPD_FWD;
     LocalDelayElapsed = 0.0f;
     if ((m_flags & 0x10) != 0) {
-        float end_time;
+        float end_of_anim;
         if (m_flags & 0x40) {
-            end_time = GetLoopRangeScaledEnd();
+            end_of_anim = GetLoopRangeScaledEnd();
         } else {
-            end_time = m_animLength;
+            end_of_anim = m_animLength;
         }
-        if (time > end_time) {
+        if (time > end_of_anim) {
             PlayDirection = eACPD_REV;
-            m_evalTime = end_time - (time - end_time);
+            m_evalTime = end_of_anim - (time - end_of_anim);
         }
     }
 }
 
 float CWorldAnimCtrl::GetAnimLengthInSeconds() {
-    float denom = m_timeScale * m_f_speed_modifier;
-    float num = m_animLength * 0.033333335f;
-    return num / denom;
+    return m_animLength / 30 / GetEffectiveTimeScale();
 }
 
 int CWorldAnimCtrl::CreateFnAnimFromBank(EAGL4Anim::AnimBank *animBank, int animIndex, int dof) {
@@ -154,16 +149,16 @@ int CWorldAnimCtrl::CreateFnAnimFromBank(EAGL4Anim::AnimBank *animBank, int anim
     return 0;
 }
 
+// UNSOLVED
 int CWorldAnimCtrl::AdvanceAnimTime(float timestep) {
     int result_anim_is_done = 0;
 
     float effective_time_scale = GetEffectiveTimeScale();
-    effective_time_scale *= 30.0f;
-    float this_time_step = timestep * effective_time_scale;
-    float this_master_delay_elapsed = MasterDelayElapsed * effective_time_scale;
-    float this_master_delay_len = m_masterDelayTime * 30.0f;
-    float this_local_delay_elapsed = LocalDelayElapsed * effective_time_scale;
-    float this_local_delay_len = m_localDelayTime * 30.0f;
+    float this_time_step = timestep * 30 * effective_time_scale;
+    float this_master_delay_elapsed = MasterDelayElapsed * 30 * effective_time_scale;
+    float this_master_delay_len = m_masterDelayTime * 30;
+    float this_local_delay_elapsed = LocalDelayElapsed * 30 * effective_time_scale;
+    float this_local_delay_len = m_localDelayTime * 30;
 
     float range_len = m_flags & 0x40 ? GetLoopRangeScaledEnd() - GetLoopRangeScaledStart() : m_animLength;
 
@@ -171,33 +166,26 @@ int CWorldAnimCtrl::AdvanceAnimTime(float timestep) {
 
     float end_of_anim = m_flags & 0x40 ? GetLoopRangeScaledEnd() : m_animLength;
 
-    bool triggered = (m_flags >> 11) & 1;
-    bool linear = (m_flags >> 3) & 1;
-    bool loop = false;
-    if (m_flags & 0x20) {
-        loop = !triggered;
-    }
-    bool pingpong = (m_flags >> 4) & 1;
+    bool linear = m_flags & 8;
+    bool triggered = m_flags & 0x800;
+    bool loop = m_flags & 0x20 ? !triggered : false;
+    bool pingpong = m_flags & 0x10;
 
     if (linear) {
         if (pingpong) {
             ClearFlags(0x10);
             pingpong = false;
         }
-    } else if (!pingpong) {
-        SetFlags(8);
-        linear = true;
+    } else {
+        if (!pingpong) {
+            SetFlags(8);
+            linear = true;
+        }
     }
 
-    bool delay_world_start = false;
-    if ((m_flags & 0x80) && this_master_delay_elapsed < this_master_delay_len) {
-        delay_world_start = m_evalTime < end_of_anim;
-    }
+    bool delay_world_start = (m_flags & 0x80) && this_master_delay_elapsed < this_master_delay_len && m_evalTime < end_of_anim;
 
-    bool delay_loop_start = false;
-    if ((m_flags & 0x100) && this_local_delay_elapsed < this_local_delay_len) {
-        delay_loop_start = m_evalTime < end_of_anim;
-    }
+    bool delay_loop_start = (m_flags & 0x100) && this_local_delay_elapsed < this_local_delay_len && m_evalTime < end_of_anim;
 
     float new_evaltime = m_evalTime;
 
@@ -210,13 +198,13 @@ int CWorldAnimCtrl::AdvanceAnimTime(float timestep) {
         if (new_timestep > this_master_delay_len) {
             new_evaltime += bFMod(new_timestep, this_master_delay_len);
         }
-        MasterDelayElapsed = (new_timestep / effective_time_scale) * 0.033333335f;
+        MasterDelayElapsed = (new_timestep / effective_time_scale) / 30;
     } else if (delay_loop_start) {
         float new_timestep = this_local_delay_elapsed + this_time_step;
         if (new_timestep > this_local_delay_len) {
             new_evaltime += bFMod(new_timestep, this_local_delay_len);
         }
-        LocalDelayElapsed = (new_timestep / effective_time_scale) * 0.033333335f;
+        LocalDelayElapsed = (new_timestep / effective_time_scale) / 30;
     } else if (linear) {
         if (m_flags & 0x1000) {
             new_evaltime -= this_time_step;
@@ -279,13 +267,13 @@ int CWorldAnimCtrl::UpdateAnimPose() {
     EAGL4::Transform *skinningMatrices = m_animPart.GetGlobalMatrices();
     float eval_time = GetEvalTime();
 
-    if (GetFnAnim(1) != nullptr) {
+    if (GetFnAnim(1)) {
         GetFnAnim(1)->EvalSQT(eval_time, sqtBuffer, nullptr);
     }
-    if (GetFnAnim(2) != nullptr) {
+    if (GetFnAnim(2)) {
         GetFnAnim(2)->EvalSQT(eval_time, sqtBuffer, nullptr);
     }
-    if (GetFnAnim(0) != nullptr) {
+    if (GetFnAnim(0)) {
         GetFnAnim(0)->EvalSQT(eval_time, sqtBuffer, nullptr);
     }
 

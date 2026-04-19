@@ -5,6 +5,7 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/Src/World/WCollision.h"
 #include "Speed/Indep/Src/World/WCollider.h"
 #include "Speed/Indep/Src/World/WCollisionTri.h"
 
@@ -60,20 +61,20 @@ class WWorldPos {
     }
 
     void UNormal(UMath::Vector3 *norm) const {
-        if (!OnValidFace()) {
-            norm->x = 0.0f;
-            norm->y = 1.0f;
-            norm->z = 0.0f;
-        } else {
+        if (fFaceValid) {
             fFace.GetNormal(norm);
             if (norm->y < 0.0f) {
-                norm->y = -norm->y;
                 norm->x = -norm->x;
+                norm->y = -norm->y;
                 norm->z = -norm->z;
             }
             if (norm->y >= 0.9999f) {
                 norm->y = 0.9999f;
             }
+        } else {
+            norm->z = 0.0f;
+            norm->x = 0.0f;
+            norm->y = 1.0f;
         }
     }
 

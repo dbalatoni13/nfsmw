@@ -1,5 +1,6 @@
 #include "AnimSkeleton.hpp"
 #include "AnimInternal.hpp"
+#include "Speed/Indep/Src/Misc/SpeedChunks.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bMemory.hpp"
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
@@ -33,15 +34,31 @@ void CloseAnimSkelSlotPool() {
     AnimSkelSlotPoolInitialized = false;
 }
 
+#ifdef MILESTONE_OPT
+static int NumAnimSkels = 0;
+static int MaxNumAnimSkels = 0;
+#endif
+
 void *CAnimSkeleton::operator new(size_t size, const char *debug_name) {
     if (!AnimSkelSlotPoolInitialized) {
         InitAnimSkelSlotPool();
     }
 
+#ifdef MILESTONE_OPT
+    NumAnimSkels++;
+    if (MaxNumAnimSkels < NumAnimSkels) {
+        MaxNumAnimSkels = NumAnimSkels;
+    }
+#endif
+
     return bOMalloc(AnimSkelSlotPool);
 }
 
 void CAnimSkeleton::operator delete(void *ptr) {
+#ifdef MILESTONE_OPT
+    NumAnimSkels--;
+#endif
+
     bFree(AnimSkelSlotPool, ptr);
     if (bCountFreeSlots(AnimSkelSlotPool) == bCountTotalSlots(AnimSkelSlotPool)) {
         CloseAnimSkelSlotPool();
@@ -49,7 +66,7 @@ void CAnimSkeleton::operator delete(void *ptr) {
 }
 
 int CAnimSkeleton::Initialize(char *data, int size) {
-    if (data != nullptr) {
+    if (data) {
         m_pDynLoader = AnimBridgeNewDynamicLoader("EAGL4::DynamicLoader CAnimSkeleton", data, size);
         m_DynLoaderSize = size;
         m_internalDynLoader = 1;
@@ -64,7 +81,7 @@ void CAnimSkeleton::Cleanup() {
     m_pName = nullptr;
     m_NameHash = 0;
     m_internalDynLoader = 0;
-    if (m_pDynLoader != nullptr) {
+    if (m_pDynLoader) {
         AnimBridgeDeleteDynamicLoader(m_pDynLoader);
         m_pDynLoader = nullptr;
     }
@@ -72,7 +89,7 @@ void CAnimSkeleton::Cleanup() {
 }
 
 void CAnimSkeleton::DynamicLoadResolve() {
-    if (m_pDynLoader != nullptr) {
+    if (m_pDynLoader) {
         EAGL4::DynamicLoader::Symbol sym;
         int idx = 0;
 
@@ -81,7 +98,7 @@ void CAnimSkeleton::DynamicLoadResolve() {
             m_pName = sym.name;
             m_NameHash = bStringHash(sym.name);
             m_pSkeleton = skeleton;
-            if (skeleton != nullptr) {
+            if (skeleton) {
                 m_loaded = 1;
             } else {
                 m_loaded = 0;
@@ -92,26 +109,24 @@ void CAnimSkeleton::DynamicLoadResolve() {
     }
 }
 
-CAnimSkeleton *GetSkeletonFromList(unsigned int namehash) {
-    CAnimSkeleton *skeleton = g_loadedSkeletonList.GetHead();
-    while (skeleton != g_loadedSkeletonList.EndOfList()) {
-        const char *name = skeleton->GetSkeletonName();
-        if (name != nullptr && bStringHash(name) == namehash) {
-            return skeleton;
+CAnimSkeleton *GetSkeletonFromList(uint32 namehash) {
+    CAnimSkeleton *skel_list = g_loadedSkeletonList.GetHead();
+    while (skel_list != g_loadedSkeletonList.EndOfList()) {
+        if (skel_list->GetSkeletonName() && bStringHash(skel_list->GetSkeletonName()) == namehash) {
+            return skel_list;
         }
-        skeleton = skeleton->GetNext();
+        skel_list = skel_list->GetNext();
     }
 
     return nullptr;
 }
 
 int LoaderEAGLSkeletons(bChunk *chunk) {
-    if (chunk->ID == 0xE34009) {
-        char *data = chunk->GetAlignedData(16);
-        int offset = data - chunk->GetData();
+    if (chunk->GetID() == BCHUNK_EAGL_SKELETONS) {
+        int size = chunk->GetAlignedSize(0x10); // unused
         CAnimSkeleton *skeleton = new ("NFS CAnimSkeleton") CAnimSkeleton();
 
-        skeleton->Initialize(data, chunk->Size - offset);
+        skeleton->Initialize(chunk->GetAlignedData(0x10), chunk->GetAlignedSize(0x10));
         skeleton->SetAssociatedChunk(chunk);
         g_loadedSkeletonList.AddTail(skeleton);
 
@@ -122,18 +137,19 @@ int LoaderEAGLSkeletons(bChunk *chunk) {
 }
 
 int UnloaderEAGLSkeletons(bChunk *chunk) {
-    if (chunk->ID == 0xE34009) {
-        CAnimSkeleton *skeleton = g_loadedSkeletonList.GetHead();
+    if (chunk->GetID() == BCHUNK_EAGL_SKELETONS) {
+        CAnimSkeleton *skel = g_loadedSkeletonList.GetHead();
 
-        while (skeleton != g_loadedSkeletonList.EndOfList()) {
-            CAnimSkeleton *next_skeleton = skeleton->GetNext();
+        while (skel != g_loadedSkeletonList.EndOfList()) {
+            CAnimSkeleton *next_skel = skel->GetNext();
+            struct bChunk *assoc_chunk = skel->GetAssociatedChunk();
 
-            if (skeleton->GetAssociatedChunk() == chunk) {
-                skeleton->Remove();
-                skeleton->Cleanup();
-                delete skeleton;
+            if (assoc_chunk == chunk) {
+                skel->Remove();
+                skel->Cleanup();
+                delete skel;
             }
-            skeleton = next_skeleton;
+            skel = next_skel;
         }
         return 1;
     }

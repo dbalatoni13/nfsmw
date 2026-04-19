@@ -8,9 +8,6 @@
 
 extern int AnimCfg_DisableWorldAnimations;
 
-void InitAnimControlScenarios(IControlScenario **arr_ptrs);
-void CleanControlScenarios(IControlScenario **arr_ptrs);
-
 WorldAnimInstanceDirectory TheWorldAnimInstanceDirectory; // size: 0x50, address: 0x80457718
 bool PrintWorldAnimationStuff = false;                    // size: 0x1, address: 0x8041589C
 bool DisableWorldAnimations = false;                      // size: 0x1, address: 0x804156F0
@@ -91,16 +88,14 @@ void WorldAnimInstanceDirectory::RemoveAndDeleteAnimTreeInfo(uint32 tree_name_ha
     if (AnimCfg_DisableWorldAnimations || DisableWorldAnimations) {
         return;
     }
-    WorldAnimEntityTreeInfo *tree = mLoadedWorldAnimTrees.GetHead();
-    while (tree != mLoadedWorldAnimTrees.EndOfList()) {
-        if (tree->tree_name_hash == tree_name_hash)
-            goto found;
-        tree = tree->GetNext();
+
+    for (WorldAnimEntityTreeInfo *tree = mLoadedWorldAnimTrees.GetHead(); tree != mLoadedWorldAnimTrees.EndOfList(); tree = tree->GetNext()) {
+        if (tree->tree_name_hash == tree_name_hash) {
+            tree->Remove();
+            delete tree;
+            break;
+        }
     }
-    return;
-found:
-    tree->Remove();
-    delete tree;
 }
 
 void WorldAnimInstanceDirectory::RemoveEntityInfo(WorldAnimEntityInfo *entity_info) {
@@ -131,7 +126,7 @@ void WorldAnimInstanceDirectory::RemoveAnimInstance(WorldAnimInstance *instance)
         return;
     }
     for (bPNode *node = mLoadedWorldAnimInstance.GetHead(); node != mLoadedWorldAnimInstance.EndOfList(); node = node->GetNext()) {
-        WorldAnimInstance *wai = reinterpret_cast<WorldAnimInstance *>(node->GetpObject());
+        WorldAnimInstance *wai = reinterpret_cast<WorldAnimInstance *>(node->GetObject());
         if (wai == instance) {
             mLoadedWorldAnimInstance.Remove(node);
             return;
@@ -194,16 +189,14 @@ void WorldAnimInstanceDirectory::RemoveInstanceEntryAndInfo(WorldAnimInstanceEnt
             break;
         }
     }
-    bPNode *node = mResidentWorldAnimInstanceEntryInfos.GetHead();
-    while (node != mResidentWorldAnimInstanceEntryInfos.EndOfList()) {
+    for (bPNode *node = mResidentWorldAnimInstanceEntryInfos.GetHead(); node != mResidentWorldAnimInstanceEntryInfos.EndOfList();
+         node = node->GetNext()) {
         WorldAnimInstanceEntryInfo *info = reinterpret_cast<WorldAnimInstanceEntryInfo *>(node->GetpObject());
-        if (info == entry_info)
-            goto found;
-        node = node->GetNext();
+        if (info == entry_info) {
+            mResidentWorldAnimInstanceEntryInfos.Remove(node);
+            break;
+        }
     }
-    return;
-found:
-    mResidentWorldAnimInstanceEntryInfos.Remove(node);
 }
 
 void WorldAnimInstanceDirectory::Init() {
@@ -215,11 +208,20 @@ void WorldAnimInstanceDirectory::Init() {
     }
     InitAnimControlScenarios(mAnimControlScenarios);
     mInitialized = true;
+
+#ifdef EA_BUILD_A124
+    WorldAnimEntitySlotPool = bNewSlotPool(0x24, 0xD5, "WorldAnimEntity_SlotPool", 0);
+    WorldAnimEntityTreeSlotPool = bNewSlotPool(0x2C, 0x42, "WorldAnimEntityTree_SlotPool", 0);
+    WorldAnimEntityTreeInfoSlotPool = bNewSlotPool(0x58, 0x27, "WorldAnimEntityTreeInfo_SlotPool", 0);
+    WorldAnimCtrlSlotPool = bNewSlotPool(0x74, 0x95, "WorldAnimCtrl_SlotPool", 0);
+    WorldAnimInstanceEntrySlotPool = bNewSlotPool(0x10, 0x42, "WorldAnimInstanceEntry_SlotPool", 0);
+#else
     WorldAnimEntitySlotPool = bNewSlotPool(0x24, 0xD5, "WorldAnimEntity_SlotPool", GetVirtualMemoryAllocParams());
     WorldAnimEntityTreeSlotPool = bNewSlotPool(0x2C, 0x42, "WorldAnimEntityTree_SlotPool", GetVirtualMemoryAllocParams());
     WorldAnimEntityTreeInfoSlotPool = bNewSlotPool(0x58, 0x27, "WorldAnimEntityTreeInfo_SlotPool", GetVirtualMemoryAllocParams());
     WorldAnimCtrlSlotPool = bNewSlotPool(0x74, 0x95, "WorldAnimCtrl_SlotPool", GetVirtualMemoryAllocParams());
     WorldAnimInstanceEntrySlotPool = bNewSlotPool(0x10, 0x42, "WorldAnimInstanceEntry_SlotPool", GetVirtualMemoryAllocParams());
+#endif
 }
 
 void WorldAnimInstanceDirectory::DeInit(bool full_unload, bool quickrace_drag_restart) {
@@ -261,11 +263,12 @@ int LoaderWorldAnimInstanceEntry(bChunk *chunk) {
         return 0;
     }
 
-    int num_objects = chunk->GetAlignedSize(16) / sizeof(WorldAnimInstanceEntryInfo);
+    int num_objects = chunk->GetAlignedSize(0x10) / sizeof(WorldAnimInstanceEntryInfo);
     for (int n = 0; n < num_objects; n++) {
         if (AnimCfg_DisableWorldAnimations || DisableWorldAnimations) {
-            break;
+            return 1;
         }
+
         WorldAnimInstanceEntryInfo *waiei = &reinterpret_cast<WorldAnimInstanceEntryInfo *>(chunk->GetAlignedData(16))[n];
         bPlatEndianSwap(&waiei->mAnimTreeNameHash);
         bPlatEndianSwap(&waiei->mUniqueInstanceID);
@@ -285,7 +288,7 @@ int UnloaderWorldAnimInstanceEntry(bChunk *chunk) {
     int num_objects = chunk->GetAlignedSize(16) / sizeof(WorldAnimInstanceEntryInfo);
     for (int n = 0; n < num_objects; n++) {
         if (AnimCfg_DisableWorldAnimations || DisableWorldAnimations) {
-            break;
+            return 1;
         }
         WorldAnimInstanceEntryInfo *waiei = &reinterpret_cast<WorldAnimInstanceEntryInfo *>(chunk->GetAlignedData(16))[n];
         TheWorldAnimInstanceDirectory.RemoveInstanceEntryAndInfo(waiei);

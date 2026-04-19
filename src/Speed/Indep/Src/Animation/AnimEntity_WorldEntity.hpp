@@ -1,13 +1,13 @@
 #ifndef ANIMATION_ANIMENTITY_WORLDENTITY_H
 #define ANIMATION_ANIMENTITY_WORLDENTITY_H
 
-#include "WorldAnimCtrl.hpp"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
 
 #include "AnimEntity.hpp"
 #include "Speed/Indep/Src/Animation/AnimWorldTypes.hpp"
+#include "WorldAnimCtrl.hpp"
 
 class CWorldAnimEntityTree;
 
