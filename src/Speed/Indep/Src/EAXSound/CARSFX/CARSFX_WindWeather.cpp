@@ -147,7 +147,7 @@ void CARSFX_WindWeather::UpdateParams(float t) {
         Play();
     }
 
-    WeatherSpeedScale = WeatherWindVolSlope.GetValue(GetPhysCar()->GetVelocityMagnitudeMPH());
+    WeatherSpeedScale = WeatherWindVolSlope.GetValue(m_pEAXCar->GetPhysCar()->GetVelocityMagnitudeMPH());
 }
 
 void CARSFX_WindWeather::Play() {
