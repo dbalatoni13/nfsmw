@@ -179,14 +179,14 @@ void NFSMixMap::ResetMapData() {
 }
 
 void NFSMixMap::SetupStateRefCount() {
-    int ntotalstateprocs;
     int *pStateOffsetTable;
+    int ntotalstateprocs;
 
     ntotalstateprocs = 0;
     pStateOffsetTable =
         reinterpret_cast<int *>(reinterpret_cast<char *>(m_pMMHdr) + m_pMMHdr->StateTableOffset);
 
-    if (m_pMMHdr->NumStates > 0) {
+    if (ntotalstateprocs < m_pMMHdr->NumStates) {
         do {
             int nst;
 
