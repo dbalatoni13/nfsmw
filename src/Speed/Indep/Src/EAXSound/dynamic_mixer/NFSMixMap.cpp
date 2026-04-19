@@ -727,12 +727,11 @@ int **NFSMixMap::AddScaleIDs(stMixCtlParams *pmixctl, int instance) {
     paddr = m_pScalePtrArray + m_ScaleParamsIDCount;
     for (n = 0; n < numscale; n++) {
         unsigned int ID;
+        unsigned int selfstate;
 
         ID = *pIDs++;
-        if ((ID & 0xFF0000) == (pmixctl->nINPUTID & 0xFF0000U)) {
-            m_pScalePtrArray[m_ScaleParamsIDCount + n] = reinterpret_cast<int *>(ID | (instance << 11));
-            ntotaladded++;
-        } else {
+        selfstate = pmixctl->nINPUTID;
+        if ((ID & 0xFF0000) != (selfstate & 0xFF0000U)) {
             int m;
             int state;
 
@@ -741,6 +740,9 @@ int **NFSMixMap::AddScaleIDs(stMixCtlParams *pmixctl, int instance) {
                 m_pScalePtrArray[m_ScaleParamsIDCount + n + m] = reinterpret_cast<int *>(ID | (m << 11));
                 ntotaladded++;
             }
+        } else {
+            m_pScalePtrArray[m_ScaleParamsIDCount + n] = reinterpret_cast<int *>(ID | (instance << 11));
+            ntotaladded++;
         }
     }
 
@@ -770,12 +772,11 @@ int **NFSMixMap::AddScaleIDs(stMixEvtParams *pevtmixctl, int instance) {
     paddr = m_pScalePtrArray + m_ScaleParamsIDCount;
     for (n = 0; n < numscale; n++) {
         unsigned int ID;
+        unsigned int selfstate;
 
         ID = *pIDs++;
-        if ((ID & 0xFF0000) == (pevtmixctl->nEVTCTLID & 0xFF0000U)) {
-            m_pScalePtrArray[m_ScaleParamsIDCount + n] = reinterpret_cast<int *>(ID | (instance << 11));
-            ntotaladded++;
-        } else {
+        selfstate = pevtmixctl->nEVTCTLID;
+        if ((ID & 0xFF0000) != (selfstate & 0xFF0000U)) {
             int m;
             int state;
 
@@ -784,6 +785,9 @@ int **NFSMixMap::AddScaleIDs(stMixEvtParams *pevtmixctl, int instance) {
                 m_pScalePtrArray[m_ScaleParamsIDCount + n + m] = reinterpret_cast<int *>(ID | (m << 11));
                 ntotaladded++;
             }
+        } else {
+            m_pScalePtrArray[m_ScaleParamsIDCount + n] = reinterpret_cast<int *>(ID | (instance << 11));
+            ntotaladded++;
         }
     }
 
