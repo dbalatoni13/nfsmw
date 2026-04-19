@@ -143,6 +143,7 @@ void CARSFX_WindWeather::Destroy() {
 }
 
 void CARSFX_WindWeather::UpdateParams(float t) {
+    SndBase::UpdateParams(t);
     if (!m_pcsisWind) {
         Play();
     }
