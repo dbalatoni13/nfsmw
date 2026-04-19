@@ -70,8 +70,8 @@ void CARSFX_Siren::InitSFX() {
     if (IsSoundEnabled != 0) {
         SndBase::InitSFX();
         bIgnoreHealth = GetPhysCar()->mHealth < 0.01f;
-        m_PrevSirenState = SIREN_OFF;
         m_SirenState = SIREN_OFF;
+        m_PrevSirenState = SIREN_OFF;
         tSirenState = g_pEAXSound->Random(2.0f) + 6.0f;
     }
 }
