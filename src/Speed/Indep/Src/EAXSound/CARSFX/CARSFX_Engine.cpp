@@ -600,7 +600,7 @@ void CARSFX_AEMSEngine::SetupLoadData() {
     if (auxBankName != "") {
         SPU_or_EE = 0;
         type = eBANK_SLOT_NONE;
-        if (GetPhysCar()->GetContext() == Sound::CONTEXT_AIRACER || GetPhysCar()->GetContext() == Sound::CONTEXT_COP) {
+        if (GetPhysCar()->IsAICar() || GetPhysCar()->IsCopCar()) {
             type = eBANK_SLOT_AI_AEMS_ENGINE;
         }
         SPU_or_EE = 1;
