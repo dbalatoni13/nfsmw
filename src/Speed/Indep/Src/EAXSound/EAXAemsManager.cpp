@@ -283,7 +283,7 @@ void EAXAemsManager::Init() {
     }
 
     m_NumBankLoadResolves = 0;
-    unsigned int numEvtSys = g_pEAXSound->GetAttributes()->Num_EvtSys();
+    unsigned int numEvtSys = g_pEAXSound->GetAttributes().Num_EvtSys();
     mNumEvtSys = numEvtSys;
     if (static_cast<int>(numEvtSys) > 0) {
         m_pEvtSystems.resize(numEvtSys);
@@ -306,7 +306,7 @@ void EAXAemsManager::InitSPUram() {
 }
 
 int EAXAemsManager::AddEventSystem(eEVTSYS eESIndex, eSNDDATAPATH eSDP) {
-    Attrib::Gen::audiosystem &atr = *g_pEAXSound->GetAttributes();
+    Attrib::Gen::audiosystem &atr = g_pEAXSound->GetAttributes();
     const char *dataPath = g_DataPaths[eSDP];
 
     const char *evtName = atr.EvtSys(eESIndex).GetString();

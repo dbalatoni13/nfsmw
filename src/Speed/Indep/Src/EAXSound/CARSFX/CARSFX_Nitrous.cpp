@@ -234,5 +234,5 @@ void CARSFX_Nitrous::SetupLoadData() {
     }
 
     LoadAsset(
-        g_pEAXSound->GetAttributes()->AEMS_NOSBanks(nbankindex), SNDPATH_NOS, EAXSND_DT_AEMS_ASYNCSPUMEM, eBANK_SLOT_NONE, true);
+        g_pEAXSound->GetAttributes().AEMS_NOSBanks(nbankindex), SNDPATH_NOS, EAXSND_DT_AEMS_ASYNCSPUMEM, eBANK_SLOT_NONE, true);
 }

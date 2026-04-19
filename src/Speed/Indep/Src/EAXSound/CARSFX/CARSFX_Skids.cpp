@@ -289,5 +289,5 @@ void CARSFX_Skids::SetupLoadData() {
         nlvl = 1;
     }
 
-    LoadAsset(g_pEAXSound->GetAttributes()->AEMS_SkidBanks(nlvl), SNDPATH_SKIDS, EAXSND_DT_AEMS_ASYNCSPUMEM, eBANK_SLOT_NONE, true);
+    LoadAsset(g_pEAXSound->GetAttributes().AEMS_SkidBanks(nlvl), SNDPATH_SKIDS, EAXSND_DT_AEMS_ASYNCSPUMEM, eBANK_SLOT_NONE, true);
 }

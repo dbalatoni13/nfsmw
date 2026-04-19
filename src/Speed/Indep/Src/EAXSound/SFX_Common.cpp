@@ -146,10 +146,10 @@ void SFX_Common::ProcessUpdate() {
 }
 
 void SFX_Common::SetupLoadData() {
-    LoadAsset(g_pEAXSound->GetAttributes()->AEMS_FEBanks(1), SNDPATH_GLOBAL, EAXSND_DT_AEMS_ASYNCSPUMEM, eBANK_SLOT_NONE,
+    LoadAsset(g_pEAXSound->GetAttributes().AEMS_FEBanks(1), SNDPATH_GLOBAL, EAXSND_DT_AEMS_ASYNCSPUMEM, eBANK_SLOT_NONE,
               true);
     if (g_pEAXSound->GetSndGameMode() == SND_FRONTEND) {
-        LoadAsset(g_pEAXSound->GetAttributes()->AEMS_FEBanks(0), SNDPATH_FE, EAXSND_DT_AEMS_ASYNCSPUMEM, eBANK_SLOT_NONE,
+        LoadAsset(g_pEAXSound->GetAttributes().AEMS_FEBanks(0), SNDPATH_FE, EAXSND_DT_AEMS_ASYNCSPUMEM, eBANK_SLOT_NONE,
                   true);
     }
 }
