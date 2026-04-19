@@ -8,11 +8,13 @@ SndBase::TypeInfo *SndBase::GetTypeInfo() const {
 }
 
 SndBase::SndBase() {
-    int i = 0;
-    do {
-        i++;
-        m_refCount = 0;
-    } while (i < 16);
+    {
+        int n = 0;
+        do {
+            n++;
+            m_refCount = 0;
+        } while (n < 16);
+    }
     m_pEAXCar = nullptr;
     m_pStateBase = nullptr;
     m_pOutPutBlock = nullptr;
