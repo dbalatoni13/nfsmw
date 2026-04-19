@@ -40,10 +40,10 @@ struct stMixMapStateHdr {
 struct NFSMixMapState {
     // total size: 0x60
     NFSMixMapState();
+    virtual ~NFSMixMapState();
     virtual void Initialize(NFSMixMap *pmm, int stateindex, int numstatecopies, int objnum);
     int GetStateRefCount();
     void DestroyState();
-    virtual ~NFSMixMapState();
     stMixCtlProc *GetMixCtlProc(int nMIXCTLIN_ID, int nInstance);
     st3DMixCtlProc *Get3DMixCtlProc(int n3DMIXCTLCREATE_ID, int nInstance);
     stEvtMixCtlProc *GetEvtMixCtlProc(int nEVENTID, int nInstance);
