@@ -26,7 +26,10 @@ void NFSMixMapState::Initialize(NFSMixMap *pmm, int stateindex, int numstatecopi
 }
 
 int NFSMixMapState::GetStateRefCount() {
-    return m_pFirstInstance->m_ThisStateRefCnt;
+    NFSMixMapState *pstate;
+
+    pstate = m_pFirstInstance;
+    return pstate->m_ThisStateRefCnt;
 }
 
 NFSMixMapState::~NFSMixMapState() {}
@@ -668,7 +671,10 @@ void NFSMixMapState::InitializeMasterChannels() {
 }
 
 NFSMixMapState *NFSMixMapState::GetMixMapProc(int refcnt) {
-    return m_pFirstInstance + refcnt;
+    NFSMixMapState *pstate;
+
+    pstate = m_pFirstInstance + refcnt;
+    return pstate;
 }
 
 void NFSMixMapState::SetFirstStateInst(NFSMixMapState *pstate) {
