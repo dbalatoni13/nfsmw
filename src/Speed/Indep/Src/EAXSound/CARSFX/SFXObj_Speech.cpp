@@ -79,15 +79,17 @@ void SFXObj_Speech::UpdateParams(float t) {
                 fPosition = *SndCamera::GetWorldCarPos3(0);
             }
         }
-    } else if (GetDMIX_InputValue(2) == 0) {
-        m_pClosestCar = nullptr;
-        *reinterpret_cast<int *>(&bFresh) = 0;
     } else {
-        EAX_CarState *copcar;
+        if (GetDMIX_InputValue(2) == 0) {
+            *reinterpret_cast<int *>(&bFresh) = 0;
+            m_pClosestCar = nullptr;
+        } else {
+            EAX_CarState *copcar;
 
-        copcar = GetClosestCopCarToCamera();
-        if (m_pClosestCar == copcar) {
-            fPosition = *m_pClosestCar->GetPosition();
+            copcar = GetClosestCopCarToCamera();
+            if (m_pClosestCar == copcar) {
+                fPosition = *m_pClosestCar->GetPosition();
+            }
         }
     }
 }
