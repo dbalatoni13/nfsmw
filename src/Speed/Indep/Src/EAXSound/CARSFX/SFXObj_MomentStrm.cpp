@@ -77,12 +77,12 @@ SFXObj_MomentStrm::SFXObj_MomentStrm()
     fVector = bVector3(0.0f, 0.0f, 0.0f);
     fVelocity = bVector3(0.0f, 0.0f, 0.0f);
     m_CurMoment = 0;
-    mHeldMoment = nullptr;
     UseUserPos = false;
-    mCarsID = 0;
-    mbUseTRafficsID = false;
+    mHeldMoment = nullptr;
     bHoldStream = false;
     g_MomentStream = this;
+    mCarsID = 0;
+    mbUseTRafficsID = false;
 }
 
 SFXObj_MomentStrm::~SFXObj_MomentStrm() {
