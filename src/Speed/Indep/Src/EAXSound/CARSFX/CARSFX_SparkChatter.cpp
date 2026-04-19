@@ -112,7 +112,7 @@ void CARSFX_SparkChatter::SparkChatUpdateCallBack(Csis::Parameter *pParameters, 
 void CARSFX_SparkChatter::SparkChatDestroyCallBack(Csis::Class *pSparkChatClass, void *pClientData) {
     SparkChatOutputInstance *pSparkChatInstance = static_cast<SparkChatOutputInstance *>(pClientData);
 
-    static_cast<SndBase *>(pSparkChatInstance->m_pThis)->Destroy();
+    pSparkChatInstance->m_pThis->UpdateMixerOutputs();
     pSparkChatClass->UnsubscribeMemberData(&pSparkChatInstance->UpdateClient);
     pSparkChatClass->UnsubscribeDestructor(&pSparkChatInstance->DestroyClient);
 }
