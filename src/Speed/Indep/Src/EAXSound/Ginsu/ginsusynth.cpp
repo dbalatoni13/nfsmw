@@ -189,8 +189,8 @@ GinsuSynthesis::GinsuSynthesis(void *memblock, int size) {
     char *overheadMem;
 
     mPacketHandle = -1;
-    mSynthData = 0;
     mSampleRate = 0;
+    mSynthData = 0;
 
     overhead = SNDPKTPLAY_overhead(8);
     mMaxPacketSize = (static_cast<unsigned int>(size - overhead) >> 2) & 0x3FFFFFFE;
