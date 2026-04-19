@@ -141,8 +141,8 @@ void NFSMixMap::ResetMapData() {
     m_CurrentSubChannelPtrBlockOffset = 0;
     m_Current3DMixCtlPtrBlockOffset = 0;
     m_CurrentEvtMixCtlPtrBlockOffset = 0;
+    m_nTotalMasterChannel3DOutputs = 0;
     m_nTotalSubChannelInputs = 0;
-    m_pMasterChannelOutputArrayBlock = nullptr;
     m_nTotalSubChannel3DOutputs = 0;
     m_nTotalUniqueMasterChannels = 0;
     m_SFXOBJsAdded = 0;
@@ -175,7 +175,7 @@ void NFSMixMap::ResetMapData() {
     m_pMasterChProc = nullptr;
     m_pMasterChannelInputs = nullptr;
     m_pSubChannelInputs = nullptr;
-    m_nTotalMasterChannel3DOutputs = 0;
+    m_pMasterChannelOutputArrayBlock = nullptr;
 }
 
 void NFSMixMap::SetupStateRefCount() {
