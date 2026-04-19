@@ -255,12 +255,11 @@ void CARSFX_Turbo::StopBlowOff() {
     }
 }
 
-int CARSFX_Turbo::PlaySpl(int _ID, int Vol, int PSI, int, int rotation) {
-    int nDMixOut;
+int CARSFX_Turbo::PlaySpl(int _ID, int Vol, int PSI, int Azimuth, int rotation) {
+    (void)Azimuth;
 
     if (IsSoundEnabled == 1) {
-        nDMixOut = GetDMixOutput(1, DMX_VOL);
-        nDMixOut = Vol * nDMixOut >> 15;
+        int nDMixOut = Vol * GetDMixOutput(1, DMX_VOL) >> 15;
         g_pEAXSound->SetCsisName("SND:Turbo Spool");
         m_pTurboSplControl =
             new FX_TURBO_01(_ID, nDMixOut, PSI, GetDMixOutput(0, DMX_AZIM), rotation, static_cast<int>(GetPhysRPM()));
