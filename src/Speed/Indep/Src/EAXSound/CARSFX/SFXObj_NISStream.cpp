@@ -592,7 +592,8 @@ void SFXObj_NISStream::NISActivityDone() {
 
 void SFXObj_NISStream::StartNIS() {
     {
-        bool bresult = m_bNISAudioStreamReady;
+        bool bresult;
+        bresult = m_bNISAudioStreamReady;
 
         m_bNISAnimationReady = true;
         if (bresult) {

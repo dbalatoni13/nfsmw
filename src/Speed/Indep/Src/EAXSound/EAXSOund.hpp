@@ -206,7 +206,6 @@ class EAXSound : public AudioMemBase {
     AudioSettings *GetCurAudioSettings() { return m_pCurAudioSettings; }
     AudioSettings *GetCurrentAudioSettings() const { return m_pCurAudioSettings; }
     Attrib::Gen::audiosystem &GetAttributes() { return *mAttributes; }
-    Attrib::Gen::audiosystem *GetAttributes() const { return mAttributes; }
     eSndGameMode GetSndGameMode() { return m_eSndGameMode; }
     eSndGameMode GetSndGameMode() const { return m_eSndGameMode; }
     eSndGameMode GetPrevSndGameMode() const { return m_prevSndGameMode; }
