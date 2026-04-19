@@ -312,6 +312,6 @@ void CARSFX_Turbo::SetupLoadData() {
     if (EAXCar::g_TurboInfo) {
         LoadAsset(EAXCar::g_TurboInfo->BankName(), SNDPATH_TURBO, EAXSND_DT_AEMS_ASYNCSPUMEM, eBANK_SLOT_NONE, true);
     } else {
-        LoadAsset(m_pEAXCar->mTurboInfo.BankName(), SNDPATH_TURBO, EAXSND_DT_AEMS_ASYNCSPUMEM, eBANK_SLOT_NONE, true);
+        LoadAsset(m_pEAXCar->GetTurboInfo().BankName(), SNDPATH_TURBO, EAXSND_DT_AEMS_ASYNCSPUMEM, eBANK_SLOT_NONE, true);
     }
 }
