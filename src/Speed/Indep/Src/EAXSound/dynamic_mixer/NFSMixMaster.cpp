@@ -11,8 +11,6 @@ char *szMixMapFiles[] = {
 };
 
 NFSMixMaster::NFSMixMaster() {
-    int n;
-
     m_pMainMixMap = nullptr;
     m_pSecondaryMixMap = nullptr;
     m_pCurDynMMP = nullptr;
@@ -22,11 +20,15 @@ NFSMixMaster::NFSMixMaster() {
     m_pSecDynMMPHead = nullptr;
     m_pSecDynMMPTail = nullptr;
     *reinterpret_cast<int *>(&m_bMapReady) = 0;
-    n = 0;
-    do {
-        m_StateRefCount[n] = 0;
-        n = n + 1;
-    } while (n < 13);
+    {
+        int n;
+
+        n = 0;
+        do {
+            m_StateRefCount[n] = 0;
+            n = n + 1;
+        } while (n < 13);
+    }
 }
 
 NFSMixMaster::~NFSMixMaster() {
