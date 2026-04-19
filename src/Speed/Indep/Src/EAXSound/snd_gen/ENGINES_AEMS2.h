@@ -896,9 +896,8 @@ struct CAR_Sputter {
 
     CAR_Sputter(int car_class, int car_id, int rPM, int vOL, int cOMMON_PARAMETERS_AZIMUTH, int cOMMON_PARAMETERS_PITCH_OFFSET,
                 int cOMMON_PARAMETERS_ROTATION, int tORQUE, int force_Trigger, int accel_true, int shifting_true) {
-        SetCar_id(car_id);
         SetCar_class(car_class);
-        SetShifting_true(shifting_true);
+        SetCar_id(car_id);
         SetRPM(rPM);
         SetVOL(vOL);
         SetCOMMON_PARAMETERS_AZIMUTH(cOMMON_PARAMETERS_AZIMUTH);
@@ -907,9 +906,10 @@ struct CAR_Sputter {
         SetTORQUE(tORQUE);
         SetForce_Trigger(force_Trigger);
         SetAccel_true(accel_true);
+        SetShifting_true(shifting_true);
 
-        int result = Class::CreateInstance(&gCAR_SputterHandle, &mData, &mpClass);
-        if (result < 0) {
+        System::Result result = static_cast<System::Result>(Class::CreateInstance(&gCAR_SputterHandle, &mData, &mpClass));
+        if (result < System::kResult_Ok) {
             gCAR_SputterHandle.Set(&CAR_SputterId);
             Class::CreateInstance(&gCAR_SputterHandle, &mData, &mpClass);
         }

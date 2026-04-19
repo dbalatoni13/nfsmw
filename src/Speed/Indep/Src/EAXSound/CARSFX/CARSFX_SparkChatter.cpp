@@ -81,10 +81,13 @@ void CARSFX_SparkChatter::SetupSFX(CSTATE_Base *_StateBase) {
 }
 
 void CARSFX_SparkChatter::InitSFX() {
+    CARSFX_SparkChatter *pThisPtr = this;
+    int iThisPtr = reinterpret_cast<int>(pThisPtr);
+
     SndBase::InitSFX();
     g_pEAXSound->SetCsisName(this);
     m_pSparkChatterControl =
-        new Csis::CAR_Sputter(static_cast<int>(m_pEAXCar->mEngineInfo.CarID()), reinterpret_cast<int>(this), 0, 0, 0, 0, 0, 0, 0, 0, 0);
+        new Csis::CAR_Sputter(static_cast<int>(m_pEAXCar->GetAttributes().CarID()), iThisPtr, 0, 0, 0, 0, 0, 0, 0, 0, 0);
     static int tmp_refCnt = m_pSparkChatterControl->GetRefCount();
 }
 
