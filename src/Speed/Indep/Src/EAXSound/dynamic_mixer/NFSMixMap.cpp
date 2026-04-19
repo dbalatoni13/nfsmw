@@ -188,13 +188,15 @@ void NFSMixMap::SetupStateRefCount() {
 
     if (m_pMMHdr->NumStates > 0) {
         do {
-            m_StateRefCount[ntotalstateprocs] = 0;
+            int nst;
 
+            nst = ntotalstateprocs;
+            m_StateRefCount[nst] = 0;
             if (*pStateOffsetTable != -1) {
-                m_StateRefCount[ntotalstateprocs] = (*mGetStateRefCnt)(ntotalstateprocs);
+                m_StateRefCount[nst] = (*mGetStateRefCnt)(nst);
             }
 
-            ntotalstateprocs++;
+            ntotalstateprocs = nst + 1;
             pStateOffsetTable++;
         } while (ntotalstateprocs < m_pMMHdr->NumStates);
     }
