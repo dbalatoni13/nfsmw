@@ -38,10 +38,8 @@ SndBase *CARSFX_Siren::CreateObject(unsigned int allocator) {
 }
 
 CARSFX_Siren::CARSFX_Siren()
-    : CARSFX() {
-    mSiren = nullptr;
-    mT_death = Timer(0);
-}
+    : CARSFX()
+    , mSiren(nullptr) {}
 
 CARSFX_Siren::~CARSFX_Siren() {
     Destroy();
