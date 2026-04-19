@@ -243,8 +243,8 @@ int SFXObj_TruckFX::GetController(int Index) {
 void SFXObj_TruckFX::AttachController(SFXCTL *psfxctl) {}
 
 void SFXObj_TruckFX::InitSFX() {
-    if (IsSoundEnabled != 0 && GetInputBlockPtr()) {
-        GetInputBlockPtr()[15] = 1;
+    if (IsSoundEnabled != 0) {
+        SndBase::InitSFX();
     }
 }
 
