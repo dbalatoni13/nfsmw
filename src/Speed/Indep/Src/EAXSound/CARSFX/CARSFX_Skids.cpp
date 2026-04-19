@@ -288,6 +288,9 @@ void CARSFX_Skids::SetupLoadData() {
     if (nlvl > 1) {
         nlvl = 1;
     }
+    if (0) {
+        nlvl = bClamp(nlvl, 0, 1);
+    }
 
     LoadAsset(g_pEAXSound->GetAttributes().AEMS_SkidBanks(nlvl), SNDPATH_SKIDS, EAXSND_DT_AEMS_ASYNCSPUMEM, eBANK_SLOT_NONE, true);
 }
