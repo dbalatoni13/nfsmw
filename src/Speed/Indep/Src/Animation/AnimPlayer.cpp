@@ -10,7 +10,6 @@
 bool gPlayAnimStream = IsSoundEnabled ? true : false;
 CAnimPlayer TheAnimPlayer;
 
-extern AnimDirectory *TheAnimDirectory;
 void AnimLoader_NextStep();
 extern int AnimCfg_DisableWorldAnimations;
 
@@ -66,7 +65,7 @@ bool CAnimPlayer::IsLoaded(uint32 anim_id) {
         return false;
     }
     CAnimSceneData *scene_data = CAnimSceneData::FindAnimSceneData(anim_id);
-    if (scene_data != nullptr) {
+    if (scene_data) {
         m_audioQueued = false;
         return true;
     }
@@ -76,7 +75,7 @@ bool CAnimPlayer::IsLoaded(uint32 anim_id) {
 int CAnimPlayer::CreateAnimInstance(uint32 anim_id, int camera_track_number, int anim_candidate_type, int anim_candidate_index) {
     CAnimSceneData *anim_scene_data = CAnimSceneData::FindAnimSceneData(anim_id);
     int result = 0;
-    if (anim_scene_data != nullptr) {
+    if (anim_scene_data) {
         result = CreateAnimScene(anim_scene_data, camera_track_number, anim_candidate_type, anim_candidate_index);
     }
     return result;
@@ -148,17 +147,18 @@ void AnimLoader_NextStep() {
     }
 }
 
+// UNSOLVED
 bool CAnimPlayer::Load(uint32 anim_id, int camera_track_number, bool DisableZoneSwitching) {
     if (gAnimLoader_InProgress) {
         return false;
     }
 
     CAnimSceneData *scene_data = CAnimSceneData::FindAnimSceneData(anim_id);
-    if (scene_data != nullptr) {
+    if (scene_data) {
         return false;
     }
 
-    if (TheAnimDirectory == nullptr) {
+    if (!TheAnimDirectory) {
         return false;
     }
 
@@ -193,9 +193,9 @@ bool CAnimPlayer::Load(uint32 anim_id, int camera_track_number, bool DisableZone
         TheTrackStreamer.MakeSpaceInPool(size_needed, true);
         gAnimLoader_MemPointer = TheTrackStreamer.AllocateUserMemory(size_needed, "NISMemory", 0);
         gAnimLoader_UsingMemoryPool = CAnimResourceFileProxy::CarPool;
-        if (gAnimLoader_MemPointer == nullptr) {
+        if (!gAnimLoader_MemPointer) {
             TheCarLoader.MakeSpaceInPool(size_needed);
-            gAnimLoader_MemPointer = bMalloc(size_needed, CarLoaderMemoryPoolNumber & 0xF | 0x2000);
+            gAnimLoader_MemPointer = TheCarLoader.AllocateUserMemory(size_needed, "NISMemory");
             gAnimLoader_UsingMemoryPool = CAnimResourceFileProxy::TrackStream;
         }
     } else {
@@ -203,7 +203,7 @@ bool CAnimPlayer::Load(uint32 anim_id, int camera_track_number, bool DisableZone
         gAnimLoader_MemPointer = bMalloc(size_needed, 0x2000);
     }
 
-    if (gAnimLoader_MemPointer != nullptr) {
+    if (gAnimLoader_MemPointer) {
         AnimLoader_Init();
         loading_has_begun = true;
         AnimLoader_NextStep();
@@ -219,20 +219,20 @@ bool CAnimPlayer::Unload(uint32 anim_id) {
     TheTrackStreamer.EnableZoneSwitching();
     CAnimSceneData *scene_data = CAnimSceneData::FindAnimSceneData(anim_id);
 
-    if (scene_data != nullptr) {
+    if (scene_data) {
         CAnimResourceFileProxy *proxy = gAnimLoader_ResourceFileList.GetHead();
         while (proxy != gAnimLoader_ResourceFileList.EndOfList()) {
             CAnimResourceFileProxy *next_proxy = proxy->GetNext();
-            if (proxy->mResourceFile != nullptr) {
+            if (proxy->mResourceFile) {
                 UnloadResourceFile(proxy->mResourceFile);
                 if (proxy->mMemoryPool == CAnimResourceFileProxy::TrackStream) {
                     void *mem = proxy->mResourceFile->GetMemory();
-                    if (mem != nullptr) {
+                    if (mem) {
                         TheTrackStreamer.FreeUserMemory(mem);
                     }
                 } else if (proxy->mMemoryPool == CAnimResourceFileProxy::CarPool) {
                     void *mem = proxy->mResourceFile->GetMemory();
-                    if (mem != nullptr) {
+                    if (mem) {
                         bFree(mem);
                     }
                 } else {
@@ -252,7 +252,7 @@ bool CAnimPlayer::Unload(uint32 anim_id) {
 void CAnimPlayer::InitWorldAnimScene() {
     if (!DisableWorldAnimations && !AnimCfg_DisableWorldAnimations) {
         int numEntries = TheWorldAnimInstanceDirectory.GetNumInstanceEntries();
-        if (mWorldAnimScene == nullptr && numEntries > 0) {
+        if (!mWorldAnimScene && numEntries > 0) {
             mWorldAnimScene = new CAnimWorldScene();
         }
     }
@@ -264,19 +264,19 @@ CAnimWorldScene *CAnimPlayer::GetWorldAnimScene() {
 
 void CAnimPlayer::KillWorldAnimScene(bool full_unload, bool quickrace_drag_restart) {
     if (DisableWorldAnimations || AnimCfg_DisableWorldAnimations) {
-        if (mWorldAnimScene != nullptr) {
+        if (mWorldAnimScene) {
             goto clear;
         }
         return;
     } else {
-        if (mWorldAnimScene == nullptr) {
+        if (!mWorldAnimScene) {
             goto deinit;
         }
     }
 
 clear:
     mWorldAnimScene->ClearAllAnimations();
-    if (mWorldAnimScene != nullptr) {
+    if (mWorldAnimScene) {
         delete mWorldAnimScene;
     }
     mWorldAnimScene = nullptr;
@@ -299,7 +299,7 @@ void CAnimPlayer::UpdateTime(float time_step) {
 bool CAnimPlayer::Play(AnimHandle anim_handle) {
     CAnimScene *scene = FindAnimScene(anim_handle);
 
-    if (scene == nullptr) {
+    if (!scene) {
         return false;
     }
     return scene->Play();
@@ -307,7 +307,7 @@ bool CAnimPlayer::Play(AnimHandle anim_handle) {
 
 bool CAnimPlayer::Stop(AnimHandle anim_handle, bool delete_instance) {
     CAnimScene *scene = FindAnimScene(anim_handle);
-    if (scene != nullptr) {
+    if (scene) {
         bool stopped = scene->Stop();
         if (stopped && delete_instance) {
             DeleteAnimInstance(anim_handle);
@@ -331,7 +331,7 @@ CAnimScene *CAnimPlayer::FindAnimScene(AnimHandle anim_handle) {
 void CAnimPlayer::DestroyAnimScene(AnimHandle anim_handle) {
     CAnimScene *anim_scene = FindAnimScene(anim_handle);
 
-    if (anim_scene != nullptr && anim_scene->Purge()) {
+    if (anim_scene && anim_scene->Purge()) {
         anim_scene->Remove();
         delete anim_scene;
     }

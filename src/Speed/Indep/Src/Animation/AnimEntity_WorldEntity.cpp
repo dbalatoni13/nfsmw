@@ -60,6 +60,7 @@ void WorldAnimEntityTreeInfo::operator delete(void *ptr) {
 }
 
 void CWorldAnimEntity::EndianSwapEntityData(void *data, int size) {
+#ifndef EA_BUILD_A124
     WorldAnimEntityInfo *info = static_cast<WorldAnimEntityInfo *>(data);
     bPlatEndianSwap(&info->mTypeID);
     bPlatEndianSwap(&info->mThisInstanceNameHash);
@@ -70,6 +71,7 @@ void CWorldAnimEntity::EndianSwapEntityData(void *data, int size) {
     bPlatEndianSwap(&info->mAnimTreeHash);
     bPlatEndianSwap(&info->mAnimNameHash);
     bPlatEndianSwap(&info->mLocalMatrix);
+#endif
 }
 
 CWorldAnimEntity::CWorldAnimEntity()
@@ -158,16 +160,16 @@ bool CWorldAnimEntity::Init(void *init_data, SpaceNode *parent_space_node) {
         mAnimCtrl->CreateFnAnimFromNamehash(ScaleAnimNameHash, 2);
     }
 
-    if (mAnimCtrl->GetAllocated() == 0 || skel == nullptr) {
+    if (mAnimCtrl->GetAllocated() == 0 || !skel) {
         mAnimCtrl->GetAnimPart()->Purge();
         mAnimCtrl->Cleanup();
-        if (mAnimCtrl != nullptr) {
+        if (mAnimCtrl) {
             delete mAnimCtrl;
         }
         mAnimCtrl = nullptr;
     }
 
-    if (mAnimCtrl != nullptr) {
+    if (mAnimCtrl) {
         if (info->instance_data->play_flags & 0x40) {
             mAnimCtrl->SetLoopRange(info->instance_data->begin_range, info->instance_data->end_range);
         }
@@ -237,7 +239,6 @@ void CWorldAnimEntity::SetTime(float time) {
     if (mAnimCtrl) {
         mAnimCtrl->SetEvalTime(0.0f);
     }
-    // TODO is this right?
     UpdateTimeStep(time);
 }
 
@@ -305,8 +306,7 @@ WorldAnimEntityTreeInfo::WorldAnimEntityTreeInfo(uint32 treenamehash, bPList<Wor
 
         loaded_world_anim_entity_chunks.AddSorted(&CompareParentIndex, new bPNode(waei));
     }
-    // TODO is the sizeof right?
-    bMemCpy(named_ranges, ranges, 4 * sizeof(WorldAnimNamedRange));
+    bMemCpy(named_ranges, ranges, sizeof(named_ranges));
 }
 
 CWorldAnimEntityTree::CWorldAnimEntityTree() {
@@ -366,7 +366,7 @@ int LoaderWorldAnimTreeMarker(bChunk *chunk) {
             return 1;
         }
         int num_entities = temp_loaded_world_anim_entity_chunks.CountElements();
-        WorldAnimEntityInfo **arr_of_ptrs = new ("WorldAnimEntityInfo[]", 0) WorldAnimEntityInfo *[num_entities];
+        WorldAnimEntityInfo **arr_of_ptrs = new ("WorldAnimEntityInfo*[]", 0) WorldAnimEntityInfo *[num_entities];
         bMemSet(arr_of_ptrs, 0, num_entities * sizeof(*arr_of_ptrs));
 
         int ix = 0;
@@ -432,7 +432,7 @@ int LoaderWorldAnimEntityData(bChunk *chunk) {
     int num_objects = chunk->GetAlignedSize(16) / sizeof(WorldAnimEntityInfo);
     for (int n = 0; n < num_objects; n++) {
         if (DisableWorldAnimations || AnimCfg_DisableWorldAnimations) {
-            break;
+            return 1;
         }
         WorldAnimEntityInfo *entity_info = &reinterpret_cast<WorldAnimEntityInfo *>(chunk->GetAlignedData(16))[n];
         CWorldAnimEntity::EndianSwapEntityData(entity_info, sizeof(WorldAnimEntityInfo));
@@ -451,7 +451,7 @@ int UnloaderWorldAnimEntityData(bChunk *chunk) {
     int num_objects = chunk->GetAlignedSize(16) / sizeof(WorldAnimEntityInfo);
     for (int n = 0; n < num_objects; n++) {
         if (DisableWorldAnimations || AnimCfg_DisableWorldAnimations) {
-            break;
+            return 1;
         }
         WorldAnimEntityInfo *entity_info_to_unload = &reinterpret_cast<WorldAnimEntityInfo *>(chunk->GetAlignedData(16))[n];
         TheWorldAnimInstanceDirectory.RemoveEntityInfo(entity_info_to_unload);
@@ -467,9 +467,11 @@ int LoaderWorldAnimDirectoryData(bChunk *chunk) {
     int num_objects = chunk->GetAlignedSize(16) / sizeof(WorldAnimInstance);
     for (int n = 0; n < num_objects; n++) {
         if (DisableWorldAnimations || AnimCfg_DisableWorldAnimations) {
-            break;
+            return 1;
         }
         WorldAnimInstance *wai = &reinterpret_cast<WorldAnimInstance *>(chunk->GetAlignedData(16))[n];
+
+#ifndef EA_BUILD_A124
         bPlatEndianSwap(&wai->unique_instance_id);
         bPlatEndianSwap(&wai->anim_tree_name_hash);
         bPlatEndianSwap(&wai->section_number);
@@ -490,6 +492,7 @@ int LoaderWorldAnimDirectoryData(bChunk *chunk) {
         bPlatEndianSwap(&wai->lodb_hash);
         bPlatEndianSwap(&wai->lodz_hash);
         bPlatEndianSwap(&wai->instance_matrix);
+#endif
 
         TheWorldAnimInstanceDirectory.AddLoadedAnimInstance(wai);
     }
@@ -505,7 +508,7 @@ int UnloaderWorldAnimDirectoryData(bChunk *chunk) {
     int num_objects = chunk->GetAlignedSize(16) / sizeof(WorldAnimInstance);
     for (int n = 0; n < num_objects; n++) {
         if (DisableWorldAnimations || AnimCfg_DisableWorldAnimations) {
-            break;
+            return 1;
         }
         WorldAnimInstance *wai = &reinterpret_cast<WorldAnimInstance *>(chunk->GetAlignedData(16))[n];
         TheWorldAnimInstanceDirectory.RemoveAnimInstance(wai);
@@ -514,7 +517,6 @@ int UnloaderWorldAnimDirectoryData(bChunk *chunk) {
 }
 
 CWorldAnimEntity *CWorldAnimEntityTree::GetEntityByNameHash(unsigned int namehash) {
-    // TODO
     for (bPNode *node = instantiated_world_anim_entities.GetHead(); node != instantiated_world_anim_entities.EndOfList(); node = node->GetNext()) {
         CWorldAnimEntity *entity = reinterpret_cast<CWorldAnimEntity *>(node->GetObject());
         if (entity->GetInstanceNameHash() == namehash) {

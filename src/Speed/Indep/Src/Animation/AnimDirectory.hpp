@@ -124,4 +124,6 @@ class AnimDirectory {
     AnimFileLoadInfo mAnimFileLoadInfo;                   // offset 0x804, size 0x4004
 };
 
+extern AnimDirectory *TheAnimDirectory;
+
 #endif

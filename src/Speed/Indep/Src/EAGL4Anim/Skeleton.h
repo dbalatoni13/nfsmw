@@ -18,9 +18,13 @@ class Skeleton : public SkeletonData {
 
     void RestoreOrthoScale(int boneId, const EAGL4::Transform &orthoScalingMatrix) {}
 
-    static int ComputePoseBufferLength(int numBones) {}
+    static int ComputePoseBufferLength(int numBones) {
+        return numBones * 0xC; // TODO: should 0xC be a sizeof?
+    }
 
-    int GetPoseBufferLength() const {}
+    int GetPoseBufferLength() const {
+        return ComputePoseBufferLength(GetNumBones());
+    }
 
     void PoseLocal(float *pose, EAGL4::Transform *outputLocal) {}
 

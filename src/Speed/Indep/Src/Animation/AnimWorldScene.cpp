@@ -38,12 +38,11 @@ CWorldAnimEntityTree *CAnimWorldScene::InstantiateAnimTree(WorldAnimInstance *in
         return nullptr;
     }
 
-    unsigned int track_num_val = instance->track_num;
-    if (track_num_val != 0) {
-        int min1 = (track_num_val >> 8) & 0xFF;
-        int max1 = track_num_val & 0xFF;
-        int min2 = track_num_val >> 24;
-        int max2 = (track_num_val >> 16) & 0xFF;
+    if (instance->track_num != 0) {
+        int min1 = (instance->track_num & 0xFF00) >> 8; // dumb but matches ps2
+        int max1 = instance->track_num & 0xFF;
+        int min2 = instance->track_num >> 24;
+        int max2 = (instance->track_num >> 16) & 0xFF;
         int tracknum = TheRaceParameters.TrackNumber % 100;
         if (tracknum < min1 || tracknum > max1) {
             if (tracknum < min2 || tracknum > max2) {
@@ -52,9 +51,10 @@ CWorldAnimEntityTree *CAnimWorldScene::InstantiateAnimTree(WorldAnimInstance *in
         }
     }
 
-    WorldAnimEntityTreeInfo *treeinfo = TheWorldAnimInstanceDirectory.GetAnimTreeInfo(instance->anim_tree_name_hash);
+    uint32 tree_name_hash = instance->anim_tree_name_hash;
     bMatrix4 *instance_mat = &instance->instance_matrix;
-    if (treeinfo == nullptr) {
+    WorldAnimEntityTreeInfo *treeinfo = TheWorldAnimInstanceDirectory.GetAnimTreeInfo(tree_name_hash);
+    if (!treeinfo) {
         return nullptr;
     }
 
@@ -80,9 +80,8 @@ CWorldAnimEntityTree *CAnimWorldScene::InstantiateAnimTree(WorldAnimInstance *in
     }
 
     CWorldAnimEntityTree *new_tree = new ("CWorldAnimEntityTree") CWorldAnimEntityTree();
-    uint32 tree_name_hash = treeinfo->tree_name_hash;
+    new_tree->tree_name_hash = treeinfo->tree_name_hash;
     new_tree->mInstanceData = instance;
-    new_tree->tree_name_hash = tree_name_hash;
     new_tree->mControlScenarioType = eCST_ERROR;
 
     int num_entities = treeinfo->loaded_world_anim_entity_chunks.CountElements();
@@ -153,7 +152,7 @@ CWorldAnimEntityTree *CAnimWorldScene::InstantiateAnimTree(WorldAnimInstance *in
     new_tree->root_entity = root_entity;
     mInstancedAnimTreeList.AddTail(new_tree);
 
-    if (arr_of_ptrs != nullptr) {
+    if (arr_of_ptrs) {
         delete[] arr_of_ptrs;
     }
 
@@ -172,18 +171,18 @@ void CAnimWorldScene::UpdateTime(float time_step) {
 }
 
 void ControlWorldAnim(unsigned int fAnimTreeNameHash, float fTimeSet, bool fAnimPause, bool fAnimHide) {
-    if (TheAnimPlayer.GetWorldAnimScene() != nullptr) {
-        CWorldAnimEntityTree *animTree = TheAnimPlayer.GetWorldAnimScene()->GetAnimTreeFromHash(fAnimTreeNameHash);
-        if (animTree != nullptr) {
+    if (TheAnimPlayer.GetWorldAnimScene()) {
+        CWorldAnimEntityTree *tree = TheAnimPlayer.GetWorldAnimScene()->GetAnimTreeFromHash(fAnimTreeNameHash);
+        if (tree) {
             if (fTimeSet >= 0.0f) {
-                animTree->SetTime(fTimeSet);
+                tree->SetTime(fTimeSet);
             }
             if (fAnimHide) {
-                animTree->Stop();
+                tree->Stop();
             } else if (fAnimPause) {
-                animTree->Pause();
+                tree->Pause();
             } else {
-                animTree->Play();
+                tree->Play();
             }
         }
     }
@@ -193,11 +192,11 @@ void StartWorldAnimations() {
     if (!DisableWorldAnimations && !AnimCfg_DisableWorldAnimations) {
         TheWorldAnimInstanceDirectory.Init();
         CAnimWorldScene *pscene = TheAnimPlayer.GetWorldAnimScene();
-        if (pscene == nullptr) {
+        if (!pscene) {
             TheAnimPlayer.InitWorldAnimScene();
         }
         pscene = TheAnimPlayer.GetWorldAnimScene();
-        if (pscene != nullptr) {
+        if (pscene) {
             bPList<WorldAnimInstance> &directory_list = TheWorldAnimInstanceDirectory.GetInstanceList();
             bPNode *node = directory_list.GetHead();
             while (node != directory_list.EndOfList()) {

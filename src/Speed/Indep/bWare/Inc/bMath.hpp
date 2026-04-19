@@ -974,6 +974,9 @@ void bMulMatrix(bVector3 *dest, const bMatrix4 *a, const bVector3 *b);
 bMatrix4 *bTransposeMatrix(bMatrix4 *dest, const bMatrix4 *m);
 void bInvertMatrix(bMatrix4 *dest, const bMatrix4 *src);
 
+void bConvertToBond(bMatrix4 &dest, const bMatrix4 &m);
+void bConvertFromBond(bMatrix4 &dest, const bMatrix4 &m);
+
 struct bQuaternion {
     // total size: 0x10
     float x; // offset 0x0, size 0x4

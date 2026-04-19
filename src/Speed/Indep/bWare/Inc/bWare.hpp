@@ -46,7 +46,9 @@ void bOverlappedMemCpy(void *dest, const void *src, unsigned int numbytes);
 }
 
 inline void *operator new(size_t size, const char *file, int line) {
-#if MILESTONE_OPT
+#ifdef EA_BUILD_A124
+    return bMalloc(size, 0);
+#elif MILESTONE_OPT
     return bWareMalloc(size, file, line, 0);
 #else
     return new char[size];
@@ -85,19 +87,27 @@ void bInitSharedStringPool(int size);
 void bCloseSharedStringPool();
 
 inline void bPlatEndianSwap(int *value) {
+#ifndef EA_BUILD_A124
     bEndianSwap32(value);
+#endif
 }
 
 inline void bPlatEndianSwap(unsigned int *value) {
+#ifndef EA_BUILD_A124
     bEndianSwap32(value);
+#endif
 }
 
 inline void bPlatEndianSwap(short *value) {
+#ifndef EA_BUILD_A124
     bEndianSwap16(value);
+#endif
 }
 
 inline void bPlatEndianSwap(unsigned short *value) {
+#ifndef EA_BUILD_A124
     bEndianSwap16(value);
+#endif
 }
 
 inline void bPlatEndianSwap(unsigned char *value) {}
@@ -105,7 +115,9 @@ inline void bPlatEndianSwap(unsigned char *value) {}
 inline void bPlatEndianSwap(signed char *value) {}
 
 inline void bPlatEndianSwap(float *value) {
+#ifndef EA_BUILD_A124
     bEndianSwap32(value);
+#endif
 }
 
 // TODO are the endian swap functions in this file?

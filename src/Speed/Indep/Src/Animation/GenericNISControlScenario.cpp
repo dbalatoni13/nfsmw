@@ -15,11 +15,11 @@ void GenericNISControlScenario::HandleEventMessage(CWorldAnimEntityTree *entity_
     }
 
     GenericNISControlScenarioInfo *gcsi = static_cast<GenericNISControlScenarioInfo *>(data);
-    bool set_to_pos_immediately = __builtin_fabs(gcsi->len) < 0.001;
+    bool set_to_pos_immediately = fabs(gcsi->len) < 0.001;
     int open;
-    if (__builtin_fabs(gcsi->pos - 1.0f) >= 0.001) {
+    if (fabs(gcsi->pos - 1.0f) >= 0.001) {
         open = 0;
-        if (__builtin_fabs(gcsi->pos) >= 0.001) {
+        if (fabs(gcsi->pos) >= 0.001) {
             open = -1;
         }
     } else {
@@ -32,7 +32,7 @@ void GenericNISControlScenario::HandleEventMessage(CWorldAnimEntityTree *entity_
         CWorldAnimEntity *entity = reinterpret_cast<CWorldAnimEntity *>(node->GetObject());
         if (gcsi->entity_hash == entity->GetInstanceNameHash()) {
             CWorldAnimCtrl *anim_ctrl = entity->GetAnimCtrl();
-            if (anim_ctrl != nullptr) {
+            if (anim_ctrl) {
                 if (set_to_pos_immediately) {
                     if (open == 1) {
                         anim_ctrl->JumpToEndForTrigger();

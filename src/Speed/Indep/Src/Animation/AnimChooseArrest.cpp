@@ -20,14 +20,14 @@
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 float g_TriggerMomentNISTime = 0;
-bool Tweak_TriggerMomentAlways = 0;
-
-int lbl_80415678[2] = { 0, 0x3DA3D70A };
+bool Tweak_TriggerMomentAlways = false;
+bool Tweak_TriggerMomentPrints = false;
+float world_anim_advance_time = 8.0f / 100.0f;
 
 void ChooseArrestAnimation(int *cameraTrack, char *sceneName, int strLen) {
+    int heatLevel = 0;
     IVehicle *playerVehicle = IVehicle::First(VEHICLE_PLAYERS);
-    int heatLevel;
-    heatLevel = 0;
+
     if (playerVehicle) {
         IPerpetrator *player;
         if (playerVehicle->QueryInterface(&player)) {
@@ -35,117 +35,118 @@ void ChooseArrestAnimation(int *cameraTrack, char *sceneName, int strLen) {
         }
     }
 
-    float fVar = bRandom(0.99f);
-    int randPick = static_cast<int>(fVar * 8.0f);
+    int randPick = static_cast<int>(bRandom(0.99f) * 8.0f);
+    int numTracks; // unused
 
     switch (heatLevel) {
-    case 0:
-    case 1:
-        switch (randPick) {
-        case 0:
-            bStrNCpy(sceneName, "ArrestM01", strLen);
-            break;
-        case 1:
-            bStrNCpy(sceneName, "ArrestM16", strLen);
-            break;
-        case 2:
-            bStrNCpy(sceneName, "ArrestF02", strLen);
-            break;
-        case 3:
-            bStrNCpy(sceneName, "ArrestF18", strLen);
-            break;
-        case 4:
-            bStrNCpy(sceneName, "ArrestM01b", strLen);
-            break;
-        case 5:
-            bStrNCpy(sceneName, "ArrestM16b", strLen);
-            break;
-        case 6:
-            bStrNCpy(sceneName, "ArrestF02b", strLen);
-            break;
-        default:
-            bStrNCpy(sceneName, "ArrestF18b", strLen);
-            break;
-        }
-        goto done;
-    case 2:
-        switch (randPick) {
         case 0:
         case 1:
-            bStrNCpy(sceneName, "ArrestM04", strLen);
+            switch (randPick) {
+                case 0:
+                    bStrNCpy(sceneName, "ArrestM01", strLen);
+                    break;
+                case 1:
+                    bStrNCpy(sceneName, "ArrestM16", strLen);
+                    break;
+                case 2:
+                    bStrNCpy(sceneName, "ArrestF02", strLen);
+                    break;
+                case 3:
+                    bStrNCpy(sceneName, "ArrestF18", strLen);
+                    break;
+                case 4:
+                    bStrNCpy(sceneName, "ArrestM01b", strLen);
+                    break;
+                case 5:
+                    bStrNCpy(sceneName, "ArrestM16b", strLen);
+                    break;
+                case 6:
+                    bStrNCpy(sceneName, "ArrestF02b", strLen);
+                    break;
+                default:
+                    bStrNCpy(sceneName, "ArrestF18b", strLen);
+                    break;
+            }
             break;
         case 2:
+            switch (randPick) {
+                case 0:
+                case 1:
+                    bStrNCpy(sceneName, "ArrestM04", strLen);
+                    break;
+                case 2:
+                case 3:
+                    bStrNCpy(sceneName, "ArrestF23", strLen);
+                    break;
+                case 4:
+                case 5:
+                    bStrNCpy(sceneName, "ArrestM04b", strLen);
+                    break;
+                case 6:
+                default:
+                    bStrNCpy(sceneName, "ArrestF23b", strLen);
+                    break;
+            }
+#ifdef FIX_BUGS
+            // looks like they actually forgot breaks here.
+            break;
+#endif
         case 3:
-            bStrNCpy(sceneName, "ArrestF23", strLen);
+            switch (randPick) {
+                case 0:
+                    bStrNCpy(sceneName, "ArrestM07", strLen);
+                    break;
+                case 1:
+                    bStrNCpy(sceneName, "ArrestM14", strLen);
+                    break;
+                case 2:
+                case 3:
+                    bStrNCpy(sceneName, "ArrestF14", strLen);
+                    break;
+                case 4:
+                    bStrNCpy(sceneName, "ArrestM07b", strLen);
+                    break;
+                case 5:
+                    bStrNCpy(sceneName, "ArrestM14b", strLen);
+                    break;
+                case 6:
+                default:
+                    bStrNCpy(sceneName, "ArrestF14b", strLen);
+                    break;
+            }
+#ifdef FIX_BUGS
+            // whoops
             break;
-        case 4:
-        case 5:
-            bStrNCpy(sceneName, "ArrestM04b", strLen);
-            break;
-        case 6:
+#endif
         default:
-            bStrNCpy(sceneName, "ArrestF23b", strLen);
-            break;
-        }
-        break;
-    case 3:
-        break;
-    default:
-        goto third_section;
+            switch (randPick) {
+                case 0:
+                    bStrNCpy(sceneName, "ArrestM06", strLen);
+                    break;
+                case 1:
+                    bStrNCpy(sceneName, "ArrestM19", strLen);
+                    break;
+                case 2:
+                    bStrNCpy(sceneName, "ArrestF06", strLen);
+                    break;
+                case 3:
+                    bStrNCpy(sceneName, "ArrestF07", strLen);
+                    break;
+                case 4:
+                    bStrNCpy(sceneName, "ArrestM06b", strLen);
+                    break;
+                case 5:
+                    bStrNCpy(sceneName, "ArrestM19b", strLen);
+                    break;
+                case 6:
+                    bStrNCpy(sceneName, "ArrestF06b", strLen);
+                    break;
+                default:
+                    bStrNCpy(sceneName, "ArrestF07b", strLen);
+                    break;
+            }
     }
 
-    switch (randPick) {
-    case 0:
-        bStrNCpy(sceneName, "ArrestM07", strLen);
-        break;
-    case 1:
-        bStrNCpy(sceneName, "ArrestM14", strLen);
-        break;
-    case 2:
-    case 3:
-        bStrNCpy(sceneName, "ArrestF14", strLen);
-        break;
-    case 4:
-        bStrNCpy(sceneName, "ArrestM07b", strLen);
-        break;
-    case 5:
-        bStrNCpy(sceneName, "ArrestM14b", strLen);
-        break;
-    case 6:
-    default:
-        bStrNCpy(sceneName, "ArrestF14b", strLen);
-        break;
-    }
-
-third_section:
-    switch (randPick) {
-    case 0:
-        bStrNCpy(sceneName, "ArrestM06", strLen);
-        break;
-    case 1:
-        bStrNCpy(sceneName, "ArrestM19", strLen);
-        break;
-    case 2:
-        bStrNCpy(sceneName, "ArrestF06", strLen);
-        break;
-    case 3:
-        bStrNCpy(sceneName, "ArrestF07", strLen);
-        break;
-    case 4:
-        bStrNCpy(sceneName, "ArrestM06b", strLen);
-        break;
-    case 5:
-        bStrNCpy(sceneName, "ArrestM19b", strLen);
-        break;
-    case 6:
-        bStrNCpy(sceneName, "ArrestF06b", strLen);
-        break;
-    default:
-        bStrNCpy(sceneName, "ArrestF07b", strLen);
-        break;
-    }
-
-done:
     TheICEManager.GetNumSceneCameraTrack(bStringHash(sceneName));
     *cameraTrack = 0;
 }
@@ -153,6 +154,7 @@ done:
 bool ChooseArrestLocation(UMath::Vector3 &position, float &angle) {
     IVehicle *playerVehicle = IVehicle::First(VEHICLE_PLAYERS);
     ISimable *simable = playerVehicle->GetSimable();
+
     if (simable) {
         UMath::Matrix4 xform;
         simable->GetTransform(xform);
@@ -179,14 +181,14 @@ bool ChooseArrestLocation(UMath::Vector3 &position, float &angle) {
 
         position = centreOfRoad;
         return true;
-    } else {
-        return false;
     }
+    return false;
 }
 
 // TODO where to put this?
 // total size: 0x58
-struct NISListenerActivity : public Sim::Activity, public INISLISTENER {
+class NISListenerActivity : public Sim::Activity, public INISLISTENER {
+  public:
     static IActivity *Construct(Sim::Param params) {
         return new NISListenerActivity();
     }
@@ -204,8 +206,7 @@ struct NISListenerActivity : public Sim::Activity, public INISLISTENER {
     Hermes::HHANDLER mMessageBusted; // offset 0x54, size 0x4
 };
 
-static UTL::COM::Factory<Sim::Param, Sim::IActivity, UCrc32>::Prototype
-    _NISListenerActivity(UCrc32("NISActivity"), NISListenerActivity::Construct);
+static UTL::COM::Factory<Sim::Param, Sim::IActivity, UCrc32>::Prototype _NISListenerActivity(UCrc32("NISActivity"), NISListenerActivity::Construct);
 
 NISListenerActivity::NISListenerActivity() : Sim::Activity(1), INISLISTENER(this) {
     // TODO magic

@@ -1,28 +1,23 @@
 #include "AnimScene.hpp"
 #include "AnimDirectory.hpp"
 #include "AnimEntity_BasicCharacter.hpp"
-#include "AnimEntityCreationContext.hpp"
 #include "AnimLocator.hpp"
 #include "AnimPlayer.hpp"
+#include "Speed/Indep/Src/Animation/AnimBank.hpp"
 #include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
 #include "Speed/Indep/Src/Interfaces/Simables/INISCarControl.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IINput.h"
+#include "Speed/Indep/Src/Misc/SpeedChunks.hpp"
 #include "Speed/Indep/Src/World/SpaceNode.hpp"
 #include "Speed/Indep/Src/World/VisibleSection.hpp"
 #include "Speed/Indep/Src/World/WCollisionMgr.h"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 
-extern AnimDirectory *TheAnimDirectory;
-// mIsRaceStart is CAnimEntityCreationContext::mIsRaceStart
-unsigned int skel_ROOT_hash;
+uint32 skel_ROOT_hash = bStringHash("ROOT");
 extern int AnimCfg_DebugOutput;
 extern float NISCopCarDoorOpenAmount[4];
-
-void bConvertToBond(bMatrix4 &dest, const bMatrix4 &v);
-CAnimSkeleton *GetSkeletonFromList(unsigned int namehash);
-void DumpAnimBanks();
 
 bTList<CAnimSceneData> g_loadedAnimSceneDataList;
 CarAnimationState gCarAnimationStates[16];
@@ -75,24 +70,21 @@ void StartCopDoorAnim(int door, float startPos, float AnimLength, float endPos) 
 }
 
 void UpdateCopDoorPositions(float time) {
-    int door = 0;
-    do {
+    for (int door = 0; door < 4; door++) {
         float animLength = gCopCarDoorAnim_AnimLength[door];
         if (animLength != 0.0f) {
-            float currentTime = gCopCarDoorAnim_CurrentTime[door] + time;
-            gCopCarDoorAnim_CurrentTime[door] = currentTime;
-            if (currentTime <= 0.0f) {
+            gCopCarDoorAnim_CurrentTime[door] = gCopCarDoorAnim_CurrentTime[door] + time;
+            if (gCopCarDoorAnim_CurrentTime[door] <= 0.0f) {
                 NISCopCarDoorOpenAmount[door] = gCopCarDoorAnim_StartPos[door];
-            } else if (currentTime < animLength) {
-                float ratio = currentTime / animLength;
-                NISCopCarDoorOpenAmount[door] = ratio * gCopCarDoorAnim_Delta[door] + gCopCarDoorAnim_StartPos[door];
+            } else if (gCopCarDoorAnim_CurrentTime[door] < animLength) {
+                float ratio = gCopCarDoorAnim_CurrentTime[door] / animLength;
+                NISCopCarDoorOpenAmount[door] = gCopCarDoorAnim_StartPos[door] + ratio * gCopCarDoorAnim_Delta[door];
             } else {
                 gCopCarDoorAnim_AnimLength[door] = 0.0f;
                 NISCopCarDoorOpenAmount[door] = gCopCarDoorAnim_StartPos[door] + gCopCarDoorAnim_Delta[door];
             }
         }
-        door = door + 1;
-    } while (door < 4);
+    }
 }
 
 CAnimSceneData::CAnimSceneData(bChunk *chunk)
@@ -101,10 +93,10 @@ CAnimSceneData::CAnimSceneData(bChunk *chunk)
 
 CAnimSceneData::~CAnimSceneData() {}
 
-CAnimSceneData *CAnimSceneData::FindAnimSceneData(unsigned int scene_name_hash) {
+CAnimSceneData *CAnimSceneData::FindAnimSceneData(uint32 anim_id) {
     CAnimSceneData *scene_data = static_cast<CAnimSceneData *>(g_loadedAnimSceneDataList.GetHead());
     while (scene_data != g_loadedAnimSceneDataList.EndOfList()) {
-        if (scene_name_hash == scene_data->GetSceneInfo()->mSceneNameHash) {
+        if (anim_id == scene_data->GetSceneInfo()->mSceneNameHash) {
             return scene_data;
         }
         scene_data = scene_data->GetNext();
@@ -113,18 +105,18 @@ CAnimSceneData *CAnimSceneData::FindAnimSceneData(unsigned int scene_name_hash) 
 }
 
 void CAnimSceneData::EndianSwapHeaderData() {
-    bEndianSwap32(mNisScene);
-    bEndianSwap32(&mNisScene->SceneType);
-    bEndianSwap32(&mNisScene->HaveLayout);
-    bEndianSwap32(&mNisScene->HaveCarAnimation);
-    bEndianSwap32(&mNisScene->NumberOfCars);
-    bEndianSwap32(&mNisScene->StartFrame);
-    bEndianSwap32(&mNisScene->VanishFrame);
+    bPlatEndianSwap(reinterpret_cast<int32 *>(mNisScene));
+    bPlatEndianSwap(&mNisScene->SceneType);
+    bPlatEndianSwap(&mNisScene->HaveLayout);
+    bPlatEndianSwap(&mNisScene->HaveCarAnimation);
+    bPlatEndianSwap(&mNisScene->NumberOfCars);
+    bPlatEndianSwap(&mNisScene->StartFrame);
+    bPlatEndianSwap(&mNisScene->VanishFrame);
 }
 
 void CAnimSceneData::InitHeaderData(void *data, int size) {
     mNisScene = reinterpret_cast<NisScene *>(data);
-    mNisScene->Description = reinterpret_cast<char *>(data) + 0x40;
+    mNisScene->Description = reinterpret_cast<char *>(&mNisScene[1]); // wtf?
     EndianSwapHeaderData();
 }
 
@@ -136,38 +128,38 @@ void CAnimSceneData::AddEntityData(void *data, int size) {
 }
 
 CAnimSceneData *CreateAnimSceneData(bChunk *nested_chunk, bChunk *sub_chunk) {
-    CAnimSceneData *scene_data = new CAnimSceneData(nested_chunk);
+    CAnimSceneData *anim_scene_data = new CAnimSceneData(nested_chunk);
 
-    if (scene_data != nullptr) {
-        scene_data->InitHeaderData(sub_chunk + 1, sub_chunk->Size);
-        g_loadedAnimSceneDataList.AddTail(scene_data);
-        return scene_data;
+    if (anim_scene_data) {
+        anim_scene_data->InitHeaderData(sub_chunk + 1, sub_chunk->Size);
+        g_loadedAnimSceneDataList.AddTail(anim_scene_data);
+        return anim_scene_data;
     }
     return nullptr;
 }
 
 int LoaderAnimSceneData(bChunk *chunk) {
-    if (chunk->ID == 0x80037020) {
-        bChunk *sub_chunk = chunk->GetFirstChunk();
-        bChunk *last_chunk = chunk->GetLastChunk();
-        CAnimSceneData *scene_data = nullptr;
+    if (chunk->GetID() == BCHUNK_ANIM_SCENE) {
+        bChunk *sub = chunk->GetFirstChunk();
+        bChunk *last = chunk->GetLastChunk();
+        CAnimSceneData *anim_scene_data = nullptr;
 
-        while (sub_chunk != last_chunk) {
-            unsigned int chunk_id = sub_chunk->ID;
+        while (sub != last) {
+            unsigned int chunk_id = sub->ID;
 
             switch (chunk_id) {
-                case 0x37030:
-                    scene_data = CreateAnimSceneData(chunk, sub_chunk);
+                case BCHUNK_ANIM_SCENE_DATA:
+                    anim_scene_data = CreateAnimSceneData(chunk, sub);
                     break;
-                case 0x37040:
-                    if (scene_data != nullptr) {
-                        char *data = sub_chunk->GetAlignedData(16);
-                        scene_data->AddEntityData(data, sub_chunk->Size - (data - sub_chunk->GetData()));
+                case BCHUNK_ANIM_SCENE_ENTITY_DATA:
+                    if (anim_scene_data) {
+                        char *data = sub->GetAlignedData(16);
+                        anim_scene_data->AddEntityData(data, sub->Size - (data - sub->GetData()));
                     }
                     break;
             }
 
-            sub_chunk = sub_chunk->GetNext();
+            sub = sub->GetNext();
         }
         return 1;
     }
@@ -176,16 +168,16 @@ int LoaderAnimSceneData(bChunk *chunk) {
 }
 
 int UnloaderAnimSceneData(bChunk *chunk) {
-    if (chunk->ID == 0x80037020) {
-        CAnimSceneData *scene_data = static_cast<CAnimSceneData *>(g_loadedAnimSceneDataList.GetHead());
-        while (scene_data != g_loadedAnimSceneDataList.EndOfList()) {
-            CAnimSceneData *next = scene_data->GetNext();
-            if (scene_data->GetChunk() == chunk) {
-                scene_data->Remove();
-                delete scene_data;
+    if (chunk->GetID() == BCHUNK_ANIM_SCENE) {
+        CAnimSceneData *anim_scene_data = g_loadedAnimSceneDataList.GetHead();
+        while (anim_scene_data != g_loadedAnimSceneDataList.EndOfList()) {
+            CAnimSceneData *next_anim_scene_data = anim_scene_data->GetNext();
+            if (anim_scene_data->GetChunk() == chunk) {
+                anim_scene_data->Remove();
+                delete anim_scene_data;
                 break;
             }
-            scene_data = next;
+            anim_scene_data = next_anim_scene_data;
         }
         return 1;
     }
@@ -297,7 +289,7 @@ bool CAnimScene::IsPaused() {
 bool CAnimScene::SetPropertyEnabled(eAnimProperty property_id, bool enable) {
     CAnimProperty *anim_property = FindProperty(property_id);
 
-    if (anim_property != nullptr) {
+    if (anim_property) {
         anim_property->SetEnabled(enable);
         return true;
     }
@@ -309,7 +301,7 @@ bool CAnimScene::SetPropertyEnabled(eAnimProperty property_id, bool enable) {
 bool CAnimScene::IsPropertyEnabled(eAnimProperty property_id) {
     CAnimProperty *anim_property = FindProperty(property_id);
 
-    if (anim_property == nullptr) {
+    if (!anim_property) {
         return false;
     }
     return anim_property->IsEnabled();
@@ -369,6 +361,15 @@ void CAnimScene::UpdateTime(float time_step) {
     if (bEnableNisTextDisplay) {
         char scene_name[16];
         GetSceneName(scene_name);
+
+#ifdef EA_BUILD_A124
+#if 0 // TODO: ScreenPrintf comes from zFe2
+        ScreenPrintf(-300, -0xb9, "NIS Time %3.1f sec - Frame %3.1f");
+        ScreenPrintf(-300, -0xa5, "NIS Scene: %s");
+        ScreenPrintf(-300, -0x91, "NIS CameraTrack: %d", GetCameraTrackNumber());
+        ScreenPrintf(-300, -0x7d, "NIS Description: %s", GetAnimDescription());
+#endif
+#endif
     }
 
     bPNode *node = mInstancedAnimEntityList.GetTail();
@@ -448,7 +449,10 @@ void CAnimScene::ChangePlayStatus(ePlayStatus new_status) {
                 case Paused:
                     return;
                 case Stopped:
-                    goto do_stop;
+                    mPlayStatus = new_status;
+                    UnBindToGame();
+                    ResetTime();
+                    return;
                 case Playing:
                     break;
                 default:
@@ -465,7 +469,6 @@ void CAnimScene::ChangePlayStatus(ePlayStatus new_status) {
             if (new_status != Stopped) {
                 return;
             }
-        do_stop:
             mPlayStatus = new_status;
             UnBindToGame();
             ResetTime();
@@ -527,7 +530,8 @@ bool CAnimScene::Purge() {
     ClearCarAnimationControllers();
     DeleteSpaceNode(mSpaceNode);
     CloseCharacterEffects();
-    if (mAnimSceneData->GetSceneInfo()->SeeulatorOverlayName[0] != '\0') {
+    char *overlay_name = mAnimSceneData->GetSceneInfo()->SeeulatorOverlayName;
+    if (overlay_name[0] != '\0') {
         TheVisibleSectionManager.UnactivateOverlay();
     }
     return true;
@@ -543,53 +547,44 @@ void CAnimScene::ClearCarAnimStates() {
 
 void CAnimScene::InitCarAnimStatesFromStartingPositions() {
     if (mAnimCandidateType != 4) {
-        int i = 0;
-        do {
+        for (int i = 0; i < 8; i++) {
             char channelName[32];
             bSPrintf(channelName, "car%d", i + 1);
             IVehicle *NISCar = INIS::Get()->GetCar(UCrc32(channelName));
-            if (NISCar != nullptr) {
+            if (NISCar) {
                 gCarAnimationStates[i].CarIndex = i;
                 gCarAnimationStates[i].mIVehicle = NISCar;
                 NISCar->Deactivate();
             }
-            i = i + 1;
-        } while (i < 8);
+        }
     }
 }
 
 void CAnimScene::InitCarAnimStatesFromNIS() {
-    {
-        int i = 0;
-        do {
-            char channelName[32];
-            bSPrintf(channelName, "car%d", i + 1);
-            IVehicle *NISCar = INIS::Get()->GetCar(UCrc32(channelName));
-            if (NISCar != nullptr) {
-                gCarAnimationStates[i].CarIndex = i;
-                gCarAnimationStates[i].mIVehicle = NISCar;
-                NISCar->Deactivate();
-            }
-            i = i + 1;
-        } while (i < 8);
+    for (int i = 0; i < 8; i++) {
+        char channelName[32];
+        bSPrintf(channelName, "car%d", i + 1);
+        IVehicle *NISCar = INIS::Get()->GetCar(UCrc32(channelName));
+        if (NISCar) {
+            gCarAnimationStates[i].CarIndex = i;
+            gCarAnimationStates[i].mIVehicle = NISCar;
+            NISCar->Deactivate();
+        }
     }
 
     IVehicle *copCar = INIS::Get()->GetCar(UCrc32("cop1"));
-    if (copCar != nullptr) {
+    if (copCar) {
         gCarAnimationStates[8].CarIndex = 8;
         gCarAnimationStates[8].mIVehicle = copCar;
     }
 
-    {
-        for (int i = 1; i < 8; i++) {
-            char channelName[24];
-            bSPrintf(channelName, "cop%d", i + 1);
-            IVehicle *copVehicle = INIS::Get()->GetCar(UCrc32(channelName));
-            int carIndex = i + 8;
-            if (copVehicle != nullptr) {
-                gCarAnimationStates[carIndex].CarIndex = carIndex;
-                gCarAnimationStates[carIndex].mIVehicle = copVehicle;
-            }
+    for (int i = 1; i < 8; i++) {
+        char channelName[24];
+        bSPrintf(channelName, "cop%d", i + 1);
+        IVehicle *copVehicle = INIS::Get()->GetCar(UCrc32(channelName));
+        if (copVehicle) {
+            gCarAnimationStates[i + 8].CarIndex = i + 8;
+            gCarAnimationStates[i + 8].mIVehicle = copVehicle;
         }
     }
 }
@@ -614,78 +609,73 @@ void CAnimScene::CreateCarAnimationControllers() {
     }
 
     CAnimSkeleton *skel = GetSkeletonFromList(skel_ROOT_hash);
-    if (skel == nullptr) {
+    if (!skel) {
         return;
     }
 
-    {
-        int i = 0;
-        do {
-            if (gCarAnimationStates[i].CarIndex != -1) {
-                char nameToHash[34];
-                char *baseCarName = Car_Name[i];
-                NisScene *scene = mAnimSceneData->GetSceneInfo();
-                bSPrintf(nameToHash, "%s%s", scene->mSceneName, baseCarName);
-                unsigned int name_hash = bStringHash(nameToHash);
-                scene = mAnimSceneData->GetSceneInfo();
-                bSPrintf(nameToHash, "%s%s_t", scene->mSceneName, baseCarName);
-                unsigned int name_hash_t = bStringHash(nameToHash);
-                scene = mAnimSceneData->GetSceneInfo();
-                bSPrintf(nameToHash, "%s%s_q", scene->mSceneName, baseCarName);
-                unsigned int name_hash_q = bStringHash(nameToHash);
+    for (int i = 0; i < 16; i++) {
+        if (gCarAnimationStates[i].CarIndex != -1) {
+            char nameToHash[34];
+            char *baseCarName = Car_Name[i];
+            NisScene *scene = mAnimSceneData->GetSceneInfo();
+            bSPrintf(nameToHash, "%s%s", scene->mSceneName, baseCarName);
+            unsigned int name_hash = bStringHash(nameToHash);
+            scene = mAnimSceneData->GetSceneInfo();
+            bSPrintf(nameToHash, "%s%s_t", scene->mSceneName, baseCarName);
+            unsigned int name_hash_t = bStringHash(nameToHash);
+            scene = mAnimSceneData->GetSceneInfo();
+            bSPrintf(nameToHash, "%s%s_q", scene->mSceneName, baseCarName);
+            unsigned int name_hash_q = bStringHash(nameToHash);
 
-                if (name_hash != 0 && name_hash_t != 0 && name_hash_q != 0) {
-                    CAnimCtrl *new_anim_ctrl = new ("Car CAnimCtrl") CAnimCtrl();
-                    new_anim_ctrl->SetNameHash(name_hash);
-                    new_anim_ctrl->SetTimeScale(0.5f);
-                    new_anim_ctrl->SetFlags(new_anim_ctrl->GetFlags() | 8);
-                    new_anim_ctrl->GetAnimPart()->Init(skel);
-                    new_anim_ctrl->CreateFnAnimFromNamehash(name_hash_t, 0);
-                    new_anim_ctrl->CreateFnAnimFromNamehash(name_hash_q, 1);
-                    if (new_anim_ctrl->GetAllocated() != 0) {
-                        gCarAnimationStates[i].AnimCtrl = new_anim_ctrl;
-                        gCarAnimationStates[i].mIVehicle->Activate();
-                    } else {
-                        if (AnimCfg_DebugOutput != 0) {
-                            DumpAnimBanks();
-                        }
-                        new_anim_ctrl->Purge();
-                        new_anim_ctrl->Cleanup();
-                        delete new_anim_ctrl;
-                        gCarAnimationStates[i].AnimCtrl = nullptr;
+            if (name_hash != 0 && name_hash_t != 0 && name_hash_q != 0) {
+                CAnimCtrl *new_anim_ctrl = new ("Car CAnimCtrl") CAnimCtrl();
+                new_anim_ctrl->SetNameHash(name_hash);
+                new_anim_ctrl->SetTimeScale(0.5f);
+                new_anim_ctrl->SetFlags(new_anim_ctrl->GetFlags() | 8);
+                new_anim_ctrl->GetAnimPart()->Init(skel);
+                new_anim_ctrl->CreateFnAnimFromNamehash(name_hash_t, 0);
+                new_anim_ctrl->CreateFnAnimFromNamehash(name_hash_q, 1);
+                if (new_anim_ctrl->GetAllocated() != 0) {
+                    gCarAnimationStates[i].AnimCtrl = new_anim_ctrl;
+                    gCarAnimationStates[i].mIVehicle->Activate();
+                } else {
+                    if (AnimCfg_DebugOutput != 0) {
+                        DumpAnimBanks();
                     }
+                    new_anim_ctrl->Purge();
+                    new_anim_ctrl->Cleanup();
+                    delete new_anim_ctrl;
+                    gCarAnimationStates[i].AnimCtrl = nullptr;
                 }
             }
-            i = i + 1;
-        } while (i < 16);
+        }
     }
 
     AddProperty(eAnimProp_ControlRaceCars, true);
 }
 
 void CAnimScene::ClearCarAnimationControllers() {
-    int i = 0;
-    do {
-        if (gCarAnimationStates[i].AnimCtrl != nullptr) {
+    for (int i = 0; i < 16; i++) {
+        if (gCarAnimationStates[i].AnimCtrl) {
             gCarAnimationStates[i].AnimCtrl->GetAnimPart()->Purge();
             gCarAnimationStates[i].AnimCtrl->Cleanup();
-            if (gCarAnimationStates[i].AnimCtrl != nullptr) {
+            if (gCarAnimationStates[i].AnimCtrl) {
                 delete gCarAnimationStates[i].AnimCtrl;
             }
             gCarAnimationStates[i].AnimCtrl = nullptr;
         }
         gCarAnimationStates[i].HaveLastCarPosition = 0;
         gCarAnimationStates[i].CarIndex = -1;
-        i = i + 1;
-    } while (i < 16);
+    }
 }
 
 void CAnimScene::AnimatedCars_SetMainAndWheels(int current_car, CAnimCtrl *main_anim_ctrl, float time_step) {
-    bMatrix4 animated_car_matrix(reinterpret_cast<bMatrix4 *>(main_anim_ctrl->GetAnimPart()->GetGlobalMatrices())[1]);
+    bMatrix4 *animated_car_global_matrices = reinterpret_cast<bMatrix4 *>(main_anim_ctrl->GetAnimPart()->GetGlobalMatrices());
+    bMatrix4 animated_car_matrix(animated_car_global_matrices[1]);
     bMatrix4 AI_Space_Matrix;
     bMulMatrix(&animated_car_matrix, &mSceneRotationMatrix, &animated_car_matrix);
     bMulMatrix(&animated_car_matrix, &mSceneTranslationMatrix, &animated_car_matrix);
-    bConvertToBond(animated_car_matrix, animated_car_matrix);
+    eUnSwizzleWorldMatrix(animated_car_matrix, animated_car_matrix);
 
     float ground_elevation = 0.0f;
     bool point_valid =
@@ -708,35 +698,31 @@ void CAnimScene::AnimatedCars_SetMainAndWheels(int current_car, CAnimCtrl *main_
 
 void CAnimScene::AnimatedCars_ResetToBeginning() {
     AnimatedCars_ClearLastPose();
-    int current_car = 0;
-    do {
+    for (int current_car = 0; current_car < 16; current_car++) {
         CAnimCtrl *main_anim_ctrl = gCarAnimationStates[current_car].AnimCtrl;
-        if (main_anim_ctrl != nullptr) {
+        if (main_anim_ctrl) {
             main_anim_ctrl->SetEvalTime(0.0f);
         }
-        current_car = current_car + 1;
-    } while (current_car < 16);
+    }
     AnimatedCars_Update(0.0f);
 }
 
 void CAnimScene::AnimatedCars_ClearLastPose() {
-    for (int i = 0; i <= 15; i++) {
-        gCarAnimationStates[i].HaveLastCarPosition = 0;
+    for (int current_car = 0; current_car < 16; current_car++) {
+        gCarAnimationStates[current_car].HaveLastCarPosition = 0;
     }
 }
 
 void CAnimScene::AnimatedCars_SetTime(float time) {
-    int current_car = 0;
-    do {
+    for (int current_car = 0; current_car < 16; current_car++) {
         CAnimCtrl *main_anim_ctrl = gCarAnimationStates[current_car].AnimCtrl;
         gCarAnimationStates[current_car].HaveLastCarPosition = 0;
-        if (main_anim_ctrl != nullptr) {
+        if (main_anim_ctrl) {
             main_anim_ctrl->SetEvalTime(0.0f);
             main_anim_ctrl->AdvanceAnimTime(0.0f);
             main_anim_ctrl->UpdateAnimPose(true);
         }
-        current_car = current_car + 1;
-    } while (current_car < 16);
+    }
     AnimatedCars_Update(time);
 }
 
@@ -750,16 +736,14 @@ void CAnimScene::AnimatedCars_Update(float time_step) {
         return;
     }
 
-    int current_car = 0;
-    do {
+    for (int current_car = 0; current_car < 16; current_car++) {
         CAnimCtrl *main_anim_ctrl = gCarAnimationStates[current_car].AnimCtrl;
-        if (main_anim_ctrl != nullptr && gCarAnimationStates[current_car].CarIndex >= 0) {
+        if (main_anim_ctrl && gCarAnimationStates[current_car].CarIndex >= 0) {
             main_anim_ctrl->AdvanceAnimTime(time_step);
             main_anim_ctrl->UpdateAnimPose(true);
             AnimatedCars_SetMainAndWheels(current_car, main_anim_ctrl, time_step);
         }
-        current_car = current_car + 1;
-    } while (current_car < 16);
+    }
 }
 
 void CAnimScene::AnimatedCars_Bind() {
@@ -767,8 +751,7 @@ void CAnimScene::AnimatedCars_Bind() {
         return;
     }
 
-    int i = 0;
-    do {
+    for (int i = 0; i < 16; i++) {
         if (gCarAnimationStates[i].CarIndex >= 0) {
             gCarAnimationStates[i].mIVehicle->SetSpeed(0.0f);
 
@@ -786,8 +769,7 @@ void CAnimScene::AnimatedCars_Bind() {
                 pInput->SetControlBrake(1.0f);
             }
         }
-        i = i + 1;
-    } while (i < 16);
+    }
 }
 
 void CAnimScene::AnimatedCars_UnBind() {
@@ -795,8 +777,7 @@ void CAnimScene::AnimatedCars_UnBind() {
         SetPropertyEnabled(eAnimProp_ControlRaceCars, false);
     }
 
-    int i = 0;
-    do {
+    for (int i = 0; i < 16; i++) {
         int car_index = gCarAnimationStates[i].CarIndex;
         if (car_index >= 0) {
             gCarAnimationStates[i].mIVehicle->SetAnimating(false);
@@ -804,16 +785,15 @@ void CAnimScene::AnimatedCars_UnBind() {
                 gCarAnimationStates[i].mIVehicle->Deactivate();
             }
         }
-        i = i + 1;
-    } while (i < 16);
+    }
 }
 
 IAnimEntity *CAnimScene::GetAnimEntityWithModelName(const char *name) {
-    unsigned int hashID = bStringHash(name);
+    uint32 hashID = bStringHash(name);
     bPNode *node = mInstancedAnimEntityList.GetTail();
     while (node != mInstancedAnimEntityList.EndOfList()) {
         IAnimEntity *iae = reinterpret_cast<IAnimEntity *>(node->GetObject());
-        if (iae->GetWorldModel() != nullptr) {
+        if (iae->GetWorldModel()) {
             eModel *model = iae->GetWorldModel()->GetModel();
             if (model->GetNameHash() == hashID) {
                 return iae;
@@ -857,9 +837,9 @@ void CAnimScene::ClearAnimEntities() {
 }
 
 void RenderAnimSceneEffects(eView *view, int exc_flag) {
-    if (INIS::Get() != nullptr) {
+    if (INIS::Get()) {
         CAnimScene *scene = INIS::Get()->GetAnimScene();
-        if (scene != nullptr) {
+        if (scene) {
             scene->RenderEffects(view, exc_flag & 0x800);
         }
     }
