@@ -113,7 +113,7 @@ void SFX_Common::ProcessUpdate() {
         }
 
         if (m_pUves) {
-            m_pUves->SetVolume(GetDMixOutput(1, DMX_VOL));
+            m_pUves->SetVolume(GetDMixOutput(2, DMX_VOL));
             m_pUves->CommitMemberData();
         }
     }
