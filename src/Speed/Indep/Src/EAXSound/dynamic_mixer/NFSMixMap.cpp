@@ -514,7 +514,6 @@ void NFSMixMap::AllocateMixerMemory() {
 }
 
 int *NFSMixMap::GetNextInputBlock(bool bincrement) {
-    int n;
     int *pAddr;
     int *pclear;
 
@@ -524,8 +523,14 @@ int *NFSMixMap::GetNextInputBlock(bool bincrement) {
     }
 
     pclear = pAddr;
-    for (n = 0; n <= 0xF; n++) {
-        *pclear++ = 0;
+    {
+        int n;
+
+        n = 0;
+        do {
+            *pclear++ = 0;
+            n = n + 1;
+        } while (n <= 0xF);
     }
 
     return pAddr;
