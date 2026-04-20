@@ -545,6 +545,49 @@ void SoundAI::AttemptReattachPursuit() {
     }
 }
 
+void SoundAI::DealWithDeadAir() {
+    if (mPursuitState != kActive) {
+        return;
+    }
+    if (!mLeader) {
+        return;
+    }
+    if (mFocus == kPursuitFlow) {
+        return;
+    }
+
+    if (mPursuitDuration > 60.0f) {
+        mDispatch->PursuitUpdate(mLeader);
+    }
+
+    if ((WorldTimer - mT_noLOS).GetSeconds() < mTune.NoLOSCommentaryTime()) {
+        if (mPursuitDuration > 60.0f) {
+            if (IsHeadingValid() && (mPlayerOffroadID > -1) && (bRandom(1.0f) <= 0.5f)) {
+                mLeader->LocationReport();
+            } else {
+                mLeader->PursuitUpdateReply();
+            }
+        }
+        return;
+    }
+
+    if (!mHeli) {
+        mLeader->LostVisual();
+        return;
+    }
+
+    if (!mHeli->HasLOS()) {
+        mHeli->LostVisual();
+        return;
+    }
+
+    if (IsHeadingValid() && (mPlayerOffroadID > -1) && (bRandom(1.0f) <= 0.5f)) {
+        mHeli->LocationReport();
+    } else {
+        mHeli->PursuitUpdateReply();
+    }
+}
+
 EAXCop *SoundAI::GetRandomCop(int type) {
     EAXCop *spkr = 0;
     unsigned int actor_count = mActors.size();
