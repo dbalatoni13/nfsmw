@@ -368,6 +368,27 @@ int SoundAI::GetBattalionFromRoadID(int roadID) {
     return 2;
 }
 
+void SoundAI::AddNewHeli(IVehicle *heli) {
+    HSIMABLE handle = heli->GetSimable()->GetOwnerHandle();
+    EAXAirSupport *chopper = new EAXAirSupport(2, handle);
+    int focus;
+
+    mActors.Add(handle, chopper);
+    focus = mFocus;
+    mHeli = chopper;
+
+    if (focus != 1) {
+        if ((focus != 999) && (focus != 0)) {
+            chopper->BackupArrives();
+            return;
+        }
+        if (mFocus != 1) {
+            return;
+        }
+    }
+    mFlags |= HELI_INTRO_REQ;
+}
+
 int SoundAI::GetBattalionFromKey(unsigned int theKey) {
     if ((theKey == 0x38B38226) || (theKey == 0x54B10E38) || (theKey == 0x2E149EAC)) {
         return 0x20;
