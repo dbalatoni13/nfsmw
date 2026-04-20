@@ -157,22 +157,24 @@ void SoundAI::OnDetached(IAttachable *pOther) {
 }
 
 Sim::IActivity *SoundAI::Construct(Sim::Param) {
-    if ((IsSoundEnabled == 0) || (Sim::GetUserMode() == Sim::USER_SPLIT_SCREEN)) {
-        return 0;
-    }
+    Sim::IActivity *activity;
 
-    SoundAI *instance = UTL::Collections::Singleton<SoundAI>::Get();
-    if (instance) {
-        Sim::IActivity *activity = static_cast<Sim::IActivity *>(instance);
-        SoundAI::mRefCount = SoundAI::mRefCount + 1;
-        return activity;
+    if ((IsSoundEnabled != 0) && (Sim::GetUserMode() != Sim::USER_SPLIT_SCREEN)) {
+        SoundAI *instance = UTL::Collections::Singleton<SoundAI>::Get();
+        if (instance) {
+            activity = static_cast<Sim::IActivity *>(instance);
+            SoundAI::mRefCount = SoundAI::mRefCount + 1;
+        } else {
+            SoundAI *result = new SoundAI;
+            activity = 0;
+            if (result) {
+                activity = static_cast<Sim::IActivity *>(result);
+            }
+        }
+    } else {
+        activity = 0;
     }
-
-    SoundAI *result = new SoundAI;
-    if (result) {
-        return static_cast<Sim::IActivity *>(result);
-    }
-    return 0;
+    return activity;
 }
 
 IRoadBlock *SoundAI::GetRoadblock() {
@@ -207,14 +209,14 @@ bool SoundAI::IsMusicActive() {
     int i;
     char *music = reinterpret_cast<char *>(mMusicFlow);
 
-    if (!music) {
-        result = false;
-    } else {
+    if (music) {
         i = (**reinterpret_cast<int (**)(void *)>(*reinterpret_cast<int **>(music + 0xC) + 0x2C / 4))(music + *reinterpret_cast<short *>(*reinterpret_cast<int *>(music + 0xC) + 0x28));
         result = true;
         if (i == -1) {
             result = false;
         }
+    } else {
+        result = false;
     }
     return result;
 }
