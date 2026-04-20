@@ -123,6 +123,14 @@ struct Setup_VehicleReportStruct {
     int measurement;
 };
 
+struct Setup_AttmptVehStpStruct {
+    int speaker_id;
+    int pursuit_type;
+    int num_suspects;
+    int speaker_battalion;
+    int speaker_call_sign_id;
+};
+
 struct Setup_SelfStrategyStruct {
     int speaker_id;
     int code;
@@ -358,6 +366,7 @@ extern InterfaceId Setup_ReInitPursuitId;
 extern InterfaceId Setup_InitialCallForBU_MSId;
 extern InterfaceId Setup_InitialCallForBUId;
 extern InterfaceId Setup_VehicleReportId;
+extern InterfaceId Setup_AttmptVehStpId;
 extern InterfaceId Setup_SelfStrategyId;
 extern InterfaceId AnytimeEvents_LostSuspectId;
 extern InterfaceId Arrest_ArrestId;
@@ -424,6 +433,7 @@ extern FunctionHandle gSetup_ReInitPursuitHandle;
 extern FunctionHandle gSetup_InitialCallForBU_MSHandle;
 extern FunctionHandle gSetup_InitialCallForBUHandle;
 extern FunctionHandle gSetup_VehicleReportHandle;
+extern FunctionHandle gSetup_AttmptVehStpHandle;
 extern FunctionHandle gSetup_SelfStrategyHandle;
 extern FunctionHandle gAnytimeEvents_LostSuspectHandle;
 extern FunctionHandle gArrest_ArrestHandle;
@@ -491,6 +501,7 @@ extern void ScheduleSpeech_Setup_ReInitPursuit(Csis::Setup_ReInitPursuitStruct &
 extern void ScheduleSpeech_Setup_InitialCallForBU_MS(Csis::Setup_InitialCallForBU_MSStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis31Setup_InitialCallForBU_MSStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
 extern void ScheduleSpeech_Setup_InitialCallForBU(Csis::Setup_InitialCallForBUStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis28Setup_InitialCallForBUStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
 extern void ScheduleSpeech_Setup_VehicleReport(Csis::Setup_VehicleReportStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis25Setup_VehicleReportStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
+extern void ScheduleSpeech_Setup_AttmptVehStp(Csis::Setup_AttmptVehStpStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis24Setup_AttmptVehStpStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
 extern void ScheduleSpeech_Setup_SelfStrategy(Csis::Setup_SelfStrategyStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis24Setup_SelfStrategyStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
 extern void ScheduleSpeech_AnytimeEvents_LostSuspect(Csis::AnytimeEvents_LostSuspectStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis31AnytimeEvents_LostSuspectStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
 extern void ScheduleSpeech_Arrest_Arrest(Csis::Arrest_ArrestStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis19Arrest_ArrestStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
@@ -541,6 +552,9 @@ extern "C" float lbl_804074E0;
 extern "C" float lbl_804074D0;
 extern "C" float lbl_804074D4;
 extern "C" float lbl_804074D8;
+extern "C" float lbl_80407490;
+extern "C" float lbl_80407494;
+extern "C" float lbl_80407498;
 extern "C" float speed_test_28362[] asm("speed_test.28362");
 extern void *FEDatabase;
 
@@ -623,7 +637,75 @@ void EAXCop::Reset() {
     EAXCharacter::Reset();
 }
 
-void EAXCop::AttemptVehicleStop() {}
+void EAXCop::AttemptVehicleStop() {
+    SoundAI *ai = SoundAI::Get();
+    if (ai) {
+        int pursuit_type = 0x10;
+        float t_last_nailed = ai->GetTimeLastNailedCop();
+        if (t_last_nailed >= lbl_80407490) {
+            int infraction = *reinterpret_cast<int *>(reinterpret_cast<char *>(ai) + 0x1F0);
+            if (infraction > 0) {
+                switch (infraction) {
+                case 1:
+                case 2:
+                    if (ai->IsHighIntensity()) {
+                        pursuit_type = 2;
+                    } else {
+                        pursuit_type = 1;
+                    }
+                    break;
+                case 4:
+                case 0x80:
+                    pursuit_type = 8;
+                    break;
+                case 8:
+                    pursuit_type = 0x10;
+                    break;
+                case 0x10:
+                case 0x20:
+                    pursuit_type = 4;
+                    break;
+                case 0x40:
+                    pursuit_type = 2;
+                    break;
+                default:
+                    break;
+                }
+            } else {
+                if (ai->IsHighIntensity()) {
+                    pursuit_type = 2;
+                } else if (bRandom(lbl_80407494) > lbl_80407498) {
+                    pursuit_type = 4;
+                    if (*reinterpret_cast<int *>(reinterpret_cast<char *>(ai) + 0x154) > 0) {
+                        pursuit_type = 4;
+                    } else if (*reinterpret_cast<int *>(reinterpret_cast<char *>(ai) + 0x158) > 0x3E8) {
+                        pursuit_type = 8;
+                    } else if (GetCount_EventHistory(gSpeechManagerGlobalHistory, 0x9A) > 0 || GetCount_EventHistory(gSpeechManagerGlobalHistory, 0x3A) > 0 || GetCount_EventHistory(gSpeechManagerGlobalHistory, 0xB2) > 0) {
+                        pursuit_type = 2;
+                    } else {
+                        pursuit_type = 1;
+                    }
+                } else if (GetCount_EventHistory(gSpeechManagerGlobalHistory, 0x9A) > 0 || GetCount_EventHistory(gSpeechManagerGlobalHistory, 0x3A) > 0 || GetCount_EventHistory(gSpeechManagerGlobalHistory, 0xB2) > 0) {
+                    pursuit_type = 2;
+                } else {
+                    pursuit_type = 1;
+                }
+            }
+        }
+
+        Csis::Setup_AttmptVehStpStruct data;
+        int num_suspects = 1;
+        data.pursuit_type = pursuit_type;
+        if ((*reinterpret_cast<unsigned int *>(reinterpret_cast<char *>(ai) + 0x5C) & 0x800) != 0) {
+            num_suspects = 2;
+        }
+        data.num_suspects = num_suspects;
+        data.speaker_battalion = GetCallsign();
+        data.speaker_call_sign_id = GetUnitNumber();
+        data.speaker_id = mSpeakerID;
+        ScheduleSpeech_Setup_AttmptVehStp(data, Csis::Setup_AttmptVehStpId, Csis::gSetup_AttmptVehStpHandle, this);
+    }
+}
 
 void EAXCop::VehicleReport() {
     int ndx = 0;
