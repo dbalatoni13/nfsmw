@@ -654,14 +654,14 @@ void EAXCop::Update() {
         mTimeNoLOS = WorldTimer;
     }
 
-    if (!simable) {
-        (*reinterpret_cast<void (**)(void *, bool)>(*reinterpret_cast<char **>(this) + 0xD4))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0xD0), false);
-    } else {
-        simable->QueryInterface(&damageable);
+    if (simable) {
         simable->QueryInterface(&vehicle);
-        simable->QueryInterface(&suspension);
+        simable->QueryInterface(&damageable);
         simable->QueryInterface(&pursuit_ai);
+        simable->QueryInterface(&suspension);
         simable->QueryInterface(&vehicle_ai);
+    } else {
+        (*reinterpret_cast<void (**)(void *, bool)>(*reinterpret_cast<char **>(this) + 0xD4))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0xD0), false);
     }
 
     if (pursuit_ai && (*reinterpret_cast<unsigned int *>(&mActive) != 0)) {
@@ -674,18 +674,26 @@ void EAXCop::Update() {
         (*reinterpret_cast<void (**)(void *, const UMath::Vector3 &)>(*reinterpret_cast<char **>(this) + 0x37C))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x378), UMath::Vector3::kZero);
     }
 
-    if (!suspension || (*reinterpret_cast<unsigned int *>(&mActive) == 0)) {
-        mTimeAirborne = WorldTimer;
-        mPctTractiveTires = lbl_8040745C;
+    if (suspension) {
+        if (*reinterpret_cast<unsigned int *>(&mActive) == 0) {
+            mTimeAirborne = WorldTimer;
+            mPctTractiveTires = lbl_8040745C;
+        } else {
+            mPctTractiveTires = lbl_8040745C;
+            int num_wheels_on_ground = (*reinterpret_cast<int (**)(void *)>(*reinterpret_cast<char **>(suspension) + 0x1C))(reinterpret_cast<char *>(suspension) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(suspension) + 0x18));
+            if (num_wheels_on_ground != 0) {
+                unsigned int wheel_traction = (*reinterpret_cast<unsigned int (**)(void *)>(*reinterpret_cast<char **>(suspension) + 0xA4))(reinterpret_cast<char *>(suspension) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(suspension) + 0xA0));
+                unsigned int num_wheels = (*reinterpret_cast<unsigned int (**)(void *)>(*reinterpret_cast<char **>(suspension) + 0x1C))(reinterpret_cast<char *>(suspension) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(suspension) + 0x18));
+                wheel_traction = wheel_traction / num_wheels;
+                mPctTractiveTires = static_cast<float>(wheel_traction);
+            }
+            if (mPctTractiveTires > lbl_80407468) {
+                mTimeAirborne = WorldTimer;
+            }
+        }
     } else {
         mPctTractiveTires = lbl_8040745C;
-        if (suspension->GetNumWheelsOnGround() != 0) {
-            unsigned int wheel_traction = suspension->GetNumWheelsOnGround() / suspension->GetNumWheels();
-            mPctTractiveTires = static_cast<float>(wheel_traction);
-        }
-        if (mPctTractiveTires > lbl_80407468) {
-            mTimeAirborne = WorldTimer;
-        }
+        mTimeAirborne = WorldTimer;
     }
 
     if (damageable) {
@@ -693,14 +701,18 @@ void EAXCop::Update() {
         mHealth = damageable->GetHealth();
     }
 
-    if (!vehicle_ai || (*reinterpret_cast<unsigned int *>(&mActive) == 0)) {
-        mCurrRoad = MAX_ROADNAMES;
-    } else {
-        WRoadNav *nav = (*reinterpret_cast<WRoadNav *(**)(void *)>(*reinterpret_cast<char **>(vehicle_ai) + 0x9C))(reinterpret_cast<char *>(vehicle_ai) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(vehicle_ai) + 0x98));
-        RoadNames road = static_cast<RoadNames>(nav->GetRoadSpeechId());
-        if (road != MAX_ROADNAMES) {
-            mCurrRoad = road;
+    if (vehicle_ai) {
+        if (*reinterpret_cast<unsigned int *>(&mActive) == 0) {
+            mCurrRoad = MAX_ROADNAMES;
+        } else {
+            WRoadNav *nav = (*reinterpret_cast<WRoadNav *(**)(void *)>(*reinterpret_cast<char **>(vehicle_ai) + 0x9C))(reinterpret_cast<char *>(vehicle_ai) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(vehicle_ai) + 0x98));
+            RoadNames road = static_cast<RoadNames>(nav->GetRoadSpeechId());
+            if (road != MAX_ROADNAMES) {
+                mCurrRoad = road;
+            }
         }
+    } else {
+        mCurrRoad = MAX_ROADNAMES;
     }
 
     if ((*reinterpret_cast<unsigned int *>(&mActive) != 0) && (*reinterpret_cast<unsigned int *>(&mSuspectLOS) != 0) && vehicle) {
@@ -741,16 +753,13 @@ void EAXCop::SetActive(bool activity) {
             return;
         }
 
-        int fn_delta = 0;
-        int fn_addr = 0;
         if (*reinterpret_cast<unsigned int *>(&mSuspectLOS) != 0) {
             if (bRandom(lbl_8040746C) > lbl_80407470) {
-                fn_delta = *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x288);
-                fn_addr = *reinterpret_cast<int *>(*reinterpret_cast<char **>(this) + 0x28C);
+                (*reinterpret_cast<void (**)(void *)>(*reinterpret_cast<char **>(this) + 0x28C))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x288));
             } else {
-                fn_delta = *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x1B8);
-                fn_addr = *reinterpret_cast<int *>(*reinterpret_cast<char **>(this) + 0x1BC);
+                (*reinterpret_cast<void (**)(void *)>(*reinterpret_cast<char **>(this) + 0x1BC))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x1B8));
             }
+            return;
         } else {
             if (focus != 2) {
                 return;
@@ -771,16 +780,12 @@ void EAXCop::SetActive(bool activity) {
             }
 
             if (bRandom(lbl_8040746C) > lbl_80407470) {
-                fn_delta = *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x140);
-                fn_addr = *reinterpret_cast<int *>(*reinterpret_cast<char **>(this) + 0x144);
+                (*reinterpret_cast<void (**)(void *)>(*reinterpret_cast<char **>(this) + 0x144))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x140));
             } else {
-                fn_delta = *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x1F0);
-                fn_addr = *reinterpret_cast<int *>(*reinterpret_cast<char **>(this) + 0x1F4);
+                (*reinterpret_cast<void (**)(void *)>(*reinterpret_cast<char **>(this) + 0x1F4))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x1F0));
             }
+            return;
         }
-
-        (reinterpret_cast<void (*)(void *)>(fn_addr))(reinterpret_cast<char *>(this) + fn_delta);
-        return;
     }
 
     if ((WorldTimer - mT_lastactivity).GetSeconds() < lbl_80407484) {
@@ -797,8 +802,8 @@ void EAXCop::SetActive(bool activity) {
     if (mTrafficHitCount > 1) {
         (*reinterpret_cast<void (**)(void *)>(*reinterpret_cast<char **>(this) + 0x22C))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x228));
         mTrafficHitCount = activity;
-        unsigned int state = static_cast<unsigned int>(*reinterpret_cast<int *>(reinterpret_cast<char *>(ai) + 0x1DC));
-        if (state <= 1U) {
+        int state = *reinterpret_cast<int *>(reinterpret_cast<char *>(ai) + 0x1DC);
+        if (state == 0 || state == 1) {
             ai->RandomBailoutDeny(this);
         }
         return;
@@ -828,8 +833,8 @@ void EAXCop::SetActive(bool activity) {
     }
 
     (*reinterpret_cast<void (**)(void *)>(*reinterpret_cast<char **>(this) + 0x21C))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x218));
-    unsigned int state = static_cast<unsigned int>(*reinterpret_cast<int *>(reinterpret_cast<char *>(ai) + 0x1DC));
-    if (state <= 1U) {
+    int state = *reinterpret_cast<int *>(reinterpret_cast<char *>(ai) + 0x1DC);
+    if (state == 0 || state == 1) {
         ai->RandomBailoutDeny(this);
     }
 }
