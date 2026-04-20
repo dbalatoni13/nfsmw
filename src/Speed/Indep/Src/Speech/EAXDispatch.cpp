@@ -421,8 +421,8 @@ void EAXDispatch::PursuitEscalation() {
 
 void EAXDispatch::BackupUpdate(EAXCop *, int yes) {
     Csis::Backup_DispBackupUpdateStruct data;
-    data.speaker_id = mSpeakerID;
     data.yes_no = Csis::Type_yes_no_No_False;
+    data.speaker_id = mSpeakerID;
     if (yes != 0) {
         data.yes_no = Csis::Type_yes_no_Yes_True;
     }
@@ -556,12 +556,12 @@ void EAXDispatch::RBUpdate(EAXCop *, signed char true_false) {
     data.speaker_id = mSpeakerID;
     data.code = GetRandomizedCode();
     data.roadblock_type = Csis::Type_roadblock_type_Roadblock_Generic_;
+    if (*reinterpret_cast<signed char *>(reinterpret_cast<char *>(ai) + 0x164) > 1) {
+        data.roadblock_type = Csis::Type_roadblock_type_Multiple_Roadblocks_disp_only_;
+    }
     data.yes_no = Csis::Type_yes_no_No_False;
     if (true_false > 0) {
         data.yes_no = Csis::Type_yes_no_Yes_True;
-    }
-    if (*reinterpret_cast<signed char *>(reinterpret_cast<char *>(ai) + 0x164) > 1) {
-        data.roadblock_type = Csis::Type_roadblock_type_Multiple_Roadblocks_disp_only_;
     }
     ScheduleSpeech_StaticRoadblock_DispRBUpdate(data, Csis::StaticRoadblock_DispRBUpdateId, Csis::gStaticRoadblock_DispRBUpdateHandle, this);
 }
@@ -644,7 +644,6 @@ void EAXDispatch::VehicleDescription() {
     SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
     Csis::Setup_DispVehDescripStruct data;
     SoundAI::CarCustomizations *custrec;
-    void *layout;
 
     if (ai) {
         data.speaker_id = mSpeakerID;
@@ -654,8 +653,7 @@ void EAXDispatch::VehicleDescription() {
             data.car_color = *reinterpret_cast<int *>(custrec);
         }
         if (data.car_color != 0) {
-            layout = *reinterpret_cast<void **>(reinterpret_cast<char *>(ai) + 0x170);
-            data.car_type = *reinterpret_cast<int *>(reinterpret_cast<char *>(layout) + 0x40);
+            data.car_type = *reinterpret_cast<int *>(*reinterpret_cast<int *>(reinterpret_cast<char *>(ai) + 0x178) + 0x40);
             ScheduleSpeech_Setup_DispVehDescrip(data, Csis::Setup_DispVehDescripId, Csis::gSetup_DispVehDescripHandle, this);
         }
     }
