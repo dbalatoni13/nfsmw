@@ -231,31 +231,31 @@ void EAXCop::RBAverted() {}
 
 void EAXCop::CallForSubRB() {}
 
-void EAXCop::RearEnded(Type_intensity intensity) {
+void EAXCop::RearEnded(Csis::Type_intensity intensity) {
     mLastEvent = intensity;
 }
 
-void EAXCop::HeadOn(Type_intensity intensity) {
+void EAXCop::HeadOn(Csis::Type_intensity intensity) {
     mLastEvent = intensity;
 }
 
-void EAXCop::SideSwiped(Type_intensity intensity) {
+void EAXCop::SideSwiped(Csis::Type_intensity intensity) {
     mLastEvent = intensity;
 }
 
-void EAXCop::TBoned(Type_intensity intensity) {
+void EAXCop::TBoned(Csis::Type_intensity intensity) {
     mLastEvent = intensity;
 }
 
-void EAXCop::SuspectRollover(Type_intensity intensity) {
+void EAXCop::SuspectRollover(Csis::Type_intensity intensity) {
     mLastEvent = intensity;
 }
 
-void EAXCop::SuspectAirborne(Type_intensity intensity) {
+void EAXCop::SuspectAirborne(Csis::Type_intensity intensity) {
     mLastEvent = intensity;
 }
 
-void EAXCop::SuspectSpunout(Type_intensity intensity) {
+void EAXCop::SuspectSpunout(Csis::Type_intensity intensity) {
     mLastEvent = intensity;
 }
 
@@ -293,6 +293,6 @@ void EAXCop::Impact_Suspect_GasStation() {}
 
 void EAXCop::Impact_Suspect_Spikebelt() {}
 
-void EAXCop::Impact_Suspect_Traffic(Type_intensity intensity) {
+void EAXCop::Impact_Suspect_Traffic(Csis::Type_intensity intensity) {
     mLastEvent = intensity;
 }

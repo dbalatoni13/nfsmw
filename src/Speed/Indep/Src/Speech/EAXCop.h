@@ -10,10 +10,12 @@
 #include "Speed/Indep/Src/World/WRoadNetwork.h"
 
 // TODO move
+namespace Csis {
 enum Type_intensity {
     Type_intensity_Normal = 1,
     Type_intensity_High = 2,
 };
+}
 
 // total size: 0x84
 class EAXCop : public EAXCharacter {
@@ -93,56 +95,93 @@ class EAXCop : public EAXCharacter {
     virtual void PursuitApproaching();
     virtual void RBAverted();
     virtual void CallForSubRB();
-    virtual void RearEnded(Type_intensity intensity);
-    virtual void HeadOn(Type_intensity intensity);
-    virtual void SideSwiped(Type_intensity intensity);
-    virtual void TBoned(Type_intensity intensity);
-    virtual void SuspectRollover(Type_intensity intensity);
-    virtual void SuspectAirborne(Type_intensity intensity);
-    virtual void SuspectSpunout(Type_intensity intensity);
+    virtual void RearEnded(Csis::Type_intensity intensity);
+    virtual void HeadOn(Csis::Type_intensity intensity);
+    virtual void SideSwiped(Csis::Type_intensity intensity);
+    virtual void TBoned(Csis::Type_intensity intensity);
+    virtual void SuspectRollover(Csis::Type_intensity intensity);
+    virtual void SuspectAirborne(Csis::Type_intensity intensity);
+    virtual void SuspectSpunout(Csis::Type_intensity intensity);
     virtual void SuspectBrake();
     virtual void SwapVoices(EAXCop *cop);
     virtual bool IsPrimary();
 
-    virtual bool IsHeli() {}
+    virtual bool IsHeli() {
+        return false;
+    }
 
-    virtual bool IsCross() {}
+    virtual bool IsCross() {
+        return mSpeakerID == 9;
+    }
 
-    virtual void SetInFormation(bool yes) {}
+    virtual void SetInFormation(bool yes) {
+        *reinterpret_cast<unsigned int *>(&mInFormation) = yes;
+    }
 
-    virtual bool GetInFormation() {}
+    virtual int GetInFormation() {
+        return *reinterpret_cast<unsigned int *>(&mInFormation);
+    }
 
-    virtual void SetInPosition(bool yes) {}
+    virtual void SetInPosition(bool yes) {
+        *reinterpret_cast<unsigned int *>(&mInPosition) = yes;
+    }
 
-    virtual bool GetInPosition() {}
+    virtual int GetInPosition() {
+        return *reinterpret_cast<unsigned int *>(&mInPosition);
+    }
 
-    virtual void SetTgtOffset(const UMath::Vector3 &off) {}
+    virtual void SetTgtOffset(const UMath::Vector3 &off) {
+        mTgtOffset = off;
+    }
 
-    virtual const UMath::Vector3 GetTgtOffset() {}
+    virtual const UMath::Vector3 GetTgtOffset() {
+        return mTgtOffset;
+    }
 
     virtual bool SetRank(int newrank);
 
-    virtual bool GetRank() {}
+    virtual bool GetRank() {
+        return mRank != 0;
+    }
 
-    virtual void JustHitTraffic() {}
+    virtual void JustHitTraffic() {
+        mTrafficHitCount++;
+    }
 
-    virtual void WasRammed() {}
+    virtual void WasRammed() {
+        mNumRammed++;
+        mLastRammedTime = WorldTimer;
+    }
 
-    virtual int GetTimesRammed() {}
+    virtual int GetTimesRammed() {
+        return mNumRammed;
+    }
 
-    virtual float GetTimeLastSeen() {}
+    virtual float GetTimeLastSeen() {
+        return (WorldTimer - mTimeNoLOS).GetSeconds();
+    }
 
-    virtual float GetTimeAirborne() {}
+    virtual float GetTimeAirborne() {
+        return (WorldTimer - mTimeAirborne).GetSeconds();
+    }
 
-    virtual float GetTimeLastRammed() {}
+    virtual float GetTimeLastRammed() {
+        return (WorldTimer - mLastRammedTime).GetSeconds();
+    }
 
-    virtual float GetTimeLastClosing() {}
+    virtual float GetTimeLastClosing() {
+        return (WorldTimer - mT_closingDist).GetSeconds();
+    }
 
-    virtual float IsAhead() {}
+    virtual float IsAhead() {
+        return static_cast<float>(*reinterpret_cast<unsigned int *>(&mAhead));
+    }
 
-    virtual void SetAhead(bool ahead) {}
+    virtual void SetAhead(bool ahead) {
+        *reinterpret_cast<unsigned int *>(&mAhead) = ahead;
+    }
 
-    bool operator<(const struct EAXCop &from) const {}
+    bool operator<(const struct EAXCop &from) const;
 
   private:
     virtual void Impact_Suspect_World();
@@ -157,7 +196,7 @@ class EAXCop : public EAXCharacter {
 
     virtual void Impact_Suspect_Spikebelt();
 
-    virtual void Impact_Suspect_Traffic(Type_intensity intensity);
+    virtual void Impact_Suspect_Traffic(Csis::Type_intensity intensity);
 
     int mRank;                    // offset 0x40, size 0x4
     bool mInFormation;            // offset 0x44, size 0x1
