@@ -503,13 +503,17 @@ void EAXCop::SetActive(bool activity) {
 }
 
 void EAXCop::Reset() {
-    EAXCharacter::Reset();
     mInFormation = false;
     mInPosition = false;
-    mAhead = false;
     mPctTractiveTires = 0.0f;
+    *reinterpret_cast<unsigned int *>(&mTimeAirborne) = 0;
     mTrafficHitCount = 0;
+    *reinterpret_cast<unsigned int *>(&mTimeNoLOS) = 0;
     mNumRammed = 0;
+    *reinterpret_cast<unsigned int *>(&mLastRammedTime) = 0;
+    *reinterpret_cast<unsigned int *>(&mT_lastactivity) = 0;
+    *reinterpret_cast<unsigned int *>(&mT_closingDist) = 0;
+    EAXCharacter::Reset();
 }
 
 void EAXCop::AttemptVehicleStop() {}
@@ -1196,8 +1200,16 @@ bool EAXCop::IsPrimary() {
 }
 
 bool EAXCop::SetRank(int newrank) {
+    bool did_reset = false;
+    if (newrank == 0 && mRank > 0) {
+        Csis::Setup_PrimaryEngageStruct data;
+        data.speaker_id = mSpeakerID;
+        ScheduleSpeech_Setup_PrimaryEngage(data, Csis::Setup_PrimaryEngageId, Csis::gSetup_PrimaryEngageHandle, this);
+        Reset();
+        did_reset = true;
+    }
     mRank = newrank;
-    return true;
+    return did_reset;
 }
 
 void EAXCop::Impact_Suspect_World() {}
