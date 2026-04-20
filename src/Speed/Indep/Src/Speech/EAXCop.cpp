@@ -115,6 +115,14 @@ struct Setup_InitialCallForBUStruct {
     int code;
 };
 
+struct Setup_VehicleReportStruct {
+    int speaker_id;
+    int car_color;
+    int car_type;
+    int speed;
+    int measurement;
+};
+
 struct Setup_SelfStrategyStruct {
     int speaker_id;
     int code;
@@ -349,6 +357,7 @@ extern InterfaceId Setup_LocationReportId;
 extern InterfaceId Setup_ReInitPursuitId;
 extern InterfaceId Setup_InitialCallForBU_MSId;
 extern InterfaceId Setup_InitialCallForBUId;
+extern InterfaceId Setup_VehicleReportId;
 extern InterfaceId Setup_SelfStrategyId;
 extern InterfaceId AnytimeEvents_LostSuspectId;
 extern InterfaceId Arrest_ArrestId;
@@ -414,6 +423,7 @@ extern FunctionHandle gSetup_LocationReportHandle;
 extern FunctionHandle gSetup_ReInitPursuitHandle;
 extern FunctionHandle gSetup_InitialCallForBU_MSHandle;
 extern FunctionHandle gSetup_InitialCallForBUHandle;
+extern FunctionHandle gSetup_VehicleReportHandle;
 extern FunctionHandle gSetup_SelfStrategyHandle;
 extern FunctionHandle gAnytimeEvents_LostSuspectHandle;
 extern FunctionHandle gArrest_ArrestHandle;
@@ -480,6 +490,7 @@ extern void ScheduleSpeech_Setup_LocationReport(Csis::Setup_LocationReportStruct
 extern void ScheduleSpeech_Setup_ReInitPursuit(Csis::Setup_ReInitPursuitStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis25Setup_ReInitPursuitStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
 extern void ScheduleSpeech_Setup_InitialCallForBU_MS(Csis::Setup_InitialCallForBU_MSStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis31Setup_InitialCallForBU_MSStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
 extern void ScheduleSpeech_Setup_InitialCallForBU(Csis::Setup_InitialCallForBUStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis28Setup_InitialCallForBUStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
+extern void ScheduleSpeech_Setup_VehicleReport(Csis::Setup_VehicleReportStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis25Setup_VehicleReportStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
 extern void ScheduleSpeech_Setup_SelfStrategy(Csis::Setup_SelfStrategyStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis24Setup_SelfStrategyStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
 extern void ScheduleSpeech_AnytimeEvents_LostSuspect(Csis::AnytimeEvents_LostSuspectStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis31AnytimeEvents_LostSuspectStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
 extern void ScheduleSpeech_Arrest_Arrest(Csis::Arrest_ArrestStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis19Arrest_ArrestStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
@@ -527,6 +538,11 @@ extern int GetCount_EventHistory(void *history, int event_id) asm("GetCount__Q26
 extern unsigned char gSpeechManagerGlobalHistory[] asm("_Q26Speech7Manager.mGlobalHistory");
 extern "C" float lbl_804074DC;
 extern "C" float lbl_804074E0;
+extern "C" float lbl_804074D0;
+extern "C" float lbl_804074D4;
+extern "C" float lbl_804074D8;
+extern "C" float speed_test_28362[] asm("speed_test.28362");
+extern void *FEDatabase;
 
 EAXCop::EAXCop(int speakerID, HSIMABLE handle, int bID, int cID)
     : EAXCharacter(speakerID, handle, bID, cID) {
@@ -609,7 +625,46 @@ void EAXCop::Reset() {
 
 void EAXCop::AttemptVehicleStop() {}
 
-void EAXCop::VehicleReport() {}
+void EAXCop::VehicleReport() {
+    int ndx = 0;
+    if (FEDatabase) {
+        SoundAI *ai = SoundAI::Get();
+        if (ai) {
+            int color = 0;
+            void *custom = *reinterpret_cast<void **>(reinterpret_cast<char *>(ai) + 0x238);
+            if (custom) {
+                color = *reinterpret_cast<int *>(custom);
+            }
+            if (color && MiscSpeech::IsVehicleTypeOK()) {
+                Csis::Setup_VehicleReportStruct data;
+                float speedo;
+                data.speaker_id = mSpeakerID;
+                data.car_color = color;
+                data.car_type = *reinterpret_cast<int *>(reinterpret_cast<char *>(*reinterpret_cast<void **>(reinterpret_cast<char *>(ai) + 0x178)) + 0x40);
+                speedo = *reinterpret_cast<float *>(reinterpret_cast<char *>(ai) + 0x110);
+                if (*reinterpret_cast<unsigned char *>(reinterpret_cast<char *>(*reinterpret_cast<void **>(reinterpret_cast<char *>(FEDatabase) + 0x20)) + 0x44) == 1) {
+                    data.measurement = 4;
+                    speedo = speedo * lbl_804074D0;
+                } else {
+                    data.measurement = 2;
+                }
+                while (ndx <= 10 && speed_test_28362[ndx] <= speedo) {
+                    ndx++;
+                }
+                if (ndx == 0) {
+                    data.speed = 1;
+                    data.measurement = 1;
+                } else {
+                    if (bRandom(lbl_804074D4) > lbl_804074D8) {
+                        data.measurement = 1;
+                    }
+                    data.speed = 2 << (ndx - 1);
+                }
+                ScheduleSpeech_Setup_VehicleReport(data, Csis::Setup_VehicleReportId, Csis::gSetup_VehicleReportHandle, this);
+            }
+        }
+    }
+}
 
 void EAXCop::InitiatePursuit() {
     SoundAI *ai = SoundAI::Get();
