@@ -192,6 +192,7 @@ class WRoadNav {
     bool FindPathNow(const UMath::Vector3 *goal_position, const UMath::Vector3 *goal_direction, char *shortcut_allowed);
     bool FindingPath();
     float GetPathDistanceRemaining();
+    unsigned int GetRoadSpeechId();
     bool IsPointInCookieTrail(const UMath::Vector3 &position_3d, float margin);
     bool IsSegmentInCookieTrail(int segment_number, bool use_whole_path);
     bool IsSegmentInPath(int segment_number);

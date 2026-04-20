@@ -39,12 +39,17 @@ struct Battalion {
 class EAXCharacter : public AudioMemBase {
   public:
     EAXCharacter(int sID, HSIMABLE wID, int bID, int cID);
+    virtual ~EAXCharacter();
+
+    static void *operator new(unsigned int size);
+    static void operator delete(void *ptr);
 
     // Virtual functions
     virtual void Ack();
     virtual void Deny();
     virtual void InterruptStatic();
     virtual void InterruptExpletive();
+    virtual void InterruptViolent();
     virtual void InterruptComposedLow();
     virtual void InterruptComposedHigh();
     virtual void DriverHistory();
@@ -77,8 +82,6 @@ class EAXCharacter : public AudioMemBase {
     virtual float GetDistance() {}
 
     virtual float GetHealth() {}
-
-    virtual void InterruptViolent();
 
     virtual bool IsActive() {}
 
