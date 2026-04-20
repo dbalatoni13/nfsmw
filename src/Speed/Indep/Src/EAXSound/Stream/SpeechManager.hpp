@@ -27,6 +27,14 @@ enum SpeechModuleIndex {
     NUM_SPEECH_MODULES = 2,
 };
 
+enum SPEECH_MODE {
+    SPEECH_FRONTEND_MODE = 1,
+    SPEECH_GAME_MODE = 2,
+    SPEECH_SPLITSCREEN_MODE = 3,
+};
+
+struct CLUMP_IDX_FILEtag;
+
 namespace Speech {
 
 struct ScheduledSpeechEvent;
@@ -98,15 +106,23 @@ struct ScheduledSpeechEvent {
 
 class Manager {
   public:
+    template <typename T>
+    static void ScheduleSpeech(T &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) {
+        ScheduleSpeechPartII(sizeof(T), &data, iid, fh, actor);
+    }
+
     static void FlushSpeechForActor(EAXCharacter *actor);
     static int GetGlobalHistoryCount(SPCHType_1_EventID id);
     static void ScheduleSpeechPartII(unsigned int sample_size, void *sample_data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor);
+    static int IndirectSpeechEvent(ScheduledSpeechEvent *evt, bool test_only);
     static int TestSentenceRuleCallback(EventSpec *event_info, int rule_id, int parm_value, int user_num);
     static int ReparmCallback(int rule_id, unsigned int *parms);
     static void SetSentenceRuleCallback(EventSpec *event_info, int rule_id, int parm_value, int user_num);
     static SPCHType_EventRuleResult EventRuleCallback(EventSpec *event_info);
     static void ClearPlayback();
-    static void Init(int mode);
+    static void Init(SPEECH_MODE mode);
+    static void Init(int mode) { Init(static_cast<SPEECH_MODE>(mode)); }
+    static void Init2();
     static void Destroy();
     static void Deduce();
     static void Update(float dt);
@@ -116,7 +132,27 @@ class Manager {
     static bool IsCopSpeechPlaying(SPCHType_1_EventID event);
     static bool IsCopSpeechBusy();
     static Timer GetTimeSinceLastEvent(SpeechModuleIndex module);
+    static void SpchLibAbort(const char *format, ...);
+    static int SampleRequestCallback(SPCHType_SampleRequestData *data);
+    static int LoadSpeechBank(CLUMP_IDX_FILEtag *index, int &type, int &number, SPEECH_BANK *sb);
+    static int AddHeaders(char **dest, SPEECH_BANK *banks, int numBanks, Module *module);
+    static int GetTicker();
+    static void PopulateHashMap();
+    static bool IsCacheable(SPCHType_1_EventID event_id);
+    static bool HasBeenSaid(SPCHType_1_EventID event_id);
+    static bool ServiceInterruptEvents();
+    static void ServiceFilteredEvents();
+    static bool RecallSpeechEvent(SPCHType_1_EventID recall_id);
     static void ResetGlobalHistory();
+    static void Expire(ScheduledSpeechEvent *event);
+    static bool IsQueued(SPCHType_1_EventID evtID, int indices);
+    static float IsEventDead(ScheduledSpeechEvent *evt);
+    static void NotifyEventCompletion(ScheduledSpeechEvent *evt, bool playback_complete);
+    static ScheduledSpeechEvent *GetNextEvent();
+    static int PostValidate(ScheduledSpeechEvent *evt, unsigned int mask);
+    static int PreValidate(ScheduledSpeechEvent &evt);
+    static bool CanPlayback(Attrib::Gen::speech &event_attribs);
+    static void CalcProbPlayback();
     static SampleReqList &GetSampleRequests() { return mSampleRequests; }
 
     static Module *m_SpeechModule[NUM_SPEECH_MODULES];

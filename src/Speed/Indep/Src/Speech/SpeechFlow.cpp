@@ -24,6 +24,26 @@ int SED_NISSFX::m_channel = 0;
 char *SED_NISSFX::m_eventDat = 0;
 bool SED_NISSFX::m_dataIsLoaded = false;
 
+namespace {
+ScheduledSpeechEvent *sQueuedEvents[256] = { 0 };
+int sQueuedEventCount = 0;
+float sPlaybackProbability = 1.0f;
+
+void CompactQueuedEvents() {
+    int write = 0;
+    for (int read = 0; read < sQueuedEventCount; ++read) {
+        if (sQueuedEvents[read]) {
+            sQueuedEvents[write] = sQueuedEvents[read];
+            ++write;
+        }
+    }
+    for (int clear = write; clear < sQueuedEventCount; ++clear) {
+        sQueuedEvents[clear] = 0;
+    }
+    sQueuedEventCount = write;
+}
+} // namespace
+
 SpeechFlow::SpeechFlow()
     : mState(0), //
       mLastState(-1), //
@@ -94,11 +114,36 @@ void Manager::ScheduleSpeechPartII(unsigned int sample_size, void *sample_data, 
     mSampleRequests.push_back(req);
 }
 
-void Manager::ClearPlayback() {
-    mSampleRequests.clear();
+int Manager::IndirectSpeechEvent(ScheduledSpeechEvent *evt, bool test_only) {
+    if (!evt) {
+        return -1;
+    }
+
+    if (PreValidate(*evt) != 0) {
+        return 1;
+    }
+
+    if (!test_only) {
+        if (sQueuedEventCount < 256) {
+            sQueuedEvents[sQueuedEventCount] = evt;
+            ++sQueuedEventCount;
+        } else {
+            return 2;
+        }
+    }
+
+    return PostValidate(evt, 0U);
 }
 
-void Manager::Init(int mode) {
+void Manager::ClearPlayback() {
+    mSampleRequests.clear();
+    for (int i = 0; i < sQueuedEventCount; ++i) {
+        sQueuedEvents[i] = 0;
+    }
+    sQueuedEventCount = 0;
+}
+
+void Manager::Init(SPEECH_MODE mode) {
     mSampleRequests.clear();
     m_frameindex = 0;
     mLastSpeakerID = 0;
@@ -116,6 +161,24 @@ void Manager::Init(int mode) {
     if (m_SpeechModule[NISSFX_MODULE]) {
         m_SpeechModule[NISSFX_MODULE]->Init(2);
     }
+}
+
+void Manager::Init2() {
+    for (int i = 0; i < NUM_SPEECH_MODULES; ++i) {
+        Module *module = m_SpeechModule[i];
+        if (module) {
+            module->LoadBanks();
+        }
+    }
+
+    for (SPCHSampleRequest *it = mSampleRequests.begin(); it != mSampleRequests.end(); ++it) {
+        it->owner = 0;
+        it->sample_index = 0xFF;
+    }
+
+    ServiceFilteredEvents();
+    ServiceInterruptEvents();
+    CalcProbPlayback();
 }
 
 void Manager::Destroy() {
@@ -137,6 +200,231 @@ void Manager::Update(float) {
         if (m_SpeechModule[i]) {
             m_SpeechModule[i]->Update();
         }
+    }
+
+    ServiceFilteredEvents();
+    ServiceInterruptEvents();
+    CalcProbPlayback();
+}
+
+void Manager::SpchLibAbort(const char *, ...) {
+    ClearPlayback();
+}
+
+int Manager::SampleRequestCallback(SPCHType_SampleRequestData *data) {
+    if (!data) {
+        return 0;
+    }
+
+    int module_index = data->channel;
+    if (module_index < 0 || module_index >= NUM_SPEECH_MODULES) {
+        module_index = COPSPEECH_MODULE;
+    }
+
+    Module *module = m_SpeechModule[module_index];
+    if (!module) {
+        return 0;
+    }
+
+    return static_cast<int>(module->SampleRequestCallback(data));
+}
+
+int Manager::LoadSpeechBank(CLUMP_IDX_FILEtag *, int &type, int &number, SPEECH_BANK *sb) {
+    if (!sb) {
+        return 0;
+    }
+
+    sb->bank = number;
+    sb->offset = type * 4;
+    sb->mem = 0;
+    ++number;
+    return 1;
+}
+
+int Manager::AddHeaders(char **dest, SPEECH_BANK *banks, int numBanks, Module *module) {
+    if (!dest || !banks || !module) {
+        return 0;
+    }
+
+    int bytes = 0;
+    for (int i = 0; i < numBanks; ++i) {
+        dest[i] = banks[i].mem;
+        bytes += banks[i].offset;
+    }
+    return bytes;
+}
+
+int Manager::GetTicker() {
+    return WorldTimer.GetPackedTime();
+}
+
+void Manager::PopulateHashMap() {
+    for (int i = 0; i < sQueuedEventCount; ++i) {
+        ScheduledSpeechEvent *evt = sQueuedEvents[i];
+        if (!evt) {
+            continue;
+        }
+        if (evt->priority > 0xFE) {
+            evt->priority = 0xFE;
+        }
+    }
+}
+
+bool Manager::IsCacheable(SPCHType_1_EventID event_id) {
+    return static_cast<int>(event_id) >= 0;
+}
+
+bool Manager::HasBeenSaid(SPCHType_1_EventID event_id) {
+    for (int i = 0; i < sQueuedEventCount; ++i) {
+        ScheduledSpeechEvent *evt = sQueuedEvents[i];
+        if (evt && evt->ID == event_id) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool Manager::ServiceInterruptEvents() {
+    bool changed = false;
+    for (SPCHSampleRequest *it = mSampleRequests.begin(); it != mSampleRequests.end();) {
+        if (it->data.interruptFlag != 0) {
+            it = mSampleRequests.erase(it);
+            changed = true;
+        } else {
+            ++it;
+        }
+    }
+    return changed;
+}
+
+void Manager::ServiceFilteredEvents() {
+    for (SPCHSampleRequest *it = mSampleRequests.begin(); it != mSampleRequests.end();) {
+        SPCHType_1_EventID id = static_cast<SPCHType_1_EventID>(it->data.eventSpec.eventID);
+        if (!IsCacheable(id)) {
+            it = mSampleRequests.erase(it);
+        } else {
+            ++it;
+        }
+    }
+}
+
+bool Manager::RecallSpeechEvent(SPCHType_1_EventID recall_id) {
+    for (int i = 0; i < sQueuedEventCount; ++i) {
+        if (sQueuedEvents[i] && sQueuedEvents[i]->ID == recall_id) {
+            return true;
+        }
+    }
+    return false;
+}
+
+void Manager::Expire(ScheduledSpeechEvent *event) {
+    if (!event) {
+        return;
+    }
+    event->flags |= 1;
+    event->finish_time = WorldTimer;
+}
+
+bool Manager::IsQueued(SPCHType_1_EventID evtID, int indices) {
+    int found = 0;
+    for (int i = 0; i < sQueuedEventCount; ++i) {
+        if (sQueuedEvents[i] && sQueuedEvents[i]->ID == evtID) {
+            ++found;
+            if (found >= indices) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+float Manager::IsEventDead(ScheduledSpeechEvent *evt) {
+    if (!evt) {
+        return 1.0f;
+    }
+    if ((evt->flags & 1) != 0) {
+        return 1.0f;
+    }
+    return 0.0f;
+}
+
+void Manager::NotifyEventCompletion(ScheduledSpeechEvent *evt, bool playback_complete) {
+    if (!evt) {
+        return;
+    }
+
+    evt->finish_time = WorldTimer;
+    if (playback_complete) {
+        evt->flags |= 2;
+    } else {
+        evt->flags |= 1;
+    }
+
+    for (int i = 0; i < sQueuedEventCount; ++i) {
+        if (sQueuedEvents[i] == evt) {
+            sQueuedEvents[i] = 0;
+        }
+    }
+    CompactQueuedEvents();
+}
+
+ScheduledSpeechEvent *Manager::GetNextEvent() {
+    ScheduledSpeechEvent *best = 0;
+    for (int i = 0; i < sQueuedEventCount; ++i) {
+        ScheduledSpeechEvent *evt = sQueuedEvents[i];
+        if (!evt) {
+            continue;
+        }
+        if (!best || ScheduledSpeechEvent::sort_nested_priority(evt, best)) {
+            best = evt;
+        }
+    }
+    return best;
+}
+
+int Manager::PostValidate(ScheduledSpeechEvent *evt, unsigned int mask) {
+    if (!evt) {
+        return 1;
+    }
+
+    if ((evt->flags & static_cast<short>(mask)) != 0) {
+        return 2;
+    }
+
+    if (IsEventDead(evt) > 0.0f) {
+        return 3;
+    }
+
+    return 0;
+}
+
+int Manager::PreValidate(ScheduledSpeechEvent &evt) {
+    if (!evt.actor) {
+        return 1;
+    }
+    if (evt.ID == kSPCH1_EventID_MaxEventID) {
+        return 2;
+    }
+    return 0;
+}
+
+bool Manager::CanPlayback(Attrib::Gen::speech &) {
+    if (sPlaybackProbability <= 0.0f) {
+        return false;
+    }
+    return true;
+}
+
+void Manager::CalcProbPlayback() {
+    int queued = sQueuedEventCount;
+    int requested = static_cast<int>(mSampleRequests.size());
+    int total = queued + requested;
+    if (total <= 0) {
+        sPlaybackProbability = 1.0f;
+    } else if (total > 12) {
+        sPlaybackProbability = 0.25f;
+    } else {
+        sPlaybackProbability = 1.0f - static_cast<float>(total) * 0.05f;
     }
 }
 
@@ -170,9 +458,21 @@ Timer Manager::GetTimeSinceLastEvent(SpeechModuleIndex) {
 
 void Manager::ResetGlobalHistory() {
     mLastSpeakerID = 0;
+    sPlaybackProbability = 1.0f;
 }
 
-void Manager::FlushSpeechForActor(EAXCharacter *) {}
+void Manager::FlushSpeechForActor(EAXCharacter *actor) {
+    if (!actor) {
+        return;
+    }
+
+    for (int i = 0; i < sQueuedEventCount; ++i) {
+        if (sQueuedEvents[i] && sQueuedEvents[i]->actor == actor) {
+            sQueuedEvents[i] = 0;
+        }
+    }
+    CompactQueuedEvents();
+}
 
 Module::Module()
     : m_enable(false), //
