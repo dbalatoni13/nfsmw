@@ -31,6 +31,7 @@ void RoadblockFlow_Update(void *flow) asm("Update__Q26Speech13RoadblockFlow");
 void PursuitFlow_Reset(void *flow) asm("Reset__Q26Speech11PursuitFlow");
 void StrategyFlow_Reset(void *flow) asm("Reset__Q26Speech12StrategyFlow");
 void RoadblockFlow_Reset(void *flow) asm("Reset__Q26Speech13RoadblockFlow");
+void PursuitFlow_OnCopRemoved(void *flow, EAXCop *cop) asm("OnCopRemoved__Q26Speech11PursuitFlowP6EAXCop");
 void Observer_Reset(void *observer) asm("Reset__Q26Speech8Observer");
 void MusicFlow_Reset(void *flow) asm("Reset__Q26Speech9MusicFlow");
 void Manager_ResetGlobalHistory() asm("ResetGlobalHistory__Q26Speech7Manager");
@@ -721,4 +722,145 @@ void SoundAI::ResetPursuit(bool including_music) {
     mFlags = 0;
     mTrafficHits911 = 0;
     mCTS911 = 0;
+}
+
+void SoundAI::RemoveCop(HSIMABLE seeya) {
+    if (mActors.size() == 0) {
+        return;
+    }
+
+    EAXCop *cop = mActors.Remove(seeya);
+    if (!cop) {
+        return;
+    }
+
+    Speech::copList::iterator i = mCopsInFormation.begin();
+    while (i != mCopsInFormation.end()) {
+        EAXCop *copInFormation = *i;
+        if (copInFormation && copInFormation->GetHandle() == cop->GetHandle()) {
+            mCopsInFormation.erase(i);
+            break;
+        }
+        ++i;
+    }
+
+    if (mLastCopInFormation && (mLastCopInFormation->GetHandle() == cop->GetHandle())) {
+        mLastCopInFormation = 0;
+    }
+    if (mLeader == cop) {
+        mLeader = 0;
+    }
+    if (mHeli == cop) {
+        mHeli = 0;
+    }
+    if (mLatestCop == cop) {
+        mLatestCop = 0;
+    }
+
+    Speech::PursuitFlow_OnCopRemoved(mPursuitFlow, cop);
+    mUsage.voices.push_back(cop->GetSpeakerID());
+    cop->SetActive(false);
+}
+
+void SoundAI::AddNewCop(IVehicle *newcop) {
+    HSIMABLE newbie = newcop->GetSimable()->GetOwnerHandle();
+    IVehicleAI *vai = newcop->GetAIVehiclePtr();
+    int roadID = -1;
+    bool is_rb_cop = false;
+
+    if (vai) {
+        WRoadNav *nav = vai->GetDriveToNav();
+        if (nav) {
+            roadID = nav->GetRoadSpeechId();
+        }
+    }
+
+    bool is_cross = (newcop->GetVehicleKey() == static_cast<unsigned int>(-0x2c837f93));
+    IRoadBlock *block = GetRoadblock();
+    if (block) {
+        is_rb_cop = (block->IsComprisedOf(newbie) == newcop);
+    }
+
+    int bID = GetBattalionFromKey(newcop->GetVehicleKey());
+    if (bID < 1) {
+        if (roadID == 0x6b) {
+            return;
+        }
+        bID = GetBattalionFromRoadID(roadID);
+        if (bID < 1) {
+            bID = 1 << (bRandom(4) & 0x3F);
+        }
+    }
+
+    EAXCop *latest_cop = 0;
+    if (mUsage.voices.empty() || !is_cross) {
+        UMath::Vector3 cop_pos = newcop->GetPosition();
+        UMath::Vector3 delta;
+        VU0_v3sub(mPlayerPos, cop_pos, delta);
+        float distance = VU0_sqrt(VU0_v3lengthsquare(delta));
+
+        Speech::copMap::iterator i = mActors.begin();
+        while (i != mActors.end()) {
+            EAXCop *cop = i->cop;
+            if (!cop->IsActive() && !is_rb_cop && (distance < cop->GetDistance()) && !cop->IsHeli()) {
+                if (cop->GetCallsign() != bID) {
+                    int keyedID = GetBattalionFromKey(newcop->GetVehicleKey());
+                    if (keyedID > 0) {
+                        bID = keyedID;
+                    } else if (roadID != 0x6b) {
+                        keyedID = GetBattalionFromRoadID(roadID);
+                        if (keyedID > 0) {
+                            bID = keyedID;
+                        } else {
+                            bID = 1 << (bRandom(4) & 0x3F);
+                        }
+                    } else {
+                        return;
+                    }
+                }
+
+                mActors.ModifyHandle(cop->GetHandle(), newbie);
+                cop->SetHandle(newbie);
+                cop->SetCallsign(bID);
+                cop->SetUnitNumber(GetCallsign(static_cast<Csis::Type_speaker_battalion>(bID)));
+                cop->Reset();
+                latest_cop = cop;
+                break;
+            }
+            ++i;
+        }
+    }
+
+    if (!latest_cop) {
+        if (!mUsage.voices.empty() || !is_cross) {
+            int type = 0;
+            if (is_cross) {
+                type = 3;
+            } else if (is_rb_cop) {
+                type = 2;
+            }
+
+            int voice = GetVoice(type);
+            if (voice > 0) {
+                int cID = GetCallsign(static_cast<Csis::Type_speaker_battalion>(bID));
+                latest_cop = new EAXCop(voice, newbie, bID, cID);
+                latest_cop->SetRank(mActors.size());
+                mActors.Add(newbie, latest_cop);
+                latest_cop->Reset();
+            }
+        }
+        if (!latest_cop) {
+            return;
+        }
+    }
+
+    mLatestCop = latest_cop;
+    if ((mPursuitState < kInactive) && !is_rb_cop && (mFocus == kStrategyFlow)) {
+        float random = bRandom(1.0f);
+        if (random <= 0.5f) {
+            mLatestCop->PrimaryEngage();
+        } else {
+            mLatestCop->BackupArrives();
+        }
+    }
 }
