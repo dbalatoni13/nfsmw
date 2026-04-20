@@ -1,5 +1,110 @@
 #include "EAXCop.h"
+#include "Speed/Indep/Src/EAXSound/Csis.hpp"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
+
+namespace Csis {
+struct AnytimeEvents_Unit911ReplyStruct {
+    int speaker_id;
+};
+
+struct Backup_UnitBUReplyStruct {
+    int speaker_id;
+};
+
+struct Backup_NegativeBUReplyStruct {
+    int speaker_id;
+    int yes_no;
+    int subject_battalion;
+    int subject_call_sign_id;
+};
+
+struct Outcome_AnticipateSuccessStruct {
+    int speaker_id;
+};
+
+struct Outcome_AnticipateFailStruct {
+    int speaker_id;
+};
+
+struct Setup_BullhornPrefixStruct {
+    int speaker_id;
+};
+
+struct ExtraCops_SwarmingReplyStruct {};
+
+struct AnytimeEvents_PursuitUpdateRepStruct {
+    int speaker_id;
+};
+
+struct AnytimeEvents_BailoutDenyStruct {
+    int speaker_id;
+};
+
+struct StaticRoadblock_RBAvertedStruct {
+    int speaker_id;
+};
+
+struct Backup_CallForSwarmingStruct {
+    int speaker_id;
+};
+
+struct Setup_SpotterWantedStruct {
+    int speaker_id;
+};
+
+struct AnytimeEvents_WeatherReportStruct {
+    int speaker_id;
+};
+
+struct AnytimeEvents_SuspectBrakeStruct {
+    int speaker_id;
+};
+
+extern InterfaceId AnytimeEvents_Unit911ReplyId;
+extern InterfaceId Backup_UnitBUReplyId;
+extern InterfaceId Backup_NegativeBUReplyId;
+extern InterfaceId Outcome_AnticipateSuccessId;
+extern InterfaceId Outcome_AnticipateFailId;
+extern InterfaceId Setup_BullhornPrefixId;
+extern InterfaceId ExtraCops_SwarmingReplyId;
+extern InterfaceId AnytimeEvents_PursuitUpdateRepId;
+extern InterfaceId AnytimeEvents_BailoutDenyId;
+extern InterfaceId StaticRoadblock_RBAvertedId;
+extern InterfaceId Backup_CallForSwarmingId;
+extern InterfaceId Setup_SpotterWantedId;
+extern InterfaceId AnytimeEvents_WeatherReportId;
+extern InterfaceId AnytimeEvents_SuspectBrakeId;
+
+extern FunctionHandle gAnytimeEvents_Unit911ReplyHandle;
+extern FunctionHandle gBackup_UnitBUReplyHandle;
+extern FunctionHandle gBackup_NegativeBUReplyHandle;
+extern FunctionHandle gOutcome_AnticipateSuccessHandle;
+extern FunctionHandle gOutcome_AnticipateFailHandle;
+extern FunctionHandle gSetup_BullhornPrefixHandle;
+extern FunctionHandle gExtraCops_SwarmingReplyHandle;
+extern FunctionHandle gAnytimeEvents_PursuitUpdateRepHandle;
+extern FunctionHandle gAnytimeEvents_BailoutDenyHandle;
+extern FunctionHandle gStaticRoadblock_RBAvertedHandle;
+extern FunctionHandle gBackup_CallForSwarmingHandle;
+extern FunctionHandle gSetup_SpotterWantedHandle;
+extern FunctionHandle gAnytimeEvents_WeatherReportHandle;
+extern FunctionHandle gAnytimeEvents_SuspectBrakeHandle;
+}
+
+extern void ScheduleSpeech_AnytimeEvents_Unit911Reply(Csis::AnytimeEvents_Unit911ReplyStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis32AnytimeEvents_Unit911ReplyStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
+extern void ScheduleSpeech_Backup_UnitBUReply(Csis::Backup_UnitBUReplyStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis24Backup_UnitBUReplyStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
+extern void ScheduleSpeech_Backup_NegativeBUReply(Csis::Backup_NegativeBUReplyStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis28Backup_NegativeBUReplyStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
+extern void ScheduleSpeech_Outcome_AnticipateSuccess(Csis::Outcome_AnticipateSuccessStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis31Outcome_AnticipateSuccessStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
+extern void ScheduleSpeech_Outcome_AnticipateFail(Csis::Outcome_AnticipateFailStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis28Outcome_AnticipateFailStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
+extern void ScheduleSpeech_Setup_BullhornPrefix(Csis::Setup_BullhornPrefixStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis26Setup_BullhornPrefixStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
+extern void ScheduleSpeech_ExtraCops_SwarmingReply(Csis::ExtraCops_SwarmingReplyStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis29ExtraCops_SwarmingReplyStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
+extern void ScheduleSpeech_AnytimeEvents_PursuitUpdateRep(Csis::AnytimeEvents_PursuitUpdateRepStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis36AnytimeEvents_PursuitUpdateRepStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
+extern void ScheduleSpeech_AnytimeEvents_BailoutDeny(Csis::AnytimeEvents_BailoutDenyStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis31AnytimeEvents_BailoutDenyStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
+extern void ScheduleSpeech_StaticRoadblock_RBAverted(Csis::StaticRoadblock_RBAvertedStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis31StaticRoadblock_RBAvertedStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
+extern void ScheduleSpeech_Backup_CallForSwarming(Csis::Backup_CallForSwarmingStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis28Backup_CallForSwarmingStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
+extern void ScheduleSpeech_Setup_SpotterWanted(Csis::Setup_SpotterWantedStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis25Setup_SpotterWantedStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
+extern void ScheduleSpeech_AnytimeEvents_WeatherReport(Csis::AnytimeEvents_WeatherReportStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis33AnytimeEvents_WeatherReportStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
+extern void ScheduleSpeech_AnytimeEvents_SuspectBrake(Csis::AnytimeEvents_SuspectBrakeStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis32AnytimeEvents_SuspectBrakeStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
 
 EAXCop::EAXCop(int speakerID, HSIMABLE handle, int bID, int cID)
     : EAXCharacter(speakerID, handle, bID, cID) {
@@ -83,7 +188,11 @@ void EAXCop::CallForBackup(int type) {
     }
 }
 
-void EAXCop::UnitBackupReply() {}
+void EAXCop::UnitBackupReply() {
+    Csis::Backup_UnitBUReplyStruct data;
+    data.speaker_id = mSpeakerID;
+    ScheduleSpeech_Backup_UnitBUReply(data, Csis::Backup_UnitBUReplyId, Csis::gBackup_UnitBUReplyHandle, this);
+}
 
 void EAXCop::InitiateStrategy(int type) {
     if (type) {
@@ -107,9 +216,17 @@ void EAXCop::Collision(int collisionType, float force, EAXCop *spkr) {
     }
 }
 
-void EAXCop::AnticipateSuccess() {}
+void EAXCop::AnticipateSuccess() {
+    Csis::Outcome_AnticipateSuccessStruct data;
+    data.speaker_id = mSpeakerID;
+    ScheduleSpeech_Outcome_AnticipateSuccess(data, Csis::Outcome_AnticipateSuccessId, Csis::gOutcome_AnticipateSuccessHandle, this);
+}
 
-void EAXCop::AnticipateFail() {}
+void EAXCop::AnticipateFail() {
+    Csis::Outcome_AnticipateFailStruct data;
+    data.speaker_id = mSpeakerID;
+    ScheduleSpeech_Outcome_AnticipateFail(data, Csis::Outcome_AnticipateFailId, Csis::gOutcome_AnticipateFailHandle, this);
+}
 
 void EAXCop::OutcomeFail(short intensity) {
     if (intensity) {
@@ -135,15 +252,26 @@ void EAXCop::LostVisual() {}
 
 void EAXCop::RegainVisual() {}
 
-void EAXCop::SwarmingReply() {}
+void EAXCop::SwarmingReply() {
+    Csis::ExtraCops_SwarmingReplyStruct data;
+    ScheduleSpeech_ExtraCops_SwarmingReply(data, Csis::ExtraCops_SwarmingReplyId, Csis::gExtraCops_SwarmingReplyHandle, this);
+}
 
 void EAXCop::Arrest() {}
 
-void EAXCop::PursuitUpdateReply() {}
+void EAXCop::PursuitUpdateReply() {
+    Csis::AnytimeEvents_PursuitUpdateRepStruct data;
+    data.speaker_id = mSpeakerID;
+    ScheduleSpeech_AnytimeEvents_PursuitUpdateRep(data, Csis::AnytimeEvents_PursuitUpdateRepId, Csis::gAnytimeEvents_PursuitUpdateRepHandle, this);
+}
 
 void EAXCop::ReinitiatePursuit() {}
 
-void EAXCop::NegativeBackupReply() {}
+void EAXCop::NegativeBackupReply() {
+    Csis::Backup_NegativeBUReplyStruct data;
+    data.speaker_id = mSpeakerID;
+    ScheduleSpeech_Backup_NegativeBUReply(data, Csis::Backup_NegativeBUReplyId, Csis::gBackup_NegativeBUReplyHandle, this);
+}
 
 void EAXCop::BackupReminder(int type) {
     if (type) {
@@ -179,15 +307,27 @@ void EAXCop::Spotter() {}
 
 void EAXCop::SpotterReply() {}
 
-void EAXCop::Reply911() {}
+void EAXCop::Reply911() {
+    Csis::AnytimeEvents_Unit911ReplyStruct data;
+    data.speaker_id = mSpeakerID;
+    ScheduleSpeech_AnytimeEvents_Unit911Reply(data, Csis::AnytimeEvents_Unit911ReplyId, Csis::gAnytimeEvents_Unit911ReplyHandle, this);
+}
 
-void EAXCop::DenyBailout() {}
+void EAXCop::DenyBailout() {
+    Csis::AnytimeEvents_BailoutDenyStruct data;
+    data.speaker_id = mSpeakerID;
+    ScheduleSpeech_AnytimeEvents_BailoutDeny(data, Csis::AnytimeEvents_BailoutDenyId, Csis::gAnytimeEvents_BailoutDenyHandle, this);
+}
 
 void EAXCop::PrimaryEngage() {}
 
 void EAXCop::Bullhorn() {}
 
-void EAXCop::PreBullhorn() {}
+void EAXCop::PreBullhorn() {
+    Csis::Setup_BullhornPrefixStruct data;
+    data.speaker_id = mSpeakerID;
+    ScheduleSpeech_Setup_BullhornPrefix(data, Csis::Setup_BullhornPrefixId, Csis::gSetup_BullhornPrefixHandle, this);
+}
 
 void EAXCop::BullhornArrest() {}
 
@@ -199,9 +339,17 @@ void EAXCop::Spotted() {}
 
 void EAXCop::DirectionChange() {}
 
-void EAXCop::CallForSwarming() {}
+void EAXCop::CallForSwarming() {
+    Csis::Backup_CallForSwarmingStruct data;
+    data.speaker_id = mSpeakerID;
+    ScheduleSpeech_Backup_CallForSwarming(data, Csis::Backup_CallForSwarmingId, Csis::gBackup_CallForSwarmingHandle, this);
+}
 
-void EAXCop::SpotterWanted() {}
+void EAXCop::SpotterWanted() {
+    Csis::Setup_SpotterWantedStruct data;
+    data.speaker_id = mSpeakerID;
+    ScheduleSpeech_Setup_SpotterWanted(data, Csis::Setup_SpotterWantedId, Csis::gSetup_SpotterWantedHandle, this);
+}
 
 void EAXCop::Offroad(unsigned int id, bool subsequent) {
     if (subsequent) {
@@ -209,7 +357,11 @@ void EAXCop::Offroad(unsigned int id, bool subsequent) {
     }
 }
 
-void EAXCop::WeatherReport() {}
+void EAXCop::WeatherReport() {
+    Csis::AnytimeEvents_WeatherReportStruct data;
+    data.speaker_id = mSpeakerID;
+    ScheduleSpeech_AnytimeEvents_WeatherReport(data, Csis::AnytimeEvents_WeatherReportId, Csis::gAnytimeEvents_WeatherReportHandle, this);
+}
 
 void EAXCop::CallForRB() {}
 
@@ -227,7 +379,11 @@ void EAXCop::RBEngage(bool spikes_hit) {
 
 void EAXCop::PursuitApproaching() {}
 
-void EAXCop::RBAverted() {}
+void EAXCop::RBAverted() {
+    Csis::StaticRoadblock_RBAvertedStruct data;
+    data.speaker_id = mSpeakerID;
+    ScheduleSpeech_StaticRoadblock_RBAverted(data, Csis::StaticRoadblock_RBAvertedId, Csis::gStaticRoadblock_RBAvertedHandle, this);
+}
 
 void EAXCop::CallForSubRB() {}
 
@@ -259,7 +415,11 @@ void EAXCop::SuspectSpunout(Csis::Type_intensity intensity) {
     mLastEvent = intensity;
 }
 
-void EAXCop::SuspectBrake() {}
+void EAXCop::SuspectBrake() {
+    Csis::AnytimeEvents_SuspectBrakeStruct data;
+    data.speaker_id = mSpeakerID;
+    ScheduleSpeech_AnytimeEvents_SuspectBrake(data, Csis::AnytimeEvents_SuspectBrakeId, Csis::gAnytimeEvents_SuspectBrakeHandle, this);
+}
 
 void EAXCop::SwapVoices(EAXCop *cop) {
     if (cop) {
