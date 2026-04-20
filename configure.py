@@ -1483,6 +1483,11 @@ config.custom_build_rules = [
         "name": "hashgen",
         "command": f"$python tools/hasher.py $in $out",
         "description": "HASH $out",
+    },
+    {
+        "name": "source_guard",
+        "command": f"$python tools/source_guard.py $in $out",
+        "description": "GUARD $in",
     }
 ]
 
@@ -1497,11 +1502,20 @@ for src_path in sourcelist_files:
     gen_header = Path(
         str(src_path).replace("SourceLists", "Src/Generated/Hashes/")
     ).with_suffix(".h")
+    guard_stamp = config.out_path() / "source_guard" / f"{src_path.stem}.ok"
     precompile_steps.append(
         {
             "rule": "hashgen",
             "inputs": str(src_path),
             "outputs": str(gen_header),
+        }
+    )
+    precompile_steps.append(
+        {
+            "rule": "source_guard",
+            "inputs": str(src_path),
+            "outputs": str(guard_stamp),
+            "implicit": "tools/source_guard.py",
         }
     )
 
