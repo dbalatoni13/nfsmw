@@ -1,17 +1,112 @@
 #include "SoundAI.h"
 #include "Speed/Indep/Src/EAXSound/Csis.hpp"
+#include "Speed/Indep/Src/EAXSound/Stream/SpeechManager.hpp"
+#include "Speed/Indep/Src/Generated/Messages/MControlPathfinder.h"
+#include "Speed/Indep/Src/Generated/Messages/MGamePlayMoment.h"
 #include "Speed/Indep/Src/Generated/Messages/MMiscSound.h"
+#include "Speed/Indep/Src/Generated/Messages/MPerpBusted.h"
+#include "Speed/Indep/Src/Generated/Messages/MRestartRace.h"
 
 namespace MiscSpeech {
 bool GetLocation(RoadNames road, int &region, int &location) asm("GetLocation__10MiscSpeech9RoadNamesRQ24Csis20Type_location_regionRQ24Csis13Type_location");
+}
+
+namespace Speech {
+void Observer_Observe(void *observer, int observation, int speaker, float score) asm("Observe__Q26Speech8Observeriif");
+void RoadblockFlow_NailedSomethingInRB(void *rbflow, unsigned int key) asm("NailedSomethingInRB__Q26Speech13RoadblockFlowUi");
+}
+
+extern float lbl_80407BA8;
+
+void SoundAI::MessagePerpBusted(const MPerpBusted &) {
+    mFocus = kTerminal;
+    if (mMusicFlow) {
+        MControlPathfinder msg(false, 0xF, 0, 0);
+        msg.Send(UCrc32("Event"));
+    }
+    mFlags |= BUSTED;
+}
+
+void SoundAI::MessageAIPerpBusted(const MPerpBusted &) {
+    if (mPursuitState != kInactive) {
+        EAXCop *cop = FindFurthestCop(true);
+        if (cop) {
+            cop->Arrest();
+        }
+    }
 }
 
 void SoundAI::MessageInfraction(const MMiscSound &message) {
     mInfraction = message.GetSoundID();
 }
 
+void SoundAI::MessageRestart(const MRestartRace &) {
+    ResetPursuit(true);
+    Speech::Module *cop_speech = Speech::Manager::GetSpeechModule(1);
+    if (cop_speech) {
+        cop_speech->ReleaseResource();
+    }
+    Speech::Manager::ClearPlayback();
+}
+
+void SoundAI::MessageUnspawnCop(const MUnspawnCop &message) {
+    EAXCop *cop = mActors.Find(message.GetCopHandle());
+    int param;
+
+    if (!cop) {
+        return;
+    }
+    param = message.GetParam();
+    if (param != 2) {
+        if (param < 3) {
+            if (param == 0) {
+                goto remove_cop;
+            }
+            if (param == 1) {
+                goto deactivate_cop;
+            }
+            goto remove_cop;
+        }
+        if (param < 7) {
+deactivate_cop:
+            cop->SetActive(false);
+            return;
+        }
+    }
+remove_cop:
+    RemoveCop(message.GetCopHandle());
+}
+
+void SoundAI::MessageTireBlown(const MGamePlayMoment &) {
+    EAXCop *spkr;
+    void *observer;
+    int speaker;
+
+    if (mRoadblockFlow) {
+        Speech::RoadblockFlow_NailedSomethingInRB(mRoadblockFlow, 0x10);
+    }
+    spkr = FindClosestCop(true, true);
+    observer = mObserver;
+    if (observer && spkr) {
+        speaker = spkr->GetSpeakerID();
+        Speech::Observer_Observe(observer, 0xE, speaker, lbl_80407BA8);
+    }
+}
+
 void SoundAI::OnVehicleAdded(IVehicle *ivehicle) {
     Sim::Collision::AddListener(this, ivehicle, "SoundAI");
+}
+
+void SoundAI::OnVehicleRemoved(IVehicle *ivehicle) {
+    Sim::Collision::RemoveListener(this, ivehicle);
+
+    EAXCop *cop = *reinterpret_cast<EAXCop **>(reinterpret_cast<char *>(mObserver) + 0x60);
+    if (cop) {
+        EAXCop *actor = mActors.Find(ivehicle->GetSimable()->GetOwnerHandle());
+        if (actor == cop) {
+            *reinterpret_cast<EAXCop **>(reinterpret_cast<char *>(mObserver) + 0x60) = 0;
+        }
+    }
 }
 
 bool SoundAI::IsMusicActive() {
