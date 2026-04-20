@@ -1068,3 +1068,106 @@ void SoundAI::AddNewCop(IVehicle *newcop) {
         }
     }
 }
+
+void SoundAI::ShuffleActors() {
+    if (mActors.empty()) {
+        return;
+    }
+
+    Speech::copList active;
+    Speech::copList inactive;
+    active.reserve(mActors.size());
+    inactive.reserve(mActors.size());
+
+    Speech::copMap::iterator iter = mActors.begin();
+    while (iter != mActors.end()) {
+        EAXCop *cop = iter->cop;
+        if (cop->IsActive()) {
+            active.push_back(cop);
+        } else {
+            inactive.push_back(cop);
+        }
+        ++iter;
+    }
+
+    Speech::copList::iterator i = inactive.begin();
+    while (i != inactive.end()) {
+        EAXCop *inact = *i;
+        Speech::copList::iterator j = active.begin();
+        while (j != active.end()) {
+            EAXCop *act = *j;
+            if (inact->GetSpeakerID() == act->GetSpeakerID()) {
+                RemoveCop(inact->GetHandle());
+                break;
+            }
+            ++j;
+        }
+        ++i;
+    }
+
+    bool changed = true;
+    while (changed) {
+        changed = false;
+        active.clear();
+        Speech::copMap::iterator it = mActors.begin();
+        while (it != mActors.end()) {
+            EAXCop *cop = it->cop;
+            if (cop->IsActive()) {
+                active.push_back(cop);
+            }
+            ++it;
+        }
+
+        Speech::copList::iterator a = active.begin();
+        while (a != active.end()) {
+            Speech::copList::iterator b = a;
+            ++b;
+            while (b != active.end()) {
+                if ((*a)->GetSpeakerID() == (*b)->GetSpeakerID() && ((*a)->GetHandle() != (*b)->GetHandle())) {
+                    if ((*b)->GetDistance() <= (*a)->GetDistance()) {
+                        RemoveCop((*a)->GetHandle());
+                    } else {
+                        RemoveCop((*b)->GetHandle());
+                    }
+                    changed = true;
+                    break;
+                }
+                ++b;
+            }
+            if (changed) {
+                break;
+            }
+            ++a;
+        }
+    }
+
+    active.clear();
+    Speech::copMap::iterator final_iter = mActors.begin();
+    while (final_iter != mActors.end()) {
+        EAXCop *cop = final_iter->cop;
+        if (cop->IsActive()) {
+            active.push_back(cop);
+        }
+        ++final_iter;
+    }
+
+    if (!active.empty()) {
+        if (!mLeader || !mLeader->IsActive() || mLeader->IsHeli()) {
+            Speech::copList::iterator c = active.begin();
+            while (c != active.end()) {
+                EAXCop *cop = *c;
+                if (cop->IsPrimary() && cop->HasLOS()) {
+                    mLeader = cop;
+                    if ((mFocus == kStrategyFlow) && !mLeader->HasLOS()) {
+                        mLeader->SpotterWanted();
+                    }
+                    break;
+                }
+                ++c;
+            }
+        }
+        if (mLeader && !mLeader->IsPrimary()) {
+            MakeLeader(mLeader);
+        }
+    }
+}
