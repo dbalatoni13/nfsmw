@@ -111,28 +111,28 @@ class EAXCharacter : public AudioMemBase {
         return mHealth;
     }
 
-    virtual int IsActive() {
-        return *reinterpret_cast<unsigned int *>(&mActive);
+    virtual bool IsActive() {
+        return mActive;
     }
 
     virtual void SetActive(bool active) {
-        *reinterpret_cast<unsigned int *>(&mActive) = active;
+        mActive = active;
     }
 
     virtual float GetSpeed() {
         return mSpeed;
     }
 
-    virtual int IsDead() {
-        return *reinterpret_cast<unsigned int *>(&mDestroyed);
+    virtual bool IsDead() {
+        return mDestroyed;
     }
 
-    virtual int HasLOS() {
-        return *reinterpret_cast<unsigned int *>(&mSuspectLOS);
+    virtual bool HasLOS() {
+        return mSuspectLOS;
     }
 
     virtual void SetLOS(bool yes) {
-        *reinterpret_cast<unsigned int *>(&mSuspectLOS) = yes;
+        mSuspectLOS = yes;
     }
 
     virtual Type_code GetRandomizedCode() {
