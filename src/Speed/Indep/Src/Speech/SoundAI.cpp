@@ -5,6 +5,10 @@
 #include "Speed/Indep/Src/Misc/Config.h"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 #include "Speed/Indep/Src/Sim/Simulation.h"
+#include "Speed/Indep/Src/EAXSound/AudioMemoryManager.hpp"
+#include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
+#include "Speed/Indep/Src/Main/AttribSupport.h"
+#include "Speed/Indep/Src/Speech/EAXCharacter.h"
 #include "Speed/Indep/Src/Generated/Messages/MControlPathfinder.h"
 #include "Speed/Indep/Src/Generated/Messages/MGamePlayMoment.h"
 #include "Speed/Indep/Src/Generated/Messages/MMiscSound.h"
@@ -46,12 +50,243 @@ void Observer_Reset(void *observer) asm("Reset__Q26Speech8Observer");
 void MusicFlow_Reset(void *flow) asm("Reset__Q26Speech9MusicFlow");
 void MusicFlow_Reacquire(void *flow) asm("Reacquire__Q26Speech9MusicFlow");
 void Manager_ResetGlobalHistory() asm("ResetGlobalHistory__Q26Speech7Manager");
+void *PursuitFlow_Ctor(void *flow) asm("__Q26Speech11PursuitFlow");
+void *StrategyFlow_Ctor(void *flow) asm("__Q26Speech12StrategyFlow");
+void *Observer_Ctor(void *observer) asm("__Q26Speech8Observer");
+void *RoadblockFlow_Ctor(void *flow) asm("__Q26Speech13RoadblockFlow");
+void *MusicFlow_Ctor(void *flow) asm("__Q26Speech9MusicFlow");
+void PursuitFlow_Dtor(void *flow, int in_chrg) asm("_._Q26Speech11PursuitFlow");
+void StrategyFlow_Dtor(void *flow, int in_chrg) asm("_._Q26Speech12StrategyFlow");
+void Observer_Dtor(void *observer, int in_chrg) asm("_._Q26Speech8Observer");
+void RoadblockFlow_Dtor(void *flow, int in_chrg) asm("_._Q26Speech13RoadblockFlow");
+void MusicFlow_Dtor(void *flow, int in_chrg) asm("_._Q26Speech9MusicFlow");
 }
 
 extern float lbl_80407BA8;
+extern float lbl_80407BA4;
 extern int FORCE_VOICE_RANDOMIZATION;
 extern bool IsSpeechEnabled;
 extern short Speech_Manager_mLastSpeakerID asm("_Q26Speech7Manager.mLastSpeakerID");
+
+SoundAI::SoundAI()
+    : Sim::Activity(1),
+      mMainUpdate(0),
+      mProcessObservations(0),
+      mFlags(0),
+      mActors(10),
+      mUsage(),
+      mDispatch(0),
+      mLeader(0),
+      mHeli(0),
+      mCopsInFormation(),
+      mDeadAir(0.0f),
+      mLastCopInFormation(0),
+      mLatestCop(0),
+      mPlayerHeat(0),
+      mPlayerSpeed(0.0f),
+      mPlayerPos(UMath::Vector3::kZero),
+      mSmoothedFWRoad(UMath::Vector3::kZero),
+      mPursuit(0),
+      mAIPursuit(0),
+      mFocus(kPursuitFlow),
+      mPursuitDist(0.0f),
+      mT_PerpLastSeen(0.0f),
+      mLOSCount(0),
+      mTrafficHits911(0),
+      mCTS911(0),
+      mHavoc(0),
+      mPursuitCount(0),
+      mNumRoadBlocks(0),
+      mRacerCount(0),
+      mClosestRacerDist(0.0f),
+      mTimeSinceLastChase(0.0f),
+      mPVehicle(static_cast<const Attrib::Collection *>(0), 0, 0),
+      mTune(static_cast<const Attrib::Collection *>(0), 0, 0),
+      mPursuitLevel(static_cast<const Attrib::Collection *>(0), 0, 0),
+      mPursuitState(kInactive),
+      mQuadrantState(kReset),
+      mRecentBlowby(),
+      mInfraction(-1),
+      mNumCopsInWave(0),
+      mNumActiveCopCars(0),
+      mPlayerOffroadID(-1),
+      mCopsInView(0),
+      mPursuitFlow(0),
+      mStrategyFlow(0),
+      mObserver(0),
+      mRoadblockFlow(0),
+      mMusicFlow(0),
+      mT_outofFormation(0),
+      mT_reallylowspeed(0),
+      mT_noLOS(0),
+      mT_LOS(0),
+      mT_lastCrashed(0),
+      mT_lastCopNailed(0),
+      mT_pursuitStart(WorldTimer),
+      mT_sinceLastPursuit(0),
+      mPlayerCarCustom(0),
+      mAICarCustom(0),
+      mActorPool(0),
+      mMsgPerpBusted(0),
+      mMsgAIPerpBusted(0),
+      mMsgForcePursuitStart(0),
+      mMsgRestartRace(0),
+      mMsgInfraction(0),
+      mMsgUnspawnCop(0),
+      mMsgTireBlown(0) {
+    mMainUpdate = AddTask("Speech", 1.0f, 0.0f, Sim::TASK_FRAME_FIXED);
+    mProcessObservations = AddTask("Comment", 1.0f, 0.0f, Sim::TASK_FRAME_FIXED);
+
+    mUsage.voices.reserve(8);
+    mUsage.cs_Rhino.reserve(6);
+    mUsage.cs_SuperPursuit.reserve(6);
+    mUsage.cs_City.reserve(20);
+    mUsage.cs_Coastal.reserve(10);
+    mUsage.cs_Rosewood.reserve(10);
+    mUsage.cs_Alpine.reserve(10);
+
+    mMsgPerpBusted = Hermes::Handler::Create<MPerpBusted, SoundAI, SoundAI>(this, &SoundAI::MessagePerpBusted, "Speech", 0);
+    mMsgAIPerpBusted = Hermes::Handler::Create<MPerpBusted, SoundAI, SoundAI>(this, &SoundAI::MessageAIPerpBusted, "AIRacerBusted", 0);
+    mMsgRestartRace = Hermes::Handler::Create<MRestartRace, SoundAI, SoundAI>(this, &SoundAI::MessageRestart, "Speech", 0);
+    mMsgInfraction = Hermes::Handler::Create<MMiscSound, SoundAI, SoundAI>(this, &SoundAI::MessageInfraction, "Infraction", 0);
+    mMsgUnspawnCop = Hermes::Handler::Create<MUnspawnCop, SoundAI, SoundAI>(this, &SoundAI::MessageUnspawnCop, "SoundAI", 0);
+    mMsgTireBlown = Hermes::Handler::Create<MGamePlayMoment, SoundAI, SoundAI>(this, &SoundAI::MessageTireBlown, "TireBlo", 0);
+
+    SoundAI::mRefCount = 1;
+    mRecentBlowby.distance = lbl_80407BA4;
+    mRecentBlowby.speed = 0.0f;
+    mRecentBlowby.timestamp = Timer(0);
+
+    Sim::ProfileTask(mMainUpdate, "Speech");
+    Sim::ProfileTask(mProcessObservations, "Speech");
+
+    mTune.Change(Attrib::FindCollectionWithDefault(Attrib::Gen::speechtune::ClassKey(), 0));
+    mPursuitLevel.Change(Attrib::FindCollectionWithDefault(Attrib::Gen::pursuitlevels::ClassKey(), 0));
+
+    mActorPool = bNewSlotPool(0xA0, 10, "VoiceActors slotpool", AudioMemoryPool);
+    if (mActorPool) {
+        mActorPool->ClearFlag(SLOTPOOL_FLAG_OVERFLOW_IF_FULL);
+        mActorPool->ClearFlag(SLOTPOOL_FLAG_WARN_IF_NONEMPTY_DELETE);
+    }
+
+    mDispatch = reinterpret_cast<EAXDispatch *>(new EAXCharacter(1, 0, 0, 0));
+    mPursuitFlow = reinterpret_cast<PursuitFlow *>(Speech::PursuitFlow_Ctor(::operator new(0x28)));
+    mStrategyFlow = reinterpret_cast<StrategyFlow *>(Speech::StrategyFlow_Ctor(::operator new(0x48)));
+    mObserver = reinterpret_cast<Observer *>(Speech::Observer_Ctor(::operator new(0xA0)));
+    mRoadblockFlow = reinterpret_cast<RoadblockFlow *>(Speech::RoadblockFlow_Ctor(::operator new(0x44)));
+    mMusicFlow = reinterpret_cast<MusicFlow *>(Speech::MusicFlow_Ctor(::operator new(0x68)));
+
+    for (int i = 0; i < 2; i++) {
+        mPlayerCurrent[i].direction = CalcPlayerDirection(false);
+        mPlayerCurrent[i].roadID = untagged;
+        mAICurrent[i].direction = 0;
+        mAICurrent[i].roadID = untagged;
+    }
+
+    mLastKnown.direction = 0;
+    mLastKnown.roadID = untagged;
+    mAILastKnown.direction = 0;
+    mAILastKnown.roadID = untagged;
+
+    for (int i = 3; i < 10; i++) {
+        mUsage.voices.push_back(i);
+    }
+    for (unsigned int ndx = 0; ndx < mUsage.voices.size(); ndx++) {
+        int rand = bRandom(static_cast<int>(mUsage.voices.size()));
+        int rand_voice = mUsage.voices[rand];
+        int curr_voice = mUsage.voices[ndx];
+        if (rand_voice != curr_voice) {
+            mUsage.voices[ndx] = rand_voice;
+            mUsage.voices[rand] = curr_voice;
+        }
+    }
+
+    ModifyTask(mMainUpdate, 1.0f);
+    ModifyTask(mProcessObservations, 1.0f);
+}
+
+SoundAI::~SoundAI() {
+    SoundAI::mRefCount = 0;
+    RemoveTask(mMainUpdate);
+    RemoveTask(mProcessObservations);
+
+    Speech::copMap::iterator iter = mActors.begin();
+    while (iter != mActors.end()) {
+        EAXCop *cop = iter->cop;
+        if (cop) {
+            delete cop;
+        }
+        ++iter;
+    }
+    mActors.clear();
+    mCopsInFormation.clear();
+
+    if (mActorPool) {
+        bDeleteSlotPool(mActorPool);
+        mActorPool = 0;
+    }
+
+    Sim::Collision::RemoveListener(this);
+
+    if (mPursuitFlow) {
+        Speech::PursuitFlow_Dtor(mPursuitFlow, 3);
+        mPursuitFlow = 0;
+    }
+    if (mStrategyFlow) {
+        Speech::StrategyFlow_Dtor(mStrategyFlow, 3);
+        mStrategyFlow = 0;
+    }
+    if (mObserver) {
+        Speech::Observer_Dtor(mObserver, 3);
+        mObserver = 0;
+    }
+    if (mRoadblockFlow) {
+        Speech::RoadblockFlow_Dtor(mRoadblockFlow, 3);
+        mRoadblockFlow = 0;
+    }
+    if (mMusicFlow) {
+        Speech::MusicFlow_Dtor(mMusicFlow, 3);
+        mMusicFlow = 0;
+    }
+
+    if (mPlayerCarCustom) {
+        delete mPlayerCarCustom;
+        mPlayerCarCustom = 0;
+    }
+    if (mAICarCustom) {
+        delete mAICarCustom;
+        mAICarCustom = 0;
+    }
+
+    if (mMsgPerpBusted) {
+        Hermes::Handler::Destroy(mMsgPerpBusted);
+        mMsgPerpBusted = 0;
+    }
+    if (mMsgAIPerpBusted) {
+        Hermes::Handler::Destroy(mMsgAIPerpBusted);
+        mMsgAIPerpBusted = 0;
+    }
+    if (mMsgForcePursuitStart) {
+        Hermes::Handler::Destroy(mMsgForcePursuitStart);
+        mMsgForcePursuitStart = 0;
+    }
+    if (mMsgRestartRace) {
+        Hermes::Handler::Destroy(mMsgRestartRace);
+        mMsgRestartRace = 0;
+    }
+    if (mMsgInfraction) {
+        Hermes::Handler::Destroy(mMsgInfraction);
+        mMsgInfraction = 0;
+    }
+    if (mMsgUnspawnCop) {
+        Hermes::Handler::Destroy(mMsgUnspawnCop);
+        mMsgUnspawnCop = 0;
+    }
+    if (mMsgTireBlown) {
+        Hermes::Handler::Destroy(mMsgTireBlown);
+        mMsgTireBlown = 0;
+    }
+}
 
 void SoundAI::MessagePerpBusted(const MPerpBusted &) {
     mFocus = kTerminal;
