@@ -541,6 +541,64 @@ EAXCop *SoundAI::GetRandomCop(int type) {
     return spkr;
 }
 
+EAXCop *SoundAI::GetRandomActiveCop(int type, bool reqLOS) {
+    Speech::copList active;
+    active.reserve(mActors.size());
+
+    Speech::copMap::iterator iter = mActors.begin();
+    while (iter != mActors.end()) {
+        EAXCop *cop = iter->cop;
+        if (cop->IsActive() && (!reqLOS || cop->HasLOS())) {
+            active.push_back(cop);
+        }
+        ++iter;
+    }
+
+    if (active.empty()) {
+        return 0;
+    }
+
+    if ((type == 0) && (active.size() > 1)) {
+        return active[bRandom(static_cast<int>(active.size()))];
+    }
+
+    if (active.size() == 1) {
+        EAXCop *cop = active.front();
+        if (type == 1) {
+            if (!cop->IsPrimary()) {
+                return 0;
+            }
+        } else if (type == 2) {
+            if (cop->IsPrimary()) {
+                return 0;
+            }
+        } else if (type != 0) {
+            return 0;
+        }
+        return cop;
+    }
+
+    if ((type != 1) && (type != 2)) {
+        return 0;
+    }
+
+    Speech::copList secondaries;
+    secondaries.reserve(active.size());
+    Speech::copList::iterator i = active.begin();
+    while (i != active.end()) {
+        EAXCop *cop = *i;
+        if ((type == 1 && cop->IsPrimary()) || (type == 2 && !cop->IsPrimary())) {
+            secondaries.push_back(cop);
+        }
+        ++i;
+    }
+
+    if (!secondaries.empty()) {
+        return secondaries[bRandom(static_cast<int>(secondaries.size()))];
+    }
+    return 0;
+}
+
 void SoundAI::RandomizeCallsign(Speech::voiceIDs &cs, Csis::Type_speaker_call_sign_id start, Csis::Type_speaker_call_sign_id finish) {
     if (cs.empty()) {
         int i = start;
