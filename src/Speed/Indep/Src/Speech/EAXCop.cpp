@@ -459,6 +459,7 @@ extern void ScheduleSpeech_Backup_CallForBU(Csis::Backup_CallForBUStruct &data, 
 extern void ScheduleSpeech_Outcome_StrategyReset(Csis::Outcome_StrategyResetStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis27Outcome_StrategyResetStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
 extern void ScheduleSpeech_StaticRoadblock_RBEngage(Csis::StaticRoadblock_RBEngageStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis30StaticRoadblock_RBEngageStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
 extern void ScheduleSpeech_StaticRoadblock_RBApproach(Csis::StaticRoadblock_RBApproachStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis32StaticRoadblock_RBApproachStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
+extern void FlushSpeechForActor(EAXCharacter *actor) asm("FlushSpeechForActor__Q26Speech7ManagerP12EAXCharacter");
 
 EAXCop::EAXCop(int speakerID, HSIMABLE handle, int bID, int cID)
     : EAXCharacter(speakerID, handle, bID, cID) {
@@ -496,7 +497,9 @@ EAXCop::EAXCop(int speakerID, HSIMABLE handle, int bID, int cID)
     }
 }
 
-EAXCop::~EAXCop() {}
+EAXCop::~EAXCop() {
+    FlushSpeechForActor(this);
+}
 
 int EAXCop::GetBackupTypeFromDispatch(int type) {
     switch (type) {
@@ -1098,12 +1101,13 @@ void EAXCop::RBApproach() {
         IRoadBlock *roadblock = ai->GetRoadblock();
         if (roadblock) {
             Csis::StaticRoadblock_RBApproachStruct data;
-            int approach_type = 1;
+            int roadblock_type;
             data.speaker_id = mSpeakerID;
-            if (roadblock->GetNumCops() > 0) {
-                approach_type = 2;
+            roadblock_type = 1;
+            if (roadblock->GetNumSpikeStrips() > 0) {
+                roadblock_type = 2;
             }
-            data.approach_type = approach_type;
+            data.approach_type = roadblock_type;
             ScheduleSpeech_StaticRoadblock_RBApproach(data, Csis::StaticRoadblock_RBApproachId, Csis::gStaticRoadblock_RBApproachHandle, this);
         }
     }
@@ -1222,7 +1226,11 @@ void EAXCop::SwapVoices(EAXCop *cop) {
 }
 
 bool EAXCop::IsPrimary() {
-    return mRank == 0;
+    int speaker_id = mSpeakerID;
+    if ((speaker_id - 2U <= 3) || (speaker_id == 9)) {
+        return true;
+    }
+    return false;
 }
 
 bool EAXCop::SetRank(int newrank) {
