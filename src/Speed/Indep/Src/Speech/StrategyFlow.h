@@ -1,5 +1,5 @@
-#ifndef SPEECH_ROADBLOCKFLOW_H
-#define SPEECH_ROADBLOCKFLOW_H
+#ifndef SPEECH_STRATEGYFLOW_H
+#define SPEECH_STRATEGYFLOW_H
 
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
@@ -9,17 +9,15 @@
 
 namespace Speech {
 
-class RoadblockFlow : public SpeechFlow {
+class StrategyFlow : public SpeechFlow {
   public:
-    RoadblockFlow();
-    virtual ~RoadblockFlow();
+    StrategyFlow();
+    virtual ~StrategyFlow();
     virtual void Update();
     virtual bool IsTransitionable();
     virtual void Reset();
-    virtual void NailedSomethingInRB(unsigned int key);
 };
 
 } // namespace Speech
-
 
 #endif

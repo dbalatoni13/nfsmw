@@ -8,7 +8,7 @@ Module *sSpeechModules[NUM_SPEECH_MODULES] = { 0, 0 };
 }
 
 Module *Manager::GetSpeechModule(int nindex) {
-    if (nindex >= NUM_SPEECH_MODULES) {
+    if (nindex > 1) {
         return 0;
     }
     return sSpeechModules[nindex];
@@ -51,9 +51,8 @@ Module::~Module() {}
 
 unsigned int Module::GetBankOffset(int bnum) {
     for (int i = 0; i < m_numBanks; i++) {
-        int *entry = reinterpret_cast<int *>(reinterpret_cast<char *>(m_speechBanks) + i * 12);
-        if (entry[1] == bnum) {
-            return static_cast<unsigned int>(entry[2]);
+        if (m_speechBanks[i].bank == bnum) {
+            return static_cast<unsigned int>(m_speechBanks[i].offset);
         }
     }
     return static_cast<unsigned int>(-1);

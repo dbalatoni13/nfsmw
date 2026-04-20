@@ -485,19 +485,6 @@ extern FunctionHandle gStaticRoadblock_RBApproachHandle;
 extern void FlushSpeechForActor(EAXCharacter *actor) asm("FlushSpeechForActor__Q26Speech7ManagerP12EAXCharacter");
 extern int GetCount_EventHistory(void *history, int event_id) asm("GetCount__Q26Speech12EventHistory18SPCHType_1_EventID");
 extern unsigned char gSpeechManagerGlobalHistory[] asm("_Q26Speech7Manager.mGlobalHistory");
-extern "C" float lbl_804074DC;
-extern "C" float lbl_804074E0;
-extern "C" float lbl_804074D0;
-extern "C" float lbl_804074D4;
-extern "C" float lbl_804074D8;
-extern "C" float lbl_80407484;
-extern "C" float lbl_8040746C;
-extern "C" float lbl_80407470;
-extern "C" float lbl_80407468;
-extern "C" float lbl_8040745C;
-extern "C" float lbl_80407490;
-extern "C" float lbl_80407494;
-extern "C" float lbl_80407498;
 extern "C" float speed_test_28362[] asm("speed_test.28362");
 
 EAXCop::EAXCop(int speakerID, HSIMABLE handle, int bID, int cID)
@@ -563,7 +550,7 @@ void EAXCop::Update() {
     if (!handle) {
         *reinterpret_cast<unsigned int *>(&mInPosition) = 0;
         *reinterpret_cast<unsigned int *>(&mInFormation) = 0;
-        mPctTractiveTires = lbl_8040745C;
+        mPctTractiveTires = 1.0f;
         mTimeAirborne = WorldTimer;
         EAXCharacter::Reset();
         return;
@@ -612,9 +599,9 @@ void EAXCop::Update() {
     if (suspension) {
         if (*reinterpret_cast<unsigned int *>(&mActive) == 0) {
             mTimeAirborne = WorldTimer;
-            mPctTractiveTires = lbl_8040745C;
+            mPctTractiveTires = 1.0f;
         } else {
-            mPctTractiveTires = lbl_8040745C;
+            mPctTractiveTires = 1.0f;
             int num_wheels_on_ground = (*reinterpret_cast<int (**)(void *)>(*reinterpret_cast<char **>(suspension) + 0x1C))(reinterpret_cast<char *>(suspension) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(suspension) + 0x18));
             if (num_wheels_on_ground != 0) {
                 unsigned int wheel_traction = (*reinterpret_cast<unsigned int (**)(void *)>(*reinterpret_cast<char **>(suspension) + 0xA4))(reinterpret_cast<char *>(suspension) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(suspension) + 0xA0));
@@ -622,12 +609,12 @@ void EAXCop::Update() {
                 wheel_traction = wheel_traction / num_wheels;
                 mPctTractiveTires = static_cast<float>(wheel_traction);
             }
-            if (mPctTractiveTires > lbl_80407468) {
+            if (mPctTractiveTires > 0.25f) {
                 mTimeAirborne = WorldTimer;
             }
         }
     } else {
-        mPctTractiveTires = lbl_8040745C;
+        mPctTractiveTires = 1.0f;
         mTimeAirborne = WorldTimer;
     }
 
@@ -689,7 +676,7 @@ void EAXCop::SetActive(bool activity) {
         }
 
         if (*reinterpret_cast<unsigned int *>(&mSuspectLOS) != 0) {
-            if (bRandom(lbl_8040746C) > lbl_80407470) {
+            if (bRandom(1.0f) > 0.5f) {
                 (*reinterpret_cast<void (**)(void *)>(*reinterpret_cast<char **>(this) + 0x28C))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x288));
             } else {
                 (*reinterpret_cast<void (**)(void *)>(*reinterpret_cast<char **>(this) + 0x1BC))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x1B8));
@@ -714,7 +701,7 @@ void EAXCop::SetActive(bool activity) {
                 return;
             }
 
-            if (bRandom(lbl_8040746C) > lbl_80407470) {
+            if (bRandom(1.0f) > 0.5f) {
                 (*reinterpret_cast<void (**)(void *)>(*reinterpret_cast<char **>(this) + 0x144))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x140));
             } else {
                 (*reinterpret_cast<void (**)(void *)>(*reinterpret_cast<char **>(this) + 0x1F4))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x1F0));
@@ -723,7 +710,7 @@ void EAXCop::SetActive(bool activity) {
         }
     }
 
-    if ((WorldTimer - mT_lastactivity).GetSeconds() < lbl_80407484) {
+    if ((WorldTimer - mT_lastactivity).GetSeconds() < 2.0f) {
         return;
     }
 
@@ -793,7 +780,7 @@ void EAXCop::AttemptVehicleStop() {
     if (ai) {
         int pursuit_type = 0x10;
         float t_last_nailed = ai->GetTimeLastNailedCop();
-        if (t_last_nailed >= lbl_80407490) {
+        if (t_last_nailed >= 5.0f) {
             int infraction = *reinterpret_cast<int *>(reinterpret_cast<char *>(ai) + 0x1F0);
             if (infraction > 0) {
                 switch (infraction) {
@@ -825,7 +812,7 @@ void EAXCop::AttemptVehicleStop() {
             } else {
                 if (ai->IsHighIntensity()) {
                     pursuit_type = 2;
-                } else if (bRandom(lbl_80407494) > lbl_80407498) {
+                } else if (bRandom(1.0f) > 0.5f) {
                     pursuit_type = 4;
                     if (*reinterpret_cast<int *>(reinterpret_cast<char *>(ai) + 0x154) > 0) {
                         pursuit_type = 4;
@@ -877,7 +864,7 @@ void EAXCop::VehicleReport() {
                 speedo = *reinterpret_cast<float *>(reinterpret_cast<char *>(ai) + 0x110);
                 if (*reinterpret_cast<unsigned char *>(reinterpret_cast<char *>(*reinterpret_cast<void **>(reinterpret_cast<char *>(FEDatabase) + 0x20)) + 0x44) == 1) {
                     data.measurement = 4;
-                    speedo = speedo * lbl_804074D0;
+                    speedo = speedo * 1.60931f;
                 } else {
                     data.measurement = 2;
                 }
@@ -888,7 +875,7 @@ void EAXCop::VehicleReport() {
                     data.speed = 1;
                     data.measurement = 1;
                 } else {
-                    if (bRandom(lbl_804074D4) > lbl_804074D8) {
+                    if (bRandom(1.0f) > 0.5f) {
                         data.measurement = 1;
                     }
                     data.speed = 2 << (ndx - 1);
@@ -970,7 +957,7 @@ void EAXCop::SelfStrategy(int type) {
         case 3:
         case 6:
             data.self_strategy_type = 4;
-            if (bRandom(lbl_804074DC) > lbl_804074E0) {
+            if (bRandom(1.0f) > 0.5f) {
                 data.self_strategy_type = 2;
             }
             break;
@@ -1261,15 +1248,13 @@ void EAXCop::PursuitUpdateReply() {
     ScheduleSpeech(data, Csis::AnytimeEvents_PursuitUpdateRepId, Csis::gAnytimeEvents_PursuitUpdateRepHandle, this);
 }
 
-extern "C" float lbl_8040749C;
-extern "C" float lbl_804074A0;
 
 void EAXCop::ReinitiatePursuit() {
     SoundAI *ai = SoundAI::Get();
     if (ai) {
         if (*reinterpret_cast<float *>(reinterpret_cast<char *>(ai) + 0x16C) < *reinterpret_cast<float *>(reinterpret_cast<char *>(*reinterpret_cast<void **>(reinterpret_cast<char *>(ai) + 0x18C)) + 0x7C)) {
             float speed = (*reinterpret_cast<float (**)(void *)>(*reinterpret_cast<char **>(this) + 0x3D4))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x3D0));
-            if (speed != lbl_8040749C) {
+            if (speed != 0.0f) {
                 (*reinterpret_cast<void (**)(void *)>(*reinterpret_cast<char **>(this) + 0x28C))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x288));
             } else {
                 (*reinterpret_cast<void (**)(void *)>(*reinterpret_cast<char **>(this) + 0x1BC))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x1B8));
@@ -1278,7 +1263,7 @@ void EAXCop::ReinitiatePursuit() {
             Csis::Setup_ReInitPursuitStruct data;
             int time_since_lost;
             int num_suspects;
-            if (*reinterpret_cast<float *>(reinterpret_cast<char *>(ai) + 0x16C) < lbl_804074A0) {
+            if (*reinterpret_cast<float *>(reinterpret_cast<char *>(ai) + 0x16C) < 30.0f) {
                 time_since_lost = 1;
             } else {
                 time_since_lost = 2;
@@ -1542,13 +1527,12 @@ void EAXCop::FocusChange() {
     ScheduleSpeech(data, Csis::AnytimeEvents_FocusChangeId, Csis::gAnytimeEvents_FocusChangeHandle, this);
 }
 
-extern "C" float lbl_804074E8;
 
 void EAXCop::Spotted() {
     Csis::AnytimeEvents_SpottedStruct data;
     data.speaker_id = mSpeakerID;
     int intensity;
-    if (GetSpeed() > lbl_804074E8) {
+    if (GetSpeed() > 80.0f) {
         intensity = 2;
     } else {
         intensity = 1;

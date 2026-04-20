@@ -120,9 +120,14 @@ class Manager {
     static void AttachSFXOBJ(SpeechModuleIndex module, SFX_Base *psb, eSFXOBJ_MAIN_TYPES type);
     static bool IsPlaying(SpeechModuleIndex module);
     static bool IsCopSpeechPlaying(SPCHType_1_EventID event);
+    static bool IsCopSpeechBusy();
+    static Timer GetTimeSinceLastEvent(SpeechModuleIndex module);
+    static void ResetGlobalHistory();
     static SampleReqList &GetSampleRequests() { return mSampleRequests; }
 
+    static Module *m_SpeechModule[NUM_SPEECH_MODULES];
     static short m_frameindex;
+    static short mLastSpeakerID;
     static SampleReqList mSampleRequests;
 };
 

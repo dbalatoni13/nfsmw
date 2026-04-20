@@ -55,7 +55,6 @@ extern FunctionHandle gAnytimeEvents_HeatJumpHandle;
 
 
 extern void *NullPointer;
-extern float lbl_80407430;
 
 EAXCharacter::EAXCharacter(int sID, HSIMABLE wID, int bID, int cID)
     : mCallsign(bID, cID) {
@@ -197,7 +196,7 @@ void EAXCharacter::Update() {
         mPos.z = pos.z;
         pPos = *reinterpret_cast<UMath::Vector3 *>(reinterpret_cast<char *>(ai) + 0x114);
         cPos = mPos;
-        mSpeed = vehicle->GetAbsoluteSpeed() * lbl_80407430;
+        mSpeed = vehicle->GetAbsoluteSpeed() * 2.23699f;
         VU0_v3sub(cPos, pPos, temp);
         mDistance = VU0_sqrt(VU0_v3lengthsquare(temp));
     }

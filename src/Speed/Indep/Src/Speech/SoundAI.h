@@ -55,6 +55,14 @@ enum Type_speaker_call_sign_id {
 };
 }
 
+namespace Speech {
+class PursuitFlow;
+class StrategyFlow;
+class Observer;
+class RoadblockFlow;
+class MusicFlow;
+}
+
 DECLARE_CONTAINER_TYPE(IVehiclePtrs);
 
 // total size: 0x260
@@ -401,11 +409,11 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
     int mNumActiveCopCars;                  // offset 0x1F8, size 0x4
     int mPlayerOffroadID;                   // offset 0x1FC, size 0x4
     unsigned char mCopsInView;              // offset 0x200, size 0x1
-    struct PursuitFlow *mPursuitFlow;       // offset 0x204, size 0x4
-    struct StrategyFlow *mStrategyFlow;     // offset 0x208, size 0x4
-    struct Observer *mObserver;             // offset 0x20C, size 0x4
-    struct RoadblockFlow *mRoadblockFlow;   // offset 0x210, size 0x4
-    struct MusicFlow *mMusicFlow;           // offset 0x214, size 0x4
+    Speech::PursuitFlow *mPursuitFlow;      // offset 0x204, size 0x4
+    Speech::StrategyFlow *mStrategyFlow;    // offset 0x208, size 0x4
+    Speech::Observer *mObserver;            // offset 0x20C, size 0x4
+    Speech::RoadblockFlow *mRoadblockFlow;  // offset 0x210, size 0x4
+    Speech::MusicFlow *mMusicFlow;          // offset 0x214, size 0x4
     Timer mT_outofFormation;                // offset 0x218, size 0x4
     Timer mT_reallylowspeed;                // offset 0x21C, size 0x4
     Timer mT_noLOS;                         // offset 0x220, size 0x4

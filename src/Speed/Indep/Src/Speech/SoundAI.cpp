@@ -1,4 +1,9 @@
 #include "SoundAI.h"
+#include "MusicFlow.h"
+#include "Observer.h"
+#include "PursuitFlow.h"
+#include "RoadblockFlow.h"
+#include "StrategyFlow.h"
 #include "Speed/Indep/Src/EAXSound/Csis.hpp"
 #include "Speed/Indep/Src/EAXSound/Stream/SpeechManager.hpp"
 #include "Speed/Indep/Src/Interfaces/Simables/IRenderable.h"
@@ -26,40 +31,18 @@
 #include "Speed/Indep/Src/Generated/Messages/MRestartRace.h"
 
 namespace MiscSpeech {
-bool GetLocation(RoadNames road, int &region, int &location) asm("GetLocation__10MiscSpeech9RoadNamesRQ24Csis20Type_location_regionRQ24Csis13Type_location");
-void LostSuspect(int speaker) asm("LostSuspect__10MiscSpeechi");
-void Bailout(int speaker) asm("Bailout__10MiscSpeechi");
-void QuadrantForming() asm("QuadrantForming__10MiscSpeech");
-void SuspectPossiblyGone() asm("SuspectPossiblyGone__10MiscSpeech");
-void QuadrantMoving() asm("QuadrantMoving__10MiscSpeech");
-void OtherLead() asm("OtherLead__10MiscSpeech");
-void PossibleSuspect() asm("PossibleSuspect__10MiscSpeech");
-void WrongSuspect() asm("WrongSuspect__10MiscSpeech");
+bool GetLocation(RoadNames road, int &region, int &location);
+void LostSuspect(int speaker);
+void Bailout(int speaker);
+void QuadrantForming();
+void SuspectPossiblyGone();
+void QuadrantMoving();
+void OtherLead();
+void PossibleSuspect();
+void WrongSuspect();
 }
 
 namespace Speech {
-void Observer_Observe(void *observer, int observation, int speaker, float score) asm("Observe__Q26Speech8Observeriif");
-void RoadblockFlow_NailedSomethingInRB(void *rbflow, unsigned int key) asm("NailedSomethingInRB__Q26Speech13RoadblockFlowUi");
-bool Manager_IsCopSpeechBusy() asm("IsCopSpeechBusy__Q26Speech7Manager");
-Timer Manager_GetTimeSinceLastEvent(SpeechModuleIndex module) asm("GetTimeSinceLastEvent__Q26Speech7Manager17SpeechModuleIndex");
-void SpeechFlow_ChangeStateTo(void *flow, int state) asm("ChangeStateTo__Q26Speech10SpeechFlowi");
-int SpeechFlow_GetState(void *flow) asm("GetState__Q26Speech10SpeechFlow");
-void PursuitFlow_Update(void *flow) asm("Update__Q26Speech11PursuitFlow");
-int PursuitFlow_IsTransitionable(void *flow) asm("IsTransitionable__Q26Speech11PursuitFlow");
-void StrategyFlow_Update(void *flow) asm("Update__Q26Speech12StrategyFlow");
-int StrategyFlow_IsTransitionable(void *flow) asm("IsTransitionable__Q26Speech12StrategyFlow");
-void MusicFlow_Update(void *flow) asm("Update__Q26Speech9MusicFlow");
-void Observer_Update(void *observer) asm("Update__Q26Speech8Observer");
-void RoadblockFlow_Update(void *flow) asm("Update__Q26Speech13RoadblockFlow");
-void PursuitFlow_Reset(void *flow) asm("Reset__Q26Speech11PursuitFlow");
-void StrategyFlow_Reset(void *flow) asm("Reset__Q26Speech12StrategyFlow");
-void RoadblockFlow_Reset(void *flow) asm("Reset__Q26Speech13RoadblockFlow");
-void PursuitFlow_OnCopRemoved(void *flow, EAXCop *cop) asm("OnCopRemoved__Q26Speech11PursuitFlowP6EAXCop");
-void PursuitFlow_Reacquire(void *flow) asm("Reacquire__Q26Speech11PursuitFlow");
-void Observer_Reset(void *observer) asm("Reset__Q26Speech8Observer");
-void MusicFlow_Reset(void *flow) asm("Reset__Q26Speech9MusicFlow");
-void MusicFlow_Reacquire(void *flow) asm("Reacquire__Q26Speech9MusicFlow");
-void Manager_ResetGlobalHistory() asm("ResetGlobalHistory__Q26Speech7Manager");
 void *PursuitFlow_Ctor(void *flow) asm("__Q26Speech11PursuitFlow");
 void *StrategyFlow_Ctor(void *flow) asm("__Q26Speech12StrategyFlow");
 void *Observer_Ctor(void *observer) asm("__Q26Speech8Observer");
@@ -70,18 +53,14 @@ void StrategyFlow_Dtor(void *flow, int in_chrg) asm("_._Q26Speech12StrategyFlow"
 void Observer_Dtor(void *observer, int in_chrg) asm("_._Q26Speech8Observer");
 void RoadblockFlow_Dtor(void *flow, int in_chrg) asm("_._Q26Speech13RoadblockFlow");
 void MusicFlow_Dtor(void *flow, int in_chrg) asm("_._Q26Speech9MusicFlow");
-bool Observer_WeatherExists(void *observer) asm("WeatherExists__Q26Speech8Observer");
 }
 
-extern float lbl_80407BA8;
-extern float lbl_80407BA4;
 extern int FORCE_VOICE_RANDOMIZATION;
 extern bool IsSpeechEnabled;
-extern short Speech_Manager_mLastSpeakerID asm("_Q26Speech7Manager.mLastSpeakerID");
 extern ParameterAccessor SPAMAccessorSpeech;
 
-void EAXDispatch_Report911(void *dispatch, int infraction) asm("Report911__11EAXDispatchQ24Csis17Type_pursuit_type");
-void EAXDispatch_JurisShift(void *dispatch, int jurisdiction) asm("JurisShift__11EAXDispatchQ24Csis17Type_jurisdiction");
+void EAXDispatch_Report911(void *dispatch, int infraction);
+void EAXDispatch_JurisShift(void *dispatch, int jurisdiction);
 
 static float prev_heat_30802 = 0.0f;
 
@@ -170,7 +149,7 @@ SoundAI::SoundAI()
     mMsgTireBlown = Hermes::Handler::Create<MGamePlayMoment, SoundAI, SoundAI>(this, &SoundAI::MessageTireBlown, "TireBlo", 0);
 
     SoundAI::mRefCount = 1;
-    mRecentBlowby.distance = lbl_80407BA4;
+    mRecentBlowby.distance = 32767.0f;
     mRecentBlowby.speed = 0.0f;
     mRecentBlowby.timestamp = Timer(0);
 
@@ -187,11 +166,11 @@ SoundAI::SoundAI()
     }
 
     mDispatch = reinterpret_cast<EAXDispatch *>(new EAXCharacter(1, 0, 0, 0));
-    mPursuitFlow = reinterpret_cast<PursuitFlow *>(Speech::PursuitFlow_Ctor(::operator new(0x28)));
-    mStrategyFlow = reinterpret_cast<StrategyFlow *>(Speech::StrategyFlow_Ctor(::operator new(0x48)));
-    mObserver = reinterpret_cast<Observer *>(Speech::Observer_Ctor(::operator new(0xA0)));
-    mRoadblockFlow = reinterpret_cast<RoadblockFlow *>(Speech::RoadblockFlow_Ctor(::operator new(0x44)));
-    mMusicFlow = reinterpret_cast<MusicFlow *>(Speech::MusicFlow_Ctor(::operator new(0x68)));
+    mPursuitFlow = reinterpret_cast<Speech::PursuitFlow *>(Speech::PursuitFlow_Ctor(::operator new(0x28)));
+    mStrategyFlow = reinterpret_cast<Speech::StrategyFlow *>(Speech::StrategyFlow_Ctor(::operator new(0x48)));
+    mObserver = reinterpret_cast<Speech::Observer *>(Speech::Observer_Ctor(::operator new(0xA0)));
+    mRoadblockFlow = reinterpret_cast<Speech::RoadblockFlow *>(Speech::RoadblockFlow_Ctor(::operator new(0x44)));
+    mMusicFlow = reinterpret_cast<Speech::MusicFlow *>(Speech::MusicFlow_Ctor(::operator new(0x68)));
 
     for (int i = 0; i < 2; i++) {
         mPlayerCurrent[i].direction = CalcPlayerDirection(false);
@@ -366,17 +345,17 @@ remove_cop:
 
 void SoundAI::MessageTireBlown(const MGamePlayMoment &) {
     EAXCop *spkr;
-    void *observer;
+    Speech::Observer *observer;
     int speaker;
 
     if (mRoadblockFlow) {
-        Speech::RoadblockFlow_NailedSomethingInRB(mRoadblockFlow, 0x10);
+        mRoadblockFlow->NailedSomethingInRB(0x10);
     }
     spkr = FindClosestCop(true, true);
     observer = mObserver;
     if (observer && spkr) {
         speaker = spkr->GetSpeakerID();
-        Speech::Observer_Observe(observer, 0xE, speaker, lbl_80407BA8);
+        observer->Observe(0xE, speaker, 1.0f);
     }
 }
 
@@ -441,7 +420,7 @@ void SoundAI::OnCollision(const COLLISION_INFO &cinfo) {
 
         if (impact >= mTune.MinIntensityCopSmash()) {
             Csis::Type_intensity intensity = (impact > 0.75f) ? Csis::Type_intensity_High : Csis::Type_intensity_Normal;
-            if (mObserver && Speech::Observer_WeatherExists(mObserver)) {
+            if (mObserver && mObserver->WeatherExists()) {
                 cop_actor->HeadOn(intensity);
             } else {
                 cop_actor->RearEnded(intensity);
@@ -452,7 +431,7 @@ void SoundAI::OnCollision(const COLLISION_INFO &cinfo) {
             RandomBailoutDeny(cop_actor);
         }
         if (mObserver) {
-            Speech::Observer_Observe(mObserver, 4, cop_actor->GetSpeakerID(), impact);
+            mObserver->Observe(4, cop_actor->GetSpeakerID(), impact);
         }
         return;
     }
@@ -505,7 +484,7 @@ void SoundAI::OnCollision(const COLLISION_INFO &cinfo) {
                 speaker = spkr->GetSpeakerID();
             }
             if (mObserver) {
-                Speech::Observer_Observe(mObserver, 7, speaker, impact);
+                mObserver->Observe(7, speaker, impact);
             }
             if (impact >= mTune.MinIntensityTrafficSmash()) {
                 mTrafficHits911++;
@@ -515,10 +494,10 @@ void SoundAI::OnCollision(const COLLISION_INFO &cinfo) {
 
         if (other_vehicle->GetDriverClass() == DRIVER_HUMAN) {
             if (mObserver) {
-                Speech::Observer_Observe(mObserver, 6, -1, impact);
+                mObserver->Observe(6, -1, impact);
             }
         } else if (mObserver) {
-            Speech::Observer_Observe(mObserver, 7, -1, impact);
+            mObserver->Observe(7, -1, impact);
         }
         return;
     }
@@ -543,7 +522,7 @@ void SoundAI::OnCollision(const COLLISION_INFO &cinfo) {
 
     if (other_vehicle->GetDriverClass() == DRIVER_TRAFFIC) {
         if (mObserver) {
-            Speech::Observer_Observe(mObserver, 2, -1, impact);
+            mObserver->Observe(2, -1, impact);
         }
         cop_actor->JustHitTraffic();
         if ((mPursuitState == kActive) && (mFocus == kStrategyFlow) && cop_actor->IsActive()) {
@@ -559,11 +538,11 @@ void SoundAI::OnCollision(const COLLISION_INFO &cinfo) {
         if (roadblock->IsComprisedOf(other_sim->GetOwnerHandle()) == other_vehicle) {
             cop_is_in_rb = true;
             if (mRoadblockFlow) {
-                Speech::RoadblockFlow_NailedSomethingInRB(mRoadblockFlow, 0x40);
+                mRoadblockFlow->NailedSomethingInRB(0x40);
             }
         }
     } else if (mObserver) {
-        Speech::Observer_Observe(mObserver, 3, -1, impact);
+        mObserver->Observe(3, -1, impact);
     }
 
     bool cop_is_braking = false;
@@ -692,13 +671,7 @@ void SoundAI::OnAttached(IAttachable *pOther) {
 void SoundAI::OnVehicleRemoved(IVehicle *ivehicle) {
     Sim::Collision::RemoveListener(this, ivehicle);
 
-    EAXCop *cop = *reinterpret_cast<EAXCop **>(reinterpret_cast<char *>(mObserver) + 0x60);
-    if (cop) {
-        EAXCop *actor = mActors.Find(ivehicle->GetSimable()->GetOwnerHandle());
-        if (actor == cop) {
-            *reinterpret_cast<EAXCop **>(reinterpret_cast<char *>(mObserver) + 0x60) = 0;
-        }
-    }
+    (void)ivehicle;
 }
 
 void SoundAI::OnDetached(IAttachable *pOther) {
@@ -1169,8 +1142,8 @@ bool SoundAI::IsHighIntensity() {
 bool SoundAI::OnTask(HSIMTASK htask, float) {
     float tout = 0.0f;
 
-    if (!Speech::Manager_IsCopSpeechBusy()) {
-        tout = (WorldTimer - Speech::Manager_GetTimeSinceLastEvent(COPSPEECH_MODULE)).GetSeconds();
+    if (!Speech::Manager::IsCopSpeechBusy()) {
+        tout = (WorldTimer - Speech::Manager::GetTimeSinceLastEvent(COPSPEECH_MODULE)).GetSeconds();
     }
     mDeadAir = tout;
 
@@ -1194,8 +1167,8 @@ bool SoundAI::OnTask(HSIMTASK htask, float) {
 
     if (htask == mProcessObservations) {
         if ((mFlags & BUSTED) == 0) {
-            Speech::Observer_Update(mObserver);
-            Speech::RoadblockFlow_Update(mRoadblockFlow);
+            mObserver->Update();
+            mRoadblockFlow->Update();
         }
         Speech::Manager::Deduce();
     }
@@ -1204,34 +1177,34 @@ bool SoundAI::OnTask(HSIMTASK htask, float) {
 
 void SoundAI::UpdateStateMachines() {
     if ((IsSpeechEnabled == 0) || ((mFlags & BUSTED) != 0)) {
-        Speech::MusicFlow_Update(mMusicFlow);
+        mMusicFlow->Update();
         return;
     }
 
     int focus = mFocus;
     if (focus == kPursuitFlow) {
-        Speech::PursuitFlow_Update(mPursuitFlow);
-        if (Speech::PursuitFlow_IsTransitionable(mPursuitFlow)) {
+        mPursuitFlow->Update();
+        if (mPursuitFlow->IsTransitionable()) {
             mFocus = kStrategyFlow;
-            Speech::SpeechFlow_ChangeStateTo(mStrategyFlow, 0);
+            mStrategyFlow->ChangeStateTo(0);
         }
     } else if ((focus == kStrategyFlow) || (focus == kRoadblockFlow)) {
-        if (Speech::StrategyFlow_IsTransitionable(mStrategyFlow)) {
-            Speech::SpeechFlow_ChangeStateTo(mStrategyFlow, kWaiting);
+        if (mStrategyFlow->IsTransitionable()) {
+            mStrategyFlow->ChangeStateTo(kWaiting);
         }
-        Speech::StrategyFlow_Update(mStrategyFlow);
+        mStrategyFlow->Update();
     } else if (focus == kWaiting) {
         if ((mPursuit != 0) && (mPursuitState == kSearching)) {
-            if (Speech::SpeechFlow_GetState(mStrategyFlow) != kOtherTarget) {
-                Speech::SpeechFlow_ChangeStateTo(mStrategyFlow, kOtherTarget);
+            if (mStrategyFlow->GetState() != kOtherTarget) {
+                mStrategyFlow->ChangeStateTo(kOtherTarget);
             }
-            Speech::StrategyFlow_Update(mStrategyFlow);
+            mStrategyFlow->Update();
         }
     } else if (!mPursuit) {
         ResetPursuit(false);
     }
 
-    Speech::MusicFlow_Update(mMusicFlow);
+    mMusicFlow->Update();
 }
 
 void SoundAI::AttemptReattachPursuit() {
@@ -1335,8 +1308,8 @@ void SoundAI::SyncPursuit() {
         mQuadrantState = kReset;
         mFlags &= ~PURSUIT_EXPIRED;
         Speech::Manager::ClearPlayback();
-        Speech::PursuitFlow_Reacquire(mPursuitFlow);
-        Speech::MusicFlow_Reacquire(mMusicFlow);
+        mPursuitFlow->Reacquire();
+        mMusicFlow->Reacquire();
     }
 
     if (mFocus == kLost) {
@@ -1348,7 +1321,7 @@ void SoundAI::SyncPursuit() {
             mFlags |= PURSUIT_EXPIRED;
         } else if (no_los_time > inactivity_cutoff[1]) {
             ResetPursuit(false);
-        } else if (((mPursuitState == kSearching) || (mPursuitState == kInactive)) && !Speech::Manager_IsCopSpeechBusy()) {
+        } else if (((mPursuitState == kSearching) || (mPursuitState == kInactive)) && !Speech::Manager::IsCopSpeechBusy()) {
             switch (mQuadrantState) {
             case kInitial:
                 MiscSpeech::QuadrantForming();
@@ -1642,7 +1615,7 @@ void SoundAI::SyncCarsToActors() {
     new_cop_cars.reserve(30);
     new_cop_cars.clear();
 
-    float closest = lbl_80407BA4;
+    float closest = 32767.0f;
     mRacerCount = static_cast<char>(UTL::Collections::ListableSet<IVehicle, 10, eVehicleList, 10>::GetList(VEHICLE_AIRACERS).size());
 
     {
@@ -1679,7 +1652,7 @@ void SoundAI::SyncCarsToActors() {
     unsigned char cops_with_los = 0;
     unsigned char cops_ahead = 0;
     unsigned char num_active = 0;
-    float pursuit_distance = lbl_80407BA4;
+    float pursuit_distance = 32767.0f;
 
     const UTL::Collections::ListableSet<IVehicle, 10, eVehicleList, 10>::List &vehicles =
         UTL::Collections::ListableSet<IVehicle, 10, eVehicleList, 10>::GetList(VEHICLE_AICOPS);
@@ -1872,14 +1845,14 @@ void SoundAI::SyncFormations() {
 }
 
 void SoundAI::ResetPursuit(bool including_music) {
-    Speech::PursuitFlow_Reset(mPursuitFlow);
-    Speech::StrategyFlow_Reset(mStrategyFlow);
-    Speech::RoadblockFlow_Reset(mRoadblockFlow);
-    Speech::Observer_Reset(mObserver);
+    mPursuitFlow->Reset();
+    mStrategyFlow->Reset();
+    mRoadblockFlow->Reset();
+    mObserver->Reset();
     if (including_music) {
-        Speech::MusicFlow_Reset(mMusicFlow);
+        mMusicFlow->Reset();
     }
-    Speech::Manager_ResetGlobalHistory();
+    Speech::Manager::ResetGlobalHistory();
 
     mFocus = kPursuitFlow;
     mQuadrantState = kReset;
@@ -1928,7 +1901,7 @@ void SoundAI::TerminatePursuit(BailoutType type) {
         }
         Speech::Manager::ClearPlayback();
         if (!cops_visible) {
-            MiscSpeech::LostSuspect(static_cast<int>(Speech_Manager_mLastSpeakerID));
+            MiscSpeech::LostSuspect(static_cast<int>(Speech::Manager::mLastSpeakerID));
         }
         mDispatch->BreakAway();
         mFocus = kLost;
@@ -1938,7 +1911,7 @@ void SoundAI::TerminatePursuit(BailoutType type) {
     }
 
     if (mMusicFlow) {
-        Speech::SpeechFlow_ChangeStateTo(mMusicFlow, kTerminal);
+        mMusicFlow->ChangeStateTo(kTerminal);
     }
 
     bool is_DDay = false;
@@ -1997,7 +1970,7 @@ void SoundAI::RemoveCop(HSIMABLE seeya) {
         mLatestCop = 0;
     }
 
-    Speech::PursuitFlow_OnCopRemoved(mPursuitFlow, cop);
+    mPursuitFlow->OnCopRemoved(cop);
     mUsage.voices.push_back(cop->GetSpeakerID());
     cop->SetActive(false);
 }

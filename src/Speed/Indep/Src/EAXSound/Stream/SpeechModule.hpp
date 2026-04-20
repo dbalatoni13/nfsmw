@@ -9,7 +9,11 @@
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribHash.h"
 
-struct SPEECH_BANK;
+struct SPEECH_BANK {
+    char *mem;
+    int bank;
+    int offset;
+};
 struct EAXS_StreamChannel;
 struct SFX_Base;
 
@@ -73,15 +77,28 @@ class Module : public AudioMemBase {
     virtual SPCHType_EventRuleResult EventRuleCallback(int eventID);
 
     virtual int GetNumBanks() {
-        return 0; // TODO fix
+        return m_numBanks;
     }
 
     virtual unsigned int GetBankOffset(int bnum);
     virtual void Update();
-    virtual const char *GetFilename();
-    virtual bool QueStream(eNISSFX_TYPE stream_type, void (*callback)(), bool trigger_play_after_callback);
+    virtual const char *GetFilename() {
+        const char *filename = m_filename.GetString();
+        if (filename) {
+            return filename;
+        }
+        return "";
+    }
+
+    virtual bool QueStream(eNISSFX_TYPE stream_type, void (*callback)(), bool trigger_play_after_callback) {
+        return false;
+    }
+
     virtual unsigned int SampleRequestCallback(SPCHType_SampleRequestData *data); // TODO
-    virtual bool IsStreamQueued();
+    virtual bool IsStreamQueued() {
+        return m_bIsStreamQueued;
+    }
+
     virtual char *GetCSIptr();
     virtual int GetChannel();
     virtual char *GetEventDat();
