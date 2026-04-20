@@ -15,6 +15,7 @@
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
+#include "Speed/Indep/Src/Physics/Common/VehicleSystem.h"
 #include "Speed/Indep/Src/World/ParameterMaps.hpp"
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 #include "Speed/Indep/Src/Generated/Messages/MControlPathfinder.h"
@@ -1337,6 +1338,200 @@ const float SoundAI::GetTimeLastNailedCop() {
         ++i;
     }
     return t_mostrecent;
+}
+
+void SoundAI::SyncCarsToActors() {
+    IVehicles new_cop_cars;
+    new_cop_cars.reserve(30);
+    new_cop_cars.clear();
+
+    float closest = lbl_80407BA4;
+    mRacerCount = static_cast<char>(UTL::Collections::ListableSet<IVehicle, 10, eVehicleList, 10>::GetList(VEHICLE_AIRACERS).size());
+
+    {
+        const UTL::Collections::ListableSet<IVehicle, 10, eVehicleList, 10>::List &vehicles =
+            UTL::Collections::ListableSet<IVehicle, 10, eVehicleList, 10>::GetList(VEHICLE_AIRACERS);
+        UTL::Collections::ListableSet<IVehicle, 10, eVehicleList, 10>::List::const_iterator i = vehicles.begin();
+        while (i != vehicles.end()) {
+            IVehicle *vehicle = *i;
+            IRenderable *renderable = 0;
+            if (vehicle && vehicle->QueryInterface(&renderable)) {
+                float dist2cam = renderable->DistanceToView();
+                if (dist2cam < closest) {
+                    closest = dist2cam;
+                }
+            }
+            ++i;
+        }
+    }
+
+    mClosestRacerDist = closest;
+    if (closest > mTune.AIRacerProximity()) {
+        if ((mFlags & RACERS_PROXIMAL) != 0) {
+            EAXCop *cop = GetRandomActiveCop(0, false);
+            if (cop) {
+                cop->FocusChange();
+            }
+        }
+        mFlags &= ~RACERS_PROXIMAL;
+    } else {
+        mFlags |= RACERS_PROXIMAL;
+    }
+
+    unsigned char cops_in_view = 0;
+    unsigned char cops_with_los = 0;
+    unsigned char cops_ahead = 0;
+    unsigned char num_active = 0;
+    float pursuit_distance = lbl_80407BA4;
+
+    const UTL::Collections::ListableSet<IVehicle, 10, eVehicleList, 10>::List &vehicles =
+        UTL::Collections::ListableSet<IVehicle, 10, eVehicleList, 10>::GetList(VEHICLE_AICOPS);
+    UTL::Collections::ListableSet<IVehicle, 10, eVehicleList, 10>::List::const_iterator i = vehicles.begin();
+    while (i != vehicles.end()) {
+        IVehicle *vehicle = *i;
+        if (vehicle) {
+            IRenderable *renderable = 0;
+            vehicle->QueryInterface(&renderable);
+
+            ISimable *simable = vehicle->GetSimable();
+            HSIMABLE thisObj = simable->GetOwnerHandle();
+
+            bool is_in_rb = false;
+            IRoadBlock *irb = GetRoadblock();
+            if (irb) {
+                is_in_rb = (irb->IsComprisedOf(thisObj) == vehicle);
+            }
+
+            if (vehicle->GetDriverClass() == DRIVER_COP) {
+                IPursuitAI *ai = 0;
+                vehicle->QueryInterface(&ai);
+
+                if (vehicle->GetVehicleClass() == VehicleClass::CAR) {
+                    bool has_visual = false;
+                    bool is_ahead = false;
+                    bool in_view = false;
+
+                    if (renderable && renderable->InView()) {
+                        cops_in_view++;
+                        in_view = true;
+                    }
+
+                    if (vehicle->IsActive() && ai && ((ai->GetTimeSinceTargetSeen() < 0.05f) || (is_in_rb && in_view))) {
+                        has_visual = true;
+                        cops_with_los++;
+                    }
+
+                    UMath::Vector3 player_pos = mPlayerPos;
+                    UMath::Vector3 copcar_pos = vehicle->GetPosition();
+                    UMath::Vector3 player_fw = mPlayerFW;
+                    if (vehicle->IsActive() || in_view) {
+                        UMath::Vector3 playerToCop;
+                        UMath::Sub(copcar_pos, player_pos, playerToCop);
+                        UMath::Unit(playerToCop, playerToCop);
+                        float dot = UMath::Dot(playerToCop, player_fw);
+                        if (0.0f < dot) {
+                            is_ahead = true;
+                        }
+                    }
+
+                    if (vehicle->IsActive()) {
+                        num_active++;
+                        float cop_dist_to_car = UMath::Distance(copcar_pos, player_pos);
+                        if (cop_dist_to_car < pursuit_distance) {
+                            pursuit_distance = cop_dist_to_car;
+                        }
+                        if (is_ahead) {
+                            cops_ahead++;
+                        }
+                    }
+
+                    EAXCop *actor = mActors.Find(thisObj);
+                    if (!actor) {
+                        new_cop_cars.push_back(vehicle);
+                    } else {
+                        if (!vehicle->IsActive()) {
+                            actor->SetActive(false);
+                        } else if (!actor->IsActive()) {
+                            actor->SetActive(true);
+                        }
+
+                        actor->SetLOS(has_visual);
+                        actor->SetAhead(is_ahead);
+                        actor->Update();
+
+                        float t_lastblowby = (WorldTimer - mRecentBlowby.timestamp).GetSeconds();
+                        if ((mTune.BlowbyInterval() < t_lastblowby) && (actor->GetSpeed() < mPlayerSpeed) && !is_ahead) {
+                            mRecentBlowby.distance = actor->GetDistance();
+                            mRecentBlowby.speed = mPlayerSpeed - actor->GetSpeed();
+                            mRecentBlowby.timestamp = WorldTimer;
+                        }
+
+                        if ((actor->GetDistance() < mRecentBlowby.distance) && (actor->GetSpeed() < mPlayerSpeed) && !is_ahead &&
+                            ((mPlayerSpeed * 0.75f) < (mPlayerSpeed - actor->GetSpeed()))) {
+                            mRecentBlowby.distance = actor->GetDistance();
+                            mRecentBlowby.speed = mPlayerSpeed - actor->GetSpeed();
+                            mRecentBlowby.timestamp = WorldTimer;
+                        }
+                    }
+                }
+            } else if (vehicle->GetVehicleClass() == VehicleClass::CHOPPER) {
+                if (!mHeli) {
+                    AddNewHeli(vehicle);
+                } else {
+                    if (mHeli->GetHandle() != thisObj) {
+                        mHeli->SetHandle(thisObj);
+                    }
+
+                    if (vehicle->IsActive()) {
+                        if (!mHeli->IsActive()) {
+                            mHeli->SetActive(true);
+                        }
+                    } else if (mHeli->IsActive()) {
+                        mHeli->SetActive(false);
+                    }
+
+                    IPursuitAI *ai = 0;
+                    vehicle->QueryInterface(&ai);
+                    if (vehicle->IsActive() && ai) {
+                        mHeli->SetLOS(ai->GetTimeSinceTargetSeen() < 0.05f);
+                    }
+                    mHeli->Update();
+                }
+            }
+        }
+        ++i;
+    }
+
+    mCopsInView = cops_in_view;
+    mLOSCount = cops_with_los;
+    mPursuitDist = pursuit_distance;
+    mNumActiveCopCars = num_active;
+    if (num_active == cops_ahead) {
+        mFlags |= COPS_ARE_AHEAD;
+    } else {
+        mFlags &= ~COPS_ARE_AHEAD;
+    }
+
+    IVehicles::iterator add_it = new_cop_cars.begin();
+    while (add_it != new_cop_cars.end()) {
+        AddNewCop(*add_it);
+        ++add_it;
+    }
+    new_cop_cars.clear();
+
+    Speech::copMap::iterator iter = mActors.begin();
+    while (iter != mActors.end()) {
+        EAXCop *actor = iter->cop;
+        if (actor && actor->IsActive() && !ISimable::FindInstance(actor->GetHandle())) {
+            RemoveCop(actor->GetHandle());
+            break;
+        }
+        ++iter;
+    }
+
+    if (mDispatch) {
+        mDispatch->Update();
+    }
 }
 
 void SoundAI::SyncFormations() {
