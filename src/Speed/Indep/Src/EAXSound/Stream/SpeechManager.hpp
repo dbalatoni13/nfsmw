@@ -15,6 +15,10 @@
 struct InterfaceId;
 struct FunctionHandle;
 struct SlotPool;
+namespace Csis {
+struct InterfaceId;
+struct FunctionHandle;
+}
 
 enum SpeechModuleIndex {
     NISSFX_MODULE = 0,
@@ -102,6 +106,11 @@ class Cache {
 
 class Manager {
   public:
+    static void ScheduleSpeechPartII(unsigned int sample_size, void *sample_data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor);
+    static int TestSentenceRuleCallback(EventSpec *event_info, int rule_id, int parm_value, int user_num);
+    static int ReparmCallback(int rule_id, unsigned int *parms);
+    static void SetSentenceRuleCallback(EventSpec *event_info, int rule_id, int parm_value, int user_num);
+    static SPCHType_EventRuleResult EventRuleCallback(EventSpec *event_info);
     static void ClearPlayback();
     static void Init(int mode);
     static void Destroy();

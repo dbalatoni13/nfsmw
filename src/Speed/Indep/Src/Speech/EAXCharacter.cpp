@@ -1,4 +1,5 @@
 #include "EAXCharacter.h"
+#include "ScheduleSpeech.hpp"
 #include "SoundAI.h"
 #include "Speed/Indep/Src/EAXSound/Csis.hpp"
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
@@ -52,13 +53,6 @@ extern FunctionHandle gAnytimeEvents_DriverHistoryHandle;
 extern FunctionHandle gAnytimeEvents_HeatJumpHandle;
 }
 
-extern void ScheduleSpeech_Acknowledge(Csis::AcknowledgeStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis17AcknowledgeStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
-extern void ScheduleSpeech_Interrupts_StaticInterrupt(Csis::Interrupts_StaticInterruptStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis32Interrupts_StaticInterruptStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
-extern void ScheduleSpeech_Interrupts_InterruptRam(Csis::Interrupts_InterruptRamStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis29Interrupts_InterruptRamStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
-extern void ScheduleSpeech_Interrupts_InterruptRamHigh(Csis::Interrupts_InterruptRamHighStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis33Interrupts_InterruptRamHighStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
-extern void ScheduleSpeech_Interrupts_Interrupt(Csis::Interrupts_InterruptStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis26Interrupts_InterruptStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
-extern void ScheduleSpeech_AnytimeEvents_DriverHistory(Csis::AnytimeEvents_DriverHistoryStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis33AnytimeEvents_DriverHistoryStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
-extern void ScheduleSpeech_AnytimeEvents_HeatJump(Csis::AnytimeEvents_HeatJumpStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis28AnytimeEvents_HeatJumpStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
 
 extern void *NullPointer;
 extern float lbl_80407430;
@@ -111,7 +105,7 @@ void EAXCharacter::Ack() {
         ack.yes_no = 2;
     }
     ack.intensity = 1;
-    ScheduleSpeech_Acknowledge(ack, Csis::AcknowledgeId, Csis::gAcknowledgeHandle, this);
+    ScheduleSpeech(ack, Csis::AcknowledgeId, Csis::gAcknowledgeHandle, this);
 }
 
 void EAXCharacter::Deny() {
@@ -128,45 +122,45 @@ void EAXCharacter::Deny() {
         intensity = 2;
     }
     ack.intensity = intensity;
-    ScheduleSpeech_Acknowledge(ack, Csis::AcknowledgeId, Csis::gAcknowledgeHandle, this);
+    ScheduleSpeech(ack, Csis::AcknowledgeId, Csis::gAcknowledgeHandle, this);
 }
 
 void EAXCharacter::InterruptStatic() {
     Csis::Interrupts_StaticInterruptStruct data;
-    ScheduleSpeech_Interrupts_StaticInterrupt(data, Csis::Interrupts_StaticInterruptId, Csis::gInterrupts_StaticInterruptHandle, this);
+    ScheduleSpeech(data, Csis::Interrupts_StaticInterruptId, Csis::gInterrupts_StaticInterruptHandle, this);
 }
 
 void EAXCharacter::InterruptExpletive() {
     Csis::Interrupts_InterruptRamStruct data;
     data.speaker_id = mSpeakerID;
-    ScheduleSpeech_Interrupts_InterruptRam(data, Csis::Interrupts_InterruptRamId, Csis::gInterrupts_InterruptRamHandle, this);
+    ScheduleSpeech(data, Csis::Interrupts_InterruptRamId, Csis::gInterrupts_InterruptRamHandle, this);
 }
 
 void EAXCharacter::InterruptViolent() {
     Csis::Interrupts_InterruptRamHighStruct data;
     data.speaker_id = mSpeakerID;
-    ScheduleSpeech_Interrupts_InterruptRamHigh(data, Csis::Interrupts_InterruptRamHighId, Csis::gInterrupts_InterruptRamHighHandle, this);
+    ScheduleSpeech(data, Csis::Interrupts_InterruptRamHighId, Csis::gInterrupts_InterruptRamHighHandle, this);
 }
 
 void EAXCharacter::InterruptComposedLow() {
     Csis::Interrupts_InterruptStruct data;
     data.speaker_id = mSpeakerID;
     data.intensity = 1;
-    ScheduleSpeech_Interrupts_Interrupt(data, Csis::Interrupts_InterruptId, Csis::gInterrupts_InterruptHandle, this);
+    ScheduleSpeech(data, Csis::Interrupts_InterruptId, Csis::gInterrupts_InterruptHandle, this);
 }
 
 void EAXCharacter::InterruptComposedHigh() {
     Csis::Interrupts_InterruptStruct data;
     data.speaker_id = mSpeakerID;
     data.intensity = 2;
-    ScheduleSpeech_Interrupts_Interrupt(data, Csis::Interrupts_InterruptId, Csis::gInterrupts_InterruptHandle, this);
+    ScheduleSpeech(data, Csis::Interrupts_InterruptId, Csis::gInterrupts_InterruptHandle, this);
 }
 
 void EAXCharacter::DriverHistory() {
     Csis::AnytimeEvents_DriverHistoryStruct data;
     data.speaker_id = mSpeakerID;
     data.region = 2;
-    ScheduleSpeech_AnytimeEvents_DriverHistory(data, Csis::AnytimeEvents_DriverHistoryId, Csis::gAnytimeEvents_DriverHistoryHandle, this);
+    ScheduleSpeech(data, Csis::AnytimeEvents_DriverHistoryId, Csis::gAnytimeEvents_DriverHistoryHandle, this);
 }
 
 void EAXCharacter::HeatJump(Csis::Type_heat_level heat) {
@@ -176,7 +170,7 @@ void EAXCharacter::HeatJump(Csis::Type_heat_level heat) {
     if (ai) {
         data.speaker_id = mSpeakerID;
         data.heat_level = heat;
-        ScheduleSpeech_AnytimeEvents_HeatJump(data, Csis::AnytimeEvents_HeatJumpId, Csis::gAnytimeEvents_HeatJumpHandle, this);
+        ScheduleSpeech(data, Csis::AnytimeEvents_HeatJumpId, Csis::gAnytimeEvents_HeatJumpHandle, this);
     }
 }
 

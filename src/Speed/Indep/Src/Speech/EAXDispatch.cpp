@@ -1,4 +1,5 @@
 #include "EAXCop.h"
+#include "ScheduleSpeech.hpp"
 #include "SoundAI.h"
 #include "Speed/Indep/Src/EAXSound/Csis.hpp"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
@@ -228,23 +229,6 @@ extern FunctionHandle gSetup_DispNoVehDescripHandle;
 extern FunctionHandle gStaticRoadblock_DispSubRBHandle;
 }
 
-extern void ScheduleSpeech_Backup_DispBackupReply(Csis::Backup_DispBackupReplyStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis28Backup_DispBackupReplyStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
-extern void ScheduleSpeech_Arrest_DispArrestReply(Csis::Arrest_DispArrestReplyStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis28Arrest_DispArrestReplyStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
-extern void ScheduleSpeech_AnytimeEvents_DispPursuitUpdate(Csis::AnytimeEvents_DispPursuitUpdateStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis37AnytimeEvents_DispPursuitUpdateStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
-extern void ScheduleSpeech_AnytimeEvents_DispPursEscGen(Csis::AnytimeEvents_DispPursEscGenStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis34AnytimeEvents_DispPursEscGenStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
-extern void ScheduleSpeech_AnytimeEvents_DispPursuitEscalation(Csis::AnytimeEvents_DispPursuitEscalationStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis41AnytimeEvents_DispPursuitEscalationStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
-extern void ScheduleSpeech_Backup_DispBackupUpdate(Csis::Backup_DispBackupUpdateStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis29Backup_DispBackupUpdateStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
-extern void ScheduleSpeech_AnytimeEvents_DispBreakAway(Csis::AnytimeEvents_DispBreakAwayStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis33AnytimeEvents_DispBreakAwayStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
-extern void ScheduleSpeech_Setup_DispGoAhead(Csis::Setup_DispGoAheadStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis23Setup_DispGoAheadStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
-extern void ScheduleSpeech_AnytimeEvents_DispTimeExpired(Csis::AnytimeEvents_DispTimeExpiredStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis35AnytimeEvents_DispTimeExpiredStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
-extern void ScheduleSpeech_AnytimeEvents_Disp911Report(Csis::AnytimeEvents_Disp911ReportStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis33AnytimeEvents_Disp911ReportStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
-extern void ScheduleSpeech_StaticRoadblock_DispRBUpdate(Csis::StaticRoadblock_DispRBUpdateStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis34StaticRoadblock_DispRBUpdateStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
-extern void ScheduleSpeech_StaticRoadblock_DispRBReply(Csis::StaticRoadblock_DispRBReplyStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis33StaticRoadblock_DispRBReplyStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
-extern void ScheduleSpeech_AnytimeEvents_DispJurisShift(Csis::AnytimeEvents_DispJurisShiftStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis34AnytimeEvents_DispJurisShiftStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
-extern void ScheduleSpeech_Backup_DispBUETA(Csis::Backup_DispBUETAStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis22Backup_DispBUETAStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
-extern void ScheduleSpeech_Setup_DispVehDescrip(Csis::Setup_DispVehDescripStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis26Setup_DispVehDescripStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
-extern void ScheduleSpeech_Setup_DispNoVehDescrip(Csis::Setup_DispNoVehDescripStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis28Setup_DispNoVehDescripStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
-extern void ScheduleSpeech_StaticRoadblock_DispSubRB(Csis::StaticRoadblock_DispSubRBStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis31StaticRoadblock_DispSubRBStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
 
 struct EAXDispatch : public EAXCharacter {
     EAXDispatch(int sID);
@@ -291,14 +275,14 @@ void EAXDispatch::BackupReply(EAXCop *cop, int yes, int type) {
         data.subject_battalion = cop->GetCallsign();
         data.subject_call_sign_id = cop->GetUnitNumber();
         data.disp_backup_type = type;
-        ScheduleSpeech_Backup_DispBackupReply(data, Csis::Backup_DispBackupReplyId, Csis::gBackup_DispBackupReplyHandle, this);
+        ScheduleSpeech(data, Csis::Backup_DispBackupReplyId, Csis::gBackup_DispBackupReplyHandle, this);
     }
 }
 
 void EAXDispatch::ArrestReply() {
     Csis::Arrest_DispArrestReplyStruct data;
     data.speaker_id = mSpeakerID;
-    ScheduleSpeech_Arrest_DispArrestReply(data, Csis::Arrest_DispArrestReplyId, Csis::gArrest_DispArrestReplyHandle, this);
+    ScheduleSpeech(data, Csis::Arrest_DispArrestReplyId, Csis::gArrest_DispArrestReplyHandle, this);
 }
 
 void EAXDispatch::PursuitUpdate(EAXCop *cop) {
@@ -306,7 +290,7 @@ void EAXDispatch::PursuitUpdate(EAXCop *cop) {
     data.speaker_id = mSpeakerID;
     data.subject_battalion = cop->GetCallsign();
     data.subject_call_sign_id = cop->GetUnitNumber();
-    ScheduleSpeech_AnytimeEvents_DispPursuitUpdate(data, Csis::AnytimeEvents_DispPursuitUpdateId, Csis::gAnytimeEvents_DispPursuitUpdateHandle, this);
+    ScheduleSpeech(data, Csis::AnytimeEvents_DispPursuitUpdateId, Csis::gAnytimeEvents_DispPursuitUpdateHandle, this);
 }
 
 void EAXDispatch::PursuitEscalationGeneric() {
@@ -319,7 +303,7 @@ void EAXDispatch::PursuitEscalationGeneric() {
         if ((*reinterpret_cast<unsigned int *>(reinterpret_cast<char *>(ai) + 0x5C) & 0x800) != 0) {
             data.num_suspects = Csis::Type_num_suspects_multiple_suspects;
         }
-        ScheduleSpeech_AnytimeEvents_DispPursEscGen(data, Csis::AnytimeEvents_DispPursEscGenId, Csis::gAnytimeEvents_DispPursEscGenHandle, this);
+        ScheduleSpeech(data, Csis::AnytimeEvents_DispPursEscGenId, Csis::gAnytimeEvents_DispPursEscGenHandle, this);
     }
 }
 
@@ -416,7 +400,7 @@ void EAXDispatch::PursuitEscalation() {
             }
         }
     }
-    ScheduleSpeech_AnytimeEvents_DispPursuitEscalation(data, Csis::AnytimeEvents_DispPursuitEscalationId, Csis::gAnytimeEvents_DispPursuitEscalationHandle, this);
+    ScheduleSpeech(data, Csis::AnytimeEvents_DispPursuitEscalationId, Csis::gAnytimeEvents_DispPursuitEscalationHandle, this);
 }
 
 void EAXDispatch::BackupUpdate(EAXCop *, int yes) {
@@ -426,7 +410,7 @@ void EAXDispatch::BackupUpdate(EAXCop *, int yes) {
     if (yes != 0) {
         data.yes_no = Csis::Type_yes_no_Yes_True;
     }
-    ScheduleSpeech_Backup_DispBackupUpdate(data, Csis::Backup_DispBackupUpdateId, Csis::gBackup_DispBackupUpdateHandle, this);
+    ScheduleSpeech(data, Csis::Backup_DispBackupUpdateId, Csis::gBackup_DispBackupUpdateHandle, this);
 }
 
 void EAXDispatch::BreakAway() {
@@ -465,20 +449,20 @@ void EAXDispatch::BreakAway() {
         data.speaker_id = mSpeakerID;
         data.location_region = location_region;
         data.location = location;
-        ScheduleSpeech_AnytimeEvents_DispBreakAway(data, Csis::AnytimeEvents_DispBreakAwayId, Csis::gAnytimeEvents_DispBreakAwayHandle, this);
+        ScheduleSpeech(data, Csis::AnytimeEvents_DispBreakAwayId, Csis::gAnytimeEvents_DispBreakAwayHandle, this);
     }
 }
 
 void EAXDispatch::GoAhead() {
     Csis::Setup_DispGoAheadStruct data;
     data.speaker_id = mSpeakerID;
-    ScheduleSpeech_Setup_DispGoAhead(data, Csis::Setup_DispGoAheadId, Csis::gSetup_DispGoAheadHandle, this);
+    ScheduleSpeech(data, Csis::Setup_DispGoAheadId, Csis::gSetup_DispGoAheadHandle, this);
 }
 
 void EAXDispatch::TimeExpired() {
     Csis::AnytimeEvents_DispTimeExpiredStruct data;
     data.speaker_id = mSpeakerID;
-    ScheduleSpeech_AnytimeEvents_DispTimeExpired(data, Csis::AnytimeEvents_DispTimeExpiredId, Csis::gAnytimeEvents_DispTimeExpiredHandle, this);
+    ScheduleSpeech(data, Csis::AnytimeEvents_DispTimeExpiredId, Csis::gAnytimeEvents_DispTimeExpiredHandle, this);
 }
 
 void EAXDispatch::Report911(Csis::Type_pursuit_type infraction) {
@@ -546,7 +530,7 @@ void EAXDispatch::Report911(Csis::Type_pursuit_type infraction) {
     if (dir == 2) {
         data.address_group_type = Csis::Type_address_group_type_generic_any_;
     }
-    ScheduleSpeech_AnytimeEvents_Disp911Report(data, Csis::AnytimeEvents_Disp911ReportId, Csis::gAnytimeEvents_Disp911ReportHandle, this);
+    ScheduleSpeech(data, Csis::AnytimeEvents_Disp911ReportId, Csis::gAnytimeEvents_Disp911ReportHandle, this);
 }
 
 void EAXDispatch::RBUpdate(EAXCop *, signed char true_false) {
@@ -563,7 +547,7 @@ void EAXDispatch::RBUpdate(EAXCop *, signed char true_false) {
     if (true_false > 0) {
         data.yes_no = Csis::Type_yes_no_Yes_True;
     }
-    ScheduleSpeech_StaticRoadblock_DispRBUpdate(data, Csis::StaticRoadblock_DispRBUpdateId, Csis::gStaticRoadblock_DispRBUpdateHandle, this);
+    ScheduleSpeech(data, Csis::StaticRoadblock_DispRBUpdateId, Csis::gStaticRoadblock_DispRBUpdateHandle, this);
 }
 
 void EAXDispatch::RBReply(EAXCop *cop, signed char true_false, unsigned int type) {
@@ -589,7 +573,7 @@ void EAXDispatch::RBReply(EAXCop *cop, signed char true_false, unsigned int type
     }
     data.subject_battalion = cop->GetCallsign();
     data.subject_call_sign_id = cop->GetUnitNumber();
-    ScheduleSpeech_StaticRoadblock_DispRBReply(data, Csis::StaticRoadblock_DispRBReplyId, Csis::gStaticRoadblock_DispRBReplyHandle, this);
+    ScheduleSpeech(data, Csis::StaticRoadblock_DispRBReplyId, Csis::gStaticRoadblock_DispRBReplyHandle, this);
 }
 
 void EAXDispatch::JurisShift(Csis::Type_jurisdiction jurisdiction) {
@@ -599,7 +583,7 @@ void EAXDispatch::JurisShift(Csis::Type_jurisdiction jurisdiction) {
     if (ai) {
         data.speaker_id = mSpeakerID;
         data.jurisdiction = jurisdiction;
-        ScheduleSpeech_AnytimeEvents_DispJurisShift(data, Csis::AnytimeEvents_DispJurisShiftId, Csis::gAnytimeEvents_DispJurisShiftHandle, this);
+        ScheduleSpeech(data, Csis::AnytimeEvents_DispJurisShiftId, Csis::gAnytimeEvents_DispJurisShiftHandle, this);
     }
 }
 
@@ -636,7 +620,7 @@ void EAXDispatch::BackupETA() {
         } else {
             data.disp_backup_eta = Csis::Type_disp_backup_eta_15sec;
         }
-        ScheduleSpeech_Backup_DispBUETA(data, Csis::Backup_DispBUETAId, Csis::gBackup_DispBUETAHandle, this);
+        ScheduleSpeech(data, Csis::Backup_DispBUETAId, Csis::gBackup_DispBUETAHandle, this);
     }
 }
 
@@ -654,7 +638,7 @@ void EAXDispatch::VehicleDescription() {
         }
         if (data.car_color != 0) {
             data.car_type = *reinterpret_cast<int *>(*reinterpret_cast<int *>(reinterpret_cast<char *>(ai) + 0x178) + 0x40);
-            ScheduleSpeech_Setup_DispVehDescrip(data, Csis::Setup_DispVehDescripId, Csis::gSetup_DispVehDescripHandle, this);
+            ScheduleSpeech(data, Csis::Setup_DispVehDescripId, Csis::gSetup_DispVehDescripHandle, this);
         }
     }
 }
@@ -662,11 +646,11 @@ void EAXDispatch::VehicleDescription() {
 void EAXDispatch::NoVehicleDescription() {
     Csis::Setup_DispNoVehDescripStruct data;
     data.speaker_id = mSpeakerID;
-    ScheduleSpeech_Setup_DispNoVehDescrip(data, Csis::Setup_DispNoVehDescripId, Csis::gSetup_DispNoVehDescripHandle, this);
+    ScheduleSpeech(data, Csis::Setup_DispNoVehDescripId, Csis::gSetup_DispNoVehDescripHandle, this);
 }
 
 void EAXDispatch::SubRBReply() {
     Csis::StaticRoadblock_DispSubRBStruct data;
     data.speaker_id = mSpeakerID;
-    ScheduleSpeech_StaticRoadblock_DispSubRB(data, Csis::StaticRoadblock_DispSubRBId, Csis::gStaticRoadblock_DispSubRBHandle, this);
+    ScheduleSpeech(data, Csis::StaticRoadblock_DispSubRBId, Csis::gStaticRoadblock_DispSubRBHandle, this);
 }

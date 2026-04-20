@@ -64,6 +64,8 @@ namespace Speech {
 // total size: 0x58
 class Module : public AudioMemBase {
   public:
+    Module();
+    virtual ~Module();
     virtual void Init(int channel);
     virtual void LoadBanks();
     virtual int TestSentenceRuleCallback(int eventID, int ruleID, int parmValue);
@@ -86,6 +88,7 @@ class Module : public AudioMemBase {
     virtual bool IsDataLoaded();
     virtual bool PlayStream(int stream_id);
     bool DonePlaying();
+    void AttachSFXOBJ(SFX_Base *psfx, eSFXOBJ_MAIN_TYPES sfxtype);
     virtual void ReleaseResource();
     EAXS_StreamChannel *GetStreamChannel() { return m_strm; }
     void PurgeSpeech();
