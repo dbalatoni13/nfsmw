@@ -635,14 +635,16 @@ void EAXCop::Update() {
     }
 
     HSIMABLE find_handle = (*reinterpret_cast<HSIMABLE (**)(void *)>(*reinterpret_cast<char **>(this) + 0x5C))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x58));
-    ISimable *simable = 0;
+    ISimable *simable;
     if (find_handle) {
         simable = ISimable::FindInstance(find_handle);
+    } else {
+        simable = 0;
     }
-    IVehicle *vehicle = 0;
     IDamageable *damageable = 0;
-    IPursuitAI *pursuit_ai = 0;
+    IVehicle *vehicle = 0;
     ISuspension *suspension = 0;
+    IPursuitAI *pursuit_ai = 0;
     IVehicleAI *vehicle_ai = 0;
     UMath::Vector3 cop_pos;
     UMath::Vector3 player_pos;
@@ -655,10 +657,10 @@ void EAXCop::Update() {
     if (!simable) {
         (*reinterpret_cast<void (**)(void *, bool)>(*reinterpret_cast<char **>(this) + 0xD4))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0xD0), false);
     } else {
-        simable->QueryInterface(&vehicle);
         simable->QueryInterface(&damageable);
-        simable->QueryInterface(&pursuit_ai);
+        simable->QueryInterface(&vehicle);
         simable->QueryInterface(&suspension);
+        simable->QueryInterface(&pursuit_ai);
         simable->QueryInterface(&vehicle_ai);
     }
 
@@ -678,7 +680,8 @@ void EAXCop::Update() {
     } else {
         mPctTractiveTires = lbl_8040745C;
         if (suspension->GetNumWheelsOnGround() != 0) {
-            mPctTractiveTires = static_cast<float>(suspension->GetNumWheelsOnGround()) / static_cast<float>(suspension->GetNumWheels());
+            unsigned int wheel_traction = suspension->GetNumWheelsOnGround() / suspension->GetNumWheels();
+            mPctTractiveTires = static_cast<float>(wheel_traction);
         }
         if (mPctTractiveTires > lbl_80407468) {
             mTimeAirborne = WorldTimer;
@@ -693,20 +696,25 @@ void EAXCop::Update() {
     if (!vehicle_ai || (*reinterpret_cast<unsigned int *>(&mActive) == 0)) {
         mCurrRoad = MAX_ROADNAMES;
     } else {
-        WRoadNav *nav = vehicle_ai->GetCurrentRoad();
+        WRoadNav *nav = (*reinterpret_cast<WRoadNav *(**)(void *)>(*reinterpret_cast<char **>(vehicle_ai) + 0x9C))(reinterpret_cast<char *>(vehicle_ai) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(vehicle_ai) + 0x98));
         RoadNames road = static_cast<RoadNames>(nav->GetRoadSpeechId());
         if (road != MAX_ROADNAMES) {
             mCurrRoad = road;
         }
     }
 
-    SoundAI *ai = SoundAI::Get();
-    if ((ai != 0) && (*reinterpret_cast<unsigned int *>(&mActive) != 0) && (*reinterpret_cast<unsigned int *>(&mSuspectLOS) != 0) && vehicle) {
+    if ((*reinterpret_cast<unsigned int *>(&mActive) != 0) && (*reinterpret_cast<unsigned int *>(&mSuspectLOS) != 0) && vehicle) {
+        SoundAI *ai = SoundAI::Get();
+        if (!ai) {
+            return;
+        }
         const UMath::Vector3 &v_pos = vehicle->GetPosition();
-        cop_pos.x = v_pos.x;
-        cop_pos.y = v_pos.y;
-        cop_pos.z = v_pos.z;
-        player_pos = *reinterpret_cast<UMath::Vector3 *>(reinterpret_cast<char *>(ai) + 0x114);
+        *reinterpret_cast<unsigned int *>(&cop_pos.x) = *reinterpret_cast<const unsigned int *>(&v_pos.x);
+        *reinterpret_cast<unsigned int *>(&cop_pos.y) = *reinterpret_cast<const unsigned int *>(&v_pos.y);
+        *reinterpret_cast<unsigned int *>(&cop_pos.z) = *reinterpret_cast<const unsigned int *>(&v_pos.z);
+        *reinterpret_cast<unsigned int *>(&player_pos.x) = *reinterpret_cast<unsigned int *>(reinterpret_cast<char *>(ai) + 0x114);
+        *reinterpret_cast<unsigned int *>(&player_pos.y) = *reinterpret_cast<unsigned int *>(reinterpret_cast<char *>(ai) + 0x118);
+        *reinterpret_cast<unsigned int *>(&player_pos.z) = *reinterpret_cast<unsigned int *>(reinterpret_cast<char *>(ai) + 0x11C);
         VU0_v3sub(cop_pos, player_pos, delta);
         float dist = VU0_sqrt(VU0_v3lengthsquare(delta));
         if (dist <= mDistance) {
@@ -721,8 +729,8 @@ void EAXCop::SetActive(bool activity) {
         return;
     }
 
-    SoundAI *ai = SoundAI::Get();
     *reinterpret_cast<unsigned int *>(&mActive) = active;
+    SoundAI *ai = SoundAI::Get();
     if (!ai) {
         return;
     }
@@ -737,11 +745,11 @@ void EAXCop::SetActive(bool activity) {
         int fn_addr = 0;
         if (*reinterpret_cast<unsigned int *>(&mSuspectLOS) != 0) {
             if (bRandom(lbl_8040746C) > lbl_80407470) {
-                fn_delta = *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x140);
-                fn_addr = *reinterpret_cast<int *>(*reinterpret_cast<char **>(this) + 0x144);
+                fn_delta = *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x288);
+                fn_addr = *reinterpret_cast<int *>(*reinterpret_cast<char **>(this) + 0x28C);
             } else {
-                fn_delta = *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x1F0);
-                fn_addr = *reinterpret_cast<int *>(*reinterpret_cast<char **>(this) + 0x1F4);
+                fn_delta = *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x1B8);
+                fn_addr = *reinterpret_cast<int *>(*reinterpret_cast<char **>(this) + 0x1BC);
             }
         } else {
             if (focus != 2) {
@@ -763,11 +771,11 @@ void EAXCop::SetActive(bool activity) {
             }
 
             if (bRandom(lbl_8040746C) > lbl_80407470) {
-                fn_delta = *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x288);
-                fn_addr = *reinterpret_cast<int *>(*reinterpret_cast<char **>(this) + 0x28C);
+                fn_delta = *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x140);
+                fn_addr = *reinterpret_cast<int *>(*reinterpret_cast<char **>(this) + 0x144);
             } else {
-                fn_delta = *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x1B8);
-                fn_addr = *reinterpret_cast<int *>(*reinterpret_cast<char **>(this) + 0x1BC);
+                fn_delta = *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x1F0);
+                fn_addr = *reinterpret_cast<int *>(*reinterpret_cast<char **>(this) + 0x1F4);
             }
         }
 
@@ -789,8 +797,8 @@ void EAXCop::SetActive(bool activity) {
     if (mTrafficHitCount > 1) {
         (*reinterpret_cast<void (**)(void *)>(*reinterpret_cast<char **>(this) + 0x22C))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x228));
         mTrafficHitCount = activity;
-        int state = *reinterpret_cast<int *>(reinterpret_cast<char *>(ai) + 0x1DC);
-        if (static_cast<unsigned int>(state) <= 1U) {
+        unsigned int state = static_cast<unsigned int>(*reinterpret_cast<int *>(reinterpret_cast<char *>(ai) + 0x1DC));
+        if (state <= 1U) {
             ai->RandomBailoutDeny(this);
         }
         return;
@@ -820,8 +828,8 @@ void EAXCop::SetActive(bool activity) {
     }
 
     (*reinterpret_cast<void (**)(void *)>(*reinterpret_cast<char **>(this) + 0x21C))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x218));
-    int state = *reinterpret_cast<int *>(reinterpret_cast<char *>(ai) + 0x1DC);
-    if (static_cast<unsigned int>(state) <= 1U) {
+    unsigned int state = static_cast<unsigned int>(*reinterpret_cast<int *>(reinterpret_cast<char *>(ai) + 0x1DC));
+    if (state <= 1U) {
         ai->RandomBailoutDeny(this);
     }
 }
