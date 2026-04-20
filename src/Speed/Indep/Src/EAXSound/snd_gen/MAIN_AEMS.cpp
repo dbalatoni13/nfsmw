@@ -1,29 +1,17 @@
 #include "Speed/Indep/Src/EAXSound/Csis.hpp"
 
-static const char kFX_NITROUSName[] = "FX_NITROUS";
-static const char kFX_PURGEName[] = "FX_PURGE";
-static const char kFX_SPARKCHATTERName[] = "FX_SPARKCHATTER";
-static const char kFX_SKIDName[] = "FX_SKID";
-static const char kFX_HydraulicName[] = "FX_Hydraulic";
-static const char kFX_HelicopterName[] = "FX_Helicopter";
-static const char kFX_Hydr_BounceName[] = "FX_Hydr_Bounce";
-static const char kFX_CameraName[] = "FX_Camera";
-static const char kFX_UVESName[] = "FX_UVES";
-static const char kFX_RadarName[] = "FX_Radar";
-static const char kFX_ScrapeName[] = "FX_Scrape";
-
 namespace Csis {
-InterfaceId FX_NITROUSId = {kFX_NITROUSName, 0x3EE6, 0x1A8B};
-InterfaceId FX_PURGEId = {kFX_PURGEName, 0x3EE6, 0x439C};
-InterfaceId FX_SPARKCHATTERId = {kFX_SPARKCHATTERName, 0x3EE6, 0x723E};
-InterfaceId FX_SKIDId = {kFX_SKIDName, 0x3EE6, 0x005F};
-InterfaceId FX_HydraulicId = {kFX_HydraulicName, 0x3EE6, 0x6508};
-InterfaceId FX_HelicopterId = {kFX_HelicopterName, 0x3EE6, 0x0990};
-InterfaceId FX_Hydr_BounceId = {kFX_Hydr_BounceName, 0x3EE6, 0x6048};
-InterfaceId FX_CameraId = {kFX_CameraName, 0x3EE6, 0x23B1};
-InterfaceId FX_UVESId = {kFX_UVESName, 0x3EE6, 0x61F6};
-InterfaceId FX_RadarId = {kFX_RadarName, 0x3EE6, 0x46AF};
-InterfaceId FX_ScrapeId = {kFX_ScrapeName, 0x3EE6, 0x0625};
+InterfaceId FX_NITROUSId = {"FX_NITROUS", 0x3EE6, 0x1A8B};
+InterfaceId FX_PURGEId = {"FX_PURGE", 0x3EE6, 0x439C};
+InterfaceId FX_SPARKCHATTERId = {"FX_SPARKCHATTER", 0x3EE6, 0x723E};
+InterfaceId FX_SKIDId = {"FX_SKID", 0x3EE6, 0x005F};
+InterfaceId FX_HydraulicId = {"FX_Hydraulic", 0x3EE6, 0x6508};
+InterfaceId FX_HelicopterId = {"FX_Helicopter", 0x3EE6, 0x0990};
+InterfaceId FX_Hydr_BounceId = {"FX_Hydr_Bounce", 0x3EE6, 0x6048};
+InterfaceId FX_CameraId = {"FX_Camera", 0x3EE6, 0x23B1};
+InterfaceId FX_UVESId = {"FX_UVES", 0x3EE6, 0x61F6};
+InterfaceId FX_RadarId = {"FX_Radar", 0x3EE6, 0x46AF};
+InterfaceId FX_ScrapeId = {"FX_Scrape", 0x3EE6, 0x0625};
 
 ClassHandle gFX_NITROUSHandle;
 ClassHandle gFX_PURGEHandle;

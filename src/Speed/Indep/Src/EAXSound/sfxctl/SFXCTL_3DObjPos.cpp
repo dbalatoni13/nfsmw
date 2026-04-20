@@ -252,13 +252,13 @@ void SFXCTL_3DObjPos::UpdateParams(float t) {
         SetDMIX_Input(DMX_PITCH, -1);
         SetDMIX_Input(DMX_FREQ, 0);
         SetDMIX_Input(DMX_VOL, -1);
-        register int nvar asm("r0") = GetDMIX_InputValue(15);
+        int nvar = GetDMIX_InputValue(15);
         SetDMIX_Input(15, nvar & ~1);
         return;
     }
-    register int nvar asm("r0") = GetDMIX_InputValue(15);
+    int nvar = GetDMIX_InputValue(15);
     SetDMIX_Input(15, nvar | 1);
-    register int playerRef asm("r11") = m_PlayerRef;
+    int playerRef = m_PlayerRef;
     SetDMIX_Input(11, playerRef);
     SFXCTL::UpdateParams(t);
     Generate3DParams(0);
@@ -300,7 +300,7 @@ void SFXCTL_3DObjPos::UpdateDoppler(int PlayerNum, float t) {
 
     if (((m_fdvelmag_cam[1] < 0.0f) && (0.0f < m_fdvelmag_cam[0])) ||
         ((0.0f < m_fdvelmag_cam[1]) && (m_fdvelmag_cam[0] < 0.0f))) {
-        register int nvar asm("r0") = GetDMIX_InputValue(15);
+        int nvar = GetDMIX_InputValue(15);
         SetDMIX_Input(15, nvar | 0x40000000);
     }
 

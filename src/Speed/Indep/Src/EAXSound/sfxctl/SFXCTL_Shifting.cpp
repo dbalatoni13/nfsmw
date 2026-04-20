@@ -7,11 +7,6 @@
 
 void FillGraphFromSpline(const UMath::Matrix4 &matrix, bVector2 *points, int num_points, float XScale, float YScale);
 
-static const float kDownShiftingRevPercent = 0.5f;
-static const int kDownShiftingRevRampTime = 0x32;
-static const int kUpShiftTrqAttackTime[4] = {0x64, 0x64, 0x64, 0x64};
-static const float kUpShiftTrqAttachInitialPercent[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-
 SndBase::TypeInfo *SFXCTL_Shifting::GetTypeInfo() const { return &s_TypeInfo; }
 
 const char *SFXCTL_Shifting::GetTypeName() const { return s_TypeInfo.typeName; }
@@ -168,8 +163,8 @@ void SFXCTL_Shifting::UpdateGearShiftState(float t) {
                 if (MaxCurGear < CurGear) {
                     CurGear = MaxCurGear;
                 }
-                m_InterpShiftTorque.Initialize(kUpShiftTrqAttachInitialPercent[CurGear] * m_pEngineCtl->m_pPhysicsCtl->GetPhysTRQ(),
-                                               m_pEngineCtl->m_pPhysicsCtl->GetPhysTRQ(), kUpShiftTrqAttackTime[CurGear],
+                m_InterpShiftTorque.Initialize(0.0f * m_pEngineCtl->m_pPhysicsCtl->GetPhysTRQ(),
+                                               m_pEngineCtl->m_pPhysicsCtl->GetPhysTRQ(), 0x64,
                                                LINEAR);
 
                 m_InterpShiftVol.Initialize(m_pShiftingPatternData->Up_Engaging_Attack_Vol(), 0.0f,
@@ -223,7 +218,7 @@ void SFXCTL_Shifting::UpdateGearShiftState(float t) {
                                            LowRPMScale,
                                  1000.0f, 10000.0f);
         InterpShiftRPM->Initialize(m_pEngineCtl->GetEngRPM(), TargetRPM, Length, EQ_PWR_SQ);
-        m_InterpShiftTorque.Initialize(0.0f, m_pEngineCtl->GetEngTorque(), kDownShiftingRevRampTime, LINEAR);
+        m_InterpShiftTorque.Initialize(0.0f, m_pEngineCtl->GetEngTorque(), 0x32, LINEAR);
         break;
     }
     case SHFT_DOWN_ENGAGING_RISE: {
@@ -245,7 +240,7 @@ void SFXCTL_Shifting::UpdateGearShiftState(float t) {
                                         static_cast<float>(m_pShiftingPatternData->Down_Engaging_Fall_RPM()) * LowRPMScale,
                                     Length,
                                     LINEAR);
-        m_InterpShiftTorque.Initialize(kDownShiftingRevPercent * LowRPMScale, 0.0f, kDownShiftingRevRampTime, LINEAR);
+        m_InterpShiftTorque.Initialize(0.5f * LowRPMScale, 0.0f, 0x32, LINEAR);
         break;
     }
     case SHFT_DOWN_ENGAGING_FALL: {

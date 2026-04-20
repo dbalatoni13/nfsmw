@@ -16,19 +16,6 @@
 #include "Speed/Indep/Src/EAXSound/OldSoundTemplates.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
-extern float lbl_803D726C;
-extern float lbl_803D7270;
-extern float lbl_803D72D0;
-extern float lbl_803D72D4;
-extern float lbl_803D72D8;
-extern float lbl_803D72DC;
-extern float lbl_803D72E0;
-extern float lbl_803D72E4;
-extern float lbl_803D72E8;
-extern float lbl_803D72EC;
-extern float lbl_803D72F0;
-extern float lbl_803D72F4;
-extern float lbl_803D72F8;
 extern Slope RedLineDelayPerGear;
 extern "C" int GetQ15FromHundredthsdB__11NFSMixShapei(int ndB);
 
@@ -212,7 +199,7 @@ void SFXCTL_Engine::UpdateParams(float t) {
 
     if (m_pEAXCar->GetPOV() != 1) {
         bVector3 scaled(vOffset);
-        scaled *= lbl_803D726C;
+        scaled *= 0.2f;
         vOffset = scaled;
     } else {
         bVector3 scaled(vOffset);
@@ -255,7 +242,7 @@ void SFXCTL_Engine::UpdateFilterFX() {
     int DistanceFilter;
 
     fdist = static_cast<float>(m_p3DCarPosCtl->GetDMIX_InputValue(1));
-    DistanceRolloffFilterFActor = ((fdist * 0.01f) - 6.5f) / lbl_803D7270;
+    DistanceRolloffFilterFActor = ((fdist * 0.01f) - 6.5f) / 44.0f;
     DistanceToUse = bClamp(DistanceRolloffFilterFActor, 0.0f, 1.0f);
     DBResult = NFSMixShape::GetCurveOutput(
         static_cast<NFSMixShape::eMIXTABLEID>(6), static_cast<int>(DistanceToUse * 32766.0f), true);
@@ -376,14 +363,14 @@ have_cur_rpm:
             VisualRPM =
                 smooth(GetEngRPM(),
                        m_pEAXCar->PhysRPM,
-                       lbl_803D72D4, lbl_803D72D8);
+                       999.0f, 60.0f);
         }
     }
 
     NormalRPM = VisualRPM + m_RPM_LFO + m_ComppressionRPM.CurValue + m_RPM_LFO;
     m_fPrevRPM = m_fEng_RPM;
     m_fEng_RPM = NormalRPM;
-    m_fSmoothedEng_RPM = m_fSmoothedEng_RPM * lbl_803D72DC + NormalRPM * lbl_803D72E0;
+    m_fSmoothedEng_RPM = m_fSmoothedEng_RPM * 0.95f + NormalRPM * 0.05f;
 
     if (static_cast<unsigned int>(m_pShiftCtl->eShiftState - SHFT_UP_DISENGAGE) < 2u) {
         VisualRPM = m_pShiftCtl->m_VisualRPM.GetValue();
@@ -391,17 +378,17 @@ have_cur_rpm:
         VisualRPM = m_pEAXCar->PhysRPM;
     } else {
         if (bIsRedlining) {
-            float target = lbl_803D72E4;
+            float target = 200.0f;
             if (bRedliningBounce) {
-                float offset = smooth(RedlineingVisualOffset, target, lbl_803D72E8);
+                float offset = smooth(RedlineingVisualOffset, target, 50.0f);
                 RedlineingVisualOffset = offset;
                 if (offset == target) {
                     bRedliningBounce = false;
                 }
             } else {
-                float offset = smooth(RedlineingVisualOffset, lbl_803D72D0, lbl_803D72E8);
+                float offset = smooth(RedlineingVisualOffset, 0.0f, 50.0f);
                 RedlineingVisualOffset = offset;
-                if (offset == lbl_803D72D0) {
+                if (offset == 0.0f) {
                     bRedliningBounce = true;
                 }
             }
@@ -412,17 +399,17 @@ have_cur_rpm:
     VisRpmAvg.Record(VisualRPM);
     VisRpmAvg.Recalculate();
 
-    PhysicsNewAudioRPM = (VisRpmAvg.GetValue() - lbl_803D72EC) * lbl_803D72F0;
+    PhysicsNewAudioRPM = (VisRpmAvg.GetValue() - 1000.0f) * 0.00011111111f;
     EAX_CarState *car = m_pStateBase->GetPhysCar();
     if (car->mContext == 0) {
         if (bPreRace != 0) {
             PhysicsNewAudioRPM = car->mVisualRPM;
-        } else if (tMergeWithPhysicsOffStart > lbl_803D72D0) {
+        } else if (tMergeWithPhysicsOffStart > 0.0f) {
             tMergeWithPhysicsOffStart -= t;
-            if (tMergeWithPhysicsOffStart < lbl_803D72D0) {
-                tMergeWithPhysicsOffStart = lbl_803D72D0;
+            if (tMergeWithPhysicsOffStart < 0.0f) {
+                tMergeWithPhysicsOffStart = 0.0f;
             }
-            float PercentInterp = (lbl_803D72F4 - tMergeWithPhysicsOffStart) * lbl_803D72F8;
+            float PercentInterp = (0.7f - tMergeWithPhysicsOffStart) * 1.4285715f;
             PhysicsNewAudioRPM =
                 (PhysicsNewAudioRPM - car->mVisualRPM) * PercentInterp + car->mVisualRPM;
         }

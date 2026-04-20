@@ -9,7 +9,9 @@ extern float g_fPitchCentTable[100];
 extern int nDBreturn;
 extern int ndBShift;
 extern int ndBRem;
-extern int lbl_803DAFF0[12];
+static const int DbRemainderFillin[12] = {
+    0x0, 0x1, 0x3, 0x7, 0xF, 0x1F, 0x3F, 0x7F, 0xFF, 0x1FF, 0x3FF, 0x7FF,
+};
 
 int NFSMixShape::GetCentsFromPitchMult(float ratio) {
     if (ratio > 1.0f) {
@@ -120,7 +122,7 @@ int NFSMixShape::GetdBFromQ15(int nQ15) {
 found:
     ndB = (n + 1) * -0x25A;
     nRem = nQ15 - (0x4000 >> n);
-    memcpy(fillin, lbl_803DAFF0, sizeof(fillin));
+    memcpy(fillin, DbRemainderFillin, sizeof(fillin));
     if (n > 4) {
         nRem = (nRem << (n - 5)) | fillin[n - 5];
     } else {

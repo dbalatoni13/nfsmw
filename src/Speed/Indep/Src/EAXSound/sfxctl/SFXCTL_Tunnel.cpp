@@ -454,7 +454,7 @@ void SFXCTL_Tunnel::UpdateCityVerb(float t) {
     }
 
     if (static_cast<unsigned int>(m_CurReverbZone) > 0xB) {
-        register int zone asm("r0");
+        int zone;
         if (g_pEAXSound->GetSoundGameMode() == SND_FRONTEND) {
             zone = 0;
         } else {

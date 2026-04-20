@@ -15,7 +15,7 @@ RAW_POINTER_ERROR = (
     "Access of struct fields through raw pointer math is not allowed. Don't try to rewrite it in a "
     "hacky way just to get it to compile. You must use proper field access or virtual function calls"
 )
-LBL_ERROR = "lbl_ is not allowed, use the constant directly, do not create a fake global for it."
+LBL_ERROR = "lbl_ is not allowed, use the constant directly"
 ASM_ERROR = "asm is prohibited in most files, this is a multiplatform game."
 K_CONST_ERROR = "Likely made up constant variable, use the value directly"
 

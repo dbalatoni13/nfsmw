@@ -29,8 +29,8 @@ bool IsWorldDataStreaming(unsigned int strmhandle) {
 }
 
 void AssignAudioStreamHandle(unsigned int realstrmhandle) {
-    register unsigned int nEndAudioMemPool asm("r0");
     unsigned int nStartAudioMemPool;
+    unsigned int nEndAudioMemPool;
     nStartAudioMemPool = reinterpret_cast<unsigned int>(gAudioMemoryManager.GetMemoryPoolStart());
     if (false) {
         nEndAudioMemPool = nStartAudioMemPool + static_cast<unsigned int>(gAudioMemoryManager.GetMemoryPoolSize());
@@ -41,7 +41,8 @@ void AssignAudioStreamHandle(unsigned int realstrmhandle) {
         }
         (void)nEndAudioMemPool;
     }
-    asm volatile("cmplw %0, %1" : : "r"(realstrmhandle), "r"(nStartAudioMemPool));
+    (void)realstrmhandle;
+    (void)nStartAudioMemPool;
 }
 
 EAXS_StreamManager::EAXS_StreamManager() {

@@ -8,8 +8,8 @@
 
 
 extern int GetCsisEventIndex(unsigned int anim_id);
-extern const char lbl_803D7358[];
 extern unsigned char uNIS_STRINGHASHMAP[];
+static const char NisRevDataPathFormat[] = "sound\\NISRevData\\%s.bin";
 
 NIS_RevManager *g_pNISRevMgr = nullptr;
 
@@ -364,7 +364,7 @@ void NIS_RevManager::OpenNISRevData(unsigned int anim_id) {
     index = GetCsisEventIndex(anim_id);
     if (index != -1) {
         AnimName = reinterpret_cast<char **>(uNIS_STRINGHASHMAP + 8)[index * 3];
-        bSPrintf(EngineRevBin, lbl_803D7358, AnimName);
+        bSPrintf(EngineRevBin, NisRevDataPathFormat, AnimName);
         index = bFileExists(EngineRevBin);
         if (index) {
             int nfilesize;

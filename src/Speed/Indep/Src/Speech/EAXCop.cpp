@@ -9,7 +9,7 @@
 
 namespace MiscSpeech {
 bool IsVehicleTypeOK();
-bool GetLocation(RoadNames road, int &region, int &location) asm("GetLocation__10MiscSpeech9RoadNamesRQ24Csis20Type_location_regionRQ24Csis13Type_location");
+bool GetLocation(RoadNames road, int &region, int &location);
 }
 
 namespace Csis {
@@ -482,10 +482,7 @@ extern FunctionHandle gStaticRoadblock_RBEngageHandle;
 extern FunctionHandle gStaticRoadblock_RBApproachHandle;
 }
 
-extern void FlushSpeechForActor(EAXCharacter *actor) asm("FlushSpeechForActor__Q26Speech7ManagerP12EAXCharacter");
-extern int GetCount_EventHistory(void *history, int event_id) asm("GetCount__Q26Speech12EventHistory18SPCHType_1_EventID");
-extern unsigned char gSpeechManagerGlobalHistory[] asm("_Q26Speech7Manager.mGlobalHistory");
-extern "C" float speed_test_28362[] asm("speed_test.28362");
+extern "C" float speed_test_28362[];
 
 EAXCop::EAXCop(int speakerID, HSIMABLE handle, int bID, int cID)
     : EAXCharacter(speakerID, handle, bID, cID) {
@@ -524,7 +521,7 @@ EAXCop::EAXCop(int speakerID, HSIMABLE handle, int bID, int cID)
 }
 
 EAXCop::~EAXCop() {
-    FlushSpeechForActor(this);
+    Speech::Manager::FlushSpeechForActor(this);
 }
 
 int EAXCop::GetBackupTypeFromDispatch(int type) {
@@ -714,7 +711,7 @@ void EAXCop::SetActive(bool activity) {
         return;
     }
 
-    FlushSpeechForActor(this);
+    Speech::Manager::FlushSpeechForActor(this);
     if ((*reinterpret_cast<unsigned int *>(&mInFormation) == 0) && (*reinterpret_cast<unsigned int *>(&mInPosition) == 0)) {
         return;
     }
@@ -818,12 +815,12 @@ void EAXCop::AttemptVehicleStop() {
                         pursuit_type = 4;
                     } else if (*reinterpret_cast<int *>(reinterpret_cast<char *>(ai) + 0x158) > 0x3E8) {
                         pursuit_type = 8;
-                    } else if (GetCount_EventHistory(gSpeechManagerGlobalHistory, 0x9A) > 0 || GetCount_EventHistory(gSpeechManagerGlobalHistory, 0x3A) > 0 || GetCount_EventHistory(gSpeechManagerGlobalHistory, 0xB2) > 0) {
+                    } else if (Speech::Manager::GetGlobalHistoryCount(static_cast<SPCHType_1_EventID>(0x9A)) > 0 || Speech::Manager::GetGlobalHistoryCount(static_cast<SPCHType_1_EventID>(0x3A)) > 0 || Speech::Manager::GetGlobalHistoryCount(static_cast<SPCHType_1_EventID>(0xB2)) > 0) {
                         pursuit_type = 2;
                     } else {
                         pursuit_type = 1;
                     }
-                } else if (GetCount_EventHistory(gSpeechManagerGlobalHistory, 0x9A) > 0 || GetCount_EventHistory(gSpeechManagerGlobalHistory, 0x3A) > 0 || GetCount_EventHistory(gSpeechManagerGlobalHistory, 0xB2) > 0) {
+                } else if (Speech::Manager::GetGlobalHistoryCount(static_cast<SPCHType_1_EventID>(0x9A)) > 0 || Speech::Manager::GetGlobalHistoryCount(static_cast<SPCHType_1_EventID>(0x3A)) > 0 || Speech::Manager::GetGlobalHistoryCount(static_cast<SPCHType_1_EventID>(0xB2)) > 0) {
                     pursuit_type = 2;
                 } else {
                     pursuit_type = 1;
@@ -920,7 +917,7 @@ void EAXCop::LocationReport() {
                 int encounter = 1;
                 data.location = location;
                 data.location_region = region;
-                if (GetCount_EventHistory(gSpeechManagerGlobalHistory, 0x9E) > 1) {
+                if (Speech::Manager::GetGlobalHistoryCount(static_cast<SPCHType_1_EventID>(0x9E)) > 1) {
                     encounter = 2;
                 }
                 data.encounter = encounter;

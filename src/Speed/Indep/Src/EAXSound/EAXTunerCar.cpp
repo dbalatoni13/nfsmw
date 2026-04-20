@@ -74,7 +74,6 @@ int EAXTunerCar::UpdateRotation() {
     int val = 0;
     m_Rotation = 0;
     val = bMax(val, 0);
-    asm volatile("" : "+r"(val));
     val = bMin(val, 0x400);
     m_Rotation = val;
     return val;

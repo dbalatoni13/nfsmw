@@ -112,9 +112,7 @@ int SndStrmWrapper::Stop() {
 
 int SndStrmWrapper::AddToStream(const char *filename, long offset, int holdtime) {
     int request = SNDSTRM_queuefile(m_handle, holdtime, filename, offset);
-    register int ret asm("r0");
-    asm volatile("mr. %0, %1" : "=r"(ret) : "r"(request));
-    return ret;
+    return request;
 }
 
 int SndStrmWrapper::AddToStream(int holdtime, void *paddr, int length, int offset) {
@@ -221,7 +219,7 @@ SndStrmWrapper::~SndStrmWrapper() {
 void SndStrmWrapper::DestroyStream() {
     if (m_handle >= 0) {
         Stop();
-        register unsigned int time asm("r30") = bGetTicker() + 0x14;
+        unsigned int time = bGetTicker() + 0x14;
         while (time > bGetTicker()) {
             bSyncTaskRun();
         }

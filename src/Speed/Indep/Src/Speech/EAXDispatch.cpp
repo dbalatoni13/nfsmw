@@ -6,7 +6,7 @@
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 namespace MiscSpeech {
-bool GetLocation(RoadNames road, int &region, int &location) asm("GetLocation__10MiscSpeech9RoadNamesRQ24Csis20Type_location_regionRQ24Csis13Type_location");
+bool GetLocation(RoadNames road, int &region, int &location);
 }
 
 enum SpeechObservations {

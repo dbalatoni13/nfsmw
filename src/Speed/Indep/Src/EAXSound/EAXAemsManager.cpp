@@ -299,7 +299,7 @@ void EAXAemsManager::Init() {
 }
 
 void EAXAemsManager::InitSPUram() {
-    register int Size asm("r0");
+    int Size;
     int Start = -1;
     Size = SNDmemlargestunused(&Start);
     m_SPU_UpperAddress = Start + Size;
@@ -873,9 +873,6 @@ void *EAXAemsManager::ResidentAllocCB(void *pbank, int residentsize, int totalsi
 
 void EAXAemsManager::DataLoadCB(int param, int error_status) {
     (void)error_status;
-    int Result;
-    int nhandle;
-    asm volatile("" : "+m"(Result), "+m"(nhandle));
     StartBankLoadTicks = bGetTicker();
     gAEMSMgr.m_pCurLoadSDLP = reinterpret_cast<stSndDataLoadParams *>(param);
     gAEMSMgr.m_pCurLoadSDLP->t_load = WorldTimer;

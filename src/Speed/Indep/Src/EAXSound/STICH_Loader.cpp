@@ -114,12 +114,13 @@ int LoaderSoundStichs(bChunk *chunk) {
         NewStich->pSampleRefList = reinterpret_cast<SND_SampleRef *>(sampleRefChunk->GetData());
         for (int i = 0; i < static_cast<int>(NewStich->Num_SampleRefs); i++) {
             GlobalStichSizes += 0x10;
-            bEndianSwap16(i * 16 + reinterpret_cast<char *>(NewStich->pSampleRefList) + 2);
-            bEndianSwap16(i * 16 + reinterpret_cast<char *>(NewStich->pSampleRefList) + 4);
-            bEndianSwap16(i * 16 + reinterpret_cast<char *>(NewStich->pSampleRefList) + 6);
-            bEndianSwap16(i * 16 + reinterpret_cast<char *>(NewStich->pSampleRefList) + 8);
-            bEndianSwap16(i * 16 + reinterpret_cast<char *>(NewStich->pSampleRefList) + 0xA);
-            bEndianSwap16(i * 16 + reinterpret_cast<char *>(NewStich->pSampleRefList) + 0xC);
+            SND_SampleRef &sampleRef = NewStich->pSampleRefList[i];
+            bEndianSwap16(&sampleRef.Volume);
+            bEndianSwap16(&sampleRef.Pitch);
+            bEndianSwap16(&sampleRef.Offset);
+            bEndianSwap16(&sampleRef.Az);
+            bEndianSwap16(&sampleRef.RND_Vol);
+            bEndianSwap16(&sampleRef.RND_Pitch);
         }
 
         chunk = sampleRefChunk->GetNext();

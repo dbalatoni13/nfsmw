@@ -106,6 +106,8 @@ class Cache {
 
 class Manager {
   public:
+    static void FlushSpeechForActor(EAXCharacter *actor);
+    static int GetGlobalHistoryCount(SPCHType_1_EventID id);
     static void ScheduleSpeechPartII(unsigned int sample_size, void *sample_data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor);
     static int TestSentenceRuleCallback(EventSpec *event_info, int rule_id, int parm_value, int user_num);
     static int ReparmCallback(int rule_id, unsigned int *parms);
