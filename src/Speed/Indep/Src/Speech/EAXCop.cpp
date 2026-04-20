@@ -1,4 +1,5 @@
 #include "EAXCop.h"
+#include "SoundAI.h"
 #include "Speed/Indep/Src/EAXSound/Csis.hpp"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 
@@ -60,6 +61,76 @@ struct AnytimeEvents_SuspectBrakeStruct {
     int speaker_id;
 };
 
+struct Setup_SpotterStruct {
+    int speaker_id;
+    int num_suspects;
+};
+
+struct Setup_SpotterReplyStruct {
+    int speaker_id;
+    int num_suspects;
+};
+
+struct Setup_InitPursuitStruct {
+    int speaker_id;
+    int num_suspects;
+};
+
+struct AnytimeEvents_LostSuspectStruct {
+    int speaker_id;
+    int intensity;
+};
+
+struct Arrest_ArrestStruct {
+    int speaker_id;
+    int intensity;
+};
+
+struct AnytimeEvents_LostVisualStruct {
+    int speaker_id;
+    int intensity;
+};
+
+struct AnytimeEvents_RegainVisualStruct {
+    int speaker_id;
+    int intensity;
+};
+
+struct RollingStrategy_CallToPositionRemStruct {
+    int speaker_id;
+    int intensity;
+};
+
+struct RollingStrategy_StrategyExecuteStruct {
+    int speaker_id;
+    int intensity;
+};
+
+struct AnytimeEvents_IntentToRamStruct {
+    int speaker_id;
+    int intensity;
+};
+
+struct AnytimeEvents_SuspectBehaviourStruct {
+    int speaker_id;
+    int num_suspects;
+};
+
+struct Setup_SuspectConfirmedStruct {
+    int speaker_id;
+    int num_suspects;
+};
+
+struct AnytimeEvents_FocusChangeStruct {
+    int speaker_id;
+    int intensity;
+};
+
+struct StaticRoadblock_PursuitApproachingStruct {
+    int speaker_id;
+    int num_suspects;
+};
+
 extern InterfaceId AnytimeEvents_Unit911ReplyId;
 extern InterfaceId Backup_UnitBUReplyId;
 extern InterfaceId Backup_NegativeBUReplyId;
@@ -74,6 +145,20 @@ extern InterfaceId Backup_CallForSwarmingId;
 extern InterfaceId Setup_SpotterWantedId;
 extern InterfaceId AnytimeEvents_WeatherReportId;
 extern InterfaceId AnytimeEvents_SuspectBrakeId;
+extern InterfaceId Setup_SpotterId;
+extern InterfaceId Setup_SpotterReplyId;
+extern InterfaceId Setup_InitPursuitId;
+extern InterfaceId AnytimeEvents_LostSuspectId;
+extern InterfaceId Arrest_ArrestId;
+extern InterfaceId AnytimeEvents_LostVisualId;
+extern InterfaceId AnytimeEvents_RegainVisualId;
+extern InterfaceId RollingStrategy_CallToPositionRemId;
+extern InterfaceId RollingStrategy_StrategyExecuteId;
+extern InterfaceId AnytimeEvents_IntentToRamId;
+extern InterfaceId AnytimeEvents_SuspectBehaviourId;
+extern InterfaceId Setup_SuspectConfirmedId;
+extern InterfaceId AnytimeEvents_FocusChangeId;
+extern InterfaceId StaticRoadblock_PursuitApproachingId;
 
 extern FunctionHandle gAnytimeEvents_Unit911ReplyHandle;
 extern FunctionHandle gBackup_UnitBUReplyHandle;
@@ -89,6 +174,20 @@ extern FunctionHandle gBackup_CallForSwarmingHandle;
 extern FunctionHandle gSetup_SpotterWantedHandle;
 extern FunctionHandle gAnytimeEvents_WeatherReportHandle;
 extern FunctionHandle gAnytimeEvents_SuspectBrakeHandle;
+extern FunctionHandle gSetup_SpotterHandle;
+extern FunctionHandle gSetup_SpotterReplyHandle;
+extern FunctionHandle gSetup_InitPursuitHandle;
+extern FunctionHandle gAnytimeEvents_LostSuspectHandle;
+extern FunctionHandle gArrest_ArrestHandle;
+extern FunctionHandle gAnytimeEvents_LostVisualHandle;
+extern FunctionHandle gAnytimeEvents_RegainVisualHandle;
+extern FunctionHandle gRollingStrategy_CallToPositionRemHandle;
+extern FunctionHandle gRollingStrategy_StrategyExecuteHandle;
+extern FunctionHandle gAnytimeEvents_IntentToRamHandle;
+extern FunctionHandle gAnytimeEvents_SuspectBehaviourHandle;
+extern FunctionHandle gSetup_SuspectConfirmedHandle;
+extern FunctionHandle gAnytimeEvents_FocusChangeHandle;
+extern FunctionHandle gStaticRoadblock_PursuitApproachingHandle;
 }
 
 extern void ScheduleSpeech_AnytimeEvents_Unit911Reply(Csis::AnytimeEvents_Unit911ReplyStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis32AnytimeEvents_Unit911ReplyStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
@@ -105,6 +204,20 @@ extern void ScheduleSpeech_Backup_CallForSwarming(Csis::Backup_CallForSwarmingSt
 extern void ScheduleSpeech_Setup_SpotterWanted(Csis::Setup_SpotterWantedStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis25Setup_SpotterWantedStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
 extern void ScheduleSpeech_AnytimeEvents_WeatherReport(Csis::AnytimeEvents_WeatherReportStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis33AnytimeEvents_WeatherReportStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
 extern void ScheduleSpeech_AnytimeEvents_SuspectBrake(Csis::AnytimeEvents_SuspectBrakeStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis32AnytimeEvents_SuspectBrakeStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
+extern void ScheduleSpeech_Setup_Spotter(Csis::Setup_SpotterStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis19Setup_SpotterStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
+extern void ScheduleSpeech_Setup_SpotterReply(Csis::Setup_SpotterReplyStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis24Setup_SpotterReplyStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
+extern void ScheduleSpeech_Setup_InitPursuit(Csis::Setup_InitPursuitStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis23Setup_InitPursuitStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
+extern void ScheduleSpeech_AnytimeEvents_LostSuspect(Csis::AnytimeEvents_LostSuspectStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis31AnytimeEvents_LostSuspectStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
+extern void ScheduleSpeech_Arrest_Arrest(Csis::Arrest_ArrestStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis19Arrest_ArrestStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
+extern void ScheduleSpeech_AnytimeEvents_LostVisual(Csis::AnytimeEvents_LostVisualStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis30AnytimeEvents_LostVisualStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
+extern void ScheduleSpeech_AnytimeEvents_RegainVisual(Csis::AnytimeEvents_RegainVisualStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis32AnytimeEvents_RegainVisualStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
+extern void ScheduleSpeech_RollingStrategy_CallToPositionRem(Csis::RollingStrategy_CallToPositionRemStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis39RollingStrategy_CallToPositionRemStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
+extern void ScheduleSpeech_RollingStrategy_StrategyExecute(Csis::RollingStrategy_StrategyExecuteStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis37RollingStrategy_StrategyExecuteStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
+extern void ScheduleSpeech_AnytimeEvents_IntentToRam(Csis::AnytimeEvents_IntentToRamStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis31AnytimeEvents_IntentToRamStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
+extern void ScheduleSpeech_AnytimeEvents_SuspectBehaviour(Csis::AnytimeEvents_SuspectBehaviourStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis36AnytimeEvents_SuspectBehaviourStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
+extern void ScheduleSpeech_Setup_SuspectConfirmed(Csis::Setup_SuspectConfirmedStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis28Setup_SuspectConfirmedStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
+extern void ScheduleSpeech_AnytimeEvents_FocusChange(Csis::AnytimeEvents_FocusChangeStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis31AnytimeEvents_FocusChangeStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
+extern void ScheduleSpeech_StaticRoadblock_PursuitApproaching(Csis::StaticRoadblock_PursuitApproachingStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis40StaticRoadblock_PursuitApproachingStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
 
 EAXCop::EAXCop(int speakerID, HSIMABLE handle, int bID, int cID)
     : EAXCharacter(speakerID, handle, bID, cID) {
@@ -170,7 +283,19 @@ void EAXCop::AttemptVehicleStop() {}
 
 void EAXCop::VehicleReport() {}
 
-void EAXCop::InitiatePursuit() {}
+void EAXCop::InitiatePursuit() {
+    SoundAI *ai = SoundAI::Get();
+    if (ai) {
+        Csis::Setup_InitPursuitStruct data;
+        int num_suspects = 1;
+        if ((*reinterpret_cast<unsigned int *>(reinterpret_cast<char *>(ai) + 0x5C) & 0x800) != 0) {
+            num_suspects = 2;
+        }
+        data.num_suspects = num_suspects;
+        data.speaker_id = mSpeakerID;
+        ScheduleSpeech_Setup_InitPursuit(data, Csis::Setup_InitPursuitId, Csis::gSetup_InitPursuitHandle, this);
+    }
+}
 
 void EAXCop::LocationReport() {}
 
@@ -206,9 +331,31 @@ void EAXCop::CallToPosition(EAXCop *cop) {
     }
 }
 
-void EAXCop::CallToPositionReminder() {}
+void EAXCop::CallToPositionReminder() {
+    Csis::RollingStrategy_CallToPositionRemStruct data;
+    register int intensity;
+    if (SoundAI::Get()->IsHighIntensity()) {
+        intensity = 2;
+    } else {
+        intensity = 1;
+    }
+    data.intensity = intensity;
+    data.speaker_id = mSpeakerID;
+    ScheduleSpeech_RollingStrategy_CallToPositionRem(data, Csis::RollingStrategy_CallToPositionRemId, Csis::gRollingStrategy_CallToPositionRemHandle, this);
+}
 
-void EAXCop::StrategyExecute() {}
+void EAXCop::StrategyExecute() {
+    Csis::RollingStrategy_StrategyExecuteStruct data;
+    register int intensity;
+    if (SoundAI::Get()->IsHighIntensity()) {
+        intensity = 2;
+    } else {
+        intensity = 1;
+    }
+    data.intensity = intensity;
+    data.speaker_id = mSpeakerID;
+    ScheduleSpeech_RollingStrategy_StrategyExecute(data, Csis::RollingStrategy_StrategyExecuteId, Csis::gRollingStrategy_StrategyExecuteHandle, this);
+}
 
 void EAXCop::Collision(int collisionType, float force, EAXCop *spkr) {
     if (force > 0.0f || spkr) {
@@ -240,24 +387,81 @@ void EAXCop::StrategyReset(bool new_strategy) {
     }
 }
 
-void EAXCop::SuspectBehavior() {}
+void EAXCop::SuspectBehavior() {
+    SoundAI *ai = SoundAI::Get();
+    if (ai) {
+        Csis::AnytimeEvents_SuspectBehaviourStruct data;
+        int num_suspects;
+        data.speaker_id = mSpeakerID;
+        num_suspects = 1;
+        if ((*reinterpret_cast<unsigned int *>(reinterpret_cast<char *>(ai) + 0x5C) & 0x800) != 0) {
+            num_suspects = 2;
+        }
+        data.num_suspects = num_suspects;
+        ScheduleSpeech_AnytimeEvents_SuspectBehaviour(data, Csis::AnytimeEvents_SuspectBehaviourId, Csis::gAnytimeEvents_SuspectBehaviourHandle, this);
+    }
+}
 
 void EAXCop::SuspectOutrun() {}
 
 void EAXCop::SuspectUTurn() {}
 
-void EAXCop::LostSuspect() {}
+void EAXCop::LostSuspect() {
+    Csis::AnytimeEvents_LostSuspectStruct data;
+    register int intensity;
+    if (SoundAI::Get()->IsHighIntensity()) {
+        intensity = 2;
+    } else {
+        intensity = 1;
+    }
+    data.intensity = intensity;
+    data.speaker_id = mSpeakerID;
+    ScheduleSpeech_AnytimeEvents_LostSuspect(data, Csis::AnytimeEvents_LostSuspectId, Csis::gAnytimeEvents_LostSuspectHandle, this);
+}
 
-void EAXCop::LostVisual() {}
+void EAXCop::LostVisual() {
+    Csis::AnytimeEvents_LostVisualStruct data;
+    register int intensity;
+    if (SoundAI::Get()->IsHighIntensity()) {
+        intensity = 2;
+    } else {
+        intensity = 1;
+    }
+    data.intensity = intensity;
+    data.speaker_id = mSpeakerID;
+    ScheduleSpeech_AnytimeEvents_LostVisual(data, Csis::AnytimeEvents_LostVisualId, Csis::gAnytimeEvents_LostVisualHandle, this);
+}
 
-void EAXCop::RegainVisual() {}
+void EAXCop::RegainVisual() {
+    Csis::AnytimeEvents_RegainVisualStruct data;
+    register int intensity;
+    if (SoundAI::Get()->IsHighIntensity()) {
+        intensity = 2;
+    } else {
+        intensity = 1;
+    }
+    data.intensity = intensity;
+    data.speaker_id = mSpeakerID;
+    ScheduleSpeech_AnytimeEvents_RegainVisual(data, Csis::AnytimeEvents_RegainVisualId, Csis::gAnytimeEvents_RegainVisualHandle, this);
+}
 
 void EAXCop::SwarmingReply() {
     Csis::ExtraCops_SwarmingReplyStruct data;
     ScheduleSpeech_ExtraCops_SwarmingReply(data, Csis::ExtraCops_SwarmingReplyId, Csis::gExtraCops_SwarmingReplyHandle, this);
 }
 
-void EAXCop::Arrest() {}
+void EAXCop::Arrest() {
+    Csis::Arrest_ArrestStruct data;
+    register int intensity;
+    if (SoundAI::Get()->IsHighIntensity()) {
+        intensity = 2;
+    } else {
+        intensity = 1;
+    }
+    data.intensity = intensity;
+    data.speaker_id = mSpeakerID;
+    ScheduleSpeech_Arrest_Arrest(data, Csis::Arrest_ArrestId, Csis::gArrest_ArrestHandle, this);
+}
 
 void EAXCop::PursuitUpdateReply() {
     Csis::AnytimeEvents_PursuitUpdateRepStruct data;
@@ -281,7 +485,18 @@ void EAXCop::BackupReminder(int type) {
 
 void EAXCop::BackupArrives() {}
 
-void EAXCop::IntentToRam() {}
+void EAXCop::IntentToRam() {
+    Csis::AnytimeEvents_IntentToRamStruct data;
+    register int intensity;
+    if (SoundAI::Get()->IsHighIntensity()) {
+        intensity = 2;
+    } else {
+        intensity = 1;
+    }
+    data.intensity = intensity;
+    data.speaker_id = mSpeakerID;
+    ScheduleSpeech_AnytimeEvents_IntentToRam(data, Csis::AnytimeEvents_IntentToRamId, Csis::gAnytimeEvents_IntentToRamHandle, this);
+}
 
 void EAXCop::CallforEV(unsigned int type) {
     if (type) {
@@ -303,9 +518,35 @@ void EAXCop::BailoutTraffic() {}
 
 void EAXCop::BailoutBadRoad() {}
 
-void EAXCop::Spotter() {}
+void EAXCop::Spotter() {
+    SoundAI *ai = SoundAI::Get();
+    if (ai) {
+        Csis::Setup_SpotterStruct data;
+        int num_suspects;
+        data.speaker_id = mSpeakerID;
+        num_suspects = 1;
+        if ((*reinterpret_cast<unsigned int *>(reinterpret_cast<char *>(ai) + 0x5C) & 0x800) != 0) {
+            num_suspects = 2;
+        }
+        data.num_suspects = num_suspects;
+        ScheduleSpeech_Setup_Spotter(data, Csis::Setup_SpotterId, Csis::gSetup_SpotterHandle, this);
+    }
+}
 
-void EAXCop::SpotterReply() {}
+void EAXCop::SpotterReply() {
+    SoundAI *ai = SoundAI::Get();
+    if (ai) {
+        Csis::Setup_SpotterReplyStruct data;
+        int num_suspects;
+        data.speaker_id = mSpeakerID;
+        num_suspects = 1;
+        if ((*reinterpret_cast<unsigned int *>(reinterpret_cast<char *>(ai) + 0x5C) & 0x800) != 0) {
+            num_suspects = 2;
+        }
+        data.num_suspects = num_suspects;
+        ScheduleSpeech_Setup_SpotterReply(data, Csis::Setup_SpotterReplyId, Csis::gSetup_SpotterReplyHandle, this);
+    }
+}
 
 void EAXCop::Reply911() {
     Csis::AnytimeEvents_Unit911ReplyStruct data;
@@ -331,9 +572,33 @@ void EAXCop::PreBullhorn() {
 
 void EAXCop::BullhornArrest() {}
 
-void EAXCop::SuspectConfirmed() {}
+void EAXCop::SuspectConfirmed() {
+    SoundAI *ai = SoundAI::Get();
+    if (ai) {
+        Csis::Setup_SuspectConfirmedStruct data;
+        int num_suspects;
+        data.speaker_id = mSpeakerID;
+        num_suspects = 1;
+        if ((*reinterpret_cast<unsigned int *>(reinterpret_cast<char *>(ai) + 0x5C) & 0x800) != 0) {
+            num_suspects = 2;
+        }
+        data.num_suspects = num_suspects;
+        ScheduleSpeech_Setup_SuspectConfirmed(data, Csis::Setup_SuspectConfirmedId, Csis::gSetup_SuspectConfirmedHandle, this);
+    }
+}
 
-void EAXCop::FocusChange() {}
+void EAXCop::FocusChange() {
+    Csis::AnytimeEvents_FocusChangeStruct data;
+    int intensity;
+    data.speaker_id = mSpeakerID;
+    if (SoundAI::Get()->IsHighIntensity()) {
+        intensity = 2;
+    } else {
+        intensity = 1;
+    }
+    data.intensity = intensity;
+    ScheduleSpeech_AnytimeEvents_FocusChange(data, Csis::AnytimeEvents_FocusChangeId, Csis::gAnytimeEvents_FocusChangeHandle, this);
+}
 
 void EAXCop::Spotted() {}
 
@@ -377,7 +642,20 @@ void EAXCop::RBEngage(bool spikes_hit) {
     }
 }
 
-void EAXCop::PursuitApproaching() {}
+void EAXCop::PursuitApproaching() {
+    SoundAI *ai = SoundAI::Get();
+    if (ai) {
+        Csis::StaticRoadblock_PursuitApproachingStruct data;
+        int num_suspects;
+        data.speaker_id = mSpeakerID;
+        num_suspects = 1;
+        if ((*reinterpret_cast<unsigned int *>(reinterpret_cast<char *>(ai) + 0x5C) & 0x800) != 0) {
+            num_suspects = 2;
+        }
+        data.num_suspects = num_suspects;
+        ScheduleSpeech_StaticRoadblock_PursuitApproaching(data, Csis::StaticRoadblock_PursuitApproachingId, Csis::gStaticRoadblock_PursuitApproachingHandle, this);
+    }
+}
 
 void EAXCop::RBAverted() {
     Csis::StaticRoadblock_RBAvertedStruct data;
