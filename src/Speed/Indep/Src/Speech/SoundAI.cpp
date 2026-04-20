@@ -175,6 +175,33 @@ Sim::IActivity *SoundAI::Construct(Sim::Param) {
     return 0;
 }
 
+IRoadBlock *SoundAI::GetRoadblock() {
+    IPursuit *pursuit = mPursuit;
+
+    if (pursuit) {
+        return pursuit->GetRoadBlock();
+    }
+
+    const UTL::Collections::Listable<IRoadBlock, 8>::List &blocks = UTL::Collections::Listable<IRoadBlock, 8>::GetList();
+    UTL::Collections::Listable<IRoadBlock, 8>::List::const_iterator i = blocks.begin();
+    while (i != blocks.end()) {
+        IRoadBlock *rb = *i;
+        if (rb) {
+            pursuit = rb->GetPursuit();
+            if (pursuit) {
+                int active = (**reinterpret_cast<int (**)(void *)>(*reinterpret_cast<int **>(reinterpret_cast<char *>(pursuit) + 4) + 0x124 / 4))(
+                    reinterpret_cast<char *>(pursuit) + *reinterpret_cast<short *>(*reinterpret_cast<int *>(reinterpret_cast<char *>(pursuit) + 4) + 0x120)
+                );
+                if (active) {
+                    return rb;
+                }
+            }
+        }
+        ++i;
+    }
+    return 0;
+}
+
 bool SoundAI::IsMusicActive() {
     bool result;
     int i;
