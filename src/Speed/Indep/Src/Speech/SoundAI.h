@@ -97,7 +97,7 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
     // total size: 0x8
     struct CarCustomizations {
         // Members
-        // Type_car_color color; // offset 0x0, size 0x4
+        unsigned int color; // offset 0x0, size 0x4
         unsigned int flags; // offset 0x4, size 0x4
     };
     // total size: 0x8
@@ -250,7 +250,9 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
 
     // struct EAXDispatch *GetDispatch() {}
 
-    // struct IPursuit *GetPursuit() {}
+    IPursuit *GetPursuit() {
+        return mPursuit;
+    }
 
     // enum PursuitState GetPursuitState() {}
 
@@ -262,21 +264,33 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
 
     // const float GetPursuitDistance() {}
 
-    // const float GetPlayerSpeed() {}
+    const float GetPlayerSpeed() {
+        return mPlayerSpeed;
+    }
 
-    // const struct Vector3 &GetPlayerPos() {}
+    const UMath::Vector3 &GetPlayerPos() {
+        return mPlayerPos;
+    }
 
     // const int NumCopsWithLOS() {}
 
-    // const int NumTrafficHits() {}
+    const int NumTrafficHits() {
+        return mTrafficHits911;
+    }
 
-    // const signed char NumRoadBlocks() {}
+    const signed char NumRoadBlocks() {
+        return mNumRoadBlocks;
+    }
 
     // const int NumPursuits() {}
 
-    // const struct pvehicle &GetPlayerSpecs() {}
+    const Attrib::Gen::pvehicle &GetPlayerSpecs() {
+        return mPVehicle;
+    }
 
-    // const struct speechtune &GetTune() {}
+    const Attrib::Gen::speechtune &GetTune() {
+        return mTune;
+    }
 
     const Attrib::Gen::pursuitlevels &GetPursuitSpecs() {
         return mPursuitLevel;
@@ -286,11 +300,15 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
 
     // enum SpeechObservations GetLastObservation() {}
 
-    // const int GetFocus() {}
+    const int GetFocus() {
+        return mFocus;
+    }
 
     // void SetFocus(enum MachineState s) {}
 
-    // struct Observer *GetObserver() {}
+    Speech::Observer *GetObserver() {
+        return mObserver;
+    }
 
     // struct RoadblockFlow *GetRBFlow() {}
 
@@ -302,15 +320,25 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
 
     // enum RoadNames GetLastKnownAIRoad() {}
 
-    // enum RoadNames GetPlayerRoadID(int n) {}
+    RoadNames GetPlayerRoadID(int n) {
+        return mPlayerCurrent[n].roadID;
+    }
 
-    // unsigned int GetPlayerDirection(int n) {}
+    unsigned int GetPlayerDirection(int n) {
+        return mPlayerCurrent[n].direction;
+    }
 
-    // unsigned int GetLastKnownDirection() {}
+    unsigned int GetLastKnownDirection() {
+        return mLastKnown.direction;
+    }
 
-    // enum RoadNames GetLastKnownRoad() {}
+    RoadNames GetLastKnownRoad() {
+        return mLastKnown.roadID;
+    }
 
-    // const float GetPursuitDuration() {}
+    const float GetPursuitDuration() {
+        return mPursuitDuration;
+    }
 
     // const float GetPlayerStopTime() {}
 
@@ -318,13 +346,17 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
 
     // const float GetTimeLastCrashed() {}
 
-    // const float GetTimeSinceLastChase() {}
+    const float GetTimeSinceLastChase() {
+        return mTimeSinceLastChase;
+    }
 
     // const float GetTimeInView() {}
 
     // struct BlowByRecord &GetRecentBlowby() {}
 
-    // struct SlotPool *GetActorPool() {}
+    SlotPool *GetActorPool() {
+        return mActorPool;
+    }
 
     // void MakeCopsImmune() {}
 
@@ -336,23 +368,41 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
 
     // bool HeliRoadblocksEnabled() {}
 
-    // bool SpikesEnabled() {}
+    bool SpikesEnabled() {
+        return (mFlags & SPIKES_ENABLED) != 0;
+    }
 
     // bool AreCopsAhead() {}
 
-    // bool Is911Active() {}
+    bool Is911Active() {
+        return (mFlags & DISP911_ACTIVE) != 0;
+    }
 
-    // bool AreRacersNearby() {}
+    bool AreRacersNearby() {
+        return (mFlags & RACERS_PROXIMAL) != 0;
+    }
 
-    // int GetLastInfraction() {}
+    int GetLastInfraction() {
+        return mInfraction;
+    }
 
     // int GetNumCopsInWave() {}
 
     // unsigned int GetPlayerOffroadID() {}
 
-    // unsigned int GetPlayerCarColor() {}
+    unsigned int GetPlayerCarColor() {
+        if (!mPlayerCarCustom) {
+            return 0;
+        }
+        return mPlayerCarCustom->color;
+    }
 
-    // unsigned int GetPlayerCustom() {}
+    unsigned int GetPlayerCustom() {
+        if (!mPlayerCarCustom) {
+            return 0;
+        }
+        return mPlayerCarCustom->flags;
+    }
 
     // const unsigned char GetNumCopsInView() {}
 

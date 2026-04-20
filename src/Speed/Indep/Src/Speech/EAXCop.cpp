@@ -543,7 +543,7 @@ int EAXCop::GetBackupTypeFromDispatch(int type) {
 
 void EAXCop::Update() {
     EAXCharacter::Update();
-    HSIMABLE handle = (*reinterpret_cast<HSIMABLE (**)(void *)>(*reinterpret_cast<char **>(this) + 0x5C))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x58));
+    HSIMABLE handle = GetHandle();
     if (!handle) {
         *reinterpret_cast<unsigned int *>(&mInPosition) = 0;
         *reinterpret_cast<unsigned int *>(&mInFormation) = 0;
@@ -553,7 +553,7 @@ void EAXCop::Update() {
         return;
     }
 
-    HSIMABLE find_handle = (*reinterpret_cast<HSIMABLE (**)(void *)>(*reinterpret_cast<char **>(this) + 0x5C))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x58));
+    HSIMABLE find_handle = GetHandle();
     ISimable *simable;
     if (find_handle) {
         simable = ISimable::FindInstance(find_handle);
@@ -580,17 +580,17 @@ void EAXCop::Update() {
         simable->QueryInterface(&suspension);
         simable->QueryInterface(&vehicle_ai);
     } else {
-        (*reinterpret_cast<void (**)(void *, bool)>(*reinterpret_cast<char **>(this) + 0xD4))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0xD0), false);
+        SetActive(false);
     }
 
     if (pursuit_ai && (*reinterpret_cast<unsigned int *>(&mActive) != 0)) {
-        (*reinterpret_cast<void (**)(void *, bool)>(*reinterpret_cast<char **>(this) + 0x35C))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x358), pursuit_ai->GetInFormation());
-        (*reinterpret_cast<void (**)(void *, bool)>(*reinterpret_cast<char **>(this) + 0x36C))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x368), pursuit_ai->GetInPosition());
-        (*reinterpret_cast<void (**)(void *, const UMath::Vector3 &)>(*reinterpret_cast<char **>(this) + 0x37C))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x378), pursuit_ai->GetPursuitOffset());
+        SetInFormation(pursuit_ai->GetInFormation());
+        SetInPosition(pursuit_ai->GetInPosition());
+        SetTgtOffset(pursuit_ai->GetPursuitOffset());
     } else {
-        (*reinterpret_cast<void (**)(void *, bool)>(*reinterpret_cast<char **>(this) + 0x35C))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x358), false);
-        (*reinterpret_cast<void (**)(void *, bool)>(*reinterpret_cast<char **>(this) + 0x36C))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x368), false);
-        (*reinterpret_cast<void (**)(void *, const UMath::Vector3 &)>(*reinterpret_cast<char **>(this) + 0x37C))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x378), UMath::Vector3::kZero);
+        SetInFormation(false);
+        SetInPosition(false);
+        SetTgtOffset(UMath::Vector3::kZero);
     }
 
     if (suspension) {
@@ -599,10 +599,10 @@ void EAXCop::Update() {
             mPctTractiveTires = 1.0f;
         } else {
             mPctTractiveTires = 1.0f;
-            int num_wheels_on_ground = (*reinterpret_cast<int (**)(void *)>(*reinterpret_cast<char **>(suspension) + 0x1C))(reinterpret_cast<char *>(suspension) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(suspension) + 0x18));
+            int num_wheels_on_ground = suspension->GetNumWheelsOnGround();
             if (num_wheels_on_ground != 0) {
-                unsigned int wheel_traction = (*reinterpret_cast<unsigned int (**)(void *)>(*reinterpret_cast<char **>(suspension) + 0xA4))(reinterpret_cast<char *>(suspension) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(suspension) + 0xA0));
-                unsigned int num_wheels = (*reinterpret_cast<unsigned int (**)(void *)>(*reinterpret_cast<char **>(suspension) + 0x1C))(reinterpret_cast<char *>(suspension) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(suspension) + 0x18));
+                unsigned int wheel_traction = static_cast<unsigned int>(num_wheels_on_ground);
+                unsigned int num_wheels = suspension->GetNumWheels();
                 wheel_traction = wheel_traction / num_wheels;
                 mPctTractiveTires = static_cast<float>(wheel_traction);
             }
@@ -624,7 +624,7 @@ void EAXCop::Update() {
         if (*reinterpret_cast<unsigned int *>(&mActive) == 0) {
             mCurrRoad = MAX_ROADNAMES;
         } else {
-            WRoadNav *nav = (*reinterpret_cast<WRoadNav *(**)(void *)>(*reinterpret_cast<char **>(vehicle_ai) + 0x9C))(reinterpret_cast<char *>(vehicle_ai) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(vehicle_ai) + 0x98));
+            WRoadNav *nav = vehicle_ai->GetCurrentRoad();
             RoadNames road = static_cast<RoadNames>(nav->GetRoadSpeechId());
             if (road != MAX_ROADNAMES) {
                 mCurrRoad = road;
@@ -643,9 +643,7 @@ void EAXCop::Update() {
         *reinterpret_cast<unsigned int *>(&cop_pos.x) = *reinterpret_cast<const unsigned int *>(&v_pos.x);
         *reinterpret_cast<unsigned int *>(&cop_pos.y) = *reinterpret_cast<const unsigned int *>(&v_pos.y);
         *reinterpret_cast<unsigned int *>(&cop_pos.z) = *reinterpret_cast<const unsigned int *>(&v_pos.z);
-        *reinterpret_cast<unsigned int *>(&player_pos.x) = *reinterpret_cast<unsigned int *>(reinterpret_cast<char *>(ai) + 0x114);
-        *reinterpret_cast<unsigned int *>(&player_pos.y) = *reinterpret_cast<unsigned int *>(reinterpret_cast<char *>(ai) + 0x118);
-        *reinterpret_cast<unsigned int *>(&player_pos.z) = *reinterpret_cast<unsigned int *>(reinterpret_cast<char *>(ai) + 0x11C);
+        player_pos = ai->GetPlayerPos();
         VU0_v3sub(cop_pos, player_pos, delta);
         float dist = VU0_sqrt(VU0_v3lengthsquare(delta));
         if (dist <= mDistance) {
@@ -655,6 +653,29 @@ void EAXCop::Update() {
 }
 
 void EAXCop::SetActive(bool activity) {
+    typedef void (*VoidMethodPtr)(void *);
+    typedef void (*VoidBoolMethodPtr)(void *, bool);
+    typedef int (*IntMethodPtr)(void *);
+    const int kRegainAdjustOffset = 0x288;
+    const int kRegainMethodOffset = 0x28C;
+    const int kLostAdjustOffset = 0x1B8;
+    const int kLostMethodOffset = 0x1BC;
+    const int kCallToPositionAdjustOffset = 0x140;
+    const int kCallToPositionMethodOffset = 0x144;
+    const int kCallForSwarmingAdjustOffset = 0x1F0;
+    const int kCallForSwarmingMethodOffset = 0x1F4;
+    const int kBailoutTrafficAdjustOffset = 0x228;
+    const int kBailoutTrafficMethodOffset = 0x22C;
+    const int kIsPrimaryAdjustOffset = 0x348;
+    const int kIsPrimaryMethodOffset = 0x34C;
+    const int kBailoutAdjustOffset = 0x210;
+    const int kBailoutMethodOffset = 0x214;
+    const int kBailoutBadRoadAdjustOffset = 0x208;
+    const int kBailoutBadRoadMethodOffset = 0x20C;
+    const int kHiBailoutAdjustOffset = 0x220;
+    const int kHiBailoutMethodOffset = 0x224;
+    const int kLoBailoutAdjustOffset = 0x218;
+    const int kLoBailoutMethodOffset = 0x21C;
     unsigned int active = static_cast<unsigned int>(activity);
     if (*reinterpret_cast<unsigned int *>(&mActive) == active) {
         return;
@@ -665,25 +686,28 @@ void EAXCop::SetActive(bool activity) {
     if (!ai) {
         return;
     }
+    char *vtable = *reinterpret_cast<char **>(this);
 
     if (active != 0) {
-        int focus = *reinterpret_cast<int *>(reinterpret_cast<char *>(ai) + 0x140);
+        int focus = ai->GetFocus();
         if (focus != 0x29A && focus != 2) {
             return;
         }
 
         if (*reinterpret_cast<unsigned int *>(&mSuspectLOS) != 0) {
             if (bRandom(1.0f) > 0.5f) {
-                (*reinterpret_cast<void (**)(void *)>(*reinterpret_cast<char **>(this) + 0x28C))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x288));
+                short thisAdjust = *reinterpret_cast<short *>(vtable + kRegainAdjustOffset);
+                (*reinterpret_cast<VoidMethodPtr *>(vtable + kRegainMethodOffset))(reinterpret_cast<char *>(this) + thisAdjust);
             } else {
-                (*reinterpret_cast<void (**)(void *)>(*reinterpret_cast<char **>(this) + 0x1BC))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x1B8));
+                short thisAdjust = *reinterpret_cast<short *>(vtable + kLostAdjustOffset);
+                (*reinterpret_cast<VoidMethodPtr *>(vtable + kLostMethodOffset))(reinterpret_cast<char *>(this) + thisAdjust);
             }
             return;
         } else {
             if (focus != 2) {
                 return;
             }
-            if (*reinterpret_cast<int *>(reinterpret_cast<char *>(ai) + 0x1DC) == 2) {
+            if (ai->GetPursuitState() == SoundAI::kInactive) {
                 return;
             }
 
@@ -692,16 +716,17 @@ void EAXCop::SetActive(bool activity) {
                 return;
             }
 
-            HSIMABLE handle = (*reinterpret_cast<HSIMABLE (**)(void *)>(*reinterpret_cast<char **>(this) + 0x5C))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x58));
-            int includes = (*reinterpret_cast<int (**)(void *, HSIMABLE)>(*reinterpret_cast<char **>(roadblock) + 0xBC))(reinterpret_cast<char *>(roadblock) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(roadblock) + 0xB8), handle);
-            if (includes != 0) {
+            HSIMABLE handle = GetHandle();
+            if (roadblock->IsComprisedOf(handle) != 0) {
                 return;
             }
 
             if (bRandom(1.0f) > 0.5f) {
-                (*reinterpret_cast<void (**)(void *)>(*reinterpret_cast<char **>(this) + 0x144))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x140));
+                short thisAdjust = *reinterpret_cast<short *>(vtable + kCallToPositionAdjustOffset);
+                (*reinterpret_cast<VoidMethodPtr *>(vtable + kCallToPositionMethodOffset))(reinterpret_cast<char *>(this) + thisAdjust);
             } else {
-                (*reinterpret_cast<void (**)(void *)>(*reinterpret_cast<char **>(this) + 0x1F4))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x1F0));
+                short thisAdjust = *reinterpret_cast<short *>(vtable + kCallForSwarmingAdjustOffset);
+                (*reinterpret_cast<VoidMethodPtr *>(vtable + kCallForSwarmingMethodOffset))(reinterpret_cast<char *>(this) + thisAdjust);
             }
             return;
         }
@@ -719,17 +744,20 @@ void EAXCop::SetActive(bool activity) {
     mT_lastactivity = WorldTimer;
 
     if (mTrafficHitCount > 1) {
-        (*reinterpret_cast<void (**)(void *)>(*reinterpret_cast<char **>(this) + 0x22C))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x228));
+        short thisAdjust = *reinterpret_cast<short *>(vtable + kBailoutTrafficAdjustOffset);
+        (*reinterpret_cast<VoidMethodPtr *>(vtable + kBailoutTrafficMethodOffset))(reinterpret_cast<char *>(this) + thisAdjust);
         mTrafficHitCount = activity;
-        int state = *reinterpret_cast<int *>(reinterpret_cast<char *>(ai) + 0x1DC);
+        int state = ai->GetPursuitState();
         if (state == 0 || state == 1) {
             ai->RandomBailoutDeny(this);
         }
         return;
     }
 
-    if ((*reinterpret_cast<int (**)(void *)>(*reinterpret_cast<char **>(this) + 0x34C))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x348))) {
-        (*reinterpret_cast<void (**)(void *)>(*reinterpret_cast<char **>(this) + 0x214))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x210));
+    short isPrimaryAdjust = *reinterpret_cast<short *>(vtable + kIsPrimaryAdjustOffset);
+    if ((*reinterpret_cast<IntMethodPtr *>(vtable + kIsPrimaryMethodOffset))(reinterpret_cast<char *>(this) + isPrimaryAdjust)) {
+        short thisAdjust = *reinterpret_cast<short *>(vtable + kBailoutAdjustOffset);
+        (*reinterpret_cast<VoidMethodPtr *>(vtable + kBailoutMethodOffset))(reinterpret_cast<char *>(this) + thisAdjust);
         return;
     }
 
@@ -737,22 +765,25 @@ void EAXCop::SetActive(bool activity) {
         EAXCop *rand_cop = ai->FindClosestCop(true, true);
         bool different_battalion = false;
         if (rand_cop) {
-            int their_battalion = (*reinterpret_cast<int (**)(void *)>(*reinterpret_cast<char **>(rand_cop) + 0x6C))(reinterpret_cast<char *>(rand_cop) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(rand_cop) + 0x68));
-            int my_battalion = (*reinterpret_cast<int (**)(void *)>(*reinterpret_cast<char **>(this) + 0x6C))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x68));
+            int their_battalion = rand_cop->GetCallsign();
+            int my_battalion = GetCallsign();
             different_battalion = their_battalion != my_battalion;
         }
-        (*reinterpret_cast<void (**)(void *, bool)>(*reinterpret_cast<char **>(this) + 0x20C))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x208), different_battalion);
+        short thisAdjust = *reinterpret_cast<short *>(vtable + kBailoutBadRoadAdjustOffset);
+        (*reinterpret_cast<VoidBoolMethodPtr *>(vtable + kBailoutBadRoadMethodOffset))(reinterpret_cast<char *>(this) + thisAdjust, different_battalion);
         return;
     }
 
-    float min_health = *reinterpret_cast<float *>(*reinterpret_cast<char **>(reinterpret_cast<char *>(ai) + 0x18C) + 0x9C);
+    float min_health = ai->GetTune().MinHealthForCommentary();
     if (mHealth < min_health) {
-        (*reinterpret_cast<void (**)(void *)>(*reinterpret_cast<char **>(this) + 0x224))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x220));
+        short thisAdjust = *reinterpret_cast<short *>(vtable + kHiBailoutAdjustOffset);
+        (*reinterpret_cast<VoidMethodPtr *>(vtable + kHiBailoutMethodOffset))(reinterpret_cast<char *>(this) + thisAdjust);
         return;
     }
 
-    (*reinterpret_cast<void (**)(void *)>(*reinterpret_cast<char **>(this) + 0x21C))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x218));
-    int state = *reinterpret_cast<int *>(reinterpret_cast<char *>(ai) + 0x1DC);
+    short thisAdjust = *reinterpret_cast<short *>(vtable + kLoBailoutAdjustOffset);
+    (*reinterpret_cast<VoidMethodPtr *>(vtable + kLoBailoutMethodOffset))(reinterpret_cast<char *>(this) + thisAdjust);
+    int state = ai->GetPursuitState();
     if (state == 0 || state == 1) {
         ai->RandomBailoutDeny(this);
     }
@@ -778,7 +809,7 @@ void EAXCop::AttemptVehicleStop() {
         int pursuit_type = 0x10;
         float t_last_nailed = ai->GetTimeLastNailedCop();
         if (t_last_nailed >= 5.0f) {
-            int infraction = *reinterpret_cast<int *>(reinterpret_cast<char *>(ai) + 0x1F0);
+            int infraction = ai->GetLastInfraction();
             if (infraction > 0) {
                 switch (infraction) {
                 case 1:
@@ -811,9 +842,9 @@ void EAXCop::AttemptVehicleStop() {
                     pursuit_type = 2;
                 } else if (bRandom(1.0f) > 0.5f) {
                     pursuit_type = 4;
-                    if (*reinterpret_cast<int *>(reinterpret_cast<char *>(ai) + 0x154) > 0) {
+                    if (ai->NumTrafficHits() > 0) {
                         pursuit_type = 4;
-                    } else if (*reinterpret_cast<int *>(reinterpret_cast<char *>(ai) + 0x158) > 0x3E8) {
+                    } else if (ai->Is911Active()) {
                         pursuit_type = 8;
                     } else if (Speech::Manager::GetGlobalHistoryCount(static_cast<SPCHType_1_EventID>(0x9A)) > 0 || Speech::Manager::GetGlobalHistoryCount(static_cast<SPCHType_1_EventID>(0x3A)) > 0 || Speech::Manager::GetGlobalHistoryCount(static_cast<SPCHType_1_EventID>(0xB2)) > 0) {
                         pursuit_type = 2;
@@ -831,7 +862,7 @@ void EAXCop::AttemptVehicleStop() {
         Csis::Setup_AttmptVehStpStruct data;
         int num_suspects = 1;
         data.pursuit_type = pursuit_type;
-        if ((*reinterpret_cast<unsigned int *>(reinterpret_cast<char *>(ai) + 0x5C) & 0x800) != 0) {
+        if (ai->AreRacersNearby()) {
             num_suspects = 2;
         }
         data.num_suspects = num_suspects;
@@ -848,18 +879,15 @@ void EAXCop::VehicleReport() {
         SoundAI *ai = SoundAI::Get();
         if (ai) {
             int color = 0;
-            void *custom = *reinterpret_cast<void **>(reinterpret_cast<char *>(ai) + 0x238);
-            if (custom) {
-                color = *reinterpret_cast<int *>(custom);
-            }
+            color = ai->GetPlayerCarColor();
             if (color && MiscSpeech::IsVehicleTypeOK()) {
                 Csis::Setup_VehicleReportStruct data;
                 float speedo;
                 data.speaker_id = mSpeakerID;
                 data.car_color = color;
-                data.car_type = *reinterpret_cast<int *>(reinterpret_cast<char *>(*reinterpret_cast<void **>(reinterpret_cast<char *>(ai) + 0x178)) + 0x40);
-                speedo = *reinterpret_cast<float *>(reinterpret_cast<char *>(ai) + 0x110);
-                if (*reinterpret_cast<unsigned char *>(reinterpret_cast<char *>(*reinterpret_cast<void **>(reinterpret_cast<char *>(FEDatabase) + 0x20)) + 0x44) == 1) {
+                data.car_type = static_cast<int>(ai->GetPlayerSpecs().VerbalType());
+                speedo = ai->GetPlayerSpeed();
+                if (FEDatabase->CurrentUserProfiles[0]->GetOptions()->TheGameplaySettings.SpeedoUnits == 1) {
                     data.measurement = 4;
                     speedo = speedo * 1.60931f;
                 } else {
@@ -888,7 +916,7 @@ void EAXCop::InitiatePursuit() {
     if (ai) {
         Csis::Setup_InitPursuitStruct data;
         int num_suspects = 1;
-        if ((*reinterpret_cast<unsigned int *>(reinterpret_cast<char *>(ai) + 0x5C) & 0x800) != 0) {
+        if (ai->AreRacersNearby()) {
             num_suspects = 2;
         }
         data.num_suspects = num_suspects;
@@ -907,12 +935,12 @@ void EAXCop::LocationReport() {
             int location;
             bool result;
             num_suspects = 1;
-            if ((*reinterpret_cast<unsigned int *>(reinterpret_cast<char *>(ai) + 0x5C) & 0x800) != 0) {
+            if (ai->AreRacersNearby()) {
                 num_suspects = 2;
             }
             data.num_suspects = num_suspects;
-            data.direction = *reinterpret_cast<int *>(reinterpret_cast<char *>(ai) + 0x1AC);
-            result = MiscSpeech::GetLocation(*reinterpret_cast<RoadNames *>(reinterpret_cast<char *>(ai) + 0x1B0), region, location);
+            data.direction = ai->GetPlayerDirection(0);
+            result = MiscSpeech::GetLocation(ai->GetPlayerRoadID(0), region, location);
             if (result) {
                 int encounter = 1;
                 data.location = location;
@@ -970,7 +998,7 @@ void EAXCop::SelfStrategy(int type) {
 void EAXCop::InitialCallForBackup() {
     SoundAI *ai = SoundAI::Get();
     if (ai) {
-        if ((*reinterpret_cast<unsigned int *>(reinterpret_cast<char *>(ai) + 0x5C) & 0x800) != 0) {
+        if (ai->AreRacersNearby()) {
             Csis::Setup_InitialCallForBU_MSStruct data;
             data.speaker_id = mSpeakerID;
             ScheduleSpeech(data, Csis::Setup_InitialCallForBU_MSId, Csis::gSetup_InitialCallForBU_MSHandle, this);
@@ -1148,7 +1176,7 @@ void EAXCop::SuspectBehavior() {
         int num_suspects;
         data.speaker_id = mSpeakerID;
         num_suspects = 1;
-        if ((*reinterpret_cast<unsigned int *>(reinterpret_cast<char *>(ai) + 0x5C) & 0x800) != 0) {
+        if (ai->AreRacersNearby()) {
             num_suspects = 2;
         }
         data.num_suspects = num_suspects;
@@ -1249,26 +1277,37 @@ void EAXCop::PursuitUpdateReply() {
 void EAXCop::ReinitiatePursuit() {
     SoundAI *ai = SoundAI::Get();
     if (ai) {
-        if (*reinterpret_cast<float *>(reinterpret_cast<char *>(ai) + 0x16C) < *reinterpret_cast<float *>(reinterpret_cast<char *>(*reinterpret_cast<void **>(reinterpret_cast<char *>(ai) + 0x18C)) + 0x7C)) {
-            float speed = (*reinterpret_cast<float (**)(void *)>(*reinterpret_cast<char **>(this) + 0x3D4))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x3D0));
+        if (ai->GetTimeSinceLastChase() < ai->GetTune().TimeConsideredLostNoLOS()) {
+            typedef float (*FloatMethodPtr)(void *);
+            typedef void (*VoidMethodPtr)(void *);
+            const int kSpeedAdjustOffset = 0x3D0;
+            const int kSpeedMethodOffset = 0x3D4;
+            const int kReinitMethodAdjustOffset = 0x288;
+            const int kReinitMethodOffset = 0x28C;
+            const int kLostMethodAdjustOffset = 0x1B8;
+            const int kLostMethodOffset = 0x1BC;
+            char *vtable = *reinterpret_cast<char **>(this);
+            short speedAdjust = *reinterpret_cast<short *>(vtable + kSpeedAdjustOffset);
+            float speed = (*reinterpret_cast<FloatMethodPtr *>(vtable + kSpeedMethodOffset))(reinterpret_cast<char *>(this) + speedAdjust);
             if (speed != 0.0f) {
-                (*reinterpret_cast<void (**)(void *)>(*reinterpret_cast<char **>(this) + 0x28C))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x288));
+                short thisAdjust = *reinterpret_cast<short *>(vtable + kReinitMethodAdjustOffset);
+                (*reinterpret_cast<VoidMethodPtr *>(vtable + kReinitMethodOffset))(reinterpret_cast<char *>(this) + thisAdjust);
             } else {
-                (*reinterpret_cast<void (**)(void *)>(*reinterpret_cast<char **>(this) + 0x1BC))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x1B8));
+                short thisAdjust = *reinterpret_cast<short *>(vtable + kLostMethodAdjustOffset);
+                (*reinterpret_cast<VoidMethodPtr *>(vtable + kLostMethodOffset))(reinterpret_cast<char *>(this) + thisAdjust);
             }
         } else {
             Csis::Setup_ReInitPursuitStruct data;
             int time_since_lost;
             int num_suspects;
-            if (*reinterpret_cast<float *>(reinterpret_cast<char *>(ai) + 0x16C) < 30.0f) {
+            if (ai->GetTimeSinceLastChase() < 30.0f) {
                 time_since_lost = 1;
             } else {
                 time_since_lost = 2;
             }
             data.time_since_lost = time_since_lost;
-            unsigned int flags = *reinterpret_cast<unsigned int *>(reinterpret_cast<char *>(ai) + 0x5C);
             num_suspects = 1;
-            if ((flags & 0x800) != 0) {
+            if (ai->AreRacersNearby()) {
                 num_suspects = 2;
             }
             data.num_suspects = num_suspects;
@@ -1315,15 +1354,15 @@ void EAXCop::IntentToRam() {
 
 void EAXCop::CallforEV(unsigned int type) {
     SoundAI *ai = SoundAI::Get();
-    if (ai && ai->GetPursuitState() == SoundAI::kActive && *reinterpret_cast<int *>(reinterpret_cast<char *>(ai) + 0x140) != 1) {
+    if (ai && ai->GetPursuitState() == SoundAI::kActive && ai->GetFocus() != 1) {
         Csis::AnytimeEvents_CallForEVStruct data;
         data.ev_type = type;
         if (type == 0) {
             if (IsHeli()) {
                 data.ev_type = 4;
             } else {
-                IPursuit *pursuit = *reinterpret_cast<IPursuit **>(reinterpret_cast<char *>(ai) + 0x138);
-                int destroyed = (*reinterpret_cast<int (**)(void *)>(*reinterpret_cast<char **>(reinterpret_cast<char *>(pursuit) + 4) + 0x13C))(reinterpret_cast<char *>(pursuit) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(reinterpret_cast<char *>(pursuit) + 4) + 0x138));
+                IPursuit *pursuit = ai->GetPursuit();
+                int destroyed = pursuit->GetNumCopsDestroyed();
                 if (destroyed < 2) {
                     return;
                 }
@@ -1357,7 +1396,7 @@ void EAXCop::UnitDisabled(int other) {
 void EAXCop::Bailout() {
     SoundAI *ai = SoundAI::Get();
     if (ai) {
-        if (*reinterpret_cast<float *>(reinterpret_cast<char *>(ai) + 0x148) >= *reinterpret_cast<float *>(reinterpret_cast<char *>(*reinterpret_cast<void **>(reinterpret_cast<char *>(ai) + 0x18C)) + 0x58)) {
+        if (ai->GetPursuitDuration() >= ai->GetTune().MinPursuitDurationForBailouts()) {
             Csis::AnytimeEvents_BailoutStruct data;
             data.speaker_id = mSpeakerID;
             data.bailout_type = 8;
@@ -1369,7 +1408,7 @@ void EAXCop::Bailout() {
 void EAXCop::LoBailout() {
     SoundAI *ai = SoundAI::Get();
     if (ai) {
-        if (*reinterpret_cast<float *>(reinterpret_cast<char *>(ai) + 0x148) >= *reinterpret_cast<float *>(reinterpret_cast<char *>(*reinterpret_cast<void **>(reinterpret_cast<char *>(ai) + 0x18C)) + 0x58)) {
+        if (ai->GetPursuitDuration() >= ai->GetTune().MinPursuitDurationForBailouts()) {
             Csis::AnytimeEvents_BailoutStruct data;
             data.speaker_id = mSpeakerID;
             data.bailout_type = 1;
@@ -1381,7 +1420,7 @@ void EAXCop::LoBailout() {
 void EAXCop::HiBailout() {
     SoundAI *ai = SoundAI::Get();
     if (ai) {
-        if (*reinterpret_cast<float *>(reinterpret_cast<char *>(ai) + 0x148) >= *reinterpret_cast<float *>(reinterpret_cast<char *>(*reinterpret_cast<void **>(reinterpret_cast<char *>(ai) + 0x18C)) + 0x58)) {
+        if (ai->GetPursuitDuration() >= ai->GetTune().MinPursuitDurationForBailouts()) {
             Csis::AnytimeEvents_BailoutStruct data;
             data.speaker_id = mSpeakerID;
             data.bailout_type = 0x10;
@@ -1393,7 +1432,7 @@ void EAXCop::HiBailout() {
 void EAXCop::BailoutTraffic() {
     SoundAI *ai = SoundAI::Get();
     if (ai) {
-        if (*reinterpret_cast<float *>(reinterpret_cast<char *>(ai) + 0x148) >= *reinterpret_cast<float *>(reinterpret_cast<char *>(*reinterpret_cast<void **>(reinterpret_cast<char *>(ai) + 0x18C)) + 0x58)) {
+        if (ai->GetPursuitDuration() >= ai->GetTune().MinPursuitDurationForBailouts()) {
             Csis::AnytimeEvents_BailoutStruct data;
             data.speaker_id = mSpeakerID;
             data.bailout_type = 2;
@@ -1405,7 +1444,7 @@ void EAXCop::BailoutTraffic() {
 void EAXCop::BailoutBadRoad() {
     SoundAI *ai = SoundAI::Get();
     if (ai) {
-        if (*reinterpret_cast<float *>(reinterpret_cast<char *>(ai) + 0x148) >= *reinterpret_cast<float *>(reinterpret_cast<char *>(*reinterpret_cast<void **>(reinterpret_cast<char *>(ai) + 0x18C)) + 0x58)) {
+        if (ai->GetPursuitDuration() >= ai->GetTune().MinPursuitDurationForBailouts()) {
             Csis::AnytimeEvents_BailoutStruct data;
             data.speaker_id = mSpeakerID;
             data.bailout_type = 4;
@@ -1421,7 +1460,7 @@ void EAXCop::Spotter() {
         int num_suspects;
         data.speaker_id = mSpeakerID;
         num_suspects = 1;
-        if ((*reinterpret_cast<unsigned int *>(reinterpret_cast<char *>(ai) + 0x5C) & 0x800) != 0) {
+        if (ai->AreRacersNearby()) {
             num_suspects = 2;
         }
         data.num_suspects = num_suspects;
@@ -1436,7 +1475,7 @@ void EAXCop::SpotterReply() {
         int num_suspects;
         data.speaker_id = mSpeakerID;
         num_suspects = 1;
-        if ((*reinterpret_cast<unsigned int *>(reinterpret_cast<char *>(ai) + 0x5C) & 0x800) != 0) {
+        if (ai->AreRacersNearby()) {
             num_suspects = 2;
         }
         data.num_suspects = num_suspects;
@@ -1503,7 +1542,7 @@ void EAXCop::SuspectConfirmed() {
         int num_suspects;
         data.speaker_id = mSpeakerID;
         num_suspects = 1;
-        if ((*reinterpret_cast<unsigned int *>(reinterpret_cast<char *>(ai) + 0x5C) & 0x800) != 0) {
+        if (ai->AreRacersNearby()) {
             num_suspects = 2;
         }
         data.num_suspects = num_suspects;
@@ -1541,7 +1580,7 @@ void EAXCop::Spotted() {
 void EAXCop::DirectionChange() {
     SoundAI *ai = SoundAI::Get();
     if (ai) {
-        int direction_type = *reinterpret_cast<int *>(reinterpret_cast<char *>(ai) + 0x1AC);
+        int direction_type = ai->GetPlayerDirection(0);
         if (direction_type) {
             Csis::AnytimeEvents_DirectionHighStruct data;
             data.speaker_id = mSpeakerID;
@@ -1585,7 +1624,7 @@ void EAXCop::CallForRB() {
         data.speaker_id = mSpeakerID;
         data.code_type = GetRandomizedCode();
         roadblock_type = 1;
-        if ((*reinterpret_cast<unsigned int *>(reinterpret_cast<char *>(ai) + 0x5C) & 4) != 0) {
+        if (ai->SpikesEnabled()) {
             roadblock_type = 2;
         }
         data.roadblock_type = roadblock_type;
@@ -1617,7 +1656,7 @@ void EAXCop::RBApproach() {
             int roadblock_type;
             data.speaker_id = mSpeakerID;
             roadblock_type = 1;
-            if ((*reinterpret_cast<int (**)(void *)>(*reinterpret_cast<char **>(reinterpret_cast<char *>(roadblock) + 4) + 0x9C))(reinterpret_cast<char *>(roadblock) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(reinterpret_cast<char *>(roadblock) + 4) + 0x98)) > 0) {
+            if (roadblock->GetNumSpikeStrips() > 0) {
                 roadblock_type = 2;
             }
             data.approach_type = roadblock_type;
@@ -1650,7 +1689,7 @@ void EAXCop::PursuitApproaching() {
         int num_suspects;
         data.speaker_id = mSpeakerID;
         num_suspects = 1;
-        if ((*reinterpret_cast<unsigned int *>(reinterpret_cast<char *>(ai) + 0x5C) & 0x800) != 0) {
+        if (ai->AreRacersNearby()) {
             num_suspects = 2;
         }
         data.num_suspects = num_suspects;

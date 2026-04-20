@@ -735,9 +735,7 @@ IRoadBlock *SoundAI::GetRoadblock() {
         if (rb) {
             pursuit = rb->GetPursuit();
             if (pursuit) {
-                int active = (**reinterpret_cast<int (**)(void *)>(*reinterpret_cast<int **>(reinterpret_cast<char *>(pursuit) + 4) + 0x124 / 4))(
-                    reinterpret_cast<char *>(pursuit) + *reinterpret_cast<short *>(*reinterpret_cast<int *>(reinterpret_cast<char *>(pursuit) + 4) + 0x120)
-                );
+                int active = pursuit->ContingentHasActiveCops();
                 if (active) {
                     return rb;
                 }
@@ -750,15 +748,8 @@ IRoadBlock *SoundAI::GetRoadblock() {
 
 bool SoundAI::IsMusicActive() {
     bool result;
-    int i;
-    char *music = reinterpret_cast<char *>(mMusicFlow);
-
-    if (music) {
-        i = (**reinterpret_cast<int (**)(void *)>(*reinterpret_cast<int **>(music + 0xC) + 0x2C / 4))(music + *reinterpret_cast<short *>(*reinterpret_cast<int *>(music + 0xC) + 0x28));
-        result = true;
-        if (i == -1) {
-            result = false;
-        }
+    if (mMusicFlow) {
+        result = mMusicFlow->GetState() != -1;
     } else {
         result = false;
     }

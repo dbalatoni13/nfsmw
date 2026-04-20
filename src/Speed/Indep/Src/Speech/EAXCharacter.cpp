@@ -80,7 +80,7 @@ void *EAXCharacter::operator new(unsigned int) {
     SoundAI *ai = SoundAI::Get();
     void *p = NullPointer;
     if (ai) {
-        SlotPool *pool = *reinterpret_cast<SlotPool **>(reinterpret_cast<char *>(ai) + 0x240);
+        SlotPool *pool = ai->GetActorPool();
         if (pool->NumAllocatedSlots != pool->TotalNumSlots) {
             p = pool->Malloc(1, 0);
         }
@@ -91,7 +91,7 @@ void *EAXCharacter::operator new(unsigned int) {
 void EAXCharacter::operator delete(void *ptr) {
     SoundAI *ai = SoundAI::Get();
     if (ai) {
-        SlotPool *pool = *reinterpret_cast<SlotPool **>(reinterpret_cast<char *>(ai) + 0x240);
+        SlotPool *pool = ai->GetActorPool();
         pool->Free(ptr);
     }
 }
@@ -194,7 +194,7 @@ void EAXCharacter::Update() {
         mPos.x = pos.x;
         mPos.y = pos.y;
         mPos.z = pos.z;
-        pPos = *reinterpret_cast<UMath::Vector3 *>(reinterpret_cast<char *>(ai) + 0x114);
+        pPos = ai->GetPlayerPos();
         cPos = mPos;
         mSpeed = vehicle->GetAbsoluteSpeed() * 2.23699f;
         VU0_v3sub(cPos, pPos, temp);

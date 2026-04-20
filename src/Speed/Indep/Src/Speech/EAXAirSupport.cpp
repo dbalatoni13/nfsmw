@@ -1,4 +1,5 @@
 #include "EAXAirSupport.h"
+#include "Observer.h"
 #include "ScheduleSpeech.hpp"
 #include "SoundAI.h"
 #include "Speed/Indep/Src/EAXSound/Csis.hpp"
@@ -97,8 +98,6 @@ bool IsVehicleTypeOK();
 EAXAirSupport::~EAXAirSupport() {}
 
 Type_heli_bailout_type EAXAirSupport::GetCauseOfBailout() {
-    static const unsigned int kSoundAIObserverOffset = 0x20C;
-    static const unsigned int kObserverWeatherOffset = 0x54;
     Type_heli_bailout_type rval = Type_heli_bailout_type_fuel_low;
     ISimable *simable = ISimable::FindInstance(GetHandle());
     if (simable) {
@@ -111,8 +110,8 @@ Type_heli_bailout_type EAXAirSupport::GetCauseOfBailout() {
     }
     SoundAI *ai = SoundAI::Get();
     if (ai) {
-        void *observer = *reinterpret_cast<void **>(reinterpret_cast<char *>(ai) + kSoundAIObserverOffset);
-        if (observer && *reinterpret_cast<unsigned int *>(reinterpret_cast<char *>(observer) + kObserverWeatherOffset)) {
+        Speech::Observer *observer = ai->GetObserver();
+        if (observer && observer->WeatherExists()) {
             rval = Type_heli_bailout_type_flight_conditions;
         }
     }
@@ -123,10 +122,9 @@ Type_heli_bailout_type EAXAirSupport::GetCauseOfBailout() {
 }
 
 void EAXAirSupport::Update() {
-    static const unsigned int kSoundAIFocusOffset = 0x140;
     EAXCop::Update();
     SoundAI *ai = SoundAI::Get();
-    if (ai && *reinterpret_cast<int *>(reinterpret_cast<char *>(ai) + kSoundAIFocusOffset) != 1 && IsActive()) {
+    if (ai && ai->GetFocus() != 1 && IsActive()) {
         ISimable *simable = ISimable::FindInstance(GetHandle());
         IAIHelicopter *heli;
         if (simable->QueryInterface(&heli)) {
@@ -151,8 +149,8 @@ void EAXAirSupport::LostVisual() {
     Csis::Type_heli_lost_visual lostVisual = Csis::Type_heli_lost_visual_Generic;
     data.speaker_id = mSpeakerID;
     if (ai) {
-        void *observer = *reinterpret_cast<void **>(reinterpret_cast<char *>(ai) + 0x20C);
-        if (*reinterpret_cast<unsigned int *>(reinterpret_cast<char *>(observer) + 0x58)) {
+        Speech::Observer *observer = ai->GetObserver();
+        if (observer && observer->WeatherExists()) {
             lostVisual = Csis::Type_heli_lost_visual_In_tunnel;
         }
     }

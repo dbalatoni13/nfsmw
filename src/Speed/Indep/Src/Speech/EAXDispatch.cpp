@@ -300,7 +300,7 @@ void EAXDispatch::PursuitEscalationGeneric() {
     if (ai) {
         data.speaker_id = mSpeakerID;
         data.num_suspects = Csis::Type_num_suspects_one_suspect;
-        if ((*reinterpret_cast<unsigned int *>(reinterpret_cast<char *>(ai) + 0x5C) & 0x800) != 0) {
+        if (ai->AreRacersNearby()) {
             data.num_suspects = Csis::Type_num_suspects_multiple_suspects;
         }
         ScheduleSpeech(data, Csis::AnytimeEvents_DispPursEscGenId, Csis::gAnytimeEvents_DispPursEscGenHandle, this);
@@ -316,9 +316,13 @@ void EAXDispatch::PursuitEscalation() {
     int location;
     int last;
     Csis::AnytimeEvents_DispPursuitEscalationStruct data;
-    SoundAI::CarHeading *last_known;
-    SoundAI::CarHeading *player_current;
-    void *observer;
+    Speech::Observer *observer;
+    unsigned int last_known_direction;
+    unsigned int player_direction_0;
+    unsigned int player_direction_1;
+    RoadNames last_known_road;
+    RoadNames player_road_0;
+    RoadNames player_road_1;
 
     if (!ai) {
         return;
@@ -345,9 +349,9 @@ void EAXDispatch::PursuitEscalation() {
         }
     }
     last = 0;
-    observer = *reinterpret_cast<void **>(reinterpret_cast<char *>(ai) + 0x20C);
+    observer = ai->GetObserver();
     if (observer) {
-        last = *reinterpret_cast<int *>(reinterpret_cast<char *>(observer) + 0x20);
+        last = observer->GetState();
     }
     if (last < Collision_Suspect_Train) {
         if ((last > Collision_Suspect_Structure) || (last == Collision_Suspect_World)) {
@@ -375,25 +379,29 @@ void EAXDispatch::PursuitEscalation() {
         data.pursuit_type = Csis::Type_pursuit_type_Generic_Speeder;
     }
     data.num_suspects = Csis::Type_num_suspects_one_suspect;
-    if ((*reinterpret_cast<unsigned int *>(reinterpret_cast<char *>(ai) + 0x5C) & 0x800) != 0) {
+    if (ai->AreRacersNearby()) {
         data.num_suspects = Csis::Type_num_suspects_multiple_suspects;
     }
-    last_known = reinterpret_cast<SoundAI::CarHeading *>(reinterpret_cast<char *>(ai) + 0x1CC);
-    player_current = reinterpret_cast<SoundAI::CarHeading *>(reinterpret_cast<char *>(ai) + 0x1AC);
-    result = MiscSpeech::GetLocation(last_known->roadID, location_region, location);
+    last_known_direction = ai->GetLastKnownDirection();
+    player_direction_0 = ai->GetPlayerDirection(0);
+    player_direction_1 = ai->GetPlayerDirection(1);
+    last_known_road = ai->GetLastKnownRoad();
+    player_road_0 = ai->GetPlayerRoadID(0);
+    player_road_1 = ai->GetPlayerRoadID(1);
+    result = MiscSpeech::GetLocation(last_known_road, location_region, location);
     if (!result) {
-        result = MiscSpeech::GetLocation(player_current[0].roadID, location_region, location);
+        result = MiscSpeech::GetLocation(player_road_0, location_region, location);
         if (!result) {
-            MiscSpeech::GetLocation(player_current[1].roadID, location_region, location);
+            MiscSpeech::GetLocation(player_road_1, location_region, location);
         }
     }
     data.location_region = location_region;
     data.location = location;
-    data.direction = last_known->direction;
+    data.direction = last_known_direction;
     if (data.direction == 0) {
-        data.direction = player_current[0].direction;
+        data.direction = player_direction_0;
         if (data.direction == 0) {
-            data.direction = player_current[1].direction;
+            data.direction = player_direction_1;
             if (data.direction == 0) {
                 dir = bRandom(4);
                 data.direction = 1 << (dir & 0x3F);
@@ -420,26 +428,34 @@ void EAXDispatch::BreakAway() {
     int location_region;
     int location;
     Csis::AnytimeEvents_DispBreakAwayStruct data;
-    SoundAI::CarHeading *last_known;
-    SoundAI::CarHeading *player_current;
+    unsigned int last_known_direction;
+    unsigned int player_direction_0;
+    unsigned int player_direction_1;
+    RoadNames last_known_road;
+    RoadNames player_road_0;
+    RoadNames player_road_1;
 
     if (ai) {
-        last_known = reinterpret_cast<SoundAI::CarHeading *>(reinterpret_cast<char *>(ai) + 0x1CC);
-        player_current = reinterpret_cast<SoundAI::CarHeading *>(reinterpret_cast<char *>(ai) + 0x1AC);
-        result = MiscSpeech::GetLocation(last_known->roadID, location_region, location);
+        last_known_direction = ai->GetLastKnownDirection();
+        player_direction_0 = ai->GetPlayerDirection(0);
+        player_direction_1 = ai->GetPlayerDirection(1);
+        last_known_road = ai->GetLastKnownRoad();
+        player_road_0 = ai->GetPlayerRoadID(0);
+        player_road_1 = ai->GetPlayerRoadID(1);
+        result = MiscSpeech::GetLocation(last_known_road, location_region, location);
         if (!result) {
-            result = MiscSpeech::GetLocation(player_current[0].roadID, location_region, location);
+            result = MiscSpeech::GetLocation(player_road_0, location_region, location);
             if (!result) {
-                MiscSpeech::GetLocation(player_current[1].roadID, location_region, location);
+                MiscSpeech::GetLocation(player_road_1, location_region, location);
             }
         }
         data.location_region = location_region;
         data.location = location;
-        data.direction = last_known->direction;
+        data.direction = last_known_direction;
         if (data.direction == 0) {
-            data.direction = player_current[0].direction;
+            data.direction = player_direction_0;
             if (data.direction == 0) {
-                data.direction = player_current[1].direction;
+                data.direction = player_direction_1;
                 if (data.direction == 0) {
                     dir = bRandom(4);
                     data.direction = 1 << (dir & 0x3F);
@@ -472,35 +488,43 @@ void EAXDispatch::Report911(Csis::Type_pursuit_type infraction) {
     int location_region;
     int location;
     Csis::AnytimeEvents_Disp911ReportStruct data;
-    SoundAI::CarHeading *last_known;
-    SoundAI::CarHeading *player_current;
+    unsigned int last_known_direction;
+    unsigned int player_direction_0;
+    unsigned int player_direction_1;
+    RoadNames last_known_road;
+    RoadNames player_road_0;
+    RoadNames player_road_1;
 
     if (!ai) {
         return;
     }
     data.speaker_id = mSpeakerID;
     data.num_suspects = Csis::Type_num_suspects_one_suspect;
-    if ((*reinterpret_cast<unsigned int *>(reinterpret_cast<char *>(ai) + 0x5C) & 0x800) != 0) {
+    if (ai->AreRacersNearby()) {
         data.num_suspects = Csis::Type_num_suspects_multiple_suspects;
     }
     data.encounter = Csis::Type_encounter_first_encounter;
     data.pursuit_type = infraction;
-    last_known = reinterpret_cast<SoundAI::CarHeading *>(reinterpret_cast<char *>(ai) + 0x1CC);
-    player_current = reinterpret_cast<SoundAI::CarHeading *>(reinterpret_cast<char *>(ai) + 0x1AC);
-    result = MiscSpeech::GetLocation(last_known->roadID, location_region, location);
+    last_known_direction = ai->GetLastKnownDirection();
+    player_direction_0 = ai->GetPlayerDirection(0);
+    player_direction_1 = ai->GetPlayerDirection(1);
+    last_known_road = ai->GetLastKnownRoad();
+    player_road_0 = ai->GetPlayerRoadID(0);
+    player_road_1 = ai->GetPlayerRoadID(1);
+    result = MiscSpeech::GetLocation(last_known_road, location_region, location);
     if (!result) {
-        result = MiscSpeech::GetLocation(player_current[0].roadID, location_region, location);
+        result = MiscSpeech::GetLocation(player_road_0, location_region, location);
         if (!result) {
-            MiscSpeech::GetLocation(player_current[1].roadID, location_region, location);
+            MiscSpeech::GetLocation(player_road_1, location_region, location);
         }
     }
     data.location_region = location_region;
     data.location = location;
-    data.direction = last_known->direction;
+    data.direction = last_known_direction;
     if (data.direction == 0) {
-        data.direction = player_current[0].direction;
+        data.direction = player_direction_0;
         if (data.direction == 0) {
-            data.direction = player_current[1].direction;
+            data.direction = player_direction_1;
             if (data.direction == 0) {
                 dir = bRandom(4);
                 data.direction = 1 << (dir & 0x3F);
@@ -540,7 +564,7 @@ void EAXDispatch::RBUpdate(EAXCop *, signed char true_false) {
     data.speaker_id = mSpeakerID;
     data.code = GetRandomizedCode();
     data.roadblock_type = Csis::Type_roadblock_type_Roadblock_Generic_;
-    if (*reinterpret_cast<signed char *>(reinterpret_cast<char *>(ai) + 0x164) > 1) {
+    if (ai->NumRoadBlocks() > 1) {
         data.roadblock_type = Csis::Type_roadblock_type_Multiple_Roadblocks_disp_only_;
     }
     data.yes_no = Csis::Type_yes_no_No_False;
@@ -558,9 +582,9 @@ void EAXDispatch::RBReply(EAXCop *cop, signed char true_false, unsigned int type
     data.code = GetRandomizedCode();
     data.roadblock_type = type;
     if (type == 0) {
-        if ((*reinterpret_cast<unsigned int *>(reinterpret_cast<char *>(ai) + 0x5C) & 4) == 0) {
+        if (!ai->SpikesEnabled()) {
             data.roadblock_type = Csis::Type_roadblock_type_Roadblock_Generic_;
-            if (*reinterpret_cast<signed char *>(reinterpret_cast<char *>(ai) + 0x164) > 1) {
+            if (ai->NumRoadBlocks() > 1) {
                 data.roadblock_type = Csis::Type_roadblock_type_Multiple_Roadblocks_disp_only_;
             }
         } else {
@@ -593,7 +617,7 @@ void EAXDispatch::BackupETA() {
     float eta;
     Csis::Backup_DispBUETAStruct data;
 
-    if (ai && (pursuit = *reinterpret_cast<IPursuit **>(reinterpret_cast<char *>(ai) + 0x138), pursuit)) {
+    if (ai && (pursuit = ai->GetPursuit(), pursuit)) {
         data.speaker_id = mSpeakerID;
         eta = pursuit->GetBackupETA();
         if ((eta <= 10.0f) || (eta >= 20.0f)) {
@@ -627,17 +651,11 @@ void EAXDispatch::BackupETA() {
 void EAXDispatch::VehicleDescription() {
     SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
     Csis::Setup_DispVehDescripStruct data;
-    SoundAI::CarCustomizations *custrec;
-
     if (ai) {
         data.speaker_id = mSpeakerID;
-        data.car_color = 0;
-        custrec = *reinterpret_cast<SoundAI::CarCustomizations **>(reinterpret_cast<char *>(ai) + 0x238);
-        if (custrec) {
-            data.car_color = *reinterpret_cast<int *>(custrec);
-        }
+        data.car_color = ai->GetPlayerCarColor();
         if (data.car_color != 0) {
-            data.car_type = *reinterpret_cast<int *>(*reinterpret_cast<int *>(reinterpret_cast<char *>(ai) + 0x178) + 0x40);
+            data.car_type = static_cast<int>(ai->GetPlayerSpecs().VerbalType());
             ScheduleSpeech(data, Csis::Setup_DispVehDescripId, Csis::gSetup_DispVehDescripHandle, this);
         }
     }
