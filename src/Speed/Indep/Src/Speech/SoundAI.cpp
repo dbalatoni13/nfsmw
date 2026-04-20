@@ -42,19 +42,6 @@ void PossibleSuspect();
 void WrongSuspect();
 }
 
-namespace Speech {
-void *PursuitFlow_Ctor(void *flow) asm("__Q26Speech11PursuitFlow");
-void *StrategyFlow_Ctor(void *flow) asm("__Q26Speech12StrategyFlow");
-void *Observer_Ctor(void *observer) asm("__Q26Speech8Observer");
-void *RoadblockFlow_Ctor(void *flow) asm("__Q26Speech13RoadblockFlow");
-void *MusicFlow_Ctor(void *flow) asm("__Q26Speech9MusicFlow");
-void PursuitFlow_Dtor(void *flow, int in_chrg) asm("_._Q26Speech11PursuitFlow");
-void StrategyFlow_Dtor(void *flow, int in_chrg) asm("_._Q26Speech12StrategyFlow");
-void Observer_Dtor(void *observer, int in_chrg) asm("_._Q26Speech8Observer");
-void RoadblockFlow_Dtor(void *flow, int in_chrg) asm("_._Q26Speech13RoadblockFlow");
-void MusicFlow_Dtor(void *flow, int in_chrg) asm("_._Q26Speech9MusicFlow");
-}
-
 extern int FORCE_VOICE_RANDOMIZATION;
 extern bool IsSpeechEnabled;
 extern ParameterAccessor SPAMAccessorSpeech;
@@ -166,11 +153,11 @@ SoundAI::SoundAI()
     }
 
     mDispatch = reinterpret_cast<EAXDispatch *>(new EAXCharacter(1, 0, 0, 0));
-    mPursuitFlow = reinterpret_cast<Speech::PursuitFlow *>(Speech::PursuitFlow_Ctor(::operator new(0x28)));
-    mStrategyFlow = reinterpret_cast<Speech::StrategyFlow *>(Speech::StrategyFlow_Ctor(::operator new(0x48)));
-    mObserver = reinterpret_cast<Speech::Observer *>(Speech::Observer_Ctor(::operator new(0xA0)));
-    mRoadblockFlow = reinterpret_cast<Speech::RoadblockFlow *>(Speech::RoadblockFlow_Ctor(::operator new(0x44)));
-    mMusicFlow = reinterpret_cast<Speech::MusicFlow *>(Speech::MusicFlow_Ctor(::operator new(0x68)));
+    mPursuitFlow = new (::operator new(0x28)) Speech::PursuitFlow;
+    mStrategyFlow = new (::operator new(0x48)) Speech::StrategyFlow;
+    mObserver = new (::operator new(0xA0)) Speech::Observer;
+    mRoadblockFlow = new (::operator new(0x44)) Speech::RoadblockFlow;
+    mMusicFlow = new (::operator new(0x68)) Speech::MusicFlow;
 
     for (int i = 0; i < 2; i++) {
         mPlayerCurrent[i].direction = CalcPlayerDirection(false);
@@ -225,23 +212,28 @@ SoundAI::~SoundAI() {
     Sim::Collision::RemoveListener(this);
 
     if (mPursuitFlow) {
-        Speech::PursuitFlow_Dtor(mPursuitFlow, 3);
+        mPursuitFlow->~PursuitFlow();
+        ::operator delete(mPursuitFlow);
         mPursuitFlow = 0;
     }
     if (mStrategyFlow) {
-        Speech::StrategyFlow_Dtor(mStrategyFlow, 3);
+        mStrategyFlow->~StrategyFlow();
+        ::operator delete(mStrategyFlow);
         mStrategyFlow = 0;
     }
     if (mObserver) {
-        Speech::Observer_Dtor(mObserver, 3);
+        mObserver->~Observer();
+        ::operator delete(mObserver);
         mObserver = 0;
     }
     if (mRoadblockFlow) {
-        Speech::RoadblockFlow_Dtor(mRoadblockFlow, 3);
+        mRoadblockFlow->~RoadblockFlow();
+        ::operator delete(mRoadblockFlow);
         mRoadblockFlow = 0;
     }
     if (mMusicFlow) {
-        Speech::MusicFlow_Dtor(mMusicFlow, 3);
+        mMusicFlow->~MusicFlow();
+        ::operator delete(mMusicFlow);
         mMusicFlow = 0;
     }
 
