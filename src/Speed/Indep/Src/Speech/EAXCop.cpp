@@ -240,6 +240,46 @@ struct Arrest_BullhornArrestStruct {
     int intensity;
 };
 
+struct AnytimeEvents_OffroadMomentStruct {
+    int speaker_id;
+    int offroad_id;
+    int offroad_type;
+};
+
+struct AnytimeEvents_UnitDisabledStruct {
+    int speaker_id;
+    int intensity;
+    int disabled_type;
+};
+
+struct Outcome_OutcomeFailStruct {
+    int speaker_id;
+    int intensity;
+};
+
+struct Backup_BUReminderStruct {
+    int speaker_id;
+    int code_type;
+    int backup_type;
+};
+
+struct Backup_CallForBUStruct {
+    int speaker_id;
+    int code_type;
+    int backup_type;
+};
+
+struct Outcome_StrategyResetStruct {
+    int speaker_id;
+    int strategy_type;
+    int intensity;
+};
+
+struct StaticRoadblock_RBEngageStruct {
+    int speaker_id;
+    int engage_type;
+};
+
 extern InterfaceId AnytimeEvents_Unit911ReplyId;
 extern InterfaceId Backup_UnitBUReplyId;
 extern InterfaceId Backup_NegativeBUReplyId;
@@ -289,6 +329,13 @@ extern InterfaceId AnytimeEvents_CollWorld_AirId;
 extern InterfaceId AnytimeEvents_CollWorld_SpinId;
 extern InterfaceId AnytimeEvents_CollWorld_CiviId;
 extern InterfaceId Arrest_BullhornArrestId;
+extern InterfaceId AnytimeEvents_OffroadMomentId;
+extern InterfaceId AnytimeEvents_UnitDisabledId;
+extern InterfaceId Outcome_OutcomeFailId;
+extern InterfaceId Backup_BUReminderId;
+extern InterfaceId Backup_CallForBUId;
+extern InterfaceId Outcome_StrategyResetId;
+extern InterfaceId StaticRoadblock_RBEngageId;
 
 extern FunctionHandle gAnytimeEvents_Unit911ReplyHandle;
 extern FunctionHandle gBackup_UnitBUReplyHandle;
@@ -339,6 +386,13 @@ extern FunctionHandle gAnytimeEvents_CollWorld_AirHandle;
 extern FunctionHandle gAnytimeEvents_CollWorld_SpinHandle;
 extern FunctionHandle gAnytimeEvents_CollWorld_CiviHandle;
 extern FunctionHandle gArrest_BullhornArrestHandle;
+extern FunctionHandle gAnytimeEvents_OffroadMomentHandle;
+extern FunctionHandle gAnytimeEvents_UnitDisabledHandle;
+extern FunctionHandle gOutcome_OutcomeFailHandle;
+extern FunctionHandle gBackup_BUReminderHandle;
+extern FunctionHandle gBackup_CallForBUHandle;
+extern FunctionHandle gOutcome_StrategyResetHandle;
+extern FunctionHandle gStaticRoadblock_RBEngageHandle;
 }
 
 extern void ScheduleSpeech_AnytimeEvents_Unit911Reply(Csis::AnytimeEvents_Unit911ReplyStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis32AnytimeEvents_Unit911ReplyStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
@@ -390,6 +444,13 @@ extern void ScheduleSpeech_AnytimeEvents_CollWorld_Air(Csis::AnytimeEvents_CollW
 extern void ScheduleSpeech_AnytimeEvents_CollWorld_Spin(Csis::AnytimeEvents_CollWorld_SpinStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis34AnytimeEvents_CollWorld_SpinStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
 extern void ScheduleSpeech_AnytimeEvents_CollWorld_Civi(Csis::AnytimeEvents_CollWorld_CiviStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis34AnytimeEvents_CollWorld_CiviStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
 extern void ScheduleSpeech_Arrest_BullhornArrest(Csis::Arrest_BullhornArrestStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis27Arrest_BullhornArrestStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
+extern void ScheduleSpeech_AnytimeEvents_OffroadMoment(Csis::AnytimeEvents_OffroadMomentStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis33AnytimeEvents_OffroadMomentStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
+extern void ScheduleSpeech_AnytimeEvents_UnitDisabled(Csis::AnytimeEvents_UnitDisabledStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis32AnytimeEvents_UnitDisabledStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
+extern void ScheduleSpeech_Outcome_OutcomeFail(Csis::Outcome_OutcomeFailStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis25Outcome_OutcomeFailStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
+extern void ScheduleSpeech_Backup_BUReminder(Csis::Backup_BUReminderStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis23Backup_BUReminderStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
+extern void ScheduleSpeech_Backup_CallForBU(Csis::Backup_CallForBUStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis22Backup_CallForBUStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
+extern void ScheduleSpeech_Outcome_StrategyReset(Csis::Outcome_StrategyResetStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis27Outcome_StrategyResetStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
+extern void ScheduleSpeech_StaticRoadblock_RBEngage(Csis::StaticRoadblock_RBEngageStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis30StaticRoadblock_RBEngageStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
 
 EAXCop::EAXCop(int speakerID, HSIMABLE handle, int bID, int cID)
     : EAXCharacter(speakerID, handle, bID, cID) {
@@ -480,9 +541,16 @@ void EAXCop::SelfStrategy(int type) {
 void EAXCop::InitialCallForBackup() {}
 
 void EAXCop::CallForBackup(int type) {
-    if (type) {
-        mLastEvent = type;
+    register EAXCop *self = this;
+    register int backup_type = type;
+    if (!backup_type) {
+        return;
     }
+    Csis::Backup_CallForBUStruct data;
+    data.code_type = self->GetRandomizedCode();
+    data.backup_type = self->GetBackupTypeFromDispatch(backup_type);
+    data.speaker_id = self->mSpeakerID;
+    ScheduleSpeech_Backup_CallForBU(data, Csis::Backup_CallForBUId, Csis::gBackup_CallForBUHandle, self);
 }
 
 void EAXCop::UnitBackupReply() {
@@ -548,15 +616,39 @@ void EAXCop::AnticipateFail() {
 }
 
 void EAXCop::OutcomeFail(short intensity) {
-    if (intensity) {
-        mLastEvent = intensity;
+    Csis::Outcome_OutcomeFailStruct data;
+    SoundAI *ai = SoundAI::Get();
+    if (intensity < 0) {
+        register int new_intensity;
+        if (ai->IsHighIntensity()) {
+            new_intensity = 2;
+        } else {
+            new_intensity = 1;
+        }
+        data.intensity = new_intensity;
+    } else {
+        data.intensity = intensity;
     }
+    data.speaker_id = mSpeakerID;
+    ScheduleSpeech_Outcome_OutcomeFail(data, Csis::Outcome_OutcomeFailId, Csis::gOutcome_OutcomeFailHandle, this);
 }
 
 void EAXCop::StrategyReset(bool new_strategy) {
-    if (new_strategy) {
-        mLastEvent = 0;
+    Csis::Outcome_StrategyResetStruct data;
+    register int intensity;
+    if (SoundAI::Get()->IsHighIntensity()) {
+        intensity = 2;
+    } else {
+        intensity = 1;
     }
+    data.intensity = intensity;
+    if (new_strategy) {
+        data.strategy_type = 2;
+    } else {
+        data.strategy_type = 1;
+    }
+    data.speaker_id = mSpeakerID;
+    ScheduleSpeech_Outcome_StrategyReset(data, Csis::Outcome_StrategyResetId, Csis::gOutcome_StrategyResetHandle, this);
 }
 
 void EAXCop::SuspectBehavior() {
@@ -672,9 +764,16 @@ void EAXCop::NegativeBackupReply() {
 }
 
 void EAXCop::BackupReminder(int type) {
-    if (type) {
-        mLastEvent = type;
+    register EAXCop *self = this;
+    register int backup_type = type;
+    if (!backup_type) {
+        return;
     }
+    Csis::Backup_BUReminderStruct data;
+    data.code_type = self->GetRandomizedCode();
+    data.backup_type = self->GetBackupTypeFromDispatch(backup_type);
+    data.speaker_id = self->mSpeakerID;
+    ScheduleSpeech_Backup_BUReminder(data, Csis::Backup_BUReminderId, Csis::gBackup_BUReminderHandle, self);
 }
 
 void EAXCop::BackupArrives() {
@@ -705,7 +804,22 @@ void EAXCop::CallforEV(unsigned int type) {
 }
 
 void EAXCop::UnitDisabled(int other) {
-    mLastEvent = other;
+    Csis::AnytimeEvents_UnitDisabledStruct data;
+    SoundAI *ai = SoundAI::Get();
+    int disabled_type = 1;
+    int intensity;
+    if (other) {
+        disabled_type = 2;
+    }
+    data.disabled_type = disabled_type;
+    if (ai->IsHighIntensity()) {
+        intensity = 2;
+    } else {
+        intensity = 1;
+    }
+    data.intensity = intensity;
+    data.speaker_id = mSpeakerID;
+    ScheduleSpeech_AnytimeEvents_UnitDisabled(data, Csis::AnytimeEvents_UnitDisabledId, Csis::gAnytimeEvents_UnitDisabledHandle, this);
 }
 
 void EAXCop::Bailout() {
@@ -919,9 +1033,11 @@ void EAXCop::SpotterWanted() {
 }
 
 void EAXCop::Offroad(unsigned int id, bool subsequent) {
-    if (subsequent) {
-        mLastEvent = static_cast<int>(id);
-    }
+    Csis::AnytimeEvents_OffroadMomentStruct data;
+    data.offroad_id = static_cast<int>(id);
+    data.speaker_id = mSpeakerID;
+    data.offroad_type = subsequent ? 2 : 1;
+    ScheduleSpeech_AnytimeEvents_OffroadMoment(data, Csis::AnytimeEvents_OffroadMomentId, Csis::gAnytimeEvents_OffroadMomentHandle, this);
 }
 
 void EAXCop::WeatherReport() {
@@ -964,8 +1080,19 @@ void EAXCop::NegRBReply() {
 void EAXCop::RBApproach() {}
 
 void EAXCop::RBEngage(bool spikes_hit) {
-    if (spikes_hit) {
-        mLastEvent = 1;
+    SoundAI *ai = SoundAI::Get();
+    if (ai) {
+        if (ai->GetRoadblock()) {
+            Csis::StaticRoadblock_RBEngageStruct data;
+            int engage_type;
+            data.speaker_id = mSpeakerID;
+            engage_type = 1;
+            if (spikes_hit) {
+                engage_type = 2;
+            }
+            data.engage_type = engage_type;
+            ScheduleSpeech_StaticRoadblock_RBEngage(data, Csis::StaticRoadblock_RBEngageId, Csis::gStaticRoadblock_RBEngageHandle, this);
+        }
     }
 }
 
