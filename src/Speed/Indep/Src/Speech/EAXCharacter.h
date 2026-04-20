@@ -8,7 +8,7 @@
 #include "Speed/Indep/Src/EAXSound/AudioMemBase.hpp"
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
 
-// TODO figure out where this is, it has smth to do with AnytimeEvents
+namespace Csis {
 enum Type_heat_level {
     Type_heat_level_2 = 1,
     Type_heat_level_3 = 2,
@@ -20,6 +20,8 @@ enum Type_heat_level {
     Type_heat_level_9 = 128,
     Type_heat_level_10 = 256,
 };
+}
+typedef Csis::Type_heat_level Type_heat_level;
 
 enum Type_code {
     Type_code_Use_10_code = 1,
@@ -53,49 +55,89 @@ class EAXCharacter : public AudioMemBase {
     virtual void InterruptComposedLow();
     virtual void InterruptComposedHigh();
     virtual void DriverHistory();
-    virtual void HeatJump(Type_heat_level heat);
+    virtual void HeatJump(Csis::Type_heat_level heat);
 
-    virtual HSIMABLE GetHandle() {}
+    virtual HSIMABLE GetHandle() {
+        return mHandle;
+    }
 
-    virtual void SetHandle(HSIMABLE handle) {}
+    virtual void SetHandle(HSIMABLE handle) {
+        mHandle = handle;
+    }
 
-    virtual int GetSpeakerID() {}
+    virtual int GetSpeakerID() {
+        return mSpeakerID;
+    }
 
-    virtual int GetCallsign() {}
+    virtual int GetCallsign() {
+        return mCallsign.name;
+    }
 
-    virtual int GetUnitNumber() {}
+    virtual int GetUnitNumber() {
+        return mCallsign.number;
+    }
 
-    virtual void SetCallsign(int callsign) {}
+    virtual void SetCallsign(int callsign) {
+        mCallsign.name = callsign;
+    }
 
-    virtual void SetUnitNumber(int unitnum) {}
+    virtual void SetUnitNumber(int unitnum) {
+        mCallsign.number = unitnum;
+    }
 
-    virtual void SetSpeakerID(int spkrID) {}
+    virtual void SetSpeakerID(int spkrID) {
+        mSpeakerID = spkrID;
+    }
 
-    virtual void SetPosition(const UMath::Vector3 &v) {}
+    virtual void SetPosition(const UMath::Vector3 &v) {
+        mPos = v;
+    }
 
-    virtual const UMath::Vector3 GetPosition() {}
+    virtual const UMath::Vector3 GetPosition() {
+        return mPos;
+    }
 
-    virtual void SetSpeed(const float speed) {}
+    virtual void SetSpeed(const float speed) {
+        mSpeed = speed;
+    }
 
     virtual void Update();
 
-    virtual float GetDistance() {}
+    virtual float GetDistance() {
+        return mDistance;
+    }
 
-    virtual float GetHealth() {}
+    virtual float GetHealth() {
+        return mHealth;
+    }
 
-    virtual bool IsActive() {}
+    virtual int IsActive() {
+        return *reinterpret_cast<unsigned int *>(&mActive);
+    }
 
-    virtual void SetActive(bool active) {}
+    virtual void SetActive(bool active) {
+        *reinterpret_cast<unsigned int *>(&mActive) = active;
+    }
 
-    virtual float GetSpeed() {}
+    virtual float GetSpeed() {
+        return mSpeed;
+    }
 
-    virtual bool IsDead() {}
+    virtual int IsDead() {
+        return *reinterpret_cast<unsigned int *>(&mDestroyed);
+    }
 
-    virtual bool HasLOS() {}
+    virtual int HasLOS() {
+        return *reinterpret_cast<unsigned int *>(&mSuspectLOS);
+    }
 
-    virtual void SetLOS(bool yes) {}
+    virtual void SetLOS(bool yes) {
+        *reinterpret_cast<unsigned int *>(&mSuspectLOS) = yes;
+    }
 
-    virtual Type_code GetRandomizedCode() {}
+    virtual Type_code GetRandomizedCode() {
+        return Type_code_dont_use_10_code;
+    }
 
     virtual void Reset();
 
