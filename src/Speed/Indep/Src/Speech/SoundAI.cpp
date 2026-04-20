@@ -15,6 +15,12 @@ namespace MiscSpeech {
 bool GetLocation(RoadNames road, int &region, int &location) asm("GetLocation__10MiscSpeech9RoadNamesRQ24Csis20Type_location_regionRQ24Csis13Type_location");
 void LostSuspect(int speaker) asm("LostSuspect__10MiscSpeechi");
 void Bailout(int speaker) asm("Bailout__10MiscSpeechi");
+void QuadrantForming() asm("QuadrantForming__10MiscSpeech");
+void SuspectPossiblyGone() asm("SuspectPossiblyGone__10MiscSpeech");
+void QuadrantMoving() asm("QuadrantMoving__10MiscSpeech");
+void OtherLead() asm("OtherLead__10MiscSpeech");
+void PossibleSuspect() asm("PossibleSuspect__10MiscSpeech");
+void WrongSuspect() asm("WrongSuspect__10MiscSpeech");
 }
 
 namespace Speech {
@@ -35,8 +41,10 @@ void PursuitFlow_Reset(void *flow) asm("Reset__Q26Speech11PursuitFlow");
 void StrategyFlow_Reset(void *flow) asm("Reset__Q26Speech12StrategyFlow");
 void RoadblockFlow_Reset(void *flow) asm("Reset__Q26Speech13RoadblockFlow");
 void PursuitFlow_OnCopRemoved(void *flow, EAXCop *cop) asm("OnCopRemoved__Q26Speech11PursuitFlowP6EAXCop");
+void PursuitFlow_Reacquire(void *flow) asm("Reacquire__Q26Speech11PursuitFlow");
 void Observer_Reset(void *observer) asm("Reset__Q26Speech8Observer");
 void MusicFlow_Reset(void *flow) asm("Reset__Q26Speech9MusicFlow");
+void MusicFlow_Reacquire(void *flow) asm("Reacquire__Q26Speech9MusicFlow");
 void Manager_ResetGlobalHistory() asm("ResetGlobalHistory__Q26Speech7Manager");
 }
 
@@ -541,6 +549,112 @@ void SoundAI::AttemptReattachPursuit() {
         mAIPursuit = 0;
         if ((mPursuitState == kOtherTarget) && !mPursuit) {
             mPursuitState = kInactive;
+        }
+    }
+}
+
+void SoundAI::SyncPursuit() {
+    if (!mPursuit || !mPursuit->IsPlayerPursuit() || (mAIPursuit && mAIPursuit->IsPlayerPursuit())) {
+        AttemptReattachPursuit();
+    }
+
+    Timer t = WorldTimer;
+    if (!mPursuit) {
+        if ((mPursuitState == kActive) || (mPursuitState == kSearching)) {
+            if (!mAIPursuit || (mRacerCount < 1)) {
+                mPursuitState = kInactive;
+                mT_sinceLastPursuit = t;
+            } else {
+                mPursuitState = kOtherTarget;
+            }
+        }
+    } else {
+        bool ai_searching = false;
+        if (!mPursuit->IsPerpInSight() || !mPursuit->PursuitMeterCanShowBusted() || (mPursuit->GetFormationType() == 2)) {
+            ai_searching = true;
+        }
+
+        bool heli_los = false;
+        if (mHeli && mHeli->HasLOS()) {
+            heli_los = mHeli->GetInFormation() != 0;
+        }
+
+        if (ai_searching || ((mLOSCount == 0) && !heli_los)) {
+            mPursuitState = kSearching;
+        } else {
+            if (mPursuitState != kActive) {
+                mCTS911 = 0;
+                mTrafficHits911 = 0;
+            }
+            mPursuitState = kActive;
+        }
+    }
+
+    float no_los_time = (WorldTimer - mT_noLOS).GetSeconds();
+    if (mPursuitState == kActive) {
+        mT_noLOS = WorldTimer;
+        mT_sinceLastPursuit = t;
+    } else {
+        mT_LOS = WorldTimer;
+    }
+
+    float inactivity_cutoff[2];
+    inactivity_cutoff[0] = mTune.PursuitInactivityTimer(0);
+    inactivity_cutoff[1] = mTune.PursuitInactivityTimer(1);
+
+    if ((mFocus == kLost) && (mPursuitState == kActive) && (mTimeSinceLastChase < inactivity_cutoff[1])) {
+        mFocus = kPursuitFlow;
+        mQuadrantState = kReset;
+        mFlags &= ~PURSUIT_EXPIRED;
+        Speech::Manager::ClearPlayback();
+        Speech::PursuitFlow_Reacquire(mPursuitFlow);
+        Speech::MusicFlow_Reacquire(mMusicFlow);
+    }
+
+    if (mFocus == kLost) {
+        if (((mPursuitState == kSearching) || (mPursuitState == kInactive)) && mPursuit && (mPursuit->GetFormationType() == 4) &&
+            ((mFlags & PURSUIT_EXPIRED) == 0)) {
+            Speech::Manager::ClearPlayback();
+            mDispatch->TimeExpired();
+            mQuadrantState = kReset;
+            mFlags |= PURSUIT_EXPIRED;
+        } else if (no_los_time > inactivity_cutoff[1]) {
+            ResetPursuit(false);
+        } else if (((mPursuitState == kSearching) || (mPursuitState == kInactive)) && !Speech::Manager_IsCopSpeechBusy()) {
+            switch (mQuadrantState) {
+            case kInitial:
+                MiscSpeech::QuadrantForming();
+                mQuadrantState = kForming;
+                break;
+            case kForming:
+                if (bRandom(1.0f) <= 0.4f) {
+                    mQuadrantState = kFiction1;
+                    switch (bRandom(3)) {
+                    case 0:
+                        MiscSpeech::SuspectPossiblyGone();
+                        break;
+                    case 1:
+                        MiscSpeech::QuadrantMoving();
+                        break;
+                    default:
+                        MiscSpeech::OtherLead();
+                        break;
+                    }
+                } else {
+                    mQuadrantState = kFiction2;
+                    MiscSpeech::PossibleSuspect();
+                }
+                break;
+            case kFiction2:
+                MiscSpeech::WrongSuspect();
+                mQuadrantState = kExpired;
+                break;
+            case kFiction1:
+                mQuadrantState = kExpired;
+                break;
+            default:
+                break;
+            }
         }
     }
 }
