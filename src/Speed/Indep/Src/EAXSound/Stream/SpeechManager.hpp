@@ -10,6 +10,7 @@
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/speech.h"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 #include "Speed/Indep/Src/Speech/EAXCharacter.h"
+#include "Speed/Indep/Src/Speech/SpeechCache.h"
 #include "SpeechModule.hpp"
 
 struct InterfaceId;
@@ -95,15 +96,6 @@ struct ScheduledSpeechEvent {
     unsigned char ReserveSample();
 };
 
-class Cache {
-  public:
-    SlotPool *GetEventPool();
-    void Free(void *ptr);
-    void Dump();
-    void Init(int size);
-    void Validate();
-};
-
 class Manager {
   public:
     static void FlushSpeechForActor(EAXCharacter *actor);
@@ -134,7 +126,5 @@ class Manager {
 };
 
 }; // namespace Speech
-
-extern Speech::Cache gSpeechCache;
 
 #endif
