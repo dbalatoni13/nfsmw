@@ -2,6 +2,8 @@
 #include "SoundAI.h"
 #include "Speed/Indep/Src/EAXSound/Csis.hpp"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IDamageable.h"
+#include "Speed/Indep/Src/Interfaces/Simables/ISuspension.h"
 
 namespace MiscSpeech {
 bool IsVehicleTypeOK();
@@ -552,6 +554,11 @@ extern "C" float lbl_804074E0;
 extern "C" float lbl_804074D0;
 extern "C" float lbl_804074D4;
 extern "C" float lbl_804074D8;
+extern "C" float lbl_80407484;
+extern "C" float lbl_8040746C;
+extern "C" float lbl_80407470;
+extern "C" float lbl_80407468;
+extern "C" float lbl_8040745C;
 extern "C" float lbl_80407490;
 extern "C" float lbl_80407494;
 extern "C" float lbl_80407498;
@@ -617,10 +624,195 @@ int EAXCop::GetBackupTypeFromDispatch(int type) {
 
 void EAXCop::Update() {
     EAXCharacter::Update();
+    HSIMABLE handle = (*reinterpret_cast<HSIMABLE (**)(void *)>(*reinterpret_cast<char **>(this) + 0x5C))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x58));
+    if (!handle) {
+        *reinterpret_cast<unsigned int *>(&mInPosition) = 0;
+        *reinterpret_cast<unsigned int *>(&mInFormation) = 0;
+        mPctTractiveTires = lbl_8040745C;
+        mTimeAirborne = WorldTimer;
+        EAXCharacter::Reset();
+        return;
+    }
+
+    ISimable *simable = ISimable::FindInstance(handle);
+    IVehicle *vehicle = 0;
+    IDamageable *damageable = 0;
+    IPursuitAI *pursuit_ai = 0;
+    ISuspension *suspension = 0;
+    IVehicleAI *vehicle_ai = 0;
+
+    if (*reinterpret_cast<unsigned int *>(&mSuspectLOS) != 0) {
+        mTimeNoLOS = WorldTimer;
+    }
+
+    if (!simable) {
+        (*reinterpret_cast<void (**)(void *, bool)>(*reinterpret_cast<char **>(this) + 0xD4))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0xD0), false);
+    } else {
+        simable->QueryInterface(&vehicle);
+        simable->QueryInterface(&damageable);
+        simable->QueryInterface(&pursuit_ai);
+        simable->QueryInterface(&suspension);
+        simable->QueryInterface(&vehicle_ai);
+    }
+
+    if (!pursuit_ai || (*reinterpret_cast<unsigned int *>(&mActive) == 0)) {
+        (*reinterpret_cast<void (**)(void *, bool)>(*reinterpret_cast<char **>(this) + 0x35C))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x358), false);
+        (*reinterpret_cast<void (**)(void *, bool)>(*reinterpret_cast<char **>(this) + 0x36C))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x368), false);
+        (*reinterpret_cast<void (**)(void *, const UMath::Vector3 &)>(*reinterpret_cast<char **>(this) + 0x37C))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x378), UMath::Vector3::kZero);
+    } else {
+        (*reinterpret_cast<void (**)(void *, bool)>(*reinterpret_cast<char **>(this) + 0x35C))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x358), pursuit_ai->GetInFormation());
+        (*reinterpret_cast<void (**)(void *, bool)>(*reinterpret_cast<char **>(this) + 0x36C))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x368), pursuit_ai->GetInPosition());
+        (*reinterpret_cast<void (**)(void *, const UMath::Vector3 &)>(*reinterpret_cast<char **>(this) + 0x37C))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x378), pursuit_ai->GetPursuitOffset());
+    }
+
+    if (!suspension || (*reinterpret_cast<unsigned int *>(&mActive) == 0)) {
+        mTimeAirborne = WorldTimer;
+        mPctTractiveTires = lbl_8040745C;
+    } else {
+        mPctTractiveTires = lbl_8040745C;
+        if (suspension->GetNumWheelsOnGround() != 0) {
+            mPctTractiveTires = static_cast<float>(suspension->GetNumWheelsOnGround()) / static_cast<float>(suspension->GetNumWheels());
+        }
+        if (mPctTractiveTires > lbl_80407468) {
+            mTimeAirborne = WorldTimer;
+        }
+    }
+
+    if (damageable) {
+        *reinterpret_cast<unsigned int *>(&mDestroyed) = damageable->IsDestroyed();
+        mHealth = damageable->GetHealth();
+    }
+
+    if (!vehicle_ai || (*reinterpret_cast<unsigned int *>(&mActive) == 0)) {
+        mCurrRoad = MAX_ROADNAMES;
+    } else {
+        WRoadNav *nav = vehicle_ai->GetCurrentRoad();
+        if (nav) {
+            RoadNames road = static_cast<RoadNames>(nav->GetRoadSpeechId());
+            if (road != MAX_ROADNAMES) {
+                mCurrRoad = road;
+            }
+        }
+    }
+
+    SoundAI *ai = SoundAI::Get();
+    if ((ai != 0) && (*reinterpret_cast<unsigned int *>(&mActive) != 0) && (*reinterpret_cast<unsigned int *>(&mSuspectLOS) != 0) && vehicle) {
+        const UMath::Vector3 &cop_pos = vehicle->GetPosition();
+        const UMath::Vector3 &player_pos = *reinterpret_cast<UMath::Vector3 *>(reinterpret_cast<char *>(ai) + 0x114);
+        if (UMath::Distance(cop_pos, player_pos) <= mDistance) {
+            mT_closingDist = WorldTimer;
+        }
+    }
 }
 
 void EAXCop::SetActive(bool activity) {
-    EAXCharacter::SetActive(activity);
+    unsigned int active = static_cast<unsigned int>(activity);
+    if (*reinterpret_cast<unsigned int *>(&mActive) == active) {
+        return;
+    }
+
+    *reinterpret_cast<unsigned int *>(&mActive) = active;
+    SoundAI *ai = SoundAI::Get();
+    if (!ai) {
+        return;
+    }
+
+    if (active != 0) {
+        int focus = *reinterpret_cast<int *>(reinterpret_cast<char *>(ai) + 0x140);
+        if (focus != 0x29A && focus != 2) {
+            return;
+        }
+
+        int fn_delta = 0;
+        int fn_addr = 0;
+        if (*reinterpret_cast<unsigned int *>(&mSuspectLOS) == 0) {
+            if (focus != 2) {
+                return;
+            }
+            if (*reinterpret_cast<int *>(reinterpret_cast<char *>(ai) + 0x1DC) == 2) {
+                return;
+            }
+
+            IRoadBlock *roadblock = ai->GetRoadblock();
+            if (!roadblock) {
+                return;
+            }
+
+            HSIMABLE handle = (*reinterpret_cast<HSIMABLE (**)(void *)>(*reinterpret_cast<char **>(this) + 0x5C))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x58));
+            if (roadblock->IsComprisedOf(handle)) {
+                return;
+            }
+
+            if (bRandom(lbl_8040746C) > lbl_80407470) {
+                fn_delta = *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x288);
+                fn_addr = *reinterpret_cast<int *>(*reinterpret_cast<char **>(this) + 0x28C);
+            } else {
+                fn_delta = *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x1B8);
+                fn_addr = *reinterpret_cast<int *>(*reinterpret_cast<char **>(this) + 0x1BC);
+            }
+        } else {
+            if (bRandom(lbl_8040746C) > lbl_80407470) {
+                fn_delta = *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x140);
+                fn_addr = *reinterpret_cast<int *>(*reinterpret_cast<char **>(this) + 0x144);
+            } else {
+                fn_delta = *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x1F0);
+                fn_addr = *reinterpret_cast<int *>(*reinterpret_cast<char **>(this) + 0x1F4);
+            }
+        }
+
+        (*reinterpret_cast<void (**)(void *)>(fn_addr))(reinterpret_cast<char *>(this) + fn_delta);
+        return;
+    }
+
+    if ((WorldTimer - mT_lastactivity).GetSeconds() < lbl_80407484) {
+        return;
+    }
+
+    FlushSpeechForActor(this);
+    if ((*reinterpret_cast<unsigned int *>(&mInFormation) == 0) && (*reinterpret_cast<unsigned int *>(&mInPosition) == 0)) {
+        return;
+    }
+
+    mT_lastactivity = WorldTimer;
+
+    if (mTrafficHitCount > 1) {
+        (*reinterpret_cast<void (**)(void *)>(*reinterpret_cast<char **>(this) + 0x22C))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x228));
+        mTrafficHitCount = activity;
+        int state = *reinterpret_cast<int *>(reinterpret_cast<char *>(ai) + 0x1DC);
+        if (state == 0 || state == 1) {
+            ai->RandomBailoutDeny(this);
+        }
+        return;
+    }
+
+    if ((*reinterpret_cast<int (**)(void *)>(*reinterpret_cast<char **>(this) + 0x34C))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x348))) {
+        (*reinterpret_cast<void (**)(void *)>(*reinterpret_cast<char **>(this) + 0x214))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x210));
+        return;
+    }
+
+    if (*reinterpret_cast<unsigned int *>(&mDestroyed) != 0) {
+        EAXCop *rand_cop = ai->FindClosestCop(true, true);
+        bool different_battalion = false;
+        if (rand_cop) {
+            int their_battalion = (*reinterpret_cast<int (**)(void *)>(*reinterpret_cast<char **>(rand_cop) + 0x6C))(reinterpret_cast<char *>(rand_cop) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(rand_cop) + 0x68));
+            int my_battalion = (*reinterpret_cast<int (**)(void *)>(*reinterpret_cast<char **>(this) + 0x6C))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x68));
+            different_battalion = their_battalion != my_battalion;
+        }
+        (*reinterpret_cast<void (**)(void *, bool)>(*reinterpret_cast<char **>(this) + 0x20C))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x208), different_battalion);
+        return;
+    }
+
+    float min_health = *reinterpret_cast<float *>(*reinterpret_cast<char **>(reinterpret_cast<char *>(ai) + 0x18C) + 0x9C);
+    if (mHealth < min_health) {
+        (*reinterpret_cast<void (**)(void *)>(*reinterpret_cast<char **>(this) + 0x224))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x220));
+        return;
+    }
+
+    (*reinterpret_cast<void (**)(void *)>(*reinterpret_cast<char **>(this) + 0x21C))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x218));
+    int state = *reinterpret_cast<int *>(reinterpret_cast<char *>(ai) + 0x1DC);
+    if (state == 0 || state == 1) {
+        ai->RandomBailoutDeny(this);
+    }
 }
 
 void EAXCop::Reset() {
@@ -797,39 +989,34 @@ void EAXCop::SelfStrategy(int type) {
     SoundAI *ai = SoundAI::Get();
     if (ai && ai->GetPursuitState() == SoundAI::kActive) {
         Csis::Setup_SelfStrategyStruct data;
-        if (type < 4) {
-            if (type < 2) {
-                if (type != 1) {
-                    return;
-                }
-                int select = bRandom(4);
-                if (select == 1) {
-                    data.self_strategy_type = 0x40;
-                } else if (select < 2) {
-                    if (select == 0) {
-                        data.self_strategy_type = 0x20;
-                    } else {
-                        data.self_strategy_type = 8;
-                    }
-                } else if (select == 2) {
-                    data.self_strategy_type = 0x10;
+        switch (type) {
+        case 1: {
+            unsigned int select = bRandom(4);
+            if (select == 1) {
+                data.self_strategy_type = 0x40;
+            } else if (static_cast<int>(select) < 2) {
+                if (select == 0) {
+                    data.self_strategy_type = 0x20;
                 } else {
                     data.self_strategy_type = 8;
                 }
+            } else if (select == 2) {
+                data.self_strategy_type = 0x10;
             } else {
-                data.self_strategy_type = 4;
-                if (bRandom(lbl_804074DC) > lbl_804074E0) {
-                    data.self_strategy_type = 2;
-                }
+                data.self_strategy_type = 8;
             }
-        } else {
-            if (type != 6) {
-                return;
-            }
+            break;
+        }
+        case 2:
+        case 3:
+        case 6:
             data.self_strategy_type = 4;
             if (bRandom(lbl_804074DC) > lbl_804074E0) {
                 data.self_strategy_type = 2;
             }
+            break;
+        default:
+            return;
         }
         data.code = GetRandomizedCode();
         data.speaker_id = mSpeakerID;
