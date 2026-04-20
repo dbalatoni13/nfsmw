@@ -28,6 +28,12 @@ int StrategyFlow_IsTransitionable(void *flow) asm("IsTransitionable__Q26Speech12
 void MusicFlow_Update(void *flow) asm("Update__Q26Speech9MusicFlow");
 void Observer_Update(void *observer) asm("Update__Q26Speech8Observer");
 void RoadblockFlow_Update(void *flow) asm("Update__Q26Speech13RoadblockFlow");
+void PursuitFlow_Reset(void *flow) asm("Reset__Q26Speech11PursuitFlow");
+void StrategyFlow_Reset(void *flow) asm("Reset__Q26Speech12StrategyFlow");
+void RoadblockFlow_Reset(void *flow) asm("Reset__Q26Speech13RoadblockFlow");
+void Observer_Reset(void *observer) asm("Reset__Q26Speech8Observer");
+void MusicFlow_Reset(void *flow) asm("Reset__Q26Speech9MusicFlow");
+void Manager_ResetGlobalHistory() asm("ResetGlobalHistory__Q26Speech7Manager");
 }
 
 extern float lbl_80407BA8;
@@ -634,4 +640,85 @@ const float SoundAI::GetTimeLastNailedCop() {
         ++i;
     }
     return t_mostrecent;
+}
+
+void SoundAI::SyncFormations() {
+    Speech::copMap::iterator iter = mActors.begin();
+    while (iter != mActors.end()) {
+        EAXCop *cop = iter->cop;
+        if (!cop->GetInFormation() || cop->IsHeli()) {
+            Speech::copList::iterator i = mCopsInFormation.begin();
+            while (i != mCopsInFormation.end()) {
+                EAXCop *copInFormation = *i;
+                if (copInFormation && copInFormation->GetHandle() == cop->GetHandle()) {
+                    mCopsInFormation.erase(i);
+                    break;
+                }
+                ++i;
+            }
+        } else {
+            bool found = false;
+            Speech::copList::iterator i = mCopsInFormation.begin();
+            while (i != mCopsInFormation.end()) {
+                EAXCop *copInFormation = *i;
+                if (copInFormation && copInFormation->GetHandle() == cop->GetHandle()) {
+                    found = true;
+                    break;
+                }
+                ++i;
+            }
+            if (!found && !cop->IsHeli()) {
+                mCopsInFormation.push_back(cop);
+            }
+        }
+        ++iter;
+    }
+
+    if (mCopsInFormation.size() == 1) {
+        mLastCopInFormation = mCopsInFormation.front();
+    }
+    if (!mCopsInFormation.empty()) {
+        mT_outofFormation = WorldTimer;
+    }
+}
+
+void SoundAI::ResetPursuit(bool including_music) {
+    Speech::PursuitFlow_Reset(mPursuitFlow);
+    Speech::StrategyFlow_Reset(mStrategyFlow);
+    Speech::RoadblockFlow_Reset(mRoadblockFlow);
+    Speech::Observer_Reset(mObserver);
+    if (including_music) {
+        Speech::MusicFlow_Reset(mMusicFlow);
+    }
+    Speech::Manager_ResetGlobalHistory();
+
+    mFocus = kPursuitFlow;
+    mQuadrantState = kReset;
+    mRacerCount = 0;
+
+    while (!mActors.empty()) {
+        RemoveCop(mActors.begin()->hsimable);
+    }
+
+    mLeader = 0;
+    mCopsInFormation.clear();
+    mPursuit = 0;
+    mAIPursuit = 0;
+    mLastCopInFormation = 0;
+    mLatestCop = 0;
+    mHavoc = 0;
+    mT_pursuitStart = WorldTimer;
+    mPursuitState = kInactive;
+    mPursuitDist = 0.0f;
+    mT_lastCopNailed = Timer(0);
+    mT_lastCrashed = Timer(0);
+    mT_noLOS = Timer(0);
+    mT_reallylowspeed = Timer(0);
+    mT_outofFormation = Timer(0);
+    mT_LOS = Timer(0);
+    mCopsInView = 0;
+    mInfraction = 0;
+    mFlags = 0;
+    mTrafficHits911 = 0;
+    mCTS911 = 0;
 }
