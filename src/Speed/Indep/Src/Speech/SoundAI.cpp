@@ -9,6 +9,14 @@
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
 #include "Speed/Indep/Src/Main/AttribSupport.h"
 #include "Speed/Indep/Src/Speech/EAXCharacter.h"
+#include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
+#include "Speed/Indep/Src/Gameplay/GRaceDatabase.h"
+#include "Speed/Indep/Src/Interfaces/SimActivities/ICopMgr.h"
+#include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
+#include "Speed/Indep/Src/World/ParameterMaps.hpp"
+#include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 #include "Speed/Indep/Src/Generated/Messages/MControlPathfinder.h"
 #include "Speed/Indep/Src/Generated/Messages/MGamePlayMoment.h"
 #include "Speed/Indep/Src/Generated/Messages/MMiscSound.h"
@@ -67,6 +75,12 @@ extern float lbl_80407BA4;
 extern int FORCE_VOICE_RANDOMIZATION;
 extern bool IsSpeechEnabled;
 extern short Speech_Manager_mLastSpeakerID asm("_Q26Speech7Manager.mLastSpeakerID");
+extern ParameterAccessor SPAMAccessorSpeech;
+
+void EAXDispatch_Report911(void *dispatch, int infraction) asm("Report911__11EAXDispatchQ24Csis17Type_pursuit_type");
+void EAXDispatch_JurisShift(void *dispatch, int jurisdiction) asm("JurisShift__11EAXDispatchQ24Csis17Type_jurisdiction");
+
+static float prev_heat_30802 = 0.0f;
 
 SoundAI::SoundAI()
     : Sim::Activity(1),
@@ -606,6 +620,187 @@ bool SoundAI::IsHeadingValid() {
         return true;
     }
     return false;
+}
+
+void SoundAI::SyncPlayers() {
+    IPlayer *player = IPlayer::First(PLAYER_LOCAL);
+    if (!player) {
+        return;
+    }
+
+    IVehicle *vehicle = 0;
+    IPerpetrator *perp = 0;
+    IVehicleAI *vai = 0;
+    player->GetSimable()->QueryInterface(&vehicle);
+    player->GetSimable()->QueryInterface(&perp);
+    if (vehicle) {
+        vehicle->QueryInterface(&vai);
+    }
+    if (!vehicle || !vai) {
+        return;
+    }
+
+    WRoadNav *nav = vai->GetDriveToNav();
+    if (!nav) {
+        return;
+    }
+
+    mPlayerCurrent[0].roadID = static_cast<RoadNames>(nav->GetRoadSpeechId());
+    mPlayerCurrent[0].direction = CalcPlayerDirection(false);
+
+    if (IsHeadingValid()) {
+        RoadNames last_road = mPlayerCurrent[1].roadID;
+        RoadNames curr_road = mPlayerCurrent[0].roadID;
+        unsigned int curr_dir = mPlayerCurrent[0].direction;
+        unsigned int known_dir = mLastKnown.direction;
+        mPlayerCurrent[1].roadID = curr_road;
+        mPlayerCurrent[1].direction = curr_dir;
+        if ((known_dir != curr_dir) && mPursuit && mPursuit->IsPerpInSight() && (last_road != curr_road)) {
+            if ((mPursuitState == kActive) && (mFocus != kPursuitFlow)) {
+                EAXCop *cop = FindClosestCop(true, true);
+                if (cop) {
+                    cop->DirectionChange();
+                }
+            }
+            mLastKnown.direction = curr_dir;
+            mLastKnown.roadID = curr_road;
+        }
+    }
+
+    if (!perp) {
+        return;
+    }
+
+    const Attrib::Instance &vehicle_attrib = player->GetSimable()->GetAttributes();
+    if (mPVehicle.GetCollection() != vehicle_attrib.GetCollection()) {
+        mPVehicle.Change(Attrib::FindCollectionWithDefault(Attrib::Gen::pvehicle::ClassKey(), vehicle_attrib.GetCollection()));
+    }
+
+    if (!mPlayerCarCustom) {
+        mPlayerCarCustom = new CarCustomizations;
+        if (!GetCustomized(vehicle, *mPlayerCarCustom)) {
+            delete mPlayerCarCustom;
+            mPlayerCarCustom = 0;
+        }
+    }
+
+    mPlayerSpeed = MPS2MPH(vehicle->GetSpeed());
+    if ((mTune.MinTimeConsideredStopped() <= mPlayerSpeed) || ((mFlags & LOWSPEEDTIMER) != 0)) {
+        if (mTune.MinSpeedConsideredStopped() <= mPlayerSpeed) {
+            mFlags &= ~LOWSPEEDTIMER;
+            mT_reallylowspeed = WorldTimer;
+        }
+    } else {
+        mFlags |= LOWSPEEDTIMER;
+        mT_reallylowspeed = WorldTimer;
+    }
+
+    mPlayerPos = player->GetPosition();
+    if (SPAMAccessorSpeech.Layer) {
+        SPAMAccessorSpeech.CaptureData(mPlayerPos.z, -mPlayerPos.x);
+        mPlayerOffroadID = SPAMAccessorSpeech.GetDataInt(1);
+    }
+
+    float heat = perp->GetHeat();
+    mPlayerHeat = static_cast<int>(heat);
+
+    if ((mFocus != kPursuitFlow) && (60.0f < mPursuitDuration) && (prev_heat_30802 < heat)) {
+        bool crossed = false;
+        int cutoff_index = 3;
+        while (cutoff_index > -1) {
+            float cutoff = heat_cutoffs[cutoff_index].value;
+            if ((prev_heat_30802 < cutoff) && (cutoff <= heat)) {
+                crossed = true;
+                prev_heat_30802 = heat;
+                break;
+            }
+            cutoff_index--;
+        }
+
+        if (crossed && (mPursuitState < kInactive)) {
+            if (bRandom(1.0f) <= 0.5f) {
+                EAXCop *cop = GetRandomActiveCop(1, false);
+                if (mHeli && (bRandom(1.0f) > 0.5f)) {
+                    mHeli->HeatJump(heat_cutoffs[cutoff_index].heat_level);
+                } else if (cop) {
+                    cop->HeatJump(heat_cutoffs[cutoff_index].heat_level);
+                }
+            } else if (mDispatch) {
+                reinterpret_cast<EAXCharacter *>(mDispatch)->HeatJump(heat_cutoffs[cutoff_index].heat_level);
+            }
+
+            if (bRandom(1.0f) > 0.5f && mDispatch) {
+                if ((3.0f <= heat) && (heat < 6.0f)) {
+                    EAXDispatch_JurisShift(mDispatch, 1);
+                } else if (6.0f <= heat) {
+                    EAXDispatch_JurisShift(mDispatch, 2);
+                }
+            }
+        }
+    }
+
+    Attrib::Gen::pursuitlevels *pursuitatr = perp->GetPursuitLevelAttrib();
+    if (pursuitatr && (mPursuitLevel.GetCollection() != pursuitatr->GetCollection())) {
+        mPursuitLevel.Change(Attrib::FindCollectionWithDefault(Attrib::Gen::pursuitlevels::ClassKey(), pursuitatr->GetCollection()));
+    }
+
+    if (mPursuitLevel.GetCollection()) {
+        if (mPursuitLevel.roadblockprobability() <= 0.0f) {
+            mFlags &= ~RB_ENABLED;
+        } else {
+            mFlags |= RB_ENABLED;
+        }
+        if (mPursuitLevel.roadblockhelichance() <= 0.0f) {
+            mFlags &= ~HELIRB_ENABLED;
+        } else {
+            mFlags |= HELIRB_ENABLED;
+        }
+        if (mPursuitLevel.roadblockspikechance(0) <= 0.0f) {
+            mFlags &= ~SPIKES_ENABLED;
+        } else {
+            mFlags |= SPIKES_ENABLED;
+        }
+
+        mNumCopsInWave = mPursuitLevel.NumCopsToTriggerBackup();
+
+        if ((mPursuitState == kInactive) && ((mFlags & DISP911_ACTIVE) == 0)) {
+            bool is_DDay = false;
+            bool is_pursuit_race = false;
+            bool is_roaming = false;
+            if (GRaceStatus::Exists()) {
+                is_roaming = (GRaceStatus::Get().GetPlayMode() == GRaceStatus::kPlayMode_Roaming);
+                GRaceParameters *parms = GRaceStatus::Get().GetRaceParameters();
+                if (parms) {
+                    is_DDay = parms->GetIsDDayRace();
+                    is_pursuit_race = parms->GetIsPursuitRace();
+                }
+            }
+
+            ICopMgr *copmgr = UTL::Collections::Singleton<ICopMgr>::Get();
+            if (copmgr && ICopMgr::AreCopsEnabled()) {
+                float t_lockout = copmgr->GetLockoutTimeRemaining();
+                bool scripted_911 = ((mPursuitLevel.Lifetime911(0) < t_lockout) && (t_lockout < mPursuitLevel.Lifetime911(1)) && !is_pursuit_race &&
+                                     !is_roaming);
+                bool req911_met = false;
+                if ((mCTS911 >= mPursuitLevel.CTSFor911()) || (mTrafficHits911 >= mPursuitLevel.NumCiviHitsFor911(0))) {
+                    req911_met = true;
+                }
+
+                if ((req911_met || scripted_911) && !is_DDay && mDispatch) {
+                    EAXDispatch_Report911(mDispatch, IsHighIntensity() ? 2 : 1);
+                }
+            }
+        }
+    }
+
+    UMath::Vector3 player_fw;
+    player->GetSimable()->GetRigidBody()->GetForwardVector(player_fw);
+    UMath::Vector3 unit_fw;
+    UMath::Unit(player_fw, unit_fw);
+    mPlayerFW = unit_fw;
+    mSmoothedFWRoad.x = (mSmoothedFWRoad.x * 0.8f) + (unit_fw.x * 0.2f);
+    mSmoothedFWRoad.y = (mSmoothedFWRoad.y * 0.8f) + (unit_fw.y * 0.2f);
+    mSmoothedFWRoad.z = (mSmoothedFWRoad.z * 0.8f) + (unit_fw.z * 0.2f);
 }
 
 int SoundAI::GetBattalionFromRoadID(int roadID) {

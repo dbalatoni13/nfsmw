@@ -1,6 +1,7 @@
 #include "EAXCop.h"
 #include "SoundAI.h"
 #include "Speed/Indep/Src/EAXSound/Csis.hpp"
+#include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IDamageable.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISuspension.h"
@@ -563,7 +564,6 @@ extern "C" float lbl_80407490;
 extern "C" float lbl_80407494;
 extern "C" float lbl_80407498;
 extern "C" float speed_test_28362[] asm("speed_test.28362");
-extern void *FEDatabase;
 
 EAXCop::EAXCop(int speakerID, HSIMABLE handle, int bID, int cID)
     : EAXCharacter(speakerID, handle, bID, cID) {
