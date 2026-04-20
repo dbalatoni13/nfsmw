@@ -634,12 +634,19 @@ void EAXCop::Update() {
         return;
     }
 
-    ISimable *simable = ISimable::FindInstance(handle);
+    HSIMABLE find_handle = (*reinterpret_cast<HSIMABLE (**)(void *)>(*reinterpret_cast<char **>(this) + 0x5C))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x58));
+    ISimable *simable = 0;
+    if (find_handle) {
+        simable = ISimable::FindInstance(find_handle);
+    }
     IVehicle *vehicle = 0;
     IDamageable *damageable = 0;
     IPursuitAI *pursuit_ai = 0;
     ISuspension *suspension = 0;
     IVehicleAI *vehicle_ai = 0;
+    UMath::Vector3 cop_pos;
+    UMath::Vector3 player_pos;
+    UMath::Vector3 delta;
 
     if (*reinterpret_cast<unsigned int *>(&mSuspectLOS) != 0) {
         mTimeNoLOS = WorldTimer;
@@ -655,14 +662,14 @@ void EAXCop::Update() {
         simable->QueryInterface(&vehicle_ai);
     }
 
-    if (!pursuit_ai || (*reinterpret_cast<unsigned int *>(&mActive) == 0)) {
-        (*reinterpret_cast<void (**)(void *, bool)>(*reinterpret_cast<char **>(this) + 0x35C))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x358), false);
-        (*reinterpret_cast<void (**)(void *, bool)>(*reinterpret_cast<char **>(this) + 0x36C))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x368), false);
-        (*reinterpret_cast<void (**)(void *, const UMath::Vector3 &)>(*reinterpret_cast<char **>(this) + 0x37C))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x378), UMath::Vector3::kZero);
-    } else {
+    if (pursuit_ai && (*reinterpret_cast<unsigned int *>(&mActive) != 0)) {
         (*reinterpret_cast<void (**)(void *, bool)>(*reinterpret_cast<char **>(this) + 0x35C))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x358), pursuit_ai->GetInFormation());
         (*reinterpret_cast<void (**)(void *, bool)>(*reinterpret_cast<char **>(this) + 0x36C))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x368), pursuit_ai->GetInPosition());
         (*reinterpret_cast<void (**)(void *, const UMath::Vector3 &)>(*reinterpret_cast<char **>(this) + 0x37C))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x378), pursuit_ai->GetPursuitOffset());
+    } else {
+        (*reinterpret_cast<void (**)(void *, bool)>(*reinterpret_cast<char **>(this) + 0x35C))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x358), false);
+        (*reinterpret_cast<void (**)(void *, bool)>(*reinterpret_cast<char **>(this) + 0x36C))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x368), false);
+        (*reinterpret_cast<void (**)(void *, const UMath::Vector3 &)>(*reinterpret_cast<char **>(this) + 0x37C))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x378), UMath::Vector3::kZero);
     }
 
     if (!suspension || (*reinterpret_cast<unsigned int *>(&mActive) == 0)) {
@@ -687,19 +694,22 @@ void EAXCop::Update() {
         mCurrRoad = MAX_ROADNAMES;
     } else {
         WRoadNav *nav = vehicle_ai->GetCurrentRoad();
-        if (nav) {
-            RoadNames road = static_cast<RoadNames>(nav->GetRoadSpeechId());
-            if (road != MAX_ROADNAMES) {
-                mCurrRoad = road;
-            }
+        RoadNames road = static_cast<RoadNames>(nav->GetRoadSpeechId());
+        if (road != MAX_ROADNAMES) {
+            mCurrRoad = road;
         }
     }
 
     SoundAI *ai = SoundAI::Get();
     if ((ai != 0) && (*reinterpret_cast<unsigned int *>(&mActive) != 0) && (*reinterpret_cast<unsigned int *>(&mSuspectLOS) != 0) && vehicle) {
-        const UMath::Vector3 &cop_pos = vehicle->GetPosition();
-        const UMath::Vector3 &player_pos = *reinterpret_cast<UMath::Vector3 *>(reinterpret_cast<char *>(ai) + 0x114);
-        if (UMath::Distance(cop_pos, player_pos) <= mDistance) {
+        const UMath::Vector3 &v_pos = vehicle->GetPosition();
+        cop_pos.x = v_pos.x;
+        cop_pos.y = v_pos.y;
+        cop_pos.z = v_pos.z;
+        player_pos = *reinterpret_cast<UMath::Vector3 *>(reinterpret_cast<char *>(ai) + 0x114);
+        VU0_v3sub(cop_pos, player_pos, delta);
+        float dist = VU0_sqrt(VU0_v3lengthsquare(delta));
+        if (dist <= mDistance) {
             mT_closingDist = WorldTimer;
         }
     }
@@ -711,8 +721,8 @@ void EAXCop::SetActive(bool activity) {
         return;
     }
 
-    *reinterpret_cast<unsigned int *>(&mActive) = active;
     SoundAI *ai = SoundAI::Get();
+    *reinterpret_cast<unsigned int *>(&mActive) = active;
     if (!ai) {
         return;
     }
@@ -725,7 +735,15 @@ void EAXCop::SetActive(bool activity) {
 
         int fn_delta = 0;
         int fn_addr = 0;
-        if (*reinterpret_cast<unsigned int *>(&mSuspectLOS) == 0) {
+        if (*reinterpret_cast<unsigned int *>(&mSuspectLOS) != 0) {
+            if (bRandom(lbl_8040746C) > lbl_80407470) {
+                fn_delta = *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x140);
+                fn_addr = *reinterpret_cast<int *>(*reinterpret_cast<char **>(this) + 0x144);
+            } else {
+                fn_delta = *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x1F0);
+                fn_addr = *reinterpret_cast<int *>(*reinterpret_cast<char **>(this) + 0x1F4);
+            }
+        } else {
             if (focus != 2) {
                 return;
             }
@@ -739,7 +757,8 @@ void EAXCop::SetActive(bool activity) {
             }
 
             HSIMABLE handle = (*reinterpret_cast<HSIMABLE (**)(void *)>(*reinterpret_cast<char **>(this) + 0x5C))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x58));
-            if (roadblock->IsComprisedOf(handle)) {
+            int includes = (*reinterpret_cast<int (**)(void *, HSIMABLE)>(*reinterpret_cast<char **>(roadblock) + 0xBC))(reinterpret_cast<char *>(roadblock) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(roadblock) + 0xB8), handle);
+            if (includes != 0) {
                 return;
             }
 
@@ -750,17 +769,9 @@ void EAXCop::SetActive(bool activity) {
                 fn_delta = *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x1B8);
                 fn_addr = *reinterpret_cast<int *>(*reinterpret_cast<char **>(this) + 0x1BC);
             }
-        } else {
-            if (bRandom(lbl_8040746C) > lbl_80407470) {
-                fn_delta = *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x140);
-                fn_addr = *reinterpret_cast<int *>(*reinterpret_cast<char **>(this) + 0x144);
-            } else {
-                fn_delta = *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x1F0);
-                fn_addr = *reinterpret_cast<int *>(*reinterpret_cast<char **>(this) + 0x1F4);
-            }
         }
 
-        (*reinterpret_cast<void (**)(void *)>(fn_addr))(reinterpret_cast<char *>(this) + fn_delta);
+        (reinterpret_cast<void (*)(void *)>(fn_addr))(reinterpret_cast<char *>(this) + fn_delta);
         return;
     }
 
@@ -779,7 +790,7 @@ void EAXCop::SetActive(bool activity) {
         (*reinterpret_cast<void (**)(void *)>(*reinterpret_cast<char **>(this) + 0x22C))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x228));
         mTrafficHitCount = activity;
         int state = *reinterpret_cast<int *>(reinterpret_cast<char *>(ai) + 0x1DC);
-        if (state == 0 || state == 1) {
+        if (static_cast<unsigned int>(state) <= 1U) {
             ai->RandomBailoutDeny(this);
         }
         return;
@@ -810,7 +821,7 @@ void EAXCop::SetActive(bool activity) {
 
     (*reinterpret_cast<void (**)(void *)>(*reinterpret_cast<char **>(this) + 0x21C))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x218));
     int state = *reinterpret_cast<int *>(reinterpret_cast<char *>(ai) + 0x1DC);
-    if (state == 0 || state == 1) {
+    if (static_cast<unsigned int>(state) <= 1U) {
         ai->RandomBailoutDeny(this);
     }
 }
