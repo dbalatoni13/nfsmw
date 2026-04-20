@@ -127,7 +127,7 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
     EAXCop *GetCopInRB();
     EAXCop *GetRandomActiveCop(int type, bool reqLOS);
     EAXCop *GetRandomCop(int type);
-    Sim::IActivity *Construct(Sim::Param params);
+    static Sim::IActivity *Construct(Sim::Param params);
     IRoadBlock *GetRoadblock();
     bool IsMusicActive();
     PursuitState GetPursuitState() {

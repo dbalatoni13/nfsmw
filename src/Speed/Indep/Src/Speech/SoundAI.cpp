@@ -1,6 +1,9 @@
 #include "SoundAI.h"
 #include "Speed/Indep/Src/EAXSound/Csis.hpp"
 #include "Speed/Indep/Src/EAXSound/Stream/SpeechManager.hpp"
+#include "Speed/Indep/Src/Misc/Config.h"
+#include "Speed/Indep/Src/Misc/Timer.hpp"
+#include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Src/Generated/Messages/MControlPathfinder.h"
 #include "Speed/Indep/Src/Generated/Messages/MGamePlayMoment.h"
 #include "Speed/Indep/Src/Generated/Messages/MMiscSound.h"
@@ -97,6 +100,16 @@ void SoundAI::OnVehicleAdded(IVehicle *ivehicle) {
     Sim::Collision::AddListener(this, ivehicle, "SoundAI");
 }
 
+void SoundAI::OnAttached(IAttachable *pOther) {
+    bool attached;
+    IVehicle *ivehicle = 0;
+
+    attached = pOther->QueryInterface(&ivehicle);
+    if (attached) {
+        OnVehicleAdded(ivehicle);
+    }
+}
+
 void SoundAI::OnVehicleRemoved(IVehicle *ivehicle) {
     Sim::Collision::RemoveListener(this, ivehicle);
 
@@ -107,6 +120,59 @@ void SoundAI::OnVehicleRemoved(IVehicle *ivehicle) {
             *reinterpret_cast<EAXCop **>(reinterpret_cast<char *>(mObserver) + 0x60) = 0;
         }
     }
+}
+
+void SoundAI::OnDetached(IAttachable *pOther) {
+    IVehicle *ivehicle = 0;
+    IPursuit *pursuit;
+    bool detached;
+    Timer t = WorldTimer;
+
+    detached = pOther->QueryInterface(&ivehicle);
+    if (detached) {
+        OnVehicleRemoved(ivehicle);
+    }
+
+    detached = UTL::COM::ComparePtr(mPursuit, pOther);
+    if (detached) {
+        PursuitState state = kInactive;
+        pursuit = mAIPursuit;
+        mPursuit = 0;
+        if (pursuit) {
+            state = kOtherTarget;
+        }
+        mT_pursuitStart = t;
+        mPursuitState = state;
+    } else {
+        pursuit = mAIPursuit;
+    }
+
+    detached = UTL::COM::ComparePtr(pursuit, pOther);
+    if (detached) {
+        mAIPursuit = 0;
+        if ((mPursuitState == kOtherTarget) && !mPursuit) {
+            mPursuitState = kInactive;
+        }
+    }
+}
+
+Sim::IActivity *SoundAI::Construct(Sim::Param) {
+    if ((IsSoundEnabled == 0) || (Sim::GetUserMode() == Sim::USER_SPLIT_SCREEN)) {
+        return 0;
+    }
+
+    SoundAI *instance = UTL::Collections::Singleton<SoundAI>::Get();
+    if (instance) {
+        Sim::IActivity *activity = static_cast<Sim::IActivity *>(instance);
+        SoundAI::mRefCount = SoundAI::mRefCount + 1;
+        return activity;
+    }
+
+    SoundAI *result = new SoundAI;
+    if (result) {
+        return static_cast<Sim::IActivity *>(result);
+    }
+    return 0;
 }
 
 bool SoundAI::IsMusicActive() {
