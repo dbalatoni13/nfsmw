@@ -195,6 +195,51 @@ struct AnytimeEvents_SpottedStruct {
     int intensity;
 };
 
+struct Interrupts_InterruptRam_HOStruct {
+    int speaker_id;
+    int intensity;
+};
+
+struct Interrupts_InterruptRam_REStruct {
+    int speaker_id;
+    int intensity;
+};
+
+struct Interrupts_InterruptRam_SSStruct {
+    int speaker_id;
+    int intensity;
+};
+
+struct Interrupts_InterruptRam_TBStruct {
+    int speaker_id;
+    int intensity;
+};
+
+struct AnytimeEvents_CollWorld_FlipStruct {
+    int speaker_id;
+    int intensity;
+};
+
+struct AnytimeEvents_CollWorld_AirStruct {
+    int speaker_id;
+    int intensity;
+};
+
+struct AnytimeEvents_CollWorld_SpinStruct {
+    int speaker_id;
+    int intensity;
+};
+
+struct AnytimeEvents_CollWorld_CiviStruct {
+    int speaker_id;
+    int intensity;
+};
+
+struct Arrest_BullhornArrestStruct {
+    int speaker_id;
+    int intensity;
+};
+
 extern InterfaceId AnytimeEvents_Unit911ReplyId;
 extern InterfaceId Backup_UnitBUReplyId;
 extern InterfaceId Backup_NegativeBUReplyId;
@@ -235,6 +280,15 @@ extern InterfaceId StaticRoadblock_CallForRBId;
 extern InterfaceId Setup_PrimaryEngageId;
 extern InterfaceId Backup_BUArrivesId;
 extern InterfaceId AnytimeEvents_SpottedId;
+extern InterfaceId Interrupts_InterruptRam_HOId;
+extern InterfaceId Interrupts_InterruptRam_REId;
+extern InterfaceId Interrupts_InterruptRam_SSId;
+extern InterfaceId Interrupts_InterruptRam_TBId;
+extern InterfaceId AnytimeEvents_CollWorld_FlipId;
+extern InterfaceId AnytimeEvents_CollWorld_AirId;
+extern InterfaceId AnytimeEvents_CollWorld_SpinId;
+extern InterfaceId AnytimeEvents_CollWorld_CiviId;
+extern InterfaceId Arrest_BullhornArrestId;
 
 extern FunctionHandle gAnytimeEvents_Unit911ReplyHandle;
 extern FunctionHandle gBackup_UnitBUReplyHandle;
@@ -276,6 +330,15 @@ extern FunctionHandle gStaticRoadblock_CallForRBHandle;
 extern FunctionHandle gSetup_PrimaryEngageHandle;
 extern FunctionHandle gBackup_BUArrivesHandle;
 extern FunctionHandle gAnytimeEvents_SpottedHandle;
+extern FunctionHandle gInterrupts_InterruptRam_HOHandle;
+extern FunctionHandle gInterrupts_InterruptRam_REHandle;
+extern FunctionHandle gInterrupts_InterruptRam_SSHandle;
+extern FunctionHandle gInterrupts_InterruptRam_TBHandle;
+extern FunctionHandle gAnytimeEvents_CollWorld_FlipHandle;
+extern FunctionHandle gAnytimeEvents_CollWorld_AirHandle;
+extern FunctionHandle gAnytimeEvents_CollWorld_SpinHandle;
+extern FunctionHandle gAnytimeEvents_CollWorld_CiviHandle;
+extern FunctionHandle gArrest_BullhornArrestHandle;
 }
 
 extern void ScheduleSpeech_AnytimeEvents_Unit911Reply(Csis::AnytimeEvents_Unit911ReplyStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis32AnytimeEvents_Unit911ReplyStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
@@ -318,6 +381,15 @@ extern void ScheduleSpeech_StaticRoadblock_CallForRB(Csis::StaticRoadblock_CallF
 extern void ScheduleSpeech_Setup_PrimaryEngage(Csis::Setup_PrimaryEngageStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis25Setup_PrimaryEngageStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
 extern void ScheduleSpeech_Backup_BUArrives(Csis::Backup_BUArrivesStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis22Backup_BUArrivesStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
 extern void ScheduleSpeech_AnytimeEvents_Spotted(Csis::AnytimeEvents_SpottedStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis27AnytimeEvents_SpottedStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
+extern void ScheduleSpeech_Interrupts_InterruptRam_HO(Csis::Interrupts_InterruptRam_HOStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis32Interrupts_InterruptRam_HOStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
+extern void ScheduleSpeech_Interrupts_InterruptRam_RE(Csis::Interrupts_InterruptRam_REStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis32Interrupts_InterruptRam_REStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
+extern void ScheduleSpeech_Interrupts_InterruptRam_SS(Csis::Interrupts_InterruptRam_SSStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis32Interrupts_InterruptRam_SSStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
+extern void ScheduleSpeech_Interrupts_InterruptRam_TB(Csis::Interrupts_InterruptRam_TBStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis32Interrupts_InterruptRam_TBStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
+extern void ScheduleSpeech_AnytimeEvents_CollWorld_Flip(Csis::AnytimeEvents_CollWorld_FlipStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis34AnytimeEvents_CollWorld_FlipStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
+extern void ScheduleSpeech_AnytimeEvents_CollWorld_Air(Csis::AnytimeEvents_CollWorld_AirStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis33AnytimeEvents_CollWorld_AirStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
+extern void ScheduleSpeech_AnytimeEvents_CollWorld_Spin(Csis::AnytimeEvents_CollWorld_SpinStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis34AnytimeEvents_CollWorld_SpinStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
+extern void ScheduleSpeech_AnytimeEvents_CollWorld_Civi(Csis::AnytimeEvents_CollWorld_CiviStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis34AnytimeEvents_CollWorld_CiviStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
+extern void ScheduleSpeech_Arrest_BullhornArrest(Csis::Arrest_BullhornArrestStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis27Arrest_BullhornArrestStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
 
 EAXCop::EAXCop(int speakerID, HSIMABLE handle, int bID, int cID)
     : EAXCharacter(speakerID, handle, bID, cID) {
@@ -760,7 +832,23 @@ void EAXCop::PreBullhorn() {
     ScheduleSpeech_Setup_BullhornPrefix(data, Csis::Setup_BullhornPrefixId, Csis::gSetup_BullhornPrefixHandle, this);
 }
 
-void EAXCop::BullhornArrest() {}
+void EAXCop::BullhornArrest() {
+    if (MiscSpeech::IsVehicleTypeOK()) {
+        SoundAI *ai = SoundAI::Get();
+        if (ai) {
+            Csis::Arrest_BullhornArrestStruct data;
+            data.speaker_id = mSpeakerID;
+            register int intensity;
+            if (ai->IsHighIntensity()) {
+                intensity = 2;
+            } else {
+                intensity = 1;
+            }
+            data.intensity = intensity;
+            ScheduleSpeech_Arrest_BullhornArrest(data, Csis::Arrest_BullhornArrestId, Csis::gArrest_BullhornArrestHandle, this);
+        }
+    }
+}
 
 void EAXCop::SuspectConfirmed() {
     SoundAI *ai = SoundAI::Get();
@@ -911,31 +999,52 @@ void EAXCop::CallForSubRB() {
 }
 
 void EAXCop::RearEnded(Csis::Type_intensity intensity) {
-    mLastEvent = intensity;
+    Csis::Interrupts_InterruptRam_REStruct data;
+    data.speaker_id = mSpeakerID;
+    data.intensity = intensity;
+    ScheduleSpeech_Interrupts_InterruptRam_RE(data, Csis::Interrupts_InterruptRam_REId, Csis::gInterrupts_InterruptRam_REHandle, this);
 }
 
 void EAXCop::HeadOn(Csis::Type_intensity intensity) {
-    mLastEvent = intensity;
+    Csis::Interrupts_InterruptRam_HOStruct data;
+    data.speaker_id = mSpeakerID;
+    data.intensity = intensity;
+    ScheduleSpeech_Interrupts_InterruptRam_HO(data, Csis::Interrupts_InterruptRam_HOId, Csis::gInterrupts_InterruptRam_HOHandle, this);
 }
 
 void EAXCop::SideSwiped(Csis::Type_intensity intensity) {
-    mLastEvent = intensity;
+    Csis::Interrupts_InterruptRam_SSStruct data;
+    data.speaker_id = mSpeakerID;
+    data.intensity = intensity;
+    ScheduleSpeech_Interrupts_InterruptRam_SS(data, Csis::Interrupts_InterruptRam_SSId, Csis::gInterrupts_InterruptRam_SSHandle, this);
 }
 
 void EAXCop::TBoned(Csis::Type_intensity intensity) {
-    mLastEvent = intensity;
+    Csis::Interrupts_InterruptRam_TBStruct data;
+    data.speaker_id = mSpeakerID;
+    data.intensity = intensity;
+    ScheduleSpeech_Interrupts_InterruptRam_TB(data, Csis::Interrupts_InterruptRam_TBId, Csis::gInterrupts_InterruptRam_TBHandle, this);
 }
 
 void EAXCop::SuspectRollover(Csis::Type_intensity intensity) {
-    mLastEvent = intensity;
+    Csis::AnytimeEvents_CollWorld_FlipStruct data;
+    data.speaker_id = mSpeakerID;
+    data.intensity = intensity;
+    ScheduleSpeech_AnytimeEvents_CollWorld_Flip(data, Csis::AnytimeEvents_CollWorld_FlipId, Csis::gAnytimeEvents_CollWorld_FlipHandle, this);
 }
 
 void EAXCop::SuspectAirborne(Csis::Type_intensity intensity) {
-    mLastEvent = intensity;
+    Csis::AnytimeEvents_CollWorld_AirStruct data;
+    data.speaker_id = mSpeakerID;
+    data.intensity = intensity;
+    ScheduleSpeech_AnytimeEvents_CollWorld_Air(data, Csis::AnytimeEvents_CollWorld_AirId, Csis::gAnytimeEvents_CollWorld_AirHandle, this);
 }
 
 void EAXCop::SuspectSpunout(Csis::Type_intensity intensity) {
-    mLastEvent = intensity;
+    Csis::AnytimeEvents_CollWorld_SpinStruct data;
+    data.speaker_id = mSpeakerID;
+    data.intensity = intensity;
+    ScheduleSpeech_AnytimeEvents_CollWorld_Spin(data, Csis::AnytimeEvents_CollWorld_SpinId, Csis::gAnytimeEvents_CollWorld_SpinHandle, this);
 }
 
 void EAXCop::SuspectBrake() {
@@ -977,5 +1086,8 @@ void EAXCop::Impact_Suspect_GasStation() {}
 void EAXCop::Impact_Suspect_Spikebelt() {}
 
 void EAXCop::Impact_Suspect_Traffic(Csis::Type_intensity intensity) {
-    mLastEvent = intensity;
+    Csis::AnytimeEvents_CollWorld_CiviStruct data;
+    data.speaker_id = mSpeakerID;
+    data.intensity = intensity;
+    ScheduleSpeech_AnytimeEvents_CollWorld_Civi(data, Csis::AnytimeEvents_CollWorld_CiviId, Csis::gAnytimeEvents_CollWorld_CiviHandle, this);
 }
