@@ -17,9 +17,22 @@ bool GetLocation(RoadNames road, int &region, int &location) asm("GetLocation__1
 namespace Speech {
 void Observer_Observe(void *observer, int observation, int speaker, float score) asm("Observe__Q26Speech8Observeriif");
 void RoadblockFlow_NailedSomethingInRB(void *rbflow, unsigned int key) asm("NailedSomethingInRB__Q26Speech13RoadblockFlowUi");
+bool Manager_IsCopSpeechBusy() asm("IsCopSpeechBusy__Q26Speech7Manager");
+Timer Manager_GetTimeSinceLastEvent(SpeechModuleIndex module) asm("GetTimeSinceLastEvent__Q26Speech7Manager17SpeechModuleIndex");
+void SpeechFlow_ChangeStateTo(void *flow, int state) asm("ChangeStateTo__Q26Speech10SpeechFlowi");
+int SpeechFlow_GetState(void *flow) asm("GetState__Q26Speech10SpeechFlow");
+void PursuitFlow_Update(void *flow) asm("Update__Q26Speech11PursuitFlow");
+int PursuitFlow_IsTransitionable(void *flow) asm("IsTransitionable__Q26Speech11PursuitFlow");
+void StrategyFlow_Update(void *flow) asm("Update__Q26Speech12StrategyFlow");
+int StrategyFlow_IsTransitionable(void *flow) asm("IsTransitionable__Q26Speech12StrategyFlow");
+void MusicFlow_Update(void *flow) asm("Update__Q26Speech9MusicFlow");
+void Observer_Update(void *observer) asm("Update__Q26Speech8Observer");
+void RoadblockFlow_Update(void *flow) asm("Update__Q26Speech13RoadblockFlow");
 }
 
 extern float lbl_80407BA8;
+extern int FORCE_VOICE_RANDOMIZATION;
+extern bool IsSpeechEnabled;
 
 void SoundAI::MessagePerpBusted(const MPerpBusted &) {
     mFocus = kTerminal;
@@ -404,4 +417,221 @@ bool SoundAI::IsHighIntensity() {
         return true;
     }
     return false;
+}
+
+bool SoundAI::OnTask(HSIMTASK htask, float) {
+    float tout = 0.0f;
+
+    if (!Speech::Manager_IsCopSpeechBusy()) {
+        tout = (WorldTimer - Speech::Manager_GetTimeSinceLastEvent(COPSPEECH_MODULE)).GetSeconds();
+    }
+    mDeadAir = tout;
+
+    if (htask == mMainUpdate) {
+        if (FORCE_VOICE_RANDOMIZATION != 0) {
+            ForceGlobalVoiceChange();
+            FORCE_VOICE_RANDOMIZATION = 0;
+        }
+        if ((mFlags & BUSTED) == 0) {
+            SyncPursuit();
+            SyncCarsToActors();
+            SyncPlayers();
+            SyncFormations();
+            ShuffleActors();
+            UpdateStateMachines();
+            if ((IsSpeechEnabled != 0) && (mDeadAir > 0.0f)) {
+                DealWithDeadAir();
+            }
+        }
+    }
+
+    if (htask == mProcessObservations) {
+        if ((mFlags & BUSTED) == 0) {
+            Speech::Observer_Update(mObserver);
+            Speech::RoadblockFlow_Update(mRoadblockFlow);
+        }
+        Speech::Manager::Deduce();
+    }
+    return true;
+}
+
+void SoundAI::UpdateStateMachines() {
+    if ((IsSpeechEnabled == 0) || ((mFlags & BUSTED) != 0)) {
+        Speech::MusicFlow_Update(mMusicFlow);
+        return;
+    }
+
+    int focus = mFocus;
+    if (focus == kPursuitFlow) {
+        Speech::PursuitFlow_Update(mPursuitFlow);
+        if (Speech::PursuitFlow_IsTransitionable(mPursuitFlow)) {
+            mFocus = kStrategyFlow;
+            Speech::SpeechFlow_ChangeStateTo(mStrategyFlow, 0);
+        }
+    } else if ((focus == kStrategyFlow) || (focus == kRoadblockFlow)) {
+        if (Speech::StrategyFlow_IsTransitionable(mStrategyFlow)) {
+            Speech::SpeechFlow_ChangeStateTo(mStrategyFlow, kWaiting);
+        }
+        Speech::StrategyFlow_Update(mStrategyFlow);
+    } else if (focus == kWaiting) {
+        if ((mPursuit != 0) && (mPursuitState == kSearching)) {
+            if (Speech::SpeechFlow_GetState(mStrategyFlow) != kOtherTarget) {
+                Speech::SpeechFlow_ChangeStateTo(mStrategyFlow, kOtherTarget);
+            }
+            Speech::StrategyFlow_Update(mStrategyFlow);
+        }
+    } else if (!mPursuit) {
+        ResetPursuit(false);
+    }
+
+    Speech::MusicFlow_Update(mMusicFlow);
+}
+
+EAXCop *SoundAI::GetRandomCop(int type) {
+    EAXCop *spkr = 0;
+    unsigned int actor_count = mActors.size();
+
+    if ((type == 0) && (actor_count > 1)) {
+        unsigned int idx = bRandom(static_cast<int>(actor_count));
+        return mActors[idx].cop;
+    }
+
+    if (actor_count == 1) {
+        EAXCop *cop = mActors.begin()->cop;
+        if (type == 1) {
+            if (!cop->IsPrimary()) {
+                return 0;
+            }
+        } else if (type == 2) {
+            if (cop->IsPrimary()) {
+                return 0;
+            }
+        } else if (type != 0) {
+            return 0;
+        }
+        return cop;
+    }
+
+    if ((type != 1) && (type != 2)) {
+        return 0;
+    }
+
+    Speech::copList secondaries;
+    secondaries.reserve(actor_count);
+
+    Speech::copMap::iterator iter = mActors.begin();
+    while (iter != mActors.end()) {
+        EAXCop *cop = iter->cop;
+        if ((type == 1 && cop->IsPrimary()) || (type == 2 && !cop->IsPrimary())) {
+            secondaries.push_back(cop);
+        }
+        ++iter;
+    }
+
+    if (!secondaries.empty()) {
+        spkr = secondaries[bRandom(static_cast<int>(secondaries.size()))];
+    }
+    return spkr;
+}
+
+void SoundAI::RandomizeCallsign(Speech::voiceIDs &cs, Csis::Type_speaker_call_sign_id start, Csis::Type_speaker_call_sign_id finish) {
+    if (cs.empty()) {
+        int i = start;
+        while (i <= finish) {
+            cs.push_back(i);
+            i <<= 1;
+        }
+        for (unsigned int ndx = 0; ndx < cs.size(); ndx++) {
+            int rand = bRandom(static_cast<int>(cs.size()));
+            int rand_cs = cs[rand];
+            int curr_cs = cs[ndx];
+            if (rand_cs != curr_cs) {
+                cs[ndx] = rand_cs;
+                cs[rand] = curr_cs;
+            }
+        }
+    }
+}
+
+int SoundAI::GetCallsign(Csis::Type_speaker_battalion battalion) {
+    Speech::voiceIDs *cs_pool = 0;
+
+    switch (battalion) {
+    case Csis::Type_speaker_battalion_City:
+        cs_pool = &mUsage.cs_City;
+        if (cs_pool->empty()) {
+            RandomizeCallsign(*cs_pool, Csis::Type_speaker_call_sign_id_CallSign01, Csis::Type_speaker_call_sign_id_CallSign20);
+        }
+        break;
+    case Csis::Type_speaker_battalion_Rosewood:
+        cs_pool = &mUsage.cs_Rosewood;
+        if (cs_pool->empty()) {
+            RandomizeCallsign(*cs_pool, Csis::Type_speaker_call_sign_id_CallSign01, Csis::Type_speaker_call_sign_id_CallSign10);
+        }
+        break;
+    case Csis::Type_speaker_battalion_Coastal:
+        cs_pool = &mUsage.cs_Coastal;
+        if (cs_pool->empty()) {
+            RandomizeCallsign(*cs_pool, Csis::Type_speaker_call_sign_id_CallSign01, Csis::Type_speaker_call_sign_id_CallSign10);
+        }
+        break;
+    case Csis::Type_speaker_battalion_Super_Pursuit:
+        cs_pool = &mUsage.cs_SuperPursuit;
+        if (cs_pool->empty()) {
+            RandomizeCallsign(*cs_pool, Csis::Type_speaker_call_sign_id_CallSign01, Csis::Type_speaker_call_sign_id_CallSign05);
+        }
+        break;
+    case Csis::Type_speaker_battalion_Alpine:
+        cs_pool = &mUsage.cs_Alpine;
+        if (cs_pool->empty()) {
+            RandomizeCallsign(*cs_pool, Csis::Type_speaker_call_sign_id_CallSign01, Csis::Type_speaker_call_sign_id_CallSign10);
+        }
+        break;
+    case Csis::Type_speaker_battalion_Rhino_Units:
+        cs_pool = &mUsage.cs_Rhino;
+        if (cs_pool->empty()) {
+            RandomizeCallsign(*cs_pool, Csis::Type_speaker_call_sign_id_CallSign01, Csis::Type_speaker_call_sign_id_CallSign06);
+        }
+        break;
+    default:
+        break;
+    }
+
+    if (!cs_pool) {
+        return -1;
+    }
+
+    Speech::voiceIDs::iterator iter = cs_pool->begin();
+    int id = *iter;
+    cs_pool->erase(iter);
+    return id;
+}
+
+const float SoundAI::GetTimeLastNailedCop() {
+    Speech::copList nailed;
+
+    nailed.reserve(mActors.size());
+    Speech::copMap::iterator iter = mActors.begin();
+    while (iter != mActors.end()) {
+        EAXCop *cop = iter->cop;
+        if (cop->GetTimesRammed() > 0) {
+            nailed.push_back(cop);
+        }
+        ++iter;
+    }
+
+    if (nailed.empty()) {
+        return 0.0f;
+    }
+
+    float t_mostrecent = nailed.front()->GetTimeLastRammed();
+    Speech::copList::iterator i = nailed.begin();
+    while (i != nailed.end()) {
+        EAXCop *unfortunate = *i;
+        if (unfortunate->GetTimeLastRammed() < t_mostrecent) {
+            t_mostrecent = unfortunate->GetTimeLastRammed();
+        }
+        ++i;
+    }
+    return t_mostrecent;
 }

@@ -16,6 +16,45 @@
 #include "Speed/Indep/Src/Sim/Collision.h"
 #include "Speed/Indep/Src/Sim/SimActivity.h"
 
+namespace Csis {
+enum Type_speaker_battalion {
+    Type_speaker_battalion_Rosewood = 1,
+    Type_speaker_battalion_Coastal = 2,
+    Type_speaker_battalion_City = 4,
+    Type_speaker_battalion_Alpine = 8,
+    Type_speaker_battalion_Super_Pursuit = 16,
+    Type_speaker_battalion_Rhino_Units = 32,
+    Type_speaker_battalion_Air_Support = 64,
+    Type_speaker_battalion_All_Units = 128,
+    Type_speaker_battalion_Dispatch = 256,
+};
+
+enum Type_speaker_call_sign_id {
+    Type_speaker_call_sign_id_CallSign01 = 1,
+    Type_speaker_call_sign_id_CallSign02 = 2,
+    Type_speaker_call_sign_id_CallSign03 = 4,
+    Type_speaker_call_sign_id_CallSign04 = 8,
+    Type_speaker_call_sign_id_CallSign05 = 16,
+    Type_speaker_call_sign_id_CallSign06 = 32,
+    Type_speaker_call_sign_id_CallSign07 = 64,
+    Type_speaker_call_sign_id_CallSign08 = 128,
+    Type_speaker_call_sign_id_CallSign09 = 256,
+    Type_speaker_call_sign_id_CallSign10 = 512,
+    Type_speaker_call_sign_id_CallSign11 = 1024,
+    Type_speaker_call_sign_id_CallSign12 = 2048,
+    Type_speaker_call_sign_id_CallSign13 = 4096,
+    Type_speaker_call_sign_id_CallSign14 = 8192,
+    Type_speaker_call_sign_id_CallSign15 = 16384,
+    Type_speaker_call_sign_id_CallSign16 = 32768,
+    Type_speaker_call_sign_id_CallSign17 = 65536,
+    Type_speaker_call_sign_id_CallSign18 = 131072,
+    Type_speaker_call_sign_id_CallSign19 = 262144,
+    Type_speaker_call_sign_id_CallSign20 = 524288,
+    Type_speaker_call_sign_id_All_units = 1048576,
+    Type_speaker_call_sign_id_none = 2097152,
+};
+}
+
 DECLARE_CONTAINER_TYPE(IVehiclePtrs);
 
 // total size: 0x260
@@ -154,8 +193,8 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
     int GetBattalionFromKey(unsigned int theKey);
     void AddNewCop(IVehicle *newcop);
     bool MakeLeader(EAXCop *newprim);
-    // int GetCallsign(Type_speaker_battalion battalion);
-    // void RandomizeCallsign(struct voiceIDs &cs, Type_speaker_call_sign_id start, Type_speaker_call_sign_id finish);
+    int GetCallsign(Csis::Type_speaker_battalion battalion);
+    void RandomizeCallsign(Speech::voiceIDs &cs, Csis::Type_speaker_call_sign_id start, Csis::Type_speaker_call_sign_id finish);
     int GetVoice(int type);
     EAXCop *GetCop(int speaker);
     void RandomBailoutDeny(EAXCop *wimp);
