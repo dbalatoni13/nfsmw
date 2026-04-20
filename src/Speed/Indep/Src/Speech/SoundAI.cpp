@@ -219,6 +219,95 @@ bool SoundAI::IsMusicActive() {
     return result;
 }
 
+EAXCop *SoundAI::GetCop(int speaker) {
+    Speech::copMap::iterator iter = mActors.begin();
+    while (iter != mActors.end()) {
+        EAXCop *cop = iter->cop;
+        if (cop && cop->GetSpeakerID() == speaker) {
+            return iter->cop;
+        }
+        ++iter;
+    }
+    return 0;
+}
+
+void SoundAI::RandomBailoutDeny(EAXCop *wimp) {
+    if (wimp->GetInFormation() == 1) {
+        if ((mActors.size() > 1) && (mPursuitState != kInactive)) {
+            Speech::copMap::iterator iter = mActors.begin();
+            while (iter != mActors.end()) {
+                EAXCop *cop = iter->cop;
+                if (cop->IsPrimary()) {
+                    if (cop->GetSpeakerID() != wimp->GetSpeakerID()) {
+                        cop->DenyBailout();
+                    }
+                }
+                ++iter;
+            }
+        }
+    }
+}
+
+int SoundAI::GetVoice(int type) {
+    int return_voice;
+    Speech::voiceIDs::iterator i = mUsage.voices.begin();
+    Speech::voiceIDs::iterator end = mUsage.voices.end();
+
+    if (i == end) {
+        return -1;
+    }
+
+    if (type == 2) {
+        while (i != end) {
+            return_voice = *i;
+            if (static_cast<unsigned int>(return_voice - 6) < 3) {
+                mUsage.voices.erase(i);
+                return return_voice;
+            }
+            ++i;
+            end = mUsage.voices.end();
+        }
+        return -1;
+    }
+
+    if (type < 3) {
+        if (type == 1) {
+            while (i != end) {
+                return_voice = *i;
+                if (static_cast<unsigned int>(return_voice - 3) < 3) {
+                    mUsage.voices.erase(i);
+                    return return_voice;
+                }
+                ++i;
+                end = mUsage.voices.end();
+            }
+            return -1;
+        }
+    } else if (type == 3) {
+        while (i != end) {
+            return_voice = *i;
+            if (return_voice == 9) {
+                mUsage.voices.erase(i);
+                return 9;
+            }
+            ++i;
+            end = mUsage.voices.end();
+        }
+        return -1;
+    }
+
+    while (i != end) {
+        return_voice = *i;
+        if (static_cast<unsigned int>(return_voice - 3) < 6) {
+            mUsage.voices.erase(i);
+            return return_voice;
+        }
+        ++i;
+        end = mUsage.voices.end();
+    }
+    return -1;
+}
+
 void SoundAI::Release() {
     if ((mRefCount != 0) && ((mRefCount = mRefCount - 1) == 0)) {
         Sim::Activity::Release();
