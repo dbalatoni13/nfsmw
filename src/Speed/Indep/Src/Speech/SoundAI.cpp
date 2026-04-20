@@ -32,8 +32,8 @@
 
 namespace MiscSpeech {
 bool GetLocation(RoadNames road, int &region, int &location);
-void LostSuspect(int speaker);
-void Bailout(int speaker);
+int LostSuspect(int speaker);
+int Bailout(int speaker);
 void QuadrantForming();
 void SuspectPossiblyGone();
 void QuadrantMoving();
