@@ -1,6 +1,7 @@
 #include "SoundAI.h"
 #include "Speed/Indep/Src/EAXSound/Csis.hpp"
 #include "Speed/Indep/Src/EAXSound/Stream/SpeechManager.hpp"
+#include "Speed/Indep/Src/Interfaces/Simables/IRenderable.h"
 #include "Speed/Indep/Src/Misc/Config.h"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 #include "Speed/Indep/Src/Sim/Simulation.h"
@@ -12,6 +13,8 @@
 
 namespace MiscSpeech {
 bool GetLocation(RoadNames road, int &region, int &location) asm("GetLocation__10MiscSpeech9RoadNamesRQ24Csis20Type_location_regionRQ24Csis13Type_location");
+void LostSuspect(int speaker) asm("LostSuspect__10MiscSpeechi");
+void Bailout(int speaker) asm("Bailout__10MiscSpeechi");
 }
 
 namespace Speech {
@@ -40,6 +43,7 @@ void Manager_ResetGlobalHistory() asm("ResetGlobalHistory__Q26Speech7Manager");
 extern float lbl_80407BA8;
 extern int FORCE_VOICE_RANDOMIZATION;
 extern bool IsSpeechEnabled;
+extern short Speech_Manager_mLastSpeakerID asm("_Q26Speech7Manager.mLastSpeakerID");
 
 void SoundAI::MessagePerpBusted(const MPerpBusted &) {
     mFocus = kTerminal;
@@ -494,6 +498,53 @@ void SoundAI::UpdateStateMachines() {
     Speech::MusicFlow_Update(mMusicFlow);
 }
 
+void SoundAI::AttemptReattachPursuit() {
+    bool playerfound = false;
+    bool aifound = false;
+
+    if (mPursuit && mPursuit->IsPlayerPursuit()) {
+        playerfound = true;
+    }
+    if (mAIPursuit && !mAIPursuit->IsPlayerPursuit()) {
+        aifound = true;
+    }
+
+    const UTL::Collections::Listable<IPursuit, 8>::List &pursuits = UTL::Collections::Listable<IPursuit, 8>::GetList();
+    UTL::Collections::Listable<IPursuit, 8>::List::const_iterator i = pursuits.begin();
+    while (i != pursuits.end()) {
+        IPursuit *pursuit = *i;
+        if (pursuit->IsPlayerPursuit()) {
+            playerfound = true;
+            if (mPursuit != pursuit) {
+                mPursuitCount++;
+                if (!mPursuit) {
+                    mT_pursuitStart = WorldTimer;
+                }
+                mPursuit = pursuit;
+            }
+        } else {
+            if (!aifound) {
+                aifound = true;
+                mAIPursuit = pursuit;
+            }
+        }
+        ++i;
+    }
+
+    if (!playerfound) {
+        mPursuit = 0;
+        mPursuitState = kInactive;
+        mT_pursuitStart = WorldTimer;
+    }
+
+    if (!aifound) {
+        mAIPursuit = 0;
+        if ((mPursuitState == kOtherTarget) && !mPursuit) {
+            mPursuitState = kInactive;
+        }
+    }
+}
+
 EAXCop *SoundAI::GetRandomCop(int type) {
     EAXCop *spkr = 0;
     unsigned int actor_count = mActors.size();
@@ -780,6 +831,58 @@ void SoundAI::ResetPursuit(bool including_music) {
     mFlags = 0;
     mTrafficHits911 = 0;
     mCTS911 = 0;
+}
+
+void SoundAI::TerminatePursuit(BailoutType type) {
+    if ((type == kOutrunBail) || (type != kForcedBail)) {
+        bool cops_visible = false;
+        const UTL::Collections::ListableSet<IVehicle, 10, eVehicleList, 10>::List &vehicles =
+            UTL::Collections::ListableSet<IVehicle, 10, eVehicleList, 10>::GetList(VEHICLE_AICOPS);
+        UTL::Collections::ListableSet<IVehicle, 10, eVehicleList, 10>::List::const_iterator i = vehicles.begin();
+        while (i != vehicles.end()) {
+            IVehicle *vehicle = *i;
+            IRenderable *renderable = 0;
+            if (vehicle->QueryInterface(&renderable) && renderable->InView()) {
+                cops_visible = true;
+            }
+            ++i;
+        }
+        Speech::Manager::ClearPlayback();
+        if (!cops_visible) {
+            MiscSpeech::LostSuspect(static_cast<int>(Speech_Manager_mLastSpeakerID));
+        }
+        mDispatch->BreakAway();
+        mFocus = kLost;
+        mQuadrantState = kInitial;
+        mFlags &= ~DISP911_ACTIVE;
+        return;
+    }
+
+    if (mMusicFlow) {
+        Speech::SpeechFlow_ChangeStateTo(mMusicFlow, kTerminal);
+    }
+
+    bool is_DDay = false;
+    GRaceParameters *parms = GRaceStatus::Get().GetRaceParameters();
+    if (parms) {
+        is_DDay = parms->GetIsDDayRace();
+    }
+
+    if (!is_DDay) {
+        Speech::Module *cop_speech = Speech::Manager::GetSpeechModule(1);
+        if (cop_speech) {
+            cop_speech->ReleaseResource();
+        }
+        Speech::Manager::ClearPlayback();
+    }
+
+    EAXCop *bailer = GetRandomActiveCop(0, false);
+    if (bailer) {
+        MiscSpeech::Bailout(bailer->GetSpeakerID());
+    } else {
+        MiscSpeech::Bailout(0);
+    }
+    mFocus = kTerminal;
 }
 
 void SoundAI::RemoveCop(HSIMABLE seeya) {
