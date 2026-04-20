@@ -240,29 +240,41 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
 
     // void Disable() {}
 
-    // const struct copMap &GetActors() {}
+    const Speech::copMap &GetActors() {
+        return mActors;
+    }
 
-    // EAXCop *GetLeader() {}
+    EAXCop *GetLeader() {
+        return mLeader;
+    }
 
     EAXAirSupport *GetHeli() {
         return mHeli;
     }
 
-    // struct EAXDispatch *GetDispatch() {}
+    struct EAXDispatch *GetDispatch() {
+        return mDispatch;
+    }
 
     IPursuit *GetPursuit() {
         return mPursuit;
     }
 
-    // enum PursuitState GetPursuitState() {}
+    const int GetHeat() {
+        return mPlayerHeat;
+    }
 
-    // const int GetHeat() {}
+    EAXCop *GetLatestCop() {
+        return mLatestCop;
+    }
 
-    // EAXCop *GetLatestCop() {}
+    const Speech::copList &GetCopsInFormation() {
+        return mCopsInFormation;
+    }
 
-    // const struct copList &GetCopsInFormation() {}
-
-    // const float GetPursuitDistance() {}
+    const float GetPursuitDistance() {
+        return mPursuitDist;
+    }
 
     const float GetPlayerSpeed() {
         return mPlayerSpeed;
@@ -272,7 +284,9 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
         return mPlayerPos;
     }
 
-    // const int NumCopsWithLOS() {}
+    const int NumCopsWithLOS() {
+        return mLOSCount;
+    }
 
     const int NumTrafficHits() {
         return mTrafficHits911;
@@ -282,7 +296,9 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
         return mNumRoadBlocks;
     }
 
-    // const int NumPursuits() {}
+    const int NumPursuits() {
+        return mPursuitCount;
+    }
 
     const Attrib::Gen::pvehicle &GetPlayerSpecs() {
         return mPVehicle;
@@ -296,7 +312,9 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
         return mPursuitLevel;
     }
 
-    // const int GetHavoc() {}
+    const int GetHavoc() {
+        return mHavoc;
+    }
 
     // enum SpeechObservations GetLastObservation() {}
 
@@ -310,7 +328,9 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
         return mObserver;
     }
 
-    // struct RoadblockFlow *GetRBFlow() {}
+    Speech::RoadblockFlow *GetRBFlow() {
+        return mRoadblockFlow;
+    }
 
     // enum RoadNames GetAIRacerRoadID(int n) {}
 
@@ -340,11 +360,17 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
         return mPursuitDuration;
     }
 
-    // const float GetPlayerStopTime() {}
+    const float GetPlayerStopTime() {
+        return (WorldTimer - mT_reallylowspeed).GetSeconds();
+    }
 
-    // const float GetPerpLostTime() {}
+    const float GetPerpLostTime() {
+        return (WorldTimer - mT_noLOS).GetSeconds();
+    }
 
-    // const float GetTimeLastCrashed() {}
+    const float GetTimeLastCrashed() {
+        return (WorldTimer - mT_lastCrashed).GetSeconds();
+    }
 
     const float GetTimeSinceLastChase() {
         return mTimeSinceLastChase;
@@ -352,7 +378,9 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
 
     // const float GetTimeInView() {}
 
-    // struct BlowByRecord &GetRecentBlowby() {}
+    BlowByRecord &GetRecentBlowby() {
+        return mRecentBlowby;
+    }
 
     SlotPool *GetActorPool() {
         return mActorPool;
@@ -364,15 +392,21 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
 
     // const unsigned char GetRacerCount() {}
 
-    // bool RoadblocksEnabled() {}
+    bool RoadblocksEnabled() {
+        return (mFlags & RB_ENABLED) != 0;
+    }
 
-    // bool HeliRoadblocksEnabled() {}
+    bool HeliRoadblocksEnabled() {
+        return (mFlags & HELIRB_ENABLED) != 0;
+    }
 
     bool SpikesEnabled() {
         return (mFlags & SPIKES_ENABLED) != 0;
     }
 
-    // bool AreCopsAhead() {}
+    bool AreCopsAhead() {
+        return (mFlags & COPS_ARE_AHEAD) != 0;
+    }
 
     bool Is911Active() {
         return (mFlags & DISP911_ACTIVE) != 0;
@@ -386,9 +420,13 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
         return mInfraction;
     }
 
-    // int GetNumCopsInWave() {}
+    int GetNumCopsInWave() {
+        return mNumCopsInWave;
+    }
 
-    // unsigned int GetPlayerOffroadID() {}
+    unsigned int GetPlayerOffroadID() {
+        return static_cast<unsigned int>(mPlayerOffroadID);
+    }
 
     unsigned int GetPlayerCarColor() {
         if (!mPlayerCarCustom) {
@@ -404,9 +442,13 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
         return mPlayerCarCustom->flags;
     }
 
-    // const unsigned char GetNumCopsInView() {}
+    const unsigned char GetNumCopsInView() {
+        return mCopsInView;
+    }
 
-    // int GetNumActiveCopCars() {}
+    int GetNumActiveCopCars() {
+        return mNumActiveCopCars;
+    }
 
     static const HeatCutoffs heat_cutoffs[4]; // size: 0x20, address: 0x80407A80
     static int mRefCount;                     // size: 0x4, address: 0x80435E9C

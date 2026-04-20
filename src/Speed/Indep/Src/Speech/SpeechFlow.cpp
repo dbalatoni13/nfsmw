@@ -1,11 +1,43 @@
 #include "Speed/Indep/Src/EAXSound/Stream/SpeechManager.hpp"
 #include "Speed/Indep/Src/EAXSound/Stream/EAXS_StreamChannel.h"
+#include "Speed/Indep/Src/Speech/SpeechFlow.h"
 
 namespace Speech {
 
 namespace {
 Module *sSpeechModules[NUM_SPEECH_MODULES] = { 0, 0 };
 }
+
+SpeechFlow::SpeechFlow()
+    : mState(0), //
+      mLastState(-1), //
+      mBusy(0) {}
+
+SpeechFlow::~SpeechFlow() {}
+
+void SpeechFlow::ChangeStateTo(int new_state) {
+    if (new_state != mState) {
+        mLastState = mState;
+    }
+    mState = new_state;
+}
+
+int SpeechFlow::GetState() {
+    return mState;
+}
+
+void SpeechFlow::Reset() {
+    ChangeStateTo(-1);
+    mBusy = 0;
+}
+
+bool SpeechFlow::IsBusy() {
+    return mBusy != 0;
+}
+
+void SpeechFlow::OnCopAdded(EAXCop *) {}
+
+void SpeechFlow::OnCopRemoved(EAXCop *) {}
 
 Module *Manager::GetSpeechModule(int nindex) {
     if (nindex > 1) {
