@@ -868,7 +868,40 @@ void EAXCop::PursuitUpdateReply() {
     ScheduleSpeech_AnytimeEvents_PursuitUpdateRep(data, Csis::AnytimeEvents_PursuitUpdateRepId, Csis::gAnytimeEvents_PursuitUpdateRepHandle, this);
 }
 
-void EAXCop::ReinitiatePursuit() {}
+extern "C" float lbl_8040749C;
+extern "C" float lbl_804074A0;
+
+void EAXCop::ReinitiatePursuit() {
+    SoundAI *ai = SoundAI::Get();
+    if (ai) {
+        if (*reinterpret_cast<float *>(reinterpret_cast<char *>(ai) + 0x16C) < *reinterpret_cast<float *>(reinterpret_cast<char *>(*reinterpret_cast<void **>(reinterpret_cast<char *>(ai) + 0x18C)) + 0x7C)) {
+            float speed = (*reinterpret_cast<float (**)(void *)>(*reinterpret_cast<char **>(this) + 0x3D4))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x3D0));
+            if (speed != lbl_8040749C) {
+                (*reinterpret_cast<void (**)(void *)>(*reinterpret_cast<char **>(this) + 0x28C))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x288));
+            } else {
+                (*reinterpret_cast<void (**)(void *)>(*reinterpret_cast<char **>(this) + 0x1BC))(reinterpret_cast<char *>(this) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(this) + 0x1B8));
+            }
+        } else {
+            Csis::Setup_ReInitPursuitStruct data;
+            int time_since_lost;
+            int num_suspects;
+            if (*reinterpret_cast<float *>(reinterpret_cast<char *>(ai) + 0x16C) < lbl_804074A0) {
+                time_since_lost = 1;
+            } else {
+                time_since_lost = 2;
+            }
+            data.time_since_lost = time_since_lost;
+            unsigned int flags = *reinterpret_cast<unsigned int *>(reinterpret_cast<char *>(ai) + 0x5C);
+            num_suspects = 1;
+            if ((flags & 0x800) != 0) {
+                num_suspects = 2;
+            }
+            data.num_suspects = num_suspects;
+            data.speaker_id = mSpeakerID;
+            ScheduleSpeech_Setup_ReInitPursuit(data, Csis::Setup_ReInitPursuitId, Csis::gSetup_ReInitPursuitHandle, this);
+        }
+    }
+}
 
 void EAXCop::NegativeBackupReply() {
     Csis::Backup_NegativeBUReplyStruct data;
@@ -915,10 +948,7 @@ void EAXCop::CallforEV(unsigned int type) {
                 data.ev_type = 4;
             } else {
                 IPursuit *pursuit = *reinterpret_cast<IPursuit **>(reinterpret_cast<char *>(ai) + 0x138);
-                char *pursuit_vtbl = *reinterpret_cast<char **>(reinterpret_cast<char *>(pursuit) + 4);
-                short delta = *reinterpret_cast<short *>(pursuit_vtbl + 0x138);
-                int (*method)(void *) = *reinterpret_cast<int (**)(void *)>(pursuit_vtbl + 0x13C);
-                int destroyed = method(reinterpret_cast<char *>(pursuit) + delta);
+                int destroyed = (*reinterpret_cast<int (**)(void *)>(*reinterpret_cast<char **>(reinterpret_cast<char *>(pursuit) + 4) + 0x13C))(reinterpret_cast<char *>(pursuit) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(reinterpret_cast<char *>(pursuit) + 4) + 0x138));
                 if (destroyed < 2) {
                     return;
                 }
@@ -1213,7 +1243,7 @@ void EAXCop::RBApproach() {
             int roadblock_type;
             data.speaker_id = mSpeakerID;
             roadblock_type = 1;
-            if (roadblock->GetNumSpikeStrips() > 0) {
+            if ((*reinterpret_cast<int (**)(void *)>(*reinterpret_cast<char **>(reinterpret_cast<char *>(roadblock) + 4) + 0x9C))(reinterpret_cast<char *>(roadblock) + *reinterpret_cast<short *>(*reinterpret_cast<char **>(reinterpret_cast<char *>(roadblock) + 4) + 0x98)) > 0) {
                 roadblock_type = 2;
             }
             data.approach_type = roadblock_type;
