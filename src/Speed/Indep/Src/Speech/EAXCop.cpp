@@ -115,6 +115,18 @@ struct Setup_InitialCallForBUStruct {
     int code;
 };
 
+struct Setup_SelfStrategyStruct {
+    int speaker_id;
+    int code;
+    int self_strategy_type;
+};
+
+struct RollingStrategy_InitStrategyStruct {
+    int speaker_id;
+    int code;
+    int rolling_strategy_type;
+};
+
 struct AnytimeEvents_LostSuspectStruct {
     int speaker_id;
     int intensity;
@@ -337,12 +349,14 @@ extern InterfaceId Setup_LocationReportId;
 extern InterfaceId Setup_ReInitPursuitId;
 extern InterfaceId Setup_InitialCallForBU_MSId;
 extern InterfaceId Setup_InitialCallForBUId;
+extern InterfaceId Setup_SelfStrategyId;
 extern InterfaceId AnytimeEvents_LostSuspectId;
 extern InterfaceId Arrest_ArrestId;
 extern InterfaceId AnytimeEvents_LostVisualId;
 extern InterfaceId AnytimeEvents_RegainVisualId;
 extern InterfaceId RollingStrategy_CallToPositionRemId;
 extern InterfaceId RollingStrategy_StrategyExecuteId;
+extern InterfaceId RollingStrategy_InitStrategyId;
 extern InterfaceId AnytimeEvents_IntentToRamId;
 extern InterfaceId AnytimeEvents_SuspectBehaviourId;
 extern InterfaceId Setup_SuspectConfirmedId;
@@ -400,12 +414,14 @@ extern FunctionHandle gSetup_LocationReportHandle;
 extern FunctionHandle gSetup_ReInitPursuitHandle;
 extern FunctionHandle gSetup_InitialCallForBU_MSHandle;
 extern FunctionHandle gSetup_InitialCallForBUHandle;
+extern FunctionHandle gSetup_SelfStrategyHandle;
 extern FunctionHandle gAnytimeEvents_LostSuspectHandle;
 extern FunctionHandle gArrest_ArrestHandle;
 extern FunctionHandle gAnytimeEvents_LostVisualHandle;
 extern FunctionHandle gAnytimeEvents_RegainVisualHandle;
 extern FunctionHandle gRollingStrategy_CallToPositionRemHandle;
 extern FunctionHandle gRollingStrategy_StrategyExecuteHandle;
+extern FunctionHandle gRollingStrategy_InitStrategyHandle;
 extern FunctionHandle gAnytimeEvents_IntentToRamHandle;
 extern FunctionHandle gAnytimeEvents_SuspectBehaviourHandle;
 extern FunctionHandle gSetup_SuspectConfirmedHandle;
@@ -464,12 +480,14 @@ extern void ScheduleSpeech_Setup_LocationReport(Csis::Setup_LocationReportStruct
 extern void ScheduleSpeech_Setup_ReInitPursuit(Csis::Setup_ReInitPursuitStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis25Setup_ReInitPursuitStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
 extern void ScheduleSpeech_Setup_InitialCallForBU_MS(Csis::Setup_InitialCallForBU_MSStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis31Setup_InitialCallForBU_MSStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
 extern void ScheduleSpeech_Setup_InitialCallForBU(Csis::Setup_InitialCallForBUStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis28Setup_InitialCallForBUStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
+extern void ScheduleSpeech_Setup_SelfStrategy(Csis::Setup_SelfStrategyStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis24Setup_SelfStrategyStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
 extern void ScheduleSpeech_AnytimeEvents_LostSuspect(Csis::AnytimeEvents_LostSuspectStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis31AnytimeEvents_LostSuspectStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
 extern void ScheduleSpeech_Arrest_Arrest(Csis::Arrest_ArrestStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis19Arrest_ArrestStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
 extern void ScheduleSpeech_AnytimeEvents_LostVisual(Csis::AnytimeEvents_LostVisualStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis30AnytimeEvents_LostVisualStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
 extern void ScheduleSpeech_AnytimeEvents_RegainVisual(Csis::AnytimeEvents_RegainVisualStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis32AnytimeEvents_RegainVisualStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
 extern void ScheduleSpeech_RollingStrategy_CallToPositionRem(Csis::RollingStrategy_CallToPositionRemStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis39RollingStrategy_CallToPositionRemStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
 extern void ScheduleSpeech_RollingStrategy_StrategyExecute(Csis::RollingStrategy_StrategyExecuteStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis37RollingStrategy_StrategyExecuteStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
+extern void ScheduleSpeech_RollingStrategy_InitStrategy(Csis::RollingStrategy_InitStrategyStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis34RollingStrategy_InitStrategyStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
 extern void ScheduleSpeech_AnytimeEvents_IntentToRam(Csis::AnytimeEvents_IntentToRamStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis31AnytimeEvents_IntentToRamStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
 extern void ScheduleSpeech_AnytimeEvents_SuspectBehaviour(Csis::AnytimeEvents_SuspectBehaviourStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis36AnytimeEvents_SuspectBehaviourStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
 extern void ScheduleSpeech_Setup_SuspectConfirmed(Csis::Setup_SuspectConfirmedStruct &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) asm("ScheduleSpeech__H1ZQ24Csis28Setup_SuspectConfirmedStruct_Q26Speech7ManagerRX01RQ24Csis11InterfaceIdRQ24Csis14FunctionHandleP12EAXCharacter_v");
@@ -507,6 +525,8 @@ extern void ScheduleSpeech_StaticRoadblock_RBApproach(Csis::StaticRoadblock_RBAp
 extern void FlushSpeechForActor(EAXCharacter *actor) asm("FlushSpeechForActor__Q26Speech7ManagerP12EAXCharacter");
 extern int GetCount_EventHistory(void *history, int event_id) asm("GetCount__Q26Speech12EventHistory18SPCHType_1_EventID");
 extern unsigned char gSpeechManagerGlobalHistory[] asm("_Q26Speech7Manager.mGlobalHistory");
+extern "C" float lbl_804074DC;
+extern "C" float lbl_804074E0;
 
 EAXCop::EAXCop(int speakerID, HSIMABLE handle, int bID, int cID)
     : EAXCharacter(speakerID, handle, bID, cID) {
@@ -637,8 +657,46 @@ void EAXCop::LocationReport() {
 }
 
 void EAXCop::SelfStrategy(int type) {
-    if (type) {
-        mLastEvent = type;
+    SoundAI *ai = SoundAI::Get();
+    if (ai && ai->GetPursuitState() == SoundAI::kActive) {
+        Csis::Setup_SelfStrategyStruct data;
+        if (type < 4) {
+            if (type < 2) {
+                if (type != 1) {
+                    return;
+                }
+                int select = bRandom(4);
+                if (select == 1) {
+                    data.self_strategy_type = 0x40;
+                } else if (select < 2) {
+                    if (select == 0) {
+                        data.self_strategy_type = 0x20;
+                    } else {
+                        data.self_strategy_type = 8;
+                    }
+                } else if (select == 2) {
+                    data.self_strategy_type = 0x10;
+                } else {
+                    data.self_strategy_type = 8;
+                }
+            } else {
+                data.self_strategy_type = 4;
+                if (bRandom(lbl_804074DC) > lbl_804074E0) {
+                    data.self_strategy_type = 2;
+                }
+            }
+        } else {
+            if (type != 6) {
+                return;
+            }
+            data.self_strategy_type = 4;
+            if (bRandom(lbl_804074DC) > lbl_804074E0) {
+                data.self_strategy_type = 2;
+            }
+        }
+        data.code = GetRandomizedCode();
+        data.speaker_id = mSpeakerID;
+        ScheduleSpeech_Setup_SelfStrategy(data, Csis::Setup_SelfStrategyId, Csis::gSetup_SelfStrategyHandle, this);
     }
 }
 
@@ -673,9 +731,26 @@ void EAXCop::UnitBackupReply() {
 }
 
 void EAXCop::InitiateStrategy(int type) {
-    if (type) {
-        mLastEvent = type;
+    Csis::RollingStrategy_InitStrategyStruct init;
+    init.code = GetRandomizedCode();
+    switch (type) {
+    case 1:
+        init.rolling_strategy_type = 0x20;
+        break;
+    case 3:
+        init.rolling_strategy_type = 2;
+        break;
+    case 2:
+        init.rolling_strategy_type = 4;
+        break;
+    case 6:
+        init.rolling_strategy_type = 0x10;
+        break;
+    default:
+        return;
     }
+    init.speaker_id = mSpeakerID;
+    ScheduleSpeech_RollingStrategy_InitStrategy(init, Csis::RollingStrategy_InitStrategyId, Csis::gRollingStrategy_InitStrategyHandle, this);
 }
 
 void EAXCop::CallToPosition(EAXCop *cop) {
@@ -711,8 +786,43 @@ void EAXCop::StrategyExecute() {
 }
 
 void EAXCop::Collision(int collisionType, float force, EAXCop *spkr) {
-    if (force > 0.0f || spkr) {
-        mLastEvent = collisionType;
+    int intensity = 1;
+    if (force > 0.75f) {
+        intensity = 2;
+    }
+    switch (collisionType) {
+    case 5:
+        Impact_Suspect_World();
+        break;
+    case 7:
+        Impact_Suspect_Traffic(static_cast<Csis::Type_intensity>(intensity));
+        break;
+    case 10:
+        Impact_Suspect_Guardrail();
+        break;
+    case 11:
+        Impact_Suspect_Train();
+        break;
+    case 12:
+        Impact_Suspect_Semi();
+        break;
+    case 13:
+        Impact_Suspect_GasStation();
+        break;
+    case 14:
+        Impact_Suspect_Spikebelt();
+        break;
+    case 15:
+        SuspectSpunout(static_cast<Csis::Type_intensity>(intensity));
+        break;
+    case 16:
+        SuspectAirborne(static_cast<Csis::Type_intensity>(intensity));
+        break;
+    case 17:
+        SuspectRollover(static_cast<Csis::Type_intensity>(intensity));
+        break;
+    default:
+        break;
     }
 }
 
