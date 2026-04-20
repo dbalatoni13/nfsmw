@@ -219,6 +219,24 @@ bool SoundAI::IsMusicActive() {
     return result;
 }
 
+EAXCop *SoundAI::GetCopInRB() {
+    IRoadBlock *block = GetRoadblock();
+
+    if (block) {
+        Speech::copMap::iterator iter = mActors.begin();
+        while (iter != mActors.end()) {
+            EAXCop *cop = iter->cop;
+            if ((cop->GetInFormation() != 0) && !cop->IsPrimary()) {
+                if (block->IsComprisedOf(cop->GetHandle())) {
+                    return cop;
+                }
+            }
+            ++iter;
+        }
+    }
+    return 0;
+}
+
 EAXCop *SoundAI::GetCop(int speaker) {
     Speech::copMap::iterator iter = mActors.begin();
     while (iter != mActors.end()) {
