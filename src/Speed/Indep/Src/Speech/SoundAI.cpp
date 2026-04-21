@@ -72,6 +72,9 @@ void EAXDispatch_Report911(void *dispatch, int infraction);
 void EAXDispatch_JurisShift(void *dispatch, int jurisdiction);
 
 static float prev_heat_30802 = 0.0f;
+static unsigned int dir_tracking_30959 = 0;
+static Timer t_currdir_30960 = 0;
+static unsigned int dir_init_30961 = 0;
 
 SoundAI::SoundAI()
     : Sim::Activity(1),
@@ -1586,6 +1589,65 @@ int SoundAI::GetCallsign(Csis::Type_speaker_battalion battalion) {
     return id;
 }
 
+void SoundAI::Force911State() {
+    IPlayer *player = IPlayer::First(PLAYER_LOCAL);
+    IPerpetrator *perp = 0;
+    ICopMgr *copmgr = UTL::Collections::Singleton<ICopMgr>::Get();
+
+    if (!player) {
+        return;
+    }
+
+    player->GetSimable()->QueryInterface(&perp);
+    if (copmgr && ICopMgr::AreCopsEnabled() && perp && mPursuitLevel.GetCollection()) {
+        mFlags |= DISP911_ACTIVE;
+        perp->Set911CallTime(mPursuitLevel.Lifetime911(0));
+        copmgr->LockoutCops(false);
+    }
+}
+
+EAXCop *SoundAI::FindFurthestCop(bool includeHeli) {
+    EAXCop *furthest = 0;
+
+    if (!mActors.size()) {
+        return 0;
+    }
+
+    Speech::copPair *iter = mActors.begin();
+    while (iter != mActors.end()) {
+        EAXCop *cop = iter->cop;
+        if (cop) {
+            if (!furthest || (furthest->GetDistance() < cop->GetDistance())) {
+                if ((cop->IsHeli() && includeHeli) || !cop->IsHeli()) {
+                    furthest = cop;
+                }
+            }
+        }
+        ++iter;
+    }
+    return furthest;
+}
+
+EAXCop *SoundAI::FindClosestCop(bool enforceLOS, bool includeHeli) {
+    EAXCop *closest = 0;
+
+    if (!mActors.size()) {
+        return 0;
+    }
+
+    Speech::copPair *iter = mActors.begin();
+    while (iter != mActors.end()) {
+        EAXCop *cop = iter->cop;
+        if (cop && (!enforceLOS || cop->HasLOS()) && (includeHeli || !cop->IsHeli())) {
+            if (!closest || (cop->GetDistance() < closest->GetDistance())) {
+                closest = cop;
+            }
+        }
+        ++iter;
+    }
+    return closest;
+}
+
 bool SoundAI::MakeLeader(EAXCop *newprim) {
     EAXCop *wannab;
     Speech::copPair *primary;
@@ -1744,6 +1806,53 @@ unsigned char SoundAI::GetCustomized(IVehicle *vehicle, CarCustomizations &custr
         custrec.flags |= DECALS;
     }
     return 1;
+}
+
+unsigned int SoundAI::CalcPlayerDirection(bool force_set) {
+    if (!dir_init_30961) {
+        t_currdir_30960 = Timer(0);
+        dir_init_30961 = 1;
+    }
+
+    float zmag = UMath::Abs(mSmoothedFWRoad.z);
+    float xmag = UMath::Abs(mSmoothedFWRoad.x);
+    unsigned int dir;
+    if (xmag <= zmag) {
+        dir = 1;
+        if (0.0f < mSmoothedFWRoad.z) {
+            dir = 2;
+        }
+    } else {
+        dir = 8;
+        if (0.0f < mSmoothedFWRoad.x) {
+            dir = 4;
+        }
+    }
+
+    if ((dir != 0) && (dir != dir_tracking_30959)) {
+        t_currdir_30960 = WorldTimer;
+        dir_tracking_30959 = dir;
+    }
+
+    float t_samedir = (WorldTimer - t_currdir_30960).GetSeconds();
+    if ((t_samedir <= 3.0f) && !force_set) {
+        dir = 0;
+    }
+    return dir;
+}
+
+void SoundAI::ForceGlobalVoiceChange() {
+    Speech::copPair *iter = mActors.begin();
+    while (iter != mActors.end()) {
+        EAXCop *cop = iter->cop;
+        if (cop) {
+            cop->SetSpeakerID(3);
+        }
+        ++iter;
+    }
+
+    mActors.clear();
+    mCopsInFormation.clear();
 }
 
 const float SoundAI::GetTimeLastNailedCop() {
