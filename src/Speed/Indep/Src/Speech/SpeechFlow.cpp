@@ -4,6 +4,23 @@
 #include "Speed/Indep/Src/EAXSound/Stream/NISSFXModule.hpp"
 #include "Speed/Indep/Src/Speech/SpeechFlow.h"
 
+struct CLUMP_ITEMtag {
+    unsigned int key;
+    unsigned int size;
+    unsigned int header;
+    unsigned int sample;
+};
+
+struct CLUMP_IDX_FILEtag {
+    unsigned int numtypes;
+    unsigned int numbanks[20];
+    unsigned int count;
+    CLUMP_ITEMtag item[1];
+};
+
+extern int SPCH_AddBank(char *bankHdr);
+extern "C" bool InteruptedAndNotDelayed__6SpeechPQ26Speech20ScheduledSpeechEvent(Speech::ScheduledSpeechEvent *this_event);
+
 namespace Speech {
 
 Module *Manager::m_SpeechModule[NUM_SPEECH_MODULES] = { 0, 0 };
@@ -42,6 +59,84 @@ void CompactQueuedEvents() {
     }
     sQueuedEventCount = write;
 }
+
+int LoadSpeechBankImpl(CLUMP_IDX_FILEtag *index, int &type, int &number, ::SPEECH_BANK *sb) {
+    unsigned int key = static_cast<unsigned int>(type) * 0x1000000 + static_cast<unsigned int>(number);
+    int lower = 0;
+    int upper = static_cast<int>(index->count) - 1;
+    int i = upper >> 1;
+
+    if (index->item[i].key != key) {
+        bool done = (i == 0);
+        int local_upper = i;
+        while (!done && (local_upper != upper)) {
+            if (index->item[local_upper].key < key) {
+                lower = local_upper;
+                local_upper = upper;
+            }
+            i = (lower + local_upper) >> 1;
+            if (index->item[i].key == key) {
+                break;
+            }
+            done = (i == lower);
+            upper = local_upper;
+            local_upper = i;
+        }
+
+        i = local_upper;
+        if ((index->item[local_upper].key != key) && (index->item[lower].key != key) && (index->item[upper].key != key)) {
+            sb->bank = -1;
+            sb->offset = 0;
+            sb->mem = 0;
+            return -1;
+        }
+        if (index->item[lower].key == key) {
+            i = lower;
+        } else if (index->item[upper].key == key) {
+            i = upper;
+        }
+    }
+
+    if (index->item[i].size == 0) {
+        sb->offset = 0;
+        sb->bank = -1;
+        sb->mem = 0;
+        return -1;
+    }
+
+    sb->mem = reinterpret_cast<char *>(index->numbanks) + (index->item[i].header - 4);
+    sb->bank = static_cast<int>(index->item[i].size);
+    sb->offset = static_cast<int>(index->item[i].sample);
+    return 0;
+}
+
+int AddHeadersImpl(char **dest, ::SPEECH_BANK *banks, int numBanks) {
+    int size = 0;
+    ::SPEECH_BANK *sb = banks;
+    ::SPEECH_BANK *end = banks + numBanks;
+    while (sb < end) {
+        if (sb->mem) {
+            size += sb->bank;
+        }
+        ++sb;
+    }
+
+    char *mem = gAudioMemoryManager.AllocateMemoryChar(size, "AUD:Relocated speech headers", false);
+    *dest = mem;
+
+    sb = banks;
+    while (sb < end) {
+        if (sb->mem) {
+            bMemCpy(mem, sb->mem, sb->bank);
+            sb->mem = mem;
+            mem += sb->bank;
+            sb->offset = SPCH_AddBank(sb->mem);
+        }
+        ++sb;
+    }
+    return 0;
+}
+
 } // namespace
 
 SpeechFlow::SpeechFlow()
@@ -229,29 +324,18 @@ int Manager::SampleRequestCallback(SPCHType_SampleRequestData *data) {
     return static_cast<int>(module->SampleRequestCallback(data));
 }
 
-int Manager::LoadSpeechBank(CLUMP_IDX_FILEtag *, int &type, int &number, SPEECH_BANK *sb) {
-    if (!sb) {
+int Manager::LoadSpeechBank(CLUMP_IDX_FILEtag *index, int &type, int &number, SPEECH_BANK *sb) {
+    if (!index || !sb) {
         return 0;
     }
-
-    sb->bank = number;
-    sb->offset = type * 4;
-    sb->mem = 0;
-    ++number;
-    return 1;
+    return LoadSpeechBankImpl(index, type, number, sb);
 }
 
 int Manager::AddHeaders(char **dest, SPEECH_BANK *banks, int numBanks, Module *module) {
-    if (!dest || !banks || !module) {
+    if (!dest || !banks || !module || (numBanks < 0)) {
         return 0;
     }
-
-    int bytes = 0;
-    for (int i = 0; i < numBanks; ++i) {
-        dest[i] = banks[i].mem;
-        bytes += banks[i].offset;
-    }
-    return bytes;
+    return AddHeadersImpl(dest, banks, numBanks);
 }
 
 int Manager::GetTicker() {
@@ -287,7 +371,7 @@ bool Manager::HasBeenSaid(SPCHType_1_EventID event_id) {
 bool Manager::ServiceInterruptEvents() {
     bool changed = false;
     for (SPCHSampleRequest *it = mSampleRequests.begin(); it != mSampleRequests.end();) {
-        if (it->data.interruptFlag != 0) {
+        if ((it->owner && InteruptedAndNotDelayed__6SpeechPQ26Speech20ScheduledSpeechEvent(it->owner)) || (it->data.interruptFlag != 0)) {
             it = mSampleRequests.erase(it);
             changed = true;
         } else {
@@ -296,6 +380,43 @@ bool Manager::ServiceInterruptEvents() {
     }
     return changed;
 }
+
+} // namespace Speech
+
+namespace Speech {
+struct SPEECH_BANK {
+    char *mem;
+    int bank;
+    int offset;
+};
+}
+
+extern "C" int LoadSpeechBank__Q26Speech7ManagerP17CLUMP_IDX_FILEtagRiT2PQ26Speech11SPEECH_BANK(
+    CLUMP_IDX_FILEtag *index,
+    int &type,
+    int &number,
+    Speech::SPEECH_BANK *sb) {
+    return Speech::Manager::LoadSpeechBank(index, type, number, reinterpret_cast< ::SPEECH_BANK *>(sb));
+}
+
+extern "C" int AddHeaders__Q26Speech7ManagerPPcPQ26Speech11SPEECH_BANKiPQ26Speech6Module(
+    char **dest,
+    Speech::SPEECH_BANK *banks,
+    int numBanks,
+    Speech::Module *module) {
+    return Speech::Manager::AddHeaders(dest, reinterpret_cast< ::SPEECH_BANK *>(banks), numBanks, module);
+}
+
+extern "C" bool InteruptedAndNotDelayed__6SpeechPQ26Speech20ScheduledSpeechEvent(Speech::ScheduledSpeechEvent *this_event) {
+    Attrib::Gen::speech pb(static_cast<unsigned int>(this_event->ID), 0, 0);
+    if (!pb.interrupt() || ((this_event->flags & 2U) != 0)) {
+        return false;
+    }
+    this_event->flags = static_cast<short>(this_event->flags | 3);
+    return true;
+}
+
+namespace Speech {
 
 void Manager::ServiceFilteredEvents() {
     for (SPCHSampleRequest *it = mSampleRequests.begin(); it != mSampleRequests.end();) {
