@@ -29,6 +29,8 @@
 #include "Speed/Indep/Src/Generated/Messages/MMiscSound.h"
 #include "Speed/Indep/Src/Generated/Messages/MPerpBusted.h"
 #include "Speed/Indep/Src/Generated/Messages/MRestartRace.h"
+#include "Speed/Indep/Src/Speech/SpeechCache.h"
+#include "Speed/Indep/Src/World/CarInfo.hpp"
 
 namespace MiscSpeech {
 bool GetLocation(RoadNames road, int &region, int &location);
@@ -45,6 +47,26 @@ void WrongSuspect();
 extern int FORCE_VOICE_RANDOMIZATION;
 extern bool IsSpeechEnabled;
 extern ParameterAccessor SPAMAccessorSpeech;
+struct CarPart;
+struct CarPartDatabase;
+struct ColourHashToSoundColour {
+    unsigned int Hash;
+    unsigned int SoundColour;
+};
+extern CarPartDatabase CarPartDB;
+extern CarTypeInfo *CarTypeInfoArray;
+extern ColourHashToSoundColour ColourHashToSoundColourMap[];
+extern int NumberOfColourHashToSoundColourMaps;
+
+extern "C" CarPart *GetInstalledPart__C21FECustomizationRecord7CarTypei(const FECustomizationRecord *record, CarType car_type, int car_slot_id);
+extern "C" unsigned int GetAppliedAttributeUParam__7CarPartUiUi(CarPart *part, unsigned int name_hash, unsigned int default_value);
+extern "C" CarPart *NewGetCarPart__15CarPartDatabase7CarTypeiUiP7CarParti(
+    CarPartDatabase *db,
+    CarType car_type,
+    int car_slot_id,
+    unsigned int car_part_namehash,
+    CarPart *prev_part,
+    int upg_level);
 
 void EAXDispatch_Report911(void *dispatch, int infraction);
 void EAXDispatch_JurisShift(void *dispatch, int jurisdiction);
@@ -1562,6 +1584,166 @@ int SoundAI::GetCallsign(Csis::Type_speaker_battalion battalion) {
     int id = *iter;
     cs_pool->erase(iter);
     return id;
+}
+
+bool SoundAI::MakeLeader(EAXCop *newprim) {
+    EAXCop *wannab;
+    Speech::copPair *primary;
+
+    if (!newprim) {
+        return false;
+    }
+
+    if (mLeader && (mLeader->GetSpeakerID() == newprim->GetSpeakerID())) {
+        return true;
+    }
+
+    if (newprim->IsActive()) {
+        int speaker = newprim->GetSpeakerID();
+        if ((speaker == 5) || (speaker == 4) || (speaker == 3) || (speaker == 2) || (speaker == 9)) {
+            if (mLeader != newprim) {
+                mLeader = newprim;
+                if (mFocus == kStrategyFlow) {
+                    newprim->PrimaryEngage();
+                }
+            }
+            gSpeechCache.AddSpeaker(mLeader->GetSpeakerID());
+            return true;
+        }
+    }
+
+    wannab = mActors.Find(newprim->GetHandle());
+    if (!wannab) {
+        return false;
+    }
+
+    primary = mActors.end();
+    Speech::copPair *iter = mActors.begin();
+    while (iter != mActors.end()) {
+        EAXCop *cop = iter->cop;
+        int speaker = cop->GetSpeakerID();
+        if ((speaker == 5) || (speaker == 4) || (speaker == 3) || (speaker == 9)) {
+            primary = iter;
+            break;
+        }
+        ++iter;
+    }
+
+    if (primary != mActors.end()) {
+        int spkrA = wannab->GetSpeakerID();
+        int spkrB = primary->cop->GetSpeakerID();
+        wannab->SetSpeakerID(spkrB);
+        primary->cop->SetSpeakerID(spkrA);
+    } else {
+        int rand = bRandom(3);
+        if (rand == 1) {
+            newprim->SetSpeakerID(4);
+        } else if (rand == 0) {
+            newprim->SetSpeakerID(3);
+        } else if (rand == 2) {
+            newprim->SetSpeakerID(5);
+        } else {
+            newprim->SetSpeakerID(3);
+        }
+
+        int *i = mUsage.voices.begin();
+        while (i != mUsage.voices.end()) {
+            if (*i == newprim->GetSpeakerID()) {
+                mUsage.voices.erase(i);
+                break;
+            }
+            ++i;
+        }
+    }
+
+    if (mLeader != newprim) {
+        mLeader = newprim;
+        if (mFocus == kStrategyFlow) {
+            newprim->PrimaryEngage();
+        }
+    }
+    gSpeechCache.AddSpeaker(mLeader->GetSpeakerID());
+    return true;
+}
+
+unsigned char SoundAI::GetCustomized(IVehicle *vehicle, CarCustomizations &custrec) {
+    const FECustomizationRecord *record;
+    bool has_vinyls;
+    bool has_custom_paint;
+    bool has_racing_numbers;
+    bool has_decals;
+
+    has_vinyls = false;
+    has_custom_paint = false;
+    has_racing_numbers = false;
+    has_decals = false;
+    custrec.color = 0;
+
+    record = vehicle->GetCustomizations();
+    custrec.flags = 0;
+    if (!record) {
+        CarPart *paint_part = NewGetCarPart__15CarPartDatabase7CarTypeiUiP7CarParti(
+            &CarPartDB,
+            vehicle->GetModelType(),
+            0x4c,
+            static_cast<unsigned int>(CarTypeInfoArray[vehicle->GetModelType()].DefaultBasePaint),
+            0,
+            -1);
+        if (paint_part) {
+            unsigned int colour_hash = GetAppliedAttributeUParam__7CarPartUiUi(paint_part, 0xd68a7bab, 0);
+            for (int i = 0; i < NumberOfColourHashToSoundColourMaps; i++) {
+                if (ColourHashToSoundColourMap[i].Hash == colour_hash) {
+                    custrec.color = ColourHashToSoundColourMap[i].SoundColour;
+                    break;
+                }
+            }
+        }
+    } else {
+        has_custom_paint = true;
+        CarType model = vehicle->GetModelType();
+        CarPart *paint_part = GetInstalledPart__C21FECustomizationRecord7CarTypei(record, model, 0x4c);
+        if (paint_part) {
+            unsigned int colour_hash = GetAppliedAttributeUParam__7CarPartUiUi(paint_part, 0xd68a7bab, 0);
+            for (int i = 0; i < NumberOfColourHashToSoundColourMaps; i++) {
+                if (ColourHashToSoundColourMap[i].Hash == colour_hash) {
+                    custrec.color = ColourHashToSoundColourMap[i].SoundColour;
+                    break;
+                }
+            }
+
+            has_vinyls = (GetInstalledPart__C21FECustomizationRecord7CarTypei(record, model, 0x4d) != 0);
+
+            CarPart *left_number1 = GetInstalledPart__C21FECustomizationRecord7CarTypei(record, model, 0x69);
+            CarPart *left_number2 = GetInstalledPart__C21FECustomizationRecord7CarTypei(record, model, 0x6a);
+            CarPart *right_number1 = GetInstalledPart__C21FECustomizationRecord7CarTypei(record, model, 0x71);
+            CarPart *right_number2 = GetInstalledPart__C21FECustomizationRecord7CarTypei(record, model, 0x72);
+            if (left_number1 || left_number2 || right_number1 || right_number2) {
+                has_racing_numbers = true;
+            }
+
+            CarPart *left_door_decal = GetInstalledPart__C21FECustomizationRecord7CarTypei(record, model, 0x48);
+            CarPart *right_door_decal = GetInstalledPart__C21FECustomizationRecord7CarTypei(record, model, 0x49);
+            CarPart *left_quarter = GetInstalledPart__C21FECustomizationRecord7CarTypei(record, model, 0x4a);
+            CarPart *right_quarter = GetInstalledPart__C21FECustomizationRecord7CarTypei(record, model, 0x4b);
+            if (left_door_decal || right_door_decal || left_quarter || right_quarter) {
+                has_decals = true;
+            }
+        }
+    }
+
+    if (has_vinyls) {
+        custrec.flags |= VINYLS;
+    }
+    if (has_custom_paint) {
+        custrec.flags |= PAINT;
+    }
+    if (has_racing_numbers) {
+        custrec.flags |= RACING_NUMS;
+    }
+    if (has_decals) {
+        custrec.flags |= DECALS;
+    }
+    return 1;
 }
 
 const float SoundAI::GetTimeLastNailedCop() {
