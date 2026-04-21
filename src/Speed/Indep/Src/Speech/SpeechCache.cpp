@@ -70,35 +70,6 @@ Cache::~Cache() {
     }
 }
 
-void Cache::AddSpeaker(int spkrID) {
-    if (!mSpeakers) {
-        mSpeakers = new VoiceIDs();
-    }
-
-    VoiceIDs::iterator it = mSpeakers->begin();
-    while (it != mSpeakers->end()) {
-        if (*it == spkrID) {
-            return;
-        }
-        ++it;
-    }
-
-    mSpeakers->push_back(spkrID);
-}
-
-void Cache::RemoveSpeaker(int spkrID) {
-    if (!mSpeakers) {
-        return;
-    }
-
-    for (VoiceIDs::iterator it = mSpeakers->begin(); it != mSpeakers->end(); ++it) {
-        if (*it == spkrID) {
-            mSpeakers->erase(it);
-            return;
-        }
-    }
-}
-
 void Cache::Init(int memsize) {
     if (!IsSpeechEnabled || (mCache != 0)) {
         return;

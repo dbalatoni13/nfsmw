@@ -22,8 +22,34 @@ class Cache {
     Cache();
     ~Cache();
 
-    void AddSpeaker(int spkrID);
-    void RemoveSpeaker(int spkrID);
+    void AddSpeaker(int spkrID) {
+        if (!mSpeakers) {
+            mSpeakers = new VoiceIDs();
+        }
+
+        VoiceIDs::iterator it = mSpeakers->begin();
+        while (it != mSpeakers->end()) {
+            if (*it == spkrID) {
+                return;
+            }
+            ++it;
+        }
+
+        mSpeakers->push_back(spkrID);
+    }
+
+    void RemoveSpeaker(int spkrID) {
+        if (!mSpeakers) {
+            return;
+        }
+
+        for (VoiceIDs::iterator it = mSpeakers->begin(); it != mSpeakers->end(); ++it) {
+            if (*it == spkrID) {
+                mSpeakers->erase(it);
+                return;
+            }
+        }
+    }
     SlotPool *GetEventPool();
     bool IsCached(SPCHType_SampleRequestData *data, bool check_preparedness);
     unsigned long long CreateKey(int bank, int offset);
