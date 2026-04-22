@@ -184,13 +184,27 @@ class CAnimScene : public ICEScene, public bTNode<CAnimScene> {
     bool Pause() override;
     bool UnPause() override;
     bool IsPlaying() override;
-    float GetTimeElapsed() override;
-    float GetTimeStart() override;
-    float GetTimeTotalLength() override;
-    bool IsControllingCamera() override;
-    bool IsCameraFixingElevation() override;
-    const bMatrix4 &GetSceneRotationMatrix() override;
-    const bMatrix4 &GetSceneTransformMatrix() override;
+    float GetTimeElapsed() override {
+        return mTimeElapsed;
+    };
+    float GetTimeStart() override {
+        return mTimeStart;
+    };
+    float GetTimeTotalLength() override {
+        return mTimeTotalLength;
+    };
+    bool IsControllingCamera() override {
+        return mControllingCamera;
+    };
+    bool IsCameraFixingElevation() override {
+        return true;
+    };
+    const bMatrix4 &GetSceneRotationMatrix() override {
+        return mSceneRotationMatrix;
+    };
+    const bMatrix4 &GetSceneTransformMatrix() override {
+        return mSceneTransformMatrix;
+    };
 
   private:
     static int mHandleCounter;

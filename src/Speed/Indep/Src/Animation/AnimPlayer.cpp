@@ -1,5 +1,6 @@
 #include "AnimPlayer.hpp"
 #include "AnimDirectory.hpp"
+#include "AnimScene.hpp"
 #include "WorldAnimInstanceDirectory.hpp"
 #include "Speed/Indep/Src/Misc/bFile.hpp"
 #include "Speed/Indep/Src/World/CarLoader.hpp"
@@ -47,8 +48,24 @@ int gAnimCfg_Small_NIS_Size = 20000;
 extern int CarLoaderMemoryPoolNumber;
 void UpdateCopDoorPositions(float time_step);
 
+// STRIPPED
+void CAnimSettings::SetDebugPrintEnabled(bool enable) {
+    mDebugPrintEnabled = enable;
+}
+
 bool CAnimSettings::IsDebugPrintEnabled() {
     return mDebugPrintEnabled;
+}
+
+// STRIPPED
+char *GetDescription(uint32 anim_id) {
+    CAnimSceneData *scene_data = CAnimSceneData::FindAnimSceneData(anim_id);
+
+    if (scene_data) {
+        return scene_data->GetSceneInfo()->Description;
+    }
+
+    return nullptr;
 }
 
 CAnimPlayer::CAnimPlayer() {
@@ -60,26 +77,8 @@ CAnimPlayer::~CAnimPlayer() {
     KillWorldAnimScene(true, false);
 }
 
-bool CAnimPlayer::IsLoaded(uint32 anim_id) {
-    if (gAnimLoader_InProgress) {
-        return false;
-    }
-    CAnimSceneData *scene_data = CAnimSceneData::FindAnimSceneData(anim_id);
-    if (scene_data) {
-        m_audioQueued = false;
-        return true;
-    }
-    return false;
-}
-
-int CAnimPlayer::CreateAnimInstance(uint32 anim_id, int camera_track_number, int anim_candidate_type, int anim_candidate_index) {
-    CAnimSceneData *anim_scene_data = CAnimSceneData::FindAnimSceneData(anim_id);
-    int result = 0;
-    if (anim_scene_data) {
-        result = CreateAnimScene(anim_scene_data, camera_track_number, anim_candidate_type, anim_candidate_index);
-    }
-    return result;
-}
+// STRIPPED
+int GetAnimLoader_MaxSize() {}
 
 void AnimLoader_Init() {
     gAnimLoader_InProgress = true;
@@ -119,9 +118,7 @@ int AnimLoader_SizeNeeded() {
     }
 }
 
-void AnimLoader_Callback(int param_1) {
-    AnimLoader_NextStep();
-}
+void AnimLoader_Callback(int);
 
 void AnimLoader_LoadResourceFile(const char *filename) {
     int file_size = bFileSize(filename);
@@ -146,6 +143,16 @@ void AnimLoader_NextStep() {
         }
     }
 }
+
+void AnimLoader_Callback(int) {
+    AnimLoader_NextStep();
+}
+
+// STRIPPED
+void AnimLoader_UnloadAll() {}
+
+// STRIPPED
+void CAnimPlayer::StreamCued() {}
 
 // UNSOLVED
 bool CAnimPlayer::Load(uint32 anim_id, int camera_track_number, bool DisableZoneSwitching) {
@@ -249,6 +256,232 @@ bool CAnimPlayer::Unload(uint32 anim_id) {
     return false;
 }
 
+// STRIPPED
+bool CAnimPlayer::UnloadAll() {}
+
+// STRIPPED
+bool CAnimPlayer::UnloadCategory(eAnimCategory category_id) {}
+
+bool CAnimPlayer::IsLoaded(uint32 anim_id) {
+    if (gAnimLoader_InProgress) {
+        return false;
+    }
+    CAnimSceneData *scene_data = CAnimSceneData::FindAnimSceneData(anim_id);
+    if (scene_data) {
+        m_audioQueued = false;
+        return true;
+    }
+    return false;
+}
+
+int CAnimPlayer::CreateAnimInstance(uint32 anim_id, int camera_track_number, int anim_candidate_type, int anim_candidate_index) {
+    CAnimSceneData *anim_scene_data = CAnimSceneData::FindAnimSceneData(anim_id);
+    int result = 0;
+    if (anim_scene_data) {
+        result = CreateAnimScene(anim_scene_data, camera_track_number, anim_candidate_type, anim_candidate_index);
+    }
+    return result;
+}
+
+void CAnimPlayer::DeleteAnimInstance(AnimHandle anim_handle) {
+    DestroyAnimScene(anim_handle);
+}
+
+int CAnimPlayer::CreateAnimScene(CAnimSceneData *anim_scene_data, int camera_track_number, int anim_candidate_type, int anim_candidate_index) {
+    CAnimScene *anim_scene = new CAnimScene(anim_scene_data, camera_track_number, anim_candidate_type, anim_candidate_index);
+    if (anim_scene->Init()) {
+        mInstancedAnimSceneList.AddTail(anim_scene);
+        return anim_scene->GetHandle();
+    }
+    return 0;
+}
+
+void CAnimPlayer::DestroyAnimScene(AnimHandle anim_handle) {
+    CAnimScene *anim_scene = FindAnimScene(anim_handle);
+
+    if (anim_scene && anim_scene->Purge()) {
+        anim_scene->Remove();
+        delete anim_scene;
+    }
+}
+
+int CAnimPlayer::CreateAndPlayAnim(uint32 anim_id, int camera_track_number, int anim_candidate_type, int anim_candidate_index) {
+    AnimHandle anim_handle = CreateAnimInstance(anim_id, camera_track_number, anim_candidate_type, anim_candidate_index);
+    if (anim_handle == 0) {
+        return 0;
+    }
+    Play(anim_handle);
+    return anim_handle;
+}
+
+CAnimScene *CAnimPlayer::FindAnimScene(AnimHandle anim_handle) {
+    CAnimScene *anim_scene = mInstancedAnimSceneList.GetHead();
+    while (anim_scene != mInstancedAnimSceneList.EndOfList()) {
+        if (anim_handle == anim_scene->GetHandle()) {
+            return anim_scene;
+        }
+        anim_scene = anim_scene->GetNext();
+    }
+    return nullptr;
+}
+
+// STRIPPED
+int CAnimPlayer::FindHandle(eAnimCategory category_id) {}
+
+// STRIPPED
+int CAnimPlayer::GetSceneType(AnimHandle anim_handle) {}
+
+// STRIPPED
+bool CAnimPlayer::SetPropertyEnabled(AnimHandle anim_handle, eAnimProperty property_id, bool enable) {}
+
+// STRIPPED
+bool CAnimPlayer::IsPropertyEnabled(AnimHandle anim_handle, eAnimProperty property_id) {}
+
+// STRIPPED
+bool CAnimPlayer::AreAnyWithThisPropertyEnabled(eAnimProperty property_id) {}
+
+// STRIPPED
+bool CAnimPlayer::AreAnyControllingCamera() {}
+
+// STRIPPED
+bool CAnimPlayer::SetTime(AnimHandle anim_handle, float time) {}
+
+// STRIPPED
+bool CAnimPlayer::GetTime(AnimHandle anim_handle, float &time) {}
+
+// STRIPPED
+bool CAnimPlayer::Cue(AnimHandle anim_handle) {
+    CAnimScene *scene = FindAnimScene(anim_handle);
+
+    if (scene) {
+        return scene->Cue();
+    }
+
+    return false;
+}
+
+bool CAnimPlayer::Play(AnimHandle anim_handle) {
+    CAnimScene *scene = FindAnimScene(anim_handle);
+
+    if (scene) {
+        return scene->Play();
+    }
+
+    return false;
+}
+
+bool CAnimPlayer::Stop(AnimHandle anim_handle, bool delete_instance) {
+    CAnimScene *scene = FindAnimScene(anim_handle);
+    if (scene) {
+        bool stopped = scene->Stop();
+        if (stopped && delete_instance) {
+            DeleteAnimInstance(anim_handle);
+        }
+        return stopped;
+    }
+    return false;
+}
+
+// STRIPPED
+bool CAnimPlayer::Pause(int anim_handle) {
+    CAnimScene *scene = FindAnimScene(anim_handle);
+
+    if (scene) {
+        return scene->Pause();
+    }
+
+    return false;
+}
+
+// STRIPPED
+bool CAnimPlayer::UnPause(AnimHandle anim_handle) {
+    CAnimScene *scene = FindAnimScene(anim_handle);
+
+    if (scene) {
+        return scene->UnPause();
+    }
+
+    return false;
+}
+
+// STRIPPED
+bool CAnimPlayer::StopAll(bool delete_instances) {}
+
+// STRIPPED
+bool CAnimPlayer::StopCategory(eAnimCategory category_id, bool delete_instances) {}
+
+bool CAnimPlayer::PauseAll() {
+    bool any_success = false;
+
+    for (CAnimScene *anim_scene = mInstancedAnimSceneList.GetHead(); anim_scene != mInstancedAnimSceneList.EndOfList();
+         anim_scene = anim_scene->GetNext()) {
+
+        bool success = anim_scene->Pause();
+        if (!any_success) {
+            any_success = success;
+        }
+    }
+
+    return any_success;
+}
+
+bool CAnimPlayer::UnPauseAll() {
+    bool any_success = false;
+
+    for (CAnimScene *anim_scene = mInstancedAnimSceneList.GetHead(); anim_scene != mInstancedAnimSceneList.EndOfList();
+         anim_scene = anim_scene->GetNext()) {
+
+        bool success = anim_scene->UnPause();
+        if (!any_success) {
+            any_success = success;
+        }
+    }
+
+    return any_success;
+}
+
+// STRIPPED
+bool CAnimPlayer::IsCued(AnimHandle anim_handle) {}
+
+// STRIPPED
+bool CAnimPlayer::IsPlaying(AnimHandle anim_handle) {}
+
+// STRIPPED
+bool CAnimPlayer::IsStopped(AnimHandle anim_handle) {}
+
+// STRIPPED
+bool CAnimPlayer::IsPaused(AnimHandle anim_handle) {}
+
+// STRIPPED
+bool CAnimPlayer::IsFinished(AnimHandle anim_handle) {}
+
+// STRIPPED
+bool CAnimPlayer::AreAllPlaying() {}
+
+// STRIPPED
+bool CAnimPlayer::AreAllStopped() {}
+
+// STRIPPED
+bool CAnimPlayer::AreAllPaused() {}
+
+void CAnimPlayer::UpdateTime(float time_step) {
+    if (mWorldAnimScene != nullptr) {
+        mWorldAnimScene->UpdateTime(time_step);
+    }
+    UpdateCopDoorPositions(time_step);
+}
+
+void CAnimPlayer::BeginOnlinePause() {}
+
+void CAnimPlayer::EndOnlinePause() {}
+
+bool CAnimPlayer::Init() {
+    return true;
+}
+
+// STRIPPED
+void CAnimPlayer::Purge() {}
+
 void CAnimPlayer::InitWorldAnimScene() {
     if (!DisableWorldAnimations && !AnimCfg_DisableWorldAnimations) {
         int numEntries = TheWorldAnimInstanceDirectory.GetNumInstanceEntries();
@@ -285,76 +518,42 @@ deinit:
     TheWorldAnimInstanceDirectory.DeInit(full_unload, quickrace_drag_restart);
 }
 
-bool CAnimPlayer::Init() {
-    return true;
-}
+extern float NISCopCarDoorOpenAmount[4];
 
-void CAnimPlayer::UpdateTime(float time_step) {
-    if (mWorldAnimScene != nullptr) {
-        mWorldAnimScene->UpdateTime(time_step);
+float gCopCarDoorAnim_CurrentTime[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+float gCopCarDoorAnim_AnimLength[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+float gCopCarDoorAnim_StartPos[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+float gCopCarDoorAnim_Delta[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+
+void StartCopDoorAnim(int door, float startPos, float AnimLength, float endPos) {
+    if (door < 0 || 3 < door) {
+        return;
     }
-    UpdateCopDoorPositions(time_step);
-}
-
-bool CAnimPlayer::Play(AnimHandle anim_handle) {
-    CAnimScene *scene = FindAnimScene(anim_handle);
-
-    if (!scene) {
-        return false;
+    gCopCarDoorAnim_CurrentTime[door] = 0.0f;
+    if (AnimLength > 0.0f) {
+        gCopCarDoorAnim_AnimLength[door] = AnimLength;
+        gCopCarDoorAnim_StartPos[door] = startPos;
+        gCopCarDoorAnim_Delta[door] = endPos - startPos;
+    } else {
+        gCopCarDoorAnim_AnimLength[door] = 0.0f;
     }
-    return scene->Play();
+    NISCopCarDoorOpenAmount[door] = startPos;
 }
 
-bool CAnimPlayer::Stop(AnimHandle anim_handle, bool delete_instance) {
-    CAnimScene *scene = FindAnimScene(anim_handle);
-    if (scene) {
-        bool stopped = scene->Stop();
-        if (stopped && delete_instance) {
-            DeleteAnimInstance(anim_handle);
+void UpdateCopDoorPositions(float time) {
+    for (int door = 0; door < 4; door++) {
+        float animLength = gCopCarDoorAnim_AnimLength[door];
+        if (animLength != 0.0f) {
+            gCopCarDoorAnim_CurrentTime[door] = gCopCarDoorAnim_CurrentTime[door] + time;
+            if (gCopCarDoorAnim_CurrentTime[door] <= 0.0f) {
+                NISCopCarDoorOpenAmount[door] = gCopCarDoorAnim_StartPos[door];
+            } else if (gCopCarDoorAnim_CurrentTime[door] < animLength) {
+                float ratio = gCopCarDoorAnim_CurrentTime[door] / animLength;
+                NISCopCarDoorOpenAmount[door] = gCopCarDoorAnim_StartPos[door] + ratio * gCopCarDoorAnim_Delta[door];
+            } else {
+                gCopCarDoorAnim_AnimLength[door] = 0.0f;
+                NISCopCarDoorOpenAmount[door] = gCopCarDoorAnim_StartPos[door] + gCopCarDoorAnim_Delta[door];
+            }
         }
-        return stopped;
     }
-    return false;
-}
-
-CAnimScene *CAnimPlayer::FindAnimScene(AnimHandle anim_handle) {
-    CAnimScene *anim_scene = mInstancedAnimSceneList.GetHead();
-    while (anim_scene != mInstancedAnimSceneList.EndOfList()) {
-        if (anim_handle == anim_scene->GetHandle()) {
-            return anim_scene;
-        }
-        anim_scene = anim_scene->GetNext();
-    }
-    return nullptr;
-}
-
-void CAnimPlayer::DestroyAnimScene(AnimHandle anim_handle) {
-    CAnimScene *anim_scene = FindAnimScene(anim_handle);
-
-    if (anim_scene && anim_scene->Purge()) {
-        anim_scene->Remove();
-        delete anim_scene;
-    }
-}
-
-void CAnimPlayer::DeleteAnimInstance(AnimHandle anim_handle) {
-    DestroyAnimScene(anim_handle);
-}
-
-int CAnimPlayer::CreateAndPlayAnim(uint32 anim_id, int camera_track_number, int anim_candidate_type, int anim_candidate_index) {
-    AnimHandle anim_handle = CreateAnimInstance(anim_id, camera_track_number, anim_candidate_type, anim_candidate_index);
-    if (anim_handle == 0) {
-        return 0;
-    }
-    Play(anim_handle);
-    return anim_handle;
-}
-
-int CAnimPlayer::CreateAnimScene(CAnimSceneData *anim_scene_data, int camera_track_number, int anim_candidate_type, int anim_candidate_index) {
-    CAnimScene *anim_scene = new CAnimScene(anim_scene_data, camera_track_number, anim_candidate_type, anim_candidate_index);
-    if (anim_scene->Init()) {
-        mInstancedAnimSceneList.AddTail(anim_scene);
-        return anim_scene->GetHandle();
-    }
-    return 0;
 }

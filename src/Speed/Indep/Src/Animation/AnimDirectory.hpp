@@ -1,10 +1,11 @@
 #ifndef ANIMATION_ANIMDIRECTORY_H
 #define ANIMATION_ANIMDIRECTORY_H
 
-#include "Speed/Indep/bWare/Inc/bWare.hpp"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
+
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 #define ANIM_SCENE_MAX (256)
 

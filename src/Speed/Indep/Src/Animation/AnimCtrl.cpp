@@ -24,6 +24,9 @@ void InitAnimCtrls() {
 #endif
 }
 
+// STRIPPED
+void CloseAnimCtrls() {}
+
 #ifdef MILESTONE_OPT
 static int NumAnimCtrls = 0;
 static int MaxNumAnimCtrls = 0;
@@ -97,6 +100,9 @@ void CAnimCtrl::SetLoopRange(uint32 loop_range_start, uint32 loop_range_end) {
     m_loop_range_end = loop_range_end;
     m_f_loop_end = m_loop_range_end * m_timeScale;
 }
+
+// STRIPPED
+int CAnimCtrl::CreateFnAnim(EAGL4Anim::AnimMemoryMap *memMap, int dof) {}
 
 int CAnimCtrl::CreateFnAnimFromBank(EAGL4Anim::AnimBank *animBank, int animIndex, int dof) {
     m_pFnAnim[dof] = animBank->NewFnAnim(animIndex);
@@ -212,6 +218,18 @@ int CAnimCtrl::AdvanceAnimTime(float timestep) {
     return result_anim_is_done;
 }
 
+// STRIPPED
+float CAnimCtrl::GetEvalTimeInSeconds() {}
+
+// STRIPPED
+void CAnimCtrl::SetEvalTimeInSeconds(float seconds) {}
+
+// STRIPPED
+float CAnimCtrl::GetAnimLengthInSeconds() {}
+
+// STRIPPED
+void CAnimCtrl::UpdateAnim() {}
+
 int Anim_Apply_Trans = 1;  // size: 0x4, address: 0x80415688
 int Anim_Apply_Rots = 1;   // size: 0x4, address: 0x8041568C
 int Anim_Apply_Scales = 1; // size: 0x4, address: 0x80415690
@@ -254,3 +272,6 @@ int CAnimCtrl::UpdateAnimPose(bool force_calc) {
     }
     return 0;
 }
+
+// STRIPPED
+void CAnimCtrl::PredictPositionAtTime(float time, struct bMatrix4 *world_position) {}

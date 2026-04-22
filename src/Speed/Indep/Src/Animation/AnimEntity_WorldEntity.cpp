@@ -12,6 +12,7 @@
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "WorldAnimInstanceDirectory.hpp"
 
+bool DisableWorldAnimations = false;    // size: 0x1, address: 0x804156F0
 static int NumWorldAnimEntities = 0;    // size: 0x4, address: 0x804156F4
 static int MaxNumWorldAnimEntities = 0; // size: 0x4, address: 0x804156F8
 // TODO move? they are static though
@@ -19,6 +20,11 @@ static int NumWorldAnimEntityTrees = 0;        // size: 0x4, address: 0x804156FC
 static int MaxNumWorldAnimEntityTrees = 0;     // size: 0x4, address: 0x80415700
 static int NumWorldAnimEntityTreeInfos = 0;    // size: 0x4, address: 0x80415704
 static int MaxNumWorldAnimEntityTreeInfos = 0; // size: 0x4, address: 0x80415708
+
+// STRIPPED
+int GetMaxWorldAnimEntities() {
+    return MaxNumWorldAnimEntities;
+}
 
 void *CWorldAnimEntity::operator new(size_t size, const char *debug_name) {
     NumWorldAnimEntities++;
@@ -33,6 +39,11 @@ void CWorldAnimEntity::operator delete(void *ptr) {
     bFree(TheWorldAnimInstanceDirectory.GetWorldAnimEntitySlotPool(), ptr);
 }
 
+// STRIPPED
+int GetMaxNumWorldAnimEntityTrees() {
+    return MaxNumWorldAnimEntityTrees;
+}
+
 void *CWorldAnimEntityTree::operator new(size_t size, const char *debug_name) {
     NumWorldAnimEntityTrees++;
     if (NumWorldAnimEntityTrees > MaxNumWorldAnimEntityTrees) {
@@ -44,6 +55,11 @@ void *CWorldAnimEntityTree::operator new(size_t size, const char *debug_name) {
 void CWorldAnimEntityTree::operator delete(void *ptr) {
     NumWorldAnimEntityTrees--;
     bFree(TheWorldAnimInstanceDirectory.GetWorldAnimEntityTreeSlotPool(), ptr);
+}
+
+// STRIPPED
+int GetMaxNumWorldAnimEntityTreeInfos() {
+    return MaxNumWorldAnimEntityTreeInfos;
 }
 
 void *WorldAnimEntityTreeInfo::operator new(size_t size, const char *debug_name) {
@@ -516,7 +532,8 @@ int UnloaderWorldAnimDirectoryData(bChunk *chunk) {
     return 1;
 }
 
-CWorldAnimEntity *CWorldAnimEntityTree::GetEntityByNameHash(unsigned int namehash) {
+// STRIPPED
+CWorldAnimEntity *CWorldAnimEntityTree::GetEntityByNameHash(uint32 namehash) {
     for (bPNode *node = instantiated_world_anim_entities.GetHead(); node != instantiated_world_anim_entities.EndOfList(); node = node->GetNext()) {
         CWorldAnimEntity *entity = reinterpret_cast<CWorldAnimEntity *>(node->GetObject());
         if (entity->GetInstanceNameHash() == namehash) {
@@ -564,3 +581,6 @@ void CWorldAnimEntityTree::Stop() {
         }
     }
 }
+
+// STRIPPED
+float CWorldAnimEntityTree::GetAnimLengthInSeconds() {}

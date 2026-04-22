@@ -6,6 +6,11 @@
 #include "Speed/Indep/bWare/Inc/bMemory.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
+#ifdef EA_BUILD_A124
+// STRIPPED
+void DumpNFSAnimMemUsage() {}
+#endif
+
 void InitNFSAnimEngine() {
     CAnimEngineManager::Init();
     TheAnimPlayer.Init();
@@ -13,6 +18,24 @@ void InitNFSAnimEngine() {
 
 // STRIPPED
 void CloseNFSAnimEngine() {}
+
+// STRIPPED
+void ReportNFSAnimMemoryUsage() {}
+
+// STRIPPED
+void ResetNFSAnimMemory() {}
+
+// STRIPPED
+CAnimEngineManager::CAnimEngineManager() {}
+
+// STRIPPED
+CAnimEngineManager::~CAnimEngineManager() {}
+
+// STRIPPED
+void *MyEAGLNewOverride(size_t size, const char *name) {}
+
+// STRIPPED
+void MyEAGLDeleteOverride(void *ptr, size_t) {}
 
 void *MyEAGLMallocOverride(size_t size, const char *name) {
 #ifdef EA_BUILD_A124
@@ -32,5 +55,12 @@ void MyEAGLFreeOverride(void *ptr, size_t) {
 void CAnimEngineManager::Init() {
     EAGL4Internal::SetMallocOverride(&MyEAGLMallocOverride);
     EAGL4Internal::SetFreeOverride(&MyEAGLFreeOverride);
+#ifdef EA_BUILD_A124
+    EAGL4Anim::Init(0xC800, true);
+#else
     EAGL4Anim::Init(0x14000, false);
+#endif
 }
+
+// STRIPPED
+void CAnimEngineManager::Purge() {}
