@@ -14,6 +14,11 @@ struct WorldAnimInstanceDirectoryLayout {
     SlotPool *WorldAnimCtrlSlotPool;
 };
 
+// STRIPPED
+int GetMaxNumWorldAnimCtrls() {
+    return MaxNumWorldAnimCtrls;
+}
+
 void *CWorldAnimCtrl::operator new(size_t size, const char *debug_name) {
     NumWorldAnimCtrls++;
     if (NumWorldAnimCtrls > MaxNumWorldAnimCtrls) {
@@ -35,52 +40,12 @@ CWorldAnimCtrl::~CWorldAnimCtrl() {
     Purge();
 }
 
+// STRIPPED
+void CWorldAnimCtrl::Init() {}
+
 void CWorldAnimCtrl::Purge() {
     Cleanup();
     Clear();
-}
-
-void CWorldAnimCtrl::Play() {
-    PlayState = eACPS_PLAYING;
-}
-
-void CWorldAnimCtrl::Pause() {
-    PlayState = eACPS_PAUSED;
-}
-
-void CWorldAnimCtrl::Stop() {
-    m_evalTime = 0.0f;
-    PlayState = eACPS_STOPPED;
-}
-
-void CWorldAnimCtrl::SetLoopRange(uint32 loop_range_start, uint32 loop_range_end) {
-    m_loop_range_end = loop_range_end;
-    m_loop_range_start = loop_range_start;
-    m_flags |= 0x40;
-}
-
-float CWorldAnimCtrl::GetLoopRangeScaledStart() {
-    return static_cast<float>(m_loop_range_start) * GetEffectiveTimeScale();
-}
-
-float CWorldAnimCtrl::GetLoopRangeScaledEnd() {
-    return static_cast<float>(m_loop_range_end) * GetEffectiveTimeScale();
-}
-
-void CWorldAnimCtrl::ApplySpeedModifier(float speed_modifier) {
-    m_f_speed_modifier = speed_modifier;
-}
-
-void CWorldAnimCtrl::JumpToEndForTrigger() {
-    m_evalTime = m_animLength;
-    PlayState = eACPS_PAUSED;
-    PlayDirection = eACPD_REV;
-}
-
-void CWorldAnimCtrl::JumpToBeginForTrigger() {
-    PlayState = eACPS_PAUSED;
-    m_evalTime = 0.0f;
-    PlayDirection = eACPD_FWD;
 }
 
 void CWorldAnimCtrl::Clear() {
@@ -106,16 +71,6 @@ void CWorldAnimCtrl::Clear() {
     MasterDelayElapsed = 0.0f;
 }
 
-void CWorldAnimCtrl::Cleanup() {
-    m_animPart.Purge();
-    for (int i = 0; i < 4; i++) {
-        if (m_pFnAnim[i]) {
-            EAGL4Anim::MemoryPoolManager::DeleteFnAnim(m_pFnAnim[i]);
-            m_pFnAnim[i] = nullptr;
-        }
-    }
-}
-
 void CWorldAnimCtrl::SetEvalTime(float time) {
     m_evalTime = time;
     PlayDirection = eACPD_FWD;
@@ -134,9 +89,32 @@ void CWorldAnimCtrl::SetEvalTime(float time) {
     }
 }
 
-float CWorldAnimCtrl::GetAnimLengthInSeconds() {
-    return m_animLength / 30 / GetEffectiveTimeScale();
+void CWorldAnimCtrl::Cleanup() {
+    m_animPart.Purge();
+    for (int i = 0; i < 4; i++) {
+        if (m_pFnAnim[i]) {
+            EAGL4Anim::MemoryPoolManager::DeleteFnAnim(m_pFnAnim[i]);
+            m_pFnAnim[i] = nullptr;
+        }
+    }
 }
+
+void CWorldAnimCtrl::SetLoopRange(uint32 loop_range_start, uint32 loop_range_end) {
+    m_loop_range_end = loop_range_end;
+    m_loop_range_start = loop_range_start;
+    m_flags |= 0x40;
+}
+
+float CWorldAnimCtrl::GetLoopRangeScaledStart() {
+    return m_loop_range_start * GetEffectiveTimeScale();
+}
+
+float CWorldAnimCtrl::GetLoopRangeScaledEnd() {
+    return m_loop_range_end * GetEffectiveTimeScale();
+}
+
+// STRIPPED
+int CWorldAnimCtrl::CreateFnAnim(EAGL4Anim::AnimMemoryMap *memMap, int dof) {}
 
 int CWorldAnimCtrl::CreateFnAnimFromBank(EAGL4Anim::AnimBank *animBank, int animIndex, int dof) {
     m_pFnAnim[dof] = animBank->NewFnAnim(animIndex);
@@ -148,6 +126,58 @@ int CWorldAnimCtrl::CreateFnAnimFromBank(EAGL4Anim::AnimBank *animBank, int anim
     }
     return 0;
 }
+
+int CWorldAnimCtrl::CreateFnAnimFromNamehash(uint32 namehash, int dof) {
+    EAGL4Anim::AnimBank *animBank = nullptr;
+    int item_index = 0;
+    if (GetAnimFromBankByNamehash(namehash, &animBank, &item_index)) {
+        CreateFnAnimFromBank(animBank, item_index, dof);
+        m_isAllocated = 1;
+        return 1;
+    }
+    return 0;
+}
+
+void CWorldAnimCtrl::Play() {
+    PlayState = eACPS_PLAYING;
+}
+
+void CWorldAnimCtrl::Stop() {
+    m_evalTime = 0.0f;
+    PlayState = eACPS_STOPPED;
+}
+
+void CWorldAnimCtrl::Pause() {
+    PlayState = eACPS_PAUSED;
+}
+
+// STRIPPED
+void CWorldAnimCtrl::AdvanceAnim() {}
+
+// STRIPPED
+void CWorldAnimCtrl::GetFlagString(uint32 flag, char *buffer, int size) {}
+
+void CWorldAnimCtrl::JumpToEndForTrigger() {
+    m_evalTime = m_animLength;
+    PlayState = eACPS_PAUSED;
+    PlayDirection = eACPD_REV;
+}
+
+void CWorldAnimCtrl::JumpToBeginForTrigger() {
+    PlayState = eACPS_PAUSED;
+    m_evalTime = 0.0f;
+    PlayDirection = eACPD_FWD;
+}
+
+void CWorldAnimCtrl::ApplySpeedModifier(float speed_modifier) {
+    m_f_speed_modifier = speed_modifier;
+}
+
+// STRIPPED
+bool CWorldAnimCtrl::IsCurrentlyDelayingBeforeWorldStart() {}
+
+// STRIPPED
+bool CWorldAnimCtrl::IsCurrentlyDelayingBetweenLoops() {}
 
 // UNSOLVED
 int CWorldAnimCtrl::AdvanceAnimTime(float timestep) {
@@ -261,6 +291,23 @@ int CWorldAnimCtrl::AdvanceAnimTime(float timestep) {
     return result_anim_is_done;
 }
 
+// STRIPPED
+float CWorldAnimCtrl::GetEvalTimeInSeconds() {
+    return m_evalTime / 30 / GetEffectiveTimeScale();
+}
+
+// STRIPPED
+void CWorldAnimCtrl::SetEvalTimeInSeconds(float seconds) {
+    m_evalTime = seconds * 30 * GetEffectiveTimeScale();
+}
+
+float CWorldAnimCtrl::GetAnimLengthInSeconds() {
+    return m_animLength / 30 / GetEffectiveTimeScale();
+}
+
+// STRIPPED
+void CWorldAnimCtrl::UpdateAnim() {}
+
 int CWorldAnimCtrl::UpdateAnimPose() {
     EAGL4Anim::Skeleton *world_skel = m_animPart.GetSkeleton()->GetEAGLSkeleton();
     float *sqtBuffer = m_animPart.GetSQTptr();
@@ -293,13 +340,8 @@ int CWorldAnimCtrl::UpdateAnimPose() {
     return 0;
 }
 
-int CWorldAnimCtrl::CreateFnAnimFromNamehash(uint32 namehash, int dof) {
-    EAGL4Anim::AnimBank *animBank = nullptr;
-    int item_index = 0;
-    if (GetAnimFromBankByNamehash(namehash, &animBank, &item_index)) {
-        CreateFnAnimFromBank(animBank, item_index, dof);
-        m_isAllocated = 1;
-        return 1;
-    }
-    return 0;
-}
+// STRIPPED
+void CWorldAnimCtrl::PredictPositionAtTime(float time, bMatrix4 *world_position) {}
+
+// STRIPPED
+void CWorldAnimCtrl::DoSnapshot(ReplaySnapshot *snapshot) {}

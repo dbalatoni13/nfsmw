@@ -1,11 +1,11 @@
 #ifndef ANIMATION_ANIMCANDIDATES_H
 #define ANIMATION_ANIMCANDIDATES_H
 
-#include "Speed/Indep/bWare/Inc/bWare.hpp"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
 
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "Speed/Indep/Src/World/TrackPositionMarker.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 

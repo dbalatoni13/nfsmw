@@ -37,6 +37,11 @@ void CloseAnimSkelSlotPool() {
 #ifdef MILESTONE_OPT
 static int NumAnimSkels = 0;
 static int MaxNumAnimSkels = 0;
+
+// STRIPPED
+int GetMaxNumAnimSkels() {
+    return MaxNumAnimSkels;
+}
 #endif
 
 void *CAnimSkeleton::operator new(size_t size, const char *debug_name) {
@@ -108,6 +113,9 @@ void CAnimSkeleton::DynamicLoadResolve() {
         }
     }
 }
+
+// STRIPPED
+void CAnimSkeleton::PrintfSkeletonBoneData() {}
 
 CAnimSkeleton *GetSkeletonFromList(uint32 namehash) {
     CAnimSkeleton *skel_list = g_loadedSkeletonList.GetHead();

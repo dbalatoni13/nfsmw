@@ -1,7 +1,6 @@
 #ifndef ANIMATION_ANIMPLAYER_H
 #define ANIMATION_ANIMPLAYER_H
 
-#include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
@@ -9,17 +8,14 @@
 #include "AnimScene.hpp"
 #include "AnimWorldScene.hpp"
 #include "Speed/Indep/Src/Misc/ResourceLoader.hpp"
+#include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 
 class CAnimMarker : bTNode<CAnimMarker> {
   public:
-    CAnimMarker();
+    CAnimMarker(uint32 name_hash, float time);
     virtual ~CAnimMarker();
-    uint32 GetNameHash() {
-        return mNameHash;
-    };
-    float GetTime() {
-        return mTime;
-    };
+    uint32 GetNameHash();
+    float GetTime();
 
     static uint32 mMarkerHash_StartCountdown;
 

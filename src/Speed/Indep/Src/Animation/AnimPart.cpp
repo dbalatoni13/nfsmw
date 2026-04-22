@@ -16,10 +16,32 @@ CAnimPart::~CAnimPart() {
     Purge();
 }
 
+// STRIPPED
+void InitAnimPartSlotPool() {}
+
+// STRIPPED
+void CloseAnimPartSlotPool() {}
+
 #ifdef MILESTONE_OPT
 static int NumAnimParts = 0;
 static int MaxNumAnimParts = 0;
+
+// STRIPPED
+int GetMaxNumAnimParts() {
+    return MaxNumAnimParts;
+}
 #endif
+
+// STRIPPED
+void *CAnimPart::operator new(size_t size, const char *debug_name) {
+#ifdef MILESTONE_OPT
+    NumAnimParts++;
+    if (NumAnimParts > MaxNumAnimParts) {
+        MaxNumAnimParts = NumAnimParts;
+    }
+#endif
+    return bOMalloc(AnimPartSlotPool);
+}
 
 void CAnimPart::operator delete(void *ptr) {
 #ifdef MILESTONE_OPT

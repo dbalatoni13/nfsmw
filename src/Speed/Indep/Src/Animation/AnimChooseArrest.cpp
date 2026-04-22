@@ -245,6 +245,7 @@ void NISListenerActivity::MessageBusted(const MPerpBusted &message) {
             nis->StartLocation(markerPos, markerAngle);
             nis->Load(CAnimChooser::Arrest, sceneName, cameraTrack, true);
         }
+#ifndef EA_BUILD_A124
     } else {
         GRaceParameters *parms = GRaceStatus::Get().GetRaceParameters();
         if (!parms) {
@@ -252,5 +253,9 @@ void NISListenerActivity::MessageBusted(const MPerpBusted &message) {
         } else {
             new EPause(0, 1, 0);
         }
+#endif
     }
 }
+
+// STRIPPED
+bool GetNearestRoadCentre(UMath::Vector3 &centre, const struct UMath::Vector3 &pos) {}

@@ -28,6 +28,8 @@
 
 #include "Speed/Indep/Src/Animation/AnimPart.cpp"
 
+#include "Speed/Indep/Src/Animation/AnimPrint.cpp"
+
 #include "Speed/Indep/Src/Animation/AnimScene.cpp"
 
 #include "Speed/Indep/Src/Animation/AnimSkeleton.cpp"

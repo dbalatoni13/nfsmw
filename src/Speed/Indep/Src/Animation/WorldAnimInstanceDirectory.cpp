@@ -9,11 +9,12 @@
 extern int AnimCfg_DisableWorldAnimations;
 
 WorldAnimInstanceDirectory TheWorldAnimInstanceDirectory; // size: 0x50, address: 0x80457718
-bool PrintWorldAnimationStuff = false;                    // size: 0x1, address: 0x8041589C
-bool DisableWorldAnimations = false;                      // size: 0x1, address: 0x804156F0
 
 static int NumWorldAnimInstanceEntries = 0; // size: 0x4, address: 0x80415898
 static int MaxWorldAnimInstances = 0;       // size: 0x4, address: 0x80415894
+
+// STRIPPED
+int GetMaxSlotPoolSizes_ForInstances() {}
 
 void *WorldAnimInstanceEntry::operator new(size_t size, const char *debug_name) {
     NumWorldAnimInstanceEntries++;
@@ -27,6 +28,9 @@ void WorldAnimInstanceEntry::operator delete(void *ptr) {
     NumWorldAnimInstanceEntries--;
     bFree(TheWorldAnimInstanceDirectory.GetWorldAnimInstanceEntrySlotPool(), ptr);
 }
+
+// STRIPPED
+void DumpWorldAnimMemUsage() {}
 
 WorldAnimInstanceDirectory::WorldAnimInstanceDirectory() {
     mInitialized = false;
@@ -53,6 +57,9 @@ WorldAnimEntityTreeInfo *WorldAnimInstanceDirectory::GetAnimTreeInfo(uint32 anim
     return nullptr;
 }
 
+// STRIPPED
+bool GetAnimPosition(int instance_id, uint32 entity_hash, bVector3 *pos_out, bool *is_between_loops) {}
+
 void WorldAnimInstanceDirectory::AddLoadedAnimTreeInfo(WorldAnimEntityTreeInfo *anim_tree_info) {
     if (AnimCfg_DisableWorldAnimations || DisableWorldAnimations) {
         return;
@@ -62,6 +69,9 @@ void WorldAnimInstanceDirectory::AddLoadedAnimTreeInfo(WorldAnimEntityTreeInfo *
     }
     mLoadedWorldAnimTrees.AddTail(anim_tree_info);
 }
+
+// STRIPPED
+WorldAnimEntityInfo *WorldAnimInstanceDirectory::GetAnimEntityInfo(uint32 anim_entity_name_hash) {}
 
 void WorldAnimInstanceDirectory::AddLoadedAnimEntityInfo(WorldAnimEntityInfo *anim_entity_info) {
     if (AnimCfg_DisableWorldAnimations || DisableWorldAnimations) {
@@ -224,6 +234,10 @@ void WorldAnimInstanceDirectory::Init() {
 #endif
 }
 
+WorldAnimInstanceDirectory::~WorldAnimInstanceDirectory() {
+    DeInit(true, false);
+}
+
 void WorldAnimInstanceDirectory::DeInit(bool full_unload, bool quickrace_drag_restart) {
     if (AnimCfg_DisableWorldAnimations || DisableWorldAnimations || !full_unload) {
         return;
@@ -296,3 +310,9 @@ int UnloaderWorldAnimInstanceEntry(bChunk *chunk) {
 
     return 1;
 }
+
+// STRIPPED
+IControlScenario *WorldAnimInstanceDirectory::GetControlScenario(eControlScenarioType cst) {}
+
+// STRIPPED
+CWorldAnimEntityTree *WorldAnimInstanceDirectory::GetAnimationAssociatedWithTriggerZone(uint32 trigger_zone_hash) {}

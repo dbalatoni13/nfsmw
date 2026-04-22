@@ -45,6 +45,9 @@ EAGL4Anim::AnimBank *GetFirstAnimBank(const EAGL4::DynamicLoader *loader) {
     return firstBank;
 }
 
+// STRIPPED
+EAGL4Anim::AnimMemoryMap *CAnimBank::GetAnim(int bankID, int index) {}
+
 int CAnimBank::Initialize(char *data, int size) {
     m_pDynLoader = AnimBridgeNewDynamicLoader("EAGL4::DynamicLoder CAnimBank", data, size);
     m_DynLoaderSize = size;
@@ -79,9 +82,16 @@ void CAnimBank::Cleanup() {
     }
 }
 
+// STRIPPED
+void CAnimBank::PrintfAnimBankContents() {}
+
 void InitAnimBankSlotPool() {
     if (!AnimBankSlotPoolInitialized) {
+#ifdef EA_BUILD_A124
+        AnimBankSlotPool = bNewSlotPool(60, 81, "Anim_CNFSAnimBank_SlotPool", 0);
+#else
         AnimBankSlotPool = bNewSlotPool(60, 81, "Anim_CNFSAnimBank_SlotPool", GetVirtualMemoryAllocParams());
+#endif
         AnimBankSlotPoolInitialized = true;
     }
 }
@@ -94,15 +104,36 @@ void CloseAnimBankSlotPool() {
 
 bTList<CNFSAnimBank> g_loadedAnimBankList;
 
+#ifdef MILESTONE_OPT
+int NumAnimBanks = 0;
+int MaxNumAnimBanks = 0;
+
+// STRIPPED
+int GetMaxNumAnimBanks() {
+    return MaxNumAnimBanks;
+}
+#endif
+
 void *CNFSAnimBank::operator new(size_t size, const char *debug_name) {
     if (!AnimBankSlotPoolInitialized) {
         InitAnimBankSlotPool();
     }
 
+#ifdef MILESTONE_OPT
+    NumAnimBanks++;
+    if (MaxNumAnimBanks < NumAnimBanks) {
+        MaxNumAnimBanks = NumAnimBanks;
+    }
+#endif
+
     return bOMalloc(AnimBankSlotPool);
 }
 
 void CNFSAnimBank::operator delete(void *ptr) {
+#ifdef MILESTONE_OPT
+    NumAnimBanks--;
+#endif
+
     bFree(AnimBankSlotPool, ptr);
     if (bCountFreeSlots(AnimBankSlotPool) == bCountTotalSlots(AnimBankSlotPool)) {
         CloseAnimBankSlotPool();
@@ -160,6 +191,12 @@ int GetAnimFromBankByNamehash(uint32 namehash, EAGL4Anim::AnimBank **animBank, i
     }
     return false;
 }
+
+// STRIPPED
+struct AnimMemoryMap *GetAnimFromBank(uint32 namehash) {}
+
+// STRIPPED
+bool IsAnimInBank(uint32 namehash) {}
 
 int LoaderEAGLAnimations(bChunk *chunk) {
     if (chunk->GetID() == BCHUNK_EAGL_ANIMATIONS) {

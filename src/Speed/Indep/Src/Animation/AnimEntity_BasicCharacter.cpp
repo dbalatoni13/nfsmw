@@ -237,6 +237,15 @@ void CBasicCharacterAnimEntity::Purge() {
     }
 }
 
+// STRIPPED
+void CBasicCharacterAnimEntity::Play() {}
+
+// STRIPPED
+void CBasicCharacterAnimEntity::Stop() {}
+
+// STRIPPED
+bool CBasicCharacterAnimEntity::IsPlaying() {}
+
 void CBasicCharacterAnimEntity::SetTime(float time) {
     if (mAnimCtrl) {
         mAnimCtrl->SetEvalTime(0.0f);
@@ -359,6 +368,18 @@ void CBasicCharacterAnimEntity::RenderEffects(eView *view, int is_reflection) {
         view->Render(&shadow_poly, CharacterShadowTexture, eGetIdentityMatrix(), 0, 0.0f);
     }
 }
+
+// STRIPPED
+void CBasicCharacterAnimEntity::SetCurrentEvalTime(float time, bool in_seconds) {}
+
+// STRIPPED
+float CBasicCharacterAnimEntity::GetCurrentEvalTime(bool in_seconds) {}
+
+// STRIPPED
+float CBasicCharacterAnimEntity::GetNumSecondsUntilThisFrame(float frame_number) {}
+
+// STRIPPED
+float CBasicCharacterAnimEntity::GetNumSecondsBetweenFrames(float start_frame, float end_frame) {}
 
 void CBasicCharacterAnimEntity::FindWorldBonePosition(int bone, bVector3 *position) {
     bMatrix4 world_matrix(*mSpaceNode->GetWorldMatrix());

@@ -100,3 +100,6 @@ bool ANIM_GetWorldHeight(const UMath::Vector3 &pt, float &height, UMath::Vector3
         return true;
     }
 }
+
+// STRIPPED
+void MatrixFromNormal(const UMath::Vector3 &normal, const UMath::Vector4 &facing, UMath::Matrix4 &mat) {}

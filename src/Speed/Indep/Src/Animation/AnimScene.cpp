@@ -17,15 +17,9 @@
 
 uint32 skel_ROOT_hash = bStringHash("ROOT");
 extern int AnimCfg_DebugOutput;
-extern float NISCopCarDoorOpenAmount[4];
 
 bTList<CAnimSceneData> g_loadedAnimSceneDataList;
 CarAnimationState gCarAnimationStates[16];
-
-float gCopCarDoorAnim_CurrentTime[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-float gCopCarDoorAnim_AnimLength[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-float gCopCarDoorAnim_StartPos[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-float gCopCarDoorAnim_Delta[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 
 SlotPool *AnimPartSlotPool = nullptr;
 
@@ -54,45 +48,6 @@ void ResetCarAnimState(IVehicle *vehicle) {
     }
 }
 
-void StartCopDoorAnim(int door, float startPos, float AnimLength, float endPos) {
-    if (static_cast<unsigned int>(door) > 3) {
-        return;
-    }
-    gCopCarDoorAnim_CurrentTime[door] = 0.0f;
-    if (AnimLength > 0.0f) {
-        gCopCarDoorAnim_AnimLength[door] = AnimLength;
-        gCopCarDoorAnim_StartPos[door] = startPos;
-        gCopCarDoorAnim_Delta[door] = endPos - startPos;
-    } else {
-        gCopCarDoorAnim_AnimLength[door] = 0.0f;
-    }
-    NISCopCarDoorOpenAmount[door] = startPos;
-}
-
-void UpdateCopDoorPositions(float time) {
-    for (int door = 0; door < 4; door++) {
-        float animLength = gCopCarDoorAnim_AnimLength[door];
-        if (animLength != 0.0f) {
-            gCopCarDoorAnim_CurrentTime[door] = gCopCarDoorAnim_CurrentTime[door] + time;
-            if (gCopCarDoorAnim_CurrentTime[door] <= 0.0f) {
-                NISCopCarDoorOpenAmount[door] = gCopCarDoorAnim_StartPos[door];
-            } else if (gCopCarDoorAnim_CurrentTime[door] < animLength) {
-                float ratio = gCopCarDoorAnim_CurrentTime[door] / animLength;
-                NISCopCarDoorOpenAmount[door] = gCopCarDoorAnim_StartPos[door] + ratio * gCopCarDoorAnim_Delta[door];
-            } else {
-                gCopCarDoorAnim_AnimLength[door] = 0.0f;
-                NISCopCarDoorOpenAmount[door] = gCopCarDoorAnim_StartPos[door] + gCopCarDoorAnim_Delta[door];
-            }
-        }
-    }
-}
-
-CAnimSceneData::CAnimSceneData(bChunk *chunk)
-    : mChunk(chunk), //
-      mNisScene(nullptr) {}
-
-CAnimSceneData::~CAnimSceneData() {}
-
 CAnimSceneData *CAnimSceneData::FindAnimSceneData(uint32 anim_id) {
     CAnimSceneData *scene_data = static_cast<CAnimSceneData *>(g_loadedAnimSceneDataList.GetHead());
     while (scene_data != g_loadedAnimSceneDataList.EndOfList()) {
@@ -103,6 +58,12 @@ CAnimSceneData *CAnimSceneData::FindAnimSceneData(uint32 anim_id) {
     }
     return nullptr;
 }
+
+CAnimSceneData::CAnimSceneData(bChunk *chunk)
+    : mChunk(chunk), //
+      mNisScene(nullptr) {}
+
+CAnimSceneData::~CAnimSceneData() {}
 
 void CAnimSceneData::EndianSwapHeaderData() {
     bPlatEndianSwap(reinterpret_cast<int32 *>(mNisScene));
@@ -126,6 +87,9 @@ void CAnimSceneData::AddEntityData(void *data, int size) {
     CAnimEntityData *aed = new CAnimEntityData(*reinterpret_cast<unsigned int *>(data), data, size);
     mAnimEntityDataList.AddTail(aed);
 }
+
+// STRIPPED
+void CAnimSceneData::RemoveAllEntityData() {}
 
 CAnimSceneData *CreateAnimSceneData(bChunk *nested_chunk, bChunk *sub_chunk) {
     CAnimSceneData *anim_scene_data = new CAnimSceneData(nested_chunk);
@@ -185,6 +149,22 @@ int UnloaderAnimSceneData(bChunk *chunk) {
     return 0;
 }
 
+// STRIPPED
+CAnimMarker::CAnimMarker(uint32 name_hash, float time) {}
+
+// STRIPPED
+CAnimMarker::~CAnimMarker() {}
+
+// STRIPPED
+uint32 CAnimMarker::GetNameHash() {
+    return mNameHash;
+}
+
+// STRIPPED
+float CAnimMarker::GetTime() {
+    return mTime;
+};
+
 CAnimProperty::CAnimProperty(eAnimProperty type, bool enabled)
     : mType(type), //
       mEnabled(enabled) {}
@@ -203,8 +183,12 @@ bool CAnimProperty::IsEnabled() {
     return mEnabled != 0;
 }
 
-int CAnimScene::GetHandle() {
-    return mHandle;
+int CAnimScene::GenerateHandle() {
+    mHandleCounter++;
+    if (mHandleCounter > 0xFFFF) {
+        mHandleCounter = 1;
+    }
+    return mHandleCounter;
 }
 
 CAnimScene::CAnimScene(CAnimSceneData *anim_scene_data, int camera_track_number, int anim_candidate_type, int anim_candidate_index)
@@ -229,12 +213,8 @@ CAnimScene::CAnimScene(CAnimSceneData *anim_scene_data, int camera_track_number,
 
 CAnimScene::~CAnimScene() {}
 
-int CAnimScene::GenerateHandle() {
-    mHandleCounter++;
-    if (mHandleCounter > 0xFFFF) {
-        mHandleCounter = 1;
-    }
-    return mHandleCounter;
+int CAnimScene::GetHandle() {
+    return mHandle;
 }
 
 uint32 CAnimScene::GetAnimID() {
@@ -258,32 +238,8 @@ int CAnimScene::GetCameraTrackNumber() {
     return mCameraTrackNumber;
 }
 
-bool CAnimScene::Play() {
-    ChangePlayStatus(Playing);
-    return true;
-}
-
-bool CAnimScene::Stop() {
-    ChangePlayStatus(Stopped);
-    return true;
-}
-
-bool CAnimScene::Pause() {
-    ChangePlayStatus(Paused);
-    return true;
-}
-
-bool CAnimScene::UnPause() {
-    ChangePlayStatus(Playing);
-    return true;
-}
-
-bool CAnimScene::IsPlaying() {
-    return (uint32)mPlayStatus > (uint32)Paused;
-}
-
-bool CAnimScene::IsPaused() {
-    return mPlayStatus == Paused;
+const char *CAnimScene::GetAnimDescription() {
+    return mAnimSceneData->GetSceneInfo()->Description;
 }
 
 bool CAnimScene::SetPropertyEnabled(eAnimProperty property_id, bool enable) {
@@ -305,6 +261,11 @@ bool CAnimScene::IsPropertyEnabled(eAnimProperty property_id) {
         return false;
     }
     return anim_property->IsEnabled();
+}
+
+// STRIPPED
+bool CAnimScene::IsBoundToGame() {
+    return mIsBoundToGame;
 }
 
 bool CAnimScene::BindToGame() {
@@ -330,6 +291,96 @@ bool CAnimScene::UnBindToGame() {
     return true;
 }
 
+void CAnimScene::ChangePlayStatus(ePlayStatus new_status) {
+    ePlayStatus current_status = mPlayStatus;
+
+    switch (current_status) {
+        case Stopped:
+            if (new_status < Stopped) {
+                return;
+            }
+            if (new_status <= Paused) {
+                return;
+            }
+            if (new_status != Playing) {
+                return;
+            }
+            ResetTime();
+            BindToGame();
+            mPlayStatus = new_status;
+            return;
+        case Paused:
+            switch (new_status) {
+                case Paused:
+                    return;
+                case Stopped:
+                    mPlayStatus = new_status;
+                    UnBindToGame();
+                    ResetTime();
+                    return;
+                case Playing:
+                    break;
+                default:
+                    return;
+            }
+            break;
+        case Playing:
+            if (new_status == Paused) {
+                break;
+            }
+            if (new_status > Paused) {
+                return;
+            }
+            if (new_status != Stopped) {
+                return;
+            }
+            mPlayStatus = new_status;
+            UnBindToGame();
+            ResetTime();
+            return;
+        default:
+            return;
+    }
+    mPlayStatus = new_status;
+}
+
+// STRIPPED
+bool CAnimScene::Cue() {}
+
+bool CAnimScene::Play() {
+    ChangePlayStatus(Playing);
+    return true;
+}
+
+bool CAnimScene::Stop() {
+    ChangePlayStatus(Stopped);
+    return true;
+}
+
+bool CAnimScene::Pause() {
+    ChangePlayStatus(Paused);
+    return true;
+}
+
+bool CAnimScene::UnPause() {
+    ChangePlayStatus(Playing);
+    return true;
+}
+
+// STRIPPED
+bool CAnimScene::IsCued() {}
+
+bool CAnimScene::IsPlaying() {
+    return (uint32)mPlayStatus > (uint32)Paused;
+}
+
+// STRIPPED
+bool CAnimScene::IsStopped() {}
+
+bool CAnimScene::IsPaused() {
+    return mPlayStatus == Paused;
+}
+
 void CAnimScene::ResetTime() {
     SetTime(mTimeStart);
 }
@@ -349,6 +400,9 @@ void CAnimScene::SetTime(float time) {
     mTimeElapsed = time;
     mTimeDelta = 0.0f;
 }
+
+// STRIPPED
+void CAnimScene::GetTime(float &time) {}
 
 void CAnimScene::UpdateTime(float time_step) {
     if (!IsPlaying()) {
@@ -414,6 +468,9 @@ void CAnimScene::AddProperty(eAnimProperty property_id, bool enabled) {
     }
 }
 
+// STRIPPED
+void CAnimScene::RemoveProperties() {}
+
 CAnimProperty *CAnimScene::FindProperty(eAnimProperty property_id) {
     CAnimProperty *anim_property = static_cast<CAnimProperty *>(mAnimPropertyList.GetHead());
 
@@ -424,59 +481,6 @@ CAnimProperty *CAnimScene::FindProperty(eAnimProperty property_id) {
         anim_property = anim_property->GetNext();
     }
     return nullptr;
-}
-
-void CAnimScene::ChangePlayStatus(ePlayStatus new_status) {
-    ePlayStatus current_status = mPlayStatus;
-
-    switch (current_status) {
-        case Stopped:
-            if (new_status < Stopped) {
-                return;
-            }
-            if (new_status <= Paused) {
-                return;
-            }
-            if (new_status != Playing) {
-                return;
-            }
-            ResetTime();
-            BindToGame();
-            mPlayStatus = new_status;
-            return;
-        case Paused:
-            switch (new_status) {
-                case Paused:
-                    return;
-                case Stopped:
-                    mPlayStatus = new_status;
-                    UnBindToGame();
-                    ResetTime();
-                    return;
-                case Playing:
-                    break;
-                default:
-                    return;
-            }
-            break;
-        case Playing:
-            if (new_status == Paused) {
-                break;
-            }
-            if (new_status > Paused) {
-                return;
-            }
-            if (new_status != Stopped) {
-                return;
-            }
-            mPlayStatus = new_status;
-            UnBindToGame();
-            ResetTime();
-            return;
-        default:
-            return;
-    }
-    mPlayStatus = new_status;
 }
 
 bool CAnimScene::Init() {
@@ -537,7 +541,13 @@ bool CAnimScene::Purge() {
     return true;
 }
 
+// STRIPPED
+void CAnimScene::ForceCarToAnimCarPosition(Car *car, int car_num) {}
+
 void CAnimScene::ForcePlayerToAnimCarPosition(int player_num, int car_num) {}
+
+// STRIPPED
+// int GetPositionInRace(RacingCar *pRacingCar) {}
 
 void CAnimScene::ClearCarAnimStates() {
     for (int i = 0; i <= 15; i++) {
@@ -588,6 +598,9 @@ void CAnimScene::InitCarAnimStatesFromNIS() {
         }
     }
 }
+
+// STRIPPED
+int CAnimScene::FindCurrentWorldCarIndex(Car *car) {}
 
 void CAnimScene::SetCarAnimationPositions() {
     ClearCarAnimStates();
@@ -843,32 +856,4 @@ void RenderAnimSceneEffects(eView *view, int exc_flag) {
             scene->RenderEffects(view, exc_flag & 0x800);
         }
     }
-}
-
-float CAnimScene::GetTimeElapsed() {
-    return mTimeElapsed;
-}
-
-float CAnimScene::GetTimeStart() {
-    return mTimeStart;
-}
-
-float CAnimScene::GetTimeTotalLength() {
-    return mTimeTotalLength;
-}
-
-bool CAnimScene::IsControllingCamera() {
-    return mControllingCamera;
-}
-
-bool CAnimScene::IsCameraFixingElevation() {
-    return true;
-}
-
-const bMatrix4 &CAnimScene::GetSceneRotationMatrix() {
-    return mSceneRotationMatrix;
-}
-
-const bMatrix4 &CAnimScene::GetSceneTransformMatrix() {
-    return mSceneTransformMatrix;
 }

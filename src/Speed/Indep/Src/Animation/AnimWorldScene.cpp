@@ -6,9 +6,8 @@
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 extern int AnimCfg_DisableWorldAnimations;
-extern bool DisableWorldAnimations;
-extern bool PrintWorldAnimationStuff;
-extern RaceParameters TheRaceParameters;
+bool PrintWorldAnimationStuff = false;
+RaceParameters TheRaceParameters;
 
 CAnimWorldScene::CAnimWorldScene() : mHandle(0) {
     mHandle = bStringHash("WorldAnimations");
@@ -19,6 +18,9 @@ void CAnimWorldScene::ClearAllAnimations() {
         delete mInstancedAnimTreeList.RemoveTail();
     }
 }
+
+// STRIPPED
+CWorldAnimEntityTree *CAnimWorldScene::GetAnimTree(int instance_id) {}
 
 CWorldAnimEntityTree *CAnimWorldScene::GetAnimTreeFromHash(uint32 instanceHash) {
     for (CWorldAnimEntityTree *tree = mInstancedAnimTreeList.GetHead(); tree != mInstancedAnimTreeList.EndOfList(); tree = tree->GetNext()) {
@@ -32,6 +34,20 @@ CWorldAnimEntityTree *CAnimWorldScene::GetAnimTreeFromHash(uint32 instanceHash) 
 CAnimWorldScene::~CAnimWorldScene() {
     ClearAllAnimations();
 }
+
+void CAnimWorldScene::UpdateTime(float time_step) {
+    if (!AnimCfg_DisableWorldAnimations && !DisableWorldAnimations) {
+        for (CWorldAnimEntityTree *tree = mInstancedAnimTreeList.GetHead(); tree != mInstancedAnimTreeList.EndOfList(); tree = tree->GetNext()) {
+            for (bPNode *node = tree->instantiated_world_anim_entities.GetHead(); node != tree->instantiated_world_anim_entities.EndOfList();
+                 node = node->GetNext()) {
+                reinterpret_cast<IAnimEntity *>(node->GetpObject())->UpdateTimeStep(time_step);
+            }
+        }
+    }
+}
+
+// STRIPPED
+bMatrix4 *CAnimWorldScene::GetAnimLocation(int SceneID) {}
 
 CWorldAnimEntityTree *CAnimWorldScene::InstantiateAnimTree(WorldAnimInstance *instance) {
     if (AnimCfg_DisableWorldAnimations || DisableWorldAnimations) {
@@ -159,31 +175,22 @@ CWorldAnimEntityTree *CAnimWorldScene::InstantiateAnimTree(WorldAnimInstance *in
     return new_tree;
 }
 
-void CAnimWorldScene::UpdateTime(float time_step) {
-    if (!AnimCfg_DisableWorldAnimations && !DisableWorldAnimations) {
-        for (CWorldAnimEntityTree *tree = mInstancedAnimTreeList.GetHead(); tree != mInstancedAnimTreeList.EndOfList(); tree = tree->GetNext()) {
-            for (bPNode *node = tree->instantiated_world_anim_entities.GetHead(); node != tree->instantiated_world_anim_entities.EndOfList();
-                 node = node->GetNext()) {
-                reinterpret_cast<IAnimEntity *>(node->GetpObject())->UpdateTimeStep(time_step);
-            }
-        }
-    }
-}
-
 void ControlWorldAnim(unsigned int fAnimTreeNameHash, float fTimeSet, bool fAnimPause, bool fAnimHide) {
     if (TheAnimPlayer.GetWorldAnimScene()) {
-        CWorldAnimEntityTree *tree = TheAnimPlayer.GetWorldAnimScene()->GetAnimTreeFromHash(fAnimTreeNameHash);
-        if (tree) {
-            if (fTimeSet >= 0.0f) {
-                tree->SetTime(fTimeSet);
-            }
-            if (fAnimHide) {
-                tree->Stop();
-            } else if (fAnimPause) {
-                tree->Pause();
-            } else {
-                tree->Play();
-            }
+        CWorldAnimEntityTree *animTree = TheAnimPlayer.GetWorldAnimScene()->GetAnimTreeFromHash(fAnimTreeNameHash);
+        if (!animTree) {
+            return;
+        }
+
+        if (fTimeSet >= 0.0f) {
+            animTree->SetTime(fTimeSet);
+        }
+        if (fAnimHide) {
+            animTree->Stop();
+        } else if (fAnimPause) {
+            animTree->Pause();
+        } else {
+            animTree->Play();
         }
     }
 }
@@ -239,3 +246,6 @@ void CloseAllGarageDoors() {
     ControlWorldAnim(bStringHash("EN_Chopshop_12"), 0.0f, true, false);
     ControlWorldAnim(bStringHash("EN_Chopshop_55"), 0.0f, true, false);
 }
+
+// STRIPPED
+void CAnimWorldScene::DoSnapshot(ReplaySnapshot *snapshot) {}
