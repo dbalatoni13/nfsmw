@@ -8,6 +8,7 @@
 // total size: 0xC
 class GTimer {
   public:
+    float GetTime() const;
   private:
     float mStartTime; // offset 0x0, size 0x4
     float mTotalTime; // offset 0x4, size 0x4

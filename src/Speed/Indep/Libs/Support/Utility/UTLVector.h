@@ -9,7 +9,7 @@
 #include <cstddef>
 
 namespace UTL {
-template <typename T, unsigned int Alignment = 16> class Vector {
+template <typename T, int Alignment = 16> class Vector {
   public:
     typedef T value_type;
     typedef value_type *pointer;
@@ -57,6 +57,14 @@ template <typename T, unsigned int Alignment = 16> class Vector {
 
     iterator end() {
         return mBegin + mSize;
+    }
+
+    reference operator[](size_type idx) {
+        return *(mBegin + idx);
+    }
+
+    const_reference operator[](size_type idx) const {
+        return *(mBegin + idx);
     }
 
     void push_back(value_type const &val) {

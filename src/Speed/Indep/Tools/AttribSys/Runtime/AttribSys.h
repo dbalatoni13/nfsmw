@@ -349,6 +349,10 @@ class Array {
     // TODO is this really overriden?
     void operator delete(void *ptr) {}
 
+#ifdef _MSC_VER
+    void operator delete(void *mem, void *ptr) {}
+#endif
+
     ~Array() {
         if (IsReferences()) {
             ITypeHandler *typeHandler = GetTypeDesc().GetHandler();
@@ -773,7 +777,7 @@ class Instance {
         return mCollection;
     }
 
-    void SetDefaultLayout(unsigned int bytes) {
+    void SetDefaultLayout(unsigned int bytes) const {
         if (mLayoutPtr == nullptr) {
             mLayoutPtr = const_cast<void *>(DefaultDataArea(bytes));
         }
@@ -820,7 +824,7 @@ class Instance {
 
     UTL::COM::IUnknown *mOwner;    // offset 0x0, size 0x4
     const Collection *mCollection; // offset 0x4, size 0x4
-    void *mLayoutPtr;              // offset 0x8, size 0x4
+    mutable void *mLayoutPtr;              // offset 0x8, size 0x4
     uint32_t mMsgPort;             // offset 0xC, size 0x4
     uint16_t mFlags;               // offset 0x10, size 0x2
     mutable uint16_t mLocks;       // offset 0x12, size 0x2

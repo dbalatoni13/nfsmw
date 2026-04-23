@@ -5,11 +5,24 @@
 #pragma once
 #endif
 
+// total size: 0xC
+struct FEEvent {
+    unsigned long EventID; // offset 0x0, size 0x4
+    unsigned long Target;  // offset 0x4, size 0x4
+    unsigned long tTime;   // offset 0x8, size 0x4
+};
+
 // total size: 0x8
 class FEEventList {
-  private:
+  public:
     int Count;              // offset 0x0, size 0x4
-    struct FEEvent *pEvent; // offset 0x4, size 0x4
+    FEEvent* pEvent;        // offset 0x4, size 0x4
+
+    inline FEEventList() : Count(0), pEvent(nullptr) {}
+    void operator=(FEEventList& rhs);
+    void SetCount(long NewCount);
+    inline unsigned long GetCount() { return Count; }
+    inline FEEvent& operator[](int Index) { return pEvent[Index]; }
 };
 
 #endif

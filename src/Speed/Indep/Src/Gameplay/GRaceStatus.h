@@ -29,6 +29,27 @@ struct GRacerInfo {
         return mPctRaceComplete;
     }
 
+    ISimable *GetSimable() const {
+        return ISimable::FindInstance(mhSimable);
+    }
+    float GetFinishingSpeed() const { return mFinishingSpeed; }
+    float GetPointTotal() const { return mPointTotal; }
+#ifndef EA_BUILD_A124
+    float GetSplitTime(int split) const { return mSplitTimes[split]; }
+    int GetSplitRanking(int split) const { return mSplitRankings[split]; }
+    const float *GetSplitTimes() const { return mSplitTimes; }
+    const int *GetSplitRankings() const { return mSplitRankings; }
+#endif
+    const GTimer &GetRaceTimer() const { return mRaceTimer; }
+
+    bool GetIsKnockedOut() const { return mKnockedOut; }
+    bool GetIsTotalled() const { return mTotalled; }
+    bool GetIsEngineBlown() const { return mEngineBlown; }
+    bool GetIsBusted() const { return mBusted; }
+    bool IsFinishedRacing() const { return mFinishedRacing; }
+    const char *GetName() const { return mName; }
+    int GetRanking() const { return mRanking; }
+
   private:
     HSIMABLE mhSimable;              // offset 0x0, size 0x4
     GCharacter *mGameCharacter;      // offset 0x4, size 0x4
@@ -82,6 +103,22 @@ struct GRacerInfo {
 };
 
 DECLARE_CONTAINER_TYPE(ID_GRaceStatusTriggerList);
+
+enum CopDensity {
+    kRaceCops_Off = 0,
+    kRaceCops_Light = 1,
+    kRaceCops_Medium = 2,
+    kRaceCops_Heavy = 3,
+    kRaceCops_NumDensities = 4,
+};
+
+enum Region {
+    kRaceRegion_None = -1,
+    kRaceRegion_College = 0,
+    kRaceRegion_Coastal = 1,
+    kRaceRegion_City = 2,
+    kRaceRegion_NumRegions = 3,
+};
 
 // total size: 0x14
 class GRaceParameters {
@@ -231,6 +268,7 @@ class GRaceParameters {
     GRace::Type GetRaceType() const;
 
     // enum Region GetRegion() const;
+    Region GetRegion() const;
 
     void ExtractPosition(Attrib::Gen::gameplay &collection, UMath::Vector3 &pos) const;
 
@@ -238,7 +276,7 @@ class GRaceParameters {
 
     unsigned int GetEventHash() const;
 
-    // bool GetIsAvailable(enum Context context) const;
+    bool GetIsAvailable(GRace::Context context) const;
 
     bool GetIsSunsetRace() const;
 
@@ -250,7 +288,7 @@ class GRaceParameters {
 
     // enum Difficulty GetDifficulty() const;
 
-    // enum CopDensity GetCopDensity() const;
+    CopDensity GetCopDensity() const;
 
     bool GetCanBeReversed() const;
 
@@ -468,12 +506,36 @@ class GRaceStatus : public UTL::COM::Object, public IVehicleCache {
         return mRaceParms ? mRaceParms->GetRaceType() : GRace::kRaceType_None;
     }
 
+    float GetRaceLength() const {
+        return fRaceLength;
+    }
+
+    int GetNumTollbooths() const {
+        return mNumTollbooths;
+    }
+
+    int GetNumSpeedTraps() const {
+        return nSpeedTraps;
+    }
+
     static bool IsChallengeRace() {
         return Exists() && Get().GetRaceType() == GRace::kRaceType_Challenge;
     }
 
-    PlayMode GetPlayMode() {
+    static bool IsDragRace() {
+        return Exists() && Get().GetRaceType() == GRace::kRaceType_Drag;
+    }
+
+    static bool IsTollboothRace() {
+        return Exists() && Get().GetRaceType() == GRace::kRaceType_Tollbooth;
+    }
+
+    PlayMode GetPlayMode() const {
         return mPlayMode;
+    }
+
+    bool GetIsTimeLimited() const {
+        return mRaceParms && mRaceParms->GetTimeLimit() > 0.0f;
     }
 
     unsigned int GetTrafficPattern() const {

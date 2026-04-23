@@ -542,8 +542,22 @@ config.libs = [
             Object(NonMatching, "Speed/Indep/SourceLists/zTrack.cpp"),
             Object(NonMatching, "Speed/Indep/SourceLists/zWorld.cpp"),
             Object(NonMatching, "Speed/Indep/SourceLists/zWorld2.cpp"),
-            Object(NonMatching, "Speed/Indep/SourceLists/zOnline.cpp"),
-            Object(NonMatching, "Speed/Indep/SourceLists/zFeOverlay.cpp"),
+            Object(
+                NonMatching,
+                "Speed/Indep/SourceLists/zOnline.cpp",
+                section_renames=(
+                    (".text", ".over"),
+                    (".rela.text", ".rela.over"),
+                ),
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/SourceLists/zFeOverlay.cpp",
+                section_renames=(
+                    (".text", ".over"),
+                    (".rela.text", ".rela.over"),
+                ),
+            ),
         ],
     },
     {

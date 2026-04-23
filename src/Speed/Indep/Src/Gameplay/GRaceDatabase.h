@@ -38,7 +38,9 @@ class GRaceBin {
 
     GVault *GetChildVault() const;
 
+    GRaceBin* GetBin(unsigned int index);
     int GetBinNumber() const;
+    int GetBinNumber(int index);
 
     int GetBossReputation() const;
 
@@ -104,6 +106,8 @@ class GRaceBin {
     BinStats mStats;                  // offset 0x18, size 0x4
 };
 
+class GActivity;
+
 // total size: 0x40
 class GRaceDatabase {
   public:
@@ -119,10 +123,15 @@ class GRaceDatabase {
     static void Init();
 
     GRaceCustom *GetStartupRace();
+    void ClearStartupRace();
     void SetStartupRace(GRaceCustom *custom, Context context);
     void FreeCustomRace(GRaceCustom *custom);
     GRaceParameters *GetRaceFromHash(unsigned int hash);
+    GRaceParameters *GetRaceFromActivity(GActivity *activity);
     GRaceCustom *AllocCustomRace(GRaceParameters *parms);
+
+    unsigned int GetRaceCount() const;
+    GRaceParameters *GetRaceParameters(unsigned int index) const;
 
     static GRaceDatabase &Get() {
         return *mObj;
@@ -135,6 +144,43 @@ class GRaceDatabase {
     GRaceParameters *GetRaceFromName(const char *name) {
         return GetRaceFromHash(Attrib::StringHash32(name));
     }
+
+    bool IsCareerRaceComplete(unsigned int eventHash) {
+        return CheckRaceScoreFlags(eventHash, kCompleted_ContextCareer);
+    }
+
+    bool IsQuickRaceComplete(unsigned int eventHash) {
+        return CheckRaceScoreFlags(eventHash, kCompleted_ContextQuickRace);
+    }
+
+    const char *GetBurgerKingRace() const { return "19.8.31"; }
+
+    const char *GetDDayStartRace() const {
+        return sDDayRaces[0];
+    }
+
+    const char *GetDDayEndRace() const {
+        return sDDayRaces[7];
+    }
+
+    const char *GetFinalBossRace() const {
+        return sDDayRaces[4];
+    }
+
+    bool CheckRaceScoreFlags(unsigned int eventHash, ScoreFlags mask);
+    const char *GetNextDDayRace();
+    struct GRaceSaveInfo* GetScoreInfo(unsigned int eventHash);
+    struct GRaceSaveInfo *GetScoreInfo();
+    unsigned int GetScoreInfoCount();
+    void LoadBestScores(struct GRaceSaveInfo *entries, unsigned int count);
+    void SimulateDDayComplete();
+    void ClearRaceScores();
+
+    unsigned int GetBinCount();
+    GRaceBin* GetBin(unsigned int index);
+    GRaceBin* GetBinNumber(int number);
+
+    static const char sDDayRaces[8][5];
 
   private:
     unsigned int mRaceCountStatic;           // offset 0x0, size 0x4
@@ -151,6 +197,7 @@ class GRaceDatabase {
     unsigned int *mInitialUnlockHash;        // offset 0x38, size 0x4
     struct GRaceSaveInfo *mRaceScoreInfo;    // offset 0x3C, size 0x4
 
+  public:
     static GRaceDatabase *mObj;
 };
 

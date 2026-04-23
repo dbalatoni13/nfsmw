@@ -150,7 +150,7 @@ float bGetTickerDifference(unsigned int start_ticks, unsigned int end_ticks) {
 }
 
 void bMutex::Create() {
-    MUTEX_create(reinterpret_cast<MUTEX *>(this));
+    reinterpret_cast<RealSystem::Mutex *>(this)->Create();
 }
 
 void bMutex::Destroy() {

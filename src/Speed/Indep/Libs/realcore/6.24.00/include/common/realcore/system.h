@@ -1,6 +1,8 @@
 #ifndef REALCORE_COMMON_SYSTEM_H
 #define REALCORE_COMMON_SYSTEM_H
 
+extern "C" void bMemSet(void *dest, unsigned char pattern, unsigned int size);
+
 // TODO move away
 namespace RealSystem {
 
@@ -23,6 +25,7 @@ struct MUTEX {
 };
 
 inline bool MUTEX_create(MUTEX *m) {
+    bMemSet(m, sizeof(MUTEX), 0);
     reinterpret_cast<RealSystem::Mutex *>(m)->Create();
     return true;
 }

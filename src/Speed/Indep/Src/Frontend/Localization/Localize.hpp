@@ -27,6 +27,7 @@ enum eLanguages {
     eLANGUAGE_MAX = 16,
 };
 
+const char *GetLocalizedString(unsigned int string_label);
 char *GetTranslatedString(int label_hash);
 void LoadCurrentLanguage();
 void InitLocalization();

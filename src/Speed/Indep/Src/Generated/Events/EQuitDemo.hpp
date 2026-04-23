@@ -6,6 +6,7 @@
 #endif
 
 #include "Speed/Indep/Src/Main/Event.h"
+#include "Speed/Indep/Src/Misc/DemoDisc.hpp"
 
 // total size: 0xc
 class EQuitDemo : public Event {

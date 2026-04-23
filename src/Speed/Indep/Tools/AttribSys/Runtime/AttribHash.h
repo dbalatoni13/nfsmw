@@ -42,6 +42,10 @@ class StringKey {
         return mHash32;
     }
 
+    const char *GetString() const {
+        return mString;
+    }
+
     bool IsValid() const {
         return mString != nullptr;
     }

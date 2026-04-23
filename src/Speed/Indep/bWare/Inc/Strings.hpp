@@ -75,6 +75,7 @@ class bSharedStringPool {
 
 char *bStrNCpy(char *to, const char *from, int m);
 char *bSafeStrCpy(char *to, const char *from, int max_size);
+char *bStrCat(char *dest, const char *s1, const char *s2);
 int bStrCmp(const char *s1, const char *s2);
 int bStrNCmp(const char *s1, const char *s2, int n);
 int bStrNICmp(const char *s1, const char *s2, int n);

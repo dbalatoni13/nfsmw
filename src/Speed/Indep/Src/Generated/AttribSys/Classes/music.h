@@ -62,6 +62,10 @@ struct music : Instance {
         Instance::Change(refspec);
     }
 
+    void ChangeWithDefault(const RefSpec &refspec) {
+        Instance::ChangeWithDefault(refspec);
+    }
+
     static Key ClassKey() {
         return 0x565465f8;
     }

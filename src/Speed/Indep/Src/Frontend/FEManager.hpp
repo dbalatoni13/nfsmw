@@ -64,11 +64,19 @@ class FEManager {
 
     void ExitOnlineGameplayBasedOnConnection();
 
-    //  void SetFirstScreen(const char *pPackageName, int arg, unsigned int controlMask) {}
+    void SetFirstScreen(const char *pPackageName, int arg, unsigned int controlMask) {
+        mFirstScreen = pPackageName;
+        mFirstScreenArg = arg;
+        mFirstScreenMask = controlMask;
+    }
 
-    //  void RequestBootFlow() {}
+    void RequestBootFlow() {
+        mFirstBoot = true;
+    }
 
-    //  eGarageType GetPreviousGarageType() {}
+    eGarageType GetPreviousGarageType() {
+        return mPreviousGarageType;
+    }
 
     ResourceFile *GetGarageBackground() {
         return mGarageBackground;
@@ -78,11 +86,17 @@ class FEManager {
         mGarageBackground = pBackground;
     }
 
-    //  void SetEATraxFirstButton(bool onOff) {}
+    void SetEATraxFirstButton(bool onOff) {
+        mEATraxFirstButton = onOff;
+    }
 
-    // static  bool IsPaused() {}
+    static inline bool IsPaused() {
+        return mInstance->mPauseRequest > 0;
+    }
 
-    // static  int GetNumPauseRequests() {}
+    static int GetNumPauseRequests() {
+        return mPauseRequest;
+    }
 
     // static  const char *GetPauseReason(int idx) {}
 
@@ -99,13 +113,21 @@ class FEManager {
         }
     }
 
-    //  void SuppressControllerError(bool b) {}
+    void SuppressControllerError(bool b) {
+        bSuppressControllerError = b;
+    }
 
-    //  void AllowControllerError(bool b) {}
+    void AllowControllerError(bool b) {
+        bAllowControllerError = b;
+    }
 
-    //  bool IsAllowingControllerError() {}
+    bool IsAllowingControllerError() {
+        return bAllowControllerError;
+    }
 
-    //  bool IsFirstBoot() {}
+    bool IsFirstBoot() {
+        return mFirstBoot;
+    }
 
     //  ~FEManager() {}
 
@@ -126,6 +148,33 @@ class FEManager {
     bool mFirstBoot;                 // offset 0x40, size 0x1
     int mEATraxDelay;                // offset 0x44, size 0x4
     bool mEATraxFirstButton;         // offset 0x48, size 0x1
+};
+
+struct RideInfo;
+
+enum eSetRideInfoReasons {
+    SET_RIDE_INFO_REASON_VINYL = 0,
+    SET_RIDE_INFO_REASON_LOAD_CAR = 1,
+    SET_RIDE_INFO_REASON_CATCHALL = 2,
+};
+
+enum eCarViewerWhichCar {
+    eCARVIEWER_PLAYER1_CAR = 0,
+    eCARVIEWER_PLAYER2_CAR = 1,
+};
+
+struct GarageMainScreen;
+
+struct CarViewer {
+    static GarageMainScreen *FindWhichScreenToUpdate(eCarViewerWhichCar which_car);
+    static void SetRideInfo(RideInfo *ride, eSetRideInfoReasons reason, eCarViewerWhichCar which_car);
+    static void CancelCarLoad(eCarViewerWhichCar which_car);
+    static RideInfo *GetRideInfo(eCarViewerWhichCar which_car);
+    static void HideAllCars();
+    static void ShowAllCars();
+    static void ShowCarScreen();
+    static void UnshowCarScreen();
+    static bool haveLoadedOnce;
 };
 
 #endif
