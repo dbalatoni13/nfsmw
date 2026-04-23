@@ -5,7 +5,6 @@
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 
 extern bool BuildRegion_IsPal();
-extern bool eIsWidescreen();
 extern char *bStrStr(const char *s1, const char *s2);
 
 extern const char *sBootFlowNTSC[];
@@ -39,8 +38,7 @@ void BootFlowManager::Destroy() {
     g_pEAXSound->PlayFEMusic(-1);
 }
 
-BootFlowManager::~BootFlowManager() {
-}
+BootFlowManager::~BootFlowManager() {}
 
 BootFlowManager::BootFlowManager() {
     if (!BuildRegion_IsPal()) {

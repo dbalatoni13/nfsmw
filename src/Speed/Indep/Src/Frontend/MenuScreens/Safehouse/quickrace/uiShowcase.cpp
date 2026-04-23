@@ -1,10 +1,8 @@
-// OWNED BY zFeOverlay AGENT - DO NOT MODIFY OR EMPTY
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiShowcase.hpp"
 #include "Speed/Indep/Src/Input/IOModule.h"
 #include "Speed/Indep/Src/Input/ISteeringWheel.h"
 
 extern void FEngSetButtonTexture(FEImage *img, unsigned int hash);
-extern bool eIsWidescreen();
 
 const char *Showcase::FromPackage;
 unsigned int Showcase::FromArgs;
@@ -13,9 +11,10 @@ unsigned int Showcase::BlackListNumber;
 int Showcase::FromFilter;
 void *Showcase::FromColor[3];
 
-Showcase::Showcase(ScreenConstructorData *sd) : MenuScreen(sd) //
-    , RivalStreamer(sd->PackageFilename, false)
-{
+Showcase::Showcase(ScreenConstructorData *sd)
+    : MenuScreen(sd) //
+      ,
+      RivalStreamer(sd->PackageFilename, false) {
     if (eIsWidescreen()) {
         cFEng::Get()->QueuePackageMessage(bStringHash("WidescreenFix"), GetPackageName(), 0);
     }

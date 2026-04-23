@@ -1,4 +1,3 @@
-// OWNED BY zFeOverlay AGENT - DO NOT MODIFY OR EMPTY
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiQRChallengeSeries.hpp"
 
 #include "Speed/Indep/Src/FEng/cFEng.h"
@@ -15,7 +14,7 @@ extern unsigned int FEngHashString(const char *, ...);
 extern void FEAnyTutorialScreen_LaunchMovie(const char *movie, const char *pkg);
 
 class RaceStarter {
-public:
+  public:
     static void StartRace();
 };
 extern const char *gTUTORIAL_MOVIE_TOLLBOOTH;
@@ -32,9 +31,10 @@ void ChallengeDatum::NotificationMessage(unsigned long msg, FEObject *pObj, unsi
 
 UIQRChallengeSeries::UIQRChallengeSeries(ScreenConstructorData *sd)
     : ArrayScrollerMenu(sd, 4, 3, true) //
-    , prev_race_hash(0) //
-    , pMovieName(0)
-{
+      ,
+      prev_race_hash(0) //
+      ,
+      pMovieName(0) {
     theChallengeRace = nullptr;
     int numSlots = GetWidth() * GetHeight();
     for (int i = 0; i < numSlots; i++) {
@@ -49,8 +49,7 @@ UIQRChallengeSeries::UIQRChallengeSeries(ScreenConstructorData *sd)
     Setup();
 }
 
-UIQRChallengeSeries::~UIQRChallengeSeries() {
-}
+UIQRChallengeSeries::~UIQRChallengeSeries() {}
 
 eMenuSoundTriggers UIQRChallengeSeries::NotifySoundMessage(unsigned long msg, eMenuSoundTriggers maybe) {
     ArrayScrollerMenu::NotifySoundMessage(msg, maybe);
@@ -63,72 +62,72 @@ eMenuSoundTriggers UIQRChallengeSeries::NotifySoundMessage(unsigned long msg, eM
 void UIQRChallengeSeries::NotificationMessage(unsigned long msg, FEObject *obj, unsigned long param1, unsigned long param2) {
     ArrayScrollerMenu::NotificationMessage(msg, obj, param1, param2);
     switch (msg) {
-    case 0xc98356ba:
-        TrackMapStreamer.UpdateAnimation();
-        break;
-    case 0xc407210:
-        if (!theChallengeRace) {
-            g_pEAXSound->PlayUISoundFX(static_cast<eMenuSoundTriggers>(7));
-            return;
+        case 0xc98356ba:
+            TrackMapStreamer.UpdateAnimation();
+            break;
+        case 0xc407210:
+            if (!theChallengeRace) {
+                g_pEAXSound->PlayUISoundFX(static_cast<eMenuSoundTriggers>(7));
+                return;
+            }
+            DialogInterface::ShowTwoButtons(GetPackageName(), "", static_cast<eDialogTitle>(1), 0x70e01038, 0x417b25e4, 0xd05fc3a3, 0x34dc1bcf,
+                                            0x34dc1bcf, static_cast<eDialogFirstButtons>(1), 0x77cf03c5);
+            break;
+        case 0xc519bfc3:
+            if (static_cast<ChallengeDatum *>(currentDatum)->race->GetChallengeType() != 0) {
+                return;
+            }
+            FEngSetScript(GetPackageName(), 0x99344537, 0x16a259, true);
+            FEAnyTutorialScreen_LaunchMovie(gTUTORIAL_MOVIE_TOLLBOOTH, GetPackageName());
+            break;
+        case 0x1a2826e1:
+            FEDatabase->GetPlayerSettings(0)->Transmission = 0;
+            goto start_race;
+        case 0x5f5e3886:
+            FEDatabase->GetPlayerSettings(0)->Transmission = 1;
+            goto start_race;
+        case 0xd05fc3a3: {
+            signed char port = static_cast<signed char>(FEngMapJoyParamToJoyport(param1));
+            FEDatabase->SetPlayersJoystickPort(0, port);
+            if (FEDatabase->GetPlayerSettings(0)->TransmissionPromptOn != 0) {
+                ChooseTransmission();
+                return;
+            }
         }
-        DialogInterface::ShowTwoButtons(GetPackageName(), "", static_cast<eDialogTitle>(1),
-            0x70e01038, 0x417b25e4, 0xd05fc3a3, 0x34dc1bcf, 0x34dc1bcf, static_cast<eDialogFirstButtons>(1), 0x77cf03c5);
-        break;
-    case 0xc519bfc3:
-        if (static_cast<ChallengeDatum *>(currentDatum)->race->GetChallengeType() != 0) {
-            return;
-        }
-        FEngSetScript(GetPackageName(), 0x99344537, 0x16a259, true);
-        FEAnyTutorialScreen_LaunchMovie(gTUTORIAL_MOVIE_TOLLBOOTH, GetPackageName());
-        break;
-    case 0x1a2826e1:
-        FEDatabase->GetPlayerSettings(0)->Transmission = 0;
-        goto start_race;
-    case 0x5f5e3886:
-        FEDatabase->GetPlayerSettings(0)->Transmission = 1;
-        goto start_race;
-    case 0xd05fc3a3: {
-        signed char port = static_cast<signed char>(FEngMapJoyParamToJoyport(param1));
-        FEDatabase->SetPlayersJoystickPort(0, port);
-        if (FEDatabase->GetPlayerSettings(0)->TransmissionPromptOn != 0) {
-            ChooseTransmission();
-            return;
-        }
-    }
-start_race:
-        {
+        start_race: {
             GRaceCustom *race = GRaceDatabase::Get().AllocCustomRace(theChallengeRace);
             GRaceDatabase::Get().SetStartupRace(race, kRaceContext_QuickRace);
             GRaceDatabase::Get().FreeCustomRace(race);
             RaceStarter::StartRace();
-        }
-        break;
-    case 0x911ab364:
-        cFEng::Get()->QueuePackageSwitch("FeQrPkg", 0, 0, false);
-        break;
-    case 0xc3960eb9:
-        FEngSetScript(GetPackageName(), 0x99344537, 0x1744b3, true);
-        break;
+        } break;
+        case 0x911ab364:
+            cFEng::Get()->QueuePackageSwitch("FeQrPkg", 0, 0, false);
+            break;
+        case 0xc3960eb9:
+            FEngSetScript(GetPackageName(), 0x99344537, 0x1744b3, true);
+            break;
     }
 }
 
 void UIQRChallengeSeries::ChooseTransmission() {
-    DialogInterface::ShowTwoButtons(GetPackageName(), "", static_cast<eDialogTitle>(3),
-        0x317d3005, 0x8cd532a0, 0x5f5e3886, 0x1a2826e1, 0x34dc1bcf,
-        (eDialogFirstButtons)(FEDatabase->GetPlayerSettings(0)->Transmission == 0), 0x6f5401d1);
+    DialogInterface::ShowTwoButtons(GetPackageName(), "", static_cast<eDialogTitle>(3), 0x317d3005, 0x8cd532a0, 0x5f5e3886, 0x1a2826e1, 0x34dc1bcf,
+                                    (eDialogFirstButtons)(FEDatabase->GetPlayerSettings(0)->Transmission == 0), 0x6f5401d1);
 }
 
 void UIQRChallengeSeries::RefreshHeader() {
     ArrayScrollerMenu::RefreshHeader();
-    if (!currentDatum) return;
+    if (!currentDatum)
+        return;
 
-    int pos = data.TraversebList(currentDatum);
+    // TODO
+    int pos; // = data.TraversebList(currentDatum);
     FEPrintf(GetPackageName(), 0x5a856a34, "%d", pos);
     FEPrintf(GetPackageName(), 0x2d4d22c8, "%d", GetNumDatum());
 
     ChallengeDatum *cd = static_cast<ChallengeDatum *>(currentDatum);
     GRaceParameters *race = cd->race;
-    if (!race || prev_race_hash == race->GetEventHash()) return;
+    if (!race || prev_race_hash == race->GetEventHash())
+        return;
 
     prev_race_hash = race->GetEventHash();
     FEPrintf(GetPackageName(), 0x13c45e, "%.0f", race->GetCashValue());
@@ -174,7 +173,8 @@ void UIQRChallengeSeries::RefreshHeader() {
 
     if (static_cast<ChallengeDatum *>(currentDatum)->IsLocked()) {
         cFEng::Get()->QueuePackageMessage(0xc5dd9d68, GetPackageName(), nullptr);
-        int lockedPos = data.TraversebList(currentDatum);
+        // TODO
+        int lockedPos; // = data.TraversebList(currentDatum);
         int index = lockedPos - 1;
         int page = (lockedPos / 5) * 5;
         if (lockedPos < 61) {
@@ -227,13 +227,18 @@ void UIQRChallengeSeries::AddRace(GRaceParameters *race) {
 bool UIQRChallengeSeries::IsRaceValidForMike(GRaceParameters *parms) {
     int build = GetMikeMannBuild();
     if (build == 1) {
-        if (bStrCmp(parms->GetEventID(), "16_1_1_circuit") == 0) return true;
-        if (bStrCmp(parms->GetEventID(), "16_1_2_sprint") == 0) return true;
-        if (bStrCmp(parms->GetEventID(), "16_1_3_drag") == 0) return true;
-        if (bStrCmp(parms->GetEventID(), "16_1_4_lap_ko") == 0) return true;
+        if (bStrCmp(parms->GetEventID(), "16_1_1_circuit") == 0)
+            return true;
+        if (bStrCmp(parms->GetEventID(), "16_1_2_sprint") == 0)
+            return true;
+        if (bStrCmp(parms->GetEventID(), "16_1_3_drag") == 0)
+            return true;
+        if (bStrCmp(parms->GetEventID(), "16_1_4_lap_ko") == 0)
+            return true;
         return bStrCmp(parms->GetEventID(), "16_1_5_tollbooth") == 0;
     } else if (GetMikeMannBuild() == 2) {
-        if (bStrICmp(parms->GetEventID(), "16_1_4_lap_ko") == 0) return true;
+        if (bStrICmp(parms->GetEventID(), "16_1_4_lap_ko") == 0)
+            return true;
         return bStrICmp(parms->GetEventID(), "16_1_6_speedtrap") == 0;
     }
     return true;

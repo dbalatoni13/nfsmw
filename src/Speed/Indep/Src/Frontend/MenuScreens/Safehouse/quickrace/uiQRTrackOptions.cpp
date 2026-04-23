@@ -1,4 +1,3 @@
-// OWNED BY zFeOverlay AGENT - DO NOT MODIFY OR EMPTY
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiQRTrackOptions.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/feWidget.hpp"
@@ -75,54 +74,55 @@ UIQRTrackOptions::UIQRTrackOptions(ScreenConstructorData *sd) : UIWidgetMenu(sd)
 void UIQRTrackOptions::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
     UIWidgetMenu::NotificationMessage(msg, pobj, param1, param2);
     switch (msg) {
-    case 0x406415e3:
-        if (!(FEDatabase->IsOnlineMode()) && !(FEDatabase->IsLANMode())) {
-            GRaceCustom *custom = GRaceDatabase_mObj->AllocCustomRace(race);
-            GRaceCustom_SetCopsEnabled(custom, false);
-            RaceSettings *settings = FEDatabase->GetQuickRaceSettings(race->GetRaceType());
-            FEDatabase->FillCustomRace(custom, settings);
-            bool isSplitScreen = false;
-            if (FEDatabase->IsSplitScreenMode()) {
-                isSplitScreen = FEDatabase->iNumPlayers == 2;
+        case 0x406415e3:
+            if (!(FEDatabase->IsOnlineMode()) && !(FEDatabase->IsLANMode())) {
+                GRaceCustom *custom = GRaceDatabase_mObj->AllocCustomRace(race);
+                GRaceCustom_SetCopsEnabled(custom, false);
+                RaceSettings *settings = FEDatabase->GetQuickRaceSettings(race->GetRaceType());
+                FEDatabase->FillCustomRace(custom, settings);
+                bool isSplitScreen = false;
+                if (FEDatabase->IsSplitScreenMode()) {
+                    isSplitScreen = FEDatabase->iNumPlayers == 2;
+                }
+                if (isSplitScreen) {
+                    GRaceCustom_SetNumOpponents(custom, 1);
+                }
+                GRaceDatabase_mObj->SetStartupRace(custom, kRaceContext_QuickRace);
+                GRaceDatabase_mObj->FreeCustomRace(custom);
             }
-            if (isSplitScreen) {
-                GRaceCustom_SetNumOpponents(custom, 1);
+            {
+                bool isSplitScreen = false;
+                if (FEDatabase->IsSplitScreenMode()) {
+                    isSplitScreen = FEDatabase->iNumPlayers == 2;
+                }
+                if (isSplitScreen) {
+                    cFEng_mInstance->QueuePackageSwitch("PressStart.fng", 0, 0, false);
+                } else {
+                    cFEng_mInstance->QueuePackageSwitch("Car_Select.fng", 0, 0, false);
+                }
             }
-            GRaceDatabase_mObj->SetStartupRace(custom, kRaceContext_QuickRace);
-            GRaceDatabase_mObj->FreeCustomRace(custom);
+            break;
+        case 0x911ab364:
+            cFEng_mInstance->QueuePackageSwitch("Track_Select.fng", 0, 0, false);
+            break;
+        case 0xc519bfc4: {
+            const char *locStr = GetLocalizedString(0x8aef5ae8);
+            DialogInterface::ShowTwoButtons(GetPackageName(), "", dialog_alert, 0x70e01038, 0x417b25e4, 0xd05fc3a3, 0x34dc1bcf, 0x34dc1bcf,
+                                            static_cast<eDialogFirstButtons>(1), locStr);
+            break;
         }
-        {
-            bool isSplitScreen = false;
-            if (FEDatabase->IsSplitScreenMode()) {
-                isSplitScreen = FEDatabase->iNumPlayers == 2;
+        case 0xd05fc3a3:
+            FEDatabase->DefaultRaceSettings();
+            {
+                int count = Options.CountElements();
+                for (int i = 0; i < count; i++) {
+                    FEWidget *w = static_cast<FEWidget *>(Options.GetNode(i));
+                    w->Draw();
+                }
             }
-            if (isSplitScreen) {
-                cFEng_mInstance->QueuePackageSwitch("PressStart.fng", 0, 0, false);
-            } else {
-                cFEng_mInstance->QueuePackageSwitch("Car_Select.fng", 0, 0, false);
-            }
-        }
-        break;
-    case 0x911ab364:
-        cFEng_mInstance->QueuePackageSwitch("Track_Select.fng", 0, 0, false);
-        break;
-    case 0xc519bfc4: {
-        const char *locStr = GetLocalizedString(0x8aef5ae8);
-        DialogInterface::ShowTwoButtons(GetPackageName(), "", dialog_alert, 0x70e01038, 0x417b25e4, 0xd05fc3a3, 0x34dc1bcf, 0x34dc1bcf, static_cast<eDialogFirstButtons>(1), locStr);
-        break;
-    }
-    case 0xd05fc3a3:
-        FEDatabase->DefaultRaceSettings();
-        {
-            int count = Options.TraversebList(nullptr);
-            for (int i = 0; i < count; i++) {
-                FEWidget *w = static_cast<FEWidget *>(Options.GetNode(i));
-                w->Draw();
-            }
-        }
-        break;
-    case 0x34dc1bcf:
-        break;
+            break;
+        case 0x34dc1bcf:
+            break;
     }
 }
 
@@ -155,19 +155,31 @@ void UIQRTrackOptions::Setup() {
     unsigned int titleHash = 0;
     GRace::Type type = race->GetRaceType();
     switch (type) {
-        case GRace::kRaceType_P2P: titleHash = 0xb80bfc8a; break;
-        case GRace::kRaceType_Circuit: titleHash = 0xa6ed015d; break;
-        case GRace::kRaceType_Drag: titleHash = 0xec86e188; break;
-        case GRace::kRaceType_Knockout: titleHash = 0xcc959b8; break;
-        case GRace::kRaceType_Tollbooth: titleHash = 0x141edfe1; break;
-        case GRace::kRaceType_SpeedTrap: titleHash = 0xf2745852; break;
-        default: break;
+        case GRace::kRaceType_P2P:
+            titleHash = 0xb80bfc8a;
+            break;
+        case GRace::kRaceType_Circuit:
+            titleHash = 0xa6ed015d;
+            break;
+        case GRace::kRaceType_Drag:
+            titleHash = 0xec86e188;
+            break;
+        case GRace::kRaceType_Knockout:
+            titleHash = 0xcc959b8;
+            break;
+        case GRace::kRaceType_Tollbooth:
+            titleHash = 0x141edfe1;
+            break;
+        case GRace::kRaceType_SpeedTrap:
+            titleHash = 0xf2745852;
+            break;
+        default:
+            break;
     }
     FEngSetLanguageHash(GetPackageName(), 0x42adb44c, titleHash);
 }
 
-void UIQRTrackOptions::BoilerPlateOnline(const bool &boAddLaps) {
-}
+void UIQRTrackOptions::BoilerPlateOnline(const bool &boAddLaps) {}
 
 void UIQRTrackOptions::SetupCircuit() {
     if (race->GetCanBeReversed()) {
@@ -354,8 +366,7 @@ TrackDirection::~TrackDirection() {}
 // --- SplitScreen ---
 
 struct SplitScreen : public IconOption {
-    SplitScreen(unsigned int tex_hash, unsigned int name_hash, unsigned int desc_hash)
-        : IconOption(tex_hash, name_hash, desc_hash) {}
+    SplitScreen(unsigned int tex_hash, unsigned int name_hash, unsigned int desc_hash) : IconOption(tex_hash, name_hash, desc_hash) {}
     ~SplitScreen() override;
     void React(const char *pkg_name, unsigned int data, FEObject *obj, unsigned int param1, unsigned int param2) override;
 };
@@ -433,15 +444,15 @@ void AISkill::Draw() {
     RaceSettings *settings = FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(0xb));
     unsigned char skill = settings->AISkill;
     switch (skill) {
-    case 0:
-        hash = 0x61973e01;
-        break;
-    case 1:
-        hash = 0x3747f6d0;
-        break;
-    case 2:
-        hash = 0x6198e2ee;
-        break;
+        case 0:
+            hash = 0x61973e01;
+            break;
+        case 1:
+            hash = 0x3747f6d0;
+            break;
+        case 2:
+            hash = 0x6198e2ee;
+            break;
     }
     FEngSetLanguageHash(pTitle, 0x4d156786);
     FEngSetLanguageHash(pData, hash);
@@ -498,18 +509,18 @@ void TrafficLevel::Draw() {
     RaceSettings *settings = FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(0xb));
     unsigned char level = settings->TrafficDensity;
     switch (level) {
-    case 0:
-        hash = 0x8cdc3937;
-        break;
-    case 1:
-        hash = 0x73c615a3;
-        break;
-    case 2:
-        hash = 0xa2cca838;
-        break;
-    case 3:
-        hash = 0x61d1c5a5;
-        break;
+        case 0:
+            hash = 0x8cdc3937;
+            break;
+        case 1:
+            hash = 0x73c615a3;
+            break;
+        case 2:
+            hash = 0xa2cca838;
+            break;
+        case 3:
+            hash = 0x61d1c5a5;
+            break;
     }
     FEngSetLanguageHash(pData, hash);
     FEngSetLanguageHash(pTitle, 0xeb9dfc09);

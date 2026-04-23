@@ -65,7 +65,9 @@ class Timer {
         return *this;
     }
 
-    // Timer &operator-() {}
+    Timer operator-(const Timer &t) const {
+        return Timer(PackedTime - t.PackedTime);
+    }
 
     void ResetLow() {
         this->PackedTime = 0;

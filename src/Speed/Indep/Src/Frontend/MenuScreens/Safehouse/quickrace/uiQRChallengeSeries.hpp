@@ -1,4 +1,3 @@
-// OWNED BY zFeOverlay AGENT - do not empty or overwrite
 #ifndef FRONTEND_MENUSCREENS_SAFEHOUSE_QUICKRACE_UIQRCHALLENGESERIES_H
 #define FRONTEND_MENUSCREENS_SAFEHOUSE_QUICKRACE_UIQRCHALLENGESERIES_H
 
@@ -17,7 +16,8 @@ struct FEMultiImage;
 struct ChallengeDatum : public ArrayDatum {
     ChallengeDatum(unsigned int hash, unsigned int desc, GRaceParameters *race)
         : ArrayDatum(hash, desc) //
-        , race(race) {}
+          ,
+          race(race) {}
 
     ~ChallengeDatum() override {}
 
@@ -40,10 +40,10 @@ struct UIQRChallengeSeries : public ArrayScrollerMenu {
     bool IsRaceValidForMike(GRaceParameters *parms);
     void Setup();
 
-    unsigned int prev_race_hash;          // offset 0xE8, size 0x4
-    FEMultiImage *TrackMap;               // offset 0xEC, size 0x4
-    UITrackMapStreamer TrackMapStreamer;  // offset 0xF0, size 0xDC
-    char *pMovieName;                     // offset 0x1CC, size 0x4
+    unsigned int prev_race_hash;         // offset 0xE8, size 0x4
+    FEMultiImage *TrackMap;              // offset 0xEC, size 0x4
+    UITrackMapStreamer TrackMapStreamer; // offset 0xF0, size 0xDC
+    char *pMovieName;                    // offset 0x1CC, size 0x4
 };
 
 #endif

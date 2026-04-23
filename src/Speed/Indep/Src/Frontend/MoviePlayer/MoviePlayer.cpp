@@ -9,19 +9,15 @@ struct TextureInfo;
 struct Shape;
 struct DECODER;
 
-extern TrackStreamer TheTrackStreamer;
-extern bool IsSoundEnabled;
-extern int SkipMovies;
-extern bool ShutJosieUp;
 extern TextureInfo MovieTextureInfo;
-extern void* RCMPDecodeBuffer;
+extern void *RCMPDecodeBuffer;
 
-extern int bStrNICmp(const char*, const char*, int);
+extern int bStrNICmp(const char *, const char *, int);
 
-typedef void* (*RCMP_AllocFunc)(const char*, int, int, int, int);
-typedef void (*RCMP_FreeFunc)(void*);
+typedef void *(*RCMP_AllocFunc)(const char *, int, int, int, int);
+typedef void (*RCMP_FreeFunc)(void *);
 
-void* RCMP_PlayerAllocAlign(const char*, int, int, int, int);
+void *RCMP_PlayerAllocAlign(const char *, int, int, int, int);
 extern RCMP_FreeFunc RCMP_PlayerFree_func;
 
 struct RCMP_System {
@@ -32,20 +28,19 @@ struct RCMP_System {
 extern RCMP_System __4RCMP_rcmp_sys;
 
 struct MovieVolumeEntry {
-    const char* name;
+    const char *name;
     unsigned int volume;
 };
 extern MovieVolumeEntry MovieVolumeArray[];
 
 extern void PlatFinishMovie();
-extern void PlatSetFirstMovieFrame(TextureInfo*, Shape*, bool);
+extern void PlatSetFirstMovieFrame(TextureInfo *, Shape *, bool);
 extern unsigned int RCMP_GetMaxFramesOutStanding();
-extern void RCMP_PlayerFree(void*);
+extern void RCMP_PlayerFree(void *);
 extern unsigned int bGetTicker();
 extern float bGetTickerDifference(unsigned int);
-extern void* bMalloc(int, int);
-extern void bFree(void*);
-extern int GetVideoMode();
+extern void *bMalloc(int, int);
+extern void bFree(void *);
 extern void eWaitUntilRenderingDone();
 extern void NotifyFirstFrame_SubTitler();
 extern void SoundPause(bool pause, eSNDPAUSE_REASON reason);
@@ -53,7 +48,7 @@ extern void SYNCTASK_run();
 extern void THREAD_yield(int);
 
 namespace RealShape {
-void SetAllocator(EA::Allocator::IAllocator*);
+void SetAllocator(EA::Allocator::IAllocator *);
 }
 
 class CarLoader {
@@ -63,13 +58,13 @@ class CarLoader {
 extern CarLoader TheCarLoader;
 extern int CarLoaderMemoryPoolNumber;
 
-void* GamecubeMaybeAllocateFromCarLoader(int size, const char* name, int alloc_params) {
+void *GamecubeMaybeAllocateFromCarLoader(int size, const char *name, int alloc_params) {
     bool track_stream_pool_exists = TheTrackStreamer.HasMemoryPool();
     if ((track_stream_pool_exists && size <= bLargestMalloc(7)) || size <= bLargestMalloc(0)) {
         return nullptr;
     }
     TheCarLoader.MakeSpaceInPool(size);
-    void* ptr = bMalloc(size, name, __LINE__, (CarLoaderMemoryPoolNumber & 0xf) | alloc_params);
+    void *ptr = bMalloc(size, name, __LINE__, (CarLoaderMemoryPoolNumber & 0xf) | alloc_params);
     if (ptr != nullptr) {
         return ptr;
     }
@@ -78,17 +73,15 @@ void* GamecubeMaybeAllocateFromCarLoader(int size, const char* name, int alloc_p
 
 // AV_PLAYER member functions not declared in header (using mangled names)
 extern "C" {
-AV_PLAYER* __Q24RCMP9AV_PLAYERPCciQ34RCMP9AV_PLAYER9LOAD_ENUMQ34RCMP9AV_PLAYER10SOUND_ENUM(
-    void*, const char*, int, int, int);
-FRAME* GetFrame__Q24RCMP9AV_PLAYERf(AV_PLAYER*, float);
-int IsTimeForDecode__Q24RCMP9AV_PLAYER(AV_PLAYER*);
-int IsAudioFinished__Q24RCMP9AV_PLAYER(AV_PLAYER*);
-void ReleaseFrame__Q24RCMP7DECODERPQ24RCMP5FRAME(DECODER*, FRAME*);
-void FillInTextureInfo__11MoviePlayerPUiP11TextureInfoPQ29RealShape5Shape(
-    MoviePlayer*, unsigned int*, TextureInfo*, Shape*);
+AV_PLAYER *__Q24RCMP9AV_PLAYERPCciQ34RCMP9AV_PLAYER9LOAD_ENUMQ34RCMP9AV_PLAYER10SOUND_ENUM(void *, const char *, int, int, int);
+FRAME *GetFrame__Q24RCMP9AV_PLAYERf(AV_PLAYER *, float);
+int IsTimeForDecode__Q24RCMP9AV_PLAYER(AV_PLAYER *);
+int IsAudioFinished__Q24RCMP9AV_PLAYER(AV_PLAYER *);
+void ReleaseFrame__Q24RCMP7DECODERPQ24RCMP5FRAME(DECODER *, FRAME *);
+void FillInTextureInfo__11MoviePlayerPUiP11TextureInfoPQ29RealShape5Shape(MoviePlayer *, unsigned int *, TextureInfo *, Shape *);
 }
 
-MoviePlayer* gMoviePlayer;
+MoviePlayer *gMoviePlayer;
 unsigned int gMovieStartTime = 0xFFFFFFFF;
 ShapeMemoryAllocator gShapeMemoryAllocator;
 
@@ -153,7 +146,7 @@ MoviePlayer::~MoviePlayer() {
     PlatFinishMovie();
 }
 
-void MoviePlayer::Init(Settings& newSettings) {
+void MoviePlayer::Init(Settings &newSettings) {
     mSettings.activeController = newSettings.activeController;
     mSettings.bufferSize = newSettings.bufferSize;
     mSettings.loop = newSettings.loop;
@@ -196,12 +189,12 @@ unsigned int MoviePlayer::GetMillisecondsPerFrame() {
 int MoviePlayer::GetMovieCategoryVolume() {
     unsigned int vol = 0x7F;
     for (int i = 0; i < 0x26; i++) {
-        const char* name = MovieVolumeArray[i].name;
+        const char *name = MovieVolumeArray[i].name;
         int len = bStrLen(name);
         if (bStrNICmp(name, mSettings.filename, len) == 0) {
             vol = MovieVolumeArray[i].volume;
             if (ShutJosieUp) {
-                const char* name2 = MovieVolumeArray[i].name;
+                const char *name2 = MovieVolumeArray[i].name;
                 int len2 = bStrLen(name2);
                 if (bStrNICmp(name2, "josie", len2) == 0) {
                     vol = 0;
@@ -221,9 +214,9 @@ void MoviePlayer::Play() {
             loadType = 1;
         }
         int soundType = mSettings.sound == false;
-        void* mem = __4RCMP_rcmp_sys.AllocMem("avplayer", 0x94, 0, 0, __4RCMP_rcmp_sys.memClass);
-        fPlayer = __Q24RCMP9AV_PLAYERPCciQ34RCMP9AV_PLAYER9LOAD_ENUMQ34RCMP9AV_PLAYER10SOUND_ENUM(
-            mem, mSettings.filename, mSettings.bufferSize, loadType, soundType);
+        void *mem = __4RCMP_rcmp_sys.AllocMem("avplayer", 0x94, 0, 0, __4RCMP_rcmp_sys.memClass);
+        fPlayer = __Q24RCMP9AV_PLAYERPCciQ34RCMP9AV_PLAYER9LOAD_ENUMQ34RCMP9AV_PLAYER10SOUND_ENUM(mem, mSettings.filename, mSettings.bufferSize,
+                                                                                                  loadType, soundType);
         HandleFatalError();
         if (fPlayer == nullptr) {
             fStatus = 2;
@@ -242,19 +235,18 @@ void MoviePlayer::Play() {
     }
     cFEng::Get()->QueueGameMessage(0xc3960eb9, nullptr, 0xff);
     return;
-curframe_found:
-    {
-        Shape* shape = *reinterpret_cast<Shape**>(reinterpret_cast<char*>(CurFrame) + 4);
-        PlatSetFirstMovieFrame(&MovieTextureInfo, shape, mSettings.type == 0);
-        NotifyFirstFrame_SubTitler();
-        fStatus = 5;
-        fLiveStatus = 5;
-        fPlayer->UnPause();
-    }
+curframe_found: {
+    Shape *shape = *reinterpret_cast<Shape **>(reinterpret_cast<char *>(CurFrame) + 4);
+    PlatSetFirstMovieFrame(&MovieTextureInfo, shape, mSettings.type == 0);
+    NotifyFirstFrame_SubTitler();
+    fStatus = 5;
+    fLiveStatus = 5;
+    fPlayer->UnPause();
+}
 }
 
 void MoviePlayer::GetFirstFrame() {
-    AV_PLAYER* player = fPlayer;
+    AV_PLAYER *player = fPlayer;
     unsigned int maxFrames = RCMP_GetMaxFramesOutStanding();
     int msPerFrame = GetMillisecondsPerFrame();
     CurFrame = player->GetFirstFrame(maxFrames, msPerFrame << 1);
@@ -284,7 +276,7 @@ void MoviePlayer::Update() {
                 delete fPlayer;
             }
             fPlayer = nullptr;
-            void* buf = RCMPDecodeBuffer;
+            void *buf = RCMPDecodeBuffer;
             RCMP_PlayerFree(buf);
             RCMPDecodeBuffer = nullptr;
             ResetTimer();
@@ -302,9 +294,9 @@ void MoviePlayer::UpdateFunction() {
         SYNCTASK_run();
         THREAD_yield(0);
         if (IsTimeForDecode__Q24RCMP9AV_PLAYER(fPlayer) && CurFrame != nullptr) {
-            DECODER* decoder = *reinterpret_cast<DECODER**>(reinterpret_cast<char*>(fPlayer) + 0x64);
+            DECODER *decoder = *reinterpret_cast<DECODER **>(reinterpret_cast<char *>(fPlayer) + 0x64);
             ReleaseFrame__Q24RCMP7DECODERPQ24RCMP5FRAME(decoder, CurFrame);
-            float goalFrame = *reinterpret_cast<float*>(reinterpret_cast<char*>(fPlayer) + 0x48);
+            float goalFrame = *reinterpret_cast<float *>(reinterpret_cast<char *>(fPlayer) + 0x48);
             CurFrame = GetFrame__Q24RCMP9AV_PLAYERf(fPlayer, goalFrame);
         } else {
             MovieFinished = true;
@@ -312,10 +304,10 @@ void MoviePlayer::UpdateFunction() {
         if (CurFrame == nullptr) {
             finished = IsAudioFinished__Q24RCMP9AV_PLAYER(fPlayer);
         } else {
-            Shape* shape = *reinterpret_cast<Shape**>(reinterpret_cast<char*>(CurFrame) + 4);
+            Shape *shape = *reinterpret_cast<Shape **>(reinterpret_cast<char *>(CurFrame) + 4);
             if (!MovieFinished) {
-                FillInTextureInfo__11MoviePlayerPUiP11TextureInfoPQ29RealShape5Shape(
-                    this, reinterpret_cast<unsigned int*>(RCMPDecodeBuffer), &MovieTextureInfo, shape);
+                FillInTextureInfo__11MoviePlayerPUiP11TextureInfoPQ29RealShape5Shape(this, reinterpret_cast<unsigned int *>(RCMPDecodeBuffer),
+                                                                                     &MovieTextureInfo, shape);
             }
         }
         HandleFatalError();
@@ -337,11 +329,11 @@ bool GiveTheMoviePlayerBandwidth() {
     return result;
 }
 
-void* ShapeMemoryAllocator::Alloc(unsigned int size, const EA::TagValuePair& flags) {
-    const char* name = "";
+void *ShapeMemoryAllocator::Alloc(unsigned int size, const EA::TagValuePair &flags) {
+    const char *name = "";
     int allocation_params = 0x40;
     int offset = 0;
-    const EA::TagValuePair* p = &flags;
+    const EA::TagValuePair *p = &flags;
     while (p != nullptr) {
         unsigned int tag = p->mTag;
         if (tag == 2) {
@@ -351,10 +343,10 @@ void* ShapeMemoryAllocator::Alloc(unsigned int size, const EA::TagValuePair& fla
             goto tag_gt_2;
         }
         if (tag == 1) {
-            name = static_cast<const char*>(p->mValue.mPointer);
+            name = static_cast<const char *>(p->mValue.mPointer);
             goto next;
         }
-next:
+    next:
         p = p->mNext;
         continue;
 
@@ -375,7 +367,7 @@ next:
         allocation_params |= (p->mValue.mInt & 0x1FFC) << 6;
         goto next;
     }
-    void* maybe = GamecubeMaybeAllocateFromCarLoader(size, name, allocation_params);
+    void *maybe = GamecubeMaybeAllocateFromCarLoader(size, name, allocation_params);
     if (maybe == nullptr) {
         if (TheTrackStreamer.HasMemoryPool()) {
             maybe = TheTrackStreamer.AllocateUserMemory(size, "shape_mem", offset);
@@ -386,9 +378,8 @@ next:
     return maybe;
 }
 
-void ShapeMemoryAllocator::Free(void* pBlock, unsigned int size) {
-    if (!TheTrackStreamer.HasMemoryPool() ||
-        (pBlock != nullptr && !TheTrackStreamer.IsUserMemory(pBlock))) {
+void ShapeMemoryAllocator::Free(void *pBlock, unsigned int size) {
+    if (!TheTrackStreamer.HasMemoryPool() || (pBlock != nullptr && !TheTrackStreamer.IsUserMemory(pBlock))) {
         bFree(pBlock);
     } else {
         TheTrackStreamer.FreeUserMemory(pBlock);
@@ -409,13 +400,13 @@ int ShapeMemoryAllocator::Release() {
     return ref;
 }
 
-void* RCMP_PlayerAllocAlign(const char* name, int size, int alignment, int headersize, int type) {
+void *RCMP_PlayerAllocAlign(const char *name, int size, int alignment, int headersize, int type) {
     if (name == nullptr || *name == '\0') {
         name = "RCMP_Mem";
     }
     size = size + headersize;
     int alloc_params = (headersize & 0x1FFC) << 17;
-    void* maybe = GamecubeMaybeAllocateFromCarLoader(size, name, alloc_params | (alignment & 0x1FFC) << 6);
+    void *maybe = GamecubeMaybeAllocateFromCarLoader(size, name, alloc_params | (alignment & 0x1FFC) << 6);
     if (maybe == nullptr) {
         if (TheTrackStreamer.HasMemoryPool()) {
             return TheTrackStreamer.AllocateUserMemory(size, name, headersize);
@@ -423,14 +414,14 @@ void* RCMP_PlayerAllocAlign(const char* name, int size, int alignment, int heade
             if (alignment == 0) {
                 alignment = 0x80;
             }
-            void* ptr = bMalloc(size, name, __LINE__, alloc_params | (alignment & 0x1FFC) << 6 | 0x40);
+            void *ptr = bMalloc(size, name, __LINE__, alloc_params | (alignment & 0x1FFC) << 6 | 0x40);
             return ptr;
         }
     }
     return maybe;
 }
 
-void RCMP_PlayerFree(void* ptr) {
+void RCMP_PlayerFree(void *ptr) {
     if (!TheTrackStreamer.HasMemoryPool()) {
         goto bfree_label;
     }

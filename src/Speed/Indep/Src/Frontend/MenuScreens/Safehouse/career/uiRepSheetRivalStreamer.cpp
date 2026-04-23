@@ -5,20 +5,19 @@
 
 struct FEObject;
 
-FEObject* FEngFindObject(const char* pkg_name, unsigned int hash);
-void FEngSetVisible(FEObject* obj);
-void FEngSetInvisible(FEObject* obj);
-void FEngSetTextureHash(FEImage* image, unsigned int hash);
-unsigned int FEngHashString(const char* format, ...);
-void eLoadStreamingTexture(unsigned int* textures, int count, void (*callback)(void*), void* param, int pool);
-void eUnloadStreamingTexture(unsigned int* textures, int count);
-void eLoadStreamingTexturePack(const char* name, void (*callback)(void*), void* param, int flags);
-void eUnloadStreamingTexturePack(const char* name);
-void eWaitForStreamingTexturePackLoading(const char* name);
+FEObject *FEngFindObject(const char *pkg_name, unsigned int hash);
+void FEngSetVisible(FEObject *obj);
+void FEngSetInvisible(FEObject *obj);
+void FEngSetTextureHash(FEImage *image, unsigned int hash);
+unsigned int FEngHashString(const char *format, ...);
+void eLoadStreamingTexture(unsigned int *textures, int count, void (*callback)(void *), void *param, int pool);
+void eUnloadStreamingTexture(unsigned int *textures, int count);
+void eUnloadStreamingTexturePack(const char *name);
+void eWaitForStreamingTexturePackLoading(const char *name);
 struct TextureInfo;
-TextureInfo* GetTextureInfo(unsigned int hash, int, int);
+TextureInfo *GetTextureInfo(unsigned int hash, int, int);
 
-uiRepSheetRivalStreamer::uiRepSheetRivalStreamer(const char* name, bool in_game) {
+uiRepSheetRivalStreamer::uiRepSheetRivalStreamer(const char *name, bool in_game) {
     pkg_name = name;
     MemPoolNum = 0;
     bInGame = in_game;
@@ -62,14 +61,14 @@ void uiRepSheetRivalStreamer::TexturePackLoadedCallback() {
     LoadTextures();
 }
 
-void uiRepSheetRivalStreamer::Init(unsigned int the_bin, FEImage* the_rival, FEImage* the_tag, FEImage* the_bg) {
+void uiRepSheetRivalStreamer::Init(unsigned int the_bin, FEImage *the_rival, FEImage *the_tag, FEImage *the_bg) {
     DesiredBin = the_bin;
     Rival = the_rival;
     Tag = the_tag;
     BG = the_bg;
-    FEngSetInvisible(reinterpret_cast<FEObject*>(Rival));
-    FEngSetInvisible(reinterpret_cast<FEObject*>(Tag));
-    FEngSetInvisible(reinterpret_cast<FEObject*>(BG));
+    FEngSetInvisible(reinterpret_cast<FEObject *>(Rival));
+    FEngSetInvisible(reinterpret_cast<FEObject *>(Tag));
+    FEngSetInvisible(reinterpret_cast<FEObject *>(BG));
     if (!LoadingInProgress) {
         LoadTextures();
     }
@@ -93,7 +92,7 @@ void uiRepSheetRivalStreamer::UnloadTextures() {
     LoadedBin = -1;
 }
 
-int uiRepSheetRivalStreamer::CalcTexturesToLoad(unsigned int* temp, int bin) {
+int uiRepSheetRivalStreamer::CalcTexturesToLoad(unsigned int *temp, int bin) {
     int count = 0;
     if (Rival != nullptr) {
         if (bInGame) {
@@ -131,30 +130,30 @@ void uiRepSheetRivalStreamer::TexturesLoadedCallback() {
         cFEng::Get()->QueuePackageMessage(0xC0942E85, pkg_name, nullptr);
         GetTextureInfo(LoadedTextures[0], false, false);
         FEngSetTextureHash(Rival, LoadedTextures[0]);
-        FEngSetVisible(reinterpret_cast<FEObject*>(Rival));
+        FEngSetVisible(reinterpret_cast<FEObject *>(Rival));
         idx = 1;
     }
     if (Tag != nullptr) {
         cFEng::Get()->QueuePackageMessage(0x8C9D4547, pkg_name, nullptr);
         FEngSetTextureHash(Tag, LoadedTextures[idx]);
         idx++;
-        FEngSetVisible(reinterpret_cast<FEObject*>(Tag));
+        FEngSetVisible(reinterpret_cast<FEObject *>(Tag));
     }
     if (BG != nullptr) {
         cFEng::Get()->QueuePackageMessage(0xD22B95D0, pkg_name, nullptr);
         FEngSetTextureHash(BG, LoadedTextures[idx]);
-        FEngSetVisible(reinterpret_cast<FEObject*>(BG));
+        FEngSetVisible(reinterpret_cast<FEObject *>(BG));
     }
 }
 
 void uiRepSheetRivalStreamer::MakeSpaceInPoolCallbackBridge(int param) {
-    reinterpret_cast<uiRepSheetRivalStreamer*>(param)->MakeSpaceInPoolCallback();
+    reinterpret_cast<uiRepSheetRivalStreamer *>(param)->MakeSpaceInPoolCallback();
 }
 
-void uiRepSheetRivalStreamer::TexturePackLoadedCallbackBridge(void* param) {
-    static_cast<uiRepSheetRivalStreamer*>(param)->TexturePackLoadedCallback();
+void uiRepSheetRivalStreamer::TexturePackLoadedCallbackBridge(void *param) {
+    static_cast<uiRepSheetRivalStreamer *>(param)->TexturePackLoadedCallback();
 }
 
-void uiRepSheetRivalStreamer::TexturesLoadedCallbackBridge(void* param) {
-    static_cast<uiRepSheetRivalStreamer*>(param)->TexturesLoadedCallback();
+void uiRepSheetRivalStreamer::TexturesLoadedCallbackBridge(void *param) {
+    static_cast<uiRepSheetRivalStreamer *>(param)->TexturesLoadedCallback();
 }

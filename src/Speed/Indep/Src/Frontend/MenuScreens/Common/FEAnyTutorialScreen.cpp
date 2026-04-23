@@ -7,16 +7,15 @@
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 
 struct FEMovie;
-extern FEObject* FEngFindObject(const char* pkg_name, unsigned int obj_hash);
-extern void FEngSetMovieName(FEMovie* movie, const char* name);
-extern int eIsWidescreen();
+extern FEObject *FEngFindObject(const char *pkg_name, unsigned int obj_hash);
+extern void FEngSetMovieName(FEMovie *movie, const char *name);
 extern void DismissChyron();
-extern unsigned int FEngHashString(const char*, ...);
-extern unsigned int bStringHash(const char*, int);
-extern void FEngSetLanguageHash(const char* pkg_name, unsigned int obj_hash, unsigned int language);
+extern unsigned int FEngHashString(const char *, ...);
+extern unsigned int bStringHash(const char *, int);
+extern void FEngSetLanguageHash(const char *pkg_name, unsigned int obj_hash, unsigned int language);
 
-inline void FEngSetMovieName(const char* pkg_name, unsigned int obj_hash, const char* name) {
-    FEMovie* movie = static_cast<FEMovie*>(FEngFindObject(pkg_name, obj_hash));
+inline void FEngSetMovieName(const char *pkg_name, unsigned int obj_hash, const char *name) {
+    FEMovie *movie = static_cast<FEMovie *>(FEngFindObject(pkg_name, obj_hash));
     FEngSetMovieName(movie, name);
 }
 
@@ -24,12 +23,11 @@ char FEAnyTutorialScreen::MovieFilename[64];
 char FEAnyTutorialScreen::PackageFilename[64];
 bool FEAnyTutorialScreen::PackageSet;
 
-static const char* FEAnyTutorialScreenName = "FEAnyTutorialScreen.fng";
+static const char *FEAnyTutorialScreenName = "FEAnyTutorialScreen.fng";
 
-FEAnyTutorialScreen::FEAnyTutorialScreen(ScreenConstructorData* sd)
+FEAnyTutorialScreen::FEAnyTutorialScreen(ScreenConstructorData *sd)
     : MenuScreen(sd), //
-      mTimer(0)
-{
+      mTimer(0) {
     unsigned int str_hash = 0;
     bool mSkipable = true;
 
@@ -41,7 +39,7 @@ FEAnyTutorialScreen::FEAnyTutorialScreen(ScreenConstructorData* sd)
         cFEng::Get()->QueuePackageMessage(0x70D2183B, GetPackageName(), nullptr);
     }
 
-    CareerSettings* career = FEDatabase->GetCareerSettings();
+    CareerSettings *career = FEDatabase->GetCareerSettings();
 
     if (bStrCmp(MovieFilename, "TUT_DRAG") == 0) {
         if (career != nullptr && !(career->SpecialFlags & 0x40)) {
@@ -90,7 +88,7 @@ FEAnyTutorialScreen::FEAnyTutorialScreen(ScreenConstructorData* sd)
     new EFadeScreenOff(0x14035FB);
 }
 
-MenuScreen* FEAnyTutorialScreen::Create(ScreenConstructorData* sd) {
+MenuScreen *FEAnyTutorialScreen::Create(ScreenConstructorData *sd) {
     return new ("", 0) FEAnyTutorialScreen(sd);
 }
 
@@ -98,23 +96,22 @@ FEAnyTutorialScreen::~FEAnyTutorialScreen() {
     FEManager::Get()->SetEATraxSecondButton();
 }
 
-void FEAnyTutorialScreen::NotificationMessage(unsigned long msg, FEObject* obj,
-                                               unsigned long param1, unsigned long param2) {
+void FEAnyTutorialScreen::NotificationMessage(unsigned long msg, FEObject *obj, unsigned long param1, unsigned long param2) {
     mSubtitler.Update(msg);
 
     switch (msg) {
-    case 0xC3960EB9:
-        DismissMovie(false);
-        break;
-    case 0xB5AF2461:
-    case 0x406415E3:
-        DismissMovie(true);
-        mSubtitler.Update(0xC3960EB9);
-        break;
+        case 0xC3960EB9:
+            DismissMovie(false);
+            break;
+        case 0xB5AF2461:
+        case 0x406415E3:
+            DismissMovie(true);
+            mSubtitler.Update(0xC3960EB9);
+            break;
     }
 }
 
-void FEAnyTutorialScreen::LaunchMovie(const char* filename, const char* packageName) {
+void FEAnyTutorialScreen::LaunchMovie(const char *filename, const char *packageName) {
     PackageSet = false;
     SetMovieName(filename);
     if (packageName != nullptr) {
@@ -130,11 +127,11 @@ void FEAnyTutorialScreen::DismissMovie(bool send_message) {
     }
 }
 
-void FEAnyTutorialScreen::SetMovieName(const char* filename) {
+void FEAnyTutorialScreen::SetMovieName(const char *filename) {
     bStrNCpy(MovieFilename, filename, 64);
 }
 
-void FEAnyTutorialScreen::SetPackageName(const char* packageName) {
+void FEAnyTutorialScreen::SetPackageName(const char *packageName) {
     PackageSet = true;
     bStrNCpy(PackageFilename, packageName, 64);
 }

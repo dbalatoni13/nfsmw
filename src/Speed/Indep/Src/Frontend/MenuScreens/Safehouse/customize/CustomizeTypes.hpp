@@ -1,4 +1,3 @@
-// OWNED BY zFeOverlay AGENT - do not empty or overwrite
 #ifndef FRONTEND_MENUSCREENS_SAFEHOUSE_CUSTOMIZE_CUSTOMIZETYPES_H
 #define FRONTEND_MENUSCREENS_SAFEHOUSE_CUSTOMIZE_CUSTOMIZETYPES_H
 
@@ -134,105 +133,188 @@ struct CustomizeMeter {
     void Draw();
     void SetVisibility(bool b);
 
-    float Min;                      // offset 0x0, size 0x4
-    float Max;                      // offset 0x4, size 0x4
-    float Current;                  // offset 0x8, size 0x4
-    float Preview;                  // offset 0xC, size 0x4
-    float PreviousPreview;          // offset 0x10, size 0x4
-    int NumStages;                  // offset 0x14, size 0x4
-    FEImage *pMultiplier;           // offset 0x18, size 0x4
-    FEImage *pMultiplierZoom;       // offset 0x1C, size 0x4
-    FEImage *pBases[10];            // offset 0x20, size 0x28
-    FEObject *pMeterGroup;          // offset 0x48, size 0x4
+    float Min;                // offset 0x0, size 0x4
+    float Max;                // offset 0x4, size 0x4
+    float Current;            // offset 0x8, size 0x4
+    float Preview;            // offset 0xC, size 0x4
+    float PreviousPreview;    // offset 0x10, size 0x4
+    int NumStages;            // offset 0x14, size 0x4
+    FEImage *pMultiplier;     // offset 0x18, size 0x4
+    FEImage *pMultiplierZoom; // offset 0x1C, size 0x4
+    FEImage *pBases[10];      // offset 0x20, size 0x28
+    FEObject *pMeterGroup;    // offset 0x48, size 0x4
     // vtable at 0x4C
 };
 
 // total size: 0x2C
 struct SelectablePart : public bTNode<SelectablePart> {
-    static void *operator new(size_t s) { return ::operator new[](s); }
-    static void operator delete(void *p) { ::operator delete[](p); }
+    static void *operator new(size_t s) {
+        return ::operator new[](s);
+    }
+    static void operator delete(void *p) {
+        ::operator delete[](p);
+    }
 
     SelectablePart(SelectablePart *part)
         : ThePart(part->ThePart) //
-        , CarSlotID(part->CarSlotID) //
-        , UpgradeLevel(part->UpgradeLevel) //
-        , PhysicsType(part->PhysicsType) //
-        , PerformancePkg(part->PerformancePkg) //
-        , PartState(part->PartState) //
-        , Price(part->Price) //
-        , JunkmanPart(part->JunkmanPart) {}
+          ,
+          CarSlotID(part->CarSlotID) //
+          ,
+          UpgradeLevel(part->UpgradeLevel) //
+          ,
+          PhysicsType(part->PhysicsType) //
+          ,
+          PerformancePkg(part->PerformancePkg) //
+          ,
+          PartState(part->PartState) //
+          ,
+          Price(part->Price) //
+          ,
+          JunkmanPart(part->JunkmanPart) {}
 
-    SelectablePart(CarPart *part, int slot_id, unsigned int lvl, GRace::Type phys_type, bool is_perf, eCustomizePartState state, int price, bool junkman)
+    SelectablePart(CarPart *part, int slot_id, unsigned int lvl, GRace::Type phys_type, bool is_perf, eCustomizePartState state, int price,
+                   bool junkman)
         : ThePart(part) //
-        , CarSlotID(slot_id) //
-        , UpgradeLevel(lvl) //
-        , PhysicsType(phys_type) //
-        , PerformancePkg(is_perf) //
-        , PartState(state) //
-        , Price(price) //
-        , JunkmanPart(junkman) {}
+          ,
+          CarSlotID(slot_id) //
+          ,
+          UpgradeLevel(lvl) //
+          ,
+          PhysicsType(phys_type) //
+          ,
+          PerformancePkg(is_perf) //
+          ,
+          PartState(state) //
+          ,
+          Price(price) //
+          ,
+          JunkmanPart(junkman) {}
 
     virtual ~SelectablePart() {}
 
-    CarPart *GetPart() { return ThePart; }
-    int GetSlotID() { return CarSlotID; }
-    unsigned int GetUpgradeLevel() { return UpgradeLevel; }
-    GRace::Type GetPhysicsType() { return PhysicsType; }
-    int IsPerformancePkg() { return PerformancePkg; }
-    eCustomizePartState GetPartState() { return PartState; }
-    int GetPrice() { return Price; }
-    int IsJunkmanPart() { return JunkmanPart; }
+    CarPart *GetPart() {
+        return ThePart;
+    }
+    int GetSlotID() {
+        return CarSlotID;
+    }
+    unsigned int GetUpgradeLevel() {
+        return UpgradeLevel;
+    }
+    GRace::Type GetPhysicsType() {
+        return PhysicsType;
+    }
+    int IsPerformancePkg() {
+        return PerformancePkg;
+    }
+    eCustomizePartState GetPartState() {
+        return PartState;
+    }
+    int GetPrice() {
+        return Price;
+    }
+    int IsJunkmanPart() {
+        return JunkmanPart;
+    }
 
-    void SetSlotID(unsigned int id) { CarSlotID = static_cast<int>(id); }
+    void SetSlotID(unsigned int id) {
+        CarSlotID = static_cast<int>(id);
+    }
 
-    bool IsAvailable() { return (PartState & CPS_GAME_STATE_MASK) == CPS_AVAILABLE; }
-    bool IsLocked() { return (PartState & CPS_GAME_STATE_MASK) == CPS_LOCKED; }
-    bool IsNew() { return (PartState & CPS_GAME_STATE_MASK) == CPS_NEW; }
-    bool IsInstalled() { return (PartState & CPS_PLAYER_STATE_MASK) == CPS_INSTALLED; }
-    bool IsInCart() { return (PartState & CPS_PLAYER_STATE_MASK) == CPS_IN_CART; }
-    bool IsInstalledX() { return (PartState & CPS_INSTALLED) != 0; }
-    bool IsInCartX() { return (PartState & CPS_IN_CART) != 0; }
+    bool IsAvailable() {
+        return (PartState & CPS_GAME_STATE_MASK) == CPS_AVAILABLE;
+    }
+    bool IsLocked() {
+        return (PartState & CPS_GAME_STATE_MASK) == CPS_LOCKED;
+    }
+    bool IsNew() {
+        return (PartState & CPS_GAME_STATE_MASK) == CPS_NEW;
+    }
+    bool IsInstalled() {
+        return (PartState & CPS_PLAYER_STATE_MASK) == CPS_INSTALLED;
+    }
+    bool IsInCart() {
+        return (PartState & CPS_PLAYER_STATE_MASK) == CPS_IN_CART;
+    }
+    bool IsInstalledX() {
+        return (PartState & CPS_INSTALLED) != 0;
+    }
+    bool IsInCartX() {
+        return (PartState & CPS_IN_CART) != 0;
+    }
 
-    void SetPartState(unsigned int state) { PartState = static_cast<eCustomizePartState>(state); }
-    void SetInCart() { PartState = static_cast<eCustomizePartState>((PartState & CPS_GAME_STATE_MASK) | CPS_IN_CART); }
-    void SetInCartPreserve() { PartState = static_cast<eCustomizePartState>(PartState | CPS_IN_CART); }
-    void SetInstalled() { PartState = static_cast<eCustomizePartState>((PartState & CPS_GAME_STATE_MASK) | CPS_INSTALLED); }
-    void UnSetInCart() { PartState = static_cast<eCustomizePartState>(PartState & CPS_GAME_STATE_MASK); }
-    void UnSetInCartPreserve() { PartState = static_cast<eCustomizePartState>(PartState & ~CPS_IN_CART); }
-    void SetPrice(int price) { Price = price; }
+    void SetPartState(unsigned int state) {
+        PartState = static_cast<eCustomizePartState>(state);
+    }
+    void SetInCart() {
+        PartState = static_cast<eCustomizePartState>((PartState & CPS_GAME_STATE_MASK) | CPS_IN_CART);
+    }
+    void SetInCartPreserve() {
+        PartState = static_cast<eCustomizePartState>(PartState | CPS_IN_CART);
+    }
+    void SetInstalled() {
+        PartState = static_cast<eCustomizePartState>((PartState & CPS_GAME_STATE_MASK) | CPS_INSTALLED);
+    }
+    void UnSetInCart() {
+        PartState = static_cast<eCustomizePartState>(PartState & CPS_GAME_STATE_MASK);
+    }
+    void UnSetInCartPreserve() {
+        PartState = static_cast<eCustomizePartState>(PartState & ~CPS_IN_CART);
+    }
+    void SetPrice(int price) {
+        Price = price;
+    }
 
-    CarPart *ThePart;               // offset 0x8, size 0x4
-    int CarSlotID;                  // offset 0xC, size 0x4
-    unsigned int UpgradeLevel;      // offset 0x10, size 0x4
-    GRace::Type PhysicsType;          // offset 0x14, size 0x4
-    int PerformancePkg;             // offset 0x18, size 0x4
-    eCustomizePartState PartState;  // offset 0x1C, size 0x4
-    int Price;                      // offset 0x20, size 0x4
-    int JunkmanPart;                // offset 0x24, size 0x4
+    CarPart *ThePart;              // offset 0x8, size 0x4
+    int CarSlotID;                 // offset 0xC, size 0x4
+    unsigned int UpgradeLevel;     // offset 0x10, size 0x4
+    GRace::Type PhysicsType;       // offset 0x14, size 0x4
+    int PerformancePkg;            // offset 0x18, size 0x4
+    eCustomizePartState PartState; // offset 0x1C, size 0x4
+    int Price;                     // offset 0x20, size 0x4
+    int JunkmanPart;               // offset 0x24, size 0x4
     // vtable at 0x28
 };
 
 // total size: 0x18
 struct ShoppingCartItem : public bTNode<ShoppingCartItem> {
-    static void *operator new(size_t s) { return ::operator new[](s); }
-    static void operator delete(void *p) { ::operator delete[](p); }
+    static void *operator new(size_t s) {
+        return ::operator new[](s);
+    }
+    static void operator delete(void *p) {
+        ::operator delete[](p);
+    }
 
     ShoppingCartItem(SelectablePart *to_buy, SelectablePart *trade_in)
         : ToBuy(to_buy) //
-        , TradeIn(trade_in) //
-        , bActive(true) {}
+          ,
+          TradeIn(trade_in) //
+          ,
+          bActive(true) {}
 
     virtual ~ShoppingCartItem() {
         delete ToBuy;
         delete TradeIn;
     }
 
-    SelectablePart *GetBuyingPart() { return ToBuy; }
-    SelectablePart *GetTradeInPart() { return TradeIn; }
-    int GetPartPrice() { return ToBuy->GetPrice(); }
-    int GetTradeInPrice() { return TradeIn ? TradeIn->GetPrice() : 0; }
-    void ToggleActive() { bActive = !bActive; }
-    bool IsActive() { return bActive; }
+    SelectablePart *GetBuyingPart() {
+        return ToBuy;
+    }
+    SelectablePart *GetTradeInPart() {
+        return TradeIn;
+    }
+    int GetPartPrice() {
+        return ToBuy->GetPrice();
+    }
+    int GetTradeInPrice() {
+        return TradeIn ? TradeIn->GetPrice() : 0;
+    }
+    void ToggleActive() {
+        bActive = !bActive;
+    }
+    bool IsActive() {
+        return bActive;
+    }
 
     SelectablePart *ToBuy;   // offset 0x8, size 0x4
     SelectablePart *TradeIn; // offset 0xC, size 0x4
@@ -244,8 +326,10 @@ struct ShoppingCartItem : public bTNode<ShoppingCartItem> {
 struct CustomizePartOption : public IconOption {
     CustomizePartOption(SelectablePart *part, unsigned int tex_hash, unsigned int name_hash, unsigned int desc_hash, unsigned int unlock_blurb)
         : IconOption(tex_hash, name_hash, desc_hash) //
-        , ThePart(part) //
-        , UnlockBlurb(unlock_blurb) {}
+          ,
+          ThePart(part) //
+          ,
+          UnlockBlurb(unlock_blurb) {}
 
     ~CustomizePartOption() override {
         delete ThePart;
@@ -253,19 +337,26 @@ struct CustomizePartOption : public IconOption {
 
     void React(const char *pkg_name, unsigned int data, FEObject *obj, unsigned int param1, unsigned int param2) override {}
 
-    void SetPart(SelectablePart *part) { ThePart = part; }
-    SelectablePart *GetPart() { return ThePart; }
-    unsigned int GetUnlockBlurb() { return UnlockBlurb; }
+    void SetPart(SelectablePart *part) {
+        ThePart = part;
+    }
+    SelectablePart *GetPart() {
+        return ThePart;
+    }
+    unsigned int GetUnlockBlurb() {
+        return UnlockBlurb;
+    }
 
-    SelectablePart *ThePart;   // offset 0x5C, size 0x4
-    unsigned int UnlockBlurb;  // offset 0x60, size 0x4
+    SelectablePart *ThePart;  // offset 0x5C, size 0x4
+    unsigned int UnlockBlurb; // offset 0x60, size 0x4
 };
 
 // total size: 0x68
 struct CustomizeMainOption : public IconOption {
     CustomizeMainOption(const char *to_pkg, unsigned int tex_hash, unsigned int name_hash, unsigned int to_cat, unsigned int from_cat)
         : IconOption(tex_hash, name_hash, 0) //
-        , ToPkg(to_pkg) {
+          ,
+          ToPkg(to_pkg) {
         UnlockStatus = CPS_AVAILABLE;
         Category = to_cat | (from_cat << 16);
     }
@@ -278,18 +369,21 @@ struct CustomizeMainOption : public IconOption {
         }
     }
 
-    virtual bool IsStockOption() { return false; }
+    virtual bool IsStockOption() {
+        return false;
+    }
 
-    const char *ToPkg;                     // offset 0x5C, size 0x4
-    unsigned int Category;                 // offset 0x60, size 0x4
-    eCustomizePartState UnlockStatus;      // offset 0x64, size 0x4
+    const char *ToPkg;                // offset 0x5C, size 0x4
+    unsigned int Category;            // offset 0x60, size 0x4
+    eCustomizePartState UnlockStatus; // offset 0x64, size 0x4
 };
 
 // total size: 0x6C
 struct SetStockPartOption : public CustomizeMainOption {
     SetStockPartOption(SelectablePart *part, unsigned int icon, unsigned int to_cat)
         : CustomizeMainOption("", icon, 0x60a662f5, to_cat, to_cat) //
-        , ThePart(part) {
+          ,
+          ThePart(part) {
         SetReactImmediately(true);
     }
 
@@ -298,7 +392,9 @@ struct SetStockPartOption : public CustomizeMainOption {
     }
 
     void React(const char *pkg_name, unsigned int data, FEObject *obj, unsigned int param1, unsigned int param2) override;
-    bool IsStockOption() override { return true; }
+    bool IsStockOption() override {
+        return true;
+    }
 
     SelectablePart *ThePart; // offset 0x68, size 0x4
 };
@@ -310,18 +406,21 @@ struct HUDLayerOption : public CustomizePartOption {
 
     void React(const char *parent_pkg, unsigned int data, FEObject *obj, unsigned int param1, unsigned int param2) override {}
 
-    unsigned int GetLayer() { return HUDLayer; }
+    unsigned int GetLayer() {
+        return HUDLayer;
+    }
 
-    unsigned int HUDLayer;               // offset 0x64, size 0x4
-    bTList<SelectablePart> TheColors;    // offset 0x68, size 0x8
-    SelectablePart *SelectedPart;        // offset 0x70, size 0x4
+    unsigned int HUDLayer;            // offset 0x64, size 0x4
+    bTList<SelectablePart> TheColors; // offset 0x68, size 0x8
+    SelectablePart *SelectedPart;     // offset 0x70, size 0x4
 };
 
 // total size: 0x64
 struct HUDColorOption : public IconOption {
     HUDColorOption(SelectablePart *part)
         : IconOption(0, 0, 0) //
-        , ThePart(part) {}
+          ,
+          ThePart(part) {}
 
     ~HUDColorOption() override {}
 
@@ -337,17 +436,33 @@ struct CustomizationScreenHelper {
 
     virtual ~CustomizationScreenHelper() {}
 
-    const char *GetPackageName() { return pPackageName; }
-    void SetTitleHash(unsigned int hash) { TitleHash = hash; }
-    unsigned int GetTitleHash() { return TitleHash; }
-    void SetInitComplete(bool b) { bInitComplete = b; }
-    bool IsInitComplete() { return bInitComplete; }
+    const char *GetPackageName() {
+        return pPackageName;
+    }
+    void SetTitleHash(unsigned int hash) {
+        TitleHash = hash;
+    }
+    unsigned int GetTitleHash() {
+        return TitleHash;
+    }
+    void SetInitComplete(bool b) {
+        bInitComplete = b;
+    }
+    bool IsInitComplete() {
+        return bInitComplete;
+    }
     void PlayLocked() {}
     void PlayInCart() {}
     void PlayInstalled() {}
-    void DrawMeters() { HeatMeter.Draw(); }
-    void SetHeatValue(float f) { HeatMeter.SetCurrent(f); }
-    void SetHeatPreview(float f) { HeatMeter.SetPreview(f); }
+    void DrawMeters() {
+        HeatMeter.Draw();
+    }
+    void SetHeatValue(float f) {
+        HeatMeter.SetCurrent(f);
+    }
+    void SetHeatPreview(float f) {
+        HeatMeter.SetPreview(f);
+    }
 
     void DrawTitle();
     void SetCareerStatusIcon(eCustomizePartState state);
@@ -358,11 +473,11 @@ struct CustomizationScreenHelper {
     void SetPartStatus(SelectablePart *part, unsigned int unlock_blurb, int part_num, int max_parts);
     void FlashStatusIcon(eCustomizePartState state, bool play_sound);
 
-    const char *pPackageName;       // offset 0x0, size 0x4
-    unsigned int TitleHash;         // offset 0x4, size 0x4
-    bool bUnlockOverlayShowing;     // offset 0x8, size 0x1
-    bool bInitComplete;             // offset 0xC, size 0x1
-    CustomizeMeter HeatMeter;       // offset 0x10, size 0x50
+    const char *pPackageName;   // offset 0x0, size 0x4
+    unsigned int TitleHash;     // offset 0x4, size 0x4
+    bool bUnlockOverlayShowing; // offset 0x8, size 0x1
+    bool bInitComplete;         // offset 0xC, size 0x1
+    CustomizeMeter HeatMeter;   // offset 0x10, size 0x50
     // vtable at 0x60
 };
 

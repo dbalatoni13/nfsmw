@@ -29,7 +29,6 @@
 #include "Speed/Indep/Src/Generated/Messages/MControlPathfinder.h"
 
 extern void SetSoundControlState(bool set, eSNDCTLSTATE state, const char *name);
-extern int GetVideoMode();
 static int IsDebugPlayMovie;
 
 struct FEMovie;
@@ -47,32 +46,32 @@ struct MovieEntry {
 };
 
 static MovieEntry MovieData[10] = {
-    {"LS_EALogo.fng",           "ealogo",        0x58BCF5B6, 0, 0},
-    {"LS_EA_hidef.fng",         "eahd_bumper",   0x58BCF5B6, 0, 0},
-    {"LS_PSA.fng",              "psa",           0x58BCF5B6, 1, 1},
-    {"MW_LS_IntroFMV.fng",      "intro_movie",   0x72CF9F38, 1, 0},
-    {"MW_LS_AttractFMV.fng",    "attract_movie", 0x72CF9F38, 1, 0},
-    {"WS_LS_EALogo.fng",        "ealogo",        0x58BCF5B6, 0, 0},
-    {"WS_LS_EA_hidef.fng",      "eahd_bumper",   0x58BCF5B6, 0, 0},
-    {"WS_LS_PSA.fng",           "psa",           0x58BCF5B6, 1, 1},
-    {"WS_LS_IntroFMV.fng",      "intro_movie",   0x58BCF5B6, 1, 0},
+    {"LS_EALogo.fng", "ealogo", 0x58BCF5B6, 0, 0},
+    {"LS_EA_hidef.fng", "eahd_bumper", 0x58BCF5B6, 0, 0},
+    {"LS_PSA.fng", "psa", 0x58BCF5B6, 1, 1},
+    {"MW_LS_IntroFMV.fng", "intro_movie", 0x72CF9F38, 1, 0},
+    {"MW_LS_AttractFMV.fng", "attract_movie", 0x72CF9F38, 1, 0},
+    {"WS_LS_EALogo.fng", "ealogo", 0x58BCF5B6, 0, 0},
+    {"WS_LS_EA_hidef.fng", "eahd_bumper", 0x58BCF5B6, 0, 0},
+    {"WS_LS_PSA.fng", "psa", 0x58BCF5B6, 1, 1},
+    {"WS_LS_IntroFMV.fng", "intro_movie", 0x58BCF5B6, 1, 0},
     {"WS_MW_LS_AttractFMV.fng", "attract_movie", 0x72CF9F38, 1, 0},
 };
 
-static const char* gLoadinScreenPackageName;
+static const char *gLoadinScreenPackageName;
 
-void SetLoadingScreenPackageName(const char* name) {
+void SetLoadingScreenPackageName(const char *name) {
     gLoadinScreenPackageName = name;
 }
 
-const char* GetLoadingScreenPackageName() {
+const char *GetLoadingScreenPackageName() {
     return gLoadinScreenPackageName;
 }
 
 struct ScreenButtonDatum {
-    unsigned int ScreenHash; // offset 0x0, size 0x4
+    unsigned int ScreenHash;  // offset 0x0, size 0x4
     unsigned char LastButton; // offset 0x4, size 0x1
-    unsigned int GameMode; // offset 0x8, size 0x4
+    unsigned int GameMode;    // offset 0x8, size 0x4
 };
 
 extern unsigned long FEHashUpper(const char *str);
@@ -100,8 +99,7 @@ ScreenButtonDatum *FindScreenButtonDatum(unsigned int screen_filename_hash) {
     cFrontendDatabase *db = FEDatabase;
     for (int i = 0; i <= 0x31; i++) {
         if (screen_filename_hash == ScreenButtonData[i].ScreenHash) {
-            if (ScreenButtonData[i].GameMode == 0xFFFFFFFF ||
-                db->MatchesGameMode(ScreenButtonData[i].GameMode)) {
+            if (ScreenButtonData[i].GameMode == 0xFFFFFFFF || db->MatchesGameMode(ScreenButtonData[i].GameMode)) {
                 return &ScreenButtonData[i];
             }
         }
@@ -132,54 +130,244 @@ void FEngSetLastButton(const char *pkg_name, unsigned char button_hash) {
     }
 }
 
-struct UIMain : MenuScreen { UIMain(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0x144]; };
-struct UIOptionsScreen : MenuScreen { UIOptionsScreen(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0x130]; };
-struct UIQRBrief : MenuScreen { UIQRBrief(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0x10C]; };
-struct UIQRTrackSelect : MenuScreen { UIQRTrackSelect(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0xF4]; };
-struct UIQRTrackOptions : MenuScreen { UIQRTrackOptions(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0x128]; };
-struct UIQRCarSelect : MenuScreen { UIQRCarSelect(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0x18C]; };
-struct uiQRPressStart : MenuScreen { uiQRPressStart(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0x8]; };
-struct UIQRChallengeSeries : MenuScreen { UIQRChallengeSeries(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0x1A4]; };
-struct Showcase : MenuScreen { Showcase(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0x44]; };
-struct WorldMap : MenuScreen { WorldMap(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0x170]; };
-struct uiSMS : MenuScreen { uiSMS(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0xD4]; };
-struct uiSMSMessage : MenuScreen { uiSMSMessage(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0xBC]; };
-struct ControllerUnplugged : MenuScreen { ControllerUnplugged(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0x4]; };
-struct UISafehouseRaceSheet : MenuScreen { UISafehouseRaceSheet(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0x1A8]; };
-struct uiRapSheetLogin : MenuScreen { uiRapSheetLogin(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0x8]; };
-struct uiRapSheetMain : MenuScreen { uiRapSheetMain(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0x110]; };
-struct uiRapSheetRS : MenuScreen { uiRapSheetRS(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} };
-struct uiRapSheetUS : MenuScreen { uiRapSheetUS(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0xC0]; };
-struct uiRapSheetVD : MenuScreen { uiRapSheetVD(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0xBC]; };
-struct uiRapSheetCTS : MenuScreen { uiRapSheetCTS(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0xBC]; };
-struct uiRapSheetTEP : MenuScreen { uiRapSheetTEP(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0x114]; };
-struct uiRapSheetPD : MenuScreen { uiRapSheetPD(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0x4]; };
-struct uiRapSheetRankings : MenuScreen { uiRapSheetRankings(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0x8]; };
-struct uiRapSheetRankingsDetail : MenuScreen { uiRapSheetRankingsDetail(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0xC4]; };
-struct uiRepSheetMain : MenuScreen { uiRepSheetMain(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0x194]; };
-struct uiRepSheetRival : MenuScreen { uiRepSheetRival(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0x60]; };
-struct uiRepSheetRivalBio : MenuScreen { uiRepSheetRivalBio(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0x4C]; };
-struct uiRepSheetMilestones : MenuScreen { uiRepSheetMilestones(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0xC8]; };
-struct uiSafehouseRegionUnlock : MenuScreen { uiSafehouseRegionUnlock(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0x48]; };
-struct uiRepSheetBounty : MenuScreen { uiRepSheetBounty(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0x14C]; };
-struct FEMarkerSelection : MenuScreen { FEMarkerSelection(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0x94]; };
-struct FEGameWonScreen : MenuScreen { FEGameWonScreen(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} };
-struct DebugCarCustomizeScreen : MenuScreen { DebugCarCustomizeScreen(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0x54]; };
-struct MyCarsManager : MenuScreen { MyCarsManager(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0x194]; };
-struct CustomizeMain : MenuScreen { CustomizeMain(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0x1A8]; };
-struct CustomizeSub : MenuScreen { CustomizeSub(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0x1AC]; };
-struct CustomizeShoppingCart : MenuScreen { CustomizeShoppingCart(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0x15C]; };
-struct CustomizeParts : MenuScreen { CustomizeParts(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0x1C8]; };
-struct CustomizeHUDColor : MenuScreen { CustomizeHUDColor(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0x1CC]; };
-struct CustomizeDecals : MenuScreen { CustomizeDecals(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0x1BC]; };
-struct CustomizeNumbers : MenuScreen { CustomizeNumbers(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0x8C]; };
-struct CustomizePaint : MenuScreen { CustomizePaint(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0x2F8]; };
-struct CustomizeRims : MenuScreen { CustomizeRims(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0x1C4]; };
-struct CustomizeSpoiler : MenuScreen { CustomizeSpoiler(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0x1CC]; };
-struct CustomizePerformance : MenuScreen { CustomizePerformance(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0x29C]; };
-struct uiCredits : MenuScreen { uiCredits(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0x1C]; };
-struct UIEATraxScreen : MenuScreen { UIEATraxScreen(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0xF4]; };
-struct UIOptionsController : MenuScreen { UIOptionsController(ScreenConstructorData *); void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {} char _pad[0x128]; };
+struct UIMain : MenuScreen {
+    UIMain(ScreenConstructorData *);
+    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
+    char _pad[0x144];
+};
+struct UIOptionsScreen : MenuScreen {
+    UIOptionsScreen(ScreenConstructorData *);
+    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
+    char _pad[0x130];
+};
+struct UIQRBrief : MenuScreen {
+    UIQRBrief(ScreenConstructorData *);
+    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
+    char _pad[0x10C];
+};
+struct UIQRTrackSelect : MenuScreen {
+    UIQRTrackSelect(ScreenConstructorData *);
+    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
+    char _pad[0xF4];
+};
+struct UIQRTrackOptions : MenuScreen {
+    UIQRTrackOptions(ScreenConstructorData *);
+    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
+    char _pad[0x128];
+};
+struct UIQRCarSelect : MenuScreen {
+    UIQRCarSelect(ScreenConstructorData *);
+    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
+    char _pad[0x18C];
+};
+struct uiQRPressStart : MenuScreen {
+    uiQRPressStart(ScreenConstructorData *);
+    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
+    char _pad[0x8];
+};
+struct UIQRChallengeSeries : MenuScreen {
+    UIQRChallengeSeries(ScreenConstructorData *);
+    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
+    char _pad[0x1A4];
+};
+struct Showcase : MenuScreen {
+    Showcase(ScreenConstructorData *);
+    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
+    char _pad[0x44];
+};
+struct WorldMap : MenuScreen {
+    WorldMap(ScreenConstructorData *);
+    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
+    char _pad[0x170];
+};
+struct uiSMS : MenuScreen {
+    uiSMS(ScreenConstructorData *);
+    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
+    char _pad[0xD4];
+};
+struct uiSMSMessage : MenuScreen {
+    uiSMSMessage(ScreenConstructorData *);
+    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
+    char _pad[0xBC];
+};
+struct ControllerUnplugged : MenuScreen {
+    ControllerUnplugged(ScreenConstructorData *);
+    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
+    char _pad[0x4];
+};
+struct UISafehouseRaceSheet : MenuScreen {
+    UISafehouseRaceSheet(ScreenConstructorData *);
+    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
+    char _pad[0x1A8];
+};
+struct uiRapSheetLogin : MenuScreen {
+    uiRapSheetLogin(ScreenConstructorData *);
+    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
+    char _pad[0x8];
+};
+struct uiRapSheetMain : MenuScreen {
+    uiRapSheetMain(ScreenConstructorData *);
+    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
+    char _pad[0x110];
+};
+struct uiRapSheetRS : MenuScreen {
+    uiRapSheetRS(ScreenConstructorData *);
+    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
+};
+struct uiRapSheetUS : MenuScreen {
+    uiRapSheetUS(ScreenConstructorData *);
+    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
+    char _pad[0xC0];
+};
+struct uiRapSheetVD : MenuScreen {
+    uiRapSheetVD(ScreenConstructorData *);
+    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
+    char _pad[0xBC];
+};
+struct uiRapSheetCTS : MenuScreen {
+    uiRapSheetCTS(ScreenConstructorData *);
+    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
+    char _pad[0xBC];
+};
+struct uiRapSheetTEP : MenuScreen {
+    uiRapSheetTEP(ScreenConstructorData *);
+    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
+    char _pad[0x114];
+};
+struct uiRapSheetPD : MenuScreen {
+    uiRapSheetPD(ScreenConstructorData *);
+    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
+    char _pad[0x4];
+};
+struct uiRapSheetRankings : MenuScreen {
+    uiRapSheetRankings(ScreenConstructorData *);
+    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
+    char _pad[0x8];
+};
+struct uiRapSheetRankingsDetail : MenuScreen {
+    uiRapSheetRankingsDetail(ScreenConstructorData *);
+    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
+    char _pad[0xC4];
+};
+struct uiRepSheetMain : MenuScreen {
+    uiRepSheetMain(ScreenConstructorData *);
+    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
+    char _pad[0x194];
+};
+struct uiRepSheetRival : MenuScreen {
+    uiRepSheetRival(ScreenConstructorData *);
+    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
+    char _pad[0x60];
+};
+struct uiRepSheetRivalBio : MenuScreen {
+    uiRepSheetRivalBio(ScreenConstructorData *);
+    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
+    char _pad[0x4C];
+};
+struct uiRepSheetMilestones : MenuScreen {
+    uiRepSheetMilestones(ScreenConstructorData *);
+    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
+    char _pad[0xC8];
+};
+struct uiSafehouseRegionUnlock : MenuScreen {
+    uiSafehouseRegionUnlock(ScreenConstructorData *);
+    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
+    char _pad[0x48];
+};
+struct uiRepSheetBounty : MenuScreen {
+    uiRepSheetBounty(ScreenConstructorData *);
+    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
+    char _pad[0x14C];
+};
+struct FEMarkerSelection : MenuScreen {
+    FEMarkerSelection(ScreenConstructorData *);
+    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
+    char _pad[0x94];
+};
+struct FEGameWonScreen : MenuScreen {
+    FEGameWonScreen(ScreenConstructorData *);
+    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
+};
+struct DebugCarCustomizeScreen : MenuScreen {
+    DebugCarCustomizeScreen(ScreenConstructorData *);
+    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
+    char _pad[0x54];
+};
+struct MyCarsManager : MenuScreen {
+    MyCarsManager(ScreenConstructorData *);
+    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
+    char _pad[0x194];
+};
+struct CustomizeMain : MenuScreen {
+    CustomizeMain(ScreenConstructorData *);
+    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
+    char _pad[0x1A8];
+};
+struct CustomizeSub : MenuScreen {
+    CustomizeSub(ScreenConstructorData *);
+    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
+    char _pad[0x1AC];
+};
+struct CustomizeShoppingCart : MenuScreen {
+    CustomizeShoppingCart(ScreenConstructorData *);
+    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
+    char _pad[0x15C];
+};
+struct CustomizeParts : MenuScreen {
+    CustomizeParts(ScreenConstructorData *);
+    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
+    char _pad[0x1C8];
+};
+struct CustomizeHUDColor : MenuScreen {
+    CustomizeHUDColor(ScreenConstructorData *);
+    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
+    char _pad[0x1CC];
+};
+struct CustomizeDecals : MenuScreen {
+    CustomizeDecals(ScreenConstructorData *);
+    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
+    char _pad[0x1BC];
+};
+struct CustomizeNumbers : MenuScreen {
+    CustomizeNumbers(ScreenConstructorData *);
+    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
+    char _pad[0x8C];
+};
+struct CustomizePaint : MenuScreen {
+    CustomizePaint(ScreenConstructorData *);
+    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
+    char _pad[0x2F8];
+};
+struct CustomizeRims : MenuScreen {
+    CustomizeRims(ScreenConstructorData *);
+    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
+    char _pad[0x1C4];
+};
+struct CustomizeSpoiler : MenuScreen {
+    CustomizeSpoiler(ScreenConstructorData *);
+    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
+    char _pad[0x1CC];
+};
+struct CustomizePerformance : MenuScreen {
+    CustomizePerformance(ScreenConstructorData *);
+    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
+    char _pad[0x29C];
+};
+struct uiCredits : MenuScreen {
+    uiCredits(ScreenConstructorData *);
+    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
+    char _pad[0x1C];
+};
+struct UIEATraxScreen : MenuScreen {
+    UIEATraxScreen(ScreenConstructorData *);
+    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
+    char _pad[0xF4];
+};
+struct UIOptionsController : MenuScreen {
+    UIOptionsController(ScreenConstructorData *);
+    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
+    char _pad[0x128];
+};
 // nsEngageEventDialog::EngageEventDialog defined in FEPkg_EngageEventDialog.cpp (jumbo line 89)
 struct MovieScreen : MenuScreen {
     MovieScreen(ScreenConstructorData *);
@@ -726,8 +914,7 @@ void *FEPackageData::GetDataChunk() {
     if (MyChunk->GetID() == 0x30210) {
         int decompressedSize = reinterpret_cast<int *>(MyChunk)[5];
         DataChunk = bMalloc(decompressedSize, GetVirtualMemoryAllocParams());
-        LZDecompress(reinterpret_cast<unsigned char *>(reinterpret_cast<int *>(MyChunk) + 3),
-                     static_cast<unsigned char *>(DataChunk));
+        LZDecompress(reinterpret_cast<unsigned char *>(reinterpret_cast<int *>(MyChunk) + 3), static_cast<unsigned char *>(DataChunk));
         return DataChunk;
     }
     return nullptr;
@@ -777,32 +964,31 @@ void nsEngageEventDialog::EngageEventDialog::NotifyTheGameDeclineEvent() {
 
 void nsEngageEventDialog::EngageEventDialog::NotificationMessage(unsigned long msg, FEObject *obj, unsigned long param1, unsigned long param2) {
     switch (msg) {
-    case 0x911ab364:
-        NotifyTheGameDeclineEvent();
-        cFEng::Get()->QueuePackagePop(1);
-        break;
-    case 0xc98356ba:
-        if (MapStreamer) {
-            MapStreamer->UpdateAnimation();
-        }
-        break;
-    case 0x0c407210: {
-        unsigned int objHash = obj->NameHash;
-        if (objHash == 0x694b896e) {
+        case 0x911ab364:
             NotifyTheGameDeclineEvent();
             cFEng::Get()->QueuePackagePop(1);
-        } else if (objHash == 0xd72f002a) {
-            NotifyTheGameAcceptEvent();
-            cFEng::Get()->QueuePackagePop(1);
+            break;
+        case 0xc98356ba:
+            if (MapStreamer) {
+                MapStreamer->UpdateAnimation();
+            }
+            break;
+        case 0x0c407210: {
+            unsigned int objHash = obj->NameHash;
+            if (objHash == 0x694b896e) {
+                NotifyTheGameDeclineEvent();
+                cFEng::Get()->QueuePackagePop(1);
+            } else if (objHash == 0xd72f002a) {
+                NotifyTheGameAcceptEvent();
+                cFEng::Get()->QueuePackagePop(1);
+            }
+            break;
         }
-        break;
-    }
     }
 }
 
 // MovieScreen destructor
-MovieScreen::~MovieScreen() {
-}
+MovieScreen::~MovieScreen() {}
 
 // MovieScreen constructor
 MovieScreen::MovieScreen(ScreenConstructorData *sd) : MenuScreen(sd), mSoundState(0), mSubtitler() {
@@ -840,7 +1026,8 @@ void MovieScreen::NotificationMessage(unsigned long msg, FEObject *obj, unsigned
             }
             goto end;
         }
-        if (msg != 0x406415e3) goto end;
+        if (msg != 0x406415e3)
+            goto end;
     }
     if (mSoundState != 0) {
         new ESndGameState(1, false);
@@ -860,10 +1047,11 @@ end:
     }
 }
 
-SplashScreen::SplashScreen(ScreenConstructorData *sd) : MenuScreen(sd), //
-                                                       bAllowContinue(false), //
-                                                       CopyrightNotice(0), //
-                                                       SplashStartedTimer(0) {
+SplashScreen::SplashScreen(ScreenConstructorData *sd)
+    : MenuScreen(sd),        //
+      bAllowContinue(false), //
+      CopyrightNotice(0),    //
+      SplashStartedTimer(0) {
     const unsigned long FEObj_HDGROUP = 0x534cc377;
     const unsigned long FEObj_startclick = 0x13cf446d;
     const unsigned long FEObj_mouseclick = 0x8c0bd743;
@@ -949,47 +1137,42 @@ Timer SplashScreen::CalculateLastJoyEventTime() {
 extern float SplashScreenMovieTimeout;
 extern float SplashScreenTotalTimeout;
 
-void SplashScreen::NotificationMessage(unsigned long msg, FEObject *obj, unsigned long param1,
-                                       unsigned long param2) {
+void SplashScreen::NotificationMessage(unsigned long msg, FEObject *obj, unsigned long param1, unsigned long param2) {
     switch (msg) {
-    case 0x98257537:
-        DialogInterface::ShowOneButton(GetPackageName(), "", static_cast<eDialogTitle>(1),
-                                       0x417b2601, 0x1fab5998, 0x53f13fd1);
-        break;
-    case 0x6521e5c2:
-        DialogInterface::ShowOneButton(GetPackageName(), "", static_cast<eDialogTitle>(1),
-                                       0x417b2601, 0x1fab5998, 0x6521e5c2);
-        break;
-    case 0xa6813b08:
-        DialogInterface::ShowOneButton(GetPackageName(), "", static_cast<eDialogTitle>(1),
-                                       0x417b2601, 0x1fab5998, 0xa1161aaf);
-        break;
-    case 0xc98356ba: {
-        Timer lastJoyTime = CalculateLastJoyEventTime();
-        Timer elapsed = RealTimer - lastJoyTime;
-        int timed_out = elapsed.GetSeconds() > SplashScreenMovieTimeout ||
-            (SplashScreenTotalTimeout != 0.0f &&
-             (RealTimer - SplashStartedTimer).GetSeconds() > SplashScreenTotalTimeout);
-        int final_timed_out = timed_out;
-        if (TheTrackStreamer.IsPermFileLoading()) {
-            final_timed_out = 0;
-        }
-        if (final_timed_out != 0) {
-            if (!BootFlowManager::Get()->DoAttract()) {
-                SplashStartedTimer.ResetHigh();
+        case 0x98257537:
+            DialogInterface::ShowOneButton(GetPackageName(), "", static_cast<eDialogTitle>(1), 0x417b2601, 0x1fab5998, 0x53f13fd1);
+            break;
+        case 0x6521e5c2:
+            DialogInterface::ShowOneButton(GetPackageName(), "", static_cast<eDialogTitle>(1), 0x417b2601, 0x1fab5998, 0x6521e5c2);
+            break;
+        case 0xa6813b08:
+            DialogInterface::ShowOneButton(GetPackageName(), "", static_cast<eDialogTitle>(1), 0x417b2601, 0x1fab5998, 0xa1161aaf);
+            break;
+        case 0xc98356ba: {
+            Timer lastJoyTime = CalculateLastJoyEventTime();
+            Timer elapsed = RealTimer - lastJoyTime;
+            int timed_out = elapsed.GetSeconds() > SplashScreenMovieTimeout ||
+                            (SplashScreenTotalTimeout != 0.0f && (RealTimer - SplashStartedTimer).GetSeconds() > SplashScreenTotalTimeout);
+            int final_timed_out = timed_out;
+            if (TheTrackStreamer.IsPermFileLoading()) {
+                final_timed_out = 0;
             }
+            if (final_timed_out != 0) {
+                if (!BootFlowManager::Get()->DoAttract()) {
+                    SplashStartedTimer.ResetHigh();
+                }
+            }
+            break;
         }
-        break;
-    }
-    case 0x406415e3:
-    case 0xb5af2461:
-        if (bAllowContinue) {
-            BootFlowManager::Get()->ChangeToNextBootFlowScreen(0xff);
-        }
-        break;
-    case 0x35f8620b:
-        bAllowContinue = true;
-        break;
+        case 0x406415e3:
+        case 0xb5af2461:
+            if (bAllowContinue) {
+                BootFlowManager::Get()->ChangeToNextBootFlowScreen(0xff);
+            }
+            break;
+        case 0x35f8620b:
+            bAllowContinue = true;
+            break;
     }
 }
 

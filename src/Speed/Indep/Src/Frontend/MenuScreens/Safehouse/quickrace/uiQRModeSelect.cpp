@@ -1,4 +1,3 @@
-// OWNED BY zFeOverlay AGENT - DO NOT MODIFY OR EMPTY
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiQRModeSelect.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEIconScrollerMenu.hpp"
 #include "Speed/Indep/Src/FEng/cFEng.h"
@@ -16,7 +15,8 @@ static void _SetQRMode(int mode) {
 struct MSOption : public IconOption {
     MSOption(unsigned int tex_hash, unsigned int name_hash, GRace::Type race_type)
         : IconOption(tex_hash, name_hash, 0) //
-        , raceType(race_type) {}
+          ,
+          raceType(race_type) {}
 
     void React(const char *pkg_name, unsigned int data, FEObject *obj, unsigned int param1, unsigned int param2) override;
 
@@ -101,25 +101,25 @@ void UIQRModeSelect::Setup() {
 void UIQRModeSelect::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
     IconScrollerMenu::NotificationMessage(msg, pobj, param1, param2);
     switch (msg) {
-    case 0x911ab364:
-        if (FEDatabase->IsOnlineMode() || FEDatabase->IsLANMode()) {
-            cFEng::Get()->QueuePackageMessage(0x587c018b, PackageFilename, nullptr);
-        }
-        break;
-    case 0xe1fde1d1:
-        switch (PrevButtonMessage) {
-        case 0xc407210:
-            cFEng::Get()->QueuePackageSwitch("Track_Select.fng", 0, 0, false);
-            break;
         case 0x911ab364:
-            FEDatabase->ClearGameMode(static_cast<eFEGameModes>(0x400));
             if (FEDatabase->IsOnlineMode() || FEDatabase->IsLANMode()) {
-                cFEng::Get()->QueuePackageSwitch(gOnlineMainMenu, 0, 0, false);
-            } else {
-                cFEng::Get()->QueuePackageSwitch("MainMenu_Sub.fng", 0, 0, false);
+                cFEng::Get()->QueuePackageMessage(0x587c018b, PackageFilename, nullptr);
             }
             break;
-        }
-        break;
+        case 0xe1fde1d1:
+            switch (PrevButtonMessage) {
+                case 0xc407210:
+                    cFEng::Get()->QueuePackageSwitch("Track_Select.fng", 0, 0, false);
+                    break;
+                case 0x911ab364:
+                    FEDatabase->ClearGameMode(static_cast<eFEGameModes>(0x400));
+                    if (FEDatabase->IsOnlineMode() || FEDatabase->IsLANMode()) {
+                        cFEng::Get()->QueuePackageSwitch(gOnlineMainMenu, 0, 0, false);
+                    } else {
+                        cFEng::Get()->QueuePackageSwitch("MainMenu_Sub.fng", 0, 0, false);
+                    }
+                    break;
+            }
+            break;
     }
 }

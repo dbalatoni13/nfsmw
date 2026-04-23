@@ -11,26 +11,23 @@ namespace BuildRegion {
 bool IsPal();
 }
 
-extern int FEngStrICmp(const char*, const char*);
-extern int FEngSNPrintf(char*, int, const char*, ...);
-extern int bSPrintf(char*, const char*, ...);
-extern const char* GetLanguageName(eLanguages language);
-extern int SkipMovies;
-extern bool IsSoundEnabled;
-extern int GetCurrentLanguage();
-extern int bFileExists(const char* f);
-extern char* bStrNCpy(char* to, const char* from, int m);
-extern void FEngSetVisible(FEObject* obj);
-extern void FEngSetInvisible(FEObject* obj);
+extern int FEngStrICmp(const char *, const char *);
+extern int FEngSNPrintf(char *, int, const char *, ...);
+extern int bSPrintf(char *, const char *, ...);
+extern const char *GetLanguageName(eLanguages language);
+extern int bFileExists(const char *f);
+extern char *bStrNCpy(char *to, const char *from, int m);
+extern void FEngSetVisible(FEObject *obj);
+extern void FEngSetInvisible(FEObject *obj);
 
 struct MovieNameMap {
-    const char* movieName;
+    const char *movieName;
     int movieId;
 };
 
 static MovieNameMap sMovieNameMap[42];
 
-static int GetMovieNameEnum(const char* movieName) {
+static int GetMovieNameEnum(const char *movieName) {
     for (int i = 0; i < 42; i++) {
         if (FEngStrICmp(movieName, sMovieNameMap[i].movieName) == 0) {
             return sMovieNameMap[i].movieId;
@@ -39,12 +36,11 @@ static int GetMovieNameEnum(const char* movieName) {
     return -1;
 }
 
-static void CalculateMovieFilename(char* buffer, int bufsize, const char* basename,
-                                   eLanguages cur_language) {
-    const char* extension;
-    const char* prefix = "";
+static void CalculateMovieFilename(char *buffer, int bufsize, const char *basename, eLanguages cur_language) {
+    const char *extension;
+    const char *prefix = "";
     char language[64];
-    const char* pal_or_ntsc;
+    const char *pal_or_ntsc;
 
     if (!BuildRegion::IsPal()) {
         pal_or_ntsc = "_ntsc";
@@ -54,12 +50,10 @@ static void CalculateMovieFilename(char* buffer, int bufsize, const char* basena
 
     bSPrintf(language, "_%s", GetLanguageName(cur_language));
     extension = ".vp6";
-    FEngSNPrintf(buffer, bufsize, "%sMOVIES\\%s%s%s%s", prefix, basename, language, pal_or_ntsc,
-                 extension);
+    FEngSNPrintf(buffer, bufsize, "%sMOVIES\\%s%s%s%s", prefix, basename, language, pal_or_ntsc, extension);
 }
 
-
-bool FEngMovieStopper::Callback(FEObject* obj) {
+bool FEngMovieStopper::Callback(FEObject *obj) {
     if (obj->Type == 7) {
         if (gMoviePlayer != nullptr) {
             gMoviePlayer->Stop();
@@ -70,7 +64,7 @@ bool FEngMovieStopper::Callback(FEObject* obj) {
     return true;
 }
 
-bool FEngHidePCObjects::Callback(FEObject* obj) {
+bool FEngHidePCObjects::Callback(FEObject *obj) {
     if (obj->Flags & 0x8) {
         FEngSetInvisible(obj);
         if (obj->Flags & 0x10000000) {
@@ -81,18 +75,18 @@ bool FEngHidePCObjects::Callback(FEObject* obj) {
     return true;
 }
 
-bool RenderObjectDisconnect::Callback(FEObject* pObj) {
+bool RenderObjectDisconnect::Callback(FEObject *pObj) {
     pFEngRenderer->RemoveCachedRender(pObj, PkgRenderInfo);
     return true;
 }
 
-bool ObjectDirtySetter::Callback(FEObject* obj) {
+bool ObjectDirtySetter::Callback(FEObject *obj) {
     obj->Flags |= 0x00400000;
     cFEngRender::mInstance->RemoveCachedRender(obj, pRenderInfo);
     return true;
 }
 
-bool ObjectVisibilitySetter::Callback(FEObject* obj) {
+bool ObjectVisibilitySetter::Callback(FEObject *obj) {
     if (Visible) {
         FEngSetVisible(obj);
     } else {
@@ -101,13 +95,13 @@ bool ObjectVisibilitySetter::Callback(FEObject* obj) {
     return true;
 }
 
-bool FEngMovieStarter::Callback(FEObject* obj) {
+bool FEngMovieStarter::Callback(FEObject *obj) {
     if (obj->Type == FE_Movie) {
         if (SkipMovies) {
             cFEng::Get()->QueueGameMessagePkg(0xc3960eb9, pPackage);
         }
 
-        const char* movie_name = reinterpret_cast<const char*>(obj->Handle);
+        const char *movie_name = reinterpret_cast<const char *>(obj->Handle);
         char buffer[64];
         int movieID = GetMovieNameEnum(movie_name);
         eLanguages lang = static_cast<eLanguages>(GetCurrentLanguage());
@@ -147,10 +141,10 @@ bool FEngMovieStarter::Callback(FEObject* obj) {
     return true;
 }
 
-bool FEngTransferFlagsToChildren::Callback(FEObject* obj) {
+bool FEngTransferFlagsToChildren::Callback(FEObject *obj) {
     if ((obj->Flags & FlagToTransfer) && obj->Type == FE_Group) {
-        FEGroup* group = static_cast<FEGroup*>(obj);
-        FEObject* child = group->GetFirstChild();
+        FEGroup *group = static_cast<FEGroup *>(obj);
+        FEObject *child = group->GetFirstChild();
         int num = group->GetNumChildren();
         for (int i = 0; i < num; i++) {
             child->Flags |= FlagToTransfer;
@@ -161,7 +155,7 @@ bool FEngTransferFlagsToChildren::Callback(FEObject* obj) {
     return true;
 }
 
-static char* GetBaseName(char* dest, const char* filename) {
+static char *GetBaseName(char *dest, const char *filename) {
     long x = 0;
     long first = 0;
     long last;

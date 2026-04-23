@@ -34,8 +34,7 @@ extern void FEngSetButtonTexture(FEImage *img, unsigned int hash);
 extern void FEngSetInvisible(const char *pkg_name, unsigned int obj_hash);
 extern bool FEngIsScriptSet(const char *pkg_name, unsigned int obj_hash, unsigned int script_hash);
 extern bool FEngIsScriptSet(FEObject *obj, unsigned int script_hash);
-extern void FEngSetScript(const char *pkg_name, unsigned int obj_hash, unsigned int script_hash,
-                          bool start_at_beginning);
+extern void FEngSetScript(const char *pkg_name, unsigned int obj_hash, unsigned int script_hash, bool start_at_beginning);
 extern void FEngSetScript(FEObject *obj, unsigned int script_hash, bool start_at_beginning);
 extern void FEngSetLanguageHash(FEString *text, unsigned int hash);
 extern void FEngSetLanguageHash(const char *pkg_name, unsigned int object_hash, unsigned int language_hash);
@@ -51,8 +50,8 @@ extern float GRaceStatusGetRaceTimeElapsed(const GRaceStatus *race_status) asm("
 extern float GRacerInfoCalcAverageSpeed(const GRacerInfo *racer_info) asm("CalcAverageSpeed__C10GRacerInfo");
 extern bool GRacerInfoAreStatsReady(const GRacerInfo *racer_info) asm("AreStatsReady__C10GRacerInfo");
 
-extern const char lbl_803E4CB4[];  // "%d"
-extern const char lbl_803E4CF0[];  // "%s"
+extern const char lbl_803E4CB4[]; // "%d"
+extern const char lbl_803E4CF0[]; // "%s"
 extern const char lbl_803E43DC[];
 
 int bSNPrintf(char *buf, int max_len, const char *format, ...);
@@ -103,9 +102,12 @@ PursuitData PostRacePursuitScreen::mPursuitData;
 struct LapStat : public ResultStat {
     LapStat(FEString *lap, FEString *time, FEString *pos, int lap_num, float seconds, int pos_num)
         : ResultStat(lap, time, pos, nullptr) //
-        , LapNum(lap_num) //
-        , Time(seconds) //
-        , PosNum(pos_num) {}
+          ,
+          LapNum(lap_num) //
+          ,
+          Time(seconds) //
+          ,
+          PosNum(pos_num) {}
 
     ~LapStat() override;
     void Draw() override;
@@ -118,9 +120,12 @@ struct LapStat : public ResultStat {
 struct SpeedStat : public ResultStat {
     SpeedStat(FEString *speedtrap, FEString *speed, FEString *pos, int trap_num, float trap_speed, int pos_num)
         : ResultStat(speedtrap, speed, pos, nullptr) //
-        , TrapNum(trap_num) //
-        , Speed(trap_speed) //
-        , PosNum(pos_num) {}
+          ,
+          TrapNum(trap_num) //
+          ,
+          Speed(trap_speed) //
+          ,
+          PosNum(pos_num) {}
 
     ~SpeedStat() override;
     void Draw() override;
@@ -130,8 +135,7 @@ struct SpeedStat : public ResultStat {
     int PosNum;
 };
 
-RaceStat::RaceStat(FEString *title, FEString *data)
-    : FEStatWidget(true) {
+RaceStat::RaceStat(FEString *title, FEString *data) : FEStatWidget(true) {
     SetTitleObject(title);
     SetDataObject(data);
 }
@@ -164,7 +168,7 @@ LapStat::~LapStat() {}
 
 void LapStat::Draw() {
     FEPrintf(GetTitleObject(), lbl_803E4CB4, LapNum);
-    if (static_cast< float >(PosNum) == 0.0f) {
+    if (static_cast<float>(PosNum) == 0.0f) {
         FEngSetLanguageHash(Position, 0x5D82DBA2);
         FEngSetLanguageHash(GetDataObject(), 0x5D82DBA2);
         return;
@@ -221,7 +225,7 @@ TollboothStat::~TollboothStat() {}
 
 void TollboothStat::Draw() {
     FEPrintf(GetTitleObject(), lbl_803E4CB4, TollboothNum);
-    if (static_cast< float >(PosNum) == 1.0f) {
+    if (static_cast<float>(PosNum) == 1.0f) {
         FEngSetLanguageHash(Position, 0x5D82DBA2);
         FEngSetLanguageHash(GetDataObject(), 0x5D82DBA2);
         return;
@@ -241,9 +245,12 @@ void TollboothStat::Draw() {
 
 StatsPanel::StatsPanel()
     : TheStats() //
-    , iWidgetToAdd(1) //
-    , RacerName(lbl_803E43DC) //
-    , ParentPkg(lbl_803E43DC) {}
+      ,
+      iWidgetToAdd(1) //
+      ,
+      RacerName(lbl_803E43DC) //
+      ,
+      ParentPkg(lbl_803E43DC) {}
 
 void StatsPanel::Reset() {
     TheStats.DeleteAllElements();
@@ -280,54 +287,54 @@ void StatsPanel::AddStat(RaceStat *stat) {
 
 void StatsPanel::AddInfoStat(unsigned int title, unsigned int info) {
     FEngSetScript(ParentPkg, FEngHashString(lbl_803E5DB0, iWidgetToAdd), 0x001744B3, true);
-    InfoStat *stat = new ("", 0) InfoStat(
-        GetCurrentString(lbl_803E5DCC),
-        GetCurrentString(lbl_803E5E24),
-        title,
-        info);
+    InfoStat *stat = new ("", 0) InfoStat(GetCurrentString(lbl_803E5DCC), GetCurrentString(lbl_803E5E24), title, info);
     TheStats.AddTail(stat);
     ++iWidgetToAdd;
 }
 
 void StatsPanel::AddGenericStat(float stat_data, unsigned int title_hash, unsigned int units_hash, const char *format) {
     FEngSetScript(ParentPkg, FEngHashString(lbl_803E5DB0, iWidgetToAdd), 0x001744B3, true);
-    GenericStat *stat = new ("", 0) GenericStat(
-        GetCurrentString(lbl_803E5DCC),
-        GetCurrentString(lbl_803E5E24),
-        stat_data,
-        title_hash,
-        units_hash,
-        format);
+    GenericStat *stat =
+        new ("", 0) GenericStat(GetCurrentString(lbl_803E5DCC), GetCurrentString(lbl_803E5E24), stat_data, title_hash, units_hash, format);
     TheStats.AddTail(stat);
     ++iWidgetToAdd;
 }
 
 void StatsPanel::AddTimerStat(float seconds, unsigned int title_hash) {
     FEngSetScript(ParentPkg, FEngHashString(lbl_803E5DB0, iWidgetToAdd), 0x001744B3, true);
-    TimerStat *stat = new ("", 0) TimerStat(
-        GetCurrentString(lbl_803E5DCC),
-        GetCurrentString(lbl_803E5E24),
-        seconds,
-        title_hash);
+    TimerStat *stat = new ("", 0) TimerStat(GetCurrentString(lbl_803E5DCC), GetCurrentString(lbl_803E5E24), seconds, title_hash);
     TheStats.AddTail(stat);
     ++iWidgetToAdd;
 }
 
 PostRaceResultsScreen::PostRaceResultsScreen(ScreenConstructorData *sd)
     : MenuScreen(sd) //
-    , RacerStats() //
-    , RaceResults() //
-    , mNumberOfRacers(GRaceStatus::Get().GetRacerCount()) //
-    , mIndexOfWinner(-1) //
-    , mIndexOfCurrentRacer(-1) //
-    , mNumberOfLaps(GRaceStatus::Get().GetRaceParameters()->GetNumLaps()) //
-    , mNumberOfStats(0) //
-    , mRaceType(GRaceStatus::Get().GetRaceType()) //
-    , mPostRaceScreenMode(POSTRACESCREENMODE_RESULTS) //
-    , mPlayerRacerInfo(nullptr) //
-    , mMaxSlotsLeftSide(11) //
-    , m_RaceButtonHash(0x5CED1D04) //
-    , m_raceResultsUploaded(false) {
+      ,
+      RacerStats() //
+      ,
+      RaceResults() //
+      ,
+      mNumberOfRacers(GRaceStatus::Get().GetRacerCount()) //
+      ,
+      mIndexOfWinner(-1) //
+      ,
+      mIndexOfCurrentRacer(-1) //
+      ,
+      mNumberOfLaps(GRaceStatus::Get().GetRaceParameters()->GetNumLaps()) //
+      ,
+      mNumberOfStats(0) //
+      ,
+      mRaceType(GRaceStatus::Get().GetRaceType()) //
+      ,
+      mPostRaceScreenMode(POSTRACESCREENMODE_RESULTS) //
+      ,
+      mPlayerRacerInfo(nullptr) //
+      ,
+      mMaxSlotsLeftSide(11) //
+      ,
+      m_RaceButtonHash(0x5CED1D04) //
+      ,
+      m_raceResultsUploaded(false) {
     bEnableEAMessenger = false;
 
     if (mRaceType == GRace::kRaceType_Tollbooth) {
@@ -352,8 +359,7 @@ PostRaceResultsScreen::PostRaceResultsScreen(ScreenConstructorData *sd)
     Setup();
 }
 
-PostRaceResultsScreen::~PostRaceResultsScreen() {
-}
+PostRaceResultsScreen::~PostRaceResultsScreen() {}
 
 void PostRaceResultsScreen::Setup() {
     for (int i = 0; i < mNumberOfRacers; ++i) {
@@ -384,30 +390,29 @@ void PostRaceResultsScreen::Setup() {
     FEngSetInvisible(FEngFindObject(GetPackageName(), 0x30EE5E68));
 
     switch (mPostRaceScreenMode) {
-    case POSTRACESCREENMODE_RESULTS:
-        RaceResults.Reset();
-        SetupResults();
-        RaceResults.Draw(mNumberOfRacers);
-        break;
-    case POSTRACESCREENMODE_STATS:
-        RacerStats[mIndexOfCurrentRacer].Reset();
-        SetupRacerStats(mIndexOfCurrentRacer, &GRaceStatus::Get().GetRacerInfo(mIndexOfCurrentRacer));
-        RacerStats[mIndexOfCurrentRacer].Draw(mNumberOfRacers);
-        break;
-    case POSTRACESCREENMODE_LAPSTATS:
-        RacerStats[mIndexOfCurrentRacer].Reset();
-        SetupLapStats(mIndexOfCurrentRacer, &GRaceStatus::Get().GetRacerInfo(mIndexOfCurrentRacer));
-        RacerStats[mIndexOfCurrentRacer].Draw(mNumberOfRacers);
-        break;
-    default:
-        break;
+        case POSTRACESCREENMODE_RESULTS:
+            RaceResults.Reset();
+            SetupResults();
+            RaceResults.Draw(mNumberOfRacers);
+            break;
+        case POSTRACESCREENMODE_STATS:
+            RacerStats[mIndexOfCurrentRacer].Reset();
+            SetupRacerStats(mIndexOfCurrentRacer, &GRaceStatus::Get().GetRacerInfo(mIndexOfCurrentRacer));
+            RacerStats[mIndexOfCurrentRacer].Draw(mNumberOfRacers);
+            break;
+        case POSTRACESCREENMODE_LAPSTATS:
+            RacerStats[mIndexOfCurrentRacer].Reset();
+            SetupLapStats(mIndexOfCurrentRacer, &GRaceStatus::Get().GetRacerInfo(mIndexOfCurrentRacer));
+            RacerStats[mIndexOfCurrentRacer].Draw(mNumberOfRacers);
+            break;
+        default:
+            break;
     }
 
     unsigned int fe_flags = FEDatabase->GetGameMode();
 
     if ((fe_flags & 8) == 0) {
-        if ((fe_flags & 0x40) == 0 &&
-            !FEngIsScriptSet(GetPackageName(), 0x445A862B, 0x5079C8F8)) {
+        if ((fe_flags & 0x40) == 0 && !FEngIsScriptSet(GetPackageName(), 0x445A862B, 0x5079C8F8)) {
             FEngSetScript(GetPackageName(), 0x445A862B, 0x5079C8F8, true);
         }
     }
@@ -459,13 +464,9 @@ void PostRaceResultsScreen::SetupResults() {
                     }
 
                     RaceResults.AddStat(new ("", 0) RaceResultStat(
-                        FEngFindString(RaceResults.ParentPkg,
-                                       FEngHashString(lbl_803E5088, "COLUMN2_DATA", RaceResults.iWidgetToAdd)),
-                        FEngFindString(RaceResults.ParentPkg,
-                                       FEngHashString(lbl_803E5088, "COLUMN3_DATA", RaceResults.iWidgetToAdd)),
-                        FEngFindString(RaceResults.ParentPkg,
-                                       FEngHashString(lbl_803E5088, "COLUMN1_DATA", RaceResults.iWidgetToAdd)),
-                        racer_info));
+                        FEngFindString(RaceResults.ParentPkg, FEngHashString(lbl_803E5088, "COLUMN2_DATA", RaceResults.iWidgetToAdd)),
+                        FEngFindString(RaceResults.ParentPkg, FEngHashString(lbl_803E5088, "COLUMN3_DATA", RaceResults.iWidgetToAdd)),
+                        FEngFindString(RaceResults.ParentPkg, FEngHashString(lbl_803E5088, "COLUMN1_DATA", RaceResults.iWidgetToAdd)), racer_info));
                 } while (place < mNumberOfRacers);
             }
         } else if (mRaceType == GRace::kRaceType_SpeedTrap) {
@@ -490,16 +491,10 @@ void PostRaceResultsScreen::SetupResults() {
                     }
 
                     RaceResults.AddStat(new ("", 0) GenericResult(
-                        FEngFindString(RaceResults.ParentPkg,
-                                       FEngHashString(lbl_803E5088, "COLUMN2_DATA", RaceResults.iWidgetToAdd)),
-                        FEngFindString(RaceResults.ParentPkg,
-                                       FEngHashString(lbl_803E5088, "COLUMN3_DATA", RaceResults.iWidgetToAdd)),
-                        FEngFindString(RaceResults.ParentPkg,
-                                       FEngHashString(lbl_803E5088, "COLUMN1_DATA", RaceResults.iWidgetToAdd)),
-                        speed_units,
-                        speed,
-                        "%$0.0f",
-                        racer_info));
+                        FEngFindString(RaceResults.ParentPkg, FEngHashString(lbl_803E5088, "COLUMN2_DATA", RaceResults.iWidgetToAdd)),
+                        FEngFindString(RaceResults.ParentPkg, FEngHashString(lbl_803E5088, "COLUMN3_DATA", RaceResults.iWidgetToAdd)),
+                        FEngFindString(RaceResults.ParentPkg, FEngHashString(lbl_803E5088, "COLUMN1_DATA", RaceResults.iWidgetToAdd)), speed_units,
+                        speed, "%$0.0f", racer_info));
                 } while (place < mNumberOfRacers);
             }
         }
@@ -509,7 +504,7 @@ void PostRaceResultsScreen::SetupResults() {
 void PostRaceResultsScreen::SetupStat_NosUsed() {
     GRacerInfo &racerInfo = GRaceStatus::Get().GetRacerInfo(mIndexOfCurrentRacer);
     unsigned int mass_units = 0xC173E1BB;
-    float nos = *reinterpret_cast< const float * >(reinterpret_cast< const char * >(&racerInfo) + 0x11C);
+    float nos = *reinterpret_cast<const float *>(reinterpret_cast<const char *>(&racerInfo) + 0x11C);
 
     if (FEDatabase->GetGameplaySettings()->SpeedoUnits == 1) {
         mass_units = 0xC173DE1F;
@@ -527,7 +522,7 @@ void PostRaceResultsScreen::SetupStat_NosUsed() {
 void PostRaceResultsScreen::SetupStat_TopSpeed() {
     GRacerInfo &racerInfo = GRaceStatus::Get().GetRacerInfo(mIndexOfCurrentRacer);
     unsigned int speedUnits = 0x8569AB44;
-    float speed = *reinterpret_cast< const float * >(reinterpret_cast< const char * >(&racerInfo) + 0x114) * lbl_803E5E5C;
+    float speed = *reinterpret_cast<const float *>(reinterpret_cast<const char *>(&racerInfo) + 0x114) * lbl_803E5E5C;
 
     if (FEDatabase->GetGameplaySettings()->SpeedoUnits == 1) {
         speedUnits = 0x8569A25F;
@@ -565,10 +560,8 @@ void PostRaceResultsScreen::SetupStat_TimeBehind() {
 
     if (mIndexOfWinner >= 0 && mIndexOfWinner != mIndexOfCurrentRacer) {
         GRacerInfo &winnerInfo = GRaceStatus::Get().GetRacerInfo(mIndexOfWinner);
-        float winnerTime =
-            reinterpret_cast< const GTimer * >(reinterpret_cast< const char * >(&winnerInfo) + 0x160)->GetTime();
-        float racerTime =
-            reinterpret_cast< const GTimer * >(reinterpret_cast< const char * >(&racerInfo) + 0x160)->GetTime();
+        float winnerTime = reinterpret_cast<const GTimer *>(reinterpret_cast<const char *>(&winnerInfo) + 0x160)->GetTime();
+        float racerTime = reinterpret_cast<const GTimer *>(reinterpret_cast<const char *>(&racerInfo) + 0x160)->GetTime();
 
         RacerStats[mIndexOfCurrentRacer].AddTimerStat(bAbs(winnerTime - racerTime), 0xAB44ED8B);
         return;
@@ -580,7 +573,7 @@ void PostRaceResultsScreen::SetupStat_TimeBehind() {
 void PostRaceResultsScreen::SetupStat_LapVariance() {
     GRacerInfo &racerInfo = GRaceStatus::Get().GetRacerInfo(mIndexOfCurrentRacer);
 
-    if (*reinterpret_cast< const int * >(reinterpret_cast< const char * >(&racerInfo) + 0x3C) > 1) {
+    if (*reinterpret_cast<const int *>(reinterpret_cast<const char *>(&racerInfo) + 0x3C) > 1) {
         float bestLapTime = GRaceStatus::Get().GetBestLapTime(mIndexOfCurrentRacer);
         float worstLapTime = GRaceStatus::Get().GetWorstLapTime(mIndexOfCurrentRacer);
 
@@ -600,8 +593,7 @@ void PostRaceResultsScreen::SetupStat_TrafficCollisions() {
 
     if (GRaceStatusGetRaceTimeElapsed(&GRaceStatus::Get()) > lbl_803E5E74) {
         RacerStats[mIndexOfCurrentRacer].AddGenericStat(
-            static_cast< float >(*reinterpret_cast< const int * >(reinterpret_cast< const char * >(&racerInfo) + 0x12C)),
-            0x094BFDFC, 0, lbl_803E5E44);
+            static_cast<float>(*reinterpret_cast<const int *>(reinterpret_cast<const char *>(&racerInfo) + 0x12C)), 0x094BFDFC, 0, lbl_803E5E44);
         return;
     }
 
@@ -616,10 +608,9 @@ void PostRaceResultsScreen::SetupStat_ZeroToSixty() {
         speedUnits = 0xB8CF16FC;
     }
 
-    if (*reinterpret_cast< const float * >(reinterpret_cast< const char * >(&racerInfo) + 0x138) > lbl_803E5E80 &&
-        GRacerInfoAreStatsReady(&racerInfo)) {
-        RacerStats[mIndexOfCurrentRacer].AddTimerStat(
-            *reinterpret_cast< const float * >(reinterpret_cast< const char * >(&racerInfo) + 0x138), speedUnits);
+    if (*reinterpret_cast<const float *>(reinterpret_cast<const char *>(&racerInfo) + 0x138) > lbl_803E5E80 && GRacerInfoAreStatsReady(&racerInfo)) {
+        RacerStats[mIndexOfCurrentRacer].AddTimerStat(*reinterpret_cast<const float *>(reinterpret_cast<const char *>(&racerInfo) + 0x138),
+                                                      speedUnits);
         return;
     }
 
@@ -634,10 +625,9 @@ void PostRaceResultsScreen::SetupStat_QuarterMile() {
         timeUnits = 0x1C6F2A82;
     }
 
-    if (*reinterpret_cast< const float * >(reinterpret_cast< const char * >(&racerInfo) + 0x13C) > lbl_803E5E84 &&
-        GRacerInfoAreStatsReady(&racerInfo)) {
-        RacerStats[mIndexOfCurrentRacer].AddTimerStat(
-            *reinterpret_cast< const float * >(reinterpret_cast< const char * >(&racerInfo) + 0x13C), timeUnits);
+    if (*reinterpret_cast<const float *>(reinterpret_cast<const char *>(&racerInfo) + 0x13C) > lbl_803E5E84 && GRacerInfoAreStatsReady(&racerInfo)) {
+        RacerStats[mIndexOfCurrentRacer].AddTimerStat(*reinterpret_cast<const float *>(reinterpret_cast<const char *>(&racerInfo) + 0x13C),
+                                                      timeUnits);
         return;
     }
 
@@ -649,8 +639,7 @@ void PostRaceResultsScreen::SetupStat_PerfectShifts() {
 
     if (GRaceStatusGetRaceTimeElapsed(&GRaceStatus::Get()) > lbl_803E5E88 && GRacerInfoAreStatsReady(&racerInfo)) {
         RacerStats[mIndexOfCurrentRacer].AddGenericStat(
-            static_cast< float >(*reinterpret_cast< const int * >(reinterpret_cast< const char * >(&racerInfo) + 0x128)),
-            0x680AC597, 0, lbl_803E5E44);
+            static_cast<float>(*reinterpret_cast<const int *>(reinterpret_cast<const char *>(&racerInfo) + 0x128)), 0x680AC597, 0, lbl_803E5E44);
         return;
     }
 
@@ -660,7 +649,7 @@ void PostRaceResultsScreen::SetupStat_PerfectShifts() {
 void PostRaceResultsScreen::SetupStat_AccumulatedSpeed() {
     GRacerInfo &racerInfo = GRaceStatus::Get().GetRacerInfo(mIndexOfCurrentRacer);
     unsigned int speedUnits = 0x8569A25F;
-    float speed = *reinterpret_cast< const float * >(reinterpret_cast< const char * >(&racerInfo) + 0x134);
+    float speed = *reinterpret_cast<const float *>(reinterpret_cast<const char *>(&racerInfo) + 0x134);
 
     if (FEDatabase->GetGameplaySettings()->SpeedoUnits == 0) {
         speedUnits = 0x8569AB44;
@@ -719,80 +708,80 @@ void PostRaceResultsScreen::SetupStat_SpeedBehind() {
 void PostRaceResultsScreen::SetupRacerStats(int index, GRacerInfo *racer_info) {
     FEngSetLanguageHash(GetPackageName(), 0x2D691760, 0x4E706980);
     switch (mRaceType) {
-    case GRace::kRaceType_P2P:
-    case GRace::kRaceType_Drag:
-        FEngSetLanguageHash(GetPackageName(), m_RaceButtonHash, 0x1135F776);
-        break;
-    case GRace::kRaceType_Circuit:
-    case GRace::kRaceType_Knockout:
-        FEngSetLanguageHash(GetPackageName(), m_RaceButtonHash, 0x7B8F45DF);
-        break;
-    case GRace::kRaceType_SpeedTrap:
-        FEngSetLanguageHash(GetPackageName(), m_RaceButtonHash, 0xAEF51E9D);
-        break;
-    case GRace::kRaceType_Tollbooth:
-        FEngSetLanguageHash(GetPackageName(), m_RaceButtonHash, 0xAC23368C);
-        break;
-    default:
-        break;
+        case GRace::kRaceType_P2P:
+        case GRace::kRaceType_Drag:
+            FEngSetLanguageHash(GetPackageName(), m_RaceButtonHash, 0x1135F776);
+            break;
+        case GRace::kRaceType_Circuit:
+        case GRace::kRaceType_Knockout:
+            FEngSetLanguageHash(GetPackageName(), m_RaceButtonHash, 0x7B8F45DF);
+            break;
+        case GRace::kRaceType_SpeedTrap:
+            FEngSetLanguageHash(GetPackageName(), m_RaceButtonHash, 0xAEF51E9D);
+            break;
+        case GRace::kRaceType_Tollbooth:
+            FEngSetLanguageHash(GetPackageName(), m_RaceButtonHash, 0xAC23368C);
+            break;
+        default:
+            break;
     }
 
     RacerStats[index].SetRacerName(racer_info->GetName());
 
     switch (mRaceType) {
-    case GRace::kRaceType_P2P:
-        SetupStat_TopSpeed();
-        SetupStat_AverageSpeed();
-        if (FEDatabase->IsLANMode()) {
-            SetupStat_NosUsed();
-        } else if (FEDatabase->IsOnlineMode()) {
-            SetupStat_NosUsed();
-        } else {
-            SetupStat_TimeBehind();
+        case GRace::kRaceType_P2P:
+            SetupStat_TopSpeed();
+            SetupStat_AverageSpeed();
+            if (FEDatabase->IsLANMode()) {
+                SetupStat_NosUsed();
+            } else if (FEDatabase->IsOnlineMode()) {
+                SetupStat_NosUsed();
+            } else {
+                SetupStat_TimeBehind();
+                SetupStat_TrafficCollisions();
+            }
+            SetupStat_StageVariance();
+            break;
+        case GRace::kRaceType_Circuit:
+        case GRace::kRaceType_Knockout:
+            SetupStat_TopSpeed();
+            SetupStat_AverageSpeed();
+            if (FEDatabase->IsLANMode()) {
+                SetupStat_NosUsed();
+            } else if (FEDatabase->IsOnlineMode()) {
+                SetupStat_NosUsed();
+            } else {
+                SetupStat_TimeBehind();
+                SetupStat_LapVariance();
+                SetupStat_TrafficCollisions();
+            }
+            break;
+        case GRace::kRaceType_Drag:
+            SetupStat_ZeroToSixty();
+            SetupStat_QuarterMile();
+            SetupStat_PerfectShifts();
+            if (FEDatabase->IsLANMode()) {
+                SetupStat_NosUsed();
+            } else if (FEDatabase->IsOnlineMode()) {
+                SetupStat_NosUsed();
+            } else {
+                SetupStat_TimeBehind();
+                SetupStat_TrafficCollisions();
+            }
+            break;
+        case GRace::kRaceType_Tollbooth:
+            SetupStat_AccumulatedSpeed();
+            SetupStat_SpeedVariance();
+            SetupStat_SpeedBehind();
+            break;
+        case GRace::kRaceType_SpeedTrap:
+            SetupStat_TopSpeed();
+            SetupStat_AverageSpeed();
+            SetupStat_StageVariance();
             SetupStat_TrafficCollisions();
-        }
-        SetupStat_StageVariance();
-        break;
-    case GRace::kRaceType_Circuit:
-    case GRace::kRaceType_Knockout:
-        SetupStat_TopSpeed();
-        SetupStat_AverageSpeed();
-        if (FEDatabase->IsLANMode()) {
-            SetupStat_NosUsed();
-        } else if (FEDatabase->IsOnlineMode()) {
-            SetupStat_NosUsed();
-        } else {
-            SetupStat_TimeBehind();
-            SetupStat_LapVariance();
-            SetupStat_TrafficCollisions();
-        }
-        break;
-    case GRace::kRaceType_Drag:
-        SetupStat_ZeroToSixty();
-        SetupStat_QuarterMile();
-        SetupStat_PerfectShifts();
-        if (FEDatabase->IsLANMode()) {
-            SetupStat_NosUsed();
-        } else if (FEDatabase->IsOnlineMode()) {
-            SetupStat_NosUsed();
-        } else {
-            SetupStat_TimeBehind();
-            SetupStat_TrafficCollisions();
-        }
-        break;
-    case GRace::kRaceType_Tollbooth:
-        SetupStat_AccumulatedSpeed();
-        SetupStat_SpeedVariance();
-        SetupStat_SpeedBehind();
-        break;
-    case GRace::kRaceType_SpeedTrap:
-        SetupStat_TopSpeed();
-        SetupStat_AverageSpeed();
-        SetupStat_StageVariance();
-        SetupStat_TrafficCollisions();
-        break;
-    default:
-        break;
+            break;
+        default:
+            break;
     }
 }
 
@@ -801,59 +790,59 @@ void PostRaceResultsScreen::SetupLapStats(int racerIndex, GRacerInfo *racer_info
 
     FEngSetLanguageHash(GetPackageName(), m_RaceButtonHash, 0x8159A0B2);
     switch (mRaceType) {
-    case GRace::kRaceType_P2P:
-    case GRace::kRaceType_Drag:
-        FEngSetLanguageHash(GetPackageName(), 0x2D691760, 0x34BA50FF);
-        obj = FEngFindObject(GetPackageName(), 0x586AB4A6);
-        FEngSetVisible(obj);
-        obj = FEngFindObject(GetPackageName(), 0x44AC8987);
-        FEngSetVisible(obj);
-        obj = FEngFindObject(GetPackageName(), 0x30EE5E68);
-        FEngSetVisible(obj);
-        FEngSetLanguageHash(GetPackageName(), 0x586AB4A6, 0xE8B7D527);
-        FEngSetLanguageHash(GetPackageName(), 0x44AC8987, 0x96B05F47);
-        FEngSetLanguageHash(GetPackageName(), 0x30EE5E68, 0xB67DA102);
-        break;
-    case GRace::kRaceType_Circuit:
-    case GRace::kRaceType_Knockout:
-        FEngSetLanguageHash(GetPackageName(), 0x2D691760, 0x9C8D7FE8);
-        obj = FEngFindObject(GetPackageName(), 0x586AB4A6);
-        FEngSetVisible(obj);
-        obj = FEngFindObject(GetPackageName(), 0x44AC8987);
-        FEngSetVisible(obj);
-        obj = FEngFindObject(GetPackageName(), 0x30EE5E68);
-        FEngSetVisible(obj);
-        FEngSetLanguageHash(GetPackageName(), 0x586AB4A6, 0x0000BF9C);
-        FEngSetLanguageHash(GetPackageName(), 0x44AC8987, 0x96B05F47);
-        FEngSetLanguageHash(GetPackageName(), 0x30EE5E68, 0xB67DA102);
-        break;
-    case GRace::kRaceType_SpeedTrap:
-        if (GRaceStatus::Exists()) {
-            GRaceStatus::Get().SortCheckPointRankings();
-        }
-        FEngSetLanguageHash(GetPackageName(), 0x2D691760, 0xECD0E6A6);
-        obj = FEngFindObject(GetPackageName(), 0x586AB4A6);
-        FEngSetVisible(obj);
-        obj = FEngFindObject(GetPackageName(), 0x44AC8987);
-        FEngSetVisible(obj);
-        obj = FEngFindObject(GetPackageName(), 0x30EE5E68);
-        FEngSetVisible(obj);
-        FEngSetLanguageHash(GetPackageName(), 0x586AB4A6, 0xEE1EDC76);
-        FEngSetLanguageHash(GetPackageName(), 0x44AC8987, 0x96B05F47);
-        FEngSetLanguageHash(GetPackageName(), 0x30EE5E68, 0x7540FB04);
-        break;
-    case GRace::kRaceType_Tollbooth:
-        FEngSetLanguageHash(GetPackageName(), 0x2D691760, 0xD10A8EA2);
-        obj = FEngFindObject(GetPackageName(), 0x586AB4A6);
-        FEngSetVisible(obj);
-        obj = FEngFindObject(GetPackageName(), 0x30EE5E68);
-        FEngSetVisible(obj);
-        FEngSetLanguageHash(GetPackageName(), 0x586AB4A6, 0xA15E4505);
-        FEngSetLanguageHash(GetPackageName(), 0x30EE5E68, 0xB67DA102);
-        FEngSetLanguageHash(GetPackageName(), m_RaceButtonHash, 0xD0B8AA33);
-        break;
-    default:
-        break;
+        case GRace::kRaceType_P2P:
+        case GRace::kRaceType_Drag:
+            FEngSetLanguageHash(GetPackageName(), 0x2D691760, 0x34BA50FF);
+            obj = FEngFindObject(GetPackageName(), 0x586AB4A6);
+            FEngSetVisible(obj);
+            obj = FEngFindObject(GetPackageName(), 0x44AC8987);
+            FEngSetVisible(obj);
+            obj = FEngFindObject(GetPackageName(), 0x30EE5E68);
+            FEngSetVisible(obj);
+            FEngSetLanguageHash(GetPackageName(), 0x586AB4A6, 0xE8B7D527);
+            FEngSetLanguageHash(GetPackageName(), 0x44AC8987, 0x96B05F47);
+            FEngSetLanguageHash(GetPackageName(), 0x30EE5E68, 0xB67DA102);
+            break;
+        case GRace::kRaceType_Circuit:
+        case GRace::kRaceType_Knockout:
+            FEngSetLanguageHash(GetPackageName(), 0x2D691760, 0x9C8D7FE8);
+            obj = FEngFindObject(GetPackageName(), 0x586AB4A6);
+            FEngSetVisible(obj);
+            obj = FEngFindObject(GetPackageName(), 0x44AC8987);
+            FEngSetVisible(obj);
+            obj = FEngFindObject(GetPackageName(), 0x30EE5E68);
+            FEngSetVisible(obj);
+            FEngSetLanguageHash(GetPackageName(), 0x586AB4A6, 0x0000BF9C);
+            FEngSetLanguageHash(GetPackageName(), 0x44AC8987, 0x96B05F47);
+            FEngSetLanguageHash(GetPackageName(), 0x30EE5E68, 0xB67DA102);
+            break;
+        case GRace::kRaceType_SpeedTrap:
+            if (GRaceStatus::Exists()) {
+                GRaceStatus::Get().SortCheckPointRankings();
+            }
+            FEngSetLanguageHash(GetPackageName(), 0x2D691760, 0xECD0E6A6);
+            obj = FEngFindObject(GetPackageName(), 0x586AB4A6);
+            FEngSetVisible(obj);
+            obj = FEngFindObject(GetPackageName(), 0x44AC8987);
+            FEngSetVisible(obj);
+            obj = FEngFindObject(GetPackageName(), 0x30EE5E68);
+            FEngSetVisible(obj);
+            FEngSetLanguageHash(GetPackageName(), 0x586AB4A6, 0xEE1EDC76);
+            FEngSetLanguageHash(GetPackageName(), 0x44AC8987, 0x96B05F47);
+            FEngSetLanguageHash(GetPackageName(), 0x30EE5E68, 0x7540FB04);
+            break;
+        case GRace::kRaceType_Tollbooth:
+            FEngSetLanguageHash(GetPackageName(), 0x2D691760, 0xD10A8EA2);
+            obj = FEngFindObject(GetPackageName(), 0x586AB4A6);
+            FEngSetVisible(obj);
+            obj = FEngFindObject(GetPackageName(), 0x30EE5E68);
+            FEngSetVisible(obj);
+            FEngSetLanguageHash(GetPackageName(), 0x586AB4A6, 0xA15E4505);
+            FEngSetLanguageHash(GetPackageName(), 0x30EE5E68, 0xB67DA102);
+            FEngSetLanguageHash(GetPackageName(), m_RaceButtonHash, 0xD0B8AA33);
+            break;
+        default:
+            break;
     }
 
     StatsPanel &panel = RacerStats[racerIndex];
@@ -861,301 +850,254 @@ void PostRaceResultsScreen::SetupLapStats(int racerIndex, GRacerInfo *racer_info
     GRaceStatus &race_status = GRaceStatus::Get();
 
     switch (mRaceType) {
-    case GRace::kRaceType_P2P:
-    case GRace::kRaceType_Drag: {
+        case GRace::kRaceType_P2P:
+        case GRace::kRaceType_Drag: {
 #ifdef EA_BUILD_A124
-        const float split_times[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-        const int split_rankings[4] = {0, 0, 0, 0};
+            const float split_times[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+            const int split_rankings[4] = {0, 0, 0, 0};
 #else
-        const float *split_times = racer_info->GetSplitTimes();
-        const int *split_rankings = racer_info->GetSplitRankings();
+            const float *split_times = racer_info->GetSplitTimes();
+            const int *split_rankings = racer_info->GetSplitRankings();
 #endif
 
-        for (int i = 0; i < 4; ++i) {
-            RacerStats[racerIndex].AddStat(new ("", 0)
-                                               StageStat(FEngFindString(RacerStats[racerIndex].ParentPkg,
-                                                                        FEngHashString(lbl_803E5088, lbl_803E5DCC,
-                                                                            RacerStats[racerIndex].RacerName)),
-                                                         FEngFindString(RacerStats[racerIndex].ParentPkg,
-                                                                        FEngHashString(lbl_803E5088, lbl_803E5DDC,
-                                                                            RacerStats[racerIndex].RacerName)),
-                                                         FEngFindString(RacerStats[racerIndex].ParentPkg,
-                                                                        FEngHashString(lbl_803E5088, lbl_803E5E24,
-                                                                            RacerStats[racerIndex].RacerName)),
-                                         i,
-                                         split_times[i],
-                                         split_rankings[i]));
-        }
-
-        float final_time = 0.0f;
-        if (racer_info->IsFinishedRacing()) {
-            final_time = racer_info->GetRaceTimer().GetTime();
-        }
-
-        panel.AddStat(new ("", 0)
-                          StageStat(FEngFindString(panel.ParentPkg,
-                                                   FEngHashString(lbl_803E5088, lbl_803E5DCC, panel.RacerName)),
-                                    FEngFindString(panel.ParentPkg,
-                                                   FEngHashString(lbl_803E5088, lbl_803E5DDC, panel.RacerName)),
-                                    FEngFindString(panel.ParentPkg,
-                                                   FEngHashString(lbl_803E5088, lbl_803E5E24, panel.RacerName)),
-                                     4,
-                                     final_time,
-                                     racer_info->GetRanking()));
-        break;
-    }
-    case GRace::kRaceType_Circuit:
-    case GRace::kRaceType_Knockout: {
-        for (int i = 0; i < race_status.GetRaceParameters()->GetNumLaps(); ++i) {
-            int lap_position = race_status.GetLapPosition(i, racerIndex, true);
-
-            if (racer_info->GetIsKnockedOut() && lap_position < 2) {
-                lap_position = -1;
+            for (int i = 0; i < 4; ++i) {
+                RacerStats[racerIndex].AddStat(new ("", 0) StageStat(
+                    FEngFindString(RacerStats[racerIndex].ParentPkg, FEngHashString(lbl_803E5088, lbl_803E5DCC, RacerStats[racerIndex].RacerName)),
+                    FEngFindString(RacerStats[racerIndex].ParentPkg, FEngHashString(lbl_803E5088, lbl_803E5DDC, RacerStats[racerIndex].RacerName)),
+                    FEngFindString(RacerStats[racerIndex].ParentPkg, FEngHashString(lbl_803E5088, lbl_803E5E24, RacerStats[racerIndex].RacerName)), i,
+                    split_times[i], split_rankings[i]));
             }
 
-            RacerStats[racerIndex].AddStat(new ("", 0)
-                                               LapStat(FEngFindString(RacerStats[racerIndex].ParentPkg,
-                                                                      FEngHashString(lbl_803E5088, lbl_803E5DCC,
-                                                                          RacerStats[racerIndex].RacerName)),
-                                                       FEngFindString(RacerStats[racerIndex].ParentPkg,
-                                                                      FEngHashString(lbl_803E5088, lbl_803E5DDC,
-                                                                          RacerStats[racerIndex].RacerName)),
-                                                       FEngFindString(RacerStats[racerIndex].ParentPkg,
-                                                                      FEngHashString(lbl_803E5088, lbl_803E5E24,
-                                                                          RacerStats[racerIndex].RacerName)),
-                                      i + 1,
-                                       race_status.GetLapTime(i, racerIndex, false), lap_position));
-        }
-        break;
-    }
-    case GRace::kRaceType_SpeedTrap: {
-        int num_traps = race_status.GetNumSpeedTraps();
+            float final_time = 0.0f;
+            if (racer_info->IsFinishedRacing()) {
+                final_time = racer_info->GetRaceTimer().GetTime();
+            }
 
-        for (int i = 0; i < num_traps; ++i) {
-            panel.AddStat(new ("", 0)
-                              SpeedStat(FEngFindString(panel.ParentPkg,
-                                                       FEngHashString(lbl_803E5088, lbl_803E5DCC, panel.RacerName)),
-                                        FEngFindString(panel.ParentPkg,
-                                                       FEngHashString(lbl_803E5088, lbl_803E5DDC, panel.RacerName)),
-                                        FEngFindString(panel.ParentPkg,
-                                                       FEngHashString(lbl_803E5088, lbl_803E5E24, panel.RacerName)),
-                                         i + 1,
-                                          race_status.GetRaceSpeedTrapSpeed(i, racerIndex),
-                                          race_status.GetRaceSpeedTrapPosition(i, racerIndex)));
+            panel.AddStat(new ("", 0) StageStat(FEngFindString(panel.ParentPkg, FEngHashString(lbl_803E5088, lbl_803E5DCC, panel.RacerName)),
+                                                FEngFindString(panel.ParentPkg, FEngHashString(lbl_803E5088, lbl_803E5DDC, panel.RacerName)),
+                                                FEngFindString(panel.ParentPkg, FEngHashString(lbl_803E5088, lbl_803E5E24, panel.RacerName)), 4,
+                                                final_time, racer_info->GetRanking()));
+            break;
         }
-        break;
-    }
-    case GRace::kRaceType_Tollbooth: {
-        int num_booths = race_status.GetNumTollbooths();
+        case GRace::kRaceType_Circuit:
+        case GRace::kRaceType_Knockout: {
+            for (int i = 0; i < race_status.GetRaceParameters()->GetNumLaps(); ++i) {
+                int lap_position = race_status.GetLapPosition(i, racerIndex, true);
 
-        for (int i = 0; i < num_booths; ++i) {
-            RacerStats[racerIndex].AddStat(new ("", 0)
-                                               TollboothStat(FEngFindString(RacerStats[racerIndex].ParentPkg,
-                                                                            FEngHashString(lbl_803E5088, lbl_803E5DCC,
-                                                                                RacerStats[racerIndex].RacerName)),
-                                                            FEngFindString(RacerStats[racerIndex].ParentPkg,
-                                                                            FEngHashString(lbl_803E5088, lbl_803E5DDC,
-                                                                                RacerStats[racerIndex].RacerName)),
-                                                            FEngFindString(RacerStats[racerIndex].ParentPkg,
-                                                                            FEngHashString(lbl_803E5088, lbl_803E5E24,
-                                                                                RacerStats[racerIndex].RacerName)),
-                                             i + 1,
-                                              race_status.GetRaceTollboothTime(i, racerIndex), 1));
+                if (racer_info->GetIsKnockedOut() && lap_position < 2) {
+                    lap_position = -1;
+                }
+
+                RacerStats[racerIndex].AddStat(new ("", 0) LapStat(
+                    FEngFindString(RacerStats[racerIndex].ParentPkg, FEngHashString(lbl_803E5088, lbl_803E5DCC, RacerStats[racerIndex].RacerName)),
+                    FEngFindString(RacerStats[racerIndex].ParentPkg, FEngHashString(lbl_803E5088, lbl_803E5DDC, RacerStats[racerIndex].RacerName)),
+                    FEngFindString(RacerStats[racerIndex].ParentPkg, FEngHashString(lbl_803E5088, lbl_803E5E24, RacerStats[racerIndex].RacerName)),
+                    i + 1, race_status.GetLapTime(i, racerIndex, false), lap_position));
+            }
+            break;
         }
+        case GRace::kRaceType_SpeedTrap: {
+            int num_traps = race_status.GetNumSpeedTraps();
 
-        float remaining_time = 0.0f;
-        if (racer_info->IsFinishedRacing()) {
-            remaining_time = race_status.GetRaceTimeRemaining();
+            for (int i = 0; i < num_traps; ++i) {
+                panel.AddStat(new ("", 0)
+                                  SpeedStat(FEngFindString(panel.ParentPkg, FEngHashString(lbl_803E5088, lbl_803E5DCC, panel.RacerName)),
+                                            FEngFindString(panel.ParentPkg, FEngHashString(lbl_803E5088, lbl_803E5DDC, panel.RacerName)),
+                                            FEngFindString(panel.ParentPkg, FEngHashString(lbl_803E5088, lbl_803E5E24, panel.RacerName)), i + 1,
+                                            race_status.GetRaceSpeedTrapSpeed(i, racerIndex), race_status.GetRaceSpeedTrapPosition(i, racerIndex)));
+            }
+            break;
         }
+        case GRace::kRaceType_Tollbooth: {
+            int num_booths = race_status.GetNumTollbooths();
 
-        panel.AddStat(new ("", 0)
-                          TollboothStat(FEngFindString(panel.ParentPkg,
-                                                       FEngHashString(lbl_803E5088, lbl_803E5DCC, panel.RacerName)),
-                                        FEngFindString(panel.ParentPkg,
-                                                       FEngHashString(lbl_803E5088, lbl_803E5DDC, panel.RacerName)),
-                                        FEngFindString(panel.ParentPkg,
-                                                       FEngHashString(lbl_803E5088, lbl_803E5E24, panel.RacerName)),
-                                        num_booths + 1,
-                                         remaining_time,
-                                         1));
-        break;
-    }
-    default:
-        break;
+            for (int i = 0; i < num_booths; ++i) {
+                RacerStats[racerIndex].AddStat(new ("", 0) TollboothStat(
+                    FEngFindString(RacerStats[racerIndex].ParentPkg, FEngHashString(lbl_803E5088, lbl_803E5DCC, RacerStats[racerIndex].RacerName)),
+                    FEngFindString(RacerStats[racerIndex].ParentPkg, FEngHashString(lbl_803E5088, lbl_803E5DDC, RacerStats[racerIndex].RacerName)),
+                    FEngFindString(RacerStats[racerIndex].ParentPkg, FEngHashString(lbl_803E5088, lbl_803E5E24, RacerStats[racerIndex].RacerName)),
+                    i + 1, race_status.GetRaceTollboothTime(i, racerIndex), 1));
+            }
+
+            float remaining_time = 0.0f;
+            if (racer_info->IsFinishedRacing()) {
+                remaining_time = race_status.GetRaceTimeRemaining();
+            }
+
+            panel.AddStat(new ("", 0) TollboothStat(FEngFindString(panel.ParentPkg, FEngHashString(lbl_803E5088, lbl_803E5DCC, panel.RacerName)),
+                                                    FEngFindString(panel.ParentPkg, FEngHashString(lbl_803E5088, lbl_803E5DDC, panel.RacerName)),
+                                                    FEngFindString(panel.ParentPkg, FEngHashString(lbl_803E5088, lbl_803E5E24, panel.RacerName)),
+                                                    num_booths + 1, remaining_time, 1));
+            break;
+        }
+        default:
+            break;
     }
 }
 
-void PostRaceResultsScreen::NotificationMessage(unsigned long msg, FEObject *pObject, unsigned long Param1,
-                                                unsigned long Param2) {
+void PostRaceResultsScreen::NotificationMessage(unsigned long msg, FEObject *pObject, unsigned long Param1, unsigned long Param2) {
     switch (msg) {
-    case 0x35F8620B: {
-        if (!FEDatabase->IsLANMode()) {
-            if (!FEDatabase->IsOnlineMode()) {
+        case 0x35F8620B: {
+            if (!FEDatabase->IsLANMode()) {
+                if (!FEDatabase->IsOnlineMode()) {
+                    return;
+                }
+            }
+
+            FEngSetScript(GetPackageName(), 0x812A09D4, 0x0016A259, true);
+            FEngSetScript(GetPackageName(), 0x05D85A9F, 0x5079C8F8, true);
+            return;
+        }
+        case 0x5073EF13:
+            if (mPostRaceScreenMode == POSTRACESCREENMODE_RESULTS) {
                 return;
             }
-        }
 
-        FEngSetScript(GetPackageName(), 0x812A09D4, 0x0016A259, true);
-        FEngSetScript(GetPackageName(), 0x05D85A9F, 0x5079C8F8, true);
-        return;
-    }
-    case 0x5073EF13:
-        if (mPostRaceScreenMode == POSTRACESCREENMODE_RESULTS) {
+            --mIndexOfCurrentRacer;
+            if (mIndexOfCurrentRacer < 0) {
+                mIndexOfCurrentRacer = mNumberOfRacers - 1;
+            }
+
+            Setup();
             return;
-        }
+        case 0xD9FEEC59:
+            if (mPostRaceScreenMode == POSTRACESCREENMODE_RESULTS) {
+                return;
+            }
 
-        --mIndexOfCurrentRacer;
-        if (mIndexOfCurrentRacer < 0) {
-            mIndexOfCurrentRacer = mNumberOfRacers - 1;
-        }
+            ++mIndexOfCurrentRacer;
+            if (mIndexOfCurrentRacer >= mNumberOfRacers) {
+                mIndexOfCurrentRacer = 0;
+            }
 
-        Setup();
-        return;
-    case 0xD9FEEC59:
-        if (mPostRaceScreenMode == POSTRACESCREENMODE_RESULTS) {
+            Setup();
             return;
-        }
-
-        ++mIndexOfCurrentRacer;
-        if (mIndexOfCurrentRacer >= mNumberOfRacers) {
-            mIndexOfCurrentRacer = 0;
-        }
-
-        Setup();
-        return;
-    case 0xC519BFC3:
-        if (mRaceType == GRace::kRaceType_Tollbooth) {
-            if (mPostRaceScreenMode == POSTRACESCREENMODE_LAPSTATS) {
-                mPostRaceScreenMode = POSTRACESCREENMODE_STATS;
+        case 0xC519BFC3:
+            if (mRaceType == GRace::kRaceType_Tollbooth) {
+                if (mPostRaceScreenMode == POSTRACESCREENMODE_LAPSTATS) {
+                    mPostRaceScreenMode = POSTRACESCREENMODE_STATS;
+                } else {
+                    mPostRaceScreenMode = POSTRACESCREENMODE_LAPSTATS;
+                }
             } else {
-                mPostRaceScreenMode = POSTRACESCREENMODE_LAPSTATS;
-            }
-        } else {
-            mPostRaceScreenMode = static_cast< PostRaceScreenMode >(mPostRaceScreenMode + 1);
-            if (mPostRaceScreenMode == POSTRACESCREENMODE_NUMMODES) {
-                mPostRaceScreenMode = POSTRACESCREENMODE_RESULTS;
-            }
-        }
-
-        Setup();
-        return;
-    case 0xC519BFC4: {
-        if (FEDatabase->IsLANMode()) {
-            return;
-        }
-
-        if (FEDatabase->IsOnlineMode()) {
-            return;
-        }
-
-        DialogInterface::ShowTwoButtons(GetPackageName(), lbl_803E5EEC, static_cast< eDialogTitle >(1), 0x417B2601,
-                                        0x1A294DAD, 0xE1A57D51, 0xB4623F67, 0xB4623F67,
-                                        static_cast< eDialogFirstButtons >(1),
-                                        static_cast< unsigned int >(0x4D3399A8));
-        return;
-    }
-    case 0xE1A57D51:
-        new EUnPause();
-        if (cFEng::Get()->IsPackagePushed(lbl_803E5F00)) {
-            PhotoFinishScreen::mRestartSelected = true;
-            return;
-        }
-
-        new ERestartRace();
-        return;
-    case 0xB4623F67:
-        cFEng::Get()->QueuePackageMessage(0xC6341FF6, GetPackageName(), nullptr);
-        return;
-    case 0x406415E3: {
-        if (FEngIsScriptSet(GetPackageName(), 0x57EFB2FB, 0x0016A259)) {
-            return;
-        }
-
-        if (GRaceStatus::Get().GetRaceContext() == GRace::kRaceContext_Career &&
-            GRaceStatus::Get().GetRaceParameters()->GetIsBossRace()) {
-            bool playerDone = false;
-
-            if (mPlayerRacerInfo != nullptr &&
-                (mPlayerRacerInfo->IsFinishedRacing() || mPlayerRacerInfo->GetIsTotalled() ||
-                 mPlayerRacerInfo->GetIsEngineBlown() || mPlayerRacerInfo->GetIsKnockedOut() ||
-                 mPlayerRacerInfo->GetIsBusted())) {
-                playerDone = true;
+                mPostRaceScreenMode = static_cast<PostRaceScreenMode>(mPostRaceScreenMode + 1);
+                if (mPostRaceScreenMode == POSTRACESCREENMODE_NUMMODES) {
+                    mPostRaceScreenMode = POSTRACESCREENMODE_RESULTS;
+                }
             }
 
-            if (playerDone && mPlayerRacerInfo->GetRanking() != 1) {
-                DialogInterface::ShowTwoButtons(GetPackageName(), lbl_803E5EEC, static_cast< eDialogTitle >(1),
-                                                0x417B2601, 0x1A294DAD, 0x30ED2368, 0xB4623F67, 0xB4623F67,
-                                                static_cast< eDialogFirstButtons >(1),
-                                                static_cast< unsigned int >(0x9887EB98));
+            Setup();
+            return;
+        case 0xC519BFC4: {
+            if (FEDatabase->IsLANMode()) {
                 return;
             }
-        }
 
-        goto set_continue_script;
-    }
-    case 0x30ED2368:
-    set_continue_script:
-        if (!FEngIsScriptSet(GetPackageName(), 0x47FF4E7C, 0x001335F0)) {
-            FEngSetScript(GetPackageName(), 0x47FF4E7C, 0x001335F0, true);
-        }
-        return;
-    case 0xE1FDE1D1: {
-        if (FEDatabase->IsLANMode()) {
-            return;
-        }
-
-        if (FEDatabase->IsOnlineMode()) {
-            return;
-        }
-
-        if (cFEng::Get()->IsPackagePushed(lbl_803E5F00)) {
-            cFEng::Get()->QueuePackagePop(1);
-            if (cFEng::Get()->IsPackagePushed(lbl_803E5F18)) {
-                cFEng::Get()->QueuePackagePop(1);
-            }
-            return;
-        }
-
-        {
-            bool playerDone = false;
-            if (mPlayerRacerInfo != nullptr &&
-                (mPlayerRacerInfo->IsFinishedRacing() || mPlayerRacerInfo->GetIsTotalled() ||
-                 mPlayerRacerInfo->GetIsEngineBlown() || mPlayerRacerInfo->GetIsKnockedOut() ||
-                 mPlayerRacerInfo->GetIsBusted())) {
-                playerDone = true;
+            if (FEDatabase->IsOnlineMode()) {
+                return;
             }
 
-            GRaceParameters *parms = GRaceStatus::Get().GetRaceParameters();
-            bool ddayRace = false;
-            if (parms != nullptr && parms->GetIsDDayRace()) {
-                ddayRace = true;
+            DialogInterface::ShowTwoButtons(GetPackageName(), lbl_803E5EEC, static_cast<eDialogTitle>(1), 0x417B2601, 0x1A294DAD, 0xE1A57D51,
+                                            0xB4623F67, 0xB4623F67, static_cast<eDialogFirstButtons>(1), static_cast<unsigned int>(0x4D3399A8));
+            return;
+        }
+        case 0xE1A57D51:
+            new EUnPause();
+            if (cFEng::Get()->IsPackagePushed(lbl_803E5F00)) {
+                PhotoFinishScreen::mRestartSelected = true;
+                return;
             }
 
-            if (GRaceStatus::Exists() && GRaceStatus::Get().GetRaceContext() == GRace::kRaceContext_Career &&
-                !ddayRace) {
-                if (playerDone) {
-                    GRaceStatus::Get().RaceAbandoned();
+            new ERestartRace();
+            return;
+        case 0xB4623F67:
+            cFEng::Get()->QueuePackageMessage(0xC6341FF6, GetPackageName(), nullptr);
+            return;
+        case 0x406415E3: {
+            if (FEngIsScriptSet(GetPackageName(), 0x57EFB2FB, 0x0016A259)) {
+                return;
+            }
 
-                    {
-                        MNotifyRaceAbandoned abandoned;
-                        abandoned.Post(MNotifyRaceAbandoned::_GetKind());
-                    }
+            if (GRaceStatus::Get().GetRaceContext() == GRace::kRaceContext_Career && GRaceStatus::Get().GetRaceParameters()->GetIsBossRace()) {
+                bool playerDone = false;
+
+                if (mPlayerRacerInfo != nullptr &&
+                    (mPlayerRacerInfo->IsFinishedRacing() || mPlayerRacerInfo->GetIsTotalled() || mPlayerRacerInfo->GetIsEngineBlown() ||
+                     mPlayerRacerInfo->GetIsKnockedOut() || mPlayerRacerInfo->GetIsBusted())) {
+                    playerDone = true;
                 }
 
-                new EUnPause();
+                if (playerDone && mPlayerRacerInfo->GetRanking() != 1) {
+                    DialogInterface::ShowTwoButtons(GetPackageName(), lbl_803E5EEC, static_cast<eDialogTitle>(1), 0x417B2601, 0x1A294DAD, 0x30ED2368,
+                                                    0xB4623F67, 0xB4623F67, static_cast<eDialogFirstButtons>(1),
+                                                    static_cast<unsigned int>(0x9887EB98));
+                    return;
+                }
+            }
+
+            goto set_continue_script;
+        }
+        case 0x30ED2368:
+        set_continue_script:
+            if (!FEngIsScriptSet(GetPackageName(), 0x47FF4E7C, 0x001335F0)) {
+                FEngSetScript(GetPackageName(), 0x47FF4E7C, 0x001335F0, true);
+            }
+            return;
+        case 0xE1FDE1D1: {
+            if (FEDatabase->IsLANMode()) {
                 return;
             }
 
-            if (playerDone) {
-                new EQuitToFE(GARAGETYPE_MAIN_FE, nullptr);
-            } else {
-                new EUnPause();
+            if (FEDatabase->IsOnlineMode()) {
+                return;
             }
+
+            if (cFEng::Get()->IsPackagePushed(lbl_803E5F00)) {
+                cFEng::Get()->QueuePackagePop(1);
+                if (cFEng::Get()->IsPackagePushed(lbl_803E5F18)) {
+                    cFEng::Get()->QueuePackagePop(1);
+                }
+                return;
+            }
+
+            {
+                bool playerDone = false;
+                if (mPlayerRacerInfo != nullptr &&
+                    (mPlayerRacerInfo->IsFinishedRacing() || mPlayerRacerInfo->GetIsTotalled() || mPlayerRacerInfo->GetIsEngineBlown() ||
+                     mPlayerRacerInfo->GetIsKnockedOut() || mPlayerRacerInfo->GetIsBusted())) {
+                    playerDone = true;
+                }
+
+                GRaceParameters *parms = GRaceStatus::Get().GetRaceParameters();
+                bool ddayRace = false;
+                if (parms != nullptr && parms->GetIsDDayRace()) {
+                    ddayRace = true;
+                }
+
+                if (GRaceStatus::Exists() && GRaceStatus::Get().GetRaceContext() == GRace::kRaceContext_Career && !ddayRace) {
+                    if (playerDone) {
+                        GRaceStatus::Get().RaceAbandoned();
+
+                        {
+                            MNotifyRaceAbandoned abandoned;
+                            abandoned.Post(MNotifyRaceAbandoned::_GetKind());
+                        }
+                    }
+
+                    new EUnPause();
+                    return;
+                }
+
+                if (playerDone) {
+                    new EQuitToFE(GARAGETYPE_MAIN_FE, nullptr);
+                } else {
+                    new EUnPause();
+                }
+            }
+            return;
         }
-        return;
-    }
-    default:
-        return;
+        default:
+            return;
     }
 }
 
@@ -1170,12 +1112,12 @@ eMenuSoundTriggers PostRaceResultsScreen::NotifySoundMessage(unsigned long msg, 
         }
 
         if (mNumberOfRacers < 2 || mPostRaceScreenMode == POSTRACESCREENMODE_RESULTS) {
-            return static_cast< eMenuSoundTriggers >( -1 );
+            return static_cast<eMenuSoundTriggers>(-1);
         }
     }
 
     if (FEngIsScriptSet(GetPackageName(), 0x57EFB2FB, 0x0016A259)) {
-        return static_cast< eMenuSoundTriggers >( -1 );
+        return static_cast<eMenuSoundTriggers>(-1);
     }
 
     return maybe;
@@ -1304,10 +1246,14 @@ FEImage *FEngFindImage(const char *pkg_name, int name_hash);
 
 PostRaceMilestonesScreen::PostRaceMilestonesScreen(ScreenConstructorData *sd)
     : MenuScreen(sd) //
-    , mBountyEarned(0.0f) //
-    , mCurrMilestoneIndex(-1) //
-    , mCurrMilestoneScriptHash(0) //
-    , mCopDestructionBountyShown(false) //
+      ,
+      mBountyEarned(0.0f) //
+      ,
+      mCurrMilestoneIndex(-1) //
+      ,
+      mCurrMilestoneScriptHash(0) //
+      ,
+      mCopDestructionBountyShown(false) //
 {
     mpDataBigIcon = FEngFindImage(GetPackageName(), 0x14564FB9);
 }
@@ -1412,11 +1358,9 @@ bool PostRaceMilestonesScreen::StartMilestoneAnimations() {
     if (milestone) {
         char descStr[32];
         char outputStr[64];
-        FEDatabase->SetMilestoneDescriptionString(
-            descStr, milestone->GetTypeKey(), milestone->GetCurrentValue(), milestone->GetRequiredValue(), false);
-        bSNPrintf(
-            outputStr, 64, "%s: %s", GetTranslatedString(FEDatabase->GetMilestoneHeaderHash(milestone->GetLocalizationTag())),
-            descStr);
+        FEDatabase->SetMilestoneDescriptionString(descStr, milestone->GetTypeKey(), milestone->GetCurrentValue(), milestone->GetRequiredValue(),
+                                                  false);
+        bSNPrintf(outputStr, 64, "%s: %s", GetTranslatedString(FEDatabase->GetMilestoneHeaderHash(milestone->GetLocalizationTag())), descStr);
         StartAnimations(true, milestone->GetTypeKey(), milestone->GetBounty(), outputStr);
         return true;
     }
@@ -1435,11 +1379,8 @@ bool PostRaceMilestonesScreen::StartChallengeAnimations() {
             char descStr[32];
             char outputStr[64];
             FEDatabase->SetMilestoneDescriptionString(descStr, raceParams->GetChallengeType(), currVal, goalVal, false);
-            bSNPrintf(
-                outputStr, 64, "%s: %s",
-                GetTranslatedString(FEDatabase->GetChallengeHeaderHash(raceParams->GetLocalizationTag())), descStr);
-            StartAnimations(
-                true, raceParams->GetChallengeType(), static_cast<float>(raceParams->GetReputation()), outputStr);
+            bSNPrintf(outputStr, 64, "%s: %s", GetTranslatedString(FEDatabase->GetChallengeHeaderHash(raceParams->GetLocalizationTag())), descStr);
+            StartAnimations(true, raceParams->GetChallengeType(), static_cast<float>(raceParams->GetReputation()), outputStr);
             return true;
         }
     }
@@ -1468,8 +1409,7 @@ void PostRaceMilestonesScreen::NotificationMessage(unsigned long msg, FEObject *
             }
         }
 
-        if (GRaceStatus::Exists() && GRaceStatus::Get().GetRaceParameters() &&
-            GRaceStatus::Get().GetRaceParameters()->GetIsPursuitRace() &&
+        if (GRaceStatus::Exists() && GRaceStatus::Get().GetRaceParameters() && GRaceStatus::Get().GetRaceParameters()->GetIsPursuitRace() &&
             !FEDatabase->IsFinalEpicChase()) {
             StartChallengeAnimations();
         } else {
@@ -1488,28 +1428,38 @@ void PostRaceMilestonesScreen::NotificationMessage(unsigned long msg, FEObject *
         return;
     }
 
-    if (FEngIsScriptSet(mpDataBigIcon, 0x5079c8f8) &&
-        !FEngIsScriptRunning(mpDataBigIcon, 0x5079c8f8)) {
+    if (FEngIsScriptSet(mpDataBigIcon, 0x5079c8f8) && !FEngIsScriptRunning(mpDataBigIcon, 0x5079c8f8)) {
         FEngSetScript(mpDataBigIcon, mCurrMilestoneScriptHash, true);
     }
 }
 
-PursuitResultsDatum::PursuitResultsDatum(PursuitResultsDatumType type, unsigned int itemName, float itemNumber, float itemGoal, PursuitResultsDatumCheckType itemChecked)
+PursuitResultsDatum::PursuitResultsDatum(PursuitResultsDatumType type, unsigned int itemName, float itemNumber, float itemGoal,
+                                         PursuitResultsDatumCheckType itemChecked)
     : ArrayDatum(0, 0) //
-    , mType(type) //
-    , mName(itemName) //
-    , mNumber(itemNumber >= 0.0f ? itemNumber : 0.0f) //
-    , mGoal(itemGoal) //
-    , mChecked(itemChecked) //
+      ,
+      mType(type) //
+      ,
+      mName(itemName) //
+      ,
+      mNumber(itemNumber >= 0.0f ? itemNumber : 0.0f) //
+      ,
+      mGoal(itemGoal) //
+      ,
+      mChecked(itemChecked) //
 {}
 
 PursuitResultsArraySlot::PursuitResultsArraySlot(FEObject *obj, FEString *itemName, FEString *itemNumber, FEImage *itemChecked, FEImage *itemEmpty)
     : ArraySlot(obj) //
-    , mLine(obj) //
-    , mItemName(itemName) //
-    , mItemNumber(itemNumber) //
-    , mItemChecked(itemChecked) //
-    , mItemEmpty(itemEmpty) //
+      ,
+      mLine(obj) //
+      ,
+      mItemName(itemName) //
+      ,
+      mItemNumber(itemNumber) //
+      ,
+      mItemChecked(itemChecked) //
+      ,
+      mItemEmpty(itemEmpty) //
 {}
 
 void PursuitResultsArraySlot::Update(ArrayDatum *datum, bool isSelected) {
@@ -1591,8 +1541,10 @@ void PursuitResultsArraySlot::Update(ArrayDatum *datum, bool isSelected) {
 
 PostRacePursuitScreen::PostRacePursuitScreen(ScreenConstructorData *sd)
     : ArrayScrollerMenu(sd, 1, 9, false) //
-    , mPostPursuitScreenMode(POSTPURSUITSCREENMODE_PURSUIT) //
-    , m_RaceButtonHash(0x5CED1D04) {
+      ,
+      mPostPursuitScreenMode(POSTPURSUITSCREENMODE_PURSUIT) //
+      ,
+      m_RaceButtonHash(0x5CED1D04) {
     int i;
     char sztemp[32];
 
@@ -1661,46 +1613,46 @@ void PostRacePursuitScreen::Initialize() {
 void PostRacePursuitScreen::NotificationMessage(unsigned long msg, FEObject *pObject, unsigned long Param1, unsigned long Param2) {
     ArrayScrollerMenu::NotificationMessage(msg, pObject, Param1, Param2);
     switch (msg) {
-    case 0x406415E3:
-        if (TheGameFlowManager.IsInFrontend()) {
-            if (FEDatabase->IsQuickRaceMode()) {
-                cFEng::Get()->QueuePackageSwitch(lbl_803E5FA0, 0, 0, false);
-            } else {
-                cFEng::Get()->QueuePackageSwitch(lbl_803E52D4, 0, 0, false);
-            }
-        } else if (GRaceStatus::Exists() && GRaceStatus::Get().GetPlayMode() == GRaceStatus::kPlayMode_Racing) {
-            GRacerInfo &info = GRaceStatus::Get().GetRacerInfo(0);
-            if (info.IsFinishedRacing() && GRaceStatus::Get().GetRaceParameters()->GetIsPursuitRace()) {
-                if (FEDatabase->IsChallengeMode() && MemoryCard::GetInstance()->ShouldDoAutoSave(false)) {
-                    MemcardEnter(nullptr, nullptr, 0x100B1, nullptr, nullptr, 0, 0);
+        case 0x406415E3:
+            if (TheGameFlowManager.IsInFrontend()) {
+                if (FEDatabase->IsQuickRaceMode()) {
+                    cFEng::Get()->QueuePackageSwitch(lbl_803E5FA0, 0, 0, false);
                 } else {
-                    new EQuitToFE(static_cast<eGarageType>(1), nullptr);
+                    cFEng::Get()->QueuePackageSwitch(lbl_803E52D4, 0, 0, false);
+                }
+            } else if (GRaceStatus::Exists() && GRaceStatus::Get().GetPlayMode() == GRaceStatus::kPlayMode_Racing) {
+                GRacerInfo &info = GRaceStatus::Get().GetRacerInfo(0);
+                if (info.IsFinishedRacing() && GRaceStatus::Get().GetRaceParameters()->GetIsPursuitRace()) {
+                    if (FEDatabase->IsChallengeMode() && MemoryCard::GetInstance()->ShouldDoAutoSave(false)) {
+                        MemcardEnter(nullptr, nullptr, 0x100B1, nullptr, nullptr, 0, 0);
+                    } else {
+                        new EQuitToFE(static_cast<eGarageType>(1), nullptr);
+                    }
+                } else {
+                    new EUnPause();
                 }
             } else {
                 new EUnPause();
             }
-        } else {
-            new EUnPause();
-        }
-        break;
-    case 0xC519BFC3:
-        if (TheGameFlowManager.IsInFrontend()) {
-            if (mPostPursuitScreenMode == POSTPURSUITSCREENMODE_INFRACTIONS) {
-                mPostPursuitScreenMode = POSTPURSUITSCREENMODE_PURSUIT;
+            break;
+        case 0xC519BFC3:
+            if (TheGameFlowManager.IsInFrontend()) {
+                if (mPostPursuitScreenMode == POSTPURSUITSCREENMODE_INFRACTIONS) {
+                    mPostPursuitScreenMode = POSTPURSUITSCREENMODE_PURSUIT;
+                } else {
+                    mPostPursuitScreenMode = POSTPURSUITSCREENMODE_INFRACTIONS;
+                }
             } else {
-                mPostPursuitScreenMode = POSTPURSUITSCREENMODE_INFRACTIONS;
+                if (mPostPursuitScreenMode == POSTPURSUITSCREENMODE_INFRACTIONS) {
+                    mPostPursuitScreenMode = POSTPURSUITSCREENMODE_MILESTONES;
+                } else if (mPostPursuitScreenMode == POSTPURSUITSCREENMODE_MILESTONES) {
+                    mPostPursuitScreenMode = POSTPURSUITSCREENMODE_PURSUIT;
+                } else {
+                    mPostPursuitScreenMode = POSTPURSUITSCREENMODE_INFRACTIONS;
+                }
             }
-        } else {
-            if (mPostPursuitScreenMode == POSTPURSUITSCREENMODE_INFRACTIONS) {
-                mPostPursuitScreenMode = POSTPURSUITSCREENMODE_MILESTONES;
-            } else if (mPostPursuitScreenMode == POSTPURSUITSCREENMODE_MILESTONES) {
-                mPostPursuitScreenMode = POSTPURSUITSCREENMODE_PURSUIT;
-            } else {
-                mPostPursuitScreenMode = POSTPURSUITSCREENMODE_INFRACTIONS;
-            }
-        }
-        Initialize();
-        break;
+            Initialize();
+            break;
     }
 }
 
@@ -1756,13 +1708,26 @@ void PostRacePursuitScreen::SetupInfractions() {
 }
 
 void PostRacePursuitScreen::SetupPursuit() {
-    AddDatum(new(__FILE__, __LINE__) PursuitResultsDatum(PursuitResultsDatum::PursuitResultsDatumType_Time, 0x4d64888d, mPursuitData.mPursuitLength, 0.0f, PursuitResultsDatum::PursuitResultsDatumCheckType_Off));
-    AddDatum(new(__FILE__, __LINE__) PursuitResultsDatum(PursuitResultsDatum::PursuitResultsDatumType_Number, 0xa999f6e2, static_cast<float>(mPursuitData.mNumCopsDamaged), 0.0f, PursuitResultsDatum::PursuitResultsDatumCheckType_Off));
-    AddDatum(new(__FILE__, __LINE__) PursuitResultsDatum(PursuitResultsDatum::PursuitResultsDatumType_Number, 0x23f6e732, static_cast<float>(mPursuitData.mNumCopsDestroyed), 0.0f, PursuitResultsDatum::PursuitResultsDatumCheckType_Off));
-    AddDatum(new(__FILE__, __LINE__) PursuitResultsDatum(PursuitResultsDatum::PursuitResultsDatumType_Number, 0x0291c816, static_cast<float>(mPursuitData.mNumSpikeStripsDodged), 0.0f, PursuitResultsDatum::PursuitResultsDatumCheckType_Off));
-    AddDatum(new(__FILE__, __LINE__) PursuitResultsDatum(PursuitResultsDatum::PursuitResultsDatumType_Number, 0x29daba15, static_cast<float>(mPursuitData.mNumRoadblocksDodged), 0.0f, PursuitResultsDatum::PursuitResultsDatumCheckType_Off));
-    AddDatum(new(__FILE__, __LINE__) PursuitResultsDatum(PursuitResultsDatum::PursuitResultsDatumType_Number, 0xd9bb7d2d, static_cast<float>(mPursuitData.mCostToStateAchieved), 0.0f, PursuitResultsDatum::PursuitResultsDatumCheckType_Off));
-    AddDatum(new(__FILE__, __LINE__) PursuitResultsDatum(PursuitResultsDatum::PursuitResultsDatumType_Number, 0xb7dfff96, static_cast<float>(GInfractionManager::Get().GetNumInfractions()), 0.0f, PursuitResultsDatum::PursuitResultsDatumCheckType_Off));
+    AddDatum(new (__FILE__, __LINE__) PursuitResultsDatum(PursuitResultsDatum::PursuitResultsDatumType_Time, 0x4d64888d, mPursuitData.mPursuitLength,
+                                                          0.0f, PursuitResultsDatum::PursuitResultsDatumCheckType_Off));
+    AddDatum(new (__FILE__, __LINE__)
+                 PursuitResultsDatum(PursuitResultsDatum::PursuitResultsDatumType_Number, 0xa999f6e2,
+                                     static_cast<float>(mPursuitData.mNumCopsDamaged), 0.0f, PursuitResultsDatum::PursuitResultsDatumCheckType_Off));
+    AddDatum(new (__FILE__, __LINE__) PursuitResultsDatum(PursuitResultsDatum::PursuitResultsDatumType_Number, 0x23f6e732,
+                                                          static_cast<float>(mPursuitData.mNumCopsDestroyed), 0.0f,
+                                                          PursuitResultsDatum::PursuitResultsDatumCheckType_Off));
+    AddDatum(new (__FILE__, __LINE__) PursuitResultsDatum(PursuitResultsDatum::PursuitResultsDatumType_Number, 0x0291c816,
+                                                          static_cast<float>(mPursuitData.mNumSpikeStripsDodged), 0.0f,
+                                                          PursuitResultsDatum::PursuitResultsDatumCheckType_Off));
+    AddDatum(new (__FILE__, __LINE__) PursuitResultsDatum(PursuitResultsDatum::PursuitResultsDatumType_Number, 0x29daba15,
+                                                          static_cast<float>(mPursuitData.mNumRoadblocksDodged), 0.0f,
+                                                          PursuitResultsDatum::PursuitResultsDatumCheckType_Off));
+    AddDatum(new (__FILE__, __LINE__) PursuitResultsDatum(PursuitResultsDatum::PursuitResultsDatumType_Number, 0xd9bb7d2d,
+                                                          static_cast<float>(mPursuitData.mCostToStateAchieved), 0.0f,
+                                                          PursuitResultsDatum::PursuitResultsDatumCheckType_Off));
+    AddDatum(new (__FILE__, __LINE__) PursuitResultsDatum(PursuitResultsDatum::PursuitResultsDatumType_Number, 0xb7dfff96,
+                                                          static_cast<float>(GInfractionManager::Get().GetNumInfractions()), 0.0f,
+                                                          PursuitResultsDatum::PursuitResultsDatumCheckType_Off));
 }
 
 void PostRacePursuitScreen::SetupMilestones() {
@@ -1780,9 +1745,8 @@ void PostRacePursuitScreen::SetupMilestones() {
             }
             PursuitResultsDatum::PursuitResultsDatumCheckType checkType =
                 static_cast<PursuitResultsDatum::PursuitResultsDatumCheckType>(static_cast<int>(bestVal >= goalVal));
-            AddDatum(new PursuitResultsDatum(type,
-                FEDatabase->GetChallengeHeaderHash(raceParams->GetLocalizationTag()),
-                bestVal, goalVal, checkType));
+            AddDatum(
+                new PursuitResultsDatum(type, FEDatabase->GetChallengeHeaderHash(raceParams->GetLocalizationTag()), bestVal, goalVal, checkType));
         } else {
             unsigned int binNumber = FEDatabase->GetCareerSettings()->GetCurrentBin();
             GMilestone *milestone = GManager::Get().GetFirstMilestone(false, binNumber);
@@ -1798,12 +1762,10 @@ void PostRacePursuitScreen::SetupMilestones() {
                 if (milestone->GetIsDonePendingEscape()) {
                     checkType = PursuitResultsDatum::PursuitResultsDatumCheckType_On;
                 } else {
-                    checkType = static_cast<PursuitResultsDatum::PursuitResultsDatumCheckType>(
-                        milestone->GetIsAwarded() ? 2 : 0);
+                    checkType = static_cast<PursuitResultsDatum::PursuitResultsDatumCheckType>(milestone->GetIsAwarded() ? 2 : 0);
                 }
-                AddDatum(new PursuitResultsDatum(type,
-                    FEDatabase->GetMilestoneHeaderHash(milestone->GetLocalizationTag()),
-                    milestone->GetCurrentValue(), milestone->GetRequiredValue(), checkType));
+                AddDatum(new PursuitResultsDatum(type, FEDatabase->GetMilestoneHeaderHash(milestone->GetLocalizationTag()),
+                                                 milestone->GetCurrentValue(), milestone->GetRequiredValue(), checkType));
                 milestone = GManager::Get().GetNextMilestone(milestone, false, binNumber);
             }
         }

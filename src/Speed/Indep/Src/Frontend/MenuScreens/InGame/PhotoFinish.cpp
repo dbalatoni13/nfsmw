@@ -28,13 +28,10 @@
 #include "Speed/Indep/Src/World/TrackStreamer.hpp"
 #include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 
-extern void eLoadStreamingTexturePack(const char *filename, void (*callback)(void *), void *param,
-                                      int flags);
 extern void eUnloadStreamingTexturePack(const char *name);
 extern void eWaitForStreamingTexturePackLoading(const char *name);
 extern void eUnloadStreamingTexture(unsigned int *textures, int count);
-extern void eLoadStreamingTexture(unsigned int *textures, int count, void (*callback)(unsigned int),
-                                  unsigned int param, int pool);
+extern void eLoadStreamingTexture(unsigned int *textures, int count, void (*callback)(unsigned int), unsigned int param, int pool);
 extern void FEngSetTextureHash(FEImage *img, unsigned int hash);
 extern void FEngSetVisible(FEObject *obj);
 
@@ -47,8 +44,7 @@ extern FEObject *FEngFindObject(const char *pkg_name, unsigned int hash);
 extern void FEngSetInvisible(FEObject *obj);
 extern bool FEngIsScriptSet(const char *pkg_name, unsigned int obj_hash, unsigned int script_hash);
 extern bool FEngIsScriptRunning(const char *pkg_name, unsigned int obj_hash, unsigned int script_hash);
-extern void FEngSetScript(const char *pkg_name, unsigned int obj_hash, unsigned int script_hash,
-                          bool start_at_beginning);
+extern void FEngSetScript(const char *pkg_name, unsigned int obj_hash, unsigned int script_hash, bool start_at_beginning);
 extern void HideEverySingleHud();
 extern void SoundPause(bool pause, eSNDPAUSE_REASON reason);
 extern void StartCinematicSlowdown(EVIEW_ID view_id, float amount);
@@ -102,8 +98,7 @@ SillyTextureStreamerManager::SillyTextureStreamerManager(const char *stream_pack
     mMakeSpaceInPoolComplete = false;
     mCurrentlyLoading = true;
     gSillyTextureStreamerActive = true;
-    TheTrackStreamer.MakeSpaceInPool(0x60000, MakeSpaceInPoolCallbackBridge,
-                                    reinterpret_cast<int>(this));
+    TheTrackStreamer.MakeSpaceInPool(0x60000, MakeSpaceInPoolCallbackBridge, reinterpret_cast<int>(this));
 }
 
 SillyTextureStreamerManager::~SillyTextureStreamerManager() {
@@ -123,8 +118,7 @@ SillyTextureStreamerManager::~SillyTextureStreamerManager() {
 
 void SillyTextureStreamerManager::MakeSpaceInPoolCallback() {
     mMakeSpaceInPoolComplete = true;
-    eLoadStreamingTexturePack(BundleFileName, reinterpret_cast<void (*)(void *)>(LoadCallbackBridge),
-                              reinterpret_cast<void *>(this), 0);
+    eLoadStreamingTexturePack(BundleFileName, reinterpret_cast<void (*)(void *)>(LoadCallbackBridge), reinterpret_cast<void *>(this), 0);
 }
 
 void SillyTextureStreamerManager::LoadCallback() {
@@ -141,9 +135,7 @@ void SillyTextureStreamerManager::LoadCallback() {
             mCurrentlyLoading = true;
             mCurrentLoadingIndex = i;
             unsigned int tex = LoadInfos[i].LoadingTexture;
-            eLoadStreamingTexture(&tex, 1,
-                                  LoadCallbackBridge,
-                                  reinterpret_cast<unsigned int>(this), 7);
+            eLoadStreamingTexture(&tex, 1, LoadCallbackBridge, reinterpret_cast<unsigned int>(this), 7);
             return;
         }
     }
@@ -182,11 +174,16 @@ bool PhotoFinishScreen::mActive = false;
 
 PhotoFinishScreen::PhotoFinishScreen(ScreenConstructorData *sd)
     : MenuScreen(sd) //
-    , mIceCamTimer() //
-    , mSlowdownTimer() //
-    , fResultType(static_cast< FERESULTTYPE >(sd->Arg)) //
-    , mPhotoHash(0) //
-    , StreamTex(lbl_803E6080) {
+      ,
+      mIceCamTimer() //
+      ,
+      mSlowdownTimer() //
+      ,
+      fResultType(static_cast<FERESULTTYPE>(sd->Arg)) //
+      ,
+      mPhotoHash(0) //
+      ,
+      StreamTex(lbl_803E6080) {
     if (fResultType == FERESULTTYPE_RACE) {
         if (GRaceStatus::Exists()) {
             GRaceStatus &race_status = GRaceStatus::Get();
@@ -207,14 +204,14 @@ PhotoFinishScreen::PhotoFinishScreen(ScreenConstructorData *sd)
 
     mSlowdownTimer = RealTimer;
 
-    StartCinematicSlowdown(static_cast< EVIEW_ID >(1), lbl_803E60C4);
-    SetSoundControlState(true, static_cast< eSNDCTLSTATE >(0xF), lbl_803E60B8);
+    StartCinematicSlowdown(static_cast<EVIEW_ID>(1), lbl_803E60C4);
+    SetSoundControlState(true, static_cast<eSNDCTLSTATE>(0xF), lbl_803E60B8);
     new EMomentStrm(UMath::Vector4::kZero, UMath::Vector4::kZero, UMath::Vector4::kZero, 0, nullptr, 0x9FE1EE17);
 }
 
 void PhotoFinishScreen::Setup() {
     FEManager *fe_manager = FEManager::Get();
-    reinterpret_cast< unsigned int * >(fe_manager)[1] = 1;
+    reinterpret_cast<unsigned int *>(fe_manager)[1] = 1;
 
     unsigned int locale_hash = 0x8569AB44;
     if (FEDatabase->GetGameplaySettings()->SpeedoUnits == 1) {
@@ -227,7 +224,7 @@ void PhotoFinishScreen::Setup() {
 
         FEPrintf(GetPackageName(), speed_hash, lbl_803E4FF8, GetTranslatedString(locale_hash), display_speed);
         unsigned int bounty_hash = bStringHash(lbl_803E61D4);
-        FEPrintf(GetPackageName(), bounty_hash, GetTranslatedString(0x060C058A), static_cast< int >(mSpeedtrapBounty));
+        FEPrintf(GetPackageName(), bounty_hash, GetTranslatedString(0x060C058A), static_cast<int>(mSpeedtrapBounty));
         return;
     }
 
@@ -265,8 +262,7 @@ void PhotoFinishScreen::Setup() {
     lap_time.SetTime(racer_info->GetRaceTimer().GetTime());
     lap_time.PrintToString(lap_time_buffer, 0);
 
-    bSNPrintf(summary_buffer, 64, lbl_803E61E0, lap_time_buffer, GetTranslatedString(0x474),
-              GetTranslatedString(locale_hash), finishing_speed);
+    bSNPrintf(summary_buffer, 64, lbl_803E61E0, lap_time_buffer, GetTranslatedString(0x474), GetTranslatedString(locale_hash), finishing_speed);
 
     unsigned int result_hash;
 
@@ -277,16 +273,14 @@ void PhotoFinishScreen::Setup() {
         result_hash = 0x42423E94;
     } else if (FEngIsScriptSet(GetPackageName(), bStringHash(lbl_803E6190), 0x5079C8F8)) {
         if (race_params->GetRaceType() == GRace::kRaceType_SpeedTrap) {
-            FEPrintf(GetPackageName(), 0x37BEA03B, lbl_803E61F0, GetTranslatedString(0x7F54569D),
-                     GetTranslatedString(locale_hash), point_total);
+            FEPrintf(GetPackageName(), 0x37BEA03B, lbl_803E61F0, GetTranslatedString(0x7F54569D), GetTranslatedString(locale_hash), point_total);
         } else {
             FEPrintf(GetPackageName(), 0x37BEA03B, lbl_803E4CF0, summary_buffer);
         }
         result_hash = 0x9F4DF5BB;
     } else {
         if (race_params->GetRaceType() == GRace::kRaceType_SpeedTrap) {
-            FEPrintf(GetPackageName(), 0xAB6AAFDD, lbl_803E61F0, GetTranslatedString(0x7F54569D),
-                     GetTranslatedString(locale_hash), point_total);
+            FEPrintf(GetPackageName(), 0xAB6AAFDD, lbl_803E61F0, GetTranslatedString(0x7F54569D), GetTranslatedString(locale_hash), point_total);
         } else {
             FEPrintf(GetPackageName(), 0xAB6AAFDD, lbl_803E4CF0, summary_buffer);
         }
@@ -300,8 +294,7 @@ void PhotoFinishScreen::Setup() {
     }
 
     if (race_params->GetEventHash() == Attrib::StringHash32(lbl_803E4744)) {
-        DialogInterface::ShowOneButton(GetPackageName(), lbl_803E43DC, static_cast< eDialogTitle >(1),
-                                       0x417B2601, 0x1FAB5998, 0x4C54B7EA);
+        DialogInterface::ShowOneButton(GetPackageName(), lbl_803E43DC, static_cast<eDialogTitle>(1), 0x417B2601, 0x1FAB5998, 0x4C54B7EA);
         FEDatabase->GetCareerSettings()->SpecialFlags |= 0x2000;
     }
 }
@@ -314,8 +307,8 @@ void PhotoFinishScreen::NotificationMessage(unsigned long msg, FEObject *, unsig
                 new EAutoSave();
 
                 MFlowReadyForOutro().Post(UCrc32(0x20D60DBF));
-                SoundPause(false, static_cast< eSNDPAUSE_REASON >(0xA));
-                SetSoundControlState(false, static_cast< eSNDCTLSTATE >(0xC), lbl_803E60D4);
+                SoundPause(false, static_cast<eSNDPAUSE_REASON>(0xA));
+                SetSoundControlState(false, static_cast<eSNDCTLSTATE>(0xC), lbl_803E60D4);
                 return;
             }
 
@@ -335,8 +328,7 @@ void PhotoFinishScreen::NotificationMessage(unsigned long msg, FEObject *, unsig
                     int remaining_races = 0;
 
                     for (unsigned int i = 0; i < race_bin->GetBossRaceCount(); ++i) {
-                        if (!GRaceDatabase::Get().CheckRaceScoreFlags(race_bin->GetBossRaceHash(i),
-                                                                      GRaceDatabase::kCompleted_ContextCareer)) {
+                        if (!GRaceDatabase::Get().CheckRaceScoreFlags(race_bin->GetBossRaceHash(i), GRaceDatabase::kCompleted_ContextCareer)) {
                             ++remaining_races;
                         }
                     }
@@ -383,9 +375,8 @@ void PhotoFinishScreen::NotificationMessage(unsigned long msg, FEObject *, unsig
             return;
         case 0xC519BFC4:
             if (fResultType != FERESULTTYPE_SPEEDTRAP) {
-                DialogInterface::ShowTwoButtons(GetPackageName(), lbl_803E5EEC, static_cast< eDialogTitle >(1),
-                                                0x417B2601, 0x1A294DAD, 0xE1A57D51, 0xB4623F67, 0xB4623F67,
-                                                static_cast< eDialogFirstButtons >(1), 0x4D3399A8);
+                DialogInterface::ShowTwoButtons(GetPackageName(), lbl_803E5EEC, static_cast<eDialogTitle>(1), 0x417B2601, 0x1A294DAD, 0xE1A57D51,
+                                                0xB4623F67, 0xB4623F67, static_cast<eDialogFirstButtons>(1), 0x4D3399A8);
             }
             return;
         case 0xE1A57D51:
@@ -395,29 +386,25 @@ void PhotoFinishScreen::NotificationMessage(unsigned long msg, FEObject *, unsig
             return;
         case 0xC98356BA: {
             if (mSlowdownTimer.IsSet() &&
-                static_cast< float >(RealTimer.GetPackedTime() - mSlowdownTimer.GetPackedTime()) * lbl_803E61B8 >=
-                    lbl_803E61BC) {
+                static_cast<float>(RealTimer.GetPackedTime() - mSlowdownTimer.GetPackedTime()) * lbl_803E61B8 >= lbl_803E61BC) {
                 mSlowdownTimer.UnSet();
                 mIceCamTimer = RealTimer;
 
                 HideEverySingleHud();
                 FEManager::RequestPauseSimulation(GetPackageName());
-                *reinterpret_cast< unsigned int * >(reinterpret_cast< char * >(&TheICEManager) + 0x7C) = 1;
+                *reinterpret_cast<unsigned int *>(reinterpret_cast<char *>(&TheICEManager) + 0x7C) = 1;
 
                 if (fResultType == FERESULTTYPE_PURSUIT) {
                     new ECinematicMoment(lbl_803E611C, lbl_803E6128, lbl_803E61C0);
                 } else if (fResultType == FERESULTTYPE_SPEEDTRAP) {
                     new ECinematicMoment(lbl_803E611C, lbl_803E6138, lbl_803E61C0);
                 } else {
-                    new ECinematicMoment(lbl_803E611C, GRaceStatus::Get().GetRaceParameters()->GetPhotoFinishCamera(),
-                                         lbl_803E61C0);
+                    new ECinematicMoment(lbl_803E611C, GRaceStatus::Get().GetRaceParameters()->GetPhotoFinishCamera(), lbl_803E61C0);
                 }
                 return;
             }
 
-            if (mIceCamTimer.IsSet() &&
-                static_cast< float >(RealTimer.GetPackedTime() - mIceCamTimer.GetPackedTime()) * lbl_803E61B8 >=
-                    lbl_803E61BC) {
+            if (mIceCamTimer.IsSet() && static_cast<float>(RealTimer.GetPackedTime() - mIceCamTimer.GetPackedTime()) * lbl_803E61B8 >= lbl_803E61BC) {
                 mIceCamTimer.UnSet();
 
                 if (!FEngIsScriptSet(GetPackageName(), 0x47FF4E7C, 0x0013C37B)) {
@@ -446,15 +433,15 @@ void PhotoFinishScreen::NotificationMessage(unsigned long msg, FEObject *, unsig
                 }
 
                 Setup();
-                *reinterpret_cast< unsigned int * >(reinterpret_cast< char * >(&TheICEManager) + 0x7C) = 0;
+                *reinterpret_cast<unsigned int *>(reinterpret_cast<char *>(&TheICEManager) + 0x7C) = 0;
 
                 MMiscSound sound_message(2);
                 sound_message.Send(Attrib::StringHash32(lbl_803E485C));
 
                 new ESndGameState(7, true);
-                SoundPause(true, static_cast< eSNDPAUSE_REASON >(0xA));
-                SetSoundControlState(false, static_cast< eSNDCTLSTATE >(0xF), lbl_803E60B8);
-                SetSoundControlState(true, static_cast< eSNDCTLSTATE >(1), lbl_803E60D4);
+                SoundPause(true, static_cast<eSNDPAUSE_REASON>(0xA));
+                SetSoundControlState(false, static_cast<eSNDCTLSTATE>(0xF), lbl_803E60B8);
+                SetSoundControlState(true, static_cast<eSNDCTLSTATE>(1), lbl_803E60D4);
             }
             return;
         }
@@ -471,7 +458,7 @@ PhotoFinishScreen::~PhotoFinishScreen() {
 
     TheICEManager.SetGenericCameraToPlay(lbl_803E43DC, lbl_803E43DC);
     new ESndGameState(7, false);
-    SetSoundControlState(false, static_cast< eSNDCTLSTATE >(1), lbl_803E60C8);
+    SetSoundControlState(false, static_cast<eSNDCTLSTATE>(1), lbl_803E60C8);
     mActive = false;
 }
 

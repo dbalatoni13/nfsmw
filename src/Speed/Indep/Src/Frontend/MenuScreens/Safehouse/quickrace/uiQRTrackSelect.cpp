@@ -1,4 +1,3 @@
-// OWNED BY zFeOverlay AGENT - DO NOT MODIFY OR EMPTY
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiQRTrackSelect.hpp"
 #include "Speed/Indep/Src/FEng/cFEng.h"
 #include "Speed/Indep/Src/Gameplay/GRaceDatabase.h"
@@ -60,27 +59,27 @@ void UIQRTrackSelect::Setup() {
     GRace::Type raceMode = FEDatabase->RaceMode;
     unsigned int hash;
     switch (raceMode) {
-    case GRace::kRaceType_Circuit:
-        hash = 0x3de80a85;
-        break;
-    case GRace::kRaceType_Drag:
-        hash = 0x136c5c90;
-        break;
-    case GRace::kRaceType_Knockout:
-        hash = 0xd6d65640;
-        break;
-    case GRace::kRaceType_P2P:
-        hash = 0xc2d85652;
-        break;
-    case GRace::kRaceType_Tollbooth:
-        hash = 0xe3afadc9;
-        break;
-    case GRace::kRaceType_SpeedTrap:
-        hash = 0x3070453a;
-        break;
-    default:
-        hash = 0;
-        break;
+        case GRace::kRaceType_Circuit:
+            hash = 0x3de80a85;
+            break;
+        case GRace::kRaceType_Drag:
+            hash = 0x136c5c90;
+            break;
+        case GRace::kRaceType_Knockout:
+            hash = 0xd6d65640;
+            break;
+        case GRace::kRaceType_P2P:
+            hash = 0xc2d85652;
+            break;
+        case GRace::kRaceType_Tollbooth:
+            hash = 0xe3afadc9;
+            break;
+        case GRace::kRaceType_SpeedTrap:
+            hash = 0x3070453a;
+            break;
+        default:
+            hash = 0;
+            break;
     }
     FEngSetLanguageHash(PackageFilename, 0xb71b576d, hash);
     const char *pkg = PackageFilename;
@@ -99,13 +98,9 @@ void UIQRTrackSelect::SetSelectedTrack(GRaceParameters *track) {
 }
 
 bool UIQRTrackSelect::IsRaceValidForMike(GRaceParameters *parms) {
-    static const char *ValidForMikeMann[] = {
-        "15.2.1", "14.2.1", "16.2.3", "15.1.1", "16.1.1",
-        "14.1.2", "5.1.1", "11.4.2", "7.4.2", "5.4.14.4.1", "10.7.1"
-    };
-    static const char *goddamcrap[] = {
-        "16.1.1.r", "15.1.1"
-    };
+    static const char *ValidForMikeMann[] = {"15.2.1", "14.2.1", "16.2.3", "15.1.1",     "16.1.1", "14.1.2",
+                                             "5.1.1",  "11.4.2", "7.4.2",  "5.4.14.4.1", "10.7.1"};
+    static const char *goddamcrap[] = {"16.1.1.r", "15.1.1"};
 
     int build = GetMikeMannBuild();
     if (build == 1) {
@@ -268,29 +263,28 @@ void UIQRTrackSelect::RefreshHeader() {
     RaceSettings *settings = FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(0xb));
     unsigned int hash;
     switch (settings->RegionFilterBits) {
-    case 0:
-        hash = 0xa6850651;
-        break;
-    case 1:
-        hash = 0xa5c20e7d;
-        break;
-    case 2:
-        hash = 0x8663faef;
-        break;
-    case 3:
-        hash = 0x632dd19b;
-        break;
-    default:
-        hash = 0;
-        break;
+        case 0:
+            hash = 0xa6850651;
+            break;
+        case 1:
+            hash = 0xa5c20e7d;
+            break;
+        case 2:
+            hash = 0x8663faef;
+            break;
+        case 3:
+            hash = 0x632dd19b;
+            break;
+        default:
+            hash = 0;
+            break;
     }
     FEngSetLanguageHash(PackageFilename, 0x78008599, hash);
     FEngSetLanguageHash(PackageFilename, 0x4510987f, hash);
     FEPrintf(PackageFilename, 0x6f25a248, "%d", Tracks.GetNodeNumber(pCurrentNode));
     FEPrintf(PackageFilename, 0xb2037bdc, "%d", Tracks.CountElements());
 
-    FEngSetLanguageHash(PackageFilename, 0xb5154998,
-                        FEDatabase->GetRaceNameHash(FEDatabase->RaceMode));
+    FEngSetLanguageHash(PackageFilename, 0xb5154998, FEDatabase->GetRaceNameHash(FEDatabase->RaceMode));
 
     FEngSetVisible(PackageFilename, 0x6b67d70b);
 
@@ -353,10 +347,8 @@ void UIQRTrackSelect::RefreshHeader() {
 
         GRaceSaveInfo *info = GRaceDatabase::Get().GetScoreInfo(pCurrentTrack->GetEventHash());
 
-        if (pCurrentTrack->GetRaceType() == GRace::kRaceType_P2P ||
-            pCurrentTrack->GetRaceType() == GRace::kRaceType_Circuit ||
-            pCurrentTrack->GetRaceType() == GRace::kRaceType_Drag ||
-            pCurrentTrack->GetRaceType() == GRace::kRaceType_Knockout ||
+        if (pCurrentTrack->GetRaceType() == GRace::kRaceType_P2P || pCurrentTrack->GetRaceType() == GRace::kRaceType_Circuit ||
+            pCurrentTrack->GetRaceType() == GRace::kRaceType_Drag || pCurrentTrack->GetRaceType() == GRace::kRaceType_Knockout ||
             pCurrentTrack->GetRaceType() == GRace::kRaceType_Tollbooth) {
             Timer t(info->mHighScores);
             char buf[64];
@@ -375,8 +367,7 @@ void UIQRTrackSelect::RefreshHeader() {
             FEPrintf(PackageFilename, 0xb515499c, "%s", GetLocalizedString(0x472aa00a));
         }
 
-        if (pCurrentTrack->GetRaceType() == GRace::kRaceType_Circuit ||
-            pCurrentTrack->GetRaceType() == GRace::kRaceType_Knockout) {
+        if (pCurrentTrack->GetRaceType() == GRace::kRaceType_Circuit || pCurrentTrack->GetRaceType() == GRace::kRaceType_Knockout) {
             FEngSetLanguageHash(PackageFilename, 0x28462c64, 0xc5b5a177);
         }
 
@@ -389,68 +380,68 @@ void UIQRTrackSelect::RefreshHeader() {
 
 void UIQRTrackSelect::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
     switch (msg) {
-    case 0xe1fde1d1:
-        if (pCurrentTrack) {
-            bool isSplitQR = false;
-            if ((FEDatabase->GetGameMode() & 4) != 0) {
-                isSplitQR = FEDatabase->iNumPlayers == 2;
+        case 0xe1fde1d1:
+            if (pCurrentTrack) {
+                bool isSplitQR = false;
+                if ((FEDatabase->GetGameMode() & 4) != 0) {
+                    isSplitQR = FEDatabase->iNumPlayers == 2;
+                }
+                GRace::Type rt = pCurrentTrack->GetRaceType();
+                if (isSplitQR && (rt == GRace::kRaceType_Drag || pCurrentTrack->GetRaceType() == GRace::kRaceType_P2P ||
+                                  pCurrentTrack->GetRaceType() == GRace::kRaceType_SpeedTrap)) {
+                    GRaceCustom *custom = GRaceDatabase::Get().AllocCustomRace(pCurrentTrack);
+                    SetNumOpponents(custom, 1);
+                    SetCopsEnabled(custom, false);
+                    GRaceDatabase::Get().SetStartupRace(custom, kRaceContext_QuickRace);
+                    GRaceDatabase::Get().FreeCustomRace(custom);
+                    cFEng::Get()->QueuePackageSwitch("PressStart.fng", 0, 0, false);
+                    return;
+                }
             }
-            GRace::Type rt = pCurrentTrack->GetRaceType();
-            if (isSplitQR && (rt == GRace::kRaceType_Drag ||
-                              pCurrentTrack->GetRaceType() == GRace::kRaceType_P2P ||
-                              pCurrentTrack->GetRaceType() == GRace::kRaceType_SpeedTrap)) {
-                GRaceCustom *custom = GRaceDatabase::Get().AllocCustomRace(pCurrentTrack);
-                SetNumOpponents(custom, 1);
-                SetCopsEnabled(custom, false);
-                GRaceDatabase::Get().SetStartupRace(custom, kRaceContext_QuickRace);
-                GRaceDatabase::Get().FreeCustomRace(custom);
-                cFEng::Get()->QueuePackageSwitch("PressStart.fng", 0, 0, false);
+            cFEng::Get()->QueuePackageSwitch("Track_Options.fng", static_cast<unsigned long>(reinterpret_cast<unsigned int>(pCurrentTrack)), 0,
+                                             false);
+            RefreshHeader();
+            break;
+        case 0x911ab364: {
+            GRaceDatabase::Get().ClearStartupRace();
+            RaceSettings *settings = FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(0xb));
+            settings->EventHash = 0;
+            const char *pkg;
+            if (FEDatabase->IsOnlineMode() || FEDatabase->IsLANMode()) {
+                pkg = "OL_MAIN.fng";
+            } else {
+                pkg = "MainMenu_Sub.fng";
+            }
+            cFEng::Get()->QueuePackageSwitch(pkg, 0, 0, false);
+            break;
+        }
+        case 0x406415e3:
+            if (!pCurrentTrack) {
                 return;
             }
-        }
-        cFEng::Get()->QueuePackageSwitch("Track_Options.fng", static_cast<unsigned long>(reinterpret_cast<unsigned int>(pCurrentTrack)), 0, false);
-        RefreshHeader();
-        break;
-    case 0x911ab364: {
-        GRaceDatabase::Get().ClearStartupRace();
-        RaceSettings *settings = FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(0xb));
-        settings->EventHash = 0;
-        const char *pkg;
-        if (FEDatabase->IsOnlineMode() || FEDatabase->IsLANMode()) {
-            pkg = "OL_MAIN.fng";
-        } else {
-            pkg = "MainMenu_Sub.fng";
-        }
-        cFEng::Get()->QueuePackageSwitch(pkg, 0, 0, false);
-        break;
-    }
-    case 0x406415e3:
-        if (!pCurrentTrack) {
-            return;
-        }
-        if (pCurrentNode->bLocked) {
-            return;
-        }
-        SetSelectedTrack(pCurrentTrack);
-        if (FEDatabase->RaceMode == GRace::kRaceType_None) {
-            FEDatabase->RaceMode = pCurrentTrack->GetRaceType();
-        }
-        cFEng::Get()->QueuePackageMessage(0x2e76edfb, PackageFilename, nullptr);
-        break;
-    case 0x9120409e:
-        ScrollTracks(eSD_PREV);
-        break;
-    case 0xb5971bf1:
-        ScrollTracks(eSD_NEXT);
-        break;
-    case 0xd9feec59:
-        ScrollRegions(eSD_NEXT);
-        break;
-    case 0x5073ef13:
-        ScrollRegions(eSD_PREV);
-        break;
-    case 0xc98356ba:
-        TrackMapStreamer.UpdateAnimation();
-        break;
+            if (pCurrentNode->bLocked) {
+                return;
+            }
+            SetSelectedTrack(pCurrentTrack);
+            if (FEDatabase->RaceMode == GRace::kRaceType_None) {
+                FEDatabase->RaceMode = pCurrentTrack->GetRaceType();
+            }
+            cFEng::Get()->QueuePackageMessage(0x2e76edfb, PackageFilename, nullptr);
+            break;
+        case 0x9120409e:
+            ScrollTracks(eSD_PREV);
+            break;
+        case 0xb5971bf1:
+            ScrollTracks(eSD_NEXT);
+            break;
+        case 0xd9feec59:
+            ScrollRegions(eSD_NEXT);
+            break;
+        case 0x5073ef13:
+            ScrollRegions(eSD_PREV);
+            break;
+        case 0xc98356ba:
+            TrackMapStreamer.UpdateAnimation();
+            break;
     }
 }

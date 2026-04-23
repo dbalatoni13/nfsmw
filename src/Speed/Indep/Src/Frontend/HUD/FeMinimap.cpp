@@ -63,41 +63,7 @@ extern unsigned int FEngHashString(const char *, ...);
 extern void FEngGetCenter(FEObject *obj, float &x, float &y);
 extern char *bStrStr(const char *, const char *);
 
-bool GIcon::IsFlagSet(unsigned int mask) const {
-    return (mFlags & mask) != 0;
-}
-
-void Physics::Tunings::Default() {
-    bMemSet(this, 0, 0x1C);
-}
-
-void MD5::Reset() {
-    uCount = 0;
-    uRegs[0] = 0x67452301;
-    uRegs[1] = 0xEFCDAB89;
-    uRegs[2] = 0x98BADCFE;
-    uRegs[3] = 0x10325476;
-    computed = false;
-}
-
-namespace UTL {
-namespace Collections {
-
-template <>
-IPlayer *ListableSet<IPlayer, 8, ePlayerList, PLAYER_MAX>::Last(ePlayerList idx) {
-    ListableSet<IPlayer, 8, ePlayerList, PLAYER_MAX>::List &l = _mLists._buckets[idx];
-    if (l.size() != 0) {
-        return l[l.size() - 1];
-    }
-    return nullptr;
-}
-
-} // namespace Collections
-} // namespace UTL
-
-Minimap::Minimap(const char *pkg_name, int player_number)
-    : HudElement(pkg_name, 0x40010000)
-{
+Minimap::Minimap(const char *pkg_name, int player_number) : HudElement(pkg_name, 0x40010000) {
     for (int i = 3; i >= 0; i--) {
         for (int j = 1; j >= 0; j--) {
             TrackmapArtUVs[i][j].y = 0.0f;
@@ -185,9 +151,8 @@ void Minimap::Update(IPlayer *player) {
     if (Sim::GetUserMode() == Sim::USER_SPLIT_SCREEN) {
         MinimapRotateWithPlayer = 0;
     } else {
-        unsigned char rotate_with_player =
-            GRaceStatus::Get().GetRaceParameters() == nullptr ? FEDatabase->GetGameplaySettings()->ExploringMiniMapMode
-                                                              : FEDatabase->GetGameplaySettings()->RacingMiniMapMode;
+        unsigned char rotate_with_player = GRaceStatus::Get().GetRaceParameters() == nullptr ? FEDatabase->GetGameplaySettings()->ExploringMiniMapMode
+                                                                                             : FEDatabase->GetGameplaySettings()->RacingMiniMapMode;
         if (!rotate_with_player) {
             MinimapRotateWithPlayer = 0;
         }
@@ -312,21 +277,17 @@ void Minimap::SetupMinimap(IPlayer *player) {
     float xDisp = -(XSection_decimal * SectionSize);
     float yDisp = -(YSection_decimal * SectionSize);
 
-    TrackmapArt[0]->SetUVs(
-        0, FEVector2(TrackmapArtUVs[0][0].x + xDisp, TrackmapArtUVs[0][0].y + yDisp),
-        FEVector2(TrackmapArtUVs[0][1].x + xDisp, TrackmapArtUVs[0][1].y + yDisp));
+    TrackmapArt[0]->SetUVs(0, FEVector2(TrackmapArtUVs[0][0].x + xDisp, TrackmapArtUVs[0][0].y + yDisp),
+                           FEVector2(TrackmapArtUVs[0][1].x + xDisp, TrackmapArtUVs[0][1].y + yDisp));
 
-    TrackmapArt[1]->SetUVs(
-        0, FEVector2(TrackmapArtUVs[1][0].x + xDisp, TrackmapArtUVs[1][0].y + yDisp),
-        FEVector2(TrackmapArtUVs[1][1].x + xDisp, TrackmapArtUVs[1][1].y + yDisp));
+    TrackmapArt[1]->SetUVs(0, FEVector2(TrackmapArtUVs[1][0].x + xDisp, TrackmapArtUVs[1][0].y + yDisp),
+                           FEVector2(TrackmapArtUVs[1][1].x + xDisp, TrackmapArtUVs[1][1].y + yDisp));
 
-    TrackmapArt[2]->SetUVs(
-        0, FEVector2(TrackmapArtUVs[2][0].x + xDisp, TrackmapArtUVs[2][0].y + yDisp),
-        FEVector2(TrackmapArtUVs[2][1].x + xDisp, TrackmapArtUVs[2][1].y + yDisp));
+    TrackmapArt[2]->SetUVs(0, FEVector2(TrackmapArtUVs[2][0].x + xDisp, TrackmapArtUVs[2][0].y + yDisp),
+                           FEVector2(TrackmapArtUVs[2][1].x + xDisp, TrackmapArtUVs[2][1].y + yDisp));
 
-    TrackmapArt[3]->SetUVs(
-        0, FEVector2(TrackmapArtUVs[3][0].x + xDisp, TrackmapArtUVs[3][0].y + yDisp),
-        FEVector2(TrackmapArtUVs[3][1].x + xDisp, TrackmapArtUVs[3][1].y + yDisp));
+    TrackmapArt[3]->SetUVs(0, FEVector2(TrackmapArtUVs[3][0].x + xDisp, TrackmapArtUVs[3][0].y + yDisp),
+                           FEVector2(TrackmapArtUVs[3][1].x + xDisp, TrackmapArtUVs[3][1].y + yDisp));
 
     FEObjData *data = TrackmapLayout->GetObjData();
     xDisp *= -128.0f;
@@ -342,9 +303,10 @@ void Minimap::SetupMinimap(IPlayer *player) {
 
 void Minimap::ConvertPos(bVector2 &worldPos, bVector2 &minimapPos, TrackInfo *track) {
     minimapPos.x = (worldPos.x - *reinterpret_cast<float *>(reinterpret_cast<char *>(track) + 0xAC)) /
-            *reinterpret_cast<float *>(reinterpret_cast<char *>(track) + 0xB4);
+                   *reinterpret_cast<float *>(reinterpret_cast<char *>(track) + 0xB4);
     minimapPos.y = (*reinterpret_cast<float *>(reinterpret_cast<char *>(track) + 0xB0) - worldPos.y) /
-            *reinterpret_cast<float *>(reinterpret_cast<char *>(track) + 0xB4) + 1.0f;
+                       *reinterpret_cast<float *>(reinterpret_cast<char *>(track) + 0xB4) +
+                   1.0f;
 }
 
 void Minimap::UpdateRaceElements() {
@@ -410,8 +372,7 @@ void Minimap::UpdateIconElement(FEImage *image, GIcon *icon) {
 
 void Minimap::UpdateMiniMapItems() {
     bVector2 defaultDir;
-    for (MiniMapItem *item = static_cast<MiniMapItem *>(StaticMiniMapItems.GetHead());
-         item != StaticMiniMapItems.EndOfList();
+    for (MiniMapItem *item = static_cast<MiniMapItem *>(StaticMiniMapItems.GetHead()); item != StaticMiniMapItems.EndOfList();
          item = static_cast<MiniMapItem *>(item->GetNext())) {
         if (item->mHidden) {
             FEngSetInvisible(item->mpIcon);
@@ -494,8 +455,7 @@ void Minimap::UpdateCopElements(IVehicle *ivehicle) {
                 UpdateElementArt(target_pos_to_use, target_dir_to_use, copArtToUse, false);
                 UpdateElementArt(target_pos_to_use, target_dir_to_use, mHeliLineOfSiteArt, false);
             } else {
-                if (MinimapShowNonPursuitCops ||
-                    (ipursuitai && ipursuitai->WasWithinEngagementRadius() && MinimapShowPursuitCops)) {
+                if (MinimapShowNonPursuitCops || (ipursuitai && ipursuitai->WasWithinEngagementRadius() && MinimapShowPursuitCops)) {
                     copArtToUse = mCopElementArt[artIter];
                     UpdateElementArt(target_pos_to_use, target_dir_to_use, copArtToUse, false);
                 } else {
@@ -593,9 +553,9 @@ void Minimap::UpdateGameplayIcons(IPlayer *player) {
         GameplayIconInfo &iconInfo = kGameplayIconInfo[iconType];
         FEImage *image;
 
-        if (iconInfo.mItemType != 0 && static_cast< unsigned int >(iconsPlaced[iconType]) < 8) {
+        if (iconInfo.mItemType != 0 && static_cast<unsigned int>(iconsPlaced[iconType]) < 8) {
             if (FEDatabase->GetGameplaySettings()->IsMapItemEnabled(static_cast<eWorldMapItemType>(iconInfo.mItemType))) {
-                image = mGameplayIcons[iconType][static_cast< unsigned int >(iconsPlaced[iconType])];
+                image = mGameplayIcons[iconType][static_cast<unsigned int>(iconsPlaced[iconType])];
                 iconsPlaced[iconType]++;
                 if (image) {
                     UpdateIconElement(image, icon);
@@ -605,7 +565,7 @@ void Minimap::UpdateGameplayIcons(IPlayer *player) {
     }
 
     for (int onType = 0; onType < GIcon::kType_Count; onType++) {
-        for (int onHideIcon = iconsPlaced[onType]; static_cast< unsigned int >(onHideIcon) < 8; onHideIcon++) {
+        for (int onHideIcon = iconsPlaced[onType]; static_cast<unsigned int>(onHideIcon) < 8; onHideIcon++) {
             if (mGameplayIcons[onType][onHideIcon]) {
                 FEngSetInvisible(mGameplayIcons[onType][onHideIcon]);
             }

@@ -1,4 +1,3 @@
-// OWNED BY zFeOverlay AGENT - DO NOT MODIFY OR EMPTY
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiMarkerSelect.hpp"
 
 #include "Speed/Indep/Src/FEng/cFEng.h"
@@ -19,12 +18,12 @@ extern void GetLocalizedString(char *buffer, unsigned int bufsize, unsigned int 
 // total size: 0x1C
 struct MarkerSelectInfo {
     FEMarkerManager::ePossibleMarker Marker; // offset 0x0
-    unsigned int IconHash;         // offset 0x4
-    unsigned int CategoryIconHash; // offset 0x8
-    unsigned int NameHash;         // offset 0xC
-    unsigned int CategoryNameHash; // offset 0x10
-    unsigned int BlurbHash;        // offset 0x14
-    unsigned int CategoryBlurbHash; // offset 0x18
+    unsigned int IconHash;                   // offset 0x4
+    unsigned int CategoryIconHash;           // offset 0x8
+    unsigned int NameHash;                   // offset 0xC
+    unsigned int CategoryNameHash;           // offset 0x10
+    unsigned int BlurbHash;                  // offset 0x14
+    unsigned int CategoryBlurbHash;          // offset 0x18
 };
 
 extern MarkerSelectInfo MarkerSelectInfos[];
@@ -79,12 +78,18 @@ int FEMarkerSelection::GetNumSelected() {
 }
 
 int FEMarkerSelection::GetButtonIndex(unsigned int hash) {
-    if (hash == 0xcda0a66b) return 0;
-    if (hash == 0xcda0a66c) return 1;
-    if (hash == 0xcda0a66d) return 2;
-    if (hash == 0xcda0a66e) return 3;
-    if (hash == 0xcda0a66f) return 4;
-    if (hash == 0xcda0a670) return 5;
+    if (hash == 0xcda0a66b)
+        return 0;
+    if (hash == 0xcda0a66c)
+        return 1;
+    if (hash == 0xcda0a66d)
+        return 2;
+    if (hash == 0xcda0a66e)
+        return 3;
+    if (hash == 0xcda0a66f)
+        return 4;
+    if (hash == 0xcda0a670)
+        return 5;
     return 0;
 }
 
@@ -98,8 +103,10 @@ int FEMarkerSelection::GetSelectedButtonIndex() {
 
 FEMarkerSelection::FEMarkerSelection(ScreenConstructorData *sd)
     : MenuScreen(sd) //
-    , NumVisibleMarkers(0) //
-    , RivalStreamer(sd->PackageFilename, false) {
+      ,
+      NumVisibleMarkers(0) //
+      ,
+      RivalStreamer(sd->PackageFilename, false) {
     unsigned int CategoryOrder[] = {0xbdaa5794, 0xe69d4f7c, 0x73272ed2, 0xc61c8d3a};
     for (int cat = 0; cat < 4; cat++) {
         unsigned int categoryHash = CategoryOrder[cat];
@@ -107,8 +114,7 @@ FEMarkerSelection::FEMarkerSelection(ScreenConstructorData *sd)
             FEMarkerManager::ePossibleMarker marker = static_cast<FEMarkerManager::ePossibleMarker>(0);
             int param = 0;
             TheFEMarkerManager.GetMarkerForLaterSelection(j, marker, param);
-            if (marker != static_cast<FEMarkerManager::ePossibleMarker>(0) &&
-                categoryHash == GetCategoryIconHashForType(marker)) {
+            if (marker != static_cast<FEMarkerManager::ePossibleMarker>(0) && categoryHash == GetCategoryIconHashForType(marker)) {
                 TheMarkers[NumVisibleMarkers].Marker = marker;
                 TheMarkers[NumVisibleMarkers].Param = param;
                 TheMarkers[NumVisibleMarkers].Selected = false;
@@ -138,7 +144,6 @@ FEMarkerSelection::FEMarkerSelection(ScreenConstructorData *sd)
     SetUnlockIcon(static_cast<eUnlockableEntity>(0), 0x7f8aaf09);
 }
 
-
 void FEMarkerSelection::SetUnlockIcon(eUnlockableEntity ent, unsigned int message) {
     if (ent == static_cast<eUnlockableEntity>(0)) {
         bool found = false;
@@ -162,64 +167,67 @@ void FEMarkerSelection::SetUnlockIcon(eUnlockableEntity ent, unsigned int messag
 
 void FEMarkerSelection::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
     switch (msg) {
-    case 0xe1fde1d1:
-        TheFEMarkerManager.ClearMarkersForLaterSelection();
-        uiRepSheetRivalFlow::Get()->Next();
-        break;
-    case 0x35f8620b:
-        FEngSetCurrentButton(GetPackageName(), 0xcda0a66b);
-        break;
-    case 0x0c407210: {
-        if (GetNumSelected() < 2) {
-            int idx = GetSelectedButtonIndex();
-            if (TheMarkers[idx].Selected) break;
-            FEngSetScript(pobj, 0x15970a, true);
-            TheMarkers[idx].Selected = true;
-            switch (static_cast<int>(TheMarkers[idx].Marker)) {
-            case 0x12:
-                FEDatabase->GetPlayerCarStable(0)->AwardRivalCar(TheMarkers[idx].Param);
-                break;
-            case 0x13:
-                FEDatabase->GetCareerSettings()->AddCash(TheMarkers[idx].Param);
-                break;
-            default:
-                TheFEMarkerManager.AddMarkerToInventory(TheMarkers[idx].Marker, TheMarkers[idx].Param);
-                break;
+        case 0xe1fde1d1:
+            TheFEMarkerManager.ClearMarkersForLaterSelection();
+            uiRepSheetRivalFlow::Get()->Next();
+            break;
+        case 0x35f8620b:
+            FEngSetCurrentButton(GetPackageName(), 0xcda0a66b);
+            break;
+        case 0x0c407210: {
+            if (GetNumSelected() < 2) {
+                int idx = GetSelectedButtonIndex();
+                if (TheMarkers[idx].Selected)
+                    break;
+                FEngSetScript(pobj, 0x15970a, true);
+                TheMarkers[idx].Selected = true;
+                switch (static_cast<int>(TheMarkers[idx].Marker)) {
+                    case 0x12:
+                        FEDatabase->GetPlayerCarStable(0)->AwardRivalCar(TheMarkers[idx].Param);
+                        break;
+                    case 0x13:
+                        FEDatabase->GetCareerSettings()->AddCash(TheMarkers[idx].Param);
+                        break;
+                    default:
+                        TheFEMarkerManager.AddMarkerToInventory(TheMarkers[idx].Marker, TheMarkers[idx].Param);
+                        break;
+                }
+                if (GetNumSelected() >= 2) {
+                    FEngSetLanguageHash(GetPackageName(), 0xbdb541b3, 0x8098a54c);
+                    FEngSetLanguageHash(GetPackageName(), 0x7603f3d5, 0x8098a54c);
+                }
+            } else {
+                cFEng::Get()->QueuePackageMessage(0x587c018b, GetPackageName(), nullptr);
             }
-            if (GetNumSelected() >= 2) {
-                FEngSetLanguageHash(GetPackageName(), 0xbdb541b3, 0x8098a54c);
-                FEngSetLanguageHash(GetPackageName(), 0x7603f3d5, 0x8098a54c);
+            break;
+        }
+        case 0xabc08912: {
+            FEPackage *pkg = cFEng::Get()->FindPackage(GetPackageName());
+            if (!pkg->bInputEnabled)
+                return;
+            int idx = GetButtonIndex(pobj->NameHash);
+            if (TheMarkers[idx].Selected) {
+                FEngSetScript(pobj, 0x6b718fa1, true);
+            } else {
+                FEngSetScript(pobj, 0x249db7b7, true);
             }
-        } else {
-            cFEng::Get()->QueuePackageMessage(0x587c018b, GetPackageName(), nullptr);
         }
-        break;
-    }
-    case 0xabc08912: {
-        FEPackage *pkg = cFEng::Get()->FindPackage(GetPackageName());
-        if (!pkg->bInputEnabled) return;
-        int idx = GetButtonIndex(pobj->NameHash);
-        if (TheMarkers[idx].Selected) {
-            FEngSetScript(pobj, 0x6b718fa1, true);
-        } else {
-            FEngSetScript(pobj, 0x249db7b7, true);
+        case 0xbb3e313d:
+        case 0xf0966d46:
+            Redraw();
+            break;
+        case 0x55d1e635: {
+            FEPackage *pkg = cFEng::Get()->FindPackage(GetPackageName());
+            if (!pkg->bInputEnabled)
+                return;
+            int idx = GetButtonIndex(pobj->NameHash);
+            if (TheMarkers[idx].Selected) {
+                FEngSetScript(pobj, 0xc5decc84, true);
+            } else {
+                FEngSetScript(pobj, 0x7ab5521a, true);
+            }
+            break;
         }
-    }
-    case 0xbb3e313d:
-    case 0xf0966d46:
-        Redraw();
-        break;
-    case 0x55d1e635: {
-        FEPackage *pkg = cFEng::Get()->FindPackage(GetPackageName());
-        if (!pkg->bInputEnabled) return;
-        int idx = GetButtonIndex(pobj->NameHash);
-        if (TheMarkers[idx].Selected) {
-            FEngSetScript(pobj, 0xc5decc84, true);
-        } else {
-            FEngSetScript(pobj, 0x7ab5521a, true);
-        }
-        break;
-    }
     }
 }
 

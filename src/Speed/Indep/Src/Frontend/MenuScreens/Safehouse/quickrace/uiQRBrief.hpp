@@ -1,4 +1,3 @@
-// OWNED BY zFeOverlay AGENT - do not empty or overwrite
 #ifndef FRONTEND_MENUSCREENS_SAFEHOUSE_QUICKRACE_UIQRBRIEF_H
 #define FRONTEND_MENUSCREENS_SAFEHOUSE_QUICKRACE_UIQRBRIEF_H
 
@@ -20,7 +19,8 @@ struct SelectableTrack;
 struct SelectableCar : public bTNode<SelectableCar> {
     SelectableCar(unsigned int handle, bool locked)
         : mHandle(handle) //
-        , bLocked(locked) {}
+          ,
+          bLocked(locked) {}
 
     ~SelectableCar() {}
 
@@ -30,13 +30,19 @@ struct SelectableCar : public bTNode<SelectableCar> {
 
 // total size: 0x14
 struct SelectableTrack : public bTNode<SelectableTrack> {
-    static void *operator new(size_t s) { return ::operator new[](s); }
-    static void operator delete(void *p) { ::operator delete[](p); }
+    static void *operator new(size_t s) {
+        return ::operator new[](s);
+    }
+    static void operator delete(void *p) {
+        ::operator delete[](p);
+    }
 
     SelectableTrack(GRaceParameters *rp, bool locked, int bin_num)
         : pRaceParams(rp) //
-        , bLocked(locked) //
-        , bin(bin_num) {}
+          ,
+          bLocked(locked) //
+          ,
+          bin(bin_num) {}
 
     ~SelectableTrack() {}
 
@@ -58,15 +64,15 @@ struct UIQRBrief : public MenuScreen {
     SelectableCar *GetRandomCar();
     SelectableTrack *GetRandomTrack();
 
-    bTList<SelectableCar> FilteredCarsList;        // offset 0x2C, size 0x8
-    SelectableCar *pSelectedCar;                   // offset 0x34, size 0x4
-    bTList<SelectableTrack> FilteredTracksList;    // offset 0x38, size 0x8
-    SelectableTrack *pSelectedTrack;               // offset 0x40, size 0x4
-    RaceSettings raceSettings;                     // offset 0x44, size 0x24
-    int randomCount;                               // offset 0x68, size 0x4
-    TwoStageSlider AccelerationSlider;             // offset 0x6C, size 0x44
-    TwoStageSlider TopSpeedSlider;                 // offset 0xB0, size 0x44
-    TwoStageSlider HandlingSlider;                 // offset 0xF4, size 0x44
+    bTList<SelectableCar> FilteredCarsList;     // offset 0x2C, size 0x8
+    SelectableCar *pSelectedCar;                // offset 0x34, size 0x4
+    bTList<SelectableTrack> FilteredTracksList; // offset 0x38, size 0x8
+    SelectableTrack *pSelectedTrack;            // offset 0x40, size 0x4
+    RaceSettings raceSettings;                  // offset 0x44, size 0x24
+    int randomCount;                            // offset 0x68, size 0x4
+    TwoStageSlider AccelerationSlider;          // offset 0x6C, size 0x44
+    TwoStageSlider TopSpeedSlider;              // offset 0xB0, size 0x44
+    TwoStageSlider HandlingSlider;              // offset 0xF4, size 0x44
 };
 
 #endif

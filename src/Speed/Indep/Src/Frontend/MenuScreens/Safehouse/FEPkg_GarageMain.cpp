@@ -1,4 +1,3 @@
-// OWNED BY zFeOverlay AGENT - DO NOT MODIFY OR EMPTY
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/FEPkg_GarageMain.hpp"
 #include "Speed/Indep/Src/FEng/cFEng.h"
 #include "Speed/Indep/Src/FEng/FEPackage.h"
@@ -11,8 +10,6 @@
 #include "Speed/Indep/Src/Generated/Events/EFadeScreenOff.hpp"
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/Src/Ecstasy/EmitterSystem.h"
-#include "Speed/Indep/Src/Ecstasy/eModel.hpp"
-#include "Speed/Indep/Src/Ecstasy/eSolid.hpp"
 #include "Speed/Indep/Src/Ecstasy/EcstasyData.hpp"
 #include "Speed/Indep/Src/Input/ActionQueue.h"
 #include "Speed/Indep/Src/Input/ActionRef.h"
@@ -23,6 +20,7 @@
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/Src/Camera/CameraMover.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/customize/CustomizeManager.hpp"
+#include "Speed/Indep/Src/World/ScreenEffects.hpp"
 #include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 
 extern MenuScreen *FEngFindScreen(const char *name);
@@ -100,7 +98,8 @@ extern void SetHRotateSpeed(SelectCarCameraMover *mover, float speed);
 extern void SetVRotateSpeed(SelectCarCameraMover *mover, float speed);
 extern void SetZoomSpeed(SelectCarCameraMover *mover, float speed);
 extern void SetCurrentOrientation(SelectCarCameraMover *mover, bVector3 *target, float roll, float fov, bVector3 *lookat);
-extern void SetDesiredOrientation(SelectCarCameraMover *mover, bVector3 *target, float roll, float fov, float anim_speed, float damping, bVector3 *lookat, int periods);
+extern void SetDesiredOrientation(SelectCarCameraMover *mover, bVector3 *target, float roll, float fov, float anim_speed, float damping,
+                                  bVector3 *lookat, int periods);
 extern SelectCarCameraMover *NewSelectCarCameraMover(int view_id);
 extern void SelectCarCameraMover_SetTime(SelectCarCameraMover *mover, float time);
 
@@ -423,7 +422,8 @@ void GarageMainScreen::HandleTick(unsigned long msg) {
     }
 
     FEPackage *currentControllingPackage = cFEng::Get()->FindPackageAtBase();
-    if (!currentControllingPackage) goto after_camera;
+    if (!currentControllingPackage)
+        goto after_camera;
     {
         const unsigned int screenKey = FindScreenInfo(currentControllingPackage->GetName(), mCustomizationCategory);
         const unsigned int attribKey = FindScreenCameraInfo(screenKey);
@@ -446,7 +446,8 @@ void GarageMainScreen::HandleTick(unsigned long msg) {
             if (!CameraPushRequested) {
                 bVector3 orbit(camera.cam_orbit_vertical(), camera.cam_orbit_horizontal(), camera.cam_orbit_radius());
                 bVector3 lookat(camera.cam_lookat_x(), camera.cam_lookat_y(), camera.cam_lookat_z());
-                SetDesiredOrientation(pCameraMover, &orbit, camera.cam_roll_angle(), camera.cam_fov(), camera.cam_anim_speed(), camera.cam_damping(), &lookat, camera.cam_periods());
+                SetDesiredOrientation(pCameraMover, &orbit, camera.cam_roll_angle(), camera.cam_fov(), camera.cam_anim_speed(), camera.cam_damping(),
+                                      &lookat, camera.cam_periods());
             }
         } else {
             if (bTimeToRotate) {
@@ -458,7 +459,8 @@ void GarageMainScreen::HandleTick(unsigned long msg) {
                 if (!CameraPushRequested) {
                     bVector3 orbit(camera.cam_orbit_vertical(), camera.cam_orbit_horizontal(), camera.cam_orbit_radius());
                     bVector3 lookat(camera.cam_lookat_x(), camera.cam_lookat_y(), camera.cam_lookat_z());
-                    SetDesiredOrientation(pCameraMover, &orbit, camera.cam_roll_angle(), camera.cam_fov(), camera.cam_anim_speed(), camera.cam_damping(), &lookat, camera.cam_periods());
+                    SetDesiredOrientation(pCameraMover, &orbit, camera.cam_roll_angle(), camera.cam_fov(), camera.cam_anim_speed(),
+                                          camera.cam_damping(), &lookat, camera.cam_periods());
                 }
             } else {
                 if (HaveAttributesChanged(camera)) {
@@ -569,7 +571,8 @@ void GarageMainScreen::UpdateCurrentCameraView(bool bForce) {
         }
         bVector3 orbit2(final_cam.cam_orbit_vertical(), final_cam.cam_orbit_horizontal(), final_cam.cam_orbit_radius());
         bVector3 lookat2(final_cam.cam_lookat_x(), final_cam.cam_lookat_y(), final_cam.cam_lookat_z());
-        SetDesiredOrientation(pCameraMover, &orbit2, final_cam.cam_roll_angle(), final_cam.cam_fov(), final_cam.cam_anim_speed(), final_cam.cam_damping(), &lookat2, final_cam.cam_periods());
+        SetDesiredOrientation(pCameraMover, &orbit2, final_cam.cam_roll_angle(), final_cam.cam_fov(), final_cam.cam_anim_speed(),
+                              final_cam.cam_damping(), &lookat2, final_cam.cam_periods());
 
         CameraPushRequested = false;
     }
@@ -652,7 +655,8 @@ void GarageMainScreen::HandleJoyEvents() {
         }
     }
     for (int port = startPort; port < endPort; port++) {
-        if (!mActionQ[port]) continue;
+        if (!mActionQ[port])
+            continue;
         while (!mActionQ[port]->IsEmpty()) {
             if (bUserRotate || CarGuysCamera != 0) {
                 ActionRef action = mActionQ[port]->GetAction();
@@ -877,8 +881,6 @@ void CarViewer::ShowCarScreen() {
 
 bool CarViewer::haveLoadedOnce;
 
-// --- Free functions ---
-
 static unsigned int FindScreenInfo(const char *pkg_name, int category) {
     char name[128];
     char prefix[128];
@@ -974,11 +976,9 @@ static unsigned int FindGarageFinalCameraInfo() {
     return FindGarageCameraInfo("angle_final_");
 }
 
-// --- GarageCarLoader ---
-
 GarageCarLoader::GarageCarLoader() {
-    reinterpret_cast<RideInfo *>(_pad_ride0)->Init(CARTYPE_NONE, CarRenderUsage_Player, 0, 0);
-    reinterpret_cast<RideInfo *>(_pad_ride1)->Init(CARTYPE_NONE, CarRenderUsage_Player, 0, 0);
+    LoadingRideInfo.Init(CARTYPE_NONE, CarRenderUsage_Player, 0, 0);
+    CurrentRideInfo.Init(CARTYPE_NONE, CarRenderUsage_Player, 0, 0);
     IsLoadingRide = false;
     IsCurrentRide = false;
     LoadingCar = 0;
@@ -1003,13 +1003,13 @@ void GarageCarLoader::LoadRideInfo(RideInfo *ride_info) {
     LoadingCar = TheCarLoader.Load(ride_info);
     TheCarLoader.BeginLoading(nullptr, 0);
     IsLoadingRide = true;
-    *reinterpret_cast<RideInfo *>(_pad_ride0) = *ride_info;
+    LoadingRideInfo = *ride_info;
     IsDifferent = false;
 }
 
 RideInfo *GarageCarLoader::GetLoadingRideInfo() {
     if (IsLoadingRide) {
-        return reinterpret_cast<RideInfo *>(_pad_ride0);
+        return &LoadingRideInfo;
     }
     return nullptr;
 }
@@ -1021,7 +1021,7 @@ void GarageCarLoader::Update() {
         }
         IsCurrentRide = true;
         CurrentCar = LoadingCar;
-        *reinterpret_cast<RideInfo *>(_pad_ride1) = *reinterpret_cast<RideInfo *>(_pad_ride0);
+        CurrentRideInfo = LoadingRideInfo;
         IsDifferent = true;
         LoadingCar = 0;
         IsLoadingRide = false;
@@ -1047,7 +1047,7 @@ void GarageCarLoader::Switch() {
 
 RideInfo *GarageCarLoader::GetCurrentRideInfo() {
     if (IsCurrentRide) {
-        return reinterpret_cast<RideInfo *>(&_pad_ride1[0]);
+        return &CurrentRideInfo;
     }
     return nullptr;
 }
