@@ -84,6 +84,7 @@ CAST_SPACING_PATTERN = re.compile(
 )
 USING_NAMESPACE_PATTERN = re.compile(r"^\s*using\s+namespace\b")
 NULL_PATTERN = re.compile(r"\bNULL\b")
+BARE_PRESENCE_IF_PATTERN = re.compile(r"^\s*#if\s+([A-Za-z_][A-Za-z0-9_]*)\s*$")
 HEADER_GUARD_IFNDEF_PATTERN = re.compile(r"^\s*#ifndef\s+[A-Za-z0-9_]+\s*$", re.MULTILINE)
 HEADER_GUARD_DEFINE_PATTERN = re.compile(r"^\s*#define\s+[A-Za-z0-9_]+\s*$", re.MULTILINE)
 EA_PRAGMA_BLOCK_PATTERN = re.compile(
@@ -91,6 +92,16 @@ EA_PRAGMA_BLOCK_PATTERN = re.compile(
     r".*?^\s*#pragma\s+once\s*$"
     r".*?^\s*#endif\s*$",
     re.MULTILINE | re.DOTALL,
+)
+EA_PRAGMA_IFDEF_PATTERN = re.compile(
+    r"^\s*#ifdef\s+EA_PRAGMA_ONCE_SUPPORTED\s*$", re.MULTILINE
+)
+RECOVERED_LAYOUT_COMMENT_PATTERN = re.compile(
+    r"//\s*offset 0x[0-9A-Fa-f]+,\s*size 0x[0-9A-Fa-f]+"
+)
+RECOVERED_NARROW_UNSIGNED_PATTERN = re.compile(r"\bunsigned\s+(char|short)\b")
+BARE_RECOVERY_MARKER_PATTERN = re.compile(
+    r"//\s*(TODO|UNSOLVED|STRIPPED)\b(?:\s*[.:,-]*)?\s*$"
 )
 SUSPICIOUS_MEMBER_PATTERN = re.compile(
     r"^(?:"
@@ -441,6 +452,16 @@ def audit_style_guide_rules(
         if touched_lines is not None and idx not in touched_lines:
             continue
         stripped = line.strip()
+        bare_recovery_marker_match = BARE_RECOVERY_MARKER_PATTERN.search(line)
+        if bare_recovery_marker_match is not None:
+            findings.append(
+                Finding(
+                    path,
+                    idx,
+                    "INFO",
+                    f"`// {bare_recovery_marker_match.group(1)}` has no context; add a short reason or remove the stale recovery marker",
+                )
+            )
         if stripped.startswith("//"):
             continue
 
@@ -471,9 +492,35 @@ def audit_style_guide_rules(
                     "use `nullptr` instead of `NULL`",
                 )
             )
+        bare_presence_if_match = BARE_PRESENCE_IF_PATTERN.match(line)
+        if bare_presence_if_match is not None:
+            findings.append(
+                Finding(
+                    path,
+                    idx,
+                    "WARN",
+                    f"bare `#if {bare_presence_if_match.group(1)}` looks like a presence check; prefer `#ifdef {bare_presence_if_match.group(1)}` unless a numeric test is intentional",
+                )
+            )
+        narrow_type_match = RECOVERED_NARROW_UNSIGNED_PATTERN.search(line)
+        if (
+            narrow_type_match is not None
+            and RECOVERED_LAYOUT_COMMENT_PATTERN.search(line) is not None
+        ):
+            preferred = "uint8" if narrow_type_match.group(1) == "char" else "uint16"
+            findings.append(
+                Finding(
+                    path,
+                    idx,
+                    "INFO",
+                    f"recovered layout member uses `{narrow_type_match.group(0)}`; prefer explicit-width `{preferred}` when the field width is known",
+                )
+            )
 
     if ext in HEADER_EXTS:
-        should_check_guard = touched_lines is None or any(line_no <= 8 for line_no in touched_lines)
+        should_check_guard = touched_lines is None or any(
+            line_no <= 12 for line_no in touched_lines
+        )
         if should_check_guard:
             has_ifndef = HEADER_GUARD_IFNDEF_PATTERN.search(text) is not None
             has_define = HEADER_GUARD_DEFINE_PATTERN.search(text) is not None
@@ -487,6 +534,20 @@ def audit_style_guide_rules(
                         "header guard should use `#ifndef` / `#define` plus the `EA_PRAGMA_ONCE_SUPPORTED` `#pragma once` block",
                     )
                 )
+            pragma_ifdef_match = EA_PRAGMA_IFDEF_PATTERN.search(text)
+            if pragma_ifdef_match is not None:
+                pragma_ifdef_line = text[: pragma_ifdef_match.start()].count("\n") + 1
+                for idx, line in enumerate(text.splitlines(), 1):
+                    if line.strip().startswith("#include ") and idx < pragma_ifdef_line:
+                        findings.append(
+                            Finding(
+                                path,
+                                idx,
+                                "WARN",
+                                "header include appears before the `EA_PRAGMA_ONCE_SUPPORTED` block; keep the guard / pragma block ahead of includes",
+                            )
+                        )
+                        break
 
     return findings
 
