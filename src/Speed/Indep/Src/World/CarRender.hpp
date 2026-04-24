@@ -519,25 +519,33 @@ class CarRenderInfo {
 class FrontEndRenderingCar : public bTNode<FrontEndRenderingCar> {
   public:
     // Functions
-    void SetPosition(bVector3 *position) {}
+    void SetPosition(bVector3 *position) { Position = *position; }
 
-    void SetBodyMatrix(bMatrix4 *body_matrix) {}
+    void SetBodyMatrix(bMatrix4 *body_matrix) { BodyMatrix = *body_matrix; }
 
-    void SetTireMatrices(bMatrix4 *tire_matrices) {}
+    void SetTireMatrices(bMatrix4 *tire_matrices) {
+        for (int n = 0; n < 4; n++) {
+            TireMatrices[n] = tire_matrices[n];
+        }
+    }
 
-    void SetBrakeMatrices(bMatrix4 *brake_matrices) {}
+    void SetBrakeMatrices(bMatrix4 *brake_matrices) {
+        for (int n = 0; n < 4; n++) {
+            BrakeMatrices[n] = brake_matrices[n];
+        }
+    }
 
-    void SetTireMatrix(int n, bMatrix4 *m) {}
+    void SetTireMatrix(int n, bMatrix4 *m) { TireMatrices[n] = *m; }
 
-    void SetBrakeMatrix(int n, bMatrix4 *m) {}
+    void SetBrakeMatrix(int n, bMatrix4 *m) { BrakeMatrices[n] = *m; }
 
     void SetOverrideModel(eModel *override_model) {}
 
-    RideInfo *GetRideInfo() {}
+    RideInfo *GetRideInfo() { return &mRideInfo; }
 
     CarRenderInfo *GetRenderInfo() {}
 
-    CarType GetCarType() {}
+    CarType GetCarType() { return mRideInfo.Type; }
 
     FrontEndRenderingCar(RideInfo *ride_info, int view_id);
 

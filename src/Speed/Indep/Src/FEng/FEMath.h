@@ -5,6 +5,8 @@
 #pragma once
 #endif
 
-
+inline float RAD2DEG(float a) {
+    return a * 57.295776f;
+}
 
 #endif

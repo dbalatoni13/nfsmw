@@ -5,6 +5,6 @@
 #pragma once
 #endif
 
-
+struct FETypeLib;
 
 #endif

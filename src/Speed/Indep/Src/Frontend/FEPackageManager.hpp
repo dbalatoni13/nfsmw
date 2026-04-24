@@ -65,7 +65,7 @@ class FEPackageManager {
 
     FEPackageManager() {}
 
-    virtual ~FEPackageManager() {}
+    virtual ~FEPackageManager();
 
     // FEPackageData *Add(FEPackageData *screen) {}
 

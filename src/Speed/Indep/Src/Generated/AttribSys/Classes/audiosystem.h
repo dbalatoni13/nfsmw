@@ -23,6 +23,10 @@ struct audiosystem : Instance {
         Attrib::StringKey EVTPath; // offset 0x30, size 0x10
     };
 
+    void *operator new(size_t bytes) {
+        return Attrib::Alloc(bytes, "audiosystem");
+    }
+
     void operator delete(void *ptr, size_t bytes) {
         Attrib::Free(ptr, bytes, "audiosystem");
     }
@@ -36,6 +40,10 @@ struct audiosystem : Instance {
         this->SetDefaultLayout(sizeof(_LayoutStruct));
     }
 
+    audiosystem(const RefSpec &refspec, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(refspec, msgPort, owner) {
+        this->SetDefaultLayout(sizeof(_LayoutStruct));
+    }
+
     ~audiosystem() {}
 
     void Change(const Collection *c) {
@@ -44,6 +52,10 @@ struct audiosystem : Instance {
 
     void Change(Key collectionkey) {
         Change(FindCollection(ClassKey(), collectionkey));
+    }
+
+    void Change(const RefSpec &refspec) {
+        Instance::Change(refspec);
     }
 
     static Key ClassKey() {

@@ -132,6 +132,8 @@ class MenuScreen {
     MenuScreen(ScreenConstructorData *sd);
 
     virtual ~MenuScreen();
+    virtual void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) = 0;
+    virtual eMenuSoundTriggers NotifySoundMessage(unsigned long msg, eMenuSoundTriggers maybe) { return maybe; }
 
     void BaseNotify(u32 Message, FEObject *pObject, u32 Param1, u32 Param2);
 
@@ -153,13 +155,11 @@ class MenuScreen {
 
     static void MaybeShutdownVoIPChat();
 
-    // virtual enum eMenuSoundTriggers NotifySoundMessage(unsigned long msg, enum eMenuSoundTriggers maybe) {}
+    const char *GetPackageName() { return PackageFilename; }
 
-    const char *GetPackageName() {}
+    FEPackage *GetPackage() { return ConstructData.pPackage; }
 
-    // FEPackage *GetPackage() {}
-
-    void SetAsGarageScreen() {}
+    void SetAsGarageScreen() { IsGarageScreen = true; }
 
   protected:
     bool mPlaySound;                      // offset 0x0, size 0x1
@@ -172,6 +172,7 @@ class MenuScreen {
   private:
     static int gEAMIconState; // size: 0x4, address: 0xFFFFFFFF
 
+  protected:
     const char *PackageFilename;                 // offset 0xC, size 0x4
     ScreenConstructorData ConstructData;         // offset 0x10, size 0xC
     bool IsGarageScreen;                         // offset 0x1C, size 0x1

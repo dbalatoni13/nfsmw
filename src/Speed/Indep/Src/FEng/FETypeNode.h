@@ -5,6 +5,7 @@
 #pragma once
 #endif
 
-
+struct FEFieldNode;
+struct FETypeNode;
 
 #endif

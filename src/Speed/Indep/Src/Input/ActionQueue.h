@@ -47,27 +47,20 @@ class ActionQueue : public UTL::Collections::Listable<ActionQueue, 20> {
 
     // void operator delete(void *mem, void *ptr) {}
 
-    // const char *GetName() {}
+    const char *GetName() const { return mQueueName; }
+    int GetPort() const { return mPort; }
 
     // bool IsRequired() const {}
 
-    // void SetRequired(bool b) {}
+    void SetRequired(bool b) { mRequired = b; }
 
-    // bool IsValid() const {}
-
-    // int GetPort() const {}
-
-    // bool IsActive() const {}
-
-    // int Size() {}
-
-    // Timer LastActionTime() const {}
-
-    // Timer ActivationTime() const {}
+    bool IsConnected() const;
 
     unsigned int GetConfig() const {
         return mConfig;
     }
+
+    Timer LastActionTime() const { return mActionTime; }
 
   private:
     UCircularQueue<ActionData, 50> fQueue; // offset 0x4, size 0x268

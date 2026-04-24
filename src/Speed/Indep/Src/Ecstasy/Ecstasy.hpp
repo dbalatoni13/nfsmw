@@ -292,7 +292,9 @@ class ePoly {
 
     void operator delete(void *ptr) {}
 
-    void SetFlags(uint8 i) {}
+    void SetFlags(unsigned char i) {
+        flags = i;
+    }
 
     void SetFlailer(uint8 i) {
 #ifndef EA_BUILD_A124
@@ -300,7 +302,9 @@ class ePoly {
 #endif
     }
 
-    uint8 GetFlags() {}
+    uint8 GetFlags() {
+        return flags;
+    }
 
     uint8 GetFlailer() {
 #ifndef EA_BUILD_A124

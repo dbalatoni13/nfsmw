@@ -39,8 +39,14 @@ enum CarRenderUsage {
 class RideInfo {
   public:
     void Init(CarType type, CarRenderUsage usage, int has_dash, int can_be_vertex_damaged);
-    struct CarPart *GetPart(int car_slot_id) const;
-    int GetSpecialLODRangeForCarSlot(int slot_id, CARPART_LOD *special_minimum, CARPART_LOD *special_maximum, bool in_front_end);
+    void SetStockParts();
+    void SetRandomPaint();
+    void SetRandomParts();
+    void DumpForPreset(struct FECarRecord *car);
+    void FillWithPreset(unsigned int preset);
+    struct CarPart *GetPart(int carslotid) const;
+    void SetPart(int carslotid, struct CarPart *part, bool enabled);
+    void SetCompositeNameHash(int skin_number);
 
     RideInfo() {
         Init(CARTYPE_NONE, CarRenderUsage_Player, 0, 0);
@@ -138,5 +144,11 @@ struct CarTypeInfo {
     int Padding;                                // offset 0xC8, size 0x4
     int DefaultBasePaint;                       // offset 0xCC, size 0x4
 };
+
+extern CarTypeInfo *CarTypeInfoArray;
+
+inline CarTypeInfo *GetCarTypeInfo(CarType type) {
+    return &CarTypeInfoArray[type];
+}
 
 #endif

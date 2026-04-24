@@ -13,7 +13,16 @@ class LoadingScreen : public MenuScreen {
         LS_LOADING_FE = 0,
         LS_LOADING_GAME_FROM_FE = 1,
     };
-    LoadingScreen(struct ScreenConstructorData *sd);
+
+    LoadingScreen(ScreenConstructorData *sd);
+    static void InitLoadingScreen();
+    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override;
+
+    void *operator new(size_t, void *ptr) {
+        return ptr;
+    }
+
+    static void *mLoadingScreenPtr;
 };
 
 #endif

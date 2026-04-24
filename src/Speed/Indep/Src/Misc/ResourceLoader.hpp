@@ -189,6 +189,8 @@ void EndianSwapChunkHeadersRecursive(bChunk *first_chunk, bChunk *last_chunk);
 
 int ServiceResourceLoading();
 ResourceFile *CreateResourceFile(const char *filename, ResourceFileType type, int flags, int flag_offset, int file_size);
+ResourceFile *LoadResourceFile(const char *filename, ResourceFileType type, int flags, void (*callback)(void *), void *callback_param,
+                               int file_offset, int file_size);
 void UnloadResourceFile(ResourceFile *resource_file);
 void SetDelayedResourceCallback(void (*callback)(void *), void *param);
 

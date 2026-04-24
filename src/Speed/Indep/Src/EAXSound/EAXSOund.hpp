@@ -9,9 +9,12 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
 #include "Speed/Indep/Src/EAXSound/SFX_base.hpp"
 #include "Speed/Indep/Src/EAXSound/STICH_Playback.h"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/audiosystem.h"
 #include "Speed/Indep/Src/Main/Event.h"
 #include "Speed/Indep/Src/Misc/Hermes.h"
+
+class AudioSettings;
 
 // yes that is the correct name for the file
 
@@ -100,6 +103,8 @@ enum eSNDCTLSTATE {
     SNDSTATE_OFF = 0,
 };
 
+struct EAXFrontEnd;
+
 // total size: 0xBC
 class EAXSound : public AudioMemBase {
   public:
@@ -109,6 +114,8 @@ class EAXSound : public AudioMemBase {
     void Update(float t);
     bool AreResourceLoadsPending();
 
+    void PlayFEMusic(int nIndex);
+
     void START_321Countdown();
 
     SFX_Base *GetSFXBase_Object(int nID);
@@ -116,11 +123,22 @@ class EAXSound : public AudioMemBase {
     void StartSND11();
     void StopSND11();
 
+    void StopUISoundFX(eMenuSoundTriggers trigger);
+    void PlayUISoundFX(eMenuSoundTriggers trigger);
+
     void QueueNISStream(unsigned int anim_id, int camera_track_number, void (*setmstimecb)(unsigned int, int));
     bool IsNISStreamQueued();
     void NISFinished();
 
-    void PlayUISoundFX(eMenuSoundTriggers etriggertype);
+    void UpdateVolumes(AudioSettings *paudiosettings, float NewValue);
+
+    int GetDefaultPlatformAudioMode();
+
+    static void ChangeLanguage(int new_language) {}
+
+    EAXFrontEnd *GetFrontEnd() {
+        return m_pFESnd;
+    }
 
   private:
     int ncompiletest;                            // offset 0x4, size 0x4
