@@ -1,4 +1,3 @@
-// OWNED BY zFeOverlay AGENT - do not empty or overwrite
 #ifndef FRONTEND_MENUSCREENS_SAFEHOUSE_QUICKRACE_UIQRCARSELECT_H
 #define FRONTEND_MENUSCREENS_SAFEHOUSE_QUICKRACE_UIQRCARSELECT_H
 
@@ -122,26 +121,26 @@ struct UIQRCarSelect : public MenuScreen {
 
     static unsigned int ForceCar; // size: 0x4
 
-    bTList<SelectableCar> FilteredCarsList;        // offset 0x2C, size 0x8
-    SelectableCar *pSelectedCar;                   // offset 0x34, size 0x4
-    Timer tLastEventTimer;                         // offset 0x38, size 0x4
-    FEImage *pManuLogo;                            // offset 0x3C, size 0x4
-    FEImage *pCarBadge;                            // offset 0x40, size 0x4
-    FEString *pCarName;                            // offset 0x44, size 0x4
-    FEString *pCarNameShadow;                      // offset 0x48, size 0x4
-    FEString *pFilter;                             // offset 0x4C, size 0x4
-    unsigned int ListHandles[6];                   // offset 0x50, size 0x18
-    unsigned int originalCar;                      // offset 0x68, size 0x4
-    QRCarSelectBustedManager TheBustedManager;     // offset 0x6C, size 0x1C
-    CustomizeMeter TheHeatMeter;                   // offset 0x88, size 0x50
-    TwoStageSlider AccelerationSlider;             // offset 0xD8, size 0x44
-    TwoStageSlider TopSpeedSlider;                 // offset 0x11C, size 0x44
-    TwoStageSlider HandlingSlider;                 // offset 0x160, size 0x44
-    bool bLoadingBarActive;                        // offset 0x1A4, size 0x1
-    bool bShowcaseMode;                            // offset 0x1A8, size 0x1
-    int iPlayerNum;                                // offset 0x1AC, size 0x4
-    int filter;                                    // offset 0x1B0, size 0x4
-    unsigned int iPrevButtonMsg;                   // offset 0x1B4, size 0x4
+    bTList<SelectableCar> FilteredCarsList;    // offset 0x2C, size 0x8
+    SelectableCar *pSelectedCar;               // offset 0x34, size 0x4
+    Timer tLastEventTimer;                     // offset 0x38, size 0x4
+    FEImage *pManuLogo;                        // offset 0x3C, size 0x4
+    FEImage *pCarBadge;                        // offset 0x40, size 0x4
+    FEString *pCarName;                        // offset 0x44, size 0x4
+    FEString *pCarNameShadow;                  // offset 0x48, size 0x4
+    FEString *pFilter;                         // offset 0x4C, size 0x4
+    unsigned int ListHandles[6];               // offset 0x50, size 0x18
+    unsigned int originalCar;                  // offset 0x68, size 0x4
+    QRCarSelectBustedManager TheBustedManager; // offset 0x6C, size 0x1C
+    CustomizeMeter TheHeatMeter;               // offset 0x88, size 0x50
+    TwoStageSlider AccelerationSlider;         // offset 0xD8, size 0x44
+    TwoStageSlider TopSpeedSlider;             // offset 0x11C, size 0x44
+    TwoStageSlider HandlingSlider;             // offset 0x160, size 0x44
+    bool bLoadingBarActive;                    // offset 0x1A4, size 0x1
+    bool bShowcaseMode;                        // offset 0x1A8, size 0x1
+    int iPlayerNum;                            // offset 0x1AC, size 0x4
+    int filter;                                // offset 0x1B0, size 0x4
+    unsigned int iPrevButtonMsg;               // offset 0x1B4, size 0x4
 };
 
 #endif

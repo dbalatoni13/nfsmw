@@ -1,10 +1,10 @@
 #include "Speed/Indep/Src/Frontend/HUD/FeMinimapStreamer.hpp"
+#include "Speed/Indep/Src/Misc/LZCompress.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 extern void bEndianSwap32(void *data);
 extern void bEndianSwap16(void *data);
 extern int bSNPrintf(char *buf, int size, const char *fmt, ...);
-extern int LZDecompress(unsigned char *pSrc, unsigned char *pDst);
 extern void UnloadChunks(bChunk *chunks, int sizeof_chunks, const char *debug_name);
 extern void LoadEmbeddedChunks(bChunk *chunk, int sizeof_chunks, const char *debug_name);
 
@@ -97,8 +97,7 @@ void ChoppedMiniMapManager::UncompressMaps(short *chop_nums, int num_chops) {
                 int size = *reinterpret_cast<int *>(reinterpret_cast<char *>(lz_header) + 8);
                 free_map->SizeofChunks = size;
                 free_map->Chunks = static_cast<bChunk *>(bMalloc(size, 0x2000));
-                LZDecompress(reinterpret_cast<unsigned char *>(lz_header),
-                             reinterpret_cast<unsigned char *>(free_map->Chunks));
+                LZDecompress(reinterpret_cast<unsigned char *>(lz_header), reinterpret_cast<unsigned char *>(free_map->Chunks));
                 LoadEmbeddedChunks(free_map->Chunks, free_map->SizeofChunks, "MiniMap Chop embedded");
             }
         }

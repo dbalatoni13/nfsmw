@@ -1,4 +1,3 @@
-// OWNED BY zFeOverlay AGENT - DO NOT MODIFY OR EMPTY
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/customize/MyCarsManager.hpp"
 
 #include "Speed/Indep/Src/FEng/cFEng.h"
@@ -16,17 +15,20 @@ extern Timer RealTimer;
 extern bool IsMemcardEnabled;
 extern unsigned int FEngHashString(const char *, ...);
 
-void MemcardEnter(const char *from, const char *to, unsigned int op,
-                  void (*termFunc)(void *), void *termParam,
-                  unsigned int successMsg, unsigned int failedMsg);
+void MemcardEnter(const char *from, const char *to, unsigned int op, void (*termFunc)(void *), void *termParam, unsigned int successMsg,
+                  unsigned int failedMsg);
 extern void BeginCarCustomize(eCustomizeEntryPoint entry, FECarRecord *car);
 
 MyCarsManager::MyCarsManager(ScreenConstructorData *sd)
     : ArrayScrollerMenu(sd, 5, 2, true) //
-    , AccelerationSlider() //
-    , TopSpeedSlider() //
-    , HandlingSlider() //
-    , bGoToShowcase(false) {
+      ,
+      AccelerationSlider() //
+      ,
+      TopSpeedSlider() //
+      ,
+      HandlingSlider() //
+      ,
+      bGoToShowcase(false) {
     bShouldPlaySound = true;
     pSelectedCar = nullptr;
     tCarLoadTimer.UnSet();
@@ -45,76 +47,73 @@ void MyCarsManager::NotificationMessage(unsigned long msg, FEObject *obj, unsign
     ArrayScrollerMenu::NotificationMessage(msg, obj, param1, param2);
 
     switch (msg) {
-    case 0x34dc1bcf:
-        break;
-    case 0x35f8620b:
-        FEDatabase->BackupCarStable();
-        break;
-    case 0xc98356ba: {
-        if (tCarLoadTimer.IsSet()) {
-            float elapsed = static_cast<float>(RealTimer.GetPackedTime() - tCarLoadTimer.GetPackedTime()) / 4000.0f;
-            if (elapsed >= 0.5f && pSelectedCar) {
-                RideInfo ride;
-                FEDatabase->GetPlayerCarStable(0)->BuildRideForPlayer(pSelectedCar->Handle, 0, &ride);
-                CarViewer::SetRideInfo(&ride, static_cast<eSetRideInfoReasons>(1), static_cast<eCarViewerWhichCar>(0));
-                tCarLoadTimer.UnSet();
+        case 0x34dc1bcf:
+            break;
+        case 0x35f8620b:
+            FEDatabase->BackupCarStable();
+            break;
+        case 0xc98356ba: {
+            if (tCarLoadTimer.IsSet()) {
+                float elapsed = static_cast<float>(RealTimer.GetPackedTime() - tCarLoadTimer.GetPackedTime()) / 4000.0f;
+                if (elapsed >= 0.5f && pSelectedCar) {
+                    RideInfo ride;
+                    FEDatabase->GetPlayerCarStable(0)->BuildRideForPlayer(pSelectedCar->Handle, 0, &ride);
+                    CarViewer::SetRideInfo(&ride, static_cast<eSetRideInfoReasons>(1), static_cast<eCarViewerWhichCar>(0));
+                    tCarLoadTimer.UnSet();
+                }
             }
+            break;
         }
-        break;
-    }
-    case 0x911ab364: {
-        if (!pSelectedCar) {
-            RideInfo ride;
+        case 0x911ab364: {
+            if (!pSelectedCar) {
+                RideInfo ride;
+                FEPlayerCarDB *carDB = FEDatabase->GetPlayerCarStable(0);
+                RaceSettings *rs = FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(0xb));
+                carDB->BuildRideForPlayer(rs->SelectedCar[0], 0, &ride);
+                CarViewer::SetRideInfo(&ride, static_cast<eSetRideInfoReasons>(1), static_cast<eCarViewerWhichCar>(0));
+            }
+            if (FEDatabase->IsCarStableDirty() && IsMemcardEnabled) {
+                MemcardEnter(GetPackageName(), "MainMenu.fng", 0x2000b3, nullptr, nullptr, 0, 0);
+            } else {
+                cFEng::Get()->QueuePackageSwitch("MainMenu.fng", 0, 0, false);
+            }
+            break;
+        }
+        case 0xc519bfc4: {
+            FECarRecord *car = FEDatabase->GetPlayerCarStable(0)->GetCarRecordByHandle(static_cast<CarDatum *>(GetCurrentDatum())->Handle);
+            if (car->IsValid()) {
+                DialogInterface::ShowTwoButtons(GetPackageName(), "", static_cast<eDialogTitle>(1), 0x70e01038, 0x417b25e4, 0xd05fc3a3, 0x34dc1bcf,
+                                                0x34dc1bcf, static_cast<eDialogFirstButtons>(1), 0x4f68196e);
+            }
+            break;
+        }
+        case 0xd05fc3a3: {
+            unsigned int handle = static_cast<CarDatum *>(GetCurrentDatum())->Handle;
             FEPlayerCarDB *carDB = FEDatabase->GetPlayerCarStable(0);
-            RaceSettings *rs = FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(0xb));
-            carDB->BuildRideForPlayer(rs->SelectedCar[0], 0, &ride);
-            CarViewer::SetRideInfo(&ride, static_cast<eSetRideInfoReasons>(1), static_cast<eCarViewerWhichCar>(0));
+            FEDatabase->NotifyDeleteCar(handle);
+            carDB->DeleteCustomCar(handle);
+            RefreshCarList();
+            if (data.CountElements() >= 2) {
+                pSelectedCar = carDB->GetCarRecordByHandle(static_cast<CarDatum *>(GetCurrentDatum())->Handle);
+            } else {
+                pSelectedCar = nullptr;
+            }
+            RefreshHeader();
+            break;
         }
-        if (FEDatabase->IsCarStableDirty() && IsMemcardEnabled) {
-            MemcardEnter(GetPackageName(), "MainMenu.fng", 0x2000b3, nullptr, nullptr, 0, 0);
-        } else {
-            cFEng::Get()->QueuePackageSwitch("MainMenu.fng", 0, 0, false);
-        }
-        break;
-    }
-    case 0xc519bfc4: {
-        FECarRecord *car = FEDatabase->GetPlayerCarStable(0)->GetCarRecordByHandle(
-            static_cast<CarDatum *>(GetCurrentDatum())->Handle);
-        if (car->IsValid()) {
-            DialogInterface::ShowTwoButtons(GetPackageName(), "", static_cast<eDialogTitle>(1),
-                                            0x70e01038, 0x417b25e4, 0xd05fc3a3,
-                                            0x34dc1bcf, 0x34dc1bcf, static_cast<eDialogFirstButtons>(1), 0x4f68196e);
-        }
-        break;
-    }
-    case 0xd05fc3a3: {
-        unsigned int handle = static_cast<CarDatum *>(GetCurrentDatum())->Handle;
-        FEPlayerCarDB *carDB = FEDatabase->GetPlayerCarStable(0);
-        FEDatabase->NotifyDeleteCar(handle);
-        carDB->DeleteCustomCar(handle);
-        RefreshCarList();
-        if (data.CountElements() >= 2) {
-            pSelectedCar = carDB->GetCarRecordByHandle(
-                static_cast<CarDatum *>(GetCurrentDatum())->Handle);
-        } else {
-            pSelectedCar = nullptr;
-        }
-        RefreshHeader();
-        break;
-    }
-    case 0xc519bfbf:
-        if (pSelectedCar) {
-            cFEng::Get()->QueuePackageMessage(0x587c018b, GetPackageName(), nullptr);
-            bGoToShowcase = true;
-        }
-        break;
-    case 0xe1fde1d1:
-        if (bGoToShowcase) {
-            Showcase::FromArgs = 0;
-            Showcase::FromPackage = GetPackageName();
-            cFEng::Get()->QueuePackageSwitch("Showcase.fng", reinterpret_cast<int>(pSelectedCar), 0, false);
-        }
-        break;
+        case 0xc519bfbf:
+            if (pSelectedCar) {
+                cFEng::Get()->QueuePackageMessage(0x587c018b, GetPackageName(), nullptr);
+                bGoToShowcase = true;
+            }
+            break;
+        case 0xe1fde1d1:
+            if (bGoToShowcase) {
+                Showcase::FromArgs = 0;
+                Showcase::FromPackage = GetPackageName();
+                cFEng::Get()->QueuePackageSwitch("Showcase.fng", reinterpret_cast<int>(pSelectedCar), 0, false);
+            }
+            break;
     }
 }
 
@@ -199,8 +198,7 @@ void MyCarsManager::RefreshHeader() {
 
 void MyCarsManager::UpdateSliders() {
     if (static_cast<CarDatum *>(GetCurrentDatum())->Handle != 0xFFFFFFFF) {
-        FECarRecord *car = FEDatabase->GetPlayerCarStable(0)->GetCarRecordByHandle(
-            static_cast<CarDatum *>(GetCurrentDatum())->Handle);
+        FECarRecord *car = FEDatabase->GetPlayerCarStable(0)->GetCarRecordByHandle(static_cast<CarDatum *>(GetCurrentDatum())->Handle);
         Physics::Info::Performance performance;
         if (car) {
             Attrib::Gen::pvehicle pv(car->VehicleKey, 0, nullptr);

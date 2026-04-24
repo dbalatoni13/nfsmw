@@ -9,17 +9,13 @@ extern void FEEndBatchRender(eView *view);
 extern void FERender(eView *view, ePoly *poly, TextureInfo *tex, TextureInfo *mask, int param);
 extern void FERender(eView *view, ePoly *poly, TextureInfo *tex, int param);
 
-extern unsigned int ClipTop(bVector3 *pDst, bVector2 *pDstUVs, bVector4 *pDstColors,
-                            bVector3 *pSrc, bVector2 *pSrcUVs, bVector4 *pSrcColors,
+extern unsigned int ClipTop(bVector3 *pDst, bVector2 *pDstUVs, bVector4 *pDstColors, bVector3 *pSrc, bVector2 *pSrcUVs, bVector4 *pSrcColors,
                             unsigned int num_verts, float value);
-extern unsigned int ClipBottom(bVector3 *pDst, bVector2 *pDstUVs, bVector4 *pDstColors,
-                               bVector3 *pSrc, bVector2 *pSrcUVs, bVector4 *pSrcColors,
+extern unsigned int ClipBottom(bVector3 *pDst, bVector2 *pDstUVs, bVector4 *pDstColors, bVector3 *pSrc, bVector2 *pSrcUVs, bVector4 *pSrcColors,
                                unsigned int num_verts, float value);
-extern unsigned int ClipLeft(bVector3 *pDst, bVector2 *pDstUVs, bVector4 *pDstColors,
-                             bVector3 *pSrc, bVector2 *pSrcUVs, bVector4 *pSrcColors,
+extern unsigned int ClipLeft(bVector3 *pDst, bVector2 *pDstUVs, bVector4 *pDstColors, bVector3 *pSrc, bVector2 *pSrcUVs, bVector4 *pSrcColors,
                              unsigned int num_verts, float value);
-extern unsigned int ClipRight(bVector3 *pDst, bVector2 *pDstUVs, bVector4 *pDstColors,
-                              bVector3 *pSrc, bVector2 *pSrcUVs, bVector4 *pSrcColors,
+extern unsigned int ClipRight(bVector3 *pDst, bVector2 *pDstUVs, bVector4 *pDstColors, bVector3 *pSrc, bVector2 *pSrcUVs, bVector4 *pSrcColors,
                               unsigned int num_verts, float value);
 
 void FERenderObject::Initialize() {
@@ -46,7 +42,7 @@ FERenderObject::~FERenderObject() {
 }
 
 void *FERenderEPoly::operator new(unsigned int) {
-    if (FERenderEPolySlotPool->NumAllocatedSlots != FERenderEPolySlotPool->TotalNumSlots) {
+    if (!FERenderEPolySlotPool->IsFull()) {
         return FERenderEPolySlotPool->FastMalloc();
     }
     if (!FERenderEPolySlotPoolOverflow) {
@@ -61,7 +57,7 @@ void FERenderEPoly::operator delete(void *p) {
         FERenderEPolySlotPool->Free(p);
     } else {
         FERenderEPolySlotPoolOverflow->Free(p);
-        if (FERenderEPolySlotPoolOverflow->NumAllocatedSlots == 0) {
+        if (FERenderEPolySlotPoolOverflow->IsEmpty()) {
             bDeleteSlotPool(FERenderEPolySlotPoolOverflow);
             FERenderEPolySlotPoolOverflow = nullptr;
         }
@@ -107,9 +103,8 @@ void FERenderObject::Clear(FEPackageRenderInfo *pkg_render_info) {
     mulNumTimesRendered = 0;
 }
 
-unsigned int ClipLeft(bVector3 *pDst, bVector2 *pDstUVs, bVector4 *pDstColors,
-                     bVector3 *pSrc, bVector2 *pSrcUVs, bVector4 *pSrcColors,
-                     unsigned int num_verts, float value) {
+unsigned int ClipLeft(bVector3 *pDst, bVector2 *pDstUVs, bVector4 *pDstColors, bVector3 *pSrc, bVector2 *pSrcUVs, bVector4 *pSrcColors,
+                      unsigned int num_verts, float value) {
     unsigned int new_num_verts = 0;
     bool bFlag;
     unsigned long last_vert;
@@ -172,8 +167,7 @@ unsigned int ClipLeft(bVector3 *pDst, bVector2 *pDstUVs, bVector4 *pDstColors,
     return new_num_verts;
 }
 
-unsigned int ClipTop(bVector3 *pDst, bVector2 *pDstUVs, bVector4 *pDstColors,
-                     bVector3 *pSrc, bVector2 *pSrcUVs, bVector4 *pSrcColors,
+unsigned int ClipTop(bVector3 *pDst, bVector2 *pDstUVs, bVector4 *pDstColors, bVector3 *pSrc, bVector2 *pSrcUVs, bVector4 *pSrcColors,
                      unsigned int num_verts, float value) {
     unsigned int new_num_verts = 0;
     bool bFlag;
@@ -237,8 +231,7 @@ unsigned int ClipTop(bVector3 *pDst, bVector2 *pDstUVs, bVector4 *pDstColors,
     return new_num_verts;
 }
 
-unsigned int ClipRight(bVector3 *pDst, bVector2 *pDstUVs, bVector4 *pDstColors,
-                       bVector3 *pSrc, bVector2 *pSrcUVs, bVector4 *pSrcColors,
+unsigned int ClipRight(bVector3 *pDst, bVector2 *pDstUVs, bVector4 *pDstColors, bVector3 *pSrc, bVector2 *pSrcUVs, bVector4 *pSrcColors,
                        unsigned int num_verts, float value) {
     unsigned int new_num_verts = 0;
     bool bFlag;
@@ -302,8 +295,7 @@ unsigned int ClipRight(bVector3 *pDst, bVector2 *pDstUVs, bVector4 *pDstColors,
     return new_num_verts;
 }
 
-unsigned int ClipBottom(bVector3 *pDst, bVector2 *pDstUVs, bVector4 *pDstColors,
-                        bVector3 *pSrc, bVector2 *pSrcUVs, bVector4 *pSrcColors,
+unsigned int ClipBottom(bVector3 *pDst, bVector2 *pDstUVs, bVector4 *pDstColors, bVector3 *pSrc, bVector2 *pSrcUVs, bVector4 *pSrcColors,
                         unsigned int num_verts, float value) {
     unsigned int new_num_verts = 0;
     bool bFlag;
@@ -367,8 +359,7 @@ unsigned int ClipBottom(bVector3 *pDst, bVector2 *pDstUVs, bVector4 *pDstColors,
     return new_num_verts;
 }
 
-unsigned int FERenderObject::ClipAligned(FEClipInfo *pClipInfo, bVector3 *v, bVector2 *uv,
-                                         bVector4 *colors, bVector3 *nv, bVector2 *nuv,
+unsigned int FERenderObject::ClipAligned(FEClipInfo *pClipInfo, bVector3 *v, bVector2 *uv, bVector4 *colors, bVector3 *nv, bVector2 *nuv,
                                          bVector4 *ncolors) {
     bVector3 *pDst = nv;
     bVector2 *pDstUVs = nuv;
@@ -379,18 +370,21 @@ unsigned int FERenderObject::ClipAligned(FEClipInfo *pClipInfo, bVector3 *v, bVe
     unsigned long num_verts;
 
     num_verts = ClipLeft(pDst, pDstUVs, pDstColors, pSrc, pSrcUVs, pSrcColors, 4, pClipInfo->constants[3]);
-    if (!num_verts) return 0;
+    if (!num_verts)
+        return 0;
     num_verts = ClipTop(pSrc, pSrcUVs, pSrcColors, pDst, pDstUVs, pDstColors, num_verts, pClipInfo->constants[0]);
-    if (!num_verts) return 0;
+    if (!num_verts)
+        return 0;
     num_verts = ClipRight(pDst, pDstUVs, pDstColors, pSrc, pSrcUVs, pSrcColors, num_verts, pClipInfo->constants[1]);
-    if (!num_verts) return 0;
+    if (!num_verts)
+        return 0;
     num_verts = ClipBottom(pSrc, pSrcUVs, pSrcColors, pDst, pDstUVs, pDstColors, num_verts, pClipInfo->constants[2]);
-    if (!num_verts) return 0;
+    if (!num_verts)
+        return 0;
     return num_verts;
 }
 
-unsigned int FERenderObject::ClipGeneral(FEClipInfo *pClipInfo, bVector3 *v, bVector2 *uv,
-                                         bVector4 *colors, bVector3 *nv, bVector2 *nuv,
+unsigned int FERenderObject::ClipGeneral(FEClipInfo *pClipInfo, bVector3 *v, bVector2 *uv, bVector4 *colors, bVector3 *nv, bVector2 *nuv,
                                          bVector4 *ncolors) {
     bVector3 *pSrc = v;
     bVector2 *pSrcUVs = uv;
@@ -456,20 +450,26 @@ unsigned int FERenderObject::ClipGeneral(FEClipInfo *pClipInfo, bVector3 *v, bVe
         }
 
         void *pTmp;
-        pTmp = pSrc; pSrc = pDst; pDst = static_cast<bVector3 *>(pTmp);
-        pTmp = pSrcUVs; pSrcUVs = pDstUVs; pDstUVs = static_cast<bVector2 *>(pTmp);
-        pTmp = pSrcColors; pSrcColors = pDstColors; pDstColors = static_cast<bVector4 *>(pTmp);
+        pTmp = pSrc;
+        pSrc = pDst;
+        pDst = static_cast<bVector3 *>(pTmp);
+        pTmp = pSrcUVs;
+        pSrcUVs = pDstUVs;
+        pDstUVs = static_cast<bVector2 *>(pTmp);
+        pTmp = pSrcColors;
+        pSrcColors = pDstColors;
+        pDstColors = static_cast<bVector4 *>(pTmp);
 
         num_verts = new_num_verts;
-        if (!num_verts) return 0;
+        if (!num_verts)
+            return 0;
     }
 
     return num_verts;
 }
 
-FERenderEPoly *FERenderObject::AddPoly(float x0, float y0, float x1, float y1, float z,
-                                       float s0, float t0, float s1, float t1,
-                                       unsigned int *colors, FEPackageRenderInfo *pkg_render_info) {
+FERenderEPoly *FERenderObject::AddPoly(float x0, float y0, float x1, float y1, float z, float s0, float t0, float s1, float t1, unsigned int *colors,
+                                       FEPackageRenderInfo *pkg_render_info) {
     FERenderEPoly *render = new FERenderEPoly();
     ePoly *pPoly = &render->EPoly;
     render->pTextureMask = nullptr;
@@ -520,20 +520,16 @@ FERenderEPoly *FERenderObject::AddPoly(float x0, float y0, float x1, float y1, f
     return render;
 }
 
-void FERenderObject::AddPoly(float x0, float y0, float x1, float y1, float z,
-                             float s0, float t0, float s1, float t1,
-                             unsigned int *colors, TextureInfo *texture,
-                             FEPackageRenderInfo *pkg_render_info) {
+void FERenderObject::AddPoly(float x0, float y0, float x1, float y1, float z, float s0, float t0, float s1, float t1, unsigned int *colors,
+                             TextureInfo *texture, FEPackageRenderInfo *pkg_render_info) {
     FERenderEPoly *render = AddPoly(x0, y0, x1, y1, z, s0, t0, s1, t1, colors, pkg_render_info);
     if (render) {
         render->pTexture = texture;
     }
 }
 
-void FERenderObject::AddPoly(float x0, float y0, float x1, float y1, float z,
-                             float s0, float t0, float s1, float t1,
-                             unsigned int *in_colors, FEClipInfo *pClipInfo,
-                             FEPackageRenderInfo *pkg_render_info) {
+void FERenderObject::AddPoly(float x0, float y0, float x1, float y1, float z, float s0, float t0, float s1, float t1, unsigned int *in_colors,
+                             FEClipInfo *pClipInfo, FEPackageRenderInfo *pkg_render_info) {
     if (!pClipInfo) {
         AddPoly(x0, y0, x1, y1, z, s0, t0, s1, t1, in_colors, pkg_render_info);
         return;
@@ -582,8 +578,8 @@ void FERenderObject::AddPoly(float x0, float y0, float x1, float y1, float z,
     bMulMatrix(&v[2], &mstTransform, &v[2]);
     bMulMatrix(&v[3], &mstTransform, &v[3]);
 
-    unsigned int num_verts = (pClipInfo->flags & 1) ? ClipAligned(pClipInfo, v, uv, colors, nv, nuv, ncolors)
-                                                    : ClipGeneral(pClipInfo, v, uv, colors, nv, nuv, ncolors);
+    unsigned int num_verts =
+        (pClipInfo->flags & 1) ? ClipAligned(pClipInfo, v, uv, colors, nv, nuv, ncolors) : ClipGeneral(pClipInfo, v, uv, colors, nv, nuv, ncolors);
     if (!num_verts || num_verts == 2) {
         return;
     }
@@ -628,12 +624,9 @@ void FERenderObject::AddPoly(float x0, float y0, float x1, float y1, float z,
     }
 }
 
-void FERenderObject::AddPolyWithRotatedMask(float x0, float y0, float x1, float y1, float z,
-                                             float s0, float t0, float s1, float t1,
-                                             float ms0, float mt0, float ms1, float mt1,
-                                             float ms2, float mt2, float ms3, float mt3,
-                                             unsigned int *colors, TextureInfo *texture,
-                                             TextureInfo *textureMask) {
+void FERenderObject::AddPolyWithRotatedMask(float x0, float y0, float x1, float y1, float z, float s0, float t0, float s1, float t1, float ms0,
+                                            float mt0, float ms1, float mt1, float ms2, float mt2, float ms3, float mt3, unsigned int *colors,
+                                            TextureInfo *texture, TextureInfo *textureMask) {
     FERenderEPoly *render = new FERenderEPoly();
     ePoly *pPoly = &render->EPoly;
     render->pTexture = texture;

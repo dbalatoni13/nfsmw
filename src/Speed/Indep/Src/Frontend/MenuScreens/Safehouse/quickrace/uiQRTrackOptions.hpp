@@ -1,4 +1,3 @@
-// OWNED BY zFeOverlay AGENT - do not empty or overwrite
 #ifndef FRONTEND_MENUSCREENS_SAFEHOUSE_QUICKRACE_UIQRTRACKOPTIONS_H
 #define FRONTEND_MENUSCREENS_SAFEHOUSE_QUICKRACE_UIQRTRACKOPTIONS_H
 
@@ -28,13 +27,13 @@ struct UIQRTrackOptions : public UIWidgetMenu {
     void SetupSpeedTrap();
     void SetupTollbooth();
 
-    GRaceParameters *race;              // offset 0x138, size 0x4
-    unsigned int ConfirmPasswordId;     // offset 0x13C, size 0x4
-    unsigned int EnterPasswordId;       // offset 0x140, size 0x4
-    unsigned int PasswordProtectedId;   // offset 0x144, size 0x4
-    int m_code;                         // offset 0x148, size 0x4
-    int msgHandle;                      // offset 0x14C, size 0x4
-    bool m_boDisconnectPercAvail;       // offset 0x150, size 0x1
+    GRaceParameters *race;            // offset 0x138, size 0x4
+    unsigned int ConfirmPasswordId;   // offset 0x13C, size 0x4
+    unsigned int EnterPasswordId;     // offset 0x140, size 0x4
+    unsigned int PasswordProtectedId; // offset 0x144, size 0x4
+    int m_code;                       // offset 0x148, size 0x4
+    int msgHandle;                    // offset 0x14C, size 0x4
+    bool m_boDisconnectPercAvail;     // offset 0x150, size 0x1
 };
 
 #endif

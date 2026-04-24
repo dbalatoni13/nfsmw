@@ -27,9 +27,11 @@ inline void FEngSetMovieName(const char *pkg_name, unsigned int obj_hash, const 
 extern bool TrackStreamerIsLoadingInProgress() asm("IsLoadingInProgress__13TrackStreamer");
 
 struct CarLoader {
-    char _pad[0x14]; //
+    char _pad[0x14];       //
     int LoadingInProgress; //
-    int IsLoadingInProgress() { return LoadingInProgress; }
+    int IsLoadingInProgress() {
+        return LoadingInProgress;
+    }
 };
 extern CarLoader TheCarLoader;
 
@@ -44,11 +46,9 @@ struct InGameAnyMovieScreen : MenuScreen {
     static void SetMovieName(const char *filename);
     static const char *GetFEngPackageName();
     static char MovieFilename[64];
-    SubTitler mSubtitler;                  // offset 0x2C
-    bool bAllowingControllerErrors;        // offset 0x50
+    SubTitler mSubtitler;           // offset 0x2C
+    bool bAllowingControllerErrors; // offset 0x50
 };
-
-extern bool eIsWidescreen();
 
 bool InGameAnyMovieScreen::IsPlaying() {
     return gInGameMoviePlaying;
@@ -75,8 +75,7 @@ MenuScreen *InGameAnyMovieScreen::Create(ScreenConstructorData *sd) {
 InGameAnyMovieScreen::InGameAnyMovieScreen(ScreenConstructorData *sd) : MenuScreen(sd) {
     bAllowingControllerErrors = FEManager::Get()->IsAllowingControllerError();
     FEManager::Get()->AllowControllerError(false);
-    while (TheCarLoader.IsLoadingInProgress() || TrackStreamerIsLoadingInProgress() ||
-           g_pEAXSound->AreResourceLoadsPending()) {
+    while (TheCarLoader.IsLoadingInProgress() || TrackStreamerIsLoadingInProgress() || g_pEAXSound->AreResourceLoadsPending()) {
         MiniMainLoop();
     }
     DismissChyron();

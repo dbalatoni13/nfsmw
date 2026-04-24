@@ -1,4 +1,3 @@
-// OWNED BY zFeOverlay AGENT - DO NOT MODIFY OR EMPTY
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiQRMainMenu.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEIconScrollerMenu.hpp"
 #include "Speed/Indep/Src/FEng/cFEng.h"
@@ -11,8 +10,7 @@ void FEngSetLanguageHash(const char *pkg_name, unsigned int obj_hash, unsigned i
 static void _SetQRMode(int mode);
 
 struct QuickPlay : public IconOption {
-    QuickPlay(unsigned int tex_hash, unsigned int name_hash, unsigned int desc_hash)
-        : IconOption(tex_hash, name_hash, desc_hash) {}
+    QuickPlay(unsigned int tex_hash, unsigned int name_hash, unsigned int desc_hash) : IconOption(tex_hash, name_hash, desc_hash) {}
 
     void React(const char *pkg_name, unsigned int data, FEObject *obj, unsigned int param1, unsigned int param2) override {
         if (data == 0xc407210) {
@@ -22,8 +20,7 @@ struct QuickPlay : public IconOption {
 };
 
 struct CustomRace : public IconOption {
-    CustomRace(unsigned int tex_hash, unsigned int name_hash, unsigned int desc_hash)
-        : IconOption(tex_hash, name_hash, desc_hash) {}
+    CustomRace(unsigned int tex_hash, unsigned int name_hash, unsigned int desc_hash) : IconOption(tex_hash, name_hash, desc_hash) {}
 
     void React(const char *pkg_name, unsigned int data, FEObject *obj, unsigned int param1, unsigned int param2) override {
         if (data == 0xc407210) {
@@ -33,8 +30,7 @@ struct CustomRace : public IconOption {
 };
 
 struct SplitScreenOption : public IconOption {
-    SplitScreenOption(unsigned int tex_hash, unsigned int name_hash, unsigned int desc_hash)
-        : IconOption(tex_hash, name_hash, desc_hash) {}
+    SplitScreenOption(unsigned int tex_hash, unsigned int name_hash, unsigned int desc_hash) : IconOption(tex_hash, name_hash, desc_hash) {}
 
     void React(const char *pkg_name, unsigned int data, FEObject *obj, unsigned int param1, unsigned int param2) override {
         if (data == 0xc407210) {
@@ -83,27 +79,27 @@ void UIQRMainMenu::NotificationMessage(unsigned long msg, FEObject *pobj, unsign
     IconScrollerMenu::NotificationMessage(msg, pobj, param1, param2);
     if (msg == 0xe1fde1d1) {
         switch (PrevButtonMessage) {
-        case 0xc407210: {
-            FEDatabase->iNumPlayers = 1;
-            switch (QRMode) {
-            case 1:
-                FEDatabase->SetGameMode(static_cast<eFEGameModes>(FEDatabase->GetGameMode() | 0x400));
-                cFEng::Get()->QueuePackageSwitch("MainMenu_Sub.fng", 0, 0, false);
-                break;
-            case 0:
-                cFEng::Get()->QueuePackageSwitch("Quick_Race_Brief.fng", 0, 0, false);
-                break;
-            case 2:
-                FEDatabase->iNumPlayers = 2;
-                FEDatabase->SetGameMode(static_cast<eFEGameModes>(FEDatabase->GetGameMode() | 0x400));
-                cFEng::Get()->QueuePackageSwitch("MainMenu_Sub.fng", 0, 0, false);
+            case 0xc407210: {
+                FEDatabase->iNumPlayers = 1;
+                switch (QRMode) {
+                    case 1:
+                        FEDatabase->SetGameMode(static_cast<eFEGameModes>(FEDatabase->GetGameMode() | 0x400));
+                        cFEng::Get()->QueuePackageSwitch("MainMenu_Sub.fng", 0, 0, false);
+                        break;
+                    case 0:
+                        cFEng::Get()->QueuePackageSwitch("Quick_Race_Brief.fng", 0, 0, false);
+                        break;
+                    case 2:
+                        FEDatabase->iNumPlayers = 2;
+                        FEDatabase->SetGameMode(static_cast<eFEGameModes>(FEDatabase->GetGameMode() | 0x400));
+                        cFEng::Get()->QueuePackageSwitch("MainMenu_Sub.fng", 0, 0, false);
+                        break;
+                }
                 break;
             }
-            break;
-        }
-        case 0x911ab364:
-            cFEng::Get()->QueuePackageSwitch("MainMenu.fng", 0, 0, false);
-            break;
+            case 0x911ab364:
+                cFEng::Get()->QueuePackageSwitch("MainMenu.fng", 0, 0, false);
+                break;
         }
     }
 }

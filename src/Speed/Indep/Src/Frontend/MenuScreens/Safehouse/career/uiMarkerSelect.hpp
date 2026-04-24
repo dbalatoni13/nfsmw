@@ -1,4 +1,3 @@
-// OWNED BY zFeOverlay AGENT - do not empty or overwrite
 #ifndef FRONTEND_MENUSCREENS_SAFEHOUSE_CAREER_UIMARKERSELECT_H
 #define FRONTEND_MENUSCREENS_SAFEHOUSE_CAREER_UIMARKERSELECT_H
 
@@ -20,8 +19,8 @@ struct FEMarkerSelection : public MenuScreen {
     // total size: 0xC
     struct Selection {
         FEMarkerManager::ePossibleMarker Marker; // offset 0x0, size 0x4
-        int Param;                                // offset 0x4, size 0x4
-        bool Selected;                            // offset 0x8, size 0x1
+        int Param;                               // offset 0x4, size 0x4
+        bool Selected;                           // offset 0x8, size 0x1
     };
 
     FEMarkerSelection(ScreenConstructorData *sd);
@@ -41,12 +40,12 @@ struct FEMarkerSelection : public MenuScreen {
     int GetNumSelected();
     void Redraw();
 
-    int NumVisibleMarkers;                     // offset 0x2C, size 0x4
-    FEImage *pRivalImg;                        // offset 0x30, size 0x4
-    FEImage *pTagImg;                          // offset 0x34, size 0x4
-    FEImage *pBGImg;                           // offset 0x38, size 0x4
-    uiRepSheetRivalStreamer RivalStreamer;      // offset 0x3C, size 0x3C
-    Selection TheMarkers[6];                   // offset 0x78, size 0x48
+    int NumVisibleMarkers;                 // offset 0x2C, size 0x4
+    FEImage *pRivalImg;                    // offset 0x30, size 0x4
+    FEImage *pTagImg;                      // offset 0x34, size 0x4
+    FEImage *pBGImg;                       // offset 0x38, size 0x4
+    uiRepSheetRivalStreamer RivalStreamer; // offset 0x3C, size 0x3C
+    Selection TheMarkers[6];               // offset 0x78, size 0x48
 };
 
 #endif

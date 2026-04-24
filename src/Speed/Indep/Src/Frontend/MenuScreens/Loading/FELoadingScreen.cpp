@@ -9,7 +9,6 @@
 extern void FEngSetScript(const char *pkg_name, unsigned int obj_hash, unsigned int script_hash, bool start_at_beginning);
 extern FEObject *FEngFindObject(const char *pkg_name, unsigned int hash);
 extern void FEngSetVisible(FEObject *obj);
-extern bool eIsWidescreen();
 extern void SetSoundControlState(bool bON, eSNDCTLSTATE esndstate, const char *Reason);
 
 static bool bSawLoadingScreen;

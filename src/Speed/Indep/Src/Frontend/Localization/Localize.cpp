@@ -42,27 +42,27 @@ struct WideCharHistogram {
     void PlatEndianSwap();
 
   protected:
-    int NumEntries;                       // offset 0x0, size 0x4
-    unsigned short EntryTable[3072];      // offset 0x4, size 0x1800
+    int NumEntries;                  // offset 0x0, size 0x4
+    unsigned short EntryTable[3072]; // offset 0x4, size 0x1800
 };
 
 extern WideCharHistogram *pWideCharHistogram;
 extern void bStrCpy(unsigned short *dst, const char *src);
 
 struct LanguageInfo {
-    eLanguages Language;                 // offset 0x0, size 0x4
-    char *Name;                          // offset 0x4, size 0x4
-    char *Filename;                      // offset 0x8, size 0x4
-    char *FilenameTextOnly;              // offset 0xC, size 0x4
-    FontNameInfo *pFontNameInfo;         // offset 0x10, size 0x4
+    eLanguages Language;                   // offset 0x0, size 0x4
+    char *Name;                            // offset 0x4, size 0x4
+    char *Filename;                        // offset 0x8, size 0x4
+    char *FilenameTextOnly;                // offset 0xC, size 0x4
+    FontNameInfo *pFontNameInfo;           // offset 0x10, size 0x4
     bPrintfLocaleInfo *pbPrintfLocaleInfo; // offset 0x14, size 0x4
 };
 
 extern LanguageInfo LanguageInfoTable[];
 
 struct StringRecord {
-    unsigned int Hash;            // offset 0x0, size 0x4
-    unsigned char *PackedString;  // offset 0x4, size 0x4
+    unsigned int Hash;           // offset 0x0, size 0x4
+    unsigned char *PackedString; // offset 0x4, size 0x4
 };
 
 static unsigned int NumStringRecords;
@@ -291,7 +291,8 @@ bool GetLocalizedWideString(short *wide_string, int wide_string_buffer_size, uns
 const char *GetLocalizedPercentSign() {
     const char *szPercentUnit = "%";
     eLanguages currLang = GetCurrentLanguage();
-    if (currLang == eLANGUAGE_DANISH || currLang == eLANGUAGE_FINNISH || currLang == eLANGUAGE_FRENCH || currLang == eLANGUAGE_GERMAN || currLang == eLANGUAGE_SWEDISH) {
+    if (currLang == eLANGUAGE_DANISH || currLang == eLANGUAGE_FINNISH || currLang == eLANGUAGE_FRENCH || currLang == eLANGUAGE_GERMAN ||
+        currLang == eLANGUAGE_SWEDISH) {
         szPercentUnit = " %";
     }
     return szPercentUnit;
@@ -309,7 +310,6 @@ extern int LanguageMemoryPoolSize;
 extern bool IsKorea();
 extern int bGetFreeMemoryPoolNum();
 extern void bInitMemoryPool(int pool, void *mem, int size, const char *name);
-extern void eLoadStreamingTexturePack(const char *filename, void (*callback)(void *), void *param, int flags);
 extern void eWaitForStreamingTexturePackLoading(const char *name);
 
 struct VMFile;
@@ -346,8 +346,7 @@ void InitLocalization() {
     if (LanguageMemoryPoolNumber != 0) {
         LanguageMemoryPoolNumber = bGetFreeMemoryPoolNum();
         pLanguageMemoryPoolMemory = bMalloc(LanguageMemoryPoolSize, 0);
-        bInitMemoryPool(LanguageMemoryPoolNumber, pLanguageMemoryPoolMemory,
-                        LanguageMemoryPoolSize, "LanguageMemoryPool");
+        bInitMemoryPool(LanguageMemoryPoolNumber, pLanguageMemoryPoolMemory, LanguageMemoryPoolSize, "LanguageMemoryPool");
     }
     eLoadStreamingTexturePack("LANGUAGES\\LANGUAGETEXTURES.BIN", nullptr, nullptr, 0);
     eWaitForStreamingTexturePackLoading("LANGUAGES\\LANGUAGETEXTURES.BIN");
@@ -376,7 +375,8 @@ void LoadLanguageResources(bool load_global, bool load_frontend, bool load_ingam
     if (load_global) {
         if (!pLanguageResourceFile) {
             pLanguageResourceFile_VM = LoadFileIntoVirtualMemory(info->FilenameTextOnly, false, false);
-            {} // empty anonymous block (DWARF)
+            {
+            } // empty anonymous block (DWARF)
             int pool = 0;
             pLanguageResourceFile = CreateResourceFile(info->Filename, static_cast<ResourceFileType>(7), 0, 0, 0);
             int file_size = bFileSize(info->Filename);
@@ -390,16 +390,19 @@ void LoadLanguageResources(bool load_global, bool load_frontend, bool load_ingam
             }
         }
         if (load_global && !info->pFontNameInfo->GlobalFontsLoaded) {
-            eLoadStreamingTexture(info->pFontNameInfo->GlobalFonts, 8, static_cast<void (*)(void*)>(nullptr), static_cast<void*>(nullptr), LanguageMemoryPoolNumber);
+            eLoadStreamingTexture(info->pFontNameInfo->GlobalFonts, 8, static_cast<void (*)(void *)>(nullptr), static_cast<void *>(nullptr),
+                                  LanguageMemoryPoolNumber);
             info->pFontNameInfo->GlobalFontsLoaded = 1;
         }
     }
     if (load_frontend && !info->pFontNameInfo->FrontendFontsLoaded) {
-        eLoadStreamingTexture(info->pFontNameInfo->FrontendFonts, 8, static_cast<void (*)(void*)>(nullptr), static_cast<void*>(nullptr), LanguageMemoryPoolNumber);
+        eLoadStreamingTexture(info->pFontNameInfo->FrontendFonts, 8, static_cast<void (*)(void *)>(nullptr), static_cast<void *>(nullptr),
+                              LanguageMemoryPoolNumber);
         info->pFontNameInfo->FrontendFontsLoaded = 1;
     }
     if (load_ingame && !info->pFontNameInfo->InGameFontsLoaded) {
-        eLoadStreamingTexture(info->pFontNameInfo->InGameFonts, 8, static_cast<void (*)(void*)>(nullptr), static_cast<void*>(nullptr), LanguageMemoryPoolNumber);
+        eLoadStreamingTexture(info->pFontNameInfo->InGameFonts, 8, static_cast<void (*)(void *)>(nullptr), static_cast<void *>(nullptr),
+                              LanguageMemoryPoolNumber);
         info->pFontNameInfo->InGameFontsLoaded = 1;
     }
     if (blocking) {

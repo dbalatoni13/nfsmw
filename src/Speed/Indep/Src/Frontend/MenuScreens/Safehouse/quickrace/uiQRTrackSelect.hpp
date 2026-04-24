@@ -1,4 +1,3 @@
-// OWNED BY zFeOverlay AGENT - do not empty or overwrite
 #ifndef FRONTEND_MENUSCREENS_SAFEHOUSE_QUICKRACE_UIQRTRACKSELECT_H
 #define FRONTEND_MENUSCREENS_SAFEHOUSE_QUICKRACE_UIQRTRACKSELECT_H
 
@@ -34,12 +33,12 @@ struct UIQRTrackSelect : public MenuScreen {
     void ScrollTracks(eScrollDir dir);
     void ScrollRegions(eScrollDir dir);
 
-    UITrackMapStreamer TrackMapStreamer;             // offset 0x2C, size 0xDC
-    bTList<SelectableTrack> Tracks;                // offset 0x108, size 0x8
-    SelectableTrack *pCurrentNode;                 // offset 0x110, size 0x4
-    GRaceParameters *pCurrentTrack;                // offset 0x114, size 0x4
-    FEMultiImage *TrackMap;                        // offset 0x118, size 0x4
-    unsigned int MapHash;                          // offset 0x11C, size 0x4
+    UITrackMapStreamer TrackMapStreamer; // offset 0x2C, size 0xDC
+    bTList<SelectableTrack> Tracks;      // offset 0x108, size 0x8
+    SelectableTrack *pCurrentNode;       // offset 0x110, size 0x4
+    GRaceParameters *pCurrentTrack;      // offset 0x114, size 0x4
+    FEMultiImage *TrackMap;              // offset 0x118, size 0x4
+    unsigned int MapHash;                // offset 0x11C, size 0x4
 };
 
 #endif

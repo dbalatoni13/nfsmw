@@ -1,4 +1,3 @@
-// OWNED BY zFeOverlay AGENT - do not empty or overwrite
 #ifndef FRONTEND_MENUSCREENS_SAFEHOUSE_QUICKRACE_UISHOWCASE_H
 #define FRONTEND_MENUSCREENS_SAFEHOUSE_QUICKRACE_UISHOWCASE_H
 
@@ -27,8 +26,8 @@ struct Showcase : public MenuScreen {
     static int FromFilter;
     static void *FromColor[3];
 
-    FECarRecord *car;                    // offset 0x2C, size 0x4
-    FEImage *pTagImg;                    // offset 0x30, size 0x4
+    FECarRecord *car;                      // offset 0x2C, size 0x4
+    FEImage *pTagImg;                      // offset 0x30, size 0x4
     uiRepSheetRivalStreamer RivalStreamer; // offset 0x34, size 0x3C
 };
 

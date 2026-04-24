@@ -1,4 +1,3 @@
-// OWNED BY zFeOverlay AGENT - DO NOT MODIFY OR EMPTY
 #ifndef FRONTEND_MENUSCREENS_SAFEHOUSE_CUSTOMIZE_CUSTOMIZEMANAGER_H
 #define FRONTEND_MENUSCREENS_SAFEHOUSE_CUSTOMIZE_CUSTOMIZEMANAGER_H
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
@@ -22,20 +21,44 @@ bool CustomizeIsInParts();
 void CustomizeSetInParts(bool b);
 
 struct CarCustomizeManager {
-    ShoppingCartItem *GetFirstCartItem() { return static_cast<ShoppingCartItem *>(ShoppingCart.GetHead()); }
-    ShoppingCartItem *GetLastCartItem() { return static_cast<ShoppingCartItem *>(ShoppingCart.GetTail()); }
-    int GetNumCartItems() { return NumPartsInCart; }
+    ShoppingCartItem *GetFirstCartItem() {
+        return static_cast<ShoppingCartItem *>(ShoppingCart.GetHead());
+    }
+    ShoppingCartItem *GetLastCartItem() {
+        return static_cast<ShoppingCartItem *>(ShoppingCart.GetTail());
+    }
+    int GetNumCartItems() {
+        return NumPartsInCart;
+    }
     ShoppingCartItem *GetCartItem(int index);
     void EmptyCart();
-    SelectablePart *GetTempColoredPart() { return TheTempColoredPart; }
-    void SetInBackRoom(bool in_back) { CustomizeSetInBackRoom(in_back); }
-    bool IsInBackRoom() { return CustomizeIsInBackRoom(); }
-    void SetInPerformance(bool b) { CustomizeSetInPerformance(b); }
-    bool IsInPerformance() { return CustomizeIsInPerformance(); }
-    void SetInParts(bool b) { CustomizeSetInParts(b); }
-    bool IsInParts() { return CustomizeIsInParts(); }
-    const FECustomizationRecord *GetPreviewRecord() { return &PreviewRecord; }
-    const FECarRecord *GetTuningCar() { return TuningCar; }
+    SelectablePart *GetTempColoredPart() {
+        return TheTempColoredPart;
+    }
+    void SetInBackRoom(bool in_back) {
+        CustomizeSetInBackRoom(in_back);
+    }
+    bool IsInBackRoom() {
+        return CustomizeIsInBackRoom();
+    }
+    void SetInPerformance(bool b) {
+        CustomizeSetInPerformance(b);
+    }
+    bool IsInPerformance() {
+        return CustomizeIsInPerformance();
+    }
+    void SetInParts(bool b) {
+        CustomizeSetInParts(b);
+    }
+    bool IsInParts() {
+        return CustomizeIsInParts();
+    }
+    const FECustomizationRecord *GetPreviewRecord() {
+        return &PreviewRecord;
+    }
+    const FECarRecord *GetTuningCar() {
+        return TuningCar;
+    }
 
     void TakeControl(eCustomizeEntryPoint entry_point, FECarRecord *tuning_car);
     void RelinquishControl();
@@ -102,15 +125,16 @@ struct CarCustomizeManager {
 
     CarCustomizeManager()
         : ThePVehicle(static_cast<const Attrib::Collection *>(nullptr), 0, nullptr) //
-        , PreviewRecord() {}
+          ,
+          PreviewRecord() {}
 
-    eCustomizeEntryPoint EntryPoint;              // offset 0x0, size 0x4
-    FECarRecord *TuningCar;                       // offset 0x4, size 0x4
-    Attrib::Gen::pvehicle ThePVehicle;              // offset 0x8, size 0x14
-    FECustomizationRecord PreviewRecord;          // offset 0x1C, size 0x198
-    bTList<ShoppingCartItem> ShoppingCart;         // offset 0x1B4, size 0x8
-    int NumPartsInCart;                            // offset 0x1BC, size 0x4
-    SelectablePart *TheTempColoredPart;            // offset 0x1C0, size 0x4
+    eCustomizeEntryPoint EntryPoint;       // offset 0x0, size 0x4
+    FECarRecord *TuningCar;                // offset 0x4, size 0x4
+    Attrib::Gen::pvehicle ThePVehicle;     // offset 0x8, size 0x14
+    FECustomizationRecord PreviewRecord;   // offset 0x1C, size 0x198
+    bTList<ShoppingCartItem> ShoppingCart; // offset 0x1B4, size 0x8
+    int NumPartsInCart;                    // offset 0x1BC, size 0x4
+    SelectablePart *TheTempColoredPart;    // offset 0x1C0, size 0x4
 };
 
 extern CarCustomizeManager gCarCustomizeManager;
