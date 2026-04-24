@@ -136,8 +136,12 @@ class MemoryPool {
     bMutex Mutex;                                  // offset 0x40, size 0x20
 };
 
-int bMemoryAutomaticVerifyPoolIntegrity = 0;                                          // size: 0x4, address: 0x80416418
-int bMemoryRandomFillPattern = 0;                                                     // size: 0x4, address: 0x80416430
+int bMemoryAutomaticVerifyPoolIntegrity = 0; // size: 0x4, address: 0x80416418
+int bMemoryPrintEachAllocation = 0;
+int EnableCleanupBorrowedMemoryBlock = 0;
+int BorrowMemoryBlockMinSize = 0x19000;
+int bMemoryRandomFillPattern = 0; // size: 0x4, address: 0x80416430
+int bMemoryUseSharedStrings = 1;
 int bMemoryTracing = false;                                                           // size: 0x4, address: 0x80416438
 int bMemoryBreakOnAllocationNumber = -1;                                              // size: 0x4, address: 0x8041643C
 int bMemoryAllocationNumber = 0;                                                      // size: 0x4, address: 0x80416440
@@ -146,15 +150,6 @@ EA::Allocator::IAllocator &gMemoryAllocator = TheMemoryAllocator;               
 bMemoryAllocator TheMemoryPersistentAllocator;                                        // size: 0xC, address: 0x8045791C
 EA::Allocator::IAllocator &gMemoryPersistentAllocator = TheMemoryPersistentAllocator; // size: 0x4, address: 0x80457928
 // static const int bMemoryEnableFancyStompDetector; // size: 0x4
-const char *pTraceDebugText = nullptr;  // size: 0x4, address: 0x80416450
-int TraceDebugLine = 0;                 // size: 0x4, address: 0x80416454
-int MemoryInitialized = 0;              // size: 0x4, address: 0x80416458
-char MemoryPoolMem[16][96];             // size: 0x600, address: 0x8045A20D
-MemoryPool *MemoryPools[16];            // size: 0x40, address: 0x8045A810
-MemoryPoolInfo MemoryPoolInfoTable[16]; // size: 0x100, address: 0x8045A850
-bVirtualMemoryManager eARAMMM;          // size: 0x18, address: 0x8045A950
-unsigned int MemoryPoolZeroSize = 0;    // size: 0x4, address: 0x8041645C
-int bMemoryPersistentPoolNumber = -1;   // size: 0x4, address: 0x80416460
 
 #ifdef EA_PLATFORM_GAMECUBE
 void bFunkGameCube(const char *server_name, unsigned char function_num, const void *param_buffer, long param_size) {}
@@ -456,6 +451,16 @@ void MemoryPool::VerifyPoolIntegrity(bool verify_free_pattern) {
 asd:
     this->Mutex.Unlock();
 }
+
+const char *pTraceDebugText = nullptr;  // size: 0x4, address: 0x80416450
+int TraceDebugLine = 0;                 // size: 0x4, address: 0x80416454
+int MemoryInitialized = 0;              // size: 0x4, address: 0x80416458
+char MemoryPoolMem[16][96];             // size: 0x600, address: 0x8045A20D
+MemoryPool *MemoryPools[16];            // size: 0x40, address: 0x8045A810
+MemoryPoolInfo MemoryPoolInfoTable[16]; // size: 0x100, address: 0x8045A850
+bVirtualMemoryManager eARAMMM;          // size: 0x18, address: 0x8045A950
+unsigned int MemoryPoolZeroSize = 0;    // size: 0x4, address: 0x8041645C
+int bMemoryPersistentPoolNumber = -1;   // size: 0x4, address: 0x80416460
 
 // STRIPPED
 int MemoryPool::CountAllocations(const char *debug_text) {}
@@ -1030,15 +1035,20 @@ int bMemoryGetAllocations(int pool_num, void **allocations, int max_allocations)
     return 0;
 }
 
+#ifdef EA_BUILD_A124
 static char bMemoryDebugStringNoName[8] = "NO_NAME";
+#endif
 
 void *bMemoryAllocator::Alloc(size_t size, const EA::TagValuePair &flags) {
     // TODO magic numbers (flags)
     int allocation_params = 0x40;
-    const EA::TagValuePair *p = &flags;
+#ifdef EA_BUILD_A124
     char *name = bMemoryDebugStringNoName;
+#else
+    char *name;
+#endif
 
-    for (; p; p = p->mNext) {
+    for (const EA::TagValuePair *p = &flags; p; p = p->mNext) {
         switch (p->mTag) {
             case 1:
                 if (p->mValue.mPointer) {
@@ -1046,10 +1056,10 @@ void *bMemoryAllocator::Alloc(size_t size, const EA::TagValuePair &flags) {
                 }
                 break;
             case 2:
-                allocation_params |= (p->mValue.mSize & 0x1ffc) << 6;
+                allocation_params |= (p->mValue.mInt & 0x1ffc) << 6;
                 break;
             case 3:
-                allocation_params |= (p->mValue.mSize & 0x1ffc) << 0x11;
+                allocation_params |= (p->mValue.mInt & 0x1ffc) << 0x11;
                 break;
             case 4:
                 allocation_params &= ~0x40;
