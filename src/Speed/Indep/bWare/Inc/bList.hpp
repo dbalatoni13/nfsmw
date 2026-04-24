@@ -94,7 +94,6 @@ class bList {
     ~bList() {}
 
     bNode *GetNode(int ordinal_number);
-    void Sort(SortFunc check_flip);
 
     void InitList() {
         this->HeadNode.Next = &this->HeadNode;
@@ -156,7 +155,17 @@ class bList {
         return TraversebList(nullptr);
     }
 
-    bNode *AddSorted(SortFunc check_flip); // TODO
+    void Sort(long (*check_flip)(bNode *, bNode *)) {} // TODO
+
+    void Sort(SortFunc check_flip);
+
+    void AddTail(bList *list);
+
+    void AddHead(bList *list);
+
+    bNode *AddSorted(SortFunc check_flip) {}; // TODO
+
+    bNode *AddSorted(SortFunc check_flip, bNode *node);
 
   private:
     void MergeSort(SortFunc cmp);

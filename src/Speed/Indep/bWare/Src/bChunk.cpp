@@ -29,8 +29,21 @@ bChunkLoader *bChunkLoader::FindLoader(unsigned int id) {
     return nullptr;
 }
 
+// STRIPPED
+unsigned int bChunkLoader::CallLoaders(bChunk *chunks, int sizeof_chunks, bool abort_on_error) {}
+
+// STRIPPED
+unsigned int bChunkLoader::CallUnloaders(bChunk *chunks, int sizeof_chunks, bool abort_on_error) {}
+
 void bChunkCarpHeader::PlatformEndianSwap() {
     bPlatEndianSwap(&this->mCrpSize);
     bPlatEndianSwap(&this->mSectionNumber);
     bPlatEndianSwap(&this->mFlags);
 }
+
+// STRIPPED
+bool bValidateChunksRecursive(bChunk *the_chunk, int32 expected_level_size, int32 *current_offset, long max_size, bChunk *min_pointer,
+                              bChunk *max_pointer) {}
+
+// STRIPPED
+bool bValidateChunks(bChunk *first_chunk, int sizeof_chunks) {}

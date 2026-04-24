@@ -25,6 +25,11 @@ typedef int32 bFix;
 typedef short unsigned int bAngle;
 typedef short int bSignedAngle;
 
+struct bPolar {
+    float r;
+    bAngle a;
+};
+
 extern unsigned int bDefaultSeed;
 
 unsigned int bRandom(int range, unsigned int *seed);
@@ -154,7 +159,10 @@ inline float bAbs(float a) {
     asm("fabs %0, %1" : "=f"(f_abs) : "f"(a));
     return f_abs;
 #elif defined(EA_PLATFORM_PLAYSTATION2)
-// TODO
+    float f;
+    // Source: I made it up
+    asm("abs.s %0, %1" : "=f"(f) : "f"(a));
+    return f;
 #else
     return fabsf(a);
 #endif
@@ -525,8 +533,6 @@ inline float bDot(const bVector3 *v1, const bVector3 *v2) {
     return v1->x * v2->x + v1->y * v2->y + v1->z * v2->z;
 }
 
-inline int bEqual(const bVector3 *v1, const bVector3 *v2, float epsilon) {}
-
 inline float bLength(const bVector3 *v) {
     return bSqrt(bDot(v, v));
 }
@@ -552,6 +558,8 @@ inline bVector3 bCross(const bVector3 &v1, const bVector3 &v2) {
 inline float bDot(const bVector3 &v1, const bVector3 &v2) {
     return bDot(&v1, &v2);
 }
+
+int bEqual(const bVector3 *v1, const bVector3 *v2, float epsilon);
 
 inline int bEqual(const bVector3 &v1, const bVector3 &v2, float epsilon) {
     return bEqual(&v1, &v2, epsilon);

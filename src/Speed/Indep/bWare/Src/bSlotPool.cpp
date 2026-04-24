@@ -12,6 +12,11 @@ void bDeleteSlotPool(SlotPool *slot_pool) {
     TheSlotPoolManager.DeleteSlotPool(slot_pool);
 }
 
+// STRIPPED
+void bFlushSlotPool(SlotPool *slot_pool) {
+    slot_pool->FlushSlotPool();
+}
+
 void *bMalloc(SlotPool *slot_pool) {
     return slot_pool->FastMalloc();
 }
@@ -22,6 +27,26 @@ void *bOMalloc(SlotPool *slot_pool) {
 
 void bFree(SlotPool *slot_pool, void *p) {
     slot_pool->Free(p);
+}
+
+// STRIPPED
+void *bMalloc(SlotPool *slot_pool, int num_slots, void **last_slot) {
+    return slot_pool->Malloc(num_slots, last_slot);
+}
+
+// STRIPPED
+void bFree(SlotPool *slot_pool, void *first_slot, void *last_slot) {
+    return slot_pool->Free(first_slot, last_slot);
+}
+
+// STRIPPED
+int bGetSlotNumber(SlotPool *slot_pool, void *p) {
+    return slot_pool->GetSlotNumber(p);
+}
+
+// STRIPPED
+void *bGetSlot(SlotPool *slot_pool, int slot_number) {
+    return slot_pool->GetSlot(slot_number);
 }
 
 int bIsSlotPoolFull(SlotPool *slot_pool) {
@@ -215,6 +240,9 @@ void SlotPool::CleanupExpandedSlotPools() {
     }
 }
 
+// STRIPPED
+void SlotPool::VerifyPoolIntegrity() {}
+
 void *SlotPool::Malloc() {
     if (!FreeSlots && (Flags & SLOTPOOL_FLAG_OVERFLOW_IF_FULL)) {
         int num_extra_slots = NumSlots;
@@ -315,6 +343,9 @@ void *SlotPool::Malloc(int num_slots, void **last_slot) {
     return first_slot;
 }
 
+// STRIPPED
+void SlotPool::Free(void *first_slot, void *last_slot) {}
+
 SlotPoolManager::SlotPoolManager() {
     Initialized = true;
 }
@@ -352,6 +383,9 @@ void SlotPoolManager::DeleteSlotPool(SlotPool *slot_pool) {
         slot_pool = next_pool;
     }
 }
+
+// STRIPPED
+void SlotPoolManager::PrintAllSlotPools() {}
 
 void SlotPoolManager::CleanupExpandedSlotPools() {
     for (SlotPool *slot_pool = SlotPoolList.GetHead(); slot_pool != SlotPoolList.EndOfList(); slot_pool = slot_pool->GetNext()) {

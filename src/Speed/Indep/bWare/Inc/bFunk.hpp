@@ -42,7 +42,7 @@ struct bFunkPacketHeader {
 
     uint16 CalculateChecksum() {}
 
-    static uint16 CalculateChecksum(void *data, int data_size);
+    static uint16 CalculateChecksum(const void *data, int data_size);
 };
 
 // total size: 0x7FC
@@ -61,7 +61,7 @@ class bFunkServer : public bTNode<bFunkServer> {
     void *FunctionTable[128]; // offset 0xCC, size 0x200
 
   public:
-    bFunkServer(const char *name) {}
+    bFunkServer(const char *name);
 
     uint32 GetNameHash() {
         return NameHash;
@@ -71,13 +71,13 @@ class bFunkServer : public bTNode<bFunkServer> {
         return Name;
     }
 
-    void AddASync(int function_num, bFunkHandleASyncFunction) {}
+    void AddASync(int function_num, bFunkHandleASyncFunction);
 
-    void AddSync(int function_num, bFunkHandleSyncFunction) {}
+    void AddSync(int function_num, bFunkHandleSyncFunction);
 
     void Remove(int function_num);
 
-    void ProcessPacket(bFunkPacket *packet);
+    void ProcessPacket(const bFunkPacket *packet);
 
     virtual ~bFunkServer();
     virtual bool CanDeliverPacket(uint32 server_hash);
@@ -93,10 +93,10 @@ class bFunkServerPlatform : public bFunkServer {
     bool ProcessingPacket;        // offset 0x2D8, size 0x1
     bFunkPacket *pReceivePackets; // offset 0x2DC, size 0x4
   public:
-    bFunkServerPlatform();
-    override ~bFunkServerPlatform();
-    override bool DeliverPacket(bFunkPacket *packet);
-    override int Service();
+    bFunkServerPlatform(const char *name, int max_receive_packets);
+    ~bFunkServerPlatform() override;
+    int Service() override;
+    bool DeliverPacket(bFunkPacket *packet) override;
 };
 
 struct bFileOpenPacket {

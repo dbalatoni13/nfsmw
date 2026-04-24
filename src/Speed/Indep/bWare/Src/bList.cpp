@@ -29,6 +29,15 @@ int bList::TraversebList(bNode *match_node) {
     return n;
 }
 
+// TODO
+void bList::AddTail(bList *list) {}
+
+// TODO
+void bList::AddHead(bList *list) {}
+
+// STRIPPED
+bNode *bList::AddSorted(SortFunc check_flip, bNode *node) {}
+
 // UNSOLVED, it matches in ProStreet..
 void bList::Sort(SortFunc check_flip) {
     bNode *node = this->GetHead();
