@@ -15,7 +15,6 @@
 
 // TODO
 extern "C" {
-void *memset(void *, int, uintptr_t, ...);
 void VMInit(size_t, uintptr_t, size_t);
 BOOL VMAlloc(uintptr_t, size_t);
 }
@@ -105,6 +104,12 @@ class MemoryPool {
         return address >= this->InitialAddress && address < this->InitialAddress + this->InitialSize;
     }
 
+    int GetPoolSize() {
+        return PoolSize;
+    }
+
+    bool IsEmpty() {}
+
     void AddAllocationHeader(AllocationHeader *allocation_header) {
         this->AllocationHeaderList.AddTail(allocation_header);
     }
@@ -151,7 +156,12 @@ bVirtualMemoryManager eARAMMM;          // size: 0x18, address: 0x8045A950
 unsigned int MemoryPoolZeroSize = 0;    // size: 0x4, address: 0x8041645C
 int bMemoryPersistentPoolNumber = -1;   // size: 0x4, address: 0x80416460
 
+#ifdef EA_PLATFORM_GAMECUBE
 void bFunkGameCube(const char *server_name, unsigned char function_num, const void *param_buffer, long param_size) {}
+#endif
+
+// STRIPPED
+bool ShouldPrintThisAllocation(void *mem, const char *debug_name) {}
 
 int GetAlignmentAdjustTop(intptr_t address, int alignment, int alignment_offset) {
     return (alignment - (address + alignment_offset & alignment - 1)) % alignment;
@@ -196,6 +206,9 @@ void MemoryPool::AddMemory(void *p, int size) {
     this->PoolSize += size;
     this->AddFreeMemory(p, size, this->GetName());
 }
+
+// STRIPPED
+void MemoryPool::RemoveMemory(void *p, int size) {}
 
 void MemoryPool::FreeMemory(void *p, int size, const char *debug_name) {
     this->Mutex.Lock();
@@ -444,6 +457,9 @@ asd:
     this->Mutex.Unlock();
 }
 
+// STRIPPED
+int MemoryPool::CountAllocations(const char *debug_text) {}
+
 int CheckFlipMemoryByAddress(AllocationHeader *a, AllocationHeader *b) {
     return a->GetBottomAddress() <= b->GetBottomAddress();
 }
@@ -507,6 +523,9 @@ void MemoryPool::PrintAllocations(int from_allocation, int to_allocation) {
     }
 }
 
+// STRIPPED
+AllocationHeader *MemoryPool::FindAllocation(int allocation_num) {}
+
 int MemoryPool::GetAllocations(void **allocations, int max_allocations) {
     this->AllocationHeaderList.Sort(CheckFlipMemoryByAddress);
     int num_allocations = 0;
@@ -520,6 +539,9 @@ int MemoryPool::GetAllocations(void **allocations, int max_allocations) {
     return num_allocations;
 }
 
+// STRIPPED
+void MemoryPool::SetFancyStompDetector(void *mem, int mem_size, const char *name) {}
+
 bool MemoryPool::CheckFancyStompDetector(const void *mem, int mem_size) {
     return false;
 }
@@ -531,26 +553,47 @@ void MemoryPool::TraceNewPool() {
     if (this->pDebugName) {
         bStrNCpy(packet.Name, this->pDebugName, sizeof(packet.Name) - 1);
     }
+#ifdef EA_PLATFORM_GAMECUBE
     bFunkGameCube("CODEINE", 25, &packet, sizeof(packet));
+#else
+    bFunkCallASync("CODEINE", 25, &packet, sizeof(packet));
+#endif
 }
 
 void MemoryPool::TraceDeletePool() {
     bMemoryTraceDeletePoolPacket packet;
     packet.PoolID = reinterpret_cast<uintptr_t>(this);
+#ifdef EA_PLATFORM_GAMECUBE
     bFunkGameCube("CODEINE", 26, &packet, sizeof(packet));
+#else
+    bFunkCallASync("CODEINE", 26, &packet, sizeof(packet));
+#endif
 }
 
 void MemoryPool::TraceFreeMemory(void *p, int size) {
-    bMemoryTraceFreePacket packet;
-    // TODO
-    bMemoryTraceFreePacket *fake_match = &packet;
+    bMemoryTraceFreePacket packet = {0};
 
-    memset(fake_match, 0, sizeof(packet));
     packet.PoolID = reinterpret_cast<uintptr_t>(this);
     packet.MemoryAddress = reinterpret_cast<uintptr_t>(p);
     packet.Size = size;
-    bFunkGameCube("CODEINE", 27, fake_match, sizeof(packet));
+#ifdef EA_PLATFORM_GAMECUBE
+    bFunkGameCube("CODEINE", 27, &packet, sizeof(packet));
+#else
+    bFunkCallASync("CODEINE", 27, &packet, sizeof(packet));
+#endif
 }
+
+// STRIPPED
+void MemoryPool::TraceRemoveMemory(void *p, int size) {}
+
+// STRIPPED
+void TrapMissingMemoryTraces(int size) {}
+
+// STRIPPED
+void MemoryPool::TraceAllocateMemory(void *p, int size) {}
+
+// STRIPPED
+void MemoryPool::UpdateTraceInformation() {}
 
 int bGetFreeMemoryPoolNum() {
     for (int pool_num = 0; pool_num < 16; pool_num++) {
@@ -592,6 +635,12 @@ void bCloseMemoryPool(int pool_num) {
 bool bSetMemoryPoolDebugFill(int pool_num, bool on_off) {
     return MemoryPools[pool_num]->SetDebugFill(on_off);
 }
+
+// STRIPPED
+void bAddToMemoryPool(int pool_num, void *mem, int mem_size) {}
+
+// STRIPPED
+void bRemoveFromMemoryPool(int pool_num, void *mem, int mem_size) {}
 
 bool bSetMemoryPoolDebugTracing(int pool_num, bool on_off) {
     bool previous;
@@ -635,6 +684,9 @@ void bVirtualMemoryManager::Init() {
 // TODO
 #endif
 }
+
+// STRIPPED
+void bVirtualMemoryManager::Quit() {}
 
 void bVirtualMemoryManager::Alloc() {
     this->bIsValid = VMAlloc(this->mVirtualBaseAddr, this->mARamSize);
@@ -697,6 +749,9 @@ void bMemoryInit() {
     // TODO
 #endif
 }
+
+// STRIPPED
+void bMemoryUpdateTraceInformation() {}
 
 #ifdef MILESTONE_OPT
 void *bMalloc(int size, const char *debug_text, int debug_line, int allocation_params) {
@@ -846,6 +901,15 @@ int bGetMallocPool(void *ptr) {
     return 0;
 }
 
+// STRIPPED
+int bGetMallocNumber(void *ptr) {
+    if (ptr) {
+        AllocationHeader *header = &static_cast<AllocationHeader *>(ptr)[-1];
+        return header->GetAllocationNumber();
+    }
+    return 0;
+}
+
 const char *bGetMallocName(void *ptr) {
     if (ptr) {
         AllocationHeader *header = &static_cast<AllocationHeader *>(ptr)[-1];
@@ -864,6 +928,15 @@ int bCountFreeMemory(int pool) {
         }
     }
     return MemoryPools[pool]->GetAmountFree();
+}
+
+// STRIPPED
+int bGetPoolSize(int pool) {
+    if (MemoryPools[pool]) {
+        return MemoryPools[pool]->GetPoolSize();
+    }
+
+    return 0;
 }
 
 int bLargestMalloc(int allocation_params) {
@@ -897,6 +970,22 @@ void bVerifyPoolIntegrity(int pool) {
     }
 }
 
+// STRIPPED
+const char *bGetMemoryPoolName(int pool_num) {
+    if (MemoryPools[pool_num]) {
+        return MemoryPools[pool_num]->GetName();
+    }
+
+#ifndef EA_BUILD_A124
+    MemoryPoolOverrideInfo *override_info = MemoryPoolInfoTable[pool_num].OverrideInfo;
+    if (override_info) {
+        return override_info->Name;
+    }
+#endif
+
+    return nullptr;
+}
+
 int bGetMemoryPoolNum(const char *memory_pool_name) {
     for (int pool_num = 0; pool_num < 16; pool_num++) {
         if (MemoryPools[pool_num]) {
@@ -914,6 +1003,9 @@ int bGetMemoryPoolNum(const char *memory_pool_name) {
     return -1;
 }
 
+// STRIPPED
+int bMemoryCountAllocations(const char *debug_text, int pool_num) {}
+
 int bMemoryGetAllocationNumber() {
     return bMemoryAllocationNumber;
 }
@@ -927,6 +1019,9 @@ void bMemoryPrintAllocationsByAddress(int pool_num, int from_allocation, int to_
         MemoryPools[pool_num]->PrintAllocationsByAddress(from_allocation, to_allocation);
     }
 }
+
+// STRIPPED
+void *bMemoryFindAllocation(int pool_num, int allocation_num) {}
 
 int bMemoryGetAllocations(int pool_num, void **allocations, int max_allocations) {
     if (MemoryPools[pool_num]) {
@@ -963,6 +1058,9 @@ void *bMemoryAllocator::Alloc(size_t size, const EA::TagValuePair &flags) {
     }
     return bMalloc(size, name, 0, allocation_params);
 }
+
+// STRIPPED
+void *bMemoryAllocator::Alloc(size_t size) {}
 
 void bMemoryAllocator::Free(void *pBlock, unsigned int size) {
     bFree(pBlock);

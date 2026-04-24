@@ -66,3 +66,15 @@ void bMatrixToQuaternion(bQuaternion &quat, const bMatrix4 &m) {
         quat.w = q[3];
     }
 }
+
+// STRIPPED
+bQuaternion *bConjugate(bQuaternion *qdest, const bQuaternion *q) {}
+
+// STRIPPED
+float bLength(bQuaternion *q) {}
+
+// STRIPPED
+bQuaternion *bNormalize(bQuaternion *qdest, const bQuaternion *q) {}
+
+// STRIPPED
+bQuaternion *bMult(bQuaternion *qdest, const bQuaternion *q1, const bQuaternion *q2) {}

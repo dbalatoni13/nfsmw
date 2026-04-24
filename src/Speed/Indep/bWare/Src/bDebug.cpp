@@ -26,7 +26,6 @@ int NewFileCheckResult = 0;
 // void (*SendPacketFunction)(/* parameters unknown */);
 // void (*ServiceMonitorFunction)(/* parameters unknown */);
 // bList bFunkServerList;
-int bSonyToolConnected = false;
 int bSuperBenderConnected = false;
 #endif
 
@@ -40,6 +39,9 @@ void bWareInit(void) {
     bFigureOutPSX2Platform();
 #endif
 }
+
+// STRIPPED
+void bWareClose() {}
 
 void bSetUserPutStringFunction(bool (*function)(int, const char *)) {
     UserPutStringFunction = function;
@@ -95,6 +97,48 @@ void bReleasePutString(char terminal_channel, const char *s) {
     }
 }
 
+// STRIPPED
+int bNewFileCheckerAdd(const char *filename) {}
+
+// STRIPPED
+void bNewFileCheckerRemove(int id) {}
+
+// STRIPPED
+int bCheckForNewFiles() {}
+
+// STRIPPED
+int bCheckForNewFiles(float seconds) {}
+
+bool bIsDebuggerConnected() {
+
+    if (bIsCodeineConnected()) {
+        // TODO: from sn debug.c
+        // return snIsDebuggerRunning();
+    }
+    return true;
+}
+
+static int GetCodeineString(char *string, int max_chars, int bfunk_num) {
+    int return_code = bFunkCallSync("CODEINE", bfunk_num, nullptr, 0, string, max_chars);
+
+    if (return_code > 0) {
+        return true;
+    }
+
+    *string = '\0';
+    return false;
+}
+
+int bGetComputerName(char *computer_name, int max_chars) {
+    return GetCodeineString(computer_name, max_chars, 0x5f);
+}
+
+// STRIPPED
+int bGetHostName(char *host_name, int max_chars) {}
+
+// STRIPPED
+int bGetTimeString(char *time_string, int max_chars) {}
+
 void bBreak() {
 #ifdef EA_PLATFORM_GAMECUBE
     OSPanic("", 0, "");
@@ -107,29 +151,27 @@ int bIsValidPointer(void *p, int size) {
     return (reinterpret_cast<uintptr_t>(p) & size - 1) == 0;
 }
 
+// STRIPPED
+int bLaunch(const char *command_line, int dos_command) {}
+
+// STRIPPED
+int bLaunchWindows(const char *command_line) {}
+
 float bGetTickerDifference(unsigned int start_ticks) {
 
     return bGetTickerDifference(start_ticks, bGetTicker());
 }
 
 int bGetFixTickerDifference(unsigned int start_ticks, unsigned int end_ticks) {
+#ifdef EA_BUILD_A124
+    unsigned int ticks = end_ticks - start_ticks;
+    return ticks * 0x40 / 0x125;
+#else
     return static_cast<int>(bGetTickerDifference(start_ticks, end_ticks) * 65536.0f);
+#endif
 }
 
 void bInitTicker(float min_wraparound_time) {}
-
-#if defined(EA_PLATFORM_PLAYSTATION2)
-void bFigureOutPSX2Platform() {
-    bSonyToolConnected = false;
-    if (GetMemorySize() > 0x4000000) {
-        bSonyToolConnected = true;
-    }
-}
-#endif
-
-int bDisableInterrupts() {}
-
-void bRestoreInterrupts(int previous_state) {}
 
 unsigned int bGetTicker() {
 #ifdef EA_PLATFORM_GAMECUBE
@@ -148,6 +190,13 @@ float bGetTickerDifference(unsigned int start_ticks, unsigned int end_ticks) {
     return OSTicksToMicroseconds(start_ticks) * 0.001f;
 #endif
 }
+
+// STRIPPED
+bool bHasTickerExpired(unsigned int start_ticks, float ms) {}
+
+int bDisableInterrupts() {}
+
+void bRestoreInterrupts(int previous_state) {}
 
 void bMutex::Create() {
     MUTEX_create(reinterpret_cast<MUTEX *>(this));

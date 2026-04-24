@@ -72,6 +72,9 @@ int bVPrintf(const char *fmt, va_list argList) {
     return _bOutput(&output_info, fmt, argList);
 }
 
+// STRIPPED
+int bVPrintf(char terminal_channel, char *fmt, char *argList) {}
+
 int bSPrintf(char *destString, const char *fmt, ...) {
     va_list argList;
     va_start(argList, fmt);

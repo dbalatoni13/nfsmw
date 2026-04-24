@@ -233,6 +233,9 @@ char *bStrCat(char *to, const char *s1, const char *s2) {
     return to;
 }
 
+// STRIPPED
+char *bStrChr(const char *s1, int c) {}
+
 char *bToUpper(char *s) {
     if (*s != '\0') {
         do {
@@ -352,7 +355,7 @@ float bStrToFloat(const char *s) {
     return value;
 }
 
-int bStrLen(const unsigned short *s) {
+int bStrLen(const uint16 *s) {
     int n = 0;
 
     if (s) {
@@ -363,7 +366,7 @@ int bStrLen(const unsigned short *s) {
     return n;
 }
 
-unsigned short *bStrCpy(unsigned short *to, const unsigned short *from) {
+uint16 *bStrCpy(uint16 *to, const uint16 *from) {
     int n = 0;
 
     to[0] = from[0];
@@ -374,7 +377,7 @@ unsigned short *bStrCpy(unsigned short *to, const unsigned short *from) {
     return to;
 }
 
-unsigned short *bStrCpy(unsigned short *to, const char *from) {
+uint16 *bStrCpy(uint16 *to, const char *from) {
     int n = 0;
 
     to[0] = from[0];
@@ -385,7 +388,7 @@ unsigned short *bStrCpy(unsigned short *to, const char *from) {
     return to;
 }
 
-unsigned short *bStrNCpy(unsigned short *to, const unsigned short *from, int m) {
+uint16 *bStrNCpy(uint16 *to, const uint16 *from, int m) {
     int n = 0;
     if (m-- != 0) {
         to[0] = from[0];
@@ -400,7 +403,7 @@ unsigned short *bStrNCpy(unsigned short *to, const unsigned short *from, int m) 
     return to;
 }
 
-unsigned short *bStrNCpy(unsigned short *to, const char *from, int m) {
+uint16 *bStrNCpy(uint16 *to, const char *from, int m) {
     int n = 0;
     if (m-- != 0) {
         to[0] = from[0];
@@ -414,6 +417,12 @@ unsigned short *bStrNCpy(unsigned short *to, const char *from, int m) {
     }
     return to;
 }
+
+// STRIPPED
+int bStrCmp(uint16 *s1, uint16 *s2) {}
+
+// STRIPPED
+int bStrNCmp(uint16 *s1, uint16 *s2, int n) {}
 
 char *bStrStr(const char *s1, const char *s2) {
     int len = bStrLen(s2);
@@ -440,6 +449,9 @@ char *bStrIStr(const char *s1, const char *s2) {
 
     return nullptr;
 }
+
+// STRIPPED
+uint16 *bStrCat(uint16 *to, uint16 *s1, uint16 *s2) {}
 
 int bMatchNameWithWildcard(const char *wild, const char *string) {
     const char *cp = nullptr;
@@ -496,6 +508,18 @@ void bSharedStringPool::Init(int size) {
     string->Prev = 0;
     string->String[0] = '\0';
     this->LargestFreeString = string;
+}
+
+// STRIPPED
+void bSharedStringPool::Close() {
+    if (StringTable) {
+        bFree(StringTable);
+        StringTable = nullptr;
+        StringTableSizeBytes = 0;
+        StringTableSize = 0;
+        LargestFreeString = nullptr;
+        Mutex.Destroy();
+    }
 }
 
 const char *bSharedStringPool::Allocate(const char *s) {
@@ -644,9 +668,18 @@ void bSharedStringPool::Free(const char *s) {
     this->Mutex.Unlock();
 }
 
+// STRIPPED
+void bSharedStringPool::Dump() {}
+
+// STRIPPED
+void bSharedStringPool::Validate() {}
+
 void bInitSharedStringPool(int size) {
     gSharedStringPool.Init(size);
 }
+
+// STRIPPED
+void bCloseSharedStringPool() {}
 
 const char *bAllocateSharedString(const char *s) {
     return gSharedStringPool.Allocate(s);
@@ -655,3 +688,12 @@ const char *bAllocateSharedString(const char *s) {
 void bFreeSharedString(const char *s) {
     gSharedStringPool.Free(s);
 }
+
+// STRIPPED
+void bDumpSharedStrings() {}
+
+// STRIPPED
+short bGetSharedStringIndex(const char *s) {}
+
+// STRIPPED
+const char *bGetSharedString(int index) {}

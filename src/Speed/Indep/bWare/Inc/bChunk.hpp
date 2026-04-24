@@ -91,6 +91,10 @@ class bChunkLoader {
   public:
     static bChunkLoader *FindLoader(unsigned int id);
 
+    static unsigned int CallLoaders(bChunk *chunks, int sizeof_chunks, bool abort_on_error);
+
+    static unsigned int CallUnloaders(bChunk *chunks, int sizeof_chunks, bool abort_on_error);
+
     static unsigned int GetHash(unsigned int id) {
         return id + (id >> 6) + (id >> 0xc) & 0x3f;
     }

@@ -30,6 +30,15 @@ SpeedScript::SpeedScript(const char *filename, BOOL enable_fatal_error) {
     this->InitFromFile(filename);
 }
 
+// STRIPPED
+SpeedScript::SpeedScript(const char *script_name, const char *text_buffer, int enable_fatal_error) {}
+
+// STRIPPED
+SpeedScript::SpeedScript(const char *filename, void (*error_function)(const char *)) {}
+
+// STRIPPED
+SpeedScript::SpeedScript(const char *script_name, const char *text_buffer, void (*error_function)(const char *)) {}
+
 void SpeedScript::InitFromFile(const char *filename) {
     int file_size = 0;
     char *buffer = static_cast<char *>(bGetFile(filename, &file_size, 0));
@@ -246,6 +255,12 @@ char *SpeedScript::GetNextCommand(const char *command) {
     return nullptr;
 }
 
+// STRIPPED
+char *SpeedScript::PeekNextCommand() {}
+
+// STRIPPED
+char *SpeedScript::GetCommandArgument(const char *command) {}
+
 // TODO fake match, isArg doesn't exist
 bool SpeedScript::IsAnotherArgument() {
     SpeedScriptEntry *entry = this->GetNextEntry();
@@ -265,6 +280,9 @@ char *SpeedScript::GetNextArgument() {
     }
     return nullptr;
 }
+
+// STRIPPED
+char *SpeedScript::PeekNextArgument() {}
 
 char *SpeedScript::GetNextArgumentString() {
     char *arg = this->GetNextArgument();
@@ -313,9 +331,26 @@ float SpeedScript::GetNextArgumentFloat() {
     return value;
 }
 
+// STRIPPED
+bVector2 SpeedScript::GetNextArgumentVector2() {
+    float x = this->GetNextArgumentFloat();
+    float y = this->GetNextArgumentFloat();
+    return bVector2(x, y);
+}
+
 bVector3 SpeedScript::GetNextArgumentVector3() {
     float x = this->GetNextArgumentFloat();
     float y = this->GetNextArgumentFloat();
     float z = this->GetNextArgumentFloat();
     return bVector3(x, y, z);
+}
+
+// STRIPPED
+bVector4 SpeedScript::GetNextArgumentVector4() {
+    float x = this->GetNextArgumentFloat();
+    float y = this->GetNextArgumentFloat();
+    float z = this->GetNextArgumentFloat();
+    float w = this->GetNextArgumentFloat();
+
+    return bVector4(x, y, z, w);
 }

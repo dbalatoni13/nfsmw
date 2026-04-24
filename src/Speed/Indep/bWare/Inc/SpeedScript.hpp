@@ -31,6 +31,10 @@ class SpeedScript {
     static void DefaultErrorFunction(const char *msg);
 
     SpeedScript(const char *filename, int enable_fatal_error);
+    SpeedScript(const char *script_name, const char *text_buffer, int enable_fatal_error);
+    SpeedScript(const char *filename, void (*error_function)(const char *));
+    SpeedScript(const char *script_name, const char *text_buffer, void (*error_function)(const char *));
+
     ~SpeedScript();
     void InitFromFile(const char *filename);
     void Error(const char *format, ...);
@@ -42,14 +46,53 @@ class SpeedScript {
     void HandleIncludeScript(const char *filename);
     char *GetNextCommand();
     char *GetNextCommand(const char *command);
+    char *PeekNextCommand();
+    char *GetCommandArgument(const char *command);
     bool IsAnotherArgument();
     char *GetNextArgument();
+    char *PeekNextArgument();
     char *GetNextArgumentString();
     int GetNextArgumentInt();
     short GetNextArgumentShort();
-    float GetNextArgumentFloat();
     char GetNextArgumentChar();
+    float GetNextArgumentFloat();
+    bVector2 GetNextArgumentVector2();
     bVector3 GetNextArgumentVector3();
+    bVector4 GetNextArgumentVector4();
+
+    char *GetName() {}
+
+    char *GetError() {
+        return ErrorText;
+    }
+
+    void Rewind() {}
+
+    int GetPosition() {}
+
+    void SetPosition(int position) {}
+
+    long GetNextArgumentLong() {}
+
+    char *NextKeyWord() {}
+
+    int NextKeyWord(char *keyword) {}
+
+    char *ArgumentKeyWord(char *keyword) {}
+
+    char *NextArgumentString() {}
+
+    unsigned long NextArgumentLong() {}
+
+    unsigned short NextArgumentShort() {}
+
+    unsigned char NextArgumentChar() {}
+
+    float NextArgumentFloat() {}
+
+    char *GetName(SpeedScriptEntry *entry) {
+        return &this->FileTable[entry->FileNumber].ArgBuf[entry->ArgBufPos];
+    }
 
     SpeedScriptEntry *GetCurrentEntry() {
         if ((this->NextEntryNum > 0) && (this->NextEntryNum <= this->NumEntries)) {
@@ -65,10 +108,6 @@ class SpeedScript {
         } else {
             return nullptr;
         }
-    }
-
-    char *GetName(struct SpeedScriptEntry *entry) {
-        return &this->FileTable[entry->FileNumber].ArgBuf[entry->ArgBufPos];
     }
 
     int NumFiles;                        // offset 0x0, size 0x4

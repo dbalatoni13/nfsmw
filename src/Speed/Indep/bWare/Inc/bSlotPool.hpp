@@ -46,10 +46,12 @@ class SlotPool : public bTNode<SlotPool> {
     void *GetSlot(int slot_number);
     void *GetAllocatedSlot(int n);
     void CleanupExpandedSlotPools();
+    void VerifyPoolIntegrity();
     void *Malloc();
     void *FastMalloc();
     void Free(void *p);
     void *Malloc(int num_slots, void **last_slot);
+    void Free(void *first_slot, void *last_slot);
 
     void SetFlag(SlotPoolFlags flag) {
         Flags = static_cast<SlotPoolFlags>((static_cast<int>(Flags)) | flag);

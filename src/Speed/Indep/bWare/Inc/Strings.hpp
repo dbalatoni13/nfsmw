@@ -35,8 +35,11 @@ class bSharedStringPool {
     }
 
     void Init(int size);
+    void Close();
     const char *Allocate(const char *s);
     void Free(const char *s);
+    void Dump();
+    void Validate();
 
     short GetIndex(const char *s) {
         int index = reinterpret_cast<const bSharedString *>(s) - this->StringTable;
@@ -50,6 +53,8 @@ class bSharedStringPool {
     bSharedString *GetSharedString(int index) {
         return &StringTable[index];
     }
+
+    const char *GetString(int index) {}
 
   private:
     bSharedString *GetStringTableStart() {
