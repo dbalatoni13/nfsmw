@@ -5,12 +5,13 @@ Wrapper around objdiff-cli for agent-friendly diff output.
 
 Two modes:
   Overview (default): List symbols in a unit with match status
-  Diff (-d):          Show side-by-side instruction diff for a function
+  Diff (-d):          Show side-by-side or unified instruction diff for a function
 
 Usage:
   python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim
   python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim -s nonmatching
   python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim -d __9CAnimBank
+  python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim -d __9CAnimBank --unified
   python tools/decomp-diff.py -u main/Speed/Indep/SourceLists/zAnim -d __9CAnimBank --reloc-diffs all
 """
 
@@ -325,6 +326,60 @@ def build_diff(data: Dict[str, Any], symbol_name: str, args) -> None:
         print("No instructions in the specified range.")
         return
 
+    if args.unified:
+        # Unified diff format (git-style)
+        # Expand ~ (arg mismatch) and | (replace) into - + pairs
+        expanded = []
+        for addr_str, marker, l_text, r_text, is_match, offset_int, line_str in rows:
+            if marker in ("~", "|"):
+                expanded.append((addr_str, "-", l_text, "", False, offset_int, ""))
+                expanded.append((addr_str, "+", "", r_text, False, offset_int, line_str))
+            elif marker == "<":
+                expanded.append((addr_str, "-", l_text, "", False, offset_int, ""))
+            elif marker == ">":
+                expanded.append((addr_str, "+", "", r_text, False, offset_int, line_str))
+            else:
+                expanded.append((addr_str, " ", l_text, r_text, True, offset_int, line_str))
+
+        # Collect mismatch ranges, then merge nearby ones into single hunks
+        mismatch_ranges = []
+        i = 0
+        while i < len(expanded):
+            if not expanded[i][4]:
+                start = i
+                while i < len(expanded) and not expanded[i][4]:
+                    i += 1
+                mismatch_ranges.append((start, i))
+            else:
+                i += 1
+
+        # Merge ranges whose context windows overlap
+        hunks = []
+        for start, end in mismatch_ranges:
+            hunk_start = max(0, start - context)
+            hunk_end = min(len(expanded), end + context)
+            if hunks and hunk_start <= hunks[-1][1]:
+                hunks[-1] = (hunks[-1][0], hunk_end)
+            else:
+                hunks.append((hunk_start, hunk_end))
+
+        # Emit each merged hunk once
+        for hunk_start, hunk_end in hunks:
+            hunk_addr = expanded[hunk_start][0]
+            n_removed = sum(1 for k in range(hunk_start, hunk_end) if expanded[k][1] == "-")
+            n_added = sum(1 for k in range(hunk_start, hunk_end) if expanded[k][1] == "+")
+            print(f"@@ 0x{hunk_addr} -{n_removed} +{n_added} instructions @@")
+            for k in range(hunk_start, hunk_end):
+                a, m, lt, rt, _, _, ls = expanded[k]
+                line_tag = f" line {ls}" if ls else ""
+                if m == "-":
+                    print(f"-{a:>6}  {lt}")
+                elif m == "+":
+                    print(f"+{a:>6}  {rt}{line_tag}")
+                else:
+                    print(f" {a:>6}  {lt}")
+        return
+
     # Determine column widths
     max_left = max((len(r[2]) for r in rows), default=20)
     max_left = max(max_left, 4)  # minimum width
@@ -433,6 +488,11 @@ def main():
         "--no-collapse",
         action="store_true",
         help="Don't collapse matching instruction runs",
+    )
+    parser.add_argument(
+        "--unified",
+        action="store_true",
+        help="Output unified diff format (git-style: - for original, + for decomp)",
     )
 
     parser.add_argument(
