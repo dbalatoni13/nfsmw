@@ -20,6 +20,14 @@ public:
         OVERHAUSER_LINE = 0,
     };
 
+    USpline();
+    ~USpline();
+
+    void BuildSplineEx(const UMath::Vector3 &start, const UMath::Vector3 &startControl, const UMath::Vector3 &end, const UMath::Vector3 &endControl);
+    void EvaluateSpline(float t, UMath::Vector4 &result);
+    void EvaluateTangent(float t, UMath::Vector4 &tangent);
+    float EvaluateCurvatureXZ(float t);
+
     static const UMath::Matrix4 &GetBasisMatrix(SplineType splineType);
 
     // total size: 0x6C

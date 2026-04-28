@@ -341,7 +341,7 @@ AIVehicle::AIVehicle(const BehaviorParams &bp, float update_rate, float stagger,
     WRoadNav::EPathType path_type = WRoadNav::kPathNone;
 
     if (v->GetVehicleClass() == VehicleClass::CHOPPER) {
-        path_type = WRoadNav::kPathPathy;
+        path_type = WRoadNav::kPathChopper;
     } else {
         switch (GetVehicle()->GetDriverClass()) {
             case DRIVER_COP:

@@ -131,6 +131,11 @@ class TrackPathManager {
     int Loader(bChunk *chunk);
     int Unloader(bChunk *chunk);
     void Clear();
+
+    int GetNumBarriers() const {
+        return NumBarriers;
+    }
+
     void EnableBarriers(const char *group_name);
     void DisableAllBarriers();
     void BuildZoneInfoTable();

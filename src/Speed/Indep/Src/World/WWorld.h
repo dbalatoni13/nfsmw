@@ -29,9 +29,13 @@ class WWorld {
 
     void Close();
 
-    // static void *operator new(unsigned int size, void *ptr) {}
+    void *operator new(size_t size) {
+        return gFastMem.Alloc(size, nullptr);
+    }
 
-    // static void operator delete(void *mem, void *ptr) {}
+    void operator delete(void *mem, size_t size) {
+        gFastMem.Free(mem, size, nullptr);
+    }
 
     // static void *operator new(unsigned int size) {}
 
@@ -53,11 +57,17 @@ class WWorld {
 
     // const struct world &GetAttributes() const {}
 
-    // bool IsValid() {}
+    bool IsValid() {
+        return fRootWorldGroup != nullptr;
+    }
 
-    // const struct UGroup &GetMapGroup() const {}
+    const UGroup &GetMapGroup() const {
+        return *fRootWorldGroup;
+    }
 
-    // const struct UGroup *GetMapGroup() {}
+    const UGroup *GetMapGroup() {
+        return fRootWorldGroup;
+    }
 
   private:
     static WWorld *fgWorld;               // size: 0x4

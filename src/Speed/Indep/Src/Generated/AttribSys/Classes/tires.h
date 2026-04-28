@@ -67,6 +67,12 @@ struct tires : Instance {
         return 0xbd38d1ca;
     }
 
+    Instance &GetBase() {
+        return *this;
+    }
+
+    const tires &operator=(const Instance &rhs);
+
     const float &YAW_CONTROL(unsigned int index) const {
         const _LayoutStruct *lp = reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer());
         if (index < lp->_Array_YAW_CONTROL.GetLength()) {

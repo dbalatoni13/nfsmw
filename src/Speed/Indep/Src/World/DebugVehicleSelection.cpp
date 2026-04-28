@@ -28,10 +28,9 @@ void DebugVehicleSelection::Init() {
     }
 }
 
-DebugVehicleSelection::DebugVehicleSelection() : UTL::COM::Object(1), IVehicleCache((UTL::COM::Object *)this) {
-    this->mCollisionObject = "";
-    this->mCollisionSurface = "";
-    this->mSelectionIndex = 0;
+DebugVehicleSelection::DebugVehicleSelection()
+    : UTL::COM::Object(1), IVehicleCache((UTL::COM::Object *)this), mSelectionIndex(0), mSelectionList(), mCollisionObject(""),
+      mCollisionSurface("") {
     this->mSelectionList.reserve(32);
     this->InitSelectionList();
     this->mOnOff = 1;
@@ -55,16 +54,16 @@ void DebugVehicleSelection::Service() {
 }
 
 void DebugVehicleSelection::InitSelectionList() {
-    const Attrib::Class *aClass = Attrib::Database::Get().GetClass(0x4A97EC8F);
-    unsigned int key = aClass->GetFirstCollection();
-    this->mSelectionList.reserve(aClass->GetNumCollections());
+    const Attrib::Class *aclass = Attrib::Database::Get().GetClass(0x4A97EC8F);
+    unsigned int key = aclass->GetFirstCollection();
+    this->mSelectionList.reserve(aclass->GetNumCollections());
     while (key != 0) {
         Attrib::Gen::pvehicle atr = Attrib::Gen::pvehicle(key, 0, nullptr);
         if (atr.MODEL().GetHash32() != UCrc32::kNull.GetValue() && atr.GetParent() == 0xA6ABC921) {
             const char *vehicleName = atr.CollectionName();
             this->mSelectionList.push_back(vehicleName);
         }
-        key = aClass->GetNextCollection(key);
+        key = aclass->GetNextCollection(key);
     }
 }
 
@@ -79,13 +78,25 @@ bool DebugVehicleSelection::SwitchPlayerVehicle(const char *attribName) {
 
     UMath::Matrix4 transform;
     oldcar->GetTransform(transform);
-    // Attrib::StringToKey(attribName);
-    // VehicleParams params = VehicleParams::VehicleParams();
 
-    // ISimable *icar = UTL::Collections::ListableSet<IPlayer, 8, ePlayerList, 3>::First(PLAYER_LOCAL)->GetSimable();
+    unsigned int carType = Attrib::StringToKey(attribName);
 
-    // oldcar->Attach(icar);
-    oldcar->Kill();
+    VehicleParams params(
+        static_cast<IVehicleCache *>(this), //
+        static_cast<DriverClass>(0),        //
+        carType,                            //
+        UMath::Vector4To3(transform.v2),    //
+        UMath::Vector4To3(transform.v3),    //
+        2,                                  //
+        nullptr,                            //
+        nullptr);
 
-    return true;
+    ISimable *icar = UTL::COM::Factory<Sim::Param, ISimable, UCrc32>::CreateInstance(UCrc32("PVehicle"), params);
+    if (icar) {
+        icar->Attach(UTL::Collections::ListableSet<IPlayer, 8, ePlayerList, 3>::First(PLAYER_LOCAL));
+        oldcar->Kill();
+        return true;
+    }
+
+    return false;
 }

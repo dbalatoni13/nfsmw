@@ -30,6 +30,24 @@ class Pkt_Smackable_Service : public Sim::Packet {
         this->mChildVisibility = 0xFFFFFF;
     }
 
+    UCrc32 ConnectionClass() override {
+        static UCrc32 hash("SmackableRenderConn");
+        return hash;
+    }
+
+    unsigned int Size() override {
+        return 0x10;
+    }
+
+    static unsigned int SType() {
+        static UCrc32 hash("Pkt_Smackable_Service");
+        return hash.GetValue();
+    }
+
+    unsigned int Type() override {
+        return SType();
+    }
+
     // total size: 0x10
     bool mVisible;                 // offset 0x4, size 0x1
     float mDistanceToView;         // offset 0x8, size 0x4

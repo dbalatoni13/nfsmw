@@ -36,6 +36,16 @@ inline float Cosr(const float a) {
     return VU0_Cos(RAD2ANGLE(a) * (float)M_TWOPI);
 }
 
+#ifndef EA_PLATFORM_PLAYSTATION2
+inline float ASinr(const float x) {
+    return ANGLE2RAD(VU0_ASin(x));
+}
+#else
+inline float ASinr(const float x) {
+    return asinf(x);
+}
+#endif
+
 void BuildRotate(Matrix4 &m, float r, float x, float y, float z);
 
 float Ceil(const float x);
@@ -57,7 +67,11 @@ inline float DistanceSquare(const Vector3 &a, const Vector3 &b) {
 }
 
 inline float DistanceSquarexz(const Vector3 &a, const Vector3 &b) {
+#ifdef EA_PLATFORM_PLAYSTATION2
     return VU0_v3distancesquare(a, b);
+#else
+    return VU0_v3distancesquarexz(a, b);
+#endif
 }
 
 inline void Clear(Vector3 &r) {
@@ -172,6 +186,10 @@ inline void Add(const Vector3 &a, const Vector3 &b, Vector3 &r) {
 #endif
 }
 
+inline void Add(const Vector4 &a, const Vector4 &b, Vector4 &r) {
+    VU0_v4add(a, b, r);
+}
+
 inline void Scale(const Vector3 &a, const Vector3 &b, Vector3 &r) {
 #ifdef EA_PLATFORM_XENON
     r.x = a.x * b.x;
@@ -224,6 +242,11 @@ inline void ScaleAdd(const Vector4 &a, const float s, const Vector4 &b, Vector4 
     VU0_v4scaleadd(a, s, b, r);
 }
 
+inline void ScaleAdd(const Vector2 &a, const float s, const Vector2 &b, Vector2 &r) {
+    r.x = a.x + s * b.x;
+    r.y = a.y + s * b.y;
+}
+
 inline void ScaleAddxyz(const Vector4 &a, const float s, const Vector4 &b, Vector4 &r) {
     VU0_v4scaleaddxyz(a, s, b, r);
 }
@@ -247,6 +270,32 @@ inline void Sub(const Vector3 &a, const Vector3 &b, Vector3 &r) {
 
 inline void Subxyz(const Vector4 &a, const Vector4 &b, Vector4 &r) {
     VU0_v4subxyz(a, b, r);
+}
+
+inline void Addxyz(const Vector4 &a, const Vector4 &b, Vector4 &r) {
+    VU0_v4addxyz(a, b, r);
+}
+
+inline void Scalexyz(const Vector4 &a, const float s, Vector4 &r) {
+    VU0_v4scalexyz(a, s, r);
+}
+
+inline void Scalexyz(const Vector4 &a, const Vector4 &b, Vector4 &r) {
+    VU0_v4scalexyz(a, b, r);
+}
+
+inline void Negatexyz(Vector4 &r) {
+    VU0_v4negatexyz(r);
+}
+
+inline float DistanceSquarexyz(const Vector4 &a, const Vector4 &b) {
+    return VU0_v4distancesquarexyz(a, b);
+}
+
+inline float Distancexyz(const Vector4 &a, const Vector4 &b) {
+    Vector4 temp;
+    VU0_v4subxyz(a, b, temp);
+    return VU0_sqrt(VU0_v4lengthsquarexyz(temp));
 }
 
 inline void SetYRot(Matrix4 &r, float a) {
@@ -282,6 +331,10 @@ inline void Rotate(const Vector3 &a, const Matrix4 &m, Vector3 &r) {
 #endif
 }
 
+inline void Rotate(const Vector4 &a, const Matrix4 &m, Vector4 &r) {
+    VU0_MATRIX3x4_vect4mult(a, m, r);
+}
+
 inline float Dot(const Vector3 &a, const Vector3 &b) {
 #ifdef EA_PLATFORM_XENON
     return a.x * b.x + a.y * b.y + a.z * b.z;
@@ -292,6 +345,16 @@ inline float Dot(const Vector3 &a, const Vector3 &b) {
 
 inline float Dot(const Vector2 &a, const Vector2 &b) {
     return a.x * b.x + a.y * b.y;
+}
+
+inline void Scale(Vector2 &r, const float s) {
+    r.x *= s;
+    r.y *= s;
+}
+
+inline void Scale(const Vector2 &a, const float s, Vector2 &r) {
+    r.x = a.x * s;
+    r.y = a.y * s;
 }
 
 inline void Dot(const Vector3 &a, const Matrix4 &b, Vector3 &r) {
@@ -326,10 +389,19 @@ inline void UnitCross(const Vector3 &a, const Vector3 &b, Vector3 &r) {
 }
 #endif
 
+
 inline float Normalize(Vector3 &r) {
     float m = VU0_v3length(r);
     if (m != 0.0f) {
         VU0_v3scale(r, 1.0f / m, r);
+    }
+    return m;
+}
+
+inline float Normalize(Vector4 &r) {
+    float m = VU0_v4length(r);
+    if (m != 0.0f) {
+        VU0_v4scale(r, 1.0f / m, r);
     }
     return m;
 }
@@ -375,6 +447,16 @@ inline float Sqrt(const float f) {
 #endif
 }
 
+inline float Normalize(Vector2 &r) {
+    float h = r.x * r.x + r.y * r.y;
+    float l = Sqrt(h);
+    float c = 1.0f / l;
+    r.x *= c;
+    r.y *= c;
+    float ret = l;
+    return ret;
+}
+
 inline float Length(const Vector3 &a) {
 #ifdef EA_PLATFORM_XENON
     return Sqrt(LengthSquare(a));
@@ -410,6 +492,12 @@ inline float Ramp(const float a, const float amin, const float amax) {
 
 inline float Lerp(const float a, const float b, const float t) {
     return a + (b - a) * t;
+}
+
+inline void Lerp(const Vector2 &a, const Vector2 &b, const float t, Vector2 &r) {
+    float u = 1.0f - t;
+    r.x = a.x * u + b.x * t;
+    r.y = a.y * u + b.y * t;
 }
 
 inline void Negate(Vector3 &r) {
@@ -463,5 +551,50 @@ inline float Limit(const float a, const float l) {
 }
 
 } // namespace UMath
+
+struct UQuat : public UMath::Vector4 {
+    UQuat() {
+        *static_cast<UMath::Vector4 *>(this) = UMath::Vector4::kIdentity;
+    }
+
+    UQuat(const UMath::Vector4 &From) {
+        x = From.x;
+        y = From.y;
+        z = From.z;
+        w = From.w;
+    }
+
+    const UQuat &operator=(const UMath::Vector4 &From) {
+        x = From.x;
+        y = From.y;
+        z = From.z;
+        w = From.w;
+        return *this;
+    }
+
+    void BuildDeltaAxis(const UMath::Vector3 &normal1, const UMath::Vector3 &normal2) {
+        const float angle = UMath::Dot(normal1, normal2);
+        if (angle > 0.999f) {
+            *this = UMath::Vector4::kIdentity;
+            return;
+        }
+        UMath::Vector3 axis;
+        UMath::Cross(normal1, normal2, axis);
+        if (angle < -0.999f) {
+            x = axis.x;
+            y = axis.y;
+            z = axis.z;
+            w = 0.0f;
+            UMath::Normalize(*static_cast<UMath::Vector4 *>(this));
+        } else {
+            const float s = UMath::Sqrt(2.0f * (1.0f + angle));
+            const float invs = 1.0f / s;
+            x = axis.x * invs;
+            y = axis.y * invs;
+            z = axis.z * invs;
+            w = s * 0.5f;
+        }
+    }
+};
 
 #endif

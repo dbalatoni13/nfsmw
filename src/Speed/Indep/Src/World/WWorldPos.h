@@ -33,15 +33,18 @@ class WWorldPos {
         }
     }
 
-    WWorldPos(float yOffset) {
-        this->fFaceValid = 0;
-        this->fMissCount = 0;
-        this->fUsageCount = 0;
-        this->fYOffset = yOffset;
-        this->fFace.fPt0 = UMath::Vector3::kZero;
-        this->fFace.fPt1 = UMath::Vector3::kZero;
-        this->fFace.fPt2 = UMath::Vector3::kZero;
-        this->fSurface = nullptr;
+    WWorldPos(float yOffset)
+        : fFace(), //
+          fYOffset(yOffset) {
+        fFaceValid = 0;
+        fMissCount = 0;
+        fFace.fSurface.fSurface = 0;
+        fFace.fSurface.fFlags = 0;
+        fUsageCount = 0;
+        fFace.fPt0 = UMath::Vector3::kZero;
+        fFace.fPt1 = UMath::Vector3::kZero;
+        fFace.fPt2 = UMath::Vector3::kZero;
+        fSurface = nullptr;
     }
 
     ~WWorldPos() {}
@@ -52,7 +55,9 @@ class WWorldPos {
         return fFaceValid;
     }
 
-    void ForceFaceValidity() {}
+    void ForceFaceValidity() {
+        fFaceValid = 1;
+    }
 
     // const WSurface &Surface() const {}
 
@@ -64,11 +69,11 @@ class WWorldPos {
         if (fFaceValid) {
             fFace.GetNormal(norm);
             if (norm->y < 0.0f) {
-                norm->x = -norm->x;
                 norm->y = -norm->y;
+                norm->x = -norm->x;
                 norm->z = -norm->z;
             }
-            if (norm->y >= 0.9999f) {
+            if (0.9999f <= norm->y) {
                 norm->y = 0.9999f;
             }
         } else {
@@ -78,7 +83,10 @@ class WWorldPos {
         }
     }
 
-    void UNormal(UMath::Vector4 *norm) const {}
+    void UNormal(UMath::Vector4 *norm) const {
+        UNormal(&UMath::Vector4To3(*norm));
+        norm->w = 0.0f;
+    }
 
     const UMath::Vector4 &FacePoint(int ptInd) const {
         return reinterpret_cast<const UMath::Vector4 *>(&fFace)[ptInd];

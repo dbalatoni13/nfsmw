@@ -298,13 +298,13 @@ inline bVector2 *bCopy(bVector2 *dest, const bVector2 *v) {
     return dest;
 }
 
+inline bVector2::bVector2(float _x, float _y) {
+    bFill(this, _x, _y);
+}
+
 inline bVector2 &bVector2::operator=(const bVector2 &v) {
     bCopy(this, &v);
     return *this;
-}
-
-inline bVector2::bVector2(float _x, float _y) {
-    bFill(this, _x, _y);
 }
 
 inline bVector2 bVector2::operator+(const bVector2 &v) const {
@@ -373,6 +373,14 @@ int bEqual(const bVector2 *v1, const bVector2 *v2, float epsilon);
 
 inline float bDot(const bVector2 *v1, const bVector2 *v2) {
     return v1->x * v2->x + v1->y * v2->y;
+}
+
+inline float bCross(const bVector2 *a, const bVector2 *b) {
+    return a->x * b->y - a->y * b->x;
+}
+
+inline float bDot(const bVector2 &v1, const bVector2 &v2) {
+    return bDot(&v1, &v2);
 }
 
 static inline float bDistBetween(const bVector2 *v1, const bVector2 *v2) {
@@ -957,6 +965,9 @@ inline void bIdentity(bMatrix4 *a) {
 #error Choose a platform
 #endif
 }
+
+void bConvertFromBond(bMatrix4 &dest, const bMatrix4 &m);
+void bConvertToBond(bMatrix4 &dest, const bMatrix4 &m);
 
 inline void eIdentity(bMatrix4 *a) {
     bIdentity(a);

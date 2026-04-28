@@ -15,28 +15,43 @@
 
 // UNSOLVED, i hate constructors
 SmackableRenderConn::SmackableRenderConn(const Sim::ConnectionData &data /* r27 */)
-    : Sim::Connection(data), mTarget(0), mModelHash((unsigned int)0), mLOD(0), mModelOffset(bVector4(0.0f, 0.0f, 0.0f, 0.0f)) {
+    : Sim::Connection(data), mModelHash(), mTarget((*reinterpret_cast<unsigned int *>(&mModelHash) = 0, 0)), mModel(0), mLOD(0),
+      mModelOffset(bVector4(0.0f, 0.0f, 0.0f, 0.0f)) {
     this->mList.AddTail(this);
 
     RenderConn::Pkt_Smackable_Open *oc = Sim::Packet::Cast<RenderConn::Pkt_Smackable_Open>(data.pkt);
-    this->mTarget.Set(oc->mModelHash.GetValue());
+    this->mTarget.Set(oc->mObjectWUID);
 
     this->mHeirarchy = oc->mHeirarchy;
     this->mModelHash = oc->mModelHash;
-    this->mRenderNode = oc->mRenderNode;
-    this->mModelHash = oc->mModelHash;
-
     const CollisionGeometry::Bounds *bounds = oc->mCollisionNode;
+    this->mRenderNode = oc->mRenderNode;
     UMath::Vector3 pivot;
     bounds->GetPivot(pivot);
+    this->mModelOffset.x = -pivot.z;
+    this->mModelOffset.y = pivot.x;
+    this->mModelOffset.z = -pivot.y;
+}
+
+Sim::Connection *SmackableRenderConn::Construct(const Sim::ConnectionData &data) {
+    return new SmackableRenderConn(data);
 }
 
 SmackableRenderConn::~SmackableRenderConn() {
-    if (this->mModel) {
-        delete this->mModel;
+    mList.Remove(this);
+    if (mModel) {
+        delete mModel;
+        mModel = nullptr;
     }
-    this->mTarget.Set(0);
+    mTarget.Set(0);
+}
+
+void SmackableRenderConn::OnClose() {
     delete this;
+}
+
+Sim::ConnStatus SmackableRenderConn::OnStatusCheck() {
+    return Sim::CONNSTATUS_READY;
 }
 
 SlotPool *SpaceNodeSlotPool = nullptr; // move elsewhere
@@ -86,7 +101,7 @@ void SmackableRenderConn::Update(float dT) {
 }
 
 void SmackableRenderConn::UpdateAll(float dT) {
-    for (SmackableRenderConn *w = mList.GetHead(); w != mList.GetHead(); w = w->GetNext()) {
+    for (SmackableRenderConn *w = mList.GetHead(); w != mList.EndOfList(); w = w->GetNext()) {
         w->Update(dT);
     }
 }
@@ -100,4 +115,5 @@ void SmackableRender_Service(float dT) {
 }
 
 bTList<SmackableRenderConn> SmackableRenderConn::mList;
-// Prototype _SmackableRenderConn;
+UTL::COM::Factory<const Sim::ConnectionData &, Sim::Connection, UCrc32>::Prototype _SmackableRenderConn("SmackableRenderConn",
+                                                                                                          SmackableRenderConn::Construct);

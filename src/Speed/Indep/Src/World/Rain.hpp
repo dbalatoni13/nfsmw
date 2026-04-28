@@ -138,4 +138,8 @@ int AmIinATunnelSlow(eView *view, int CheckOverPass);
 void SetRainBase();
 void CreateWindRotMatrix(eView *view, bMatrix4 *matrix, int x, const bMatrix4 *world);
 
+inline bVector3 *Rain::GetWind() {
+    return &this->PrevailingWindSpeed;
+}
+
 #endif

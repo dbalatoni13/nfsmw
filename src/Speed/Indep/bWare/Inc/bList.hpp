@@ -319,7 +319,7 @@ template <typename T> class bTList : public bList {
     }
 };
 
-template <typename T> T *bTList<T>::AddSorted(typename bTList<T>::SortFuncT check_flip, T *node) {
+template <typename T> T *bTList<T>::AddSorted(SortFuncT check_flip, T *node) {
     T *insert_point = GetHead();
     while (insert_point != EndOfList()) {
         if (check_flip(node, insert_point) == 0) {

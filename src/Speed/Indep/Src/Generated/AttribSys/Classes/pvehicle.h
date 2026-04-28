@@ -613,8 +613,8 @@ struct pvehicle : Instance {
         return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->DefaultPresetRide;
     }
 
-    const char *CollectionName() const {
-        return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->CollectionName;
+    const char *const &CollectionName() const {
+        return *reinterpret_cast<const char *const *>(&reinterpret_cast<const _LayoutStruct *>(GetLayoutPointer())->CollectionName);
     }
 
     const int &engine_upgrades() const {

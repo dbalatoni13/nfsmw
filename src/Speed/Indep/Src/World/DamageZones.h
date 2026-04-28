@@ -23,6 +23,10 @@ enum ID {
     DZ_MAX = 10,
 };
 
+Attrib::StringKey GetSystemName(ID id);
+UCrc32 GetDamageStimulus(unsigned int level);
+UCrc32 GetImpactStimulus(unsigned int level);
+
 // total size: 0x4
 struct Info {
     Info() {

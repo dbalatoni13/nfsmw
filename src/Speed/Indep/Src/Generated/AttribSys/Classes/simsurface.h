@@ -22,6 +22,7 @@ struct TireEffectRecord {
 };
 
 struct RoadNoiseRecord {
+    RoadNoiseRecord() : Frequency(0.0f), Amplitude(0.0f), MinSpeed(0.0f), MaxSpeed(0.0f) {} //
     float Frequency;
     float Amplitude;
     float MinSpeed;

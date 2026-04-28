@@ -279,6 +279,8 @@ class Emitter : public bTNode<Emitter> {
         this->mLocalWorld = *local_world;
     }
 
+    void SetIntensity(float intensity) {}
+
     void SetIntensityRange(float min, float max) {
         this->mMinIntensity = min;
         this->mMaxIntensity = max;
@@ -334,6 +336,7 @@ class EmitterGroup : public bTNode<EmitterGroup> {
     uint32 NumEmitters() const;
     bool MakeOneShot(bool force_all);
     void SetInheritVelocity(const bVector3 *vel);
+    void SetIntensity(float intensity) { mIntensity = intensity; }
     void Enable();
     void Disable();
     void SubscribeToDeletion(void *subscriber, void (*callback)(void *, struct EmitterGroup *));
