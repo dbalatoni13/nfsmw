@@ -73,6 +73,10 @@ struct ecar : Instance {
         Change(FindCollection(ClassKey(), collectionkey));
     }
 
+    void ChangeWithDefault(Key collectionkey) {
+        Change(FindCollectionWithDefault(ClassKey(), collectionkey));
+    }
+
     static Key ClassKey() {
         return 0xa5b543b7;
     }
@@ -283,8 +287,8 @@ struct ecar : Instance {
         return *resultptr;
     }
 
-    const bool &IsSkinned(unsigned int index) const {
-        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0xd9102c65, index));
+    const bool &IsSkinned() const {
+        const bool *resultptr = reinterpret_cast<const bool *>(this->GetAttributePointer(0xd9102c65, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
         }

@@ -21,6 +21,7 @@ enum eOnlineState {
 class OnlineManager {
   public:
     void StartSimFrame();
+    void InitQuantizers();
 
     void EndSimFrame() {}
 

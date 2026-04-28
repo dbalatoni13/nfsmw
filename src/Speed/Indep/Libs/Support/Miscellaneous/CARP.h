@@ -5,4 +5,10 @@
 #pragma once
 #endif
 
+struct UGroup;
+
+namespace CARP {
+unsigned int ResolveTagReferences(const UGroup *g, unsigned int deltaAddress);
+}
+
 #endif

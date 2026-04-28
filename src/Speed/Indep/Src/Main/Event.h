@@ -10,6 +10,11 @@
 
 #include "Speed/Indep/Src/Misc/Hermes.h"
 
+namespace CARP {
+struct EventStaticData;
+struct EventList;
+}
+
 extern char *gCreationPoint;
 extern char *gDeletionPoint;
 
@@ -44,11 +49,11 @@ class EventManager {
 
     static void RunEvents();
 
-    static void FireEventList(const struct EventList *eventList, bool verbose);
+    static void FireEventList(const CARP::EventList *eventList, bool verbose);
 
-    static void FireOneEvent(const struct EventList *eventList, unsigned int eventToFire, bool verbose);
+    static void FireOneEvent(const CARP::EventList *eventList, unsigned int eventToFire, bool verbose);
 
-    static bool ListHasEvent(const struct EventList *eventList, unsigned int eventID, const struct EventStaticData **foundEvent);
+    static bool ListHasEvent(const CARP::EventList *eventList, unsigned int eventID, const CARP::EventStaticData **foundEvent);
 
     static void AbortCurrentEventList();
 

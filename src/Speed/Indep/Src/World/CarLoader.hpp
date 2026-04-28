@@ -22,6 +22,10 @@ extern int CarLoaderMemoryPoolNumber;
 // total size: 0x18
 class LoadedSolidPack : public bTNode<LoadedSolidPack> {
   public:
+    LoadedSolidPack(const char *filename);
+    ~LoadedSolidPack();
+    static void operator delete(void *ptr);
+
     const char *Filename;           // offset 0x8, size 0x4
     eStreamingPack *pStreamingPack; // offset 0xC, size 0x4
     ResourceFile *pResourceFile;    // offset 0x10, size 0x4
@@ -34,6 +38,10 @@ class LoadedSolidPack : public bTNode<LoadedSolidPack> {
 // total size: 0x18
 class LoadedTexturePack : public bTNode<LoadedTexturePack> {
   public:
+    LoadedTexturePack(const char *filename, int max_header_size);
+    ~LoadedTexturePack();
+    static void operator delete(void *ptr);
+
     const char *Filename;           // offset 0x8, size 0x4
     int16 NumInstances;             // offset 0xC, size 0x2
     char LoadState;                 // offset 0xE, size 0x1
@@ -47,6 +55,9 @@ class LoadedTexturePack : public bTNode<LoadedTexturePack> {
 // total size: 0x10
 class LoadedSkinLayer : public bTNode<LoadedSkinLayer> {
   public:
+    LoadedSkinLayer(unsigned int name_hash);
+    static void operator delete(void *ptr);
+
     uint32 NameHash;    // offset 0x8, size 0x4
     int16 NumInstances; // offset 0xC, size 0x2
     char LoadState;     // offset 0xE, size 0x1
@@ -56,13 +67,15 @@ class LoadedSkinLayer : public bTNode<LoadedSkinLayer> {
 // total size: 0x7C
 class LoadedWheel : public bTNode<LoadedWheel> {
   public:
+    LoadedWheel(RideInfo *ride_info, bool in_fe);
+
     CarLoadState LoadState;                   // offset 0x8, size 0x4
     CarLoadState LoadStateSkinPerm;           // offset 0xC, size 0x4
     CarLoadState LoadStateSkinTemp;           // offset 0x10, size 0x4
     uint32 PartNameHash;                      // offset 0x14, size 0x4
     uint32 TextureBaseNameHash;               // offset 0x18, size 0x4
     CarPart *pCarPart;                        // offset 0x1C, size 0x4
-    uint32 ModelNameHashes[5][1];             // offset 0x20, size 0x14
+    uint32 ModelNameHashes[1][5];             // offset 0x20, size 0x14
     uint32 SkinNameHashesPerm[4];             // offset 0x34, size 0x10
     uint32 SkinNameHashesTemp[4];             // offset 0x44, size 0x10
     LoadedSkinLayer *LoadedSkinLayersPerm[4]; // offset 0x54, size 0x10
@@ -84,6 +97,10 @@ class LoadedWheel : public bTNode<LoadedWheel> {
 // total size: 0x2E0
 class LoadedSkin : public bTNode<LoadedSkin> {
   public:
+    LoadedSkin(RideInfo *ride_info, int in_front_end, int is_player_skin);
+    int GetTextureHashes(unsigned int *texture_hashes, int max_texture_hashes, int perm);
+    int IsLoaded();
+
     RideInfo *pRideInfo;                       // offset 0x8, size 0x4
     char LoadStatePerm;                        // offset 0xC, size 0x1
     char LoadStateTemp;                        // offset 0xD, size 0x1
@@ -96,31 +113,28 @@ class LoadedSkin : public bTNode<LoadedSkin> {
     LoadedSkinLayer *LoadedSkinLayersPerm[87]; // offset 0x24, size 0x15C
     int NumLoadedSkinLayersTemp;               // offset 0x180, size 0x4
     LoadedSkinLayer *LoadedSkinLayersTemp[87]; // offset 0x184, size 0x15C
-
-    LoadedSkin(RideInfo *ride_info, int in_front_end, int is_player_skin);
-    const char *GetName();
-    int IsLoaded();
-    int GetTextureHashes(uint32 *texture_hashes, int max_texture_hashes, int perm);
 };
 
 // total size: 0x20
 class LoadedCar : public bTNode<LoadedCar> {
   public:
+    LoadedCar(RideInfo *ride_info, int in_front_end, int is_two_player);
+    int GetModelHashes(unsigned int *model_hashes, int max_model_hashes);
+    int ShouldWeStream();
+
     CarType Type;                      // offset 0x8, size 0x4
     struct RideInfo *pRideInfo;        // offset 0xC, size 0x4
     int InFrontEnd;                    // offset 0x10, size 0x4
     int IsTwoPlayer;                   // offset 0x14, size 0x4
     CarLoadState LoadState;            // offset 0x18, size 0x4
     LoadedSolidPack *pLoadedSolidPack; // offset 0x1C, size 0x4
-
-    LoadedCar(RideInfo *ride_info, int in_front_end, int is_two_player);
-    int ShouldWeStream();
-    int GetModelHashes(uint32 *model_hashes, int max_model_hashes);
 };
 
 // total size: 0x6D4
 class LoadedRideInfo : public bTNode<LoadedRideInfo> {
   public:
+    static void operator delete(void *ptr);
+
     int NumInstances;           // offset 0x8, size 0x4
     CarLoadState LoadState;     // offset 0xC, size 0x4
     int HighPriority;           // offset 0x10, size 0x4

@@ -23,6 +23,10 @@ struct FECarRecord {
 
 // total size: 0x198
 struct FECustomizationRecord {
+    bool IsPreset() const {
+        return this->Preset != 0;
+    }
+
     short InstalledPartIndices[139];             // offset 0x0, size 0x116
     Physics::Upgrades::Package InstalledPhysics; // offset 0x118, size 0x20
     Physics::Tunings Tunings[3];                 // offset 0x138, size 0x54

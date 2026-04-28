@@ -16,6 +16,7 @@
 #include "Speed/Indep/Src/Sim/Collision.h"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
+#include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
 
 /////// NOT IN THIS FILE ///////
 class ePointSprite3D {
@@ -153,16 +154,18 @@ typedef struct tagCarEffectParam {
     uint32 NameHash;
 } CarEffectParam;
 
+extern SlotPool *CarEmitterPositionSlotPool;
+
 class CarEmitterPosition : public bSNode<CarEmitterPosition> {
   public:
     // Functions
-    static void *operator new(size_t size) {}
+    static void *operator new(unsigned int size);
 
-    static void operator delete(void *ptr) {}
+    static void operator delete(void *ptr);
 
-    CarEmitterPosition(ePositionMarker *position_marker) {}
+    CarEmitterPosition(ePositionMarker *position_marker);
 
-    CarEmitterPosition(float x, float y, float z) {}
+    CarEmitterPosition(float x, float y, float z);
 
     // Members
     float X;                         // offset 0x4, size 0x4
@@ -171,7 +174,7 @@ class CarEmitterPosition : public bSNode<CarEmitterPosition> {
     ePositionMarker *PositionMarker; // offset 0x10, size 0x4
 };
 
-struct UsedCarTextureInfo {
+class UsedCarTextureInfo {
     // Members
     uint32 TexturesToLoadPerm[87];        // offset 0x0, size 0x15C
     uint32 TexturesToLoadTemp[87];        // offset 0x15C, size 0x15C
@@ -218,9 +221,13 @@ class CarPartModel {
 
     ~CarPartModel() {}
 
-    void Clear() {}
+    void Clear() {
+        mModel = 0;
+    }
 
-    int IsHidden() {}
+    int IsHidden() {
+        return this->mModel & 1;
+    }
 
     void Hide(int bHide) {
         mModel = (mModel & ~3) | (bHide ? 1 : 0);
@@ -231,10 +238,12 @@ class CarPartModel {
     }
 
     void SetModel(struct eModel *model) {
-        this->mModel = reinterpret_cast<uint32>(model);
+        this->mModel = reinterpret_cast<unsigned int>(model) | this->IsHidden();
     }
 
-    bool IsLodMissing() const {}
+    bool IsLodMissing() const {
+        return (mModel & ~3u) == 0;
+    }
 
   private:
     uint32 mModel; // offset 0x0, size 0x4
@@ -328,15 +337,21 @@ class CarRenderInfo {
 
     float GetDeltaTime() const {}
 
-    void SetRadius(float r) {}
+    void SetRadius(float r) {
+        this->mRadius = r;
+    }
 
     float GetRadius() const {}
 
-    void SetCollider(const WCollider *collider) {}
+    void SetCollider(const WCollider *collider) {
+        this->mWCollider = collider;
+    }
 
     void SetAnimationTime(float animationTime) {}
 
-    void SetWheelWobble(unsigned int wheelInd, bool enable) {}
+    void SetWheelWobble(unsigned int wheelInd, bool enable) {
+        this->mWheelWobbleEnabled[wheelInd] = enable;
+    }
 
     bool GetWheelWobble(unsigned int wheelInd) {}
 
@@ -368,9 +383,9 @@ class CarRenderInfo {
 
     void SetLights(unsigned int vehiclefx_ids) {}
 
-    bool IsLightBroken(enum VehicleFX::ID id) const {}
+    bool IsLightBroken(enum VehicleFX::ID id) const;
 
-    bool IsLightOn(enum VehicleFX::ID id) const {}
+    bool IsLightOn(enum VehicleFX::ID id) const;
 
     CarRenderInfo(RideInfo *ride_info);
 

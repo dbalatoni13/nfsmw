@@ -12,10 +12,11 @@ enum eTimeOfDay {
     eTOD_ERROR = -1,
 };
 
-void TickOverTimeOfday() {}
-
-eTimeOfDay GetCurrentTimeOfDay();
+void TickOverTimeOfday();
+void ApplyTimeOfDayTickOver();
+void SetCurrentTimeOfDay(float tod);
 const char *GetTimeOfDaySuffix(eTimeOfDay tod);
 bool NeedsSeperateTODStreamingFile(const char *platform_name);
+eTimeOfDay GetCurrentTimeOfDay();
 
 #endif

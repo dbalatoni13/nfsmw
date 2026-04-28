@@ -24,11 +24,9 @@ struct world : Instance {
     }
 
     world(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {
-        this->SetDefaultLayout(sizeof(_LayoutStruct));
     }
 
     world(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {
-        this->SetDefaultLayout(sizeof(_LayoutStruct));
     }
 
     ~world() {}

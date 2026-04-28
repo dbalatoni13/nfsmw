@@ -6,6 +6,7 @@
 
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 // TODO this stuff may or may not go here.
 enum CarUsageType {
@@ -24,6 +25,239 @@ enum CARPART_LOD {
     CARPART_LOD_E,
     CARPART_LOD_NUM,
 };
+enum CAR_SLOT_ID {
+    CARSLOTID_BASE = 0,
+    CARSLOTID_DAMAGE_FRONT_WINDOW = 1,
+    CARSLOTID_DAMAGE_BODY = 2,
+    CARSLOTID_DAMAGE_COP_LIGHTS = 3,
+    CARSLOTID_DAMAGE_COP_SPOILER = 4,
+    CARSLOTID_DAMAGE_FRONT_WHEEL = 5,
+    CARSLOTID_DAMAGE_LEFT_BRAKELIGHT = 6,
+    CARSLOTID_DAMAGE_RIGHT_BRAKELIGHT = 7,
+    CARSLOTID_DAMAGE_LEFT_HEADLIGHT = 8,
+    CARSLOTID_DAMAGE_RIGHT_HEADLIGHT = 9,
+    CARSLOTID_DAMAGE_HOOD = 10,
+    CARSLOTID_DAMAGE_BUSHGUARD = 11,
+    CARSLOTID_DAMAGE_FRONT_BUMPER = 12,
+    CARSLOTID_DAMAGE_RIGHT_DOOR = 13,
+    CARSLOTID_DAMAGE_RIGHT_REAR_DOOR = 14,
+    CARSLOTID_DAMAGE_TRUNK = 15,
+    CARSLOTID_DAMAGE_REAR_BUMPER = 16,
+    CARSLOTID_DAMAGE_REAR_LEFT_WINDOW = 17,
+    CARSLOTID_DAMAGE_FRONT_LEFT_WINDOW = 18,
+    CARSLOTID_DAMAGE_FRONT_RIGHT_WINDOW = 19,
+    CARSLOTID_DAMAGE_REAR_RIGHT_WINDOW = 20,
+    CARSLOTID_DAMAGE_LEFT_DOOR = 21,
+    CARSLOTID_DAMAGE_LEFT_REAR_DOOR = 22,
+    CARSLOTID_BODY = 23,
+    CARSLOTID_FRONT_BRAKE = 24,
+    CARSLOTID_FRONT_LEFT_WINDOW = 25,
+    CARSLOTID_FRONT_RIGHT_WINDOW = 26,
+    CARSLOTID_FRONT_WINDOW = 27,
+    CARSLOTID_INTERIOR = 28,
+    CARSLOTID_LEFT_BRAKELIGHT = 29,
+    CARSLOTID_LEFT_BRAKELIGHT_GLASS = 30,
+    CARSLOTID_LEFT_HEADLIGHT = 31,
+    CARSLOTID_LEFT_HEADLIGHT_GLASS = 32,
+    CARSLOTID_LEFT_SIDE_MIRROR = 33,
+    CARSLOTID_REAR_BRAKE = 34,
+    CARSLOTID_REAR_LEFT_WINDOW = 35,
+    CARSLOTID_REAR_RIGHT_WINDOW = 36,
+    CARSLOTID_REAR_WINDOW = 37,
+    CARSLOTID_RIGHT_BRAKELIGHT = 38,
+    CARSLOTID_RIGHT_BRAKELIGHT_GLASS = 39,
+    CARSLOTID_RIGHT_HEADLIGHT = 40,
+    CARSLOTID_RIGHT_HEADLIGHT_GLASS = 41,
+    CARSLOTID_RIGHT_SIDE_MIRROR = 42,
+    CARSLOTID_DRIVER = 43,
+    CARSLOTID_SPOILER = 44,
+    CARSLOTID_UNIVERSAL_SPOILER_BASE = 45,
+    CARSLOTID_DAMAGE0_FRONT = 46,
+    CARSLOTID_DAMAGE0_FRONTLEFT = 47,
+    CARSLOTID_DAMAGE0_FRONTRIGHT = 48,
+    CARSLOTID_DAMAGE0_REAR = 49,
+    CARSLOTID_DAMAGE0_REARLEFT = 50,
+    CARSLOTID_DAMAGE0_REARRIGHT = 51,
+    CARSLOTID_ATTACHMENT0 = 52,
+    CARSLOTID_ATTACHMENT1 = 53,
+    CARSLOTID_ATTACHMENT2 = 54,
+    CARSLOTID_ATTACHMENT3 = 55,
+    CARSLOTID_ATTACHMENT4 = 56,
+    CARSLOTID_ATTACHMENT5 = 57,
+    CARSLOTID_ATTACHMENT6 = 58,
+    CARSLOTID_ATTACHMENT7 = 59,
+    CARSLOTID_ATTACHMENT8 = 60,
+    CARSLOTID_ATTACHMENT9 = 61,
+    CARSLOTID_ROOF = 62,
+    CARSLOTID_HOOD = 63,
+    CARSLOTID_HEADLIGHT = 64,
+    CARSLOTID_BRAKELIGHT = 65,
+    CARSLOTID_FRONT_WHEEL = 66,
+    CARSLOTID_REAR_WHEEL = 67,
+    CARSLOTID_SPINNER = 68,
+    CARSLOTID_LICENSE_PLATE = 69,
+    CARSLOTID_DECAL_FRONT_WINDOW = 70,
+    CARSLOTID_DECAL_REAR_WINDOW = 71,
+    CARSLOTID_DECAL_LEFT_DOOR = 72,
+    CARSLOTID_DECAL_RIGHT_DOOR = 73,
+    CARSLOTID_DECAL_LEFT_QUARTER = 74,
+    CARSLOTID_DECAL_RIGHT_QUARTER = 75,
+    CARSLOTID_BASE_PAINT = 76,
+    CARSLOTID_VINYL_LAYER0 = 77,
+    CARSLOTID_PAINT_RIM = 78,
+    CARSLOTID_VINYL_COLOUR0_0 = 79,
+    CARSLOTID_VINYL_COLOUR0_1 = 80,
+    CARSLOTID_VINYL_COLOUR0_2 = 81,
+    CARSLOTID_VINYL_COLOUR0_3 = 82,
+    CARSLOTID_DECAL_FRONT_WINDOW_TEX0 = 83,
+    CARSLOTID_DECAL_FRONT_WINDOW_TEX1 = 84,
+    CARSLOTID_DECAL_FRONT_WINDOW_TEX2 = 85,
+    CARSLOTID_DECAL_FRONT_WINDOW_TEX3 = 86,
+    CARSLOTID_DECAL_FRONT_WINDOW_TEX4 = 87,
+    CARSLOTID_DECAL_FRONT_WINDOW_TEX5 = 88,
+    CARSLOTID_DECAL_FRONT_WINDOW_TEX6 = 89,
+    CARSLOTID_DECAL_FRONT_WINDOW_TEX7 = 90,
+    CARSLOTID_DECAL_REAR_WINDOW_TEX0 = 91,
+    CARSLOTID_DECAL_REAR_WINDOW_TEX1 = 92,
+    CARSLOTID_DECAL_REAR_WINDOW_TEX2 = 93,
+    CARSLOTID_DECAL_REAR_WINDOW_TEX3 = 94,
+    CARSLOTID_DECAL_REAR_WINDOW_TEX4 = 95,
+    CARSLOTID_DECAL_REAR_WINDOW_TEX5 = 96,
+    CARSLOTID_DECAL_REAR_WINDOW_TEX6 = 97,
+    CARSLOTID_DECAL_REAR_WINDOW_TEX7 = 98,
+    CARSLOTID_DECAL_LEFT_DOOR_TEX0 = 99,
+    CARSLOTID_DECAL_LEFT_DOOR_TEX1 = 100,
+    CARSLOTID_DECAL_LEFT_DOOR_TEX2 = 101,
+    CARSLOTID_DECAL_LEFT_DOOR_TEX3 = 102,
+    CARSLOTID_DECAL_LEFT_DOOR_TEX4 = 103,
+    CARSLOTID_DECAL_LEFT_DOOR_TEX5 = 104,
+    CARSLOTID_DECAL_LEFT_DOOR_TEX6 = 105,
+    CARSLOTID_DECAL_LEFT_DOOR_TEX7 = 106,
+    CARSLOTID_DECAL_RIGHT_DOOR_TEX0 = 107,
+    CARSLOTID_DECAL_RIGHT_DOOR_TEX1 = 108,
+    CARSLOTID_DECAL_RIGHT_DOOR_TEX2 = 109,
+    CARSLOTID_DECAL_RIGHT_DOOR_TEX3 = 110,
+    CARSLOTID_DECAL_RIGHT_DOOR_TEX4 = 111,
+    CARSLOTID_DECAL_RIGHT_DOOR_TEX5 = 112,
+    CARSLOTID_DECAL_RIGHT_DOOR_TEX6 = 113,
+    CARSLOTID_DECAL_RIGHT_DOOR_TEX7 = 114,
+    CARSLOTID_DECAL_LEFT_QUARTER_TEX0 = 115,
+    CARSLOTID_DECAL_LEFT_QUARTER_TEX1 = 116,
+    CARSLOTID_DECAL_LEFT_QUARTER_TEX2 = 117,
+    CARSLOTID_DECAL_LEFT_QUARTER_TEX3 = 118,
+    CARSLOTID_DECAL_LEFT_QUARTER_TEX4 = 119,
+    CARSLOTID_DECAL_LEFT_QUARTER_TEX5 = 120,
+    CARSLOTID_DECAL_LEFT_QUARTER_TEX6 = 121,
+    CARSLOTID_DECAL_LEFT_QUARTER_TEX7 = 122,
+    CARSLOTID_DECAL_RIGHT_QUARTER_TEX0 = 123,
+    CARSLOTID_DECAL_RIGHT_QUARTER_TEX1 = 124,
+    CARSLOTID_DECAL_RIGHT_QUARTER_TEX2 = 125,
+    CARSLOTID_DECAL_RIGHT_QUARTER_TEX3 = 126,
+    CARSLOTID_DECAL_RIGHT_QUARTER_TEX4 = 127,
+    CARSLOTID_DECAL_RIGHT_QUARTER_TEX5 = 128,
+    CARSLOTID_DECAL_RIGHT_QUARTER_TEX6 = 129,
+    CARSLOTID_DECAL_RIGHT_QUARTER_TEX7 = 130,
+    CARSLOTID_WINDOW_TINT = 131,
+    CARSLOTID_CUSTOM_HUD = 132,
+    CARSLOTID_HUD_BACKING_COLOUR = 133,
+    CARSLOTID_HUD_NEEDLE_COLOUR = 134,
+    CARSLOTID_HUD_CHARACTER_COLOUR = 135,
+    CARSLOTID_CV = 136,
+    CARSLOTID_WHEEL_MANUFACTURER = 137,
+    CARSLOTID_MISC = 138,
+    CARSLOTID_NUM = 139,
+};
+enum CAR_PART_ID {
+    CARPARTID_INVALID = -1,
+    CARPARTID_BASE = 0,
+    CARPARTID_DAMAGE_FRONT_WINDOW = 1,
+    CARPARTID_DAMAGE_BODY = 2,
+    CARPARTID_DAMAGE_COP_LIGHTS = 3,
+    CARPARTID_DAMAGE_COP_SPOILER = 4,
+    CARPARTID_DAMAGE_FRONT_WHEEL = 5,
+    CARPARTID_DAMAGE_LEFT_BRAKELIGHT = 6,
+    CARPARTID_DAMAGE_RIGHT_BRAKELIGHT = 7,
+    CARPARTID_DAMAGE_LEFT_HEADLIGHT = 8,
+    CARPARTID_DAMAGE_RIGHT_HEADLIGHT = 9,
+    CARPARTID_DAMAGE_HOOD = 10,
+    CARPARTID_DAMAGE_BUSHGUARD = 11,
+    CARPARTID_DAMAGE_FRONT_BUMPER = 12,
+    CARPARTID_DAMAGE_RIGHT_DOOR = 13,
+    CARPARTID_DAMAGE_RIGHT_REAR_DOOR = 14,
+    CARPARTID_DAMAGE_TRUNK = 15,
+    CARPARTID_DAMAGE_REAR_BUMPER = 16,
+    CARPARTID_DAMAGE_REAR_LEFT_WINDOW = 17,
+    CARPARTID_DAMAGE_FRONT_LEFT_WINDOW = 18,
+    CARPARTID_DAMAGE_FRONT_RIGHT_WINDOW = 19,
+    CARPARTID_DAMAGE_REAR_RIGHT_WINDOW = 20,
+    CARPARTID_DAMAGE_LEFT_DOOR = 21,
+    CARPARTID_DAMAGE_LEFT_REAR_DOOR = 22,
+    CARPARTID_BODY = 23,
+    CARPARTID_FRONT_BRAKE = 24,
+    CARPARTID_FRONT_LEFT_WINDOW = 25,
+    CARPARTID_FRONT_RIGHT_WINDOW = 26,
+    CARPARTID_FRONT_WINDOW = 27,
+    CARPARTID_INTERIOR = 28,
+    CARPARTID_LEFT_BRAKELIGHT = 29,
+    CARPARTID_LEFT_BRAKELIGHT_GLASS = 30,
+    CARPARTID_LEFT_HEADLIGHT = 31,
+    CARPARTID_LEFT_HEADLIGHT_GLASS = 32,
+    CARPARTID_LEFT_SIDE_MIRROR = 33,
+    CARPARTID_REAR_BRAKE = 34,
+    CARPARTID_REAR_LEFT_WINDOW = 35,
+    CARPARTID_REAR_RIGHT_WINDOW = 36,
+    CARPARTID_REAR_WINDOW = 37,
+    CARPARTID_RIGHT_BRAKELIGHT = 38,
+    CARPARTID_RIGHT_BRAKELIGHT_GLASS = 39,
+    CARPARTID_RIGHT_HEADLIGHT = 40,
+    CARPARTID_RIGHT_HEADLIGHT_GLASS = 41,
+    CARPARTID_RIGHT_SIDE_MIRROR = 42,
+    CARPARTID_DRIVER = 43,
+    CARPARTID_SPOILER = 44,
+    CARPARTID_UNIVERSAL_SPOILER_BASE = 45,
+    CARPARTID_DAMAGE0_FRONT = 46,
+    CARPARTID_DAMAGE0_FRONTLEFT = 47,
+    CARPARTID_DAMAGE0_FRONTRIGHT = 48,
+    CARPARTID_DAMAGE0_REAR = 49,
+    CARPARTID_DAMAGE0_REARLEFT = 50,
+    CARPARTID_DAMAGE0_REARRIGHT = 51,
+    CARPARTID_ATTACHMENT0 = 52,
+    CARPARTID_ATTACHMENT1 = 53,
+    CARPARTID_ATTACHMENT2 = 54,
+    CARPARTID_ATTACHMENT3 = 55,
+    CARPARTID_ATTACHMENT4 = 56,
+    CARPARTID_ATTACHMENT5 = 57,
+    CARPARTID_ATTACHMENT6 = 58,
+    CARPARTID_ATTACHMENT7 = 59,
+    CARPARTID_ATTACHMENT8 = 60,
+    CARPARTID_ATTACHMENT9 = 61,
+    CARPARTID_ROOF = 62,
+    CARPARTID_HOOD = 63,
+    CARPARTID_HEADLIGHT = 64,
+    CARPARTID_BRAKELIGHT = 65,
+    CARPARTID_BRAKE = 66,
+    CARPARTID_WHEEL = 67,
+    CARPARTID_SPINNER = 68,
+    CARPARTID_LICENSE_PLATE = 69,
+    CARPARTID_DECAL_FRONT_WINDOW = 70,
+    CARPARTID_DECAL_REAR_WINDOW = 71,
+    CARPARTID_DECAL_LEFT_DOOR = 72,
+    CARPARTID_DECAL_RIGHT_DOOR = 73,
+    CARPARTID_DECAL_LEFT_QUARTER = 74,
+    CARPARTID_DECAL_RIGHT_QUARTER = 75,
+    CARPARTID_PAINT = 76,
+    CARPARTID_VINYL_PAINT = 77,
+    CARPARTID_RIM_PAINT = 78,
+    CARPARTID_VINYL = 79,
+    CARPARTID_DECAL_TEXTURE = 80,
+    CARPARTID_WINDOW_TINT = 81,
+    CARPARTID_CUSTOM_HUD = 82,
+    CARPARTID_CUSTOM_HUD_PAINT = 83,
+    CARPARTID_CV = 84,
+    CARPARTID_WHEEL_MANUFACTURER = 85,
+    CARPARTID_MISC = 86,
+    CARPARTID_NUM = 87,
+};
 enum CarRenderUsage {
     CarRenderUsage_Player,
     CarRenderUsage_RemotePlayer,
@@ -35,15 +269,145 @@ enum CarRenderUsage {
     CarRenderUsage_Invalid,
 };
 
+struct CarPartAttribute {
+    unsigned int NameHash;
+    union {
+        float fParam;
+        int iParam;
+        unsigned int uParam;
+    } Params;
+
+    unsigned int GetUParam() {
+        return this->Params.uParam;
+    }
+
+    void EndianSwap() {
+        bPlatEndianSwap(&this->Params.iParam);
+        bPlatEndianSwap(&this->NameHash);
+    }
+};
+
+struct CarPart {
+    CarPartAttribute *GetAttribute(unsigned int namehash, CarPartAttribute *prev_attribute);
+    CarPartAttribute *GetFirstAppliedAttribute(unsigned int namehash);
+    CarPartAttribute *GetNextAppliedAttribute(unsigned int namehash, CarPartAttribute *prev_attribute);
+    char *GetName();
+    unsigned int GetCarTypeNameHash();
+    unsigned int GetModelNameHash(int model, int lod);
+    unsigned int GetAppliedAttributeUParam(unsigned int namehash, unsigned int default_value);
+    int GetAppliedAttributeIParam(unsigned int namehash, int default_value);
+    const char *GetAppliedAttributeString(unsigned int namehash, const char *default_string);
+    int HasAppliedAttribute(unsigned int namehash);
+    char GetPartID() {
+        return *(reinterpret_cast<char *>(this) + 4);
+    }
+
+    char GetUpgradeLevel() {
+        return (static_cast<unsigned char>(*(reinterpret_cast<unsigned char *>(this) + 5)) >> 5) - 1;
+    }
+
+    char GetGroupNumber() {
+        return *(reinterpret_cast<unsigned char *>(this) + 5) & 0x1F;
+    }
+
+    void EndianSwap() {
+        bPlatEndianSwap(reinterpret_cast<unsigned short *>(reinterpret_cast<char *>(this) + 0));
+        bPlatEndianSwap(reinterpret_cast<unsigned short *>(reinterpret_cast<char *>(this) + 2));
+        bPlatEndianSwap(reinterpret_cast<unsigned short *>(reinterpret_cast<char *>(this) + 8));
+        bPlatEndianSwap(reinterpret_cast<unsigned short *>(reinterpret_cast<char *>(this) + 10));
+        bPlatEndianSwap(reinterpret_cast<unsigned short *>(reinterpret_cast<char *>(this) + 12));
+    }
+
+    unsigned int GetPartNameHash() {
+        return (static_cast<unsigned int>(*(reinterpret_cast<unsigned short *>(this) + 1)) << 16) |
+               *reinterpret_cast<unsigned short *>(this);
+    }
+
+    unsigned int GetTextureNameHash() {
+        return GetAppliedAttributeUParam(0x10C98090, 0);
+    }
+
+    unsigned int GetBrandNameHash() {
+        return GetAppliedAttributeUParam(0xEBB03E66, 0);
+    }
+};
+
 // total size: 0x310
+struct FECarRecord;
 class RideInfo {
   public:
     void Init(CarType type, CarRenderUsage usage, int has_dash, int can_be_vertex_damaged);
+    struct CarPart *SetPart(int car_slot_id, struct CarPart *car_part, bool update_enabled);
+    void SetStockParts();
+    void SetRandomPart(CAR_SLOT_ID slot, int upgrade_level);
+    void SetRandomPaint();
+    void SetRandomParts();
+    void SetUpgradePart(CAR_SLOT_ID car_slot_id, int upg_level);
+    void UpdatePartsEnabled();
     struct CarPart *GetPart(int car_slot_id) const;
+    int IsPartEnabled(int car_part_id);
+    void DumpForPreset(FECarRecord *car);
+    void FillWithPreset(unsigned int preset_name_hash);
     int GetSpecialLODRangeForCarSlot(int slot_id, CARPART_LOD *special_minimum, CARPART_LOD *special_maximum, bool in_front_end);
+    unsigned int GetSkinNameHash();
+    void SetCompositeNameHash(int skin_number);
+    unsigned int GetCompositeSkinNameHash();
+    void SetCompositeSkinNameHash(unsigned int namehash);
+    unsigned int GetCompositeWheelNameHash();
+    void SetCompositeWheelNameHash(unsigned int namehash);
+    unsigned int GetCompositeSpinnerNameHash();
+    void SetCompositeSpinnerNameHash(unsigned int namehash);
+    int IsUsingCompositeSkin();
+    struct CarPart *GetPreviewPart() {
+        return this->PreviewPart;
+    }
 
     RideInfo() {
         Init(CARTYPE_NONE, CarRenderUsage_Player, 0, 0);
+    }
+
+    void SetCarLoaderHandle(int car_loader_handle) {
+        this->mMyCarLoaderHandle = car_loader_handle;
+    }
+
+    int GetCarLoaderHandle() {
+        return this->mMyCarLoaderHandle;
+    }
+
+    CarRenderUsage GetCarRenderUsage() {
+        return this->mMyCarRenderUsage;
+    }
+
+    CARPART_LOD GetMinLodLevel() const {
+        return this->mMinLodLevel;
+    }
+
+    CARPART_LOD GetMaxLodLevel() const {
+        return this->mMaxLodLevel;
+    }
+
+    CARPART_LOD GetMinFELodLevel() const {
+        return this->mMinFELodLevel;
+    }
+
+    CARPART_LOD GetMaxFELodLevel() const {
+        return this->mMaxFELodLevel;
+    }
+
+    CARPART_LOD GetMaxTireLodLevel() const {
+        return this->mMaxTireLodLevel;
+    }
+
+    CARPART_LOD GetMaxBrakeLodLevel() const {
+        return this->mMaxBrakeLodLevel;
+    }
+
+    CARPART_LOD GetMaxSpoilerLodLevel() const {
+        return this->mMaxSpoilerLodLevel;
+    }
+
+    CARPART_LOD GetMaxRoofScoopLodLevel() const {
+        return this->mMaxRoofScoopLodLevel;
     }
 
     CarType Type;            // offset 0x0, size 0x4
@@ -137,6 +501,19 @@ struct CarTypeInfo {
     char Skinnable;                             // offset 0xC7, size 0x1
     int Padding;                                // offset 0xC8, size 0x4
     int DefaultBasePaint;                       // offset 0xCC, size 0x4
+
+    char *GetBaseModelName();
+    char *GetName() {
+        return this->CarTypeName;
+    }
+
+    char *GetCarTypeName() {
+        return this->CarTypeName;
+    }
+
+    CarUsageType GetCarUsageType() {
+        return this->UsageType;
+    }
 };
 
 #endif

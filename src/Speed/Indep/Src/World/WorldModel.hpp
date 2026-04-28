@@ -7,6 +7,7 @@
 
 #include "SpaceNode.hpp"
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
+#include "Speed/Indep/Libs/Support/Utility/UCrc.h"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
@@ -38,6 +39,10 @@ class WorldModel : public bTNode<WorldModel> {
 
     void *operator new(std::size_t size) {
         return bOMalloc(WorldModelSlotPool);
+    }
+
+    void operator delete(void *ptr) {
+        bFree(WorldModelSlotPool, ptr);
     }
 
     bool IsEnabled() {
@@ -80,6 +85,11 @@ class WorldModel : public bTNode<WorldModel> {
     eModel *GetModel();
 
     void AttachReplacementTextureTable(eReplacementTextureTable *replacement_texture_table, int num_textures);
+
+    void AttachLightMaterial(eLightMaterial *lm, unsigned int toskin) {
+        this->mLightMaterial = lm;
+        this->mLightMaterialSkinHash = toskin;
+    }
 
     unsigned int GetNameHash();
 

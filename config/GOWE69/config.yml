@@ -55,3 +55,13 @@ block_relocations:
 
 - source: .text:0x802c0e2c
   end: .text:0x802c0e38
+
+# LoaderParameterMaps: chunk ID constant, not a relocation
+- source: .text:0x802E63EC
+  end: .text:0x802E63F0
+- source: .text:0x802E63F4
+  end: .text:0x802E63F8
+
+# UnloaderParameterMaps: chunk ID constant, not a relocation
+- source: .text:0x802E650C
+  end: .text:0x802E6514
