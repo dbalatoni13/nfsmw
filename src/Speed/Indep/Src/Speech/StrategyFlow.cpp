@@ -25,9 +25,28 @@ StrategyFlow::StrategyFlow()
     mSpeed[1] = 0.0f;
     mState = kCullCheck;
     mLastState = kTransition;
+
+    mMsgReqBackup = Hermes::Handler::Create<MReqBackup, StrategyFlow, StrategyFlow>(this, &StrategyFlow::MessageReqBackup, "ReqBackup", 0);
+    mMsgBackupDenied =
+        Hermes::Handler::Create<MReqBackup, StrategyFlow, StrategyFlow>(this, &StrategyFlow::MessageBackupDenied, "BackupDenied", 0);
+    mMsgNotifyEventCompletion = Hermes::Handler::Create<MNotifySpeechStatus, StrategyFlow, StrategyFlow>(
+        this, &StrategyFlow::MessageEventComplete, UCrc32(0x20d60dbf), 0);
 }
 
-StrategyFlow::~StrategyFlow() {}
+StrategyFlow::~StrategyFlow() {
+    if (mMsgReqBackup) {
+        Hermes::Handler::Destroy(mMsgReqBackup);
+        mMsgReqBackup = 0;
+    }
+    if (mMsgBackupDenied) {
+        Hermes::Handler::Destroy(mMsgBackupDenied);
+        mMsgBackupDenied = 0;
+    }
+    if (mMsgNotifyEventCompletion) {
+        Hermes::Handler::Destroy(mMsgNotifyEventCompletion);
+        mMsgNotifyEventCompletion = 0;
+    }
+}
 
 void StrategyFlow::Reset() {
     mFlags = 0;

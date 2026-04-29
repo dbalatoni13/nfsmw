@@ -11,9 +11,17 @@ PursuitFlow::PursuitFlow()
       mReqRestart(false), //
       mAVSUnitRammedSaid(false), //
       mSpeaker(0), //
-      mMsgNotifyEventCompletion(0) {}
+      mMsgNotifyEventCompletion(0) {
+    mMsgNotifyEventCompletion = Hermes::Handler::Create<MNotifySpeechStatus, PursuitFlow, PursuitFlow>(
+        this, &PursuitFlow::MessageEventComplete, UCrc32(0x20d60dbf), 0);
+}
 
-PursuitFlow::~PursuitFlow() {}
+PursuitFlow::~PursuitFlow() {
+    if (mMsgNotifyEventCompletion) {
+        Hermes::Handler::Destroy(mMsgNotifyEventCompletion);
+        mMsgNotifyEventCompletion = 0;
+    }
+}
 
 void PursuitFlow::OnCopRemoved(EAXCop *cop) {
     if (mFirstOnScene && cop && (mFirstOnScene->GetSpeakerID() == cop->GetSpeakerID())) {

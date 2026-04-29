@@ -22,9 +22,35 @@ RoadblockFlow::RoadblockFlow()
       mMsgNotifyEventCompletion(0) {
     mState = kWaiting;
     mLastState = kTransition;
+
+    mMsgReqHeliJoinRB =
+        Hermes::Handler::Create<MReqRoadBlock, RoadblockFlow, RoadblockFlow>(this, &RoadblockFlow::MessageReqHeliJoinRB, "ReqHeliJoinRB", 0);
+    mMsgRoadBlockDodged = Hermes::Handler::Create<MReqRoadBlock, RoadblockFlow, RoadblockFlow>(
+        this, &RoadblockFlow::MessageRoadBlockDodged, "RoadBlockDodged", 0);
+    mMsgPosition = Hermes::Handler::Create<MReqRoadBlock, RoadblockFlow, RoadblockFlow>(
+        this, &RoadblockFlow::MessagePositionUpdate, "PositionUpdate", 0);
+    mMsgNotifyEventCompletion = Hermes::Handler::Create<MNotifySpeechStatus, RoadblockFlow, RoadblockFlow>(
+        this, &RoadblockFlow::MessageEventComplete, UCrc32(0x20d60dbf), 0);
 }
 
-RoadblockFlow::~RoadblockFlow() {}
+RoadblockFlow::~RoadblockFlow() {
+    if (mMsgReqHeliJoinRB) {
+        Hermes::Handler::Destroy(mMsgReqHeliJoinRB);
+        mMsgReqHeliJoinRB = 0;
+    }
+    if (mMsgRoadBlockDodged) {
+        Hermes::Handler::Destroy(mMsgRoadBlockDodged);
+        mMsgRoadBlockDodged = 0;
+    }
+    if (mMsgPosition) {
+        Hermes::Handler::Destroy(mMsgPosition);
+        mMsgPosition = 0;
+    }
+    if (mMsgNotifyEventCompletion) {
+        Hermes::Handler::Destroy(mMsgNotifyEventCompletion);
+        mMsgNotifyEventCompletion = 0;
+    }
+}
 
 void RoadblockFlow::NailedSomethingInRB(unsigned int what) {
     mFlags |= what;
