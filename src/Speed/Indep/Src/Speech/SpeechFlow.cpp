@@ -24,9 +24,26 @@ extern "C" bool InteruptedAndNotDelayed__6SpeechPQ26Speech20ScheduledSpeechEvent
 namespace Speech {
 
 Module *Manager::m_SpeechModule[NUM_SPEECH_MODULES] = { 0, 0 };
+SPEECH_MODE Manager::m_speechMode = static_cast<SPEECH_MODE>(0);
+int Manager::m_numberSpeechBanks = 0;
+int Manager::m_SPEECH_initted = 0;
+char *Manager::m_SPEECH_bankPtrMem = 0;
+int Manager::m_speechDisable = 0;
+int Manager::m_gameSpeechInitted = 0;
+int Manager::m_NISAudioInitted = 0;
+float Manager::m_clock_in_ms = 0.0f;
+float Manager::m_timestep = 0.0f;
+float Manager::m_deadair = 0.0f;
+int Manager::mCurrentEvent = 0;
 short Manager::m_frameindex = 0;
+float Manager::mProbPlayback = 1.0f;
 short Manager::mLastSpeakerID = 0;
+SchedSpchEvents Manager::mEvents[4];
+SPCHEventList Manager::mEvtHistory;
+SpeechHashIDMap Manager::mHashMap;
+EventHistory Manager::mGlobalHistory;
 SampleReqList Manager::mSampleRequests;
+Timer Manager::mSampleReqTimer;
 
 char *GameSpeech::m_tempCharPtr = 0;
 CLUMP_IDX_FILEtag *GameSpeech::m_clumpIdx = 0;
@@ -44,7 +61,6 @@ bool SED_NISSFX::m_dataIsLoaded = false;
 namespace {
 ScheduledSpeechEvent *sQueuedEvents[256] = { 0 };
 int sQueuedEventCount = 0;
-float sPlaybackProbability = 1.0f;
 
 void CompactQueuedEvents() {
     int write = 0;
@@ -138,6 +154,16 @@ int AddHeadersImpl(char **dest, ::SPEECH_BANK *banks, int numBanks) {
 }
 
 } // namespace
+
+SpeechHashIDMap::~SpeechHashIDMap() {}
+
+EventHistory::~EventHistory() {}
+
+SchedSpchEvents::~SchedSpchEvents() {}
+
+SPCHEventList::~SPCHEventList() {}
+
+SpchSampleMap::~SpchSampleMap() {}
 
 SpeechFlow::SpeechFlow()
     : mState(0), //
@@ -530,7 +556,7 @@ int Manager::PreValidate(ScheduledSpeechEvent &evt) {
 }
 
 bool Manager::CanPlayback(Attrib::Gen::speech &) {
-    if (sPlaybackProbability <= 0.0f) {
+    if (mProbPlayback <= 0.0f) {
         return false;
     }
     return true;
@@ -541,11 +567,11 @@ void Manager::CalcProbPlayback() {
     int requested = static_cast<int>(mSampleRequests.size());
     int total = queued + requested;
     if (total <= 0) {
-        sPlaybackProbability = 1.0f;
+        mProbPlayback = 1.0f;
     } else if (total > 12) {
-        sPlaybackProbability = 0.25f;
+        mProbPlayback = 0.25f;
     } else {
-        sPlaybackProbability = 1.0f - static_cast<float>(total) * 0.05f;
+        mProbPlayback = 1.0f - static_cast<float>(total) * 0.05f;
     }
 }
 
@@ -579,7 +605,7 @@ Timer Manager::GetTimeSinceLastEvent(SpeechModuleIndex) {
 
 void Manager::ResetGlobalHistory() {
     mLastSpeakerID = 0;
-    sPlaybackProbability = 1.0f;
+    mProbPlayback = 1.0f;
 }
 
 void Manager::FlushSpeechForActor(EAXCharacter *actor) {
