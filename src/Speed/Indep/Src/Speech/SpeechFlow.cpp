@@ -360,7 +360,46 @@ void Manager::Destroy() {
 }
 
 void Manager::Deduce() {
-    Update(0.0f);
+    SchedSpchEvents deferredEvents;
+
+    while (!mEvents[0].empty()) {
+        SchedSpchEvents::iterator it = mEvents[0].begin();
+        ScheduledSpeechEvent *this_event = *it;
+        mEvents[0].erase(it);
+
+        int keep = PreValidate(*this_event);
+        if (keep == 0) {
+            mEvents[1].push_back(this_event);
+        } else if (keep == 1) {
+            mEvents[3].push_back(this_event);
+        } else if (keep == 4) {
+            deferredEvents.push_back(this_event);
+        } else {
+            delete this_event;
+        }
+    }
+
+    for (SchedSpchEvents::iterator i = deferredEvents.begin(); i != deferredEvents.end();) {
+        ScheduledSpeechEvent *deferral = *i;
+        if (PostValidate(deferral, 1U) != 0) {
+            i = deferredEvents.erase(i);
+            delete deferral;
+            continue;
+        }
+
+        Attrib::Gen::speech deferral_atr(mHashMap.GetHash(deferral->ID), 0, 0);
+        if (!deferral_atr.interrupt()) {
+            mEvents[0].push_back(deferral);
+        } else {
+            mEvents[3].push_back(deferral);
+        }
+
+        i = deferredEvents.erase(i);
+    }
+
+    ServiceFilteredEvents();
+    while (!ServiceInterruptEvents()) {
+    }
 }
 
 void Manager::Update(float) {
