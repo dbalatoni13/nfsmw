@@ -22,4 +22,6 @@
 
 #include "Speed/Indep/Src/Speech/SpeechFlow.cpp"
 
+#include "Speed/Indep/Src/EAXSound/snd_gen/copspeech.cpp"
+
 #include "Speed/Indep/Src/Speech/StrategyFlow.cpp"

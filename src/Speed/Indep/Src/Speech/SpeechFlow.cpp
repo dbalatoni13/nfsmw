@@ -2,6 +2,8 @@
 #include "Speed/Indep/Src/EAXSound/Stream/EAXS_StreamChannel.h"
 #include "Speed/Indep/Src/EAXSound/Stream/GameSpeech.hpp"
 #include "Speed/Indep/Src/EAXSound/Stream/NISSFXModule.hpp"
+#include "Speed/Indep/Src/EAXSound/snd_gen/copspeech.hpp"
+#include "Speed/Indep/Src/Misc/Config.h"
 #include "Speed/Indep/Src/Speech/SpeechFlow.h"
 
 struct CLUMP_ITEMtag {
@@ -19,6 +21,9 @@ struct CLUMP_IDX_FILEtag {
 };
 
 extern int SPCH_AddBank(char *bankHdr);
+extern int SPCH_AddEventDB(char *event_dat, unsigned int channel);
+extern int SPCH_GetBankPtrMemSize(int num_banks);
+extern int SPCH_InitBankMem(int num_banks, char *bank_ptr_mem);
 extern "C" bool InteruptedAndNotDelayed__6SpeechPQ26Speech20ScheduledSpeechEvent(Speech::ScheduledSpeechEvent *this_event);
 
 namespace Speech {
@@ -285,21 +290,63 @@ void Manager::Init(SPEECH_MODE mode) {
 }
 
 void Manager::Init2() {
-    for (int i = 0; i < NUM_SPEECH_MODULES; ++i) {
-        Module *module = m_SpeechModule[i];
-        if (module) {
-            module->LoadBanks();
+    if (IsSoundEnabled == 0 || m_SPEECH_initted != 0) {
+        return;
+    }
+
+    if (m_speechMode != SPEECH_FRONTEND_MODE) {
+        if (m_speechMode == SPEECH_GAME_MODE) {
+            if (IsSpeechEnabled && m_SpeechModule[COPSPEECH_MODULE] && m_SpeechModule[COPSPEECH_MODULE]->IsDataLoaded() && !m_gameSpeechInitted) {
+                Module *cop_speech = m_SpeechModule[COPSPEECH_MODULE];
+                m_numberSpeechBanks += cop_speech->GetNumBanks();
+                Csis::System::Subscribe(cop_speech->GetCSIptr());
+                Csis::CacheHandlesEvents();
+                SPCH_AddEventDB(cop_speech->GetEventDat(), static_cast<unsigned int>(cop_speech->GetChannel()));
+                m_gameSpeechInitted = 1;
+            }
+
+            if (IsNISAudioEnabled && m_SpeechModule[NISSFX_MODULE] && m_SpeechModule[NISSFX_MODULE]->IsDataLoaded() && !m_NISAudioInitted) {
+                Module *nis_speech = m_SpeechModule[NISSFX_MODULE];
+                m_numberSpeechBanks += nis_speech->GetNumBanks();
+                Csis::System::Subscribe(nis_speech->GetCSIptr());
+                Csis::CacheHandlesEventsNIS();
+                SPCH_AddEventDB(nis_speech->GetEventDat(), static_cast<unsigned int>(nis_speech->GetChannel()));
+                m_NISAudioInitted = 1;
+            }
+
+            if ((m_SpeechModule[COPSPEECH_MODULE] && !m_gameSpeechInitted) || (m_SpeechModule[NISSFX_MODULE] && !m_NISAudioInitted)) {
+                return;
+            }
+        } else if (m_speechMode == SPEECH_SPLITSCREEN_MODE) {
+            if (IsNISAudioEnabled && m_SpeechModule[NISSFX_MODULE] && m_SpeechModule[NISSFX_MODULE]->IsDataLoaded() && !m_NISAudioInitted) {
+                Module *nis_speech = m_SpeechModule[NISSFX_MODULE];
+                m_numberSpeechBanks += nis_speech->GetNumBanks();
+                Csis::System::Subscribe(nis_speech->GetCSIptr());
+                Csis::CacheHandlesEventsNIS();
+                SPCH_AddEventDB(nis_speech->GetEventDat(), static_cast<unsigned int>(nis_speech->GetChannel()));
+                m_NISAudioInitted = 1;
+            }
         }
     }
 
-    for (SPCHSampleRequest *it = mSampleRequests.begin(); it != mSampleRequests.end(); ++it) {
-        it->owner = 0;
-        it->sample_index = 0xFF;
+    int buffSize = SPCH_GetBankPtrMemSize(m_numberSpeechBanks);
+    m_SPEECH_bankPtrMem = gAudioMemoryManager.AllocateMemoryChar(buffSize, "AUD:Speech Bank Ptrs", false);
+    SPCH_InitBankMem(m_numberSpeechBanks, m_SPEECH_bankPtrMem);
+
+    if (m_speechMode == SPEECH_GAME_MODE) {
+        if (IsSpeechEnabled && m_SpeechModule[COPSPEECH_MODULE]) {
+            m_SpeechModule[COPSPEECH_MODULE]->LoadBanks();
+        }
+        if (IsNISAudioEnabled && m_SpeechModule[NISSFX_MODULE]) {
+            m_SpeechModule[NISSFX_MODULE]->LoadBanks();
+        }
+    } else if (m_speechMode == SPEECH_SPLITSCREEN_MODE) {
+        if (IsNISAudioEnabled && m_SpeechModule[NISSFX_MODULE]) {
+            m_SpeechModule[NISSFX_MODULE]->LoadBanks();
+        }
     }
 
-    ServiceFilteredEvents();
-    ServiceInterruptEvents();
-    CalcProbPlayback();
+    m_SPEECH_initted = 1;
 }
 
 void Manager::Destroy() {

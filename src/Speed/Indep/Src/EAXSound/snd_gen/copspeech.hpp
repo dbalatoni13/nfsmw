@@ -5,6 +5,11 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/Src/EAXSound/Csis.hpp"
 
+namespace Csis {
+System::Result CacheHandlesEvents();
+System::Result CacheHandlesEventsNIS();
+} // namespace Csis
 
 #endif
