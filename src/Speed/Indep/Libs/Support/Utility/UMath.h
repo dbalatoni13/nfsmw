@@ -381,6 +381,14 @@ inline void Cross(const Vector3 &a, const Vector3 &b, Vector3 &r) {
 #endif
 }
 
+inline void Crossxyz(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &r) {
+#ifdef EA_PLATFORM_XENON
+    // TODO
+#else
+    VU0_v4crossprodxyz(a, b, r);
+#endif
+}
+
 #ifdef EA_PLATFORM_XENON
 void UnitCross(const Vector3 &a, const Vector3 &b, Vector3 &r);
 #else
@@ -388,7 +396,6 @@ inline void UnitCross(const Vector3 &a, const Vector3 &b, Vector3 &r) {
     VU0_v3unitcrossprod(a, b, r);
 }
 #endif
-
 
 inline float Normalize(Vector3 &r) {
     float m = VU0_v3length(r);

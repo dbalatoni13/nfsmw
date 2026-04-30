@@ -8,52 +8,40 @@
 #include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Libs/Support/Utility/UStandard.h"
+#include "Speed/Indep/Libs/Support/Miscellaneous/CARP.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
 
-namespace CARP {
-struct EventStaticData;
-struct EventList;
-}
-
-struct IRigidBody;
-struct WTrigger;
-
 // total size: 0x40
-struct Trigger {
-    bool ValidateMatrix() const;
-    void MakeMatrix(UMath::Matrix4 &m, bool addXLate) const;
+class WTrigger : public CARP::Trigger {
+  public:
+    void operator delete(void *mem, size_t size) {
+        if (mem) {
+            gFastMem.Free(mem, size, nullptr);
+        }
+    }
 
-    UMath::Vector4 fMatRow0Width; // offset 0x0, size 0x10
-    unsigned int fType : 4;       // offset 0x10, size 0x4
-    unsigned int fShape : 4;      // offset 0x10, size 0x4
-    unsigned int fFlags : 24;     // offset 0x10, size 0x4
-    float fHeight;                // offset 0x14, size 0x4
-    CARP::EventList *fEvents;           // offset 0x18, size 0x4
-    unsigned short fIterStamp;    // offset 0x1C, size 0x2
-    unsigned short fFingerprint;  // offset 0x1E, size 0x2
-    UMath::Vector4 fMatRow2Length; // offset 0x20, size 0x10
-    UMath::Vector4 fPosRadius;     // offset 0x30, size 0x10
-};
-
-// total size: 0x40
-struct WTrigger : public Trigger {
     WTrigger();
     WTrigger(const UMath::Matrix4 &boxMat, const UMath::Vector3 &center, CARP::EventList *events, unsigned int type);
     ~WTrigger();
-    bool HasEvent(unsigned int eventID, const CARP::EventStaticData** foundEvent) const;
-    bool TestDirection(const UMath::Vector3& vec) const;
-    void FireEvents(HSIMABLE__ *hSimable);
-    void UpdateBox(const UMath::Matrix4& boxMat, const UMath::Vector3& center);
-    bool UpdatePos(const UMath::Vector3 &newPos, unsigned int triggerInd);
+    void FireEvents(HSIMABLE hSimable);
 
-    void Enable() { fFlags |= 1; }
-    void Disable() { fFlags &= ~1; }
-    bool IsEnabled() const { return (fFlags & 1) != 0; }
+    void Enable() {
+        fFlags |= 1;
+    }
+
+    void Disable() {
+        fFlags &= ~1;
+    }
+
+    bool IsEnabled() const {
+        return (fFlags & 1) != 0;
+    }
 
     bool IsEnabled(bool allowSilencables) const {
-        unsigned int flags = (static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(this)[0x11]) << 16)
-                           | (static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(this)[0x12]) << 8)
-                           | static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(this)[0x13]);
+        // TODO fFlags
+        unsigned int flags = (static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(this)[0x11]) << 16) |
+                             (static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(this)[0x12]) << 8) |
+                             static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(this)[0x13]);
         if (flags & 1) {
             if ((flags & 0x400) && !allowSilencables) {
                 return false;
@@ -63,11 +51,15 @@ struct WTrigger : public Trigger {
         return false;
     }
 
+    bool UpdatePos(const UMath::Vector3 &newPos, uintptr_t triggerInd);
+    void UpdateBox(const UMath::Matrix4 &boxMat, const UMath::Vector3 &center);
+
     void MakeMatrix(UMath::Matrix4 &m, bool addXLate, bool frombase) const {
         m[0][0] = fMatRow0Width.x;
         m[0][1] = fMatRow0Width.y;
         m[0][2] = fMatRow0Width.z;
         m[0][3] = 0.0f;
+        // TODO fFlags
         if ((static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(this)[0x12]) << 8) & 0x1000) {
             m[1][0] = fMatRow2Length.y * fMatRow0Width.z - fMatRow2Length.z * fMatRow0Width.y;
             m[1][1] = fMatRow2Length.z * fMatRow0Width.x - fMatRow2Length.x * fMatRow0Width.z;
@@ -98,73 +90,113 @@ struct WTrigger : public Trigger {
         m[3][3] = 1.0f;
     }
 
-    static void operator delete(void *mem, unsigned int size) { if (mem) gFastMem.Free(mem, size, nullptr); }
+    bool HasEvent(unsigned int eventID, const CARP::EventStaticData **foundEvent) const;
+    bool TestDirection(const UMath::Vector3 &vec) const;
 };
 
-struct WTriggerList : public UTL::Std::vector<WTrigger *, _type_vector> {};
+class WTriggerList : public UTL::Std::vector<WTrigger *, _type_vector> {};
 
 struct FireOnExitRec {
-    FireOnExitRec(WTrigger &trigger, HSIMABLE__ *hSimable) : mTrigger(trigger)
-        , mhSimable(hSimable) {}
+    FireOnExitRec(WTrigger &trigger, HSIMABLE hSimable) : mTrigger(trigger), mhSimable(hSimable) {}
 
     bool operator==(const FireOnExitRec &rhs) const {
         return &mTrigger == &rhs.mTrigger && mhSimable == rhs.mhSimable;
     }
 
     bool operator<(const FireOnExitRec &rhs) const {
-        if (mhSimable < rhs.mhSimable) return true;
+        if (mhSimable < rhs.mhSimable)
+            return true;
         return &mTrigger < &rhs.mTrigger;
     }
 
     WTrigger &mTrigger; // offset 0x0, size 0x4
-    HSIMABLE__ *mhSimable; // offset 0x4, size 0x4
+    HSIMABLE mhSimable; // offset 0x4, size 0x4
 };
 
 // total size: 0x10
 class FireOnExitList : public std::set<FireOnExitRec> {
   public:
-    static void *operator new(unsigned int size) { return gFastMem.Alloc(size, nullptr); }
-    static void operator delete(void *mem, unsigned int size) { if (mem) gFastMem.Free(mem, size, nullptr); }
+    void *operator new(size_t size) {
+        return gFastMem.Alloc(size, nullptr);
+    }
+
+    void operator delete(void *mem, size_t size) {
+        if (mem)
+            gFastMem.Free(mem, size, nullptr);
+    }
 };
 
 // total size: 0x10
 class WTriggerManager {
   public:
-    static void *operator new(unsigned int size) { return gFastMem.Alloc(size, nullptr); }
-    static void operator delete(void *mem, unsigned int size) { if (mem) gFastMem.Free(mem, size, nullptr); }
+    void *operator new(size_t size) {
+        return gFastMem.Alloc(size, nullptr);
+    }
+
+    void operator delete(void *mem, size_t size) {
+        if (mem)
+            gFastMem.Free(mem, size, nullptr);
+    }
 
     WTriggerManager();
     ~WTriggerManager();
 
     static void Init();
-    static void Shutdown();
+
+    static void Shutdown() {
+        delete fgTriggerManager;
+        fgTriggerManager = nullptr;
+    }
+
     static void Restart();
-    static bool Exists() { return fgTriggerManager != nullptr; }
+
+    static bool Exists() {
+        return fgTriggerManager != nullptr;
+    }
 
     static WTriggerManager &Get() {
         return *fgTriggerManager;
     }
 
-    void EnableSilencables() { fSilencableEnabled = true; }
-    void DisableSilencables() { fSilencableEnabled = false; }
-    int GetCurrentStimulus() const { return fProcessingStimulus; }
+    static void FindTriggers(unsigned int eventID, WTriggerList &triggerList);
 
-    void SubmitForFire(WTrigger &trig, HSIMABLE__ *hSimable);
-    void ProcessRB(IRigidBody *rBody, float dT);
-    void ProcessSRB(IRigidBody *srBody, float dT);
-    bool CheckCollideRB(const IRigidBody *rBody, const WTrigger *trig, float dT) const;
-    bool CheckCollideSRB(const IRigidBody *srBody, const WTrigger *trig, float dT) const;
-    void GetIntersectingTriggers(const UMath::Vector3 &pt, float radius, WTriggerList *triggerList) const;
-    void DeleteRefs(const WTrigger *trig);
-    void ClearAllFireOnExit();
     void Update(float dT);
 
-    static WTriggerManager *fgTriggerManager;
+    void EnableSilencables() {
+        fSilencableEnabled = true;
+    }
+
+    void DisableSilencables() {
+        fSilencableEnabled = false;
+    }
+
+    void ClearAllFireOnExit();
+
+    void SetTargetability(WTrigger *pTrigger, bool targetable);
+    void GetIntersectingTriggers(const UMath::Vector3 &pt, float radius, WTriggerList *triggerList) const;
+    void SubmitForFire(WTrigger &trig, HSIMABLE hSimable);
+
+    int GetCurrentStimulus() const {
+        return fProcessingStimulus;
+    }
+
+    void DeleteRefs(const WTrigger *trig);
+    void ProcessRB(IRigidBody *rBody, float dT);
+    void ProcessSRB(IRigidBody *srBody, float dT);
+
+  private:
+    bool CheckCollideRB(const IRigidBody *rBody, const WTrigger *trig, float dT) const;
+    bool CheckCollideSRB(const IRigidBody *srBody, const WTrigger *trig, float dT) const;
+    bool CheckCollide(const UMath::Vector4 *pts, float segRadius, const WTrigger *trig) const;
+    bool CheckCollide(const UMath::Vector3 &pos, float radius, const WTrigger *trig) const;
+    bool CheckCollide(const UMath::Vector3 &pos, float radius, float height, float depth, const WTrigger *trig) const;
+    void Process(int rayShellIndex);
 
     bool fSilencableEnabled;          // offset 0x0, size 0x1
     int fProcessingStimulus;          // offset 0x4, size 0x4
     FireOnExitList *fgFireOnExitList; // offset 0x8, size 0x4
-    mutable unsigned short fIterCount;        // offset 0xC, size 0x2
+    static WTriggerManager *fgTriggerManager;
+    mutable unsigned short fIterCount; // offset 0xC, size 0x2
 };
 
 #endif

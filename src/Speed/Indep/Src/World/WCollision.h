@@ -55,32 +55,34 @@ struct WCollisionStrip {
     void MakeNextFace(unsigned int ind, const UMath::Vector3 &cp, WCollisionTri &retFace) const;
 };
 
+// total size: 0x10
 struct WCollisionArticle {
-    // total size: 0x10
     void Resolve();
 
     const Attrib::Collection *GetSurface(unsigned int ind) const {
-        unsigned int ref = fStripsSize + 0x10;
-        const char *dataStart = reinterpret_cast<const char *>(this) + ref + fEdgesSize;
+        const char *dataStart = reinterpret_cast<const char *>(&this[1]) + fStripsSize + fEdgesSize;
         return reinterpret_cast<const Attrib::Collection *>(*reinterpret_cast<const unsigned int *>(dataStart + ind * 4));
     }
 
-    inline const WCollisionBarrier *GetBarrier(unsigned int ind) const;
+    const WCollisionBarrier *GetBarrier(unsigned int ind) const {
+        const char *dataStart = reinterpret_cast<const char *>(&this[1]) + fStripsSize;
+        return reinterpret_cast<const WCollisionBarrier *>(dataStart + ind * 0x10); // sizeof(WCollisionBarrier)
+    }
 
     const WCollisionStripSphere *GetStripSphere(unsigned int ind) const {
-        const char *dataStart = reinterpret_cast<const char *>(this) + 0x10;
+        const char *dataStart = reinterpret_cast<const char *>(&this[1]);
         return reinterpret_cast<const WCollisionStripSphere *>(dataStart + ind * sizeof(WCollisionStripSphere));
     }
 
-    unsigned short fNumStrips;         // offset 0x0, size 0x2
-    unsigned short fStripsSize;        // offset 0x2, size 0x2
-    unsigned short fNumEdges;          // offset 0x4, size 0x2
-    unsigned short fEdgesSize;         // offset 0x6, size 0x2
-    unsigned char fResolvedFlag;       // offset 0x8, size 0x1
-    unsigned char fNumSurfaces;        // offset 0x9, size 0x1
-    unsigned short fSurfacesSize;      // offset 0xA, size 0x2
-    unsigned short fIntermediatObjInd; // offset 0xC, size 0x2
-    short fFlags;                      // offset 0xE, size 0x2
+    short unsigned int fNumStrips;         // offset 0x0, size 0x2
+    short unsigned int fStripsSize;        // offset 0x2, size 0x2
+    short unsigned int fNumEdges;          // offset 0x4, size 0x2
+    short unsigned int fEdgesSize;         // offset 0x6, size 0x2
+    unsigned char fResolvedFlag;           // offset 0x8, size 0x1
+    unsigned char fNumSurfaces;            // offset 0x9, size 0x1
+    short unsigned int fSurfacesSize;      // offset 0xA, size 0x2
+    short unsigned int fIntermediatObjInd; // offset 0xC, size 0x2
+    short int fFlags;                      // offset 0xE, size 0x2
 };
 
 // total size: 0x20
@@ -90,7 +92,7 @@ struct WCollisionBarrier {
     }
 
     const WCollisionBarrier *Next() const {
-        return this + 1;
+        return &this[1];
     }
 
     const UMath::Vector4 *GetPts() const {
@@ -163,11 +165,6 @@ struct WCollisionBarrier {
     UMath::Vector4 fPts[2]; // offset 0x0, size 0x20
 };
 
-inline const WCollisionBarrier *WCollisionArticle::GetBarrier(unsigned int ind) const {
-    const char *dataStart = reinterpret_cast<const char *>(this) + (fStripsSize + 0x10);
-    return reinterpret_cast<const WCollisionBarrier *>(dataStart + ind * 0x20);
-}
-
 // total size: 0x28
 struct WCollisionBarrierListEntry {
     WCollisionBarrier fB;                  // offset 0x0, size 0x20
@@ -213,24 +210,25 @@ inline int IsSceneryGroupEnabled(int group_number) {
     return SceneryGroupEnabledTable[group_number];
 }
 
+// total size: 0x40
 struct WCollisionInstance : public CollisionInstance {
-    // total size: 0x40
+    void MakeMatrix(UMath::Matrix4 &m, bool addXLate) const;
+    void CalcPosition(UMath::Vector3 &pos) const;
+    const char *GetName() const;
 
-    inline bool NeedsCrossProduct() const {
+    bool NeedsCrossProduct() const {
         return (fFlags & 3) != 0;
     }
 
-    inline bool IsYVecNotUp() const {
+    float CalcSphericalRadius() const;
+
+    bool IsYVecNotUp() const {
         return (fFlags & 1) != 0;
     }
 
-    inline bool IsDynamic() const {
+    bool IsDynamic() const {
         return (fFlags & 2) != 0;
     }
-
-    float CalcSphericalRadius() const;
-    void CalcPosition(UMath::Vector3 &pos) const;
-    void MakeMatrix(UMath::Matrix4 &m, bool addXLate) const;
 };
 
 #endif

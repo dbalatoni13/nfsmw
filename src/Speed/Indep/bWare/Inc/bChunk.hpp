@@ -79,8 +79,8 @@ inline bChunk *GetLastChunk(bChunk *first_chunk, int sizeof_binary) {
 
 typedef int (*bChunkLoaderFunction)(bChunk *);
 
+// total size: 0x10
 class bChunkLoader {
-    // total size: 0x10
     bChunkLoader *Next;                    // offset 0x0, size 0x4
     unsigned int ID;                       // offset 0x4, size 0x4
     bChunkLoaderFunction LoaderFunction;   // offset 0x8, size 0x4
@@ -112,8 +112,8 @@ class bChunkLoader {
 
 typedef enum { kResolved = 1 } kCarpHeaderFlags;
 
+// total size: 0x10
 class bChunkCarpHeader {
-    // total size: 0x10
     enum kCarpHeaderFlags {
         kResolved = 1,
     };

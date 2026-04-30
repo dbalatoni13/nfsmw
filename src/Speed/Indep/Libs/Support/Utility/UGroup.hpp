@@ -6,7 +6,11 @@
 #endif
 
 inline unsigned int UDataGroupTag(unsigned int type, unsigned int index) {
-    return (type << 16) | index;
+    if (index != -1) {
+        return (type & 0xFFFF0000) | index;
+    } else {
+        return type;
+    }
 }
 
 inline unsigned int UDataGroupType(unsigned int tag) {
@@ -18,22 +22,22 @@ inline unsigned int UDataGroupIndex(unsigned int tag) {
 }
 
 struct TagStruct {
-    unsigned int tag; // offset 0x0, size 0x4
+    unsigned int tag;     // offset 0x0, size 0x4
     unsigned int data[3]; // offset 0x4, size 0xC
 };
 
 class UData {
-public:
+  public:
     // total size: 0x10
-    unsigned int fTag; // offset 0x0, size 0x4
-    unsigned int fIndexed : 1; // offset 0x4, size 0x4
-    unsigned int fEmbedded : 1; // offset 0x4, size 0x4
+    unsigned int fTag;           // offset 0x0, size 0x4
+    unsigned int fIndexed : 1;   // offset 0x4, size 0x4
+    unsigned int fEmbedded : 1;  // offset 0x4, size 0x4
     unsigned int fAllocated : 1; // offset 0x4, size 0x4
-    unsigned int fSection : 5; // offset 0x4, size 0x4
-    unsigned int fSize : 24; // offset 0x4, size 0x4
-    unsigned int fCount; // offset 0x8, size 0x4
+    unsigned int fSection : 5;   // offset 0x4, size 0x4
+    unsigned int fSize : 24;     // offset 0x4, size 0x4
+    unsigned int fCount;         // offset 0x8, size 0x4
     union {
-        void * fPointer; // offset 0x0, size 0x4
+        void *fPointer;       // offset 0x0, size 0x4
         unsigned int fOffset; // offset 0x0, size 0x4
     }; // offset 0xC, size 0x4
 
@@ -52,31 +56,21 @@ public:
     }
 };
 
-struct UGroup {
-    // total size: 0x10
+// total size: 0x10
+class UGroup {
+  public:
+    // total size: 0xC
     struct SerializationControls {
-        // total size: 0xC
         unsigned int fSuppressDuplicates; // offset 0x0, size 0x4
-        unsigned int fAlign[2]; // offset 0x4, size 0x8
+        unsigned int fAlign[2];           // offset 0x4, size 0x8
     };
+
+    // total size: 0xC
     class Processor {
-    private:
-        // total size: 0xC
-        bool mSkipData; // offset 0x0, size 0x1
+      private:
+        bool mSkipData;   // offset 0x0, size 0x1
         bool mSkipGroups; // offset 0x4, size 0x1
     };
-    unsigned int fTag; // offset 0x0, size 0x4
-    unsigned int fIndexed : 1; // offset 0x4, size 0x4
-    unsigned int fEmbedded : 1; // offset 0x4, size 0x4
-    unsigned int fAllocated : 1; // offset 0x4, size 0x4
-    unsigned int fDataSorted : 1; // offset 0x4, size 0x4
-    unsigned int fGroupSorted : 1; // offset 0x4, size 0x4
-    unsigned int fGroupCount : 27; // offset 0x4, size 0x4
-    unsigned int fDataCount; // offset 0x8, size 0x4
-    union {
-        void * fPointer; // offset 0x0, size 0x4
-        unsigned int fOffset; // offset 0x0, size 0x4
-    }; // offset 0xC, size 0x4
 
     static const UGroup *Deserialize(unsigned int numParts, const unsigned int *dataLengths, const void **serializedData, unsigned int deltaAddress);
     unsigned int GroupCountType(unsigned int type) const;
@@ -88,7 +82,7 @@ struct UGroup {
     const void *GetArray() const;
 
     const UGroup *GroupBegin() const {
-        return static_cast< const UGroup * >(GetArray());
+        return static_cast<const UGroup *>(GetArray());
     }
 
     const UGroup *GroupEnd() const {
@@ -96,7 +90,7 @@ struct UGroup {
     }
 
     const UData *DataBegin() const {
-        return reinterpret_cast< const UData * >(GroupEnd());
+        return reinterpret_cast<const UData *>(GroupEnd());
     }
 
     const UData *DataEnd() const {
@@ -110,6 +104,20 @@ struct UGroup {
     const UData *DataLocate(unsigned int type, unsigned int index) const {
         return DataLocateTag(UDataGroupTag(type, index));
     }
+
+  public:
+    unsigned int fTag;             // offset 0x0, size 0x4
+    unsigned int fIndexed : 1;     // offset 0x4, size 0x4
+    unsigned int fEmbedded : 1;    // offset 0x4, size 0x4
+    unsigned int fAllocated : 1;   // offset 0x4, size 0x4
+    unsigned int fDataSorted : 1;  // offset 0x4, size 0x4
+    unsigned int fGroupSorted : 1; // offset 0x4, size 0x4
+    unsigned int fGroupCount : 27; // offset 0x4, size 0x4
+    unsigned int fDataCount;       // offset 0x8, size 0x4
+    union {
+        void *fPointer;       // offset 0x0, size 0x4
+        unsigned int fOffset; // offset 0x0, size 0x4
+    }; // offset 0xC, size 0x4
 };
 
 #endif
