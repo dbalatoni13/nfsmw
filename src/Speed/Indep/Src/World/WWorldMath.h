@@ -8,8 +8,6 @@
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
-void VU0_v4crossprodxyz(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &r);
-
 namespace WWorldMath {
 
 inline float pow2(float a) {
@@ -23,9 +21,9 @@ inline float wmin(const float &a, const float &b) {
 }
 
 inline float wmax(const float &a, const float &b) {
-    if (a < b)
-        return b;
-    return a;
+    if (a > b)
+        return a;
+    return b;
 }
 
 inline bool InCircle(float x, float y, float cx, float cy, float r) {
@@ -37,7 +35,7 @@ inline float InvSqrt(const float f) {
 }
 
 inline float wwfabs(float a) {
-#if defined(__GNUC__) && !defined(EA_PLATFORM_PLAYSTATION2)
+#if defined(EA_PLATFORM_GAMECUBE)
     float r;
     asm("fabs %0, %1" : "=f"(r) : "f"(a));
     return r;

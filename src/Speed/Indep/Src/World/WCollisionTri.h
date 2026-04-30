@@ -67,10 +67,16 @@ struct WCollisionInstanceCacheList : public WCollisionWarnVector<const WCollisio
 
 template <typename T> class WCollisionVector : public UTL::Std::vector<T, _type_WCollisionVector> {};
 
+// total size: 0x10
 struct WCollisionBarrierList : public WCollisionVector<WCollisionBarrierListEntry> {
-    // total size: 0x10
+    void operator delete(void *mem, size_t size) {
+        if (mem) {
+            gFastMem.Free(mem, size, nullptr);
+        }
+    }
 };
 
+// total size: 0x10
 struct WCollisionTriBlock : public WCollisionVector<WCollisionTri> {
     static void *operator new(size_t size) {
         return gFastMem.Alloc(size, nullptr);
@@ -81,32 +87,51 @@ struct WCollisionTriBlock : public WCollisionVector<WCollisionTri> {
     }
 };
 
+// total size: 0x14
 struct WCollisionTriList : public WCollisionVector<WCollisionTriBlock *> {
-    // total size: 0x14
+    void operator delete(void *mem, size_t size) {
+        if (mem) {
+            gFastMem.Free(mem, size, nullptr);
+        }
+    }
+
     WCollisionTriList() : mCurrBlock(nullptr) {}
+
     ~WCollisionTriList() {
         clear_all();
     }
 
-    inline void clear_all() {
-        for (WCollisionTriBlock **i = begin(); i != end(); ++i) {
+    void clear_all() {
+        for (iterator i = begin(); i != end(); ++i) {
             delete *i;
         }
         clear();
         mCurrBlock = nullptr;
     }
-    inline void add_tri(const WCollisionTri &tri) {
+
+    void add_tri(const WCollisionTri &tri) {
         if (mCurrBlock == nullptr || mCurrBlock->size() == mCurrBlock->capacity()) {
             mCurrBlock = new WCollisionTriBlock();
-            mCurrBlock->reserve(0x15);
+            mCurrBlock->reserve(21);
             push_back(mCurrBlock);
         }
         mCurrBlock->push_back(tri);
     }
 
+    // TODO doesn't exist on PS2
+    void reserve_total() {
+        reserve(8);
+    }
+
     WCollisionTriBlock *mCurrBlock; // offset 0x10, size 0x4
 };
 
-struct WCollisionObjectList : public WCollisionVector<const WCollisionObject *> {};
+struct WCollisionObjectList : public WCollisionVector<const WCollisionObject *> {
+    void operator delete(void *mem, size_t size) {
+        if (mem) {
+            gFastMem.Free(mem, size, nullptr);
+        }
+    }
+};
 
 #endif

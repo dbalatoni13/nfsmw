@@ -33,14 +33,14 @@ WTrigger::WTrigger(const UMath::Matrix4 &mat, const UMath::Vector3 &dimensions, 
     fMatRow2Length.w = dimensions.z + dimensions.z;
 }
 
-bool WTrigger::HasEvent(unsigned int eventID, const CARP::EventStaticData** foundEvent) const {
+bool WTrigger::HasEvent(unsigned int eventID, const CARP::EventStaticData **foundEvent) const {
     if (fEvents != nullptr) {
         return EventManager::ListHasEvent(fEvents, eventID, foundEvent);
     }
     return false;
 }
 
-bool WTrigger::TestDirection(const UMath::Vector3& vec) const {
+bool WTrigger::TestDirection(const UMath::Vector3 &vec) const {
     return UMath::Dot(UMath::Vector4To3(fMatRow2Length), vec) >= 0.0f;
 }
 
@@ -64,11 +64,11 @@ void WTrigger::FireEvents(HSIMABLE__ *hSimable) {
     }
 }
 
-int LoaderTrigger(bChunk* chunk) {
+int LoaderTrigger(bChunk *chunk) {
     return 0;
 }
 
-int UnloaderTrigger(bChunk* chunk) {
+int UnloaderTrigger(bChunk *chunk) {
     return 0;
 }
 
@@ -76,8 +76,10 @@ WTriggerManager *WTriggerManager::fgTriggerManager;
 
 WTriggerManager::WTriggerManager()
     : fSilencableEnabled(true) //
-    , fIterCount(0) //
-    , fgFireOnExitList(nullptr) {
+      ,
+      fIterCount(0) //
+      ,
+      fgFireOnExitList(nullptr) {
     fgFireOnExitList = new FireOnExitList();
 }
 
@@ -153,8 +155,8 @@ void WTriggerManager::SubmitForFire(WTrigger &trig, HSIMABLE__ *hSimable) {
 
 void WTriggerManager::Update(float dT) {
     fProcessingStimulus = 1;
-    IRigidBody * const *enditer = IRigidBody::GetList().end();
-    for (IRigidBody * const *iter = IRigidBody::GetList().begin(); iter != enditer; ++iter) {
+    IRigidBody *const *enditer = IRigidBody::GetList().end();
+    for (IRigidBody *const *iter = IRigidBody::GetList().begin(); iter != enditer; ++iter) {
         IRigidBody *rigidBody = *iter;
         if (rigidBody->IsSimple()) {
             ProcessSRB(rigidBody, dT);
@@ -202,13 +204,11 @@ WTrigger::~WTrigger() {
     }
 }
 
-void WTrigger::UpdateBox(const UMath::Matrix4& mat, const UMath::Vector3& dimension) {
+void WTrigger::UpdateBox(const UMath::Matrix4 &mat, const UMath::Vector3 &dimension) {
     UMath::Vector4 oldPosRad = fPosRadius;
     unsigned int b11 = reinterpret_cast<const unsigned char *>(this)[0x11] << 16;
-    unsigned int flags = reinterpret_cast<const unsigned char *>(this)[0x13]
-                       | (reinterpret_cast<const unsigned char *>(this)[0x12] << 8
-                        | b11);
-    CARP::EventList* eventList = fEvents;
+    unsigned int flags = reinterpret_cast<const unsigned char *>(this)[0x13] | (reinterpret_cast<const unsigned char *>(this)[0x12] << 8 | b11);
+    CARP::EventList *eventList = fEvents;
 
     memcpy(this, &mat, sizeof(UMath::Matrix4));
 
@@ -237,7 +237,7 @@ void WTrigger::UpdateBox(const UMath::Matrix4& mat, const UMath::Vector3& dimens
     WGridManagedDynamicElem::AddElem(&oldPosRad, &fPosRadius, WGrid_kTrigger, reinterpret_cast<unsigned int>(this));
 }
 
-bool WTrigger::UpdatePos(const UMath::Vector3 &newPos, unsigned int triggerInd) {
+bool WTrigger::UpdatePos(const UMath::Vector3 &newPos, uintptr_t triggerInd) {
     UMath::Vector4 oldPosRad = fPosRadius;
     fPosRadius.x = newPos.x;
     fPosRadius.y = newPos.y;
@@ -267,9 +267,10 @@ void WTriggerManager::ProcessRB(IRigidBody *rBody, float dT) {
                 if (trig.fIterStamp != fIterCount) {
                     trig.fIterStamp = fIterCount;
                     if (trig.IsEnabled(fSilencableEnabled) &&
-                        (((static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(&trig)[0x11]) << 16)
-                        | (static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(&trig)[0x12]) << 8)
-                        | static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(&trig)[0x13])) & activateFlag) != 0 &&
+                        (((static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(&trig)[0x11]) << 16) |
+                          (static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(&trig)[0x12]) << 8) |
+                          static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(&trig)[0x13])) &
+                         activateFlag) != 0 &&
                         CheckCollideRB(rBody, &trig, dT)) {
                         HSIMABLE__ *hSimable = rBody->GetOwner()->GetInstanceHandle();
                         SubmitForFire(trig, hSimable);
@@ -301,9 +302,10 @@ void WTriggerManager::ProcessSRB(IRigidBody *srBody, float dT) {
                 if (trig.fIterStamp != fIterCount) {
                     trig.fIterStamp = fIterCount;
                     if (trig.IsEnabled(fSilencableEnabled) &&
-                        (((static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(&trig)[0x11]) << 16)
-                        | (static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(&trig)[0x12]) << 8)
-                        | static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(&trig)[0x13])) & activateFlag) != 0) {
+                        (((static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(&trig)[0x11]) << 16) |
+                          (static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(&trig)[0x12]) << 8) |
+                          static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(&trig)[0x13])) &
+                         activateFlag) != 0) {
                         if (srBody->GetOwner()->IsOwnedByPlayer() || !(reinterpret_cast<const unsigned char *>(&trig)[0x13] & 0x80)) {
                             if (CheckCollideSRB(srBody, &trig, dT)) {
                                 HSIMABLE__ *hSimable = srBody->GetOwner()->GetInstanceHandle();
@@ -366,7 +368,8 @@ bool WTriggerManager::CheckCollideRB(const IRigidBody *rBody, const WTrigger *tr
                 trigDimension.x = trig->fMatRow0Width.w * 0.5f;
                 trigDimension.y = trig->fHeight * 0.5f;
                 trigDimension.z = trig->fMatRow2Length.w * 0.5f;
-                Dynamics::Collision::Geometry trigOBB(m, UMath::Vector4To3(trigPos), trigDimension, Dynamics::Collision::Geometry::BOX, UMath::Vector3::kZero);
+                Dynamics::Collision::Geometry trigOBB(m, UMath::Vector4To3(trigPos), trigDimension, Dynamics::Collision::Geometry::BOX,
+                                                      UMath::Vector3::kZero);
                 if (Dynamics::Collision::Geometry::FindIntersection(&carOBB, &trigOBB, &carOBB)) {
                     return true;
                 }
@@ -416,7 +419,8 @@ bool WTriggerManager::CheckCollideSRB(const IRigidBody *srBody, const WTrigger *
         trigDimension.x = trig->fMatRow0Width.w * 0.5f;
         trigDimension.y = trig->fHeight * 0.5f;
         trigDimension.z = trig->fMatRow2Length.w * 0.5f;
-        Dynamics::Collision::Geometry trigOBB(m, UMath::Vector4To3(trigPos), trigDimension, Dynamics::Collision::Geometry::BOX, UMath::Vector3::kZero);
+        Dynamics::Collision::Geometry trigOBB(m, UMath::Vector4To3(trigPos), trigDimension, Dynamics::Collision::Geometry::BOX,
+                                              UMath::Vector3::kZero);
         if (Dynamics::Collision::Geometry::FindIntersection(&trigOBB, &srbOBB, &trigOBB)) {
             return true;
         }
@@ -436,8 +440,7 @@ bool WTriggerManager::CheckCollideSRB(const IRigidBody *srBody, const WTrigger *
                     return false;
                 }
             }
-            if (rPos.y + srRadius >= trig->fPosRadius.y - trig->fHeight * 0.5f &&
-                rPos.y - srRadius < trig->fPosRadius.y + trig->fHeight * 0.5f) {
+            if (rPos.y + srRadius >= trig->fPosRadius.y - trig->fHeight * 0.5f && rPos.y - srRadius < trig->fPosRadius.y + trig->fHeight * 0.5f) {
                 return true;
             }
         }

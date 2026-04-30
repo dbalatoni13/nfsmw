@@ -33,15 +33,15 @@ struct CollisionObject {
 // TODO move to CARP?
 // total size: 0x40
 struct CollisionInstance {
-    bVector4 fInvMatRow0Width;                         // offset 0x0, size 0x10
-    unsigned short fIterStamp;                         // offset 0x10, size 0x2
-    unsigned short fFlags;                             // offset 0x12, size 0x2
-    float fHeight;                                     // offset 0x14, size 0x4
-    unsigned short fGroupNumber;                       // offset 0x18, size 0x2
-    unsigned short fRenderInstanceInd;                 // offset 0x1A, size 0x2
-    const struct WCollisionArticle *fCollisionArticle; // offset 0x1C, size 0x4
-    bVector4 fInvMatRow2Length;                        // offset 0x20, size 0x10
-    bVector4 fInvPosRadius;                            // offset 0x30, size 0x10
+    bVector4 fInvMatRow0Width;                                 // offset 0x0, size 0x10
+    unsigned short fIterStamp;                                 // offset 0x10, size 0x2
+    mutable unsigned short fFlags;                             // offset 0x12, size 0x2
+    float fHeight;                                             // offset 0x14, size 0x4
+    unsigned short fGroupNumber;                               // offset 0x18, size 0x2
+    unsigned short fRenderInstanceInd;                         // offset 0x1A, size 0x2
+    mutable const struct WCollisionArticle *fCollisionArticle; // offset 0x1C, size 0x4
+    bVector4 fInvMatRow2Length;                                // offset 0x20, size 0x10
+    bVector4 fInvPosRadius;                                    // offset 0x30, size 0x10
 };
 
 struct CollisionPacket {

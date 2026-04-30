@@ -2,18 +2,13 @@
 
 #include "Speed/Indep/Src/Sim/SimSurface.h"
 
-static const unsigned int kWCollisionArticleGroupTag = 0x41727469;
-static const unsigned int kWCollisionInstanceTag = 0x63690000;
-static const unsigned int kWCollisionObjectTag = 0x636F0000;
-static const unsigned int kDefaultCollisionArticleTag = 0x63612020;
-
 WCollisionPack::WCollisionPack(bChunk *chunk)
-    : mSectionNumber(0),            //
-      mInstanceNum(0),              //
-      mInstanceList(nullptr),       //
-      mObjectNum(0),                //
-      mObjectList(nullptr),         //
-      mCarpChunkHeader(reinterpret_cast<bChunkCarpHeader *>(chunk->GetAlignedData(0x10))) {
+    : mSectionNumber(0),      //
+      mInstanceNum(0),        //
+      mInstanceList(nullptr), //
+      mObjectNum(0),          //
+      mObjectList(nullptr),   //
+      mCarpChunkHeader(reinterpret_cast<bChunkCarpHeader *>(chunk->GetAlignedData(16))) {
     Init(chunk);
 }
 
@@ -22,37 +17,35 @@ WCollisionPack::~WCollisionPack() {
 }
 
 void WCollisionPack::Init(bChunk *chunk) {
-    const void *carpSource;
-    int carpSize[1];
-    unsigned int deltaRelocationOffset;
-    const UGroup *carpGroup;
-
-    if (mCarpChunkHeader->GetFlags() & 1) {
-    } else {
+    if (!mCarpChunkHeader->IsResolved()) {
         mCarpChunkHeader->PlatformEndianSwap();
     }
 
-    carpSource = mCarpChunkHeader + 1;
     mSectionNumber = mCarpChunkHeader->GetSectionNumber();
-    deltaRelocationOffset = 0;
-    carpSize[0] = mCarpChunkHeader->GetCarpSize();
+    {
+        void *crpData = mCarpChunkHeader + 1;
+        const int carpSourceCount = 1;
+        const void *carpSource[1] = {crpData};
+        int carpSize[carpSourceCount];
+        unsigned int deltaRelocationOffset = 0;
+        carpSize[0] = mCarpChunkHeader->GetCarpSize();
 
-    if (mCarpChunkHeader->GetFlags() & 1) {
-        deltaRelocationOffset =
-            reinterpret_cast<unsigned int>(mCarpChunkHeader) - reinterpret_cast<unsigned int>(mCarpChunkHeader->GetLastAddress());
+        if (mCarpChunkHeader->IsResolved()) {
+            deltaRelocationOffset = reinterpret_cast<uintptr_t>(mCarpChunkHeader) - reinterpret_cast<uintptr_t>(mCarpChunkHeader->GetLastAddress());
+        }
+
+        const UGroup *carpGroup;
+        const UGroup *cGroup;
+        if (mCarpChunkHeader != mCarpChunkHeader->GetLastAddress()) {
+            carpGroup = UGroup::Deserialize(carpSourceCount, reinterpret_cast<unsigned int *>(carpSize), carpSource, deltaRelocationOffset);
+        } else {
+            carpGroup = reinterpret_cast<const UGroup *>(carpSource[0]);
+        }
+
+        Resolve(carpGroup->GroupLocate(0x41720000, 0x7469), 0);
+        mCarpChunkHeader->SetLastAddress(mCarpChunkHeader);
+        mCarpChunkHeader->SetResolved();
     }
-
-    if (mCarpChunkHeader != mCarpChunkHeader->GetLastAddress()) {
-        carpGroup = UGroup::Deserialize(1, reinterpret_cast<unsigned int *>(carpSize), &carpSource, deltaRelocationOffset);
-    } else {
-        carpGroup = reinterpret_cast<const UGroup *>(carpSource);
-    }
-
-    Resolve(carpGroup->GroupLocateTag(kWCollisionArticleGroupTag), 0);
-    mCarpChunkHeader->SetLastAddress(mCarpChunkHeader);
-    mCarpChunkHeader->SetResolved();
-
-    (void)chunk;
 }
 
 void WCollisionPack::DeInit() {
@@ -65,33 +58,29 @@ void WCollisionPack::DeInit() {
 
 void WCollisionArticle::Resolve() {
     if (!fResolvedFlag) {
-        for (int i = 0; i < fNumSurfaces; ++i) {
-            unsigned int *surfaceData = reinterpret_cast<unsigned int *>(reinterpret_cast<char *>(this) + (fStripsSize + 0x10) + fEdgesSize);
-            UCrc32 crc(surfaceData[i]);
-            surfaceData[i] = reinterpret_cast<unsigned int>(SimSurface::Lookup(crc));
+        for (int ind = 0; ind < fNumSurfaces; ++ind) {
+            char *dataStart = reinterpret_cast<char *>(reinterpret_cast<char *>(&this[1]) + fStripsSize + fEdgesSize);
+            unsigned int hash = reinterpret_cast<unsigned int *>(dataStart)[ind];
+            // TODO 64 bit, gotta reallocate and use uintptr_t
+            reinterpret_cast<unsigned int *>(dataStart)[ind] = reinterpret_cast<unsigned int>(SimSurface::Lookup(hash));
         }
         fResolvedFlag = true;
     }
 }
 
 void WCollisionPack::Resolve(const UGroup *cGroup, unsigned int deltaAddress) {
-    unsigned int i = 0;
-    const UData *instanceUData = cGroup->DataLocateTag(kWCollisionInstanceTag);
-    const UData *objectUData = cGroup->DataLocateTag(kWCollisionObjectTag);
+    const UData *instanceUData = cGroup->DataLocate(0x63690000, 0);
+    const UData *objectUData = cGroup->DataLocate(0x636F0000, 0);
 
-    if (instanceUData != reinterpret_cast<const UData *>(
-                             reinterpret_cast<unsigned int>(cGroup->GetArray()) + cGroup->fGroupCount * sizeof(UGroup) +
-                             cGroup->fDataCount * sizeof(UData))) {
+    if (instanceUData != cGroup->DataEnd()) {
         mInstanceList = reinterpret_cast<const WCollisionInstance *>(instanceUData->GetDataConst());
         mInstanceNum = instanceUData->DataCount();
     } else {
         mInstanceList = nullptr;
-        mInstanceNum = i;
+        mInstanceNum = 0;
     }
 
-    if (objectUData != reinterpret_cast<const UData *>(
-                            reinterpret_cast<unsigned int>(cGroup->GetArray()) + cGroup->fGroupCount * sizeof(UGroup) +
-                            cGroup->fDataCount * sizeof(UData))) {
+    if (objectUData != cGroup->DataEnd()) {
         mObjectList = reinterpret_cast<const WCollisionObject *>(objectUData->GetDataConst());
         mObjectNum = objectUData->DataCount();
     } else {
@@ -99,21 +88,12 @@ void WCollisionPack::Resolve(const UGroup *cGroup, unsigned int deltaAddress) {
         mObjectNum = 0;
     }
 
-    i = 0;
-    for (; i < mInstanceNum; ++i) {
-        WCollisionInstance *cInst = const_cast<WCollisionInstance *>(&mInstanceList[i]);
+    for (unsigned int i = 0; i < mInstanceNum; ++i) {
+        const WCollisionInstance *cInst = &mInstanceList[i];
         if (deltaAddress == 0) {
-            unsigned int articleTag = kDefaultCollisionArticleTag;
-            int renderInstanceInd = cInst->fRenderInstanceInd;
-            if (renderInstanceInd != -1) {
-                articleTag = 0x63610000 | renderInstanceInd;
-            }
-
-            const UData *articleUData = cGroup->DataLocateTag(articleTag);
+            const UData *articleUData = cGroup->DataLocate(0x63612020, cInst->fRenderInstanceInd);
             WCollisionArticle *cArt;
-            if (articleUData != reinterpret_cast<const UData *>(
-                                    reinterpret_cast<unsigned int>(cGroup->GetArray()) + cGroup->fGroupCount * sizeof(UGroup) +
-                                    cGroup->fDataCount * sizeof(UData))) {
+            if (articleUData != cGroup->DataEnd()) {
                 cArt = reinterpret_cast<WCollisionArticle *>(const_cast<void *>(articleUData->GetDataConst()));
             } else {
                 cArt = nullptr;
@@ -123,9 +103,9 @@ void WCollisionPack::Resolve(const UGroup *cGroup, unsigned int deltaAddress) {
             if (cArt) {
                 cArt->Resolve();
             }
-        } else if (cInst->fCollisionArticle != nullptr) {
+        } else if (cInst->fCollisionArticle) {
             cInst->fCollisionArticle =
-                reinterpret_cast<const WCollisionArticle *>(reinterpret_cast<unsigned int>(cInst->fCollisionArticle) + deltaAddress);
+                reinterpret_cast<const WCollisionArticle *>(reinterpret_cast<const char *>(cInst->fCollisionArticle) + deltaAddress);
         }
     }
 }

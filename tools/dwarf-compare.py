@@ -24,7 +24,13 @@ import sys
 import tempfile
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Set, Tuple
 
-from _common import ROOT_DIR, ToolError, find_objdiff_unit, load_objdiff_config, make_abs
+from _common import (
+    ROOT_DIR,
+    ToolError,
+    find_objdiff_unit,
+    load_objdiff_config,
+    make_abs,
+)
 from dwarf1_gcc_line_info import process_file as export_debug_lines
 from lookup import (
     _candidate_func_names,
@@ -40,7 +46,7 @@ SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 TOOLS_DIR = os.path.join(ROOT_DIR, "tools")
 GC_DWARF = os.path.join(ROOT_DIR, "symbols", "Dwarf")
 DTK = os.path.join(ROOT_DIR, "build", "tools", "dtk")
-HEX_RE = re.compile(r"0x[0-9A-Fa-f]+")
+HEX_RE = re.compile(r"(?<!\+)0x[0-9A-Fa-f]+")
 RANGE_RE = re.compile(r"^(\s*)// Range:\s*(0x[0-9A-Fa-f]+)\s*->\s*(0x[0-9A-Fa-f]+)")
 DEBUG_LINE_RE = re.compile(
     r"^\s*(?:0x)?([0-9A-Fa-f]+):\s*(.+?)\s+\(line\s+(\d+)(?:,\s+column\s+(\d+))?\)\s*$"
@@ -96,7 +102,9 @@ def get_unit_build_output(unit_name: str) -> str:
 
     target = unit.get("base_path") or unit.get("target_path")
     if not target:
-        raise DwarfCompareError(f"Unit has no build target in objdiff.json: {unit_name}")
+        raise DwarfCompareError(
+            f"Unit has no build target in objdiff.json: {unit_name}"
+        )
     return make_abs(str(target)) or str(target)
 
 
@@ -135,7 +143,9 @@ def dtk_dwarf_dump(obj_path: str) -> str:
         )
 
     if not os.path.exists(output_path):
-        raise DwarfCompareError("dtk dwarf dump succeeded but did not write an output file")
+        raise DwarfCompareError(
+            "dtk dwarf dump succeeded but did not write an output file"
+        )
 
     return output_path
 
@@ -153,7 +163,9 @@ def load_function_blocks(
     return split_functions(text)
 
 
-def find_function_blocks(funcs: Iterable[FunctionBlock], query: str) -> List[FunctionBlock]:
+def find_function_blocks(
+    funcs: Iterable[FunctionBlock], query: str
+) -> List[FunctionBlock]:
     candidates = _candidate_func_names(query)
     matches: List[FunctionBlock] = []
     exact_substring_matches: List[FunctionBlock] = []
@@ -254,7 +266,9 @@ def canonical_debug_path(debug_path: str) -> str:
     if "/speed/indep/" in lowered:
         indep_index = lowered.index("/speed/indep/")
         suffix = normalized[indep_index + len("/speed/indep/") :].lstrip("/")
-        return os.path.normpath("src/Speed/Indep/" + suffix.lstrip("/")).replace("\\", "/")
+        return os.path.normpath("src/Speed/Indep/" + suffix.lstrip("/")).replace(
+            "\\", "/"
+        )
     return os.path.normpath(normalized).replace("\\", "/")
 
 
@@ -299,7 +313,9 @@ def ensure_debug_lines_cache_db(path: str) -> str:
             )
             """
         )
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_entries_address ON entries(address)")
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_entries_address ON entries(address)"
+        )
         conn.execute(
             """
             CREATE TABLE IF NOT EXISTS metadata (
@@ -365,7 +381,9 @@ def ensure_debug_lines_cache_db(path: str) -> str:
     return db_path
 
 
-def load_debug_line_entries(path: str, addresses: Set[int]) -> Dict[int, List[Dict[str, Any]]]:
+def load_debug_line_entries(
+    path: str, addresses: Set[int]
+) -> Dict[int, List[Dict[str, Any]]]:
     entries: Dict[int, List[Dict[str, Any]]] = {}
     if not addresses:
         return entries
@@ -480,10 +498,12 @@ def align_range_entries(
     rebuilt_entries: Sequence[Dict[str, Any]],
 ) -> List[Tuple[Optional[Dict[str, Any]], Optional[Dict[str, Any]]]]:
     original_keys = [
-        f"{entry['indent']}|{normalized_signature_key(entry['signature'])}" for entry in original_entries
+        f"{entry['indent']}|{normalized_signature_key(entry['signature'])}"
+        for entry in original_entries
     ]
     rebuilt_keys = [
-        f"{entry['indent']}|{normalized_signature_key(entry['signature'])}" for entry in rebuilt_entries
+        f"{entry['indent']}|{normalized_signature_key(entry['signature'])}"
+        for entry in rebuilt_entries
     ]
     matcher = difflib.SequenceMatcher(a=original_keys, b=rebuilt_keys)
     aligned: List[Tuple[Optional[Dict[str, Any]], Optional[Dict[str, Any]]]] = []
@@ -522,8 +542,12 @@ def build_range_source_summary(
     aligned_entries = align_range_entries(original_entries, rebuilt_entries)
     original_addresses = {int(entry["start_address"]) for entry in original_entries}
     rebuilt_addresses = {int(entry["start_address"]) for entry in rebuilt_entries}
-    original_debug_lines = load_debug_line_entries(original_debug_lines_path, original_addresses)
-    rebuilt_debug_lines = load_debug_line_entries(rebuilt_debug_lines_path, rebuilt_addresses)
+    original_debug_lines = load_debug_line_entries(
+        original_debug_lines_path, original_addresses
+    )
+    rebuilt_debug_lines = load_debug_line_entries(
+        rebuilt_debug_lines_path, rebuilt_addresses
+    )
 
     rows: List[Dict[str, Any]] = []
     file_match_count = 0
@@ -540,7 +564,9 @@ def build_range_source_summary(
             else []
         )
         original_locations = (
-            dedupe_source_locations(original_items) if original_entry is not None else []
+            dedupe_source_locations(original_items)
+            if original_entry is not None
+            else []
         )
         rebuilt_locations = (
             dedupe_source_locations(rebuilt_items) if rebuilt_entry is not None else []
@@ -551,22 +577,26 @@ def build_range_source_summary(
         rebuilt_files_display = (
             dedupe_source_files(rebuilt_items) if rebuilt_entry is not None else []
         )
-        original_norm = {
-            item["normalized"]
-            for item in original_items
-        } if original_entry is not None else set()
-        original_files = {
-            item["normalized_file"]
-            for item in original_items
-        } if original_entry is not None else set()
-        rebuilt_norm = {
-            item["normalized"]
-            for item in rebuilt_items
-        } if rebuilt_entry is not None else set()
-        rebuilt_files = {
-            item["normalized_file"]
-            for item in rebuilt_items
-        } if rebuilt_entry is not None else set()
+        original_norm = (
+            {item["normalized"] for item in original_items}
+            if original_entry is not None
+            else set()
+        )
+        original_files = (
+            {item["normalized_file"] for item in original_items}
+            if original_entry is not None
+            else set()
+        )
+        rebuilt_norm = (
+            {item["normalized"] for item in rebuilt_items}
+            if rebuilt_entry is not None
+            else set()
+        )
+        rebuilt_files = (
+            {item["normalized_file"] for item in rebuilt_items}
+            if rebuilt_entry is not None
+            else set()
+        )
         common_files = [
             path
             for path in original_files_display
@@ -585,12 +615,20 @@ def build_range_source_summary(
             if os.path.normpath(path.replace("\\", "/")).replace("\\", "/").lower()
             not in original_files
         ]
-        if original_entry is not None and rebuilt_entry is not None and original_files == rebuilt_files:
+        if (
+            original_entry is not None
+            and rebuilt_entry is not None
+            and original_files == rebuilt_files
+        ):
             file_status = "match"
             file_match_count += 1
         else:
             file_status = "mismatch"
-        if original_entry is not None and rebuilt_entry is not None and original_norm == rebuilt_norm:
+        if (
+            original_entry is not None
+            and rebuilt_entry is not None
+            and original_norm == rebuilt_norm
+        ):
             exact_status = "match"
             exact_match_count += 1
         else:
@@ -600,8 +638,12 @@ def build_range_source_summary(
                 "file_status": file_status,
                 "exact_status": exact_status,
                 "indent": (original_entry or rebuilt_entry or {}).get("indent", 0),
-                "line_number": (original_entry or rebuilt_entry or {}).get("line_index"),
-                "signature": (original_entry or rebuilt_entry or {}).get("signature", "<missing>"),
+                "line_number": (original_entry or rebuilt_entry or {}).get(
+                    "line_index"
+                ),
+                "signature": (original_entry or rebuilt_entry or {}).get(
+                    "signature", "<missing>"
+                ),
                 "original_locations": original_locations,
                 "rebuilt_locations": rebuilt_locations,
                 "common_files": common_files,
@@ -618,7 +660,9 @@ def build_range_source_summary(
     }
 
 
-def count_lines_for_opcodes(opcodes: Sequence[Tuple[str, int, int, int, int]]) -> Dict[str, int]:
+def count_lines_for_opcodes(
+    opcodes: Sequence[Tuple[str, int, int, int, int]],
+) -> Dict[str, int]:
     matching = 0
     original_only = 0
     rebuilt_only = 0
@@ -656,7 +700,9 @@ def build_diff_lines(
     ]
 
     matcher = difflib.SequenceMatcher(a=original_lines, b=rebuilt_lines)
-    for group in matcher.get_grouped_opcodes(context if collapse else max(len(original_lines), len(rebuilt_lines))):
+    for group in matcher.get_grouped_opcodes(
+        context if collapse else max(len(original_lines), len(rebuilt_lines))
+    ):
         first = group[0]
         last = group[-1]
         a_start = first[1] + 1
@@ -700,7 +746,9 @@ def build_report(
     counts = count_lines_for_opcodes(opcodes)
     total_lines = max(len(original_lines), len(rebuilt_lines), 1)
     match_percent = 100.0 * counts["matching_lines"] / total_lines
-    signature_match = normalize_line(original_block[2]) == normalize_line(rebuilt_block[2])
+    signature_match = normalize_line(original_block[2]) == normalize_line(
+        rebuilt_block[2]
+    )
     raw_exact_match = original_raw == rebuilt_raw
     normalized_exact_match = original_lines == rebuilt_lines
 
@@ -716,11 +764,15 @@ def build_report(
         if tag == "equal":
             continue
         original_span = (
-            f"L{i1 + 1:04d}" if i2 - i1 <= 1 else f"L{i1 + 1:04d}-L{i2:04d}"
-        ) if tag in ("replace", "delete") else "-"
+            (f"L{i1 + 1:04d}" if i2 - i1 <= 1 else f"L{i1 + 1:04d}-L{i2:04d}")
+            if tag in ("replace", "delete")
+            else "-"
+        )
         rebuilt_span = (
-            f"L{j1 + 1:04d}" if j2 - j1 <= 1 else f"L{j1 + 1:04d}-L{j2:04d}"
-        ) if tag in ("replace", "insert") else "-"
+            (f"L{j1 + 1:04d}" if j2 - j1 <= 1 else f"L{j1 + 1:04d}-L{j2:04d}")
+            if tag in ("replace", "insert")
+            else "-"
+        )
 
         if tag == "replace" and i2 - i1 == 1 and j2 - j1 == 1:
             detail = f"{original_lines[i1]} -> {rebuilt_lines[j1]}"
@@ -733,9 +785,7 @@ def build_report(
                 f"replaced {i2 - i1} original line(s) with "
                 f"{j2 - j1} rebuilt line(s)"
             )
-        mismatch_summaries.append(
-            f"- {original_span} -> {rebuilt_span}: {detail}"
-        )
+        mismatch_summaries.append(f"- {original_span} -> {rebuilt_span}: {detail}")
 
     range_sources = build_range_source_summary(
         original_block,
@@ -786,13 +836,18 @@ def print_summary(report: Dict[str, Any]) -> None:
     if report["normalized_exact_match"] and not report["raw_exact_match"]:
         print("Raw textual exact match: no (only raw addresses/ranges differ)")
     else:
-        print(f"Raw textual exact match: {'yes' if report['raw_exact_match'] else 'no'}")
+        print(
+            f"Raw textual exact match: {'yes' if report['raw_exact_match'] else 'no'}"
+        )
     print(
         "Address-only range differences are normalized out so the percentage tracks "
         "structural/function-body DWARF changes."
     )
     if report["range_sources"].get("available"):
-        line_drifts = report["range_sources"]["file_matches"] - report["range_sources"]["exact_matches"]
+        line_drifts = (
+            report["range_sources"]["file_matches"]
+            - report["range_sources"]["exact_matches"]
+        )
         print(
             f"Range source ownership: files agree {report['range_sources']['file_matches']}/"
             f"{report['range_sources']['total']}"
@@ -816,7 +871,9 @@ def print_diff(report: Dict[str, Any]) -> None:
         line_drifts = []
     elif report["range_sources"]["rows"]:
         file_mismatches = [
-            row for row in report["range_sources"]["rows"] if row["file_status"] != "match"
+            row
+            for row in report["range_sources"]["rows"]
+            if row["file_status"] != "match"
         ]
         line_drifts = [
             row
@@ -842,12 +899,8 @@ def print_diff(report: Dict[str, Any]) -> None:
                 print(
                     f"  rebuilt-only files:  {render_list(row['rebuilt_only_files'])}"
                 )
-            print(
-                f"  original lines:      {render_list(row['original_locations'])}"
-            )
-            print(
-                f"  rebuilt lines:       {render_list(row['rebuilt_locations'])}"
-            )
+            print(f"  original lines:      {render_list(row['original_locations'])}")
+            print(f"  rebuilt lines:       {render_list(row['rebuilt_locations'])}")
         if line_drifts:
             print()
             print(
@@ -880,7 +933,9 @@ def build_parser() -> argparse.ArgumentParser:
         )
     )
     parser.add_argument("-u", "--unit", required=True, help="Translation unit name")
-    parser.add_argument("-f", "--function", required=True, help="Function name to compare")
+    parser.add_argument(
+        "-f", "--function", required=True, help="Function name to compare"
+    )
     parser.add_argument(
         "--summary",
         action="store_true",
@@ -953,8 +1008,12 @@ def main() -> None:
             apply_split_fixups_in_ram=True,
         )
 
-        original_block = choose_function_block(original_funcs, args.function, "original DWARF")
-        rebuilt_block = choose_function_block(rebuilt_funcs, args.function, "rebuilt DWARF")
+        original_block = choose_function_block(
+            original_funcs, args.function, "original DWARF"
+        )
+        rebuilt_block = choose_function_block(
+            rebuilt_funcs, args.function, "rebuilt DWARF"
+        )
 
         report = build_report(
             args.unit,
