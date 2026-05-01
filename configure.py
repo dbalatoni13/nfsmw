@@ -251,7 +251,7 @@ if config.platform == Platform.GC_WII:
         "-Woverloaded-virtual",
         "-I src/Speed/Indep/Libs/Support/stlgc",
         "-I src/Speed/GameCube/Libs/stl/STLport-4.5/stlport",
-        "-I src/Speed/GameCube/bWare/GameCube/bWare/GameCube/SN/include",
+        "-I src/Speed/GameCube/bWare/GameCube/SN/include",
         "-I include",
         f"-I {dolphinsdk_root}/include",
         "-I src/Packages",
@@ -631,7 +631,9 @@ config.libs = [
             Object(NonMatching, "Packages/snd/9/source/library/cmn/ssys.cpp"),
             Object(NonMatching, "Packages/snd/9/source/library/cmn/ssysinit.c"),
             Object(NonMatching, "Packages/snd/9/source/library/cmn/ssysserv.c"),
-            Object(NonMatching, "Packages/snd/9/source/library/cmn/ssysveccsismutex.cpp"),
+            Object(
+                NonMatching, "Packages/snd/9/source/library/cmn/ssysveccsismutex.cpp"
+            ),
             Object(NonMatching, "Packages/snd/9/source/library/cmn/stagpat.c"),
             Object(NonMatching, "Packages/snd/9/source/library/cmn/stimemul.c"),
             Object(NonMatching, "Packages/snd/9/source/library/cmn/stimerem.c"),
@@ -640,7 +642,9 @@ config.libs = [
             Object(NonMatching, "Packages/snd/9/source/library/cmn/svecreal.cpp"),
             Object(NonMatching, "Packages/snd/9/source/library/cmn/svol.c"),
             Object(NonMatching, "Packages/snd/9/source/library/mix/sx87d16.c"),
-            Object(NonMatching, "Packages/snd/9/source/library/extern/coda/cmn/coda.cpp"),
+            Object(
+                NonMatching, "Packages/snd/9/source/library/extern/coda/cmn/coda.cpp"
+            ),
             Object(NonMatching, "Packages/snd/9/source/library/cmn/s3dlow.c"),
             Object(NonMatching, "Packages/snd/9/source/library/gc/saramman.c"),
             Object(NonMatching, "Packages/snd/9/source/library/cmn/satospkr.c"),
@@ -699,7 +703,8 @@ config.libs = [
             Object(NonMatching, "Packages/snd/9/source/library/mix/supxalf.cpp"),
             Object(NonMatching, "Packages/snd/9/source/library/mix/supxapf.cpp"),
             Object(
-                NonMatching, "Packages/snd/9/source/library/extern/coda/cmn/eaxadecf.cpp"
+                NonMatching,
+                "Packages/snd/9/source/library/extern/coda/cmn/eaxadecf.cpp",
             ),
             Object(
                 NonMatching, "Packages/snd/9/source/library/extern/coda/cmn/mtdecf.cpp"
@@ -719,22 +724,55 @@ config.libs = [
         "host": False,
         "progress_category": "libs",  # str | List[str]
         "objects": [
-            Object(NonMatching, "Packages/realcore/6.24.00/source/input/cmn/device.cpp"),
-            Object(NonMatching, "Packages/realcore/6.24.00/source/file/cmn/filesys.cpp"),
-            Object(NonMatching, "Packages/realcore/6.24.00/source/file/cmn/filesysopts.cpp"),
-            Object(NonMatching, "Packages/realcore/6.24.00/source/file/cmn/syncfile.cpp"),
-            Object(NonMatching, "Packages/realcore/6.24.00/source/file/cmn/hlafile.cpp"),
-            Object(NonMatching, "Packages/realcore/6.24.00/source/file/cmn/hlsfile.cpp"),
-            Object(NonMatching, "Packages/realcore/6.24.00/source/system/cmn/timer.cpp"),
-            Object(NonMatching, "Packages/realcore/6.24.00/source/system/cmn/systask.cpp"),
-            Object(NonMatching, "Packages/realcore/6.24.00/source/system/gc/threads.cpp"),
-            Object(NonMatching, "Packages/realcore/6.24.00/source/system/gc/signals.cpp"),
-            Object(NonMatching, "Packages/realcore/6.24.00/source/system/debug/cmn/printstr.cpp"),
-            Object(NonMatching, "Packages/realcore/6.24.00/source/system/debug/cmn/abortmsg.cpp"),
-            Object(NonMatching, "Packages/realcore/6.24.00/source/std/cmn/memclear.cpp"),
+            Object(
+                NonMatching, "Packages/realcore/6.24.00/source/input/cmn/device.cpp"
+            ),
+            Object(
+                NonMatching, "Packages/realcore/6.24.00/source/file/cmn/filesys.cpp"
+            ),
+            Object(
+                NonMatching, "Packages/realcore/6.24.00/source/file/cmn/filesysopts.cpp"
+            ),
+            Object(
+                NonMatching, "Packages/realcore/6.24.00/source/file/cmn/syncfile.cpp"
+            ),
+            Object(
+                NonMatching, "Packages/realcore/6.24.00/source/file/cmn/hlafile.cpp"
+            ),
+            Object(
+                NonMatching, "Packages/realcore/6.24.00/source/file/cmn/hlsfile.cpp"
+            ),
+            Object(
+                NonMatching, "Packages/realcore/6.24.00/source/system/cmn/timer.cpp"
+            ),
+            Object(
+                NonMatching, "Packages/realcore/6.24.00/source/system/cmn/systask.cpp"
+            ),
+            Object(
+                NonMatching, "Packages/realcore/6.24.00/source/system/gc/threads.cpp"
+            ),
+            Object(
+                NonMatching, "Packages/realcore/6.24.00/source/system/gc/signals.cpp"
+            ),
+            Object(
+                NonMatching,
+                "Packages/realcore/6.24.00/source/system/debug/cmn/printstr.cpp",
+            ),
+            Object(
+                NonMatching,
+                "Packages/realcore/6.24.00/source/system/debug/cmn/abortmsg.cpp",
+            ),
+            Object(
+                NonMatching, "Packages/realcore/6.24.00/source/std/cmn/memclear.cpp"
+            ),
             Object(NonMatching, "Packages/realcore/6.24.00/source/std/cmn/exit.cpp"),
-            Object(NonMatching, "Packages/realcore/6.24.00/source/system/gc/timerthread.cpp"),
-            Object(NonMatching, "Packages/realcore/6.24.00/source/system/gc/memfill.cpp"),
+            Object(
+                NonMatching,
+                "Packages/realcore/6.24.00/source/system/gc/timerthread.cpp",
+            ),
+            Object(
+                NonMatching, "Packages/realcore/6.24.00/source/system/gc/memfill.cpp"
+            ),
         ],
     },
     {
@@ -744,10 +782,22 @@ config.libs = [
         "host": False,
         "progress_category": "libs",  # str | List[str]
         "objects": [
-            Object(NonMatching, "Packages/realmemcard/3.04.01-layer2/source/lib/gc/gc_interface.cpp"),
-            Object(NonMatching, "Packages/realmemcard/3.04.01-layer2/source/lib/gc/public.cpp"),
-            Object(NonMatching, "Packages/realmemcard/3.04.01-layer2/source/lib/gc/trctasks.cpp"),
-            Object(NonMatching, "Packages/realmemcard/3.04.01-layer2/source/lib/gc/tasks.cpp"),
+            Object(
+                NonMatching,
+                "Packages/realmemcard/3.04.01-layer2/source/lib/gc/gc_interface.cpp",
+            ),
+            Object(
+                NonMatching,
+                "Packages/realmemcard/3.04.01-layer2/source/lib/gc/public.cpp",
+            ),
+            Object(
+                NonMatching,
+                "Packages/realmemcard/3.04.01-layer2/source/lib/gc/trctasks.cpp",
+            ),
+            Object(
+                NonMatching,
+                "Packages/realmemcard/3.04.01-layer2/source/lib/gc/tasks.cpp",
+            ),
         ],
     },
 ]
