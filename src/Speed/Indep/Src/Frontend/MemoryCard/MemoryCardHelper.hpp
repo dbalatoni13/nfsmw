@@ -8,7 +8,9 @@
 #include <types.h>
 #include <string.h>
 
-#include "RealmcIface.hpp"
+#include "Speed/Indep/Libs/realcore/6.24.00/include/common/realcore/system.h"
+#include "Packages/realmemcard/3.04.01-layer2/include/common/realmemcard/memcard_interface.h"
+
 #include "Speed/Indep/Src/Misc/Joylog.hpp"
 
 struct IAllocator;
@@ -17,12 +19,12 @@ struct IThread {
     virtual ~IThread() {}
     virtual int AddRef() = 0;
     virtual int Release() = 0;
-    virtual IThread* CreateInstance() = 0;
+    virtual IThread *CreateInstance() = 0;
     virtual void SetStackSize(unsigned int stacksize) = 0;
-    virtual void Begin(int (*func)(void*)) = 0;
+    virtual void Begin(int (*func)(void *)) = 0;
     virtual void WaitForEnd(int) = 0;
     virtual void Sleep(int ticks) = 0;
-    virtual int (*GetEntryFunc())(void*) = 0;
+    virtual int (*GetEntryFunc())(void *) = 0;
     virtual bool IsActive() = 0;
 };
 
@@ -30,7 +32,7 @@ struct IMutex {
     virtual ~IMutex() {}
     virtual int AddRef() = 0;
     virtual int Release() = 0;
-    virtual IMutex* CreateInstance() = 0;
+    virtual IMutex *CreateInstance() = 0;
     virtual void Lock() = 0;
     virtual void Unlock() = 0;
 };
@@ -39,16 +41,16 @@ struct THREAD {
     int reserved[198]; // offset 0x0, size 0x318
 };
 
-void THREAD_destroy(THREAD* thread);
+void THREAD_destroy(THREAD *thread);
 
 struct MyThread : public IThread {
-    int mRefcount;                   // offset 0x4, size 0x4
-    int (*mEntryFunc)(void*);        // offset 0x8, size 0x4
-    unsigned int mStackSize;         // offset 0xC, size 0x4
-    void* mStackBuffer;              // offset 0x10, size 0x4
-    THREAD mThreadData;              // offset 0x14, size 0x318
-    int mPriority;                   // offset 0x32C, size 0x4
-    bool mActive;                    // offset 0x330, size 0x1
+    int mRefcount;             // offset 0x4, size 0x4
+    int (*mEntryFunc)(void *); // offset 0x8, size 0x4
+    unsigned int mStackSize;   // offset 0xC, size 0x4
+    void *mStackBuffer;        // offset 0x10, size 0x4
+    THREAD mThreadData;        // offset 0x14, size 0x318
+    int mPriority;             // offset 0x32C, size 0x4
+    bool mActive;              // offset 0x330, size 0x1
 
     MyThread() {
         mRefcount = 1;
@@ -68,14 +70,16 @@ struct MyThread : public IThread {
 
     int AddRef() override;
     int Release() override;
-    IThread* CreateInstance() override;
-    void SetStackSize(unsigned int stacksize) override { mStackSize = stacksize; }
-    void Begin(int (*func)(void*)) override;
+    IThread *CreateInstance() override;
+    void SetStackSize(unsigned int stacksize) override {
+        mStackSize = stacksize;
+    }
+    void Begin(int (*func)(void *)) override;
     void WaitForEnd(int) override;
     void Sleep(int ticks) override;
     void SetPriority(int priority) override;
-    static int EntryProc(void* pContext);
-    int (*GetEntryFunc())(void*) override;
+    static int EntryProc(void *pContext);
+    int (*GetEntryFunc())(void *) override;
     bool IsActive() override;
 };
 
@@ -95,10 +99,103 @@ struct MyMutex : public IMutex {
 
     int AddRef() override;
     int Release() override;
-    IMutex* CreateInstance() override;
+    IMutex *CreateInstance() override;
     void Lock() override;
     void Unlock() override;
 };
+
+void MyMutex::Lock() {
+    MUTEX_lock(&mMutex);
+}
+
+void MyMutex::Unlock() {
+    MUTEX_unlock(&mMutex);
+}
+
+int MyMutex::AddRef() {
+    return ++mRefcount;
+}
+
+int MyMutex::Release() {
+    int ref = --mRefcount;
+    if (ref > 0) {
+        return ref;
+    }
+    if (this != nullptr) {
+        delete this;
+    }
+    return 0;
+}
+
+IMutex *MyMutex::CreateInstance() {
+    return new MyMutex();
+}
+
+int MyThread::AddRef() {
+    return ++mRefcount;
+}
+
+int MyThread::Release() {
+    int ref = --mRefcount;
+    if (ref > 0) {
+        return ref;
+    }
+    if (this != nullptr) {
+        delete this;
+    }
+    return 0;
+}
+
+IThread *MyThread::CreateInstance() {
+    return new MyThread();
+}
+
+void THREAD_sleep(int ticks);
+void THREAD_create(THREAD *thread, int (*func)(void *), void *param, void *stack, int stackSize, int priority);
+void THREAD_waitexit(THREAD *thread, int status);
+void THREAD_setpriority(THREAD *thread, int priority);
+void THREAD_yield(int ticks);
+
+void MyThread::Sleep(int ticks) {
+    THREAD_sleep(ticks);
+}
+
+void MyThread::Begin(int (*func)(void *)) {
+    mEntryFunc = func;
+    mStackBuffer = new char[mStackSize];
+    THREAD_create(&mThreadData, EntryProc, this, mStackBuffer, mStackSize, mPriority);
+    mActive = true;
+}
+
+void MyThread::WaitForEnd(int) {
+    THREAD_waitexit(&mThreadData, 0);
+    if (mStackBuffer != nullptr) {
+        delete[] static_cast<char *>(mStackBuffer);
+    }
+    mActive = false;
+}
+
+void MyThread::SetPriority(int priority) {
+    mPriority = 0;
+    THREAD_setpriority(&mThreadData, 0);
+}
+
+bool MyThread::IsActive() {
+    return mActive;
+}
+
+int (*MyThread::GetEntryFunc())(void *) {
+    return mEntryFunc;
+}
+
+int MyThread::EntryProc(void *pContext) {
+    MyThread *pThread = static_cast<MyThread *>(pContext);
+    while (!pThread->MyThread::IsActive()) {
+        THREAD_yield(1);
+    }
+    pThread->MyThread::GetEntryFunc()(pContext);
+    return 0;
+}
 
 namespace Realmc {
 
@@ -118,13 +215,10 @@ struct MemoryCard;
 struct UIMemcardBase;
 
 struct IGameInterface {
-    virtual void ShowMessage(const wchar_t *msg, unsigned int nOptions,
-                             const wchar_t **options) = 0;
+    virtual void ShowMessage(const wchar_t *msg, unsigned int nOptions, const wchar_t **options) = 0;
     virtual void ClearMessage() = 0;
-    virtual void BootupCheckDone(RealmcIface::CardStatus status,
-                                 RealmcIface::BootupCheckResults res) = 0;
-    virtual void SaveCheckDone(RealmcIface::TaskResult result,
-                               RealmcIface::CardStatus status) = 0;
+    virtual void BootupCheckDone(RealmcIface::CardStatus status, RealmcIface::BootupCheckResults res) = 0;
+    virtual void SaveCheckDone(RealmcIface::TaskResult result, RealmcIface::CardStatus status) = 0;
     virtual void SaveDone(const char *filename) = 0;
     virtual RealmcIface::DataStatus CheckLoadedData(const char *data) = 0;
     virtual void LoadDone(const char *filename) = 0;
@@ -133,21 +227,13 @@ struct IGameInterface {
     virtual void FoundEntry(const RealmcIface::EntryInfo *info) = 0;
     virtual void FindEntriesDone(RealmcIface::CardStatus status) = 0;
     virtual void Retry(RealmcIface::CardStatus status) = 0;
-    virtual void Failed(RealmcIface::TaskResult result,
-                        RealmcIface::CardStatus status) = 0;
-    virtual void CardChanged(RealmcIface::TaskResult result,
-                             RealmcIface::CardStatus status) = 0;
+    virtual void Failed(RealmcIface::TaskResult result, RealmcIface::CardStatus status) = 0;
+    virtual void CardChanged(RealmcIface::TaskResult result, RealmcIface::CardStatus status) = 0;
     virtual void CardChecked(const RealmcIface::CardInfo *info) = 0;
     virtual void CardRemoved() = 0;
-    virtual void SetAutosaveDone(RealmcIface::TaskResult res,
-                                 RealmcIface::CardStatus status,
-                                 RealmcIface::AutosaveState flag) = 0;
-    virtual void SetMonitorDone(RealmcIface::CardStatus status,
-                                RealmcIface::MonitorState state) = 0;
-    virtual RealmcIface::TaskStatus LoadReady(const char *entryName,
-                                              unsigned int headerSize,
-                                              unsigned int bodySize,
-                                              char *&headerData,
+    virtual void SetAutosaveDone(RealmcIface::TaskResult res, RealmcIface::CardStatus status, RealmcIface::AutosaveState flag) = 0;
+    virtual void SetMonitorDone(RealmcIface::CardStatus status, RealmcIface::MonitorState state) = 0;
+    virtual RealmcIface::TaskStatus LoadReady(const char *entryName, unsigned int headerSize, unsigned int bodySize, char *&headerData,
                                               char *&bodyData) = 0;
 };
 
@@ -178,19 +264,15 @@ struct IJoyHelper {
 
     inline void JLog(MemoryCardJoyLoggableEvents op) {
         if (Joylog::IsCapturing())
-            Joylog::AddData(static_cast< int >(op), 8, JOYLOG_CHANNEL_MEMORY_CARD);
+            Joylog::AddData(static_cast<int>(op), 8, JOYLOG_CHANNEL_MEMORY_CARD);
     }
 
     inline void JLog(RealmcIface::CardStatus &status) {
-        status = static_cast<RealmcIface::CardStatus>(
-            Joylog::AddOrGetData(static_cast<unsigned int>(status), 0x10,
-                                 JOYLOG_CHANNEL_MEMORY_CARD));
+        status = static_cast<RealmcIface::CardStatus>(Joylog::AddOrGetData(static_cast<unsigned int>(status), 0x10, JOYLOG_CHANNEL_MEMORY_CARD));
     }
 
     inline void JLog(RealmcIface::TaskResult &res) {
-        res = static_cast<RealmcIface::TaskResult>(
-            Joylog::AddOrGetData(static_cast<unsigned int>(res), 8,
-                                 JOYLOG_CHANNEL_MEMORY_CARD));
+        res = static_cast<RealmcIface::TaskResult>(Joylog::AddOrGetData(static_cast<unsigned int>(res), 8, JOYLOG_CHANNEL_MEMORY_CARD));
     }
 };
 
@@ -198,13 +280,10 @@ struct MemcardCallbacks : public IGameInterface, public IJoyHelper {
     MemoryCard *GetMemcard();
     UIMemcardBase *GetScreen();
 
-    void ShowMessage(const wchar_t *msg, unsigned int nOptions,
-                     const wchar_t **options) override;
+    void ShowMessage(const wchar_t *msg, unsigned int nOptions, const wchar_t **options) override;
     void ClearMessage() override;
-    void BootupCheckDone(RealmcIface::CardStatus status,
-                         RealmcIface::BootupCheckResults res) override;
-    void SaveCheckDone(RealmcIface::TaskResult result,
-                       RealmcIface::CardStatus status) override;
+    void BootupCheckDone(RealmcIface::CardStatus status, RealmcIface::BootupCheckResults res) override;
+    void SaveCheckDone(RealmcIface::TaskResult result, RealmcIface::CardStatus status) override;
     void SaveDone(const char *filename) override;
     RealmcIface::DataStatus CheckLoadedData(const char *data) override;
     void LoadDone(const char *filename) override;
@@ -213,20 +292,13 @@ struct MemcardCallbacks : public IGameInterface, public IJoyHelper {
     void FoundEntry(const RealmcIface::EntryInfo *info) override;
     void FindEntriesDone(RealmcIface::CardStatus status) override;
     void Retry(RealmcIface::CardStatus status) override;
-    void Failed(RealmcIface::TaskResult result,
-                RealmcIface::CardStatus status) override;
-    void CardChanged(RealmcIface::TaskResult result,
-                     RealmcIface::CardStatus status) override;
+    void Failed(RealmcIface::TaskResult result, RealmcIface::CardStatus status) override;
+    void CardChanged(RealmcIface::TaskResult result, RealmcIface::CardStatus status) override;
     void CardChecked(const RealmcIface::CardInfo *info) override;
     void CardRemoved() override;
-    void SetAutosaveDone(RealmcIface::TaskResult res,
-                         RealmcIface::CardStatus status,
-                         RealmcIface::AutosaveState flag) override;
-    void SetMonitorDone(RealmcIface::CardStatus status,
-                        RealmcIface::MonitorState state) override;
-    RealmcIface::TaskStatus LoadReady(const char *entryName,
-                                      unsigned int headerSize,
-                                      unsigned int bodySize, char *&headerData,
+    void SetAutosaveDone(RealmcIface::TaskResult res, RealmcIface::CardStatus status, RealmcIface::AutosaveState flag) override;
+    void SetMonitorDone(RealmcIface::CardStatus status, RealmcIface::MonitorState state) override;
+    RealmcIface::TaskStatus LoadReady(const char *entryName, unsigned int headerSize, unsigned int bodySize, char *&headerData,
                                       char *&bodyData) override;
 
     inline MemcardCallbacks() {}

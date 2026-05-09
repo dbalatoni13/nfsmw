@@ -1,51 +1,24 @@
 #include "uiRepSheetRaceEvents.hpp"
 
-#include "Speed/Indep/Src/FEng/cFEng.h"
+#include "Speed/Indep/Src/Frontend/FEngFrontend.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
+#include "Speed/Indep/Src/Frontend/Localization/Localize.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/DialogInterface.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiTrackMapStreamer.hpp"
+#include "Speed/Indep/Src/Frontend/RaceStarter.hpp"
 #include "Speed/Indep/Src/Gameplay/GRace.h"
 #include "Speed/Indep/Src/Gameplay/GRaceDatabase.h"
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Gameplay/GManager.h"
 #include "Speed/Indep/Src/Generated/Events/ERaceSheetOff.hpp"
-#include "Speed/Indep/Src/Misc/FixedPoint.hpp"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
-#include "Speed/Indep/bWare/Inc/bPrintf.hpp"
-#include "Speed/Indep/bWare/Inc/bWare.hpp"
 
-struct FEObject;
-
-FEObject *FEngFindObject(const char *pkg_name, unsigned int hash);
-FEImage *FEngFindImage(const char *pkg_name, int hash);
-void FEngSetVisible(FEObject *obj);
-void FEngSetInvisible(FEObject *obj);
-void FEngSetTextureHash(FEImage *image, unsigned int hash);
-void FEngSetLanguageHash(const char *pkg_name, unsigned int obj_hash, unsigned int lang_hash);
-int FEPrintf(const char *pkg_name, int hash, const char *fmt, ...);
-unsigned int FEngHashString(const char *format, ...);
-void FEngSetScript(const char *pkg_name, unsigned int obj_hash, unsigned int script_hash, bool);
-const char *GetLocalizedString(unsigned int hash);
-unsigned int CalcLanguageHash(const char *prefix, GRaceParameters *pRaceParams);
-int FEngMapJoyParamToJoyport(int feng_param);
-void StartRace();
-
-extern unsigned int FEDBGetRaceIconHash(cFrontendDatabase *, GRace::Type) asm("GetRaceIconHash__17cFrontendDatabaseQ25GRace4Type");
-extern unsigned int FEDBGetRaceNameHash(cFrontendDatabase *, GRace::Type) asm("GetRaceNameHash__17cFrontendDatabaseQ25GRace4Type");
-
-struct GRaceSaveInfo {
-    unsigned int mRaceHash;
-    unsigned int mFlags;
-    float mHighScores;
-    FixedPoint<unsigned short, 10, 2> mTopSpeed;
-    FixedPoint<unsigned short, 10, 2> mAverageSpeed;
-};
-
-extern unsigned int iCurrentViewBin;
+extern int iCurrentViewBin;
 extern GRaceParameters *theRace;
 
-void RaceDatum::NotificationMessage(unsigned long msg, FEObject *pObj, unsigned long param1, unsigned long param2) {
+void RaceDatum::NotificationMessage(u32 msg, FEObject *pObj, u32 param1, u32 param2) {
     if (msg == 0xc407210) {
         if (!IsLocked()) {
             theRace = race;
@@ -75,7 +48,7 @@ UISafehouseRaceSheet::UISafehouseRaceSheet(ScreenConstructorData *sd) : ArrayScr
 
 UISafehouseRaceSheet::~UISafehouseRaceSheet() {}
 
-eMenuSoundTriggers UISafehouseRaceSheet::NotifySoundMessage(unsigned long msg, eMenuSoundTriggers maybe) {
+eMenuSoundTriggers UISafehouseRaceSheet::NotifySoundMessage(u32 msg, eMenuSoundTriggers maybe) {
     eMenuSoundTriggers result = ArrayScrollerMenu::NotifySoundMessage(msg, maybe);
     if (msg == 0x7b6b89d7 && !theRace) {
         return static_cast<eMenuSoundTriggers>(7);
@@ -83,7 +56,7 @@ eMenuSoundTriggers UISafehouseRaceSheet::NotifySoundMessage(unsigned long msg, e
     return result;
 }
 
-void UISafehouseRaceSheet::NotificationMessage(unsigned long msg, FEObject *obj, unsigned long param1, unsigned long param2) {
+void UISafehouseRaceSheet::NotificationMessage(u32 msg, FEObject *obj, u32 param1, u32 param2) {
     ArrayScrollerMenu::NotificationMessage(msg, obj, param1, param2);
     switch (msg) {
         case 0xc98356ba:
@@ -123,7 +96,7 @@ void UISafehouseRaceSheet::NotificationMessage(unsigned long msg, FEObject *obj,
                 GRaceCustom *race = GRaceDatabase::Get().AllocCustomRace(theRace);
                 GRaceDatabase::Get().SetStartupRace(race, kRaceContext_Career);
                 GRaceDatabase::Get().FreeCustomRace(race);
-                StartRace();
+                RaceStarter::StartRace();
             }
             break;
         case 0x911ab364:
@@ -151,7 +124,7 @@ void UISafehouseRaceSheet::RefreshHeader() {
     FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(0);
     FEPrintf(GetPackageName(), 0xb514e2d8, "%s %", GetLocalizedString(0xce6b99b1), stable->GetTotalBounty());
     FEPrintf(GetPackageName(), 0xf91a59f6, "%s %", GetLocalizedString(0x73b79e0), FEDatabase->GetCareerSettings()->GetCash());
-    ArrayDatum *datum = currentDatum;
+    ArrayDatum *datum = GetCurrentDatum();
     if (datum == nullptr) {
         return;
     }
@@ -181,10 +154,10 @@ void UISafehouseRaceSheet::RefreshHeader() {
     if (race->GetRaceType() == GRace::kRaceType_P2P || race->GetRaceType() == GRace::kRaceType_Circuit ||
         race->GetRaceType() == GRace::kRaceType_Drag || race->GetRaceType() == GRace::kRaceType_Knockout ||
         race->GetRaceType() == GRace::kRaceType_Tollbooth) {
-        if (info->mHighScores == 0.0f) {
+        if (info->mHighScores.mBestTime == 0.0f) {
             FEPrintf(GetPackageName(), 0x8fd41bb4, GetLocalizedString(0x472aa00a));
         } else {
-            Timer t(info->mHighScores);
+            Timer t(info->mHighScores.mBestTime);
             char buf[64];
             t.PrintToString(buf, 0);
             FEPrintf(GetPackageName(), 0x8fd41bb4, "%s", buf);
@@ -206,12 +179,12 @@ void UISafehouseRaceSheet::RefreshHeader() {
     FEPrintf(GetPackageName(), 0xebd7f926, "%ash.2f %s", top_speed, distUnits);
     FEPrintf(GetPackageName(), 0xde9145fb, "%ash.2f %s", avg_speed, distUnits);
     FEPrintf(GetPackageName(), 0x763f4b5b, "%ash.0f", race->GetCashValue());
-    unsigned int iconHash = FEDBGetRaceIconHash(FEDatabase, race->GetRaceType());
+    uint32 iconHash = FEDatabase->GetRaceIconHash(race->GetRaceType());
     FEImage *img = FEngFindImage(GetPackageName(), 0xf97ec5d5);
     FEngSetTextureHash(img, iconHash);
     for (int i = 0; i < GetNumSlots(); i++) {
         RaceDatum *rdatum = static_cast<RaceDatum *>(GetDatumAt(i + GetStartDatumNum()));
-        unsigned int check_hash = FEngHashString("MEDAL_THUMB_%d", i + 1);
+        uint32 check_hash = FEngHashString("MEDAL_THUMB_%d", i + 1);
         FEngSetInvisible(FEngFindObject(GetPackageName(), check_hash));
         if (rdatum == nullptr) {
             continue;
@@ -241,7 +214,7 @@ bool UISafehouseRaceSheet::AddRace(GRaceParameters *race) {
             break;
     }
     RaceDatum *datum =
-        new ("", 0) RaceDatum(FEDBGetRaceIconHash(FEDatabase, race->GetRaceType()), FEDBGetRaceNameHash(FEDatabase, race->GetRaceType()), race);
+        new ("", 0) RaceDatum(FEDatabase->GetRaceIconHash(race->GetRaceType()), FEDatabase->GetRaceNameHash(race->GetRaceType()), race);
     AddDatum(datum);
     return true;
 }

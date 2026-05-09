@@ -1,20 +1,9 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/Slider.hpp"
 
-struct FEObject;
-
-extern FEImage *FEngFindImage(const char *pkg_name, int name_hash);
-extern FEString *FEngFindString(const char *pkg_name, int name_hash);
-extern unsigned int FEngHashString(const char *, ...);
-extern void FEngSetVisible(FEObject *obj);
-extern void FEngSetInvisible(FEObject *obj);
-extern void FEngSetScript(FEObject *object, unsigned int script_hash, bool start_at_beginning);
-extern void FEngGetSize(FEObject *object, float &x, float &y);
-extern void FEngSetSize(FEObject *object, float x, float y);
-extern void FEngGetTopLeft(FEObject *object, float &x, float &y);
-extern void FEngSetTopLeft(FEObject *object, float x, float y);
-extern void FEngGetBottomRightUV(FEImage *img, float &u, float &v);
-extern void FEngSetBottomRightUV(FEImage *img, float u, float v);
-extern int FEPrintf(FEString *text, const char *fmt, ...);
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEImages.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEStrings.hpp"
+#include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 cSlider::cSlider() {
     pBase = nullptr;
@@ -33,29 +22,25 @@ cSlider::cSlider() {
     fInnerOffset = 0.0f;
 }
 
-bool cSlider::Update(unsigned long msg) {
+bool cSlider::Update(u32 msg) {
     bool actual_scroll = false;
-    if (msg == 0x9120409E) {
-        fPrevValue = fCurValue;
-        float newVal = fCurValue - fIncrement;
-        float d = fMinValue;
-        if (fMinValue - newVal < 0.0f) {
-            d = newVal;
+
+    switch (msg) {
+        case 0x9120409E: {
+            fPrevValue = fCurValue;
+            fCurValue = bMax(fMinValue, fCurValue - fIncrement);
+            if (!(fCurValue == fMinValue && fPrevValue == fMinValue)) {
+                actual_scroll = true;
+            }
+            break;
         }
-        fCurValue = d;
-        if (d != fMinValue || fCurValue != fMinValue) {
-            actual_scroll = true;
-        }
-    } else if (msg == 0xB59719F1) {
-        fPrevValue = fCurValue;
-        float newVal = fCurValue + fIncrement;
-        float d = fMaxValue;
-        if (fMaxValue - newVal < 0.0f) {
-            d = newVal;
-        }
-        fCurValue = d;
-        if (d != fMaxValue || fCurValue != fMaxValue) {
-            actual_scroll = true;
+        case 0xB59719F1: {
+            fPrevValue = fCurValue;
+            fCurValue = bMin(fMaxValue, fCurValue + fIncrement);
+            if (!(fCurValue == fMaxValue && fPrevValue == fMaxValue)) {
+                actual_scroll = true;
+            }
+            break;
         }
     }
     Draw();
@@ -86,13 +71,6 @@ void cSlider::InitValues(float min, float max, float inc, float cur, float range
     max = bMin(cur, max);
     fMinValue = min;
     fDesiredValue = max;
-    fCurValue = max;
-}
-
-void cSlider::SetValue(float fvalue) {
-    fvalue = bMax(fvalue, fMinValue);
-    fPrevValue = fCurValue;
-    float max = bMin(fvalue, fMaxValue);
     fCurValue = max;
 }
 
@@ -147,6 +125,13 @@ void cSlider::ToggleVisible(bool bOn) {
     }
 }
 
+void cSlider::SetValue(float fvalue) {
+    fvalue = bMax(fvalue, fMinValue);
+    fPrevValue = fCurValue;
+    float max = bMin(fvalue, fMaxValue);
+    fCurValue = max;
+}
+
 void cSlider::Highlight() {
     FEngSetScript(reinterpret_cast<FEObject *>(pBase), 0x249DB7B7, true);
     FEngSetScript(reinterpret_cast<FEObject *>(pFillBar), 0x249DB7B7, true);
@@ -179,15 +164,7 @@ void TwoStageSlider::InitObjects(const char *pkg_name, const char *name) {
 
 void TwoStageSlider::InitValues(float min, float max, float inc, float cur, float preview, float range) {
     cSlider::InitValues(min, max, inc, cur, range);
-    float d = fMaxValue;
-    if (fMaxValue - preview < 0.0f) {
-        d = preview;
-    }
-    float c = fMinValue;
-    if (fMinValue - d < 0.0f) {
-        c = d;
-    }
-    fPreviewValue = c;
+    fPreviewValue = bMax(bMin(fMaxValue, preview), fMinValue);
 }
 
 void TwoStageSlider::ToggleVisible(bool bOn) {

@@ -14,14 +14,15 @@ class TurboMeter : public HudElement, public ITurbometer {
     TurboMeter(UTL::COM::Object *pOutter, const char *pkg_name, int player_number);
     void Update(IPlayer *player) override;
     void SetInductionPsi(float psi) override;
-    float CalcNeedleAngle(float psi, float min_angle, float max_angle);
 
   private:
+    float CalcNeedleAngle(float psi, float min_angle, float max_angle);
+
     bool mUpdated;
     float mInductionPsi;
-    FEGroup * pTurboGroup;
-    FEObject * pTurboDialLines;
-    FEObject * pTurboNeedle;
+    FEGroup *pTurboGroup;
+    FEObject *pTurboDialLines;
+    FEObject *pTurboNeedle;
 };
 
 #endif

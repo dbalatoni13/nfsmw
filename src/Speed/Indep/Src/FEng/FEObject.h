@@ -9,7 +9,7 @@
 #ifndef _FEOBJECT
 #define _FEOBJECT
 
-#include "types.h"
+#include <types.h>
 #include "FEList.h"
 
 struct FEScript;
@@ -18,9 +18,11 @@ struct FEObjData;
 struct FEMessageResponse;
 struct FEObject;
 
-struct FEObjectDestructorCallback {
-    virtual void OnDestroy(FEObject* pObject) = 0;
+class FEObjectDestructorCallback {
+  public:
+    virtual void OnDestroy(FEObject *pObject) = 0;
 };
+
 struct FEVector2;
 struct FEVector3;
 struct FEColor;
@@ -59,62 +61,71 @@ enum FEObjType {
 };
 
 // total size: 0x5C
-struct FEObject : public FEMinNode {
-    static FEObjectDestructorCallback* pDestructorCallback;
-
-    unsigned long GUID;           // offset 0xC, size 0x4
-    unsigned long NameHash;       // offset 0x10, size 0x4
-    char* pName;                  // offset 0x14, size 0x4
-    FEObjType Type;               // offset 0x18, size 0x4
-    unsigned long Flags;          // offset 0x1C, size 0x4
-    unsigned short RenderContext; // offset 0x20, size 0x2
-    unsigned short ResourceIndex; // offset 0x22, size 0x2
-    unsigned long Handle;         // offset 0x24, size 0x4
-    unsigned long UserParam;      // offset 0x28, size 0x4
-    unsigned char* pData;         // offset 0x2C, size 0x4
-    unsigned long DataSize;       // offset 0x30, size 0x4
-    FEMinList Responses;          // offset 0x34, size 0x10
-    FEMinList Scripts;            // offset 0x44, size 0x10
-    FEScript* pCurrentScript;     // offset 0x54, size 0x4
-    FERenderObject* Cached;       // offset 0x58, size 0x4
-
-    inline FEObjData* GetObjData() const { return reinterpret_cast<FEObjData*>(pData); }
-    inline FEScript* GetFirstScript() const { return reinterpret_cast<FEScript*>(Scripts.GetHead()); }
-    inline unsigned long GetNumScripts() const;
-    inline FEScript* GetScript(unsigned long Index) const;
-    inline FEMessageResponse* GetFirstResponse() const { return reinterpret_cast<FEMessageResponse*>(Responses.GetHead()); }
-    inline unsigned long GetNumResponses() const;
-    inline FEMessageResponse* GetResponse(unsigned long Index) const;
-    inline void SetNameHash(const unsigned long nameHash);
-    inline FEObject* GetNext() const { return static_cast<FEObject*>(FEMinNode::GetNext()); }
-    inline FEObject* GetPrev() const { return static_cast<FEObject*>(FEMinNode::GetPrev()); }
-
+class FEObject : public FEMinNode {
+  public:
+    void SetCurrentScript(FEScript *pScript);
+    inline FEObjData *GetObjData() const {
+        return reinterpret_cast<FEObjData *>(pData);
+    }
+    inline FEScript *GetFirstScript() const {
+        return reinterpret_cast<FEScript *>(Scripts.GetHead());
+    }
+    inline u32 GetNumScripts() const;
+    inline FEScript *GetScript(u32 Index) const;
+    FEScript *FindScript(u32 ID) const;
+    inline FEMessageResponse *GetFirstResponse() const {
+        return reinterpret_cast<FEMessageResponse *>(Responses.GetHead());
+    }
+    inline u32 GetNumResponses() const;
+    inline FEMessageResponse *GetResponse(u32 Index) const;
+    FEMessageResponse *FindResponse(u32 MsgID) const;
     FEObject();
-    FEObject(const FEObject& Object, bool bReference);
+    FEObject(const FEObject &Object, bool bReference);
     ~FEObject() override;
-
-    void SetDataSize(unsigned long Size);
-    void SetName(const char* pNewName);
-    FEScript* FindScript(unsigned long ID) const;
+    void SetDataSize(u32 Size);
+    void SetName(const char *pNewName);
+    inline void SetNameHash(const u32 nameHash) {};
+    void SetPivot(const FEVector3 &pivot, bool bRelative);
+    void SetPosition(const FEVector3 &position, bool bRelative);
+    void SetRotation(const FEQuaternion &rotation, bool bRelative);
+    void SetSize(const FEVector3 &size, bool bRelative);
+    void SetColor(const FEColor &color, bool bRelative);
+    void SetScript(u32 ID, bool bForce);
+    void SetScript(FEScript *pScript, bool bForce);
     void SetupMoveToTracks();
-    void SetCurrentScript(FEScript* pScript);
-    FEMessageResponse* FindResponse(unsigned long MsgID) const;
+    u32 GetDataOffset(FEKeyTrack_Indices track);
+    virtual FEObject *Clone(bool bReference);
 
-    void SetPivot(const FEVector3& pivot, bool bRelative);
-    void SetPosition(const FEVector3& position, bool bRelative);
-    void SetRotation(const FEQuaternion& rotation, bool bRelative);
-    void SetSize(const FEVector3& size, bool bRelative);
-    void SetColor(const FEColor& color, bool bRelative);
-    void SetScript(unsigned long ID, bool bForce);
-    void SetScript(FEScript* pScript, bool bForce);
-    unsigned long GetDataOffset(FEKeyTrack_Indices track);
+    inline FEObject *GetNext() const {
+        return static_cast<FEObject *>(FEMinNode::GetNext());
+    }
+    inline FEObject *GetPrev() const {
+        return static_cast<FEObject *>(FEMinNode::GetPrev());
+    }
 
-    virtual FEObject* Clone(bool bReference);
+  protected:
+    void SetTrackValue(FEKeyTrack_Indices track, const FEVector3 &value, bool bRelative);
+    void SetTrackValue(FEKeyTrack_Indices track, const FEVector2 &value, bool bRelative);
+    void SetTrackValue(FEKeyTrack_Indices track, const FEColor &value, bool bRelative);
 
-protected:
-    void SetTrackValue(FEKeyTrack_Indices track, const FEVector3& value, bool bRelative);
-    void SetTrackValue(FEKeyTrack_Indices track, const FEVector2& value, bool bRelative);
-    void SetTrackValue(FEKeyTrack_Indices track, const FEColor& value, bool bRelative);
+  public:
+    static FEObjectDestructorCallback *pDestructorCallback;
+
+    u32 GUID;                 // offset 0xC, size 0x4
+    u32 NameHash;             // offset 0x10, size 0x4
+    char *pName;              // offset 0x14, size 0x4
+    FEObjType Type;           // offset 0x18, size 0x4
+    u32 Flags;                // offset 0x1C, size 0x4
+    u16 RenderContext;        // offset 0x20, size 0x2
+    u16 ResourceIndex;        // offset 0x22, size 0x2
+    u32 Handle;               // offset 0x24, size 0x4
+    u32 UserParam;            // offset 0x28, size 0x4
+    u8 *pData;                // offset 0x2C, size 0x4
+    u32 DataSize;             // offset 0x30, size 0x4
+    FEMinList Responses;      // offset 0x34, size 0x10
+    FEMinList Scripts;        // offset 0x44, size 0x10
+    FEScript *pCurrentScript; // offset 0x54, size 0x4
+    FERenderObject *Cached;   // offset 0x58, size 0x4
 };
 
 #endif

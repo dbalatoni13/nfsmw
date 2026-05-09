@@ -13,7 +13,9 @@ class TimeExtension : public HudElement, public ITimeExtension {
   public:
     TimeExtension(UTL::COM::Object *pOutter, const char *pkg_name, int player_number);
     void Update(IPlayer *player) override;
-    void SetPlayerLapTime(float lapTime) override;
+    void SetPlayerLapTime(float lapTime) override {
+        mPlayerLapTime = lapTime;
+    }
     void RequestTimeExtensionMessage(IPlayer *iplayer, float timeToShow) override;
 
   private:

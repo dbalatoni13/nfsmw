@@ -27,12 +27,13 @@ struct Tunings {
         INDUCTION = 6,
         MAX_TUNINGS = 7,
     };
-    float Value[7]; // offset 0x0, size 0x1C
-
-    void Default();
 
     static float LowerLimit(Path path);
     static float UpperLimit(Path path);
+
+    void Default();
+
+    float Value[7]; // offset 0x0, size 0x1C
 };
 
 } // namespace Physics

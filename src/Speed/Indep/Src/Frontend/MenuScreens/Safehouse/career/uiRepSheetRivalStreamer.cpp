@@ -1,21 +1,8 @@
 #include "uiRepSheetRivalStreamer.hpp"
 
-#include "Speed/Indep/Src/FEng/cFEng.h"
+#include "Speed/Indep/Src/Ecstasy/Texture.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/World/TrackStreamer.hpp"
-
-struct FEObject;
-
-FEObject *FEngFindObject(const char *pkg_name, unsigned int hash);
-void FEngSetVisible(FEObject *obj);
-void FEngSetInvisible(FEObject *obj);
-void FEngSetTextureHash(FEImage *image, unsigned int hash);
-unsigned int FEngHashString(const char *format, ...);
-void eLoadStreamingTexture(unsigned int *textures, int count, void (*callback)(void *), void *param, int pool);
-void eUnloadStreamingTexture(unsigned int *textures, int count);
-void eUnloadStreamingTexturePack(const char *name);
-void eWaitForStreamingTexturePackLoading(const char *name);
-struct TextureInfo;
-TextureInfo *GetTextureInfo(unsigned int hash, int, int);
 
 uiRepSheetRivalStreamer::uiRepSheetRivalStreamer(const char *name, bool in_game) {
     pkg_name = name;
@@ -144,16 +131,4 @@ void uiRepSheetRivalStreamer::TexturesLoadedCallback() {
         FEngSetTextureHash(BG, LoadedTextures[idx]);
         FEngSetVisible(reinterpret_cast<FEObject *>(BG));
     }
-}
-
-void uiRepSheetRivalStreamer::MakeSpaceInPoolCallbackBridge(int param) {
-    reinterpret_cast<uiRepSheetRivalStreamer *>(param)->MakeSpaceInPoolCallback();
-}
-
-void uiRepSheetRivalStreamer::TexturePackLoadedCallbackBridge(void *param) {
-    static_cast<uiRepSheetRivalStreamer *>(param)->TexturePackLoadedCallback();
-}
-
-void uiRepSheetRivalStreamer::TexturesLoadedCallbackBridge(void *param) {
-    static_cast<uiRepSheetRivalStreamer *>(param)->TexturesLoadedCallback();
 }

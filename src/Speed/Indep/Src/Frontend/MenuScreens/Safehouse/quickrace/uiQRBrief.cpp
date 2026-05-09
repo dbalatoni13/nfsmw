@@ -1,7 +1,11 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiQRBrief.hpp"
 
+#include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/Src/Frontend/Database/VehicleDB.hpp"
 #include "Speed/Indep/Src/Frontend/Careers/UnlockSystem.hpp"
+#include "Speed/Indep/Src/Frontend/FEManager.hpp"
+#include "Speed/Indep/Src/Frontend/FEngFrontend.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/FEPkg_GarageMain.hpp"
 #include "Speed/Indep/Src/Gameplay/GRaceDatabase.h"
 #include "Speed/Indep/Src/World/CarInfo.hpp"
 
@@ -30,9 +34,12 @@ UIQRBrief::UIQRBrief(ScreenConstructorData *sd)
       randomCount(0) {
     raceSettings.Default();
     Setup();
-    AccelerationSlider.Init(GetPackageName(), GetPackageName(), 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f);
-    TopSpeedSlider.Init(GetPackageName(), GetPackageName(), 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f);
-    HandlingSlider.Init(GetPackageName(), GetPackageName(), 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+    AccelerationSlider.Init(reinterpret_cast<MenuScreen *>(this)->GetPackageName(), reinterpret_cast<MenuScreen *>(this)->GetPackageName(), 0.0f,
+                            1.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+    TopSpeedSlider.Init(reinterpret_cast<MenuScreen *>(this)->GetPackageName(), reinterpret_cast<MenuScreen *>(this)->GetPackageName(), 0.0f, 1.0f,
+                        0.0f, 0.0f, 0.0f, 0.0f);
+    HandlingSlider.Init(reinterpret_cast<MenuScreen *>(this)->GetPackageName(), reinterpret_cast<MenuScreen *>(this)->GetPackageName(), 0.0f, 1.0f,
+                        0.0f, 0.0f, 0.0f, 0.0f);
 }
 
 UIQRBrief::~UIQRBrief() {}
@@ -78,40 +85,40 @@ void UIQRBrief::Setup() {
             }
         }
     }
-    cFEng::Get()->QueueGameMessage(0xc519bfc4, GetPackageName(), 0xff);
+    cFEng::Get()->QueueGameMessage(0xc519bfc4, reinterpret_cast<MenuScreen *>(this)->GetPackageName(), 0xff);
 }
 
 void UIQRBrief::RefreshHeader() {
     FECarRecord *car_rec = FEDatabase->GetPlayerCarStable(0)->GetCarRecordByHandle(pSelectedCar->mHandle);
     unsigned int manu_logo = car_rec->GetManuLogoHash();
     if (GetTextureInfo(manu_logo, 0, 0)) {
-        FEImage *img = FEngFindImage(PackageFilename, 0x3e01ad1d);
+        FEImage *img = FEngFindImage(reinterpret_cast<MenuScreen *>(this)->GetPackageName(), 0x3e01ad1d);
         FEngSetTextureHash(img, manu_logo);
     } else {
         unsigned int placeholder = FEHashUpper("GENERICPLACEHOLDER");
-        FEImage *img = FEngFindImage(PackageFilename, 0x3e01ad1d);
+        FEImage *img = FEngFindImage(reinterpret_cast<MenuScreen *>(this)->GetPackageName(), 0x3e01ad1d);
         FEngSetTextureHash(img, placeholder);
     }
     unsigned int car_logo = car_rec->GetLogoHash();
     if (GetTextureInfo(car_logo, 0, 0)) {
-        FEImage *img = FEngFindImage(PackageFilename, 0xb05dd708);
+        FEImage *img = FEngFindImage(reinterpret_cast<MenuScreen *>(this)->GetPackageName(), 0xb05dd708);
         FEngSetTextureHash(img, car_logo);
     } else {
         unsigned int placeholder = FEHashUpper("GENERICPLACEHOLDER");
-        FEImage *img = FEngFindImage(PackageFilename, 0xb05dd708);
+        FEImage *img = FEngFindImage(reinterpret_cast<MenuScreen *>(this)->GetPackageName(), 0xb05dd708);
         FEngSetTextureHash(img, placeholder);
     }
     GRaceParameters *track_params = pSelectedTrack->pRaceParams;
     unsigned int race_name = FEDatabase->GetRaceNameHash(track_params->GetRaceType());
-    FEngSetLanguageHash(PackageFilename, 0xb5154998, race_name);
+    FEngSetLanguageHash(reinterpret_cast<MenuScreen *>(this)->GetPackageName(), 0xb5154998, race_name);
     unsigned int race_icon = FEDatabase->GetRaceIconHash(track_params->GetRaceType());
-    FEImage *icon_img = FEngFindImage(PackageFilename, 0x2521e5eb);
+    FEImage *icon_img = FEngFindImage(reinterpret_cast<MenuScreen *>(this)->GetPackageName(), 0x2521e5eb);
     FEngSetTextureHash(icon_img, race_icon);
     unsigned int track_name = CalcLanguageHash("TRACKNAME_", track_params);
     if (DoesStringExist(track_name)) {
-        FEngSetLanguageHash(PackageFilename, 0xb5154999, track_name);
+        FEngSetLanguageHash(reinterpret_cast<MenuScreen *>(this)->GetPackageName(), 0xb5154999, track_name);
     } else {
-        FEPrintf(PackageFilename, 0xb5154999, track_params->GetEventID());
+        FEPrintf(reinterpret_cast<MenuScreen *>(this)->GetPackageName(), 0xb5154999, track_params->GetEventID());
     }
     unsigned int unit_hash = 0x867dcfd9;
     if (FEDatabase->GetUserProfile(0)->GetOptions()->TheGameplaySettings.SpeedoUnits == 1) {
@@ -119,14 +126,14 @@ void UIQRBrief::RefreshHeader() {
     }
     const char *unit_str = GetLocalizedString(unit_hash);
     float race_length = track_params->GetRaceLengthMeters() * 0.001f;
-    FEPrintf(PackageFilename, 0xb515499a, "%$0.1f %s", race_length, unit_str);
+    FEPrintf(reinterpret_cast<MenuScreen *>(this)->GetPackageName(), 0xb515499a, "%$0.1f %s", race_length, unit_str);
     GRace::Type race_type = track_params->GetRaceType();
     if (race_type == static_cast<GRace::Type>(1) || race_type == static_cast<GRace::Type>(3)) {
-        FEPrintf(PackageFilename, 0xb515499b, "%d", raceSettings.NumLaps);
+        FEPrintf(reinterpret_cast<MenuScreen *>(this)->GetPackageName(), 0xb515499b, "%d", raceSettings.NumLaps);
     } else {
-        FEPrintf(PackageFilename, 0xb515499b, "--");
+        FEPrintf(reinterpret_cast<MenuScreen *>(this)->GetPackageName(), 0xb515499b, "--");
     }
-    FEPrintf(PackageFilename, 0xb515499c, "%d", raceSettings.NumOpponents);
+    FEPrintf(reinterpret_cast<MenuScreen *>(this)->GetPackageName(), 0xb515499c, "%d", raceSettings.NumOpponents);
     unsigned int ai_hash;
     switch (raceSettings.TrafficDensity) {
         case 0:
@@ -149,7 +156,7 @@ void UIQRBrief::RefreshHeader() {
     if (race_type == static_cast<GRace::Type>(0) || track_params->GetRaceType() == static_cast<GRace::Type>(2)) {
         ai_hash = 0x7f2f7ad6;
     }
-    FEngSetLanguageHash(PackageFilename, 0xb515499d, ai_hash);
+    FEngSetLanguageHash(reinterpret_cast<MenuScreen *>(this)->GetPackageName(), 0xb515499d, ai_hash);
     unsigned int traffic_hash;
     switch (raceSettings.AISkill) {
         case 0:
@@ -165,12 +172,12 @@ void UIQRBrief::RefreshHeader() {
             traffic_hash = 0;
             break;
     }
-    FEngSetLanguageHash(PackageFilename, 0xb515499e, traffic_hash);
+    FEngSetLanguageHash(reinterpret_cast<MenuScreen *>(this)->GetPackageName(), 0xb515499e, traffic_hash);
     unsigned int cops_hash = 0x70dfe5c2;
     if (raceSettings.CatchUp) {
         cops_hash = 0x417b2604;
     }
-    FEngSetLanguageHash(PackageFilename, 0xb515499e, cops_hash);
+    FEngSetLanguageHash(reinterpret_cast<MenuScreen *>(this)->GetPackageName(), 0xb515499e, cops_hash);
     UpdateSliders();
 }
 
@@ -226,12 +233,12 @@ void UIQRBrief::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned 
         case 0xc98356ba: {
             if (randomCount < 1)
                 return;
-            SelectableCar *next_car = static_cast<SelectableCar *>(pSelectedCar->GetNext());
+            SelectableCar *next_car = reinterpret_cast<bTNode<SelectableCar> *>(pSelectedCar)->GetNext();
             if (next_car == static_cast<SelectableCar *>(FilteredCarsList.EndOfList())) {
                 next_car = FilteredCarsList.GetHead();
             }
             pSelectedCar = next_car;
-            SelectableTrack *next_track = static_cast<SelectableTrack *>(pSelectedTrack->GetNext());
+            SelectableTrack *next_track = reinterpret_cast<bTNode<SelectableTrack> *>(pSelectedTrack)->GetNext();
             if (next_track == static_cast<SelectableTrack *>(FilteredTracksList.EndOfList())) {
                 next_track = FilteredTracksList.GetHead();
             }
@@ -247,11 +254,11 @@ void UIQRBrief::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned 
             Attrib::Gen::frontend fe_attrib(car_rec->FEKey, 0, nullptr);
             int unlocked_at = fe_attrib.UnlockedAt();
             if (unlocked_at < FEDatabase->GetUserProfile(0)->GetCareer()->GetCurrentBin()) {
-                FEngSetScript(PackageFilename, 0xfe8fdbf7, 0x5079c8f8, true);
+                FEngSetScript(reinterpret_cast<MenuScreen *>(this)->GetPackageName(), 0xfe8fdbf7, 0x5079c8f8, true);
                 char buf[128];
                 int req_bin = unlocked_at + 1;
                 FEngSNPrintf(buf, 128, "BLACKLIST_%d", req_bin);
-                const char *pkg = PackageFilename;
+                const char *pkg = reinterpret_cast<MenuScreen *>(this)->GetPackageName();
                 const char *locked_str = GetLocalizedString(0x4ef2a115);
                 unsigned int bin_hash = FEHashUpper(buf);
                 const char *bin_name = GetLocalizedString(bin_hash);
@@ -298,7 +305,7 @@ void UIQRBrief::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned 
             randomCount = 30;
             GarageMainScreen::GetInstance()->DisableCarRendering();
             cFEng::Get()->QueuePackageMessage(0xa05a328e, nullptr, nullptr);
-            FEngSetScript(PackageFilename, 0xfe8fdbf7, 0x16a259, true);
+            FEngSetScript(reinterpret_cast<MenuScreen *>(this)->GetPackageName(), 0xfe8fdbf7, 0x16a259, true);
             break;
         case 0x911ab364:
             cFEng::Get()->QueuePackageSwitch("FeQuickRaceMainMenu.fng", 0, 0, false);

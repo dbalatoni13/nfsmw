@@ -12,17 +12,30 @@ class BustedMeter : public HudElement, public IBustedMeter {
   public:
     BustedMeter(UTL::COM::Object *pOutter, const char *pkg_name, int player_number);
     void Update(IPlayer *player) override;
-    void SetInPursuit(bool inPursuit) override;
-    void SetIsHiding(bool isHiding) override;
-    void SetTimeUntilBusted(float time) override;
-    void SetIsBusted(bool isBusted) override;
+    void SetInPursuit(bool inPursuit) override {
+        mInPursuit = inPursuit;
+    };
+    void SetIsHiding(bool isHiding) override {
+        mIsHiding = isHiding;
+    };
+    void SetTimeUntilBusted(float time) override {
+        mTimeUntilBusted = time;
+    };
+    void SetIsBusted(bool isBusted) override {
+        mIsBusted = isBusted;
+        if (!isBusted) {
+            if (mBustedFlasherShown) {
+                mBustedFlasherShown = false;
+            }
+        }
+    };
 
   private:
     bool mInPursuit;
     float mTimeUntilBusted;
     bool mIsHiding;
-    FEObject * mpDataBustedCountdownGroup;
-    FEObject * mpDataBustedCountdownBar;
+    FEObject *mpDataBustedCountdownGroup;
+    FEObject *mpDataBustedCountdownBar;
     float mBustedCountdownBarOriginalWidth;
     bool mIsBusted;
     bool mBustedFlasherShown;

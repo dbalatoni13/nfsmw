@@ -44,4 +44,20 @@ enum Type {
 
 }; // namespace GRace
 
+enum CopDensity {
+    kRaceCops_Off = 0,
+    kRaceCops_Light = 1,
+    kRaceCops_Medium = 2,
+    kRaceCops_Heavy = 3,
+    kRaceCops_NumDensities = 4,
+};
+
+enum Region {
+    kRaceRegion_None = -1,
+    kRaceRegion_College = 0,
+    kRaceRegion_Coastal = 1,
+    kRaceRegion_City = 2,
+    kRaceRegion_NumRegions = 3,
+};
+
 #endif

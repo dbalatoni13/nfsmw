@@ -2,45 +2,49 @@
 
 #include "Speed/Indep/Src/FEng/FEMultiImage.h"
 #include "Speed/Indep/Src/FEng/FETypes.h"
-#include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
+#include "Speed/Indep/Src/Frontend/Database/RaceDB.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEImages.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEObjects.hpp"
 #include "Speed/Indep/Src/Misc/GameFlow.hpp"
 #include "Speed/Indep/Src/World/TrackStreamer.hpp"
+#include "Speed/Indep/Src/Ecstasy/Texture.hpp"
+#include "Speed/Indep/Src/Frontend/FEngFrontend.hpp"
 
-struct Vector2 {
-    float x;
-    float y;
-};
+// struct Vector2 {
+//     float x;
+//     float y;
+// };
 
-struct FEObject;
+// struct FEObject;
 
-void FEngSetInvisible(FEObject *obj);
-void FEngSetVisible(FEObject *obj);
-void FEngSetTextureHash(FEImage *image, unsigned int texture_hash);
-unsigned long FEHashUpper(const char *string);
-unsigned int FEngHashString(const char *format, ...);
-unsigned int CalcLanguageHash(const char *prefix, GRaceParameters *pRaceParams);
+// void FEngSetInvisible(FEObject *obj);
+// void FEngSetVisible(FEObject *obj);
+// void FEngSetTextureHash(FEImage *image, unsigned int texture_hash);
+// unsigned long FEHashUpper(const char *string);
+// unsigned int FEngHashString(const char *format, ...);
+// unsigned int CalcLanguageHash(const char *prefix, GRaceParameters *pRaceParams);
 
-void eLoadStreamingTexture(unsigned int *name_hash_table, int num_hashes, void (*callback)(void *), void *param, int memory_pool_num);
-void eUnloadStreamingTexture(unsigned int *name_hash_table, int num_hashes);
+// void eLoadStreamingTexture(unsigned int *name_hash_table, int num_hashes, void (*callback)(void *), void *param, int memory_pool_num);
+// void eUnloadStreamingTexture(unsigned int *name_hash_table, int num_hashes);
 
-inline void eLoadStreamingTexture(unsigned int name_hash, void (*callback)(unsigned int), unsigned int param0, int memory_pool_num) {
-    eLoadStreamingTexture(&name_hash, 1, reinterpret_cast<void (*)(void *)>(callback), reinterpret_cast<void *>(param0), memory_pool_num);
-}
+// inline void eLoadStreamingTexture(unsigned int name_hash, void (*callback)(unsigned int), unsigned int param0, int memory_pool_num) {
+//     eLoadStreamingTexture(&name_hash, 1, reinterpret_cast<void (*)(void *)>(callback), reinterpret_cast<void *>(param0), memory_pool_num);
+// }
 
-inline void eUnloadStreamingTexture(unsigned int name_hash) {
-    eUnloadStreamingTexture(&name_hash, 1);
-}
+// inline void eUnloadStreamingTexture(unsigned int name_hash) {
+//     eUnloadStreamingTexture(&name_hash, 1);
+// }
 
-void eWaitForStreamingTexturePackLoading(const char *filename);
-void eUnloadAllStreamingTextures(const char *filename);
-void eUnloadStreamingTexturePack(const char *filename);
-int eIsStreamingTexturePackLoaded(const char *filename);
+// void eWaitForStreamingTexturePackLoading(const char *filename);
+// void eUnloadAllStreamingTextures(const char *filename);
+// void eUnloadStreamingTexturePack(const char *filename);
+// int eIsStreamingTexturePackLoaded(const char *filename);
 
 extern float RealTimeElapsed;
 
-struct cPoint {
-    static void SplineSeek(tCubic2D *p, float time);
-};
+// struct cPoint {
+//     static void SplineSeek(tCubic2D *p, float time);
+// };
 
 static UITrackMapStreamer *pInstance;
 
@@ -119,6 +123,10 @@ void UITrackMapStreamer::Init(GRaceParameters *track, FEMultiImage *map, int unu
     }
 }
 
+void UITrackMapStreamer::MapPackLoadCallback(unsigned int screenPtr) {
+    reinterpret_cast<UITrackMapStreamer *>(screenPtr)->SetMapPackLoaded();
+}
+
 void UITrackMapStreamer::MapLoadCallback(unsigned int texture) {
     pInstance->SetMapLoaded(texture);
 }
@@ -146,7 +154,7 @@ void UITrackMapStreamer::SetMapLoaded(unsigned int texture) {
     unsigned int hash = CalcMapTextureHash();
     if (hash != texture) {
         unsigned int old_texture = texture;
-        eUnloadStreamingTexture(&old_texture, 1);
+        eUnloadStreamingTexture(old_texture);
         MapHash = hash;
         FEngSetInvisible(static_cast<FEObject *>(TrackMap));
         unsigned int new_hash = MapHash;
@@ -196,8 +204,8 @@ void UITrackMapStreamer::UpdateMap() {
 
 void UITrackMapStreamer::CalcBoundsForRace(bVector2 &top_left, bVector2 &bottom_right) {
     if (pCurrentTrack != nullptr) {
-        Vector2 topLeftMap;
-        Vector2 botRightMap;
+        UMath::Vector2 topLeftMap;
+        UMath::Vector2 botRightMap;
         pCurrentTrack->GetBoundingBox(topLeftMap, botRightMap);
         float margin = 0.125f;
         top_left.x = topLeftMap.x - margin;
@@ -226,6 +234,14 @@ void UITrackMapStreamer::GetPan(bVector2 &pan) {
     bVector2 center(0.5f, 0.5f);
     PanCubic.GetVal(&pan);
     pan -= center;
+}
+
+void UITrackMapStreamer::ZoomTo(const bVector2 &factor) {
+    ZoomCubic.SetValDesired(const_cast<bVector2 *>(&factor));
+}
+
+void UITrackMapStreamer::PanTo(const bVector2 &pos) {
+    PanCubic.SetValDesired(const_cast<bVector2 *>(&pos));
 }
 
 void UITrackMapStreamer::ZoomToTrack() {
@@ -294,20 +310,4 @@ void UITrackMapStreamer::ResetPan(bool use_track) {
         bVector2 pan(0.5f, 0.5f);
         SetPan(pan);
     }
-}
-
-void UITrackMapStreamer::ZoomTo(const bVector2 &factor) {
-    ZoomCubic.SetValDesired(const_cast<bVector2 *>(&factor));
-}
-
-void UITrackMapStreamer::PanTo(const bVector2 &pos) {
-    PanCubic.SetValDesired(const_cast<bVector2 *>(&pos));
-}
-
-void UITrackMapStreamer::MapPackLoadCallback(unsigned int screenPtr) {
-    reinterpret_cast<UITrackMapStreamer *>(screenPtr)->SetMapPackLoaded();
-}
-
-void UITrackMapStreamer::MakeSpaceInPoolCallbackBridge(int param) {
-    reinterpret_cast<UITrackMapStreamer *>(param)->MakeSpaceInPoolCallback();
 }

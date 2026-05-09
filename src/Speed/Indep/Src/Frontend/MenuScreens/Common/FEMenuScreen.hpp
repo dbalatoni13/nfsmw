@@ -4,10 +4,10 @@
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
+#include <types.h>
 
 #include "Speed/Indep/Src/FEng/FEObject.h"
-
-#include <types.h>
+// #include "Speed/Indep/Src/Frontend/MenuScreens/Common/feKeyboardInput.hpp"
 
 // TODO move?
 enum eMenuSoundTriggers {
@@ -120,7 +120,8 @@ enum eMenuSoundTriggers {
 };
 
 // total size: 0xC
-struct ScreenConstructorData {
+class ScreenConstructorData {
+  public:
     const char *PackageFilename; // offset 0x0, size 0x4
     struct FEPackage *pPackage;  // offset 0x4, size 0x4
     int Arg;                     // offset 0x8, size 0x4
@@ -130,10 +131,14 @@ struct ScreenConstructorData {
 class MenuScreen {
   public:
     MenuScreen(ScreenConstructorData *sd);
-
     virtual ~MenuScreen();
-    virtual void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) = 0;
-    virtual eMenuSoundTriggers NotifySoundMessage(unsigned long msg, eMenuSoundTriggers maybe) { return maybe; }
+
+    int GetActiveButtons();
+
+    virtual void NotificationMessage(u32 msg, FEObject *pobj, u32 param1, u32 param2) = 0;
+    virtual eMenuSoundTriggers NotifySoundMessage(u32 msg, eMenuSoundTriggers maybe) {
+        return maybe;
+    }
 
     void BaseNotify(u32 Message, FEObject *pObject, u32 Param1, u32 Param2);
 
@@ -155,29 +160,36 @@ class MenuScreen {
 
     static void MaybeShutdownVoIPChat();
 
-    const char *GetPackageName() { return PackageFilename; }
+    const char *GetPackageName() {
+        return PackageFilename;
+    }
 
-    FEPackage *GetPackage() { return ConstructData.pPackage; }
+    FEPackage *GetPackage() {
+        return ConstructData.pPackage;
+    }
 
-    void SetAsGarageScreen() { IsGarageScreen = true; }
+    void SetAsGarageScreen() {
+        IsGarageScreen = true;
+    }
 
   protected:
-    bool mPlaySound;                      // offset 0x0, size 0x1
-    unsigned long mDirectionForNextSound; // offset 0x4, size 0x4
-    bool bEnableEAMessenger;              // offset 0x8, size 0x1
+    bool mPlaySound;            // offset 0x0, size 0x1
+    u32 mDirectionForNextSound; // offset 0x4, size 0x4
+    bool bEnableEAMessenger;    // offset 0x8, size 0x1
 
     static bool ShowingEAMessenger; // size: 0x1, address: 0xFFFFFFFF
     static bool EnteringChallenge;  // size: 0x1, address: 0xFFFFFFFF
 
   private:
-    static int gEAMIconState; // size: 0x4, address: 0xFFFFFFFF
-
-  protected:
     const char *PackageFilename;                 // offset 0xC, size 0x4
     ScreenConstructorData ConstructData;         // offset 0x10, size 0xC
     bool IsGarageScreen;                         // offset 0x1C, size 0x1
     struct FEngTextInputObject *TextInputObject; // offset 0x20, size 0x4
     uint8 mStartCapturingFromKeyboard;           // offset 0x24, size 0x1
+
+    static int gEAMIconState; // size: 0x4, address: 0xFFFFFFFF
 };
+
+typedef MenuScreen *(*MenuScreenCreateFunction)(ScreenConstructorData *sd);
 
 #endif

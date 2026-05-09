@@ -5,20 +5,45 @@
 #pragma once
 #endif
 
-#include "Speed/Indep/Src/FEng/FEngStandard.h"
+#include <types.h>
 
-template <int N>
-void FEObjectSorter<N>::SortObjects() {
+#include "FEObject.h"
+
+#include "FEngStandard.h"
+// #include "Speed/Indep/Src/FEng/FEngStandard.h"
+
+struct SFERadixKey { // 0x8
+    FEObject *pobObject;
+    u32 ulKey;
+};
+
+template <int N> class FEObjectSorter {
+  public:
+    FEObjectSorter() {};
+    void Zero() {};
+    void AddObject() {};
+    u32 GetNumObjects() {};
+    FEObject *GetObject() {};
+    SFERadixKey *GetListPtr() {};
+    void SortObjects();
+
+  private:
+    u32 mulNumObjects;
+    SFERadixKey mastFinalList[N];
+    SFERadixKey mastScratchList[N];
+};
+
+template <int N> void FEObjectSorter<N>::SortObjects() {
     int lNumBytes = mulNumObjects << 3;
-    SFERadixKey* pstDestList = mastScratchList;
-    SFERadixKey* pstSrcList = mastFinalList;
+    SFERadixKey *pstDestList = mastScratchList;
+    SFERadixKey *pstSrcList = mastFinalList;
     int b = 3;
     do {
         long alElemCount[256];
         FEngMemSet(alElemCount, 0, sizeof(alElemCount));
         int byteOffset = b + 4;
         int nextB = b - 1;
-        unsigned char* pucByte = reinterpret_cast<unsigned char*>(pstSrcList) + byteOffset;
+        unsigned char *pucByte = reinterpret_cast<unsigned char *>(pstSrcList) + byteOffset;
         int i = 0;
         if (i < lNumBytes) {
             do {
@@ -34,12 +59,12 @@ void FEObjectSorter<N>::SortObjects() {
         }
         for (int k = 0; k < static_cast<int>(mulNumObjects); k++) {
             unsigned char ucIndex = pucByte[k * 8];
-            SFERadixKey* pOut = pstDestList + alElemIndex[ucIndex];
+            SFERadixKey *pOut = pstDestList + alElemIndex[ucIndex];
             pOut->pobObject = pstSrcList[k].pobObject;
             pOut->ulKey = pstSrcList[k].ulKey;
             alElemIndex[ucIndex]++;
         }
-        SFERadixKey* pstTemp = pstSrcList;
+        SFERadixKey *pstTemp = pstSrcList;
         pstSrcList = pstDestList;
         pstDestList = pstTemp;
         b = nextB;

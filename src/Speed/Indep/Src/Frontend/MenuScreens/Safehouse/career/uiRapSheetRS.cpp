@@ -1,20 +1,22 @@
 #include "uiRapSheetRS.hpp"
-#include "Speed/Indep/Src/FEng/cFEng.h"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/frontend.h"
-int FEPrintf(const char* pkg_name, int hash, const char* fmt, ...);
-unsigned int FEngHashString(const char* format, ...);
-const char* GetLocalizedString(unsigned int hash);
-void FEngSetLanguageHash(const char* pkg_name, unsigned int obj_hash, unsigned int lang_hash);
-uiRapSheetRS::uiRapSheetRS(ScreenConstructorData* sd) : MenuScreen(sd) { RefreshHeader(); }
-uiRapSheetRS::~uiRapSheetRS() {}
-void uiRapSheetRS::NotificationMessage(unsigned long msg, FEObject* pobj, unsigned long param1, unsigned long param2) {
-    if (msg == 0xE1FDE1D1) { cFEng::Get()->QueuePackageSwitch("RapSheetMain.fng", 0, 0, false); }
+
+uiRapSheetRS::uiRapSheetRS(ScreenConstructorData *sd) : MenuScreen(sd) {
+    RefreshHeader();
 }
+
+void uiRapSheetRS::NotificationMessage(u32 msg, FEObject *pobj, u32 param1, u32 param2) {
+    if (msg == 0xE1FDE1D1) {
+        cFEng::Get()->QueuePackageSwitch("RapSheetMain.fng", 0, 0, false);
+    }
+}
+
 void uiRapSheetRS::RefreshHeader() {
-    UserProfile* prof = FEDatabase->GetUserProfile(0);
-    FEPlayerCarDB* stable = FEDatabase->GetPlayerCarStable(0);
-    HighScoresDatabase* scores = prof->GetHighScores();
+    UserProfile *prof = FEDatabase->GetUserProfile(0);
+    FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(0);
+    HighScoresDatabase *scores = prof->GetHighScores();
     FEPrintf(GetPackageName(), 0x1232703A, GetLocalizedString(0xE21D083C), prof->GetCareer()->GetCaseFileName());
     FEPrintf(GetPackageName(), 0xB259EEA7, GetLocalizedString(0x6031106E), prof->GetProfileName());
     FEPrintf(GetPackageName(), 0xB259EEA8, GetLocalizedString(0x364E4525), stable->GetTotalBounty());
@@ -33,9 +35,14 @@ void uiRapSheetRS::RefreshHeader() {
         unsigned int wanring_val = rapsheetSummaryString.Num_WarningLevel();
         int totalInfractions = stable->GetTotalNumInfractions(true) + stable->GetTotalNumInfractions(false);
         for (unsigned int i = 0; i < rapsheetSummaryString.Num_WarningLevel(); i++) {
-            if (static_cast<unsigned int>(totalInfractions) <= rapsheetSummaryString.WarningLevel(i)) { wanring_val = i; break; }
+            if (static_cast<unsigned int>(totalInfractions) <= rapsheetSummaryString.WarningLevel(i)) {
+                wanring_val = i;
+                break;
+            }
         }
-        if (wanring_val == 0) { wanring_val = 1; }
+        if (wanring_val == 0) {
+            wanring_val = 1;
+        }
         FEngSetLanguageHash(GetPackageName(), 0x90211462, FEngHashString("RAPSHEET_WARNING_%d", wanring_val));
     }
 }

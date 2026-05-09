@@ -1,5 +1,5 @@
 #include "Speed/Indep/Src/Frontend/HUD/FEPkg_Hud.hpp"
-#include "Speed/Indep/Src/Frontend/HUD/FeAutoSaveIcon.hpp"
+#include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/Src/Frontend/HUD/FeBustedMeter.hpp"
 #include "Speed/Indep/Src/Frontend/HUD/FeCostToState.hpp"
 #include "Speed/Indep/Src/Frontend/HUD/FeCountdown.hpp"
@@ -12,7 +12,7 @@
 #include "Speed/Indep/Src/Frontend/HUD/FeLeaderBoard.hpp"
 #include "Speed/Indep/Src/Frontend/HUD/FeMenuZoneTrigger.hpp"
 #include "Speed/Indep/Src/Frontend/HUD/FeMilestoneBoard.hpp"
-#include "Speed/Indep/Src/Frontend/HUD/FeMinimap.hpp"
+#include "Speed/Indep/Src/Frontend/HUD/FeMinimapStreamer.hpp"
 #include "Speed/Indep/Src/Frontend/HUD/FeNitrousGauge.hpp"
 #include "Speed/Indep/Src/Frontend/HUD/FeOnlineHudSupport.hpp"
 #include "Speed/Indep/Src/Frontend/HUD/FePursuitBoard.hpp"
@@ -27,9 +27,11 @@
 #include "Speed/Indep/Src/Frontend/HUD/FeTimeExtension.hpp"
 #include "Speed/Indep/Src/Frontend/HUD/FeTurboMeter.hpp"
 #include "Speed/Indep/Src/Frontend/HUD/FeWrongWIndi.hpp"
-#include "Speed/Indep/Src/FEng/cFEng.h"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/FEng/FEList.h"
+#include "Speed/Indep/Src/Frontend/HUD/feMinimap.hpp"
 #include "Speed/Indep/Src/Frontend/MemoryCard/MemoryCard.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
 #include "Speed/Indep/Src/Generated/Events/EFadeScreenOff.hpp"
 #include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
 #include "Speed/Indep/Src/Misc/GameFlow.hpp"
@@ -57,63 +59,12 @@
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Src/World/TrackInfo.hpp"
-
-struct FadeScreen : MenuScreen {
-    static bool IsFadeScreenOn();
-    FadeScreen(ScreenConstructorData *);
-    ~FadeScreen() override;
-    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override;
-};
+#include "Speed/Indep/bWare/Inc/bPrintf.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/InGame/FeFadeScreen.hpp"
 
 extern bool bIsRestartingRace;
 extern int SkipFE;
 extern const char *SkipFEPlayerCar;
-
-extern FEString *FEngFindString(const char *, int);
-extern unsigned int bStringHash(const char *str);
-extern unsigned int FEngHashString(const char *, ...);
-extern int bSPrintf(char *, const char *, ...);
-extern int bSNPrintf(char *buf, int max_len, const char *format, ...);
-extern void FixDot(char *buf, int size);
-extern void bToUpper(char *);
-extern int bFileExists(const char *f);
-extern int bStrCmp(const char *, const char *);
-
-extern void eWaitUntilRenderingDone();
-extern void eLoadStreamingTexture(unsigned int *textures, int count, void (*callback)(void *), void *param, int pool);
-extern void eUnloadStreamingTexture(unsigned int *textures, int count);
-extern void eUnloadAllStreamingTextures(const char *);
-extern void eWaitForStreamingTexturePackLoading(const char *);
-extern void eUnloadStreamingTexturePack(const char *);
-extern void SetSoundControlState(bool bON, int esndstate, const char *Reason);
-
-extern FEObject *FEngFindObject(const char *, unsigned int);
-extern FEImage *FEngFindImage(const char *, int);
-extern void FEngSetTextureHash(FEImage *, unsigned int);
-extern void FEngSetColor(FEObject *, unsigned int);
-extern void FEngSetMultiImageRot(FEMultiImage *, float);
-
-inline void eLoadStreamingTexture(unsigned int *textures, int count, void (*callback)(unsigned int), unsigned int param0, int pool) {
-    eLoadStreamingTexture(textures, count, reinterpret_cast<void (*)(void *)>(callback), reinterpret_cast<void *>(param0), pool);
-}
-
-inline void eLoadStreamingTexture(unsigned int name_hash, void (*callback)(unsigned int), unsigned int param0, int pool) {
-    eLoadStreamingTexture(&name_hash, 1, callback, param0, pool);
-}
-
-inline void eUnloadStreamingTexture(unsigned int name_hash) {
-    eUnloadStreamingTexture(&name_hash, 1);
-}
-
-inline void FEngSetTextureHash(const char *pkg_name, unsigned int obj_hash, unsigned int texture_hash) {
-    FEngSetTextureHash(FEngFindImage(pkg_name, obj_hash), texture_hash);
-}
-
-inline void FEngSetColor(const char *pkg_name, unsigned int obj_hash, unsigned int color) {
-    FEngSetColor(FEngFindObject(pkg_name, obj_hash), color);
-}
-
-IHud::~IHud() {}
 
 template void UTL::Vector<IHud *, 16>::push_back(IHud *const &);
 
@@ -132,6 +83,11 @@ extern const char *HudDragTexturePackFilename;
 extern const char *HudSplitScreenTexturePackFilename;
 extern const char *HudDragSplitScreenTexturePackFilename;
 
+HudResourceManager::HudResourceManager() {
+    mHudResourcesState = HRM_NOT_LOADED;
+    pHudTextures = nullptr;
+}
+
 const char *HudResourceManager::GetHudTexPackFilename(ePlayerHudType ht) {
     if (ht == PHT_DRAG) {
         return HudDragTexturePackFilename;
@@ -143,38 +99,6 @@ const char *HudResourceManager::GetHudTexPackFilename(ePlayerHudType ht) {
         return HudSingleRaceTexturePackFilename;
     }
     return HudDragSplitScreenTexturePackFilename;
-}
-
-const char *HudResourceManager::GetHudFengName(ePlayerHudType ht) {
-    switch (ht) {
-        case PHT_DRAG:
-            return "HUD_Drag.fng";
-        case PHT_SPLIT1:
-            return "HUD_Player1.fng";
-        case PHT_SPLIT2:
-            return "HUD_Player2.fng";
-        case PHT_DRAG_SPLIT1:
-            return "HUD_Drag_Player1.fng";
-        case PHT_DRAG_SPLIT2:
-            return "HUD_Drag_Player2.fng";
-        default:
-            return "HUD_SingleRace.fng";
-    }
-}
-
-bool HudResourceManager::AreResourcesLoaded(ePlayerHudType ht) {
-    if (mHudResourcesState == HRM_LOADED) {
-        if (ht == PHT_SPLIT2) {
-            return LoadingResourcesForHudType == PHT_SPLIT1;
-        }
-        if (ht == PHT_DRAG_SPLIT2) {
-            return LoadingResourcesForHudType == PHT_DRAG_SPLIT1;
-        }
-        if (LoadingResourcesForHudType == ht) {
-            return true;
-        }
-    }
-    return false;
 }
 
 CarPart *HudResourceManager::GetCarPart(ePlayerHudType ht, CAR_SLOT_ID carSlotId) {
@@ -229,6 +153,23 @@ bool HudResourceManager::GetCustomHudTexPackFilename(ePlayerHudType ht, char *hu
 
     bSPrintf(hudTexturePackName, "");
     return false;
+}
+
+const char *HudResourceManager::GetHudFengName(ePlayerHudType ht) {
+    switch (ht) {
+        case PHT_DRAG:
+            return "HUD_Drag.fng";
+        case PHT_SPLIT1:
+            return "HUD_Player1.fng";
+        case PHT_SPLIT2:
+            return "HUD_Player2.fng";
+        case PHT_DRAG_SPLIT1:
+            return "HUD_Drag_Player1.fng";
+        case PHT_DRAG_SPLIT2:
+            return "HUD_Drag_Player2.fng";
+        default:
+            return "HUD_SingleRace.fng";
+    }
 }
 
 bool HudResourceManager::ChooseMinimapTextureName(ePlayerHudType hudType, char *texture_name, unsigned int texture_name_size,
@@ -399,20 +340,20 @@ void HudResourceManager::LoadingCompleteCallback() {
         if (GetCustomHudTexPackFilename(LoadingResourcesForHudType, mCustHudTexPackName)) {
             float redlineRotation;
             ChooseLoadableTextures(LoadingResourcesForHudType, mTachLinesHash, redlineRotation);
-            FEngSetMultiImageRot(static_cast<FEMultiImage *>(FEngFindObject(mPackageName, 0xcdfce1b0)), redlineRotation);
+            FEngSetMultiImageRot(reinterpret_cast<FEMultiImage *>(FEngFindObject(mPackageName, 0xcdfce1b0)), redlineRotation);
             eLoadStreamingTexturePack(mCustHudTexPackName, reinterpret_cast<void (*)(void *)>(LoadedCustomHudTexturePackCallbackBridge),
                                       reinterpret_cast<void *>(this), 0);
         } else {
             float redlineRotation;
             ChooseLoadableTextures(LoadingResourcesForHudType, mTachLinesHash, redlineRotation);
-            FEngSetMultiImageRot(static_cast<FEMultiImage *>(FEngFindObject(mPackageName, 0xcdfce1b0)), redlineRotation);
+            FEngSetMultiImageRot(reinterpret_cast<FEMultiImage *>(FEngFindObject(mPackageName, 0xcdfce1b0)), redlineRotation);
             FEngSetTextureHash(mPackageName, 0x309878bc, static_cast<unsigned int>(mTachLinesHash));
             eLoadStreamingTexture(static_cast<unsigned int>(mTachLinesHash), LoadingCompleteCallbackBridge, reinterpret_cast<unsigned int>(this), 0);
         }
     } else if (mPhase == 3) {
         TheHudResourceManager.mHudResourcesState = HRM_LOADED;
         cFEng::Get()->MakeLoadedPackagesDirty();
-        SetSoundControlState(false, 0xc, "HUDLoaded");
+        SetSoundControlState(false, SNDSTATE_STOP_MUSIC, "HUDLoaded");
     }
 }
 
@@ -427,29 +368,28 @@ void HudResourceManager::LoadedCustomHudTexturePackCallback() {
 }
 
 void HudResourceManager::LoadedCustomHudTexturesCallback() {
-    int mPhaseCust = 0;
-    do {
-        unsigned int fengObjHash = 0;
-        CAR_SLOT_ID carSlotIdForColour = static_cast<CAR_SLOT_ID>(0);
+    for (int mPhaseCust = 0; mPhaseCust <= (uint32)5; mPhaseCust++) {
+        int fengObjHash = 0;
+        CAR_SLOT_ID carSlotIdForColour = CARSLOTID_BASE;
         switch (mPhaseCust) {
             case 0:
-                carSlotIdForColour = static_cast<CAR_SLOT_ID>(0x85);
+                carSlotIdForColour = CARSLOTID_HUD_BACKING_COLOUR;
                 fengObjHash = 0x05d19f25;
                 break;
             case 1:
-                carSlotIdForColour = static_cast<CAR_SLOT_ID>(0x87);
+                carSlotIdForColour = CARSLOTID_HUD_CHARACTER_COLOUR;
                 fengObjHash = 0x309878bc;
                 break;
             case 2:
-                carSlotIdForColour = static_cast<CAR_SLOT_ID>(0x87);
+                carSlotIdForColour = CARSLOTID_HUD_CHARACTER_COLOUR;
                 fengObjHash = 0xc62ad685;
                 break;
             case 3:
-                carSlotIdForColour = static_cast<CAR_SLOT_ID>(0x86);
+                carSlotIdForColour = CARSLOTID_HUD_NEEDLE_COLOUR;
                 fengObjHash = 0xf0250dac;
                 break;
             case 4:
-                carSlotIdForColour = static_cast<CAR_SLOT_ID>(0x86);
+                carSlotIdForColour = CARSLOTID_HUD_NEEDLE_COLOUR;
                 fengObjHash = 0x6d5ece44;
                 break;
         }
@@ -458,9 +398,8 @@ void HudResourceManager::LoadedCustomHudTexturesCallback() {
             FEngSetColor(mPackageName, fengObjHash, custColour);
         }
         FEngSetTextureHash(mPackageName, fengObjHash, mCustomizeHUDTexTextureResources[mPhaseCust]);
-        mPhaseCust++;
-    } while (static_cast<unsigned int>(mPhaseCust) <= 4);
-    int custColour = GetCustomHudColour(LoadingResourcesForHudType, static_cast<CAR_SLOT_ID>(0x87));
+    };
+    int custColour = GetCustomHudColour(LoadingResourcesForHudType, CARSLOTID_HUD_CHARACTER_COLOUR);
     if (custColour) {
         FEngSetColor(mPackageName, 0xc3383b63, custColour);
     }
@@ -511,62 +450,19 @@ void HudResourceManager::UnloadRequiredResources(ePlayerHudType ht) {
     mPackageName = nullptr;
 }
 
-bool FEngHud::ShouldRearViewMirrorBeVisible(EVIEW_ID viewId) {
-    eView *view = eGetView(viewId, false);
-    IPlayer *player = IPlayer::First(PLAYER_LOCAL);
-
-    if (player) {
-        IHud *hud = player->GetHud();
-        if (hud && !player->GetHud()->IsHudVisible()) {
-            return false;
+bool HudResourceManager::AreResourcesLoaded(ePlayerHudType ht) {
+    if (mHudResourcesState == HRM_LOADED) {
+        if (ht == PHT_SPLIT2) {
+            return LoadingResourcesForHudType == PHT_SPLIT1;
+        }
+        if (ht == PHT_DRAG_SPLIT2) {
+            return LoadingResourcesForHudType == PHT_DRAG_SPLIT1;
+        }
+        if (LoadingResourcesForHudType == ht) {
+            return true;
         }
     }
-
-    CameraMover *camMover = nullptr;
-    if (view) {
-        camMover = view->GetCameraMover();
-    }
-
-    if (camMover && camMover->GetType() == CM_DRIVE_CUBIC) {
-        if (camMover->GetLookbackAngle()) {
-            return false;
-        }
-    }
-
-    if (FEManager::ShouldPauseSimulation(true)) {
-        return false;
-    }
-
-    if (!FEDatabase) {
-        return false;
-    }
-
-    if (!FEDatabase->GetGameplaySettings()->RearviewOn) {
-        return false;
-    }
-
-    ePlayerSettingsCameras playerCam = FEDatabase->GetPlayerSettings(viewId - 1)->CurCam;
-    if (playerCam >= PSC_CLOSE && playerCam <= PSC_PURSUIT) {
-        return false;
-    }
-
-    if (!cFEng::Get()->IsPackagePushed("HUD_SingleRace.fng")) {
-        return false;
-    }
-    return true;
-}
-
-float FEngHud::ChooseMaxRpmTextureNumber(float rpm) {
-    if (rpm < 7000.0f) {
-        return 7000.0f;
-    }
-    if (rpm < 8000.0f) {
-        return 8000.0f;
-    }
-    if (rpm < 9000.0f) {
-        return 9000.0f;
-    }
-    return 10000.0f;
+    return false;
 }
 
 FEngHud::FEngHud(ePlayerHudType ht, const char *pkg_name, IPlayer *player, int player_number)
@@ -617,7 +513,7 @@ FEngHud::FEngHud(ePlayerHudType ht, const char *pkg_name, IPlayer *player, int p
         TheHudResourceManager.LoadRequiredResources(mPlayerHudType, pkg_name);
     }
 
-    cFEng::mInstance->PushNoControlPackage(pkg_name, static_cast<FE_PACKAGE_PRIORITY>(0x66));
+    cFEng::Get()->PushNoControlPackage(pkg_name, static_cast<FE_PACKAGE_PRIORITY>(0x66));
     FEngSetAllObjectsInPackageVisibility(pkg_name, false);
 
     pSpeedometer = new Speedometer(this, pPackageName, player_number);
@@ -731,7 +627,7 @@ FEngHud::~FEngHud() {
     delete pInfractions;
     pInfractions = nullptr;
 
-    cFEng::mInstance->PopNoControlPackage(pPackageName);
+    cFEng::Get()->PopNoControlPackage(pPackageName);
 
     if (mPlayerHudType != PHT_SPLIT2 && mPlayerHudType != PHT_DRAG_SPLIT2) {
         TheHudResourceManager.UnloadRequiredResources(mPlayerHudType);
@@ -846,9 +742,36 @@ void FEngHud::Update(IPlayer *player, float dT) {
     JoyHandle(player);
 }
 
+void FEngHud::FadeAll(bool fadeIn) {
+    if (fadeIn) {
+        cFEng::Get()->QueuePackageMessage(0xBCC00F05, pPackageName, nullptr);
+        cFEng::Get()->QueuePackageMessage(FEHashUpper("DEACTIVATE"), pPackageName, nullptr);
+    } else {
+        cFEng::Get()->QueuePackageMessage(0x54C20A66, pPackageName, nullptr);
+        cFEng::Get()->QueuePackageMessage(FEHashUpper("ACTIVATE"), pPackageName, nullptr);
+    }
+}
+
 void FEngHud::SetInPursuit(bool inPursuit) {
     if (mInPursuit != inPursuit) {
         mInPursuit = inPursuit;
+    }
+}
+
+void FEngHud::JoyDisable() {
+    JoystickPort port = static_cast<JoystickPort>(pPlayer->GetControllerPort());
+    if (mActionQ.IsEnabled()) {
+        mActionQ.Enable(false);
+        mActionQ.Flush();
+    }
+}
+
+void FEngHud::JoyEnable() {
+    int port = pPlayer->GetControllerPort();
+    if (!mActionQ.IsEnabled()) {
+        mActionQ.SetPort(port);
+        mActionQ.Enable(true);
+        mActionQ.Flush();
     }
 }
 
@@ -956,22 +879,6 @@ void FEngHud::JoyHandle(IPlayer *player) {
             mActionQ.PopAction();
         }
     }
-}
-
-void FEngHud::SetHasTurbo(bool hasTurbo) {
-    mHasTurbo = hasTurbo;
-}
-
-bool FEngHud::IsHudVisible() {
-    return CurrentHudFeatures != 0;
-}
-
-void FEngHud::HideAll() {
-    SetHudFeatures(0);
-}
-
-void FEngHud::Release() {
-    delete this;
 }
 
 unsigned long long FEngHud::DetermineHudFeatures(IPlayer *player) {
@@ -1132,35 +1039,6 @@ bool FEngHud::AreResourcesLoaded() {
     return TheHudResourceManager.AreResourcesLoaded(mPlayerHudType);
 }
 
-void FEngHud::RefreshMiniMapItems() {
-    if (pMinimap) {
-        static_cast<Minimap *>(pMinimap)->RefreshMapItems();
-    }
-}
-
-OnlineHUDSupport *FEngHud::GetOnlineHUDSupport() {
-    return static_cast<OnlineHUDSupport *>(pOnlineSupport);
-}
-
-extern const char lbl_803E4E0C[];
-extern const char lbl_803E572C[];
-
-void FEngHud::FadeAll(bool fadeIn) {
-    if (fadeIn) {
-        {
-            const unsigned long FEObj_FADEIN = 0xBCC00F05;
-            cFEng::Get()->QueuePackageMessage(FEObj_FADEIN, pPackageName, nullptr);
-            cFEng::Get()->QueuePackageMessage(FEHashUpper(lbl_803E572C), pPackageName, nullptr);
-        }
-    } else {
-        {
-            const unsigned long FEObj_FADEOUT = 0x54C20A66;
-            cFEng::Get()->QueuePackageMessage(FEObj_FADEOUT, pPackageName, nullptr);
-            cFEng::Get()->QueuePackageMessage(FEHashUpper(lbl_803E4E0C), pPackageName, nullptr);
-        }
-    }
-}
-
 void FEngHud::SetHudFeatures(unsigned long long hud_features) {
     unsigned long long diff = CurrentHudFeatures ^ hud_features;
     if (pSpeedometer != nullptr && (diff & 0x8000000)) {
@@ -1246,23 +1124,6 @@ void FEngHud::SetHudFeatures(unsigned long long hud_features) {
     CurrentHudFeatures = hud_features;
 }
 
-void FEngHud::JoyEnable() {
-    int port = pPlayer->GetControllerPort();
-    if (!mActionQ.IsEnabled()) {
-        mActionQ.SetPort(port);
-        mActionQ.Enable(true);
-        mActionQ.Flush();
-    }
-}
-
-void FEngHud::JoyDisable() {
-    JoystickPort port = static_cast<JoystickPort>(pPlayer->GetControllerPort());
-    if (mActionQ.IsEnabled()) {
-        mActionQ.Enable(false);
-        mActionQ.Flush();
-    }
-}
-
 void FEngHud::SetWideScreenMode() {
     if (mCurrentWidescreenSetting != FEDatabase->GetVideoSettings()->WideScreen) {
         mCurrentWidescreenSetting = FEDatabase->GetVideoSettings()->WideScreen;
@@ -1294,4 +1155,73 @@ void HideEverySingleHud() {
     for (IHud *const *iter = list.begin(); iter != end; iter++) {
         (*iter)->HideAll();
     }
+}
+
+void FEngHud::RefreshMiniMapItems() {
+    if (pMinimap) {
+        static_cast<Minimap *>(pMinimap)->RefreshMapItems();
+    }
+}
+
+bool FEngHud::ShouldRearViewMirrorBeVisible(EVIEW_ID viewId) {
+    eView *view = eGetView(viewId, false);
+    IPlayer *player = IPlayer::First(PLAYER_LOCAL);
+
+    if (player) {
+        IHud *hud = player->GetHud();
+        if (hud && !player->GetHud()->IsHudVisible()) {
+            return false;
+        }
+    }
+
+    CameraMover *camMover = nullptr;
+    if (view) {
+        camMover = view->GetCameraMover();
+    }
+
+    if (camMover && camMover->GetType() == CM_DRIVE_CUBIC) {
+        if (camMover->GetLookbackAngle()) {
+            return false;
+        }
+    }
+
+    if (FEManager::ShouldPauseSimulation(true)) {
+        return false;
+    }
+
+    if (!FEDatabase) {
+        return false;
+    }
+
+    if (!FEDatabase->GetGameplaySettings()->RearviewOn) {
+        return false;
+    }
+
+    ePlayerSettingsCameras playerCam = FEDatabase->GetPlayerSettings(viewId - 1)->CurCam;
+    if (playerCam >= PSC_CLOSE && playerCam <= PSC_PURSUIT) {
+        return false;
+    }
+
+    if (!cFEng::Get()->IsPackagePushed("HUD_SingleRace.fng")) {
+        return false;
+    }
+    return true;
+}
+
+float FEngHud::ChooseMaxRpmTextureNumber(float rpm) {
+    if (rpm < 7000.0f) {
+        return 7000.0f;
+    }
+    if (rpm < 8000.0f) {
+        return 8000.0f;
+    }
+    if (rpm < 9000.0f) {
+        return 9000.0f;
+    }
+    return 10000.0f;
+}
+
+// STRIPPED TODO: find where it goes
+OnlineHUDSupport *FEngHud::GetOnlineHUDSupport() {
+    return static_cast<OnlineHUDSupport *>(pOnlineSupport);
 }

@@ -23,10 +23,14 @@ extern const float lbl_803E48B0;
 
 HeatMeter::HeatMeter(UTL::COM::Object *pOutter, const char *pkg_name, int player_number)
     : HudElement(pkg_name, 0x40004000ULL) //
-    , IHeatMeter(pOutter) //
-    , mHeatChanged(true) //
-    , mPursuitHeat(lbl_803E4888) //
-    , mVehicleHeat(lbl_803E4888) //
+      ,
+      IHeatMeter(pOutter) //
+      ,
+      mHeatChanged(true) //
+      ,
+      mPursuitHeat(lbl_803E4888) //
+      ,
+      mVehicleHeat(lbl_803E4888) //
 {
     RegisterGroup(0xC46A80A9);
     mpDataHeatMultiplier = FEngFindObject(GetPackageName(), 0x7F91DA62);
@@ -68,7 +72,7 @@ void HeatMeter::Update(IPlayer *player) {
                 FEngSetScript(mpDataHeatMultiplier, 0x1744B3, true);
             }
         }
-        FEPrintf(pPackageName, 0x7F91DA62, lbl_803E488C, heatIntegerPart);
+        FEPrintf(GetPackageName(), 0x7F91DA62, lbl_803E488C, heatIntegerPart);
         FEngSetVisible(mpDataHeatMultiplier);
     } else {
         FEngSetInvisible(mpDataHeatMultiplier);

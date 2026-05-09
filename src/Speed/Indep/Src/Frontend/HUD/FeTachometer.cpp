@@ -1,61 +1,28 @@
 #include "Speed/Indep/Src/Frontend/HUD/FeTachometer.hpp"
 
-#include "Speed/Indep/Src/FEng/FEMultiImage.h"
 #include "Speed/Indep/Src/FEng/FEString.h"
 #include "Speed/Indep/Src/FEng/FETypes.h"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEObjects.hpp"
 #include "Speed/Indep/Src/Sim/Simulation.h"
-
-void FEngSetMultiImageRot(FEMultiImage *image, float angle_degrees);
-void FEngSetScript(FEObject *object, unsigned int script_hash, bool start_at_beginning);
-bool FEngIsScriptSet(FEObject *obj, unsigned int script_hash);
-FEObject *FEngFindObject(const char *pkg_name, unsigned int obj_hash);
-unsigned long FEHashUpper(const char *name);
-int FEPrintf(FEString *text, const char *fmt, ...);
-void FEngSetVisible(FEObject *obj);
-void FEngSetInvisible(FEObject *obj);
-void FEngSetRotationZ(FEObject *obj, float angle);
-void FEngGetTopLeft(FEObject *obj, float &x, float &y);
-void FEngGetSize(FEObject *obj, float &w, float &h);
-void FEngSetSize(FEObject *obj, float w, float h);
-void FEngSetTopLeft(FEObject *obj, float x, float y);
-void FEngSetColor(FEObject *obj, unsigned int color);
-FEColor FEngGetObjectColor(FEObject *obj);
-int bStrICmp(const char *s1, const char *s2);
-
-extern const char lbl_803E4D20[];
-extern const char lbl_803E4EB8[];
-extern const char lbl_803E4EC8[];
-extern const char lbl_803E4ED8[];
-extern const char lbl_803E4EE4[];
-extern const char lbl_803E4EF0[];
-extern const char lbl_803E4F00[];
-extern const float lbl_803E4F10;
-extern const char lbl_803E4F14[];
-
-float ChooseMaxRpmTextureNumber(float redline);
-
-extern const float lbl_803E4EA4;
-extern const float lbl_803E4EA8;
-extern const float lbl_803E4EAC;
-extern const float lbl_803E4EB0;
-extern const float lbl_803E4EB4;
+#include "Speed/Indep/Src/Frontend/HUD/FEPkg_Hud.hpp"
 
 static float CalcAngleForRPM(float rpm, float redline) {
-    float factor = rpm / ChooseMaxRpmTextureNumber(redline);
-    if (factor < lbl_803E4EA4) {
-        factor = lbl_803E4EA4;
+    float factor = rpm / FEngHud::ChooseMaxRpmTextureNumber(redline);
+    if (factor < 0.0f) {
+        factor = 0.0f;
     }
-    if (factor > lbl_803E4EA8) {
-        factor = lbl_803E4EA8;
+    if (factor > 1.0f) {
+        factor = 1.0f;
     }
-    float min_angle = lbl_803E4EAC;
-    float fRange = lbl_803E4EB0 - lbl_803E4EAC;
-    float max_angle = lbl_803E4EB4;
+    float min_angle = 66.0f;
+    float max_angle = 360.0f;
+    float fRange = 294.0f - min_angle;
     float angle = factor * fRange + min_angle;
     if (angle > max_angle) {
         angle = angle - max_angle;
     }
-    if (angle < lbl_803E4EA4) {
+    if (angle < 0.0f) {
         angle = max_angle - angle;
     }
     return angle;
@@ -63,29 +30,36 @@ static float CalcAngleForRPM(float rpm, float redline) {
 
 Tachometer::Tachometer(UTL::COM::Object *pOutter, const char *pkg_name, int player_number)
     : HudElement(pkg_name, 2) //
-    , ITachometer(pOutter) //
-    , mRpm(lbl_803E4F10) //
-    , mRedline(lbl_803E4F10) //
-    , mMaxRpm(lbl_803E4F10) //
-    , mGear(G_NEUTRAL) //
-    , mIsShifting(false) //
-    , mInPerfectLaunchRange(false) //
-    , mShiftPotential(SHIFT_POTENTIAL_NONE) //
-    , mNeedleColourSetToPerfectLaunch(false) //
+      ,
+      ITachometer(pOutter) //
+      ,
+      mRpm(0.0f) //
+      ,
+      mRedline(0.0f) //
+      ,
+      mMaxRpm(0.0f) //
+      ,
+      mGear(G_NEUTRAL) //
+      ,
+      mIsShifting(false) //
+      ,
+      mInPerfectLaunchRange(false) //
+      ,
+      mShiftPotential(SHIFT_POTENTIAL_NONE) //
+      ,
+      mNeedleColourSetToPerfectLaunch(false) //
 {
-    RegisterGroup(FEHashUpper(lbl_803E4EB8));
-    TachNeedle = FEngFindObject(pkg_name, FEHashUpper(lbl_803E4EC8));
-    pRedline = FEngFindObject(pkg_name, FEHashUpper(lbl_803E4ED8));
-    pShiftIndicator = FEngFindObject(pkg_name, FEHashUpper(lbl_803E4EE4));
-    pRPM_bar = FEngFindObject(pkg_name, FEHashUpper(lbl_803E4EF0));
-    pGearString = static_cast< FEString * >(FEngFindObject(pkg_name, FEHashUpper(lbl_803E4F00)));
+    RegisterGroup(FEHashUpper("GaugeCluster"));
+    TachNeedle = FEngFindObject(pkg_name, FEHashUpper("3rdPersonNeedle"));
+    pRedline = FEngFindObject(pkg_name, FEHashUpper("RPM_REDLINE"));
+    pShiftIndicator = FEngFindObject(pkg_name, FEHashUpper("Shift_light"));
+    pRPM_bar = FEngFindObject(pkg_name, FEHashUpper("TAC_Lines_7500"));
+    pGearString = static_cast<FEString *>(FEngFindObject(pkg_name, FEHashUpper("3rdPersonGear")));
     RegisterGroup(0x045E9562);
     PerfectShiftDetectedTimer.ResetLow();
     MissedShiftTimer.ResetLow();
     mOriginalNeedleWidth = TachNeedle->GetObjData()->Size.x;
 }
-
-ITachometer::~ITachometer() {}
 
 void Tachometer::Update(IPlayer *player) {
     if (Sim::GetUserMode() == 1) {
@@ -109,7 +83,7 @@ void Tachometer::Update(IPlayer *player) {
     }
 
     if (pGearString) {
-        FEPrintf(pGearString, lbl_803E4F14, GetLetterForGear(mGear));
+        FEPrintf(pGearString, "%c", GetLetterForGear(mGear));
 
         if (Sim::GetUserMode() != 1) {
             FEColor normalColor(0xFF000000);
@@ -148,18 +122,6 @@ void Tachometer::Update(IPlayer *player) {
     }
 }
 
-void Tachometer::SetRpm(float rpm) {
-    mRpm = rpm;
-}
-
-void Tachometer::SetShifting(bool shifting) {
-    mIsShifting = shifting;
-}
-
-void Tachometer::SetInPerfectLaunchRange(bool inRange) {
-    mInPerfectLaunchRange = inRange;
-}
-
 char Tachometer::GetLetterForGear(GearID gear) {
     if (gear == G_FIRST) {
         return '1';
@@ -189,17 +151,4 @@ char Tachometer::GetLetterForGear(GearID gear) {
         return 'R';
     }
     return 'N';
-}
-
-void Tachometer::SetGear(GearID gear, ShiftPotential potential, bool hasGoodEnoughTraction) {
-    if (gear != mGear) {
-        mGear = gear;
-        mShiftPotential = static_cast<ShiftPotential>(0);
-        return;
-    }
-    if (hasGoodEnoughTraction) {
-        mShiftPotential = potential;
-        return;
-    }
-    mShiftPotential = static_cast<ShiftPotential>(0);
 }

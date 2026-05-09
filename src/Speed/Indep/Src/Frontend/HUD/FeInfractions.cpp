@@ -1,15 +1,11 @@
 #include "Speed/Indep/Src/Frontend/HUD/FeInfractions.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEObjects.hpp"
 #include "Speed/Indep/Src/Gameplay/GInfractionManager.h"
-
-extern bool FEngIsScriptSet(FEObject *obj, unsigned int script_hash);
-extern void FEngSetScript(FEObject *object, unsigned int script_hash, bool start_at_beginning);
-extern int FEPrintf(const char *pkg_name, FEObject *obj, const char *fmt, ...);
-extern int FEPrintf(FEString *text, const char *fmt, ...);
+#include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 
 Infractions::Infractions(UTL::COM::Object *pOutter, const char *pkg_name, int player_number)
-    : HudElement(pkg_name, 0x200000000ULL) //
-    , IInfractions(pOutter)
-{
+    : HudElement(pkg_name, 0x200000000ULL), IInfractions(pOutter) {
     RegisterGroup(FEHashUpper("INFRACTIONS_HEADER_GROUP"));
     mpDataGenericIcon = RegisterObject(FEHashUpper("GENERIC_ICONS"));
     mpDataTotalInfractions = RegisterString(FEHashUpper("TOTAL_INFRACTIONS_TEXT"));
@@ -29,8 +25,7 @@ void Infractions::Update(IPlayer *player) {
         }
     }
     if (!infractionStringShowing) {
-        if (FEngIsScriptSet(mpDataGenericIcon, 0x5079c8f8) ||
-            FEngIsScriptSet(mpDataGenericIcon, 0x3826a28)) {
+        if (FEngIsScriptSet(mpDataGenericIcon, 0x5079c8f8) || FEngIsScriptSet(mpDataGenericIcon, 0x3826a28)) {
             FEngSetScript(mpDataGenericIcon, 0x33113ac, true);
         }
     }

@@ -20,49 +20,13 @@ enum eGarageType {
 // total size: 0x4C
 class FEManager {
   public:
-    FEManager();
+    static void InitInput();
 
     static void Init();
-
-    static void InitInput();
 
     static void Destroy();
 
     static FEManager *Get();
-
-    eGarageType GetGarageType();
-
-    void SetGarageType(eGarageType pGarageType);
-
-    const char *GetGarageNameFromType();
-
-    const char *GetGaragePrefixFromType(eGarageType pGarageType);
-
-    static bool IsOkayToRequestPauseSimulation(int playerIndex, bool useControllerErrors, bool okIfAutoSaveActive);
-
-    static bool ShouldPauseSimulation(bool useControllerErrors);
-
-    static void RequestPauseSimulation(const char *reason);
-
-    static void RequestUnPauseSimulation(const char *reason);
-
-    void WantControllerError(int port);
-
-    bool WaitingForControllerError();
-
-    void StartFE();
-
-    void StopFE();
-
-    void Render();
-
-    void UpdateJoyInput();
-
-    void Update();
-
-    void SetEATraxSecondButton();
-
-    void ExitOnlineGameplayBasedOnConnection();
 
     void SetFirstScreen(const char *pPackageName, int arg, unsigned int controlMask) {
         mFirstScreen = pPackageName;
@@ -74,9 +38,17 @@ class FEManager {
         mFirstBoot = true;
     }
 
+    void SetGarageType(eGarageType pGarageType);
+
+    eGarageType GetGarageType();
+
     eGarageType GetPreviousGarageType() {
         return mPreviousGarageType;
     }
+
+    const char *GetGarageNameFromType();
+
+    const char *GetGaragePrefixFromType(eGarageType pGarageType);
 
     ResourceFile *GetGarageBackground() {
         return mGarageBackground;
@@ -86,9 +58,35 @@ class FEManager {
         mGarageBackground = pBackground;
     }
 
+    void StartFE();
+
+    void StopFE();
+
+    void Render();
+
+    void Update();
+
+    void UpdateJoyInput();
+
+#ifdef EA_BUILD_A124
+    void SetEATraxDelay();
+
+    int GetEATraxDelay();
+#endif
+
     void SetEATraxFirstButton(bool onOff) {
         mEATraxFirstButton = onOff;
     }
+
+    void SetEATraxSecondButton();
+
+    static bool IsOkayToRequestPauseSimulation(int playerIndex, bool useControllerErrors, bool okIfAutoSaveActive);
+
+    static void RequestPauseSimulation(const char *reason);
+
+    static bool ShouldPauseSimulation(bool useControllerErrors);
+
+    static void RequestUnPauseSimulation(const char *reason);
 
     static inline bool IsPaused() {
         return mInstance->mPauseRequest > 0;
@@ -98,7 +96,11 @@ class FEManager {
         return mPauseRequest;
     }
 
+#ifdef EA_BUILD_A124
     // static  const char *GetPauseReason(int idx) {}
+#endif
+
+    void WantControllerError(int port);
 
     void ClearControllerError(int port) {
         if (port == -1) {
@@ -113,6 +115,8 @@ class FEManager {
         }
     }
 
+    bool WaitingForControllerError();
+
     void SuppressControllerError(bool b) {
         bSuppressControllerError = b;
     }
@@ -125,13 +129,15 @@ class FEManager {
         return bAllowControllerError;
     }
 
+    void ExitOnlineGameplayBasedOnConnection();
+
     bool IsFirstBoot() {
         return mFirstBoot;
     }
 
-    //  ~FEManager() {}
-
   private:
+    FEManager();
+
     static FEManager *mInstance;        // size: 0x4
     static int mPauseRequest;           // size: 0x4
     static const char *mPauseReason[8]; // size: 0x20
@@ -150,31 +156,6 @@ class FEManager {
     bool mEATraxFirstButton;         // offset 0x48, size 0x1
 };
 
-struct RideInfo;
-
-enum eSetRideInfoReasons {
-    SET_RIDE_INFO_REASON_VINYL = 0,
-    SET_RIDE_INFO_REASON_LOAD_CAR = 1,
-    SET_RIDE_INFO_REASON_CATCHALL = 2,
-};
-
-enum eCarViewerWhichCar {
-    eCARVIEWER_PLAYER1_CAR = 0,
-    eCARVIEWER_PLAYER2_CAR = 1,
-};
-
-struct GarageMainScreen;
-
-struct CarViewer {
-    static GarageMainScreen *FindWhichScreenToUpdate(eCarViewerWhichCar which_car);
-    static void SetRideInfo(RideInfo *ride, eSetRideInfoReasons reason, eCarViewerWhichCar which_car);
-    static void CancelCarLoad(eCarViewerWhichCar which_car);
-    static RideInfo *GetRideInfo(eCarViewerWhichCar which_car);
-    static void HideAllCars();
-    static void ShowAllCars();
-    static void ShowCarScreen();
-    static void UnshowCarScreen();
-    static bool haveLoadedOnce;
-};
+int GetPortsPlayer(int port);
 
 #endif

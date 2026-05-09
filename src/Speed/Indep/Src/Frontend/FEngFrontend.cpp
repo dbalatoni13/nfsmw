@@ -1,4 +1,6 @@
-#include "Speed/Indep/Src/FEng/cFEng.h"
+#include "FEngFrontend.hpp"
+
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/FEng/FEPackage.h"
 #include "Speed/Indep/Src/Frontend/FEJoyInput.hpp"
 
@@ -11,7 +13,7 @@ extern unsigned int Button_Action_Hashes_GAMECUBE[][5];
 extern unsigned int Button_Action_Hashes_GAMECUBE_Wheel[][5];
 
 unsigned int FindButtonNameHashForFEString(int config, int string_number, JoystickPort player) {
-    unsigned int (*hashes)[5];
+    unsigned int(*hashes)[5];
     if (IsJoystickTypeWheel(player)) {
         hashes = Button_Action_Hashes_GAMECUBE_Wheel;
     } else {
@@ -29,7 +31,8 @@ void FEngSNMakeHidden(char *outBuffer, int out_buf_size, const char *strInput) {
         do {
             outBuffer[i] = '*';
             i++;
-            if (i >= nLen) break;
+            if (i >= nLen)
+                break;
         } while (i != out_buf_size - 1);
     }
     outBuffer[i] = '\0';
@@ -42,25 +45,34 @@ void FEngSNMakeHidden(char *outBuffer, int out_buf_size, unsigned short *strInpu
         do {
             outBuffer[i] = '*';
             i++;
-            if (i >= nLen) break;
+            if (i >= nLen)
+                break;
         } while (i != out_buf_size - 1);
     }
     outBuffer[i] = '\0';
 }
 
 int FEngMapJoyParamToJoyport(int feng_param) {
-    if (feng_param & 1) return 0;
-    if (feng_param & 2) return 1;
-    if (feng_param & 4) return 2;
-    if (feng_param & 8) return 3;
+    if (feng_param & 1)
+        return 0;
+    if (feng_param & 2)
+        return 1;
+    if (feng_param & 4)
+        return 2;
+    if (feng_param & 8)
+        return 3;
     return -1;
 }
 
 int FEngMapJoyportToJoyParam(int joyport) {
-    if (joyport == 0) return 1;
-    if (joyport == 1) return 2;
-    if (joyport == 2) return 4;
-    if (joyport == 3) return 8;
+    if (joyport == 0)
+        return 1;
+    if (joyport == 1)
+        return 2;
+    if (joyport == 2)
+        return 4;
+    if (joyport == 3)
+        return 8;
     return 0;
 }
 

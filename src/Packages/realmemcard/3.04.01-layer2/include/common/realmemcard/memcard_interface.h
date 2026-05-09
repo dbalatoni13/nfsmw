@@ -1,5 +1,5 @@
-#ifndef FRONTEND_MEMORYCARD_REALMCIFACE_H
-#define FRONTEND_MEMORYCARD_REALMCIFACE_H
+#ifndef REALMEMCARD_MEMCARD_INTERFACE_H
+#define REALMEMCARD_MEMCARD_INTERFACE_H
 
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
@@ -122,8 +122,8 @@ struct TimeInfo {
 struct BootupCheckResults {
     void Clear();
 
-    CardId mFirstGoodCard;        // offset 0x0, size 0x4
-    bool mEntryFound;             // offset 0x4, size 0x1
+    CardId mFirstGoodCard;         // offset 0x0, size 0x4
+    bool mEntryFound;              // offset 0x4, size 0x1
     unsigned int mNumBlocksNeeded; // offset 0x8, size 0x4
 };
 
@@ -132,13 +132,13 @@ struct CardInfo {
     CardInfo();
     void Clear();
 
-    CardId mCardId;             // offset 0x0, size 0x4
-    CardStatus mStatus;         // offset 0x4, size 0x4
-    unsigned int mFreeSpace;    // offset 0x8, size 0x4
-    unsigned int mFreeFiles;    // offset 0xC, size 0x4
-    unsigned int mTotalSpace;   // offset 0x10, size 0x4
-    bool mFreeSpaceOverLimit;   // offset 0x14, size 0x1
-    bool mTotalSpaceOverLimit;  // offset 0x18, size 0x1
+    CardId mCardId;            // offset 0x0, size 0x4
+    CardStatus mStatus;        // offset 0x4, size 0x4
+    unsigned int mFreeSpace;   // offset 0x8, size 0x4
+    unsigned int mFreeFiles;   // offset 0xC, size 0x4
+    unsigned int mTotalSpace;  // offset 0x10, size 0x4
+    bool mFreeSpaceOverLimit;  // offset 0x14, size 0x1
+    bool mTotalSpaceOverLimit; // offset 0x18, size 0x1
 };
 
 // total size: 0x24
@@ -223,16 +223,14 @@ struct TitleInfo {
 struct MemcardInterfaceImpl;
 
 struct GameInfo {
-    wchar_t mGameTitle[33];          // offset 0x0, size 0x84
-    unsigned int mTitleId;           // offset 0x84, size 0x4
-    bool mMultipleSaveTypesUsed;     // offset 0x88, size 0x1
-    bool mMultitapSupported;         // offset 0x8C, size 0x1
+    wchar_t mGameTitle[33];      // offset 0x0, size 0x84
+    unsigned int mTitleId;       // offset 0x84, size 0x4
+    bool mMultipleSaveTypesUsed; // offset 0x88, size 0x1
+    bool mMultitapSupported;     // offset 0x8C, size 0x1
 
-    GameInfo(const unsigned short *gameTitle, unsigned int titleId,
-             bool multipleSaveTypesUsed, bool multitapSupported);
+    GameInfo(const unsigned short *gameTitle, unsigned int titleId, bool multipleSaveTypesUsed, bool multitapSupported);
 #if !defined(_MSC_VER) || defined(_NATIVE_WCHAR_T_DEFINED)
-    GameInfo(const wchar_t *gameTitle, unsigned int titleId,
-             bool multipleSaveTypesUsed, bool multitapSupported);
+    GameInfo(const wchar_t *gameTitle, unsigned int titleId, bool multipleSaveTypesUsed, bool multitapSupported);
 #endif
     void Clear();
 };
@@ -240,41 +238,29 @@ struct GameInfo {
 struct MemcardInterface {
     MemcardInterfaceImpl *mImpl;
 
-    static MemcardInterface *CreateInstance(struct SystemInterface *iSystem,
-                                            struct IGameInterface *iGame,
-                                            struct GameInfo *gameInfo);
+    static MemcardInterface *CreateInstance(struct SystemInterface *iSystem, struct IGameInterface *iGame, struct GameInfo *gameInfo);
     static const char *GetFilterForAllEntries();
     void Release();
-    MemcardInterface(struct SystemInterface *iSystem, struct IGameInterface *iGame,
-                     struct GameInfo *gameInfo);
+    MemcardInterface(struct SystemInterface *iSystem, struct IGameInterface *iGame, struct GameInfo *gameInfo);
     ~MemcardInterface();
-    void BootupCheck(const BootupCheckParams *params, unsigned int nEntries,
-                     const char **entryNames, wchar_t *content);
-    void BootupCheck(const BootupCheckParams *params, unsigned int nEntries,
-                     const AutoloadEntry *autoloadEntries);
-    void SaveCheck(const char *entryName, const SaveInfo *saveInfo,
-                   const TitleInfo *titleInfo);
-    void Save(const char *entryName, const char *header, const char *body,
-              const SaveInfo *saveInfo, const TitleInfo *titleInfo);
-    void Save(const char *entryName, const char *header, const char *body,
-              const SaveInfo *saveInfo);
-    void Load(const char *entryName, char *header, char *body,
-              const unsigned short *contentName, const TitleInfo *titleInfo,
+    void BootupCheck(const BootupCheckParams *params, unsigned int nEntries, const char **entryNames, wchar_t *content);
+    void BootupCheck(const BootupCheckParams *params, unsigned int nEntries, const AutoloadEntry *autoloadEntries);
+    void SaveCheck(const char *entryName, const SaveInfo *saveInfo, const TitleInfo *titleInfo);
+    void Save(const char *entryName, const char *header, const char *body, const SaveInfo *saveInfo, const TitleInfo *titleInfo);
+    void Save(const char *entryName, const char *header, const char *body, const SaveInfo *saveInfo);
+    void Load(const char *entryName, char *header, char *body, const unsigned short *contentName, const TitleInfo *titleInfo,
               const unsigned short *typeName);
-    void Load(const char *entryName, char *header, char *body,
-              const wchar_t *contentName, const TitleInfo *titleInfo);
+    void Load(const char *entryName, char *header, char *body, const wchar_t *contentName, const TitleInfo *titleInfo);
     void Delete(const char *entryName, const unsigned short *contentName);
 #if !defined(_MSC_VER) || defined(_NATIVE_WCHAR_T_DEFINED)
     void Delete(const char *entryName, const wchar_t *contentName);
 #endif
-    void DeleteMultiple(unsigned int nEntryNames, const char **entryNames,
-                        const unsigned short *contentName);
+    void DeleteMultiple(unsigned int nEntryNames, const char **entryNames, const unsigned short *contentName);
     void FindEntries(const char *entryNamePattern, const TitleInfo *titleInfo);
     void MessageDone(MessageChoices choice);
     void CheckCard(CardId cardId);
     void SetActiveCard(CardId cardId);
-    void SetAutosave(AutosaveState state, unsigned int nSaveReqs,
-                     SaveReq **saveReqs, const char *entryName, CardId cardId);
+    void SetAutosave(AutosaveState state, unsigned int nSaveReqs, SaveReq **saveReqs, const char *entryName, CardId cardId);
     void SetMonitor(MonitorState state);
     void SetMessage(MessageState state, unsigned int message);
     const unsigned short *GetCardName();

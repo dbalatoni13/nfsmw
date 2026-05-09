@@ -1,132 +1,101 @@
 #include "uiMain.hpp"
 
-#include "Speed/Indep/Src/FEng/cFEng.h"
 #include "Speed/Indep/Src/FEng/FEList.h"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
+#include "Speed/Indep/Src/Frontend/FEPackageData.hpp"
 #include "Speed/Indep/Src/Frontend/MemoryCard/MemoryCard.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/MemCard/uiMemcardInterface.hpp"
 #include "Speed/Indep/Src/Misc/Config.h"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/FEPkg_GarageMain.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEObjects.hpp"
 
 const char *gOnlineMainMenu = "OL_MAIN.fng";
 
-// GarageMainScreen forward definition (full definition in FEAnyMovieScreen.cpp later in TU)
-struct GarageMainScreen : public MenuScreen {
-    char _pad_2c[0x2C];       // offset 0x2C to 0x58
-    bool CameraPushRequested; // offset 0x58
-    char _pad_59[0x17];       // offset 0x59 to 0x70
-    int HideEntireScreen;     // offset 0x70
-
-    GarageMainScreen(ScreenConstructorData *sd) : MenuScreen(sd) {}
-    ~GarageMainScreen() override;
-    void NotificationMessage(unsigned long msg, FEObject *obj, unsigned long param1, unsigned long param2) override;
-    bool IsVisable() {
-        return HideEntireScreen == 0;
-    }
-    void CancelCameraPush() {
-        CameraPushRequested = false;
-    }
-    void UpdateCurrentCameraView(bool b);
-    void EnableCarRendering();
-    void DisableCarRendering();
-    static GarageMainScreen *GetInstance();
-};
-
-void MemcardEnter(const char *from, const char *to, unsigned int op, void (*pTermFunc)(void *), void *pTermFuncParam, unsigned int msgSuccess,
-                  unsigned int msgFailed);
-bool GetMikeMannBuild();
 extern int UnlockAllThings;
-void FEngSetLanguageHash(const char *pkg_name, unsigned int obj_hash, unsigned int lang_hash);
-unsigned char FEngGetLastButton(const char *pkg_name);
-int FEPrintf(const char *pkg_name, int hash, const char *fmt, ...);
 
-FEObject *FEngFindObject(const char *pkg_name, unsigned int obj_hash);
-void FEngSetInvisible(FEObject *obj);
-void FEngSetVisible(FEObject *obj);
-
-inline void FEngSetInvisible(const char *pkg_name, unsigned int obj_hash) {
-    FEngSetInvisible(FEngFindObject(pkg_name, obj_hash));
-}
-inline void FEngSetVisible(const char *pkg_name, unsigned int obj_hash) {
-    FEngSetVisible(FEngFindObject(pkg_name, obj_hash));
-}
-
-struct MainQuickRace : public IconOption {
-    MainQuickRace(unsigned int tex_hash, unsigned int name_hash, unsigned int desc_hash) : IconOption(tex_hash, name_hash, desc_hash) {}
+class MainQuickRace : public IconOption {
+  public:
+    MainQuickRace(uint32 tex_hash, uint32 name_hash, uint32 desc_hash) : IconOption(tex_hash, name_hash, desc_hash) {}
     ~MainQuickRace() override {}
-    void React(const char *pkg_name, unsigned int data, FEObject *obj, unsigned int param1, unsigned int param2) override;
+    void React(const char *pkg_name, uint32 data, FEObject *obj, uint32 param1, uint32 param2) override {
+        if (data != 0x0C407210)
+            return;
+        FEDatabase->SetGameMode(eFE_GAME_MODE_QUICK_RACE);
+    }
 };
 
-void MainQuickRace::React(const char *pkg_name, unsigned int data, FEObject *obj, unsigned int param1, unsigned int param2) {
-    if (data != 0x0C407210)
-        return;
-    FEDatabase->SetGameMode(eFE_GAME_MODE_QUICK_RACE);
-}
-
-struct MainCustomize : public IconOption {
-    MainCustomize(unsigned int tex_hash, unsigned int name_hash, unsigned int desc_hash) : IconOption(tex_hash, name_hash, desc_hash) {}
+class MainCustomize : public IconOption {
+  public:
+    MainCustomize(uint32 tex_hash, uint32 name_hash, uint32 desc_hash) : IconOption(tex_hash, name_hash, desc_hash) {}
     ~MainCustomize() override {}
-    void React(const char *pkg_name, unsigned int data, FEObject *obj, unsigned int param1, unsigned int param2) override;
+    void React(const char *pkg_name, uint32 data, FEObject *obj, uint32 param1, uint32 param2) override {
+        if (data != 0x0C407210)
+            return;
+        FEDatabase->SetGameMode(eFE_GAME_MODE_CUSTOMIZE);
+    };
 };
 
-void MainCustomize::React(const char *pkg_name, unsigned int data, FEObject *obj, unsigned int param1, unsigned int param2) {
-    if (data != 0x0C407210)
-        return;
-    FEDatabase->SetGameMode(eFE_GAME_MODE_CUSTOMIZE);
-}
-
-struct MainProfileManager : public IconOption {
-    MainProfileManager(unsigned int tex_hash, unsigned int name_hash, unsigned int desc_hash) : IconOption(tex_hash, name_hash, desc_hash) {}
+class MainProfileManager : public IconOption {
+  public:
+    MainProfileManager(uint32 tex_hash, uint32 name_hash, uint32 desc_hash) : IconOption(tex_hash, name_hash, desc_hash) {}
     ~MainProfileManager() override {}
-    void React(const char *pkg_name, unsigned int data, FEObject *obj, unsigned int param1, unsigned int param2) override;
+    void React(const char *pkg_name, uint32 data, FEObject *obj, uint32 param1, uint32 param2) override {
+        if (data != 0x0C407210)
+            return;
+        FEDatabase->SetGameMode(eFE_GAME_MODE_PROFILE_MANAGER);
+    };
 };
 
-void MainProfileManager::React(const char *pkg_name, unsigned int data, FEObject *obj, unsigned int param1, unsigned int param2) {
-    if (data != 0x0C407210)
-        return;
-    FEDatabase->SetGameMode(eFE_GAME_MODE_PROFILE_MANAGER);
-}
-
-struct MainOptions : public IconOption {
-    MainOptions(unsigned int tex_hash, unsigned int name_hash, unsigned int desc_hash) : IconOption(tex_hash, name_hash, desc_hash) {}
+class MainOptions : public IconOption {
+  public:
+    MainOptions(uint32 tex_hash, uint32 name_hash, uint32 desc_hash) : IconOption(tex_hash, name_hash, desc_hash) {}
     ~MainOptions() override {}
-    void React(const char *pkg_name, unsigned int data, FEObject *obj, unsigned int param1, unsigned int param2) override;
+    void React(const char *pkg_name, uint32 data, FEObject *obj, uint32 param1, uint32 param2) override {
+        if (data != 0x0C407210)
+            return;
+        FEDatabase->SetGameMode(eFE_GAME_MODE_OPTIONS);
+    };
 };
 
-void MainOptions::React(const char *pkg_name, unsigned int data, FEObject *obj, unsigned int param1, unsigned int param2) {
-    if (data != 0x0C407210)
-        return;
-    FEDatabase->SetGameMode(eFE_GAME_MODE_OPTIONS);
-}
-
-void MainCareer::React(const char *pkg_name, unsigned int data, FEObject *obj, unsigned int param1, unsigned int param2) {
-    if (data != 0x0C407210)
-        return;
-    if (IsMemcardEnabled) {
-        FEDatabase->SetGameMode(eFE_GAME_MODE_CAREER_MANAGER);
-    } else {
-        FEDatabase->SetGameMode(eFE_GAME_MODE_CAREER);
-    }
-}
-
-void Challenge::React(const char *pkg_name, unsigned int data, FEObject *obj, unsigned int param1, unsigned int param2) {
-    if (data == 0x0C407210) {
-        if (FEDatabase->bProfileLoaded || !IsMemcardEnabled) {
-            FEDatabase->SetGameMode(eFE_GAME_MODE_CHALLENGE);
-            SetReactImmediately(false);
-            cFEng::Get()->QueuePackageMessage(0x0C407210, pkg_name, obj);
+class MainCareer : public IconOption {
+  public:
+    MainCareer(uint32 tex_hash, uint32 name_hash, uint32 desc_hash) : IconOption(tex_hash, name_hash, desc_hash) {}
+    ~MainCareer() override {}
+    void React(const char *pkg_name, uint32 data, FEObject *obj, uint32 param1, uint32 param2) override {
+        if (data != 0x0C407210)
+            return;
+        if (IsMemcardEnabled) {
+            FEDatabase->SetGameMode(eFE_GAME_MODE_CAREER_MANAGER);
         } else {
-            MemcardEnter("MainMenu.fng", "ChallengeSeries.fng", 0x10063, nullptr, nullptr, 0, 0);
+            FEDatabase->SetGameMode(eFE_GAME_MODE_CAREER);
         }
-    }
-}
+    };
+};
 
-UIMain::UIMain(ScreenConstructorData *sd)
-    : IconScrollerMenu(sd) //
-      ,
-      m_bStatsShowing(false) {
+class Challenge : public IconOption {
+  public:
+    Challenge(uint32 tex_hash, uint32 name_hash, uint32 desc_hash) : IconOption(tex_hash, name_hash, desc_hash) {}
+    ~Challenge() override {}
+    void React(const char *pkg_name, uint32 data, FEObject *obj, uint32 param1, uint32 param2) override {
+        if (data == 0x0C407210) {
+            if (FEDatabase->bProfileLoaded || !IsMemcardEnabled) {
+                FEDatabase->SetGameMode(eFE_GAME_MODE_CHALLENGE);
+                SetReactImmediately(false);
+                cFEng::Get()->QueuePackageMessage(0x0C407210, pkg_name, obj);
+            } else {
+                MemcardEnter("MainMenu.fng", "ChallengeSeries.fng", 0x10063, nullptr, nullptr, 0, 0);
+            }
+        }
+    };
+};
+
+UIMain::UIMain(ScreenConstructorData *sd) : IconScrollerMenu(sd) {
+    m_bStatsShowing = false;
     Setup();
 }
 
-void UIMain::NotificationMessage(unsigned long msg, FEObject *obj, unsigned long param1, unsigned long param2) {
+void UIMain::NotificationMessage(u32 msg, FEObject *obj, u32 param1, u32 param2) {
     IconScrollerMenu::NotificationMessage(msg, obj, param1, param2);
 
     switch (msg) {
@@ -180,7 +149,7 @@ void UIMain::NotificationMessage(unsigned long msg, FEObject *obj, unsigned long
 }
 
 void UIMain::Setup() {
-    const unsigned long FEObj_TITLEGROUP = 0xb71b576d;
+    const uint32 FEObj_TITLEGROUP = 0xb71b576d;
 
     FEDatabase->ResetGameMode();
     FEDatabase->SetPlayersJoystickPort(0, -1);
@@ -207,7 +176,7 @@ void UIMain::Setup() {
     }
 
     FEngSetLanguageHash(GetPackageName(), FEObj_TITLEGROUP, 0xb24aae58);
-    unsigned char lastButton = FEngGetLastButton(GetPackageName());
+    uint8 lastButton = FEngGetLastButton(GetPackageName());
 
     if (bFadeInIconsImmediately) {
         Options.bDelayUpdate = false;
@@ -223,7 +192,7 @@ void UIMain::Setup() {
 void UIMain::UpdateProfileData() {
     if (FEDatabase->bProfileLoaded) {
         GameCompletionStats stats = FEDatabase->GetGameCompletionStats();
-        const unsigned long FEObj_PLAYERNAMEGROUP = 0xb514e2d8;
+        const uint32 FEObj_PLAYERNAMEGROUP = 0xb514e2d8;
 
         const char *szPercentUnit = "%";
         eLanguages currLang = static_cast<eLanguages>(GetCurrentLanguage());

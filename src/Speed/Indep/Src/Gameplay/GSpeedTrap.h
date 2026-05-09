@@ -5,37 +5,80 @@
 #pragma once
 #endif
 
-struct GSpeedTrap {
-    enum Flags { kFlag_Unlocked = 1, kFlag_Active = 2, kFlag_Completed = 4, kFlag_KnockedOver = 8, };
-    unsigned short mFlags;
-    unsigned short mBinNumber;
-    unsigned int mSpeedTrapKey;
-    unsigned int mCameraMarkerKey;
-    float mRequiredValue;
-    float mRecordedValue;
-    void SetFlag(unsigned int mask) { mFlags |= mask; }
-    void ClearFlag(unsigned int mask) { mFlags &= ~mask; }
-    bool IsFlagSet(unsigned int mask) const;
-    bool IsFlagClear(unsigned int mask) const;
-    bool GetIsLocked() const { return IsFlagClear(kFlag_Unlocked); }
-    bool GetIsUnlocked() const { return IsFlagSet(kFlag_Unlocked); }
-    bool GetIsCompleted() const { return IsFlagSet(kFlag_Completed); }
-    bool GetIsKnockedOver() const { return IsFlagSet(kFlag_KnockedOver); }
-    bool GetIsActive() const { return IsFlagSet(kFlag_Active); }
-    unsigned int GetSpeedTrapKey() const { return mSpeedTrapKey; }
-    unsigned int GetBinNumber() const { return mBinNumber; }
-    float GetTriggerSpeed() const { return mRequiredValue; }
-    float GetRecordedPassSpeed() const { return mRecordedValue; }
+#include "types.h"
+
+#include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
+#include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
+
+class GSpeedTrap {
+  public:
+    typedef enum { kFlag_Unlocked = 1, kFlag_Active = 2, kFlag_Completed = 4, kFlag_KnockedOver = 8 } Flags;
+
     GSpeedTrap();
+    bool GetIsLocked() const {
+        return IsFlagClear(kFlag_Unlocked);
+    }
+    bool GetIsUnlocked() const {
+        return IsFlagSet(kFlag_Unlocked);
+    }
+    bool GetIsCompleted() const {
+        return IsFlagSet(kFlag_Completed);
+    }
+    bool GetIsKnockedOver() const {
+        return IsFlagSet(kFlag_KnockedOver);
+    }
+    bool GetIsActive() const {
+        return IsFlagSet(kFlag_Active);
+    }
+    Attrib::Key GetSpeedTrapKey() const {
+        return mSpeedTrapKey;
+    }
+    unsigned int GetBinNumber() const {
+        return mBinNumber;
+    }
+    float GetTriggerSpeed() const {
+        return mRequiredValue;
+    }
+    float GetRecordedPassSpeed() const {
+        return mRecordedValue;
+    }
     float GetBounty() const;
     int GetLocalizationTag() const;
-    unsigned int GetJumpMarkerKey() const;
-    void Init(unsigned int trapKey);
+    // TODO impl GTrigger
+    class GTrigger *GetTrapTrigger() const;
+    Attrib::Key GetJumpMarkerKey() const;
+    void NotifyTriggered(float value);
+    void DebugForceComplete();
+    bool operator<(const struct GSpeedTrap &rhs) const {}
+
+  private:
+    void SetFlag(unsigned int mask) {
+        mFlags |= mask;
+    }
+    void ClearFlag(unsigned int mask) {
+        mFlags &= ~mask;
+    }
+    bool IsFlagSet(unsigned int mask) const;
+    bool IsFlagClear(unsigned int mask) const;
+    void Init(Attrib::Key trapKey);
     void Reset();
     void Unlock();
     void Activate();
-    void NotifyTriggered(float value);
-    void DebugForceComplete();
+
+#ifdef EA_BUILD_A124
+    Attrib::Key mSpeedTrapKey;
+    uint16 mFlags;
+    uint16 mBinNumber;
+    Mps mRequiredValue;
+    Mps mRecordedValue;
+#else
+    uint16 mFlags;
+    uint16 mBinNumber;
+    Attrib::Key mSpeedTrapKey;
+    Attrib::Key mCameraMarkerKey;
+    Mps mRequiredValue;
+    Mps mRecordedValue;
+#endif
 };
 
 #endif

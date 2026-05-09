@@ -1,14 +1,17 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiShowcase.hpp"
+#include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEStrings.hpp"
+#include "Speed/Indep/Src/Frontend/Localization/Localize.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/FEPkg_GarageMain.hpp"
 #include "Speed/Indep/Src/Input/IOModule.h"
 #include "Speed/Indep/Src/Input/ISteeringWheel.h"
 
-extern void FEngSetButtonTexture(FEImage *img, unsigned int hash);
-
 const char *Showcase::FromPackage;
-unsigned int Showcase::FromArgs;
-unsigned int Showcase::FromIndex;
-unsigned int Showcase::BlackListNumber;
-int Showcase::FromFilter;
+uint32 Showcase::FromArgs;
+uint32 Showcase::FromIndex;
+uint32 Showcase::BlackListNumber;
+int32 Showcase::FromFilter;
 void *Showcase::FromColor[3];
 
 Showcase::Showcase(ScreenConstructorData *sd)
@@ -34,10 +37,10 @@ Showcase::Showcase(ScreenConstructorData *sd)
             RivalStreamer.Init(BlackListNumber, nullptr, pTagImg, nullptr);
         } else {
             const char *pkg = GetPackageName();
-            unsigned int manuLogoHash = car->GetManuLogoHash();
+            uint32 manuLogoHash = car->GetManuLogoHash();
             FEImage *manuLogo = FEngFindImage(pkg, 0x3e01ad1d);
             FEngSetTextureHash(manuLogo, manuLogoHash);
-            unsigned int logoHash = car->GetLogoHash();
+            uint32 logoHash = car->GetLogoHash();
             FEImage *carBadge = FEngFindImage(pkg, 0xb05dd708);
             FEngSetTextureHash(carBadge, logoHash);
             RivalStreamer.Init(1, nullptr, nullptr, nullptr);

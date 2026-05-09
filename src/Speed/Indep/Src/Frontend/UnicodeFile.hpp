@@ -7,21 +7,24 @@
 
 #include <types.h>
 
-struct UnicodeFile {
-    short* data_; // offset 0x0, size 0x4
-    short* next_; // offset 0x4, size 0x4
-    short* end_;  // offset 0x8, size 0x4
-
+class UnicodeFile {
+  public:
     UnicodeFile();
-    UnicodeFile(const char* filename);
+    UnicodeFile(const char *filename);
     ~UnicodeFile();
-    bool Load(const char* filename);
+    bool Load(const char *filename);
     void Unload();
-    short* First();
-    short* Next();
+    void LineWrap(int maxCharacters);
+    i16 *First();
+    i16 *Next();
+
+  private:
     void FixEndian();
     void FixEOLs();
-    void LineWrap(int maxCharacters);
+
+    i16 *data_; // offset 0x0, size 0x4
+    i16 *next_; // offset 0x4, size 0x4
+    i16 *end_;  // offset 0x8, size 0x4
 };
 
 #endif

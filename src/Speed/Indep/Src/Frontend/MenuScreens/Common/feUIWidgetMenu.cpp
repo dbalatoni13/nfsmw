@@ -2,6 +2,7 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEInputWidget.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/IconPanel.hpp"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEObjects.hpp"
 
 extern void FEngSetVisible(FEObject *obj);
 extern void FEngSetInvisible(FEObject *obj);
@@ -27,12 +28,18 @@ extern float g_KBDelaySeconds;
 
 UIWidgetMenu::UIWidgetMenu(ScreenConstructorData *sd)
     : MenuScreen(sd) //
-    , pCurrentOption(nullptr) //
-    , pViewTop(nullptr) //
-    , pTitleMaster(nullptr) //
-    , pDataMaster(nullptr) //
-    , pPrevButtonObj(nullptr) //
-    , pDone(nullptr) //
+      ,
+      pCurrentOption(nullptr) //
+      ,
+      pViewTop(nullptr) //
+      ,
+      pTitleMaster(nullptr) //
+      ,
+      pDataMaster(nullptr) //
+      ,
+      pPrevButtonObj(nullptr) //
+      ,
+      pDone(nullptr) //
 {
     ScrollBar.~FEScrollBar();
     new (&ScrollBar) FEScrollBar(GetPackageName(), "scrollbar", true, false, false);
@@ -72,74 +79,80 @@ UIWidgetMenu::UIWidgetMenu(ScreenConstructorData *sd)
     }
 }
 
-void UIWidgetMenu::Setup() {
-}
-
 void UIWidgetMenu::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
     switch (msg) {
-    case 0x35f8620b:
-        if (!pCurrentOption) return;
-        if (!pCurrentOption->IsEnabled()) return;
-        SetOption(pCurrentOption);
-        return;
-    case 0xc407210:
-    case 0x911ab364:
-        StorePrevNotification(msg, pobj, param1, param2);
-    case 0x9120409e:
-    case 0xb5971bf1:
-        if (!bAllowScroll) return;
-        if (!pCurrentOption) return;
-        if (!pCurrentOption->IsEnabled()) return;
-        pCurrentOption->Act(GetPackageName(), msg);
-        return;
-    case 0x72619778:
-        if (!bAllowScroll) return;
-        if (bScrollWrapped) {
-            ScrollWrapped(eSD_PREV);
+        case 0x35f8620b:
+            if (!pCurrentOption)
+                return;
+            if (!pCurrentOption->IsEnabled())
+                return;
+            SetOption(pCurrentOption);
+            return;
+        case 0xc407210:
+        case 0x911ab364:
+            StorePrevNotification(msg, pobj, param1, param2);
+        case 0x9120409e:
+        case 0xb5971bf1:
+            if (!bAllowScroll)
+                return;
+            if (!pCurrentOption)
+                return;
+            if (!pCurrentOption->IsEnabled())
+                return;
+            pCurrentOption->Act(GetPackageName(), msg);
+            return;
+        case 0x72619778:
+            if (!bAllowScroll)
+                return;
+            if (bScrollWrapped) {
+                ScrollWrapped(eSD_PREV);
+                return;
+            }
+            Scroll(eSD_PREV);
+            return;
+        case 0x911c0a4b:
+            if (!bAllowScroll)
+                return;
+            if (bScrollWrapped) {
+                ScrollWrapped(eSD_NEXT);
+                return;
+            }
+            Scroll(eSD_NEXT);
+            return;
+        case 0x92b703b5:
+            RefreshWidgets();
+            return;
+        case 0xaf0bbd92:
+            ClearWidgets();
+            Setup();
+            return;
+        case 0x81017864: {
+            if ((RealTimer - KBCreationTimer).GetSeconds() < g_KBDelaySeconds)
+                return;
+            FEInputWidget *widge = static_cast<FEInputWidget *>(pCurrentOption);
+            widge->SetInputText("");
+            FEngBeginTextInput(widge->GetDataObject()->NameHash, widge->GetEditMode(), widge->GetInputText(), widge->GetTitle(),
+                               widge->GetMaxInputLength());
+            bAllowScroll = false;
             return;
         }
-        Scroll(eSD_PREV);
-        return;
-    case 0x911c0a4b:
-        if (!bAllowScroll) return;
-        if (bScrollWrapped) {
-            ScrollWrapped(eSD_NEXT);
+        case 0xda5b8712: {
+            KBCreationTimer = RealTimer;
+            FEInputWidget *widge = static_cast<FEInputWidget *>(pCurrentOption);
+            widge->SetInputText(FEngGetEditedString());
+            if (pCurrentOption && pCurrentOption->IsEnabled()) {
+                pCurrentOption->Act(GetPackageName(), 0xda5b8712);
+            }
+            widge->Draw();
+            bAllowScroll = true;
             return;
         }
-        Scroll(eSD_NEXT);
-        return;
-    case 0x92b703b5:
-        RefreshWidgets();
-        return;
-    case 0xaf0bbd92:
-        ClearWidgets();
-        Setup();
-        return;
-    case 0x81017864: {
-        if ((RealTimer - KBCreationTimer).GetSeconds() < g_KBDelaySeconds) return;
-        FEInputWidget *widge = static_cast<FEInputWidget *>(pCurrentOption);
-        widge->SetInputText("");
-        FEngBeginTextInput(widge->GetDataObject()->NameHash, widge->GetEditMode(), widge->GetInputText(), widge->GetTitle(), widge->GetMaxInputLength());
-        bAllowScroll = false;
-        return;
-    }
-    case 0xda5b8712: {
-        KBCreationTimer = RealTimer;
-        FEInputWidget *widge = static_cast<FEInputWidget *>(pCurrentOption);
-        widge->SetInputText(FEngGetEditedString());
-        if (pCurrentOption && pCurrentOption->IsEnabled()) {
-            pCurrentOption->Act(GetPackageName(), 0xda5b8712);
-        }
-        widge->Draw();
-        bAllowScroll = true;
-        return;
-    }
-    case 0xc9d30688:
-        bAllowScroll = true;
-        return;
-    case 0x84378bef:
-    default:
-        return;
+        case 0xc9d30688:
+            bAllowScroll = true;
+            return;
+        case 0x84378bef:
+        default:
+            return;
     }
 }
 
@@ -322,8 +335,8 @@ void UIWidgetMenu::SyncViewToSelection() {
         Reset();
         return;
     }
-    if (static_cast< unsigned int >(iIndexToAdd - 1) > iMaxWidgetsOnScreen &&
-        GetWidgetIndex(pCurrentOption) <= static_cast< unsigned int >(iIndexToAdd - iMaxWidgetsOnScreen)) {
+    if (static_cast<unsigned int>(iIndexToAdd - 1) > iMaxWidgetsOnScreen &&
+        GetWidgetIndex(pCurrentOption) <= static_cast<unsigned int>(iIndexToAdd - iMaxWidgetsOnScreen)) {
         pViewTop = pCurrentOption;
     } else {
         int node_index = iIndexToAdd - iMaxWidgetsOnScreen;
@@ -331,7 +344,7 @@ void UIWidgetMenu::SyncViewToSelection() {
         if (node_index < 0) {
             node_index = 0;
         }
-        pViewTop = static_cast< FEWidget * >(Options.GetNode(node_index));
+        pViewTop = static_cast<FEWidget *>(Options.GetNode(node_index));
     }
     Reposition();
     bViewNeedsSync = false;
@@ -378,9 +391,10 @@ unsigned int UIWidgetMenu::AddToggleOption(FEToggleWidget *option, bool use_arro
     option->Show();
     option->Draw();
     option->Position();
-    img_left = FEngGetTopLeftX(option->GetRightImage()) + bAbs(FEngGetSizeX(option->GetRightImage()));
+    img_left = FEngGetTopLeftX(reinterpret_cast<FEObject *>(option->GetRightImage())) +
+               bAbs(FEngGetSizeX(reinterpret_cast<FEObject *>(option->GetRightImage())));
     option->SetWidth(bAbs(option->GetTopLeftX() - img_left));
-    img_right = bAbs(FEngGetSizeY(option->GetRightImage()));
+    img_right = bAbs(FEngGetSizeY(reinterpret_cast<FEObject *>(option->GetRightImage())));
     option->SetHeight(img_right);
     return iIndexToAdd - 1;
 }
@@ -409,9 +423,10 @@ unsigned int UIWidgetMenu::AddSliderOption(FESliderWidget *option, bool use_arro
     option->Show();
     option->Draw();
     option->Position();
-    img_left = FEngGetTopLeftX(option->GetRightImage()) + bAbs(FEngGetSizeX(option->GetRightImage()));
+    img_left = FEngGetTopLeftX(reinterpret_cast<FEObject *>(option->GetRightImage())) +
+               bAbs(FEngGetSizeX(reinterpret_cast<FEObject *>(option->GetRightImage())));
     option->SetWidth(bAbs(option->GetTopLeftX() - img_left));
-    img_right = bAbs(FEngGetSizeY(option->GetTitleObject()));
+    img_right = bAbs(FEngGetSizeY(reinterpret_cast<FEObject *>(option->GetTitleObject())));
     option->SetHeight(img_right);
     return iIndexToAdd - 1;
 }
@@ -419,12 +434,12 @@ unsigned int UIWidgetMenu::AddSliderOption(FESliderWidget *option, bool use_arro
 void UIWidgetMenu::SetInitialOption(int number) {
     if (Options.IsEmpty()) {
         if (bHasScrollBar) {
-            ScrollBar.Update(iMaxWidgetsOnScreen, iIndexToAdd - 1,
-                             GetWidgetIndex(pViewTop), GetWidgetIndex(pCurrentOption));
+            ScrollBar.Update(iMaxWidgetsOnScreen, iIndexToAdd - 1, GetWidgetIndex(pViewTop), GetWidgetIndex(pCurrentOption));
         }
         return;
     }
-    if (bCurrentOptionSet) goto update_scrollbar;
+    if (bCurrentOptionSet)
+        goto update_scrollbar;
 
     bool need_first_avail;
     need_first_avail = false;
@@ -464,13 +479,13 @@ void UIWidgetMenu::SetInitialOption(int number) {
     SyncViewToSelection();
 update_scrollbar:
     if (bHasScrollBar) {
-        ScrollBar.Update(iMaxWidgetsOnScreen, iIndexToAdd - 1,
-                         GetWidgetIndex(pViewTop), GetWidgetIndex(pCurrentOption));
+        ScrollBar.Update(iMaxWidgetsOnScreen, iIndexToAdd - 1, GetWidgetIndex(pViewTop), GetWidgetIndex(pCurrentOption));
     }
 }
 
 void UIWidgetMenu::Scroll(eScrollDir dir) {
-    if (Options.IsEmpty()) return;
+    if (Options.IsEmpty())
+        return;
 
     if (bViewNeedsSync) {
         SyncViewToSelection();
@@ -488,10 +503,8 @@ void UIWidgetMenu::Scroll(eScrollDir dir) {
             if (new_option != Options.GetTail()) {
                 do {
                     new_option = new_option->GetNext();
-                    iLastSelectedIndex = bMin(static_cast<int>(iIndexToAdd - 1),
-                                              static_cast<int>(iLastSelectedIndex + 1));
-                } while (new_option && !new_option->IsEnabled() &&
-                         new_option != Options.GetTail());
+                    iLastSelectedIndex = bMin(static_cast<int>(iIndexToAdd - 1), static_cast<int>(iLastSelectedIndex + 1));
+                } while (new_option && !new_option->IsEnabled() && new_option != Options.GetTail());
 
                 unsigned int sel_idx = GetWidgetIndex(new_option);
                 int view_idx = GetWidgetIndex(pViewTop);
@@ -508,8 +521,7 @@ void UIWidgetMenu::Scroll(eScrollDir dir) {
                 do {
                     new_option = new_option->GetPrev();
                     iLastSelectedIndex = bMax(1, static_cast<int>(iLastSelectedIndex - 1));
-                } while (new_option && !new_option->IsEnabled() &&
-                         new_option != Options.GetHead());
+                } while (new_option && !new_option->IsEnabled() && new_option != Options.GetHead());
             }
             if (new_option == pViewTop->GetPrev()) {
                 new_view = new_option;
@@ -524,14 +536,14 @@ void UIWidgetMenu::Scroll(eScrollDir dir) {
     if (pCurrentOption != new_option) {
         SetOption(new_option);
         if (bHasScrollBar && pCurrentOption) {
-            ScrollBar.Update(iMaxWidgetsOnScreen, iIndexToAdd - 1,
-                             GetWidgetIndex(pViewTop), GetWidgetIndex(pCurrentOption));
+            ScrollBar.Update(iMaxWidgetsOnScreen, iIndexToAdd - 1, GetWidgetIndex(pViewTop), GetWidgetIndex(pCurrentOption));
         }
     }
 }
 
 void UIWidgetMenu::ScrollWrapped(eScrollDir dir) {
-    if (Options.IsEmpty()) return;
+    if (Options.IsEmpty())
+        return;
 
     if (bViewNeedsSync) {
         SyncViewToSelection();
@@ -543,8 +555,7 @@ void UIWidgetMenu::ScrollWrapped(eScrollDir dir) {
 
     if (dir == eSD_NEXT) {
         do {
-            if (!new_option ||
-                (new_option == Options.GetTail() && !pDone)) {
+            if (!new_option || (new_option == Options.GetTail() && !pDone)) {
                 new_view = Options.GetHead();
                 new_option = new_view;
             } else if (new_option == Options.GetTail() && pDone) {
@@ -567,8 +578,7 @@ void UIWidgetMenu::ScrollWrapped(eScrollDir dir) {
         }
     } else {
         do {
-            if (!new_option ||
-                (new_option == Options.GetHead() && !pDone)) {
+            if (!new_option || (new_option == Options.GetHead() && !pDone)) {
                 new_option = Options.GetTail();
                 int idx = bMax(0, static_cast<int>(iIndexToAdd - iMaxWidgetsOnScreen) - 1);
                 new_view = Options.GetNode(idx);
@@ -585,8 +595,7 @@ void UIWidgetMenu::ScrollWrapped(eScrollDir dir) {
             }
         } while (new_option && !new_option->IsEnabled());
 
-        if (iIndexToAdd - 1 > iMaxWidgetsOnScreen &&
-            new_option == pViewTop->GetPrev()) {
+        if (iIndexToAdd - 1 > iMaxWidgetsOnScreen && new_option == pViewTop->GetPrev()) {
             new_view = new_option;
         }
     }
@@ -598,8 +607,7 @@ void UIWidgetMenu::ScrollWrapped(eScrollDir dir) {
     if (pCurrentOption != new_option) {
         SetOption(new_option);
         if (bHasScrollBar && pCurrentOption) {
-            ScrollBar.Update(iMaxWidgetsOnScreen, iIndexToAdd - 1,
-                             GetWidgetIndex(pViewTop), GetWidgetIndex(pCurrentOption));
+            ScrollBar.Update(iMaxWidgetsOnScreen, iIndexToAdd - 1, GetWidgetIndex(pViewTop), GetWidgetIndex(pCurrentOption));
         }
     }
 }

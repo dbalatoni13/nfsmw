@@ -7,13 +7,16 @@
 
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
 
-struct uiRapSheetPD : public MenuScreen {
-    int pursuit_number; // offset 0x2C, size 0x4
+class uiRapSheetPD : public MenuScreen {
+  public:
+    uiRapSheetPD(ScreenConstructorData *sd);
+    ~uiRapSheetPD() override {};
+    void NotificationMessage(u32 msg, FEObject *pobj, u32 param1, u32 param2) override;
 
-    uiRapSheetPD(ScreenConstructorData* sd);
-    ~uiRapSheetPD() override;
-    void NotificationMessage(unsigned long msg, FEObject* pobj, unsigned long param1, unsigned long param2) override;
+  private:
     void Setup();
+
+    int pursuit_number; // offset 0x2C, size 0x4
 };
 
 #endif

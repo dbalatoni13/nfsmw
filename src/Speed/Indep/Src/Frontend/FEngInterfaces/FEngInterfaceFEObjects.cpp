@@ -7,22 +7,18 @@
 #include "Speed/Indep/Src/FEng/FEMultiImage.h"
 #include "Speed/Indep/Src/FEng/FEObjectCallback.h"
 #include "Speed/Indep/Src/FEng/FEPackage.h"
-#include "Speed/Indep/Src/FEng/cFEng.h"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/Frontend/FEngFont.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/Src/Ecstasy/Texture.hpp"
-int bStrLen(const unsigned short* s);
-int GetLocalizedWideString(short* buffer, int bufSize, unsigned int hash);
-TextureInfo* GetTextureInfo(unsigned int handle, int param2, int param3);
-void bMatrixToQuaternion(bQuaternion& quat, const bMatrix4& m);
-
 #include "Speed/Indep/Src/Frontend/FEObjectCallbacks.hpp"
+#include "Speed/Indep/Src/Frontend/Localization/Localize.hpp"
 
-FEObject* FEngFindObject(const char* pkg_name, unsigned int obj_hash) {
+FEObject *FEngFindObject(const char *pkg_name, unsigned int obj_hash) {
     if (pkg_name != nullptr) {
-        FEPackage* pkg = cFEng::Get()->FindPackage(pkg_name);
+        FEPackage *pkg = cFEng::Get()->FindPackage(pkg_name);
         if (pkg != nullptr) {
-            FEObject* obj = pkg->FindObjectByHash(obj_hash);
+            FEObject *obj = pkg->FindObjectByHash(obj_hash);
             if (obj != nullptr) {
                 return obj;
             }
@@ -31,21 +27,21 @@ FEObject* FEngFindObject(const char* pkg_name, unsigned int obj_hash) {
     return nullptr;
 }
 
-FEObject* FEngFindGroup(const char* pkg_name, unsigned int obj_hash) {
-    FEObject* obj = FEngFindObject(pkg_name, obj_hash);
+FEGroup *FEngFindGroup(const char *pkg_name, unsigned int obj_hash) {
+    FEObject *obj = FEngFindObject(pkg_name, obj_hash);
     if (obj == nullptr || obj->Type != FE_Group) {
         return nullptr;
     }
-    return obj;
+    return static_cast<FEGroup *>(obj);
 }
 
-void FEngSetInvisible(FEObject* obj) {
+void FEngSetInvisible(FEObject *obj) {
     if (obj != nullptr) {
         obj->Flags |= 1;
         obj->Flags |= 0x2400000;
         if (obj->Type == FE_Group) {
-            FEGroup* group = static_cast<FEGroup*>(obj);
-            FEObject* child = group->GetFirstChild();
+            FEGroup *group = static_cast<FEGroup *>(obj);
+            FEObject *child = group->GetFirstChild();
             int num = group->GetNumChildren();
             for (int i = 0; i < num; i++) {
                 FEngSetInvisible(child);
@@ -55,12 +51,12 @@ void FEngSetInvisible(FEObject* obj) {
     }
 }
 
-void FEngSetVisible(FEObject* obj) {
+void FEngSetVisible(FEObject *obj) {
     if (obj != nullptr && !(obj->Flags & 8)) {
         obj->Flags = (obj->Flags & ~1) | 0x2400000;
         if (obj->Type == FE_Group) {
-            FEGroup* group = static_cast<FEGroup*>(obj);
-            FEObject* child = group->GetFirstChild();
+            FEGroup *group = static_cast<FEGroup *>(obj);
+            FEObject *child = group->GetFirstChild();
             int num = group->GetNumChildren();
             for (int i = 0; i < num; i++) {
                 FEngSetVisible(child);
@@ -70,17 +66,17 @@ void FEngSetVisible(FEObject* obj) {
     }
 }
 
-void FEngSetAllObjectsInPackageVisibility(const char* pkg_name, bool visible) {
-    FEPackage* pkg = cFEng::Get()->FindPackage(pkg_name);
+void FEngSetAllObjectsInPackageVisibility(const char *pkg_name, bool visible) {
+    FEPackage *pkg = cFEng::Get()->FindPackage(pkg_name);
     if (pkg != nullptr) {
         ObjectVisibilitySetter vis(visible);
         pkg->ForAllObjects(vis);
     }
 }
 
-void FEngSetScript(FEObject* object, unsigned int script_hash, bool start_at_beginning) {
+void FEngSetScript(FEObject *object, uint32 script_hash, bool start_at_beginning) {
     if (object != nullptr) {
-        FEScript* script = object->FindScript(script_hash);
+        FEScript *script = object->FindScript(script_hash);
         if (script != nullptr) {
             object->SetScript(script, false);
             if (start_at_beginning) {
@@ -90,47 +86,50 @@ void FEngSetScript(FEObject* object, unsigned int script_hash, bool start_at_beg
     }
 }
 
-void FEngSetScript(const char* pkg_name, unsigned int obj_hash, unsigned int script_hash, bool start_at_beginning) {
-    FEObject* object = FEngFindObject(pkg_name, obj_hash);
+void FEngSetScript(const char *pkg_name, uint32 obj_hash, uint32 script_hash, bool start_at_beginning) {
+    FEObject *object = FEngFindObject(pkg_name, obj_hash);
     FEngSetScript(object, script_hash, start_at_beginning);
 }
 
-FEScript* FEngGetScript(FEObject* object, unsigned int script_hash) {
+FEScript *FEngGetScript(FEObject *object, uint32 script_hash) {
     if (object == nullptr) {
         return nullptr;
     }
     return object->FindScript(script_hash);
 }
 
-FEScript* FEngGetScript(const char* pkg_name, unsigned int obj_hash, unsigned int script_hash) {
-    FEObject* obj = FEngFindObject(pkg_name, obj_hash);
+FEScript *FEngGetScript(const char *pkg_name, unsigned int obj_hash, unsigned int script_hash) {
+    FEObject *obj = FEngFindObject(pkg_name, obj_hash);
     return FEngGetScript(obj, script_hash);
 }
 
-bool FEngIsScriptSet(FEObject* obj, unsigned int script_hash);
-bool FEngIsScriptRunning(FEObject* object, unsigned int script_hash);
+bool FEngIsScriptSet(FEObject *obj, unsigned int script_hash);
+bool FEngIsScriptRunning(FEObject *object, unsigned int script_hash);
 
-bool FEngIsScriptSet(const char* pkg_name, unsigned int obj_hash, unsigned int script_hash) {
-    FEObject* object = FEngFindObject(pkg_name, obj_hash);
+bool FEngIsScriptSet(const char *pkg_name, unsigned int obj_hash, unsigned int script_hash) {
+    FEObject *object = FEngFindObject(pkg_name, obj_hash);
     return FEngIsScriptSet(object, script_hash);
 }
 
-bool FEngIsScriptSet(FEObject* obj, unsigned int script_hash) {
-    if (obj == nullptr) return false;
-    FEScript* script = obj->pCurrentScript;
-    if (script == nullptr) return false;
-    if (script->ID != script_hash) return false;
+bool FEngIsScriptSet(FEObject *obj, unsigned int script_hash) {
+    if (obj == nullptr)
+        return false;
+    FEScript *script = obj->pCurrentScript;
+    if (script == nullptr)
+        return false;
+    if (script->ID != script_hash)
+        return false;
     return true;
 }
 
-bool FEngIsScriptRunning(const char* pkg_name, unsigned int obj_hash, unsigned int script_hash) {
-    FEObject* object = FEngFindObject(pkg_name, obj_hash);
+bool FEngIsScriptRunning(const char *pkg_name, unsigned int obj_hash, unsigned int script_hash) {
+    FEObject *object = FEngFindObject(pkg_name, obj_hash);
     return FEngIsScriptRunning(object, script_hash);
 }
 
-bool FEngIsScriptRunning(FEObject* object, unsigned int script_hash) {
+bool FEngIsScriptRunning(FEObject *object, unsigned int script_hash) {
     if (object != nullptr) {
-        FEScript* cur = object->pCurrentScript;
+        FEScript *cur = object->pCurrentScript;
         if (cur != nullptr && cur->ID == script_hash && cur->CurTime <= cur->Length) {
             return true;
         }
@@ -138,7 +137,7 @@ bool FEngIsScriptRunning(FEObject* object, unsigned int script_hash) {
     return false;
 }
 
-void FEngSetRotationZ(FEObject* obj, float angle_degrees) {
+void FEngSetRotationZ(FEObject *obj, float angle_degrees) {
     if (obj != nullptr) {
         float rad_angle = bDegToRad(angle_degrees);
         bMatrix4 b;
@@ -160,16 +159,16 @@ void FEngSetRotationZ(FEObject* obj, float angle_degrees) {
     }
 }
 
-void FEngSetMultiImageRot(FEMultiImage* image, float angle_degrees) {
+void FEngSetMultiImageRot(FEMultiImage *image, float angle_degrees) {
     if (image == nullptr) {
         return;
     }
-    FEMultiImageData* image_data = static_cast<FEMultiImageData*>(image->GetObjData());
+    FEMultiImageData *image_data = static_cast<FEMultiImageData *>(image->GetObjData());
     image_data->PivotRot.z = angle_degrees;
     image->Flags |= 0x400000;
 }
 
-void FEngSetMultiImageBottomRightUVs(FEMultiImage* image, FEVector2& bottomRightUVs, int textureNumber) {
+void FEngSetMultiImageBottomRightUVs(FEMultiImage *image, FEVector2 &bottomRightUVs, int textureNumber) {
     if (image != nullptr) {
         FEVector2 currTopLeftUVs;
         FEVector2 currBottomRightUVs;
@@ -179,14 +178,14 @@ void FEngSetMultiImageBottomRightUVs(FEMultiImage* image, FEVector2& bottomRight
     }
 }
 
-void FEngGetTopLeft(FEObject* object, float& x, float& y) {
+void FEngGetTopLeft(FEObject *object, float &x, float &y) {
     if (object == nullptr) {
         return;
     }
 
-    FEObjData* data = object->GetObjData();
-    FEVector3& pos = data->Pos;
-    FEVector3& size = data->Size;
+    FEObjData *data = object->GetObjData();
+    FEVector3 &pos = data->Pos;
+    FEVector3 &size = data->Size;
 
     switch (object->Type) {
         case FE_Group:
@@ -199,10 +198,10 @@ void FEngGetTopLeft(FEObject* object, float& x, float& y) {
             y = pos.y - size.y * 0.5f;
             break;
         case FE_String: {
-            FEngFont* pFont = FindFont(object->Handle);
+            FEngFont *pFont = FindFont(object->Handle);
             if (pFont != nullptr) {
-                FEString* pStr = static_cast<FEString*>(object);
-                const short* characters = nullptr;
+                FEString *pStr = static_cast<FEString *>(object);
+                const short *characters = nullptr;
                 int label_hash = pStr->GetLabelHash();
                 if (!(object->Flags & 2)) {
                     short localized_string_buffer[1024];
@@ -230,12 +229,12 @@ void FEngGetTopLeft(FEObject* object, float& x, float& y) {
     }
 }
 
-void FEngSetTopLeft(FEObject* object, float x, float y) {
+void FEngSetTopLeft(FEObject *object, float x, float y) {
     if (object == nullptr) {
         return;
     }
 
-    FEObjData* data = object->GetObjData();
+    FEObjData *data = object->GetObjData();
     FEVector3 pos(data->Pos);
     FEVector3 size(data->Size);
 
@@ -248,9 +247,9 @@ void FEngSetTopLeft(FEObject* object, float x, float y) {
             pos.y = y + size.y * 0.5f;
             break;
         case FE_String: {
-            FEngFont* pFont = FindFont(object->Handle);
+            FEngFont *pFont = FindFont(object->Handle);
             if (pFont != nullptr) {
-                FEString* pStr = static_cast<FEString*>(object);
+                FEString *pStr = static_cast<FEString *>(object);
                 float width = size.x * pFont->GetTextWidth(pStr->GetString(), 0);
                 float height = size.y * pFont->GetTextHeight(pStr->GetString(), pStr->Leading, 0, 0, false);
                 pos.x = x - pFont->CalculateXOffset(pStr->Format, width);
@@ -271,14 +270,14 @@ void FEngSetTopLeft(FEObject* object, float x, float y) {
     object->SetPosition(pos, false);
 }
 
-void FEngGetBottomRight(FEObject* object, float& x, float& y) {
+void FEngGetBottomRight(FEObject *object, float &x, float &y) {
     if (object == nullptr) {
         return;
     }
 
-    FEObjData* data = object->GetObjData();
-    FEVector3& pos = data->Pos;
-    FEVector3& size = data->Size;
+    FEObjData *data = object->GetObjData();
+    FEVector3 &pos = data->Pos;
+    FEVector3 &size = data->Size;
 
     switch (object->Type) {
         case FE_Image:
@@ -289,10 +288,10 @@ void FEngGetBottomRight(FEObject* object, float& x, float& y) {
             y = size.y * 0.5f + pos.y;
             break;
         case FE_String: {
-            FEngFont* pFont = FindFont(object->Handle);
+            FEngFont *pFont = FindFont(object->Handle);
             if (pFont != nullptr) {
-                FEString* pStr = static_cast<FEString*>(object);
-                const short* characters = nullptr;
+                FEString *pStr = static_cast<FEString *>(object);
+                const short *characters = nullptr;
                 int label_hash = pStr->GetLabelHash();
                 if (!(object->Flags & 2)) {
                     short localized_string_buffer[1024];
@@ -321,12 +320,12 @@ void FEngGetBottomRight(FEObject* object, float& x, float& y) {
     }
 }
 
-void FEngSetBottomRight(FEObject* object, float x, float y) {
+void FEngSetBottomRight(FEObject *object, float x, float y) {
     if (object == nullptr) {
         return;
     }
 
-    FEObjData* data = object->GetObjData();
+    FEObjData *data = object->GetObjData();
     FEVector3 pos(data->Pos);
     FEVector3 size(data->Size);
 
@@ -352,21 +351,21 @@ void FEngSetBottomRight(FEObject* object, float x, float y) {
     object->SetPosition(pos, false);
 }
 
-void FEngGetCenter(FEObject* object, float& x, float& y) {
+void FEngGetCenter(FEObject *object, float &x, float &y) {
     if (object == nullptr) {
         return;
     }
 
-    FEObjData* data = object->GetObjData();
-    FEVector3& pos = data->Pos;
+    FEObjData *data = object->GetObjData();
+    FEVector3 &pos = data->Pos;
     FEVector3 size(data->Size);
 
     switch (object->Type) {
         case FE_String: {
-            FEngFont* pFont = FindFont(object->Handle);
+            FEngFont *pFont = FindFont(object->Handle);
             if (pFont != nullptr) {
-                FEString* pStr = static_cast<FEString*>(object);
-                const short* characters = nullptr;
+                FEString *pStr = static_cast<FEString *>(object);
+                const short *characters = nullptr;
                 int label_hash = pStr->GetLabelHash();
                 if (!(object->Flags & 2)) {
                     short localized_string_buffer[1024];
@@ -402,20 +401,20 @@ void FEngGetCenter(FEObject* object, float& x, float& y) {
     }
 }
 
-void FEngSetCenter(FEObject* object, float x, float y) {
+void FEngSetCenter(FEObject *object, float x, float y) {
     if (object == nullptr) {
         return;
     }
 
-    FEObjData* data = object->GetObjData();
+    FEObjData *data = object->GetObjData();
     FEVector3 pos(data->Pos);
 
     switch (object->Type) {
         case FE_String: {
-            FEngFont* pFont = FindFont(object->Handle);
+            FEngFont *pFont = FindFont(object->Handle);
             if (pFont != nullptr) {
-                FEString* pStr = static_cast<FEString*>(object);
-                FEVector3& size = data->Size;
+                FEString *pStr = static_cast<FEString *>(object);
+                FEVector3 &size = data->Size;
                 float width = size.x * pFont->GetTextWidth(pStr->GetString(), 0);
                 float height = size.y * pFont->GetTextHeight(pStr->GetString(), pStr->Leading, 0, 0, false);
                 pos.x = x - (pFont->CalculateXOffset(pStr->Format, width) + width * 0.5f);
@@ -443,15 +442,15 @@ void FEngSetCenter(FEObject* object, float x, float y) {
     object->SetPosition(pos, false);
 }
 
-float FEngGetScaleX(FEObject* object) {
-    FEObjData* data = object->GetObjData();
+float FEngGetScaleX(FEObject *object) {
+    FEObjData *data = object->GetObjData();
 
     switch (object->Type) {
         case FE_Image:
         case FE_Movie:
         case FE_ColoredImage:
         case FE_MultiImage: {
-            TextureInfo* pTex = GetTextureInfo(object->Handle, 1, 0);
+            TextureInfo *pTex = GetTextureInfo(object->Handle, 1, 0);
             return data->Size.x / static_cast<float>(pTex->Width);
         }
         case FE_String:
@@ -465,15 +464,15 @@ float FEngGetScaleX(FEObject* object) {
     }
 }
 
-float FEngGetScaleY(FEObject* object) {
-    FEObjData* data = object->GetObjData();
+float FEngGetScaleY(FEObject *object) {
+    FEObjData *data = object->GetObjData();
 
     switch (object->Type) {
         case FE_Image:
         case FE_Movie:
         case FE_ColoredImage:
         case FE_MultiImage: {
-            TextureInfo* pTex = GetTextureInfo(object->Handle, 1, 0);
+            TextureInfo *pTex = GetTextureInfo(object->Handle, 1, 0);
             return data->Size.y / static_cast<float>(pTex->Height);
         }
         case FE_String:
@@ -487,12 +486,12 @@ float FEngGetScaleY(FEObject* object) {
     }
 }
 
-void FEngSetScaleX(FEObject* object, float x) {
+void FEngSetScaleX(FEObject *object, float x) {
     if (object == nullptr) {
         return;
     }
 
-    FEObjData* data = object->GetObjData();
+    FEObjData *data = object->GetObjData();
     float size = data->Size.x;
     float scale = x;
 
@@ -501,7 +500,7 @@ void FEngSetScaleX(FEObject* object, float x) {
         case FE_Movie:
         case FE_ColoredImage:
         case FE_MultiImage: {
-            TextureInfo* pTex = GetTextureInfo(object->Handle, 1, 0);
+            TextureInfo *pTex = GetTextureInfo(object->Handle, 1, 0);
             scale = x * static_cast<float>(pTex->Width);
         }
         case FE_String:
@@ -516,12 +515,12 @@ void FEngSetScaleX(FEObject* object, float x) {
     }
 }
 
-void FEngSetScaleY(FEObject* object, float y) {
+void FEngSetScaleY(FEObject *object, float y) {
     if (object == nullptr) {
         return;
     }
 
-    FEObjData* data = object->GetObjData();
+    FEObjData *data = object->GetObjData();
     float size = data->Size.y;
     float scale = y;
 
@@ -530,7 +529,7 @@ void FEngSetScaleY(FEObject* object, float y) {
         case FE_Movie:
         case FE_ColoredImage:
         case FE_MultiImage: {
-            TextureInfo* pTex = GetTextureInfo(object->Handle, 1, 0);
+            TextureInfo *pTex = GetTextureInfo(object->Handle, 1, 0);
             scale = y * static_cast<float>(pTex->Height);
         }
         case FE_String:
@@ -545,12 +544,12 @@ void FEngSetScaleY(FEObject* object, float y) {
     }
 }
 
-void FEngGetSize(FEObject* object, float& x, float& y) {
+void FEngGetSize(FEObject *object, float &x, float &y) {
     if (object == nullptr) {
         return;
     }
 
-    FEObjData* data = object->GetObjData();
+    FEObjData *data = object->GetObjData();
 
     switch (object->Type) {
         case FE_Image:
@@ -561,12 +560,12 @@ void FEngGetSize(FEObject* object, float& x, float& y) {
             y = data->Size.y;
             return;
         case FE_String: {
-            FEngFont* pFont = FindFont(object->Handle);
+            FEngFont *pFont = FindFont(object->Handle);
             if (pFont == nullptr) {
                 return;
             }
-            FEString* pStr = static_cast<FEString*>(object);
-            FEVector3& size = data->Size;
+            FEString *pStr = static_cast<FEString *>(object);
+            FEVector3 &size = data->Size;
             x = size.x * pFont->GetTextWidth(pStr->GetString(), 0);
             y = size.y * pFont->GetTextHeight(pStr->GetString(), pStr->Leading, 0, 0, false);
             break;
@@ -582,12 +581,12 @@ void FEngGetSize(FEObject* object, float& x, float& y) {
     }
 }
 
-void FEngSetSize(FEObject* object, float x, float y) {
+void FEngSetSize(FEObject *object, float x, float y) {
     if (object == nullptr) {
         return;
     }
 
-    FEObjData* data = object->GetObjData();
+    FEObjData *data = object->GetObjData();
 
     switch (object->Type) {
         case FE_Image:
@@ -611,39 +610,39 @@ void FEngSetSize(FEObject* object, float x, float y) {
     object->Flags |= 0x400000;
 }
 
-void FEngGetBottomRightUV(FEImage* img, float& u, float& v) {
+void FEngGetBottomRightUV(FEImage *img, float &u, float &v) {
     if (img != nullptr) {
-        TextureInfo* pTex = GetTextureInfo(img->Handle, 1, 0);
+        TextureInfo *pTex = GetTextureInfo(img->Handle, 1, 0);
         u = img->GetImageData()->LowerRight.x * static_cast<float>(pTex->Width);
         v = img->GetImageData()->LowerRight.y * static_cast<float>(pTex->Height);
     }
 }
 
-void FEngSetBottomRightUV(FEImage* img, float u, float v) {
+void FEngSetBottomRightUV(FEImage *img, float u, float v) {
     if (img != nullptr) {
-        TextureInfo* pTex = GetTextureInfo(img->Handle, 1, 0);
+        TextureInfo *pTex = GetTextureInfo(img->Handle, 1, 0);
         img->GetImageData()->LowerRight.x = u / static_cast<float>(pTex->Width);
         img->GetImageData()->LowerRight.y = v / static_cast<float>(pTex->Height);
         img->Flags |= 0x400000;
     }
 }
 
-void FEngSetColor(FEObject* object, unsigned int color) {
+void FEngSetColor(FEObject *object, unsigned int color) {
     if (object != nullptr) {
         FEColor col(color);
         object->SetColor(col, false);
     }
 }
 
-FEColor FEngGetObjectColor(FEObject* obj) {
+FEColor FEngGetObjectColor(FEObject *obj) {
     if (obj != nullptr) {
-        FEObjData* data = obj->GetObjData();
+        FEObjData *data = obj->GetObjData();
         return data->Col;
     }
     return FEColor(0);
 }
 
-void FixInvertedRect(FERect& rect) {
+void FixInvertedRect(FERect &rect) {
     if (rect.left > rect.right) {
         float tmp = rect.left;
         rect.left = rect.right;
@@ -656,23 +655,23 @@ void FixInvertedRect(FERect& rect) {
     }
 }
 
-inline float FEngGetCenterX(FEObject* obj) {
+inline float FEngGetCenterX(FEObject *obj) {
     float x;
     float y;
     FEngGetCenter(obj, x, y);
     return x;
 }
 
-inline float FEngGetCenterY(FEObject* obj) {
+inline float FEngGetCenterY(FEObject *obj) {
     float x;
     float y;
     FEngGetCenter(obj, x, y);
     return y;
 }
 
-bool FEngGet2DExtentsForMouse(FEObject* pObject, FERect& Rect, FEVector2 offset);
+bool FEngGet2DExtentsForMouse(FEObject *pObject, FERect &Rect, FEVector2 offset);
 
-bool FEngTestForIntersection(float xPos, float yPos, FEObject* obj) {
+bool FEngTestForIntersection(float xPos, float yPos, FEObject *obj) {
     if (obj != nullptr) {
         FERect Rect(-10000.0f, -10000.0f, 10000.0f, 10000.0f);
         FEngGet2DExtentsForMouse(obj, Rect, FEVector2());
@@ -684,15 +683,15 @@ bool FEngTestForIntersection(float xPos, float yPos, FEObject* obj) {
     return false;
 }
 
-bool FEngGet2DExtentsForMouse(FEObject* pObject, FERect& Rect, FEVector2 offset) {
+bool FEngGet2DExtentsForMouse(FEObject *pObject, FERect &Rect, FEVector2 offset) {
     if (pObject == nullptr) {
         return false;
     }
 
     switch (pObject->Type) {
         case FE_Group: {
-            FEGroup* grp = static_cast<FEGroup*>(pObject);
-            FEObject* pChild = grp->GetFirstChild();
+            FEGroup *grp = static_cast<FEGroup *>(pObject);
+            FEObject *pChild = grp->GetFirstChild();
             if (pChild != nullptr) {
                 do {
                     FERect ChildRect(-10000.0f, -10000.0f, 10000.0f, 10000.0f);

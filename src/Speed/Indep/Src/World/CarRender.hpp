@@ -5,7 +5,7 @@
 #pragma once
 #endif
 
-#include <cstddef>
+#include <types.h>
 #include "./CarInfo.hpp"
 #include "./DamageZones.h"
 #include "Interfaces/IVehicleDamageBehaviour.h"
@@ -13,34 +13,8 @@
 #include "Speed/Indep/Src/Ecstasy/eLight.hpp"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/ecar.h"
 #include "Speed/Indep/Src/Physics/PhysicsTypes.h"
-#include "Speed/Indep/Src/Sim/Collision.h"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
-
-/////// NOT IN THIS FILE ///////
-class ePointSprite3D {
-  public:
-    // Functions
-    void *operator new(size_t size) {}
-
-    ePointSprite3D() {}
-    ~ePointSprite3D() {}
-
-    // Members
-    float X;       // offset 0x0, size 0x4
-    float Y;       // offset 0x4, size 0x4
-    float Z;       // offset 0x8, size 0x4
-    float Radius;  // offset 0xC, size 0x4
-    float S1;      // offset 0x10, size 0x4
-    float T1;      // offset 0x14, size 0x4
-    float S0;      // offset 0x18, size 0x4
-    float T0;      // offset 0x1C, size 0x4
-    uint32 Colour; // offset 0x20, size 0x4
-    uint32 pad0;   // offset 0x24, size 0x4
-    float Cos;     // offset 0x28, size 0x4
-    float Sin;     // offset 0x2C, size 0x4
-};
-////////////////////////////////
 
 enum CarEffectPosition {
     CARFXPOS_NONE,
@@ -169,42 +143,6 @@ class CarEmitterPosition : public bSNode<CarEmitterPosition> {
     float Y;                         // offset 0x8, size 0x4
     float Z;                         // offset 0xC, size 0x4
     ePositionMarker *PositionMarker; // offset 0x10, size 0x4
-};
-
-struct UsedCarTextureInfo {
-    // Members
-    uint32 TexturesToLoadPerm[87];        // offset 0x0, size 0x15C
-    uint32 TexturesToLoadTemp[87];        // offset 0x15C, size 0x15C
-    int NumTexturesToLoadPerm;            // offset 0x2B8, size 0x4
-    int NumTexturesToLoadTemp;            // offset 0x2BC, size 0x4
-    uint32 MappedSkinHash;                // offset 0x2C0, size 0x4
-    uint32 MappedSkinBHash;               // offset 0x2C4, size 0x4
-    uint32 MappedGlobalHash;              // offset 0x2C8, size 0x4
-    uint32 MappedWheelHash;               // offset 0x2CC, size 0x4
-    uint32 MappedSpinnerHash;             // offset 0x2D0, size 0x4
-    uint32 MappedBadging;                 // offset 0x2D4, size 0x4
-    uint32 MappedSpoilerHash;             // offset 0x2D8, size 0x4
-    uint32 MappedRoofScoopHash;           // offset 0x2DC, size 0x4
-    uint32 MappedDashSkinHash;            // offset 0x2E0, size 0x4
-    uint32 MappedLightHash[11];           // offset 0x2E4, size 0x2C
-    uint32 MappedTireHash;                // offset 0x310, size 0x4
-    uint32 MappedRimHash;                 // offset 0x314, size 0x4
-    uint32 MappedRimBlurHash;             // offset 0x318, size 0x4
-    uint32 MappedLicensePlateHash;        // offset 0x31C, size 0x4
-    uint32 ReplaceSkinHash;               // offset 0x320, size 0x4
-    uint32 ReplaceSkinBHash;              // offset 0x324, size 0x4
-    uint32 ReplaceGlobalHash;             // offset 0x328, size 0x4
-    uint32 ReplaceWheelHash;              // offset 0x32C, size 0x4
-    uint32 ReplaceSpinnerHash;            // offset 0x330, size 0x4
-    uint32 ReplaceSpoilerHash;            // offset 0x334, size 0x4
-    uint32 ReplaceRoofScoopHash;          // offset 0x338, size 0x4
-    uint32 ReplaceDashSkinHash;           // offset 0x33C, size 0x4
-    uint32 ReplaceHeadlightHash[3];       // offset 0x340, size 0xC
-    uint32 ReplaceHeadlightGlassHash[3];  // offset 0x34C, size 0xC
-    uint32 ReplaceBrakelightHash[3];      // offset 0x358, size 0xC
-    uint32 ReplaceBrakelightGlassHash[3]; // offset 0x364, size 0xC
-    uint32 ReplaceReverselightHash[3];    // offset 0x370, size 0xC
-    uint32 ShadowHash;                    // offset 0x37C, size 0x4
 };
 
 inline int IsNISCopCar(int type) {
@@ -352,11 +290,11 @@ class CarRenderInfo {
 
     RideInfo *GetRideInfo() const {}
 
-    enum CARPART_LOD GetMinLodLevel() const {}
+    CARPART_LOD GetMinLodLevel() const {}
 
-    enum CARPART_LOD GetMaxLodLevel() const {}
+    CARPART_LOD GetMaxLodLevel() const {}
 
-    enum CARPART_LOD GetMinReflectionLodLevel() const {}
+    CARPART_LOD GetMinReflectionLodLevel() const {}
 
     void EnableAlphaWrites(bool onOff) {}
 
@@ -416,8 +354,8 @@ class CarRenderInfo {
                            int renderFlareFlags);
 
     bool Render(eView *view, const bVector3 *world_position, const bMatrix4 *body_matrix, bMatrix4 *tire_matrices, bMatrix4 *brake_matrices,
-                bMatrix4 *spinner_matrices, uint32 extra_render_flags, int force_light_state, int reflexion, float shadow_scale,
-                enum CARPART_LOD tireLOD, enum CARPART_LOD carLOD);
+                bMatrix4 *spinner_matrices, uint32 extra_render_flags, int force_light_state, int reflexion, float shadow_scale, CARPART_LOD tireLOD,
+                CARPART_LOD carLOD);
 
     void convex_hull(bVector3 *p, const WCollider *wcoll, int &n, float Z, float zBias, int fast);
 
@@ -519,9 +457,13 @@ class CarRenderInfo {
 class FrontEndRenderingCar : public bTNode<FrontEndRenderingCar> {
   public:
     // Functions
-    void SetPosition(bVector3 *position) { Position = *position; }
+    void SetPosition(bVector3 *position) {
+        Position = *position;
+    }
 
-    void SetBodyMatrix(bMatrix4 *body_matrix) { BodyMatrix = *body_matrix; }
+    void SetBodyMatrix(bMatrix4 *body_matrix) {
+        BodyMatrix = *body_matrix;
+    }
 
     void SetTireMatrices(bMatrix4 *tire_matrices) {
         for (int n = 0; n < 4; n++) {
@@ -535,17 +477,25 @@ class FrontEndRenderingCar : public bTNode<FrontEndRenderingCar> {
         }
     }
 
-    void SetTireMatrix(int n, bMatrix4 *m) { TireMatrices[n] = *m; }
+    void SetTireMatrix(int n, bMatrix4 *m) {
+        TireMatrices[n] = *m;
+    }
 
-    void SetBrakeMatrix(int n, bMatrix4 *m) { BrakeMatrices[n] = *m; }
+    void SetBrakeMatrix(int n, bMatrix4 *m) {
+        BrakeMatrices[n] = *m;
+    }
 
     void SetOverrideModel(eModel *override_model) {}
 
-    RideInfo *GetRideInfo() { return &mRideInfo; }
+    RideInfo *GetRideInfo() {
+        return &mRideInfo;
+    }
 
     CarRenderInfo *GetRenderInfo() {}
 
-    CarType GetCarType() { return mRideInfo.Type; }
+    CarType GetCarType() {
+        return mRideInfo.Type;
+    }
 
     FrontEndRenderingCar(RideInfo *ride_info, int view_id);
 

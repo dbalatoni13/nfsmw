@@ -1,90 +1,30 @@
 #include "Speed/Indep/Src/Frontend/HUD/FePursuitBoard.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/Src/FEng/FETypes.h"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEObjects.hpp"
 #include "Speed/Indep/Src/Frontend/Localization/Localize.hpp"
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 
-FEObject *FEngFindObject(const char *pkg_name, unsigned int obj_hash);
-void FEngSetScript(FEObject *object, unsigned int script_hash, bool start_at_beginning);
-void FEngSetScript(const char *pkg_name, unsigned int obj_hash, unsigned int script_hash, bool start_at_beginning);
-bool FEngIsScriptSet(FEObject *obj, unsigned int script_hash);
-bool FEngIsScriptSet(const char *pkg_name, unsigned int obj_hash, unsigned int script_hash);
-bool FEngIsScriptRunning(const char *pkg_name, unsigned int obj_hash, unsigned int script_hash);
-bool FEngIsScriptRunning(FEObject *object, unsigned int script_hash);
-int FEPrintf(FEString *text, const char *fmt, ...);
-void FEngGetBottomRight(FEObject *object, float &x, float &y);
-void FEngSetBottomRight(FEObject *object, float x, float y);
-void FEngGetTopLeft(FEObject *object, float &x, float &y);
-void FEngSetTopLeft(FEObject *object, float x, float y);
-void FEngGetSize(FEObject *object, float &x, float &y);
-void FEngSetSize(FEObject *object, float x, float y);
-
-inline float FEngGetTopLeftX(FEObject *obj) {
-    float x, y;
-    FEngGetTopLeft(obj, x, y);
-    return x;
-}
-
-inline float FEngGetTopLeftY(FEObject *obj) {
-    float x, y;
-    FEngGetTopLeft(obj, x, y);
-    return y;
-}
-
-inline float FEngGetBottomRightX(FEObject *obj) {
-    float x, y;
-    FEngGetBottomRight(obj, x, y);
-    return x;
-}
-
-inline float FEngGetBottomRightY(FEObject *obj) {
-    float x, y;
-    FEngGetBottomRight(obj, x, y);
-    return y;
-}
-
-inline float FEngGetSizeY(FEObject *obj) {
-    float x, y;
-    FEngGetSize(obj, x, y);
-    return y;
-}
-
-inline void FEngSetSizeX(FEObject *obj, float x) {
-    float y = FEngGetSizeY(obj);
-    FEngSetSize(obj, x, y);
-}
-
-inline void FEngSetTopLeftX(FEObject *obj, float x) {
-    float y = FEngGetTopLeftY(obj);
-    FEngSetTopLeft(obj, x, y);
-}
-
-inline void FEngSetBottomRightX(FEObject *obj, float x) {
-    float y = FEngGetBottomRightY(obj);
-    FEngSetBottomRight(obj, x, y);
-}
-
 PursuitBoard::PursuitBoard(UTL::COM::Object *pOutter, const char *pkg_name, int player_number)
-    : HudElement(pkg_name, 0x100000) //
-    , IPursuitBoard(pOutter) //
-    , mInPursuit(false) //
-    , mIsHiding(false) //
-    , mTimeUntilHidden(0.0f) //
-    , mTimeUntilBusted(0.0f) //
-    , mTimeUntilBackup(0.0f) //
-    , mPursuitDuration(0.0f) //
-    , mCooldownTimeRemaining(0.0f) //
-    , mCooldownTimeRequired(60.0f) //
-    , mNumCopsFullyEngaged(0) //
-    , mNumCopsDestroyed(0) //
-    , mNumCopsDamaged(0) //
-    , mTotalNumCopsInvolved(0) //
-    , mHeliInvolved(false) //
-    , mPursuitRep(0)
-{
+    : HudElement(pkg_name, 0x100000), IPursuitBoard(pOutter) {
+    mInPursuit = false;
+    mIsHiding = false;
+    mTimeUntilHidden = 0.0f;
+    mTimeUntilBusted = 0.0f;
+    mTimeUntilBackup = 0.0f;
+    mPursuitDuration = 0.0f;
+    mCooldownTimeRemaining = 0.0f;
+    mCooldownTimeRequired = 60.0f;
+    mNumCopsFullyEngaged = 0;
+    mNumCopsDestroyed = 0;
+    mNumCopsDamaged = 0;
+    mTotalNumCopsInvolved = 0;
+    mHeliInvolved = false;
+    mPursuitRep = 0;
     mpDataPursuitBoardGroup = RegisterGroup(0xde89e070);
     mpDataPursuitMeterGroup = RegisterGroup(0x7b422ba3);
     mpDataPursuitIconsGroup = RegisterGroup(0xe0b1430b);
@@ -164,8 +104,7 @@ void PursuitBoard::Update(IPlayer *player) {
                 FEngSetScript(mpDataPursuitCooldownMeterGroup, 0x92975065, true);
                 g_pEAXSound->PlayUISoundFX(static_cast<eMenuSoundTriggers>(0xc));
             } else {
-                if (FEngIsScriptSet(mpDataPursuitMeterGroup, 0x16a259) ||
-                    FEngIsScriptSet(mpDataPursuitMeterGroup, 0x33113ac)) {
+                if (FEngIsScriptSet(mpDataPursuitMeterGroup, 0x16a259) || FEngIsScriptSet(mpDataPursuitMeterGroup, 0x33113ac)) {
                     FEngSetScript(mpDataPursuitMeterGroup, 0x5079c8f8, true);
                 }
             }
@@ -276,22 +215,16 @@ void PursuitBoard::Update(IPlayer *player) {
         if (FEngIsScriptSet(mpDataPursuitBoardGroup, 0x5079c8f8)) {
             FEngSetScript(mpDataPursuitBoardGroup, 0x33113ac, true);
         }
-        if (!FEngIsScriptSet(mpDataPursuitMeterGroup, 0x33113ac) &&
-            !FEngIsScriptSet(mpDataPursuitMeterGroup, 0x16a259)) {
+        if (!FEngIsScriptSet(mpDataPursuitMeterGroup, 0x33113ac) && !FEngIsScriptSet(mpDataPursuitMeterGroup, 0x16a259)) {
             FEngSetScript(mpDataPursuitMeterGroup, 0x33113ac, true);
         }
-        if (FEngIsScriptSet(mpDataPursuitCooldownMeterGroup, 0x5079c8f8) ||
-            FEngIsScriptSet(mpDataPursuitCooldownMeterGroup, 0x13f51124)) {
+        if (FEngIsScriptSet(mpDataPursuitCooldownMeterGroup, 0x5079c8f8) || FEngIsScriptSet(mpDataPursuitCooldownMeterGroup, 0x13f51124)) {
             FEngSetScript(mpDataPursuitCooldownMeterGroup, 0x33113ac, true);
         }
         if (FEngIsScriptSet(mpDataPursuitIconsGroup, 0x5079c8f8)) {
             FEngSetScript(mpDataPursuitIconsGroup, 0x33113ac, true);
         }
     }
-}
-
-void PursuitBoard::SetCooldownTimeRequired(float time) {
-    mCooldownTimeRequired = time;
 }
 
 void PursuitBoard::SetInPursuit(bool inPursuit) {
@@ -325,8 +258,7 @@ void PursuitBoard::SetTimeUntilBusted(float time, bool bIsBusted) {
         if (time >= 1.0f) {
             IGenericMessage *igenericmessage;
             if (IPlayer::First(PLAYER_LOCAL)->GetSimable()->QueryInterface(&igenericmessage)) {
-                igenericmessage->RequestGenericMessage(
-                    GetTranslatedString(0x532b5186), false, 0x9d73bc15, 0, 0, GenericMessage_Priority_1);
+                igenericmessage->RequestGenericMessage(GetTranslatedString(0x532b5186), false, 0x9d73bc15, 0, 0, GenericMessage_Priority_1);
             }
         }
     }
@@ -344,30 +276,6 @@ void PursuitBoard::SetIsInView(bool isInView) {
     }
 }
 
-void PursuitBoard::SetCooldownTimeRemaining(float time) {
-    if (mCooldownTimeRemaining != time) {
-        mCooldownTimeRemaining = time;
-    }
-}
-
-void PursuitBoard::SetTotalNumCopsInvolved(int numCops) {
-    if (mTotalNumCopsInvolved != numCops) {
-        mTotalNumCopsInvolved = numCops;
-    }
-}
-
-void PursuitBoard::SetHeliInvolvedInPursuit(bool heliInvolved) {
-    if (mHeliInvolved != heliInvolved) {
-        mHeliInvolved = heliInvolved;
-    }
-}
-
-void PursuitBoard::SetPursuitRep(int rep) {
-    if (mPursuitRep != rep) {
-        mPursuitRep = rep;
-    }
-}
-
 void PursuitBoard::SetPursuitDuration(float time) {
     if (mPursuitDuration != time) {
         if (time >= 0.0f) {
@@ -378,15 +286,14 @@ void PursuitBoard::SetPursuitDuration(float time) {
     }
 }
 
-void PursuitBoard::SetNumCopsDamaged(int numCops) {
-    if (mNumCopsDamaged != numCops) {
-        if (numCops > mNumCopsDamaged) {
-            if (!FEngIsScriptSet(mpDataCopsDamaged, 0x4f90cf9b)) {
-                FEngSetScript(mpDataCopsDamaged, 0x4f90cf9b, true);
-            }
-        }
-        mNumCopsDamaged = numCops;
+void PursuitBoard::SetCooldownTimeRemaining(float time) {
+    if (mCooldownTimeRemaining != time) {
+        mCooldownTimeRemaining = time;
     }
+}
+
+void PursuitBoard::SetCooldownTimeRequired(float time) {
+    mCooldownTimeRequired = time;
 }
 
 void PursuitBoard::SetNumCopsInPursuit(int numCops) {
@@ -409,9 +316,7 @@ void PursuitBoard::SetNumCopsInPursuit(int numCops) {
     }
 }
 
-void PursuitBoard::SetNumCopsDestroyed(int numCops, UCrc32 lastCopDestroyedType,
-                                       int lastCopDestroyedMultiplier,
-                                       int lastCopDestroyedRep) {
+void PursuitBoard::SetNumCopsDestroyed(int numCops, UCrc32 lastCopDestroyedType, int lastCopDestroyedMultiplier, int lastCopDestroyedRep) {
     if (mNumCopsDestroyed == numCops) {
         return;
     }
@@ -445,12 +350,39 @@ void PursuitBoard::SetNumCopsDestroyed(int numCops, UCrc32 lastCopDestroyedType,
             bSNPrintf(copCarString, 64, pCopString, lastCopDestroyedRep * lastCopDestroyedMultiplier);
             IGenericMessage *igenericmessage;
             if (IPlayer::First(PLAYER_LOCAL)->GetSimable()->QueryInterface(&igenericmessage)) {
-                igenericmessage->RequestGenericMessage(
-                    copCarString, false, 0x8ab83edb,
-                    bStringHash("COPS_TAKENOUT_ICON"), 0x13ff94,
-                    GenericMessage_Priority_4);
+                igenericmessage->RequestGenericMessage(copCarString, false, 0x8ab83edb, bStringHash("COPS_TAKENOUT_ICON"), 0x13ff94,
+                                                       GenericMessage_Priority_4);
             }
         }
     }
     mNumCopsDestroyed = numCops;
+}
+
+void PursuitBoard::SetNumCopsDamaged(int numCops) {
+    if (mNumCopsDamaged != numCops) {
+        if (numCops > mNumCopsDamaged) {
+            if (!FEngIsScriptSet(mpDataCopsDamaged, 0x4f90cf9b)) {
+                FEngSetScript(mpDataCopsDamaged, 0x4f90cf9b, true);
+            }
+        }
+        mNumCopsDamaged = numCops;
+    }
+}
+
+void PursuitBoard::SetTotalNumCopsInvolved(int numCops) {
+    if (mTotalNumCopsInvolved != numCops) {
+        mTotalNumCopsInvolved = numCops;
+    }
+}
+
+void PursuitBoard::SetHeliInvolvedInPursuit(bool heliInvolved) {
+    if (mHeliInvolved != heliInvolved) {
+        mHeliInvolved = heliInvolved;
+    }
+}
+
+void PursuitBoard::SetPursuitRep(int rep) {
+    if (mPursuitRep != rep) {
+        mPursuitRep = rep;
+    }
 }

@@ -1,27 +1,21 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/Loading/FEBootFlowManager.hpp"
+#include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
+#include "Speed/Indep/Src/Misc/BuildRegion.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
-#include "Speed/Indep/Src/FEng/cFEng.h"
-#include "Speed/Indep/Src/Frontend/FEManager.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
+#include "Speed/Indep/Src/Frontend/FECarViewer.hpp"
 
-extern bool BuildRegion_IsPal();
-extern char *bStrStr(const char *s1, const char *s2);
-
-extern const char *sBootFlowNTSC[];
-extern const char *sBootFlowPAL[];
-extern const char *sBootFlowWideScreen[];
-extern const char *sBootFlowPALWidescreen[];
+const char *sBootFlowNTSC[] = {"MC_Bootup_GC.fng", "LS_EAlogo.fng",  "LS_PSA.fng",  "MW_LS_AttractFMV.fng",
+                               "MW_LS_Splash.fng", "MC_Main_GC.fng", "MainMenu.fng"};
+const char *sBootFlowPAL[] = {"MC_Bootup_GC.fng", "LS_EAlogo.fng",  "LS_PSA.fng",  "MW_LS_AttractFMV.fng",
+                              "MW_LS_Splash.fng", "MC_Main_GC.fng", "MainMenu.fng"};
+const char *sBootFlowWideScreen[] = {"MC_Bootup_GC.fng", "LS_EAlogo.fng",  "LS_PSA.fng",  "MW_LS_AttractFMV.fng",
+                                     "MW_LS_Splash.fng", "MC_Main_GC.fng", "MainMenu.fng"};
+const char *sBootFlowPALWidescreen[] = {"MC_Bootup_GC.fng", "LS_EAlogo.fng",  "LS_PSA.fng",  "MW_LS_AttractFMV.fng",
+                                        "MW_LS_Splash.fng", "MC_Main_GC.fng", "MainMenu.fng"};
 
 BootFlowManager *BootFlowManager::mInstance;
-
-BootFlowManager *BootFlowManager::Get() {
-    return mInstance;
-}
-
-void BootFlowManager::JumpToHead() {
-    CurrentScreen = BootFlowScreens.GetHead();
-    JumpToScreen(CurrentScreen->Name);
-}
 
 void BootFlowManager::Init() {
     if (mInstance == nullptr) {
@@ -38,10 +32,12 @@ void BootFlowManager::Destroy() {
     g_pEAXSound->PlayFEMusic(-1);
 }
 
-BootFlowManager::~BootFlowManager() {}
+BootFlowManager *BootFlowManager::Get() {
+    return mInstance;
+}
 
 BootFlowManager::BootFlowManager() {
-    if (!BuildRegion_IsPal()) {
+    if (!BuildRegion::IsPal()) {
         if (eIsWidescreen()) {
             for (int i = 0; i < 7; i++) {
                 if (*sBootFlowWideScreen[i] != '\0') {
@@ -107,14 +103,19 @@ BootFlowScreen *BootFlowManager::FindScreenSubStr(const char *name) {
     return nullptr;
 }
 
+void BootFlowManager::JumpToHead() {
+    CurrentScreen = BootFlowScreens.GetHead();
+    JumpToScreen(CurrentScreen->Name);
+}
+
 bool BootFlowManager::JumpToScreen(const char *screen_name) {
     BootFlowScreen *screen = FindScreen(screen_name);
     if (screen == nullptr) {
         return false;
     }
     CurrentScreen = screen;
-    cFEng::mInstance->QueuePackagePop(0);
-    cFEng::mInstance->QueuePackagePush(CurrentScreen->Name, 0, 0, false);
+    cFEng::Get()->QueuePackagePop(0);
+    cFEng::Get()->QueuePackagePush(CurrentScreen->Name, 0, 0, false);
     if (BootFlowScreens.GetTail() == CurrentScreen) {
         Destroy();
     }
@@ -131,7 +132,7 @@ bool BootFlowManager::DoAttract() {
 
 void BootFlowManager::ChangeToNextBootFlowScreen(int mask) {
     CurrentScreen = CurrentScreen->GetNext();
-    cFEng::mInstance->QueuePackageSwitch(CurrentScreen->Name, 0, mask, false);
+    cFEng::Get()->QueuePackageSwitch(CurrentScreen->Name, 0, mask, false);
     if (BootFlowScreens.GetTail() == CurrentScreen) {
         Destroy();
     }

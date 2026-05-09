@@ -9,29 +9,12 @@
 struct FEString;
 
 // total size: 0x16C
-struct IconScrollerMenu : public MenuScreen {
-protected:
-    IconScroller Options;                   // offset 0x2C, size 0x11C
-    bool bWasLeftMouseDown;                 // offset 0x148, size 0x1
-    bool bFadeInIconsImmediately;           // offset 0x14C, size 0x1
-    FEString* pOptionName;                  // offset 0x150, size 0x4
-    FEString* pOptionNameShadow;            // offset 0x154, size 0x4
-    FEString* pOptionDesc;                  // offset 0x158, size 0x4
-    unsigned int PrevButtonMessage;         // offset 0x15C, size 0x4
-    FEObject* PrevButtonObj;                // offset 0x160, size 0x4
-    unsigned int PrevParam1;                // offset 0x164, size 0x4
-    unsigned int PrevParam2;                // offset 0x168, size 0x4
-
-public:
-    IconScrollerMenu(ScreenConstructorData* sd);
+class IconScrollerMenu : public MenuScreen {
+  public:
+    IconScrollerMenu(ScreenConstructorData *sd);
     ~IconScrollerMenu() override {}
-
-    void NotificationMessage(unsigned long msg, FEObject* pobj, unsigned long param1, unsigned long param2) override;
-    eMenuSoundTriggers NotifySoundMessage(unsigned long msg, eMenuSoundTriggers maybe) override;
-    void StorePrevNotification(unsigned int msg, FEObject* pobj, unsigned int param1, unsigned int param2);
-    virtual void RefreshHeader();
-    virtual void Setup() {}
-    void AddOption(IconOption* option);
+    void NotificationMessage(u32 msg, FEObject *pobj, u32 param1, u32 param2) override;
+    eMenuSoundTriggers NotifySoundMessage(u32 msg, eMenuSoundTriggers maybe) override;
 
     void DelayFadeIn() {
         bFadeInIconsImmediately = true;
@@ -51,6 +34,25 @@ public:
     void StopInput() {
         Options.SetReactToInput(false);
     }
+
+    void StorePrevNotification(uint32 msg, FEObject *pobj, uint32 param1, uint32 param2);
+
+  protected:
+    virtual void RefreshHeader();
+    virtual void Setup() {}
+
+    void AddOption(IconOption *option);
+
+    IconScroller Options;         // offset 0x2C, size 0x11C
+    bool bWasLeftMouseDown;       // offset 0x148, size 0x1
+    bool bFadeInIconsImmediately; // offset 0x14C, size 0x1
+    FEString *pOptionName;        // offset 0x150, size 0x4
+    FEString *pOptionNameShadow;  // offset 0x154, size 0x4
+    FEString *pOptionDesc;        // offset 0x158, size 0x4
+    uint32 PrevButtonMessage;     // offset 0x15C, size 0x4
+    FEObject *PrevButtonObj;      // offset 0x160, size 0x4
+    uint32 PrevParam1;            // offset 0x164, size 0x4
+    uint32 PrevParam2;            // offset 0x168, size 0x4
 };
 
 #endif

@@ -1,11 +1,12 @@
 #include "FEManager.hpp"
 
+#include "Speed/GameCube/Src/Logitech/LGWheels.hpp"
 #include "Speed/Indep/Src/Camera/ICE/ICEManager.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/Src/FEng/FEGameInterface.h"
-#include "Speed/Indep/Src/FEng/FEngine.h"
 #include "Speed/Indep/Src/FEng/FEPackage.h"
-#include "Speed/Indep/Src/FEng/cFEng.h"
+#include "Speed/Indep/Src/Frontend/FEngFrontend.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Frontend/FEJoyInput.hpp"
 #include "Speed/Indep/Src/Frontend/FEPackageManager.hpp"
@@ -28,54 +29,20 @@
 #include "Speed/Indep/Src/Misc/GameFlow.hpp"
 #include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Src/World/CarInfo.hpp"
-
-struct ChoppedMiniMapManager {
-    static void Init();
-};
-
-struct FadeScreen {
-    static bool IsFadeScreenOn();
-};
+#include "Speed/Indep/Src/Frontend/MenuScreens/InGame/FeFadeScreen.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/InGame/FEPkg_Chyron.hpp"
+#include "Speed/Indep/Src/Frontend/HUD/FeMinimapStreamer.hpp"
+#include "Speed/Indep/Src/Frontend/FECarLoader.hpp"
+#include "Speed/Indep/Src/Frontend/FECarViewer.hpp"
 
 extern bool DrawFEng;
 extern int SummonChyronNow;
 extern int DoScreenPrintf;
-extern float RealTimeElapsed;
-
-void InitFEngMemoryPool();
-void InitChyron();
-void SummonChyron(char *, char *, char *);
-void UpdateGarageCarLoaders();
-unsigned long FEngMapJoyportToJoyParam(int);
-
-struct LGWheels {
-    bool IsConnected(int channel);
-    void StopConstantForce(int channel);
-    void StopSurfaceEffect(int channel);
-    void StopDamperForce(int channel);
-    void StopCarAirborne(int channel);
-    void StopSlipperyRoadEffect(int channel);
-    void PlaySpringForce(int channel, char offset, unsigned char saturation, short coefficient);
-};
-
-struct SteeringWheelDevice {
-    static LGWheels *lgwheels;
-};
-
-void SteeringWheels_StopAllForces();
 
 FEManager::FEManager()
-    : bSuppressControllerError(false) //
-    , bAllowControllerError(false) //
-    , mFirstScreen(nullptr) //
-    , mFirstScreenArg(0) //
-    , mFirstScreenMask(0xFF) //
-    , mGarageType(GARAGETYPE_NONE) //
-    , mPreviousGarageType(GARAGETYPE_NONE) //
-    , mGarageBackground(nullptr) //
-    , mFirstBoot(true) //
-    , mEATraxDelay(0) //
-    , mEATraxFirstButton(false) {
+    : bSuppressControllerError(false), bAllowControllerError(false), mFirstScreen(nullptr), mFirstScreenArg(0), mFirstScreenMask(0xFF),
+      mGarageType(GARAGETYPE_NONE), mPreviousGarageType(GARAGETYPE_NONE), mGarageBackground(nullptr), mFirstBoot(true), mEATraxDelay(0),
+      mEATraxFirstButton(false) {
     for (int port = 0; port < 8; port++) {
         bWantControllerError[port] = false;
     }
@@ -102,8 +69,7 @@ void FEManager::InitInput() {
     cFEngJoyInput::mInstance = new cFEngJoyInput();
 }
 
-void FEManager::Destroy() {
-}
+void FEManager::Destroy() {}
 
 FEManager *FEManager::Get() {
     return mInstance;
@@ -121,43 +87,42 @@ void FEManager::SetGarageType(eGarageType pGarageType) {
 const char *FEManager::GetGarageNameFromType() {
     eGarageType garageTypeToUse = mGarageType;
     switch (garageTypeToUse) {
-    case GARAGETYPE_NONE:
-        return "";
-    case GARAGETYPE_MAIN_FE:
-        return "FRONTEND\\PLATFORMS\\PLATFORMCRIB.BIN";
-    case GARAGETYPE_CAREER_SAFEHOUSE:
-        return "FRONTEND\\PLATFORMS\\CAREER_SAFEHOUSE.BIN";
-    case GARAGETYPE_CUSTOMIZATION_SHOP:
-        return "FRONTEND\\PLATFORMS\\CUSTOMIZATION_SHOP.BIN";
-    case GARAGETYPE_CUSTOMIZATION_SHOP_BACKROOM:
-        return "FRONTEND\\PLATFORMS\\CUSTOMIZATION_SHOP_BACKROOM.BIN";
-    case GARAGETYPE_CAR_LOT:
-        return "FRONTEND\\PLATFORMS\\CAR_LOT.BIN";
-    default:
-        return "";
+        case GARAGETYPE_NONE:
+            return "";
+        case GARAGETYPE_MAIN_FE:
+            return "FRONTEND\\PLATFORMS\\PLATFORMCRIB.BIN";
+        case GARAGETYPE_CAREER_SAFEHOUSE:
+            return "FRONTEND\\PLATFORMS\\CAREER_SAFEHOUSE.BIN";
+        case GARAGETYPE_CUSTOMIZATION_SHOP:
+            return "FRONTEND\\PLATFORMS\\CUSTOMIZATION_SHOP.BIN";
+        case GARAGETYPE_CUSTOMIZATION_SHOP_BACKROOM:
+            return "FRONTEND\\PLATFORMS\\CUSTOMIZATION_SHOP_BACKROOM.BIN";
+        case GARAGETYPE_CAR_LOT:
+            return "FRONTEND\\PLATFORMS\\CAR_LOT.BIN";
+        default:
+            return "";
     }
 }
 
 const char *FEManager::GetGaragePrefixFromType(eGarageType pGarageType) {
     switch (pGarageType) {
-    case GARAGETYPE_NONE:
-        return "";
-    case GARAGETYPE_MAIN_FE:
-        return "QRACE";
-    case GARAGETYPE_CAREER_SAFEHOUSE:
-        return "CAREER";
-    case GARAGETYPE_CUSTOMIZATION_SHOP:
-    case GARAGETYPE_CUSTOMIZATION_SHOP_BACKROOM:
-        return "CSHOP";
-    case GARAGETYPE_CAR_LOT:
-        return "CARLOT";
-    default:
-        return "";
+        case GARAGETYPE_NONE:
+            return "";
+        case GARAGETYPE_MAIN_FE:
+            return "QRACE";
+        case GARAGETYPE_CAREER_SAFEHOUSE:
+            return "CAREER";
+        case GARAGETYPE_CUSTOMIZATION_SHOP:
+        case GARAGETYPE_CUSTOMIZATION_SHOP_BACKROOM:
+            return "CSHOP";
+        case GARAGETYPE_CAR_LOT:
+            return "CARLOT";
+        default:
+            return "";
     }
 }
 
-bool FEManager::IsOkayToRequestPauseSimulation(int playerIndex, bool useControllerErrors,
-                                                bool okIfAutoSaveActive) {
+bool FEManager::IsOkayToRequestPauseSimulation(int playerIndex, bool useControllerErrors, bool okIfAutoSaveActive) {
     if (TheGameFlowManager.GetState() != GAMEFLOW_STATE_RACING) {
         return false;
     }
@@ -179,8 +144,7 @@ bool FEManager::IsOkayToRequestPauseSimulation(int playerIndex, bool useControll
     }
 
     if (GRaceStatus::Exists()) {
-        ISimable *simable =
-            IPlayer::GetList(PLAYER_LOCAL)[static_cast< unsigned int >(playerIndex)]->GetSimable();
+        ISimable *simable = IPlayer::GetList(PLAYER_LOCAL)[static_cast<unsigned int>(playerIndex)]->GetSimable();
         GRacerInfo *racerInfo;
         if (simable) {
             racerInfo = GRaceStatus::Get().GetRacerInfo(simable);
@@ -189,29 +153,22 @@ bool FEManager::IsOkayToRequestPauseSimulation(int playerIndex, bool useControll
         }
 
         if (GRaceStatus::Get().GetPlayMode() == GRaceStatus::kPlayMode_Racing) {
-            if (!GRaceStatus::Get().GetIsTimeLimited() ||
-                GRaceStatus::Get().GetRaceTimeRemaining() > 0.0f) {
-                if (!racerInfo ||
-                    (!racerInfo->GetIsEngineBlown() && !racerInfo->GetIsTotalled() &&
-                     !racerInfo->GetIsKnockedOut() && !racerInfo->IsFinishedRacing())) {
+            if (!GRaceStatus::Get().GetIsTimeLimited() || GRaceStatus::Get().GetRaceTimeRemaining() > 0.0f) {
+                if (!racerInfo || (!racerInfo->GetIsEngineBlown() && !racerInfo->GetIsTotalled() && !racerInfo->GetIsKnockedOut() &&
+                                   !racerInfo->IsFinishedRacing())) {
                     goto done;
                 }
 
                 if (Sim::GetUserMode() == Sim::USER_SPLIT_SCREEN) {
-                    ISimable *other_simable =
-                        IPlayer::GetList(PLAYER_LOCAL)[static_cast< unsigned int >(playerIndex != 1)]
-                            ->GetSimable();
+                    ISimable *other_simable = IPlayer::GetList(PLAYER_LOCAL)[static_cast<unsigned int>(playerIndex != 1)]->GetSimable();
                     GRacerInfo *other_racerInfo;
                     if (other_simable) {
                         other_racerInfo = GRaceStatus::Get().GetRacerInfo(other_simable);
                     } else {
                         other_racerInfo = nullptr;
                     }
-                    if (!other_racerInfo ||
-                        (!other_racerInfo->GetIsEngineBlown() &&
-                         !other_racerInfo->GetIsTotalled() &&
-                         !other_racerInfo->GetIsKnockedOut() &&
-                         !other_racerInfo->IsFinishedRacing())) {
+                    if (!other_racerInfo || (!other_racerInfo->GetIsEngineBlown() && !other_racerInfo->GetIsTotalled() &&
+                                             !other_racerInfo->GetIsKnockedOut() && !other_racerInfo->IsFinishedRacing())) {
                         goto done;
                     }
                 }
@@ -238,8 +195,8 @@ done:
 }
 
 bool FEManager::ShouldPauseSimulation(bool useControllerErrors) {
-    if (!mInstance->bSuppressControllerError && mInstance->WaitingForControllerError() &&
-        useControllerErrors && !UTL::Collections::Singleton<INIS>::Get() && !gMoviePlayer) {
+    if (!mInstance->bSuppressControllerError && mInstance->WaitingForControllerError() && useControllerErrors &&
+        !UTL::Collections::Singleton<INIS>::Get() && !gMoviePlayer) {
         return true;
     }
     return mPauseRequest != 0;
@@ -258,8 +215,7 @@ void FEManager::WantControllerError(int port) {
         return;
     }
 
-    if (TheGameFlowManager.IsInGame() &&
-        (FEDatabase->IsOnlineMode() || FEDatabase->IsLANMode())) {
+    if (TheGameFlowManager.IsInGame() && (FEDatabase->IsOnlineMode() || FEDatabase->IsLANMode())) {
         ISimable *simable = IPlayer::First(PLAYER_LOCAL)->GetSimable();
         GRacerInfo *racerInfo;
         if (simable) {
@@ -316,7 +272,7 @@ void FEManager::StartFE() {
 }
 
 void FEManager::StopFE() {
-    cFEngJoyInput::mInstance->JoyDisable(kJP_NumPorts, true);
+    cFEngJoyInput::mInstance->JoyDisable(JOYSTICK_PORT_ALL, true);
     FEPackageManager::Get()->CloseAllPackages(0);
     BootFlowManager::Destroy();
     mEATraxDelay = 0;
@@ -327,6 +283,9 @@ void FEManager::Render() {
         cFEng::Get()->DrawForeground();
     }
 }
+
+// STRIPPED
+void FEManager::UpdateJoyInput() {}
 
 void SteeringWheels_StopAllForces() {
     if (SteeringWheelDevice::lgwheels != nullptr) {
@@ -344,30 +303,21 @@ void SteeringWheels_StopAllForces() {
 }
 
 int GetPortsPlayer(int port) {
-    if (FEDatabase->GetPlayersJoystickPort(0) != -1 &&
-        FEDatabase->GetPlayersJoystickPort(0) == port) {
+    if (FEDatabase->GetPlayersJoystickPort(0) != -1 && FEDatabase->GetPlayersJoystickPort(0) == port) {
         return 0;
     }
-    if (FEDatabase->GetPlayersJoystickPort(1) != -1 &&
-        FEDatabase->GetPlayersJoystickPort(1) == port) {
+    if (FEDatabase->GetPlayersJoystickPort(1) != -1 && FEDatabase->GetPlayersJoystickPort(1) == port) {
         return 1;
     }
     return -1;
 }
 
-void FEManager::UpdateJoyInput() {
-    if (cFEngJoyInput::mInstance) {
-        cFEngJoyInput::mInstance->CheckUnplugged();
-    }
-}
-
 void FEManager::Update() {
     if (MemoryCard::GetInstance()) {
-        MemoryCard::GetInstance()->Tick(static_cast< int >(RealTimeElapsed * 1000.0f));
+        MemoryCard::GetInstance()->Tick(static_cast<int>(RealTimeElapsed * 1000.0f));
     }
 
-    if (!Sim::Exists() || (Sim::Exists() && Sim::GetState() != Sim::STATE_ACTIVE) ||
-        UTL::Collections::Singleton<INIS>::Get()) {
+    if (!Sim::Exists() || (Sim::Exists() && Sim::GetState() != Sim::STATE_ACTIVE) || UTL::Collections::Singleton<INIS>::Get()) {
         SteeringWheels_StopAllForces();
     }
 
@@ -378,17 +328,14 @@ void FEManager::Update() {
     int port;
     for (port = 0; port < 8; port++) {
         if (bWantControllerError[port]) {
-            if ((!UTL::Collections::Singleton<INIS>::Get() && !gMoviePlayer) ||
-                bAllowControllerError) {
+            if ((!UTL::Collections::Singleton<INIS>::Get() && !gMoviePlayer) || bAllowControllerError) {
                 if (!bSuppressControllerError) {
                     if (TheGameFlowManager.IsInGame() && FEManager::IsPaused()) {
                         FEManager *feManager = FEManager::Get();
-                        JoystickPort player_port1 =
-                            static_cast< JoystickPort >(FEDatabase->GetPlayersJoystickPort(0));
-                        feManager->ClearControllerError(static_cast< int >(player_port1));
-                        JoystickPort player_port2 =
-                            static_cast< JoystickPort >(FEDatabase->GetPlayersJoystickPort(1));
-                        feManager->ClearControllerError(static_cast< int >(player_port2));
+                        JoystickPort player_port1 = static_cast<JoystickPort>(FEDatabase->GetPlayersJoystickPort(0));
+                        feManager->ClearControllerError(static_cast<int>(player_port1));
+                        JoystickPort player_port2 = static_cast<JoystickPort>(FEDatabase->GetPlayersJoystickPort(1));
+                        feManager->ClearControllerError(static_cast<int>(player_port2));
                     }
 
                     int maxPort = IOModule::GetIOModule().GetNumDevices();
@@ -449,16 +396,14 @@ void FEManager::Update() {
 }
 
 void FEManager::SetEATraxSecondButton() {
-    if (gMoviePlayer && static_cast< unsigned int >(gMoviePlayer->GetStatus() - 3) < 3) {
+    if (gMoviePlayer && static_cast<unsigned int>(gMoviePlayer->GetStatus() - 3) < 3) {
         return;
     }
 
-    if (!cFEng::Get()->IsPackagePushed("EA_Trax_Jukebox.fng") &&
-        TheGameFlowManager.IsInFrontend()) {
+    if (!cFEng::Get()->IsPackagePushed("EA_Trax_Jukebox.fng") && TheGameFlowManager.IsInFrontend()) {
         MControlPathfinder msg(true, 0xffffffff, 0, 0);
         msg.Send(UCrc32("Pathfinder5"));
     }
 }
 
-void FEManager::ExitOnlineGameplayBasedOnConnection() {
-}
+void FEManager::ExitOnlineGameplayBasedOnConnection() {}

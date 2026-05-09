@@ -10,7 +10,6 @@
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "TimeOfDay.hpp"
-#include "World.hpp"
 
 SunChunkInfo *SunInfoTable;
 int NumSunInfo;

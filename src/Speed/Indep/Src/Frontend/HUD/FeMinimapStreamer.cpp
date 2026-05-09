@@ -1,12 +1,9 @@
 #include "Speed/Indep/Src/Frontend/HUD/FeMinimapStreamer.hpp"
 #include "Speed/Indep/Src/Misc/LZCompress.hpp"
+#include "Speed/Indep/Src/Misc/ResourceLoader.hpp"
+#include "Speed/Indep/bWare/Inc/bChunk.hpp"
+#include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
-
-extern void bEndianSwap32(void *data);
-extern void bEndianSwap16(void *data);
-extern int bSNPrintf(char *buf, int size, const char *fmt, ...);
-extern void UnloadChunks(bChunk *chunks, int sizeof_chunks, const char *debug_name);
-extern void LoadEmbeddedChunks(bChunk *chunk, int sizeof_chunks, const char *debug_name);
 
 ChoppedMiniMapManager *gChoppedMiniMapManager;
 

@@ -1,51 +1,23 @@
+#include "Speed/Indep/Src/Frontend/MenuScreens/InGame/InGameTutorialScreen.hpp"
+
+#include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
+#include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
+#include "Speed/Indep/Src/Frontend/FEPackageData.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/InGame/FEPkg_Chyron.hpp"
+#include "Speed/Indep/Src/Generated/Events/EFadeScreenOff.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/Src/Frontend/SubTitle.hpp"
-#include "Speed/Indep/Src/FEng/cFEng.h"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/Generated/Messages/MNotifyMovieFinished.h"
 #include "Speed/Indep/Src/Generated/Events/EFadeScreenOn.hpp"
 
-extern unsigned int FEngHashString(const char *, ...);
-extern unsigned int bStringHash(const char *, int);
-
 extern bool gInGameMoviePlaying;
 
-struct MenuScreen;
-struct ScreenConstructorData;
-
-extern const char *GetLoadingScreenPackageName();
-static const char *InGameTutorialScreenName = "InGameTutorial.fng";
-
-struct InGameAnyTutorialScreen : MenuScreen {
-    InGameAnyTutorialScreen(ScreenConstructorData *sd);
-    ~InGameAnyTutorialScreen() override;
-    static MenuScreen *Create(ScreenConstructorData *sd);
-    void NotificationMessage(unsigned long msg, FEObject *obj, unsigned long param1, unsigned long param2) override;
-    static void LaunchMovie(const char *filename, const char *packageName);
-    void DismissMovie();
-    static void SetMovieName(const char *filename);
-    static void SetPackageName(const char *packageName);
-    static char MovieFilename[64];
-    static char PackageFilename[64];
-    static bool PackageSet;
-    SubTitler mSubtitler; // offset 0x2C
-};
+static const char *InGameTutorialScreenName = "InGameAnyTutorial.fng";
 
 char InGameAnyTutorialScreen::MovieFilename[64];
 char InGameAnyTutorialScreen::PackageFilename[64];
 bool InGameAnyTutorialScreen::PackageSet;
-
-void InGameAnyTutorialScreen::SetMovieName(const char *filename) {
-    bStrNCpy(MovieFilename, filename, 0x40);
-}
-
-void InGameAnyTutorialScreen::SetPackageName(const char *packageName) {
-    PackageSet = true;
-    bStrNCpy(PackageFilename, packageName, 0x40);
-}
-
-MenuScreen *InGameAnyTutorialScreen::Create(ScreenConstructorData *sd) {
-    return new ("", 0) InGameAnyTutorialScreen(sd);
-}
 
 InGameAnyTutorialScreen::InGameAnyTutorialScreen(ScreenConstructorData *sd) : MenuScreen(sd) {
     bool mSkipable = true;
@@ -112,8 +84,8 @@ skip_hash:
     new EFadeScreenOff(0x14035fb);
 }
 
-InGameAnyTutorialScreen::~InGameAnyTutorialScreen() {
-    gInGameMoviePlaying = false;
+MenuScreen *InGameAnyTutorialScreen::Create(ScreenConstructorData *sd) {
+    return new ("", 0) InGameAnyTutorialScreen(sd);
 }
 
 void InGameAnyTutorialScreen::NotificationMessage(unsigned long msg, FEObject *obj, unsigned long param1, unsigned long param2) {
@@ -132,6 +104,10 @@ void InGameAnyTutorialScreen::NotificationMessage(unsigned long msg, FEObject *o
     }
     DismissMovie();
     mSubtitler.Update(0xc3960eb9);
+}
+
+InGameAnyTutorialScreen::~InGameAnyTutorialScreen() {
+    gInGameMoviePlaying = false;
 }
 
 void InGameAnyTutorialScreen::LaunchMovie(const char *filename, const char *packageName) {
@@ -153,7 +129,16 @@ void InGameAnyTutorialScreen::DismissMovie() {
     gInGameMoviePlaying = false;
     MNotifyMovieFinished msg;
     msg.Post(port);
-    cFEng::mInstance->QueuePackagePop(0);
-    cFEng::mInstance->QueueGameMessage(0xc3960eb9, PackageFilename, 0xff);
+    cFEng::Get()->QueuePackagePop(0);
+    cFEng::Get()->QueueGameMessage(0xc3960eb9, PackageFilename, 0xff);
     new EFadeScreenOn(false);
+}
+
+void InGameAnyTutorialScreen::SetMovieName(const char *filename) {
+    bStrNCpy(MovieFilename, filename, 0x40);
+}
+
+void InGameAnyTutorialScreen::SetPackageName(const char *packageName) {
+    PackageSet = true;
+    bStrNCpy(PackageFilename, packageName, 0x40);
 }

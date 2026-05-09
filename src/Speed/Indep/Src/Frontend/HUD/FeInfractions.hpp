@@ -17,9 +17,10 @@ class Infractions : public HudElement, public IInfractions {
     void RequestInfraction(const char *infractionString) override;
 
   private:
-    FEObject * mpDataGenericIcon;
-    FEGroup * mpDataInfractionStrings[4];
-    FEString * mpDataTotalInfractions;
+    static int mNumVisibleInfractions;
+    FEObject *mpDataGenericIcon;
+    FEGroup *mpDataInfractionStrings[4];
+    FEString *mpDataTotalInfractions;
 };
 
 #endif

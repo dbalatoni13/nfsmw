@@ -1,26 +1,23 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/Loading/FELoadingScreen.hpp"
+#include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
+#include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "Speed/Indep/Src/Frontend/FEManager.hpp"
 #include "Speed/Indep/Src/Misc/BuildRegion.hpp"
-#include "Speed/Indep/Src/FEng/cFEng.h"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/Generated/Events/ESndGameState.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
-
-extern void FEngSetScript(const char *pkg_name, unsigned int obj_hash, unsigned int script_hash, bool start_at_beginning);
-extern FEObject *FEngFindObject(const char *pkg_name, unsigned int hash);
-extern void FEngSetVisible(FEObject *obj);
-extern void SetSoundControlState(bool bON, eSNDCTLSTATE esndstate, const char *Reason);
 
 static bool bSawLoadingScreen;
 
 void *LoadingScreen::mLoadingScreenPtr;
 
 LoadingScreen::LoadingScreen(ScreenConstructorData *sd) : MenuScreen(sd) {
-    const unsigned long FEObj_LoadingBlinker = 0xCF281D29;
+    const u32 FEObj_LoadingBlinker = 0xCF281D29;
 
     if (FEManager::Get()->IsFirstBoot()) {
         if (BuildRegion::ShowLanguageSelect()) {
-            FEngSetScript(PackageFilename, FEObj_LoadingBlinker, 0x5D7C6A21, true);
+            FEngSetScript(GetPackageName(), FEObj_LoadingBlinker, 0x5D7C6A21, true);
         }
     }
 
@@ -39,13 +36,15 @@ LoadingScreen::LoadingScreen(ScreenConstructorData *sd) : MenuScreen(sd) {
     new ESndGameState(10, true);
     SetSoundControlState(true, SNDSTATE_OFF, "FELoad");
 }
+LoadingScreen::~LoadingScreen() {
+    if (cFEng::Get()->IsPackageInControl("Loading_Tips.fng")) {
+        cFEng::Get()->QueuePackagePop(1);
+    }
 
-void LoadingScreen::NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) {}
-
-void LoadingScreen::InitLoadingScreen() {
-    mLoadingScreenPtr = bMalloc(0x2C, nullptr, 0, 0);
+    new ESndGameState(10, false);
+    SetSoundControlState(false, SNDSTATE_OFF, "FELoad");
 }
 
-MenuScreen *CreateLoadingScreen(ScreenConstructorData *sd) {
-    return new (LoadingScreen::mLoadingScreenPtr) LoadingScreen(sd);
+void LoadingScreen::InitLoadingScreen() {
+    mLoadingScreenPtr = bMalloc(sizeof(LoadingScreen), nullptr, 0, 0);
 }

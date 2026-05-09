@@ -1,24 +1,15 @@
 #include "Speed/Indep/Src/Frontend/FEObjectCallbacks.hpp"
 
 #include "Speed/Indep/Src/FEng/FEGroup.h"
-#include "Speed/Indep/Src/FEng/FEPackage.h"
-#include "Speed/Indep/Src/FEng/cFEng.h"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEObjects.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEStrings.hpp"
 #include "Speed/Indep/Src/Frontend/MoviePlayer/MoviePlayer.hpp"
 #include "Speed/Indep/Src/Frontend/cFEngRender.hpp"
 #include "Speed/Indep/Src/Misc/BuildRegion.hpp"
-
-namespace BuildRegion {
-bool IsPal();
-}
-
-extern int FEngStrICmp(const char *, const char *);
-extern int FEngSNPrintf(char *, int, const char *, ...);
-extern int bSPrintf(char *, const char *, ...);
-extern const char *GetLanguageName(eLanguages language);
-extern int bFileExists(const char *f);
-extern char *bStrNCpy(char *to, const char *from, int m);
-extern void FEngSetVisible(FEObject *obj);
-extern void FEngSetInvisible(FEObject *obj);
+#include "Speed/Indep/Src/Misc/Config.h"
+#include "Speed/Indep/Src/Misc/bFile.hpp"
+#include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 
 struct MovieNameMap {
     const char *movieName;
@@ -51,48 +42,6 @@ static void CalculateMovieFilename(char *buffer, int bufsize, const char *basena
     bSPrintf(language, "_%s", GetLanguageName(cur_language));
     extension = ".vp6";
     FEngSNPrintf(buffer, bufsize, "%sMOVIES\\%s%s%s%s", prefix, basename, language, pal_or_ntsc, extension);
-}
-
-bool FEngMovieStopper::Callback(FEObject *obj) {
-    if (obj->Type == 7) {
-        if (gMoviePlayer != nullptr) {
-            gMoviePlayer->Stop();
-        }
-        MoviePlayer_ShutDown();
-        return false;
-    }
-    return true;
-}
-
-bool FEngHidePCObjects::Callback(FEObject *obj) {
-    if (obj->Flags & 0x8) {
-        FEngSetInvisible(obj);
-        if (obj->Flags & 0x10000000) {
-            obj->Flags &= ~0x10000000;
-        }
-        obj->Flags |= 0x00400000;
-    }
-    return true;
-}
-
-bool RenderObjectDisconnect::Callback(FEObject *pObj) {
-    pFEngRenderer->RemoveCachedRender(pObj, PkgRenderInfo);
-    return true;
-}
-
-bool ObjectDirtySetter::Callback(FEObject *obj) {
-    obj->Flags |= 0x00400000;
-    cFEngRender::mInstance->RemoveCachedRender(obj, pRenderInfo);
-    return true;
-}
-
-bool ObjectVisibilitySetter::Callback(FEObject *obj) {
-    if (Visible) {
-        FEngSetVisible(obj);
-    } else {
-        FEngSetInvisible(obj);
-    }
-    return true;
 }
 
 bool FEngMovieStarter::Callback(FEObject *obj) {
@@ -141,6 +90,28 @@ bool FEngMovieStarter::Callback(FEObject *obj) {
     return true;
 }
 
+bool FEngMovieStopper::Callback(FEObject *obj) {
+    if (obj->Type == 7) {
+        if (gMoviePlayer != nullptr) {
+            gMoviePlayer->Stop();
+        }
+        MoviePlayer_ShutDown();
+        return false;
+    }
+    return true;
+}
+
+bool FEngHidePCObjects::Callback(FEObject *obj) {
+    if (obj->Flags & 0x8) {
+        FEngSetInvisible(obj);
+        if (obj->Flags & 0x10000000) {
+            obj->Flags &= ~0x10000000;
+        }
+        obj->Flags |= 0x00400000;
+    }
+    return true;
+}
+
 bool FEngTransferFlagsToChildren::Callback(FEObject *obj) {
     if ((obj->Flags & FlagToTransfer) && obj->Type == FE_Group) {
         FEGroup *group = static_cast<FEGroup *>(obj);
@@ -155,36 +126,22 @@ bool FEngTransferFlagsToChildren::Callback(FEObject *obj) {
     return true;
 }
 
-static char *GetBaseName(char *dest, const char *filename) {
-    long x = 0;
-    long first = 0;
-    long last;
+bool RenderObjectDisconnect::Callback(FEObject *pObj) {
+    pFEngRenderer->RemoveCachedRender(pObj, PkgRenderInfo);
+    return true;
+}
 
-    while (filename[x] != '\0') {
-        int c = filename[x];
-        x++;
-        if (c == '\\' || c == '/') {
-            first = x;
-        }
-    }
+bool ObjectDirtySetter::Callback(FEObject *obj) {
+    obj->Flags |= 0x00400000;
+    cFEngRender::mInstance->RemoveCachedRender(obj, pRenderInfo);
+    return true;
+}
 
-    last = x;
-    if (x != 0) {
-        if (filename[x] != '.') {
-            while (--x != 0) {
-                if (filename[x] == '.') {
-                    last = x;
-                    break;
-                }
-            }
-        }
+bool ObjectVisibilitySetter::Callback(FEObject *obj) {
+    if (Visible) {
+        FEngSetVisible(obj);
+    } else {
+        FEngSetInvisible(obj);
     }
-
-    long y = 0;
-    for (x = first; x < last; x++) {
-        dest[y] = filename[x];
-        y++;
-    }
-    dest[y] = '\0';
-    return dest;
+    return true;
 }

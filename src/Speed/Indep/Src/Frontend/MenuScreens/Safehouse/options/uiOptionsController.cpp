@@ -1,36 +1,40 @@
 #include "uiOptionsController.hpp"
 
-#include "Speed/Indep/Src/FEng/cFEng.h"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Frontend/FEJoyInput.hpp"
+#include "Speed/Indep/Src/Frontend/FEngFrontend.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEImages.hpp"
+#include "Speed/Indep/Src/Frontend/Localization/Localize.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/options/uiOptionWidgets.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/options/uiOptionsMain.hpp"
 #include "Speed/Indep/Src/Generated/Events/EUnPause.hpp"
 #include "Speed/Indep/Src/Sim/Simulation.h"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/DialogInterface.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 
-void FEngSetButtonTexture(FEImage* img, unsigned int tex_hash);
-unsigned long FEHashUpper(const char* str);
+void FEngSetButtonTexture(FEImage *img, unsigned int tex_hash);
+unsigned long FEHashUpper(const char *str);
 unsigned int FindButtonNameHashForFEString(int config, int string_number, JoystickPort player);
 bool IsJoystickTypeWheel(JoystickPort port);
 
-void eLoadStreamingTexture(unsigned int* textures, int count, void (*callback)(void*),
-                           void* param, int pool);
-void eUnloadStreamingTexture(unsigned int* textures, int count);
+void eLoadStreamingTexture(unsigned int *textures, int count, void (*callback)(void *), void *param, int pool);
+void eUnloadStreamingTexture(unsigned int *textures, int count);
 
 int UIOptionsController::PortToConfigure = 0;
 int UIOptionsController::isWheelConfig = 0;
 
 void MyFinishLoadingControllerTextureCallbackBridge(unsigned int p);
 
-UIOptionsController::UIOptionsController(ScreenConstructorData* sd)
-    : UIWidgetMenu(sd) //
-    , WhichControllerTexture(0) //
-    , PrevJoystickType(-1) //
-    , mCalledFromPauseMenu(sd->Arg != 0) //
-    , NeedSetup(true) {
+UIOptionsController::UIOptionsController(ScreenConstructorData *sd) : UIWidgetMenu(sd) {
+    WhichControllerTexture = 0;
+    PrevJoystickType = -1;
+    mCalledFromPauseMenu = sd->Arg != 0;
+    NeedSetup = true;
+
     if (Sim::GetUserMode() == Sim::USER_SPLIT_SCREEN) {
         cFEng::Get()->QueuePackageMessage(0x7DB7B6D7, GetPackageName(), 0);
-        const char* pkg = GetPackageName();
+        const char *pkg = GetPackageName();
         int player = GetPlayerToEditForOptions();
         unsigned int lang = 0x7B070985;
         if (player == 0) {
@@ -40,14 +44,13 @@ UIOptionsController::UIOptionsController(ScreenConstructorData* sd)
     }
 
     oldConfig = FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions())->Config;
-    reinterpret_cast<int&>(oldVibration) = FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions())->Rumble;
-    reinterpret_cast<int&>(oldDriveWithAnalog) = FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions())->DriveWithAnalog;
+    reinterpret_cast<int &>(oldVibration) = FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions())->Rumble;
+    reinterpret_cast<int &>(oldDriveWithAnalog) = FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions())->DriveWithAnalog;
 
     CalcControllerTextureToLoad();
 
     if (isWheelConfig) {
-        FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions())->Config =
-            static_cast<eControllerConfig>(0);
+        FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions())->Config = static_cast<eControllerConfig>(0);
         FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions())->DriveWithAnalog = true;
     }
 
@@ -59,20 +62,17 @@ UIOptionsController::~UIOptionsController() {
 }
 
 bool UIOptionsController::OptionsDidNotChange() {
-    bool result =
-        (oldConfig == FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions())->Config);
+    bool result = (oldConfig == FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions())->Config);
     if (oldVibration != FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions())->Rumble) {
         result = false;
     }
-    if (oldDriveWithAnalog !=
-        FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions())->DriveWithAnalog) {
+    if (oldDriveWithAnalog != FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions())->DriveWithAnalog) {
         result = false;
     }
     return result;
 }
 
-void UIOptionsController::NotificationMessage(unsigned long msg, FEObject* pobj,
-                                              unsigned long param1, unsigned long param2) {
+void UIOptionsController::NotificationMessage(u32 msg, FEObject *pobj, u32 param1, u32 param2) {
     if (msg == 0x9120409E || msg == 0xB5971BF1) {
         int joyPort = FEngMapJoyParamToJoyport(param1);
         FEDatabase->SetPlayersJoystickPort(GetPlayerToEditForOptions(), joyPort);
@@ -81,85 +81,80 @@ void UIOptionsController::NotificationMessage(unsigned long msg, FEObject* pobj,
     UIWidgetMenu::NotificationMessage(msg, pobj, param1, param2);
 
     switch (msg) {
-    case 0xE1FDE1D1: {
-        bool dirty = false;
-        if (FEDatabase->IsOptionsDirty() || !OptionsDidNotChange()) {
-            dirty = true;
-        }
-        FEDatabase->SetOptionsDirty(dirty);
+        case 0xE1FDE1D1: {
+            bool dirty = false;
+            if (FEDatabase->IsOptionsDirty() || !OptionsDidNotChange()) {
+                dirty = true;
+            }
+            FEDatabase->SetOptionsDirty(dirty);
 
-        if (mCalledFromPauseMenu) {
-            cFEng::Get()->QueuePackageSwitch("Pause_Main.fng", 1, 0, false);
-        } else {
-            if (FEDatabase->IsOnlineMode()) {
-                cFEng::Get()->QueuePackageSwitch("OL_MAIN.fng", 0, 0, false);
-            } else {
-                cFEng::Get()->QueuePackageSwitch("MainMenu_Sub.fng", 0, 0, false);
-            }
-        }
-        break;
-    }
-    case 0x911AB364:
-        if (OptionsDidNotChange()) {
-            cFEng::Get()->QueuePackageMessage(0x587C018B, GetPackageName(), 0);
-        } else {
-            DialogInterface::ShowTwoButtons(GetPackageName(), "", static_cast<eDialogTitle>(1),
-                                            0x70E01038, 0x417B25E4, 0x775DBA97, 0x34DC1BCF,
-                                            0x34DC1BCF, static_cast<eDialogFirstButtons>(1),
-                                            GetLocalizedString(0xE9CB802F));
-        }
-        break;
-    case 0x775DBA97:
-        RestoreOriginals();
-        cFEng::Get()->QueuePackageMessage(0x587C018B, GetPackageName(), 0);
-        break;
-    case 0xD9FEEC59:
-    case 0x5073EF13:
-        if (!OptionsDidNotChange()) {
-            char buf[128];
-            FEngSNPrintf(buf, 128, GetLocalizedString(0xBA463431),
-                         GetPlayerToEditForOptions() + 1);
-            const char* pkgName = GetPackageName();
-            const char* dlg_pkg;
             if (mCalledFromPauseMenu) {
-                dlg_pkg = "InGameDialog.fng";
+                cFEng::Get()->QueuePackageSwitch("Pause_Main.fng", 1, 0, false);
             } else {
-                dlg_pkg = "Dialog.fng";
+                if (FEDatabase->IsOnlineMode()) {
+                    cFEng::Get()->QueuePackageSwitch("OL_MAIN.fng", 0, 0, false);
+                } else {
+                    cFEng::Get()->QueuePackageSwitch("MainMenu_Sub.fng", 0, 0, false);
+                }
             }
-            DialogInterface::ShowTwoButtons(pkgName, dlg_pkg,
-                                            static_cast<eDialogTitle>(1), 0x70E01038, 0x417B25E4,
-                                            0x9A5AD46D, 0xA2A07AC4, 0x34DC1BCF,
-                                            static_cast<eDialogFirstButtons>(1), buf);
-        } else {
-            cFEng::Get()->QueueGameMessage(0x9A5AD46D, 0, 0xFF);
+            break;
         }
-        break;
-    case 0xA2A07AC4:
-        RestoreOriginals();
-        TogglePlayer();
-        break;
-    case 0x9A5AD46D: {
-        bool dirty = false;
-        if (FEDatabase->IsOptionsDirty() || !OptionsDidNotChange()) {
-            dirty = true;
+        case 0x911AB364:
+            if (OptionsDidNotChange()) {
+                cFEng::Get()->QueuePackageMessage(0x587C018B, GetPackageName(), 0);
+            } else {
+                DialogInterface::ShowTwoButtons(GetPackageName(), "", static_cast<eDialogTitle>(1), 0x70E01038, 0x417B25E4, 0x775DBA97, 0x34DC1BCF,
+                                                0x34DC1BCF, static_cast<eDialogFirstButtons>(1), GetLocalizedString(0xE9CB802F));
+            }
+            break;
+        case 0x775DBA97:
+            RestoreOriginals();
+            cFEng::Get()->QueuePackageMessage(0x587C018B, GetPackageName(), 0);
+            break;
+        case 0xD9FEEC59:
+        case 0x5073EF13:
+            if (!OptionsDidNotChange()) {
+                char buf[128];
+                FEngSNPrintf(buf, 128, GetLocalizedString(0xBA463431), GetPlayerToEditForOptions() + 1);
+                const char *pkgName = GetPackageName();
+                const char *dlg_pkg;
+                if (mCalledFromPauseMenu) {
+                    dlg_pkg = "InGameDialog.fng";
+                } else {
+                    dlg_pkg = "Dialog.fng";
+                }
+                DialogInterface::ShowTwoButtons(pkgName, dlg_pkg, static_cast<eDialogTitle>(1), 0x70E01038, 0x417B25E4, 0x9A5AD46D, 0xA2A07AC4,
+                                                0x34DC1BCF, static_cast<eDialogFirstButtons>(1), buf);
+            } else {
+                cFEng::Get()->QueueGameMessage(0x9A5AD46D, 0, 0xFF);
+            }
+            break;
+        case 0xA2A07AC4:
+            RestoreOriginals();
+            TogglePlayer();
+            break;
+        case 0x9A5AD46D: {
+            bool dirty = false;
+            if (FEDatabase->IsOptionsDirty() || !OptionsDidNotChange()) {
+                dirty = true;
+            }
+            FEDatabase->SetOptionsDirty(dirty);
+            TogglePlayer();
+            break;
         }
-        FEDatabase->SetOptionsDirty(dirty);
-        TogglePlayer();
-        break;
-    }
-    case 0xB5AF2461:
-        if (mCalledFromPauseMenu) {
-            new EUnPause();
-        }
-        break;
-    case 0x92B703B5:
-        SetupControllerConfig();
-        break;
-    case 0xC98356BA:
-        DetectControllers();
-        break;
-    case 0x34DC1BCF:
-        return;
+        case 0xB5AF2461:
+            if (mCalledFromPauseMenu) {
+                new EUnPause();
+            }
+            break;
+        case 0x92B703B5:
+            SetupControllerConfig();
+            break;
+        case 0xC98356BA:
+            DetectControllers();
+            break;
+        case 0x34DC1BCF:
+            return;
     }
 }
 
@@ -172,16 +167,15 @@ void UIOptionsController::Setup() {
         cFEng::Get()->QueuePackageMessage(0xDE511657, GetPackageName(), 0);
     }
 
-    COConfig* config = new COConfig(true);
+    COConfig *config = new COConfig(true);
     config->SetBackingOffsetX(-295.0f);
     AddToggleOption(config, true);
 
-    COVibration* vibration = new COVibration(GetPlayerToEditForOptions(), true);
+    COVibration *vibration = new COVibration(GetPlayerToEditForOptions(), true);
     int idx = AddToggleOption(vibration, true);
     Options.GetNode(idx - 1)->SetBackingOffsetX(-295.0f);
 
-    FEngSetLanguageHash(GetPackageName(), 0x53BF826D,
-                        GetPlayerToEditForOptions() == 0 ? 0x7B070984 : 0x7B070985);
+    FEngSetLanguageHash(GetPackageName(), 0x53BF826D, GetPlayerToEditForOptions() == 0 ? 0x7B070984 : 0x7B070985);
 
     SetInitialOption(0);
     HideControllerConfig();
@@ -252,7 +246,12 @@ void UIOptionsController::FinishLoadingTexCallback() {
     SetupControllerConfig();
 }
 
-unsigned int UIOptionsController::CalcControllerTextureToLoad() {
+void MyFinishLoadingControllerTextureCallbackBridge(uint32 p) {
+    UIOptionsController *ls = reinterpret_cast<UIOptionsController *>(p);
+    ls->FinishLoadingTexCallback();
+}
+
+uint32 UIOptionsController::CalcControllerTextureToLoad() {
     unsigned int texture_hash;
     isWheelConfig = 0;
 
@@ -272,8 +271,7 @@ unsigned int UIOptionsController::CalcControllerTextureToLoad() {
 
 void UIOptionsController::PrepToShowControllerConfig() {
     if (isWheelConfig) {
-        FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions())->Config =
-            static_cast<eControllerConfig>(0);
+        FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions())->Config = static_cast<eControllerConfig>(0);
         FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions())->DriveWithAnalog = true;
         cFEng::Get()->QueueGameMessage(0x92B703B5, 0, 0xFF);
     }
@@ -284,9 +282,7 @@ void UIOptionsController::PrepToShowControllerConfig() {
     FEngSetTextureHash(FEngFindImage(GetPackageName(), 0x922A39C4), tex);
 
     unsigned int texArr = WhichControllerTexture;
-    eLoadStreamingTexture(&texArr, 1,
-                          reinterpret_cast<void (*)(void*)>(MyFinishLoadingControllerTextureCallbackBridge),
-                          this, 0);
+    eLoadStreamingTexture(&texArr, 1, reinterpret_cast<void (*)(void *)>(MyFinishLoadingControllerTextureCallbackBridge), this, 0);
 }
 
 void UIOptionsController::ShowControllerConfig() {
@@ -308,10 +304,10 @@ void UIOptionsController::TogglePlayer() {
     SetPlayerToEditForOptions(GetPlayerToEditForOptions() == 0);
 
     oldConfig = FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions())->Config;
-    reinterpret_cast<int&>(oldVibration) = FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions())->Rumble;
-    reinterpret_cast<int&>(oldDriveWithAnalog) = FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions())->DriveWithAnalog;
+    reinterpret_cast<int &>(oldVibration) = FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions())->Rumble;
+    reinterpret_cast<int &>(oldDriveWithAnalog) = FEDatabase->GetPlayerSettings(GetPlayerToEditForOptions())->DriveWithAnalog;
 
-    const char* pkg = GetPackageName();
+    const char *pkg = GetPackageName();
     int player = GetPlayerToEditForOptions();
     unsigned int lang = 0x7B070985;
     if (player == 0) {
@@ -324,9 +320,4 @@ void UIOptionsController::TogglePlayer() {
     }
 
     SetupControllerConfig();
-}
-
-void MyFinishLoadingControllerTextureCallbackBridge(unsigned int p) {
-    UIOptionsController* ls = reinterpret_cast<UIOptionsController*>(p);
-    ls->FinishLoadingTexCallback();
 }

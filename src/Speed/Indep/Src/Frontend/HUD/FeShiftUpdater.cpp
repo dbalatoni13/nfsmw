@@ -1,23 +1,19 @@
 #include "Speed/Indep/Src/Frontend/HUD/FeShiftUpdater.hpp"
+#include "Speed/Indep/Src/FEng/FEObject.h"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEObjects.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEStrings.hpp"
 
-extern void FEngSetVisible(FEObject *pObject);
-extern void FEngSetInvisible(FEObject *pObject);
-extern void FEngSetScript(FEObject *object, unsigned int script_hash, bool start_at_beginning);
-extern bool FEngIsScriptSet(FEObject *obj, unsigned int script_hash);
-extern void FEngSetLanguageHash(FEString *obj, unsigned int hash);
-extern unsigned long FEHashUpper(const char *String);
 extern float warningPulseMinRpm;
 
 ShiftUpdater::ShiftUpdater(UTL::COM::Object *pOutter, const char *pkg_name, int player_number)
-    : HudElement(pkg_name, 0x20000000) //
-    , IShiftUpdater(pOutter) //
-    , mGear(G_NEUTRAL) //
-    , mShiftPotential(SHIFT_POTENTIAL_NONE) //
-    , mGearChanged(0) //
-    , mLastShiftStatus(SHIFT_STATUS_NONE) //
-    , mIsEngineBlown(false) //
-    , mEngineTemp(0.0f)
+    : HudElement(pkg_name, 0x20000000), IShiftUpdater(pOutter) //
 {
+    mGear = G_NEUTRAL;
+    mShiftPotential = SHIFT_POTENTIAL_NONE;
+    mGearChanged = 0;
+    mLastShiftStatus = SHIFT_STATUS_NONE;
+    mIsEngineBlown = false;
+    mEngineTemp = 0.0f;
     pShiftIndicator = RegisterImage(FEHashUpper("Shift_light"));
     pShiftIndicatorOverheatGroup = RegisterGroup(FEHashUpper("ENGINE_HEAT_SHIFTLIGHT_GROUP"));
     pShiftMsgGroup = RegisterGroup(FEHashUpper("SHIFT_GROUP"));
@@ -28,42 +24,42 @@ ShiftUpdater::ShiftUpdater(UTL::COM::Object *pOutter, const char *pkg_name, int 
 void ShiftUpdater::Update(IPlayer *player) {
     ShiftPotential potential = static_cast<ShiftPotential>(mShiftPotential);
     if (potential < SHIFT_POTENTIAL_GOOD || mIsEngineBlown) {
-        FEngSetInvisible(pShiftIndicator);
+        FEngSetInvisible(reinterpret_cast<FEObject *>(pShiftIndicator));
         FEngSetInvisible(pShiftIndicatorOverheatGroup);
     } else if (potential == SHIFT_POTENTIAL_GOOD) {
         const char *scriptName = "PulseBlue";
-        FEObject *obj = pShiftIndicator;
+        FEObject *obj = reinterpret_cast<FEObject *>(pShiftIndicator);
         unsigned long hash = FEHashUpper(scriptName);
         if (!FEngIsScriptSet(obj, hash)) {
-            FEngSetScript(pShiftIndicator, FEHashUpper(scriptName), true);
+            FEngSetScript(reinterpret_cast<FEObject *>(pShiftIndicator), FEHashUpper(scriptName), true);
         }
-        FEngSetVisible(pShiftIndicator);
-        FEngSetInvisible(pShiftIndicatorOverheatGroup);
+        FEngSetVisible(reinterpret_cast<FEObject *>(pShiftIndicator));
+        FEngSetInvisible(reinterpret_cast<FEObject *>(pShiftIndicatorOverheatGroup));
     } else if (potential == SHIFT_POTENTIAL_PERFECT) {
         const char *scriptName = "PulseGreen";
-        FEObject *obj = pShiftIndicator;
+        FEObject *obj = reinterpret_cast<FEObject *>(pShiftIndicator);
         unsigned long hash = FEHashUpper(scriptName);
         if (!FEngIsScriptSet(obj, hash)) {
-            FEngSetScript(pShiftIndicator, FEHashUpper(scriptName), true);
+            FEngSetScript(reinterpret_cast<FEObject *>(pShiftIndicator), FEHashUpper(scriptName), true);
         }
-        FEngSetVisible(pShiftIndicator);
+        FEngSetVisible(reinterpret_cast<FEObject *>(pShiftIndicator));
         FEngSetInvisible(pShiftIndicatorOverheatGroup);
     } else if (potential == SHIFT_POTENTIAL_MISS) {
         if (mEngineTemp <= warningPulseMinRpm) {
             const char *scriptName = "PulseRed";
-            FEObject *obj = pShiftIndicator;
+            FEObject *obj = reinterpret_cast<FEObject *>(pShiftIndicator);
             unsigned long hash = FEHashUpper(scriptName);
             if (!FEngIsScriptSet(obj, hash)) {
-                FEngSetScript(pShiftIndicator, FEHashUpper(scriptName), true);
+                FEngSetScript(reinterpret_cast<FEObject *>(pShiftIndicator), FEHashUpper(scriptName), true);
             }
-            FEngSetVisible(pShiftIndicator);
+            FEngSetVisible(reinterpret_cast<FEObject *>(pShiftIndicator));
             FEngSetInvisible(pShiftIndicatorOverheatGroup);
         } else {
             unsigned long hash = FEHashUpper("OVERHEAT_PULSE");
             if (!FEngIsScriptSet(pShiftIndicatorOverheatGroup, hash)) {
                 FEngSetScript(pShiftIndicatorOverheatGroup, FEHashUpper("OVERHEAT_PULSE"), true);
             }
-            FEngSetInvisible(pShiftIndicator);
+            FEngSetInvisible(reinterpret_cast<FEObject *>(pShiftIndicator));
             FEngSetVisible(pShiftIndicatorOverheatGroup);
         }
     }
@@ -100,37 +96,6 @@ void ShiftUpdater::Update(IPlayer *player) {
         FEngSetScript(pShiftMsgGroup, FEHashUpper("OVERREV"), true);
     }
 
-    FEngSetInvisible(pShiftIndicator);
+    FEngSetInvisible(reinterpret_cast<FEObject *>(pShiftIndicator));
     mGearChanged = 0;
-}
-
-void ShiftUpdater::SetGear(GearID gear, ShiftStatus status, ShiftPotential potential, bool hasGoodEnoughTraction) {
-    if (gear != mGear) {
-        int dir = -1;
-        if (gear > mGear) {
-            dir = 1;
-        }
-        mGear = gear;
-        mGearChanged = dir;
-        mShiftPotential = SHIFT_POTENTIAL_NONE;
-        if (hasGoodEnoughTraction) {
-            mLastShiftStatus = status;
-        } else {
-            mLastShiftStatus = SHIFT_STATUS_NORMAL;
-        }
-        return;
-    }
-    if (hasGoodEnoughTraction) {
-        mShiftPotential = potential;
-    } else {
-        mShiftPotential = SHIFT_POTENTIAL_NONE;
-    }
-}
-
-void ShiftUpdater::SetEngineBlown(bool blown) {
-    mIsEngineBlown = blown;
-}
-
-void ShiftUpdater::SetEngineTemp(float temp) {
-    mEngineTemp = temp;
 }

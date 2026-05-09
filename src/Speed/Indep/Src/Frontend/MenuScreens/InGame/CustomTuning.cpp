@@ -1,6 +1,6 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/InGame/CustomTuning.hpp"
 
-#include "Speed/Indep/Src/FEng/cFEng.h"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/FEng/FEImage.h"
 #include "Speed/Indep/Src/Generated/Events/ETuneVehicle.hpp"
 #include "Speed/Indep/Src/Generated/Events/EUnPause.hpp"
@@ -12,6 +12,7 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/feWidget.hpp"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/pvehicle.h"
 #include "Speed/Indep/Src/Physics/PhysicsInfo.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEObjects.hpp"
 
 extern int FEPrintf(FEString *, const char *, ...);
 extern unsigned int FEngHashString(const char *, ...);
@@ -54,7 +55,7 @@ void SetLevel(Attrib::Gen::pvehicle &vehicle, int type, int level);
 namespace Info {
 eInductionType InductionType(const Attrib::Gen::pvehicle &vehicle);
 }
-}
+} // namespace Physics
 
 struct TuningSlider : public FEToggleWidget {
     FEObject *pSliderGroup;
@@ -84,13 +85,20 @@ struct TuningSlider : public FEToggleWidget {
 
 CustomTuningScreen::CustomTuningScreen(ScreenConstructorData *sd)
     : UIWidgetMenu(sd) //
-    , HelpTextScroller(nullptr) //
-    , HelpScrollBar(nullptr) //
-    , TuningRecord(nullptr) //
-    , TempTuningRecord() //
-    , CurrentTuningType(0) //
-    , HelpVisible(false) //
-    , ExitWithStart(false) {
+      ,
+      HelpTextScroller(nullptr) //
+      ,
+      HelpScrollBar(nullptr) //
+      ,
+      TuningRecord(nullptr) //
+      ,
+      TempTuningRecord() //
+      ,
+      CurrentTuningType(0) //
+      ,
+      HelpVisible(false) //
+      ,
+      ExitWithStart(false) {
     HelpScrollBar = new (__FILE__, __LINE__) FEScrollBar(sd->PackageFilename, lbl_803E89FC, true, true, false);
     bHasScrollBar = false;
     iMaxWidgetsOnScreen = 8;
@@ -136,10 +144,10 @@ void TuningSlider::Draw() {
     FEngSetLanguageHash(GetTitleObject(), Title);
     FEPrintf(GetDataObject(), lbl_803E89B8, ((Current - Min) / (Max - Min)) * lbl_803E89C0);
     if (bActive) {
-        FEngSetScript(GetTitleObject(), 0x7AB5521A, true);
+        FEngSetScript(reinterpret_cast<FEObject *>(GetTitleObject()), 0x7AB5521A, true);
         FEngSetScript(pSliderGroup, 0x001744B3, true);
     } else {
-        FEngSetScript(GetTitleObject(), 0x00163C76, true);
+        FEngSetScript(reinterpret_cast<FEObject *>(GetTitleObject()), 0x00163C76, true);
         FEngSetScript(pSliderGroup, 0x00163C76, true);
     }
     Negative.Draw();
@@ -149,11 +157,11 @@ void TuningSlider::Draw() {
 void TuningSlider::Position() {}
 
 void TuningSlider::SetFocus(const char *parent_pkg) {
-    FEngSetCurrentButton(parent_pkg, GetTitleObject());
+    FEngSetCurrentButton(parent_pkg, reinterpret_cast<FEObject *>(GetTitleObject()));
     if (bActive) {
         const unsigned long FEObj_Init = 0x7AB5521A;
 
-        FEngSetScript(GetTitleObject(), FEObj_Init, true);
+        FEngSetScript(reinterpret_cast<FEObject *>(GetTitleObject()), FEObj_Init, true);
         FEngSetScript(pSliderGroup, 0x001744B3, true);
     }
 }
@@ -161,11 +169,11 @@ void TuningSlider::SetFocus(const char *parent_pkg) {
 void TuningSlider::UnsetFocus() {
     if (bActive) {
         const unsigned long FEObj_Init = 0x7AB5521A;
-        FEngSetScript(GetTitleObject(), FEObj_Init, true);
+        FEngSetScript(reinterpret_cast<FEObject *>(GetTitleObject()), FEObj_Init, true);
         FEngSetScript(pSliderGroup, 0x001744B3, true);
     } else {
         const unsigned long FEObj_GREY = 0x00163C76;
-        FEngSetScript(GetTitleObject(), FEObj_GREY, true);
+        FEngSetScript(reinterpret_cast<FEObject *>(GetTitleObject()), FEObj_GREY, true);
         FEngSetScript(pSliderGroup, FEObj_GREY, true);
     }
 }
@@ -235,79 +243,70 @@ void CustomTuningScreen::NotificationMessage(unsigned long msg, FEObject *pobj, 
     }
 
     switch (msg) {
-    case 0xB5AF2461:
-        if (!HelpVisible) {
-            ExitWithStart = true;
-        } else {
-            return;
-        }
-    case 0x406415E3:
-        if (!HelpVisible) {
-            StoreSettings();
+        case 0xB5AF2461:
+            if (!HelpVisible) {
+                ExitWithStart = true;
+            } else {
+                return;
+            }
+        case 0x406415E3:
+            if (!HelpVisible) {
+                StoreSettings();
+                cFEng::Get()->QueuePackageMessage(0x587C018B, GetPackageName(), nullptr);
+            }
+            break;
+        case 0x9120409E:
+        case 0xB5971BF1:
+            if (!HelpVisible) {
+                TempTuningRecord.Tunings[CurrentTuningType].Value[static_cast<TuningSlider *>(pCurrentOption)->TuningPath] =
+                    static_cast<TuningSlider *>(pCurrentOption)->Current;
+            }
+            break;
+        case 0x5073EF13:
+            ScrollTypes(eSD_PREV);
+            break;
+        case 0xD9FEEC59:
+            ScrollTypes(eSD_NEXT);
+            break;
+        case 0xC519BFC4:
+            if (!HelpVisible) {
+                ShowHelpBlurb();
+            }
+            break;
+        case 0x911AB364:
+            if (HelpVisible) {
+                HideHelpBlurb();
+            } else if (SettingsDidNotChange()) {
+                cFEng::Get()->QueuePackageMessage(0x587C018B, GetPackageName(), nullptr);
+            } else {
+                DialogInterface::ShowTwoButtons(GetPackageName(), lbl_803E5EEC, static_cast<eDialogTitle>(1), 0x70E01038, 0x417B25E4, 0x775DBA97,
+                                                0x34DC1BCF, 0x34DC1BCF, static_cast<eDialogFirstButtons>(1), GetLocalizedString(0xE9CB802F));
+            }
+            break;
+        case 0x775DBA97:
             cFEng::Get()->QueuePackageMessage(0x587C018B, GetPackageName(), nullptr);
-        }
-        break;
-    case 0x9120409E:
-    case 0xB5971BF1:
-        if (!HelpVisible) {
-            TempTuningRecord.Tunings[CurrentTuningType].Value[static_cast< TuningSlider * >(pCurrentOption)->TuningPath] =
-                static_cast< TuningSlider * >(pCurrentOption)->Current;
-        }
-        break;
-    case 0x5073EF13:
-        ScrollTypes(eSD_PREV);
-        break;
-    case 0xD9FEEC59:
-        ScrollTypes(eSD_NEXT);
-        break;
-    case 0xC519BFC4:
-        if (!HelpVisible) {
-            ShowHelpBlurb();
-        }
-        break;
-    case 0x911AB364:
-        if (HelpVisible) {
-            HideHelpBlurb();
-        } else if (SettingsDidNotChange()) {
-            cFEng::Get()->QueuePackageMessage(0x587C018B, GetPackageName(), nullptr);
-        } else {
-            DialogInterface::ShowTwoButtons(
-                GetPackageName(),
-                lbl_803E5EEC,
-                static_cast< eDialogTitle >(1),
-                0x70E01038,
-                0x417B25E4,
-                0x775DBA97,
-                0x34DC1BCF,
-                0x34DC1BCF,
-                static_cast< eDialogFirstButtons >(1),
-                GetLocalizedString(0xE9CB802F));
-        }
-        break;
-    case 0x775DBA97:
-        cFEng::Get()->QueuePackageMessage(0x587C018B, GetPackageName(), nullptr);
-        break;
-    case 0xE1FDE1D1:
-        if (ExitWithStart) {
-            new EUnPause();
-        } else {
-            cFEng::Get()->QueuePackageSwitch(lbl_803E4CFC, 0, 0, false);
-        }
-        break;
+            break;
+        case 0xE1FDE1D1:
+            if (ExitWithStart) {
+                new EUnPause();
+            } else {
+                cFEng::Get()->QueuePackageSwitch(lbl_803E4CFC, 0, 0, false);
+            }
+            break;
     }
 }
 
 void CustomTuningScreen::DrawSettingName(unsigned int tuning_type) {
     switch (tuning_type) {
-    case 0:
-        FEngSetLanguageHash(GetPackageName(), 0x05CDDED4, 0x40230063);
-        break;
-    case 1:
-        FEngSetLanguageHash(GetPackageName(), 0x05CDDED4, 0x40230064);
-        break;
-    case 2:
-        FEngSetLanguageHash(GetPackageName(), 0x05CDDED4, 0x40230065);
-        break;
+        case 0:
+            FEngSetLanguageHash(GetPackageName(), 0x05CDDED4, 0x40230063);
+            break;
+        case 1:
+            FEngSetLanguageHash(GetPackageName(), 0x05CDDED4, 0x40230064);
+            break;
+        case 2:
+            FEngSetLanguageHash(GetPackageName(), 0x05CDDED4, 0x40230065);
+            break;
     }
 }
 
@@ -333,8 +332,8 @@ unsigned int CustomTuningScreen::AddTuningSlider(FEPlayerCarDB *stable, FECarRec
     Options.AddTail(slider);
     iIndexToAdd++;
     IncrementStartPos();
-    FEngGetTopLeft(slider->GetRightImage(), x, y);
-    FEngGetSize(slider->GetRightImage(), width, height);
+    FEngGetTopLeft(reinterpret_cast<FEObject *>(slider->GetRightImage()), x, y);
+    FEngGetSize(reinterpret_cast<FEObject *>(slider->GetRightImage()), width, height);
     button_width = (x + width) - x;
     if (button_width < 0.0f) {
         button_width = -button_width;
@@ -351,7 +350,7 @@ void CustomTuningScreen::Setup() {
     if (FEDatabase->IsCareerMode()) {
         current_car = FEDatabase->GetCareerSettings()->GetCurrentCar();
     } else {
-        current_car = FEDatabase->GetQuickRaceSettings(static_cast< GRace::Type >(0xB))->GetSelectedCar(0);
+        current_car = FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(0xB))->GetSelectedCar(0);
     }
 
     record = stable->GetCarRecordByHandle(current_car);
@@ -380,15 +379,11 @@ void CustomTuningScreen::SetSlidersForType() {
     DrawSettingName(CurrentTuningType);
 
     for (FEWidget *option = Options.GetHead(); option != Options.EndOfList(); option = option->GetNext()) {
-        TuningSlider *slider = static_cast< TuningSlider * >(option);
+        TuningSlider *slider = static_cast<TuningSlider *>(option);
         float lower = Physics::Tunings::LowerLimit(slider->TuningPath);
         float upper = Physics::Tunings::UpperLimit(slider->TuningPath);
 
-        slider->SetSliderValues(
-            lower,
-            upper,
-            (upper - lower) * lbl_803E8A24,
-            TempTuningRecord.Tunings[CurrentTuningType].Value[slider->TuningPath]);
+        slider->SetSliderValues(lower, upper, (upper - lower) * lbl_803E8A24, TempTuningRecord.Tunings[CurrentTuningType].Value[slider->TuningPath]);
         slider->Draw();
     }
 }
@@ -400,9 +395,9 @@ void CustomTuningScreen::ShowHelpBlurb() {
         FEString *help_text = FEngFindString(GetPackageName(), FEHashUpper(lbl_803E8A28));
 
         HelpTextScroller = new CTextScroller();
-        HelpTextScroller->Initialise(this, help_text->MaxWidth, 7, const_cast< char * >(lbl_803E8A38), FindFont(help_text->Handle));
+        HelpTextScroller->Initialise(this, help_text->MaxWidth, 7, const_cast<char *>(lbl_803E8A38), FindFont(help_text->Handle));
         HelpTextScroller->UseScrollBar(HelpScrollBar);
-        HelpTextScroller->SetTextHash(static_cast< TuningSlider * >(pCurrentOption)->HelpBlurb);
+        HelpTextScroller->SetTextHash(static_cast<TuningSlider *>(pCurrentOption)->HelpBlurb);
     }
     HelpVisible = true;
 }
@@ -424,8 +419,8 @@ void CustomTuningScreen::StoreSettings() {
         }
     }
 
-    TuningRecord->ActiveTuning = static_cast< Physics::eCustomTuningType >(CurrentTuningType);
-    new ETuneVehicle(0, reinterpret_cast< const Tunings * >(&TuningRecord->Tunings[TuningRecord->ActiveTuning]));
+    TuningRecord->ActiveTuning = static_cast<Physics::eCustomTuningType>(CurrentTuningType);
+    new ETuneVehicle(0, reinterpret_cast<const Tunings *>(&TuningRecord->Tunings[TuningRecord->ActiveTuning]));
 }
 
 bool CustomTuningScreen::SettingsDidNotChange() {
@@ -451,98 +446,98 @@ bool CustomTuningScreen::IsTuningAvailable(FEPlayerCarDB *stable, FECarRecord *r
     }
 
     switch (path) {
-    case Physics::Tunings::STEERING:
-    case Physics::Tunings::HANDLING:
-    case Physics::Tunings::RIDEHEIGHT:
-        return custom->InstalledPhysics.Part[2] > 0;
-    case Physics::Tunings::BRAKES:
-        return custom->InstalledPhysics.Part[1] > 0;
-    case Physics::Tunings::AERODYNAMICS: {
-        RideInfo ride;
+        case Physics::Tunings::STEERING:
+        case Physics::Tunings::HANDLING:
+        case Physics::Tunings::RIDEHEIGHT:
+            return custom->InstalledPhysics.Part[2] > 0;
+        case Physics::Tunings::BRAKES:
+            return custom->InstalledPhysics.Part[1] > 0;
+        case Physics::Tunings::AERODYNAMICS: {
+            RideInfo ride;
 
-        ride.Init(static_cast< CarType >(-1), CarRenderUsage_Player, 0, 0);
-        stable->BuildRideForPlayer(record->Handle, 0, &ride);
-        ride.SetStockParts();
+            ride.Init(static_cast<CarType>(-1), CarRenderUsage_Player, 0, 0);
+            stable->BuildRideForPlayer(record->Handle, 0, &ride);
+            ride.SetStockParts();
 
-        struct CarPart *stock = ride.GetPart(0x2C);
-        struct CarPart *installed = custom->GetInstalledPart(record->GetType(), 0x2C);
-        if (installed != nullptr && installed != stock) {
-            return true;
+            struct CarPart *stock = ride.GetPart(0x2C);
+            struct CarPart *installed = custom->GetInstalledPart(record->GetType(), 0x2C);
+            if (installed != nullptr && installed != stock) {
+                return true;
+            }
+
+            stock = ride.GetPart(0x17);
+            installed = custom->GetInstalledPart(record->GetType(), 0x17);
+            return installed != nullptr && installed != stock;
         }
-
-        stock = ride.GetPart(0x17);
-        installed = custom->GetInstalledPart(record->GetType(), 0x17);
-        return installed != nullptr && installed != stock;
-    }
-    case Physics::Tunings::NOS:
-        return custom->InstalledPhysics.Part[6] > 0;
-    case Physics::Tunings::INDUCTION:
-        return custom->InstalledPhysics.Part[5] > 0;
-    default:
-        return false;
+        case Physics::Tunings::NOS:
+            return custom->InstalledPhysics.Part[6] > 0;
+        case Physics::Tunings::INDUCTION:
+            return custom->InstalledPhysics.Part[5] > 0;
+        default:
+            return false;
     }
 }
 
 unsigned int CustomTuningScreen::GetNameForPath(Physics::Tunings::Path path, bool turbo) {
     switch (path) {
-    case Physics::Tunings::STEERING:
-        return 0xC56C5B36;
-    case Physics::Tunings::HANDLING:
-        return 0xFCEEBE1A;
-    case Physics::Tunings::BRAKES:
-        return 0x2EE2A74D;
-    case Physics::Tunings::RIDEHEIGHT:
-        return 0xCF6215D1;
-    case Physics::Tunings::AERODYNAMICS:
-        return 0x7196ACB4;
-    case Physics::Tunings::NOS:
-        return 0x934FCFA9;
-    case Physics::Tunings::INDUCTION:
-        return turbo ? 0x86945521 : 0xE3A932E0;
-    default:
-        return 0;
+        case Physics::Tunings::STEERING:
+            return 0xC56C5B36;
+        case Physics::Tunings::HANDLING:
+            return 0xFCEEBE1A;
+        case Physics::Tunings::BRAKES:
+            return 0x2EE2A74D;
+        case Physics::Tunings::RIDEHEIGHT:
+            return 0xCF6215D1;
+        case Physics::Tunings::AERODYNAMICS:
+            return 0x7196ACB4;
+        case Physics::Tunings::NOS:
+            return 0x934FCFA9;
+        case Physics::Tunings::INDUCTION:
+            return turbo ? 0x86945521 : 0xE3A932E0;
+        default:
+            return 0;
     }
 }
 
 unsigned int CustomTuningScreen::GetHelpForPath(Physics::Tunings::Path path, bool active, bool turbo) {
     if (active) {
         switch (path) {
-        case Physics::Tunings::STEERING:
-            return 0x4A1F18BE;
-        case Physics::Tunings::HANDLING:
-            return 0x81A17BA2;
-        case Physics::Tunings::BRAKES:
-            return 0x473862D5;
-        case Physics::Tunings::RIDEHEIGHT:
-            return 0xD6C24659;
-        case Physics::Tunings::AERODYNAMICS:
-            return 0x64FCEE3C;
-        case Physics::Tunings::NOS:
-            return 0xB65CFC31;
-        case Physics::Tunings::INDUCTION:
-            return turbo ? 0xB5DCBFA9 : 0xD70F7468;
-        default:
-            return 0;
+            case Physics::Tunings::STEERING:
+                return 0x4A1F18BE;
+            case Physics::Tunings::HANDLING:
+                return 0x81A17BA2;
+            case Physics::Tunings::BRAKES:
+                return 0x473862D5;
+            case Physics::Tunings::RIDEHEIGHT:
+                return 0xD6C24659;
+            case Physics::Tunings::AERODYNAMICS:
+                return 0x64FCEE3C;
+            case Physics::Tunings::NOS:
+                return 0xB65CFC31;
+            case Physics::Tunings::INDUCTION:
+                return turbo ? 0xB5DCBFA9 : 0xD70F7468;
+            default:
+                return 0;
         }
     }
 
     switch (path) {
-    case Physics::Tunings::STEERING:
-        return 0x221D7E85;
-    case Physics::Tunings::HANDLING:
-        return 0x18C12069;
-    case Physics::Tunings::BRAKES:
-        return 0xC213A6DC;
-    case Physics::Tunings::RIDEHEIGHT:
-        return 0xB6D02C60;
-    case Physics::Tunings::AERODYNAMICS:
-        return 0xC6A99483;
-    case Physics::Tunings::NOS:
-        return 0xB8124038;
-    case Physics::Tunings::INDUCTION:
-        return turbo ? 0xB7D6F7B0 : 0xE3F577AF;
-    default:
-        return 0;
+        case Physics::Tunings::STEERING:
+            return 0x221D7E85;
+        case Physics::Tunings::HANDLING:
+            return 0x18C12069;
+        case Physics::Tunings::BRAKES:
+            return 0xC213A6DC;
+        case Physics::Tunings::RIDEHEIGHT:
+            return 0xB6D02C60;
+        case Physics::Tunings::AERODYNAMICS:
+            return 0xC6A99483;
+        case Physics::Tunings::NOS:
+            return 0xB8124038;
+        case Physics::Tunings::INDUCTION:
+            return turbo ? 0xB7D6F7B0 : 0xE3F577AF;
+        default:
+            return 0;
     }
 }
 

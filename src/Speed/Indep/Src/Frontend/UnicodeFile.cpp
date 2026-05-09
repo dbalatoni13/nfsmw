@@ -1,27 +1,26 @@
 #include "UnicodeFile.hpp"
 
+#include "Speed/Indep/Src/Misc/bFile.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
-
-void bEndianSwap(short* value);
-extern void* bGetFile(const char* filename, int* size, int flags);
 
 UnicodeFile::UnicodeFile()
     : data_(nullptr) //
-    , next_(nullptr) //
-    , end_(nullptr)
-{}
+      ,
+      next_(nullptr) //
+      ,
+      end_(nullptr) {}
 
 UnicodeFile::~UnicodeFile() {
     Unload();
 }
 
-bool UnicodeFile::Load(const char* filename) {
-    int size;
-    data_ = static_cast<short*>(bGetFile(filename, &size, 0));
+bool UnicodeFile::Load(const char *filename) {
+    int32 size;
+    data_ = static_cast<i16 *>(bGetFile(filename, &size, 0));
     next_ = nullptr;
     if (data_ != nullptr) {
         end_ = data_ + size / 2;
-        if (*data_ == static_cast<short>(0xFFFE)) {
+        if (*data_ == static_cast<i16>(0xFFFE)) {
             FixEndian();
         }
         FixEOLs();
@@ -37,19 +36,19 @@ void UnicodeFile::Unload() {
     }
 }
 
-short* UnicodeFile::First() {
-    short* p = data_;
+i16 *UnicodeFile::First() {
+    i16 *p = data_;
     if (p == nullptr) {
         return nullptr;
     }
     next_ = p;
-    if (*p == static_cast<short>(0xFEFF)) {
+    if (*p == static_cast<i16>(0xFEFF)) {
         next_ = p + 1;
     }
     return next_;
 }
 
-short* UnicodeFile::Next() {
+i16 *UnicodeFile::Next() {
     if (data_ == nullptr || next_ == nullptr) {
         return nullptr;
     }
@@ -78,7 +77,7 @@ done:
 }
 
 void UnicodeFile::FixEndian() {
-    short* p = data_;
+    i16 *p = data_;
     while (p != end_) {
         bEndianSwap(p);
         p++;
@@ -86,7 +85,7 @@ void UnicodeFile::FixEndian() {
 }
 
 void UnicodeFile::FixEOLs() {
-    short* p = data_;
+    i16 *p = data_;
     while (p != end_) {
         if (*p == 10 || *p == 13) {
             *p = 0;
@@ -96,10 +95,10 @@ void UnicodeFile::FixEOLs() {
 }
 
 void UnicodeFile::LineWrap(int maxCharacters) {
-    short* p = First();
+    i16 *p = First();
     while (p != nullptr) {
         int count = 0;
-        short* lastSpace = nullptr;
+        i16 *lastSpace = nullptr;
         while (*p != 0) {
             count++;
             if (count > 1 && *p == 0x20 && *(p - 1) != 0x20) {

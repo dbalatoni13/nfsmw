@@ -1,11 +1,10 @@
-#include "Speed/Indep/Src/Frontend/FEngFont.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/feKeyboardInput.hpp"
 
-extern void WideStringToPackedString(char *dest, int destSize, const unsigned short *src);
-extern void PackedStringToWideString(unsigned short *wide_string, int wide_string_buffer_size, const char *packed_string);
-extern void FEngSNMakeHidden(char *dest, int destSize, unsigned short *src);
-extern void FESetString(FEString *text, const short *string);
-extern void bStrCpy(unsigned short *dst, const char *src);
-extern char *bStrCat(char *dest, const char *str1, const char *str2);
+#include "Speed/Indep/Src/Frontend/FEngFont.hpp"
+#include "Speed/Indep/Src/Frontend/FEngFrontend.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEStrings.hpp"
+#include "Speed/Indep/Src/Frontend/Localization/Localize.hpp"
+#include "Speed/Indep/bWare/Inc/Strings.hpp"
 
 KeyboardEditString::KeyboardEditString() {
     TextInputObject = nullptr;
@@ -48,6 +47,10 @@ void KeyboardEditString::RevertToOriginalString() {
     SyncEditIntoPacked();
 }
 
+FEngTextInputObject::~FEngTextInputObject() {
+    gKeyboardManager.EndCapture();
+}
+
 void FEngTextInputObject::ReturnPressed() {
     if (gKeyboardManager.GetModeFlags() == 6) {
         if (bStrLen(gKeyboardManager.GetEditedString()) == 0) {
@@ -69,26 +72,14 @@ void FEngTextInputObject::EscapePressed() {
     ParentPackage->FEngEndTextInput();
 }
 
-FEngTextInputObject::~FEngTextInputObject() {
-    gKeyboardManager.EndCapture();
-}
-
-void FEngTextInputObject::Notify(unsigned int msg) {
-    if (msg == 0xc98356ba) {
-        RedrawString(true);
-    } else if (msg == 0x0c407210) {
-        ReturnPressed();
-    }
-}
-
 void FEngTextInputObject::RedrawString(bool pIncludeCursor) {
     if (DisplayString) {
         char buffer[156];
-        unsigned short widestring[156];
+        u16 widestring[156];
         FEngFont *font;
         int width;
         int flags;
-        short *fitstring;
+        i16 *fitstring;
 
         gKeyboardManager.GetStringForDisplay(buffer, 0x9C);
         if (pIncludeCursor) {
@@ -117,5 +108,13 @@ void FEngTextInputObject::RedrawString(bool pIncludeCursor) {
         }
 
         FESetString(DisplayString, fitstring);
+    }
+}
+
+void FEngTextInputObject::Notify(uint32 msg) {
+    if (msg == 0xc98356ba) {
+        RedrawString(true);
+    } else if (msg == 0x0c407210) {
+        ReturnPressed();
     }
 }

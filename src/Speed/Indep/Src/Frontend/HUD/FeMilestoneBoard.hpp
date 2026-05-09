@@ -23,9 +23,15 @@ class MilestoneBoard : public HudElement, public IMilestoneBoard {
   public:
     MilestoneBoard(UTL::COM::Object *pOutter, const char *pkg_name, int player_number);
     void Update(IPlayer *player) override;
-    void SetInPursuit(bool inPursuit) override;
-    void SetChallengeSeries(bool challenge) override;
-    void SetNumberOfMilestones(int num) override;
+    void SetInPursuit(bool inPursuit) override {
+        mInPursuit = inPursuit;
+    }
+    void SetChallengeSeries(bool challenge) override {
+        mChallengeSeries = challenge;
+    };
+    void SetNumberOfMilestones(int num) override {
+        mNumMilestones = num;
+    };
     void SetMilestoneIconHash(int milestoneNum, int hash) override {
         mMilestones[milestoneNum].mMilestoneIconHash = hash;
     }
@@ -35,18 +41,19 @@ class MilestoneBoard : public HudElement, public IMilestoneBoard {
     void SetMilestoneGoal(int milestoneNum, float goal) override {
         mMilestones[milestoneNum].mGoal = goal;
     }
+    void SetMilestoneComplete(int milestoneNum, bool complete) override;
+    void SetMilestoneCurrValue(int milestoneNum, float currVal) override;
     void SetMilestoneHeaderHash(int milestoneNum, int hash) override {
         mMilestones[milestoneNum].mHeaderHash = hash;
     }
-    void SetMilestoneComplete(int milestoneNum, bool complete) override;
-    void SetMilestoneCurrValue(int milestoneNum, float currVal) override;
-    bool GetIsMilestoneComplete(int index) const;
+
+  private:
     int GetNumIncompleteMilestones() const;
     int GetNumCompleteMilestones() const;
     int GetNextVisibleMilestone() const;
     int GetFirstIncompleteMilestone() const;
+    bool GetIsMilestoneComplete(int index) const;
 
-  private:
     bool mInPursuit;
     bool mChallengeSeries;
     int mPlayerBinNumber;
@@ -54,14 +61,14 @@ class MilestoneBoard : public HudElement, public IMilestoneBoard {
     int mMilestoneSetVisible;
     Timer mScrollTimer;
     MilestoneBoard_Milestone mMilestones[4];
-    FEObject * mpDataMilestoneInfoGroup;
-    FEObject * mpDataMilestoneIconGroup;
-    FEString * mpDataMilestonesTotal;
-    FEObject * mpDataIcons[4];
-    FEObject * mpDataIconBackings[4];
-    FEObject * mpDataDetailsBacking;
-    FEObject * mpDataDetailsGroup;
-    FEString * mpDataMilestoneGoal;
+    FEObject *mpDataMilestoneInfoGroup;
+    FEObject *mpDataMilestoneIconGroup;
+    FEString *mpDataMilestonesTotal;
+    FEObject *mpDataIcons[4];
+    FEObject *mpDataIconBackings[4];
+    FEObject *mpDataDetailsBacking;
+    FEObject *mpDataDetailsGroup;
+    FEString *mpDataMilestoneGoal;
 };
 
 #endif

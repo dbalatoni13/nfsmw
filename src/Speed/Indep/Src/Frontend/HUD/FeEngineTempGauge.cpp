@@ -1,28 +1,22 @@
 #include "Speed/Indep/Src/Frontend/HUD/FeEngineTempGauge.hpp"
 
 #include "Speed/Indep/Src/FEng/FEMultiImage.h"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEObjects.hpp"
 
-void FEngSetMultiImageRot(FEMultiImage *image, float angle_degrees);
-void FEngSetScript(FEObject *object, unsigned int script_hash, bool start_at_beginning);
-bool FEngIsScriptSet(FEObject *obj, unsigned int script_hash);
-FEObject *FEngFindObject(const char *pkg_name, unsigned int obj_hash);
-unsigned long FEHashUpper(const char *name);
-
-extern const char lbl_803E4DB0[];
-extern const char lbl_803E4DC8[];
-extern const char lbl_803E4DE0[];
-extern const float lbl_803E4DF0;
 extern float warningPulseMinRpm;
 
 EngineTempGauge::EngineTempGauge(UTL::COM::Object *pOutter, const char *pkg_name, int player_number)
     : HudElement(pkg_name, 0x40) //
-    , IEngineTempGauge(pOutter) //
-    , mEngineTemp(lbl_803E4DF0) //
-    , mEngineTempChanged(true) //
+      ,
+      IEngineTempGauge(pOutter) //
+      ,
+      mEngineTemp(0.0f) //
+      ,
+      mEngineTempChanged(true) //
 {
-    RegisterGroup(FEHashUpper(lbl_803E4DB0));
-    mpWarningLight = FEngFindObject(GetPackageName(), FEHashUpper(lbl_803E4DC8));
-    mpEngineTempGaugeBar = RegisterMultiImage(FEHashUpper(lbl_803E4DE0));
+    RegisterGroup(FEHashUpper("Engine_Heat_Meter_Group"));
+    mpWarningLight = FEngFindObject(GetPackageName(), FEHashUpper("ENGINE_HEAT_ICON_GROUP"));
+    mpEngineTempGaugeBar = RegisterMultiImage(FEHashUpper("ENGINE_METER"));
 }
 
 void EngineTempGauge::Update(IPlayer *player) {

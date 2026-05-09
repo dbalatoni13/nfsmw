@@ -5,19 +5,31 @@
 #pragma once
 #endif
 
+#include <cstddef>
+#include <types.h>
+
 #include "RaceDB.hpp"
 #include "Speed/Indep/Src/Gameplay/GInfractionManager.h"
 #include "Speed/Indep/Src/Gameplay/GRace.h"
-#include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "VehicleDB.hpp"
-
-#include <types.h>
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEStrings.hpp"
+#include "Speed/Indep/bWare/Inc/bMath.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/InGame/uiWorldMap.hpp"
 
 class GRaceCustom;
 
 #if ONLINE_SUPPORT
 #include "Speed/Indep/Src/Online/OnlineCfg.hpp"
 #endif
+
+typedef enum {
+    POST_RACE_OPT_NEXT_RACE = 0,
+    POST_RACE_OPT_QUIT = 1,
+    POST_RACE_OPT_RESTART_RACE = 2,
+    POST_RACE_OPT_RESTART_EVENT = 3
+} ePostRaceOptions;
+
+typedef enum { EXIT_RACE_FROM_PAUSE = 0, EXIT_RACE_FROM_POSTRACE = 1 } eExitRacePlaces;
 
 enum eFEGameModes {
     eFE_GAME_MODE_NONE = 0,
@@ -51,18 +63,6 @@ enum eControllerConfig {
     MAX_CONFIG = 4,
 };
 
-enum ePlayerSettingsCameras {
-    PSC_BUMPER,
-    PSC_HOOD,
-    PSC_CLOSE,
-    PSC_FAR,
-    PSC_SUPER_FAR,
-    PSC_DRIFT,
-    PSC_PURSUIT,
-    NUM_CAMERAS_IN_OPTIONS,
-    PSC_DEFAULT = 2,
-};
-
 enum eControllerAttribs {
     CA_HUD = 0,
     CA_DRIVING = 1,
@@ -82,121 +82,110 @@ enum eOptionsCategory {
     NUM_OPTIONS_CATEGORIES = 10,
 };
 
-enum ePostRaceOptions {
-    POST_RACE_OPT_NEXT_RACE = 0,
-    POST_RACE_OPT_QUIT = 1,
-    POST_RACE_OPT_RESTART_RACE = 2,
-    POST_RACE_OPT_RESTART_EVENT = 3,
-};
-
 enum eLoadSaveGame {
     eLOADSAVE_LOAD = 0,
     eLOADSAVE_SAVE = 1,
 };
 
-enum eExitRacePlaces {
-    EXIT_RACE_FROM_PAUSE = 0,
-    EXIT_RACE_FROM_POSTRACE = 1,
-};
-
-#ifndef FRONTEND_DATABASE_EWORLDMAPITEMTYPE_DEFINED
-#define FRONTEND_DATABASE_EWORLDMAPITEMTYPE_DEFINED
-enum eWorldMapItemType {
-    WMIT_NONE = 0,
-    WMIT_PLAYER_CAR = 1,
-    WMIT_AI_RACE_CAR = 2,
-    WMIT_COP_CAR = 4,
-    WMIT_COP_HELI = 8,
-    WMIT_TRAFFIC_CAR = 16,
-    WMIT_ROADBLOCK = 32,
-    WMIT_CHECKPOINT = 64,
-    WMIT_CIRCUIT_RACE = 128,
-    WMIT_SPRINT_RACE = 256,
-    WMIT_LAP_KO_RACE = 512,
-    WMIT_DRAG_RACE = 1024,
-    WMIT_SPEED_TRAP_RACE = 2048,
-    WMIT_TOLLBOOTH_RACE = 4096,
-    WMIT_MULTIPOINT_RACE = 8192,
-    WMIT_CELL_PHONE_RACE = 16384,
-    WMIT_RIVAL_RACE = 32768,
-    WMIT_CASH_GRAB_RACE = 65536,
-    WMIT_CASH_GRAB_SMALL = 131072,
-    WMIT_CASH_GRAB_MED = 262144,
-    WMIT_CASH_GRAB_LARGE = 524288,
-    WMIT_CASH_GRAB_ALL = 917504,
-    WMIT_SPEED_TRAP = 1048576,
-    WMIT_SAFEHOUSE = 2097152,
-    WMIT_SHOP = 4194304,
-    WMIT_CAR_LOT = 8388608,
-    WMIT_TOKEN = 16777216,
-    WMIT_HIDING_SPOT = 33554432,
-    WMIT_PURSUIT_BREAKER = 67108864,
-};
-#endif
-
 // total size: 0x20
 class GameplaySettings {
   public:
+    GameplaySettings() {
+        Default();
+    }
     void Default();
-    bool operator==(const GameplaySettings &rhs) const;
     bool IsMapItemEnabled(eWorldMapItemType type);
     void SetMapItem(eWorldMapItemType type, bool enabled);
+    bool operator==(const GameplaySettings &rhs) const;
 
-    int AutoSaveOn;                     // offset 0x0, size 0x1
-    int RearviewOn;                     // offset 0x4, size 0x1
-    int Damage;                         // offset 0x8, size 0x1
-    unsigned char SpeedoUnits;          // offset 0xC, size 0x1
-    unsigned char RacingMiniMapMode;    // offset 0xD, size 0x1
-    unsigned char ExploringMiniMapMode; // offset 0xE, size 0x1
-    unsigned int MapItems;              // offset 0x10, size 0x4
-    unsigned char LastMapZoom;          // offset 0x14, size 0x1
-    unsigned char LastPursuitMapZoom;   // offset 0x15, size 0x1
-    unsigned char LastMapView;          // offset 0x16, size 0x1
-    int JumpCam;                        // offset 0x18, size 0x1
-    float HighlightCam;                 // offset 0x1C, size 0x4
+    bool AutoSaveOn;            // offset 0x0, size 0x1
+    bool RearviewOn;            // offset 0x4, size 0x1
+    bool Damage;                // offset 0x8, size 0x1
+    uint8 SpeedoUnits;          // offset 0xC, size 0x1
+    uint8 RacingMiniMapMode;    // offset 0xD, size 0x1
+    uint8 ExploringMiniMapMode; // offset 0xE, size 0x1
+    uint32 MapItems;            // offset 0x10, size 0x4
+    uint8 LastMapZoom;          // offset 0x14, size 0x1
+    uint8 LastPursuitMapZoom;   // offset 0x15, size 0x1
+    uint8 LastMapView;          // offset 0x16, size 0x1
+    bool JumpCam;               // offset 0x18, size 0x1
+    float HighlightCam;         // offset 0x1C, size 0x4
 };
 
 // total size: 0x2C
 class PlayerSettings {
   public:
+    PlayerSettings() {
+        Default();
+    }
     void Default();
     void DefaultFromOptionsScreen();
     bool operator==(const PlayerSettings &rhs) const;
-    unsigned int GetControllerAttribs(eControllerAttribs type, bool wheel_connected) const;
     void ScrollDriveCam(int dir);
+    Attrib::Key GetControllerAttribs(eControllerAttribs type, bool wheel_connected) const;
 
-    int GaugesOn;
-    int PositionOn;
-    int LapInfoOn;
-    int ScoreOn;
-    int Rumble;
-    int LeaderboardOn;
-    int TransmissionPromptOn;
-    int DriveWithAnalog;
-    eControllerConfig Config;
-    ePlayerSettingsCameras CurCam;
-    unsigned char SplitTimeType;
-    unsigned char Transmission;
-    unsigned char Handling;
+    bool GaugesOn;                 // offset 0x0, size 0x1
+    bool PositionOn;               // offset 0x4, size 0x1
+    bool LapInfoOn;                // offset 0x8, size 0x1
+    bool ScoreOn;                  // offset 0xC, size 0x1
+    bool Rumble;                   // offset 0x10, size 0x1
+    bool LeaderboardOn;            // offset 0x14, size 0x1
+    bool TransmissionPromptOn;     // offset 0x18, size 0x1
+    bool DriveWithAnalog;          // offset 0x1C, size 0x1
+    eControllerConfig Config;      // offset 0x20, size 0x4
+    ePlayerSettingsCameras CurCam; // offset 0x24, size 0x4
+    uint8 SplitTimeType;           // offset 0x28, size 0x1
+    uint8 Transmission;            // offset 0x29, size 0x1
+    uint8 Handling;                // offset 0x2A, size 0x1
 };
 
 // total size: 0x10
 class VideoSettings {
   public:
+    VideoSettings() {
+        Default();
+    }
     void Default();
     bool operator==(const VideoSettings &rhs) const;
 
     float FEScale;       // offset 0x0, size 0x4
     float ScreenOffsetX; // offset 0x4, size 0x4
     float ScreenOffsetY; // offset 0x8, size 0x4
-    int WideScreen;      // offset 0xC, size 0x1
+    bool WideScreen;     // offset 0xC, size 0x1
 };
 
 // total size: 0x34
 class AudioSettings {
   public:
+    AudioSettings() {
+        Default();
+    }
     void Default();
     bool operator==(const AudioSettings &rhs) const;
+    float GetMasteredSpeechVol() {
+        return SpeechVol;
+    }
+    float GetMasteredFEMusicVol() {
+        return FEMusicVol;
+    };
+    float GetMasteredIGMusicVol() {
+        return IGMusicVol;
+    };
+    float GetMasteredSoundEffectsVol() {
+        return SoundEffectsVol;
+    };
+    float GetMasteredEngineVol() {
+        return EngineVol;
+    };
+    float GetMasteredCarVol() {
+        return CarVol;
+    };
+    float GetMasteredAmbientVol() {
+        return AmbientVol;
+    };
+    float GetMasteredSpeedVol() {
+        return SpeedVol;
+    };
 
     float MasterVol;          // offset 0x0, size 0x4
     float SpeechVol;          // offset 0x4, size 0x4
@@ -216,6 +205,9 @@ class AudioSettings {
 // total size: 0xC0
 class OptionsSettings {
   public:
+    OptionsSettings() : TheVideoSettings(), TheGameplaySettings(), TheAudioSettings(), ThePlayerSettings() {
+        Default();
+    }
     void Default();
 
     eOptionsCategory CurrentCategory;     // offset 0x0, size 0x4
@@ -225,121 +217,183 @@ class OptionsSettings {
     PlayerSettings ThePlayerSettings[2];  // offset 0x68, size 0x58
 };
 
+typedef uint16 FESMSHandle;
+
+typedef enum { SMS_FLAG_UNREAD = 1, SMS_FLAG_READ = 2 } SMSMessageFlags;
+
 // total size: 0x4
-struct SMSMessage {
+class SMSMessage {
   public:
-    unsigned char GetHandle() {
-        return Handle;
-    }
-    void SetHandle(unsigned char handle) {
+    void SetHandle(FESMSHandle handle) {
         Handle = handle;
     }
-    unsigned int GetFlags() {
-        return Flags;
+    FESMSHandle GetHandle() {
+        return Handle;
     }
-    void SetFlag(unsigned int flag) {
+    void SetFlag(uint32 flag) {
         Flags |= flag;
     }
     void ClearFlags() {
         Flags = 0;
     }
-    unsigned short GetSortOrder() const {
-        return SortOrder;
+    uint32 GetFlags() {
+        return Flags;
     }
-    void SetSortOrder(unsigned short order) {
+    void SetSortOrder(uint16 order) {
         SortOrder = order;
     }
-    bool IsValid() {
-        return Handle != 0xFF;
+    uint16 GetSortOrder() {
+        return SortOrder;
     }
-    bool IsRead() {
-        return (Flags & 4) != 0;
+    uint32 GetMsgHash() {
+        return FEngHashString("SMS_MESSAGE_%d", GetHandle());
+    }
+    uint32 GetFromHash() {
+        return FEngHashString("SMS_MESSAGE_%d_FROM", GetHandle());
+    }
+    uint32 GetVoiceHash() {
+        return FEngHashString("SMS_MESSAGE_%d_VOICE", GetHandle());
+    }
+    uint32 GetSubjectHash() {
+        return FEngHashString("SMS_MESSAGE_%d_SUBJECT", GetHandle());
     }
     bool IsUnRead() {
         return (Flags & 2) != 0;
     }
+    bool IsRead() {
+        return (Flags & 4) != 0;
+    }
+    bool IsValid() {
+        return Handle != 0xFF;
+    }
     bool IsVoice();
 
-    unsigned int GetMsgHash();
-    unsigned int GetFromHash();
-    unsigned int GetSubjectHash();
-    unsigned int GetVoiceHash();
-
-    unsigned char Handle;     // offset 0x0, size 0x1
-    unsigned char Flags;      // offset 0x1, size 0x1
-    unsigned short SortOrder; // offset 0x2, size 0x2
+    FESMSHandle Handle; // offset 0x0, size 0x1
+    uint8 Flags;        // offset 0x1, size 0x1
+    uint16 SortOrder;   // offset 0x2, size 0x2
 };
 
 // total size: 0x27C
 class CareerSettings {
   public:
-    uint32 GetCurrentCar() {
-        return CurrentCar;
+    CareerSettings() {
+        for (int i = 0; i < 150; i++) {
+            SMSMessages[i].Handle = 0xFF;
+            SMSMessages[i].Flags = 0;
+            SMSMessages[i].SortOrder = 0;
+        }
     }
-    uint8 GetCurrentBin() const {
-        return CurrentBin;
-    }
-    void AwardOneTimeCashBonus(bool bOldSaveExists);
+    void Default();
     const char *GetCaseFileName() {
         return CaseFileName;
     }
-
+    void SpendCash(int amount);
+    void AwardCash(int amount) {
+        CurrentCash += amount;
+    }
+    int GetCash() {
+        return CurrentCash;
+    }
+    SMSMessage *GetSMSMessage(uint32 index);
+    uint16 GetSMSSortOrder();
+    char *SaveToBuffer(void *buffer, void *maxbuf);
+    char *LoadFromBuffer(void *buffer, void *maxbuf);
+    int32 GetSaveBufferSize(bool bExcludeGameplay);
+    void ResumeCareer();
+    void StartNewCareer(bool bEnterGameplay);
+    bool HasBeenAwardedDemoMarker() {
+        return SpecialFlags & 0x20000;
+    }
+    void SetAwardedDemoMarker() {
+        SpecialFlags |= 0x20000;
+    }
     bool HasCareerStarted() {
         return SpecialFlags & 1;
+    }
+    void TryAwardDemoMarker();
+    void SetGameOver() {
+        SpecialFlags |= 0x800;
     }
     bool IsGameOver() {
         return SpecialFlags & 0x800;
     }
-    void SetGameOver() {
-        SpecialFlags |= 0x800;
+    bool HasCashBonusBeenAwarded() {
+        return SpecialFlags & 2;
     }
-    bool HasRapSheet() {
-        return SpecialFlags & 0x10;
+    void AwardOneTimeCashBonus(bool bOldSaveExists);
+    bool HasBeenBustedOnce() {
+        return SpecialFlags & 0x1000;
+    }
+    void SetBeenBustedOnce() {
+        SpecialFlags |= 0x1000;
+    }
+    bool HasBeenAwardedBKReward() {
+        return SpecialFlags & 0x2000;
+    }
+    void SetAwardedBKReward() {
+        SpecialFlags |= 0x2000;
+    }
+    void SetAdaptiveDifficulty(float difficulty) {
+        // TODO
+        AdaptiveDifficulty = static_cast<int16>(bClamp(difficulty, 0.0f, 1.0f));
+    }
+    float GetAdaptiveDifficulty() {
+        // TODO
+        return bClamp(static_cast<float>(AdaptiveDifficulty), 0.0f, 1.0f);
+    }
+    uint8 GetCurrentBin() const {
+        return CurrentBin;
+    }
+    void SetCurrentBin(uint8 bin) {
+        CurrentBin = bin;
+    }
+    uint32 GetCurrentCar() {
+        return CurrentCar;
+    }
+    void SetCurrentCar(uint32 car) {
+        CurrentCar = car;
     }
     void SetHasRapSheet() {
         SpecialFlags |= 0x10;
     }
-    void SetHasDoneCareerIntro() {
-        SpecialFlags |= 0x20;
+    bool HasRapSheet() {
+        return SpecialFlags & 0x10;
     }
     bool HasDoneCareerIntro() {
         return SpecialFlags & 0x20;
     }
+    void SetHasDoneCareerIntro() {
+        SpecialFlags |= 0x20;
+    }
     bool HasDoneDragTutorial() {
         return SpecialFlags & 0x40;
-    }
-    void SetHasDoneDragTutorial() {
-        SpecialFlags |= 0x40;
     }
     bool HasDoneSpeedTrapTutorial() {
         return SpecialFlags & 0x80;
     }
-    void SetHasDoneSpeedTrapTutorial() {
-        SpecialFlags |= 0x80;
-    }
     bool HasDoneTollBoothTutorial() {
         return SpecialFlags & 0x100;
-    }
-    void SetHasDoneTollBoothTutorial() {
-        SpecialFlags |= 0x100;
     }
     bool HasDonePursuitTutorial() {
         return SpecialFlags & 0x200;
     }
-    void SetHasDonePursuitTutorial() {
-        SpecialFlags |= 0x200;
-    }
     bool HasDoneBountyTutorial() {
         return SpecialFlags & 0x400;
     }
+    void SetHasDoneDragTutorial() {
+        SpecialFlags |= 0x40;
+    }
+    void SetHasDoneSpeedTrapTutorial() {
+        SpecialFlags |= 0x80;
+    }
+    void SetHasDoneTollBoothTutorial() {
+        SpecialFlags |= 0x100;
+    }
+    void SetHasDonePursuitTutorial() {
+        SpecialFlags |= 0x200;
+    }
     void SetHasDoneBountyTutorial() {
         SpecialFlags |= 0x400;
-    }
-    bool HasDoneMapLoadigTip() {
-        return SpecialFlags & 0x80000;
-    }
-    void SetHasDoneMapLoadigTip() {
-        SpecialFlags |= 0x80000;
     }
     bool HasBeatenCareer() {
         return SpecialFlags & 0x4000;
@@ -347,45 +401,40 @@ class CareerSettings {
     void SetHasBeatenCareer() {
         SpecialFlags |= 0x4000;
     }
-    bool HasBeenBustedOnce() {
-        return SpecialFlags & 0x1000;
+    bool HasBeatenSpecialChallengeEvent() {
+        return SpecialFlags & 0x8000;
     }
-    void SetBeenBustedOnce() {
-        SpecialFlags |= 0x1000;
+    void SetHasBeatenSpecialChallengeEvent() {
+        SpecialFlags |= 0x8000;
     }
-    int GetCash() {
-        return CurrentCash;
+    bool HasBeatenChallengeSeries() {
+        return SpecialFlags & 0x100000;
     }
-    void AddCash(int amount) {
-        CurrentCash += amount;
+    void SetHasBeatenChallengeSeries() {
+        SpecialFlags |= 0x10000;
     }
-    SMSMessage *GetSMSMessage(unsigned int index);
-    unsigned short GetSMSSortOrder();
-    void SpendCash(int amount);
+    bool HasDoneMapLoadigTip() {
+        return SpecialFlags & 0x80000;
+    }
+    void SetHasDoneMapLoadigTip() {
+        SpecialFlags |= 0x80000;
+    }
+    bool HasBeenAwardedEpicCar() {
+        return SpecialFlags & 0x100000;
+    }
+    void SetHasBeenAwardedEpicCar() {
+        SpecialFlags |= 0x100000;
+    }
     void SetPlayerHasBeatenTheGame();
-    int GetSaveBufferSize(bool bExcludeGameplay);
-    void ResumeCareer();
-    void StartNewCareer(bool bEnterGameplay);
-    char *SaveUnlockData(void *save_to, void *maxptr);
-    char *LoadUnlockData(void *load_from, void *maxptr);
-    void Default();
-    void TryAwardDemoMarker();
-    void GenerateCaseFileName();
-    char *SaveToBuffer(void *buffer, void *maxbuf);
-    char *LoadFromBuffer(void *buffer, void *maxbuf);
+
+  private:
     char *SaveRaceData(void *save_to, void *maxptr);
+    char *SaveUnlockData(void *save_to, void *maxptr);
     char *SaveGameplayData(void *save_to, void *maxptr);
     char *LoadRaceData(void *load_from, void *maxptr);
+    char *LoadUnlockData(void *load_from, void *maxptr);
     char *LoadGameplayData(void *load_from, void *maxptr);
-    void SetCurrentCar(unsigned int car) {
-        CurrentCar = car;
-    }
-    bool HasBeenAwardedDemoMarker();
-    void SetAwardedDemoMarker();
-
-    bool HasBeenAwardedBKReward() {
-        return SpecialFlags & 0x2000;
-    }
+    void GenerateCaseFileName();
 
   public:
     uint32 CurrentCar;           // offset 0x0, size 0x4
@@ -400,8 +449,8 @@ class CareerSettings {
 
 // total size: 0x8
 struct JukeboxEntry {
-    unsigned int SongIndex;         // offset 0x0, size 0x4
-    unsigned char PlayabilityField; // offset 0x4, size 0x1
+    uint32 SongIndex;       // offset 0x0, size 0x4
+    uint8 PlayabilityField; // offset 0x4, size 0x1
 };
 
 // total size: 0x9CF4
@@ -409,33 +458,31 @@ class UserProfile {
   public:
     UserProfile();
     ~UserProfile();
-    void SetProfileName(const char *pName, bool isP1);
-    const char *GetProfileName();
-    bool IsProfileNamed();
-    void Default(int player_number, bool commit_default);
-    // void CommitHighScoresPreRace(enum eHighScoresRaceTypes race_type, int is_split_screen);
-    // void CommitHighScoresPostRace(enum eHighScoresRaceTypes race_type, int track, int direction, int laps, int is_split_screen,
-    //                               struct FinishedRaceStatsEntry *stats);
-    void CommitHighScoresPauseQuit();
-    void CommitPursuitInfo(IPursuit *iPursuit, unsigned int car_FEKey, unsigned int bounty, unsigned int num_infractions);
-    void IncInfration(GInfractionManager::InfractionType infrat, unsigned int car);
-    void CommitServeInfractions(unsigned int car);
-    void WriteProfileHash(void *bufferToHash, void *bufferToWrite, int bytes, void *maxptr);
-    bool VerifyProfileHash(void *bufferToHash, void *bufferHash, int bytes);
-    void SaveToBuffer(void *buffer, int size);
-    bool LoadFromBuffer(void *buffer, int size, bool commit_changes, int player_id);
-    int GetSaveBufferSize(bool bExcludeGameplay);
-
     OptionsSettings *GetOptions() {
         return &TheOptionsSettings;
     }
-
     CareerSettings *GetCareer() {
         return &TheCareerSettings;
     }
+    void WriteProfileHash(void *bufferToHash, void *bufferToWrite, int bytes, void *maxptr);
+    bool VerifyProfileHash(void *bufferToHash, void *bufferHash, int bytes);
     HighScoresDatabase *GetHighScores() {
         return &HighScores;
     }
+    bool IsProfileNamed();
+    void SetProfileName(const char *pName, bool isP1);
+    const char *GetProfileName();
+    void Default(int player_number, bool commit_default);
+    void SaveToBuffer(void *buffer, int size);
+    bool LoadFromBuffer(void *buffer, int size, bool commit_changes, int player_id);
+    int32 GetSaveBufferSize(bool bExcludeGameplay);
+    void CommitHighScoresPreRace(eHighScoresRaceTypes race_type, int is_split_screen);
+    void CommitHighScoresPostRace(eHighScoresRaceTypes race_type, int track, int direction, int laps, int is_split_screen,
+                                  FinishedRaceStatsEntry *stats);
+    void CommitHighScoresPauseQuit();
+    void CommitPursuitInfo(IPursuit *iPursuit, uint32 car_handle, uint32 bounty, unsigned int num_infractions);
+    void IncInfration(GInfractionManager::InfractionType infrat, uint32 car);
+    void CommitServeInfractions(uint32 car);
 
   private:
     char m_aProfileName[32];            // offset 0x0, size 0x20
@@ -449,246 +496,35 @@ class UserProfile {
     HighScoresDatabase HighScores;              // offset 0x911C, size 0xBD8
 };
 
-// total size: 0x24
-struct RaceSettings {
-    RaceSettings() {
-        EventHash = 0;
-        Default();
-    }
-    void Default();
-
-    unsigned int GetSelectedCar(int player_num) {
-        return SelectedCar[player_num];
-    }
-
-    void SetSelectedCar(unsigned int car, int player_num) {
-        SelectedCar[player_num] = car;
-    }
-
-    uint32 EventHash;            // offset 0x0, size 0x4
-    uint8 NumLaps;               // offset 0x4, size 0x1
-    uint8 TrackDirection;        // offset 0x5, size 0x1
-    bool IsLapKO;                // offset 0x8, size 0x1
-    uint8 NumOpponents;          // offset 0xC, size 0x1
-    uint8 AISkill;               // offset 0xD, size 0x1
-    uint8 CopDensity;            // offset 0xE, size 0x1
-    uint8 TrafficDensity;        // offset 0xF, size 0x1
-    bool CatchUp;                // offset 0x10, size 0x1
-    bool CopsOn;                 // offset 0x14, size 0x1
-    uint8 RegionFilterBits;      // offset 0x18, size 0x1
-    unsigned int SelectedCar[2]; // offset 0x1C, size 0x8
-#ifdef EA_BUILD_A124
-    int CarSelectFilterBits[2];
-#endif
-};
-
 // total size: 0x14C
 struct FEKeyboardSettings {
     FEKeyboardSettings();
 
-    int AcceptCallbackHash;  // offset 0x0, size 0x4
-    int DeclineCallbackHash; // offset 0x4, size 0x4
-    int DefaultTextHash;     // offset 0x8, size 0x4
-    int MaxTextLength;       // offset 0xC, size 0x4
-    int Mode;                // offset 0x10, size 0x4
-    char Buffer[156];        // offset 0x14, size 0x9C
-    char Title[156];         // offset 0xB0, size 0x9C
+    int32 AcceptCallbackHash;  // offset 0x0, size 0x4
+    int32 DeclineCallbackHash; // offset 0x4, size 0x4
+    int32 DefaultTextHash;     // offset 0x8, size 0x4
+    int MaxTextLength;         // offset 0xC, size 0x4
+    int Mode;                  // offset 0x10, size 0x4
+    char Buffer[156];          // offset 0x14, size 0x9C
+    char Title[156];           // offset 0xB0, size 0x9C
 };
 
 // total size: 0x6
 struct GameCompletionStats {
     GameCompletionStats();
 
-    unsigned char m_nOverall;                 // offset 0x0, size 0x1
-    unsigned char m_nCareer;                  // offset 0x1, size 0x1
-    unsigned char m_nRapSheetRankings;        // offset 0x2, size 0x1
-    unsigned char m_nChallenge;               // offset 0x3, size 0x1
-    unsigned char m_nTotalChallengeRaces;     // offset 0x4, size 0x1
-    unsigned char m_nCompletedChallengeRaces; // offset 0x5, size 0x1
+    uint8 m_nOverall;                 // offset 0x0, size 0x1
+    uint8 m_nCareer;                  // offset 0x1, size 0x1
+    uint8 m_nRapSheetRankings;        // offset 0x2, size 0x1
+    uint8 m_nChallenge;               // offset 0x3, size 0x1
+    uint8 m_nTotalChallengeRaces;     // offset 0x4, size 0x1
+    uint8 m_nCompletedChallengeRaces; // offset 0x5, size 0x1
 };
 
 // total size: 0xA28
 class cFrontendDatabase {
   public:
-    RaceSettings *GetQuickRaceSettings(GRace::Type type);
-    void DefaultRaceSettings();
-    void FillCustomRace(GRaceCustom *parms, RaceSettings *race);
-
-    PlayerSettings *GetPlayerSettings(int player) {
-        return &CurrentUserProfiles[0]->GetOptions()->ThePlayerSettings[player];
-    }
-
-    FEPlayerCarDB *GetPlayerCarStable(int player) {
-        if (static_cast<unsigned int>(player) <= 1)
-            return &CurrentUserProfiles[player]->PlayersCarStable;
-        return nullptr;
-    }
-
-    CareerSettings *GetCareerSettings() {
-        return CurrentUserProfiles[0]->GetCareer();
-    }
-
-    bool IsDDay() {
-        return GetCareerSettings()->GetCurrentBin() >= 16;
-    }
-
-    bool IsSplitScreenMode() {
-        return FEGameMode & 4 && iNumPlayers == 2;
-    }
-
-    bool IsCareerMode() {
-        return FEGameMode & 1;
-    }
-
-    bool IsChallengeMode() {
-        return FEGameMode & 2;
-    }
-
-    bool IsQuickRaceMode() {
-        return FEGameMode & 4;
-    }
-
-    bool IsOnlineMode() {
-        return FEGameMode & 8;
-    }
-
-    bool IsOptionsMode() {
-        return FEGameMode & 16;
-    }
-
-    bool IsCustomizeMode() {
-        return FEGameMode & 32;
-    }
-
-    bool IsLANMode() {
-        return FEGameMode & 64;
-    }
-
-    bool IsProfileManagerMode() {
-        return FEGameMode & 128;
-    }
-
-    bool IsCareerManagerMode() {
-        return FEGameMode & 256;
-    }
-
-    bool IsRapSheetMode() {
-        return FEGameMode & 512;
-    }
-
-    bool IsModeSelectMode() {
-        return FEGameMode & 1024;
-    }
-
-    bool IsCarLotMode() {
-        return FEGameMode & 32768;
-    }
-
-    bool IsSafehouseMode() {
-        return FEGameMode & 65536;
-    }
-
-    bool IsPostRivalMode() {
-        return FEGameMode & 131072;
-    }
-
-    bool IsBeatGameMode() {
-        return FEGameMode & 262144;
-    }
-
-    void SetGameMode(eFEGameModes mode) {
-        FEGameMode = FEGameMode | static_cast<unsigned int>(mode);
-    }
-
-    void ClearGameMode(eFEGameModes mode) {
-        FEGameMode = FEGameMode & ~static_cast<unsigned int>(mode);
-    }
-
-    void ResetGameMode() {
-        FEGameMode = 0;
-    }
-
-    unsigned int GetGameMode() {
-        return FEGameMode;
-    }
-
-    bool IsOptionsDirty() {
-        return bIsOptionsDirty;
-    }
-
-    void SetOptionsDirty(bool dirty) {
-        bIsOptionsDirty = dirty;
-    }
-
-    void SetPlayersJoystickPort(int player, signed char port);
-
-    signed char GetPlayersJoystickPort(int player) {
-        return PlayerJoyports[player];
-    }
-
-    UserProfile *GetMultiplayerProfile(int player) {
-        return CurrentUserProfiles[player];
-    }
-    UserProfile *GetUserProfile(int player) {
-        return CurrentUserProfiles[player];
-    }
-    void CreateMultiplayerProfile(int player);
-    void DeleteMultiplayerProfile(int player);
-
-    OptionsSettings *GetOptionsSettings() {
-        return CurrentUserProfiles[0]->GetOptions();
-    }
-
-    AudioSettings *GetAudioSettings() {
-        return &CurrentUserProfiles[0]->GetOptions()->TheAudioSettings;
-    }
-
-    VideoSettings *GetVideoSettings() {
-        return &CurrentUserProfiles[0]->GetOptions()->TheVideoSettings;
-    }
-
-    GameplaySettings *GetGameplaySettings() {
-        return &CurrentUserProfiles[0]->GetOptions()->TheGameplaySettings;
-    }
-
-    GameCompletionStats GetGameCompletionStats();
-
-    unsigned int GetChallengeHeaderHash(unsigned int index);
-    unsigned int GetChallengeDescHash(unsigned int index);
-    unsigned int GetBountyIconHash(unsigned int index);
-    unsigned int GetBountyHeaderHash(unsigned int index);
-    unsigned int GetBountyDescHash(unsigned int index);
-    unsigned int GetMilestoneDescHash(unsigned int tag);
-    unsigned int GetMilestoneHeaderHash(unsigned int tag);
-    unsigned int GetMilestoneIconHash(unsigned int typeKey, bool active);
-    void SetMilestoneDescriptionString(char *buf, int value, float number, float goal, bool isTime) const;
-    bool IsMilestoneTimeFormat(int typeKey) const;
-    unsigned int GetRaceIconHash(GRace::Type type);
-    unsigned int GetRaceNameHash(GRace::Type type);
-
-    void BuildCurrentRideForPlayer(int player, class RideInfo *ride);
-
-    bool IsFinalEpicChase();
-    unsigned int GetUserProfileSaveSize(bool bExcludeGameplay);
-    void SaveUserProfileToBuffer(void *buffer, int size);
-    void NotifyExitRaceToFrontend(eExitRacePlaces from_where);
-    void AllocBackupDB(bool b);
-    void DefaultProfile();
-    unsigned int GetDefaultCar();
-    bool LoadUserProfileFromBuffer(void *buffer, int size, int player);
-    void RestoreFromBackupDB();
-    void DeallocBackupDB();
-    void RefreshCurrentRide();
-    void NotifyDeleteCar(unsigned int handle);
-    void BackupCarStable();
-    bool IsCarStableDirty();
-    bool IsDirty();
-
-    bool MatchesGameMode(unsigned int mode) {
-        return FEGameMode & mode;
-    }
-
-    static void *operator new(unsigned int size, unsigned int alloc_params) {
+    static void *operator new(size_t size, unsigned int alloc_params) {
 #ifdef MILESTONE_OPT
         return bMalloc(size, __FILE__, __LINE__, alloc_params);
 #else
@@ -696,19 +532,190 @@ class cFrontendDatabase {
 #endif
     }
 
+    static void operator delete(void *ptr) {}
+
+  private:
+    eHighScoresRaceTypes CalcRaceTypeForHighScores();
+
+  public:
     cFrontendDatabase();
     void Default();
+    void DefaultProfile();
+    void DefaultRaceSettings();
+    void RestartDemoCareer();
+    void RefreshCurrentRide();
+    void SetPlayersJoystickPort(int player, int8 joy_port);
+    int8 GetPlayersJoystickPort(int player) {
+        return PlayerJoyports[player];
+    }
+    UserProfile *GetMultiplayerProfile(int player) {
+        return CurrentUserProfiles[player];
+    }
+    void CreateMultiplayerProfile(int player);
+    void DeleteMultiplayerProfile(int player);
+    OptionsSettings *GetOptionsSettings() {
+        return CurrentUserProfiles[0]->GetOptions();
+    }
+    VideoSettings *GetVideoSettings() {
+        return &CurrentUserProfiles[0]->GetOptions()->TheVideoSettings;
+    }
+    GameplaySettings *GetGameplaySettings() {
+        return &CurrentUserProfiles[0]->GetOptions()->TheGameplaySettings;
+    }
+    AudioSettings *GetAudioSettings() {
+        return &CurrentUserProfiles[0]->GetOptions()->TheAudioSettings;
+    }
+    PlayerSettings *GetPlayerSettings(int player) {
+        return &CurrentUserProfiles[0]->GetOptions()->ThePlayerSettings[player];
+    }
+    CareerSettings *GetCareerSettings() {
+        return CurrentUserProfiles[0]->GetCareer();
+    }
+    GameCompletionStats GetGameCompletionStats();
+    uint32 GetChallengeHeaderHash(uint32 hal_id);
+    uint32 GetChallengeDescHash(uint32 hal_id);
+    uint32 GetBountyHeaderHash(uint32 hal_id);
+    uint32 GetBountyDescHash(uint32 hal_id);
+    uint32 GetBountyIconHash(uint32 hal_id);
+    uint32 GetMilestoneDescHash(uint32 hal_id);
+    uint32 GetMilestoneHeaderHash(uint32 hal_id);
+    uint32 GetMilestoneIconHash(uint32 type, bool isMilestone);
+    void SetMilestoneDescriptionString(char *const outputStr, const int milestoneType, float currVal, const float goalVal,
+                                       const bool showCurrVal) const;
+    bool IsMilestoneTimeFormat(const int milestoneType) const;
+    uint32 GetRaceNameHash(GRace::Type raceType);
+    uint32 GetRaceIconHash(GRace::Type raceType);
+    uint32 GetSafehouseIconHash(const char *safehouseType);
+    RaceSettings *GetQuickRaceSettings(GRace::Type type);
+    void NotifyDeleteCar(uint32 handle);
+    GRaceParameters *GetRandomRace(GRace::Type type);
     void GetRandomRaceOptions(RaceSettings *race, GRace::Type type);
-    unsigned int GetSafehouseIconHash(const char *name);
+    void FillCustomRace(GRaceCustom *parms, RaceSettings *race);
+    void SetGameMode(eFEGameModes mode) {
+        FEGameMode = FEGameMode | static_cast<uint32>(mode);
+    }
+    void ClearGameMode(eFEGameModes mode) {
+        FEGameMode = FEGameMode & ~static_cast<uint32>(mode);
+    }
+    void ResetGameMode() {
+        FEGameMode = 0;
+    }
+    void BackupCarStable();
+    bool IsCarStableDirty();
+    void AllocBackupDB(bool bForce);
+    void DeallocBackupDB();
+    void RestoreFromBackupDB();
+    bool IsDirty();
+    bool IsDDay() {
+        return GetCareerSettings()->GetCurrentBin() >= 16;
+    }
+    bool IsFinalEpicChase();
+    void SetOptionsDirty(bool dirty) {
+        bIsOptionsDirty = dirty;
+    }
+    bool IsOptionsDirty() {
+        return bIsOptionsDirty;
+    }
+    bool IsSplitScreenMode() {
+        return FEGameMode & 4 && iNumPlayers == 2;
+    }
+    bool IsQuickRaceMode() {
+        return FEGameMode & 4;
+    }
+    bool IsCareerMode() {
+        return FEGameMode & 1;
+    }
+    bool IsChallengeMode() {
+        return FEGameMode & 2;
+    }
+    bool IsOnlineMode() {
+        return FEGameMode & 8;
+    }
+    bool IsOnlineCustomizeMode() {}
+    bool IsCustomizeMode() {
+        return FEGameMode & 32;
+    }
+    bool IsOptionsMode() {
+        return FEGameMode & 16;
+    }
+    bool IsLANMode() {
+        return FEGameMode & 64;
+    }
+    bool IsModeSelectMode() {
+        return FEGameMode & 1024;
+    }
+    bool IsRapSheetMode() {
+        return FEGameMode & 512;
+    }
+    bool IsProfileManagerMode() {
+        return FEGameMode & 128;
+    }
+    bool IsCareerManagerMode() {
+        return FEGameMode & 256;
+    }
+    bool IsCarLotMode() {
+        return FEGameMode & 32768;
+    }
+    bool IsSafehouseMode() {
+        return FEGameMode & 65536;
+    }
+    bool IsPostRivalMode() {
+        return FEGameMode & 131072;
+    }
+    bool IsBeatGameMode() {
+        return FEGameMode & 262144;
+    }
+    bool MatchesGameMode(uint32 mode) {
+        return FEGameMode & mode;
+    }
+    uint32 GetGameMode() {
+        return FEGameMode;
+    }
+    bool IsAutoSave() {}
+    void SetAutoSave(bool flag) {}
+#if ONLINE_SUPPORT
+    cOnlineSettings *GetOnlineSettings() {
+        return OnlineSettings;
+    };
+    OnlineCreateUserSettings *GetOnlineCreateUserSettings() {
+        return mOnlineCreateUserSettings;
+    };
+#endif
+    FEKeyboardSettings *GetFEKeyboardSettings() {}
+    FEPlayerCarDB *GetPlayerCarStable(int player) {
+        if (static_cast<unsigned int>(player) <= 1)
+            return &CurrentUserProfiles[player]->PlayersCarStable;
+        return nullptr;
+    }
+    FECarRecord *GetPlayerCarRecordByHandle(int player, int handle) {}
+    void BuildCurrentRideForPlayer(int player, class RideInfo *ride);
+    void RepaintSecondStable();
+    UserProfile *GetUserProfile(int player) {
+        return CurrentUserProfiles[player];
+    }
+    void NotifyStartNewRace();
+    // void NotifyTheRaceIsOver(Race *race); // STRIPPED with struct Race
+    void NotifyRestartRace();
+    void NotifyRestartEvent();
+    void NotifyExitRaceToFrontend(eExitRacePlaces from_where);
+    void NotifyChangeToNextRace();
+    bool CanAdvanceToNextRace();
+    bool IsThereANextRace();
+    bool IsCurrentRaceEventInCareerMode();
+    uint32 GetDefaultCar();
+    int32 GetUserProfileSaveSize(bool bExcludeGameplay);
+    void SaveUserProfileToBuffer(void *buffer, int32 bufsize);
+    bool LoadUserProfileFromBuffer(void *buffer, int32 bufsize, int player);
+    bool CanCheatToUnlock();
 
-    unsigned char iNumPlayers;           // offset 0x0, size 0x1
+    uint8 iNumPlayers;                   // offset 0x0, size 0x1
     bool bComingFromBoot;                // offset 0x4, size 0x1
     bool bSavedProfileForMP;             // offset 0x8, size 0x1
     bool bProfileLoaded;                 // offset 0xC, size 0x1
     bool bIsOptionsDirty;                // offset 0x10, size 0x1
     bool bAutoSaveOverwriteConfirmed;    // offset 0x14, size 0x1
-    unsigned int iDefaultStableHash;     // offset 0x18, size 0x4
-    signed char PlayerJoyports[2];       // offset 0x1C, size 0x2
+    uint32 iDefaultStableHash;           // offset 0x18, size 0x4
+    int8 PlayerJoyports[2];              // offset 0x1C, size 0x2
     UserProfile *CurrentUserProfiles[2]; // offset 0x20, size 0x8
     GRace::Type RaceMode;                // offset 0x28, size 0x4
   private:
@@ -717,7 +724,7 @@ class cFrontendDatabase {
     char *m_pCarStableBackup; // offset 0x1B8, size 0x4
     char *m_pDBBackup;        // offset 0x1BC, size 0x4
   private:
-    unsigned int FEGameMode; // offset 0x1C0, size 0x4
+    uint32 FEGameMode; // offset 0x1C0, size 0x4
   public:
     eLoadSaveGame LoadSaveGame; // offset 0x1C4, size 0x4
 #if ONLINE_SUPPORT
@@ -736,5 +743,6 @@ class cFrontendDatabase {
 extern cFrontendDatabase *FEDatabase;
 
 void InitFrontendDatabase();
+int GetMikeMannBuild();
 
 #endif

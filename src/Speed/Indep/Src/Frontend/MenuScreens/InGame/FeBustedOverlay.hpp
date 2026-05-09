@@ -8,10 +8,11 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
 
 // total size: 0x2C
-struct BustedOverlayScreen : public MenuScreen {
+class BustedOverlayScreen : public MenuScreen {
+  public:
     BustedOverlayScreen(ScreenConstructorData *sd);
     ~BustedOverlayScreen() override;
-    void NotificationMessage(unsigned long Message, FEObject *pObject, unsigned long Param1, unsigned long Param2) override {}
+    void NotificationMessage(u32 Message, FEObject *pObject, u32 Param1, u32 Param2) override {}
 };
 
 #endif

@@ -1,6 +1,8 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiQRTrackSelect.hpp"
-#include "Speed/Indep/Src/FEng/cFEng.h"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
+#include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Gameplay/GRaceDatabase.h"
+#include "Speed/Indep/Src/Frontend/Careers/UnlockSystem.hpp"
 
 void FEngSetLanguageHash(const char *pkg_name, unsigned int obj_hash, unsigned int lang_hash);
 extern int FEngGetLastButton(const char *pkg_name);
@@ -17,7 +19,7 @@ extern int FEPrintf(const char *pkg_name, int hash, const char *fmt, ...);
 extern unsigned int CalcLanguageHash(const char *prefix, GRaceParameters *rp);
 extern bool DoesStringExist(unsigned int hash);
 extern unsigned long FEHashUpper(const char *str);
-extern int GetMikeMannBuild();
+// extern int GetMikeMannBuild();
 extern void StartRace();
 extern void FEngSetScript(const char *pkg_name, unsigned int obj_hash, unsigned int script_hash, bool play);
 
@@ -81,8 +83,8 @@ void UIQRTrackSelect::Setup() {
             hash = 0;
             break;
     }
-    FEngSetLanguageHash(PackageFilename, 0xb71b576d, hash);
-    const char *pkg = PackageFilename;
+    FEngSetLanguageHash(GetPackageName(), 0xb71b576d, hash);
+    const char *pkg = GetPackageName();
     unsigned int objHash = FEngHashString("TRACK_MAP");
     FEObject *obj = FEngFindObject(pkg, objHash);
     TrackMap = reinterpret_cast<FEMultiImage *>(obj);
@@ -255,9 +257,9 @@ void UIQRTrackSelect::ScrollRegions(eScrollDir dir) {
 
 void UIQRTrackSelect::RefreshHeader() {
     FEImage *img;
-    img = FEngFindImage(PackageFilename, 0x91c4a50);
+    img = FEngFindImage(GetPackageName(), 0x91c4a50);
     FEngSetButtonTexture(img, 0x5bc);
-    img = FEngFindImage(PackageFilename, 0x2d145be3);
+    img = FEngFindImage(GetPackageName(), 0x2d145be3);
     FEngSetButtonTexture(img, 0x682);
 
     RaceSettings *settings = FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(0xb));
@@ -279,49 +281,49 @@ void UIQRTrackSelect::RefreshHeader() {
             hash = 0;
             break;
     }
-    FEngSetLanguageHash(PackageFilename, 0x78008599, hash);
-    FEngSetLanguageHash(PackageFilename, 0x4510987f, hash);
-    FEPrintf(PackageFilename, 0x6f25a248, "%d", Tracks.GetNodeNumber(pCurrentNode));
-    FEPrintf(PackageFilename, 0xb2037bdc, "%d", Tracks.CountElements());
+    FEngSetLanguageHash(GetPackageName(), 0x78008599, hash);
+    FEngSetLanguageHash(GetPackageName(), 0x4510987f, hash);
+    FEPrintf(GetPackageName(), 0x6f25a248, "%d", Tracks.GetNodeNumber(pCurrentNode));
+    FEPrintf(GetPackageName(), 0xb2037bdc, "%d", Tracks.CountElements());
 
-    FEngSetLanguageHash(PackageFilename, 0xb5154998, FEDatabase->GetRaceNameHash(FEDatabase->RaceMode));
+    FEngSetLanguageHash(GetPackageName(), 0xb5154998, FEDatabase->GetRaceNameHash(FEDatabase->RaceMode));
 
-    FEngSetVisible(PackageFilename, 0x6b67d70b);
+    FEngSetVisible(GetPackageName(), 0x6b67d70b);
 
     if (!pCurrentTrack) {
-        FEPrintf(PackageFilename, 0x6f25a248, "0");
-        FEPrintf(PackageFilename, 0xb2037bdc, "0");
-        FEPrintf(PackageFilename, 0x5e7b09c9, "");
-        FEPrintf(PackageFilename, 0xdfb7a2e, "");
-        FEPrintf(PackageFilename, 0xb5154999, "--");
-        FEPrintf(PackageFilename, 0xb515499c, "%s", GetLocalizedString(0x472aa00a));
-        FEngSetLanguageHash(PackageFilename, 0x68215623, 0xf9c0519a);
-        FEngSetInvisible(PackageFilename, 0xe08434fc);
+        FEPrintf(GetPackageName(), 0x6f25a248, "0");
+        FEPrintf(GetPackageName(), 0xb2037bdc, "0");
+        FEPrintf(GetPackageName(), 0x5e7b09c9, "");
+        FEPrintf(GetPackageName(), 0xdfb7a2e, "");
+        FEPrintf(GetPackageName(), 0xb5154999, "--");
+        FEPrintf(GetPackageName(), 0xb515499c, "%s", GetLocalizedString(0x472aa00a));
+        FEngSetLanguageHash(GetPackageName(), 0x68215623, 0xf9c0519a);
+        FEngSetInvisible(GetPackageName(), 0xe08434fc);
     } else {
         if (!pCurrentNode->bLocked) {
-            FEngSetInvisible(PackageFilename, 0x6b67d70b);
-            FEngSetVisible(PackageFilename, 0xe08434fc);
+            FEngSetInvisible(GetPackageName(), 0x6b67d70b);
+            FEngSetVisible(GetPackageName(), 0xe08434fc);
         } else {
             char rival_name_locdb[128];
             FEngSNPrintf(rival_name_locdb, 0x80, "blacklist_rival_%02d_aka", pCurrentNode->bin);
-            const char *pkg = PackageFilename;
+            const char *pkg = GetPackageName();
             const char *rival_label = GetLocalizedString(0xbd563be5);
             unsigned int aka_hash = FEHashUpper(rival_name_locdb);
             const char *aka_name = GetLocalizedString(aka_hash);
             FEPrintf(pkg, 0x68215623, rival_label, aka_name, pCurrentNode->bin);
-            FEngSetInvisible(PackageFilename, 0xe08434fc);
+            FEngSetInvisible(GetPackageName(), 0xe08434fc);
         }
 
         unsigned int trackNameHash = CalcLanguageHash("TRACKNAME_", pCurrentTrack);
         if (DoesStringExist(trackNameHash)) {
-            FEngSetLanguageHash(PackageFilename, 0x5e7b09c9, trackNameHash);
-            FEngSetLanguageHash(PackageFilename, 0xdfb7a2e, trackNameHash);
+            FEngSetLanguageHash(GetPackageName(), 0x5e7b09c9, trackNameHash);
+            FEngSetLanguageHash(GetPackageName(), 0xdfb7a2e, trackNameHash);
         } else {
-            FEPrintf(PackageFilename, 0x5e7b09c9, pCurrentTrack->GetEventID());
-            FEPrintf(PackageFilename, 0xdfb7a2e, pCurrentTrack->GetEventID());
+            FEPrintf(GetPackageName(), 0x5e7b09c9, pCurrentTrack->GetEventID());
+            FEPrintf(GetPackageName(), 0xdfb7a2e, pCurrentTrack->GetEventID());
         }
 
-        FEngSetInvisible(PackageFilename, 0xbbf970cd);
+        FEngSetInvisible(GetPackageName(), 0xbbf970cd);
 
         bool kph = true;
         const char *distUnits;
@@ -336,7 +338,7 @@ void UIQRTrackSelect::RefreshHeader() {
         }
 
         const char *distFmt = "%$0.1f %s";
-        const char *distPkg = PackageFilename;
+        const char *distPkg = GetPackageName();
         float distance = pCurrentTrack->GetRaceLengthMeters();
         if (kph) {
             distance *= 0.001f;
@@ -353,7 +355,7 @@ void UIQRTrackSelect::RefreshHeader() {
             Timer t(info->mHighScores);
             char buf[64];
             t.PrintToString(buf, 0);
-            FEPrintf(PackageFilename, 0xb515499c, "%s", buf);
+            FEPrintf(GetPackageName(), 0xb515499c, "%s", buf);
         } else if (pCurrentTrack->GetRaceType() == GRace::kRaceType_SpeedTrap) {
             float max_speed;
             if (FEDatabase->GetGameplaySettings()->SpeedoUnits == 1) {
@@ -361,17 +363,17 @@ void UIQRTrackSelect::RefreshHeader() {
             } else {
                 max_speed = MPS2MPH(KPH2MPS(info->mHighScores));
             }
-            FEngSetLanguageHash(PackageFilename, 0x28462c64, 0x512e823);
-            FEPrintf(PackageFilename, 0xb515499c, "%$0.0f %s", max_speed, speedUnits);
+            FEngSetLanguageHash(GetPackageName(), 0x28462c64, 0x512e823);
+            FEPrintf(GetPackageName(), 0xb515499c, "%$0.0f %s", max_speed, speedUnits);
         } else {
-            FEPrintf(PackageFilename, 0xb515499c, "%s", GetLocalizedString(0x472aa00a));
+            FEPrintf(GetPackageName(), 0xb515499c, "%s", GetLocalizedString(0x472aa00a));
         }
 
         if (pCurrentTrack->GetRaceType() == GRace::kRaceType_Circuit || pCurrentTrack->GetRaceType() == GRace::kRaceType_Knockout) {
-            FEngSetLanguageHash(PackageFilename, 0x28462c64, 0xc5b5a177);
+            FEngSetLanguageHash(GetPackageName(), 0x28462c64, 0xc5b5a177);
         }
 
-        const char *pkg = PackageFilename;
+        const char *pkg = GetPackageName();
         unsigned int raceIconHash = FEDatabase->GetRaceIconHash(pCurrentTrack->GetRaceType());
         img = FEngFindImage(pkg, 0x8007b4c);
         FEngSetTextureHash(img, raceIconHash);
@@ -426,7 +428,7 @@ void UIQRTrackSelect::NotificationMessage(unsigned long msg, FEObject *pobj, uns
             if (FEDatabase->RaceMode == GRace::kRaceType_None) {
                 FEDatabase->RaceMode = pCurrentTrack->GetRaceType();
             }
-            cFEng::Get()->QueuePackageMessage(0x2e76edfb, PackageFilename, nullptr);
+            cFEng::Get()->QueuePackageMessage(0x2e76edfb, GetPackageName(), nullptr);
             break;
         case 0x9120409e:
             ScrollTracks(eSD_PREV);

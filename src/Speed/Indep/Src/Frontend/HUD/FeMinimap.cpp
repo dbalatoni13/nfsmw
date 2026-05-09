@@ -1,4 +1,9 @@
-#include "Speed/Indep/Src/Frontend/HUD/FeMinimap.hpp"
+#include "Speed/Indep/Src/Frontend/HUD/feMinimap.hpp"
+
+#include "Speed/Indep/Libs/Support/Utility/UCOM.h"
+#include "Speed/Indep/Src/FEng/FETypes.h"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEStrings.hpp"
 #include "Speed/Indep/Src/Frontend/HUD/FeMinimapStreamer.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
@@ -19,16 +24,18 @@
 #include "Speed/Indep/Src/Physics/PhysicsTunings.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
-extern void FEngSetRotationZ(FEObject *obj, float rot);
-extern void FEngSetVisible(FEObject *obj);
-extern void FEngSetInvisible(FEObject *obj);
-extern void FEngSetCenter(FEObject *obj, float x, float y);
-extern void FEngSetColor(FEObject *obj, unsigned int color);
-extern FEColor FEngGetObjectColor(FEObject *obj);
-extern bool FEngIsScriptSet(FEObject *obj, unsigned int script_hash);
-extern void FEngSetScript(FEObject *object, unsigned int script_hash, bool start_at_beginning);
-extern unsigned long FEHashUpper(const char *str);
-extern void FEngSetTextureHash(FEImage *img, unsigned int hash);
+// extern void FEngSetRotationZ(FEObject *obj, float rot);
+// extern void FEngSetVisible(FEObject *obj);
+// extern void FEngSetInvisible(FEObject *obj);
+// extern void FEngSetCenter(FEObject *obj, float x, float y);
+// extern void FEngSetColor(FEObject *obj, unsigned int color);
+// extern FEColor FEngGetObjectColor(FEObject *obj);
+// extern bool FEngIsScriptSet(FEObject *obj, unsigned int script_hash);
+// extern void FEngSetScript(FEObject *object, unsigned int script_hash, bool start_at_beginning);
+// extern unsigned long FEHashUpper(const char *str);
+// extern void FEngSetTextureHash(FEImage *img, unsigned int hash);
+extern bool GPS_IsEngaged();
+
 extern float MinimapPivotX;
 extern float MinimapPivotY;
 extern float MinimapDispX;
@@ -42,7 +49,7 @@ void GetVehicleVectors(bVector2 *pos, bVector2 *dir, ISimable *isimable) {
     pos->y = -position.x;
     pos->x = position.z;
     ICollisionBody *irigidbody;
-    if (isimable->QueryInterface(&irigidbody)) {
+    if (reinterpret_cast<UTL::COM::IUnknown *>(isimable)->QueryInterface(&irigidbody)) {
         UMath::Vector3 forwardVec = irigidbody->GetForwardVector();
         dir->y = -forwardVec.x;
         dir->x = forwardVec.z;
@@ -59,9 +66,9 @@ int UnloaderMiniMap(bChunk *chunk) {
 
 static bChunkLoader bChunkLoaderMiniMap(0x3A100, LoaderMiniMap, UnloaderMiniMap);
 
-extern unsigned int FEngHashString(const char *, ...);
-extern void FEngGetCenter(FEObject *obj, float &x, float &y);
-extern char *bStrStr(const char *, const char *);
+// extern unsigned int FEngHashString(const char *, ...);
+// extern void FEngGetCenter(FEObject *obj, float &x, float &y);
+// extern char *bStrStr(const char *, const char *);
 
 Minimap::Minimap(const char *pkg_name, int player_number) : HudElement(pkg_name, 0x40010000) {
     for (int i = 3; i >= 0; i--) {
@@ -135,68 +142,6 @@ Minimap::Minimap(const char *pkg_name, int player_number) : HudElement(pkg_name,
 
 Minimap::~Minimap() {
     gChoppedMiniMapManager->UncompressMaps(nullptr, 0);
-}
-
-void Minimap::Update(IPlayer *player) {
-    if (!IsElementVisible() || !player) {
-        return;
-    }
-
-    ISimable *isimable = player->GetSimable();
-    if (!isimable) {
-        return;
-    }
-
-    MinimapRotateWithPlayer = 1;
-    if (Sim::GetUserMode() == Sim::USER_SPLIT_SCREEN) {
-        MinimapRotateWithPlayer = 0;
-    } else {
-        unsigned char rotate_with_player = GRaceStatus::Get().GetRaceParameters() == nullptr ? FEDatabase->GetGameplaySettings()->ExploringMiniMapMode
-                                                                                             : FEDatabase->GetGameplaySettings()->RacingMiniMapMode;
-        if (!rotate_with_player) {
-            MinimapRotateWithPlayer = 0;
-        }
-    }
-
-    SetupMinimap(player);
-
-    IVehicle *ivehicle = nullptr;
-    float speed = 0.0f;
-    bVector2 target_pos;
-    bVector2 target_dir;
-    bVector2 *target_pos_to_use = &target_pos;
-    bVector2 *target_dir_to_use = &target_dir;
-    isimable = player->GetSimable();
-    GetVehicleVectors(target_pos_to_use, target_dir_to_use, isimable);
-
-    if (isimable->QueryInterface(&ivehicle)) {
-        speed = bAbs(ivehicle->GetSpeed());
-    }
-
-    mPolyRotation = bAngToDeg(bATan(target_dir_to_use->y, target_dir_to_use->x));
-    ConvertPos(*target_pos_to_use, mTrackTargetNormalized, CurrentTrack);
-
-    if (speed > MinimapMaxSpeed) {
-        speed = MinimapMaxSpeed;
-    } else if (speed < 0.0f) {
-        speed = 0.0f;
-    }
-
-    mSpeedZoomScale = 2.0f - speed / MinimapMaxSpeed;
-    if (mSpeedZoomScale < 1.0f) {
-        mSpeedZoomScale = 1.0f;
-    }
-
-    UpdateTrackMapArt();
-    if (!MinimapRotateWithPlayer) {
-        mPolyRotation = 0.0f;
-    }
-
-    UpdateCopElements(ivehicle);
-    UpdateAiRacerElements();
-    UpdatePlayer2Element();
-    UpdateRaceElements();
-    UpdateGameplayIcons(player);
 }
 
 void Minimap::SetupMinimap(IPlayer *player) {
@@ -301,6 +246,16 @@ void Minimap::SetupMinimap(IPlayer *player) {
     data->Pivot.z = 0.0f;
 }
 
+void Minimap::RefreshMapItems() {
+    MiniMapItem *item = StaticMiniMapItems.GetHead();
+    while (item != StaticMiniMapItems.EndOfList()) {
+        FEngSetInvisible(item->mpIcon);
+        item = item->GetNext();
+    }
+    StaticMiniMapItems.DeleteAllElements();
+    InitStaticMiniMapItems();
+}
+
 void Minimap::ConvertPos(bVector2 &worldPos, bVector2 &minimapPos, TrackInfo *track) {
     minimapPos.x = (worldPos.x - *reinterpret_cast<float *>(reinterpret_cast<char *>(track) + 0xAC)) /
                    *reinterpret_cast<float *>(reinterpret_cast<char *>(track) + 0xB4);
@@ -309,8 +264,66 @@ void Minimap::ConvertPos(bVector2 &worldPos, bVector2 &minimapPos, TrackInfo *tr
                    1.0f;
 }
 
-void Minimap::UpdateRaceElements() {
-    UpdateMiniMapItems();
+void Minimap::Update(IPlayer *player) {
+    if (!IsElementVisible() || !player) {
+        return;
+    }
+
+    ISimable *isimable = player->GetSimable();
+    if (!isimable) {
+        return;
+    }
+
+    MinimapRotateWithPlayer = 1;
+    if (Sim::GetUserMode() == Sim::USER_SPLIT_SCREEN) {
+        MinimapRotateWithPlayer = 0;
+    } else {
+        unsigned char rotate_with_player = GRaceStatus::Get().GetRaceParameters() == nullptr ? FEDatabase->GetGameplaySettings()->ExploringMiniMapMode
+                                                                                             : FEDatabase->GetGameplaySettings()->RacingMiniMapMode;
+        if (!rotate_with_player) {
+            MinimapRotateWithPlayer = 0;
+        }
+    }
+
+    SetupMinimap(player);
+
+    IVehicle *ivehicle = nullptr;
+    float speed = 0.0f;
+    bVector2 target_pos;
+    bVector2 target_dir;
+    // bVector2 *target_pos_to_use = &target_pos;
+    // bVector2 *target_dir_to_use = &target_dir;
+    isimable = player->GetSimable();
+    GetVehicleVectors(&target_pos, &target_dir, isimable);
+
+    if (reinterpret_cast<UTL::COM::IUnknown *>(isimable)->QueryInterface(&ivehicle)) {
+        speed = bAbs(ivehicle->GetSpeed());
+    }
+
+    mPolyRotation = bAngToDeg(bATan(target_dir.y, target_dir.x));
+    ConvertPos(target_pos, mTrackTargetNormalized, CurrentTrack);
+
+    if (speed > MinimapMaxSpeed) {
+        speed = MinimapMaxSpeed;
+    } else if (speed < 0.0f) {
+        speed = 0.0f;
+    }
+
+    mSpeedZoomScale = 2.0f - speed / MinimapMaxSpeed;
+    if (mSpeedZoomScale < 1.0f) {
+        mSpeedZoomScale = 1.0f;
+    }
+
+    UpdateTrackMapArt();
+    if (!MinimapRotateWithPlayer) {
+        mPolyRotation = 0.0f;
+    }
+
+    UpdateCopElements(ivehicle);
+    UpdateAiRacerElements();
+    UpdatePlayer2Element();
+    UpdateRaceElements();
+    UpdateGameplayIcons(player);
 }
 
 void Minimap::UpdateTrackMapArt() {
@@ -325,79 +338,55 @@ void Minimap::UpdateTrackMapArt() {
     }
 }
 
-void Minimap::AdjustForWidescreen(bool moveOutwards) {
-    float offset;
-    if (moveOutwards) {
-        offset = -120.0f;
-        MinimapPivotX = offset;
-        MinimapDispX = -0.9375f;
-    } else {
-        offset = 120.0f;
-        MinimapPivotX = 0.0f;
-        MinimapDispX = 0.9375f;
-    }
-    mTrackMapCentre.x += offset;
-    for (unsigned int i = 0; i < 4; i++) {
-        reinterpret_cast<FEObjData *>(TrackmapArt[i]->pData)->Pos.x += offset;
-    }
-    reinterpret_cast<FEObjData *>(mPlayerCarIndicator->pData)->Pos.x += offset;
-    reinterpret_cast<FEObjData *>(mPlayerCarIndicator->pData)->Pos.y = mTrackMapCentre.y;
-}
+void Minimap::UpdateElementArt(bVector2 *elementPos, bVector2 *elementDir, FEObject *elementArt, bool pulse) {
+    bVector2 mapPos;
+    ConvertPos(*elementPos, mapPos, CurrentTrack);
 
-void Minimap::RefreshMapItems() {
-    MiniMapItem *item = StaticMiniMapItems.GetHead();
-    while (item != StaticMiniMapItems.EndOfList()) {
-        FEngSetInvisible(item->mpIcon);
-        item = item->GetNext();
-    }
-    StaticMiniMapItems.DeleteAllElements();
-    InitStaticMiniMapItems();
-}
+    float epoly_x = (mapPos.x - mTrackTargetNormalized.x) * mSpeedZoomScale;
+    float epoly_y = (mapPos.y - mTrackTargetNormalized.y) * mSpeedZoomScale;
+    const float sa = bSin(bDegToRad(mPolyRotation));
+    const float ca = bCos(bDegToRad(mPolyRotation));
+    float rot_epoly_x = epoly_y * ca - epoly_x * sa;
+    float rot_epoly_y = epoly_x * ca + epoly_y * sa;
+    float distance = bSqrt(rot_epoly_y * rot_epoly_y + rot_epoly_x * rot_epoly_x);
+    float alpha = 1.0f;
 
-extern bool GPS_IsEngaged();
+    if (distance > 0.0f) {
+        if (distance > 0.06f) {
+            rot_epoly_x *= 0.06f / distance;
+            rot_epoly_y *= 0.06f / distance;
 
-void Minimap::UpdateIconElement(FEImage *image, GIcon *icon) {
-    bVector2 pos2D;
-    bVector2 dir2D;
-    icon->GetPosition2D(pos2D);
-    dir2D.x = 1.0f;
-    dir2D.y = 0.0f;
-    if (icon->GetType() != GIcon::kType_AreaUnlock && !GPS_IsEngaged() && icon->GetIsGPSing()) {
-        icon->ClearGPSing();
-    }
-    bool pulse = icon->GetIsGPSing();
-    UpdateElementArt(&pos2D, &dir2D, image, pulse);
-    FEngSetRotationZ(image, 0.0f);
-}
+            if (distance > 0.125f) {
+                alpha = 1.0f - (distance - 0.125f) * 9.523809f;
+            }
+            if (distance > 0.23f) {
+                alpha = 0.0f;
+            }
+            distance = 0.06f;
 
-void Minimap::UpdateMiniMapItems() {
-    bVector2 defaultDir;
-    for (MiniMapItem *item = static_cast<MiniMapItem *>(StaticMiniMapItems.GetHead()); item != StaticMiniMapItems.EndOfList();
-         item = static_cast<MiniMapItem *>(item->GetNext())) {
-        if (item->mHidden) {
-            FEngSetInvisible(item->mpIcon);
-        } else {
-            FEngSetVisible(item->mpIcon);
-            defaultDir.x = 0.0f;
-            defaultDir.y = 1.0f;
-            UpdateElementArt(&item->mPos, &defaultDir, item->mpIcon, false);
-            FEngSetRotationZ(item->mpIcon, 0.0f);
+            if (pulse) {
+                alpha = 1.0f;
+            }
         }
     }
-}
 
-void Minimap::InitStaticMiniMapItems() {}
+    if (distance <= 0.06f) {
+        float screen_x = mTrackMapCentre.x + rot_epoly_y * 1024.0f;
+        float screen_y = mTrackMapCentre.y + rot_epoly_x * 1024.0f;
+        FEngSetCenter(elementArt, screen_x, screen_y);
+        FEngSetVisible(elementArt);
+        FEngSetRotationZ(elementArt, bAngToDeg(bATan(elementDir->y, elementDir->x)) - mPolyRotation);
 
-void Minimap::UpdatePlayer2Element() {
-    if (Sim::GetUserMode() == Sim::USER_SPLIT_SCREEN) {
-        IPlayer *player2 = IPlayer::Last(PLAYER_LOCAL);
-        ISimable *isimable = player2->GetSimable();
-        bVector2 target_pos;
-        bVector2 target_dir;
-        bVector2 *pPos = &target_pos;
-        bVector2 *pDir = &target_dir;
-        GetVehicleVectors(pPos, pDir, isimable);
-        UpdateElementArt(pPos, pDir, mPlayerCarIndicator2, false);
+        unsigned int color = static_cast<unsigned long>(FEngGetObjectColor(elementArt));
+        int alphaInt = static_cast<int>(alpha * 255.0f);
+        FEngSetColor(elementArt, color & 0x00FFFFFF | alphaInt << 24);
+
+        if (pulse) {
+            FEngSetVisible(mGPSSelectionElementArt);
+            FEngSetCenter(mGPSSelectionElementArt, screen_x, screen_y);
+        }
+    } else {
+        FEngSetInvisible(elementArt);
     }
 }
 
@@ -487,57 +476,94 @@ void Minimap::UpdateCopElements(IVehicle *ivehicle) {
     }
 }
 
-void Minimap::UpdateElementArt(bVector2 *elementPos, bVector2 *elementDir, FEObject *elementArt, bool pulse) {
-    bVector2 mapPos;
-    ConvertPos(*elementPos, mapPos, CurrentTrack);
+void Minimap::UpdateAiRacerElements() {
+    unsigned int artIter = 0;
+    eVehicleList listid = TheOnlineManager.IsOnlineRace() ? VEHICLE_REMOTE : VEHICLE_AIRACERS;
+    const IVehicle::List &vehicles = IVehicle::GetList(listid);
 
-    float epoly_x = (mapPos.x - mTrackTargetNormalized.x) * mSpeedZoomScale;
-    float epoly_y = (mapPos.y - mTrackTargetNormalized.y) * mSpeedZoomScale;
-    const float sa = bSin(bDegToRad(mPolyRotation));
-    const float ca = bCos(bDegToRad(mPolyRotation));
-    float rot_epoly_x = epoly_y * ca - epoly_x * sa;
-    float rot_epoly_y = epoly_x * ca + epoly_y * sa;
-    float distance = bSqrt(rot_epoly_y * rot_epoly_y + rot_epoly_x * rot_epoly_x);
-    float alpha = 1.0f;
-
-    if (distance > 0.0f) {
-        if (distance > 0.06f) {
-            rot_epoly_x *= 0.06f / distance;
-            rot_epoly_y *= 0.06f / distance;
-
-            if (distance > 0.125f) {
-                alpha = 1.0f - (distance - 0.125f) * 9.523809f;
-            }
-            if (distance > 0.23f) {
-                alpha = 0.0f;
-            }
-            distance = 0.06f;
-
-            if (pulse) {
-                alpha = 1.0f;
-            }
+    for (IVehicle *const *iter = vehicles.begin(); iter != vehicles.end(); ++iter) {
+        IVehicle *ivehicle = *iter;
+        if (ivehicle->IsActive()) {
+            bVector2 target_pos;
+            bVector2 target_dir;
+            GetVehicleVectors(&target_pos, &target_dir, ivehicle->GetSimable());
+            UpdateElementArt(&target_pos, &target_dir, mRacerElementArt[artIter], false);
+            artIter++;
         }
     }
 
-    if (distance <= 0.06f) {
-        float screen_x = mTrackMapCentre.x + rot_epoly_y * 1024.0f;
-        float screen_y = mTrackMapCentre.y + rot_epoly_x * 1024.0f;
-        FEngSetCenter(elementArt, screen_x, screen_y);
-        FEngSetVisible(elementArt);
-        FEngSetRotationZ(elementArt, bAngToDeg(bATan(elementDir->y, elementDir->x)) - mPolyRotation);
-
-        unsigned int color = static_cast<unsigned long>(FEngGetObjectColor(elementArt));
-        int alphaInt = static_cast<int>(alpha * 255.0f);
-        FEngSetColor(elementArt, color & 0x00FFFFFF | alphaInt << 24);
-
-        if (pulse) {
-            FEngSetVisible(mGPSSelectionElementArt);
-            FEngSetCenter(mGPSSelectionElementArt, screen_x, screen_y);
-        }
-    } else {
-        FEngSetInvisible(elementArt);
+    for (unsigned int i = artIter; i < 8; i++) {
+        FEngSetInvisible(mRacerElementArt[i]);
     }
 }
+
+void Minimap::UpdatePlayer2Element() {
+    if (Sim::GetUserMode() == Sim::USER_SPLIT_SCREEN) {
+        IPlayer *player2 = IPlayer::Last(PLAYER_LOCAL);
+        ISimable *isimable = player2->GetSimable();
+        bVector2 target_pos;
+        bVector2 target_dir;
+        bVector2 *pPos = &target_pos;
+        bVector2 *pDir = &target_dir;
+        GetVehicleVectors(pPos, pDir, isimable);
+        UpdateElementArt(pPos, pDir, mPlayerCarIndicator2, false);
+    }
+}
+
+void Minimap::UpdateIconElement(FEImage *image, GIcon *icon) {
+    bVector2 pos2D;
+    bVector2 dir2D;
+    icon->GetPosition2D(pos2D);
+    dir2D.x = 1.0f;
+    dir2D.y = 0.0f;
+    if (icon->GetType() != GIcon::kType_AreaUnlock && !GPS_IsEngaged() && icon->GetIsGPSing()) {
+        icon->ClearGPSing();
+    }
+    bool pulse = icon->GetIsGPSing();
+    UpdateElementArt(&pos2D, &dir2D, image, pulse);
+    FEngSetRotationZ(image, 0.0f);
+}
+
+void Minimap::UpdateRaceElements() {
+    UpdateMiniMapItems();
+}
+
+void Minimap::AdjustForWidescreen(bool moveOutwards) {
+    float offset;
+    if (moveOutwards) {
+        offset = -120.0f;
+        MinimapPivotX = offset;
+        MinimapDispX = -0.9375f;
+    } else {
+        offset = 120.0f;
+        MinimapPivotX = 0.0f;
+        MinimapDispX = 0.9375f;
+    }
+    mTrackMapCentre.x += offset;
+    for (unsigned int i = 0; i < 4; i++) {
+        reinterpret_cast<FEObjData *>(TrackmapArt[i]->pData)->Pos.x += offset;
+    }
+    reinterpret_cast<FEObjData *>(mPlayerCarIndicator->pData)->Pos.x += offset;
+    reinterpret_cast<FEObjData *>(mPlayerCarIndicator->pData)->Pos.y = mTrackMapCentre.y;
+}
+
+void Minimap::UpdateMiniMapItems() {
+    bVector2 defaultDir;
+    for (MiniMapItem *item = static_cast<MiniMapItem *>(StaticMiniMapItems.GetHead()); item != StaticMiniMapItems.EndOfList();
+         item = static_cast<MiniMapItem *>(item->GetNext())) {
+        if (item->mHidden) {
+            FEngSetInvisible(item->mpIcon);
+        } else {
+            FEngSetVisible(item->mpIcon);
+            defaultDir.x = 0.0f;
+            defaultDir.y = 1.0f;
+            UpdateElementArt(&item->mPos, &defaultDir, item->mpIcon, false);
+            FEngSetRotationZ(item->mpIcon, 0.0f);
+        }
+    }
+}
+
+void Minimap::InitStaticMiniMapItems() {}
 
 void Minimap::UpdateGameplayIcons(IPlayer *player) {
     int iconsPlaced[GIcon::kType_Count];
@@ -570,26 +596,5 @@ void Minimap::UpdateGameplayIcons(IPlayer *player) {
                 FEngSetInvisible(mGameplayIcons[onType][onHideIcon]);
             }
         }
-    }
-}
-
-void Minimap::UpdateAiRacerElements() {
-    unsigned int artIter = 0;
-    eVehicleList listid = TheOnlineManager.IsOnlineRace() ? VEHICLE_REMOTE : VEHICLE_AIRACERS;
-    const IVehicle::List &vehicles = IVehicle::GetList(listid);
-
-    for (IVehicle *const *iter = vehicles.begin(); iter != vehicles.end(); ++iter) {
-        IVehicle *ivehicle = *iter;
-        if (ivehicle->IsActive()) {
-            bVector2 target_pos;
-            bVector2 target_dir;
-            GetVehicleVectors(&target_pos, &target_dir, ivehicle->GetSimable());
-            UpdateElementArt(&target_pos, &target_dir, mRacerElementArt[artIter], false);
-            artIter++;
-        }
-    }
-
-    for (unsigned int i = artIter; i < 8; i++) {
-        FEngSetInvisible(mRacerElementArt[i]);
     }
 }

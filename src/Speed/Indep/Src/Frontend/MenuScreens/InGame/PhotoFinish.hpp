@@ -8,12 +8,11 @@
 #include "Speed/Indep/Src/Generated/Events/EShowResults.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
-
-struct FEImage;
+#include "Speed/Indep/Src/FEng/feimage.h"
 
 struct load_info {
     FEImage *LoadIntoImage;
-    unsigned int LoadingTexture;
+    uint32 LoadingTexture;
     bool IsLoaded;
 };
 
@@ -48,12 +47,13 @@ class PhotoFinishScreen : public MenuScreen {
   public:
     PhotoFinishScreen(ScreenConstructorData *sd);
     ~PhotoFinishScreen() override;
-    void NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) override;
-    void Setup();
+    void NotificationMessage(u32 msg, FEObject *pobj, u32 param1, u32 param2) override;
     static MenuScreen *Create(ScreenConstructorData *sd);
     static bool mRestartSelected;
 
-  protected:
+  private:
+    void Setup();
+
     static float mSpeedtrapSpeed;
     static float mSpeedtrapBounty;
     static bool mActive;

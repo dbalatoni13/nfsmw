@@ -1,39 +1,21 @@
 #include "uiRepSheetMilestones.hpp"
 
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
-#include "Speed/Indep/Src/FEng/cFEng.h"
+#include "Speed/Indep/Src/Frontend/FEngFrontend.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
+#include "Speed/Indep/Src/Frontend/Localization/Localize.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/DialogInterface.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEAnyTutorialScreen.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/InGame/InGameTutorialScreen.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiTrackMapStreamer.hpp"
+#include "Speed/Indep/Src/Frontend/RaceStarter.hpp"
 #include "Speed/Indep/Src/Gameplay/GManager.h"
-#include "Speed/Indep/Src/Gameplay/GRaceDatabase.h"
 #include "Speed/Indep/Src/Generated/Events/ERaceSheetOff.hpp"
-#include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 #include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 
-struct FEObject;
-struct FEMultiImage;
-
-FEObject *FEngFindObject(const char *pkg_name, unsigned int hash);
-FEImage *FEngFindImage(const char *pkg_name, int hash);
-void FEngSetVisible(FEObject *obj);
-void FEngSetInvisible(FEObject *obj);
-void FEngSetLanguageHash(const char *pkg_name, unsigned int obj_hash, unsigned int lang_hash);
-int FEPrintf(const char *pkg_name, int hash, const char *fmt, ...);
-unsigned int FEngHashString(const char *format, ...);
-const char *GetLocalizedString(unsigned int hash);
-void FEngSetScript(const char *pkg_name, unsigned int obj_hash, unsigned int script_hash, bool);
-void FEngSetRotationZ(FEObject *obj, float angle);
-void FEngSetTextureHash(FEImage *image, unsigned int hash);
-int FEngMapJoyParamToJoyport(int feng_param);
-
-void RaceStarterStartCareerFreeRoam() asm("StartCareerFreeRoam__11RaceStarter");
-void InGameAnyTutorialScreenLaunchMovie(const char *, const char *) asm("LaunchMovie__23InGameAnyTutorialScreenPCcT1");
-
-extern unsigned int iCurrentViewBin;
+extern int iCurrentViewBin;
 extern const char *gTUTORIAL_MOVIE_PURSUIT;
-
-// FEngSetInvisible/FEngSetVisible/FEngSetTextureHash inlines defined in uiMain.cpp
 
 MilestoneDatum *theMilestone;
 
@@ -143,8 +125,8 @@ handleActivate: {
     if (theMilestone->GetType() != 0) {
         messageHash = 0xbf1dcd38;
     }
-    DialogInterface::ShowTwoButtons(GetPackageName(), dialog, static_cast<eDialogTitle>(1), 0x70e01038, 0x417b25e4, 0xd05fc3a3, 0x34dc1bcf,
-                                    0x34dc1bcf, static_cast<eDialogFirstButtons>(1), messageHash);
+    DialogInterface::ShowTwoButtons(GetPackageName(), dialog, dialog_alert, 0x70e01038, 0x417b25e4, 0xd05fc3a3, 0x34dc1bcf, 0x34dc1bcf,
+                                    first_dialog_button2, messageHash);
     return;
 }
 
@@ -185,7 +167,7 @@ handleWarp: {
     if (pursuit) {
         GManager::Get().QueueFreeRoamPursuit(0.0f);
     }
-    RaceStarterStartCareerFreeRoam();
+    RaceStarter::StartCareerFreeRoam();
     return;
 }
 
@@ -197,7 +179,7 @@ handleUpdateAnimation:
 
 refresh: {
     int newIndex = GetNumDatum() - 1;
-    if (currentIndex != newIndex && currentDatum != nullptr) {
+    if (currentIndex != newIndex && GetCurrentDatum() != nullptr) {
         RefreshTrack();
     }
     return;
@@ -211,7 +193,7 @@ handleTutorialAccept: {
                 delete TrackMapStreamer;
             }
             TrackMapStreamer = nullptr;
-            InGameAnyTutorialScreenLaunchMovie(gTUTORIAL_MOVIE_PURSUIT, GetPackageName());
+            InGameAnyTutorialScreen::LaunchMovie(gTUTORIAL_MOVIE_PURSUIT, GetPackageName());
             FEngSetInvisible(FEngFindObject("InGameBackground.fng", 0x2716cdbf));
         } else {
             FEAnyTutorialScreen::LaunchMovie(gTUTORIAL_MOVIE_PURSUIT, GetPackageName());
@@ -236,7 +218,7 @@ handlePackageSwitch:
 
 void uiRepSheetMilestones::Setup() {
     ClearData();
-    GMilestone *ms = GManager::mObj->GetFirstMilestone(false, iCurrentViewBin);
+    GMilestone *ms = GManager::Get().GetFirstMilestone(false, iCurrentViewBin);
     while (ms != nullptr) {
         AddMilestone(ms);
         if (ms->GetIsLocked()) {
@@ -245,18 +227,18 @@ void uiRepSheetMilestones::Setup() {
         if (ms->GetIsAwarded()) {
             GetDatumAt(GetNumDatum() - 1)->SetChecked(true);
         }
-        ms = GManager::mObj->GetNextMilestone(ms, false, iCurrentViewBin);
+        ms = GManager::Get().GetNextMilestone(ms, false, iCurrentViewBin);
     }
-    GSpeedTrap *st = GManager::mObj->GetFirstSpeedTrap(false, iCurrentViewBin);
+    GSpeedTrap *st = GManager::Get().GetFirstSpeedTrap(false, iCurrentViewBin);
     while (st != nullptr) {
         AddSpeedtrap(st);
-        if (st->IsFlagClear(GSpeedTrap::kFlag_Unlocked)) {
+        if (st->GetIsLocked()) {
             GetDatumAt(GetNumDatum() - 1)->SetLocked(true);
         }
-        if (st->IsFlagSet(GSpeedTrap::kFlag_Completed)) {
+        if (st->GetIsCompleted()) {
             GetDatumAt(GetNumDatum() - 1)->SetChecked(true);
         }
-        st = GManager::mObj->GetNextSpeedTrap(st, false, iCurrentViewBin);
+        st = GManager::Get().GetNextSpeedTrap(st, false, iCurrentViewBin);
     }
     SetDescLabel(0xB5117FDE);
     SetInitialPosition(0);
@@ -308,8 +290,8 @@ void uiRepSheetMilestones::AddSpeedtrap(GSpeedTrap *trap) {
 void uiRepSheetMilestones::RefreshHeader() {
     ArrayScrollerMenu::RefreshHeader();
     ArrayDatum *currentDatum = GetCurrentDatum();
-    FEPrintf(GetPackageName(), 0x5a856a34, "%d", data.GetNodeNumber(currentDatum));
-    FEPrintf(GetPackageName(), 0x2d4d22c8, "%d", data.CountElements());
+    FEPrintf(GetPackageName(), 0x5a856a34, "%d", GetCurrentDatumNum());
+    FEPrintf(GetPackageName(), 0x2d4d22c8, "%d", GetNumDatum());
     FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(0);
     FEPrintf(GetPackageName(), 0xb514e2d8, "%s %$d", GetLocalizedString(0xce6b99b1), stable->GetTotalBounty());
     FEPrintf(GetPackageName(), 0xf91a59f6, "%s %$d", GetLocalizedString(0x73b79e0), FEDatabase->GetCareerSettings()->GetCash());
@@ -364,11 +346,4 @@ void uiRepSheetMilestones::RefreshHeader() {
             }
         }
     }
-}
-
-bool GSpeedTrap::IsFlagSet(unsigned int mask) const {
-    return (mFlags & mask) != 0;
-}
-bool GSpeedTrap::IsFlagClear(unsigned int mask) const {
-    return (mFlags & mask) == 0;
 }

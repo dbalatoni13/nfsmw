@@ -1,37 +1,24 @@
 #include "Speed/Indep/Src/Frontend/HUD/FeSpeedBreakerMeter.hpp"
 
-#include "Speed/Indep/Src/FEng/FEGroup.h"
-#include "Speed/Indep/Src/FEng/FEMultiImage.h"
-#include "Speed/Indep/Src/Sim/Simulation.h"
-
-void FEngSetMultiImageRot(FEMultiImage *image, float angle_degrees);
-void FEngSetScript(FEObject *object, unsigned int script_hash, bool start_at_beginning);
-bool FEngIsScriptSet(FEObject *obj, unsigned int script_hash);
-FEObject *FEngFindObject(const char *pkg_name, unsigned int obj_hash);
-unsigned long FEHashUpper(const char *name);
-int bStrICmp(const char *s1, const char *s2);
-void FEngGetTopLeft(FEObject *object, float &x, float &y);
-void FEngGetSize(FEObject *object, float &w, float &h);
-void FEngSetSize(FEObject *object, float w, float h);
-
-extern const char lbl_803E4D20[];
-extern const char lbl_803E4D40[];
-extern const char lbl_803E4D5C[];
-extern const char lbl_803E4D7C[];
-extern const float lbl_803E4D9C;
-extern const float lbl_803E4DA0;
-extern const float lbl_803E4DA4;
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEObjects.hpp"
+#include "Speed/Indep/Src/FEng/FEObject.h"
+#include "Speed/Indep/Src/FEng/FETypes.h"
+#include "Speed/Indep/bWare/Inc/Strings.hpp"
 
 SpeedBreakerMeter::SpeedBreakerMeter(UTL::COM::Object *pOutter, const char *pkg_name, int player_number)
     : HudElement(pkg_name, 0x40000) //
-    , ISpeedBreakerMeter(pOutter) //
-    , mPursuitLevelChanged(true) //
-    , mSpeedBreakerBarOriginalWidth(lbl_803E4D9C) //
-    , mPursuitLevel(lbl_803E4D9C) //
+      ,
+      ISpeedBreakerMeter(pOutter) //
+      ,
+      mPursuitLevelChanged(true) //
+      ,
+      mSpeedBreakerBarOriginalWidth(0.0f) //
+      ,
+      mPursuitLevel(0.0f) //
 {
-    RegisterGroup(FEHashUpper(lbl_803E4D40));
-    mpSpeedBreakerMeterIcon = FEngFindObject(GetPackageName(), FEHashUpper(lbl_803E4D5C));
-    mpSpeedBreakerMeterBar = RegisterMultiImage(FEHashUpper(lbl_803E4D7C));
+    RegisterGroup(FEHashUpper("Speedbreaker_Meter_Group"));
+    mpSpeedBreakerMeterIcon = FEngFindObject(GetPackageName(), FEHashUpper("SPEEDBREAKER_METER_ICON_GROUP"));
+    mpSpeedBreakerMeterBar = RegisterMultiImage(FEHashUpper("Speedbreaker_Meter_Multi_Image"));
     mpSpeedBreakerGroup = RegisterGroup(0x82D60021);
     mpSpeedBreakerBar = FEngFindObject(GetPackageName(), 0x1FDAF669);
     if (mpSpeedBreakerBar) {
@@ -43,29 +30,37 @@ void SpeedBreakerMeter::Update(IPlayer *player) {
     if (!mPursuitLevelChanged) {
         return;
     }
+
     mPursuitLevelChanged = false;
 
-    if (mpSpeedBreakerMeterBar != nullptr && mpSpeedBreakerBar != nullptr) {
-        float maxAngle = lbl_803E4DA0;
-        if (bStrICmp(pPackageName, lbl_803E4D20) == 0) {
-            maxAngle = lbl_803E4DA4;
+    if (mpSpeedBreakerMeterBar && mpSpeedBreakerBar) {
+        float min_angle = 175.0f;
+        if (bStrICmp(GetPackageName(), "HUD_Drag.fng") == 0) {
+            min_angle = -48.0f;
         }
-        FEngSetMultiImageRot(mpSpeedBreakerMeterBar, mPursuitLevel * -maxAngle + maxAngle);
+        FEngSetMultiImageRot(mpSpeedBreakerMeterBar, mPursuitLevel * -min_angle + min_angle);
 
-        float topLeftX, topLeftY;
-        FEngGetTopLeft(mpSpeedBreakerBar, topLeftX, topLeftY);
-        float sizeW, sizeH;
-        FEngGetSize(mpSpeedBreakerBar, sizeW, sizeH);
-        FEngSetSize(mpSpeedBreakerBar, mPursuitLevel * mSpeedBreakerBarOriginalWidth, sizeH);
+        if (FEngIsScriptSet(reinterpret_cast<FEObject *>(mpSpeedBreakerGroup), 0x5b0d9106)) {
+            const float originalLeftX = FEngGetTopLeftX(mpSpeedBreakerBar);
+            FEngSetSizeX(mpSpeedBreakerBar, mSpeedBreakerBarOriginalWidth * mPursuitLevel);
+            FEngSetTopLeftX(mpSpeedBreakerBar, originalLeftX);
+
+            if (mPursuitLevel <= 0.3f) {
+                if (!FEngIsScriptSet(this->mpSpeedBreakerBar, 0x26ded57)) {
+                    FEngSetScript(this->mpSpeedBreakerBar, 0x26ded57, true);
+                }
+            } else {
+                if (!FEngIsScriptSet(this->mpSpeedBreakerBar, 0x620e4851)) {
+                    FEngSetScript(this->mpSpeedBreakerBar, 0x620e4851, true);
+                }
+            }
+        }
     }
-
-    if (mPursuitLevel <= lbl_803E4D9C) {
-        if (!FEngIsScriptSet(mpSpeedBreakerMeterIcon, 0x1744B3)) {
-            FEngSetScript(mpSpeedBreakerMeterIcon, 0x1744B3, true);
-        }
-    } else {
-        if (!FEngIsScriptSet(mpSpeedBreakerMeterIcon, 0x61D30442)) {
+    if (mpSpeedBreakerMeterIcon) {
+        if (mPursuitLevel > 0.0f) {
             FEngSetScript(mpSpeedBreakerMeterIcon, 0x61D30442, true);
+        } else {
+            FEngSetScript(mpSpeedBreakerMeterIcon, 0x1744B3, true);
         }
     }
 }

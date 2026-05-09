@@ -5,6 +5,7 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/Src/Frontend/Localization/Localize.hpp"
 #include "Speed/Indep/Src/World/RaceParameters.hpp"
 
 extern const char *BuildVersionChangelistName;
@@ -22,12 +23,21 @@ extern int SkipFETrackNumber;
 extern int SkipFENumPlayerCars;
 extern int SkipFENumAICars;
 extern int SkipFENumLaps;
-extern int SkipFERaceType;
+extern RaceTypes SkipFERaceType;
+extern int SkipFEPoint2Point;
 extern int SkipFEMaxCops;
 extern int SkipFEHelicopter;
+extern int SkipFEPovType1;
 extern int SkipFETrafficDensity;
 extern float SkipFETrafficOncoming;
-extern int SkipFEDifficulty;
+extern eOpponentStrength SkipFEDifficulty;
+extern int SkipFEDamageEnabled;
+extern bVector3 *SkipFEOverrideStartPosition;
+extern eLanguages SkipFELanguage;
+extern int SkipFEPrintPerformances;
+extern int SkipNISs;
+extern int SkipFEControllerConfig1;
+extern int SkipFEControllerConfig2;
 extern int SkipMovies;
 extern int UnlockAllThings;
 extern int EmergencySaveMemory;
@@ -38,7 +48,10 @@ extern int SkipCareerIntro;
 extern int SkipDDayRaces;
 extern int UnlockAllThings;
 extern int MikeMannBuild;
+extern bool IsCollectorsEdition;
 extern eTrackDirection SkipFETrackDirection;
+extern int OnlineEnabled;
+extern bool gVerboseTesterOutput;
 
 void InitConfig();
 void LoadConfigItems();

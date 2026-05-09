@@ -270,15 +270,17 @@ inline void eUnSwizzleWorldMatrix(const bMatrix4 &inMat, bMatrix4 &outMat) {
 eRenderTarget *eGetRenderTarget(int32 render_target);
 void eUpdateViewMode(void);
 
+typedef enum { EPOLY_APPLYASPECT = 1, EPOLY_APPLYZSORT = 2, EPOLY_MULTI_TEXT_MASK = 4 } epoly_flags;
+
 class ePoly {
     // total size: 0x94
   public:
     bVector3 Vertices[4]; // offset 0x0, size 0x40
-    float UVs[2][4];      // offset 0x40, size 0x20
+    float UVs[4][2];      // offset 0x40, size 0x20
 #ifdef EA_BUILD_A124
-    uint16 UVsMask[2][4];
+    uint16 UVsMask[4][2];
 #else
-    float UVsMask[2][4]; // offset 0x60, size 0x20
+    float UVsMask[4][2]; // offset 0x60, size 0x20
 #endif
     uint8 Colours[4][4]; // offset 0x80, size 0x10
 #ifndef EA_BUILD_A124
@@ -292,8 +294,10 @@ class ePoly {
 
     void operator delete(void *ptr) {}
 
-    void SetFlags(unsigned char i) {
+    void SetFlags(uint8 i) {
+#ifndef EA_BUILD_A124
         flags = i;
+#endif
     }
 
     void SetFlailer(uint8 i) {
@@ -303,7 +307,9 @@ class ePoly {
     }
 
     uint8 GetFlags() {
+#ifndef EA_BUILD_A124
         return flags;
+#endif
     }
 
     uint8 GetFlailer() {

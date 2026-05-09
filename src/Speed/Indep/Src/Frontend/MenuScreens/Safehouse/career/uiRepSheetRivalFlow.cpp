@@ -1,36 +1,27 @@
 #include "uiRepSheetRivalFlow.hpp"
 
-#include "Speed/Indep/Src/FEng/cFEng.h"
+#include "Speed/Indep/Src/Frontend/FECarViewer.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEAnyMovieScreen.hpp"
 #include "Speed/Indep/Src/Frontend/MemoryCard/MemoryCard.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/MemCard/uiMemcardInterface.hpp"
+#include "Speed/Indep/Src/Frontend/RaceStarter.hpp"
 #include "Speed/Indep/Src/Generated/Events/ERaceSheetOn.hpp"
 #include "Speed/Indep/Src/Generated/Messages/MFlowReadyForOutro.h"
 #include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 
-void MemcardEnter(const char* from, const char* to, unsigned int op,
-                  void (*pTermFunc)(void*), void* pTermFuncParam,
-                  unsigned int successMsg, unsigned int failedMsg);
-
-void RaceStarterStartCareerFreeRoam() asm("StartCareerFreeRoam__11RaceStarter");
-
-void ShowAllCarsCarViewer() asm("ShowAllCars__9CarViewer");
-
-static const char* ScreenNames[] = {
-    "SafeHouseRivalChallenge.fng",
-    "SafeHouseMarkers.fng",
-    "SafeHouseRegionUnlock.fng",
-    "MC_Main_GC.fng",
-    "SafeHouseRivalBio.fng",
+static const char *ScreenNames[] = {
+    "SafeHouseRivalChallenge.fng", "SafeHouseMarkers.fng", "SafeHouseRegionUnlock.fng", "MC_Main_GC.fng", "SafeHouseRivalBio.fng",
 };
 
-uiRepSheetRivalFlow* uiRepSheetRivalFlow::mInstance;
+uiRepSheetRivalFlow *uiRepSheetRivalFlow::mInstance;
 
 void uiRepSheetRivalFlow::Init() {
     mInstance = new uiRepSheetRivalFlow();
 }
 
-uiRepSheetRivalFlow* uiRepSheetRivalFlow::Get() {
+uiRepSheetRivalFlow *uiRepSheetRivalFlow::Get() {
     return mInstance;
 }
 
@@ -49,16 +40,15 @@ void uiRepSheetRivalFlow::Next() {
 
     if (mStage == 5) {
         char buf[64];
-        bSNPrintf(buf, 64, "blacklist_%02d",
-                  FEDatabase->GetCareerSettings()->GetCurrentBin());
+        bSNPrintf(buf, 64, "blacklist_%02d", FEDatabase->GetCareerSettings()->GetCurrentBin());
         FEAnyMovieScreen::SetMovieName(buf);
         cFEng::Get()->QueuePackageSwitch(FEAnyMovieScreen::GetFEngPackageName(), 0, 0, false);
     } else if (mStage == 6) {
         unsigned char bin = FEDatabase->GetCareerSettings()->GetCurrentBin();
         if (bin == 15) {
-            FEDatabase->ClearGameMode(static_cast< eFEGameModes >(0x20000));
-            FEDatabase->SetGameMode(static_cast< eFEGameModes >(1));
-            ShowAllCarsCarViewer();
+            FEDatabase->ClearGameMode(static_cast<eFEGameModes>(0x20000));
+            FEDatabase->SetGameMode(static_cast<eFEGameModes>(1));
+            CarViewer::ShowAllCars();
             FEDatabase->GetCareerSettings()->SetHasDoneCareerIntro();
             cFEng::Get()->QueuePackagePop(-1);
             cFEng::Get()->QueuePackagePush("SafeHouseReputationOverview.fng", 0, 0, false);
@@ -69,14 +59,14 @@ void uiRepSheetRivalFlow::Next() {
             FEAnyMovieScreen::SetMovieName("blacklist_13");
             cFEng::Get()->QueuePackageSwitch(FEAnyMovieScreen::GetFEngPackageName(), 0, 0, false);
         } else {
-            RaceStarterStartCareerFreeRoam();
+            RaceStarter::StartCareerFreeRoam();
         }
     } else if (mStage == 7) {
         UCrc32 kind(0x20d60dbf);
         MFlowReadyForOutro msg;
         msg.Post(kind);
         new ERaceSheetOn(0);
-        FEDatabase->ClearGameMode(static_cast< eFEGameModes >(0x20000));
+        FEDatabase->ClearGameMode(static_cast<eFEGameModes>(0x20000));
         mStage = -1;
     } else {
         if (mStage == 2) {

@@ -10,45 +10,41 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/feArrayScrollerMenu.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiTrackMapStreamer.hpp"
 
-struct GRaceParameters;
-struct FEMultiImage;
-
 // total size: 0x28
-struct RaceDatum : public ArrayDatum {
-    GRaceParameters* race; // offset 0x24, size 0x4
+class RaceDatum : public ArrayDatum {
+  public:
+    RaceDatum() : ArrayDatum(0, 0), race(nullptr) {}
 
-    RaceDatum()
-        : ArrayDatum(0, 0) //
-        , race(nullptr) {}
-
-    RaceDatum(unsigned int hash, unsigned int desc, GRaceParameters* race)
-        : ArrayDatum(hash, desc) //
-        , race(race) {}
+    RaceDatum(uint32 hash, uint32 desc, GRaceParameters *race) : ArrayDatum(hash, desc), race(race) {}
 
     ~RaceDatum() override {}
 
-    void NotificationMessage(unsigned long msg, FEObject* pObj, unsigned long param1,
-                             unsigned long param2) override;
+    void NotificationMessage(u32 msg, FEObject *pObj, u32 param1, u32 param2) override;
+
+    GRaceParameters *race; // offset 0x24, size 0x4
 };
 
 // total size: 0x1D4
-struct UISafehouseRaceSheet : public ArrayScrollerMenu {
-    UITrackMapStreamer TrackMapStreamer; // offset 0xE8, size 0xDC
-    FEMultiImage* TrackMap;            // offset 0x1C4, size 0x4
-    bool bIsInGame;                    // offset 0x1C8, size 0x1
-    bool currentEvents;                // offset 0x1CC, size 0x1
-    int currentIndex;                  // offset 0x1D0, size 0x4
-
-    UISafehouseRaceSheet(ScreenConstructorData* sd);
+class UISafehouseRaceSheet : public ArrayScrollerMenu {
+  public:
+    UISafehouseRaceSheet(ScreenConstructorData *sd);
     ~UISafehouseRaceSheet() override;
-    eMenuSoundTriggers NotifySoundMessage(unsigned long msg, eMenuSoundTriggers maybe) override;
-    void NotificationMessage(unsigned long msg, FEObject* obj, unsigned long param1,
-                             unsigned long param2) override;
-    void RefreshHeader() override;
+    void NotificationMessage(u32 msg, FEObject *obj, u32 param1, u32 param2) override;
+    eMenuSoundTriggers NotifySoundMessage(u32 msg, eMenuSoundTriggers maybe) override;
 
-    bool AddRace(GRaceParameters* race);
+  private:
+    void RefreshHeader() override;
     void Setup();
+    bool AddRace(GRaceParameters *race);
     void ToggleList();
+
+    UITrackMapStreamer TrackMapStreamer; // offset 0xE8, size 0xDC
+    FEMultiImage *TrackMap;              // offset 0x1C4, size 0x4
+    bool bIsInGame;                      // offset 0x1C8, size 0x1
+    bool currentEvents;                  // offset 0x1CC, size 0x1
+#ifndef EA_BUILD_A124
+    int currentIndex; // offset 0x1D0, size 0x4
+#endif
 };
 
 #endif

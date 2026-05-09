@@ -1,26 +1,14 @@
-#include <new>
-
 #include "Speed/Indep/Src/FEng/FEPackage.h"
 #include "Speed/Indep/Src/FEng/FEngStandard.h"
 #include "Speed/Indep/Src/FEng/FEGameInterface.h"
 
-static unsigned long PassWrapMode[5] = { 3, 1, 1, 2, 2 };
+static unsigned long PassWrapMode[5] = {3, 1, 1, 2, 2};
 static FEVector2 DirectionVectors[8] = {
-    FEVector2(0.0f, -1.0f),
-    FEVector2(0.707110f, -0.707110f),
-    FEVector2(1.0f, 0.0f),
-    FEVector2(0.707110f, 0.707110f),
-    FEVector2(0.0f, 1.0f),
-    FEVector2(-0.707110f, 0.707110f),
-    FEVector2(-1.0f, 0.0f),
-    FEVector2(-0.707110f, -0.707110f),
+    FEVector2(0.0f, -1.0f), FEVector2(0.707110f, -0.707110f), FEVector2(1.0f, 0.0f),  FEVector2(0.707110f, 0.707110f),
+    FEVector2(0.0f, 1.0f),  FEVector2(-0.707110f, 0.707110f), FEVector2(-1.0f, 0.0f), FEVector2(-0.707110f, -0.707110f),
 };
 static FEVector2 PassOffsets[5] = {
-    FEVector2(0.0f, 0.0f),
-    FEVector2(-640.0f, 0.0f),
-    FEVector2(640.0f, 0.0f),
-    FEVector2(0.0f, -480.0f),
-    FEVector2(0.0f, 480.0f),
+    FEVector2(0.0f, 0.0f), FEVector2(-640.0f, 0.0f), FEVector2(640.0f, 0.0f), FEVector2(0.0f, -480.0f), FEVector2(0.0f, 480.0f),
 };
 
 void FEButtonMap::SetCount(unsigned long NewCount) {
@@ -29,20 +17,20 @@ void FEButtonMap::SetCount(unsigned long NewCount) {
     }
     pList = nullptr;
     if (NewCount != 0) {
-        pList = reinterpret_cast<FEObject**>(FENG_NEW char[NewCount * sizeof(FEObject*)]);
+        pList = reinterpret_cast<FEObject **>(FENG_NEW char[NewCount * sizeof(FEObject *)]);
     }
     Count = NewCount;
 }
 
-void FEButtonMap::ComputeButtonLocation(FEObject* pButton, FEGameInterface* pInterface, FEVector2& Dest) {
+void FEButtonMap::ComputeButtonLocation(FEObject *pButton, FEGameInterface *pInterface, FEVector2 &Dest) {
     if (!pInterface || pButton->RenderContext == 0) {
-        FEObjData* pData = pButton->GetObjData();
+        FEObjData *pData = pButton->GetObjData();
         Dest.x = pData->Pos.x;
         Dest.y = pData->Pos.y;
     } else {
         FEMatrix4 Matrix;
         if (!pInterface->GetContextTransform(pButton->RenderContext, Matrix)) {
-            FEObjData* pData = pButton->GetObjData();
+            FEObjData *pData = pButton->GetObjData();
             Dest.x = pData->Pos.x;
             Dest.y = pData->Pos.y;
         } else {
@@ -54,7 +42,7 @@ void FEButtonMap::ComputeButtonLocation(FEObject* pButton, FEGameInterface* pInt
     }
 }
 
-FEObject* FEButtonMap::GetButtonFrom(FEObject* pButton, long Direction, FEGameInterface* pInterface, FEButtonWrapMode WrapMode) {
+FEObject *FEButtonMap::GetButtonFrom(FEObject *pButton, long Direction, FEGameInterface *pInterface, FEButtonWrapMode WrapMode) {
     FEVector2 VectOrig;
     FEVector2 VectFrom;
     FEVector2 VectTo;
@@ -70,7 +58,7 @@ FEObject* FEButtonMap::GetButtonFrom(FEObject* pButton, long Direction, FEGameIn
             unsigned long i = 0;
             if (i < Count) {
                 do {
-                    FEObject* pObj = pList[i];
+                    FEObject *pObj = pList[i];
                     if ((pObj->Flags & 0x4000000) == 0 && pButton != pObj) {
                         FEVector2 Delta;
                         ComputeButtonLocation(pList[i], pInterface, VectTo);

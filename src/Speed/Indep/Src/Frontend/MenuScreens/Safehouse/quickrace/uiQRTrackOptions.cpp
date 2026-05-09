@@ -2,8 +2,10 @@
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/feWidget.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/DialogInterface.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiQRMainMenu.hpp"
 #include "Speed/Indep/Src/Gameplay/GRaceDatabase.h"
-#include "Speed/Indep/Src/FEng/cFEng.h"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 
 #include <types.h>
 
@@ -409,8 +411,8 @@ void NumOpponents::Act(const char *parent_pkg, unsigned int data) {
 }
 
 void NumOpponents::Draw() {
-    FEngSetLanguageHash(pTitle, 0x3384a679);
-    FEString *data = pData;
+    FEngSetLanguageHash(GetTitleObject(), 0x3384a679);
+    FEString *data = GetDataObject();
     const char *fmt = "%d";
     RaceSettings *settings = FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(0xb));
     FEPrintf(data, fmt, settings->NumOpponents);
@@ -454,8 +456,8 @@ void AISkill::Draw() {
             hash = 0x6198e2ee;
             break;
     }
-    FEngSetLanguageHash(pTitle, 0x4d156786);
-    FEngSetLanguageHash(pData, hash);
+    FEngSetLanguageHash(GetTitleObject(), 0x4d156786);
+    FEngSetLanguageHash(GetDataObject(), hash);
 }
 
 // --- CatchUp ---
@@ -474,11 +476,11 @@ void CatchUp::Act(const char *parent_pkg, unsigned int data) {
 void CatchUp::Draw() {
     RaceSettings *settings = FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(0xb));
     if (settings->CatchUp) {
-        FEngSetLanguageHash(pData, 0x417b2604);
+        FEngSetLanguageHash(GetDataObject(), 0x417b2604);
     } else {
-        FEngSetLanguageHash(pData, 0x70dfe5c2);
+        FEngSetLanguageHash(GetDataObject(), 0x70dfe5c2);
     }
-    FEngSetLanguageHash(pTitle, 0x8b8e913a);
+    FEngSetLanguageHash(GetTitleObject(), 0x8b8e913a);
 }
 
 // --- TrafficLevel ---
@@ -522,8 +524,8 @@ void TrafficLevel::Draw() {
             hash = 0x61d1c5a5;
             break;
     }
-    FEngSetLanguageHash(pData, hash);
-    FEngSetLanguageHash(pTitle, 0xeb9dfc09);
+    FEngSetLanguageHash(GetDataObject(), hash);
+    FEngSetLanguageHash(GetTitleObject(), 0xeb9dfc09);
 }
 
 // --- NumLaps ---
@@ -550,11 +552,11 @@ void NumLaps::Act(const char *parent_pkg, unsigned int data) {
 }
 
 void NumLaps::Draw() {
-    FEString *data = pData;
+    FEString *data = GetDataObject();
     const char *fmt = "%d";
     RaceSettings *settings = FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(0xb));
     FEPrintf(data, fmt, settings->NumLaps);
-    FEngSetLanguageHash(pTitle, 0x48494e83);
+    FEngSetLanguageHash(GetTitleObject(), 0x48494e83);
 }
 
 // --- TrackDirection ---
@@ -573,9 +575,9 @@ void TrackDirection::Act(const char *parent_pkg, unsigned int data) {
 void TrackDirection::Draw() {
     RaceSettings *settings = FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(0xb));
     if (settings->TrackDirection == 0) {
-        FEngSetLanguageHash(pData, 0xde6eff34);
+        FEngSetLanguageHash(GetDataObject(), 0xde6eff34);
     } else {
-        FEngSetLanguageHash(pData, 0xa1cd823e);
+        FEngSetLanguageHash(GetDataObject(), 0xa1cd823e);
     }
-    FEngSetLanguageHash(pTitle, 0xa88ffeb4);
+    FEngSetLanguageHash(GetTitleObject(), 0xa88ffeb4);
 }

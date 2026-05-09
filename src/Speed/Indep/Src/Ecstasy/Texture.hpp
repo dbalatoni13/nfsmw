@@ -375,6 +375,9 @@ int eLoadStreamingTexturePack(const char *filename, void (*callback_function)(vo
 void eLoadStreamingTexture(uint32 *name_hash_table, int num_hashes, void (*callback)(void *), void *param0, int memory_pool_num);
 void eWaitForStreamingTexturePackLoading(const char *filename);
 void eUnloadAllStreamingTextures(const char *filename);
+int eUnloadStreamingTexturePack(const char *filename);
+void eUnloadStreamingTexture(unsigned int *name_hash_table /* r3 */, int num_hashes /* r5 */);
+inline void eUnloadStreamingTexture(unsigned int name_hash) {}
 
 TextureInfo *eCreateTextureInfo();
 void eDestroyTextureInfo(TextureInfo *texture_info);
@@ -392,11 +395,27 @@ inline int eLoadStreamingTexturePack(const char *filename) {
 }
 
 inline void eLoadStreamingTexture(uint32 *name_hash_table, int num_hashes) {
-    return eLoadStreamingTexture(name_hash_table, num_hashes, nullptr, nullptr, 0);
+    eLoadStreamingTexture(name_hash_table, num_hashes, nullptr, nullptr, 0);
 }
 
 inline void eLoadStreamingTexture(uint32 name_hash) {
-    return eLoadStreamingTexture(&name_hash, 1);
+    eLoadStreamingTexture(&name_hash, 1);
 }
+
+inline void eLoadStreamingTexture(uint32 *name_hash_table, int num_hashes, void (*callback)(uint32), uint32 param0, int memory_pool_num) {
+    eLoadStreamingTexture(name_hash_table, num_hashes, reinterpret_cast<void (*)(void *)>(callback), reinterpret_cast<void *>(param0),
+                          memory_pool_num);
+}
+
+inline void eLoadStreamingTexture(uint32 name_hash, void (*callback)(uint32), uint32 param0, int memory_pool_num) {
+    eLoadStreamingTexture(&name_hash, 1, callback, param0, memory_pool_num);
+}
+
+int eUnloadStreamingTexturePack(const char *filename /* r4 */);
+
+int eIsStreamingTexturePackLoaded(const char *filename /* r4 */);
+
+TextureInfo *FixupTextureInfoNull(TextureInfo *texture_info /* r31 */, uint32 name_hash /* r30 */, TexturePack *texture_pack /* r3 */,
+                                  bool loading /* r6 */);
 
 #endif

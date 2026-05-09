@@ -1,5 +1,6 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/customize/FECustomize.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/customize/CustomizeTypes.hpp"
+#include <types.h>
 
 struct FECarRecord;
 
@@ -47,25 +48,23 @@ void BeginCarCustomize(eCustomizeEntryPoint entry_point, FECarRecord *theCustomC
 
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/customize/CustomizeManager.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
-#include "Speed/Indep/Src/FEng/cFEng.h"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/FEng/feimage.h"
 #include "Speed/Indep/Src/FEng/FEString.h"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/DialogInterface.hpp"
 #include "Speed/Indep/Src/Frontend/Careers/UnlockSystem.hpp"
 #include "Speed/Indep/Src/Physics/PhysicsUpgrades.hpp"
 
-namespace Attrib {
-namespace Gen {
-struct pvehicle;
-}
-} // namespace Attrib
-namespace Physics {
-namespace Info {
-float Redline(const Attrib::Gen::pvehicle &pvehicle);
-}
-} // namespace Physics
-
-#include <types.h>
+// namespace Attrib {
+// namespace Gen {
+// struct pvehicle;
+// }
+// } // namespace Attrib
+// namespace Physics {
+// namespace Info {
+// float Redline(const Attrib::Gen::pvehicle &pvehicle);
+// }
+// } // namespace Physics
 
 struct EAXSound;
 

@@ -42,5 +42,6 @@ struct GarageCarLoader {
 
 void InitGarageCarLoaders();
 void CleanUpGarageCarLoaders();
+void UpdateGarageCarLoaders();
 
 #endif

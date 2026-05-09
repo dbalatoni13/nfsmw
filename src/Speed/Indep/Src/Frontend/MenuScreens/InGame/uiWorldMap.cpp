@@ -1,8 +1,11 @@
 #include "uiWorldMap.hpp"
 
+#include "Speed/Indep/Src/AI/gps.h"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
-#include "Speed/Indep/Src/FEng/cFEng.h"
+#include "Speed/Indep/Src/Frontend/FEPackageData.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
+#include "Speed/Indep/Src/Frontend/HUD/feMinimap.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/DialogInterface.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiTrackMapStreamer.hpp"
 #include "Speed/Indep/Src/Gameplay/GIcon.h"
@@ -18,84 +21,8 @@
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 #include "Speed/Indep/Src/Physics/Common/VehicleSystem.h"
-#include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 
-struct Minimap {
-    struct GameplayIconInfo {
-        GIcon::Type mIconType;
-        eWorldMapItemType mItemType;
-        const char *mElementString;
-        unsigned int mWorldMapTitle;
-        unsigned int mworldIconTexHash;
-    };
-    static GameplayIconInfo kGameplayIconInfo[];
-    static GameplayIconInfo &GetGameplayIconInfo(GIcon::Type iconType) {
-        return kGameplayIconInfo[iconType];
-    }
-    static GameplayIconInfo &GetGameplayIconInfo(eWorldMapItemType itemType) {
-        for (int i = 0; i < GIcon::kType_Count; i++) {
-            if (kGameplayIconInfo[i].mItemType == itemType) {
-                return kGameplayIconInfo[i];
-            }
-        }
-        return kGameplayIconInfo[0];
-    }
-};
-
-extern Timer RealTimer;
-extern RaceParameters TheRaceParameters;
-void FEngGetSize(FEObject *obj, float &x, float &y);
-void FEngGetCenter(FEObject *obj, float &x, float &y);
-void FEngGetTopLeft(FEObject *obj, float &x, float &y);
-void FEngGetBottomRight(FEObject *obj, float &x, float &y);
-float FEngGetScaleX(FEObject *obj);
-float FEngGetScaleY(FEObject *obj);
-void FEngSetButtonTexture(FEImage *img, unsigned int tex_hash);
-void FEngSetColor(FEObject *obj, unsigned int color);
-void FEngSetScript(FEObject *object, unsigned int script_hash, bool start_at_beginning);
-bool FEngIsScriptSet(FEObject *obj, unsigned int script_hash);
-void FEngSetTopLeft(FEObject *object, float x, float y);
-void FEngSetLanguageHash(FEString *text, unsigned int hash);
-bool FEngTestForIntersection(float xPos, float yPos, FEObject *obj);
-void FEngSetLastButton(const char *pkg_name, unsigned char button);
-void FEngSetRotationZ(FEObject *obj, float z);
-FEColor FEngGetObjectColor(FEObject *obj);
-unsigned int FEngGetTextureHash(FEImage *image);
-bool GPS_IsEngaged();
-void GPS_Disengage();
-int GPS_Engage(const UMath::Vector3 &pos, float radius);
-void GetVehicleVectors(bVector2 *pos, bVector2 *dir, ISimable *simable);
-
-float FEngGetCenterX(FEObject *obj);
-float FEngGetCenterY(FEObject *obj);
-
-inline float bDistBetween(const bVector2 &v1, const bVector2 &v2) {
-    return bDistBetween(&v1, &v2);
-}
-
-inline int tCubic1D::HasArrived() {
-    return state == 0;
-}
-
-inline int tCubic2D::HasArrived() {
-    return x.HasArrived() && y.HasArrived();
-}
-
-inline bool UITrackMapStreamer::IsZooming() {
-    return !ZoomCubic.HasArrived();
-}
-
-inline float FEngGetSizeY(FEObject *obj) {
-    float x;
-    float y;
-    FEngGetSize(obj, x, y);
-    return y;
-}
-
-inline void FEngSetSizeX(FEObject *obj, float x) {
-    float y = FEngGetSizeY(obj);
-    FEngSetSize(obj, x, y);
-}
+extern int iCurrentViewBin;
 
 inline MapItem::MapItem(eWorldMapItemType type, FEObject *iconObj, bVector2 &map_pos, bVector2 &world_pos, float rot, GIcon *icon) {
     unsigned int *initial_pos_words = reinterpret_cast<unsigned int *>(&InitialPos);
@@ -122,36 +49,6 @@ inline MapItem::MapItem(eWorldMapItemType type, FEObject *iconObj, bVector2 &map
     FEngGetSize(pIcon, InitialSize.x, InitialSize.y);
     FEngSetCenter(pIcon, InitialPos.x, InitialPos.y);
     FEngSetRotationZ(pIcon, Rot);
-}
-
-inline CopItem::CopItem(FEObject *icon, bVector2 &pos, bVector2 &world_pos, float rot, eWorldMapItemType type)
-    : MapItem(type, icon, pos, world_pos, rot, nullptr) {
-    FlashTimer = -1;
-}
-
-inline HeliItem::HeliItem(FEImage *view, FEObject *icon, bVector2 &pos, bVector2 &world_pos, float rot)
-    : CopItem(icon, pos, world_pos, rot, WMIT_COP_HELI) {
-    pViewCone = view;
-    InitialSize.x = FEngGetScaleX(pIcon);
-    InitialSize.y = FEngGetScaleY(pIcon);
-    FEngSetCenter(static_cast<FEObject *>(pViewCone), pos.x, pos.y);
-    FEngSetRotationZ(static_cast<FEObject *>(pViewCone), rot);
-}
-
-void MapItem::Show() {
-    FEngSetVisible(pIcon);
-}
-
-void MapItem::Hide() {
-    FEngSetInvisible(pIcon);
-}
-
-inline ItemTypeToggle::ItemTypeToggle(unsigned int name_hash, eWorldMapItemType type, bool vis) : FEButtonWidget(true) {
-    ItemType = type;
-    NameHash = name_hash;
-    pIcon = nullptr;
-    bVisibility = vis;
-    bExiting = 0;
 }
 
 void CopItem::Draw() {
@@ -268,28 +165,6 @@ void ItemTypeToggle::Hide() {
     FEngSetInvisible(static_cast<FEObject *>(pIcon));
 }
 
-struct FEObject;
-struct FEMultiImage;
-
-FEObject *FEngFindObject(const char *pkg_name, unsigned int hash);
-FEImage *FEngFindImage(const char *pkg_name, int hash);
-void FEngSetVisible(FEObject *obj);
-void FEngSetInvisible(FEObject *obj);
-void FEngSetTextureHash(FEImage *image, unsigned int hash);
-void FEngSetLanguageHash(const char *pkg_name, unsigned int obj_hash, unsigned int lang_hash);
-void FEngSetScript(const char *pkg_name, unsigned int obj_hash, unsigned int script_hash, bool start_at_beginning);
-int FEPrintf(const char *pkg_name, int hash, const char *format, ...);
-unsigned int FEngHashString(const char *format, ...);
-unsigned char FEngGetLastButton(const char *pkg_name);
-void FEngSetRotationZ(FEObject *obj, float rot);
-void FEngSetPosition(FEObject *obj, float x, float y);
-const char *GetLocalizedString(unsigned int hash);
-void FEngSetVisible(const char *pkg_name, unsigned int obj_hash);
-void FEngSetInvisible(const char *pkg_name, unsigned int obj_hash);
-void FEngSetTextureHash(const char *pkg_name, unsigned int obj_hash, unsigned int tex_hash);
-
-extern unsigned int iCurrentViewBin;
-
 GIcon *WorldMap::mGPSingIcon;
 
 void WorldMap::SetGPSing(GIcon *icon) {
@@ -304,14 +179,6 @@ void WorldMap::ClearGPSing() {
         mGPSingIcon->ClearFlag(0x80);
         mGPSingIcon = nullptr;
     }
-}
-
-void GIcon::SetFlag(unsigned int mask) {
-    mFlags |= mask;
-}
-
-void GIcon::ClearFlag(unsigned int mask) {
-    mFlags &= ~mask;
 }
 
 WorldMap::WorldMap(ScreenConstructorData *sd) : UIWidgetMenu(sd) {
@@ -361,111 +228,106 @@ WorldMap::~WorldMap() {
     }
 }
 
-void WorldMap::NotificationMessage(unsigned long msg, FEObject *obj, unsigned long param1, unsigned long param2) {
-#ifdef EA_PLATFORM_PLAYSTATION2
-    unsigned long message = msg;
-#else
-    register unsigned long message asm("r30") = msg;
-#endif
+void WorldMap::NotificationMessage(u32 msg, FEObject *obj, u32 param1, u32 param2) {
     UMath::Vector3 pos;
 
     if (!bInToggleMode) {
-        if (message == 0x72619778) {
+        if (msg == 0x72619778) {
             goto after_base_message;
         }
-        if (message == 0x911c0a4b) {
+        if (msg == 0x911c0a4b) {
             goto after_base_message;
         }
     }
-    if (message != 0xc407210) {
-        UIWidgetMenu::NotificationMessage(message, obj, param1, param2);
+    if (msg != 0xc407210) {
+        UIWidgetMenu::NotificationMessage(msg, obj, param1, param2);
     }
 after_base_message:
-    if (message == 0xa16ca7bd) {
+    if (msg == 0xa16ca7bd) {
         goto handle_gps;
     }
-    if (message > 0xa16ca7bd) {
+    if (msg > 0xa16ca7bd) {
         goto msg_gt_a16ca7bd;
     }
-    if (message == 0x72619778) {
+    if (msg == 0x72619778) {
         goto refresh_and_end;
     }
-    if (message > 0x72619778) {
+    if (msg > 0x72619778) {
         goto msg_gt_72619778;
     }
-    if (message == 0x35f8620b) {
+    if (msg == 0x35f8620b) {
         goto clear_focus;
     }
-    if (message > 0x35f8620b) {
+    if (msg > 0x35f8620b) {
         goto msg_gt_35f8620b;
     }
-    if (message == 0xc407210) {
+    if (msg == 0xc407210) {
         goto handle_toggle_or_dialog;
     }
     return;
 
 msg_gt_35f8620b:
-    if (message == 0x5073ef13) {
+    if (msg == 0x5073ef13) {
         goto zoom_prev;
     }
     return;
 
 msg_gt_72619778:
-    if (message == 0x911c0a4b) {
+    if (msg == 0x911c0a4b) {
         goto refresh_and_end;
     }
-    if (message > 0x911c0a4b) {
+    if (msg > 0x911c0a4b) {
         goto msg_gt_911c0a4b;
     }
-    if (message == 0x911ab364) {
+    if (msg == 0x911ab364) {
         goto leave_screen;
     }
     return;
 
 msg_gt_911c0a4b:
-    if (message == 0x9120409e) {
+    if (msg == 0x9120409e) {
         goto maybe_view_switch;
     }
     return;
 
 msg_gt_a16ca7bd:
-    if (message == 0xc519bfc4) {
+    if (msg == 0xc519bfc4) {
         return;
     }
-    if (message > 0xc519bfc4) {
+    if (msg > 0xc519bfc4) {
         goto msg_gt_c519bfc4;
     }
-    if (message == 0xb5af2461) {
+    if (msg == 0xb5af2461) {
         goto set_last_button_and_leave;
     }
-    if (message > 0xb5af2461) {
+    if (msg > 0xb5af2461) {
         goto msg_gt_b5af2461;
     }
-    if (message == 0xb5971bf1) {
+    if (msg == 0xb5971bf1) {
         goto maybe_view_switch;
     }
     return;
 
 msg_gt_b5af2461:
-    if (message == 0xc519bfc3) {
+    if (msg == 0xc519bfc3) {
         goto handle_toggle;
     }
     return;
 
 msg_gt_c519bfc4:
-    if (message == 0xd9feec59) {
+    if (msg == 0xd9feec59) {
         goto zoom_next;
     }
-    if (message > 0xd9feec59) {
+    if (msg > 0xd9feec59) {
         goto msg_gt_d9feec59;
     }
-    if (message == 0xc98356ba) {
+    if (msg == 0xc98356ba) {
         goto update_map;
     }
     return;
 
 msg_gt_d9feec59:
-    if (message == 0xe1fde1d1) {
+    if (msg == 0xe1fde1d1) {
         goto world_map_off;
     }
     return;
@@ -499,10 +361,10 @@ update_map:
         bVector2 map_center;
         bVector2 *pMapCenter = &map_center;
         bVector2 *pSavedMapCenter = pMapCenter;
-        FEngGetCenter(static_cast<FEObject *>(TrackMap), pMapCenter->x, pMapCenter->y);
+        FEngGetCenter(reinterpret_cast<FEObject *>(TrackMap), pMapCenter->x, pMapCenter->y);
 
         bVector2 map_br;
-        FEngGetBottomRight(static_cast<FEObject *>(TrackMap), map_br.x, map_br.y);
+        FEngGetBottomRight(reinterpret_cast<FEObject *>(TrackMap), map_br.x, map_br.y);
 
         bVector2 pos;
         bVector2 *pPos = &pos;
@@ -566,7 +428,7 @@ handle_toggle_or_dialog:
             return;
         }
         ItemTypeToggle *tog = static_cast<ItemTypeToggle *>(w);
-        tog->Act(GetPackageName(), message);
+        tog->Act(GetPackageName(), msg);
         UpdateIconVisibility(tog->GetType(), tog->GetVisibility());
         goto refresh_and_end;
     } else {
@@ -754,12 +616,12 @@ float WorldMap::GetZoomFactor(eWorldMapZoomLevels level) {
 void WorldMap::UpdateIconVisibility(eWorldMapItemType type, bool visible) {
     MapItem *item = TheMapItems.GetHead();
     while (item != TheMapItems.EndOfList()) {
-        if (item->TheType == type) {
+        if (item->GetType() == type) {
             if (visible) {
-                item->bHidden = false;
+                item->SetHidden(false);
                 item->Show();
             } else {
-                item->bHidden = true;
+                item->SetHidden(true);
                 item->Hide();
             }
         }
@@ -878,7 +740,7 @@ void WorldMap::UpdateCursor(bool zoom_thing) {
                 bVector2 pos;
                 FEngGetCenter(Cursor, cursor.x, cursor.y);
                 SelectedItem->GetCurrentPos(pos);
-                float dist = bDistBetween(cursor, pos);
+                float dist = bDistBetween(&cursor, &pos);
                 if (dist >= fSnapDist) {
                     const unsigned int _UNSNAP = 0x7efe8ff4;
                     FEngSetScript(Cursor, _UNSNAP, true);
@@ -959,7 +821,7 @@ bool WorldMap::SnapCursor() {
     for (MapItem *item = TheMapItems.GetHead(); item != TheMapItems.EndOfList(); item = item->GetNext()) {
         bVector2 pos;
         item->GetCurrentPos(pos);
-        float cur_dist = bDistBetween(cursor, pos);
+        float cur_dist = bDistBetween(&cursor, &pos);
         if (!item->IsHidden() && cur_dist < fSnapDist && cur_dist < last_closest) {
             item_pos = pos;
             snap_to = item;
@@ -1324,7 +1186,7 @@ void WorldMap::DrawItemStats() {
     real_player.x = player_pos.z;
     real_player.y = -player_pos.x;
     SelectedItem->GetWorldPos(real_trigger);
-    float distance = bDistBetween(real_trigger, real_player);
+    float distance = bDistBetween(&real_trigger, &real_player);
     bool kph = true;
     const char *distUnits;
     if (FEDatabase->GetGameplaySettings()->SpeedoUnits == 1) {
@@ -1415,7 +1277,7 @@ void WorldMap::RefreshHeader() {
         return;
     }
 
-    if (SelectedItem != nullptr && SelectedItem->TheIcon != 0) {
+    if (SelectedItem != nullptr && SelectedItem->GetIcon() != 0) {
         FEngSetLanguageHash(GetPackageName(), 0x29456cc8, 0x43512519);
         FEngSetScript(GetPackageName(), 0x32490131, 0x6ebbfb68, true);
     } else if (mGPSingIcon != nullptr) {

@@ -78,5 +78,8 @@ class FEPackageManager {
 };
 
 unsigned int FEngGetActiveScreensChecksum();
+MenuScreen *FEngFindScreen(const char *package_name);
+
+FEPackageRenderInfo *HACK_FEPkgMgr_GetPackageRenderInfo(FEPackage *pkg /* r3 */);
 
 #endif

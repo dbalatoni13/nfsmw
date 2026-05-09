@@ -14,10 +14,9 @@ class ICostToState : public UTL::COM::IUnknown {
         return (HINTERFACE)_IHandle;
     }
 
-    ICostToState(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
-
   protected:
     virtual ~ICostToState() {}
+    ICostToState(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
   public:
     virtual void SetCostToState(int cost);
@@ -30,15 +29,17 @@ class CostToState : public HudElement, public ICostToState {
     CostToState(UTL::COM::Object *pOutter, const char *pkg_name, int player_number);
     void Update(IPlayer *player) override;
     void SetCostToState(int cost) override;
-    void SetInPursuit(bool inPursuit) override;
+    void SetInPursuit(bool inPursuit) override {
+        mInPursuit = inPursuit;
+    };
 
   private:
-    bool mCostToStateOn;             // offset 0x30
-    int mCostToState;                // offset 0x34
-    bool mInPursuit;                 // offset 0x38
-    int mNumFramesLeftToShow;        // offset 0x3C
-    FEString *mDataCostToState;      // offset 0x40
-    FEString *mDataTitle;            // offset 0x44
+    bool mCostToStateOn;        // offset 0x30
+    int mCostToState;           // offset 0x34
+    bool mInPursuit;            // offset 0x38
+    int mNumFramesLeftToShow;   // offset 0x3C
+    FEString *mDataCostToState; // offset 0x40
+    FEString *mDataTitle;       // offset 0x44
 };
 
 #endif

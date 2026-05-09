@@ -10,24 +10,26 @@
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 
 // total size: 0x60
-struct FEAnyTutorialScreen : public MenuScreen {
-    unsigned int LastTime;    // offset 0x2C
-    float TimeElapsed;        // offset 0x30
-    float TextToggleTiming;   // offset 0x34
-    Timer mTimer;             // offset 0x38
-    SubTitler mSubtitler;     // offset 0x3C
-
-    FEAnyTutorialScreen(ScreenConstructorData* sd);
+class FEAnyTutorialScreen : public MenuScreen {
+  public:
+    FEAnyTutorialScreen(struct ScreenConstructorData *sd);
     ~FEAnyTutorialScreen() override;
-    static MenuScreen* Create(ScreenConstructorData* sd);
-    void NotificationMessage(unsigned long, FEObject*, unsigned long, unsigned long) override;
-    static void LaunchMovie(const char*, const char*);
-    static void DismissMovie(bool);
-    static void SetMovieName(const char*);
-    static void SetPackageName(const char*);
-    static char MovieFilename[64];
-    static char PackageFilename[64];
-    static bool PackageSet;
-};
+    static void LaunchMovie(const char *filename, const char *packageName);
+    static void DismissMovie(bool send_message);
+    static void SetMovieName(const char *filename);
+    static MenuScreen *Create(ScreenConstructorData *sd);
+    void NotificationMessage(u32 msg, struct FEObject *obj, u32 param1, u32 param2) override;
+    static void SetPackageName(const char *packageName);
 
+  private:
+    static char MovieFilename[64];   // size: 0x40, address: 0x8041B9E4
+    static char PackageFilename[64]; // size: 0x40, address: 0x8041BA24
+    static bool PackageSet;          // size: 0x1, address: 0x8041BA64
+
+    unsigned int LastTime;  // offset 0x2C, size 0x4
+    float TimeElapsed;      // offset 0x30, size 0x4
+    float TextToggleTiming; // offset 0x34, size 0x4
+    Timer mTimer;           // offset 0x38, size 0x4
+    SubTitler mSubtitler;   // offset 0x3C, size 0x24
+};
 #endif

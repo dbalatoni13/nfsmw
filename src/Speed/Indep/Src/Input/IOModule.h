@@ -7,6 +7,7 @@
 
 #include "InputDevice.h"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
+#include "Speed/Indep/Src/Frontend/FEJoyInput.hpp"
 
 // total size: 0x50
 class IOModule {
@@ -46,7 +47,9 @@ class IOModule {
     // bool IsUnplugged(int port) {}
 
     // int GetNumDevices() {}
-    int GetNumDevices() { return fNumDevices; }
+    int GetNumDevices() {
+        return fNumDevices;
+    }
 
     InputDevice *GetDevice(int i) {
         return fDevices[i];
@@ -61,5 +64,7 @@ class IOModule {
     int fDisconnected;           // offset 0x48, size 0x4
     Timer LastTimeDeviceChanged; // offset 0x4C, size 0x4
 };
+
+bool IsJoystickTypeWheel(JoystickPort port);
 
 #endif

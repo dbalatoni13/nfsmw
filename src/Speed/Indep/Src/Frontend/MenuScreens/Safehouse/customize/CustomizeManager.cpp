@@ -7,6 +7,7 @@
 #include "Speed/Indep/Src/Frontend/Careers/UnlockSystem.hpp"
 #include "Speed/Indep/Src/Physics/PhysicsInfo.hpp"
 #include "Speed/Indep/Src/Ecstasy/eStreamingPack.hpp"
+#include "Speed/Indep/Src/Frontend/FECarViewer.hpp"
 
 namespace Physics {
 namespace Upgrades {

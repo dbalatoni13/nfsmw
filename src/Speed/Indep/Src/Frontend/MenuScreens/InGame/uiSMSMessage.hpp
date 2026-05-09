@@ -10,23 +10,23 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/CTextScroller.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/feScrollerina.hpp"
-
-struct FEObject;
-struct SMSMessage;
+#include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 
 // total size: 0xE8
-struct uiSMSMessage : public MenuScreen {
-    CTextScroller m_TextScroller; // offset 0x2C, size 0x54
-    FEScrollBar ScrollBar;        // offset 0x80, size 0x64
-    SMSMessage* the_msg;          // offset 0xE4, size 0x4
-
-    uiSMSMessage(ScreenConstructorData* sd);
+class uiSMSMessage : public MenuScreen {
+  public:
+    uiSMSMessage(ScreenConstructorData *sd);
     ~uiSMSMessage() override;
-    eMenuSoundTriggers NotifySoundMessage(unsigned long msg, eMenuSoundTriggers maybe) override;
-    void NotificationMessage(unsigned long msg, FEObject* pobj, unsigned long param1, unsigned long param2) override;
+    void NotificationMessage(u32 msg, FEObject *pobj, u32 param1, u32 param2) override;
+    eMenuSoundTriggers NotifySoundMessage(u32 msg, eMenuSoundTriggers maybe) override;
 
+  private:
     void Setup();
     void RefreshHeader();
+
+    CTextScroller m_TextScroller; // offset 0x2C, size 0x54
+    FEScrollBar ScrollBar;        // offset 0x80, size 0x64
+    SMSMessage *the_msg;          // offset 0xE4, size 0x4
 };
 
 #endif

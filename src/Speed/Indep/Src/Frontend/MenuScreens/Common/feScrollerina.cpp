@@ -1,6 +1,7 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/feScrollerina.hpp"
 
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEObjects.hpp"
 
 extern EAXSound *g_pEAXSound;
 extern FEImage *FEngFindImage(const char *pkg_name, int hash);
@@ -10,34 +11,43 @@ extern unsigned long FEHashUpper(const char *string);
 extern int FEPrintf(FEString *text, const char *fmt, ...);
 extern void FEngSetLanguageHash(FEString *text, unsigned int hash);
 
-inline float FEngGetSizeX(FEObject *obj) {
-    float x, y;
-    FEngGetSize(obj, x, y);
-    return x;
-}
-
-Scrollerina::Scrollerina(const char *parent_pkg, const char *backing, const char *scrollbar,
-                          bool vert, bool resize, bool wrapped, bool alwaysShowBacking)
+Scrollerina::Scrollerina(const char *parent_pkg, const char *backing, const char *scrollbar, bool vert, bool resize, bool wrapped,
+                         bool alwaysShowBacking)
     : pParentPkg(parent_pkg) //
-    , iNumSlots(0) //
-    , iNumData(0) //
-    , iViewHeadDataIndex(0) //
-    , SelectedDatum(nullptr) //
-    , TopDatum(nullptr) //
-    , SelectedSlot(nullptr) //
-    , pBacking(nullptr) //
-    , ScrollBar(parent_pkg, scrollbar, vert, resize, false) //
-    , vTopLeft(0.0f, 0.0f) //
-    , vSize(0.0f, 0.0f) //
-    , bHasScrollBar(true) //
-    , bViewNeedsSync(false) //
-    , bWrapped(wrapped) //
-    , bAlwaysShowBacking(alwaysShowBacking) //
-    , bVertical(vert) //
-    , mouseDownMsg(0x406415e3) //
-    , bInClickToSelectMode(false)
-    , pScrollRegion(nullptr)
-{
+      ,
+      iNumSlots(0) //
+      ,
+      iNumData(0) //
+      ,
+      iViewHeadDataIndex(0) //
+      ,
+      SelectedDatum(nullptr) //
+      ,
+      TopDatum(nullptr) //
+      ,
+      SelectedSlot(nullptr) //
+      ,
+      pBacking(nullptr) //
+      ,
+      ScrollBar(parent_pkg, scrollbar, vert, resize, false) //
+      ,
+      vTopLeft(0.0f, 0.0f) //
+      ,
+      vSize(0.0f, 0.0f) //
+      ,
+      bHasScrollBar(true) //
+      ,
+      bViewNeedsSync(false) //
+      ,
+      bWrapped(wrapped) //
+      ,
+      bAlwaysShowBacking(alwaysShowBacking) //
+      ,
+      bVertical(vert) //
+      ,
+      mouseDownMsg(0x406415e3) //
+      ,
+      bInClickToSelectMode(false), pScrollRegion(nullptr) {
     if (!backing) {
         bHasScrollBar = false;
     } else {
@@ -92,29 +102,31 @@ void Scrollerina::FindSize() {
     }
 }
 
-unsigned int Scrollerina::GetNodeIndex(ScrollerDatum* datum) {
-    ScrollerDatum* node = Data.GetHead();
+unsigned int Scrollerina::GetNodeIndex(ScrollerDatum *datum) {
+    ScrollerDatum *node = Data.GetHead();
     unsigned int index = 1;
     while (node != Data.EndOfList()) {
-        if (datum == node) return index;
+        if (datum == node)
+            return index;
         index++;
         node = node->GetNext();
     }
     return 0;
 }
 
-unsigned int Scrollerina::GetNodeIndex(ScrollerSlot* slot) {
-    ScrollerSlot* node = Slots.GetHead();
+unsigned int Scrollerina::GetNodeIndex(ScrollerSlot *slot) {
+    ScrollerSlot *node = Slots.GetHead();
     unsigned int index = 1;
     while (node != Slots.EndOfList()) {
-        if (slot == node) return index;
+        if (slot == node)
+            return index;
         index++;
         node = node->GetNext();
     }
     return 0;
 }
 
-void Scrollerina::AddData(ScrollerDatum* datum) {
+void Scrollerina::AddData(ScrollerDatum *datum) {
     Data.AddTail(datum);
     iNumData++;
     if (!TopDatum) {
@@ -126,15 +138,17 @@ void Scrollerina::AddData(ScrollerDatum* datum) {
     }
 }
 
-ScrollerDatum* Scrollerina::FindDatumInSlot(ScrollerSlot* to_find) {
-    ScrollerSlot* slot_node = Slots.GetHead();
+ScrollerDatum *Scrollerina::FindDatumInSlot(ScrollerSlot *to_find) {
+    ScrollerSlot *slot_node = Slots.GetHead();
     if (slot_node == Slots.EndOfList() || Data.GetHead() == Data.EndOfList() || !to_find) {
         return nullptr;
     }
-    ScrollerDatum* datum_node = TopDatum;
+    ScrollerDatum *datum_node = TopDatum;
     while (slot_node != Slots.EndOfList()) {
-        if (slot_node == to_find) return datum_node;
-        if (datum_node == Data.EndOfList()) return nullptr;
+        if (slot_node == to_find)
+            return datum_node;
+        if (datum_node == Data.EndOfList())
+            return nullptr;
         datum_node = datum_node->GetNext();
         slot_node = slot_node->GetNext();
     }
@@ -237,9 +251,9 @@ void Scrollerina::SetDisabledScripts() {
     ScrollerDatum *datum = TopDatum;
     while (slot != Slots.EndOfList()) {
         if (datum->IsEnabled()) {
-            slot->bEnabled = true;
+            slot->Enable();
         } else {
-            slot->bEnabled = false;
+            slot->Disable();
         }
         datum = datum->GetNext();
         slot = slot->GetNext();
@@ -250,23 +264,15 @@ void Scrollerina::Enable(ScrollerDatum *datum) {
     if (!datum) {
         return;
     }
-    datum->bEnabled = true;
+    datum->Enable();
     if (Slots.IsEmpty() || Data.IsEmpty()) {
         return;
     }
     ScrollerSlot *slot = FindSlotWithDatum(datum);
     if (slot) {
-        slot->bEnabled = true;
+        slot->Enable();
     }
 }
-
-extern FEObject *FEngFindObject(const char *pkg_name, unsigned int hash);
-extern int FEngSNPrintf(char *dest, int size, const char *fmt, ...);
-extern void FEngSetVisible(FEObject *obj);
-extern void FEngSetInvisible(FEObject *obj);
-extern void FEngSetScript(FEObject *object, unsigned int script_hash, bool start_at_beginning);
-extern void FEngSetTopLeft(FEObject *object, float x, float y);
-extern void FEngSetSize(FEObject *object, float x, float y);
 
 FEScrollBar::FEScrollBar(const char *parent_pkg, const char *name, bool vert, bool resize, bool arrows_only) {
     bVertical = vert;
@@ -386,16 +392,6 @@ void FEScrollBar::SetArrow2Dim(bool dim) {
     FEngSetScript(pSecondArrow, dim ? 0x9E99 : 0x6EBBFB68, true);
 }
 
-inline void FEngSetSizeY(FEObject *obj, float y) {
-    float x = FEngGetSizeX(obj);
-    FEngSetSize(obj, x, y);
-}
-
-inline void FEngSetTopLeftY(FEObject *obj, float y) {
-    float x = FEngGetTopLeftX(obj);
-    FEngSetTopLeft(obj, x, y);
-}
-
 void FEScrollBar::SetPosResized(int num_view_items, int num_list_items, int view_head_index) {
     if (bVertical) {
         float barsize = (static_cast<float>(num_view_items) / static_cast<float>(num_list_items)) * vBackingSize.y;
@@ -465,23 +461,25 @@ bool Scrollerina::Scroll(eScrollDir dir) {
 
         if (dir == eSD_NEXT) {
             do {
-                if (new_datum == GetLastDatum()) return false;
+                if (new_datum == GetLastDatum())
+                    return false;
                 new_datum = new_datum->GetNext();
                 unsigned int idx = GetNodeIndex(new_datum);
                 if (idx >= new_view_head + iNumSlots) {
                     new_view = new_view->GetNext();
                     new_view_head++;
                 }
-            } while (!new_datum->bEnabled);
+            } while (!new_datum->IsEnabled());
         } else if (dir == eSD_PREV) {
             do {
-                if (new_datum == GetFirstDatum()) return false;
+                if (new_datum == GetFirstDatum())
+                    return false;
                 new_datum = new_datum->GetPrev();
                 if (new_datum == new_view->GetPrev()) {
                     new_view_head--;
                     new_view = new_datum;
                 }
-            } while (!new_datum->bEnabled);
+            } while (!new_datum->IsEnabled());
         }
 
         if (new_datum != SelectedDatum) {
@@ -524,7 +522,7 @@ bool Scrollerina::ScrollWrapped(eScrollDir dir) {
                         new_view_head++;
                     }
                 }
-            } while (!new_datum->bEnabled);
+            } while (!new_datum->IsEnabled());
         } else if (dir == eSD_PREV) {
             do {
                 if (new_datum == GetFirstDatum()) {
@@ -538,7 +536,7 @@ bool Scrollerina::ScrollWrapped(eScrollDir dir) {
                         new_view = new_datum;
                     }
                 }
-            } while (!new_datum->bEnabled);
+            } while (!new_datum->IsEnabled());
         }
 
         if (new_datum != SelectedDatum) {
@@ -570,7 +568,8 @@ bool Scrollerina::MoveSelected(eScrollDir dir, bool bprint) {
             }
             g_pEAXSound->PlayUISoundFX(snd);
             ScrollerDatum *nextDatum = SelectedDatum;
-            if (nextDatum == GetLastDatum()) return false;
+            if (nextDatum == GetLastDatum())
+                return false;
             ScrollerDatum *removedDatum = nextDatum;
             removedDatum->Remove();
             nextDatum = SelectedDatum;
@@ -591,7 +590,8 @@ bool Scrollerina::MoveSelected(eScrollDir dir, bool bprint) {
             }
             g_pEAXSound->PlayUISoundFX(snd);
             ScrollerDatum *removedDatum = SelectedDatum;
-            if (removedDatum == GetFirstDatum()) return false;
+            if (removedDatum == GetFirstDatum())
+                return false;
             removedDatum->Remove();
             ScrollerDatum *nextDatum = SelectedDatum;
             removedDatum->AddBefore(nextDatum);
@@ -624,8 +624,9 @@ bool Scrollerina::ScrollSelection(eScrollDir dir) {
         do {
             datum = datum->GetNext();
             slot = slot->GetNext();
-            if (!slot || slot == Slots.EndOfList()) break;
-        } while (!datum->bEnabled);
+            if (!slot || slot == Slots.EndOfList())
+                break;
+        } while (!datum->IsEnabled());
     } else if (dir == eSD_PREV) {
         if (slot == Slots.GetHead()) {
             return false;
@@ -634,8 +635,9 @@ bool Scrollerina::ScrollSelection(eScrollDir dir) {
         do {
             datum = datum->GetPrev();
             slot = slot->GetPrev();
-            if (!slot || slot == Slots.GetHead()) break;
-        } while (!datum->bEnabled);
+            if (!slot || slot == Slots.GetHead())
+                break;
+        } while (!datum->IsEnabled());
     }
 
     ScrollerSlot *old_slot = SelectedSlot;
@@ -685,13 +687,14 @@ void Scrollerina::Print() {
             ScrollerSlotNode *snode = slot->FEStrings.GetHead();
             while (snode != slot->FEStrings.EndOfList()) {
                 if (!dnode->LanguageHash) {
-                    FEPrintf(static_cast<FEString *>(snode->String), "%s", dnode->String);
+                    FEPrintf(reinterpret_cast<FEString *>(snode->String), "%s", dnode->String);
                 } else {
-                    FEngSetLanguageHash(static_cast<FEString *>(snode->String), dnode->LanguageHash);
+                    FEngSetLanguageHash(reinterpret_cast<FEString *>(snode->String), dnode->LanguageHash);
                 }
                 dnode = dnode->GetNext();
                 snode = snode->GetNext();
-                if (dnode == datum->Strings.EndOfList() || snode == slot->FEStrings.EndOfList()) break;
+                if (dnode == datum->Strings.EndOfList() || snode == slot->FEStrings.EndOfList())
+                    break;
             }
             datum = datum->GetNext();
         }
@@ -726,10 +729,13 @@ void Scrollerina::CountListIndices() {
 }
 
 void Scrollerina::SetSelected(ScrollerSlot *slot) {
-    if (!slot) return;
-    if (!slot->IsEnabled()) return;
+    if (!slot)
+        return;
+    if (!slot->IsEnabled())
+        return;
     ScrollerDatum *datum = FindDatumInSlot(slot);
-    if (!datum) return;
+    if (!datum)
+        return;
     UnHighlightSelected();
     SelectedDatum = datum;
     SelectedSlot = slot;

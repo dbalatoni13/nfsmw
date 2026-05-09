@@ -1,6 +1,7 @@
 #ifndef FRONTEND_HUD_FEPKG_HUD_H
 #define FRONTEND_HUD_FEPKG_HUD_H
 
+#include "Speed/Indep/Src/World/CarInfo.hpp"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
@@ -10,6 +11,8 @@
 #include "Speed/Indep/Src/Input/ActionQueue.h"
 #include "Speed/Indep/Src/Interfaces/IFengHud.h"
 #include "Speed/Indep/Src/Misc/ResourceLoader.hpp"
+#include "Speed/Indep/Src/Frontend/HUD/FeOnlineHudSupport.hpp"
+#include "Speed/Indep/Src/World/CarInfo.hpp"
 
 enum ePlayerHudType {
     PHT_NONE = 0,
@@ -21,42 +24,40 @@ enum ePlayerHudType {
     PHT_DRAG_SPLIT2 = 6,
 };
 
-enum CAR_SLOT_ID {
-    CARSLOTID_BASE = 0,
-};
-
-#include "Speed/Indep/Src/World/CarPart.hpp"
-
-class Minimap;
-class OnlineHUDSupport;
-class AutoSaveIcon;
-
-void FEngSetAllObjectsInPackageVisibility(const char *pPackageName, bool visible);
-void FEngSetInvisible(FEObject *pObject);
-
 // total size: 0x348
 class FEngHud : public UTL::COM::Object, public IHud {
   public:
     FEngHud(ePlayerHudType ht, const char *pkg_name, IPlayer *player, int player_number);
-    ~FEngHud();
-    void Release() override;
+    virtual ~FEngHud();
+    void Release() override {
+        delete this;
+    };
     void Update(IPlayer *player, float dt) override;
-    void JoyEnable();
-    void JoyDisable();
+    void JoyDisable() override;
+    void JoyEnable() override;
     void JoyHandle(IPlayer *player);
-    bool AreResourcesLoaded();
-    bool IsHudVisible();
-    void HideAll();
-    void FadeAll(bool fadeIn);
-    void SetInPursuit(bool inPursuit);
+    bool AreResourcesLoaded() override;
+    bool IsHudVisible() override {
+        return CurrentHudFeatures != 0;
+    };
+    void DebugPrintHudFeatures();
+    void HideAll() override {
+        SetHudFeatures(0);
+    };
+    void FadeAll(bool fadeIn) override;
+    void SetInPursuit(bool inPursuit) override;
     bool IsInPursuit();
-    void SetHasTurbo(bool hasTurbo);
+    void SetHasTurbo(bool hasTurbo) override {
+        mHasTurbo = hasTurbo;
+    };
     bool DoesHaveTurbo();
     bool IsSplitScreen();
-    void RefreshMiniMapItems();
+    void RefreshMiniMapItems() override;
     OnlineHUDSupport *GetOnlineHUDSupport();
-    static float ChooseMaxRpmTextureNumber(float rpm);
     static bool ShouldRearViewMirrorBeVisible(EVIEW_ID viewId);
+    static float ChooseMaxRpmTextureNumber(float rpm);
+
+    static bool bIsRestartingRace; // size: 0x1, address: 0x8041BE48
 
   private:
     void SetHudFeatures(unsigned long long features);
@@ -115,56 +116,53 @@ class HudResourceManager {
     HudResourceManager();
     virtual ~HudResourceManager() {}
 
-    const char *GetHudTexPackFilename(ePlayerHudType ht);
-    static const char *GetHudFengName(ePlayerHudType ht);
     void LoadRequiredResources(ePlayerHudType ht, const char *pkg_name);
     void UnloadRequiredResources(ePlayerHudType ht);
     bool AreResourcesLoaded(ePlayerHudType ht);
-
-    void LoadingCompleteCallback();
-    void LoadedCustomHudTexturePackCallback();
-    void LoadedCustomHudTexturesCallback();
-
-    static void LoadingCompleteCallbackBridge(int param);
-    static void LoadingCompleteCallbackBridge(unsigned int param);
-    static void LoadedCustomHudTexturePackCallbackBridge(unsigned int param);
-    static void LoadedCustomHudTexturesCallbackBridge(unsigned int param);
-
+    const char *GetHudTexPackFilename(ePlayerHudType ht);
     static CarPart *GetCarPart(ePlayerHudType ht, CAR_SLOT_ID carSlotId);
     static int GetCustomHudColour(ePlayerHudType ht, CAR_SLOT_ID carSlotId);
     static bool GetCustomHudTexPackFilename(ePlayerHudType ht, char *hudTexturePackName);
-    static bool ChooseMinimapTextureName(ePlayerHudType hudType, char *texture_name, unsigned int texture_name_size, char *minimap_texture_name,
-                                         unsigned int minimap_texture_name_size);
-
+    static const char *GetHudFengName(ePlayerHudType ht);
     static void ChooseLoadableTextures(ePlayerHudType hudType, int &textureHash, float &redlineRotation);
-
-    static ePlayerHudType LoadingResourcesForHudType;
-    static int mCustIndex;
-    static int mPhase;
-    static int mTachLinesHash;
-    static ResourceFile *pMiniMapTexture;
-    static const char *mPackageName;
-    static char mCustHudTexPackName[32];
-    static unsigned int mCustomizeHUDTexTextureResources[5];
+    static bool ChooseMinimapTextureName(ePlayerHudType hudType, char *texture_name, uint32 texture_name_size, char *minimap_texture_name,
+                                         uint32 minimap_texture_name_size);
+    void LoadingCompleteCallback();
+    void LoadedCustomHudTexturePackCallback();
+    void LoadedCustomHudTexturesCallback();
+    static void LoadingCompleteCallbackBridge(int32 param);
+    static void LoadingCompleteCallbackBridge(uint32 param);
+    static void LoadedCustomHudTexturePackCallbackBridge(uint32 param);
+    static void LoadedCustomHudTexturesCallbackBridge(uint32 param);
 
   private:
     HudResourceLoadStates mHudResourcesState; // offset 0x0, size 0x4
     ResourceFile *pHudTextures;               // offset 0x4, size 0x4
+    static const char *mPackageName;
+    static int mTachLinesHash;
+    static ResourceFile *pMiniMapTexture;
+    static ePlayerHudType LoadingResourcesForHudType;
+    static int mPhase;
+    static char mCustHudTexPackName[32];
+    static int mCustIndex;
+    static uint32 mCustomizeHUDTexTextureResources[5];
 };
 
 extern HudResourceManager TheHudResourceManager;
 
-inline void HudResourceManager::LoadingCompleteCallbackBridge(int param) {
+inline void HudResourceManager::LoadingCompleteCallbackBridge(int32 param) {
     reinterpret_cast<HudResourceManager *>(param)->LoadingCompleteCallback();
 }
-inline void HudResourceManager::LoadingCompleteCallbackBridge(unsigned int param) {
+inline void HudResourceManager::LoadingCompleteCallbackBridge(uint32 param) {
     reinterpret_cast<HudResourceManager *>(param)->LoadingCompleteCallback();
 }
-inline void HudResourceManager::LoadedCustomHudTexturePackCallbackBridge(unsigned int param) {
+inline void HudResourceManager::LoadedCustomHudTexturePackCallbackBridge(uint32 param) {
     reinterpret_cast<HudResourceManager *>(param)->LoadedCustomHudTexturePackCallback();
 }
-inline void HudResourceManager::LoadedCustomHudTexturesCallbackBridge(unsigned int param) {
+inline void HudResourceManager::LoadedCustomHudTexturesCallbackBridge(uint32 param) {
     reinterpret_cast<HudResourceManager *>(param)->LoadedCustomHudTexturesCallback();
 }
+
+void HideEverySingleHud();
 
 #endif

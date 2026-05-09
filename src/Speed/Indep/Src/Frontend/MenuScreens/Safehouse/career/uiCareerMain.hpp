@@ -5,69 +5,52 @@
 #pragma once
 #endif
 
+#include "types.h"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/IconScrollerMenu.hpp"
 
-struct uiCareerCrib : public IconScrollerMenu {
-    uiCareerCrib(ScreenConstructorData* sd);
-    ~uiCareerCrib() override;
-    void NotificationMessage(unsigned long msg, FEObject* pobj, unsigned long param1, unsigned long param2) override;
+class uiCareerCrib : public IconScrollerMenu {
+  public:
+    uiCareerCrib(ScreenConstructorData *sd);
+    ~uiCareerCrib() override {};
+    void NotificationMessage(u32 msg, FEObject *pobj, u32 param1, u32 param2) override;
+
+  private:
     void Setup() override;
 };
 
-struct CResumeFreeRoam : public IconOption {
-    CResumeFreeRoam(unsigned int tex_hash, unsigned int name_hash, unsigned int desc_hash)
-        : IconOption(tex_hash, name_hash, desc_hash) {}
+class CResumeFreeRoam : public IconOption {
+  public:
+    CResumeFreeRoam(uint32 tex_hash, uint32 name_hash, uint32 desc_hash) : IconOption(tex_hash, name_hash, desc_hash) {}
     ~CResumeFreeRoam() override {}
-    void React(const char* pkg_name, unsigned int data, FEObject* obj, unsigned int param1, unsigned int param2) override;
+    void React(const char *pkg_name, uint32 data, FEObject *obj, uint32 param1, uint32 param2) override;
 };
 
-struct CCarSelect : public IconOption {
-    CCarSelect(unsigned int tex_hash, unsigned int name_hash, unsigned int desc_hash)
-        : IconOption(tex_hash, name_hash, desc_hash) {}
+class CCarSelect : public IconOption {
+  public:
+    CCarSelect(uint32 tex_hash, uint32 name_hash, uint32 desc_hash) : IconOption(tex_hash, name_hash, desc_hash) {}
     ~CCarSelect() override {}
-    void React(const char* pkg_name, unsigned int data, FEObject* obj, unsigned int param1, unsigned int param2) override;
+    void React(const char *pkg_name, uint32 data, FEObject *obj, uint32 param1, uint32 param2) override;
 };
 
-struct CRapSheet : public IconOption {
-    CRapSheet(unsigned int tex_hash, unsigned int name_hash, unsigned int desc_hash)
-        : IconOption(tex_hash, name_hash, desc_hash) {}
+class CRapSheet : public IconOption {
+  public:
+    CRapSheet(uint32 tex_hash, uint32 name_hash, uint32 desc_hash) : IconOption(tex_hash, name_hash, desc_hash) {}
     ~CRapSheet() override {}
-    void React(const char* pkg_name, unsigned int data, FEObject* obj, unsigned int param1, unsigned int param2) override;
+    void React(const char *pkg_name, uint32 data, FEObject *obj, uint32 param1, uint32 param2) override;
 };
 
-struct CTop15 : public IconOption {
-    CTop15(unsigned int tex_hash, unsigned int name_hash, unsigned int desc_hash)
-        : IconOption(tex_hash, name_hash, desc_hash) {}
+class CTop15 : public IconOption {
+  public:
+    CTop15(uint32 tex_hash, uint32 name_hash, uint32 desc_hash) : IconOption(tex_hash, name_hash, desc_hash) {}
     ~CTop15() override {}
-    void React(const char* pkg_name, unsigned int data, FEObject* obj, unsigned int param1, unsigned int param2) override;
+    void React(const char *pkg_name, uint32 data, FEObject *obj, uint32 param1, uint32 param2) override;
 };
 
-struct CSave : public IconOption {
-    CSave(unsigned int tex_hash, unsigned int name_hash, unsigned int desc_hash)
-        : IconOption(tex_hash, name_hash, desc_hash) {}
+class CSave : public IconOption {
+  public:
+    CSave(uint32 tex_hash, uint32 name_hash, uint32 desc_hash) : IconOption(tex_hash, name_hash, desc_hash) {}
     ~CSave() override {}
-    void React(const char* pkg_name, unsigned int data, FEObject* obj, unsigned int param1, unsigned int param2) override;
-};
-
-struct CResumeCareer : public IconOption {
-    CResumeCareer(unsigned int tex_hash, unsigned int name_hash, unsigned int desc_hash)
-        : IconOption(tex_hash, name_hash, desc_hash) {}
-    ~CResumeCareer() override {}
-    void React(const char* pkg_name, unsigned int data, FEObject* obj, unsigned int param1, unsigned int param2) override;
-};
-
-struct CStartNewCareer : public IconOption {
-    CStartNewCareer(unsigned int tex_hash, unsigned int name_hash, unsigned int desc_hash)
-        : IconOption(tex_hash, name_hash, desc_hash) {}
-    ~CStartNewCareer() override {}
-    void React(const char* pkg_name, unsigned int data, FEObject* obj, unsigned int param1, unsigned int param2) override;
-};
-
-struct CLoadCareer : public IconOption {
-    CLoadCareer(unsigned int tex_hash, unsigned int name_hash, unsigned int desc_hash)
-        : IconOption(tex_hash, name_hash, desc_hash) {}
-    ~CLoadCareer() override {}
-    void React(const char* pkg_name, unsigned int data, FEObject* obj, unsigned int param1, unsigned int param2) override;
+    void React(const char *pkg_name, uint32 data, FEObject *obj, uint32 param1, uint32 param2) override;
 };
 
 #endif

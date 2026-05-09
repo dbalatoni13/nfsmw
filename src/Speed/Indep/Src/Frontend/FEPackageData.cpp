@@ -1,5 +1,20 @@
 #include "Speed/Indep/Src/Frontend/FEPackageData.hpp"
 #include "Speed/Indep/Src/Frontend/FEObjectCallbacks.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Career/FEPkg_EngageEventDialog.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/InGame/FeBustedOverlay.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/InGame/FeFadeScreen.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/InGame/uiSixDaysLater.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Loading/FEMovieScreen.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Loading/FESplashScreen.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/options/uiOptionsScreen.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiQRBrief.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiQRCarSelect.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiQRChallengeSeries.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiQRPressStart.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiQRTrackOptions.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiQRTrackSelect.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiShowcase.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/uiMain.hpp"
 #include "Speed/Indep/Src/Frontend/cFEngRender.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/InGame/CustomTuning.hpp"
@@ -15,8 +30,7 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/options/uiOptionsTrailers.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiQRMainMenu.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiQRModeSelect.hpp"
-#include "Speed/Indep/Src/FEng/cFEng.h"
-#include "Speed/Indep/Src/FEng/fengine_full.h"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/Misc/LZCompress.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "Speed/Indep/bWare/Inc/bMemory.hpp"
@@ -27,36 +41,9 @@
 #include "Speed/Indep/Src/Frontend/SubTitle.hpp"
 #include "Speed/Indep/Src/Misc/EasterEggs.hpp"
 #include "Speed/Indep/Src/Generated/Messages/MControlPathfinder.h"
-
-extern void SetSoundControlState(bool set, eSNDCTLSTATE state, const char *name);
-static int IsDebugPlayMovie;
-
-struct FEMovie;
-extern FEObject *FEngFindObject(const char *pkg_name, unsigned int hash);
-extern void FEngSetVisible(FEObject *pObject);
-extern void FEngSetMovieName(FEMovie *movie, const char *name);
-extern int bStrICmp(const char *a, const char *b);
-
-struct MovieEntry {
-    const char *package_name;
-    const char *movie_name;
-    unsigned int fng_obj_hash;
-    int sound_state;
-    int has_subtitle;
-};
-
-static MovieEntry MovieData[10] = {
-    {"LS_EALogo.fng", "ealogo", 0x58BCF5B6, 0, 0},
-    {"LS_EA_hidef.fng", "eahd_bumper", 0x58BCF5B6, 0, 0},
-    {"LS_PSA.fng", "psa", 0x58BCF5B6, 1, 1},
-    {"MW_LS_IntroFMV.fng", "intro_movie", 0x72CF9F38, 1, 0},
-    {"MW_LS_AttractFMV.fng", "attract_movie", 0x72CF9F38, 1, 0},
-    {"WS_LS_EALogo.fng", "ealogo", 0x58BCF5B6, 0, 0},
-    {"WS_LS_EA_hidef.fng", "eahd_bumper", 0x58BCF5B6, 0, 0},
-    {"WS_LS_PSA.fng", "psa", 0x58BCF5B6, 1, 1},
-    {"WS_LS_IntroFMV.fng", "intro_movie", 0x58BCF5B6, 1, 0},
-    {"WS_MW_LS_AttractFMV.fng", "attract_movie", 0x72CF9F38, 1, 0},
-};
+#include "Speed/Indep/Src/Frontend/FEPackageManager.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/InGame/InGameMovieScreen.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/InGame/uiWorldMap.hpp"
 
 static const char *gLoadinScreenPackageName;
 
@@ -68,329 +55,7 @@ const char *GetLoadingScreenPackageName() {
     return gLoadinScreenPackageName;
 }
 
-struct ScreenButtonDatum {
-    unsigned int ScreenHash;  // offset 0x0, size 0x4
-    unsigned char LastButton; // offset 0x4, size 0x1
-    unsigned int GameMode;    // offset 0x8, size 0x4
-};
-
-extern unsigned long FEHashUpper(const char *str);
-extern int bStrICmp(const char *, const char *);
-extern void HackClearCache(FEPackage *pkg);
-extern FEPackageRenderInfo *HACK_FEPkgMgr_GetPackageRenderInfo(FEPackage *pkg);
-extern cFEng *cFEng_mInstance;
-
-struct ScreenFactoryDatum;
-static ScreenFactoryDatum *FindScreenCreateData(unsigned int hash);
-static MenuScreen *CreateCustomTuningScreen(ScreenConstructorData *sd);
-
-static ScreenButtonDatum ScreenButtonData[0x32];
-
-static ScreenButtonDatum *FindAvailableButtonDatum() {
-    for (int i = 0; i <= 0x31; i++) {
-        if (ScreenButtonData[i].ScreenHash == 0) {
-            return &ScreenButtonData[i];
-        }
-    }
-    return nullptr;
-}
-
-ScreenButtonDatum *FindScreenButtonDatum(unsigned int screen_filename_hash) {
-    cFrontendDatabase *db = FEDatabase;
-    for (int i = 0; i <= 0x31; i++) {
-        if (screen_filename_hash == ScreenButtonData[i].ScreenHash) {
-            if (ScreenButtonData[i].GameMode == 0xFFFFFFFF || db->MatchesGameMode(ScreenButtonData[i].GameMode)) {
-                return &ScreenButtonData[i];
-            }
-        }
-    }
-    return nullptr;
-}
-
-unsigned char FEngGetLastButton(const char *pkg_name) {
-    ScreenButtonDatum *sd = FindScreenButtonDatum(FEHashUpper(pkg_name));
-    if (!sd) {
-        return 0;
-    }
-    return sd->LastButton;
-}
-
-void FEngSetLastButton(const char *pkg_name, unsigned char button_hash) {
-    unsigned int hash = FEHashUpper(pkg_name);
-    ScreenButtonDatum *sd = FindScreenButtonDatum(hash);
-    if (sd) {
-        sd->LastButton = button_hash;
-        return;
-    }
-    ScreenButtonDatum *avail = FindAvailableButtonDatum();
-    if (avail) {
-        avail->ScreenHash = FEHashUpper(pkg_name);
-        avail->LastButton = button_hash;
-        avail->GameMode = FEDatabase->GetGameMode();
-    }
-}
-
-struct UIMain : MenuScreen {
-    UIMain(ScreenConstructorData *);
-    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
-    char _pad[0x144];
-};
-struct UIOptionsScreen : MenuScreen {
-    UIOptionsScreen(ScreenConstructorData *);
-    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
-    char _pad[0x130];
-};
-struct UIQRBrief : MenuScreen {
-    UIQRBrief(ScreenConstructorData *);
-    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
-    char _pad[0x10C];
-};
-struct UIQRTrackSelect : MenuScreen {
-    UIQRTrackSelect(ScreenConstructorData *);
-    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
-    char _pad[0xF4];
-};
-struct UIQRTrackOptions : MenuScreen {
-    UIQRTrackOptions(ScreenConstructorData *);
-    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
-    char _pad[0x128];
-};
-struct UIQRCarSelect : MenuScreen {
-    UIQRCarSelect(ScreenConstructorData *);
-    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
-    char _pad[0x18C];
-};
-struct uiQRPressStart : MenuScreen {
-    uiQRPressStart(ScreenConstructorData *);
-    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
-    char _pad[0x8];
-};
-struct UIQRChallengeSeries : MenuScreen {
-    UIQRChallengeSeries(ScreenConstructorData *);
-    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
-    char _pad[0x1A4];
-};
-struct Showcase : MenuScreen {
-    Showcase(ScreenConstructorData *);
-    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
-    char _pad[0x44];
-};
-struct WorldMap : MenuScreen {
-    WorldMap(ScreenConstructorData *);
-    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
-    char _pad[0x170];
-};
-struct uiSMS : MenuScreen {
-    uiSMS(ScreenConstructorData *);
-    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
-    char _pad[0xD4];
-};
-struct uiSMSMessage : MenuScreen {
-    uiSMSMessage(ScreenConstructorData *);
-    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
-    char _pad[0xBC];
-};
-struct ControllerUnplugged : MenuScreen {
-    ControllerUnplugged(ScreenConstructorData *);
-    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
-    char _pad[0x4];
-};
-struct UISafehouseRaceSheet : MenuScreen {
-    UISafehouseRaceSheet(ScreenConstructorData *);
-    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
-    char _pad[0x1A8];
-};
-struct uiRapSheetLogin : MenuScreen {
-    uiRapSheetLogin(ScreenConstructorData *);
-    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
-    char _pad[0x8];
-};
-struct uiRapSheetMain : MenuScreen {
-    uiRapSheetMain(ScreenConstructorData *);
-    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
-    char _pad[0x110];
-};
-struct uiRapSheetRS : MenuScreen {
-    uiRapSheetRS(ScreenConstructorData *);
-    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
-};
-struct uiRapSheetUS : MenuScreen {
-    uiRapSheetUS(ScreenConstructorData *);
-    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
-    char _pad[0xC0];
-};
-struct uiRapSheetVD : MenuScreen {
-    uiRapSheetVD(ScreenConstructorData *);
-    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
-    char _pad[0xBC];
-};
-struct uiRapSheetCTS : MenuScreen {
-    uiRapSheetCTS(ScreenConstructorData *);
-    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
-    char _pad[0xBC];
-};
-struct uiRapSheetTEP : MenuScreen {
-    uiRapSheetTEP(ScreenConstructorData *);
-    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
-    char _pad[0x114];
-};
-struct uiRapSheetPD : MenuScreen {
-    uiRapSheetPD(ScreenConstructorData *);
-    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
-    char _pad[0x4];
-};
-struct uiRapSheetRankings : MenuScreen {
-    uiRapSheetRankings(ScreenConstructorData *);
-    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
-    char _pad[0x8];
-};
-struct uiRapSheetRankingsDetail : MenuScreen {
-    uiRapSheetRankingsDetail(ScreenConstructorData *);
-    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
-    char _pad[0xC4];
-};
-struct uiRepSheetMain : MenuScreen {
-    uiRepSheetMain(ScreenConstructorData *);
-    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
-    char _pad[0x194];
-};
-struct uiRepSheetRival : MenuScreen {
-    uiRepSheetRival(ScreenConstructorData *);
-    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
-    char _pad[0x60];
-};
-struct uiRepSheetRivalBio : MenuScreen {
-    uiRepSheetRivalBio(ScreenConstructorData *);
-    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
-    char _pad[0x4C];
-};
-struct uiRepSheetMilestones : MenuScreen {
-    uiRepSheetMilestones(ScreenConstructorData *);
-    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
-    char _pad[0xC8];
-};
-struct uiSafehouseRegionUnlock : MenuScreen {
-    uiSafehouseRegionUnlock(ScreenConstructorData *);
-    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
-    char _pad[0x48];
-};
-struct uiRepSheetBounty : MenuScreen {
-    uiRepSheetBounty(ScreenConstructorData *);
-    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
-    char _pad[0x14C];
-};
-struct FEMarkerSelection : MenuScreen {
-    FEMarkerSelection(ScreenConstructorData *);
-    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
-    char _pad[0x94];
-};
-struct FEGameWonScreen : MenuScreen {
-    FEGameWonScreen(ScreenConstructorData *);
-    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
-};
-struct DebugCarCustomizeScreen : MenuScreen {
-    DebugCarCustomizeScreen(ScreenConstructorData *);
-    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
-    char _pad[0x54];
-};
-struct MyCarsManager : MenuScreen {
-    MyCarsManager(ScreenConstructorData *);
-    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
-    char _pad[0x194];
-};
-struct CustomizeMain : MenuScreen {
-    CustomizeMain(ScreenConstructorData *);
-    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
-    char _pad[0x1A8];
-};
-struct CustomizeSub : MenuScreen {
-    CustomizeSub(ScreenConstructorData *);
-    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
-    char _pad[0x1AC];
-};
-struct CustomizeShoppingCart : MenuScreen {
-    CustomizeShoppingCart(ScreenConstructorData *);
-    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
-    char _pad[0x15C];
-};
-struct CustomizeParts : MenuScreen {
-    CustomizeParts(ScreenConstructorData *);
-    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
-    char _pad[0x1C8];
-};
-struct CustomizeHUDColor : MenuScreen {
-    CustomizeHUDColor(ScreenConstructorData *);
-    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
-    char _pad[0x1CC];
-};
-struct CustomizeDecals : MenuScreen {
-    CustomizeDecals(ScreenConstructorData *);
-    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
-    char _pad[0x1BC];
-};
-struct CustomizeNumbers : MenuScreen {
-    CustomizeNumbers(ScreenConstructorData *);
-    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
-    char _pad[0x8C];
-};
-struct CustomizePaint : MenuScreen {
-    CustomizePaint(ScreenConstructorData *);
-    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
-    char _pad[0x2F8];
-};
-struct CustomizeRims : MenuScreen {
-    CustomizeRims(ScreenConstructorData *);
-    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
-    char _pad[0x1C4];
-};
-struct CustomizeSpoiler : MenuScreen {
-    CustomizeSpoiler(ScreenConstructorData *);
-    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
-    char _pad[0x1CC];
-};
-struct CustomizePerformance : MenuScreen {
-    CustomizePerformance(ScreenConstructorData *);
-    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
-    char _pad[0x29C];
-};
-struct uiCredits : MenuScreen {
-    uiCredits(ScreenConstructorData *);
-    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
-    char _pad[0x1C];
-};
-struct UIEATraxScreen : MenuScreen {
-    UIEATraxScreen(ScreenConstructorData *);
-    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
-    char _pad[0xF4];
-};
-struct UIOptionsController : MenuScreen {
-    UIOptionsController(ScreenConstructorData *);
-    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override {}
-    char _pad[0x128];
-};
-// nsEngageEventDialog::EngageEventDialog defined in FEPkg_EngageEventDialog.cpp (jumbo line 89)
-struct MovieScreen : MenuScreen {
-    MovieScreen(ScreenConstructorData *);
-    ~MovieScreen() override;
-    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override;
-    int mSoundState;      // offset 0x2C
-    SubTitler mSubtitler; // offset 0x30
-};
-struct SplashScreen : MenuScreen {
-    SplashScreen(ScreenConstructorData *);
-    ~SplashScreen() override;
-    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override;
-    Timer CalculateLastJoyEventTime();
-    eMenuSoundTriggers NotifySoundMessage(unsigned long msg, eMenuSoundTriggers maybe) override {
-        if (bAllowContinue) {
-            return maybe;
-        }
-        return static_cast<eMenuSoundTriggers>(-1);
-    }
-    bool bAllowContinue;
-    Timer CopyrightNotice;
-    Timer SplashStartedTimer;
-};
+const char *GetSplashScreenPackageName() {}
 
 static MenuScreen *CreateMainMenu(ScreenConstructorData *sd) {
     return new ("", 0) UIMain(sd);
@@ -649,12 +314,20 @@ static MenuScreen *CreateOptionsControllerScreen(ScreenConstructorData *sd) {
     return new ("", 0) UIOptionsController(sd);
 }
 
-typedef MenuScreen *(*ScreenCreateFunc)(ScreenConstructorData *);
+static MenuScreen *CreatePostRaceResultsScreen(ScreenConstructorData *sd) { //(line 347)
+    return new ("", 0) PostRaceResultsScreen(sd);
+}
 
-struct ScreenFactoryDatum {
-    const char *Name;
-    ScreenCreateFunc CreateFunc;
-};
+static MenuScreen *CreateLoadingTipsScreen(ScreenConstructorData *sd) {
+    return new LoadingTips(sd);
+}
+static MenuScreen *CreateLoadingScreen(ScreenConstructorData *sd) {
+    return new LoadingScreen(sd);
+}
+
+static MenuScreen *CreateLoadingControllerScreen(ScreenConstructorData *sd) {
+    return new LoadingControllerScreen(sd);
+}
 
 static ScreenFactoryDatum ScreenFactoryData[] = {
     {"MainMenu.fng", CreateMainMenu},
@@ -796,11 +469,23 @@ static ScreenFactoryDatum ScreenFactoryData[] = {
     {"MC_Main_GC.fng", nullptr},
 };
 
-static const int kScreenFactoryDataCount = sizeof(ScreenFactoryData) / sizeof(ScreenFactoryData[0]);
+static MenuScreen *ScreenFactory(unsigned int hash, FEPackage *pkg, int arg) {
+    for (int i = 0; i < kScreenFactoryDataCount; i++) {
+        unsigned int nameHash = FEHashUpper(ScreenFactoryData[i].FEngPackageFilename);
+        if (hash == nameHash && ScreenFactoryData[i].ConstructorFunction) {
+            ScreenConstructorData sd;
+            sd.PackageFilename = ScreenFactoryData[i].FEngPackageFilename;
+            sd.pPackage = pkg;
+            sd.Arg = arg;
+            return ScreenFactoryData[i].ConstructorFunction(&sd);
+        }
+    }
+    return nullptr;
+}
 
 static ScreenFactoryDatum *FindScreenCreateData(unsigned int hash) {
     for (int i = 0; i < kScreenFactoryDataCount; i++) {
-        unsigned int nameHash = FEHashUpper(ScreenFactoryData[i].Name);
+        unsigned int nameHash = FEHashUpper(ScreenFactoryData[i].FEngPackageFilename);
         if (hash == nameHash) {
             return &ScreenFactoryData[i];
         }
@@ -808,48 +493,59 @@ static ScreenFactoryDatum *FindScreenCreateData(unsigned int hash) {
     return nullptr;
 }
 
-void FEngSetCreateCallback(const char *abstract_pkg_name, MenuScreen *(*function)(ScreenConstructorData *)) {
-    for (int i = 0; i < kScreenFactoryDataCount; i++) {
-        ScreenFactoryDatum &sfd = ScreenFactoryData[i];
-        if (bStrICmp(abstract_pkg_name, sfd.Name) == 0) {
-            sfd.CreateFunc = function;
-            return;
-        }
-    }
-}
+static ScreenButtonDatum ScreenButtonData[0x32];
 
-static MenuScreen *ScreenFactory(unsigned int hash, FEPackage *pkg, int arg) {
-    for (int i = 0; i < kScreenFactoryDataCount; i++) {
-        unsigned int nameHash = FEHashUpper(ScreenFactoryData[i].Name);
-        if (hash == nameHash && ScreenFactoryData[i].CreateFunc) {
-            ScreenConstructorData sd;
-            sd.PackageFilename = ScreenFactoryData[i].Name;
-            sd.pPackage = pkg;
-            sd.Arg = arg;
-            return ScreenFactoryData[i].CreateFunc(&sd);
+ScreenButtonDatum *FindScreenButtonDatum(unsigned int screen_filename_hash) {
+    cFrontendDatabase *db = FEDatabase;
+    for (int i = 0; i <= 0x31; i++) {
+        if (screen_filename_hash == ScreenButtonData[i].ScreenHash) {
+            if (ScreenButtonData[i].GameMode == 0xFFFFFFFF || db->MatchesGameMode(ScreenButtonData[i].GameMode)) {
+                return &ScreenButtonData[i];
+            }
         }
     }
     return nullptr;
 }
 
-void FEPackageData::Activate(FEPackage *pkg, int arg) {
-    pPackage = pkg;
-    pkg->SetUserParam(reinterpret_cast<unsigned long>(this));
-    mInScreenConstructor++;
-    pScreen = ScreenFactory(GetNameHash(), pkg, arg);
-    LastKnownControlMask = pkg->GetControlMask();
-    mInScreenConstructor--;
+static ScreenButtonDatum *FindAvailableButtonDatum() {
+    for (int i = 0; i <= 0x31; i++) {
+        if (ScreenButtonData[i].ScreenHash == 0) {
+            return &ScreenButtonData[i];
+        }
+    }
+    return nullptr;
 }
 
-void FEPackageData::NotificationMessage(unsigned long Message, FEObject *pObject, unsigned long Param1, unsigned long Param2) {
-    if (pScreen) {
-        pScreen->BaseNotify(Message, pObject, Param1, Param2);
+unsigned char FEngGetLastButton(const char *pkg_name) {
+    ScreenButtonDatum *sd = FindScreenButtonDatum(FEHashUpper(pkg_name));
+    if (!sd) {
+        return 0;
+    }
+    return sd->LastButton;
+}
+
+void FEngSetLastButton(const char *pkg_name, unsigned char button_hash) {
+    unsigned int hash = FEHashUpper(pkg_name);
+    ScreenButtonDatum *sd = FindScreenButtonDatum(hash);
+    if (sd) {
+        sd->LastButton = button_hash;
+        return;
+    }
+    ScreenButtonDatum *avail = FindAvailableButtonDatum();
+    if (avail) {
+        avail->ScreenHash = FEHashUpper(pkg_name);
+        avail->LastButton = button_hash;
+        avail->GameMode = FEDatabase->GetGameMode();
     }
 }
 
-void FEPackageData::NotifySoundMessage(unsigned long msg, FEObject *obj, unsigned long control_mask, unsigned long pkg_ptr) {
-    if (pScreen) {
-        pScreen->BaseNotifySound(msg, obj, control_mask, pkg_ptr);
+void FEngSetCreateCallback(const char *abstract_pkg_name, MenuScreenCreateFunction function) {
+    for (int i = 0; i < sizeof(ScreenFactoryData) / sizeof(ScreenFactoryData[0]); i++) {
+        ScreenFactoryDatum &sfd = ScreenFactoryData[i];
+        if (bStrICmp(abstract_pkg_name, sfd.FEngPackageFilename) == 0) {
+            sfd.ConstructorFunction = function;
+            return;
+        }
     }
 }
 
@@ -882,6 +578,15 @@ FEPackageData::~FEPackageData() {
     DataChunk = nullptr;
 }
 
+void FEPackageData::Activate(FEPackage *pkg, int arg) {
+    pPackage = pkg;
+    pkg->SetUserParam(reinterpret_cast<unsigned long>(this));
+    mInScreenConstructor++;
+    pScreen = ScreenFactory(GetNameHash(), pkg, arg);
+    LastKnownControlMask = pkg->GetControlMask();
+    mInScreenConstructor--;
+}
+
 void FEPackageData::UnActivate() {
     if (pScreen) {
         delete pScreen;
@@ -902,7 +607,7 @@ void FEPackageData::Close() {
         HackClearCache(pPackage);
         RenderObjectDisconnect cb(HACK_FEPkgMgr_GetPackageRenderInfo(pPackage), cFEngRender::mInstance);
         pPackage->ForAllObjects(cb);
-        cFEng_mInstance->mFEng->UnloadPackage(pPackage);
+        cFEng::Get()->GetEngine()->UnloadPackage(pPackage);
         UnActivate();
     }
 }
@@ -942,239 +647,14 @@ unsigned int FEPackageData::GetNameHash() {
     return 0;
 }
 
-// EngageEventDialog implementations
-nsEngageEventDialog::EngageEventDialog::~EngageEventDialog() {
-    if (MapStreamer) {
-        delete MapStreamer;
-        MapStreamer = nullptr;
+void FEPackageData::NotificationMessage(u32 Message, FEObject *pObject, u32 Param1, u32 Param2) {
+    if (pScreen) {
+        pScreen->BaseNotify(Message, pObject, Param1, Param2);
     }
 }
 
-void nsEngageEventDialog::EngageEventDialog::NotifyTheGameAcceptEvent() {
-    UCrc32 port(0x20d60dbf);
-    MAcceptEnterCareerEvent msg;
-    msg.Post(port);
-}
-
-void nsEngageEventDialog::EngageEventDialog::NotifyTheGameDeclineEvent() {
-    UCrc32 port(0x20d60dbf);
-    MDeclineEnterCareerEvent msg;
-    msg.Post(port);
-}
-
-void nsEngageEventDialog::EngageEventDialog::NotificationMessage(unsigned long msg, FEObject *obj, unsigned long param1, unsigned long param2) {
-    switch (msg) {
-        case 0x911ab364:
-            NotifyTheGameDeclineEvent();
-            cFEng::Get()->QueuePackagePop(1);
-            break;
-        case 0xc98356ba:
-            if (MapStreamer) {
-                MapStreamer->UpdateAnimation();
-            }
-            break;
-        case 0x0c407210: {
-            unsigned int objHash = obj->NameHash;
-            if (objHash == 0x694b896e) {
-                NotifyTheGameDeclineEvent();
-                cFEng::Get()->QueuePackagePop(1);
-            } else if (objHash == 0xd72f002a) {
-                NotifyTheGameAcceptEvent();
-                cFEng::Get()->QueuePackagePop(1);
-            }
-            break;
-        }
+void FEPackageData::NotifySoundMessage(u32 msg, FEObject *obj, u32 control_mask, u32 pkg_ptr) {
+    if (pScreen) {
+        pScreen->BaseNotifySound(msg, obj, control_mask, pkg_ptr);
     }
 }
-
-// MovieScreen destructor
-MovieScreen::~MovieScreen() {}
-
-// MovieScreen constructor
-MovieScreen::MovieScreen(ScreenConstructorData *sd) : MenuScreen(sd), mSoundState(0), mSubtitler() {
-    new ESndGameState(1, true);
-    SetSoundControlState(true, static_cast<eSNDCTLSTATE>(0xb), "MovieScreen");
-    for (int i = 0; i < 10; i++) {
-        if (bStrICmp(GetPackageName(), MovieData[i].package_name) == 0) {
-            mSoundState = MovieData[i].sound_state;
-            FEMovie *movie = reinterpret_cast<FEMovie *>(FEngFindObject(GetPackageName(), MovieData[i].fng_obj_hash));
-            FEngSetMovieName(movie, MovieData[i].movie_name);
-            if (MovieData[i].has_subtitle) {
-                mSubtitler.BeginningMovie(MovieData[i].movie_name, GetPackageName());
-            }
-        }
-    }
-}
-
-// MovieScreen NotificationMessage
-void MovieScreen::NotificationMessage(unsigned long msg, FEObject *obj, unsigned long param1, unsigned long param2) {
-    mSubtitler.Update(msg);
-    bool movie_is_finished = false;
-    if (msg != 0xb5af2461) {
-        if (msg > 0xb5af2461) {
-            if (msg == 0xc3960eb9) {
-                new ESndGameState(1, false);
-                SetSoundControlState(false, static_cast<eSNDCTLSTATE>(0xb), "MovieScreen");
-                if (!IsDebugPlayMovie) {
-                    BootFlowManager::Get()->ChangeToNextBootFlowScreen(0xff);
-                    movie_is_finished = true;
-                } else {
-                    cFEng::Get()->QueuePackagePop(1);
-                    IsDebugPlayMovie = 0;
-                    movie_is_finished = true;
-                }
-            }
-            goto end;
-        }
-        if (msg != 0x406415e3)
-            goto end;
-    }
-    if (mSoundState != 0) {
-        new ESndGameState(1, false);
-        SetSoundControlState(false, static_cast<eSNDCTLSTATE>(0xb), "MovieScreen");
-        if (!IsDebugPlayMovie) {
-            BootFlowManager::Get()->ChangeToNextBootFlowScreen(0xff);
-            movie_is_finished = true;
-        } else {
-            movie_is_finished = true;
-            cFEng::Get()->QueuePackagePop(1);
-            IsDebugPlayMovie = 0;
-        }
-    }
-end:
-    if (movie_is_finished) {
-        mSubtitler.Update(0xc3960eb9);
-    }
-}
-
-SplashScreen::SplashScreen(ScreenConstructorData *sd)
-    : MenuScreen(sd),        //
-      bAllowContinue(false), //
-      CopyrightNotice(0),    //
-      SplashStartedTimer(0) {
-    const unsigned long FEObj_HDGROUP = 0x534cc377;
-    const unsigned long FEObj_startclick = 0x13cf446d;
-    const unsigned long FEObj_mouseclick = 0x8c0bd743;
-    const unsigned long FEObj_mousebutton = 0x4b98c4b9;
-    FEObject *pObject;
-    const unsigned long FEObj_LicenseBlurb = 0xc4df3ff2;
-
-    if (eIsWidescreen()) {
-        cFEng::Get()->QueuePackageMessage(bStringHash("CURRENT_GEN_WIDESCREEN"), GetPackageName(), nullptr);
-    }
-
-    FEngSetInvisible(GetPackageName(), FEObj_HDGROUP);
-
-    if (GetVideoMode() == 0) {
-        const unsigned long FEObj_ESRBicon = 0x43d41f73;
-        FEngSetInvisible(GetPackageName(), FEObj_ESRBicon);
-    }
-
-    FEngSetVisible(FEngFindObject(GetPackageName(), FEObj_LicenseBlurb));
-    FEngSetInvisible(GetPackageName(), FEObj_startclick);
-    FEngSetInvisible(GetPackageName(), FEObj_mouseclick);
-
-    pObject = FEngFindObject(GetPackageName(), FEObj_mouseclick);
-
-    FEngSetInvisible(GetPackageName(), FEObj_mousebutton);
-    FEngSetVisible(FEngFindObject(GetPackageName(), FEObj_mousebutton));
-
-    FEngSetLanguageHash(GetPackageName(), FEObj_mousebutton, 0x9ba134fc);
-    FEngSetLanguageHash(GetPackageName(), FEObj_LicenseBlurb, 0x9b580a55);
-
-    if (pObject) {
-        if ((pObject->Flags & 0x10000000) != 0) {
-            pObject->Flags &= ~0x10000000;
-        }
-        pObject->Flags |= 0x400000;
-    }
-
-    SplashStartedTimer = RealTimer;
-    CopyrightNotice = RealTimer;
-
-    {
-        MControlPathfinder msg(false, 16, 0, 0);
-        msg.Send("Event");
-    }
-
-    gEasterEggs.Activate();
-
-    if (!CarViewer::haveLoadedOnce) {
-        RideInfo ride;
-        FEDatabase->BuildCurrentRideForPlayer(0, &ride);
-        CarViewer::SetRideInfo(&ride, SET_RIDE_INFO_REASON_CATCHALL, eCARVIEWER_PLAYER1_CAR);
-        CarViewer::ShowCarScreen();
-        CarViewer::haveLoadedOnce = true;
-    }
-}
-
-SplashScreen::~SplashScreen() {
-    gEasterEggs.UnActivate();
-    MControlPathfinder msg(false, 9, 0, 0);
-    msg.Send("Event");
-}
-
-extern int bStrICmp(const char *s1, const char *s2);
-
-Timer SplashScreen::CalculateLastJoyEventTime() {
-    Timer lowesttimer;
-    lowesttimer.ResetLow();
-    for (ActionQueue *const *iter = UTL::Collections::Listable<ActionQueue, 20>::GetList().begin();
-         iter != UTL::Collections::Listable<ActionQueue, 20>::GetList().end(); ++iter) {
-        ActionQueue *q = *iter;
-        if (q->IsConnected() && q->IsEnabled() && bStrICmp(q->GetName(), "FEng") == 0) {
-            if (!lowesttimer.IsSet() || q->LastActionTime() > lowesttimer) {
-                lowesttimer = q->LastActionTime();
-            }
-        }
-    }
-    if (SplashStartedTimer > lowesttimer) {
-        lowesttimer = SplashStartedTimer;
-    }
-    return lowesttimer;
-}
-
-extern float SplashScreenMovieTimeout;
-extern float SplashScreenTotalTimeout;
-
-void SplashScreen::NotificationMessage(unsigned long msg, FEObject *obj, unsigned long param1, unsigned long param2) {
-    switch (msg) {
-        case 0x98257537:
-            DialogInterface::ShowOneButton(GetPackageName(), "", static_cast<eDialogTitle>(1), 0x417b2601, 0x1fab5998, 0x53f13fd1);
-            break;
-        case 0x6521e5c2:
-            DialogInterface::ShowOneButton(GetPackageName(), "", static_cast<eDialogTitle>(1), 0x417b2601, 0x1fab5998, 0x6521e5c2);
-            break;
-        case 0xa6813b08:
-            DialogInterface::ShowOneButton(GetPackageName(), "", static_cast<eDialogTitle>(1), 0x417b2601, 0x1fab5998, 0xa1161aaf);
-            break;
-        case 0xc98356ba: {
-            Timer lastJoyTime = CalculateLastJoyEventTime();
-            Timer elapsed = RealTimer - lastJoyTime;
-            int timed_out = elapsed.GetSeconds() > SplashScreenMovieTimeout ||
-                            (SplashScreenTotalTimeout != 0.0f && (RealTimer - SplashStartedTimer).GetSeconds() > SplashScreenTotalTimeout);
-            int final_timed_out = timed_out;
-            if (TheTrackStreamer.IsPermFileLoading()) {
-                final_timed_out = 0;
-            }
-            if (final_timed_out != 0) {
-                if (!BootFlowManager::Get()->DoAttract()) {
-                    SplashStartedTimer.ResetHigh();
-                }
-            }
-            break;
-        }
-        case 0x406415e3:
-        case 0xb5af2461:
-            if (bAllowContinue) {
-                BootFlowManager::Get()->ChangeToNextBootFlowScreen(0xff);
-            }
-            break;
-        case 0x35f8620b:
-            bAllowContinue = true;
-            break;
-    }
-}
-
-float SplashScreenMovieTimeout = 8.0f;
-float SplashScreenTotalTimeout = 0.0f;

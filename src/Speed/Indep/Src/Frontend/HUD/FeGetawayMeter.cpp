@@ -1,27 +1,17 @@
 #include "Speed/Indep/Src/Frontend/HUD/FeGetawayMeter.hpp"
 
 #include "Speed/Indep/Src/FEng/FEString.h"
-
-unsigned long FEHashUpper(const char *name);
-FEObject *FEngFindObject(const char *pkg_name, unsigned int obj_hash);
-
-extern const char lbl_803E46AC[];
-extern const char lbl_803E46C4[];
-extern const char lbl_803E46DC[];
-extern const float lbl_803E46EC;
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEObjects.hpp"
+#include "Speed/Indep/Src/Frontend/HUD/FeHudElement.hpp"
 
 GetAwayMeter::GetAwayMeter(UTL::COM::Object *pOutter, const char *pkg_name, int player_number)
-    : HudElement(pkg_name, 0x200) //
-    , IGetAwayMeter(pOutter) //
-    , mGetawayDistance(lbl_803E46EC) //
+    : HudElement(pkg_name, 0x200), IGetAwayMeter(pOutter)
+
 {
-    RegisterGroup(FEHashUpper(lbl_803E46AC));
-    mpDataDistanceBar = FEngFindObject(pkg_name, FEHashUpper(lbl_803E46C4));
-    mpDataDistanceString = static_cast< FEString * >(FEngFindObject(pkg_name, FEHashUpper(lbl_803E46DC)));
+    mGetawayDistance = 0;
+    reinterpret_cast<HudElement *>(this)->RegisterGroup(FEHashUpper("GetawayDistanceMeter"));
+    mpDataDistanceBar = FEngFindObject(pkg_name, FEHashUpper("Getaway_Distance_Bar"));
+    mpDataDistanceString = static_cast<FEString *>(FEngFindObject(pkg_name, FEHashUpper("Distance_Number")));
 }
 
 void GetAwayMeter::Update(IPlayer *player) {}
-
-void GetAwayMeter::SetGetAwayDistance(float distance) {
-    mGetawayDistance = distance;
-}

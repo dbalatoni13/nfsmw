@@ -20,4 +20,6 @@ struct UIQRMainMenu : public IconScrollerMenu {
     void Setup() override;
 };
 
+static void _SetQRMode(int mode);
+
 #endif

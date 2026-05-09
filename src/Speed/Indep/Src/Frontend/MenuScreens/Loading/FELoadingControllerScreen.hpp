@@ -1,33 +1,52 @@
 #ifndef FRONTEND_MENUSCREENS_LOADING_FELOADINGCONTROLLERSCREEN_H
 #define FRONTEND_MENUSCREENS_LOADING_FELOADINGCONTROLLERSCREEN_H
 
+#include <cstddef>
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
 
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Loading/FELoadingTips.hpp"
 
-struct GameTipInfo;
+class LoadingControllerScreen : public MenuScreen {
+  public:
+    static void *operator new(size_t size) {
+        return mLoadingControllerScreenPtr;
+    }
 
-struct LoadingControllerScreen : public MenuScreen {
+    static void *operator new(size_t size, char *file, int line) {
+        return mLoadingControllerScreenPtr;
+    }
+
+    static void *operator new(size_t size, char *msg) {
+        return mLoadingControllerScreenPtr;
+    }
+
+    static void operator delete(void *ptr) {}
+
+    static void operator delete(void *ptr, char *msg) {}
+
     LoadingControllerScreen(ScreenConstructorData *sd);
-    static void InitLoadingControllerScreen();
-    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override;
-    void PrepToShowControllerConfig();
-    void SetupControllerConfig();
-    void ShowControllerConfig();
-    void HideControllerConfig();
+    ~LoadingControllerScreen() override;
+    void NotificationMessage(u32 msg, FEObject *obj, u32 p1, u32 p2) override;
+
+    void NotifyLoadingFinished();
     void ClearLoadedControllerTexture();
-    void FinishLoadingControllerTextureCallback(unsigned int p);
+    void PrepToShowControllerConfig();
+    void FinishLoadingControllerTextureCallback(uint32 p);
+    void HideControllerConfig();
+    void ShowControllerConfig();
+    void SetupControllerConfig();
+    static void InitLoadingControllerScreen();
+    static void CloseLoadingControllerScreen();
 
-    void *operator new(size_t, void *ptr) { return ptr; }
-
-    static void *mLoadingControllerScreenPtr;
+    int LoadingFinished;           // offset 0x2C
+    GameTipInfo *GameTipToShow;    // offset 0x30
+    uint32 WhichControllerTexture; // offset 0x34
 
   private:
-    int LoadingFinished;                  // offset 0x2C
-    GameTipInfo *GameTipToShow;           // offset 0x30
-    unsigned int WhichControllerTexture;  // offset 0x34
+    static void *mLoadingControllerScreenPtr;
 };
 
 #endif

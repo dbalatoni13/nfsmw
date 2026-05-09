@@ -8,6 +8,7 @@
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
+#include "Speed/Indep/Src/Ecstasy/eSprites.hpp"
 
 struct TextureInfo;
 struct eLightContext;
@@ -216,28 +217,35 @@ class eViewPlatInfo;
 
 // total size: 0x4
 class eViewPlatInterface {
-    eViewPlatInfo *PlatInfo; // offset 0x0, size 0x4
-
   public:
     eViewPlatInfo *GetPlatInfo() {
         return PlatInfo;
     }
+    int GetPixelWidth();
+    int GetPixelHeight();
+    void FEBeginBatchRender(int numPolys);
+    void FERender(ePoly *poly, TextureInfo *texture_info, bMatrix4 *local_to_world, int use_previous_data, float bbRad);
+    void FERender(ePoly *poly, TextureInfo *texture_info, TextureInfo *texture_info_mask, int use_previous_data);
+    void FERender(ePoly *poly, TextureInfo *texture_info, int use_previous_data);
+    void FEEndBatchRender();
+    void Render(eModel *model, bMatrix4 *local_to_world, eLightContext *light_context, uint32 flags, bMatrix4 *blending_matricies);
+    void Render(ePoly *poly, TextureInfo *texture_info, bMatrix4 *local_to_world, int use_previous_data, float bbRad);
+    void Render(ePoly *poly, TextureInfo *texture_info, TextureInfo *texture_info_mask, int use_previous_data);
+    void Render(ePoly *poly, TextureInfo *texture_info, int use_previous_data);
+    void Render(ePointSprite3D *sprite, TextureInfo *texture_info, bMatrix4 *local_world, int num_sprites);
+    eVisibleState GetVisibleStateGB(const bVector3 *aabb_min, const bVector3 *aabb_max, bMatrix4 *local_world);
+    eVisibleState GetVisibleStateSB(const bVector3 *aabb_min, const bVector3 *aabb_max, bMatrix4 *local_world);
+    eVisibleState GetVisibleStateSB(const bVector3 *position, bMatrix4 *local_world);
+    void GetScreenPosition(bVector3 *screen_position, const bVector3 *world_position);
+
+  protected:
     void SetPlatInfo(eViewPlatInfo *info) {
         PlatInfo = info;
     }
-
     static eViewPlatInfo *GimmeMyViewPlatInfo(int view_id);
-    eVisibleState GetVisibleStateGB(const bVector3 *aabb_min, const bVector3 *aabb_max, bMatrix4 *local_world);
-    eVisibleState GetVisibleStateSB(const bVector3 *aabb_min, const bVector3 *aabb_max, bMatrix4 *local_world);
 
-    void Render(eModel *model, bMatrix4 *local_to_world, eLightContext *light_context, uint32 flags, bMatrix4 *blending_matricies);
-    void FERender(ePoly *poly, TextureInfo *texture_info, bMatrix4 *local_to_world, int use_previous_data, float bbRad);
-    void Render(ePoly *poly, TextureInfo *texture_info, bMatrix4 *local_to_world, int use_previous_data, float bbRad);
-    void FERender(ePoly *poly, TextureInfo *texture_info, TextureInfo *texture_info_mask, int use_previous_data);
-    void Render(ePoly *poly, TextureInfo *texture_info, TextureInfo *texture_info_mask, int use_previous_data);
-    void FERender(ePoly *poly, TextureInfo *texture_info, int use_previous_data);
-    void Render(ePoly *poly, TextureInfo *texture_info, int use_previous_data);
-    void Render(struct ePointSprite3D *sprite, TextureInfo *texture_info, bMatrix4 *local_world, int num_sprites);
+  public:
+    eViewPlatInfo *PlatInfo; // offset 0x0, size 0x4
 };
 
 class eLoadedSolidStats {

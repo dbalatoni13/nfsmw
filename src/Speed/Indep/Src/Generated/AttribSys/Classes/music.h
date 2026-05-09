@@ -13,6 +13,8 @@
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/Common/AttribPrivate.h"
 
+typedef int PathEventEnum;
+
 namespace Attrib {
 namespace Gen {
 

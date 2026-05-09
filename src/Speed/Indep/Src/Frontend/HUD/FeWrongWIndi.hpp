@@ -15,10 +15,9 @@ class IWrongWay : public UTL::COM::IUnknown {
         return (HINTERFACE)_IHandle;
     }
 
-    IWrongWay(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
-
   protected:
     virtual ~IWrongWay() {}
+    IWrongWay(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
   public:
     virtual void SetWrongWay(bool isWrongWay);
@@ -32,10 +31,10 @@ class WrongWIndi : public HudElement, public IWrongWay {
     void SetWrongWay(bool isWrongWay) override;
 
   private:
-    FEImage *mpWrongWayImage;                  // offset 0x30
-    bool mIsWrongWay;                          // offset 0x34
-    Timer mTimeBeforeDisplaying;               // offset 0x38
-    Timer mTimeBeforeClosing;                  // offset 0x3C
+    FEImage *mpWrongWayImage;    // offset 0x30
+    bool mIsWrongWay;            // offset 0x34
+    Timer mTimeBeforeDisplaying; // offset 0x38
+    Timer mTimeBeforeClosing;    // offset 0x3C
 };
 
 #endif

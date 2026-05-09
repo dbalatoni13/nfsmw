@@ -1,39 +1,16 @@
-#include "Speed/Indep/Src/Misc/FixedPoint.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Career/FEPkg_EngageEventDialog.hpp"
 
-#ifndef GRACESAVEINFO_DEFINED
-#define GRACESAVEINFO_DEFINED
-struct GRaceSaveInfo {
-    unsigned int mRaceHash;                              // offset 0x0, size 0x4
-    unsigned int mFlags;                                 // offset 0x4, size 0x4
-    float mHighScores;                                   // offset 0x8, size 0x4
-    unsigned short mTopSpeed;                            // offset 0xC, size 0x2
-    unsigned short mAverageSpeed;                        // offset 0xE, size 0x2
-};
-#endif
-
-struct UITrackMapStreamer {
-    char _data[0xD8];
-    virtual ~UITrackMapStreamer();
-    UITrackMapStreamer();
-    void Init(GRaceParameters *track, FEMultiImage *map, int unused, int region_unlock);
-    void UpdateAnimation();
-};
-
-unsigned int CalcLanguageHash(const char *prefix, GRaceParameters *parms);
+#include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEImages.hpp"
+#include "Speed/Indep/Src/Frontend/Localization/Localize.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
+#include "Speed/Indep/Src/Gameplay/GActivity.h"
+#include "Speed/Indep/Src/Gameplay/GRuntimeInstance.h"
+#include "Speed/Indep/Src/Generated/Messages/MAcceptEnterCareerEvent.h"
+#include "Speed/Indep/Src/Generated/Messages/MDeclineEnterCareerEvent.h"
 
 namespace nsEngageEventDialog {
-
-struct EngageEventDialog : MenuScreen {
-    GRuntimeInstance *mpRaceActivity;  // offset 0x2C
-    UITrackMapStreamer *MapStreamer;    // offset 0x30
-    FEMultiImage *TrackMap;            // offset 0x34
-
-    EngageEventDialog(ScreenConstructorData *sd);
-    ~EngageEventDialog() override;
-    void NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) override;
-    void NotifyTheGameAcceptEvent();
-    void NotifyTheGameDeclineEvent();
-};
 
 EngageEventDialog::EngageEventDialog(ScreenConstructorData *sd) : MenuScreen(sd) {
     MapStreamer = nullptr;
@@ -76,13 +53,11 @@ EngageEventDialog::EngageEventDialog(ScreenConstructorData *sd) : MenuScreen(sd)
 
     GRaceSaveInfo *info = GRaceDatabase::Get().GetScoreInfo(parms->GetEventHash());
 
-    if (parms->GetRaceType() == GRace::kRaceType_P2P ||
-        parms->GetRaceType() == GRace::kRaceType_Circuit ||
-        parms->GetRaceType() == GRace::kRaceType_Drag ||
-        parms->GetRaceType() == GRace::kRaceType_Knockout ||
+    if (parms->GetRaceType() == GRace::kRaceType_P2P || parms->GetRaceType() == GRace::kRaceType_Circuit ||
+        parms->GetRaceType() == GRace::kRaceType_Drag || parms->GetRaceType() == GRace::kRaceType_Knockout ||
         parms->GetRaceType() == GRace::kRaceType_Tollbooth) {
         Timer timer;
-        timer.SetTime(info->mHighScores);
+        timer.SetTime(info->mHighScores.mBestTime);
         char buf[64];
         timer.PrintToString(buf, 0);
         FEPrintf(GetPackageName(), 0x8fd41bb4, "%s", buf);
@@ -100,16 +75,63 @@ EngageEventDialog::EngageEventDialog(ScreenConstructorData *sd) : MenuScreen(sd)
         speedUnits = GetLocalizedString(0x8569ab44);
     }
 
-    float avg_speed = static_cast<float>(info->mAverageSpeed) / static_cast<float>(FixedPoint<unsigned short, 10, 2>::GetScale()) * conversion;
-    float top_speed = static_cast<float>(info->mTopSpeed) / static_cast<float>(FixedPoint<unsigned short, 10, 2>::GetScale()) * conversion;
+    float avg_speed = static_cast<float>(info->mAverageSpeed) * conversion;
+    float top_speed = static_cast<float>(info->mTopSpeed) * conversion;
     FEPrintf(GetPackageName(), 0x35d1ab83, "%$0.0f %s", avg_speed, speedUnits);
     FEPrintf(GetPackageName(), 0xde9145fb, "%$0.0f %s", top_speed, speedUnits);
 
     FEPrintf(GetPackageName(), 0x45276f1f, "%$0.0f", parms->GetCashValue());
 
-    TrackMap = static_cast<FEMultiImage *>(FEngFindObject(GetPackageName(), FEngHashString("TRACK_MAP")));
+    TrackMap = reinterpret_cast<FEMultiImage *>(FEngFindObject(GetPackageName(), FEngHashString("TRACK_MAP")));
     MapStreamer = new ("", 0) UITrackMapStreamer();
     MapStreamer->Init(parms, TrackMap, 0, 0);
+}
+
+EngageEventDialog::~EngageEventDialog() {
+    if (MapStreamer) {
+        delete MapStreamer;
+        MapStreamer = nullptr;
+    }
+}
+
+void EngageEventDialog::NotifyTheGameAcceptEvent() {
+    UCrc32 port(0x20d60dbf);
+    MAcceptEnterCareerEvent msg;
+    msg.Post(port);
+}
+
+void EngageEventDialog::NotifyTheGameDeclineEvent() {
+    UCrc32 port(0x20d60dbf);
+    MDeclineEnterCareerEvent msg;
+    msg.Post(port);
+}
+
+// STRIPPED
+void EngageEventDialog::NotifyTheGameButton3() {}
+
+void EngageEventDialog::NotificationMessage(u32 msg, FEObject *obj, u32 param1, u32 param2) {
+    switch (msg) {
+        case 0x911ab364:
+            NotifyTheGameDeclineEvent();
+            cFEng::Get()->QueuePackagePop(1);
+            break;
+        case 0xc98356ba:
+            if (MapStreamer) {
+                MapStreamer->UpdateAnimation();
+            }
+            break;
+        case 0x0c407210: {
+            unsigned int objHash = obj->NameHash;
+            if (objHash == 0x694b896e) {
+                NotifyTheGameDeclineEvent();
+                cFEng::Get()->QueuePackagePop(1);
+            } else if (objHash == 0xd72f002a) {
+                NotifyTheGameAcceptEvent();
+                cFEng::Get()->QueuePackagePop(1);
+            }
+            break;
+        }
+    }
 }
 
 } // namespace nsEngageEventDialog

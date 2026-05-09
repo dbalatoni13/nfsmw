@@ -1,24 +1,14 @@
 #include "Speed/Indep/Src/Frontend/HUD/FeMilestoneBoard.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEObjects.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/InGame/FEPkg_PostRace.hpp"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 #include "Speed/Indep/Src/FEng/feimage.h"
-
-void FEngSetScript(FEObject *obj, unsigned int script_hash, bool start_at_beginning);
-bool FEngIsScriptSet(FEObject *obj, unsigned int script_hash);
-bool FEngIsScriptRunning(FEObject *obj, unsigned int script_hash);
-void FEngSetTextureHash(FEImage *image, unsigned int hash);
-FEColor FEngGetObjectColor(FEObject *obj);
-void FEngSetColor(FEObject *obj, unsigned int color);
-int FEPrintf(FEString *str, const char *fmt, ...);
-
-inline unsigned int FEngGetColor(FEObject *obj) {
-    return FEngGetObjectColor(obj);
-}
+#include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 
 MilestoneBoard::MilestoneBoard(UTL::COM::Object *pOutter, const char *pkg_name, int player_number)
-    : HudElement(pkg_name, 0x400000000ULL) //
-    , IMilestoneBoard(pOutter)
-{
+    : HudElement(pkg_name, 0x400000000ULL), IMilestoneBoard(pOutter) {
     mInPursuit = false;
     mChallengeSeries = false;
     mPlayerBinNumber = FEDatabase->GetCareerSettings()->GetCurrentBin();
@@ -97,8 +87,7 @@ void MilestoneBoard::Update(IPlayer *player) {
                     if (elapsed.GetSeconds() >= 5.0f) {
                         if (FEngIsScriptSet(mpDataDetailsGroup, 0x1ca7c0)) {
                             FEngSetScript(mpDataDetailsGroup, 0xaff37f61, true);
-                        } else if (FEngIsScriptSet(mpDataDetailsGroup, 0xaff37f61) &&
-                                   !FEngIsScriptRunning(mpDataDetailsGroup, 0xaff37f61)) {
+                        } else if (FEngIsScriptSet(mpDataDetailsGroup, 0xaff37f61) && !FEngIsScriptRunning(mpDataDetailsGroup, 0xaff37f61)) {
                             FEngSetScript(mpDataDetailsGroup, 0xd6c950a0, true);
                             mScrollTimer = WorldTimer;
                             mMilestoneSetVisible = GetNextVisibleMilestone();
@@ -114,8 +103,7 @@ void MilestoneBoard::Update(IPlayer *player) {
             for (int i = 0; i < 4; i++) {
                 if (i < mNumMilestones) {
                     if (i == mMilestoneSetVisible) {
-                        if (!FEngIsScriptSet(mpDataIconBackings[i], 0x249db7b7) &&
-                            !FEngIsScriptRunning(mpDataIconBackings[i], 0x3826a28)) {
+                        if (!FEngIsScriptSet(mpDataIconBackings[i], 0x249db7b7) && !FEngIsScriptRunning(mpDataIconBackings[i], 0x3826a28)) {
                             FEngSetScript(mpDataIconBackings[i], 0x249db7b7, true);
                         }
                     } else {
@@ -152,8 +140,7 @@ void MilestoneBoard::Update(IPlayer *player) {
             if (mMilestoneSetVisible >= 0) {
                 char outputStr[32];
                 int idx = mMilestoneSetVisible;
-                FEDatabase->SetMilestoneDescriptionString(outputStr, mMilestones[idx].mType,
-                    mMilestones[idx].mCurrVal, mMilestones[idx].mGoal, true);
+                FEDatabase->SetMilestoneDescriptionString(outputStr, mMilestones[idx].mType, mMilestones[idx].mCurrVal, mMilestones[idx].mGoal, true);
                 FEPrintf(mpDataMilestoneGoal, "%s", outputStr);
             }
             return;
@@ -166,27 +153,6 @@ void MilestoneBoard::Update(IPlayer *player) {
     if (FEngIsScriptSet(mpDataMilestoneIconGroup, 0x5079c8f8)) {
         FEngSetScript(mpDataMilestoneIconGroup, 0x33113ac, true);
     }
-}
-
-void MilestoneBoard::SetInPursuit(bool inPursuit) {
-    mInPursuit = inPursuit;
-}
-
-void MilestoneBoard::SetChallengeSeries(bool challenge) {
-    mChallengeSeries = challenge;
-}
-
-void MilestoneBoard::SetNumberOfMilestones(int num) {
-    mNumMilestones = num;
-}
-
-void MilestoneBoard::SetMilestoneComplete(int milestoneNum, bool complete) {
-    mMilestones[milestoneNum].mComplete = complete;
-}
-
-bool MilestoneBoard::GetIsMilestoneComplete(int index) const {
-    if (index >= mNumMilestones) return true;
-    return mMilestones[index].mComplete;
 }
 
 int MilestoneBoard::GetNumIncompleteMilestones() const {
@@ -209,15 +175,6 @@ int MilestoneBoard::GetNumCompleteMilestones() const {
     return count;
 }
 
-int MilestoneBoard::GetFirstIncompleteMilestone() const {
-    for (int i = 0; i < mNumMilestones; i++) {
-        if (!mMilestones[i].mComplete) {
-            return i;
-        }
-    }
-    return 0;
-}
-
 int MilestoneBoard::GetNextVisibleMilestone() const {
     if (GetNumIncompleteMilestones() > 1) {
         int next = mMilestoneSetVisible + 1;
@@ -233,6 +190,19 @@ int MilestoneBoard::GetNextVisibleMilestone() const {
         return next;
     }
     return mMilestoneSetVisible;
+}
+
+int MilestoneBoard::GetFirstIncompleteMilestone() const {
+    for (int i = 0; i < mNumMilestones; i++) {
+        if (!mMilestones[i].mComplete) {
+            return i;
+        }
+    }
+    return 0;
+}
+
+void MilestoneBoard::SetMilestoneComplete(int milestoneNum, bool complete) {
+    mMilestones[milestoneNum].mComplete = complete;
 }
 
 void MilestoneBoard::SetMilestoneCurrValue(int milestoneNum, float currVal) {
@@ -251,4 +221,10 @@ void MilestoneBoard::SetMilestoneCurrValue(int milestoneNum, float currVal) {
             }
         }
     }
+}
+
+bool MilestoneBoard::GetIsMilestoneComplete(int index) const {
+    if (index >= mNumMilestones)
+        return true;
+    return mMilestones[index].mComplete;
 }

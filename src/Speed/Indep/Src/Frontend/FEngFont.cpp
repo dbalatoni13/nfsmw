@@ -4,20 +4,7 @@
 #include "Speed/Indep/Src/Frontend/FERenderObject.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
-#include <new>
-
-extern unsigned long FEHashUpper(const char *str);
-extern int bStrLen(const char *str);
-extern int bStrICmp(const char *s1, const char *s2);
-extern const char *GetLanguageName(int language_id);
-extern TextureInfo *GetTextureInfo(unsigned int hash, int param2, int param3);
-extern void bMemSet(void *dst, int val, unsigned int size);
-extern void WideToCharString(char *dst, unsigned int dstSize, const short *src);
-extern int bStrCmp(const char *s1, const char *s2);
-extern unsigned int bStringHashUpper(const char *str);
-extern unsigned int FEngColorToEpolyColor(FEColor c);
-
-TextureInfo *FixupTextureInfoNull(TextureInfo *info, unsigned int hash, TexturePack *pack, bool loading);
+#include "Speed/Indep/Src/Frontend/Localization/Localize.hpp"
 
 struct ExtraFontData {
     unsigned int FontHash;
@@ -35,6 +22,14 @@ static ExtraFontData ExtraFontDataTable[] = {
 bTList<FEngFont> FEngFonts;
 extern unsigned int FontReplacementTable[];
 extern int NumFontReplacements;
+
+inline bool IsNewlineChar(short c) {
+    bool result = false;
+    if (c == '\n' || c == '^') {
+        result = true;
+    }
+    return result;
+}
 
 ExtraFontData *FindExtraFontData(unsigned int font_hash) {
     for (int i = 0; i < 4; i++) {
@@ -73,22 +68,18 @@ FEngFont *FindFont(unsigned int font_hash) {
     return nullptr;
 }
 
-void *FEngMalloc(unsigned int size, const char *file, int line);
-void FEngFree(void *ptr, const char *file, int line);
-
 int LoaderFEngFont(bChunk *chunk) {
-    if (chunk->GetID() != 0x30201) {
-        return 0;
+    if (chunk->GetID() == 0x30201) {
+        FEngFont *font = new (__FILE__, __LINE__) FEngFont(chunk);
+        FEngFonts.AddHead(font);
+        ExtraFontData *extra = FindExtraFontData(chunk->GetID());
+        // if (extra) {
+        //     font->fBaselineOffset = extra->BaselineOffset;
+        //     font->fLeadingScale = extra->LeadingScale;
+        // }
+        return 1;
     }
-    void *mem = FEngMalloc(sizeof(FEngFont), nullptr, 0);
-    FEngFont *font = new(mem) FEngFont(chunk);
-    FEngFonts.AddHead(font);
-    ExtraFontData *extra = FindExtraFontData(chunk->GetID());
-    if (extra) {
-        font->fBaselineOffset = extra->BaselineOffset;
-        font->fLeadingScale = extra->LeadingScale;
-    }
-    return 1;
+    return 0;
 }
 
 int UnloaderFEngFont(bChunk *chunk) {
@@ -119,17 +110,8 @@ float FEngFont::GetHeight() {
 }
 
 FEngFont::FEngFont(bChunk *chunk)
-    : pTextureInfo(nullptr) //
-    , pFont(nullptr) //
-    , mfZValue(0.0f) //
-    , FontHash(0) //
-    , TextureHash(0) //
-    , pFontName(static_cast<char *>(chunk->GetData()) + 0) //
-    , pTextureName(static_cast<char *>(chunk->GetData()) + 0x100) //
-    , Height(0.0f) //
-    , fBaselineOffset(0.0f) //
-    , fLeadingScale(0.0f)
-{
+    : pTextureInfo(nullptr), pFont(nullptr), mfZValue(0.0f), FontHash(0), TextureHash(0), pFontName(static_cast<char *>(chunk->GetData()) + 0),
+      pTextureName(static_cast<char *>(chunk->GetData()) + 0x100), Height(0.0f), fBaselineOffset(0.0f), fLeadingScale(0.0f) {
     unsigned int raw_font_hash = FEHashUpper(pFontName);
 
     int n = 0;
@@ -153,8 +135,8 @@ FEngFont::FEngFont(bChunk *chunk)
             }
             return;
         }
-        for (int language_id = 0; n = n + 1, language_id < 0x10; language_id++) {
-            const char *lang_name = GetLanguageName(language_id);
+        for (int language_id = 0; n = n + 1, language_id < eLANGUAGE_MAX; language_id++) {
+            const char *lang_name = GetLanguageName(static_cast<eLanguages>(language_id));
             if (bStrICmp(pFontName + n - 1, lang_name) == 0 && (n - 1) > 0 && pFontName[n - 2] == '_') {
                 pFontName[n - 2] = '\0';
                 break;
@@ -273,8 +255,10 @@ const TextureInfo *FEngFont::GetJoyEventTextureInfo(const short *pInputString) {
                 short next = *ptr;
                 *ptr_to_data = c;
                 ptr_to_data++;
-                if (next == '$') break;
-                if (next == 0 || bytes_copied > 0x7F) break;
+                if (next == '$')
+                    break;
+                if (next == 0 || bytes_copied > 0x7F)
+                    break;
             }
         }
         char buffer[128];
@@ -284,7 +268,8 @@ const TextureInfo *FEngFont::GetJoyEventTextureInfo(const short *pInputString) {
     return ::GetTextureInfo(0, 1, 0);
 }
 
-const short *FEngFont::HandleJoyEventTexture(const short *input, float fX, float fY, unsigned int *render_colors, FERenderObject *cached, float &advance, FEPackageRenderInfo *pkg_render_info) {
+const short *FEngFont::HandleJoyEventTexture(const short *input, float fX, float fY, unsigned int *render_colors, FERenderObject *cached,
+                                             float &advance, FEPackageRenderInfo *pkg_render_info) {
     const short *ptr = input;
     short data[64];
     short *ptr_to_data = data;
@@ -298,8 +283,10 @@ const short *FEngFont::HandleJoyEventTexture(const short *input, float fX, float
             ptr++;
             c = *ptr;
             ptr_to_data++;
-            if (c == '$') break;
-            if (c == 0 || bytes_copied > 0x7F) break;
+            if (c == '$')
+                break;
+            if (c == 0 || bytes_copied > 0x7F)
+                break;
         }
     }
     char buffer[128];
@@ -321,8 +308,10 @@ float FEngFont::GetNextWordWidth(const short *pcString, unsigned long flags) {
     while ((flags & 0x200) == 0) {
         next_word_size += GetCharacterWidth(*next_char, *prev_char, flags);
         short next = next_char[1];
-        if (next == ' ' || next == 0) break;
-        if (IsNewlineChar(next)) break;
+        if (next == ' ' || next == 0)
+            break;
+        if (IsNewlineChar(next))
+            break;
         prev_char = next_char;
         next_char++;
     }
@@ -347,9 +336,9 @@ float FEngFont::GetCharacterWidth(short Char, short PrevChar, unsigned long Flag
     }
     const RealFontOld::Glyph *pGlyph = pFont->GetGlyph(static_cast<int>(unicode));
     if (!pGlyph) {
-        pGlyph = RealFontOld::BSearch(static_cast<short>(unicode),
-            reinterpret_cast<const RealFontOld::Glyph *>(reinterpret_cast<const char *>(pFont) + pFont->mGlyphTbl),
-            pFont->mNum);
+        pGlyph =
+            RealFontOld::BSearch(static_cast<short>(unicode),
+                                 reinterpret_cast<const RealFontOld::Glyph *>(reinterpret_cast<const char *>(pFont) + pFont->mGlyphTbl), pFont->mNum);
     }
     if (pGlyph) {
         if (PrevChar != 0) {
@@ -371,7 +360,8 @@ float FEngFont::GetLineWidth(const short *pcString, unsigned long flags, unsigne
     unsigned long k = 0;
     if (c != 0) {
         do {
-            if (IsNewlineChar(c)) break;
+            if (IsNewlineChar(c))
+                break;
             if (c == ' ') {
                 lastSpaceWidth = width;
             }
@@ -446,9 +436,9 @@ float FEngFont::GetTextHeight(const short *pcString, int ilLeading, unsigned lon
                 unsigned int unicode = static_cast<unsigned int>(c) & 0xFF;
                 const RealFontOld::Glyph *pGlyph = pFont->GetGlyph(static_cast<int>(unicode));
                 if (!pGlyph) {
-                    pGlyph = RealFontOld::BSearch(static_cast<short>(unicode),
-                        reinterpret_cast<const RealFontOld::Glyph *>(reinterpret_cast<const char *>(pFont) + pFont->mGlyphTbl),
-                        pFont->mNum);
+                    pGlyph = RealFontOld::BSearch(
+                        static_cast<short>(unicode),
+                        reinterpret_cast<const RealFontOld::Glyph *>(reinterpret_cast<const char *>(pFont) + pFont->mGlyphTbl), pFont->mNum);
                 }
                 if (pGlyph) {
                     lastCharNotReturn = true;
@@ -481,7 +471,8 @@ float FEngFont::GetTextHeight(const short *pcString, int ilLeading, unsigned lon
     return height;
 }
 
-void FEngFont::RenderString(const FEColor &Color, const short *pcString, FEString *obj, bMatrix4 *matrix, FERenderObject *cached, FEPackageRenderInfo *pkg_render_info) {
+void FEngFont::RenderString(const FEColor &Color, const short *pcString, FEString *obj, bMatrix4 *matrix, FERenderObject *cached,
+                            FEPackageRenderInfo *pkg_render_info) {
     unsigned long flags = obj->Flags;
     unsigned long format = obj->Format;
     bool word_wrap = (format & 0x10) != 0;
@@ -544,9 +535,9 @@ void FEngFont::RenderString(const FEColor &Color, const short *pcString, FEStrin
                     int glyph_stride = (pFont->mFlags & 0x40000) ? 0x10 : 0x0C;
                     const RealFontOld::Glyph *glyph = pFont->GetGlyph(static_cast<int>(unicode));
                     if (!glyph) {
-                        glyph = RealFontOld::BSearch(static_cast<short>(unicode),
-                            reinterpret_cast<const RealFontOld::Glyph *>(reinterpret_cast<const char *>(pFont) + pFont->mGlyphTbl),
-                            pFont->mNum,
+                        glyph = RealFontOld::BSearch(
+                            static_cast<short>(unicode),
+                            reinterpret_cast<const RealFontOld::Glyph *>(reinterpret_cast<const char *>(pFont) + pFont->mGlyphTbl), pFont->mNum,
                             glyph_stride);
                     }
 
@@ -565,17 +556,10 @@ void FEngFont::RenderString(const FEColor &Color, const short *pcString, FEStrin
 
                         float x0 = current_x + kern + static_cast<float>(glyph->mOffsetX);
                         float y0 = current_y + static_cast<float>(glyph->mOffsetY) + fBaselineOffset;
-                        cached->AddPoly(x0,
-                                        y0,
-                                        x0 + glyph_width,
-                                        y0 + static_cast<float>(glyph->mHeight),
-                                        1.0f,
-                                        static_cast<float>(glyph->mU) / texture_width,
-                                        static_cast<float>(glyph->mV) / texture_height,
+                        cached->AddPoly(x0, y0, x0 + glyph_width, y0 + static_cast<float>(glyph->mHeight), 1.0f,
+                                        static_cast<float>(glyph->mU) / texture_width, static_cast<float>(glyph->mV) / texture_height,
                                         static_cast<float>(glyph->mU + glyph->mWidth + 1) / texture_width,
-                                        static_cast<float>(glyph->mV + glyph->mHeight) / texture_height,
-                                        render_colors,
-                                        pkg_render_info);
+                                        static_cast<float>(glyph->mV + glyph->mHeight) / texture_height, render_colors, pkg_render_info);
 
                         short prev_char = 0;
                         if (character_index != 0) {

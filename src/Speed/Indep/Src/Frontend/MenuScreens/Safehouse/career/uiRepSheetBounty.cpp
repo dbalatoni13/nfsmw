@@ -1,39 +1,27 @@
 #include "uiRepSheetBounty.hpp"
 
-#include "Speed/Indep/Src/FEng/cFEng.h"
+#include "Speed/Indep/Src/Frontend/FEngFrontend.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
+#include "Speed/Indep/Src/Frontend/Localization/Localize.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/DialogInterface.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEAnyTutorialScreen.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/InGame/InGameTutorialScreen.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiTrackMapStreamer.hpp"
+#include "Speed/Indep/Src/Frontend/RaceStarter.hpp"
 #include "Speed/Indep/Src/Gameplay/GManager.h"
-#include "Speed/Indep/Src/Gameplay/GRaceDatabase.h"
 #include "Speed/Indep/Src/Generated/Events/ERaceSheetOff.hpp"
-#include "Speed/Indep/bWare/Inc/bPrintf.hpp"
+#include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 
-struct FEObject;
-struct FEMultiImage;
-
-FEObject *FEngFindObject(const char *pkg_name, unsigned int hash);
-FEImage *FEngFindImage(const char *pkg_name, int hash);
-void FEngSetVisible(FEObject *obj);
-void FEngSetInvisible(FEObject *obj);
-void FEngSetLanguageHash(const char *pkg_name, unsigned int obj_hash, unsigned int lang_hash);
-int FEPrintf(const char *pkg_name, int hash, const char *fmt, ...);
-unsigned int FEngHashString(const char *format, ...);
-const char *GetLocalizedString(unsigned int hash);
-void FEngSetScript(const char *pkg_name, unsigned int obj_hash, unsigned int script_hash, bool);
-void FEngSetRotationZ(FEObject *obj, float angle);
-void FEngSetTextureHash(FEImage *image, unsigned int hash);
-int FEngMapJoyParamToJoyport(int feng_param);
-
-void RaceStarterStartCareerFreeRoam() asm("StartCareerFreeRoam__11RaceStarter");
-void InGameAnyTutorialScreenLaunchMovie(const char *, const char *) asm("LaunchMovie__23InGameAnyTutorialScreenPCcT1");
-
-extern unsigned int iCurrentViewBin;
-extern unsigned int theMarker;
+extern int iCurrentViewBin;
+extern Attrib::Key theMarker;
 extern const char *gTUTORIAL_MOVIE_BOUNTY;
 
-// FEngSetInvisible/FEngSetVisible inlines defined in uiMain.cpp
-// FEngSetTextureHash inline already defined in uiOptionsScreen.cpp
+void BountyDatum::NotificationMessage(u32 msg, FEObject *pObj, u32 param1, u32 param2) {
+    if (msg == 0xc407210) {
+        theMarker = GManager::Get().GetBountySpawnMarker(static_cast<unsigned int>(index));
+    }
+}
 
 uiRepSheetBounty::uiRepSheetBounty(ScreenConstructorData *sd) : ArrayScrollerMenu(sd, 3, 3, true) {
     bIsInGame = sd->Arg != 0;
@@ -56,15 +44,15 @@ uiRepSheetBounty::uiRepSheetBounty(ScreenConstructorData *sd) : ArrayScrollerMen
     Setup();
 }
 
-eMenuSoundTriggers uiRepSheetBounty::NotifySoundMessage(unsigned long msg, eMenuSoundTriggers maybe) {
+eMenuSoundTriggers uiRepSheetBounty::NotifySoundMessage(u32 msg, eMenuSoundTriggers maybe) {
     if (msg == 0x7b6b89d7 && bIsInGame)
         return static_cast<eMenuSoundTriggers>(-1);
-    if (currentDatum->IsLocked())
+    if (GetCurrentDatum()->IsLocked())
         return static_cast<eMenuSoundTriggers>(7);
     return maybe;
 }
 
-void uiRepSheetBounty::NotificationMessage(unsigned long msg, FEObject *obj, unsigned long param1, unsigned long param2) {
+void uiRepSheetBounty::NotificationMessage(u32 msg, FEObject *obj, u32 param1, u32 param2) {
     int currentIndex = GetNumDatum() - 1;
     ArrayScrollerMenu::NotificationMessage(msg, obj, param1, param2);
     switch (msg) {
@@ -84,8 +72,8 @@ void uiRepSheetBounty::NotificationMessage(unsigned long msg, FEObject *obj, uns
             if (bIsInGame) {
                 dialog = "InGameDialog.fng";
             }
-            DialogInterface::ShowTwoButtons(GetPackageName(), dialog, static_cast<eDialogTitle>(1), 0x70e01038, 0x417b25e4, 0xd05fc3a3, 0x34dc1bcf,
-                                            0x34dc1bcf, static_cast<eDialogFirstButtons>(1), 0xcd195d0b);
+            DialogInterface ::ShowTwoButtons(GetPackageName(), dialog, dialog_alert, 0x70e01038, 0x417b25e4, 0xd05fc3a3, 0x34dc1bcf, 0x34dc1bcf,
+                                             first_dialog_button2, 0xcd195d0b);
             return;
         }
         case 0xc519bfc3:
@@ -104,7 +92,7 @@ void uiRepSheetBounty::NotificationMessage(unsigned long msg, FEObject *obj, uns
                         delete TrackMapStreamer;
                     }
                     TrackMapStreamer = nullptr;
-                    InGameAnyTutorialScreenLaunchMovie(gTUTORIAL_MOVIE_BOUNTY, GetPackageName());
+                    InGameAnyTutorialScreen::LaunchMovie(gTUTORIAL_MOVIE_BOUNTY, GetPackageName());
                     FEngSetInvisible("IG_BL_TRACKMAP.fng", 0x2716cdbf);
                 } else {
                     FEAnyTutorialScreen::LaunchMovie(gTUTORIAL_MOVIE_BOUNTY, GetPackageName());
@@ -132,7 +120,7 @@ void uiRepSheetBounty::NotificationMessage(unsigned long msg, FEObject *obj, uns
             GManager::Get().OverrideFreeRoamStartMarker(theMarker);
             GManager::Get().QueueFreeRoamPursuit(0.0f);
             GManager::Get().QueueFreeRoamPursuit(0.0f);
-            RaceStarterStartCareerFreeRoam();
+            RaceStarter::StartCareerFreeRoam();
             return;
         case 0x911ab364:
             if (bIsInGame) {
@@ -157,7 +145,7 @@ void uiRepSheetBounty::NotificationMessage(unsigned long msg, FEObject *obj, uns
             return;
     }
     int newIndex = GetNumDatum() - 1;
-    if (currentIndex != newIndex && currentDatum != nullptr) {
+    if (currentIndex != newIndex && GetCurrentDatum() != nullptr) {
         RefreshTrack();
     }
 }
@@ -209,12 +197,12 @@ void uiRepSheetBounty::RefreshTrack() {
 void uiRepSheetBounty::RefreshHeader() {
     ArrayScrollerMenu::RefreshHeader();
     ArrayDatum *currentDatum = GetCurrentDatum();
-    FEPrintf(GetPackageName(), 0x5a856a34, "%d", data.GetNodeNumber(currentDatum));
+    FEPrintf(GetPackageName(), 0x5a856a34, "%d", GetCurrentDatumNum());
     FEPrintf(GetPackageName(), 0x2d4d22c8, "%d", GetNumDatum());
     FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(0);
     FEPrintf(GetPackageName(), 0xb514e2d8, "%s %d", GetLocalizedString(0xce6b99b1), stable->GetTotalBounty());
     FEPrintf(GetPackageName(), 0xf91a59f6, "%s %d", GetLocalizedString(0x73b79e0), FEDatabase->GetCareerSettings()->GetCash());
-    int loc_tag = GManager::Get().GetBountySpawnMarkerTag(data.GetNodeNumber(currentDatum) - 1);
+    int loc_tag = GManager::Get().GetBountySpawnMarkerTag(GetCurrentDatumNum() - 1);
     FEngSetTextureHash(GetPackageName(), 0xf97ec5d5, FEDatabase->GetBountyIconHash(loc_tag));
     BountyDatum *d = static_cast<BountyDatum *>(currentDatum);
     if (d != nullptr) {
@@ -223,7 +211,7 @@ void uiRepSheetBounty::RefreshHeader() {
         } else {
             cFEng::Get()->QueuePackageMessage(0x38091fa1, GetPackageName(), nullptr);
         }
-        FEngSetLanguageHash(GetPackageName(), 0x28049d6, FEDatabase->GetBountyDescHash(data.GetNodeNumber(currentDatum)));
+        FEngSetLanguageHash(GetPackageName(), 0x28049d6, FEDatabase->GetBountyDescHash(GetCurrentDatumNum()));
         for (int i = 0; i < GetNumSlots(); i++) {
             ArrayDatum *datum = GetDatumAt(i + GetStartDatumNum());
             unsigned int check_hash = FEngHashString("CHECK_ICON_%d", i + 1);
@@ -232,11 +220,5 @@ void uiRepSheetBounty::RefreshHeader() {
                 FEngSetInvisible(GetPackageName(), check_hash);
             }
         }
-    }
-}
-
-void BountyDatum::NotificationMessage(unsigned long msg, FEObject *pObj, unsigned long param1, unsigned long param2) {
-    if (msg == 0xc407210) {
-        theMarker = GManager::Get().GetBountySpawnMarker(static_cast<unsigned int>(index));
     }
 }

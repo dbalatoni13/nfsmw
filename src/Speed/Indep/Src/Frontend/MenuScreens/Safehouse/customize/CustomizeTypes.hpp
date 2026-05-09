@@ -6,7 +6,7 @@
 #endif
 
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEIconScrollerMenu.hpp"
-#include "Speed/Indep/Src/FEng/cFEng.h"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 extern cFEng *cFEng_mInstance;
 #include "Speed/Indep/Src/Gameplay/GRace.h"
 #include "Speed/Indep/bWare/Inc/bList.hpp"

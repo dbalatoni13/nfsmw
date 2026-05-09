@@ -2,35 +2,24 @@
 
 #include "Speed/Indep/Src/FEng/FEString.h"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEObjects.hpp"
+#include "Speed/Indep/Src/Frontend/Localization/Localize.hpp"
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
-FEObject *FEngFindObject(const char *pkg_name, unsigned int obj_hash);
-unsigned long FEHashUpper(const char *name);
-int FEPrintf(FEString *text, const char *fmt, ...);
-void FEngSetVisible(FEObject *obj);
-void FEngSetInvisible(FEObject *obj);
-
-extern cFrontendDatabase *FEDatabase;
-extern const char *GetTranslatedString(unsigned int hash);
-
-extern const char lbl_803E4D20[];
-extern const char lbl_803E4E24[];
-extern const char lbl_803E4E38[];
-extern const char lbl_803E4E48[];
-extern const char lbl_803E4E58[];
-extern const char lbl_803E4E68[];
-
 Speedometer::Speedometer(UTL::COM::Object *pOutter, const char *pkg_name, int player_number)
     : HudElement(pkg_name, 0x8000000) //
-    , ISpeedometer(pOutter) //
-    , mSpeed(0.0f) //
+      ,
+      ISpeedometer(pOutter) //
+      ,
+      mSpeed(0.0f) //
 {
-    RegisterGroup(FEHashUpper(lbl_803E4E24));
-    mpSpeedDigit1 = static_cast<FEString *>(FEngFindObject(pkg_name, FEHashUpper(lbl_803E4E38)));
-    mpSpeedDigit2 = static_cast<FEString *>(FEngFindObject(pkg_name, FEHashUpper(lbl_803E4E48)));
-    mpSpeedDigit3 = static_cast<FEString *>(FEngFindObject(pkg_name, FEHashUpper(lbl_803E4E58)));
-    SpeedUnits = static_cast<FEString *>(FEngFindObject(pkg_name, FEHashUpper(lbl_803E4E68)));
+    RegisterGroup(FEHashUpper("SpeedometerGroup"));
+    mpSpeedDigit1 = static_cast<FEString *>(FEngFindObject(pkg_name, FEHashUpper("SPEED_DIGIT_1")));
+    mpSpeedDigit2 = static_cast<FEString *>(FEngFindObject(pkg_name, FEHashUpper("SPEED_DIGIT_2")));
+    mpSpeedDigit3 = static_cast<FEString *>(FEngFindObject(pkg_name, FEHashUpper("SPEED_DIGIT_3")));
+    SpeedUnits = static_cast<FEString *>(FEngFindObject(pkg_name, FEHashUpper("3rdPersonSpeedUnits")));
 }
 
 void Speedometer::Update(IPlayer *player) {
@@ -65,8 +54,4 @@ void Speedometer::Update(IPlayer *player) {
         FEngSetInvisible(mpSpeedDigit2);
         FEngSetVisible(mpSpeedDigit1);
     }
-}
-
-void Speedometer::SetSpeed(float speed) {
-    mSpeed = speed;
 }

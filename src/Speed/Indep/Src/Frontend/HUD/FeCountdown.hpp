@@ -20,9 +20,9 @@ class Countdown : public HudElement, public ICountdown {
     float GetSecondsBeforeRaceStart() override;
 
   private:
-    FEGroup * pMessageGroup;
-    FEString * pMessage;
-    FEString * pMessageShadow;
+    FEGroup *pMessageGroup;
+    FEString *pMessage;
+    FEString *pMessageShadow;
     eRaceCountdownNumber mCountdown;
     Timer mSecondTimer;
 };

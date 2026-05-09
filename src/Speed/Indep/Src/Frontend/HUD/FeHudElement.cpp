@@ -4,21 +4,18 @@
 #include "Speed/Indep/Src/FEng/FEMultiImage.h"
 #include "Speed/Indep/Src/FEng/FEString.h"
 #include "Speed/Indep/Src/FEng/feimage.h"
-
-FEString *FEngFindString(const char *pkg_name, int name_hash);
-FEImage *FEngFindImage(const char *pkg_name, int name_hash);
-FEObject *FEngFindObject(const char *pkg_name, unsigned int obj_hash);
-FEObject *FEngFindGroup(const char *pkg_name, unsigned int obj_hash);
-void FEngSetVisible(FEObject *obj);
-void FEngSetInvisible(FEObject *obj);
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEImages.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEObjects.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEStrings.hpp"
 
 HudElement::HudElement(const char *pkg_name, unsigned long long mask)
     : pPackageName(pkg_name) //
-    , Mask(mask) //
-    , CurrentHudFeatures(0) //
-    , mCurrentlySetVisible(false) {}
-
-void HudElement::Update(IPlayer *player) {}
+      ,
+      Mask(mask) //
+      ,
+      CurrentHudFeatures(0) //
+      ,
+      mCurrentlySetVisible(false) {}
 
 FEString *HudElement::RegisterString(unsigned int hash) {
     FEString *string = FEngFindString(pPackageName, hash);
@@ -41,7 +38,7 @@ FEImage *HudElement::RegisterImage(unsigned int hash) {
 }
 
 FEMultiImage *HudElement::RegisterMultiImage(unsigned int hash) {
-    FEMultiImage *image = static_cast< FEMultiImage * >(FEngFindObject(pPackageName, hash));
+    FEMultiImage *image = static_cast<FEMultiImage *>(FEngFindObject(pPackageName, hash));
 
     if (image != nullptr) {
         Objects.AddTail(image);
@@ -61,11 +58,10 @@ FEObject *HudElement::RegisterObject(unsigned int hash) {
 }
 
 FEGroup *HudElement::RegisterGroup(unsigned int hash) {
-    FEGroup *group = static_cast< FEGroup * >(FEngFindGroup(pPackageName, hash));
+    FEGroup *group = static_cast<FEGroup *>(FEngFindGroup(pPackageName, hash));
 
     if (group != nullptr) {
-        for (FEObject *object = group->GetFirstChild(); object != nullptr;
-             object = static_cast< FEObject * >(object->FEMinNode::GetNext())) {
+        for (FEObject *object = group->GetFirstChild(); object != nullptr; object = static_cast<FEObject *>(object->FEMinNode::GetNext())) {
             if (object->Type == FE_Group) {
                 RegisterGroup(object->NameHash);
             } else {
@@ -87,9 +83,8 @@ void HudElement::Toggle(unsigned long long hud_features) {
         is_visible = 1;
     }
 
-    for (bPNode *node = static_cast< bPNode * >(Objects.GetHead()); node != Objects.EndOfList();
-         node = static_cast< bPNode * >(node->GetNext())) {
-        FEObject *object = static_cast< FEObject * >(node->GetpObject());
+    for (bPNode *node = static_cast<bPNode *>(Objects.GetHead()); node != Objects.EndOfList(); node = static_cast<bPNode *>(node->GetNext())) {
+        FEObject *object = static_cast<FEObject *>(node->GetpObject());
 
         if (is_visible != 0) {
             FEngSetVisible(object);

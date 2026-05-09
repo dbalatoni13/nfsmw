@@ -3,6 +3,7 @@
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/customize/CustomizeTypes.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/customize/FECustomize.hpp"
 #include "Speed/Indep/Src/Gameplay/GActivity.h"
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Gameplay/GRaceDatabase.h"
@@ -12,18 +13,8 @@
 #include "Speed/Indep/Src/Generated/Messages/MEnterSafeHouse.h"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 
-extern cFrontendDatabase *FEDatabase;
-
-FEObject *FEngFindObject(const char *pkg_name, unsigned int obj_hash);
-bool FEngIsScriptSet(FEObject *obj, unsigned int script_hash);
-void FEngSetScript(FEObject *obj, unsigned int script_hash, bool play);
-void FEngSetTextureHash(FEImage *img, unsigned int hash);
-void BeginCarCustomize(eCustomizeEntryPoint entry, FECarRecord *record);
-
 MenuZoneTrigger::MenuZoneTrigger(UTL::COM::Object *pOutter, const char *pkg_name, int player_number)
-    : HudElement(pkg_name, 0x400000) //
-    , IMenuZoneTrigger(pOutter)
-{
+    : HudElement(pkg_name, 0x400000), IMenuZoneTrigger(pOutter) {
     mCingularTimer = 0;
     mbInsideTrigger = false;
     mbCingularQueued = false;
@@ -51,22 +42,19 @@ void MenuZoneTrigger::Update(IPlayer *player) {
     }
 }
 
-bool MenuZoneTrigger::IsPlayerInsideTrigger() {
-    return FEngIsScriptSet(mEventIcon, 0x280164f);
+bool MenuZoneTrigger::ShouldSeeMenuZoneCluster() {
+    return *reinterpret_cast<int *>(reinterpret_cast<char *>(&GRaceStatus::Get()) + 0x1AA4) == 0;
 }
 
-void MenuZoneTrigger::ExitTrigger() {
-    mpRaceActivity = nullptr;
-    mbInsideTrigger = false;
-    mZoneType = nullptr;
-    HideDPadButton();
+bool MenuZoneTrigger::IsPlayerInsideTrigger() {
+    return FEngIsScriptSet(mEventIcon, 0x280164f);
 }
 
 void MenuZoneTrigger::EnterTrigger(GRuntimeInstance *pRaceActivity) {
     mpRaceActivity = pRaceActivity;
     mbInsideTrigger = true;
     PulseDPadButton(ENGAGE_DPAD_ELEMENT_UP, mEventIcon);
-    GRaceParameters *parms = GRaceDatabase::Get().GetRaceFromActivity(static_cast<GActivity*>(mpRaceActivity));
+    GRaceParameters *parms = GRaceDatabase::Get().GetRaceFromActivity(static_cast<GActivity *>(mpRaceActivity));
     FEngSetTextureHash(mEventIcon, FEDatabase->GetRaceIconHash(parms->GetRaceType()));
 }
 
@@ -77,9 +65,16 @@ void MenuZoneTrigger::EnterTrigger(const char *zoneType) {
     FEngSetTextureHash(mEventIcon, FEDatabase->GetSafehouseIconHash(zoneType));
 }
 
+void MenuZoneTrigger::ExitTrigger() {
+    mpRaceActivity = nullptr;
+    mbInsideTrigger = false;
+    mZoneType = nullptr;
+    HideDPadButton();
+}
+
 void MenuZoneTrigger::RequestEventInfoDialog(int port) {
     if (mpRaceActivity) {
-        GRaceParameters *parms = GRaceDatabase::Get().GetRaceFromActivity(static_cast<GActivity*>(mpRaceActivity));
+        GRaceParameters *parms = GRaceDatabase::Get().GetRaceFromActivity(static_cast<GActivity *>(mpRaceActivity));
         if (!parms || !parms->GetIsBossRace()) {
             new ERequestEventInfoDialog(port, mpRaceActivity);
         } else {
@@ -89,24 +84,26 @@ void MenuZoneTrigger::RequestEventInfoDialog(int port) {
 }
 
 void MenuZoneTrigger::RequestZoneInfoDialog(int port) {
-    if (bStrCmp(mZoneType, "safehouse") == 0 ||
-        bStrCmp(mZoneType, "carlot") == 0 ||
-        bStrCmp(mZoneType, "customshop") == 0) {
+    if (bStrCmp(mZoneType, "safehouse") == 0 || bStrCmp(mZoneType, "carlot") == 0 || bStrCmp(mZoneType, "customshop") == 0) {
         MEnterSafeHouse msg(mZoneType);
         msg.Post(0x20D60DBF);
     }
 }
 
+bool MenuZoneTrigger::IsType(const char *t) {
+    return bStrCmp(mZoneType, t) == 0;
+}
+
 void MenuZoneTrigger::RequestDoAction() {
     if (bStrCmp(mZoneType, "safehouse") == 0) {
-        new EQuitToFE(static_cast<eGarageType>(2), "MainMenu_Sub.fng");
+        new EQuitToFE(GARAGETYPE_CAREER_SAFEHOUSE, "MainMenu_Sub.fng");
     } else if (bStrCmp(mZoneType, "carlot") == 0) {
-        new EQuitToFE(static_cast<eGarageType>(5), "Car_Select.fng");
+        new EQuitToFE(GARAGETYPE_CAR_LOT, "Car_Select.fng");
     } else if (bStrCmp(mZoneType, "customshop") == 0) {
         FECarRecord *rec = FEDatabase->GetPlayerCarStable(0)->GetCarRecordByHandle(FEDatabase->GetCareerSettings()->GetCurrentCar());
         if (rec->IsCustomized()) {
-            BeginCarCustomize(static_cast<eCustomizeEntryPoint>(0), rec);
-            new EQuitToFE(static_cast<eGarageType>(3), "CustomizeMain.fng");
+            BeginCarCustomize(CEP_GAMEPLAY, rec);
+            new EQuitToFE(GARAGETYPE_CUSTOMIZATION_SHOP, "CustomizeMain.fng");
         }
     }
 }
@@ -168,7 +165,7 @@ void MenuZoneTrigger::PulseDPadButton(ENGAGE_DPAD_ELEMENT_DIRECTION direction, F
             hash = 0xA729B1B;
         }
         if (hash) {
-            FEObject *btn = FEngFindObject(pPackageName, hash);
+            FEObject *btn = FEngFindObject(GetPackageName(), hash);
             if (btn) {
                 if (!FEngIsScriptSet(btn, 0x5079C8F8) && !FEngIsScriptSet(btn, 0x280164F)) {
                     FEngSetScript(btn, 0x5079C8F8, true);
@@ -177,12 +174,4 @@ void MenuZoneTrigger::PulseDPadButton(ENGAGE_DPAD_ELEMENT_DIRECTION direction, F
             }
         }
     }
-}
-
-bool MenuZoneTrigger::IsType(const char *t) {
-    return bStrCmp(mZoneType, t) == 0;
-}
-
-bool MenuZoneTrigger::ShouldSeeMenuZoneCluster() {
-    return *reinterpret_cast<int *>(reinterpret_cast<char *>(&GRaceStatus::Get()) + 0x1AA4) == 0;
 }

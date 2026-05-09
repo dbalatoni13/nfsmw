@@ -14,12 +14,12 @@ class ISpeedometer : public UTL::COM::IUnknown {
         return (HINTERFACE)_IHandle;
     }
 
-    ISpeedometer(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
-
-    virtual void SetSpeed(float speed);
-
   protected:
     virtual ~ISpeedometer() {}
+    ISpeedometer(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+
+  public:
+    virtual void SetSpeed(float speed);
 };
 
 // total size: 0x48
@@ -27,14 +27,16 @@ class Speedometer : public HudElement, public ISpeedometer {
   public:
     Speedometer(UTL::COM::Object *pOutter, const char *pkg_name, int player_number);
     void Update(IPlayer *player) override;
-    void SetSpeed(float speed) override;
+    void SetSpeed(float speed) override {
+        mSpeed = speed;
+    };
 
   private:
-    FEString *mpSpeedDigit1;                   // offset 0x30
-    FEString *mpSpeedDigit2;                   // offset 0x34
-    FEString *mpSpeedDigit3;                   // offset 0x38
-    FEString *SpeedUnits;                      // offset 0x3C
-    float mSpeed;                              // offset 0x40
+    FEString *mpSpeedDigit1; // offset 0x30
+    FEString *mpSpeedDigit2; // offset 0x34
+    FEString *mpSpeedDigit3; // offset 0x38
+    FEString *SpeedUnits;    // offset 0x3C
+    float mSpeed;            // offset 0x40
 };
 
 #endif

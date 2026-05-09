@@ -1,29 +1,33 @@
 #include "Speed/Indep/Src/Frontend/HUD/FeCountdown.hpp"
 #include "Speed/Indep/Src/Animation/AnimWorldTypes.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEObjects.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEStrings.hpp"
 #include "Speed/Indep/Src/Generated/Events/ENISWorldAnimTrigger.hpp"
 #include "Speed/Indep/Src/Generated/Messages/MCountdownDone.h"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 
-void FEngSetScript(FEObject *object, unsigned int script_hash, bool start_at_beginning);
-void FEngSetLanguageHash(FEString *text, unsigned int hash);
-int FEPrintf(FEString *text, const char *fmt, ...);
-
 Countdown::Countdown(UTL::COM::Object *pOutter, const char *pkg_name, int player_number)
     : HudElement(pkg_name, 0x400) //
-    , ICountdown(pOutter) //
-    , mCountdown(RACE_COUNTDOWN_NUMBER_NONE) //
-    , mSecondTimer(0)
-{
+      ,
+      ICountdown(pOutter) //
+      ,
+      mCountdown(RACE_COUNTDOWN_NUMBER_NONE) //
+      ,
+      mSecondTimer(0) {
     pMessageGroup = RegisterGroup(FEHashUpper("321_GO_GROUP"));
     pMessage = static_cast<FEString *>(FEngFindObject(pkg_name, FEHashUpper("321_GO")));
     pMessageShadow = static_cast<FEString *>(FEngFindObject(pkg_name, FEHashUpper("321_GO_SHADOW")));
 }
 
 void Countdown::Update(IPlayer *player) {
-    if (!pMessageGroup) return;
-    if (!pMessage) return;
-    if (!pMessageShadow) return;
+    if (!pMessageGroup)
+        return;
+    if (!pMessage)
+        return;
+    if (!pMessageShadow)
+        return;
 
     if (WorldTimer.IsSet()) {
         int countdown = mCountdown;
@@ -41,7 +45,8 @@ void Countdown::Update(IPlayer *player) {
             }
         }
 
-        if (!shouldStep) return;
+        if (!shouldStep)
+            return;
 
         mCountdown = static_cast<eRaceCountdownNumber>(countdown - 1);
 

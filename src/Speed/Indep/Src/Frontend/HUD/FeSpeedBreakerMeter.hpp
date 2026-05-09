@@ -17,10 +17,9 @@ class ISpeedBreakerMeter : public UTL::COM::IUnknown {
         return (HINTERFACE)_IHandle;
     }
 
-    ISpeedBreakerMeter(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
-
   protected:
     virtual ~ISpeedBreakerMeter() {}
+    ISpeedBreakerMeter(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
   public:
     virtual void SetPursuitLevel(float level);
@@ -34,13 +33,13 @@ class SpeedBreakerMeter : public HudElement, public ISpeedBreakerMeter {
     void SetPursuitLevel(float level) override;
 
   private:
-    float mPursuitLevel;                       // offset 0x30
-    bool mPursuitLevelChanged;                 // offset 0x34
-    FEObject *mpSpeedBreakerMeterIcon;         // offset 0x38
-    FEMultiImage *mpSpeedBreakerMeterBar;      // offset 0x3C
-    FEGroup *mpSpeedBreakerGroup;              // offset 0x40
-    FEObject *mpSpeedBreakerBar;               // offset 0x44
-    float mSpeedBreakerBarOriginalWidth;       // offset 0x48
+    float mPursuitLevel;                  // offset 0x30
+    bool mPursuitLevelChanged;            // offset 0x34
+    FEObject *mpSpeedBreakerMeterIcon;    // offset 0x38
+    FEMultiImage *mpSpeedBreakerMeterBar; // offset 0x3C
+    FEGroup *mpSpeedBreakerGroup;         // offset 0x40
+    FEObject *mpSpeedBreakerBar;          // offset 0x44
+    float mSpeedBreakerBarOriginalWidth;  // offset 0x48
 };
 
 #endif

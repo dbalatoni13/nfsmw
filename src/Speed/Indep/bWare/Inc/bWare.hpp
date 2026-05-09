@@ -86,6 +86,9 @@ void bPlatEndianSwap(bVector2 *value);
 void bPlatEndianSwap(bVector3 *value);
 void bPlatEndianSwap(bVector4 *value);
 void bPlatEndianSwap(bMatrix4 *value);
+inline void bEndianSwap(short *value) {
+    bEndianSwap16(value);
+}
 
 void bInitSharedStringPool(int size);
 void bCloseSharedStringPool();

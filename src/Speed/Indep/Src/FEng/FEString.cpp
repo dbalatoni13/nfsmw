@@ -1,13 +1,14 @@
-#include <new>
+// #include <new>
 
 #include "Speed/Indep/Src/FEng/FEString.h"
+#include "FEObject.h"
 #include "Speed/Indep/Src/FEng/FEngStandard.h"
 
-FELabelCallback* FEString::pLabelCallback;
+FELabelCallback *FEString::pLabelCallback;
 
-FEString::FEString(const FEString& String, bool bReference)
-    : FEObject(String, bReference), pLabelName(0), string(String.string), Format(String.Format), Leading(String.Leading),
-      MaxWidth(String.MaxWidth) {
+FEString::FEString(const FEString &String, bool bReference)
+    : FEObject(reinterpret_cast<const FEObject &>(String), bReference), pLabelName(0), string(String.string), Format(String.Format),
+      Leading(String.Leading), MaxWidth(String.MaxWidth) {
     SetLabel(String.pLabelName);
     string.SetLength(String.string.mulBufferLength);
 }
@@ -18,11 +19,11 @@ FEString::~FEString() {
     }
 }
 
-FEObject* FEString::Clone(bool bReference) {
-    return FENG_NEW FEString(*this, bReference);
+FEObject *FEString::Clone(bool bReference) {
+    return reinterpret_cast<FEObject *>(FENG_NEW FEString(*this, bReference));
 }
 
-void FEString::SetLabel(const char* pString) {
+void FEString::SetLabel(const char *pString) {
     if (pLabelName) {
         delete[] pLabelName;
     }

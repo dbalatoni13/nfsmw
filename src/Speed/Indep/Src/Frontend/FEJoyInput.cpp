@@ -1,47 +1,26 @@
 #include "Speed/Indep/Src/Frontend/FEJoyInput.hpp"
 
-#include "Speed/Indep/Src/FEng/cFEng.h"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Frontend/FEManager.hpp"
 #include "Speed/Indep/Src/Input/ActionQueue.h"
 #include "Speed/Indep/Src/Input/ActionRef.h"
 #include "Speed/Indep/Src/Misc/GameFlow.hpp"
 #include "Speed/Indep/Src/Sim/SimTypes.h"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/feKeyboardInput.hpp"
+#include "Speed/Indep/Src/Sim/Simulation.h"
 
-#include "Speed/Indep/Src/Frontend/MemoryCard/MemoryCard.hpp"
+// total size: 0x1C
+struct cMapJoyEventToFEPad {
+    void ResetState() {}
 
-namespace Sim {
-Sim::eUserMode GetUserMode();
-}
-
-struct FEngTextInputObject;
-
-struct KeyboardEditString {
-    char InitialString[256];
-    unsigned short EditStringUCS2[256];
-    int CursorPosUCS2;
-    char EditStringPacked[256];
-    unsigned int ModeFlags;
-    int KeysProcessed;
-    int MaxTextLength;
-    bool mEnabled;
-    FEngTextInputObject* TextInputObject;
-
-    bool IsCapturing() {
-        return mEnabled && TextInputObject != nullptr;
-    }
+    ActionID Event;    // offset 0x0, size 0x4
+    uint32 FEPadValue; // offset 0x4, size 0x4
+    const char *Name;  // offset 0x8, size 0x4
+    int State[4];      // offset 0xC, size 0x10
 };
 
-extern KeyboardEditString gKeyboardManager;
-
-struct FEJoyMapping {
-    int eventID;
-    unsigned long padMask;
-    const char* name;
-    int state[4];
-};
-
-static FEJoyMapping MapJoyEventToFEPad[16] = {
+static cMapJoyEventToFEPad MapJoyEventToFEPad[16] = {
     {FRONTENDACTION_UP, 0x00000001, "FEPad_Up", {0, 0, 0, 0}},
     {FRONTENDACTION_DOWN, 0x00000002, "FEPad_Down", {0, 0, 0, 0}},
     {FRONTENDACTION_LEFT, 0x00000004, "FEPad_Left", {0, 0, 0, 0}},
@@ -60,7 +39,7 @@ static FEJoyMapping MapJoyEventToFEPad[16] = {
     {FRONTENDACTION_RTRIGGER, 0x00000100, "FEPad_RightTrigger", {0, 0, 0, 0}},
 };
 
-cFEngJoyInput* cFEngJoyInput::mInstance;
+cFEngJoyInput *cFEngJoyInput::mInstance;
 
 cFEngJoyInput::cFEngJoyInput() {
     for (int i = 0; i < 2; i++) {
@@ -76,13 +55,13 @@ void cFEngJoyInput::FlushActions() {
             mActionQ[port]->Flush();
         }
         for (int i = 0; i < 16; i++) {
-            MapJoyEventToFEPad[i].state[port] = 0;
+            MapJoyEventToFEPad[i].State[port] = 0;
         }
     }
 }
 
 void cFEngJoyInput::JoyDisable(JoystickPort port, bool do_flush) {
-    if (port == kJP_NumPorts) {
+    if (port == JOYSTICK_PORT_NONE) {
         for (int i = 0; i < 2; i++) {
             mActionQ[i]->Enable(false);
             if (do_flush) {
@@ -102,7 +81,7 @@ bool cFEngJoyInput::IsJoyPluggedIn(JoystickPort port) {
 }
 
 void cFEngJoyInput::JoyEnable(JoystickPort port, bool do_flush) {
-    if (port == kJP_NumPorts) {
+    if (port == JOYSTICK_PORT_NONE) {
         for (int i = 0; i < 2; i++) {
             if (!mActionQ[i]->IsEnabled()) {
                 mActionQ[i]->Enable(true);
@@ -122,7 +101,7 @@ void cFEngJoyInput::JoyEnable(JoystickPort port, bool do_flush) {
 }
 
 bool cFEngJoyInput::IsJoyEnabled(JoystickPort port) {
-    if (port == kJP_NumPorts) {
+    if (port == JOYSTICK_PORT_NONE) {
         for (int i = 0; i < 2; i++) {
             if (!mActionQ[i]->IsEnabled()) {
                 return false;
@@ -137,7 +116,7 @@ bool cFEngJoyInput::IsJoyEnabled(JoystickPort port) {
 }
 
 void cFEngJoyInput::SetRequiredJoy(JoystickPort port, bool required) {
-    if (port == kJP_NumPorts) {
+    if (port == JOYSTICK_PORT_NONE) {
         for (int i = 0; i < 2; i++) {
             mActionQ[i]->SetRequired(required);
         }
@@ -149,7 +128,7 @@ void cFEngJoyInput::SetRequiredJoy(JoystickPort port, bool required) {
 bool cFEngJoyInput::CheckUnplugged() {
     bool unplugged = false;
     if (!TheGameFlowManager.IsInGame() && !FEManager::Get()->IsAllowingControllerError()) {
-        SetRequiredJoy(kJP_NumPorts, false);
+        SetRequiredJoy(JOYSTICK_PORT_NONE, false);
     } else {
         int is_splitscreen = false;
         if (FEDatabase->IsSplitScreenMode()) {
@@ -173,7 +152,7 @@ bool cFEngJoyInput::CheckUnplugged() {
         if (player_port2 != static_cast<JoystickPort>(-1)) {
             SetRequiredJoy(player_port2, true);
         }
-        FEManager* feManager = FEManager::Get();
+        FEManager *feManager = FEManager::Get();
         if (!IsJoyPluggedIn(player_port1)) {
             feManager->WantControllerError(player_port1);
             unplugged = true;
@@ -224,8 +203,8 @@ void cFEngJoyInput::HandleJoy() {
                     mActionQ[port]->IsEnabled();
                     for (int j = 0; j < 16; j++) {
                         if (mActionQ[port]->IsConnected()) {
-                            if (MapJoyEventToFEPad[j].eventID == aRef.ID()) {
-                                MapJoyEventToFEPad[j].state[port] = static_cast<int>(aRef.Data() + 0.5f);
+                            if (MapJoyEventToFEPad[j].Event == aRef.ID()) {
+                                MapJoyEventToFEPad[j].State[port] = static_cast<int>(aRef.Data() + 0.5f);
                                 if (!gKeyboardManager.IsCapturing()) {
                                     if (aRef.ID() == FRONTENDACTION_BUTTON2) {
                                         if (aRef.Data() == 1.0f) {
@@ -242,7 +221,7 @@ void cFEngJoyInput::HandleJoy() {
                                 break;
                             }
                         } else {
-                            MapJoyEventToFEPad[j].state[port] = 0;
+                            MapJoyEventToFEPad[j].State[port] = 0;
                         }
                     }
                     mActionQ[port]->PopAction();
@@ -253,104 +232,15 @@ void cFEngJoyInput::HandleJoy() {
     CheckUnplugged();
 }
 
-unsigned long cFEngJoyInput::GetJoyPadMask(unsigned char pPadIndex) {
+u32 cFEngJoyInput::GetJoyPadMask(u8 pPadIndex) {
     unsigned int buttons = 0;
     for (int i = 0; i < 16; i++) {
-        if (MapJoyEventToFEPad[i].state[pPadIndex] != 0) {
-            buttons |= MapJoyEventToFEPad[i].padMask;
+        if (MapJoyEventToFEPad[i].State[pPadIndex] != 0) {
+            buttons |= MapJoyEventToFEPad[i].FEPadValue;
         }
     }
     return buttons;
 }
 
-void MUTEX_lock(MUTEX* m);
-void MUTEX_unlock(MUTEX* m);
-
-void MyMutex::Lock() {
-    MUTEX_lock(&mMutex);
-}
-
-void MyMutex::Unlock() {
-    MUTEX_unlock(&mMutex);
-}
-
-int MyMutex::AddRef() {
-    return ++mRefcount;
-}
-
-int MyMutex::Release() {
-    int ref = --mRefcount;
-    if (ref > 0) {
-        return ref;
-    }
-    if (this != nullptr) {
-        delete this;
-    }
-    return 0;
-}
-
-IMutex* MyMutex::CreateInstance() {
-    return new MyMutex();
-}
-
-int MyThread::AddRef() {
-    return ++mRefcount;
-}
-
-int MyThread::Release() {
-    int ref = --mRefcount;
-    if (ref > 0) {
-        return ref;
-    }
-    if (this != nullptr) {
-        delete this;
-    }
-    return 0;
-}
-
-IThread* MyThread::CreateInstance() {
-    return new MyThread();
-}
-
-void THREAD_sleep(int ticks);
-void THREAD_create(THREAD* thread, int (*func)(void*), void* param, void* stack, int stackSize, int priority);
-void THREAD_waitexit(THREAD* thread, int status);
-void THREAD_setpriority(THREAD* thread, int priority);
-void THREAD_yield(int ticks);
-
-void MyThread::Sleep(int ticks) {
-    THREAD_sleep(ticks);
-}
-
-void MyThread::Begin(int (*func)(void*)) {
-    mEntryFunc = func;
-    mStackBuffer = new char[mStackSize];
-    THREAD_create(&mThreadData, EntryProc, this, mStackBuffer, mStackSize, mPriority);
-    mActive = true;
-}
-
-void MyThread::WaitForEnd(int) {
-    THREAD_waitexit(&mThreadData, 0);
-    if (mStackBuffer != nullptr) {
-        delete[] static_cast< char* >(mStackBuffer);
-    }
-    mActive = false;
-}
-
-void MyThread::SetPriority(int priority) {
-    mPriority = 0;
-    THREAD_setpriority(&mThreadData, 0);
-}
-
-bool MyThread::IsActive() { return mActive; }
-
-int (*MyThread::GetEntryFunc())(void*) { return mEntryFunc; }
-
-int MyThread::EntryProc(void* pContext) {
-    MyThread* pThread = static_cast< MyThread* >(pContext);
-    while (!pThread->MyThread::IsActive()) {
-        THREAD_yield(1);
-    }
-    pThread->MyThread::GetEntryFunc()(pContext);
-    return 0;
-}
+// STRIPPED
+uint32 cFEngJoyInput::GetJoyPadTexture(const char *eventString, JoystickPort port) {}

@@ -232,5 +232,6 @@ int eRenderLightFlare(eView *view, eLightFlare *light_flare, bMatrix4 *local_wor
                       flareType destinationType, float RefelectionOverride, uint32 ColourOverRide, float sizescale);
 eLightMaterial *elGetLightMaterial(uint32 name_hash);
 void eLightUpdateTextures();
+void SetSelectCarLighting(int, float, int);
 
 #endif

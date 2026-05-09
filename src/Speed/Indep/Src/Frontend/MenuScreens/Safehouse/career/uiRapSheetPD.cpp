@@ -1,17 +1,22 @@
 #include "uiRapSheetPD.hpp"
-#include "Speed/Indep/Src/FEng/cFEng.h"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
-int FEPrintf(const char* pkg_name, int hash, const char* fmt, ...);
-const char* GetLocalizedString(unsigned int hash);
-uiRapSheetPD::uiRapSheetPD(ScreenConstructorData* sd) : MenuScreen(sd) , pursuit_number(sd->Arg) { Setup(); }
-uiRapSheetPD::~uiRapSheetPD() {}
-void uiRapSheetPD::NotificationMessage(unsigned long msg, FEObject* pobj, unsigned long param1, unsigned long param2) {
-    if (msg == 0xE1FDE1D1) { cFEng::Get()->QueuePackageSwitch("RapSheetTEP.fng", 0, 0, false); }
+#include "Speed/Indep/Src/Frontend/Localization/Localize.hpp"
+
+uiRapSheetPD::uiRapSheetPD(ScreenConstructorData *sd) : MenuScreen(sd), pursuit_number(sd->Arg) {
+    Setup();
 }
+
+void uiRapSheetPD::NotificationMessage(u32 msg, FEObject *pobj, u32 param1, u32 param2) {
+    if (msg == 0xE1FDE1D1) {
+        cFEng::Get()->QueuePackageSwitch("RapSheetTEP.fng", 0, 0, false);
+    }
+}
+
 void uiRapSheetPD::Setup() {
-    UserProfile* prof = FEDatabase->GetUserProfile(0);
-    HighScoresDatabase* scores = prof->GetHighScores();
-    const TopEvadedPursuitDetail& pursuit = scores->GetTopEvadedPursuitScores(static_cast<unsigned short>(pursuit_number));
+    UserProfile *prof = FEDatabase->GetUserProfile(0);
+    HighScoresDatabase *scores = prof->GetHighScores();
+    const TopEvadedPursuitDetail &pursuit = scores->GetTopEvadedPursuitScores(static_cast<unsigned short>(pursuit_number));
     FEPrintf(GetPackageName(), 0x1232703A, GetLocalizedString(0xE21D083C), prof->GetCareer()->GetCaseFileName());
     FEPrintf(GetPackageName(), 0xEB406FEC, GetLocalizedString(0x6031106E), prof->GetProfileName());
     FEPrintf(GetPackageName(), 0xD91934E7, GetLocalizedString(0xA656CD29), pursuit.PursuitName);

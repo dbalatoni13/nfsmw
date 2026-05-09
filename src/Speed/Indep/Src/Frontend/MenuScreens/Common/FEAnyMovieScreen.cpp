@@ -1,32 +1,21 @@
 #include "FEAnyMovieScreen.hpp"
 
-#include "Speed/Indep/Src/FEng/cFEng.h"
+#include "Speed/Indep/Src/FEng/FEMovie.h"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Frontend/FEManager.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEMovies.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/InGame/FEPkg_Chyron.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/FEPkg_GarageMain.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRepSheetRivalFlow.hpp"
+#include "Speed/Indep/Src/Frontend/MoviePlayer/MoviePlayer.hpp"
 #include "Speed/Indep/Src/Generated/Events/EFadeScreenOff.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
-
-extern void DismissChyron();
-extern bool MoviePlayer_Bypass();
-
-struct FEMovie;
-extern FEObject *FEngFindObject(const char *pkg_name, unsigned int obj_hash);
-extern void FEngSetMovieName(FEMovie *movie, const char *name);
-
-// GarageMainScreen already defined in uiMain.cpp (earlier in TU)
 
 char FEAnyMovieScreen::MovieFilename[64];
 char FEAnyMovieScreen::ReturnToPackageName[64];
 
-FEAnyMovieScreen::FEAnyMovieScreen(ScreenConstructorData *sd)
-    : MenuScreen(sd) //
-      ,
-      mSubtitler() //
-      ,
-      bHidGarage(false) //
-      ,
-      bAllowingControllerErrors(false) {
+FEAnyMovieScreen::FEAnyMovieScreen(ScreenConstructorData *sd) : MenuScreen(sd), mSubtitler(), bHidGarage(false), bAllowingControllerErrors(false) {
     const unsigned int FEObj_movie = 0x348FF9F;
 
     bAllowingControllerErrors = FEManager::Get()->IsAllowingControllerError();
@@ -62,7 +51,7 @@ MenuScreen *FEAnyMovieScreen::Create(ScreenConstructorData *sd) {
     return new ("", 0) FEAnyMovieScreen(sd);
 }
 
-void FEAnyMovieScreen::NotificationMessage(unsigned long msg, FEObject *obj, unsigned long param1, unsigned long param2) {
+void FEAnyMovieScreen::NotificationMessage(u32 msg, FEObject *obj, u32 param1, u32 param2) {
     mSubtitler.Update(msg);
 
     switch (msg) {

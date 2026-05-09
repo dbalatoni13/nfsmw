@@ -5,15 +5,19 @@
 #pragma once
 #endif
 
+#include "types.h"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/UIWidgetMenu.hpp"
 
-struct uiRapSheetMain : public UIWidgetMenu {
-    unsigned int button_pressed; // offset 0x138, size 0x4
+class uiRapSheetMain : public UIWidgetMenu {
+  public:
+    uiRapSheetMain(ScreenConstructorData *sd);
+    ~uiRapSheetMain() override {}
+    void NotificationMessage(u32 msg, FEObject *pobj, u32 param1, u32 param2) override;
 
-    uiRapSheetMain(ScreenConstructorData* sd);
-    ~uiRapSheetMain() override;
-    void NotificationMessage(unsigned long msg, FEObject* pobj, unsigned long param1, unsigned long param2) override;
+  private:
     void RefreshHeader();
+
+    uint32 button_pressed; // offset 0x138, size 0x4
 };
 
 #endif

@@ -1,39 +1,27 @@
 #include "uiCareerMain.hpp"
 
 #include "Speed/Indep/Src/FEng/FEList.h"
-#include "Speed/Indep/Src/FEng/cFEng.h"
+#include "Speed/Indep/Src/Frontend/FEPackageData.hpp"
+#include "Speed/Indep/Src/Frontend/FEngFrontend.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Frontend/Database/VehicleDB.hpp"
 #include "Speed/Indep/Src/Frontend/FEManager.hpp"
-#include "Speed/Indep/Src/Gameplay/GManager.h"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/DialogInterface.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/MemCard/uiMemcardInterface.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/FEPkg_GarageMain.hpp"
+#include "Speed/Indep/Src/Frontend/RaceStarter.hpp"
 #include "Speed/Indep/Src/Gameplay/GRaceDatabase.h"
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Misc/Config.h"
 
-// GarageMainScreen already defined in uiMain.cpp (earlier in TU)
-
-void FEngSetLanguageHash(const char *pkg_name, unsigned int obj_hash, unsigned int language);
-unsigned char FEngGetLastButton(const char *pkg_name);
-void FEngSetScript(const char *pkg_name, unsigned int obj_hash, unsigned int script_hash, bool start_at_beginning);
-const char *GetLocalizedString(unsigned int hash);
-int FEngMapJoyParamToJoyport(int feng_param);
-void MemcardEnter(const char *from, const char *to, unsigned int op, void (*pTermFunc)(void *), void *pTermFuncParam, unsigned int msgSuccess,
-                  unsigned int msgFailed);
-
-class RaceStarter {
-  public:
-    static void StartCareerFreeRoam();
-};
-
-extern unsigned int iCurrentViewBin;
+extern int iCurrentViewBin;
 
 uiCareerCrib::uiCareerCrib(ScreenConstructorData *sd) : IconScrollerMenu(sd) {
     Setup();
 }
 
-uiCareerCrib::~uiCareerCrib() {}
-
-void uiCareerCrib::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
+void uiCareerCrib::NotificationMessage(u32 msg, FEObject *pobj, u32 param1, u32 param2) {
     IconScrollerMenu::NotificationMessage(msg, pobj, param1, param2);
 
     switch (msg) {
@@ -131,38 +119,38 @@ void uiCareerCrib::Setup() {
     FEDatabase->RefreshCurrentRide();
 }
 
-void CResumeFreeRoam::React(const char *pkg_name, unsigned int data, FEObject *obj, unsigned int param1, unsigned int param2) {
+inline void CResumeFreeRoam::React(const char *pkg_name, uint32 data, FEObject *obj, uint32 param1, uint32 param2) {
     if (data == 0x0C407210) {
         cFrontendDatabase *db = FEDatabase;
         signed char port = FEngMapJoyParamToJoyport(param1);
         db->SetPlayersJoystickPort(0, port);
         const char *blurb = GetLocalizedString(0xEB694C0C);
-        DialogInterface::ShowTwoButtons(pkg_name, "", static_cast<eDialogTitle>(1), 0x70E01038, 0x417B25E4, 0xD05FC3A3, 0x34DC1BCF, 0x34DC1BCF,
-                                        static_cast<eDialogFirstButtons>(1), blurb);
+        DialogInterface::ShowTwoButtons(pkg_name, "", dialog_alert, 0x70E01038, 0x417B25E4, 0xD05FC3A3, 0x34DC1BCF, 0x34DC1BCF, first_dialog_button2,
+                                        blurb);
     }
 }
 
-void CCarSelect::React(const char *pkg_name, unsigned int data, FEObject *obj, unsigned int param1, unsigned int param2) {
+inline void CCarSelect::React(const char *pkg_name, uint32 data, FEObject *obj, uint32 param1, uint32 param2) {
     if (data == 0x0C407210) {
         cFEng::Get()->QueuePackageSwitch("IG_CarLot.fng", 0, 0, false);
     }
 }
 
-void CRapSheet::React(const char *pkg_name, unsigned int data, FEObject *obj, unsigned int param1, unsigned int param2) {
+inline void CRapSheet::React(const char *pkg_name, uint32 data, FEObject *obj, uint32 param1, uint32 param2) {
     if (data == 0x0C407210) {
         FEDatabase->SetGameMode(eFE_GAME_MODE_RAP_SHEET);
         cFEng::Get()->QueuePackageSwitch("RapSheetMain.fng", 0, 0, false);
     }
 }
 
-void CTop15::React(const char *pkg_name, unsigned int data, FEObject *obj, unsigned int param1, unsigned int param2) {
+inline void CTop15::React(const char *pkg_name, uint32 data, FEObject *obj, uint32 param1, uint32 param2) {
     if (data == 0x0C407210) {
         iCurrentViewBin = FEDatabase->GetCareerSettings()->GetCurrentBin();
         cFEng::Get()->QueuePackageSwitch("WorldMap_Main.fng", 0, 0, false);
     }
 }
 
-void CSave::React(const char *pkg_name, unsigned int data, FEObject *obj, unsigned int param1, unsigned int param2) {
+inline void CSave::React(const char *pkg_name, uint32 data, FEObject *obj, uint32 param1, uint32 param2) {
     if (data == 0x0C407210) {
         MemcardEnter(pkg_name, pkg_name, 0x2251, 0, 0, 0, 0);
     }

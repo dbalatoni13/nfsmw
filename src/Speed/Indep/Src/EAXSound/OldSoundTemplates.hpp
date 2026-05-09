@@ -5,6 +5,8 @@
 #pragma once
 #endif
 
+template <typename T> T smooth(const float curr /* f0 */, const T target /* f2 */, const T deltaUp /* f3 */, const T deltaDown /* f4 */) {}
 
+template <typename T> T smooth(const T curr /* f0 */, const T target /* f2 */, const T delta /* f3 */) {}
 
 #endif

@@ -6,14 +6,14 @@
 #endif
 
 #include "types.h"
-
-struct FEObject;
+#include "FEObject.h"
 
 // total size: 0x4
-struct FEObjectCallback {
-    inline FEObjectCallback() {}
-    inline virtual ~FEObjectCallback() {}
-    virtual bool Callback(FEObject* obj) = 0;
+class FEObjectCallback {
+  public:
+    FEObjectCallback() {}
+    virtual ~FEObjectCallback() {}
+    virtual bool Callback(FEObject *obj) = 0;
 };
 
 #endif

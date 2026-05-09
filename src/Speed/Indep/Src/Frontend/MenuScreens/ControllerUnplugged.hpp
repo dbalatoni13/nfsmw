@@ -9,14 +9,15 @@
 #include "Speed/Indep/Src/Frontend/FEJoyInput.hpp"
 
 // total size: 0x30
-struct ControllerUnplugged : public MenuScreen {
-    JoystickPort port; // offset 0x2C
-
-    ControllerUnplugged(ScreenConstructorData* sd);
+class ControllerUnplugged : public MenuScreen {
+  public:
+    ControllerUnplugged(ScreenConstructorData *sd);
     ~ControllerUnplugged() override;
-    static MenuScreen* Create(ScreenConstructorData* sd);
-    void NotificationMessage(unsigned long, FEObject*, unsigned long, unsigned long) override;
-    void Setup();
-};
+    void NotificationMessage(u32 msg, struct FEObject *obj, u32 param1, u32 param2) override;
 
+  private:
+    void Setup();
+
+    JoystickPort port; // offset 0x2C, size 0x4
+};
 #endif

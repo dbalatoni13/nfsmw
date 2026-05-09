@@ -1,6 +1,6 @@
 #include "feArrayScrollerMenu.hpp"
 
-#include "Speed/Indep/Src/FEng/cFEng.h"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 
 extern void FEngSetTextureHash(FEImage *image, unsigned int hash);
 extern void FEngSetVisible(FEObject *object);
@@ -29,8 +29,8 @@ ArrayScripts::ArrayScripts() {
 
 ArraySlot::ArraySlot(FEObject *obj)
     : FEngObject(obj) //
-    , scripts(nullptr) {
-}
+      ,
+      scripts(nullptr) {}
 
 void ArraySlot::Update(ArrayDatum *datum, bool isSelected) {
     if (!datum) {
@@ -63,12 +63,10 @@ void ArraySlot::Update(ArrayDatum *datum, bool isSelected) {
 // ImageArraySlot
 // ============================================================
 
-ImageArraySlot::ImageArraySlot(FEImage *img)
-    : ArraySlot(static_cast< FEObject * >(static_cast< void * >(img))) {
-}
+ImageArraySlot::ImageArraySlot(FEImage *img) : ArraySlot(static_cast<FEObject *>(static_cast<void *>(img))) {}
 
 void ImageArraySlot::SetTexture(unsigned int tex_hash) {
-    FEngSetTextureHash(static_cast< FEImage * >(GetFEngObject()), tex_hash);
+    FEngSetTextureHash(static_cast<FEImage *>(GetFEngObject()), tex_hash);
 }
 
 void ImageArraySlot::Update(ArrayDatum *datum, bool isSelected) {
@@ -84,12 +82,16 @@ void ImageArraySlot::Update(ArrayDatum *datum, bool isSelected) {
 
 ArrayDatum::ArrayDatum(uint32 h, uint32 d)
     : hash(h) //
-    , desc(d) //
-    , enabled(true) //
-    , greyedOut(false) //
-    , locked(false) //
-    , checked(false) {
-}
+      ,
+      desc(d) //
+      ,
+      enabled(true) //
+      ,
+      greyedOut(false) //
+      ,
+      locked(false) //
+      ,
+      checked(false) {}
 
 // ============================================================
 // ArrayScroller
@@ -97,16 +99,26 @@ ArrayDatum::ArrayDatum(uint32 h, uint32 d)
 
 ArrayScroller::ArrayScroller(const char *name, int w, int h, bool selectable)
     : bShouldPlaySound(false) //
-    , currentDatum(nullptr) //
-    , startDatum(0) //
-    , width(w) //
-    , height(h) //
-    , descLabel(0) //
-    , pkg_name(name) //
-    , pScrollRegion(nullptr) //
-    , bSelectableArray(selectable) //
-    , mouseDownMsg(0) //
-    , bInClickToSelectMode(false) //
+      ,
+      currentDatum(nullptr) //
+      ,
+      startDatum(0) //
+      ,
+      width(w) //
+      ,
+      height(h) //
+      ,
+      descLabel(0) //
+      ,
+      pkg_name(name) //
+      ,
+      pScrollRegion(nullptr) //
+      ,
+      bSelectableArray(selectable) //
+      ,
+      mouseDownMsg(0) //
+      ,
+      bInClickToSelectMode(false) //
 {
     ScrollBar.~FEScrollBar();
     new (&ScrollBar) FEScrollBar(name, "scrollbar", true, true, false);
@@ -199,12 +211,12 @@ void ArrayScroller::ScrollHor(eScrollDir dir) {
         ArrayDatum *old = currentDatum;
         do {
             current_num++;
-            new_datum = static_cast< ArrayDatum * >(new_datum->GetNext());
+            new_datum = static_cast<ArrayDatum *>(new_datum->GetNext());
         } while (current_num < new_index);
     } else if (new_index < current_num && new_index > -1) {
         ArrayDatum *old = currentDatum;
         for (int i = new_index; i < current_num; i++) {
-            new_datum = static_cast< ArrayDatum * >(new_datum->GetPrev());
+            new_datum = static_cast<ArrayDatum *>(new_datum->GetPrev());
         }
     }
     if (new_datum != currentDatum) {
@@ -239,7 +251,7 @@ void ArrayScroller::ScrollVer(eScrollDir dir) {
         if (new_index > -1) {
             int old_num = data.GetNodeNumber(currentDatum) - 1;
             for (int i = 0; i < old_num - new_index; i++) {
-                new_datum = static_cast< ArrayDatum * >(new_datum->GetPrev());
+                new_datum = static_cast<ArrayDatum *>(new_datum->GetPrev());
             }
         }
     } else if (dir == eSD_NEXT) {
@@ -269,7 +281,7 @@ void ArrayScroller::ScrollVer(eScrollDir dir) {
         if (new_index < data.CountElements()) {
             int old_num = data.GetNodeNumber(currentDatum);
             for (int i = 0; i < new_index - (old_num - 1); i++) {
-                new_datum = static_cast< ArrayDatum * >(new_datum->GetNext());
+                new_datum = static_cast<ArrayDatum *>(new_datum->GetNext());
             }
         }
     }
@@ -357,20 +369,19 @@ void ArrayScroller::NotificationMessage(u32 msg, FEObject *pObj, u32 param1, u32
 
 ArrayScrollerMenu::ArrayScrollerMenu(ScreenConstructorData *sd, int w, int h, bool selectable)
     : MenuScreen(sd) //
-    , ArrayScroller(sd->PackageFilename, w, h, selectable) //
-{
-}
+      ,
+      ArrayScroller(sd->PackageFilename, w, h, selectable) //
+{}
 
 void ArrayScrollerMenu::NotificationMessage(u32 msg, FEObject *pObj, u32 param1, u32 param2) {
     ArrayScroller::NotificationMessage(msg, pObj, param1, param2);
 }
 
 eMenuSoundTriggers ArrayScrollerMenu::NotifySoundMessage(u32 msg, eMenuSoundTriggers maybe) {
-    if (msg == 0x9120409E || msg == 0xB5971BF1 || msg == 0x911C0A4B ||
-        msg == 0x72619778 || msg == 0x480DF13F ||
-        msg == 0xB205316C || msg == 0x48122792 || msg == 0x4AC5E165) {
+    if (msg == 0x9120409E || msg == 0xB5971BF1 || msg == 0x911C0A4B || msg == 0x72619778 || msg == 0x480DF13F || msg == 0xB205316C ||
+        msg == 0x48122792 || msg == 0x4AC5E165) {
         if (!bShouldPlaySound) {
-            maybe = static_cast< eMenuSoundTriggers >(-1);
+            maybe = static_cast<eMenuSoundTriggers>(-1);
         }
         bShouldPlaySound = false;
     }

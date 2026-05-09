@@ -11,20 +11,23 @@
 class GenericMessage : public HudElement, public IGenericMessage {
   public:
     GenericMessage(UTL::COM::Object *pOutter, const char *pkg_name, int player_number);
-    void Update(IPlayer *player) override;
-    GenericMessage_Priority GetCurrentGenericMessagePriority() override;
-    bool RequestGenericMessage(const char *string, bool singleFrame, unsigned int fengHash, unsigned int iconTextureHash, unsigned int iconFengHash, GenericMessage_Priority priority) override;
-    void RequestGenericMessageZoomOut(unsigned int fengHash) override;
+    bool RequestGenericMessage(const char *string, bool singleFrame, uint32 fengHash, uint32 iconTextureHash, uint32 iconFengHash,
+                               GenericMessage_Priority priority) override;
+    void RequestGenericMessageZoomOut(uint32 fengHash) override;
     bool IsGenericMessageShowing() override;
+    GenericMessage_Priority GetCurrentGenericMessagePriority() override {
+        return mPriority;
+    };
+    void Update(IPlayer *player) override;
 
   private:
-    FEObject * mpMessageFirstLine;
-    FEObject * mpMessageSecondLine;
-    FEObject * mpIcon;
+    FEObject *mpMessageFirstLine;
+    FEObject *mpMessageSecondLine;
+    FEObject *mpIcon;
     GenericMessage_Priority mPriority;
-    unsigned int mNumFramesPlayed;
+    uint32 mNumFramesPlayed;
     char mStringBuffer[64];
-    unsigned int mFengHash;
+    uint32 mFengHash;
     bool mPlayOneFrame;
 };
 

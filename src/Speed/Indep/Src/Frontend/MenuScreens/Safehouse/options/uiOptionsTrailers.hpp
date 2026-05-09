@@ -6,11 +6,14 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/IconScrollerMenu.hpp"
 
 // total size: 0x16C
-struct UIOptionsTrailers : public IconScrollerMenu {
-    UIOptionsTrailers(ScreenConstructorData* sd);
+class UIOptionsTrailers : public IconScrollerMenu {
+  public:
+    UIOptionsTrailers(ScreenConstructorData *sd);
     ~UIOptionsTrailers() override {}
 
-    void NotificationMessage(unsigned long msg, FEObject* pobj, unsigned long param1, unsigned long param2) override;
+    void NotificationMessage(u32 msg, FEObject *pobj, u32 param1, u32 param2) override;
+
+  private:
     void Setup() override;
 };
 

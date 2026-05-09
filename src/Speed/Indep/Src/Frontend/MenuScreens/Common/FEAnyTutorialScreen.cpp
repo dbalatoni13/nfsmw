@@ -1,23 +1,12 @@
 #include "FEAnyTutorialScreen.hpp"
 
-#include "Speed/Indep/Src/FEng/cFEng.h"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Frontend/FEManager.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEMovies.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/InGame/FEPkg_Chyron.hpp"
 #include "Speed/Indep/Src/Generated/Events/EFadeScreenOff.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
-
-struct FEMovie;
-extern FEObject *FEngFindObject(const char *pkg_name, unsigned int obj_hash);
-extern void FEngSetMovieName(FEMovie *movie, const char *name);
-extern void DismissChyron();
-extern unsigned int FEngHashString(const char *, ...);
-extern unsigned int bStringHash(const char *, int);
-extern void FEngSetLanguageHash(const char *pkg_name, unsigned int obj_hash, unsigned int language);
-
-inline void FEngSetMovieName(const char *pkg_name, unsigned int obj_hash, const char *name) {
-    FEMovie *movie = static_cast<FEMovie *>(FEngFindObject(pkg_name, obj_hash));
-    FEngSetMovieName(movie, name);
-}
 
 char FEAnyTutorialScreen::MovieFilename[64];
 char FEAnyTutorialScreen::PackageFilename[64];
@@ -25,9 +14,7 @@ bool FEAnyTutorialScreen::PackageSet;
 
 static const char *FEAnyTutorialScreenName = "FEAnyTutorialScreen.fng";
 
-FEAnyTutorialScreen::FEAnyTutorialScreen(ScreenConstructorData *sd)
-    : MenuScreen(sd), //
-      mTimer(0) {
+FEAnyTutorialScreen::FEAnyTutorialScreen(ScreenConstructorData *sd) : MenuScreen(sd), mTimer(0) {
     unsigned int str_hash = 0;
     bool mSkipable = true;
 
@@ -96,7 +83,7 @@ FEAnyTutorialScreen::~FEAnyTutorialScreen() {
     FEManager::Get()->SetEATraxSecondButton();
 }
 
-void FEAnyTutorialScreen::NotificationMessage(unsigned long msg, FEObject *obj, unsigned long param1, unsigned long param2) {
+void FEAnyTutorialScreen::NotificationMessage(u32 msg, FEObject *obj, u32 param1, u32 param2) {
     mSubtitler.Update(msg);
 
     switch (msg) {

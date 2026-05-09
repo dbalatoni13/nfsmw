@@ -1,7 +1,8 @@
-#include "Speed/Indep/Src/FEng/fengine_full.h"
+#include "Speed/Indep/Src/FEng/FEPackage.h"
+#include "Speed/Indep/Src/FEng/FEPackageList.h"
 
-void FEPackageList::AddPackage(FEPackage* pPack) {
-    FEPackage* pNode = GetLastPackage();
+void FEPackageList::AddPackage(FEPackage *pPack) {
+    FEPackage *pNode = GetLastPackage();
     for (;;) {
         if (!pNode) {
             break;
@@ -11,14 +12,14 @@ void FEPackageList::AddPackage(FEPackage* pPack) {
         }
         pNode = pNode->GetPrev();
     }
-    Packages.AddNode(static_cast<FEMinNode*>(static_cast<FENode*>(pNode)), static_cast<FEMinNode*>(static_cast<FENode*>(pPack)));
+    Packages.AddNode(static_cast<FEMinNode *>(static_cast<FENode *>(pNode)), static_cast<FEMinNode *>(static_cast<FENode *>(pPack)));
 }
 
-bool FEPackageList::RemovePackage(FEPackage* pPack) {
-    FEPackage* pNode = GetFirstPackage();
+bool FEPackageList::RemovePackage(FEPackage *pPack) {
+    FEPackage *pNode = GetFirstPackage();
     while (pNode) {
         if (pNode == pPack) {
-            Packages.RemNode(static_cast<FEMinNode*>(static_cast<FENode*>(pPack)));
+            Packages.RemNode(static_cast<FEMinNode *>(static_cast<FENode *>(pPack)));
             return true;
         }
         pNode = pNode->GetNext();
@@ -26,11 +27,11 @@ bool FEPackageList::RemovePackage(FEPackage* pPack) {
     return false;
 }
 
-void FEPackageList::ReplaceParentLinks(const FEPackage* pParent, const FEPackage* pReplacement) {
-    FEPackage* pNode = GetFirstPackage();
+void FEPackageList::ReplaceParentLinks(const FEPackage *pParent, const FEPackage *pReplacement) {
+    FEPackage *pNode = GetFirstPackage();
     while (pNode) {
         if (pNode->GetParentPackage() == pParent) {
-            pNode->SetParentPackage(const_cast<FEPackage*>(pReplacement));
+            pNode->SetParentPackage(const_cast<FEPackage *>(pReplacement));
         }
         pNode = pNode->GetNext();
     }

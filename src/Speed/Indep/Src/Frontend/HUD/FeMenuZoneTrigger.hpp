@@ -10,8 +10,6 @@
 #include "Speed/Indep/Src/FEng/FEGroup.h"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 
-struct GRuntimeInstance;
-
 class MenuZoneTrigger : public HudElement, public IMenuZoneTrigger {
   public:
     enum ENGAGE_DPAD_ELEMENT_DIRECTION {
@@ -25,27 +23,27 @@ class MenuZoneTrigger : public HudElement, public IMenuZoneTrigger {
 
     MenuZoneTrigger(UTL::COM::Object *pOutter, const char *pkg_name, int player_number);
     void Update(IPlayer *player) override;
-    void RequestCingularLogo() override {
-        mbCingularQueued = true;
-    }
     bool ShouldSeeMenuZoneCluster() override;
     bool IsPlayerInsideTrigger() override;
+    bool IsType(const char *t) override;
     void EnterTrigger(GRuntimeInstance *pRaceActivity) override;
     void EnterTrigger(const char *zoneType) override;
     void ExitTrigger() override;
+    void RequestCingularLogo() override {
+        mbCingularQueued = true;
+    }
     void RequestEventInfoDialog(int port) override;
     void RequestZoneInfoDialog(int port) override;
-    bool IsType(const char *t) override;
     void RequestDoAction() override;
     void HideDPadButton();
     void PulseDPadButton(ENGAGE_DPAD_ELEMENT_DIRECTION direction, FEObject *iconToShow);
 
   private:
-    FEGroup * mEngageMechanic;
-    FEImage * mEventIcon;
-    FEGroup * mCingularIcon;
-    const char * mZoneType;
-    GRuntimeInstance * mpRaceActivity;
+    FEGroup *mEngageMechanic;
+    FEImage *mEventIcon;
+    FEGroup *mCingularIcon;
+    const char *mZoneType;
+    GRuntimeInstance *mpRaceActivity;
     bool mbCingularQueued;
     bool mbInsideTrigger;
     Timer mCingularTimer;

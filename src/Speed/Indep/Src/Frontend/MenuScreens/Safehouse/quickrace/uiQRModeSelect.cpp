@@ -1,16 +1,14 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiQRModeSelect.hpp"
+#include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEIconScrollerMenu.hpp"
-#include "Speed/Indep/Src/FEng/cFEng.h"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
+#include "Speed/Indep/Src/Gameplay/GRace.h"
 
 extern int QRMode;
-extern int GetMikeMannBuild();
+// extern int GetMikeMannBuild();
 extern int FEngGetLastButton(const char *pkg_name);
 void FEngSetLanguageHash(const char *pkg_name, unsigned int obj_hash, unsigned int lang_hash);
 extern const char *gOnlineMainMenu;
-
-static void _SetQRMode(int mode) {
-    QRMode = mode;
-}
 
 struct MSOption : public IconOption {
     MSOption(unsigned int tex_hash, unsigned int name_hash, GRace::Type race_type)
@@ -50,7 +48,7 @@ void UIQRModeSelect::RefreshHeader() {
             hash = 0x43c825ed;
         }
     }
-    FEngSetLanguageHash(PackageFilename, 0xb71b576d, hash);
+    FEngSetLanguageHash(GetPackageName(), 0xb71b576d, hash);
 }
 
 void UIQRModeSelect::Setup() {
@@ -87,7 +85,7 @@ void UIQRModeSelect::Setup() {
             AddOption(opt);
         }
     }
-    int lastBtn = FEngGetLastButton(PackageFilename);
+    int lastBtn = FEngGetLastButton(GetPackageName());
     if (bFadeInIconsImmediately) {
         Options.bFadingIn = true;
         Options.bFadingOut = false;
@@ -95,7 +93,7 @@ void UIQRModeSelect::Setup() {
         Options.fCurFadeTime = 0.0f;
     }
     Options.SetInitialPos(lastBtn);
-    cFEng::Get()->QueuePackageMessage(0x21828323, PackageFilename, nullptr);
+    cFEng::Get()->QueuePackageMessage(0x21828323, GetPackageName(), nullptr);
 }
 
 void UIQRModeSelect::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
@@ -103,7 +101,7 @@ void UIQRModeSelect::NotificationMessage(unsigned long msg, FEObject *pobj, unsi
     switch (msg) {
         case 0x911ab364:
             if (FEDatabase->IsOnlineMode() || FEDatabase->IsLANMode()) {
-                cFEng::Get()->QueuePackageMessage(0x587c018b, PackageFilename, nullptr);
+                cFEng::Get()->QueuePackageMessage(0x587c018b, GetPackageName(), nullptr);
             }
             break;
         case 0xe1fde1d1:

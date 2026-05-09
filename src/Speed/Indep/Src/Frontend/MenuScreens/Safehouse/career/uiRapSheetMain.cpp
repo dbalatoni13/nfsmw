@@ -1,70 +1,72 @@
 #include "uiRapSheetMain.hpp"
 #include "Speed/Indep/Src/FEng/FEObject.h"
-#include "Speed/Indep/Src/FEng/cFEng.h"
+#include "Speed/Indep/Src/Frontend/FEPackageData.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
-int FEPrintf(const char* pkg_name, int hash, const char* fmt, ...);
-unsigned int FEngHashString(const char* format, ...);
-const char* GetLocalizedString(unsigned int hash);
-unsigned char FEngGetLastButton(const char* pkg_name);
-void FEngSetLastButton(const char* pkg_name, unsigned char button);
-void FEngSetCurrentButton(const char* pkg_name, unsigned int hash);
-uiRapSheetMain::uiRapSheetMain(ScreenConstructorData* sd)
+#include "Speed/Indep/Src/Frontend/Localization/Localize.hpp"
+
+uiRapSheetMain::uiRapSheetMain(ScreenConstructorData *sd)
     : UIWidgetMenu(sd) //
-    , button_pressed(0)
-{ RefreshHeader(); }
-uiRapSheetMain::~uiRapSheetMain() {}
-void uiRapSheetMain::NotificationMessage(unsigned long msg, FEObject* pobj, unsigned long param1, unsigned long param2) {
+      ,
+      button_pressed(0) {
+    RefreshHeader();
+}
+
+void uiRapSheetMain::NotificationMessage(u32 msg, FEObject *pobj, u32 param1, u32 param2) {
     switch (msg) {
-    case 0x0C407210:
-        button_pressed = pobj->NameHash;
-        break;
-    case 0x35F8620B: {
-        unsigned char button = FEngGetLastButton(GetPackageName());
-        if (button == 0) { button = 1; }
-        FEngSetCurrentButton(GetPackageName(), FEngHashString("BL_%d", button));
-        break;
-    }
-    case 0xE1FDE1D1: {
-        int button_num = 1;
-        switch (button_pressed) {
-        case 0xCDA0A66B:
-            cFEng::Get()->QueuePackageSwitch("RapSheetRS.fng", 0, 0, false);
+        case 0x0C407210:
+            button_pressed = pobj->NameHash;
             break;
-        case 0xCDA0A66C:
-            cFEng::Get()->QueuePackageSwitch("RapSheetUS.fng", 0, 0, false);
-            button_num = 2;
-            break;
-        case 0xCDA0A66D:
-            cFEng::Get()->QueuePackageSwitch("RapSheetCTS.fng", 0, 0, false);
-            button_num = 3;
-            break;
-        case 0xCDA0A66E:
-            cFEng::Get()->QueuePackageSwitch("RapSheetTEP.fng", 0, 0, false);
-            button_num = 4;
-            break;
-        case 0xCDA0A66F:
-            cFEng::Get()->QueuePackageSwitch("RapSheetRankings.fng", 0, 0, false);
-            button_num = 5;
-            break;
-        case 0xCDA0A670:
-            cFEng::Get()->QueuePackageSwitch("RapSheetVD.fng", 0, 0, false);
-            button_num = 6;
-            break;
-        default:
-            button_num = 1;
-            cFEng::Get()->QueuePackageSwitch("MainMenu_Sub.fng", 0, 0, false);
-            FEDatabase->ClearGameMode(eFE_GAME_MODE_RAP_SHEET);
+        case 0x35F8620B: {
+            unsigned char button = FEngGetLastButton(GetPackageName());
+            if (button == 0) {
+                button = 1;
+            }
+            FEngSetCurrentButton(GetPackageName(), FEngHashString("BL_%d", button));
             break;
         }
-        FEngSetLastButton(GetPackageName(), static_cast<unsigned char>(button_num));
-        break;
-    }
+        case 0xE1FDE1D1: {
+            int button_num = 1;
+            switch (button_pressed) {
+                case 0xCDA0A66B:
+                    cFEng::Get()->QueuePackageSwitch("RapSheetRS.fng", 0, 0, false);
+                    break;
+                case 0xCDA0A66C:
+                    cFEng::Get()->QueuePackageSwitch("RapSheetUS.fng", 0, 0, false);
+                    button_num = 2;
+                    break;
+                case 0xCDA0A66D:
+                    cFEng::Get()->QueuePackageSwitch("RapSheetCTS.fng", 0, 0, false);
+                    button_num = 3;
+                    break;
+                case 0xCDA0A66E:
+                    cFEng::Get()->QueuePackageSwitch("RapSheetTEP.fng", 0, 0, false);
+                    button_num = 4;
+                    break;
+                case 0xCDA0A66F:
+                    cFEng::Get()->QueuePackageSwitch("RapSheetRankings.fng", 0, 0, false);
+                    button_num = 5;
+                    break;
+                case 0xCDA0A670:
+                    cFEng::Get()->QueuePackageSwitch("RapSheetVD.fng", 0, 0, false);
+                    button_num = 6;
+                    break;
+                default:
+                    button_num = 1;
+                    cFEng::Get()->QueuePackageSwitch("MainMenu_Sub.fng", 0, 0, false);
+                    FEDatabase->ClearGameMode(eFE_GAME_MODE_RAP_SHEET);
+                    break;
+            }
+            FEngSetLastButton(GetPackageName(), static_cast<unsigned char>(button_num));
+            break;
+        }
     }
 }
+
 void uiRapSheetMain::RefreshHeader() {
-    UserProfile* prof = FEDatabase->GetUserProfile(0);
-    FEPlayerCarDB* stable = FEDatabase->GetPlayerCarStable(0);
-    HighScoresDatabase* scores = prof->GetHighScores();
+    UserProfile *prof = FEDatabase->GetUserProfile(0);
+    FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(0);
+    HighScoresDatabase *scores = prof->GetHighScores();
     FEPrintf(GetPackageName(), 0x1232703A, GetLocalizedString(0xE21D083C), prof->GetCareer()->GetCaseFileName());
     FEPrintf(GetPackageName(), 0xE3DA78E7, GetLocalizedString(0x6031106E), prof->GetProfileName());
     FEPrintf(GetPackageName(), 0xE3DA78E8, GetLocalizedString(0x364E4525), stable->GetTotalBounty());

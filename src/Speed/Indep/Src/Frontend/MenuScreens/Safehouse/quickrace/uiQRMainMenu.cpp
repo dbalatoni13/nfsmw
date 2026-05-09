@@ -1,13 +1,16 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiQRMainMenu.hpp"
+#include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEIconScrollerMenu.hpp"
-#include "Speed/Indep/Src/FEng/cFEng.h"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 
 extern int QRMode;
-extern int GetMikeMannBuild();
+// extern int GetMikeMannBuild();
 extern int FEngGetLastButton(const char *pkg_name);
 void FEngSetLanguageHash(const char *pkg_name, unsigned int obj_hash, unsigned int lang_hash);
-// _SetQRMode defined in uiQRModeSelect.cpp
-static void _SetQRMode(int mode);
+
+static void _SetQRMode(int mode) {
+    QRMode = mode;
+}
 
 struct QuickPlay : public IconOption {
     QuickPlay(unsigned int tex_hash, unsigned int name_hash, unsigned int desc_hash) : IconOption(tex_hash, name_hash, desc_hash) {}
@@ -48,8 +51,8 @@ UIQRMainMenu::UIQRMainMenu(ScreenConstructorData *sd) : IconScrollerMenu(sd) {
 
 void UIQRMainMenu::RefreshHeader() {
     IconScrollerMenu::RefreshHeader();
-    FEngSetLanguageHash(PackageFilename, 0x3c458c1, 0xcdf0cc03);
-    FEngSetLanguageHash(PackageFilename, 0xb5c74226, 0xcdf0cc03);
+    FEngSetLanguageHash(GetPackageName(), 0x3c458c1, 0xcdf0cc03);
+    FEngSetLanguageHash(GetPackageName(), 0xb5c74226, 0xcdf0cc03);
 }
 
 void UIQRMainMenu::Setup() {
@@ -64,7 +67,7 @@ void UIQRMainMenu::Setup() {
         IconOption *cr = new CustomRace(0x2a49b5e2, 0x25bbd4c3, 0);
         AddOption(cr);
     }
-    int lastBtn = FEngGetLastButton(PackageFilename);
+    int lastBtn = FEngGetLastButton(GetPackageName());
     if (bFadeInIconsImmediately) {
         Options.bFadingIn = true;
         Options.bFadingOut = false;

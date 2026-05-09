@@ -8,18 +8,21 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
 #include "Speed/Indep/Src/Frontend/Database/RaceDB.hpp"
 
-struct uiRapSheetRankings : public MenuScreen {
-    unsigned int button_pressed; // offset 0x2C, size 0x4
-    unsigned int init_button; // offset 0x30, size 0x4
+class uiRapSheetRankings : public MenuScreen {
+  public:
+    uiRapSheetRankings(ScreenConstructorData *sd);
+    ~uiRapSheetRankings() override;
+    void NotificationMessage(u32 msg, FEObject *pobj, u32 param1, u32 param2) override;
+    void RefreshHeader();
 
     static bool career_view;
 
-    uiRapSheetRankings(ScreenConstructorData* sd);
-    ~uiRapSheetRankings() override;
-    void NotificationMessage(unsigned long msg, FEObject* pobj, unsigned long param1, unsigned long param2) override;
-    void RefreshHeader();
+  private:
     void Setup();
-    void PrintRanking(unsigned int fe_rank, unsigned int button_hash, ePursuitDetailTypes type);
+    void PrintRanking(uint32 fe_rank, uint32 button_hash, ePursuitDetailTypes type);
+
+    uint32 button_pressed; // offset 0x2C, size 0x4
+    uint32 init_button;    // offset 0x30, size 0x4
 };
 
 #endif

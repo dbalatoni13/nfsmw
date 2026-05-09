@@ -14,18 +14,29 @@ class RadarDetector : public HudElement, public IRadarDetector {
   public:
     RadarDetector(UTL::COM::Object *pOutter, const char *pkg_name, int player_number);
     void Update(IPlayer *player) override;
-    void SetInPursuit(bool inPursuit) override;
-    void SetIsCoolingDown(bool coolingDown) override;
-    void SetTarget(RadarTarget targetType, float range, float direction) override;
+    void SetTarget(RadarTarget targetType, float range, float direction) override {
+        mTargetType = targetType;
+        mDirection = direction;
+        mRange = range;
+        mStaticRange = range;
+    };
+    void SetInPursuit(bool inPursuit) override {
+        mInPursuit = inPursuit;
+    };
+    void SetIsCoolingDown(bool coolingDown) override {
+        mIsCoolingDown = coolingDown;
+    };
+
+    static float mStaticRange;
 
   private:
-    FEGroup * mpDataRadarDetectorGroup;
-    FEObject * mpDataRadarDetectorLightsLeft;
-    FEObject * mpDataRadarDetectorLightsRight;
-    FEObject * mpDataRadarDetectorArrow;
-    FEObject * mpDataRadarIcon;
-    FEObject * mpDataRadarDetectorBacking;
-    FEObject * mpDataRadarDetectorBackingWithMirror;
+    FEGroup *mpDataRadarDetectorGroup;
+    FEObject *mpDataRadarDetectorLightsLeft;
+    FEObject *mpDataRadarDetectorLightsRight;
+    FEObject *mpDataRadarDetectorArrow;
+    FEObject *mpDataRadarIcon;
+    FEObject *mpDataRadarDetectorBacking;
+    FEObject *mpDataRadarDetectorBackingWithMirror;
     float mRange;
     float mDirection;
     RadarTarget mTargetType;
@@ -33,8 +44,6 @@ class RadarDetector : public HudElement, public IRadarDetector {
     bool mInPursuit;
     bool mIsCoolingDown;
     Timer mTimeCycleStarted;
-
-    static float mStaticRange;
 };
 
 #endif

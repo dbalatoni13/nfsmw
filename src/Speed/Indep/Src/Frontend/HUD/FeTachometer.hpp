@@ -35,34 +35,51 @@ class Tachometer : public HudElement, public ITachometer {
   public:
     Tachometer(UTL::COM::Object *pOutter, const char *pkg_name, int player_number);
     void Update(IPlayer *player) override;
-    void SetRpm(float rpm) override;
+    void SetRpm(float rpm) override {
+        mRpm = rpm;
+    };
     void SetRevLimiter(float redline, float maxRpm) override {
         mRedline = redline;
         mMaxRpm = maxRpm;
     }
-    void SetShifting(bool shifting) override;
-    void SetInPerfectLaunchRange(bool inRange) override;
-    void SetGear(GearID gear, ShiftPotential potential, bool hasGoodEnoughTraction) override;
+    void SetShifting(bool shifting) override {
+        mIsShifting = shifting;
+    };
+    void SetInPerfectLaunchRange(bool inRange) override {
+        mInPerfectLaunchRange = inRange;
+    };
+    void SetGear(GearID gear, ShiftPotential potential, bool hasGoodEnoughTraction) override {
+        if (gear != mGear) {
+            mGear = gear;
+            mShiftPotential = static_cast<ShiftPotential>(0);
+            return;
+        }
+        if (hasGoodEnoughTraction) {
+            mShiftPotential = potential;
+            return;
+        }
+        mShiftPotential = static_cast<ShiftPotential>(0);
+    };
 
     static char GetLetterForGear(GearID gear);
 
   private:
-    Timer PerfectShiftDetectedTimer;           // offset 0x30
-    Timer MissedShiftTimer;                    // offset 0x34
-    FEObject *TachNeedle;                      // offset 0x38
-    FEObject *pRPM_bar;                        // offset 0x3C
-    FEString *pGearString;                     // offset 0x40
-    FEObject *pShiftIndicator;                 // offset 0x44
-    FEObject *pRedline;                        // offset 0x48
-    float mRpm;                                // offset 0x4C
-    float mRedline;                            // offset 0x50
-    float mMaxRpm;                             // offset 0x54
-    GearID mGear;                              // offset 0x58
-    bool mIsShifting;                           // offset 0x5C
-    bool mInPerfectLaunchRange;                 // offset 0x60
-    ShiftPotential mShiftPotential;             // offset 0x64
-    bool mNeedleColourSetToPerfectLaunch;       // offset 0x68
-    float mOriginalNeedleWidth;                 // offset 0x6C
+    Timer PerfectShiftDetectedTimer;      // offset 0x30
+    Timer MissedShiftTimer;               // offset 0x34
+    FEObject *TachNeedle;                 // offset 0x38
+    FEObject *pRPM_bar;                   // offset 0x3C
+    FEString *pGearString;                // offset 0x40
+    FEObject *pShiftIndicator;            // offset 0x44
+    FEObject *pRedline;                   // offset 0x48
+    float mRpm;                           // offset 0x4C
+    float mRedline;                       // offset 0x50
+    float mMaxRpm;                        // offset 0x54
+    GearID mGear;                         // offset 0x58
+    bool mIsShifting;                     // offset 0x5C
+    bool mInPerfectLaunchRange;           // offset 0x60
+    ShiftPotential mShiftPotential;       // offset 0x64
+    bool mNeedleColourSetToPerfectLaunch; // offset 0x68
+    float mOriginalNeedleWidth;           // offset 0x6C
 };
 
 #endif

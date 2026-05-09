@@ -8,68 +8,66 @@
 #include <types.h>
 
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/feArrayScrollerMenu.hpp"
+#include "Speed/Indep/Src/Gameplay/GSpeedTrap.h"
+#include "Speed/Indep/Src/Gameplay/GMilestone.h"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiTrackMapStreamer.hpp"
 
-struct GMilestone;
-struct GSpeedTrap;
-struct UITrackMapStreamer;
-struct FEMultiImage;
+typedef enum { eTYPE_MILESTONE = 0, eTYPE_SPEEDTRAP = 1 } MILESTONE_TYPES;
 
 // total size: 0x28
-struct MilestoneDatum : public ArrayDatum {
-    GMilestone* my_milestone; // offset 0x24, size 0x4
+class MilestoneDatum : public ArrayDatum {
+  public:
+    MilestoneDatum() : ArrayDatum(0, 0), my_milestone(nullptr) {}
 
-    MilestoneDatum()
-        : ArrayDatum(0, 0) //
-        , my_milestone(nullptr) {}
-
-    MilestoneDatum(unsigned int hash, unsigned int desc, GMilestone* milestone)
-        : ArrayDatum(hash, desc) //
-        , my_milestone(milestone) {}
+    MilestoneDatum(uint32 hash, uint32 desc, GMilestone *milestone) : ArrayDatum(hash, desc), my_milestone(milestone) {}
 
     ~MilestoneDatum() override {}
 
-    virtual unsigned int GetType() { return 0; }
-    void NotificationMessage(unsigned long msg, FEObject* pObj, unsigned long param1,
-                             unsigned long param2) override;
+    virtual uint32 GetType() {
+        return eTYPE_MILESTONE;
+    }
+    void NotificationMessage(u32 msg, FEObject *pObj, u32 param1, u32 param2) override;
+
+    GMilestone *my_milestone; // offset 0x24, size 0x4
 };
 
 // total size: 0x2C
-struct SpeedTrapDatum : public MilestoneDatum {
-    GSpeedTrap* my_speedtrap; // offset 0x28, size 0x4
+class SpeedTrapDatum : public MilestoneDatum {
+  public:
+    SpeedTrapDatum() : MilestoneDatum(), my_speedtrap(nullptr) {}
 
-    SpeedTrapDatum()
-        : MilestoneDatum() //
-        , my_speedtrap(nullptr) {}
-
-    SpeedTrapDatum(unsigned int hash, unsigned int desc, GSpeedTrap* speedtrap)
-        : MilestoneDatum(hash, desc, nullptr) //
-        , my_speedtrap(speedtrap) {}
+    SpeedTrapDatum(uint32 hash, uint32 desc, GSpeedTrap *speedtrap) : MilestoneDatum(hash, desc, nullptr), my_speedtrap(speedtrap) {}
 
     ~SpeedTrapDatum() override {}
 
-    unsigned int GetType() override { return 1; }
+    uint32 GetType() override {
+        return eTYPE_SPEEDTRAP;
+    }
+
+    GSpeedTrap *my_speedtrap; // offset 0x28, size 0x4
 };
 
 // total size: 0xF4
-struct uiRepSheetMilestones : public ArrayScrollerMenu {
-    bool bIsInGame;                    // offset 0xE8, size 0x1
-    UITrackMapStreamer* TrackMapStreamer; // offset 0xEC, size 0x4
-    FEMultiImage* TrackMap;            // offset 0xF0, size 0x4
-
-    uiRepSheetMilestones(ScreenConstructorData* sd);
+class uiRepSheetMilestones : public ArrayScrollerMenu {
+  public:
+    uiRepSheetMilestones(ScreenConstructorData *sd);
     ~uiRepSheetMilestones() override {
         delete TrackMapStreamer;
     }
 
-    eMenuSoundTriggers NotifySoundMessage(unsigned long msg, eMenuSoundTriggers maybe) override;
-    void NotificationMessage(unsigned long msg, FEObject* obj, unsigned long param1,
-                             unsigned long param2) override;
+    void NotificationMessage(u32 msg, FEObject *obj, u32 param1, u32 param2) override;
+    eMenuSoundTriggers NotifySoundMessage(u32 msg, eMenuSoundTriggers maybe) override;
 
+  private:
+    void RefreshHeader() override;
     void Setup();
     void RefreshTrack();
-    void AddMilestone(GMilestone* pMilestone);
-    void AddSpeedtrap(GSpeedTrap* pSpeedTrap);
-    void RefreshHeader() override;
+    void AddMilestone(GMilestone *pMilestone);
+    void AddSpeedtrap(GSpeedTrap *pSpeedTrap);
+
+    bool bIsInGame;                       // offset 0xE8, size 0x1
+    UITrackMapStreamer *TrackMapStreamer; // offset 0xEC, size 0x4
+    FEMultiImage *TrackMap;               // offset 0xF0, size 0x4
 };
 
 #endif

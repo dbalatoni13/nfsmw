@@ -1,5 +1,5 @@
 #include "Speed/Indep/Src/Frontend/FEPackageManager.hpp"
-#include "Speed/Indep/Src/FEng/cFEng.h"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 
@@ -221,8 +221,7 @@ void FEPackageManager::UnLoader(bChunk *chunk, bool hotchunk_flag) {
     }
 }
 
-FEPackageManager::~FEPackageManager() {
-}
+FEPackageManager::~FEPackageManager() {}
 
 bool FEPackageManager::GetVisibility(const char *pkg_name) {
     FEPackageData *data = FindFEPackageData(pkg_name);

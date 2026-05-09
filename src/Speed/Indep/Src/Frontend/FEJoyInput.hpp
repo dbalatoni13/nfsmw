@@ -6,34 +6,42 @@
 #endif
 
 #include <types.h>
+#include "Speed/Indep/Src/Input/ActionQueue.h"
 
-struct ActionQueue;
-
-enum JoystickPort {
-    kJP_Port0 = 0,
-    kJP_Port1 = 1,
-    kJP_Port2 = 2,
-    kJP_Port3 = 3,
-    kJP_NumPorts = 4
-};
+typedef enum {
+    JOYSTICK_PORT_NONE = -1,
+    JOYSTICK_PORT1 = 0,
+    JOYSTICK_PORT2 = 1,
+    JOYSTICK_PORT3 = 2,
+    JOYSTICK_PORT4 = 3,
+    JOYSTICK_PORT_ALL = 4
+} JoystickPort;
 
 // total size: 0x8
-struct cFEngJoyInput {
-    ActionQueue* mActionQ[2]; // offset 0x0
+class cFEngJoyInput {
+  public:
+    static inline struct cFEngJoyInput *Get() {}
 
-    static cFEngJoyInput* mInstance;
-
-    static cFEngJoyInput* Get() { return mInstance; }
     cFEngJoyInput();
-    void FlushActions();
-    void JoyDisable(JoystickPort port, bool do_flush);
+    ~cFEngJoyInput();
+    void SetRequiredJoy(JoystickPort port, bool required);
+    bool IsRequiredJoy(JoystickPort port);
     bool IsJoyPluggedIn(JoystickPort port);
+    void JoyDisable(JoystickPort port, bool do_flush);
     void JoyEnable(JoystickPort port, bool do_flush);
     bool IsJoyEnabled(JoystickPort port);
-    void SetRequiredJoy(JoystickPort port, bool required);
-    bool CheckUnplugged();
+    void FlushActions();
+    void ClearInputQueue();
     void HandleJoy();
-    unsigned long GetJoyPadMask(unsigned char pPadIndex);
+    u32 GetJoyPadMask(u8 pPadIndex);
+    uint32 GetJoyPadTexture(const char *eventString, JoystickPort port);
+
+    static cFEngJoyInput *mInstance; // size: 0x4, address: 0x8041B810
+
+  private:
+    bool CheckUnplugged();
+
+    ActionQueue *mActionQ[2]; // offset 0x0, size 0x8
 };
 
 #endif

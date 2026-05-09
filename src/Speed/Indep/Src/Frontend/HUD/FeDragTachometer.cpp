@@ -1,43 +1,16 @@
 #include "Speed/Indep/Src/Frontend/HUD/FeDragTachometer.hpp"
+#include "Speed/Indep/Src/FEng/feimage.h"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEObjects.hpp"
 #include "Speed/Indep/Src/Frontend/HUD/FeTachometer.hpp"
 #include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Src/FEng/FETypes.h"
-
-extern void FEngGetSize(FEObject *obj, float &x, float &y);
-extern void FEngSetSize(FEObject *obj, float x, float y);
-extern void FEngGetTopLeft(FEObject *obj, float &x, float &y);
-extern void FEngSetTopLeft(FEObject *obj, float x, float y);
-extern void FEngSetColor(FEObject *obj, unsigned int color);
-extern FEColor FEngGetObjectColor(FEObject *obj);
-extern void FEngSetScript(FEObject *obj, unsigned int script_hash, bool start);
-extern int FEPrintf(FEString *text, const char *fmt, ...);
-
-extern const float lbl_803E5868;
-extern const float lbl_803E586C;
-extern const float lbl_803E5870;
-extern const float lbl_803E5874;
-
-float DragTachometer::CalcAngleForRPMDrag(float rpm, float redline) {
-    float factor = rpm / ChooseMaxRpmTextureNumber(redline);
-    if (factor < lbl_803E5868) {
-        factor = lbl_803E5868;
-    }
-    if (factor > lbl_803E586C) {
-        factor = lbl_803E586C;
-    }
-    float min_angle = lbl_803E5870;
-    float max_angle = lbl_803E5874;
-    float fRange = max_angle - min_angle;
-    return factor * fRange + min_angle;
-}
+#include "Speed/Indep/Src/Frontend/HUD/FEPkg_Hud.hpp"
 
 DragTachometer::DragTachometer(UTL::COM::Object *pOutter, const char *pkg_name, int player_number)
-    : HudElement(pkg_name, 0x2) //
-    , ITachometer(pOutter) //
-    , ITachometerDrag(pOutter)
-{
+    : HudElement(pkg_name, 0x2), ITachometer(pOutter), ITachometerDrag(pOutter) {
     mMaxRpm = 0.0f;
-    mGear = static_cast<GearID>(1);
+    mGear = G_NEUTRAL;
     mNeedleColourSetToPerfectLaunch = false;
     mRpm = 0.0f;
     mRedline = 0.0f;
@@ -53,9 +26,7 @@ DragTachometer::DragTachometer(UTL::COM::Object *pOutter, const char *pkg_name, 
     TachNeedle = RegisterImage(FEHashUpper("3rdPersonNeedle"));
     pGearString = RegisterString(FEHashUpper("3rdPersonGear"));
     mOriginalNeedleWidth = TachNeedle->GetObjData()->Size.x;
-    float x, y;
-    FEngGetTopLeft(TachNeedle, x, y);
-    mOriginalNeedleLeftX = x;
+    mOriginalNeedleLeftX = FEngGetTopLeftX(TachNeedle);
 }
 
 void DragTachometer::Update(IPlayer *player) {
@@ -102,20 +73,16 @@ void DragTachometer::Update(IPlayer *player) {
     }
 }
 
-void DragTachometer::SetRpm(float rpm) {
-    mRpm = rpm;
-}
-
-void DragTachometer::SetInPerfectLaunchRange(bool inRange) {
-    mInPerfectLaunchRange = inRange;
-}
-
-void DragTachometer::SetShifting(bool shifting) {
-    mGearShifting = shifting;
-}
-
-void DragTachometer::SetGear(GearID gear, ShiftPotential potential, bool hasGoodEnoughTraction) {
-    if (gear != mGear) {
-        mGear = gear;
+float DragTachometer::CalcAngleForRPMDrag(float rpm, float redline) {
+    float factor = rpm / FEngHud::ChooseMaxRpmTextureNumber(redline);
+    if (factor < 0.0f) {
+        factor = 0.0f;
     }
+    if (factor > 1.0f) {
+        factor = 1.0f;
+    }
+    float min_angle = -43.0f;
+    float max_angle = 44.5f;
+    float fRange = max_angle - min_angle;
+    return factor * fRange + min_angle;
 }

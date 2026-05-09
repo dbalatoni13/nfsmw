@@ -48,15 +48,14 @@ class IGenericMessage : public UTL::COM::IUnknown {
         return (HINTERFACE)_IHandle;
     }
 
-    IGenericMessage(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
-
   protected:
     virtual ~IGenericMessage() {}
+    IGenericMessage(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
   public:
-    virtual bool RequestGenericMessage(const char *string, bool singleFrame, unsigned int fengHash, unsigned int iconTextureHash,
-                                       unsigned int iconFengHash, GenericMessage_Priority priority);
-    virtual void RequestGenericMessageZoomOut(unsigned int fengHash);
+    virtual bool RequestGenericMessage(const char *string, bool singleFrame, uint32 fengHash, uint32 iconTextureHash, uint32 iconFengHash,
+                                       GenericMessage_Priority priority);
+    virtual void RequestGenericMessageZoomOut(uint32 fengHash);
     virtual bool IsGenericMessageShowing();
     virtual GenericMessage_Priority GetCurrentGenericMessagePriority();
 };
@@ -67,15 +66,14 @@ class IRaceOverMessage : public UTL::COM::IUnknown {
         return (HINTERFACE)_IHandle;
     }
 
-    IRaceOverMessage(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
-
   protected:
     virtual ~IRaceOverMessage() {}
+    IRaceOverMessage(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
   public:
     virtual void RequestRaceOverMessage(class IPlayer *player);
     virtual void DismissRaceOverMessage();
-    virtual int ShouldShowRaceOverMessage();
+    virtual bool ShouldShowRaceOverMessage();
 };
 
 class IRaceInformation : public UTL::COM::IUnknown {
@@ -83,10 +81,10 @@ class IRaceInformation : public UTL::COM::IUnknown {
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }
-    IRaceInformation(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
   protected:
     virtual ~IRaceInformation() {}
+    IRaceInformation(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
   public:
     virtual void SetNumRacers(int numRacers);
@@ -105,10 +103,10 @@ class ILeaderBoard : public UTL::COM::IUnknown {
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }
-    ILeaderBoard(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
   protected:
     virtual ~ILeaderBoard() {}
+    ILeaderBoard(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
   public:
     virtual void SetNumRacers(int numRacers);
@@ -129,10 +127,10 @@ class ITurbometer : public UTL::COM::IUnknown {
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }
-    ITurbometer(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
   protected:
     virtual ~ITurbometer() {}
+    ITurbometer(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
   public:
     virtual void SetInductionPsi(float psi);
@@ -152,10 +150,10 @@ class ICountdown : public UTL::COM::IUnknown {
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }
-    ICountdown(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
   protected:
     virtual ~ICountdown() {}
+    ICountdown(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
   public:
     virtual void BeginCountdown();
@@ -179,10 +177,10 @@ class IShiftUpdater : public UTL::COM::IUnknown {
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }
-    IShiftUpdater(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
   protected:
     virtual ~IShiftUpdater() {}
+    IShiftUpdater(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
   public:
     virtual void SetGear(GearID gear, ShiftStatus status, ShiftPotential potential, bool hasGoodEnoughTraction);
@@ -195,10 +193,10 @@ class ITimeExtension : public UTL::COM::IUnknown {
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }
-    ITimeExtension(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
   protected:
     virtual ~ITimeExtension() {}
+    ITimeExtension(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
   public:
     virtual void SetPlayerLapTime(float lapTime);
@@ -210,10 +208,10 @@ class IPursuitBoard : public UTL::COM::IUnknown {
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }
-    IPursuitBoard(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
   protected:
     virtual ~IPursuitBoard() {}
+    IPursuitBoard(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
   public:
     virtual void SetInPursuit(bool inPursuit);
@@ -238,10 +236,10 @@ class IMilestoneBoard : public UTL::COM::IUnknown {
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }
-    IMilestoneBoard(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
   protected:
     virtual ~IMilestoneBoard() {}
+    IMilestoneBoard(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
   public:
     virtual void SetInPursuit(bool inPursuit);
@@ -260,10 +258,10 @@ class IBustedMeter : public UTL::COM::IUnknown {
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }
-    IBustedMeter(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
   protected:
     virtual ~IBustedMeter() {}
+    IBustedMeter(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
   public:
     virtual void SetInPursuit(bool inPursuit);
@@ -277,20 +275,21 @@ class IMenuZoneTrigger : public UTL::COM::IUnknown {
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }
-    IMenuZoneTrigger(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
   protected:
     virtual ~IMenuZoneTrigger() {}
+    IMenuZoneTrigger(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
   public:
     virtual bool ShouldSeeMenuZoneCluster();
     virtual bool IsPlayerInsideTrigger();
     virtual bool IsType(const char *type);
-    virtual void EnterTriggerForAutoSave();
-    virtual void ExitTriggerForAutoSave();
     virtual void EnterTrigger(class GRuntimeInstance *activity);
     virtual void EnterTrigger(const char *zoneType);
     virtual void ExitTrigger();
+    virtual void RequestCingularLogo();
+    // virtual void EnterTriggerForAutoSave();
+    // virtual void ExitTriggerForAutoSave();
     virtual void RequestEventInfoDialog(int index);
     virtual void RequestZoneInfoDialog(int index);
     virtual void RequestDoAction();
@@ -301,10 +300,10 @@ class IInfractions : public UTL::COM::IUnknown {
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }
-    IInfractions(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
   protected:
     virtual ~IInfractions() {}
+    IInfractions(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
   public:
     virtual void RequestInfraction(unsigned int type, int count);
@@ -321,10 +320,10 @@ class IRadarDetector : public UTL::COM::IUnknown {
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }
-    IRadarDetector(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
   protected:
     virtual ~IRadarDetector() {}
+    IRadarDetector(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
   public:
     virtual void SetTarget(RadarTarget targetType, float range, float direction);

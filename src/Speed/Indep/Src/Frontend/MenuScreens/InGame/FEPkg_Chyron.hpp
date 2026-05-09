@@ -6,14 +6,23 @@
 #endif
 
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
+#include "Speed/Indep/Src/Misc/Timer.hpp"
 
-struct Chyron : public MenuScreen {
+static MenuScreen *ChyronScreenPtr;
+
+class Chyron : public MenuScreen {
+  public:
+    void *operator new(size_t size) {
+        return ChyronScreenPtr;
+    }
+    void *operator new(size_t size, char *file, int line) {}
+    void *operator new(size_t size, char *msg) {}
+    void operator delete(void *ptr) {}
+
     Chyron(ScreenConstructorData *sd);
-    ~Chyron() override;
-    void NotificationMessage(unsigned long msg, FEObject *pobject, unsigned long param1, unsigned long param2) override;
+    ~Chyron() override {};
+    void NotificationMessage(u32 msg, FEObject *pobject, u32 param1, u32 param2) override;
     void Start();
-
-    void *operator new(size_t, void *ptr) { return ptr; }
 
     static char *mTitle;
     static char *mArtist;
@@ -24,5 +33,6 @@ struct Chyron : public MenuScreen {
 
 void SummonChyron(char *title, char *artist, char *album);
 void DismissChyron();
+void InitChyron();
 
 #endif

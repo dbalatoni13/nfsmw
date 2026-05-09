@@ -29,9 +29,18 @@ class QRCarSelectBustedManager {
         BUSTED_ANIM_SHOW_IMPOUNDED = 2,
     };
 
-    static void TextureLoadedCallbackAccessor(unsigned int this_screen) {
+    QRCarSelectBustedManager(const char *pkg_name, int flags);
+    virtual ~QRCarSelectBustedManager();
+    void NotificationMessage(u32 msg, FEObject *pobj, u32 param1, u32 param2);
+
+    static void TextureLoadedCallbackAccessor(uint32 this_screen) {
         reinterpret_cast<QRCarSelectBustedManager *>(this_screen)->TextureLoadedCallback();
     }
+    void TextureLoadedCallback();
+    void LoadImpoundTexture();
+    void MaybeReleaseCar();
+    void MaybeAddImpoundBox();
+    void SetSelectedCar(FECarRecord *record);
 
     static void SetPlayerBusted() {
         bPlayerJustGotBusted = true;
@@ -39,50 +48,40 @@ class QRCarSelectBustedManager {
 
     static void SetIsCross() {}
 
-    bool ShowNewStrikeAnimation() {}
-
-    bool ShowImpoundedAnimation() {}
-
-    QRCarSelectBustedManager(const char *pkg_name, int flags);
-
-    virtual ~QRCarSelectBustedManager();
-
     bool IsImpoundInfoVisible();
 
     bool ShowImpoundedTexture();
-
-    void NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2);
-
-    void TextureLoadedCallback();
-
-    void LoadImpoundTexture();
-
-    void SetSelectedCar(FECarRecord *record);
-
-    void MaybeReleaseCar();
-
-    void MaybeAddImpoundBox();
-
-    FECareerRecord *WorkingCareerRecord; // offset 0x0, size 0x4
-    FECarRecord *WorkingCarRecord;       // offset 0x4, size 0x4
-    enum eBustedAnimationTypes Flags;    // offset 0x8, size 0x4
+    bool ShowNewStrikeAnimation() {}
+    bool ShowImpoundedAnimation() {}
 
   private:
     const char *GetPackageName() {}
-
     void RefreshHeader();
+    void PayInfractions();
+    void UseInfractionMarker();
+    void UseImpoundMarker();
     bool CalcGameOver();
+    void CalcInfractionStatus();
+    void BustCar();
+    void ImpoundCar();
 
+  public:
+    FECareerRecord *WorkingCareerRecord; // offset 0x0, size 0x4
+    FECarRecord *WorkingCarRecord;       // offset 0x4, size 0x4
+    eBustedAnimationTypes Flags;         // offset 0x8, size 0x4
+
+  private:
     static bool bPlayerJustGotBusted; // size: 0x1, address: 0x80439150
     static bool bIsCross;             // size: 0x1, address: 0xFFFFFFFF
 
-    unsigned int ImpoundStampHash; // offset 0xC, size 0x4
-    const char *ParentPkg;         // offset 0x10, size 0x4
-    bool bWantsImpound;            // offset 0x14, size 0x1
+    uint32 ImpoundStampHash; // offset 0xC, size 0x4
+    const char *ParentPkg;   // offset 0x10, size 0x4
+    bool bWantsImpound;      // offset 0x14, size 0x1
 };
 
 // total size: 0x1B8
-struct UIQRCarSelect : public MenuScreen {
+class UIQRCarSelect : public MenuScreen {
+  public:
     enum CarLists {
         LIST_STOCK = 0,
         LIST_CAREER = 1,
@@ -96,30 +95,32 @@ struct UIQRCarSelect : public MenuScreen {
     UIQRCarSelect(ScreenConstructorData *sd);
     ~UIQRCarSelect() override;
 
-    void NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) override;
-    eMenuSoundTriggers NotifySoundMessage(unsigned long msg, eMenuSoundTriggers maybe) override;
+    void NotificationMessage(u32 msg, FEObject *pobj, u32 param1, u32 param2) override;
+    eMenuSoundTriggers NotifySoundMessage(u32 msg, eMenuSoundTriggers maybe) override;
 
-    bool IsCarImpounded(unsigned int handle);
-    void CommitChangeStartRace(bool allowError);
+  private:
     void Setup();
-    void InitStatsSliders();
-    void UpdateSliders();
-    int GetFilterType();
     void SetupForPlayer(int player);
-    int GetBonusUnlockText(FECarRecord *fe_car);
-    int GetBonusUnlockBinNumber(FECarRecord *fe_car);
-    void RefreshHeader();
-    void ChooseTransmission();
-    FECarRecord *GetSelectedCarRecord();
-    void SetSelectedCar(SelectableCar *newCar, int player_num);
-    void RefreshBonusCarList();
+    void InitStatsSliders();
     void RefreshCarList();
     void ClearCarList();
     void ScrollCars(eScrollDir dir);
     void ScrollLists(eScrollDir dir);
+    void RefreshHeader();
+    void UpdateSliders();
+    void ChooseTransmission();
+    void SetSelectedCar(SelectableCar *newCar, int player_num);
+    FECarRecord *GetSelectedCarRecord();
+    bool IsCarImpounded(uint32 handle);
+    int GetFilterType();
+
+    void CommitChangeStartRace(bool allowError);
+    int GetBonusUnlockText(FECarRecord *fe_car);
+    int GetBonusUnlockBinNumber(FECarRecord *fe_car);
+    void RefreshBonusCarList();
     void OnlineActOnSelect();
 
-    static unsigned int ForceCar; // size: 0x4
+    static uint32 ForceCar; // size: 0x4
 
     bTList<SelectableCar> FilteredCarsList;    // offset 0x2C, size 0x8
     SelectableCar *pSelectedCar;               // offset 0x34, size 0x4
@@ -129,8 +130,8 @@ struct UIQRCarSelect : public MenuScreen {
     FEString *pCarName;                        // offset 0x44, size 0x4
     FEString *pCarNameShadow;                  // offset 0x48, size 0x4
     FEString *pFilter;                         // offset 0x4C, size 0x4
-    unsigned int ListHandles[6];               // offset 0x50, size 0x18
-    unsigned int originalCar;                  // offset 0x68, size 0x4
+    uint32 ListHandles[6];                     // offset 0x50, size 0x18
+    uint32 originalCar;                        // offset 0x68, size 0x4
     QRCarSelectBustedManager TheBustedManager; // offset 0x6C, size 0x1C
     CustomizeMeter TheHeatMeter;               // offset 0x88, size 0x50
     TwoStageSlider AccelerationSlider;         // offset 0xD8, size 0x44
@@ -140,7 +141,7 @@ struct UIQRCarSelect : public MenuScreen {
     bool bShowcaseMode;                        // offset 0x1A8, size 0x1
     int iPlayerNum;                            // offset 0x1AC, size 0x4
     int filter;                                // offset 0x1B0, size 0x4
-    unsigned int iPrevButtonMsg;               // offset 0x1B4, size 0x4
+    uint32 iPrevButtonMsg;                     // offset 0x1B4, size 0x4
 };
 
 #endif

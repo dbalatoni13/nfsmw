@@ -1,58 +1,27 @@
 #include "uiRepSheetMain.hpp"
 
-#include "Speed/Indep/Src/FEng/cFEng.h"
+#include "Speed/Indep/Src/Frontend/FEPackageData.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
-#include "Speed/Indep/Src/Frontend/FEManager.hpp"
+#include "Speed/Indep/Src/Frontend/Localization/Localize.hpp"
 #include "Speed/Indep/Src/Gameplay/GRaceDatabase.h"
-#include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Generated/Events/EFadeScreenOff.hpp"
 #include "Speed/Indep/Src/Generated/Events/ERaceSheetOff.hpp"
+#include "Speed/Indep/Src/Misc/ResourceLoader.hpp"
 #include "Speed/Indep/Src/World/CarInfo.hpp"
-#include "Speed/Indep/bWare/Inc/bPrintf.hpp"
+#include "Speed/Indep/Src/Frontend/FECarViewer.hpp"
 
-struct FEObject;
-
-FEObject *FEngFindObject(const char *pkg_name, unsigned int hash);
-FEImage *FEngFindImage(const char *pkg_name, int hash);
-void FEngSetVisible(FEObject *obj);
-void FEngSetInvisible(FEObject *obj);
-void FEngSetTextureHash(FEImage *image, unsigned int hash);
-void FEngSetScript(const char *pkg_name, unsigned int obj_hash, unsigned int script_hash, bool);
-void FEngSetLanguageHash(const char *pkg_name, unsigned int obj_hash, unsigned int lang_hash);
-int FEPrintf(const char *pkg_name, int hash, const char *fmt, ...);
-int FEngSNPrintf(char *buffer, int buf_size, const char *fmt, ...);
-unsigned int FEngHashString(const char *format, ...);
-const char *GetLocalizedString(unsigned int hash);
-void eUnloadStreamingTexture(unsigned int *textures, int count);
-void WaitForResourceLoadingComplete();
-unsigned char FEngGetLastButton(const char *pkg_name);
-
-extern unsigned int iCurrentViewBin;
+extern int iCurrentViewBin;
 extern int selection;
 
-struct RepSheetIcon : public IconOption {
-    unsigned int id;
-
-    RepSheetIcon(unsigned int tex_hash, unsigned int name_hash, unsigned int the_id) : IconOption(tex_hash, name_hash, 0) {
-        id = the_id;
-    }
-
-    ~RepSheetIcon() override {}
-
-    void React(const char *pkg, unsigned int data, FEObject *obj, unsigned int p1, unsigned int p2) override;
-};
-
-void RepSheetIcon::React(const char *pkg, unsigned int data, FEObject *obj, unsigned int p1, unsigned int p2) {
+void RepSheetIcon::React(const char *pkg_name, uint32 data, struct FEObject *obj, uint32 param1, uint32 param2) {
     if (data != 0xc407210)
         return;
     selection = id;
 }
 
 uiRepSheetMain::uiRepSheetMain(ScreenConstructorData *sd)
-    : IconScrollerMenu(sd), bIsInGame(sd->Arg != 0), //
-      bBossAvailable(false),                         //
-      bBossBeaten(false),                            //
-      DefeatedTextureHash(0),                        //
+    : IconScrollerMenu(sd), bIsInGame(sd->Arg != 0), bBossAvailable(false), bBossBeaten(false), DefeatedTextureHash(0),
       RivalStreamer(sd->PackageFilename, bIsInGame) {
     if (bIsInGame) {
         Options.SetIdleColor(0xffffae40);
@@ -73,14 +42,14 @@ uiRepSheetMain::~uiRepSheetMain() {
     WaitForResourceLoadingComplete();
 }
 
-eMenuSoundTriggers uiRepSheetMain::NotifySoundMessage(unsigned long msg, eMenuSoundTriggers maybe) {
+eMenuSoundTriggers uiRepSheetMain::NotifySoundMessage(u32 msg, eMenuSoundTriggers maybe) {
     if (bBossBeaten && msg == 0x7b6b89d7) {
         return static_cast<eMenuSoundTriggers>(-1);
     }
     return maybe;
 }
 
-void uiRepSheetMain::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
+void uiRepSheetMain::NotificationMessage(u32 msg, FEObject *pobj, u32 param1, u32 param2) {
     IconScrollerMenu::NotificationMessage(msg, pobj, param1, param2);
 
     switch (msg) {
@@ -198,7 +167,7 @@ void uiRepSheetMain::NotifyTextureLoaded() {
     FEngSetVisible(FEngFindObject(GetPackageName(), 0x7FE4020F));
 }
 
-unsigned int uiRepSheetMain::GetDefeatedTexture() {
+uint32 uiRepSheetMain::GetDefeatedTexture() {
     int lang = GetCurrentLanguage();
     switch (lang) {
         case 1:
@@ -343,6 +312,6 @@ void uiRepSheetMain::ScrollRival(eScrollDir dir) {
     }
 }
 
-void uiRepSheetMain::TextureLoadedCallback(unsigned int tex) {
+void uiRepSheetMain::TextureLoadedCallback(uint32 tex) {
     reinterpret_cast<uiRepSheetMain *>(tex)->NotifyTextureLoaded();
 }

@@ -1,61 +1,98 @@
+#include "Speed/Indep/Src/Frontend/RaceStarter.hpp"
+
 #include "Speed/Indep/Src/Frontend/FEJoyInput.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Misc/GameFlow.hpp"
 #include "Speed/Indep/Src/World/RaceParameters.hpp"
+#include "Speed/Indep/Src/Misc/Config.h"
 
 extern RaceParameters TheRaceParameters;
 extern cFrontendDatabase *FEDatabase;
 
-extern int OnlineEnabled;
-extern int SkipFETrackNumber;
-extern eTrackDirection SkipFETrackDirection;
-extern float SkipFETrafficOncoming;
-extern RaceTypes SkipFERaceType;
-extern int SkipFEPoint2Point;
-extern int SkipFENumLaps;
-extern int SkipFENumPlayerCars;
-extern int SkipFENumAICars;
-extern int SkipFEMaxCops;
-extern int SkipFEDamageEnabled;
-extern eOpponentStrength SkipFEDifficulty;
-extern int SkipFEControllerConfig1;
-extern int SkipFEControllerConfig2;
-extern int SkipFEPovType1;
-
-enum POVTypes {
-    kPOV_Far = 0,
-    kPOV_Close = 1,
-    kPOV_Bumper = 2,
-    kPOV_Hood = 3,
-    kPOV_Drift = 4,
-    kPOV_Pursuit = 5,
-    kPOV_Pullback = 6
-};
-
 extern ePlayerSettingsCameras GetPlayerCameraFromPOVType(POVTypes pov);
 
-class RaceStarter {
-  public:
-    static void StartRace();
-    static void StartSkipFERace();
-    static void StartCareerFreeRoam();
-    static void SetControllerConfig(int config, JoystickPort port);
-};
+// STRIPPED
+void RaceStarter::SetupPlayerCarsAndStuff(int num_players) {}
+
+// STRIPPED
+void RaceStarter::AddTrafficCars() {}
+
+// STRIPPED
+void RaceStarter::AddAIOpponentCars(int num_ai_opponents) {}
+
+// STRIPPED
+void RaceStarter::AddRandomEncounterCars(int num_ai_opponents) {}
+
+// STRIPPED
+void RaceStarter::MatchAICarPerformanceToPlayer() {}
+
+// STRIPPED
+int RaceStarter::DecideAISkillLevel(eOpponentStrength opponent_strength) {
+    int skill_level;
+}
+
+// STRIPPED
+void RaceStarter::RandomizePlayerStartPositions() {}
+
+// STRIPPED
+void RaceStarter::AddCopDriverInfos(int ncops) {}
+
+// STRIPPED
+void RaceStarter::SetupCircuit() {
+    RaceSettings *settings;
+    DriverInfo *player_1_driver_info;
+    DriverInfo *player_2_driver_info;
+}
+
+// STRIPPED
+void RaceStarter::SetupShortTrack() {}
+
+// STRIPPED
+void RaceStarter::SetupSprint() {}
+
+// STRIPPED
+void RaceStarter::SetupFreeRun() {
+    RaceSettings *settings;
+}
+
+// STRIPPED
+void RaceStarter::SetupBurnout() {
+    RaceSettings *settings;
+}
+
+// STRIPPED
+void RaceStarter::SetupGT() {}
+
+// STRIPPED
+void RaceStarter::StartXenonE3Demo() {
+    GRaceParameters *parms;
+    GRaceCustom *race;
+}
 
 void RaceStarter::StartRace() {
     TheRaceParameters.InitWithDefaults();
     TheRaceParameters.bOnlineRace = false;
     TheRaceParameters.TrackNumber = 2000;
     for (int i = 0; i < TheRaceParameters.NumPlayerCars; i++) {
-        RaceStarter::SetControllerConfig(
-            FEDatabase->GetPlayerSettings(i)->Config,
-            static_cast<JoystickPort>(FEDatabase->GetPlayersJoystickPort(i)));
+        RaceStarter::SetControllerConfig(FEDatabase->GetPlayerSettings(i)->Config, static_cast<JoystickPort>(FEDatabase->GetPlayersJoystickPort(i)));
     }
     TheGameFlowManager.UnloadFrontend();
 }
 
-void RaceStarter::SetControllerConfig(int config, JoystickPort port) {
-}
+#if ONLINE_SUPPORT
+void RaceStarter::SetupOnlineRace() {}
+#endif
+
+void RaceStarter::SetControllerConfig(int config, JoystickPort port) {}
+
+// STRIPPED
+void RaceStarter::SetRaceTheRaceParametersThatHaveNothingToDoWithTheRaceType() {}
+
+// STRIPPED
+//   void RaceStarter::StartUndergroundModeRace(FERaceEvent *race_event ) {}
+
+// STRIPPED
+void RaceStarter::SwapAICarOutOfPlayersPosition(int position, PlayerNumbers player_number) {}
 
 void RaceStarter::StartSkipFERace() {
     int track_num = SkipFETrackNumber;
@@ -104,6 +141,12 @@ void RaceStarter::StartSkipFERace() {
     }
 }
 
+// STRIPPED
+void RaceStarter::StartReplayRace() {}
+
+// STRIPPED
+void RaceStarter::StartCarTuningRace() {}
+
 void RaceStarter::StartCareerFreeRoam() {
     if (TheGameFlowManager.GetState() == GAMEFLOW_STATE_IN_FRONTEND) {
         TheGameFlowManager.UnloadFrontend();
@@ -111,3 +154,6 @@ void RaceStarter::StartCareerFreeRoam() {
         TheGameFlowManager.LoadTrack();
     }
 }
+
+// STRIPPED
+void RaceStarter::StartCareerFreeRoamFromInGame() {}

@@ -1,18 +1,18 @@
 #include "Speed/Indep/Src/Frontend/MemoryCard/MemoryCard.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
-#include "Speed/Indep/Src/FEng/cFEng.h"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
+#include "Speed/Indep/Src/Misc/bFile.hpp"
 #include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 #include "Speed/Indep/Src/FEng/FEWideString.h"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "Speed/Indep/Src/Misc/GameFlow.hpp"
+#include "Speed/Indep/Src/Misc/BuildRegion.hpp"
+#include "Speed/Indep/Src/Frontend/Localization/WideCharHistogram.hpp"
 
-extern void GC_GetOSLanguage();
-extern const char *GetLocalizedString(unsigned int id);
-extern void bPrintfSetLocaleInfo(char decimal, char group, char group_len);
-extern void LoadLanguageResources(bool load_global, bool load_frontend, bool load_ingame, bool blocking);
+extern eLanguages GC_GetOSLanguage(); // TODO Platform_G.cpp
 
 struct FontNameInfo {
     unsigned int GlobalFonts[8];   // offset 0x0
@@ -36,19 +36,6 @@ struct LanguageChunkHeader {
     }
 };
 
-struct WideCharHistogram {
-    void PackString(char *packed, int size, const unsigned short *wide);
-    void UnpackString(unsigned short *wide, int size, const char *packed);
-    void PlatEndianSwap();
-
-  protected:
-    int NumEntries;                  // offset 0x0, size 0x4
-    unsigned short EntryTable[3072]; // offset 0x4, size 0x1800
-};
-
-extern WideCharHistogram *pWideCharHistogram;
-extern void bStrCpy(unsigned short *dst, const char *src);
-
 struct LanguageInfo {
     eLanguages Language;                   // offset 0x0, size 0x4
     char *Name;                            // offset 0x4, size 0x4
@@ -61,29 +48,30 @@ struct LanguageInfo {
 extern LanguageInfo LanguageInfoTable[];
 
 struct StringRecord {
-    unsigned int Hash;           // offset 0x0, size 0x4
-    unsigned char *PackedString; // offset 0x4, size 0x4
+    uint32 Hash;         // offset 0x0, size 0x4
+    uint8 *PackedString; // offset 0x4, size 0x4
 };
 
 static unsigned int NumStringRecords;
 static unsigned char *PackedStringTable;
 static StringRecord *RecordTable;
+static eLanguages CurrentLanguage = eLANGUAGE_NONE;
+
+struct FontSizeInfo {
+    unsigned int Hash; // offset 0x0
+    int Size;          // offset 0x4
+};
+
+extern FontSizeInfo FontSizeInfoTable[9];
+extern int LanguageMemoryPoolNumber;
+extern void *pLanguageMemoryPoolMemory;
+extern int LanguageMemoryPoolSize;
+
+struct VMFile;
+extern ResourceFile *pLanguageResourceFile;
+extern VMFile *pLanguageResourceFile_VM;
 
 extern cFrontendDatabase *FEDatabase;
-eLanguages GetCurrentLanguage();
-
-void LanguageHasChanged(eLanguages new_language) {
-    EAXSound::ChangeLanguage(new_language);
-    if (FEDatabase) {
-        eLanguages lang = GetCurrentLanguage();
-        if (lang != eLANGUAGE_ENGLISH) {
-            FEDatabase->GetGameplaySettings()->SpeedoUnits = 1;
-        } else {
-            FEDatabase->GetGameplaySettings()->SpeedoUnits = 0;
-        }
-    }
-    cFEng::Get()->MakeLoadedPackagesDirty();
-}
 
 LanguageInfo *GetLanguageInfo(eLanguages language) {
     for (int i = 0; i <= 9; i++) {
@@ -94,198 +82,12 @@ LanguageInfo *GetLanguageInfo(eLanguages language) {
     return nullptr;
 }
 
-const char *GetLanguageName(eLanguages language) {
+char *GetLanguageName(eLanguages language) {
     LanguageInfo *info = GetLanguageInfo(language);
     if (!info) {
         return "UNKNOWN";
     }
     return info->Name;
-}
-
-static eLanguages CurrentLanguage;
-
-void SetCurrentLanguage(eLanguages new_language);
-
-void LoadCurrentLanguage() {
-    GC_GetOSLanguage();
-    SetCurrentLanguage(CurrentLanguage);
-}
-
-void SetCurrentLanguage(eLanguages new_language) {
-    if (new_language != CurrentLanguage) {
-        if (CurrentLanguage != static_cast<eLanguages>(-1)) {
-            LoadLanguageResources(false, false, false, false);
-        }
-        CurrentLanguage = new_language;
-        if (new_language != static_cast<eLanguages>(-1)) {
-            LoadLanguageResources(true, TheGameFlowManager.IsInFrontend(), TheGameFlowManager.IsInGame(), true);
-            LanguageInfo *langInfo = GetLanguageInfo(CurrentLanguage);
-            if (langInfo) {
-                bPrintfLocaleInfo locInfo = *langInfo->pbPrintfLocaleInfo;
-                bPrintfSetLocaleInfo(locInfo.decimal_char, locInfo.group_char, langInfo->pbPrintfLocaleInfo->group_len);
-            }
-            LanguageHasChanged(CurrentLanguage);
-        }
-        if (FEDatabase && !FEDatabase->GetUserProfile(0)->IsProfileNamed()) {
-            FEDatabase->GetUserProfile(0)->SetProfileName(nullptr, true);
-        }
-        MemoryCard::LoadLocale(CurrentLanguage);
-    }
-}
-
-eLanguages GetCurrentLanguage() {
-    return CurrentLanguage;
-}
-
-struct WideCharHistogram;
-
-void WideToCharString(char *dest, unsigned int destlen, const short *src) {
-    if (!dest) {
-        return;
-    }
-    if (!src) {
-        return;
-    }
-    unsigned int bytes = 0;
-    unsigned short ch = *reinterpret_cast<const unsigned short *>(src);
-    if (ch != 0) {
-        destlen = destlen - 1;
-        if (bytes < destlen) {
-            do {
-                if (ch < 0x100) {
-                    bytes++;
-                    *dest = reinterpret_cast<const char *>(src)[1];
-                    src++;
-                    dest++;
-                } else {
-                    src++;
-                }
-                ch = *reinterpret_cast<const unsigned short *>(src);
-            } while (ch != 0 && bytes < destlen);
-        }
-    }
-    *dest = 0;
-}
-
-static const char *SearchForString(unsigned int string_label) {
-    if (!RecordTable) {
-        return nullptr;
-    }
-    unsigned int top = NumStringRecords - 1;
-    unsigned int bot = 0;
-    while (true) {
-        unsigned int mid = (bot + top) >> 1;
-        unsigned int hash = RecordTable[mid].Hash;
-        if (hash == string_label) {
-            return reinterpret_cast<const char *>(RecordTable[mid].PackedString);
-        }
-        if (top - bot < 3) {
-            if (RecordTable[bot].Hash == string_label) {
-                return reinterpret_cast<const char *>(RecordTable[bot].PackedString);
-            }
-            if (RecordTable[top].Hash == string_label) {
-                return reinterpret_cast<const char *>(RecordTable[top].PackedString);
-            }
-            break;
-        }
-        if (mid == bot) {
-            return nullptr;
-        }
-        if (hash > string_label) {
-            top = mid;
-        }
-        if (hash < string_label) {
-            bot = mid;
-        }
-    }
-    return nullptr;
-}
-
-int UnloaderLanguage(bChunk *chunk) {
-    if (chunk->GetID() == 0x39000) {
-        RecordTable = nullptr;
-        PackedStringTable = nullptr;
-        pWideCharHistogram = nullptr;
-        NumStringRecords = 0;
-        return 1;
-    }
-    return 0;
-}
-
-int LoaderLanguage(bChunk *chunk) {
-    if (chunk->GetID() == 0x39000) {
-        LanguageChunkHeader *header = reinterpret_cast<LanguageChunkHeader *>(chunk->GetData());
-        header->PlatEndianSwap();
-        RecordTable = reinterpret_cast<StringRecord *>(reinterpret_cast<char *>(header) + header->StringRecordTablePos);
-        PackedStringTable = reinterpret_cast<unsigned char *>(header) + header->StringTablePos;
-        pWideCharHistogram = reinterpret_cast<WideCharHistogram *>(reinterpret_cast<char *>(header) + header->HistogramTablePos);
-        NumStringRecords = header->NumStringRecords;
-        pWideCharHistogram->PlatEndianSwap();
-        for (unsigned int i = 0; i < NumStringRecords; i++) {
-            bPlatEndianSwap(reinterpret_cast<unsigned int *>(&RecordTable[i]));
-            unsigned int offset = reinterpret_cast<unsigned int *>(&RecordTable[i])[1];
-            bPlatEndianSwap(&offset);
-            reinterpret_cast<unsigned int *>(&RecordTable[i])[1] = reinterpret_cast<unsigned int>(PackedStringTable) + offset;
-        }
-        return 1;
-    }
-    return 0;
-}
-
-void PackedStringToWideString(unsigned short *wide_string, int wide_string_buffer_size, const char *packed_string) {
-    if (!pWideCharHistogram) {
-        bStrCpy(wide_string, packed_string);
-    } else {
-        pWideCharHistogram->UnpackString(wide_string, wide_string_buffer_size, packed_string);
-    }
-}
-
-void WideStringToPackedString(char *packed_string, int packed_string_buffer_size, const unsigned short *wide_string) {
-    pWideCharHistogram->PackString(packed_string, packed_string_buffer_size, wide_string);
-}
-
-FEWideString &FEWideString::operator=(const char *pcString) {
-    short wide_string[1024];
-    PackedStringToWideString(reinterpret_cast<unsigned short *>(wide_string), 0x800, pcString);
-    *this = wide_string;
-    return *this;
-}
-
-bool DoesStringExist(unsigned int label) {
-    if (!SearchForString(label)) {
-        return false;
-    }
-    return true;
-}
-
-const char *GetLocalizedString(unsigned int id) {
-    const char *str = SearchForString(id);
-    if (!str) {
-        str = SearchForString(0x9bb9ccc3);
-    }
-    return str;
-}
-
-char *GetTranslatedString(int id) {
-    return const_cast<char *>(GetLocalizedString(static_cast<unsigned int>(id)));
-}
-
-void FormatMessage(char *buf, int size, const char *fmt, va_list *args) {
-    bVSPrintf(buf, fmt, args);
-}
-
-void GetLocalizedString(char *buffer, unsigned int bufsize, unsigned int string_label) {
-    char *str = const_cast<char *>(GetLocalizedString(string_label));
-    bStrNCpy(buffer, str, static_cast<int>(bufsize));
-}
-
-bool GetLocalizedWideString(short *wide_string, int wide_string_buffer_size, unsigned int string_label) {
-    const char *str = SearchForString(string_label);
-    if (str) {
-        PackedStringToWideString(reinterpret_cast<unsigned short *>(wide_string), wide_string_buffer_size, str);
-        return true;
-    }
-    return false;
 }
 
 const char *GetLocalizedPercentSign() {
@@ -298,30 +100,9 @@ const char *GetLocalizedPercentSign() {
     return szPercentUnit;
 }
 
-struct FontSizeInfo {
-    unsigned int Hash; // offset 0x0
-    int Size;          // offset 0x4
-};
-
-extern FontSizeInfo FontSizeInfoTable[9];
-extern int LanguageMemoryPoolNumber;
-extern void *pLanguageMemoryPoolMemory;
-extern int LanguageMemoryPoolSize;
-extern bool IsKorea();
-extern int bGetFreeMemoryPoolNum();
-extern void bInitMemoryPool(int pool, void *mem, int size, const char *name);
-extern void eWaitForStreamingTexturePackLoading(const char *name);
-
-struct VMFile;
-extern ResourceFile *pLanguageResourceFile;
-extern VMFile *pLanguageResourceFile_VM;
-extern void UnloadFileFromVirtualMemory(VMFile *vm_file);
-extern VMFile *LoadFileIntoVirtualMemory(const char *filename, bool compressed, bool use_trackstreampool_as_temp);
-extern void WaitForResourceLoadingComplete();
-
 void InitLocalization() {
     LanguageInfo *info;
-    if (IsKorea()) {
+    if (BuildRegion::IsKorea()) {
         info = GetLanguageInfo(eLANGUAGE_KOREAN);
     } else {
         info = GetLanguageInfo(eLANGUAGE_ENGLISH);
@@ -350,6 +131,19 @@ void InitLocalization() {
     }
     eLoadStreamingTexturePack("LANGUAGES\\LANGUAGETEXTURES.BIN", nullptr, nullptr, 0);
     eWaitForStreamingTexturePackLoading("LANGUAGES\\LANGUAGETEXTURES.BIN");
+}
+
+void LanguageHasChanged(eLanguages new_language) {
+    EAXSound::ChangeLanguage(new_language);
+    if (FEDatabase) {
+        eLanguages lang = GetCurrentLanguage();
+        if (lang != eLANGUAGE_ENGLISH) {
+            FEDatabase->GetGameplaySettings()->SpeedoUnits = 1;
+        } else {
+            FEDatabase->GetGameplaySettings()->SpeedoUnits = 0;
+        }
+    }
+    cFEng::Get()->MakeLoadedPackagesDirty();
 }
 
 void LoadLanguageResources(bool load_global, bool load_frontend, bool load_ingame, bool blocking) {
@@ -408,4 +202,190 @@ void LoadLanguageResources(bool load_global, bool load_frontend, bool load_ingam
     if (blocking) {
         eWaitForStreamingTexturePackLoading("LANGUAGES\\LANGUAGETEXTURES.BIN");
     }
+}
+
+void SetCurrentLanguage(eLanguages new_language) {
+    if (new_language != CurrentLanguage) {
+        if (CurrentLanguage != static_cast<eLanguages>(-1)) {
+            LoadLanguageResources(false, false, false, false);
+        }
+        CurrentLanguage = new_language;
+        if (new_language != static_cast<eLanguages>(-1)) {
+            LoadLanguageResources(true, TheGameFlowManager.IsInFrontend(), TheGameFlowManager.IsInGame(), true);
+            LanguageInfo *langInfo = GetLanguageInfo(CurrentLanguage);
+            if (langInfo) {
+                bPrintfLocaleInfo locInfo = *langInfo->pbPrintfLocaleInfo;
+                bPrintfSetLocaleInfo(locInfo.decimal_char, locInfo.group_char, langInfo->pbPrintfLocaleInfo->group_len);
+            }
+            LanguageHasChanged(CurrentLanguage);
+        }
+        if (FEDatabase && !FEDatabase->GetUserProfile(0)->IsProfileNamed()) {
+            FEDatabase->GetUserProfile(0)->SetProfileName(nullptr, true);
+        }
+        MemoryCard::LoadLocale(CurrentLanguage);
+    }
+}
+
+void LoadCurrentLanguage() {
+#ifdef EA_PLATFORM_GAMECUBE
+    eLanguages ngc_language = GC_GetOSLanguage();
+    SetCurrentLanguage(ngc_language);
+#elif EA_PLATFORM_PS2
+    if (BuildRegion::IsAmerica()) {
+        SetCurrentLanguage(eLANGUAGE_ENGLISH);
+    } else {
+        eLanguages new_language = PS2_GetOSLanguage();
+        SetCurrentLanguage(new_language);
+    }
+#endif
+}
+
+eLanguages GetCurrentLanguage() {
+    return CurrentLanguage;
+};
+
+void WideToCharString(char *dest, unsigned int destlen, const short *src) {
+    if (!dest) {
+        return;
+    }
+    if (!src) {
+        return;
+    }
+    unsigned int bytes = 0;
+    unsigned short ch = *reinterpret_cast<const unsigned short *>(src);
+    if (ch != 0) {
+        destlen = destlen - 1;
+        if (bytes < destlen) {
+            do {
+                if (ch < 0x100) {
+                    bytes++;
+                    *dest = reinterpret_cast<const char *>(src)[1];
+                    src++;
+                    dest++;
+                } else {
+                    src++;
+                }
+                ch = *reinterpret_cast<const unsigned short *>(src);
+            } while (ch != 0 && bytes < destlen);
+        }
+    }
+    *dest = 0;
+}
+
+void PackedStringToWideString(uint16 *wide_string, int wide_string_buffer_size, const char *packed_string) {
+    if (!pWideCharHistogram) {
+        bStrCpy(wide_string, packed_string);
+    } else {
+        pWideCharHistogram->UnpackString(wide_string, wide_string_buffer_size, packed_string);
+    }
+}
+
+void WideStringToPackedString(char *packed_string, int packed_string_buffer_size, const unsigned short *wide_string) {
+    pWideCharHistogram->PackString(packed_string, packed_string_buffer_size, wide_string);
+}
+
+// TODO: why is this here????
+FEWideString &FEWideString::operator=(const char *pcString) {
+    short wide_string[1024];
+    PackedStringToWideString(reinterpret_cast<unsigned short *>(wide_string), 0x800, pcString);
+    *this = wide_string;
+    return *this;
+}
+
+static const uint8 *SearchForString(uint32 string_label) {
+    if (!RecordTable) {
+        return nullptr;
+    }
+    unsigned int top = NumStringRecords - 1;
+    unsigned int bot = 0;
+    while (true) {
+        unsigned int mid = (bot + top) >> 1;
+        unsigned int hash = RecordTable[mid].Hash;
+        if (hash == string_label) {
+            return RecordTable[mid].PackedString;
+        }
+        if (top - bot < 3) {
+            if (RecordTable[bot].Hash == string_label) {
+                return RecordTable[bot].PackedString;
+            }
+            if (RecordTable[top].Hash == string_label) {
+                return RecordTable[top].PackedString;
+            }
+            break;
+        }
+        if (mid == bot) {
+            return nullptr;
+        }
+        if (hash > string_label) {
+            top = mid;
+        }
+        if (hash < string_label) {
+            bot = mid;
+        }
+    }
+    return nullptr;
+}
+
+bool DoesStringExist(uint32 label) {
+    if (!SearchForString(label)) {
+        return false;
+    }
+    return true;
+}
+
+char *GetLocalizedString(uint32 id) {
+    const uint8 *str = SearchForString(id);
+    if (!str) {
+        str = SearchForString(0x9bb9ccc3);
+    }
+    return reinterpret_cast<char *>(const_cast<uint8 *>(str));
+}
+
+void GetLocalizedString(char *buffer, uint32 bufsize, uint32 string_label) {
+    char *str = const_cast<char *>(GetLocalizedString(string_label));
+    bStrNCpy(buffer, str, static_cast<int>(bufsize));
+}
+
+char *GetTranslatedString(int id) {
+    return const_cast<char *>(GetLocalizedString(static_cast<unsigned int>(id)));
+}
+
+const bool GetLocalizedWideString(int16 *wide_string, int wide_string_buffer_size, uint32 string_label) {
+    const uint8 *str = SearchForString(string_label);
+    if (str) {
+        PackedStringToWideString(reinterpret_cast<uint16 *>(wide_string), wide_string_buffer_size, reinterpret_cast<const char *>(str));
+        return true;
+    }
+    return false;
+}
+
+int LoaderLanguage(bChunk *chunk) {
+    if (chunk->GetID() == 0x39000) {
+        LanguageChunkHeader *header = reinterpret_cast<LanguageChunkHeader *>(chunk->GetData());
+        header->PlatEndianSwap();
+        RecordTable = reinterpret_cast<StringRecord *>(reinterpret_cast<char *>(header) + header->StringRecordTablePos);
+        PackedStringTable = reinterpret_cast<unsigned char *>(header) + header->StringTablePos;
+        pWideCharHistogram = reinterpret_cast<WideCharHistogram *>(reinterpret_cast<char *>(header) + header->HistogramTablePos);
+        NumStringRecords = header->NumStringRecords;
+        pWideCharHistogram->PlatEndianSwap();
+        for (unsigned int i = 0; i < NumStringRecords; i++) {
+            bPlatEndianSwap(reinterpret_cast<unsigned int *>(&RecordTable[i]));
+            unsigned int offset = reinterpret_cast<unsigned int *>(&RecordTable[i])[1];
+            bPlatEndianSwap(&offset);
+            reinterpret_cast<unsigned int *>(&RecordTable[i])[1] = reinterpret_cast<unsigned int>(PackedStringTable) + offset;
+        }
+        return 1;
+    }
+    return 0;
+}
+
+int UnloaderLanguage(bChunk *chunk) {
+    if (chunk->GetID() == 0x39000) {
+        RecordTable = nullptr;
+        PackedStringTable = nullptr;
+        pWideCharHistogram = nullptr;
+        NumStringRecords = 0;
+        return 1;
+    }
+    return 0;
 }

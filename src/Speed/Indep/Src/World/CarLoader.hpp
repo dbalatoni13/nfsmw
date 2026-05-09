@@ -78,7 +78,7 @@ class LoadedWheel : public bTNode<LoadedWheel> {
     CARPART_LOD GetMaxLodLevel() {
         return mMaxLodLevel;
     };
-    void SetLodLevel(CARPART_LOD min, enum CARPART_LOD max);
+    void SetLodLevel(CARPART_LOD min, CARPART_LOD max);
 };
 
 // total size: 0x2E0

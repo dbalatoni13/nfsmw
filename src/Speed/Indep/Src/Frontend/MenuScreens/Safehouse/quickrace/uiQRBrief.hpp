@@ -12,30 +12,29 @@
 
 #include <types.h>
 
-struct SelectableCar;
-struct SelectableTrack;
-
 // total size: 0x10
-struct SelectableCar : public bTNode<SelectableCar> {
-    SelectableCar(unsigned int handle, bool locked)
+class SelectableCar : public bTNode<SelectableCar> {
+  public:
+    SelectableCar(uint32 handle, bool locked)
         : mHandle(handle) //
           ,
           bLocked(locked) {}
 
     ~SelectableCar() {}
 
-    unsigned int mHandle; // offset 0x8, size 0x4
-    bool bLocked;         // offset 0xC, size 0x1
+    uint32 mHandle; // offset 0x8, size 0x4
+    bool bLocked;   // offset 0xC, size 0x1
 };
 
 // total size: 0x14
-struct SelectableTrack : public bTNode<SelectableTrack> {
-    static void *operator new(size_t s) {
-        return ::operator new[](s);
-    }
-    static void operator delete(void *p) {
-        ::operator delete[](p);
-    }
+class SelectableTrack : public bTNode<SelectableTrack> {
+  public:
+    // static void *operator new(size_t s) {
+    //     return ::operator new[](s);
+    // }
+    // static void operator delete(void *p) {
+    //     ::operator delete[](p);
+    // }
 
     SelectableTrack(GRaceParameters *rp, bool locked, int bin_num)
         : pRaceParams(rp) //
@@ -52,15 +51,17 @@ struct SelectableTrack : public bTNode<SelectableTrack> {
 };
 
 // total size: 0x138
-struct UIQRBrief : public MenuScreen {
+class UIQRBrief : public MenuScreen {
+  public:
     UIQRBrief(ScreenConstructorData *sd);
     ~UIQRBrief() override;
 
-    void NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) override;
-
+    void NotificationMessage(u32 msg, FEObject *pobj, u32 param1, u32 param2) override;
     void RefreshHeader();
-    void UpdateSliders();
+
+  private:
     void Setup();
+    void UpdateSliders();
     SelectableCar *GetRandomCar();
     SelectableTrack *GetRandomTrack();
 

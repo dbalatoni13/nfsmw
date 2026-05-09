@@ -14,15 +14,36 @@ class RaceInformation : public HudElement, public IRaceInformation {
   public:
     RaceInformation(UTL::COM::Object *pOutter, const char *pkg_name, int player_number);
     void Update(IPlayer *player) override;
-    void SetNumRacers(int numRacers) override;
-    void SetNumLaps(int numLaps) override;
-    void SetPlayerPosition(int position) override;
-    void SetPlayerLapTime(float lapTime) override;
-    void SetSuddenDeathMode(bool suddenDeath) override;
-    void SetPlayerPercentComplete(float percent) override;
-    void SetPlayerTollboothsCrossed(int num) override;
-    void SetNumTollbooths(int num) override;
-    void SetPlayerLapNumber(int lap) override;
+    void SetNumRacers(int numRacers) override {
+        mNumRacers = numRacers;
+    };
+    void SetNumLaps(int numLaps) override {
+        mNumLaps = numLaps;
+    };
+    void SetPlayerPosition(int position) override {
+        mPlayerPosition = position;
+    };
+    void SetPlayerLapNumber(int lap) override {
+        if (lap > mNumLaps) {
+            lap = mNumLaps;
+        }
+        mPlayerLapNumber = lap;
+    };
+    void SetPlayerLapTime(float lapTime) override {
+        mPlayerLapTime = lapTime;
+    };
+    void SetSuddenDeathMode(bool suddenDeath) override {
+        mSuddenDeath = suddenDeath;
+    };
+    void SetPlayerPercentComplete(float percent) override {
+        mPlayerPercentComplete = percent;
+    };
+    void SetPlayerTollboothsCrossed(int num) override {
+        mPlayerTollboothNumber = num;
+    };
+    void SetNumTollbooths(int num) override {
+        mNumTollbooths = num;
+    };
 
   private:
     int mNumRacers;
@@ -34,15 +55,15 @@ class RaceInformation : public HudElement, public IRaceInformation {
     float mPlayerPercentComplete;
     int mPlayerTollboothNumber;
     int mNumTollbooths;
-    FEString * mDataCurrentLapTime;
-    FEString * mDataCompleteText;
-    FEGroup * mDataPositionGroup;
-    FEImage * mDataIconTollbooth;
-    FEObject * mpDataTollboothNumTop;
-    FEObject * mpDataTollboothNumBot;
-    FEObject * mpDataRacePosNum;
-    FEObject * mpDataRacerCount;
-    FEObject * mpDataPercentComplete;
+    FEString *mDataCurrentLapTime;
+    FEString *mDataCompleteText;
+    FEGroup *mDataPositionGroup;
+    FEImage *mDataIconTollbooth;
+    FEObject *mpDataTollboothNumTop;
+    FEObject *mpDataTollboothNumBot;
+    FEObject *mpDataRacePosNum;
+    FEObject *mpDataRacerCount;
+    FEObject *mpDataPercentComplete;
 };
 
 #endif

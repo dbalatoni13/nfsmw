@@ -2,32 +2,14 @@
 
 #include "Speed/Indep/Src/FEng/FEPackage.h"
 #include "Speed/Indep/Src/FEng/FEString.h"
-#include "Speed/Indep/Src/FEng/cFEng.h"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
+#include "Speed/Indep/Src/Frontend/Localization/Localize.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Career/FEGameWonScreen.hpp"
 #include "Speed/Indep/Src/Frontend/cFEngRender.hpp"
 #include "Speed/Indep/Src/Misc/BuildRegion.hpp"
 
-FEObject *FEngFindObject(const char *pkg_name, unsigned int obj_hash);
-void FEngSetInvisible(FEObject *obj);
-FEString *FEngFindString(const char *pkg_name, int name_hash);
-int FEngSNPrintf(char *buffer, int buf_size, const char *fmt, ...);
-const char *GetLanguageName(eLanguages lang);
-
-MenuScreen *uiCredits::Create(ScreenConstructorData *sd) {
-    return new uiCredits(sd);
-}
-
-uiCredits::uiCredits(ScreenConstructorData *sd)
-    : MenuScreen(sd) //
-      ,
-      initComplete_(false) //
-      ,
-      prototypeStr_(nullptr) //
-      ,
-      pendingDelete_(nullptr) //
-      ,
-      uf_() {
+uiCredits::uiCredits(ScreenConstructorData *sd) : MenuScreen(sd), initComplete_(false), prototypeStr_(nullptr), pendingDelete_(nullptr), uf_() {
     if (!FEDatabase->IsBeatGameMode()) {
         FEngSetInvisible(FEngFindObject(GetPackageName(), 0xeb4cf244));
         cFEng::Get()->QueuePackageMessage(0x8cb81f09, GetPackageName(), nullptr);
@@ -37,9 +19,7 @@ uiCredits::uiCredits(ScreenConstructorData *sd)
     }
 }
 
-uiCredits::~uiCredits() {}
-
-void uiCredits::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
+void uiCredits::NotificationMessage(u32 msg, FEObject *pobj, u32 param1, u32 param2) {
     switch (msg) {
         case 0x35f8620b: {
             char filename[32];
@@ -72,7 +52,7 @@ void uiCredits::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned 
             break;
         case 0xc98356ba:
             if (pendingDelete_ != nullptr) {
-                ConstructData.pPackage->Objects.RemNode(pendingDelete_);
+                GetPackage()->Objects.RemNode(pendingDelete_);
                 cFEngRender::mInstance->RemoveCachedRender(pendingDelete_, nullptr);
                 delete pendingDelete_;
                 pendingDelete_ = nullptr;
@@ -95,7 +75,7 @@ void uiCredits::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned 
                     } else {
                         ns->SetScript(FEHashUpper("RollCredit_ENDGAME"), false);
                     }
-                    ConstructData.pPackage->Objects.AddNode(ConstructData.pPackage->Objects.GetTail(), ns);
+                    GetPackage()->Objects.AddNode(GetPackage()->Objects.GetTail(), ns);
                 }
             }
             break;

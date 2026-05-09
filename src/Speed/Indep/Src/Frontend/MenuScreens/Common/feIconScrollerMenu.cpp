@@ -3,9 +3,12 @@
 #include "IconScrollerMenu.hpp"
 
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
-#include "Speed/Indep/Src/FEng/cFEng.h"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEImages.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEObjects.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEAnyTutorialScreen.hpp"
+#include "Speed/Indep/Src/Misc/Point.hpp"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 
 extern void FEngSetTextureHash(FEImage *image, unsigned int hash);
@@ -22,25 +25,6 @@ extern Timer RealTimer;
 extern float RealTimeElapsed;
 extern char *bStrCat(char *dest, const char *str1, const char *str2);
 extern FEString *FEngFindString(const char *pkg_name, int hash);
-
-struct tCubic1D {
-    float Val;
-    float dVal;
-    float ValDesired;
-    float dValDesired;
-    float Coeff[4];
-    float time;
-    float duration;
-    short state;
-    short flags;
-
-    void Snap();
-    void SetValDesired(float v);
-};
-
-struct cPoint {
-    static void SplineSeek(tCubic1D *p, float time, float lower, float upper);
-};
 
 static const char *gTUTORIAL_MOVIE_DRAG = "TUT_DRAG";
 static const char *gTUTORIAL_MOVIE_SPEEDTRAP = "TUT_SPEEDTRAP";
@@ -91,18 +75,6 @@ void IconOption::StartScale(float scale_to, float duration) {
     bAnimComplete = false;
     fScaleStartSecs = RealTimer.GetSeconds();
 }
-
-unsigned int IconOption::GetDesc() { return DescHash; }
-float IconOption::GetScaleToPcnt() { return fScaleToPcnt; }
-float IconOption::GetScaleStartSecs() { return fScaleStartSecs; }
-float IconOption::GetScaleDurSecs() { return fScaleDurSecs; }
-float IconOption::GetScaleAtStart() { return fScaleAtStart; }
-void IconOption::SetScaleAtStart(float scale) { fScaleAtStart = scale; }
-bool IconOption::IsAnimComplete() { return bAnimComplete; }
-void IconOption::SetAnimComplete(bool b) { bAnimComplete = b; }
-bool IconOption::IsLocked() { return Locked; }
-void IconOption::SetLocked(bool b) { Locked = b; }
-void IconOption::SetTutorialMovieName(const char *name) { pTutorialMovieName = name; }
 
 // ============================================================
 // IconPanel
@@ -203,7 +175,7 @@ void IconPanel::Scroll(eScrollDir dir) {
             new_option = new_option->GetNext();
         } while (new_option->IsGreyOut);
     } else {
-check:
+    check:
         if (new_option->IsGreyOut) {
             return;
         }
@@ -287,7 +259,7 @@ void IconPanel::AnimateSelected(float &list_width, float &list_height) {
             FEngSetSize(opt->FEngObject, opt->OrigWidth * scale, opt->OrigHeight * scale);
             bJustScrolled = true;
         }
-next:
+    next:
         list_width = opt->OrigWidth * scale + list_width;
         list_height = opt->OrigHeight * scale + list_height;
         if (opt != Options.GetTail()) {
@@ -312,7 +284,8 @@ void IconPanel::RemoveAll() {
 
 IconScroller::IconScroller(const char *pkg_name, const char *master, const char *fe_button, const char *scroll_region, float width)
     : IconPanel(pkg_name, master, fe_button, scroll_region, false) //
-    , ScrollBar(pkg_name, "ScrollBar", false, false, true) //
+      ,
+      ScrollBar(pkg_name, "ScrollBar", false, false, true) //
 {
     HeadBookEnd = nullptr;
     TailBookEnd = nullptr;
@@ -352,8 +325,7 @@ void IconScroller::Update() {
     if (!Options.IsEmpty() && pCurrentNode && !bDelayUpdate) {
         if (bJustScrolled) {
             bJustScrolled = false;
-            ScrollBar.Update(1, iIndexToAdd - (iNumBookEnds + 1), iCurSelectedIndex - iNumBookEnds,
-                             iCurSelectedIndex - iNumBookEnds);
+            ScrollBar.Update(1, iIndexToAdd - (iNumBookEnds + 1), iCurSelectedIndex - iNumBookEnds, iCurSelectedIndex - iNumBookEnds);
             reinterpret_cast<tCubic1D *>(AnimateCubicData)->SetValDesired(-pCurrentNode->XPos);
             if (-pCurrentNode->XPos != reinterpret_cast<tCubic1D *>(AnimateCubicData)->Val) {
                 reinterpret_cast<tCubic1D *>(AnimateCubicData)->state = 2;
@@ -425,7 +397,7 @@ FEImage *IconScroller::AddOption(IconOption *option) {
 void IconScroller::SetInitialPos(int index) {
     TailBookEnd = Options.GetTail();
     for (int i = 0; i < iNumBookEnds / 2; i++) {
-        FEScrollyBookEnd *option = new(__FILE__, __LINE__) FEScrollyBookEnd(0x43B6310F);
+        FEScrollyBookEnd *option = new (__FILE__, __LINE__) FEScrollyBookEnd(0x43B6310F);
         FEImage *img = AddOption(option);
         if (img) {
             FEngSetTextureHash(img, option->Item);
@@ -665,12 +637,12 @@ void IconScroller::UpdateFade(IconOption *option, float scale) {
 
 void IconScroller::UpdateArrows() {
     if (pCurrentNode == Options.GetHead()) {
-        ScrollBar.SetArrowVisibility(1, false);
+        ScrollBar.SetArrow1Visibility(false);
     } else if (pCurrentNode == Options.GetTail()) {
-        ScrollBar.SetArrowVisibility(2, false);
+        ScrollBar.SetArrow2Visibility(false);
     } else {
-        ScrollBar.SetArrowVisibility(1, true);
-        ScrollBar.SetArrowVisibility(2, true);
+        ScrollBar.SetArrow1Visibility(true);
+        ScrollBar.SetArrow2Visibility(true);
     }
 }
 
@@ -719,156 +691,156 @@ void IconScrollerMenu::NotificationMessage(unsigned long msg, FEObject *pobj, un
     unsigned long previous_param2 = param2;
 
     switch (message) {
-    case 0xC98356BA:
-        Options.Update();
-        return;
-    case 0x84378BEF:
-        Options.bFadingIn = false;
-        Options.fCurFadeTime = Options.fMaxFadeTime;
-        Options.bFadingOut = true;
-        return;
-    case 0x35F8620B:
-        Options.bAllowColorAnim = true;
-        return;
-    case 0xE1FDE1D1:
-        Options.IconPanel::Act(PrevButtonMessage, PrevButtonObj, PrevParam1, PrevParam2);
-        return;
-    case 0x911AB364:
-        StorePrevNotification(0x911AB364, object, previous_param1, previous_param2);
-        Options.bReactToInput = false;
-        FEngSetLastButton(GetPackageName(), 0);
-        return;
-    case 0x0C407210: {
-        if (!Options.bReactToInput) {
+        case 0xC98356BA:
+            Options.Update();
             return;
-        }
-
-        IconPanel *panel = &Options;
-        IconOption *cur_option = Options.pCurrentNode;
-        if (cur_option->IsGreyOut) {
+        case 0x84378BEF:
+            Options.bFadingIn = false;
+            Options.fCurFadeTime = Options.fMaxFadeTime;
+            Options.bFadingOut = true;
             return;
-        }
-        if (object != cur_option->FEngObject) {
+        case 0x35F8620B:
+            Options.bAllowColorAnim = true;
             return;
-        }
-
-        const char *pkg_name = GetPackageName();
-        unsigned char current_index = 0;
-        if (cur_option) {
-            current_index = static_cast<unsigned char>(panel->GetOptionIndex(cur_option));
-        }
-        FEngSetLastButton(pkg_name, current_index);
-
-        bool reacts_immediately = false;
-        if (Options.pCurrentNode) {
-            reacts_immediately = cur_option->ReactsImmediately();
-        }
-        if (reacts_immediately) {
-            Options.IconPanel::Act(0x0C407210, object, previous_param1, previous_param2);
+        case 0xE1FDE1D1:
+            Options.IconPanel::Act(PrevButtonMessage, PrevButtonObj, PrevParam1, PrevParam2);
             return;
-        }
-
-        StorePrevNotification(0x0C407210, object, previous_param1, previous_param2);
-        Options.bReactToInput = false;
-        cFEng::Get()->QueuePackageMessage(0x587C018B, GetPackageName(), nullptr);
-        return;
-    }
-    case 0x9120409E:
-        if (!Options.bHorizontal) {
+        case 0x911AB364:
+            StorePrevNotification(0x911AB364, object, previous_param1, previous_param2);
+            Options.bReactToInput = false;
+            FEngSetLastButton(GetPackageName(), 0);
             return;
-        }
-        if (!Options.bReactToInput) {
-            return;
-        }
-        {
-            IconPanel *panel = &Options;
-            if (Options.bWrap) {
-                panel->ScrollWrapped(eSD_PREV);
-            } else {
-                panel->Scroll(eSD_PREV);
+        case 0x0C407210: {
+            if (!Options.bReactToInput) {
+                return;
             }
-        }
-        RefreshHeader();
-        return;
-    case 0xB5971BF1:
-        if (!Options.bHorizontal) {
+
+            IconPanel *panel = &Options;
+            IconOption *cur_option = Options.pCurrentNode;
+            if (cur_option->IsGreyOut) {
+                return;
+            }
+            if (object != cur_option->FEngObject) {
+                return;
+            }
+
+            const char *pkg_name = GetPackageName();
+            unsigned char current_index = 0;
+            if (cur_option) {
+                current_index = static_cast<unsigned char>(panel->GetOptionIndex(cur_option));
+            }
+            FEngSetLastButton(pkg_name, current_index);
+
+            bool reacts_immediately = false;
+            if (Options.pCurrentNode) {
+                reacts_immediately = cur_option->ReactsImmediately();
+            }
+            if (reacts_immediately) {
+                Options.IconPanel::Act(0x0C407210, object, previous_param1, previous_param2);
+                return;
+            }
+
+            StorePrevNotification(0x0C407210, object, previous_param1, previous_param2);
+            Options.bReactToInput = false;
+            cFEng::Get()->QueuePackageMessage(0x587C018B, GetPackageName(), nullptr);
             return;
         }
-        if (!Options.bReactToInput) {
+        case 0x9120409E:
+            if (!Options.bHorizontal) {
+                return;
+            }
+            if (!Options.bReactToInput) {
+                return;
+            }
+            {
+                IconPanel *panel = &Options;
+                if (Options.bWrap) {
+                    panel->ScrollWrapped(eSD_PREV);
+                } else {
+                    panel->Scroll(eSD_PREV);
+                }
+            }
+            RefreshHeader();
+            return;
+        case 0xB5971BF1:
+            if (!Options.bHorizontal) {
+                return;
+            }
+            if (!Options.bReactToInput) {
+                return;
+            }
+            {
+                IconPanel *panel = &Options;
+                if (Options.bWrap) {
+                    panel->ScrollWrapped(eSD_NEXT);
+                } else {
+                    panel->Scroll(eSD_NEXT);
+                }
+            }
+            RefreshHeader();
+            return;
+        case 0x72619778: {
+            if (Options.bHorizontal) {
+                return;
+            }
+            if (!Options.bReactToInput) {
+                return;
+            }
+            IconPanel *panel = &Options;
+            if (!panel->IsHead(Options.pCurrentNode)) {
+                if (Options.bWrap) {
+                    panel->ScrollWrapped(eSD_PREV);
+                } else {
+                    panel->Scroll(eSD_PREV);
+                }
+            }
+            RefreshHeader();
             return;
         }
-        {
+        case 0x911C0A4B: {
+            if (Options.bHorizontal) {
+                return;
+            }
+            if (!Options.bReactToInput) {
+                return;
+            }
             IconPanel *panel = &Options;
             if (Options.bWrap) {
                 panel->ScrollWrapped(eSD_NEXT);
             } else {
                 panel->Scroll(eSD_NEXT);
             }
-        }
-        RefreshHeader();
-        return;
-    case 0x72619778: {
-        if (Options.bHorizontal) {
+            RefreshHeader();
             return;
         }
-        if (!Options.bReactToInput) {
-            return;
-        }
-        IconPanel *panel = &Options;
-        if (!panel->IsHead(Options.pCurrentNode)) {
-            if (Options.bWrap) {
-                panel->ScrollWrapped(eSD_PREV);
-            } else {
-                panel->Scroll(eSD_PREV);
+        case 0xC519BFC3: {
+            IconOption *cur_option = Options.pCurrentNode;
+            if (!cur_option->IsTutorialAvailable()) {
+                return;
             }
-        }
-        RefreshHeader();
-        return;
-    }
-    case 0x911C0A4B: {
-        if (Options.bHorizontal) {
-            return;
-        }
-        if (!Options.bReactToInput) {
-            return;
-        }
-        IconPanel *panel = &Options;
-        if (Options.bWrap) {
-            panel->ScrollWrapped(eSD_NEXT);
-        } else {
-            panel->Scroll(eSD_NEXT);
-        }
-        RefreshHeader();
-        return;
-    }
-    case 0xC519BFC3: {
-        IconOption *cur_option = Options.pCurrentNode;
-        if (!cur_option->IsTutorialAvailable()) {
-            return;
-        }
-        FEngSetScript(GetPackageName(), 0x99344537, 0x16A259, true);
-        g_pEAXSound->PlayUISoundFX(UISND_COMMON_SELECT);
-        FEAnyTutorialScreen::LaunchMovie(cur_option->GetTutorialMovieName(), GetPackageName());
+            FEngSetScript(GetPackageName(), 0x99344537, 0x16A259, true);
+            g_pEAXSound->PlayUISoundFX(UISND_COMMON_SELECT);
+            FEAnyTutorialScreen::LaunchMovie(cur_option->GetTutorialMovieName(), GetPackageName());
 
-        UserProfile *profile = FEDatabase->GetMultiplayerProfile(0);
-        CareerSettings *career = profile->GetCareer();
-        unsigned int name_hash = cur_option->GetName();
-        if (name_hash == 0xA15E4505) {
-            career->SetHasDoneTollBoothTutorial();
-        } else if (name_hash > 0xA15E4505) {
-            if (name_hash == 0xEE1EDC76) {
-                career->SetHasDoneSpeedTrapTutorial();
+            UserProfile *profile = FEDatabase->GetMultiplayerProfile(0);
+            CareerSettings *career = profile->GetCareer();
+            unsigned int name_hash = cur_option->GetName();
+            if (name_hash == 0xA15E4505) {
+                career->SetHasDoneTollBoothTutorial();
+            } else if (name_hash > 0xA15E4505) {
+                if (name_hash == 0xEE1EDC76) {
+                    career->SetHasDoneSpeedTrapTutorial();
+                }
+            } else if (name_hash == 0x6F547E4C) {
+                career->SetHasDoneDragTutorial();
             }
-        } else if (name_hash == 0x6F547E4C) {
-            career->SetHasDoneDragTutorial();
+            return;
         }
-        return;
-    }
-    case 0xC3960EB9:
-        FEngSetScript(GetPackageName(), 0x99344537, 0x1744B3, true);
-        return;
-    default:
-        return;
+        case 0xC3960EB9:
+            FEngSetScript(GetPackageName(), 0x99344537, 0x1744B3, true);
+            return;
+        default:
+            return;
     }
 }
 

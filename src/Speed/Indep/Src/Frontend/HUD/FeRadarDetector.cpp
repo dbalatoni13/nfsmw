@@ -15,15 +15,22 @@ float RadarDetector::mStaticRange;
 
 RadarDetector::RadarDetector(UTL::COM::Object *pOutter, const char *pkg_name, int player_number)
     : HudElement(pkg_name, 0x200000) //
-    , IRadarDetector(pOutter) //
-    , mRange(0.0f) //
-    , mDirection(0.0f) //
-    , mTargetType(RADAR_TARGET_NONE) //
-    , mCurrLedAmountShowing(0.3f) //
-    , mInPursuit(false) //
-    , mIsCoolingDown(false) //
-    , mTimeCycleStarted(0)
-{
+      ,
+      IRadarDetector(pOutter) //
+      ,
+      mRange(0.0f) //
+      ,
+      mDirection(0.0f) //
+      ,
+      mTargetType(RADAR_TARGET_NONE) //
+      ,
+      mCurrLedAmountShowing(0.3f) //
+      ,
+      mInPursuit(false) //
+      ,
+      mIsCoolingDown(false) //
+      ,
+      mTimeCycleStarted(0) {
     mpDataRadarDetectorGroup = RegisterGroup(0x062743f5);
     mpDataRadarDetectorLightsLeft = FEngFindObject(pkg_name, 0x69aa01e7);
     mpDataRadarDetectorLightsRight = FEngFindObject(pkg_name, 0x9f59065a);
@@ -150,15 +157,14 @@ void RadarDetector::Update(IPlayer *player) {
         return;
     }
 
-low_range:
-    {
-        if (mTimeCycleStarted.IsSet()) {
-            mTimeCycleStarted.UnSet();
-        }
-        FEVector2 ledUVs(0.0f, 1.0f);
-        FEngSetMultiImageBottomRightUVs(static_cast<FEMultiImage *>(mpDataRadarDetectorLightsLeft), ledUVs, 0);
-        FEngSetMultiImageBottomRightUVs(static_cast<FEMultiImage *>(mpDataRadarDetectorLightsRight), ledUVs, 0);
+low_range: {
+    if (mTimeCycleStarted.IsSet()) {
+        mTimeCycleStarted.UnSet();
     }
+    FEVector2 ledUVs(0.0f, 1.0f);
+    FEngSetMultiImageBottomRightUVs(static_cast<FEMultiImage *>(mpDataRadarDetectorLightsLeft), ledUVs, 0);
+    FEngSetMultiImageBottomRightUVs(static_cast<FEMultiImage *>(mpDataRadarDetectorLightsRight), ledUVs, 0);
+}
 
     if (!FEngIsScriptSet(mpDataRadarDetectorArrow, 0x16a259)) {
         FEngSetScript(mpDataRadarDetectorArrow, 0x16a259, true);
@@ -166,19 +172,4 @@ low_range:
     if (!FEngIsScriptSet(mpDataRadarIcon, 0x1744b3)) {
         FEngSetScript(mpDataRadarIcon, 0x1744b3, true);
     }
-}
-
-void RadarDetector::SetInPursuit(bool inPursuit) {
-    mInPursuit = inPursuit;
-}
-
-void RadarDetector::SetIsCoolingDown(bool coolingDown) {
-    mIsCoolingDown = coolingDown;
-}
-
-void RadarDetector::SetTarget(RadarTarget targetType, float range, float direction) {
-    mTargetType = targetType;
-    mDirection = direction;
-    mRange = range;
-    mStaticRange = range;
 }

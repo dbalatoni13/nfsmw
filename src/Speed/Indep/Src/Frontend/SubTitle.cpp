@@ -1,44 +1,15 @@
 #include "SubTitle.hpp"
 #include "MoviePlayer/MoviePlayer.hpp"
-#include "Speed/Indep/Src/FEng/cFEng.h"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEObjects.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEStrings.hpp"
+#include "Speed/Indep/Src/Frontend/Localization/Localize.hpp"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
+#include "Speed/Indep/Src/Misc/bFile.hpp"
+#include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
-extern int bSNPrintf(char *, int, const char *, ...);
-extern void *bGetFile(const char *, int *, int);
-extern void bFree(void *);
-extern unsigned int bGetTicker();
-extern float bGetTickerDifference(unsigned int, unsigned int);
 extern bool IsMovieTimerPrintf;
-extern FEString *FEngFindString(const char *, int);
-extern FEObject *FEngFindObject(const char *, unsigned int);
-extern int FEPrintf(FEString *, const char *, ...);
-extern unsigned int FEngHashString(const char *, ...);
-extern void FEngSetScript(FEObject *, unsigned int, bool);
-extern void FEngSetLanguageHash(FEString *, unsigned int);
-extern void FEngGetTopLeft(FEObject *, float &, float &);
-extern void FEngSetTopLeft(FEObject *, float, float);
-extern const char *GetLocalizedString(unsigned int);
-extern int bStrCmp(const char *, const char *);
-extern unsigned int bStringHash(const char *, int);
-extern int DoesStringExist(unsigned int);
-
-inline float FEngGetTopLeftX(FEObject *obj) {
-    float x, y;
-    FEngGetTopLeft(obj, x, y);
-    return x;
-}
-
-inline float FEngGetTopLeftY(FEObject *obj) {
-    float x, y;
-    FEngGetTopLeft(obj, x, y);
-    return y;
-}
-
-inline void FEngSetTopLeftY(FEObject *obj, float y) {
-    float x = FEngGetTopLeftX(obj);
-    FEngSetTopLeft(obj, x, y);
-}
 
 SubTitler *SubTitler::gCurrentSubtitler_;
 
@@ -125,7 +96,7 @@ float SubTitler::GetElapsedTime() {
     return thetime_ms;
 }
 
-void SubTitler::Update(unsigned int msg) {
+void SubTitler::Update(uint32 msg) {
     if (gMoviePlayer != nullptr) {
         int paused = gMoviePlayer->IsMoviePaused();
         if (paused)

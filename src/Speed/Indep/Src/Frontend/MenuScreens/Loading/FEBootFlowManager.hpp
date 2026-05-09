@@ -7,28 +7,33 @@
 
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 
-struct BootFlowScreen : public bTNode<BootFlowScreen> {
-    const char *Name;  // offset 0x8
-    virtual ~BootFlowScreen() {}
+class BootFlowScreen : public bTNode<BootFlowScreen> {
+  public:
+    // virtual ~BootFlowScreen() {}
+
+    const char *Name; // offset 0x8
 };
 
-struct BootFlowManager {
+class BootFlowManager {
+  public:
     static void Init();
     static void Destroy();
     static BootFlowManager *Get();
+    void ChangeToNextBootFlowScreen(int mask);
+    bool JumpToScreen(const char *screen_name);
+    void JumpToHead();
+    bool DoAttract();
+
+  private:
     BootFlowManager();
-    virtual ~BootFlowManager();
+    virtual ~BootFlowManager() {};
     BootFlowScreen *FindScreen(const char *name);
     BootFlowScreen *FindScreenSubStr(const char *name);
-    void JumpToHead();
-    bool JumpToScreen(const char *screen_name);
-    bool DoAttract();
-    void ChangeToNextBootFlowScreen(int mask);
+
+    static BootFlowManager *mInstance;
 
     bTList<BootFlowScreen> BootFlowScreens; // offset 0x0
     BootFlowScreen *CurrentScreen;          // offset 0x8
-
-    static BootFlowManager *mInstance;
 };
 
 #endif

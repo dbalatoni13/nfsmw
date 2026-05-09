@@ -16,10 +16,9 @@ class INos : public UTL::COM::IUnknown {
         return (HINTERFACE)_IHandle;
     }
 
-    INos(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
-
   protected:
     virtual ~INos() {}
+    INos(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
   public:
     virtual void SetNos(float nos);
@@ -33,9 +32,12 @@ class NitrousGauge : public HudElement, public INos {
     void SetNos(float nos) override;
 
   private:
-    float mNos;                            // offset 0x30
-    FEObject *mpDataNosMeterIcon;          // offset 0x34
-    FEMultiImage *mpNosMeterBar;           // offset 0x38
+#ifdef EA_BUILD_A124
+    bool mNosChanged;
+#endif
+    float mNos;                   // offset 0x30
+    FEObject *mpDataNosMeterIcon; // offset 0x34
+    FEMultiImage *mpNosMeterBar;  // offset 0x38
 };
 
 #endif

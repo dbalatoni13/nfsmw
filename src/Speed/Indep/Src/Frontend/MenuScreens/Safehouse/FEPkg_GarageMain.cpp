@@ -1,5 +1,8 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/FEPkg_GarageMain.hpp"
-#include "Speed/Indep/Src/FEng/cFEng.h"
+#include "Speed/Indep/Src/Ecstasy/eMath.hpp"
+#include "Speed/Indep/Src/Frontend/FEPackageManager.hpp"
+#include "Speed/Indep/Src/Frontend/FEngFrontend.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/FEng/FEPackage.h"
 #include "Speed/Indep/Src/Frontend/FECarLoader.hpp"
 #include "Speed/Indep/Src/World/CarLoader.hpp"
@@ -21,28 +24,16 @@
 #include "Speed/Indep/Src/Camera/CameraMover.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/customize/CustomizeManager.hpp"
 #include "Speed/Indep/Src/World/ScreenEffects.hpp"
+#include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bPrintf.hpp"
+#include "Speed/Indep/Src/Frontend/FECarViewer.hpp"
+#include "Speed/PSX2/Src/Ecstasy/EcstasyE.hpp"
+#include "Speed/Indep/Src/Misc/GameFlow.hpp"
 
-extern MenuScreen *FEngFindScreen(const char *name);
-extern FEString *FEngFindString(const char *pkg_name, int hash);
-extern void FEngSetLanguageHash(FEString *text, unsigned int hash);
-extern int FEPrintf(FEString *text, const char *fmt, ...);
-extern int FEngSNPrintf(char *, int, const char *, ...);
-extern unsigned long FEHashUpper(const char *str);
-extern int FEngMapJoyParamToJoyport(int feng_param);
-extern unsigned int AttribGenFrontendClassKey() asm("ClassKey__Q36Attrib3Gen8frontend");
-
-extern void SetSelectCarLighting(int view_id, float f, int);
-extern void eRotateZ(bMatrix4 *, bMatrix4 *, unsigned short);
-extern void eRotateX(bMatrix4 *, bMatrix4 *, unsigned short);
-extern void eRotateY(bMatrix4 *, bMatrix4 *, unsigned short);
-extern void eMulVector(bVector3 *, const bMatrix4 *, const bVector3 *);
-extern void PSMTX44Identity(void *mtx);
-extern void PSMTX44Copy(const void *src, void *dst);
-extern void eInitFEEnvMapPlat();
-extern void eRemoveFEEnvMapPlat();
-extern void GameFlowLoadGarageScreen(void (*callback)(int), int param);
-extern void AddScreenEffect(ScreenEffectDB *db, ScreenEffectType type, float a, float b, float c, float d);
+static unsigned int FindScreenInfo(const char *screenName /* r28 */, int customizationCategory /* r29 */);
+static unsigned int FindGarageEntryCameraInfo();
+static unsigned int FindGarageFinalCameraInfo();
+static unsigned int FindScreenCameraInfo(unsigned int screenKey /* r30 */);
 
 RideInfo TopOrFullScreenRide;
 CarCustomizeManager gCarCustomizeManager;
@@ -60,52 +51,52 @@ float carPosY = 0.0f;
 float CarSelectTireSteerAngle = 21.6723f;
 extern int CarTypeInfoArrayUpdated;
 
-struct SelectCarCameraData {
-    float OrbitVAngle;
-    float OrbitHAngle;
-    float Radius;
-    float RollAngle;
-    float FOV;
-    bVector3 LookAt;
-};
+// struct SelectCarCameraData {
+//     float OrbitVAngle;
+//     float OrbitHAngle;
+//     float Radius;
+//     float RollAngle;
+//     float FOV;
+//     bVector3 LookAt;
+// };
 
-struct SelectCarCameraMover : CameraMover {
-    SelectCarCameraMover(int view_id);
-    ~SelectCarCameraMover() override;
-    void Update(float dT) override;
-    void SetVRotateSpeed(float f);
-    void SetHRotateSpeed(float f);
-    void SetZoomSpeed(float f);
-    void SetCurrentOrientation(bVector3 &orbit, float roll, float fov, bVector3 &lookAt);
-    void SetDesiredOrientation(bVector3 &orbit, float roll, float fov, bVector3 &lookAt, float animSpeed, float damping, int periods);
-    float FindBestAngleGoal(float start, float goal);
+// struct SelectCarCameraMover : CameraMover {
+//     SelectCarCameraMover(int view_id);
+//     ~SelectCarCameraMover() override;
+//     void Update(float dT) override;
+//     void float->SetVRotateSpeed(f);
+//     void float->SetHRotateSpeed(f);
+//     void SetZoomSpeed(float f);
+//     void SetCurrentOrientation(bVector3 &orbit, float roll, float fov, bVector3 &lookAt);
+//     void SetDesiredOrientation(bVector3 &orbit, float roll, float fov, bVector3 &lookAt, float animSpeed, float damping, int periods);
+//     float FindBestAngleGoal(float start, float goal);
 
-    int ControlMode;
-    int DramaticMode;
-    int LookingAtParts;
-    SelectCarCameraData CurrentCameraData;
-    SelectCarCameraData StartAnimCameraData;
-    SelectCarCameraData GoalAnimCameraData;
-    float RadiusSpeed;
-    float OrbitVSpeed;
-    float OrbitHSpeed;
-    float Damping;
-    int Periods;
-    float CurrentAnimationTime;
-    float TotalAnimationTime;
-};
-extern void SetHRotateSpeed(SelectCarCameraMover *mover, float speed);
-extern void SetVRotateSpeed(SelectCarCameraMover *mover, float speed);
-extern void SetZoomSpeed(SelectCarCameraMover *mover, float speed);
-extern void SetCurrentOrientation(SelectCarCameraMover *mover, bVector3 *target, float roll, float fov, bVector3 *lookat);
-extern void SetDesiredOrientation(SelectCarCameraMover *mover, bVector3 *target, float roll, float fov, float anim_speed, float damping,
-                                  bVector3 *lookat, int periods);
-extern SelectCarCameraMover *NewSelectCarCameraMover(int view_id);
-extern void SelectCarCameraMover_SetTime(SelectCarCameraMover *mover, float time);
+//     int ControlMode;
+//     int DramaticMode;
+//     int LookingAtParts;
+//     SelectCarCameraData CurrentCameraData;
+//     SelectCarCameraData StartAnimCameraData;
+//     SelectCarCameraData GoalAnimCameraData;
+//     float RadiusSpeed;
+//     float OrbitVSpeed;
+//     float OrbitHSpeed;
+//     float Damping;
+//     int Periods;
+//     float CurrentAnimationTime;
+//     float TotalAnimationTime;
+// };
+// extern void SelectCarCameraMover->SetHRotateSpeed(*mover, float speed);
+// extern void SelectCarCameraMover->SetVRotateSpeed(*mover, float speed);
+// extern void SetZoomSpeed(SelectCarCameraMover *mover, float speed);
+// extern void SetCurrentOrientation(SelectCarCameraMover *mover, bVector3 *target, float roll, float fov, bVector3 *lookat);
+// extern void SetDesiredOrientation(SelectCarCameraMover *mover, bVector3 *target, float roll, float fov, float anim_speed, float damping,
+//                                   bVector3 *lookat, int periods);
+// extern SelectCarCameraMover *NewSelectCarCameraMover(int view_id);
+// extern void SelectCarCameraMover_SetTime(SelectCarCameraMover *mover, float time);
 
 struct EAXFrontEnd;
-extern void DestroyAllDriveOnSnds(EAXFrontEnd *fe_snd);
-extern void SetFEDrivingCarState(EAXFrontEnd *fe_snd, bVector3 *pos, bVector3 *vel, void *camera, int view_id);
+// extern void DestroyAllDriveOnSnds(EAXFrontEnd *fe_snd);
+// extern void SetFEDrivingCarState(EAXFrontEnd *fe_snd, bVector3 *pos, bVector3 *vel, void *camera, int view_id);
 
 extern bTList<eSolid> SolidList;
 
@@ -116,21 +107,14 @@ static float CarRotateSpeed = 0.5f;
 extern unsigned char *CurrentBufferPos;
 extern unsigned char *CurrentBufferEnd;
 
-extern void UnloadResourceFile(ResourceFile *file);
+// extern void UnloadResourceFile(ResourceFile *file);
 
-extern void DeleteSelectCarCameraMover(SelectCarCameraMover *mover);
-extern void EAXFrontEnd_DestroyAllDriveOnSnds(void *);
+// extern void DeleteSelectCarCameraMover(SelectCarCameraMover *mover);
+// extern void EAXFrontEnd_DestroyAllDriveOnSnds(void *);
 
 extern DemoDiscManager TheDemoDiscManager;
 
 extern ScreenEffectDB *iRam80462020;
-
-extern char *bStrIStr(const char *, const char *);
-extern int bStrNICmp(const char *, const char *, int);
-
-#ifndef ABS
-#define ABS(x) ((x) < 0 ? -(x) : (x))
-#endif
 
 static int sNumTicksSinceUserMovedCamera = 0;
 static int sNumTicksBeforeCamMovesBackToScreenPosition = 300;
@@ -138,12 +122,10 @@ static int bAutoMovement = 0;
 static int bPass1 = 0;
 static bool RenderLookAtPoint = false;
 
-static const char lbl_GarageMain[] = "GarageMain.fng";
-
-static unsigned int FindScreenInfo(const char *pkg_name, int category);
-static unsigned int FindScreenCameraInfo(unsigned int screen_key);
-static unsigned int FindGarageEntryCameraInfo();
-static unsigned int FindGarageFinalCameraInfo();
+// static unsigned int FindScreenInfo(const char *pkg_name, int category);
+// static unsigned int FindScreenCameraInfo(unsigned int screen_key);
+// static unsigned int FindGarageEntryCameraInfo();
+// static unsigned int FindGarageFinalCameraInfo();
 
 GarageCarLoader *GetGarageCarLoader();
 
@@ -242,17 +224,15 @@ void FEGeometryModels::Render(eView *view, bMatrix4 *local, unsigned int render_
             renderModel = false;
         }
         if (renderModel) {
-            view->Render(&mModels[i], local, nullptr, 4, nullptr);
+            reinterpret_cast<eViewPlatInterface *>(view)->Render(&mModels[i], local, nullptr, 4, nullptr);
         }
     }
 }
 
 // --- GarageMainScreen ---
 
-GarageMainScreen *GarageMainScreen::sInstance;
-
 GarageMainScreen *GarageMainScreen::GetInstance() {
-    return static_cast<GarageMainScreen *>(FEngFindScreen(lbl_GarageMain));
+    return static_cast<GarageMainScreen *>(FEngFindScreen("GarageMain.fng"));
 }
 
 void GarageMainScreen::EnableCarRendering() {
@@ -312,11 +292,7 @@ GarageMainScreen::GarageMainScreen(ScreenConstructorData *sd, int eview_id, Ride
     mCustomizationCategory = -1;
     LoadingReason = static_cast<eSetRideInfoReasons>(1);
     RenderingCar = nullptr;
-    mGeometryModels.mModelCastsShadowMapFlags = 0;
-    mGeometryModels.mModelCurrGenOnly = 0;
-    mGeometryModels.mModelNextGenOnly = 0;
-    mGeometryModels.mNumModels = 0;
-    mGeometryModels.mModels = nullptr;
+    mGeometryModels = FEGeometryModels();
     Player = player;
     CameraPushRequested = false;
     mScreenKeyCamIsSetTo = 0;
@@ -363,7 +339,7 @@ GarageMainScreen::~GarageMainScreen() {
     }
     mGeometryModels.UnInit();
     if (g_pEAXSound->GetFrontEnd()) {
-        EAXFrontEnd_DestroyAllDriveOnSnds(g_pEAXSound->GetFrontEnd());
+        g_pEAXSound->GetFrontEnd()->DestroyAllDriveOnSnds();
     }
     for (int i = 0; i < 2; i++) {
         if (mActionQ[i]) {
@@ -389,7 +365,7 @@ void GarageMainScreen::SetRideInfo(RideInfo *ride, eSetRideInfoReasons reason) {
     FEngSetLanguageHash(pCarName, FEHashUpper(sztemp));
 }
 
-void GarageMainScreen::HandleTick(unsigned long msg) {
+void GarageMainScreen::HandleTick(u32 msg) {
     bool have_new_car = false;
     if (CarState == 0 && TheGarageCarLoader->IsDifferent) {
         TheGarageCarLoader->Switch();
@@ -416,7 +392,7 @@ void GarageMainScreen::HandleTick(unsigned long msg) {
     }
     if (bTimeToRotate && bPass1) {
         bTimeToRotate = false;
-        SetHRotateSpeed(pCameraMover, CarRotateSpeed);
+        pCameraMover->SetHRotateSpeed(CarRotateSpeed);
         bAutoMovement = 1;
         bPass1 = 0;
     }
@@ -446,8 +422,8 @@ void GarageMainScreen::HandleTick(unsigned long msg) {
             if (!CameraPushRequested) {
                 bVector3 orbit(camera.cam_orbit_vertical(), camera.cam_orbit_horizontal(), camera.cam_orbit_radius());
                 bVector3 lookat(camera.cam_lookat_x(), camera.cam_lookat_y(), camera.cam_lookat_z());
-                SetDesiredOrientation(pCameraMover, &orbit, camera.cam_roll_angle(), camera.cam_fov(), camera.cam_anim_speed(), camera.cam_damping(),
-                                      &lookat, camera.cam_periods());
+                pCameraMover->SetDesiredOrientation(orbit, camera.cam_roll_angle(), camera.cam_fov(), lookat, camera.cam_anim_speed(),
+                                                    camera.cam_damping(), camera.cam_periods());
             }
         } else {
             if (bTimeToRotate) {
@@ -459,21 +435,21 @@ void GarageMainScreen::HandleTick(unsigned long msg) {
                 if (!CameraPushRequested) {
                     bVector3 orbit(camera.cam_orbit_vertical(), camera.cam_orbit_horizontal(), camera.cam_orbit_radius());
                     bVector3 lookat(camera.cam_lookat_x(), camera.cam_lookat_y(), camera.cam_lookat_z());
-                    SetDesiredOrientation(pCameraMover, &orbit, camera.cam_roll_angle(), camera.cam_fov(), camera.cam_anim_speed(),
-                                          camera.cam_damping(), &lookat, camera.cam_periods());
+                    pCameraMover->SetDesiredOrientation(orbit, camera.cam_roll_angle(), camera.cam_fov(), lookat, camera.cam_anim_speed(),
+                                                        camera.cam_damping(), camera.cam_periods());
                 }
             } else {
                 if (HaveAttributesChanged(camera)) {
                     bVector3 orbit(camera.cam_orbit_vertical(), camera.cam_orbit_horizontal(), camera.cam_orbit_radius());
                     bVector3 lookat(camera.cam_lookat_x(), camera.cam_lookat_y(), camera.cam_lookat_z());
-                    SetCurrentOrientation(pCameraMover, &orbit, camera.cam_roll_angle(), camera.cam_fov(), &lookat);
+                    pCameraMover->SetCurrentOrientation(orbit, camera.cam_roll_angle(), camera.cam_fov(), lookat);
                 }
             }
         }
     }
 after_camera:
     if (iRam80462020) {
-        AddScreenEffect(iRam80462020, static_cast<ScreenEffectType>(4), cam_blur, 0.0f, 0.0f, 0.0f);
+        iRam80462020->AddScreenEffect(SE_FE_BLUR, cam_blur, 0.0f, 0.0f, 0.0f);
     }
     UpdateRenderingCarParameters(RenderingCar);
     RefreshBackground();
@@ -513,13 +489,13 @@ void GarageMainScreen::UpdateRenderingCarParameters(FrontEndRenderingCar *fe_car
     fe_car->CopLightsOn = 0;
 
     bMatrix4 temp;
-    PSMTX44Identity(&temp);
+    eIdentity(&temp);
     eRotateZ(&temp, &temp, static_cast<int>(GetGeometryZAngle() * 65536.0f) / 360 & 0xffff);
     eMulVector(&position, &temp, &position);
     fe_car->SetPosition(&position);
 
     bMatrix4 body_matrix;
-    PSMTX44Identity(&body_matrix);
+    eIdentity(&body_matrix);
     eRotateZ(&body_matrix, &body_matrix, static_cast<int>(GetCarRotationZ() * 65536.0f) / 360 & 0xffff);
     eRotateX(&body_matrix, &body_matrix, static_cast<int>(GetCarRotationX() * 65536.0f) / 360 & 0xffff);
     eRotateY(&body_matrix, &body_matrix, static_cast<int>(GetCarRotationY() * 65536.0f) / 360 & 0xffff);
@@ -530,8 +506,8 @@ void GarageMainScreen::UpdateRenderingCarParameters(FrontEndRenderingCar *fe_car
     unsigned short front_tire_angle = static_cast<int>(CarSelectTireSteerAngle * 65536.0f) / 360 & 0xffff;
 
     for (int tire_num = 0; tire_num < 4; tire_num++) {
-        PSMTX44Identity(&tire_matrices[tire_num]);
-        PSMTX44Identity(&brake_matrices[tire_num]);
+        eIdentity(&tire_matrices[tire_num]);
+        eIdentity(&brake_matrices[tire_num]);
         if (tire_num < 2) {
             eRotateZ(&brake_matrices[tire_num], &brake_matrices[tire_num], front_tire_angle);
             eRotateZ(&tire_matrices[tire_num], &tire_matrices[tire_num], front_tire_angle);
@@ -562,7 +538,7 @@ void GarageMainScreen::UpdateCurrentCameraView(bool bForce) {
         }
         bVector3 orbit(entry.cam_orbit_vertical(), entry.cam_orbit_horizontal(), entry.cam_orbit_radius());
         bVector3 lookat(entry.cam_lookat_x(), entry.cam_lookat_y(), entry.cam_lookat_z());
-        SetCurrentOrientation(pCameraMover, &orbit, entry.cam_roll_angle(), entry.cam_fov(), &lookat);
+        pCameraMover->SetCurrentOrientation(orbit, entry.cam_roll_angle(), entry.cam_fov(), lookat);
 
         unsigned int finalKey = FindGarageFinalCameraInfo();
         Attrib::Gen::frontend final_cam(Attrib::FindCollection(Attrib::Gen::frontend::ClassKey(), finalKey), 0, nullptr);
@@ -571,8 +547,8 @@ void GarageMainScreen::UpdateCurrentCameraView(bool bForce) {
         }
         bVector3 orbit2(final_cam.cam_orbit_vertical(), final_cam.cam_orbit_horizontal(), final_cam.cam_orbit_radius());
         bVector3 lookat2(final_cam.cam_lookat_x(), final_cam.cam_lookat_y(), final_cam.cam_lookat_z());
-        SetDesiredOrientation(pCameraMover, &orbit2, final_cam.cam_roll_angle(), final_cam.cam_fov(), final_cam.cam_anim_speed(),
-                              final_cam.cam_damping(), &lookat2, final_cam.cam_periods());
+        pCameraMover->SetDesiredOrientation(orbit2, final_cam.cam_roll_angle(), final_cam.cam_fov(), lookat2, final_cam.cam_anim_speed(),
+                                            final_cam.cam_damping(), final_cam.cam_periods());
 
         CameraPushRequested = false;
     }
@@ -601,7 +577,7 @@ void GarageMainScreen::BackgroundLoaded(int param) {
         inst->mGeometryModels.UnInit();
         inst->mGeometryModels.Init("BACKDROP");
         inst->UpdateCurrentCameraView(true);
-        SelectCarCameraMover_SetTime(inst->pCameraMover, 0.0f);
+        inst->pCameraMover->Update(0.0f);
     }
 }
 
@@ -617,7 +593,7 @@ void GarageMainScreen::HandleRender(unsigned int render_flags) {
             CurrentBufferPos += 0x40;
         }
         if (local) {
-            PSMTX44Identity(local);
+            eIdentity(local);
             float angle = GetGeometryZAngle();
             eRotateZ(local, local, static_cast<int>(angle * 65536.0f) / 360 & 0xffff);
             local->v3.x = GetGeometryXPos();
@@ -633,7 +609,7 @@ void GarageMainScreen::HandleShowPackage(unsigned int msg) {
     RenderingCar->Visible = 1;
     if (!(FEDatabase->GetGameMode() & 4)) {
         UpdateCurrentCameraView(true);
-        SelectCarCameraMover_SetTime(pCameraMover, 0.0f);
+        pCameraMover->Update(0.0f);
         CameraPushRequested = true;
     }
 }
@@ -648,7 +624,7 @@ void GarageMainScreen::HandleJoyEvents() {
         isQR = FEDatabase->iNumPlayers == 2;
     }
     if (isQR) {
-        FEPackage *ctrl = cFEng::mInstance->FindPackageWithControl();
+        FEPackage *ctrl = cFEng::Get()->FindPackageWithControl();
         if (ctrl) {
             startPort = FEngMapJoyParamToJoyport(ctrl->Controllers);
             endPort = startPort + 1;
@@ -671,20 +647,20 @@ void GarageMainScreen::HandleJoyEvents() {
                 int id = action.ID();
                 if (id == 0x20) {
                     mOrbitH = -dVar7;
-                    SetHRotateSpeed(pCameraMover, -dVar7);
+                    pCameraMover->SetHRotateSpeed(-dVar7);
                     sNumTicksSinceUserMovedCamera = sNumTicksBeforeCamMovesBackToScreenPosition;
                 } else if (id < 0x21) {
                     if (id == 0x1e) {
                         mOrbitV = -dVar7;
-                        SetVRotateSpeed(pCameraMover, -dVar7);
+                        pCameraMover->SetVRotateSpeed(-dVar7);
                         sNumTicksSinceUserMovedCamera = sNumTicksBeforeCamMovesBackToScreenPosition;
                     } else if (id == 0x1d) {
                         mOrbitV = dVar7;
-                        SetVRotateSpeed(pCameraMover, dVar7);
+                        pCameraMover->SetVRotateSpeed(dVar7);
                         sNumTicksSinceUserMovedCamera = sNumTicksBeforeCamMovesBackToScreenPosition;
                     } else if (id == 0x1f) {
                         mOrbitH = dVar7;
-                        SetHRotateSpeed(pCameraMover, dVar7);
+                        pCameraMover->SetHRotateSpeed(dVar7);
                         sNumTicksSinceUserMovedCamera = sNumTicksBeforeCamMovesBackToScreenPosition;
                     }
                 } else if (id > 0x2a) {
@@ -695,27 +671,27 @@ void GarageMainScreen::HandleJoyEvents() {
                             zoomIn = -dVar7;
                         }
                         sNumTicksSinceUserMovedCamera = sNumTicksBeforeCamMovesBackToScreenPosition;
-                        if (ABS(zoomIn) > ABS(zoomOut)) {
+                        if (abs(zoomIn) > abs(zoomOut)) {
                             mZoom = zoomIn;
-                        } else if (ABS(zoomOut) > ABS(zoomIn)) {
+                        } else if (abs(zoomOut) > abs(zoomIn)) {
                             mZoom = zoomOut;
                         } else {
                             if (zoomOut == 0.0f && zoomIn == 0.0f) {
                                 mZoom = 0.0f;
                             }
                         }
-                        SetZoomSpeed(pCameraMover, mZoom);
+                        pCameraMover->SetZoomSpeed(mZoom);
                     } else if (id == 0x88) {
-                        SetVRotateSpeed(pCameraMover, 0.0f);
-                        SetHRotateSpeed(pCameraMover, 0.0f);
-                        SetZoomSpeed(pCameraMover, 0.0f);
+                        pCameraMover->SetVRotateSpeed(0.0f);
+                        pCameraMover->SetHRotateSpeed(0.0f);
+                        pCameraMover->SetZoomSpeed(0.0f);
                         sNumTicksSinceUserMovedCamera = sNumTicksBeforeCamMovesBackToScreenPosition;
                     }
                 }
                 if (sNumTicksSinceUserMovedCamera > 0) {
                     if (bAutoMovement) {
                         if (action.ID() != 0x1f && action.ID() != 0x20) {
-                            SetHRotateSpeed(pCameraMover, 0.0f);
+                            pCameraMover->SetHRotateSpeed(0.0f);
                         }
                     }
                     bAutoMovement = 0;
@@ -840,8 +816,8 @@ float GarageMainScreen::GetGeometryZPos() {
 // --- CarViewer ---
 
 GarageMainScreen *CarViewer::FindWhichScreenToUpdate(eCarViewerWhichCar which_car) {
-    cFEng *eng = cFEng::mInstance;
-    const char *name = lbl_GarageMain;
+    cFEng *eng = cFEng::Get();
+    const char *name = "GarageMain.fng";
     if (eng->IsPackagePushed(name)) {
         return static_cast<GarageMainScreen *>(FEngFindScreen(name));
     }
@@ -866,16 +842,16 @@ RideInfo *CarViewer::GetRideInfo(eCarViewerWhichCar which_car) {
 }
 
 void CarViewer::HideAllCars() {
-    cFEng::mInstance->QueueGameMessage(0x0AD4BBDC, lbl_GarageMain, 0xFF);
+    cFEng::Get()->QueueGameMessage(0x0AD4BBDC, "GarageMain.fng", 0xFF);
 }
 
 void CarViewer::ShowAllCars() {
-    cFEng::mInstance->QueueGameMessage(0x18883F75, lbl_GarageMain, 0xFF);
+    cFEng::Get()->QueueGameMessage(0x18883F75, "GarageMain.fng", 0xFF);
 }
 
 void CarViewer::ShowCarScreen() {
-    if (!cFEng::mInstance->IsPackagePushed(lbl_GarageMain)) {
-        cFEng::mInstance->PushNoControlPackage(lbl_GarageMain, static_cast<FE_PACKAGE_PRIORITY>(100));
+    if (!cFEng::Get()->IsPackagePushed("GarageMain.fng")) {
+        cFEng::Get()->PushNoControlPackage("GarageMain.fng", static_cast<FE_PACKAGE_PRIORITY>(100));
     }
 }
 
@@ -949,7 +925,7 @@ static unsigned int FindGarageCameraInfo(const char *prefix) {
     const char *garage_name = GetCurrentGarageName();
     bStrCat(buf, buf, garage_name);
     unsigned int key = Attrib::StringToLowerCaseKey(buf);
-    Attrib::Gen::frontend inst(Attrib::FindCollection(AttribGenFrontendClassKey(), key), 0, nullptr);
+    Attrib::Gen::frontend inst(Attrib::FindCollection(Attrib::Gen::frontend::ClassKey(), key), 0, nullptr);
     bool hasCollection = inst.GetConstCollection() != 0;
     if (hasCollection) {
         return key;

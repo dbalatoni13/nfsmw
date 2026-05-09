@@ -1025,6 +1025,8 @@ struct bQuaternion {
     bQuaternion &Slerp(bQuaternion &r, const bQuaternion &target, float t) const;
 };
 
+void bMatrixToQuaternion(bQuaternion &quat, const bMatrix4 &m);
+
 inline void bMemZero(void *dest, unsigned int size) {
     bMemSet(dest, 0, size);
 }

@@ -9,22 +9,24 @@
 #include "Speed/Indep/Src/Frontend/SubTitle.hpp"
 
 // total size: 0x58
-struct FEAnyMovieScreen : public MenuScreen {
-    SubTitler mSubtitler;           // offset 0x2C
-    bool bHidGarage;                // offset 0x50
-    bool bAllowingControllerErrors; // offset 0x54
-
-    FEAnyMovieScreen(ScreenConstructorData* sd);
+class FEAnyMovieScreen : public MenuScreen {
+  public:
+    FEAnyMovieScreen(ScreenConstructorData *sd);
     ~FEAnyMovieScreen() override;
-    static MenuScreen* Create(ScreenConstructorData* sd);
-    void NotificationMessage(unsigned long, FEObject*, unsigned long, unsigned long) override;
-    static void LaunchMovie(const char*, const char*);
-    static void PlaySafehouseIntroMovie();
+    static void LaunchMovie(const char *filename);
+    static void LaunchMovie(const char *return_to_pkg, const char *filename);
     static void DismissMovie();
-    static void SetMovieName(const char*);
-    static const char* GetFEngPackageName();
-    static char MovieFilename[64];
-    static char ReturnToPackageName[64];
-};
+    static void SetMovieName(const char *filename);
+    static MenuScreen *Create(ScreenConstructorData *sd);
+    static void PlaySafehouseIntroMovie();
+    void NotificationMessage(u32 msg, FEObject *obj, u32 param1, u32 param2) override;
+    static const char *GetFEngPackageName();
 
+  private:
+    static char MovieFilename[64];       // size: 0x40, address: 0x8041B9A4
+    struct SubTitler mSubtitler;         // offset 0x2C, size 0x24
+    static char ReturnToPackageName[64]; // size: 0x40, address: 0x804FE740
+    bool bHidGarage;                     // offset 0x50, size 0x1
+    bool bAllowingControllerErrors;      // offset 0x54, size 0x1
+};
 #endif

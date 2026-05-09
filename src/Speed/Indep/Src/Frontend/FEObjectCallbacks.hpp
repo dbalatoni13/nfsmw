@@ -6,73 +6,78 @@
 #endif
 
 #include "Speed/Indep/Src/FEng/FEObjectCallback.h"
-
-struct FEPackage;
-struct FEPackageRenderInfo;
-struct cFEngRender;
+#include "Speed/Indep/Src/FEng/FEPackage.h"
+#include "Speed/Indep/Src/Frontend/cFEngRender.hpp"
 
 // total size: 0x8
-struct FEngMovieStarter : public FEObjectCallback {
-    FEPackage* pPackage; // offset 0x4
-
-    inline FEngMovieStarter(FEPackage* pkg) : pPackage(pkg) {}
-    bool Callback(FEObject* obj) override;
+class FEngMovieStarter : public FEObjectCallback {
+  public:
+    FEngMovieStarter(FEPackage *pkg) : pPackage(pkg) {}
     ~FEngMovieStarter() override {}
+    bool Callback(FEObject *obj) override;
+
+  private:
+    FEPackage *pPackage; // offset 0x4
 };
 
 // total size: 0x4
-struct FEngMovieStopper : public FEObjectCallback {
-    inline FEngMovieStopper() {}
-    bool Callback(FEObject* obj) override;
+class FEngMovieStopper : public FEObjectCallback {
+  public:
+    FEngMovieStopper() {}
     ~FEngMovieStopper() override {}
+    bool Callback(FEObject *obj) override;
 };
 
 // total size: 0x4
-struct FEngHidePCObjects : public FEObjectCallback {
-    inline FEngHidePCObjects() {}
-    bool Callback(FEObject* obj) override;
+class FEngHidePCObjects : public FEObjectCallback {
+  public:
+    FEngHidePCObjects() {}
     ~FEngHidePCObjects() override {}
+    bool Callback(FEObject *obj) override;
 };
 
 // total size: 0x8
-struct FEngTransferFlagsToChildren : public FEObjectCallback {
-    int FlagToTransfer; // offset 0x4
-
-    inline FEngTransferFlagsToChildren(int flag) : FlagToTransfer(flag) {}
-    bool Callback(FEObject* obj) override;
+class FEngTransferFlagsToChildren : public FEObjectCallback {
+  public:
+    FEngTransferFlagsToChildren(int flag) : FlagToTransfer(flag) {}
     ~FEngTransferFlagsToChildren() override {}
+    bool Callback(FEObject *obj) override;
+
+    int32 FlagToTransfer; // offset 0x4
 };
 
 // total size: 0xC
-struct RenderObjectDisconnect : public FEObjectCallback {
-    FEPackageRenderInfo* PkgRenderInfo; // offset 0x4
-    cFEngRender* pFEngRenderer;         // offset 0x8
-
-    inline RenderObjectDisconnect() {}
-    inline RenderObjectDisconnect(FEPackageRenderInfo* ri, cFEngRender* r)
-        : PkgRenderInfo(ri) //
-        , pFEngRenderer(r) {}
-    bool Callback(FEObject* obj) override;
+class RenderObjectDisconnect : public FEObjectCallback {
+  public:
+    RenderObjectDisconnect() {}
+    RenderObjectDisconnect(FEPackageRenderInfo *ri, cFEngRender *r) : PkgRenderInfo(ri), pFEngRenderer(r) {}
     ~RenderObjectDisconnect() override {}
+    bool Callback(FEObject *obj) override;
+
+    FEPackageRenderInfo *PkgRenderInfo; // offset 0x4
+    cFEngRender *pFEngRenderer;         // offset 0x8
 };
 
 // total size: 0x8
-struct ObjectDirtySetter : public FEObjectCallback {
-    FEPackageRenderInfo* pRenderInfo; // offset 0x4
-
-    inline ObjectDirtySetter() {}
-    inline ObjectDirtySetter(FEPackageRenderInfo* ri) : pRenderInfo(ri) {}
-    bool Callback(FEObject* obj) override;
+class ObjectDirtySetter : public FEObjectCallback {
+  public:
+    ObjectDirtySetter() {}
+    ObjectDirtySetter(FEPackageRenderInfo *ri) : pRenderInfo(ri) {}
     ~ObjectDirtySetter() override {}
+    bool Callback(FEObject *obj) override;
+
+    FEPackageRenderInfo *pRenderInfo; // offset 0x4
 };
 
 // total size: 0x8
-struct ObjectVisibilitySetter : public FEObjectCallback {
-    bool Visible; // offset 0x4
-
-    inline ObjectVisibilitySetter(bool vis) : Visible(vis) {}
-    bool Callback(FEObject* obj) override;
+class ObjectVisibilitySetter : public FEObjectCallback {
+  public:
+    ObjectVisibilitySetter(bool vis) : Visible(vis) {}
     ~ObjectVisibilitySetter() override {}
+    bool Callback(FEObject *obj) override;
+
+  private:
+    bool Visible; // offset 0x4
 };
 
 #endif

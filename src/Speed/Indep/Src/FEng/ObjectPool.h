@@ -5,14 +5,12 @@
 #pragma once
 #endif
 
-#include <new>
 #include "FEList.h"
 #include "FEngStandard.h"
 
-void FEngFree(void* ptr);
+void FEngFree(void *ptr);
 
-template <class T, int N>
-struct FEPoolNode : public FEMinNode {
+template <class T, int N> struct FEPoolNode : public FEMinNode {
     T Pool[N];
     FEMinList Free;
     int Used;
@@ -25,22 +23,22 @@ struct FEPoolNode : public FEMinNode {
 
     ~FEPoolNode() override;
 
-    inline FEPoolNode* GetNext() { return static_cast<FEPoolNode*>(FEMinNode::GetNext()); }
+    inline FEPoolNode *GetNext() {
+        return static_cast<FEPoolNode *>(FEMinNode::GetNext());
+    }
 };
 
-template <class T, int N>
-FEPoolNode<T, N>::~FEPoolNode() {
+template <class T, int N> FEPoolNode<T, N>::~FEPoolNode() {
     while (Free.GetNumElements() != 0) {
         Free.RemHead();
     }
 }
 
-template <class T, int N>
-struct ObjectPool {
+template <class T, int N> struct ObjectPool {
     FEMinList Pools;
 
-    inline T* AllocSingle() {
-        FEPoolNode<T, N>* pPool = static_cast<FEPoolNode<T, N>*>(Pools.GetHead());
+    inline T *AllocSingle() {
+        FEPoolNode<T, N> *pPool = static_cast<FEPoolNode<T, N> *>(Pools.GetHead());
         while (pPool) {
             if (pPool->Free.GetNumElements() != 0) {
                 break;
@@ -51,13 +49,13 @@ struct ObjectPool {
             pPool = FENG_NEW FEPoolNode<T, N>();
             Pools.AddHead(pPool);
         }
-        T* pNode = static_cast<T*>(pPool->Free.RemHead());
+        T *pNode = static_cast<T *>(pPool->Free.RemHead());
         pPool->Used++;
         return pNode;
     }
 
-    inline void FreeSingleNoDestroy(T* pNode) {
-        FEPoolNode<T, N>* pPool = static_cast<FEPoolNode<T, N>*>(Pools.GetHead());
+    inline void FreeSingleNoDestroy(T *pNode) {
+        FEPoolNode<T, N> *pPool = static_cast<FEPoolNode<T, N> *>(Pools.GetHead());
         while (pPool) {
             bool bInPool = false;
             if (pNode >= &pPool->Pool[0]) {
@@ -78,7 +76,7 @@ struct ObjectPool {
         }
     }
 
-    inline void FreeSingle(T* pNode) {
+    inline void FreeSingle(T *pNode) {
         pNode->~T();
         FreeSingleNoDestroy(pNode);
     }

@@ -1,86 +1,31 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/Loading/FELoadingControllerScreen.hpp"
+#include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
+#include "Speed/Indep/Src/Ecstasy/Texture.hpp"
+#include "Speed/Indep/Src/FEng/feimage.h"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Frontend/FEJoyInput.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEObjects.hpp"
+#include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
-
-extern void FEngSetScript(const char *pkg_name, unsigned int obj_hash, unsigned int script_hash, bool start_at_beginning);
-extern void eUnloadStreamingTexture(unsigned int *textures, int count);
+#include "Speed/Indep/Src/Input/IOModule.h"
+#include "Speed/Indep/Src/Frontend/FEngFrontend.hpp"
 
 void *LoadingControllerScreen::mLoadingControllerScreenPtr;
 
-LoadingControllerScreen::LoadingControllerScreen(ScreenConstructorData *sd) : MenuScreen(sd) {}
-
-void LoadingControllerScreen::NotificationMessage(unsigned long, FEObject *, unsigned long, unsigned long) {}
-
-void LoadingControllerScreen::ShowControllerConfig() {
-    FEngSetScript(GetPackageName(), 0x3248E720, 0x001CA7C0, true);
-}
-
-void LoadingControllerScreen::HideControllerConfig() {
-    FEngSetScript(GetPackageName(), 0x3248E720, 0x0016A259, true);
-    WhichControllerTexture = 0;
-}
-
-void LoadingControllerScreen::ClearLoadedControllerTexture() {
-    unsigned int tex[1];
-    tex[0] = WhichControllerTexture;
-    if (tex[0]) {
-        eUnloadStreamingTexture(tex, 1);
+LoadingControllerScreen::LoadingControllerScreen(ScreenConstructorData *sd) : MenuScreen(sd) {
+    if (eIsWidescreen()) {
+        cFEng::Get()->QueuePackageMessage(bStringHash("CURRENT_GEN_WIDESCREEN"), GetPackageName(), nullptr);
     }
+    GameTipToShow = nullptr;
+    HideControllerConfig();
+    SetupControllerConfig();
+    PrepToShowControllerConfig();
 }
 
-void LoadingControllerScreen::FinishLoadingControllerTextureCallback(unsigned int p) {
-    ShowControllerConfig();
+LoadingControllerScreen::~LoadingControllerScreen() {
+    ClearLoadedControllerTexture();
 }
-
-extern bool IsJoystickTypeWheel(JoystickPort port);
-extern FEImage *FEngFindImage(const char *pkg_name, int hash);
-extern void FEngSetTextureHash(FEImage *img, unsigned int hash);
-extern void eLoadStreamingTexture(unsigned int *textures, int count, void (*callback)(unsigned int), void *user, int priority);
-extern void FinishLoadingControllerTextureCallbackBridge(unsigned int p);
-
-void LoadingControllerScreen::PrepToShowControllerConfig() {
-    unsigned int texHash;
-    if (!IsJoystickTypeWheel(static_cast<JoystickPort>(FEDatabase->PlayerJoyports[0]))) {
-        texHash = 0xed543bac;
-        if (FEDatabase->CurrentUserProfiles[0]->GetOptions()->ThePlayerSettings[0].DriveWithAnalog != 0) {
-            texHash = 0xed543bab;
-        }
-    } else {
-        FEDatabase->CurrentUserProfiles[0]->GetOptions()->ThePlayerSettings[0].Config = static_cast<eControllerConfig>(0);
-        texHash = 0xb511476b;
-    }
-    WhichControllerTexture = texHash;
-    FEImage *img = FEngFindImage(GetPackageName(), 0x922a39c4);
-    FEngSetTextureHash(img, texHash);
-    unsigned int texArray[1];
-    texArray[0] = WhichControllerTexture;
-    eLoadStreamingTexture(texArray, 1, FinishLoadingControllerTextureCallbackBridge, this, 0);
-}
-
-void FinishLoadingControllerTextureCallbackBridge(unsigned int p) {
-    LoadingControllerScreen *ls;
-    if (p != 0) {
-        ls = reinterpret_cast<LoadingControllerScreen *>(p);
-        ls->FinishLoadingControllerTextureCallback(0);
-    }
-}
-
-void LoadingControllerScreen::InitLoadingControllerScreen() {
-    mLoadingControllerScreenPtr = bMalloc(0x38, nullptr, 0, 0);
-}
-
-MenuScreen *CreateLoadingControllerScreen(ScreenConstructorData *sd) {
-    return new (LoadingControllerScreen::mLoadingControllerScreenPtr) LoadingControllerScreen(sd);
-}
-
-extern unsigned int FindButtonNameHashForFEString(int config, int string_number, JoystickPort player);
-extern int FEngSNPrintf(char *, int, const char *, ...);
-extern unsigned long FEHashUpper(const char *name);
-extern void FEngSetVisible(const char *pkg_name, unsigned int obj_hash);
-extern void FEngSetInvisible(const char *pkg_name, unsigned int obj_hash);
-extern void FEngSetLanguageHash(const char *pkg_name, unsigned int object_hash, unsigned int language_hash);
-extern void FEngSetTextureHash(const char *pkg_name, unsigned int obj_hash, unsigned int texture_hash);
 
 void LoadingControllerScreen::SetupControllerConfig() {
     if (!FEDatabase->IsCareerMode()) {
@@ -118,4 +63,56 @@ void LoadingControllerScreen::SetupControllerConfig() {
     FEngSetTextureHash(img1, 0x6851aaf5);
     FEImage *img2 = FEngFindImage(GetPackageName(), 0x81b57402);
     FEngSetTextureHash(img2, 0x3b7f86d);
+}
+
+void LoadingControllerScreen::ShowControllerConfig() {
+    FEngSetScript(GetPackageName(), 0x3248E720, 0x001CA7C0, true);
+}
+
+void LoadingControllerScreen::HideControllerConfig() {
+    FEngSetScript(GetPackageName(), 0x3248E720, 0x0016A259, true);
+    WhichControllerTexture = 0;
+}
+
+void LoadingControllerScreen::FinishLoadingControllerTextureCallback(uint32 p) {
+    ShowControllerConfig();
+}
+
+void FinishLoadingControllerTextureCallbackBridge(uint32 p) {
+    LoadingControllerScreen *ls;
+    if (p != 0) {
+        ls = reinterpret_cast<LoadingControllerScreen *>(p);
+        ls->FinishLoadingControllerTextureCallback(0);
+    }
+}
+
+void LoadingControllerScreen::PrepToShowControllerConfig() {
+    unsigned int texHash;
+    if (!IsJoystickTypeWheel(static_cast<JoystickPort>(FEDatabase->PlayerJoyports[0]))) {
+        texHash = 0xed543bac;
+        if (FEDatabase->CurrentUserProfiles[0]->GetOptions()->ThePlayerSettings[0].DriveWithAnalog != 0) {
+            texHash = 0xed543bab;
+        }
+    } else {
+        FEDatabase->CurrentUserProfiles[0]->GetOptions()->ThePlayerSettings[0].Config = CC_CONFIG_1;
+        texHash = 0xb511476b;
+    }
+    WhichControllerTexture = texHash;
+    FEImage *img = FEngFindImage(GetPackageName(), 0x922a39c4);
+    FEngSetTextureHash(img, texHash);
+    eLoadStreamingTexture(WhichControllerTexture, FinishLoadingControllerTextureCallbackBridge, (uint32)this, 0);
+}
+
+void LoadingControllerScreen::ClearLoadedControllerTexture() {
+    unsigned int tex[1];
+    tex[0] = WhichControllerTexture;
+    if (tex[0]) {
+        eUnloadStreamingTexture(tex, 1);
+    }
+}
+
+void LoadingControllerScreen::NotificationMessage(u32 msg, FEObject *obj, u32 p1, u32 p2) {}
+
+void LoadingControllerScreen::InitLoadingControllerScreen() {
+    mLoadingControllerScreenPtr = bMalloc(0x38, nullptr, 0, 0);
 }
