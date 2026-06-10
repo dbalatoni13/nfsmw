@@ -1,12 +1,11 @@
-#include <new>
-
 #include "FEObject.h"
 #include "FETypes.h"
 #include "FEScript.h"
 #include "FESlotPool.h"
 #include "FEngStandard.h"
 #include "FEMessageResponse.h"
-#include "fengine.h"
+#include "Speed/Indep/Src/FEng/FEMath.h"
+#include "Speed/Indep/Src/FEng/FEngine.h"
 
 extern FEMultiPool ObjDataPool;
 bool Close(float a, float b, float epsilon);
@@ -67,7 +66,7 @@ FEObject::FEObject(const FEObject &Object, bool bReference)
       ,
       pData(nullptr) //
 {
-    GUID = FEngine::SysGUID++;
+    GUID = FEngine::GetNextGUID();
     SetDataSize(Object.DataSize);
     FEngMemSet(pData, 0, DataSize);
     Type = Object.Type;
@@ -135,7 +134,7 @@ void FEObject::SetName(const char *pNewName) {
     if (pNewName) {
         int Len = FEngStrLen(pNewName);
 
-        pName = FENG_NEW char[Len + 1];
+        pName = FNEW char[Len + 1];
         FEngStrCpy(pName, pNewName);
         NameHash = FEHashUpper(pName);
     }
@@ -175,8 +174,8 @@ void FEObject::SetupMoveToTracks() {
             if (pKey) {
                 switch (pTrack[i].ParamType) {
                     case 1: {
-                        *static_cast<long *>(pKey->Val) =
-                            *reinterpret_cast<long *>(pfData) - *reinterpret_cast<long *>(static_cast<unsigned char *>(pBase->Val));
+                        *static_cast<float *>(pKey->Val) =
+                            *reinterpret_cast<long *>(pfData) - *reinterpret_cast<float *>(static_cast<unsigned char *>(pBase->Val));
                         break;
                     }
                     case 2: {
@@ -276,7 +275,7 @@ unsigned long FEObject::GetDataOffset(FEKeyTrack_Indices track) {
 }
 
 FEObject *FEObject::Clone(bool bReference) {
-    return FENG_NEW FEObject(*this, bReference);
+    return FNEW FEObject(*this, bReference);
 }
 
 void FEObject::SetTrackValue(FEKeyTrack_Indices track, const FEVector3 &value, bool bRelative) {
@@ -286,9 +285,9 @@ void FEObject::SetTrackValue(FEKeyTrack_Indices track, const FEVector3 &value, b
         if (pTrack) {
             FEKeyNode *pKey = pTrack->GetBaseKey();
             if (bRelative) {
-                reinterpret_cast<FEVector3 *>(static_cast<unsigned char *>(*pKey->GetKeyData()))->operator+=(value);
+                *static_cast<FEVector3 *>(pKey->GetKeyData()->Val) += (value);
             } else {
-                *pKey->GetKeyData() = value;
+                pKey->GetKeyData()->Val = value;
             }
             pTrack->InterpAction &= 0x7F;
         }
@@ -296,7 +295,7 @@ void FEObject::SetTrackValue(FEKeyTrack_Indices track, const FEVector3 &value, b
     }
     if (bRelative) {
         unsigned long offset = GetDataOffset(track);
-        reinterpret_cast<FEVector3 *>(pData + offset)->operator+=(value);
+        *reinterpret_cast<FEVector3 *>(pData + offset) += (value);
     } else {
         unsigned long offset = GetDataOffset(track);
         *reinterpret_cast<FEVector3 *>(pData + offset) = value;
@@ -310,9 +309,9 @@ void FEObject::SetTrackValue(FEKeyTrack_Indices track, const FEVector2 &value, b
         if (pTrack) {
             FEKeyNode *pKey = pTrack->GetBaseKey();
             if (bRelative) {
-                reinterpret_cast<FEVector2 *>(static_cast<unsigned char *>(*pKey->GetKeyData()))->operator+=(value);
+                *static_cast<FEVector2 *>(pKey->GetKeyData()->Val) += (value);
             } else {
-                *pKey->GetKeyData() = value;
+                pKey->GetKeyData()->Val = value;
             }
             pTrack->InterpAction &= 0x7F;
         }
@@ -334,9 +333,9 @@ void FEObject::SetTrackValue(FEKeyTrack_Indices track, const FEColor &value, boo
         if (pTrack) {
             FEKeyNode *pKey = pTrack->GetBaseKey();
             if (bRelative) {
-                *reinterpret_cast<FEColor *>(static_cast<unsigned char *>(*pKey->GetKeyData())) += value;
+                *static_cast<FEColor *>(pKey->GetKeyData()->Val) += value;
             } else {
-                *pKey->GetKeyData() = value;
+                pKey->GetKeyData()->Val = value;
             }
             pTrack->InterpAction &= 0x7F;
         }
@@ -380,9 +379,9 @@ void FEObject::SetRotation(const FEQuaternion &rotation, bool bRelative) {
         if (pTrack) {
             FEKeyNode *pKey = pTrack->GetBaseKey();
             if (bRelative) {
-                reinterpret_cast<FEQuaternion *>(static_cast<unsigned char *>(*pKey->GetKeyData()))->operator*=(rotation);
+                *static_cast<FEQuaternion *>(pKey->GetKeyData()->Val) *= (rotation);
             } else {
-                *pKey->GetKeyData() = rotation;
+                pKey->GetKeyData()->Val = rotation;
             }
             pTrack->InterpAction &= 0x7F;
         }

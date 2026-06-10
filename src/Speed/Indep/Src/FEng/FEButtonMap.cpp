@@ -17,7 +17,7 @@ void FEButtonMap::SetCount(unsigned long NewCount) {
     }
     pList = nullptr;
     if (NewCount != 0) {
-        pList = reinterpret_cast<FEObject **>(FENG_NEW char[NewCount * sizeof(FEObject *)]);
+        pList = reinterpret_cast<FEObject **>(FNEW char[NewCount * sizeof(FEObject *)]);
     }
     Count = NewCount;
 }
@@ -94,3 +94,23 @@ FEObject *FEButtonMap::GetButtonFrom(FEObject *pButton, long Direction, FEGameIn
     }
     return nullptr;
 }
+
+// File: speed/indep/src/feng/FEButtonMap.cpp
+// total size: 0x8
+// Decl: speed/indep/src/feng/FEButtonMap.cpp:161
+class FEButtonCounter : public FEObjectCallback {
+  public:
+    u32 Count; // offset 0x4, size 0x4, Decl: speed/indep/src/feng/FEButtonMap.cpp:163
+
+    bool Callback(struct FEObject *pObj) override {} // Decl: speed/indep/src/feng/FEButtonMap.cpp:165
+};
+
+// total size: 0xC
+// Decl: speed/indep/src/feng/FEButtonMap.cpp:175
+class FEButtonEnumerator : public FEObjectCallback {
+  public:
+    FEButtonMap *pButtonMap; // offset 0x4, size 0x4, Decl: speed/indep/src/feng/FEButtonMap.cpp:177
+    u32 Count;               // offset 0x8, size 0x4, Decl: speed/indep/src/feng/FEButtonMap.cpp:178
+
+    bool Callback(struct FEObject *pObj) override {} // Decl: speed/indep/src/feng/FEButtonMap.cpp:180
+};

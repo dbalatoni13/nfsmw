@@ -15,7 +15,7 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiQRTrackSelect.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiShowcase.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/uiMain.hpp"
-#include "Speed/Indep/Src/Frontend/cFEngRender.hpp"
+#include "Speed/Indep/Src/Frontend/FEngRender.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/InGame/CustomTuning.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/InGame/uiPause.hpp"
@@ -44,6 +44,14 @@
 #include "Speed/Indep/Src/Frontend/FEPackageManager.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/InGame/InGameMovieScreen.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/InGame/uiWorldMap.hpp"
+
+// File: speed/indep/src/frontend/FEPackageData.cpp
+// total size: 0x8
+// Decl: speed/indep/src/frontend/FEPackageData.cpp:437
+struct ScreenFactoryDatum {
+    char *FEngPackageFilename;                    // offset 0x0, size 0x4, Decl: speed/indep/src/frontend/FEPackageData.cpp:438
+    MenuScreenCreateFunction ConstructorFunction; // offset 0x4, size 0x4, Decl: speed/indep/src/frontend/FEPackageData.cpp:439
+};
 
 static const char *gLoadinScreenPackageName;
 

@@ -1,21 +1,27 @@
-#ifndef FENG_FECOLOREDIMAGE_H
-#define FENG_FECOLOREDIMAGE_H
+#ifndef FECOLOREDIMAGE_H_
+#define FECOLOREDIMAGE_H_
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#include "FEImage.h"
 
-#include "FEObject.h"
-#include "feimage.h"
+// File: speed/indep/src/feng/FEColoredImage.h
+// total size: 0x94
+// Decl: speed/indep/src/feng/FEColoredImage.h:27
+class FEColoredImageData : public FEImageData {
+  public:
+    FEColor VertexColors[4]; // offset 0x54, size 0x40, Decl: speed/indep/src/feng/FEColoredImage.h:29
+};
+
 // total size: 0x60
+// Decl: speed/indep/src/feng/FEColoredImage.h:36
 class FEColoredImage : public FEImage {
   public:
-    inline FEColoredImage() {}
-    inline FEColoredImage(const FEColoredImage &Object, bool bReference) : FEImage(reinterpret_cast<const FEImage &>(Object), bReference) {}
-    ~FEColoredImage() override;
-    FEObject *Clone(bool bReference) override;
+    FEColoredImage() {} // Decl: speed/indep/src/feng/FEColoredImage.h:39
+    FEColoredImage(const FEColoredImage &Object, bool bReference) : FEImage(reinterpret_cast<const FEImage &>(Object), bReference) {}
+    ~FEColoredImage() override {}
 
-    inline void SetVertexColor(const FEColor &color, unsigned long vertexIndex, bool bRelative);
+    FEObject *Clone(bool bReference) override {} // Decl: speed/indep/src/feng/FEColoredImage.h:43
+
+    void SetVertexColor(const FEColor &color, unsigned long vertexIndex, bool bRelative) {}
 };
 
 #endif

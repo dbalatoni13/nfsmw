@@ -3,6 +3,7 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/Loading/FEMovieScreen.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEMovies.hpp"
 #include "Speed/Indep/Src/Generated/Events/ESndGameState.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Loading/FEBootFlowManager.hpp"
 

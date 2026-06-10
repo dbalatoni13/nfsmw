@@ -147,4 +147,17 @@ typedef Vector4 Quaternion;
 
 } // namespace UMath
 
+// TODO where should this go
+typedef float Angle;
+typedef UMath::Vector2 COORD2;
+typedef UMath::Vector3 COORD3;
+typedef UMath::Vector4 COORD4;
+typedef UMath::Matrix4 MATRIX4;
+typedef UMath::Matrix3 MATRIX3;
+typedef UMath::Quaternion RQUAT;
+typedef unsigned char u_char;
+typedef short unsigned int u_short;
+typedef unsigned int u_int;
+typedef long unsigned int u_long;
+
 #endif

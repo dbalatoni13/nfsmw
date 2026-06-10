@@ -1,10 +1,7 @@
-#ifndef FRONTEND_FENGINTERFACES_FENGINTERFACEFEIMAGES_H
-#define FRONTEND_FENGINTERFACES_FENGINTERFACEFEIMAGES_H
+#ifndef FENGINTERFACEFEIMAGES_H
+#define FENGINTERFACEFEIMAGES_H
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-#include "Speed/Indep/Src/FEng/feimage.h"
+#include "Speed/Indep/Src/FEng/FEImage.h"
 
 FEImage *FEngFindImage(const char *pkg_name, int name_hash);
 

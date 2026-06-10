@@ -6,10 +6,13 @@
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
 #include "Speed/Indep/Src/Frontend/Localization/Localize.hpp"
 
+// File: speed/indep/src/frontend/FEngFont.cpp
+// total size: 0xC
+// Decl: speed/indep/src/frontend/FEngFont.cpp:309
 struct ExtraFontData {
-    unsigned int FontHash;
-    float BaselineOffset;
-    float LeadingScale;
+    uint32 FontHash;      // offset 0x0, size 0x4, Decl: speed/indep/src/frontend/FEngFont.cpp:310
+    float BaselineOffset; // offset 0x4, size 0x4, Decl: speed/indep/src/frontend/FEngFont.cpp:311
+    float LeadingScale;   // offset 0x8, size 0x4, Decl: speed/indep/src/frontend/FEngFont.cpp:312
 };
 
 static ExtraFontData ExtraFontDataTable[] = {

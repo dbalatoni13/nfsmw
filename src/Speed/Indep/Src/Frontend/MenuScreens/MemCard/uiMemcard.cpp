@@ -1,102 +1,14 @@
+#include "Speed/Indep/Src/Frontend/MenuScreens/MemCard/uiMemcard.hpp"
+#include "Speed/Indep/Src/Misc/Config.h"
 #include "Speed/Indep/Src/Frontend/MenuScreens/MemCard/uiMemcardBase.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/MemCard/uiMemcardInterface.hpp"
-
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Frontend/MemoryCard/MemoryCard.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Loading/FEBootFlowManager.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEIconScrollerMenu.hpp"
-#include "Speed/Indep/Src/Frontend/MenuScreens/Common/feScrollerina.hpp"
-#include "Speed/Indep/Src/Misc/GameFlow.hpp"
 
-void FEngSetScript(const char *pkg_name, unsigned int obj_hash, unsigned int script_hash, bool start_at_beginning);
-FEObject *FEngFindObject(const char *pkg_name, unsigned int obj_hash);
-FEString *FEngFindString(const char *pkg_name, int name_hash);
-void FEngSetInvisible(FEObject *obj);
-void FEngSetVisible(FEObject *obj);
-void FEngSetLanguageHash(const char *pkg_name, unsigned int obj_hash, unsigned int language);
-int FEPrintf(const char *pkg_name, int object_hash, const char *fmt, ...);
-int FEngSNPrintf(char *buffer, int buf_size, const char *fmt, ...);
-void FEngSetCurrentButton(const char *pkg_name, unsigned int hash);
-void FEngSetButtonState(const char *pkg_name, unsigned int button_hash, bool enabled);
-unsigned long FEHashUpper(const char *str);
-bool FEngIsScriptSet(const char *pkg_name, unsigned long obj_hash, unsigned long script_hash);
-int FEngMapJoyParamToJoyport(int param);
-
-extern GameFlowManager TheGameFlowManager;
-
-void MemcardExit(unsigned int msg);
-unsigned int MemcardGetCurrentUIOperation();
-
-extern "C" void ChangeToNextBootFlowScreen__15BootFlowManageri(void *self, int param);
-
-static unsigned int gButtonIDs[3] = {0xb8a7c6cc, 0xb8a7c6cd, 0xb8a7c6ce};
-static unsigned int gButtonTextIDs[3] = {0xf9363f30, 0xfb8b67d1, 0xfde09072};
-
-static const unsigned int sOpName[] = {0x841c21af, 0xe85326e2};
-
-// ===== FEMemWidget =====
-
-struct FEMemWidget : public ScrollerDatum {
-    MemCardFileFlag m_Flag;
-    int m_Size;
-    UIMemcardList *m_pParent;
-
-    FEMemWidget() {}
-    ~FEMemWidget() override;
-};
-
-FEMemWidget::~FEMemWidget() {}
-
-// ===== UIMemcardList forward =====
-
-struct UIMemcardList : public MenuScreen {
-    enum ListOp {
-        MCLO_Load = 0,
-        MCLO_Delete = 1,
-    };
-
-    Scrollerina m_SaveGameList;
-    int m_Initialized;
-    int m_ListOp;
-    unsigned int m_LastMsg;
-    FEMemWidget *m_pCreateNew;
-
-    UIMemcardList(ScreenConstructorData *sd);
-    ~UIMemcardList() override;
-
-    int GetSize() {
-        return m_SaveGameList.GetNumData();
-    }
-    bool IsReady() {
-        return m_Initialized != 0;
-    }
-    ListOp GetListOp() {
-        return static_cast<ListOp>(m_ListOp);
-    }
-
-    const char *GetFileName(int find);
-    void NotificationMessage(unsigned long msg, FEObject *obj, unsigned long param1, unsigned long param2) override;
-    FEMemWidget *AddItem(const char *pName, const char *pDate, int size, int flag);
-};
-
-// ===== UIMemcardBoot =====
-
-struct UIMemcardBoot : public UIMemcardBase {
-    UIMemcardBoot(ScreenConstructorData *sd) : UIMemcardBase(sd) {}
-    ~UIMemcardBoot() override;
-
-    void NotificationMessage(unsigned long msg, FEObject *obj, unsigned long param1, unsigned long param2) override;
-    eMenuSoundTriggers NotifySoundMessage(unsigned long msg, eMenuSoundTriggers maybe) override;
-};
-
-UIMemcardBoot::~UIMemcardBoot() {}
-
-eMenuSoundTriggers UIMemcardBoot::NotifySoundMessage(unsigned long msg, eMenuSoundTriggers maybe) {
-    return maybe;
-}
-
-void UIMemcardBoot::NotificationMessage(unsigned long msg, FEObject *obj, unsigned long param1, unsigned long param2) {
+void UIMemcardBoot::NotificationMessage(u32 msg, FEObject *obj, u32 param1, u32 param2) {
     UIMemcardBase::NotificationMessage(msg, obj, param1, param2);
     switch (msg) {
         case 0x35f8620b:
@@ -115,10 +27,14 @@ void UIMemcardBoot::NotificationMessage(unsigned long msg, FEObject *obj, unsign
             MemoryCard::GetInstance()->StartBootSequence();
             // fall through
         case 0x8867412d:
-            ChangeToNextBootFlowScreen__15BootFlowManageri(BootFlowManager::Get(), 0xff);
-            MemoryCard::GetInstance()->m_bInitialized = false;
+            BootFlowManager::Get()->ChangeToNextBootFlowScreen(0xff);
+            MemoryCard::GetInstance()->SetMemcardScreenInitialized(false);
             break;
     }
+}
+
+eMenuSoundTriggers UIMemcardBoot::NotifySoundMessage(u32 msg, eMenuSoundTriggers maybe) {
+    return maybe;
 }
 
 MenuScreen *CreateMemCardBootScreen(ScreenConstructorData *sd) {
@@ -129,22 +45,11 @@ MenuScreen *CreateMemCardBootScreen(ScreenConstructorData *sd) {
     return boot;
 }
 
-// ===== UIMemcardMain =====
-
-struct UIMemcardMain : public UIMemcardBase {
-    ~UIMemcardMain() override;
-
-    void SetPopupWindow(UIMemcardList *pChild) {
-        m_pChild = pChild;
-    }
-
-    UIMemcardMain(ScreenConstructorData *sd);
-    void DoSelect(const char *pName) override;
-    void ListDone();
-    void NotificationMessage(unsigned long msg, FEObject *obj, unsigned long param1, unsigned long param2) override;
-};
-
-UIMemcardMain::~UIMemcardMain() {}
+MenuScreen *CreateMemcardMainMenu(ScreenConstructorData *sd) {
+    UIMemcardMain *screen = new UIMemcardMain(sd);
+    screen->Setup();
+    return screen;
+}
 
 UIMemcardMain::UIMemcardMain(ScreenConstructorData *sd) : UIMemcardBase(sd) {
     FEString *blurb = FEngFindString(GetPackageName(), 0x1e2640fa);
@@ -153,7 +58,7 @@ UIMemcardMain::UIMemcardMain(ScreenConstructorData *sd) : UIMemcardBase(sd) {
 
 void UIMemcardMain::DoSelect(const char *pName) {
     bStrCpy(m_FileName, pName);
-    int listOp = m_pChild->m_ListOp;
+    int listOp = m_pChild->GetListOp();
     switch (listOp) {
         case 0:
             MemoryCard::GetInstance()->RequestTask(5, m_FileName);
@@ -240,12 +145,12 @@ void UIMemcardMain::ListDone() {
     }
 }
 
-void UIMemcardMain::NotificationMessage(unsigned long msg, FEObject *obj, unsigned long param1, unsigned long param2) {
+void UIMemcardMain::NotificationMessage(u32 msg, FEObject *obj, u32 param1, u32 param2) {
     UIMemcardBase::NotificationMessage(msg, obj, param1, param2);
     switch (msg) {
         case 0x5a051729: {
             cFEng *feng = cFEng::Get();
-            unsigned long hideHash = FEHashUpper("HIDE LOADER");
+            u32 hideHash = FEHashUpper("HIDE LOADER");
             feng->QueuePackageMessage(hideHash, GetPackageName(), nullptr);
             ListDone();
             break;
@@ -312,8 +217,8 @@ void UIMemcardMain::NotificationMessage(unsigned long msg, FEObject *obj, unsign
             }
             {
                 const char *packageName = GetPackageName();
-                unsigned long handlerHash = FEHashUpper("LOADER");
-                unsigned long appearHash = FEHashUpper("APPEAR");
+                u32 handlerHash = FEHashUpper("LOADER");
+                u32 appearHash = FEHashUpper("APPEAR");
                 if (!FEngIsScriptSet(packageName, handlerHash, appearHash)) {
                     return;
                 }
@@ -325,145 +230,8 @@ void UIMemcardMain::NotificationMessage(unsigned long msg, FEObject *obj, unsign
 
 hide_loader: {
     cFEng *feng = cFEng::Get();
-    unsigned long hideHash = FEHashUpper("HIDE LOADER");
+    u32 hideHash = FEHashUpper("HIDE LOADER");
     feng->QueuePackageMessage(hideHash, GetPackageName(), nullptr);
     return;
 }
-}
-
-MenuScreen *CreateMemcardMainMenu(ScreenConstructorData *sd) {
-    UIMemcardMain *screen = new UIMemcardMain(sd);
-    screen->Setup();
-    return screen;
-}
-
-// ===== UIMemcardList =====
-
-UIMemcardList::UIMemcardList(ScreenConstructorData *sd)
-    : MenuScreen(sd) //
-      ,
-      m_SaveGameList(GetPackageName(), "", "Scrollbar", true, true, false, false) //
-{
-    m_Initialized = 0;
-    const char *profileName = FEDatabase->CurrentUserProfiles[0]->GetProfileName();
-    FEPrintf(GetPackageName(), 0xeb406fec, profileName);
-
-    for (int i = 1; i < 9; i++) {
-        char buffer[32];
-        ScrollerSlot *slot = new (__FILE__, __LINE__) ScrollerSlot();
-        slot->pBacking = nullptr;
-        slot->vSize.y = 0.0f;
-        slot->vSize.x = 0.0f;
-        slot->vTopLeft.y = 0.0f;
-        slot->vTopLeft.x = 0.0f;
-        slot->bEnabled = true;
-
-        FEngSNPrintf(buffer, 0x20, "option_name_%d", i);
-        slot->AddData(FEngFindString(GetPackageName(), FEHashUpper(buffer)));
-
-        FEngSNPrintf(buffer, 0x20, "option_data_%d", i);
-        slot->AddData(FEngFindString(GetPackageName(), FEHashUpper(buffer)));
-
-        FEngSNPrintf(buffer, 0x20, "option_mouse_%d", i);
-        slot->SetBacking(FEngFindObject(GetPackageName(), FEHashUpper(buffer)));
-        slot->Hide();
-        m_SaveGameList.AddSlot(slot);
-    }
-
-    m_ListOp = static_cast<int>((gMemcardSetup.mOp & 0xf0) == 0x30);
-    FEngSetLanguageHash(GetPackageName(), 0x48d4fcae, sOpName[m_ListOp]);
-    FEngSetLanguageHash(GetPackageName(), 0x426c7b4d, sOpName[m_ListOp]);
-}
-
-UIMemcardList::~UIMemcardList() {}
-
-void UIMemcardList::NotificationMessage(unsigned long msg, FEObject *obj, unsigned long param1, unsigned long param2) {
-    switch (msg) {
-        case 0x35f8620b: {
-            Scrollerina &saveGameList = m_SaveGameList;
-            saveGameList.SetSelected(saveGameList.Slots.GetHead());
-            if (saveGameList.SelectedSlot != nullptr) {
-                saveGameList.SelectedSlot->SetScript(0x249db7b7);
-            }
-            MemoryCard::GetInstance()->GetScreen()->m_ExpectingInput = true;
-            m_Initialized++;
-            if (MemoryCard::GetInstance()->InBootSequence()) {
-                FEngSetLanguageHash(GetPackageName(), 0xb8a7c6cd, 0x1a294dad);
-            }
-            break;
-        }
-        case 0xc98356ba:
-            if (m_Initialized == 0) {
-                m_Initialized = 1;
-                UIMemcardBase *parent = MemoryCard::GetInstance()->GetScreen();
-                UIMemcardBase::Item *pItem = parent->m_Items.GetHead();
-                while (pItem != parent->m_Items.EndOfList()) {
-                    int prefixLen = MemoryCard::GetInstance()->GetPrefixLength();
-                    const char *name = pItem->m_Name + prefixLen;
-                    if (parent->IsProfile(name)) {
-                        AddItem(name, pItem->m_Data, pItem->m_Size, pItem->m_Flag);
-                    }
-                    pItem = pItem->GetNext();
-                }
-                FEngSetScript("MC_List.fng", 0x47ff4e7c, 0x13c37b, true);
-            }
-            break;
-        case 0x911ab364:
-            if (MemoryCard::GetInstance()->InBootSequence()) {
-                cFEng::Get()->QueueGameMessage(0x8d0cc9f9, "MC_Main_GC.fng", 0xff);
-            } else {
-                cFEng::Get()->QueueGameMessage(0x8867412d, MemoryCard::GetInstance()->GetScreen()->GetPackageName(), 0xff);
-            }
-            gMemcardSetup.mLastController = param1;
-            break;
-        case 0x72619778:
-            gMemcardSetup.mLastController = param1;
-            m_SaveGameList.ScrollPrev();
-            break;
-        case 0x911c0a4b:
-            gMemcardSetup.mLastController = param1;
-            m_SaveGameList.ScrollNext();
-            break;
-        case 0x406415e3: {
-            gMemcardSetup.mLastController = param1;
-            cFrontendDatabase *database = FEDatabase;
-            bool isMultitap = false;
-            if (database->IsSplitScreenMode()) {
-                isMultitap = database->iNumPlayers == 2;
-            }
-            if (!isMultitap) {
-                MemoryCard *memoryCard = MemoryCard::GetInstance();
-                int playerNum = memoryCard->GetPlayerNum();
-                signed char port = static_cast<signed char>(FEngMapJoyParamToJoyport(static_cast<int>(param1)));
-                database->SetPlayersJoystickPort(playerNum, port);
-            }
-            MemoryCard::GetInstance()->SetMonitor(false);
-            break;
-        }
-        case 0xeb29392a:
-            if (m_LastMsg == 0x406415e3) {
-                UIMemcardBase *parent = MemoryCard::GetInstance()->GetScreen();
-                parent->DoSelect(m_SaveGameList.SelectedDatum->Strings.GetNode(0)->String);
-            }
-            break;
-    }
-    m_LastMsg = msg;
-}
-
-FEMemWidget *UIMemcardList::AddItem(const char *pName, const char *pDate, int size, int flag) {
-    FEMemWidget *widget = new FEMemWidget();
-    widget->m_Flag = static_cast<MemCardFileFlag>(flag);
-    widget->m_Size = size;
-    widget->AddData(pName, 0);
-    widget->AddData(pDate, 0);
-    m_SaveGameList.AddData(widget);
-    m_SaveGameList.Enable(widget);
-    m_SaveGameList.Update(true);
-    return widget;
-}
-
-MenuScreen *CreateMemcardListFiles(ScreenConstructorData *sd) {
-    UIMemcardList *screen = new UIMemcardList(sd);
-    MemoryCard::GetInstance()->GetScreen()->m_pChild = screen;
-    return screen;
 }

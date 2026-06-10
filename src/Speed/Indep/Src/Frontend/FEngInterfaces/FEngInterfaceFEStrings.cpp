@@ -8,32 +8,33 @@
 
 static char FEPrintf_Buffer[1024];
 
+// File: speed/indep/src/frontend/fenginterfaces/FEngInterfaceFEStrings.cpp
+// total size: 0x8
+// Decl: speed/indep/src/frontend/fenginterfaces/FEngInterfaceFEStrings.cpp:24
 class FEngSetGroupLanguageHash : public FEObjectCallback {
   public:
-    FEngSetGroupLanguageHash() : Hash(0) {}
-    ~FEngSetGroupLanguageHash() override {}
-    bool Callback(FEObject *pObj) override {
+    u32 Hash; // offset 0x4, size 0x4, Decl: speed/indep/src/frontend/fenginterfaces/FEngInterfaceFEStrings.cpp:26
+
+    bool Callback(struct FEObject *pObj) override { // Decl: speed/indep/src/frontend/fenginterfaces/FEngInterfaceFEStrings.cpp:28
         if (pObj->Type == FE_String) {
             FEngSetLanguageHash(static_cast<FEString *>(pObj), Hash);
         }
         return true;
     }
-
-    u32 Hash; // offset 0x4, size 0x4
 };
 
+// total size: 0x8
+// Decl: speed/indep/src/frontend/fenginterfaces/FEngInterfaceFEStrings.cpp:205
 class FEngGroupFEPrintf : public FEObjectCallback {
   public:
-    FEngGroupFEPrintf() : string(nullptr) {}
-    ~FEngGroupFEPrintf() override {}
-    bool Callback(FEObject *pObj) override {
+    char *string; // offset 0x4, size 0x4, Decl: speed/indep/src/frontend/fenginterfaces/FEngInterfaceFEStrings.cpp:207
+
+    bool Callback(struct FEObject *pObj) override { // Decl: speed/indep/src/frontend/fenginterfaces/FEngInterfaceFEStrings.cpp:209
         if (pObj->Type == FE_String) {
             DoFEngPrintf(static_cast<FEString *>(pObj), string, 0);
         }
         return true;
     }
-
-    char *string; // offset 0x4, size 0x4
 };
 
 FEString *FEngFindString(const char *pkg_name, int name_hash) {

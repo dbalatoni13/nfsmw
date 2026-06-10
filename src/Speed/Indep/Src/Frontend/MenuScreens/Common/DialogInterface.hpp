@@ -1,5 +1,5 @@
-#ifndef _DIALOGINTERFACE
-#define _DIALOGINTERFACE
+#ifndef _DIALOGINTERFACE_HPP
+#define _DIALOGINTERFACE_HPP
 
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
@@ -62,20 +62,19 @@ class feDialogConfig {
 // TODO
 class DialogInterface {
   private:
-    static dialog_handle ShowOkCancel(const char *from_pkg, const char *dlg_pkg, eDialogTitle title, const char *fmt, va_list *arg_list);
-    static dialog_handle ShowMessage(const char *from_pkg, const char *dlg_pkg, eDialogTitle title, const char *fmt, va_list *arg_list);
-    static dialog_handle ShowOk(const char *from_pkg, const char *dlg_pkg, eDialogTitle title, const char *fmt, va_list *arg_list);
+    static dialog_handle ShowOkCancel(const char *from_pkg, const char *dlg_pkg, eDialogTitle title, const char *fmt, va_list arg_list);
+    static dialog_handle ShowMessage(const char *from_pkg, const char *dlg_pkg, eDialogTitle title, const char *fmt, va_list arg_list);
+    static dialog_handle ShowOk(const char *from_pkg, const char *dlg_pkg, eDialogTitle title, const char *fmt, va_list arg_list);
     static dialog_handle ShowOneButton(const char *from_pkg, const char *dlg_pkg, eDialogTitle title, uint32 button_text_hash,
-                                       uint32 button_pressed_message, uint32 cancel_message, bool dismissable, const char *fmt, va_list *arg_list);
+                                       uint32 button_pressed_message, uint32 cancel_message, bool dismissable, const char *fmt, va_list arg_list);
 
     static dialog_handle ShowTwoButtons(const char *from_pkg, const char *dlg_pkg, eDialogTitle title, uint32 button1_text_hash,
                                         uint32 button2_text_hash, uint32 button1_pressed_message, uint32 button2_pressed_message,
-                                        uint32 cancel_message, bool dismissable, eDialogFirstButtons first_button, const char *fmt,
-                                        va_list *arg_list);
+                                        uint32 cancel_message, bool dismissable, eDialogFirstButtons first_button, const char *fmt, va_list arg_list);
     static dialog_handle ShowThreeButtons(const char *from_pkg, const char *dlg_pkg, eDialogTitle title, uint32 button1_text_hash,
                                           uint32 button2_text_hash, uint32 button3_text_hash, uint32 button1_pressed_message,
                                           uint32 button2_pressed_message, uint32 button3_pressed_message, uint32 cancel_message,
-                                          eDialogFirstButtons first_button, const char *fmt, va_list *arg_list);
+                                          eDialogFirstButtons first_button, const char *fmt, va_list arg_list);
 
   public:
     static dialog_handle ShowDialog(struct feDialogConfig *conf);

@@ -1,33 +1,17 @@
-#ifndef FRONTEND_HUD_FENITROUSGAUGE_H
-#define FRONTEND_HUD_FENITROUSGAUGE_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef FENITROUSGAUGE_H
+#define FENITROUSGAUGE_H
 
 #include "Speed/Indep/Src/Frontend/HUD/FeHudElement.hpp"
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 
-struct FEMultiImage;
-
-class INos : public UTL::COM::IUnknown {
-  public:
-    static HINTERFACE _IHandle() {
-        return (HINTERFACE)_IHandle;
-    }
-
-  protected:
-    virtual ~INos() {}
-    INos(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
-
-  public:
-    virtual void SetNos(float nos);
-};
-
+// File: speed/indep/src/frontend/hud/FeNitrousGauge.hpp
 // total size: 0x40
+// Decl: speed/indep/src/frontend/hud/FeNitrousGauge.hpp:12
 class NitrousGauge : public HudElement, public INos {
   public:
     NitrousGauge(UTL::COM::Object *pOutter, const char *pkg_name, int player_number);
+    ~NitrousGauge() override {} // Decl: speed/indep/src/frontend/hud/FeNitrousGauge.hpp:15
+
     void Update(IPlayer *player) override;
     void SetNos(float nos) override;
 
@@ -35,9 +19,9 @@ class NitrousGauge : public HudElement, public INos {
 #ifdef EA_BUILD_A124
     bool mNosChanged;
 #endif
-    float mNos;                   // offset 0x30
-    FEObject *mpDataNosMeterIcon; // offset 0x34
-    FEMultiImage *mpNosMeterBar;  // offset 0x38
+    float mNos;                   // offset 0x30, size 0x4, Decl: speed/indep/src/frontend/hud/FeNitrousGauge.hpp:22
+    FEObject *mpDataNosMeterIcon; // offset 0x34, size 0x4, Decl: speed/indep/src/frontend/hud/FeNitrousGauge.hpp:26
+    FEMultiImage *mpNosMeterBar;  // offset 0x38, size 0x4, Decl: speed/indep/src/frontend/hud/FeNitrousGauge.hpp:27
 };
 
 #endif

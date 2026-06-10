@@ -1,11 +1,7 @@
-#ifndef FRONTEND_MENUSCREENS_SAFEHOUSE_OPTIONS_UICREDITS_H
-#define FRONTEND_MENUSCREENS_SAFEHOUSE_OPTIONS_UICREDITS_H
+#ifndef __UICREDITS_HPP__
+#define __UICREDITS_HPP__
 
 #include "Speed/Indep/Src/FEng/FEString.h"
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
 #include "Speed/Indep/Src/Frontend/UnicodeFile.hpp"
 

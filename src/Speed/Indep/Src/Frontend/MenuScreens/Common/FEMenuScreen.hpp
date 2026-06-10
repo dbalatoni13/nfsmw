@@ -190,6 +190,7 @@ class MenuScreen {
     static int gEAMIconState; // size: 0x4, address: 0xFFFFFFFF
 };
 
+// Decl: d:/speed/indep/src/frontend/menuscreens/common/FEMenuScreen.hpp:94
 typedef MenuScreen *(*MenuScreenCreateFunction)(ScreenConstructorData *sd);
 
 #endif

@@ -3,21 +3,21 @@
 #include "Speed/Indep/Src/FEng/FETypes.h"
 #include "Speed/Indep/Src/FEng/FEngStandard.h"
 
-extern int bSPrintf(char* buf, const char* fmt, ...);
+extern int bSPrintf(char *buf, const char *fmt, ...);
 
-static const char* FEColor1Name = "Top Left";
-static const char* FEColor2Name = "Top Right";
-static const char* FEColor3Name = "Bottom Right";
-static const char* FEColor4Name = "Bottom Left";
-static const char* FEFrameNumName = "Frame Number";
+static const char *FEColor1Name = "Top Left";
+static const char *FEColor2Name = "Top Right";
+static const char *FEColor3Name = "Bottom Right";
+static const char *FEColor4Name = "Bottom Left";
+static const char *FEFrameNumName = "Frame Number";
 
-FETypeNode* FETypeLib::CreateBaseObjectType(const char* pName) {
+FETypeNode *FETypeLib::CreateBaseObjectType(const char *pName) {
     FEVector3 ZeroVect;
     FEVector3 SizeVect;
     FEQuaternion ZeroQuat;
     FEColor White;
 
-    FETypeNode* pType = FENG_NEW FETypeNode();
+    FETypeNode *pType = FNEW FETypeNode();
     pType->SetName(pName);
 
     pType->AddField("Color", 6);
@@ -40,7 +40,7 @@ FETypeNode* FETypeLib::CreateBaseObjectType(const char* pName) {
     ZeroQuat.w = 1.0f;
 
     White = FEColor(0xFFFFFFFF);
-    FEFieldNode* pField = pType->GetFirstField();
+    FEFieldNode *pField = pType->GetFirstField();
     pField->SetDefault(&White);
     pField = pField->GetNext();
     pField->SetDefault(&ZeroVect);
@@ -54,17 +54,17 @@ FETypeNode* FETypeLib::CreateBaseObjectType(const char* pName) {
     return pType;
 }
 
-FETypeNode* FETypeLib::CreateImageObjectType(const char* pName) {
+FETypeNode *FETypeLib::CreateImageObjectType(const char *pName) {
     FEVector2 ZeroVect;
     FEVector2 OneVect;
 
-    FETypeNode* pType = CreateBaseObjectType(pName);
+    FETypeNode *pType = CreateBaseObjectType(pName);
 
     pType->AddField("Upper Left", 3);
     pType->AddField("Lower Right", 3);
 
     ZeroVect = FEVector2(0.0f, 0.0f);
-    FEFieldNode* pField = pType->GetField("Upper Left");
+    FEFieldNode *pField = pType->GetField("Upper Left");
     pField->SetDefault(&ZeroVect);
     OneVect = FEVector2(1.0f, 1.0f);
     pField->GetNext()->SetDefault(&OneVect);
@@ -72,8 +72,8 @@ FETypeNode* FETypeLib::CreateImageObjectType(const char* pName) {
     return pType;
 }
 
-FETypeNode* FETypeLib::CreateMultiImageObjectType(const char* pName) {
-    FETypeNode* pType = CreateImageObjectType(pName);
+FETypeNode *FETypeLib::CreateMultiImageObjectType(const char *pName) {
+    FETypeNode *pType = CreateImageObjectType(pName);
     char sztemp[32];
     FEVector3 pivot_rot(0.0f, 0.0f, 0.0f);
     FEVector2 top_left(0.0f, 0.0f);
@@ -82,26 +82,26 @@ FETypeNode* FETypeLib::CreateMultiImageObjectType(const char* pName) {
     for (int i = 1; i < 4; i++) {
         bSPrintf(sztemp, "Tex %d: Top Left", i);
         pType->AddField(sztemp, 3);
-        FEFieldNode* pField = pType->GetField(sztemp);
+        FEFieldNode *pField = pType->GetField(sztemp);
         pField->SetDefault(&top_left);
     }
     for (int i = 1; i < 4; i++) {
         bSPrintf(sztemp, "Tex %d: Bottom Right", i);
         pType->AddField(sztemp, 3);
-        FEFieldNode* pField = pType->GetField(sztemp);
+        FEFieldNode *pField = pType->GetField(sztemp);
         pField->SetDefault(&bottom_right);
     }
 
     bSPrintf(sztemp, "Pivot Rot (Z)");
     pType->AddField(sztemp, 4);
-    FEFieldNode* pField = pType->GetField(sztemp);
+    FEFieldNode *pField = pType->GetField(sztemp);
     pField->SetDefault(&pivot_rot);
 
     return pType;
 }
 
 bool FETypeLib::Startup() {
-    FETypeNode* pType;
+    FETypeNode *pType;
     FEColor White;
     int DefaultFrame;
 
@@ -115,7 +115,7 @@ bool FETypeLib::Startup() {
     pType->AddField(FEColor3Name, 6);
     pType->AddField(FEColor4Name, 6);
     White = FEColor(0xFFFFFFFF);
-    FEFieldNode* pField;
+    FEFieldNode *pField;
     pField = pType->GetField(FEColor1Name);
     pField->SetDefault(&White);
     pField = pType->GetField(FEColor2Name);
@@ -174,8 +174,8 @@ bool FETypeLib::Startup() {
     return true;
 }
 
-FETypeNode* FETypeLib::FindType(unsigned long TypeID) {
-    FETypeNode* pNode = GetFirstType();
+FETypeNode *FETypeLib::FindType(unsigned long TypeID) {
+    FETypeNode *pNode = GetFirstType();
     for (;;) {
         if (!pNode) {
             break;

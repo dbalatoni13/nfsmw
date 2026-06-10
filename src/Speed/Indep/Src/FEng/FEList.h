@@ -1,40 +1,81 @@
-#ifndef _FELIST
-#define _FELIST
+#ifndef FELIST_H
+#define FELIST_H
 
 #include <types.h>
 
+#define LIST_MAGIC 0xABadCafe // :32
+
+// File: speed/indep/src/feng/FEList.h
 // total size: 0xC
+// Decl: speed/indep/src/feng/FEList.h:53
 class FEMinNode {
+  protected:
+    FEMinNode *next, *prev; // offset 0x0, size 0x4, Decl: speed/indep/src/feng/FEList.h:55
+
+  public:
+    FEMinNode() {} // Decl: speed/indep/src/feng/FEList.h:58
+    virtual ~FEMinNode() {}
+
+    FEMinNode *GetNext() const {
+        return next;
+    }
+
+    FEMinNode *GetPrev() const {
+        return prev;
+    }
+
     friend class FERefList;
     friend class FEMinList;
     friend class FEngine;
     friend class FESlotPool;
     friend class FEMultiPool;
     friend struct FEPackage;
+};
+
+// total size: 0x14
+// Decl: speed/indep/src/feng/FEList.h:79
+class FENode : public FEMinNode {
+  protected:
+    char *name;            // offset 0xC, size 0x4, Decl: speed/indep/src/feng/FEList.h:81
+    unsigned int nameHash; // offset 0x10, size 0x4, Decl: speed/indep/src/feng/FEList.h:82
 
   public:
-    FEMinNode() {
-        next = reinterpret_cast<FEMinNode *>(0xABADCAFE);
-        prev = reinterpret_cast<FEMinNode *>(0xABADCAFE);
-    }
-    virtual ~FEMinNode() {}
+    FENode();
+    ~FENode() override;
 
-    FEMinNode *GetNext() const {
-        return next;
-    }
-    FEMinNode *GetPrev() const {
-        return prev;
+    bool SetName(const char *theName);
+
+    char *const GetName() const {
+        return name;
     }
 
-  protected:
-    FEMinNode *next; // offset 0x0, size 0x4
-    FEMinNode *prev; // offset 0x4, size 0x4
+    const unsigned int GetNameHash() const {
+        return nameHash;
+    }
+
+    FENode *GetNext() const {
+        return static_cast<FENode *>(FEMinNode::GetNext());
+    }
+
+    FENode *GetPrev() const {
+        return static_cast<FENode *>(FEMinNode::GetPrev());
+    }
 };
 
 // total size: 0x10
+// Decl: speed/indep/src/feng/FEList.h:111
 class FEMinList {
+  private:
+    unsigned int numElements; // offset 0x0, size 0x4, Decl: speed/indep/src/feng/FEList.h:113
+
   public:
-    FEMinList() {
+    typedef bool (*CheckFlipFunc)(FEMinNode *, FEMinNode *);
+
+  protected:
+    FEMinNode *head, *tail; // offset 0x4, size 0x4, Decl: speed/indep/src/feng/FEList.h:118
+
+  public:
+    FEMinList() { // Decl: speed/indep/src/feng/FEList.h:121
         head = nullptr;
         tail = nullptr;
         numElements = 0;
@@ -43,91 +84,168 @@ class FEMinList {
         Purge();
     }
 
-  private:
     bool IsInList(FEMinNode *node) const;
 
-  public:
-    FEMinNode *RemNode(FEMinNode *node);
     FEMinNode *RemHead();
+
     FEMinNode *RemTail();
+
+    FEMinNode *RemNode(FEMinNode *node);
+
     i32 ElementNumber(FEMinNode *node);
 
-    inline FEMinNode *GetHead() const {
+    FEMinNode *GetHead() const {
         return head;
     }
-    inline FEMinNode *GetTail() const {
+
+    FEMinNode *GetTail() const {
         return tail;
     }
-    inline void AddHead(FEMinNode *n) {
+
+    void AddHead(FEMinNode *n) { // Decl: speed/indep/src/feng/FEList.h:133
         AddNode(nullptr, n);
     }
-    inline void AddTail(FEMinNode *n) {
+    void AddTail(FEMinNode *n) { // Decl: speed/indep/src/feng/FEList.h:134
         AddNode(tail, n);
     }
+
     void AddNode(FEMinNode *insertpoint, FEMinNode *node);
+
     FEMinNode *FindNode(u32 ordinalnumber) const;
 
     void Swap(FEMinNode *n, FEMinNode *m);
 
-    inline void Purge() {
+    void Purge() { // Decl: speed/indep/src/feng/FEList.h:141
         FEMinNode *cmn = RemHead();
         while (cmn) {
             delete cmn;
             cmn = RemHead();
         }
     }
-    inline bool IsListEmpty() const {
+
+    bool IsListEmpty() const {
         return numElements == 0;
     }
-    inline u32 GetNumElements() const {
+
+    u32 GetNumElements() const {
         return numElements;
     }
 
     void Sort(bool (*CheckFlip)(FEMinNode *, FEMinNode *));
-
-  private:
-    unsigned int numElements; // offset 0x0, size 0x4
-
-  protected:
-    FEMinNode *head; // offset 0x4, size 0x4
-    FEMinNode *tail; // offset 0x8, size 0x4
-};
-
-// total size: 0x14
-class FENode : public FEMinNode {
-  public:
-    char *name;            // offset 0xC, size 0x4
-    unsigned int nameHash; // offset 0x10, size 0x4
-
-    FENode();
-    ~FENode() override;
-    bool SetName(const char *theName);
-
-    inline const char *GetName() const {
-        return name;
-    }
-    inline const unsigned int GetNameHash() const {
-        return nameHash;
-    }
-    inline FENode *GetNext() const {
-        return static_cast<FENode *>(FEMinNode::GetNext());
-    }
-    inline FENode *GetPrev() const {
-        return static_cast<FENode *>(FEMinNode::GetPrev());
-    }
 };
 
 // total size: 0x10
+// Decl: speed/indep/src/feng/FEList.h:165
 class FEList : public FEMinList {
   public:
-    inline FENode *GetHead() const {
+    FEList() {} // Decl: speed/indep/src/feng/FEList.h:167
+    ~FEList() override {}
+
+    FENode *FindNode(u32 ordinalnumber) const {}
+
+    FENode *FindNode(const char *name, FENode *node) const;
+
+    FENode *FindNode(const char *name) const;
+
+    void SortAlpha();
+
+    FENode *GetHead() const {
         return static_cast<FENode *>(FEMinList::GetHead());
     }
-    inline FENode *RemNode(FEMinNode *n) {
+
+    FENode *GetTail() const {}
+
+    FENode *RemHead() {} // Decl: speed/indep/src/feng/FEList.h:178
+
+    FENode *RemTail() {} // Decl: speed/indep/src/feng/FEList.h:179
+
+    FENode *RemNode(FEMinNode *n) { // Decl: speed/indep/src/feng/FEList.h:180
         return static_cast<FENode *>(FEMinList::RemNode(n));
     }
-    FENode *FindNode(const char *pName, FENode *node) const;
-    FENode *FindNode(const char *pName) const;
+};
+
+class FEHashNode;
+
+// total size: 0x10
+// Decl: speed/indep/src/feng/FEList.h:191
+class FEHashNodePtr : public FEMinNode {
+  private:
+    FEHashNode *NodePtr; // offset 0xC, size 0x4, Decl: speed/indep/src/feng/FEList.h:193
+  public:
+    ~FEHashNodePtr() override {}
+    FEHashNodePtr(FEHashNode *PointTo) {} // Decl: speed/indep/src/feng/FEList.h:196
+    FEHashNode *GetNodePtr() {}           // Decl: speed/indep/src/feng/FEList.h:197
+};
+
+// total size: 0x18
+// Decl: speed/indep/src/feng/FEList.h:203
+class FEHashNode : public FEMinNode {
+  private:
+    char *Name; // offset 0xC, size 0x4, Decl: speed/indep/src/feng/FEList.h:205
+
+    u32 Hash;             // offset 0x10, size 0x4, Decl: speed/indep/src/feng/FEList.h:207
+    FEHashNodePtr *myPtr; // offset 0x14, size 0x4, Decl: speed/indep/src/feng/FEList.h:208
+
+  public:
+    FEHashNode();
+
+    FEHashNode(FEHashNode &hashnode);
+
+    ~FEHashNode() override;
+
+    bool SetName(const char *newName);
+
+    char *const GetName() const {
+        return Name;
+    }
+
+    FEHashNode *GetNext() const {}
+
+    FEHashNode *GetPrev() const {}
+};
+
+// total size: 0x1C
+// Decl: speed/indep/src/feng/FEList.h:229
+class FEHashList {
+  private:
+    i32 TableSize;        // offset 0x0, size 0x4, Decl: speed/indep/src/feng/FEList.h:231
+    FEMinList *HashTable; // offset 0x4, size 0x4, Decl: speed/indep/src/feng/FEList.h:232
+    FEMinList NodeList;   // offset 0x8, size 0x10, Decl: speed/indep/src/feng/FEList.h:233
+
+  public:
+    FEHashList();
+
+    FEHashList(u32 NewTableSize);
+
+    void AddHashEntry(FEHashNode *n);
+
+    void RemHashEntry(FEHashNode *n);
+
+    virtual ~FEHashList();
+
+    void SetTableSize(i32 NewTableSize);
+
+    i32 GetTableSize() const {}
+
+    void Purge();
+
+    void AddHead(FEHashNode *n);
+
+    void AddTail(FEHashNode *n);
+
+    void AddNode(FEHashNode *insertPoint, FEHashNode *n);
+
+    void RemNode(FEHashNode *n);
+
+    FEHashNode *Find(const char *FindName);
+
+    void Rename(FEHashNode *n, const char *NewName);
+
+    u32 GetNumElements() const {}
+
+    FEHashNode *GetHead() const {}
+
+    FEHashNode *GetTail() const {}
 };
 
 u32 FEHashUpper(const char *String);

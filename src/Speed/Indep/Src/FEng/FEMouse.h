@@ -1,45 +1,59 @@
-#ifndef FENG_FEMOUSE_H
-#define FENG_FEMOUSE_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef FEMOUSE_H_
+#define FEMOUSE_H_
 
 #include "types.h"
 
+// File: speed/indep/src/feng/FEMouse.h
 // total size: 0x8
+// Decl: speed/indep/src/feng/FEMouse.h:26
 struct FEMouseInfo {
-    short XPos;              // offset 0x0, size 0x2
-    short YPos;              // offset 0x2, size 0x2
-    short WheelDelta;        // offset 0x4, size 0x2
-    unsigned short ButtonMask; // offset 0x6, size 0x2
+    i16 XPos;       // offset 0x0, size 0x2, Decl: speed/indep/src/feng/FEMouse.h:27
+    i16 YPos;       // offset 0x2, size 0x2, Decl: speed/indep/src/feng/FEMouse.h:27
+    i16 WheelDelta; // offset 0x4, size 0x2, Decl: speed/indep/src/feng/FEMouse.h:28
+    u16 ButtonMask; // offset 0x6, size 0x2, Decl: speed/indep/src/feng/FEMouse.h:29
 };
 
 // total size: 0x24
-struct FEMouse {
-    int XPos;                  // offset 0x0, size 0x4
-    int YPos;                  // offset 0x4, size 0x4
-    int WheelDelta;            // offset 0x8, size 0x4
-    unsigned short LastMask;   // offset 0xC, size 0x2
-    unsigned short CurMask;    // offset 0xE, size 0x2
-    unsigned long HeldCount[3]; // offset 0x10, size 0xC
-    bool bDragging;            // offset 0x1C, size 0x1
-    bool bMoved;               // offset 0x20, size 0x1
+// Decl: speed/indep/src/feng/FEMouse.h:34
+class FEMouse {
+  private:
+    i32 XPos, YPos, WheelDelta; // offset 0x0, size 0x4, Decl: speed/indep/src/feng/FEMouse.h:36
+    u16 LastMask, CurMask;      // offset 0xC, size 0x2, Decl: speed/indep/src/feng/FEMouse.h:37
 
-    FEMouse();
+    u32 HeldCount[3]; // offset 0x10, size 0xC, Decl: speed/indep/src/feng/FEMouse.h:39
+    bool bDragging;   // offset 0x1C, size 0x1, Decl: speed/indep/src/feng/FEMouse.h:40
+    bool bMoved;      // offset 0x20, size 0x1, Decl: speed/indep/src/feng/FEMouse.h:41
 
-    void Reset();
-    void Update(FEMouseInfo& Info, unsigned long tDelta);
-    bool WasPressed(unsigned short Mask);
-    bool WasHeld(unsigned short Mask);
-    bool IsDown(unsigned short Mask);
-    unsigned long HeldFor(unsigned short Mask);
-    bool WasReleased(unsigned short Mask);
-    void DecrementHold(unsigned short Mask, unsigned long Amount);
+  public:
+    FEMouse(); // Decl: speed/indep/src/feng/FEMouse.h:44
 
-    inline int GetXPos() const { return XPos; }
-    inline int GetYPos() const { return YPos; }
-    inline bool MouseMoved() const { return bMoved; }
+    void Reset(); // Decl: speed/indep/src/feng/FEMouse.h:46
+
+    void Update(FEMouseInfo &Info, u32 tDelta);
+
+    i32 GetXPos() const {
+        return XPos;
+    }
+
+    i32 GetYPos() const {
+        return YPos;
+    }
+
+    bool WasPressed(u16 Mask);
+
+    bool WasHeld(u16 Mask);
+
+    bool IsDown(u16 Mask);
+
+    u32 HeldFor(u16 Mask);
+
+    bool WasReleased(u16 Mask);
+
+    bool MouseMoved() const {
+        return bMoved;
+    }
+
+    void DecrementHold(u16 Mask, u32 Amount);
 };
 
 #endif

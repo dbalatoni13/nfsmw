@@ -1,9 +1,5 @@
-#ifndef INTERFACES_IFENGHUD_H
-#define INTERFACES_IFENGHUD_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef __IFENGHUD_H
+#define __IFENGHUD_H
 
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Libs/Support/Utility/UCrc.h"
@@ -134,15 +130,6 @@ class ITurbometer : public UTL::COM::IUnknown {
 
   public:
     virtual void SetInductionPsi(float psi);
-};
-
-enum eRaceCountdownNumber {
-    RACE_COUNTDOWN_NUMBER_NONE = -1,
-    RACE_COUNTDOWN_NUMBER_GO = 0,
-    RACE_COUNTDOWN_NUMBER_1 = 1,
-    RACE_COUNTDOWN_NUMBER_2 = 2,
-    RACE_COUNTDOWN_NUMBER_3 = 3,
-    RACE_COUNTDOWN_NUMBER_4 = 4,
 };
 
 class ICountdown : public UTL::COM::IUnknown {
@@ -344,6 +331,36 @@ class IAutoSaveIcon : public UTL::COM::IUnknown {
   public:
     virtual void RequestAutoSaveIcon();
     virtual bool IsAutoSaveIconShowing();
+};
+
+class IHeatMeter : public UTL::COM::IUnknown {
+  public:
+    static HINTERFACE _IHandle() {
+        return (HINTERFACE)_IHandle;
+    }
+
+    IHeatMeter(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+
+  protected:
+    virtual ~IHeatMeter() {}
+
+  public:
+    virtual void SetVehicleHeat(float heat);
+    virtual void SetPursuitHeat(float heat);
+};
+
+class INos : public UTL::COM::IUnknown {
+  public:
+    static HINTERFACE _IHandle() {
+        return (HINTERFACE)_IHandle;
+    }
+
+  protected:
+    virtual ~INos() {}
+    INos(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+
+  public:
+    virtual void SetNos(float nos);
 };
 
 #endif

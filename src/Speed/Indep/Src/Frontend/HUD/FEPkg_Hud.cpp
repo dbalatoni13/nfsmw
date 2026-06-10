@@ -1,5 +1,6 @@
 #include "Speed/Indep/Src/Frontend/HUD/FEPkg_Hud.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEImages.hpp"
 #include "Speed/Indep/Src/Frontend/HUD/FeBustedMeter.hpp"
 #include "Speed/Indep/Src/Frontend/HUD/FeCostToState.hpp"
 #include "Speed/Indep/Src/Frontend/HUD/FeCountdown.hpp"
@@ -31,7 +32,6 @@
 #include "Speed/Indep/Src/FEng/FEList.h"
 #include "Speed/Indep/Src/Frontend/HUD/feMinimap.hpp"
 #include "Speed/Indep/Src/Frontend/MemoryCard/MemoryCard.hpp"
-#include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
 #include "Speed/Indep/Src/Generated/Events/EFadeScreenOff.hpp"
 #include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
 #include "Speed/Indep/Src/Misc/GameFlow.hpp"
@@ -734,8 +734,8 @@ void FEngHud::Update(IPlayer *player, float dT) {
             pInfractions->Update(player);
         }
 
-        if (MemoryCard::s_pThis->m_bAutoSaveRequested) {
-            MemoryCard::s_pThis->m_bHUDLoaded = true;
+        if (MemoryCard::GetInstance()->AutoSaveRequested()) {
+            MemoryCard::GetInstance()->SetHUDLoaded();
         }
     }
 

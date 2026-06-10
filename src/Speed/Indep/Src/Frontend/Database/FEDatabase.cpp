@@ -394,7 +394,7 @@ void CareerSettings::ResumeCareer() {
             GRaceDatabase::Get().SetStartupRace(custom, kRaceContext_Career);
             GRaceDatabase::Get().FreeCustomRace(custom);
             if (bStrCmp(nextRace, "16.1.0") != 0) {
-                MemoryCard::s_pThis->m_bCancelNextAutoSave = true;
+                MemoryCard::GetInstance()->CancelNextAutoSave();
             }
         }
         RaceStarter::StartCareerFreeRoam();
@@ -404,7 +404,7 @@ void CareerSettings::ResumeCareer() {
         GRaceDatabase::Get().SetStartupRace(custom, kRaceContext_Career);
         GRaceDatabase::Get().FreeCustomRace(custom);
         RaceStarter::StartCareerFreeRoam();
-        MemoryCard::s_pThis->m_bCancelNextAutoSave = true;
+        MemoryCard::GetInstance()->CancelNextAutoSave();
     } else {
         FEManager::Get()->SetGarageType(static_cast<eGarageType>(2));
         FEDatabase->ClearGameMode(eFE_GAME_MODE_CAREER_MANAGER);

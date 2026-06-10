@@ -7,24 +7,25 @@
 #include "Speed/Indep/Src/EAXSound/AudioMemBase.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL.hpp"
 
-enum eMAINMAPSTATES {
-    eMM_MAX_MAIN_MIXSTATES = 13,
-    eMM_TRUCK = 12,
-    eMM_HELICOPTER = 11,
-    eMM_TRAIN = 10,
-    eMM_PLANE = 9,
-    eMM_DRIVEBY = 8,
-    eMM_COLLISION = 7,
-    eMM_ENVIRONMENT = 6,
-    eMM_TRAFFIC = 5,
-    eMM_COPCAR = 4,
-    eMM_AIRACECAR = 3,
-    eMM_PLAYERCAR = 2,
-    eMM_MUSIC = 1,
+typedef enum {
     eMM_MAIN = 0,
-};
+    eMM_MUSIC = 1,
+    eMM_PLAYERCAR = 2,
+    eMM_AIRACECAR = 3,
+    eMM_COPCAR = 4,
+    eMM_TRAFFIC = 5,
+    eMM_ENVIRONMENT = 6,
+    eMM_COLLISION = 7,
+    eMM_DRIVEBY = 8,
+    eMM_PLANE = 9,
+    eMM_TRAIN = 10,
+    eMM_HELICOPTER = 11,
+    eMM_TRUCK = 12,
+    eMM_MAX_MAIN_MIXSTATES = 13
+} eMAINMAPSTATES;
 
-struct CSTATE_Base : public AudioMemBase {
+class CSTATE_Base : public AudioMemBase {
+  public:
     friend struct CSTATEMGR_Base;
     struct StateInfo {
         // total size: 0x10

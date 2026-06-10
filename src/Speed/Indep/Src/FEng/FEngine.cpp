@@ -1,9 +1,8 @@
-#include "Speed/Indep/Src/FEng/fengine.h"
+#include "Speed/Indep/Src/FEng/FEngine.h"
 #include "Speed/Indep/Src/FEng/FEMessageResponse.h"
 #include "Speed/Indep/Src/FEng/FEObjectCallback.h"
 #include "Speed/Indep/Src/FEng/FEScript.h"
 #include "Speed/Indep/Src/FEng/FESlotPool.h"
-#include "Speed/Indep/Src/FEng/fengine_full.h"
 #include "Speed/Indep/Src/FEng/FEJoyPad.h"
 #include "Speed/Indep/Src/FEng/FEngStandard.h"
 #include "Speed/Indep/Src/FEng/FEPackageReader.h"
@@ -13,16 +12,20 @@
 #include "Speed/Indep/Src/FEng/FECodeListBox.h"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 
-void FEngGetCenter(FEObject *pObj, float &cx, float &cy);
-
 extern "C" int printf(const char *, ...);
 
-// Callback structs used by both FEngine and FEPackage.
-// Defined here because FEngine.cpp comes before FEPackage.cpp in the jumbo build.
+// total size: 0x4
+// Decl: speed/indep/src/feng/FEngine.cpp:33
+typedef struct {
+    u8 Index1, Index2; // offset 0x0, size 0x1, Decl: speed/indep/src/feng/FEngine.cpp:34
+    u16 Dir;           // offset 0x2, size 0x2, Decl: speed/indep/src/feng/FEngine.cpp:35
+} PadDirImpulse;
 
 // total size: 0x4
-struct PackageInitStateCB : public FEObjectCallback {
-    bool Callback(FEObject *pObj) override;
+// Decl: speed/indep/src/feng/FEngine.cpp:674
+class FEngSetDirtyFlagsCallback : public FEObjectCallback {
+  private:
+    bool Callback(struct FEObject *pObj) override {} // Decl: speed/indep/src/feng/FEngine.cpp:675
 };
 
 // total size: 0xC
@@ -221,7 +224,7 @@ FEPackage *FEngine::FindLibraryPackage(unsigned long NameHash) const {
 }
 
 void FEngine::QueueMessage(unsigned long MsgID, FEObject *pFrom, FEPackage *pFromPackage, FEObject *pTo, unsigned long ControlMask) {
-    FEMessageNode *pNode = FENG_NEW FEMessageNode();
+    FEMessageNode *pNode = FNEW FEMessageNode();
     pNode->MsgID = MsgID;
     pNode->pMsgFrom = pFrom;
     pNode->pFromPackage = pFromPackage;
@@ -426,7 +429,7 @@ FEPackage *FEngine::PushPackage(const char *pPackageName, const unsigned char Le
 
 void FEngine::QueuePackageUserTransfer(FEPackage *pFrom, bool bToChild, unsigned long ControlMask) {
     printf("If you get this, come see Gary or Lolley!\n");
-    FEPackageCommand *pCom = FENG_NEW FEPackageCommand();
+    FEPackageCommand *pCom = FNEW FEPackageCommand();
     pCom->iCommand = 0;
     pCom->uControlMask = 0;
     pCom->pPackage = pFrom;
@@ -634,7 +637,7 @@ void FEngine::RenderObject(FEObject *pObj, FEMatrix4 &mParent, unsigned short Re
 void FEngine::QueuePackageCommand(long command, unsigned long ControlMask, const char *pPackageName) {
     FEPackageCommand *pCom = nullptr;
     FEPackage *pPackageWithControl = FindPackageWithControl();
-    FEPackageCommand *Node = FENG_NEW FEPackageCommand();
+    FEPackageCommand *Node = FNEW FEPackageCommand();
     Node->iCommand = 0;
     Node->uControlMask = 0;
     Node->pPackage = pPackageWithControl;

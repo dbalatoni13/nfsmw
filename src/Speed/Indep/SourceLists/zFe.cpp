@@ -104,13 +104,10 @@
 
 #include "Speed/Indep/Src/Frontend/MemoryCard/MemoryCard.cpp"
 
-// #include "Speed/Indep/Src/Frontend/MemoryCard/MemoryCardCallbacks.cpp"
+#include "Speed/Indep/Src/Frontend/MemoryCard/MemoryCardCallbacks.cpp"
 
-// #include "Speed/Indep/Src/Frontend/MenuScreens/MemCard/uiMemcard.cpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/MemCard/uiMemcard.cpp"
 
-// #include "Speed/Indep/Src/Frontend/MenuScreens/MemCard/uiMemcardBase.cpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/MemCard/uiMemcardBase.cpp"
 
-// #include "Speed/Indep/Src/Frontend/MenuScreens/MemCard/uiMemcardInterface.cpp"
-
-//.
-// #include "Speed/Indep/Src/Frontend/MenuScreens/Common/feWidget.cpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/MemCard/uiMemcardInterface.cpp"

@@ -3,6 +3,15 @@
 #include "Speed/Indep/Src/FEng/FEPackage.h"
 #include "Speed/Indep/Src/Frontend/FEPackageManager.hpp"
 
+// File: speed/indep/src/frontend/fenginterfaces/FEngInterfaceFEButtons.cpp
+// total size: 0xC
+// Decl: speed/indep/src/frontend/fenginterfaces/FEngInterfaceFEButtons.cpp:93
+struct ScreenButtonDatum {
+    uint32 ScreenHash; // offset 0x0, size 0x4, Decl: speed/indep/src/frontend/fenginterfaces/FEngInterfaceFEButtons.cpp:94
+    uint8 LastButton;  // offset 0x4, size 0x1, Decl: speed/indep/src/frontend/fenginterfaces/FEngInterfaceFEButtons.cpp:95
+    uint32 GameMode;   // offset 0x8, size 0x4, Decl: speed/indep/src/frontend/fenginterfaces/FEngInterfaceFEButtons.cpp:96
+};
+
 void FEngSetCurrentButton(const char *pkg_name, uint32 hash) {
     FEPackage *pkg = FEPackageManager::Get()->FindPackage(pkg_name);
     if (pkg != nullptr) {

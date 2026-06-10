@@ -184,7 +184,7 @@ void FECodeListBox::Initialize(unsigned long ulNumVisCols, unsigned long ulNumVi
     mulNumVisibleColumns = ulNumVisCols;
     mulNumVisibleRows = ulNumVisRows;
     long ulNumCells = ulNumVisRows * ulNumVisCols;
-    mpstCells = FENG_NEW FEListBoxCell[ulNumCells];
+    mpstCells = FNEW FEListBoxCell[ulNumCells];
     FEListBox::InitializeCell(mpstCells, mulNumVisibleRows * mulNumVisibleColumns);
     SetTotalNumColumns(mulNumVisibleColumns);
     SetTotalNumRows(mulNumVisibleRows);
@@ -343,7 +343,7 @@ cleanup_ptrs:
 }
 
 FEObject *FECodeListBox::Clone(bool bReference) {
-    return FENG_NEW FECodeListBox(*this, bReference);
+    return FNEW FECodeListBox(*this, bReference);
 }
 
 void FECodeListBox::SetTotalNumColumns(unsigned long ulNumColumns) {

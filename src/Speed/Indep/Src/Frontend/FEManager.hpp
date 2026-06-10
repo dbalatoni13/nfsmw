@@ -1,23 +1,21 @@
-#ifndef FRONTEND_FEMANAGER_H
-#define FRONTEND_FEMANAGER_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef __FEMANAGER_HPP
+#define __FEMANAGER_HPP
 
 #include "Speed/Indep/Src/Misc/ResourceLoader.hpp"
 
-// TODO move?
-enum eGarageType {
+// File: speed/indep/src/frontend/FeManager.hpp
+// Decl: speed/indep/src/frontend/FeManager.hpp:25
+typedef enum {
     GARAGETYPE_NONE = 0,
     GARAGETYPE_MAIN_FE = 1,
     GARAGETYPE_CAREER_SAFEHOUSE = 2,
     GARAGETYPE_CUSTOMIZATION_SHOP = 3,
     GARAGETYPE_CUSTOMIZATION_SHOP_BACKROOM = 4,
-    GARAGETYPE_CAR_LOT = 5,
-};
+    GARAGETYPE_CAR_LOT = 5
+} eGarageType;
 
 // total size: 0x4C
+// Decl: speed/indep/src/frontend/FeManager.hpp:61
 class FEManager {
   public:
     static void InitInput();
@@ -26,14 +24,13 @@ class FEManager {
 
     static void Destroy();
 
-    static FEManager *Get();
+    static FEManager *Get(); // Decl: speed/indep/src/frontend/FeManager.hpp:122
 
     void SetFirstScreen(const char *pPackageName, int arg, unsigned int controlMask) {
         mFirstScreen = pPackageName;
         mFirstScreenArg = arg;
         mFirstScreenMask = controlMask;
     }
-
     void RequestBootFlow() {
         mFirstBoot = true;
     }
@@ -42,7 +39,7 @@ class FEManager {
 
     eGarageType GetGarageType();
 
-    eGarageType GetPreviousGarageType() {
+    eGarageType GetPreviousGarageType() { // Decl: speed/indep/src/frontend/FeManager.hpp:133
         return mPreviousGarageType;
     }
 
@@ -74,7 +71,7 @@ class FEManager {
     int GetEATraxDelay();
 #endif
 
-    void SetEATraxFirstButton(bool onOff) {
+    void SetEATraxFirstButton(bool onOff) { // Decl: speed/indep/src/frontend/FeManager.hpp:148
         mEATraxFirstButton = onOff;
     }
 
@@ -88,7 +85,7 @@ class FEManager {
 
     static void RequestUnPauseSimulation(const char *reason);
 
-    static inline bool IsPaused() {
+    static bool IsPaused() {
         return mInstance->mPauseRequest > 0;
     }
 
@@ -96,9 +93,9 @@ class FEManager {
         return mPauseRequest;
     }
 
-#ifdef EA_BUILD_A124
-    // static  const char *GetPauseReason(int idx) {}
-#endif
+    static const char *GetPauseReason(int idx) {
+        return mPauseReason[idx];
+    }
 
     void WantControllerError(int port);
 
@@ -131,29 +128,32 @@ class FEManager {
 
     void ExitOnlineGameplayBasedOnConnection();
 
-    bool IsFirstBoot() {
+    bool IsFirstBoot() { // Decl: speed/indep/src/frontend/FeManager.hpp:151
         return mFirstBoot;
     }
 
-  private:
     FEManager();
+    ~FEManager() {} // Decl: speed/indep/src/frontend/FeManager.hpp:252
 
-    static FEManager *mInstance;        // size: 0x4
-    static int mPauseRequest;           // size: 0x4
-    static const char *mPauseReason[8]; // size: 0x20
+  private:
+    static struct FEManager *mInstance; // size: 0x4, address: 0x8041B970, Decl: speed/indep/src/frontend/FEManager.cpp:109
+    static int mPauseRequest;           // size: 0x4, address: 0x8041B974
+    static const char *mPauseReason[8]; // size: 0x20, address: 0x8041B978
 
-    bool bSuppressControllerError;   // offset 0x0, size 0x1
-    bool bAllowControllerError;      // offset 0x4, size 0x1
-    bool bWantControllerError[8];    // offset 0x8, size 0x8
-    const char *mFirstScreen;        // offset 0x28, size 0x4
-    int mFirstScreenArg;             // offset 0x2C, size 0x4
-    unsigned int mFirstScreenMask;   // offset 0x30, size 0x4
-    eGarageType mGarageType;         // offset 0x34, size 0x4
-    eGarageType mPreviousGarageType; // offset 0x38, size 0x4
+    bool bSuppressControllerError; // offset 0x0, size 0x1
+    bool bAllowControllerError;    // offset 0x4, size 0x1
+    bool bWantControllerError[8];  // offset 0x8, size 0x8
+    const char *mFirstScreen;      // offset 0x28, size 0x4
+    int mFirstScreenArg;           // offset 0x2C, size 0x4
+#ifndef EA_BUILD_A124
+    unsigned int mFirstScreenMask; // offset 0x30, size 0x4
+#endif
+    eGarageType mGarageType;         // offset 0x34, size 0x4, Decl: speed/indep/src/frontend/FeManager.hpp:265
+    eGarageType mPreviousGarageType; // offset 0x38, size 0x4, Decl: speed/indep/src/frontend/FeManager.hpp:266
     ResourceFile *mGarageBackground; // offset 0x3C, size 0x4
     bool mFirstBoot;                 // offset 0x40, size 0x1
-    int mEATraxDelay;                // offset 0x44, size 0x4
-    bool mEATraxFirstButton;         // offset 0x48, size 0x1
+    int mEATraxDelay;                // offset 0x44, size 0x4, Decl: speed/indep/src/frontend/FeManager.hpp:268
+    bool mEATraxFirstButton;         // offset 0x48, size 0x1, Decl: speed/indep/src/frontend/FeManager.hpp:269
 };
 
 int GetPortsPlayer(int port);

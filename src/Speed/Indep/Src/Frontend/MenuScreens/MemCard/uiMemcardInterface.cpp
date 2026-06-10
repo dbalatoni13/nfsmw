@@ -1,27 +1,9 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/MemCard/uiMemcardInterface.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
+#include "Speed/Indep/Src/Frontend/MemoryCard/MemoryCard.hpp"
+#include "Speed/Indep/Src/Misc/GameFlow.hpp"
 
 MemoryCardSetup gMemcardSetup;
-
-void MemoryCardSetup::Clear() {
-    mOp = 0;
-    mMemScreen = nullptr;
-    mToScreen = nullptr;
-    mFromScreen = nullptr;
-    mTermFunc = nullptr;
-    mTermFuncParam = nullptr;
-    mLastMessage = 0;
-    mSuccessMsg = 0;
-    mFailedMsg = 0;
-    mInBootFlow = false;
-    mPreviousCommand = 0;
-    mPreviousPrompt = 0;
-}
-
-unsigned int MemcardGetCurrentUIOperation() {
-    return gMemcardSetup.mOp & 0xf0;
-}
-
-// ===== MemcardEnter / MemcardExit =====
 
 void MemcardEnter(const char *from, const char *to, uint32 op, MemCardOpType termFunc, void *termParam, uint32 successMsg, uint32 failedMsg) {
     gMemcardSetup.mOp = op;
@@ -54,7 +36,7 @@ void MemcardEnter(const char *from, const char *to, uint32 op, MemCardOpType ter
 
 void MemcardExit(unsigned int msg) {
     gMemcardSetup.mLastMessage = msg;
-    if (!MemoryCard::GetInstance()->m_bInitialized) {
+    if (!MemoryCard::GetInstance()->IsMemcardScreenInitialized()) {
         cFEng *feng = cFEng::Get();
         unsigned long hash = FEHashUpper("EXIT_COMPLETE");
         feng->QueueGameMessage(hash, gMemcardSetup.mMemScreen, 0xff);
@@ -63,6 +45,10 @@ void MemcardExit(unsigned int msg) {
         unsigned long hash = FEHashUpper("LEAVE_SCREEN");
         feng->QueuePackageMessage(hash, gMemcardSetup.mMemScreen, nullptr);
     }
-    MemoryCard::GetInstance()->m_bInitialized = false;
+    MemoryCard::GetInstance()->SetMemcardScreenInitialized(false);
     MemoryCard::GetInstance()->SetMemcardScreenExiting(true);
+}
+
+uint32 MemcardGetCurrentUIOperation() {
+    return gMemcardSetup.mOp & 0xf0;
 }

@@ -1,13 +1,13 @@
-#ifndef FENG_FENGSTANDARD_H
-#define FENG_FENGSTANDARD_H
+#ifndef FENGSTANDARD_H_
+#define FENGSTANDARD_H_
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#include <types.h>
 
-#include <cstddef>
+#define FEngAssert(x) bAssert(x) // :40
 
+void *FEngMalloc(size_t size);
 void *FEngMalloc(size_t size, const char *pFilename, int Line);
+void FEngFree(void *ptr);
 void FEngMemCpy(void *pDest, const void *pSrc, int Length);
 void FEngMemSet(void *pDest, int Value, int Length);
 void FEngStrCpy(char *pDest, const char *pSrc);
@@ -29,6 +29,7 @@ inline void *operator new[](size_t size, const char *file, int line, DummyFEngNe
     return FEngMalloc(size, file, line);
 }
 
-#define FENG_NEW new (nullptr, 0, static_cast<DummyFEngNewType *>(nullptr))
+#define FNEW new (__FILE__, __LINE__, (DummyFEngNewType *)NULL) // :88
+#define FDELETE delete                                          // :89
 
 #endif

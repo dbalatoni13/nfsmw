@@ -1,42 +1,54 @@
-#ifndef FRONTEND_FECARLOADER_H
-#define FRONTEND_FECARLOADER_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef FECARLOADER_H
+#define FECARLOADER_H
 
 #include <types.h>
 #include "Speed/Indep/Src/World/CarInfo.hpp"
 
-struct GarageCarLoader {
-    GarageCarLoader();
-    ~GarageCarLoader();
-    void Init();
-    void CleanUp();
-    void CancelCarLoad();
-    void LoadRideInfo(RideInfo *ride_info);
-    RideInfo *GetLoadingRideInfo();
-    RideInfo *GetCurrentRideInfo();
-    void Switch();
-    void Update();
+// total size: 0x638
+// Decl: speed/indep/src/frontend/FECarLoader.hpp:9
+class GarageCarLoader {
+  private:
+    void Init(); // Decl: speed/indep/src/frontend/FECarLoader.hpp:15
 
-    bool IsThereALoadingRideInfo() {
+  public:
+    bool IsThereALoadingRideInfo() { // Decl: speed/indep/src/frontend/FECarLoader.hpp:17
         return IsLoadingRide;
     }
-    bool IsThereACurrentRideInfo() {
+
+    bool IsThereACurrentRideInfo() { // Decl: speed/indep/src/frontend/FECarLoader.hpp:18
         return IsCurrentRide;
     }
-    bool HasSwitched() {
+
+    RideInfo *GetLoadingRideInfo(); // Decl: speed/indep/src/frontend/FECarLoader.hpp:20
+
+    RideInfo *GetCurrentRideInfo(); // Decl: speed/indep/src/frontend/FECarLoader.hpp:21
+
+    bool HasSwitched() { // Decl: speed/indep/src/frontend/FECarLoader.hpp:25
         return IsDifferent;
     }
 
-    RideInfo LoadingRideInfo;              // offset 0x0, size 0x310
-    RideInfo CurrentRideInfo;              // offset 0x310, size 0x310
-    bool IsLoadingRide;                    // offset 0x620, size 0x1
-    bool IsCurrentRide;                    // offset 0x624, size 0x1
-    int LoadingCar;                        // offset 0x628, size 0x4
-    int CurrentCar;                        // offset 0x62C, size 0x4
-    bool IsDifferent;                      // offset 0x630, size 0x1
+    void Switch(); // Decl: speed/indep/src/frontend/FECarLoader.hpp:26
+
+    void CancelCarLoad(); // Decl: speed/indep/src/frontend/FECarLoader.hpp:28
+
+    void LoadRideInfo(RideInfo *ride_info); // Decl: speed/indep/src/frontend/FECarLoader.hpp:30
+
+    void Update(); // Decl: speed/indep/src/frontend/FECarLoader.hpp:32
+
+    GarageCarLoader(); // Decl: speed/indep/src/frontend/FECarLoader.hpp:35
+
+    ~GarageCarLoader(); // Decl: speed/indep/src/frontend/FECarLoader.hpp:36
+
+  private:
+    void CleanUp(); // Decl: speed/indep/src/frontend/FECarLoader.hpp:40
+
+    RideInfo LoadingRideInfo;              // offset 0x0, size 0x310, Decl: speed/indep/src/frontend/FECarLoader.hpp:43
+    RideInfo CurrentRideInfo;              // offset 0x310, size 0x310, Decl: speed/indep/src/frontend/FECarLoader.hpp:44
+    bool IsLoadingRide;                    // offset 0x620, size 0x1, Decl: speed/indep/src/frontend/FECarLoader.hpp:48
+    bool IsCurrentRide;                    // offset 0x624, size 0x1, Decl: speed/indep/src/frontend/FECarLoader.hpp:49
+    CarLoaderHandle LoadingCar;            // offset 0x628, size 0x4, Decl: speed/indep/src/frontend/FECarLoader.hpp:51
+    CarLoaderHandle CurrentCar;            // offset 0x62C, size 0x4, Decl: speed/indep/src/frontend/FECarLoader.hpp:52
+    bool IsDifferent;                      // offset 0x630, size 0x1, Decl: speed/indep/src/frontend/FECarLoader.hpp:54
     bool UseFirstDummyTexturesForNextLoad; // offset 0x634, size 0x1
 };
 

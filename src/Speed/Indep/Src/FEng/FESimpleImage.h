@@ -1,19 +1,18 @@
-#ifndef FENG_FESIMPLEIMAGE_H
-#define FENG_FESIMPLEIMAGE_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef FESIMPLEIMAGE_H_
+#define FESIMPLEIMAGE_H_
 
 #include "FEObject.h"
 
+// File: speed/indep/src/feng/FESimpleImage.h
 // total size: 0x5C
-struct FESimpleImage : public FEObject {
-    inline FESimpleImage() {}
-    inline FESimpleImage(const FESimpleImage& Object, bool bReference)
-        : FEObject(Object, bReference) {}
-    ~FESimpleImage() override;
-    FEObject* Clone(bool bReference) override;
+// Decl: speed/indep/src/feng/FESimpleImage.h:24
+class FESimpleImage : public FEObject {
+  public:
+    FESimpleImage() {} // Decl: speed/indep/src/feng/FESimpleImage.h:26
+    FESimpleImage(const FESimpleImage &Object, bool bReference) : FEObject(Object, bReference) {}
+    ~FESimpleImage() override {} // Decl: speed/indep/src/feng/FESimpleImage.h:28
+
+    FEObject *Clone(bool bReference) override {} // Decl: speed/indep/src/feng/FESimpleImage.h:30
 };
 
 #endif

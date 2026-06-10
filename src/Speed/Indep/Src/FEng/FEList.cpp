@@ -69,7 +69,7 @@ bool FENode::SetName(const char *theName) {
     if (theName) {
         Len = FEngStrLen(theName);
 
-        name = FENG_NEW char[Len + 1];
+        name = FNEW char[Len + 1];
         if (name) {
             retval = true;
             FEngStrCpy(name, theName);
@@ -120,8 +120,8 @@ FEMinNode *FEMinList::RemNode(FEMinNode *node) {
     if (node->next) {
         node->next->prev = node->prev;
     }
-    node->next = reinterpret_cast<FEMinNode *>(0xABADCAFE);
-    node->prev = reinterpret_cast<FEMinNode *>(0xABADCAFE);
+    node->next = reinterpret_cast<FEMinNode *>(LIST_MAGIC);
+    node->prev = reinterpret_cast<FEMinNode *>(LIST_MAGIC);
     numElements--;
     return node;
 }

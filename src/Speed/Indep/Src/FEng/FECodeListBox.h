@@ -1,17 +1,10 @@
-#ifndef FENG_FECODELISTBOX_H
-#define FENG_FECODELISTBOX_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef FECODELISTBOX_H_
+#define FECODELISTBOX_H_
 
 #include <types.h>
-#include "FEObject.h"
-#include "FEListBox.h"
-#include "FETypes.h"
+#include "Speed/Indep/Src/FEng/FEListBox.h"
 
 class FEGameInterface;
-class FEPoint;
 
 inline int GetValidIndex(int lIndex, int lRange) {
     if (lIndex >= 0) {
@@ -59,107 +52,210 @@ inline int GetRealValue(int i, int lNumTotal, int lCurrentVirtual, int lNumVisib
 }
 
 // total size: 0xC8
+// Decl: speed/indep/src/feng/FECodeListBox.h:96
 class FECodeListBox : public FEObject {
+  private:
+    FEGameInterface *mpobRenderer; // offset 0x5C, size 0x4, Decl: speed/indep/src/feng/FECodeListBox.h:98
+
+    u32 mulNumVisibleColumns; // offset 0x60, size 0x4, Decl: speed/indep/src/feng/FECodeListBox.h:100
+    u32 mulNumVisibleRows;    // offset 0x64, size 0x4, Decl: speed/indep/src/feng/FECodeListBox.h:101
+
+    u32 mulFlags;                // offset 0x68, size 0x4, Decl: speed/indep/src/feng/FECodeListBox.h:103
+    u32 mulNumTotalColumns;      // offset 0x6C, size 0x4, Decl: speed/indep/src/feng/FECodeListBox.h:104
+    u32 mulNumTotalRows;         // offset 0x70, size 0x4, Decl: speed/indep/src/feng/FECodeListBox.h:105
+    u32 mulCurrentVirtualColumn; // offset 0x74, size 0x4, Decl: speed/indep/src/feng/FECodeListBox.h:106
+    u32 mulCurrentVirtualRow;    // offset 0x78, size 0x4, Decl: speed/indep/src/feng/FECodeListBox.h:107
+    u32 mulTargetColumn;         // offset 0x7C, size 0x4, Decl: speed/indep/src/feng/FECodeListBox.h:108
+    u32 mulTargetRow;            // offset 0x80, size 0x4, Decl: speed/indep/src/feng/FECodeListBox.h:109
+    FEPoint mstViewDimensions;   // offset 0x84, size 0x8, Decl: speed/indep/src/feng/FECodeListBox.h:110
+
+    FEListBoxCell *mpstCells; // offset 0x8C, size 0x4, Decl: speed/indep/src/feng/FECodeListBox.h:112
+
+    u32 mulNumStrings;    // offset 0x90, size 0x4, Decl: speed/indep/src/feng/FECodeListBox.h:115
+    u32 mulStringSize;    // offset 0x94, size 0x4, Decl: speed/indep/src/feng/FECodeListBox.h:116
+    u32 mulCurrentString; // offset 0x98, size 0x4, Decl: speed/indep/src/feng/FECodeListBox.h:117
+    i16 **mppsStringData; // offset 0x9C, size 0x4, Decl: speed/indep/src/feng/FECodeListBox.h:118
+    i16 *mpsStrings;      // offset 0xA0, size 0x4, Decl: speed/indep/src/feng/FECodeListBox.h:119
+
+    float mfCurrentAlpha; // offset 0xA4, size 0x4, Decl: speed/indep/src/feng/FECodeListBox.h:121
+    float mfAlphaDelta;   // offset 0xA8, size 0x4, Decl: speed/indep/src/feng/FECodeListBox.h:122
+
+    FEColor mstSelectionColor; // offset 0xAC, size 0x10, Decl: speed/indep/src/feng/FECodeListBox.h:124
+
+    void *mpvCallbackData; // offset 0xC4, size 0x4, Decl: speed/indep/src/feng/FECodeListBox.h:128
+
   public:
-    static void (*mpDefaultCallback)(FECodeListBox *);
+    static void (*mpDefaultCallback)(FECodeListBox *);            // size: 0x4, address: 0x8041D074
+    void (*mpSelectionCallback)(FECodeListBox *);                 // offset 0xBC, size 0x4
+    void (*mpSetCellCallback)(void *, FECodeListBox *, u32, u32); // offset 0xC0, size 0x4
 
     FECodeListBox();
     FECodeListBox(const FECodeListBox &Src, bool bReference);
     ~FECodeListBox() override;
 
-    void CopyProperties(const FECodeListBox &Src);
-    void Initialize(u32 ulNumColumns, u32 ulNumRows);
-    FEObject *Clone(bool bReference);
-    void FillAllCells();
-    void SetTotalNumColumns(u32 ulNumTotalColumns);
-    void SetTotalNumRows(u32 ulNumTotalRows);
-    void AllocateStrings(u32 ulNumStrings, u32 ulStringSize);
-    void ScrollSelection(long lColumnNum, long lRowNum);
-    void Update(float fNumTicks);
-    static void DefaultSelectCallback(FECodeListBox *pList);
-    short *AllocateString();
-    void DeallocateString(short *psString);
-    long GetRealColumn(long lColumn) const;
-    long GetRealRow(long lRow) const;
-    bool CheckMovement(long lTargetColumn, long lTargetRow, long lOldColumn, long lOldRow, long lFlags);
-    bool MakeMove(long lDirection, u32 &ulVirtual, u32 &ulTarget, u32 ulTotal, u32 ulVisible);
-    bool ScrollSelection(long lDirection, u32 &ulVirtual, u32 &ulTarget, u32 ulTotal, u32 ulVisible, bool bIsColumn);
-    u32 CalculateCurrentFromTarget(u32 ulTarget, u32 ulTotal, u32 ulVisible);
-    void SetCellColor(u32 ulColumn, u32 ulRow, u32 ulColor, u32 ulNumColumns, u32 ulNumRows);
-    void SetCellScale(u32 ulColumn, u32 ulRow, const FEPoint &stScale, u32 ulNumColumns, u32 ulNumRows);
-    void SetCellJustification(u32 ulColumn, u32 ulRow, u32 ulJustification, u32 ulNumColumns, u32 ulNumRows);
+    void Initialize(u32 ulNumVisCols, u32 ulNumVisRows);
 
-    inline u32 GetNumVisibleColumns() const {
+    FEObject *Clone(bool bReference) override;
+
+    void CopyProperties(const FECodeListBox &Object);
+
+    void SetGameInterface(FEGameInterface *pobGameInterface) {} // Decl: speed/indep/src/feng/FECodeListBox.h:144
+
+    void FillAllCells();
+
+    void SetTotalNumColumns(u32 ulNumTotalColumns);
+
+    void SetTotalNumRows(u32 ulNumTotalRows);
+
+    void SetCurrent(u32 ulCurrentColumn, u32 ulCurrentRow);
+
+    void SetCurrentColumn(u32 ulVCurrentColumn);
+
+    void SetCurrentRow(u32 ulVCurrentRow);
+
+    void SetViewDimensions(const FEPoint &stViewDimensions) {}
+
+    u32 GetTotalNumColumns() const {}
+
+    u32 GetTotalNumRows() const {}
+
+    u32 GetNumVisColumns() const {
         return mulNumVisibleColumns;
     }
-    inline u32 GetNumVisibleRows() const {
+
+    u32 GetNumVisRows() const {
         return mulNumVisibleRows;
     }
-    inline u32 GetNumTotalColumns() const {
-        return mulNumTotalColumns;
-    }
-    inline u32 GetNumTotalRows() const {
-        return mulNumTotalRows;
-    }
-    inline u32 GetCurrentVirtualColumn() const {
+
+    u32 GetCurrentColumn() const {
         return mulCurrentVirtualColumn;
     }
-    inline u32 GetCurrentVirtualRow() const {
+
+    u32 GetCurrentRow() const {
         return mulCurrentVirtualRow;
     }
-    inline FEListBoxCell *GetCellData(u32 ulColumn, u32 ulRow) {
-        return &mpstCells[ulRow * mulNumVisibleColumns + ulColumn];
+
+    const FEPoint &GetViewDimensions() const {
+        return mstViewDimensions;
     }
-    inline FEListBoxCell *GetRealCellData(long lColumnIndex, long lRowIndex) {
-        return &mpstCells[GetRealRow(lRowIndex) * mulNumVisibleColumns + GetRealColumn(lColumnIndex)];
+
+    void SetCellColor(u32 ulStartColumn, u32 ulStartRow, u32 ulColor, u32 ulNumColumns, u32 ulNumRows);
+
+    void SetCellScale(u32 ulStartColumn, u32 ulStartRow, const FEPoint &stScale, u32 ulNumColumns, u32 ulNumRows);
+
+    void SetCellResource(u32 ulStartColumn, u32 ulStartRow, u32 ulResHandle, u32 ulResParam, u32 ulResIndex, u32 ulNumColumns, u32 ulNumRows);
+
+    void SetCellJustification(u32 ulStartColumn, u32 ulStartRow, u32 ulJustification, u32 ulNumColumns, u32 ulNumRows);
+
+    void SetCellType(u32 ulStartColumn, u32 ulStartRow, u32 ulType, u32 ulNumColumns, u32 ulNumRows);
+
+    void SetCellUV(u32 ulColumn, u32 ulRow, const FERect &stUV) {}
+
+    void SetCellString(u32 ulColumn, u32 ulRow, const i16 *psString, u32 ulLabelHash) {}
+
+    void SetCellData(u32 ulStartColumn, u32 ulStartRow, u32 ulColor, const FEPoint &stScale, u32 ulJustification, u32 ulType, u32 ulNumColumns,
+                     u32 ulNumRows) {}
+
+    void SetAllTypeResource(u32 ulType, u32 ulResHandle, u32 ulResParam, u32 ulResIndex);
+
+    void SetAllType(u32 ulType);
+
+    void SetAllColor(u32 ulColor);
+
+    void SetAllScale(const FEPoint &stScale);
+
+    void SetAllJustication(u32 ulJustification);
+
+    const FEListBoxCell *GetCellData(u32 ulColumnIndex, u32 ulRowIndex) const {}
+
+    void AllocateStrings(u32 ulNumStrings, u32 ulStringSize);
+
+    u32 GetNumStrings() const {}
+
+    u32 GetSizeStrings() const {}
+
+    u32 GetFirstVisibleColumn() const {}
+
+    u32 GetFirstVisibleRow() const {}
+
+    u32 GetLastVisibleColumn() const {}
+
+    u32 GetLastVisibleRow() const {}
+
+    bool GetCellInfo(u32 ulColumn, u32 ulRow, FERect &stCellRect, FEListBoxCell &stCellInfo) const;
+
+    bool IsCurrent(u32 ulColumn, u32 ulRow) const;
+
+    void ScrollSelection(i32 lColumnNum, i32 lRowNum);
+
+    bool ScrollSelection(i32 lNumMove, u32 &ulCurrentVirtual, u32 &ulTarget, u32 ulNumTotal, u32 ulNumVis, bool bColumn);
+
+    void Update(float fNumTicks);
+
+    f32 GetAlphaHilite() const {
+        return mfCurrentAlpha;
     }
-    inline void SetSelectionCallback(void (*pCallback)(FECodeListBox *)) {
-        mpSelectionCallback = pCallback;
+
+    void SetFlags(u32 ulFlag, bool bSet) {}
+
+    u32 GetFlags() const {}
+
+    void SetSelectionColor(const FEColor &stColor) {
+        mstSelectionColor = stColor;
     }
-    inline void SetSetCellCallback(void (*pCallback)(void *, FECodeListBox *, u32, u32), void *pData) {
+
+    FEColor &GetSelectionColor() const {
+        return const_cast<FEColor &>(mstSelectionColor);
+    }
+
+    void Reset();
+
+    void SetSetCellCallback(void (*pCallback)(void *, FECodeListBox *, u32, u32), void *pvData) {
         mpSetCellCallback = pCallback;
         mpvCallbackData = pData;
     }
-    inline const FEColor &GetSelectionColor() const {
-        return mstSelectionColor;
+
+    static void DefaultSelectCallback(FECodeListBox *pobListBox);
+
+    void SetSelectionCallback(void (*pSelectionCallback)(FECodeListBox *)) {
+        mpSelectionCallback = pSelectionCallback;
     }
-    inline void SetSelectionColor(const FEColor &stColor) {
-        mstSelectionColor = stColor;
-    }
-    inline float GetAlphaHilite() const {
-        return mfCurrentAlpha;
-    }
-    inline u32 GetVisualSelectionColumn() {
+
+    static void SetDefaultSelectionCallback(void (*pSelectionCallback)(FECodeListBox *)) {}
+
+    u32 GetVisualSelectionColumn() { // Decl: speed/indep/src/feng/FECodeListBox.h:224
         return mulCurrentVirtualColumn % mulNumVisibleColumns;
     }
-    inline u32 GetVisualSelectionRow() {
+    u32 GetVisualSelectionRow() { // Decl: speed/indep/src/feng/FECodeListBox.h:225
         return mulCurrentVirtualRow % mulNumVisibleRows;
     }
 
   private:
-    FEGameInterface *mpobRenderer;                                // offset 0x5C, size 0x4
-    u32 mulNumVisibleColumns;                                     // offset 0x60, size 0x4
-    u32 mulNumVisibleRows;                                        // offset 0x64, size 0x4
-    u32 mulFlags;                                                 // offset 0x68, size 0x4
-    u32 mulNumTotalColumns;                                       // offset 0x6C, size 0x4
-    u32 mulNumTotalRows;                                          // offset 0x70, size 0x4
-    u32 mulCurrentVirtualColumn;                                  // offset 0x74, size 0x4
-    u32 mulCurrentVirtualRow;                                     // offset 0x78, size 0x4
-    u32 mulTargetColumn;                                          // offset 0x7C, size 0x4
-    u32 mulTargetRow;                                             // offset 0x80, size 0x4
-    FEPoint mstViewDimensions;                                    // offset 0x84, size 0x8
-    FEListBoxCell *mpstCells;                                     // offset 0x8C, size 0x4
-    u32 mulNumStrings;                                            // offset 0x90, size 0x4
-    u32 mulStringSize;                                            // offset 0x94, size 0x4
-    u32 mulCurrentString;                                         // offset 0x98, size 0x4
-    short **mppsStringData;                                       // offset 0x9C, size 0x4
-    short *mpsStrings;                                            // offset 0xA0, size 0x4
-    float mfCurrentAlpha;                                         // offset 0xA4, size 0x4
-    float mfAlphaDelta;                                           // offset 0xA8, size 0x4
-    FEColor mstSelectionColor;                                    // offset 0xAC, size 0x10
-    void (*mpSelectionCallback)(FECodeListBox *);                 // offset 0xBC, size 0x4
-    void (*mpSetCellCallback)(void *, FECodeListBox *, u32, u32); // offset 0xC0, size 0x4
-    void *mpvCallbackData;                                        // offset 0xC4, size 0x4
+    i16 *AllocateString();
+
+    void DeallocateString(i16 *psString);
+
+    FEListBoxCell *GetPCellData(u32 ulColumnIndex, u32 ulRowIndex) const {
+        return &mpstCells[ulRowIndex * mulNumVisibleColumns + ulColumnIndex];
+    }
+
+    FEListBoxCell *GetRealCellData(i32 lColumnIndex, i32 lRowIndex) {
+        return &mpstCells[GetRealRow(lRowIndex) * mulNumVisibleColumns + GetRealColumn(lColumnIndex)];
+    }
+
+    i32 GetRealColumn(i32 i) const;
+
+    i32 GetRealRow(i32 i) const;
+
+    i32 GetNewVirtual(i32 lNum, i32 lCurrent, i32 lNumTotal, u32 ulBuildFlag0, u32 ulBuildFlag1);
+
+    bool CheckMovement(i32 lNumMove, i32 lCurrentVirtual, i32 lTarget, i32 lNumTotal, i32 lNumVis);
+
+    bool MakeMove(i32 lNumMove, u32 &ulCurrentVirtual, u32 &ulTarget, u32 ulNumTotal, u32 ulNumVis);
+
+    u32 CalculateCurrentFromTarget(u32 ulTarget, u32 ulNumTotal, u32 ulNumVisible);
+
+    void SetPCellType(FEListBoxCell *pstCell, u32 ulType) {}
 };
 
 #endif

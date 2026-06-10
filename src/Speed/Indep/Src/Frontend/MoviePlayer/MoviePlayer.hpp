@@ -1,14 +1,11 @@
-#ifndef FRONTEND_MOVIEPLAYER_MOVIEPLAYER_H
-#define FRONTEND_MOVIEPLAYER_MOVIEPLAYER_H
-
-#include "Speed/Indep/Src/Ecstasy/Texture.hpp"
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef __MOVIEPLAYER_HPP__
+#define __MOVIEPLAYER_HPP__
 
 #include <types.h>
+#include "Speed/Indep/Src/Ecstasy/Texture.hpp"
 
-#include "Speed/Indep/bWare/Inc/bMemory.hpp"
+#define VIDEO_STREAM_BUFFER_SIZE (640 * 1024) // :59
+#define MOVIEPLAYER_FILENAME_LEN 256          // :62
 
 // TODO move to D:/env/egami/rcmp/dev/source/av/cmn/avplayer.cpp
 namespace RCMP {
@@ -621,95 +618,107 @@ struct AV_PLAYER {
 
 } // namespace RCMP
 
+// File: speed/indep/src/frontend/movieplayer/MoviePlayer.hpp
 // total size: 0x158
+// Decl: speed/indep/src/frontend/movieplayer/MoviePlayer.hpp:87
 class MoviePlayer {
   public:
-    // total size: 0x124
-    struct Settings {
-        unsigned int volume;           // offset 0x0
-        unsigned int bufferSize;       // offset 0x4
-        unsigned int activeController; // offset 0x8
-        int type;                      // offset 0xC
-        int movieId;                   // offset 0x10
-        bool preload;                  // offset 0x14
-        bool sound;                    // offset 0x18
-        bool loop;                     // offset 0x1C
-        bool pal;                      // offset 0x20
-        char filename[256];            // offset 0x24
-    };
-
-    Settings mSettings;        // offset 0x0
-    unsigned int fCurFrameNum; // offset 0x124
-    int fStatus;               // offset 0x128
-    int fLiveStatus;           // offset 0x12C
-    unsigned int mTicker;      // offset 0x130
-    bool mTickerFirstTime;     // offset 0x134
-    bool mMoviePaused;         // offset 0x138
-    int mili_seconds;          // offset 0x13C
-    int seconds;               // offset 0x140
-    int minutes;               // offset 0x144
-    float milliseconds;        // offset 0x148
-    float prevMilliseconds;    // offset 0x14C
-    RCMP::AV_PLAYER *fPlayer;  // offset 0x150
-    RCMP::FRAME *CurFrame;     // offset 0x154
-
-    RCMP::AV_PLAYER *GetPlayer() {
-        return fPlayer;
-    }
-    bool IsMoviePaused() {
-        return mMoviePaused;
-    }
-    Settings GetSettings() {
-        return mSettings;
-    }
-    int GetStatus() {
-        return fStatus;
-    }
-    int GetLiveStatus() {
-        return fLiveStatus;
-    }
-    bool IsMoviePlaying();
-    void FillInTextureInfo(uint32 *framer_address, TextureInfo *texture_info, RCMP::Shape *yuv_shape);
+    class Settings { // Decl: speed/indep/src/frontend/movieplayer/MoviePlayer.hpp:95
+      public:
+        Settings() {}                                         // Decl: speed/indep/src/frontend/movieplayer/MoviePlayer.hpp:95
+        ~Settings() {}                                        // Decl: speed/indep/src/frontend/movieplayer/MoviePlayer.hpp:95
+        void operator=(const struct Settings &newSettings) {} // Decl: speed/indep/src/frontend/movieplayer/MoviePlayer.hpp:95
+        unsigned int volume;                                  // offset 0x0, size 0x4, Decl: speed/indep/src/frontend/movieplayer/MoviePlayer.hpp:95
+        unsigned int bufferSize;                              // offset 0x4, size 0x4, Decl: speed/indep/src/frontend/movieplayer/MoviePlayer.hpp:95
+        unsigned int activeController;                        // offset 0x8, size 0x4, Decl: speed/indep/src/frontend/movieplayer/MoviePlayer.hpp:95
+        int type;                                             // offset 0xC, size 0x4, Decl: speed/indep/src/frontend/movieplayer/MoviePlayer.hpp:95
+        int movieId;                                          // offset 0x10, size 0x4, Decl: speed/indep/src/frontend/movieplayer/MoviePlayer.hpp:95
+        bool preload;                                         // offset 0x14, size 0x1, Decl: speed/indep/src/frontend/movieplayer/MoviePlayer.hpp:95
+        bool sound;                                           // offset 0x18, size 0x1, Decl: speed/indep/src/frontend/movieplayer/MoviePlayer.hpp:95
+        bool loop;                                            // offset 0x1C, size 0x1, Decl: speed/indep/src/frontend/movieplayer/MoviePlayer.hpp:95
+        bool pal;                                             // offset 0x20, size 0x1, Decl: speed/indep/src/frontend/movieplayer/MoviePlayer.hpp:95
+        char filename[256]; // offset 0x24, size 0x100, Decl: speed/indep/src/frontend/movieplayer/MoviePlayer.hpp:95
+    }; // Decl: speed/indep/src/frontend/movieplayer/MoviePlayer.hpp:95
 
     MoviePlayer(int memClass);
     ~MoviePlayer();
+
     void Init(Settings &newSettings);
-    void ResetTimer();
     void Play();
     void Stop();
     void Pause();
     void UnPause();
-    char *const GetMovieFilename();
-    int GetMovieCategoryVolume();
-    void GetFirstFrame();
-    void DisplayTime();
     void Update();
+
+    TextureInfo *GetTexture();
+
+    void ResetTimer();
+
+    RCMP::AV_PLAYER *GetPlayer() {
+        return fPlayer;
+    }
+
+    void DisplayTime();
+
+    bool IsMoviePaused() { // Decl: speed/indep/src/frontend/movieplayer/MoviePlayer.hpp:204
+        return mMoviePaused;
+    }
+
+    void FillInTextureInfo(uint32 *frame_address, TextureInfo *texture_info, RCMP::Shape *shape);
+
+    Settings GetSettings() { // Decl: speed/indep/src/frontend/movieplayer/MoviePlayer.hpp:211
+        return mSettings;
+    }
+
+    int GetStatus() { // Decl: speed/indep/src/frontend/movieplayer/MoviePlayer.hpp:214
+
+        return fStatus;
+    }
+    int GetLiveStatus() { // Decl: speed/indep/src/frontend/movieplayer/MoviePlayer.hpp:215
+        return fLiveStatus;
+    }
+
+    bool IsMoviePlaying() {} // Decl: speed/indep/src/frontend/movieplayer/MoviePlayer.hpp:217
+
+    const char *GetMovieFilename();
+
+  protected:
     void UpdateFunction();
+
+    void GetFirstFrame(); // Decl: speed/indep/src/frontend/movieplayer/MoviePlayer.hpp:237
+
+  private:
     uint32 GetMillisecondsPerFrame();
+
     void HandleFatalError();
+
+    int GetMovieCategoryVolume();
+
+    Settings mSettings;        // offset 0x0, size 0x124, Decl: speed/indep/src/frontend/movieplayer/MoviePlayer.hpp:250
+    unsigned int fCurFrameNum; // offset 0x124, size 0x4, Decl: speed/indep/src/frontend/movieplayer/MoviePlayer.hpp:253
+    int fStatus;               // offset 0x128, size 0x4, Decl: speed/indep/src/frontend/movieplayer/MoviePlayer.hpp:256
+    int fLiveStatus;           // offset 0x12C, size 0x4, Decl: speed/indep/src/frontend/movieplayer/MoviePlayer.hpp:257
+    unsigned int mTicker;      // offset 0x130, size 0x4, Decl: speed/indep/src/frontend/movieplayer/MoviePlayer.hpp:260
+    bool mTickerFirstTime;     // offset 0x134, size 0x1, Decl: speed/indep/src/frontend/movieplayer/MoviePlayer.hpp:261
+    bool mMoviePaused;         // offset 0x138, size 0x1, Decl: speed/indep/src/frontend/movieplayer/MoviePlayer.hpp:262
+    int mili_seconds;          // offset 0x13C, size 0x4, Decl: speed/indep/src/frontend/movieplayer/MoviePlayer.hpp:263
+    int seconds;               // offset 0x140, size 0x4, Decl: speed/indep/src/frontend/movieplayer/MoviePlayer.hpp:264
+    int minutes;               // offset 0x144, size 0x4, Decl: speed/indep/src/frontend/movieplayer/MoviePlayer.hpp:265
+    float milliseconds;        // offset 0x148, size 0x4, Decl: speed/indep/src/frontend/movieplayer/MoviePlayer.hpp:266
+    float prevMilliseconds;    // offset 0x14C, size 0x4, Decl: speed/indep/src/frontend/movieplayer/MoviePlayer.hpp:267
+    RCMP::AV_PLAYER *fPlayer;  // offset 0x150, size 0x4
+    RCMP::FRAME *CurFrame;     // offset 0x154, size 0x4
 };
 
 extern MoviePlayer *gMoviePlayer;
 extern unsigned int gMovieStartTime;
+
+#define MoviePlayer_Init(_a) gMoviePlayer->Init(_a) // :308
 
 bool MoviePlayer_Bypass();
 void MoviePlayer_Play();
 void MoviePlayer_StartUp();
 void MoviePlayer_ShutDown();
 bool GiveTheMoviePlayerBandwidth();
-
-class ShapeMemoryAllocator : public EA::Allocator::IAllocator {
-  public:
-    ShapeMemoryAllocator() : mRefcount(1) {}
-    ~ShapeMemoryAllocator() override {}
-    void *Alloc(size_t size, const EA::TagValuePair &flags) override;
-    void *Alloc(size_t size);
-    void Free(void *pBlock, size_t size) override;
-    int AddRef() override;
-    int Release() override;
-
-  private:
-    int mRefcount; // offset 0x4, size 0x4
-};
 
 #endif

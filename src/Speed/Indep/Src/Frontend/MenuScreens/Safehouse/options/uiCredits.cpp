@@ -6,7 +6,7 @@
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Frontend/Localization/Localize.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Career/FEGameWonScreen.hpp"
-#include "Speed/Indep/Src/Frontend/cFEngRender.hpp"
+#include "Speed/Indep/Src/Frontend/FEngRender.hpp"
 #include "Speed/Indep/Src/Misc/BuildRegion.hpp"
 
 uiCredits::uiCredits(ScreenConstructorData *sd) : MenuScreen(sd), initComplete_(false), prototypeStr_(nullptr), pendingDelete_(nullptr), uf_() {
@@ -52,7 +52,7 @@ void uiCredits::NotificationMessage(u32 msg, FEObject *pobj, u32 param1, u32 par
             break;
         case 0xc98356ba:
             if (pendingDelete_ != nullptr) {
-                GetPackage()->Objects.RemNode(pendingDelete_);
+                GetPackage()->RemoveObject(pendingDelete_);
                 cFEngRender::mInstance->RemoveCachedRender(pendingDelete_, nullptr);
                 delete pendingDelete_;
                 pendingDelete_ = nullptr;
@@ -75,7 +75,7 @@ void uiCredits::NotificationMessage(u32 msg, FEObject *pobj, u32 param1, u32 par
                     } else {
                         ns->SetScript(FEHashUpper("RollCredit_ENDGAME"), false);
                     }
-                    GetPackage()->Objects.AddNode(GetPackage()->Objects.GetTail(), ns);
+                    GetPackage()->AddObject(ns);
                 }
             }
             break;

@@ -1,6 +1,8 @@
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEGameInterface.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/FEng/FEGameInterface.h"
 #include "Speed/Indep/Src/FEng/FEList.h"
-#include "Speed/Indep/Src/Frontend/cFEngRender.hpp"
+#include "Speed/Indep/Src/Frontend/FEngRender.hpp"
 #include "Speed/Indep/Src/Frontend/FEJoyInput.hpp"
 #include "Speed/Indep/Src/Frontend/FEPackageManager.hpp"
 #include "Speed/Indep/Src/Frontend/FEObjectCallbacks.hpp"
@@ -9,7 +11,6 @@
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/Src/FEng/FEPackage.h"
-#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 
 extern int g_discErrorOccured;
 extern char *FEngPleaseRenderSinglePackage;
@@ -61,7 +62,7 @@ cFEngGameInterface::cFEngGameInterface() {
 
 cFEngGameInterface::~cFEngGameInterface() {}
 
-bool cFEngGameInterface::LoadResources(FEPackage *pPackage, long Count, FEResourceRequest *pList) {
+bool cFEngGameInterface::LoadResources(FEPackage *pPackage, i32 Count, FEResourceRequest *pList) {
     for (int i = 0; i < Count; i++) {
         char filename[256];
         GetBaseName(filename, pList[i].pFilename);
@@ -90,7 +91,7 @@ bool cFEngGameInterface::LoadResources(FEPackage *pPackage, long Count, FEResour
     return true;
 }
 
-bool cFEngGameInterface::UnloadResources(FEPackage *pPackage, long Count, FEResourceRequest *pList) {
+bool cFEngGameInterface::UnloadResources(FEPackage *pPackage, i32 Count, FEResourceRequest *pList) {
     for (int i = 0; i < Count; i++) {
         if (pList[i].Type == 4) {
             bFree(reinterpret_cast<void *>(pList[i].Handle));
@@ -169,9 +170,9 @@ void cFEngGameInterface::EndPackageRendering(FEPackage *pPackage) {
 
 void cFEngGameInterface::PackageWasLoaded(FEPackage *pPackage) {
     pPackage->InitializePackage();
-    pPackage->bExecuting = true;
-    if (!pPackage->bIsLibrary) {
-        pPackage->Update(cFEng::Get()->GetEngine(), 0);
+    pPackage->SetExecute(true);
+    if (!pPackage->IsLibrary()) {
+        pPackage->Update(cFEng::Get()->mFEng, 0);
     }
     FEPackageManager::Get()->PackageWasLoaded(pPackage);
     {

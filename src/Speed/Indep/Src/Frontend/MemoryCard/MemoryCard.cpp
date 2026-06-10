@@ -1,4 +1,5 @@
 #include "Speed/Indep/Src/Frontend/MemoryCard/MemoryCard.hpp"
+#include "Speed/Indep/Src/Frontend/MemoryCard/MemoryCardCallbacks.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/DialogInterface.hpp"
 #include "Speed/Indep/Src/Misc/Joylog.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
@@ -44,6 +45,12 @@ int ReplayJoyOp() {
     IJoyHelper::EmulateMemoryCardLibrary(l_Op);
     return l_Op;
 }
+
+void RealmcIface::MemcardInterface::Delete(const char *, const wchar_t *) {}
+
+RealmcIface::GameInfo::GameInfo(const wchar_t *gameTitle, unsigned int titleId, bool multipleSaveTypesUsed, bool multitapSupported) {}
+
+void RealmcIface::MemcardInterface::Load(const char *entryName, char *header, char *body, const wchar_t *contentName, const TitleInfo *titleInfo) {}
 
 void InitMemoryCard() {
     MemoryCard::s_pThis = new MemoryCard();

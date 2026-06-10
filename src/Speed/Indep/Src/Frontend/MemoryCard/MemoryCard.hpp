@@ -47,16 +47,18 @@ enum MessageChoices {
 };
 
 class MemoryCardMessage {
-    int mMsg[1024];         // offset 0x0, size 0x1000
-    unsigned int mnOptions; // offset 0x1000, size 0x4
-    int mOptions[4][128];   // offset 0x1004, size 0x800
+  public:
+    wchar_t mMsg[1024];       // offset 0x0, size 0x1000
+    uint32_t mnOptions;       // offset 0x1000, size 0x4
+    wchar_t mOptions[4][128]; // offset 0x1004, size 0x800
 
-    MemoryCardMessage(const wchar_t *msg, unsigned int nOptions, const wchar_t **options);
+    MemoryCardMessage(const wchar_t *msg, uint32_t nOptions, const wchar_t **options);
 };
 
 // total size: 0x198
 class MemoryCard {
     friend void InitMemoryCard();
+    friend class MemcardCallbacks;
 
   public:
     typedef enum { ST_PROFILE = 0, ST_THUMBNAIL = 1, ST_IMAGE = 2, ST_MAX = 3 } SaveType;

@@ -1,10 +1,6 @@
 #ifndef MISC_CONFIG_H
 #define MISC_CONFIG_H
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
 #include "Speed/Indep/Src/Frontend/Localization/Localize.hpp"
 #include "Speed/Indep/Src/World/RaceParameters.hpp"
 

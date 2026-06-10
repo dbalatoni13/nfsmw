@@ -1,30 +1,32 @@
-#ifndef FRONTEND_UNICODEFILE_H
-#define FRONTEND_UNICODEFILE_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef _UNICODEFILE_HPP_
+#define _UNICODEFILE_HPP_
 
 #include <types.h>
 
+// File: speed/indep/src/frontend/UnicodeFile.hpp
+// total size: 0xC
+// Decl: speed/indep/src/frontend/UnicodeFile.hpp:5
 class UnicodeFile {
   public:
-    UnicodeFile();
+    UnicodeFile(); // Decl: speed/indep/src/frontend/UnicodeFile.hpp:7
     UnicodeFile(const char *filename);
-    ~UnicodeFile();
-    bool Load(const char *filename);
-    void Unload();
-    void LineWrap(int maxCharacters);
-    i16 *First();
-    i16 *Next();
+    ~UnicodeFile(); // Decl: speed/indep/src/frontend/UnicodeFile.hpp:9
+
+    bool Load(const char *filename); // Decl: speed/indep/src/frontend/UnicodeFile.hpp:11
+    void Unload();                   // Decl: speed/indep/src/frontend/UnicodeFile.hpp:12
+
+    void LineWrap(int maxCharacters); // Decl: speed/indep/src/frontend/UnicodeFile.hpp:14
+
+    i16 *First(); // Decl: speed/indep/src/frontend/UnicodeFile.hpp:16
+    i16 *Next();  // Decl: speed/indep/src/frontend/UnicodeFile.hpp:17
 
   private:
-    void FixEndian();
-    void FixEOLs();
+    i16 *data_; // offset 0x0, size 0x4, Decl: speed/indep/src/frontend/UnicodeFile.hpp:20
+    i16 *next_; // offset 0x4, size 0x4, Decl: speed/indep/src/frontend/UnicodeFile.hpp:21
+    i16 *end_;  // offset 0x8, size 0x4, Decl: speed/indep/src/frontend/UnicodeFile.hpp:22
 
-    i16 *data_; // offset 0x0, size 0x4
-    i16 *next_; // offset 0x4, size 0x4
-    i16 *end_;  // offset 0x8, size 0x4
+    void FixEndian(); // Decl: speed/indep/src/frontend/UnicodeFile.hpp:24
+    void FixEOLs();   // Decl: speed/indep/src/frontend/UnicodeFile.hpp:25
 };
 
 #endif

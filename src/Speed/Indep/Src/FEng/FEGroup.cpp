@@ -30,5 +30,5 @@ FEObject *FEGroup::FindChildRecursive(unsigned long NameHash) const {
 }
 
 FEObject *FEGroup::Clone(bool bReference) {
-    return FENG_NEW FEGroup(*this, true, bReference);
+    return FNEW FEGroup(*this, true, bReference);
 }

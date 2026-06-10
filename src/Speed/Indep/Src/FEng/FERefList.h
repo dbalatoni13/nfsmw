@@ -1,58 +1,83 @@
-#ifndef FENG_FEREFLIST_H
-#define FENG_FEREFLIST_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef FEREFLIST_H_
+#define FEREFLIST_H_
 
 #include "FEList.h"
 
+// File: speed/indep/src/feng/FERefList.h
 // total size: 0x10
+// Decl: speed/indep/src/feng/FERefList.h:15
 class FERefList {
+  private:
+    bool bIsReference; // offset 0x0, size 0x1, Decl: speed/indep/src/feng/FERefList.h:18
+
+  protected:
+    union {
+        FERefList *pRef; // offset 0x0, size 0x4
+        FEMinNode *head; // offset 0x0, size 0x4
+    };
+
+    FEMinNode *tail; // offset 0x8, size 0x4, Decl: speed/indep/src/feng/FERefList.h:25
+
+  private:
+    bool IsInList(FEMinNode *node) const;
+
   public:
-    FERefList() {
+    FERefList() { // Decl: speed/indep/src/feng/FERefList.h:28
         head = nullptr;
         tail = nullptr;
         bIsReference = false;
     }
-    virtual ~FERefList() {
+    virtual ~FERefList() { // Decl: speed/indep/src/feng/FERefList.h:29
         if (!bIsReference) {
             Purge();
         }
     }
 
-    inline bool IsReference() const { return bIsReference; }
-    inline FERefList* GetRefSource() { return pRef; }
-    inline FEMinNode* GetHead() const { return bIsReference ? pRef->GetHead() : head; }
-    inline FEMinNode* GetTail() const { return bIsReference ? pRef->GetTail() : tail; }
-    inline bool IsListEmpty() const { return GetHead() == nullptr; }
+    void ReferenceList(FERefList *pList);
 
-    void ReferenceList(FERefList* pList);
-    inline void AddTail(FEMinNode* n) { AddNode(tail, n); }
-    void AddNode(FEMinNode* insertpoint, FEMinNode* node);
-    bool IsInList(FEMinNode* node) const;
-    int ElementNumber(FEMinNode* node);
-    FEMinNode* RemNode(FEMinNode* node);
-    FEMinNode* RemHead();
-    FEMinNode* RemTail();
-    FEMinNode* FindNode(unsigned long ordinalnumber) const;
-    inline void Purge() {
-        FEMinNode* cmn = RemHead();
+    bool IsReference() const {
+        return bIsReference;
+    }
+
+    FERefList *GetRefSource() { // Decl: speed/indep/src/feng/FERefList.h:33
+        return pRef;
+    }
+
+    FEMinNode *RemHead();
+
+    FEMinNode *RemTail();
+
+    FEMinNode *RemNode(FEMinNode *node);
+
+    i32 ElementNumber(FEMinNode *node);
+
+    FEMinNode *GetHead() const {
+        return bIsReference ? pRef->GetHead() : head;
+    }
+    FEMinNode *GetTail() const { // Decl: speed/indep/src/feng/FERefList.h:42
+        return bIsReference ? pRef->GetTail() : tail;
+    }
+    void AddHead(FEMinNode *n) {} // Decl: speed/indep/src/feng/FERefList.h:43
+
+    void AddTail(FEMinNode *n) { // Decl: speed/indep/src/feng/FERefList.h:45
+        AddNode(tail, n);
+    }
+    void AddNode(FEMinNode *insertpoint, FEMinNode *node);
+    FEMinNode *FindNode(u32 ordinalnumber) const;
+
+    void Purge() { // Decl: speed/indep/src/feng/FERefList.h:49
+        FEMinNode *cmn = RemHead();
         while (cmn) {
             delete cmn;
             cmn = RemHead();
         }
     }
-    unsigned long GetNumElements();
 
-  private:
-    bool bIsReference; // offset 0x0, size 0x1
-  protected:
-    union {
-        FERefList *pRef; // offset 0x0, size 0x4
-        FEMinNode *head; // offset 0x0, size 0x4
-    }; // offset 0x4, size 0x4
-    FEMinNode *tail; // offset 0x8, size 0x4
+    bool IsListEmpty() const { // Decl: speed/indep/src/feng/FERefList.h:62
+        return GetHead() == nullptr;
+    }
+
+    u32 GetNumElements();
 };
 
 #endif

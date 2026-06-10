@@ -1,9 +1,5 @@
-#ifndef FRONTEND_MEMORYCARD_MEMORYCARDHELPER_H
-#define FRONTEND_MEMORYCARD_MEMORYCARDHELPER_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef __MEMORYCARDHELPER_HPP__
+#define __MEMORYCARDHELPER_HPP__
 
 #include <types.h>
 #include <string.h>
@@ -15,20 +11,34 @@
 
 struct IAllocator;
 
-struct IThread {
+typedef enum {
+    IDLE_PRIORITY = -3,
+    LOW_PRIORITY = -2,
+    BELOW_PRIORITY = -1,
+    NORM_PRIORITY = 0,
+    ABOVE_PRIORITY = 1,
+    HIGH_PRIORITY = 2,
+    CRIT_PRIORITY = 3
+} Priority;
+
+typedef int (*ThreadEntryFunc)(void *);
+
+class IThread {
+  public:
     virtual ~IThread() {}
     virtual int AddRef() = 0;
     virtual int Release() = 0;
     virtual IThread *CreateInstance() = 0;
     virtual void SetStackSize(unsigned int stacksize) = 0;
-    virtual void Begin(int (*func)(void *)) = 0;
+    virtual void Begin(ThreadEntryFunc func) = 0;
     virtual void WaitForEnd(int) = 0;
     virtual void Sleep(int ticks) = 0;
-    virtual int (*GetEntryFunc())(void *) = 0;
+    virtual ThreadEntryFunc GetEntryFunc() = 0;
     virtual bool IsActive() = 0;
 };
 
-struct IMutex {
+class IMutex {
+  public:
     virtual ~IMutex() {}
     virtual int AddRef() = 0;
     virtual int Release() = 0;
@@ -41,17 +51,63 @@ struct THREAD {
     int reserved[198]; // offset 0x0, size 0x318
 };
 
+void THREAD_sleep(int ticks);
+void THREAD_create(THREAD *thread, int (*func)(void *), void *param, void *stack, int stackSize, int priority);
+void THREAD_waitexit(THREAD *thread, int status);
+void THREAD_setpriority(THREAD *thread, int priority);
+void THREAD_yield(int ticks);
 void THREAD_destroy(THREAD *thread);
 
-struct MyThread : public IThread {
-    int mRefcount;             // offset 0x4, size 0x4
-    int (*mEntryFunc)(void *); // offset 0x8, size 0x4
-    unsigned int mStackSize;   // offset 0xC, size 0x4
-    void *mStackBuffer;        // offset 0x10, size 0x4
-    THREAD mThreadData;        // offset 0x14, size 0x318
-    int mPriority;             // offset 0x32C, size 0x4
-    bool mActive;              // offset 0x330, size 0x1
+class MyMutex : public IMutex {
+  private:
+    MUTEX mMutex;  // offset 0x4, size 0x1C
+    int mRefcount; // offset 0x20, size 0x4
 
+  public:
+    MyMutex() {
+        memset(&mMutex, 0, sizeof(MUTEX));
+        mRefcount = 1;
+        MUTEX_create(&mMutex);
+    }
+    ~MyMutex() { // Decl: speed/indep/src/frontend/MemoryCard/MemoryCardHelper.hpp:49
+        MUTEX_destroy(&mMutex);
+    }
+    IMutex *CreateInstance() override { // Decl: speed/indep/src/frontend/MemoryCard/MemoryCardHelper.hpp:50
+        return new MyMutex();
+    };
+    int AddRef() override { // Decl: speed/indep/src/frontend/MemoryCard/MemoryCardHelper.hpp:51
+        return ++mRefcount;
+    };
+
+    int Release() override { // Decl: speed/indep/src/frontend/MemoryCard/MemoryCardHelper.hpp:54
+        int ref = --mRefcount;
+        if (ref > 0) {
+            return ref;
+        }
+        if (this != nullptr) {
+            delete this;
+        }
+        return 0;
+    };
+    void Lock() override { // Decl: speed/indep/src/frontend/MemoryCard/MemoryCardHelper.hpp:63
+        MUTEX_lock(&mMutex);
+    };
+    void Unlock() override { // Decl: speed/indep/src/frontend/MemoryCard/MemoryCardHelper.hpp:64
+        MUTEX_unlock(&mMutex);
+    };
+};
+
+class MyThread : public IThread {
+  private:
+    int mRefcount;              // offset 0x4, size 0x4
+    ThreadEntryFunc mEntryFunc; // offset 0x8, size 0x4
+    unsigned int mStackSize;    // offset 0xC, size 0x4
+    void *mStackBuffer;         // offset 0x10, size 0x4
+    THREAD mThreadData;         // offset 0x14, size 0x318
+    int mPriority;              // offset 0x32C, size 0x4
+    bool mActive;               // offset 0x330, size 0x1
+
+  public:
     MyThread() {
         mRefcount = 1;
         mStackSize = 0x1000;
@@ -61,142 +117,69 @@ struct MyThread : public IThread {
         mActive = false;
     }
 
-    ~MyThread() {
+    ~MyThread() { // Decl: speed/indep/src/frontend/MemoryCard/MemoryCardHelper.hpp:80
         if (mActive) {
             WaitForEnd(0);
             THREAD_destroy(&mThreadData);
         }
     }
 
-    int AddRef() override;
-    int Release() override;
-    IThread *CreateInstance() override;
-    void SetStackSize(unsigned int stacksize) override {
+    IThread *CreateInstance() override { // Decl: speed/indep/src/frontend/MemoryCard/MemoryCardHelper.hpp:89
+        return new MyThread();
+    };
+    int AddRef() override { // Decl: speed/indep/src/frontend/MemoryCard/MemoryCardHelper.hpp:94
+        return ++mRefcount;
+    };
+    int Release() override { // Decl: speed/indep/src/frontend/MemoryCard/MemoryCardHelper.hpp:99
+        int ref = --mRefcount;
+        if (ref > 0) {
+            return ref;
+        }
+        if (this != nullptr) {
+            delete this;
+        }
+        return 0;
+    };
+    void SetStackSize(unsigned int stacksize) override { // Decl: speed/indep/src/frontend/MemoryCard/MemoryCardHelper.hpp:109
         mStackSize = stacksize;
     }
-    void Begin(int (*func)(void *)) override;
-    void WaitForEnd(int) override;
-    void Sleep(int ticks) override;
-    void SetPriority(int priority) override;
-    static int EntryProc(void *pContext);
-    int (*GetEntryFunc())(void *) override;
-    bool IsActive() override;
+    static int EntryProc(void *pContext) { // Decl: speed/indep/src/frontend/MemoryCard/MemoryCardHelper.hpp:115
+        MyThread *pThread = static_cast<MyThread *>(pContext);
+        while (!pThread->MyThread::IsActive()) {
+            THREAD_yield(1);
+        }
+        pThread->MyThread::GetEntryFunc()(pContext);
+        return 0;
+    };
+    void Begin(ThreadEntryFunc func) override { // Decl: speed/indep/src/frontend/MemoryCard/MemoryCardHelper.hpp:129
+        mEntryFunc = func;
+        mStackBuffer = new char[mStackSize];
+        THREAD_create(&mThreadData, EntryProc, this, mStackBuffer, mStackSize, mPriority);
+        mActive = true;
+    };
+    void WaitForEnd(int) override { // Decl: speed/indep/src/frontend/MemoryCard/MemoryCardHelper.hpp:137
+        THREAD_waitexit(&mThreadData, 0);
+        if (mStackBuffer != nullptr) {
+            delete[] static_cast<char *>(mStackBuffer);
+        }
+        mActive = false;
+    };
+    void Sleep(int ticks) override { // Decl: speed/indep/src/frontend/MemoryCard/MemoryCardHelper.hpp:143
+        THREAD_sleep(ticks);
+    };
+    void SetPriority(int priority) override { // Decl: speed/indep/src/frontend/MemoryCard/MemoryCardHelper.hpp:148
+        mPriority = 0;
+        THREAD_setpriority(&mThreadData, 0);
+    };
+    ThreadEntryFunc GetEntryFunc() override { // Decl: speed/indep/src/frontend/MemoryCard/MemoryCardHelper.hpp:153
+        return mEntryFunc;
+    };
+    bool IsActive() override { // Decl: speed/indep/src/frontend/MemoryCard/MemoryCardHelper.hpp:154
+        return mActive;
+    };
 };
 
-struct MyMutex : public IMutex {
-    MUTEX mMutex;  // offset 0x4, size 0x1C
-    int mRefcount; // offset 0x20, size 0x4
-
-    MyMutex() {
-        memset(&mMutex, 0, sizeof(MUTEX));
-        mRefcount = 1;
-        MUTEX_create(&mMutex);
-    }
-
-    ~MyMutex() {
-        MUTEX_destroy(&mMutex);
-    }
-
-    int AddRef() override;
-    int Release() override;
-    IMutex *CreateInstance() override;
-    void Lock() override;
-    void Unlock() override;
-};
-
-void MyMutex::Lock() {
-    MUTEX_lock(&mMutex);
-}
-
-void MyMutex::Unlock() {
-    MUTEX_unlock(&mMutex);
-}
-
-int MyMutex::AddRef() {
-    return ++mRefcount;
-}
-
-int MyMutex::Release() {
-    int ref = --mRefcount;
-    if (ref > 0) {
-        return ref;
-    }
-    if (this != nullptr) {
-        delete this;
-    }
-    return 0;
-}
-
-IMutex *MyMutex::CreateInstance() {
-    return new MyMutex();
-}
-
-int MyThread::AddRef() {
-    return ++mRefcount;
-}
-
-int MyThread::Release() {
-    int ref = --mRefcount;
-    if (ref > 0) {
-        return ref;
-    }
-    if (this != nullptr) {
-        delete this;
-    }
-    return 0;
-}
-
-IThread *MyThread::CreateInstance() {
-    return new MyThread();
-}
-
-void THREAD_sleep(int ticks);
-void THREAD_create(THREAD *thread, int (*func)(void *), void *param, void *stack, int stackSize, int priority);
-void THREAD_waitexit(THREAD *thread, int status);
-void THREAD_setpriority(THREAD *thread, int priority);
-void THREAD_yield(int ticks);
-
-void MyThread::Sleep(int ticks) {
-    THREAD_sleep(ticks);
-}
-
-void MyThread::Begin(int (*func)(void *)) {
-    mEntryFunc = func;
-    mStackBuffer = new char[mStackSize];
-    THREAD_create(&mThreadData, EntryProc, this, mStackBuffer, mStackSize, mPriority);
-    mActive = true;
-}
-
-void MyThread::WaitForEnd(int) {
-    THREAD_waitexit(&mThreadData, 0);
-    if (mStackBuffer != nullptr) {
-        delete[] static_cast<char *>(mStackBuffer);
-    }
-    mActive = false;
-}
-
-void MyThread::SetPriority(int priority) {
-    mPriority = 0;
-    THREAD_setpriority(&mThreadData, 0);
-}
-
-bool MyThread::IsActive() {
-    return mActive;
-}
-
-int (*MyThread::GetEntryFunc())(void *) {
-    return mEntryFunc;
-}
-
-int MyThread::EntryProc(void *pContext) {
-    MyThread *pThread = static_cast<MyThread *>(pContext);
-    while (!pThread->MyThread::IsActive()) {
-        THREAD_yield(1);
-    }
-    pThread->MyThread::GetEntryFunc()(pContext);
-    return 0;
-}
-
+// TODO belongs to C:/packages/realmemcard/3.04.01-layer2
 namespace Realmc {
 
 // total size: 0x10
@@ -214,6 +197,7 @@ struct SystemInterface {
 struct MemoryCard;
 struct UIMemcardBase;
 
+// TODO belongs to C:/packages/realmemcard/3.04.01-layer2
 struct IGameInterface {
     virtual void ShowMessage(const wchar_t *msg, unsigned int nOptions, const wchar_t **options) = 0;
     virtual void ClearMessage() = 0;
@@ -237,7 +221,9 @@ struct IGameInterface {
                                               char *&bodyData) = 0;
 };
 
-enum MemoryCardJoyLoggableEvents {
+// File: speed/indep/src/frontend/memorycard/MemoryCardHelper.hpp
+// Decl: speed/indep/src/frontend/memorycard/MemoryCardHelper.hpp:22
+typedef enum {
     MJ_None = 0,
     MJ_ShowMesssage = 1,
     MJ_ClearMessage = 2,
@@ -255,53 +241,45 @@ enum MemoryCardJoyLoggableEvents {
     MJ_CardChecked = 14,
     MJ_CardRemoved = 15,
     MJ_SetAutosaveDone = 16,
-    MJ_LoadReady = 17,
-    MJ_SetMonitorDone = 18,
-};
+    MJ_LoadReady = 17
+} MemoryCardJoyLoggableEvents;
 
-struct IJoyHelper {
-    static void EmulateMemoryCardLibrary(int aJoyOp);
+// total size: 0x1
+// Decl: speed/indep/src/frontend/memorycard/MemoryCardHelper.hpp:47
+class IJoyHelper {
+  public:
+    void JLog(const char *msg) {} // Decl: speed/indep/src/frontend/memorycard/MemoryCardHelper.hpp:64
 
-    inline void JLog(MemoryCardJoyLoggableEvents op) {
+    void JLog(bool &value) {} // Decl: speed/indep/src/frontend/memorycard/MemoryCardHelper.hpp:86
+
+    void JLog(MemoryCardJoyLoggableEvents op) { // Decl: speed/indep/src/frontend/memorycard/MemoryCardHelper.hpp:108
         if (Joylog::IsCapturing())
             Joylog::AddData(static_cast<int>(op), 8, JOYLOG_CHANNEL_MEMORY_CARD);
     }
 
-    inline void JLog(RealmcIface::CardStatus &status) {
+    void JLog(void *data, int data_size_bytes) {} // Decl: speed/indep/src/frontend/memorycard/MemoryCardHelper.hpp:139
+
+    static void EmulateMemoryCardLibrary(int aJoyOp); // Decl: speed/indep/src/frontend/memorycard/MemoryCardHelper.hpp:169
+
+    void JLog(const wchar_t *msg) {}
+
+    void JLog(unsigned int &value) {}
+
+    void JLog(RealmcIface::CardId &id) {}
+
+    void JLog(RealmcIface::CardStatus &status) {
         status = static_cast<RealmcIface::CardStatus>(Joylog::AddOrGetData(static_cast<unsigned int>(status), 0x10, JOYLOG_CHANNEL_MEMORY_CARD));
     }
 
-    inline void JLog(RealmcIface::TaskResult &res) {
+    void JLog(RealmcIface::MonitorState &state) {}
+
+    void JLog(const RealmcIface::CardInfo *pInfo) {}
+
+    void JLog(RealmcIface::TaskResult &res) {
         res = static_cast<RealmcIface::TaskResult>(Joylog::AddOrGetData(static_cast<unsigned int>(res), 8, JOYLOG_CHANNEL_MEMORY_CARD));
     }
-};
 
-struct MemcardCallbacks : public IGameInterface, public IJoyHelper {
-    MemoryCard *GetMemcard();
-    UIMemcardBase *GetScreen();
-
-    void ShowMessage(const wchar_t *msg, unsigned int nOptions, const wchar_t **options) override;
-    void ClearMessage() override;
-    void BootupCheckDone(RealmcIface::CardStatus status, RealmcIface::BootupCheckResults res) override;
-    void SaveCheckDone(RealmcIface::TaskResult result, RealmcIface::CardStatus status) override;
-    void SaveDone(const char *filename) override;
-    RealmcIface::DataStatus CheckLoadedData(const char *data) override;
-    void LoadDone(const char *filename) override;
-    void DeleteDone(const char *filename) override;
-    void ClearEntries() override;
-    void FoundEntry(const RealmcIface::EntryInfo *info) override;
-    void FindEntriesDone(RealmcIface::CardStatus status) override;
-    void Retry(RealmcIface::CardStatus status) override;
-    void Failed(RealmcIface::TaskResult result, RealmcIface::CardStatus status) override;
-    void CardChanged(RealmcIface::TaskResult result, RealmcIface::CardStatus status) override;
-    void CardChecked(const RealmcIface::CardInfo *info) override;
-    void CardRemoved() override;
-    void SetAutosaveDone(RealmcIface::TaskResult res, RealmcIface::CardStatus status, RealmcIface::AutosaveState flag) override;
-    void SetMonitorDone(RealmcIface::CardStatus status, RealmcIface::MonitorState state) override;
-    RealmcIface::TaskStatus LoadReady(const char *entryName, unsigned int headerSize, unsigned int bodySize, char *&headerData,
-                                      char *&bodyData) override;
-
-    inline MemcardCallbacks() {}
+    void JLog(const RealmcIface::EntryInfo *info) {}
 };
 
 #endif

@@ -11,6 +11,29 @@
 #include "Speed/Indep/Src/World/TrackStreamer.hpp"
 #include "Speed/Indep/Src/Misc/Joylog.hpp"
 
+// File: speed/indep/src/frontend/MoviePlayer/MoviePlayer.cpp
+// total size: 0x8
+// Decl: speed/indep/src/frontend/MoviePlayer/MoviePlayer.cpp:141
+struct ShapeMemoryAllocator : public EA::Allocator::IAllocator {
+  public:
+    ShapeMemoryAllocator() {}           // Decl: speed/indep/src/frontend/MoviePlayer/MoviePlayer.cpp:143
+    ~ShapeMemoryAllocator() override {} // Decl: speed/indep/src/frontend/MoviePlayer/MoviePlayer.cpp:144
+
+    void *Alloc(size_t size, const EA::TagValuePair &flags) override;
+    void *Alloc(size_t size);
+
+  private:
+    int mRefcount; // offset 0x4, size 0x4, Decl: speed/indep/src/frontend/MoviePlayer/MoviePlayer.cpp:152
+
+    void Free(void *pBlock, size_t size) override; // Decl: speed/indep/src/frontend/MoviePlayer/MoviePlayer.cpp:228
+
+    int AddRef() override; // Decl: speed/indep/src/frontend/MoviePlayer/MoviePlayer.cpp:240
+
+    int Release() override; // Decl: speed/indep/src/frontend/MoviePlayer/MoviePlayer.cpp:245
+};
+
+#define MOVIE_TEXTUREINFO_COUNT 3 // :258
+
 // TODO D:/env/egami/realgraph/6/source/shape/cmn/allocator.cpp
 namespace RealShape {
 class GraphObject {
@@ -390,7 +413,7 @@ void MoviePlayer::HandleFatalError() {}
 bool GiveTheMoviePlayerBandwidth() {
     bool result = false;
     if (gMoviePlayer != nullptr) {
-        int status = gMoviePlayer->fStatus;
+        int status = gMoviePlayer->GetStatus();
         status -= 3;
         result = static_cast<unsigned int>(status) < 3u;
     }

@@ -9,36 +9,36 @@ FEFieldNode::~FEFieldNode() {
     }
 }
 
-void FEFieldNode::SetDefault(void* pSrc) {
+void FEFieldNode::SetDefault(void *pSrc) {
     if (pDefault) {
         delete[] pDefault;
     }
     pDefault = nullptr;
     if (Size != 0) {
-        pDefault = reinterpret_cast<unsigned char*>(FENG_NEW char[Size]);
+        pDefault = reinterpret_cast<unsigned char *>(FNEW char[Size]);
         FEngMemCpy(pDefault, pSrc, Size);
     }
 }
 
-void FEFieldNode::GetDefault(void* pDest) {
+void FEFieldNode::GetDefault(void *pDest) {
     if (pDefault) {
         FEngMemCpy(pDest, pDefault, Size);
     }
 }
 
-void FETypeNode::AddField(const char* pName, long iType) {
-    FEFieldNode* pField;
-    pField = FENG_NEW FEFieldNode();
+void FETypeNode::AddField(const char *pName, long iType) {
+    FEFieldNode *pField;
+    pField = FNEW FEFieldNode();
     pField->SetName(pName);
     pField->SetType(iType);
     pField->SetSize(FEKeyTypeSize[iType]);
-    Fields.AddNode(static_cast<FEMinNode*>(Fields.GetTail()), pField);
+    Fields.AddNode(static_cast<FEMinNode *>(Fields.GetTail()), pField);
     UpdateOffsets();
 }
 
 void FETypeNode::UpdateOffsets() {
     unsigned long Offset = 0;
-    FEFieldNode* pField = GetFirstField();
+    FEFieldNode *pField = GetFirstField();
     while (pField) {
         pField->SetOffset(Offset);
         Offset += pField->GetSize();
@@ -48,7 +48,7 @@ void FETypeNode::UpdateOffsets() {
 
 unsigned long FETypeNode::GetTypeSize() {
     unsigned long Size = 0;
-    FEFieldNode* pField = GetFirstField();
+    FEFieldNode *pField = GetFirstField();
     while (pField) {
         Size += pField->GetSize();
         pField = pField->GetNext();
@@ -56,8 +56,8 @@ unsigned long FETypeNode::GetTypeSize() {
     return Size;
 }
 
-FEFieldNode* FETypeNode::GetField(const char* pName) {
-    FEFieldNode* pNode = GetFirstField();
+FEFieldNode *FETypeNode::GetField(const char *pName) {
+    FEFieldNode *pNode = GetFirstField();
     while (pNode) {
         if (FEngStrICmp(pNode->GetName(), pName) == 0) {
             break;

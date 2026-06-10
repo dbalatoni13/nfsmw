@@ -5,14 +5,14 @@
 
 ObjectPool<FEMessageResponse, 64> FEMessageResponse::NodePool;
 
-void* FEMessageResponse::operator new(unsigned int) {
-    FEMessageResponse* pNode = NodePool.AllocSingle();
+void *FEMessageResponse::operator new(unsigned int) {
+    FEMessageResponse *pNode = NodePool.AllocSingle();
     pNode->Init();
     return pNode;
 }
 
-void FEMessageResponse::operator delete(void* pNode) {
-    FEMessageResponse* pDeleteNode = static_cast<FEMessageResponse*>(pNode);
+void FEMessageResponse::operator delete(void *pNode) {
+    FEMessageResponse *pDeleteNode = static_cast<FEMessageResponse *>(pNode);
     pDeleteNode->~FEMessageResponse();
     NodePool.FreeSingleNoDestroy(pDeleteNode);
 }
@@ -21,12 +21,12 @@ FEResponse::~FEResponse() {
     ReleaseParam();
 }
 
-FEResponse& FEResponse::operator=(FEResponse& rhs) {
+FEResponse &FEResponse::operator=(FEResponse &rhs) {
     ReleaseParam();
     unsigned long id = rhs.ResponseID;
     ResponseID = id;
     if (FEResponse::HasString(id)) {
-        SetParam(reinterpret_cast<const char*>(rhs.ResponseParam));
+        SetParam(reinterpret_cast<const char *>(rhs.ResponseParam));
     } else {
         ResponseParam = rhs.ResponseParam;
     }
@@ -34,11 +34,11 @@ FEResponse& FEResponse::operator=(FEResponse& rhs) {
     return *this;
 }
 
-void FEResponse::SetParam(const char* pString) {
+void FEResponse::SetParam(const char *pString) {
     ReleaseParam();
     if (pString) {
         unsigned long Len = FEngStrLen(pString);
-        char* pPathCopy = FENG_NEW char[Len + 1];
+        char *pPathCopy = FNEW char[Len + 1];
         FEngStrCpy(pPathCopy, pString);
         ResponseParam = reinterpret_cast<unsigned long>(pPathCopy);
     }
@@ -46,7 +46,7 @@ void FEResponse::SetParam(const char* pString) {
 
 void FEResponse::ReleaseParam() {
     if (HasString() && ResponseParam) {
-        delete[] reinterpret_cast<char*>(ResponseParam);
+        delete[] reinterpret_cast<char *>(ResponseParam);
     }
     ResponseParam = 0;
 }
@@ -66,7 +66,7 @@ void FEMessageResponse::SetCount(unsigned long NewCount) {
         if (NewCount == 0) {
             PurgeResponses();
         } else {
-            FEResponse* pNew = new FEResponse[NewCount];
+            FEResponse *pNew = new FEResponse[NewCount];
             unsigned long copyCount = Count;
             if (copyCount > NewCount) {
                 copyCount = NewCount;
@@ -101,22 +101,22 @@ unsigned long FEMessageResponse::FindConditionBranchTarget(unsigned long Index) 
     do {
         if (Nest == 0)
             break;
-body:
+    body:
         Index++;
         unsigned long id = pResponseList[Index].ResponseID;
         switch (id) {
-        case 0x300:
-        case 0x301:
-            Nest++;
-            break;
-        case 0x500:
-            if (Nest == 1) {
-                Nest = 0;
-            }
-            break;
-        case 0x501:
-            Nest--;
-            break;
+            case 0x300:
+            case 0x301:
+                Nest++;
+                break;
+            case 0x500:
+                if (Nest == 1) {
+                    Nest = 0;
+                }
+                break;
+            case 0x501:
+                Nest--;
+                break;
         }
     } while (Index < Count);
     return Index;

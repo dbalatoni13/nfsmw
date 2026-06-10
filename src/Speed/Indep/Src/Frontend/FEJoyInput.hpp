@@ -1,47 +1,39 @@
-#ifndef FRONTEND_FEJOYINPUT_H
-#define FRONTEND_FEJOYINPUT_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef FEJOYINPUT_H
+#define FEJOYINPUT_H
 
 #include <types.h>
 #include "Speed/Indep/Src/Input/ActionQueue.h"
-
-typedef enum {
-    JOYSTICK_PORT_NONE = -1,
-    JOYSTICK_PORT1 = 0,
-    JOYSTICK_PORT2 = 1,
-    JOYSTICK_PORT3 = 2,
-    JOYSTICK_PORT4 = 3,
-    JOYSTICK_PORT_ALL = 4
-} JoystickPort;
+#include "Speed/Indep/Src/Misc/Joystick.hpp"
 
 // total size: 0x8
+// Decl: speed/indep/src/frontend/FEJoyInput.hpp:21
 class cFEngJoyInput {
   public:
-    static inline struct cFEngJoyInput *Get() {}
+    static cFEngJoyInput *mInstance;      // size: 0x4, address: 0x8041B810, Decl: speed/indep/src/frontend/FEJoyInput.hpp:23
+    static struct cFEngJoyInput *Get() {} // Decl: speed/indep/src/frontend/FEJoyInput.hpp:24
 
-    cFEngJoyInput();
-    ~cFEngJoyInput();
-    void SetRequiredJoy(JoystickPort port, bool required);
-    bool IsRequiredJoy(JoystickPort port);
-    bool IsJoyPluggedIn(JoystickPort port);
-    void JoyDisable(JoystickPort port, bool do_flush);
-    void JoyEnable(JoystickPort port, bool do_flush);
-    bool IsJoyEnabled(JoystickPort port);
-    void FlushActions();
+    cFEngJoyInput();  // Decl: speed/indep/src/frontend/FEJoyInput.hpp:30
+    ~cFEngJoyInput(); // Decl: speed/indep/src/frontend/FEJoyInput.hpp:31
+
+    void SetRequiredJoy(JoystickPort port, bool required); // Decl: speed/indep/src/frontend/FEJoyInput.hpp:33
+    bool IsRequiredJoy(JoystickPort port);                 // Decl: speed/indep/src/frontend/FEJoyInput.hpp:34
+    bool IsJoyPluggedIn(JoystickPort port);                // Decl: speed/indep/src/frontend/FEJoyInput.hpp:35
+    void JoyDisable(JoystickPort port, bool do_flush);     // Decl: speed/indep/src/frontend/FEJoyInput.hpp:36
+    void JoyEnable(JoystickPort port, bool do_flush);      // Decl: speed/indep/src/frontend/FEJoyInput.hpp:37
+    bool IsJoyEnabled(JoystickPort port);                  // Decl: speed/indep/src/frontend/FEJoyInput.hpp:38
+
+    void FlushActions(); // Decl: speed/indep/src/frontend/FEJoyInput.hpp:41
     void ClearInputQueue();
-    void HandleJoy();
-    u32 GetJoyPadMask(u8 pPadIndex);
+    void HandleJoy(); // Decl: speed/indep/src/frontend/FEJoyInput.hpp:43
+
+    u32 GetJoyPadMask(u8 pPadIndex); // Decl: speed/indep/src/frontend/FEJoyInput.hpp:45
+
     uint32 GetJoyPadTexture(const char *eventString, JoystickPort port);
 
-    static cFEngJoyInput *mInstance; // size: 0x4, address: 0x8041B810
-
   private:
-    bool CheckUnplugged();
+    bool CheckUnplugged(); // Decl: speed/indep/src/frontend/FEJoyInput.hpp:72
 
-    ActionQueue *mActionQ[2]; // offset 0x0, size 0x8
+    ActionQueue *mActionQ[2]; // offset 0x0, size 0x8, Decl: speed/indep/src/frontend/FEJoyInput.hpp:76
 };
 
 #endif

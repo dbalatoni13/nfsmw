@@ -20,7 +20,7 @@ FEString::~FEString() {
 }
 
 FEObject *FEString::Clone(bool bReference) {
-    return reinterpret_cast<FEObject *>(FENG_NEW FEString(*this, bReference));
+    return reinterpret_cast<FEObject *>(FNEW FEString(*this, bReference));
 }
 
 void FEString::SetLabel(const char *pString) {
@@ -32,7 +32,7 @@ void FEString::SetLabel(const char *pString) {
     if (pString) {
         unsigned long Len = FEngStrLen(pString) + 1;
 
-        pLabelName = FENG_NEW char[Len];
+        pLabelName = FNEW char[Len];
         FEngStrCpy(pLabelName, pString);
     }
 

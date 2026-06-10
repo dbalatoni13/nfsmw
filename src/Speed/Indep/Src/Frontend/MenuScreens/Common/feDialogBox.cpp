@@ -1,4 +1,6 @@
 #include "Speed/Indep/Src/Frontend/FEngFrontend.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEButtons.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEImages.hpp"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEObjects.hpp"
 #include "Speed/Indep/Src/Frontend/Localization/Localize.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
@@ -292,12 +294,12 @@ dialog_handle DialogInterface::ShowDialog(feDialogConfig *conf) {
     return SecretDialogInfo.DialogHandle;
 }
 
-void FormatMessage(char *buffer, int bufsize, const char *fmt, va_list *arglist) {
+void FormatMessage(char *buffer, int bufsize, const char *fmt, va_list arglist) {
     int nchars = bufsize;
     bVSPrintf(buffer, fmt, arglist);
 }
 
-dialog_handle DialogInterface::ShowOk(const char *from_pkg, const char *dlg_pkg, eDialogTitle title, const char *fmt, va_list *arg_list) {
+dialog_handle DialogInterface::ShowOk(const char *from_pkg, const char *dlg_pkg, eDialogTitle title, const char *fmt, va_list arg_list) {
     feDialogConfig conf;
     FormatMessage(conf.BlurbString, 0x200, fmt, arg_list);
     conf.Button1TextHash = 0x417b2601;
@@ -327,7 +329,7 @@ dialog_handle DialogInterface::ShowOk(const char *from_pkg, const char *dlg_pkg,
 
 dialog_handle DialogInterface::ShowOneButton(const char *from_pkg, const char *dlg_pkg, eDialogTitle title, uint32 button_text_hash,
                                              uint32 button_pressed_message, uint32 cancel_message, bool dismissable, const char *fmt,
-                                             va_list *arg_list) {
+                                             va_list arg_list) {
     feDialogConfig conf;
     FormatMessage(conf.BlurbString, 0x200, fmt, arg_list);
     conf.NumButtons = 1;
@@ -367,7 +369,7 @@ dialog_handle DialogInterface::ShowOneButton(const char *from_pkg, const char *d
 dialog_handle DialogInterface::ShowTwoButtons(const char *from_pkg, const char *dlg_pkg, eDialogTitle title, uint32 button1_text_hash,
                                               uint32 button2_text_hash, uint32 button1_pressed_message, uint32 button2_pressed_message,
                                               uint32 cancel_message, bool dismissable, eDialogFirstButtons first_button, const char *fmt,
-                                              va_list *arg_list) {
+                                              va_list arg_list) {
     feDialogConfig conf;
     FormatMessage(conf.BlurbString, 0x200, fmt, arg_list);
     conf.NumButtons = 2;
@@ -399,7 +401,7 @@ dialog_handle DialogInterface::ShowTwoButtons(const char *from_pkg, const char *
     va_list arg_list;
     va_start(arg_list, fmt);
     int result = ShowTwoButtons(from_pkg, dlg_pkg, title, button1_text_hash, button2_text_hash, button1_pressed_message, button2_pressed_message,
-                                cancel_message, false, first_button, fmt, &arg_list);
+                                cancel_message, false, first_button, fmt, arg_list);
     va_end(arg_list);
     return result;
 }
@@ -412,7 +414,7 @@ dialog_handle DialogInterface::ShowTwoButtons(const char *from_pkg, const char *
     GetLocalizedString(fmt, 0x200, blurb_fmt);
     va_start(arg_list, blurb_fmt);
     int result = ShowTwoButtons(from_pkg, dlg_pkg, title, button1_text_hash, button2_text_hash, button1_pressed_message, button2_pressed_message,
-                                cancel_message, false, first_button, fmt, &arg_list);
+                                cancel_message, false, first_button, fmt, arg_list);
     va_end(arg_list);
     return result;
 }
@@ -425,7 +427,7 @@ dialog_handle DialogInterface::ShowTwoButtons(const char *from_pkg, const char *
     GetLocalizedString(fmt, 0x200, blurb_fmt);
     va_start(arg_list, blurb_fmt);
     int result = ShowTwoButtons(from_pkg, dlg_pkg, title, button1_text_hash, button2_text_hash, button1_pressed_message, button2_pressed_message,
-                                button1_pressed_message, false, first_button, fmt, &arg_list);
+                                button1_pressed_message, false, first_button, fmt, arg_list);
     va_end(arg_list);
     return result;
 }
@@ -433,7 +435,7 @@ dialog_handle DialogInterface::ShowTwoButtons(const char *from_pkg, const char *
 dialog_handle DialogInterface::ShowThreeButtons(const char *from_pkg, const char *dlg_pkg, eDialogTitle title, uint32 button1_text_hash,
                                                 uint32 button2_text_hash, uint32 button3_text_hash, uint32 button1_pressed_message,
                                                 uint32 button2_pressed_message, uint32 button3_pressed_message, uint32 cancel_message,
-                                                eDialogFirstButtons first_button, const char *fmt, va_list *arg_list) {
+                                                eDialogFirstButtons first_button, const char *fmt, va_list arg_list) {
     feDialogConfig conf;
     FormatMessage(conf.BlurbString, 0x200, fmt, arg_list);
     conf.NumButtons = 3;
@@ -460,7 +462,7 @@ dialog_handle DialogInterface::ShowThreeButtons(const char *from_pkg, const char
     GetLocalizedString(fmt, 0x200, blurb_fmt);
     va_start(arg_list, blurb_fmt);
     int result = ShowThreeButtons(from_pkg, dlg_pkg, title, button1_text_hash, button2_text_hash, button3_text_hash, button1_pressed_message,
-                                  button2_pressed_message, button3_pressed_message, cancel_message, first_button, fmt, &arg_list);
+                                  button2_pressed_message, button3_pressed_message, cancel_message, first_button, fmt, arg_list);
     va_end(arg_list);
     return result;
 }

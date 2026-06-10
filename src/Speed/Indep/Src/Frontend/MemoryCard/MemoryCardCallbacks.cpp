@@ -1,32 +1,16 @@
-#include "Speed/Indep/Src/Frontend/MemoryCard/MemoryCard.hpp"
+#include "Speed/Indep/Src/Frontend/MemoryCard/MemoryCardCallbacks.hpp"
 
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
+#include "Speed/Indep/Src/Frontend/MemoryCard/MemoryCardImp.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/MemCard/uiMemcardBase.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/MemCard/uiMemcardInterface.hpp"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/Misc/Joylog.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
-void DisplayUnicode(const wchar_t *str) {
-    const short *pWChar = reinterpret_cast<const short *>(str);
-    if (*pWChar == 0) {
-        return;
-    }
-    do {
-        pWChar++;
-    } while (*pWChar != 0);
-}
-
-void DisplayMessage(const wchar_t *msg, unsigned int count, const wchar_t **str) {
-    DisplayUnicode(msg);
-    if (count != 0) {
-        for (unsigned int i = 0; i < count; i++) {
-            DisplayUnicode(str[i]);
-        }
-    }
-}
-
 extern char g_GC_Disk_GameName[];
+
+void DisplayMessage(const wchar_t *msg, unsigned int count, const wchar_t **str);
 
 void DisplayStatus(int i) {}
 
@@ -576,7 +560,7 @@ void MemcardCallbacks::SetAutosaveDone(RealmcIface::TaskResult res, RealmcIface:
 }
 
 void MemcardCallbacks::SetMonitorDone(RealmcIface::CardStatus status, RealmcIface::MonitorState state) {
-    JLog(MJ_SetMonitorDone);
+    JLog(MJ_Retry);
     status = static_cast<RealmcIface::CardStatus>(Joylog::AddOrGetData(static_cast<unsigned int>(status), 0x10, JOYLOG_CHANNEL_MEMORY_CARD));
     state = static_cast<RealmcIface::MonitorState>(Joylog::AddOrGetData(static_cast<unsigned int>(state), 0x10, JOYLOG_CHANNEL_MEMORY_CARD));
     GetMemcard()->m_MemOp = MemoryCard::MO_NONE;
@@ -689,5 +673,24 @@ void IJoyHelper::EmulateMemoryCardLibrary(int aJoyOp) {
     }
     if (pBuf != nullptr) {
         delete[] pBuf;
+    }
+}
+
+void DisplayUnicode(const wchar_t *str) {
+    const short *pWChar = reinterpret_cast<const short *>(str);
+    if (*pWChar == 0) {
+        return;
+    }
+    do {
+        pWChar++;
+    } while (*pWChar != 0);
+}
+
+void DisplayMessage(const wchar_t *msg, unsigned int count, const wchar_t **str) {
+    DisplayUnicode(msg);
+    if (count != 0) {
+        for (unsigned int i = 0; i < count; i++) {
+            DisplayUnicode(str[i]);
+        }
     }
 }

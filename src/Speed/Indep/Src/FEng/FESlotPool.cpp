@@ -1,7 +1,7 @@
 #include "Speed/Indep/Src/FEng/FESlotPool.h"
 #include "Speed/Indep/Src/FEng/FEngStandard.h"
 
-unsigned char* FESlotNode::AllocBlock() {
+unsigned char *FESlotNode::AllocBlock() {
     if (SlotsUsed == 0x20) {
         return nullptr;
     }
@@ -20,7 +20,7 @@ unsigned char* FESlotNode::AllocBlock() {
     return pData + SlotSize * Index;
 }
 
-void FESlotNode::FreeBlock(unsigned char* pSlot) {
+void FESlotNode::FreeBlock(unsigned char *pSlot) {
     unsigned long idx = static_cast<unsigned long>(pSlot - pData) / static_cast<unsigned long>(SlotSize);
     SlotsUsed--;
     unsigned long byteIdx = idx >> 3;
@@ -28,26 +28,27 @@ void FESlotNode::FreeBlock(unsigned char* pSlot) {
     SlotMask[byteIdx] &= ~static_cast<unsigned char>(1 << bitIdx);
 }
 
-unsigned char* FESlotPool::Alloc() {
-    FESlotNode* pNode = static_cast<FESlotNode*>(Slots.GetHead());
+unsigned char *FESlotPool::Alloc() {
+    FESlotNode *pNode = static_cast<FESlotNode *>(Slots.GetHead());
     while (pNode && pNode->IsFull()) {
         pNode = pNode->GetNext();
     }
     if (!pNode) {
-        pNode = FENG_NEW FESlotNode(static_cast<unsigned short>(SlotSize));
-        pNode->pData = static_cast<unsigned char*>(FEngMalloc(static_cast<unsigned long>(pNode->SlotSize) << 5, nullptr, 0));
+        pNode = FNEW FESlotNode(static_cast<unsigned short>(SlotSize));
+        pNode->pData = static_cast<unsigned char *>(FEngMalloc(static_cast<unsigned long>(pNode->SlotSize) << 5, nullptr, 0));
         FEngMemSet(pNode->SlotMask, 0, 4);
         Slots.AddHead(pNode);
     }
     return pNode->AllocBlock();
 }
 
-bool FESlotPool::Free(unsigned char* pSlot) {
-    FESlotNode* pNode = static_cast<FESlotNode*>(Slots.GetHead());
+bool FESlotPool::Free(unsigned char *pSlot) {
+    FESlotNode *pNode = static_cast<FESlotNode *>(Slots.GetHead());
     while (pNode) {
         bool contains = false;
         if (reinterpret_cast<unsigned long>(pSlot) >= reinterpret_cast<unsigned long>(pNode->pData)) {
-            contains = reinterpret_cast<unsigned long>(pSlot) < reinterpret_cast<unsigned long>(pNode->pData) + static_cast<unsigned long>(pNode->SlotSize) * 0x20;
+            contains = reinterpret_cast<unsigned long>(pSlot) <
+                       reinterpret_cast<unsigned long>(pNode->pData) + static_cast<unsigned long>(pNode->SlotSize) * 0x20;
         }
         if (contains) {
             break;
@@ -71,26 +72,26 @@ FESlotNode::~FESlotNode() {
     }
 }
 
-unsigned char* FEMultiPool::Alloc(unsigned long Size) {
+unsigned char *FEMultiPool::Alloc(unsigned long Size) {
     if (Size == 0) {
         return nullptr;
     }
-    FESlotPool* pPool = static_cast<FESlotPool*>(Pools.GetHead());
+    FESlotPool *pPool = static_cast<FESlotPool *>(Pools.GetHead());
     while (pPool && pPool->SlotSize != Size) {
         pPool = pPool->GetNext();
     }
     if (!pPool) {
-        pPool = FENG_NEW FESlotPool(Size);
+        pPool = FNEW FESlotPool(Size);
         Pools.AddHead(pPool);
     }
     return pPool->Alloc();
 }
 
-void FEMultiPool::Free(unsigned char* pSlot) {
+void FEMultiPool::Free(unsigned char *pSlot) {
     if (!pSlot) {
         return;
     }
-    FESlotPool* pPool = static_cast<FESlotPool*>(Pools.GetHead());
+    FESlotPool *pPool = static_cast<FESlotPool *>(Pools.GetHead());
     while (pPool && !pPool->Free(pSlot)) {
         pPool = pPool->GetNext();
     }

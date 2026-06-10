@@ -1,9 +1,5 @@
-#ifndef FRONTEND_FENGINTERFACES_FENGINTERFACEFEMOVIES_H
-#define FRONTEND_FENGINTERFACES_FENGINTERFACEFEMOVIES_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef FENGINTERFACEFEMOVIES_H
+#define FENGINTERFACEFEMOVIES_H
 
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEObjects.hpp"
 #include "Speed/Indep/Src/FEng/FEMovie.h"

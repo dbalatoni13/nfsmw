@@ -1,80 +1,29 @@
-#ifndef FRONTEND_MENUSCREENS_MEMCARD_UIMEMCARD_H
-#define FRONTEND_MENUSCREENS_MEMCARD_UIMEMCARD_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef __UIMEMCARD_HPP__
+#define __UIMEMCARD_HPP__
 
 #include "uiMemcardBase.hpp"
-#include "Speed/Indep/Src/Frontend/MenuScreens/Common/feScrollerina.hpp"
 
-struct FEMemWidget : public ScrollerDatum {
-    MemCardFileFlag m_Flag;
-    int m_Size;
-    UIMemcardList *m_pParent;
-
-    FEMemWidget() {}
-    ~FEMemWidget() override {}
-
-    void Act(const char *parent_pkg, unsigned int data);
-    bool IsCorrupt();
-    int GetSize() const {
-        return m_Size;
-    }
-    const char *GetFileName();
-
-    static const int MAX_SIZE;
-};
-
-struct UIMemcardList : public MenuScreen {
-    enum ListOp {
-        MCLO_Load = 0,
-        MCLO_Delete = 1,
-    };
-
-    Scrollerina m_SaveGameList;
-    int m_Initialized;
-    int m_ListOp;
-    unsigned int m_LastMsg;
-    FEMemWidget *m_pCreateNew;
-
-    UIMemcardList(ScreenConstructorData *sd);
-    ~UIMemcardList() override;
-
-    int GetSize() {
-        return m_SaveGameList.GetNumData();
-    }
-    bool IsReady() {
-        return m_Initialized != 0;
-    }
-    ListOp GetListOp() {
-        return static_cast<ListOp>(m_ListOp);
-    }
-
-    const char *GetFileName(int find);
-    void NotificationMessage(unsigned long msg, FEObject *obj, unsigned long param1, unsigned long param2) override;
-    FEMemWidget *AddItem(const char *pName, const char *pDate, int size, int flag);
-};
-
-struct UIMemcardBoot : public UIMemcardBase {
+class UIMemcardBoot : public UIMemcardBase {
+  public:
     UIMemcardBoot(ScreenConstructorData *sd) : UIMemcardBase(sd) {}
     ~UIMemcardBoot() override {}
 
-    void NotificationMessage(unsigned long msg, FEObject *obj, unsigned long param1, unsigned long param2) override;
-    eMenuSoundTriggers NotifySoundMessage(unsigned long msg, eMenuSoundTriggers maybe) override;
+    void NotificationMessage(u32 msg, FEObject *obj, u32 param1, u32 param2) override;
+    eMenuSoundTriggers NotifySoundMessage(u32 msg, eMenuSoundTriggers maybe) override;
 };
 
-struct UIMemcardMain : public UIMemcardBase {
+class UIMemcardMain : public UIMemcardBase {
+  public:
+    UIMemcardMain(ScreenConstructorData *sd);
     ~UIMemcardMain() override {}
+    void NotificationMessage(u32 msg, FEObject *obj, u32 param1, u32 param2) override;
+    void DoSelect(const char *pName) override;
 
     void SetPopupWindow(UIMemcardList *pChild) {
         m_pChild = pChild;
     }
 
-    UIMemcardMain(ScreenConstructorData *sd);
-    void DoSelect(const char *pName) override;
     void ListDone();
-    void NotificationMessage(unsigned long msg, FEObject *obj, unsigned long param1, unsigned long param2) override;
 };
 
 MenuScreen *CreateMemCardBootScreen(ScreenConstructorData *sd);

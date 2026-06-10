@@ -1,6 +1,6 @@
 #include "Speed/Indep/Src/FEng/FEPackage.h"
 #include "Speed/Indep/Src/FEng/FEGroup.h"
-#include "Speed/Indep/Src/FEng/fengine.h"
+#include "Speed/Indep/Src/FEng/FEngine.h"
 #include "Speed/Indep/Src/FEng/FEResourceRequest.h"
 #include "Speed/Indep/Src/FEng/FETypes.h"
 #include "Speed/Indep/Src/FEng/FEngStandard.h"
@@ -12,22 +12,10 @@
 // Forward declarations for types only needed locally as pointer members.
 // Their struct definitions come from FEngine.cpp earlier in the jumbo build.
 
-// total size: 0xC
-struct FELibraryRef {
-    unsigned long ObjGUID;       // offset 0x0, size 0x4
-    unsigned long PackNameHash;  // offset 0x4, size 0x4
-    unsigned long LibGUID;       // offset 0x8, size 0x4
-
-    FELibraryRef()
-        : ObjGUID(0) //
-        , PackNameHash(0xFFFFFFFF) //
-        , LibGUID(0) {}
-};
-
 // total size: 0x14
 struct FEObjectComment : public FEMinNode {
     unsigned long ObjectGUID; // offset 0xC, size 0x4
-    char* pStr;               // offset 0x10, size 0x4
+    char *pStr;               // offset 0x10, size 0x4
 
     inline ~FEObjectComment() override {}
 };
@@ -37,30 +25,10 @@ struct FEObjectComment : public FEMinNode {
 unsigned long FEPackage::uHoldDirtyFlags;
 
 FEPackage::FEPackage()
-    : bExecuting(false) //
-    , bUseIdleList(false) //
-    , bIsLibrary(false) //
-    , bStartEqualsAccept(false) //
-    , bErrorScreen(false) //
-    , Priority(0) //
-    , Controllers(0xff) //
-    , OldControllers(0xff) //
-    , bInputEnabled(false) //
-    , pFilename(nullptr) //
-    , pParentPackage(nullptr) //
-    , UserParam(0) //
-    , NumRequests(0) //
-    , pRequests(nullptr) //
-    , NumMsgTargets(0) //
-    , pMsgTargets(nullptr) //
-    , NumLibRefs(0) //
-    , pLibRefs(nullptr) //
-    , pCurrentButton(nullptr) //
-    , pResourceNames(nullptr) //
-    , MouseObjectStates(nullptr) //
-    , NumMouseObjects(0)
-{
-}
+    : bExecuting(false), bUseIdleList(false), bIsLibrary(false), bStartEqualsAccept(false), bErrorScreen(false), Priority(0), Controllers(0xff),
+      OldControllers(0xff), bInputEnabled(false), pFilename(nullptr), pParentPackage(nullptr), UserParam(0), NumRequests(0), pRequests(nullptr),
+      NumMsgTargets(0), pMsgTargets(nullptr), NumLibRefs(0), pLibRefs(nullptr), pCurrentButton(nullptr), pResourceNames(nullptr),
+      MouseObjectStates(nullptr), NumMouseObjects(0) {}
 
 FEPackage::~FEPackage() {
     if (pFilename) {
@@ -78,8 +46,8 @@ FEPackage::~FEPackage() {
     if (MouseObjectStates) {
         delete[] MouseObjectStates;
     }
-    FEObjectComment* pComment;
-    while ((pComment = static_cast<FEObjectComment*>(Comments.RemHead())) != nullptr) {
+    FEObjectComment *pComment;
+    while ((pComment = static_cast<FEObjectComment *>(Comments.RemHead())) != nullptr) {
         if (pComment->pStr) {
             delete[] pComment->pStr;
         }
@@ -95,7 +63,7 @@ bool FEPackage::InitializePackage() {
     return ForAllObjects(cb);
 }
 
-FEObject* FEPackage::FindObjectByHash(unsigned long NameHash) {
+FEObject *FEPackage::FindObjectByHash(unsigned long NameHash) {
     FEFindByHash finder;
     finder.Hash = NameHash;
     finder.pFound = nullptr;
@@ -103,7 +71,7 @@ FEObject* FEPackage::FindObjectByHash(unsigned long NameHash) {
     return finder.pFound;
 }
 
-FEObject* FEPackage::FindObjectByGUID(unsigned long GUID) {
+FEObject *FEPackage::FindObjectByGUID(unsigned long GUID) {
     FEFindByGUID finder;
     finder.GUID = GUID;
     finder.pFound = nullptr;
@@ -111,56 +79,56 @@ FEObject* FEPackage::FindObjectByGUID(unsigned long GUID) {
     return finder.pFound;
 }
 
-bool FEPackage::ForAllChildren(FEGroup* pGroup, FEObjectCallback& Callback) {
-    FEObject* pObj = static_cast<FEObject*>(pGroup->Children.GetHead());
+bool FEPackage::ForAllChildren(FEGroup *pGroup, FEObjectCallback &Callback) {
+    FEObject *pObj = static_cast<FEObject *>(pGroup->Children.GetHead());
     while (pObj) {
         if (!Callback.Callback(pObj)) {
             return false;
         }
-        if (pObj->Type == 5 && !ForAllChildren(static_cast<FEGroup*>(pObj), Callback)) {
+        if (pObj->Type == 5 && !ForAllChildren(static_cast<FEGroup *>(pObj), Callback)) {
             return false;
         }
-        pObj = static_cast<FEObject*>(pObj->GetNext());
+        pObj = static_cast<FEObject *>(pObj->GetNext());
     }
     return true;
 }
 
-bool FEPackage::ForAllObjects(FEObjectCallback& Callback) {
-    FEObject* pObj = static_cast<FEObject*>(Objects.GetHead());
+bool FEPackage::ForAllObjects(FEObjectCallback &Callback) {
+    FEObject *pObj = static_cast<FEObject *>(Objects.GetHead());
     while (pObj) {
         if (!Callback.Callback(pObj)) {
             return false;
         }
-        if (pObj->Type == 5 && !ForAllChildren(static_cast<FEGroup*>(pObj), Callback)) {
+        if (pObj->Type == 5 && !ForAllChildren(static_cast<FEGroup *>(pObj), Callback)) {
             return false;
         }
-        pObj = static_cast<FEObject*>(pObj->GetNext());
+        pObj = static_cast<FEObject *>(pObj->GetNext());
     }
     return true;
 }
 
-void FEPackage::SetCurrentButton(FEObject* pNewButton, bool bSendMsgs) {
+void FEPackage::SetCurrentButton(FEObject *pNewButton, bool bSendMsgs) {
     if (bSendMsgs) {
         if (pCurrentButton) {
             pEnginePtr->QueueMessage(0x55d1e635, nullptr, this, pCurrentButton, 0);
-            pEnginePtr->QueueMessage(0x55d1e635, pCurrentButton, this, reinterpret_cast<FEObject*>(0xfffffffb), 0);
+            pEnginePtr->QueueMessage(0x55d1e635, pCurrentButton, this, reinterpret_cast<FEObject *>(0xfffffffb), 0);
         }
         if (pNewButton) {
             pEnginePtr->QueueMessage(0xabc08912, nullptr, this, pNewButton, 0);
-            pEnginePtr->QueueMessage(0xabc08912, pNewButton, this, reinterpret_cast<FEObject*>(0xfffffffb), 0);
+            pEnginePtr->QueueMessage(0xabc08912, pNewButton, this, reinterpret_cast<FEObject *>(0xfffffffb), 0);
         }
     }
     pCurrentButton = pNewButton;
 }
 
-bool PackageInitStateCB::Callback(FEObject* pObj) {
+bool PackageInitStateCB::Callback(FEObject *pObj) {
     pObj->SetCurrentScript(pObj->FindScript(0x1744b3));
     pObj->pCurrentScript->CurTime = 0;
     pObj->Flags |= 0x3c00000;
     return true;
 }
 
-bool FEFindByHash::Callback(FEObject* pObj) {
+bool FEFindByHash::Callback(FEObject *pObj) {
     if (pObj->NameHash == Hash) {
         pFound = pObj;
         return false;
@@ -168,7 +136,7 @@ bool FEFindByHash::Callback(FEObject* pObj) {
     return true;
 }
 
-bool FEFindByGUID::Callback(FEObject* pObj) {
+bool FEFindByGUID::Callback(FEObject *pObj) {
     if (pObj->GUID == GUID) {
         pFound = pObj;
         return false;
@@ -176,21 +144,21 @@ bool FEFindByGUID::Callback(FEObject* pObj) {
     return true;
 }
 
-bool MouseStateObjectCounter::Callback(FEObject* pObj) {
+bool MouseStateObjectCounter::Callback(FEObject *pObj) {
     if (pObj->Flags & 0x20000) {
         NumMouseObjects++;
     }
     return true;
 }
 
-bool MouseStateArrayBuilder::Callback(FEObject* pObj) {
+bool MouseStateArrayBuilder::Callback(FEObject *pObj) {
     if (pObj->Flags & 0x20000) {
         pPack->AddMouseObjectState(pObj);
     }
     return true;
 }
 
-bool MouseStateArrayOffsetUpdater::Callback(FEObject* pObj) {
+bool MouseStateArrayOffsetUpdater::Callback(FEObject *pObj) {
     if (pObj->Flags & 0x20000) {
         pPack->UpdateMouseObjectOffsets(pObj);
     }
@@ -201,22 +169,22 @@ extern unsigned int eFrameCounter;
 extern unsigned int eFrameCounterOLD;
 extern unsigned int objCount;
 
-void FEKeyInterp(FEKeyTrack* pTrack, long tTime, void* pOutData);
-void FEKeyInterpFast(FEKeyTrack* pTrack, long tTime, void* pOutData);
+void FEKeyInterp(FEKeyTrack *pTrack, long tTime, void *pOutData);
+void FEKeyInterpFast(FEKeyTrack *pTrack, long tTime, void *pOutData);
 
-void FEPackage::UpdateGroup(FEGroup* pGroup, long tDeltaTicks) {
-    FEObject* pChild = pGroup->GetFirstChild();
+void FEPackage::UpdateGroup(FEGroup *pGroup, long tDeltaTicks) {
+    FEObject *pChild = pGroup->GetFirstChild();
     while (pChild) {
         UpdateObject(pChild, tDeltaTicks);
         pChild->Flags |= pGroup->Flags & 0x3C00000;
-        pChild = static_cast<FEObject*>(pChild->next);
+        pChild = static_cast<FEObject *>(pChild->next);
     }
 }
 
-void FEPackage::UpdateObjectTracks(FEObject* pObj, FEScript* pScript) {
-    unsigned char* pData = pObj->pData;
+void FEPackage::UpdateObjectTracks(FEObject *pObj, FEScript *pScript) {
+    unsigned char *pData = pObj->pData;
     int CurTime = pScript->CurTime;
-    FEKeyTrack* pTracks = pScript->pTracks;
+    FEKeyTrack *pTracks = pScript->pTracks;
 
     if (bExecuting) {
         if (pTracks && pTracks->LongOffset == 0) {
@@ -230,12 +198,11 @@ void FEPackage::UpdateObjectTracks(FEObject* pObj, FEScript* pScript) {
             pObj->Flags &= FEPackage::uHoldDirtyFlags | 0xFF7FFFFF;
         }
         unsigned char bDone = 0x80;
-        if (*reinterpret_cast<int*>(pObj->pData + 0xC)) {
+        if (*reinterpret_cast<int *>(pObj->pData + 0xC)) {
             unsigned char TrackCount = static_cast<unsigned char>(pScript->TrackCount);
             for (unsigned char i = 0; i < TrackCount; i++, pTracks++) {
                 bDone = pTracks->InterpAction & bDone;
-                FEKeyInterpFast(pTracks, CurTime,
-                                pData + pTracks->LongOffset * 4);
+                FEKeyInterpFast(pTracks, CurTime, pData + pTracks->LongOffset * 4);
             }
         }
         if (bDone) {
@@ -247,11 +214,10 @@ void FEPackage::UpdateObjectTracks(FEObject* pObj, FEScript* pScript) {
         if (pTracks && pTracks->LongOffset == 0) {
             FEKeyInterp(pTracks, CurTime, pData);
         }
-        if (*reinterpret_cast<int*>(pObj->pData + 0xC)) {
+        if (*reinterpret_cast<int *>(pObj->pData + 0xC)) {
             unsigned char TrackCount = static_cast<unsigned char>(pScript->TrackCount);
             for (unsigned char i = 0; i < TrackCount; i++, pTracks++) {
-                FEKeyInterp(pTracks, CurTime,
-                            pData + pTracks->LongOffset * 4);
+                FEKeyInterp(pTracks, CurTime, pData + pTracks->LongOffset * 4);
             }
         }
     }
@@ -262,9 +228,8 @@ void FEPackage::UpdateObjectTracks(FEObject* pObj, FEScript* pScript) {
     }
 }
 
-void FEPackage::IssueScriptMessages(FEngine* pEngine, FEObject* pObj,
-                                    FEScript* pScript, long tOldTime, long tNewTime) {
-    FEEvent* pEvents = pScript->Events.pEvent;
+void FEPackage::IssueScriptMessages(FEngine *pEngine, FEObject *pObj, FEScript *pScript, long tOldTime, long tNewTime) {
+    FEEvent *pEvents = pScript->Events.pEvent;
     int Count = pScript->Events.Count;
 
     if (tNewTime < tOldTime) {
@@ -286,42 +251,38 @@ void FEPackage::IssueScriptMessages(FEngine* pEngine, FEObject* pObj,
     if (i < Count && pEvents[i].tTime < static_cast<unsigned long>(tNewTime)) {
         for (;;) {
             switch (pEvents[i].Target) {
-            case 0:
-                if (pEvents[i].EventID == 0x1B3909AA) {
-                    FEObject* pButton = FindObjectByGUID(0);
-                    SetCurrentButton(pButton, true);
-                } else {
-                    pEngine->QueueMessage(pEvents[i].EventID, pObj, this,
-                                          reinterpret_cast<FEObject*>(0), 0);
-                }
-                break;
-            case 0xFFFFFFFF:
-                pEngine->SendMessageToGame(pEvents[i].EventID, pObj, this, 0);
-                break;
-            case 0xFFFFFFFC:
-                pEngine->QueueMessage(pEvents[i].EventID, pObj, this,
-                                      reinterpret_cast<FEObject*>(0xFFFFFFFC), 0);
-                break;
-            case 0xFFFFFFFB:
-                pEngine->QueueMessage(pEvents[i].EventID, pObj, this,
-                                      reinterpret_cast<FEObject*>(0xFFFFFFFB), 0);
-                break;
-            case 0xFFFFFFFA:
-                pEngine->QueueMessage(pEvents[i].EventID, pObj, this,
-                                      reinterpret_cast<FEObject*>(0xFFFFFFFA), 0);
-                break;
-            default: {
-                FEObject* pTarget = FindObjectByGUID(pEvents[i].Target);
-                if (pEvents[i].EventID == 0x1B3909AA) {
-                    FEObject* pButton = FindObjectByGUID(pEvents[i].Target);
-                    SetCurrentButton(pButton, true);
+                case 0:
+                    if (pEvents[i].EventID == 0x1B3909AA) {
+                        FEObject *pButton = FindObjectByGUID(0);
+                        SetCurrentButton(pButton, true);
+                    } else {
+                        pEngine->QueueMessage(pEvents[i].EventID, pObj, this, reinterpret_cast<FEObject *>(0), 0);
+                    }
+                    break;
+                case 0xFFFFFFFF:
+                    pEngine->SendMessageToGame(pEvents[i].EventID, pObj, this, 0);
+                    break;
+                case 0xFFFFFFFC:
+                    pEngine->QueueMessage(pEvents[i].EventID, pObj, this, reinterpret_cast<FEObject *>(0xFFFFFFFC), 0);
+                    break;
+                case 0xFFFFFFFB:
+                    pEngine->QueueMessage(pEvents[i].EventID, pObj, this, reinterpret_cast<FEObject *>(0xFFFFFFFB), 0);
+                    break;
+                case 0xFFFFFFFA:
+                    pEngine->QueueMessage(pEvents[i].EventID, pObj, this, reinterpret_cast<FEObject *>(0xFFFFFFFA), 0);
+                    break;
+                default: {
+                    FEObject *pTarget = FindObjectByGUID(pEvents[i].Target);
+                    if (pEvents[i].EventID == 0x1B3909AA) {
+                        FEObject *pButton = FindObjectByGUID(pEvents[i].Target);
+                        SetCurrentButton(pButton, true);
+                        break;
+                    }
+                    if (pObj) {
+                        pEngine->QueueMessage(pEvents[i].EventID, pObj, this, pTarget, 0);
+                    }
                     break;
                 }
-                if (pObj) {
-                    pEngine->QueueMessage(pEvents[i].EventID, pObj, this, pTarget, 0);
-                }
-                break;
-            }
             }
             i++;
             if (i >= Count) {
@@ -334,7 +295,7 @@ void FEPackage::IssueScriptMessages(FEngine* pEngine, FEObject* pObj,
     }
 }
 
-void FEPackage::UpdateObject(FEObject* pObj, long tDeltaTicks) {
+void FEPackage::UpdateObject(FEObject *pObj, long tDeltaTicks) {
     if (eFrameCounterOLD == eFrameCounter) {
         objCount++;
     } else {
@@ -349,7 +310,7 @@ void FEPackage::UpdateObject(FEObject* pObj, long tDeltaTicks) {
         pObj->Flags = Flags & (FEPackage::uHoldDirtyFlags | 0xFDFFFFFF);
     }
 
-    FEScript* pScript = pObj->pCurrentScript;
+    FEScript *pScript = pObj->pCurrentScript;
     int tPrevTime = pScript->CurTime;
     int ScrLength = pScript->Length;
     pScript->CurTime = tPrevTime + iTickIncrement;
@@ -364,83 +325,80 @@ void FEPackage::UpdateObject(FEObject* pObj, long tDeltaTicks) {
                 UpdateObjectTracks(pObj, pScript);
                 int tOverTime = pScript->CurTime - ScrLength;
                 pScript->CurTime = 0;
-                if (pScript->Events.Count) {
+                if (pScript->Events.GetCount()) {
                     IssueScriptMessages(pEnginePtr, pObj, pScript, tPrevTime, ScrLength);
                 }
                 pScript = pScript->pChainTo;
                 pObj->SetCurrentScript(pScript);
                 pScript->CurTime = tOverTime;
-                if (pScript->Events.Count) {
+                if (pScript->Events.GetCount()) {
                     goto issueFrom0;
                 }
             } else {
                 PlayAction = pScript->Flags & 3;
                 switch (PlayAction) {
-                case 0:
-                    if (pScript->Events.Count) {
-                        IssueScriptMessages(pEnginePtr, pObj, pScript, tPrevTime, ScrLength);
-                    }
-                    pScript->CurTime = pScript->Length + 1;
-                    break;
-                case 1:
-                    if (pScript->Length > 0) {
-                        if (pScript->Events.Count) {
+                    case 0:
+                        if (pScript->Events.GetCount()) {
                             IssueScriptMessages(pEnginePtr, pObj, pScript, tPrevTime, ScrLength);
                         }
-                        pScript->CurTime = pScript->CurTime -
-                            (pScript->CurTime / pScript->Length) * pScript->Length;
-                        if (pScript->Events.Count) {
-                            IssueScriptMessages(pEnginePtr, pObj, pScript, 0, pScript->CurTime);
+                        pScript->CurTime = pScript->Length + 1;
+                        break;
+                    case 1:
+                        if (pScript->Length > 0) {
+                            if (pScript->Events.GetCount()) {
+                                IssueScriptMessages(pEnginePtr, pObj, pScript, tPrevTime, ScrLength);
+                            }
+                            pScript->CurTime = pScript->CurTime - (pScript->CurTime / pScript->Length) * pScript->Length;
+                            if (pScript->Events.GetCount()) {
+                                IssueScriptMessages(pEnginePtr, pObj, pScript, 0, pScript->CurTime);
+                            }
+                            pObj->SetupMoveToTracks();
+                        } else {
+                            pScript->CurTime = 0;
                         }
-                        pObj->SetupMoveToTracks();
-                    } else {
-                        pScript->CurTime = 0;
-                    }
-                    break;
-                case 2:
-                    if (pScript->Length > 0) {
-                        int doubleLen = pScript->Length * 2;
-                        pScript->CurTime = pScript->CurTime - (pScript->CurTime / doubleLen) * doubleLen;
-                    } else {
-                        pScript->CurTime = 0;
-                    }
-                    break;
+                        break;
+                    case 2:
+                        if (pScript->Length > 0) {
+                            int doubleLen = pScript->Length * 2;
+                            pScript->CurTime = pScript->CurTime - (pScript->CurTime / doubleLen) * doubleLen;
+                        } else {
+                            pScript->CurTime = 0;
+                        }
+                        break;
                 }
             }
-            if (bExecuting && tPrevTime == pScript->CurTime &&
-                tPrevTime == pScript->Length + 1 && !(pObj->Flags & 0x400000)) {
+            if (bExecuting && tPrevTime == pScript->CurTime && tPrevTime == pScript->Length + 1 && !(pObj->Flags & 0x400000)) {
                 goto finalize;
             }
         }
     } else {
         if (bExecuting) {
-            if (pScript->Events.Count != 0) {
+            if (pScript->Events.GetCount() != 0) {
                 PlayAction = pScript->Flags & 3;
                 switch (PlayAction) {
-                case 0:
-                    IssueScriptMessages(pEnginePtr, pObj, pScript, tPrevTime, pScript->CurTime);
-                    break;
-                case 1:
-                    if (pScript->CurTime < tPrevTime) {
-                        IssueScriptMessages(pEnginePtr, pObj, pScript, tPrevTime, ScrLength);
-                    issueFrom0:
-                        IssueScriptMessages(pEnginePtr, pObj, pScript, 0, pScript->CurTime);
-                        break;
-                    }
-                    IssueScriptMessages(pEnginePtr, pObj, pScript, tPrevTime, pScript->CurTime);
-                    break;
-                case 2:
-                    if (tPrevTime < ScrLength) {
+                    case 0:
                         IssueScriptMessages(pEnginePtr, pObj, pScript, tPrevTime, pScript->CurTime);
-                    } else {
-                        IssueScriptMessages(pEnginePtr, pObj, pScript, tPrevTime - ScrLength, 0);
-                        IssueScriptMessages(pEnginePtr, pObj, pScript, 0, pScript->CurTime);
-                    }
-                    break;
+                        break;
+                    case 1:
+                        if (pScript->CurTime < tPrevTime) {
+                            IssueScriptMessages(pEnginePtr, pObj, pScript, tPrevTime, ScrLength);
+                        issueFrom0:
+                            IssueScriptMessages(pEnginePtr, pObj, pScript, 0, pScript->CurTime);
+                            break;
+                        }
+                        IssueScriptMessages(pEnginePtr, pObj, pScript, tPrevTime, pScript->CurTime);
+                        break;
+                    case 2:
+                        if (tPrevTime < ScrLength) {
+                            IssueScriptMessages(pEnginePtr, pObj, pScript, tPrevTime, pScript->CurTime);
+                        } else {
+                            IssueScriptMessages(pEnginePtr, pObj, pScript, tPrevTime - ScrLength, 0);
+                            IssueScriptMessages(pEnginePtr, pObj, pScript, 0, pScript->CurTime);
+                        }
+                        break;
                 }
             }
-            if (bExecuting && tPrevTime == pScript->CurTime &&
-                tPrevTime == pScript->Length + 1 && !(pObj->Flags & 0x400000)) {
+            if (bExecuting && tPrevTime == pScript->CurTime && tPrevTime == pScript->Length + 1 && !(pObj->Flags & 0x400000)) {
                 goto finalize;
             }
         }
@@ -450,24 +408,23 @@ void FEPackage::UpdateObject(FEObject* pObj, long tDeltaTicks) {
 
 finalize:
     switch (pObj->Type) {
-    case FE_Group:
-        UpdateGroup(static_cast<FEGroup*>(pObj), tDeltaTicks);
-        break;
-    case FE_List:
-        static_cast<FEListBox*>(pObj)->Update(static_cast<float>(tDeltaTicks));
-        break;
-    case FE_CodeList:
-        static_cast<FECodeListBox*>(pObj)->Update(static_cast<float>(tDeltaTicks));
-        break;
-    case FE_Movie:
-        if (bExecuting) {
-            static_cast<FEMovie*>(pObj)->Update(tDeltaTicks);
-        }
-        break;
+        case FE_Group:
+            UpdateGroup(static_cast<FEGroup *>(pObj), tDeltaTicks);
+            break;
+        case FE_List:
+            static_cast<FEListBox *>(pObj)->Update(static_cast<float>(tDeltaTicks));
+            break;
+        case FE_CodeList:
+            static_cast<FECodeListBox *>(pObj)->Update(static_cast<float>(tDeltaTicks));
+            break;
+        case FE_Movie:
+            if (bExecuting) {
+                static_cast<FEMovie *>(pObj)->Update(tDeltaTicks);
+            }
+            break;
     }
 
-    if (bExecuting == true && tPrevTime == pScript->CurTime &&
-        tPrevTime == pScript->Length + 1 && !(pObj->Flags & 0x400000)) {
+    if (bExecuting == true && tPrevTime == pScript->CurTime && tPrevTime == pScript->Length + 1 && !(pObj->Flags & 0x400000)) {
         pObj->Flags &= FEPackage::uHoldDirtyFlags | 0xFE7FFFFF;
     }
 
@@ -478,8 +435,8 @@ finalize:
     }
 }
 
-void FEPackage::Update(FEngine* pEngine, long tDeltaTicks) {
-    FEObject* pObject = static_cast<FEObject*>(Objects.GetHead());
+void FEPackage::Update(FEngine *pEngine, long tDeltaTicks) {
+    FEObject *pObject = static_cast<FEObject *>(Objects.GetHead());
     pEnginePtr = pEngine;
     iTickIncrement = tDeltaTicks;
     while (pObject) {
@@ -494,7 +451,7 @@ void FEPackage::Update(FEngine* pEngine, long tDeltaTicks) {
     }
 }
 
-void FEPackage::SetFilename(const char* pName) {
+void FEPackage::SetFilename(const char *pName) {
     if (pFilename) {
         delete[] pFilename;
     }
@@ -502,12 +459,12 @@ void FEPackage::SetFilename(const char* pName) {
     if (pName) {
         int Len = FEngStrLen(pName);
 
-        pFilename = FENG_NEW char[Len + 1];
+        pFilename = FNEW char[Len + 1];
         FEngStrCpy(pFilename, pName);
     }
 }
 
-bool FEPackage::Startup(FEGameInterface* pGameInterface) {
+bool FEPackage::Startup(FEGameInterface *pGameInterface) {
     bool bResult = true;
     if (!pGameInterface->LoadResources(this, NumRequests, pRequests)) {
         bResult = false;
@@ -517,14 +474,14 @@ bool FEPackage::Startup(FEGameInterface* pGameInterface) {
     return bResult;
 }
 
-void FEPackage::Shutdown(FEGameInterface* pGameInterface) {
+void FEPackage::Shutdown(FEGameInterface *pGameInterface) {
     if (pGameInterface) {
         pGameInterface->UnloadResources(this, NumRequests, pRequests);
     }
 }
 
-FEMessageResponse* FEPackage::FindResponse(unsigned long MsgID) {
-    FEMessageResponse* pNode = GetFirstResponse();
+FEMessageResponse *FEPackage::FindResponse(unsigned long MsgID) {
+    FEMessageResponse *pNode = GetFirstResponse();
     while (pNode) {
         if (pNode->GetMsgID() == MsgID) {
             return pNode;
@@ -534,7 +491,7 @@ FEMessageResponse* FEPackage::FindResponse(unsigned long MsgID) {
     return pNode;
 }
 
-bool ResourceConnector::Callback(FEObject* pObj) {
+bool ResourceConnector::Callback(FEObject *pObj) {
     if (pObj->Type == FE_List)
         goto connect;
     if (pObj->Type < FE_List)
@@ -543,7 +500,7 @@ bool ResourceConnector::Callback(FEObject* pObj) {
         goto check_resource;
     goto done;
 connect:
-    ConnectListBoxResources(static_cast<FEListBox*>(pObj));
+    ConnectListBoxResources(static_cast<FEListBox *>(pObj));
     goto done;
 check_resource:
     if (pObj->ResourceIndex != 0xFFFF) {
@@ -555,9 +512,9 @@ done:
     return true;
 }
 
-void ResourceConnector::ConnectListBoxResources(FEListBox* pList) {
+void ResourceConnector::ConnectListBoxResources(FEListBox *pList) {
     {
-        unsigned long* pCurrentColumn = &pList->mulCurrentColumn;
+        unsigned long *pCurrentColumn = &pList->mulCurrentColumn;
         unsigned long col;
         if (pList->mulNumColumns == 0) {
             col = 0;
@@ -570,7 +527,7 @@ void ResourceConnector::ConnectListBoxResources(FEListBox* pList) {
         *pCurrentColumn = col;
     }
     {
-        unsigned long* pCurrentRow = &pList->mulCurrentRow;
+        unsigned long *pCurrentRow = &pList->mulCurrentRow;
         unsigned long row;
         if (pList->mulNumRows == 0) {
             row = 0;
@@ -587,18 +544,18 @@ void ResourceConnector::ConnectListBoxResources(FEListBox* pList) {
     for (unsigned long j = 0; j < Rows; j++) {
         unsigned long i = 0;
         while (i < Cols) {
-            const FEListBoxCell* pCellData = pList->GetCurrentCellData();
+            const FEListBoxCell *pCellData = pList->GetCurrentCellData();
             unsigned long resIdx = pCellData->stResource.ResourceIndex;
             if (resIdx != 0xFFFFFFFF) {
-                FEResourceRequest* pReq = &(*pReqList)[resIdx];
+                FEResourceRequest *pReq = &(*pReqList)[resIdx];
                 unsigned long handle = pReq->Handle;
                 unsigned long userParam = pReq->UserParam;
-                FEListBoxCell* pCell = pList->GetPCellData(pList->mulCurrentColumn, pList->mulCurrentRow);
+                FEListBoxCell *pCell = pList->GetPCellData(pList->mulCurrentColumn, pList->mulCurrentRow);
                 pCell->stResource.Handle = handle;
                 pCell->stResource.UserParam = userParam;
                 pCell->stResource.ResourceIndex = resIdx;
             } else {
-                FEListBoxCell* pCell = pList->GetPCellData(pList->mulCurrentColumn, pList->mulCurrentRow);
+                FEListBoxCell *pCell = pList->GetPCellData(pList->mulCurrentColumn, pList->mulCurrentRow);
                 pCell->stResource.Handle = 0;
                 pCell->stResource.UserParam = 0;
                 pCell->stResource.ResourceIndex = 0xFFFFFFFF;
@@ -619,11 +576,11 @@ void FEPackage::ConnectObjectResources() {
 void FEPackage::SetNumLibraryRefs(unsigned long NewCount) {
     if (NewCount == 0) {
         if (pLibRefs) {
-            delete[] reinterpret_cast<char*>(pLibRefs);
+            delete[] reinterpret_cast<char *>(pLibRefs);
         }
         pLibRefs = nullptr;
     } else {
-        FELibraryRef* pNewList = FENG_NEW FELibraryRef[NewCount];
+        FELibraryRef *pNewList = FNEW FELibraryRef[NewCount];
         unsigned long CopyCount = NewCount;
         if (NewCount > NumLibRefs) {
             CopyCount = NumLibRefs;
@@ -632,14 +589,14 @@ void FEPackage::SetNumLibraryRefs(unsigned long NewCount) {
             FEngMemCpy(pNewList, pLibRefs, CopyCount * sizeof(FELibraryRef));
         }
         if (pLibRefs) {
-            delete[] reinterpret_cast<char*>(pLibRefs);
+            delete[] reinterpret_cast<char *>(pLibRefs);
         }
         pLibRefs = pNewList;
         NumLibRefs = NewCount;
     }
 }
 
-FELibraryRef* FEPackage::FindLibraryReference(unsigned long ObjGUID) const {
+FELibraryRef *FEPackage::FindLibraryReference(unsigned long ObjGUID) const {
     for (unsigned long i = 0; i < NumLibRefs; i++) {
         if (pLibRefs[i].ObjGUID == ObjGUID) {
             return &pLibRefs[i];
@@ -674,7 +631,7 @@ FEObjectMouseState::FEObjectMouseState() {
 
 FEObjectMouseState::~FEObjectMouseState() {}
 
-FEMsgTargetList* FEPackage::GetMessageTargets(unsigned long MsgID) {
+FEMsgTargetList *FEPackage::GetMessageTargets(unsigned long MsgID) {
     for (unsigned long i = 0; i < NumMsgTargets; i++) {
         if (pMsgTargets[i].GetMsgID() == MsgID) {
             return &pMsgTargets[i];
@@ -683,35 +640,35 @@ FEMsgTargetList* FEPackage::GetMessageTargets(unsigned long MsgID) {
     return nullptr;
 }
 
-bool OffsetCalculatron(unsigned long NameHash, FEObject* pObj, FEPoint& Offset) {
+bool OffsetCalculatron(unsigned long NameHash, FEObject *pObj, FEPoint &Offset) {
     if (NameHash == pObj->NameHash) {
-        FEObjData* pData = pObj->GetObjData();
+        FEObjData *pData = pObj->GetObjData();
         Offset.h += pData->Pos.x;
         Offset.v += pData->Pos.y;
         return true;
-    } else if (pObj->Type == FE_Group && static_cast<FEGroup*>(pObj)->FindChildRecursive(NameHash)) {
-        FEObjData* pData = pObj->GetObjData();
+    } else if (pObj->Type == FE_Group && static_cast<FEGroup *>(pObj)->FindChildRecursive(NameHash)) {
+        FEObjData *pData = pObj->GetObjData();
         Offset.h += pData->Pos.x;
         Offset.v += pData->Pos.y;
-        FEObject* pChild = static_cast<FEGroup*>(pObj)->GetFirstChild();
+        FEObject *pChild = static_cast<FEGroup *>(pObj)->GetFirstChild();
         while (pChild) {
             OffsetCalculatron(NameHash, pChild, Offset);
-            pChild = static_cast<FEObject*>(pChild->GetNext());
+            pChild = static_cast<FEObject *>(pChild->GetNext());
         }
         return true;
     }
     return false;
 }
 
-void FEPackage::AddMouseObjectState(FEObject* obj) {
+void FEPackage::AddMouseObjectState(FEObject *obj) {
     if (!obj) {
         return;
     }
-    FEObject* pObj = GetFirstObject();
+    FEObject *pObj = GetFirstObject();
     unsigned long mouseable = obj->NameHash;
     while (pObj) {
         if (pObj->Type == FE_Group) {
-            if (static_cast<FEGroup*>(pObj)->FindChildRecursive(mouseable) || mouseable == pObj->NameHash) {
+            if (static_cast<FEGroup *>(pObj)->FindChildRecursive(mouseable) || mouseable == pObj->NameHash) {
                 FEPoint p;
                 if (OffsetCalculatron(mouseable, pObj, p)) {
                     MouseObjectStates[NumMouseObjects].Offset = p;
@@ -725,21 +682,21 @@ void FEPackage::AddMouseObjectState(FEObject* obj) {
                 break;
             }
         }
-        pObj = static_cast<FEObject*>(pObj->GetNext());
+        pObj = static_cast<FEObject *>(pObj->GetNext());
     }
     MouseObjectStates[NumMouseObjects].pObject = obj;
     NumMouseObjects++;
 }
 
-void FEPackage::UpdateMouseObjectOffsets(FEObject* obj) {
+void FEPackage::UpdateMouseObjectOffsets(FEObject *obj) {
     if (!obj) {
         return;
     }
-    FEObject* pObj = GetFirstObject();
+    FEObject *pObj = GetFirstObject();
     unsigned long mouseable = obj->NameHash;
     while (pObj) {
         if (pObj->Type == FE_Group) {
-            if (static_cast<FEGroup*>(pObj)->FindChildRecursive(mouseable) || mouseable == pObj->NameHash) {
+            if (static_cast<FEGroup *>(pObj)->FindChildRecursive(mouseable) || mouseable == pObj->NameHash) {
                 FEPoint p;
                 if (OffsetCalculatron(mouseable, pObj, p)) {
                     MouseObjectStates[NumMouseObjectsCounter++].Offset = p;
@@ -753,6 +710,87 @@ void FEPackage::UpdateMouseObjectOffsets(FEObject* obj) {
                 break;
             }
         }
-        pObj = static_cast<FEObject*>(pObj->GetNext());
+        pObj = static_cast<FEObject *>(pObj->GetNext());
     }
 }
+
+// File: speed/indep/src/feng/FEPackage.cpp
+// total size: 0xC
+// Decl: speed/indep/src/feng/FEPackage.cpp:211
+class FEFindByHash : public FEObjectCallback {
+  public:
+    u32 Hash;         // offset 0x4, size 0x4, Decl: speed/indep/src/feng/FEPackage.cpp:213
+    FEObject *pFound; // offset 0x8, size 0x4, Decl: speed/indep/src/feng/FEPackage.cpp:214
+
+    bool Callback(struct FEObject *pObj) override {} // Decl: speed/indep/src/feng/FEPackage.cpp:216
+};
+
+// total size: 0xC
+// Decl: speed/indep/src/feng/FEPackage.cpp:257
+class FEFindByGUID : public FEObjectCallback {
+  public:
+    u32 GUID;         // offset 0x4, size 0x4, Decl: speed/indep/src/feng/FEPackage.cpp:259
+    FEObject *pFound; // offset 0x8, size 0x4, Decl: speed/indep/src/feng/FEPackage.cpp:260
+
+    bool Callback(struct FEObject *pObj) override {} // Decl: speed/indep/src/feng/FEPackage.cpp:262
+};
+
+// total size: 0xC
+// Decl: speed/indep/src/feng/FEPackage.cpp:888
+class FEGetNumSpawnResponses : public FEObjectCallback {
+  public:
+    ~FEGetNumSpawnResponses() override {} // Decl: speed/indep/src/feng/FEPackage.cpp:888
+
+    u32 *pNumLoad;      // offset 0x4, size 0x4, Decl: speed/indep/src/feng/FEPackage.cpp:890
+    u32 *pStringLength; // offset 0x8, size 0x4, Decl: speed/indep/src/feng/FEPackage.cpp:891
+
+    FEGetNumSpawnResponses(u32 &TheNumLoad, u32 &TheStringLength) {} // Decl: speed/indep/src/feng/FEPackage.cpp:893
+
+    bool Callback(struct FEObject *pObj) override {} // Decl: speed/indep/src/feng/FEPackage.cpp:896
+};
+
+// total size: 0x10
+// Decl: speed/indep/src/feng/FEPackage.cpp:904
+class FESetSpawnResponses : public FEObjectCallback {
+  public:
+    ~FESetSpawnResponses() override {} // Decl: speed/indep/src/feng/FEPackage.cpp:904
+
+    u32 *pNumLoad;                 // offset 0x4, size 0x4, Decl: speed/indep/src/feng/FEPackage.cpp:906
+    u32 *pStringLength;            // offset 0x8, size 0x4, Decl: speed/indep/src/feng/FEPackage.cpp:907
+    FELoadPackageDescArray *pDesc; // offset 0xC, size 0x4, Decl: speed/indep/src/feng/FEPackage.cpp:908
+
+    FESetSpawnResponses(u32 &TheNumLoad, u32 &TheStringLength, struct FELoadPackageDescArray *pTheDesc) {
+    } // Decl: speed/indep/src/feng/FEPackage.cpp:910
+
+    bool Callback(struct FEObject *pObj) override {} // Decl: speed/indep/src/feng/FEPackage.cpp:913
+};
+
+// total size: 0xC
+// Decl: speed/indep/src/feng/FEPackage.cpp:968
+class ResourceConnector : public FEObjectCallback {
+  public:
+    FEPackage *pPack;             // offset 0x4, size 0x4, Decl: speed/indep/src/feng/FEPackage.cpp:970
+    FEResourceRequest **pReqList; // offset 0x8, size 0x4, Decl: speed/indep/src/feng/FEPackage.cpp:971
+
+    bool Callback(struct FEObject *pObj) override; // Decl: speed/indep/src/feng/FEPackage.cpp:978
+
+    void ConnectListBoxResources(struct FEListBox *pList); // Decl: speed/indep/src/feng/FEPackage.cpp:1006
+};
+
+// total size: 0x8
+// Decl: speed/indep/src/feng/FEPackage.cpp:1074
+class MouseStateObjectCounter : public FEObjectCallback {
+  public:
+    int NumMouseObjects; // offset 0x4, size 0x4, Decl: speed/indep/src/feng/FEPackage.cpp:1076
+
+    bool Callback(struct FEObject *pObj) override {} // Decl: speed/indep/src/feng/FEPackage.cpp:1078
+};
+
+// total size: 0x8
+// Decl: speed/indep/src/feng/FEPackage.cpp:1089
+class MouseStateArrayBuilder : public FEObjectCallback {
+  public:
+    FEPackage *pPack; // offset 0x4, size 0x4, Decl: speed/indep/src/feng/FEPackage.cpp:1091
+
+    bool Callback(struct FEObject *pObj) override {} // Decl: speed/indep/src/feng/FEPackage.cpp:1093
+};

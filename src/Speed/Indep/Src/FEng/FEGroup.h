@@ -1,43 +1,48 @@
-#ifndef FENG_FEGROUP_H
-#define FENG_FEGROUP_H
+#ifndef FEGROUP_H_
+#define FEGROUP_H_
 
 #include "FEObject.h"
 
+// File: speed/indep/src/feng/FEGroup.h
 // total size: 0x6C
+// Decl: speed/indep/src/feng/FEGroup.h:28
 class FEGroup : public FEObject {
+  private:
+    FEMinList Children; // offset 0x5C, size 0x10, Decl: speed/indep/src/feng/FEGroup.h:30
+
   public:
-    inline FEGroup() : FEObject(), Children() {}
+    FEGroup() {} // Decl: speed/indep/src/feng/FEGroup.h:33
     FEGroup(const FEGroup &Object, bool bCloneChildren, bool bReference);
+    ~FEGroup() override {}
+    FEObject *Clone(bool bReference) override {} // Decl: speed/indep/src/feng/FEGroup.h:36
 
-    FEObject *Clone(bool bReference) override;
-
-    inline void AddObject(FEObject *pObj) {
+    void AddObject(FEObject *pObj) { // Decl: speed/indep/src/feng/FEGroup.h:38
         Children.AddTail(pObj);
     }
-    inline void AddObjectAfter(FEObject *pObj, FEObject *pAddAfter) {
+    void AddObjectAfter(FEObject *pObj, FEObject *pAddAfter) { // Decl: speed/indep/src/feng/FEGroup.h:39
         Children.AddNode(pAddAfter, pObj);
     }
-    inline void RemoveObject(FEObject *pObj) {
+
+    void RemoveObject(FEObject *pObj) { // Decl: speed/indep/src/feng/FEGroup.h:41
         Children.RemNode(pObj);
     }
 
-    inline u32 GetNumChildren() const {
+    u32 GetNumChildren() const {
         return Children.GetNumElements();
     }
-    inline FEObject *GetFirstChild() const {
+
+    FEObject *GetFirstChild() const {
         return static_cast<FEObject *>(Children.GetHead());
     }
-    inline FEObject *GetLastChild() const {
+    FEObject *GetLastChild() const {
         return static_cast<FEObject *>(Children.GetTail());
     }
 
     FEObject *FindChild(u32 NameHash) const;
     FEObject *FindChild(const char *pName) const;
+
     FEObject *FindChildRecursive(u32 NameHash) const;
     FEObject *FindChildRecursive(const char *pName) const;
-
-  private:
-    FEMinList Children; // offset 0x5C, size 0x10
 };
 
 #endif
