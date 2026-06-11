@@ -57,6 +57,7 @@ class HudElement {
     }
 };
 
+// TODO: these are from carbon and are not accurate to MW
 #define MAKE_HUD_FEATURE(__bit) (((HudFeaturesType)1) << (__bit)) // :64
 #define HUD_FEATURE_TACHOMETER MAKE_HUD_FEATURE(1)                // :66
 #define HUD_FEATURE_RACE_OVER MAKE_HUD_FEATURE(2)                 // :67

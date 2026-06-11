@@ -1,9 +1,5 @@
-#ifndef FRONTEND_HUD_FETURBOMETER_H
-#define FRONTEND_HUD_FETURBOMETER_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef FETURBOMETER_H
+#define FETURBOMETER_H
 
 #include "Speed/Indep/Src/Frontend/HUD/FeHudElement.hpp"
 #include "Speed/Indep/Src/Interfaces/IFengHud.h"
@@ -18,11 +14,11 @@ class TurboMeter : public HudElement, public ITurbometer {
   private:
     float CalcNeedleAngle(float psi, float min_angle, float max_angle);
 
-    bool mUpdated;
-    float mInductionPsi;
-    FEGroup *pTurboGroup;
-    FEObject *pTurboDialLines;
-    FEObject *pTurboNeedle;
+    bool mUpdated;             // offset 0x30, size 0x1
+    float mInductionPsi;       // offset 0x34, size 0x4
+    FEGroup *pTurboGroup;      // offset 0x38, size 0x4
+    FEObject *pTurboDialLines; // offset 0x3C, size 0x4
+    FEObject *pTurboNeedle;    // offset 0x40, size 0x4
 };
 
 #endif

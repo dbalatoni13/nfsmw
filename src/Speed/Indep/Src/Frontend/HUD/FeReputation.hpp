@@ -1,28 +1,9 @@
-#ifndef FRONTEND_HUD_FEREPUTATION_H
-#define FRONTEND_HUD_FEREPUTATION_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef FEREPUTATION_H
+#define FEREPUTATION_H
 
 #include "Speed/Indep/Src/Frontend/HUD/FeHudElement.hpp"
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
-
-class IReputation : public UTL::COM::IUnknown {
-  public:
-    static HINTERFACE _IHandle() {
-        return (HINTERFACE)_IHandle;
-    }
-
-    IReputation(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
-
-  protected:
-    virtual ~IReputation() {}
-
-  public:
-    virtual void SetReputationCareer(int rep);
-    virtual void SetReputationPursuit(int rep);
-};
+#include "Speed/Indep/Src/Interfaces/IFengHud.h"
 
 // total size: 0x48
 class Reputation : public HudElement, public IReputation {
@@ -33,11 +14,11 @@ class Reputation : public HudElement, public IReputation {
     void SetReputationPursuit(int rep) override;
 
   private:
-    int mReputationCareer;                 // offset 0x30
-    int mNumFramesLeftToShow;              // offset 0x34
-    FEString *mDataReputationCareer;       // offset 0x38
-    FEString *mDataTitle;                  // offset 0x3C
-    FEObject *mDataReputationGrp;          // offset 0x40
+    int mReputationCareer;           // offset 0x30, size 0x4
+    int mNumFramesLeftToShow;        // offset 0x34, size 0x4
+    FEString *mDataReputationCareer; // offset 0x38, size 0x4
+    FEString *mDataTitle;            // offset 0x3C, size 0x4
+    FEObject *mDataReputationGrp;    // offset 0x40, size 0x4
 };
 
 #endif

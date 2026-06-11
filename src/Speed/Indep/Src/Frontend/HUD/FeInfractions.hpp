@@ -1,9 +1,5 @@
-#ifndef FRONTEND_HUD_FEINFRACTIONS_H
-#define FRONTEND_HUD_FEINFRACTIONS_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef FEINFRACTIONS_H
+#define FEINFRACTIONS_H
 
 #include "Speed/Indep/Src/Frontend/HUD/FeHudElement.hpp"
 #include "Speed/Indep/Src/Interfaces/IFengHud.h"

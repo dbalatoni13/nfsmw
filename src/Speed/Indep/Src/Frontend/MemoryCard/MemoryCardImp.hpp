@@ -1,9 +1,5 @@
-#ifndef FRONTEND_MEMORYCARD_MEMORYCARDIMP_H
-#define FRONTEND_MEMORYCARD_MEMORYCARDIMP_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef MEMORYCARDIMP_H
+#define MEMORYCARDIMP_H
 
 #include <types.h>
 

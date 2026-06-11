@@ -16,14 +16,14 @@ class HudResourceManager {
 
     ResourceFile *pHudTextures; // offset 0x4, size 0x4, Decl: speed/indep/src/frontend/hud/FeHudResourceManager.hpp:22
 
-    static const char *mPackageName;                         // size: 0x4, address: 0x8041BE44
-    static int mTachLinesHash;                               // size: 0x4, address: 0x8041BE38
-    static ResourceFile *pMiniMapTexture;                    // size: 0x4, address: 0x8041BE3C
-    static ePlayerHudType LoadingResourcesForHudType;        // size: 0x4, address: 0x8041BE40
-    static int mPhase;                                       // size: 0x4, address: 0x8041BE30
-    static char mCustHudTexPackName[32];                     // size: 0x20, address: 0x804F42BC
-    static int mCustIndex;                                   // size: 0x4, address: 0x8041BE34
-    static unsigned int mCustomizeHUDTexTextureResources[5]; // size: 0x14, address: 0x804F42DC
+    static const char *mPackageName;                   // size: 0x4, address: 0x8041BE44
+    static int mTachLinesHash;                         // size: 0x4, address: 0x8041BE38
+    static ResourceFile *pMiniMapTexture;              // size: 0x4, address: 0x8041BE3C
+    static ePlayerHudType LoadingResourcesForHudType;  // size: 0x4, address: 0x8041BE40
+    static int mPhase;                                 // size: 0x4, address: 0x8041BE30
+    static char mCustHudTexPackName[32];               // size: 0x20, address: 0x804F42BC
+    static int mCustIndex;                             // size: 0x4, address: 0x8041BE34
+    static uint32 mCustomizeHUDTexTextureResources[5]; // size: 0x14, address: 0x804F42DC
 
   public:
     HudResourceManager();
@@ -32,22 +32,14 @@ class HudResourceManager {
     void LoadRequiredResources(ePlayerHudType ht, const char *pkg_name);
     void UnloadRequiredResources(ePlayerHudType ht);
     bool AreResourcesLoaded(ePlayerHudType ht);
-
     char *const GetHudTexPackFilename(ePlayerHudType ht);
-
     static CarPart *GetCarPart(ePlayerHudType ht, CAR_SLOT_ID carSlotId);
-
     static int GetCustomHudColour(ePlayerHudType ht, CAR_SLOT_ID carSlotId);
-
     static bool GetCustomHudTexPackFilename(ePlayerHudType ht, char *const hudTexturePackName);
-
     static char *const GetHudFengName(ePlayerHudType ht);
-
     static void ChooseLoadableTextures(ePlayerHudType hudType, int &textureHash, float &redlineRotation);
-
     static bool ChooseMinimapTextureName(ePlayerHudType hudType, char *texture_name, uint32 texture_name_size, char *minimap_texture_name,
                                          uint32 minimap_texture_name_size);
-
     void LoadingCompleteCallback();
     void LoadedCustomHudTexturePackCallback();
     void LoadedCustomHudTexturesCallback();

@@ -1,27 +1,9 @@
-#ifndef FRONTEND_HUD_FECOSTTOSTATE_H
-#define FRONTEND_HUD_FECOSTTOSTATE_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef FECOSTTOSTATE_H
+#define FECOSTTOSTATE_H
 
 #include "Speed/Indep/Src/Frontend/HUD/FeHudElement.hpp"
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
-
-class ICostToState : public UTL::COM::IUnknown {
-  public:
-    static HINTERFACE _IHandle() {
-        return (HINTERFACE)_IHandle;
-    }
-
-  protected:
-    virtual ~ICostToState() {}
-    ICostToState(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
-
-  public:
-    virtual void SetCostToState(int cost);
-    virtual void SetInPursuit(bool inPursuit);
-};
+#include "Speed/Indep/Src/Interfaces/IFengHud.h"
 
 // total size: 0x48
 class CostToState : public HudElement, public ICostToState {

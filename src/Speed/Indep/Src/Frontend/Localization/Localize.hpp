@@ -1,11 +1,13 @@
-#ifndef FRONTEND_LOCALIZATION_LOCALIZE_H
-#define FRONTEND_LOCALIZATION_LOCALIZE_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef LOCALIZE_HPP
+#define LOCALIZE_HPP
 
 #include <types.h>
+
+#define LONGEST_LANGUAGE_STRING 1024    // :91
+#define STRING_CATEGORY_GLOBAL "Global" // :94
+#define STRING_CATEGORY_ONLINE "Online" // :95
+#define STRING_CATEGORY_DEMO "Demo"     // :96
+#define MAX_STRING_CATEGORY_LENGTH 16   // :132
 
 enum eLanguages {
     eLANGUAGE_NONE = -1,
@@ -40,14 +42,14 @@ eLanguages GetCurrentLanguage();
 const bool GetLocalizedWideString(int16 *wide_string, int wide_string_buffer_size, uint32 string_label);
 
 enum eLanguages GetCurrentLanguage();
-void WideToCharString(char *dest /* r3 */, unsigned int destlen /* r4 */, const short *src /* r5 */);
+void WideToCharString(char *dest, uint32 destlen, const int16 *src);
 
 // Range: 0x8015C8F0 -> 0x8015C944
-void PackedStringToWideString(unsigned short *wide_string /* r0 */, int wide_string_buffer_size /* r9 */, const char *packed_string /* r6 */);
+void PackedStringToWideString(uint16 *wide_string, int wide_string_buffer_size, const char *packed_string);
 
 // Range: 0x8015C944 -> 0x8015C980
-void WideStringToPackedString(char *packed_string /* r11 */, int packed_string_buffer_size /* r0 */, const unsigned short *wide_string /* r6 */);
-char *GetLanguageName(eLanguages language /* r3 */);
+void WideStringToPackedString(char *packed_string, int packed_string_buffer_size, const uint16 *wide_string);
+char *GetLanguageName(eLanguages language);
 const char *GetLocalizedPercentSign();
 bool DoesStringExist(uint32 label);
 

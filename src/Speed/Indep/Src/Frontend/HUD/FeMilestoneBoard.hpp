@@ -10,7 +10,9 @@
 #include "Speed/Indep/Src/FEng/FEString.h"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 
-struct MilestoneBoard_Milestone {
+// total size: 0x18
+class MilestoneBoard_Milestone {
+  public:
     unsigned int mMilestoneIconHash;
     unsigned int mType;
     float mGoal;
@@ -19,6 +21,7 @@ struct MilestoneBoard_Milestone {
     bool mComplete;
 };
 
+// total size: 0xE0
 class MilestoneBoard : public HudElement, public IMilestoneBoard {
   public:
     MilestoneBoard(UTL::COM::Object *pOutter, const char *pkg_name, int player_number);
@@ -54,21 +57,21 @@ class MilestoneBoard : public HudElement, public IMilestoneBoard {
     int GetFirstIncompleteMilestone() const;
     bool GetIsMilestoneComplete(int index) const;
 
-    bool mInPursuit;
-    bool mChallengeSeries;
-    int mPlayerBinNumber;
-    int mNumMilestones;
-    int mMilestoneSetVisible;
-    Timer mScrollTimer;
-    MilestoneBoard_Milestone mMilestones[4];
-    FEObject *mpDataMilestoneInfoGroup;
-    FEObject *mpDataMilestoneIconGroup;
-    FEString *mpDataMilestonesTotal;
-    FEObject *mpDataIcons[4];
-    FEObject *mpDataIconBackings[4];
-    FEObject *mpDataDetailsBacking;
-    FEObject *mpDataDetailsGroup;
-    FEString *mpDataMilestoneGoal;
+    bool mInPursuit;                         // offset 0x30, size 0x1
+    bool mChallengeSeries;                   // offset 0x34, size 0x1
+    int mPlayerBinNumber;                    // offset 0x38, size 0x4
+    int mNumMilestones;                      // offset 0x3C, size 0x4
+    int mMilestoneSetVisible;                // offset 0x40, size 0x4
+    Timer mScrollTimer;                      // offset 0x44, size 0x4
+    MilestoneBoard_Milestone mMilestones[4]; // offset 0x48, size 0x60
+    FEObject *mpDataMilestoneInfoGroup;      // offset 0xA8, size 0x4
+    FEObject *mpDataMilestoneIconGroup;      // offset 0xAC, size 0x4
+    FEString *mpDataMilestonesTotal;         // offset 0xB0, size 0x4
+    FEObject *mpDataIcons[4];                // offset 0xB4, size 0x10
+    FEObject *mpDataIconBackings[4];         // offset 0xC4, size 0x10
+    FEObject *mpDataDetailsBacking;          // offset 0xD4, size 0x4
+    FEObject *mpDataDetailsGroup;            // offset 0xD8, size 0x4
+    FEString *mpDataMilestoneGoal;           // offset 0xDC, size 0x4
 };
 
 #endif

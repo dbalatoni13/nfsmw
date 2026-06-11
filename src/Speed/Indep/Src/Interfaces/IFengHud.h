@@ -257,6 +257,125 @@ class IBustedMeter : public UTL::COM::IUnknown {
     virtual void SetIsBusted(bool busted);
 };
 
+class ISpeedometer : public UTL::COM::IUnknown {
+  public:
+    static HINTERFACE _IHandle() {
+        return (HINTERFACE)_IHandle;
+    }
+
+  protected:
+    virtual ~ISpeedometer() {}
+    ISpeedometer(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+
+  public:
+    virtual void SetSpeed(float speed);
+};
+
+class IReputation : public UTL::COM::IUnknown {
+  public:
+    static HINTERFACE _IHandle() {
+        return (HINTERFACE)_IHandle;
+    }
+
+    IReputation(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+
+  protected:
+    virtual ~IReputation() {}
+
+  public:
+    virtual void SetReputationCareer(int rep);
+    virtual void SetReputationPursuit(int rep);
+};
+
+class ISpeedBreakerMeter : public UTL::COM::IUnknown {
+  public:
+    static HINTERFACE _IHandle() {
+        return (HINTERFACE)_IHandle;
+    }
+
+  protected:
+    virtual ~ISpeedBreakerMeter() {}
+    ISpeedBreakerMeter(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+
+  public:
+    virtual void SetPursuitLevel(float level);
+};
+
+class ICostToState : public UTL::COM::IUnknown {
+  public:
+    static HINTERFACE _IHandle() {
+        return (HINTERFACE)_IHandle;
+    }
+
+  protected:
+    virtual ~ICostToState() {}
+    ICostToState(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+
+  public:
+    virtual void SetCostToState(int cost);
+    virtual void SetInPursuit(bool inPursuit);
+};
+
+class IWrongWay : public UTL::COM::IUnknown {
+  public:
+    static HINTERFACE _IHandle() {
+        return (HINTERFACE)_IHandle;
+    }
+
+  protected:
+    virtual ~IWrongWay() {}
+    IWrongWay(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+
+  public:
+    virtual void SetWrongWay(bool isWrongWay);
+};
+
+class ITachometer : public UTL::COM::IUnknown {
+  public:
+    static HINTERFACE _IHandle() {
+        return (HINTERFACE)_IHandle;
+    }
+
+    ITachometer(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+
+    virtual void SetRpm(float rpm);
+    virtual void SetRevLimiter(float redline, float maxRpm);
+    virtual void SetGear(GearID gear, ShiftPotential potential, bool hasGoodEnoughTraction);
+    virtual void SetShifting(bool shifting);
+    virtual void SetInPerfectLaunchRange(bool inRange);
+
+  protected:
+    virtual ~ITachometer();
+};
+
+class IGetAwayMeter : public UTL::COM::IUnknown {
+  public:
+    static HINTERFACE _IHandle() {
+        return (HINTERFACE)_IHandle;
+    }
+
+  protected:
+    virtual ~IGetAwayMeter() {}
+    IGetAwayMeter(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+
+  public:
+    virtual void SetGetAwayDistance(float distance);
+};
+
+class IEngineTempGauge : public UTL::COM::IUnknown {
+  public:
+    static HINTERFACE _IHandle() {
+        return (HINTERFACE)_IHandle;
+    }
+
+  protected:
+    virtual ~IEngineTempGauge() {}
+    IEngineTempGauge(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+
+  public:
+    virtual void SetEngineTemp(float temp);
+};
+
 class IMenuZoneTrigger : public UTL::COM::IUnknown {
   public:
     static HINTERFACE _IHandle() {

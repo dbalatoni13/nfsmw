@@ -1,9 +1,5 @@
-#ifndef FRONTEND_DATABASE_UIPROFILEMANAGER_H
-#define FRONTEND_DATABASE_UIPROFILEMANAGER_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef UIPROFILEMANAGER_H
+#define UIPROFILEMANAGER_H
 
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/IconScrollerMenu.hpp"
 

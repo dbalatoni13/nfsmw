@@ -1,9 +1,5 @@
-#ifndef FRONTEND_HUD_FEBUSTEDMETER_H
-#define FRONTEND_HUD_FEBUSTEDMETER_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef FEBUSTEDMETER_H
+#define FEBUSTEDMETER_H
 
 #include "Speed/Indep/Src/Frontend/HUD/FeHudElement.hpp"
 #include "Speed/Indep/Src/Interfaces/IFengHud.h"

@@ -1,9 +1,5 @@
-#ifndef FRONTEND_HUD_FEAUTOSAVEICON_H
-#define FRONTEND_HUD_FEAUTOSAVEICON_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef FEAUTOSAVEICON_H
+#define FEAUTOSAVEICON_H
 
 #include "Speed/Indep/Src/Frontend/HUD/FeHudElement.hpp"
 #include "Speed/Indep/Src/Interfaces/IFengHud.h"

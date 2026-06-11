@@ -1,40 +1,26 @@
-#ifndef FRONTEND_HUD_FEWRONGWINDI_H
-#define FRONTEND_HUD_FEWRONGWINDI_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef FEWRONGWINDI_H
+#define FEWRONGWINDI_H
 
 #include "Speed/Indep/Src/Frontend/HUD/FeHudElement.hpp"
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 
-class IWrongWay : public UTL::COM::IUnknown {
-  public:
-    static HINTERFACE _IHandle() {
-        return (HINTERFACE)_IHandle;
-    }
-
-  protected:
-    virtual ~IWrongWay() {}
-    IWrongWay(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
-
-  public:
-    virtual void SetWrongWay(bool isWrongWay);
-};
-
+// File: speed/indep/src/frontend/hud/FeWrongWIndi.hpp
 // total size: 0x40
+// Decl: speed/indep/src/frontend/hud/FeWrongWIndi.hpp:16
 class WrongWIndi : public HudElement, public IWrongWay {
   public:
     WrongWIndi(UTL::COM::Object *pOutter, const char *pkg_name, int player_number);
+    ~WrongWIndi() override {} // Decl: speed/indep/src/frontend/hud/FeWrongWIndi.hpp:19
+
     void Update(IPlayer *player) override;
     void SetWrongWay(bool isWrongWay) override;
 
   private:
-    FEImage *mpWrongWayImage;    // offset 0x30
-    bool mIsWrongWay;            // offset 0x34
-    Timer mTimeBeforeDisplaying; // offset 0x38
-    Timer mTimeBeforeClosing;    // offset 0x3C
+    FEImage *mpWrongWayImage;    // offset 0x30, size 0x4
+    bool mIsWrongWay;            // offset 0x34, size 0x1, Decl: speed/indep/src/frontend/hud/FeWrongWIndi.hpp:27
+    Timer mTimeBeforeDisplaying; // offset 0x38, size 0x4, Decl: speed/indep/src/frontend/hud/FeWrongWIndi.hpp:28
+    Timer mTimeBeforeClosing;    // offset 0x3C, size 0x4, Decl: speed/indep/src/frontend/hud/FeWrongWIndi.hpp:29
 };
 
 #endif

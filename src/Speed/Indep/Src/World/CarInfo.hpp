@@ -538,9 +538,11 @@ class CarSlotIDNameMap {
 struct CarSlotTypeOverride {
     uint32 CarType;
     uint32 SlotId;
-    unsigned int LookupType[2];
+    uint32 LookupType[2];
 };
 
+// total size: 0x290
+// Decl: speed/indep/src/world/CarInfo.hpp:282
 class PresetCar : bTNode<PresetCar> {
   public:
     char CarTypeName[32];
@@ -549,9 +551,13 @@ class PresetCar : bTNode<PresetCar> {
     uint64_t VehicleKey;
     uint32 FilterBits;
     int32 PhysicsLevel;
-    int PartNameHashes[139];
+    int32 PartNameHashes[139];
 };
 
+// Decl: speed/indep/src/world/CarInfo.hpp:316
+typedef enum { CTT_SETTING_1 = 0, CTT_SETTING_2 = 1, CTT_SETTING_3 = 2, NUM_CUSTOM_TUNINGS = 3 } eCustomTuningType;
+
+// Decl: speed/indep/src/world/CarInfo.hpp:328
 typedef enum {
     CARPART_LOD_OFF = -1,
     CARPART_LOD_A = 0,

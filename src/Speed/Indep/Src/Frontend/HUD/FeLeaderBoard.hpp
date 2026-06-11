@@ -6,6 +6,7 @@
 #include "Speed/Indep/Src/FEng/FEString.h"
 #include "Speed/Indep/Src/FEng/FEGroup.h"
 
+// TODO: based on line numbers in Leaderboard, this can't be in this file.
 // total size: 0x80
 struct LeaderBoardRacerData {
     char mRacerName[16];          // offset 0x0, size 0x10
@@ -25,7 +26,7 @@ struct LeaderBoardRacerData {
 // Decl: speed/indep/src/frontend/hud/FeLeaderBoard.hpp:8
 class LeaderBoard : public HudElement, public ILeaderBoard {
   public:
-    LeaderBoard(struct Object *pOutter, const char *pkg_name, int player_number);
+    LeaderBoard(UTL::COM::Object *pOutter, const char *pkg_name, int player_number);
     ~LeaderBoard() override {} // Decl: speed/indep/src/frontend/hud/FeLeaderBoard.hpp:11
 
   private:

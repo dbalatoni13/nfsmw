@@ -1,117 +1,19 @@
-#ifndef _FEICONSCROLLERMENU
-#define _FEICONSCROLLERMENU
+#ifndef FEICONSCROLLERMENU_HPP
+#define FEICONSCROLLERMENU_HPP
 
 #include <types.h>
 
 #include "Speed/Indep/Src/FEng/FEObject.h"
 #include "Speed/Indep/Src/FEng/FEString.h"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
-#include "Speed/Indep/Src/Frontend/MenuScreens/Common/IconScroller.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/feWidget.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
-#include "Speed/Indep/bWare/Inc/bMath.hpp"
-#include "Speed/Indep/bWare/Inc/bWare.hpp"
 
-struct FEObject;
-struct FEImage;
-struct FEString;
-struct FEGroup;
-int FEngSNPrintf(char *dest, int size, const char *fmt, ...);
-
-class ScrollerDatumNode : public bTNode<ScrollerDatumNode> {
-  public:
-    ScrollerDatumNode(const char *string, uint32 hash) {
-        FEngSNPrintf(String, 0x80, string);
-        LanguageHash = hash;
-    }
-
-    virtual ~ScrollerDatumNode() {}
-
-    char String[128];    // offset 0x8
-    uint32 LanguageHash; // offset 0x88
-};
-
-class ScrollerSlotNode : public bTNode<ScrollerSlotNode> {
-  public:
-    ScrollerSlotNode(FEObject *string) {
-        String = string;
-    }
-
-    virtual ~ScrollerSlotNode() {}
-
-    FEObject *String; // offset 0x8
-};
-
-class ScrollerDatum : public bTNode<ScrollerDatum> {
-  public:
-    ScrollerDatum() {}
-    ScrollerDatum(const char *string, uint32 hash) {};
-    virtual ~ScrollerDatum() {}
-
-    void AddData(const char *string, uint32 hash) {
-        Strings.AddTail(new (__FILE__, __LINE__) ScrollerDatumNode(string, hash));
-    }
-    char *GetTopDatumModeString() {};
-    ScrollerDatumNode *Find(const char *to_find);
-    ScrollerDatumNode *Find(uint32 hash);
-    void Printf();
-    void Enable() {
-        bEnabled = true;
-    }
-    void Disable() {
-        bEnabled = false;
-    }
-    bool IsEnabled() {
-        return bEnabled;
-    }
-
-    bTList<ScrollerDatumNode> Strings; // offset 0x8
-  private:
-    bool bEnabled; // offset 0x10
-};
-
-class ScrollerSlot : public bTNode<ScrollerSlot> {
-  public:
-    ScrollerSlot() {}
-    ScrollerSlot(FEObject *string) {};
-    virtual ~ScrollerSlot() {}
-
-    void AddData(FEObject *string) {
-        FEStrings.AddTail(new (__FILE__, __LINE__) ScrollerSlotNode(string));
-    }
-    void SetBacking(FEObject *obj) {
-        pBacking = obj;
-    }
-    void Hide();
-    void Show();
-    void Highlight() {};
-    void UnHighlight() {};
-    void Enable() {
-        bEnabled = true;
-    }
-    void Disable() {
-        bEnabled = false;
-    }
-    void SetScript(uint32 script_hash);
-    void FindSize();
-    void GetSize(bVector2 &size) {
-        size = vSize;
-    }
-    void GetTopLeft(bVector2 &top_left) {
-        top_left = vTopLeft;
-    }
-    bool IsEnabled() {
-        return bEnabled;
-    }
-
-    bool Find(FEObject *obj);
-
-    bTList<ScrollerSlotNode> FEStrings; // offset 0x8
-    FEObject *pBacking;                 // offset 0x10
-    bVector2 vTopLeft;                  // offset 0x14
-    bVector2 vSize;                     // offset 0x1C
-    bool bEnabled;                      // offset 0x24
-};
+#define FEMSG_REFRESH_WIDGETS 0x92b703b5 // :10
+#define FEMSG_RESET_SCREEN 0xaf0bbd92    // :11
+#define FEMSG_BEGIN_INPUT 0x81017864     // :12
+#define FEMSG_INIT_STARTED 0x1265ece9    // :13
+#define TEXT_OPTION_LENGTH 64            // : 45
 
 // 0x5C
 class IconOption : public bTNode<IconOption> {
@@ -174,28 +76,29 @@ class IconOption : public bTNode<IconOption> {
 
     void SetFEngObject(FEObject *obj);
 
-    uint32 Item;          // 0x08
-    FEObject *FEngObject; // 0x0C
-    float XPos;           // 0x10
-    float YPos;           // 0x14
-    uint32 OriginalColor; // 0x18
-    bool IsGreyOut;       // 0x1C
-    bool IsFlashable;     // 0x20
-    bool Locked;          // 0x24
-    float OrigWidth;      // 0x28
-    float OrigHeight;     // 0x2C
+  public:
+    uint32 Item;          // offset 0x8, size 0x4
+    FEObject *FEngObject; // offset 0xC, size 0x4
+    float XPos;           // offset 0x10, size 0x4
+    float YPos;           // offset 0x14, size 0x4
+    uint32 OriginalColor; // offset 0x18, size 0x4
+    bool IsGreyOut;       // offset 0x1C, size 0x1
+    bool IsFlashable;     // offset 0x20, size 0x1
+    bool Locked;          // offset 0x24, size 0x1
+    float OrigWidth;      // offset 0x28, size 0x4
+    float OrigHeight;     // offset 0x2C, size 0x4
 
   private:
-    uint32 NameHash;                // 0x30
-    uint32 DescHash;                // 0x34
-    float fScaleToPcnt;             // 0x38
-    float fScaleStartSecs;          // 0x3C
-    float fScaleDurSecs;            // 0x40
-    float fScaleAtStart;            // 0x44
-    bool bAnimComplete;             // 0x48
-    bool bReactImmediately;         // 0x4C
-    bool bIsTutorialAvailable;      // 0x50
-    const char *pTutorialMovieName; // 0x54
+    uint32 NameHash;                // offset 0x30, size 0x4
+    uint32 DescHash;                // offset 0x34, size 0x4
+    float fScaleToPcnt;             // offset 0x38, size 0x4
+    float fScaleStartSecs;          // offset 0x3C, size 0x4
+    float fScaleDurSecs;            // offset 0x40, size 0x4
+    float fScaleAtStart;            // offset 0x44, size 0x4
+    bool bAnimComplete;             // offset 0x48, size 0x1
+    bool bReactImmediately;         // offset 0x4C, size 0x1
+    bool bIsTutorialAvailable;      // offset 0x50, size 0x1
+    const char *pTutorialMovieName; // offset 0x54, size 0x4
 };
 
 class FEScrollyBookEnd : public IconOption {

@@ -1,39 +1,20 @@
-#ifndef FRONTEND_HUD_FETACHOMETER_H
-#define FRONTEND_HUD_FETACHOMETER_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef FETACHOMETER_H
+#define FETACHOMETER_H
 
 #include "Speed/Indep/Src/Frontend/HUD/FeHudElement.hpp"
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 #include "Speed/Indep/Src/Physics/PhysicsTypes.h"
+#include "Speed/Indep/Src/Interfaces/IFengHud.h"
 
-struct FEMultiImage;
-
-class ITachometer : public UTL::COM::IUnknown {
-  public:
-    static HINTERFACE _IHandle() {
-        return (HINTERFACE)_IHandle;
-    }
-
-    ITachometer(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
-
-    virtual void SetRpm(float rpm);
-    virtual void SetRevLimiter(float redline, float maxRpm);
-    virtual void SetGear(GearID gear, ShiftPotential potential, bool hasGoodEnoughTraction);
-    virtual void SetShifting(bool shifting);
-    virtual void SetInPerfectLaunchRange(bool inRange);
-
-  protected:
-    virtual ~ITachometer();
-};
-
+// File: speed/indep/src/frontend/hud/FeTachometer.hpp
 // total size: 0x70
+// Decl: speed/indep/src/frontend/hud/FeTachometer.hpp:13
 class Tachometer : public HudElement, public ITachometer {
   public:
     Tachometer(UTL::COM::Object *pOutter, const char *pkg_name, int player_number);
+    ~Tachometer() override {} // Decl: speed/indep/src/frontend/hud/FeTachometer.hpp:16
+
     void Update(IPlayer *player) override;
     void SetRpm(float rpm) override {
         mRpm = rpm;
@@ -64,22 +45,22 @@ class Tachometer : public HudElement, public ITachometer {
     static char GetLetterForGear(GearID gear);
 
   private:
-    Timer PerfectShiftDetectedTimer;      // offset 0x30
-    Timer MissedShiftTimer;               // offset 0x34
-    FEObject *TachNeedle;                 // offset 0x38
-    FEObject *pRPM_bar;                   // offset 0x3C
-    FEString *pGearString;                // offset 0x40
-    FEObject *pShiftIndicator;            // offset 0x44
-    FEObject *pRedline;                   // offset 0x48
-    float mRpm;                           // offset 0x4C
-    float mRedline;                       // offset 0x50
-    float mMaxRpm;                        // offset 0x54
-    GearID mGear;                         // offset 0x58
-    bool mIsShifting;                     // offset 0x5C
-    bool mInPerfectLaunchRange;           // offset 0x60
-    ShiftPotential mShiftPotential;       // offset 0x64
-    bool mNeedleColourSetToPerfectLaunch; // offset 0x68
-    float mOriginalNeedleWidth;           // offset 0x6C
+    Timer PerfectShiftDetectedTimer;      // offset 0x30, size 0x4
+    Timer MissedShiftTimer;               // offset 0x34, size 0x4
+    FEObject *TachNeedle;                 // offset 0x38, size 0x4
+    FEObject *pRPM_bar;                   // offset 0x3C, size 0x4
+    FEString *pGearString;                // offset 0x40, size 0x4
+    FEObject *pShiftIndicator;            // offset 0x44, size 0x4
+    FEObject *pRedline;                   // offset 0x48, size 0x4
+    float mRpm;                           // offset 0x4C, size 0x4
+    float mRedline;                       // offset 0x50, size 0x4
+    float mMaxRpm;                        // offset 0x54, size 0x4
+    GearID mGear;                         // offset 0x58, size 0x4
+    bool mIsShifting;                     // offset 0x5C, size 0x1
+    bool mInPerfectLaunchRange;           // offset 0x60, size 0x1
+    ShiftPotential mShiftPotential;       // offset 0x64, size 0x4
+    bool mNeedleColourSetToPerfectLaunch; // offset 0x68, size 0x1
+    float mOriginalNeedleWidth;           // offset 0x6C, size 0x4
 };
 
 #endif

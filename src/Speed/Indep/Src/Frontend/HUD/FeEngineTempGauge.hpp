@@ -1,26 +1,9 @@
-#ifndef FRONTEND_HUD_FEENGINETEMPGAUGE_H
-#define FRONTEND_HUD_FEENGINETEMPGAUGE_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef FEENGINETEMPGAUGE_H
+#define FEENGINETEMPGAUGE_H
 
 #include "Speed/Indep/Src/Frontend/HUD/FeHudElement.hpp"
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
-
-class IEngineTempGauge : public UTL::COM::IUnknown {
-  public:
-    static HINTERFACE _IHandle() {
-        return (HINTERFACE)_IHandle;
-    }
-
-  protected:
-    virtual ~IEngineTempGauge() {}
-    IEngineTempGauge(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
-
-  public:
-    virtual void SetEngineTemp(float temp);
-};
+#include "Speed/Indep/Src/Interfaces/IFengHud.h"
 
 // total size: 0x40
 class EngineTempGauge : public HudElement, public IEngineTempGauge {

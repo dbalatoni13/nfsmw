@@ -3,15 +3,11 @@
 
 #include "Speed/Indep/Src/Frontend/HUD/FeHudResourceManager.hpp"
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
-#include "Speed/Indep/Src/World/CarInfo.hpp"
-
 #include "FeHudElement.hpp"
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Src/Input/ActionQueue.h"
 #include "Speed/Indep/Src/Interfaces/IFengHud.h"
-#include "Speed/Indep/Src/Misc/ResourceLoader.hpp"
 #include "Speed/Indep/Src/Frontend/HUD/FeOnlineHudSupport.hpp"
-#include "Speed/Indep/Src/World/CarInfo.hpp"
 
 // File: speed/indep/src/frontend/hud/FEPkg_Hud.hpp
 // total size: 0x348
