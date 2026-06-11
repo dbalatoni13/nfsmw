@@ -10,6 +10,7 @@
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEStrings.hpp"
 
 // total size: 0x64
 class FEScrollBar {

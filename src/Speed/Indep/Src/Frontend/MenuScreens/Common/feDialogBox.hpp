@@ -1,5 +1,5 @@
-#ifndef _DIALOGINTERFACE_HPP
-#define _DIALOGINTERFACE_HPP
+#ifndef _DIALOGBOX_HPP
+#define _DIALOGBOX_HPP
 
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
 #include "Speed/Indep/Src/Misc/Timer.hpp"

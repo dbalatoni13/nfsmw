@@ -3,6 +3,9 @@
 
 #include <types.h>
 
+#include "Speed/Indep/Src/Frontend/FEngFont.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
+#include "Speed/Indep/Src/Misc/Timer.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/Slider.hpp"
@@ -341,6 +344,159 @@ class FESliderWidget : public FEToggleWidget {
   private:
     cSlider Slider;    // 0x64
     float fVertOffset; // 0xA0
+};
+
+// total size: 0x194
+class FEInputWidget : public FEStatWidget {
+  public:
+    char InputText[156];         // offset 0x54, size 0x9C
+    char Title[156];             // offset 0xF0, size 0x9C
+    unsigned int MaxInputLength; // offset 0x18C, size 0x4
+    unsigned int EditMode;       // offset 0x190, size 0x4
+
+    FEInputWidget(unsigned int max_input_length, const char *init_text, unsigned int edit_mode, bool enabled);
+
+    void Act(const char *parent_pkg, unsigned int data) override;
+    void CheckMouse(const char *parent_pkg, const float mouse_x, const float mouse_y) override;
+    void Draw() override;
+    void Enable() override;
+    void Disable() override;
+    void Show() override;
+    void Hide() override;
+    void SetFocus(const char *parent_pkg) override;
+    void UnsetFocus() override;
+
+    void SetInputFocus();
+    void SetTitle(const char *text);
+
+    inline void SetInputText(const char *text) {
+        bStrNCpy(InputText, text, 0x9b);
+    }
+
+    inline const char *GetInputText() {
+        return InputText;
+    }
+
+    inline void SetEditMode(unsigned int mode) {
+        EditMode = mode;
+    }
+
+    inline unsigned int GetEditMode() {
+        return EditMode;
+    }
+
+    inline const char *GetTitle() {
+        return Title;
+    }
+
+    inline unsigned int GetMaxInputLength() {
+        return MaxInputLength;
+    }
+};
+
+// total size: 0x64
+class FEScrollBar {
+  public:
+    FEScrollBar() {}
+    FEScrollBar(const char *parent_pkg, const char *name, bool vert, bool resize, bool arrows_only);
+
+    ~FEScrollBar() {}
+
+    void Update(int num_view_items, int num_list_items, int view_head_index, int selected_item);
+
+    void UpdateMouse();
+
+    void SetArrow1Visibility(bool visible) {}
+
+    void SetArrow2Visibility(bool visible) {}
+
+    void SetBackingVisibility(bool visible);
+
+    void SetGroupVisible(bool visible);
+
+    void SetArrow1Dim(bool dim);
+
+    void SetArrow2Dim(bool dim);
+
+    bool IsVisible() {
+        return bVisible;
+    }
+
+  private:
+    void SetPosResized(int num_view_items, int num_list_items, int view_head_index);
+    void SetPosNonResized(int num_view_items, int num_list_items, int view_head_index);
+    void UpdateArrowsMouse();
+    void UpdateHandleMouse();
+    void UpdateBackingMouse();
+    void SetVisible(FEObject *obj);
+    void SetInvisible(FEObject *obj);
+    void SetArrowVisibility(int arrow_num, bool visible);
+
+    bool bVertical;              // offset 0x0, size 0x1
+    bool bResizeHandle;          // offset 0x4, size 0x1
+    bool bHandleGrabbed;         // offset 0x8, size 0x1
+    bool bArrowsOnly;            // offset 0xC, size 0x1
+    bool bVisible;               // offset 0x10, size 0x1
+    bVector2 vGrabbedPos;        // offset 0x14, size 0x8
+    bVector2 vCurPos;            // offset 0x1C, size 0x8
+    bVector2 vGrabOffset;        // offset 0x24, size 0x8
+    bVector2 vBackingPos;        // offset 0x2C, size 0x8
+    bVector2 vBackingSize;       // offset 0x34, size 0x8
+    bVector2 vHandleMinSize;     // offset 0x3C, size 0x8
+    float fSegSize;              // offset 0x44, size 0x4
+    Timer ScrollTime;            // offset 0x48, size 0x4
+    FEObject *pBacking;          // offset 0x4C, size 0x4
+    FEObject *pHandle;           // offset 0x50, size 0x4
+    FEObject *pFirstArrow;       // offset 0x54, size 0x4
+    FEObject *pSecondArrow;      // offset 0x58, size 0x4
+    FEObject *pFirstBackingEnd;  // offset 0x5C, size 0x4
+    FEObject *pSecondBackingEnd; // offset 0x60, size 0x4
+};
+
+// total size: 0x54
+struct CTextScroller {
+    MenuScreen *m_pOwner;           // offset 0x0, size 0x4
+    FEngFont *m_pFont;              // offset 0x4, size 0x4
+    FEScrollBar *m_pScrollBar;      // offset 0x8, size 0x4
+    char m_TextBoxNameTemplate[32]; // offset 0xC, size 0x20
+    int m_ViewWidth;                // offset 0x2C, size 0x4
+    int m_ViewVisibleLines;         // offset 0x30, size 0x4
+    int m_NumAddedLines;            // offset 0x34, size 0x4
+    short **m_pLines;               // offset 0x38, size 0x4
+    char *m_pRawDataBlock;          // offset 0x3C, size 0x4
+    unsigned int m_DataBlockSize;   // offset 0x40, size 0x4
+    unsigned int m_DataBlockCurPos; // offset 0x44, size 0x4
+    int m_TopLine;                  // offset 0x48, size 0x4
+    unsigned int m_ScrollDownMsg;   // offset 0x4C, size 0x4
+    unsigned int m_ScrollUpMsg;     // offset 0x50, size 0x4
+
+    inline void UseScrollBar(FEScrollBar *pScrollBar) {
+        m_pScrollBar = pScrollBar;
+    }
+
+    CTextScroller();
+    ~CTextScroller();
+    void Initialise(MenuScreen *pOwner, int ViewWidth, int ViewLines, char *pTextDisplayNameTempl, FEngFont *pFont);
+    void SetTextHash(unsigned int language_hash);
+    void SetText(short *pText);
+    void Scroll(int Amount);
+    bool HandleNotificationMessage(unsigned int Msg);
+    void Display(int TopLine);
+    void AddLine(short *pLine, int Size);
+    void WordWrapCountLinesAndChars(short *pTextStart, short *pTextEnd, int &NumLines, int &NumChars);
+    int WordWrapAddLines(short *pTextStart, short *pTextEnd, bool bCountOnly, int *pNumCharsOut);
+    short *FindCR(short *pText);
+    short *FindEND(short *pText);
+    int GetNumVisibleLines() {
+        return m_ViewVisibleLines;
+    }
+    int GetNumLines() {
+        return m_NumAddedLines;
+    }
+    int GetTopLine() {
+        return m_TopLine;
+    }
+    void UpdateScrollBar();
 };
 
 #endif
