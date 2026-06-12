@@ -8,7 +8,7 @@
 #include "Speed/Indep/Src/Frontend/FEManager.hpp"
 #include "Speed/Indep/Src/Frontend/Localization/Localize.hpp"
 #include "Speed/Indep/Src/Frontend/MemoryCard/MemoryCard.hpp"
-#include "Speed/Indep/Src/Frontend/MenuScreens/Common/DialogInterface.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/feDialogBox.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/MemCard/uiMemcardInterface.hpp"
 #include "Speed/Indep/Src/Generated/Events/EAutoSave.hpp"
 #include "Speed/Indep/Src/Generated/Events/ECinematicMoment.hpp"

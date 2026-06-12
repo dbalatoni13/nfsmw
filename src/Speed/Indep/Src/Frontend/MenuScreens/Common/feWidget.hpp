@@ -1,5 +1,5 @@
-#ifndef _FEWIDGET
-#define _FEWIDGET
+#ifndef __FEWIDGET_HPP__
+#define __FEWIDGET_HPP__
 
 #include <types.h>
 
@@ -10,15 +10,19 @@
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/Slider.hpp"
 
-class FEObject;
-class FEString;
-class FEImage;
+// Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:30
+typedef enum { eSD_PREV = -1, eSD_NEXT = 1, eSD_PAGE_PREV = -10000, eSD_PAGE_NEXT = 10000, eSD_NONE = 10001 } eScrollDir;
 
-// 0x34
+// Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:41
+typedef enum { eSA_TOP = 0, eSA_MIDDLE = 1, eSA_BOTTOM = 2, eSA_LEFT = 0, eSA_RIGHT = 2 } eScrollerAlignment;
+
+// total size: 0x34
+// Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:66
 class FEWidget : public bTNode<FEWidget> {
   public:
     FEWidget(FEObject *backing, bool enabled, bool hidden);
-    virtual ~FEWidget() {}
+    virtual ~FEWidget() {} // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:73
+
     virtual void Act(const char *parent_pkg, uint32 data) = 0;
     virtual void CheckMouse(const char *parent_pkg, const float mouse_x, const float mouse_y) = 0;
     virtual void Draw() = 0;
@@ -31,10 +35,10 @@ class FEWidget : public bTNode<FEWidget> {
     virtual void Disable() {
         bEnabled = false;
     }
-    bool IsEnabled() {
+    bool IsEnabled() { // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:102
         return bEnabled;
     }
-    bool IsHidden() {
+    bool IsHidden() { // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:103
         return bHidden;
     }
     virtual void SetFocus(const char *parent_pkg) = 0;
@@ -120,23 +124,25 @@ class FEWidget : public bTNode<FEWidget> {
         return bMovedLastUpdate;
     }
 
+  private:
+    bVector2 vTopLeft;       // offset 0x8, size 0x8
+    bVector2 vSize;          // offset 0x10, size 0x8
+    bVector2 vBackingOffset; // offset 0x18, size 0x8
+    FEObject *pBacking;      // offset 0x20, size 0x4
+    bool bEnabled;           // offset 0x24, size 0x1, Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:152
+    bool bHidden;            // offset 0x28, size 0x1, Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:155
+
   protected:
-    bVector2 vTopLeft;       // 0x08
-    bVector2 vSize;          // 0x10
-    bVector2 vBackingOffset; // 0x18
-    FEObject *pBacking;      // 0x20
-    bool bEnabled;           // 0x24
-    bool bHidden;            // 0x28
-  protected:
-    bool bMovedLastUpdate; // 0x2C
+    bool bMovedLastUpdate; // offset 0x2C, size 0x1
 };
 
-// 0x40
+// total size: 0x40
+// Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:163
 class FEButtonWidget : public FEWidget {
   public:
     FEButtonWidget(bool enabled);
-    ~FEButtonWidget() override {}
-    void CheckMouse(const char *parent_pkg, float mouse_x, float mouse_y) override;
+    ~FEButtonWidget() override {} // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:167
+    void CheckMouse(const char *parent_pkg, const float mouse_x, const float mouse_y) override;
     void Position() override;
     void Show() override;
     void Hide() override;
@@ -151,7 +157,7 @@ class FEButtonWidget : public FEWidget {
     void SetPos(bVector2 &pos) override {
         FEWidget::SetPosX(pos.x);
         FEWidget::SetPosY(pos.y);
-    };
+    }
     void GetMaxTitleSize(bVector2 &size) {
         size = vMaxTitleSize;
     }
@@ -173,22 +179,23 @@ class FEButtonWidget : public FEWidget {
     }
 
   private:
-    FEString *pTitle;       // 0x34
-    bVector2 vMaxTitleSize; // 0x38
+    FEString *pTitle;       // offset 0x34, size 0x4
+    bVector2 vMaxTitleSize; // offset 0x38, size 0x8
 };
 
-// 0x54
+// total size: 0x54
+// Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:195
 class FEStatWidget : public FEWidget {
   public:
     FEStatWidget(bool enabled);
-    ~FEStatWidget() override {}
-    void Act(const char *parent_pkg, uint32 data) override {};
-    void CheckMouse(const char *parent_pkg, const float mouse_x, const float mouse_y) override {};
+    ~FEStatWidget() override {} // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:198
+    void Act(const char *parent_pkg, uint32 data) override {}
+    void CheckMouse(const char *parent_pkg, const float mouse_x, const float mouse_y) override {}
     void Position() override;
     void Show() override;
     void Hide() override;
-    void SetFocus(const char *parent_pkg) override {};
-    void UnsetFocus() override {};
+    void SetFocus(const char *parent_pkg) override {} // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:205
+    void UnsetFocus() override {}                     // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:206
     FEString *GetTitleObject() {
         return pTitle;
     }
@@ -201,12 +208,22 @@ class FEStatWidget : public FEWidget {
     void SetDataObject(FEString *string) {
         pData = string;
     }
-    void SetPos(bVector2 &pos) override;
+    void SetPos(bVector2 &pos) override {
+        vDataPos.x = pos.x;
+        vDataPos.y = pos.y;
+    }
     void SetPosX(float x) override;
     void SetPosY(float y) override;
-    void GetDataPos(bVector2 &pos);
-    float GetDataPosX() {};
-    float GetDataPosY() {};
+    void GetDataPos(bVector2 &pos) {
+        pos.x = vDataPos.x;
+        pos.y = vDataPos.y;
+    }
+    float GetDataPosX() {
+        return vDataPos.x;
+    }
+    float GetDataPosY() {
+        return vDataPos.y;
+    }
     void SetDataPos(bVector2 &pos) {
         vDataPos.x = pos.x;
         vDataPos.y = pos.y;
@@ -217,41 +234,62 @@ class FEStatWidget : public FEWidget {
     void SetDataPosY(float y) {
         vDataPos.y = y;
     }
-    void GetMaxTitleSize(bVector2 &size) {};
-    float GetMaxTitleWidth() {};
-    float GetMaxTitleHeight() {};
-    void GetMaxDataSize(bVector2 &size);
-    float GetMaxDataWidth() {};
-    float GetMaxDataHeight() {};
+    void GetMaxTitleSize(bVector2 &size) {
+        size.x = vMaxTitleSize.x;
+        size.y = vMaxTitleSize.y;
+    }
+    float GetMaxTitleWidth() {
+        return vMaxTitleSize.x;
+    }
+    float GetMaxTitleHeight() {
+        return vMaxTitleSize.y;
+    }
     void SetMaxTitleSize(bVector2 &size) {
         vMaxTitleSize.x = size.x;
         vMaxTitleSize.y = size.y;
     }
-    void SetMaxTitleWidth(float width) {};
-    void SetMaxTitleHeight(float height) {};
+    void SetMaxTitleWidth(float width) {
+        vMaxTitleSize.x = width;
+    }
+    void SetMaxTitleHeight(float height) {
+        vMaxTitleSize.y = height;
+    }
+    void GetMaxDataSize(bVector2 &size) {
+        size.x = vMaxDataSize.x;
+        size.y = vMaxDataSize.y;
+    }
+    float GetMaxDataWidth() {
+        return vMaxDataSize.x;
+    }
+    float GetMaxDataHeight() {
+        return vMaxDataSize.y;
+    }
     void SetMaxDataSize(bVector2 &size) {
         vMaxDataSize.x = size.x;
         vMaxDataSize.y = size.y;
     }
-    void SetMaxDataWidth(float x) {};
-    void SetMaxDataHeight(float y) {};
+    void SetMaxDataWidth(float x) {
+        vMaxDataSize.x = x;
+    }
+    void SetMaxDataHeight(float y) {
+        vMaxDataSize.y = y;
+    }
 
   private:
-    FEString *pTitle;       // 0x34
-    FEString *pData;        // 0x38
-    bVector2 vMaxTitleSize; // 0x3C
-    bVector2 vMaxDataSize;  // 0x44
-    bVector2 vDataPos;      // 0x4C
+    FEString *pTitle;       // offset 0x34, size 0x4
+    FEString *pData;        // offset 0x38, size 0x4
+    bVector2 vMaxTitleSize; // offset 0x3C, size 0x8
+    bVector2 vMaxDataSize;  // offset 0x44, size 0x8
+    bVector2 vDataPos;      // offset 0x4C, size 0x8
 };
 
-// 0x64
+// total size: 0x64
+// Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:279
 class FEToggleWidget : public FEStatWidget {
   public:
     FEToggleWidget(bool enabled);
-    ~FEToggleWidget() override {};
-    void Act(const char *parent_pkg, uint32 data) override;
+    ~FEToggleWidget() override {} // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:282
     void CheckMouse(const char *parent_pkg, const float mouse_x, const float mouse_y) override;
-    void Draw() override;
     void Position() override;
     void Enable() override;
     void Disable() override;
@@ -260,7 +298,6 @@ class FEToggleWidget : public FEStatWidget {
     void SetFocus(const char *parent_pkg) override;
     void UnsetFocus() override;
     virtual void BlinkArrows(uint32 data);
-
     FEImage *GetLeftImage() {
         return pLeftImage;
     }
@@ -273,37 +310,67 @@ class FEToggleWidget : public FEStatWidget {
     void SetRightImage(FEImage *img) {
         pRightImage = img;
     }
-    bool Update(uint32 msg) {
+    bool Update(uint32 msg) { // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:300
         bMovedLastUpdate = true;
         BlinkArrows(msg);
         Draw();
         return true;
     }
-    uint32 GetEnableScript() {};
-    uint32 GetDisableScript() {};
-    void SetEnableScript(uint32 script) {
+    uint32 GetEnableScript() { // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:302
+        return EnableScript;
+    }
+
+    uint32 GetDisableScript() { // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:303
+        return DisableScript;
+    }
+
+    void SetEnableScript(uint32 script) { // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:304
         EnableScript = script;
     }
-    void SetDisableScript(uint32 script) {
+
+    void SetDisableScript(uint32 script) { // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:305
         DisableScript = script;
     }
     void SetScript(uint32 script);
 
   private:
-    FEImage *pLeftImage;  // 0x54
-    FEImage *pRightImage; // 0x58
-    uint32 EnableScript;  // 0x5C
-    uint32 DisableScript; // 0x60
+    FEImage *pLeftImage;  // offset 0x54, size 0x4
+    FEImage *pRightImage; // offset 0x58, size 0x4
+    uint32 EnableScript;  // offset 0x5C, size 0x4, Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:311
+    uint32 DisableScript; // offset 0x60, size 0x4, Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:312
 };
 
-// 0xA4
+// total size: 0x68
+// Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:328
+class FEToggleImageWidget : public FEToggleWidget {
+  public:
+    FEToggleImageWidget(bool enabled);
+    ~FEToggleImageWidget() override {} // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:331
+    void Position() override;
+    void Enable() override;
+    void Disable() override;
+    void Show() override;
+    void Hide() override;
+    void SetFocus(const char *parent_pkg) override;
+    void UnsetFocus() override;
+    void SetDataImage(FEImage *img) { // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:346
+        pDataImage = img;
+    }
+    FEImage *GetDataImage() { // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:348
+        return pDataImage;
+    }
+
+  private:
+    FEImage *pDataImage; // offset 0x64, size 0x4, Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:352
+};
+
+// total size: 0xA4
+// Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:358
 class FESliderWidget : public FEToggleWidget {
+
   public:
     FESliderWidget(bool enabled);
-    ~FESliderWidget() override {};
-    void Act(const char *parent_pkg, uint32 data) override;
-    void Draw() override;
-    virtual void SetInitialValues() = 0;
+    ~FESliderWidget() override {} // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:361
     void Position() override;
     void Show() override;
     void Hide() override;
@@ -311,52 +378,88 @@ class FESliderWidget : public FEToggleWidget {
     void Disable() override;
     void SetFocus(const char *parent_pkg) override;
     void UnsetFocus() override;
-
-    void SetDataObject(FEString *string) {};
-    void InitSliderObjects(const char *pkg_name, const char *name) {
+    void SetDataObject(FEString *string) {}
+    void InitSliderObjects(const char *pkg_name, const char *name) { // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:378
         Slider.InitObjects(pkg_name, name);
     }
-    void SetSliderValues(float min, float max, float inc, float cur) {
+    void SetSliderValues(float min, float max, float inc, float cur) { // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:382
         Slider.InitValues(min, max, inc, cur, 160.0f);
     }
-    float GetValue() {
+    float GetValue() { // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:384
         return Slider.GetValue();
     }
-    void SetValue(float val) {
+    void SetValue(float val) { // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:387
         Slider.SetValue(val);
     }
-    void Increment() {
+    void Increment() { // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:388
         Slider.Increment();
     }
-    void Decrement() {
+    void Decrement() { // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:389
         Slider.Decrement();
     }
     void DrawSlider() {
         Slider.Draw();
     }
-    void ToggleSlider(bool on) {
+    void ToggleSlider(bool on) { // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:391
         Slider.ToggleVisible(on);
     }
     void UpdateSlider(uint32 msg);
-    float GetVertOffset() {};
-    void SetVertOffset(bool vertOffset) {};
+    float GetVertOffset() {}
+    void SetVertOffset(bool vertOffset) {}
 
   private:
-    cSlider Slider;    // 0x64
-    float fVertOffset; // 0xA0
+    cSlider Slider;    // offset 0x64, size 0x3C, Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:400
+    float fVertOffset; // offset 0xA0, size 0x4
 };
 
 // total size: 0x194
+// Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:411
 class FEInputWidget : public FEStatWidget {
   public:
-    char InputText[156];         // offset 0x54, size 0x9C
-    char Title[156];             // offset 0xF0, size 0x9C
-    unsigned int MaxInputLength; // offset 0x18C, size 0x4
-    unsigned int EditMode;       // offset 0x190, size 0x4
+    FEInputWidget(uint32 max_input_length, const char *init_text, uint32 edit_mode, bool enabled);
+    ~FEInputWidget() override {} // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:419
 
-    FEInputWidget(unsigned int max_input_length, const char *init_text, unsigned int edit_mode, bool enabled);
+    void Act(const char *parent_pkg, uint32 data) override;
+    void CheckMouse(const char *parent_pkg, const float mouse_x, const float mouse_y) override;
+    void Enable() override;
+    void Disable() override;
+    void Show() override;
+    void Hide() override;
+    void SetFocus(const char *parent_pkg) override;
+    void UnsetFocus() override;
+    void SetInputFocus();
+    void SetInputText(const char *text) { // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:437
+        bStrNCpy(InputText, text, 0x9b);
+    }
+    const char *GetInputText() { // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:438
+        return InputText;
+    }
+    void SetEditMode(uint32 mode) { // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:441
+        EditMode = mode;
+    }
+    uint32 GetEditMode() { // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:442
+        return EditMode;
+    }
+    void SetTitle(const char *text);
+    const char *GetTitle() { // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:439
+        return Title;
+    }
+    uint32 GetMaxInputLength() { // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:444
+        return MaxInputLength;
+    }
 
-    void Act(const char *parent_pkg, unsigned int data) override;
+  private:
+    char InputText[320];   // offset 0x54, size 0x9C, Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:451
+    char Title[156];       // offset 0xF0, size 0x9C
+    uint32 MaxInputLength; // offset 0x18C, size 0x4, Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:453
+    uint32 EditMode;       // offset 0x190, size 0x4, Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:454
+};
+
+// total size: 0x64
+class FEDateWidget : public FEStatWidget {
+  public:
+    FEDateWidget(bool enabled);
+    ~FEDateWidget() override {}
     void CheckMouse(const char *parent_pkg, const float mouse_x, const float mouse_y) override;
     void Draw() override;
     void Enable() override;
@@ -365,138 +468,149 @@ class FEInputWidget : public FEStatWidget {
     void Hide() override;
     void SetFocus(const char *parent_pkg) override;
     void UnsetFocus() override;
-
-    void SetInputFocus();
-    void SetTitle(const char *text);
-
-    inline void SetInputText(const char *text) {
-        bStrNCpy(InputText, text, 0x9b);
+    virtual const char *GetHeaderText() {}
+    virtual int GetMaxYear() {}
+    void SetDate(int d, int m, int y) {
+        mDay = d;
+        mMonth = m;
+        mYear = y;
+    }
+    void GetDate(int *pDay, int *pMonth, int *pYear) {
+        pDay = &mDay;
+        pMonth = &mMonth;
+        pYear = &mYear;
+    }
+    void SetPackageName(const char *pName) {
+        mPkgName = pName;
     }
 
-    inline const char *GetInputText() {
-        return InputText;
-    }
-
-    inline void SetEditMode(unsigned int mode) {
-        EditMode = mode;
-    }
-
-    inline unsigned int GetEditMode() {
-        return EditMode;
-    }
-
-    inline const char *GetTitle() {
-        return Title;
-    }
-
-    inline unsigned int GetMaxInputLength() {
-        return MaxInputLength;
-    }
+  private:
+    int mDay;             // offset 0x54, size 0x4
+    int mMonth;           // offset 0x58, size 0x4
+    int mYear;            // offset 0x5C, size 0x4
+    const char *mPkgName; // offset 0x60, size 0x4
 };
 
 // total size: 0x64
+// Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:517
 class FEScrollBar {
   public:
-    FEScrollBar() {}
-    FEScrollBar(const char *parent_pkg, const char *name, bool vert, bool resize, bool arrows_only);
+    FEScrollBar(const char *parent_pkg, const char *name, bool vert, bool resize,
+                bool arrows_only); // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:523
 
-    ~FEScrollBar() {}
+    ~FEScrollBar() {} // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:524
 
-    void Update(int num_view_items, int num_list_items, int view_head_index, int selected_item);
-
+    void Update(int num_view_items, int num_list_items, int view_head_index,
+                int selected_item); // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:527
     void UpdateMouse();
-
-    void SetArrow1Visibility(bool visible) {}
-
-    void SetArrow2Visibility(bool visible) {}
-
-    void SetBackingVisibility(bool visible);
-
-    void SetGroupVisible(bool visible);
-
-    void SetArrow1Dim(bool dim);
-
-    void SetArrow2Dim(bool dim);
-
-    bool IsVisible() {
+    void SetGroupVisible(bool visible);       // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:545
+    void SetArrow1Visibility(bool visible) {} // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:550
+    void SetArrow2Visibility(bool visible) {} // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:551
+    void SetBackingVisibility(bool visible);  // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:553
+    void SetArrow1Dim(bool dim);              // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:555
+    void SetArrow2Dim(bool dim);              // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:556
+    bool IsVisible() {                        // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:530
         return bVisible;
     }
 
   private:
-    void SetPosResized(int num_view_items, int num_list_items, int view_head_index);
-    void SetPosNonResized(int num_view_items, int num_list_items, int view_head_index);
+    void SetPosResized(int num_view_items, int num_list_items,
+                       int view_head_index); // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:539
+    void SetPosNonResized(int num_view_items, int num_list_items,
+                          int view_head_index); // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:540
     void UpdateArrowsMouse();
     void UpdateHandleMouse();
     void UpdateBackingMouse();
-    void SetVisible(FEObject *obj);
-    void SetInvisible(FEObject *obj);
-    void SetArrowVisibility(int arrow_num, bool visible);
+    void SetVisible(FEObject *obj);                       // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:546
+    void SetInvisible(FEObject *obj);                     // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:547
+    void SetArrowVisibility(int arrow_num, bool visible); // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:549
 
-    bool bVertical;              // offset 0x0, size 0x1
-    bool bResizeHandle;          // offset 0x4, size 0x1
-    bool bHandleGrabbed;         // offset 0x8, size 0x1
-    bool bArrowsOnly;            // offset 0xC, size 0x1
-    bool bVisible;               // offset 0x10, size 0x1
-    bVector2 vGrabbedPos;        // offset 0x14, size 0x8
-    bVector2 vCurPos;            // offset 0x1C, size 0x8
-    bVector2 vGrabOffset;        // offset 0x24, size 0x8
-    bVector2 vBackingPos;        // offset 0x2C, size 0x8
-    bVector2 vBackingSize;       // offset 0x34, size 0x8
-    bVector2 vHandleMinSize;     // offset 0x3C, size 0x8
-    float fSegSize;              // offset 0x44, size 0x4
+    bool bVertical;              // offset 0x0, size 0x1, Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:559
+    bool bResizeHandle;          // offset 0x4, size 0x1, Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:560
+    bool bHandleGrabbed;         // offset 0x8, size 0x1, Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:561
+    bool bArrowsOnly;            // offset 0xC, size 0x1, Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:562
+    bool bVisible;               // offset 0x10, size 0x1, Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:563
+    bVector2 vGrabbedPos;        // offset 0x14, size 0x8, Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:565
+    bVector2 vCurPos;            // offset 0x1C, size 0x8, Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:566
+    bVector2 vGrabOffset;        // offset 0x24, size 0x8, Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:567
+    bVector2 vBackingPos;        // offset 0x2C, size 0x8, Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:568
+    bVector2 vBackingSize;       // offset 0x34, size 0x8, Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:569
+    bVector2 vHandleMinSize;     // offset 0x3C, size 0x8, Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:570
+    float fSegSize;              // offset 0x44, size 0x4, Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:572
     Timer ScrollTime;            // offset 0x48, size 0x4
-    FEObject *pBacking;          // offset 0x4C, size 0x4
-    FEObject *pHandle;           // offset 0x50, size 0x4
-    FEObject *pFirstArrow;       // offset 0x54, size 0x4
-    FEObject *pSecondArrow;      // offset 0x58, size 0x4
-    FEObject *pFirstBackingEnd;  // offset 0x5C, size 0x4
-    FEObject *pSecondBackingEnd; // offset 0x60, size 0x4
+    FEObject *pBacking;          // offset 0x4C, size 0x4, Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:574
+    FEObject *pHandle;           // offset 0x50, size 0x4, Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:575
+    FEObject *pFirstArrow;       // offset 0x54, size 0x4, Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:576
+    FEObject *pSecondArrow;      // offset 0x58, size 0x4, Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:577
+    FEObject *pFirstBackingEnd;  // offset 0x5C, size 0x4, Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:578
+    FEObject *pSecondBackingEnd; // offset 0x60, size 0x4, Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:579
 };
 
 // total size: 0x54
-struct CTextScroller {
-    MenuScreen *m_pOwner;           // offset 0x0, size 0x4
-    FEngFont *m_pFont;              // offset 0x4, size 0x4
-    FEScrollBar *m_pScrollBar;      // offset 0x8, size 0x4
-    char m_TextBoxNameTemplate[32]; // offset 0xC, size 0x20
-    int m_ViewWidth;                // offset 0x2C, size 0x4
-    int m_ViewVisibleLines;         // offset 0x30, size 0x4
-    int m_NumAddedLines;            // offset 0x34, size 0x4
-    short **m_pLines;               // offset 0x38, size 0x4
-    char *m_pRawDataBlock;          // offset 0x3C, size 0x4
-    unsigned int m_DataBlockSize;   // offset 0x40, size 0x4
-    unsigned int m_DataBlockCurPos; // offset 0x44, size 0x4
-    int m_TopLine;                  // offset 0x48, size 0x4
-    unsigned int m_ScrollDownMsg;   // offset 0x4C, size 0x4
-    unsigned int m_ScrollUpMsg;     // offset 0x50, size 0x4
+// Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:615
+class CTextScroller {
+  public:
+    CTextScroller();  // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:617
+    ~CTextScroller(); // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:618
 
-    inline void UseScrollBar(FEScrollBar *pScrollBar) {
+    bool PreAllocate(int BytesToAllocate); // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:621
+
+    void Initialise(MenuScreen *pOwner, int ViewWidth, int ViewLines, char *pTextDisplayNameTempl,
+                    FEngFont *pFont); // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:624
+
+    void UseScrollBar(FEScrollBar *pScrollBar) { // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:627
         m_pScrollBar = pScrollBar;
     }
 
-    CTextScroller();
-    ~CTextScroller();
-    void Initialise(MenuScreen *pOwner, int ViewWidth, int ViewLines, char *pTextDisplayNameTempl, FEngFont *pFont);
-    void SetTextHash(unsigned int language_hash);
-    void SetText(short *pText);
-    void Scroll(int Amount);
-    bool HandleNotificationMessage(unsigned int Msg);
-    void Display(int TopLine);
-    void AddLine(short *pLine, int Size);
-    void WordWrapCountLinesAndChars(short *pTextStart, short *pTextEnd, int &NumLines, int &NumChars);
-    int WordWrapAddLines(short *pTextStart, short *pTextEnd, bool bCountOnly, int *pNumCharsOut);
-    short *FindCR(short *pText);
-    short *FindEND(short *pText);
-    int GetNumVisibleLines() {
+    void SetScrollMessages(uint32 ScrollDownMsg, uint32 ScrollUpMsg) {} // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:630
+
+    void SetText(int16 *pText);             // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:633
+    void SetTextHash(uint32 language_hash); // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:634
+
+    void Scroll(int Amount); // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:637
+
+    bool HandleNotificationMessage(uint32 Msg); // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:640
+
+    int GetNumVisibleLines() { // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:643
         return m_ViewVisibleLines;
     }
-    int GetNumLines() {
+    int GetNumLines() { // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:644
         return m_NumAddedLines;
     }
-    int GetTopLine() {
+    int GetTopLine() { // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:645
         return m_TopLine;
     }
-    void UpdateScrollBar();
+
+  private:
+    uint32 CalculateMemorySize(int NumLines, int NumChars) {} // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:652
+
+    void Display(int32 TopLine);            // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:654
+    void AddLine(int16 *pLine, int32 Size); // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:655
+
+    void WordWrapCountLinesAndChars(int16 *pTextStart, int16 *pTextEnd, int &NumLines,
+                                    int &NumChars); // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:657
+    int WordWrapAddLines(int16 *pTextStart, int16 *pTextEnd, bool bCountOnly,
+                         int *pNumCharsOut); // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:658
+
+    int16 *FindCR(int16 *pText);  // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:660
+    int16 *FindEND(int16 *pText); // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:661
+
+    void UpdateScrollBar(); // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:663
+
+    MenuScreen *m_pOwner;           // offset 0x0, size 0x4, Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:668
+    FEngFont *m_pFont;              // offset 0x4, size 0x4, Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:669
+    FEScrollBar *m_pScrollBar;      // offset 0x8, size 0x4, Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:672
+    char m_TextBoxNameTemplate[32]; // offset 0xC, size 0x20, Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:676
+    int m_ViewWidth;                // offset 0x2C, size 0x4, Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:679
+    int m_ViewVisibleLines;         // offset 0x30, size 0x4, Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:680
+    int m_NumAddedLines;            // offset 0x34, size 0x4, Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:683
+    int16 **m_pLines;               // offset 0x38, size 0x4, Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:684
+    char *m_pRawDataBlock;          // offset 0x3C, size 0x4, Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:687
+    uint32 m_DataBlockSize;         // offset 0x40, size 0x4, Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:688
+    uint32 m_DataBlockCurPos;       // offset 0x44, size 0x4, Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:689
+    int m_TopLine;                  // offset 0x48, size 0x4, Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:692
+    uint32 m_ScrollDownMsg;         // offset 0x4C, size 0x4, Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:695
+    uint32 m_ScrollUpMsg;           // offset 0x50, size 0x4, Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:695
 };
 
 #endif

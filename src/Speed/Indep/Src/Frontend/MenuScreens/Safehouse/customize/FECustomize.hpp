@@ -1,39 +1,26 @@
-#ifndef FRONTEND_MENUSCREENS_SAFEHOUSE_QUICKRACE____CUSTOMIZE_FECUSTOMIZE_H
-#define FRONTEND_MENUSCREENS_SAFEHOUSE_QUICKRACE____CUSTOMIZE_FECUSTOMIZE_H
+#ifndef __FECUSTOMIZE_HPP__
+#define __FECUSTOMIZE_HPP__
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
-#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/customize/CustomizeTypes.hpp"
+#include "Speed/Indep/Src/FEng/FEImage.h"
 #include "Speed/Indep/Src/Frontend/Database/VehicleDB.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEIconScrollerMenu.hpp"
+#include "Speed/Indep/Src/Gameplay/GRace.h"
 
-// File: speed/indep/src/frontend/menuscreens/customize/FECustomize.hpp
-// Decl: speed/indep/src/frontend/menuscreens/customize/FECustomize.hpp:82
-enum eCustomizeEntryPoint {
-    CEP_GAMEPLAY = 0,
-    CEP_MAIN_MENU = 1,
-    CEP_ONLINE_MENU = 2,
-};
+#define CC_MAKE_HIWORD(_a) (_a << 16) // :63
+#define CC_GET_HIWORD(_a) (_a >> 16)  // :64
 
-// Decl: speed/indep/src/frontend/menuscreens/customize/FECustomize.hpp:106
-enum eCustomizeCartTotals {
-    CCT_PART_PRICES = 0,
-    CCT_TRADE_IN = 1,
-    CCT_TOTAL = 2,
-};
+typedef enum {
+    FEMSG_ADD_TO_CART = -1847599228,
+    FEMSG_ICON_START = 1584310645,
+    FEMSG_EXIT_PURCHASE = 388018468,
+    FEMSG_EXIT_NO_PURCHASE = 2050068192,
+    FEMSG_FROM_CART = -812537139,
+    FEMSG_BACK_OUT = 1519550488,
+    FEMSG_MAX_OUT_PERFORMANCE = 1746985534
+} eCustomizeScreenMessages;
 
-enum eCustomizePartState {
-    CPS_AVAILABLE = 1,
-    CPS_LOCKED = 2,
-    CPS_NEW = 3,
-    CPS_INSTALLED = 16,
-    CPS_IN_CART = 32,
-    CPS_GAME_STATE_MASK = 15,
-    CPS_PLAYER_STATE_MASK = 240,
-};
-
-enum eCustomizeCategory {
+typedef enum {
     CC_TO_CAT_MASK = 65535,
     CC_FROM_CAT_MASK = -65536,
     CC_SCREEN_ID_MAIN = 2048,
@@ -99,33 +86,37 @@ enum eCustomizeCategory {
     CC_DECAL_SLOT_3 = 1539,
     CC_DECAL_SLOT_4 = 1540,
     CC_DECAL_SLOT_5 = 1541,
-    CC_DECAL_SLOT_6 = 1542,
-};
+    CC_DECAL_SLOT_6 = 1542
+} eCustomizeCategory;
 
-enum eCustomizeEntryPoint {
-    CEP_GAMEPLAY = 0,
-    CEP_MAIN_MENU = 1,
-    CEP_ONLINE_MENU = 2,
-};
+typedef enum {
+    PPL_STOCK = 0,
+    PPL_LEVEL_1 = 1,
+    PPL_LEVEL_2 = 2,
+    PPL_LEVEL_3 = 3,
+    PPL_LEVEL_4 = 4,
+    PPL_LEVEL_5 = 5,
+    PPL_LEVEL_6 = 6,
+    PPL_LEVEL_JUNKMAN = 7
+} ePerformancePkgLevels;
 
-enum eCustomizeCartTotals {
-    CCT_PART_PRICES = 0,
-    CCT_TRADE_IN = 1,
-    CCT_TOTAL = 2,
-};
+// File: speed/indep/src/frontend/menuscreens/customize/FECustomize.hpp
+// Decl: speed/indep/src/frontend/menuscreens/customize/FECustomize.hpp:82
+typedef enum { CEP_GAMEPLAY = 0, CEP_MAIN_MENU = 1, CEP_ONLINE_MENU = 2 } eCustomizeEntryPoint;
 
-enum ePerformanceRatingType {
-    PRT_TOP_SPEED = 0,
-    PRT_HANDLING = 1,
-    PRT_ACCELERATION = 2,
-};
+typedef enum {
+    CPS_AVAILABLE = 1,
+    CPS_LOCKED = 2,
+    CPS_NEW = 3,
+    CPS_INSTALLED = 16,
+    CPS_IN_CART = 32,
+    CPS_GAME_STATE_MASK = 15,
+    CPS_PLAYER_STATE_MASK = 240
+} eCustomizePartState;
 
-enum eUnlockFilters {
-    UNLOCK_QUICK_RACE = 1,
-    UNLOCK_CAREER_MODE = 2,
-    UNLOCK_ONLINE = 4,
-    UNLOCK_BACKROOM = 10,
-};
+// Decl: speed/indep/src/frontend/menuscreens/customize/FECustomize.hpp:106
+
+typedef enum { CCT_PART_PRICES = 0, CCT_TRADE_IN = 1, CCT_TOTAL = 2 } eCustomizeCartTotals;
 
 // total size: 0x50
 struct CustomizeMeter {
@@ -371,7 +362,7 @@ struct CustomizeMainOption : public IconOption {
 
     void React(const char *pkg_name, unsigned int data, FEObject *obj, unsigned int param1, unsigned int param2) override {
         if (data == 0xc407210) {
-            cFEng_mInstance->QueuePackageSwitch(ToPkg, Category, 0, false);
+            cFEng::Get()->QueuePackageSwitch(ToPkg, Category, 0, false);
         }
     }
 

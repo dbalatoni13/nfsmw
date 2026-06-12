@@ -11,7 +11,7 @@
 #include "Speed/Indep/Src/Generated/Messages/MNotifyRaceAbandoned.h"
 #include "Speed/Indep/Src/Frontend/MenuScreens/InGame/CustomTuning.hpp"
 #include "Speed/Indep/Src/Sim/Simulation.h"
-#include "Speed/Indep/Src/Frontend/MenuScreens/Common/DialogInterface.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/feDialogBox.hpp"
 #include "Speed/Indep/Src/Frontend/FEPackageData.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Frontend/Database/VehicleDB.hpp"

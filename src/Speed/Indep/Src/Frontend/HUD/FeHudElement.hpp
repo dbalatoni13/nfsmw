@@ -15,7 +15,7 @@ typedef unsigned long long HudFeaturesType; // :13
 class HudElement {
   private:
     bPList<FEObject> Objects;           // offset 0x0, size 0x8, Decl: speed/indep/src/frontend/hud/FeHudElement.hpp:19
-    char *pPackageName;                 // offset 0x8, size 0x4, Decl: speed/indep/src/frontend/hud/FeHudElement.hpp:20
+    const char *pPackageName;           // offset 0x8, size 0x4, Decl: speed/indep/src/frontend/hud/FeHudElement.hpp:20
     HudFeaturesType Mask;               // offset 0x10, size 0x8, Decl: speed/indep/src/frontend/hud/FeHudElement.hpp:21
     HudFeaturesType CurrentHudFeatures; // offset 0x18, size 0x8, Decl: speed/indep/src/frontend/hud/FeHudElement.hpp:22
     bool mCurrentlySetVisible;          // offset 0x20, size 0x1
@@ -33,18 +33,18 @@ class HudElement {
     virtual void Update(IPlayer *player) {} // Decl: speed/indep/src/frontend/hud/FeHudElement.hpp:35
 
     FEString *RegisterString(const char *name) {} // Decl: speed/indep/src/frontend/hud/FeHudElement.hpp:45
-    FEString *RegisterString(char *hash);         // Decl: speed/indep/src/frontend/hud/FeHudElement.hpp:45
+    FEString *RegisterString(uint32 hash);        // Decl: speed/indep/src/frontend/hud/FeHudElement.hpp:45
     FEImage *RegisterImage(const char *name) {}   // Decl: speed/indep/src/frontend/hud/FeHudElement.hpp:46
-    FEImage *RegisterImage(char *hash);           // Decl: speed/indep/src/frontend/hud/FeHudElement.hpp:46
+    FEImage *RegisterImage(uint32 hash);          // Decl: speed/indep/src/frontend/hud/FeHudElement.hpp:46
 
     FEObject *RegisterObject(const char *name) {} // Decl: speed/indep/src/frontend/hud/FeHudElement.hpp:47
-    FEObject *RegisterObject(char *hash);         // Decl: speed/indep/src/frontend/hud/FeHudElement.hpp:47
+    FEObject *RegisterObject(uint32 hash);        // Decl: speed/indep/src/frontend/hud/FeHudElement.hpp:47
 
     FEMultiImage *RegisterMultiImage(uint32 hash);
 
     FEGroup *RegisterGroup(uint32 hash);
 
-    char *const GetPackageName() { // Decl: speed/indep/src/frontend/hud/FeHudElement.hpp:55
+    const char *GetPackageName() { // Decl: speed/indep/src/frontend/hud/FeHudElement.hpp:55
         return pPackageName;
     }
 

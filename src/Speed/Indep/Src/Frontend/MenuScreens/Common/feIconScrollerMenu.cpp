@@ -1,7 +1,4 @@
-#include "IconPanel.hpp"
-#include "IconScroller.hpp"
-#include "IconScrollerMenu.hpp"
-
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEIconScrollerMenu.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"

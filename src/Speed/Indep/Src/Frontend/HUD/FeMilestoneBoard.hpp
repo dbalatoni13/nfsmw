@@ -1,9 +1,5 @@
-#ifndef FRONTEND_HUD_FEMILESTONEBOARD_H
-#define FRONTEND_HUD_FEMILESTONEBOARD_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef FEMILESTONEBOARD_H
+#define FEMILESTONEBOARD_H
 
 #include "Speed/Indep/Src/Frontend/HUD/FeHudElement.hpp"
 #include "Speed/Indep/Src/Interfaces/IFengHud.h"

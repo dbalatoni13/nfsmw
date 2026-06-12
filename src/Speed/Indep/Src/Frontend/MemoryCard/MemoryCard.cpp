@@ -1,6 +1,6 @@
 #include "Speed/Indep/Src/Frontend/MemoryCard/MemoryCard.hpp"
 #include "Speed/Indep/Src/Frontend/MemoryCard/MemoryCardCallbacks.hpp"
-#include "Speed/Indep/Src/Frontend/MenuScreens/Common/DialogInterface.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/feDialogBox.hpp"
 #include "Speed/Indep/Src/Misc/Joylog.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Frontend/FEManager.hpp"

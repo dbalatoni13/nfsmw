@@ -6,7 +6,7 @@
 #endif
 
 #include "types.h"
-#include "Speed/Indep/Src/Frontend/MenuScreens/Common/IconScrollerMenu.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEIconScrollerMenu.hpp"
 
 class uiCareerCrib : public IconScrollerMenu {
   public:

@@ -10,7 +10,7 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/options/uiOptionsMain.hpp"
 #include "Speed/Indep/Src/Generated/Events/EUnPause.hpp"
 #include "Speed/Indep/Src/Sim/Simulation.h"
-#include "Speed/Indep/Src/Frontend/MenuScreens/Common/DialogInterface.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/feDialogBox.hpp"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 
 void FEngSetButtonTexture(FEImage *img, unsigned int tex_hash);

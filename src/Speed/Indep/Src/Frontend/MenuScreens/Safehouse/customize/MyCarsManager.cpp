@@ -4,7 +4,7 @@
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Frontend/Database/VehicleDB.hpp"
 #include "Speed/Indep/Src/Frontend/FEManager.hpp"
-#include "Speed/Indep/Src/Frontend/MenuScreens/Common/DialogInterface.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/feDialogBox.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/FEPkg_GarageMain.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiShowcase.hpp"
 #include "Speed/Indep/Src/Physics/PhysicsInfo.hpp"

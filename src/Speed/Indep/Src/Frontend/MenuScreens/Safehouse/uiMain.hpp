@@ -3,7 +3,7 @@
 
 #include <types.h>
 
-#include "Speed/Indep/Src/Frontend/MenuScreens/Common/IconScrollerMenu.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEIconScrollerMenu.hpp"
 
 // total size: 0x170
 class UIMain : public IconScrollerMenu {

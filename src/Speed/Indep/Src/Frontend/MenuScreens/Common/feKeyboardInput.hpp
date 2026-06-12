@@ -1,13 +1,11 @@
-#ifndef FRONTEND_MENUSCREENS_COMMON_FEKEYBOARDINPUT_H
-#define FRONTEND_MENUSCREENS_COMMON_FEKEYBOARDINPUT_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef __KEYBOARD_INPUT_HPP__
+#define __KEYBOARD_INPUT_HPP__
 
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
 #include "Speed/Indep/Src/FEng/FEString.h"
-#include "Speed/Indep/Src/FEng/feimage.h"
+
+#define FEMSG_ACCEPT_EDITED_TEXT 0xda5b8712  // :17
+#define FEMSG_DECLINE_EDITED_TEXT 0xc9d30688 // :18
 
 // total size: 0xC
 class FEngTextInputObject {
@@ -73,84 +71,7 @@ class KeyboardEditString {
     FEngTextInputObject *TextInputObject; // offset 0x414, size 0x4
 };
 
-extern KeyboardEditString gKeyboardManager;
-
-// total size: 0x360
-class FEKeyboard : public MenuScreen {
-  public:
-    enum MODE {
-        MODE_ALL_KEYS = 0,
-        MODE_ALPHANUMERIC = 1,
-        MODE_ALPHANUMERIC_PASSWORD = 2,
-        MODE_FILENAME = 3,
-        MODE_EMAIL = 4,
-        MODE_PROFILE_ENTRY = 5,
-    };
-
-    FEKeyboard(ScreenConstructorData *sd);
-    ~FEKeyboard() override {}
-    static void ShowModal(const char *pstrParent, MODE nMode, u32 nAcceptHash, int nDeclineHash, int nMaxLength, u32 nDefaultTextHash);
-    void NotificationMessage(u32 msg, FEObject *pObject, u32 param1, u32 param2) override;
-    void AppendChar(char c);
-    void AppendSpace();
-    void AppendBackspace();
-    void MoveCursor(int nDelta);
-    void Dispose(bool bFreeMem);
-
-  private:
-    void SetString(char *pStr);
-    void SetMaxLength(int nLength);
-    void Initialize();
-    void UpdateVisuals();
-    void UpdateStringVisual();
-    void UpdateCursorPosition();
-    int IsKeyButton(FEObject *pObj);
-    int IsControlButton(FEObject *pObj);
-    bool IsSymbol(char character);
-    bool IsNumericSymbol(char character);
-    bool IsEmailSymbol(char character);
-    bool IsNotOkForEmail(char character);
-    void AppendLetter(int nButton);
-    char GetLetterMap(int nButton);
-    void HighlightButton(int nButton, bool bHighlight);
-    void ToggleSpecialCharacters();
-    void ToggleCapsLock();
-    void ToggleShift();
-    int GetCase();
-
-    static const char *KeyboardPackage; // size: 0x4, address: 0xFFFFFFFF
-  private:
-    static const struct FEColor ButtonHighlight; // size: 0x10, address: 0x80473028
-    static const struct FEColor LetterHighlight; // size: 0x10, address: 0x80473038
-    static const struct FEColor ButtonIdle;      // size: 0x10, address: 0x80473048
-    static const struct FEColor LetterIdle;      // size: 0x10, address: 0x80473058
-
-    int mnLetterMapIndex;                   // offset 0x2C
-    int mnCursorIndex;                      // offset 0x30
-    int mnMaxLength;                        // offset 0x34
-    bool mbIsFirstKey;                      // offset 0x38
-    bool mbShift;                           // offset 0x3C
-    bool mbCaps;                            // offset 0x40
-    bool mbOnSpecialCharacters;             // offset 0x44
-    static const char mLetterMap[8][2][45]; // size: 0x2D0, address: 0x803E59E5
-    static const char mEmailSymbols[45];    // size: 0x2D, address: 0xFFFFFFFF
-    FEString *mpInputString;                // offset 0x48
-    FEObject *mpCursor;                     // offset 0x4C
-    FEImage *mpTextBox;                     // offset 0x50
-    FEString *mpKeyName[45];                // offset 0x54
-    FEString *mpKeyNameShadow[45];          // offset 0x108
-    FEObject *mpKeyButton[45];              // offset 0x1BC
-    FEObject *mpKeyDisable[45];             // offset 0x270
-    char *mString;                          // offset 0x324
-    FEPackage *mThis;                       // offset 0x328
-    u32 mnAcceptHash;                       // offset 0x32C
-    u32 mnDeclineHash;                      // offset 0x330
-    MODE mnMode;                            // offset 0x334
-    int mnWindowStartIdx;                   // offset 0x338
-    FEString *mpCursorTestString;           // offset 0x33C
-    char mDisplayString[31];                // offset 0x340
-    static const int WindowSize;            // size: 0x4, address: 0xFFFFFFFF
-    static const int WindowSkipSize;        // size: 0x4, address: 0xFFFFFFFF
-};
+extern KeyboardEditString
+    gKeyboardManager; // size: 0x418, address: 0x80473360, Decl: speed/indep/src/frontend/menuscreens/common/feKeyboardInput.hpp:97
 
 #endif

@@ -7,6 +7,7 @@
 #include "Speed/Indep/Src/FEng/FEString.h"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/feWidget.hpp"
+#include "Speed/Indep/Src/Misc/Point.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 
 #define FEMSG_REFRESH_WIDGETS 0x92b703b5 // :10
@@ -15,68 +16,69 @@
 #define FEMSG_INIT_STARTED 0x1265ece9    // :13
 #define TEXT_OPTION_LENGTH 64            // : 45
 
-// 0x5C
+// File: speed/indep/src/frontend/menuscreens/common/FEIconScrollerMenu.hpp
+// total size: 0x5C
+// Decl: speed/indep/src/frontend/menuscreens/common/FEIconScrollerMenu.hpp:131
 class IconOption : public bTNode<IconOption> {
   public:
     IconOption(uint32 tex_hash, uint32 name_hash, uint32 desc_hash);
-    virtual ~IconOption() {}
+    virtual ~IconOption() {} // Decl: speed/indep/src/frontend/menuscreens/common/FEIconScrollerMenu.hpp:134
     virtual void React(const char *pkg_name, uint32 data, FEObject *obj, uint32 param1, uint32 param2) = 0;
 
     uint32 GetName() {
         return NameHash;
-    };
+    }
     uint32 GetDesc() {
         return DescHash;
-    };
+    }
 
     void StartScale(float scale_to, float duration);
 
     float GetScaleToPcnt() {
         return fScaleToPcnt;
-    };
+    }
     float GetScaleStartSecs() {
         return fScaleStartSecs;
-    };
+    }
     float GetScaleDurSecs() {
         return fScaleDurSecs;
-    };
+    }
     float GetScaleAtStart() {
         return fScaleAtStart;
-    };
+    }
     void SetScaleAtStart(float scale) {
         fScaleAtStart = scale;
-    };
+    }
     bool IsAnimComplete() {
         return bAnimComplete;
-    };
+    }
     void SetAnimComplete(bool b) {
         bAnimComplete = b;
-    };
+    }
     bool ReactsImmediately() {
         return bReactImmediately;
-    };
+    }
     bool IsLocked() {
         return Locked;
-    };
+    }
     void SetLocked(bool b) {
         Locked = b;
-    };
+    }
     void SetReactImmediately(bool b) {
         bReactImmediately = b;
-    };
+    }
     bool IsTutorialAvailable() {
         return bIsTutorialAvailable;
-    };
+    }
     const char *GetTutorialMovieName() {
         return pTutorialMovieName;
-    };
+    }
     void SetTutorialMovieName(const char *name) {
         pTutorialMovieName = name;
-    };
+    }
 
     void SetFEngObject(FEObject *obj);
 
-  public:
     uint32 Item;          // offset 0x8, size 0x4
     FEObject *FEngObject; // offset 0xC, size 0x4
     float XPos;           // offset 0x10, size 0x4
@@ -101,120 +103,103 @@ class IconOption : public bTNode<IconOption> {
     const char *pTutorialMovieName; // offset 0x54, size 0x4
 };
 
+// total size: 0x5C
+// Decl: speed/indep/src/frontend/menuscreens/common/FEIconScrollerMenu.hpp:254
 class FEScrollyBookEnd : public IconOption {
   public:
     FEScrollyBookEnd(uint32 tex_hash) : IconOption(tex_hash, 0, 0) {}
-    void React(const char *pkg_name, uint32 data, FEObject *obj, uint32 param1, uint32 param2) override {}
+    ~FEScrollyBookEnd() override {} // Decl: speed/indep/src/frontend/menuscreens/common/FEIconScrollerMenu.hpp:258
+
+    void React(const char *pkg_name, uint32 data, FEObject *obj, uint32 param1, uint32 param2) override;
 };
 
-enum eScrollDir {
-    eSD_PREV = -1,
-    eSD_NEXT = 1,
-    eSD_PAGE_PREV = -10000,
-    eSD_PAGE_NEXT = 10000,
-    eSD_NONE = 10001,
-};
+// Decl: speed/indep/src/frontend/menuscreens/common/FEIconScrollerMenu.hpp:262
+// Range: 0x8017D56C -> 0x8017D570
+// Overrides: IconOption
+inline void FEScrollyBookEnd::React(const char *pkg_name, uint32 data, FEObject *obj, uint32 param1, uint32 param2) override {}
 
 // total size: 0x38
-struct IconPanel {
-    bTList<IconOption> Options; // offset 0x0, size 0x8
-    IconOption *pCurrentNode;   // offset 0x8, size 0x4
-    FEObject *pMaster;          // offset 0xC, size 0x4
-    FEObject *pScrollRegion;    // offset 0x10, size 0x4
-    const char *pPackageName;   // offset 0x14, size 0x4
-    const char *pButtonName;    // offset 0x18, size 0x4
-    float fIconSpacing;         // offset 0x1C, size 0x4
-    int iIndexToAdd;            // offset 0x20, size 0x4
-    bool bWrap;                 // offset 0x24, size 0x1
-    bool bHorizontal;           // offset 0x28, size 0x1
-    bool bJustScrolled;         // offset 0x2C, size 0x1
-    bool bReactToInput;         // offset 0x30, size 0x1
-
-    IconPanel() {}
+class IconPanel {
+  public:
     IconPanel(const char *pkg_name, const char *master, const char *fe_button, const char *scroll_region, bool wrap);
     virtual ~IconPanel() {}
-
     virtual void Update();
     virtual FEImage *AddOption(IconOption *option);
-    virtual void RemoveAll();
-    virtual void Act(unsigned int data, FEObject *obj, unsigned int param1, unsigned int param2);
-    virtual IconOption *GetHead();
-    virtual bool IsHead(IconOption *option);
-    virtual bool IsTail(IconOption *option);
-    virtual bool IsEndOfList(IconOption *opt);
-    virtual int GetOptionIndex(IconOption *to_find);
-    virtual bool SetSelection(IconOption *option);
-    virtual void SetInitialPos();
-    virtual void Scroll(eScrollDir dir);
-    virtual void ScrollWrapped(eScrollDir dir);
-
-    IconOption *GetOption(int to_find);
-    void AnimateList();
-    void AnimateSelected(float &list_width, float &list_height);
-    void ResizeList(float list_width, float list_height);
-
+    virtual void RemoveAll() {}
+    virtual void Act(uint32 data, FEObject *obj, uint32 param1, uint32 param2);
+    virtual IconOption *GetHead() {}
     IconOption *GetCurrentOption() {
         return pCurrentNode;
     }
-
     FEObject *GetMaster() {
         return pMaster;
     }
-
-    bool AtHead();
-    bool AtTail();
-
-    unsigned int GetCurrentDesc();
-    unsigned int GetCurrentName();
-    bool CurrentReactsImmediately();
-
+    IconOption *GetOption(int to_find);
+    bool AtHead() {}
+    bool AtTail() {}
+    virtual bool IsHead(IconOption *option) {}
+    virtual bool IsTail(IconOption *option) {}
+    virtual bool IsEndOfList(IconOption *opt) {}
+    uint32 GetCurrentDesc() {}
+    uint32 GetCurrentName() {}
+    bool CurrentReactsImmediately() {}
     int GetIndexToAdd() {
         return iIndexToAdd;
     }
-
     int GetCurrentIndex() {
         if (pCurrentNode) {
             return GetOptionIndex(pCurrentNode);
         }
         return 0;
     }
-
-    void ScrollNext();
-    void ScrollPrev();
-
+    virtual int GetOptionIndex(IconOption *to_find);
+    void ScrollNext() {}
+    void ScrollPrev() {}
+    virtual bool SetSelection(IconOption *option);
     bool JustScrolled() {
         return bJustScrolled;
     }
-
+    virtual void SetInitialPos();
     void SetWrap(bool wrap) {
         bWrap = wrap;
     }
-
     void SetReactToInput(bool react) {
         bReactToInput = react;
     }
-
     bool IsHorizontal() {
         return bHorizontal;
     }
-
     bool ReactsToInput() {
         return bReactToInput;
     }
-};
 
-enum eScrollerAlignment {
-    eSA_TOP = 0,
-    eSA_MIDDLE = 1,
-    eSA_BOTTOM = 2,
-    eSA_LEFT = 0,
-    eSA_RIGHT = 2,
+  protected:
+    virtual void Scroll(eScrollDir dir);
+    virtual void ScrollWrapped(eScrollDir dir);
+
+  private:
+    void AnimateList();
+    void AnimateSelected(float &list_width, float &list_height);
+    void ResizeList(float list_width, float list_height);
+
+  protected:
+    bTList<IconOption> Options; // offset 0x0, size 0x8
+    IconOption *pCurrentNode;   // offset 0x8, size 0x4
+    FEObject *pMaster;          // offset 0xC, size 0x4
+    FEObject *pScrollRegion;    // offset 0x10, size 0x4
+    char *pPackageName;         // offset 0x14, size 0x4
+    char *pButtonName;          // offset 0x18, size 0x4
+    float fIconSpacing;         // offset 0x1C, size 0x4
+    int iIndexToAdd;            // offset 0x20, size 0x4
+    bool bWrap;                 // offset 0x24, size 0x1
+    bool bHorizontal;           // offset 0x28, size 0x1
+    bool bJustScrolled;         // offset 0x2C, size 0x1
+    bool bReactToInput;         // offset 0x30, size 0x1
 };
 
 // total size: 0x11C
 class IconScroller : public IconPanel {
   public:
-    IconScroller() {}
     IconScroller(const char *pkg_name, const char *master, const char *fe_button, const char *scroll_region, float width);
     ~IconScroller() override {}
 
@@ -224,7 +209,46 @@ class IconScroller : public IconPanel {
     virtual void SetInitialPos(int index);
     bool SetSelection(IconOption *option) override;
     void RemoveAll() override;
+    void DelayUpdate() {
+        bDelayUpdate = true;
+    }
+    void SetAllowFade(bool allow) {
+        bAllowColorAnim = allow;
+    }
+    void StartFadeIn() {
+        bFadingIn = true;
+        bDelayUpdate = false;
+        bFadingOut = false;
+        fCurFadeTime = 0.0f;
+    }
+    void StartFadeOut() {
+        bFadingOut = true;
+        fCurFadeTime = 0.0f;
+    }
+    void SetIdleColor(uint32 color) {
+        IdleColor = color;
+    }
+    void SetFadeColor(uint32 color) {
+        FadeColor = color;
+    }
+    FEScrollBar *GetScrollBar() {
+        return &ScrollBar;
+    }
+    IconOption *GetHead() override {}
+    bool IsHead(IconOption *option) override {}
+    bool IsTail(IconOption *option) override {}
+    bool IsEndOfList(IconOption *opt) override {}
+    bool IsInitialized() {
+        return bInitialized;
+    }
+    void SetInitialized() {
+        bInitialized = true;
+    }
     int GetOptionIndex(IconOption *to_find) override;
+    int CountElements() {}
+    bool IsEmpty() {}
+
+  protected:
     void Scroll(eScrollDir dir) override;
     void ScrollWrapped(eScrollDir dir) override;
     void ClipEdges(IconOption *option, float pos);
@@ -234,61 +258,10 @@ class IconScroller : public IconPanel {
     void UpdateArrows();
     void PulseSelected();
 
-    IconOption *GetHead() override;
-    bool IsHead(IconOption *option) override;
-    bool IsTail(IconOption *option) override;
-    bool IsEndOfList(IconOption *opt) override;
-
-    void DelayUpdate() {
-        bDelayUpdate = true;
-    }
-
-    void SetAllowFade(bool allow) {
-        bAllowColorAnim = allow;
-    }
-
-    void StartFadeIn() {
-        bFadingIn = true;
-        bDelayUpdate = false;
-        bFadingOut = false;
-        fCurFadeTime = 0.0f;
-    }
-
-    void StartFadeOut() {
-        bFadingOut = true;
-        fCurFadeTime = 0.0f;
-    }
-
-    void SetIdleColor(uint32 color) {
-        IdleColor = color;
-    }
-
-    void SetFadeColor(uint32 color) {
-        FadeColor = color;
-    }
-
-    FEScrollBar *GetScrollBar() {
-        return &ScrollBar;
-    }
-
-    bool IsInitialized() {
-        return bInitialized;
-    }
-
-    void SetInitialized() {
-        bInitialized = true;
-    }
-
-    int CountElements();
-
-    bool IsEmpty();
-
-  protected:
-  public:
     IconOption *HeadBookEnd;                // offset 0x38, size 0x4
     IconOption *TailBookEnd;                // offset 0x3C, size 0x4
     FEScrollBar ScrollBar;                  // offset 0x40, size 0x64
-    char AnimateCubicData[0x2C];            // offset 0xA4, size 0x2C (tCubic1D)
+    tCubic1D AnimateCubic;                  // offset 0xA4, size 0x2C
     eScrollerAlignment AlignmentToSelected; // offset 0xD0, size 0x4
     int iNumBookEnds;                       // offset 0xD4, size 0x4
     int iNumVisible;                        // offset 0xD8, size 0x4
@@ -311,11 +284,15 @@ class IconScroller : public IconPanel {
 };
 
 // total size: 0x16C
+// Decl: speed/indep/src/frontend/menuscreens/common/FEIconScrollerMenu.hpp:538
 class IconScrollerMenu : public MenuScreen {
   public:
-    IconScrollerMenu(ScreenConstructorData *sd);
-    ~IconScrollerMenu() override {}
+    IconScrollerMenu(ScreenConstructorData *sd); // Decl: speed/indep/src/frontend/menuscreens/common/FEIconScrollerMenu.hpp:543
+
+    ~IconScrollerMenu() override {} // Decl: speed/indep/src/frontend/menuscreens/common/FEIconScrollerMenu.hpp:545
+
     void NotificationMessage(u32 msg, FEObject *pobj, u32 param1, u32 param2) override;
+
     eMenuSoundTriggers NotifySoundMessage(u32 msg, eMenuSoundTriggers maybe) override;
 
     void DelayFadeIn() {
@@ -345,6 +322,7 @@ class IconScrollerMenu : public MenuScreen {
 
     void AddOption(IconOption *option);
 
+  protected:
     IconScroller Options;         // offset 0x2C, size 0x11C
     bool bWasLeftMouseDown;       // offset 0x148, size 0x1
     bool bFadeInIconsImmediately; // offset 0x14C, size 0x1

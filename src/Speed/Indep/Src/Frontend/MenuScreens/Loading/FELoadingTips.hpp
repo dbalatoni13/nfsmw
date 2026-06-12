@@ -1,15 +1,13 @@
-#ifndef FRONTEND_MENUSCREENS_LOADING_FELOADINGTIPS_H
-#define FRONTEND_MENUSCREENS_LOADING_FELOADINGTIPS_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef LOADINGTIPS_HPP
+#define LOADINGTIPS_HPP
 
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Loading/FELoadingScreen.hpp"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 
-enum eGameTips {
+// File: speed/indep/src/frontend/menuscreens/loading/FELoadingScreenSelector.hpp
+// Decl: speed/indep/src/frontend/menuscreens/loading/FELoadingScreenSelector.hpp:15
+typedef enum {
     GAME_TIP_LAST_CAR_AND_2_STRIKES = 0,
     GAME_TIP_INTRO_TIP = 1,
     GAME_TIP_MAP_INTRO_TIP = 2,
@@ -41,9 +39,11 @@ enum eGameTips {
     GAME_TIP_USE_CONTROLLER_CONFIG = 27,
     GAME_TIP_NONE = 28,
     NUM_GAME_TIPS = 29,
-};
+} eGameTips;
 
-enum eGameTipBins {
+// total size: 0x10
+// Decl: speed/indep/src/frontend/menuscreens/loading/FELoadingScreenSelector.hpp:143
+typedef enum {
     GT_BIN_NONE = 0,
     GT_BIN_1 = 2,
     GT_BIN_2 = 4,
@@ -63,9 +63,9 @@ enum eGameTipBins {
     GT_BIN_16 = 65536,
     GT_BIN_UNIQUE = 131072,
     GT_BIN_ALL = -1,
-};
+} eGameTipBins;
 
-enum eGameTipType {
+typedef enum {
     GT_TYPE_NONE = 0,
     GT_TYPE_GENERAL = 1,
     GT_TYPE_BLACKLIST = 2,
@@ -73,9 +73,9 @@ enum eGameTipType {
     GT_TYPE_QUICK_RACE = 8,
     GT_TYPE_FREE_ROAM = 16,
     GT_TYPE_ALL = 65535,
-};
+} eGameTipType;
 
-enum eGameTipFlags {
+typedef enum {
     GTF_NONE = 0,
     GFT_RACETYPE_CIRCUIT = 1,
     GFT_RACETYPE_DRAG = 2,
@@ -87,7 +87,7 @@ enum eGameTipFlags {
     GTF_TRANSITION_TO_FE = 256,
     GTF_TRANSITION_TO_INGAME = 512,
     GFT_WAIT_FOR_BUTTON_PRESS = 1024,
-};
+} eGameTipFlags;
 
 struct GameTipInfo {
     char *Name;            // offset 0x0
@@ -95,6 +95,10 @@ struct GameTipInfo {
     eGameTipType Category; // offset 0x8
     eGameTipFlags Flags;   // offset 0xC
 };
+
+// File: speed/indep/src/frontend/menuscreens/loading/FELoadingTips.hpp
+// total size: 0x3C
+// Decl: speed/indep/src/frontend/menuscreens/loading/FELoadingTips.hpp:15
 
 class LoadingTips : public MenuScreen {
   public:
@@ -110,12 +114,13 @@ class LoadingTips : public MenuScreen {
         return mLoadingTipsScreenPtr;
     }
 
-    static inline void operator delete(void *ptr) {}
+    static inline void operator delete(void *ptr) {} // Decl: speed/indep/src/frontend/menuscreens/loading/FELoadingTips.hpp:21
 
-    static inline void operator delete(void *ptr, char *msg) {}
+    static inline void operator delete(void *ptr, char *msg) {} // Decl: speed/indep/src/frontend/menuscreens/loading/FELoadingTips.hpp:22
 
     LoadingTips(ScreenConstructorData *sd);
     ~LoadingTips() override;
+
     void NotificationMessage(u32 msg, FEObject *pobj, u32 param1, u32 param2) override;
 
     void FinishLoadingTexCallback(uint32 p);
@@ -138,7 +143,7 @@ class LoadingTips : public MenuScreen {
 
     static bool mDoneLoading;
     static bool mDoneShowingLoadingTips;
-    static void *mLoadingTipsScreenPtr;
+    static void *mLoadingTipsScreenPtr; // size: 0x4, address: 0x8041C188, Decl: speed/indep/src/frontend/menuscreens/loading/FELoadingTips.cpp:21
 
     uint32 TipTextureHash;         // offset 0x2C
     Timer DisplayTime;             // offset 0x30

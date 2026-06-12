@@ -1,13 +1,12 @@
-#ifndef FRONTEND_MENUSCREENS_LOADING_FESPLASHSCREEN_H
-#define FRONTEND_MENUSCREENS_LOADING_FESPLASHSCREEN_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef FESPLASHSCREEN_H
+#define FESPLASHSCREEN_H
 
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 
+// File: speed/indep/src/frontend/menuscreens/loading/FESplashScreen.hpp
+// total size: 0x38
+// Decl: speed/indep/src/frontend/menuscreens/loading/FESplashScreen.hpp:14
 class SplashScreen : public MenuScreen {
   public:
     SplashScreen(ScreenConstructorData *);
@@ -21,7 +20,7 @@ class SplashScreen : public MenuScreen {
     }
     Timer CalculateLastJoyEventTime();
 
-    bool bAllowContinue;
+    bool bAllowContinue; // offset 0x2C, size 0x1, Decl: speed/indep/src/frontend/menuscreens/loading/FESplashScreen.hpp:27
 
   private:
     Timer CopyrightNotice;

@@ -4,7 +4,7 @@
 #include <types.h>
 
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
-#include "Speed/Indep/Src/Frontend/MenuScreens/Common/UIWidgetMenu.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/feUIWidgetMenu.hpp"
 
 // total size: 0x15C
 class UIOptionsScreen : public UIWidgetMenu {

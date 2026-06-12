@@ -5,7 +5,7 @@
 #pragma once
 #endif
 
-#include "Speed/Indep/Src/Frontend/MenuScreens/Common/UIWidgetMenu.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/feUIWidgetMenu.hpp"
 #include "Speed/Indep/Src/Frontend/Database/VehicleDB.hpp"
 
 struct CTextScroller;

@@ -1,9 +1,5 @@
-#ifndef FRONTEND_MENUSCREENS_SAFEHOUSE_CAREER_UIINFRACTIONS_H
-#define FRONTEND_MENUSCREENS_SAFEHOUSE_CAREER_UIINFRACTIONS_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef __UIINFRACTIONS_HPP__
+#define __UIINFRACTIONS_HPP__
 
 #include "Speed/Indep/Src/Frontend/Database/VehicleDB.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"

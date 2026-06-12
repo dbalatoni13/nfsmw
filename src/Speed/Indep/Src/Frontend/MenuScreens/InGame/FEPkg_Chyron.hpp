@@ -1,9 +1,5 @@
-#ifndef FRONTEND_MENUSCREENS_INGAME_FEPKG_CHYRON_H
-#define FRONTEND_MENUSCREENS_INGAME_FEPKG_CHYRON_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef FEPKG_CHYRON_H
+#define FEPKG_CHYRON_H
 
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
 #include "Speed/Indep/Src/Misc/Timer.hpp"

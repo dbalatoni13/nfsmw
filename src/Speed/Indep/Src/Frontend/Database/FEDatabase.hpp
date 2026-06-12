@@ -1,11 +1,6 @@
-#ifndef FRONTEND_DATABASE_FEDATABASE_H
-#define FRONTEND_DATABASE_FEDATABASE_H
+#ifndef FEDATABASE_H
+#define FEDATABASE_H
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
-#include <cstddef>
 #include <types.h>
 
 #include "RaceDB.hpp"
@@ -16,11 +11,11 @@
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/InGame/uiWorldMap.hpp"
 
-class GRaceCustom;
-
 #if ONLINE_SUPPORT
 #include "Speed/Indep/Src/Online/OnlineCfg.hpp"
 #endif
+
+class GRaceCustom;
 
 typedef enum {
     POST_RACE_OPT_NEXT_RACE = 0,

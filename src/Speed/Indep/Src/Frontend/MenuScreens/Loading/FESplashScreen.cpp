@@ -5,7 +5,7 @@
 #include "Speed/Indep/Src/Generated/Messages/MControlPathfinder.h"
 #include "Speed/Indep/Src/Misc/EasterEggs.hpp"
 #include "Speed/Indep/Src/Frontend/FECarViewer.hpp"
-#include "Speed/Indep/Src/Frontend/MenuScreens/Common/DialogInterface.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/feDialogBox.hpp"
 #include "Speed/Indep/Src/World/TrackStreamer.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Loading/FEBootFlowManager.hpp"
 

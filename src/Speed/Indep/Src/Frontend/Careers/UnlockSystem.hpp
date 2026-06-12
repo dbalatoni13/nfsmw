@@ -1,10 +1,9 @@
 #ifndef __UNLOCKSYSTEM_HPP
 #define __UNLOCKSYSTEM_HPP
 
-#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/customize/CustomizeTypes.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/customize/FECustomize.hpp"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/gameplay.h"
 #include "Speed/Indep/Src/Physics/PhysicsUpgrades.hpp"
-#include "Speed/Indep/Src/Generated/AttribSys/Classes/frontend.h"
 
 #define UNLOCK_SYSTEM_MAX_ITEMS 1000                            // :12
 #define NUM_PERF_PACKAGE_UNLOCKS Physics::Upgrades::PUT_MAX * 3 // :42

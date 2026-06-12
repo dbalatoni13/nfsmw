@@ -1,14 +1,15 @@
-#ifndef FRONTEND_MENUSCREENS_SAFEHOUSE_QUICKRACE____CUSTOMIZE_CARCUSTOMIZE_H
-#define FRONTEND_MENUSCREENS_SAFEHOUSE_QUICKRACE____CUSTOMIZE_CARCUSTOMIZE_H
+#ifndef __CARCUSTOMIZE_HPP__
+#define __CARCUSTOMIZE_HPP__
 
+#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/customize/FECustomize.hpp"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
 
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
-#include "Speed/Indep/Src/Frontend/MenuScreens/Common/IconPanel.hpp"
-#include "Speed/Indep/Src/Frontend/MenuScreens/Common/IconScrollerMenu.hpp"
-#include "Speed/Indep/Src/Frontend/MenuScreens/Common/UIWidgetMenu.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEIconScrollerMenu.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEIconScrollerMenu.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/feUIWidgetMenu.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/feArrayScrollerMenu.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/customize/CustomizeTypes.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiQRBrief.hpp"

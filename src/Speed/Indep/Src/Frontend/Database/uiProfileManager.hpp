@@ -1,7 +1,7 @@
 #ifndef UIPROFILEMANAGER_H
 #define UIPROFILEMANAGER_H
 
-#include "Speed/Indep/Src/Frontend/MenuScreens/Common/IconScrollerMenu.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEIconScrollerMenu.hpp"
 
 class PMSave : public IconOption {
   public:

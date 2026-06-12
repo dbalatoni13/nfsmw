@@ -4,7 +4,7 @@
 #include "Speed/Indep/Src/Frontend/FEngFont.hpp"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
-#include "Speed/Indep/Src/Frontend/MenuScreens/Common/DialogInterface.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/feDialogBox.hpp"
 #include "Speed/Indep/Src/Generated/Events/ESndGameState.hpp"
 #include "Speed/Indep/Src/EAXSound/Stream/SpeechManager.hpp"
 #include "Speed/Indep/Src/Speech/MiscSpeech.h"

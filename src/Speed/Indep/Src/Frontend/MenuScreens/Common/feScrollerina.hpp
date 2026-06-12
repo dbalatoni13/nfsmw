@@ -6,7 +6,7 @@
 #endif
 
 #include "Speed/Indep/Src/FEng/FEObject.h"
-#include "Speed/Indep/Src/Frontend/MenuScreens/Common/IconPanel.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEIconScrollerMenu.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEStrings.hpp"

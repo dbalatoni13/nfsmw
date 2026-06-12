@@ -6,7 +6,7 @@
 #include "Speed/Indep/Src/Frontend/Localization/Localize.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
 #include "Speed/Indep/Src/Frontend/Careers/UnlockSystem.hpp"
-#include "Speed/Indep/Src/Frontend/MenuScreens/Common/DialogInterface.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/feDialogBox.hpp"
 #include "Speed/Indep/Src/Misc/ResourceLoader.hpp"
 
 PostPursuitInfractionsScreen::PostPursuitInfractionsScreen(ScreenConstructorData *sd) : MenuScreen(sd) {

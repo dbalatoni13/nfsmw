@@ -1,9 +1,5 @@
-#ifndef FRONTEND_MENUSCREENS_LOADING_FEMOVIESCREEN_H
-#define FRONTEND_MENUSCREENS_LOADING_FEMOVIESCREEN_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef MOVIESCREEN_HPP
+#define MOVIESCREEN_HPP
 
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
 #include "Speed/Indep/Src/Frontend/SubTitle.hpp"

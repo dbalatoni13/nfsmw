@@ -1,6 +1,6 @@
-#include "Speed/Indep/Src/Frontend/MenuScreens/Common/UIWidgetMenu.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/feUIWidgetMenu.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEInputWidget.hpp"
-#include "Speed/Indep/Src/Frontend/MenuScreens/Common/IconPanel.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEIconScrollerMenu.hpp"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEObjects.hpp"
 

@@ -1,9 +1,10 @@
+#include "Speed/Indep/Src/Frontend/MenuScreens/InGame/FEPkg_MU_Keyboard.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Frontend/FEngFont.hpp"
 #include "Speed/Indep/Src/Frontend/FEngFrontend.hpp"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEImages.hpp"
 #include "Speed/Indep/Src/Frontend/Localization/Localize.hpp"
-#include "Speed/Indep/Src/Frontend/MenuScreens/Common/feKeyboardInput.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
@@ -12,45 +13,6 @@
 Timer KBCreationTimer;
 extern FEKeyboard *gFEKeyboard;
 extern bool KeyboardActive;
-
-const char FEKeyboard::mLetterMap[8][2][45] = {
-    {{'1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '\'', '_', '-', '.', '@', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h',
-      'i', 'j', 'k', 'l', 'm', '?', '!', 'n', 'o', 'p', 'q',  'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', ',', '&'},
-     {'/', '\\', '|', '`', '~', '#', '%', '+', '*', '=', '\"', ':', ';', '(', ')', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
-      'I', 'J',  'K', 'L', 'M', '<', '>', 'N', 'O', 'P', 'Q',  'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '[', ']'}},
-    {{'1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '\'', '_', '-', '.', '@', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h',
-      'i', 'j', 'k', 'l', 'm', '?', '!', 'n', 'o', 'p', 'q',  'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', ',', '&'},
-     {'/', '\\', '|', '`', '~', '#', '%', '+', '*', '=', '\"', ':', ';', '(', ')', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
-      'I', 'J',  'K', 'L', 'M', '<', '>', 'N', 'O', 'P', 'Q',  'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '[', ']'}},
-    {{'1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '\'', '_', '-', '.', '@', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h',
-      'i', 'j', 'k', 'l', 'm', '?', '!', 'n', 'o', 'p', 'q',  'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', ',', '&'},
-     {'/', '\\', '|', '`', '~', '#', '%', '+', '*', '=', '\"', ':', ';', '(', ')', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
-      'I', 'J',  'K', 'L', 'M', '<', '>', 'N', 'O', 'P', 'Q',  'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '[', ']'}},
-    {{'1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '\'', '_', '-', '.', '@', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h',
-      'i', 'j', 'k', 'l', 'm', '?', '!', 'n', 'o', 'p', 'q',  'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', ',', '&'},
-     {'/', '\\', '|', '`', '~', '#', '%', '+', '*', '=', '\"', ':', ';', '(', ')', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
-      'I', 'J',  'K', 'L', 'M', '<', '>', 'N', 'O', 'P', 'Q',  'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '[', ']'}},
-    {{'1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '\'', '_', '-', '.', '@', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h',
-      'i', 'j', 'k', 'l', 'm', '?', '!', 'n', 'o', 'p', 'q',  'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', ',', '&'},
-     {'/', '\\', '|', '`', '~', '#', '%', '+', '*', '=', '\"', ':', ';', '(', ')', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
-      'I', 'J',  'K', 'L', 'M', '<', '>', 'N', 'O', 'P', 'Q',  'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '[', ']'}},
-    {{'1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '\'', '_', '-', '.', '@', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h',
-      'i', 'j', 'k', 'l', 'm', '?', '!', 'n', 'o', 'p', 'q',  'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', ',', '&'},
-     {'/', '\\', '|', '`', '~', '#', '%', '+', '*', '=', '\"', ':', ';', '(', ')', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
-      'I', 'J',  'K', 'L', 'M', '<', '>', 'N', 'O', 'P', 'Q',  'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '[', ']'}},
-    {{'1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '\'', '_', '-', '.', '@', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h',
-      'i', 'j', 'k', 'l', 'm', '?', '!', 'n', 'o', 'p', 'q',  'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', ',', '&'},
-     {'/', '\\', '|', '`', '~', '#', '%', '+', '*', '=', '\"', ':', ';', '(', ')', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
-      'I', 'J',  'K', 'L', 'M', '<', '>', 'N', 'O', 'P', 'Q',  'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '[', ']'}},
-    {{0xFA, 0xF9, 0xFB, 0xFC, 0xDF, 0xA1, 0xBF, 0,    0,    0,    0,    0,    0,    0,    0,    0xE1, 0xE0, 0xE2, 0xE5, 0xE4, 0xE6, 0xE7, 0xE9,
-      0xE8, 0xEA, 0xEB, 0,    0,    0,    0,    0xED, 0xEC, 0xEE, 0xEF, 0xF1, 0xF8, 0xF3, 0xF2, 0xF4, 0xF6, 0x9C, 0,    0,    0,    0},
-     {0xDA, 0xD9, 0xDB, 0xDC, 0, 0, 0, 0,    0,    0,    0,    0,    0,    0,    0,    0xC1, 0xC0, 0xC2, 0xC5, 0xC4, 0xC6, 0xC7, 0xC9,
-      0xC8, 0xCA, 0xCB, 0,    0, 0, 0, 0xCD, 0xCC, 0xCE, 0xCF, 0xD1, 0xD8, 0xD3, 0xD2, 0xD4, 0xD6, 0,    0,    0,    0,    0}}};
-
-const FEColor FEKeyboard::ButtonHighlight(0xC8CFE9F2);
-const FEColor FEKeyboard::LetterHighlight(0xFFFFFFFF);
-const FEColor FEKeyboard::ButtonIdle(0x50549AC0);
-const FEColor FEKeyboard::LetterIdle(0xFF323232);
 
 MenuScreen *CreateFEKeyboard(ScreenConstructorData *sd) {
     return new ("FEKeyboard", 0) FEKeyboard(sd);

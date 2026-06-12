@@ -5,7 +5,7 @@
 #include "Speed/Indep/Src/Generated/Messages/MControlPathfinder.h"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "Speed/Indep/Src/Frontend/Localization/Localize.hpp"
-#include "Speed/Indep/Src/Frontend/MenuScreens/Common/DialogInterface.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/feDialogBox.hpp"
 
 struct stSongInfo {
     char *SongName; // offset 0x0, size 0x4

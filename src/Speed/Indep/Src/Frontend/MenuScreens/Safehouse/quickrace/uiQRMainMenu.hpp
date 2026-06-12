@@ -5,7 +5,7 @@
 #pragma once
 #endif
 
-#include "Speed/Indep/Src/Frontend/MenuScreens/Common/IconScrollerMenu.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEIconScrollerMenu.hpp"
 
 #include <types.h>
 

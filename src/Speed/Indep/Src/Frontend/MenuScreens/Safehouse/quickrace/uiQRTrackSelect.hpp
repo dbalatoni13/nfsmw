@@ -6,7 +6,7 @@
 #endif
 
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
-#include "Speed/Indep/Src/Frontend/MenuScreens/Common/IconPanel.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEIconScrollerMenu.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiTrackMapStreamer.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 

@@ -6,7 +6,7 @@
 #endif
 
 #include "types.h"
-#include "Speed/Indep/Src/Frontend/MenuScreens/Common/UIWidgetMenu.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/feUIWidgetMenu.hpp"
 
 class uiRapSheetMain : public UIWidgetMenu {
   public:

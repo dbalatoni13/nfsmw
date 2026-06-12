@@ -7,7 +7,7 @@
 
 #include <types.h>
 
-#include "Speed/Indep/Src/Frontend/MenuScreens/Common/CTextScroller.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/feWidget.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/feScrollerina.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"

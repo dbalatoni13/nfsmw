@@ -7,7 +7,7 @@
 #include "Speed/Indep/Src/Misc/GameFlow.hpp"
 #include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
-#include "Speed/Indep/Src/Frontend/MenuScreens/Common/DialogInterface.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/feDialogBox.hpp"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/FEng/FEString.h"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"

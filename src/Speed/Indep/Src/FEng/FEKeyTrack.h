@@ -80,7 +80,7 @@ class FEKeyTrack {
         return static_cast<FEKeyNode *>(DeltaKeys.GetHead());
     }
 
-    FEKeyNode *GetKeyNumber(unsigned long Number) {}
+    FEKeyNode *GetKeyNumber(u32 Number) {}
 
     FEKeyNode *GetKeyAt(i32 tTime);
 

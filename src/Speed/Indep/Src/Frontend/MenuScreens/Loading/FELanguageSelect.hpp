@@ -1,14 +1,12 @@
-#ifndef FRONTEND_MENUSCREENS_LOADING_FELANGUAGESELECT_H
-#define FRONTEND_MENUSCREENS_LOADING_FELANGUAGESELECT_H
+#ifndef LANGUAGESELECTSCREEN_HPP
+#define LANGUAGESELECTSCREEN_HPP
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
-#include "Speed/Indep/Src/Frontend/MenuScreens/Common/IconScrollerMenu.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEIconScrollerMenu.hpp"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 
+// File: speed/indep/src/frontend/menuscreens/loading/FELanguageSelect.hpp
 // total size: 0x170
+// Decl: speed/indep/src/frontend/menuscreens/loading/FELanguageSelect.hpp:14
 class LanguageSelectScreen : public IconScrollerMenu {
   public:
     LanguageSelectScreen(ScreenConstructorData *sd);
@@ -17,7 +15,7 @@ class LanguageSelectScreen : public IconScrollerMenu {
     void Setup() override {}
 
   private:
-    static bool bChoiceMade;
+    static bool bChoiceMade; // size: 0x1, address: 0xFFFFFFFF
 
     Timer StartedTimer; // offset 0x16C
 };

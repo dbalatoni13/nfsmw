@@ -13,7 +13,7 @@
 #include "Speed/Indep/Src/Misc/Config.h"
 #include "Speed/Indep/Src/Misc/GameFlow.hpp"
 #include "Speed/Indep/Src/Sim/Simulation.h"
-#include "Speed/Indep/Src/Frontend/MenuScreens/Common/DialogInterface.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/feDialogBox.hpp"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 
 int UIOptionsScreen::PlayerToEdit = 0;

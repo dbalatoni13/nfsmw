@@ -4,6 +4,7 @@
 // total size: 0x70
 #include "Speed/Indep/Src/Frontend/HUD/FeHudElement.hpp"
 #include "Speed/Indep/Src/Interfaces/IFengHud.h"
+
 class DragTachometer : public HudElement, public ITachometer, public ITachometerDrag {
   public:
     DragTachometer(UTL::COM::Object *pOutter, const char *pkg_name, int player_number);

@@ -1,11 +1,7 @@
-#ifndef FRONTEND_MENUSCREENS_SAFEHOUSE_CAREER_UICAREERMANAGER_H
-#define FRONTEND_MENUSCREENS_SAFEHOUSE_CAREER_UICAREERMANAGER_H
+#ifndef __UI_CAREER_MANAGER_HPP__
+#define __UI_CAREER_MANAGER_HPP__
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
-#include "Speed/Indep/Src/Frontend/MenuScreens/Common/IconScrollerMenu.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEIconScrollerMenu.hpp"
 
 class uiCareerManager : public IconScrollerMenu {
   public:

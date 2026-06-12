@@ -3,27 +3,27 @@
 
 ObjectPool<FEKeyNode, 256> FEKeyNode::NodePool;
 
-void* FEKeyNode::operator new(unsigned int) {
-    FEKeyNode* pNode = NodePool.AllocSingle();
+void *FEKeyNode::operator new(unsigned int) {
+    FEKeyNode *pNode = NodePool.AllocSingle();
     return pNode;
 }
 
-void FEKeyNode::operator delete(void* pNode) {
-    FEKeyNode* pDeleteNode = static_cast<FEKeyNode*>(pNode);
+void FEKeyNode::operator delete(void *pNode) {
+    FEKeyNode *pDeleteNode = static_cast<FEKeyNode *>(pNode);
     pDeleteNode->~FEKeyNode();
-    NodePool.FreeSingleNoDestroy(pDeleteNode);
+    NodePool.FreeSingle(pDeleteNode);
 }
 
-FEKeyNode* FEKeyTrack::GetKeyAt(long tTime) {
+FEKeyNode *FEKeyTrack::GetKeyAt(i32 tTime) {
     if (tTime < 0) {
         return GetBaseKey();
     }
-    FEKeyNode* pPrev = GetFirstDeltaKey();
+    FEKeyNode *pPrev = GetFirstDeltaKey();
     if (!pPrev) {
         return GetBaseKey();
     }
     for (;;) {
-        FEKeyNode* pKey = pPrev->GetNext();
+        FEKeyNode *pKey = pPrev->GetNext();
         if (!pKey) {
             break;
         }
@@ -35,13 +35,13 @@ FEKeyNode* FEKeyTrack::GetKeyAt(long tTime) {
     return pPrev;
 }
 
-FEKeyNode* FEKeyTrack::GetDeltaKeyAt(long tTime) {
-    FEKeyNode* pPrev = GetFirstDeltaKey();
+FEKeyNode *FEKeyTrack::GetDeltaKeyAt(i32 tTime) {
+    FEKeyNode *pPrev = GetFirstDeltaKey();
     if (!pPrev) {
         return nullptr;
     }
     for (;;) {
-        FEKeyNode* pKey = pPrev->GetNext();
+        FEKeyNode *pKey = pPrev->GetNext();
         if (!pKey) {
             break;
         }
@@ -53,9 +53,9 @@ FEKeyNode* FEKeyTrack::GetDeltaKeyAt(long tTime) {
     return pPrev;
 }
 
-void FEKeyTrack::operator=(FEKeyTrack& Src) {
-    FEKeyNode* pKey;
-    while ((pKey = static_cast<FEKeyNode*>(DeltaKeys.RemHead())) != nullptr) {
+void FEKeyTrack::operator=(FEKeyTrack &Src) {
+    FEKeyNode *pKey;
+    while ((pKey = static_cast<FEKeyNode *>(DeltaKeys.RemHead())) != nullptr) {
         delete pKey;
     }
 
@@ -71,7 +71,7 @@ void FEKeyTrack::operator=(FEKeyTrack& Src) {
     if (Src.IsReference()) {
         DeltaKeys.ReferenceList(Src.DeltaKeys.GetRefSource());
     } else {
-        FEKeyNode* pSrcKey = Src.GetFirstDeltaKey();
+        FEKeyNode *pSrcKey = Src.GetFirstDeltaKey();
         while (pSrcKey) {
             pKey = new FEKeyNode();
             pKey->tTime = pSrcKey->tTime;
