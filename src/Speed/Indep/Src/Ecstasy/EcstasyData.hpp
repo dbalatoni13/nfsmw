@@ -1,9 +1,5 @@
-#ifndef ECSTASY_ECSTASY_DATA_H
-#define ECSTASY_ECSTASY_DATA_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef __ECSTASY_ENGINE__ECSTASYDATA_HPP
+#define __ECSTASY_ENGINE__ECSTASYDATA_HPP
 
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
@@ -100,11 +96,11 @@ enum FILTER_ID {
 };
 
 enum EVIEWMODE {
-    EVIEWMODE_TWOV = 4,
-    EVIEWMODE_TWOH = 3,
-    EVIEWMODE_ONE_RVM = 2,
-    EVIEWMODE_ONE = 1,
     EVIEWMODE_NONE = 0,
+    EVIEWMODE_ONE = 1,
+    EVIEWMODE_ONE_RVM = 2,
+    EVIEWMODE_TWOH = 3,
+    EVIEWMODE_TWOV = 4,
 };
 
 class eTextureEntry {
@@ -196,8 +192,8 @@ class eNormalSmoother {
     void EndianSwap() {}
 };
 
+// total size: 0x50
 class ePositionMarker {
-    // total size: 0x50
   public:
     uint32 NameHash; // offset 0x0, size 0x4
     int32 iParam0;   // offset 0x4, size 0x4
@@ -229,6 +225,7 @@ class eViewPlatInterface {
     static eViewPlatInfo *GimmeMyViewPlatInfo(int view_id);
     eVisibleState GetVisibleStateGB(const bVector3 *aabb_min, const bVector3 *aabb_max, bMatrix4 *local_world);
     eVisibleState GetVisibleStateSB(const bVector3 *aabb_min, const bVector3 *aabb_max, bMatrix4 *local_world);
+    void GetScreenPosition(bVector3 *screen_position, const bVector3 *world_position);
 
     void Render(eModel *model, bMatrix4 *local_to_world, eLightContext *light_context, uint32 flags, bMatrix4 *blending_matricies);
     void FERender(ePoly *poly, TextureInfo *texture_info, bMatrix4 *local_to_world, int use_previous_data, float bbRad);

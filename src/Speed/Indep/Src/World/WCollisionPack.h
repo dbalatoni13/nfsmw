@@ -24,19 +24,7 @@ class WCollisionPack {
 
     const WCollisionObject *Object(unsigned short index) const;
 
-    void *operator new(size_t size) {
-        return gFastMem.Alloc(size, nullptr);
-    }
-
-    void *operator new(size_t size, const char *name) {
-        return gFastMem.Alloc(size, nullptr);
-    }
-
-    void operator delete(void *mem, size_t size) {
-        if (mem) {
-            gFastMem.Free(mem, size, nullptr);
-        }
-    }
+    USE_FASTALLOC(WCollisionPack);
 
   private:
     void Init(bChunk *chunk);

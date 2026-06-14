@@ -88,6 +88,11 @@ struct effects : Instance {
         return *resultptr;
     }
 
+    bool AudioQuadratic(TAttrib<UMath::Vector4> &result) const {
+        result = Attrib::TAttrib<UMath::Vector4>(Get(0x15e6552f));
+        return result.IsValid();
+    }
+
     const float &VisualCullDist() const {
         const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0x1a2f2b1b, 0));
         if (!resultptr) {
@@ -180,6 +185,12 @@ struct effects : Instance {
         return *resultptr;
     }
 
+    // TODO add this to the function generator
+    bool EmitterQuadratic(TAttrib<UMath::Vector4> &result) const {
+        result = Attrib::TAttrib<UMath::Vector4>(Get(0xa9402c33));
+        return result.IsValid();
+    }
+
     const RefSpec &emittergroup() const {
         const RefSpec *resultptr = reinterpret_cast<const RefSpec *>(GetAttributePointer(0xaba86e60, 0));
         if (!resultptr) {
@@ -212,7 +223,8 @@ struct effects : Instance {
         return *resultptr;
     }
 
-    const char *CollectionName() const {
+    // TODO macro the const & correctly here
+    const char *const &CollectionName() const {
         return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->CollectionName;
     }
 };

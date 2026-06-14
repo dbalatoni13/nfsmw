@@ -246,12 +246,9 @@ struct gameplay : Instance {
         return this->Get(0x13b11b40).GetLength();
     }
 
-    const float &ShortcutMaxChance(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x16faba11, index));
-        if (!resultptr) {
-            resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
-        }
-        return *resultptr;
+    const float &ShortcutMaxChance() const {
+        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x16faba11, 0));
+        return !resultptr ? *reinterpret_cast<const float *>(DefaultDataArea(sizeof(float))) : *resultptr;
     }
 
     const int &KnockoutsPerLap(unsigned int index) const {
@@ -590,20 +587,14 @@ struct gameplay : Instance {
         return *resultptr;
     }
 
-    const float &ShortcutMinChance(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x4efb950a, index));
-        if (!resultptr) {
-            resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
-        }
-        return *resultptr;
+    const float &ShortcutMinChance() const {
+        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x4efb950a, 0));
+        return !resultptr ? *reinterpret_cast<const float *>(DefaultDataArea(sizeof(float))) : *resultptr;
     }
 
     const GCollectionKey &RewardsForWinner(unsigned int index) const {
         const GCollectionKey *resultptr = reinterpret_cast<const GCollectionKey *>(this->GetAttributePointer(0x50104d90, index));
-        if (!resultptr) {
-            resultptr = reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey)));
-        }
-        return *resultptr;
+        return !resultptr ? *reinterpret_cast<const GCollectionKey *>(DefaultDataArea(sizeof(GCollectionKey))) : *resultptr;
     }
 
     unsigned int Num_RewardsForWinner() const {

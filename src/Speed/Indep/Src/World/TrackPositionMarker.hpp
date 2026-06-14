@@ -1,10 +1,6 @@
 #ifndef WORLD_TRACKPOSITIONMARKER_H
 #define WORLD_TRACKPOSITIONMARKER_H
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"

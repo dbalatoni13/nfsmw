@@ -125,22 +125,6 @@ class emEvent : public bTNode<emEvent> {
 
 typedef void (*EVENT_HANDLER_FUNC)(emEvent *);
 
-class emEventHandler : public bTNode<emEventHandler> {
-  public:
-    void *operator new(size_t size) {
-        return bOMalloc(EventHandlerSlotPool);
-    }
-
-    void operator delete(void *ptr) {
-        bFree(EventHandlerSlotPool, ptr);
-    }
-
-    EVENT_HANDLER_FUNC HandlerFunction;
-    uint32 StreamMask;
-    int32 ReferenceCount;
-    float TotalTime;
-};
-
 void emEventManagerInit();
 void emProcessAllEvents();
 

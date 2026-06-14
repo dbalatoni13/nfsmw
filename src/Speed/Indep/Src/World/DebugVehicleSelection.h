@@ -1,9 +1,5 @@
-#ifndef WORLD_DEBUGVEHICLESELECTION_H
-#define WORLD_DEBUGVEHICLESELECTION_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef __E_DEBUG_VEHICLE_SECTION_H__
+#define __E_DEBUG_VEHICLE_SECTION_H__
 
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Libs/Support/Utility/UStandard.h"
@@ -12,15 +8,33 @@
 // total size: 0x38
 class DebugVehicleSelection : public UTL::COM::Object, public IVehicleCache {
   public:
+    DebugVehicleSelection();
+    ~DebugVehicleSelection();
+
+    static bool IsEnabled() {
+        return false;
+    }
+
     static void Init();
     static void DeInit();
 
-    DebugVehicleSelection();
-    ~DebugVehicleSelection();
+    static DebugVehicleSelection &Get() {
+        return *mThis;
+    }
+
     void Service();
 
+  private:
+    static DebugVehicleSelection *mThis;
+    static bool mOnOff;
+
+  public:
     void DebugDisplay();
     void ReportCollision(const char *objectname, const char *surfacename);
+
+    eVehicleCacheResult OnQueryVehicleCache(const IVehicle *removethis, const IVehicleCache *whosasking) const override {
+        return VCR_DONTCARE;
+    };
 
 #ifndef EA_BUILD_A124
     const char *GetCacheName() const override {
@@ -28,27 +42,7 @@ class DebugVehicleSelection : public UTL::COM::Object, public IVehicleCache {
     };
 #endif
 
-    eVehicleCacheResult OnQueryVehicleCache(const IVehicle *removethis, const IVehicleCache *whosasking) const override {
-        return VCR_DONTCARE;
-    };
-
-    void OnRemovedVehicleCache(IVehicle *ivehicle) override {};
-
-    static inline bool IsEnabled();
-
-    eVehicleCacheResult OnQueryVehicleCache(const IVehicle *removethis, const IVehicleCache *whosasking) const override {
-        return VCR_DONTCARE;
-    }
-
-    const char *GetCacheName() const override {
-        return "DebugVehicleSelection";
-    }
-
     void OnRemovedVehicleCache(IVehicle *ivehicle) override {}
-
-    static DebugVehicleSelection &Get() {
-        return *mThis;
-    }
 
   private:
     void InitSelectionList();
@@ -58,9 +52,6 @@ class DebugVehicleSelection : public UTL::COM::Object, public IVehicleCache {
     UTL::Std::vector<const char *, _type_vector> mSelectionList; // offset 0x20, size 0x10
     const char *mCollisionObject;                                // offset 0x30, size 0x4
     const char *mCollisionSurface;                               // offset 0x34, size 0x4
-
-    static DebugVehicleSelection *mThis;
-    static bool mOnOff;
 };
 
 #endif

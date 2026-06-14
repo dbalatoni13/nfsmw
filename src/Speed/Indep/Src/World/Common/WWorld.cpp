@@ -2,34 +2,26 @@
 
 #include "Speed/Indep/Libs/Support/Miscellaneous/CARP.h"
 #include "Speed/Indep/Src/Sim/SimSurface.h"
-#include "Speed/Indep/Src/World/WCollision.h"
 #include "Speed/Indep/Src/World/WCollisionAssets.h"
-
-int LoaderCarpWGrid(bChunk *chunk);
-int UnloaderCarpWGrid(bChunk *chunk);
-
-bChunkLoader bChunkLoaderWGrid(0x3B800, LoaderCarpWGrid, UnloaderCarpWGrid);
-
-WWorld* WWorld::fgWorld;
+#include "Speed/Indep/Src/Misc/SpeedChunks.hpp"
 
 WWorld::WWorld()
-    : fAttributes(0xeec2271a, 0, nullptr) //
-    , fRootWorldGroup(nullptr) //
-    , fCarpData(nullptr) //
-    , fCarpDataSize(0) //
-{
-}
+    : fAttributes(0xeec2271a, 0, nullptr), //
+      fRootWorldGroup(nullptr),            //
+      fCarpData(nullptr),                  //
+      fCarpDataSize(0)                     //
+{}
 
 void WWorld::Init() {
-    if (!fgWorld) {
+    if (fgWorld == nullptr) {
         fgWorld = new WWorld();
         SimSurface::InitSystem();
         WSurface::InitSystem();
     }
 }
 
-int WWorld::Loader(bChunk* chunk) {
-    if (chunk->GetID() != 0x3B800) {
+int WWorld::Loader(bChunk *chunk) {
+    if (chunk->GetID() != BCHUNK_UPPLE_UWORLD) {
         return 0;
     }
     fCarpData = chunk->GetAlignedData(16);
@@ -38,14 +30,27 @@ int WWorld::Loader(bChunk* chunk) {
     return 1;
 }
 
-int WWorld::Unloader(bChunk* chunk) {
-    if (chunk->GetID() != 0x3B800) {
+int WWorld::Unloader(bChunk *chunk) {
+    if (chunk->GetID() != BCHUNK_UPPLE_UWORLD) {
         return 0;
     }
     fCarpData = nullptr;
     fCarpDataSize = 0;
     return 1;
 }
+
+int LoaderCarpWGrid(bChunk *chunk) {
+    return WWorld::Get().Loader(chunk);
+}
+
+int UnloaderCarpWGrid(bChunk *chunk) {
+    return WWorld::Get().Unloader(chunk);
+}
+
+bChunkLoader bChunkLoaderWGrid(BCHUNK_UPPLE_UWORLD, LoaderCarpWGrid, UnloaderCarpWGrid);
+
+WWorld *WWorld::fgWorld = nullptr;     // size: 0x4, address: 0x80439024
+UMath::Vector4 WWorld::mStartPosition; // size: 0x10, address: 0xFFFFFFFF
 
 bool WWorld::Open() {
     const void *sources[3];
@@ -62,31 +67,21 @@ bool WWorld::Open() {
     WCollisionAssets::Init(persistentGroup, nullptr);
     fRootWorldGroup = persistentGroup;
 
-    unsigned int artCount = persistentGroup->GroupCountType(0x41727469);
-    const UGroup *article = fRootWorldGroup->GroupLocateFirst(0x41727469, 0xFFFFFFFF, 0xFFFFFFFF);
+    {
+        unsigned int artCount = persistentGroup->GroupCountType('Arti');
+        const struct UData *foundSbUData;
+        const UGroup *article = fRootWorldGroup->GroupLocateFirst('Arti', 0xFFFFFFFF, 0xFFFFFFFF);
 
-    for (unsigned int artInd = 0; artInd < artCount; artInd++) {
-        article->DataLocateTag(0x53426172);
-        article->GetArray();
-        article++;
+        for (unsigned int artInd = 0; artInd < artCount; artInd++) {
+            const UData *sbUData = article->DataLocate(MAKE_UDATA_TYPE('SB'), 'ar');
+            article->DataEnd();
+            article++;
+        }
     }
 
     return fRootWorldGroup != nullptr;
 }
 
-int LoaderCarpWGrid(bChunk* chunk) {
-    return WWorld::Get().Loader(chunk);
-}
-
-int UnloaderCarpWGrid(bChunk* chunk) {
-    return WWorld::Get().Unloader(chunk);
-}
-
 void WWorld::Close() {
     WCollisionAssets::Shutdown();
-}
-
-WSurface WSurface::kNull;
-
-void WSurface::InitSystem() {
 }

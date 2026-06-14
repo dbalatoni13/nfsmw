@@ -90,15 +90,14 @@ Stomper::Stomper() {
 }
 
 void Stomper::Clear() {
-    // TODO hack
-    if (static_cast<unsigned int>(nCurrent - 1) < eSTOMPER_BLUE_NIGHT) {
+    if (nCurrent >= eSTOMPER_CARTOON && nCurrent <= eSTOMPER_BLUE_NIGHT) {
         StomperTable[nCurrent]->ClearAll(pStack);
     }
     nCurrent = eSTOMPER_NONE;
 }
 
 void ResetRenderEggs() {
-    if (pStomper) {
+    if (pStomper != nullptr) {
         pStomper->Clear();
     }
 }

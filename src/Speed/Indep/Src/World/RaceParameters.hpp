@@ -1,81 +1,92 @@
-#ifndef WORLD_RACEPARAMETERS_H
-#define WORLD_RACEPARAMETERS_H
+#ifndef RACEPARAMETERS_HPP
+#define RACEPARAMETERS_HPP
 
 #include "CarInfo.hpp"
+#include "World.hpp"
+#include "Speed/Indep/Src/AI/AIBasics.hpp"
 #include "Speed/Indep/Src/Misc/Replay.hpp"
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
-#include "./World.hpp"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 
-// TODO where should these two go?
-enum eTrackDirection {
-    eDIRECTION_FORWARD,
-    eDIRECTION_BACKWARD,
-    NUM_TRACK_DIRECTIONS,
+enum PlayerNumbers {
+    PLAYER_1 = 0,
+    PLAYER_2 = 1,
+    MAX_NUM_PLAYERS = 2,
 };
 
-enum eTrafficDensity {
-    eTRAFFICDENSITY_OFF,
-    eTRAFFICDENSITY_LOW,
-    eTRAFFICDENSITY_MEDIUM,
-    eTRAFFICDENSITY_HIGH,
-    NUM_TRAFFIC_DENSITIES,
-};
-
-enum RaceTypes {
-    RACE_TYPE_NONE,
-    RACE_TYPE_SINGLE_RACE,
-    RACE_TYPE_TIME_TRIAL,
-    RACE_TYPE_LAP_KNOCKOUT,
-    RACE_TYPE_RACE_KNOCKOUT,
-    RACE_TYPE_TOURNAMENT,
-    RACE_TYPE_CAR_SHOW,
-    RACE_TYPE_GET_AWAY,
+enum eTransmissionType {
+    TRANSMISSION_AUTOMATIC = 0,
+    TRANSMISSION_MANUAL = 1,
+    TRANSMISSION_SPORT = 2,
+    TRANSMISSION_MANUAL_CLUTCH = 3,
+    NUM_TRANSMISSION_TYPES = 4,
 };
 
 enum eHandlingMode {
-    HANDLING_MODE_CLASSIC,
-    HANDLING_MODE_EXTREME,
+    HANDLING_MODE_CLASSIC = 0,
+    HANDLING_MODE_EXTREME = 1,
 };
 
-enum eOpponentStrength {
-    eOPPONENTSTRENGTH_LOW,
-    eOPPONENTSTRENGTH_MEDIUM,
-    eOPPONENTSTRENGTH_HIGH,
-    NUM_OPPONENT_STRENGTHS,
+enum eTrackDirection {
+    eDIRECTION_FORWARD = 0,
+    eDIRECTION_BACKWARD = 1,
+    NUM_TRACK_DIRECTIONS = 2,
 };
 
-enum eAIDifficultyModifier {
-    eAI_DIFFICULTY_MODIFIER_EASY,
-    eAI_DIFFICULTY_MODIFIER_SOMEWHAT_EASY,
-    eAI_DIFFICULTY_MODIFIER_NORMAL,
-    NUM_AI_DIFFICULTY_MODIFIERS,
+enum RaceTypes {
+    RACE_TYPE_NONE = 0,
+    RACE_TYPE_SINGLE_RACE = 1,
+    RACE_TYPE_TIME_TRIAL = 2,
+    RACE_TYPE_LAP_KNOCKOUT = 3,
+    RACE_TYPE_RACE_KNOCKOUT = 4,
+    RACE_TYPE_TOURNAMENT = 5,
+    RACE_TYPE_CAR_SHOW = 6,
+    RACE_TYPE_GET_AWAY = 7,
 };
 
 // total size: 0xA0
 struct RaceParameters {
-    void InitWithDefaults();
+    RaceParameters() {
+        InitWithDefaults();
+    }
+
     void DoSnapshot(ReplaySnapshot *snapshot);
+    void InitWithDefaults();
+    void Print();
     void AddDriverInfo(DriverInfo &driver_info);
     void RemoveDriverInfo(int driver_number);
-    void SetDriverInfo(DriverInfo &driver_info);
+    void SetDriverInfo(DriverInfo &driver_info, int index);
     DriverInfo *GetDriverInfo(int n);
     DriverInfo *GetDriverInfoByDriverNumber(int nDriverNumber);
     DriverInfo *GetDriverInfoByPlayerNumber(int player_number);
     int GetDriverNumber(int player_number);
+    void ResetStartingPositions();
     DriverInfo *EliminateDriver(int nDriverNumber, int nRank);
     void ClearEliminatedDrivers();
     int GetNumEliminated();
-    void ResetStartingPositions();
     bool AreThereTooManyUniqueCarGeometries(RideInfo *ride_info);
-    void Print();
-
+    int NumRacingCars() {}
+    unsigned int Checksum();
+    void ChooseHudTextures();
+    bool IsFreeRun();
+    Timer GetTimeTrialTime() {}
+    bool IsTimeTrial() {}
+    bool IsCareerEventRace() {}
+    bool IsDragRace() {}
     inline bool IsDriftRace() {
-        return ((this->bDriftRaceFlag) || (g_tweakIsDriftRace));
+        return this->bDriftRaceFlag || (g_tweakIsDriftRace != 0);
     }
+    bool IsBurnout() {}
+    bool IsShortTrackRace() {}
+    bool IsDriftPhysics() {}
+    bool IsBurnoutPhysics() {}
+    bool IsTestTrack() {}
+    bool IsSkidPad() {}
+    bool IsFreeRoam() {}
+    bool IsExploreMode() {}
+    bool IsGetAway() {}
+    bool IsLapKnockout() {}
+    bool IsRollingStart() {}
+    bool IsGamebreakerOn() {}
 
     int TrackNumber;                            // offset 0x0, size 0x4
     eTrackDirection TrackDirection;             // offset 0x4, size 0x4
@@ -91,7 +102,7 @@ struct RaceParameters {
     int NumAICars;                              // offset 0x2C, size 0x4
     int NumOnlinePlayerCars;                    // offset 0x30, size 0x4
     int NumOnlineAICars;                        // offset 0x34, size 0x4
-    signed char PlayerStartPosition[2];         // offset 0x38, size 0x2
+    int8 PlayerStartPosition[2];                // offset 0x38, size 0x2
     bool DamageEnabled;                         // offset 0x3C, size 0x1
     eHandlingMode HandlingMode;                 // offset 0x40, size 0x4
     int FinishLineNumber;                       // offset 0x44, size 0x4
@@ -111,9 +122,36 @@ struct RaceParameters {
     float BoostScale[2];                        // offset 0x80, size 0x8
     eAIDifficultyModifier AIDifficultyModifier; // offset 0x88, size 0x4
     int PlayerDriverNumber[2];                  // offset 0x8C, size 0x8
-    int NumDriverInfo;                          // offset 0x94, size 0x4
+    int32 NumDriverInfo;                        // offset 0x94, size 0x4
     Timer TimeTrialTime;                        // offset 0x98, size 0x4
     bool bCareerEventRace;                      // offset 0x9C, size 0x1
+};
+
+// total size: 0x2C
+struct RunTimePlayerSettings {
+    void ResetToDefaults();
+    void DoSnapshot(ReplaySnapshot *snapshot);
+    void SetName(const char *name);
+    char *GetName() {}
+    void ToggleLookback();
+    void CycleAlternateCamera();
+    void ToggleCameraSpring();
+    void ToggleHudHotkey();
+
+    char PlayersHudState;        // offset 0x0, size 0x1
+    char DriveCameraAlternate;   // offset 0x1, size 0x1
+    char PreferredGender;        // offset 0x2, size 0x1
+    char CameraSpring;           // offset 0x3, size 0x1
+    char LookbackMode;           // offset 0x4, size 0x1
+    char Pad;                    // offset 0x5, size 0x1
+    char Pad2;                   // offset 0x6, size 0x1
+    char Pad3;                   // offset 0x7, size 0x1
+    uint32 PreferredHudFeatures; // offset 0x8, size 0x4
+    char PlayerName[16];         // offset 0xC, size 0x10
+    Timer BestTotalTimeRecord;   // offset 0x1C, size 0x4
+    Timer BestLapTimeRecord;     // offset 0x20, size 0x4
+    int HudHotkeyEnabled;        // offset 0x24, size 0x4
+    float DragHandicap;          // offset 0x28, size 0x4
 };
 
 extern RaceParameters TheRaceParameters;

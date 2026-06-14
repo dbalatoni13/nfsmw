@@ -320,4 +320,6 @@ class CAnimMomentScene : public ICEScene {
     bMatrix4 mSceneTransformMatrix; // offset 0x54, size 0x40
 };
 
+void RenderAnimSceneEffects(eView *view, int exc_flag);
+
 #endif

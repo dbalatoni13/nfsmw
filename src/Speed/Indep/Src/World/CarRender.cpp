@@ -3,9 +3,12 @@
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 #include "Speed/Indep/Src/Ecstasy/DefragFixer.hpp"
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
+#include "Speed/Indep/Src/Ecstasy/eEnvMap.hpp"
+#include "Speed/Indep/Src/Ecstasy/eStrip.hpp"
 #include "Speed/Indep/Src/Ecstasy/EcstasyData.hpp"
 #include "Speed/Indep/Src/Ecstasy/EcstasyE.hpp"
 #include "Speed/Indep/Src/Ecstasy/Texture.hpp"
+#include "Speed/Indep/Src/Ecstasy/eLight.hpp"
 #include "Speed/Indep/Src/Ecstasy/eMath.hpp"
 #include "Speed/Indep/Src/Camera/CameraMover.hpp"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/ecar.h"
@@ -18,24 +21,97 @@
 #include "Speed/Indep/Src/Misc/GameFlow.hpp"
 #include "Speed/Indep/Src/Misc/Profiler.hpp"
 #include "Speed/Indep/Src/Sim/Simulation.h"
+#include "Speed/Indep/Src/World/Car.hpp"
 #include "Speed/Indep/Src/World/CarInfo.hpp"
+#include "Speed/Indep/Src/World/CarPartID.h"
+#include "Speed/Indep/Src/World/Player.hpp"
 #include "Speed/Indep/Src/World/Sun.hpp"
 #include "Speed/Indep/Src/World/VehicleFragmentConn.h"
+#include "Speed/Indep/Src/World/VehiclePartDamage.h"
 #include "Speed/Indep/Src/World/VehicleRenderConn.h"
-#include "Speed/Indep/Src/World/World.hpp"
-#include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
-#include "Speed/Indep/Tools/AttribSys/Runtime/Common/AttribPrivate.h"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bMemory.hpp"
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
-#include "Speed/Indep/bWare/Inc/bVector.hpp"
+#include "Speed/Indep/bWare/Inc/bTypes.hpp"
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
+#include "VehicleFX.h"
+#include <cmath>
 
-namespace BuildRegion {
-bool IsEurope();
-}
+// int32 DrawLightFlares; // why is this here in the dwarfs? shouldn't it be in eLight?
+
+static const int RenderShaperRigLightIndicators = 0;
+static const float ShaperLightsIndicatorDistanceFromCar = 1.5f;
+static const float ShaperLightsIndicatorSize = 0.075f;
+
+static const CAR_SLOT_ID BreakOnModelInitCarSlotId = CARSLOTID_BASE;
+static const CAR_SLOT_ID BreakOnSetModelCarSlotId = CARSLOTID_BASE;
+static const CAR_SLOT_ID BreakOnRenderCarSlotId = CARSLOTID_BASE;
+
+// STRIPPED
+const char *GetCarRenderUsageString(CarRenderUsage usage) {}
 
 float culldiv = 12000.0f;
+
+enum eCullableCarParts {
+    CULLABLE_CAR_PART_TIRE_FL = 0,
+    CULLABLE_CAR_PART_TIRE_FR = 1,
+    CULLABLE_CAR_PART_TIRE_RR = 2,
+    CULLABLE_CAR_PART_TIRE_RL = 3,
+    CULLABLE_CAR_PART_BRAKE_FL = 4,
+    CULLABLE_CAR_PART_BRAKE_FR = 5,
+    CULLABLE_CAR_PART_BRAKE_RR = 6,
+    CULLABLE_CAR_PART_BRAKE_RL = 7,
+    CULLABLE_CAR_PART_SIDE_FRONT = 8,
+    CULLABLE_CAR_PART_SIDE_REAR = 9,
+    CULLABLE_CAR_PART_UNDERNEATH = 10,
+    NUM_CULLABLE_CAR_PARTS = 11,
+};
+
+enum eCullingPolarity {
+    CULLING_POLARITY_ANY_VISIBLE = 0,
+    CULLING_POLARITY_ALL_MUST_BE_VISIBLE = 1,
+};
+
+enum CarEffectPosition {
+    CARFXPOS_NONE = 0,
+    CARFXPOS_FRONT_TIRES = 1,
+    CARFXPOS_REAR_TIRES = 2,
+    CARFXPOS_LEFT_TIRES = 3,
+    CARFXPOS_RIGHT_TIRES = 4,
+    CARFXPOS_TIRE_FL = 5,
+    CARFXPOS_TIRE_FR = 6,
+    CARFXPOS_TIRE_RR = 7,
+    CARFXPOS_TIRE_RL = 8,
+    CARFXPOS_ENGINE = 9,
+    CARFXPOS_EXHAUST = 10,
+    CARFXPOS_RADIATOR = 11,
+    CARFXPOS_WINDSHIELD = 12,
+    CARFXPOS_WINDOW_REAR = 13,
+    CARFXPOS_WINDOW_LEFT_FRONT = 14,
+    CARFXPOS_WINDOW_LEFT_REAR = 15,
+    CARFXPOS_WINDOW_RIGHT_FRONT = 16,
+    CARFXPOS_WINDOW_RIGHT_REAR = 17,
+    CARFXPOS_HEADLIGHT = 18,
+    CARFXPOS_HEADLIGHT_LEFT = 19,
+    CARFXPOS_HEADLIGHT_RIGHT = 20,
+    CARFXPOS_BRAKELIGHT = 21,
+    CARFXPOS_BRAKELIGHT_LEFT = 22,
+    CARFXPOS_BRAKELIGHT_RIGHT = 23,
+    CARFXPOS_SIDE_MIRROR_LEFT = 24,
+    CARFXPOS_SIDE_MIRROR_RIGHT = 25,
+    CARFXPOS_LICENSE_PLATE_FRONT = 26,
+    CARFXPOS_LICENSE_PLATE_REAR = 27,
+    NUM_CARFXPOS = 28,
+};
+
+static const int MAX_NUM_MARKERS_PER_CARFXPOS = 0; // TODO value
+
+struct CarFXPosInfo {
+    unsigned int position_marker_hashes[4]; // offset 0x0, size 0x10
+    unsigned char marker_count;             // offset 0x10, size 0x1
+};
+
 static const CarFXPosInfo FXMarkerNameHashMappings[28] = {
     {{0, 0, 0, 0}, 255},
     {{0, 0, 0, 0}, 255},
@@ -47,7 +123,7 @@ static const CarFXPosInfo FXMarkerNameHashMappings[28] = {
     {{0, 0, 0, 0}, 255},
     {{0, 0, 0, 0}, 255},
     {{0, 0, 0, 0}, 255},
-    {{0xA5B28001, 0xBCF8A18B, 0xBD7CF15E, 0}, 3},
+    {{STRINGHASH_EXHAUST, STRINGHASH_LEFT_EXHAUST, STRINGHASH_RIGHT_EXHAUST, 0}, 3},
     {{0, 0, 0, 0}, 0},
     {{0, 0, 0, 0}, 0},
     {{0, 0, 0, 0}, 0},
@@ -66,358 +142,11 @@ static const CarFXPosInfo FXMarkerNameHashMappings[28] = {
     {{0, 0, 0, 0}, 0},
     {{0, 0, 0, 0}, 0},
 };
-
-SlotPool *CarEmitterPositionSlotPool = nullptr;
-const int MAX_CAR_PART_MODELS = 250;
-SlotPool *CarPartModelPool = nullptr;
-extern void *gINISInstance asm("_Q33UTL11Collectionst9Singleton1Z4INIS_mInstance");
-
-struct eEnvMap {
-    void UpdateCameras(bVector3 *viewer_world_position, bVector3 *envmap_world_position);
-};
-
-eSolid *eFindSolid(unsigned int name_hash);
-void GetUsedCarTextureInfo(UsedCarTextureInfo *used_texture_info, RideInfo *ride_info, int front_end_only);
-extern float copm;
-extern float copt;
-extern int copModulo;
-extern float cpr;
-extern float cpb;
-extern float cpw;
-extern float copoffsetr;
-extern float copoffsetb;
-extern float copoffsetw;
-extern float enX;
-extern float enY;
-extern float enZ;
-extern float hOffX;
-extern float hOffY;
-extern float hRad1x;
-extern float hRad2x;
-extern float hRad1y;
-extern float hRad2y;
-extern float hRad0x;
-extern float hRad3x;
-extern float hRad0y;
-extern float hRad3y;
-extern unsigned int TireFaceIt;
-float TireFace(bMatrix4 *matrix, eView *view);
-extern unsigned int CarReplacementDecalHash[CarRenderInfo::REPLACETEX_DECAL_NUM];
-extern unsigned int hcL;
-extern unsigned int FrameMallocFailed;
-extern unsigned int FrameMallocFailAmount;
-extern int DrawCars;
-extern int DrawCarShadow;
-extern float WorldTimeElapsed;
-extern int ForceCarLOD;
-extern int ForceTireLOD;
-extern int ForceReverselightsOn;
-extern int TweakKitWheelOffsetFront;
-extern int TweakKitWheelOffsetRear;
-extern int ForceBrakelightsOn;
-extern int ForceHeadlightsOn;
-extern int iRam8047ff04;
-extern float lbl_8040AA60;
-extern float lbl_8040AA68;
-extern float lbl_8040AA6C;
-extern bVector3 EnvMapEyeOffset;
-extern bVector3 EnvMapCamOffset;
-extern float WheelStandardWidth;
-extern float WheelStandardRadius;
-extern float lbl_8040AD70;
-extern float lbl_8040AD74;
-extern float lbl_8040AD78;
-extern float lbl_8040AD7C;
-extern float lbl_8040AD80;
-extern float lbl_8040AD84;
-extern float lbl_8040AD88;
-extern float lbl_8040AD8C;
-extern float lbl_8040AD90;
-extern float lbl_8040AD94;
-extern float lbl_8040AD98;
-extern float lbl_8040AD9C;
-extern float lbl_8040ADA0;
-extern float lbl_8040ADA4;
-extern float lbl_8040ADA8;
-extern float lbl_8040ADAC;
-extern float lbl_8040ADB0;
-extern float lbl_8040ADB4;
-extern float lbl_8040ADB8;
-extern float lbl_8040ADBC;
-extern float lbl_8040ADC0;
-extern float lbl_8040ADC4;
-extern float lbl_8040ADC8;
-extern float lbl_8040ADCC;
-extern float lbl_8040ADD0;
-extern float lbl_8040ADD4;
-extern float lbl_8040ADD8;
-extern float lbl_8040ADDC;
-extern float lbl_8040ADE0;
-extern float lbl_8040ADE4;
-extern float lbl_8040ADE8;
-extern float lbl_8040ADEC;
-extern float lbl_8040ADF0;
-extern float lbl_8040ADF4;
-extern float lbl_8040ADF8;
-extern float lbl_8040ADFC;
-extern float lbl_8040AE00;
-extern float lbl_8040AE04;
-extern float copWhitemul;
-extern int gTWEAKER_NISLightEnabled;
-extern float gTWEAKER_NISLightIntensity;
-extern float gTWEAKER_NISLightPosX;
-extern float gTWEAKER_NISLightPosY;
-extern float gTWEAKER_NISLightPosZ;
-extern unsigned int Lightslot;
-extern int PrintLightQuery;
-extern int PrintQueryLightMat;
-extern int EnableEnvMap;
-extern eShaperLightRig ShaperLightsBackRoom;
-extern eShaperLightRig ShaperLightsCarLot;
-extern eShaperLightRig ShaperLightsCarsInGame;
-extern eShaperLightRig ShaperLightsCShop;
-extern eShaperLightRig ShaperLightsCharacters;
-extern eShaperLightRig ShaperLightsCharactersBackup;
-extern eShaperLightRig ShaperLightsQRace;
-extern eShaperLightRig ShaperLightsSafehouse;
-extern bMatrix4 hack_man_matrix;
-extern bVector3 hull_Origin asm("hull_Origin");
-extern bVector3 hull_Normal asm("hull_Normal");
-extern bVector3 hullVertArray1[16] asm("hullVertArray1");
-extern bVector3 hullVertArray2[16] asm("hullVertArray2");
-extern bVector3 hullVertArray3[48] asm("hullVertArray3");
-extern bVector4 PointCloud[16] asm("PointCloud");
-extern bVector3 *P[17] asm("P");
-int ch2d(float **P, int n);
-extern float FancyCarShadowEdgeMult;
-extern float car_elevation;
-extern float car_elevation_scale;
-extern int dshad;
-extern bVector3 cs_lightV asm("cs_lightV");
-extern float cs_OneOverZ asm("cs_OneOverZ");
-extern int counter_31665 asm("counter.31665");
-extern int counter_31669 asm("counter.31669");
-extern float heliScale;
-extern bVector4 feposoff;
-extern CarTypeInfo *CarTypeInfoArray;
-extern void RestoreShaperRig(eShaperLightRig *ShaperRigP, unsigned int slot, eShaperLightRig *ShaperRigBP);
-extern void AddQuickDynamicLight(eShaperLightRig *ShaperRigP, unsigned int slot, float r, float g, float b, float intensity, bVector3 *position);
-extern int bBoundingBoxIsInside(const bVector3 *bbox_min, const bVector3 *bbox_max, const bVector3 *point, float extra_width);
-
-void sh_Setup(bVector3 *car_pos);
-
-void sh_Setup(bVector3 *car_pos) {
-    bVector3 light_pos;
-    bVector3 light_delta;
-    float light_length;
-    unsigned short shadow_angle;
-
-    if (SunInfo == 0) {
-        light_pos.x = lbl_8040AD80;
-        light_pos.y = lbl_8040AD84;
-        light_pos.z = lbl_8040AD88;
-    } else {
-        light_pos.x = SunInfo->CarShadowPositionX;
-        light_pos.y = SunInfo->CarShadowPositionY;
-        light_pos.z = SunInfo->CarShadowPositionZ;
-    }
-
-    light_delta.x = car_pos->x - light_pos.x;
-    light_delta.y = car_pos->y - light_pos.y;
-    light_delta.z = car_pos->z - light_pos.z;
-
-    cs_lightV.z = light_delta.z;
-    cs_lightV.x = light_delta.x;
-    cs_lightV.y = light_delta.y;
-
-    light_length = lbl_8040AD84;
-    float xy_length_sq = light_delta.x * light_delta.x + light_delta.y * light_delta.y;
-    if (lbl_8040AD8C < xy_length_sq) {
-        light_length = bSqrt(xy_length_sq);
-    }
-
-    shadow_angle = bATan(light_length, -cs_lightV.z);
-    if (shadow_angle < 4000) {
-        float sin_angle;
-        float cos_angle;
-        float abs_y;
-
-        bSinCos(&sin_angle, &cos_angle, 4000);
-        xy_length_sq = cs_lightV.z * cs_lightV.z + cs_lightV.x * cs_lightV.x + cs_lightV.y * cs_lightV.y;
-        light_length = lbl_8040AD84;
-        if (lbl_8040AD8C < xy_length_sq) {
-            light_length = bSqrt(xy_length_sq);
-        }
-
-        abs_y = bAbs(cs_lightV.y);
-        cs_lightV.z = -light_length * sin_angle;
-        cs_lightV.y = (cs_lightV.y / (bAbs(cs_lightV.x) + abs_y)) * light_length * cos_angle;
-        cs_lightV.x = (cs_lightV.x / (bAbs(cs_lightV.x) + abs_y)) * light_length * cos_angle;
-    }
-
-    cs_OneOverZ = lbl_8040AD84;
-    if (cs_lightV.z != lbl_8040AD84) {
-        cs_OneOverZ = lbl_8040AD94 / cs_lightV.z;
-    }
-}
-
-static float const CarBodyLodSwapSize[] = {120.0f, 25.0f, 20.0f, 10.0f, 0.0f};
-static float const TrafficCarBodyLodSwapSize[] = {20.0f, 10.0f, 4.0f, 0.0f, 0.0f};
-
-namespace {
-
-void Render(eViewPlatInterface *view, eModel *model, bMatrix4 *local_to_world, eLightContext *light_context, unsigned int flags,
-            unsigned int exc_flag);
-void Render(eViewPlatInterface *view, ePoly *poly, TextureInfo *texture_info, bMatrix4 *matrix, int accurate, float z_bias);
-int eSmoothNormals(eModel **model_table, int num_models);
-eEnvMap *eGetEnvMap();
-bool eBeginStrip(TextureInfo *a, int b, bMatrix4 *c);
-bool eEndStrip(eView *view);
-void eAddVertex(const bVector3 &v);
-void eAddColour(unsigned int colour);
-void eAddUV(float u, float v);
-bool exBeginStrip(TextureInfo *tex, int a, bMatrix4 *mat);
-void exAddVertex(const bVector3 &v);
-void exAddColour(unsigned int colour);
-void exAddUV(float u, float v);
-bool exEndStrip(eView *view);
-int CarPart_GetAppliedAttributeIParam(CarPart *part, unsigned int namehash, int default_value) asm("GetAppliedAttributeIParam__7CarPartUii");
-int CarPart_HasAppliedAttribute(CarPart *part, unsigned int namehash) asm("HasAppliedAttribute__7CarPartUi");
-unsigned int CarPart_GetAppliedAttributeUParam(CarPart *part, unsigned int namehash, unsigned int default_value)
-    asm("GetAppliedAttributeUParam__7CarPartUiUi");
-unsigned int CarPart_GetModelNameHash(CarPart *part, int model_num, int lod) asm("GetModelNameHash__7CarPartii");
-
-template <typename T> struct bSNodeLayout {
-    T *Next;
-};
-
-template <typename T> struct bSListLayout {
-    T *Head;
-    T *Tail;
-};
-
-struct CarRenderUsedCarTextureInfoLayout {
-    unsigned int TexturesToLoadPerm[87];
-    unsigned int TexturesToLoadTemp[87];
-    int NumTexturesToLoadPerm;
-    int NumTexturesToLoadTemp;
-    unsigned int MappedSkinHash;
-    unsigned int MappedSkinBHash;
-    unsigned int MappedGlobalHash;
-    unsigned int MappedWheelHash;
-    unsigned int MappedSpinnerHash;
-    unsigned int MappedBadging;
-    unsigned int MappedSpoilerHash;
-    unsigned int MappedRoofScoopHash;
-    unsigned int MappedDashSkinHash;
-    unsigned int MappedLightHash[11];
-    unsigned int MappedTireHash;
-    unsigned int MappedRimHash;
-    unsigned int MappedRimBlurHash;
-    unsigned int MappedLicensePlateHash;
-    unsigned int ReplaceSkinHash;
-    unsigned int ReplaceSkinBHash;
-    unsigned int ReplaceGlobalHash;
-    unsigned int ReplaceWheelHash;
-    unsigned int ReplaceSpinnerHash;
-    unsigned int ReplaceSpoilerHash;
-    unsigned int ReplaceRoofScoopHash;
-    unsigned int ReplaceDashSkinHash;
-    unsigned int ReplaceHeadlightHash[3];
-    unsigned int ReplaceHeadlightGlassHash[3];
-    unsigned int ReplaceBrakelightHash[3];
-    unsigned int ReplaceBrakelightGlassHash[3];
-    unsigned int ReplaceReverselightHash[3];
-    unsigned int ShadowHash;
-};
-
-struct CarRenderRideInfoLayout {
-    CarType Type;
-    char InstanceIndex;
-    char HasDash;
-    char CanBeVertexDamaged;
-    char SkinType;
-    CARPART_LOD mMinLodLevel;
-    CARPART_LOD mMaxLodLevel;
-    CARPART_LOD mMinFELodLevel;
-    CARPART_LOD mMaxFELodLevel;
-    CARPART_LOD mMaxLicenseLodLevel;
-    CARPART_LOD mMinTrafficDiffuseLodLevel;
-    CARPART_LOD mMinShadowLodLevel;
-    CARPART_LOD mMaxShadowLodLevel;
-    CARPART_LOD mMaxTireLodLevel;
-    CARPART_LOD mMaxBrakeLodLevel;
-    CARPART_LOD mMaxSpoilerLodLevel;
-    CARPART_LOD mMaxRoofScoopLodLevel;
-    CARPART_LOD mMinReflectionLodLevel;
-};
-
-struct FrontEndRenderingCarLayout {
-    bNode Node;
-    RideInfo mRideInfo;
-};
-
-struct CameraPositionAccess {
-    char pad[0x50];
-    float x;
-    float y;
-    float z;
-};
-
-template <typename T> void InitSList(bSList<T> &list) {
-    bSListLayout<T> &layout = reinterpret_cast<bSListLayout<T> &>(list);
-    T *end = list.EndOfList();
-
-    layout.Head = end;
-    layout.Tail = end;
-}
-
-} // namespace
-
-inline void *CarEmitterPosition::operator new(unsigned int size) {
-    return bOMalloc(CarEmitterPositionSlotPool);
-}
-
-inline void CarEmitterPosition::operator delete(void *ptr) {
-    bFree(CarEmitterPositionSlotPool, ptr);
-}
-
-inline CarEmitterPosition::CarEmitterPosition(ePositionMarker *position_marker) {
-    PositionMarker = position_marker;
-    X = position_marker->Matrix.v3.x;
-    Y = position_marker->Matrix.v3.y;
-    Z = position_marker->Matrix.v3.z;
-}
-
-inline CarEmitterPosition::CarEmitterPosition(float x, float y, float z) {
-    PositionMarker = nullptr;
-    X = x;
-    Y = y;
-    Z = z;
-}
-
-template <> inline CarEmitterPosition *bSList<CarEmitterPosition>::EndOfList() {
-    return reinterpret_cast<CarEmitterPosition *>(this);
-}
-
-template <> inline bSList<CarEmitterPosition>::bSList() {
-    Head = EndOfList();
-    Tail = EndOfList();
-}
-
-template <> inline CarEmitterPosition *bSList<CarEmitterPosition>::AddTail(CarEmitterPosition *node) {
-    CarEmitterPosition *prev_tail = Tail;
-
-    Tail = node;
-    prev_tail->Next = node;
-    node->Next = EndOfList();
-    return node;
-}
 
 bool GetNumCarEffectMarkerHashes(CarEffectPosition fx_pos, int &count_out) {
     bool position_marker_based_fxpos = false;
     count_out = 0;
-    if (FXMarkerNameHashMappings[fx_pos].marker_count != 0xFF) {
+    if (FXMarkerNameHashMappings[fx_pos].marker_count != 255) {
         count_out = FXMarkerNameHashMappings[fx_pos].marker_count;
         position_marker_based_fxpos = true;
     }
@@ -429,101 +158,98 @@ const unsigned int *GetCarEffectMarkerHashes(CarEffectPosition fx_pos) {
     return reinterpret_cast<const unsigned int *>(&FXMarkerNameHashMappings[fx_pos].marker_count);
 }
 
-CarPartCullingPlaneInfo CarPartCullingPlaneInfoTable[11] = {
-    CarPartCullingPlaneInfo(CULLABLE_CAR_PART_TIRE_FL, "CULLABLE_CAR_PART_TIRE_FL", CULLING_POLARITY_ANY_VISIBLE, 3,
-                            bVector3(-0.01f, -1.0f, 0.0f), bVector3(0.0f, 0.0f, 1.0f), bVector3(-0.70710677f, 0.0f, 0.70710677f),
-                            0.1f, 0.86602539f, 0.5f),
-    CarPartCullingPlaneInfo(CULLABLE_CAR_PART_TIRE_FR, "CULLABLE_CAR_PART_TIRE_FR", CULLING_POLARITY_ANY_VISIBLE, 3,
-                            bVector3(-0.01f, 1.0f, 0.0f), bVector3(0.0f, 0.0f, 1.0f), bVector3(-0.70710677f, 0.0f, 0.70710677f),
-                            0.1f, 0.86602539f, 0.5f),
-    CarPartCullingPlaneInfo(CULLABLE_CAR_PART_TIRE_RR, "CULLABLE_CAR_PART_TIRE_RR", CULLING_POLARITY_ANY_VISIBLE, 3,
-                            bVector3(0.01f, 1.0f, 0.0f), bVector3(0.0f, 0.0f, 1.0f), bVector3(0.70710677f, 0.0f, 0.70710677f),
-                            0.1f, 0.86602539f, 0.5f),
-    CarPartCullingPlaneInfo(CULLABLE_CAR_PART_TIRE_RL, "CULLABLE_CAR_PART_TIRE_RL", CULLING_POLARITY_ANY_VISIBLE, 3,
-                            bVector3(0.01f, -1.0f, 0.0f), bVector3(0.0f, 0.0f, 1.0f), bVector3(0.70710677f, 0.0f, 0.70710677f),
-                            0.1f, 0.86602539f, 0.5f),
-    CarPartCullingPlaneInfo(CULLABLE_CAR_PART_BRAKE_FL, "CULLABLE_CAR_PART_BRAKE_FL", CULLING_POLARITY_ALL_MUST_BE_VISIBLE, 2,
-                            bVector3(0.36f, -1.0f, 0.0f), bVector3(-0.77f, -1.0f, 0.0f), bVector3(-0.77f, -1.0f, 0.0f), 0.0f,
-                            -0.77f, 0.0f),
-    CarPartCullingPlaneInfo(CULLABLE_CAR_PART_BRAKE_FR, "CULLABLE_CAR_PART_BRAKE_FR", CULLING_POLARITY_ALL_MUST_BE_VISIBLE, 2,
-                            bVector3(0.36f, 1.0f, 0.0f), bVector3(-0.77f, 1.0f, 0.0f), bVector3(-0.77f, -1.0f, 0.0f), 0.0f,
-                            -0.77f, 0.0f),
-    CarPartCullingPlaneInfo(CULLABLE_CAR_PART_BRAKE_RR, "CULLABLE_CAR_PART_BRAKE_RR", CULLING_POLARITY_ALL_MUST_BE_VISIBLE, 2,
-                            bVector3(0.36f, 1.0f, 0.0f), bVector3(-0.77f, 1.0f, 0.0f), bVector3(-0.77f, -1.0f, 0.0f), 0.0f,
-                            -0.77f, 0.0f),
-    CarPartCullingPlaneInfo(CULLABLE_CAR_PART_BRAKE_RL, "CULLABLE_CAR_PART_BRAKE_RL", CULLING_POLARITY_ALL_MUST_BE_VISIBLE, 2,
-                            bVector3(0.36f, -1.0f, 0.0f), bVector3(-0.77f, -1.0f, 0.0f), bVector3(-0.77f, -1.0f, 0.0f), 0.0f,
-                            -0.77f, 0.0f),
-    CarPartCullingPlaneInfo(CULLABLE_CAR_PART_SIDE_FRONT, "CULLABLE_CAR_PART_SIDE_FRONT", CULLING_POLARITY_ANY_VISIBLE, 1,
-                            bVector3(-1.0f, 0.0f, 0.0f), bVector3(-1.0f, 0.0f, 0.0f), bVector3(-1.0f, 0.0f, 0.0f), 0.0f, 0.0f,
-                            0.0f),
-    CarPartCullingPlaneInfo(CULLABLE_CAR_PART_SIDE_REAR, "CULLABLE_CAR_PART_SIDE_REAR", CULLING_POLARITY_ANY_VISIBLE, 1,
-                            bVector3(1.0f, 0.0f, 0.0f), bVector3(-1.0f, 0.0f, 0.0f), bVector3(-1.0f, 0.0f, 0.0f), 0.0f, 0.0f,
-                            0.0f),
-    CarPartCullingPlaneInfo(CULLABLE_CAR_PART_UNDERNEATH, "CULLABLE_CAR_PART_UNDERNEATH", CULLING_POLARITY_ALL_MUST_BE_VISIBLE, 2,
-                            bVector3(-0.07f, 0.0f, 1.0f), bVector3(0.07f, 0.0f, 1.0f), bVector3(0.07f, 0.0f, 1.0f), -0.77f,
-                            -0.77f, 0.0f),
-};
-const CarPartCullingPlaneInfo *pCurrentPartCullingPlaneInfo = nullptr;
-unsigned int CarReplacementDecalHash[CarRenderInfo::REPLACETEX_DECAL_NUM];
-unsigned int gTrunkAudioMarkerHash[12];
+struct CarPartCullingPlaneInfo {
+  public:
+    CarPartCullingPlaneInfo(eCullableCarParts type, char *name, eCullingPolarity polarity, int numPlanes, const bVector3 &normal0,
+                            const bVector3 &normal1, const bVector3 &normal2, float nd0, float nd1, float nd2) {
+        this->Type = type;
+        this->Name = name;
+        this->Polarity = polarity;
+        this->NumPlanes = numPlanes;
 
-struct CarRenderHashStartup {
-    CarRenderHashStartup() {
-        CarReplacementDecalHash[0] = bStringHash("BOTTOM_DECAL");
+        this->Normal[0] = normal0;
+        this->Normal[1] = normal1;
+        this->Normal[2] = normal2;
 
-        unsigned int *decal_hash = &CarReplacementDecalHash[1];
-        *decal_hash = bStringHash("FRONT_BUMPER_DECAL");
-        *++decal_hash = bStringHash("FRONT_DECAL");
-        *++decal_hash = bStringHash("GTWING_DECAL");
-        *++decal_hash = bStringHash("HOOD_DECAL");
-        *++decal_hash = bStringHash("LEFT_BRAKELIGHT_DECAL");
-        *++decal_hash = bStringHash("LEFT_DOOR_DECAL");
-        *++decal_hash = bStringHash("LEFT_FENDER_DECAL");
-        *++decal_hash = bStringHash("LEFT_QUARTER_DECAL");
-        *++decal_hash = bStringHash("LEFT_SIDE_MIRROR_DECAL");
-        *++decal_hash = bStringHash("LEFT_SKIRT_DECAL");
-        *++decal_hash = bStringHash("REAR_BUMPER_DECAL");
-        *++decal_hash = bStringHash("REAR_DECAL");
-        *++decal_hash = bStringHash("RIGHT_BRAKELIGHT_DECAL");
-        *++decal_hash = bStringHash("RIGHT_DOOR_DECAL");
-        *++decal_hash = bStringHash("RIGHT_FENDER_DECAL");
-        *++decal_hash = bStringHash("RIGHT_QUARTER_DECAL");
-        *++decal_hash = bStringHash("RIGHT_SIDE_MIRROR_DECAL");
-        *++decal_hash = bStringHash("RIGHT_SKIRT_DECAL");
-        *++decal_hash = bStringHash("TOP_DECAL");
-        *++decal_hash = bStringHash("FRONT_WINDOW_DECAL");
-        *++decal_hash = bStringHash("REAR_WINDOW_DECAL");
-        *++decal_hash = bStringHash("LEFT_FRONT_WINDOW_DECAL");
-        *++decal_hash = bStringHash("LEFT_REAR_WINDOW_DECAL");
-        *++decal_hash = bStringHash("RIGHT_FRONT_WINDOW_DECAL");
-        *++decal_hash = bStringHash("RIGHT_REAR_WINDOW_DECAL");
-
-        gTrunkAudioMarkerHash[0] = bStringHash("MARKER_AUDIO_COMP_0");
-
-        unsigned int *trunk_audio_hash = &gTrunkAudioMarkerHash[1];
-        *trunk_audio_hash = bStringHash("MARKER_AUDIO_COMP_1");
-        *++trunk_audio_hash = bStringHash("MARKER_AUDIO_COMP_2");
-        *++trunk_audio_hash = bStringHash("MARKER_AUDIO_COMP_3");
-        *++trunk_audio_hash = bStringHash("MARKER_AUDIO_COMP_4");
-        *++trunk_audio_hash = bStringHash("MARKER_AUDIO_COMP_5");
-        *++trunk_audio_hash = bStringHash("MARKER_AUDIO_COMP_6");
-        *++trunk_audio_hash = bStringHash("MARKER_AUDIO_COMP_7");
-        *++trunk_audio_hash = bStringHash("MARKER_AUDIO_COMP_8");
-        *++trunk_audio_hash = bStringHash("MARKER_AUDIO_COMP_9");
-        *++trunk_audio_hash = bStringHash("MARKER_AUDIO_COMP_10");
-        *++trunk_audio_hash = bStringHash("MARKER_AUDIO_COMP_11");
+        this->NormalDistance[0] = nd0;
+        this->NormalDistance[1] = nd1;
+        this->NormalDistance[2] = nd2;
     }
-} CarRenderHashStartupInitializer;
 
-extern "C" void __5ePoly(ePoly *);
+    eCullableCarParts Type;    // offset 0x0, size 0x4
+    char *Name;                // offset 0x4, size 0x4
+    eCullingPolarity Polarity; // offset 0x8, size 0x4
+    int NumPlanes;             // offset 0xC, size 0x4
+    bVector3 Normal[3];        // offset 0x10, size 0x30
+    float NormalDistance[3];   // offset 0x40, size 0xC
+};
+
+struct CarPartInfo {
+    bVector3 Position;       // offset 0x0, size 0x10
+    int NumCulledNotVisible; // offset 0x10, size 0x4
+    int NumCulledVisible;    // offset 0x14, size 0x4
+    bool IsVisible;          // offset 0x18, size 0x1
+};
+
+CarPartCullingPlaneInfo CarPartCullingPlaneInfoTable[11] = {
+    CarPartCullingPlaneInfo(CULLABLE_CAR_PART_TIRE_FL, "CULLABLE_CAR_PART_TIRE_FL", CULLING_POLARITY_ANY_VISIBLE, 3, bVector3(-0.01f, -1.0f, 0.0f),
+                            bVector3(0.0f, 0.0f, 1.0f), bVector3(-0.707f, 0.0f, 0.707f), 0.1f, 0.42, -0.298f),
+    CarPartCullingPlaneInfo(CULLABLE_CAR_PART_TIRE_FR, "CULLABLE_CAR_PART_TIRE_FR", CULLING_POLARITY_ANY_VISIBLE, 3, bVector3(-0.01f, 1.0f, 0.0f),
+                            bVector3(0.0f, 0.0f, 1.0f), bVector3(-0.707f, 0.0f, 0.707f), 0.1f, 0.42f, -0.298f),
+    CarPartCullingPlaneInfo(CULLABLE_CAR_PART_TIRE_RR, "CULLABLE_CAR_PART_TIRE_RR", CULLING_POLARITY_ANY_VISIBLE, 3, bVector3(0.01f, 1.0f, 0.0f),
+                            bVector3(0.0f, 0.0f, 1.0f), bVector3(0.707f, 0.0f, 0.707f), 0.1f, 0.42f, -0.298f),
+    CarPartCullingPlaneInfo(CULLABLE_CAR_PART_TIRE_RL, "CULLABLE_CAR_PART_TIRE_RL", CULLING_POLARITY_ANY_VISIBLE, 3, bVector3(0.01f, -1.0f, 0.0f),
+                            bVector3(0.0f, 0.0f, 1.0f), bVector3(0.707f, 0.0f, 0.707f), 0.1f, 0.42f, -0.298f),
+    CarPartCullingPlaneInfo(CULLABLE_CAR_PART_BRAKE_FL, "CULLABLE_CAR_PART_BRAKE_FL", CULLING_POLARITY_ALL_MUST_BE_VISIBLE, 2,
+                            bVector3(0.22f, -1.0f, 0.0f), bVector3(-0.22f, -1.0f, 0.0f), bVector3(-0.22f, -1.0f, 0.0f), 0.0f, 0.05f, 0.0f),
+    CarPartCullingPlaneInfo(CULLABLE_CAR_PART_BRAKE_FR, "CULLABLE_CAR_PART_BRAKE_FR", CULLING_POLARITY_ALL_MUST_BE_VISIBLE, 2,
+                            bVector3(0.22f, 1.0f, 0.0f), bVector3(-0.22f, 1.0f, 0.0f), bVector3(-0.22f, -1.0f, 0.0f), 0.0f, 0.05f, 0.0f),
+    CarPartCullingPlaneInfo(CULLABLE_CAR_PART_BRAKE_RR, "CULLABLE_CAR_PART_BRAKE_RR", CULLING_POLARITY_ALL_MUST_BE_VISIBLE, 2,
+                            bVector3(0.22f, 1.0f, 0.0f), bVector3(-0.22f, 1.0f, 0.0f), bVector3(-0.22f, -1.0f, 0.0f), 0.0f, 0.05f, 0.0f),
+    CarPartCullingPlaneInfo(CULLABLE_CAR_PART_BRAKE_RL, "CULLABLE_CAR_PART_BRAKE_RL", CULLING_POLARITY_ALL_MUST_BE_VISIBLE, 2,
+                            bVector3(0.22f, -1.0f, 0.0f), bVector3(-0.22f, -1.0f, 0.0f), bVector3(-0.22f, -1.0f, 0.0f), 0.0f, 0.05f, 0.0f),
+    CarPartCullingPlaneInfo(CULLABLE_CAR_PART_SIDE_FRONT, "CULLABLE_CAR_PART_SIDE_FRONT", CULLING_POLARITY_ANY_VISIBLE, 1,
+                            bVector3(-1.0f, 0.0f, 0.0f), bVector3(-1.0f, 0.0f, 0.0f), bVector3(-1.0f, 0.0f, 0.0f), 0.0f, 0.0f, 0.0f),
+    CarPartCullingPlaneInfo(CULLABLE_CAR_PART_SIDE_REAR, "CULLABLE_CAR_PART_SIDE_REAR", CULLING_POLARITY_ANY_VISIBLE, 1, bVector3(1.0f, 0.0f, 0.0f),
+                            bVector3(-1.0f, 0.0f, 0.0f), bVector3(-1.0f, 0.0f, 0.0f), 0.0f, 0.0f, 0.0f),
+    CarPartCullingPlaneInfo(CULLABLE_CAR_PART_UNDERNEATH, "CULLABLE_CAR_PART_UNDERNEATH", CULLING_POLARITY_ALL_MUST_BE_VISIBLE, 2,
+                            bVector3(-0.07f, 0.0f, 1.0f), bVector3(0.07f, 0.0f, 1.0f), bVector3(0.07f, 0.0f, 1.0f), 0.05f, 0.05f, 0.0f),
+};
+
+class CarPartCuller {
+  public:
+    CarPartCuller() {
+        bMemSet(this, 0, sizeof(*this));
+    }
+
+    void InitPart(eCullableCarParts type, const bVector3 *position);
+    void CullParts(bVector3 *camera_eye, bAngle stang);
+    void RenderPart(eCullableCarParts type, eView *view, const bMatrix4 *local_world, bAngle stang);
+
+    bool IsPartVisible(eCullableCarParts type) {
+        return CarPartInfoTable[type].IsVisible;
+    }
+
+  private:
+    CarPartInfo CarPartInfoTable[11];
+};
+
+static const eCullableCarParts CurrentCarPartCullingType = CULLABLE_CAR_PART_TIRE_FL; // TODO fix value
+
+const CarPartCullingPlaneInfo *pCurrentPartCullingPlaneInfo = nullptr;
+
+static const int DisableCarPartCulling = 0;
+
+int my_xyz = 1;
+int xyzhmm = 0;
+int neghmm = 0;
 
 void CarPartCuller::InitPart(eCullableCarParts type, const bVector3 *position) {
     CarPartCullingPlaneInfo *plane_info = &CarPartCullingPlaneInfoTable[type];
     CarPartInfo *part_info = &this->CarPartInfoTable[type];
 
     for (int n = 0; n < plane_info->NumPlanes; n++) {
-        if (bAbs(1.0f - bLength(plane_info->Normal[n])) > 0.01f) {
+        if (bAbs(1.0f - bLength(&plane_info->Normal[n])) > 0.01f) {
             bNormalize(&plane_info->Normal[n], &plane_info->Normal[n]);
         }
     }
@@ -531,10 +257,14 @@ void CarPartCuller::InitPart(eCullableCarParts type, const bVector3 *position) {
     part_info->Position = *position;
 }
 
+// UNSOLVED
+void CarPartCuller::RenderPart(eCullableCarParts type, eView *view, const bMatrix4 *local_world, unsigned short stang) {}
+
+// UNSOLVED, weird debug_print stuff
 void CarPartCuller::CullParts(bVector3 *camera_eye, bAngle stang) {
-    ProfileNode profile_node;
+    ProfileNode profile_node("TODO", 0);
     bVector3 Modcamera_eye = *camera_eye;
-    bVector3 *unModcamera_eyeP = &Modcamera_eye;
+    bVector3 *unModcamera_eyeP = camera_eye;
     bMatrix4 turnMat;
 
     if (stang != 0) {
@@ -543,63 +273,67 @@ void CarPartCuller::CullParts(bVector3 *camera_eye, bAngle stang) {
         eMulVector(&Modcamera_eye, &turnMat, camera_eye);
     }
 
-    for (eCullableCarParts type = CULLABLE_CAR_PART_TIRE_FL; type < NUM_CULLABLE_CAR_PARTS; type = (eCullableCarParts)((int)type + 1)) {
+    for (eCullableCarParts type = CULLABLE_CAR_PART_TIRE_FL; type < NUM_CULLABLE_CAR_PARTS;
+         type = static_cast<eCullableCarParts>(static_cast<int>(type) + 1)) {
         bool visible = true;
         CarPartCullingPlaneInfo *plane_info = &CarPartCullingPlaneInfoTable[type];
         CarPartInfo *part_info = &this->CarPartInfoTable[type];
         float omodifier = plane_info->NormalDistance[0];
+        float modifier;
 
-        if (IsGameFlowInFrontEnd())
-            continue;
+        if (!IsGameFlowInFrontEnd()) {
+            // TODO
+            camera_eye = (static_cast<unsigned int>(type) - 4 > 1) ? unModcamera_eyeP : &Modcamera_eye;
 
-        camera_eye = (type - 4 > 1) ? unModcamera_eyeP : &Modcamera_eye;
+            if (type <= CULLABLE_CAR_PART_TIRE_FR) {
+                if (stang > 0x8000) {
+                    stang = -stang;
+                }
 
-        if (type == 1) {
-            if (stang > 0x8000) {
-                stang = -stang;
+                modifier = static_cast<float>(stang) / culldiv;
+                plane_info->NormalDistance[0] = omodifier + modifier;
+            } else {
+                plane_info->NormalDistance[0] = omodifier;
             }
-            plane_info->NormalDistance[0] = omodifier + (stang / culldiv);
-        } else {
-            plane_info->NormalDistance[0] = omodifier;
-        }
 
-        if (plane_info->NumPlanes > 0) {
-            bVector3 v = *camera_eye - part_info->Position;
-            int debug_print = 0;
+            if (plane_info->NumPlanes > 0) {
+                bVector3 v = *camera_eye - part_info->Position;
+                int debug_print = 0;
 
-            if (plane_info->Polarity == CULLING_POLARITY_ANY_VISIBLE) {
-                if (plane_info->NumPlanes < debug_print) {
+                if (plane_info->Polarity == CULLING_POLARITY_ANY_VISIBLE) {
                     debug_print = plane_info->NumPlanes;
                     int n = 0;
 
-                    for (; n < debug_print; n++) {
+                    for (; n < plane_info->NumPlanes; n++) {
                         bVector3 normal = plane_info->Normal[n];
+
                         if (pCurrentPartCullingPlaneInfo != nullptr) {
                             bNormalize(&normal, &normal);
                         }
-                        debug_print = plane_info->NumPlanes;
 
-                        float distance = bDot(&v, &normal) - plane_info->Normal[n].x;
-                        if (distance < 0.0f)
+                        float distance = bDot(&v, &normal) - plane_info->NormalDistance[n];
+                        debug_print = plane_info->NumPlanes;
+                        if (distance < 0.0f) {
                             break;
+                        }
                     }
 
                     if (n == debug_print) {
                         visible = false;
                     }
-                    break;
-                }
-            } else if (plane_info->Polarity == CULLING_POLARITY_ALL_MUST_BE_VISIBLE) {
-                for (int n = 0; n < plane_info->NumPlanes; n++) {
-                    bVector3 normal = plane_info->Normal[n];
-                    if (pCurrentPartCullingPlaneInfo != nullptr) {
-                        bNormalize(&normal, &normal);
-                    }
+                } else if (plane_info->Polarity == CULLING_POLARITY_ALL_MUST_BE_VISIBLE) {
+                    for (int n = 0; n < plane_info->NumPlanes; n++) {
+                        bVector3 normal = plane_info->Normal[n];
 
-                    float distance = bDot(&v, &normal) - plane_info->Normal[n].x;
-                    if (distance >= 0.0f) {
-                        visible = false;
-                        break;
+                        if (pCurrentPartCullingPlaneInfo != nullptr) {
+                            bNormalize(&normal, &normal);
+                        }
+
+                        float distance = bDot(&v, &normal) - plane_info->NormalDistance[n];
+                        if (distance >= 0.0f) {
+                            visible = false;
+                            break;
+                        }
                     }
                 }
             }
@@ -616,14 +350,584 @@ void CarPartCuller::CullParts(bVector3 *camera_eye, bAngle stang) {
     }
 }
 
+extern SlotPool *CarEmitterPositionSlotPool;
+
+const int MAX_CAR_PART_MODELS = 250;
+SlotPool *CarPartModelPool = nullptr;
+
+class CarEmitterPosition : public bSNode<CarEmitterPosition> {
+  public:
+    USE_SLOTALLOC(CarEmitterPositionSlotPool);
+
+    CarEmitterPosition(ePositionMarker *position_marker) {
+        PositionMarker = position_marker;
+        X = position_marker->Matrix.v3.x;
+        Y = position_marker->Matrix.v3.y;
+        Z = position_marker->Matrix.v3.z;
+    }
+
+    CarEmitterPosition(float x, float y, float z) {
+        PositionMarker = nullptr;
+        X = x;
+        Y = y;
+        Z = z;
+    }
+
+    float X;                         // offset 0x4, size 0x4
+    float Y;                         // offset 0x8, size 0x4
+    float Z;                         // offset 0xC, size 0x4
+    ePositionMarker *PositionMarker; // offset 0x10, size 0x4
+};
+
+uint32 CarLightsStateMap[5] = {1, 2, 4, 8, 16};
+uint32 CarReplacementDecalHash[26] = {
+    bStringHash("BOTTOM_DECAL"),
+    bStringHash("FRONT_BUMPER_DECAL"),
+    bStringHash("FRONT_DECAL"),
+    bStringHash("GTWING_DECAL"),
+    bStringHash("HOOD_DECAL"),
+    bStringHash("LEFT_BRAKELIGHT_DECAL"),
+    bStringHash("LEFT_DOOR_DECAL"),
+    bStringHash("LEFT_FENDER_DECAL"),
+    bStringHash("LEFT_QUARTER_DECAL"),
+    bStringHash("LEFT_SIDE_MIRROR_DECAL"),
+    bStringHash("LEFT_SKIRT_DECAL"),
+    bStringHash("REAR_BUMPER_DECAL"),
+    bStringHash("REAR_DECAL"),
+    bStringHash("RIGHT_BRAKELIGHT_DECAL"),
+    bStringHash("RIGHT_DOOR_DECAL"),
+    bStringHash("RIGHT_FENDER_DECAL"),
+    bStringHash("RIGHT_QUARTER_DECAL"),
+    bStringHash("RIGHT_SIDE_MIRROR_DECAL"),
+    bStringHash("RIGHT_SKIRT_DECAL"),
+    bStringHash("TOP_DECAL"),
+    bStringHash("FRONT_WINDOW_DECAL"),
+    bStringHash("REAR_WINDOW_DECAL"),
+    bStringHash("LEFT_FRONT_WINDOW_DECAL"),
+    bStringHash("LEFT_REAR_WINDOW_DECAL"),
+    bStringHash("RIGHT_FRONT_WINDOW_DECAL"),
+    bStringHash("RIGHT_REAR_WINDOW_DECAL"),
+};
+
+static const int NUM_TRUNK_AUDIO_MARKERS = 0; // TODO fix the value
+
+unsigned int gTrunkAudioMarkerHash[12] = {
+    bStringHash("MARKER_AUDIO_COMP_0"), bStringHash("MARKER_AUDIO_COMP_1"), bStringHash("MARKER_AUDIO_COMP_2"),  bStringHash("MARKER_AUDIO_COMP_3"),
+    bStringHash("MARKER_AUDIO_COMP_4"), bStringHash("MARKER_AUDIO_COMP_5"), bStringHash("MARKER_AUDIO_COMP_6"),  bStringHash("MARKER_AUDIO_COMP_7"),
+    bStringHash("MARKER_AUDIO_COMP_8"), bStringHash("MARKER_AUDIO_COMP_9"), bStringHash("MARKER_AUDIO_COMP_10"), bStringHash("MARKER_AUDIO_COMP_11"),
+};
+
+float NISCopCarDoorOpenAmount[4];
+bMatrix4 NISCopCarDoorOpenMarkers[4];
+bMatrix4 NISCopCarDoorClosedMarkers[4];
+
+void SetNISCopCarDoorOpenAmount(CarRenderDoorID door, float open_amount) {}
+
 int NISCopCarDriverVisible = 0;
+
+void SetNISCopCarDriverVisible(int visible) {}
+
 int NISRaceDriverVisible = 1;
 
-void SetNISRaceDriverVisible(int visible /* r3 */) {
+void SetNISRaceDriverVisible(int visible) {
     NISRaceDriverVisible = visible;
 }
 
+class CarPartModel {
+  public:
+    CarPartModel() {
+        this->mModel = 0;
+    }
+
+    ~CarPartModel() {
+        this->mModel = 0;
+    }
+
+    void Clear() {
+        mModel = 0;
+    }
+
+    int IsHidden() {
+        return this->mModel & 1;
+    }
+
+    void Hide(int bHide) {
+        mModel = (mModel & ~3) | (bHide ? 1 : 0);
+    }
+
+    struct eModel *GetModel() {
+        return reinterpret_cast<eModel *>(mModel & ~0x3);
+    }
+
+    void SetModel(struct eModel *model) {
+        this->mModel = reinterpret_cast<unsigned int>(model) | this->IsHidden();
+    }
+
+    bool IsLodMissing() const {
+        return (mModel & ~3u) == 0;
+    }
+
+  private:
+    uint32 mModel; // offset 0x0, size 0x4
+};
+
+static const float Tweak_ResetFlashOff = 0.05f;
+static const float Tweak_ResetFlashOn = 0.07f;
+
+class CarRenderInfo {
+  public:
+    enum CarReplacementTexID {
+        REPLACETEX_CARSKIN,
+        REPLACETEX_CARSKINB,
+        REPLACETEX_GLOBALSKIN,
+        REPLACETEX_CARBONSKIN,
+        REPLACETEX_GLOBALCARBONSKIN,
+        REPLACETEX_BADGING,
+        REPLACETEX_WHEEL,
+        REPLACETEX_SPINNER,
+        REPLACETEX_SPOILER,
+        REPLACETEX_ROOF_SCOOP,
+        REPLACETEX_DASHSKIN,
+        REPLACETEX_DRIVER,
+        REPLACETEX_TIRE,
+        REPLACETEX_WINDOW_FRONT,
+        REPLACETEX_WINDOW_REAR,
+        REPLACETEX_WINDOW_LEFT_FRONT,
+        REPLACETEX_WINDOW_LEFT_REAR,
+        REPLACETEX_WINDOW_RIGHT_FRONT,
+        REPLACETEX_WINDOW_RIGHT_REAR,
+        REPLACETEX_WINDOW_REAR_DEFOST,
+        REPLACETEX_WINDOW2_FRONT,
+        REPLACETEX_WINDOW2_REAR,
+        REPLACETEX_WINDOW2_LEFT_FRONT,
+        REPLACETEX_WINDOW2_LEFT_REAR,
+        REPLACETEX_WINDOW2_RIGHT_FRONT,
+        REPLACETEX_WINDOW2_RIGHT_REAR,
+        REPLACETEX_WINDOW2_REAR_DEFOST,
+        REPLACETEX_HEADLIGHT_LEFT,
+        REPLACETEX_HEADLIGHT_RIGHT,
+        REPLACETEX_BRAKELIGHT_LEFT,
+        REPLACETEX_BRAKELIGHT_RIGHT,
+        REPLACETEX_BRAKELIGHT_CENTRE,
+        REPLACETEX_HEADLIGHT_GLASS_LEFT,
+        REPLACETEX_HEADLIGHT_GLASS_RIGHT,
+        REPLACETEX_BRAKELIGHT_GLASS_LEFT,
+        REPLACETEX_BRAKELIGHT_GLASS_RIGHT,
+        REPLACETEX_BRAKELIGHT_GLASS_CENTRE,
+        REPLACETEX_OLD_HEADLIGHT_LEFT,
+        REPLACETEX_OLD_HEADLIGHT_RIGHT,
+        REPLACETEX_OLD_BRAKELIGHT_LEFT,
+        REPLACETEX_OLD_BRAKELIGHT_RIGHT,
+        REPLACETEX_OLD_BRAKELIGHT_CENTRE,
+        REPLACETEX_OLD_HEADLIGHT_GLASS_LEFT,
+        REPLACETEX_OLD_HEADLIGHT_GLASS_RIGHT,
+        REPLACETEX_OLD_BRAKELIGHT_GLASS_LEFT,
+        REPLACETEX_OLD_BRAKELIGHT_GLASS_RIGHT,
+        REPLACETEX_OLD_BRAKELIGHT_GLASS_CENTRE,
+        REPLACETEX_BOTTOM_DECAL,
+        REPLACETEX_FRONT_BUMPER_DECAL,
+        REPLACETEX_FRONT_DECAL,
+        REPLACETEX_GTWING_DECAL,
+        REPLACETEX_HOOD_DECAL,
+        REPLACETEX_LEFT_BRAKELIGHT_DECAL,
+        REPLACETEX_LEFT_DOOR_DECAL,
+        REPLACETEX_LEFT_FENDER_DECAL,
+        REPLACETEX_LEFT_QUARTER_DECAL,
+        REPLACETEX_LEFT_SIDE_MIRROR_DECAL,
+        REPLACETEX_LEFT_SKIRT_DECAL,
+        REPLACETEX_REAR_BUMPER_DECAL,
+        REPLACETEX_REAR_DECAL,
+        REPLACETEX_RIGHT_BRAKELIGHT_DECAL,
+        REPLACETEX_RIGHT_DOOR_DECAL,
+        REPLACETEX_RIGHT_FENDER_DECAL,
+        REPLACETEX_RIGHT_QUARTER_DECAL,
+        REPLACETEX_RIGHT_SIDE_MIRROR_DECAL,
+        REPLACETEX_RIGHT_SKIRT_DECAL,
+        REPLACETEX_TOP_DECAL,
+        REPLACETEX_FRONT_WINDOW_DECAL,
+        REPLACETEX_REAR_WINDOW_DECAL,
+        REPLACETEX_LEFT_FRONT_WINDOW_DECAL,
+        REPLACETEX_LEFT_REAR_WINDOW_DECAL,
+        REPLACETEX_RIGHT_FRONT_WINDOW_DECAL,
+        REPLACETEX_RIGHT_REAR_WINDOW_DECAL,
+        REPLACETEX_DECAL_START = 47,
+        REPLACETEX_DECAL_END = 72,
+        REPLACETEX_DECAL_NUM = 26,
+        REPLACETEX_NUM = 73,
+    };
+
+    CarRenderInfo(RideInfo *ride_info);
+
+    ~CarRenderInfo();
+
+    void Init();
+    void Refresh();
+
+    uint32 FindCarPart(int slotId);
+    uint32 HideCarPart(int slotId, bool hide);
+
+    void SetDeltaTime(float dt) {
+        this->mDeltaTime = dt;
+    }
+
+    float GetDeltaTime() const {
+        return this->mDeltaTime;
+    }
+
+    void SetCarDamageState(bool on, unsigned int startID, unsigned int endID);
+    void SetCarGlassDamageState(bool on, CarReplacementTexID replacementId, uint32 undamageHash, uint32 damageHash);
+
+    void UpdateCarReplacementTextures();
+    void UpdateLightStateTextures();
+    void CreateCarLightFlares();
+
+    void SetRadius(float r) {
+        this->mRadius = r;
+    }
+
+    float GetRadius() const {
+        return this->mRadius;
+    }
+
+    void SetCollider(const WCollider *collider) {
+        this->mWCollider = collider;
+    }
+
+    void SetAnimationTime(float animationTime) {
+        this->AnimTime = animationTime;
+    }
+
+    void SetWheelWobble(unsigned int wheelInd, bool enable) {
+        this->mWheelWobbleEnabled[wheelInd] = enable;
+    }
+
+    bool GetWheelWobble(unsigned int wheelInd) {
+        return this->mWheelWobbleEnabled[wheelInd];
+    }
+
+    void SetFlashing(bool b) {
+        this->mFlashing = b;
+    }
+
+    void UpdateFlashing() {
+        if (this->mFlashing) {
+            this->mFlashInterval += RealTimeElapsed;
+
+            if (Tweak_ResetFlashOff < this->mFlashInterval) {
+                this->mFlashInterval -= Tweak_ResetFlashOn + Tweak_ResetFlashOff;
+            }
+        }
+    }
+
+    bool Render(eView *view, const bVector3 *world_position, const bMatrix4 *body_matrix, bMatrix4 *tire_matrices, bMatrix4 *brake_matrices,
+                bMatrix4 *spinner_matrices, uint32 extra_render_flags, int force_light_state, int reflexion, float shadow_scale, CARPART_LOD tireLOD,
+                CARPART_LOD carLOD);
+
+    void DrawAmbientShadow(eView *view, const bVector3 *position, float shadow_scale, bMatrix4 *localWorld, bMatrix4 *worldLocal,
+                           bMatrix4 *biasedIdentity);
+
+    void DrawKeithProjShadow(eView *view, const bVector3 *position, bMatrix4 *localWorld, bMatrix4 *worldLocal, bMatrix4 *biasedIdentity,
+                             int body_lod);
+
+    void SetCarRenderFlags(int draw_solid, int draw_alpha, int draw_shadows) {}
+
+    void RenderFlaresOnCar(eView *view, const bVector3 *position, const bMatrix4 *body_matrix, int force_light_state, int reflexion,
+                           int renderFlareFlags);
+    void RenderTextureHeadlights(eView *view, bMatrix4 *l_w, uint32 Accurate);
+    void SwitchSkin(RideInfo *ride_info);
+    void UpdateDecalTextures(RideInfo *ride_info);
+    void UpdateCarParts();
+
+    void UpdateWheelYRenderOffset();
+
+    float CalculateTireBlur(int nWheel);
+    void RenderTireBlur(eView *view, TextureInfo *texture_info, bMatrix4 *local_world, float alpha, eDynamicLightContext *light_context);
+
+    void SetSpecialFX(int fx) {
+        this->SpecialFX = fx;
+    }
+
+    int GetSpecialFX() {
+        return this->SpecialFX;
+    }
+
+    RideInfo *GetRideInfo() const {
+        return this->pRideInfo;
+    }
+
+    void SetDamageInfo(const DamageZone::Info &damageInfo);
+    void SetPlayerDamage(const DamageZone::Info &damageInfo);
+
+    CARPART_LOD GetMinLodLevel() const {
+        return this->mMinLodLevel;
+    }
+
+    CARPART_LOD GetMaxLodLevel() const {
+        return this->mMaxLodLevel;
+    }
+
+    CARPART_LOD GetMinReflectionLodLevel() const {
+        return this->mMinReflectionLodLevel;
+    }
+
+    void GetLightPositions(bSList<CarEmitterPosition> &pos, uint32 position);
+    int GetEmitterPositions(bSList<CarEmitterPosition> &markers_out, const unsigned int *position_name_hashes, int num_pos_name_hashes);
+    void InitEmitterPositions(bVector4 *tire_positions);
+
+    void EnableAlphaWrites(bool onOff) {}
+
+    const Attrib::Gen::ecar &GetAttributes() const {
+        return this->mAttributes;
+    }
+
+    void SetBrokenLights(unsigned int vehiclefx_ids) {
+        this->mBrokenLights = vehiclefx_ids;
+    }
+
+    void SetLights(unsigned int vehiclefx_ids) {
+        this->mOnLights = vehiclefx_ids;
+    }
+
+    bool IsLightBroken(VehicleFX::ID id) const {
+        return (this->mBrokenLights & id) != 0;
+    }
+
+    bool IsLightOn(VehicleFX::ID id) const {
+        return (this->mOnLights & id) != 0;
+    }
+
+    void RenderPart(eView *view, CarPartModel *carPart, bMatrix4 *local_to_world, eDynamicLightContext *light_context, uint32 flags);
+    void convex_hull(bVector3 *p, const WCollider *wcoll, int &n, float Z, float zBias, int fast);
+
+    float AnimTime;                                                         // offset 0x0, size 0x4
+    bVector3 mVelocity;                                                     // offset 0x4, size 0x10
+    bVector3 mAngularVelocity;                                              // offset 0x14, size 0x10
+    bVector3 mAcceleration;                                                 // offset 0x24, size 0x10
+    IVehiclePartDamageBehaviour *mDamageBehaviour;                          // offset 0x34, size 0x4
+    const WCollider *mWCollider;                                            // offset 0x38, size 0x4
+    WWorldPos mWorldPos;                                                    // offset 0x3C, size 0x3C
+    RideInfo *pRideInfo;                                                    // offset 0x78, size 0x4
+    CarTypeInfo *pCarTypeInfo;                                              // offset 0x7C, size 0x4
+    int16 LastCarPartChanged;                                               // offset 0x80, size 0x2
+    bVector3 AABBMin;                                                       // offset 0x84, size 0x10
+    bVector3 AABBMax;                                                       // offset 0x94, size 0x10
+    bVector3 ModelOffset;                                                   // offset 0xA4, size 0x10
+    bVector3 PivotPosition;                                                 // offset 0xB4, size 0x10
+    TextureInfo *ShadowTexture;                                             // offset 0xC4, size 0x4
+    TextureInfo *ShadowRampTexture;                                         // offset 0xC8, size 0x4
+    eLightMaterial *LightMaterial_CarSkin;                                  // offset 0xCC, size 0x4
+    eLightMaterial *LightMaterial_Carbon;                                   // offset 0xD0, size 0x4
+    eLightMaterial *LightMaterial_WindowTint;                               // offset 0xD4, size 0x4
+    eLightMaterial *LightMaterial_WheelRim;                                 // offset 0xD8, size 0x4
+    eLightMaterial *LightMaterial_Caliper;                                  // offset 0xDC, size 0x4
+    eLightMaterial *LightMaterial_Spoiler;                                  // offset 0xE0, size 0x4
+    eLightMaterial *LightMaterial_Roof;                                     // offset 0xE4, size 0x4
+    eLightMaterial *LightMaterial_Spinner;                                  // offset 0xE8, size 0x4
+    int CarbonHood;                                                         // offset 0xEC, size 0x4
+    eDynamicLightContext *Car_light_context;                                // offset 0xF0, size 0x4
+    uint32 CarFrame;                                                        // offset 0xF4, size 0x4
+    bTList<eLightFlare> LightFlareList;                                     // offset 0xF8, size 0x8
+    float CarTimebaseStart;                                                 // offset 0x100, size 0x4
+    float WheelYRenderOffset[4];                                            // offset 0x104, size 0x10
+    float WheelWidths[2];                                                   // offset 0x114, size 0x8
+    float WheelRadius[2];                                                   // offset 0x11C, size 0x8
+    float WheelWidthScales[4];                                              // offset 0x124, size 0x10
+    float WheelRadiusScales[4];                                             // offset 0x134, size 0x10
+    float WheelBrakeMarkerY[2];                                             // offset 0x144, size 0x8
+    bool mEmitterPositionsInitialized;                                      // offset 0x14C, size 0x1
+    bSList<CarEmitterPosition> EmitterPositionList[28];                     // offset 0x150, size 0xE0
+    eReplacementTextureTable MasterReplacementTextureTable[73];             // offset 0x230, size 0x36C
+    eReplacementTextureTable CarbonReplacementTextureTable[73];             // offset 0x59C, size 0x36C
+    eReplacementTextureTable DecalReplacementTextureTable[48];              // offset 0x908, size 0x240
+    eReplacementTextureTable BrakeLeftReplacementTextureTable[2];           // offset 0xB48, size 0x18
+    eReplacementTextureTable BrakeRightReplacementTextureTable[2];          // offset 0xB60, size 0x18
+    CarPartModel mCarPartModels[CARSLOTID_MODEL_NUM][CARPART_MODEL_NUM][5]; // offset 0xB78, size 0x5F0
+    int SpecialFX;                                                          // offset 0x1168, size 0x4
+    float mCar_elevation;                                                   // offset 0x116C, size 0x4
+    int NOSstate;                                                           // offset 0x1170, size 0x4
+    bAngle mSteeringR;                                                      // offset 0x1174, size 0x2
+    bAngle mSteeringL;                                                      // offset 0x1176, size 0x2
+    bMatrix4 LastFewMatrices[3];                                            // offset 0x1178, size 0xC0
+    bVector3 LastFewPositions[3];                                           // offset 0x1238, size 0x30
+    int matrixIndex;                                                        // offset 0x1268, size 0x4
+    ePositionMarker *SpoilerPositionMarker;                                 // offset 0x126C, size 0x4
+    ePositionMarker *SpoilerPositionMarker2;                                // offset 0x1270, size 0x4
+    ePositionMarker *RoofScoopPositionMarker;                               // offset 0x1274, size 0x4
+    uint32 AAflags;                                                         // offset 0x1278, size 0x4
+    int AAdraw_solid;                                                       // offset 0x127C, size 0x4
+    int AAdraw_alpha;                                                       // offset 0x1280, size 0x4
+    int AAdraw_shadows;                                                     // offset 0x1284, size 0x4
+
+  private:
+    UsedCarTextureInfo mUsedTextureInfos; // offset 0x1288, size 0x380
+    unsigned int mOnLights;               // offset 0x1608, size 0x4
+    unsigned int mBrokenLights;           // offset 0x160C, size 0x4
+    CARPART_LOD mMinLodLevel;             // offset 0x1610, size 0x4
+    CARPART_LOD mMaxLodLevel;             // offset 0x1614, size 0x4
+    CARPART_LOD mMinReflectionLodLevel;   // offset 0x1618, size 0x4
+    CarPartCuller TheCarPartCuller;       // offset 0x161C, size 0x134
+    static bool mAlphaWritesEnabled;
+    DamageZone::Info mDamageZoneInfo;  // offset 0x1750, size 0x4
+    float mDeltaTime;                  // offset 0x1754, size 0x4
+    float mRadius;                     // offset 0x1758, size 0x4
+    Attrib::Gen::ecar mAttributes;     // offset 0x175C, size 0x14
+    bool mFlashing;                    // offset 0x1770, size 0x1
+    float mFlashInterval;              // offset 0x1774, size 0x4
+    DamageZone::Info mDamageInfoCache; // offset 0x1778, size 0x4
+    bool mWheelWobbleEnabled[4];       // offset 0x177C, size 0x4
+    bool mMirrorLeftWheels;            // offset 0x178C, size 0x1
+};
+
+bool AlphaWritesEnabled = true;
+
+static const int NUM_DASHES = 3;
+
+enum DASH_INDEX {
+    DASH_F50 = 0,
+    DASH_BARCHETTA = 1,
+    DASH_360 = 2,
+};
+
+// TODO use these, the values are from Undercover, so they might be different in MW
+
+DASH_INDEX dash_index;
+
+static const float dashPositionX[3] = {-0.25581399f, -0.25581399f, -0.25128201f};
+
+static const float dashPositionY[3] = {-0.107692f, -0.15897401f, -0.179488f};
+
+static const float dashPositionZ[3] = {-0.308f, -0.40697601f, -0.32307601f};
+
+static const float dashScaleX[3] = {0.89999998f, 0.89999998f, 0.89999998f};
+
+static const float dashScaleY[3] = {1.703488f, 2.0f, 1.703488f};
+
+static const float dashScaleZ[3] = {1.697674f, 2.0f, 1.697674f};
+
+float WheelPivotTranslationAmount = 0.5f;
+
+float WheelStandardWidth = 0.225f;
+
+float WheelStandardRadius = 0.32f;
+
+static const float TweakWheelWidthScale = 1.0f;
+static const float TweakWheelRadiusScale = 1.0f;
+static const int MaxDrawnCars = 0; // TODO fix value
+int DrawCars = 1;
+int DrawCarsReflections = 1;
+static const int DrawBody = 1;
+static const int DrawCarReflection = 1;
+static const int DrawCarHeadlight = 1;
+static const int DrawCarBrakelight = 1;
+static const int DrawCarEngine = 1;
+static const int DrawLicensePlates = 1;
+static const int DrawScuffs = 1;
+static const int DrawSideMirrors = 1;
+int DrawCarShadow = 1;
+static const int DrawTires = 1;
+static const int DrawTireBlurs = 1;
+static const int DrawBrakes = 1;
+static const int DrawWipers = 1;
+static const int DrawDashboard = 1;
+static const int DrawInCarSteeringWheel = 1;
+static const int DrawDriverModel = 1;
+static const int DrawDriverModelInFE = 1;
+int DrawTrunkAudio = 0;
+static const int DrawSpoiler = 1;
+static const int DrawRoofScoop = 1;
+static const int DrawDoors = 1;
+static const int DrawHood = 1;
+static const int DrawInterior = 1;
+static const int ForceRenderCar = 1;
+static const int DrawCarParts = 1;
+static const int PrintCarInit = 0;
+static const int PrintCarFlow = 0;
+static const int PrintMissingCarModels = 0;
+static const int EnablePreviousLODs = 1;
+static const int PrintCarRenderModel = 0;
+int ForceHeadlightsOn = 0;
+int ForceBrakelightsOn = 0;
+int ForceReverselightsOn = 0;
+int ForceCopLightsOn = 0;
+int ForceDriverModelOn = 0;
+static const int ApplySpoilerPivotRotation = 0;
+static const int UsePositionMarkerForStockSpoiler = 0;
+static const float HeadlightBaseIntensity = 0.2f;
+static const float BrakelightBaseIntensity = 0.0f;
+static const float TrafficBrakelightBaseIntensity = 0.5f;
+static const float TrafficHeadlightBaseIntensity = 0.2f;
+static const float ExtraRearTireOffsetOverride = 0.0f;
+static const float TweakBrakeMarkerY[2] = {0.0f, 0.0f};
+static const float BrakeLightScaleFactor = 16.0f;
+static const int CarPrintEffects = 0;
+static const float CarShadowElevationIG = 0.01f;
+static const float CarShadowScaleWidthIG = 1.12f;
+static const float CarShadowScaleLengthIG = 1.14f;
+static const int CarBaseShadowAlphaMinIG = 0;
+static const int CarBaseShadowAlphaMaxIG = 100;
+static const float CarShadowElevationFE = 0.0f; // TODO fix value
+static const float CarShadowScaleWidthFE = 1.12f;
+static const float CarShadowScaleLengthFE = 1.14f;
+static const int CarBaseShadowAlphaMinFE = 255;
+static const int CarBaseShadowAlphaMaxFE = 255;
+
+static const float CarNeonElevation = 0.01f;
+static const float CarNeonElevationFalloff = 0.0f; // TODO fix value?
+static const float CarNeonElevationCutoff = 0.7f;  // TODO fix value
+static const float CarNeonScaleMax = 0.75f;
+
+static const bool TweakCarShadowSun = false;
+static const float TweakCarShadowSunX = -16384.0f;
+static const float TweakCarShadowSunY = 0.0f;
+static const float TweakCarShadowSunZ = 7000.0f;
+static const float TweakCarShadowSunScale = 0.5f;
+static const float TweakCarShadowTopologyTolerance = 1.25f;
+
+static const float HullShadowElevation = 0.06f;
+
+static const float fCarFudgeElevation = 0.01f;
+static const float fCarFudgeBias = 0.25f;
+static const float BrakeMirrorX = 1.0f;
+static const float BrakeMirrorY = -1.0f;
+static const float BrakeMirrorZ = 1.0f;
+static const int TweakerDriverHeader = 0;
+static const int ReplaceUnusedDecals = 1;
+unsigned char CopLightsRed[8] = {1, 1, 1, 1, 0, 0, 0, 0};
+unsigned char CopLightsBlue[8] = {0, 0, 1, 1, 1, 1, 0, 0};
+unsigned char CopLightsWhite[8] = {1, 1, 1, 1, 0, 0, 0, 0};
+unsigned char CopLightsSlowRed[16] = {1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0};
+unsigned char CopLightsSlowBlue[16] = {0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1};
+unsigned char CopLightsSlowWhite[16] = {0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0};
+unsigned char CopLightsHeadlights[16] = {1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0};
+int PrintQueryLightMat = 0;
+int PrintLightMat = 0;
+int PrintLightMatX = 0;
+int PrintLightMatY = 0;
+static const float DashVibrationAmplitude = 0.048f;
+static const float CarBodyLodSwapSize[5] = {120.0f, 25.0f, 20.0f, 10.0f, 0.0f};
+static const float TrafficCarBodyLodSwapSize[5] = {20.0, 10.0f, 4.0f, 0.0f, 0.0f};
+static const float DisableEnvMapSize = 5.0f;
+static const float CarTwoPlayerLODFactor = 0.7f;
+static const CARPART_LOD CarBodyMaxLOD = CARPART_LOD_D;
+
+CARPART_LOD ForceCarLOD = CARPART_LOD_OFF;
+CARPART_LOD ForceTireLOD = CARPART_LOD_OFF;
+static const int ShowCarLODScreenPrint = 0;
+static const int CarLODScreenPrintX = 100;
+static const int CarLODScreenPrintY = -228;
+float CarLightFlareNormals[4][6] = {{1.0f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f},
+                                    {0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f},
+                                    {0.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f},
+                                    {0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f}};
+bVector3 EnvMapEyeOffset(0.0f, 0.0f, 0.95f);
+bVector3 EnvMapCamOffset(0.0f, 0.0f, 0.6f);
 bMatrix4 CarScaleMatrix;
+
+typedef struct tagCarEffectParam {
+    const char *Name;
+    uint32 NameHash;
+} CarEffectParam;
+
 CarEffectParam CarEffectParameters[29] = {
     {"CARFX_NONE", 0},
     {"CARFX_DRIVE_OVER", 0},
@@ -656,18 +960,27 @@ CarEffectParam CarEffectParameters[29] = {
     {"CARFX_BREAK_WINDOW_RIGHT_REAR", 0},
 };
 
-ePointSprite3D TestSprite;
+SlotPool *CarEmitterPositionSlotPool = nullptr;
+
+bAngle TestSpriteAngle = 0;
+ePointSprite3D TestSprite; // TODO values, or is it just zero initialized?
+int TestSpriteonoff = 0;
+int numTestSprites = 1;
+int numTestSpritesmul = 1;
+float testSpriteXoff = 1.0f;
+
+static const int MirrorLeftTires = 0;
 
 bMatrix4 LeftTireRotateZMatrix;
 bMatrix4 LeftTireMirrorMatrix;
 
-TextureInfo *pTextureInfo2PlayerHeadlight1;
+TextureInfo *pTextureInfo2PlayerHeadlight1 = nullptr;
 
 void InitCarRender() {
-    CarPartModelPool = bNewSlotPool(0x18, 0x400, "CarPartModelPool", 0);
+    CarPartModelPool = bNewSlotPool(0x18, 1024, "CarPartModelPool", 0);
 
     eIdentity(&LeftTireRotateZMatrix);
-    eRotateZ(&LeftTireRotateZMatrix, &LeftTireRotateZMatrix, 0x8000);
+    eRotateZ(&LeftTireRotateZMatrix, &LeftTireRotateZMatrix, 32768);
 
     eIdentity(&LeftTireMirrorMatrix);
     LeftTireMirrorMatrix.v0.x = 1.0f;
@@ -677,7 +990,7 @@ void InitCarRender() {
 
 void InitCarEffects() {
     CarEmitterPositionSlotPool = bNewSlotPool(0x14, MAX_CAR_PART_MODELS, "CarEmitterPositionSlotPool", GetVirtualMemoryAllocParams());
-    for (int i = 0; i < 0x1D; i++) {
+    for (int i = 0; i < NUM_ELEMENTS(CarEffectParameters); i++) {
         CarEffectParameters[i].NameHash = bStringHash(CarEffectParameters[i].Name);
     }
 
@@ -704,9 +1017,11 @@ eModel StandardCubeModel;
 eModel StandardDebugModel;
 
 void InitStandardModels() {
-    StandardCubeModel.Init(0xC7395A8);
+    StandardCubeModel.Init(STRINGHASH_STD_CUBE);
     StandardDebugModel.Init(bStringHash("DEBUG_LOD_CUBE"));
 }
+
+void DrawCube(eView *view, bMatrix4 *local_world, float w, float h, float l) {}
 
 bTList<FrontEndRenderingCar> FrontEndRenderingCarList;
 
@@ -738,6 +1053,8 @@ FrontEndRenderingCar::FrontEndRenderingCar(RideInfo *ride_info, int view_id) {
     FrontEndRenderingCarList.AddTail(this);
 }
 
+static const CarEffectPosition CarFXForcePosition = CARFXPOS_NONE;
+
 bool FrontEndRenderingCar::LookupWheelPosition(unsigned int index, bVector4 *position) {
     if (this->RenderInfo != nullptr && position != nullptr) {
         this->RenderInfo->GetAttributes().TireOffsets(*reinterpret_cast<UMath::Vector4 *>(position), index);
@@ -751,7 +1068,7 @@ bool FrontEndRenderingCar::LookupWheelPosition(unsigned int index, bVector4 *pos
     }
 }
 
-bool FrontEndRenderingCar::LookupWheelRadius(unsigned int index /* r4 */, float &radius /* r5 */) {
+bool FrontEndRenderingCar::LookupWheelRadius(unsigned int index, float &radius) {
     if (this->RenderInfo == nullptr)
         return false;
 
@@ -762,7 +1079,7 @@ bool FrontEndRenderingCar::LookupWheelRadius(unsigned int index /* r4 */, float 
     return true;
 }
 
-void FrontEndRenderingCar::ReInit(struct RideInfo *ride_info /* r31 */) {
+void FrontEndRenderingCar::ReInit(struct RideInfo *ride_info) {
     if (this->RenderInfo != nullptr) {
         CarRenderInfo *info;
 
@@ -771,9 +1088,8 @@ void FrontEndRenderingCar::ReInit(struct RideInfo *ride_info /* r31 */) {
     }
 
     if (ride_info != nullptr) {
-
         this->mRideInfo = *ride_info;
-        this->RenderInfo = ::new (__FILE__, __LINE__) CarRenderInfo(&this->mRideInfo);
+        this->RenderInfo = new ("CarRenderInfo", 0) CarRenderInfo(&this->mRideInfo);
     }
 }
 
@@ -790,45 +1106,52 @@ FrontEndRenderingCar::~FrontEndRenderingCar() {
         this->OverrideModel = nullptr;
     }
 
-    this->Remove();
+    FrontEndRenderingCarList.Remove(this);
 }
 
-float NISCopCarDoorOpenAmount[4];
-bMatrix4 NISCopCarDoorOpenMarkers[4];
-bMatrix4 NISCopCarDoorClosedMarkers[4];
+inline int IsNISCopCar(int type) {
+    return static_cast<int>(type == CARTYPE_COPMIDSIZEINT);
+}
 
-// UNSOLVED, to preserve my sanity
+// STRIPPED
+void FrontEndRenderingCar::OverRideAlpha(unsigned char nAlphaBits, bool bSemiTrans, bool bWriteZ) {}
+
+// STRIPPED
+void FrontEndRenderingCar::RestoreAlpha() {}
+
 CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
-    : mDamageBehaviour(nullptr), //
-      mWCollider(nullptr), //
-      mWorldPos(0.025f), //
+    : mDamageBehaviour(nullptr),           //
+      mWCollider(nullptr),                 //
+      mWorldPos(0.025f),                   //
       mEmitterPositionsInitialized(false), //
-      mOnLights(0), //
-      mBrokenLights(0), //
-      mRadius(lbl_8040AA60), //
+      mOnLights(0),                        //
+      mBrokenLights(0),                    //
+      mRadius(3.0f),                       //
       mAttributes(0xeec2271a, 0, nullptr), //
-      mFlashing(false), //
-      mFlashInterval(0.0f)
-{
-    ProfileNode profile_node;
+      mFlashing(false),                    //
+      mFlashInterval(0.0f) {
+    ProfileNode profile_node("TODO", 0);
+    mWheelWobbleEnabled[0] = false;
+    mWheelWobbleEnabled[1] = false;
+    mWheelWobbleEnabled[2] = false;
+    mWheelWobbleEnabled[3] = false;
+
+    CarTypeInfo *info = GetCarTypeInfo(ride_info->Type);
+    char *car_base_name = info->BaseModelName;
+    this->mAttributes.ChangeWithDefault(Attrib::StringToLowerCaseKey(car_base_name));
+    this->mMirrorLeftWheels = (this->mAttributes.WheelSpokeCount() & 0x80) != 0;
     bVector3 tire_positions[4];
     float wheel_radius[4];
 
-    bMemSet(&this->TheCarPartCuller, 0, sizeof(this->TheCarPartCuller));
-    CarTypeInfo *info = &CarTypeInfoArray[ride_info->Type];
-    char *car_base_name = info->BaseModelName;
-    this->mAttributes.ChangeWithDefault(Attrib::StringToLowerCaseKey(car_base_name));
-    *reinterpret_cast<unsigned int *>(&this->mMirrorLeftWheels) =
-        static_cast<unsigned char>(this->mAttributes.WheelSpokeCount()) >> 7;
-    bMemSet(&this->mDamageInfoCache, 0, 0x14);
-
     this->AnimTime = 0.0f;
-    for (unsigned int wheel = 0; wheel < 4; wheel++) {
+    for (unsigned int i = 0; i < 4; i++) {
         UMath::Vector4 tire_offset;
 
-        this->GetAttributes().TireOffsets(tire_offset, wheel);
-        tire_positions[wheel] = bVector3(tire_offset.x, tire_offset.y, tire_offset.z);
-        wheel_radius[wheel] = tire_offset.w;
+        this->mAttributes.TireOffsets(tire_offset, i);
+        // TODO how to assign bVector instead of bFill? why are there two bVector constructor calls here?
+        // tire_positions[i] = bVector3(tire_offset.x, tire_offset.y, tire_offset.z);
+        bFill(&tire_positions[i], tire_offset.x, tire_offset.y, tire_offset.z);
+        wheel_radius[i] = tire_offset.w;
     }
 
     this->WheelWidths[0] = WheelStandardWidth;
@@ -837,71 +1160,55 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
     this->WheelRadius[1] = WheelStandardRadius;
 
     for (int i = 0; i < 4; i++) {
-        this->WheelWidthScales[i] = 1.0f;
-        this->WheelRadiusScales[i] = 1.0f;
+        this->WheelWidthScales[i] = TweakWheelWidthScale;
+        this->WheelRadiusScales[i] = TweakWheelRadiusScale;
     }
 
-    this->mVelocity.x = 0.0f;
-    this->mVelocity.y = 0.0f;
-    this->mVelocity.z = 0.0f;
-    this->mAngularVelocity.x = 0.0f;
-    this->mAngularVelocity.y = 0.0f;
-    this->mAngularVelocity.z = 0.0f;
-    this->mAcceleration.x = 0.0f;
-    this->mAcceleration.y = 0.0f;
-    this->mAcceleration.z = 0.0f;
+    this->mVelocity = bVector3(0.0f, 0.0f, 0.0f);
+    this->mAngularVelocity = bVector3(0.0f, 0.0f, 0.0f);
+    this->mAcceleration = bVector3(0.0f, 0.0f, 0.0f);
 
-    if (TheGameFlowManager.IsInFrontend()) {
-        this->mMinLodLevel = reinterpret_cast<CarRenderRideInfoLayout *>(ride_info)->mMinFELodLevel;
-        this->mMaxLodLevel = reinterpret_cast<CarRenderRideInfoLayout *>(ride_info)->mMaxFELodLevel;
+    if (IsGameFlowInFrontEnd()) {
+        this->mMinLodLevel = ride_info->GetMinFELodLevel();
+        this->mMaxLodLevel = ride_info->GetMaxFELodLevel();
     } else {
-        this->mMinLodLevel = reinterpret_cast<CarRenderRideInfoLayout *>(ride_info)->mMinLodLevel;
-        this->mMaxLodLevel = reinterpret_cast<CarRenderRideInfoLayout *>(ride_info)->mMaxLodLevel;
+        this->mMinLodLevel = ride_info->GetMinLodLevel();
+        this->mMaxLodLevel = ride_info->GetMaxLodLevel();
     }
 
-    CARPART_LOD min_reflection_lod = reinterpret_cast<CarRenderRideInfoLayout *>(ride_info)->mMinReflectionLodLevel;
-
+    this->mMinReflectionLodLevel = ride_info->GetMinReflectionLodLevel();
     this->pRideInfo = ride_info;
-    this->mMinReflectionLodLevel = min_reflection_lod;
     this->LastCarPartChanged = -1;
     this->CarTimebaseStart = bRandom(1.0f);
     this->mDeltaTime = 0.0f;
-    CarTypeInfo *car_type_info = &CarTypeInfoArray[this->pRideInfo->Type];
-    int is_traffic_car = car_type_info->GetCarUsageType() == CAR_USAGE_TYPE_TRAFFIC;
+
+    CarTypeInfo *car_type_info = GetCarTypeInfo(this->pRideInfo->Type);
+    int is_traffic_car = static_cast<int>(car_type_info->GetCarUsageType() == CAR_USAGE_TYPE_TRAFFIC);
 
     bMemSet(this->mCarPartModels, 0, sizeof(this->mCarPartModels));
     this->pCarTypeInfo = car_type_info;
     this->CarbonHood = 0;
     GetUsedCarTextureInfo(&this->mUsedTextureInfos, this->pRideInfo, 0);
-    {
-        UsedCarTextureInfo *used_texture_info = &this->mUsedTextureInfos;
-        unsigned int mapped_skin_hash = used_texture_info->MappedSkinHash;
-        unsigned int mapped_skin_b_hash = used_texture_info->MappedSkinBHash;
-        unsigned int mapped_global_hash = used_texture_info->MappedGlobalHash;
-        unsigned int mapped_badging_hash = used_texture_info->MappedBadging;
-        unsigned int mapped_wheel_hash = used_texture_info->MappedWheelHash;
-        unsigned int mapped_spinner_hash = used_texture_info->MappedSpinnerHash;
-        unsigned int mapped_spoiler_hash = used_texture_info->MappedSpoilerHash;
-        unsigned int mapped_roof_scoop_hash = used_texture_info->MappedRoofScoopHash;
-        unsigned int mapped_dash_skin_hash = used_texture_info->MappedDashSkinHash;
 
-        this->MasterReplacementTextureTable[REPLACETEX_CARSKIN].SetOldNameHash(mapped_skin_hash);
-        this->MasterReplacementTextureTable[REPLACETEX_CARSKINB].SetOldNameHash(mapped_skin_b_hash);
-        this->MasterReplacementTextureTable[REPLACETEX_GLOBALSKIN].SetOldNameHash(mapped_global_hash);
+    {
+        this->MasterReplacementTextureTable[REPLACETEX_CARSKIN].SetOldNameHash(this->mUsedTextureInfos.MappedSkinHash);
+        this->MasterReplacementTextureTable[REPLACETEX_CARSKINB].SetOldNameHash(this->mUsedTextureInfos.MappedSkinBHash);
+        this->MasterReplacementTextureTable[REPLACETEX_GLOBALSKIN].SetOldNameHash(this->mUsedTextureInfos.MappedGlobalHash);
         this->MasterReplacementTextureTable[REPLACETEX_CARBONSKIN].SetOldNameHash(0xA7366AE6);
         this->MasterReplacementTextureTable[REPLACETEX_GLOBALCARBONSKIN].SetOldNameHash(0x3C84D757);
-        this->MasterReplacementTextureTable[REPLACETEX_BADGING].SetOldNameHash(mapped_badging_hash);
-        this->MasterReplacementTextureTable[REPLACETEX_WHEEL].SetOldNameHash(mapped_wheel_hash);
-        this->MasterReplacementTextureTable[REPLACETEX_SPINNER].SetOldNameHash(mapped_spinner_hash);
-        this->MasterReplacementTextureTable[REPLACETEX_SPOILER].SetOldNameHash(mapped_spoiler_hash);
-        this->MasterReplacementTextureTable[REPLACETEX_ROOF_SCOOP].SetOldNameHash(mapped_roof_scoop_hash);
-        this->MasterReplacementTextureTable[REPLACETEX_DASHSKIN].SetOldNameHash(mapped_dash_skin_hash);
+        this->MasterReplacementTextureTable[REPLACETEX_BADGING].SetOldNameHash(this->mUsedTextureInfos.MappedBadging);
+        this->MasterReplacementTextureTable[REPLACETEX_WHEEL].SetOldNameHash(this->mUsedTextureInfos.MappedWheelHash);
+        this->MasterReplacementTextureTable[REPLACETEX_SPINNER].SetOldNameHash(this->mUsedTextureInfos.MappedSpinnerHash);
+        this->MasterReplacementTextureTable[REPLACETEX_SPOILER].SetOldNameHash(this->mUsedTextureInfos.MappedSpoilerHash);
+        this->MasterReplacementTextureTable[REPLACETEX_ROOF_SCOOP].SetOldNameHash(this->mUsedTextureInfos.MappedRoofScoopHash);
+        this->MasterReplacementTextureTable[REPLACETEX_DASHSKIN].SetOldNameHash(this->mUsedTextureInfos.MappedDashSkinHash);
         this->MasterReplacementTextureTable[REPLACETEX_DRIVER].SetOldNameHash(0x5799E60B);
-        unsigned int mapped_tire_hash = used_texture_info->MappedTireHash;
-        this->MasterReplacementTextureTable[REPLACETEX_TIRE].SetOldNameHash(mapped_tire_hash);
+        this->MasterReplacementTextureTable[REPLACETEX_TIRE].SetOldNameHash(this->mUsedTextureInfos.MappedTireHash);
+
         if (is_traffic_car != 0) {
-            this->MasterReplacementTextureTable[REPLACETEX_TIRE].SetNewNameHash(bStringHash("_N"));
+            this->MasterReplacementTextureTable[REPLACETEX_TIRE].SetNewNameHash(bStringHash("TRAFFIC_TIRE"));
         }
+
         this->MasterReplacementTextureTable[REPLACETEX_WINDOW_FRONT].SetOldNameHash(bStringHash("WINDOW_FRONT"));
         this->MasterReplacementTextureTable[REPLACETEX_WINDOW_REAR].SetOldNameHash(bStringHash("WINDOW_REAR"));
         this->MasterReplacementTextureTable[REPLACETEX_WINDOW_LEFT_FRONT].SetOldNameHash(bStringHash("WINDOW_LEFT_FRONT"));
@@ -928,40 +1235,45 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
         this->MasterReplacementTextureTable[REPLACETEX_OLD_BRAKELIGHT_GLASS_LEFT].SetOldNameHash(this->mUsedTextureInfos.MappedLightHash[7]);
         this->MasterReplacementTextureTable[REPLACETEX_OLD_BRAKELIGHT_GLASS_RIGHT].SetOldNameHash(this->mUsedTextureInfos.MappedLightHash[8]);
         this->MasterReplacementTextureTable[REPLACETEX_OLD_BRAKELIGHT_GLASS_CENTRE].SetOldNameHash(this->mUsedTextureInfos.MappedLightHash[9]);
-        this->BrakeLeftReplacementTextureTable[0].SetOldNameHash(0x17F9F794);
-        this->BrakeLeftReplacementTextureTable[0].SetNewNameHash(0x85E9C79E);
+        this->BrakeLeftReplacementTextureTable[0].SetOldNameHash(STRINGHASH_BRAKE_GLOBAL);
+        this->BrakeLeftReplacementTextureTable[0].SetNewNameHash(STRINGHASH_BRAKE_GLOBAL_LEFT);
         this->BrakeLeftReplacementTextureTable[1].SetOldNameHash(this->mUsedTextureInfos.MappedGlobalHash);
-        this->BrakeRightReplacementTextureTable[0].SetOldNameHash(0x17F9F794);
-        this->BrakeRightReplacementTextureTable[0].SetNewNameHash(0x17F9F794);
+        this->BrakeRightReplacementTextureTable[0].SetOldNameHash(STRINGHASH_BRAKE_GLOBAL);
+        this->BrakeRightReplacementTextureTable[0].SetNewNameHash(STRINGHASH_BRAKE_GLOBAL);
         this->BrakeRightReplacementTextureTable[1].SetOldNameHash(this->mUsedTextureInfos.MappedGlobalHash);
-    }
-    this->SwitchSkin(this->pRideInfo);
-    {
-        UsedCarTextureInfo *used_texture_info = &this->mUsedTextureInfos;
-        unsigned int badging_hash = used_texture_info->MappedBadging;
-        const char *europe_suffix = BuildRegion::IsEurope() ? "_EU" : nullptr;
 
-        if (europe_suffix != nullptr) {
-            unsigned int europe_badging_hash = bStringHash(europe_suffix, badging_hash);
+        this->SwitchSkin(this->pRideInfo);
 
-            if (GetTextureInfo(europe_badging_hash, 0, 0) != nullptr) {
-                badging_hash = europe_badging_hash;
+        uint32 badging_namehash = this->mUsedTextureInfos.MappedBadging;
+        const char *car_badging_suffix = BuildRegion::GetCarBadgingSuffix();
+
+        if (car_badging_suffix != nullptr) {
+            uint32 badging_eu_namehash = bStringHash(car_badging_suffix, badging_namehash);
+
+            if (GetTextureInfo(badging_eu_namehash, 0, 0) != nullptr) {
+                badging_namehash = badging_eu_namehash;
             }
         }
-        TextureInfo *badging_texture = GetTextureInfo(badging_hash, 0, 0);
+
+        TextureInfo *badging_texture = GetTextureInfo(badging_namehash, 0, 0);
 
         if (badging_texture != nullptr) {
             badging_texture->ApplyAlphaSorting = 0;
         }
 
-        this->MasterReplacementTextureTable[REPLACETEX_BADGING].SetNewNameHash(badging_hash);
+        this->MasterReplacementTextureTable[REPLACETEX_BADGING].SetNewNameHash(badging_namehash);
+        this->UpdateCarReplacementTextures();
+        this->UpdateDecalTextures(ride_info);
+        unsigned int driver_namehash =
+            TweakerDriverHeader > 1 ? (TweakerDriverHeader == 2 ? STRINGHASH_DRIVER_FEMALE : STRINGHASH_DRIVER_HELMET) : STRINGHASH_DRIVER_MALE;
+        this->MasterReplacementTextureTable[REPLACETEX_DRIVER].SetNewNameHash(driver_namehash);
     }
-    this->UpdateCarReplacementTextures();
-    this->UpdateDecalTextures(ride_info);
-    this->MasterReplacementTextureTable[REPLACETEX_DRIVER].SetNewNameHash(0xA244D489);
+
     this->UpdateCarParts();
-    this->ShadowTexture = GetTextureInfo(bStringHash("CARSHADOW"), 1, 0);
-    this->ShadowRampTexture = GetTextureInfo(0xBADB4475, 0, 0);
+
+    int shadow_hash = bStringHash("CARSHADOW");
+    this->ShadowTexture = GetTextureInfo(shadow_hash, 1, 0);
+    this->ShadowRampTexture = GetTextureInfo(STRINGHASH_SHADOWRAMP, 0, 0);
 
     if (this->ShadowTexture != nullptr) {
         this->ShadowTexture->ApplyAlphaSorting = 0;
@@ -973,296 +1285,226 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
         this->ShadowRampTexture->RenderingOrder = 3;
     }
 
-    {
-        eModel *base_model = this->mCarPartModels[CARSLOTID_BASE][0][this->mMinLodLevel].GetModel();
+    eModel *model = this->mCarPartModels[CARSLOTID_BASE][0][this->mMinLodLevel].GetModel();
 
-        if (base_model != nullptr) {
-            bVector4 *pivot_position = base_model->GetPivotPosition();
-            float pivot_x;
+    if (model != nullptr) {
+        bVector4 *pivot_position = model->GetPivotPosition();
 
-            if (pivot_position != nullptr) {
-                pivot_x = pivot_position->x;
-            } else {
-                pivot_x = 0.0f;
-            }
-            this->PivotPosition.x = pivot_x;
-
-            float pivot_y;
-
-            if (pivot_position != nullptr) {
-                pivot_y = pivot_position->y;
-            } else {
-                pivot_y = 0.0f;
-            }
-            this->PivotPosition.y = pivot_y;
-
-            float pivot_z;
-
-            if (pivot_position != nullptr) {
-                pivot_z = pivot_position->z;
-            } else {
-                pivot_z = 0.0f;
-            }
-            this->PivotPosition.z = pivot_z;
-        }
+        this->PivotPosition.x = pivot_position != nullptr ? pivot_position->x : 0.0f;
+        this->PivotPosition.y = pivot_position != nullptr ? pivot_position->y : 0.0f;
+        this->PivotPosition.z = pivot_position != nullptr ? pivot_position->z : 0.0f;
     }
 
     this->CreateCarLightFlares();
 
-    {
-        this->TheCarPartCuller.InitPart(CULLABLE_CAR_PART_TIRE_FL, &tire_positions[0]);
-        this->TheCarPartCuller.InitPart(CULLABLE_CAR_PART_TIRE_FR, &tire_positions[1]);
-        this->TheCarPartCuller.InitPart(CULLABLE_CAR_PART_TIRE_RR, &tire_positions[2]);
-        this->TheCarPartCuller.InitPart(CULLABLE_CAR_PART_TIRE_RL, &tire_positions[3]);
+    this->TheCarPartCuller.InitPart(CULLABLE_CAR_PART_TIRE_FL, &tire_positions[0]);
+    this->TheCarPartCuller.InitPart(CULLABLE_CAR_PART_TIRE_FR, &tire_positions[1]);
+    this->TheCarPartCuller.InitPart(CULLABLE_CAR_PART_TIRE_RR, &tire_positions[2]);
+    this->TheCarPartCuller.InitPart(CULLABLE_CAR_PART_TIRE_RL, &tire_positions[3]);
 
-        bVector3 v_left = tire_positions[0] + tire_positions[3];
-        v_left /= 2.0f;
-        bVector3 v_right = tire_positions[1] + tire_positions[2];
-        v_right /= 2.0f;
+    bVector3 v_left = tire_positions[0] + tire_positions[3];
+    v_left /= 2.0f;
+    bVector3 v_right = tire_positions[1] + tire_positions[2];
+    v_right /= 2.0f;
 
-        this->TheCarPartCuller.InitPart(CULLABLE_CAR_PART_BRAKE_FL, &tire_positions[0]);
-        this->TheCarPartCuller.InitPart(CULLABLE_CAR_PART_BRAKE_FR, &tire_positions[1]);
-        this->TheCarPartCuller.InitPart(CULLABLE_CAR_PART_BRAKE_RR, &tire_positions[2]);
-        this->TheCarPartCuller.InitPart(CULLABLE_CAR_PART_BRAKE_RL, &tire_positions[3]);
-        this->TheCarPartCuller.InitPart(CULLABLE_CAR_PART_SIDE_FRONT, &tire_positions[0]);
-        this->TheCarPartCuller.InitPart(CULLABLE_CAR_PART_SIDE_REAR, &tire_positions[2]);
+    this->TheCarPartCuller.InitPart(CULLABLE_CAR_PART_BRAKE_FL, &tire_positions[0]);
+    this->TheCarPartCuller.InitPart(CULLABLE_CAR_PART_BRAKE_FR, &tire_positions[1]);
+    this->TheCarPartCuller.InitPart(CULLABLE_CAR_PART_BRAKE_RR, &tire_positions[2]);
+    this->TheCarPartCuller.InitPart(CULLABLE_CAR_PART_BRAKE_RL, &tire_positions[3]);
+    this->TheCarPartCuller.InitPart(CULLABLE_CAR_PART_SIDE_FRONT, &tire_positions[0]);
+    this->TheCarPartCuller.InitPart(CULLABLE_CAR_PART_SIDE_REAR, &tire_positions[2]);
 
-        bVector3 v_underneath = v_left + v_right;
-        v_underneath /= 2.0f;
-        this->TheCarPartCuller.InitPart(CULLABLE_CAR_PART_UNDERNEATH, &v_underneath);
+    bVector3 v_underneath = v_left + v_right;
+    v_underneath /= 2.0f;
+    this->TheCarPartCuller.InitPart(CULLABLE_CAR_PART_UNDERNEATH, &v_underneath);
 
-        bVector3 v_front_diff = tire_positions[0] - tire_positions[1];
-        bVector3 v_side_diff = tire_positions[1] - tire_positions[2];
-        bVector3 v_normal;
-        bCross(&v_normal, &v_front_diff, &v_side_diff);
-        bNormalize(&v_normal, &v_normal);
+    bVector3 v_front_diff = tire_positions[0] - tire_positions[1];
+    bVector3 v_side_diff = tire_positions[1] - tire_positions[2];
+    bVector3 v_normal;
+    bCross(&v_normal, &v_front_diff, &v_side_diff);
+    bNormalize(&v_normal, &v_normal);
 
-        float tire_radius = wheel_radius[0];
-        if (tire_radius < wheel_radius[1]) {
-            tire_radius = wheel_radius[1];
-        }
-        if (tire_radius < wheel_radius[2]) {
-            tire_radius = wheel_radius[2];
-        }
-        if (tire_radius < wheel_radius[3]) {
-            tire_radius = wheel_radius[3];
-        }
-
-        bScale(&v_normal, &v_normal, tire_radius);
-        bAdd(&v_underneath, &v_underneath, &v_normal);
+    float tire_radius = wheel_radius[0];
+    if (tire_radius < wheel_radius[1]) {
+        tire_radius = wheel_radius[1];
+    }
+    if (tire_radius < wheel_radius[2]) {
+        tire_radius = wheel_radius[2];
+    }
+    if (tire_radius < wheel_radius[3]) {
+        tire_radius = wheel_radius[3];
     }
 
+    bScale(&v_normal, &v_normal, tire_radius);
+    bAdd(&v_underneath, &v_underneath, &v_normal);
+
     {
-        for (int lod = this->mMinLodLevel; lod < this->mMaxLodLevel + 1; lod++) {
-            eModel *smooth_normal_models[0x4C];
+        ProfileNode profile_node("TODO", 0);
+        eModel *model_table[CARSLOTID_MODEL_NUM][CARPART_MODEL_NUM];
 
-            bMemSet(smooth_normal_models, 0, sizeof(smooth_normal_models));
-            for (int slot = 0; slot < 0x4C; slot++) {
-                eModel *model = this->mCarPartModels[slot][0][lod].GetModel();
-                eModel *smooth_model = nullptr;
+        for (int lod_index = this->mMinLodLevel; lod_index < this->mMaxLodLevel + 1; lod_index++) {
+            bMemSet(model_table, 0, sizeof(model_table));
 
-                if (model != nullptr) {
-                    eModel *previous_model = nullptr;
+            for (int model_number = 0; model_number < CARPART_MODEL_NUM; model_number++) {
+                for (int model_index = 0; model_index < CARSLOTID_MODEL_NUM; model_index++) {
+                    eModel *model = this->mCarPartModels[model_index][model_number][lod_index].GetModel();
+                    eModel *prev_model = nullptr;
+                    int car_slot_id = model_index;
 
-                    if (slot == CARSLOTID_RIGHT_SIDE_MIRROR) {
-                        goto use_smooth_normal_model;
+                    if (lod_index > this->mMinLodLevel) {
+                        prev_model = this->mCarPartModels[model_index][model_number][lod_index - 1].GetModel();
+                    }
+
+                    if (model != nullptr) {
+                        switch (car_slot_id) {
+                            case CARSLOTID_RIGHT_SIDE_MIRROR:
+                            case CARSLOTID_BODY:
+                            case CARSLOTID_BASE:
+                            case CARSLOTID_LEFT_SIDE_MIRROR:
+                            case CARSLOTID_SPOILER:
+                            case CARSLOTID_ROOF:
+                            case CARSLOTID_HOOD:
+                            case CARSLOTID_HEADLIGHT:
+                            case CARSLOTID_BRAKELIGHT:
+                                if (lod_index == this->mMinLodLevel || prev_model == nullptr ||
+                                    (lod_index > this->mMinLodLevel && prev_model->GetNameHash() != model->GetNameHash())) {
+                                    model_table[model_index][model_number] = model;
+                                }
+                                break;
+
+                            default:
+                                model_table[model_index][model_number] = nullptr;
+                                break;
+                        }
                     } else {
-                        if (slot > CARSLOTID_RIGHT_SIDE_MIRROR) {
-                            if (slot != CARSLOTID_SPOILER &&
-                                (slot < CARSLOTID_SPOILER || slot > CARSLOTID_BRAKELIGHT || slot < CARSLOTID_ROOF)) {
-                                goto skip_smooth_normal_model;
-                            }
-                            goto use_smooth_normal_model;
-                        }
-                        if (slot == CARSLOTID_BODY) {
-                            goto use_smooth_normal_model;
-                        }
-                        if (slot < CARSLOTID_BODY + 1) {
-                            if (slot == CARSLOTID_BASE) {
-                                goto use_smooth_normal_model;
-                            }
-                        } else if (slot == CARSLOTID_LEFT_SIDE_MIRROR) {
-                            goto use_smooth_normal_model;
-                        }
-
-                        goto skip_smooth_normal_model;
+                        model_table[model_index][model_number] = model;
                     }
-
-use_smooth_normal_model:
-                    if (lod > this->mMinLodLevel) {
-                        previous_model = this->mCarPartModels[slot][0][lod - 1].GetModel();
-                    }
-
-                    if (lod <= this->mMinLodLevel || previous_model == nullptr ||
-                        previous_model->GetNameHash() != model->GetNameHash()) {
-                        smooth_model = model;
-                    }
-
-skip_smooth_normal_model: {}
                 }
-
-                smooth_normal_models[slot] = smooth_model;
             }
 
-            eSmoothNormals(smooth_normal_models, 0x4C);
+            eSmoothNormals(model_table[0], CARSLOTID_MODEL_NUM);
         }
     }
 
     {
-        unsigned int light_material_hash = 0;
-        CarPart *base_paint_part = ride_info->GetPart(CARSLOTID_BASE_PAINT);
+        CarPart *base_paint_layer = ride_info->GetPart(CARSLOTID_BASE_PAINT);
+        unsigned int light_material_namehash = 0;
 
-        if (base_paint_part != nullptr) {
-            light_material_hash = CarPart_GetAppliedAttributeUParam(base_paint_part, 0x6BA02C05, 0);
+        if (base_paint_layer != nullptr) {
+            light_material_namehash = base_paint_layer->GetLightMaterialNameHash();
         }
 
-        this->LightMaterial_CarSkin = elGetLightMaterial(light_material_hash);
-        this->LightMaterial_Carbon = elGetLightMaterial(bStringHash("CARBONFIBRE"));
+        this->LightMaterial_CarSkin = elGetLightMaterial(light_material_namehash);
+        this->LightMaterial_Carbon = elGetLightMaterial(bStringHash("CARBONFIBER"));
+    }
 
-        {
-            CarPart *window_tint_part = ride_info->GetPart(CARSLOTID_WINDOW_TINT);
-            unsigned int window_tint_material_hash = 0x471A1DCA;
+    {
+        CarPart *window_tint_part = ride_info->GetPart(CARSLOTID_WINDOW_TINT);
+        unsigned int light_material_namehash = STRINGHASH_WINDSHIELD;
 
-            if (window_tint_part != nullptr) {
-                window_tint_material_hash = CarPart_GetAppliedAttributeUParam(window_tint_part, 0x6BA02C05, 0);
-            }
-
-            this->LightMaterial_WindowTint = elGetLightMaterial(window_tint_material_hash);
+        if (window_tint_part != nullptr) {
+            light_material_namehash = window_tint_part->GetLightMaterialNameHash();
         }
 
-        {
-            CarPart *paint_rim_part = ride_info->GetPart(CARSLOTID_PAINT_RIM);
-            CarPart *front_wheel_part = ride_info->GetPart(CARSLOTID_FRONT_WHEEL);
-            CarPart *spoiler_part = ride_info->GetPart(CARSLOTID_SPOILER);
-            CarPart *roof_part = ride_info->GetPart(CARSLOTID_ROOF);
-            unsigned int wheel_rim_material_hash = 0;
-            unsigned int caliper_material_hash = 0;
-            unsigned int spoiler_material_hash = 0;
-            unsigned int roof_material_hash = 0;
-            eLightMaterial *wheel_rim_material;
-            eLightMaterial *caliper_material;
-            eLightMaterial *spoiler_material;
-            eLightMaterial *roof_material;
+        this->LightMaterial_WindowTint = elGetLightMaterial(light_material_namehash);
+    }
 
-            this->LightMaterial_Spinner = nullptr;
+    {
+        CarPart *paint_part_rim = ride_info->GetPart(CARSLOTID_PAINT_RIM);
+        CarPart *paint_part_caliper = nullptr;
+        CarPart *paint_part_spoiler = nullptr;
+        CarPart *paint_part_roof = nullptr;
+        CarPart *part_rim = ride_info->GetPart(CARSLOTID_FRONT_WHEEL);
+        CarPart *part_caliper = nullptr;
+        CarPart *part_spoiler = nullptr;
+        CarPart *part_roof = nullptr;
 
-            if (paint_rim_part == nullptr || (reinterpret_cast<unsigned char *>(paint_rim_part)[5] >> 5) == 0) {
-                paint_rim_part = nullptr;
-            }
-
-            if (front_wheel_part == nullptr || (reinterpret_cast<unsigned char *>(front_wheel_part)[5] >> 5) == 0) {
-                front_wheel_part = nullptr;
-            }
-
-            if (spoiler_part == nullptr || (reinterpret_cast<unsigned char *>(spoiler_part)[5] >> 5) == 0) {
-                spoiler_part = nullptr;
-            }
-
-            if (roof_part == nullptr || (reinterpret_cast<unsigned char *>(roof_part)[5] >> 5) == 0) {
-                roof_part = nullptr;
-            }
-
-            if (paint_rim_part != nullptr) {
-                wheel_rim_material_hash = CarPart_GetAppliedAttributeUParam(paint_rim_part, 0x6BA02C05, 0);
-            }
-
-            if (front_wheel_part != nullptr) {
-                caliper_material_hash = CarPart_GetAppliedAttributeUParam(front_wheel_part, 0x6BA02C05, 0);
-            }
-
-            if (spoiler_part != nullptr) {
-                spoiler_material_hash = CarPart_GetAppliedAttributeUParam(spoiler_part, 0x6BA02C05, 0);
-            }
-
-            if (roof_part != nullptr) {
-                roof_material_hash = CarPart_GetAppliedAttributeUParam(roof_part, 0x6BA02C05, 0);
-            }
-
-            if (wheel_rim_material_hash != 0) {
-                wheel_rim_material = elGetLightMaterial(wheel_rim_material_hash);
-            } else {
-                wheel_rim_material = nullptr;
-            }
-
-            if (caliper_material_hash != 0) {
-                caliper_material = elGetLightMaterial(caliper_material_hash);
-            } else {
-                caliper_material = nullptr;
-            }
-
-            if (spoiler_material_hash != 0) {
-                spoiler_material = elGetLightMaterial(spoiler_material_hash);
-            } else {
-                spoiler_material = nullptr;
-            }
-
-            if (roof_material_hash != 0) {
-                roof_material = elGetLightMaterial(roof_material_hash);
-            } else {
-                roof_material = nullptr;
-            }
-
-            this->LightMaterial_Caliper = caliper_material;
-            this->LightMaterial_WheelRim = wheel_rim_material;
-            this->LightMaterial_Spoiler = spoiler_material;
-            this->LightMaterial_Roof = roof_material;
+        if (part_rim == nullptr || part_rim->GetUpgradeLevel() == 0) {
+            paint_part_rim = nullptr;
         }
+
+        if (part_caliper == nullptr || part_caliper->GetUpgradeLevel() == 0) {
+            paint_part_caliper = nullptr;
+        }
+
+        if (part_spoiler == nullptr || part_spoiler->GetUpgradeLevel() == 0) {
+            paint_part_spoiler = nullptr;
+        }
+
+        if (part_roof == nullptr || part_roof->GetUpgradeLevel() == 0) {
+            paint_part_roof = nullptr;
+        }
+
+        uint32 light_material_namehash_rim = 0;
+        uint32 light_material_namehash_caliper = 0;
+        uint32 light_material_namehash_spoiler = 0;
+        uint32 light_material_namehash_roof = 0;
+
+        if (paint_part_rim != nullptr) {
+            light_material_namehash_rim = paint_part_rim->GetLightMaterialNameHash();
+        }
+
+        if (paint_part_caliper != nullptr) {
+            light_material_namehash_caliper = paint_part_caliper->GetLightMaterialNameHash();
+        }
+
+        if (paint_part_spoiler != nullptr) {
+            light_material_namehash_spoiler = paint_part_spoiler->GetLightMaterialNameHash();
+        }
+
+        if (paint_part_roof != nullptr) {
+            light_material_namehash_roof = paint_part_roof->GetLightMaterialNameHash();
+        }
+
+        eLightMaterial *light_material_rim = light_material_namehash_rim ? elGetLightMaterial(light_material_namehash_rim) : nullptr;
+        eLightMaterial *light_material_caliper = light_material_namehash_caliper ? elGetLightMaterial(light_material_namehash_caliper) : nullptr;
+        eLightMaterial *light_material_spoiler = light_material_namehash_spoiler ? elGetLightMaterial(light_material_namehash_spoiler) : nullptr;
+        eLightMaterial *light_material_roof = light_material_namehash_roof ? elGetLightMaterial(light_material_namehash_roof) : nullptr;
+
+        this->LightMaterial_Caliper = light_material_caliper;
+        this->LightMaterial_WheelRim = light_material_rim;
+        this->LightMaterial_Spoiler = light_material_spoiler;
+        this->LightMaterial_Roof = light_material_roof;
     }
 
     this->UpdateWheelYRenderOffset();
-    
-    { //?
+
+    {
         eModel *front_wheel_model = this->mCarPartModels[CARSLOTID_FRONT_WHEEL][0][this->mMinLodLevel].GetModel();
-        eModel *rear_wheel_model  = this->mCarPartModels[CARSLOTID_REAR_WHEEL][0][this->mMinLodLevel].GetModel();
-
-        ePositionMarker *front_position_marker;
-        if (front_wheel_model != nullptr) {
-            front_position_marker = front_wheel_model->GetPostionMarker(0xa4ccd4ac);
-        } else {
-            front_position_marker = nullptr;
-        }
-
-        ePositionMarker *rear_position_marker;
-        if (rear_wheel_model != nullptr) {
-            rear_position_marker = rear_wheel_model->GetPostionMarker(0xb2e13a0d);
-        } else {
-            rear_position_marker = nullptr;
-        }
+        eModel *rear_wheel_model = this->mCarPartModels[CARSLOTID_REAR_WHEEL][0][this->mMinLodLevel].GetModel();
+        ePositionMarker *front_position_marker = front_wheel_model != nullptr ? front_wheel_model->GetPostionMarker(STRINGHASH_FRONT_BRAKE) : nullptr;
+        ePositionMarker *rear_position_marker = rear_wheel_model != nullptr ? rear_wheel_model->GetPostionMarker(STRINGHASH_REAR_BRAKE) : nullptr;
 
         if (front_position_marker != nullptr && rear_position_marker == nullptr) {
             rear_position_marker = front_position_marker;
         }
 
-        if (front_position_marker != nullptr) {
-            this->WheelBrakeMarkerY[0] = front_position_marker->Matrix.v3.y;
-        } else {
-            this->WheelBrakeMarkerY[0] = 0.0f;
-        }
-        if (rear_position_marker != nullptr) {
-            this->WheelBrakeMarkerY[1] = rear_position_marker->Matrix.v3.y;
-        } else {
-            this->WheelBrakeMarkerY[1] = 0.0f;
-        }
+        this->WheelBrakeMarkerY[0] = front_position_marker != nullptr ? front_position_marker->Matrix.v3.y : 0.0f;
+        this->WheelBrakeMarkerY[1] = rear_position_marker != nullptr ? rear_position_marker->Matrix.v3.y : 0.0f;
     }
 
     if (IsNISCopCar(this->pRideInfo->Type)) {
         for (int i = 0; i < 4; i++) {
             NISCopCarDoorOpenAmount[i] = 0;
-            eIdentity(&NISCopCarDoorOpenMarkers[i]);
-            eIdentity(&NISCopCarDoorClosedMarkers[i]);
+            bIdentity(&NISCopCarDoorOpenMarkers[i]);
+            bIdentity(&NISCopCarDoorClosedMarkers[i]);
         }
-        
+
         eModel *base_model = this->mCarPartModels[CARSLOTID_BODY][0][this->mMinLodLevel].GetModel();
+
         if (base_model != nullptr) {
-            unsigned int open_string_hashes[4] = {0xF91BCA96, 0x8DE14C29, 0x60989ECA, 0xD0F2CD17};
-            unsigned int closed_string_hashes[4] = {0x58A2A425, 0x8FE91DD8, 0x05C907D9, 0x7B3CD206};
+            unsigned int open_string_hashes[4] = {STRINGHASH_FRONT_LEFT_DOOR_OPEN, STRINGHASH_FRONT_RIGHT_DOOR_OPEN, STRINGHASH_REAR_RIGHT_DOOR_OPEN,
+                                                  STRINGHASH_REAR_LEFT_DOOR_OPEN};
+            unsigned int closed_string_hashes[4] = {STRINGHASH_FRONT_LEFT_DOOR, STRINGHASH_FRONT_RIGHT_DOOR, STRINGHASH_REAR_RIGHT_DOOR,
+                                                    STRINGHASH_REAR_LEFT_DOOR};
 
             for (int i = 0; i < 4; i++) {
                 ePositionMarker *open_marker = base_model->GetPostionMarker(open_string_hashes[i]);
                 ePositionMarker *closed_marker = base_model->GetPostionMarker(closed_string_hashes[i]);
 
-                if (open_marker == nullptr || closed_marker == nullptr)
+                if (open_marker == nullptr || closed_marker == nullptr) {
                     continue;
+                }
 
                 NISCopCarDoorOpenMarkers[i] = open_marker->Matrix;
                 NISCopCarDoorClosedMarkers[i] = closed_marker->Matrix;
@@ -1274,33 +1516,31 @@ skip_smooth_normal_model: {}
         this->pRideInfo->Type == CARTYPE_COPGHOST || this->pRideInfo->Type == CARTYPE_COPGTO || this->pRideInfo->Type == CARTYPE_COPSUVL ||
         this->pRideInfo->Type == CARTYPE_COPGTOGHOST || this->pRideInfo->Type == CARTYPE_COPSPORTHENCH ||
         this->pRideInfo->Type == CARTYPE_COPSPORTGHOST) {
-        this->mDamageBehaviour = ::new (__FILE__, __LINE__) VehiclePartDamageBehaviour(this);
+        this->mDamageBehaviour = new ("VehiclePartDamageBehaviour", 0) VehiclePartDamageBehaviour(this);
     }
 
-    this->SetCarGlassDamageState(false, REPLACETEX_WINDOW_FRONT, bStringHash("WINDOW_FRONT"), 0xa155545);
-    this->SetCarGlassDamageState(false, REPLACETEX_WINDOW_REAR, bStringHash("WINDOW_FRONT"), 0xa155545);
-    this->SetCarGlassDamageState(false, REPLACETEX_WINDOW_LEFT_FRONT, bStringHash("WINDOW_FRONT"), 0xa155545);
-    this->SetCarGlassDamageState(false, REPLACETEX_WINDOW_LEFT_REAR, bStringHash("WINDOW_FRONT"), 0xa155545);
-    this->SetCarGlassDamageState(false, REPLACETEX_WINDOW_RIGHT_FRONT, bStringHash("WINDOW_FRONT"), 0xa155545);
-    this->SetCarGlassDamageState(false, REPLACETEX_WINDOW_RIGHT_REAR, bStringHash("WINDOW_FRONT"), 0xa155545);
-    this->SetCarGlassDamageState(false, REPLACETEX_WINDOW_REAR_DEFOST, bStringHash("REAR_DEFROSTER"), 0xa155545);
+    this->SetCarGlassDamageState(false, REPLACETEX_WINDOW_FRONT, bStringHash("WINDOW_FRONT"), STRINGHASH_WINDOW_DAMAGE0);
+    this->SetCarGlassDamageState(false, REPLACETEX_WINDOW_REAR, bStringHash("WINDOW_FRONT"), STRINGHASH_WINDOW_DAMAGE0);
+    this->SetCarGlassDamageState(false, REPLACETEX_WINDOW_LEFT_FRONT, bStringHash("WINDOW_FRONT"), STRINGHASH_WINDOW_DAMAGE0);
+    this->SetCarGlassDamageState(false, REPLACETEX_WINDOW_LEFT_REAR, bStringHash("WINDOW_FRONT"), STRINGHASH_WINDOW_DAMAGE0);
+    this->SetCarGlassDamageState(false, REPLACETEX_WINDOW_RIGHT_FRONT, bStringHash("WINDOW_FRONT"), STRINGHASH_WINDOW_DAMAGE0);
+    this->SetCarGlassDamageState(false, REPLACETEX_WINDOW_RIGHT_REAR, bStringHash("WINDOW_FRONT"), STRINGHASH_WINDOW_DAMAGE0);
+    this->SetCarGlassDamageState(false, REPLACETEX_WINDOW_REAR_DEFOST, bStringHash("REAR_DEFROSTER"), STRINGHASH_WINDOW_DAMAGE0);
 }
 
-// UNSOLVED
 CarRenderInfo::~CarRenderInfo() {
-    for (int model_index = 0; model_index < 0x4C; model_index++) {
-        for (int model_number = 0; model_number < 1; model_number++) {
-            for (int model_lod = this->mMinLodLevel; model_lod <= this->mMaxLodLevel; model_lod++) {
+    for (int model_index = 0; model_index < CARSLOTID_MODEL_NUM; model_index++) {
+        for (int model_number = 0; model_number < CARPART_MODEL_NUM; model_number++) {
+            for (int model_lod = this->mMinLodLevel; model_lod <= this->mMaxLodLevel;) {
                 eModel *model = this->mCarPartModels[model_index][model_number][model_lod].GetModel();
-                if (model == nullptr)
-                    break;
-                if (model->GetNameHash() == 0)
-                    break;
 
-                model->UnInit();
-                CarPartModelPool->Free(model);
-                this->mCarPartModels[model_index][model_number][model_lod].SetModel(nullptr);
-                this->mCarPartModels[model_index][model_number][model_lod].Clear();
+                if (model != nullptr && model->GetNameHash() != 0) {
+                    model->UnInit();
+                    CarPartModelPool->Free(model);
+                    this->mCarPartModels[model_index][model_number][model_lod].SetModel(nullptr);
+                }
+
+                this->mCarPartModels[model_index][model_number][model_lod++].Clear();
             }
         }
     }
@@ -1325,7 +1565,7 @@ void CarRenderInfo::Refresh() {
     this->SpoilerPositionMarker2 = reinterpret_cast<ePositionMarker *>(gDefragFixer.Fix(this->SpoilerPositionMarker2));
     this->RoofScoopPositionMarker = reinterpret_cast<ePositionMarker *>(gDefragFixer.Fix(this->RoofScoopPositionMarker));
 
-    for (int fxpos = 0; fxpos < 0x1C; fxpos++) {
+    for (int fxpos = 0; fxpos < NUM_ELEMENTS(this->EmitterPositionList); fxpos++) {
         for (CarEmitterPosition *empos = this->EmitterPositionList[fxpos].GetHead(); empos != this->EmitterPositionList[fxpos].EndOfList();
              empos = empos->GetNext()) {
             if (empos->PositionMarker != nullptr) {
@@ -1334,6 +1574,14 @@ void CarRenderInfo::Refresh() {
         };
     }
 }
+
+static const bool Tweak_EnableAllSkinDamage = true;
+static const bool Tweak_EnableSkinDamageFRONT = true;
+static const bool Tweak_EnableSkinDamageFRONTLEFT = true;
+static const bool Tweak_EnableSkinDamageFRONTRIGHT = true;
+static const bool Tweak_EnableSkinDamageREAR = true;
+static const bool Tweak_EnableSkinDamageREARLEFT = true;
+static const bool Tweak_EnableSkinDamageREARRIGHT = true;
 
 void CarRenderInfo::SetPlayerDamage(const DamageZone::Info &damageInfo) {
     if (this->mDamageInfoCache.Value == damageInfo.Value)
@@ -1344,43 +1592,47 @@ void CarRenderInfo::SetPlayerDamage(const DamageZone::Info &damageInfo) {
 
     this->mDamageInfoCache.Value = damageInfo.Value;
 
-    this->SetCarDamageState(damageInfo.Get(DamageZone::DZ_FRONT) > kDamageThresh, 0x2E, 0x2E);
-    this->SetCarDamageState(damageInfo.Get(DamageZone::DZ_REAR) > kDamageThresh, 0x31, 0x31);
-    this->SetCarDamageState(damageInfo.Get(DamageZone::DZ_LFRONT) > kDamageThresh, 0x2F, 0x2F);
-    this->SetCarDamageState(damageInfo.Get(DamageZone::DZ_RFRONT) > kDamageThresh, 0x30, 0x30);
-    this->SetCarDamageState(damageInfo.Get(DamageZone::DZ_LREAR) > kDamageThresh, 0x32, 0x32);
-    this->SetCarDamageState(damageInfo.Get(DamageZone::DZ_RREAR) > kDamageThresh, 0x33, 0x33);
+    this->SetCarDamageState((Tweak_EnableAllSkinDamage || Tweak_EnableSkinDamageFRONT) && damageInfo.Get(DamageZone::DZ_FRONT) > kDamageThresh,
+                            CARSLOTID_DAMAGE0_FRONT, CARSLOTID_DAMAGE0_FRONT);
+    this->SetCarDamageState((Tweak_EnableAllSkinDamage || Tweak_EnableSkinDamageFRONT) && damageInfo.Get(DamageZone::DZ_REAR) > kDamageThresh,
+                            CARSLOTID_DAMAGE0_REAR, CARSLOTID_DAMAGE0_REAR);
+    this->SetCarDamageState((Tweak_EnableAllSkinDamage || Tweak_EnableSkinDamageFRONT) && damageInfo.Get(DamageZone::DZ_LFRONT) > kDamageThresh,
+                            CARSLOTID_DAMAGE0_FRONTLEFT, CARSLOTID_DAMAGE0_FRONTLEFT);
+    this->SetCarDamageState((Tweak_EnableAllSkinDamage || Tweak_EnableSkinDamageFRONT) && damageInfo.Get(DamageZone::DZ_RFRONT) > kDamageThresh,
+                            CARSLOTID_DAMAGE0_FRONTRIGHT, CARSLOTID_DAMAGE0_FRONTRIGHT);
+    this->SetCarDamageState((Tweak_EnableAllSkinDamage || Tweak_EnableSkinDamageFRONT) && damageInfo.Get(DamageZone::DZ_LREAR) > kDamageThresh,
+                            CARSLOTID_DAMAGE0_REARLEFT, CARSLOTID_DAMAGE0_REARLEFT);
+    this->SetCarDamageState((Tweak_EnableAllSkinDamage || Tweak_EnableSkinDamageFRONT) && damageInfo.Get(DamageZone::DZ_RREAR) > kDamageThresh,
+                            CARSLOTID_DAMAGE0_REARRIGHT, CARSLOTID_DAMAGE0_REARRIGHT);
 
     this->SetCarGlassDamageState(damageInfo.Get(DamageZone::DZ_FRONT) > kDamageWindowThresh, REPLACETEX_WINDOW_FRONT, bStringHash("WINDOW_FRONT"),
-                                 0xa155545);
+                                 STRINGHASH_WINDOW_DAMAGE0);
     this->SetCarGlassDamageState(damageInfo.Get(DamageZone::DZ_REAR) > kDamageWindowThresh, REPLACETEX_WINDOW_REAR, bStringHash("WINDOW_FRONT"),
-                                 0xa155545);
+                                 STRINGHASH_WINDOW_DAMAGE0);
     this->SetCarGlassDamageState(damageInfo.Get(DamageZone::DZ_LFRONT) > kDamageWindowThresh, REPLACETEX_WINDOW_LEFT_FRONT,
-                                 bStringHash("WINDOW_FRONT"), 0xa155545);
+                                 bStringHash("WINDOW_FRONT"), STRINGHASH_WINDOW_DAMAGE0);
     this->SetCarGlassDamageState(damageInfo.Get(DamageZone::DZ_LREAR) > kDamageWindowThresh, REPLACETEX_WINDOW_LEFT_REAR, bStringHash("WINDOW_FRONT"),
-                                 0xa155545);
+                                 STRINGHASH_WINDOW_DAMAGE0);
     this->SetCarGlassDamageState(damageInfo.Get(DamageZone::DZ_RFRONT) > kDamageWindowThresh, REPLACETEX_WINDOW_RIGHT_FRONT,
-                                 bStringHash("WINDOW_FRONT"), 0xa155545);
+                                 bStringHash("WINDOW_FRONT"), STRINGHASH_WINDOW_DAMAGE0);
     this->SetCarGlassDamageState(damageInfo.Get(DamageZone::DZ_RREAR) > kDamageWindowThresh, REPLACETEX_WINDOW_RIGHT_REAR,
-                                 bStringHash("WINDOW_FRONT"), 0xa155545);
+                                 bStringHash("WINDOW_FRONT"), STRINGHASH_WINDOW_DAMAGE0);
     this->SetCarGlassDamageState(damageInfo.Get(DamageZone::DZ_REAR) > kDamageWindowThresh, REPLACETEX_WINDOW_REAR_DEFOST,
-                                 bStringHash("REAR_DEFROSTER"), 0xa155545);
+                                 bStringHash("REAR_DEFROSTER"), STRINGHASH_WINDOW_DAMAGE0);
 }
 
 void CarRenderInfo::SetCarDamageState(bool on, unsigned int startID, unsigned int endID) {
     bool hidden = !on;
 
-    for (int model_number = 0; model_number < 1; model_number++) {
+    for (int model_number = 0; model_number < CARPART_MODEL_NUM; model_number++) {
         for (int model_lod = this->mMinLodLevel; model_lod <= this->mMaxLodLevel; model_lod++) {
+            CarPartModel *model;
             for (unsigned int i = startID; i <= endID; i++) {
-                CarPartModel *model = &this->mCarPartModels[i][model_number][model_lod];
+                model = &this->mCarPartModels[i][model_number][model_lod];
 
-                if (!model)
-                    continue;
-                if (!model->GetModel())
-                    continue;
-
-                model->Hide(hidden);
+                if (model != nullptr && model->GetModel() != nullptr) {
+                    model->Hide(static_cast<int>(hidden));
+                }
             }
         }
     }
@@ -1413,9 +1665,10 @@ void CarRenderInfo::SetDamageInfo(const DamageZone::Info &damageInfo) {
 uint32 CarRenderInfo::FindCarPart(int slotId) {
     uint32 model_namehash = 0;
 
-    if (slotId <= 0x4C) {
-        eModel *model = this->mCarPartModels[slotId][0][this->mMinLodLevel].GetModel();
-        if (model) {
+    if (slotId <= CARSLOTID_MODEL_NUM) {
+        unsigned int lodId = this->mMinLodLevel;
+        eModel *model = this->mCarPartModels[slotId][0][lodId].GetModel();
+        if (model != nullptr) {
             model_namehash = model->GetNameHash();
         }
     }
@@ -1426,14 +1679,14 @@ uint32 CarRenderInfo::FindCarPart(int slotId) {
 uint32 CarRenderInfo::HideCarPart(int slotId, bool hide) {
     uint32 model_namehash = 0;
 
-    if (slotId <= 0x4C) {
+    if (slotId <= CARSLOTID_MODEL_NUM) {
         for (int lodId = this->mMinLodLevel; lodId <= this->mMaxLodLevel; lodId++) {
             CarPartModel *carPartModel = &this->mCarPartModels[slotId][0][lodId];
             eModel *model = carPartModel->GetModel();
 
-            carPartModel->Hide(hide);
+            carPartModel->Hide(static_cast<int>(hide));
 
-            if (lodId == this->mMinLodLevel && model) {
+            if (lodId == this->mMinLodLevel && (model != nullptr)) {
                 model_namehash = model->GetNameHash();
             }
         }
@@ -1442,1824 +1695,309 @@ uint32 CarRenderInfo::HideCarPart(int slotId, bool hide) {
     return model_namehash;
 }
 
-struct CarPartMetaLayout {
-    unsigned short PartNameHashBot;
-    unsigned short PartNameHashTop;
-    char PartID;
-    unsigned char GroupNumber_UpgradeLevel;
-    char BaseModelNameHashSelector;
-    unsigned char CarTypeNameHashIndex;
-    unsigned short NameOffset;
-    unsigned short AttributeTableOffset;
-    unsigned short ModelNameHashTableOffset;
-};
-
-struct CameraAnchorLayout {
-    bVector3 mVelocity;
-    float mVelMag;
-    float mTopSpeed;
-    bVector3 mGeomPos;
-};
-
-struct CarPartModelLayout {
-    unsigned int mModel;
-};
-
-static inline eModel *GetPackedCarPartModel(CarPartModel *car_part_model) {
-    return reinterpret_cast<eModel *>(reinterpret_cast<CarPartModelLayout *>(car_part_model)->mModel & ~0x3);
-}
-
-static inline void SetPackedCarPartModel(CarPartModel *car_part_model, eModel *model) {
-    unsigned int &packed_model = reinterpret_cast<CarPartModelLayout *>(car_part_model)->mModel;
-
-    packed_model = reinterpret_cast<unsigned int>(model) | (packed_model & 1);
-}
-
-static inline void ClearPackedCarPartModel(CarPartModel *car_part_model) {
-    reinterpret_cast<CarPartModelLayout *>(car_part_model)->mModel &= 1;
-}
-
-static inline bool DotPassesTest(const bVector3 *point) {
-    bVector3 vec = *point - hull_Origin;
-    float dot = bDot(&vec, &hull_Normal);
-
-    if (dot < lbl_8040ADC0) {
-        dot = -dot;
-    }
-
-    return dot < lbl_8040ADEC;
-}
-
-static inline void *CarRenderFrameMalloc(unsigned int size) {
-    unsigned char *address = CurrentBufferPos;
-
-    if (CurrentBufferEnd <= CurrentBufferPos + size) {
-        FrameMallocFailed = 1;
-        FrameMallocFailAmount += size;
-        address = 0;
-    } else {
-        CurrentBufferPos += size;
-    }
-
-    return address;
-}
-
-inline bool CarRenderInfo::IsLightBroken(VehicleFX::ID id) const {
-    return (this->mBrokenLights & id) != 0;
-}
-
-inline bool CarRenderInfo::IsLightOn(VehicleFX::ID id) const {
-    return (this->mOnLights & id) != 0;
-}
-
-void elResetLightContext(eDynamicLightContext *light_context);
-int elSetupLights(eDynamicLightContext *light_context, eShaperLightRig *shaper_lights, bVector3 *local_pos, bMatrix4 *local_world, bMatrix4 *world_view,
-                  eView *view);
-int elCloneLightContext(eDynamicLightContext *light_context, bMatrix4 *local_world, bMatrix4 *world_view, bVector4 *camera_world_position, eView *view,
-                        eDynamicLightContext *old_context);
-
 void CarRenderInfo::UpdateCarParts() {
-    ProfileNode profile_node("UpdateCarParts", 0);
+    ProfileNode profile_node("TODO", 0);
 
     bInitializeBoundingBox(&this->AABBMin, &this->AABBMax);
 
-    for (int slot_id = 0; slot_id < 0x4C; slot_id++) {
-        for (int model_number = 0; model_number < 1; model_number++) {
-            for (int lod = this->mMinLodLevel; lod <= this->mMaxLodLevel; lod++) {
-                eModel *model = this->mCarPartModels[slot_id][model_number][lod].GetModel();
+    for (int model_index = 0; model_index < CARSLOTID_MODEL_NUM; model_index++) {
+        for (int model_number = 0; model_number < CARPART_MODEL_NUM; model_number++) {
+            for (int model_lod = this->mMinLodLevel; model_lod <= this->mMaxLodLevel; model_lod++) {
+                eModel *model = this->mCarPartModels[model_index][model_number][model_lod].GetModel();
 
-                if (model != 0 && model->GetNameHash() != 0) {
+                if (model != nullptr && model->GetNameHash() != 0) {
                     model->UnInit();
                     CarPartModelPool->Free(model);
-                    this->mCarPartModels[slot_id][model_number][lod].SetModel(nullptr);
+                    this->mCarPartModels[model_index][model_number][model_lod].SetModel(nullptr);
                 }
             }
         }
     }
 
     RideInfo *ride_info = this->pRideInfo;
-    for (int slot_id = 0; slot_id < 0x4C; slot_id++) {
-        CarPart *car_part = ride_info->GetPart(slot_id);
 
-        if (car_part == 0) {
+    for (int model_index = 0; model_index < CARSLOTID_MODEL_NUM; model_index++) {
+        int model_part_id = model_index;
+        CarPart *car_part = ride_info->GetPart(model_part_id);
+
+        if (car_part == nullptr) {
             continue;
         }
 
-        for (int model_number = 0; model_number < 1; model_number++) {
-            for (int lod = this->mMinLodLevel; lod <= this->mMaxLodLevel; lod++) {
-                CARPART_LOD special_minimum;
-                CARPART_LOD special_maximum;
-                CARPART_LOD model_lod = static_cast<CARPART_LOD>(lod);
+        for (int model_number = 0; model_number < CARPART_MODEL_NUM; model_number++) {
+            for (int model_lod = this->mMinLodLevel; model_lod <= this->mMaxLodLevel; model_lod++) {
+                int attempt_lod = model_lod;
+                CARPART_LOD special_minimum_lod;
+                CARPART_LOD special_maximum_lod;
 
-                if (ride_info->GetSpecialLODRangeForCarSlot(
-                        slot_id,
-                        &special_minimum,
-                        &special_maximum,
-                        IsGameFlowInFrontEnd())) {
-                    model_lod = static_cast<CARPART_LOD>(bClamp(model_lod, special_minimum, special_maximum));
+                if (ride_info->GetSpecialLODRangeForCarSlot(model_part_id, &special_minimum_lod, &special_maximum_lod, IsGameFlowInFrontEnd())) {
+                    attempt_lod = bClamp(attempt_lod, special_minimum_lod, special_maximum_lod);
                 }
 
-                unsigned int model_name_hash = CarPart_GetModelNameHash(car_part, model_number, model_lod);
+                int attempt_namehash = car_part->GetModelNameHash(model_number, attempt_lod);
 
-                if (model_name_hash == 0) {
-                    continue;
+                eModel *model = nullptr;
+                if (attempt_namehash != 0) {
+                    model = static_cast<eModel *>(CarPartModelPool->Malloc());
+
+                    this->mCarPartModels[model_index][model_number][model_lod].SetModel(model);
+                    model->Init(attempt_namehash);
+
+                    if (!model->HasSolid()) {
+                        model->UnInit();
+                        CarPartModelPool->Free(model);
+                        this->mCarPartModels[model_index][model_number][model_lod].SetModel(nullptr);
+                        model = nullptr;
+                    }
                 }
 
-                eModel *model = static_cast<eModel *>(CarPartModelPool->Malloc());
+                if (model != nullptr) {
+                    if (model_index < CARSLOTID_DECAL_FRONT_WINDOW || model_index > CARSLOTID_DECAL_RIGHT_QUARTER) {
+                        if (model_index == CARSLOTID_HOOD) {
+                            CarPart *hood_part = ride_info->GetPart(CARSLOTID_HOOD);
+                            int carbon = hood_part->GetAppliedAttributeIParam(STRINGHASH_CARBONFIBRE, 0);
 
-                this->mCarPartModels[slot_id][model_number][lod].SetModel(model);
-                model->Init(model_name_hash);
-
-                if (!model->HasSolid()) {
-                    model->UnInit();
-                    CarPartModelPool->Free(model);
-                    this->mCarPartModels[slot_id][model_number][lod].SetModel(nullptr);
-                    model = 0;
-                }
-
-                if (model != 0) {
-                    if (slot_id < CARSLOTID_DECAL_FRONT_WINDOW || slot_id > CARSLOTID_DECAL_RIGHT_QUARTER) {
-                        if (slot_id == CARSLOTID_HOOD) {
-                            int carbon_hood = CarPart_GetAppliedAttributeIParam(ride_info->GetPart(CARSLOTID_HOOD), 0x721AFF7C, 0);
-
-                            if (carbon_hood != 0) {
+                            if (carbon != 0) {
                                 model->AttachReplacementTextureTable(this->CarbonReplacementTextureTable, REPLACETEX_NUM, 0);
                                 this->CarbonHood = 1;
                             } else {
                                 model->AttachReplacementTextureTable(this->MasterReplacementTextureTable, REPLACETEX_NUM, 0);
-                                this->CarbonHood = carbon_hood;
+                                this->CarbonHood = carbon;
                             }
                         } else {
                             model->AttachReplacementTextureTable(this->MasterReplacementTextureTable, REPLACETEX_NUM, 0);
                         }
                     } else {
-                        model->AttachReplacementTextureTable(&this->DecalReplacementTextureTable[(slot_id - CARSLOTID_DECAL_FRONT_WINDOW) * 8], 8, 0);
+                        int decal_model_index = model_index - CARSLOTID_DECAL_FRONT_WINDOW;
+                        model->AttachReplacementTextureTable(&this->DecalReplacementTextureTable[decal_model_index * 8], 8, 0);
                     }
                 }
             }
 
-            eModel *model;
+            switch (model_index) {
+                case CARSLOTID_BASE:
+                case CARSLOTID_DAMAGE_BODY:
+                case CARSLOTID_DAMAGE_COP_LIGHTS:
+                case CARSLOTID_DAMAGE_HOOD:
+                case CARSLOTID_DAMAGE_BUSHGUARD:
+                case CARSLOTID_DAMAGE_FRONT_BUMPER:
+                case CARSLOTID_DAMAGE_TRUNK:
+                case CARSLOTID_DAMAGE_REAR_BUMPER:
+                case CARSLOTID_BODY:
+                case CARSLOTID_LEFT_SIDE_MIRROR:
+                case CARSLOTID_RIGHT_SIDE_MIRROR:
+                case CARSLOTID_SPOILER:
+                case CARSLOTID_ROOF:
+                case CARSLOTID_HOOD: {
+                    bVector3 bbox_min;
+                    bVector3 bbox_max;
 
-            if (slot_id <= CARSLOTID_DAMAGE_REAR_BUMPER) {
-                if (slot_id >= CARSLOTID_DAMAGE_TRUNK) {
-                    goto expand_bbox;
-                }
-
-                if (slot_id > CARSLOTID_DAMAGE_COP_LIGHTS) {
-                    if (slot_id <= CARSLOTID_DAMAGE_FRONT_BUMPER) {
-                        if (slot_id >= CARSLOTID_DAMAGE_HOOD) {
-                            goto expand_bbox;
-                        }
+                    eModel *model = this->mCarPartModels[model_index][model_number][this->mMinLodLevel].GetModel();
+                    if (model != nullptr) {
+                        model->GetBoundingBox(&bbox_min, &bbox_max);
+                        bExpandBoundingBox(&this->AABBMin, &this->AABBMax, &bbox_min, &bbox_max);
                     }
-                } else {
-                    if (slot_id >= CARSLOTID_DAMAGE_BODY) {
-                        goto expand_bbox;
-                    }
-                    if (slot_id == CARSLOTID_BASE) {
-                        goto expand_bbox;
-                    }
-                }
-            } else if (slot_id == CARSLOTID_RIGHT_SIDE_MIRROR) {
-                goto expand_bbox;
-            } else if (slot_id < CARSLOTID_RIGHT_SIDE_MIRROR) {
-                if (slot_id == CARSLOTID_BODY) {
-                    goto expand_bbox;
-                }
-                if (slot_id == CARSLOTID_LEFT_SIDE_MIRROR) {
-                    goto expand_bbox;
-                }
-            } else {
-                if (slot_id == CARSLOTID_SPOILER) {
-                    goto expand_bbox;
-                }
-                if (slot_id >= CARSLOTID_ROOF) {
-                    if (slot_id <= CARSLOTID_HOOD) {
-                        goto expand_bbox;
-                    }
-                }
-            }
-
-            goto skip_expand_bbox;
-
-        expand_bbox:
-            model = this->mCarPartModels[slot_id][model_number][this->mMinLodLevel].GetModel();
-
-            if (model != 0) {
-                bVector3 bbox_min;
-                bVector3 bbox_max;
-
-                model->GetBoundingBox(&bbox_min, &bbox_max);
-                bExpandBoundingBox(&this->AABBMin, &this->AABBMax, &bbox_min, &bbox_max);
-            }
-
-        skip_expand_bbox:
-            ;
-        }
-    }
-
-    for (int model_number = 0; model_number < 1; model_number++) {
-        for (int lod = this->mMinLodLevel; lod <= this->mMaxLodLevel; lod++) {
-            CarPartModel *front_wheel_part_model = &this->mCarPartModels[CARSLOTID_FRONT_WHEEL][model_number][lod];
-            eModel *front_wheel_model = front_wheel_part_model->GetModel();
-            CarPartModel *rear_wheel_part_model = &this->mCarPartModels[CARSLOTID_REAR_WHEEL][model_number][lod];
-            eModel *rear_wheel_model = rear_wheel_part_model->GetModel();
-
-            if (front_wheel_model != 0 && rear_wheel_model == 0) {
-                rear_wheel_model = static_cast<eModel *>(CarPartModelPool->Malloc());
-                rear_wheel_part_model->SetModel(rear_wheel_model);
-                rear_wheel_model->Init(front_wheel_model->GetNameHash());
-
-                if (!rear_wheel_model->HasSolid()) {
-                    rear_wheel_model->UnInit();
-                    CarPartModelPool->Free(rear_wheel_model);
-                    rear_wheel_part_model->SetModel(nullptr);
-                } else {
-                    rear_wheel_model->AttachReplacementTextureTable(this->MasterReplacementTextureTable, REPLACETEX_NUM, 0);
-                }
-            }
-
-            CarPartModel *front_brake_part_model = &this->mCarPartModels[CARSLOTID_FRONT_BRAKE][model_number][lod];
-            CarPartModel *rear_brake_part_model = &this->mCarPartModels[CARSLOTID_REAR_BRAKE][model_number][lod];
-            eModel *front_brake_model = front_brake_part_model->GetModel();
-            eModel *rear_brake_model = rear_brake_part_model->GetModel();
-
-            if (front_brake_model != 0 && rear_brake_model == 0) {
-                rear_brake_model = static_cast<eModel *>(CarPartModelPool->Malloc());
-                rear_brake_part_model->SetModel(rear_brake_model);
-                rear_brake_model->Init(front_brake_model->GetNameHash());
-
-                if (!rear_brake_model->HasSolid()) {
-                    rear_brake_model->UnInit();
-                    CarPartModelPool->Free(rear_brake_model);
-                    rear_brake_part_model->SetModel(nullptr);
-                } else {
-                    rear_brake_model->AttachReplacementTextureTable(this->MasterReplacementTextureTable, REPLACETEX_NUM, 0);
+                    break;
                 }
             }
         }
     }
 
-    eModel *front_wheel_model = this->mCarPartModels[CARSLOTID_FRONT_WHEEL][0][this->mMinLodLevel].GetModel();
-    eModel *rear_wheel_model = this->mCarPartModels[CARSLOTID_REAR_WHEEL][0][this->mMinLodLevel].GetModel();
-    bVector3 bbox_min;
-    bVector3 bbox_max;
+    for (int model_number = 0; model_number < CARPART_MODEL_NUM; model_number++) {
+        for (int model_lod = this->mMinLodLevel; model_lod <= this->mMaxLodLevel; model_lod++) {
+            {
+                CarPartModel *front_wheel = &this->mCarPartModels[CARSLOTID_FRONT_WHEEL][model_number][model_lod];
+                CarPartModel *rear_wheel = &this->mCarPartModels[CARSLOTID_REAR_WHEEL][model_number][model_lod];
+                eModel *front_wheel_model = front_wheel->GetModel();
+                eModel *rear_wheel_model = rear_wheel->GetModel();
 
-    if (front_wheel_model != 0) {
-        float wheel_width;
-        float wheel_radius;
+                if (front_wheel_model != nullptr && rear_wheel_model == nullptr) {
+                    eModel *model = static_cast<eModel *>(CarPartModelPool->Malloc());
 
-        front_wheel_model->GetBoundingBox(&bbox_min, &bbox_max);
-        wheel_width = UMath::Abs(bbox_max.y - bbox_min.y);
-        this->WheelWidths[0] = wheel_width;
+                    rear_wheel->SetModel(model);
+                    model->Init(front_wheel_model->GetNameHash());
 
-        wheel_radius = UMath::Abs(bbox_max.x - bbox_min.x);
-        this->WheelRadius[0] = wheel_radius * 0.5f;
+                    if (!model->HasSolid()) {
+                        model->UnInit();
+                        CarPartModelPool->Free(model);
+                        rear_wheel->SetModel(nullptr);
+                    } else {
+                        model->AttachReplacementTextureTable(this->MasterReplacementTextureTable, REPLACETEX_NUM, 0);
+                    }
+                }
+            }
+
+            {
+                CarPartModel *front_brake = &this->mCarPartModels[CARSLOTID_FRONT_BRAKE][model_number][model_lod];
+                CarPartModel *rear_brake = &this->mCarPartModels[CARSLOTID_REAR_BRAKE][model_number][model_lod];
+                eModel *front_brake_model = front_brake->GetModel();
+                eModel *rear_brake_model = rear_brake->GetModel();
+
+                if (front_brake_model != nullptr && rear_brake_model == nullptr) {
+                    eModel *model = static_cast<eModel *>(CarPartModelPool->Malloc());
+
+                    rear_brake->SetModel(model);
+                    model->Init(front_brake_model->GetNameHash());
+
+                    if (!model->HasSolid()) {
+                        model->UnInit();
+                        CarPartModelPool->Free(model);
+                        rear_brake->SetModel(nullptr);
+                    } else {
+                        model->AttachReplacementTextureTable(this->MasterReplacementTextureTable, REPLACETEX_NUM, 0);
+                    }
+                }
+            }
+        }
     }
 
-    if (rear_wheel_model != 0) {
-        float wheel_width;
-        float wheel_radius;
+    {
+        eModel *front_wheel_model = this->mCarPartModels[CARSLOTID_FRONT_WHEEL][0][this->mMinLodLevel].GetModel();
+        eModel *rear_wheel_model = this->mCarPartModels[CARSLOTID_REAR_WHEEL][0][this->mMinLodLevel].GetModel();
+        bVector3 bbox_min;
+        bVector3 bbox_max;
 
-        rear_wheel_model->GetBoundingBox(&bbox_min, &bbox_max);
-        wheel_width = UMath::Abs(bbox_max.y - bbox_min.y);
-        this->WheelWidths[1] = wheel_width;
+        if (front_wheel_model != nullptr) {
+            front_wheel_model->GetBoundingBox(&bbox_min, &bbox_max);
+            this->WheelWidths[0] = UMath::Abs(bbox_max.y - bbox_min.y);
+            this->WheelRadius[0] = UMath::Abs(bbox_max.x - bbox_min.x) * 0.5f;
+        }
 
-        wheel_radius = UMath::Abs(bbox_max.x - bbox_min.x);
-        this->WheelRadius[1] = wheel_radius * 0.5f;
+        if (rear_wheel_model != nullptr) {
+            rear_wheel_model->GetBoundingBox(&bbox_min, &bbox_max);
+            this->WheelWidths[1] = this->WheelRadius[1] = UMath::Abs(bbox_max.y - bbox_min.y);
+            this->WheelRadius[1] = UMath::Abs(bbox_max.x - bbox_min.x) * 0.5f;
+        }
     }
 
     this->ModelOffset = (this->AABBMax + this->AABBMin) * 0.5f;
 
     CarPart *base_part = ride_info->GetPart(CARSLOTID_BASE);
-    if (base_part != 0) {
-        eSolid *solid = eFindSolid(CarPart_GetModelNameHash(base_part, 0, this->mMinLodLevel));
+    if (base_part != nullptr) {
+        eSolid *base_solid = eFindSolid(base_part->GetModelNameHash(0, this->mMinLodLevel));
 
-        if (solid != 0) {
-            this->SpoilerPositionMarker = solid->GetPostionMarker(0xC93B73FD);
-            this->SpoilerPositionMarker2 = solid->GetPostionMarker(0xF0A9F3CF);
-            this->RoofScoopPositionMarker = solid->GetPostionMarker(0x90C81258);
+        if (base_solid != nullptr) {
+            this->SpoilerPositionMarker = base_solid->GetPostionMarker(STRINGHASH_SPOILER);
+            this->SpoilerPositionMarker2 = base_solid->GetPostionMarker(STRINGHASH_SPOILER2);
+            this->RoofScoopPositionMarker = base_solid->GetPostionMarker(STRINGHASH_ROOF_SCOOP);
         } else {
-            this->SpoilerPositionMarker = 0;
-            this->SpoilerPositionMarker2 = 0;
-            this->RoofScoopPositionMarker = 0;
+            this->SpoilerPositionMarker = nullptr;
+            this->SpoilerPositionMarker2 = nullptr;
+            this->RoofScoopPositionMarker = nullptr;
         }
     } else {
-        this->SpoilerPositionMarker = 0;
-        this->SpoilerPositionMarker2 = 0;
-        this->RoofScoopPositionMarker = 0;
+        this->SpoilerPositionMarker = nullptr;
+        this->SpoilerPositionMarker2 = nullptr;
+        this->RoofScoopPositionMarker = nullptr;
     }
 
-    CarPart *spoiler_part = ride_info->GetPart(CARSLOTID_SPOILER);
-    bool mirror_left_wheels = true;
+    {
+        bool hidden = true;
+        CarPart *base_part = ride_info->GetPart(CARSLOTID_SPOILER);
 
-    if (spoiler_part != 0) {
-        mirror_left_wheels = (reinterpret_cast<CarPartMetaLayout *>(spoiler_part)->GroupNumber_UpgradeLevel >> 5) == 0;
+        if (base_part != nullptr) {
+            hidden = base_part->GetUpgradeLevel() == 0;
+        }
+
+        for (int model_number = 0; model_number < CARPART_MODEL_NUM; model_number++) {
+            for (int model_lod = this->mMinLodLevel; model_lod <= this->mMaxLodLevel; model_lod++) {
+                CarPartModel *spoiler_base = &this->mCarPartModels[CARSLOTID_UNIVERSAL_SPOILER_BASE][model_number][model_lod];
+
+                spoiler_base->Hide(static_cast<int>(hidden));
+            }
+        }
     }
 
-    for (int lod = this->mMinLodLevel; lod <= this->mMaxLodLevel; lod++) {
-        this->mCarPartModels[CARSLOTID_UNIVERSAL_SPOILER_BASE][0][lod].Hide(mirror_left_wheels);
-    }
-    this->mMirrorLeftWheels = mirror_left_wheels;
-
-    this->SetCarDamageState(false, 0x2E, 0x33);
+    this->SetCarDamageState(false, CARSLOTID_DAMAGE0_FRONT, CARSLOTID_DAMAGE0_REARRIGHT);
 }
 
-void CarRenderInfo::UpdateWheelYRenderOffset() {
-    CarPart *front_wheel = nullptr;
-    CarPart *rear_wheel = nullptr;
-    int front_upgrade_level = 0;
-    int rear_upgrade_level = 0;
-    UMath::Vector4 tire_offset;
+int TweakKitWheelOffsetFront = 0;
+int TweakKitWheelOffsetRear = 0;
 
+// UNSOLVED
+void CarRenderInfo::UpdateWheelYRenderOffset() {
     if (this->pCarTypeInfo == nullptr) {
         bMemSet(this->WheelYRenderOffset, 0, sizeof(this->WheelYRenderOffset));
         return;
     }
 
+    CarPart *front_wheel;
+    CarPart *rear_wheel;
+    int front_upgrade_level;
+    int rear_upgrade_level;
     if (this->pRideInfo != nullptr) {
         front_wheel = this->pRideInfo->GetPart(CARSLOTID_FRONT_WHEEL);
+
+        if (front_wheel != nullptr) {
+            front_upgrade_level = front_wheel->GetUpgradeLevel();
+        }
     }
     if (this->pRideInfo != nullptr) {
         rear_wheel = this->pRideInfo->GetPart(CARSLOTID_REAR_WHEEL);
+
+        if (rear_wheel != nullptr) {
+            rear_upgrade_level = rear_wheel->GetUpgradeLevel();
+        }
     }
 
-    if (front_wheel != nullptr) {
-        front_upgrade_level = 0;
-    }
-    if (rear_wheel != nullptr) {
-        rear_upgrade_level = 0;
-    }
-
+    UMath::Vector4 tire_offset;
     for (int wheel = 0; wheel < 4; wheel++) {
-        int wheel_end = (wheel > 1);
-        int kit_number = wheel_end ? rear_upgrade_level : front_upgrade_level;
-        CarPart *body_part = nullptr;
-        int kit_wheel_offset;
-        float kit_wheel_offset_float;
-        float model_width;
-        float model_radius;
-        float desired_width;
-        float desired_radius;
+        int wheel_end = static_cast<int>(wheel > 1);
 
-        const UMath::Vector4 &tire_ref = this->GetAttributes().TireOffsets(wheel);
-        this->WheelYRenderOffset[wheel] = -tire_ref.y;
+        this->WheelYRenderOffset[wheel] = -this->mAttributes.TireOffsets(wheel).y;
 
-        body_part = this->pRideInfo->GetPart(CARSLOTID_BODY);
+        int kit_number = 0;
+        CarPart *body_part = this->pRideInfo->GetPart(CARSLOTID_BODY);
 
         if (body_part != nullptr) {
-            kit_number = CarPart_GetAppliedAttributeIParam(body_part, 0x796C0CB0, 0);
+            kit_number = body_part->GetAppliedAttributeIParam(STRINGHASH_KITNUMBER, 0);
         }
 
+        int kit_wheel_offset;
         if (wheel_end == 0) {
             if (TweakKitWheelOffsetFront == 0) {
-                kit_wheel_offset = this->GetAttributes().KitWheelOffsetFront(kit_number);
+                kit_wheel_offset = this->mAttributes.KitWheelOffsetFront(kit_number);
             } else {
                 kit_wheel_offset = TweakKitWheelOffsetFront;
             }
         } else if (TweakKitWheelOffsetRear == 0) {
-            kit_wheel_offset = this->GetAttributes().KitWheelOffsetRear(kit_number);
+            kit_wheel_offset = this->mAttributes.KitWheelOffsetRear(kit_number);
         } else {
             kit_wheel_offset = TweakKitWheelOffsetRear;
         }
 
-        kit_wheel_offset_float = static_cast<float>(kit_wheel_offset) * 0.001f;
+        float kit_wheel_offset_float = static_cast<float>(kit_wheel_offset) * 0.001f;
         if (this->WheelYRenderOffset[wheel] <= 0.0f) {
             this->WheelYRenderOffset[wheel] -= kit_wheel_offset_float;
         } else {
             this->WheelYRenderOffset[wheel] += kit_wheel_offset_float;
         }
 
-        model_width = this->WheelWidths[wheel_end];
-        model_radius = this->WheelRadius[wheel_end];
-        desired_width = this->GetAttributes().TireSkidWidth(wheel);
+        float model_width = this->WheelWidths[wheel_end];
+        float model_radius = this->WheelRadius[wheel_end];
+        float desired_width = this->mAttributes.TireSkidWidth(wheel);
 
         if (wheel <= 1) {
-            desired_width *= this->GetAttributes().TireSkidWidthKitScale(kit_number).x;
+            desired_width *= this->mAttributes.TireSkidWidthKitScale(kit_number).x;
         } else {
-            desired_width *= this->GetAttributes().TireSkidWidthKitScale(kit_number).y;
+            desired_width *= this->mAttributes.TireSkidWidthKitScale(kit_number).y;
         }
 
-        tire_offset = tire_ref;
-        desired_radius = tire_offset.w;
+        this->mAttributes.TireOffsets(tire_offset, wheel);
+        float desired_radius = tire_offset.w;
 
         if (model_width > 0.0f && desired_width > 0.0f) {
             this->WheelWidthScales[wheel] = desired_width / model_width;
         } else {
-            this->WheelWidthScales[wheel] = 1.0f;
+            this->WheelWidthScales[wheel] = TweakWheelWidthScale;
         }
 
         if (model_radius > 0.0f && desired_radius > 0.0f) {
             this->WheelRadiusScales[wheel] = desired_radius / model_radius;
         } else {
-            this->WheelRadiusScales[wheel] = 1.0f;
+            this->WheelRadiusScales[wheel] = TweakWheelRadiusScale;
         }
     }
-}
-
-void CarRenderInfo::UpdateDecalTextures(RideInfo *ride_info) {
-    unsigned int alpha_hash = bStringHash("DEFAULTALPHA");
-
-    for (int i = REPLACETEX_DECAL_START; i <= REPLACETEX_DECAL_END; i++) {
-        this->MasterReplacementTextureTable[i].SetOldNameHash(CarReplacementDecalHash[i - REPLACETEX_DECAL_START]);
-        this->MasterReplacementTextureTable[i].SetNewNameHash(alpha_hash);
-    }
-
-    unsigned int decal_hashes[8] = {
-        bStringHash("DUMMY_DECAL1"),
-        bStringHash("DUMMY_DECAL2"),
-        bStringHash("DUMMY_DECAL3"),
-        bStringHash("DUMMY_DECAL4"),
-        bStringHash("DUMMY_DECAL5"),
-        bStringHash("DUMMY_DECAL6"),
-        bStringHash("DUMMY_NUMBER_LEFT"),
-        bStringHash("DUMMY_NUMBER_RIGHT"),
-    };
-
-    for (int i = 0; i < 48; i++) {
-        this->DecalReplacementTextureTable[i].SetOldNameHash(decal_hashes[i % 8]);
-        this->DecalReplacementTextureTable[i].SetNewNameHash(alpha_hash);
-    }
-
-    int hood_decals = 1;
-    if (ride_info->GetPart(CARSLOTID_HOOD) == 0) {
-        hood_decals = 0;
-    }
-    unsigned int size_hash = bStringHash("SIZE");
-    unsigned int shape_hash = bStringHash("SHAPE");
-    unsigned int size_hashes[3] = {
-        bStringHash("SMALL"),
-        bStringHash("MEDIUM"),
-        bStringHash("LARGE"),
-    };
-    unsigned int shape_hashes[3] = {
-        bStringHash("SQUARE"),
-        bStringHash("RECT"),
-        bStringHash("WIDE"),
-    };
-
-    for (int i = CARSLOTID_DECAL_FRONT_WINDOW; i < CARSLOTID_BASE_PAINT; i++) {
-        CarPart *decal_model_part = ride_info->GetPart(i);
-        int decal_index = i - CARSLOTID_DECAL_FRONT_WINDOW;
-
-        if (decal_model_part != 0 && hood_decals != 0 && CarPart_HasAppliedAttribute(decal_model_part, size_hash) != 0 &&
-            CarPart_HasAppliedAttribute(decal_model_part, shape_hash) != 0) {
-            unsigned int decal_size = CarPart_GetAppliedAttributeUParam(decal_model_part, size_hash, 0);
-            unsigned int decal_shape = CarPart_GetAppliedAttributeUParam(decal_model_part, shape_hash, 0);
-            eReplacementTextureTable *replace_table = &this->DecalReplacementTextureTable[decal_index * 8];
-            int first_tex_part = CARSLOTID_DECAL_FRONT_WINDOW_TEX0 + decal_index * 8;
-
-            (void)decal_size;
-            (void)size_hashes;
-
-            for (int j = 0; j < 8; j++) {
-                CarPart *decal_texture_part = ride_info->GetPart(j + first_tex_part);
-
-                if (decal_texture_part != 0) {
-                    char buf[128];
-                    unsigned int base_hash = CarPart_GetAppliedAttributeUParam(decal_texture_part, bStringHash("NAME"), 0);
-                    unsigned int decal_texture_hash;
-
-                    if (decal_shape == shape_hashes[0]) {
-                        bStrCpy(buf, "_SQUARE");
-                    } else if (decal_shape == shape_hashes[1]) {
-                        bStrCpy(buf, "_RECT");
-                    } else if (decal_shape == shape_hashes[2]) {
-                        bStrCpy(buf, "_WIDE");
-                    }
-
-                    decal_texture_hash = bStringHash(buf, base_hash);
-                    replace_table[j].SetNewNameHash(decal_texture_hash);
-                }
-            }
-        }
-    }
-}
-
-bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bMatrix4 *body_matrix, bMatrix4 *tire_matrices,
-                           bMatrix4 *brake_matrices, bMatrix4 *, unsigned int extra_render_flags, int force_light_state,
-                           int reflexion, float shadow_scale, enum CARPART_LOD tireLOD, enum CARPART_LOD carLOD) {
-    ProfileNode profile_node;
-    bVector3 position = *world_position;
-    int car_pixel_size;
-
-    if (this->pCarTypeInfo != 0 && this->pCarTypeInfo->UsageType == CAR_USAGE_TYPE_COP) {
-        view->NumCopsTotal++;
-    }
-    car_pixel_size = view->GetPixelSize(&position, this->mRadius);
-    if (eGetCurrentViewMode() == EVIEWMODE_TWOH && iRam8047ff04 != 3) {
-        car_pixel_size = static_cast<int>(static_cast<float>(car_pixel_size) * 0.5f);
-    }
-    if (car_pixel_size < view->PixelMinSize) {
-        if (static_cast<unsigned int>(view->GetID() - 13) > 1) {
-            return true;
-        }
-    }
-    if (DrawCars == 0) {
-        return true;
-    }
-
-    Camera *camera = view->GetCamera();
-    int is_traffic_car;
-    if (this->pCarTypeInfo != 0) {
-        is_traffic_car = this->pCarTypeInfo->UsageType == CAR_USAGE_TYPE_RACING;
-    } else {
-        is_traffic_car = 0;
-    }
-
-    eDynamicLightContext *light_context;
-    if (CurrentBufferEnd <= CurrentBufferPos + 0x130) {
-        FrameMallocFailed = 1;
-        FrameMallocFailAmount += 0x130;
-        light_context = 0;
-    } else {
-        light_context = reinterpret_cast<eDynamicLightContext *>(CurrentBufferPos);
-        CurrentBufferPos += 0x130;
-    }
-
-    bMatrix4 *local_world;
-    {
-        unsigned char *address = CurrentBufferPos;
-        if (address + 0x40 >= CurrentBufferEnd) {
-            FrameMallocFailed = 1;
-            FrameMallocFailAmount += 0x40;
-            local_world = 0;
-        } else {
-            CurrentBufferPos = address + 0x40;
-            local_world = reinterpret_cast<bMatrix4 *>(address);
-        }
-    }
-
-    bMatrix4 *cpy_local_world;
-    {
-        unsigned char *address = CurrentBufferPos;
-        if (address + 0x40 >= CurrentBufferEnd) {
-            FrameMallocFailed = 1;
-            FrameMallocFailAmount += 0x40;
-            cpy_local_world = 0;
-        } else {
-            CurrentBufferPos = address + 0x40;
-            cpy_local_world = reinterpret_cast<bMatrix4 *>(address);
-        }
-    }
-
-    bMatrix4 *biased_identity;
-    {
-        unsigned char *address = CurrentBufferPos;
-        if (address + 0x40 >= CurrentBufferEnd) {
-            FrameMallocFailed = 1;
-            FrameMallocFailAmount += 0x40;
-            biased_identity = 0;
-        } else {
-            CurrentBufferPos = address + 0x40;
-            biased_identity = reinterpret_cast<bMatrix4 *>(address);
-        }
-    }
-
-    bMatrix4 *biased_local_world;
-    {
-        unsigned char *address = CurrentBufferPos;
-        if (address + 0x40 >= CurrentBufferEnd) {
-            FrameMallocFailed = 1;
-            FrameMallocFailAmount += 0x40;
-            biased_local_world = 0;
-        } else {
-            CurrentBufferPos = address + 0x40;
-            biased_local_world = reinterpret_cast<bMatrix4 *>(address);
-        }
-    }
-
-    if (light_context == 0 || local_world == 0 || biased_identity == 0 || biased_local_world == 0) {
-        return true;
-    }
-
-    PSMTX44Copy(*reinterpret_cast<const Mtx44 *>(body_matrix), *reinterpret_cast<Mtx44 *>(local_world));
-    eMulMatrix(local_world, &CarScaleMatrix, local_world);
-    local_world->v3.x = position.x;
-    local_world->v3.y = position.y;
-    local_world->v3.z = position.z;
-    local_world->v3.w = 1.0f;
-
-    if (view->GetVisibleState(&this->AABBMin, &this->AABBMax, local_world) == EVISIBLESTATE_NOT) {
-        return true;
-    }
-
-    bVector4 camera_world_position;
-    if (camera != 0) {
-        camera_world_position.x = camera->GetPosition()->x;
-        camera_world_position.y = camera->GetPosition()->y;
-        camera_world_position.z = camera->GetPosition()->z;
-    } else {
-        camera_world_position.x = position.x;
-        camera_world_position.y = position.y;
-        camera_world_position.z = position.z;
-    }
-    camera_world_position.w = 1.0f;
-
-    Player *player1 = Player::GetPlayerByIndex(0);
-    int in_front_end = IsGameFlowInFrontEnd();
-    int print_query_light_mat = PrintQueryLightMat;
-    if (print_query_light_mat != 0) {
-        PrintLightQuery = 1;
-    }
-
-    PSMTX44Copy(*reinterpret_cast<const Mtx44 *>(body_matrix), *reinterpret_cast<Mtx44 *>(cpy_local_world));
-    cpy_local_world->v3.x = position.x;
-    cpy_local_world->v3.y = position.y;
-    cpy_local_world->v3.z = position.z;
-    cpy_local_world->v3.w = 1.0f;
-
-    eDynamicLightContext base_light_context;
-    elResetLightContext(&base_light_context);
-
-    FEManager *fe_manager = FEManager::Get();
-    eShaperLightRig *shaper_lights;
-    switch (fe_manager->GetGarageType()) {
-    case GARAGETYPE_CAREER_SAFEHOUSE:
-        shaper_lights = &ShaperLightsSafehouse;
-        break;
-    case GARAGETYPE_CUSTOMIZATION_SHOP:
-        shaper_lights = &ShaperLightsCShop;
-        break;
-    case GARAGETYPE_CUSTOMIZATION_SHOP_BACKROOM:
-        shaper_lights = &ShaperLightsBackRoom;
-        break;
-    case GARAGETYPE_CAR_LOT:
-        shaper_lights = &ShaperLightsCarLot;
-        break;
-    default:
-        shaper_lights = &ShaperLightsQRace;
-        break;
-    }
-    if (iRam8047ff04 == 6) {
-        shaper_lights = &ShaperLightsCarsInGame;
-    }
-
-    elSetupLights(&base_light_context, shaper_lights, &position, 0, &hack_man_matrix, view);
-    elCloneLightContext(light_context, cpy_local_world, &hack_man_matrix, &camera_world_position, view, &base_light_context);
-    this->CarFrame = eFrameCounter;
-    if (print_query_light_mat != 0) {
-        PrintLightQuery = 0;
-    }
-
-    unsigned int disable_env_flag = 0;
-    unsigned int disable_env_flag_tires = 0;
-    this->UpdateLightStateTextures();
-    if (EnableEnvMap == 0 || static_cast<float>(car_pixel_size) < lbl_8040AD70) {
-        disable_env_flag = 1;
-        disable_env_flag_tires = 1;
-    }
-
-    int bodyLodIx = 0;
-    int tireLodIx = 0;
-    int mMinLod = static_cast<int>(this->mMinLodLevel);
-    int mMaxLod = static_cast<int>(this->mMaxLodLevel);
-    float const *body_lod_swap_size;
-
-    if (!is_traffic_car) {
-        if (mMinLod == 2) {
-            goto use_traffic_lod;
-        }
-        body_lod_swap_size = CarBodyLodSwapSize;
-        while (static_cast<float>(car_pixel_size) < body_lod_swap_size[bodyLodIx]) {
-            bodyLodIx++;
-            tireLodIx++;
-        }
-    } else {
-        extra_render_flags |= 0x80000;
-    use_traffic_lod:
-        body_lod_swap_size = TrafficCarBodyLodSwapSize;
-        while (static_cast<float>(car_pixel_size) < body_lod_swap_size[bodyLodIx]) {
-            bodyLodIx++;
-            tireLodIx++;
-        }
-    }
-
-    int car_body_lod = mMaxLod;
-    if (bodyLodIx + mMinLod < mMaxLod) {
-        car_body_lod = bodyLodIx + mMinLod;
-    }
-    int car_tire_lod = mMaxLod;
-    if (tireLodIx + mMinLod < mMaxLod) {
-        car_tire_lod = tireLodIx + mMinLod;
-    }
-
-    if (ForceCarLOD != -1) {
-        car_body_lod = mMinLod;
-        if (mMinLod < ForceCarLOD) {
-            car_body_lod = ForceCarLOD;
-        }
-        if (mMaxLod < car_body_lod) {
-            car_body_lod = mMaxLod;
-        }
-    }
-    if (ForceTireLOD != -1) {
-        car_tire_lod = mMinLod;
-        if (mMinLod < ForceTireLOD) {
-            car_tire_lod = ForceTireLOD;
-        }
-        if (mMaxLod < car_tire_lod) {
-            car_tire_lod = mMaxLod;
-        }
-    }
-
-    if (car_body_lod == -1 && car_tire_lod == -1) {
-        return true;
-    }
-
-    if (this->pRideInfo != 0 && this->pCarTypeInfo != 0 && this->pCarTypeInfo->UsageType != CAR_USAGE_TYPE_RACING) {
-        extra_render_flags |= 0x800;
-        if (INIS::Get() != 0) {
-            extra_render_flags |= 0x80000;
-        }
-    }
-
-    bMatrix4 world_local;
-    bInvertMatrix(&world_local, local_world);
-    bVector3 camera_eye_in_car_space;
-    bMulMatrix(&camera_eye_in_car_space, &world_local, camera->GetPosition());
-    float fDistanceToCamera = bDistBetween(camera->GetPosition(), reinterpret_cast<bVector3 *>(&local_world->v3));
-
-    if (car_body_lod == 0 && fDistanceToCamera < lbl_8040AD74 && view->GetID() == 1 && INIS::Get() == 0) {
-        camera_eye_in_car_space.y += lbl_8040AD78;
-        if (bBoundingBoxIsInside(&this->AABBMin, &this->AABBMax, &camera_eye_in_car_space, lbl_8040AD7C) != 0) {
-            return true;
-        }
-        camera_eye_in_car_space.y -= lbl_8040AD78;
-    }
-
-    PSMTX44Copy(*reinterpret_cast<Mtx44 *>(local_world), *reinterpret_cast<Mtx44 *>(biased_identity));
-    *biased_local_world = eMathIdentityMatrix;
-    biased_local_world->v3.x = position.x;
-    biased_local_world->v3.y = position.y;
-    biased_local_world->v3.z = position.z;
-    biased_local_world->v3.w = 1.0f;
-
-    bool nisPlaying = false;
-    INIS *nis = INIS::Get();
-    if (nis != 0) {
-        nisPlaying = nis->IsPlaying();
-    }
-
-    if (reflexion == 0) {
-        float bias_amount = lbl_8040AD80;
-        biased_identity->v3.y += bias_amount;
-        float dist_bias = static_cast<float>((fDistanceToCamera - lbl_8040AD84) / fDistanceToCamera);
-        if (in_front_end) {
-            view->BiasMatrixForZSorting(biased_identity, dist_bias);
-        }
-        view->BiasMatrixForZSorting(biased_local_world, dist_bias);
-
-        bMatrix4 neg_pos_matrix;
-        eIdentity(&neg_pos_matrix);
-        neg_pos_matrix.v3.x = -position.x;
-        neg_pos_matrix.v3.y = -position.y;
-        neg_pos_matrix.v3.z = -position.z;
-        eMulMatrix(biased_local_world, &neg_pos_matrix, biased_local_world);
-    }
-
-    unsigned short tangR = this->mSteeringR;
-    unsigned short tangL = this->mSteeringL;
-    unsigned short steerAngle = tangR;
-    if (tangR > 0x8000) {
-        steerAngle = static_cast<unsigned short>(-tangR);
-    }
-    unsigned short absL = tangL;
-    if (tangL > 0x8000) {
-        absL = static_cast<unsigned short>(-tangL);
-    }
-    if (absL < steerAngle) {
-        tangL = tangR;
-    }
-    this->TheCarPartCuller.CullParts(&camera_eye_in_car_space, tangL);
-
-    unsigned int body_render_flags;
-    if (DrawCarShadow != 0 && reflexion == 0) {
-        this->DrawAmbientShadow(view, &position, shadow_scale, local_world, &world_local, biased_local_world);
-        if (iRam8047ff04 != 3 && this->pCarTypeInfo->UsageType != CAR_USAGE_TYPE_COP && is_traffic_car) {
-            this->DrawKeithProjShadow(view, &position, local_world, &world_local, biased_local_world, car_body_lod);
-        }
-    }
-
-    body_render_flags = 0;
-    if (iRam8047ff04 == 6 && view->GetID() != 3) {
-        body_render_flags = 0x8000;
-    }
-
-    eLightMaterial *light_material_carskin = this->LightMaterial_CarSkin;
-    eLightMaterial *light_material_spoiler = this->LightMaterial_Spoiler;
-    if (light_material_spoiler == 0) {
-        light_material_spoiler = light_material_carskin;
-    }
-    eLightMaterial *light_material_roof = this->LightMaterial_Roof;
-    if (light_material_roof == 0) {
-        light_material_roof = light_material_carskin;
-    }
-    eLightMaterial *light_material_tint = this->LightMaterial_WindowTint;
-
-    bMatrix4 trans_pivot[4];
-    bMatrix4 trans_axle[4];
-    bMatrix4 brake_trans_pivot[4];
-    float wheel_pivot_trans_amount;
-    float front_wheel_brake_marker;
-    float rear_wheel_brake_marker;
-    unsigned short wheel_camber_angle_front;
-    float wheel_camber_push_down_front;
-    unsigned short wheel_camber_angle_rear;
-    float wheel_camber_push_down_rear;
-    unsigned short wheel_wobble_angle;
-    int tire_visible0;
-    int tire_visible1;
-    int tire_visible2;
-    int tire_visible3;
-    eDynamicLightContext *tire_light_context;
-    int tires_enabled;
-    bMatrix4 *tirelight_world_view;
-
-    for (int slot_id = 0; slot_id < 0x4C; slot_id++) {
-        bMatrix4 *slot_local_world;
-        {
-            unsigned char *addr = CurrentBufferPos;
-            unsigned int sz = sizeof(bMatrix4);
-            if (CurrentBufferEnd <= addr + sz) {
-                FrameMallocFailed = 1;
-                FrameMallocFailAmount += sz;
-                slot_local_world = 0;
-            } else {
-                CurrentBufferPos = addr + sz;
-                slot_local_world = reinterpret_cast<bMatrix4 *>(addr);
-            }
-        }
-        if (slot_local_world == 0) {
-            continue;
-        }
-
-        PSMTX44Copy(*reinterpret_cast<Mtx44 *>(biased_identity), *reinterpret_cast<Mtx44 *>(slot_local_world));
-
-        if (slot_id == CARSLOTID_FRONT_WHEEL || slot_id == CARSLOTID_REAR_WHEEL || slot_id == CARSLOTID_FRONT_BRAKE ||
-            slot_id == CARSLOTID_REAR_BRAKE || slot_id == CARSLOTID_SPOILER || slot_id == CARSLOTID_ROOF) {
-            continue;
-        }
-
-        CarPartModel *car_part_model = &this->mCarPartModels[slot_id][0][car_body_lod];
-        eModel *model = car_part_model->GetModel();
-
-        if (model != 0) {
-            eLightMaterial *paint_material = light_material_carskin;
-
-            if (slot_id == CARSLOTID_SPOILER || slot_id == CARSLOTID_UNIVERSAL_SPOILER_BASE) {
-                paint_material = light_material_spoiler;
-            } else if (slot_id == CARSLOTID_ROOF) {
-                paint_material = light_material_roof;
-            } else if (slot_id == CARSLOTID_HOOD && this->CarbonHood != 0 && this->LightMaterial_Carbon != 0) {
-                paint_material = this->LightMaterial_Carbon;
-            }
-
-            if (paint_material != 0) {
-                model->ReplaceLightMaterial(0xD6D6080A, paint_material);
-            }
-            if (light_material_tint != 0) {
-                model->ReplaceLightMaterial(0x471A1DCA, light_material_tint);
-            }
-        }
-
-        this->RenderPart(view, car_part_model, slot_local_world, light_context, extra_render_flags | disable_env_flag | body_render_flags);
-    }
-
-    // Spoiler section
-    if (car_body_lod <= pRideInfo->GetMaxSpoilerLodLevel()) {
-        bMatrix4 *spoiler_local_world;
-        {
-            unsigned char *address = CurrentBufferPos;
-            if (address + 0x40 >= CurrentBufferEnd) {
-                FrameMallocFailed = 1;
-                FrameMallocFailAmount += 0x40;
-                spoiler_local_world = nullptr;
-            } else {
-                CurrentBufferPos = address + 0x40;
-                spoiler_local_world = reinterpret_cast<bMatrix4 *>(address);
-            }
-        }
-
-        if (spoiler_local_world) {
-            CarPart *part_spoiler = pRideInfo->GetPart(CARSLOTID_SPOILER);
-            if (part_spoiler) {
-                unsigned int hash = bStringHash("USEMARKER2");
-                int use_marker = CarPart_GetAppliedAttributeIParam(part_spoiler, hash, 0);
-                if (use_marker != 0 && this->SpoilerPositionMarker2 != nullptr) {
-                    this->SpoilerPositionMarker = this->SpoilerPositionMarker2;
-                }
-            }
-
-            if (this->SpoilerPositionMarker != nullptr && part_spoiler != nullptr &&
-                (reinterpret_cast<unsigned char *>(part_spoiler)[5] >> 5) != 0) {
-                for (int i = 0; i < 1; i++) {
-                    eModel *spoiler_model = this->mCarPartModels[CARSLOTID_SPOILER][i][car_body_lod].GetModel();
-                    if (spoiler_model) {
-                        eMulMatrix(&spoiler_local_world[i],
-                                   reinterpret_cast<bMatrix4 *>(reinterpret_cast<char *>(this->SpoilerPositionMarker) + 0x10),
-                                   local_world);
-                        spoiler_model->ReplaceLightMaterial(0xD6D6080A, light_material_spoiler);
-                        ::Render(view, spoiler_model, &spoiler_local_world[i], light_context, extra_render_flags | disable_env_flag, 0);
-                    }
-                }
-            } else {
-                for (int i = 0; i < 1; i++) {
-                    eModel *spoiler_model = this->mCarPartModels[CARSLOTID_SPOILER][i][car_body_lod].GetModel();
-                    if (spoiler_model) {
-                        spoiler_model->ReplaceLightMaterial(0xD6D6080A, light_material_spoiler);
-                        ::Render(view, spoiler_model, local_world, light_context, extra_render_flags | disable_env_flag, 0);
-                    }
-                }
-            }
-        }
-    }
-
-    // Roof scoop section
-    if (car_body_lod <= pRideInfo->GetMaxRoofScoopLodLevel()) {
-        bMatrix4 *roof_local_world;
-        {
-            unsigned char *address = CurrentBufferPos;
-            if (address + 0x40 >= CurrentBufferEnd) {
-                FrameMallocFailed = 1;
-                FrameMallocFailAmount += 0x40;
-                roof_local_world = nullptr;
-            } else {
-                CurrentBufferPos = address + 0x40;
-                roof_local_world = reinterpret_cast<bMatrix4 *>(address);
-            }
-        }
-
-        if (roof_local_world) {
-            if (this->RoofScoopPositionMarker != nullptr) {
-                eMulMatrix(roof_local_world,
-                           reinterpret_cast<bMatrix4 *>(reinterpret_cast<char *>(this->RoofScoopPositionMarker) + 0x10),
-                           local_world);
-                for (int i = 0; i < 1; i++) {
-                    eModel *roof_scoop_model = this->mCarPartModels[CARSLOTID_ROOF][i][car_body_lod].GetModel();
-                    if (roof_scoop_model) {
-                        roof_scoop_model->ReplaceLightMaterial(0xD6D6080A, light_material_roof);
-                        ::Render(view, roof_scoop_model, roof_local_world, light_context,
-                                 (extra_render_flags | disable_env_flag) | body_render_flags, 0);
-                    }
-                }
-            } else {
-                for (int i = 0; i < 1; i++) {
-                    eModel *roof_scoop_model = this->mCarPartModels[CARSLOTID_ROOF][i][car_body_lod].GetModel();
-                    if (roof_scoop_model) {
-                        roof_scoop_model->ReplaceLightMaterial(0xD6D6080A, light_material_roof);
-                        ::Render(view, roof_scoop_model, local_world, light_context,
-                                 (extra_render_flags | disable_env_flag) | body_render_flags, 0);
-                    }
-                }
-            }
-        }
-    }
-
-    // Camber computation
-    {
-        float camber_amount_front = this->GetAttributes().CamberFront();
-        float camber_amount_rear = this->GetAttributes().CamberRear();
-        wheel_camber_angle_front = bDegToAng(camber_amount_front);
-        wheel_camber_angle_rear = bDegToAng(camber_amount_rear);
-        wheel_camber_push_down_rear = camber_amount_rear * 0.01f;
-        wheel_camber_push_down_front = camber_amount_front * 0.01f;
-    }
-
-    wheel_wobble_angle = bDegToAng(0.0f);
-
-    // Wheel scale loop - initialize transformation matrices
-    {
-        for (int wheel = 0; wheel < 4; wheel++) {
-            int wheel_end = wheel < 2 ? 0 : 1;
-            float wheel_width_scale = this->WheelWidthScales[wheel];
-            float wheel_width = this->WheelWidths[wheel_end];
-            float wheel_radius_scale = this->WheelRadiusScales[wheel];
-            float yrender_offset = this->WheelYRenderOffset[wheel];
-            float pivot_y = this->PivotPosition.y;
-            float wheel_brake_marker_y = this->WheelBrakeMarkerY[wheel_end];
-
-            eIdentity(&trans_pivot[wheel]);
-            eIdentity(&trans_axle[wheel]);
-            eIdentity(&brake_trans_pivot[wheel]);
-
-            trans_pivot[wheel].v0.x = wheel_width_scale;
-            trans_pivot[wheel].v1.y = wheel_radius_scale;
-            trans_pivot[wheel].v2.z = wheel_radius_scale;
-            trans_pivot[wheel].v3.y = yrender_offset - pivot_y;
-
-            trans_axle[wheel].v0.x = wheel_width_scale;
-            trans_axle[wheel].v1.y = wheel_radius_scale;
-            trans_axle[wheel].v2.z = wheel_radius_scale;
-            trans_axle[wheel].v3.y = yrender_offset - pivot_y;
-            trans_axle[wheel].v3.x = wheel_width * (wheel_width_scale - 1.0f) * 0.5f;
-
-            brake_trans_pivot[wheel].v3.y = yrender_offset - pivot_y;
-            {
-                float marker_y = wheel_brake_marker_y;
-                brake_trans_pivot[wheel].v3.y += marker_y;
-            }
-        }
-    }
-
-    // Tire section
-    if (tire_matrices != 0) {
-        CARPART_LOD max_tire_lod = this->pRideInfo->GetMaxTireLodLevel();
-
-        bMatrix4 *tire_local_world;
-        float extra_rear_tire_offset;
-        bMatrix4 *extra_tire_local_world;
-
-        // Allocate tire_local_world from frame buffer
-        {
-            unsigned char *address = CurrentBufferPos;
-            unsigned int size = sizeof(bMatrix4);
-            if (address + size >= CurrentBufferEnd) {
-                FrameMallocFailed = 1;
-                FrameMallocFailAmount += size;
-                tire_local_world = 0;
-            } else {
-                CurrentBufferPos = address + size;
-                tire_local_world = reinterpret_cast<bMatrix4 *>(address);
-            }
-        }
-
-        extra_rear_tire_offset = this->GetAttributes().ExtraRearTireOffset(0);
-
-        // Allocate extra_tire_local_world from frame buffer
-        {
-            unsigned char *address = CurrentBufferPos;
-            unsigned int size = sizeof(bMatrix4);
-            if (address + size >= CurrentBufferEnd) {
-                FrameMallocFailed = 1;
-                FrameMallocFailAmount += size;
-                extra_tire_local_world = 0;
-            } else {
-                CurrentBufferPos = address + size;
-                extra_tire_local_world = reinterpret_cast<bMatrix4 *>(address);
-            }
-        }
-
-        // Allocate tire_light_context from frame buffer
-        {
-            unsigned char *address = CurrentBufferPos;
-            unsigned int size = sizeof(eDynamicLightContext);
-            if (address + size >= CurrentBufferEnd) {
-                FrameMallocFailed = 1;
-                FrameMallocFailAmount += size;
-                tire_light_context = 0;
-            } else {
-                CurrentBufferPos = address + size;
-                tire_light_context = reinterpret_cast<eDynamicLightContext *>(address);
-            }
-        }
-
-        {
-            int tire_lod = car_tire_lod;
-            CarPartModel *front_tire_models[1];
-            CarPartModel *rear_tire_models[1];
-            eLightMaterial *light_material_rim[2];
-            bMatrix4 *left_tire_flip;
-            unsigned int extra_mirror_flag;
-            bMatrix4 wobbleMat;
-
-            tire_visible0 = this->TheCarPartCuller.IsPartVisible(CULLABLE_CAR_PART_TIRE_FL);
-            tire_visible1 = this->TheCarPartCuller.IsPartVisible(CULLABLE_CAR_PART_TIRE_FR);
-            tire_visible2 = this->TheCarPartCuller.IsPartVisible(CULLABLE_CAR_PART_TIRE_RR);
-            tire_visible3 = this->TheCarPartCuller.IsPartVisible(CULLABLE_CAR_PART_TIRE_RL);
-
-            if (max_tire_lod > car_tire_lod) {
-                tire_lod = max_tire_lod;
-            }
-
-            // Check tire models across LOD levels
-            {
-                for (int i = tire_lod; i >= 0; i--) {
-                    front_tire_models[0] = &this->mCarPartModels[CARSLOTID_FRONT_WHEEL][0][i];
-                    if (front_tire_models[0]->GetModel() != 0) {
-                        break;
-                    }
-                    if (i == 0) {
-                        front_tire_models[0]->GetModel();
-                    }
-                }
-                for (int i = tire_lod; i >= 0; i--) {
-                    rear_tire_models[0] = &this->mCarPartModels[CARSLOTID_REAR_WHEEL][0][i];
-                    if (rear_tire_models[0]->GetModel() != 0) {
-                        break;
-                    }
-                    if (i == 0) {
-                        rear_tire_models[0]->GetModel();
-                    }
-                }
-            }
-
-            light_material_rim[0] = this->LightMaterial_WheelRim;
-            light_material_rim[1] = this->LightMaterial_Spinner;
-
-            if (this->mMirrorLeftWheels) {
-                left_tire_flip = &LeftTireMirrorMatrix;
-            } else {
-                left_tire_flip = &LeftTireRotateZMatrix;
-            }
-
-            extra_mirror_flag = extra_render_flags | disable_env_flag_tires;
-
-            wobbleMat = bMatrix4();
-            bIdentity(&wobbleMat);
-
-            // Tire 0 (front-left)
-            {
-                bMatrix4 *starting_tire_matrix = &tire_matrices[0];
-                bMatrix4 tire_matrix_for_camber;
-                bMatrix4 tire0;
-
-                {
-                    bVector3 wheel_offset;
-                    bCopy(&tire_matrix_for_camber, starting_tire_matrix);
-                    wheel_offset = bVector3();
-                    bCopy(&wheel_offset, reinterpret_cast<bVector3 *>(&tire_matrix_for_camber.v3));
-                    bFill(&tire_matrix_for_camber.v3, 0.0f, 0.0f, 0.0f, 1.0f);
-                    bCopy(reinterpret_cast<bVector3 *>(&tire0.v3), &wheel_offset);
-                }
-
-                eRotateX(&tire_matrix_for_camber, &tire_matrix_for_camber, wheel_camber_angle_front);
-                eMulMatrix(&tire0, &tire_matrix_for_camber, &trans_pivot[0]);
-                tire0.v3.y += wheel_camber_push_down_front;
-                eMulMatrix(&tire0, left_tire_flip, &tire0);
-                eMulMatrix(&tire0, &wobbleMat, &tire0);
-                PSMTX44Copy(*reinterpret_cast<Mtx44 *>(&tire0), *reinterpret_cast<Mtx44 *>(tire_local_world));
-                eMulMatrix(tire_local_world, tire_local_world, local_world);
-
-                if (tire_visible0) {
-                    eModel *tire_model = front_tire_models[0]->GetModel();
-                    if (tire_model != 0) {
-                        eReplacementTextureTable *rep_table = this->BrakeLeftReplacementTextureTable;
-                        tire_model->AttachReplacementTextureTable(rep_table, 2, 0);
-                        if (light_material_rim[0] != 0) {
-                            tire_model->ReplaceLightMaterial(0xD6640DFF, light_material_rim[0]);
-                        }
-                        if (light_material_rim[1] != 0) {
-                            tire_model->ReplaceLightMaterial(0xA3186E2B, light_material_rim[1]);
-                        }
-                        float face = TireFace(tire_local_world, view);
-                        ::Render(view, tire_model, tire_local_world, light_context, extra_mirror_flag, 0);
-                    }
-                }
-            }
-
-            // Tire 1 (front-right)
-            {
-                bMatrix4 *starting_tire_matrix = &tire_matrices[1];
-                bMatrix4 tire_matrix_for_camber;
-                bMatrix4 tire1;
-
-                {
-                    bVector3 wheel_offset;
-                    bCopy(&tire_matrix_for_camber, starting_tire_matrix);
-                    wheel_offset = bVector3();
-                    bCopy(&wheel_offset, reinterpret_cast<bVector3 *>(&tire_matrix_for_camber.v3));
-                    bFill(&tire_matrix_for_camber.v3, 0.0f, 0.0f, 0.0f, 1.0f);
-                    bCopy(reinterpret_cast<bVector3 *>(&tire1.v3), &wheel_offset);
-                }
-
-                eRotateX(&tire_matrix_for_camber, &tire_matrix_for_camber, wheel_camber_angle_front);
-                eMulMatrix(&tire1, &tire_matrix_for_camber, &trans_pivot[1]);
-                tire1.v3.y += wheel_camber_push_down_front;
-                tire1 = tire1;
-                eMulMatrix(&tire1, &wobbleMat, &tire1);
-                PSMTX44Copy(*reinterpret_cast<Mtx44 *>(&tire1), *reinterpret_cast<Mtx44 *>(tire_local_world));
-                eMulMatrix(tire_local_world, tire_local_world, local_world);
-
-                if (tire_visible1) {
-                    eModel *tire_model = front_tire_models[0]->GetModel();
-                    if (tire_model != 0) {
-                        eReplacementTextureTable *rep_table = this->BrakeRightReplacementTextureTable;
-                        tire_model->AttachReplacementTextureTable(rep_table, 2, 0);
-                        if (light_material_rim[0] != 0) {
-                            tire_model->ReplaceLightMaterial(0xD6640DFF, light_material_rim[0]);
-                        }
-                        if (light_material_rim[1] != 0) {
-                            tire_model->ReplaceLightMaterial(0xA3186E2B, light_material_rim[1]);
-                        }
-                        float face = TireFace(tire_local_world, view);
-                        ::Render(view, tire_model, tire_local_world, light_context, extra_mirror_flag, 0);
-                    }
-                }
-            }
-
-            // Tire 2 (rear-right)
-            {
-                bMatrix4 *starting_tire_matrix = &tire_matrices[2];
-                bMatrix4 tire_matrix_for_camber;
-                bMatrix4 tire2;
-
-                {
-                    bVector3 wheel_offset;
-                    bCopy(&tire_matrix_for_camber, starting_tire_matrix);
-                    wheel_offset = bVector3();
-                    bCopy(&wheel_offset, reinterpret_cast<bVector3 *>(&tire_matrix_for_camber.v3));
-                    bFill(&tire_matrix_for_camber.v3, 0.0f, 0.0f, 0.0f, 1.0f);
-                    bCopy(reinterpret_cast<bVector3 *>(&tire2.v3), &wheel_offset);
-                }
-
-                eRotateX(&tire_matrix_for_camber, &tire_matrix_for_camber, wheel_camber_angle_rear);
-                eMulMatrix(&tire2, &tire_matrix_for_camber, &trans_pivot[2]);
-                tire2.v3.y += wheel_camber_push_down_rear;
-                tire2 = tire2;
-                eMulMatrix(&tire2, &wobbleMat, &tire2);
-                PSMTX44Copy(*reinterpret_cast<Mtx44 *>(&tire2), *reinterpret_cast<Mtx44 *>(tire_local_world));
-                eMulMatrix(tire_local_world, tire_local_world, local_world);
-
-                if (tire_visible2) {
-                    if (IsGameFlowInGame()) {
-                        eModel *tire_model = rear_tire_models[0]->GetModel();
-                        if (tire_model != 0) {
-                            eReplacementTextureTable *rep_table = this->BrakeRightReplacementTextureTable;
-                            tire_model->AttachReplacementTextureTable(rep_table, 2, 0);
-                            if (light_material_rim[0] != 0) {
-                                tire_model->ReplaceLightMaterial(0xD6640DFF, light_material_rim[0]);
-                            }
-                            if (light_material_rim[1] != 0) {
-                                tire_model->ReplaceLightMaterial(0xA3186E2B, light_material_rim[1]);
-                            }
-                            float face = TireFace(tire_local_world, view);
-                            ::Render(view, tire_model, tire_local_world, light_context, extra_mirror_flag, 0);
-                        }
-                    } else {
-                        CarPartModel *tmpM = rear_tire_models[0];
-                        this->RenderPart(view, tmpM, tire_local_world, light_context, extra_mirror_flag);
-                    }
-                }
-            }
-
-            // Extra rear tire offset intermediate
-            {
-                for (int i = 3; i >= 0; i--) {
-                }
-            }
-
-            // Tire 3 (rear-left)
-            {
-                bMatrix4 *starting_tire_matrix = &tire_matrices[3];
-                bMatrix4 tire_matrix_for_camber;
-                bMatrix4 tire3;
-
-                {
-                    bVector3 wheel_offset;
-                    bCopy(&tire_matrix_for_camber, starting_tire_matrix);
-                    wheel_offset = bVector3();
-                    bCopy(&wheel_offset, reinterpret_cast<bVector3 *>(&tire_matrix_for_camber.v3));
-                    bFill(&tire_matrix_for_camber.v3, 0.0f, 0.0f, 0.0f, 1.0f);
-                    bCopy(reinterpret_cast<bVector3 *>(&tire3.v3), &wheel_offset);
-                }
-
-                eRotateX(&tire_matrix_for_camber, &tire_matrix_for_camber, wheel_camber_angle_rear);
-                eMulMatrix(&tire3, &tire_matrix_for_camber, &trans_pivot[3]);
-                tire3.v3.y += wheel_camber_push_down_rear;
-                eMulMatrix(&tire3, left_tire_flip, &tire3);
-                eMulMatrix(&tire3, &wobbleMat, &tire3);
-                PSMTX44Copy(*reinterpret_cast<Mtx44 *>(&tire3), *reinterpret_cast<Mtx44 *>(tire_local_world));
-                eMulMatrix(tire_local_world, tire_local_world, local_world);
-
-                if (tire_visible3) {
-                    if (IsGameFlowInGame()) {
-                        eModel *tire_model = rear_tire_models[0]->GetModel();
-                        if (tire_model != 0) {
-                            eReplacementTextureTable *rep_table = this->BrakeLeftReplacementTextureTable;
-                            tire_model->AttachReplacementTextureTable(rep_table, 2, 0);
-                            if (light_material_rim[0] != 0) {
-                                tire_model->ReplaceLightMaterial(0xD6640DFF, light_material_rim[0]);
-                            }
-                            if (light_material_rim[1] != 0) {
-                                tire_model->ReplaceLightMaterial(0xA3186E2B, light_material_rim[1]);
-                            }
-                            float face = TireFace(tire_local_world, view);
-                            ::Render(view, tire_model, tire_local_world, light_context, extra_mirror_flag, 0);
-                        }
-                    } else {
-                        CarPartModel *tmpM = rear_tire_models[0];
-                        this->RenderPart(view, tmpM, tire_local_world, light_context, extra_mirror_flag);
-                    }
-                }
-            }
-        }
-    }
-
-    // Brake section
-    if (brake_matrices != 0) {
-        CARPART_LOD max_brake_lod = this->pRideInfo->GetMaxBrakeLodLevel();
-
-        eModel *front_brake_check = this->mCarPartModels[CARSLOTID_FRONT_BRAKE][0][car_body_lod].GetModel();
-
-        int brakes_visible_front_left = this->TheCarPartCuller.IsPartVisible(CULLABLE_CAR_PART_BRAKE_FL);
-        int brakes_visible_front_right = this->TheCarPartCuller.IsPartVisible(CULLABLE_CAR_PART_BRAKE_FR);
-        int brakes_visible_rear_right = this->TheCarPartCuller.IsPartVisible(CULLABLE_CAR_PART_BRAKE_RR);
-        int brakes_visible_rear_left = this->TheCarPartCuller.IsPartVisible(CULLABLE_CAR_PART_BRAKE_RL);
-
-        if (car_body_lod <= max_brake_lod && front_brake_check != 0) {
-            bMatrix4 *brake_local_world;
-            eDynamicLightContext *brake_light_context;
-
-            {
-                unsigned char *address = CurrentBufferPos;
-                unsigned int size = sizeof(bMatrix4) * 4;
-                if (address + size >= CurrentBufferEnd) {
-                    FrameMallocFailed = 1;
-                    FrameMallocFailAmount += size;
-                    brake_local_world = 0;
-                } else {
-                    CurrentBufferPos = address + size;
-                    brake_local_world = reinterpret_cast<bMatrix4 *>(address);
-                }
-            }
-
-            {
-                unsigned char *address = CurrentBufferPos;
-                unsigned int size = sizeof(eDynamicLightContext) * 4;
-                if (address + size >= CurrentBufferEnd) {
-                    FrameMallocFailed = 1;
-                    FrameMallocFailAmount += size;
-                    brake_light_context = 0;
-                } else {
-                    CurrentBufferPos = address + size;
-                    brake_light_context = reinterpret_cast<eDynamicLightContext *>(address);
-                }
-            }
-
-            if (brake_local_world != 0 && brake_light_context != 0) {
-                int brakes_lod = car_body_lod;
-                eModel *front_brake_models[1];
-                eModel *rear_brake_models[1];
-                eLightMaterial *light_material_caliper = this->LightMaterial_Caliper;
-                bMatrix4 mirror;
-
-                {
-                    for (int i = brakes_lod; i >= 0; i--) {
-                        front_brake_models[0] = this->mCarPartModels[CARSLOTID_FRONT_BRAKE][0][i].GetModel();
-                        rear_brake_models[0] = this->mCarPartModels[CARSLOTID_REAR_BRAKE][0][i].GetModel();
-                        if (front_brake_models[0] != 0 || rear_brake_models[0] != 0) {
-                            break;
-                        }
-                    }
-                }
-
-                if (light_material_caliper != 0) {
-                    if (front_brake_models[0] != 0) {
-                        front_brake_models[0]->ReplaceLightMaterial(0xD6640DFF, light_material_caliper);
-                        front_brake_models[0]->ReplaceLightMaterial(0xA3186E2B, light_material_caliper);
-                    }
-                    if (rear_brake_models[0] != 0) {
-                        rear_brake_models[0]->ReplaceLightMaterial(0xD6640DFF, light_material_caliper);
-                        rear_brake_models[0]->ReplaceLightMaterial(0xA3186E2B, light_material_caliper);
-                    }
-                }
-
-                mirror = bMatrix4();
-                eIdentity(&mirror);
-                mirror.v0.x = -1.0f;
-
-                if (brakes_visible_front_left) {
-                    bMatrix4 *starting_brake_matrix = &brake_matrices[0];
-                    bMatrix4 brake_matrix_for_camber;
-                    bMatrix4 bm0;
-
-                    {
-                        bVector3 wheel_offset;
-                        bCopy(&brake_matrix_for_camber, starting_brake_matrix);
-                        wheel_offset = bVector3();
-                        bCopy(&wheel_offset, reinterpret_cast<bVector3 *>(&brake_matrix_for_camber.v3));
-                        bFill(&brake_matrix_for_camber.v3, 0.0f, 0.0f, 0.0f, 1.0f);
-                        bCopy(reinterpret_cast<bVector3 *>(&bm0.v3), &wheel_offset);
-                    }
-
-                    eRotateX(&brake_matrix_for_camber, &brake_matrix_for_camber, wheel_camber_angle_front);
-                    eMulMatrix(&bm0, &brake_trans_pivot[0], &mirror);
-                    eMulMatrix(&bm0, &bm0, &brake_matrix_for_camber);
-                    eMulMatrix(&bm0, &bm0, &trans_axle[0]);
-                    eMulMatrix(&brake_local_world[0], &bm0, local_world);
-
-                    if (IsGameFlowInGame()) {
-                        for (int i = 0; i < 1; i++) {
-                            if (front_brake_models[i] != 0) {
-                                front_brake_models[i]->AttachReplacementTextureTable(this->BrakeLeftReplacementTextureTable, 2, 0);
-                                ::Render(view, front_brake_models[i], &brake_local_world[0], light_context,
-                                         extra_render_flags | disable_env_flag_tires | 0x40000, 0);
-                            }
-                        }
-                    } else {
-                        for (int i = 0; i < 1; i++) {
-                            if (front_brake_models[i] != 0) {
-                                front_brake_models[i]->AttachReplacementTextureTable(this->BrakeLeftReplacementTextureTable, 2, 0);
-                                elCloneLightContext(&brake_light_context[0], &brake_local_world[0], &hack_man_matrix, &camera_world_position, view,
-                                                    &base_light_context);
-                                ::Render(view, front_brake_models[i], &brake_local_world[0], &brake_light_context[0],
-                                         extra_render_flags | disable_env_flag_tires | 0x40000, 0);
-                            }
-                        }
-                    }
-                }
-
-                if (brakes_visible_front_right) {
-                    bMatrix4 *starting_brake_matrix = &brake_matrices[1];
-                    bMatrix4 brake_matrix_for_camber;
-                    bMatrix4 bm1;
-
-                    {
-                        bVector3 wheel_offset;
-                        bCopy(&brake_matrix_for_camber, starting_brake_matrix);
-                        wheel_offset = bVector3();
-                        bCopy(&wheel_offset, reinterpret_cast<bVector3 *>(&brake_matrix_for_camber.v3));
-                        bFill(&brake_matrix_for_camber.v3, 0.0f, 0.0f, 0.0f, 1.0f);
-                        bCopy(reinterpret_cast<bVector3 *>(&bm1.v3), &wheel_offset);
-                    }
-
-                    eRotateX(&brake_matrix_for_camber, &brake_matrix_for_camber, -wheel_camber_angle_front);
-                    eMulMatrix(&bm1, &brake_trans_pivot[1], &brake_matrix_for_camber);
-                    eMulMatrix(&bm1, &bm1, &trans_axle[1]);
-                    eMulMatrix(&brake_local_world[1], &bm1, local_world);
-
-                    if (IsGameFlowInGame()) {
-                        for (int i = 0; i < 1; i++) {
-                            if (front_brake_models[i] != 0) {
-                                front_brake_models[i]->AttachReplacementTextureTable(this->BrakeRightReplacementTextureTable, 2, 0);
-                                ::Render(view, front_brake_models[i], &brake_local_world[1], light_context, extra_render_flags | disable_env_flag_tires,
-                                         0);
-                            }
-                        }
-                    } else {
-                        for (int i = 0; i < 1; i++) {
-                            if (front_brake_models[i] != 0) {
-                                front_brake_models[i]->AttachReplacementTextureTable(this->BrakeRightReplacementTextureTable, 2, 0);
-                                elCloneLightContext(&brake_light_context[1], &brake_local_world[1], &hack_man_matrix, &camera_world_position, view,
-                                                    &base_light_context);
-                                ::Render(view, front_brake_models[i], &brake_local_world[1], &brake_light_context[1],
-                                         extra_render_flags | disable_env_flag_tires, 0);
-                            }
-                        }
-                    }
-                }
-
-                if (brakes_visible_rear_right) {
-                    bMatrix4 *starting_brake_matrix = &brake_matrices[2];
-                    bMatrix4 brake_matrix_for_camber;
-                    bMatrix4 bm2;
-
-                    {
-                        bVector3 wheel_offset;
-                        bCopy(&brake_matrix_for_camber, starting_brake_matrix);
-                        wheel_offset = bVector3();
-                        bCopy(&wheel_offset, reinterpret_cast<bVector3 *>(&brake_matrix_for_camber.v3));
-                        bFill(&brake_matrix_for_camber.v3, 0.0f, 0.0f, 0.0f, 1.0f);
-                        bCopy(reinterpret_cast<bVector3 *>(&bm2.v3), &wheel_offset);
-                    }
-
-                    eRotateX(&brake_matrix_for_camber, &brake_matrix_for_camber, -wheel_camber_angle_rear);
-                    eMulMatrix(&bm2, &brake_trans_pivot[2], &brake_matrix_for_camber);
-                    eMulMatrix(&bm2, &bm2, &trans_axle[2]);
-                    eMulMatrix(&brake_local_world[2], &bm2, local_world);
-
-                    if (IsGameFlowInGame()) {
-                        for (int i = 0; i < 1; i++) {
-                            if (rear_brake_models[i] != 0) {
-                                rear_brake_models[i]->AttachReplacementTextureTable(this->BrakeRightReplacementTextureTable, 2, 0);
-                                ::Render(view, rear_brake_models[i], &brake_local_world[2], light_context, extra_render_flags | disable_env_flag_tires,
-                                         0);
-                            }
-                        }
-                    } else {
-                        for (int i = 0; i < 1; i++) {
-                            if (rear_brake_models[i] != 0) {
-                                rear_brake_models[i]->AttachReplacementTextureTable(this->BrakeRightReplacementTextureTable, 2, 0);
-                                elCloneLightContext(&brake_light_context[2], &brake_local_world[2], &hack_man_matrix, &camera_world_position, view,
-                                                    &base_light_context);
-                                ::Render(view, rear_brake_models[i], &brake_local_world[2], &brake_light_context[2],
-                                         extra_render_flags | disable_env_flag_tires, 0);
-                            }
-                        }
-                    }
-                }
-
-                if (brakes_visible_rear_left) {
-                    bMatrix4 *starting_brake_matrix = &brake_matrices[3];
-                    bMatrix4 brake_matrix_for_camber;
-                    bMatrix4 bm3;
-
-                    {
-                        bVector3 wheel_offset;
-                        bCopy(&brake_matrix_for_camber, starting_brake_matrix);
-                        wheel_offset = bVector3();
-                        bCopy(&wheel_offset, reinterpret_cast<bVector3 *>(&brake_matrix_for_camber.v3));
-                        bFill(&brake_matrix_for_camber.v3, 0.0f, 0.0f, 0.0f, 1.0f);
-                        bCopy(reinterpret_cast<bVector3 *>(&bm3.v3), &wheel_offset);
-                    }
-
-                    eRotateX(&brake_matrix_for_camber, &brake_matrix_for_camber, wheel_camber_angle_rear);
-                    eMulMatrix(&bm3, &brake_trans_pivot[3], &mirror);
-                    eMulMatrix(&bm3, &bm3, &brake_matrix_for_camber);
-                    eMulMatrix(&bm3, &bm3, &trans_axle[3]);
-                    eMulMatrix(&brake_local_world[3], &bm3, local_world);
-
-                    if (IsGameFlowInGame()) {
-                        for (int i = 0; i < 1; i++) {
-                            if (rear_brake_models[i] != 0) {
-                                rear_brake_models[i]->AttachReplacementTextureTable(this->BrakeLeftReplacementTextureTable, 2, 0);
-                                ::Render(view, rear_brake_models[i], &brake_local_world[3], light_context,
-                                         extra_render_flags | disable_env_flag_tires | 0x40000, 0);
-                            }
-                        }
-                    } else {
-                        for (int i = 0; i < 1; i++) {
-                            if (rear_brake_models[i] != 0) {
-                                rear_brake_models[i]->AttachReplacementTextureTable(this->BrakeLeftReplacementTextureTable, 2, 0);
-                                elCloneLightContext(&brake_light_context[3], &brake_local_world[3], &hack_man_matrix, &camera_world_position, view,
-                                                    &base_light_context);
-                                ::Render(view, rear_brake_models[i], &brake_local_world[3], &brake_light_context[3],
-                                         extra_render_flags | disable_env_flag_tires | 0x40000, 0);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    if (tire_matrices != 0 && !this->mEmitterPositionsInitialized) {
-        bVector4 tire_positions[4];
-
-        for (int wheel = 0; wheel < 4; wheel++) {
-            tire_positions[wheel] = tire_matrices[wheel].v3;
-        }
-
-        this->InitEmitterPositions(tire_positions);
-    }
-
-    this->RenderFlaresOnCar(view, &position, body_matrix, force_light_state, reflexion, static_cast<int>(extra_render_flags));
-
-    return true;
-}
-
-void CarRenderInfo::RenderPart(eView *view, CarPartModel *carPart, bMatrix4 *local_to_world, eDynamicLightContext *light_context,
-                               unsigned int flags) {
-    if (carPart != nullptr) {
-        if (carPart->IsLodMissing()) {
-            view->Render(&StandardDebugModel, local_to_world, light_context, flags, nullptr);
-        } else {
-            view->Render(carPart->GetModel(), local_to_world, light_context, flags, nullptr);
-        }
-    }
-}
-
-int CarRenderInfo::GetEmitterPositions(bSList<CarEmitterPosition> &markers_out, const unsigned int *position_name_hashes,
-                                       int num_pos_name_hashes) {
-    int count;
-
-    if (this->pCarTypeInfo == nullptr) {
-        return 0;
-    }
-
-    count = 0;
-
-    for (int slot_model_index = 0; slot_model_index < 0x4C; slot_model_index++) {
-        eModel *model = this->mCarPartModels[slot_model_index][0][this->mMinLodLevel].GetModel();
-        ePositionMarker *position_marker = nullptr;
-
-        if (model == nullptr) {
-            continue;
-        }
-
-        while ((position_marker = model->GetPostionMarker(position_marker)) != nullptr) {
-            unsigned int position_marker_namehash;
-
-            for (int i = 0; i < num_pos_name_hashes; i++) {
-                if (position_marker->NameHash == position_name_hashes[i]) {
-                    CarEmitterPosition *empos;
-
-                    empos = new CarEmitterPosition(position_marker);
-                    markers_out.AddTail(empos);
-                    count++;
-                }
-            }
-        }
-    }
-
-    return count;
-}
-
-void CarRenderInfo::InitEmitterPositions(bVector4 *tire_positions) {
-    if (this->pCarTypeInfo != nullptr && !this->mEmitterPositionsInitialized) {
-        int fxpos;
-
-        for (fxpos = 0; fxpos < NUM_CARFXPOS; fxpos++) {
-            int pos_count = 0;
-            bool is_based_off_position_marker;
-
-            is_based_off_position_marker = GetNumCarEffectMarkerHashes(static_cast<CarEffectPosition>(fxpos), pos_count);
-
-            if (is_based_off_position_marker) {
-                if (pos_count > 0) {
-                    this->GetEmitterPositions(this->EmitterPositionList[fxpos],
-                                              GetCarEffectMarkerHashes(static_cast<CarEffectPosition>(fxpos)),
-                                              pos_count);
-                }
-                continue;
-            }
-
-            {
-                CarEffectPosition efxpos = static_cast<CarEffectPosition>(fxpos);
-                bSList<CarEmitterPosition> &pos_list = this->EmitterPositionList[fxpos];
-                CarEmitterPosition *empos = nullptr;
-                switch (efxpos) {
-                    case CARFXPOS_NONE:
-                        empos = new CarEmitterPosition(0.0f, 0.0f, 0.0f);
-                        pos_list.AddTail(empos);
-                        break;
-                    case CARFXPOS_FRONT_TIRES:
-                        {
-                            bVector4 *fl = tire_positions;
-                            bVector4 *fr = tire_positions + 1;
-                            bVector4 avg = *fl + *fr;
-
-                            avg *= 0.5f;
-                            empos = new CarEmitterPosition(avg.x, avg.y, avg.z);
-                            pos_list.AddTail(empos);
-                        }
-                        break;
-                    case CARFXPOS_REAR_TIRES:
-                        {
-                            bVector4 *rr = tire_positions + 2;
-                            bVector4 *rl = tire_positions + 3;
-                            bVector4 avg = *rr + *rl;
-
-                            avg *= 0.5f;
-                            empos = new CarEmitterPosition(avg.x, avg.y, avg.z);
-                            pos_list.AddTail(empos);
-                        }
-                        break;
-                    case CARFXPOS_LEFT_TIRES:
-                        {
-                            bVector4 *fl = tire_positions;
-                            bVector4 *rl = tire_positions + 3;
-                            bVector4 avg = *fl + *rl;
-
-                            avg *= 0.5f;
-                            empos = new CarEmitterPosition(avg.x, avg.y, avg.z);
-                            pos_list.AddTail(empos);
-                        }
-                        break;
-                    case CARFXPOS_RIGHT_TIRES:
-                        {
-                            bVector4 *fr = tire_positions + 1;
-                            bVector4 *rr = tire_positions + 2;
-                            bVector4 avg = *fr + *rr;
-
-                            avg *= 0.5f;
-                            empos = new CarEmitterPosition(avg.x, avg.y, avg.z);
-                            pos_list.AddTail(empos);
-                        }
-                        break;
-                    case CARFXPOS_TIRE_FL:
-                        empos = new CarEmitterPosition(tire_positions->x, tire_positions->y, tire_positions->z);
-                        pos_list.AddTail(empos);
-                        break;
-                    case CARFXPOS_TIRE_FR:
-                        empos = new CarEmitterPosition(tire_positions[1].x, tire_positions[1].y, tire_positions[1].z);
-                        pos_list.AddTail(empos);
-                        break;
-                    case CARFXPOS_TIRE_RR:
-                        empos = new CarEmitterPosition(tire_positions[2].x, tire_positions[2].y, tire_positions[2].z);
-                        pos_list.AddTail(empos);
-                        break;
-                    case CARFXPOS_TIRE_RL:
-                        empos = new CarEmitterPosition(tire_positions[3].x, tire_positions[3].y, tire_positions[3].z);
-                        pos_list.AddTail(empos);
-                        break;
-                    case CARFXPOS_ENGINE:
-                        {
-                            bVector4 *fl = tire_positions;
-                            bVector4 *fr = tire_positions + 1;
-                            bVector4 avg = *fl + *fr;
-
-                            avg *= 0.5f;
-                            bVector4 diff;
-                            bSub(&diff, fl, fr);
-                            empos = new CarEmitterPosition(avg.x, avg.y, avg.z + diff.y * 0.2f);
-                            pos_list.AddTail(empos);
-                        }
-                        break;
-                }
-            }
-        }
-
-        this->mEmitterPositionsInitialized = true;
-    }
-}
-
-int cmpl(const void *a, const void *b) {
-    const float *pa = *reinterpret_cast<const float *const *>(a);
-    const float *pb = *reinterpret_cast<const float *const *>(b);
-    float delta = pa[0] - pb[0];
-
-    if (0.0f < delta) {
-        return 1;
-    }
-    if (delta < 0.0f) {
-        return -1;
-    }
-
-    delta = pb[1] - pa[1];
-    if (0.0f < delta) {
-        return 1;
-    }
-    if (delta < 0.0f) {
-        return -1;
-    }
-
-    return 0;
-}
-
-int cmph(const void *a, const void *b) {
-    return cmpl(b, a);
-}
-
-void bRotateVector(bVector3 *dest, const bMatrix4 *m, bVector3 *v) {
-    dest->x = m->v0.x * v->x + m->v1.x * v->y + m->v2.x * v->z;
-    dest->y = m->v0.y * v->x + m->v1.y * v->y + m->v2.y * v->z;
-    dest->z = m->v0.z * v->x + m->v1.z * v->y + m->v2.z * v->z;
-}
-
-float coplightflicker(float time, int offset) {
-    int counter = counter_31665 + 1;
-    counter_31665 = counter % copModulo;
-
-    return bCos((time + copt * static_cast<float>(offset)) * copm);
-}
-
-float coplightflicker2(float time, int whichColor, int flarecount) {
-    int counter;
-    float offset;
-    float a;
-    float t;
-
-    counter = counter_31669 + 1;
-    counter_31669 = counter % copModulo;
-
-    switch (whichColor) {
-    case 0:
-        offset = copoffsetr;
-        break;
-    case 1:
-        offset = copoffsetb;
-        break;
-    case 2:
-        offset = copoffsetw;
-        break;
-    }
-
-    t = bCos(time * 24.0f);
-    t *= t;
-
-    if (whichColor == 2) {
-        a = t * coplightflicker(time, flarecount);
-        return a;
-    }
-
-    float c = bCos(time * 8.0f + offset);
-    if (c > 0.2f) {
-        a = t;
-        return a;
-    }
-
-    a = 0.0f;
-    return a;
-}
-
-float TireFace(bMatrix4 *matrix, eView *view) {
-    float face;
-
-    if (TireFaceIt != 0) {
-        bVector3 cDir(*view->GetCamera()->GetDirection());
-        bMatrix4 matrix2(*matrix);
-        bVector3 N(enX, enY, enZ);
-
-        eMulVector(&N, &matrix2, &N);
-        face = bDot(&N, &cDir);
-    } else {
-        face = 1.0f;
-    }
-
-    return face;
-}
-
-void CarRenderInfo::UpdateCarReplacementTextures() {
-    bMemCpy(this->CarbonReplacementTextureTable, this->MasterReplacementTextureTable, sizeof(this->CarbonReplacementTextureTable));
-
-    this->CarbonReplacementTextureTable[REPLACETEX_CARSKIN].SetNewNameHash(bStringHash("CARBONFIBRE"));
-    this->CarbonReplacementTextureTable[REPLACETEX_CARSKINB].SetNewNameHash(
-        *reinterpret_cast<unsigned int *>(reinterpret_cast<unsigned char *>(this) + 0x15B0));
-    this->CarbonReplacementTextureTable[REPLACETEX_GLOBALSKIN].SetNewNameHash(
-        *reinterpret_cast<unsigned int *>(reinterpret_cast<unsigned char *>(this) + 0x15B0));
-    this->CarbonReplacementTextureTable[REPLACETEX_CARBONSKIN].SetNewNameHash(bStringHash("CARBONFIBRE"));
-    this->CarbonReplacementTextureTable[REPLACETEX_GLOBALCARBONSKIN].SetNewNameHash(bStringHash("CARBONFIBRE"));
 }
 
 void CarRenderInfo::SwitchSkin(RideInfo *ride_info) {
@@ -3288,456 +2026,99 @@ void CarRenderInfo::SwitchSkin(RideInfo *ride_info) {
     this->BrakeRightReplacementTextureTable[1].SetNewNameHash(this->mUsedTextureInfos.ReplaceGlobalHash);
 }
 
-void CarRenderInfo::CreateCarLightFlares() {
-    if (this->pCarTypeInfo != 0) {
-        int front_marker_slot = -1;
-        int rear_marker_slot = -1;
+void CarRenderInfo::UpdateDecalTextures(RideInfo *ride_info) {
+    unsigned int alpha_hash = bStringHash("DEFAULTALPHA");
 
-        for (int slot_model_index = 0x4B; slot_model_index >= 0; slot_model_index--) {
-            eModel *model = this->mCarPartModels[slot_model_index][0][this->mMinLodLevel].GetModel();
-            ePositionMarker *position_marker = 0;
+    for (int i = REPLACETEX_DECAL_START; i <= REPLACETEX_DECAL_END; i++) {
+        this->MasterReplacementTextureTable[i].SetOldNameHash(CarReplacementDecalHash[i - REPLACETEX_DECAL_START]);
+        this->MasterReplacementTextureTable[i].SetNewNameHash(alpha_hash);
+    }
 
-            if (model == 0) {
-                continue;
-            }
+    unsigned int decal_hashes[8] = {
+        bStringHash("DUMMY_DECAL1"), bStringHash("DUMMY_DECAL2"), bStringHash("DUMMY_DECAL3"),      bStringHash("DUMMY_DECAL4"),
+        bStringHash("DUMMY_DECAL5"), bStringHash("DUMMY_DECAL6"), bStringHash("DUMMY_NUMBER_LEFT"), bStringHash("DUMMY_NUMBER_RIGHT"),
+    };
 
-            while ((position_marker = model->GetPostionMarker(position_marker)) != 0) {
-                unsigned int name_hash = position_marker->NameHash;
-                int flare_type;
+    for (int i = 0; i < NUM_ELEMENTS(this->DecalReplacementTextureTable); i++) {
+        this->DecalReplacementTextureTable[i].SetOldNameHash(decal_hashes[i % 8]);
+        this->DecalReplacementTextureTable[i].SetNewNameHash(alpha_hash);
+    }
 
-                switch (name_hash) {
-                    case 0xD09091C6:
-                    case 0x9DB90133:
-                    case 0x7A5BCF69:
-                        flare_type = 0;
-                        break;
-                    case 0x31A66786:
-                    case 0xA2A2FC7C:
-                    case 0xBF700A79:
-                        flare_type = 1;
-                        break;
-                    case 0x1E4150B4:
-                        flare_type = 5;
-                        break;
-                    case 0xE662C161:
-                        flare_type = 6;
-                        break;
-                    case 0xB4348DBA:
-                        flare_type = 7;
-                        break;
-                    case 0x41489594:
-                        flare_type = 10;
-                        break;
-                    case 0x6A52A241:
-                        flare_type = 11;
-                        break;
-                    case 0x28CD78F5:
-                        flare_type = 12;
-                        break;
-                    case 0x7A5B2F25:
-                        if (front_marker_slot != slot_model_index && front_marker_slot > 0) {
-                            continue;
-                        }
-                        front_marker_slot = slot_model_index;
-                        flare_type = 3;
-                        break;
-                    case 0x7ADF7EF8:
-                        if (rear_marker_slot != slot_model_index && rear_marker_slot > 0) {
-                            continue;
-                        }
-                        rear_marker_slot = slot_model_index;
-                        flare_type = 3;
-                        break;
-                    default:
-                        flare_type = -1;
-                        break;
-                }
+    int hood_decals = 1;
+    if (ride_info->GetPart(CARSLOTID_HOOD) == nullptr) {
+        hood_decals = 0;
+    }
+    unsigned int size_hash = bStringHash("SIZE");
+    unsigned int shape_hash = bStringHash("SHAPE");
+    unsigned int size_hashes[3] = {
+        bStringHash("SMALL"),
+        bStringHash("MEDIUM"),
+        bStringHash("LARGE"),
+    };
+    unsigned int shape_hashes[3] = {
+        bStringHash("SQUARE"),
+        bStringHash("RECT"),
+        bStringHash("WIDE"),
+    };
 
-                if (flare_type != -1) {
-                    eLightFlare *light_flare = static_cast<eLightFlare *>(gFastMem.Alloc(sizeof(eLightFlare), 0));
+    for (int i = CARSLOTID_DECAL_FRONT_WINDOW; i < CARSLOTID_BASE_PAINT; i++) {
+        CarPart *decal_model_part = ride_info->GetPart(i);
+        int decal_index = i - CARSLOTID_DECAL_FRONT_WINDOW;
 
-                    light_flare->NameHash = name_hash;
-                    light_flare->Type = static_cast<char>(flare_type);
-                    if ((flare_type - 5U < 3) || flare_type == 10 || flare_type == 11 || flare_type == 12) {
-                        light_flare->Flags = 2;
-                    } else {
-                        light_flare->Flags = 4;
+        if (decal_model_part != nullptr && hood_decals != 0 && decal_model_part->HasAppliedAttribute(size_hash) != 0 &&
+            decal_model_part->HasAppliedAttribute(shape_hash) != 0) {
+            unsigned int decal_size = decal_model_part->GetAppliedAttributeUParam(size_hash, 0);
+            unsigned int decal_shape = decal_model_part->GetAppliedAttributeUParam(shape_hash, 0);
+            eReplacementTextureTable *replace_table = &this->DecalReplacementTextureTable[decal_index * 8];
+            int first_tex_part = CARSLOTID_DECAL_FRONT_WINDOW_TEX0 + decal_index * 8;
+
+            for (int j = 0; j < 8; j++) {
+                CarPart *decal_texture_part = ride_info->GetPart(j + first_tex_part);
+
+                if (decal_texture_part != nullptr) {
+                    char buf[128];
+                    unsigned int base_hash = decal_texture_part->GetAppliedAttributeUParam(bStringHash("NAME"), 0);
+                    unsigned int decal_texture_hash;
+
+                    if (decal_shape == shape_hashes[0]) {
+                        bStrCpy(buf, "_SQUARE");
+                    } else if (decal_shape == shape_hashes[1]) {
+                        bStrCpy(buf, "_RECT");
+                    } else if (decal_shape == shape_hashes[2]) {
+                        bStrCpy(buf, "_WIDE");
                     }
-                    light_flare->PositionX = position_marker->Matrix.v3.x;
-                    light_flare->PositionY = position_marker->Matrix.v3.y;
-                    light_flare->PositionZ = position_marker->Matrix.v3.z;
-                    light_flare->ReflectPosZ = 0.0f;
-                    light_flare->DirectionX = position_marker->Matrix.v2.x;
-                    light_flare->DirectionY = position_marker->Matrix.v2.y;
-                    light_flare->DirectionZ = position_marker->Matrix.v2.z;
-                    this->LightFlareList.AddTail(light_flare);
+
+                    decal_texture_hash = bStringHash(buf, base_hash);
+                    replace_table[j].SetNewNameHash(decal_texture_hash);
                 }
             }
         }
     }
 }
 
-void CarRenderInfo::RenderTextureHeadlights(eView *view, bMatrix4 *l_w, unsigned int) {
-    bMatrix4 *matrix;
-    unsigned char *address = CurrentBufferPos;
+void CarRenderInfo::UpdateCarReplacementTextures() {
+    bMemCpy(this->CarbonReplacementTextureTable, this->MasterReplacementTextureTable, sizeof(this->CarbonReplacementTextureTable));
 
-    if (address + 0x40 >= CurrentBufferEnd) {
-        FrameMallocFailed = 1;
-        FrameMallocFailAmount += 0x40;
-        matrix = 0;
-    } else {
-        matrix = reinterpret_cast<bMatrix4 *>(address);
-        CurrentBufferPos = address + 0x40;
-    }
-
-    PSMTX44Copy(*reinterpret_cast<Mtx44 *>(l_w), *reinterpret_cast<Mtx44 *>(matrix));
-
-    if (matrix != 0) {
-        bVector3 Up(0.0f, 0.0f, 1.0f);
-        bVector3 Basis(matrix->v0.z, matrix->v1.z, matrix->v2.z);
-        float hOffZ0 = 0.0f;
-        float hOffZ1 = 0.0f;
-        float hOffZ2 = 0.0f;
-        float hOffZ3 = 0.0f;
-        float hOffMID12 = 1.0f;
-        float hOffMID03 = 0.0f;
-        float hOffMID13 = 1.0f;
-
-        if (bDot(&Up, &Basis) < 0.707f) {
-            return;
-        }
-
-        ePoly poly;
-        TextureInfo *texture_info = GetTextureInfo(bStringHash("2PLAYERHEADLIGHT1"), 1, 0);
-
-        poly.Vertices[0].x = hOffX - hRad0x;
-        poly.Vertices[0].y = hOffY - hRad0y;
-        poly.Vertices[1].x = hRad1x + hOffX;
-        poly.Vertices[1].y = hOffY - hRad1y;
-        poly.Vertices[3].x = hOffX - hRad3x;
-        poly.Vertices[3].y = hRad3y + hOffY;
-        poly.Vertices[2].x = hRad2x + hOffX;
-        poly.Vertices[2].y = hRad2y + hOffY;
-
-        poly.Vertices[0].z = hOffZ0;
-        poly.Vertices[1].z = hOffZ1;
-        poly.Vertices[2].z = hOffZ2;
-        poly.Vertices[3].z = hOffZ3;
-
-        poly.UVs[0][0] = hOffMID03;
-        poly.UVs[1][0] = hOffMID03;
-        poly.UVs[0][1] = hOffMID12;
-        poly.UVs[1][1] = hOffMID03;
-        poly.UVs[0][2] = hOffMID12;
-        poly.UVs[1][2] = hOffMID13;
-        poly.UVs[0][3] = hOffMID03;
-        poly.UVs[1][3] = hOffMID13;
-
-        reinterpret_cast<unsigned int *>(poly.Colours)[0] = hcL;
-        reinterpret_cast<unsigned int *>(poly.Colours)[1] = hcL;
-        reinterpret_cast<unsigned int *>(poly.Colours)[2] = hcL;
-        reinterpret_cast<unsigned int *>(poly.Colours)[3] = hcL;
-
-        ::Render(view, &poly, texture_info, matrix, 0, 0.0f);
-    }
+    this->CarbonReplacementTextureTable[REPLACETEX_CARSKIN].SetNewNameHash(bStringHash("CARBONFIBRE"));
+    this->CarbonReplacementTextureTable[REPLACETEX_CARSKINB].SetNewNameHash(this->mUsedTextureInfos.ReplaceGlobalHash);
+    this->CarbonReplacementTextureTable[REPLACETEX_GLOBALSKIN].SetNewNameHash(this->mUsedTextureInfos.ReplaceGlobalHash);
+    this->CarbonReplacementTextureTable[REPLACETEX_CARBONSKIN].SetNewNameHash(bStringHash("CARBONFIBRE"));
+    this->CarbonReplacementTextureTable[REPLACETEX_GLOBALCARBONSKIN].SetNewNameHash(bStringHash("CARBONFIBRE"));
 }
 
-void CarRenderInfo::RenderFlaresOnCar(eView *view, const bVector3 *position, const bMatrix4 *body_matrix, int force_light_state, int reflexion,
-                                      int renderFlareFlags) {
-    ProfileNode profile_node("RenderFlaresOnCar", 0);
-    float Ftime = Sim::GetTime() + this->CarTimebaseStart;
-    bMatrix4 *local_world = reinterpret_cast<bMatrix4 *>(CurrentBufferPos);
-
-    if (CurrentBufferEnd <= CurrentBufferPos + sizeof(bMatrix4)) {
-        FrameMallocFailed = 1;
-        FrameMallocFailAmount += sizeof(bMatrix4);
-        local_world = 0;
-    } else {
-        CurrentBufferPos += sizeof(bMatrix4);
-    }
-
-    if (local_world == 0) {
-        return;
-    }
-
-    PSMTX44Copy(*reinterpret_cast<const Mtx44 *>(body_matrix), *reinterpret_cast<Mtx44 *>(local_world));
-    local_world->v3.x = position->x;
-    local_world->v3.y = position->y;
-    local_world->v3.z = position->z;
-    local_world->v3.w = 1.0f;
-
-    if (!reflexion) {
-        this->RenderTextureHeadlights(view, local_world, 0);
-    }
-
-    if (this->pCarTypeInfo != 0 && this->pCarTypeInfo->GetCarUsageType() == CAR_USAGE_TYPE_COP) {
-        if (this->IsLightOn(VehicleFX::LIGHT_COPRED)) {
-            view->NumCopsCherry++;
-        }
-    }
-
-    int car_pixel_size = view->GetPixelSize(position, this->mRadius);
-    if (eGetCurrentViewMode() == EVIEWMODE_TWOH) {
-        car_pixel_size = static_cast<int>(static_cast<float>(car_pixel_size) * 0.5f);
-    }
-
-    if (car_pixel_size < view->PixelMinSize) {
-        return;
-    }
-
-    unsigned int visibility_state = view->GetVisibleState(&this->AABBMin, &this->AABBMax, local_world);
-    if (visibility_state == EVISIBLESTATE_NOT) {
-        return;
-    }
-
-    CarTypeInfo *car_type_info = &CarTypeInfoArray[this->pRideInfo->Type];
-    int is_traffic_car = car_type_info->GetCarUsageType() == CAR_USAGE_TYPE_TRAFFIC;
-    float base_headlight_intensity;
-    float base_brakelight_intensity;
-
-    if (is_traffic_car != 0) {
-        base_brakelight_intensity = 0.0f;
-        base_headlight_intensity = 1.0f;
-    } else {
-        base_headlight_intensity = 1.0f;
-        base_brakelight_intensity = 0.0f;
-    }
-
-    float headlight_left_intensity;
-    if (UTL::Collections::Singleton<INIS>::Get() == 0) {
-        headlight_left_intensity = base_headlight_intensity;
-    } else {
-        headlight_left_intensity = 0.5f;
-    }
-
-    float headlight_right_intensity;
-    if (UTL::Collections::Singleton<INIS>::Get() == 0) {
-        headlight_right_intensity = base_headlight_intensity;
-    } else {
-        headlight_right_intensity = 0.5f;
-    }
-
-    float brakelight_left_intensity = base_brakelight_intensity;
-    float brakelight_centre_intensity = 0.0f;
-    float brakelight_right_intensity = brakelight_left_intensity;
-    float reverselight_left_intensity = 0.0f;
-    float reverselight_right_intensity = 0.0f;
-    float coplight_intensityR = 0.0f;
-    float coplight_intensityB = 0.0f;
-    float coplight_intensityW = 0.0f;
-    unsigned int flashHeadlights = 0;
-
-    if (ForceHeadlightsOn != 0) {
-        force_light_state |= 1;
-    }
-    if (ForceBrakelightsOn != 0) {
-        force_light_state |= 2;
-    }
-    if (ForceReverselightsOn != 0) {
-        force_light_state |= 4;
-    }
-
-    if (force_light_state & 1) {
-        headlight_left_intensity += 1.0f;
-        headlight_right_intensity += 1.0f;
-    } else if (force_light_state & 8) {
-        headlight_left_intensity = 0.0f;
-        headlight_right_intensity = 0.0f;
-    }
-    if (force_light_state & 2) {
-        brakelight_left_intensity += 1.0f;
-        brakelight_right_intensity += 1.0f;
-        brakelight_centre_intensity += 1.0f;
-    }
-    if (this->IsLightOn(VehicleFX::LIGHT_LHEAD)) {
-        headlight_left_intensity = 1.0f;
-    }
-    if (this->IsLightBroken(VehicleFX::LIGHT_LHEAD)) {
-        headlight_left_intensity = 0.0f;
-    }
-    if (this->IsLightOn(VehicleFX::LIGHT_RHEAD)) {
-        headlight_right_intensity = 1.0f;
-    }
-    if (this->IsLightBroken(VehicleFX::LIGHT_RHEAD)) {
-        headlight_right_intensity = 0.0f;
-    }
-    if (this->IsLightOn(VehicleFX::LIGHT_LBRAKE)) {
-        brakelight_left_intensity += 1.0f;
-    }
-    if (this->IsLightBroken(VehicleFX::LIGHT_LBRAKE)) {
-        brakelight_left_intensity = 0.0f;
-    }
-    if (this->IsLightOn(VehicleFX::LIGHT_RBRAKE)) {
-        brakelight_right_intensity += 1.0f;
-    }
-    if (this->IsLightBroken(VehicleFX::LIGHT_RBRAKE)) {
-        brakelight_right_intensity = 0.0f;
-    }
-    if (this->IsLightOn(VehicleFX::LIGHT_CBRAKE)) {
-        brakelight_centre_intensity += 1.0f;
-    }
-    if (this->IsLightBroken(VehicleFX::LIGHT_CBRAKE)) {
-        brakelight_centre_intensity = 0.0f;
-    }
-    if (force_light_state & 4) {
-        reverselight_left_intensity += 1.0f;
-        reverselight_right_intensity += 1.0f;
-    }
-    if (this->IsLightOn(VehicleFX::LIGHT_LREVERSE)) {
-        reverselight_left_intensity += 1.0f;
-    }
-    if (this->IsLightBroken(VehicleFX::LIGHT_LREVERSE)) {
-        reverselight_left_intensity = 0.0f;
-    }
-    if (this->IsLightOn(VehicleFX::LIGHT_RREVERSE)) {
-        reverselight_right_intensity += 1.0f;
-    }
-    if (this->IsLightBroken(VehicleFX::LIGHT_RREVERSE)) {
-        reverselight_right_intensity = 0.0f;
-    }
-    if (this->IsLightOn(VehicleFX::LIGHT_COPRED)) {
-        coplight_intensityR = cpr;
-    }
-    if (this->IsLightBroken(VehicleFX::LIGHT_COPRED)) {
-        coplight_intensityR = 0.0f;
-    }
-    if (this->IsLightOn(VehicleFX::LIGHT_COPWHITE)) {
-        coplight_intensityW = cpw;
-        flashHeadlights = 1;
-    }
-    if (this->IsLightBroken(VehicleFX::LIGHT_COPWHITE)) {
-        coplight_intensityW = 0.0f;
-    }
-    if (this->IsLightOn(VehicleFX::LIGHT_COPBLUE)) {
-        coplight_intensityB = cpb;
-    }
-    if (this->IsLightBroken(VehicleFX::LIGHT_COPBLUE)) {
-        coplight_intensityB = 0.0f;
-    }
-
-    CarPart *preview_part = this->pRideInfo->GetPreviewPart();
-    CAR_PART_ID preview_part_id = CARPARTID_NUM;
-
-    if (preview_part != 0) {
-        preview_part_id = static_cast<CAR_PART_ID>(*reinterpret_cast<signed char *>(reinterpret_cast<unsigned char *>(preview_part) + 4));
-    }
-    float constFlicker = coplightflicker(Ftime, 0);
-    int FlareCount = 0;
-
-    for (eLightFlare *light_flare = this->LightFlareList.GetHead(); light_flare != this->LightFlareList.EndOfList();
-         light_flare = light_flare->GetNext()) {
-        unsigned int name_hash = light_flare->NameHash;
-        int is_brakelight = preview_part_id == CARPARTID_BRAKELIGHT;
-        int is_headlight = preview_part_id == CARPARTID_HEADLIGHT;
-        float intensity = 0.0f;
-        float sizescale = 1.0f;
-
-        if (is_traffic_car != 0 && light_flare->Type == 1) {
-            light_flare->Type = 2;
-        }
-        if ((renderFlareFlags & 2) != 0 && light_flare->Type != 1) {
-            continue;
-        }
-        if ((renderFlareFlags & 1) != 0) {
-            if (light_flare->Type < 5 || light_flare->Type > 12) {
-                continue;
-            }
-            sizescale = 0.75f;
-        }
-
-        switch (name_hash) {
-            case 0x9DB90133:
-                intensity = headlight_left_intensity;
-                if (flashHeadlights != 0) {
-                    intensity *= constFlicker;
-                }
-                break;
-            case 0xD09091C6:
-                intensity = headlight_right_intensity;
-                if (flashHeadlights != 0) {
-                    intensity *= 1.0f - constFlicker;
-                }
-                break;
-            case 0x31A66786:
-                intensity = brakelight_left_intensity;
-                break;
-            case 0xBF700A79:
-                intensity = brakelight_right_intensity;
-                break;
-            case 0xA2A2FC7C:
-                intensity = brakelight_centre_intensity;
-                break;
-            case 0x7A5B2F25:
-                intensity = reverselight_left_intensity;
-                break;
-            case 0x7ADF7EF8:
-                intensity = reverselight_right_intensity;
-                break;
-            case 0x1E4150B4:
-            case 0x41489594:
-                intensity = coplight_intensityR * coplightflicker2(Ftime, 0, FlareCount);
-                break;
-            case 0x6A52A241:
-            case 0xE662C161:
-                intensity = coplight_intensityB * coplightflicker2(Ftime, 1, FlareCount);
-                break;
-            case 0xB4348DBA:
-                intensity = bSin(coplight_intensityW * coplightflicker2(Ftime, 2, FlareCount) * copWhitemul);
-                break;
-            case 0x28CD78F5:
-                if (is_brakelight || (is_headlight && renderFlareFlags != 0)) {
-                    intensity = 1.0f;
-                }
-                break;
-            default:
-                intensity = 0.0f;
-                break;
-        }
-
-        if (intensity > 1.0f) {
-            intensity = 1.0f;
-        }
-
-        if (intensity > 0.0f) {
-            if (!reflexion) {
-                eRenderLightFlare(
-                    view, light_flare, local_world, intensity, REF_NONE, (renderFlareFlags & 1) != 0 ? FLARE_ENV : FLARE_NORM, 0.0f, 0,
-                    sizescale
-                );
-            } else {
-                eRenderLightFlare(view, light_flare, local_world, intensity, REF_TOPO, FLARE_REFLECT, 0.0f, 0, 1.0f);
-            }
-        }
-
-        FlareCount++;
-    }
-
-    if (view->GetID() == EVIEW_FIRST_PLAYER && !reflexion) {
-        bVector3 NisLightPosition(position->x + gTWEAKER_NISLightPosX, position->y + gTWEAKER_NISLightPosY, position->z + gTWEAKER_NISLightPosZ);
-        bVector3 *lightPosition = const_cast<bVector3 *>(position);
-        float extraIntensity = 1.0f;
-
-        if (gTWEAKER_NISLightEnabled != 0) {
-            lightPosition = &NisLightPosition;
-            extraIntensity = gTWEAKER_NISLightIntensity;
-        }
-
-        if (coplight_intensityR > 0.0f) {
-            AddQuickDynamicLight(&ShaperLightsCharacters, Lightslot, 1.0f, 0.0f, 0.0f, coplight_intensityR * extraIntensity, lightPosition);
-        } else if (coplight_intensityB > 0.0f) {
-            AddQuickDynamicLight(&ShaperLightsCharacters, Lightslot, 0.0f, 0.0f, 1.0f, coplight_intensityB * extraIntensity, lightPosition);
-        } else {
-            RestoreShaperRig(&ShaperLightsCharacters, Lightslot, &ShaperLightsCharactersBackup);
-        }
-    }
-}
-
+// UNSOLVED
 void CarRenderInfo::UpdateLightStateTextures() {
-    bool lights_always_on;
+    bool lights_always_on = true;
 
     {
-        int left_light_state = 1;
-        int right_light_state = left_light_state;
+        int left_light_state = 0;
+        if (lights_always_on) {
+            left_light_state = 1;
+        }
+        int right_light_state = 0;
+        if (lights_always_on) {
+            right_light_state = 1;
+        }
         int left_light_state_hash = this->mUsedTextureInfos.ReplaceHeadlightHash[left_light_state];
         int right_light_state_hash = this->mUsedTextureInfos.ReplaceHeadlightHash[right_light_state];
         int left_light_glass_state_hash = this->mUsedTextureInfos.ReplaceHeadlightGlassHash[left_light_state];
@@ -3808,135 +2189,1801 @@ void CarRenderInfo::UpdateLightStateTextures() {
     }
 }
 
-void UpdateEnvironmentMapCameras() {
-    bVector3 *car_world_position = nullptr;
-    eView *view = eGetView(1, false);
+// TODO regswap
+void CarRenderInfo::CreateCarLightFlares() {
+    int found_STRINGHASH_LEFT_REVERSE_slot;
+    int found_STRINGHASH_RIGHT_REVERSE_slot;
 
-    if (view->GetCameraMover() != nullptr) {
-        CameraAnchor *anchor = view->GetCameraMover()->GetAnchor();
+    if (this->pCarTypeInfo != nullptr) {
+        found_STRINGHASH_LEFT_REVERSE_slot = -1;
+        found_STRINGHASH_RIGHT_REVERSE_slot = -1;
 
-        if (anchor != nullptr) {
-            car_world_position = &reinterpret_cast<CameraAnchorLayout *>(anchor)->mGeomPos;
+        for (int slotIndex = CARSLOTID_MODEL_NUM - 1; slotIndex >= 0; slotIndex--) {
+            {
+                eModel *model = this->mCarPartModels[slotIndex][0][this->mMinLodLevel].GetModel();
+                ePositionMarker *position_marker = nullptr;
+
+                if (model == nullptr) {
+                    continue;
+                }
+
+                while ((position_marker = model->GetPostionMarker(position_marker)) != nullptr) {
+                    unsigned int position_marker_namehash = position_marker->NameHash;
+                    const char *type_name;
+                    int flare_type;
+
+                    switch (position_marker_namehash) {
+                        case STRINGHASH_LEFT_HEADLIGHT:
+                        case STRINGHASH_CENTRE_HEADLIGHT:
+                        case STRINGHASH_RIGHT_HEADLIGHT:
+                            flare_type = 0;
+                            break;
+                        case STRINGHASH_LEFT_BRAKELIGHT:
+                        case STRINGHASH_CENTRE_BRAKELIGHT:
+                        case STRINGHASH_RIGHT_BRAKELIGHT:
+                            flare_type = 1;
+                            break;
+                        case STRINGHASH_COPLIGHTRED:
+                            flare_type = 5;
+                            break;
+                        case STRINGHASH_COPLIGHTBLUE:
+                            flare_type = 6;
+                            break;
+                        case STRINGHASH_COPLIGHTWHITE:
+                            flare_type = 7;
+                            break;
+                        case STRINGHASH_COPLIGHTBRIGHTRED:
+                            flare_type = 10;
+                            break;
+                        case STRINGHASH_COPLIGHTBRIGHTBLUE:
+                            flare_type = 11;
+                            break;
+                        case STRINGHASH_COPLIGHTORANGE:
+                            flare_type = 12;
+                            break;
+                        case STRINGHASH_LEFT_REVERSE:
+                            if (found_STRINGHASH_LEFT_REVERSE_slot != slotIndex && found_STRINGHASH_LEFT_REVERSE_slot > 0) {
+                                continue;
+                            }
+                            found_STRINGHASH_LEFT_REVERSE_slot = slotIndex;
+                            flare_type = 3;
+                            break;
+                        case STRINGHASH_RIGHT_REVERSE:
+                            if (found_STRINGHASH_RIGHT_REVERSE_slot != slotIndex && found_STRINGHASH_RIGHT_REVERSE_slot > 0) {
+                                continue;
+                            }
+                            found_STRINGHASH_RIGHT_REVERSE_slot = slotIndex;
+                            flare_type = 3;
+                            break;
+                        default:
+                            flare_type = -1;
+                            break;
+                    }
+
+                    if (flare_type != -1) {
+                        eLightFlare *light_flare = new eLightFlare;
+
+                        light_flare->NameHash = position_marker_namehash;
+                        light_flare->Type = static_cast<char>(flare_type);
+                        if ((flare_type >= ELF_CAR_COPLIGHTRED && flare_type <= ELF_CAR_COPLIGHTWHITE) || flare_type == ELF_CAR_COPLIGHTBRIGHTRED ||
+                            flare_type == ELF_CAR_COPLIGHTBRIGHTBLUE || flare_type == ELF_CAR_COPLIGHTORANGE) {
+                            light_flare->Flags = 2;
+                        } else {
+                            light_flare->Flags = 4;
+                        }
+                        light_flare->PositionX = position_marker->Matrix.v3.x;
+                        light_flare->PositionY = position_marker->Matrix.v3.y;
+                        light_flare->PositionZ = position_marker->Matrix.v3.z;
+                        light_flare->ReflectPosZ = 0.0f;
+                        light_flare->DirectionX = position_marker->Matrix.v2.x;
+                        light_flare->DirectionY = position_marker->Matrix.v2.y;
+                        light_flare->DirectionZ = position_marker->Matrix.v2.z;
+                        this->LightFlareList.AddTail(light_flare);
+                    }
+                }
+            }
+        }
+    }
+}
+
+static const float fTireBlurAngVelMin = 0.0f;
+static const float fTireBlurAngVelMax = 50.0f;
+static const float fTireBlurAlphaMax = 70.0f;
+
+float blurOverRide = 0.0f;
+
+// STRIPPED
+float CarRenderInfo::CalculateTireBlur(int nWheel) {}
+
+// STRIPPED
+void CarRenderInfo::RenderTireBlur(eView *view, TextureInfo *texture_info, struct bMatrix4 *local_world, float alpha,
+                                   eDynamicLightContext *light_context) {}
+
+// STRIPPED
+int IsCarBlinkingOrPoofed(Car *car, eView *view) {}
+
+// STRIPPED
+int ShouldCarBeRendered(Car *car, Camera *camera, eView *view) {}
+
+float hOffX = 13.0f;
+float hOffY = 0.0f;
+float hOffZ = 0.05f;
+float hOffZ00 = 0.1f;
+float hOffZ11 = 0.1f;
+float hOffZ22 = 0.1f;
+float hOffZ33 = 0.1f;
+float hRad1x = 10.0f;
+float hRad2x = 10.0f;
+float hRad1y = 4.9f;
+float hRad2y = 4.9f;
+float hRad0x = 10.0f;
+float hRad3x = 10.0f;
+float hRad0y = 4.9f;
+float hRad3y = 4.9f;
+
+bMatrix4 IdMat;
+
+uint32 TexturedHeadLightsON = 1;
+uint32 TexturedHeadLightsAccuracy = 0;
+
+float bbmul = 10.0f;
+
+unsigned int hcL = 0x80CCCCCC;
+
+void CarRenderInfo::RenderTextureHeadlights(eView *view, bMatrix4 *l_w, unsigned int Accurate) {
+    bMatrix4 *local_world = eFrameMallocMatrix(1);
+
+    *local_world = *l_w;
+
+    bVector3 Up(0.0f, 0.0f, 1.0f);
+    bVector3 Basis(local_world->v0.z, local_world->v1.z, local_world->v2.z);
+    float hOffZ0 = 0.0f;
+    float hOffZ1 = 0.0f;
+    float hOffZ2 = 0.0f;
+    float hOffZ3 = 0.0f;
+    float hOffMID12 = 1.0f;
+    float hOffMID03 = 0.0f;
+    float hOffMID13 = 1.0f;
+
+    if (bDot(&Up, &Basis) < 0.707f) {
+        return;
+    }
+
+    ePoly HeadLightPoly;
+    TextureInfo *pTextureInfo2PlayerHeadlight1 = GetTextureInfo(bStringHash("2PLAYERHEADLIGHT1"), 1, 0);
+
+    HeadLightPoly.Vertices[0] = bVector3(-(hRad0x - hOffX), -(hRad0y - hOffY), hOffZ0);
+    HeadLightPoly.Vertices[1] = bVector3(hRad1x + hOffX, hOffY - hRad1y, hOffZ1);
+    HeadLightPoly.Vertices[3] = bVector3(hOffX - hRad3x, hRad3y + hOffY, hOffZ3);
+    HeadLightPoly.Vertices[2] = bVector3(hRad2x + hOffX, hRad2y + hOffY, hOffZ2);
+
+    reinterpret_cast<uint32 *>(HeadLightPoly.Colours)[0] = hcL;
+    reinterpret_cast<uint32 *>(HeadLightPoly.Colours)[1] = hcL;
+    reinterpret_cast<uint32 *>(HeadLightPoly.Colours)[2] = hcL;
+    reinterpret_cast<uint32 *>(HeadLightPoly.Colours)[3] = hcL;
+
+    view->Render(&HeadLightPoly, pTextureInfo2PlayerHeadlight1, local_world, 0, 0.0f);
+}
+
+float cpr = 1.0f;
+float cpb = 1.0f;
+float cpw = 1.f;
+float copm = 12.0f;
+float copt = 1.5f;
+int copModulo = 19;
+float copWhitemul = 3.0f;
+float copoffsetr = 0.0f;
+float copoffsetb = M_PI;
+float copoffsetw = 4.0f;
+
+static const int CopLightsAlwaysON = 0;
+
+float coplightflicker(float time, int offset) {
+    static int counter = 0;
+    counter = (counter + 1) % copModulo;
+
+    return bCos((time + copt * static_cast<float>(offset)) * copm);
+}
+
+static const float FlarePeriodLong = static_cast<float>(M_PI_4);
+static const float FlarePeriodShort = FlarePeriodLong / 3.0f;
+static const bool FlareCopWhiteOn = false;
+
+float coplightflicker2(float time, int whichColor, int flarecount) {
+    static int counter = 0;
+
+    counter = (counter + 1) % copModulo;
+
+    float offset;
+    switch (whichColor) {
+        case 0:
+            offset = copoffsetr;
+            break;
+        case 1:
+            offset = copoffsetb;
+            break;
+        case 2:
+            offset = copoffsetw;
+            break;
+    }
+
+    // TODO 'a' regalloc
+    float a;
+    float t;
+    t = bCos((static_cast<float>(M_TWOPI) / FlarePeriodShort) * time);
+    t *= t;
+
+    if (whichColor == 2) {
+        a = t * coplightflicker(time, flarecount);
+        return a;
+    }
+
+    float c = bCos(time * 8.0f + offset);
+    if (c > 0.2f) {
+        a = t;
+        return a;
+    }
+
+    a = 0.0f;
+    return a;
+}
+
+bool gTWEAKER_NISLightEnabled = false;
+float gTWEAKER_NISLightIntensity = 1.0f;
+float gTWEAKER_NISLightPosX = 0.0f;
+float gTWEAKER_NISLightPosY = 0.0f;
+float gTWEAKER_NISLightPosZ = 0.0f;
+static const bool gTWEAKER_NISLightGrabPos = false;
+
+float HackTime = 0.0f;
+
+int Lightslot = 3;
+
+// UNSOLVED, just scheduling, our variant doesn't use r1+0x20
+void CarRenderInfo::RenderFlaresOnCar(eView *view, const bVector3 *position, const bMatrix4 *body_matrix, int force_light_state, int reflexion,
+                                      int renderFlareFlags) {
+    ProfileNode profile_node("TODO", 0);
+    float Ftime = Sim::GetTime() + this->CarTimebaseStart;
+    Camera *camera = view->GetCamera();
+    int in_front_end = static_cast<int>(IsGameFlowInFrontEnd());
+    bMatrix4 *local_world = eFrameMallocMatrix(1);
+    bMatrix4 *world_view = camera->GetCameraMatrix();
+
+    if (local_world == nullptr) {
+        return;
+    }
+
+    bCopy(local_world, body_matrix);
+    local_world->v3.x = position->x;
+    local_world->v3.y = position->y;
+    local_world->v3.z = position->z;
+    local_world->v3.w = 1.0f;
+
+    if (reflexion) {
+        this->RenderTextureHeadlights(view, local_world, 0);
+    }
+
+    if (this->pCarTypeInfo != nullptr && this->pCarTypeInfo->GetCarUsageType() == CAR_USAGE_TYPE_COP) {
+#ifndef EA_BUILD_A124
+        if (this->IsLightOn(VehicleFX::LIGHT_COPRED)) {
+            view->NumCopsCherry++;
+        }
+#endif
+    }
+
+    int car_pixel_size = view->GetPixelSize(position, this->mRadius);
+    if (eGetCurrentViewMode() == EVIEWMODE_TWOH) {
+        car_pixel_size = static_cast<int>(car_pixel_size * CarTwoPlayerLODFactor);
+    }
+
+    if (car_pixel_size < view->GetPixelMinSize()) {
+        return;
+    }
+
+    unsigned int visibility_state = view->GetVisibleState(&this->AABBMin, &this->AABBMax, local_world);
+    if (visibility_state == EVISIBLESTATE_NOT) {
+        return;
+    }
+
+    float base_headlight_intensity;
+    float base_brakelight_intensity;
+    CarTypeInfo *car_type_info = GetCarTypeInfo(this->pRideInfo->Type);
+    int is_traffic_car = static_cast<int>(car_type_info->GetCarUsageType() == CAR_USAGE_TYPE_TRAFFIC);
+
+    if (is_traffic_car != 0) {
+        base_brakelight_intensity = TrafficBrakelightBaseIntensity;
+        base_headlight_intensity = 1.0f;
+    } else {
+        base_headlight_intensity = 1.0f;
+        base_brakelight_intensity = 0.5f;
+    }
+
+    float headlight_left_intensity;
+    if (UTL::Collections::Singleton<INIS>::Get() == nullptr) {
+        headlight_left_intensity = base_headlight_intensity;
+    } else {
+        headlight_left_intensity = 0.0f;
+    }
+
+    float headlight_right_intensity;
+    if (UTL::Collections::Singleton<INIS>::Get() == nullptr) {
+        headlight_right_intensity = base_headlight_intensity;
+    } else {
+        headlight_right_intensity = 0.0f;
+    }
+
+    float brakelight_left_intensity = base_brakelight_intensity;
+    float brakelight_centre_intensity = 0.0f;
+    float brakelight_right_intensity = brakelight_left_intensity;
+    float reverselight_left_intensity = 0.0f;
+    float reverselight_right_intensity = 0.0f;
+    float coplight_intensityR = 0.0f;
+    float coplight_intensityB = 0.0f;
+    float coplight_intensityW = 0.0f;
+    unsigned int flashHeadlights = 0;
+
+    if (ForceHeadlightsOn != 0) {
+        force_light_state |= 1;
+    }
+    if (ForceBrakelightsOn != 0) {
+        force_light_state |= 2;
+    }
+    if (ForceReverselightsOn != 0) {
+        force_light_state |= 4;
+    }
+
+    if (force_light_state & 1) {
+        headlight_left_intensity += 1.0f;
+        headlight_right_intensity += 1.0f;
+    } else if (force_light_state & 8) {
+        headlight_left_intensity = 0.0f;
+        headlight_right_intensity = 0.0f;
+    }
+
+    if (force_light_state & 2) {
+        brakelight_left_intensity += 1.0f;
+        brakelight_centre_intensity += 1.0f;
+        brakelight_right_intensity += 1.0f;
+    }
+
+    float intensity = BrakeLightScaleFactor;
+
+    if (this->IsLightOn(VehicleFX::LIGHT_LHEAD)) {
+        headlight_left_intensity = base_headlight_intensity;
+    }
+    if (this->IsLightBroken(VehicleFX::LIGHT_LHEAD)) {
+        headlight_left_intensity = 0.0f;
+    }
+    if (this->IsLightOn(VehicleFX::LIGHT_RHEAD)) {
+        headlight_right_intensity = base_headlight_intensity;
+    }
+    if (this->IsLightBroken(VehicleFX::LIGHT_RHEAD)) {
+        headlight_right_intensity = 0.0f;
+    }
+    if (this->IsLightOn(VehicleFX::LIGHT_LREVERSE)) {
+        reverselight_left_intensity += 1.0f;
+    }
+    if (this->IsLightBroken(VehicleFX::LIGHT_LREVERSE)) {
+        reverselight_left_intensity = 0.0f;
+    }
+    if (this->IsLightOn(VehicleFX::LIGHT_LREVERSE)) {
+        reverselight_right_intensity += 1.0f;
+    }
+    if (this->IsLightBroken(VehicleFX::LIGHT_LREVERSE)) {
+        reverselight_right_intensity = 0.0f;
+    }
+    if (this->IsLightOn(VehicleFX::LIGHT_LBRAKE)) {
+        brakelight_left_intensity += intensity;
+    }
+    if (this->IsLightBroken(VehicleFX::LIGHT_LBRAKE)) {
+        brakelight_left_intensity = 0.0f;
+    }
+    if (this->IsLightOn(VehicleFX::LIGHT_RBRAKE)) {
+        brakelight_right_intensity += intensity;
+    }
+    if (this->IsLightBroken(VehicleFX::LIGHT_RBRAKE)) {
+        brakelight_right_intensity = 0.0f;
+    }
+    if (this->IsLightOn(VehicleFX::LIGHT_CBRAKE)) {
+        brakelight_centre_intensity = intensity + base_brakelight_intensity;
+    }
+    if (this->IsLightBroken(VehicleFX::LIGHT_CBRAKE)) {
+        brakelight_centre_intensity = 0.0f;
+    }
+    if (this->IsLightOn(VehicleFX::LIGHT_LREVERSE)) {
+        reverselight_left_intensity += intensity;
+    }
+    if (this->IsLightBroken(VehicleFX::LIGHT_LREVERSE)) {
+        reverselight_left_intensity = 0.0f;
+    }
+    if (this->IsLightOn(VehicleFX::LIGHT_RREVERSE)) {
+        reverselight_right_intensity += intensity;
+    }
+    if (this->IsLightBroken(VehicleFX::LIGHT_RREVERSE)) {
+        reverselight_right_intensity = 0.0f;
+    }
+    if (this->IsLightOn(VehicleFX::LIGHT_COPRED)) {
+        coplight_intensityR = cpr;
+    }
+    if (this->IsLightOn(VehicleFX::LIGHT_COPBLUE)) {
+        coplight_intensityB = cpb;
+    }
+    if (this->IsLightOn(VehicleFX::LIGHT_COPWHITE)) {
+        coplight_intensityW = cpw;
+        flashHeadlights = 1;
+    }
+    if (this->IsLightBroken(VehicleFX::LIGHT_COPRED)) {
+        coplight_intensityR = 0.0f;
+    }
+    if (this->IsLightBroken(VehicleFX::LIGHT_COPBLUE)) {
+        coplight_intensityB = 0.0f;
+    }
+    if (this->IsLightBroken(VehicleFX::LIGHT_COPWHITE)) {
+        coplight_intensityW = 0.0f;
+    }
+
+    CarPart *preview_part;
+    if (this->pRideInfo != nullptr) {
+        preview_part = this->pRideInfo->GetPreviewPart();
+    } else {
+        preview_part = nullptr;
+    }
+
+    CAR_PART_ID preview_part_id;
+    if (preview_part != nullptr) {
+        preview_part_id = static_cast<CAR_PART_ID>(*reinterpret_cast<signed char *>(reinterpret_cast<unsigned char *>(preview_part) + 4));
+    } else {
+        preview_part_id = CARPARTID_NUM;
+    }
+
+    int FlareCount = 0;
+    float constFlicker = coplightflicker(Ftime, 0);
+
+    for (eLightFlare *light_flare = this->LightFlareList.GetHead(); light_flare != this->LightFlareList.EndOfList();
+         light_flare = light_flare->GetNext()) {
+        unsigned int name_hash = light_flare->NameHash;
+        int is_brakelight = 0;
+        int is_headlight = 0;
+        float intensity = 0.0f;
+        float sizescale = 1.0f;
+
+        if (is_traffic_car != 0 && light_flare->Type == 1) {
+            light_flare->Type = 2;
+        }
+        if ((renderFlareFlags & 2) != 0 && light_flare->Type != 1) {
+            continue;
+        }
+        if ((renderFlareFlags & 1) != 0) {
+            if (light_flare->Type < 5 || light_flare->Type > 12) {
+                continue;
+            }
+            sizescale = 10.0f;
+        }
+
+        switch (name_hash) {
+            case STRINGHASH_LEFT_HEADLIGHT:
+                intensity = headlight_left_intensity;
+                if (flashHeadlights != 0) {
+                    intensity *= constFlicker;
+                }
+                break;
+            case STRINGHASH_RIGHT_HEADLIGHT:
+                intensity = headlight_right_intensity;
+                if (flashHeadlights != 0) {
+                    intensity *= 1.0f - constFlicker;
+                }
+                break;
+            case STRINGHASH_LEFT_BRAKELIGHT:
+                intensity = brakelight_left_intensity;
+                break;
+            case STRINGHASH_CENTRE_BRAKELIGHT:
+                intensity = brakelight_centre_intensity;
+                break;
+            case STRINGHASH_RIGHT_BRAKELIGHT:
+                intensity = brakelight_right_intensity;
+                break;
+            case STRINGHASH_LEFT_REVERSE:
+                intensity = reverselight_left_intensity;
+                break;
+            case STRINGHASH_RIGHT_REVERSE:
+                intensity = reverselight_right_intensity;
+                break;
+            case STRINGHASH_COPLIGHTRED:
+                coplight_intensityR *= coplightflicker2(Ftime, 0, FlareCount);
+                intensity = coplight_intensityR;
+                break;
+            case STRINGHASH_COPLIGHTBLUE:
+                coplight_intensityB *= coplightflicker2(Ftime, 1, FlareCount);
+                intensity = coplight_intensityB;
+                break;
+            case STRINGHASH_COPLIGHTBRIGHTRED:
+                intensity = coplight_intensityR * coplightflicker2(Ftime, 0, FlareCount);
+                break;
+            case STRINGHASH_COPLIGHTBRIGHTBLUE:
+                intensity = coplight_intensityB * coplightflicker2(Ftime, 1, FlareCount);
+                break;
+            case STRINGHASH_COPLIGHTWHITE:
+                intensity = bSin(coplight_intensityW * coplightflicker2(Ftime, 2, FlareCount) * copWhitemul);
+                break;
+            case STRINGHASH_COPLIGHTORANGE:
+                intensity = 1.0f;
+                break;
+            default:
+                break;
+        }
+
+        if ((preview_part_id == CARPARTID_BRAKELIGHT && is_brakelight != 0) || (preview_part_id == CARPARTID_HEADLIGHT && is_headlight != 0)) {
+            intensity = 0.0f;
+        }
+
+        if (intensity > 0.0f) {
+            if (intensity > 1.0f) {
+                intensity = 1.0f;
+            }
+
+            if (!reflexion) {
+                if ((renderFlareFlags & 1) != 0) {
+                    eRenderLightFlare(view, light_flare, local_world, intensity, REF_NONE, FLARE_ENV, 0.0f, 0, sizescale);
+                } else {
+                    eRenderLightFlare(view, light_flare, local_world, intensity, REF_NONE, FLARE_NORM, 0.0f, 0, sizescale);
+                }
+            } else {
+                eRenderLightFlare(view, light_flare, local_world, intensity, REF_TOPO, FLARE_REFLECT, this->mCar_elevation, 0, 1.0f);
+            }
+        }
+
+        FlareCount++;
+    }
+
+    if (view->GetID() == EVIEW_FIRST_PLAYER && !reflexion) {
+        bVector3 *lightPosition = const_cast<bVector3 *>(position);
+        float extraIntensity = 1.0f;
+        bVector3 NisLightPosition(gTWEAKER_NISLightPosX + position->x, gTWEAKER_NISLightPosY + position->y, gTWEAKER_NISLightPosZ + position->z);
+
+        if (gTWEAKER_NISLightEnabled) {
+            lightPosition = &NisLightPosition;
+            extraIntensity = gTWEAKER_NISLightIntensity;
+        }
+
+        if (coplight_intensityR > 0.0f || coplight_intensityB > 0.0f) {
+            if (coplight_intensityR > 0.0f) {
+                AddQuickDynamicLight(&ShaperLightsCharacters, Lightslot, 0.8f, 0.2f, 0.0f, coplight_intensityR * extraIntensity, lightPosition);
+            } else if (coplight_intensityB > 0.0f) {
+                AddQuickDynamicLight(&ShaperLightsCharacters, Lightslot, 0.2f, 0.2f, 0.8f, coplight_intensityB * extraIntensity, lightPosition);
+            }
         } else {
-            static bVector3 sCarWorldPosition_31751;
-            static int tmp_45_31752;
+            RestoreShaperRig(&ShaperLightsCharacters, Lightslot, &ShaperLightsCharactersBackup);
+        }
+    }
+}
 
-            if (tmp_45_31752 == 0) {
-                tmp_45_31752 = 1;
+float enX = .0f;
+float enY = 1.0f;
+float enZ = 0.0f;
+
+float FaceCos = 0.0f;
+uint32 TireFaceIt = 1;
+
+float TireFace(bMatrix4 *matrix, eView *view) {
+    if (TireFaceIt == 0) {
+        return 1.0f;
+    }
+    bVector3 cDir(*view->GetCamera()->GetDirection());
+    bMatrix4 matrix2(*matrix);
+
+    matrix2.v3.x = matrix2.v3.y = matrix2.v3.z = 0.0f;
+    matrix2.v3.w = 1.0f;
+
+    bVector3 N(enX, enY, enZ);
+
+    eMulVector(&N, &matrix2, &N);
+    return bDot(&N, &cDir);
+}
+
+static const float WheelCamberMaxAngle = 7.0f;
+static const float WheelCamberMaxPushDown = 0.03f;
+static const float WheelWobbleMaxAngle = 16.0f;
+
+int PartDamage_Test = 0;
+static const int PartDamage_Level = 0;
+static const float PartDamage_X = 0.0f;
+static const float PartDamage_Y = 0.0f;
+static const float PartDamage_Z = 0.0f;
+static const float PartDamage_Intens = 0.0f;
+static const uint32 CullBFace = 1;
+static const uint32 shadowBias = 1;
+
+// UNSOLVED
+bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bMatrix4 *body_matrix, bMatrix4 *tire_matrices,
+                           bMatrix4 *brake_matrices, bMatrix4 *spinner_matrices, unsigned int extra_render_flags, int force_light_state,
+                           int reflexion, float shadow_scale, enum CARPART_LOD tireLOD, enum CARPART_LOD carLOD) {
+    ProfileNode profile_node("TODO", 0);
+    bVector3 position(*world_position);
+
+#ifndef EA_BUILD_A124
+    if (this->pCarTypeInfo != nullptr && this->pCarTypeInfo->GetCarUsageType() == CAR_USAGE_TYPE_COP) {
+        view->NumCopsTotal++;
+    }
+#endif
+    int car_pixel_size = view->GetPixelSize(&position, this->mRadius);
+    if (eGetCurrentViewMode() == EVIEWMODE_TWOH && !IsGameFlowInFrontEnd()) {
+        car_pixel_size = static_cast<int>(static_cast<float>(car_pixel_size) * CarTwoPlayerLODFactor);
+    }
+    if (car_pixel_size < view->GetPixelMinSize()) {
+        if (static_cast<unsigned int>(view->ID - 13) > 1) {
+            return false;
+        }
+    }
+    if (DrawCars == 0) {
+        return true;
+    }
+
+    Camera *camera = view->GetCamera();
+    int is_traffic_car;
+    if (this->pCarTypeInfo != nullptr) {
+        is_traffic_car = static_cast<int>(this->pCarTypeInfo->GetCarUsageType() == CAR_USAGE_TYPE_TRAFFIC);
+    } else {
+        is_traffic_car = 0;
+    }
+
+    eDynamicLightContext *light_context = static_cast<eDynamicLightContext *>(eFrameMalloc(sizeof(eDynamicLightContext)));
+    bMatrix4 *local_world = eFrameMallocMatrix(1);
+    bMatrix4 *cpy_local_world = eFrameMallocMatrix(1);
+    bMatrix4 *biased_local_world = eFrameMallocMatrix(1);
+    bMatrix4 *biased_identity = eFrameMallocMatrix(1);
+
+    if (light_context == nullptr || local_world == nullptr || biased_local_world == nullptr || biased_identity == nullptr) {
+        return false;
+    }
+
+    bMatrix4 *world_view = camera->GetCameraMatrix();
+    bCopy(local_world, body_matrix);
+    eMulMatrix(local_world, &CarScaleMatrix, local_world);
+    local_world->v3.x = position.x;
+    local_world->v3.y = position.y;
+    local_world->v3.z = position.z;
+    local_world->v3.w = 1.0f;
+
+    unsigned int visibility_state = view->GetVisibleState(&this->AABBMin, &this->AABBMax, local_world);
+    if (visibility_state == EVISIBLESTATE_NOT) {
+        return false;
+    }
+
+    bVector4 camera_world_position;
+    bVector3 *eye = camera->GetPosition();
+    camera_world_position.x = eye->x;
+    camera_world_position.y = eye->y;
+    camera_world_position.z = eye->z;
+    camera_world_position.w = 1.0f;
+
+    Player *player1 = Player::GetPlayerByIndex(0);
+    int in_front_end = static_cast<int>(IsGameFlowInFrontEnd());
+    if (PrintQueryLightMat != 0) {
+        PrintLightQuery = 1;
+    }
+
+    bCopy(cpy_local_world, body_matrix);
+    cpy_local_world->v3.x = position.x;
+    cpy_local_world->v3.y = position.y;
+    cpy_local_world->v3.z = position.z;
+    cpy_local_world->v3.w = 1.0f;
+
+    eDynamicLightContext base_light_context;
+    elResetLightContext(&base_light_context);
+
+    {
+        eShaperLightRig *shaper_lights;
+        switch (FEManager::Get()->GetGarageType()) {
+            // case GARAGETYPE_MAIN_FE:
+            //     shaper_lights = &ShaperLightsQRace;
+            //     break;
+            case GARAGETYPE_CAREER_SAFEHOUSE:
+                shaper_lights = &ShaperLightsSafehouse;
+                break;
+            case GARAGETYPE_CUSTOMIZATION_SHOP:
+                shaper_lights = &ShaperLightsCShop;
+                break;
+            case GARAGETYPE_CUSTOMIZATION_SHOP_BACKROOM:
+                shaper_lights = &ShaperLightsBackRoom;
+                break;
+            case GARAGETYPE_CAR_LOT:
+                shaper_lights = &ShaperLightsCarLot;
+                break;
+            default:
+                shaper_lights = &ShaperLightsQRace;
+                break;
+        }
+        if (IsGameFlowInGame()) {
+            shaper_lights = &ShaperLightsCarsInGame;
+        }
+
+        elSetupLights(&base_light_context, shaper_lights, &position, nullptr, &hack_man_matrix, view);
+    }
+    elCloneLightContext(light_context, cpy_local_world, &hack_man_matrix, &camera_world_position, view, &base_light_context);
+    this->CarFrame = eFrameCounter;
+    if (PrintQueryLightMat != 0) {
+        PrintLightQuery = 0;
+    }
+
+    unsigned int disable_env_flag = 0;
+    unsigned int disable_env_flag_tires = 0;
+    this->UpdateLightStateTextures();
+    if (EnableEnvMap == 0 || static_cast<float>(car_pixel_size) < DisableEnvMapSize) {
+        disable_env_flag = 1;
+        disable_env_flag_tires = 1;
+    }
+
+    int bodyLodIx = 0;
+    int tireLodIx = 0;
+
+    if (is_traffic_car || this->mMinLodLevel == CARPART_LOD_C) {
+        if (is_traffic_car) {
+            extra_render_flags = 0x80000;
+        }
+        while (static_cast<float>(car_pixel_size) < TrafficCarBodyLodSwapSize[bodyLodIx]) {
+            bodyLodIx++;
+            tireLodIx++;
+        }
+    } else {
+        while (static_cast<float>(car_pixel_size) < CarBodyLodSwapSize[bodyLodIx]) {
+            bodyLodIx++;
+            tireLodIx++;
+        }
+    }
+
+    int car_body_lod = bMin(this->mMaxLodLevel, bodyLodIx + this->mMinLodLevel);
+    int car_tire_lod = bMin(this->mMaxLodLevel, tireLodIx + this->mMinLodLevel);
+    int force_show_car_lod_screen_print;
+
+    if (ForceCarLOD != CARPART_LOD_OFF) {
+        car_body_lod = bClamp(ForceCarLOD, this->mMinLodLevel, this->mMaxLodLevel);
+    }
+    if (ForceTireLOD != CARPART_LOD_OFF) {
+        car_tire_lod = bClamp(ForceTireLOD, this->mMinLodLevel, this->mMaxLodLevel);
+    }
+
+    if (car_body_lod == CARPART_LOD_OFF && car_tire_lod == CARPART_LOD_OFF) {
+        return false;
+    }
+
+    if (this->pRideInfo != nullptr) {
+        CarTypeInfo *car_type_info = this->pCarTypeInfo;
+        if (GetCarTypeInfo(this->pRideInfo->Type)->GetCarUsageType() != CAR_USAGE_TYPE_RACING) {
+            extra_render_flags |= 0x800;
+            if (INIS::Exists()) {
+                extra_render_flags |= 0x80000;
             }
+        }
+    }
 
-            IPlayer *first_player = IPlayer::First(PLAYER_LOCAL);
-            if (first_player != nullptr) {
-                ISimable *simable = first_player->GetSimable();
-                IRigidBody *player_rigid_body = simable != nullptr ? simable->GetRigidBody() : nullptr;
+    bMatrix4 world_local;
+    bVector3 camera_eye_in_car_space;
+    bInvertMatrix(&world_local, local_world);
+    bMulMatrix(&camera_eye_in_car_space, &world_local, camera->GetPosition());
+    float fDistanceToCamera = bDistBetween(camera->GetPosition(), reinterpret_cast<bVector3 *>(&local_world->v3));
 
-                if (player_rigid_body != nullptr) {
-                    eSwizzleWorldVector(player_rigid_body->GetPosition(), sCarWorldPosition_31751);
-                    bSub(&sCarWorldPosition_31751, &sCarWorldPosition_31751, &EnvMapEyeOffset);
-                    car_world_position = &sCarWorldPosition_31751;
+    if (car_body_lod == CARPART_LOD_A) {
+        if (fDistanceToCamera < 4.0f && view->GetID() == EVIEW_FIRST_PLAYER && !INIS::Exists()) {
+            camera_eye_in_car_space.z += 0.5f;
+            if (bBoundingBoxIsInside(&this->AABBMin, &this->AABBMax, &camera_eye_in_car_space, 0.0f) != 0) {
+                return false;
+            }
+            camera_eye_in_car_space.z -= 0.5f;
+        }
+    }
+
+    if (this->mFlashing == true && this->mFlashInterval > 0.0f) {
+        return true;
+    }
+
+    bCopy(biased_local_world, local_world);
+    bCopy(biased_identity, eGetIdentityMatrix(), &position);
+
+    bool nisPlaying = false;
+    INIS *nis = INIS::Get();
+    if (nis != nullptr) {
+        nisPlaying = nis->IsPlaying();
+    }
+
+    if (reflexion == 0) {
+        biased_local_world->v3.z += fCarFudgeElevation;
+        float fBias = (fDistanceToCamera - fCarFudgeBias) / fDistanceToCamera;
+        if (in_front_end) {
+            view->BiasMatrixForZSorting(biased_local_world, fBias);
+        }
+        view->BiasMatrixForZSorting(biased_identity, fBias);
+
+        bMatrix4 pre_translate;
+        bIdentity(&pre_translate);
+        pre_translate.v3.x = -position.x;
+        pre_translate.v3.y = -position.y;
+        pre_translate.v3.z = -position.z;
+        eMulMatrix(biased_identity, &pre_translate, biased_identity);
+    }
+
+    unsigned short steerAngleR = this->mSteeringR;
+    unsigned short tangL = this->mSteeringL;
+    unsigned short tangR = steerAngleR;
+    unsigned short steerAngle;
+    if (steerAngleR > 0x8000) {
+        tangR = static_cast<unsigned short>(-steerAngleR);
+    }
+    if (tangL > 0x8000) {
+        tangL = static_cast<unsigned short>(-tangL);
+    }
+    steerAngle = this->mSteeringL;
+    int tangR_compare = tangR;
+    int tangL_compare = tangL;
+    if (tangR_compare > tangL_compare) {
+        steerAngle = steerAngleR;
+    }
+    this->TheCarPartCuller.CullParts(&camera_eye_in_car_space, steerAngle);
+
+    unsigned int body_render_flags;
+    if (DrawCarShadow != 0 && reflexion == 0) {
+        this->DrawAmbientShadow(view, &position, shadow_scale, local_world, &world_local, biased_identity);
+        if (!IsGameFlowInFrontEnd() && this->pRideInfo->Type != CARTYPE_COPHELI && !is_traffic_car) {
+            this->DrawKeithProjShadow(view, &position, local_world, &world_local, biased_identity, car_body_lod);
+        }
+    }
+
+    body_render_flags = 0;
+    if (IsGameFlowInGame() && view->GetID() != 3) {
+        body_render_flags = 0x8000;
+    }
+
+    if ((static_cast<unsigned int>(view->GetID() - EVIEW_PLAYER1) <= 1) && WorldTimeElapsed > 0.0f) {
+        if (this->mDamageBehaviour != nullptr) {
+            this->mDamageBehaviour->Update(biased_local_world);
+        }
+    } else {
+        if (this->mDamageBehaviour != nullptr) {
+            this->mDamageBehaviour->Pose(biased_local_world);
+        }
+    }
+
+    if (this->pCarTypeInfo != nullptr && this->pCarTypeInfo->GetCarUsageType() == CAR_USAGE_TYPE_COP) {
+        view->NumCopsInView++;
+    }
+
+    eLightMaterial *light_material_carskin = this->LightMaterial_CarSkin;
+    eLightMaterial *light_material_spoiler = this->LightMaterial_Spoiler;
+    if (light_material_spoiler == nullptr) {
+        light_material_spoiler = light_material_carskin;
+    }
+    eLightMaterial *light_material_roof = this->LightMaterial_Roof;
+    if (light_material_roof == nullptr) {
+        light_material_roof = light_material_carskin;
+    }
+    eLightMaterial *light_material_tint = this->LightMaterial_WindowTint;
+
+    for (int model_index = 0; model_index < CARSLOTID_MODEL_NUM; model_index++) {
+        bMatrix4 *finalmat = static_cast<bMatrix4 *>(eFrameMalloc(sizeof(bMatrix4)));
+        if (finalmat == nullptr) {
+            continue;
+        }
+
+        *finalmat = *biased_local_world;
+
+        int current_model_lod = car_body_lod;
+        for (int model_number = 0; model_number < CARPART_MODEL_NUM; model_number++) {
+            CarPartModel *model_lod_base = &this->mCarPartModels[model_index][model_number][current_model_lod];
+            int model_part_id = model_index;
+            eLightMaterial *model_light_material = light_material_carskin;
+
+            // TODO get rid of gotos, there are probably switch statements here
+            if (model_lod_base->GetModel() != nullptr && !model_lod_base->IsHidden()) {
+                if (model_part_id == CARSLOTID_RIGHT_SIDE_MIRROR) {
+                    goto render_side_mirror;
+                }
+
+                {
+                    if (model_part_id < CARSLOTID_DRIVER) {
+                        if (model_part_id == CARSLOTID_LEFT_SIDE_MIRROR) {
+                            goto render_side_mirror;
+                        } else if (model_part_id < CARSLOTID_REAR_BRAKE) {
+                            if (model_part_id == CARSLOTID_FRONT_BRAKE) {
+                                continue;
+                            }
+                        } else if (model_part_id == CARSLOTID_REAR_BRAKE) {
+                            continue;
+                        }
+                    } else if (model_part_id != CARSLOTID_ROOF) {
+                        if (model_part_id < CARSLOTID_HOOD) {
+                            if (model_part_id == CARSLOTID_SPOILER) {
+                                continue;
+                            }
+                        } else if (model_part_id <= CARSLOTID_LICENSE_PLATE) {
+                            if (model_part_id >= CARSLOTID_FRONT_WHEEL) {
+                                continue;
+                            }
+                        }
+                    } else {
+                        continue;
+                    }
+
+                    int draw_part = this->pRideInfo->IsPartEnabled(model_part_id);
+
+                    if (model_part_id == CARSLOTID_DAMAGE_REAR_LEFT_WINDOW || model_part_id == CARSLOTID_DAMAGE_FRONT_LEFT_WINDOW ||
+                        model_part_id == CARSLOTID_DAMAGE_FRONT_RIGHT_WINDOW || model_part_id == CARSLOTID_DAMAGE_REAR_RIGHT_WINDOW ||
+                        model_part_id == CARSLOTID_FRONT_LEFT_WINDOW || model_part_id == CARSLOTID_FRONT_RIGHT_WINDOW ||
+                        model_part_id == CARSLOTID_FRONT_WINDOW || model_part_id == CARSLOTID_REAR_LEFT_WINDOW ||
+                        model_part_id == CARSLOTID_REAR_RIGHT_WINDOW || model_part_id == CARSLOTID_REAR_WINDOW) {
+                        if (!AlphaWritesEnabled) {
+                            goto done_model_part;
+                        }
+                    }
+
+                    if (model_part_id == CARSLOTID_LEFT_SIDE_MIRROR) {
+                        draw_part = 1;
+                    }
+                    if (model_part_id == CARSLOTID_RIGHT_SIDE_MIRROR) {
+                        draw_part = 1;
+                    }
+
+                    if (model_part_id == 0x15 || model_part_id == 0x0e || model_part_id == 0x0d || model_part_id == 0x16) {
+                        if (IsNISCopCar(this->pRideInfo->Type)) {
+                            int door_index = 0;
+                            if (model_part_id == 0x0d) {
+                                door_index = 1;
+                            } else if (model_part_id == 0x0e) {
+                                door_index = 2;
+                            } else if (model_part_id == 0x16) {
+                                door_index = 3;
+                            }
+
+                            if (NISCopCarDoorOpenAmount[door_index] == 0.0f) {
+                                eMulMatrix(finalmat, &NISCopCarDoorClosedMarkers[door_index], biased_local_world);
+                            } else if (NISCopCarDoorOpenAmount[door_index] == 1.0f) {
+                                eMulMatrix(finalmat, &NISCopCarDoorOpenMarkers[door_index], biased_local_world);
+                            } else {
+                                bQuaternion open_quaternion(NISCopCarDoorOpenMarkers[door_index]);
+                                bQuaternion closed_quaternion(NISCopCarDoorClosedMarkers[door_index]);
+                                bQuaternion blend_quaternion;
+                                closed_quaternion.Slerp(blend_quaternion, open_quaternion, NISCopCarDoorOpenAmount[door_index]);
+
+                                bVector4 blend_translation(NISCopCarDoorOpenMarkers[door_index].v3);
+                                bScale(&blend_translation, &blend_translation, NISCopCarDoorOpenAmount[door_index]);
+                                bScaleAdd(&blend_translation, &blend_translation, &NISCopCarDoorClosedMarkers[door_index].v3,
+                                          1.0f - NISCopCarDoorOpenAmount[door_index]);
+
+                                bMatrix4 blend_matrix;
+                                blend_quaternion.GetMatrix(&blend_matrix);
+                                blend_matrix.v3 = blend_translation;
+                                eMulMatrix(finalmat, &blend_matrix, biased_local_world);
+                            }
+                        }
+                    } else if (model_part_id == 0x3f && this->CarbonHood != 0) {
+                        model_light_material = this->LightMaterial_Carbon;
+                    }
+
+                    if (model_part_id == 0x2b) {
+                        draw_part &= 1;
+                        if (IsGameFlowInFrontEnd()) {
+                            draw_part = 0;
+                        }
+                        if (IsNISCopCar(this->pRideInfo->Type)) {
+                            draw_part &= NISCopCarDriverVisible;
+                        } else {
+                            draw_part &= NISRaceDriverVisible;
+                        }
+                    } else {
+                        draw_part &= 1;
+                    }
+
+                    if (draw_part != 0) {
+                        eLightMaterial *light_material_body = model_light_material;
+                        eModel *model = model_lod_base->GetModel();
+
+                        model->ReplaceLightMaterial(STRINGHASH_CARSKIN, light_material_body);
+                        model = model_lod_base->GetModel();
+                        model->ReplaceLightMaterial(STRINGHASH_WINDSHIELD, light_material_tint);
+
+                        if (this->mDamageBehaviour == nullptr || model_part_id == 0x2b) {
+                            this->RenderPart(view, model_lod_base, finalmat, light_context,
+                                             disable_env_flag | extra_render_flags | body_render_flags);
+                        } else if (model_part_id <= CARSLOTID_BODY) {
+                            bMatrix4 *damage_matrix = this->mDamageBehaviour->GetPartMatrix(model_part_id);
+                            bCopy(finalmat, damage_matrix);
+                            if (!this->mDamageBehaviour->IsPartHidden(model_part_id)) {
+                                this->RenderPart(view, model_lod_base, finalmat, light_context,
+                                                 disable_env_flag | extra_render_flags | body_render_flags);
+                            }
+                        }
+                    }
+                }
+                goto done_model_part;
+
+            render_side_mirror:
+                if (reflexion == 0) {
+                    eModel *model = model_lod_base->GetModel();
+                    model->ReplaceLightMaterial(STRINGHASH_CARSKIN, this->LightMaterial_CarSkin);
+                    view->Render(model, biased_local_world, light_context, disable_env_flag | extra_render_flags | body_render_flags, 0);
+                }
+
+            done_model_part:;
+            }
+        }
+    }
+
+    if (car_body_lod <= this->pRideInfo->GetMaxLicenseLodLevel() || reflexion == 0) {
+        bMatrix4 license_rotate;
+        eIdentity(&license_rotate);
+        eRotateY(&license_rotate, &license_rotate, 0x4000);
+
+        for (CarEmitterPosition *emitter_position = this->EmitterPositionList[27].GetHead();
+             emitter_position != this->EmitterPositionList[27].EndOfList(); emitter_position = emitter_position->GetNext()) {
+            ePositionMarker *position_marker = emitter_position->PositionMarker;
+            bMatrix4 *license_local_world = eFrameMallocMatrix(1);
+            if (license_local_world != nullptr) {
+                eMulMatrix(license_local_world, &license_rotate, &position_marker->Matrix);
+                eMulMatrix(license_local_world, license_local_world, biased_local_world);
+
+                for (int i = 0; i < 1; i++) {
+                    eModel *license_model = this->mCarPartModels[i + CARSLOTID_LICENSE_PLATE][0][this->mMinLodLevel].GetModel();
+                    if (license_model != nullptr) {
+                        view->Render(license_model, license_local_world, light_context, disable_env_flag | extra_render_flags | body_render_flags,
+                                     nullptr);
+                    }
                 }
             }
         }
     }
 
-    if (car_world_position == nullptr) {
-        FrontEndRenderingCar *fecar = nullptr;
+    if (car_body_lod <= this->pRideInfo->GetMaxSpoilerLodLevel()) {
+        bMatrix4 *spoiler_local_world = eFrameMallocMatrix(1);
 
-        if (FrontEndRenderingCarList.GetHead() != FrontEndRenderingCarList.EndOfList()) {
-            fecar = FrontEndRenderingCarList.GetHead();
-        }
-        if (fecar == nullptr) {
-            return;
-        }
+        if (spoiler_local_world != nullptr) {
+            CarPart *part_spoiler = this->pRideInfo->GetPart(CARSLOTID_SPOILER);
+            if (part_spoiler != nullptr) {
+                if (part_spoiler->GetAppliedAttributeIParam(bStringHash("USEMARKER2"), 0) != 0 && this->SpoilerPositionMarker2 != nullptr) {
+                    this->SpoilerPositionMarker = this->SpoilerPositionMarker2;
+                }
+            }
 
-        car_world_position = &fecar->Position;
-    }
-
-    bVector3 camera_eye_position(*view->GetCamera()->GetPosition());
-    bVector3 envmap_position;
-    bAdd(&camera_eye_position, &camera_eye_position, &EnvMapCamOffset);
-    bAdd(&envmap_position, car_world_position, &EnvMapEyeOffset);
-    eGetEnvMap()->UpdateCameras(&camera_eye_position, &envmap_position);
-}
-
-void RefreshAllFrontEndCarRenderInfos(CarType type) {
-    for (FrontEndRenderingCar *front_end_car = FrontEndRenderingCarList.GetHead(); front_end_car != FrontEndRenderingCarList.EndOfList();
-         front_end_car = front_end_car->GetNext()) {
-        RideInfo *ride_info = &reinterpret_cast<FrontEndRenderingCarLayout *>(front_end_car)->mRideInfo;
-
-        if ((type == static_cast<CarType>(-1) || ride_info->Type == type) && front_end_car->RenderInfo != 0) {
-            front_end_car->RenderInfo->Refresh();
-        }
-    }
-}
-
-void RefreshAllRenderInfo(CarType type) {
-    UTL::Collections::Listable<VehicleRenderConn, 10>::List::const_iterator it = VehicleRenderConn::GetList().begin();
-
-    while (it != VehicleRenderConn::GetList().end()) {
-        VehicleRenderConn *conn = *it;
-
-        if ((type == static_cast<CarType>(-1) || conn->GetCarType() == type) && conn->mState > 1) {
-            conn->RefreshRenderInfo();
-        }
-        ++it;
-    }
-
-    RefreshAllFrontEndCarRenderInfos(type);
-}
-
-void RenderFEFlares(eView *, int) {}
-
-void RenderFrontEndCars(eView *view, int reflection) {
-    if (DrawCars != 0) {
-        if (reflection) {
-            FEManager *fe_manager = FEManager::Get();
-            if (fe_manager->GetGarageType() == GARAGETYPE_CAR_LOT) {
-                return;
+            if (this->SpoilerPositionMarker != nullptr && part_spoiler != nullptr && part_spoiler->GetUpgradeLevel() != 0) {
+                for (int i = 0; i < CARPART_MODEL_NUM; i++) {
+                    eModel *spoiler_model = this->mCarPartModels[CARSLOTID_SPOILER][i][car_body_lod].GetModel();
+                    if (spoiler_model != nullptr) {
+                        eMulMatrix(&spoiler_local_world[i], &this->SpoilerPositionMarker->Matrix, biased_local_world);
+                        spoiler_model->ReplaceLightMaterial(STRINGHASH_CARSKIN, light_material_spoiler);
+                        view->Render(spoiler_model, &spoiler_local_world[i], light_context, disable_env_flag | extra_render_flags, nullptr);
+                    }
+                }
+            } else {
+                for (int i = 0; i < CARPART_MODEL_NUM; i++) {
+                    eModel *spoiler_model = this->mCarPartModels[CARSLOTID_SPOILER][i][car_body_lod].GetModel();
+                    if (spoiler_model != nullptr) {
+                        spoiler_model->ReplaceLightMaterial(STRINGHASH_CARSKIN, light_material_spoiler);
+                        view->Render(spoiler_model, biased_local_world, light_context, disable_env_flag | extra_render_flags, nullptr);
+                    }
+                }
             }
         }
+    }
 
-        eGetCurrentViewMode();
+    if (car_body_lod <= this->pRideInfo->GetMaxRoofScoopLodLevel()) {
+        bMatrix4 *roof_local_world = eFrameMallocMatrix(1);
 
-        for (FrontEndRenderingCar *front_end_car = FrontEndRenderingCarList.GetHead(); front_end_car != FrontEndRenderingCarList.EndOfList();
-             front_end_car = front_end_car->GetNext()) {
-            CarRenderInfo *render_info = front_end_car->RenderInfo;
+        if (roof_local_world != nullptr) {
+            if (this->RoofScoopPositionMarker != nullptr) {
+                eMulMatrix(roof_local_world, &this->RoofScoopPositionMarker->Matrix, biased_local_world);
+                for (int i = 0; i < CARPART_MODEL_NUM; i++) {
+                    eModel *roof_scoop_model = this->mCarPartModels[CARSLOTID_ROOF][i][car_body_lod].GetModel();
+                    if (roof_scoop_model != nullptr) {
+                        roof_scoop_model->ReplaceLightMaterial(STRINGHASH_CARSKIN, light_material_roof);
+                        view->Render(roof_scoop_model, roof_local_world, light_context, (disable_env_flag | extra_render_flags) | body_render_flags,
+                                     nullptr);
+                    }
+                }
+            } else {
+                for (int i = 0; i < CARPART_MODEL_NUM; i++) {
+                    eModel *roof_scoop_model = this->mCarPartModels[CARSLOTID_ROOF][i][car_body_lod].GetModel();
+                    if (roof_scoop_model != nullptr) {
+                        roof_scoop_model->ReplaceLightMaterial(STRINGHASH_CARSKIN, light_material_roof);
+                        view->Render(roof_scoop_model, biased_local_world, light_context, (disable_env_flag | extra_render_flags) | body_render_flags,
+                                     nullptr);
+                    }
+                }
+            }
+        }
+    }
 
-            if (render_info != 0 && front_end_car->Visible != 0) {
-                CARPART_LOD lod = render_info->mMinLodLevel;
-                bMatrix4 body_matrix(front_end_car->BodyMatrix);
-                bVector3 position(front_end_car->Position.x, front_end_car->Position.y, front_end_car->Position.z);
+    bMatrix4 trans_pivot[4];
+    bMatrix4 trans_axle[4];
+    bMatrix4 brake_trans_pivot[4];
 
-                if (reflection) {
-                    float offset_scale =
-                        *reinterpret_cast<float *>(*reinterpret_cast<int *>(reinterpret_cast<unsigned char *>(render_info) + 0x1764) + 0xF4);
+    float wheel_pivot_trans_amount = WheelPivotTranslationAmount;
 
-                    body_matrix.v2.x = -body_matrix.v2.x;
-                    body_matrix.v2.y = -body_matrix.v2.y;
-                    body_matrix.v2.z = -body_matrix.v2.z;
-                    position.x += feposoff.x + body_matrix.v2.x * offset_scale;
-                    position.y += feposoff.y + body_matrix.v2.y * offset_scale;
-                    position.z += feposoff.z + body_matrix.v2.z * offset_scale;
+    float front_wheel_brake_marker = TweakBrakeMarkerY[0] != 0.0f ? TweakBrakeMarkerY[0] : this->WheelBrakeMarkerY[0];
+    float rear_wheel_brake_marker = TweakBrakeMarkerY[1] != 0.0f ? TweakBrakeMarkerY[1] : this->WheelBrakeMarkerY[1];
+
+    unsigned short wheel_camber_angle_front = 0;
+    float wheel_camber_push_down_front = 0.0f;
+    unsigned short wheel_camber_angle_rear = 0;
+    float wheel_camber_push_down_rear = 0.0f;
+
+    if (car_body_lod <= CARPART_LOD_B) {
+        float camber_amount_front = this->mAttributes.CamberFront();
+        float camber_amount_rear = this->mAttributes.CamberRear();
+        wheel_camber_angle_front = bDegToAng(camber_amount_front * 7.0f);
+        wheel_camber_angle_rear = bDegToAng(camber_amount_rear * 7.0f);
+        wheel_camber_push_down_front = camber_amount_front * 0.03f;
+        wheel_camber_push_down_rear = camber_amount_rear * 0.03f;
+    }
+
+    unsigned short wheel_wobble_angle = bDegToAng(0.0f);
+
+    for (int wheel = 0; wheel < 4; wheel++) {
+        int wheel_end = static_cast<int>(wheel > 1);
+        float wheel_width_scale = this->WheelWidthScales[wheel];
+        float wheel_width = this->WheelWidths[wheel_end] * wheel_width_scale;
+        float wheel_radius_scale = this->WheelRadiusScales[wheel];
+        float yrender_offset = this->WheelYRenderOffset[wheel];
+        float pivot_y = wheel_width * wheel_pivot_trans_amount;
+        float wheel_brake_marker_y = rear_wheel_brake_marker;
+
+        if (wheel <= 1) {
+            wheel_brake_marker_y = front_wheel_brake_marker;
+        }
+
+        eIdentity(&trans_pivot[wheel]);
+        eIdentity(&trans_axle[wheel]);
+        eIdentity(&brake_trans_pivot[wheel]);
+
+        trans_pivot[wheel].v0.x = wheel_radius_scale;
+        trans_pivot[wheel].v1.y = wheel_width_scale;
+        trans_pivot[wheel].v2.z = wheel_radius_scale;
+        trans_pivot[wheel].v3.y = -pivot_y;
+
+        if (yrender_offset < 0.0f) {
+            trans_axle[wheel].v3.y = -(yrender_offset + pivot_y);
+        } else {
+            trans_axle[wheel].v3.y = pivot_y - yrender_offset;
+        }
+
+        if (wheel_brake_marker_y != 0.0f) {
+            float marker_y = -pivot_y;
+            brake_trans_pivot[wheel].v3.y = wheel_brake_marker_y * wheel_width_scale + marker_y;
+        }
+
+        if (wheel <= 1) {
+            trans_axle[wheel].v3.z -= wheel_camber_push_down_front;
+        } else {
+            trans_axle[wheel].v3.z -= wheel_camber_push_down_rear;
+        }
+
+        tire_matrices[wheel].v3.y = 0.0f;
+        brake_matrices[wheel].v3.y = 0.0f;
+    }
+
+    int tire_visible0 = 0;
+    int tire_visible1 = 0;
+    int tire_visible2 = 0;
+    int tire_visible3 = 0;
+    eDynamicLightContext *tire_light_context = nullptr;
+
+    int tires_enabled = this->pRideInfo->IsPartEnabled(CARSLOTID_FRONT_WHEEL);
+    bMatrix4 *tirelight_world_view = &hack_man_matrix;
+
+    if (this->pRideInfo->Type != CARTYPE_COPHELI && tires_enabled != 0 && car_body_lod <= this->pRideInfo->GetMaxTireLodLevel()) {
+        bMatrix4 *tire_local_world = eFrameMallocMatrix(4);
+        float extra_rear_tire_offset = this->mAttributes.ExtraRearTireOffset();
+        bMatrix4 *extra_tire_local_world = nullptr;
+
+        if (extra_rear_tire_offset != 0.0f) {
+            extra_tire_local_world = eFrameMallocMatrix(2);
+        }
+
+        tire_light_context = static_cast<eDynamicLightContext *>(eFrameMalloc(0x490));
+
+        if (tire_local_world != nullptr && tire_light_context != nullptr) {
+            int tire_lod = car_tire_lod;
+            CarPartModel *front_tire_models[CARPART_MODEL_NUM];
+            CarPartModel *rear_tire_models[CARPART_MODEL_NUM];
+            eLightMaterial *light_material_rim[2];
+            bMatrix4 *left_tire_flip;
+            unsigned int extra_mirror_flag;
+
+            tire_visible0 = static_cast<int>(this->TheCarPartCuller.IsPartVisible(CULLABLE_CAR_PART_TIRE_FL));
+            tire_visible1 = static_cast<int>(this->TheCarPartCuller.IsPartVisible(CULLABLE_CAR_PART_TIRE_FR));
+            tire_visible2 = static_cast<int>(this->TheCarPartCuller.IsPartVisible(CULLABLE_CAR_PART_TIRE_RR));
+            tire_visible3 = static_cast<int>(this->TheCarPartCuller.IsPartVisible(CULLABLE_CAR_PART_TIRE_RL));
+
+            if (car_tire_lod > this->pRideInfo->GetMaxTireLodLevel()) {
+                tire_lod = this->pRideInfo->GetMaxTireLodLevel();
+            }
+
+            light_material_rim[0] = this->LightMaterial_WheelRim;
+            light_material_rim[1] = this->LightMaterial_Spinner;
+
+            for (int i = 0; i < CARPART_MODEL_NUM; i++) {
+                front_tire_models[i] = &this->mCarPartModels[CARSLOTID_FRONT_WHEEL + i][0][tire_lod];
+                rear_tire_models[i] = &this->mCarPartModels[CARSLOTID_REAR_WHEEL + i][0][tire_lod];
+
+                if (front_tire_models[i] != nullptr && light_material_rim[i] != nullptr) {
+                    front_tire_models[i]->GetModel()->ReplaceLightMaterial(STRINGHASH_MAGSILVER, light_material_rim[i]);
+                    front_tire_models[i]->GetModel()->ReplaceLightMaterial(STRINGHASH_MAGCHROME, light_material_rim[i]);
+                    front_tire_models[i]->GetModel()->ReplaceLightMaterial(STRINGHASH_MAGGUNMETAL, light_material_rim[i]);
+                }
+                if (rear_tire_models[i] != nullptr && light_material_rim[i] != nullptr) {
+                    front_tire_models[i]->GetModel()->ReplaceLightMaterial(STRINGHASH_MAGSILVER, light_material_rim[i]);
+                    front_tire_models[i]->GetModel()->ReplaceLightMaterial(STRINGHASH_MAGCHROME, light_material_rim[i]);
+                    front_tire_models[i]->GetModel()->ReplaceLightMaterial(STRINGHASH_MAGGUNMETAL, light_material_rim[i]);
+                }
+            }
+
+            left_tire_flip = &LeftTireRotateZMatrix;
+            extra_mirror_flag = 0;
+            if (MirrorLeftTires || this->mMirrorLeftWheels) {
+                left_tire_flip = &LeftTireMirrorMatrix;
+                extra_mirror_flag = 0x40000;
+            }
+
+            bMatrix4 wobbleMat;
+            if (this->mWheelWobbleEnabled[0] || this->mWheelWobbleEnabled[1] || this->mWheelWobbleEnabled[2] || this->mWheelWobbleEnabled[3]) {
+                bIdentity(&wobbleMat);
+                eRotateX(&wobbleMat, &wobbleMat, 0x4fa);
+            }
+
+            if (tire_visible0) {
+                bMatrix4 *starting_tire_matrix = &tire_matrices[0];
+                bMatrix4 tire_matrix_for_camber;
+
+                if (wheel_camber_angle_front != 0) {
+                    bVector3 wheel_offset;
+                    bCopy(&tire_matrix_for_camber, starting_tire_matrix);
+                    bCopy(&wheel_offset, reinterpret_cast<bVector3 *>(&tire_matrix_for_camber.v3));
+                    bFill(&tire_matrix_for_camber.v3, 0.0f, 0.0f, 0.0f, 1.0f);
+                    eRotateX(&tire_matrix_for_camber, &tire_matrix_for_camber, wheel_camber_angle_front);
+                    bCopy(reinterpret_cast<bVector3 *>(&tire_matrix_for_camber.v3), &wheel_offset);
+                    starting_tire_matrix = &tire_matrix_for_camber;
                 }
 
-                render_info->Render(view, &position, &body_matrix, front_end_car->TireMatrices, front_end_car->BrakeMatrices,
-                                    front_end_car->TireMatrices, reflection, 0, reflection, 1.0f, lod, lod);
+                bMatrix4 tire0;
+                eMulMatrix(&tire0, &trans_pivot[0], left_tire_flip);
+                if (this->mWheelWobbleEnabled[0]) {
+                    eMulMatrix(&tire0, &tire0, &wobbleMat);
+                }
+                eMulMatrix(&tire0, &tire0, starting_tire_matrix);
+                eMulMatrix(&tire0, &tire0, &trans_axle[0]);
+                eMulMatrix(&tire_local_world[0], &tire0, biased_local_world);
+                elCloneLightContext(&tire_light_context[0], &tire_local_world[0], tirelight_world_view, &camera_world_position, view,
+                                    &base_light_context);
+
+                this->RenderPart(view, front_tire_models[0], &tire_local_world[0], &tire_light_context[0],
+                                 disable_env_flag_tires | extra_render_flags | body_render_flags | extra_mirror_flag);
+            }
+
+            if (tire_visible1) {
+                bMatrix4 *starting_tire_matrix = &tire_matrices[1];
+                bMatrix4 tire_matrix_for_camber;
+
+                if (wheel_camber_angle_front != 0) {
+                    bVector3 wheel_offset;
+                    bCopy(&tire_matrix_for_camber, starting_tire_matrix);
+                    bCopy(&wheel_offset, reinterpret_cast<bVector3 *>(&tire_matrix_for_camber.v3));
+                    bFill(&tire_matrix_for_camber.v3, 0.0f, 0.0f, 0.0f, 1.0f);
+                    eRotateX(&tire_matrix_for_camber, &tire_matrix_for_camber, -wheel_camber_angle_front);
+                    bCopy(reinterpret_cast<bVector3 *>(&tire_matrix_for_camber.v3), &wheel_offset);
+                    starting_tire_matrix = &tire_matrix_for_camber;
+                }
+
+                bMatrix4 tire1;
+                if (this->mWheelWobbleEnabled[1]) {
+                    eMulMatrix(&tire1, &trans_pivot[1], &wobbleMat);
+                } else {
+                    tire1 = trans_pivot[1];
+                }
+                eMulMatrix(&tire1, &tire1, starting_tire_matrix);
+                eMulMatrix(&tire1, &tire1, &trans_axle[1]);
+                eMulMatrix(&tire_local_world[1], &tire1, biased_local_world);
+                elCloneLightContext(&tire_light_context[1], &tire_local_world[1], tirelight_world_view, &camera_world_position, view,
+                                    &base_light_context);
+                this->RenderPart(view, front_tire_models[0], &tire_local_world[1], &tire_light_context[1],
+                                 disable_env_flag_tires | extra_render_flags | body_render_flags);
+            }
+
+            if (tire_visible2) {
+                bMatrix4 *starting_tire_matrix = &tire_matrices[2];
+                bMatrix4 tire_matrix_for_camber;
+
+                if (wheel_camber_angle_rear != 0) {
+                    bVector3 wheel_offset;
+                    bCopy(&tire_matrix_for_camber, starting_tire_matrix);
+                    bCopy(&wheel_offset, reinterpret_cast<bVector3 *>(&tire_matrix_for_camber.v3));
+                    bFill(&tire_matrix_for_camber.v3, 0.0f, 0.0f, 0.0f, 1.0f);
+                    eRotateX(&tire_matrix_for_camber, &tire_matrix_for_camber, -wheel_camber_angle_rear);
+                    bCopy(reinterpret_cast<bVector3 *>(&tire_matrix_for_camber.v3), &wheel_offset);
+                    starting_tire_matrix = &tire_matrix_for_camber;
+                }
+
+                bMatrix4 tire2;
+                if (this->mWheelWobbleEnabled[2]) {
+                    eMulMatrix(&tire2, &trans_pivot[2], &wobbleMat);
+                } else {
+                    tire2 = trans_pivot[2];
+                }
+                eMulMatrix(&tire2, &tire2, starting_tire_matrix);
+                eMulMatrix(&tire2, &tire2, &trans_axle[2]);
+                eMulMatrix(&tire_local_world[2], &tire2, biased_local_world);
+                elCloneLightContext(&tire_light_context[2], &tire_local_world[2], tirelight_world_view, &camera_world_position, view,
+                                    &base_light_context);
+
+                if (!in_front_end && !INIS::Exists() && tire_lod == this->mMinLodLevel && TireFace(&tire_local_world[2], view) < FaceCos &&
+                    this->mMinLodLevel + CARPART_LOD_B <= this->mMaxLodLevel) {
+                    CarPartModel *tmpM = &this->mCarPartModels[CARSLOTID_REAR_WHEEL][0][this->mMinLodLevel + CARPART_LOD_B];
+                    if (tmpM != nullptr) {
+                        rear_tire_models[0] = tmpM;
+                    }
+                }
+
+                this->RenderPart(view, rear_tire_models[0], &tire_local_world[2], &tire_light_context[2],
+                                 disable_env_flag_tires | extra_render_flags | body_render_flags);
+                if (extra_tire_local_world != nullptr) {
+                    tire2.v3.x += extra_rear_tire_offset;
+                    eMulMatrix(&extra_tire_local_world[0], &tire2, biased_local_world);
+                    this->RenderPart(view, rear_tire_models[0], &extra_tire_local_world[0], &tire_light_context[2],
+                                     disable_env_flag_tires | extra_render_flags | body_render_flags);
+                }
+            }
+
+            for (int i = 0; i < 1; i++) {
+                rear_tire_models[i] = &this->mCarPartModels[CARSLOTID_REAR_WHEEL + i][0][tire_lod];
+            }
+
+            if (tire_visible3) {
+                bMatrix4 *starting_tire_matrix = &tire_matrices[3];
+                bMatrix4 tire_matrix_for_camber;
+
+                if (wheel_camber_angle_rear != 0) {
+                    bVector3 wheel_offset;
+                    bCopy(&tire_matrix_for_camber, starting_tire_matrix);
+                    bCopy(&wheel_offset, reinterpret_cast<bVector3 *>(&tire_matrix_for_camber.v3));
+                    bFill(&tire_matrix_for_camber.v3, 0.0f, 0.0f, 0.0f, 1.0f);
+                    eRotateX(&tire_matrix_for_camber, &tire_matrix_for_camber, wheel_camber_angle_rear);
+                    bCopy(reinterpret_cast<bVector3 *>(&tire_matrix_for_camber.v3), &wheel_offset);
+                    starting_tire_matrix = &tire_matrix_for_camber;
+                }
+
+                bMatrix4 tire3;
+                eMulMatrix(&tire3, &trans_pivot[3], left_tire_flip);
+                if (this->mWheelWobbleEnabled[3]) {
+                    eMulMatrix(&tire3, &tire3, &wobbleMat);
+                }
+                eMulMatrix(&tire3, &tire3, starting_tire_matrix);
+                eMulMatrix(&tire3, &tire3, &trans_axle[3]);
+                eMulMatrix(&tire_local_world[3], &tire3, biased_local_world);
+                elCloneLightContext(&tire_light_context[3], &tire_local_world[3], tirelight_world_view, &camera_world_position, view,
+                                    &base_light_context);
+
+                if (!in_front_end && !INIS::Exists() && tire_lod == this->mMinLodLevel && TireFace(&tire_local_world[3], view) < FaceCos &&
+                    this->mMinLodLevel + CARPART_LOD_B <= this->mMaxLodLevel) {
+                    CarPartModel *tmpM = &this->mCarPartModels[CARSLOTID_REAR_WHEEL][0][this->mMinLodLevel + CARPART_LOD_B];
+                    if (tmpM != nullptr) {
+                        rear_tire_models[0] = tmpM;
+                    }
+                }
+
+                this->RenderPart(view, rear_tire_models[0], &tire_local_world[3], &tire_light_context[3],
+                                 disable_env_flag_tires | extra_render_flags | body_render_flags | extra_mirror_flag);
+                if (extra_tire_local_world != nullptr) {
+                    tire3.v3.x += extra_rear_tire_offset;
+                    eMulMatrix(&extra_tire_local_world[1], &tire3, biased_local_world);
+                    this->RenderPart(view, rear_tire_models[0], &extra_tire_local_world[1], &tire_light_context[3],
+                                     disable_env_flag_tires | extra_render_flags | body_render_flags | extra_mirror_flag);
+                }
             }
         }
     }
+
+    if (car_body_lod <= this->pRideInfo->GetMaxBrakeLodLevel() &&
+        this->mCarPartModels[CARSLOTID_FRONT_BRAKE][0][this->mMinLodLevel].GetModel() != nullptr) {
+        int brakes_visible_front_left = static_cast<int>(this->TheCarPartCuller.IsPartVisible(CULLABLE_CAR_PART_BRAKE_FL));
+        int brakes_visible_front_right = static_cast<int>(this->TheCarPartCuller.IsPartVisible(CULLABLE_CAR_PART_BRAKE_FR));
+        int brakes_visible_rear_right = static_cast<int>(this->TheCarPartCuller.IsPartVisible(CULLABLE_CAR_PART_BRAKE_RR));
+        int brakes_visible_rear_left = static_cast<int>(this->TheCarPartCuller.IsPartVisible(CULLABLE_CAR_PART_BRAKE_RL));
+
+        if ((brakes_visible_front_left | brakes_visible_front_right | brakes_visible_rear_right | brakes_visible_rear_left) != 0) {
+            bMatrix4 *brake_local_world = eFrameMallocMatrix(4);
+            eDynamicLightContext *brake_light_context = static_cast<eDynamicLightContext *>(eFrameMalloc(sizeof(eDynamicLightContext) * 4));
+
+            if (brake_local_world != nullptr && brake_light_context != nullptr) {
+                int brakes_lod = car_body_lod;
+                eModel *front_brake_models[CARPART_MODEL_NUM];
+                eModel *rear_brake_models[CARPART_MODEL_NUM];
+                eLightMaterial *light_material_caliper = this->LightMaterial_Caliper;
+                bMatrix4 mirror;
+
+                for (int i = 0; i < CARPART_MODEL_NUM; i++) {
+                    if (this->mCarPartModels[CARSLOTID_FRONT_BRAKE + i][0][brakes_lod].GetModel() != nullptr) {
+                        front_brake_models[i] = this->mCarPartModels[CARSLOTID_FRONT_BRAKE + i][0][brakes_lod].GetModel();
+                        if (light_material_caliper != nullptr) {
+                            front_brake_models[i]->ReplaceLightMaterial(STRINGHASH_CALIPER, light_material_caliper);
+                            front_brake_models[i]->ReplaceLightMaterial(STRINGHASH_CALLIPER, light_material_caliper);
+                        }
+                    } else {
+                        front_brake_models[i] = nullptr;
+                    }
+
+                    if (this->mCarPartModels[CARSLOTID_REAR_BRAKE + i][0][brakes_lod].GetModel() != nullptr) {
+                        rear_brake_models[i] = this->mCarPartModels[CARSLOTID_REAR_BRAKE + i][0][brakes_lod].GetModel();
+                        if (light_material_caliper != nullptr) {
+                            rear_brake_models[i]->ReplaceLightMaterial(STRINGHASH_CALIPER, light_material_caliper);
+                            rear_brake_models[i]->ReplaceLightMaterial(STRINGHASH_CALLIPER, light_material_caliper);
+                        }
+                    } else {
+                        rear_brake_models[i] = nullptr;
+                    }
+                }
+
+                eIdentity(&mirror);
+                mirror.v0.x = BrakeMirrorX;
+                mirror.v1.y = BrakeMirrorY;
+                mirror.v2.z = BrakeMirrorZ;
+
+                if (brakes_visible_front_left) {
+                    bMatrix4 *starting_brake_matrix = &brake_matrices[0];
+                    bMatrix4 brake_matrix_for_camber;
+
+                    if (wheel_camber_angle_front != 0) {
+                        bVector3 wheel_offset;
+                        bCopy(&brake_matrix_for_camber, starting_brake_matrix);
+                        bCopy(&wheel_offset, reinterpret_cast<bVector3 *>(&brake_matrix_for_camber.v3));
+                        bFill(&brake_matrix_for_camber.v3, 0.0f, 0.0f, 0.0f, 1.0f);
+                        eRotateX(&brake_matrix_for_camber, &brake_matrix_for_camber, wheel_camber_angle_front);
+                        bCopy(reinterpret_cast<bVector3 *>(&brake_matrix_for_camber.v3), &wheel_offset);
+                        starting_brake_matrix = &brake_matrix_for_camber;
+                    }
+
+                    bMatrix4 bm0;
+                    eMulMatrix(&bm0, &brake_trans_pivot[0], &mirror);
+                    eMulMatrix(&bm0, &bm0, starting_brake_matrix);
+                    eMulMatrix(&bm0, &bm0, &trans_axle[0]);
+                    eMulMatrix(&brake_local_world[0], &bm0, biased_local_world);
+
+                    if (tire_visible0 && IsGameFlowInGame()) {
+                        for (int i = 0; i < CARPART_MODEL_NUM; i++) {
+                            if (front_brake_models[i] != nullptr) {
+                                front_brake_models[i]->AttachReplacementTextureTable(this->BrakeLeftReplacementTextureTable, 2, 0);
+                                view->Render(front_brake_models[i], &brake_local_world[0], &tire_light_context[0],
+                                             extra_render_flags | body_render_flags | 0x40000, nullptr);
+                            }
+                        }
+                    } else {
+                        for (int i = 0; i < CARPART_MODEL_NUM; i++) {
+                            if (front_brake_models[i] != nullptr) {
+                                front_brake_models[i]->AttachReplacementTextureTable(this->BrakeLeftReplacementTextureTable, 2, 0);
+                                elCloneLightContext(&brake_light_context[0], &brake_local_world[0], tirelight_world_view, &camera_world_position,
+                                                    view, &base_light_context);
+                                view->Render(front_brake_models[i], &brake_local_world[0], &brake_light_context[0],
+                                             extra_render_flags | body_render_flags | 0x40000, nullptr);
+                            }
+                        }
+                    }
+                }
+
+                if (brakes_visible_front_right) {
+                    bMatrix4 *starting_brake_matrix = &brake_matrices[1];
+                    bMatrix4 brake_matrix_for_camber;
+
+                    if (wheel_camber_angle_front != 0) {
+                        bVector3 wheel_offset;
+                        bCopy(&brake_matrix_for_camber, starting_brake_matrix);
+                        bCopy(&wheel_offset, reinterpret_cast<bVector3 *>(&brake_matrix_for_camber.v3));
+                        bFill(&brake_matrix_for_camber.v3, 0.0f, 0.0f, 0.0f, 1.0f);
+                        eRotateX(&brake_matrix_for_camber, &brake_matrix_for_camber, -wheel_camber_angle_front);
+                        bCopy(reinterpret_cast<bVector3 *>(&brake_matrix_for_camber.v3), &wheel_offset);
+                        starting_brake_matrix = &brake_matrix_for_camber;
+                    }
+
+                    bMatrix4 bm1;
+                    eMulMatrix(&bm1, &brake_trans_pivot[1], starting_brake_matrix);
+                    eMulMatrix(&bm1, &bm1, &trans_axle[1]);
+                    eMulMatrix(&brake_local_world[1], &bm1, biased_local_world);
+
+                    if (tire_visible1 && IsGameFlowInGame()) {
+                        for (int i = 0; i < CARPART_MODEL_NUM; i++) {
+                            if (front_brake_models[i] != nullptr) {
+                                front_brake_models[i]->AttachReplacementTextureTable(this->BrakeRightReplacementTextureTable, 2, 0);
+                                view->Render(front_brake_models[i], &brake_local_world[1], &tire_light_context[1],
+                                             extra_render_flags | body_render_flags, nullptr);
+                            }
+                        }
+                    } else {
+                        for (int i = 0; i < CARPART_MODEL_NUM; i++) {
+                            if (front_brake_models[i] != nullptr) {
+                                front_brake_models[i]->AttachReplacementTextureTable(this->BrakeRightReplacementTextureTable, 2, 0);
+                                elCloneLightContext(&brake_light_context[1], &brake_local_world[1], tirelight_world_view, &camera_world_position,
+                                                    view, &base_light_context);
+                                view->Render(front_brake_models[i], &brake_local_world[1], &brake_light_context[1],
+                                             extra_render_flags | body_render_flags, nullptr);
+                            }
+                        }
+                    }
+                }
+
+                if (brakes_visible_rear_right) {
+                    bMatrix4 *starting_brake_matrix = &brake_matrices[2];
+                    bMatrix4 brake_matrix_for_camber;
+
+                    if (wheel_camber_angle_rear != 0) {
+                        bCopy(&brake_matrix_for_camber, starting_brake_matrix);
+                        bVector3 wheel_offset;
+                        bCopy(&wheel_offset, reinterpret_cast<bVector3 *>(&brake_matrix_for_camber.v3));
+                        bFill(&brake_matrix_for_camber.v3, 0.0f, 0.0f, 0.0f, 1.0f);
+                        eRotateX(&brake_matrix_for_camber, &brake_matrix_for_camber, -wheel_camber_angle_rear);
+                        bCopy(reinterpret_cast<bVector3 *>(&brake_matrix_for_camber.v3), &wheel_offset);
+                        starting_brake_matrix = &brake_matrix_for_camber;
+                    }
+
+                    bMatrix4 bm2;
+                    eMulMatrix(&bm2, &brake_trans_pivot[2], starting_brake_matrix);
+                    eMulMatrix(&bm2, &bm2, &trans_axle[2]);
+                    eMulMatrix(&brake_local_world[2], &bm2, biased_local_world);
+
+                    if (tire_visible2 && IsGameFlowInGame()) {
+                        for (int i = 0; i < CARPART_MODEL_NUM; i++) {
+                            if (rear_brake_models[i] != nullptr) {
+                                rear_brake_models[i]->AttachReplacementTextureTable(this->BrakeRightReplacementTextureTable, 2, 0);
+                                view->Render(rear_brake_models[i], &brake_local_world[2], &tire_light_context[2],
+                                             extra_render_flags | body_render_flags, nullptr);
+                            }
+                        }
+                    } else {
+                        for (int i = 0; i < CARPART_MODEL_NUM; i++) {
+                            if (rear_brake_models[i] != nullptr) {
+                                rear_brake_models[i]->AttachReplacementTextureTable(this->BrakeRightReplacementTextureTable, 2, 0);
+                                elCloneLightContext(&brake_light_context[2], &brake_local_world[2], tirelight_world_view, &camera_world_position,
+                                                    view, &base_light_context);
+                                view->Render(rear_brake_models[i], &brake_local_world[2], &brake_light_context[2],
+                                             extra_render_flags | body_render_flags, nullptr);
+                            }
+                        }
+                    }
+                }
+
+                if (brakes_visible_rear_left) {
+                    bMatrix4 *starting_brake_matrix = &brake_matrices[3];
+                    bMatrix4 brake_matrix_for_camber;
+
+                    if (wheel_camber_angle_rear != 0) {
+                        bVector3 wheel_offset;
+                        bCopy(&brake_matrix_for_camber, starting_brake_matrix);
+                        bCopy(&wheel_offset, reinterpret_cast<bVector3 *>(&brake_matrix_for_camber.v3));
+                        bFill(&brake_matrix_for_camber.v3, 0.0f, 0.0f, 0.0f, 1.0f);
+                        eRotateX(&brake_matrix_for_camber, &brake_matrix_for_camber, wheel_camber_angle_rear);
+                        bCopy(reinterpret_cast<bVector3 *>(&brake_matrix_for_camber.v3), &wheel_offset);
+                        starting_brake_matrix = &brake_matrix_for_camber;
+                    }
+
+                    bMatrix4 bm3;
+                    eMulMatrix(&bm3, &brake_trans_pivot[3], &mirror);
+                    eMulMatrix(&bm3, &bm3, starting_brake_matrix);
+                    eMulMatrix(&bm3, &bm3, &trans_axle[3]);
+                    eMulMatrix(&brake_local_world[3], &bm3, biased_local_world);
+
+                    if (tire_visible3 && IsGameFlowInGame()) {
+                        for (int i = 0; i < CARPART_MODEL_NUM; i++) {
+                            if (rear_brake_models[i] != nullptr) {
+                                rear_brake_models[i]->AttachReplacementTextureTable(this->BrakeLeftReplacementTextureTable, 2, 0);
+                                view->Render(rear_brake_models[i], &brake_local_world[3], &tire_light_context[3],
+                                             extra_render_flags | body_render_flags | 0x40000, nullptr);
+                            }
+                        }
+                    } else {
+                        for (int i = 0; i < CARPART_MODEL_NUM; i++) {
+                            if (rear_brake_models[i] != nullptr) {
+                                rear_brake_models[i]->AttachReplacementTextureTable(this->BrakeLeftReplacementTextureTable, 2, 0);
+                                elCloneLightContext(&brake_light_context[3], &brake_local_world[3], tirelight_world_view, &camera_world_position,
+                                                    view, &base_light_context);
+                                view->Render(rear_brake_models[i], &brake_local_world[3], &brake_light_context[3],
+                                             extra_render_flags | body_render_flags | 0x40000, nullptr);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return true;
 }
 
-void RenderVehicleFlares(eView *view, int reflection, int renderFlareFlags) {
-    VehicleRenderConn::RenderFlares(view, reflection, renderFlareFlags);
+int cmpl(const void *a, const void *b) {
+    float v = (*reinterpret_cast<const float *const *>(a))[0] - (*reinterpret_cast<const float *const *>(b))[0];
+
+    if (0.0f < v) {
+        return 1;
+    }
+    if (v < 0.0f) {
+        return -1;
+    }
+
+    v = (*reinterpret_cast<const float *const *>(b))[1] - (*reinterpret_cast<const float *const *>(a))[1];
+
+    if (0.0f < v) {
+        return 1;
+    }
+    if (v < 0.0f) {
+        return -1;
+    }
+
+    return 0;
 }
 
-void DrawTestCars(eView *view, int reflection) {
-    VehicleRenderConn::RenderAll(view, reflection);
+int cmph(const void *a, const void *b) {
+    return cmpl(b, a);
+}
+
+static inline bool ccw(float **P, int i, int j, int k) {
+    float a = P[i][0] - P[j][0];
+    float b = P[i][1] - P[j][1];
+    float c = P[k][0] - P[j][0];
+    float d = P[k][1] - P[j][1];
+    return a * d - b * c > 0.0f;
+}
+
+// UNSOLVED
+int make_chain(float **V, int n, int (*cmp)(const void *, const void *)) {
+    int i;
+    int j;
+    int s;
+    float *t;
+
+    qsort(V, n, 4, cmp);
+
+    s = 1;
+    for (i = 2; i < n; i++) {
+        for (j = s; j >= 1 && !ccw(V, j - 1, j, i); j--) {
+        }
+
+        s = j + 1;
+        t = V[s];
+        V[s] = V[i];
+        V[i] = t;
+    }
+
+    return s;
+}
+
+int ch2d(float **P, int n) {
+    int u = make_chain(P, n, cmpl);
+    P[n] = P[0];
+    return u + make_chain(P + u, n - u + 1, cmph);
+}
+
+inline bool ZPassesTest(float z, float zref) {
+    return true;
+}
+
+static bVector3 hull_Origin;
+static bVector3 hull_Normal;
+
+inline bool DotPassesTest(const bVector3 *point) {
+    bVector3 vec = *point - hull_Origin;
+    float dot = bDot(&vec, &hull_Normal);
+    if (dot < 0.0f) {
+        dot = -dot;
+    }
+
+    return dot < 20.0f;
+}
+
+float PointCloud[16][4] = {
+    {-0.5f, 0.5f, 1.0f, 1.0f}, {0.5f, 0.5f, 1.0f, 1.0f}, {0.5f, -0.5f, 1.0f, 1.0f}, {-0.5f, -0.5f, 1.0f, 1.0f},
+    {-0.5f, 0.5f, 0.5f, 1.0f}, {0.5f, 0.5f, 0.5f, 1.0f}, {0.5f, -0.5f, 0.5f, 1.0f}, {-0.5f, -0.5f, 0.5f, 1.0f},
+    {-1.0f, 1.0f, 0.5f, 1.0f}, {1.0f, 1.0f, 0.5f, 1.0f}, {1.0f, -1.0f, 0.5f, 1.0f}, {-1.0f, -1.0f, 0.5f, 1.0f},
+    {-1.0f, 1.0f, 0.0f, 1.0f}, {1.0f, 1.0f, 0.0f, 1.0f}, {1.0f, -1.0f, 0.0f, 1.0f}, {-1.0f, -1.0f, 0.0f, 1.0f},
+};
+
+// TODO figure out and use these values
+// static const unsigned short CarShadowSunAngleMin;
+
+// static const float CarShadowSunAdjust;
+
+// static const float FancyCarShadowFanUV;
+
+// static const float FancyCarShadowEdgeMultMin;
+
+// static const float FancyCarShadowEdgeMultMax;
+
+float FancyCarShadowEdgeMult = 1.1f;
+
+// static const float FancyCarShadowZAdd;
+
+// static const float CarShadowScaleHULLx;
+
+// static const float CarShadowScaleHULLy;
+
+// static const float CarShadowScaleHULLz;
+
+// static const float CarHullShadowZeroSunlightAmount;
+
+// static const float CarBaseShadowZeroSunlightAmount;
+
+// static const int CarHullShadowAlphaMinIG;
+
+// static const int CarHullShadowAlphaMaxIG;
+
+float car_elevation = 0.0f;
+
+float car_elevation_scale = 0.0f;
+
+bVector3 hullVertArray1[16];
+
+bVector3 hullVertArray2[16];
+
+bVector3 hullVertArray3[48];
+
+static float *P[17];
+
+void CarRenderInfo::convex_hull(bVector3 *p, const WCollider *wcoll, int &n, float Z, float zBias, int fast) {
+    int i;
+    int dec;
+    bool bPointValid;
+    UMath::Vector3 usPoint;
+
+    for (i = 0; i < n; i++) {
+        P[i] = reinterpret_cast<float *>(&p[i]);
+    }
+
+    n = ch2d(reinterpret_cast<float **>(P), n);
+    if (wcoll != nullptr) {
+        this->mWorldPos.SetTolerance(TweakCarShadowTopologyTolerance);
+        if (fast != 0) {
+            bVector3 *vec = hullVertArray2;
+            bFill(vec, P[0][0], P[0][1], Z);
+
+            eUnSwizzleWorldVector(*vec, reinterpret_cast<bVector3 &>(usPoint));
+            float fastZ = 0.0f;
+            this->mWorldPos.FindClosestFace(wcoll, usPoint, true);
+            if (this->mWorldPos.OnValidFace()) {
+                fastZ = this->mWorldPos.HeightAtPoint(usPoint);
+            }
+
+            dec = 0;
+            for (i = 0; i < n; i++) {
+                bFill(vec, P[i][0], P[i][1], fastZ);
+
+                if (ZPassesTest(vec->z, fastZ) && DotPassesTest(vec)) {
+                    vec++;
+                } else {
+                    dec++;
+                }
+            }
+        } else {
+            bool quitIfSameFace = true;
+            bVector3 *vec;
+
+            vec = hullVertArray2;
+            dec = 0;
+
+            for (i = 0; i < n; i++) {
+                bFill(vec, P[i][0], P[i][1], Z);
+
+                eUnSwizzleWorldVector(*vec, reinterpret_cast<bVector3 &>(usPoint));
+                this->mWorldPos.FindClosestFace(wcoll, usPoint, quitIfSameFace);
+                if (this->mWorldPos.OnValidFace()) {
+                    vec->z = this->mWorldPos.HeightAtPoint(usPoint);
+                }
+
+                if (ZPassesTest(vec->z, Z) && DotPassesTest(vec)) {
+                    quitIfSameFace = true;
+                    vec++;
+                } else {
+                    quitIfSameFace = false;
+                    dec++;
+                }
+            }
+        }
+
+        n -= dec;
+    }
 }
 
 int smooth_shadow_corners(int nVerts) {
     bVector3 v[2];
-    bVector3 vTemp;
     int i;
     int iNew;
     int nCurr;
@@ -3944,9 +3991,8 @@ int smooth_shadow_corners(int nVerts) {
     int nNext;
 
     iNew = 0;
-    nPrev = nVerts - 1;
-    v[0] = hullVertArray2[0] - hullVertArray2[nPrev];
-    v[0] *= lbl_8040AD7C;
+    v[1] = hullVertArray2[0] - hullVertArray2[nVerts - 1];
+    v[1] *= 0.333f;
 
     for (i = 0; i < nVerts; i++) {
         nCurr = i & 1;
@@ -3958,95 +4004,273 @@ int smooth_shadow_corners(int nVerts) {
         }
 
         v[nCurr] = hullVertArray2[nNext] - hullVertArray2[i];
-        v[nCurr] *= lbl_8040AD7C;
+        v[nCurr] *= 0.333f;
 
         hullVertArray3[iNew] = hullVertArray2[i] - v[nPrev];
-        hullVertArray3[iNew + 1] = hullVertArray2[i] + v[nCurr];
-        vTemp = v[nCurr] - v[nPrev];
-        bScaleAdd(&hullVertArray3[iNew + 2], &hullVertArray2[i], &vTemp, lbl_8040AD7C);
+        hullVertArray3[iNew + 2] = hullVertArray2[i] + v[nCurr];
+
+        {
+            bVector3 vTemp = v[nCurr] - v[nPrev];
+            bScaleAdd(&hullVertArray3[iNew + 1], &hullVertArray2[i], &vTemp, 0.333f);
+        }
+
         iNew += 3;
     }
 
     return iNew;
 }
 
+bVector3 cs_lightV;
+
+float cs_OneOverZ;
+
+void sh_Setup(bVector3 *car_pos) {
+    bVector3 light_pos;
+
+    if (SunInfo == nullptr) {
+        light_pos.x = TweakCarShadowSunX;
+        light_pos.y = TweakCarShadowSunY;
+        light_pos.z = TweakCarShadowSunZ;
+    } else {
+        light_pos.x = SunInfo->CarShadowPositionX;
+        light_pos.y = SunInfo->CarShadowPositionY;
+        light_pos.z = SunInfo->CarShadowPositionZ;
+    }
+
+    cs_lightV = *car_pos - light_pos;
+
+    float fBase = cs_lightV.x * cs_lightV.x + cs_lightV.y * cs_lightV.y;
+    fBase = bSqrt(fBase);
+
+    unsigned short aSunAngle = bATan(fBase, -cs_lightV.z);
+    if (aSunAngle < 4000) {
+        float fSin;
+        float fCos;
+
+        bSinCos(&fSin, &fCos, 4000);
+
+        float fLength = bLength(&cs_lightV);
+        float fTotal;
+        float fX = cs_lightV.x;
+        float fY = cs_lightV.y;
+        fTotal = bAbs(fX) + bAbs(fY);
+
+        cs_lightV.x = (fX / fTotal) * fLength * fCos;
+        cs_lightV.z = -fLength * fSin;
+        cs_lightV.y = (fY / fTotal) * fLength * fCos;
+    }
+
+    cs_OneOverZ = (cs_lightV.z != 0.0f) ? (1.0f / cs_lightV.z) : 0.0f;
+}
+
+inline bVector3 sh_Adjust(const bVector3 &p, const bVector3 &mid) {
+    bVector3 v;
+
+    v.x = FancyCarShadowEdgeMult * (p.x - mid.x) + mid.x;
+    v.y = FancyCarShadowEdgeMult * (p.y - mid.y) + mid.y;
+    v.z = p.z;
+    return v;
+}
+
+int dshad = 1;
+
+// UNSOLVED r29, r24
+void CarRenderInfo::DrawKeithProjShadow(eView *view, const bVector3 *position, bMatrix4 *localWorld, bMatrix4 *worldLocal, bMatrix4 *biasedIdentity,
+                                        int body_lod) {
+    if (body_lod >= 3) {
+        return;
+    }
+
+    int i;
+    int nVert = 16;
+    bVector3 mid;
+    bool bColour2;
+    bVector3 *p = hullVertArray1;
+
+    sh_Setup(const_cast<bVector3 *>(position));
+    UMath::Vector3 usPoint;
+    float zplane = position->z;
+
+    if (IsGameFlowInGame()) {
+        eUnSwizzleWorldVector(*position, reinterpret_cast<bVector3 &>(usPoint));
+        this->mWorldPos.FindClosestFace(this->mWCollider, usPoint, false);
+        if (this->mWorldPos.OnValidFace()) {
+            zplane = this->mWorldPos.HeightAtPoint(usPoint);
+        }
+    }
+
+    {
+        bVector3 *pVec = p;
+        bVector3 lightV(cs_lightV);
+        float oneOverZ = cs_OneOverZ;
+        bVector3 scale(1.75f, 0.75f, 1.0f);
+
+        for (i = 0; i < nVert; i++) {
+            bVector3 vLocal(PointCloud[i][0] * scale.x, PointCloud[i][1] * scale.y, PointCloud[i][2] * scale.z);
+            bVector3 vWorld;
+
+            eMulVector(&vWorld, localWorld, &vLocal);
+            float w = (zplane - vWorld.z) * oneOverZ;
+            pVec->x = w * cs_lightV.x + vWorld.x;
+            pVec->y = vWorld.y;
+            pVec->y += w * cs_lightV.y;
+            pVec++;
+        }
+    }
+
+    int fastfancy = static_cast<int>(body_lod != this->mMinLodLevel);
+    this->convex_hull(p, this->mWCollider, nVert, zplane, HullShadowElevation, fastfancy);
+
+    if (body_lod == this->mMinLodLevel) {
+        nVert = smooth_shadow_corners(nVert);
+        p = hullVertArray3;
+    } else {
+        p = hullVertArray2;
+    }
+
+    if (nVert > 2) {
+        bVector3 v = p[0] + p[nVert / 2];
+
+        mid = v;
+        mid *= 0.5f;
+
+        float alpha_min;
+        float alpha_max = 27.0f;
+        float shadow_alpha = (1.0f - car_elevation_scale) * alpha_max;
+        FancyCarShadowEdgeMult = car_elevation_scale * -0.29999995f + 1.4f;
+        i = static_cast<int>(shadow_alpha);
+        unsigned int colour = static_cast<unsigned int>(bClamp(i, 0, 0xFE) << 24) | 0x00808080;
+
+        if (dshad != 0) {
+            int nMax = (nVert & ~1) - 1; // TODO doesn't exist
+
+            for (i = 0; i < nMax; i += 2) {
+                if (eBeginStrip(this->ShadowRampTexture, 4, biasedIdentity)) {
+                    eAddVertex(p[i]);
+                    eAddVertex(mid);
+                    eAddVertex(p[i + 1]);
+                    eAddVertex(p[(i + 2) % nVert]);
+                    eAddColour(colour);
+                    eAddColour(colour);
+                    eAddColour(colour);
+                    eAddColour(colour);
+                    eAddUV(0.155f, 0.0f);
+                    eAddUV(0.0f, 0.0f);
+                    eAddUV(0.155f, 0.0f);
+                    eAddUV(0.155f, 0.0f);
+                    eEndStrip(view);
+                }
+            }
+
+            if ((nVert & 1) != 0 && eBeginStrip(this->ShadowRampTexture, 3, biasedIdentity)) {
+                eAddVertex(p[nVert - 1]);
+                eAddVertex(mid);
+                eAddVertex(p[0]);
+                eAddColour(colour);
+                eAddColour(colour);
+                eAddColour(colour);
+                eAddUV(0.155f, 0.0f);
+                eAddUV(0.0f, 0.0f);
+                eAddUV(0.155f, 0.0f);
+                eEndStrip(view);
+            }
+
+            int fake = nVert / 3;
+            int nStart = 0;
+            int nStep;
+
+            for (int j = 0; j < 3; j++) {
+                int nSubVerts = (j + 1 > 2) ? nVert - nStart : fake;
+
+                if (exBeginStrip(this->ShadowRampTexture, (nSubVerts + 1) * 2, biasedIdentity)) {
+                    int nMax = nStart + nSubVerts;
+
+                    for (i = nStart; i < nMax; i++) {
+                        v = sh_Adjust(p[i], mid);
+                        exAddVertex(p[i]);
+                        exAddVertex(v);
+                        exAddColour(colour);
+                        exAddColour(colour);
+                        exAddUV(0.155f, 0.0f);
+                        exAddUV(1.0f, 0.0f);
+                    }
+
+                    if (i >= nVert) {
+                        i = 0;
+                    }
+
+                    v = sh_Adjust(p[i], mid);
+                    exAddVertex(p[i]);
+                    exAddVertex(v);
+                    exAddColour(colour);
+                    exAddColour(colour);
+                    exAddUV(0.155f, 0.0f);
+                    exAddUV(1.0f, 0.0f);
+                    exEndStrip(view);
+                }
+
+                nStart += fake;
+            }
+        }
+    }
+}
+
+float heliScale = 0.43f;
+
+static const float hull_DotCutoff = 20.0f;
+
+// UNSOLVED, maybe equivalent?
 void CarRenderInfo::DrawAmbientShadow(eView *view, const bVector3 *position, float shadow_scale, bMatrix4 *localWorld, bMatrix4 *worldLocal,
                                       bMatrix4 *biasedIdentity) {
     const int N = 16;
-    int in_front_end;
-    bVector3 usPoint;
-    float scaleW;
-    float scaleL;
-    bVector3 min;
-    bVector3 max;
-    float scale;
-    bVector3 SunCarVector;
-    bVector3 light_pos;
-    SunChunkInfo *sun_info;
-    float SunScale;
-    bVector3 sunpos_in_car_space;
-    float sunAdjX;
-    float sunAdjY;
-    float sunDX;
-    float sunDY;
-    float sunStartX;
-    float sunStartY;
-    int bad_points[4];
-    float py;
-    float px;
-    float dy;
-    float dx;
-    float ps;
-    float pt;
-    float ds;
-    float dt;
-    float shadow_alpha_scale;
-    unsigned int shadow_colour;
-    float shadow_alpha_min;
-    float shadow_alpha_max;
-    float shadow_alpha;
-    int shadow_alphai;
-    int shadow_alphai_raw;
-    TextureInfo *texture_info;
-    unsigned int colour;
 
     hull_Origin = *position;
-    if (TheGameFlowManager.GetState() == GAMEFLOW_STATE_RACING) {
-        eUnSwizzleWorldVector(*position, usPoint);
-        this->mWorldPos.FindClosestFace(this->mWCollider, reinterpret_cast<const UMath::Vector3 &>(usPoint), false);
+
+    if (IsGameFlowInGame()) {
+        UMath::Vector3 usPoint;
+
+        eUnSwizzleWorldVector(*position, reinterpret_cast<bVector3 &>(usPoint));
+        this->mWorldPos.FindClosestFace(this->mWCollider, usPoint, false);
         if (this->mWorldPos.OnValidFace()) {
-            this->mCar_elevation = this->mWorldPos.HeightAtPoint(reinterpret_cast<const UMath::Vector3 &>(usPoint));
+            this->mCar_elevation = this->mWorldPos.HeightAtPoint(usPoint);
             car_elevation = position->z - this->mCar_elevation;
         }
     }
 
-    car_elevation_scale = lbl_8040ADC0;
-    if (car_elevation > lbl_8040ADC0 && car_elevation < lbl_8040ADC4) {
-        car_elevation_scale = car_elevation * lbl_8040ADC8;
-    } else if (car_elevation > lbl_8040ADC4) {
-        car_elevation_scale = lbl_8040ADCC;
+    car_elevation_scale = 0.0f;
+    if (car_elevation > 0.0f && car_elevation < 8.0f) {
+        car_elevation_scale = car_elevation * 0.125f;
+    } else if (car_elevation > 8.0f) {
+        car_elevation_scale = 1.0f;
     }
 
-    min = this->AABBMin;
-    max = this->AABBMax;
-    in_front_end = IsGameFlowInFrontEnd();
+    int in_front_end = static_cast<int>(IsGameFlowInFrontEnd());
+    // TODO
+    float scaleW;
+    float scaleL;
+    bVector3 min(this->AABBMin);
+    bVector3 max(this->AABBMax);
 
-    scale = lbl_8040ADD0;
-    if (this->pRideInfo->Type == static_cast<CarType>(4)) {
+    // TODO
+    float scale = 1.05f;
+    if (this->pRideInfo->Type == CARTYPE_COPHELI) {
         scale *= heliScale;
     }
 
+    // TODO
     min.x *= scale;
     min.y *= scale;
-    min.z *= scale;
     max.x *= scale;
     max.y *= scale;
-    max.z *= scale;
-    sun_info = SunInfo;
-    if (sun_info == 0) {
-        light_pos.x = lbl_8040ADD4;
-        light_pos.y = lbl_8040ADC0;
-        light_pos.z = lbl_8040ADD8;
+
+    bVector3 SunCarVector;
+    bVector3 light_pos;
+    SunChunkInfo *sun_info = SunInfo;
+
+    if (sun_info == nullptr) {
+        light_pos.x = TweakCarShadowSunX;
+        light_pos.y = TweakCarShadowSunY;
+        light_pos.z = TweakCarShadowSunZ;
     } else {
         light_pos.x = sun_info->CarShadowPositionX;
         light_pos.y = sun_info->CarShadowPositionY;
@@ -4055,55 +4279,59 @@ void CarRenderInfo::DrawAmbientShadow(eView *view, const bVector3 *position, flo
 
     SunCarVector = light_pos - *position;
     bNormalize(&SunCarVector, &SunCarVector);
-    SunScale = (lbl_8040ADCC - SunCarVector.z) * lbl_8040ADDC;
+
+    float SunScale = (1.0f - SunCarVector.z) * TweakCarShadowSunScale;
+    bVector3 sunpos_in_car_space;
+
     bMulMatrix(&sunpos_in_car_space, worldLocal, &light_pos);
     bNormalize(&sunpos_in_car_space, &sunpos_in_car_space);
 
-    sunAdjY = -sunpos_in_car_space.y * SunScale * lbl_8040ADE0;
-    sunAdjX = -sunpos_in_car_space.x * SunScale * lbl_8040ADE0;
-    sunDX = bAbs(sunAdjX);
-    sunDY = bAbs(sunAdjY);
-    sunStartX = sunAdjX;
-    if (sunAdjX > lbl_8040ADC0) {
-        sunStartX = lbl_8040ADC0;
-    }
-    sunStartY = sunAdjY;
-    if (sunAdjY > lbl_8040ADC0) {
-        sunStartY = lbl_8040ADC0;
-    }
+    float sunAdjX = -sunpos_in_car_space.x * SunScale;
+    float sunAdjY = -sunpos_in_car_space.y * SunScale;
+    float sunDX = bAbs(sunAdjX * 0.33333334f);
+    float sunDY = bAbs(sunAdjY * 0.33333334f);
+
+    float sunStartX = sunAdjX > 0.0f ? 0.0f : sunAdjX;
+    float sunStartY = sunAdjY > 0.0f ? 0.0f : sunAdjY;
 
     bVector3 p[16];
     bVector3 *pp;
     bVector2 uv[16];
     bVector2 *puv;
+    int bad_points[4];
+
     pp = p;
     puv = uv;
-    py = min.y + sunStartY;
-    scaleW = (max.y - min.y) * lbl_8040ADE0;
-    scaleL = (max.x - min.x) * lbl_8040ADE0;
-    dy = scaleW;
-    dx = scaleL;
-    ds = lbl_8040ADE0;
-    dt = lbl_8040ADE0;
-    pt = lbl_8040ADC0;
-    float pz = lbl_8040ADC0;
+
+    float py = min.y + sunStartY;
+    scaleW = (max.y - min.y) * 0.33333334f;
+    scaleL = (max.x - min.x) * 0.33333334f;
+    float px;
+    float dy = scaleW;
+    float dx = scaleL;
+    float ps;
+    float pt = 0.0f;
+    float ds = 0.33333334f;
+    float dt = 0.33333334f;
 
     for (int y = 0; y < 4; y++) {
         px = min.x + sunStartX;
-        ps = lbl_8040ADC0;
+        ps = 0.0f;
+
         for (int x = 0; x < 4; x++) {
             pp->x = px;
-            puv->x = ps;
             pp->y = py;
-            pp->z = pz;
+            pp->z = 0.0f;
+            puv->x = ps;
             puv->y = pt;
             eMulVector(pp, localWorld, pp);
             px += sunDX;
+            px += dx;
             ps += ds;
             pp++;
             puv++;
-            px += dx;
         }
+
         bad_points[y] = 0;
         py += sunDY;
         py += dy;
@@ -4111,98 +4339,88 @@ void CarRenderInfo::DrawAmbientShadow(eView *view, const bVector3 *position, flo
     }
 
     if (in_front_end != 0) {
-        bVector3 *pz = p;
+        pp = p;
 
         for (int x = 0; x < N; x++) {
-            pz->z = lbl_8040ADC0;
-            pz++;
+            pp->z = 0.0f;
+            pp++;
         }
-    } else if (this->mWCollider != 0) {
-        bVector3 usCenter;
-        bVector3 sCenter;
-        bVector3 ref;
+    } else if (this->mWCollider != nullptr) {
+        UMath::Vector3 usCenter;
+        bVector3 sCenter(*position);
+
+        eUnSwizzleWorldVector(sCenter, reinterpret_cast<bVector3 &>(usCenter));
+        this->mWorldPos.SetTolerance(TweakCarShadowTopologyTolerance);
+        this->mWorldPos.FindClosestFace(this->mWCollider, usCenter, false);
+
+        if (this->mWorldPos.OnValidFace()) {
+            UMath::Vector4 worldNormal = {};
+
+            worldNormal.y = 1.0f;
+            this->mWorldPos.UNormal(&UMath::Vector4To3(worldNormal));
+            UMath::Unitxyz(worldNormal, worldNormal);
+            worldNormal.w = 0.0f;
+            eSwizzleWorldVector(reinterpret_cast<const bVector3 &>(worldNormal), hull_Normal);
+        } else {
+            hull_Normal.x = 0.0f;
+            hull_Normal.y = 0.0f;
+            hull_Normal.z = 1.0f;
+        }
+
+        bVector3 ref(0.0f, 0.0f, 0.0f);
+
+        eMulVector(&ref, localWorld, &ref);
+        this->mWorldPos.SetTolerance(TweakCarShadowTopologyTolerance);
+
+        pp = p;
         bool quitIfSameFace = true;
 
-        sCenter = *position;
-        eUnSwizzleWorldVector(sCenter, usCenter);
-        this->mWorldPos.SetTolerance(lbl_8040ADE4);
-        this->mWorldPos.FindClosestFace(this->mWCollider, reinterpret_cast<const UMath::Vector3 &>(usCenter), false);
-        if (this->mWorldPos.OnValidFace()) {
-            UMath::Vector4 worldNormal;
+        for (int x = 0; x < N; x++, pp++) {
+            UMath::Vector3 usPoint;
+            bVector3 sPoint(*pp);
 
-            memset(&worldNormal, 0, sizeof(worldNormal));
-            worldNormal.y = lbl_8040ADCC;
-            this->mWorldPos.UNormal(&worldNormal);
-            UMath::Unitxyz(worldNormal, worldNormal);
-            eSwizzleWorldVector(reinterpret_cast<const bVector3 &>(UMath::Vector4To3(worldNormal)), hull_Normal);
-        } else {
-            hull_Normal.x = lbl_8040ADC0;
-            hull_Normal.y = lbl_8040ADC0;
-            hull_Normal.z = lbl_8040ADCC;
-        }
+            eUnSwizzleWorldVector(sPoint, reinterpret_cast<bVector3 &>(usPoint));
+            this->mWorldPos.FindClosestFace(this->mWCollider, usPoint, quitIfSameFace);
+            bool validFace = this->mWorldPos.OnValidFace();
+            pp->z = this->mWorldPos.HeightAtPoint(usPoint);
 
-        ref.x = lbl_8040ADC0;
-        ref.y = lbl_8040ADC0;
-        ref.z = lbl_8040ADC0;
-        eMulVector(&ref, localWorld, &ref);
-        this->mWorldPos.SetTolerance(lbl_8040ADE4);
-        bVector3 *point = p;
-        for (int x = 0; x < N; x++, point++) {
-            bVector3 sPoint;
-            bVector3 usPoint;
-            bool validFace;
-
-            sPoint = *point;
-            eUnSwizzleWorldVector(sPoint, usPoint);
-            this->mWorldPos.FindClosestFace(this->mWCollider, reinterpret_cast<const UMath::Vector3 &>(usPoint), quitIfSameFace);
-            validFace = this->mWorldPos.OnValidFace();
-            point->z = this->mWorldPos.HeightAtPoint(reinterpret_cast<const UMath::Vector3 &>(usPoint));
-            if (validFace) {
-                bVector3 vec = *point - hull_Origin;
-                float dot = bDot(&vec, &hull_Normal);
-
-                if (dot < lbl_8040ADC0) {
-                    dot = -dot;
-                }
-
-                if (dot < lbl_8040ADEC) {
-                    quitIfSameFace = true;
-                    continue;
-                }
+            if (validFace && ZPassesTest(pp->z, ref.z) && DotPassesTest(pp)) {
+                quitIfSameFace = true;
+                continue;
             }
 
             quitIfSameFace = false;
 
-            if (this->pRideInfo->Type == static_cast<CarType>(4)) {
-                point->z = lbl_8040ADCC;
+            if (this->pRideInfo->Type == CARTYPE_COPHELI) {
+                pp->z = -100.0f;
                 bad_points[x / 4]++;
             } else {
-                point->z = this->mCar_elevation;
+                pp->z = this->mCar_elevation;
                 ref.z = this->mCar_elevation;
             }
         }
     }
 
-    shadow_alpha_scale = bAbs(localWorld->v2.z) * (lbl_8040ADCC - car_elevation_scale);
-    if (in_front_end != 0) {
-        shadow_alpha_min = lbl_8040ADF4;
-        shadow_alpha_max = lbl_8040ADF4;
-    } else {
-        shadow_alpha_min = lbl_8040ADC0;
-        shadow_alpha_max = lbl_8040ADF8;
-    }
+    float shadow_alpha_scale = bAbs(localWorld->v2.z);
+    unsigned int shadow_colour;
 
-    shadow_alpha = (shadow_alpha_max - shadow_alpha_min) * shadow_alpha_scale + shadow_alpha_min;
-    shadow_alphai_raw = static_cast<int>(shadow_alpha);
-    shadow_alphai = bClamp(shadow_alphai_raw, 0, 0xFE);
+    shadow_alpha_scale *= 1.0f - car_elevation_scale;
 
-    shadow_colour = static_cast<unsigned int>(shadow_alphai << 24) | 0x00808080;
-    texture_info = this->ShadowTexture;
-    if (texture_info == 0 || (shadow_colour & 0xFF000000) == 0) {
+    float shadow_alpha_min = in_front_end != 0 ? 110.0f : 0.0f;
+    float shadow_alpha_max = in_front_end != 0 ? 110.0f : 25.0f;
+
+    float shadow_alpha = (shadow_alpha_max - shadow_alpha_min) * shadow_alpha_scale + shadow_alpha_min;
+    int shadow_alphai = bClamp(static_cast<int>(shadow_alpha), 0, 0xFE);
+
+    shadow_colour = static_cast<unsigned int>(shadow_alphai << 24);
+    TextureInfo *texture_info = this->ShadowTexture;
+    shadow_colour |= 0x00808080;
+    if (texture_info == nullptr || (shadow_colour & 0xFF000000) == 0) {
         return;
     }
 
-    colour = shadow_colour;
+    unsigned int colour = shadow_colour;
+
     {
         bVector3 *p0 = p;
         bVector3 *p1 = p + 4;
@@ -4224,6 +4442,7 @@ void CarRenderInfo::DrawAmbientShadow(eView *view, const bVector3 *position, flo
                         exAddUV(u1->x, u1->y);
                         u1++;
                     }
+
                     exEndStrip(view);
                 } else {
                     p0 += 4;
@@ -4241,280 +4460,306 @@ void CarRenderInfo::DrawAmbientShadow(eView *view, const bVector3 *position, flo
     }
 }
 
-void CarRenderInfo::convex_hull(bVector3 *p, const WCollider *wcoll, int &n, float Z, float zBias, int fast) {
-    int i;
-    int dec;
-    bool bPointValid;
-    bVector3 usPoint;
-
-    for (i = 0; i < n; i++) {
-        P[i] = &p[i];
-    }
-
-    n = ch2d(reinterpret_cast<float **>(P), n);
-    if (wcoll != nullptr) {
-        this->mWorldPos.SetTolerance(lbl_8040AD70);
-        if (fast != 0) {
-            bVector3 *vec;
-            float fastZ = Z;
-
-            vec = hullVertArray2;
-            bFill(vec, P[0]->x, P[0]->y, Z);
-
-            eUnSwizzleWorldVector(*vec, usPoint);
-            this->mWorldPos.FindClosestFace(wcoll, reinterpret_cast<const UMath::Vector3 &>(usPoint), true);
-            if (!this->mWorldPos.OnValidFace()) {
-                fastZ = this->mWorldPos.HeightAtPoint(reinterpret_cast<const UMath::Vector3 &>(usPoint));
-            }
-
-            dec = 0;
-            for (i = 0; i < n; i++) {
-                bFill(vec, P[i]->x, P[i]->y, fastZ);
-
-                bVector3 dotVec = *vec - hull_Origin;
-                float dot = bDot(&dotVec, &hull_Normal);
-                if (dot < lbl_8040AD74) {
-                    dot = -dot;
-                }
-
-                if (lbl_8040AD78 <= dot) {
-                    dec++;
-                } else {
-                    vec++;
-                }
-            }
+void CarRenderInfo::RenderPart(eView *view, CarPartModel *carPart, bMatrix4 *local_to_world, eDynamicLightContext *light_context,
+                               unsigned int flags) {
+    if (carPart != nullptr) {
+        if (carPart->IsLodMissing()) {
+            view->Render(&StandardDebugModel, local_to_world, light_context, flags, nullptr);
         } else {
-            bool quitIfSameFace = true;
-            bVector3 *vec;
-
-            vec = hullVertArray2;
-            dec = 0;
-
-            for (i = 0; i < n; i++) {
-                bFill(vec, P[i]->x, P[i]->y, Z);
-
-                eUnSwizzleWorldVector(*vec, usPoint);
-                this->mWorldPos.FindClosestFace(wcoll, reinterpret_cast<const UMath::Vector3 &>(usPoint), quitIfSameFace);
-                if (!this->mWorldPos.OnValidFace()) {
-                    vec->z = this->mWorldPos.HeightAtPoint(reinterpret_cast<const UMath::Vector3 &>(usPoint));
-                }
-
-                bVector3 dotVec = *vec - hull_Origin;
-                float dot = bDot(&dotVec, &hull_Normal);
-                if (dot < lbl_8040AD74) {
-                    dot = -dot;
-                }
-
-                if (lbl_8040AD78 <= dot) {
-                    dec++;
-                } else {
-                    vec++;
-                }
-                quitIfSameFace = false;
-            }
+            view->Render(carPart->GetModel(), local_to_world, light_context, flags, nullptr);
         }
-
-        n -= dec;
     }
 }
 
-static inline bool ccw(float **P, int i, int j, int k) {
-    float d = P[k][1] - P[j][1];
-    float c = P[k][0] - P[j][0];
-    float b = P[i][1] - P[j][1];
-    float a = P[i][0] - P[j][0];
-    return a * d - b * c > 0.0f;
-}
+void CarRenderInfo::InitEmitterPositions(bVector4 *tire_positions) {
+    if (this->pCarTypeInfo != nullptr && !this->mEmitterPositionsInitialized) {
+        int fxpos;
 
-int make_chain(float **V, int n, int (*cmp)(const void *, const void *)) {
-    int s;
-    qsort(V, n, 4, cmp);
-    s = 1;
-    for (int i = 2; i < n; i++) {
-        int j;
-        for (j = s; j >= 1 && !ccw(V, j - 1, j, i); j--) {
-        }
-        s = j + 1;
-        float *t = V[s];
-        V[s] = V[i];
-        V[i] = t;
-    }
-    return s;
-}
+        for (fxpos = 0; fxpos < NUM_CARFXPOS; fxpos++) {
+            int pos_count = 0;
+            bool is_based_off_position_marker;
 
-int ch2d(float **P, int n) {
-    int u = make_chain(P, n, cmpl);
-    P[n] = P[0];
-    return u + make_chain(P + u, n - u + 1, cmph);
-}
+            is_based_off_position_marker = GetNumCarEffectMarkerHashes(static_cast<CarEffectPosition>(fxpos), pos_count);
 
-void CarRenderInfo::DrawKeithProjShadow(eView *view, const bVector3 *position, bMatrix4 *localWorld, bMatrix4 *worldLocal, bMatrix4 *biasedIdentity,
-                                        int body_lod) {
-    if (body_lod < 3) {
-        int n = 16;
-        bVector3 *shadowVertices = hullVertArray1;
-        float shadowZ;
-        bVector3 lightV;
-        bVector3 scale;
+            if (is_based_off_position_marker) {
+                if (pos_count > 0) {
+                    this->GetEmitterPositions(this->EmitterPositionList[fxpos], GetCarEffectMarkerHashes(static_cast<CarEffectPosition>(fxpos)),
+                                              pos_count);
+                }
+                continue;
+            }
 
-        sh_Setup(const_cast<bVector3 *>(position));
-        shadowZ = position->z;
-        if (TheGameFlowManager.GetState() == GAMEFLOW_STATE_RACING) {
-            bVector3 worldPosition;
+            {
+                CarEffectPosition efxpos = static_cast<CarEffectPosition>(fxpos);
+                CarEmitterPosition *empos = nullptr;
+                bSList<CarEmitterPosition> &pos_list = this->EmitterPositionList[fxpos];
 
-            eUnSwizzleWorldVector(*position, worldPosition);
-            this->mWorldPos.FindClosestFace(this->mWCollider, reinterpret_cast<const UMath::Vector3 &>(worldPosition), false);
-            if (this->mWorldPos.OnValidFace()) {
-                shadowZ = this->mWorldPos.HeightAtPoint(reinterpret_cast<const UMath::Vector3 &>(worldPosition));
+                switch (efxpos) {
+                    case CARFXPOS_NONE:
+                        empos = new CarEmitterPosition(0.0f, 0.0f, 0.0f);
+                        pos_list.AddTail(empos);
+                        break;
+
+                    case CARFXPOS_FRONT_TIRES: {
+                        bVector4 *fl = tire_positions;
+                        bVector4 *fr = tire_positions + 1;
+                        bVector4 avg = *fl + *fr;
+
+                        avg *= 0.5f;
+                        empos = new CarEmitterPosition(avg.x, avg.y, avg.z);
+                        pos_list.AddTail(empos);
+                    } break;
+
+                    case CARFXPOS_REAR_TIRES: {
+                        bVector4 *rr = tire_positions + 2;
+                        bVector4 *rl = tire_positions + 3;
+                        bVector4 avg = *rr + *rl;
+
+                        avg *= 0.5f;
+                        empos = new CarEmitterPosition(avg.x, avg.y, avg.z);
+                        pos_list.AddTail(empos);
+                    } break;
+
+                    case CARFXPOS_LEFT_TIRES: {
+                        bVector4 *fl = tire_positions;
+                        bVector4 *rl = tire_positions + 3;
+                        bVector4 avg = *fl + *rl;
+
+                        avg *= 0.5f;
+                        empos = new CarEmitterPosition(avg.x, avg.y, avg.z);
+                        pos_list.AddTail(empos);
+                    } break;
+
+                    case CARFXPOS_RIGHT_TIRES: {
+                        bVector4 *fr = tire_positions + 1;
+                        bVector4 *rr = tire_positions + 2;
+                        bVector4 avg = *fr + *rr;
+
+                        avg *= 0.5f;
+                        empos = new CarEmitterPosition(avg.x, avg.y, avg.z);
+                        pos_list.AddTail(empos);
+                    } break;
+
+                    case CARFXPOS_TIRE_FL:
+                        empos = new CarEmitterPosition(tire_positions[0].x, tire_positions[0].y, tire_positions[0].z);
+                        pos_list.AddTail(empos);
+                        break;
+
+                    case CARFXPOS_TIRE_FR:
+                        empos = new CarEmitterPosition(tire_positions[1].x, tire_positions[1].y, tire_positions[1].z);
+                        pos_list.AddTail(empos);
+                        break;
+
+                    case CARFXPOS_TIRE_RR:
+                        empos = new CarEmitterPosition(tire_positions[2].x, tire_positions[2].y, tire_positions[2].z);
+                        pos_list.AddTail(empos);
+                        break;
+
+                    case CARFXPOS_TIRE_RL:
+                        empos = new CarEmitterPosition(tire_positions[3].x, tire_positions[3].y, tire_positions[3].z);
+                        pos_list.AddTail(empos);
+                        break;
+
+                    case CARFXPOS_ENGINE: {
+                        bVector4 *fl = tire_positions;
+                        bVector4 *fr = tire_positions + 1;
+                        bVector4 avg = *fl + *fr;
+
+                        avg *= 0.5f;
+
+                        bVector4 diff;
+                        bSub(&diff, fl, fr);
+
+                        empos = new CarEmitterPosition(avg.x, avg.y, avg.z + diff.y * 0.2f);
+                        pos_list.AddTail(empos);
+                    } break;
+                }
             }
         }
 
-        lightV = cs_lightV;
-        scale.x = lbl_8040AD98;
-        scale.y = lbl_8040AD9C;
-        scale.z = lbl_8040ADA0;
-        float one_over_z = cs_OneOverZ;
-        bVector3 *shadow_vertex = shadowVertices;
-        for (int i = 0; i < n; i++) {
-            bVector3 localPoint;
-            bVector3 worldPoint;
-            float scaleToGround;
+        this->mEmitterPositionsInitialized = true;
+    }
+}
 
-            localPoint.x = PointCloud[i].x * scale.x;
-            localPoint.y = PointCloud[i].y * scale.y;
-            localPoint.z = PointCloud[i].z * scale.z;
-            eMulVector(&worldPoint, localWorld, &localPoint);
-            scaleToGround = (shadowZ - worldPoint.z) * one_over_z;
-            shadow_vertex->x = scaleToGround * lightV.x + worldPoint.x;
-            shadow_vertex->y = scaleToGround * lightV.y + worldPoint.y;
-            shadow_vertex->z = scaleToGround * lightV.z + worldPoint.z;
-            shadow_vertex++;
-        }
+int CarRenderInfo::GetEmitterPositions(bSList<CarEmitterPosition> &markers_out, const unsigned int *position_name_hashes, int num_pos_name_hashes) {
+    if (this->pCarTypeInfo == nullptr) {
+        return 0;
+    }
 
-        int not_min_lod = body_lod != this->mMinLodLevel;
+    int count = 0;
 
-        this->convex_hull(shadowVertices, this->mWCollider, n, shadowZ, lbl_8040ADA4, not_min_lod);
-        if (!not_min_lod) {
-            n = smooth_shadow_corners(n);
-            shadowVertices = hullVertArray3;
-        } else {
-            shadowVertices = hullVertArray2;
-        }
+    for (int slot_model_index = 0; slot_model_index < CARSLOTID_MODEL_NUM; slot_model_index++) {
+        eModel *model = this->mCarPartModels[slot_model_index][0][this->mMinLodLevel].GetModel();
+        ePositionMarker *position_marker = nullptr;
 
-        if (n > 2) {
-            bVector3 shadowCenter = shadowVertices[0] + shadowVertices[n / 2];
-            int alpha = static_cast<int>((lbl_8040ADA0 - car_elevation_scale) * lbl_8040ADB0);
-            unsigned int colour;
+        if (model != nullptr) {
+            while ((position_marker = model->GetPostionMarker(position_marker)) != nullptr) {
+                unsigned int position_marker_namehash;
+                for (int i = 0; i < num_pos_name_hashes; i++) {
+                    position_marker_namehash = position_marker->NameHash;
+                    if (position_marker_namehash == position_name_hashes[i]) {
+                        CarEmitterPosition *empos = new CarEmitterPosition(position_marker);
 
-            shadowCenter *= lbl_8040ADA8;
-            FancyCarShadowEdgeMult = car_elevation_scale * lbl_8040ADB4 + lbl_8040ADB8;
-            alpha = bClamp(alpha, 0, 0xFE);
-            colour = static_cast<unsigned int>(alpha << 24) | 0x00808080;
-
-            if (dshad != 0) {
-                int start = 0;
-                int stop = (n & ~1) - 1;
-
-                while (start < stop) {
-                    int next = start + 2;
-
-                    if (eBeginStrip(this->ShadowRampTexture, 4, biasedIdentity)) {
-                        eAddVertex(shadowVertices[start]);
-                        eAddVertex(shadowCenter);
-                        eAddVertex(shadowVertices[start + 1]);
-                        eAddVertex(shadowVertices[next - (next / n) * n]);
-                        eAddColour(colour);
-                        eAddColour(colour);
-                        eAddColour(colour);
-                        eAddColour(colour);
-                        eAddUV(lbl_8040ADBC, lbl_8040ADAC);
-                        eAddUV(lbl_8040ADAC, lbl_8040ADAC);
-                        eAddUV(lbl_8040ADBC, lbl_8040ADAC);
-                        eAddUV(lbl_8040ADBC, lbl_8040ADAC);
-                        eEndStrip(view);
+                        markers_out.AddTail(empos);
+                        count++;
                     }
-
-                    start = next;
                 }
+            }
+        }
+    }
 
-                if ((n & 1) != 0 && eBeginStrip(this->ShadowRampTexture, 3, biasedIdentity)) {
-                    eAddVertex(shadowVertices[n - 1]);
-                    eAddVertex(shadowCenter);
-                    eAddVertex(shadowVertices[0]);
-                    eAddColour(colour);
-                    eAddColour(colour);
-                    eAddColour(colour);
-                    eAddUV(lbl_8040ADBC, lbl_8040ADAC);
-                    eAddUV(lbl_8040ADAC, lbl_8040ADAC);
-                    eAddUV(lbl_8040ADBC, lbl_8040ADAC);
-                    eEndStrip(view);
-                }
+    return count;
+}
+
+// STRIPPED
+void CarRenderInfo::GetLightPositions(bSList<CarEmitterPosition> &pos, unsigned int position) {}
+
+static const bVector3 EPfe(1.0f, 1.0f, 1.0f);
+
+void UpdateEnvironmentMapCameras() {
+    bVector3 *car_world_position = nullptr;
+    eView *view = eGetView(1, false);
+
+    if (view != nullptr && view->GetCameraMover() != nullptr) {
+        CameraAnchor *anchor = view->GetCameraMover()->GetAnchor();
+
+        if (anchor != nullptr) {
+            car_world_position = anchor->GetGeometryPosition();
+        } else {
+            static bVector3 sCarWorldPosition;
+            IPlayer *firstPlayer;
+
+            if (IPlayer::First(PLAYER_LOCAL) != nullptr) {
+                firstPlayer = IPlayer::First(PLAYER_LOCAL);
 
                 {
-                    int nStart = n / 3;
-                    int startIndex = 0;
-                    int section = 0;
+                    IRigidBody *player_rigid_body = firstPlayer->GetSimable()->GetRigidBody();
 
-                    do {
-                        int nSubVerts = nStart;
-                        int nextStart;
-                        int nextSection = section + 1;
-
-                        if (nextSection > 2) {
-                            nSubVerts = n - startIndex;
-                        }
-                        nextStart = startIndex + nSubVerts;
-
-                        if (exBeginStrip(this->ShadowRampTexture, (nSubVerts + 1) * 2, biasedIdentity)) {
-                            int endIndex = startIndex + nSubVerts;
-                            int loopIndex = startIndex;
-
-                            for (; loopIndex < endIndex; loopIndex++) {
-                                bVector3 *edge = &shadowVertices[loopIndex];
-                                bVector3 sourceVertex(*edge);
-                                bVector3 inner(sourceVertex);
-                                bVector3 edgeVertex(inner);
-
-                                inner.x = FancyCarShadowEdgeMult * (edgeVertex.x - shadowCenter.x) + shadowCenter.x;
-                                inner.y = FancyCarShadowEdgeMult * (edgeVertex.y - shadowCenter.y) + shadowCenter.y;
-                                exAddVertex(edgeVertex);
-                                exAddVertex(inner);
-                                exAddColour(colour);
-                                exAddColour(colour);
-                                exAddUV(lbl_8040ADBC, lbl_8040ADAC);
-                                exAddUV(lbl_8040ADA0, lbl_8040ADAC);
-                            }
-
-                            if (loopIndex < n) {
-                            } else {
-                                loopIndex = 0;
-                            }
-
-                            {
-                                bVector3 *edge = &shadowVertices[loopIndex];
-                                bVector3 sourceVertex(*edge);
-                                bVector3 inner(sourceVertex);
-                                bVector3 edgeVertex(inner);
-
-                                inner.x = FancyCarShadowEdgeMult * (edgeVertex.x - shadowCenter.x) + shadowCenter.x;
-                                inner.y = FancyCarShadowEdgeMult * (edgeVertex.y - shadowCenter.y) + shadowCenter.y;
-                                exAddVertex(edgeVertex);
-                                exAddVertex(inner);
-                                exAddColour(colour);
-                                exAddColour(colour);
-                                exAddUV(lbl_8040ADBC, lbl_8040ADAC);
-                                exAddUV(lbl_8040ADA0, lbl_8040ADAC);
-                                exEndStrip(view);
-                            }
-                        }
-
-                        startIndex = nextStart;
-                        section = nextSection;
-                    } while (section < 3);
+                    if (player_rigid_body != nullptr) {
+                        eSwizzleWorldVector(reinterpret_cast<const bVector3 &>(player_rigid_body->GetPosition()), sCarWorldPosition);
+                        bSub(&sCarWorldPosition, &sCarWorldPosition, &EnvMapEyeOffset);
+                        car_world_position = &sCarWorldPosition;
+                    }
                 }
             }
         }
     }
+
+    if (car_world_position == nullptr) {
+        if (!FrontEndRenderingCarList.IsEmpty()) {
+            FrontEndRenderingCar *fecar = FrontEndRenderingCarList.GetHead();
+            car_world_position = &fecar->Position;
+        }
+
+        if (car_world_position == nullptr) {
+            return;
+        }
+    }
+
+    {
+        bVector3 camera_eye_position(*eGetView(1, false)->GetCamera()->GetPosition());
+        bVector3 envmap_position;
+        bAdd(&envmap_position, &EnvMapEyeOffset, car_world_position);
+        bAdd(&camera_eye_position, &EnvMapCamOffset, &camera_eye_position);
+
+        eEnvMap *envmap = eGetEnvMap();
+        envmap->UpdateCameras(&camera_eye_position, &envmap_position);
+    }
+}
+
+// STRIPPED
+int IsAnyFrontEndCars() {}
+
+// STRIPPED
+void RenderFrontEndCarNeon(eView *view, int reflection) {}
+
+// STRIPPED
+void SetFeCarRenderFlagsGlob(int draw_solid, int draw_alpha, int draw_shadows) {}
+
+void RefreshAllFrontEndCarRenderInfos(CarType type) {
+    for (FrontEndRenderingCar *fecar = FrontEndRenderingCarList.GetHead(); fecar != FrontEndRenderingCarList.EndOfList(); fecar = fecar->GetNext()) {
+        if ((type == CARTYPE_NONE || fecar->GetCarType() == type) && fecar->GetRenderInfo() != nullptr) {
+            fecar->GetRenderInfo()->Refresh();
+        }
+    }
+}
+
+bVector3 feposoff(0.0f, 0.0f, -0.35f);
+
+int taildrag = 4;
+
+void RenderFrontEndCars(eView *view, int reflection) {
+    if (DrawCars == 0) {
+        return;
+    }
+
+    if (reflection && FEManager::Get()->GetGarageType() == GARAGETYPE_CAR_LOT) {
+        return;
+    }
+
+    EVIEWMODE view_mode = eGetCurrentViewMode();
+
+    for (FrontEndRenderingCar *fecar = FrontEndRenderingCarList.GetHead(); fecar != FrontEndRenderingCarList.EndOfList(); fecar = fecar->GetNext()) {
+        CarRenderInfo *info = fecar->RenderInfo;
+
+        if (info != nullptr && fecar->Visible != 0) {
+            CARPART_LOD car_lod = info->GetMinLodLevel();
+            CARPART_LOD tire_lod = info->GetMinLodLevel();
+            bMatrix4 cbm(fecar->BodyMatrix);
+            bVector3 cpos(fecar->Position);
+            int render_flags = 0;
+            int force_light_state = 0;
+
+            if (reflection) {
+                render_flags = 1;
+
+                cbm.v2.x = -cbm.v2.x;
+                cbm.v2.y = -cbm.v2.y;
+                cbm.v2.z = -cbm.v2.z;
+
+                cpos += reinterpret_cast<bVector3 &>(feposoff);
+
+                float reflection_offset = info->GetAttributes().ReflectionOffset();
+                bVector3 offset;
+
+                offset.x = cbm.v2.x * reflection_offset;
+                offset.y = cbm.v2.y * reflection_offset;
+                offset.z = cbm.v2.z * reflection_offset;
+
+                cpos += offset;
+            }
+
+            info->Render(view, &cpos, &cbm, fecar->TireMatrices, fecar->BrakeMatrices, fecar->TireMatrices, render_flags, force_light_state,
+                         reflection, 1.0f, car_lod, tire_lod);
+        }
+    }
+}
+
+void RenderFEFlares(eView *view, int reflexion) {}
+
+// STRIPEPD
+void SetSpecialFX(Car *car, int fx) {}
+
+// STRIPEPD
+void UpdateCarStreakingFlares(eView *view) {}
+
+float CarLightSize[2] = {90.0f, 10.0f};
+
+float CarLightFarStart[2] = {0.0f, 0.0f};
+float CarLightFalloff[2] = {10.0f, 10.0f};
+
+float CarLightOffsets[2] = {0.0f, 1.0f};
+uint32 CarLightColours[2] = {0x00B0B0B0, 0x00000090};
+bAngle CarLightAngles[2] = {0x36B0, 0x4000};
+
+unsigned int lastlight = 2;
+
+void RenderVehicleFlares(eView *view, int reflection, int renderFlareFlags) {
+    VehicleRenderConn::RenderFlares(view, reflection, renderFlareFlags);
+}
+
+void DrawTestCars(eView *view, int reflection) {
+    VehicleRenderConn::RenderAll(view, reflection);
 }
 
 void CarRender_Service(float dT) {

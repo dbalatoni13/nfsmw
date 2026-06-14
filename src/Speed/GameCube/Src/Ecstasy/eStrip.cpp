@@ -1,23 +1,8 @@
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
+#include "Speed/Indep/Src/Ecstasy/eStrip.hpp"
 #include "Speed/Indep/Src/Ecstasy/Texture.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
-
-struct eStripVert {
-    // total size: 0x18
-    float x;          // offset 0x0, size 0x4
-    float y;          // offset 0x4, size 0x4
-    float z;          // offset 0x8, size 0x4
-    unsigned int col; // offset 0xC, size 0x4
-    float u;          // offset 0x10, size 0x4
-    float v;          // offset 0x14, size 0x4
-};
-
-struct eStrip {
-    // total size: 0x604
-    int m_NumVerts;              // offset 0x0, size 0x4
-    eStripVert m_StripVerts[64]; // offset 0x4, size 0x600
-};
 
 eStrip *e_current_strip;
 eStripVert *e_strip_verts;

@@ -11,7 +11,6 @@ bChunkLoader bChunkLoaderTrackPath(BCHUNK_TRACK_PATH_MANAGER, LoaderTrackPath, U
 bChunkLoader bChunkLoaderTrackPathBarriers(BCHUNK_TTRACK_PATH_BARRIERS, LoaderTrackPath, UnloaderTrackPath);
 
 bool DoLinesIntersect(const bVector2 &a, const bVector2 &b, const bVector2 &c, const bVector2 &d) {
-
     float den = (b.x - a.x) * (d.y - c.y) - (b.y - a.y) * (d.x - c.x);
 
     if (den == 0.0f) {
@@ -78,7 +77,7 @@ int TrackPathManager::Loader(bChunk *chunk) {
             }
         }
         BuildZoneInfoTable();
-        return true;
+        return 1;
     }
 
     if (chunk->GetID() == BCHUNK_TTRACK_PATH_BARRIERS) {
@@ -87,32 +86,32 @@ int TrackPathManager::Loader(bChunk *chunk) {
         for (int i = 0; i < NumBarriers; i++) {
             pBarriers[i].EndianSwap();
         }
-        return true;
+        return 1;
     }
 
-    return false;
+    return 0;
 }
 
 int TrackPathManager::Unloader(bChunk *chunk) {
     if (chunk->GetID() == BCHUNK_TRACK_PATH_MANAGER) {
         Clear();
         NotifyGameZonesChanged();
-        return true;
+        return 1;
     }
 
     if (chunk->GetID() == BCHUNK_TTRACK_PATH_BARRIERS) {
         pBarriers = nullptr;
         NumBarriers = 0;
-        return true;
+        return 1;
     }
 
-    return false;
+    return 0;
 }
 
 void TrackPathManager::DisableAllBarriers() {
     for (int i = 0; i < NumBarriers; i++) {
         TrackPathBarrier *barrier = GetBarrier(i);
-        barrier->Enabled = false;
+        barrier->Enabled = 0;
     }
 }
 
@@ -121,10 +120,10 @@ void TrackPathManager::EnableBarriers(const char *group_name) {
     for (int i = 0; i < NumBarriers; i++) {
         TrackPathBarrier *barrier = GetBarrier(i);
         if (barrier->HasGroup(group_name_hash)) {
-            barrier->Enabled = true;
+            barrier->Enabled = 1;
 
             SceneryGroup *scenery_group = FindSceneryGroup(group_name_hash);
-            barrier->PlayerBarrier = scenery_group && scenery_group->DriveThroughBarrierFlag;
+            barrier->PlayerBarrier = static_cast<int8>((scenery_group != nullptr) && (scenery_group->DriveThroughBarrierFlag != 0));
         }
     }
 }
@@ -155,7 +154,7 @@ TrackPathZone *TrackPathManager::FindZone(const bVector2 *position, eTrackPathZo
     ZoneInfo *zone_info = &ZoneInfoTable[zone_type];
     bool cache_valid;
 
-    if (!position) {
+    if (position == nullptr) {
         cache_valid = false;
     } else if (bBoundingBoxIsInside(&zone_info->CachedBBoxMin, &zone_info->CachedBBoxMax, position, 0.0f)) {
         cache_valid = zone_info->NumCachedZones < 9;
@@ -192,12 +191,12 @@ TrackPathZone *TrackPathManager::FindZone(const bVector2 *position, eTrackPathZo
         first_zone = zone_info->pFirstZone;
 
         zone_info->NumFullRebuilds++;
-        if (prev_zone) {
+        if (prev_zone != nullptr) {
             first_zone = prev_zone->GetMemoryImageNext();
         }
 
         for (TrackPathZone *zone = first_zone; zone < last_zone; zone = zone->GetMemoryImageNext()) {
-            if (!position || (bBoundingBoxIsInside(&zone->BBoxMin, &zone->BBoxMax, position, 0.0f) && zone->IsPointInside(position))) {
+            if ((position == nullptr) || (bBoundingBoxIsInside(&zone->BBoxMin, &zone->BBoxMax, position, 0.0f) && zone->IsPointInside(position))) {
                 found_zone = zone;
                 break;
             }
@@ -205,7 +204,7 @@ TrackPathZone *TrackPathManager::FindZone(const bVector2 *position, eTrackPathZo
     } else {
         int first_zone_index = 0;
         zone_info->NumCacheHits++;
-        if (prev_zone) {
+        if (prev_zone != nullptr) {
             first_zone_index = prev_zone->CachedIndex + 1;
         }
 

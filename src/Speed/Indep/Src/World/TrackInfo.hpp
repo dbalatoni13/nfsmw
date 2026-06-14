@@ -1,10 +1,6 @@
 #ifndef WORLD_TRACKINFO_H
 #define WORLD_TRACKINFO_H
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
@@ -46,7 +42,7 @@ class TrackInfo {
     static int UnloaderTrackInfo(bChunk *chunk);
 
     static int GetLoadedTrackNumber() {
-        if (LoadedTrackInfo) {
+        if (LoadedTrackInfo != nullptr) {
             return LoadedTrackInfo->TrackNumber;
         }
         return 0;
@@ -72,8 +68,8 @@ class TrackInfo {
     uint32 TrackLength;                              // offset 0x98, size 0x4
     float TimeToBeatForwards_ms;                     // offset 0x9C, size 0x4
     float TimeToBeatReverse_ms;                      // offset 0xA0, size 0x4
-    uint32 ScoreToBeatForwards_DriftOnly;            // offset 0xA4, size 0x4
-    uint32 ScoreToBeatReverse_DriftOnly;             // offset 0xA8, size 0x4
+    int32 ScoreToBeatForwards_DriftOnly;             // offset 0xA4, size 0x4
+    int32 ScoreToBeatReverse_DriftOnly;              // offset 0xA8, size 0x4
     bVector2 TrackMapCalibrationUpperLeft;           // offset 0xAC, size 0x8
     float TrackMapCalibrationMapWidthMetres;         // offset 0xB4, size 0x4
     bAngle TrackMapCalibrationRotation;              // offset 0xB8, size 0x2
@@ -96,7 +92,7 @@ class TrackInfo {
     float TrafficOncomingFraction[4];                // offset 0x100, size 0x10
     bVector2 TrackMapZoomTopLeft;                    // offset 0x110, size 0x8
     float TrackMapZoomWidth;                         // offset 0x118, size 0x4
-    char TrackMapStartZoomed;                        // offset 0x11C, size 0x1
+    int8 TrackMapStartZoomed;                        // offset 0x11C, size 0x1
 
   private:
     static TrackInfo *TrackInfoTable;

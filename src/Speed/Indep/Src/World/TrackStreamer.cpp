@@ -43,6 +43,117 @@ bChunkLoader bChunkLoaderTrackStreamingBarriers(BCHUNK_TRACK_STRAMING_BARRIERS, 
 
 unsigned int PlotLoadingMarker(const char *layer_name, const bVector2 *begin_position, const bVector2 *end_position, float load_time) {}
 
+// total size: 0x34
+class TSMemoryNode : public bTNode<TSMemoryNode> {
+  public:
+    bool IsFree() {
+        return !Allocated;
+    }
+
+    bool IsAllocated() {
+        return Allocated;
+    }
+
+    bool Contains(intptr_t address) {
+        return address >= Address && address < Address + Size;
+    }
+
+    int GetAddress(bool start_from_top, int size) {
+        if (start_from_top) {
+            return Address;
+        }
+        return Address + Size - size;
+    }
+
+    intptr_t Address;   // offset 0x8, size 0x4
+    int32 Size;         // offset 0xC, size 0x4
+    bool Allocated;     // offset 0x10, size 0x1
+    char DebugName[32]; // offset 0x14, size 0x20
+};
+
+// total size: 0x2754
+class TSMemoryPool {
+  public:
+    TSMemoryPool(intptr_t address, int size, const char *debug_name, int pool_num);
+    void *Malloc(int32 size, const char *debug_name, bool best_fit, bool allocate_from_top, intptr_t address);
+    void Free(void *ptr);
+    int GetAmountFree();
+    int GetLargestFreeBlock();
+    TSMemoryNode *GetNextNode(bool start_from_top, TSMemoryNode *node);
+
+    TSMemoryNode *GetFirstNode(bool start_from_top) {
+        return GetNextNode(start_from_top, nullptr);
+    }
+
+    TSMemoryNode *GetNextFreeNode(bool start_from_top, TSMemoryNode *node);
+
+    TSMemoryNode *GetFirstFreeNode(bool start_from_top) {
+        return GetNextFreeNode(start_from_top, nullptr);
+    }
+
+    TSMemoryNode *GetNextAllocatedNode(bool start_from_top, TSMemoryNode *node);
+
+    TSMemoryNode *GetFirstAllocatedNode(bool start_from_top) {
+        return GetNextAllocatedNode(start_from_top, 0);
+    }
+
+    bool IsUpdated() {
+        bool updated = Updated;
+        Updated = false;
+        return updated;
+    }
+
+    uint32 GetPoolChecksum();
+    void DebugPrint();
+
+    void EnableTracing(bool enabled) {
+        TracingEnabled = enabled;
+    }
+
+  private:
+    static void *OverrideMalloc(void *pool, int size, const char *debug_text, int debug_line, int allocation_params) {
+        int user_alignment_offset = bMemoryGetAlignmentOffset(allocation_params);
+
+        if (user_alignment_offset != 0) {
+            char *p = reinterpret_cast<char *>(static_cast<TSMemoryPool *>(pool)->Malloc(
+                size + 0x80, debug_text, bMemoryGetBestFit(allocation_params) != 0, bMemoryGetTopBit(allocation_params) != 0, 0));
+            return &p[0x80 - user_alignment_offset];
+        }
+
+        return static_cast<TSMemoryPool *>(pool)->Malloc(size, debug_text, bMemoryGetBestFit(allocation_params) != 0,
+                                                         bMemoryGetTopBit(allocation_params) != 0, 0);
+    }
+
+    static void OverrideFree(void *pool, void *ptr) {
+        static_cast<TSMemoryPool *>(pool)->Free(reinterpret_cast<void *>(reinterpret_cast<uintptr_t>(ptr) & ~static_cast<uintptr_t>(0x7F)));
+    }
+
+    static int OverrideGetAmountFree(void *pool) {
+        return static_cast<TSMemoryPool *>(pool)->GetAmountFree();
+    }
+
+    static int OverrideGetLargestFreeBlock(void *pool) {
+        return static_cast<TSMemoryPool *>(pool)->GetLargestFreeBlock();
+    }
+
+    TSMemoryNode *GetNewNode(intptr_t address, int32 size, bool allocated, const char *debug_name);
+    void RemoveNode(TSMemoryNode *node);
+
+    int PoolNum;                         // offset 0x0, size 0x4
+    const char *DebugName;               // offset 0x4, size 0x4
+    int TotalSize;                       // offset 0x8, size 0x4
+    bool TracingEnabled;                 // offset 0xC, size 0x1
+    bool Updated;                        // offset 0x10, size 0x1
+    int AllocationNumber;                // offset 0x14, size 0x4
+    int AmountFree;                      // offset 0x18, size 0x4
+    int LargestFree;                     // offset 0x1C, size 0x4
+    bool NeedToRecalcLargestFree;        // offset 0x20, size 0x1
+    bTList<TSMemoryNode> UnusedNodeList; // offset 0x24, size 0x8
+    bTList<TSMemoryNode> NodeList;       // offset 0x2C, size 0x8
+    TSMemoryNode MemoryNodes[192];       // offset 0x34, size 0x2700
+    MemoryPoolOverrideInfo OverrideInfo; // offset 0x2734, size 0x20
+};
+
 TSMemoryPool::TSMemoryPool(intptr_t address, int size, const char *debug_name, int pool_num) {
     PoolNum = pool_num;
     DebugName = debug_name;
@@ -121,7 +232,7 @@ void *TSMemoryPool::Malloc(int size, const char *debug_name, bool best_fit, bool
         }
     } else if (best_fit) {
         for (TSMemoryNode *node = NodeList.GetHead(); node != NodeList.EndOfList(); node = node->GetNext()) {
-            if (node->IsFree() && node->Size >= size && (!found_node || found_node->Size - size > node->Size - size)) {
+            if (node->IsFree() && node->Size >= size && ((found_node == nullptr) || found_node->Size - size > node->Size - size)) {
                 found_node = node;
             }
         }
@@ -141,7 +252,7 @@ void *TSMemoryPool::Malloc(int size, const char *debug_name, bool best_fit, bool
         }
     }
 
-    if (!found_node) {
+    if (found_node == nullptr) {
         return nullptr;
     }
 
@@ -268,13 +379,13 @@ int TSMemoryPool::GetLargestFreeBlock() {
 
 TSMemoryNode *TSMemoryPool::GetNextNode(bool start_from_top, TSMemoryNode *node) {
     if (start_from_top) {
-        if (node) {
+        if (node != nullptr) {
             node = node->GetNext();
         } else {
             node = NodeList.GetHead();
         }
     } else {
-        if (node) {
+        if (node != nullptr) {
             node = node->GetPrev();
         } else {
             node = NodeList.GetTail();
@@ -523,7 +634,7 @@ int TrackStreamer::CountUserAllocations(const char **pfragmented_user_allocation
     TSMemoryNode *node = pMemoryPool->GetFirstAllocatedNode(start_from_top);
     while (node) {
         TrackStreamingSection *section = FindSectionByAddress(node->Address);
-        if (!section) {
+        if (section == nullptr) {
             user_allocation_size += node->Size;
             if (pMemoryPool->GetNextFreeNode(start_from_top, node) && pMemoryPool->GetNextFreeNode(!start_from_top, node) &&
                 pfragmented_user_allocation) {
@@ -661,7 +772,7 @@ void TrackStreamer::FlushHibernatingSections() {
 
 void *TrackStreamer::AllocateMemory(TrackStreamingSection *section, int allocation_params) {
     void *buf = bMalloc(section->Size, section->SectionName, 0, allocation_params | 0x2007);
-    if (!buf) {
+    if (buf == nullptr) {
         bBreak();
     }
     return buf;
@@ -953,11 +1064,19 @@ void TrackStreamer::UnJettisonSections() {
     for (int n = 0; n < NumJettisonedSections; n++) {
         TrackStreamingSection *section = JettisonedSections[n];
         CurrentStreamingSections[NumCurrentStreamingSections++] = section;
-        section->CurrentlyVisible = true;
+        section->CurrentlyVisible = 1;
     }
     NumJettisonedSections = 0;
     AmountJettisoned = 0;
 }
+
+// total size: 0x10
+struct HoleMovement {
+    intptr_t Address;    // offset 0x0, size 0x4
+    intptr_t NewAddress; // offset 0x4, size 0x4
+    int32 Size;          // offset 0x8, size 0x4
+    uint32 Checksum;     // offset 0xC, size 0x4
+};
 
 // UNSOLVED, TODO this is pretty wrong
 int TrackStreamer::BuildHoleMovements(HoleMovement *hole_movements, int max_movements, int filler_method, int largest_free, int *pamount_moved,
@@ -1011,7 +1130,7 @@ int TrackStreamer::BuildHoleMovements(HoleMovement *hole_movements, int max_move
                 break;
             }
 
-            if (node) {
+            if (node != nullptr) {
                 movement->Size = node->Size;
                 movement->Address = node->Address;
                 movement->NewAddress = free_node->GetAddress(start_from_top, movement->Size);
@@ -1028,7 +1147,7 @@ int TrackStreamer::BuildHoleMovements(HoleMovement *hole_movements, int max_move
 
             while ((next_node = pMemoryPool->GetNextAllocatedNode(start_from_top, next_node)) != nullptr) {
                 TSMemoryNode *next_free = pMemoryPool->GetNextFreeNode(start_from_top, next_node);
-                if (!next_free) {
+                if (next_free == nullptr) {
                     continue;
                 }
                 if (first || next_node->Size <= free_node->Size) {
@@ -1108,7 +1227,7 @@ int TrackStreamer::BuildHoleMovements(HoleMovement *hole_movements, int max_move
                         found_nodes = 1;
                         while (pMemoryPool->GetNextNode(true, cursor) != bottom_free_top && cursor && found_nodes < 32) {
                             cursor = pMemoryPool->GetNextNode(true, cursor);
-                            if (cursor) {
+                            if (cursor != nullptr) {
                                 size_checking[found_nodes] = cursor->Size;
                                 middle_allocated_memory += cursor->Size;
                                 found_nodes++;
@@ -1194,7 +1313,7 @@ int TrackStreamer::BuildHoleMovements(HoleMovement *hole_movements, int max_move
         pMemoryPool->Free(reinterpret_cast<void *>(movement->NewAddress));
         char *debug_name = "UndoHoleMovement";
         TrackStreamingSection *section = FindSectionByAddress(movement->Address);
-        if (section) {
+        if (section != nullptr) {
             debug_name = section->SectionName;
         }
         pMemoryPool->Malloc(movement->Size, debug_name, false, false, movement->Address);
@@ -1453,7 +1572,7 @@ void TrackStreamer::AddCurrentStreamingSections(short *sections_to_load, int num
         }
 
         TrackStreamingSection *section = FindSection(section_number);
-        if (!section) {
+        if (section == nullptr) {
             continue;
         }
 
@@ -2234,7 +2353,7 @@ void TrackStreamer::FinishedLoading() {
         position_entry->BeginLoadingTime = 0.0f;
     }
 
-    if (pCallback) {
+    if (pCallback != nullptr) {
         SetDelayedResourceCallback(pCallback, CallbackParam);
         pCallback = nullptr;
         CallbackParam = 0;
@@ -2288,7 +2407,7 @@ bool TrackStreamer::CheckLoadingBar() {
             TrackStreamingSection *section = CurrentStreamingSections[n];
             VisibleSectionBoundary *boundary = section->pBoundary;
 
-            if (boundary) {
+            if (boundary != nullptr) {
                 bool may_contain_road = false;
                 if (IsRegularScenerySection(section->SectionNumber)) {
                     if (IsScenerySectionDrivable(section->SectionNumber) || IsLODScenerySectionNumber(section->SectionNumber)) {
@@ -2368,7 +2487,7 @@ void TrackStreamer::UnloadEverything() {
     for (int n = 0; n < NumTrackStreamingSections; n++) {
         TrackStreamingSection *section = &pTrackStreamingSections[n];
         // TODO
-        if (static_cast<unsigned int>(section->Status - TrackStreamingSection::LOADED) < 2U) {
+        if (section->Status >= TrackStreamingSection::LOADED && section->Status <= TrackStreamingSection::ACTIVATED) {
             UnloadSection(section);
         }
     }

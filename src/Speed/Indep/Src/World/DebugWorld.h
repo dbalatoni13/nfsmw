@@ -1,39 +1,28 @@
-#ifndef WORLD_DEBUGWORLD_H
-#define WORLD_DEBUGWORLD_H
+#ifndef __E_DEBUG_WORLD_H
+#define __E_DEBUG_WORLD_H
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
-#include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include <types.h>
 
 // total size: 0x1
 class DebugWorld {
   public:
-    static void Init();
-
     DebugWorld();
-    void Service();
-    void HandleSaveHotPosition();
-    void HandleJumpToHotPosition();
-
+    ~DebugWorld();
+    static bool IsEnabled() {}
+    static void Init();
+    static void DeInit();
     static DebugWorld &Get() {
         return *mThis;
     }
+    void Service();
+    void DebugDisplay();
 
   private:
+    void HandleSaveHotPosition();
+    void HandleJumpToHotPosition();
+
     static DebugWorld *mThis;
     static bool mOnOff;
-};
-
-struct SavedHotPosition {
-    // total size: 0x18
-    bVector3 Position; // offset 0x0, size 0x10
-    bAngle Angle;      // offset 0x10, size 0x2
-    float Speed;       // offset 0x14, size 0x4
-
-    SavedHotPosition() {}
 };
 
 #endif

@@ -54,7 +54,7 @@ float GetTimeStep();
 const State GetState();
 const float GetFrameTimeElapsed();
 eUserMode GetUserMode();
-void SetStream(UMath::Vector3 &location, bool blocking);
+void SetStream(const UMath::Vector3 &location, bool blocking);
 void ProfileTask(HSIMTASK htask, const char *name);
 HSIMTASK AddTask(const UCrc32 &schedule, float rate, ITaskable *handler, float start_offset, TaskMode mode);
 void RemoveTask(HSIMTASK hTask, ITaskable *handler);

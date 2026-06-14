@@ -1,11 +1,8 @@
 #ifndef WORLD_SUN_H
 #define WORLD_SUN_H
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
 #include "types.h"
+#include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 
 enum SUN_TEXTURE {
     NUM_SUN_TEXTURES = 5,
@@ -21,8 +18,8 @@ enum SUN_ALPHA {
     SUNALPHA_BLEND = 0,
 };
 
+// total size: 0x24
 class SunLayer {
-    // total size: 0x24
   public:
     SUN_TEXTURE Texture;    // offset 0x0, size 0x4
     SUN_ALPHA AlphaType;    // offset 0x4, size 0x4
@@ -35,8 +32,8 @@ class SunLayer {
     float SweepAngleAmount; // offset 0x20, size 0x4
 };
 
+// total size: 0x110
 class SunChunkInfo {
-    // total size: 0x110
   public:
     int32 Version;            // offset 0x0, size 0x4
     uint32 NameHash;          // offset 0x4, size 0x4
@@ -53,6 +50,7 @@ class SunChunkInfo {
 void RenderSunAsFlare();
 void SunTrackLoader(void);
 void SunTrackUnloader(void);
+void GetSunPos(eView *view, float *x, float *y, float *z);
 
 extern SunChunkInfo *SunInfo;
 

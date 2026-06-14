@@ -5,14 +5,17 @@
 #pragma once
 #endif
 
-#include "Speed/Indep/bWare/Inc/bMath.hpp"
+#include "Speed/Indep/Libs/Support/Utility/UTLVector.h"
 #include "Speed/Indep/Src/World/Common/WGridNode.h"
 
-struct UGroup;
-
-struct WGrid {
-    static bool Initialized() { return fgGrid != 0; }
-    static WGrid &Get() { return *fgGrid; }
+class WGrid {
+  public:
+    static bool Initialized() {
+        return fgGrid != nullptr;
+    }
+    static WGrid &Get() {
+        return *fgGrid;
+    }
 
     WGrid(const UMath::Vector4 &min, unsigned int rows, unsigned int cols, float edgeSize);
     ~WGrid();
@@ -28,11 +31,11 @@ struct WGrid {
     void FindNodes(const UMath::Vector3 &pt, float radiusInner, float radiusOuter, UTL::Vector<unsigned int, 16> &nodeIndList) const;
     bool RangeCheck(const UMath::Vector3 *pts) const;
 
-    inline bool IsValidNode(unsigned short nodeInd) {
+    bool IsValidNode(unsigned short nodeInd) {
         return nodeInd < fNumRows * fNumCols;
     }
 
-    inline void RangeCheckROWCOL(unsigned int &row, unsigned int &col) const {
+    void RangeCheckROWCOL(unsigned int &row, unsigned int &col) const {
         if (col >= fNumCols) {
             if (col > 0x7FFFFFFEU) {
                 col = 0;
@@ -49,41 +52,43 @@ struct WGrid {
         }
     }
 
-    inline unsigned int GetNodeInd(unsigned int row, unsigned int col) const {
+    unsigned int GetNodeInd(unsigned int row, unsigned int col) const {
         return row * fNumCols + col;
     }
 
-    inline void GetRowCol(const UMath::Vector3 &pt, unsigned int &row, unsigned int &col) const {
-        col = static_cast< int >((pt.x - fMin.x) * fInvEdgeSize);
-        row = static_cast< int >((pt.z - fMin.z) * fInvEdgeSize);
+    void GetRowCol(const UMath::Vector3 &pt, unsigned int &row, unsigned int &col) const {
+        col = FLOAT2INT((pt.x - fMin.x) * fInvEdgeSize);
+        row = FLOAT2INT((pt.z - fMin.z) * fInvEdgeSize);
         RangeCheckROWCOL(row, col);
     }
 
-    inline void GetRowCol(unsigned int ind, unsigned int &row, unsigned int &col) const {
+    void GetRowCol(unsigned int ind, unsigned int &row, unsigned int &col) const {
         row = ind / fNumCols;
         col = ind - row * fNumCols;
         RangeCheckROWCOL(row, col);
     }
 
-    inline WGridNode *GetNode(unsigned int row, unsigned int col) const {
+    WGridNode *GetNode(unsigned int row, unsigned int col) const {
         return fNodes[GetNodeInd(row, col)];
     }
 
-    inline WGridNode *GetNode(unsigned int ind) const {
+    WGridNode *GetNode(unsigned int ind) const {
         unsigned int row, col;
         GetRowCol(ind, row, col);
         return GetNode(row, col);
     }
 
+    UMath::Vector4 fMin;   // offset 0x0, size 0x10
+    float fEdgeSize;       // offset 0x10, size 0x4
+    float fInvEdgeSize;    // offset 0x14, size 0x4
+    unsigned int fNumRows; // offset 0x18, size 0x4
+    unsigned int fNumCols; // offset 0x1C, size 0x4
+    WGridNode **fNodes;    // offset 0x20, size 0x4
+
+  private:
     static WGrid *fgGrid;
     static const UGroup *fgMapGroup;
-
-    UMath::Vector4 fMin;       // offset 0x0, size 0x10
-    float fEdgeSize;           // offset 0x10, size 0x4
-    float fInvEdgeSize;        // offset 0x14, size 0x4
-    unsigned int fNumRows;     // offset 0x18, size 0x4
-    unsigned int fNumCols;     // offset 0x1C, size 0x4
-    WGridNode **fNodes;        // offset 0x20, size 0x4
+    static unsigned int fNumGrids;
 };
 
 #endif

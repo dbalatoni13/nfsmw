@@ -11,8 +11,6 @@
 
 int eUnloadSolidListPlatChunks(bChunk *chunk);
 eSolidIndexEntry *GetSolidIndexEntry(eSolidListHeader *list_header, uint32 name_hash);
-eSolid *eFindSolid(uint32 name_hash);
-eSolid *eFindSolid(uint32 name_hash, eSolidListHeader *solid_list_header);
 
 LoadedTable SolidLoadedTable;
 bTList<eSolidListHeader> SolidListHeaderList;

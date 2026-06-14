@@ -8,6 +8,8 @@
 #include "bDebug.hpp"
 #include "bList.hpp"
 
+// TODO this doesn't exist
+
 // total size: 0x10
 class FreeBlock : public bTNode<FreeBlock> {
   public:

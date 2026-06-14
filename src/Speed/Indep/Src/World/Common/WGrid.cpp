@@ -2,19 +2,21 @@
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include <math.h>
 
-inline int FLOAT2INT(float f) {
-    return static_cast< int >(f);
-}
+WGrid *WGrid::fgGrid = nullptr;            // size: 0x4, address: 0x80438F74
+const UGroup *WGrid::fgMapGroup = nullptr; // size: 0x4, address: 0x80438F78
+unsigned int WGrid::fNumGrids = 0;         // size: 0x4, address: 0xFFFFFFFF
 
-WGrid::WGrid(const UMath::Vector4 &min, unsigned int rows, unsigned int cols, float edgeSize) {
-    fMin = min;
-    fEdgeSize = edgeSize;
-    fInvEdgeSize = 1.0f / edgeSize;
-    fNumCols = cols;
-    fNumRows = rows;
-    fNodes = static_cast<WGridNode **>(bMalloc(cols * 4 * rows, 0));
+WGrid::WGrid(const UMath::Vector4 &min, unsigned int rows, unsigned int cols, float edgeSize)
+    : fMin(min),                     //
+      fEdgeSize(edgeSize),           //
+      fInvEdgeSize(1.0f / edgeSize), //
+      fNumRows(rows),                //
+      fNumCols(cols)                 //
+{
+    fNodes = static_cast<WGridNode **>(Alloc(sizeof(WGridNode *) * rows * cols, 0, "WGrid Nodes"));
+    // TODO likely a macro because of the cast?
     for (int i = 0; i < static_cast<int>(rows * cols); i++) {
-        fNodes[i] = 0;
+        fNodes[i] = nullptr;
     }
 }
 
@@ -25,23 +27,25 @@ WGrid::~WGrid() {
 void WGrid::Init(const UGroup *mapGroup) {
     fgMapGroup = mapGroup;
     if (mapGroup != nullptr) {
-        const UGroup *cDatGroup = mapGroup->GroupLocate('CD', 'at');
-        const UData *carpGridData = cDatGroup->DataLocate('CG', 'rd');
+        const UGroup *cDatGroup = mapGroup->GroupLocate(MAKE_UDATA_TYPE('CD'), 'at');
+        const UData *carpGridData = cDatGroup->DataLocate(MAKE_UDATA_TYPE('CG'), 'rd');
         const WGrid *carpGrid = static_cast<const WGrid *>(carpGridData->GetDataConst());
 
         if (carpGrid->fNumRows == 0 || carpGrid->fNumCols == 0) {
-            fgGrid = new WGrid(UMath::Vector4Make(-10000.0f, -10000.0f, -10000.0f, 1.0f), 2, 2, 10000.0f);
+            fgGrid = new ("WGrid", 0) WGrid(UMath::Vector4Make(-10000.0f, -10000.0f, -10000.0f, 1.0f), 2, 2, 10000.0f);
         } else {
-            fgGrid = new WGrid(carpGrid->fMin, carpGrid->fNumRows, carpGrid->fNumCols, carpGrid->fEdgeSize);
+            fgGrid = new ("WGrid", 0) WGrid(carpGrid->fMin, carpGrid->fNumRows, carpGrid->fNumCols, carpGrid->fEdgeSize);
         }
 
-        unsigned int numNodes = cDatGroup->DataCountType(UDataGroupTag('CG', 'cn'));
-        const UData *nodeDat = cDatGroup->DataLocateFirst(UDataGroupTag('CG', 'cn'), 0xFFFFFFFF, 0xFFFFFFFF);
-        if (nodeDat != cDatGroup->DataEnd()) {
-            const WGridNode *n = static_cast<const WGridNode *>(nodeDat->GetDataConst());
-            for (unsigned int i = 0; i < nodeDat->DataCount(); i++) {
-                fgGrid->fNodes[n->GetNodeInd()] = const_cast<WGridNode *>(n);
-                n = reinterpret_cast<const WGridNode *>(reinterpret_cast<const char *>(n) + n->TotalSize());
+        {
+            unsigned int numNodes = cDatGroup->DataCountType(MAKE_UDATA_TYPE('CG') | 'cn');
+            const UData *nodeDat = cDatGroup->DataLocateFirst(MAKE_UDATA_TYPE('CG') | 'cn', -1, -1);
+            if (nodeDat != cDatGroup->DataEnd()) {
+                const WGridNode *n = static_cast<const WGridNode *>(nodeDat->GetDataConst());
+                for (unsigned int i = 0; i < nodeDat->DataCount(); i++) {
+                    fgGrid->fNodes[n->GetNodeInd()] = const_cast<WGridNode *>(n);
+                    n = reinterpret_cast<const WGridNode *>(reinterpret_cast<const char *>(n) + n->TotalSize());
+                }
             }
         }
     } else {
@@ -52,9 +56,8 @@ void WGrid::Init(const UGroup *mapGroup) {
 void WGrid::Shutdown() {
     if (fgGrid != nullptr) {
         for (int i = 0; i < static_cast<int>(fgGrid->fNumRows * fgGrid->fNumCols); i++) {
-            WGridNode *node = fgGrid->fNodes[i];
-            if (node != nullptr) {
-                node->ShutDown();
+            if (fgGrid->fNodes[i]) {
+                fgGrid->fNodes[i]->ShutDown();
                 fgGrid->fNodes[i] = nullptr;
             }
         }
@@ -112,128 +115,140 @@ void WGrid::FindNodesBox(const UMath::Vector4 *pts, UTL::Vector<unsigned int, 16
     }
 }
 
+// UNSOLVED, pretty wrong https://decomp.me/scratch/6DrZg
 void WGrid::FindNodes(const UMath::Vector4 *seg, UTL::Vector<unsigned int, 16> &nodeIndList) const {
-    static int iMaxNumNodes = 100;
     int iNumNodes;
-    float fDirX = seg[1].x - seg[0].x;
-    float fDirY = seg[1].z - seg[0].z;
-
+    static int iMaxNumNodes = 100;
+    float fDirX;
+    float fDirY;
+    int iStartPosX;
+    int iStartPosY;
+    int iEndPosX;
+    int iEndPosY;
     UMath::Vector2 points[2];
+    bool bStartPosOut;
+    bool bEndPosOut;
+    float fLength;
+
     points[0].x = seg[0].x;
     points[0].y = seg[0].z;
     points[1].x = seg[1].x;
     points[1].y = seg[1].z;
 
-    int iStartPosX = static_cast< int >(FLOAT2INT(points[0].x - fMin.x) * fInvEdgeSize);
-    int iStartPosY = static_cast< int >(FLOAT2INT(points[0].y - fMin.z) * fInvEdgeSize);
+    fDirX = points[1].x - points[0].x;
+    fDirY = points[1].y - points[0].y;
 
-    bool bStartPosOut = false;
-    if (iStartPosX < 0 || iStartPosX >= static_cast< int >(fNumCols) ||
-        iStartPosY < 0 || iStartPosY >= static_cast< int >(fNumRows)) {
+    iStartPosX = FLOAT2INT(FLOAT2INT(points[0].x - fMin.x) * fInvEdgeSize);
+    iStartPosY = FLOAT2INT(FLOAT2INT(points[0].y - fMin.z) * fInvEdgeSize);
+
+    bStartPosOut = false;
+    if (iStartPosX < 0 || iStartPosX >= static_cast<int>(fNumCols) || iStartPosY < 0 || iStartPosY >= static_cast<int>(fNumRows)) {
         bStartPosOut = true;
     }
 
-    int iEndPosX = static_cast< int >(FLOAT2INT(seg[1].x - fMin.x) * fInvEdgeSize);
-    int iEndPosY = static_cast< int >(FLOAT2INT(seg[1].z - fMin.z) * fInvEdgeSize);
+    iEndPosX = FLOAT2INT(FLOAT2INT(points[1].x - fMin.x) * fInvEdgeSize);
+    iEndPosY = FLOAT2INT(FLOAT2INT(points[1].y - fMin.z) * fInvEdgeSize);
 
-    bool bEndPosOut = false;
-    if (iEndPosX < 0 || iEndPosX >= static_cast< int >(fNumCols) ||
-        iEndPosY < 0 || iEndPosY >= static_cast< int >(fNumRows)) {
+    bEndPosOut = false;
+    if (iEndPosX < 0 || iEndPosX >= static_cast<int>(fNumCols) || iEndPosY < 0 || iEndPosY >= static_cast<int>(fNumRows)) {
         bEndPosOut = true;
     }
 
-    if (UMath::Abs(fDirX) < 0.05f) {
+    if (fabsf(fDirX) < 0.05f) {
         fDirX = 0.05f;
     }
-    if (UMath::Abs(fDirY) < 0.05f) {
+    if (fabsf(fDirY) < 0.05f) {
         fDirY = 0.05f;
     }
 
-    if (!bStartPosOut) {
+    if (bStartPosOut) {
+        if (!bEndPosOut) {
+            float fBarrierPosX;
+            float fBarrierPosY;
+            float fRevDirX = -fDirX;
+            float fRevDirY = -fDirY;
+            float fBarrierDistX;
+            float fBarrierDistY;
+
+            if (fRevDirX > 0.0f) {
+                fBarrierPosX = static_cast<float>(fNumCols) * fEdgeSize + fMin.x - 0.1f;
+            } else {
+                fBarrierPosX = fMin.x + 0.1f;
+            }
+            if (fRevDirY > 0.0f) {
+                fBarrierPosY = static_cast<float>(fNumRows) * fEdgeSize + fMin.z - 0.1f;
+            } else {
+                fBarrierPosY = fMin.z + 0.1f;
+            }
+
+            fBarrierDistX = (fBarrierPosX - points[1].x) / fRevDirX;
+            fBarrierDistY = (fBarrierPosY - points[1].y) / fRevDirY;
+
+            if (fBarrierDistX < fBarrierDistY) {
+                points[0].x = fBarrierPosX;
+                points[0].y = fBarrierDistX * fRevDirY + points[1].y;
+            } else {
+                points[0].y = fBarrierPosY;
+                points[0].x = fBarrierDistY * fRevDirX + points[1].x;
+            }
+
+            iStartPosX = FLOAT2INT(FLOAT2INT(points[0].x - fMin.x) * fInvEdgeSize);
+            iStartPosY = FLOAT2INT(FLOAT2INT(points[0].y - fMin.z) * fInvEdgeSize);
+        }
+    } else {
         if (bEndPosOut) {
             float fBarrierPosX;
             float fBarrierPosY;
             float fBarrierDistX;
             float fBarrierDistY;
 
-            if (fDirX <= 0.0f) {
+            if (fDirX > 0.0f) {
+                fBarrierPosX = static_cast<float>(fNumCols) * fEdgeSize + fMin.x - 0.1f;
+            } else {
                 fBarrierPosX = fMin.x + 0.1f;
-            } else {
-                fBarrierPosX = static_cast< float >(fNumCols) * fEdgeSize + fMin.x - 0.1f;
             }
-            if (fDirY <= 0.0f) {
-                fBarrierPosY = fMin.z + 0.1f;
+            if (fDirY > 0.0f) {
+                fBarrierPosY = static_cast<float>(fNumRows) * fEdgeSize + fMin.z - 0.1f;
             } else {
-                fBarrierPosY = static_cast< float >(fNumRows) * fEdgeSize + fMin.z - 0.1f;
+                fBarrierPosY = fMin.z + 0.1f;
             }
 
             fBarrierDistX = (fBarrierPosX - points[0].x) / fDirX;
             fBarrierDistY = (fBarrierPosY - points[0].y) / fDirY;
 
-            if (fBarrierDistY <= fBarrierDistX) {
-                points[1].x = fBarrierDistY * fDirX + points[0].x;
-            } else {
+            if (fBarrierDistX < fBarrierDistY) {
+                points[1].x = fBarrierPosX;
                 points[1].y = fBarrierDistX * fDirY + points[0].y;
+            } else {
+                points[1].y = fBarrierPosY;
+                points[1].x = fBarrierDistY * fDirX + points[0].x;
             }
 
-            iEndPosX = static_cast< int >(FLOAT2INT(points[1].x - fMin.x) * fInvEdgeSize);
-            iEndPosY = static_cast< int >(FLOAT2INT(points[1].y - fMin.z) * fInvEdgeSize);
+            iEndPosX = FLOAT2INT(FLOAT2INT(points[1].x - fMin.x) * fInvEdgeSize);
+            iEndPosY = FLOAT2INT(FLOAT2INT(points[1].y - fMin.z) * fInvEdgeSize);
         }
-    } else {
-        if (bEndPosOut) {
-            return;
-        }
-
-        float fBarrierPosX;
-        float fBarrierPosY;
-        float fRevDirX = -fDirX;
-        float fRevDirY = -fDirY;
-        float fBarrierDistX;
-        float fBarrierDistY;
-
-        if (fRevDirX <= 0.0f) {
-            fBarrierPosX = fMin.x + 0.1f;
-        } else {
-            fBarrierPosX = static_cast< float >(fNumCols) * fEdgeSize + fMin.x - 0.1f;
-        }
-        if (fRevDirY <= 0.0f) {
-            fBarrierPosY = fMin.z + 0.1f;
-        } else {
-            fBarrierPosY = static_cast< float >(fNumRows) * fEdgeSize + fMin.z - 0.1f;
-        }
-
-        fBarrierDistX = (fBarrierPosX - points[1].x) / fRevDirX;
-        fBarrierDistY = (fBarrierPosY - points[1].y) / fRevDirY;
-
-        if (fBarrierDistY <= fBarrierDistX) {
-            points[0].x = fBarrierDistY * fRevDirX + points[1].x;
-        } else {
-            points[0].y = fBarrierDistX * fRevDirY + points[1].y;
-        }
-
-        iStartPosX = static_cast< int >(FLOAT2INT(points[0].x - fMin.x) * fInvEdgeSize);
-        iStartPosY = static_cast< int >(FLOAT2INT(points[0].y - fMin.z) * fInvEdgeSize);
     }
 
     nodeIndList.push_back(GetNodeInd(iStartPosY, iStartPosX));
     iNumNodes = 1;
 
-    float fLength = UMath::Sqrt(fDirX * fDirX + fDirY * fDirY);
+    fLength = UMath::Sqrt(fDirX * fDirX + fDirY * fDirY);
 
+    // TODO only one push back call here
     if (fLength <= fEdgeSize) {
-        if (iStartPosX == iEndPosX) {
+        if (iStartPosX != iEndPosX) {
             if (iStartPosY == iEndPosY) {
+                nodeIndList.push_back(GetNodeInd(iEndPosY, iEndPosX));
                 return;
             }
-        } else if (iStartPosY != iEndPosY) {
-            goto dda_traverse;
+        } else if (iStartPosY == iEndPosY) {
+            return;
+        } else {
+            nodeIndList.push_back(GetNodeInd(iEndPosY, iEndPosX));
+            return;
         }
-
-        nodeIndList.push_back(GetNodeInd(iEndPosY, iEndPosX));
-        return;
     }
 
-dda_traverse:
     {
         float fVx = fDirX / fLength;
         float fVy = fDirY / fLength;
@@ -246,8 +261,8 @@ dda_traverse:
         float fCurY = points[0].y;
         int iCurPosX = iStartPosX;
         int iCurPosY = iStartPosY;
-        bool bEast = fVx < 0.0f;
-        bool bNorth = fVy < 0.0f;
+        bool bEast;
+        bool bNorth;
         float fWallX;
         float fWallY;
 
@@ -263,82 +278,88 @@ dda_traverse:
             fInvVy = 10000.0f;
         }
 
+        bEast = fVx >= 0.0f;
+        bNorth = fVy >= 0.0f;
+
         if (bEast) {
-            fWallX = floorf(fCurX * fInvEdgeSize) * fEdgeSize;
-        } else {
             fWallX = ceilf(fCurX * fInvEdgeSize) * fEdgeSize;
+        } else {
+            fWallX = floorf(fCurX * fInvEdgeSize) * fEdgeSize;
         }
 
         if (bNorth) {
-            fWallY = floorf(fCurY * fInvEdgeSize) * fEdgeSize;
-        } else {
             fWallY = ceilf(fCurY * fInvEdgeSize) * fEdgeSize;
-        }
-
-        if (iCurPosX == iEndPosX) {
-            goto walk_y;
-        }
-        if (iCurPosY == iEndPosY) {
-            goto walk_x;
-        }
-
-    dda_step:
-        fRx = (fWallX - fCurX) * fInvVx;
-        fRy = (fWallY - fCurY) * fInvVy;
-
-        if (fRy <= fRx) {
-            fCurX = fRy * fVx + fCurX;
-            fCurY = fWallY;
-            if (bNorth) {
-                iCurPosY--;
-                fWallY -= fEdgeSize;
-            } else {
-                iCurPosY++;
-                fWallY += fEdgeSize;
-            }
         } else {
-            fCurY = fRx * fVy + fCurY;
-            fCurX = fWallX;
-            if (bEast) {
-                iCurPosX--;
-                fWallX -= fEdgeSize;
+            fWallY = floorf(fCurY * fInvEdgeSize) * fEdgeSize;
+        }
+
+        while (iCurPosX != iEndPosX && iCurPosY != iEndPosY) {
+            fRx = (fWallX - fCurX) * fInvVx;
+            fRy = (fWallY - fCurY) * fInvVy;
+
+            if (fRx < fRy) {
+                fCurX = fWallX;
+                fCurY = fRx * fVy + fCurY;
+                if (bEast) {
+                    iCurPosX++;
+                    fWallX += fEdgeSize;
+                } else {
+                    iCurPosX--;
+                    fWallX -= fEdgeSize;
+                }
             } else {
-                iCurPosX++;
-                fWallX += fEdgeSize;
+                fCurX = fRy * fVx + fCurX;
+                fCurY = fWallY;
+                if (bNorth) {
+                    iCurPosY++;
+                    fWallY += fEdgeSize;
+                } else {
+                    iCurPosY--;
+                    fWallY -= fEdgeSize;
+                }
+            }
+
+            nodeIndList.push_back(GetNodeInd(iCurPosY, iCurPosX));
+            iNumNodes++;
+
+            if (iNumNodes > iMaxNumNodes) {
+                nodeIndList.clear();
+                WGrid::Get().FindNodes(UMath::Vector4To3(seg[0]), 1.0f, nodeIndList);
+                return;
             }
         }
 
-        nodeIndList.push_back(GetNodeInd(iCurPosY, iCurPosX));
-        iNumNodes++;
+        if (iCurPosX != iEndPosX) {
+            if (bEast) {
+                do {
+                    iCurPosX++;
+                    if (iCurPosX > iEndPosX) {
+                        return;
+                    }
+                    nodeIndList.push_back(GetNodeInd(iCurPosY, iCurPosX));
+                    iNumNodes++;
+                } while (iNumNodes <= iMaxNumNodes);
+            } else {
+                do {
+                    iCurPosX--;
+                    if (iCurPosX < iEndPosX) {
+                        return;
+                    }
+                    nodeIndList.push_back(GetNodeInd(iCurPosY, iCurPosX));
+                    iNumNodes++;
+                } while (iNumNodes <= iMaxNumNodes);
+            }
 
-        if (iNumNodes > iMaxNumNodes) {
             nodeIndList.clear();
             WGrid::Get().FindNodes(UMath::Vector4To3(seg[0]), 1.0f, nodeIndList);
             return;
         }
 
-        if (iCurPosX != iEndPosX) {
-            if (iCurPosY != iEndPosY) {
-                goto dda_step;
-            }
-            goto walk_x;
-        }
-
-    walk_y:
         if (iCurPosY == iEndPosY) {
             return;
         }
 
         if (bNorth) {
-            do {
-                iCurPosY--;
-                if (iCurPosY < iEndPosY) {
-                    return;
-                }
-                nodeIndList.push_back(GetNodeInd(iCurPosY, iCurPosX));
-                iNumNodes++;
-            } while (iNumNodes <= iMaxNumNodes);
-        } else {
             do {
                 iCurPosY++;
                 if (iEndPosY < iCurPosY) {
@@ -347,30 +368,10 @@ dda_traverse:
                 nodeIndList.push_back(GetNodeInd(iCurPosY, iCurPosX));
                 iNumNodes++;
             } while (iNumNodes <= iMaxNumNodes);
-        }
-
-        nodeIndList.clear();
-        WGrid::Get().FindNodes(UMath::Vector4To3(seg[0]), 1.0f, nodeIndList);
-        return;
-
-    walk_x:
-        if (iCurPosX == iEndPosX) {
-            goto walk_y;
-        }
-
-        if (bEast) {
-            do {
-                iCurPosX--;
-                if (iCurPosX < iEndPosX) {
-                    return;
-                }
-                nodeIndList.push_back(GetNodeInd(iCurPosY, iCurPosX));
-                iNumNodes++;
-            } while (iNumNodes <= iMaxNumNodes);
         } else {
             do {
-                iCurPosX++;
-                if (iEndPosX < iCurPosX) {
+                iCurPosY--;
+                if (iCurPosY < iEndPosY) {
                     return;
                 }
                 nodeIndList.push_back(GetNodeInd(iCurPosY, iCurPosX));

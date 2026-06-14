@@ -10,8 +10,35 @@
 
 namespace CARP {
 
-struct EventStaticData;
-struct EventList;
+struct Map {};
+
+// total size: 0x10
+struct EventStaticData {
+    // char *StaticData() {}
+
+    // const char *StaticData() const {}
+
+    // EventStaticData *NextEvent() {}
+
+    // const EventStaticData *NextEvent() const {}
+
+    unsigned int fEventID;    // offset 0x0, size 0x4
+    unsigned int fEventSize;  // offset 0x4, size 0x4
+    unsigned int fDataOffset; // offset 0x8, size 0x4
+    unsigned int fPad;        // offset 0xC, size 0x4
+};
+
+// total size: 0x10
+struct EventList {
+    EventStaticData *Event() {
+        return reinterpret_cast<EventStaticData *>(&this[1]);
+    }
+
+    // const EventStaticData *Event() const {}
+
+    unsigned int fNumEvents; // offset 0x0, size 0x4
+    unsigned int fPad[3];    // offset 0x4, size 0xC
+};
 
 // total size: 0x40
 struct Trigger {

@@ -1,12 +1,8 @@
-#ifndef WORLD_PARAMETERMAPS_H
-#define WORLD_PARAMETERMAPS_H
+#ifndef __PARAMETER_MAPS_HPP
+#define __PARAMETER_MAPS_HPP
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
-#include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 // total size: 0x24
 struct ParameterMapLayerHeader {
@@ -21,44 +17,34 @@ struct ParameterMapLayerHeader {
     int NumberOfFields;        // offset 0x20, size 0x4
 };
 
-class ParameterMapLayer;
-
-class ParameterAccessor : public bTNode<ParameterAccessor> {
-  public:
-    ParameterAccessor();
-    ParameterAccessor(const char *layer_name);
-    virtual ~ParameterAccessor();
-
-    virtual void CaptureData(float x, float y);
-    virtual void ClearData();
-    virtual float GetDataFloat(int field_index);
-    virtual int GetDataInt(int field_index);
-
-  protected:
-    virtual void SetUpForNewLayer();
-
-    ParameterMapLayer *Layer;             // offset 0x8, size 0x4
-    unsigned int AutoAttachLayerNamehash; // offset 0xC, size 0x4
-    const char *DebugName;                // offset 0x10, size 0x4
-    void *CurrentParameterData;           // offset 0x14, size 0x4
-};
-
 // total size: 0x4
 class ParameterMapQuad8 {
   public:
     // uint8 IsParent() {}
 
-    // uint8 IsLeave() {}
+    uint8 IsLeave() {
+        return static_cast<uint8>(this->Children.Child0 == 0);
+    }
 
-    // uint8 GetChild0() {}
+    uint8 GetChild0() {
+        return this->Children.Child0;
+    }
 
-    // uint8 GetChild1() {}
+    uint8 GetChild1() {
+        return this->Children.Child1;
+    }
 
-    // uint8 GetChild2() {}
+    uint8 GetChild2() {
+        return this->Children.Child2;
+    }
 
-    // uint8 GetChild3() {}
+    uint8 GetChild3() {
+        return this->Children.Child3;
+    }
 
-    // uint8 GetData() {}
+    uint8 GetData() {
+        return this->Children.Child1;
+    }
 
     // void SetChild0(uint8 child) {}
 
@@ -92,17 +78,29 @@ class ParameterMapQuad16 {
   public:
     // uint16 IsParent() {}
 
-    // uint16 IsLeave() {}
+    uint16 IsLeave() {
+        return static_cast<uint8>(this->Children.Child0 == 0);
+    }
 
-    // uint16 GetChild0() {}
+    uint16 GetChild0() {
+        return this->Children.Child0;
+    }
 
-    // uint16 GetChild1() {}
+    uint16 GetChild1() {
+        return this->Children.Child1;
+    }
 
-    // uint16 GetChild2() {}
+    uint16 GetChild2() {
+        return this->Children.Child2;
+    }
 
-    // uint16 GetChild3() {}
+    uint16 GetChild3() {
+        return this->Children.Child3;
+    }
 
-    // uint16 GetData() {}
+    uint16 GetData() {
+        return this->Children.Child1;
+    }
 
     // void SetChild0(uint16 child) {}
 
@@ -114,7 +112,12 @@ class ParameterMapQuad16 {
 
     // void SetData(uint16 data) {}
 
-    // void DoEndianSwap() {}
+    void DoEndianSwap() {
+        bPlatEndianSwap(&Children.Child0);
+        bPlatEndianSwap(&Children.Child1);
+        bPlatEndianSwap(&Children.Child2);
+        bPlatEndianSwap(&Children.Child3);
+    }
 
   private:
     union {
@@ -134,6 +137,8 @@ class ParameterMapQuad16 {
         } Others;            // offset 0x0, size 0x4
     }; // offset 0x0, size 0x8
 };
+
+class ParameterAccessor;
 
 // total size: 0x28
 class ParameterMapLayer : public bTNode<ParameterMapLayer> {
@@ -156,15 +161,25 @@ class ParameterMapLayer : public bTNode<ParameterMapLayer> {
 
     int GetDataInt(int field_index, void *parameter_data);
 
-    // uint32 GetNameHash() {}
+    uint32 GetNameHash() {
+        return this->Header != nullptr ? Header->NameHash : 0;
+    }
 
-    // int GetSizeOfParameterSet() {}
+    int GetSizeOfParameterSet() {
+        return this->Header != nullptr ? this->Header->SizeOfParameterSet : 0;
+    }
 
-    // int GetNumberOfFields() {}
+    int GetNumberOfFields() {
+        return this->Header != nullptr ? this->Header->NumberOfFields : 0;
+    }
 
-    // int GetFieldType(int field_index) {}
+    int GetFieldType(int field_index) {
+        return this->FieldTypes != nullptr ? this->FieldTypes[field_index] : -1;
+    }
 
-    // int GetFieldOffset(int field_index) {}
+    int GetFieldOffset(int field_index) {
+        return this->FieldOffsets != nullptr ? this->FieldOffsets[field_index] : -1;
+    }
 
   private:
     int GetParameterSetIndexFromMapData(float x, float y);
@@ -182,6 +197,47 @@ class ParameterMapLayer : public bTNode<ParameterMapLayer> {
     ParameterMapQuad8 *QuadData8;                 // offset 0x18, size 0x4
     ParameterMapQuad16 *QuadData16;               // offset 0x1C, size 0x4
     bTList<ParameterAccessor> ParameterAccessors; // offset 0x20, size 0x8
+};
+
+class ParameterAccessor : public bTNode<ParameterAccessor> {
+  public:
+    ParameterAccessor();
+
+    ParameterAccessor(const char *layer_name);
+
+    virtual ~ParameterAccessor();
+
+    void SetLayer(struct ParameterMapLayer *layer);
+
+    void ClearLayer();
+
+    virtual void CaptureData(float x, float y);
+
+    virtual void ClearData();
+
+    virtual float GetDataFloat(int field_index);
+
+    virtual int GetDataInt(int field_index);
+
+    // int IsValid() {}
+
+    unsigned int GetAutoAttachLayerNamehash() {
+        return this->AutoAttachLayerNamehash;
+    }
+
+    const char *GetDebugName() {
+        return this->DebugName;
+    }
+
+  protected:
+    virtual void SetUpForNewLayer();
+    // TODO
+    // ParameterAccessor(const ParameterAccessor &_ctor_arg) {}
+
+    ParameterMapLayer *Layer;       // offset 0x8, size 0x4
+    uint32 AutoAttachLayerNamehash; // offset 0xC, size 0x4
+    const char *DebugName;          // offset 0x10, size 0x4
+    void *CurrentParameterData;     // offset 0x14, size 0x4
 };
 
 class ParameterAccessorBlend : public ParameterAccessor {
@@ -228,6 +284,22 @@ class ParameterAccessorBlendByDistance : public ParameterAccessorBlend {
   private:
     // Overrides: ParameterAccessor
     void CaptureData(float x, float y) override;
+};
+
+// total size: 0x8
+class ParameterMapsManager {
+  public:
+    ParameterMapsManager();
+    ~ParameterMapsManager();
+    void AddLayer(ParameterMapLayer *new_layer);
+    void UnloadAllLayers();
+
+    // TODO how to make these two private?
+    int GetDataForLayer(uint32 layer_name_hash, ParameterAccessor *accessor, int warning_if_not_found);
+    int GetDataForLayer(const char *layer_name, ParameterAccessor *accessor, int warning_if_not_found);
+
+  private:
+    bTList<ParameterMapLayer> ParameterMapLayers; // offset 0x0, size 0x8
 };
 
 extern ParameterAccessorBlendByDistance TintSunRiseAccessor[2];

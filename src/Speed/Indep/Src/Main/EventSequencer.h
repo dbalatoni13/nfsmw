@@ -1,6 +1,7 @@
 #ifndef MAIN_EVENTSEQUENCER_H
 #define MAIN_EVENTSEQUENCER_H
 
+#include "Speed/Indep/bWare/Inc/Strings.hpp"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
@@ -11,9 +12,11 @@
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 
 // TODO move?
+// total size: 0x64
 struct EventDynamicData {
-    // total size: 0x64
-    void Clear() { memset(this, 0, sizeof(EventDynamicData)); }
+    void Clear() {
+        bMemSet(this, 0, sizeof(EventDynamicData));
+    }
 
     UMath::Vector4 fPosition;        // offset 0x0, size 0x10
     UMath::Vector4 fVector;          // offset 0x10, size 0x10

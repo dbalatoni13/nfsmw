@@ -59,4 +59,6 @@ class SmokeableSpawner {
     uint32 pad;                        // offset 0x3C, size 0x4
 };
 
+void ResetPropTimers();
+
 #endif

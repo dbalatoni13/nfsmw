@@ -1,32 +1,27 @@
-#ifndef UTILITY_UBITARRAY_H
-#define UTILITY_UBITARRAY_H
+#ifndef UBITARRAY_H
+#define UBITARRAY_H
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#include "Speed/Indep/bWare/Inc/bTypes.hpp"
 
-template <typename T, int N>
-struct BitArray {
-    static const int kBitsPerWord = sizeof(T) * 8;
-    static const int kWordCount = (N + kBitsPerWord - 1) / kBitsPerWord;
-
-    T Words[kWordCount];
+template <typename T, int N> struct BitArray {
+    static const int kBitsPerWord = sizeof(T) * 8; // TODO this doesn't exist
+    T Words[(N + kBitsPerWord - 1) / kBitsPerWord];
 
     BitArray() {
-        for (int i = 0; i < kWordCount; i++) {
+        for (unsigned int i = 0; i < NUM_ELEMENTS(this->Words); i++) {
             Words[i] = 0;
         }
     }
 
     const BitArray &operator=(const BitArray &src) {
-        for (unsigned int i = 0; i < static_cast<unsigned int>(kWordCount); i++) {
+        for (unsigned int i = 0; i < NUM_ELEMENTS(this->Words); i++) {
             Words[i] = src.Words[i];
         }
         return *this;
     }
 
     bool operator!=(const BitArray &other) const {
-        for (int i = 0; i < kWordCount; i++) {
+        for (int i = 0; i < NUM_ELEMENTS(this->Words); i++) {
             if (Words[i] != other.Words[i]) {
                 return true;
             }
@@ -47,7 +42,7 @@ struct BitArray {
     }
 
     void Clear() {
-        for (int i = 0; i < kWordCount; i++) {
+        for (int i = 0; i < NUM_ELEMENTS(this->Words); i++) {
             Words[i] = 0;
         }
     }

@@ -5,6 +5,10 @@
 #pragma once
 #endif
 
+#include "types.h"
+
+typedef int32 CarLoaderHandle;
+
 // inline float MPH2MPS(float x) {
 //     return x * 0.44703001f;
 // }

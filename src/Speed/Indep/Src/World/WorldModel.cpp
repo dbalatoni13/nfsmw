@@ -1,154 +1,108 @@
 #include "./WorldModel.hpp"
+#include "Speed/Indep/Src/Animation/AnimScene.hpp"
 #include "Speed/Indep/Src/Camera/Camera.hpp"
 #include "Speed/Indep/Src/Camera/CameraMover.hpp"
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/Src/Ecstasy/eLight.hpp"
 #include "Speed/Indep/Src/Ecstasy/eMath.hpp"
+#include "Speed/Indep/Src/Misc/Profiler.hpp"
+#include "Speed/Indep/Src/World/Scenery.hpp"
 
-extern unsigned int FrameMallocFailed;
-extern unsigned int FrameMallocFailAmount;
-extern float lbl_8040CD80;
-extern float lbl_8040CD84;
-extern float lbl_8040CD88;
-extern float lbl_8040CD8C;
-extern float lbl_8040CD90;
-extern float lbl_8040CD94;
-extern eShaperLightRig ShaperLightsCarsInGame;
-extern eShaperLightRig ShaperLightsCharacters;
-extern int bBoundingBoxIsInside(const bVector3 *bbox_min, const bVector3 *bbox_max, const bVector3 *point, float extra_width);
-extern void RenderAnimSceneEffects(eView *view, int exc_flag) asm("RenderAnimSceneEffects__FP5eViewi");
-
-bTList<WorldModel> WorldModelList;
-
-int elSetupLightContext(eDynamicLightContext *light_context, eShaperLightRig *shaper_lights, bMatrix4 *local_world, bMatrix4 *world_view,
-                        bVector4 *camera_world_position, eView *view);
-void AdjustQuickDynamicLight(eShaperLightRig *ShaperRigP, bVector3 *MyPosition);
-
-namespace {
-
-void Render(eViewPlatInterface *view, eModel *model, bMatrix4 *local_to_world, eLightContext *light_context, unsigned int flags,
-            unsigned int exc_flag) asm("Render__18eViewPlatInterfaceP6eModelP8bMatrix4P13eLightContextUiT2");
-
-inline void *eFrameMalloc(unsigned int size) {
-    unsigned char *address = CurrentBufferPos;
-
-    if (CurrentBufferEnd <= CurrentBufferPos + size) {
-        FrameMallocFailed = 1;
-        FrameMallocFailAmount += size;
-        address = 0;
-    } else {
-        CurrentBufferPos += size;
-    }
-
-    return address;
-}
-
-struct AABBAdjustor {
-    bVector4 *mMin;
-    bVector4 *mMax;
-    bVector4 *mAdjustment;
-
+class AABBAdjustor {
+  public:
     void Adjust(float scaler) {
-        if (this->mAdjustment != 0) {
-            this->mMin->x += this->mAdjustment->x * scaler;
-            this->mMax->x += this->mAdjustment->x * scaler;
-            this->mMin->y += this->mAdjustment->y * scaler;
-            this->mMax->y += this->mAdjustment->y * scaler;
-            this->mMin->z += this->mAdjustment->z * scaler;
-            this->mMax->z += this->mAdjustment->z * scaler;
-        }
+        this->mMin->x += this->mAdjustment->x * scaler;
+        this->mMax->x += this->mAdjustment->x * scaler;
+        this->mMin->y += this->mAdjustment->y * scaler;
+        this->mMax->y += this->mAdjustment->y * scaler;
+        this->mMin->z += this->mAdjustment->z * scaler;
+        this->mMax->z += this->mAdjustment->z * scaler;
     }
 
     AABBAdjustor(eModel *m, bMatrix4 *adjustment) {
-        if (adjustment != 0) {
-            eSolid *solid = m->GetSolid();
-
-            if (solid != 0) {
-                this->mMin = reinterpret_cast<bVector4 *>(&solid->AABBMinX);
-                this->mMax = reinterpret_cast<bVector4 *>(&solid->AABBMaxX);
-                this->mAdjustment = &adjustment[1].v3;
-                this->Adjust(1.0f);
-                return;
-            }
+        if (adjustment != nullptr) {
+            this->mMin = reinterpret_cast<bVector4 *>(&m->GetSolid()->AABBMinX);
+            this->mMax = reinterpret_cast<bVector4 *>(&m->GetSolid()->AABBMaxX);
+            this->mAdjustment = &adjustment[1].v3;
+            this->Adjust(1.0f);
+        } else {
+            this->mMin = nullptr;
+            this->mMax = nullptr;
+            this->mAdjustment = nullptr;
         }
-        this->mMin = 0;
-        this->mMax = 0;
-        this->mAdjustment = 0;
     }
 
     ~AABBAdjustor() {
-        this->Adjust(-1.0f);
+        if (this->mAdjustment != nullptr) {
+            this->Adjust(-1.0f);
+        }
     }
+
+  private:
+    bVector4 *mMin;
+    bVector4 *mMax;
+    bVector4 *mAdjustment;
 };
 
-} // namespace
+bTList<WorldModel> WorldModelList;
+
+SlotPool *WorldModelSlotPool = nullptr;
+static const int32 DrawWorldModels = 1;
 
 WorldModel::WorldModel(unsigned int name_hash, bMatrix4 *matrix, bool add_lighting) {
-    eModel *model = static_cast<eModel *>(bOMalloc(eModelSlotPool));
-    model->NameHash = 0;
-    model->Solid = 0;
-    model->Init(name_hash);
-    this->pModel = model;
-    this->pReflectionModel = 0;
-    this->Construct(0, matrix, 0, 0, add_lighting);
+    this->pModel = new eModel(name_hash);
+    this->pReflectionModel = nullptr;
+    this->Construct(nullptr, matrix, nullptr, 0, add_lighting);
 }
 
 WorldModel::WorldModel(SpaceNode *spacenode, unsigned int *lod_name_hash, bool add_lighting) {
-    eModel *model = static_cast<eModel *>(bOMalloc(eModelSlotPool));
-    unsigned int model_name_hash = *lod_name_hash;
-    model->NameHash = 0;
-    model->Solid = 0;
-    model->Init(model_name_hash);
-    this->pModel = model;
+    this->pModel = new eModel(lod_name_hash[0]);
 
-    if (lod_name_hash[3] != 0) {
-        eModel *reflection_model = static_cast<eModel *>(bOMalloc(eModelSlotPool));
-        unsigned int reflection_name_hash = lod_name_hash[3];
-        reflection_model->NameHash = 0;
-        reflection_model->Solid = 0;
-        reflection_model->Init(reflection_name_hash);
-        this->pReflectionModel = reflection_model;
+    if (lod_name_hash[3]) {
+        this->pReflectionModel = new eModel(lod_name_hash[3]);
     } else {
-        this->pReflectionModel = 0;
+        this->pReflectionModel = nullptr;
     }
 
-    this->Construct(spacenode, 0, 0, 0, add_lighting);
+    this->Construct(spacenode, nullptr, nullptr, 0, add_lighting);
 }
 
 WorldModel::WorldModel(const ModelHeirarchy *heirarchy, unsigned int heirarchy_index, bool add_lighting) {
-    this->pModel = 0;
-    this->pReflectionModel = 0;
-    this->Construct(0, 0, heirarchy, heirarchy_index, add_lighting);
+    this->pModel = nullptr;
+    this->pReflectionModel = nullptr;
+    this->Construct(nullptr, nullptr, heirarchy, heirarchy_index, add_lighting);
 }
 
 void WorldModel::Construct(SpaceNode *spacenode, bMatrix4 *matrix, const ModelHeirarchy *heirarchy, unsigned int rootnode, bool add_lighting) {
-    this->mDistanceToGameView = lbl_8040CD80;
+    this->mDistanceToGameView = 0.0f;
     this->mLastRenderFrame = 0;
     this->mLastVisibleFrame = 0;
-    this->mLightMaterial = 0;
+    this->mLightMaterial = nullptr;
     this->mLightMaterialSkinHash = 0;
 
-    if (heirarchy != 0 && rootnode < heirarchy->mNumNodes) {
+    if ((heirarchy != nullptr) && rootnode < heirarchy->mNumNodes) {
         this->mHeirarchyIndex = rootnode;
         this->mHeirarchy = heirarchy;
         this->mChildVisibility = 0xFFFFFF;
     } else {
         this->mChildVisibility = 0;
         this->mHeirarchyIndex = 0;
-        this->mHeirarchy = 0;
+        this->mHeirarchy = nullptr;
     }
 
     this->mInvisibleInside = false;
     this->mEnabled = true;
     this->mRenderInSplitScreen = true;
+#ifndef EA_BUILD_A124
     this->mCastsShadow = 1;
+#endif
     this->pSpaceNode = spacenode;
 
-    if (spacenode != 0) {
+    if (spacenode != nullptr) {
         spacenode->Lock();
     }
 
-    if (matrix != 0) {
+    if (matrix != nullptr) {
         this->SetMatrix(matrix);
     }
 
@@ -157,84 +111,73 @@ void WorldModel::Construct(SpaceNode *spacenode, bMatrix4 *matrix, const ModelHe
 }
 
 WorldModel::~WorldModel() {
-    if (this->pModel != 0) {
-        delete this->pModel;
-    }
-
-    if (this->pReflectionModel != 0) {
-        delete this->pReflectionModel;
-    }
-
-    if (this->pSpaceNode != 0) {
+    delete this->pModel;
+    delete this->pReflectionModel;
+    if (this->pSpaceNode != nullptr) {
         this->pSpaceNode->Unlock();
     }
-
-    this->Remove();
+    WorldModelList.Remove(this);
 }
 
 eModel *WorldModel::GetModel() {
-    if (this->pModel != 0) {
+    if (this->pModel != nullptr) {
         return this->pModel;
     }
 
-    if (this->mHeirarchy != 0) {
-        return this->mHeirarchy->GetNodes()[this->mHeirarchyIndex].mModel;
+    if (this->mHeirarchy != nullptr) {
+        return mHeirarchy->GetNodes()[mHeirarchyIndex].mModel;
     }
 
-    return 0;
+    return nullptr;
 }
 
 void WorldModel::AttachReplacementTextureTable(eReplacementTextureTable *replacement_texture_table, int num_textures) {
-    if (this->pModel != 0) {
+    if (this->pModel != nullptr) {
         this->pModel->AttachReplacementTextureTable(replacement_texture_table, num_textures, 0);
     }
 
-    if (this->pReflectionModel != 0) {
+    if (this->pReflectionModel != nullptr) {
         this->pReflectionModel->AttachReplacementTextureTable(replacement_texture_table, num_textures, 0);
     }
 }
 
+// STRIPPED
+uint32 WorldModel::GetNameHash() {}
+
+// STRIPPED
+const char *WorldModel::GetName() {}
+
 void WorldModel::GetLocalBoundingBox(bVector3 *min_ext, bVector3 *max_ext) {
     eModel *model = this->GetModel();
 
-    if (model != 0) {
+    if (model != nullptr) {
         model->GetBoundingBox(min_ext, max_ext);
     } else {
-        bVector3 zero;
-        bFill(&zero, 0.0f, 0.0f, 0.0f);
-        bCopy(min_ext, &zero);
-        bCopy(max_ext, &zero);
+        *max_ext = *min_ext = bVector3(0.0f, 0.0f, 0.0f);
     }
 }
 
 void InitWorldModels() {
-    WorldModelSlotPool = bNewSlotPool(0x88, 0x80, "WorldModelSlotPool", 0);
+    WorldModelSlotPool = bNewSlotPool(sizeof(WorldModel), 128, "WorldModelSlotPool", 0);
 }
 
 void CloseWorldModels() {
-    WorldModel *end = WorldModelList.EndOfList();
-
-    if (WorldModelList.GetHead() != end) {
-        for (;;) {
-            WorldModel *world_model = WorldModelList.GetHead();
-            if (world_model == end) {
-                break;
-            }
-            if (world_model != 0) {
-                delete world_model;
-            }
+    if (!WorldModelList.IsEmpty()) {
+        while (!WorldModelList.IsEmpty()) {
+            WorldModel *w = WorldModelList.GetHead();
+            delete w;
         }
     }
 
     bDeleteSlotPool(WorldModelSlotPool);
-    WorldModelSlotPool = 0;
+    WorldModelSlotPool = nullptr;
 }
 
 void WorldModel::RenderNode(const ModelHeirarchy *heirarchy, unsigned int nodeIndex, eView *view, int exc_flag, bMatrix4 *blended_matrices,
                             const bMatrix4 *matrix) {
     const ModelHeirarchy::Node *node = &heirarchy->GetNodes()[nodeIndex];
 
-    if (node->mModel != 0 && node->mModel->GetSolid() != 0) {
+    if ((node->mModel != nullptr) && (node->mModel->GetSolid() != nullptr)) {
         this->RenderModel(node->mModel, view, exc_flag, blended_matrices, matrix);
     }
 
@@ -248,41 +191,41 @@ void WorldModel::RenderNode(const ModelHeirarchy *heirarchy, unsigned int nodeIn
 }
 
 void WorldModel::RenderModel(eModel *render_model, eView *view, int exc_flag, bMatrix4 *blended_matrices, const bMatrix4 *matrix) {
-    unsigned int flags = static_cast<unsigned int>(exc_flag);
+    unsigned int flags = exc_flag;
     AABBAdjustor adjustor(render_model, blended_matrices);
     bMatrix4 *frame_matrix = static_cast<bMatrix4 *>(eFrameMalloc(sizeof(bMatrix4)));
 
-    if (frame_matrix != 0) {
-        eDynamicLightContext *light_context = 0;
-
+    if (frame_matrix != nullptr) {
         *frame_matrix = *matrix;
-        if ((flags & 0x800) != 0) {
+        if (flags & 0x800) {
             frame_matrix->v2.z = -frame_matrix->v2.z;
         }
 
-        if (this->mAddLighting) {
-            light_context = static_cast<eDynamicLightContext *>(eFrameMalloc(0x130));
-            if (light_context == 0) {
+        eDynamicLightContext *light_context = nullptr;
+        if (mAddLighting) {
+            light_context = static_cast<eDynamicLightContext *>(eFrameMalloc(sizeof(eDynamicLightContext) + 0xC)); // TODO why +0xC?
+            if (light_context == nullptr) {
                 return;
             }
 
-            Camera *camera = view->GetCamera();
-            bVector3 *eye = camera->GetPosition();
-            bMatrix4 *world_view = camera->GetCameraMatrix();
             bVector4 camera_world_position;
+            bVector3 *eye = view->GetCamera()->GetPosition();
+            Camera *camera = view->GetCamera();
+            bMatrix4 *world_view = camera->GetCameraMatrix();
 
             camera_world_position.x = eye->x;
             camera_world_position.y = eye->y;
             camera_world_position.z = eye->z;
             camera_world_position.w = 1.0f;
-            if (blended_matrices != 0) {
-                bMatrix4 *actual_frame_matrix;
-                bMatrix4 moved_frame_matrix;
+
+            bMatrix4 *actual_frame_matrix;
+            bMatrix4 moved_frame_matrix;
+            if (blended_matrices != nullptr) {
                 bVector4 pelvis_pos = blended_matrices[1].v3;
 
                 eMulVector(&pelvis_pos, frame_matrix, &pelvis_pos);
                 moved_frame_matrix = *frame_matrix;
-                camera_world_position = pelvis_pos;
+                moved_frame_matrix.v3 = pelvis_pos;
                 actual_frame_matrix = &moved_frame_matrix;
                 AdjustQuickDynamicLight(&ShaperLightsCharacters, reinterpret_cast<bVector3 *>(&camera_world_position));
                 elSetupLightContext(light_context, &ShaperLightsCharacters, actual_frame_matrix, world_view, &camera_world_position, view);
@@ -292,166 +235,132 @@ void WorldModel::RenderModel(eModel *render_model, eView *view, int exc_flag, bM
             }
         }
 
-        if (this->mLightMaterial != 0) {
+        if (this->mLightMaterial != nullptr) {
             render_model->ReplaceLightMaterial(this->mLightMaterialSkinHash, this->mLightMaterial);
         }
 
-        ::Render(view, render_model, frame_matrix, light_context, 0, flags);
+        view->Render(render_model, frame_matrix, light_context, 0, blended_matrices);
     }
 }
 
+static const float AmbientCharacterLightRed = 0x42800000;
+static const float AmbientCharacterLightGreen = 0x42800000;
+static const float AmbientCharacterLightBlue = 0x42800000;
+
+static const float WorldObjectMaximumRadius = 35.0f;
+
+// TODO how to initialize these?
+bVector4 delta2;
+bVector4 delta66;
+
 void WorldModel::Render(eView *view, int exc_flag) {
-    if (this->mLastRenderFrame != eFrameCounter) {
-        this->mLastRenderFrame = eFrameCounter;
-        this->mDistanceToGameView = lbl_8040CD80;
+    if (this->mLastRenderFrame != eGetFrameCounter()) {
+        this->mLastRenderFrame = eGetFrameCounter();
+        this->mDistanceToGameView = 999999.0f;
     }
 
-    CameraMover *camera_mover = 0;
-    if (!view->CameraMoverList.IsEmpty()) {
-        camera_mover = view->CameraMoverList.GetHead();
-    }
+    CameraMover *mover = view->GetCameraMover();
 
-    if (camera_mover != 0 && (view->GetID() - 1U) < 3U) {
-        const bMatrix4 *world_matrix = &this->mMatrix;
-
-        if (this->pSpaceNode != 0) {
-            world_matrix =
-                reinterpret_cast<const bMatrix4 *>(reinterpret_cast<const unsigned char *>(this->pSpaceNode) + 0x50);
-        }
-
-        {
-            bVector3 *camera_position = camera_mover->GetPosition();
-            bVector3 delta;
-            float distance_sq;
-            float distance_scale = lbl_8040CD90;
-
-            delta.y = camera_position->y - world_matrix->v3.y;
-            delta.x = camera_position->x - world_matrix->v3.x;
-            delta.z = camera_position->z - world_matrix->v3.z;
-            distance_sq = delta.x * delta.x + delta.y * delta.y + delta.z * delta.z;
-            if (lbl_8040CD84 < distance_sq) {
-                distance_scale = bSqrt(distance_sq);
-            }
-
-            if (this->mDistanceToGameView < distance_scale) {
-                distance_scale = this->mDistanceToGameView;
-            }
-            this->mDistanceToGameView = distance_scale;
-        }
+    if ((mover != nullptr) && eIsGameViewID(view->GetID())) {
+        this->mDistanceToGameView = UMath::Min(this->mDistanceToGameView, mover->GetDistanceTo(reinterpret_cast<bVector3 *>(&this->GetMatrix()->v3)));
     }
 
     eModel *render_model = this->GetModel();
-    if ((static_cast<unsigned int>(exc_flag) & 0x800) != 0 && (render_model = this->pReflectionModel) == 0) {
-        return;
+    if (exc_flag & 0x800) {
+        if (this->pReflectionModel != nullptr) {
+            render_model = this->pReflectionModel;
+        } else {
+            return;
+        }
     }
-    if (render_model == 0) {
+
+    if ((render_model == nullptr) || (render_model->GetSolid() == nullptr)) {
         return;
     }
 
-    eSolid *solid = render_model->Solid;
-    if (solid == 0) {
-        return;
-    }
-
-    if ((static_cast<unsigned int>(exc_flag) & 0x200000) != 0) {
+    if (exc_flag & 0x200000) {
+#ifndef EA_BUILD_A124
         if (!this->mCastsShadow) {
             return;
         }
-        if ((static_cast<unsigned int>(exc_flag) & 0x2000) != 0) {
-            if (*reinterpret_cast<char *>(reinterpret_cast<unsigned char *>(solid) + 0x18) != '\0') {
+#endif
+        if (exc_flag & 0x2000) {
+            if (render_model->GetSolid()->NumBones) {
                 return;
             }
-        } else if (*reinterpret_cast<char *>(reinterpret_cast<unsigned char *>(solid) + 0x18) == '\0') {
+        } else if (render_model->GetSolid()->NumBones == 0) {
             return;
         }
     }
 
-    bMatrix4 world_matrix;
-    bMatrix4 *blended_matrices = 0;
-    const bMatrix4 *render_matrix;
-    if (this->pSpaceNode != 0) {
-        SpaceNode *space_node = this->pSpaceNode;
-
-        if (*reinterpret_cast<unsigned int *>(reinterpret_cast<unsigned char *>(space_node) + 0xE4) != 0) {
-            space_node->Update();
-        }
-        render_matrix = reinterpret_cast<const bMatrix4 *>(reinterpret_cast<const unsigned char *>(space_node) + 0x10);
-        blended_matrices = *reinterpret_cast<bMatrix4 **>(reinterpret_cast<unsigned char *>(this->pSpaceNode) + 0xE8);
-        if (blended_matrices != 0) {
-            bMulMatrix(&world_matrix, render_matrix, &blended_matrices[1]);
-            goto have_world_matrix;
+    bMatrix4 *matrix;
+    bMatrix4 *blended_matrices = nullptr;
+    bMatrix4 clip_matrix;
+    if (this->pSpaceNode != nullptr) {
+        matrix = this->pSpaceNode->GetWorldMatrix();
+        blended_matrices = this->pSpaceNode->GetBlendingMatrices();
+        if (blended_matrices != nullptr) {
+            bMulMatrix(&clip_matrix, matrix, &blended_matrices[1]);
+        } else {
+            bCopy(&clip_matrix, matrix);
         }
     } else {
-        render_matrix = &this->mMatrix;
+        matrix = this->GetMatrix();
+        bCopy(&clip_matrix, matrix);
     }
- 
-    PSMTX44Copy(*reinterpret_cast<const Mtx44 *>(render_matrix), *reinterpret_cast<Mtx44 *>(&world_matrix));
 
-    have_world_matrix:
-    if (view->GetPixelSize(reinterpret_cast<const bVector3 *>(&world_matrix.v3), lbl_8040CD94) < view->PixelMinSize) {
+    const bVector3 *position = reinterpret_cast<const bVector3 *>(&clip_matrix.v3);
+    if (view->GetPixelSize(position, WorldObjectMaximumRadius) < view->GetPixelMinSize()) {
         return;
     }
 
-    {
-        int visible = view->GetVisibleState(render_model, &world_matrix) != 0;
-
-        if (visible == 0) {
-            return;
+    if (view->IsVisible(render_model, &clip_matrix)) {
+        const ModelHeirarchy *heirarchy = this->GetHeirarchy();
+        if (heirarchy != nullptr) {
+            this->RenderNode(heirarchy, this->mHeirarchyIndex, view, exc_flag, blended_matrices, matrix);
+        } else {
+            this->RenderModel(render_model, view, exc_flag, blended_matrices, matrix);
         }
-    }
 
-    if (this->mHeirarchy != 0) {
-        this->RenderNode(this->mHeirarchy, this->mHeirarchyIndex, view, exc_flag, blended_matrices, render_matrix);
-    } else {
-        this->RenderModel(render_model, view, exc_flag, blended_matrices, render_matrix);
+        mLastVisibleFrame = eGetFrameCounter();
     }
-
-    this->mLastVisibleFrame = eFrameCounter;
 }
 
+static const int DisableWorldObjectReflections = 0;
+
 void RenderWorldModels(eView *view, int exc_flag) {
-    int view_mode = eGetCurrentViewMode();
+    ProfileNode profile_node("TODO", 0);
 
-    for (WorldModel *world_model = WorldModelList.GetHead(); world_model != WorldModelList.EndOfList(); world_model = world_model->GetNext()) {
-        unsigned char *world_model_bytes = reinterpret_cast<unsigned char *>(world_model);
-        unsigned int *world_model_words = reinterpret_cast<unsigned int *>(world_model);
+    if (!DrawWorldModels || (DisableWorldObjectReflections && (exc_flag & 0x1000) != 0)) {
+        return;
+    }
 
-        if (world_model_words[10] != 0 && (view_mode != 3 || world_model_words[11] != 0)) {
-            if (world_model_words[12] != 0) {
-                const bMatrix4 *matrix = reinterpret_cast<const bMatrix4 *>(world_model_bytes + 0x40);
-                const bVector3 *position = reinterpret_cast<const bVector3 *>(world_model_bytes + 0x70);
-                SpaceNode *space_node = *reinterpret_cast<SpaceNode **>(world_model_bytes + 0x3C);
+    bool split_screen = eGetCurrentViewMode() == EVIEWMODE_TWOH;
 
-                if (space_node != 0) {
-                    matrix = reinterpret_cast<const bMatrix4 *>(reinterpret_cast<const unsigned char *>(space_node) + 0x50);
-                    position = reinterpret_cast<const bVector3 *>(reinterpret_cast<const unsigned char *>(space_node) + 0x80);
-                }
+    for (WorldModel *w = WorldModelList.GetHead(); w != WorldModelList.EndOfList(); w = w->GetNext()) {
+        if (w->IsEnabled() && (!split_screen || w->CanRenderInSplitScreen())) {
+            if (w->InvisibleInside()) {
+                bMatrix4 matrix;
+                bVector3 camera_pos;
+                bVector3 box_min;
+                bVector3 box_max;
 
-                bMatrix4 local_matrix;
-                bVector3 bbox_min;
-                bVector3 bbox_max;
-                bVector3 local_camera_position;
+                bCopy(&matrix, w->GetMatrix(), w->GetPosition());
+                eInvertTransformationMatrix(&matrix, &matrix);
+                w->GetLocalBoundingBox(&box_min, &box_max);
+                eMulVector(&camera_pos, &matrix, view->GetCamera()->GetPosition());
 
-                local_matrix.v0 = matrix->v0;
-                local_matrix.v1 = matrix->v1;
-                local_matrix.v2 = matrix->v2;
-                local_matrix.v3.x = position->x;
-                local_matrix.v3.y = position->y;
-                local_matrix.v3.z = position->z;
-                local_matrix.v3.w = 1.0f;
-
-                eInvertTransformationMatrix(&local_matrix, &local_matrix);
-                world_model->GetLocalBoundingBox(&bbox_min, &bbox_max);
-                eMulVector(&local_camera_position, &local_matrix, reinterpret_cast<const bVector3 *>(reinterpret_cast<const unsigned char *>(view->pCamera) + 0x40));
-
-                if (bBoundingBoxIsInside(&bbox_min, &bbox_max, &local_camera_position, 0.0f) != 0) {
+                if (bBoundingBoxIsInside(&box_min, &box_max, &camera_pos, 0.0f) != 0) {
                     continue;
                 }
             }
 
-            world_model->Render(view, exc_flag);
+            w->Render(view, exc_flag);
         }
     }
 
     RenderAnimSceneEffects(view, exc_flag);
 }
+
+// STRIPPED
+bool AnyWorldModelsInBox(bVector3 *pMin, bVector3 *pMax) {}

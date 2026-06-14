@@ -22866,6 +22866,7 @@ BaseSpecHash = 0x649610; // size:0x4
 ///////////////////////////////////////////////////////////////////
 __8WRoadNav = 0x4664e8; // type:func
 _$_8WRoadNav = 0x466568; // type:func
+CalcNewRegionSizeFromRequested__FbRCQ25UMath7Vector3fT1fT1RQ25UMath7Vector3Rf = 0x457ba8; // type:func
 GetWorldHeightAtPointRigorous__13WCollisionMgrRCQ25UMath7Vector3RfPQ25UMath7Vector3 = 0x45b690; // type:func
 Reset__8WRoadNav = 0x466748; // type:func
 InitAtPoint__8WRoadNavRCQ25UMath7Vector3T1bf = 0x46d7c0; // type:func

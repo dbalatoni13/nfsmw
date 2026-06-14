@@ -1,10 +1,6 @@
 #ifndef SIM_SIMSURFACE_H
 #define SIM_SIMSURFACE_H
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
 #include "Speed/Indep/Libs/Support/Utility/UCrc.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/simsurface.h"
 
@@ -25,8 +21,8 @@ class SimSurface : public Attrib::Gen::simsurface {
 
     SimSurface(const SimSurface &from) : Attrib::Gen::simsurface(from.GetConstCollection(), 0, nullptr) {}
 
-    SimSurface() : Attrib::Gen::simsurface(GetConstCollection(), 0, nullptr) {
-        if (mNullSpec) {
+    SimSurface() : Attrib::Gen::simsurface((Attrib::Collection *)nullptr, 0, nullptr) {
+        if (mNullSpec != nullptr) {
             Change(mNullSpec);
         }
     }

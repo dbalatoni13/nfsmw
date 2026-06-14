@@ -5,6 +5,7 @@
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/Src/Ecstasy/EcstasyE.hpp"
 #include "Speed/Indep/Src/Misc/GameFlow.hpp"
+#include "Speed/Indep/Src/World/ParameterMaps.hpp"
 #include "Speed/Indep/Src/World/TrackPath.hpp"
 #include "Speed/Indep/Src/World/Rain.hpp"
 #include "Speed/Indep/Src/World/WCollisionMgr.h"
@@ -75,7 +76,7 @@ void ScreenEffectDB::AddScreenEffect(ScreenEffectType type, float intensity, flo
 
 void ScreenEffectDB::AddScreenEffect(ScreenEffectType type, ScreenEffectDef *info, unsigned int lock, ScreenEffectControl controller) {
     if (lock != 0) {
-        if (info) {
+        if (info != nullptr) {
             SE_data[type] = *info;
         }
         numType[type] = 1;
@@ -92,7 +93,7 @@ void ScreenEffectDB::AddScreenEffect(ScreenEffectType type, ScreenEffectDef *inf
     }
 
     SE_inf[type].active = 1;
-    if (SE_data[type].UpdateFnc) {
+    if (SE_data[type].UpdateFnc != nullptr) {
         SE_data[type].UpdateFnc(type, this);
     } else {
         SetController(type, controller);
@@ -114,6 +115,9 @@ void ScreenEffectDB::AddPaletteEffect(ScreenEffectPaletteDef *palette) {
 }
 
 void InitScreenEFX() {}
+
+ParameterAccessorBlendByDistance TintSunRiseAccessor[2] = {"Screen Tint SunRise", "Screen Tint SunRise"};
+ParameterAccessorBlendByDistance TintMiddayAccessor[2] = {"Screen Tint Midday", "Screen Tint Midday"};
 
 void TickSFX() {
     static uint32 ticS = 0;
@@ -160,20 +164,20 @@ void DoTinting(eView *view) {
         return;
     }
 
-    if (view->Precipitation) {
+    if (view->Precipitation != nullptr) {
         intense = view->Precipitation->GetCloudIntensity();
     } else {
         intense = 0.0f;
     }
 
     if (0.0f < intense) {
-        if (view->Precipitation) {
+        if (view->Precipitation != nullptr) {
             view->Precipitation->GetPrecipFogColour(&r, &g, &b);
         }
         SE_def.r = static_cast<float>(r);
         SE_def.g = static_cast<float>(g);
         SE_def.a = 128.0f;
-        SE_def.UpdateFnc = 0;
+        SE_def.UpdateFnc = nullptr;
         SE_def.intensity = intense;
         SE_def.b = static_cast<float>(b);
         view->ScreenEffects->AddScreenEffect(SE_TINT, &SE_def, 1, SEC_FRAME);
@@ -193,12 +197,12 @@ void DoTunnelBloom(eView *view) {
     }
 
     CameraMover *cameraMover = view->GetCameraMover();
-    if (!cameraMover) {
+    if (cameraMover == nullptr) {
         return;
     }
 
     CameraAnchor *cameraAnchor = cameraMover->GetAnchor();
-    if (!cameraAnchor) {
+    if (cameraAnchor == nullptr) {
         return;
     }
 
@@ -217,19 +221,19 @@ void DoTunnelBloom(eView *view) {
     bVector3 posScreen;
     TrackPathZone *zone = nullptr;
     TrackPathZone *zoneBP = zoneB[vIndex];
-    if (zoneBP && zoneBP->IsPointInside(&twoDpos)) {
+    if ((zoneBP != nullptr) && zoneBP->IsPointInside(&twoDpos)) {
         zone = zoneB[vIndex];
     } else {
-        zone = TheTrackPathManager.FindZone(&twoDpos, TRACK_PATH_ZONE_TUNNEL, 0);
+        zone = TheTrackPathManager.FindZone(&twoDpos, TRACK_PATH_ZONE_TUNNEL, nullptr);
     }
 
-    if (zone && zone->GetElevation() > MyCarPos->z) {
+    if ((zone != nullptr) && zone->GetElevation() > MyCarPos->z) {
         bVector2 p0;
         bVector2 p1;
         lcamPosInside[vIndex] = *CameraPosition;
         float angleCos = 0.0f;
         GenericRegion *EndTunnelP = GetClosestRegionInView(view, &endVector, &angleCos);
-        if (EndTunnelP) {
+        if (EndTunnelP != nullptr) {
             ScreenEffectDef SE_def;
             bVector2 endP(endVector.x, endVector.y);
             float len = zone->GetSegmentNextTo(&endP, &p0, &p1);
@@ -240,7 +244,7 @@ void DoTunnelBloom(eView *view) {
                     eUnSwizzleWorldVector(p3, *reinterpret_cast<bVector3 *>(&usPoint));
 
                     float height;
-                    WCollisionMgr(0, 3).GetWorldHeightAtPointRigorous(usPoint, height, 0);
+                    WCollisionMgr(0, 3).GetWorldHeightAtPointRigorous(usPoint, height, nullptr);
 
                     SE_def.data[2] = p0.x + CameraDirection->x;
                     dataBackup[vIndex][0] = SE_def.data[2];
@@ -315,7 +319,7 @@ void DoTunnelBloom(eView *view) {
                 SE_def.intensity = SE_def.data[1];
                 view->ScreenEffects->AddScreenEffect(SE_GLARE, &SE_def, 1, SEC_FRAME);
 
-                if (view->Precipitation && 0.0f < view->Precipitation->GetRainIntensity()) {
+                if ((view->Precipitation != nullptr) && 0.0f < view->Precipitation->GetRainIntensity()) {
                     view->Precipitation->IsValidRainCurtainPos = CT_OVERIDE;
                     view->Precipitation->AttachRainCurtain(SE_def.data[8], SE_def.data[9], SE_def.data[10], SE_def.data[11], SE_def.data[12],
                                                            SE_def.data[13], SE_def.data[2], SE_def.data[3], SE_def.data[4], SE_def.data[5],

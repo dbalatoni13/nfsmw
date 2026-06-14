@@ -725,7 +725,7 @@ void SimSystem::RemoveTask(HSIMTASK hTask, ITaskable *handler) {
 }
 
 void SimSystem::Start(const UCrc32 objclass) {
-    mKernel = UTL::COM::Factory<Sim::Param, Sim::IActivity, UCrc32>::CreateInstance(objclass, Sim::Param());
+    mKernel = Sim::IActivity::CreateInstance(objclass, Sim::Param());
 }
 
 IRigidBody *SimCollisionMap::GetRB(int rbIndex) const {

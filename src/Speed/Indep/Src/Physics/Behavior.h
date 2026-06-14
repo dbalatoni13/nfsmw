@@ -1,6 +1,7 @@
 #ifndef PHYSICS_BEHAVIOR_H
 #define PHYSICS_BEHAVIOR_H
 
+#include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
@@ -9,14 +10,6 @@
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
 #include "Speed/Indep/Src/Sim/SimObject.h"
 #include "Speed/Indep/Src/Sim/SimProfile.h"
-
-extern Attrib::StringKey BEHAVIOR_MECHANIC_AI;
-extern Attrib::StringKey BEHAVIOR_MECHANIC_ENGINE;
-extern Attrib::StringKey BEHAVIOR_MECHANIC_INPUT;
-extern Attrib::StringKey BEHAVIOR_MECHANIC_RIGIDBODY;
-extern Attrib::StringKey BEHAVIOR_MECHANIC_DRAW;
-extern Attrib::StringKey BEHAVIOR_MECHANIC_DAMAGE;
-extern Attrib::StringKey BEHAVIOR_MECHANIC_SUSPENSION;
 
 // total size: 0x10
 struct BehaviorParams {
@@ -29,15 +22,7 @@ struct BehaviorParams {
 // total size: 0x4C
 class Behavior : public Sim::Object, public UTL::COM::Factory<const BehaviorParams &, Behavior, UCrc32> {
   public:
-    void *operator new(std::size_t size) {
-        return gFastMem.Alloc(size, nullptr);
-    }
-
-    void operator delete(void *mem, std::size_t size) {
-        if (mem) {
-            gFastMem.Free(mem, size, nullptr);
-        }
-    }
+    USE_FASTALLOC(Behavior);
 
     Behavior(const BehaviorParams &params, unsigned int num_interfaces);
 
@@ -98,7 +83,6 @@ class Behavior : public Sim::Object, public UTL::COM::Factory<const BehaviorPara
 };
 
 template <typename T> class BehaviorSpecsPtr : public AttributeStructPtr<T> {
-
   public:
     BehaviorSpecsPtr(Behavior *behavior, int index) : AttributeStructPtr<T>(LookupKey(behavior->GetOwner(), index)) {}
 

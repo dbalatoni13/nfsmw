@@ -1,35 +1,11 @@
-#ifndef WORLD_WGRIDMANAGEDDYNAMICELEM_H
-#define WORLD_WGRIDMANAGEDDYNAMICELEM_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef __WGridManagedDynamicElem_H
+#define __WGridManagedDynamicElem_H
 
 #include "Speed/Indep/Libs/Support/Miscellaneous/CARP.h"
 #include "Speed/Indep/Src/Physics/Dynamics/Collision.h"
+#include "Speed/Indep/Src/World/Common/WGridNode.h"
 #include "Speed/Indep/Libs/Support/Utility/UStandard.h"
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
-
-typedef uintptr_t WGridNodeElemTag;
-
-enum WGridNode_ElemType {
-    WGrid_kInstance = 0,
-    WGrid_kTrigger = 1,
-    WGrid_kObject = 2,
-    WGrid_kRoadSegment = 3,
-    WGrid_kElemTypeCount = 4,
-};
-
-// total size: 0x8
-struct WGridNodeElem {
-    WGridNodeElem() {}
-    WGridNodeElem(WGridNodeElemTag ind, WGridNode_ElemType type)
-        : fInd(ind), //
-          fType(type) {}
-
-    WGridNodeElemTag fInd;    // offset 0x0, size 0x4
-    WGridNode_ElemType fType; // offset 0x4, size 0x4
-};
 
 // total size: 0x40
 class WGridManagedDynamicElem {

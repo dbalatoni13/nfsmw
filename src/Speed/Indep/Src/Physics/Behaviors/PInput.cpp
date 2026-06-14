@@ -15,6 +15,7 @@
 #include "Speed/Indep/Src/Physics/Behavior.h"
 #include "Speed/Indep/Src/Physics/Common/VehicleSystem.h"
 #include "Speed/Indep/Src/Physics/PhysicsObject.h"
+#include "Speed/Indep/Src/World/RaceParameters.hpp"
 #include "Speed/Indep/Src/Physics/PhysicsTypes.h"
 
 Behavior *PInput::Construct(const BehaviorParams &params) {

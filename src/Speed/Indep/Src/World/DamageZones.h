@@ -5,7 +5,8 @@
 #pragma once
 #endif
 
-#include "types.h"
+#include "Speed/Indep/Tools/AttribSys/Runtime/AttribHash.h"
+#include "Speed/Indep/Libs/Support/Utility/UCrc.h"
 
 namespace DamageZone {
 

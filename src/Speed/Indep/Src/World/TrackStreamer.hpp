@@ -6,6 +6,7 @@
 #endif
 
 #include "TrackPath.hpp"
+#include "VisibleSection.hpp"
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
@@ -73,7 +74,7 @@ struct TrackStreamingSection {
     DiscBundleSection *pDiscBundle;   // offset 0x50, size 0x4
     int32 LoadedSize;                 // offset 0x54, size 0x4
 #ifndef EA_BUILD_A124
-    struct VisibleSectionBoundary *pBoundary; // offset 0x58, size 0x4
+    VisibleSectionBoundary *pBoundary; // offset 0x58, size 0x4
 #endif
 };
 
@@ -104,119 +105,8 @@ struct StreamingPositionEntry {
     bVector2 AudioBlockingPosition; // offset 0x60, size 0x8
 };
 
-// total size: 0x34
-class TSMemoryNode : public bTNode<TSMemoryNode> {
-  public:
-    intptr_t Address;   // offset 0x8, size 0x4
-    int32 Size;         // offset 0xC, size 0x4
-    bool Allocated;     // offset 0x10, size 0x1
-    char DebugName[32]; // offset 0x14, size 0x20
-
-    bool IsFree() {
-        return !Allocated;
-    }
-
-    bool IsAllocated() {
-        return Allocated;
-    }
-
-    bool Contains(intptr_t address) {
-        return address >= Address && address < Address + Size;
-    }
-
-    int GetAddress(bool start_from_top, int size) {
-        if (start_from_top) {
-            return Address;
-        }
-        return Address + Size - size;
-    }
-};
-
-// total size: 0x2754
-class TSMemoryPool {
-  public:
-    TSMemoryPool(intptr_t address, int size, const char *debug_name, int pool_num);
-    void *Malloc(int size, const char *debug_name, bool best_fit, bool allocate_from_top, intptr_t address);
-    void Free(void *ptr);
-    int GetAmountFree();
-    int GetLargestFreeBlock();
-    TSMemoryNode *GetNextNode(bool start_from_top, TSMemoryNode *node);
-
-    TSMemoryNode *GetFirstNode(bool start_from_top) {
-        return GetNextNode(start_from_top, nullptr);
-    }
-
-    TSMemoryNode *GetNextFreeNode(bool start_from_top, TSMemoryNode *node);
-
-    TSMemoryNode *GetFirstFreeNode(bool start_from_top) {
-        return GetNextFreeNode(start_from_top, nullptr);
-    }
-
-    TSMemoryNode *GetNextAllocatedNode(bool start_from_top, TSMemoryNode *node);
-
-    TSMemoryNode *GetFirstAllocatedNode(bool start_from_top) {
-        return GetNextAllocatedNode(start_from_top, 0);
-    }
-
-    bool IsUpdated() {
-        bool updated = Updated;
-        Updated = false;
-        return updated;
-    }
-
-    unsigned int GetPoolChecksum();
-    void DebugPrint();
-
-    void EnableTracing(bool enabled) {
-        TracingEnabled = enabled;
-    }
-
-  private:
-    static void *OverrideMalloc(void *pool, int size, const char *debug_text, int debug_line, int allocation_params) {
-        int user_alignment_offset = bMemoryGetAlignmentOffset(allocation_params);
-
-        if (user_alignment_offset != 0) {
-            char *p = reinterpret_cast<char *>(static_cast<TSMemoryPool *>(pool)->Malloc(
-                size + 0x80, debug_text, bMemoryGetBestFit(allocation_params), bMemoryGetTopBit(allocation_params), 0));
-            return &p[0x80 - user_alignment_offset];
-        }
-
-        return static_cast<TSMemoryPool *>(pool)->Malloc(size, debug_text, bMemoryGetBestFit(allocation_params), bMemoryGetTopBit(allocation_params),
-                                                         0);
-    }
-
-    static void OverrideFree(void *pool, void *ptr) {
-        static_cast<TSMemoryPool *>(pool)->Free(reinterpret_cast<void *>(reinterpret_cast<uintptr_t>(ptr) & ~static_cast<uintptr_t>(0x7F)));
-    }
-
-    static int OverrideGetAmountFree(void *pool) {
-        return static_cast<TSMemoryPool *>(pool)->GetAmountFree();
-    }
-
-    static int OverrideGetLargestFreeBlock(void *pool) {
-        return static_cast<TSMemoryPool *>(pool)->GetLargestFreeBlock();
-    }
-
-    TSMemoryNode *GetNewNode(intptr_t address, int size, bool allocated, const char *debug_name);
-    void RemoveNode(TSMemoryNode *node);
-
-    int PoolNum;                         // offset 0x0, size 0x4
-    const char *DebugName;               // offset 0x4, size 0x4
-    int TotalSize;                       // offset 0x8, size 0x4
-    bool TracingEnabled;                 // offset 0xC, size 0x1
-    bool Updated;                        // offset 0x10, size 0x1
-    int AllocationNumber;                // offset 0x14, size 0x4
-    int AmountFree;                      // offset 0x18, size 0x4
-    int LargestFree;                     // offset 0x1C, size 0x4
-    bool NeedToRecalcLargestFree;        // offset 0x20, size 0x1
-    bTList<TSMemoryNode> UnusedNodeList; // offset 0x24, size 0x8
-    bTList<TSMemoryNode> NodeList;       // offset 0x2C, size 0x8
-    TSMemoryNode MemoryNodes[192];       // offset 0x34, size 0x2700
-    MemoryPoolOverrideInfo OverrideInfo; // offset 0x2734, size 0x20
-};
-
 struct TrackStreamingInfo {
-    int FileSize[2]; // offset 0x0, size 0x8
+    int32 FileSize[2]; // offset 0x0, size 0x8
 };
 
 // total size: 0x10
@@ -233,13 +123,7 @@ struct TrackStreamingBarrier {
     bVector2 Points[2]; // offset 0x0, size 0x10
 };
 
-// total size: 0x10
-struct HoleMovement {
-    intptr_t Address;    // offset 0x0, size 0x4
-    intptr_t NewAddress; // offset 0x4, size 0x4
-    int32 Size;          // offset 0x8, size 0x4
-    uint32 Checksum;     // offset 0xC, size 0x4
-};
+struct HoleMovement;
 
 enum HoleFillerMethod {
     HOLE_FILLER_METHOD_LINEAR_BOTTOM_ALL_THE_WAY = 0,
@@ -250,6 +134,8 @@ enum HoleFillerMethod {
     HOLE_FILLER_METHOD_BIGGEST_FIRST_TOP = 5,
     NUM_HOLE_FILLER_METHODS = 6,
 };
+
+class TSMemoryPool;
 
 // total size: 0x888
 class TrackStreamer {
@@ -344,7 +230,7 @@ class TrackStreamer {
 
     void RemoveCurrentStreamingSections();
 
-    void AddCurrentStreamingSections(short *sections_to_load, int num_sections_to_load, int position_number);
+    void AddCurrentStreamingSections(int16 *sections_to_load, int num_sections_to_load, int position_number);
 
     void DetermineStreamingSections();
 
@@ -384,7 +270,7 @@ class TrackStreamer {
 
     void SetLoadingCallback(void (*callback)(intptr_t), intptr_t param);
 
-    void SwitchZones(short *current_zones);
+    void SwitchZones(int16 *current_zones);
 
     void HandleLoading();
 
@@ -436,7 +322,7 @@ class TrackStreamer {
 
   private:
     void ClearCurrentZones();
-    bool DetermineCurrentZones(short *current_zones);
+    bool DetermineCurrentZones(int16 *current_zones);
     void HandleZoneSwitching();
     int GetCombinedSectionNumber(int section_number);
     static void DiscBundleLoadedCallback(intptr_t param, int error_status);
@@ -497,7 +383,7 @@ class TrackStreamer {
     int UserMemoryAllocationSize;                         // offset 0x85C, size 0x4
     TSMemoryPool *pMemoryPool;                            // offset 0x860, size 0x4
     bBitTable CurrentVisibleSectionTable;                 // offset 0x864, size 0x8
-    short KeepSectionTable[4];                            // offset 0x86C, size 0x8
+    int16 KeepSectionTable[4];                            // offset 0x86C, size 0x8
     void (*pCallback)(intptr_t);                          // offset 0x874, size 0x4
     intptr_t CallbackParam;                               // offset 0x878, size 0x4
     void (*MakeSpaceInPoolCallback)(intptr_t);            // offset 0x87C, size 0x4

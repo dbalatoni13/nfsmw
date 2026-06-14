@@ -1,136 +1,137 @@
 #include "ParameterMaps.hpp"
+#include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
+#include "Speed/Indep/Src/Misc/SpeedChunks.hpp"
 #include <cstring>
 
-ParameterAccessorBlendByDistance TintSunRiseAccessor[2] = {"Screen Tint SunRise", "Screen Tint SunRise"};
-ParameterAccessorBlendByDistance TintMiddayAccessor[2] = {"Screen Tint Midday", "Screen Tint Midday"};
-
-namespace {
-
-enum ParameterMapChunkID {
-    kPMCH_Header = 0x3B602,
-    kPMCH_FieldTypes = 0x3B603,
-    kPMCH_FieldOffsets = 0x3B604,
-    kPMCH_ParameterData = 0x3B605,
-    kPMCH_QuadData8 = 0x3B607,
-    kPMCH_QuadData16 = 0x3B608,
-};
-
-} // namespace
-
-ParameterMapsManager &GetParameterMapsManager() {
-    static ParameterMapsManager TheParameterMapsManager;
-    return TheParameterMapsManager;
-}
-
-bTList<ParameterAccessor> &GetAutoParameterAccessors() {
-    static bTList<ParameterAccessor> AutoParameterAccessors;
-    return AutoParameterAccessors;
-}
-
 ParameterMapLayer::ParameterMapLayer()
-    : Header(0),        //
-      FieldTypes(0),    //
-      FieldOffsets(0),  //
-      ParameterData(0), //
-      QuadData8(0),     //
-      QuadData16(0) {}
+    : Header(nullptr),        //
+      FieldTypes(nullptr),    //
+      FieldOffsets(nullptr),  //
+      ParameterData(nullptr), //
+      QuadData8(nullptr),     //
+      QuadData16(nullptr) {}
 
 ParameterMapLayer::~ParameterMapLayer() {
     Unload();
 }
 
 void ParameterMapLayer::Load(bChunk **chunk) {
-    bChunk *root = *chunk;
-    *chunk = root->GetFirstChunk();
+    bChunk *last_chunk = (*chunk)->GetLastChunk();
 
-    while (*chunk < root->GetLastChunk()) {
-        bChunk *current = *chunk;
+    *chunk = (*chunk)->GetFirstChunk();
 
-        switch (current->GetID()) {
-            case kPMCH_Header:
-                this->Header = reinterpret_cast<ParameterMapLayerHeader *>(current->GetData());
-                bEndianSwap32(&this->Header->NameHash);
-                bEndianSwap32(&this->Header->QuadLeft);
-                bEndianSwap32(&this->Header->QuadTop);
-                bEndianSwap32(&this->Header->QuadRight);
-                bEndianSwap32(&this->Header->QuadBottom);
-                bEndianSwap32(&this->Header->NumberOfQuadNodes);
-                bEndianSwap32(&this->Header->NumberOfParameterSets);
-                bEndianSwap32(&this->Header->SizeOfParameterSet);
-                bEndianSwap32(&this->Header->NumberOfFields);
-                this->FieldTypes = 0;
-                this->FieldOffsets = 0;
-                this->ParameterData = 0;
-                this->QuadData8 = 0;
-                this->QuadData16 = 0;
+    while (*chunk < last_chunk) {
+        switch ((*chunk)->GetID()) {
+            case BCHUNK_PARAMETER_MAPS_LAYER_HEADER:
+                this->Header = reinterpret_cast<ParameterMapLayerHeader *>((*chunk)->GetData());
+                bPlatEndianSwap(&this->Header->NameHash);
+                bPlatEndianSwap(&this->Header->QuadLeft);
+                bPlatEndianSwap(&this->Header->QuadTop);
+                bPlatEndianSwap(&this->Header->QuadRight);
+                bPlatEndianSwap(&this->Header->QuadBottom);
+                bPlatEndianSwap(&this->Header->NumberOfQuadNodes);
+                bPlatEndianSwap(&this->Header->NumberOfParameterSets);
+                bPlatEndianSwap(&this->Header->SizeOfParameterSet);
+                bPlatEndianSwap(&this->Header->NumberOfFields);
+                this->FieldTypes = nullptr;
+                this->FieldOffsets = nullptr;
+                this->ParameterData = nullptr;
+                this->QuadData8 = nullptr;
+                this->QuadData16 = nullptr;
                 break;
 
-            case kPMCH_FieldTypes:
-                if (this->Header != 0 && current->Size == this->Header->NumberOfFields * 4) {
-                    this->FieldTypes = reinterpret_cast<int *>(current->GetData());
-                    for (int i = 0; i < this->Header->NumberOfFields; i++) {
-                        bEndianSwap32(&this->FieldTypes[i]);
+            case BCHUNK_PARAMETER_MAPS_LAYER_FIELD_TYPES:
+                if (this->Header != nullptr) {
+                    int expected_size = this->Header->NumberOfFields * sizeof(*this->FieldTypes);
+
+                    if ((*chunk)->GetSize() == expected_size) {
+                        this->FieldTypes = reinterpret_cast<int *>((*chunk)->GetData());
+
+                        for (int i = 0; i < this->Header->NumberOfFields; i++) {
+                            bPlatEndianSwap(&this->FieldTypes[i]);
+                        }
                     }
                 }
                 break;
 
-            case kPMCH_FieldOffsets:
-                if (this->Header != 0 && current->Size == this->Header->NumberOfFields * 4) {
-                    this->FieldOffsets = reinterpret_cast<int *>(current->GetData());
-                    for (int i = 0; i < this->Header->NumberOfFields; i++) {
-                        bEndianSwap32(&this->FieldOffsets[i]);
+            case BCHUNK_PARAMETER_MAPS_LAYER_FIELD_OFFSETS:
+                if (this->Header != nullptr) {
+                    int expected_size = this->Header->NumberOfFields * sizeof(*this->FieldTypes);
+
+                    if ((*chunk)->GetSize() == expected_size) {
+                        this->FieldOffsets = reinterpret_cast<int *>((*chunk)->GetData());
+
+                        for (int i = 0; i < this->Header->NumberOfFields; i++) {
+                            bPlatEndianSwap(&this->FieldOffsets[i]);
+                        }
                     }
                 }
                 break;
 
-            case kPMCH_ParameterData:
-                if (this->Header != 0 && this->FieldTypes != 0 && this->FieldOffsets != 0 &&
-                    current->Size == this->Header->NumberOfParameterSets * this->Header->SizeOfParameterSet) {
-                    this->ParameterData = current->GetData();
-                    for (int set_index = 0; set_index < this->Header->NumberOfParameterSets; set_index++) {
-                        for (int field_index = 0; field_index < this->Header->NumberOfFields; field_index++) {
-                            void *field = this->GetFieldPointer(set_index, field_index);
-                            int field_type = this->FieldTypes[field_index];
-                            if (field_type == 0 || field_type == 1) {
-                                bEndianSwap32(field);
+            case BCHUNK_PARAMETER_MAPS_LAYER_PARAMETER_DATA:
+                if ((this->Header != nullptr) && (this->FieldTypes != nullptr) && (this->FieldOffsets != nullptr)) {
+                    int expected_size = this->Header->NumberOfParameterSets * this->Header->SizeOfParameterSet;
+
+                    if ((*chunk)->GetSize() == expected_size) {
+                        this->ParameterData = (*chunk)->GetData();
+
+                        for (int current_set = 0; current_set < this->Header->NumberOfParameterSets; current_set++) {
+                            for (int current_field = 0; current_field < this->Header->NumberOfFields; current_field++) {
+                                void *field_pointer = this->GetFieldPointer(current_set, current_field);
+
+                                switch (this->FieldTypes[current_field]) {
+                                    case 0:
+                                        bPlatEndianSwap(static_cast<float *>(field_pointer));
+                                        break;
+                                    case 1:
+                                        bPlatEndianSwap(static_cast<int *>(field_pointer));
+                                        break;
+                                }
                             }
                         }
                     }
                 }
                 break;
 
-            case kPMCH_QuadData8:
-                if (this->Header != 0 && current->Size == this->Header->NumberOfQuadNodes * 4) {
-                    this->QuadData8 = reinterpret_cast<ParameterMapQuad8 *>(current->GetData());
+            case BCHUNK_PARAMETER_MAPS_LAYER_QUAD_DATA_8:
+                if (this->Header != nullptr) {
+                    int expected_size = this->Header->NumberOfQuadNodes * sizeof(ParameterMapQuad8);
+
+                    if ((*chunk)->GetSize() == expected_size) {
+                        this->QuadData8 = reinterpret_cast<ParameterMapQuad8 *>((*chunk)->GetData());
+                    }
                 }
                 break;
 
-            case kPMCH_QuadData16:
-                if (this->Header != 0 && current->Size == this->Header->NumberOfQuadNodes * 8) {
-                    this->QuadData16 = reinterpret_cast<ParameterMapQuad16 *>(current->GetData());
-                    for (int i = 0; i < this->Header->NumberOfQuadNodes; i++) {
-                        bEndianSwap16(&this->QuadData16[i].Children.Child0);
-                        bEndianSwap16(&this->QuadData16[i].Children.Child1);
-                        bEndianSwap16(&this->QuadData16[i].Children.Child2);
-                        bEndianSwap16(&this->QuadData16[i].Children.Child3);
+            case BCHUNK_PARAMETER_MAPS_LAYER_QUAD_DATA_16:
+                if (this->Header != nullptr) {
+                    int expected_size = this->Header->NumberOfQuadNodes * sizeof(ParameterMapQuad16);
+
+                    if ((*chunk)->GetSize() == expected_size) {
+                        this->QuadData16 = reinterpret_cast<ParameterMapQuad16 *>((*chunk)->GetData());
+
+                        for (int i = 0; i < this->Header->NumberOfQuadNodes; i++) {
+                            this->QuadData16[i].DoEndianSwap();
+                        }
                     }
                 }
                 break;
         }
 
-        *chunk = current->GetNext();
+        *chunk = (*chunk)->GetNext();
     }
 }
 
 void ParameterMapLayer::Unload() {
-    this->Header = 0;
-    this->FieldTypes = 0;
-    this->FieldOffsets = 0;
-    this->ParameterData = 0;
+    this->Header = nullptr;
+    this->FieldTypes = nullptr;
+    this->FieldOffsets = nullptr;
+    this->ParameterData = nullptr;
 
     while (!this->ParameterAccessors.IsEmpty()) {
-        this->ParameterAccessors.GetHead()->ClearLayer();
+        ParameterAccessor *accessor = this->ParameterAccessors.GetHead();
+        accessor->ClearLayer();
     }
 }
 
@@ -139,24 +140,25 @@ void ParameterMapLayer::AddParameterAccessor(ParameterAccessor *accessor) {
 }
 
 void ParameterMapLayer::RemoveParameterAccessor(ParameterAccessor *accessor) {
-    accessor->Remove();
+    this->ParameterAccessors.Remove(accessor);
 }
 
 void *ParameterMapLayer::GetParameterData(float x, float y) {
     int parameter_set_index = 0;
 
-    if (this->QuadData8 != 0) {
+    if (this->QuadData8 != nullptr) {
         parameter_set_index = this->GetParameterSetIndexFromQuadData8(x, y);
-    } else if (this->QuadData16 != 0) {
+    } else if (this->QuadData16 != nullptr) {
         parameter_set_index = this->GetParameterSetIndexFromQuadData16(x, y);
     }
 
-    return reinterpret_cast<char *>(this->ParameterData) + this->Header->SizeOfParameterSet * parameter_set_index;
+    int data_offset = this->Header->SizeOfParameterSet * parameter_set_index;
+    return reinterpret_cast<char *>(this->ParameterData) + data_offset;
 }
 
 float ParameterMapLayer::GetDataFloat(int field_index, void *parameter_data) {
     float *data = reinterpret_cast<float *>(static_cast<char *>(parameter_data) + FieldOffsets[field_index]);
-    if (!data) {
+    if (data == nullptr) {
         return 0.0f;
     }
     return *data;
@@ -164,100 +166,116 @@ float ParameterMapLayer::GetDataFloat(int field_index, void *parameter_data) {
 
 int ParameterMapLayer::GetDataInt(int field_index, void *parameter_data) {
     int *data = reinterpret_cast<int *>(static_cast<char *>(parameter_data) + FieldOffsets[field_index]);
-    if (!data) {
+    if (data == nullptr) {
         return 0;
     }
     return *data;
 }
 
+// STRIPPED
 int ParameterMapLayer::GetParameterSetIndexFromMapData(float x, float y) {
-    if (this->QuadData8 != 0) {
+    int parameter_set_index;
+    if (this->QuadData8 != nullptr) {
         return this->GetParameterSetIndexFromQuadData8(x, y);
     }
-    if (this->QuadData16 != 0) {
+    if (this->QuadData16 != nullptr) {
         return this->GetParameterSetIndexFromQuadData16(x, y);
     }
     return 0;
 }
 
+// UNSOLVED regswap
 int ParameterMapLayer::GetParameterSetIndexFromQuadData8(float x, float y) {
     float left = this->Header->QuadLeft;
     float top = this->Header->QuadTop;
     float right = this->Header->QuadRight;
     float bottom = this->Header->QuadBottom;
-    unsigned int node_index = 0;
+    int current_index = 0;
 
-    if (x < left || right < x || y < top || bottom < y) {
+    if (x < left && x > right && y < top && y > bottom) {
         return 0;
     }
 
     while (true) {
-        ParameterMapQuad8 *quad = &this->QuadData8[node_index];
-        node_index = quad->Children.Child0;
-        if (node_index == 0) {
-            return quad->Children.Child1;
+        if (this->QuadData8[current_index].IsLeave()) {
+            return this->QuadData8[current_index].GetData();
         }
 
-        float middle_x = (left + right) * 0.5f;
-        float middle_y = (top + bottom) * 0.5f;
-        if (x < middle_x) {
-            right = middle_x;
-            if (middle_y <= y) {
-                node_index = quad->Children.Child1;
-                top = middle_y;
+        float centre_x = (left + right) * 0.5f;
+        float centre_y = (top + bottom) * 0.5f;
+
+        if (x < centre_x) {
+
+            if (y < centre_y) {
+                right = centre_x;
+                bottom = centre_y;
+                current_index = this->QuadData8[current_index].GetChild0();
+            } else {
+                right = centre_x;
+                current_index = this->QuadData8[current_index].GetChild1();
+                top = centre_y;
             }
         } else {
-            left = middle_x;
-            if (y < middle_y) {
-                node_index = quad->Children.Child2;
+            if (y < centre_y) {
+                left = centre_x;
+                current_index = this->QuadData8[current_index].GetChild2();
+                bottom = centre_y;
             } else {
-                node_index = quad->Children.Child3;
-                top = middle_y;
+                left = centre_x; // TODO regswap if this is not commented out
+                current_index = this->QuadData8[current_index].GetChild3();
+                top = centre_y;
             }
         }
     }
 }
 
+// UNSOLVED regswap
 int ParameterMapLayer::GetParameterSetIndexFromQuadData16(float x, float y) {
     float left = this->Header->QuadLeft;
     float top = this->Header->QuadTop;
     float right = this->Header->QuadRight;
     float bottom = this->Header->QuadBottom;
-    unsigned int node_index = 0;
+    int current_index = 0;
 
-    if (x < left || right < x || y < top || bottom < y) {
+    if (x < left && x > right && y < top && y > bottom) {
         return 0;
     }
 
     while (true) {
-        ParameterMapQuad16 *quad = &this->QuadData16[node_index];
-        node_index = quad->Children.Child0;
-        if (node_index == 0) {
-            return quad->Children.Child1;
+        if (this->QuadData16[current_index].IsLeave()) {
+            return this->QuadData16[current_index].GetData();
         }
 
-        float middle_x = (left + right) * 0.5f;
-        float middle_y = (top + bottom) * 0.5f;
-        if (x < middle_x) {
-            right = middle_x;
-            if (middle_y <= y) {
-                node_index = quad->Children.Child1;
-                top = middle_y;
+        float centre_x = (left + right) * 0.5f;
+        float centre_y = (top + bottom) * 0.5f;
+
+        if (x < centre_x) {
+            if (y < centre_y) {
+                right = centre_x;
+                bottom = centre_y;
+                current_index = this->QuadData16[current_index].GetChild0();
+            } else {
+                right = centre_x;
+                current_index = this->QuadData16[current_index].GetChild1();
+                top = centre_y;
             }
         } else {
-            left = middle_x;
-            if (y < middle_y) {
-                node_index = quad->Children.Child2;
+            if (y < centre_y) {
+                left = centre_x;
+                current_index = this->QuadData16[current_index].GetChild2();
+                bottom = centre_y;
             } else {
-                node_index = quad->Children.Child3;
-                top = middle_y;
+                left = centre_x;
+                current_index = this->QuadData16[current_index].GetChild3();
+                top = centre_y;
             }
         }
     }
 }
 
 void *ParameterMapLayer::GetFieldPointer(int set_index, int field_index) {
-    if (!Header->NumberOfParameterSets || !Header->SizeOfParameterSet || !Header->NumberOfFields || !FieldTypes || !FieldOffsets || !ParameterData) {
+    if (!Header->NumberOfParameterSets || !Header->SizeOfParameterSet || !Header->NumberOfFields || (FieldTypes == nullptr) ||
+        (FieldOffsets == nullptr) || (ParameterData == nullptr)) {
         return nullptr;
     }
     if (set_index >= Header->NumberOfParameterSets) {
@@ -270,11 +288,27 @@ void *ParameterMapLayer::GetFieldPointer(int set_index, int field_index) {
     return static_cast<char *>(ParameterData) + data_offset;
 }
 
+static const int EnableAutoParameterAccessorsListDump = 0;
+
+ParameterMapsManager &GetParameterMapsManager() {
+    static ParameterMapsManager TheParameterMapsManager;
+    return TheParameterMapsManager;
+}
+
+bTList<ParameterAccessor> &GetAutoParameterAccessors() {
+    static bTList<ParameterAccessor> AutoParameterAccessors;
+    return AutoParameterAccessors;
+}
+
+void DumpAutoParameterAccessorsList() {}
+
+ParameterAccessor::ParameterAccessor() {}
+
 ParameterAccessor::ParameterAccessor(const char *layer_name)
-    : Layer(0),                   //
+    : Layer(nullptr),             //
       AutoAttachLayerNamehash(0), //
       DebugName(layer_name),      //
-      CurrentParameterData(0) {
+      CurrentParameterData(nullptr) {
     AutoAttachLayerNamehash = bStringHash(layer_name);
     if (!GetParameterMapsManager().GetDataForLayer(AutoAttachLayerNamehash, this, 0)) {
         GetAutoParameterAccessors().AddTail(this);
@@ -291,12 +325,12 @@ ParameterAccessor::~ParameterAccessor() {
 void ParameterAccessor::SetLayer(ParameterMapLayer *layer) {
     this->ClearData();
 
-    if (this->Layer != 0) {
+    if (this->Layer != nullptr) {
         this->Layer->RemoveParameterAccessor(this);
     }
 
     this->Layer = layer;
-    if (layer) {
+    if (layer != nullptr) {
         this->SetUpForNewLayer();
         this->Layer->AddParameterAccessor(this);
     } else if (this->AutoAttachLayerNamehash) {
@@ -309,22 +343,132 @@ void ParameterAccessor::ClearLayer() {
 }
 
 void ParameterAccessor::CaptureData(float x, float y) {
-    this->CurrentParameterData = this->Layer != 0 ? this->Layer->GetParameterData(x, y) : this->Layer;
+    this->CurrentParameterData = this->Layer != nullptr ? this->Layer->GetParameterData(x, y) : this->Layer;
 }
 
 void ParameterAccessor::ClearData() {
-    this->CurrentParameterData = 0;
+    this->CurrentParameterData = nullptr;
 }
 
 float ParameterAccessor::GetDataFloat(int field_index) {
-    return this->Layer != 0 && this->CurrentParameterData != 0 ? this->Layer->GetDataFloat(field_index, this->CurrentParameterData) : 0.0f;
+    return this->Layer != nullptr && this->CurrentParameterData != nullptr ? this->Layer->GetDataFloat(field_index, this->CurrentParameterData)
+                                                                           : 0.0f;
 }
 
 int ParameterAccessor::GetDataInt(int field_index) {
-    return this->Layer != 0 && this->CurrentParameterData != 0 ? this->Layer->GetDataInt(field_index, this->CurrentParameterData) : 0;
+    return this->Layer != nullptr && this->CurrentParameterData != nullptr ? this->Layer->GetDataInt(field_index, this->CurrentParameterData) : 0;
 }
 
 void ParameterAccessor::SetUpForNewLayer() {}
+
+ParameterAccessorBlend::ParameterAccessorBlend(const char *layer_name)
+    : ParameterAccessor(layer_name), //
+      LastData(nullptr),             //
+      HaveLastData(0) {}
+
+ParameterAccessorBlend::~ParameterAccessorBlend() {}
+
+void ParameterAccessorBlend::CaptureData(float x, float y, float ratio) {
+
+    if (this->Layer != nullptr && this->LastData != nullptr) {
+        void *current_data = this->Layer->GetParameterData(x, y);
+
+        if (this->HaveLastData == 0) {
+            memcpy(this->LastData, current_data, this->Layer->GetSizeOfParameterSet());
+            this->HaveLastData = 1;
+        } else {
+            for (int i = 0; i < this->Layer->GetNumberOfFields(); i++) {
+                int field_type = this->Layer->GetFieldType(i);
+                int field_offset = this->Layer->GetFieldOffset(i);
+                void *from_current;
+                void *from_last;
+                void *to;
+
+                if (field_offset >= 0) {
+                    from_current = static_cast<char *>(current_data) + field_offset;
+                    from_last = static_cast<char *>(this->LastData) + field_offset;
+                    to = from_last;
+
+                    switch (field_type) {
+                        case 0: {
+                            float current_amount = *static_cast<float *>(from_current);
+                            float last_amount = *static_cast<float *>(from_last);
+
+                            *static_cast<float *>(to) = current_amount * ratio + last_amount * (1.0f - ratio);
+                            break;
+                        }
+                        case 1: {
+                            float current_amount = static_cast<float>(*static_cast<int *>(from_current));
+                            float last_amount = static_cast<float>(*static_cast<int *>(from_last));
+
+                            *static_cast<int *>(to) = static_cast<int>(current_amount * ratio + last_amount * (1.0f - ratio));
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        this->CurrentParameterData = this->LastData;
+    } else {
+        this->CurrentParameterData = nullptr;
+    }
+}
+
+void ParameterAccessorBlend::ClearData() {
+    if (this->LastData != nullptr) {
+        delete[] reinterpret_cast<char *>(this->LastData);
+        this->LastData = nullptr;
+    }
+    this->HaveLastData = 0;
+    ParameterAccessor::ClearData();
+}
+
+void ParameterAccessorBlend::SetUpForNewLayer() {
+    if (Layer != nullptr) {
+        int data_size = Layer->GetSizeOfParameterSet();
+        if (data_size > 0) {
+            LastData = new ("Parameter Accessor Blend Buffer", 0) char[data_size];
+        }
+    }
+}
+
+void ParameterAccessorBlend::CaptureData(float x, float y) {}
+
+ParameterAccessorBlendByDistance::ParameterAccessorBlendByDistance(const char *layer_name)
+    : ParameterAccessorBlend(layer_name), //
+      last_x(0.0f),                       //
+      last_y(0.0f),                       //
+      HaveLastPosition(0) {}
+
+ParameterAccessorBlendByDistance::~ParameterAccessorBlendByDistance() {}
+
+void ParameterAccessorBlendByDistance::CaptureData(float x, float y, float full_blend_distance) {
+    float ratio = 1.0f;
+
+    if (this->HaveLastPosition != 0 && full_blend_distance != 0.0f) {
+        float dx = x - this->last_x;
+        float dy = y - this->last_y;
+        float distance_traveled = bSqrt(dx * dx + dy * dy);
+        if (distance_traveled < full_blend_distance) {
+            ratio = distance_traveled / full_blend_distance;
+        }
+    }
+
+    ParameterAccessorBlend::CaptureData(x, y, ratio);
+    this->last_y = y;
+    this->last_x = x;
+    this->HaveLastPosition = 1;
+}
+
+void ParameterAccessorBlendByDistance::SetUpForNewLayer() {
+    this->last_x = 0.0f;
+    this->last_y = 0.0f;
+    this->HaveLastPosition = 0;
+    ParameterAccessorBlend::SetUpForNewLayer();
+}
+
+void ParameterAccessorBlendByDistance::CaptureData(float x, float y) {}
 
 ParameterMapsManager::ParameterMapsManager() {}
 
@@ -356,19 +500,17 @@ int ParameterMapsManager::GetDataForLayer(unsigned int layer_name_hash, Paramete
         }
     }
 
-    if (warning_if_not_found) {
-    }
     return 0;
 }
 
 int LoaderParameterMaps(bChunk *chunk) {
-    if (chunk->GetID() == 0x8003B600) {
+    if (chunk->GetID() == BCHUNK_PARAMETER_MAPS_DATA) {
         bChunk *last_chunk = chunk->GetLastChunk();
         chunk = chunk->GetFirstChunk();
 
         while (chunk < last_chunk) {
-            if (chunk->GetID() == 0x8003B601) {
-                ParameterMapLayer *new_layer = new (__FILE__, __LINE__) ParameterMapLayer;
+            if (chunk->GetID() == BCHUNK_PARAMETER_MAPS_LAYER_DATA) {
+                ParameterMapLayer *new_layer = new ("ParameterMapLayer", 0) ParameterMapLayer;
                 new_layer->Load(&chunk);
                 GetParameterMapsManager().AddLayer(new_layer);
             }
@@ -395,7 +537,7 @@ int LoaderParameterMaps(bChunk *chunk) {
 }
 
 int UnloaderParameterMaps(bChunk *chunk) {
-    if (chunk->GetID() == 0x8003B600) {
+    if (chunk->GetID() == BCHUNK_PARAMETER_MAPS_DATA) {
         DumpAutoParameterAccessorsList();
         GetParameterMapsManager().UnloadAllLayers();
         DumpAutoParameterAccessorsList();
@@ -404,102 +546,5 @@ int UnloaderParameterMaps(bChunk *chunk) {
     return 0;
 }
 
-void DumpAutoParameterAccessorsList() {}
-
-ParameterAccessorBlend::ParameterAccessorBlend(const char *layer_name)
-    : ParameterAccessor(layer_name), //
-      LastData(0),                   //
-      HaveLastData(0) {}
-
-ParameterAccessorBlend::~ParameterAccessorBlend() {}
-
-void ParameterAccessorBlend::CaptureData(float x, float y, float ratio) {
-    if (this->Layer == 0 || this->LastData == 0) {
-        this->CurrentParameterData = 0;
-        return;
-    }
-
-    void *current_data = this->Layer->GetParameterData(x, y);
-    if (this->HaveLastData == 0) {
-        std::memcpy(this->LastData, current_data, this->Layer->GetSizeOfParameterSet());
-        this->HaveLastData = 1;
-    } else {
-        for (int i = 0; i < this->Layer->GetNumberOfFields(); i++) {
-            int field_type = this->Layer->GetFieldType(i);
-            int field_offset = this->Layer->GetFieldOffset(i);
-            char *last_data = reinterpret_cast<char *>(this->LastData) + field_offset;
-            char *new_data = reinterpret_cast<char *>(current_data) + field_offset;
-
-            if (field_type == 0) {
-                *reinterpret_cast<float *>(last_data) =
-                    *reinterpret_cast<float *>(new_data) * ratio + *reinterpret_cast<float *>(last_data) * (1.0f - ratio);
-            } else if (field_type == 1) {
-                *reinterpret_cast<int *>(last_data) = static_cast<int>(static_cast<float>(*reinterpret_cast<int *>(new_data)) * ratio +
-                                                                       static_cast<float>(*reinterpret_cast<int *>(last_data)) * (1.0f - ratio));
-            }
-        }
-    }
-
-    this->CurrentParameterData = this->LastData;
-}
-
-void ParameterAccessorBlend::ClearData() {
-    if (this->LastData != 0) {
-        delete[] reinterpret_cast<char *>(this->LastData);
-        this->LastData = 0;
-    }
-    this->HaveLastData = 0;
-    ParameterAccessor::ClearData();
-}
-
-void ParameterAccessorBlend::SetUpForNewLayer() {
-    if (Layer) {
-        int data_size = Layer->GetSizeOfParameterSet();
-        if (data_size > 0) {
-            LastData = new (__FILE__, __LINE__) char[data_size];
-        }
-    }
-}
-
-void ParameterAccessorBlend::CaptureData(float x, float y) {
-    (void)x;
-    (void)y;
-}
-
-ParameterAccessorBlendByDistance::ParameterAccessorBlendByDistance(const char *layer_name)
-    : ParameterAccessorBlend(layer_name), //
-      last_x(0.0f),                       //
-      last_y(0.0f),                       //
-      HaveLastPosition(0) {}
-
-ParameterAccessorBlendByDistance::~ParameterAccessorBlendByDistance() {}
-
-void ParameterAccessorBlendByDistance::CaptureData(float x, float y, float full_blend_distance) {
-    float ratio = 1.0f;
-
-    if (this->HaveLastPosition != 0 && full_blend_distance != 0.0f) {
-        float dy = y - this->last_y;
-        float dx = x - this->last_x;
-        float distance = bSqrt(dx * dx + dy * dy);
-        if (distance < full_blend_distance) {
-            ratio = distance / full_blend_distance;
-        }
-    }
-
-    ParameterAccessorBlend::CaptureData(x, y, ratio);
-    this->last_y = y;
-    this->last_x = x;
-    this->HaveLastPosition = 1;
-}
-
-void ParameterAccessorBlendByDistance::SetUpForNewLayer() {
-    this->last_x = 0.0f;
-    this->last_y = 0.0f;
-    this->HaveLastPosition = 0;
-    ParameterAccessorBlend::SetUpForNewLayer();
-}
-
-void ParameterAccessorBlendByDistance::CaptureData(float x, float y) {
-    (void)x;
-    (void)y;
-}
+// STRIPPED
+int GetXYviewCar(eView *view, float *x, float *y) {}

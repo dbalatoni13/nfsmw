@@ -396,6 +396,8 @@ int VisibleSectionManager::GetSectionsToLoad(LoadingSection *loading_section, sh
     return num_sections;
 }
 
+class UnallocatedVisibleSectionUserInfo : public bTNode<UnallocatedVisibleSectionUserInfo> {};
+
 VisibleSectionManager::VisibleSectionManager() {
     pBoundaryChunks = nullptr;
     pInfo = nullptr;
@@ -417,7 +419,7 @@ VisibleSectionManager::VisibleSectionManager() {
 
 VisibleSectionUserInfo *VisibleSectionManager::AllocateUserInfo(int section_number) {
     VisibleSectionUserInfo *info = GetUserInfo(section_number);
-    if (!info) {
+    if (info == nullptr) {
         NumAllocatedUserInfo++;
         UnallocatedVisibleSectionUserInfo *unallocated_info = UnallocatedUserInfoList.RemoveHead();
         info = reinterpret_cast<VisibleSectionUserInfo *>(unallocated_info);
@@ -432,7 +434,7 @@ VisibleSectionUserInfo *VisibleSectionManager::AllocateUserInfo(int section_numb
 
 void VisibleSectionManager::UnallocateUserInfo(int section_number) {
     VisibleSectionUserInfo *info = GetUserInfo(section_number);
-    if (info) {
+    if (info != nullptr) {
         if (--info->ReferenceCount != 0) {
             return;
         }
@@ -449,7 +451,7 @@ void VisibleSectionManager::ActivateOverlay(const char *name) {
     for (VisibleSectionOverlay *overlay = OverlayList.GetHead(); overlay != OverlayList.EndOfList(); overlay = overlay->GetNext()) {
         if (bStrICmp(overlay->Name, name) == 0) {
             if (overlay != pActiveOverlay) {
-                if (pActiveOverlay) {
+                if (pActiveOverlay != nullptr) {
                     UnactivateOverlay();
                 }
 
@@ -468,7 +470,7 @@ void VisibleSectionManager::ActivateOverlay(VisibleSectionOverlay *overlay, Visi
     for (int n = 0; n < overlay->NumEntries; n++) {
         VisibleSectionOverlay::OverlayEntry *entry = &overlay->EntryTable[n];
         DrivableScenerySection *section = FindDrivableSection(entry->DrivableSectionNumber);
-        if (section) {
+        if (section != nullptr) {
             bool did_something = false;
             if (entry->AddRemove != 0) {
                 if (!section->IsSectionVisible(entry->SectionNumber)) {
@@ -493,7 +495,7 @@ void VisibleSectionManager::ActivateOverlay(VisibleSectionOverlay *overlay, Visi
 }
 
 void VisibleSectionManager::UnactivateOverlay() {
-    if (pActiveOverlay) {
+    if (pActiveOverlay != nullptr) {
         EnablePreculler();
         ActivateOverlay(pUndoOverlay, nullptr);
         delete pUndoOverlay;

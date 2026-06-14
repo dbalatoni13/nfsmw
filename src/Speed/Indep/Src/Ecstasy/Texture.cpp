@@ -5,7 +5,7 @@
 #include "Speed/Indep/Src/Misc/ResourceLoader.hpp"
 #include "Speed/Indep/Src/Misc/SpeedChunks.hpp"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
-#include "Speed/Indep/Src/World/Car.hpp"
+#include "Speed/Indep/Src/World/CarSkin.hpp"
 #include "eStreamingPack.hpp"
 
 #include "Speed/Indep/bWare/Inc/Strings.hpp"

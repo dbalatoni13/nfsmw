@@ -1,21 +1,58 @@
 #include "./SmackableRender.hpp"
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
+#include "Speed/Indep/Libs/Support/Utility/FastMem.h"
+#include "Speed/Indep/Libs/Support/Utility/UCrc.h"
 #include "Speed/Indep/Src/Ecstasy/eMath.hpp"
 #include "Speed/Indep/Src/Physics/Bounds.h"
 #include "Speed/Indep/Src/Render/RenderConn.h"
 #include "Speed/Indep/Src/Sim/SimConn.h"
 #include "Speed/Indep/Src/Sim/SimServer.h"
 #include "Speed/Indep/Src/World/WorldModel.hpp"
+#include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
-#include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
 #include "WorldConn.h"
 #include "WorldModel.hpp"
 
 #include <types.h>
 
-// UNSOLVED, i hate constructors
-SmackableRenderConn::SmackableRenderConn(const Sim::ConnectionData &data /* r27 */)
-    : Sim::Connection(data), mModelHash(), mTarget((*reinterpret_cast<unsigned int *>(&mModelHash) = 0, 0)), mModel(0), mLOD(0),
+// total size: 0x8C
+class SmackableRenderConn : public Sim::Connection, public bTNode<SmackableRenderConn> {
+  public:
+    USE_FASTALLOC(SmackableRenderConn);
+
+    SmackableRenderConn(const Sim::ConnectionData &data);
+    virtual ~SmackableRenderConn();
+
+    void OnClose() override {
+        delete this;
+    }
+
+    Sim::ConnStatus OnStatusCheck() override {
+        return Sim::CONNSTATUS_READY;
+    }
+
+    static Sim::Connection *Construct(const Sim::ConnectionData &data) {
+        return new SmackableRenderConn(data);
+    }
+
+    static void UpdateAll(float dT);
+
+  private:
+    void Update(float dT);
+
+    bHash32 mModelHash;               // offset 0x18, size 0x4
+    const ModelHeirarchy *mHeirarchy; // offset 0x1C, size 0x4
+    WorldConn::Reference mTarget;     // offset 0x20, size 0x10
+    WorldModel *mModel;               // offset 0x30, size 0x4
+    uint32 mRenderNode;               // offset 0x34, size 0x4
+    bVector4 mModelOffset;            // offset 0x38, size 0x10
+    bMatrix4 mRenderMatrix;           // offset 0x48, size 0x40
+    int mLOD;                         // offset 0x88, size 0x4
+    static bTList<SmackableRenderConn> mList;
+};
+
+SmackableRenderConn::SmackableRenderConn(const Sim::ConnectionData &data)
+    : Sim::Connection(data), mModelHash(), mTarget((*reinterpret_cast<unsigned int *>(&mModelHash) = 0, 0)), mModel(nullptr), mLOD(0),
       mModelOffset(bVector4(0.0f, 0.0f, 0.0f, 0.0f)) {
     this->mList.AddTail(this);
 
@@ -33,36 +70,19 @@ SmackableRenderConn::SmackableRenderConn(const Sim::ConnectionData &data /* r27 
     this->mModelOffset.z = -pivot.y;
 }
 
-Sim::Connection *SmackableRenderConn::Construct(const Sim::ConnectionData &data) {
-    return new SmackableRenderConn(data);
-}
-
 SmackableRenderConn::~SmackableRenderConn() {
-    mList.Remove(this);
-    if (mModel) {
-        delete mModel;
-        mModel = nullptr;
+    this->mList.Remove(this);
+    if (this->mModel != nullptr) {
+        delete this->mModel;
+        this->mModel = nullptr;
     }
-    mTarget.Set(0);
+    this->mTarget.Set(0);
 }
 
-void SmackableRenderConn::OnClose() {
-    delete this;
-}
-
-Sim::ConnStatus SmackableRenderConn::OnStatusCheck() {
-    return Sim::CONNSTATUS_READY;
-}
-
-SlotPool *SpaceNodeSlotPool = nullptr; // move elsewhere
-SlotPool *WorldModelSlotPool = nullptr; // move elsewhere
-
-// UNSOLVED, this function does some weird shit
 void SmackableRenderConn::Update(float dT) {
     if (this->mTarget.IsValid()) {
-        bVector4 tmp;
-
         this->mRenderMatrix = *this->mTarget.GetMatrix();
+        bVector4 tmp;
         eMulVector(&tmp, this->mTarget.GetMatrix(), &this->mModelOffset);
 
         this->mRenderMatrix.v3 += tmp;
@@ -70,9 +90,9 @@ void SmackableRenderConn::Update(float dT) {
 
         float disttoview = 0.0f;
         bool inview = false;
-        if (this->mModel && this->mModel->IsEnabled()) {
+        if ((this->mModel != nullptr) && this->mModel->IsEnabled()) {
             disttoview = this->mModel->DistanceToGameView();
-            
+
             if (this->mModel->GetLastVisibleFrame() >= this->mModel->GetLastRenderFrame() && this->mModel->GetLastRenderFrame() != 0) {
                 inview = true;
             }
@@ -86,8 +106,8 @@ void SmackableRenderConn::Update(float dT) {
                 this->mModel = nullptr;
             }
         } else {
-            if (!this->mModel) {
-                if (this->mHeirarchy && this->mRenderNode != 0) {
+            if (this->mModel == nullptr) {
+                if ((this->mHeirarchy != nullptr) && this->mRenderNode != 0) {
                     this->mModel = new WorldModel(this->mHeirarchy, this->mRenderNode, true);
                 } else {
                     this->mModel = new WorldModel(this->mModelHash.GetValue(), nullptr, true);
@@ -115,5 +135,4 @@ void SmackableRender_Service(float dT) {
 }
 
 bTList<SmackableRenderConn> SmackableRenderConn::mList;
-UTL::COM::Factory<const Sim::ConnectionData &, Sim::Connection, UCrc32>::Prototype _SmackableRenderConn("SmackableRenderConn",
-                                                                                                          SmackableRenderConn::Construct);
+BIND_SIM_CONN(SmackableRenderConn);

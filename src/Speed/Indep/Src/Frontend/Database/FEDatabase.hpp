@@ -317,5 +317,6 @@ class cFrontendDatabase {
 extern cFrontendDatabase *FEDatabase;
 
 void InitFrontendDatabase();
+int GetIsCollectorsEdition();
 
 #endif

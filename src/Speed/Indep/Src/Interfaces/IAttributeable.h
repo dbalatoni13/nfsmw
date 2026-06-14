@@ -11,9 +11,9 @@ class IAttributeable {
   public:
     IAttributeable() {}
 
-    virtual void OnAttributeChange(const Attrib::Collection *collection, unsigned int attribkey);
+    virtual void OnAttributeChange(const Attrib::Collection *collection, Attrib::Key attribkey);
 
-    static void Register(IAttributeable *who, unsigned int class_key) {}
+    static void Register(IAttributeable *who, Attrib::Key class_key) {}
 
     static void UnRegister(IAttributeable *who) {}
 };

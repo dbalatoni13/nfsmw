@@ -7,6 +7,8 @@
 
 #include "./UTypes.h"
 
+extern "C" {
+
 float rasin(float a);
 float rsqrt(const float x);
 float v3length(const UMath::Vector3 *v);
@@ -19,5 +21,6 @@ void MATRIX4_multxrot(const UMath::Matrix4 *m4, float xbangle, UMath::Matrix4 *r
 void MATRIX4_multyrot(const UMath::Matrix4 *m4, float ybangle, UMath::Matrix4 *resultm);
 void MATRIX4_multzrot(const UMath::Matrix4 *m4, float zbangle, UMath::Matrix4 *resultm);
 
+};
 
 #endif

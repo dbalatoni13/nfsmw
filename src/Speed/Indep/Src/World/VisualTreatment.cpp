@@ -2,95 +2,205 @@
 
 #include "Speed/Indep/Src/Camera/Camera.hpp"
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/visuallookeffect.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/IGameState.h"
+#include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IEngine.h"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
-#include "Speed/Indep/Src/World/World.hpp"
-#include "Speed/Indep/bWare/Inc/bMemory.hpp"
+#include "TimeOfDay.hpp"
 
-extern Timer RealTimer;
-extern float WorldTimeSeconds;
-void SetMiddleGrayValue(float val) {}
+float twkVisualTreatmentTargetHeat = -1.0f;
+float twkVisualTreatmentRadialBlur = -1.0f;
+float twkVisualTreatmentPulseBrightness = -1.0f;
 
+// UNSOLVED
 float GetValueFromSpline(float value, bMatrix4 *curve) {
     float tm1 = 1.0f - value;
     float tm13 = tm1 * tm1 * tm1;
     float t3 = value * value * value;
 
-    return tm13 * curve->v0.y + value * (tm1 * 3.0f) * tm1 * curve->v1.y +
-           value * (value * 3.0f) * tm1 * curve->v2.y + t3 * curve->v3.y;
+    return tm13 * curve->v0.y + value * (tm1 * 3.0f) * tm1 * curve->v1.y + value * (value * 3.0f) * tm1 * curve->v2.y + t3 * curve->v3.y;
 }
 
-inline void VisualLookEffect::Reset() {
-    this->StartTime = 0.0f;
-    this->PulseLength = 0.0f;
-}
+void SetMiddleGrayValue(float val) {}
 
-bool VisualLookEffect::IsActive() {
-    return this->StartTime != 0.0f;
-}
+class VisualLookEffect {
+    friend class IVisualTreatment;
 
-float VisualLookEffect::UpdateActive(float heatMeter) {
-    float secondsElapsed;
-    if (this->UseWorldTime != 0) {
-        secondsElapsed = WorldTimer.GetSeconds() - this->StartTime;
-    } else {
-        secondsElapsed = RealTimer.GetSeconds() - this->StartTime;
+  public:
+    VisualLookEffect(Attrib::Gen::visuallookeffect *attribEffect)
+        : AttribEffect(attribEffect), //
+          StartTime(0.0f),            //
+          PulseLength(0.0f) {
+        this->StopIfHeatFalls = true;
+        this->StopAfterLength = false;
+        this->UseWorldTime = true;
     }
 
-    if (this->StopIfHeatFalls != 0 && heatMeter < this->AttribEffect->heattrigger()) {
+    float Update(float heatMeter) {
+        if (this->IsActive()) {
+            return this->UpdateActive(heatMeter);
+        }
+
+        return 0.0f;
+    }
+
+    void Reset() {
         this->StartTime = 0.0f;
+        this->PulseLength = 0.0f;
     }
 
-    if (this->StopAfterLength != 0 && secondsElapsed >= this->PulseLength) {
-        this->StartTime = 0.0f;
+    Attrib::Gen::visuallookeffect *GetAttrib() {
+        return this->AttribEffect;
     }
 
-    bMatrix4 *curve = reinterpret_cast<bMatrix4 *>(&const_cast<UMath::Matrix4 &>(this->AttribEffect->graph()));
-    float value;
-    if (secondsElapsed <= 0.0f) {
-        return curve->v0.y * this->AttribEffect->magnitude();
+    void Trigger(float length, bool useWorldTime, bool stopIfHeatFalls, bool stopAfterLength) {
+        if (length == 0.0f) {
+            length = this->AttribEffect->length();
+            if (length == 0.0f) {
+                return;
+            }
+        }
+        this->StartTime = useWorldTime ? WorldTimer.GetSeconds() : RealTimer.GetSeconds();
+        this->PulseLength = length;
+        this->UseWorldTime = useWorldTime;
+        this->StopIfHeatFalls = stopIfHeatFalls;
+        this->StopAfterLength = stopAfterLength;
     }
 
-    if (secondsElapsed >= this->PulseLength) {
-        return curve->v3.y * this->AttribEffect->magnitude();
+  protected:
+    bool IsActive() {
+        return this->StartTime != 0.0f;
     }
 
-    value = GetValueFromSpline(secondsElapsed / this->PulseLength, curve);
-    return value * this->AttribEffect->magnitude();
-}
+    // UNSOLVED float scheduling
+    float UpdateActive(float heatMeter) {
+        float secondsElapsed;
+        if (this->UseWorldTime) {
+            secondsElapsed = WorldTimer.GetSeconds() - this->StartTime;
+        } else {
+            secondsElapsed = RealTimer.GetSeconds() - this->StartTime;
+        }
 
-inline void VisualLookEffectTarget::Reset() {
-    this->Target = 0.0f;
-    this->Current = 0.0f;
-    this->StartWorldTime = 0.0f;
-}
+        if (this->StopIfHeatFalls && heatMeter < this->AttribEffect->heattrigger()) {
+            this->StartTime = 0.0f;
+        }
 
+        if (this->StopAfterLength && secondsElapsed >= this->PulseLength) {
+            this->StartTime = 0.0f;
+        }
+
+        bMatrix4 *curve = reinterpret_cast<bMatrix4 *>(&const_cast<UMath::Matrix4 &>(this->AttribEffect->graph()));
+        if (secondsElapsed <= 0.0f) {
+            return curve->v0.y * this->AttribEffect->magnitude();
+        }
+
+        if (secondsElapsed >= this->PulseLength) {
+            return curve->v3.y * this->AttribEffect->magnitude();
+        }
+
+        float value = GetValueFromSpline(secondsElapsed / this->PulseLength, curve);
+        return value * this->AttribEffect->magnitude();
+    }
+
+    Attrib::Gen::visuallookeffect *AttribEffect; // offset 0x0, size 0x4
+    float StartTime;                             // offset 0x4, size 0x4
+    float PulseLength;                           // offset 0x8, size 0x4
+    bool UseWorldTime;                           // offset 0xC, size 0x4
+    bool StopIfHeatFalls;                        // offset 0x10, size 0x4
+    bool StopAfterLength;                        // offset 0x14, size 0x4
+};
+
+class VisualLookEffectTarget {
+    friend class IVisualTreatment;
+
+  public:
+    VisualLookEffectTarget(Attrib::Gen::visuallookeffect *attribEffect) : AttribEffect(attribEffect) {
+        this->Target = 0.0f;
+        this->Current = 0.0f;
+        this->StartWorldTime = 0.0f;
+    }
+
+    void Reset() {
+        this->Target = 0.0f;
+        this->Current = 0.0f;
+        this->StartWorldTime = 0.0f;
+    }
+
+    float Update() {
+        if (StartWorldTime != 0.0f) {
+            float secondsElapsed = WorldTimeSeconds - StartWorldTime;
+
+            if (secondsElapsed > this->AttribEffect->length()) {
+                StartWorldTime = 0.0f;
+                this->Current = this->Target;
+            } else if (secondsElapsed >= 0.0f) {
+                bMatrix4 *curve = (bMatrix4 *)&this->AttribEffect->graph();
+                float value = secondsElapsed / this->AttribEffect->length();
+
+                if (this->Current > this->Target) {
+                    value = 1.0f - value;
+                }
+
+                this->Current = GetValueFromSpline(value, curve);
+            }
+        }
+
+        return this->Current;
+    }
+
+    void SetTarget(float target) {
+        if (this->Target == target) {
+            return;
+        }
+        this->Target = target;
+        this->StartWorldTime = WorldTimeSeconds;
+    }
+
+    void SetCurrent(float value) {
+        this->Current = value;
+        this->Target = value;
+        this->StartWorldTime = 0.0f;
+    }
+
+    Attrib::Gen::visuallookeffect *GetAttrib() {
+        return this->AttribEffect;
+    }
+
+  private:
+    Attrib::Gen::visuallookeffect *AttribEffect; // offset 0x0, size 0x4
+    float StartWorldTime;                        // offset 0x4, size 0x4
+    float Current;                               // offset 0x8, size 0x4
+    float Target;                                // offset 0xC, size 0x4
+};
+
+// UNSOLVED float assignment order
 IVisualTreatment::IVisualTreatment()
-    : MiddayVisualLook(0xEEC2271A, 0, nullptr), //
-      SunsetVisualLook(0xCEDA4E4F, 0, nullptr), //
-      UvesVisualLook(0x681BEF75, 0, nullptr), //
-      CopCamVisualLook(0xEE6074A3, 0, nullptr), //
-      UvesPulse(::new (__FILE__, __LINE__) VisualLookEffect(new Attrib::Gen::visuallookeffect(0x334F1E4D, 0, nullptr))), //
-      UvesRadialBlur(::new (__FILE__, __LINE__) VisualLookEffect(new Attrib::Gen::visuallookeffect(0xBFA7B6AC, 0, nullptr))), //
-      UvesTransition(::new (__FILE__, __LINE__) VisualLookEffect(new Attrib::Gen::visuallookeffect(0x15746132, 0, nullptr))), //
-      CameraFlash(::new (__FILE__, __LINE__) VisualLookEffect(new Attrib::Gen::visuallookeffect(0x30656612, 0, nullptr))), //
-      PursuitBreaker(::new (__FILE__, __LINE__) VisualLookEffectTarget(new Attrib::Gen::visuallookeffect(0x90D06C71, 0, nullptr))), //
-      NosRadialBlur(::new (__FILE__, __LINE__) VisualLookEffectTarget(new Attrib::Gen::visuallookeffect(0x6B40EB80, 0, nullptr)))
-{
+    : MiddayVisualLook(0xEEC2271A, 0, nullptr),                                                                                            //
+      SunsetVisualLook(0xCEDA4E4F, 0, nullptr),                                                                                            //
+      UvesVisualLook(0x681BEF75, 0, nullptr),                                                                                              //
+      CopCamVisualLook(0xEE6074A3, 0, nullptr),                                                                                            //
+      UvesPulse(new ("VisualLookEffect", 0) VisualLookEffect(new Attrib::Gen::visuallookeffect(0x334F1E4D, 0, nullptr))),                  //
+      UvesRadialBlur(new ("VisualLookEffect", 0) VisualLookEffect(new Attrib::Gen::visuallookeffect(0xBFA7B6AC, 0, nullptr))),             //
+      UvesTransition(new ("VisualLookEffect", 0) VisualLookEffect(new Attrib::Gen::visuallookeffect(0x15746132, 0, nullptr))),             //
+      CameraFlash(new ("VisualLookEffect", 0) VisualLookEffect(new Attrib::Gen::visuallookeffect(0x30656612, 0, nullptr))),                //
+      PursuitBreaker(new ("VisualLookEffectTarget", 0) VisualLookEffectTarget(new Attrib::Gen::visuallookeffect(0x90D06C71, 0, nullptr))), //
+      NosRadialBlur(new ("VisualLookEffectTarget", 0) VisualLookEffectTarget(new Attrib::Gen::visuallookeffect(0x6B40EB80, 0, nullptr))) {
     this->State = HEAT_LOOK;
+    this->HeatMeter = 0.0f;
     this->PulseBrightness = 1.0f;
-    this->IsBeingPursued = -1;
-    this->NosRadialBlur->StartWorldTime = 0.0f;
-    this->PursuitBreakerBlend = 0.0f;
     this->CurrentTarget = -1.0f;
     this->DesaturationTarget = -1.0f;
-    this->HeatMeter = 0.0f;
-    this->NosRadialBlur->Target = 0.0f;
+    this->IsBeingPursued = -1;
+
     this->NosRadialBlur->Current = 0.0f;
+    this->NosRadialBlur->StartWorldTime = 0.0f;
+    this->NosRadialBlur->Target = 0.0f;
+
     this->RadialBlur = 0.0f;
+    this->PursuitBreakerBlend = 0.0f;
     this->NosRadialBlurAmount = 0.0f;
 }
 
@@ -103,11 +213,12 @@ IVisualTreatment::~IVisualTreatment() {
     delete this->PursuitBreaker;
 }
 
+// UNSOLVED assignment order
 void IVisualTreatment::Reset() {
     this->State = HEAT_LOOK;
-    this->PulseBrightness = 1.0f;
     this->CurrentTarget = -1.0f;
     this->IsBeingPursued = -1;
+    this->PulseBrightness = 1.0f;
     this->DesaturationTarget = -1.0f;
     this->RadialBlur = 0.0f;
     this->NosRadialBlurAmount = 0.0f;
@@ -120,6 +231,9 @@ void IVisualTreatment::Reset() {
     CameraFlash->Reset();
     NosRadialBlur->Reset();
 }
+
+// STRIPPED
+void IVisualTreatment::PrintValues() {}
 
 void IVisualTreatment::TriggerPulse(float length) {
     CameraFlash->Trigger(length, false, false, true);
@@ -134,75 +248,58 @@ void IVisualTreatment::SetNosEngaged(bool isNosEngaged) {
 }
 
 void IVisualTreatment::SetPursuitBreakerTarget(float blendTarget) {
-    VisualLookEffectTarget *pursuitBreaker = this->PursuitBreaker;
-
-    if (pursuitBreaker->Target == blendTarget) {
-        return;
-    }
-
-    pursuitBreaker->Target = blendTarget;
-    pursuitBreaker->StartWorldTime = WorldTimeSeconds;
+    this->PursuitBreaker->SetTarget(blendTarget);
 }
 
-void IVisualTreatment::BlendVisualLookAttribute(
-    bMatrix4 &result, float defaultUves, float uves,
-    const UMath::Matrix4 &(Attrib::Gen::visuallook::*funcPtr)() const) {
-    const Attrib::Gen::visuallook *currVisualLook;
+inline void AddBlend(bMatrix4 *result, bMatrix4 *m0, float scale) {
+    result->v0.x += scale * m0->v0.x;
+    result->v0.y += scale * m0->v0.y;
 
-    bMemSet(&result, 0, 0x40);
+    result->v1.x += scale * m0->v1.x;
+    result->v1.y += scale * m0->v1.y;
+
+    result->v2.x += scale * m0->v2.x;
+    result->v2.y += scale * m0->v2.y;
+
+    result->v3.x += scale * m0->v3.x;
+    result->v3.y += scale * m0->v3.y;
+}
+
+inline void AddBlend(bVector4 *result, bVector4 *v, float scale) {
+    result->x += scale * v->x;
+    result->y += scale * v->y;
+    result->z += scale * v->z;
+    result->w += scale * v->w;
+}
+
+// UNSOLVED missing AddBlend call causing issues
+void IVisualTreatment::BlendVisualLookAttribute(bMatrix4 &result, float defaultUves, float uves,
+                                                const UMath::Matrix4 &(Attrib::Gen::visuallook::*funcPtr)() const) {
+    bMemSet(&result, 0, sizeof(bMatrix4));
 
     if (GetCurrentTimeOfDay() == eTOD_MIDDAY) {
         if (defaultUves != 0.0f) {
-            currVisualLook = &this->MiddayVisualLook;
-            const bMatrix4 &currCurve = *reinterpret_cast<const bMatrix4 *>(&(currVisualLook->*funcPtr)());
-            result.v0.x += defaultUves * currCurve.v0.x;
-            result.v0.y += defaultUves * currCurve.v0.y;
-            result.v1.x += defaultUves * currCurve.v1.x;
-            result.v1.y += defaultUves * currCurve.v1.y;
-            result.v2.x += defaultUves * currCurve.v2.x;
-            result.v2.y += defaultUves * currCurve.v2.y;
-            result.v3.x += defaultUves * currCurve.v3.x;
-            result.v3.y += defaultUves * currCurve.v3.y;
+            AddBlend(&result, (bMatrix4 *)&(MiddayVisualLook.*funcPtr)(), defaultUves);
         }
     } else if (defaultUves != 0.0f) {
-        currVisualLook = &this->SunsetVisualLook;
-        const bMatrix4 &currCurve = *reinterpret_cast<const bMatrix4 *>(&(currVisualLook->*funcPtr)());
-        result.v0.x += defaultUves * currCurve.v0.x;
-        result.v0.y += defaultUves * currCurve.v0.y;
-        result.v1.x += defaultUves * currCurve.v1.x;
-        result.v1.y += defaultUves * currCurve.v1.y;
-        result.v2.x += defaultUves * currCurve.v2.x;
-        result.v2.y += defaultUves * currCurve.v2.y;
-        result.v3.x += defaultUves * currCurve.v3.x;
-        result.v3.y += defaultUves * currCurve.v3.y;
+        AddBlend(&result, (bMatrix4 *)&(SunsetVisualLook.*funcPtr)(), defaultUves);
     }
 
     if (uves != 0.0f) {
-        const bMatrix4 &currCurve = *reinterpret_cast<const bMatrix4 *>(&(this->UvesVisualLook.*funcPtr)());
-        result.v0.x += uves * currCurve.v0.x;
-        result.v0.y += uves * currCurve.v0.y;
-        result.v1.x += uves * currCurve.v1.x;
-        result.v1.y += uves * currCurve.v1.y;
-        result.v2.x += uves * currCurve.v2.x;
-        result.v2.y += uves * currCurve.v2.y;
-        result.v3.x += uves * currCurve.v3.x;
-        result.v3.y += uves * currCurve.v3.y;
+        AddBlend(&result, (bMatrix4 *)&(UvesVisualLook.*funcPtr)(), uves);
     }
 }
 
-void IVisualTreatment::BlendVisualLookAttribute(
-    float &result, float defaultUves, float uves,
-    const float &(Attrib::Gen::visuallook::*funcPtr)() const) {
+void IVisualTreatment::BlendVisualLookAttribute(float &result, float defaultUves, float uves,
+                                                const float &(Attrib::Gen::visuallook::*funcPtr)() const) {
     result = 0.0f;
 
     if (defaultUves != 0.0f) {
-        int tod = GetCurrentTimeOfDay();
-        const Attrib::Gen::visuallook *currVisualLook = &this->SunsetVisualLook;
-        if (tod == eTOD_MIDDAY) {
-            currVisualLook = &this->MiddayVisualLook;
+        if (GetCurrentTimeOfDay() == eTOD_MIDDAY) {
+            result += (this->MiddayVisualLook.*funcPtr)() * defaultUves;
+        } else {
+            result += (this->SunsetVisualLook.*funcPtr)() * defaultUves;
         }
-
-        result += (currVisualLook->*funcPtr)() * defaultUves;
     }
 
     if (uves != 0.0f) {
@@ -210,37 +307,25 @@ void IVisualTreatment::BlendVisualLookAttribute(
     }
 }
 
-void IVisualTreatment::BlendVisualLookAttribute(
-    bVector4 &result, float defaultUves, float uves,
-    const UMath::Vector4 &(Attrib::Gen::visuallook::*funcPtr)() const) {
-    const Attrib::Gen::visuallook *currVisualLook;
-
-    bMemSet(&result, 0, 0x10);
+void IVisualTreatment::BlendVisualLookAttribute(bVector4 &result, float defaultUves, float uves,
+                                                const UMath::Vector4 &(Attrib::Gen::visuallook::*funcPtr)() const) {
+    bMemSet(&result, 0, sizeof(bVector4));
 
     if (defaultUves != 0.0f) {
-        currVisualLook = &this->SunsetVisualLook;
         if (GetCurrentTimeOfDay() == eTOD_MIDDAY) {
-            currVisualLook = &this->MiddayVisualLook;
+            AddBlend(&result, (bVector4 *)(&(MiddayVisualLook.*funcPtr)()), defaultUves);
+        } else {
+            AddBlend(&result, (bVector4 *)(&(SunsetVisualLook.*funcPtr)()), defaultUves);
         }
-
-        const bVector4 &currTint = *reinterpret_cast<const bVector4 *>(&(currVisualLook->*funcPtr)());
-        result.x += defaultUves * currTint.x;
-        result.y += defaultUves * currTint.y;
-        result.z += defaultUves * currTint.z;
-        result.w += defaultUves * currTint.w;
     }
 
     if (uves != 0.0f) {
-        const bVector4 &currTint = *reinterpret_cast<const bVector4 *>(&(this->UvesVisualLook.*funcPtr)());
-        result.x += uves * currTint.x;
-        result.y += uves * currTint.y;
-        result.z += uves * currTint.z;
-        result.w += uves * currTint.w;
+        AddBlend(&result, (bVector4 *)(&(UvesVisualLook.*funcPtr)()), uves);
     }
 }
 
 void IVisualTreatment::UpdateVisualLook() {
-    Attrib::Gen::visuallook *currVisualLook = 0;
+    Attrib::Gen::visuallook *currVisualLook = nullptr;
 
     if (this->State == COPCAM_LOOK) {
         currVisualLook = &this->CopCamVisualLook;
@@ -257,14 +342,11 @@ void IVisualTreatment::UpdateVisualLook() {
         this->PursuitBreakerBlend = 0.0f;
     }
 
-    PSMTX44Copy(*reinterpret_cast<const Mtx44 *>(&currVisualLook->BlackBloomCurve()),
-                *reinterpret_cast<Mtx44 *>(&this->BlackBloomCurve));
-    PSMTX44Copy(*reinterpret_cast<const Mtx44 *>(&currVisualLook->ColourBloomCurve()),
-                *reinterpret_cast<Mtx44 *>(&this->ColourBloomCurve));
-    PSMTX44Copy(*reinterpret_cast<const Mtx44 *>(&currVisualLook->DetailMapCurve()),
-                *reinterpret_cast<Mtx44 *>(&this->DetailMapCurve));
+    this->BlackBloomCurve = reinterpret_cast<const bMatrix4 &>(currVisualLook->BlackBloomCurve());
+    this->ColourBloomCurve = reinterpret_cast<const bMatrix4 &>(currVisualLook->ColourBloomCurve());
+    this->DetailMapCurve = reinterpret_cast<const bMatrix4 &>(currVisualLook->DetailMapCurve());
 
-    this->ColourBloomTint = *reinterpret_cast<const bVector4 *>(&currVisualLook->ColourBloomTint());
+    this->ColourBloomTint = reinterpret_cast<const bVector4 &>(currVisualLook->ColourBloomTint());
     this->BlackBloomIntensity = currVisualLook->BlackBloomIntensity();
     this->ColourBloomIntensity = currVisualLook->ColourBloomIntensity();
     this->Desaturation = currVisualLook->Desaturation();
@@ -272,187 +354,132 @@ void IVisualTreatment::UpdateVisualLook() {
 }
 
 void IVisualTreatment::TriggerUves() {
-    const float kUseAttribLength = 0.0f;
-    UvesTransition->Trigger(kUseAttribLength, true, true, false);
-    UvesRadialBlur->Trigger(kUseAttribLength, true, true, false);
-    UvesPulse->Trigger(kUseAttribLength, false, true, false);
+    const float kUseAttribLength = UvesTransition->GetAttrib()->length();
+    UvesTransition->Trigger(0.0f, true, true, false);
+    UvesRadialBlur->Trigger(0.0f, true, true, false);
+    UvesPulse->Trigger(0.0f, false, true, false);
 }
 
 void IVisualTreatment::UpdateHeat(eView *view, float targetHeat, bool isBeingPursued) {
-    targetHeat = static_cast< float >(static_cast< int >(targetHeat));
+    targetHeat = static_cast<float>(static_cast<int>(targetHeat));
 
-    bool hasIni = UTL::Collections::Singleton<INIS>::Get() != 0;
-    if (hasIni) {
-        this->IsBeingPursued = -1;
-        this->CurrentTarget = -1.0f;
-        this->UvesPulse->PulseLength = 0.0f;
-        this->UvesPulse->StartTime = 0.0f;
-        this->UvesTransition->PulseLength = 0.0f;
-        this->UvesTransition->StartTime = 0.0f;
+    if (UTL::Collections::Singleton<INIS>::Exists()) {
+        IsBeingPursued = -1;
+        CurrentTarget = -1.0f;
+        UvesPulse->Reset();
+        UvesTransition->Reset();
     }
 
-    if (((targetHeat > this->CurrentTarget && this->CurrentTarget != -1.0f)) || (this->IsBeingPursued == 0 && isBeingPursued)) {
+    if ((targetHeat > CurrentTarget && CurrentTarget != -1.0f) || (!IsBeingPursued && isBeingPursued)) {
         this->TriggerUves();
     }
 
-    this->IsBeingPursued = isBeingPursued;
-    this->CurrentTarget = targetHeat;
-    float currentTarget = this->CurrentTarget;
+    IsBeingPursued = static_cast<int>(isBeingPursued);
+    CurrentTarget = targetHeat;
 
-    VisualLookEffect *uvesTransition = this->UvesTransition;
-    float uves = 0.0f;
-    if (uvesTransition->IsActive()) {
-        uves = uvesTransition->UpdateActive(targetHeat);
-    }
-
+    float uves = UvesTransition->Update(targetHeat);
     float defaultUves = 1.0f - uves;
-    this->BlendVisualLookAttribute(this->BlackBloomCurve, defaultUves, uves, &Attrib::Gen::visuallook::BlackBloomCurve);
-    this->BlendVisualLookAttribute(this->ColourBloomCurve, defaultUves, uves, &Attrib::Gen::visuallook::ColourBloomCurve);
-    this->BlendVisualLookAttribute(this->BlackBloomIntensity, defaultUves, uves, &Attrib::Gen::visuallook::BlackBloomIntensity);
-    this->BlendVisualLookAttribute(this->ColourBloomIntensity, defaultUves, uves, &Attrib::Gen::visuallook::ColourBloomIntensity);
-    this->BlendVisualLookAttribute(this->ColourBloomTint, defaultUves, uves, &Attrib::Gen::visuallook::ColourBloomTint);
-    this->BlendVisualLookAttribute(this->Desaturation, defaultUves, uves, &Attrib::Gen::visuallook::Desaturation);
-    this->BlendVisualLookAttribute(this->DetailMapCurve, defaultUves, uves, &Attrib::Gen::visuallook::DetailMapCurve);
-    this->BlendVisualLookAttribute(this->DetailMapIntensity, defaultUves, uves, &Attrib::Gen::visuallook::DetailMapIntensity);
 
-    VisualLookEffect *uvesPulse = this->UvesPulse;
-    float pulseBrightness = 0.0f;
-    if (uvesPulse->IsActive()) {
-        pulseBrightness = uvesPulse->UpdateActive(currentTarget);
-    }
-    this->PulseBrightness = pulseBrightness;
+    BlendVisualLookAttribute(BlackBloomCurve, defaultUves, uves, &Attrib::Gen::visuallook::BlackBloomCurve);
+    BlendVisualLookAttribute(ColourBloomCurve, defaultUves, uves, &Attrib::Gen::visuallook::ColourBloomCurve);
+    BlendVisualLookAttribute(BlackBloomIntensity, defaultUves, uves, &Attrib::Gen::visuallook::BlackBloomIntensity);
+    BlendVisualLookAttribute(ColourBloomIntensity, defaultUves, uves, &Attrib::Gen::visuallook::ColourBloomIntensity);
+    BlendVisualLookAttribute(ColourBloomTint, defaultUves, uves, &Attrib::Gen::visuallook::ColourBloomTint);
+    BlendVisualLookAttribute(Desaturation, defaultUves, uves, &Attrib::Gen::visuallook::Desaturation);
+    BlendVisualLookAttribute(DetailMapCurve, defaultUves, uves, &Attrib::Gen::visuallook::DetailMapCurve);
+    BlendVisualLookAttribute(DetailMapIntensity, defaultUves, uves, &Attrib::Gen::visuallook::DetailMapIntensity);
 
-    VisualLookEffect *cameraFlash = this->CameraFlash;
-    float cameraFlashValue;
-    if (cameraFlash->IsActive()) {
-        cameraFlashValue = cameraFlash->UpdateActive(currentTarget);
-    } else {
-        cameraFlashValue = 0.0f;
-    }
-    this->PulseBrightness += cameraFlashValue;
+    PulseBrightness = UvesPulse->Update(CurrentTarget);
+    PulseBrightness += CameraFlash->Update(CurrentTarget);
 
-    VisualLookEffect *uvesRadialBlurEffect = this->UvesRadialBlur;
-    float uvesRadialBlur;
-    if (uvesRadialBlurEffect->IsActive()) {
-        uvesRadialBlur = uvesRadialBlurEffect->UpdateActive(currentTarget);
-    } else {
-        uvesRadialBlur = 0.0f;
+    float uvesBlur = UvesRadialBlur->Update(CurrentTarget);
+
+    PursuitBreakerBlend = PursuitBreaker->Update();
+
+    float nosBlurBlend = NosRadialBlur->Update();
+    float pursuitBreakerBlur = 0.0f;
+    float nosBlur = 0.0f;
+
+    if (PursuitBreakerBlend > 0.0f) {
+        pursuitBreakerBlur = bClamp(PursuitBreakerBlend * PursuitBreaker->GetAttrib()->radialblur_scale(), 0.0f, 1.0f);
     }
 
-    VisualLookEffectTarget *pursuitBreaker = this->PursuitBreaker;
-    if (pursuitBreaker->StartWorldTime != 0.0f) {
-        float elapsed = WorldTimeSeconds - pursuitBreaker->StartWorldTime;
-        float length = pursuitBreaker->GetAttrib()->length();
-        if (elapsed > length) {
-            pursuitBreaker->StartWorldTime = 0.0f;
-            pursuitBreaker->Current = pursuitBreaker->Target;
-        } else if (elapsed >= 0.0f) {
-            float normalized = elapsed / length;
-            if (pursuitBreaker->Current > pursuitBreaker->Target) {
-                normalized = 1.0f - normalized;
-            }
-            pursuitBreaker->Current =
-                GetValueFromSpline(normalized, reinterpret_cast<bMatrix4 *>(&const_cast<UMath::Matrix4 &>(pursuitBreaker->GetAttrib()->graph())));
-        }
+    NosRadialBlurAmount = 0.0f;
+
+    if (nosBlurBlend > 0.0f) {
+        nosBlur = bClamp(nosBlurBlend * NosRadialBlur->GetAttrib()->radialblur_scale(), 0.0f, 2.0f);
+        NosRadialBlurAmount = nosBlur;
     }
 
-    VisualLookEffectTarget *nosRadialBlur = this->NosRadialBlur;
-    this->PursuitBreakerBlend = pursuitBreaker->Current;
-    if (nosRadialBlur->StartWorldTime != 0.0f) {
-        float elapsed = WorldTimeSeconds - nosRadialBlur->StartWorldTime;
-        float length = nosRadialBlur->GetAttrib()->length();
-        if (elapsed > length) {
-            nosRadialBlur->StartWorldTime = 0.0f;
-            nosRadialBlur->Current = nosRadialBlur->Target;
-        } else if (elapsed >= 0.0f) {
-            float normalized = elapsed / length;
-            if (nosRadialBlur->Current > nosRadialBlur->Target) {
-                normalized = 1.0f - normalized;
-            }
-            nosRadialBlur->Current =
-                GetValueFromSpline(normalized, reinterpret_cast<bMatrix4 *>(&const_cast<UMath::Matrix4 &>(nosRadialBlur->GetAttrib()->graph())));
-        }
+    RadialBlur = bMax(uvesBlur, bMax(nosBlur, pursuitBreakerBlur));
+
+    if (DesaturationTarget >= 0.0f) {
+        Desaturation = DesaturationTarget;
     }
 
-    float pursuitBreakerRadialBlur = 0.0f;
-    float nosRadialBlurAmount = nosRadialBlur->Current;
-    float nosRadialBlurValue = 0.0f;
-    if (this->PursuitBreakerBlend > 0.0f) {
-        pursuitBreakerRadialBlur = this->PursuitBreakerBlend * this->PursuitBreaker->GetAttrib()->radialblur_scale();
-        pursuitBreakerRadialBlur = bMax(pursuitBreakerRadialBlur, 0.0f);
-        pursuitBreakerRadialBlur = bMin(pursuitBreakerRadialBlur, 1.0f);
+    if (ColourBloomIntensityTarget >= 0.0f) {
+        ColourBloomIntensity = ColourBloomIntensityTarget;
     }
-
-    this->NosRadialBlurAmount = 0.0f;
-    if (nosRadialBlurAmount > 0.0f) {
-        nosRadialBlurValue = nosRadialBlurAmount * this->NosRadialBlur->GetAttrib()->radialblur_scale();
-        nosRadialBlurValue = bMax(nosRadialBlurValue, 0.0f);
-        nosRadialBlurValue = bMin(nosRadialBlurValue, 0.5f);
-        this->NosRadialBlurAmount = nosRadialBlurValue;
-    }
-
-    float radialBlur = bMax(pursuitBreakerRadialBlur, nosRadialBlurValue);
-    radialBlur = bMax(uvesRadialBlur, radialBlur);
-    this->RadialBlur = radialBlur;
-
-    if (this->DesaturationTarget >= 0.0f) {
-        this->Desaturation = this->DesaturationTarget;
-    }
-    if (this->ColourBloomIntensityTarget >= 0.0f) {
-        this->ColourBloomIntensity = this->ColourBloomIntensityTarget;
-    }
-
-    (void)view;
 }
 
+// UNSOLVED, just scheduling
 void IVisualTreatment::Update(eView *view) {
-    bool inGameBreaker = false;
-    IGameState *gameState = IGameState::Get();
-    if (gameState != 0 && gameState->InGameBreaker()) {
-        inGameBreaker = true;
+    IGameState *gamestate = UTL::Collections::Singleton<IGameState>::Get();
+    bool in_pursuit_breaker = false;
+
+    if ((gamestate != nullptr) && gamestate->InGameBreaker()) {
+        in_pursuit_breaker = true;
     }
 
-    IPerpetrator *perpetrator = 0;
-    IEngine *engine = 0;
-    for (IPlayer::List::const_iterator iter = IPlayer::GetList(PLAYER_ALL).begin(); iter != IPlayer::GetList(PLAYER_ALL).end(); ++iter) {
-        IPlayer *player = *iter;
-        if (player->GetRenderPort() == view->GetID()) {
-            ISimable *simable = player->GetSimable();
-            if (simable != 0) {
-                simable->QueryInterface(&perpetrator);
-                simable->QueryInterface(&engine);
+    IPerpetrator *iperp = nullptr;
+    IEngine *iengine = nullptr;
+    const IPlayer::List &playerList = IPlayer::GetList(PLAYER_ALL);
+
+    for (IPlayer::List::const_iterator iter = playerList.begin(); iter != playerList.end(); ++iter) {
+        IPlayer *ip = *iter;
+
+        if (ip->GetRenderPort() == view->GetID()) {
+            ISimable *simable = ip->GetSimable();
+
+            if (simable != nullptr) {
+                simable->QueryInterface(&iperp);
+                simable->QueryInterface(&iengine);
             }
             break;
         }
     }
 
-    if (UTL::Collections::Singleton<INIS>::Get() == 0) {
-        if (inGameBreaker || gCinematicMomementCamera) {
-            this->SetPursuitBreakerTarget(1.0f);
-        } else {
-            this->SetPursuitBreakerTarget(0.0f);
+    if (UTL::Collections::Singleton<INIS>::Exists()) {
+        if (this->PursuitBreaker) {
+            this->PursuitBreaker->SetCurrent(0.0f);
         }
-    } else if (this->PursuitBreaker != 0) {
-        this->PursuitBreaker->StartWorldTime = 0.0f;
-        this->PursuitBreaker->Current = 0.0f;
-        this->PursuitBreaker->Target = 0.0f;
-    }
-
-    if (this->State == HEAT_LOOK) {
-        float targetHeat = 0.0f;
-        bool isBeingPursued = false;
-        if (perpetrator != 0) {
-            targetHeat = perpetrator->GetHeat();
-            isBeingPursued = perpetrator->IsBeingPursued();
-        }
-
-        this->UpdateHeat(view, targetHeat, isBeingPursued);
-        this->HeatMeter = targetHeat;
     } else {
-        this->UpdateVisualLook();
+        if (in_pursuit_breaker || gCinematicMomementCamera) {
+            SetPursuitBreakerTarget(1.0f);
+        } else {
+            SetPursuitBreakerTarget(0.0f);
+        }
     }
 
-    if (engine != 0) {
-        this->SetNosEngaged(engine->IsNOSEngaged());
+    if (State == HEAT_LOOK) {
+        float heatMeter = 0.0f;
+        bool isBeingPursed = false;
+
+        if (iperp != nullptr) {
+            heatMeter = iperp->GetHeat();
+            isBeingPursed = iperp->IsBeingPursued();
+        }
+
+        UpdateHeat(view, heatMeter, isBeingPursed);
+        HeatMeter = heatMeter;
+    } else {
+        UpdateVisualLook();
     }
+
+    if (iengine == nullptr) {
+        return;
+    }
+
+    bool nos = iengine->IsNOSEngaged();
+    SetNosEngaged(nos);
 }

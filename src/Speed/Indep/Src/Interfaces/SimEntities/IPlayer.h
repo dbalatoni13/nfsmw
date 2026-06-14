@@ -1,9 +1,5 @@
-#ifndef INTERFACES_SIMENTITIES_IPLAYER_H
-#define INTERFACES_SIMENTITIES_IPLAYER_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef IPLAYER_H
+#define IPLAYER_H
 
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Libs/Support/Utility/UListable.h"
@@ -13,7 +9,6 @@
 #include "Speed/Indep/Src/Interfaces/IFengHud.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
 
-// TODO move?
 enum ePlayerList {
     PLAYER_ALL = 0,
     PLAYER_LOCAL = 1,

@@ -109,11 +109,19 @@ struct ALIGN_16 Matrix4 {
 };
 
 inline Vector3 &Vector4To3(Vector4 &c4) {
-    return *reinterpret_cast<Vector3 *>(&c4);
+    return reinterpret_cast<Vector3 &>(c4);
+}
+
+inline Vector3 *Vector4To3(Vector4 *c4) {
+    return reinterpret_cast<Vector3 *>(c4);
 }
 
 inline const Vector3 &Vector4To3(const Vector4 &c4) {
-    return *reinterpret_cast<const Vector3 *>(&c4);
+    return reinterpret_cast<const Vector3 &>(c4);
+}
+
+inline const Vector3 *Vector4To3(const Vector4 *c4) {
+    return reinterpret_cast<const Vector3 *>(c4);
 }
 
 inline Vector2 Vector2Make(float x, float y) {
@@ -121,10 +129,6 @@ inline Vector2 Vector2Make(float x, float y) {
     c.x = x;
     c.y = y;
     return c;
-}
-
-inline float Cross(const Vector2 &a, const Vector2 &b) {
-    return a.x * b.y - a.y * b.x;
 }
 
 inline UMath::Vector3 Vector3Make(float x, float y, float z) {
@@ -160,9 +164,18 @@ typedef Vector4 Quaternion;
 
 } // namespace UMath
 
+// TODO move?
 inline UMath::Vector3 &bConvertToBond(UMath::Vector3 &dest, const bVector3 &v) {
     bConvertToBond(reinterpret_cast<bVector3 &>(dest), v);
     return dest;
 }
+
+// TODO move?
+extern "C" {
+void v3crossprod(const UMath::Vector3 *p1, const UMath::Vector3 *p2, UMath::Vector3 *result);
+void v3unit(const UMath::Vector3 *v, UMath::Vector3 *result);
+void v3sub(int num, const UMath::Vector3 *src, const UMath::Vector3 *vtosub, UMath::Vector3 *results);
+void v3add(int num, const UMath::Vector3 *src, const UMath::Vector3 *vtosub, UMath::Vector3 *results);
+};
 
 #endif

@@ -249,6 +249,7 @@ if config.platform == Platform.GC_WII:
         # "-Wreturn-type", # enable at some point
         "-Wno-ctor-dtor-privacy",  # because of AttribSys for example
         "-Woverloaded-virtual",
+        "-Wno-multichar",
         "-I src/Speed/Indep/Libs/Support/stlgc",
         "-I src/Speed/GameCube/Libs/stl/STLport-4.5/stlport",
         "-I src/Speed/GameCube/bWare/GameCube/SN/include",
@@ -314,10 +315,11 @@ if config.platform == Platform.GC_WII:
         # "-fno-argument-alias",
         # "-fno-ident",
         "-DLUA_NUMBER=float",
+        "-DDISABLE_RAIN",
     ]
 
     config.extra_clang_flags = [
-        "-std=gnu++98",
+        "-std=gnu++11",
         "-DSN_TARGET_NGC",
         "-D__SN__",
         "-D_STLP_VENDOR_EXCEPT_STD=std",
@@ -412,6 +414,7 @@ elif config.platform == Platform.PS2:
         "-O2",
         "-g2",
         # "-Wall",
+        "-Wno-ctor-dtor-privacy",  # because of AttribSys for example
         "-I src/Speed/Indep/Libs/Support/stlps2",
         "-I src/Speed/PSX2/Libs/stl/gpp",
         "-I src/Speed/PSX2/bWare/src/ee/include",

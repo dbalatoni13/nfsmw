@@ -1,5 +1,4 @@
-#include "./DebugWorld.h"
-#include "Speed/Indep/Libs/Support/Utility/UListable.h"
+#include "DebugWorld.h"
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/Src/Interfaces/Simables/ICollisionBody.h"
@@ -16,27 +15,48 @@
 DebugWorld *DebugWorld::mThis = nullptr;
 bool DebugWorld::mOnOff = false;
 
+int SaveHotPosition = 0;
+int JumpToHotPosition = 0;
+
 void DebugWorld::Init() {
-    if (!mThis) {
+    if (mThis == nullptr) {
         mThis = ::new ("DebugWorld", 0) DebugWorld();
     }
 }
 
+// STRIPPED
+void DebugWorld::DeInit() {}
+
 DebugWorld::DebugWorld() {
     this->mOnOff = true;
 }
+
+// STRIPPED
+DebugWorld::~DebugWorld() {}
 
 void DebugWorld::Service() {
     this->HandleSaveHotPosition();
     this->HandleJumpToHotPosition();
 }
 
+// STRIPPED
+void DebugWorld::DebugDisplay() {}
+
+// total size: 0x18
+struct SavedHotPosition {
+    bVector3 Position; // offset 0x0, size 0x10
+    bAngle Angle;      // offset 0x10, size 0x2
+    float Speed;       // offset 0x14, size 0x4
+
+    SavedHotPosition() {}
+};
+
 int ReadHotPositionScript(const char *filename, SavedHotPosition *hot_positions, int max_hot_positions) {
     int num_hot_positions = 0;
-    bMemSet(hot_positions, 0, max_hot_positions * 0x18);
+    bMemSet(hot_positions, 0, max_hot_positions * sizeof(SavedHotPosition));
     if (bFileExists(filename) != 0) {
         SpeedScript script = SpeedScript(filename, 1);
-        while (num_hot_positions < max_hot_positions && script.GetNextCommand("HOTPOSITION:")) {
+        while (num_hot_positions < max_hot_positions && (script.GetNextCommand("HOTPOSITION:") != nullptr)) {
             SavedHotPosition *hot_position = &hot_positions[num_hot_positions++];
             hot_position->Position = script.GetNextArgumentVector3();
 
@@ -55,8 +75,8 @@ int ReadHotPositionScript(const char *filename, SavedHotPosition *hot_positions,
 }
 
 void SaveHotPositionScript(const char *filename, SavedHotPosition *hot_positions, int num_hot_positions) {
-    bFile *file = bOpen(filename, 0x6, 0x1);
-    if (!file)
+    bFile *file = bOpen(filename, 0x6, 1);
+    if (file == nullptr)
         return;
 
     bFPrintf(file, "//\r\n// HotPosition - %s\r\n//\r\n\r\n", filename);
@@ -70,79 +90,75 @@ void SaveHotPositionScript(const char *filename, SavedHotPosition *hot_positions
     bClose(file);
 }
 
-int SaveHotPosition = 0;
-
 void DebugWorld::HandleSaveHotPosition() {
-    if (SaveHotPosition == 0)
-        return;
+    if (SaveHotPosition) {
+        IVehicle *iplayer = IVehicle::First(VEHICLE_PLAYERS);
+        if (iplayer == nullptr)
+            return;
 
-    IVehicle *iplayer = IVehicle::First(VEHICLE_PLAYERS);
-    if (!iplayer)
-        return;
+        ICollisionBody *ibody = reinterpret_cast<ICollisionBody *>(iplayer);
+        if (!ibody->QueryInterface(&ibody))
+            return;
 
-    ICollisionBody *ibody = reinterpret_cast<ICollisionBody *>(iplayer);
-    if (!ibody->QueryInterface(&ibody))
-        return;
+        char filename[80];
+        bSPrintf(filename, "TRACKS\\HotPosition%s.HOT", TrackInfo::GetLoadedTrackInfo()->RegionName);
 
-    char filename[80];
-    bSPrintf(filename, "TRACKS\\HotPosition%s.HOT", TrackInfo::GetLoadedTrackInfo()->RegionName);
+        SavedHotPosition hot_positions[5];
+        int num_hot_positions = ReadHotPositionScript(filename, hot_positions, 5);
 
-    SavedHotPosition hot_positions[5];
-    int num_hot_positions = ReadHotPositionScript(filename, hot_positions, 5);
+        if (SaveHotPosition > 5) {
+            SaveHotPosition = 5;
+        }
+        if (SaveHotPosition > num_hot_positions) {
+            num_hot_positions = SaveHotPosition;
+        }
 
-    if (SaveHotPosition > 5) {
-        SaveHotPosition = 5;
+        SavedHotPosition *hot_position = &hot_positions[SaveHotPosition - 1];
+        bVector3 direction;
+        eSwizzleWorldVector(ibody->GetForwardVector(), direction);
+        hot_position->Angle = bATan(direction.x, direction.y);
+
+        eSwizzleWorldVector(iplayer->GetPosition(), hot_position->Position);
+
+        hot_position->Speed = iplayer->GetSpeed();
+
+        SaveHotPositionScript(filename, hot_positions, num_hot_positions);
+        SaveHotPosition = 0;
+
+        bRefreshTweaker();
     }
-    if (SaveHotPosition > num_hot_positions) {
-        num_hot_positions = SaveHotPosition;
-    }
-
-    SavedHotPosition *hot_position = &hot_positions[SaveHotPosition - 1];
-    bVector3 direction;
-    eSwizzleWorldVector(ibody->GetForwardVector(), direction);
-    hot_position->Angle = bATan(direction.x, direction.y);
-
-    eSwizzleWorldVector(iplayer->GetPosition(), hot_position->Position);
-
-    hot_position->Speed = iplayer->GetSpeed();
-
-    SaveHotPositionScript(filename, hot_positions, num_hot_positions);
-    SaveHotPosition = 0;
-
-    bRefreshTweaker();
 }
 
-int JumpToHotPosition = 0;
-
 void DebugWorld::HandleJumpToHotPosition() {
-    if (SaveHotPosition == 0)
-        return;
+    if (SaveHotPosition) {
+        IVehicle *iplayer = IVehicle::First(VEHICLE_PLAYERS);
+        if (iplayer == nullptr)
+            return;
 
-    IVehicle *iplayer = IVehicle::First(VEHICLE_PLAYERS);
-    if (!iplayer)
-        return;
+        char filename[80];
+        bSPrintf(filename, "TRACKS\\HotPosition%s.HOT", TrackInfo::GetLoadedTrackInfo()->RegionName);
 
-    char filename[80];
-    bSPrintf(filename, "TRACKS\\HotPosition%s.HOT", TrackInfo::GetLoadedTrackInfo()->RegionName);
+        SavedHotPosition hot_positions[5];
+        int num_hot_positions = ReadHotPositionScript(filename, hot_positions, 5);
 
-    SavedHotPosition hot_positions[5];
-    int num_hot_positions = ReadHotPositionScript(filename, hot_positions, 5);
+        if (JumpToHotPosition <= num_hot_positions) {
+            SavedHotPosition *hot_position = &hot_positions[JumpToHotPosition - 1];
 
-    if (JumpToHotPosition <= num_hot_positions) {
-        SavedHotPosition *hot_position = &hot_positions[JumpToHotPosition - 1];
+            {
+                bVector3 dir = bVector3(bCos(hot_position->Angle), bSin(hot_position->Angle), 0.0f);
+                bVector3 sim_pos;
+                bVector3 sim_dir;
 
-        bVector3 dir = bVector3(bCos(hot_position->Angle), bSin(hot_position->Angle), 0.0f);
-        bVector3 sim_pos;
-        bVector3 sim_dir;
+                eUnSwizzleWorldVector(hot_position->Position, sim_pos);
+                eUnSwizzleWorldVector(dir, sim_dir);
 
-        eUnSwizzleWorldVector(hot_position->Position, sim_pos);
-        eUnSwizzleWorldVector(dir, sim_dir);
+                iplayer->SetVehicleOnGround(*reinterpret_cast<UMath::Vector3 *>(&sim_pos), *reinterpret_cast<UMath::Vector3 *>(&sim_dir));
+                Sim::SetStream(*reinterpret_cast<UMath::Vector3 *>(&sim_pos), true);
+                iplayer->SetSpeed(hot_position->Speed);
+            }
+        }
 
-        iplayer->SetVehicleOnGround(*reinterpret_cast<UMath::Vector3 *>(&sim_pos), *reinterpret_cast<UMath::Vector3 *>(&sim_dir));
-        Sim::SetStream(*reinterpret_cast<UMath::Vector3 *>(&sim_pos), true);
-        iplayer->SetSpeed(hot_position->Speed);
+        JumpToHotPosition = 0;
+        bRefreshTweaker();
     }
-
-    JumpToHotPosition = 0;
-    bRefreshTweaker();
 }

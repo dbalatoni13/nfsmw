@@ -101,6 +101,24 @@ struct pvehicle : Instance {
 
     ~pvehicle() {}
 
+    Instance &GetBase() {
+        return *this;
+    }
+
+    const Instance &GetBase() const {
+        return *this;
+    }
+
+    const pvehicle &operator=(const pvehicle &rhs) {
+        operator=(rhs.GetBase());
+        return *this;
+    }
+
+    const pvehicle &operator=(const Instance &rhs) {
+        Instance::operator=(rhs);
+        return *this;
+    }
+
     void Change(const Collection *c) {
         Instance::Change(c);
     }

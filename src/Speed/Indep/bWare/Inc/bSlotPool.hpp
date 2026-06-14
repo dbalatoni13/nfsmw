@@ -1,9 +1,5 @@
-#ifndef BWARE_BSLOT_POOL_H
-#define BWARE_BSLOT_POOL_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef BSLOTPOOL_HPP
+#define BSLOTPOOL_HPP
 
 #include "bList.hpp"
 
@@ -13,14 +9,18 @@ enum SlotPoolFlags {
     SLOTPOOL_FLAG_ZERO_ALLOCATED_MEMORY = 2,
     SLOTPOOL_FLAG_OVERFLOW_IF_FULL = 1,
 };
+
+#define DEFAULT_SLOTPOOL_FLAGS                                                                                                                       \
+    (SLOTPOOL_FLAG_OVERFLOW_IF_FULL | SLOTPOOL_FLAG_ZERO_ALLOCATED_MEMORY | SLOTPOOL_FLAG_WARN_IF_OVERFLOW | SLOTPOOL_FLAG_WARN_IF_NONEMPTY_DELETE)
+
+// total size: 0x4
 class SlotPoolEntry {
-    // total size: 0x4
   public:
     SlotPoolEntry *Next; // offset 0x0, size 0x4
 };
 
+// total size: 0x34
 class SlotPool : public bTNode<SlotPool> {
-    // total size: 0x34
 
     friend class SlotPoolManager; // only way I can think to allow SlotPoolManager::DeleteSlotPool to access NextSlotPool
 
@@ -123,13 +123,6 @@ void bFree(SlotPool *slot_pool, void *p);
 void bFree(SlotPool *slot_pool, void *first_slot, void *last_slot);
 
 extern SlotPool *ePolySlotPool;
-
-inline int bGetSlotNumber(SlotPool *pool, void *p) {
-    return pool->GetSlotNumber(p);
-}
-inline void *bGetSlot(SlotPool *pool, int n) {
-    return pool->GetSlot(n);
-}
 
 extern uint8 *CurrentBufferStart;
 extern uint8 *CurrentBufferPos;

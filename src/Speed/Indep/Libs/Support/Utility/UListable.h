@@ -1,9 +1,5 @@
-#ifndef SUPPORT_UTILITY_ULISTABLE_H
-#define SUPPORT_UTILITY_ULISTABLE_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef ULISTABLE_H
+#define ULISTABLE_H
 
 #include <algorithm>
 #include <cstddef>
@@ -11,6 +7,18 @@
 #include "Speed/Indep/Libs/Support/Utility/UCollections.h"
 #include "UTLVector.h"
 #include <types.h>
+
+#define IMPLEMENT_LISTABLE(_class_, _limit_)                                                                                                         \
+    template <>                                                                                                                                      \
+    UTL::Collections::Listable<_class_, _limit_>::List UTL::Collections::Listable<_class_, _limit_>::_mTable =                                       \
+        UTL::Collections::Listable<_class_, _limit_>::List();
+#define IMPLEMENT_LISTABLESET(TYPE, LIMIT, ENUMERATORTYPE, NUMBUCKETS)                                                                               \
+    template <>                                                                                                                                      \
+    UTL::Collections::ListableSet<TYPE, LIMIT, ENUMERATORTYPE, NUMBUCKETS>::_ListSet                                                                 \
+        UTL::Collections::ListableSet<TYPE, LIMIT, ENUMERATORTYPE, NUMBUCKETS>::_mLists =                                                            \
+            UTL::Collections::ListableSet<TYPE, LIMIT, ENUMERATORTYPE, NUMBUCKETS>::_ListSet();
+#define IMPLEMENT_COUNTABLE(TYPE) template <> int UTL::Collections::Countable<TYPE>::_mCount = 0;
+#define IMPLEMENT_SINGLETON(TYPE) template <> TYPE *UTL::Collections::Singleton<TYPE>::mInstance = NULL;
 
 namespace UTL {
 namespace Collections {
@@ -21,33 +29,22 @@ template <typename T, int U> class Listable {
     typedef value_type *pointer;
     typedef value_type const *const_pointer;
 
-#if MILESTONE_OPT
-    class List : public FixedVector<pointer, U> {
-      public:
-        typedef T value_type;
-        typedef value_type *pointer;
-        typedef value_type const *const_pointer;
-
-        // List(const List &);
-        List() {}
-        ~List() override {}
-
-        // List &operator=(List &);
-    };
-#else
     class List : public _Storage<pointer, U> {
       public:
         typedef T value_type;
         typedef value_type *pointer;
         typedef value_type const *const_pointer;
 
+        const static int Limit = U;
+
         // List(const List &);
-        List() { this->reserve(U); }
+        List() {
+            this->reserve(U);
+        }
         ~List() override {}
 
         // List &operator=(List &);
     };
-#endif
 
     typedef void (*ForEachFunc)(pointer);
     typedef bool (*ComparisonFunc)(pointer, pointer);
@@ -69,8 +66,8 @@ template <typename T, int U> class Listable {
     }
 
   public:
-    static void ForEach(ForEachFunc f) {
-        std::for_each(_mTable.begin(), _mTable.end(), f);
+    static ForEachFunc ForEach(ForEachFunc f) {
+        return std::for_each(_mTable.begin(), _mTable.end(), f);
     }
 
     static const List &GetList() {

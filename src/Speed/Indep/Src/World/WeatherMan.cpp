@@ -230,12 +230,12 @@ GenericRegion *GetClosestRegionInView(eView *view, bVector3 *endVector, float *a
     bVector3 posScreen;
 
     CameraMover *cameraMover = view->GetCameraMover();
-    if (!cameraMover) {
+    if (cameraMover == nullptr) {
         return nullptr;
     }
 
     CameraAnchor *cameraAnchor = cameraMover->GetAnchor();
-    if (!cameraAnchor) {
+    if (cameraAnchor == nullptr) {
         return nullptr;
     }
 
@@ -261,7 +261,7 @@ GenericRegion *GetClosestRegionInView(eView *view, bVector3 *endVector, float *a
         }
     }
 
-    if (ClosestRegion) {
+    if (ClosestRegion != nullptr) {
         endVector->x = ClosestRegion->PositionX;
         endVector->y = ClosestRegion->PositionY;
         endVector->z = ClosestRegion->PositionZ;
