@@ -37,10 +37,10 @@ HSIMSERVICE OpenService(UCrc32 server, IServiceable *client, Packet *pkt) {
     data.pkt = pkt;
     data.server = server;
 
-    Connection *con = UTL::COM::Factory<ConnectionData const &, Connection, UCrc32>::CreateInstance(pkt->ConnectionClass(), data);
+    Connection *con = Connection::CreateInstance(pkt->ConnectionClass(), data);
 
     // big brain
-    if (con) {
+    if (con != nullptr) {
         return reinterpret_cast<HSIMSERVICE>(con);
     } else {
         return nullptr;

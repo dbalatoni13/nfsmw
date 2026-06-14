@@ -1,11 +1,9 @@
-// TODO
-// #include <string.h>
-
 #include "Speed/Indep/bWare/Inc/bMemory.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
+#include <cstring>
 #include <types.h>
 
 #ifdef EA_PLATFORM_GAMECUBE
@@ -142,7 +140,7 @@ int EnableCleanupBorrowedMemoryBlock = 0;
 int BorrowMemoryBlockMinSize = 0x19000;
 int bMemoryRandomFillPattern = 0; // size: 0x4, address: 0x80416430
 int bMemoryUseSharedStrings = 1;
-int bMemoryTracing = false;                                                           // size: 0x4, address: 0x80416438
+int bMemoryTracing = 0;                                                               // size: 0x4, address: 0x80416438
 int bMemoryBreakOnAllocationNumber = -1;                                              // size: 0x4, address: 0x8041643C
 int bMemoryAllocationNumber = 0;                                                      // size: 0x4, address: 0x80416440
 bMemoryAllocator TheMemoryAllocator;                                                  // size: 0xC, address: 0x8045790C
@@ -466,11 +464,11 @@ int bMemoryPersistentPoolNumber = -1;   // size: 0x4, address: 0x80416460
 int MemoryPool::CountAllocations(const char *debug_text) {}
 
 int CheckFlipMemoryByAddress(AllocationHeader *a, AllocationHeader *b) {
-    return a->GetBottomAddress() <= b->GetBottomAddress();
+    return static_cast<int>(a->GetBottomAddress() <= b->GetBottomAddress());
 }
 
 int CheckFlipMemoryByAllocationNumber(AllocationHeader *a, AllocationHeader *b) {
-    return true;
+    return 1;
 }
 
 void MemoryPool::PrintAllocationsByAddress(int from_allocation, int to_allocation) {
@@ -486,7 +484,7 @@ void MemoryPool::PrintAllocationsByAddress(int from_allocation, int to_allocatio
         if (header->GetAllocationNumber() < from_allocation) {
             prev_header = nullptr;
         } else if (header->GetAllocationNumber() < to_allocation) {
-            if (prev_header) {
+            if (prev_header != nullptr) {
                 unsigned char *prev_header_bot = static_cast<unsigned char *>(prev_header->GetBottomAddress());
                 unsigned char *header_bot = static_cast<unsigned char *>(header->GetBottomAddress());
                 int block_size = header_bot - prev_header_bot;
@@ -555,7 +553,7 @@ void MemoryPool::TraceNewPool() {
     bMemoryTraceNewPoolPacket packet;
     packet.PoolID = reinterpret_cast<uintptr_t>(this);
     bMemSet(packet.Name, 0, sizeof(packet.Name));
-    if (this->pDebugName) {
+    if (this->pDebugName != nullptr) {
         bStrNCpy(packet.Name, this->pDebugName, sizeof(packet.Name) - 1);
     }
 #ifdef EA_PLATFORM_GAMECUBE
@@ -603,7 +601,7 @@ void MemoryPool::UpdateTraceInformation() {}
 int bGetFreeMemoryPoolNum() {
     for (int pool_num = 0; pool_num < 16; pool_num++) {
         MemoryPoolInfo *info = &MemoryPoolInfoTable[pool_num];
-        if (info->NumberReserved == 0 && !MemoryPools[pool_num] && !info->OverrideInfo) {
+        if (!info->NumberReserved && (MemoryPools[pool_num] == nullptr) && (info->OverrideInfo == nullptr)) {
             return pool_num;
         }
     }
@@ -612,7 +610,7 @@ int bGetFreeMemoryPoolNum() {
 
 void bReserveMemoryPool(int pool_num) {
     MemoryPoolInfo *info = &MemoryPoolInfoTable[pool_num];
-    info->NumberReserved = 1;
+    info->NumberReserved = true;
 }
 
 void bSetMemoryPoolOverrideInfo(int pool_num, MemoryPoolOverrideInfo *override_info) {
@@ -623,7 +621,7 @@ void bSetMemoryPoolOverrideInfo(int pool_num, MemoryPoolOverrideInfo *override_i
 
 void bInitMemoryPool(int pool_num, void *mem, int mem_size, const char *debug_name) {
     MemoryPoolInfo *info = &MemoryPoolInfoTable[pool_num];
-    info->TopMeansLargerAddress = 0;
+    info->TopMeansLargerAddress = false;
     info->OverflowPoolNumber = -1;
     MemoryPools[pool_num] = reinterpret_cast<MemoryPool *>(MemoryPoolMem[pool_num]);
     reinterpret_cast<MemoryPool *>(MemoryPoolMem[pool_num])->Init(mem, mem_size, debug_name);
@@ -677,7 +675,7 @@ int PlatformMemoryINIT() {
 
 void bVirtualMemoryManager::Init() {
 #ifdef EA_PLATFORM_GAMECUBE
-    this->bIsValid = false;
+    this->bIsValid = FALSE;
     this->mVirtualBaseAddr = 0x7e000000;
     this->mMRamBaseAddr = reinterpret_cast<uintptr_t>(OSGetArenaLo());
     this->mMRamSize = 0x80000;
@@ -748,7 +746,7 @@ void bMemoryInit() {
         int pool_number;
         int pool_num_VM = GetVirtualMemoryPoolNumber();
         bInitMemoryPool(pool_num_VM, reinterpret_cast<void *>(eARAMMM.mVirtualBaseAddr), eARAMMM.mARamSize, GetVirtualMemoryPoolName());
-        MemoryInitialized = true;
+        MemoryInitialized = TRUE;
     }
 #else
     // TODO
@@ -781,7 +779,7 @@ void *bWareMalloc(int size, const char *debug_text, int debug_line, int allocati
         }
     }
 
-    if (info->TopMeansLargerAddress != 0) {
+    if (info->TopMeansLargerAddress) {
         allocation_params ^= 0x40;
     }
 
@@ -848,19 +846,19 @@ void *bWareMalloc(int size, const char *debug_text, int debug_line, int allocati
 }
 
 void bFree(void *ptr) {
-    if (!ptr) {
+    if (ptr == nullptr) {
         return;
     }
     for (int n = 0; n < 16; n++) {
         MemoryPoolOverrideInfo *override_info = MemoryPoolInfoTable[n].OverrideInfo;
         intptr_t address = reinterpret_cast<intptr_t>(ptr);
-        if (override_info && (address >= override_info->Address) && (address < override_info->Address + override_info->Size)) {
+        if ((override_info != nullptr) && (address >= override_info->Address) && (address < override_info->Address + override_info->Size)) {
             int pool_num = 1;
 
             while (pool_num < 16) {
                 MemoryPool *pool = MemoryPools[pool_num];
 
-                if (!pool || !pool->IsInPool(address)) {
+                if ((pool == nullptr) || !pool->IsInPool(address)) {
                     pool_num++;
                 } else {
                     break;
@@ -891,7 +889,7 @@ void bFree(void *ptr) {
 }
 
 size_t bGetMallocSize(const void *ptr) {
-    if (ptr) {
+    if (ptr != nullptr) {
         const AllocationHeader *header = &static_cast<const AllocationHeader *>(ptr)[-1];
         return header->RequestedSize;
     }
@@ -899,7 +897,7 @@ size_t bGetMallocSize(const void *ptr) {
 }
 
 int bGetMallocPool(void *ptr) {
-    if (ptr) {
+    if (ptr != nullptr) {
         AllocationHeader *header = &static_cast<AllocationHeader *>(ptr)[-1];
         return header->PoolNum;
     }
@@ -908,7 +906,7 @@ int bGetMallocPool(void *ptr) {
 
 // STRIPPED
 int bGetMallocNumber(void *ptr) {
-    if (ptr) {
+    if (ptr != nullptr) {
         AllocationHeader *header = &static_cast<AllocationHeader *>(ptr)[-1];
         return header->GetAllocationNumber();
     }
@@ -916,7 +914,7 @@ int bGetMallocNumber(void *ptr) {
 }
 
 const char *bGetMallocName(void *ptr) {
-    if (ptr) {
+    if (ptr != nullptr) {
         AllocationHeader *header = &static_cast<AllocationHeader *>(ptr)[-1];
         return header->GetDebugText();
     }
@@ -924,9 +922,9 @@ const char *bGetMallocName(void *ptr) {
 }
 
 int bCountFreeMemory(int pool) {
-    if (!MemoryPools[pool]) {
+    if (MemoryPools[pool] == nullptr) {
         MemoryPoolOverrideInfo *override_info = MemoryPoolInfoTable[pool].OverrideInfo;
-        if (override_info) {
+        if (override_info != nullptr) {
             return override_info->GetAmountFree(override_info->Pool);
         } else {
             return 0;
@@ -937,7 +935,7 @@ int bCountFreeMemory(int pool) {
 
 // STRIPPED
 int bGetPoolSize(int pool) {
-    if (MemoryPools[pool]) {
+    if (MemoryPools[pool] != nullptr) {
         return MemoryPools[pool]->GetPoolSize();
     }
 
@@ -945,9 +943,9 @@ int bGetPoolSize(int pool) {
 }
 
 int bLargestMalloc(int allocation_params) {
-    if (!MemoryPools[allocation_params & 0xfU]) {
+    if (MemoryPools[allocation_params & 0xfU] == nullptr) {
         MemoryPoolOverrideInfo *override_info = MemoryPoolInfoTable[allocation_params & 0xfU].OverrideInfo;
-        if (override_info) {
+        if (override_info != nullptr) {
             return override_info->GetLargestFreeBlock(override_info->Pool);
         } else {
             return 0;
@@ -969,7 +967,7 @@ int bLargestMalloc(int allocation_params) {
 }
 
 void bVerifyPoolIntegrity(int pool) {
-    if (MemoryPools[pool]) {
+    if (MemoryPools[pool] != nullptr) {
         bool verify_free_pattern = true;
         MemoryPools[pool]->VerifyPoolIntegrity(verify_free_pattern);
     }
@@ -977,13 +975,13 @@ void bVerifyPoolIntegrity(int pool) {
 
 // STRIPPED
 const char *bGetMemoryPoolName(int pool_num) {
-    if (MemoryPools[pool_num]) {
+    if (MemoryPools[pool_num] != nullptr) {
         return MemoryPools[pool_num]->GetName();
     }
 
 #ifndef EA_BUILD_A124
     MemoryPoolOverrideInfo *override_info = MemoryPoolInfoTable[pool_num].OverrideInfo;
-    if (override_info) {
+    if (override_info != nullptr) {
         return override_info->Name;
     }
 #endif
@@ -993,14 +991,14 @@ const char *bGetMemoryPoolName(int pool_num) {
 
 int bGetMemoryPoolNum(const char *memory_pool_name) {
     for (int pool_num = 0; pool_num < 16; pool_num++) {
-        if (MemoryPools[pool_num]) {
+        if (MemoryPools[pool_num] != nullptr) {
             if (bStrICmp(MemoryPools[pool_num]->GetName(), memory_pool_name) == 0) {
                 return pool_num;
             }
         }
 #ifndef EA_BUILD_A124
         MemoryPoolOverrideInfo *override_info = MemoryPoolInfoTable[pool_num].OverrideInfo;
-        if (override_info && bStrICmp(override_info->Name, memory_pool_name) == 0) {
+        if ((override_info != nullptr) && bStrICmp(override_info->Name, memory_pool_name) == 0) {
             return pool_num;
         }
 #endif
@@ -1020,7 +1018,7 @@ void bMemoryPrintAllocations(int pool_num, int from_allocation, int to_allocatio
 }
 
 void bMemoryPrintAllocationsByAddress(int pool_num, int from_allocation, int to_allocation) {
-    if (MemoryPools[pool_num]) {
+    if (MemoryPools[pool_num] != nullptr) {
         MemoryPools[pool_num]->PrintAllocationsByAddress(from_allocation, to_allocation);
     }
 }
@@ -1029,7 +1027,7 @@ void bMemoryPrintAllocationsByAddress(int pool_num, int from_allocation, int to_
 void *bMemoryFindAllocation(int pool_num, int allocation_num) {}
 
 int bMemoryGetAllocations(int pool_num, void **allocations, int max_allocations) {
-    if (MemoryPools[pool_num]) {
+    if (MemoryPools[pool_num] != nullptr) {
         return MemoryPools[pool_num]->GetAllocations(allocations, max_allocations);
     }
     return 0;
@@ -1048,10 +1046,10 @@ void *bMemoryAllocator::Alloc(size_t size, const EA::TagValuePair &flags) {
     char *name;
 #endif
 
-    for (const EA::TagValuePair *p = &flags; p; p = p->mNext) {
+    for (const EA::TagValuePair *p = &flags; p != nullptr; p = p->mNext) {
         switch (p->mTag) {
             case 1:
-                if (p->mValue.mPointer) {
+                if (p->mValue.mPointer != nullptr) {
                     name = static_cast<char *>(p->mValue.mPointer);
                 }
                 break;
@@ -1072,7 +1070,7 @@ void *bMemoryAllocator::Alloc(size_t size, const EA::TagValuePair &flags) {
 // STRIPPED
 void *bMemoryAllocator::Alloc(size_t size) {}
 
-void bMemoryAllocator::Free(void *pBlock, unsigned int size) {
+void bMemoryAllocator::Free(void *pBlock, size_t size) {
     bFree(pBlock);
 }
 

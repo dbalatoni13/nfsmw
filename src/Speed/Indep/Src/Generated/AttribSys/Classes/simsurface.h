@@ -14,15 +14,17 @@
 
 // TODO move?
 struct TireEffectRecord {
-    unsigned int TireCondition;
-    unsigned int EmitterClass;
-    unsigned int EmitterCollection;
-    float MinSpeed;
-    float MaxSpeed;
+    Attrib::RefSpec mEmitter; // offset 0x0, size 0xC
+    float mMinSpeed;          // offset 0xC, size 0x4
+    float mMaxSpeed;          // offset 0x10, size 0x4
 };
 
 struct RoadNoiseRecord {
-    RoadNoiseRecord() : Frequency(0.0f), Amplitude(0.0f), MinSpeed(0.0f), MaxSpeed(0.0f) {} //
+    RoadNoiseRecord() : Frequency(0.0f), Amplitude(0.0f), MinSpeed(0.0f), MaxSpeed(0.0f) {}
+
+    RoadNoiseRecord(float frequency, float amplitude, float minspeed, float maxspeed)
+        : Frequency(frequency), Amplitude(amplitude), MinSpeed(minspeed), MaxSpeed(maxspeed) {}
+
     float Frequency;
     float Amplitude;
     float MinSpeed;

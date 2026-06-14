@@ -11,13 +11,19 @@
 
 #define COLLISION_PACK_MAX (2700)
 
+WCollisionAssets *WCollisionAssets::sWCollisionAssets = nullptr;       // size: 0x4, address: 0x80438F58
+unsigned int WCollisionAssets::sTriggerDataSize = 0;                   // size: 0x4, address: 0xFFFFFFFF
+const CARP::Trigger *WCollisionAssets::sOriginalTriggerData = nullptr; // size: 0x4, address: 0x80438F60
+const CARP::Trigger *WCollisionAssets::sSavedTriggerData = nullptr;    // size: 0x4, address: 0x80438F64
+WCollisionPack **WCollisionAssets::mCollisionPackList = nullptr;       // size: 0x4, address: 0x80438F68
+
 struct ManagedCollisionInstance {
     ManagedCollisionInstance(WCollisionInstance *cInst, unsigned int trigInd)
         : mCInst(cInst), //
           mTriggerInd(trigInd) {}
 
     WCollisionInstance *mCInst;
-    unsigned int mTriggerInd;
+    WGridNodeElemTag mTriggerInd;
 };
 
 WCollisionAssets::WCollisionAssets()
@@ -31,45 +37,45 @@ WCollisionAssets::WCollisionAssets()
       fManagedCollisionObjectsInd(0x8000),                                               //
       fNumPackLoadCallbacks(0) {
     for (unsigned int onCallback = 0; onCallback < 4; ++onCallback) {
-        fPackLoadCallback[onCallback] = nullptr;
+        this->fPackLoadCallback[onCallback] = nullptr;
     }
 
-    fStaticTriggers = nullptr;
-    fStaticTriggersCount = 0;
-    fStaticCollisionObjects = nullptr;
+    this->fStaticTriggers = nullptr;
+    this->fStaticTriggersCount = 0;
+    this->fStaticCollisionObjects = nullptr;
 
-    mCollisionPackList = new ("WCollisionPack", 0) WCollisionPack *[COLLISION_PACK_MAX];
+    this->mCollisionPackList = new ("WCollisionPack", 0) WCollisionPack *[COLLISION_PACK_MAX];
     for (int ix = 0; ix < COLLISION_PACK_MAX; ++ix) {
-        mCollisionPackList[ix] = nullptr;
+        this->mCollisionPackList[ix] = nullptr;
     }
 }
 
 WCollisionAssets::~WCollisionAssets() {
     for (int ix = 0; ix < COLLISION_PACK_MAX; ++ix) {
-        if (mCollisionPackList[ix]) {
-            delete mCollisionPackList[ix];
-            mCollisionPackList[ix] = nullptr;
+        if (this->mCollisionPackList[ix]) {
+            delete this->mCollisionPackList[ix];
+            this->mCollisionPackList[ix] = nullptr;
         }
     }
 
-    if (mCollisionPackList) {
-        delete[] mCollisionPackList;
-        mCollisionPackList = nullptr;
+    if (this->mCollisionPackList) {
+        delete[] this->mCollisionPackList;
+        this->mCollisionPackList = nullptr;
     }
 
-    delete fManagedCollisionInstances;
-    fManagedCollisionInstances = nullptr;
+    delete this->fManagedCollisionInstances;
+    this->fManagedCollisionInstances = nullptr;
 
-    for (CollisionObjectMap::iterator iter = fManagedCollisionObjects->begin(); iter != fManagedCollisionObjects->end(); ++iter) {
+    for (CollisionObjectMap::iterator iter = this->fManagedCollisionObjects->begin(); iter != this->fManagedCollisionObjects->end(); ++iter) {
         WCollisionObject *obj = (*iter).second;
         delete obj;
     }
-    delete fManagedCollisionObjects;
-    fManagedCollisionObjects = nullptr;
+    delete this->fManagedCollisionObjects;
+    this->fManagedCollisionObjects = nullptr;
 }
 
 void WCollisionAssets::Init(const UGroup *mapGroup, const UData *triggerUData) {
-    if (!mapGroup) {
+    if (mapGroup == nullptr) {
         sWCollisionAssets = new ("WCollisionAssets", 0) WCollisionAssets();
         WTriggerManager::Init();
         WGrid::Init(nullptr);
@@ -77,7 +83,7 @@ void WCollisionAssets::Init(const UGroup *mapGroup, const UData *triggerUData) {
         return;
     }
     sWCollisionAssets = new ("WCollisionAssets", 0) WCollisionAssets();
-    if (!triggerUData) {
+    if (triggerUData == nullptr) {
         sWCollisionAssets->fStaticTriggers = nullptr;
         sSavedTriggerData = nullptr;
         sOriginalTriggerData = nullptr;
@@ -109,7 +115,7 @@ void WCollisionAssets::Shutdown() {
 }
 
 void WCollisionAssets::SetExclusionFlags(WCollisionPack *collisionPack) {
-    if (!collisionPack) {
+    if (collisionPack == nullptr) {
         return;
     }
     const WCollisionInstance *cInst;
@@ -117,7 +123,7 @@ void WCollisionAssets::SetExclusionFlags(WCollisionPack *collisionPack) {
 
     while (true) {
         cInst = collisionPack->Instance(static_cast<unsigned short>(ind));
-        if (!cInst) {
+        if (cInst == nullptr) {
             break;
         }
 
@@ -151,32 +157,32 @@ void WCollisionAssets::SetExclusionFlags(WCollisionPack *collisionPack) {
 
 void WCollisionAssets::SetExclusionFlags() {
     for (unsigned int sectionId = 0; sectionId < 0x400; ++sectionId) {
-        WCollisionPack *collisionPack = mCollisionPackList[sectionId];
-        SetExclusionFlags(collisionPack);
+        WCollisionPack *collisionPack = this->mCollisionPackList[sectionId];
+        this->SetExclusionFlags(collisionPack);
     }
 
     WCollider::InvalidateAllCachedData();
 }
 
 void WCollisionAssets::AddPackLoadCallback(void (*callback)(int, bool)) {
-    if (fNumPackLoadCallbacks > 3) {
+    if (this->fNumPackLoadCallbacks > 3) {
         return;
     }
 
-    fPackLoadCallback[fNumPackLoadCallbacks++] = callback;
+    this->fPackLoadCallback[this->fNumPackLoadCallbacks++] = callback;
 }
 
 void WCollisionAssets::RemovePackLoadCallback(void (*callback)(int, bool)) {
     unsigned int onCallback = 0;
 
-    while (onCallback < fNumPackLoadCallbacks) {
+    while (onCallback < this->fNumPackLoadCallbacks) {
         if (fPackLoadCallback[onCallback] == callback) {
-            if (onCallback < fNumPackLoadCallbacks - 1) {
-                fPackLoadCallback[onCallback] = fPackLoadCallback[fNumPackLoadCallbacks - 1];
+            if (onCallback < this->fNumPackLoadCallbacks - 1) {
+                fPackLoadCallback[onCallback] = fPackLoadCallback[this->fNumPackLoadCallbacks - 1];
             } else {
                 fPackLoadCallback[onCallback] = nullptr;
             }
-            fNumPackLoadCallbacks--;
+            this->fNumPackLoadCallbacks--;
         } else {
             onCallback++;
         }
@@ -189,28 +195,28 @@ void WCollisionAssets::LoadCollisionPack(bChunk *chunk) {
     if (!chunk_header->IsResolved()) {
         bPlatEndianSwap(&sectionId);
     }
-    if (!mCollisionPackList[sectionId]) {
-        mCollisionPackList[sectionId] = new ("WCollisionPack") WCollisionPack(chunk);
-        for (unsigned int onCallback = 0; onCallback < fNumPackLoadCallbacks; ++onCallback) {
-            if (fPackLoadCallback[onCallback]) {
-                fPackLoadCallback[onCallback](sectionId, true);
+    if (!this->mCollisionPackList[sectionId]) {
+        this->mCollisionPackList[sectionId] = new ("WCollisionPack") WCollisionPack(chunk);
+        for (unsigned int onCallback = 0; onCallback < this->fNumPackLoadCallbacks; ++onCallback) {
+            if (this->fPackLoadCallback[onCallback]) {
+                this->fPackLoadCallback[onCallback](sectionId, true);
             }
         }
     }
-    SetExclusionFlags(mCollisionPackList[sectionId]);
+    this->SetExclusionFlags(this->mCollisionPackList[sectionId]);
 }
 
 void WCollisionAssets::UnLoadCollisionPack(bChunk *chunk) {
     bChunkCarpHeader *chunk_header = reinterpret_cast<bChunkCarpHeader *>(chunk->GetAlignedData(16));
     int sectionId = chunk_header->GetSectionNumber();
-    if (mCollisionPackList[sectionId]) {
+    if (this->mCollisionPackList[sectionId]) {
         for (unsigned int onCallback = 0; onCallback < fNumPackLoadCallbacks; ++onCallback) {
             if (fPackLoadCallback[onCallback]) {
                 fPackLoadCallback[onCallback](sectionId, false);
             }
         }
-        delete mCollisionPackList[sectionId];
-        mCollisionPackList[sectionId] = nullptr;
+        delete this->mCollisionPackList[sectionId];
+        this->mCollisionPackList[sectionId] = nullptr;
     }
 }
 
@@ -223,8 +229,8 @@ const WCollisionInstance *WCollisionAssets::Instance(unsigned int ind) const {
         return nullptr;
     }
 
-    WCollisionPack *collisionPack = mCollisionPackList[sectionId];
-    if (collisionPack) {
+    WCollisionPack *collisionPack = this->mCollisionPackList[sectionId];
+    if (collisionPack != nullptr) {
         return collisionPack->Instance(static_cast<unsigned short>(ind));
     }
 
@@ -238,20 +244,20 @@ const WCollisionObject *WCollisionAssets::Object(unsigned int ind) const {
     }
 
     if (ind > 0x7FFF) {
-        return (*fManagedCollisionObjects)[ind];
+        return (*this->fManagedCollisionObjects)[ind];
     }
 
-    if (mCollisionPackList[sectionId]) {
-        return mCollisionPackList[sectionId]->Object(static_cast<unsigned short>(ind));
+    if (this->mCollisionPackList[sectionId]) {
+        return this->mCollisionPackList[sectionId]->Object(static_cast<unsigned short>(ind));
     }
 
     return nullptr;
 }
 
 unsigned int WCollisionAssets::AddObject(WCollisionObject *obj) {
-    unsigned int objectInd = fManagedCollisionObjectsInd;
-    fManagedCollisionObjectsInd = objectInd + 1;
-    (*fManagedCollisionObjects)[objectInd] = obj;
+    unsigned int objectInd = this->fManagedCollisionObjectsInd;
+    this->fManagedCollisionObjectsInd = objectInd + 1;
+    (*this->fManagedCollisionObjects)[objectInd] = obj;
     return objectInd;
 }
 
@@ -274,7 +280,7 @@ WCollisionObject *WCollisionAssets::CreateObject(const UMath::Vector3 &dim, cons
     obj->fSurface.fFlags = 0;
     obj->fSurface.fSurface = 0;
 
-    unsigned int objectInd = AddObject(obj);
+    unsigned int objectInd = this->AddObject(obj);
     WGridManagedDynamicElem::AddElem(nullptr, &obj->fPosRadius, WGrid_kObject, objectInd);
 
     if (dynamicFlag) {

@@ -22,21 +22,7 @@ struct TextureInfoPlatInfo : public bTNode<TextureInfoPlatInfo> {
     unsigned char SetImage(struct TextureInfo *texture_info);
 };
 
-class TextureInfoPlatInterface {
-    // total size: 0x4
-    TextureInfoPlatInfo *PlatInfo; // offset 0x0, size 0x4
-
-  public:
-    void *CreateAnimData();
-    void SetAnimData(void *anim_data);
-    void ReleaseAnimData(void *anim_data);
-    void SetPlatInfo(TextureInfoPlatInfo *info);
-    void Init();
-    void Close();
-
-    TextureInfoPlatInfo *GetPlatInfo() {
-        return this->PlatInfo;
-    }
-};
+void eUnSwizzle8bitPalette(unsigned int *palette);
+void eSwizzle8bitPalette(unsigned int *palette);
 
 #endif

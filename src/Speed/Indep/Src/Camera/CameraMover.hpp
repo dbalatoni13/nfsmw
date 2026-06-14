@@ -48,6 +48,10 @@ class CameraAnchor {
         return mWorldID;
     }
 
+    short GetPOVType() {
+        return this->mPOV.Type;
+    }
+
   private:
     bVector3 mVelocity;                            // offset 0x0, size 0x10
     float mVelMag;                                 // offset 0x10, size 0x4
@@ -86,14 +90,16 @@ class CameraMover : public bTNode<CameraMover>, public WCollisionMgr::ICollision
         return Type;
     }
 
+    WUID GetAnchorID();
+
     bVector3 *GetPosition() {
         return pCamera->GetPosition();
     }
 
-    float GetDistanceTo(bVector3 *to) {
+    float GetDistanceTo(const bVector3 *to) {
         bVector3 rel;
 
-        bSub(&rel, this->GetPosition(), to);
+        bSub(&rel, GetPosition(), to);
         return bLength(&rel);
     }
 

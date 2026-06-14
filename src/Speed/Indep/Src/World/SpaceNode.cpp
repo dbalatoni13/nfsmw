@@ -1,31 +1,26 @@
 #include "SpaceNode.hpp"
 
+#include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bMemory.hpp"
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
 
-extern SlotPool *SpaceNodeSlotPool;
-
-SpaceNode *SpaceNode_Construct(SpaceNode *space_node, SpaceNode *parent) asm("__9SpaceNodeP9SpaceNode");
+SlotPool *SpaceNodeSlotPool = nullptr;
 
 bTList<SpaceNode> SpaceNodeTrashList;
 
 SpaceNode::SpaceNode(SpaceNode *parent) {
-    bVector3 zero;
-
     this->ReferenceCount = 0;
     this->Dirty = 1;
 
-    PSMTX44Identity(*reinterpret_cast<Mtx44 *>(&this->LocalMatrix));
+    bIdentity(&this->LocalMatrix);
 
-    this->Parent = 0;
-    bFill(&zero, 0.0f, 0.0f, 0.0f);
-    bCopy(&this->LocalVelocity, &zero);
-    bFill(&zero, 0.0f, 0.0f, 0.0f);
-    bCopy(&this->WorldAngularVelocity, &zero);
-    bCopy(&this->LocalAngularVelocity, &zero);
+    this->Parent = nullptr;
+    this->LocalVelocity = bVector3(0.0f, 0.0f, 0.0f);
+    this->LocalAngularVelocity = bVector3(0.0f, 0.0f, 0.0f);
+    this->WorldAngularVelocity = bVector3(0.0f, 0.0f, 0.0f);
 
     this->SetParent(parent);
-    this->BlendingMatrices = 0;
+    this->BlendingMatrices = nullptr;
 }
 
 SpaceNode::~SpaceNode() {
@@ -33,18 +28,25 @@ SpaceNode::~SpaceNode() {
     this->RemoveFromParent();
 }
 
+// STRIPPED
+void SpaceNode::SetName(const char *name) {
+    this->Name = name;
+}
+
 void SpaceNode::SetParent(SpaceNode *new_parent) {
-    if (new_parent != this->Parent) {
+    SpaceNode *current_parent = this->GetParent();
+    if (new_parent != current_parent) {
         this->RemoveFromParent();
-        if (new_parent != 0) {
+        if (new_parent != nullptr) {
             new_parent->AddChild(this);
         }
     }
 }
 
 void SpaceNode::RemoveFromParent() {
-    if (this->Parent != 0) {
-        this->Parent->RemoveChild(this);
+    SpaceNode *parent = this->GetParent();
+    if (parent != nullptr) {
+        parent->RemoveChild(this);
     }
 }
 
@@ -56,12 +58,12 @@ void SpaceNode::AddChild(SpaceNode *child) {
 
 void SpaceNode::RemoveChild(SpaceNode *child) {
     child = child->Remove();
-    child->Parent = 0;
+    child->Parent = nullptr;
     this->Unlock();
 }
 
 void SpaceNode::RemoveAllChildren() {
-    while (this->ChildrenList.GetHead() != this->ChildrenList.EndOfList()) {
+    while (!this->ChildrenList.IsEmpty()) {
         this->RemoveChild(this->ChildrenList.GetHead());
     }
 }
@@ -81,39 +83,45 @@ void SpaceNode::Unlock() {
 void SpaceNode::ReallySetDirty() {
     this->Dirty = 1;
 
-    for (SpaceNode *child = this->ChildrenList.GetHead(); child != this->ChildrenList.EndOfList(); child = child->GetNext()) {
-        if (!child->Dirty) {
-            child->ReallySetDirty();
-        }
+    for (SpaceNode *node = this->ChildrenList.GetHead(); node != this->ChildrenList.EndOfList(); node = node->GetNext()) {
+        node->SetDirty();
     }
 }
 
 void SpaceNode::Update() {
-    bVector3 rotated_velocity;
-
-    if (Parent) {
-        bMulMatrix(&WorldMatrix, Parent->GetWorldMatrix(), &LocalMatrix);
-        bMulMatrix(&rotated_velocity, Parent->GetWorldMatrix(), &LocalVelocity);
-        rotated_velocity -= *reinterpret_cast<bVector3 *>(&Parent->GetWorldMatrix()->v3);
-        WorldVelocity = rotated_velocity + *Parent->GetWorldVelocity();
+    if (this->Parent != nullptr) {
+        bMulMatrix(&this->WorldMatrix, this->Parent->GetWorldMatrix(), &this->LocalMatrix);
+        bVector3 rotated_velocity;
+        bMulMatrix(&rotated_velocity, this->Parent->GetWorldMatrix(), &this->LocalVelocity);
+        rotated_velocity -= *reinterpret_cast<bVector3 *>(&this->Parent->GetWorldMatrix()->v3);
+        this->WorldVelocity = *this->Parent->GetWorldVelocity() + rotated_velocity;
     } else {
-        PSMTX44Copy(*reinterpret_cast<const Mtx44 *>(&LocalMatrix), *reinterpret_cast<Mtx44 *>(&WorldMatrix));
-        WorldVelocity = LocalVelocity;
+        bCopy(&this->WorldMatrix, &this->LocalMatrix);
+        bCopy(&this->WorldVelocity, &this->LocalVelocity);
     }
 
     Dirty = 0;
 }
 
-SpaceNode *CreateSpaceNode(SpaceNode *parent) {
-    SpaceNode *space_node = SpaceNode_Construct(static_cast<SpaceNode *>(bOMalloc(SpaceNodeSlotPool)), parent);
+// STRIPPED
+void SpaceNode::SetWorldMatrix(bMatrix4 *matrix) {}
 
-    space_node->Lock();
-    return space_node;
+// STRIPPED
+void SpaceNode::SetWorldVelocity(bVector3 *velocity) {}
+
+SpaceNode *CreateSpaceNode(SpaceNode *parent) {
+    SpaceNode *sn = new SpaceNode(parent);
+
+    sn->Lock();
+    return sn;
 }
 
 void DeleteSpaceNode(SpaceNode *space_node) {
     space_node->Unlock();
 }
+
+// STRIPPED
+SpaceNode *FindSpaceNode(uint32 name_hash, SpaceNode *parent) {}
 
 void ServiceSpaceNodes() {
     while (!SpaceNodeTrashList.IsEmpty()) {
@@ -124,5 +132,8 @@ void ServiceSpaceNodes() {
 }
 
 void InitSpaceNodes() {
-    SpaceNodeSlotPool = bNewSlotPool(0xF4, 0x50, "SpaceNodeSlotPool", GetVirtualMemoryAllocParams());
+    SpaceNodeSlotPool = bNewSlotPool(sizeof(SpaceNode), 80, "SpaceNodeSlotPool", GetVirtualMemoryAllocParams());
 }
+
+// STRIPPED
+void CloseSpaceNodes() {}

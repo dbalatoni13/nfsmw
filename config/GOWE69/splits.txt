@@ -227,7 +227,7 @@ Speed/Indep/SourceLists/zWorld.cpp:
 Speed/Indep/SourceLists/zWorld2.cpp:
 	.text       start:0x802ECA00 end:0x8030EA7C
 	.ctors      start:0x803C8BDC end:0x803C8BE0
-	.rodata     start:0x8040DFE8 end:0x8040FBB8
+	.rodata     start:0x8040DFE8 end:0x8040F1B8
 	.data       start:0x80438F58 end:0x804390E4
 	.bss        start:0x804AA598 end:0x804AAA88
 

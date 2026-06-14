@@ -20,6 +20,7 @@
 #include "Speed/Indep/Src/Physics/PhysicsInfo.hpp"
 #include "Speed/Indep/Src/Physics/PhysicsTunings.h"
 #include "Speed/Indep/Src/Physics/Wheel.h"
+#include "Speed/Indep/Src/Sim/Collision.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 
@@ -1030,8 +1031,7 @@ void SuspensionRacer::Reset() {
 }
 
 void SuspensionRacer::OnCollision(const COLLISION_INFO &cinfo) {
-    // TODO fix this -1U
-    if (cinfo.type - 1U < COLLISION_INFO::WORLD) {
+    if (cinfo.type >= COLLISION_INFO::OBJECT && cinfo.type <= COLLISION_INFO::WORLD) {
         float impulse = !cinfo.objAImmobile ? cinfo.impulseA : 0.0f;
         if (cinfo.objB == GetOwner()->GetInstanceHandle()) {
             impulse = !cinfo.objBImmobile ? cinfo.impulseB : 0.0f;

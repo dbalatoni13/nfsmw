@@ -552,10 +552,10 @@ void AIVehicle::SetGoal(const UCrc32 &name) {
     }
     delete mCurrentGoal;
     mGoalName = name;
-    mCurrentGoal = UTL::COM::Factory<ISimable *, AIGoal, UCrc32>::CreateInstance(name, GetOwner());
+    mCurrentGoal = AIGoal::CreateInstance(name, GetOwner());
     DriverClass driverclass = GetVehicle()->GetDriverClass();
     // TODO, this means the first 4
-    if (driverclass - 1U < 3) {
+    if (driverclass >= DRIVER_TRAFFIC && driverclass <= DRIVER_RACER) {
         IRBVehicle *ivehiclebody;
         if (GetOwner()->QueryInterface(&ivehiclebody)) {
             const Attrib::Gen::aivehicle &attributes = GetAttributes();

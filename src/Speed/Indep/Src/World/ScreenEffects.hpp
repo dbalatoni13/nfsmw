@@ -103,7 +103,7 @@ class ScreenEffectDB {
     eView *MyView;              // offset 0x0, size 0x4
     ScreenEffectInf SE_inf[5];  // offset 0x4, size 0x3C
     ScreenEffectDef SE_data[5]; // offset 0x40, size 0x190
-    unsigned int numType[5];    // offset 0x1D0, size 0x14
+    uint32 numType[5];          // offset 0x1D0, size 0x14
     float SE_time;              // offset 0x1E4, size 0x4
 };
 

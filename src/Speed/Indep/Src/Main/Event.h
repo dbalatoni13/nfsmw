@@ -8,12 +8,8 @@
 #include <cstddef>
 #include <types.h>
 
+#include "Speed/Indep/Libs/Support/Miscellaneous/CARP.h"
 #include "Speed/Indep/Src/Misc/Hermes.h"
-
-namespace CARP {
-struct EventStaticData;
-struct EventList;
-}
 
 extern char *gCreationPoint;
 extern char *gDeletionPoint;
@@ -63,7 +59,7 @@ class EventManager {
 
     static Hermes::Message *EmbedField(Event *event, Hermes::Message *ptr);
 
-    // static inline Event *GetCurrentEvent() {}
+    // static Event *GetCurrentEvent() {}
 
   private:
     static Event *fgCurrentEvent;  // size: 0x4, address: 0x8041E458

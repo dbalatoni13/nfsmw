@@ -27,30 +27,16 @@ inline float wmax(const float &a, const float &b) {
 }
 
 inline bool InCircle(float x, float y, float cx, float cy, float r) {
-    return pow2(cx - x) + pow2(cy - y) < pow2(r);
+    return (cx - x) * (cx - x) + (cy - y) * (cy - y) < r * r;
 }
 
 inline float InvSqrt(const float f) {
     return VU0_rsqrt(f);
 }
 
-inline float wwfabs(float a) {
-#if defined(EA_PLATFORM_GAMECUBE)
-    float r;
-    asm("fabs %0, %1" : "=f"(r) : "f"(a));
-    return r;
-#else
-    return a < 0.0f ? -a : a;
-#endif
-}
-
 inline bool PtsEqual(const UMath::Vector3 &p0, const UMath::Vector3 &p1, float tolerance) {
     const float kTolerance = tolerance;
-    return wwfabs(p0.x - p1.x) < kTolerance && wwfabs(p0.y - p1.y) < kTolerance && wwfabs(p0.z - p1.z) < kTolerance;
-}
-
-inline void Crossxyz(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &r) {
-    VU0_v4crossprodxyz(a, b, r);
+    return fabsf(p0.x - p1.x) < kTolerance && fabsf(p0.y - p1.y) < kTolerance && fabsf(p0.z - p1.z) < kTolerance;
 }
 
 inline float PtDir4(const UMath::Vector4 &p1, const UMath::Vector4 &p2, const UMath::Vector3 &tp) {
@@ -58,40 +44,27 @@ inline float PtDir4(const UMath::Vector4 &p1, const UMath::Vector4 &p2, const UM
 }
 
 inline bool InTri(const UMath::Vector3 &pt, const UMath::Vector4 *pts) {
-    bool result;
-    float d = PtDir4(pts[0], pts[1], pt);
-    if (d <= 0.0f) {
-        result = false;
-        if (PtDir4(pts[1], pts[2], pt) <= 0.0f) {
-            result = PtDir4(pts[2], pts[0], pt) <= 0.0f;
+    if (PtDir4(pts[0], pts[1], pt) <= 0.0f) {
+        if (PtDir4(pts[1], pts[2], pt) <= 0.0f && PtDir4(pts[2], pts[0], pt) <= 0.0f) {
+            return true;
+        } else {
+            return false;
         }
     } else {
-        result = false;
-        if (0.0f <= PtDir4(pts[1], pts[2], pt)) {
-            result = 0.0f <= PtDir4(pts[2], pts[0], pt);
+        if (PtDir4(pts[1], pts[2], pt) >= 0.0f && PtDir4(pts[2], pts[0], pt) >= 0.0f) {
+            return true;
+        } else {
+            return false;
         }
     }
-    return result;
 }
 
 inline bool InTriR(const UMath::Vector3 &pt, const UMath::Vector4 *pts) {
-    bool result = false;
-    if (PtDir4(pts[0], pts[1], pt) <= 0.0f) {
-        if (PtDir4(pts[1], pts[2], pt) <= 0.0f) {
-            result = PtDir4(pts[2], pts[0], pt) <= 0.0f;
-        }
-    }
-    return result;
+    return PtDir4(pts[0], pts[1], pt) <= 0.0f && PtDir4(pts[1], pts[2], pt) <= 0.0f && PtDir4(pts[2], pts[0], pt) <= 0.0f;
 }
 
 inline bool InTriL(const UMath::Vector3 &pt, const UMath::Vector4 *pts) {
-    bool result = false;
-    if (0.0f <= PtDir4(pts[0], pts[1], pt)) {
-        if (0.0f <= PtDir4(pts[1], pts[2], pt)) {
-            result = 0.0f <= PtDir4(pts[2], pts[0], pt);
-        }
-    }
-    return result;
+    return 0.0f <= PtDir4(pts[0], pts[1], pt) && 0.0f <= PtDir4(pts[1], pts[2], pt) && 0.0f <= PtDir4(pts[2], pts[0], pt);
 }
 
 float GetPlaneY(const UMath::Vector3 &normal, const UMath::Vector3 &pointOnPlane, const UMath::Vector3 &pt);

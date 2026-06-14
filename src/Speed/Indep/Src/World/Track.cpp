@@ -44,11 +44,6 @@ int UnloaderTrackOBB(bChunk *chunk) {
 
 void EstablishRemoteCaffeineConnection() {}
 
-// TODO where is this?
-inline UMath::Vector3 &bConvertToBond(UMath::Vector3 &dest, const bVector3 &v) {
-    return *reinterpret_cast<UMath::Vector3 *>(&bConvertToBond(*reinterpret_cast<bVector3 *>(&dest), v));
-}
-
 float TopologyCoordinate::GetElevation(const bVector3 *position, TerrainType *type, bVector3 *normal, bool *point_valid) {
     UMath::Vector3 bond_pos;
 
@@ -56,7 +51,7 @@ float TopologyCoordinate::GetElevation(const bVector3 *position, TerrainType *ty
     WWorldPos world_pos(0.025f);
     UMath::Vector4 dummy_normal;
     world_pos.Update(bond_pos, dummy_normal, true, nullptr, true);
-    if (point_valid) {
+    if (point_valid != nullptr) {
         *point_valid = world_pos.OnValidFace();
     }
     if (world_pos.OnValidFace()) {
@@ -72,5 +67,5 @@ int TopologyCoordinate::HasTopology(const bVector2 *position) {
     bool point_valid;
 
     test_elevation = GetElevation(&test_position, nullptr, nullptr, &point_valid);
-    return point_valid;
+    return static_cast<int>(point_valid);
 }

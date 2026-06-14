@@ -48,7 +48,7 @@ struct ecar : Instance {
         unsigned char KitWheelOffsetRear[6];     // offset 0x108, size 0x6
         Private _Array_KitWheelOffsetFront;      // offset 0x10e, size 0x8
         unsigned char KitWheelOffsetFront[6];    // offset 0x116, size 0x6
-        char WheelSpokeCount;                    // offset 0x11c, size 0x1
+        signed char WheelSpokeCount;                    // offset 0x11c, size 0x1
     };
 
     void operator delete(void *ptr, size_t bytes) {
@@ -97,8 +97,8 @@ struct ecar : Instance {
         return *resultptr;
     }
 
-    const float &RoadNoise(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x13eb7da2, index));
+    const float &RoadNoise() const {
+        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x13eb7da2, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
@@ -121,32 +121,32 @@ struct ecar : Instance {
         return *resultptr;
     }
 
-    const float &WheelWell(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x24cb15ea, index));
+    const float &WheelWell() const {
+        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x24cb15ea, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
 
-    const float &ShiftAngle(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x24e25513, index));
+    const float &ShiftAngle() const {
+        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x24e25513, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
 
-    const RefSpec &DamageEffect(unsigned int index) const {
-        const RefSpec *resultptr = reinterpret_cast<const RefSpec *>(this->GetAttributePointer(0x30b2997b, index));
+    const RefSpec &DamageEffect() const {
+        const RefSpec *resultptr = reinterpret_cast<const RefSpec *>(this->GetAttributePointer(0x30b2997b, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const RefSpec *>(DefaultDataArea(sizeof(RefSpec)));
         }
         return *resultptr;
     }
 
-    const float &WheelHopScale(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x44e52948, index));
+    const float &WheelHopScale() const {
+        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x44e52948, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
@@ -161,8 +161,8 @@ struct ecar : Instance {
         return *resultptr;
     }
 
-    const float &EngineRev(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x564773be, index));
+    const float &EngineRev() const {
+        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x564773be, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
@@ -187,32 +187,31 @@ struct ecar : Instance {
     }
 
     bool TireOffsets(UMath::Vector4 &result, unsigned int index) const {
-        const _LayoutStruct *lp = reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer());
-        result = lp->TireOffsets[index];
+        result = reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->TireOffsets[index];
     }
 
     unsigned int Num_TireOffsets() const {
         return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->_Array_TireOffsets.GetLength();
     }
 
-    const RefSpec &NOSEffect(unsigned int index) const {
-        const RefSpec *resultptr = reinterpret_cast<const RefSpec *>(this->GetAttributePointer(0x60cec115, index));
+    const RefSpec &NOSEffect() const {
+        const RefSpec *resultptr = reinterpret_cast<const RefSpec *>(this->GetAttributePointer(0x60cec115, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const RefSpec *>(DefaultDataArea(sizeof(RefSpec)));
         }
         return *resultptr;
     }
 
-    const float &SteerSpeed(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x79356463, index));
+    const float &SteerSpeed() const {
+        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x79356463, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
 
-    const float &EngineVibrationFreq(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x80e657ff, index));
+    const float &EngineVibrationFreq() const {
+        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x80e657ff, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
@@ -239,24 +238,24 @@ struct ecar : Instance {
         return this->Get(0x8d5beb72).GetLength();
     }
 
-    const float &MaxTireSteer(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0xa9633fde, index));
+    const float &MaxTireSteer() const {
+        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0xa9633fde, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
 
-    const float &ExtraRearTireOffset(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0xb1304fde, index));
+    const float &ExtraRearTireOffset() const {
+        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0xb1304fde, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
 
-    const RefSpec &MissShiftEffect(unsigned int index) const {
-        const RefSpec *resultptr = reinterpret_cast<const RefSpec *>(this->GetAttributePointer(0xb699b7be, index));
+    const RefSpec &MissShiftEffect() const {
+        const RefSpec *resultptr = reinterpret_cast<const RefSpec *>(this->GetAttributePointer(0xb699b7be, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const RefSpec *>(DefaultDataArea(sizeof(RefSpec)));
         }
@@ -295,40 +294,40 @@ struct ecar : Instance {
         return *resultptr;
     }
 
-    const RefSpec &EngineBlownEffect(unsigned int index) const {
-        const RefSpec *resultptr = reinterpret_cast<const RefSpec *>(this->GetAttributePointer(0xd9cca9a3, index));
+    const RefSpec &EngineBlownEffect() const {
+        const RefSpec *resultptr = reinterpret_cast<const RefSpec *>(this->GetAttributePointer(0xd9cca9a3, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const RefSpec *>(DefaultDataArea(sizeof(RefSpec)));
         }
         return *resultptr;
     }
 
-    const float &ShiftSpeed(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0xda27cd35, index));
+    const float &ShiftSpeed() const {
+        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0xda27cd35, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
 
-    const float &EngineRevAngle(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0xe2c63383, index));
+    const float &EngineRevAngle() const {
+        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0xe2c63383, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
 
-    const float &EngineVibrationMin(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0xe91f59bd, index));
+    const float &EngineVibrationMin() const {
+        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0xe91f59bd, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
 
-    const float &ExtraPitch(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0xe95257c2, index));
+    const float &ExtraPitch() const {
+        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0xe95257c2, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
@@ -343,24 +342,24 @@ struct ecar : Instance {
         return *resultptr;
     }
 
-    const RefSpec &DeathEffect(unsigned int index) const {
-        const RefSpec *resultptr = reinterpret_cast<const RefSpec *>(this->GetAttributePointer(0xf7b59fc7, index));
+    const RefSpec &DeathEffect() const {
+        const RefSpec *resultptr = reinterpret_cast<const RefSpec *>(this->GetAttributePointer(0xf7b59fc7, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const RefSpec *>(DefaultDataArea(sizeof(RefSpec)));
         }
         return *resultptr;
     }
 
-    const float &EngineVibrationMax(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0xf947fe58, index));
+    const float &EngineVibrationMax() const {
+        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0xf947fe58, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
         return *resultptr;
     }
 
-    const float &EngineRevSpeed(unsigned int index) const {
-        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0xfaad3e61, index));
+    const float &EngineRevSpeed() const {
+        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0xfaad3e61, 0));
         if (!resultptr) {
             resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
         }
@@ -477,7 +476,7 @@ struct ecar : Instance {
         return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->_Array_KitWheelOffsetFront.GetLength();
     }
 
-    const char &WheelSpokeCount() const {
+    const signed char &WheelSpokeCount() const {
         return reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer())->WheelSpokeCount;
     }
 };

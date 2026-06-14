@@ -1,9 +1,5 @@
-#ifndef WORLD_SKIDS_H
-#define WORLD_SKIDS_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef SKIDS_HPP
+#define SKIDS_HPP
 
 #include "Car.hpp"
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
@@ -11,6 +7,8 @@
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
+
+#define MAX_SKID_SEGMENTS_PER_SKIDSET 8
 
 class Clan;
 extern SlotPool *SkidSetSlotPool;
@@ -35,9 +33,9 @@ class SkidSegment {
     void GetEndPoints(bVector3 *left_point, bVector3 *right_point);
 
   private:
-    float Position[3];            // offset 0x0, size 0xC
-    signed char DeltaPosition[3]; // offset 0xC, size 0x3
-    uint8 Intensity;              // offset 0xF, size 0x1
+    float Position[3];     // offset 0x0, size 0xC
+    int8 DeltaPosition[3]; // offset 0xC, size 0x3
+    uint8 Intensity;       // offset 0xF, size 0x1
 };
 
 class SkidSet;
@@ -45,6 +43,14 @@ class SkidSet;
 // total size: 0x4
 class SkidMaker {
   public:
+    SkidMaker() {
+        this->pSkidSet = nullptr;
+    }
+
+    ~SkidMaker() {
+        this->MakeNoSkid();
+    }
+
     void MakeSkid(Car *pCar, bVector3 *position, bVector3 *delta_position, int terrain_type, float intensity);
     void MakeNoSkid();
 #if 0
@@ -60,13 +66,9 @@ class SkidMaker {
 // total size: 0xF0
 class SkidSet : public bTNode<SkidSet> {
   public:
-    void *operator new(size_t size) {
-        return bMalloc(SkidSetSlotPool);
-    }
+    friend class SkidMaker;
 
-    void operator delete(void *ptr) {
-        bFree(SkidSetSlotPool, ptr);
-    }
+    USE_SLOTALLOC(SkidSetSlotPool);
 
     SkidSet(SkidMaker *skid_maker, bVector3 *position, bVector3 *delta_position, int terrain_type, float intensity);
     ~SkidSet();
@@ -101,20 +103,18 @@ class SkidSet : public bTNode<SkidSet> {
         return static_cast<float>(SkidSegments[NumSkidSegments - 1].GetIntensity()) * (1.0f / 255.0f);
     }
 
-    friend class SkidMaker;
-
-    bVector3 LastNormal;         // offset 0x8, size 0x10
-    float LastSegmentLength;     // offset 0x18, size 0x4
-    Clan *pClan;                 // offset 0x1C, size 0x4
-    bPNode *pClanNode;           // offset 0x20, size 0x4
-    SkidMaker *pSkidMaker;       // offset 0x24, size 0x4
-    int TheTerrainType;          // offset 0x28, size 0x4
-    bVector3 Position;           // offset 0x2C, size 0x10
-    bVector3 BBoxMax;            // offset 0x3C, size 0x10
-    bVector3 BBoxMin;            // offset 0x4C, size 0x10
-    SkidSegment SkidSegments[8]; // offset 0x5C, size 0x80
-    int NumSkidSegments;         // offset 0xDC, size 0x4
-    bVector3 BBoxCentre;         // offset 0xE0, size 0x10
+    bVector3 LastNormal;                                     // offset 0x8, size 0x10
+    float LastSegmentLength;                                 // offset 0x18, size 0x4
+    Clan *pClan;                                             // offset 0x1C, size 0x4
+    bPNode *pClanNode;                                       // offset 0x20, size 0x4
+    SkidMaker *pSkidMaker;                                   // offset 0x24, size 0x4
+    int TheTerrainType;                                      // offset 0x28, size 0x4
+    bVector3 Position;                                       // offset 0x2C, size 0x10
+    bVector3 BBoxMax;                                        // offset 0x3C, size 0x10
+    bVector3 BBoxMin;                                        // offset 0x4C, size 0x10
+    SkidSegment SkidSegments[MAX_SKID_SEGMENTS_PER_SKIDSET]; // offset 0x5C, size 0x80
+    int NumSkidSegments;                                     // offset 0xDC, size 0x4
+    bVector3 BBoxCentre;                                     // offset 0xE0, size 0x10
 };
 
 SkidSet *CreateNewSkidSet(SkidMaker *skid_maker, bVector3 *position, bVector3 *delta_position, int terrain_type, float intensity);

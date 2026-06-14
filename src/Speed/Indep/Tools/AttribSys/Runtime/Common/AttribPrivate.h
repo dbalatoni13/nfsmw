@@ -195,8 +195,6 @@ class ClassPrivate : public Class {
       public:
         CollectionHashMap(std::size_t reserve) : VecHashMap<unsigned int, Attrib::Collection, Attrib::Class::TablePolicy, true, 40>(reserve) {}
 
-        ~CollectionHashMap();
-
         unsigned int GetNextValidIndex(unsigned int startPoint) const {
             unsigned int index = startPoint + 1;
             for (; index < mTableSize && !mTable[index].IsValid(); index++) {

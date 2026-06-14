@@ -56,7 +56,7 @@ inline float ANGLE2RAD(const float _arc_) {
 }
 
 inline float DEG2RAD(const float _deg_) {
-    return _deg_ * ((float)M_PI / 180.f);
+    return _deg_ * 0.017453f; //  ((float)M_PI / 180.f); // TODO why doesn't the PI one match?
 }
 
 inline float RAD2DEG(const float _rad_) {

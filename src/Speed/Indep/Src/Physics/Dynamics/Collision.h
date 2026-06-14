@@ -97,7 +97,7 @@ class Geometry {
         return mPenetratesOther != 0;
     }
 
-    float GetOverlap() const {
+    const float GetOverlap() const {
         return mOverlap;
     }
 

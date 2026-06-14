@@ -1,14 +1,19 @@
-#ifndef MISC_BUILDREGION_H
-#define MISC_BUILDREGION_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef BUILD_REGION_HPP
+#define BUILD_REGION_HPP
 
 namespace BuildRegion {
 
 bool IsAmerica();
+bool IsEurope();
 bool IsPal();
+
+inline const char *GetCarBadgingSuffix() {
+    if (IsEurope()) {
+        return "_EU";
+    } else {
+        return nullptr;
+    }
+}
 
 }; // namespace BuildRegion
 

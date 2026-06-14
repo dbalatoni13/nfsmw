@@ -110,13 +110,16 @@ extern float WorldTimeElapsed;
 extern int RealTimeFrames;
 extern Timer WorldTimer;
 extern int WorldTime;
+extern float WorldTimeSeconds;
 extern Timer RealTimer;
 extern float RealTimeElapsed;
 extern int RealLoopCounter;
+extern int WorldLoopCounter;
 
 extern volatile int FrameCounter;
 extern volatile unsigned int LastFrameCounterTick;
 
+void ResetWorldTime();
 void PrepareRealTimestep(float video_time_elapsed);
 void PrepareWorldTimestep(float elapsed_time);
 void AdvanceRealTime();

@@ -1,27 +1,19 @@
-#ifndef WORLD_WTRIGGER_H
-#define WORLD_WTRIGGER_H
+#ifndef _WTrigger_H_
+#define _WTrigger_H_
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
+#include "WTriggerList.h"
 #include "Speed/Indep/Libs/Support/Utility/FastMem.h"
-#include "Speed/Indep/Libs/Support/Utility/UMath.h"
-#include "Speed/Indep/Libs/Support/Utility/UStandard.h"
 #include "Speed/Indep/Libs/Support/Miscellaneous/CARP.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
 
 // total size: 0x40
 class WTrigger : public CARP::Trigger {
   public:
-    void operator delete(void *mem, size_t size) {
-        if (mem) {
-            gFastMem.Free(mem, size, nullptr);
-        }
-    }
+    USE_FASTALLOC(WTrigger);
 
     WTrigger();
     WTrigger(const UMath::Matrix4 &boxMat, const UMath::Vector3 &center, CARP::EventList *events, unsigned int type);
+    WTrigger(const UMath::Matrix4 &mat, float radius, float height, CARP::EventList *eventList, unsigned int flags);
     ~WTrigger();
     void FireEvents(HSIMABLE hSimable);
 
@@ -94,49 +86,13 @@ class WTrigger : public CARP::Trigger {
     bool TestDirection(const UMath::Vector3 &vec) const;
 };
 
-class WTriggerList : public UTL::Std::vector<WTrigger *, _type_vector> {};
-
-struct FireOnExitRec {
-    FireOnExitRec(WTrigger &trigger, HSIMABLE hSimable) : mTrigger(trigger), mhSimable(hSimable) {}
-
-    bool operator==(const FireOnExitRec &rhs) const {
-        return &mTrigger == &rhs.mTrigger && mhSimable == rhs.mhSimable;
-    }
-
-    bool operator<(const FireOnExitRec &rhs) const {
-        if (mhSimable < rhs.mhSimable)
-            return true;
-        return &mTrigger < &rhs.mTrigger;
-    }
-
-    WTrigger &mTrigger; // offset 0x0, size 0x4
-    HSIMABLE mhSimable; // offset 0x4, size 0x4
-};
-
-// total size: 0x10
-class FireOnExitList : public std::set<FireOnExitRec> {
-  public:
-    void *operator new(size_t size) {
-        return gFastMem.Alloc(size, nullptr);
-    }
-
-    void operator delete(void *mem, size_t size) {
-        if (mem)
-            gFastMem.Free(mem, size, nullptr);
-    }
-};
+struct FireOnExitRec;
+class FireOnExitList;
 
 // total size: 0x10
 class WTriggerManager {
   public:
-    void *operator new(size_t size) {
-        return gFastMem.Alloc(size, nullptr);
-    }
-
-    void operator delete(void *mem, size_t size) {
-        if (mem)
-            gFastMem.Free(mem, size, nullptr);
-    }
+    USE_FASTALLOC(WTriggerManager);
 
     WTriggerManager();
     ~WTriggerManager();

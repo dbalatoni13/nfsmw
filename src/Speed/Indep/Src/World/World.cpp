@@ -1,20 +1,22 @@
-#include "./World.hpp"
-#include "./DebugVehicleSelection.h"
-#include "./DebugWorld.h"
-#include "./Track.hpp"
-#include "./TrackStreamer.hpp"
+#include "World.hpp"
+#include "DebugVehicleSelection.h"
+#include "DebugWorld.h"
+#include "Speed/Indep/Src/World/Car.hpp"
+#include "Track.hpp"
+#include "TrackStreamer.hpp"
 #include "CarRender.hpp"
 #include "Clans.hpp"
-#include "OnlineManager.hpp"
 #include "RaceParameters.hpp"
 #include "Rain.hpp"
 #include "Scenery.hpp"
 #include "Skids.hpp"
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
+#include "Speed/Indep/Src/AI/AIDebug.h"
 #include "Speed/Indep/Src/Camera/CameraMover.hpp"
 #include "Speed/Indep/Src/Camera/ICE/ICEManager.hpp"
 #include "Speed/Indep/Src/Gameplay/GManager.h"
+#include "Speed/Indep/Src/Animation/AnimWorldScene.hpp"
 #include "Speed/Indep/Src/Gameplay/GRaceDatabase.h"
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
@@ -23,6 +25,8 @@
 #include "Speed/Indep/Src/Interfaces/Simables/IExplosion.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
 #include "Speed/Indep/Src/Misc/Rumble.hpp"
+#include "Speed/Indep/Src/Misc/Config.h"
+#include "Speed/Indep/Src/Physics/SmokeableInfo.hpp"
 #include "Speed/Indep/Src/Sim/SimSubSystem.h"
 #include "Speed/Indep/Src/World/World.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
@@ -31,45 +35,17 @@
 #include "TrackInfo.hpp"
 #include "TrackPath.hpp"
 
-#include "types.h"
-
-static void World_Init();
-static void World_Shutdown();
-
-OnlineManager TheOnlineManager;
-
-namespace {
-
-struct RaceParametersAutoInit {
-    RaceParametersAutoInit() {
-        TheRaceParameters.InitWithDefaults();
-    }
-};
-
-struct OnlineManagerQuantizerAutoInit {
-    OnlineManagerQuantizerAutoInit() {
-        TheOnlineManager.InitQuantizers();
-    }
-};
-
-} // namespace
+// TODO the stripped functions here are leftovers from HP2
 
 int SuperEasyAIMode = 0;
-
-// BSS Class Init
+int CarControllerDisableCatchup = 0;
+int UseHP2SteeringCode = 0;
 bVector3 ZeroVector = bVector3(0, 0, 0);
-Sim::SubSystem _Physics_System_World = Sim::SubSystem(nullptr, World_Init, World_Shutdown);
 
-float UglyTimestepHack = 0.016666668f;
+float UglyTimestepHack = 1.0f / 60.0f;
 World *pCurrentWorld = nullptr;
 
-// TODO move
-extern int WorldLoopCounter;                  // zMisc
-extern bVector3 *SkipFEOverrideStartPosition; // zMiscSmall
-
-// TODO move
-extern void ResetWorldAnimations(); // zAnim
-extern void ResetPropTimers();      // zPhysics
+int TweakerPauseWorld = 0;
 
 World::World() {
     pCurrentWorld = this;
@@ -78,14 +54,14 @@ World::World() {
     this->AICarPos = 0;
     this->TrafficCarPos = 0;
     this->ParkedCarPos = 0;
-    this->CollisionPredictionID = 1;
-    this->PotentialDriveTargetID = 1;
+    this->ResetCollisionPredictionID();
+    this->ResetPotentialDriveTargetID();
     this->OnlinePauseWorld = 0;
 
     this->ResetTimeScale();
     this->PreviousTimeToWaste = 0.0f;
-    bMemSet(this->PlayerPositions, 0x0, 0x60);
-    bMemSet(this->PlayerDATs, 0x0, 0x18);
+    bMemSet(this->PlayerPositions, 0x0, sizeof(this->PlayerPositions));
+    bMemSet(this->PlayerDATs, 0x0, sizeof(this->PlayerDATs));
 }
 
 World::~World() {
@@ -98,13 +74,114 @@ World::~World() {
 // STRIPPED
 void World::DoSnapshot(ReplaySnapshot *snapshot) {}
 
+// STRIPPED
+void World::SetTimeScale(float t, float d, void (*func)(int), int param) {}
+
 void World::ResetTimeScale() {
     this->fTimeScale = 1.0f;
     this->fTimeScaleTimer = 0.0f;
     this->fTimeToRemainPaused = 0.0f;
-    this->TimeScaleCallback = 0;
+    this->TimeScaleCallback = nullptr;
     this->TimeScaleCallbackParam = 0;
 }
+
+// STRIPPED
+void World::SetWorldPaused(float t, void (*func)(int), int param) {}
+
+// STRIPPED
+void World::BeginPause() {}
+
+// STRIPPED
+void World::EndPause() {}
+
+// STRIPPED
+void World::BeginOnlinePause() {}
+
+// STRIPPED
+void World::EndOnlinePause() {}
+
+// STRIPPED
+void World::UpdateWorldPaused() {}
+
+// STRIPPED
+int World::IsWorldPaused() {}
+
+// STRIPPED
+float World::GetTimestep() {}
+
+// STRIPPED
+void World::DoTimestepMove(float timestep) {}
+
+int MAX_CONTACT_RESOLUTIONS = 20;
+int MAX_CONTACTS_PER_FRAME = 2;
+
+static const int RecreateWitnesses = 1;
+
+void World::DoTimestepCollisions(float timestep) {}
+
+static const int RespawnSmokeables = 0;
+
+ControlMode OverridePlayerCarControlMode = NO_CONTROL;
+int PrintWorldObjectDebugInfo = 0;
+int WhichCollisionPredictionIterationToRender = -1;
+int WhichCarsRegisteredDriveTargetToRender = -1;
+
+// STRIPPED
+void World::DoTimestep(float timestep) {}
+
+// STRIPPED
+unsigned short World::CalculateDebugChecksum() {}
+
+static const int DisableReplayChecksumVerification = 0;
+
+// STRIPPED
+void World::VerifyDebugChecksums() {}
+
+// STRIPPED
+float World::GetDistanceToClosestPlayer(const bVector2 *point) {}
+
+// STRIPPED
+float World::GetDistanceToClosestPlayer(const bVector3 *point) {}
+
+// STRIPPED
+unsigned int World::Random(int range) {}
+
+// STRIPPED
+float World::Random(float range) {}
+
+// STRIPPED
+unsigned int World::ConstantRandom(int range, unsigned int seed) {}
+
+// STRIPPED
+float World::ConstantRandom(float range, unsigned int seed) {}
+
+// STRIPPED
+void World::IncrementCollisionPredictionID() {}
+
+// STRIPPED
+bool World::AddTrafficCar(DriverInfo *d) {}
+
+// STRIPPED
+void World::DebugDisplay() {}
+
+// STRIPPED
+void World::CollisionPredictionSetOBBs(OBB *my_obbs, OBB *other_car_obbs) {}
+
+// STRIPPED
+void World::CollisionPredictionSetDriveTargets(DriveTarget *my_drive_target, DriveTarget *other_car_drive_target) {}
+
+// STRIPPED
+void World::RecordPotentialDriveTarget(DriveTarget *drive_target) {}
+
+// STRIPPED
+void World::CollisionPredictionRecordIteration(int loop_counter, int8 my_index, int8 other_car_index, bVector2 *my_position,
+                                               bVector2 *other_car_position) {}
+
+// STRIPPED
+void World::UpdateAIDebugRendering() {}
+
+// STRIPPED
+void World::UpdateAIDebugStuff() {}
 
 // UNSOLVED
 void World_DEBUGStartLocation(UMath::Vector3 &startLoc, UMath::Vector3 &initialVec) {
@@ -148,7 +225,7 @@ void World_DEBUGStartLocation(UMath::Vector3 &startLoc, UMath::Vector3 &initialV
     } else if (strcasecmp(regionName, "L2RX") == 0) {
         startLoc.x = -2510.0f;
         startLoc.y = 151.0f;
-        startLoc.z = 1767.0f;
+        startLoc.z = 1773.0f;
         rotInitialVec = 0.63f;
     }
 
@@ -163,7 +240,7 @@ void World_DEBUGStartLocation(UMath::Vector3 &startLoc, UMath::Vector3 &initialV
 
     GRaceCustom *quickRace = GRaceDatabase::Get().GetStartupRace();
 
-    if (quickRace) {
+    if (quickRace != nullptr) {
         quickRace->GetStartPosition(startLoc);
         quickRace->GetStartDirection(initialVec);
     } else if (GManager::Get().Exists()) {
@@ -196,8 +273,8 @@ void World_RestoreProps() {
         }
     }
 
-    for (IExplosion::List::const_iterator m = IExplosion::GetList().begin(); m != IExplosion::GetList().end(); m++) {
-        IExplosion *explosion = *m;
+    for (IExplosion::List::const_iterator e = IExplosion::GetList().begin(); e != IExplosion::GetList().end(); e++) {
+        IExplosion *explosion = *e;
         ISimable *isimable = (ISimable *)explosion;
         if (isimable->QueryInterface(&isimable)) {
             isimable->Kill();
@@ -208,12 +285,17 @@ void World_RestoreProps() {
         IModel::ForEach(HideNonRaceSmackable);
     }
 
+#ifndef EA_BUILD_A124
     GManager::Get().RestorePursuitBreakerIcons(-1);
+#endif
     ResetWorldAnimations();
     ResetPropTimers();
 }
 
+bool Tweak_World_RestoreScenery = false;
+
 void World_Service() {
+    AI::Debug();
     UglyTimestepHack = 0.0f;
 
     INIS *nis = INIS::Get();
@@ -232,10 +314,6 @@ void World_Service() {
     DebugWorld::Get().Service();
 }
 
-RaceParameters TheRaceParameters;
-RaceParametersAutoInit gRaceParametersAutoInit;
-OnlineManagerQuantizerAutoInit gOnlineManagerQuantizerAutoInit;
-
 static void World_Init() {
     ResetWorldTime();
     TheICEManager.Resolve();
@@ -244,9 +322,9 @@ static void World_Init() {
     InitCarEffects();
     InitClans();
 
-    int max_skids = 0x80;
+    int max_skids = 128;
     if (TheRaceParameters.IsDriftRace()) {
-        max_skids = 0x200;
+        max_skids = 512;
     }
     InitSkids(max_skids);
     ResetCameraShakers();
@@ -264,5 +342,18 @@ static void World_Shutdown() {
     CloseCarEffects();
     ResetWorldTime();
 
-    WorldLoopCounter = 0x186A0;
+    WorldLoopCounter = 100000;
 }
+
+BIND_SIM_SUBSYSTEM(World, World_Init, World_Shutdown);
+
+// STRIPPED
+void RenderTrackRoutes(eView *view) {}
+
+int g_tweakIsBurnout = 0;
+int g_tweakIsDriftRace = 0;
+int g_tweakIsDragRace = 0;
+int g_tweakIsShortTrackRace = 0;
+int g_tweakBurnoutPhysics = 0;
+int g_tweakDriftPhysics = 0;
+int g_tweakAIDriftOpponents = 1;

@@ -1,10 +1,7 @@
 #ifndef MISC_RESOURCE_LOADER_H
 #define MISC_RESOURCE_LOADER_H
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "Speed/Indep/Libs/realcore/6.24.00/include/common/realcore/file/driver.h"
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
@@ -43,18 +40,10 @@ extern SlotPool *ResourceFileSlotPool;
 // total size: 0x50
 class ResourceFile : public bTNode<ResourceFile> {
   public:
-    static void FileTransferCallback(void *param, int error_status);
-
-    void *operator new(size_t size) {
-        return bOMalloc(ResourceFileSlotPool);
-    }
-
-    void operator delete(void *ptr) {
-        bFree(ResourceFileSlotPool, ptr);
-    }
-
     ResourceFile(const char *filename, ResourceFileType type, int flags, int file_offset, int file_size);
     ~ResourceFile();
+
+    USE_SLOTALLOC(ResourceFileSlotPool);
 
     void SetAllocationParams(int allocation_params, const char *debug_name);
     void AllocateMemory(bool loading_compressed_file);
@@ -70,10 +59,6 @@ class ResourceFile : public bTNode<ResourceFile> {
     void *GetMemory() {
         return pFirstChunk;
     }
-
-    // static void *operator new(unsigned int size) {}
-
-    // static void operator delete(void *ptr) {}
 
     void AssignMemory(void *mem, int allocation_params, const char *debug_name) {
         pFirstChunk = reinterpret_cast<bChunk *>(mem);
@@ -95,7 +80,7 @@ class ResourceFile : public bTNode<ResourceFile> {
     }
 
     void CallCallback() {
-        if (Callback) {
+        if (Callback != nullptr) {
             Callback(CallbackParam);
         }
     }
@@ -136,6 +121,8 @@ class ResourceFile : public bTNode<ResourceFile> {
     }
 
   private:
+    static void FileTransferCallback(void *param, int error_status);
+
     bool mEnableFreeMemory;                    // offset 0x8, size 0x1
     ResourceFileType Type;                     // offset 0xC, size 0x4
     int Flags;                                 // offset 0x10, size 0x4
@@ -197,6 +184,8 @@ void MoveChunks(bChunk *dest_chunks, bChunk *source_chunks, int32 sizeof_chunks,
 void UnloadChunks(bChunk *chunks, int sizeof_chunks, const char *debug_name);
 void PostLoadFixup();
 
+void ScratchPadMemCpy(void *dest, const void *src, unsigned int numbytes);
+
 extern int ChunkMovementOffset; // size: 0x4
 
 inline ResourceFile *LoadResourceFile(const char *filename, ResourceFileType type, int flags) {
@@ -217,7 +206,7 @@ inline int GetChunkMovementOffset() {
     return ChunkMovementOffset;
 }
 
-inline void SetDelayedResourceCallback(void (*callback)(int), int param) {
+inline void SetDelayedResourceCallback(void (*callback)(intptr_t), intptr_t param) {
     SetDelayedResourceCallback(reinterpret_cast<void (*)(void *)>(callback), reinterpret_cast<void *>(param));
 }
 

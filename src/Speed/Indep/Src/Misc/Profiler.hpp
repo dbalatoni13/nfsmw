@@ -11,7 +11,7 @@ class ProfileNode {
 
     ProfileNode(const char *section_name, int categories) {}
 
-    void Begin(const char *, int) {}
+    void Begin(const char *section_name, int categories) {}
 
     void End() {}
 

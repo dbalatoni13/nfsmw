@@ -133,7 +133,7 @@ class VisibleSectionCoordinate {
     int GetSectionNumber();
 
   private:
-    bool FullUpdate(bVector2 &position, VisibleSectionManager &visible_section_manager, float overlap_distance);
+    bool FullUpdate(const bVector2 &position, VisibleSectionManager &visible_section_manager, float overlap_distance);
 };
 
 // total size: 0xA4
@@ -144,7 +144,7 @@ class DrivableScenerySection : public bTNode<DrivableScenerySection> {
     int8 MostVisibleSections;          // offset 0xE, size 0x1
     int8 MaxVisibleSections;           // offset 0xF, size 0x1
     int16 NumVisibleSections;          // offset 0x10, size 0x2
-    short int VisibleSections[72];     // offset 0x12, size 0x90
+    int16 VisibleSections[72];         // offset 0x12, size 0x90
 #ifndef EA_BUILD_A124
     short Padding; // offset 0xA2, size 0x2
 #endif
@@ -202,7 +202,7 @@ class DrivableSectionsInRegion {
     }
 };
 
-// total size: 0x150
+// total size: 0x150S
 class VisibleTextureSection : public bTNode<VisibleTextureSection> {
   public:
     int16 SectionNumber;            // offset 0x8, size 0x2
@@ -371,8 +371,8 @@ struct VisibleSectionManagerInfo {
 
 // total size: 0x4C
 struct OverrideSectionObject : public bTNode<OverrideSectionObject> {
-    short SectionNumber; // offset 0x8, size 0x2
-    short Touched;       // offset 0xA, size 0x2
+    int16 SectionNumber; // offset 0x8, size 0x2
+    int16 Touched;       // offset 0xA, size 0x2
     char ObjectName[64]; // offset 0xC, size 0x40
 
     ~OverrideSectionObject();
@@ -390,7 +390,7 @@ struct VisibleSectionUserInfo {
     struct EventTriggerPack *pEventTriggerPack;         // offset 0x18, size 0x4
 };
 
-class UnallocatedVisibleSectionUserInfo : public bTNode<UnallocatedVisibleSectionUserInfo> {};
+class UnallocatedVisibleSectionUserInfo;
 
 // total size: 0x8
 struct VisibleGroupInfo {
@@ -435,6 +435,11 @@ class VisibleSectionManager {
     VisibleSectionBoundary *FindClosestBoundary(const bVector2 *point, float *distance_outside);
 
     VisibleSectionBoundary *FindBoundary(const bVector2 *point);
+
+    int GetDrivableSectionNumber(const bVector2 *point) {
+        VisibleSectionBoundary *b = this->FindBoundary(point);
+        return b != nullptr ? b->SectionNumber : 0;
+    }
 
     int FindCloseBoundaries(VisibleSectionBoundary **boundaries, int max_boundaries, const bVector2 *point, float distance_outside);
 

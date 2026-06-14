@@ -29,7 +29,7 @@
 
 #include <algorithm>
 
-UTL::COM::Factory<Sim::Param, Sim::IActivity, UCrc32>::Prototype _AITrafficManager("AITrafficManager", AITrafficManager::Construct);
+BIND_ACTIVITY_FACTORY(AITrafficManager);
 
 // Functionally matching
 // https://decomp.me/scratch/qvQEg
@@ -201,7 +201,7 @@ IVehicle *AITrafficManager::GetAvailableTrafficVehicle(Attrib::Key key, bool mak
     UMath::Vector3 initialVec = {0.0f, 0.0f, 1.0f};
     UMath::Vector3 initialPos = {0.0f, 0.0f, 0.0f};
     VehicleParams params(this, DRIVER_TRAFFIC, key, initialVec, initialPos, 0, nullptr, 0);
-    ISimable *isimable = UTL::COM::Factory<Sim::Param, ISimable, UCrc32>::CreateInstance("PVehicle", params);
+    ISimable *isimable = ISimable::CreateInstance("PVehicle", params);
     if (isimable) {
         static_cast<IActivity *>(this)->Attach(isimable);
         IVehicle *ivehicle;

@@ -1,11 +1,8 @@
 #ifndef SPEECH_EAXCOP_H
 #define SPEECH_EAXCOP_H
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
 #include "EAXCharacter.h"
+#include "MWRoadNames.h"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 #include "Speed/Indep/Src/World/WRoadNetwork.h"
 

@@ -1,9 +1,5 @@
-#ifndef WORLD_HELIRENDERCONN_H
-#define WORLD_HELIRENDERCONN_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef HELI_RENDER_CONN_H
+#define HELI_RENDER_CONN_H
 
 #include "Speed/Indep/Src/World/VehicleRenderConn.h"
 
@@ -13,7 +9,7 @@ class Pkt_Heli_Open : public Sim::Packet {
   public:
     Pkt_Heli_Open(unsigned int model_hash, unsigned int world_id, bool spool_load)
         : mModelHash(model_hash), //
-          mWorldID(world_id), //
+          mWorldID(world_id),     //
           mSpoolLoad(spool_load) {}
 
     UCrc32 ConnectionClass() override {
@@ -37,7 +33,7 @@ class Pkt_Heli_Open : public Sim::Packet {
     ~Pkt_Heli_Open() override {}
 
     unsigned int mModelHash; // offset 0x4, size 0x4
-    unsigned int mWorldID;   // offset 0x8, size 0x4
+    WUID mWorldID;           // offset 0x8, size 0x4
     bool mSpoolLoad;         // offset 0xC, size 0x1
 };
 
@@ -95,7 +91,7 @@ class HeliRenderConn : public VehicleRenderConn {
   public:
     static Sim::Connection *Construct(const Sim::ConnectionData &data);
 
-    HeliRenderConn(const Sim::ConnectionData &data, CarType type, RenderConn::Pkt_Heli_Open *open);
+    HeliRenderConn(const Sim::ConnectionData &data, CarType type, RenderConn::Pkt_Heli_Open *oc);
     ~HeliRenderConn() override;
 
     void OnRender(eView *view, int reflection) override;
@@ -104,12 +100,12 @@ class HeliRenderConn : public VehicleRenderConn {
   private:
     void Update(const RenderConn::Pkt_Heli_Service &data, float dT);
 
-    bMatrix4 mMatrices[4];         // offset 0x64, size 0x100
-    bMatrix4 mGeomMatrix;          // offset 0x164, size 0x40
-    unsigned int mLastRenderFrame; // offset 0x1A4, size 0x4
-    unsigned int mLastVisibleFrame; // offset 0x1A8, size 0x4
-    float mDistanceToView;         // offset 0x1AC, size 0x4
-    float mShadowScale;            // offset 0x1B0, size 0x4
+    bMatrix4 mMatrices[4];    // offset 0x64, size 0x100
+    bMatrix4 mGeomMatrix;     // offset 0x164, size 0x40
+    uint32 mLastRenderFrame;  // offset 0x1A4, size 0x4
+    uint32 mLastVisibleFrame; // offset 0x1A8, size 0x4
+    float mDistanceToView;    // offset 0x1AC, size 0x4
+    float mShadowScale;       // offset 0x1B0, size 0x4
 };
 
 #endif

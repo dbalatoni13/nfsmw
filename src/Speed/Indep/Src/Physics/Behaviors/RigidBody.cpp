@@ -997,7 +997,11 @@ bool RigidBody::CanCollideWithWorld() const {
 bool RigidBody::OnWCollide(const WCollisionMgr::WorldCollisionInfo &cInfo, const UMath::Vector3 &cPoint, void *userdata) {
     Volatile &data = *mData;
     data.SetStatus(Volatile::HAS_HAD_WORLD_COLLISION);
+#ifdef EA_BUILD_A124
+    SimSurface surface(cInfo.fBle.fSurfaceHash.GetValue());
+#else
     SimSurface surface(cInfo.fBle.fSurfaceRef);
+#endif
     surface.DebugOverride();
     UVector3 wV;
     if (cInfo.fNormal.w > 0.0f) {

@@ -71,7 +71,19 @@ struct tires : Instance {
         return *this;
     }
 
-    const tires &operator=(const Instance &rhs);
+    const Instance &GetBase() const {
+        return *this;
+    }
+
+    const tires &operator=(const tires &rhs) {
+        operator=(rhs.GetBase());
+        return *this;
+    }
+
+    const tires &operator=(const Instance &rhs) {
+        Instance::operator=(rhs);
+        return *this;
+    }
 
     const float &YAW_CONTROL(unsigned int index) const {
         const _LayoutStruct *lp = reinterpret_cast<_LayoutStruct *>(this->GetLayoutPointer());

@@ -5,6 +5,22 @@
 #include "Speed/Indep/bWare/Inc/bDebug.hpp"
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
 
+class emEventHandler : public bTNode<emEventHandler> {
+  public:
+    void *operator new(size_t size) {
+        return bOMalloc(EventHandlerSlotPool);
+    }
+
+    void operator delete(void *ptr) {
+        bFree(EventHandlerSlotPool, ptr);
+    }
+
+    EVENT_HANDLER_FUNC HandlerFunction;
+    uint32 StreamMask;
+    int32 ReferenceCount;
+    float TotalTime;
+};
+
 emEvent *emAddEvent(EVENT_ID event_id);
 
 int EventManagerStats[5];
@@ -25,7 +41,7 @@ void emEventManagerInit() {
 
 int LoaderEventManager(bChunk *bchunk) {
     if (bchunk->GetID() != BCHUNK_EVENT_TRIGGER) {
-        return false;
+        return 0;
     }
 
     EventTriggerPack *trigger_pack = nullptr;
@@ -42,7 +58,7 @@ int LoaderEventManager(bChunk *bchunk) {
                 }
 
                 if (trigger_pack->Version != 2) {
-                    return true;
+                    return 1;
                 }
 
                 VisibleSectionUserInfo *user_info = TheVisibleSectionManager.AllocateUserInfo(trigger_pack->ScenerySectionNumber);
@@ -51,7 +67,7 @@ int LoaderEventManager(bChunk *bchunk) {
             }
 
             case BCHUNK_EVENT_TRIGGER_NODES:
-                if (trigger_pack) {
+                if (trigger_pack != nullptr) {
                     trigger_pack->EventTree = reinterpret_cast<vAABBTree *>(chunk->GetAlignedData(16));
                     trigger_pack->EventTree->NodeArray = reinterpret_cast<vAABB *>(reinterpret_cast<int *>(trigger_pack->EventTree) + 4);
                     if (!trigger_pack->EndianSwapped) {
@@ -61,7 +77,7 @@ int LoaderEventManager(bChunk *bchunk) {
                 break;
 
             case BCHUNK_EVENT_TRIGGER_ENTRIES:
-                if (trigger_pack) {
+                if (trigger_pack != nullptr) {
                     trigger_pack->EventTriggerArray = reinterpret_cast<EventTrigger *>(chunk->GetAlignedData(16));
                     if (!trigger_pack->EndianSwapped) {
                         int num_triggers = static_cast<unsigned int>(chunk->GetAlignedSize(16)) / sizeof(EventTrigger);
@@ -82,21 +98,21 @@ int LoaderEventManager(bChunk *bchunk) {
         }
     }
 
-    trigger_pack->EndianSwapped = true;
-    if (trigger_pack) {
-        if (trigger_pack->NumEventTriggers != 0 && trigger_pack->EventTree && trigger_pack->EventTriggerArray) {
+    trigger_pack->EndianSwapped = 1;
+    if (trigger_pack != nullptr) {
+        if (trigger_pack->NumEventTriggers != 0 && (trigger_pack->EventTree != nullptr) && (trigger_pack->EventTriggerArray != nullptr)) {
             EventTriggerPackList.AddTail(trigger_pack);
         } else {
             EmptyEventTriggerPackList.AddTail(trigger_pack);
         }
     }
 
-    return true;
+    return 1;
 }
 
 int UnloaderEventManager(bChunk *bchunk) {
     if (bchunk->GetID() != BCHUNK_EVENT_TRIGGER) {
-        return false;
+        return 0;
     }
 
     bChunk *chunk = bchunk->GetFirstChunk();
@@ -110,17 +126,17 @@ int UnloaderEventManager(bChunk *bchunk) {
             }
 
             VisibleSectionUserInfo *user_info = TheVisibleSectionManager.GetUserInfo(trigger_pack->ScenerySectionNumber);
-            user_info->pEventTriggerPack = 0;
+            user_info->pEventTriggerPack = nullptr;
             TheVisibleSectionManager.UnallocateUserInfo(trigger_pack->ScenerySectionNumber);
             break;
         }
     }
 
-    return true;
+    return 1;
 }
 
 int emAddHandler(EVENT_HANDLER_FUNC function, unsigned int stream_mask) {
-    if ((function && stream_mask) == 0) {
+    if (!(function != nullptr) && (stream_mask != 0)) {
         return 0;
     }
     emEventHandler *handler;
@@ -132,7 +148,7 @@ int emAddHandler(EVENT_HANDLER_FUNC function, unsigned int stream_mask) {
     }
 
     handler = new emEventHandler();
-    if (!handler) {
+    if (handler == nullptr) {
         return 0;
     }
 
@@ -151,7 +167,7 @@ void emRemoveHandler(EVENT_HANDLER_FUNC function) {
     for (emEventHandler *handler = EventHandlerList.GetHead(); handler != EventHandlerList.EndOfList(); handler = handler->GetNext()) {
         if (handler->HandlerFunction == function) {
             if (--handler->ReferenceCount == 0) {
-                if (handler->Remove()) {
+                if (handler->Remove() != nullptr) {
                     delete handler;
                 }
                 EventManagerStats[1]--;
@@ -163,8 +179,8 @@ void emRemoveHandler(EVENT_HANDLER_FUNC function) {
 
 emEvent *emAddEvent(EVENT_ID event_id) {
     emEvent *event = new emEvent;
-    if (!event) {
-        return 0;
+    if (event == nullptr) {
+        return nullptr;
     }
 
     bMemSet(event, 0, sizeof(emEvent));
@@ -230,11 +246,11 @@ emEvent **emTriggerEventsInSection(bVector3 *position, int section_number) {
     float z = position->z;
     VisibleSectionUserInfo *user_info = TheVisibleSectionManager.GetUserInfo(section_number);
 
-    if (user_info && user_info->pEventTriggerPack) {
+    if ((user_info != nullptr) && (user_info->pEventTriggerPack != nullptr)) {
         EventTriggerPack *trigger_pack = user_info->pEventTriggerPack;
         vAABBTree *tree = trigger_pack->EventTree;
         vAABB *aabb = tree->QueryLeaf(x, y, z);
-        if (aabb) {
+        if (aabb != nullptr) {
             EventTrigger *root_event = trigger_pack->EventTriggerArray;
             int num_hits = -aabb->NumChildren;
 

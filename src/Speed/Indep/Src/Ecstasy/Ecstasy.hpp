@@ -1,9 +1,5 @@
-#ifndef ECSTASY_ECSTASY_H
-#define ECSTASY_ECSTASY_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef __ECSTASY_ENGINE__ECSTASY_HPP
+#define __ECSTASY_ENGINE__ECSTASY_HPP
 
 #include "EcstasyData.hpp"
 #include "EcstasyE.hpp"
@@ -45,7 +41,7 @@ class eModel : public bTNode<eModel> {
         bFree(eModelSlotPool, ptr);
     }
 
-    eModel() {}
+    eModel() : NameHash(0), Solid(nullptr) {}
 
     eModel(uint32 name_hash) {
         NameHash = 0;
@@ -179,8 +175,8 @@ class eView : public eViewPlatInterface {
     struct eDynamicLightContext *WorldLightContext; // offset 0x54, size 0x4
     eRenderTarget *RenderTargetTable[1];            // offset 0x58, size 0x4
     struct ScreenEffectDB *ScreenEffects;           // offset 0x5C, size 0x4
-    struct Rain *Precipitation;                     // offset 0x60, size 0x4
-    struct FacePixelation *facePixelation;          // offset 0x64, size 0x4
+    class Rain *Precipitation;                      // offset 0x60, size 0x4
+    class FacePixelation *facePixelation;           // offset 0x64, size 0x4
 
     eView();
     ~eView();
@@ -238,11 +234,17 @@ class eView : public eViewPlatInterface {
         }
         return nullptr;
     }
+
+    int IsVisible(eModel *model, bMatrix4 *local_world) {
+        return GetVisibleState(model, local_world) != EVISIBLESTATE_NOT;
+    }
+
+    int GetPixelMinSize() {
+        return PixelMinSize;
+    }
 };
 
 extern eView eViews[22];
-
-eView *eGetView(int32 view_id);
 
 inline eView *eGetView(int32 view_id, bool doAssert) {
     // if (doAssert) {
@@ -309,44 +311,8 @@ class ePoly {
     }
 };
 
-enum CurtainStatus {
-    CT_OVERIDE = 3,
-    CT_TURNON = 2,
-    CT_ACTIVE = 1,
-    CT_INACTIVE = 0,
-};
-
-class FacePixelation {
-    // total size: 0xC
-    eView *MyView;  // offset 0x0, size 0x4
-    float mScreenX; // offset 0x4, size 0x4
-    float mScreenY; // offset 0x8, size 0x4
-
-    static bool mPixelationOn; // size: 0x1, address: 0x80438AB0
-    static float mWidth;       // size: 0x4, address: 0x80438AB4
-    static float mHeight;      // size: 0x4, address: 0x80438AB8
-    static bVector3 mWorldPos; // size: 0x10, address: 0x804A7E04
-
-  public:
-    FacePixelation(eView *view);
-    ~FacePixelation();
-    static void SetLocation(bVector3 &worldPos);
-    void GetData(float *x, float *y, float *width, float *height);
-    void Render();
-
-    bool IsEnabled() {}
-
-    void Update(float x, float y) {}
-
-    static void SetDimensions(float width, float height) {}
-
-    static void Enable() {}
-
-    static void Disable() {}
-};
-
+// total size: 0x2004
 class LoadedTable {
-    // total size: 0x2004
     int NumLoaded;      // offset 0x0, size 0x4
     uint8 Counts[8192]; // offset 0x4, size 0x2000
 
@@ -354,7 +320,7 @@ class LoadedTable {
     LoadedTable() {}
 
     int IsLoaded(uint32 hash) {
-        return *this->GetPtr(hash) == 0;
+        return static_cast<int>(*this->GetPtr(hash) == 0);
     }
 
     void SetLoaded(uint32 hash) {
@@ -374,8 +340,8 @@ class LoadedTable {
     }
 };
 
+// total size: 0xC
 class eReplacementTextureTable {
-    // total size: 0xC
     uint32 hOldNameHash;       // offset 0x0, size 0x4
     uint32 hNewNameHash;       // offset 0x4, size 0x4
     TextureInfo *pTextureInfo; // offset 0x8, size 0x4
@@ -403,8 +369,9 @@ class eReplacementTextureTable {
     }
 
     void SetNewNameHash(uint32 name_hash) {
-        if (name_hash == this->hNewNameHash)
+        if (name_hash == this->hNewNameHash) {
             return;
+        }
 
         hNewNameHash = name_hash;
         pTextureInfo = (TextureInfo *)-1;
@@ -421,9 +388,31 @@ class eReplacementTextureTable {
     }
 };
 
+class ePointSprite3D {
+  public:
+    void *operator new(size_t size) {}
+
+    ePointSprite3D() {}
+    ~ePointSprite3D() {}
+
+    float X;       // offset 0x0, size 0x4
+    float Y;       // offset 0x4, size 0x4
+    float Z;       // offset 0x8, size 0x4
+    float Radius;  // offset 0xC, size 0x4
+    float S1;      // offset 0x10, size 0x4
+    float T1;      // offset 0x14, size 0x4
+    float S0;      // offset 0x18, size 0x4
+    float T0;      // offset 0x1C, size 0x4
+    uint32 Colour; // offset 0x20, size 0x4
+    uint32 pad0;   // offset 0x24, size 0x4
+    float Cos;     // offset 0x28, size 0x4
+    float Sin;     // offset 0x2C, size 0x4
+};
+
 void eInitModels();
-void NotifySolidLoader(eSolidListHeader *solid_list_header);
-void NotifySolidUnloader(eSolid *solid);
+int eSmoothNormals(eModel **model_table, int num_models);
+
+void eFixupReplacementTextureTables();
 
 void eFixupReplacementTexturesAfterUnloading(TextureInfo *texture_info);
 void eNotifyTextureLoading(TexturePack *texture_pack, TextureInfo *texture_info, bool loading);
@@ -434,12 +423,18 @@ float GetSunIntensity(eView *view);
 int eInitEngine();
 void eFixUpTables();
 bool eIsWidescreen();
+void eLoadStreamingSolid(uint32 *name_hash_table, int num_hashes, void (*callback)(void *), void *param0, int memory_pool_num);
 int eLoadStreamingSolidPack(const char *filename, void (*callback_function)(void *), void *callback_param, int memory_pool_num);
+void eUnloadStreamingSolid(uint32 *name_hash_table, int num_hashes);
+int eUnloadStreamingSolidPack(const char *filename);
 void eWaitForStreamingSolidPackLoading(const char *filename);
 
 void eInitSolids();
 void eSolidNotifyTextureLoading(TexturePack *texture_pack, TextureInfo *texture_info, bool loading);
+eSolid *eFindSolid(uint32 name_hash);
 eSolid *eFindSolid(uint32 name_hash, eSolidListHeader *solid_list_header);
+void NotifySolidLoader(eSolidListHeader *solid_list_header);
+void NotifySolidUnloader(eSolid *solid);
 int eSmoothNormals(eSolid **solid_table, int num_solids);
 
 void SetDuplicateTextureWarning(int enabled);
@@ -452,8 +447,16 @@ inline uint32 eGetFrameCounter() {
     return eFrameCounter;
 }
 
+inline void eLoadStreamingSolid(unsigned int *name_hash_table, int num_hashes, void (*callback)(uintptr_t), uintptr_t param0, int memory_pool_num) {
+    eLoadStreamingSolid(name_hash_table, num_hashes, reinterpret_cast<void (*)(void *)>(callback), reinterpret_cast<void *>(param0), memory_pool_num);
+}
+
 inline int eLoadStreamingSolidPack(const char *filename) {
     return eLoadStreamingSolidPack(filename, nullptr, nullptr, 0);
+}
+
+inline void eLoadStreamingSolidPack(const char *filename, void (*callback_func)(uintptr_t), uintptr_t callback_param, int memory_pool_num) {
+    eLoadStreamingSolidPack(filename, reinterpret_cast<void (*)(void *)>(callback_func), reinterpret_cast<void *>(callback_param), memory_pool_num);
 }
 
 inline void DisableWaitUntilRenderingDone() {
@@ -467,9 +470,24 @@ inline void EnableWaitUntilRenderingDone() {
 extern uint32 FrameMallocFailed;
 extern uint32 FrameMallocFailAmount;
 
+#define roundup(x, a) (((x) + (a) - 1) & (~((a) - 1)))
+
+inline void *eFrameMalloc(unsigned int size) {
+    unsigned char *address = CurrentBufferPos;
+
+    if (CurrentBufferPos + roundup(size, 16) >= CurrentBufferEnd) {
+        FrameMallocFailed = 1;
+        FrameMallocFailAmount += roundup(size, 16);
+        return nullptr;
+    } else {
+        CurrentBufferPos += roundup(size, 16);
+        return address;
+    }
+}
+
 static inline bMatrix4 *eFrameMallocMatrix(int num_matrices) {
     uint32 size = num_matrices * sizeof(bMatrix4);
-    uint8 *address = CurrentBufferPos;
+    uint8 *address = CurrentBufferPos; // TODO dwarf regalloc
     if (address + size < CurrentBufferEnd) {
         CurrentBufferPos += size;
     } else {
@@ -491,6 +509,8 @@ inline void EnableWaitForFrameBufferSwap() {
 }
 
 extern int AllowDuplicateSolids;
+extern int EnableEnvMap;
+extern bMatrix4 hack_man_matrix; // TODO where is this
 
 inline void eAllowDuplicateSolids(bool enable) {
     if (enable) {
@@ -498,6 +518,10 @@ inline void eAllowDuplicateSolids(bool enable) {
     } else {
         AllowDuplicateSolids--;
     }
+}
+
+inline bool eIsGameViewID(int id) {
+    return id >= EVIEW_FIRST_PLAYER && id <= EVIEW_LAST_PLAYER;
 }
 
 #endif

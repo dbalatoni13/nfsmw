@@ -3,7 +3,6 @@
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Src/World/WCollisionMgr.h"
 #include "Speed/Indep/Src/World/WWorld.h"
-#include "Speed/Indep/Src/World/WWorldMath.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 // TODO move
@@ -26,11 +25,11 @@ WCollider::WCollider(eColliderShape colliderShape, unsigned int typeMask, unsign
       fRefCount(0),                                  //
       fWorldID(0),                                   //
       fExclusionFlags(exclusionMask) {
-    ReserveLists(typeMask);
+    this->ReserveLists(typeMask);
 }
 
 WCollider::~WCollider() {
-    Clear();
+    this->Clear();
 }
 
 WCollider *WCollider::Get(unsigned int wuid) {
@@ -112,119 +111,145 @@ static void CalcNewRegionSizeFromRequested(bool useLastData, const UMath::Vector
     }
 }
 
+#ifdef EA_BUILD_A124
+bool gDisableWCollider;
+#endif
+
 void WCollider::Refresh(const UMath::Vector3 &pt, float radius, bool predictiveSizing) {
     if (!WWorld::Get().IsValid()) {
-        EmptyLists(0x1C);
+        this->EmptyLists(28);
         return;
     }
 
-    unsigned int updateMask = GetUpdateMask(pt, radius);
-    if (updateMask != 0) {
-        EmptyLists(updateMask);
-        ReserveLists(updateMask);
+#ifdef EA_BUILD_A124
+    if (gDisableWCollider) {
+        this->EmptyLists(28);
+        return;
+    }
+#endif
 
-        if (updateMask == fTypeMask) {
-            fRequestedPosition = pt;
-            fRequestedRadius = radius;
+    unsigned int updateMask = this->GetUpdateMask(pt, radius);
+    if (updateMask != 0) {
+        this->EmptyLists(updateMask);
+        this->ReserveLists(updateMask);
+
+        if (updateMask == this->fTypeMask) {
+            this->fRequestedPosition = pt;
+            this->fRequestedRadius = radius;
 
             if (predictiveSizing) {
-                CalcNewRegionSizeFromRequested(fRegionInitialized, fRequestedPosition, radius, fLastRequestedPosition, fLastRequestedRadius,
-                                               fLastRefreshedPosition, fPosition, fRadius);
+                CalcNewRegionSizeFromRequested(this->fRegionInitialized, this->fRequestedPosition, radius, this->fLastRequestedPosition,
+                                               this->fLastRequestedRadius, this->fLastRefreshedPosition, this->fPosition, this->fRadius);
             } else {
-                fPosition = fRequestedPosition;
-                fRadius = fRequestedRadius * 1.1f;
+                this->fPosition = this->fRequestedPosition;
+                this->fRadius = this->fRequestedRadius * 1.1f;
             }
         }
 
-        PrepareRegion(updateMask);
+        this->PrepareRegion(updateMask);
     }
 
     if (predictiveSizing) {
-        fLastRefreshedPosition = pt;
-        fLastRequestedPosition = pt;
-        fLastRequestedRadius = radius;
+        this->fLastRefreshedPosition = pt;
+        this->fLastRequestedPosition = pt;
+        this->fLastRequestedRadius = radius;
     }
 }
 
 void WCollider::PrepareRegion(unsigned int updateMask) {
     if (updateMask & 0xC) {
-        WCollisionMgr(fExclusionFlags, 3).GetInstanceList(fInstanceCacheList, fPosition, fRadius, fColliderShape == kColliderShape_Cylinder);
+#ifdef EA_BUILD_A124
+        bool cullStrips = updateMask & 8;
+#endif
+        WCollisionMgr(this->fExclusionFlags, 3)
+            .GetInstanceList(this->fInstanceCacheList, this->fPosition, this->fRadius,
+#ifdef EA_BUILD_A124
+                             cullStrips,
+#endif
+                             this->fColliderShape == kColliderShape_Cylinder);
+
+#ifdef EA_BUILD_A124
+        if (cullStrips) {
+#else
         if (updateMask & 0x8) {
-            WCollisionMgr(fExclusionFlags, 3).GetTriList(fInstanceCacheList, fPosition, fRadius, fTriList);
+#endif
+            WCollisionMgr(this->fExclusionFlags, 3).GetTriList(this->fInstanceCacheList, this->fPosition, this->fRadius, this->fTriList);
         }
     }
 
     if (updateMask & 0x4) {
-        fBarrierList.reserve(0x15);
-        WCollisionMgr(fExclusionFlags, 3).GetBarrierList(fBarrierList, fInstanceCacheList, fPosition, fRadius);
+        this->fBarrierList.reserve(21);
+        WCollisionMgr(this->fExclusionFlags, 3).GetBarrierList(this->fBarrierList, this->fInstanceCacheList, this->fPosition, this->fRadius);
     }
 
+#ifndef EA_BUILD_A124
     if (updateMask & 0x10) {
-        WCollisionMgr(fExclusionFlags, 3).GetObjectList(fObbList, fPosition, fRadius);
+        WCollisionMgr(fExclusionFlags, 3).GetObjectList(this->fObbList, this->fPosition, this->fRadius);
     }
+#endif
 
-    fRegionInitialized = true;
+    this->fRegionInitialized = true;
 }
 
 bool WCollider::IsEmpty() const {
     // TODO fObbList.empty()?
-    return fInstanceCacheList.empty() && fBarrierList.empty();
+    return this->fInstanceCacheList.empty() && this->fBarrierList.empty();
 }
 
 void WCollider::Clear() {
-    if (fRegionInitialized) {
-        ClearLists(0x1C);
-        fRegionInitialized = false;
+    if (this->fRegionInitialized) {
+        this->ClearLists(28);
+        this->fRegionInitialized = false;
     }
 }
 
 void WCollider::ClearLists(unsigned int typeMask) {
     if (typeMask & 0x8) {
-        fInstanceCacheList.clear();
-        fTriList.clear_all();
+        this->fInstanceCacheList.clear();
+        this->fTriList.clear_all();
     }
 
     if (typeMask & 0x4) {
-        fBarrierList.clear();
+        this->fBarrierList.clear();
     }
 
     if (typeMask & 0x10) {
-        fObbList.clear();
+        this->fObbList.clear();
     }
 }
 
 void WCollider::EmptyLists(unsigned int typeMask) {
     if (typeMask & 0x8) {
-        fInstanceCacheList.resize(0);
-        fTriList.clear_all();
+        this->fInstanceCacheList.resize(0);
+        this->fTriList.clear_all();
     }
 
     if (typeMask & 0x4) {
-        fBarrierList.resize(0);
+        this->fBarrierList.resize(0);
     }
 
     if (typeMask & 0x10) {
-        fObbList.resize(0);
+        this->fObbList.resize(0);
     }
 }
 
 void WCollider::ReserveLists(unsigned int typeMask) {
     if (typeMask & 0x8) {
-        fInstanceCacheList.reserve(100);
-        fTriList.reserve_total();
+        this->fInstanceCacheList.reserve(100);
+        this->fTriList.reserve_total();
     }
 
     if (typeMask & 0x4) {
-        fBarrierList.reserve(25);
+        this->fBarrierList.reserve(25);
     }
 
     if (typeMask & 0x10) {
-        fObbList.reserve(25);
+        this->fObbList.reserve(25);
     }
 }
 
 bool WCollider::Validate() const {
-    if (!fRegionInitialized) {
+    if (!this->fRegionInitialized) {
         return false;
     } else {
         return true;
@@ -232,9 +257,9 @@ bool WCollider::Validate() const {
 }
 
 unsigned int WCollider::GetUpdateMask(const UMath::Vector3 &pt, float radius) {
-    unsigned int updateMask = fTypeMask & 0x10;
-    if (!Validate() || !InRegion(pt, radius)) {
-        updateMask |= fTypeMask & 0xC;
+    unsigned int updateMask = this->fTypeMask & 0x10;
+    if (!this->Validate() || !this->InRegion(pt, radius)) {
+        updateMask |= this->fTypeMask & 0xC;
     }
     return updateMask;
 }
@@ -244,7 +269,7 @@ bool WCollider::InRegion(const UMath::Vector3 &pt, float radius) const {
     if (radDiff < 0.0f) {
         return false;
     }
-    float cpDiffSq = UMath::DistanceSquare(pt, fPosition);
+    float cpDiffSq = UMath::DistanceSquare(pt, this->fPosition);
     return cpDiffSq < radDiff * radDiff;
 }
 
@@ -259,12 +284,12 @@ void WCollider::InvalidateAllCachedData() {
 }
 
 void WCollisionObject::MakeMatrix(UMath::Matrix4 &m, bool addXLate) const {
-    m = fMat;
+    m = this->fMat;
 
     if (addXLate) {
-        m[3][0] = fPosRadius.x;
-        m[3][1] = fPosRadius.y;
-        m[3][2] = fPosRadius.z;
+        m[3][0] = this->fPosRadius.x;
+        m[3][1] = this->fPosRadius.y;
+        m[3][2] = this->fPosRadius.z;
         m[3][3] = 1.0f;
         return;
     }
@@ -281,36 +306,38 @@ float WCollisionInstance::CalcSphericalRadius() const {
     // maxExtent = WWorldMath::wmax(maxExtent, fHeight);
     // return WWorldMath::wmax(maxExtent, fInvMatRow0Width.w);
 
-    float maxExtent = (fInvMatRow2Length.w < fInvPosRadius.w) ? fInvPosRadius.w : fInvMatRow2Length.w;
-    maxExtent = (fHeight < maxExtent) ? maxExtent : fHeight;
-    return (fInvMatRow0Width.w < maxExtent) ? maxExtent : fInvMatRow0Width.w;
+    float maxExtent = (this->fInvMatRow2Length.w < this->fInvPosRadius.w) ? this->fInvPosRadius.w : this->fInvMatRow2Length.w;
+    maxExtent = (this->fHeight < maxExtent) ? maxExtent : this->fHeight;
+    return (this->fInvMatRow0Width.w < maxExtent) ? maxExtent : this->fInvMatRow0Width.w;
 }
 
 // STRIPPED
 const char *WCollisionInstance::GetName() const {}
 
 void WCollisionInstance::CalcPosition(UMath::Vector3 &pos) const {
-    pos.x = (-fInvPosRadius.x * fInvMatRow0Width.x - fInvPosRadius.y * fInvMatRow0Width.y) - fInvPosRadius.z * fInvMatRow0Width.z;
-    pos.z = (-fInvPosRadius.x * fInvMatRow2Length.x - fInvPosRadius.y * fInvMatRow2Length.y) - fInvPosRadius.z * fInvMatRow2Length.z;
+    pos.x = (-this->fInvPosRadius.x * this->fInvMatRow0Width.x - this->fInvPosRadius.y * this->fInvMatRow0Width.y) -
+            this->fInvPosRadius.z * this->fInvMatRow0Width.z;
+    pos.z = (-this->fInvPosRadius.x * this->fInvMatRow2Length.x - this->fInvPosRadius.y * this->fInvMatRow2Length.y) -
+            this->fInvPosRadius.z * fInvMatRow2Length.z;
 
     if (NeedsCrossProduct()) {
         UMath::Vector4 upVec;
-        UMath::Crossxyz(reinterpret_cast<const UMath::Vector4 &>(fInvMatRow2Length), reinterpret_cast<const UMath::Vector4 &>(fInvMatRow0Width),
-                        upVec);
-        pos.y = (-fInvPosRadius.x * upVec.x - fInvPosRadius.y * upVec.y) - fInvPosRadius.z * upVec.z;
+        UMath::Crossxyz(reinterpret_cast<const UMath::Vector4 &>(this->fInvMatRow2Length),
+                        reinterpret_cast<const UMath::Vector4 &>(this->fInvMatRow0Width), upVec);
+        pos.y = (-this->fInvPosRadius.x * upVec.x - this->fInvPosRadius.y * upVec.y) - this->fInvPosRadius.z * upVec.z;
     } else {
-        pos.y = -fInvPosRadius.y;
+        pos.y = -this->fInvPosRadius.y;
     }
 }
 
 void WCollisionInstance::MakeMatrix(UMath::Matrix4 &m, bool addXLate) const {
-    m[0][0] = fInvMatRow0Width.x;
-    m[0][1] = fInvMatRow0Width.y;
-    m[0][2] = fInvMatRow0Width.z;
+    m[0][0] = this->fInvMatRow0Width.x;
+    m[0][1] = this->fInvMatRow0Width.y;
+    m[0][2] = this->fInvMatRow0Width.z;
     m[0][3] = 0.0f;
 
     if (NeedsCrossProduct()) {
-        UMath::Crossxyz(reinterpret_cast<const UMath::Vector4 &>(fInvMatRow2Length), reinterpret_cast<const UMath::Vector4 &>(fInvMatRow0Width),
+        UMath::Crossxyz(reinterpret_cast<const UMath::Vector4 &>(this->fInvMatRow2Length), reinterpret_cast<const UMath::Vector4 &>(this->fInvMatRow0Width),
                         m[1]);
         m[1][3] = 0.0f;
     } else {
@@ -320,15 +347,15 @@ void WCollisionInstance::MakeMatrix(UMath::Matrix4 &m, bool addXLate) const {
         m[1][3] = 0.0f;
     }
 
-    m[2][0] = fInvMatRow2Length.x;
-    m[2][1] = fInvMatRow2Length.y;
-    m[2][2] = fInvMatRow2Length.z;
+    m[2][0] = this->fInvMatRow2Length.x;
+    m[2][1] = this->fInvMatRow2Length.y;
+    m[2][2] = this->fInvMatRow2Length.z;
     m[2][3] = 0.0f;
 
     if (addXLate) {
-        m[3][0] = fInvPosRadius.x;
-        m[3][1] = fInvPosRadius.y;
-        m[3][2] = fInvPosRadius.z;
+        m[3][0] = this->fInvPosRadius.x;
+        m[3][1] = this->fInvPosRadius.y;
+        m[3][2] = this->fInvPosRadius.z;
         m[3][3] = 1.0f;
     } else {
         m[3][0] = 0.0f;

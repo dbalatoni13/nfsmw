@@ -1,20 +1,14 @@
-#ifndef SUPPORT_UTILITY_UTLVECTOR_H
-#define SUPPORT_UTILITY_UTLVECTOR_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef UTL_VECTOR_COLLECTIONS_H
+#define UTL_VECTOR_COLLECTIONS_H
 
 #include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include <cstddef>
 
+static const int DEFAULT_VECTOR_ALIGNMENT = 16;
+
 namespace UTL {
-#if MILESTONE_OPT
-template <typename T, unsigned int Alignment = 16> class Vector {
-#else
-template <typename T, int Alignment = 16> class Vector {
-#endif
+template <typename T, int Alignment = DEFAULT_VECTOR_ALIGNMENT> class Vector {
   public:
     typedef T value_type;
     typedef value_type *pointer;
@@ -175,11 +169,7 @@ template <typename T, int Alignment = 16> class Vector {
     size_type mSize;     // offset 0x8, size 0x4
 };
 
-#if MILESTONE_OPT
-template <typename T, std::size_t Size, unsigned int Alignment = 16> class FixedVector : public Vector<T, Alignment> {
-#else
 template <typename T, int Size, int Alignment = 16> class FixedVector : public Vector<T, Alignment> {
-#endif
   public:
     FixedVector() {}
 
@@ -210,12 +200,7 @@ template <typename T, int Size, int Alignment = 16> class FixedVector : public V
     int mVectorSpace[(sizeof(typename Vector<T, Alignment>::value_type) * Size) / sizeof(int)];
 };
 
-
-#if MILESTONE_OPT
-template <typename T, unsigned int Alignment = 16> class FastVector : public Vector<T, Alignment> {
-#else
 template <typename T, int Alignment = 16> class FastVector : public Vector<T, Alignment> {
-#endif
   public:
     FastVector() {}
 
@@ -225,8 +210,7 @@ template <typename T, int Alignment = 16> class FastVector : public Vector<T, Al
 
   protected:
     typename Vector<T, Alignment>::pointer AllocVectorSpace(std::size_t num, unsigned int alignment) override {
-        return static_cast<typename Vector<T, Alignment>::pointer>(
-            gFastMem.Alloc(num * sizeof(T), nullptr));
+        return static_cast<typename Vector<T, Alignment>::pointer>(gFastMem.Alloc(num * sizeof(T), nullptr));
     }
 
     void FreeVectorSpace(typename Vector<T, Alignment>::pointer buffer, std::size_t num) override {

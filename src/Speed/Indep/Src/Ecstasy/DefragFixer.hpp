@@ -24,7 +24,12 @@ class DefragFixer {
 
   public:
     DefragFixer() {}
-    void Init() {}
+
+    void Init() {
+        this->MemLow = 0;
+        this->MemHigh = 0;
+        this->NumRanges = 0;
+    }
 
     void Add(void *pmem, int mem_size, int movement_offset);
     void *Fix(void *pmem);

@@ -6,12 +6,12 @@
 #endif
 
 #include "types.h"
-#include "Speed/Indep/Src/World/WorldTypes.h"
 #include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 #include "Speed/Indep/Libs/Support/Utility/UListable.h"
 #include "Speed/Indep/Libs/Support/Utility/UStandard.h"
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
-#include "Speed/Indep/Src/World/WCollisionTri.h"
+#include "WCollisionSTL.h"
+#include "WorldTypes.h"
 
 class WCollider : public UTL::Collections::Listable<WCollider, 100> {
   public:
@@ -42,46 +42,39 @@ class WCollider : public UTL::Collections::Listable<WCollider, 100> {
     static void InvalidateIntersectingColliders(const UMath::Vector4 &posRad);
     static void InvalidateAllCachedData();
 
-    static void *operator new(size_t size) {
-        return gFastMem.Alloc(size, nullptr);
-    }
-
-    static void operator delete(void *mem, size_t size) {
-        if (mem)
-            gFastMem.Free(mem, size, nullptr);
-    }
+    USE_FASTALLOC(WCollider);
 
     WCollisionInstanceCacheList &GetInstanceList() {
-        return fInstanceCacheList;
+        return this->fInstanceCacheList;
     }
 
     const WCollisionTriList &GetTriList() const {
-        return fTriList;
+        return this->fTriList;
     }
 
     WCollisionTriList &GetTriList() {
-        return fTriList;
+        return this->fTriList;
     }
 
     const WCollisionObjectList &GetObbList() const {
-        return fObbList;
+        return this->fObbList;
     }
 
     WCollisionObjectList &GetObbList() {
-        return fObbList;
+        return this->fObbList;
     }
 
     void Clear();
-    bool IsEmpty() const;
     void EmptyLists(unsigned int typeMask);
+    bool IsEmpty() const;
 
   private:
     void AddRef() {
-        ++fRefCount;
+        ++this->fRefCount;
     }
 
     void RemoveRef() {
-        --fRefCount;
+        --this->fRefCount;
     }
 
     unsigned int GetUpdateMask(const UMath::Vector4 *seg);

@@ -5,6 +5,8 @@
 #pragma once
 #endif
 
+#define MAKE_UDATA_TYPE(x) (x << 16)
+
 inline unsigned int UDataGroupTag(unsigned int type, unsigned int index) {
     if (index != -1) {
         return (type & 0xFFFF0000) | index;

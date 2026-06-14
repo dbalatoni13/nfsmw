@@ -8,7 +8,7 @@ SlotPool *ClanSlotPool = nullptr;
 bTList<Clan> ClanList;
 
 void InitClans() {
-    if (!ClanSlotPool) {
+    if (ClanSlotPool == nullptr) {
         ClanSlotPool = bNewSlotPool(0x48, 40, "ClanSlotPool", 0);
     }
 }

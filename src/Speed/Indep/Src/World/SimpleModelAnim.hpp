@@ -1,9 +1,5 @@
-#ifndef WORLD_SIMPLE_MODEL_ANIM_H
-#define WORLD_SIMPLE_MODEL_ANIM_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef SIMPLEMODELANIM_HPP
+#define SIMPLEMODELANIM_HPP
 
 namespace SimpleModelAnim {
 

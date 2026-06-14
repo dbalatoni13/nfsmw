@@ -7,6 +7,8 @@
 
 #include "Speed/Indep/Src/World/RaceParameters.hpp"
 
+// TODO this file was made up. What should we use instead? Maybe Speed.hpp?
+
 extern const char *BuildVersionChangelistName;
 
 extern int IsSoundEnabled;
@@ -39,6 +41,8 @@ extern int SkipDDayRaces;
 extern int UnlockAllThings;
 extern int MikeMannBuild;
 extern eTrackDirection SkipFETrackDirection;
+extern int TimeOfDaySwapEnable;
+extern bVector3 *SkipFEOverrideStartPosition;
 
 void InitConfig();
 void LoadConfigItems();

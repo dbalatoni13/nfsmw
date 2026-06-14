@@ -23,8 +23,8 @@ enum SceneryDetailLevel {
 // total size: 0x18
 struct SceneryBoundingBox {
 #ifdef EA_BUILD_A124
-    short int BBoxMin[3]; // offset 0x0, size 0x6
-    short int BBoxMax[3]; // offset 0x6, size 0x6
+    short BBoxMin[3]; // offset 0x0, size 0x6
+    short BBoxMax[3]; // offset 0x6, size 0x6
 #else
     float BBoxMin[3]; // offset 0x0, size 0xC
     float BBoxMax[3]; // offset 0xC, size 0xC
@@ -75,6 +75,12 @@ class SceneryInstance : public SceneryBoundingBox {
         return reinterpret_cast<bVector3 *>(Position);
     }
 
+    void GetMatrix(bMatrix4 *matrix) {
+        GetRotation(matrix);
+        GetPosition(&matrix->v3);
+        matrix->v3.w = 1.0f;
+    }
+
     void SetMatrix(const bMatrix4 *matrix) {
         const float rotation_conversion = 8192.0f;
         Rotation[0] = static_cast<short>(matrix->v0.x * rotation_conversion);
@@ -102,7 +108,7 @@ class SceneryInstance : public SceneryBoundingBox {
     int16 LightingContextNumber; // offset 0x1E, size 0x2
 #endif
     float Position[3];       // offset 0x20, size 0xC
-    short int Rotation[9];   // offset 0x2C, size 0x12
+    short Rotation[9];       // offset 0x2C, size 0x12
     int16 SceneryInfoNumber; // offset 0x3E, size 0x2
 };
 
@@ -178,7 +184,7 @@ class tPrecullerInfo {
     }
 
     int IsVisible(int preculler_section_number) {
-        return !IsNotVisible(preculler_section_number);
+        return static_cast<int>(IsNotVisible(preculler_section_number) == 0);
     }
 
     uint8 *GetBits() {
@@ -200,8 +206,8 @@ inline int GetPrecullerSectionNumber(float x, float y) {
 // total size: 0x24
 class SceneryTreeNode : public SceneryBoundingBox {
   public:
-    int16 NumChildren;       // offset 0x18, size 0x2
-    short int ChildCodes[5]; // offset 0x1A, size 0xA
+    int16 NumChildren;   // offset 0x18, size 0x2
+    int16 ChildCodes[5]; // offset 0x1A, size 0xA
 };
 
 // TODO
@@ -215,7 +221,7 @@ class ScenerySectionHeader : public bTNode<ScenerySectionHeader> {
 
     void TreeCull(SceneryCullInfo *scenery_cull_info);
 
-    void CullNodeRecursive(SceneryTreeNode *node, SceneryCullInfo *scenery_cull_info, unsigned int visibility_state);
+    void CullNodeRecursive(SceneryTreeNode *node, SceneryCullInfo *scenery_cull_info, uint32 visibility_state);
 
     SceneryInstance *GetSceneryInstance(int scenery_instance_number) {
         return &pSceneryInstance[scenery_instance_number];
@@ -247,7 +253,7 @@ class ScenerySectionHeader : public bTNode<ScenerySectionHeader> {
     int NumSceneryTreeNodes;               // offset 0x2C, size 0x4
     tPrecullerInfo *PrecullerInfoTable;    // offset 0x30, size 0x4
     int NumPrecullerInfos;                 // offset 0x34, size 0x4
-    int ViewsVisibleThisFrame;             // offset 0x38, size 0x4
+    int32 ViewsVisibleThisFrame;           // offset 0x38, size 0x4
 };
 
 // total size: 0x6
@@ -350,19 +356,19 @@ struct SceneryGroup : public bTNode<SceneryGroup> {
         }
     }
 
-    uint32 NameHash;                               // offset 0x8, size 0x4
-    int16 GroupNumber;                             // offset 0xC, size 0x2
-    int16 NumObjects;                              // offset 0xE, size 0x2
-    int8 BarrierFlag;                              // offset 0x10, size 0x1
-    int8 DriveThroughBarrierFlag;                  // offset 0x11, size 0x1
-    int16 Pad2;                                    // offset 0x12, size 0x2
-    short unsigned int OverrideInfoNumbers[16384]; // offset 0x14, size 0x8000
+    uint32 NameHash;                   // offset 0x8, size 0x4
+    int16 GroupNumber;                 // offset 0xC, size 0x2
+    int16 NumObjects;                  // offset 0xE, size 0x2
+    int8 BarrierFlag;                  // offset 0x10, size 0x1
+    int8 DriveThroughBarrierFlag;      // offset 0x11, size 0x1
+    int16 Pad2;                        // offset 0x12, size 0x2
+    uint16 OverrideInfoNumbers[16384]; // offset 0x14, size 0x8000
 };
 
 // total size: 0x8E0
 class GrandSceneryCullInfo {
   public:
-    int WhatSectionsShouldWeDraw(short *sections_to_draw, int max_sections_to_draw, SceneryCullInfo *scenery_cull_info);
+    int WhatSectionsShouldWeDraw(int16 *sections_to_draw, int max_sections_to_draw, SceneryCullInfo *scenery_cull_info);
     void CullView(SceneryCullInfo *scenery_cull_info);
     void DoCulling();
     void StuffScenery(eView *view, int stuff_flags);
@@ -388,6 +394,8 @@ void ServicePreculler();
 void LoadPrecullerBooBooScripts();
 void EnableSceneryGroup(unsigned int group_name_hash, bool flip_artwork);
 SceneryGroup *FindSceneryGroup(unsigned int name_hash);
+SceneryInstance *FindSceneryInstance(unsigned int name_hash);
+SceneryInfo *FindSceneryInfo(unsigned int name_hash);
 
 inline int IsSceneryGroupEnabled(int group_number) {
     return SceneryGroupEnabledTable[group_number];

@@ -74,4 +74,12 @@ class SimCollisionMap {
     unsigned long long fBitMap[3]; // offset 0x0, size 0x18
 };
 
+extern Attrib::StringKey BEHAVIOR_MECHANIC_AI;
+extern Attrib::StringKey BEHAVIOR_MECHANIC_ENGINE;
+extern Attrib::StringKey BEHAVIOR_MECHANIC_INPUT;
+extern Attrib::StringKey BEHAVIOR_MECHANIC_RIGIDBODY;
+extern Attrib::StringKey BEHAVIOR_MECHANIC_DRAW;
+extern Attrib::StringKey BEHAVIOR_MECHANIC_DAMAGE;
+extern Attrib::StringKey BEHAVIOR_MECHANIC_SUSPENSION;
+
 #endif

@@ -28,7 +28,7 @@ typedef unsigned int type_operator_new;
 
 #define ALIGN_16
 
-#define ONLINE_SUPPORT (0)
+#define ONLINE_SUPPORT (0) // TODO get rid of this
 
 #elif defined(EA_PLATFORM_XENON)
 
@@ -185,8 +185,14 @@ typedef signed char i8;
 #define M_TWOPI (2.0 * M_PI)
 #endif
 
+#ifdef CLANGD_DAMNIT
 typedef unsigned int uintptr_t;
 typedef int intptr_t;
+#else
+#define uintptr_t unsigned int
+#define intptr_t int
+#endif
+
 typedef volatile uint8 vu8;
 typedef volatile uint16 vu16;
 typedef volatile uint32 vu32;

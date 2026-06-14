@@ -4,14 +4,15 @@
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 
+// TODO where are these declared?
 enum SimpleModelAnimType {
     SIMPLEMODELANIM_ROTATEX = 1,
     SIMPLEMODELANIM_ROTATEY = 2,
-    SIMPLEMODELANIM_ROTATEZ = 4
+    SIMPLEMODELANIM_ROTATEZ = 4,
 };
 
 struct SimpleModelAnimInfo {
-    unsigned int mHash;
+    uint32 mHash;
     SimpleModelAnimType mRotationType;
     float mRotationSpeed;
     float mRotationAngle;
@@ -42,7 +43,7 @@ void Update() {
         SimpleModelAnimInfo &modelAnim = gSimpleSolidHashList[ix];
         float elapsed = WorldTimer.GetSeconds() - modelAnim.mLastAnimTime;
         modelAnim.mLastAnimTime = WorldTimer.GetSeconds();
-        modelAnim.mRotationAngle = elapsed * modelAnim.mRotationSpeed + modelAnim.mRotationAngle;
+        modelAnim.mRotationAngle = modelAnim.mRotationAngle + elapsed * modelAnim.mRotationSpeed;
         if (modelAnim.mRotationAngle >= 360.0f) {
             modelAnim.mRotationAngle -= 360.0f;
         }
@@ -75,5 +76,8 @@ void Animate(eModel *model, eSolid *solid, bMatrix4 *local_world) {
         }
     }
 }
+
+// STRIPPED
+bool IsSimpleAnim(unsigned int uiNameHash) {}
 
 } // namespace SimpleModelAnim

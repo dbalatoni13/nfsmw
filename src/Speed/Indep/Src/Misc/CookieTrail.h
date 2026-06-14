@@ -47,23 +47,15 @@ template <typename T, int U> class CookieTrail {
     }
 
     void AddNew(const T &t) {
-        int cap = mCapacity;
-        mLast = (mLast + 1) - ((mLast + 1) / cap) * cap;
-        if (mCount < cap) {
+        mLast = (mLast + 1) % mCapacity;
+        if (mCount < mCapacity) {
             mCount++;
         }
         mData[mLast] = t;
     }
 
     T &NthOldest(int n) {
-        T *data = mData;
-        int idx;
-        if (mCount < mCapacity) {
-            idx = n % mCount;
-        } else {
-            idx = (mLast + (n + 1)) % mCapacity;
-        }
-        return data[idx];
+        return mData[mCount < mCapacity ? (n % mCount) : ((mLast + 1 + n) % mCapacity)];
     }
 };
 
@@ -85,11 +77,12 @@ struct NavCookie {
     unsigned short SegmentNodeInd : 1; // offset 0x3E, size 0x2
 
     void SetSegmentParameter(float t) {
-        SegmentParameter = static_cast< short >(bClamp(t, 0.0f, 1.0f) * 65535.0f);
+        SegmentParameter = static_cast<short>(bClamp(t, 0.0f, 1.0f) * 65535.0f);
     }
 
     float GetSegmentParameter() const {
-        return static_cast< float >(SegmentParameter) / 65535.0f;
+        const float recip = 1.0f / 65535.0f;
+        return static_cast<float>(SegmentParameter) * recip;
     }
 };
 

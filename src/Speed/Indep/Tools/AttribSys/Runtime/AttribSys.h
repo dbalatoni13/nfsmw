@@ -14,7 +14,7 @@
 namespace Attrib {
 
 typedef uint32_t HashInt;
-typedef HashInt Key;
+typedef HashInt Key; // TODO might be in the global namespace
 typedef HashInt Type;
 
 // const int kTypeHandlerCount = 7;
@@ -189,7 +189,8 @@ class Database {
 
 class Array {
 #define Flag_AlignedAt16 (1 << 15)
-  private: // Returns the base location of this array's data
+  private:
+    // Returns the base location of this array's data
     unsigned char *BasePointer() const {
         return (unsigned char *)(&this[1]);
     }
@@ -369,6 +370,8 @@ class Array {
     uint16_t mEncodedTypePad;
 };
 
+#undef Flag_AlignedAt16
+
 // Credit: Brawltendo
 // total size: 0xC
 class Node {
@@ -447,7 +450,7 @@ class Node {
         if (IsByValue()) {
             return &mValue;
         } else if (IsLaidOut()) {
-            return (void *)(uintptr_t(layoutptr) + uintptr_t(mPtr));
+            return (void *)((uintptr_t)(layoutptr) + (uintptr_t)(mPtr));
         } else {
             return mPtr;
         }
@@ -455,7 +458,7 @@ class Node {
 
     Array *GetArray(void *layoutptr) const {
         if (IsLaidOut()) {
-            return (Array *)(uintptr_t(layoutptr) + uintptr_t(mArray));
+            return (Array *)((uintptr_t)(layoutptr) + (uintptr_t)(mArray));
         } else {
             return mArray;
         }
@@ -608,7 +611,12 @@ class RefSpec {
     const Collection *GetCollection() const;
     const Collection *GetCollectionWithDefault() const;
     RefSpec &operator=(const RefSpec &rhs);
-    RefSpec &operator=(int rhs) { mClassKey = 0; mCollectionKey = 0; mCollectionPtr = nullptr; return *this; }
+    RefSpec &operator=(int rhs) {
+        mClassKey = 0;
+        mCollectionKey = 0;
+        mCollectionPtr = nullptr;
+        return *this;
+    }
     void Clean() const;
 
     void operator delete(void *ptr, std::size_t bytes) {
@@ -903,8 +911,11 @@ class Blob {
     const void *mData; // offset 0x4, size 0x4
 };
 
-template <typename t> class TAttrib : public Attribute {
+// TODO how to use private inheritance and not run into issues when calling IsValid in effects.h?
+template <typename T> class TAttrib : public Attribute {
   public:
+    typedef T TypeOf;
+
     void operator delete(void *ptr, std::size_t bytes) {
         Free(ptr, bytes, "Attrib::TAttrib");
     }
@@ -913,7 +924,7 @@ template <typename t> class TAttrib : public Attribute {
     TAttrib(const Attribute &src) : Attribute(src) {}
     ~TAttrib() {}
 
-    const t &Get(unsigned int index) const;
+    const TypeOf &Get(unsigned int index) const;
 };
 
 } // namespace Attrib

@@ -1,13 +1,54 @@
 #ifndef SUPPORT_UTILITY_UVECTOR_MATH_H
 #define SUPPORT_UTILITY_UVECTOR_MATH_H
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 
 #include "UTypes.h"
 
 #include <cmath>
+
+typedef struct UMath::Vector2 COORD2;
+typedef struct UMath::Vector3 COORD3;
+typedef struct UMath::Vector4 COORD4;
+typedef struct UMath::Matrix4 MATRIX4;
+typedef struct UMath::Matrix3 MATRIX3;
+typedef struct UMath::Vector4 RQUAT;
+
+// total size: 0x40
+class UTransform {
+  public:
+    UTransform() {}
+
+    UTransform(const UMath::Matrix4 &m) : fTransform(m) {}
+
+    // UTransform(const UMath::Vector3 &t) {}
+
+    // UTransform(const UMath::Vector4 &q) {}
+
+    // UTransform(const UMath::Matrix3 &m, const UMath::Vector3 &t) {}
+
+    // UTransform(const UMath::Vector4 &q, const UMath::Vector4 &t) {}
+
+    ~UTransform() {}
+
+    // UMath::Vector4 Quaternion() const {}
+
+    // void Orientation(UMath::Matrix3 &result) const {}
+
+    // const UTransform &operator=(const UTransform &src) {}
+
+    // static const UTransform &Identity() {}
+
+    // UMath::Vector4 Apply(const UMath::Vector4 &input) const {}
+
+    // void Apply(const UMath::Vector4 &input, UMath::Vector4 &output) const {}
+
+    // void Apply(unsigned int count, const UMath::Vector4 *input, UMath::Vector4 *output) const {}
+
+    static const UTransform fgIdentityTransform; // size: 0x40, address: 0x80473E24
+
+    UMath::Matrix4 fTransform; // offset 0x0, size 0x40
+};
 
 // TODO sort these
 
@@ -43,7 +84,6 @@ void VU0_v4scalexyz(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vec
 void VU0_v4add(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &result);
 float VU0_v4distancesquarexyz(const UMath::Vector4 &p1, const UMath::Vector4 &p2);
 void VU0_v4addxyz(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &result);
-void VU0_v4negatexyz(UMath::Vector4 &result);
 void VU0_v4crossprodxyz(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &dest);
 void VU0_MATRIX3x4_vect3mult(const UMath::Vector3 &v, const UMath::Matrix4 &m, UMath::Vector3 &result);
 void VU0_MATRIX3x4_vect4mult(const UMath::Vector4 &v, const UMath::Matrix4 &m, UMath::Vector4 &result);
@@ -55,6 +95,7 @@ void VU0_m4toquat(const UMath::Matrix4 &mat, UMath::Vector4 &result);
 void VU0_MATRIX4_vect3mult(const UMath::Vector3 &v, const UMath::Matrix4 &m, UMath::Vector3 &result);
 void VU0_MATRIX4_vect4mult(const UMath::Vector4 &v, const UMath::Matrix4 &m, UMath::Vector4 &result);
 void VU0_MATRIX4setyrot(UMath::Matrix4 &dest, const float yangle);
+void VU0_Matrix4ToEuler(const UMath::Matrix4 &m, UMath::Vector3 &e);
 
 // has to be above VU0_v3dotprod so it doesn't inline
 inline void VU0_MATRIX3x4dotprod(const UMath::Vector3 &a, const UMath::Matrix4 &b, UMath::Vector3 &r) {
@@ -219,8 +260,6 @@ inline float VU0_v4distancesquarexyz(const UMath::Vector4 &p1, const UMath::Vect
 
 inline void VU0_v4addxyz(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &result) {}
 
-inline void VU0_v4negatexyz(UMath::Vector4 &result) {}
-
 inline void VU0_MATRIX3x4_vect3mult(const UMath::Vector3 &v, const UMath::Matrix4 &m, UMath::Vector3 &result) {
     asm __volatile__("lqc2 vf1, %1\n"
                      "lqc2 vf2, 0x0(%2)\n"
@@ -277,7 +316,7 @@ inline float VU0_fabs(const float a) {
         return -a;
     }
     return a;
-    // return a < 0.0f ? -a : a;
+        // return a < 0.0f ? -a : a;
 #endif
 }
 
@@ -312,9 +351,22 @@ inline float VU0_floatmax(const float a, const float b) {
 }
 
 inline void VU0_v3negate(UMath::Vector3 &result) {
+#ifdef EA_PLATFORM_PLAYSTATION2
+    asm __volatile__("lqc2 vf1, %0\n"
+                     "vsub vf1, vf0, vf1\n"
+                     "sqc2 vf1, %0"
+                     : "=o"(result));
+#else
     result.x = -result.x;
     result.y = -result.y;
     result.z = -result.z;
+#endif
+}
+
+inline void VU0_v3lerp(const UMath::Vector3 &v1, const UMath::Vector3 &v2, const float t, UMath::Vector3 &target) {
+    target.x = v1.x + (v2.x - v1.x) * t;
+    target.y = v1.y + (v2.y - v1.y) * t;
+    target.z = v1.z + (v2.z - v1.z) * t;
 }
 
 inline float VU0_v3distance(const UMath::Vector3 &p1, const UMath::Vector3 &p2) {
@@ -393,6 +445,12 @@ inline void VU0_v3unitcrossprod(const UMath::Vector3 &a, const UMath::Vector3 &b
     VU0_v3crossprod(a, b, dest);
     VU0_v3unit(dest, dest);
 #endif
+}
+
+inline float VU0_v4distancexyz(const UMath::Vector4 &p1, const UMath::Vector4 &p2) {
+    UMath::Vector4 temp;
+    VU0_v4subxyz(p1, p2, temp);
+    return VU0_sqrt(VU0_v4lengthsquarexyz(temp));
 }
 
 inline void VU0_ExtractXAxis3FromQuat(const UMath::Vector4 &quat, UMath::Vector3 &result) {
@@ -565,30 +623,30 @@ inline void VU0_MATRIX4Copy(const UMath::Matrix4 &a, UMath::Matrix4 &b) {
 // TODO
 inline void VU0_v4Copy(const UMath::Vector4 &a, UMath::Vector4 &b) {
 #ifdef EA_PLATFORM_PLAYSTATION2
-    // u_long128 _t0;
-    // u_long128 _t1;
-    // asm __volatile__("lq %0, 0x0(%2)\n"
-    //                  "lq %1, 0x10(%2)\n"
-    //                  "sq %0, %3\n"
-    //                  "sq %1, %4\n"
-    //                  "lq %0, 0x20(%2)\n"
-    //                  "lq %1, 0x30(%2)\n"
-    //                  "sq %0, %5\n"
-    //                  "sq %1, %6\n"
-    //                  :
-    //                  : "r"(_t0), "r"(_t1), "r"(&a), "o"(b.v0), "o"(b.v1), "o"(b.v2), "o"(b.v3));
+        // u_long128 _t0;
+        // u_long128 _t1;
+        // asm __volatile__("lq %0, 0x0(%2)\n"
+        //                  "lq %1, 0x10(%2)\n"
+        //                  "sq %0, %3\n"
+        //                  "sq %1, %4\n"
+        //                  "lq %0, 0x20(%2)\n"
+        //                  "lq %1, 0x30(%2)\n"
+        //                  "sq %0, %5\n"
+        //                  "sq %1, %6\n"
+        //                  :
+        //                  : "r"(_t0), "r"(_t1), "r"(&a), "o"(b.v0), "o"(b.v1), "o"(b.v2), "o"(b.v3));
 #else
     b = a;
-    // *reinterpret_cast<int *>(&b.x) = *reinterpret_cast<const int *>(&a.x);
-    // *reinterpret_cast<int *>(&b.y) = *reinterpret_cast<const int *>(&a.y);
-    // *reinterpret_cast<int *>(&b.z) = *reinterpret_cast<const int *>(&a.z);
-    // *reinterpret_cast<int *>(&b.w) = *reinterpret_cast<const int *>(&a.w);
+        // *reinterpret_cast<int *>(&b.x) = *reinterpret_cast<const int *>(&a.x);
+        // *reinterpret_cast<int *>(&b.y) = *reinterpret_cast<const int *>(&a.y);
+        // *reinterpret_cast<int *>(&b.z) = *reinterpret_cast<const int *>(&a.z);
+        // *reinterpret_cast<int *>(&b.w) = *reinterpret_cast<const int *>(&a.w);
 #endif
 }
 
 inline float VU0_v3length(const struct UMath::Vector3 &a) {
 #ifdef EA_PLATFORM_PLAYSTATION2
-    u_long128 _t0;
+    u_long128 _t0; // TODO uint128 instead of u_long128
     float result;
     asm __volatile__("lui %2, 0x3f80\n"
                      "lqc2 vf1, %1\n"
@@ -644,7 +702,7 @@ inline void VU0_v3unit(const UMath::Vector3 &a, UMath::Vector3 &result) {
     u_long128 _t0;
     asm __volatile__("lui %2, 0x3f80\n"
                      "lqc2 vf1, %1\n"
-                     "lqc2 vf2, %1\n"
+                     "lqc2 vf2, %0\n"
                      "vmul vf2, vf1, vf1\n"
                      "qmtc2.ni %2, vf3\n"
                      "vmulax ACC, vf1, vf1x\n"
@@ -672,6 +730,12 @@ inline void VU0_v4unitxyz(const UMath::Vector4 &a, UMath::Vector4 &result) {
     VU0_v4scalexyz(a, rlen, result);
 }
 
+inline void VU0_v4negatexyz(UMath::Vector4 &result) {
+    result.x = -result.x;
+    result.y = -result.y;
+    result.z = -result.z;
+}
+
 inline float IntAsFloat(const int &i) {
     return *reinterpret_cast<const float *>(&i);
 }
@@ -684,7 +748,11 @@ inline float V3DistanceSquared(const UMath::Vector3 &a, const UMath::Vector3 &b)
     return dx * dx + dy * dy + dz * dz;
 }
 
-// TODO where to put these? TODO only one of them uses IntAsFloat actually
+inline int FLOAT2INT(float f) {
+    return static_cast<int>(f);
+}
+
+// TODO where to put these?
 static const float kFloatScaleUp = IntAsFloat(0x00800000);
 static const float kFloatScaleDown = 1.0f / kFloatScaleUp;
 

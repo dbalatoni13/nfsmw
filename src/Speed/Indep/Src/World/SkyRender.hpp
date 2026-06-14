@@ -1,0 +1,18 @@
+#ifndef __SKYRENDER_HPP
+#define __SKYRENDER_HPP
+
+enum SKY_LAYER {
+    SKY_LAYER_BLUE = 0,
+    SKY_LAYER_CLOUDS = 1,
+    SKY_LAYER_OVERCAST = 2,
+    SKY_LAYER_LOWREZ = 3,
+    SKY_LAYER_REFLECTION = 4,
+    SKY_NUM_LAYERS = 5,
+};
+
+enum SKY_TEX_TYPE {
+    TEX_MAIN = 0,
+    TEX_CAP = 1,
+};
+
+#endif

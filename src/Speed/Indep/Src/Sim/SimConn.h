@@ -1,11 +1,20 @@
-#ifndef SIM_SIMCONN_H
-#define SIM_SIMCONN_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef SIM_CONN_H
+#define SIM_CONN_H
 
 #include "Speed/Indep/Libs/Support/Utility/UCrc.h"
+
+// I added override to this macro so clangd doesn't yell at us
+#define DECLARE_SIMPACKET(_PKT_, _NAME_)                                                                                                             \
+    unsigned Size() override {                                                                                                                       \
+        return sizeof(_PKT_);                                                                                                                        \
+    }                                                                                                                                                \
+    static unsigned SType() {                                                                                                                        \
+        static UCrc32 hash(_NAME_);                                                                                                                  \
+        return hash.GetValue();                                                                                                                      \
+    }                                                                                                                                                \
+    unsigned Type() override {                                                                                                                       \
+        return SType();                                                                                                                              \
+    }
 
 namespace Sim {
 

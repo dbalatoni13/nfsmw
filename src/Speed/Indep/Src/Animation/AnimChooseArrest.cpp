@@ -206,7 +206,7 @@ class NISListenerActivity : public Sim::Activity, public INISLISTENER {
     Hermes::HHANDLER mMessageBusted; // offset 0x54, size 0x4
 };
 
-static UTL::COM::Factory<Sim::Param, Sim::IActivity, UCrc32>::Prototype _NISListenerActivity(UCrc32("NISActivity"), NISListenerActivity::Construct);
+BIND_ACTIVITY_FACTORY(NISListenerActivity);
 
 NISListenerActivity::NISListenerActivity() : Sim::Activity(1), INISLISTENER(this) {
     // TODO magic
@@ -238,7 +238,7 @@ void NISListenerActivity::MessageBusted(const MPerpBusted &message) {
     UMath::Vector3 markerPos;
     float markerAngle;
     if (ChooseArrestLocation(markerPos, markerAngle)) {
-        Sim::IActivity *activity = UTL::COM::Factory<Sim::Param, Sim::IActivity, UCrc32>::CreateInstance("NISActivity", Sim::Param());
+        Sim::IActivity *activity = Sim::IActivity::CreateInstance("NISActivity", Sim::Param());
         INIS *nis;
         if (activity && activity->QueryInterface(&nis)) {
             nis->AddCar("car1", playerVehicle);
