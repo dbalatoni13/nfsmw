@@ -31,15 +31,19 @@ import argparse
 re_total_size = re.compile(r"^// total size:\s*0x[0-9A-Fa-f]+")
 re_struct_name = re.compile(r"\bstruct\s+(\w+)")
 # Must start at column 0 — indented enums are nested inside structs
-re_enum_start = re.compile(r"^enum\s+(?:class\s+)?(\w+)\s*(?::\s*[\w:]+\s*)?\{")
-re_enum_name = re.compile(r"^enum\s+(?:class\s+)?(\w+)")
+re_enum_start = re.compile(
+    r"^enum\s+(?:class\s+)?([\w:]+)\s*(?::\s*[\w:]+\s*)?\{"
+)
+re_enum_name = re.compile(r"^enum\s+(?:class\s+)?([\w:]+)", re.MULTILINE)
+re_decl_comment = re.compile(r"^// Decl:\s+")
 re_func_range = re.compile(r"^// Range:\s*(0x[0-9A-Fa-f]+)\s*->\s*(0x[0-9A-Fa-f]+)")
 # Matches the offset/size annotation on member variable lines
 re_member = re.compile(r"offset\s+0x[0-9A-Fa-f]+,\s*size\s+0x[0-9A-Fa-f]+")
 re_typedef = re.compile(r"^typedef\s+\S")
-# Any line that looks like a declaration: one or more type tokens followed by a name and semicolon.
+# Any line that looks like a declaration: one or more type tokens followed by a
+# name, optional array extents, optional initializer, and semicolon.
 # Excludes typedefs (handled separately) and lines that are clearly not declarations.
-re_global_decl = re.compile(r"^(?:[\w\s:<>*&]+?)\b\w+\s*;")
+re_global_decl = re.compile(r"^(?:[\w\s:<>*&]+?)\b\w+(?:\[[^\]]*\])*\s*(?:=[^;]*)?;")
 
 STRIPPED_ADDR = "0XFFFFFFFF"
 
@@ -256,15 +260,23 @@ def extract_enum_blocks(lines: list[str]) -> list[str]:
     current: list[str] = []
     in_block = False
     brace_depth = 0
+    pending_decl: str | None = None
 
     for line in lines:
         stripped = line.strip()
         if not in_block:
+            if re_decl_comment.match(line):
+                pending_decl = line
+                continue
             # Match on raw line so indented (nested) enums are skipped
             if re_enum_start.match(line):
-                current = [line]
+                current = ([pending_decl] if pending_decl else []) + [line]
                 in_block = True
                 brace_depth = line.count("{") - line.count("}")
+                pending_decl = None
+                continue
+            if stripped:
+                pending_decl = None
             continue
         current.append(line)
         brace_depth += line.count("{") - line.count("}")

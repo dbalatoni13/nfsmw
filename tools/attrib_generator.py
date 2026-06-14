@@ -126,10 +126,7 @@ def get_non_layout_getter(field, hash):
 
     out += f"""const {type} &{field_name}({"unsigned int index" if is_array else ""}) const {{
         const {type} *resultptr = reinterpret_cast<const {type} *>(GetAttributePointer({hash}{", index" if is_array else ", 0"}));
-        if (!resultptr) {{
-            resultptr = reinterpret_cast<const {type} *>(DefaultDataArea(sizeof({type})));
-        }}
-        return *resultptr;
+        return !resultptr ? *reinterpret_cast<const {type} *>(DefaultDataArea(sizeof({type}))) : *resultptr;
     }}
         
 """
