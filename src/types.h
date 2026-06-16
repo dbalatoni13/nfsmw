@@ -26,6 +26,7 @@ typedef float float_t;
 typedef double double_t;
 typedef unsigned int type_operator_new;
 
+// TODO remove these
 #define ALIGN_16
 
 #define ONLINE_SUPPORT (0) // TODO get rid of this
@@ -199,6 +200,9 @@ typedef volatile uint32 vu32;
 typedef volatile int8 vs8;
 typedef volatile int16 vs16;
 typedef volatile int32 vs32;
+
+#undef NULL
+#define NULL nullptr
 
 #define REFRESH_RATE (60.0f)
 
