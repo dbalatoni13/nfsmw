@@ -15,6 +15,7 @@ import json
 import math
 import os
 import platform
+import re
 import sys
 from pathlib import Path
 from typing import (
@@ -2075,6 +2076,67 @@ def generate_compile_commands(
 
     clangd_config = []
 
+    source_list_include_re = re.compile(r'^\s*#\s*include\s+"([^"]+)"')
+
+    def resolve_source_list_include(source_list: Path, include: str) -> Optional[Path]:
+        candidates = [
+            source_list.parent / include,
+            config.src_dir / include,
+            Path(include),
+        ]
+        for candidate in candidates:
+            if candidate.is_file():
+                return candidate
+        return None
+
+    def source_list_includes(source_list: Path) -> List[Path]:
+        if "SourceLists" not in source_list.as_posix():
+            return []
+
+        includes: List[Path] = []
+        try:
+            with open(source_list, "r", encoding="utf-8") as f:
+                for line in f:
+                    match = source_list_include_re.match(line)
+                    if match is None:
+                        continue
+
+                    include_path = resolve_source_list_include(
+                        source_list, match.group(1)
+                    )
+                    if include_path is None or not file_is_c_cpp(include_path):
+                        continue
+
+                    includes.append(include_path)
+        except OSError:
+            pass
+
+        return includes
+
+    def fake_source_list_obj_path(source_list_obj: Path, include_path: Path) -> Path:
+        try:
+            relative_include = include_path.relative_to(config.src_dir)
+        except ValueError:
+            relative_include = include_path
+
+        return (
+            source_list_obj.parent
+            / "_clangd_source_list"
+            / relative_include.with_suffix(source_list_obj.suffix)
+        )
+
+    def add_compile_command(
+        source_path: Path, output_path: Path, arguments: List[Union[str, Path]]
+    ) -> None:
+        clangd_config.append(
+            {
+                "directory": Path.cwd(),
+                "file": source_path,
+                "output": output_path,
+                "arguments": arguments,
+            }
+        )
+
     def add_unit(build_obj: BuildConfigUnit) -> None:
         obj = objects.get(build_obj["name"])
         if obj is None:
@@ -2197,13 +2259,14 @@ def generate_compile_commands(
                 "-o",
                 obj.src_obj_path,
             ]
-        unit_config = {
-            "directory": Path.cwd(),
-            "file": obj.src_path,
-            "output": obj.src_obj_path,
-            "arguments": unit_config_args,
-        }
-        clangd_config.append(unit_config)
+        add_compile_command(obj.src_path, obj.src_obj_path, unit_config_args)
+
+        for include_path in source_list_includes(obj.src_path):
+            include_obj_path = fake_source_list_obj_path(obj.src_obj_path, include_path)
+            include_args = list(unit_config_args)
+            include_args[-3] = include_path
+            include_args[-1] = include_obj_path
+            add_compile_command(include_path, include_obj_path, include_args)
 
     # Add DOL units
     for unit in build_config["units"]:
