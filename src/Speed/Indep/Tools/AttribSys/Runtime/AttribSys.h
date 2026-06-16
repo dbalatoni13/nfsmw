@@ -970,14 +970,14 @@ const Key h64_default = 0xeec2271a;
 namespace EA {
 namespace Reflection {
 
-typedef long long Int64;
-typedef long Int32;
-typedef short Int16;
-typedef char Int8;
-typedef unsigned long long UInt64;
-typedef unsigned long UInt32;
-typedef unsigned short UInt16;
-typedef unsigned char UInt8;
+typedef int64_t Int64;
+typedef int32_t Int32;
+typedef int16_t Int16;
+typedef int8_t Int8;
+typedef uint64_t UInt64;
+typedef uint32_t UInt32;
+typedef uint16_t UInt16;
+typedef uint8_t UInt8;
 typedef char Char;
 typedef bool Bool;
 typedef float Float;
