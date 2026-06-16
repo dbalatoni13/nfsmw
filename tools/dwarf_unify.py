@@ -1501,6 +1501,10 @@ def decl_file_key(path: Optional[str]) -> str:
     return path.replace("\\", "/").lower()
 
 
+def same_source_file(left: str, right: str) -> bool:
+    return decl_file_key(left) == decl_file_key(right)
+
+
 def build_located_decl_index(
     located_carbon_by_name: Dict[Tuple[str, str], List[TopDecl]]
 ) -> Tuple[LocatedDeclIndex, LocatedDeclIndex]:
@@ -1754,7 +1758,11 @@ def pair_top_functions(base_functions: List[TopDecl], carbon_functions: List[Top
 
         if decl.decl_file is not None and decl.decl_line is not None:
             order_line = decl.decl_line * ORDER_SCALE
-            if decl.decl_file == previous_file and previous_order_line is not None:
+            if (
+                previous_file is not None
+                and same_source_file(decl.decl_file, previous_file)
+                and previous_order_line is not None
+            ):
                 order_line = max(order_line, previous_order_line + 1)
             decl.order_file = decl.decl_file
             decl.order_line = order_line
@@ -1764,11 +1772,6 @@ def pair_top_functions(base_functions: List[TopDecl], carbon_functions: List[Top
             decl.order_file = previous_file
             decl.order_line = previous_order_line + 1
             previous_order_line = decl.order_line
-
-
-def same_source_file(left: str, right: str) -> bool:
-    return left.replace("\\", "/").lower() == right.replace("\\", "/").lower()
-
 
 def item_match_key(item: DeclItem) -> str:
     return item.match_key or item.key
@@ -2536,23 +2539,31 @@ def render_output(
     class_index: ProStreetClassIndex,
     ps2_function_index: Optional[Ps2FunctionIndex] = None,
 ) -> str:
-    grouped: Dict[str, List[Tuple[int, int, object]]] = {}
+    grouped: Dict[str, Tuple[str, List[Tuple[int, int, object]]]] = {}
+
+    def add_grouped(file_name: str, item: Tuple[int, int, object]) -> None:
+        key = decl_file_key(file_name)
+        if key not in grouped:
+            grouped[key] = (file_name, [])
+        grouped[key][1].append(item)
+
     for typ in base_result.types:
         file_name, line = type_file_and_line(typ)
-        grouped.setdefault(file_name, []).append((line * ORDER_SCALE, type_sort_rank(typ), typ))
+        add_grouped(file_name, (line * ORDER_SCALE, type_sort_rank(typ), typ))
     for decl in base_result.top_decls:
         file_name, line = top_decl_file_and_line(decl)
-        grouped.setdefault(file_name, []).append((line, 0, decl))
+        add_grouped(file_name, (line, 0, decl))
 
     output: List[str] = []
     if base_result.others:
         output.append("// File: <top-level declarations>")
         output.extend(base_result.others)
         output.append("")
-    for file_name in sorted(grouped):
+    for file_key in sorted(grouped):
+        file_name, file_items = grouped[file_key]
         output.append(f"// File: {file_name}")
         for _, _, item in sorted(
-            grouped[file_name],
+            file_items,
             key=lambda pair: (pair[0], pair[1], pair[2].original_index),
         ):
             if isinstance(item, TypeDecl):
