@@ -2,27 +2,30 @@
 #define _attrib_gen_chassis_h
 
 #include "Speed/Indep/Src/Misc/MWAttribUserTypes.h"
+#include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 
 namespace Attrib {
 namespace Gen {
 
 struct chassis : Instance {
     struct _LayoutStruct {
-        AxlePair SHOCK_DIGRESSION;               // offset 0x0, size 0x8
-        AxlePair SPRING_PROGRESSION;             // offset 0x8, size 0x8
-        AxlePair TRAVEL;                         // offset 0x10, size 0x8
-        AxlePair RIDE_HEIGHT;                    // offset 0x18, size 0x8
-        AxlePair TRACK_WIDTH;                    // offset 0x20, size 0x8
-        AxlePair SHOCK_EXT_STIFFNESS;            // offset 0x28, size 0x8
-        AxlePair SHOCK_STIFFNESS;                // offset 0x30, size 0x8
-        AxlePair SPRING_STIFFNESS;               // offset 0x38, size 0x8
-        AxlePair SHOCK_VALVING;                  // offset 0x40, size 0x8
-        AxlePair SWAYBAR_STIFFNESS;              // offset 0x48, size 0x8
-        EA::Reflection::Float ROLL_CENTER;       // offset 0x50, size 0x4
-        EA::Reflection::Float WHEEL_BASE;        // offset 0x54, size 0x4
-        EA::Reflection::Float SHOCK_BLOWOUT;     // offset 0x58, size 0x4
-        EA::Reflection::Float AERO_CG;           // offset 0x5c, size 0x4
-        EA::Reflection::Float RENDER_MOTION;     // offset 0x60, size 0x4
+        AxlePair SHOCK_DIGRESSION;           // offset 0x0, size 0x8
+        AxlePair SPRING_PROGRESSION;         // offset 0x8, size 0x8
+        AxlePair TRAVEL;                     // offset 0x10, size 0x8
+        AxlePair RIDE_HEIGHT;                // offset 0x18, size 0x8
+        AxlePair TRACK_WIDTH;                // offset 0x20, size 0x8
+        AxlePair SHOCK_EXT_STIFFNESS;        // offset 0x28, size 0x8
+        AxlePair SHOCK_STIFFNESS;            // offset 0x30, size 0x8
+        AxlePair SPRING_STIFFNESS;           // offset 0x38, size 0x8
+        AxlePair SHOCK_VALVING;              // offset 0x40, size 0x8
+        AxlePair SWAYBAR_STIFFNESS;          // offset 0x48, size 0x8
+        EA::Reflection::Float ROLL_CENTER;   // offset 0x50, size 0x4
+        EA::Reflection::Float WHEEL_BASE;    // offset 0x54, size 0x4
+        EA::Reflection::Float SHOCK_BLOWOUT; // offset 0x58, size 0x4
+        EA::Reflection::Float AERO_CG;       // offset 0x5c, size 0x4
+#ifndef EA_BUILD_A124
+        EA::Reflection::Float RENDER_MOTION; // offset 0x60, size 0x4
+#endif
         EA::Reflection::Float FRONT_AXLE;        // offset 0x64, size 0x4
         EA::Reflection::Float AERO_COEFFICIENT;  // offset 0x68, size 0x4
         EA::Reflection::Float FRONT_WEIGHT_BIAS; // offset 0x6c, size 0x4
@@ -170,13 +173,25 @@ struct chassis : Instance {
         ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xb3d3e7d5);
     }
     bool RENDER_MOTION(EA::Reflection::Float &result) const {
+#ifdef EA_BUILD_A124
+        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xb3d3e7d5, result);
+#else
         ATTRIB_CODEGEN_CHECKEDGETLAYOUT(RENDER_MOTION, result);
+#endif
     }
     const EA::Reflection::Float &RENDER_MOTION() const {
+#ifdef EA_BUILD_A124
+        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0xb3d3e7d5);
+#else
         ATTRIB_CODEGEN_GETLAYOUT(RENDER_MOTION);
+#endif
     }
     bool SET_RENDER_MOTION(const EA::Reflection::Float &input) {
+#ifdef EA_BUILD_A124
+        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xb3d3e7d5, input);
+#else
         ATTRIB_CODEGEN_SETLAYOUT(RENDER_MOTION, input);
+#endif
     }
     bool RIDE_HEIGHT(TAttrib<AxlePair> &result) const {
         ATTRIB_CODEGEN_GETATTRIB(AxlePair, 0x46c189b0);
