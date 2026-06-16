@@ -243,7 +243,7 @@ void SuspensionSimple::Reset() {
 
         if (wheel.InitPosition(*rigidBody, wheel.GetRadius())) {
             float newCompression = wheel.GetNormal().w + GetRideHeight(i);
-            if (newCompression <= FLOAT_EPSILON) {
+            if (newCompression <= UMath::Epsilon) {
                 newCompression = 0.0f;
             }
             wheel.SetCompression(newCompression);
@@ -321,7 +321,7 @@ void SuspensionSimple::DoDriveForces(State &state) {
         return;
     }
     float drive_torque = mTrany->GetDriveTorque();
-    if (UMath::Abs(drive_torque) <= FLOAT_EPSILON) {
+    if (UMath::Abs(drive_torque) <= UMath::Epsilon) {
         return;
     }
     float split = mDrivetrainInfo->TORQUE_SPLIT();

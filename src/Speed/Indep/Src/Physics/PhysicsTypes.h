@@ -1,5 +1,27 @@
-#ifndef PHYSICS_PHYSICSTYPES_H
-#define PHYSICS_PHYSICSTYPES_H
+//
+//
+//
+//
+//
+
+#ifndef PHYSICS_TYPE_H
+#define PHYSICS_TYPE_H
+
+typedef float Rpm;
+typedef float Mps;
+typedef float Mps2;
+typedef float Mph;
+typedef float Kph;
+typedef float Meters;
+typedef float Kg;
+typedef float FtLbs;
+typedef float Hp;
+typedef float Nm;
+typedef float Newtons;
+typedef float Seconds;
+typedef float Psi;
+typedef float Lbs;
+typedef float Kgm2;
 
 enum GearID {
     G_REVERSE = 0,
@@ -29,15 +51,16 @@ enum eTireDamage {
     TIRE_DAMAGE_BLOWN = 2,
 };
 
-struct AxlePair {
-    // total size: 0x8
-    float Front; // offset 0x0, size 0x4
-    float Rear;  // offset 0x4, size 0x4
-
-    float At(int index) const {
-        return (&Front)[index];
-    }
+enum ShiftPotential {
+    SHIFT_POTENTIAL_MISS = 5,
+    SHIFT_POTENTIAL_PERFECT = 4,
+    SHIFT_POTENTIAL_GOOD = 3,
+    SHIFT_POTENTIAL_UP = 2,
+    SHIFT_POTENTIAL_DOWN = 1,
+    SHIFT_POTENTIAL_NONE = 0,
 };
+
+
 
 enum DriverStyle {
     STYLE_RACING = 0,
@@ -48,15 +71,6 @@ enum PhysicsMode {
     PHYSICS_MODE_INACTIVE = 0,
     PHYSICS_MODE_SIMULATED = 1,
     PHYSICS_MODE_EMULATED = 2,
-};
-
-enum ShiftPotential {
-    SHIFT_POTENTIAL_MISS = 5,
-    SHIFT_POTENTIAL_PERFECT = 4,
-    SHIFT_POTENTIAL_GOOD = 3,
-    SHIFT_POTENTIAL_UP = 2,
-    SHIFT_POTENTIAL_DOWN = 1,
-    SHIFT_POTENTIAL_NONE = 0,
 };
 
 enum eTireIdx {

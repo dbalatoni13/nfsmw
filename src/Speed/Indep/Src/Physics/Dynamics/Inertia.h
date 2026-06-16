@@ -24,7 +24,7 @@ class Tensor : public UVector3 {
 
     void GetInverseWorldTensor(const UMath::Matrix4 &orientation, UMath::Matrix4 &result) const {
         UMath::Matrix4 temp;
-        UMath::Init(result, x > FLOAT_EPSILON ? 1.0f / x : x, y > FLOAT_EPSILON ? 1.0f / y : y, z > FLOAT_EPSILON ? 1.0f / z : z);
+        UMath::Init(result, x > UMath::Epsilon ? 1.0f / x : x, y > UMath::Epsilon ? 1.0f / y : y, z > UMath::Epsilon ? 1.0f / z : z);
         UMath::Matrix4 orientationInv;
         UMath::Transpose(orientation, orientationInv);
         UMath::Mult(result, orientation, temp);

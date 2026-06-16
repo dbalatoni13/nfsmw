@@ -13,6 +13,14 @@ namespace Attrib {
 AssetID StringToAssetID(const char *assetName);
 Key StringToTypeID(const char *typeName);
 
+class IExportPolicy {
+  public:
+    virtual void Initialize(Vault &v, const Type &type, const unsigned int &id, const char *name, void *data, std::size_t bytes);
+    virtual bool IsReferenced(const Vault &v, const Type &type, const unsigned int &id);
+    virtual void Clean(Vault &v, const Type &type, const unsigned int &id);
+    virtual void Deinitialize(Vault &v, const Type &type, const unsigned int &id);
+};
+
 // total size: 0xC
 class ExportManager {
   public:

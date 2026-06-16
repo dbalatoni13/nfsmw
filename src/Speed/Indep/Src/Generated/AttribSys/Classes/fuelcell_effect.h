@@ -1,86 +1,132 @@
-#ifndef ATTRIBSYS_CLASSES_FUELCELL_EFFECT_H
-#define ATTRIBSYS_CLASSES_FUELCELL_EFFECT_H
+#ifndef _attrib_gen_fuelcell_effect_h
+#define _attrib_gen_fuelcell_effect_h
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
-#include <cstddef>
-
-#include "Speed/Indep/Libs/Support/Utility/UTypes.h"
-#include "Speed/Indep/Src/Main/AttribSupport.h"
-#include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
-#include "Speed/Indep/Tools/AttribSys/Runtime/Common/AttribPrivate.h"
+#include "Speed/Indep/Src/Misc/MWAttribUserTypes.h"
 
 namespace Attrib {
 namespace Gen {
 
 struct fuelcell_effect : Instance {
     struct _LayoutStruct {
-        bool doTest; // offset 0x0, size 0x1
+        EA::Reflection::Bool doTest; // offset 0x0, size 0x1
     };
 
-    void *operator new(size_t bytes) {
-        return Attrib::Alloc(bytes, "fuelcell_effect");
-    }
+    typedef RefSpec TypeOf_NGEmitter;
+    typedef EA::Reflection::Bool TypeOf_doTest;
 
-    void operator delete(void *ptr, size_t bytes) {
-        Attrib::Free(ptr, bytes, "fuelcell_effect");
-    }
-
+    static Key ClassKey();
+    USE_ATTRIB_ALLOC("fuelcell_effect");
     fuelcell_effect(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
         : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {
         SetDefaultLayout(sizeof(_LayoutStruct));
     }
-
     fuelcell_effect(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {
         SetDefaultLayout(sizeof(_LayoutStruct));
     }
-
+    fuelcell_effect(const Instance &src) : Instance(src) {
+        SetDefaultLayout(sizeof(_LayoutStruct));
+    }
     fuelcell_effect(const fuelcell_effect &src) : Instance(src) {
         SetDefaultLayout(sizeof(_LayoutStruct));
     }
-
     fuelcell_effect(const RefSpec &refspec, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(refspec, msgPort, owner) {
         SetDefaultLayout(sizeof(_LayoutStruct));
     }
-
     ~fuelcell_effect() {}
-
+    Instance &GetBase() {
+        return *this;
+    }
+    const Instance &GetBase() const {
+        return *this;
+    }
+    Key GetClass() {
+        return 0x6f5943f1;
+    }
+    void Modify(Key dynamicCollectionKey, unsigned int spaceForAdditionalAttributes) {
+        ModifyInternal(0x6f5943f1, dynamicCollectionKey, spaceForAdditionalAttributes);
+    }
+    Key GenerateUniqueKey(const char *name, bool registerName) const {
+        return GenerateUniqueKey(name, registerName);
+    }
     void Change(const Collection *c) {
         Instance::Change(c);
     }
-
-    void Change(Key collectionkey) {
-        Change(FindCollection(ClassKey(), collectionkey));
-    }
-
     void Change(const RefSpec &refspec) {
         Instance::Change(refspec);
     }
-
-    static Key ClassKey() {
-        return 0x6f5943f1;
+    void Change(Key collectionkey) {
+        Change(FindCollection(ClassKey(), collectionkey));
     }
-
-    const bool &doTest() const {
-        return reinterpret_cast<_LayoutStruct *>(GetLayoutPointer())->doTest;
+    void ChangeWithDefault(const RefSpec &refspec) {
+        Instance::ChangeWithDefault(refspec);
     }
-
+    void ChangeWithDefault(Key collectionkey) {
+        Change(FindCollectionWithDefault(ClassKey(), collectionkey));
+    }
+    const fuelcell_effect &operator=(const fuelcell_effect &rhs) {
+        operator=(rhs.GetBase());
+        return *this;
+    }
+    const fuelcell_effect &operator=(const Instance &rhs) {
+        Instance::operator=(rhs);
+        return *this;
+    }
+    bool NGEmitter(TAttrib<RefSpec> &result) const {
+        ATTRIB_CODEGEN_GETATTRIB(RefSpec, 0xb0d98a89);
+    }
+    bool NGEmitter(RefSpec &result, unsigned int index) const {
+        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(RefSpec, 0xb0d98a89, result, index);
+    }
     const RefSpec &NGEmitter(unsigned int index) const {
-        const RefSpec *resultptr = reinterpret_cast<const RefSpec *>(GetAttributePointer(0xb0d98a89, index));
-        if (!resultptr) {
-            resultptr = reinterpret_cast<const RefSpec *>(DefaultDataArea(sizeof(RefSpec)));
-        }
-        return *resultptr;
+        ATTRIB_CODEGEN_GETVALUEINDEXED(RefSpec, 0xb0d98a89, index);
     }
-
     unsigned int Num_NGEmitter() const {
-        return Get(0xb0d98a89).GetLength();
+        ATTRIB_CODEGEN_GETLENGTH(0xb0d98a89);
     }
-};
+    bool SET_NGEmitter(const RefSpec &input, unsigned int index) {
+        ATTRIB_CODEGEN_SETVALUEINDEXED(RefSpec, 0xb0d98a89, input, index);
+    }
+    bool doTest(TAttrib<EA::Reflection::Bool> &result) const {
+        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0xaee3be58);
+    }
+    bool doTest(EA::Reflection::Bool &result) const {
+        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(doTest, result);
+    }
+    const EA::Reflection::Bool &doTest() const {
+        ATTRIB_CODEGEN_GETLAYOUT(doTest);
+    }
+    bool SET_doTest(const EA::Reflection::Bool &input) {
+        ATTRIB_CODEGEN_SETLAYOUT(doTest, input);
+    }
 
-} // namespace Gen
-} // namespace Attrib
+  private:
+    unsigned int GetLayoutSize() {
+        return sizeof(_LayoutStruct);
+    }
+    fuelcell_effect &ConvertFromInstance(Instance &src) {}
+    const fuelcell_effect &ConvertFromInstance(const Instance &src) {}
+};
+}; // namespace Gen
+
+namespace ClassName {
+
+static const Key fuelcell_effect = 0x6f5943f1;
+
+}; // namespace ClassName
+
+namespace Hash {
+namespace fuelcell_effect {
+
+static const Key NGEmitter = 0xb0d98a89;
+static const Key doTest = 0xaee3be58;
+
+}; // namespace fuelcell_effect
+}; // namespace Hash
+
+inline Key Gen::fuelcell_effect::ClassKey() {
+    return ClassName::fuelcell_effect;
+}
+
+}; // namespace Attrib
 
 #endif

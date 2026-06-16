@@ -297,7 +297,7 @@ class EngineRacer : protected VehicleBehavior,
         float ratio1 = mTranyInfo.GEAR_RATIO(from);
         float ratio2 = mTranyInfo.GEAR_RATIO(to);
 
-        if (ratio1 > 0.0f && ratio2 > FLOAT_EPSILON) {
+        if (ratio1 > 0.0f && ratio2 > UMath::Epsilon) {
             return ratio1 / ratio2;
         } else {
             return 0.0f;
@@ -417,7 +417,7 @@ void EngineRacer::OnBehaviorChange(const UCrc32 &mechanic) {
 }
 
 void EngineRacer::Sabotage(float time) {
-    if ((mSabotage <= 0.0f) && (time > FLOAT_EPSILON) && !IsBlown()) {
+    if ((mSabotage <= 0.0f) && (time > UMath::Epsilon) && !IsBlown()) {
         mSabotage = Sim::GetTime() + time;
     }
 }
@@ -956,7 +956,7 @@ void EngineRacer::DoInduction(const Physics::Tunings *tunings, float dT) {
 
     if (mSpool > desired_spool) {
         float spool_time = mInductionInfo.SPOOL_TIME_DOWN();
-        if (spool_time > FLOAT_EPSILON) {
+        if (spool_time > UMath::Epsilon) {
             mSpool -= dT / spool_time;
             mSpool = UMath::Max(mSpool, desired_spool);
         } else {
@@ -964,7 +964,7 @@ void EngineRacer::DoInduction(const Physics::Tunings *tunings, float dT) {
         }
     } else if (mSpool < desired_spool) {
         float spool_time = mInductionInfo.SPOOL_TIME_UP();
-        if (spool_time > FLOAT_EPSILON) {
+        if (spool_time > UMath::Epsilon) {
             mSpool += dT / spool_time;
             mSpool = UMath::Min(mSpool, desired_spool);
         } else {

@@ -346,7 +346,7 @@ bool LocalPlayer::OnTask(HSIMTASK htask, float dT) {
     if (htask == mHudTask) {
         float dT_real = 0.0f;
         float sim_speed = Sim::GetSpeed();
-        if (sim_speed > FLOAT_EPSILON) {
+        if (sim_speed > UMath::Epsilon) {
             dT_real = dT / sim_speed;
         }
         UpdateHud(dT);

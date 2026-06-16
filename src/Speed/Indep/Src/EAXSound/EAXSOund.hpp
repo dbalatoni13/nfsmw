@@ -6,6 +6,7 @@
 #endif
 
 #include "Speed/Indep/Src/EAXSound/AudioMemBase.hpp"
+#include "Speed/Indep/Src/EAXSound/EAXSoundEnums.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
 #include "Speed/Indep/Src/EAXSound/SFX_base.hpp"
 #include "Speed/Indep/Src/EAXSound/STICH_Playback.h"
@@ -44,11 +45,6 @@ enum eEAXGameState {
     EAXGS_ENTERINGGAME = 2,
     EAXGS_FRONTEND = 1,
     EAXGS_INITIALIZING = 0,
-};
-
-enum e3DPlayerMix {
-    EAXS3D_TWO_PLAYER_MIX = 1,
-    EAXS3D_SINGLE_PLAYER_MIX = 0,
 };
 
 enum eSndGameMode {

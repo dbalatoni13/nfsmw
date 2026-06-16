@@ -6,6 +6,7 @@
 #endif
 
 #include "./Camera.hpp"
+#include "CameraInfo.hpp"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/camerainfo.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/ecar.h"
 #include "Speed/Indep/Src/Sim/SimSurface.h"

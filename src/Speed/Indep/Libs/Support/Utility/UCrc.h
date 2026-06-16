@@ -5,8 +5,8 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/Src/Misc/attribuserinclude.h"
 #include "Speed/Indep/Libs/Support/Miscellaneous/StringHash.h"
-#include "Speed/Indep/Tools/AttribSys/Runtime/AttribHash.h"
 
 class bHash32 {
     unsigned int mCRC;

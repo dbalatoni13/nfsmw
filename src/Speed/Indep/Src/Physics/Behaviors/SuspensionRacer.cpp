@@ -625,9 +625,9 @@ void SuspensionRacer::Tire::CheckSign() {
         mAV = 0.0f;
     }
 
-    if (mAV > FLOAT_EPSILON) {
+    if (mAV > UMath::Epsilon) {
         mLastSign = WAS_POSITIVE;
-    } else if (mAV < -FLOAT_EPSILON) {
+    } else if (mAV < -UMath::Epsilon) {
         mLastSign = WAS_NEGATIVE;
     } else {
         mLastSign = WAS_ZERO;
@@ -709,7 +709,7 @@ float SuspensionRacer::Tire::UpdateLoaded(float lat_vel, float fwd_vel, float bo
     mSlip = slip_speed;
     float skid_speed = UMath::Sqrt(slip_speed * slip_speed + lat_vel * lat_vel);
     float pilot_factor = GetPilotFactor(body_speed);
-    if (skid_speed > FLOAT_EPSILON && (lat_vel != 0.0f || fwd_vel != 0.0f)) {
+    if (skid_speed > UMath::Epsilon && (lat_vel != 0.0f || fwd_vel != 0.0f)) {
         dynamicfriction = dynamicgrip_spec * mTractionBoost;
         dynamicfriction *= pilot_factor;
         groundfriction = mLoad * dynamicfriction / skid_speed;
@@ -1060,7 +1060,7 @@ void SuspensionRacer::OnCollision(const COLLISION_INFO &cinfo) {
             }
             if (mSteering.WallSideTurn == 0.0f && GetVehicle()->GetSpeed() < 0.0f) {
                 float dirdot = UMath::Dot(cinfo.normal, vRight);
-                if (UMath::Abs(dirdot) > FLOAT_EPSILON) {
+                if (UMath::Abs(dirdot) > UMath::Epsilon) {
                     UMath::Vector3 rpos;
                     UMath::Sub(cinfo.position, mRB->GetPosition(), rpos);
                     if (UMath::Abs(UMath::Dot(rpos, vFoward)) > (mRB->GetDimension().z * 0.75f)) {
@@ -1606,7 +1606,7 @@ void SuspensionRacer::Differential::CalcSplit(bool locked) {
     float av_1 = angular_vel[1] * bias;
     float combined_av = UMath::Abs(av_0 + av_1);
 
-    if (combined_av > FLOAT_EPSILON) {
+    if (combined_av > UMath::Epsilon) {
         torque_split[0] = ((1.0f - factor) * bias) + ((factor * UMath::Abs(av_1)) / combined_av);
         torque_split[1] = ((1.0f - factor) * (1.0f - bias)) + ((factor * UMath::Abs(av_0)) / combined_av);
     } else {
@@ -1645,7 +1645,7 @@ void SuspensionRacer::DoDriveForces(Chassis::State &state) {
 
     for (unsigned int axle = 0; axle < 2; ++axle) {
         float axle_torque = drive_torque * center_diff.torque_split[axle];
-        if (UMath::Abs(axle_torque) > FLOAT_EPSILON) {
+        if (UMath::Abs(axle_torque) > UMath::Epsilon) {
             SuspensionRacer::Differential diff;
             diff.bias = 0.5f;
 
@@ -1810,7 +1810,7 @@ void SuspensionRacer::DoWheelForces(Chassis::State &state) {
             float rise = diff / dT;
 
             float spring = (newCompression * spring_specs[axle]) * (newCompression * progression[axle] + 1.0f);
-            if (shock_valving[axle] > FLOAT_EPSILON && shock_digression[axle] < 1.0f) {
+            if (shock_valving[axle] > UMath::Epsilon && shock_digression[axle] < 1.0f) {
                 float abs_rise = UMath::Abs(rise);
                 float valving = shock_valving[axle];
                 if (abs_rise > valving) {

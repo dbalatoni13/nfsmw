@@ -1,83 +1,129 @@
-#ifndef ATTRIBSYS_CLASSES_LIGHTSHADERS_H
-#define ATTRIBSYS_CLASSES_LIGHTSHADERS_H
+#ifndef _attrib_gen_lightshaders_h
+#define _attrib_gen_lightshaders_h
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
-#include <cstddef>
-
-#include "Speed/Indep/Libs/Support/Utility/UTypes.h"
-#include "Speed/Indep/Src/Main/AttribSupport.h"
-#include "Speed/Indep/Tools/AttribSys/Runtime/AttribHash.h"
-#include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
-#include "Speed/Indep/Tools/AttribSys/Runtime/Common/AttribPrivate.h"
+#include "Speed/Indep/Src/Misc/MWAttribUserTypes.h"
 
 namespace Attrib {
 namespace Gen {
 
 struct lightshaders : Instance {
-    void *operator new(size_t bytes) {
-        return Attrib::Alloc(bytes, "lightshaders");
-    }
+    typedef Attrib::StringKey TypeOf_name;
+    typedef Attrib::StringKey TypeOf_shadername;
+    typedef EA::Reflection::Bool TypeOf_useVertexColour;
 
-    void operator delete(void *ptr, size_t bytes) {
-        Attrib::Free(ptr, bytes, "lightshaders");
-    }
-
+    static Key ClassKey();
+    USE_ATTRIB_ALLOC("lightshaders");
     lightshaders(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
         : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {}
-
     lightshaders(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {}
-
+    lightshaders(const Instance &src) : Instance(src) {}
     lightshaders(const lightshaders &src) : Instance(src) {}
-
     lightshaders(const RefSpec &refspec, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(refspec, msgPort, owner) {}
-
     ~lightshaders() {}
-
+    Instance &GetBase() {
+        return *this;
+    }
+    const Instance &GetBase() const {
+        return *this;
+    }
+    Key GetClass() {
+        return 0xbc8c1aa3;
+    }
+    void Modify(Key dynamicCollectionKey, unsigned int spaceForAdditionalAttributes) {
+        ModifyInternal(0xbc8c1aa3, dynamicCollectionKey, spaceForAdditionalAttributes);
+    }
+    Key GenerateUniqueKey(const char *name, bool registerName) const {
+        return GenerateUniqueKey(name, registerName);
+    }
     void Change(const Collection *c) {
         Instance::Change(c);
     }
-
-    void Change(Key collectionkey) {
-        Change(FindCollection(ClassKey(), collectionkey));
-    }
-
     void Change(const RefSpec &refspec) {
         Instance::Change(refspec);
     }
-
-    static Key ClassKey() {
-        return 0xbc8c1aa3;
+    void Change(Key collectionkey) {
+        Change(FindCollection(ClassKey(), collectionkey));
     }
-
-    const bool &useVertexColour() const {
-        const bool *resultptr = reinterpret_cast<const bool *>(GetAttributePointer(0x2de05384, 0));
-        if (!resultptr) {
-            resultptr = reinterpret_cast<const bool *>(DefaultDataArea(sizeof(bool)));
-        }
-        return *resultptr;
+    void ChangeWithDefault(const RefSpec &refspec) {
+        Instance::ChangeWithDefault(refspec);
     }
-
-    const Attrib::StringKey &shadername() const {
-        const Attrib::StringKey *resultptr = reinterpret_cast<const Attrib::StringKey *>(GetAttributePointer(0x39004977, 0));
-        if (!resultptr) {
-            resultptr = reinterpret_cast<const Attrib::StringKey *>(DefaultDataArea(sizeof(Attrib::StringKey)));
-        }
-        return *resultptr;
+    void ChangeWithDefault(Key collectionkey) {
+        Change(FindCollectionWithDefault(ClassKey(), collectionkey));
     }
-
+    const lightshaders &operator=(const lightshaders &rhs) {
+        operator=(rhs.GetBase());
+        return *this;
+    }
+    const lightshaders &operator=(const Instance &rhs) {
+        Instance::operator=(rhs);
+        return *this;
+    }
+    bool name(TAttrib<Attrib::StringKey> &result) const {
+        ATTRIB_CODEGEN_GETATTRIB(Attrib::StringKey, 0xba41a46a);
+    }
+    bool name(Attrib::StringKey &result) const {
+        ATTRIB_CODEGEN_CHECKEDGETVALUE(Attrib::StringKey, 0xba41a46a, result);
+    }
     const Attrib::StringKey &name() const {
-        const Attrib::StringKey *resultptr = reinterpret_cast<const Attrib::StringKey *>(GetAttributePointer(0xba41a46a, 0));
-        if (!resultptr) {
-            resultptr = reinterpret_cast<const Attrib::StringKey *>(DefaultDataArea(sizeof(Attrib::StringKey)));
-        }
-        return *resultptr;
+        ATTRIB_CODEGEN_GETVALUE(Attrib::StringKey, 0xba41a46a);
     }
-};
+    bool SET_name(const Attrib::StringKey &input) {
+        ATTRIB_CODEGEN_SETVALUE(Attrib::StringKey, 0xba41a46a, input);
+    }
+    bool shadername(TAttrib<Attrib::StringKey> &result) const {
+        ATTRIB_CODEGEN_GETATTRIB(Attrib::StringKey, 0x39004977);
+    }
+    bool shadername(Attrib::StringKey &result) const {
+        ATTRIB_CODEGEN_CHECKEDGETVALUE(Attrib::StringKey, 0x39004977, result);
+    }
+    const Attrib::StringKey &shadername() const {
+        ATTRIB_CODEGEN_GETVALUE(Attrib::StringKey, 0x39004977);
+    }
+    bool SET_shadername(const Attrib::StringKey &input) {
+        ATTRIB_CODEGEN_SETVALUE(Attrib::StringKey, 0x39004977, input);
+    }
+    bool useVertexColour(TAttrib<EA::Reflection::Bool> &result) const {
+        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x2de05384);
+    }
+    bool useVertexColour(EA::Reflection::Bool &result) const {
+        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x2de05384, result);
+    }
+    const EA::Reflection::Bool &useVertexColour() const {
+        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x2de05384);
+    }
+    bool SET_useVertexColour(const EA::Reflection::Bool &input) {
+        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x2de05384, input);
+    }
 
-} // namespace Gen
-} // namespace Attrib
+  private:
+    unsigned int GetLayoutSize() {
+        return 0;
+    }
+    lightshaders &ConvertFromInstance(Instance &src) {}
+    const lightshaders &ConvertFromInstance(const Instance &src) {}
+};
+}; // namespace Gen
+
+namespace ClassName {
+
+static const Key lightshaders = 0xbc8c1aa3;
+
+}; // namespace ClassName
+
+namespace Hash {
+namespace lightshaders {
+
+static const Key name = 0xba41a46a;
+static const Key shadername = 0x39004977;
+static const Key useVertexColour = 0x2de05384;
+
+}; // namespace lightshaders
+}; // namespace Hash
+
+inline Key Gen::lightshaders::ClassKey() {
+    return ClassName::lightshaders;
+}
+
+}; // namespace Attrib
 
 #endif

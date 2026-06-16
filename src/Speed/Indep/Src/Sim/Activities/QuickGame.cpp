@@ -38,7 +38,7 @@ QuickGame::QuickGame(Sim::Param params)
     bool foundIntroNIS = false;
     GRaceCustom *quickRace = GRaceDatabase::Get().GetStartupRace();
     if (quickRace) {
-        const char *nisName = quickRace->GetGameplayObj()->IntroNIS(0);
+        const char *nisName = quickRace->GetGameplayObj()->IntroNIS();
         if (nisName && nisName[0] != '\0') {
             foundIntroNIS = true;
         }

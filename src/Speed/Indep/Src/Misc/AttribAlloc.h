@@ -17,6 +17,7 @@ class IAttribAllocator {
     virtual void Free(void *ptr, std::size_t bytes, const char *name);
 };
 
+// TODO figure out whether we need the ifdefs
 class AttribAlloc {
   public:
     static IAttribAllocator *OverrideAllocator(IAttribAllocator *newAllocator);

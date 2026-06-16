@@ -1,74 +1,115 @@
-#ifndef ATTRIBSYS_CLASSES_AUD_STITCH_LOOP_H
-#define ATTRIBSYS_CLASSES_AUD_STITCH_LOOP_H
+#ifndef _attrib_gen_aud_stitch_loop_h
+#define _attrib_gen_aud_stitch_loop_h
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
-#include <cstddef>
-
-#include "Speed/Indep/Libs/Support/Utility/UTypes.h"
-#include "Speed/Indep/Src/Main/AttribSupport.h"
-#include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
-#include "Speed/Indep/Tools/AttribSys/Runtime/Common/AttribPrivate.h"
+#include "Speed/Indep/Src/Misc/MWAttribUserTypes.h"
 
 namespace Attrib {
 namespace Gen {
 
 struct aud_stitch_loop : Instance {
-    void *operator new(size_t bytes) {
-        return Attrib::Alloc(bytes, "aud_stitch_loop");
-    }
+    typedef EA::Reflection::Int32 TypeOf_overlap;
+    typedef STICH_COLLISION_TYPE TypeOf_stitch;
 
-    void operator delete(void *ptr, size_t bytes) {
-        Attrib::Free(ptr, bytes, "aud_stitch_loop");
-    }
-
+    static Key ClassKey();
+    USE_ATTRIB_ALLOC("aud_stitch_loop");
     aud_stitch_loop(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
         : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {}
-
     aud_stitch_loop(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {}
-
+    aud_stitch_loop(const Instance &src) : Instance(src) {}
     aud_stitch_loop(const aud_stitch_loop &src) : Instance(src) {}
-
     aud_stitch_loop(const RefSpec &refspec, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(refspec, msgPort, owner) {}
-
     ~aud_stitch_loop() {}
-
+    Instance &GetBase() {
+        return *this;
+    }
+    const Instance &GetBase() const {
+        return *this;
+    }
+    Key GetClass() {
+        return 0x3473edcd;
+    }
+    void Modify(Key dynamicCollectionKey, unsigned int spaceForAdditionalAttributes) {
+        ModifyInternal(0x3473edcd, dynamicCollectionKey, spaceForAdditionalAttributes);
+    }
+    Key GenerateUniqueKey(const char *name, bool registerName) const {
+        return GenerateUniqueKey(name, registerName);
+    }
     void Change(const Collection *c) {
         Instance::Change(c);
     }
-
-    void Change(Key collectionkey) {
-        Change(FindCollection(ClassKey(), collectionkey));
-    }
-
     void Change(const RefSpec &refspec) {
         Instance::Change(refspec);
     }
-
-    static Key ClassKey() {
-        return 0x3473edcd;
+    void Change(Key collectionkey) {
+        Change(FindCollection(ClassKey(), collectionkey));
     }
-
+    void ChangeWithDefault(const RefSpec &refspec) {
+        Instance::ChangeWithDefault(refspec);
+    }
+    void ChangeWithDefault(Key collectionkey) {
+        Change(FindCollectionWithDefault(ClassKey(), collectionkey));
+    }
+    const aud_stitch_loop &operator=(const aud_stitch_loop &rhs) {
+        operator=(rhs.GetBase());
+        return *this;
+    }
+    const aud_stitch_loop &operator=(const Instance &rhs) {
+        Instance::operator=(rhs);
+        return *this;
+    }
+    bool overlap(TAttrib<EA::Reflection::Int32> &result) const {
+        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0xad8c27f5);
+    }
+    bool overlap(EA::Reflection::Int32 &result) const {
+        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0xad8c27f5, result);
+    }
+    const EA::Reflection::Int32 &overlap() const {
+        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0xad8c27f5);
+    }
+    bool SET_overlap(const EA::Reflection::Int32 &input) {
+        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0xad8c27f5, input);
+    }
+    bool stitch(TAttrib<STICH_COLLISION_TYPE> &result) const {
+        ATTRIB_CODEGEN_GETATTRIB(STICH_COLLISION_TYPE, 0x1553cd23);
+    }
+    bool stitch(STICH_COLLISION_TYPE &result) const {
+        ATTRIB_CODEGEN_CHECKEDGETVALUE(STICH_COLLISION_TYPE, 0x1553cd23, result);
+    }
     const STICH_COLLISION_TYPE &stitch() const {
-        const STICH_COLLISION_TYPE *resultptr = reinterpret_cast<const STICH_COLLISION_TYPE *>(GetAttributePointer(0x1553cd23, 0));
-        if (!resultptr) {
-            resultptr = reinterpret_cast<const STICH_COLLISION_TYPE *>(DefaultDataArea(sizeof(STICH_COLLISION_TYPE)));
-        }
-        return *resultptr;
+        ATTRIB_CODEGEN_GETVALUE(STICH_COLLISION_TYPE, 0x1553cd23);
+    }
+    bool SET_stitch(const STICH_COLLISION_TYPE &input) {
+        ATTRIB_CODEGEN_SETVALUE(STICH_COLLISION_TYPE, 0x1553cd23, input);
     }
 
-    const int &overlap() const {
-        const int *resultptr = reinterpret_cast<const int *>(GetAttributePointer(0xad8c27f5, 0));
-        if (!resultptr) {
-            resultptr = reinterpret_cast<const int *>(DefaultDataArea(sizeof(int)));
-        }
-        return *resultptr;
+  private:
+    unsigned int GetLayoutSize() {
+        return 0;
     }
+    aud_stitch_loop &ConvertFromInstance(Instance &src) {}
+    const aud_stitch_loop &ConvertFromInstance(const Instance &src) {}
 };
+}; // namespace Gen
 
-} // namespace Gen
-} // namespace Attrib
+namespace ClassName {
+
+static const Key aud_stitch_loop = 0x3473edcd;
+
+}; // namespace ClassName
+
+namespace Hash {
+namespace aud_stitch_loop {
+
+static const Key overlap = 0xad8c27f5;
+static const Key stitch = 0x1553cd23;
+
+}; // namespace aud_stitch_loop
+}; // namespace Hash
+
+inline Key Gen::aud_stitch_loop::ClassKey() {
+    return ClassName::aud_stitch_loop;
+}
+
+}; // namespace Attrib
 
 #endif
