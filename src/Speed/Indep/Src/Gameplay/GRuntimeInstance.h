@@ -1,10 +1,7 @@
 #ifndef GAMEPLAY_GRUNTIMEINSTANCE_H
 #define GAMEPLAY_GRUNTIMEINSTANCE_H
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
+#include "GUserIncludes.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/gameplay.h"
 
 // total size: 0x28

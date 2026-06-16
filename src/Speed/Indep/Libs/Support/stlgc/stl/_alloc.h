@@ -433,7 +433,7 @@ _STLP_EXPORT_TEMPLATE_CLASS allocator<wchar_t>;
 template <class _Tp, class _Allocator> struct _Alloc_traits {
     typedef _Allocator _Orig;
 #if defined(_STLP_MEMBER_TEMPLATE_CLASSES)
-    typedef typename _Allocator::_STLP_TEMPLATE rebind<_Tp> _Rebind_type;
+    typedef typename _Allocator::_STLP_TEMPLATE template rebind<_Tp> _Rebind_type;
     typedef typename _Rebind_type::other allocator_type;
     static allocator_type create_allocator(const _Orig &__a) {
         return allocator_type(__a);
@@ -479,7 +479,7 @@ template <class _Tp, class _Tp1> struct _Alloc_traits<_Tp, allocator<_Tp1> > {
 #if defined(_STLP_MEMBER_TEMPLATE_CLASSES)
 template <class _Tp, class _Alloc>
 inline _STLP_TYPENAME_ON_RETURN_TYPE _Alloc_traits<_Tp, _Alloc>::allocator_type _STLP_CALL __stl_alloc_create(const _Alloc &__a, const _Tp *) {
-    typedef typename _Alloc::_STLP_TEMPLATE rebind<_Tp>::other _Rebound_type;
+    typedef typename _Alloc::_STLP_TEMPLATE template rebind<_Tp>::other _Rebound_type;
     return _Rebound_type(__a);
 }
 #else

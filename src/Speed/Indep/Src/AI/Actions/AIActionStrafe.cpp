@@ -7,7 +7,7 @@ class AIActionStrafe : public AIAction {
 
     AIActionStrafe(AIActionParams *params, float score) : AIAction(params, score) {}
 
-    void UpdateNavPos(struct Vector3 &dest, float lookAheadDistance);
+    void UpdateNavPos(UMath::Vector3 &dest, float lookAheadDistance);
 
     // Virtual overrides
     // IUnknown

@@ -187,7 +187,7 @@ void RBVehicle::ModifyCollision(const RigidBody &other, const Dynamics::Collisio
             }
         }
     }
-    if ((mCollisionMass > FLOAT_EPSILON) && !myMoment.IsImmobile()) {
+    if ((mCollisionMass > UMath::Epsilon) && !myMoment.IsImmobile()) {
         float tensorscale = mCollisionMass * myMoment.GetOOMass();
         myMoment.SetInertia(myMoment.GetInertia() * tensorscale);
         myMoment.SetMass(mCollisionMass);

@@ -4,32 +4,13 @@
 #ifndef CONVERSION_UTIL_H
 #define CONVERSION_UTIL_H
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
 #include "types.h"
+#include "Speed/Indep/Src/Physics/PhysicsTypes.h"
 
 // Credit: Brawltendo
 
 typedef float Angle;
 
-typedef float Rpm;
-typedef float Mps;
-typedef float Mps2;
-typedef float Mph;
-typedef float Kph;
-typedef float Meters;
-typedef float Kg;
-typedef float FtLbs;
-typedef float Hp;
-typedef float Nm;
-typedef float Newtons;
-typedef float Seconds;
-typedef float Psi;
-typedef float Lbs;
-typedef float Kgm2;
-typedef float Radians;
 
 inline Mph MPS2MPH(const Mps _mps_) {
     return _mps_ * 2.23699f;

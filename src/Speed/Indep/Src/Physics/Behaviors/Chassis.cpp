@@ -138,7 +138,7 @@ Chassis::SleepState Chassis::DoSleep(const Chassis::State &state) {
     if (state.speed < 0.5f) {
         if ((GetNumWheelsOnGround() == GetNumWheels()) && (state.brake_input + state.ebrake_input > 0.0f) && (state.gas_input == 0.0f)) {
             if ((UMath::Length(state.angular_vel) < 0.25f) && (!mRBComplex->HasHadCollision())) {
-                if (state.speed < FLOAT_EPSILON) {
+                if (state.speed < UMath::Epsilon) {
                     mRBComplex->Damp(1.0f);
                 } else {
                     mRBComplex->Damp(1.0f - state.speed);
@@ -495,7 +495,7 @@ void Chassis::DoJumpStabilizer(const Chassis::State &state) {
     }
 
     if (bActiveStabilizer && nTouching == 0 && ground_normal.y > 0.9f && state.GetUpVector().y > 0.1f && ground_dot > 0.8f &&
-        altitude > FLOAT_EPSILON) {
+        altitude > UMath::Epsilon) {
         float altitude_ramp = 1.0f - UMath::Ramp(altitude, 0.0f, fStablizationAltitude);
         float speed_ramp = UMath::Ramp(state.speed, 0.0f, fStabilizerSpeed);
 

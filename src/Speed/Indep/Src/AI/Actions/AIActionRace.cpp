@@ -360,7 +360,7 @@ void AIActionRace::ComputePotentials() {
         mUsableNOS = 1.0f;
         mBottleTime = my_nos.Capacity;
     } else {
-        if (my_nos.Capacity > FLOAT_EPSILON && mNosCapability > 0.0f) {
+        if (my_nos.Capacity > UMath::Epsilon && mNosCapability > 0.0f) {
             mUsableNOS = (lowest_nos.Capacity / my_nos.Capacity) * (mNosCapability / my_nos.Boost);
             mBottleTime = my_nos.Capacity;
         } else {

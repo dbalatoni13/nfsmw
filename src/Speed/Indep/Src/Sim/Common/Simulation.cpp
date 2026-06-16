@@ -620,7 +620,7 @@ void SimSystem::UpdateFrame() {
     const unsigned int current_render_frame = eGetFrameCounter();
     mTimeStep = mScheduleStep * mSpeed;
 
-    if ((mState != Sim::STATE_ACTIVE) || (mTimeStep <= FLOAT_EPSILON)) {
+    if ((mState != Sim::STATE_ACTIVE) || (mTimeStep <= UMath::Epsilon)) {
         Sim::Internal::mFrameTime = 0.0f;
         Sim::Internal::mRenderFrame = current_render_frame;
         return;

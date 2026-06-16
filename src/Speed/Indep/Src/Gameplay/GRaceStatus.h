@@ -224,7 +224,7 @@ class GRaceParameters {
 
     struct GVault *GetParentVault() const;
 
-    void GetBoundingBox(struct Vector2 &topLeft, struct Vector2 &botRight) const;
+    void GetBoundingBox(UMath::Vector2 &topLeft, UMath::Vector2 &botRight) const;
 
     unsigned int GetChallengeType() const;
 

@@ -66,7 +66,7 @@ template <typename T> class Grid {
 
     ~Grid();
 
-    Grid(T &owner, const struct Vector3 &position, float radius) {
+    Grid(T &owner, const UMath::Vector3 &position, float radius) {
         // TODO
     }
 

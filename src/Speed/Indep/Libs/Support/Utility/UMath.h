@@ -1,10 +1,6 @@
 #ifndef SUPPORT_UTILITY_UMATH_H
 #define SUPPORT_UTILITY_UMATH_H
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
 #include <cmath>
 
 #ifdef EA_PLATFORM_XENON
@@ -16,24 +12,38 @@
 #include "UTypes.h"
 #include "UVectorMath.h"
 
-#define FLOAT_EPSILON 0.000001f
+namespace UMath {
+// TODO apply these
+const float PI = 3.141592653589793f; // size: 0x4, Decl: UMath.h:15
+const float OOPI = 1.0f / PI;        // size: 0x4, Decl: UMath.h:16
+const float TWOPI = 2 * PI;          // size: 0x4, Decl: UMath.h:18
+const float OOTWOPI = 1.0f / TWOPI;  // size: 0x4, Decl: UMath.h:19
+const float Epsilon = 0.000001f;     // size: 0x4, Decl: UMath.h:22
+}; // namespace UMath
+
+// TODO are these in the namespace?
+typedef float Radians; // Decl: UMath.h:37
+
+typedef float Degrees; // Decl: UMath.h:40
+
+typedef float Angle; // Decl: UMath.h:43
 
 namespace UMath {
 
-inline float Sina(const float a) {
-    return VU0_Sin(a * (float)M_TWOPI);
+inline float Sina(const Angle a) {
+    return VU0_Sin(a * TWOPI);
 }
 
-inline float Cosa(const float a) {
-    return VU0_Cos(a * (float)M_TWOPI);
+inline float Cosa(const Angle a) {
+    return VU0_Cos(a * TWOPI);
 }
 
 inline float Sinr(const float r) {
-    return VU0_Sin(RAD2ANGLE(r) * (float)M_TWOPI);
+    return VU0_Sin(RAD2ANGLE(r) * TWOPI);
 }
 
 inline float Cosr(const float r) {
-    return VU0_Cos(RAD2ANGLE(r) * (float)M_TWOPI);
+    return VU0_Cos(RAD2ANGLE(r) * TWOPI);
 }
 
 #ifndef EA_PLATFORM_PLAYSTATION2
@@ -381,7 +391,7 @@ inline void Cross(const Vector3 &a, const Vector3 &b, Vector3 &r) {
 
 inline void Crossxyz(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &r) {
 #ifdef EA_PLATFORM_XENON
-    // TODO
+        // TODO
 #else
     VU0_v4crossprodxyz(a, b, r);
 #endif
@@ -501,7 +511,7 @@ inline float Pow(const float f, const float e) {
 
 inline float Ramp(const float a, const float amin, const float amax) {
     float arange = amax - amin;
-    return arange > FLOAT_EPSILON ? VU0_floatmax(0.0f, VU0_floatmin((a - amin) / arange, 1.0f)) : 0.0f;
+    return arange > UMath::Epsilon ? VU0_floatmax(0.0f, VU0_floatmin((a - amin) / arange, 1.0f)) : 0.0f;
 }
 
 inline float Lerp(const float a, const float b, const float t) {
