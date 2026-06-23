@@ -12,6 +12,9 @@
 #include "UTypes.h"
 #include "UVectorMath.h"
 
+// TODO UEALibs not working???
+extern "C" void MATRIX4_multyrot(const UMath::Matrix4 *m4, float ybangle, UMath::Matrix4 *resultm);
+
 namespace UMath {
 // TODO apply these
 const float PI = 3.141592653589793f; // size: 0x4, Decl: UMath.h:15
@@ -171,8 +174,6 @@ inline void Unitxyz(const Vector4 &a, Vector4 &r) {
     VU0_v4unitxyz(a, r);
 }
 
-// UEALibs not working???
-void MATRIX4_multyrot(const Matrix4 *m4, float ybangle, Matrix4 *resultm);
 inline void MultYRot(const Matrix4 &m, float a, Matrix4 &r) {
     r = m;
     MATRIX4_multyrot(&r, a, &r);
