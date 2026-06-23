@@ -78,6 +78,10 @@ block_relocations:
 - source: .data:0x80437E14
   end: .data:0x80437E18
 
+# SjisE3
+- source: .data:0x8044C120
+  end: .data:0x8044C320
+
 add_relocations:
 - source: .text:0x80249960
   type: ha

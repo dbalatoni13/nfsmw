@@ -11,7 +11,6 @@ struct Maps {
     uint32 marker;
 };
 
-// TODO somehow make the symbol of this final?
 static const Maps vehicle_fx_maps[22] = {
     {LIGHT_LHEAD, Attrib::StringKey("LIGHT_LHEAD"), STRINGHASH_LEFT_HEADLIGHT},
     {LIGHT_RHEAD, Attrib::StringKey("LIGHT_RHEAD"), STRINGHASH_RIGHT_HEADLIGHT},

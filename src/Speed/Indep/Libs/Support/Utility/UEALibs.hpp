@@ -1,10 +1,6 @@
 #ifndef SUPPORT_UTILITY_UEALIBS_H
 #define SUPPORT_UTILITY_UEALIBS_H
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
 #include "./UTypes.h"
 
 extern "C" {
@@ -20,7 +16,6 @@ void v3add(int num, const UMath::Vector3 *src, const UMath::Vector3 *vtosub, UMa
 void MATRIX4_multxrot(const UMath::Matrix4 *m4, float xbangle, UMath::Matrix4 *resultm);
 void MATRIX4_multyrot(const UMath::Matrix4 *m4, float ybangle, UMath::Matrix4 *resultm);
 void MATRIX4_multzrot(const UMath::Matrix4 *m4, float zbangle, UMath::Matrix4 *resultm);
-
 };
 
 #endif

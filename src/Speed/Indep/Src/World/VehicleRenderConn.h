@@ -126,8 +126,8 @@ class VehicleRenderConn : public Sim::Connection, public UTL::Collections::Lista
         return this->mState > S_Loading ? Sim::CONNSTATUS_READY : Sim::CONNSTATUS_CONNECTING;
     }
 
-    virtual void OnRender(eView *view, int reflection);
-    virtual void OnFetch(float dT);
+    virtual void OnRender(eView *view, int reflection) = 0;
+    virtual void OnFetch(float dT) = 0;
     virtual void OnLoaded(CarRenderInfo *render_info);
     virtual void GetRenderMatrix(bMatrix4 *matrix);
 

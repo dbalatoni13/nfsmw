@@ -146,11 +146,9 @@ template <typename T, int Alignment = DEFAULT_VECTOR_ALIGNMENT> class Vector {
 
   protected:
     // Unfinished
-    virtual pointer AllocVectorSpace(size_type num, unsigned int alignment) {
-        return nullptr;
-    }
+    virtual pointer AllocVectorSpace(size_type num, unsigned int alignment) = 0;
 
-    virtual void FreeVectorSpace(pointer buffer, size_type num) {}
+    virtual void FreeVectorSpace(pointer buffer, size_type num) = 0;
 
     virtual size_type GetGrowSize(size_type minSize) const {
         return UMath::Max(mCapacity + ((mCapacity + 1) >> 1), minSize);

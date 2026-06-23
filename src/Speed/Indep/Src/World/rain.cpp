@@ -458,13 +458,6 @@ ParameterAccessorBlendByDistance RainFogAccessor[2] = {"Rain Fog", "Rain Fog"};
 ParameterAccessor FogBlendDistAccessor[2] = {"Fog Blend Distance", "Fog Blend Distance"};
 
 int FogControlOverRide = 0;
-float BaseFogFalloff = 0.62f;
-float BaseFogFalloffX = 0.31f;
-float BaseFogFalloffY = 1.3f;
-
-int32 BaseWeatherFogColourR = 0x4B;
-int32 BaseWeatherFogColourG = 0x69;
-int32 BaseWeatherFogColourB = 0x6E;
 
 static const bool grabFogInfo = false;
 
