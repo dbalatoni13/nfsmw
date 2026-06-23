@@ -404,7 +404,9 @@ def top_level_variable_key(line: str) -> Optional[Tuple[str, str]]:
     if not code.endswith(";"):
         return None
     code = code[:-1].strip()
-    if code.startswith(("typedef ", "friend ", "enum ", "struct ", "class ", "using ")):
+    if code.startswith(("typedef ", "friend ", "using ")):
+        return None
+    if re.match(r"^(enum|struct|class)\s+[A-Za-z_]\w*$", code):
         return None
     code = re.sub(r"\s*=.*$", "", code).strip()
     if code.endswith(")"):
@@ -845,6 +847,13 @@ def parse_source_top_level_decls(text: str, path: str) -> List[TopLevelDecl]:
                 index = next_index
                 continue
 
+            parsed_var = top_level_variable_key(line)
+            if parsed_var:
+                key, name = parsed_var
+                add_top_decl(entries, "variable", name, key, path, base_line + index)
+                index += 1
+                continue
+
             constructed_var = constructed_variable_key(line)
             if constructed_var:
                 key, name = constructed_var
@@ -893,13 +902,6 @@ def parse_source_top_level_decls(text: str, path: str) -> List[TopLevelDecl]:
                     add_top_decl(entries, "variable", name, key, path, base_line + index)
                     index = statement_end + 1
                     continue
-
-            parsed_var = top_level_variable_key(line)
-            if parsed_var:
-                key, name = parsed_var
-                add_top_decl(entries, "variable", name, key, path, base_line + index)
-                index += 1
-                continue
 
             if "{" in code:
                 _block, index = collect_brace_block(lines, index)
