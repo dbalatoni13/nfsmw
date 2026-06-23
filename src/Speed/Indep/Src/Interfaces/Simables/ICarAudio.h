@@ -1,10 +1,4 @@
 #ifndef INTERFACES_SIMABLES_ICARAUDIO_H
 #define INTERFACES_SIMABLES_ICARAUDIO_H
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
-
-
 #endif

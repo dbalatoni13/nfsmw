@@ -1,10 +1,6 @@
 #ifndef INTERFACES_SIMENTITIES_IENTITY_H
 #define INTERFACES_SIMENTITIES_IENTITY_H
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Libs/Support/Utility/UListable.h"
 #include "Speed/Indep/Src/Interfaces/IAttachable.h"
@@ -25,13 +21,7 @@ class IEntity : public UTL::COM::IUnknown,
                 public UTL::Collections::ListableSet<Sim::IEntity, 8, eEntityList, ENTITY_MAX>,
                 public UTL::COM::Factory<Sim::Param, Sim::IEntity, UCrc32> {
   public:
-    static HINTERFACE _IHandle() {
-        return (HINTERFACE)_IHandle;
-    }
-
-    IEntity(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
-
-    virtual ~IEntity() {}
+    DECL_INTERFACE(IEntity);
 
     virtual void AttachPhysics(ISimable *object);
     virtual void DetachPhysics();

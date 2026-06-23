@@ -1,23 +1,18 @@
 #ifndef WORLD_WCOLLISION_H
 #define WORLD_WCOLLISION_H
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
 #include <types.h>
 
 #include "Speed/Indep/Src/Physics/Dynamics/Collision.h"
-#include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "WCollisionTri.h"
 #include "WSurfaceTypes.h"
 
 // total size: 0x8
 struct WCollisionPackedVert {
-    short x;                  // offset 0x0, size 0x2
-    short y;                  // offset 0x2, size 0x2
-    short z;                  // offset 0x4, size 0x2
-    CollisionSurface surface; // offset 0x6, size 0x2
+    short x;                        // offset 0x0, size 0x2
+    short y;                        // offset 0x2, size 0x2
+    short z;                        // offset 0x4, size 0x2
+    CARP::CollisionSurface surface; // offset 0x6, size 0x2
 };
 
 struct WCollisionBarrier;
@@ -239,7 +234,7 @@ struct WCollisionBarrierListEntry {
     }
 };
 
-struct WCollisionObject : public CollisionObject {
+struct WCollisionObject : public CARP::CollisionObject {
     // total size: 0x70
     enum Types {
         kBox = 0,
@@ -258,7 +253,7 @@ struct WCollisionObject : public CollisionObject {
 };
 
 // total size: 0x40
-struct WCollisionInstance : public CollisionInstance {
+struct WCollisionInstance : public CARP::CollisionInstance {
     void MakeMatrix(UMath::Matrix4 &m, bool addXLate) const;
     void CalcPosition(UMath::Vector3 &pos) const;
     const char *GetName() const;

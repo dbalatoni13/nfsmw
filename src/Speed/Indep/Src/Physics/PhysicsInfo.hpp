@@ -1,9 +1,5 @@
-#ifndef PHYSICS_PHYSICSINFO_H
-#define PHYSICS_PHYSICSINFO_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef PHYSICSINFO_HPP
+#define PHYSICSINFO_HPP
 
 #include "PhysicsTunings.h"
 #include "PhysicsTypes.h"
@@ -15,7 +11,6 @@
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/pvehicle.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/tires.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/transmission.h"
-#include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 
 namespace Physics {
 namespace Info {

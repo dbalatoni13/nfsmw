@@ -1,10 +1,6 @@
 #ifndef PHYSICS_SMOKEABLEINFO_H
 #define PHYSICS_SMOKEABLEINFO_H
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
 #include "Speed/Indep/Libs/Support/Utility/UCrc.h"
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/Common/AttribPrivate.h"

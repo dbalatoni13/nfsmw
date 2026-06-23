@@ -1,9 +1,5 @@
-#ifndef SUPPORT_MISC_SAP_H
-#define SUPPORT_MISC_SAP_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef SAP_H
+#define SAP_H
 
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 
@@ -91,6 +87,10 @@ template <typename T> class Grid {
     Axis mZ;   // offset 0x34, size 0x34
     T &mOwner; // offset 0x68, size 0x4
 };
+
+#define IMPLEMENT_SAP_GRID(_TYPE_)                                                                                                                   \
+    template <> SAP::Grid<_TYPE_>::Axis::Node *SAP::Grid<_TYPE_>::mRootX = NULL;                                                                     \
+    template <> SAP::Grid<_TYPE_>::Axis::Node *SAP::Grid<_TYPE_>::mRootZ = NULL;
 
 }; // namespace SAP
 

@@ -1,10 +1,6 @@
 #ifndef INTERFACES_SIMABLES_ICOLLISIONBODY_H
 #define INTERFACES_SIMABLES_ICOLLISIONBODY_H
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Libs/Support/Utility/UCrc.h"
 #include "Speed/Indep/Libs/Support/Utility/UListable.h"
@@ -13,15 +9,8 @@
 // total size: 0xC
 class ICollisionBody : public UTL::COM::IUnknown, public UTL::Collections::Listable<ICollisionBody, 160> {
   public:
-    static HINTERFACE _IHandle() {
-        return (HINTERFACE)_IHandle;
-    }
+    DECL_INTERFACE(ICollisionBody);
 
-    ICollisionBody(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
-
-    virtual ~ICollisionBody() {}
-
-  public:
     virtual const UMath::Vector3 &GetPosition() const = 0;
     virtual const UMath::Vector3 &GetLinearVelocity() const = 0;
     virtual const UMath::Vector3 &GetAngularVelocity() const = 0;

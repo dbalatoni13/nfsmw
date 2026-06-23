@@ -1,10 +1,6 @@
 #ifndef INTERFACES_SIMABLES_IATTRIBUTEABLE_H
 #define INTERFACES_SIMABLES_IATTRIBUTEABLE_H
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 
 class IAttributeable {

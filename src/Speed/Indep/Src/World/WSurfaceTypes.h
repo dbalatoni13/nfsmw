@@ -1,13 +1,10 @@
 #ifndef WORLD_WSURFACETYPES_H
 #define WORLD_WSURFACETYPES_H
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
+#include "Speed/Indep/Libs/Support/Miscellaneous/CARP.h"
 #include "Speed/Indep/Src/Physics/Dynamics/Collision.h"
 
-class WSurface : public CollisionSurface {
+class WSurface : public CARP::CollisionSurface {
   public:
     static void InitSystem();
 

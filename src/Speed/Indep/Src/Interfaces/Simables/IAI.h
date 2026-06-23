@@ -1,12 +1,9 @@
 #ifndef INTERFACES_SIMABLES_IAI_H
 #define INTERFACES_SIMABLES_IAI_H
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Src/AI/AIAvoidable.h"
+#include "Speed/Indep/Src/EAXSound/EAXSoundTypes.h"
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/aivehicle.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/pursuitescalation.h"
@@ -17,33 +14,24 @@
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #include "Speed/Indep/Src/World/WRoadNetwork.h"
 
-// TODO move?
 enum eLaneSelection {
     SELECT_CENTER_LANE = 0,
     SELECT_CURRENT_LANE = 1,
     SELECT_VALID_LANE = 2,
 };
 
-struct IVehicle;
+class IVehicle;
+class IPursuit;
 
 DECLARE_CONTAINER_TYPE(IRoadBlockVehicles);
 DECLARE_CONTAINER_TYPE(IRoadBlockSmackables);
 
-struct IPursuit;
-
 class IRoadBlock : public UTL::COM::IUnknown, public UTL::Collections::Listable<IRoadBlock, 8> {
-  protected:
-    ~IRoadBlock() override;
-
   public:
-    static HINTERFACE _IHandle() {
-        return (HINTERFACE)_IHandle;
-    }
+    DECL_INTERFACE(IRoadBlock);
 
-    IRoadBlock(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
-
-    typedef struct UTL::Std::vector<IVehicle *, _type_IRoadBlockVehicles> Vehicles;
-    typedef struct UTL::Std::vector<IPlaceableScenery *, _type_IRoadBlockSmackables> Smackables;
+    typedef UTL::Std::vector<IVehicle *, _type_IRoadBlockVehicles> Vehicles;
+    typedef UTL::Std::vector<IPlaceableScenery *, _type_IRoadBlockSmackables> Smackables;
 
     virtual bool AddVehicle(IVehicle *vehicle);
     virtual void AddSmackable(IPlaceableScenery *smackable, bool isSpikeStrip);
@@ -71,13 +59,7 @@ class IRoadBlock : public UTL::COM::IUnknown, public UTL::Collections::Listable<
 
 class IVehicleAI : public UTL::COM::IUnknown {
   public:
-    static HINTERFACE _IHandle() {
-        return (HINTERFACE)_IHandle;
-    }
-
-    IVehicleAI(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
-
-    virtual ~IVehicleAI() {}
+    DECL_INTERFACE(IVehicleAI);
 
     virtual ISimable *GetSimable() const;
     virtual IVehicle *GetVehicle() const;
@@ -139,32 +121,15 @@ class IVehicleAI : public UTL::COM::IUnknown {
 
 class ITrafficAI : public UTL::COM::IUnknown {
   public:
-    static HINTERFACE _IHandle() {
-        return (HINTERFACE)_IHandle;
-    }
+    DECL_INTERFACE(ITrafficAI);
 
-    ITrafficAI(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
-
-  protected:
-    ~ITrafficAI() override {}
-
-  public:
     virtual void StartDriving(float speed);
 };
 
 class IHumanAI : public UTL::COM::IUnknown {
-  protected:
   public:
-    static HINTERFACE _IHandle() {
-        return (HINTERFACE)_IHandle;
-    }
+    DECL_INTERFACE(IHumanAI);
 
-    IHumanAI(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
-
-  protected:
-    ~IHumanAI() override {}
-
-  public:
     virtual void ChangeDragLanes(bool left);
     virtual bool IsPlayerSteering();
     virtual bool GetAiControl();
@@ -214,16 +179,8 @@ struct GroundSupportRequest {
 
 class IPursuit : public UTL::COM::IUnknown, public UTL::Collections::Listable<IPursuit, 8> {
   public:
-    static HINTERFACE _IHandle() {
-        return (HINTERFACE)_IHandle;
-    }
+    DECL_INTERFACE(IPursuit);
 
-    IPursuit(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
-
-  protected:
-    ~IPursuit() override {}
-
-  public:
     virtual bool IsTarget(AITarget *aitarget) const;
     virtual AITarget *GetTarget() const;
     virtual int GetNumCops() const;
@@ -306,27 +263,10 @@ class IPursuit : public UTL::COM::IUnknown, public UTL::Collections::Listable<IP
     virtual Attrib::Gen::pursuitlevels *GetPursuitLevelAttrib() const;
 };
 
-// TODO where?
-enum SirenState {
-    SIREN_OFF = -1,
-    SIREN_WAIL = 0,
-    SIREN_YELP = 1,
-    SIREN_SCREAM = 2,
-    SIREN_DIE = 3,
-};
-
 class IPursuitAI : public UTL::COM::IUnknown {
   public:
-    static HINTERFACE _IHandle() {
-        return (HINTERFACE)_IHandle;
-    }
+    DECL_INTERFACE(IPursuitAI);
 
-    IPursuitAI(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
-
-  protected:
-    ~IPursuitAI() override {}
-
-  public:
     virtual void StartPatrol();
     virtual void StartRoadBlock();
     virtual void StartFlee();
@@ -354,7 +294,7 @@ class IPursuitAI : public UTL::COM::IUnknown {
     virtual bool GetChicken();
     virtual void SetDamagedByPerp(bool damaged);
     virtual bool GetDamagedByPerp();
-    virtual SirenState GetSirenState() const;
+    virtual Sound::SirenState GetSirenState() const;
     virtual float GetTimeSinceTargetSeen() const;
     virtual void ZeroTimeSinceTargetSeen();
     virtual bool CanSeeTarget(AITarget *target);
@@ -366,19 +306,10 @@ class IPursuitAI : public UTL::COM::IUnknown {
 
 class IPerpetrator : public UTL::COM::IUnknown {
   public:
-    static HINTERFACE _IHandle() {
-        return (HINTERFACE)_IHandle;
-    }
+    DECL_INTERFACE(IPerpetrator);
 
-    IPerpetrator(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
-
-  protected:
-    ~IPerpetrator() override {}
-
-  public:
     static const int MaxiumumHeat;
 
-    // Virtual methods
     virtual float GetHeat() const;
     virtual void SetHeat(float heat);
     virtual Attrib::Gen::pursuitescalation *GetPursuitEscalationAttrib();
@@ -404,38 +335,7 @@ class IPerpetrator : public UTL::COM::IUnknown {
     virtual float Get911CallTime() const;
 };
 
-class IAIHelicopter : public UTL::COM::IUnknown {
-  public:
-    static HINTERFACE _IHandle() {
-        return (HINTERFACE)_IHandle;
-    }
-
-    IAIHelicopter(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
-
-  protected:
-    ~IAIHelicopter() override {}
-
-  public:
-    // Virtual methods
-    virtual float GetDesiredHeightOverDest() const;
-    virtual void SetDesiredHeightOverDest(const float height);
-    virtual void SetLookAtPosition(UMath::Vector3 la);
-    virtual UMath::Vector3 GetLookAtPosition() const;
-    virtual void SetDestinationVelocity(const UMath::Vector3 &v);
-    virtual void SteerToNav(WRoadNav *road_nav, float height, float speed, bool bStopAtDest);
-    virtual bool StartPathToPoint(UMath::Vector3 &point);
-    virtual bool StrafeToDestIsSet() const;
-    virtual void SetStrafeToDest(bool strafe);
-    virtual bool FilterHeliAltitude(UMath::Vector3 &point);
-    virtual void RestrictPointToRoadNet(UMath::Vector3 &seekPosition);
-    virtual void SetFuelFull();
-    virtual float GetFuelTimeRemaining();
-    virtual void SetShadowScale(float s);
-    virtual float GetShadowScale();
-    virtual void SetDustStormIntensity(float d);
-    virtual float GetDustStormIntensity();
-};
-
+// TODO these two were moved in carbon to IRacer.h
 struct RacePreparationInfo {
     enum eFlags {
         RESET_DAMAGE = 1,
@@ -452,21 +352,11 @@ struct RacePreparationInfo {
 
 class IRacer : public UTL::COM::IUnknown {
   public:
-    static HINTERFACE _IHandle() {
-        return (HINTERFACE)_IHandle;
-    }
+    DECL_INTERFACE(IRacer);
 
-    IRacer(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
-
-  protected:
-    ~IRacer() override {}
-
-  public:
-    // Virtual methods
-    // TODO fix order
-    virtual void StartRace(DriverStyle style);
-    virtual void QuitRace() override;
     virtual void PrepareForRace(const RacePreparationInfo &rpi);
+    virtual void StartRace(DriverStyle style);
+    virtual void QuitRace();
 };
 
 #endif

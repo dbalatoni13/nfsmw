@@ -1,12 +1,6 @@
 #ifndef INTTERFACES_SIMACTIVITIES_IVEHICLE_CACHE_H
 #define INTTERFACES_SIMACTIVITIES_IVEHICLE_CACHE_H
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
-#include "Speed/Indep/Libs/Support/Utility/UCOM.h"
-#include "Speed/Indep/Libs/Support/Utility/UListable.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 
 enum eVehicleCacheResult {
@@ -14,19 +8,13 @@ enum eVehicleCacheResult {
     VCR_WANT = 0,
 };
 
+static const int MAX_VEHICLE_CACHE = 18;
+
 // total size: 0xC
-class IVehicleCache : public UTL::COM::IUnknown, public UTL::Collections::Listable<IVehicleCache, 18> {
+class IVehicleCache : public UTL::COM::IUnknown, public UTL::Collections::Listable<IVehicleCache, MAX_VEHICLE_CACHE> {
   public:
-    static HINTERFACE _IHandle() {
-        return (HINTERFACE)_IHandle;
-    }
+    DECL_INTERFACE(IVehicleCache);
 
-    IVehicleCache(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
-
-  protected:
-    virtual ~IVehicleCache() {}
-
-  public:
 #ifndef EA_BUILD_A124
     virtual const char *GetCacheName() const;
 #endif

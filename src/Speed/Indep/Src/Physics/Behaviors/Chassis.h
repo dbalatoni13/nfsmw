@@ -1,9 +1,5 @@
-#ifndef PHYSICS_BEHAVIORS_CHASSIS_H
-#define PHYSICS_BEHAVIORS_CHASSIS_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef CHASSIS_H
+#define CHASSIS_H
 
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
@@ -20,6 +16,7 @@
 #include "Speed/Indep/Src/Physics/VehicleBehaviors.h"
 
 // Credits: Brawltendo
+// total size: 0x94
 class Chassis : public VehicleBehavior, public ISuspension {
   public:
     struct State {
@@ -76,32 +73,31 @@ class Chassis : public VehicleBehavior, public ISuspension {
         SS_NONE = 0,
     };
 
+  protected:
     Chassis(const BehaviorParams &bp);
-
+    void SetCOG(float extra_bias, float extra_ride);
     Mps ComputeMaxSlip(const State &state) const;
-    void DoTireHeat(const Chassis::State &state);
     float ComputeLateralGripScale(const Chassis::State &state) const;
     float ComputeTractionScale(const Chassis::State &state) const;
-    SleepState DoSleep(const Chassis::State &state);
-    void ComputeAckerman(const float steering, const State &state, UMath::Vector4 *left, UMath::Vector4 *right) const;
-    void SetCOG(float extra_bias, float extra_ride);
     void ComputeState(float dT, State &state) const;
+    void DoTireHeat(const Chassis::State &state);
     void DoAerodynamics(const Chassis::State &state, float drag_pct, float aero_pct, float aero_front_z, float aero_rear_z,
                         const Physics::Tunings *tunings);
     void DoJumpStabilizer(const State &state);
+    void ComputeAckerman(Angle steering, const State &state, UMath::Vector4 *left, UMath::Vector4 *right) const;
+    SleepState DoSleep(const Chassis::State &state);
 
     /* Overrides */
     // virtual ~Chassis();
-    virtual Meters GuessCompression(unsigned int id, float downforce) const;
     virtual void OnBehaviorChange(const UCrc32 &mechanic);
-    virtual float GetRenderMotion() const;
+    virtual void OnTaskSimulate(float dT);
+    virtual Meters GuessCompression(unsigned int id, Newtons downforce) const;
     virtual Meters GetRideHeight(unsigned int idx) const;
     virtual float CalculateUndersteerFactor() const;
     virtual float CalculateOversteerFactor() const;
-    virtual void OnTaskSimulate(float dT);
+    virtual float GetRenderMotion() const;
 
   private:
-    // total size: 0x94
     ICollisionBody *mRBComplex;                         // offset 0x58, size 0x4
     IInput *mInput;                                     // offset 0x5C, size 0x4
     IEngine *mEngine;                                   // offset 0x60, size 0x4
@@ -110,8 +106,8 @@ class Chassis : public VehicleBehavior, public ISuspension {
     IEngineDamage *mEngineDamage;                       // offset 0x6C, size 0x4
     ISpikeable *mSpikeDamage;                           // offset 0x70, size 0x4
     BehaviorSpecsPtr<Attrib::Gen::chassis> mAttributes; // offset 0x74, size 0x14
-    float mJumpTime;                                    // offset 0x88, size 0x4
-    float mJumpAlititude;                               // offset 0x8C, size 0x4
+    Seconds mJumpTime;                                  // offset 0x88, size 0x4
+    Meters mJumpAlititude;                              // offset 0x8C, size 0x4
     float mTireHeat;                                    // offset 0x90, size 0x4
 };
 

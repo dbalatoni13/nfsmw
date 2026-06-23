@@ -1,10 +1,6 @@
 #ifndef INTERFACES_SIMACTIVITIES_INIS_H
 #define INTERFACES_SIMACTIVITIES_INIS_H
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Libs/Support/Utility/UCollections.h"
 #include "Speed/Indep/Libs/Support/Utility/UCrc.h"
@@ -17,13 +13,7 @@
 
 class INIS : public UTL::COM::IUnknown, public UTL::Collections::Singleton<INIS> {
   public:
-    static HINTERFACE _IHandle() {
-        return (HINTERFACE)_IHandle;
-    }
-
-    INIS(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
-
-    ~INIS() override {}
+    DECL_INTERFACE(INIS);
 
     virtual void AddCar(UCrc32 channel, IVehicle *vehicle);
     virtual IVehicle *GetCar(UCrc32 channelname);
@@ -72,13 +62,7 @@ class INIS : public UTL::COM::IUnknown, public UTL::Collections::Singleton<INIS>
 
 class INISLISTENER : public UTL::COM::IUnknown {
   public:
-    static HINTERFACE _IHandle() {
-        return (HINTERFACE)_IHandle;
-    }
-
-    INISLISTENER(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
-
-    ~INISLISTENER() override {}
+    DECL_INTERFACE(INISLISTENER);
 
     virtual void ArrestLevel(int level);
 };

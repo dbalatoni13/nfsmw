@@ -13,13 +13,15 @@ enum RBElementType {
 };
 
 struct RoadblockElement {
-    RoadblockElement(enum RBElementType e, float offx, float offz, float a) {}
+    RoadblockElement(RBElementType e, float offx, float offz, float a) : mElementType(e), mOffsetX(offx), mOffsetZ(offz), mAngle(a) {}
 
     RBElementType mElementType; // offset 0x0, size 0x4
     float mOffsetX;             // offset 0x4, size 0x4
     float mOffsetZ;             // offset 0x8, size 0x4
     float mAngle;               // offset 0xC, size 0x4
 };
+
+static const int MAX_RB_ELEMENTS = 6;
 
 // total size: 0x68
 struct RoadblockSetup {

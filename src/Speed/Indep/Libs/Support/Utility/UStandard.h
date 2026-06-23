@@ -1,22 +1,20 @@
 #ifndef SUPPORT_UTILITY_USTANDARD_H
 #define SUPPORT_UTILITY_USTANDARD_H
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
 #include <list>
 #include <map>
 #include <set>
 #include <vector>
 
+#include "UDefs.h"
 #include "UTLAllocator.h"
 
+// change to DECL_CONTAINER_TYPE
 // clang-format off
 #define DECLARE_CONTAINER_TYPE(Type)\
 struct _type_##Type { \
     const char* name() {\
-        return #Type; \
+        return NULL;\
     }\
 };
 // clang-format on

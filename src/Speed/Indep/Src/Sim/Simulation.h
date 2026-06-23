@@ -1,29 +1,31 @@
-#ifndef SIM_SIMULATION_H
-#define SIM_SIMULATION_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef __SIMULATION_H
+#define __SIMULATION_H
 
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
+#include "Speed/Indep/Libs/Support/Utility/UCrc.h"
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 #include "Speed/Indep/Src/Interfaces/ITaskable.h"
 #include "Speed/Indep/Src/Math/SimRandom.h"
-#include "Speed/Indep/Src/Sim/SimTypes.h"
 
 namespace Sim {
 
-// TODO move?
+enum State {
+    STATE_NONE = 0,
+    STATE_INITIALIZING = 1,
+    STATE_ACTIVE = 3,
+    STATE_IDLE = 4,
+};
+
+enum eUserMode {
+    USER_SINGLE = 0,
+    USER_SPLIT_SCREEN = 1,
+    USER_ONLINE = 2,
+};
+
 // total size: 0x4
 class ITimeManager : public UTL::COM::IUnknown {
   public:
-    static HINTERFACE _IHandle() {
-        return (HINTERFACE)_IHandle;
-    }
-
-    ITimeManager(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
-
-    virtual ~ITimeManager() {}
+    DECL_INTERFACE(ITimeManager);
 
     virtual float OnManageTime(float real_time_delta, float sim_speed);
 };
@@ -31,13 +33,7 @@ class ITimeManager : public UTL::COM::IUnknown {
 // total size: 0x8
 class IStateManager : public UTL::COM::IUnknown {
   public:
-    static HINTERFACE _IHandle() {
-        return (HINTERFACE)_IHandle;
-    }
-
-    IStateManager(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
-
-    virtual ~IStateManager() {}
+    DECL_INTERFACE(IStateManager);
 
     virtual Sim::State OnManageState(Sim::State state);
     virtual bool ShouldPauseInput();

@@ -1,66 +1,64 @@
-#ifndef PHYSICS_BOUNDS_H
-#define PHYSICS_BOUNDS_H
+#ifndef BOUNDS_H
+#define BOUNDS_H
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#define COLLISION_GEOM_VECTOR_PRESSICION 1000.f
+#define COLLISION_GEOM_QUAT_PRECISION 32767.f
 
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Libs/Support/Utility/UCrc.h"
-#include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 #include "Speed/Indep/Src/Sim/SimSurface.h"
 
 namespace CollisionGeometry {
 
 enum BoundFlags {
-    kBounds_Joint_Invert = 8192,
-    kBounds_Male_Post = 4096,
-    kBounds_Joint_Male = 2048,
-    kBounds_Joint_Female = 1024,
-    kBounds_Constraint_Prismatic = 512,
-    kBounds_Constraint_Conical = 256,
-    kBounds_Sphere = 128,
-    kBounds_Box = 64,
-    kBounds_Internal = 32,
-    kBounds_MeshVsGround = 16,
-    kBounds_PrimVsGround = 8,
-    kBounds_PrimVsObjects = 4,
-    kBounds_PrimVsWorld = 2,
     kBounds_Disabled = 1,
+    kBounds_PrimVsWorld = 1 << 1,
+    kBounds_PrimVsObjects = 1 << 2,
+    kBounds_PrimVsGround = 1 << 3,
+    kBounds_MeshVsGround = 1 << 4,
+    kBounds_Internal = 1 << 5,
+    kBounds_Box = 1 << 6,
+    kBounds_Sphere = 1 << 7,
+    kBounds_Constraint_Conical = 1 << 8,
+    kBounds_Constraint_Prismatic = 1 << 9,
+    kBounds_Joint_Female = 1 << 10,
+    kBounds_Joint_Male = 1 << 11,
+    kBounds_Male_Post = 1 << 12,
+    kBounds_Joint_Invert = 1 << 13,
 };
 
 // total size: 0x6
 struct _V3c {
     void Decompress(UMath::Vector3 &to) const {
-        to.x = static_cast<float>(x) * 0.001f;
-        to.y = static_cast<float>(y) * 0.001f;
-        to.z = static_cast<float>(z) * 0.001f;
+        to.x = static_cast<float>(x) / COLLISION_GEOM_VECTOR_PRESSICION;
+        to.y = static_cast<float>(y) / COLLISION_GEOM_VECTOR_PRESSICION;
+        to.z = static_cast<float>(z) / COLLISION_GEOM_VECTOR_PRESSICION;
     }
 
   private:
-    short x; // offset 0x0, size 0x2
-    short y; // offset 0x2, size 0x2
-    short z; // offset 0x4, size 0x2
+    int16 x; // offset 0x0, size 0x2
+    int16 y; // offset 0x2, size 0x2
+    int16 z; // offset 0x4, size 0x2
 };
 
 // total size: 0x8
 struct _Q4c {
     void Decompress(struct UMath::Vector4 &to) const {
-        to.x = static_cast<float>(this->x) * 3.051851e-05f;
-        to.y = static_cast<float>(this->y) * 3.051851e-05f;
-        to.z = static_cast<float>(this->z) * 3.051851e-05f;
-        to.w = static_cast<float>(this->w) * 3.051851e-05f;
+        to.x = static_cast<float>(this->x) / COLLISION_GEOM_QUAT_PRECISION;
+        to.y = static_cast<float>(this->y) / COLLISION_GEOM_QUAT_PRECISION;
+        to.z = static_cast<float>(this->z) / COLLISION_GEOM_QUAT_PRECISION;
+        to.w = static_cast<float>(this->w) / COLLISION_GEOM_QUAT_PRECISION;
     }
 
   private:
-    short x; // offset 0x0, size 0x2
-    short y; // offset 0x2, size 0x2
-    short z; // offset 0x4, size 0x2
-    short w; // offset 0x6, size 0x2
+    int16 x; // offset 0x0, size 0x2
+    int16 y; // offset 0x2, size 0x2
+    int16 z; // offset 0x4, size 0x2
+    int16 w; // offset 0x6, size 0x2
 };
 
+// total size: 0x10
 struct BoundsHeader {
-    // total size: 0x10
     UCrc32 fNameHash; // offset 0x0, size 0x4
     int fNumBounds;   // offset 0x4, size 0x4
     int fIsResolved;  // offset 0x8, size 0x4
@@ -71,18 +69,18 @@ class Collection;
 
 // total size: 0x30
 struct Bounds {
-    _Q4c fOrientation;          // offset 0x0, size 0x8
-    _V3c fPosition;             // offset 0x8, size 0x6
-    unsigned short fFlags;      // offset 0xE, size 0x2
-    _V3c fHalfDimensions;       // offset 0x10, size 0x6
-    unsigned char fNumChildren; // offset 0x16, size 0x1
-    char fPCloudIndex;          // offset 0x17, size 0x1
-    _V3c fPivot;                // offset 0x18, size 0x6
-    short fChildIndex;          // offset 0x1E, size 0x2
-    float fRadius;              // offset 0x20, size 0x4
-    UCrc32 fSurface;            // offset 0x24, size 0x4
-    UCrc32 fNameHash;           // offset 0x28, size 0x4
-    Collection *fCollection;    // offset 0x2C, size 0x4
+    _Q4c fOrientation;       // offset 0x0, size 0x8
+    _V3c fPosition;          // offset 0x8, size 0x6
+    uint16 fFlags;           // offset 0xE, size 0x2
+    _V3c fHalfDimensions;    // offset 0x10, size 0x6
+    uint8 fNumChildren;      // offset 0x16, size 0x1
+    int8 fPCloudIndex;       // offset 0x17, size 0x1
+    _V3c fPivot;             // offset 0x18, size 0x6
+    int16 fChildIndex;       // offset 0x1E, size 0x2
+    float fRadius;           // offset 0x20, size 0x4
+    UCrc32 fSurface;         // offset 0x24, size 0x4
+    UCrc32 fNameHash;        // offset 0x28, size 0x4
+    Collection *fCollection; // offset 0x2C, size 0x4
 
     void GetOrientation(UMath::Vector4 &to) const {
         this->fOrientation.Decompress(to);
@@ -93,15 +91,22 @@ struct Bounds {
     }
 };
 
+// total size: 0x10
+struct PCloudHeader {
+    int fNumPClouds; // offset 0x0, size 0x4
+    int fPad[3];     // offset 0x4, size 0xC
+};
+
+// total size: 0x10
+struct PCloud {
+    int fNumVerts;          // offset 0x0, size 0x4
+    int fPad[2];            // offset 0x4, size 0x8
+    UMath::Vector4 *fPList; // offset 0xC, size 0x4
+};
+
 class IBoundable : public UTL::COM::IUnknown {
   public:
-    static HINTERFACE _IHandle() {
-        return (HINTERFACE)_IHandle;
-    }
-
-    IBoundable(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
-
-    virtual ~IBoundable() {}
+    DECL_INTERFACE(IBoundable);
 
     virtual const CollisionGeometry::Bounds *GetGeometryNode() const;
     virtual bool AddCollisionPrimitive(UCrc32 name, const UMath::Vector3 &dim, float radius, const UMath::Vector3 &offset, const SimSurface &material,

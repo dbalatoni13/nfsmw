@@ -5,6 +5,7 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Libs/Support/Utility/UCollections.h"
 #include "Speed/Indep/Libs/Support/Utility/UCrc.h"
@@ -38,17 +39,12 @@ class System;
 
 class IContext : public UTL::COM::IUnknown {
   public:
-    static HINTERFACE _IHandle() {
-        return (HINTERFACE)_IHandle;
-    }
-
-    IContext(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
-
-    virtual ~IContext() {}
+    DECL_INTERFACE(IContext);
 
     virtual bool SetDynamicData(const System *system, EventDynamicData *data);
 };
 
+// TODO DECLAREHANDLE in new UTL.h
 struct HENGINE__ {
     // total size: 0x4
     int unused; // offset 0x0, size 0x4
@@ -65,18 +61,10 @@ enum QueueMode {
 };
 
 class IEngine : public UTL::COM::IUnknown, public UTL::Collections::Instanceable<HENGINE, IEngine, 434> {
-public:
-    enum {
-        InstanceLimit = 434
-    };
+  public:
+    enum { InstanceLimit = 434 };
 
-    static HINTERFACE _IHandle() {
-        return (HINTERFACE)_IHandle;
-    }
-
-    IEngine(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
-
-    virtual ~IEngine() {}
+    DECL_INTERFACE(IEngine);
 
     virtual void Release();
     virtual const char *Name() const;
@@ -130,7 +118,7 @@ struct System {
 };
 
 struct EventSeqEngine {
-    char * mName; // offset 0x0, size 0x4
+    char *mName;        // offset 0x0, size 0x4
     uint32 mNumSystems; // offset 0x4, size 0x4
 
     // unsigned int * GetSystemIDs() {}

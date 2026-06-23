@@ -1,9 +1,5 @@
-#ifndef INTERFACES_SIMABLES_IRBVEHICLE_H
-#define INTERFACES_SIMABLES_IRBVEHICLE_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef IRBVEHICLE_H
+#define IRBVEHICLE_H
 
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
@@ -12,13 +8,7 @@
 
 class IRBVehicle : public UTL::COM::IUnknown {
   public:
-    static HINTERFACE _IHandle() {
-        return (HINTERFACE)_IHandle;
-    }
-
-    IRBVehicle(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
-
-    virtual ~IRBVehicle() {}
+    DECL_INTERFACE(IRBVehicle);
 
     virtual void SetCollisionMass(float mass);
     virtual void SetCollisionCOG(const UMath::Vector3 &cog);

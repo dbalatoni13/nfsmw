@@ -1,11 +1,6 @@
-#ifndef WORLD_DAMAGEZONES_H
-#define WORLD_DAMAGEZONES_H
+#ifndef DAMAGE_ZONES_H
+#define DAMAGE_ZONES_H
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
-#include "Speed/Indep/Tools/AttribSys/Runtime/AttribHash.h"
 #include "Speed/Indep/Libs/Support/Utility/UCrc.h"
 
 namespace DamageZone {

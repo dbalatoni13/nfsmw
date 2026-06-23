@@ -1,6 +1,7 @@
 #ifndef ECSTASY_EMITTER_SYSTEM_H
 #define ECSTASY_EMITTER_SYSTEM_H
 
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
@@ -177,23 +178,23 @@ struct TexturePageRange {
 };
 
 enum EmitterFlags {
-    TRACKED_EMITTER = 32,
-    ALREADY_ORPHANED_PARTICLES = 8,
-    START_DELAY_ALREADY_DONE = 4,
-    DELAYING = 2,
     ONE_SHOT = 1,
+    DELAYING = 1 << 1,
+    START_DELAY_ALREADY_DONE = 1 << 2,
+    ALREADY_ORPHANED_PARTICLES = 1 << 3,
+    TRACKED_EMITTER = 1 << 5,
 };
 
 enum EmitterGroupFlags {
-    ENABLED = 16,
-    LOADED = 8,
-    TRACKED_GROUP = 4,
-    IS_STATIC = 2,
     AUTO_UPDATE = 1,
+    IS_STATIC = 1 << 1,
+    TRACKED_GROUP = 1 << 2,
+    LOADED = 1 << 3,
+    ENABLED = 1 << 4,
 };
 
+// total size: 0x90
 class Emitter : public bTNode<Emitter> {
-    // total size: 0x90
     EmitterControl mControl;                // offset 0x8, size 0x8
     float mParticleAccumulation;            // offset 0x10, size 0x4
     uint32 mRandomSeed;                     // offset 0x14, size 0x4
@@ -211,17 +212,10 @@ class Emitter : public bTNode<Emitter> {
     EmitterGroup *mGroup;                   // offset 0x8C, size 0x4
 
   public:
+    ~Emitter();
+    USE_SLOTALLOC(EmitterSlotPool);
     Emitter(const Attrib::Collection *spec, EmitterGroup *parent_group);
 
-    void *operator new(std::size_t size) {
-        return bOMalloc(EmitterSlotPool);
-    }
-
-    void operator delete(void *ptr) {
-        bFree(EmitterSlotPool, ptr);
-    }
-
-    ~Emitter();
     void GetInitialParticleColorAndSize(const bMatrix4 *xtra_basis, const bMatrix4 *clr_basis, EmitterParticle *outParticle) const;
     void GetDiscVelocity(float &x, float &y, float &z, uint32 &rand_seed) const;
     void GetConeVelocity(float &x, float &y, float &z, uint32 &rand_seed) const;
@@ -248,7 +242,7 @@ class Emitter : public bTNode<Emitter> {
     }
 
     bool HasOrphanedParticles() {
-        return this->mFlags & ALREADY_ORPHANED_PARTICLES;
+        return (this->mFlags & ALREADY_ORPHANED_PARTICLES) != 0;
     }
 
     void SetOrphanedParticlesFlag() {
@@ -256,7 +250,7 @@ class Emitter : public bTNode<Emitter> {
     }
 
     bool IsEnabled() const {
-        return this->mFlags & ENABLED;
+        return (this->mFlags & ENABLED) != 0;
     }
 
     void Enable() {
@@ -305,11 +299,11 @@ class Emitter : public bTNode<Emitter> {
 
 extern SlotPool *EmitterGroupSlotPool;
 
+// total size: 0x80
 class EmitterGroup : public bTNode<EmitterGroup> {
     // typedefs
     typedef void (*OnDeleteCallback)(void *, EmitterGroup *);
 
-    // total size: 0x80
     bTList<Emitter> mEmitters;               // offset 0x8, size 0x8
     uint32 mGroupKey;                        // offset 0x10, size 0x4
     uint32 Padding;                          // offset 0x14, size 0x4
@@ -346,7 +340,7 @@ class EmitterGroup : public bTNode<EmitterGroup> {
     }
     void Enable();
     void Disable();
-    void SubscribeToDeletion(void *subscriber, void (*callback)(void *, struct EmitterGroup *));
+    void SubscribeToDeletion(void *subscriber, OnDeleteCallback callback);
     void UnSubscribe();
     void DeleteEmitters();
     void Update(float dt);
@@ -370,15 +364,15 @@ class EmitterGroup : public bTNode<EmitterGroup> {
     }
 
     bool IsAutoUpdate() {
-        return this->mFlags & AUTO_UPDATE;
+        return (this->mFlags & AUTO_UPDATE) != 0;
     }
 
     bool IsStatic() {
-        return this->mFlags & IS_STATIC;
+        return (this->mFlags & IS_STATIC) != 0;
     }
 
     bool IsEnabled() {
-        return this->mFlags & ENABLED;
+        return (this->mFlags & ENABLED) != 0;
     }
 
     void SetOldSurfaceEffectFlag() {
@@ -386,7 +380,7 @@ class EmitterGroup : public bTNode<EmitterGroup> {
     }
 
     bool IsOldSurfaceEffect() {
-        return this->mFlags & 0x80000;
+        return (this->mFlags & 0x80000) != 0;
     }
 
     void SetLoadedFlag() {
@@ -410,7 +404,7 @@ class EmitterGroup : public bTNode<EmitterGroup> {
     }
 
     bool IsFlagSet(uint32 flag) {
-        return this->mFlags & flag;
+        return (this->mFlags & flag) != 0;
     }
 
     const Attrib::Gen::emittergroup &GetAttribs() const {

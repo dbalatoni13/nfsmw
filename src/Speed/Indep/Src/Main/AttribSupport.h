@@ -21,7 +21,7 @@ template <typename T> class AttributeStructPtr : public T {
 
     AttributeStructPtr(Attrib::Key namekey) : T(namekey, 0, nullptr) {
         if (!T::IsValid()) {
-            T::Change(0xeec2271a);
+            T::Change(Attrib::key_default);
         }
         T::IsValid();
     }

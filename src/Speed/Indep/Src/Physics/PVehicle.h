@@ -1,14 +1,29 @@
 #ifndef PHYSICS_PVEHICLE_H
 #define PHYSICS_PVEHICLE_H
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
 #include "Speed/Indep/Libs/Support/Utility/UCrc.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/IVehicleCache.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #include "Speed/Indep/Src/Sim/SimTypes.h"
+
+namespace VehicleClass {
+
+extern const UCrc32 CAR;
+extern const UCrc32 SUBMARINE;
+extern const UCrc32 CHOPPER;
+extern const UCrc32 BIKE;
+extern const UCrc32 BOAT;
+extern const UCrc32 SNOWMOBILE;
+extern const UCrc32 HOVER;
+extern const UCrc32 PLANE;
+extern const UCrc32 TANK;
+extern const UCrc32 TRAILER;
+extern const UCrc32 TRAIN;
+extern const UCrc32 TRANSPORT;
+extern const UCrc32 RC;
+extern const UCrc32 TRACTOR;
+
+}; // namespace VehicleClass
 
 // total size: 0x30
 struct VehicleParams : public Sim::Param {

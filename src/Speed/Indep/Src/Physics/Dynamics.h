@@ -1,11 +1,6 @@
-#ifndef PHYSICS_DYNAMICS_H
-#define PHYSICS_DYNAMICS_H
+#ifndef DYNAMICS_H
+#define DYNAMICS_H
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
-#include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 
 namespace Dynamics {
@@ -38,16 +33,5 @@ bool IsJoined(const IEntity *rb);
 }; // namespace Articulation
 
 }; // namespace Dynamics
-
-class IDynamicsEntity : public UTL::COM::IUnknown, public Dynamics::IEntity {
-  public:
-    static HINTERFACE _IHandle() {
-        return (HINTERFACE)_IHandle;
-    }
-
-    IDynamicsEntity(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
-
-    virtual ~IDynamicsEntity() {}
-};
 
 #endif

@@ -1,17 +1,14 @@
-#ifndef SUPPORT_UTILITY_UTYPES_H
-#define SUPPORT_UTILITY_UTYPES_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef UTYPES_H
+#define UTYPES_H
 
 #include "types.h"
+#include "UDefs.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 namespace UMath {
 
-struct Vector2 {
     // total size: 0x8
+struct Vector2 {
     float x; // offset 0x0, size 0x4
     float y; // offset 0x4, size 0x4
 
@@ -22,8 +19,8 @@ struct Vector2 {
     }
 };
 
+// total size: 0xC
 struct Vector3 {
-    // total size: 0xC
     float x; // offset 0x0, size 0x4
     float y; // offset 0x4, size 0x4
     float z; // offset 0x8, size 0x4
@@ -43,8 +40,8 @@ struct Vector3 {
     }
 };
 
-struct ALIGN_16 Vector4 {
-    // total size: 0x10
+// total size: 0x10
+struct ALIGNVEC Vector4 {
     float x; // offset 0x0, size 0x4
     float y; // offset 0x4, size 0x4
     float z; // offset 0x8, size 0x4
@@ -85,7 +82,7 @@ struct Matrix3 {
     }
 };
 
-struct ALIGN_16 Matrix4 {
+struct PS2ALIGN16 Matrix4 {
     Vector4 v0, v1, v2, v3;
 
     static const Matrix4 kZero;

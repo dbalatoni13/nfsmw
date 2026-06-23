@@ -16,20 +16,20 @@
 
 Chassis::Chassis(const BehaviorParams &bp)
     : VehicleBehavior(bp, 0), ISuspension(bp.fowner), mAttributes(this, 0), mJumpTime(0.0f), mJumpAlititude(0.0f), mTireHeat(0.0f) {
-    GetOwner()->QueryInterface(&mRBComplex);
-    GetOwner()->QueryInterface(&mInput);
-    GetOwner()->QueryInterface(&mEngine);
-    GetOwner()->QueryInterface(&mTransmission);
-    GetOwner()->QueryInterface(&mDragTrany);
-    GetOwner()->QueryInterface(&mEngineDamage);
-    GetOwner()->QueryInterface(&mSpikeDamage);
+    this->GetOwner()->QueryInterface(&this->mRBComplex);
+    this->GetOwner()->QueryInterface(&this->mInput);
+    this->GetOwner()->QueryInterface(&this->mEngine);
+    this->GetOwner()->QueryInterface(&this->mTransmission);
+    this->GetOwner()->QueryInterface(&this->mDragTrany);
+    this->GetOwner()->QueryInterface(&this->mEngineDamage);
+    this->GetOwner()->QueryInterface(&this->mSpikeDamage);
 }
 
 Meters Chassis::GuessCompression(unsigned int id, Newtons downforce) const {
     float compression = 0.0f;
     if (downforce < 0.0f) {
         unsigned int axle = id / 2;
-        float spring_weight = LBIN2NM(mAttributes.SPRING_STIFFNESS().At(axle));
+        float spring_weight = LBIN2NM(this->mAttributes.SPRING_STIFFNESS().At(axle));
         downforce *= 0.25f;
         compression = -downforce / spring_weight;
     }
@@ -37,86 +37,105 @@ Meters Chassis::GuessCompression(unsigned int id, Newtons downforce) const {
 }
 
 float Chassis::GetRenderMotion() const {
-    return mAttributes.RENDER_MOTION();
+    return this->mAttributes.RENDER_MOTION();
 }
 
 Meters Chassis::GetRideHeight(unsigned int idx) const {
-    return INCH2METERS(mAttributes.RIDE_HEIGHT().At(idx / 2));
+    return INCH2METERS(this->mAttributes.RIDE_HEIGHT().At(idx / 2));
 }
+
+static const float MinForwardSpeedForUndersteer = 1.0f;
+static const float MinForwardSpeedForOversteer = 1.0f;
 
 float Chassis::CalculateUndersteerFactor() const {
     float magnitude = 0.0f;
-    float slip_avg = (GetWheelSkid(0) + GetWheelSkid(1)) / 2.0f;
-    float steer = (GetWheelSteer(0) + GetWheelSteer(1)) / 2.0f;
-    float speed = GetOwner()->GetRigidBody()->GetSpeed();
-    if ((GetVehicle()->GetSpeed() > 0.0f) && (speed > 1.0f) && (steer * slip_avg < 0.0f)) {
+    float slip_avg = (this->GetWheelSkid(0) + this->GetWheelSkid(1)) / 2.0f;
+    float steer = (this->GetWheelSteer(0) + this->GetWheelSteer(1)) / 2.0f;
+    float speed = this->GetOwner()->GetRigidBody()->GetSpeed();
+    if ((this->GetVehicle()->GetSpeed() > 0.0f) && (speed > MinForwardSpeedForUndersteer) && (steer * slip_avg < 0.0f)) {
         magnitude = UMath::Abs(slip_avg) / speed;
     }
     return UMath::Min(magnitude, 1.0f);
 }
 
+static const float Tweak_TireHeatTime = 3.0f;
+static const float Tweak_TireUnHeatTime = 6.0f;
+static const float Tweak_TireHeatToSlip = 80.0f;
+
+static const float Tweak_MaxStaticSlip = 1.5f;
+static const float Tweak_MinStaticSlip = 0.5f;
+static const float Tweak_MaxStaticSlipSpeed = 71.0f;
+static const float Tweak_MinStaticSlipSpeed = 10.0f;
+
 Mps Chassis::ComputeMaxSlip(const Chassis::State &state) const {
-    float ramp = UMath::Ramp(state.speed, 10.0f, 71.0f);
-    float result = ramp + 0.5f;
+    float ramp = UMath::Ramp(state.speed, Tweak_MinStaticSlipSpeed, Tweak_MaxStaticSlipSpeed);
+    float result = ramp + Tweak_MinStaticSlip;
     if (state.gear == G_REVERSE)
-        result = 71.0f;
+        result = Tweak_MaxStaticSlipSpeed;
     return result;
 }
 
 void Chassis::DoTireHeat(const Chassis::State &state) {
     if (state.flags & 1) {
-        for (unsigned int i = 0; i < GetNumWheels(); ++i) {
-            if (GetWheelSlip(i) > 0.5f) {
-                this->mTireHeat += state.time / 3.0f;
+        for (unsigned int i = 0; i < this->GetNumWheels(); ++i) {
+            if (this->GetWheelSlip(i) > Tweak_MinStaticSlip) {
+                this->mTireHeat += state.time / Tweak_TireHeatTime;
                 this->mTireHeat = UMath::Min(this->mTireHeat, 1.0f);
                 return;
             }
         }
     } else {
         if (this->mTireHeat > 0.0f) {
-            this->mTireHeat -= state.time / 6.0f;
+            this->mTireHeat -= state.time / Tweak_TireUnHeatTime;
             this->mTireHeat = UMath::Max(this->mTireHeat, 0.0f);
         }
     }
 }
 
 float Chassis::CalculateOversteerFactor() const {
-    float speed = GetOwner()->GetRigidBody()->GetSpeed();
+    float speed = this->GetOwner()->GetRigidBody()->GetSpeed();
     float magnitude = 0.0f;
-    if ((this->GetVehicle()->GetSpeed() > 0.0f) && (speed > 1.0f)) {
-        magnitude = UMath::Abs((GetWheelSkid(3) + GetWheelSkid(2)) * 0.5f) / speed;
+    if ((this->GetVehicle()->GetSpeed() > 0.0f) && (speed > MinForwardSpeedForOversteer)) {
+        magnitude = UMath::Abs((this->GetWheelSkid(3) + this->GetWheelSkid(2)) * 0.5f) / speed;
     }
     return UMath::Min(magnitude, 1.0f);
 }
 
 void Chassis::OnTaskSimulate(float dT) {}
 
+static const float Tweak_DragGripBoost = 3.0f;
+static const float Tweak_DragTractionBoost = 1.1f;
+float TractionVsSpeed[] = {0.909f, 1.045f, 1.09f, 1.09f, 1.09f, 1.09f, 1.09f, 1.045f, 1.0f, 1.0f};
+
+Table TractionRangeTable(TractionVsSpeed, 10, 0.0f, 1.0f);
+
 float GripVsSpeed[] = {0.833f, 0.958f, 1.008f, 1.0167f, 1.033f, 1.033f, 1.033f, 1.0167f, 1.0f, 1.0f};
+
 Table GripRangeTable(GripVsSpeed, 10, 0.0f, 1.0f);
+
+static const float Traction_RangeMaxSpeedMPH = 85.0f;
+
+static const float Tweak_GlobalGripScale = 1.2f;
+static const float Tweak_GlobalTractionScale = 1.1f;
+static const float Tweak_ReverseTractionScale = 2.0f;
 
 // Credits: Brawltendo
 float Chassis::ComputeLateralGripScale(const Chassis::State &state) const {
-    // lateral grip is tripled when in a drag race
+    // lateral grip is multiplied when in a drag race
     if (state.driver_style == STYLE_DRAG) {
-        return 3.0f;
+        return Tweak_DragGripBoost;
     }
 
-    float ratio = UMath::Ramp(state.speed, 0.0f, MPH2MPS(85.0f));
-    return GripRangeTable.GetValue(ratio) * 1.2f;
+    float ratio = UMath::Ramp(state.speed, 0.0f, MPH2MPS(Traction_RangeMaxSpeedMPH));
+    return GripRangeTable.GetValue(ratio) * Tweak_GlobalGripScale;
 }
-
-float TractionVsSpeed[] = {0.90899998f, 1.045f, 1.09f, 1.09f, 1.09f, 1.09f, 1.09f, 1.045f, 1.0f, 1.0f};
-Table TractionRangeTable(TractionVsSpeed, 10, 0.0f, 1.0f);
-static const float Traction_RangeMaxSpeedMPH = 85.0f;
-static const float Tweak_GlobalTractionScale = 1.1f;
-static const float Tweak_ReverseTractionScale = 2.0f;
 
 // Credits: Brawltendo
 float Chassis::ComputeTractionScale(const Chassis::State &state) const {
     float result = 1.0f;
 
     if (state.driver_style == STYLE_DRAG) {
-        result = Tweak_GlobalTractionScale;
+        result = Tweak_DragTractionBoost;
     } else {
         float ratio = UMath::Ramp(state.speed, 0.0f, MPH2MPS(Traction_RangeMaxSpeedMPH));
         result = TractionRangeTable.GetValue(ratio) * Tweak_GlobalTractionScale;
@@ -134,17 +153,17 @@ Chassis::SleepState Chassis::DoSleep(const Chassis::State &state) {
     if (state.flags & 1) {
         return SS_NONE;
     }
-    IRigidBody *irb = GetOwner()->GetRigidBody();
+    IRigidBody *irb = this->GetOwner()->GetRigidBody();
     if (state.speed < 0.5f) {
-        if ((GetNumWheelsOnGround() == GetNumWheels()) && (state.brake_input + state.ebrake_input > 0.0f) && (state.gas_input == 0.0f)) {
-            if ((UMath::Length(state.angular_vel) < 0.25f) && (!mRBComplex->HasHadCollision())) {
+        if ((this->GetNumWheelsOnGround() == this->GetNumWheels()) && (state.brake_input + state.ebrake_input > 0.0f) && (state.gas_input == 0.0f)) {
+            if ((UMath::Length(state.angular_vel) < 0.25f) && (!this->mRBComplex->HasHadCollision())) {
                 if (state.speed < UMath::Epsilon) {
-                    mRBComplex->Damp(1.0f);
+                    this->mRBComplex->Damp(1.0f);
                 } else {
-                    mRBComplex->Damp(1.0f - state.speed);
+                    this->mRBComplex->Damp(1.0f - state.speed);
                 }
-                for (unsigned int i = 0; i < GetNumWheels(); ++i) {
-                    SetWheelAngularVelocity(i, 0.0f);
+                for (unsigned int i = 0; i < this->GetNumWheels(); ++i) {
+                    this->SetWheelAngularVelocity(i, 0.0f);
                 }
                 return SS_ALL;
             }
@@ -154,8 +173,8 @@ Chassis::SleepState Chassis::DoSleep(const Chassis::State &state) {
         if ((UMath::Length(state.angular_vel) < 0.25f) && (state.gas_input <= 0.0f)) {
             UMath::Vector3 v = state.local_vel;
             UMath::Vector3 w = state.local_angular_vel;
-            UMath::Vector3 f = mRBComplex->GetForce();
-            UMath::Vector3 t = mRBComplex->GetTorque();
+            UMath::Vector3 f = this->mRBComplex->GetForce();
+            UMath::Vector3 t = this->mRBComplex->GetTorque();
             irb->ConvertWorldToLocal(f, false);
             irb->ConvertWorldToLocal(t, false);
 
@@ -180,33 +199,33 @@ Chassis::SleepState Chassis::DoSleep(const Chassis::State &state) {
 
 void Chassis::OnBehaviorChange(const UCrc32 &mechanic) {
     if (mechanic == BEHAVIOR_MECHANIC_ENGINE) {
-        GetOwner()->QueryInterface(&mTransmission);
-        GetOwner()->QueryInterface(&mEngine);
-        GetOwner()->QueryInterface(&mDragTrany);
-        GetOwner()->QueryInterface(&mEngineDamage);
+        this->GetOwner()->QueryInterface(&this->mTransmission);
+        this->GetOwner()->QueryInterface(&this->mEngine);
+        this->GetOwner()->QueryInterface(&this->mDragTrany);
+        this->GetOwner()->QueryInterface(&this->mEngineDamage);
     } else if (mechanic == BEHAVIOR_MECHANIC_INPUT) {
-        GetOwner()->QueryInterface(&mInput);
+        this->GetOwner()->QueryInterface(&this->mInput);
     } else if (mechanic == BEHAVIOR_MECHANIC_RIGIDBODY) {
-        GetOwner()->QueryInterface(&mRBComplex);
+        this->GetOwner()->QueryInterface(&this->mRBComplex);
     } else if (mechanic == BEHAVIOR_MECHANIC_DAMAGE) {
-        GetOwner()->QueryInterface(&mSpikeDamage);
+        this->GetOwner()->QueryInterface(&this->mSpikeDamage);
     }
 }
 
 // Credits: Brawltendo
-void Chassis::ComputeAckerman(const float steering, const Chassis::State &state, UMath::Vector4 *left, UMath::Vector4 *right) const {
-    int going_right = true;
-    float wheelbase = mAttributes.WHEEL_BASE();
-    float wheeltrack = mAttributes.TRACK_WIDTH().Front;
+void Chassis::ComputeAckerman(float steering, const Chassis::State &state, UMath::Vector4 *left, UMath::Vector4 *right) const {
+    int going_right = TRUE;
+    float wheelbase = this->mAttributes.WHEEL_BASE();
+    float wheeltrack = this->mAttributes.TRACK_WIDTH().Front;
     float steer_inside = ANGLE2RAD(steering);
 
     // clamp steering angle <= 180 degrees
-    if (steer_inside > (float)M_PI)
-        steer_inside -= (float)M_TWOPI;
+    if (steer_inside > UMath::PI)
+        steer_inside -= UMath::TWOPI;
 
     // negative steering angle indicates a left turn
     if (steer_inside < 0.0f) {
-        going_right = false;
+        going_right = FALSE;
         steer_inside = -steer_inside;
     }
 
@@ -245,29 +264,29 @@ void Chassis::ComputeAckerman(const float steering, const Chassis::State &state,
 }
 
 void Chassis::SetCOG(float extra_bias, float extra_ride) {
-    float front_z = mAttributes.FRONT_AXLE();
-    float rear_z = front_z - mAttributes.WHEEL_BASE();
-    IRigidBody *irb = GetOwner()->GetRigidBody();
+    float front_z = this->mAttributes.FRONT_AXLE();
+    float rear_z = front_z - this->mAttributes.WHEEL_BASE();
+    IRigidBody *irb = this->GetOwner()->GetRigidBody();
     float dim_y = irb->GetDimension().y;
 
-    float fwbias = (mAttributes.FRONT_WEIGHT_BIAS() + extra_bias) * 0.01f;
-    if (GetNumWheelsOnGround() == 0) {
+    float fwbias = (this->mAttributes.FRONT_WEIGHT_BIAS() + extra_bias) * 0.01f;
+    if (this->GetNumWheelsOnGround() == 0) {
         fwbias = 0.5f;
     }
     float cg_z = (front_z - rear_z) * fwbias + rear_z;
-    float cg_y = INCH2METERS(mAttributes.ROLL_CENTER()) - (dim_y + UMath::Max(INCH2METERS(mAttributes.RIDE_HEIGHT().At(0) + extra_ride),
-                                                                              INCH2METERS(mAttributes.RIDE_HEIGHT().At(1) + extra_ride)));
+    float cg_y = INCH2METERS(this->mAttributes.ROLL_CENTER()) - (dim_y + UMath::Max(INCH2METERS(this->mAttributes.RIDE_HEIGHT().At(0) + extra_ride),
+                                                                                    INCH2METERS(this->mAttributes.RIDE_HEIGHT().At(1) + extra_ride)));
     UVector3 cog(0.0f, cg_y, cg_z);
-    mRBComplex->SetCenterOfGravity(cog);
+    this->mRBComplex->SetCenterOfGravity(cog);
     return;
 }
 
 void Chassis::ComputeState(float dT, Chassis::State &state) const {
-    IRigidBody *irb = GetOwner()->GetRigidBody();
+    IRigidBody *irb = this->GetOwner()->GetRigidBody();
     state.time = dT;
     state.flags = 0;
     state.collider = irb->GetWCollider();
-    state.inertia = mRBComplex->GetInertiaTensor();
+    state.inertia = this->mRBComplex->GetInertiaTensor();
     state.dimension = irb->GetDimension();
 
     irb->GetMatrix4(state.matrix);
@@ -287,41 +306,41 @@ void Chassis::ComputeState(float dT, Chassis::State &state) const {
         state.slipangle = UMath::Atan2a(state.local_vel.x, state.local_vel.z);
     }
 
-    const InputControls &controls = mInput->GetControls();
+    const InputControls &controls = this->mInput->GetControls();
     state.gas_input = UMath::Clamp(controls.fGas, 0.0f, 1.0f);
     state.brake_input = UMath::Clamp(controls.fBrake, 0.0f, 1.0f);
     state.ebrake_input = controls.fHandBrake;
     state.steer_input = UMath::Clamp(controls.fSteering, -1.0f, 1.0f);
 
-    state.cog = mRBComplex->GetCenterOfGravity();
-    state.ground_effect = GetNumWheelsOnGround() * 0.25f;
+    state.cog = this->mRBComplex->GetCenterOfGravity();
+    state.ground_effect = this->GetNumWheelsOnGround() * 0.25f;
     state.mass = irb->GetMass();
-    state.driver_style = GetVehicle()->GetDriverStyle();
+    state.driver_style = this->GetVehicle()->GetDriverStyle();
 #ifndef EA_BUILD_A124
-    state.driver_class = GetVehicle()->GetDriverClass();
+    state.driver_class = this->GetVehicle()->GetDriverClass();
 #endif
 
-    if (GetVehicle()->IsStaging()) {
+    if (this->GetVehicle()->IsStaging()) {
         state.flags |= State::IS_STAGING;
     }
 
-    if (mEngine) {
-        state.nos_boost = mEngine->GetNOSBoost();
+    if (this->mEngine != nullptr) {
+        state.nos_boost = this->mEngine->GetNOSBoost();
     } else {
         state.nos_boost = 1.0f;
     }
-    if (mTransmission) {
+    if (this->mTransmission != nullptr) {
         state.gear = mTransmission->GetGear();
     } else {
         state.gear = G_NEUTRAL;
     }
-    if (mDragTrany) {
-        state.shift_boost = mDragTrany->GetShiftBoost();
+    if (this->mDragTrany != nullptr) {
+        state.shift_boost = this->mDragTrany->GetShiftBoost();
     } else {
         state.shift_boost = 1.0f;
     }
 
-    if (mEngineDamage && mEngineDamage->IsBlown() || GetVehicle()->IsDestroyed()) {
+    if ((this->mEngineDamage != nullptr) && this->mEngineDamage->IsBlown() || GetVehicle()->IsDestroyed()) {
         state.brake_input = 1.0f;
         state.gas_input = 0.0f;
         state.ebrake_input = 1.0f;
@@ -330,16 +349,16 @@ void Chassis::ComputeState(float dT, Chassis::State &state) const {
     UMath::Rotate(state.cog, state.matrix, state.world_cog);
 
     state.blown_tires = 0;
-    if (mSpikeDamage) {
-        unsigned int num_wheels = GetNumWheels();
+    if (this->mSpikeDamage != nullptr) {
+        unsigned int num_wheels = this->GetNumWheels();
         for (unsigned int i = 0; i < num_wheels; ++i) {
-            if (mSpikeDamage->GetTireDamage(i) == TIRE_DAMAGE_BLOWN) {
+            if (this->mSpikeDamage->GetTireDamage(i) == TIRE_DAMAGE_BLOWN) {
                 state.blown_tires |= (1 << i);
             }
         }
     }
 
-    if (GetVehicle()->IsDestroyed()) {
+    if (this->GetVehicle()->IsDestroyed()) {
         state.flags |= State::IS_DESTROYED;
     }
 }
@@ -359,12 +378,12 @@ void Chassis::DoAerodynamics(const Chassis::State &state, float drag_pct, float 
     IRigidBody *irb = this->GetOwner()->GetRigidBody();
 
     if (drag_pct > 0.0f) {
-        const float dragcoef_spec = mAttributes.DRAG_COEFFICIENT();
+        const float dragcoef_spec = this->mAttributes.DRAG_COEFFICIENT();
         // drag increases relative to the car's speed
         // letting off the throttle will increase drag by OffThrottleDragFactor
         float drag = state.speed * drag_pct * dragcoef_spec;
         drag += drag * (OffThrottleDragFactor - 1.0f) * (1.0f - state.gas_input);
-        if (tunings) {
+        if (tunings != nullptr) {
             drag += drag * Tweak_TuningAero_Drag * tunings->Value[Physics::Tunings::AERODYNAMICS];
         }
 
@@ -395,12 +414,12 @@ void Chassis::DoAerodynamics(const Chassis::State &state, float drag_pct, float 
 
         float forwardness = UMath::Max(UMath::Dot(movement_dir, state.GetForwardVector()), 0.0f);
         forwardness = UMath::Max(AeroDropOffMin, UMath::Pow(forwardness, AeroDropOff));
-        float downforce = aero_pct * upness * forwardness * Physics::Info::AerodynamicDownforce(mAttributes, state.speed);
+        float downforce = aero_pct * upness * forwardness * Physics::Info::AerodynamicDownforce(this->mAttributes, state.speed);
         // lower downforce when car is in air
         if (state.ground_effect == 0.0f) {
             downforce *= 0.8f;
         }
-        if (tunings) {
+        if (tunings != nullptr) {
             downforce += downforce * Tweak_TuningAero_DownForce * tunings->Value[Physics::Tunings::AERODYNAMICS];
         }
 
@@ -408,7 +427,7 @@ void Chassis::DoAerodynamics(const Chassis::State &state, float drag_pct, float 
             UVector3 aero_center(state.cog.x, state.cog.y, state.cog.z);
             // when at least 1 wheel is grounded, change the downforce forward position using the aero CG and axle positions
             if (state.ground_effect != 0.0f) {
-                aero_center.z = (aero_front_z - aero_rear_z) * (mAttributes.AERO_CG() * 0.01f) + aero_rear_z;
+                aero_center.z = (aero_front_z - aero_rear_z) * (this->mAttributes.AERO_CG() * 0.01f) + aero_rear_z;
             }
 
             if (Tweak_PlaneDynamics != 0.0f) {
@@ -426,8 +445,11 @@ void Chassis::DoAerodynamics(const Chassis::State &state, float drag_pct, float 
 }
 
 static const int bJumpStabilizer = 1;
+
+static const int bPassiveStabilizer = 1;
 bVector2 JumpStabilizationGraph[] = {bVector2(0.0f, 0.0f), bVector2(0.4f, 0.15f), bVector2(2.0f, 5.0f)};
 Graph JumpStabilization(JumpStabilizationGraph, 3);
+
 static const int bActiveStabilizer = 1;
 static const float fPitchStabilizerAction = 40.0f;
 static const float fRollStabilizerAction = 20.0f;
@@ -444,13 +466,13 @@ static const float fLandingGravityMinAltitude = 2.0f;
 static const float fLandingGravityMaxAltitude = 6.0f;
 
 void Chassis::DoJumpStabilizer(const Chassis::State &state) {
-    if (!bJumpStabilizer || !mRBComplex) {
+    if (!bJumpStabilizer || (this->mRBComplex == nullptr)) {
         return;
     }
 
-    int nTouching = GetNumWheelsOnGround();
+    int nTouching = this->GetNumWheelsOnGround();
     bool resolve = false;
-    UMath::Vector4 ground_normal = mRBComplex->GetGroundNormal();
+    UMath::Vector4 ground_normal = this->mRBComplex->GetGroundNormal();
     float altitude = -ground_normal.w;
     float ground_dot = UMath::Dot(state.GetUpVector(), UMath::Vector4To3(ground_normal));
 
@@ -458,13 +480,13 @@ void Chassis::DoJumpStabilizer(const Chassis::State &state) {
     UMath::Vector3 damping_force = UMath::Vector3::kZero;
 
     if (!nTouching) {
-        mJumpTime += state.time;
-        mJumpAlititude = UMath::Max(mJumpAlititude, altitude);
+        this->mJumpTime += state.time;
+        this->mJumpAlititude = UMath::Max(this->mJumpAlititude, altitude);
 
         if (bDoLandingGravity) {
             float accel = fExtraLandingGravity;
             // apply more downforce when the car has been airborne for a long time
-            if (mJumpTime > fLandingGravityMinTime && ground_dot > fLandingGravityUpThreshold && mJumpAlititude > fLandingGravityMinAltitude &&
+            if (this->mJumpTime > fLandingGravityMinTime && ground_dot > fLandingGravityUpThreshold && this->mJumpAlititude > fLandingGravityMinAltitude &&
                 state.linear_vel.y < 0.0f && altitude < fLandingGravityMaxAltitude) {
                 float alt_ratio = 1.0f - UMath::Ramp(altitude, 0.0f, fLandingGravityMaxAltitude);
                 float speed_ratio = UMath::Ramp(state.speed, 0.0f, fLandingGravitySpeed);
@@ -480,7 +502,7 @@ void Chassis::DoJumpStabilizer(const Chassis::State &state) {
         mJumpAlititude = 0.0f;
     }
 
-    if (bJumpStabilizer && nTouching < 2 && state.GetUpVector().y > fStabilizerUp && !mRBComplex->IsInGroundContact()) {
+    if (bJumpStabilizer && nTouching < 2 && state.GetUpVector().y > fStabilizerUp && !this->mRBComplex->IsInGroundContact()) {
         float speed_ramp = UMath::Ramp(state.speed, 0.0f, fStabilizerSpeed);
         float avelmag = UMath::Length(state.local_angular_vel);
         float damping = speed_ramp * JumpStabilization.GetValue(avelmag);

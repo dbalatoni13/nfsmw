@@ -1,10 +1,8 @@
 #ifndef EVENTS_ESPAWNSMACKABLE_H
 #define EVENTS_ESPAWNSMACKABLE_H
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
+#include "Speed/Indep/Src/Sim/SimTypes.h"
+#include "Speed/Indep/Src/World/WTrigger.h"
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 #include "Speed/Indep/Src/Main/Event.h"
 

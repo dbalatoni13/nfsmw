@@ -79,6 +79,11 @@ block_relocations:
   end: .data:0x80437E18
 
 add_relocations:
+- source: .text:0x80249960
+  type: ha
+  target: lbl_803FB614
+  addend: 0
+  
 - source: .text:0x802c57b0
   type: ha
   target: lbl_8040A274

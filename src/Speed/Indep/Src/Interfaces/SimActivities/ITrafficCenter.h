@@ -1,10 +1,6 @@
 #ifndef INTTERFACES_SIMACTIVITIES_ITRAFFIC_CENTER_H
 #define INTTERFACES_SIMACTIVITIES_ITRAFFIC_CENTER_H
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
 #include "Speed/Indep/Libs/Support/Utility/UListable.h"
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 

@@ -16,6 +16,7 @@ class CarRenderInfo;
 // total size: 0x64
 class VehicleRenderConn : public Sim::Connection, public UTL::Collections::Listable<VehicleRenderConn, 10> {
   public:
+    enum { Limit = 10 };
     enum eState {
         S_None = 0,
         S_Loading = 1,

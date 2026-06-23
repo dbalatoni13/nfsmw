@@ -1,12 +1,7 @@
 #ifndef WORLD_WCOLLISION_MGR_H
 #define WORLD_WCOLLISION_MGR_H
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
 #include "Speed/Indep/Libs/Support/Utility/UTLVector.h"
-#include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "WCollision.h"
 #include "WCollisionSTL.h"
 #include "WCollisionTri.h"
@@ -30,7 +25,7 @@ class WCollisionMgr {
               fNormal(UMath::Vector4::kIdentity),    //
               fDist(0.0f),                           //
               fObj(nullptr),                         //
-              fAnimated(false),                      //
+              fAnimated(0),                          //
               fType(0),                              //
               fPad(0),                               //
               fCInst(nullptr) {}
@@ -44,7 +39,7 @@ class WCollisionMgr {
       public:
         ICollisionHandler() {}
 
-        virtual bool OnWCollide(const WorldCollisionInfo &cInfo, const bVector3 &cPoint, void *userdata);
+        virtual bool OnWCollide(const WorldCollisionInfo &cInfo, const UMath::Vector3 &cPoint, void *userdata);
     };
 
     typedef UTL::Vector<unsigned int, 16> NodeIndexList;

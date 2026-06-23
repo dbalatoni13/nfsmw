@@ -3,26 +3,52 @@
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/rigidbodyspecs.h"
 #include "Speed/Indep/Src/Generated/Events/ECollision.hpp"
+#include "Speed/Indep/Src/Generated/Hash.hpp"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
 #include "Speed/Indep/Src/Main/EventSequencer.h"
 #include "Speed/Indep/Src/Physics/Dynamics.h"
 #include "Speed/Indep/Src/Physics/Dynamics/Collision.h"
 #include "Speed/Indep/Src/Sim/Collision.h"
+#include "Speed/Indep/Src/Sim/SimSubSystem.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Src/World/WCollisionTri.h"
+#include "Speed/Indep/bWare/Inc/bTypes.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
-#include <types.h>
+// total size: 0x30
+class CollisionPacket {
+  public:
+    UMath::Vector3 lever;                  // offset 0x0, size 0xC
+    const Attrib::Collection *bodysurface; // offset 0xC, size 0x4
+    UMath::Vector3 normal;                 // offset 0x10, size 0xC
+    float penetration;                     // offset 0x1C, size 0x4
+    UMath::Vector3 arm;                    // offset 0x20, size 0xC
+    const Attrib::Collection *surface;     // offset 0x2C, size 0x4
+};
 
-static char RBGrid_Memory[6912]; // size: 0x1B00, address: 0x8048A1A8
+static const bool Tweak_PrintRBWarnings = false;
+static const bool Tweak_DisableGroundCollisions = false;
+static const bool Tweak_DisableWorldCollisions = false;
+static const bool Tweak_DisableObjectCollisions = false;
+
+BIND_SIM_SUBSYSTEM(RigidBody, RigidBody::InitRigidBodySystem, RigidBody::ShutdownRigidBodySystem);
+IMPLEMENT_SCRATCHPTR(RigidBody::Volatile);
+BIND_BEHAVIOR_SPECS(rigidbodyspecs);
 
 bTList<RigidBody> TheRigidBodies;
+
+unsigned int RigidBody::mCount = 0;
+
+BIND_BEHAVIOR_FACTORY(RigidBody);
+
+static const float AV_LIMIT = 0.0f; // TODO value
+static const float V_LIMIT = 0.0f;  // TODO value
 
 // TODO clear the magic numbers in Volatile::state and status
 
 Behavior *RigidBody::Construct(const BehaviorParams &params) {
-    const RBComplexParams bp(params.fparams.Fetch<RBComplexParams>(UCrc32(0xa6b47fac)));
+    const RBComplexParams bp(params.fparams.Fetch<RBComplexParams>(UCrc32(UCRC32_BASE)));
     return new RigidBody(params, bp);
 }
 
@@ -36,64 +62,68 @@ RigidBody::Mesh::Mesh(const SimSurface &material, const UMath::Vector4 *verts, u
       mMaterial(material.GetConstCollection()), //
       mName(name) {
     if (persistant) {
-        mVerts = const_cast<UMath::Vector4 *>(verts);
+        this->mVerts = const_cast<UMath::Vector4 *>(verts);
     } else {
-        mVerts = reinterpret_cast<UMath::Vector4 *>(gFastMem.Alloc(static_cast<unsigned short>(count) * sizeof(*mVerts), "RigidBody::Mesh::Verts"));
-        bMemCpy(mVerts, verts, static_cast<unsigned short>(count) * sizeof(*mVerts));
-        mFlags |= Mesh::FREEABLE;
+        this->mVerts =
+            reinterpret_cast<UMath::Vector4 *>(gFastMem.Alloc(static_cast<unsigned short>(count) * sizeof(*this->mVerts), "RigidBody::Mesh::Verts"));
+        bMemCpy(this->mVerts, verts, static_cast<unsigned short>(count) * sizeof(*this->mVerts));
+        this->mFlags |= Mesh::FREEABLE;
     }
 }
 
 RigidBody::Mesh::~Mesh() {
-    if (mFlags & Mesh::FREEABLE) {
-        gFastMem.Free(mVerts, mNumVertices * sizeof(*mVerts), "RigidBody::Mesh::Verts");
+    if (this->mFlags & Mesh::FREEABLE) {
+        gFastMem.Free(this->mVerts, this->mNumVertices * sizeof(*this->mVerts), "RigidBody::Mesh::Verts");
     }
 }
 
 void RigidBody::Mesh::Enable(bool enable) {
     if (!enable) {
-        mFlags |= Mesh::DISABLED;
+        this->mFlags |= Mesh::DISABLED;
     } else {
-        mFlags &= ~Mesh::DISABLED;
+        this->mFlags &= ~Mesh::DISABLED;
     }
 }
 
 bool RigidBody::MeshList::Create(const SimSurface &material, const UMath::Vector4 *verts, unsigned int count, UCrc32 name, bool persistant) {
     Mesh *mesh = new Mesh(material, verts, count, name, persistant);
     AddTail(mesh);
-    mVertCount += count;
-    mSize++;
+    this->mVertCount += count;
+    this->mSize++;
     return true;
 }
+
+// STRIPPED
+void RigidBody::PrimList::CalcRadius() {}
 
 bool RigidBody::PrimList::Create(const UMath::Vector3 &dim, const UMath::Vector3 &offset, const SimSurface &material,
                                  Dynamics::Collision::Geometry::Shape shape, const UMath::Vector4 &orient, unsigned int flags, const UCrc32 &name) {
     Primitive *geom = new Primitive(dim, offset, material, shape, orient, flags, name);
 
     if (geom->GetShape() == Dynamics::Collision::Geometry::SPHERE) {
-        AddHead(geom);
+        this->AddHead(geom);
     } else {
-        AddTail(geom);
+        this->AddTail(geom);
     }
 
     float r = UMath::Length(dim) + UMath::Length(offset);
-    mRadius = UMath::Max(mRadius, r);
-    mSize++;
+    this->mRadius = UMath::Max(this->mRadius, r);
+    this->mSize++;
     return true;
 }
 
 void RigidBody::Primitive::Enable(bool enable) {
     if (!enable) {
-        mFlags |= Primitive::DISABLED;
+        this->mFlags |= Primitive::DISABLED;
     } else {
-        mFlags &= ~Primitive::DISABLED;
+        this->mFlags &= ~Primitive::DISABLED;
     }
 }
 
 // TODO why is the offset of bodyMatrix wrong on Xenon?
 void RigidBody::Primitive::Prepare(const Volatile &data) {
-    UMath::Rotate(GetOffset(), data.bodyMatrix, mPrevPosition);
-    UMath::Add(mPrevPosition, data.position, mPrevPosition);
+    UMath::Rotate(GetOffset(), data.bodyMatrix, this->mPrevPosition);
+    UMath::Add(this->mPrevPosition, data.position, this->mPrevPosition);
 }
 
 // UNSOLVED
@@ -103,16 +133,16 @@ bool RigidBody::Primitive::SetCollision(const Volatile &data, Dynamics::Collisio
 
     UMath::Rotate(GetOffset(), data.bodyMatrix, position);
     UMath::Add(position, data.position, position);
-    UMath::Sub(position, mPrevPosition, dP);
+    UMath::Sub(position, this->mPrevPosition, dP);
 
     if (this->mShape == Dynamics::Collision::Geometry::SPHERE) {
-        obb.Set(UMath::Matrix4::kIdentity, position, GetDimension(), Dynamics::Collision::Geometry::SPHERE, dP);
+        obb.Set(UMath::Matrix4::kIdentity, position, this->GetDimension(), Dynamics::Collision::Geometry::SPHERE, dP);
     } else {
         UMath::Matrix4 mat;
         UMath::Vector4 rot;
-        UMath::Mult(mOrientation, data.orientation, rot);
+        UMath::Mult(this->mOrientation, data.orientation, rot);
         UMath::QuaternionToMatrix4(rot, mat);
-        obb.Set(mat, position, GetDimension(), mShape, dP);
+        obb.Set(mat, position, this->GetDimension(), this->mShape, dP);
     }
     return true;
 }
@@ -121,64 +151,71 @@ void RigidBody::InitRigidBodySystem() {}
 
 void RigidBody::ShutdownRigidBodySystem() {}
 
+// STRIPPED
+void RigidBody::DebugSystem() {}
+
 void RBGrid::Remove(RBGrid *grid) {
-    if (grid) {
+    if (grid != nullptr) {
         grid->~RBGrid();
     }
 }
 
 RigidBody::~RigidBody() {
-    if (mGrid) {
-        RBGrid::Remove(mGrid);
-        mGrid = nullptr;
+    if (this->mGrid != nullptr) {
+        RBGrid::Remove(this->mGrid);
+        this->mGrid = nullptr;
     }
-    mMaps[mData->index] = nullptr;
-    mCount--;
-    if (mWCollider) {
-        WCollider::Destroy(mWCollider);
+    this->mMaps[this->mData->index] = nullptr;
+    this->mCount--;
+    if (this->mWCollider != nullptr) {
+        WCollider::Destroy(this->mWCollider);
     }
-    mWCollider = nullptr;
-    mMeshes.DeleteAllElements();
-    mPrimitives.DeleteAllElements();
+    this->mWCollider = nullptr;
+    this->mMeshes.DeleteAllElements();
+    this->mPrimitives.DeleteAllElements();
     Dynamics::Articulation::Release(this);
     TheRigidBodies.Remove(this);
 }
 
+IMPLEMENT_SAP_GRID(RigidBody);
+
+static char RBGrid_Memory[6912];
+
 void RigidBody::Reset() {
-    mWCollider->Clear();
-    UpdateCollider();
+    this->mWCollider->Clear();
+    this->UpdateCollider();
 }
 
 void RigidBody::SetOrientation(const UMath::Matrix4 &orientMat) {
-    Volatile &data = *mData;
+    Volatile &data = *this->mData;
     UMath::Matrix4ToQuaternion(orientMat, data.orientation);
     UMath::Copy(orientMat, data.bodyMatrix);
     UMath::Set(data.bodyMatrix, 3, UMath::Vector4::kIdentity);
-    data.inertiaTensor.GetInverseWorldTensor(data.bodyMatrix, mInvWorldTensor);
+    data.inertiaTensor.GetInverseWorldTensor(data.bodyMatrix, this->mInvWorldTensor);
 }
 
 void RigidBody::SetOrientation(const UMath::Vector4 &newOrientation) {
-    Volatile &data = *mData;
+    Volatile &data = *this->mData;
     UMath::Copy(newOrientation, data.orientation);
     UMath::QuaternionToMatrix4(data.orientation, data.bodyMatrix);
-    data.inertiaTensor.GetInverseWorldTensor(data.bodyMatrix, mInvWorldTensor);
+    data.inertiaTensor.GetInverseWorldTensor(data.bodyMatrix, this->mInvWorldTensor);
 }
 
 bool RigidBody::DistributeMass() {
-    Volatile &data = *mData;
+    Volatile &data = *this->mData;
     UMath::Clear(mCOG);
 
     float total_volume = 0.0f;
-    for (Primitive *primitive = mPrimitives.GetHead(); primitive != mPrimitives.EndOfList(); primitive = primitive->GetNext()) {
+    for (Primitive *primitive = this->mPrimitives.GetHead(); primitive != this->mPrimitives.EndOfList(); primitive = primitive->GetNext()) {
         if (primitive->GetFlags() & Primitive::VSOBJECTS) {
             const UMath::Vector3 &dimension = primitive->GetDimension();
             float volume = dimension.x * dimension.y * dimension.z * 8.0f;
-            UMath::ScaleAdd(primitive->GetOffset(), volume, mCOG, mCOG);
+            UMath::ScaleAdd(primitive->GetOffset(), volume, this->mCOG, this->mCOG);
             total_volume += volume;
         }
     }
     if (total_volume > 0.0f) {
-        UMath::Scale(mCOG, 1.0f / total_volume, mCOG);
+        UMath::Scale(this->mCOG, 1.0f / total_volume, this->mCOG);
         return true;
     }
     return false;
@@ -188,12 +225,12 @@ void RigidBody::EnableCollisionGeometries(UCrc32 name, bool enable) {
     if (name == UCrc32::kNull) {
         return;
     }
-    for (Primitive *primitive = mPrimitives.GetHead(); primitive != mPrimitives.EndOfList(); primitive = primitive->GetNext()) {
+    for (Primitive *primitive = this->mPrimitives.GetHead(); primitive != this->mPrimitives.EndOfList(); primitive = primitive->GetNext()) {
         if (primitive->GetName() == name) {
             primitive->Enable(enable);
         }
     }
-    for (Mesh *mesh = mMeshes.GetHead(); mesh != mMeshes.EndOfList(); mesh = mesh->GetNext()) {
+    for (Mesh *mesh = this->mMeshes.GetHead(); mesh != this->mMeshes.EndOfList(); mesh = mesh->GetNext()) {
         if (mesh->GetName() == name) {
             mesh->Enable(enable);
         }
@@ -201,46 +238,46 @@ void RigidBody::EnableCollisionGeometries(UCrc32 name, bool enable) {
 }
 
 void RigidBody::SetPosition(const UMath::Vector3 &pos) {
-    mData->position = pos;
+    this->mData->position = pos;
 }
 
 void RigidBody::SetLinearVelocity(const UMath::Vector3 &vel) {
-    mData->linearVel = vel;
+    this->mData->linearVel = vel;
 }
 
 void RigidBody::SetAngularVelocity(const UMath::Vector3 &vel) {
-    mData->angularVel = vel;
+    this->mData->angularVel = vel;
 }
 
 void RigidBody::SetRadius(float radius) {
-    mData->radius = radius;
+    this->mData->radius = radius;
 }
 
 void RigidBody::AttachedToWorld(bool b, float detachforce) {
     if (b) {
-        mData->SetStatus(Volatile::IS_ATTACHED_TO_WORLD);
+        this->mData->SetStatus(Volatile::IS_ATTACHED_TO_WORLD);
     } else {
-        mData->RemoveStatus(Volatile::IS_ATTACHED_TO_WORLD);
+        this->mData->RemoveStatus(Volatile::IS_ATTACHED_TO_WORLD);
     }
-    mDetachForce = detachforce;
+    this->mDetachForce = detachforce;
 }
 
 void RigidBody::Detach() {
-    if (mData->GetStatus(Volatile::IS_ATTACHED_TO_WORLD)) {
-        mData->RemoveStatus(Volatile::IS_ATTACHED_TO_WORLD);
-        EventSequencer::IEngine *engine = GetOwner()->GetEventSequencer();
-        if (engine) {
-            engine->ProcessStimulus(0xc91b90d9, Sim::GetTime(), nullptr, EventSequencer::QUEUE_ALLOW);
+    if (this->mData->GetStatus(Volatile::IS_ATTACHED_TO_WORLD)) {
+        this->mData->RemoveStatus(Volatile::IS_ATTACHED_TO_WORLD);
+        EventSequencer::IEngine *engine = this->GetOwner()->GetEventSequencer();
+        if (engine != nullptr) {
+            engine->ProcessStimulus(UCRC32_WORLD_DETACHED, Sim::GetTime(), nullptr, EventSequencer::QUEUE_ALLOW);
         }
     }
 }
 
 void RigidBody::SetInertiaTensor(const UMath::Vector3 &moment) {
-    mData->inertiaTensor = moment;
+    this->mData->inertiaTensor = moment;
 }
 
 void RigidBody::SetMass(float newMass) {
-    Volatile &data = *mData;
+    Volatile &data = *this->mData;
     float ratio = data.mass;
     if ((ratio != newMass) && (newMass > 0.0f)) {
         data.mass = newMass;
@@ -268,11 +305,11 @@ bool RigidBody::AddCollisionPrimitive(UCrc32 name, const UMath::Vector3 &dim, fl
             flags |= 2;
         }
         if (boundflags & CollisionGeometry::kBounds_Box) {
-            if (AddCollisionBox(dim, offset, material, orient, flags, name)) {
+            if (this->AddCollisionBox(dim, offset, material, orient, flags, name)) {
                 result = true;
             }
         } else if (boundflags & CollisionGeometry::kBounds_Sphere) {
-            if (AddCollisionSphere(radius, offset, material, flags, name)) {
+            if (this->AddCollisionSphere(radius, offset, material, flags, name)) {
                 result = true;
             }
         }
@@ -282,25 +319,26 @@ bool RigidBody::AddCollisionPrimitive(UCrc32 name, const UMath::Vector3 &dim, fl
 
 bool RigidBody::AddCollisionMesh(UCrc32 name, const UMath::Vector4 *verts, unsigned int count, const struct SimSurface &material,
                                  CollisionGeometry::BoundFlags flags, bool persistant) {
-    return mMeshes.Create(material, verts, count, name, persistant);
+    return this->mMeshes.Create(material, verts, count, name, persistant);
 }
 
 void RigidBody::CreateGeometries() {
-    SimSurface material = SimSurface(mSpecs.BASE_MATERIAL());
-    if (mGeoms && mGeoms->fCollection && mGeoms->fCollection->AddTo(this, mGeoms, material, true)) {
+    SimSurface material = SimSurface(this->mSpecs.BASE_MATERIAL());
+    if ((this->mGeoms != nullptr) && (this->mGeoms->fCollection != nullptr) && this->mGeoms->fCollection->AddTo(this, this->mGeoms, material, true)) {
         return;
     }
-    if (mSpecs.DEFAULT_COL_BOX() == Attrib::StringKey("SPHERE")) {
-        AddCollisionSphere(UMath::Max(mDimension.x, UMath::Max(mDimension.y, mDimension.z)), UMath::Vector3::kZero, material, 3, UCrc32::kNull);
+    if (this->mSpecs.DEFAULT_COL_BOX() == Attrib::StringKey("SPHERE")) {
+        this->AddCollisionSphere(UMath::Max(this->mDimension.x, UMath::Max(this->mDimension.y, this->mDimension.z)), UMath::Vector3::kZero, material,
+                                 3, UCrc32::kNull);
     } else {
-        AddCollisionBox(mDimension, UMath::Vector3::kZero, material, UMath::Vector4::kIdentity, 7, UCrc32::kNull);
+        this->AddCollisionBox(this->mDimension, UMath::Vector3::kZero, material, UMath::Vector4::kIdentity, 7, UCrc32::kNull);
     }
 }
 
 void RigidBody::PlaceObject(const UMath::Matrix4 &orientMat, const UMath::Vector3 &initPos) {
-    Volatile &data = *mData;
+    Volatile &data = *this->mData;
     data.state = 0;
-    SetOrientation(orientMat);
+    this->SetOrientation(orientMat);
     data.RemoveStatus(Volatile::IS_ATTACHED_TO_WORLD);
     UMath::Clear(data.force);
     UMath::Clear(data.torque);
@@ -308,29 +346,29 @@ void RigidBody::PlaceObject(const UMath::Matrix4 &orientMat, const UMath::Vector
     UMath::Clear(data.angularVel);
     data.position = initPos;
     data.leversInContact = 0;
-    if (mSimableType == SIMABLE_VEHICLE) {
+    if (this->mSimableType == SIMABLE_VEHICLE) {
         data.SetStatus(0x40);
     } else {
         data.RemoveStatus(0x40);
     }
-    mData->statusPrev = mData->status;
-    mWCollider->Clear();
-    UpdateCollider();
-    mData->Validate();
+    this->mData->statusPrev = this->mData->status;
+    this->mWCollider->Clear();
+    this->UpdateCollider();
+    this->mData->Validate();
 }
 
 float RigidBody::GetOrientToGround() const {
-    const Volatile &data = *mData;
+    const Volatile &data = *this->mData;
 
-    return data.bodyMatrix.v1.x * mGroundNormal.x + data.bodyMatrix.v1.y * mGroundNormal.y + data.bodyMatrix.v1.z * mGroundNormal.z;
+    return data.bodyMatrix.v1.x * this->mGroundNormal.x + data.bodyMatrix.v1.y * this->mGroundNormal.y + data.bodyMatrix.v1.z * this->mGroundNormal.z;
 }
 
 void RigidBody::GetPointVelocity(const UMath::Vector3 &position, UMath::Vector3 &velocity) const {
-    const Volatile &data = *mData;
+    const Volatile &data = *this->mData;
     UMath::Vector3 worldArm;
     UMath::Vector3 cg;
 
-    UMath::Rotate(mCOG, data.bodyMatrix, cg);
+    UMath::Rotate(this->mCOG, data.bodyMatrix, cg);
     UMath::Add(cg, data.position, cg);
     UMath::Sub(position, cg, worldArm);
     UMath::Cross(data.angularVel, worldArm, velocity);
@@ -338,64 +376,64 @@ void RigidBody::GetPointVelocity(const UMath::Vector3 &position, UMath::Vector3 
 }
 
 void RigidBody::OnEndFrame(float dT) {
-    Volatile &data = *mData;
+    Volatile &data = *this->mData;
     if (data.state == 0) {
-        UpdateCollider();
+        this->UpdateCollider();
         data.RemoveStatus(Volatile::HAS_HAD_WORLD_COLLISION);
-        if (!mWCollider->IsEmpty()) {
-            DoWorldCollisions(dT);
+        if (!this->mWCollider->IsEmpty()) {
+            this->DoWorldCollisions(dT);
         }
-        DoDrag();
+        this->DoDrag();
         data.Validate();
-        if (ShouldSleep() != 0) {
+        if (this->ShouldSleep()) {
             data.state = 1;
         }
     } else {
-        Behavior::GetOwner()->GetWPos().Update(data.position, mGroundNormal, true, nullptr, true);
+        Behavior::GetOwner()->GetWPos().Update(data.position, this->mGroundNormal, true, nullptr, true);
     }
     data.RemoveStatus(0x400);
 }
 
 void RigidBody::DisableTriggering() {
-    mData->SetStatus(1);
+    this->mData->SetStatus(1);
 }
 
 bool RigidBody::IsTriggering() const {
-    return !mData->GetStatus(1);
+    return !this->mData->GetStatus(1);
 }
 
 void RigidBody::EnableTriggering() {
-    mData->RemoveStatus(1);
+    this->mData->RemoveStatus(1);
 }
 
 void RigidBody::DisableModeling() {
-    mData->state = 2;
+    this->mData->state = 2;
 }
 
 void RigidBody::EnableModeling() {
-    if (mData->state == 2) {
-        Volatile &data = *mData;
+    if (this->mData->state == 2) {
+        Volatile &data = *this->mData;
         data.Validate();
         data.state = 0;
-        Behavior::GetOwner()->GetWPos().Update(data.position, mGroundNormal, false, nullptr, true);
+        Behavior::GetOwner()->GetWPos().Update(data.position, this->mGroundNormal, false, nullptr, true);
     }
 }
 
 void RigidBody::OnBeginFrame(float dT) {
-    Volatile &data = *mData;
+    Volatile &data = *this->mData;
     data.SetStatus(0x400);
     if (data.state != 2) {
-        for (Primitive *collider = mPrimitives.GetHead(); collider != mPrimitives.EndOfList(); collider = collider->GetNext()) {
+        for (Primitive *collider = this->mPrimitives.GetHead(); collider != this->mPrimitives.EndOfList(); collider = collider->GetNext()) {
             collider->Prepare(data);
         }
-        DoIntegration(dT);
+        this->DoIntegration(dT);
     }
     UMath::Clear(data.force);
     UMath::Clear(data.torque);
     if (data.state == 0) {
         data.statusPrev = data.status;
         if (!data.GetStatus(Volatile::IS_ATTACHED_TO_WORLD)) {
-            data.force.y += mSpecs.GRAVITY() * data.mass;
+            data.force.y += this->mSpecs.GRAVITY() * data.mass;
         }
     }
     data.Validate();
@@ -410,39 +448,44 @@ struct Drag : public UVector3 {
     }
 };
 
+static const bool Tweak_EnableAngularDrag = true;
+
 void RigidBody::DoDrag() {
-    Volatile &data = *mData;
+    Volatile &data = *this->mData;
     if (!data.GetStatus(Volatile::IS_ATTACHED_TO_WORLD)) {
-        if (data.GetStatus(0x800)) {
+        if (data.GetStatus(0x800) && Tweak_EnableAngularDrag) {
             UMath::Vector3 avel = data.angularVel;
             ConvertWorldToLocal(avel, false);
             UMath::Vector3 cross_section;
-            cross_section.x = mDimension.x * 4.0f * UMath::Sqrt(mDimension.y * mDimension.y + mDimension.z * mDimension.z);
-            cross_section.y = mDimension.y * 4.0f * UMath::Sqrt(mDimension.x * mDimension.x + mDimension.z * mDimension.z);
-            cross_section.z = mDimension.z * 4.0f * UMath::Sqrt(mDimension.x * mDimension.x + mDimension.y * mDimension.y);
+            cross_section.x =
+                this->mDimension.x * 4.0f * UMath::Sqrt(this->mDimension.y * this->mDimension.y + this->mDimension.z * this->mDimension.z);
+            cross_section.y =
+                this->mDimension.y * 4.0f * UMath::Sqrt(this->mDimension.x * this->mDimension.x + this->mDimension.z * this->mDimension.z);
+            cross_section.z =
+                this->mDimension.z * 4.0f * UMath::Sqrt(this->mDimension.x * this->mDimension.x + this->mDimension.y * this->mDimension.y);
 
-            Drag drag((UVector3(avel)), UVector3(UMath::Vector4To3(mSpecs.DRAG_ANGULAR())), UVector3(cross_section), 1.225f);
-            ConvertLocalToWorld(drag, false);
-            ResolveTorque(drag);
+            Drag drag((UVector3(avel)), UVector3(UMath::Vector4To3(this->mSpecs.DRAG_ANGULAR())), UVector3(cross_section), 1.225f);
+            this->ConvertLocalToWorld(drag, false);
+            this->ResolveTorque(drag);
         }
         if (data.GetStatus(0x20)) {
             UMath::Vector3 vel = data.linearVel;
             UMath::Vector3 area;
-            UMath::Scale(mDimension, mDimension, area);
+            UMath::Scale(this->mDimension, this->mDimension, area);
             UMath::Scale(area, 4.0f, area);
-            ConvertWorldToLocal(vel, false);
+            this->ConvertWorldToLocal(vel, false);
 
-            Drag drag((UVector3(vel)), UVector3(UMath::Vector4To3(mSpecs.DRAG())), UVector3(area), 1.225f);
-            ConvertLocalToWorld(drag, false);
-            ResolveForce(drag);
+            Drag drag((UVector3(vel)), UVector3(UMath::Vector4To3(this->mSpecs.DRAG())), UVector3(area), 1.225f);
+            this->ConvertLocalToWorld(drag, false);
+            this->ResolveForce(drag);
         }
     }
 }
 
 void RigidBody::ConvertLocalToWorld(UMath::Vector3 &val, bool translate) const {
-    UMath::Rotate(val, mData->bodyMatrix, val);
+    UMath::Rotate(val, this->mData->bodyMatrix, val);
     if (translate) {
-        UMath::Add(val, mData->position, val);
+        UMath::Add(val, this->mData->position, val);
     }
 }
 
@@ -450,49 +493,49 @@ void RigidBody::ConvertWorldToLocal(UMath::Vector3 &val, bool translate) const {
     UMath::Matrix4 InvBodyMatrix;
 
     if (translate) {
-        UMath::Sub(val, mData->position, val);
+        UMath::Sub(val, this->mData->position, val);
     }
-    UMath::Transpose(mData->bodyMatrix, InvBodyMatrix);
+    UMath::Transpose(this->mData->bodyMatrix, InvBodyMatrix);
     UMath::Rotate(val, InvBodyMatrix, val);
 }
 
 void RigidBody::Resolve(const UMath::Vector3 &force, const UMath::Vector3 &torque) {
-    Volatile &data = *mData;
+    Volatile &data = *this->mData;
     if (data.state != 2) {
         data.state = 0;
         data.status |= 0x40;
-        Detach();
+        this->Detach();
         UMath::Add(force, data.force, data.force);
         UMath::Add(torque, data.torque, data.torque);
     }
 }
 
 void RigidBody::ResolveTorque(const UMath::Vector3 &torque) {
-    Volatile &data = *mData;
+    Volatile &data = *this->mData;
     if (data.state != 2) {
         data.state = 0;
         data.status |= 0x40;
-        Detach();
+        this->Detach();
         UMath::Add(torque, data.torque, data.torque);
     }
 }
 
 void RigidBody::ResolveForce(const UMath::Vector3 &force) {
-    Volatile &data = *mData;
+    Volatile &data = *this->mData;
     if (data.state != 2) {
         data.state = 0;
         data.status |= 0x40;
-        Detach();
+        this->Detach();
         UMath::Add(force, data.force, data.force);
     }
 }
 
 void RigidBody::ResolveTorque(const UMath::Vector3 &force, const UMath::Vector3 &p) {
-    Volatile &data = *mData;
+    Volatile &data = *this->mData;
     if (data.state != 2) {
         data.state = 0;
         data.status |= 0x40;
-        Detach();
+        this->Detach();
 
         UMath::Vector3 cg;
         UMath::Vector3 torque;
@@ -506,11 +549,11 @@ void RigidBody::ResolveTorque(const UMath::Vector3 &force, const UMath::Vector3 
 }
 
 void RigidBody::ResolveForce(const UMath::Vector3 &force, const UMath::Vector3 &p) {
-    Volatile &data = *mData;
+    Volatile &data = *this->mData;
     if (data.state != 2) {
         data.state = 0;
         data.status |= 0x40;
-        Detach();
+        this->Detach();
 
         UMath::Vector3 cg;
         UMath::Vector3 torque;
@@ -526,21 +569,26 @@ void RigidBody::ResolveForce(const UMath::Vector3 &force, const UMath::Vector3 &
 
 void RigidBody::Debug() {}
 
+// TODO
+void RigidBody::DoIntegration(const float dT) {}
+
 void RigidBody::SetAnimating(bool animating) {
     if (animating) {
-        mData->SetStatus(0x100);
+        this->mData->SetStatus(0x100);
     } else {
-        mData->RemoveStatus(0x100);
+        this->mData->RemoveStatus(0x100);
     }
 }
 
+static const bool Tweak_SingleGroundCollisions = true; // TODO use
+
 // UNSOLVED, regswaps
 void RigidBody::ResolveGroundCollision(const CollisionPacket *bcp, const int numContacts) {
-    Volatile &data = *mData;
+    Volatile &data = *this->mData;
     bool first = true;
     Dynamics::Collision::Friction obj_friction;
-    obj_friction.mUs = mSpecs.GROUND_FRICTION(0);
-    obj_friction.mUk = UMath::Min(mSpecs.GROUND_FRICTION(1), mSpecs.GROUND_FRICTION(0));
+    obj_friction.mUs = this->mSpecs.GROUND_FRICTION(0);
+    obj_friction.mUk = UMath::Min(this->mSpecs.GROUND_FRICTION(1), this->mSpecs.GROUND_FRICTION(0));
     Dynamics::Collision::Plane plane;
 
     for (int loop = 0; loop < numContacts; ++loop, ++bcp) {
@@ -554,9 +602,9 @@ void RigidBody::ResolveGroundCollision(const CollisionPacket *bcp, const int num
 
         UMath::Vector3 e;
         UMath::Dot(plane.normal, data.bodyMatrix, e);
-        UMath::Scale(e, UMath::Vector4To3(mSpecs.GROUND_ELASTICITY()), e);
+        UMath::Scale(e, UMath::Vector4To3(this->mSpecs.GROUND_ELASTICITY()), e);
         mo.SetElasticity(UMath::Length(e));
-        mo.SetInertiaScale(UMath::Vector4To3(mSpecs.GROUND_MOMENT_SCALE()));
+        mo.SetInertiaScale(UMath::Vector4To3(this->mSpecs.GROUND_MOMENT_SCALE()));
         if (mo.React(plane, 16)) {
             if (first) {
                 first = false;
@@ -587,34 +635,37 @@ void RigidBody::ResolveGroundCollision(const CollisionPacket *bcp, const int num
 }
 
 bool RigidBody::CanCollideWith(const RigidBody &other) const {
-    if (mData->GetStatus(0x100) && other.mData->GetStatus(0x100)) {
+    if (this->mData->GetStatus(0x100) && other.mData->GetStatus(0x100)) {
         return false;
     }
     return true;
 }
 
 bool RigidBody::CanCollideWithGround() const {
-    if (mSpecs.NO_GROUND_COLLISIONS() || !IsAwake()) {
+    if (Tweak_DisableGroundCollisions || this->mSpecs.NO_GROUND_COLLISIONS() || !this->IsAwake()) {
         return false;
     }
     return true;
 }
 
+static const unsigned int Tweak_MaxGroundCollisionResults = 16; // TODO use
+static const unsigned int BOX_CORNERS = 8;                      // TODO use
+
 void RigidBody::ModifyCollision(const SimSurface &other, const Dynamics::Collision::Plane &plane, Dynamics::Collision::Moment &myMoment) {
-    myMoment.SetInertiaScale(UMath::Vector4To3(mSpecs.WORLD_MOMENT_SCALE()));
+    myMoment.SetInertiaScale(UMath::Vector4To3(this->mSpecs.WORLD_MOMENT_SCALE()));
 }
 
 bool RigidBody::IsImmobile() const {
-    if (mSpecs.IMMOBILE_OBJECT_COLLISIONS() || mData->GetStatus(Volatile::IS_ATTACHED_TO_WORLD)) {
+    if (this->mSpecs.IMMOBILE_OBJECT_COLLISIONS() || this->mData->GetStatus(Volatile::IS_ATTACHED_TO_WORLD)) {
         return true;
     }
     return false;
 }
 
 void RigidBody::ModifyCollision(const RigidBody &other, const Dynamics::Collision::Plane &plane, Dynamics::Collision::Moment &myMoment) {
-    Volatile &data = *mData;
+    Volatile &data = *this->mData;
     if (!other.IsImmobile()) {
-        if (mSpecs.IMMOBILE_OBJECT_COLLISIONS()) {
+        if (this->mSpecs.IMMOBILE_OBJECT_COLLISIONS()) {
             myMoment.MakeImmobile(true, 0.0f);
         } else {
             if (data.GetStatus(Volatile::IS_ATTACHED_TO_WORLD)) {
@@ -622,9 +673,9 @@ void RigidBody::ModifyCollision(const RigidBody &other, const Dynamics::Collisio
             }
         }
     }
-    myMoment.SetInertiaScale(UMath::Vector4To3(mSpecs.OBJ_MOMENT_SCALE()));
-    if (mSpecs.OBJ_MOMENT_SCALE().w > 0.0f) {
-        myMoment.SetMass(myMoment.GetMass() * mSpecs.OBJ_MOMENT_SCALE().w);
+    myMoment.SetInertiaScale(UMath::Vector4To3(this->mSpecs.OBJ_MOMENT_SCALE()));
+    if (this->mSpecs.OBJ_MOMENT_SCALE().w > 0.0f) {
+        myMoment.SetMass(myMoment.GetMass() * this->mSpecs.OBJ_MOMENT_SCALE().w);
     }
     if (data.GetStatus(Volatile::IS_ANCHORED)) {
         myMoment.SetFixedCG(true);
@@ -762,7 +813,7 @@ bool RigidBody::ResolveObjectCollision(RigidBody &objA, RigidBody &objB, const P
     moA.SetPosition(dataA.position);
     moB.SetPosition(dataB.position);
 
-    if (moA.React(moB, plane, 0x20)) {
+    if (moA.React(moB, plane, 32)) {
         COLLISION_INFO collisionInfo;
         float force = moA.GetForce().Magnitude();
 
@@ -832,11 +883,13 @@ bool RigidBody::ResolveObjectCollision(RigidBody &objA, RigidBody &objB, const P
     return result;
 }
 
+static const bool Tweak_TransferGroundImpulses = false; // TODO use
+
 bool RigidBody::ResolveWorldOBBCollision(const UMath::Vector3 &cn, const UMath::Vector3 &cp, COLLISION_INFO *collisionInfo,
                                          const Dynamics::Collision::Geometry *otherGeom, const UMath::Vector3 &linearVel, const SimSurface &rbsurface,
                                          const SimSurface &obbsurface) {
     const float otherMass = 1000000.0f;
-    Volatile &data = *mData;
+    Volatile &data = *this->mData;
     Dynamics::Collision::Moment moA(this);
     UMath::Vector3 inertia =
         Dynamics::Inertia::Box(1000000.0f, 2 * otherGeom->GetDimension().x, 2 * otherGeom->GetDimension().y, 2 * otherGeom->GetDimension().z);
@@ -845,28 +898,29 @@ bool RigidBody::ResolveWorldOBBCollision(const UMath::Vector3 &cn, const UMath::
     Dynamics::Collision::Moment moB(otherGeom->GetOrientation(), otherMass, inertia, cg, linearVel, angularVel, otherGeom->GetPosition());
 
     Dynamics::Collision::Plane plane;
-    plane.friction = Dynamics::Collision::Friction(UMath::Min(mSpecs.OBJ_FRICTION(0), mSpecs.OBJ_FRICTION(1)), mSpecs.OBJ_FRICTION(0));
+    plane.friction =
+        Dynamics::Collision::Friction(UMath::Min(this->mSpecs.OBJ_FRICTION(0), this->mSpecs.OBJ_FRICTION(1)), this->mSpecs.OBJ_FRICTION(0));
     plane.normal = cn;
     plane.point = UVector3(cp.x, cp.y, cp.z);
     plane.friction *= obbsurface.WORLD_FRICTION();
 
     UMath::Vector3 e;
     UMath::Dot(plane.normal, data.bodyMatrix, e);
-    UMath::Scale(e, UMath::Vector4To3(mSpecs.WALL_ELASTICITY()), e);
+    UMath::Scale(e, UMath::Vector4To3(this->mSpecs.WALL_ELASTICITY()), e);
     moA.SetElasticity(UMath::Length(e));
 
-    ModifyCollision(obbsurface, plane, moA);
+    this->ModifyCollision(obbsurface, plane, moA);
 
     moA.MakeImmobile(false, 0.0f);
     moB.MakeImmobile(true, 0.0f);
 
-    if (moA.React(moB, plane, 0x20)) {
+    if (moA.React(moB, plane, 32)) {
         float force = moA.GetForce().Magnitude();
 
         collisionInfo->objAVel = data.linearVel;
         collisionInfo->objBVel = linearVel;
         collisionInfo->objAsurface = rbsurface.GetConstCollection();
-        collisionInfo->objA = GetOwner()->GetInstanceHandle();
+        collisionInfo->objA = this->GetOwner()->GetInstanceHandle();
         collisionInfo->type = 2;
         collisionInfo->objBsurface = obbsurface.GetConstCollection();
         collisionInfo->normal = cn;
@@ -879,7 +933,7 @@ bool RigidBody::ResolveWorldOBBCollision(const UMath::Vector3 &cn, const UMath::
         collisionInfo->impulseB = 0.0f;
 
         UMath::Sub(cp, data.position, collisionInfo->armA);
-        ConvertWorldToLocal(collisionInfo->armA, 0);
+        this->ConvertWorldToLocal(collisionInfo->armA, false);
 
         data.angularVel = moA.GetAngularVelocity();
         data.linearVel = moA.GetLinearVelocity();
@@ -892,8 +946,8 @@ bool RigidBody::ResolveWorldOBBCollision(const UMath::Vector3 &cn, const UMath::
 
 float RigidBody::ResolveWorldCollision(const UMath::Vector3 &cn, const UMath::Vector3 &cp, COLLISION_INFO *collisionInfo,
                                        const Attrib::Collection *objSurface, const SimSurface &worldSurface, const UVector3 &worldVel) {
-    Volatile &data = *mData;
-    const Attrib::Gen::rigidbodyspecs &specs = *mSpecs;
+    Volatile &data = *this->mData;
+    const Attrib::Gen::rigidbodyspecs &specs = *this->mSpecs;
     Dynamics::Collision::Moment mo(this);
 
     Dynamics::Collision::Plane plane;
@@ -906,14 +960,14 @@ float RigidBody::ResolveWorldCollision(const UMath::Vector3 &cn, const UMath::Ve
     UMath::Dot(plane.normal, data.bodyMatrix, e);
     UMath::Scale(e, UMath::Vector4To3(specs.WALL_ELASTICITY()), e);
     mo.SetElasticity(UMath::Length(e));
-    ModifyCollision(worldSurface, plane, mo);
+    this->ModifyCollision(worldSurface, plane, mo);
     mo.SetLinearVelocity(mo.GetLinearVelocity() - worldVel);
-    if (mo.React(plane, 0x10)) {
+    if (mo.React(plane, 16)) {
         float force = mo.GetForce().Magnitude();
-        if (collisionInfo) {
+        if (collisionInfo != nullptr) {
             collisionInfo->normal = cn;
             collisionInfo->position = cp;
-            collisionInfo->objA = GetOwner()->GetInstanceHandle();
+            collisionInfo->objA = this->GetOwner()->GetInstanceHandle();
             collisionInfo->objAVel = data.linearVel;
             collisionInfo->objAsurface = objSurface;
             collisionInfo->type = 2;
@@ -925,7 +979,7 @@ float RigidBody::ResolveWorldCollision(const UMath::Vector3 &cn, const UMath::Ve
             collisionInfo->impulseA = force * mo.GetOOMass();
             collisionInfo->impulseB = 0.0f;
             UMath::Sub(cp, data.position, collisionInfo->armA);
-            ConvertWorldToLocal(collisionInfo->armA, 0);
+            this->ConvertWorldToLocal(collisionInfo->armA, false);
         }
         data.angularVel = mo.GetAngularVelocity();
         data.linearVel = mo.GetLinearVelocity() + worldVel;
@@ -975,18 +1029,18 @@ void RigidBody::OnObjectOverlap(RigidBody &objA, RigidBody &objB, float dT) {
 }
 
 void RigidBody::UpdateCollider() {
-    Volatile &data = *mData;
-    float radius = UMath::Max(mPrimitives.GetRadius(), 3.0f);
-    mWCollider->Refresh(data.position, radius, true);
-    Behavior::GetOwner()->GetWPos().Update(data.position, mGroundNormal, true, mWCollider, true);
+    Volatile &data = *this->mData;
+    float radius = UMath::Max(this->mPrimitives.GetRadius(), 3.0f);
+    this->mWCollider->Refresh(data.position, radius, true);
+    Behavior::GetOwner()->GetWPos().Update(data.position, this->mGroundNormal, true, this->mWCollider, true);
 }
 
 // UNSOLVED but functionally matching
 bool RigidBody::CanCollideWithWorld() const {
-    const Volatile &data = *mData;
+    const Volatile &data = *this->mData;
 
-    if (data.GetStatus(0x40) && !mSpecs.NO_WORLD_COLLISIONS() && !IsSleeping()) {
-        if (mPrimitives.Size() == 0) {
+    if (Tweak_DisableWorldCollisions && data.GetStatus(0x40) && !this->mSpecs.NO_WORLD_COLLISIONS() && !this->IsSleeping()) {
+        if (this->mPrimitives.Size() == 0) {
             return false;
         }
         return true;
@@ -995,7 +1049,7 @@ bool RigidBody::CanCollideWithWorld() const {
 }
 
 bool RigidBody::OnWCollide(const WCollisionMgr::WorldCollisionInfo &cInfo, const UMath::Vector3 &cPoint, void *userdata) {
-    Volatile &data = *mData;
+    Volatile &data = *this->mData;
     data.SetStatus(Volatile::HAS_HAD_WORLD_COLLISION);
 #ifdef EA_BUILD_A124
     SimSurface surface(cInfo.fBle.fSurfaceHash.GetValue());
@@ -1011,7 +1065,7 @@ bool RigidBody::OnWCollide(const WCollisionMgr::WorldCollisionInfo &cInfo, const
     }
     COLLISION_INFO collisionInfo;
 
-    if (ResolveWorldCollision(UVector3(cInfo.fNormal), cPoint, &collisionInfo, reinterpret_cast<Primitive *>(userdata)->GetMaterial(), surface, wV) >
+    if (this->ResolveWorldCollision(UVector3(cInfo.fNormal), cPoint, &collisionInfo, reinterpret_cast<Primitive *>(userdata)->GetMaterial(), surface, wV) >
         0.0f) {
         new ECollision(collisionInfo);
     }
@@ -1019,71 +1073,71 @@ bool RigidBody::OnWCollide(const WCollisionMgr::WorldCollisionInfo &cInfo, const
 }
 
 void RigidBody::DoWorldCollisions(const float dT) {
-    if (CanCollideWithWorld() != 0) {
-        DoObbCollision(dT);
-        DoBarrierCollision(dT);
+    if (this->CanCollideWithWorld()) {
+        this->DoObbCollision(dT);
+        this->DoBarrierCollision(dT);
     }
-    if (CanCollideWithGround() && !mWCollider->GetInstanceList().empty()) {
-        DoInstanceCollision(dT);
+    if (this->CanCollideWithGround() && !this->mWCollider->GetInstanceList().empty()) {
+        this->DoInstanceCollision(dT);
     }
 }
 
 void RigidBody::DoBarrierCollision(float dT) {}
 
 void RigidBody::DoInstanceCollision(float dT) {
-    if (!mSpecs.INSTANCE_COLLISIONS_3D()) {
-        DoInstanceCollision2d(dT);
+    if (!this->mSpecs.INSTANCE_COLLISIONS_3D()) {
+        this->DoInstanceCollision2d(dT);
     } else {
-        DoInstanceCollision3d(dT);
+        this->DoInstanceCollision3d(dT);
     }
 }
 
 void RigidBody::DoInstanceCollision3d(float dT) {
-    Volatile &data = *mData;
+    Volatile &data = *this->mData;
     WCollisionMgr::WorldCollisionInfo cInfo;
     Dynamics::Collision::Geometry thisGeom;
-    const struct WCollisionInstanceCacheList &instances = mWCollider->GetInstanceList();
-    for (Primitive *collider = mPrimitives.GetHead(); collider != mPrimitives.EndOfList(); collider = collider->GetNext()) {
+    const struct WCollisionInstanceCacheList &instances = this->mWCollider->GetInstanceList();
+    for (Primitive *collider = this->mPrimitives.GetHead(); collider != this->mPrimitives.EndOfList(); collider = collider->GetNext()) {
         if ((((collider->GetFlags() ^ 1) & 1) == 0) && !(collider->GetFlags() & 8) && collider->SetCollision(data, thisGeom)) {
-            WCollisionMgr(mCollisionMask, 3).Collide(&thisGeom, &instances, this, collider);
+            WCollisionMgr(this->mCollisionMask, 3).Collide(&thisGeom, &instances, this, collider);
         }
     }
 }
 
 bool RigidBody::ShouldSleep() const {
-    const Volatile &data = *mData;
+    const Volatile &data = *this->mData;
     float sumVel = UMath::Length(data.linearVel) + (UMath::Length(data.angularVel) * data.radius);
-    if (sumVel < mSpecs.SLEEP_VELOCITY() && GetNumContactPoints() > 2) {
+    if (sumVel < this->mSpecs.SLEEP_VELOCITY() && this->GetNumContactPoints() > 2) {
         return true;
     }
     return false;
 }
 
 void RigidBody::Accelerate(const UMath::Vector3 &a, float dT) {
-    Volatile &data = *mData;
+    Volatile &data = *this->mData;
     if (data.state == 0) {
         UMath::ScaleAdd(a, dT, data.linearVel, data.linearVel);
     }
 }
 
 bool RigidBody::AddCollisionSphere(float radius, const UMath::Vector3 &offset, const SimSurface &material, unsigned int flags, const UCrc32 &name) {
-    return mPrimitives.Create(UVector3(radius, radius, radius), offset, material, Dynamics::Collision::Geometry::SPHERE, UMath::Vector4::kIdentity,
+    return this->mPrimitives.Create(UVector3(radius, radius, radius), offset, material, Dynamics::Collision::Geometry::SPHERE, UMath::Vector4::kIdentity,
                               flags | 0x10, name);
 }
 
 bool RigidBody::AddCollisionBox(const UMath::Vector3 &dim, const UMath::Vector3 &offset, const SimSurface &material, const UMath::Vector4 &orient,
                                 unsigned int flags, const UCrc32 &name) {
-    return mPrimitives.Create(dim + mSpecs.COLLISION_BOX_PAD(), offset, material, Dynamics::Collision::Geometry::BOX, orient, flags, name);
+    return this->mPrimitives.Create(dim + this->mSpecs.COLLISION_BOX_PAD(), offset, material, Dynamics::Collision::Geometry::BOX, orient, flags, name);
 }
 
 bool RigidBody::CanCollideWithObjects() const {
-    if (mPrimitives.Size() == 0) {
+    if (this->mPrimitives.Size() == 0) {
         return false;
     }
-    if (mSpecs.NO_OBJ_COLLISIONS() != 0) {
+    if (this->mSpecs.NO_OBJ_COLLISIONS()) {
         return false;
     }
-    if (mData->state == 2) {
+    if (this->mData->state == 2) {
         return false;
     }
     return true;
@@ -1094,24 +1148,24 @@ void RigidBody::OnTaskSimulate(float dT) {}
 void RigidBody::OnDebugDraw() {}
 
 unsigned int RigidBody::GetTriggerFlags() const {
-    if (mData->GetStatus(1) || IsSleeping()) {
+    if (this->mData->GetStatus(1) || this->IsSleeping()) {
         return 0;
     }
     return 0x40;
 }
 
 void RigidBody::PushSP(void *workspace) {
-    mOnSP = 1;
+    mOnSP = true;
     ScratchPtr<RigidBody::Volatile>::Push(workspace);
 }
 
 void RigidBody::PopSP() {
-    mOnSP = 0;
+    mOnSP = false;
     ScratchPtr<RigidBody::Volatile>::Pop();
 }
 
 void RigidBody::Damp(float amount) {
-    Volatile &data = *mData;
+    Volatile &data = *this->mData;
     float scale = 1.0f - amount;
     UMath::Scale(data.linearVel, scale, data.linearVel);
     UMath::Scale(data.angularVel, scale, data.angularVel);
@@ -1120,40 +1174,40 @@ void RigidBody::Damp(float amount) {
 }
 
 void RigidBody::UpdateGrid(int &overlapx, int &overlapz) {
-    Volatile &data = *mData;
+    Volatile &data = *this->mData;
     data.RemoveStatus(Volatile::HAS_HAD_OBJECT_COLLISION | Volatile::HAS_HAD_WORLD_COLLISION);
     const bool collideable = CanCollideWithObjects();
-    if (collideable && !mGrid) {
-        mGrid = RBGrid::Add(data.index, *this, data.position, mPrimitives.GetRadius());
+    if (collideable && (this->mGrid == nullptr)) {
+        this->mGrid = RBGrid::Add(data.index, *this, data.position, this->mPrimitives.GetRadius());
         return;
     }
-    if (!collideable && mGrid) {
-        RBGrid::Remove(mGrid);
-        mGrid = nullptr;
+    if (!collideable && (this->mGrid != nullptr)) {
+        RBGrid::Remove(this->mGrid);
+        this->mGrid = nullptr;
         return;
     }
-    if (!mGrid) {
+    if (this->mGrid == nullptr) {
         return;
     }
-    mGrid->SetPosition(data.position, mPrimitives.GetRadius());
+    this->mGrid->SetPosition(data.position, this->mPrimitives.GetRadius());
 
-    if (mGrid->GetX().Overlaps()) {
+    if (this->mGrid->GetX().Overlaps()) {
         overlapx++;
     }
-    if (mGrid->GetZ().Overlaps()) {
+    if (this->mGrid->GetZ().Overlaps()) {
         overlapz++;
     }
 }
 
 IRigidBody *RigidBody::Get(unsigned int index) {
-    if (index < RIGID_BODY_MAX) {
+    if (index < NUM_ELEMENTS(mMaps)) {
         return mMaps[index];
     }
     return nullptr;
 }
 
 unsigned int RigidBody::AssignSlot() {
-    for (std::size_t i = 0; i < RIGID_BODY_MAX; ++i) {
+    for (std::size_t i = 0; i < NUM_ELEMENTS(mMaps); ++i) {
         if (mMaps[i] == nullptr) {
             return i;
         }
