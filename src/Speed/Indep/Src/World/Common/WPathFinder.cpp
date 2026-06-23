@@ -6,6 +6,7 @@
 #include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Src/World/WRoadElem.h"
 #include "Speed/Indep/Src/World/WRoadNetwork.h"
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 bool bPathFinderPrints = false;
 SlotPool *AStarNodeSlotPool = nullptr;
@@ -15,11 +16,7 @@ float ASTAR_METRIC_SCALE = 0.25f;
 // total size: 0x14
 class AStarNode : public bTNode<AStarNode> {
   public:
-    void *operator new(size_t size) {
-        return bMalloc(AStarNodeSlotPool);
-    }
-
-    void operator delete(void *ptr); // TODO inline, but doesn't get inlined in AStarSearch::Service, huh?
+    USE_SLOTALLOC(AStarNodeSlotPool);
 
     AStarNode() {}
 
