@@ -161,9 +161,7 @@ This file contains hashes used in different parts of the game. We are currently 
 
 This file contains bChunk chunk IDs.
 
-# Guide for AI contributions
-
-## Setup
+## Ghidra CLI setup
 
 - Run
 
@@ -206,10 +204,6 @@ This file contains bChunk chunk IDs.
   ```
   ghidra config set default_program NFSMWRELEASE.ELF
   ```
-
-## Workflow
-
-Just tell your favourite clanker to reference `AGENTS.md` to decompile a translation unit of your choice, for example `main/Speed/Indep/SourceLists/zEAXSound`.
 
 # Contributors
 

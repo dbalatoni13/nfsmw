@@ -57,6 +57,7 @@ IDENT_RE = re.compile(r"[A-Za-z_]\w*")
 COMMENT_SECTION_RE = re.compile(
     r"^// (Functions|Members|Static members|Static Members|Inlines|Inner declarations)$"
 )
+ATTACHED_COMMENT_RE = re.compile(r"^// (Decl|Overrides):")
 RAW_TYPE_OPEN_RE = re.compile(
     r"^(?P<kind>struct|class)\s+(?P<head>.+?)(?P<brace>\s*\{.*)$"
 )
@@ -92,6 +93,8 @@ class DeclItem:
     original_index: int = 0
     section: str = ""
     from_typedef_spelling: bool = False
+    from_gc_virtual_source: bool = False
+    nested_type: Optional["TypeDecl"] = None
 
     def text(self) -> str:
         return "\n".join(self.lines)
@@ -1072,6 +1075,12 @@ def make_raw_item(
     )
 
 
+def prepend_pending_comments(item: DeclItem, pending_comments: List[str]) -> DeclItem:
+    if pending_comments:
+        item.lines = list(pending_comments) + item.lines
+    return item
+
+
 def parse_type_body(
     source: str,
     name: str,
@@ -1120,7 +1129,7 @@ def parse_type_body(
             pending_comments = []
             index += 1
             continue
-        if stripped.startswith("// Decl:"):
+        if ATTACHED_COMMENT_RE.match(stripped):
             pending_comments.append(stripped)
             index += 1
             continue
@@ -1130,7 +1139,10 @@ def parse_type_body(
             continue
         if is_gc_type_start(lines, index):
             block_end = find_type_end(lines, index, "gc")
-            item = make_raw_item(list(lines[index:block_end]), "inner", visibility, item_index)
+            item = prepend_pending_comments(
+                make_raw_item(list(lines[index:block_end]), "inner", visibility, item_index),
+                pending_comments,
+            )
             item.section = section
             items.append(item)
             item_index += 1
@@ -1139,7 +1151,10 @@ def parse_type_body(
             continue
         if is_ps2_type_start(stripped):
             block_end = find_type_end(lines, index, "ps2")
-            item = make_raw_item(list(lines[index:block_end]), "inner", visibility, item_index)
+            item = prepend_pending_comments(
+                make_raw_item(list(lines[index:block_end]), "inner", visibility, item_index),
+                pending_comments,
+            )
             item.section = section
             items.append(item)
             item_index += 1
@@ -1148,7 +1163,10 @@ def parse_type_body(
             continue
         if "{" in stripped and not stripped.endswith("{}"):
             block, next_index = collect_brace_block(lines, index)
-            item = make_raw_item(block, "raw", visibility, item_index)
+            item = prepend_pending_comments(
+                make_raw_item(block, "raw", visibility, item_index),
+                pending_comments,
+            )
             item.section = section
             items.append(item)
             item_index += 1
@@ -1170,7 +1188,10 @@ def parse_type_body(
             index += 1
             continue
         if stripped.startswith("static ") and code_endswith_semicolon(stripped):
-            item = extract_static_item(stripped, source, visibility, item_index)
+            item = prepend_pending_comments(
+                extract_static_item(stripped, source, visibility, item_index),
+                pending_comments,
+            )
             item.section = section
             items.append(item)
             item_index += 1
@@ -1178,14 +1199,20 @@ def parse_type_body(
             index += 1
             continue
         if code_endswith_semicolon(stripped):
-            item = extract_member_item(stripped, source, visibility, item_index)
+            item = prepend_pending_comments(
+                extract_member_item(stripped, source, visibility, item_index),
+                pending_comments,
+            )
             item.section = section
             items.append(item)
             item_index += 1
             pending_comments = []
             index += 1
             continue
-        item = make_raw_item([stripped], "raw", visibility, item_index)
+        item = prepend_pending_comments(
+            make_raw_item([stripped], "raw", visibility, item_index),
+            pending_comments,
+        )
         item.section = section
         items.append(item)
         item_index += 1
@@ -1314,6 +1341,162 @@ def parse_functions(text: str) -> List[TopDecl]:
         function_index += 1
         index = next_index
     return functions
+
+
+def virtual_declaration_from_gc_item(
+    source_item: DeclItem,
+    owner: str,
+    visibility: Optional[str],
+    original_index: int,
+) -> Optional[DeclItem]:
+    if not source_item.lines:
+        return None
+    code = code_part(source_item.lines[-1]).strip()
+    if code.endswith("{}"):
+        code = code[:-2].rstrip()
+    elif code.endswith(";"):
+        code = code[:-1].rstrip()
+    signature = split_function_signature(code)
+    if signature is None:
+        return None
+
+    before_params, params, suffix = signature
+    before_params = re.sub(r"\b(inline|virtual)\s+", "", before_params).strip()
+    suffix = re.sub(r"\b(override|final)\b", "", suffix)
+    suffix = re.sub(r"\s+", " ", suffix).strip()
+    declaration = f"{before_params}({params})"
+    if suffix:
+        declaration += " " + suffix
+    declaration = "virtual " + declaration + ";"
+
+    item = extract_function_item(
+        [], declaration, "gc", visibility, original_index, owner
+    )
+    item.from_gc_virtual_source = True
+    return item
+
+
+def comparable_function_shape(
+    item: DeclItem, owner: str
+) -> Optional[Tuple[str, Tuple[str, ...], bool]]:
+    types = function_types(item, owner)
+    if types is None:
+        return None
+    return_type, param_types = types
+
+    def comparable_type(type_name: str) -> str:
+        type_name = normalize_type_name(type_name)
+        return re.sub(r"\b[A-Za-z_]\w*::", "", type_name)
+
+    return (
+        comparable_type(return_type),
+        tuple(comparable_type(type_name) for type_name in param_types),
+        item.match_key.endswith(" const"),
+    )
+
+
+def add_missing_virtual_function_declarations(
+    types: Sequence[TypeDecl],
+) -> int:
+    candidates_by_name: Dict[str, Dict[str, Tuple[TypeDecl, DeclItem]]] = {}
+    for source_type in types:
+        for item in source_type.items:
+            if item.kind != "function" or not item.lines:
+                continue
+            line = item.lines[-1]
+            if "override" not in line and "virtual " not in line:
+                continue
+            candidates_by_name.setdefault(item.name, {}).setdefault(
+                item_match_key(item), (source_type, item)
+            )
+
+    added = 0
+    for typ in types:
+        if typ.paired_ps2 is None:
+            continue
+        existing_keys = {
+            item_match_key(item) for item in typ.items if item.kind == "function"
+        }
+        next_index = max((item.original_index for item in typ.items), default=-1) + 1
+        existing_names = {
+            item.name for item in typ.items if item.kind == "function"
+        }
+        virtuals_by_name: Dict[str, List[DeclItem]] = {}
+        for ps2_item in typ.paired_ps2.items:
+            if (
+                ps2_item.kind != "function"
+                or not any("virtual " in line for line in ps2_item.lines)
+            ):
+                continue
+            virtuals_by_name.setdefault(ps2_item.name, []).append(ps2_item)
+
+        for name, ps2_items in virtuals_by_name.items():
+            if name in existing_names:
+                continue
+            candidates = candidates_by_name.get(name, {})
+            selected = list(candidates.values())
+            if len(selected) > 1 and typ.paired_carbon is not None:
+                carbon_shapes = {
+                    shape
+                    for carbon_item in typ.paired_carbon.items
+                    if carbon_item.kind == "function" and carbon_item.name == name
+                    for shape in [
+                        comparable_function_shape(carbon_item, typ.paired_carbon.name)
+                    ]
+                    if shape is not None
+                }
+                matching_carbon = [
+                    (source_type, source_item)
+                    for source_type, source_item in selected
+                    if comparable_function_shape(source_item, source_type.name)
+                    in carbon_shapes
+                ]
+                if not matching_carbon:
+                    carbon_type_shapes = {shape[:2] for shape in carbon_shapes}
+                    for source_type, source_item in selected:
+                        source_shape = comparable_function_shape(
+                            source_item, source_type.name
+                        )
+                        if (
+                            source_shape is not None
+                            and source_shape[:2] in carbon_type_shapes
+                        ):
+                            matching_carbon.append((source_type, source_item))
+                if matching_carbon:
+                    selected = matching_carbon
+            if len(selected) > 1:
+                ps2_types = function_types(ps2_items[0], typ.paired_ps2.name)
+                ps2_return = (
+                    normalize_type_name(ps2_types[0]) if ps2_types is not None else ""
+                )
+                matching_return = []
+                for source_type, source_item in selected:
+                    source_types = function_types(source_item, source_type.name)
+                    source_return = (
+                        normalize_type_name(source_types[0])
+                        if source_types is not None
+                        else ""
+                    )
+                    if source_return == ps2_return:
+                        matching_return.append((source_type, source_item))
+                if matching_return:
+                    selected = matching_return
+            if len(selected) != len(ps2_items):
+                continue
+            for ps2_item, (_source_type, source_item) in zip(ps2_items, selected):
+                item = virtual_declaration_from_gc_item(
+                    source_item,
+                    typ.name,
+                    ps2_item.visibility,
+                    next_index,
+                )
+                if item is None or item_match_key(item) in existing_keys:
+                    continue
+                typ.items.append(item)
+                existing_keys.add(item_match_key(item))
+                next_index += 1
+                added += 1
+    return added
 
 
 def parse_ps2(text: str) -> ParseResult:
@@ -1493,6 +1676,76 @@ def pair_types(
 
 
 LocatedDeclIndex = Dict[Tuple[str, str], Tuple[List[int], List[TopDecl]]]
+
+
+def parse_nested_type_item(item: DeclItem, source: str) -> Optional[TypeDecl]:
+    if item.kind not in ("inner", "raw"):
+        return None
+    parsed = parse_gc_like("\n".join(item.lines), source)
+    if len(parsed.types) == 1:
+        return parsed.types[0]
+    if not item.lines:
+        return None
+    open_index = 0
+    while open_index < len(item.lines) and item.lines[open_index].strip().startswith("//"):
+        open_index += 1
+    if open_index >= len(item.lines):
+        return None
+    open_match = GC_OPEN_RE.match(item.lines[open_index].strip())
+    if open_match is None:
+        return None
+    name, bases = split_name_bases(
+        open_match.group("name").strip(), (open_match.group("bases") or "").strip()
+    )
+    temp_lines = ["// total size: 0x0"] + item.lines
+    items, decl_file, decl_line = parse_type_body(source, name, temp_lines, 0, len(temp_lines))
+    return TypeDecl(
+        source=source,
+        kind=open_match.group("kind"),
+        name=name,
+        size=None,
+        bases=bases,
+        header_comments=[],
+        items=items,
+        original_index=item.original_index,
+        decl_file=decl_file,
+        decl_line=decl_line,
+    )
+
+
+def nested_types_from_items(items: Sequence[DeclItem], source: str) -> List[TypeDecl]:
+    result: List[TypeDecl] = []
+    for item in items:
+        nested = parse_nested_type_item(item, source)
+        if nested is not None:
+            result.append(nested)
+    return result
+
+
+def pair_nested_type_item(
+    item: DeclItem,
+    owner: TypeDecl,
+    ps2_index: Dict[str, List[TypeDecl]],
+) -> DeclItem:
+    nested = parse_nested_type_item(item, owner.source)
+    if nested is None:
+        return item
+
+    copied = DeclItem(**{**item.__dict__})
+    nested_candidates: List[TypeDecl] = []
+    if owner.paired_ps2 is not None:
+        nested_candidates.extend(nested_types_from_items(owner.paired_ps2.items, "ps2"))
+    nested_candidates.extend(ps2_index.get(nested.simple_name, []))
+    nested.paired_ps2 = choose_pair(nested, nested_candidates)
+
+    carbon_candidates: List[TypeDecl] = []
+    if owner.paired_carbon is not None:
+        carbon_candidates.extend(
+            nested_types_from_items(owner.paired_carbon.items, "carbon")
+        )
+    nested.paired_carbon = choose_pair(nested, carbon_candidates)
+    copied.nested_type = nested
+    return copied
 
 
 def decl_file_key(path: Optional[str]) -> str:
@@ -1756,6 +2009,11 @@ def pair_top_functions(base_functions: List[TopDecl], carbon_functions: List[Top
                 decl.decl_file = candidates[0].decl_file
                 decl.decl_line = candidates[0].decl_line
 
+    previous_file: Optional[str] = None
+    previous_order_line: Optional[int] = None
+    index = 0
+    while index < len(base_functions):
+        decl = base_functions[index]
         if decl.decl_file is not None and decl.decl_line is not None:
             order_line = decl.decl_line * ORDER_SCALE
             if (
@@ -1768,10 +2026,31 @@ def pair_top_functions(base_functions: List[TopDecl], carbon_functions: List[Top
             decl.order_line = order_line
             previous_file = decl.order_file
             previous_order_line = decl.order_line
-        elif previous_file is not None and previous_order_line is not None:
-            decl.order_file = previous_file
-            decl.order_line = previous_order_line + 1
-            previous_order_line = decl.order_line
+            index += 1
+            continue
+
+        run_start = index
+        while (
+            index < len(base_functions)
+            and (
+                base_functions[index].decl_file is None
+                or base_functions[index].decl_line is None
+            )
+        ):
+            index += 1
+        run = base_functions[run_start:index]
+        if previous_file is not None and previous_order_line is not None:
+            for offset, unlocated_decl in enumerate(run, 1):
+                unlocated_decl.order_file = previous_file
+                unlocated_decl.order_line = previous_order_line + offset
+            previous_order_line = run[-1].order_line
+        elif index < len(base_functions):
+            next_decl = base_functions[index]
+            if next_decl.decl_file is not None and next_decl.decl_line is not None:
+                first_order_line = max(0, next_decl.decl_line * ORDER_SCALE - len(run))
+                for offset, unlocated_decl in enumerate(run):
+                    unlocated_decl.order_file = next_decl.decl_file
+                    unlocated_decl.order_line = first_order_line + offset
 
 def item_match_key(item: DeclItem) -> str:
     return item.match_key or item.key
@@ -1895,7 +2174,14 @@ def apply_ps2_member_spelling(
         if carbon_code and not re.search(r"\(\s*\*+", carbon_code):
             carbon_type = member_type_from_code(carbon_code, carbon_item.name)
             if carbon_type:
-                if array_suffix:
+                if (
+                    normalize_type_without_const(base_type)
+                    == normalize_type_without_const(carbon_type)
+                    and normalize_type_without_const(ps2_type)
+                    != normalize_type_without_const(carbon_type)
+                ):
+                    ps2_type = format_type_name(carbon_type)
+                elif array_suffix:
                     ps2_type = format_type_name(carbon_type)
                 else:
                     ps2_type = merge_carbon_member_type(ps2_type, carbon_type)
@@ -1934,14 +2220,19 @@ def merged_item(
     if ps2_item is not None and item.kind == "member":
         item = apply_ps2_member_spelling(item, ps2_item, carbon_item)
     if (
-        carbon_item is None
+        not item.from_gc_virtual_source
+        and carbon_item is None
         and ps2_function_item is not None
         and item.kind == "function"
         and ps2_item is not None
         and ps2_function_has_omitted_params(ps2_item)
     ):
         item = apply_ps2_function_spelling(item, ps2_function_item, owner)
-    if carbon_item is not None and item.kind == "function":
+    if (
+        not item.from_gc_virtual_source
+        and carbon_item is not None
+        and item.kind == "function"
+    ):
         item = apply_carbon_function_spelling(item, carbon_item, owner)
     if carbon_item is not None and carbon_item.visibility is not None:
         item.visibility = carbon_item.visibility
@@ -2087,6 +2378,9 @@ def sorted_items(
     )
     fallback_sections = visibility_section_map(items)
     prefer_ps2_order = any(
+        item.kind == "function" and item.from_gc_virtual_source
+        for item in items
+    ) or any(
         item.kind == "function"
         and source_order_contains(ps2_order, item)
         and not source_order_contains(carbon_order, item)
@@ -2221,6 +2515,18 @@ def sorted_items(
             return carbon_sections[order_key]
         return fallback_sections.get(order_key, 0)
 
+    member_block_order: Dict[int, int] = {}
+    for item in items:
+        if item.kind != "member" or item.offset is None:
+            continue
+        section = section_index(item)
+        line_order = member_line_order.get(
+            item_match_key(item), item.original_index * order_scale
+        )
+        current = member_block_order.get(section)
+        if current is None or line_order < current:
+            member_block_order[section] = line_order
+
     def key(item: DeclItem) -> Tuple[int, int, int, int, int]:
         kind_rank = {"inner": 0, "member": 1, "static": 1, "function": 2}.get(
             item.kind, 3
@@ -2264,12 +2570,13 @@ def sorted_items(
                 item.original_index,
             )
         if item.kind == "member" and item.offset is not None:
+            section = section_index(item)
             return (
-                member_line_order.get(item_match_key(item), item.original_index * order_scale),
-                section_index(item),
+                member_block_order.get(section, item.original_index * order_scale),
+                section,
                 kind_rank,
                 item.offset,
-                item.original_index,
+                member_line_order.get(item_match_key(item), item.original_index * order_scale),
             )
         if item.decl_line is not None:
             return (
@@ -2344,6 +2651,8 @@ def render_decl_line(
         return ""
     if stripped.startswith("// Decl:"):
         return ""
+    if stripped.startswith("//"):
+        return ("    " * indent_level) + stripped
     stripped = strip_inline_keyword(stripped)
     stripped = render_type_opening_kind(stripped, class_index)
     indent = "    " * indent_level
@@ -2359,6 +2668,12 @@ def render_decl_line(
 
 
 def render_item_lines(item: DeclItem, class_index: ProStreetClassIndex) -> List[str]:
+    if item.nested_type is not None:
+        return [
+            ("    " + line) if line else ""
+            for line in render_type(item.nested_type, class_index).splitlines()
+        ]
+
     if item.kind not in ("inner", "raw") or len(item.lines) <= 1:
         rendered = []
         for raw_line in item.lines:
@@ -2394,17 +2709,23 @@ def render_type(
     typ: TypeDecl,
     class_index: ProStreetClassIndex,
     ps2_function_index: Optional[Ps2FunctionIndex] = None,
+    ps2_type_index: Optional[Dict[str, List[TypeDecl]]] = None,
 ) -> str:
     owner_file = typ.decl_file
     if owner_file is None and typ.paired_carbon is not None:
         owner_file = typ.paired_carbon.decl_file
+    ps2_type_index = ps2_type_index or {}
     items = [
-        merged_item(
-            item,
-            items_by_key(typ.paired_ps2),
-            (ps2_function_index or {}).get(typ.simple_name, {}),
-            items_by_key(typ.paired_carbon, owner_file),
-            typ.name,
+        pair_nested_type_item(
+            merged_item(
+                item,
+                items_by_key(typ.paired_ps2),
+                (ps2_function_index or {}).get(typ.simple_name, {}),
+                items_by_key(typ.paired_carbon, owner_file),
+                typ.name,
+            ),
+            typ,
+            ps2_type_index,
         )
         for item in typ.items
     ]
@@ -2538,6 +2859,7 @@ def render_output(
     base_result: ParseResult,
     class_index: ProStreetClassIndex,
     ps2_function_index: Optional[Ps2FunctionIndex] = None,
+    ps2_type_index: Optional[Dict[str, List[TypeDecl]]] = None,
 ) -> str:
     grouped: Dict[str, Tuple[str, List[Tuple[int, int, object]]]] = {}
 
@@ -2567,7 +2889,9 @@ def render_output(
             key=lambda pair: (pair[0], pair[1], pair[2].original_index),
         ):
             if isinstance(item, TypeDecl):
-                output.append(render_type(item, class_index, ps2_function_index))
+                output.append(
+                    render_type(item, class_index, ps2_function_index, ps2_type_index)
+                )
             else:
                 output.append(render_top_decl(item, ps2_function_index))
             output.append("")
@@ -2662,6 +2986,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     carbon_functions = parse_functions(read_text(args.carbon_functions))
     prostreet_classes = load_prostreet_class_index(args.prostreet_classes)
     pair_types(gc_result.types, ps2_result.types, carbon_result.types)
+    added_virtual_functions = add_missing_virtual_function_declarations(gc_result.types)
     pair_top_decls(gc_result.top_decls, carbon_result.top_decls)
     pair_top_functions(gc_functions, carbon_functions)
     top_decl_count = len(gc_result.top_decls)
@@ -2688,11 +3013,20 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     print(f"Paired with Carbon: {paired_carbon}")
     print(f"Top-level declarations paired with Carbon: {paired_carbon_top_decls}")
     print(f"Top-level functions paired with Carbon: {paired_carbon_functions}")
+    print(f"Virtual function declarations added to GC structs: {added_virtual_functions}")
     print(f"PS2 function owners: {len(ps2_function_index)}")
     print(f"ProStreet class names: {len(prostreet_classes.exact_names)}")
 
     if not args.dry_run:
-        write_text(args.output, render_output(gc_result, prostreet_classes, ps2_function_index))
+        write_text(
+            args.output,
+            render_output(
+                gc_result,
+                prostreet_classes,
+                ps2_function_index,
+                index_by_simple_name(ps2_result.types),
+            ),
+        )
         write_text(
             args.unpaired_output,
             render_unpaired(gc_result.types, ps2_result.types, carbon_result.types),
