@@ -223,6 +223,178 @@ def deduplicate_blocks(blocks: list[str], name_re: re.Pattern) -> list[str]:
     return [seen[k][1] for k in order]
 
 
+def _split_code_comment(line: str) -> tuple[str, str]:
+    index = line.find("//")
+    if index == -1:
+        return line.rstrip(), ""
+    return line[:index].rstrip(), line[index:].strip()
+
+
+def _initializer_index(code: str) -> int:
+    depth = 0
+    for index, char in enumerate(code):
+        if char in "(<[":
+            depth += 1
+        elif char in ")>]" and depth > 0:
+            depth -= 1
+        elif char == "=" and depth == 0:
+            return index
+    return -1
+
+
+def _initializer_from_code(code: str) -> str | None:
+    code = code.strip().rstrip(";").strip()
+    index = _initializer_index(code)
+    if index == -1:
+        return None
+    return code[index + 1 :].strip()
+
+
+def _code_without_initializer(code: str) -> str:
+    code = code.strip().rstrip(";").strip()
+    index = _initializer_index(code)
+    if index == -1:
+        return code
+    return code[:index].strip()
+
+
+def _global_name_from_code(code: str) -> str:
+    code = _code_without_initializer(code)
+    code = re.sub(r"\[[^\]]*\]", "", code)
+    match = re.search(r"\b([A-Za-z_]\w*)\s*$", code)
+    return match.group(1) if match else ""
+
+
+def _global_type_from_code(code: str, name: str) -> str:
+    code = _code_without_initializer(code)
+    if not name:
+        return code
+    index = code.rfind(name)
+    if index == -1:
+        return code
+    return code[:index].strip()
+
+
+def _decl_line_from_comment(comment: str) -> int | None:
+    match = re.search(r"\bDecl:\s*.*:(\d+)", comment)
+    if match is None:
+        return None
+    return int(match.group(1))
+
+
+def _global_size_bits(line: str, type_name: str) -> int | None:
+    size_match = re.search(r"\bsize\s+0x([0-9A-Fa-f]+)", line)
+    if size_match is not None:
+        return int(size_match.group(1), 16) * 8
+    alias_match = re.search(r"\bu(8|16|32|64)\b", type_name)
+    if alias_match is not None:
+        return int(alias_match.group(1))
+    if re.search(r"\bunsigned\s+char\b", type_name):
+        return 8
+    if re.search(r"\bunsigned\s+short\b", type_name):
+        return 16
+    if re.search(r"\bunsigned\s+(?:int|long)\b", type_name):
+        return 32
+    return None
+
+
+def _is_unsigned_global_type(type_name: str) -> bool:
+    return (
+        re.search(r"\bunsigned\b", type_name) is not None
+        or re.search(r"\bu(?:8|16|32|64)\b", type_name) is not None
+    )
+
+
+def _parse_int_initializer(value: str | None) -> int | None:
+    if value is None:
+        return None
+    value = value.strip()
+    if not re.fullmatch(r"-?(?:0x[0-9A-Fa-f]+|\d+)[uUlL]*", value):
+        return None
+    value = re.sub(r"[uUlL]+$", "", value)
+    sign = -1 if value.startswith("-") else 1
+    if sign < 0:
+        value = value[1:]
+    return sign * int(value, 0)
+
+
+def _unsigned_values_match(left: int, right: int, bits: int | None) -> bool:
+    if bits is None:
+        return False
+    if (left < 0) == (right < 0):
+        return False
+    mask = (1 << bits) - 1
+    return (left & mask) == (right & mask)
+
+
+def _prefer_global_decl(left: str, right: str) -> str:
+    left_line = _decl_line_from_comment(_split_code_comment(left)[1])
+    right_line = _decl_line_from_comment(_split_code_comment(right)[1])
+    if left_line is None and right_line is not None:
+        return right
+    return left
+
+
+def _duplicate_global_decl(left: str, right: str) -> bool:
+    left_code, left_comment = _split_code_comment(left)
+    right_code, right_comment = _split_code_comment(right)
+    left_name = _global_name_from_code(left_code)
+    right_name = _global_name_from_code(right_code)
+    if not left_name or left_name != right_name:
+        return False
+
+    left_value_text = _initializer_from_code(left_code)
+    right_value_text = _initializer_from_code(right_code)
+    left_value = _parse_int_initializer(left_value_text)
+    right_value = _parse_int_initializer(right_value_text)
+    if left_value is None or right_value is None:
+        return False
+
+    left_line = _decl_line_from_comment(left_comment)
+    right_line = _decl_line_from_comment(right_comment)
+    if left_line is not None and left_line == right_line and left_value == right_value:
+        return True
+
+    one_missing_line = left_line is None or right_line is None
+    if one_missing_line and left_value == right_value:
+        return True
+
+    left_type = _global_type_from_code(left_code, left_name)
+    right_type = _global_type_from_code(right_code, right_name)
+    if (
+        one_missing_line
+        and (_is_unsigned_global_type(left_type) or _is_unsigned_global_type(right_type))
+    ):
+        bits = _global_size_bits(left, left_type) or _global_size_bits(right, right_type)
+        return _unsigned_values_match(left_value, right_value, bits)
+
+    return False
+
+
+def deduplicate_global_decls(lines: list[str]) -> list[str]:
+    results: list[str] = []
+    by_name: dict[str, list[int]] = {}
+
+    for line in lines:
+        code, _comment = _split_code_comment(line)
+        if re_typedef.match(code.strip()):
+            results.append(line)
+            continue
+
+        name = _global_name_from_code(code)
+        replaced = False
+        for index in by_name.get(name, []):
+            if _duplicate_global_decl(results[index], line):
+                results[index] = _prefer_global_decl(results[index], line)
+                replaced = True
+                break
+        if not replaced:
+            by_name.setdefault(name, []).append(len(results))
+            results.append(line)
+
+    return results
+
+
 # ---------------------------------------------------------------------------
 # Struct extraction  (preceded by '// total size:' comment)
 # ---------------------------------------------------------------------------
@@ -420,6 +592,7 @@ def main() -> None:
     structs = [apply_umath_fixups(b) for b in structs]
     funcs = [apply_umath_fixups(b) for b in funcs]
     line_decls = [apply_umath_fixups(s) for s in line_decls]
+    line_decls = deduplicate_global_decls(line_decls)
 
     write_file(
         os.path.join(args.output_folder, "globals.nothpp"),
