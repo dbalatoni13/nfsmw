@@ -5,6 +5,7 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/Libs/Support/Utility/UGroup.hpp"
 #include "Speed/Indep/Libs/Support/Utility/UTLVector.h"
 #include "Speed/Indep/Src/World/Common/WGridNode.h"
 

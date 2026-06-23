@@ -64,11 +64,27 @@ class RigidBody : public Behavior,
         Mesh(const SimSurface &material, const UMath::Vector4 *verts, unsigned int count, UCrc32 name, bool persistant);
         ~Mesh();
 
+        const Attrib::Collection *GetMaterial() const {
+            return this->mMaterial;
+        }
+
+        unsigned int GetNumVertices() const {
+            return this->mNumVertices;
+        }
+
+        const UMath::Vector4 *GetOrtho() const {
+            return this->mVerts;
+        }
+
         UCrc32 GetName() const {
-            return mName;
+            return this->mName;
         }
 
         void Enable(bool enable);
+
+        bool IsEnabled() const {
+            return (this->mFlags & Mesh::DISABLED) == 0;
+        }
 
       private:
         UMath::Vector4 *mVerts;              // offset 0x8, size 0x4
@@ -83,9 +99,7 @@ class RigidBody : public Behavior,
       public:
         bool Create(const SimSurface &material, const UMath::Vector4 *verts, unsigned int count, UCrc32 name, bool persistant);
 
-        MeshList() {
-            // TODO
-        }
+        MeshList() : mSize(0), mVertCount(0) {}
 
       private:
         unsigned int mSize;      // offset 0x8, size 0x4
@@ -152,9 +166,7 @@ class RigidBody : public Behavior,
     // total size: 0x10
     class PrimList : public bTList<Primitive> {
       public:
-        PrimList() {
-            // TODO
-        }
+        PrimList() : mRadius(0.0f), mSize(0) {}
 
         float GetRadius() const {
             return mRadius;
@@ -502,7 +514,7 @@ class RigidBody : public Behavior,
             return (status & uFind) != 0;
         }
 
-        void Validate() {}
+        void Validate() const {}
 
         // TODO Quaternion typedef
         UMath::Vector4 orientation;                       // offset 0x0, size 0x10
@@ -602,7 +614,7 @@ class RBGrid : public SAP::Grid<RigidBody> {
     static void Remove(RBGrid *grid);
 
   private:
-    RBGrid(RigidBody &owner, const UMath::Vector3 &position, float radius);
+    RBGrid(RigidBody &owner, const UMath::Vector3 &position, float radius) : SAP::Grid<RigidBody>(owner, position, radius) {}
     ~RBGrid() {}
 };
 

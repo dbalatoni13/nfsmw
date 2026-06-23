@@ -151,7 +151,7 @@ inline void Init(Matrix4 &m, const float xx, const float yy, const float zz) {
 void Mult(const Vector4 &a, const Vector4 &b, Vector4 &r);
 #else
 inline void Mult(const Vector4 &a, const Vector4 &b, Vector4 &r) {
-    VU0_qmul(a, b, r);
+    VU0_qmul(b, a, r);
 }
 #endif
 
@@ -442,6 +442,14 @@ inline float LengthSquare(const Vector3 &a) {
 #endif
 }
 
+inline float LengthSquare(const Vector4 &a) {
+    return VU0_v4lengthsquare(a);
+}
+
+inline float LengthSquarexyz(const UMath::Vector4 &a) {
+    return VU0_v4lengthsquarexyz(a);
+}
+
 inline float Atan2d(float o, float a) {
     return ANGLE2DEG(VU0_Atan2(o, a));
 }
@@ -499,6 +507,10 @@ inline int Clamp(const int a, const int amin, const int amax) {
 
 inline float Clamp(const float a, const float amin, const float amax) {
     return VU0_floatmax(amin, VU0_floatmin(a, amax));
+}
+
+inline float Bound(const float a, const float alimit) {
+    return VU0_floatmax(-alimit, VU0_floatmin(a, alimit));
 }
 
 inline float Abs(const float a) {

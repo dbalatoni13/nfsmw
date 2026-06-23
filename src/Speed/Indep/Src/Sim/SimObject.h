@@ -1,10 +1,6 @@
 #ifndef SIM_SIM_OBJECT_H
 #define SIM_SIM_OBJECT_H
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
 #include "SimServer.h"
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Libs/Support/Utility/UCrc.h"
@@ -17,15 +13,7 @@ namespace Sim {
 // total size: 0x2C
 class Object : public UTL::COM::Object, public IServiceable, public ITaskable, public UTL::Collections::Countable<Object> {
   public:
-    void *operator new(std::size_t size) {
-        return gFastMem.Alloc(size, nullptr);
-    }
-
-    void operator delete(void *mem, std::size_t size) {
-        if (mem) {
-            gFastMem.Free(mem, size, nullptr);
-        }
-    }
+    USE_FASTALLOC(Sim::Object);
 
   protected:
     Object(std::size_t num_interfaces);
