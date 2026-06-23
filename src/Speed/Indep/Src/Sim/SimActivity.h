@@ -25,23 +25,31 @@ class Activity : public Sim::Object, public UTL::Collections::GarbageNode<Sim::A
     // IActivity
     void Release() override;
     bool Attach(IUnknown *object) override {
-        if (mAttachments) {
+        if (mAttachments != nullptr) {
             return mAttachments->Attach(object);
         }
         return false;
     }
 
     bool Detach(IUnknown *object) override {
-        if (mAttachments) {
+        if (mAttachments != nullptr) {
             return mAttachments->Detach(object);
         }
         return false;
     }
 
     // IAttachable
+    bool IsAttached(const IUnknown *pOther) const override {
+        return mAttachments != nullptr ? mAttachments->IsAttached(pOther) : false;
+    }
+
     void OnAttached(IAttachable *pOther) override {}
 
     void OnDetached(IAttachable *pOther) override {}
+
+    const IAttachable::List *GetAttachments() const override {
+        return mAttachments != nullptr ? &mAttachments->GetList() : nullptr;
+    }
 
   private:
     Attachments *mAttachments; // offset 0x48, size 0x4

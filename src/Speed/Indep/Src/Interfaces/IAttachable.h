@@ -11,12 +11,12 @@ class IAttachable : public UTL::COM::IUnknown {
 
     typedef UTL::Std::list<IAttachable *, _type_IAttachableList> List;
 
-    virtual bool Attach(IUnknown *pOther);
-    virtual bool Detach(IUnknown *pOther);
-    virtual bool IsAttached(const IUnknown *pOther) const;
-    virtual void OnAttached(IAttachable *pOther);
-    virtual void OnDetached(IAttachable *pOther);
-    virtual const List *GetAttachments() const;
+    virtual bool Attach(IUnknown *pOther) = 0;
+    virtual bool Detach(IUnknown *pOther) = 0;
+    virtual bool IsAttached(const IUnknown *pOther) const = 0;
+    virtual void OnAttached(IAttachable *pOther) = 0;
+    virtual void OnDetached(IAttachable *pOther) = 0;
+    virtual const List *GetAttachments() const = 0;
 };
 
 #endif
