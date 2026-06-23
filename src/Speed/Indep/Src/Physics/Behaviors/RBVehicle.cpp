@@ -4,71 +4,85 @@
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/collisionreactions.h"
 #include "Speed/Indep/Src/Generated/AttribSys/GenericAccessor.h"
+#include "Speed/Indep/Src/Generated/Hash.hpp"
 #include "Speed/Indep/Src/Interfaces/Simables/IRBVehicle.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISuspension.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
-#include "Speed/Indep/Src/Main/AttribSupport.h"
 #include "Speed/Indep/Src/Physics/PhysicsObject.h"
 #include "Speed/Indep/Src/Physics/PhysicsTypes.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 
-#include <types.h>
+static const float Tweak_PlayerCogModifire = -0.125f;
+
+BIND_BEHAVIOR_FACTORY(RBVehicle);
 
 Behavior *RBVehicle::Construct(const BehaviorParams &params) {
-    const RBComplexParams rp(params.fparams.Fetch<RBComplexParams>(UCrc32(0xa6b47fac)));
+    const RBComplexParams rp(params.fparams.Fetch<RBComplexParams>(UCrc32(UCRC32_BASE)));
     return new RBVehicle(params, rp);
 }
 
 RBVehicle::RBVehicle(const BehaviorParams &bp, const RBComplexParams &params)
-    : RigidBody(bp, params), IRBVehicle(bp.fowner), mVehicle(nullptr), mSuspension(nullptr), mSpecs(this, 0), mDeadOnWheels(0.0f), mFrame(0),
-      mCollisionCOG(UMath::Vector3::kZero), mCollisionMass(0.0f), mObjectCollisionsEnabled(true), mInvulnerableState(INVULNERABLE_NONE),
-      mInvulnerableTimer(0.0f), mLastPenetration(0.0f), mPlayerReactions((Attrib::Collection *)nullptr, 0, (UTL::COM::IUnknown *)nullptr) {
-    GetOwner()->QueryInterface(&mVehicle);
-    GetOwner()->QueryInterface(&mSuspension);
+    : RigidBody(bp, params),                 //
+      IRBVehicle(bp.fowner),                 //
+      mVehicle(nullptr),                     //
+      mSuspension(nullptr),                  //
+      mSpecs(this, 0),                       //
+      mDeadOnWheels(0.0f), mFrame(0),        //
+      mCollisionCOG(UMath::Vector3::kZero),  //
+      mCollisionMass(0.0f),                  //
+      mObjectCollisionsEnabled(true),        //
+      mInvulnerableState(INVULNERABLE_NONE), //
+      mInvulnerableTimer(0.0f),              //
+      mLastPenetration(0.0f),                //
+      mPlayerReactions((Attrib::Collection *)nullptr, 0, (UTL::COM::IUnknown *)nullptr) {
+    this->GetOwner()->QueryInterface(&this->mVehicle);
+    this->GetOwner()->QueryInterface(&this->mSuspension);
 
-    mGeoms = params.fgeoms ? params.fgeoms->fCollection : nullptr;
+    this->mGeoms = (params.fgeoms != nullptr) ? params.fgeoms->fCollection : nullptr;
 }
 
 unsigned int RBVehicle::GetNumContactPoints() const {
     unsigned int numpoints = RigidBody::GetNumContactPoints();
-    if (mSuspension) {
-        numpoints += mSuspension->GetNumWheelsOnGround();
+    if (this->mSuspension != nullptr) {
+        numpoints += this->mSuspension->GetNumWheelsOnGround();
     }
     return numpoints;
 }
 
 bool RBVehicle::IsInGroundContact() const {
-    if (mSuspension && mSuspension->GetNumWheelsOnGround() != 0) {
+    if ((this->mSuspension != nullptr) && this->mSuspension->GetNumWheelsOnGround() != 0) {
         return true;
     } else {
         return RigidBody::IsInGroundContact();
     }
 }
 
+bool RBVehicle_DisableVehicleVsVehicleCollisions = false;
+
 bool RBVehicle::CanCollideWith(const RigidBody &other) const {
-    return mObjectCollisionsEnabled ? RigidBody::CanCollideWith(other) : false;
+    return this->mObjectCollisionsEnabled ? RigidBody::CanCollideWith(other) : false;
 }
 
 void RBVehicle::OnBeginFrame(const float dT) {
-    if (mVehicle->IsStaging() && IsModeling() && !mVehicle->IsAnimating()) {
-        UMath::Vector3 position = GetPosition();
+    if (this->mVehicle->IsStaging() && IsModeling() && !this->mVehicle->IsAnimating()) {
+        UMath::Vector3 position = this->GetPosition();
         RigidBody::OnBeginFrame(dT);
-        UMath::Vector3 angular_vel = GetAngularVelocity();
-        UMath::Vector3 linear_vel = GetLinearVelocity();
+        UMath::Vector3 angular_vel = this->GetAngularVelocity();
+        UMath::Vector3 linear_vel = this->GetLinearVelocity();
 
-        ConvertWorldToLocal(linear_vel, false);
-        ConvertWorldToLocal(angular_vel, false);
+        this->ConvertWorldToLocal(linear_vel, false);
+        this->ConvertWorldToLocal(angular_vel, false);
         linear_vel.x = 0.0f;
         linear_vel.z = 0.0f;
         angular_vel.y = 0.0f;
-        position.y = GetPosition().y;
-        ConvertLocalToWorld(linear_vel, false);
-        ConvertLocalToWorld(angular_vel, false);
+        position.y = this->GetPosition().y;
+        this->ConvertLocalToWorld(linear_vel, false);
+        this->ConvertLocalToWorld(angular_vel, false);
 
-        SetPosition(position);
-        SetAngularVelocity(angular_vel);
-        SetLinearVelocity(linear_vel);
+        this->SetPosition(position);
+        this->SetAngularVelocity(angular_vel);
+        this->SetLinearVelocity(linear_vel);
     } else {
         RigidBody::OnBeginFrame(dT);
     }
@@ -76,44 +90,52 @@ void RBVehicle::OnBeginFrame(const float dT) {
 
 void RBVehicle::OnTaskSimulate(float dT) {
     Behavior::OnTaskSimulate(dT);
-    mFrame++;
-    if ((mInvulnerableState != INVULNERABLE_NONE) && (Sim::GetTime() > mLastPenetration + 1.0f) && (mInvulnerableTimer -= dT) <= 0.0f) {
-        mInvulnerableTimer = 0.0f;
-        mInvulnerableState = INVULNERABLE_NONE;
+    this->mFrame++;
+    if ((this->mInvulnerableState != INVULNERABLE_NONE) && (Sim::GetTime() > this->mLastPenetration + 1.0f) &&
+        (this->mInvulnerableTimer -= dT) <= 0.0f) {
+        this->mInvulnerableTimer = 0.0f;
+        this->mInvulnerableState = INVULNERABLE_NONE;
     }
-    if (mSuspension && GetVehicle()->IsDestroyed() && !GetOwner()->IsPlayer() &&
-        (mSuspension->GetNumWheelsOnGround() > mSuspension->GetNumWheels() / 2)) {
-        mDeadOnWheels += dT;
+    if ((this->mSuspension != nullptr) && GetVehicle()->IsDestroyed() && !this->GetOwner()->IsPlayer() &&
+        (this->mSuspension->GetNumWheelsOnGround() > this->mSuspension->GetNumWheels() / 2)) {
+        this->mDeadOnWheels += dT;
     } else {
-        mDeadOnWheels = 0.0f;
+        this->mDeadOnWheels = 0.0f;
     }
 }
 
 void RBVehicle::PlaceObject(const UMath::Matrix4 &orientMat, const UMath::Vector3 &initPos) {
     RigidBody::PlaceObject(orientMat, initPos);
-    mDeadOnWheels = 0.0f;
+    this->mDeadOnWheels = 0.0f;
 }
 
 bool RBVehicle::ShouldSleep() const {
-    if (GetVehicle()->IsAnimating() || HasHadObjectCollision()) {
+    if (this->GetVehicle()->IsAnimating() || HasHadObjectCollision()) {
         return false;
     }
-    if (mSuspension && mSuspension->GetNumWheelsOnGround() != 0 && mDeadOnWheels < 2.0f) {
+    if ((this->mSuspension != nullptr) && this->mSuspension->GetNumWheelsOnGround() != 0 && this->mDeadOnWheels < 2.0f) {
         return false;
     }
     return RigidBody::ShouldSleep();
 }
 
+static const float Tweak_VehicleWallCGMod = 0.8f;
+static const float Tweak_HeadOnDampStart = 0.0f;
+static const float Tweak_HeadOnDampEnd = 5.0f;
+static const float Tweak_HeadOnDamp = 8.0f;
+static const float Tweak_HeadOnDot = -1.0f;
+static const float Tweak_HeadOnElasticity = 0.0f;
+
 void RBVehicle::ModifyCollision(const SimSurface &other, const Dynamics::Collision::Plane &plane, Dynamics::Collision::Moment &myMoment) {
     RigidBody::ModifyCollision(other, plane, myMoment);
-    if (GetOwner()->IsPlayer()) {
-        float nose_dot = -UMath::Dot(plane.normal, GetForwardVector());
-        if (nose_dot >= -1.0f) {
-            float closing_speed = UMath::Ramp(-UMath::Dot(plane.normal, GetLinearVelocity()), 0.0f, 10.0f);
+    if (this->GetOwner()->IsPlayer()) {
+        float nose_dot = -UMath::Dot(plane.normal, this->GetForwardVector());
+        if (nose_dot >= Tweak_HeadOnDot) {
+            float closing_speed = UMath::Ramp(-UMath::Dot(plane.normal, this->GetLinearVelocity()), Tweak_HeadOnDampStart, Tweak_HeadOnDampEnd);
             float damp = UMath::Ramp(nose_dot, -1.0f, 1.0f);
             UMath::Vector3 inertia = myMoment.GetInertia();
             myMoment.SetElasticity(0.0f);
-            inertia.y *= closing_speed * damp * 8.0f + 1.0f;
+            inertia.y *= closing_speed * damp * Tweak_HeadOnDamp + 1.0f;
             myMoment.SetInertia(inertia);
         }
         UMath::Vector3 cog = myMoment.GetCG();
@@ -129,21 +151,21 @@ void RBVehicle::ModifyCollision(const SimSurface &other, const Dynamics::Collisi
 const CollisionReactionRecord &RBVehicle::ChooseReaction(const Dynamics::Collision::Plane &plane) const {
     UMath::Vector3 rp;
 
-    UMath::Sub(plane.point, GetPosition(), rp);
-    float dot_front = UMath::Dot(rp, GetForwardVector());
-    float dot_right = UMath::Dot(rp, GetRightVector());
-    float dot_normal = UMath::Abs(UMath::Dot(plane.normal, GetForwardVector()));
+    UMath::Sub(plane.point, this->GetPosition(), rp);
+    float dot_front = UMath::Dot(rp, this->GetForwardVector());
+    float dot_right = UMath::Dot(rp, this->GetRightVector());
+    float dot_normal = UMath::Abs(UMath::Dot(plane.normal, this->GetForwardVector()));
     if (dot_front > 0.0f) {
         if (dot_normal < 0.707f) {
-            return mPlayerReactions.FRONTSIDE_REACTION();
+            return this->mPlayerReactions.FRONTSIDE_REACTION();
         } else {
-            return mPlayerReactions.FRONT_REACTION();
+            return this->mPlayerReactions.FRONT_REACTION();
         }
     } else {
         if (dot_normal < 0.707f) {
-            return mPlayerReactions.REARSIDE_REACTION();
+            return this->mPlayerReactions.REARSIDE_REACTION();
         } else {
-            return mPlayerReactions.REAR_REACTION();
+            return this->mPlayerReactions.REAR_REACTION();
         }
     }
 }
@@ -151,24 +173,24 @@ const CollisionReactionRecord &RBVehicle::ChooseReaction(const Dynamics::Collisi
 void RBVehicle::ModifyCollision(const RigidBody &other, const Dynamics::Collision::Plane &plane, Dynamics::Collision::Moment &myMoment) {
     RigidBody::ModifyCollision(other, plane, myMoment);
     SimableType type = other.GetSimableType();
-    if (GetVehicle()->IsAnimating()) {
+    if (this->GetVehicle()->IsAnimating()) {
         myMoment.MakeImmobile(true, 0.0f);
     } else {
         if (type == SIMABLE_VEHICLE) {
             IVehicle *other_vehicle;
             ISuspension *other_susp;
-            if (GetOwner()->IsPlayer()) {
-                if (mSuspension && mSuspension->GetNumWheelsOnGround() > 2 && other.GetOwner()->QueryInterface(&other_susp) &&
-                    other_susp->GetNumWheelsOnGround() > 2) {
+            if (this->GetOwner()->IsPlayer()) {
+                if ((this->mSuspension != nullptr) && this->mSuspension->GetNumWheelsOnGround() > 2 &&
+                    other.GetOwner()->QueryInterface(&other_susp) && other_susp->GetNumWheelsOnGround() > 2) {
                     UVector3 cg = myMoment.GetCG();
-                    cg.y = plane.point.y - GetPosition().y + -0.125f;
+                    cg.y = plane.point.y - this->GetPosition().y + Tweak_PlayerCogModifire;
                     myMoment.SetCG(cg);
                 }
-            } else if (mPlayerReactions.IsValid() && other.GetOwner()->QueryInterface(&other_vehicle)) {
+            } else if (this->mPlayerReactions.IsValid() && other.GetOwner()->QueryInterface(&other_vehicle)) {
                 DriverClass driver = other_vehicle->GetDriverClass();
                 if (driver == DRIVER_RACER || driver == DRIVER_HUMAN) {
-                    const CollisionReactionRecord &reaction = ChooseReaction(plane);
-                    myMoment.SetElasticity(UMath::Clamp(myMoment.GetElasticity() + reaction.Elasticity, 0.0f, 1.0f));
+                    const CollisionReactionRecord &reaction = this->ChooseReaction(plane);
+                    myMoment.SetElasticity(UMath::Clamp(myMoment.GetElasticity() + reaction.Elasticity + Tweak_HeadOnElasticity, 0.0f, 1.0f));
                     if (reaction.MassScale > 0.0f) {
                         myMoment.SetInertia(myMoment.GetInertia() * reaction.MassScale);
                         myMoment.SetMass(myMoment.GetMass() * reaction.MassScale);
@@ -187,7 +209,7 @@ void RBVehicle::ModifyCollision(const RigidBody &other, const Dynamics::Collisio
             }
         }
     }
-    if ((mCollisionMass > UMath::Epsilon) && !myMoment.IsImmobile()) {
+    if ((this->mCollisionMass > UMath::Epsilon) && !myMoment.IsImmobile()) {
         float tensorscale = mCollisionMass * myMoment.GetOOMass();
         myMoment.SetInertia(myMoment.GetInertia() * tensorscale);
         myMoment.SetMass(mCollisionMass);
@@ -200,13 +222,13 @@ void RBVehicle::ModifyCollision(const RigidBody &other, const Dynamics::Collisio
 void RBVehicle::OnBehaviorChange(const UCrc32 &mechanic) {
     Behavior::OnBehaviorChange(mechanic);
     if (mechanic == BEHAVIOR_MECHANIC_SUSPENSION) {
-        GetOwner()->QueryInterface(&mSuspension);
+        this->GetOwner()->QueryInterface(&this->mSuspension);
     }
 }
 
 bool RBVehicle::CanCollideWithGround() const {
-    if (!GetOwner()->IsPlayer() && mSuspension) {
-        if (mSuspension->GetNumWheels() == mSuspension->GetNumWheelsOnGround() && mSuspension->GetNumWheels() > 2 && !HasHadObjectCollision()) {
+    if (!this->GetOwner()->IsPlayer() && (this->mSuspension != nullptr)) {
+        if (this->mSuspension->GetNumWheels() == this->mSuspension->GetNumWheelsOnGround() && this->mSuspension->GetNumWheels() > 2 && !HasHadObjectCollision()) {
             return false;
         }
     }
@@ -221,12 +243,12 @@ unsigned int RBVehicle::GetTriggerFlags() const {
     }
     flag |= 0x20;
 
-    if (GetOwner()->IsPlayer()) {
+    if (this->GetOwner()->IsPlayer()) {
         flag |= 4;
     } else {
         flag |= 8;
     }
-    if (GetVehicle()->GetDriverClass() == 2) {
+    if (this->GetVehicle()->GetDriverClass() == DRIVER_COP) {
         flag |= 0x20000;
     }
 
@@ -234,17 +256,17 @@ unsigned int RBVehicle::GetTriggerFlags() const {
 }
 
 bool RBVehicle::CanCollideWithWorld() const {
-    if ((GetVehicle()->GetDriverClass() == DRIVER_TRAFFIC) && !HasHadCollision()) {
-        float velSquare = UMath::LengthSquare(GetLinearVelocity());
+    if ((this->GetVehicle()->GetDriverClass() == DRIVER_TRAFFIC) && !this->HasHadCollision()) {
+        float velSquare = UMath::LengthSquare(this->GetLinearVelocity());
         if (velSquare < 4.0f) {
-            if (mFrame & 3) {
+            if (this->mFrame & 3) {
                 return false;
             }
-        } else if (velSquare < 225.0f && (mFrame & 1)) {
+        } else if (velSquare < 225.0f && (this->mFrame & 1)) {
             return false;
         }
     }
-    if (GetOwner()->IsPlayer()) {
+    if (this->GetOwner()->IsPlayer()) {
         return true;
     } else {
         return RigidBody::CanCollideWithWorld();

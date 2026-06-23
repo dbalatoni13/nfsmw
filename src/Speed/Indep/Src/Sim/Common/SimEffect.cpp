@@ -1,6 +1,7 @@
 #include "../SimEffect.h"
 #include "../SimServer.h"
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
+#include "Speed/Indep/Src/Generated/Hash.hpp"
 #include "Speed/Indep/Src/World/WorldConn.h"
 #include "Speed/Indep/Src/World/WorldTypes.h"
 
@@ -67,7 +68,7 @@ void Effect::Set(const Attrib::Collection *effect, const UMath::Vector3 &positio
         mActee = actee;
         if (!mService) {
             WorldConn::Pkt_Effect_Open pkt(effect, mOwner, mParticipant, context, actee);
-            mService = Sim::OpenService(UCrc32(0x998c21c0), this, &pkt); // TODO hash
+            mService = Sim::OpenService(UCrc32(UCRC32_WORLD), this, &pkt);
         }
     }
 }

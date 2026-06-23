@@ -125,7 +125,7 @@ bool GetConstraintBasis(EffectParticleConstraint constraint, bVector4 &x_basis, 
             }
             break;
         case CONSTRAIN_PARTICLE_CAMERA:
-            if (world_view) {
+            if (world_view != nullptr) {
                 x_basis = bVector4(world_view->v0.x, world_view->v1.x, world_view->v2.x, 0.0f);
                 y_basis = bVector4(world_view->v0.y, world_view->v1.y, world_view->v2.y, 0.0f);
                 if (particle_angle != 0) {
@@ -214,16 +214,16 @@ void EmitterSystem::ServiceWorldEffects() {
             bool close_enough_soon =
                 this->IsCloseEnough(reinterpret_cast<bVector3 *>(&lib->LocalWorld.v3), clip_distance_to_use, 1, cos_fov_angle_to_use);
             if (close_enough_soon) {
-                if (!lib->mGroup) {
+                if (lib->mGroup == nullptr) {
                     EmitterGroup *emgroup = gEmitterSystem.CreateEmitterGroup(lib->GroupKey, 0x8000000);
-                    if (emgroup) {
+                    if (emgroup != nullptr) {
                         emgroup->SubscribeToDeletion(lib, NotifyLibOfDeletion);
                         lib->mGroup = emgroup;
                         emgroup->SetLocalWorld(&lib->LocalWorld);
                         emgroup->SetAutoUpdate(true);
                     }
                 }
-            } else if (lib->mGroup) {
+            } else if (lib->mGroup != nullptr) {
                 delete lib->mGroup;
             }
         }
@@ -237,9 +237,9 @@ void EmitterSystem::RefreshWorldEffects() {
     }
     for (LibList::iterator it = this->mLibs.begin(); it != this->mLibs.end(); it++) {
         EmitterLibrary *lib = it->Lib;
-        if (!lib->mGroup && (lib->SectionNumber != 0)) {
+        if ((lib->mGroup == nullptr) && (lib->SectionNumber != 0)) {
             EmitterGroup *emgroup = gEmitterSystem.CreateEmitterGroup(lib->GroupKey, 0x8000000);
-            if (emgroup) {
+            if (emgroup != nullptr) {
                 emgroup->SubscribeToDeletion(lib, NotifyLibOfDeletion);
                 lib->mGroup = emgroup;
                 emgroup->SetLocalWorld(&lib->LocalWorld);
@@ -380,7 +380,7 @@ Emitter::Emitter(const Attrib::Collection *spec, EmitterGroup *parent_group) {
 
 Emitter::~Emitter() {
     this->mParticles.DeleteAllElements();
-    if (this->mTexPageTokenNode) {
+    if (this->mTexPageTokenNode != nullptr) {
         this->mTexPageTokenNode->Remove();
         delete this->mTexPageTokenNode;
         this->mTexPageTokenNode = nullptr;
@@ -495,8 +495,10 @@ uint16 Emitter::CalcParticleListIndex() {
 
 void GetAnimatedUVs(EffectParticleAnimation texture_layout_type, int frame, uint32 *uvS, uint32 *uvE) {
     if (texture_layout_type != ANIMATE_PARTICLE_NONE) {
+        // MAKE_UV macro
         float startu = (*uvS >> 16) / 65535.0f;
         float startv = (*uvS & 0xffff) / 65535.0f;
+        // MAKE_UV macro
         float endu = (*uvE >> 16) / 65535.0f;
         float endv = (*uvE & 0xffff) / 65535.0f;
         // TODO some names might be wrong
@@ -506,6 +508,7 @@ void GetAnimatedUVs(EffectParticleAnimation texture_layout_type, int frame, uint
         float fsquarewidth = xdiff / texture_layout_type;
         int i = frame - num_sub_squares * texture_layout_type;
         int j = num_sub_squares;
+        // MAKE_UV macro
         *uvS = (int)((i * fsquarewidth + startu) * 65535.0f) << 16 | (int)((j * fsquarewidth + startv) * 65535.0f);
         *uvE = (int)(((i + 1) * fsquarewidth + startu) * 65535.0f) << 16 | (int)(((j + 1) * fsquarewidth + startv) * 65535.0f);
     }
@@ -528,7 +531,7 @@ EmitterGroup::EmitterGroup(const Attrib::Collection *spec, uint32 creation_conte
     this->mNumZeroParticleFrames = 0;
     this->mCreationTimeStamp = bGetTicker();
     this->pad = 0;
-    if (spec) {
+    if (spec != nullptr) {
         if (this->SetEmitters(creation_context_flags)) {
             this->SetLoadedFlag();
         } else {
@@ -540,7 +543,7 @@ EmitterGroup::EmitterGroup(const Attrib::Collection *spec, uint32 creation_conte
 EmitterGroup::~EmitterGroup() {
     this->UnloadEmitters(true);
     gEmitterSystem.RemoveEmitterGroup(this);
-    if (this->mSubscriber && this->mDeleteCallback) {
+    if ((this->mSubscriber != nullptr) && (this->mDeleteCallback != nullptr)) {
         this->mDeleteCallback(this->mSubscriber, this);
     }
 }
@@ -556,10 +559,10 @@ bool EmitterGroup::SetEmitters(uint32 creation_context_flags) {
         }
         for (int i = 0; i < num_emitters; i++) {
             const Attrib::Collection *emspec = grpatr.Emitters(i).GetCollection();
-            if (emspec) {
+            if (emspec != nullptr) {
                 Attrib::Gen::emitterdata atr(emspec, 0, nullptr);
                 Emitter *emitter = new Emitter(emspec, this);
-                if (!emitter) {
+                if (emitter == nullptr) {
                     static bool warn_once = false;
                     if (!warn_once) {
                         warn_once = true;
@@ -740,13 +743,13 @@ void EmitterLibraryHeader::EndianSwap() {
         }
         lib = reinterpret_cast<EmitterLibrary *>(ptrig);
     }
-    this->EndianSwapped = true;
+    this->EndianSwapped = 1;
 }
 
 // UNSOLVED (EmitterParticle ctor)
 EmitterParticle *EmitterSystem::GetNewParticle(Emitter *spawning_emitter) {
     if (this->mTotalNumParticles == 1024) {
-        bool high_priority = spawning_emitter->GetEmitterGroup()->GetFlags() & 0x40000;
+        bool high_priority = (spawning_emitter->GetEmitterGroup()->GetFlags() & 0x40000) != 0;
         if (high_priority) {
             bool done = false;
             for (EmitterGroup *grp = this->mEmitterGroups.GetHead(); !done && grp != mEmitterGroups.EndOfList();) {
@@ -798,8 +801,7 @@ EmitterGroup *EmitterSystem::CreateEmitterGroup(const Attrib::StringKey &group_n
     if (!EnableParticleSystem) {
         return nullptr;
     }
-    // TODO emittergroup
-    const Attrib::Collection *spec = Attrib::FindCollection(0xaba86e60, group_name);
+    const Attrib::Collection *spec = Attrib::FindCollection(Attrib::ClassName::emittergroup, group_name);
     if (spec) {
         return this->CreateEmitterGroup(spec, creation_context_flags);
     }
@@ -811,8 +813,7 @@ EmitterGroup *EmitterSystem::CreateEmitterGroup(const Attrib::Key &group_key, ui
     if (!EnableParticleSystem) {
         return nullptr;
     }
-    // TODO emittergroup
-    const Attrib::Collection *spec = Attrib::FindCollection(0xaba86e60, group_key);
+    const Attrib::Collection *spec = Attrib::FindCollection(Attrib::ClassName::emittergroup, group_key);
     if (spec) {
         return this->CreateEmitterGroup(spec, creation_context_flags);
     }
@@ -1362,9 +1363,9 @@ int GetEmitterGroupsToTrigger(bVector3 &pos, EmitterLibrary **lib_buffer_out) {
 }
 
 int32 EmitterSystem::Loader(bChunk *bchunk) {
-    if (bchunk->GetID() == 0x3bb00) {
-        return true;
-    } else if (bchunk->GetID() == BCHUNK_EMITTER_SYSTEM) {
+    if (bchunk->GetID() == BCHUNK_SPEED_EMITTER_GROUP) {
+        return 1;
+    } else if (bchunk->GetID() == BCHUNK_SPEED_EMITTER_LIBRARY) {
         EmitterLibraryHeader *header = reinterpret_cast<EmitterLibraryHeader *>(bchunk->GetAlignedData(16));
         header->EndianSwap();
         for (int i = 0; i < header->NumEmitterLibraries; i++) {
@@ -1383,7 +1384,7 @@ int32 EmitterSystem::Loader(bChunk *bchunk) {
                     } else {
                         emgroup = nullptr;
                     }
-                    if (emgroup) {
+                    if (emgroup != nullptr) {
                         emgroup->SubscribeToDeletion(lib, NotifyLibOfDeletion);
                         lib->mGroup = emgroup;
                         emgroup->SetLocalWorld(&lib->LocalWorld);
@@ -1399,22 +1400,21 @@ int32 EmitterSystem::Loader(bChunk *bchunk) {
                 }
             }
         }
-        return true;
+        return 1;
     }
-    return false;
+    return 0;
 }
 
 int32 EmitterSystem::Unloader(bChunk *bchunk) {
-    // TODO hash
-    if (bchunk->GetID() == 0x3bb00) {
+    if (bchunk->GetID() == BCHUNK_SPEED_EMITTER_GROUP) {
         EmitterPackHeader *pack_header = reinterpret_cast<EmitterPackHeader *>(bchunk->GetAlignedData(16));
         EmitterGroup *emitter_group = reinterpret_cast<EmitterGroup *>(&pack_header[1]);
         for (int32 num_emitter_groups = pack_header->NumEmitterGroups; num_emitter_groups != 0; num_emitter_groups--) {
             gEmitterSystem.RemoveEmitterGroup(emitter_group);
             emitter_group++;
         }
-        return true;
-    } else if (bchunk->GetID() == BCHUNK_EMITTER_SYSTEM) {
+        return 1;
+    } else if (bchunk->GetID() == BCHUNK_SPEED_EMITTER_LIBRARY) {
         EmitterLibraryHeader *header = reinterpret_cast<EmitterLibraryHeader *>(bchunk->GetAlignedData(16));
         for (int i = 0; i < header->NumEmitterLibraries; i++) {
             EmitterLibrary *lib = header->GetLibrary(i);
@@ -1430,13 +1430,13 @@ int32 EmitterSystem::Unloader(bChunk *bchunk) {
             }
             gEmitterSystem.RemoveLibrary(lib);
         }
-        return true;
+        return 1;
     }
-    return false;
+    return 0;
 }
 
 int32 EmitterSystem::TexturePageLoader(bChunk *bchunk) {
-    if (bchunk->GetID() == BCHUNK_TPK_SETTINGS) {
+    if (bchunk->GetID() == BCHUNK_SPEED_XENON_TEXTURE_PAGE) {
         int32 size = bchunk->GetAlignedSize(16);
         int32 num = size / sizeof(TexturePageRange);
         TexturePageRange *ranges = reinterpret_cast<TexturePageRange *>(bchunk->GetAlignedData(16));
@@ -1450,17 +1450,17 @@ int32 EmitterSystem::TexturePageLoader(bChunk *bchunk) {
             bPlatEndianSwap(&range->v0);
             bPlatEndianSwap(&range->v1);
         }
-        return true;
+        return 1;
     }
-    return false;
+    return 0;
 }
 
 int32 EmitterSystem::TexturePageUnloader(bChunk *bchunk) {
-    if (bchunk->GetID() == BCHUNK_TPK_SETTINGS) {
+    if (bchunk->GetID() == BCHUNK_SPEED_XENON_TEXTURE_PAGE) {
         EmitterSystem::SetTexturePageRanges(0, nullptr);
-        return true;
+        return 1;
     }
-    return false;
+    return 0;
 }
 
 void EmitterSystem::SetTexturePageRanges(int num_ranges, TexturePageRange *ranges) {
@@ -1486,7 +1486,7 @@ void CleanParticlesOnRaceRestart() {
     gEmitterSystem.KillEffectsMatchingFlag(0xf7000000);
 }
 
-void EmitterGroup::SubscribeToDeletion(void *subscriber, void (*callback)(void *, EmitterGroup *)) {
+void EmitterGroup::SubscribeToDeletion(void *subscriber, OnDeleteCallback callback) {
     this->mSubscriber = subscriber;
     this->mDeleteCallback = callback;
 }
@@ -1501,7 +1501,7 @@ void EmitterGroup::DeleteEmitters() {
         Emitter *emitter = this->mEmitters.GetTail();
         emitter->Remove();
         this->mNumEmitters--;
-        if (emitter) {
+        if (emitter != nullptr) {
             delete emitter;
         }
         gEmitterSystem.OnDeleteEmitter();
@@ -1546,7 +1546,7 @@ void EmitterGroup::Update(float dt) {
     if (!EnableParticleSystem || !this->IsEnabled()) {
         return;
     }
-    bool closeEnough2spawn = gEmitterSystem.IsCloseEnough(this, !(this->GetFlags() & 0x40000), 0.7f);
+    bool closeEnough2spawn = gEmitterSystem.IsCloseEnough(this, static_cast<int>((this->GetFlags() & 0x40000) == 0), 0.7f);
     Emitter *next_emitter;
     for (Emitter *emitter = this->mEmitters.GetHead(); emitter != this->mEmitters.EndOfList(); emitter = next_emitter) {
         next_emitter = emitter->GetNext();
@@ -1590,7 +1590,7 @@ bool EmitterControl::Update(float dt, Emitter *em, float &rollover_time) {
     float on_cycle_variance = em->GetAttributes().OnCycleVariance();
     float off_cycle = em->GetAttributes().OffCycle();
     float off_cycle_variance = em->GetAttributes().OffCycleVariance();
-    bool forced_to_oneshot = em->GetFlags() & 0x400000;
+    bool forced_to_oneshot = (em->GetFlags() & 0x400000) != 0;
     bool is_one_shot = false;
 
     if (em->GetAttributes().IsOneShot() || forced_to_oneshot) {

@@ -326,6 +326,7 @@ if config.platform == Platform.GC_WII:
         "-D_STLP_VENDOR_EXCEPT_STD=std",
         "-DCLANGD_DAMNIT",  # used in cases where intellisense breaks
         "-D__HONOR_STD",
+        "-Wno-writable-strings",
     ]
 
     cflags_dolphin = [
@@ -428,7 +429,7 @@ elif config.platform == Platform.PS2:
         "-I src/Packages/eathread/1.1.0/include",
         "-I src/Packages",
         "-I src",
-        "-DEA_PLATFORM_PLAYSTATION2",
+        "-DEA_PLATFORM_PLAYSTATION2", # TODO rename to PS2
         "-DEA_BUILD_A124",
         "-D_NOTHREADS",  # TODO is this necessary?
         f"-I build/{config.version}/include",

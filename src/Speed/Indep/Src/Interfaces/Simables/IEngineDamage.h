@@ -1,24 +1,13 @@
-#ifndef INTERFACES_SIMABLES_IENGINEDAMAGE_H
-#define INTERFACES_SIMABLES_IENGINEDAMAGE_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef IENGINE_DAMAGE_H
+#define IENGINE_DAMAGE_H
 
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 
 // Credits: Brawltendo
 class IEngineDamage : public UTL::COM::IUnknown {
   public:
-    static HINTERFACE _IHandle() {
-        return (HINTERFACE)_IHandle;
-    }
+    DECL_INTERFACE(IEngineDamage);
 
-    IEngineDamage(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
-
-    virtual ~IEngineDamage() {}
-
-  public:
     virtual bool IsBlown() const;
     virtual bool Blow();
     virtual void Sabotage(float time);

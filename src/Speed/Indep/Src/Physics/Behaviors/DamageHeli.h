@@ -1,9 +1,5 @@
-#ifndef PHYSICS_BEHAVIORS_DAMAGEHELI_H
-#define PHYSICS_BEHAVIORS_DAMAGEHELI_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef DAMAGE_HELI_H
+#define DAMAGE_HELI_H
 
 #include "DamageVehicle.h"
 
@@ -12,16 +8,17 @@ class DamageHeli : public DamageVehicle {
   public:
     static Behavior *Construct(const BehaviorParams &params);
 
-    DamageHeli(const BehaviorParams &bp, const DamageParams &dp);
-    void DoAutoDestruct();
+    // Behavior
+    void OnTaskSimulate(float dT) override;
+    void Reset() override;
 
-    // Overrides
+  protected:
+    DamageHeli(const BehaviorParams &bp, const DamageParams &dp);
     // IUnknown
     ~DamageHeli() override;
 
-    // Behavior
-    void Reset() override;
-    void OnTaskSimulate(float dT) override;
+    void DoAutoDestruct();
+    void StartAutoDestruct();
 
   private:
     int mAutoDestruct; // offset 0xB8, size 0x4

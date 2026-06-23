@@ -8,15 +8,17 @@
 #include "UTLVector.h"
 #include <types.h>
 
-#define IMPLEMENT_LISTABLE(_class_, _limit_)                                                                                                         \
+#define IMPLEMENT_LISTABLE(_class_)                                                                                                                  \
     template <>                                                                                                                                      \
-    UTL::Collections::Listable<_class_, _limit_>::List UTL::Collections::Listable<_class_, _limit_>::_mTable =                                       \
-        UTL::Collections::Listable<_class_, _limit_>::List();
-#define IMPLEMENT_LISTABLESET(TYPE, LIMIT, ENUMERATORTYPE, NUMBUCKETS)                                                                               \
+    UTL::Collections::Listable<_class_, _class_::List::Limit>::List UTL::Collections::Listable<_class_, _class_::List::Limit>::_mTable =             \
+        UTL::Collections::Listable<_class_, _class_::List::Limit>::List();
+
+#define IMPLEMENT_LISTABLESET(TYPE, ENUMERATORTYPE, NUMBUCKETS)                                                                                      \
     template <>                                                                                                                                      \
-    UTL::Collections::ListableSet<TYPE, LIMIT, ENUMERATORTYPE, NUMBUCKETS>::_ListSet                                                                 \
-        UTL::Collections::ListableSet<TYPE, LIMIT, ENUMERATORTYPE, NUMBUCKETS>::_mLists =                                                            \
-            UTL::Collections::ListableSet<TYPE, LIMIT, ENUMERATORTYPE, NUMBUCKETS>::_ListSet();
+    UTL::Collections::ListableSet<TYPE, TYPE::List::Limit, ENUMERATORTYPE, NUMBUCKETS>::_ListSet                                                     \
+        UTL::Collections::ListableSet<TYPE, TYPE::List::Limit, ENUMERATORTYPE, NUMBUCKETS>::_mLists =                                                \
+            UTL::Collections::ListableSet<TYPE, TYPE::List::Limit, ENUMERATORTYPE, NUMBUCKETS>::_ListSet();
+
 #define IMPLEMENT_COUNTABLE(TYPE) template <> int UTL::Collections::Countable<TYPE>::_mCount = 0;
 #define IMPLEMENT_SINGLETON(TYPE) template <> TYPE *UTL::Collections::Singleton<TYPE>::mInstance = NULL;
 

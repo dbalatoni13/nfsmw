@@ -1,28 +1,17 @@
 #ifndef INTERFACES_SIMABLES_ISUSPENSION_H
 #define INTERFACES_SIMABLES_ISUSPENSION_H
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 #include "Speed/Indep/Src/Sim/SimTypes.h"
-#include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
+#include "Speed/Indep/Libs/Support/Utility/UMath.h"
 
 // Credit: Brawltendo
 // total size: 0x8
 class ISuspension : public UTL::COM::IUnknown {
   public:
-    static HINTERFACE _IHandle() {
-        return (HINTERFACE)_IHandle;
-    }
+    DECL_INTERFACE(ISuspension);
 
-    ISuspension(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
-
-    virtual ~ISuspension() {}
-
-  public:
     virtual float GetWheelTraction(unsigned int index) const;
     virtual unsigned int GetNumWheels() const;
     virtual const UMath::Vector3 &GetWheelPos(unsigned int wheelIndex) const;
@@ -52,19 +41,6 @@ class ISuspension : public UTL::COM::IUnknown {
     virtual float GetMaxSteering() const;
     virtual void MatchSpeed(float speed);
     virtual float GetRenderMotion() const;
-};
-
-struct SuspensionParams : public Sim::Param {
-    // total size: 0x10
-    SuspensionParams(const SuspensionParams &_ctor_arg) : Sim::Param(_ctor_arg) {}
-
-    // TODO
-    SuspensionParams() : Sim::Param(TypeName(), static_cast<SuspensionParams *>(nullptr)) {}
-
-    static UCrc32 TypeName() {
-        static UCrc32 value = "SuspensionParams";
-        return value;
-    }
 };
 
 #endif

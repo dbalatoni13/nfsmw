@@ -1,24 +1,18 @@
-#ifndef PHYSICS_WHEEL_H
-#define PHYSICS_WHEEL_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef WHEEL_H
+#define WHEEL_H
 
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
 #include "Speed/Indep/Src/Sim/SimSurface.h"
-#include "Speed/Indep/Src/World/World.hpp"
 
+// total size: 0xC4
 class Wheel {
   public:
-    void *operator new(std::size_t size) {
-        return gFastMem.Alloc(size, nullptr);
-    }
+    enum eWheelFlags {
+        WF_SMOOTHING = 1,
+    };
 
-    void operator delete(void *mem, std::size_t size) {
-        gFastMem.Free(mem, size, nullptr);
-    }
+    USE_FASTALLOC(Wheel);
 
     Wheel() : mWorldPos(0.0f) {
         // TODO
@@ -26,83 +20,101 @@ class Wheel {
 
     Wheel(unsigned int flags);
     ~Wheel();
+
+    void UpdateTime(float dT);
+    void Reset();
+    bool InitPosition(const IRigidBody &rb, float maxcompression);
     bool UpdatePosition(const UMath::Vector3 &body_av, const UMath::Vector3 &body_lv, const UMath::Matrix4 &body_matrix, const UMath::Vector3 &cog,
                         float dT, float wheel_radius, bool usecache, const WCollider *collider, float vehicle_height);
-    void UpdateSurface(const SimSurface &surface);
-    bool InitPosition(const IRigidBody &rb, float maxcompression);
-    void Reset();
-    void UpdateTime(float dT);
+    float GetRoughness() const;
 
     const UMath::Vector4 &GetNormal() const {
-        return mNormal;
+        return this->mNormal;
     }
 
     const UMath::Vector3 &GetPosition() const {
-        return mPosition;
-    }
-
-    void SetPosition(UMath::Vector3 &p) {
-        mPosition = p;
-    }
-
-    void SetY(float y) {
-        mPosition.y = y;
-    }
-
-    const UMath::Vector3 &GetForce() const {
-        return mForce;
-    }
-
-    void SetForce(const UMath::Vector3 &f) {
-        mForce = f;
-    }
-
-    void SetVelocity(const UMath::Vector3 &v) {
-        mVelocity = v;
-    }
-
-    void IncAirTime(float dT) {
-        mAirTime += dT;
-    }
-
-    void SetAirTime(float f) {
-        mAirTime = f;
-    }
-
-    const UMath::Vector3 &GetLocalArm() const {
-        return mLocalArm;
-    }
-
-    void SetLocalArm(UMath::Vector3 &arm) {
-        mLocalArm = arm;
-    }
-
-    const UMath::Vector3 &GetWorldArm() const {
-        return mWorldArm;
-    }
-
-    float GetCompression() const {
-        return mCompression;
-    }
-
-    void SetCompression(float c) {
-        mCompression = UMath::Max(c, 0.0f);
-    }
-
-    const SimSurface &GetSurface() const {
-        return mSurface;
+        return this->mPosition;
     }
 
     const UMath::Vector3 &GetVelocity() const {
-        return mVelocity;
+        return this->mVelocity;
+    }
+
+    void SetVelocity(const UMath::Vector3 &v) {
+        this->mVelocity = v;
+    }
+
+    void SetY(float y) {
+        this->mPosition.y = y;
+    }
+
+    void SetPosition(UMath::Vector3 &p) {
+        this->mPosition = p;
+    }
+
+    float GetCompression() const {
+        return this->mCompression;
+    }
+
+    void SetCompression(float c) {
+        this->mCompression = UMath::Max(c, 0.0f);
     }
 
     bool IsOnGround() const {
-        return mCompression > 0.0f;
+        return this->mCompression > 0.0f;
+    }
+
+    const UMath::Vector3 &GetForce() const {
+        return this->mForce;
+    }
+
+    void SetForce(const UMath::Vector3 &f) {
+        this->mForce = f;
+    }
+
+    const WWorldPos &GetWorld() const {
+        return mWorldPos;
+    }
+
+    void ClearWorldPos() {
+        // TODO
+    }
+
+    const SimSurface &GetSurface() const {
+        return this->mSurface;
+    }
+
+    void SetSurface(const SimSurface &surface) {
+        this->mSurface = surface;
+    }
+
+    void UpdateSurface(const SimSurface &surface);
+
+    void SetAirTime(float f) {
+        this->mAirTime = f;
+    }
+
+    void IncAirTime(float dT) {
+        this->mAirTime += dT;
+    }
+
+    float GetAirTime() {
+        return this->mAirTime;
+    }
+
+    void SetLocalArm(UMath::Vector3 &arm) {
+        this->mLocalArm = arm;
+    }
+
+    const UMath::Vector3 &GetLocalArm() const {
+        return this->mLocalArm;
+    }
+
+    const UMath::Vector3 &GetWorldArm() const {
+        return this->mWorldArm;
     }
 
   protected:
-    // total size: 0xC4
     WWorldPos mWorldPos;      // offset 0x0, size 0x3C
     UMath::Vector4 mNormal;   // offset 0x3C, size 0x10
     UMath::Vector3 mPosition; // offset 0x4C, size 0xC

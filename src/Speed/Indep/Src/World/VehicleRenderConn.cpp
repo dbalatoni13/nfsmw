@@ -16,7 +16,7 @@
 #include "CarRender.cpp"
 #endif
 
-IMPLEMENT_LISTABLE(VehicleRenderConn, 10);
+IMPLEMENT_LISTABLE(VehicleRenderConn);
 
 VehicleRenderConn::Effect::Effect(const bMatrix4 *matrix) {
     mLocalMatrix = *matrix;

@@ -7,22 +7,23 @@
 using namespace Attrib::Gen;
 
 // Credits: Brawltendo
-float Physics::Info::AerodynamicDownforce(const chassis &chassis, const float speed) {
+float Physics::Info::AerodynamicDownforce(const Attrib::Gen::chassis &chassis, const float speed) {
     return speed * 2 * chassis.AERO_COEFFICIENT() * 1000.0f;
 }
 
 // Credits: Brawltendo
-float Physics::Info::EngineInertia(const engine &engine, const bool loaded) {
+float Physics::Info::EngineInertia(const Attrib::Gen::engine &engine, const bool loaded) {
     float scale;
-    if (loaded)
-        scale = 1.f;
-    else
+    if (loaded) {
+        scale = 1.0f;
+    } else {
         scale = 0.35f;
+    }
     return scale * (engine.FLYWHEEL_MASS() * 0.025f + 0.25f);
 }
 
 // Credits: Brawltendo
-Physics::Info::eInductionType Physics::Info::InductionType(const induction &induction) {
+Physics::Info::eInductionType Physics::Info::InductionType(const Attrib::Gen::induction &induction) {
     if (induction.HIGH_BOOST() > 0.0f || induction.LOW_BOOST() > 0.0f) {
         // turbochargers don't produce significant boost until above the boost threshold (the lowest engine RPM at which it will spool up)
         // meanwhile superchargers apply boost proportionally to the engine RPM, so this param isn't needed there
@@ -37,30 +38,30 @@ Physics::Info::eInductionType Physics::Info::InductionType(const induction &indu
 }
 
 // Credits: Brawltendo
-float Physics::Info::NosBoost(const nos &nos, const Tunings *tunings) {
+float Physics::Info::NosBoost(const Attrib::Gen::nos &nos, const Tunings *tunings) {
     float torque_scale = 1.0f;
     float boost = nos.TORQUE_BOOST();
-    if (tunings) {
+    if (tunings != nullptr) {
         boost += boost * tunings->Value[Physics::Tunings::NOS] * 0.25f;
     }
     return boost + torque_scale;
 }
 
 // Credits: Brawltendo
-float Physics::Info::NosCapacity(const nos &nos, const Tunings *tunings) {
+float Physics::Info::NosCapacity(const Attrib::Gen::nos &nos, const Tunings *tunings) {
     float capacity = nos.NOS_CAPACITY();
-    if (tunings) {
+    if (tunings != nullptr) {
         capacity -= capacity * tunings->Value[Physics::Tunings::NOS] * 0.25f;
     }
     return capacity;
 }
 
 // Credits: Brawltendo
-float Physics::Info::InductionRPM(const engine &engine, const induction &induction, const Tunings *tunings) {
+float Physics::Info::InductionRPM(const Attrib::Gen::engine &engine, const Attrib::Gen::induction &induction, const Tunings *tunings) {
     float spool = induction.SPOOL();
 
     // tune the (normalized) RPM at which forced induction kicks in
-    if (tunings && spool > 0.0f) {
+    if ((tunings != nullptr) && spool > 0.0f) {
         float range;
         float value = tunings->Value[Physics::Tunings::INDUCTION];
         if (value < 0.0f) {
@@ -76,8 +77,9 @@ float Physics::Info::InductionRPM(const engine &engine, const induction &inducti
 }
 
 // Credits: Brawltendo
-float Physics::Info::InductionBoost(const engine &engine, const induction &induction, float rpm, float spool, const Tunings *tunings, float *psi) {
-    if (psi) {
+float Physics::Info::InductionBoost(const Attrib::Gen::engine &engine, const Attrib::Gen::induction &induction, float rpm, float spool,
+                                    const Tunings *tunings, float *psi) {
+    if (psi != nullptr) {
         *psi = 0.0f;
     }
 
@@ -93,7 +95,7 @@ float Physics::Info::InductionBoost(const engine &engine, const induction &induc
     if (high_boost > 0.0f || low_boost > 0.0f) {
         // tuning slider adjusts the induction boost bias
         // -tuning produces more low end boost, while +tuning produces more high end boost
-        if (tunings) {
+        if (tunings != nullptr) {
             float value = tunings->Value[Physics::Tunings::INDUCTION];
             low_boost -= low_boost * value * 0.25f;
             high_boost += high_boost * value * 0.25f;
@@ -102,14 +104,14 @@ float Physics::Info::InductionBoost(const engine &engine, const induction &induc
         if (rpm >= spool_rpm) {
             float induction_ratio = UMath::Ramp(rpm, spool_rpm, rpm_max);
             induction_boost = induction_ratio * high_boost + (1.0f - induction_ratio) * low_boost;
-            if (psi) {
+            if (psi != nullptr) {
                 *psi = spool * induction.PSI() * UMath::Ramp(induction_boost, 0.0f, UMath::Max(high_boost, low_boost));
             }
         } else if (drag < 0.0f) {
             // apply vacuum effect when not in boost
             float drag_ratio = UMath::Ramp(rpm, rpm_min, spool_rpm);
             induction_boost = drag_ratio * drag;
-            if (psi) {
+            if (psi != nullptr) {
                 *psi = drag_ratio * -induction.PSI() * UMath::Ramp(-induction_boost, 0.0f, UMath::Max(high_boost, low_boost));
             }
         }
@@ -136,7 +138,7 @@ float Physics::Info::Torque(const Attrib::Gen::engine &engine, float rpm) {
 }
 
 // Credits: Brawltendo
-float Physics::Info::WheelDiameter(const tires &tires, bool front) {
+float Physics::Info::WheelDiameter(const Attrib::Gen::tires &tires, bool front) {
     int axle = front ? 0 : 1;
     float diameter = INCH2METERS(tires.RIM_SIZE().At(axle));
     return diameter + tires.SECTION_WIDTH().At(axle) * 0.001f * 2.0f * (tires.ASPECT_RATIO().At(axle) * 0.01f);
@@ -150,8 +152,8 @@ float Physics::Info::WheelDiameter(const tires &tires, bool front) {
 
 // Credits: Brawltendo
 // TODO not matching on GC yet
-bool Physics::Info::ShiftPoints(const transmission &transmission, const engine &engine, const induction &induction, float *shift_up,
-                                float *shift_down, unsigned int numpts) {
+bool Physics::Info::ShiftPoints(const Attrib::Gen::transmission &transmission, const Attrib::Gen::engine &engine,
+                                const Attrib::Gen::induction &induction, float *shift_up, float *shift_down, unsigned int numpts) {
     for (int i = 0; i < numpts; ++i) {
         shift_up[i] = 0.0f;
         shift_down[i] = 0.0f;
@@ -176,12 +178,12 @@ bool Physics::Info::ShiftPoints(const transmission &transmission, const engine &
             while (!flag) {
                 // seems like the rpm and spool params are swapped in both instances
                 // so either it's a mistake that was copy-pasted or it was a deliberate choice
-                float currenttorque = Torque(engine, max) * (InductionBoost(engine, induction, 1.0f, max, NULL, NULL) + 1.0f);
+                float currenttorque = Torque(engine, max) * (InductionBoost(engine, induction, 1.0f, max, nullptr, nullptr) + 1.0f);
                 float shiftuptorque;
                 if (UMath::Abs(g1) > 0.00001f) {
                     float ratio = g2 / g1;
                     float next_rpm = ratio * max;
-                    shiftuptorque = Torque(engine, next_rpm) * (InductionBoost(engine, induction, 1.0f, next_rpm, NULL, NULL) + 1.0f) * g2 / g1;
+                    shiftuptorque = Torque(engine, next_rpm) * (InductionBoost(engine, induction, 1.0f, next_rpm, nullptr, nullptr) + 1.0f) * g2 / g1;
                 } else {
                     shiftuptorque = 0.0f;
                 }
@@ -192,7 +194,7 @@ bool Physics::Info::ShiftPoints(const transmission &transmission, const engine &
 
                 max += 50.0f;
                 // set the upshift RPM to the redline RPM
-                flag = !(max < redline);
+                flag = static_cast<int>(!(max < redline));
             }
             if (!flag) {
                 shift_up[j] = max;

@@ -3,7 +3,6 @@
 
 #include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 #include "Speed/Indep/Libs/Support/Utility/UStandard.h"
-#include "types.h"
 
 // TODO move into the UTL::COM namespace
 typedef void *HINTERFACE;

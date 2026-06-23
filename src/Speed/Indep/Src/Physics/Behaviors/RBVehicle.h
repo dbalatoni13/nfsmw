@@ -1,9 +1,5 @@
-#ifndef PHYSICS_BEHAVIORS_RBVEHICLE_H
-#define PHYSICS_BEHAVIORS_RBVEHICLE_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef RBVEHICLE_H
+#define RBVEHICLE_H
 
 #include "Speed/Indep/Src/Interfaces/Simables/IRBVehicle.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
@@ -13,39 +9,19 @@
 // total size: 0x1A4
 class RBVehicle : public RigidBody, public IRBVehicle {
   public:
+    ~RBVehicle() override;
+    RBVehicle(const BehaviorParams &bp, const RBComplexParams &params);
     static Behavior *Construct(const BehaviorParams &params);
 
-    RBVehicle(const BehaviorParams &bp, const RBComplexParams &params);
-
-  private:
-    const CollisionReactionRecord &ChooseReaction(const Dynamics::Collision::Plane &plane) const;
-
   public:
-    // Overrides
-    ~RBVehicle() override;
+    // IRigidBody
+    unsigned int GetTriggerFlags() const override;
+    void PlaceObject(const UMath::Matrix4 &orientMat, const UMath::Vector3 &initPos) override;
 
     // ICollisionBody
-    unsigned int GetNumContactPoints() const override;
     bool IsInGroundContact() const override;
+    unsigned int GetNumContactPoints() const override;
 
-    // RigidBody
-    bool CanCollideWith(const RigidBody &other) const override;
-    void OnBeginFrame(float dT) override;
-    bool ShouldSleep() const override;
-    void ModifyCollision(const RigidBody &other, const Dynamics::Collision::Plane &plane, Dynamics::Collision::Moment &myMoment) override;
-    void ModifyCollision(const SimSurface &other, const Dynamics::Collision::Plane &plane, Dynamics::Collision::Moment &myMoment) override;
-    bool CanCollideWithGround() const override;
-    bool CanCollideWithWorld() const override;
-
-    // Behavior
-    void OnTaskSimulate(float dT) override;
-    void OnBehaviorChange(const UCrc32 &mechanic) override;
-
-    // IRigidBody
-    void PlaceObject(const UMath::Matrix4 &orientMat, const UMath::Vector3 &initPos) override;
-    unsigned int GetTriggerFlags() const override;
-
-    // Inline virtuals
     // IRBVehicle
     void SetCollisionMass(float mass) override {
         mCollisionMass = mass;
@@ -67,6 +43,17 @@ class RBVehicle : public RigidBody, public IRBVehicle {
         mObjectCollisionsEnabled = enable;
     }
 
+  protected:
+    // RigidBody
+    void ModifyCollision(const RigidBody &other, const Dynamics::Collision::Plane &plane, Dynamics::Collision::Moment &myMoment) override;
+    void ModifyCollision(const SimSurface &other, const Dynamics::Collision::Plane &plane, Dynamics::Collision::Moment &myMoment) override;
+    bool ShouldSleep() const override;
+    bool CanCollideWithWorld() const override;
+    bool CanCollideWith(const RigidBody &other) const override;
+    bool CanCollideWithGround() const override;
+    void OnBeginFrame(const float dT) override;
+
+    // IRBVehicle
     void SetInvulnerability(eInvulnerablitiy state, float time) override {
         mInvulnerableTimer = time;
         mInvulnerableState = state;
@@ -85,24 +72,29 @@ class RBVehicle : public RigidBody, public IRBVehicle {
         return true;
     }
 
-  protected:
+    // Behavior
+    void OnTaskSimulate(float dT) override;
+    void OnBehaviorChange(const UCrc32 &mechanic) override;
+
     IVehicle *GetVehicle() const {
         return mVehicle;
     }
 
   private:
+    const CollisionReactionRecord &ChooseReaction(const Dynamics::Collision::Plane &plane) const;
+
     IVehicle *mVehicle;                                   // offset 0x148, size 0x4
     ISuspension *mSuspension;                             // offset 0x14C, size 0x4
     BehaviorSpecsPtr<Attrib::Gen::rigidbodyspecs> mSpecs; // offset 0x150, size 0x14
     float mDeadOnWheels;                                  // offset 0x164, size 0x4
     CollisionGeometry::Collection *mGeoms;                // offset 0x168, size 0x4
     unsigned int mFrame;                                  // offset 0x16C, size 0x4
-    ALIGN_16 UMath::Vector3 mCollisionCOG;                // offset 0x170, size 0xC
+    ALIGNVEC UMath::Vector3 mCollisionCOG;                // offset 0x170, size 0xC
     float mCollisionMass;                                 // offset 0x17C, size 0x4
     bool mObjectCollisionsEnabled;                        // offset 0x180, size 0x1
     eInvulnerablitiy mInvulnerableState;                  // offset 0x184, size 0x4
-    float mInvulnerableTimer;                             // offset 0x188, size 0x4
-    float mLastPenetration;                               // offset 0x18C, size 0x4
+    Seconds mInvulnerableTimer;                           // offset 0x188, size 0x4
+    Seconds mLastPenetration;                             // offset 0x18C, size 0x4
     Attrib::Gen::collisionreactions mPlayerReactions;     // offset 0x190, size 0x14
 };
 

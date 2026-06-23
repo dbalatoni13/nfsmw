@@ -3,9 +3,6 @@
 
 #include <types.h>
 
-// TODO use the real nested macro instead of this
-#define BCHUNK_NESTED_FLAG 0x80000000
-
 #define NESTED_BCHUNK 0x80000000
 #define NESTED_BCHUNK_MASK 0x7fffffff
 #define DATA_BCHUNK 0x00000000
@@ -155,11 +152,11 @@ struct bChunk {
     }
 
     int IsNestedChunk() {
-        return this->GetID() & BCHUNK_NESTED_FLAG;
+        return this->GetID() & NESTED_BCHUNK;
     }
 
     int IsDataChunk() {
-        return !IsNestedChunk();
+        return static_cast<int>(IsNestedChunk() == 0);
     }
 
     int CountChildren() {

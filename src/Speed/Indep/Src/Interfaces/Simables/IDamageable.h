@@ -1,23 +1,13 @@
 #ifndef INTERFACES_SIMABLES_IDAMAGEABLE_H
 #define INTERFACES_SIMABLES_IDAMAGEABLE_H
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Src/World/Damagezones.h"
 #include "Speed/Indep/Src/World/VehicleFX.h"
 
 class IDamageable : public UTL::COM::IUnknown {
   public:
-    static HINTERFACE _IHandle() {
-        return (HINTERFACE)_IHandle;
-    }
-
-    IDamageable(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
-
-    virtual ~IDamageable() {}
+    DECL_INTERFACE(IDamageable);
 
     virtual void SetInShock(float scale);
     virtual void SetShockForce(float f);
@@ -31,13 +21,7 @@ class IDamageable : public UTL::COM::IUnknown {
 
 class IDamageableVehicle : public UTL::COM::IUnknown {
   public:
-    static HINTERFACE _IHandle() {
-        return (HINTERFACE)_IHandle;
-    }
-
-    IDamageableVehicle(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
-
-    virtual ~IDamageableVehicle() {}
+    DECL_INTERFACE(IDamageableVehicle);
 
     virtual bool IsLightDamaged(VehicleFX::ID idx) const;
     virtual void DamageLight(VehicleFX::ID idx, bool b);

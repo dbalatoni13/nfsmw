@@ -1,25 +1,14 @@
 #ifndef INTERFACES_SIMABLES_IENGINE_H
 #define INTERFACES_SIMABLES_IENGINE_H
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 
 // Credits: Brawltendo
 class IEngine : public UTL::COM::IUnknown {
   public:
-    static HINTERFACE _IHandle() {
-        return (HINTERFACE)_IHandle;
-    }
+    DECL_INTERFACE(IEngine);
 
-    IEngine(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
-
-    virtual ~IEngine() {}
-
-  public:
     virtual float GetRPM() const;
     virtual float GetRedline() const;
     virtual float GetMaxRPM() const;
@@ -39,30 +28,16 @@ class IEngine : public UTL::COM::IUnknown {
 
 class IDragEngine : public UTL::COM::IUnknown {
   public:
-    static HINTERFACE _IHandle() {
-        return (HINTERFACE)_IHandle;
-    }
+    DECL_INTERFACE(IDragEngine);
 
-    IDragEngine(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
-
-    virtual ~IDragEngine() {}
-
-  public:
     virtual float GetOverRev() const;
     virtual float GetHeat() const;
 };
 
 class IRaceEngine : public UTL::COM::IUnknown {
   public:
-    static HINTERFACE _IHandle() {
-        return (HINTERFACE)_IHandle;
-    }
+    DECL_INTERFACE(IRaceEngine);
 
-    IRaceEngine(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
-
-    virtual ~IRaceEngine() {}
-
-  public:
     virtual float GetPerfectLaunchRange(float &range);
 };
 

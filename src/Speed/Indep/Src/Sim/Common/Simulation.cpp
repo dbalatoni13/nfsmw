@@ -737,10 +737,10 @@ class IRigidBody *SimCollisionMap::GetSRB(int srbIndex) const {
 }
 
 class IRigidBody *SimCollisionMap::GetOrderedBody(int index) const {
-    if (index < RIGID_BODY_MAX) {
+    if (index < RigidBody::Volatile::MaxInstances) {
         return SimCollisionMap::GetRB(index);
     } else {
-        return SimCollisionMap::GetSRB(index - RIGID_BODY_MAX);
+        return SimCollisionMap::GetSRB(index - RigidBody::Volatile::MaxInstances);
     }
 }
 

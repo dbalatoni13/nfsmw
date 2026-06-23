@@ -3,8 +3,14 @@
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/brakes.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/tires.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/transmission.h"
+#include "Speed/Indep/Src/Generated/Hash.hpp"
+#include "Speed/Indep/Src/Physics/Behavior.h"
 #include "Speed/Indep/Src/Physics/Wheel.h"
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
+
+#define EPSILON 0.000001f
+
+#define MAKEATTRIB const
 
 // total size: 0x110
 class SuspensionTraffic : public Chassis {
@@ -13,34 +19,66 @@ class SuspensionTraffic : public Chassis {
     class Tire : public Wheel {
       public:
         enum LastRotationSign {
-            WAS_NEGATIVE = 2,
-            WAS_ZERO = 1,
             WAS_POSITIVE = 0,
+            WAS_ZERO = 1,
+            WAS_NEGATIVE = 2,
         };
 
         Tire(float radius, int index, const Attrib::Gen::tires *specs, const Attrib::Gen::brakes *brakes);
-        void BeginFrame();
-        void EndFrame(float dT);
-        void UpdateFree(float dT);
 
-        void Stop() {
-            mAV = 0.0f;
-            mSlip = 0.0f;
-            mRoadSpeed = 0.0f;
-            mSlipAngle = 0.0f;
+        void SetBrake(float brake) {
+            this->mBrake = brake;
+        }
+        void SetEBrake(float ebrake) {
+            this->mEBrake = ebrake;
+        }
+        float GetEBrake() const {
+            return this->mEBrake;
         }
 
         float GetRadius() const {
-            return mRadius;
+            return this->mRadius;
         }
-
+        float GetAngularVelocity() const {
+            return this->mAV;
+        }
         void SetAngularVelocity(float av) {
-            mAV = av;
+            this->mAV = av;
         }
 
-        void ApplyTorque(float torque) {
-            mAppliedTorque += torque;
+        void Stop() {
+            this->mAV = 0.0f;
+            this->mSlip = 0.0f;
+            this->mRoadSpeed = 0.0f;
+            this->mSlipAngle = 0.0f;
         }
+
+        float GetCurrentSlip() const {
+            return this->mSlip;
+        }
+        float GetTraction() const {}
+
+        void BeginFrame();
+        void EndFrame(float dT);
+
+        float GetLoad() const {
+            return mLoad;
+        }
+        void ApplyTorque(float torque) {
+            this->mAppliedTorque += torque;
+        }
+        float GetLateralForce() const {
+            return this->mLateralForce;
+        }
+        float GetLongitudeForce() const {
+            return this->mLongitudeForce;
+        }
+        float GetLateralSpeed() const {
+            return this->mLateralSpeed;
+        }
+
+        void UpdateLoaded(float lat_vel, float fwd_vel, float load, float dT);
+        void UpdateFree(float dT);
 
       private:
         const float mRadius;                // offset 0xC4, size 0x4
@@ -63,33 +101,63 @@ class SuspensionTraffic : public Chassis {
         float mLateralSpeed;                // offset 0x108, size 0x4
     };
 
+    SuspensionTraffic(const BehaviorParams &bp, const SuspensionParams &sp);
+    ~SuspensionTraffic() override;
     static Behavior *Construct(const BehaviorParams &params);
 
-    SuspensionTraffic(const struct BehaviorParams &bp, const SuspensionParams &sp);
-    void DoSimpleAero(State &state);
-    void DoDriveForces(State &state);
-    void DoWheelForces(State &state);
-    float DoHP2Steering(State &state);
-    void DoSteering(State &state, UMath::Vector3 &right, UMath::Vector3 &left);
-
-    // Overrides
-    // IUnknown
-    ~SuspensionTraffic() override;
+    // ISuspension
+    void MatchSpeed(float speed) override;
+    float GetWheelAngularVelocity(int index) const override {}
+    float GetWheelRadius(unsigned int index) const override {}
+    float GetWheelSlip(unsigned int idx) const override {}
+    Mps GetToleratedSlip(unsigned int idx) const override {}
+    float GetWheelSkid(unsigned int idx) const override {}
+    Newtons GetWheelLoad(unsigned int i) const override {}
+    float GetWheelTraction(unsigned int index) const override {}
+    void SetWheelAngularVelocity(int wheel, float w) override {}
+    unsigned int GetNumWheels() const override {}
+    const UMath::Vector3 &GetWheelPos(unsigned int i) const override {}
+    const UMath::Vector3 &GetWheelLocalPos(unsigned int i) const override {}
+    UMath::Vector3 GetWheelCenterPos(unsigned int i) const override;
+    void ApplyVehicleEntryForces(bool enteringVehicle, const UMath::Vector3 &pos, bool calledfromEvent) override {}
+    const float GetWheelRoadHeight(unsigned int i) const override {}
+    float GetCompression(unsigned int i) const override {}
+    const UMath::Vector4 &GetWheelRoadNormal(unsigned int i) const override {}
+    bool IsWheelOnGround(unsigned int i) const override {}
+    const SimSurface &GetWheelRoadSurface(unsigned int i) const override {}
+    const UMath::Vector3 &GetWheelVelocity(unsigned int i) const override {}
+    int GetNumWheelsOnGround() const override {}
+    float GetWheelSteer(unsigned int wheel) const override {}
+    float GetMaxSteering() const override {}
+    Angle GetWheelSlipAngle(unsigned int idx) const override {}
 
     // Behavior
-    void OnBehaviorChange(const UCrc32 &mechanic) override;
     void OnTaskSimulate(float dT) override;
     void Reset() override;
 
-    // ISuspension
-    UMath::Vector3 GetWheelCenterPos(unsigned int i) const override;
-    void MatchSpeed(float speed) override;
+  protected:
+    void DoSimpleAero(State &state);
+    void DoWheelForces(State &state);
+    void DoDriveForces(State &state);
+    void DoSteering(State &state, UMath::Vector3 &right, UMath::Vector3 &left);
+    float DoHP2Steering(State &state);
+
+    // Behavior
+    void OnBehaviorChange(const UCrc32 &mechanic) override;
 
     Tire &GetWheel(unsigned int i) {
-        return *mTires[i];
+        return *this->mTires[i];
+    }
+
+    const Tire &GetWheel(unsigned int i) const {
+        return *this->mTires[i];
     }
 
   private:
+#ifdef EA_BUILD_A124
+    void CreateTires();
+#endif
+
     BehaviorSpecsPtr<Attrib::Gen::tires> mTireInfo;              // offset 0x94, size 0x14
     BehaviorSpecsPtr<Attrib::Gen::brakes> mBrakeInfo;            // offset 0xA8, size 0x14
     BehaviorSpecsPtr<Attrib::Gen::chassis> mSuspensionInfo;      // offset 0xBC, size 0x14
@@ -103,6 +171,8 @@ class SuspensionTraffic : public Chassis {
     float mMaxSteering;                                          // offset 0xFC, size 0x4
     Tire *mTires[4];                                             // offset 0x100, size 0x10
 };
+
+BIND_BEHAVIOR_FACTORY(SuspensionTraffic);
 
 SuspensionTraffic::Tire::Tire(float radius, int index, const Attrib::Gen::tires *specs, const Attrib::Gen::brakes *brakes)
     : Wheel(0),                          //
@@ -126,29 +196,28 @@ SuspensionTraffic::Tire::Tire(float radius, int index, const Attrib::Gen::tires 
       mSlipAngle(0.0f) {}
 
 void SuspensionTraffic::Tire::BeginFrame() {
-    mAppliedTorque = 0.0f;
-    SetForce(UMath::Vector3::kZero);
-    mLateralForce = 0.0f;
-    mLongitudeForce = 0.0f;
+    this->mAppliedTorque = 0.0f;
+    this->SetForce(UMath::Vector3::kZero);
+    this->mLateralForce = 0.0f;
+    this->mLongitudeForce = 0.0f;
 }
 
 void SuspensionTraffic::Tire::EndFrame(float dT) {}
 
 void SuspensionTraffic::Tire::UpdateFree(float dT) {
-    mSlipping = 0;
-    mLoad = 0.0f;
-    mSlip = 0.0f;
-    mSlipAngle = 0.0f;
-    if ((mEBrake > 0.0f) || (mBrake > 0.0f)) {
-        mAV = 0.0f;
+    this->mSlipping = false;
+    this->mLoad = 0.0f;
+    this->mSlip = 0.0f;
+    this->mSlipAngle = 0.0f;
+    if ((this->mEBrake > 0.0f) || (this->mBrake > 0.0f)) {
+        this->mAV = 0.0f;
     }
-    mLateralForce = 0.0f;
-    mLongitudeForce = 0.0f;
+    this->mLateralForce = 0.0f;
+    this->mLongitudeForce = 0.0f;
 }
 
 Behavior *SuspensionTraffic::Construct(const BehaviorParams &params) {
-    // "BASE"
-    SuspensionParams sp(params.fparams.Fetch<SuspensionParams>(UCrc32(0xa6b47fac)));
+    SuspensionParams sp(params.fparams.Fetch<SuspensionParams>(UCrc32(UCRC32_BASE)));
     return new SuspensionTraffic(params, sp);
 }
 
@@ -156,71 +225,71 @@ void SuspensionTraffic::OnBehaviorChange(const UCrc32 &mechanic) {
     Chassis::OnBehaviorChange(mechanic);
 
     if (mechanic == BEHAVIOR_MECHANIC_INPUT) {
-        GetOwner()->QueryInterface(&mInput);
+        this->GetOwner()->QueryInterface(&this->mInput);
     } else if (mechanic == BEHAVIOR_MECHANIC_RIGIDBODY) {
-        GetOwner()->QueryInterface(&mRBComplex);
-        GetOwner()->QueryInterface(&mRB);
+        this->GetOwner()->QueryInterface(&this->mRBComplex);
+        this->GetOwner()->QueryInterface(&this->mRB);
     } else if (mechanic == BEHAVIOR_MECHANIC_ENGINE) {
-        GetOwner()->QueryInterface(&mTransmission);
+        this->GetOwner()->QueryInterface(&this->mTransmission);
     }
 }
 
 void SuspensionTraffic::OnTaskSimulate(float dT) {
-    if (!mInput || !mRBComplex || !mRB) {
+    if ((this->mInput == nullptr) || (this->mRBComplex == nullptr) || (this->mRB == nullptr)) {
         return;
     }
-    SetCOG(0.0f, 0.0f);
+    this->SetCOG(0.0f, 0.0f);
 
-    ISimable *owner = GetOwner();
+    ISimable *owner = this->GetOwner();
     State state;
-    ComputeState(dT, state);
+    this->ComputeState(dT, state);
     for (unsigned int i = 0; i < 4; ++i) {
-        mTires[i]->BeginFrame();
+        this->mTires[i]->BeginFrame();
     }
 
-    DoSimpleAero(state);
-    DoDriveForces(state);
-    DoWheelForces(state);
+    this->DoSimpleAero(state);
+    this->DoDriveForces(state);
+    this->DoWheelForces(state);
 
     for (unsigned int i = 0; i < 4; ++i) {
-        mTires[i]->UpdateTime(dT);
+        this->mTires[i]->UpdateTime(dT);
     }
     for (unsigned int i = 0; i < 4; ++i) {
-        mTires[i]->EndFrame(dT);
+        this->mTires[i]->EndFrame(dT);
     }
-    if (DoSleep(state) == SS_ALL) {
+    if (this->DoSleep(state) == SS_ALL) {
         for (unsigned int i = 0; i < 4; ++i) {
-            mTires[i]->Stop();
+            this->mTires[i]->Stop();
         }
     }
     Chassis::OnTaskSimulate(dT);
 }
 
 UMath::Vector3 SuspensionTraffic::GetWheelCenterPos(unsigned int i) const {
-    UMath::Vector3 pos = mTires[i]->GetPosition();
-    if (!mRBComplex) {
+    UMath::Vector3 pos = this->mTires[i]->GetPosition();
+    if (this->mRBComplex == nullptr) {
         return pos;
     }
-    UMath::ScaleAdd(mRBComplex->GetUpVector(), GetWheelRadius(i), pos, pos);
+    UMath::ScaleAdd(this->mRBComplex->GetUpVector(), this->GetWheelRadius(i), pos, pos);
     return pos;
 }
 
 void SuspensionTraffic::MatchSpeed(float speed) {
     for (int i = 0; i < 4; ++i) {
-        float w = mTires[i]->GetRadius();
-        mTires[i]->SetAngularVelocity(speed / w);
+        float w = this->mTires[i]->GetRadius();
+        this->mTires[i]->SetAngularVelocity(speed / w);
     }
 }
 
 void SuspensionTraffic::Reset() {
-    ISimable *owner = GetOwner();
+    ISimable *owner = this->GetOwner();
     IRigidBody *rigidBody = owner->GetRigidBody();
     unsigned int numonground = 0;
 
-    for (int i = 0; i < GetNumWheels(); ++i) {
-        Tire &wheel = GetWheel(i);
+    for (int i = 0; i < this->GetNumWheels(); ++i) {
+        Tire &wheel = this->GetWheel(i);
         if (wheel.InitPosition(*rigidBody, wheel.GetRadius())) {
-            float newCompression = wheel.GetNormal().w + GetRideHeight(i);
+            float newCompression = wheel.GetNormal().w + this->GetRideHeight(i);
             if (newCompression < 0.0f) {
                 newCompression = 0.0f;
             }
@@ -230,29 +299,29 @@ void SuspensionTraffic::Reset() {
             }
         }
     }
-    mNumWheelsOnGround = numonground;
+    this->mNumWheelsOnGround = numonground;
 }
 
 void SuspensionTraffic::DoSimpleAero(State &state) {
-    const float dragcoef_spec = mSuspensionInfo->DRAG_COEFFICIENT();
+    const float dragcoef_spec = this->mSuspensionInfo->DRAG_COEFFICIENT();
     float speed = state.speed;
     float drag = speed * dragcoef_spec;
     UVector3 drag_vector(state.linear_vel);
 
     drag_vector *= -drag;
-    mRB->ResolveForce(drag_vector);
+    this->mRB->ResolveForce(drag_vector);
 }
 
 float SuspensionTraffic::DoHP2Steering(State &state) {
     float steer_input = state.steer_input;
-    float newsteer = steer_input * mMaxSteering;
+    float newsteer = steer_input * this->mMaxSteering;
 
-    mLastSteer = newsteer;
+    this->mLastSteer = newsteer;
     return newsteer * DEG2ANGLE(1.0f);
 }
 
 void SuspensionTraffic::DoSteering(State &state, UMath::Vector3 &right, UMath::Vector3 &left) {
-    float truesteer = DoHP2Steering(state);
+    float truesteer = this->DoHP2Steering(state);
     float steer1 = ANGLE2RAD(1.0f);
     float ca = cosf(truesteer * steer1);
     float sa = sinf(truesteer * steer1);
@@ -265,22 +334,24 @@ void SuspensionTraffic::DoSteering(State &state, UMath::Vector3 &right, UMath::V
 }
 
 void SuspensionTraffic::DoDriveForces(State &state) {
-    if (!mTransmission) {
+    if (this->mTransmission == nullptr) {
         return;
     }
-    float drive_torque = mTransmission->GetDriveTorque();
+    float drive_torque = this->mTransmission->GetDriveTorque();
     if (drive_torque == 0.0f) {
         return;
     }
-    float torquesplit = mDrivetrainInfo->TORQUE_SPLIT();
+    float torquesplit = this->mDrivetrainInfo->TORQUE_SPLIT();
     for (unsigned int tire = 0; tire < 4; ++tire) {
-        if (mTires[tire]->IsOnGround()) {
+        if (this->mTires[tire]->IsOnGround()) {
             float torque = drive_torque;
             torque = tire < 2 ? torque * (1.0f - torquesplit) : (torque * torquesplit);
 
             if (UMath::Abs(torque) >= 0.0f) {
-                mTires[tire]->ApplyTorque(torque * 0.5f);
+                this->mTires[tire]->ApplyTorque(torque * 0.5f);
             }
         }
     }
 }
+
+static const float TrafficRollAdjust = 0.0f; // TODO value and use

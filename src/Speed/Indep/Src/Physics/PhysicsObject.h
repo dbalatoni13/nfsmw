@@ -1,9 +1,5 @@
-#ifndef PHYSICS_PHYSICSOBJECT_H
-#define PHYSICS_PHYSICSOBJECT_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef __PHYSICSOBJECT_H__
+#define __PHYSICSOBJECT_H__
 
 #include "Speed/Indep/Src/Interfaces/IBody.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"

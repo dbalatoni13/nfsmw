@@ -1,10 +1,6 @@
 #ifndef INTERFACES_SIMMODELS_IMODEL_H
 #define INTERFACES_SIMMODELS_IMODEL_H
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Libs/Support/Utility/UCollections.h"
 #include "Speed/Indep/Libs/Support/Utility/UListable.h"
@@ -13,27 +9,13 @@
 #include "Speed/Indep/Src/Physics/Bounds.h"
 #include "Speed/Indep/Src/World/WorldTypes.h"
 
-struct HMODEL__ {
-    // total size: 0x4
-    int unused; // offset 0x0, size 0x4
-};
-
-typedef HMODEL__ *HMODEL;
-
+// total size: 0x4
 class IModel : public UTL::COM::IUnknown, public UTL::Collections::Instanceable<HMODEL, IModel, 434>, public UTL::Collections::Listable<IModel, 434> {
   public:
-    // total size: 0x4
+    DECL_INTERFACE(IModel);
     struct Enumerator {
         virtual bool OnModel(IModel *model);
     };
-
-    static HINTERFACE _IHandle() {
-        return (HINTERFACE)_IHandle;
-    }
-
-    IModel(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
-
-    virtual ~IModel() {}
 
     virtual void OnProcessFrame(float dT);
     virtual UCrc32 GetPartName() const;

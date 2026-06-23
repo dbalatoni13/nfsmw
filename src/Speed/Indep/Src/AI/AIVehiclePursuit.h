@@ -144,7 +144,7 @@ class AIVehiclePursuit : public AIVehiclePid, public IPursuitAI {
     }
 
     // Overrides: IPursuitAI
-    SirenState GetSirenState() const override {
+    Sound::SirenState GetSirenState() const override {
         return mSirenState;
     }
 
@@ -180,7 +180,7 @@ class AIVehiclePursuit : public AIVehiclePid, public IPursuitAI {
     bool mBreaker;                    // offset 0x77C, size 0x1
     bool mChicken;                    // offset 0x780, size 0x1
     bool mDamagedByPerp;              // offset 0x784, size 0x1
-    SirenState mSirenState;           // offset 0x788, size 0x4
+    Sound::SirenState mSirenState;    // offset 0x788, size 0x4
     bool mSirenInit;                  // offset 0x78C, size 0x1
     Timer mT_siren[3];                // offset 0x790, size 0xC
     bool mInFormation;                // offset 0x79C, size 0x1

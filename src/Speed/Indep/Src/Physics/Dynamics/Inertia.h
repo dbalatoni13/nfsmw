@@ -1,9 +1,5 @@
-#ifndef PHYSICS_DYNAMICS_INERTIA_H
-#define PHYSICS_DYNAMICS_INERTIA_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef DYNAMICS_INERTIA_H
+#define DYNAMICS_INERTIA_H
 
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Libs/Support/Utility/UVector.h"
@@ -11,9 +7,8 @@
 namespace Dynamics {
 namespace Inertia {
 
+// total size: 0xC
 class Tensor : public UVector3 {
-    // total size: 0xC
-
   public:
     const Tensor &operator=(const UMath::Vector3 &From) {
         x = From.x;
@@ -32,9 +27,8 @@ class Tensor : public UVector3 {
     }
 };
 
+// total size: 0xC
 class Box : public Tensor {
-    // total size: 0xC
-
   public:
     Box(float mass, float width, float height, float length) {
         float x2 = width * width;

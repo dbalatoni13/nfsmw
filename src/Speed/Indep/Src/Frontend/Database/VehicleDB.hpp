@@ -32,7 +32,7 @@ struct FECustomizationRecord {
     short InstalledPartIndices[139];             // offset 0x0, size 0x116
     Physics::Upgrades::Package InstalledPhysics; // offset 0x118, size 0x20
     Physics::Tunings Tunings[3];                 // offset 0x138, size 0x54
-    Physics::eCustomTuningType ActiveTuning;     // offset 0x18C, size 0x4
+    eCustomTuningType ActiveTuning;     // offset 0x18C, size 0x4
     int Preset;                                  // offset 0x190, size 0x4
     unsigned char Handle;                        // offset 0x194, size 0x1
 };

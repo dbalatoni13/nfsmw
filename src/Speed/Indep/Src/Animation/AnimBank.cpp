@@ -1,3 +1,4 @@
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "AnimBank.hpp"
 #include "AnimInternal.hpp"
 #include "Speed/Indep/Src/EAGL4Anim/FnDefaultAnimBank.h"
@@ -7,7 +8,6 @@
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bMemory.hpp"
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
-#include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 
 SlotPool *AnimBankSlotPool = nullptr;
@@ -49,7 +49,7 @@ EAGL4Anim::AnimBank *GetFirstAnimBank(const EAGL4::DynamicLoader *loader) {
 EAGL4Anim::AnimMemoryMap *CAnimBank::GetAnim(int bankID, int index) {}
 
 int CAnimBank::Initialize(char *data, int size) {
-    m_pDynLoader = AnimBridgeNewDynamicLoader("EAGL4::DynamicLoder CAnimBank", data, size);
+    m_pDynLoader = AnimBridgeNewDynamicLoader("EAGL4::DynamicLoader CAnimBank", data, size);
     m_DynLoaderSize = size;
     m_internalDynLoader = 1;
     m_pFnAnimBanks = new ("EAGL4::FnDefaultAnimBank CAnimBank", 0) EAGL4Anim::FnDefaultAnimBank();

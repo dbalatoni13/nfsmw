@@ -1,15 +1,12 @@
-#ifndef PHYSICS_BEHAVIOR_H
-#define PHYSICS_BEHAVIOR_H
+#ifndef PHYSICS_H
+#define PHYSICS_H
 
 #include "Speed/Indep/Libs/Support/Utility/FastMem.h"
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
 #include "Speed/Indep/Libs/Support/Utility/UCrc.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
 #include "Speed/Indep/Src/Sim/SimObject.h"
 #include "Speed/Indep/Src/Sim/SimProfile.h"
+#include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 
 // total size: 0x10
 struct BehaviorParams {
@@ -95,8 +92,7 @@ template <typename T> class BehaviorSpecsPtr : public AttributeStructPtr<T> {
     Attrib::Key LookupKey(const ISimable *owner, int index) {
         const Attrib::Instance &owneratr = owner->GetAttributes();
         if (!owneratr.IsValid()) {
-            // "default"
-            return 0xeec2271a;
+            return Attrib::key_default;
         }
 
         Attrib::Key classkey = AttributeStructPtr<T>::GetClassKey();
@@ -109,5 +105,11 @@ template <typename T> class BehaviorSpecsPtr : public AttributeStructPtr<T> {
         }
     }
 };
+
+#define BIND_BEHAVIOR_FACTORY(_TYPE_) Behavior::Prototype __##_TYPE_(UCrc32(#_TYPE_), _TYPE_::Construct);
+
+#define REDIRECT_BEHAVIOR_FACTORY(_TYPE_, _FACTORYNAME_) Behavior::Prototype __##_TYPE_##_FACTORYNAME_(UCrc32(#_FACTORYNAME_), _TYPE_::Construct);
+
+#define BIND_BEHAVIOR_SPECS BIND_ATTRIBUTE_STRUCT
 
 #endif

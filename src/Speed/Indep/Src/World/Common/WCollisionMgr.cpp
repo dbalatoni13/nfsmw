@@ -561,8 +561,8 @@ void WCollisionMgr::GetInstanceListGuts(const NodeIndexList &nodeInds, WCollisio
                 unsigned int instInd = *instIndPtr;
                 const WCollisionInstance *cInst = WCollisionAssets::Get().Instance(instInd);
 
-                if ((cInst != nullptr) && (cInst->fGroupNumber == 0 || IsSceneryGroupEnabled(cInst->fGroupNumber)) && (cInst->fCollisionArticle != nullptr) &&
-                    this->InstancePassesExclusion(*cInst) && cInst->fIterStamp != fIterCount) {
+                if ((cInst != nullptr) && (cInst->fGroupNumber == 0 || IsSceneryGroupEnabled(cInst->fGroupNumber)) &&
+                    (cInst->fCollisionArticle != nullptr) && this->InstancePassesExclusion(*cInst) && cInst->fIterStamp != fIterCount) {
                     const_cast<WCollisionInstance *>(cInst)->fIterStamp = fIterCount;
 
                     UMath::Vector3 instPos;
@@ -623,8 +623,8 @@ void WCollisionMgr::GetInstanceListGuts(const NodeIndexList &nodeInds, WCollisio
                 unsigned int instInd = *instIndPtr;
                 const WCollisionInstance *cInst = WCollisionAssets::Get().Instance(instInd);
 
-                if ((cInst != nullptr) && (cInst->fGroupNumber == 0 || IsSceneryGroupEnabled(cInst->fGroupNumber)) && (cInst->fCollisionArticle != nullptr) &&
-                    this->InstancePassesExclusion(*cInst) && cInst->fIterStamp != fIterCount) {
+                if ((cInst != nullptr) && (cInst->fGroupNumber == 0 || IsSceneryGroupEnabled(cInst->fGroupNumber)) &&
+                    (cInst->fCollisionArticle != nullptr) && this->InstancePassesExclusion(*cInst) && cInst->fIterStamp != fIterCount) {
                     float instRad = cInst->fInvPosRadius.w;
                     float instRadSq = instRad * instRad;
                     const_cast<WCollisionInstance *>(cInst)->fIterStamp = fIterCount;
@@ -795,7 +795,7 @@ bool WCollisionMgr::Collide(Dynamics::Collision::Geometry *geom, const WCollisio
                     UMath::Add(cPoint, dP, cPoint);
                 }
 
-                if (results->OnWCollide(cInfo, *reinterpret_cast<bVector3 *>(&cPoint), userdata)) {
+                if (results->OnWCollide(cInfo, reinterpret_cast<UMath::Vector3 &>(cPoint), userdata)) {
                     geom->Move(dP);
                 }
             } else {
@@ -870,7 +870,7 @@ bool WCollisionMgr::Collide(Dynamics::Collision::Geometry *geom, const WCollisio
                     cPoint.w = penetration;
                     cInfo.fNormal.w = penetration;
 
-                    if (results->OnWCollide(cInfo, *reinterpret_cast<bVector3 *>(&cPoint), userdata)) {
+                    if (results->OnWCollide(cInfo, reinterpret_cast<const UMath::Vector3 &>(cPoint), userdata)) {
                         UMath::ScaleAddxyz(cInfo.fNormal, cInfo.fNormal.w, delta, delta);
                     }
                 } else {

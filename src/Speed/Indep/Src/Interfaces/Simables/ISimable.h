@@ -15,26 +15,6 @@
 #include "Speed/Indep/Src/World/WWorldPos.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 
-struct HSIMABLE__ {
-    // total size: 0x4
-    int unused; // offset 0x0, size 0x4
-};
-
-typedef HSIMABLE__ *HSIMABLE;
-
-// TODO move?
-enum SimableType {
-    SIMABLE_INVALID = 0,
-    SIMABLE_VEHICLE = 1,
-    SIMABLE_SMACKABLE = 2,
-    SIMABLE_EXPLOSION = 3,
-    SIMABLE_HUMAN = 4,
-    SIMABLE_WEAPON = 5,
-    SIMABLE_NEWTON = 6,
-    SIMABLE_SENTRY = 7,
-    SIMABLE_FRAGMENT = 8,
-};
-
 namespace Sim {
 class IEntity;
 };
@@ -43,13 +23,7 @@ class ISimable : public UTL::COM::IUnknown,
                  public UTL::Collections::Instanceable<HSIMABLE, ISimable, 160>,
                  public UTL::COM::Factory<Sim::Param, ISimable, UCrc32> {
   public:
-    static HINTERFACE _IHandle() {
-        return (HINTERFACE)_IHandle;
-    }
-
-    ISimable(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
-
-    virtual ~ISimable() {}
+    DECL_INTERFACE(ISimable);
 
     virtual SimableType GetSimableType() const = 0;
     virtual void Kill() = 0;

@@ -1,18 +1,7 @@
-#ifndef PHYSICS_PHYSICSTUNINGS_H
-#define PHYSICS_PHYSICSTUNINGS_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef PHYSICS_TUNINGS_H
+#define PHYSICS_TUNINGS_H
 
 namespace Physics {
-
-enum eCustomTuningType {
-    CTT_SETTING_1 = 0,
-    CTT_SETTING_2 = 1,
-    CTT_SETTING_3 = 2,
-    NUM_CUSTOM_TUNINGS = 3,
-};
 
 struct Tunings {
     enum Path {
@@ -25,10 +14,11 @@ struct Tunings {
         INDUCTION = 6,
         MAX_TUNINGS = 7,
     };
-    float Value[7]; // offset 0x0, size 0x1C
 
     static float LowerLimit(Path path);
     static float UpperLimit(Path path);
+
+    float Value[7]; // offset 0x0, size 0x1C
 };
 
 } // namespace Physics
