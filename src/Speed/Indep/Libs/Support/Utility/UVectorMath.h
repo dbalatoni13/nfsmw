@@ -570,21 +570,23 @@ inline void VU0_qtranspose(const UMath::Vector4 &a, UMath::Vector4 &result) {
 }
 
 inline void VU0_MATRIX4Init(UMath::Matrix4 &dest, const float xx, const float yy, const float zz) {
-    dest[2][2] = zz;
-    dest[1][1] = yy;
     dest[0][0] = xx;
+    dest[1][1] = yy;
+    dest[2][2] = zz;
     dest[3][3] = 1.0f;
 
-    // TODO UNSOLVED
     dest[3][2] = 0.0f;
     dest[3][1] = 0.0f;
     dest[3][0] = 0.0f;
+
     dest[2][3] = 0.0f;
     dest[2][1] = 0.0f;
     dest[2][0] = 0.0f;
+
     dest[1][3] = 0.0f;
     dest[1][2] = 0.0f;
     dest[1][0] = 0.0f;
+
     dest[0][3] = 0.0f;
     dest[0][2] = 0.0f;
     dest[0][1] = 0.0f;
@@ -594,10 +596,9 @@ inline void VU0_MATRIX4_mult(const UMath::Matrix4 &m1, const UMath::Matrix4 &m2,
     UMath::Matrix4 temp;
     for (int i = 0; i < 4; ++i) {
         for (int j = 0; j < 4; ++j) {
-            result[i][j] = m1[i][0] * m2[0][j] + m1[i][1] * m2[1][j] + m1[i][2] * m2[2][j] + m1[i][3] * m2[3][j];
+            temp[i][j] = m1[i][0] * m2[0][j] + m1[i][1] * m2[1][j] + m1[i][2] * m2[2][j] + m1[i][3] * m2[3][j];
         }
     }
-
     result = temp;
 }
 

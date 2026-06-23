@@ -4,16 +4,17 @@
 #include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 #include "Speed/Indep/Libs/Support/Utility/UCrc.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
+#include "Speed/Indep/Src/Physics/PhysicsObject.h"
 #include "Speed/Indep/Src/Sim/SimObject.h"
 #include "Speed/Indep/Src/Sim/SimProfile.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 
 // total size: 0x10
 struct BehaviorParams {
-    const Sim::Param &fparams;    // offset 0x0, size 0x4
-    struct PhysicsObject *fowner; // offset 0x4, size 0x4
-    const UCrc32 &fSig;           // offset 0x8, size 0x4
-    const UCrc32 &fMechanic;      // offset 0xC, size 0x4
+    const Sim::Param &fparams; // offset 0x0, size 0x4
+    PhysicsObject *fowner;     // offset 0x4, size 0x4
+    const UCrc32 &fSig;        // offset 0x8, size 0x4
+    const UCrc32 &fMechanic;   // offset 0xC, size 0x4
 };
 
 // total size: 0x4C

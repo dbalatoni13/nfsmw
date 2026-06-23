@@ -3,8 +3,10 @@
 
 #include "Speed/Indep/Src/Interfaces/IBody.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
-#include "Speed/Indep/Src/Physics/Behavior.h"
 #include "Speed/Indep/Src/Sim/SimAttachable.h"
+#include "Speed/Indep/Src/Sim/SimObject.h"
+
+class Behavior;
 
 DECLARE_CONTAINER_TYPE(ID_POMechanics);
 DECLARE_CONTAINER_TYPE(ID_POBehaviors);

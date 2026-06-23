@@ -6,8 +6,6 @@
 
 namespace UMath {
 
-
-
 float Ceil(const float x) {
     return bCeil(x);
 }
@@ -32,15 +30,15 @@ bool IsNaN(const UMath::Matrix3 &v) {}
 bool IsNaN(const UMath::Matrix4 &v) {}
 //...
 
-}
+} // namespace UMath
 
 // UNSOLVED
 void BuildRotate(UMath::Matrix4 &m, float r, float x, float y, float z) {
-    r *= 0.0027777778f;
+    r /= 360.0f;
     if (r == 0.0f) {
         VU0_MATRIX4Init(m, 1.0f, 1.0f, 1.0f);
     } else {
-        float angle = r * 6.2831855f; // 2pi
+        float angle = r * UMath::TWOPI;
         float fSin = VU0_Sin(angle);
         float fCos = VU0_Cos(angle);
 
@@ -50,13 +48,13 @@ void BuildRotate(UMath::Matrix4 &m, float r, float x, float y, float z) {
         z *= invllen;
 
         float fT = 1.0f;
-        float fTX = fT * x; // f9
-        float fTY = fT * y; // f0
-        float fTZ = fT * z; // f12
+        float fTX = fT * x;   // f9
+        float fTY = fT * y;   // f0
+        float fTZ = fT * z;   // f12
         float fSX = fSin * x; // f11
         float fSY = fSin * y; // f30
         float fSZ = fSin * z; // f8
-        
+
         m.v0.x = fTX * x + fCos; // 0
         m.v0.y = fTX * y + fSZ;  // 1
         m.v0.z = fTX * z - fSY;  // 2
@@ -75,6 +73,5 @@ void BuildRotate(UMath::Matrix4 &m, float r, float x, float y, float z) {
         m.v1.w = 0.0f;
         m.v2.w = 0.0f;
         m.v3.w = fT;
-        
     }
 }

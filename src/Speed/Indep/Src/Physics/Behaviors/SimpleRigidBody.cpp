@@ -109,7 +109,6 @@ void SimpleRigidBody::DoIntegration(const float dT) {
         UMath::Vector4 aVel = {};
         UMath::Scale(data.angularVel, dT, *reinterpret_cast<UMath::Vector3 *>(&aVel));
         UMath::Vector4 temp_quat;
-        // TODO UNSOLVED
         UMath::Mult(aVel, data.orientation, temp_quat);
         UMath::ScaleAdd(temp_quat, 0.5f, data.orientation, data.orientation);
         UMath::Unit(data.orientation, data.orientation);

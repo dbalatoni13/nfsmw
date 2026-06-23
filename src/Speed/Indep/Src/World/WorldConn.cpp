@@ -109,6 +109,7 @@ class WorldBodyConn : public Sim::Connection, public bTNode<WorldBodyConn> {
 };
 
 BIND_SIM_CONN(WorldBodyConn);
+bTList<WorldBodyConn> WorldBodyConn::mList;
 
 Sim::Connection *WorldBodyConn::Construct(const Sim::ConnectionData &data) {
     return new WorldBodyConn(data);
@@ -214,6 +215,7 @@ class WorldEffectConn : public Sim::Connection, public bTNode<WorldEffectConn> {
 };
 
 BIND_SIM_CONN(WorldEffectConn);
+bTList<WorldEffectConn> WorldEffectConn::mList;
 
 Sim::Connection *WorldEffectConn::Construct(const Sim::ConnectionData &data) {
     WorldConn::Pkt_Effect_Open *oc = Sim::Packet::Cast<WorldConn::Pkt_Effect_Open>(data.pkt);
