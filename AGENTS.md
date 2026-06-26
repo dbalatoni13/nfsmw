@@ -102,17 +102,6 @@ python tools/elf_lookup.py 0x002F1234 --game ps2
 This is the preferred replacement for ad-hoc Python snippets that manually parse the ELF
 to chase `@stringBase0` or other rodata/data references.
 
-### code-style — Repo-local style guidance
-
-When you are writing code, polishing code you already touched, or doing a style-review pass,
-consult `.github/skills/code_style/SKILL.md` first. It captures repo-specific formatting and
-cleanup rules, including jumbo include spacing, initializer-list comment markers, declaration
-placement, pointer style, and how to keep style work safe in match-sensitive code.
-
-Use `python tools/code_style.py audit --base origin/main` before a branch-wide style pass.
-It classifies changed files, reports repo-specific findings, and can run clang-format
-across eligible changed C/C++ files by default.
-
 ### decomp-diff.py — Diff & symbol overview
 
 Overview mode lists all symbols in a translation unit with match status:
@@ -340,15 +329,14 @@ This is a **C++98** codebase compiled with ProDG GC 3.9.3 (GCC 2.95 under the ho
 - Use C++ casts (`static_cast<T>(expr)`) instead of C-style casts
 - Header guards should use `#ifndef` / `#define` together with the `EA_PRAGMA_ONCE_SUPPORTED` block when writing repo headers
 - Constructors use initializer list style with leading `, ` on each line, add empty comments at the end of these lines (except the last) to stop clang-format from putting them all on the same line
-- Inline assembly is acceptable when needed to reproduce dead code or compiler scheduling that source alone cannot express cleanly
 - Preserve the original `class` vs `struct` kind. Check existing headers first, then Dwarf / PS2 info when needed. Even forward declarations and local partial declarations should use the accurate keyword when known.
 - Prefer including the real repo header over introducing a local forward declaration for a project type. If a type already has a header in `src/`, include it instead of redeclaring it locally.
 - If a subsystem already has a stub owner header and the debug line info points back at that subsystem, fill the owner header instead of keeping a recovered project type declaration in a `.cpp`.
 - Preserve original member names, types, order, and proven layout comments. Do not invent `pad`, `unk`, or `field_XXXX` members just to satisfy a guessed size or offset; verify the real members with `find-symbol.py`, GC Dwarf, and PS2 data, and leave a short TODO if a layout detail is still uncertain.
 - Follow DWARF member naming exactly (`mMember` vs `m_member`) instead of normalizing names
-- Omit the `this` pointer.
+- Don't omit the `this` pointer from member access and member function calls.
 - Use `nullptr` and `override`. If they are missing, you need to include `types.h`.
-- Prefer `if (ptr)` / `if (!ptr)` over explicit `nullptr` comparisons. In match-sensitive translation units, if you choose to normalize many of them, do it as one mechanical TU-wide pass and then rebuild / re-check that unit instead of assuming a piecemeal cleanup is free.
+- Prefer explicit `nullptr` comparisons.
 - Omit `struct` when declaring variables or parameters, we are not in C land.
 - Avoid using `using` directives at all cost. Since the game uses jumbo builds, they leak through files.
 
