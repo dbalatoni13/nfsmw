@@ -8,6 +8,7 @@
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
 #include "Speed/Indep/Src/Main/EventSequencer.h"
 #include "Speed/Indep/Src/Physics/Dynamics.h"
+#include "Speed/Indep/Src/Physics/Dynamics/Articulation.h"
 #include "Speed/Indep/Src/Physics/Dynamics/Collision.h"
 #include "Speed/Indep/Src/Sim/Collision.h"
 #include "Speed/Indep/Src/Sim/SimSubSystem.h"
@@ -25,6 +26,10 @@ class CollisionPacket {
     float penetration;                     // offset 0x1C, size 0x4
     UMath::Vector3 arm;                    // offset 0x20, size 0xC
     const Attrib::Collection *surface;     // offset 0x2C, size 0x4
+
+    bool operator<(const CollisionPacket &b) const {
+        return this->penetration > b.penetration;
+    }
 };
 
 static const bool Tweak_PrintRBWarnings = false;
@@ -39,6 +44,7 @@ BIND_BEHAVIOR_SPECS(rigidbodyspecs);
 bTList<RigidBody> TheRigidBodies;
 
 unsigned int RigidBody::mCount = 0;
+bool RigidBody::mOnSP = false;
 
 BIND_BEHAVIOR_FACTORY(RigidBody);
 
@@ -126,7 +132,6 @@ void RigidBody::Primitive::Prepare(const Volatile &data) {
     UMath::Add(this->mPrevPosition, data.position, this->mPrevPosition);
 }
 
-// UNSOLVED
 bool RigidBody::Primitive::SetCollision(const Volatile &data, Dynamics::Collision::Geometry &obb) const {
     UMath::Vector3 position;
     UMath::Vector3 dP;
@@ -140,7 +145,7 @@ bool RigidBody::Primitive::SetCollision(const Volatile &data, Dynamics::Collisio
     } else {
         UMath::Matrix4 mat;
         UMath::Vector4 rot;
-        UMath::Mult(this->mOrientation, data.orientation, rot);
+        UMath::Mult(data.orientation, this->mOrientation, rot);
         UMath::QuaternionToMatrix4(rot, mat);
         obb.Set(mat, position, this->GetDimension(), this->mShape, dP);
     }
@@ -154,10 +159,93 @@ void RigidBody::ShutdownRigidBodySystem() {}
 // STRIPPED
 void RigidBody::DebugSystem() {}
 
+IMPLEMENT_SAP_GRID(RigidBody);
+
+static char RBGrid_Memory[6912];
+
+RBGrid *RBGrid::Add(unsigned int index, RigidBody &owner, const UMath::Vector3 &position, float radius) {
+    if (index < 64) {
+        void *addr = &RBGrid_Memory[index * sizeof(RBGrid)];
+        return new (addr) RBGrid(owner, position, radius);
+    } else {
+        return nullptr;
+    }
+}
+
 void RBGrid::Remove(RBGrid *grid) {
     if (grid != nullptr) {
         grid->~RBGrid();
     }
+}
+
+RigidBody::RigidBody(const BehaviorParams &bp, const RBComplexParams &params)
+    : Behavior(bp, 0),                                           //
+      IRigidBody(bp.fowner),                                     //
+      ICollisionBody(bp.fowner),                                 //
+      IDynamicsEntity(bp.fowner),                                //
+      IBoundable(bp.fowner),                                     //
+      mSpecs(this, 0),                                           //
+      mWCollider(nullptr),                                       //
+      mGeoms(params.fgeoms),                                     //
+      mGroundNormal(UMath::Vector4Make(0.0f, 1.0f, 0.0f, 0.0f)), //
+      mDimension(UMath::Vector3Make(1.0f, 1.0f, 1.0f)),          //
+      mCollisionMask(params.fCollisionMask),                     //
+      mDetachForce(0.0f),                                        //
+      mInvWorldTensor(UMath::Matrix4::kIdentity) {
+    mSimableType = this->GetOwner()->GetSimableType();
+    this->MakeDebugable(DBG_RIGIDBODY);
+    TheRigidBodies.AddTail(this);
+
+    this->mData->force = UMath::Vector3::kZero;
+    this->mData->torque = UMath::Vector3::kZero;
+    this->mData->index = AssignSlot();
+    this->mData->torque = UMath::Vector3::kZero;
+    this->mData->mass = params.finitMass;
+    this->mData->leversInContact = 0;
+    this->mData->position = params.finitPos;
+    this->mData->linearVel = params.factive ? params.finitVel : UMath::Vector3::kZero;
+    this->mData->angularVel = params.factive ? params.finitAngVel : UMath::Vector3::kZero;
+    this->mData->bodyMatrix = UMath::Matrix4::kIdentity;
+    this->mData->inertiaTensor = params.finitMoment;
+    this->mData->status = 0;
+    this->mData->statusPrev = 0;
+    this->mData->oom = 1.0f / this->mData->mass;
+    this->mData->state = 0;
+    this->mData->radius = UMath::Length(params.fdimension);
+
+    this->SetOrientation(params.finitMat);
+    this->mGrid = RBGrid::Add(this->mData->index, *this, params.finitPos, UMath::Length(params.fdimension));
+    this->mCOG = UMath::Vector4To3(this->mSpecs.CG());
+    this->mDimension.x = UMath::Max(0.001f, params.fdimension.x);
+    this->mDimension.y = UMath::Max(0.001f, params.fdimension.y);
+    this->mDimension.z = UMath::Max(0.001f, params.fdimension.z);
+
+    if (!params.factive) {
+        this->mData->state = 1;
+    }
+
+    if (LengthSquarexyz(this->mSpecs.DRAG()) > 0.0f) {
+        this->mData->SetStatus(0x20);
+    } else {
+        this->mData->RemoveStatus(0x20);
+    }
+
+    if (LengthSquarexyz(this->mSpecs.DRAG_ANGULAR()) > 0.0f) {
+        this->mData->SetStatus(0x800);
+    } else {
+        this->mData->RemoveStatus(0x800);
+    }
+
+    if (this->mSimableType == SIMABLE_VEHICLE) {
+        this->mData->SetStatus(0x40);
+    }
+
+    WUID world_id = this->GetOwner()->GetWorldID();
+    this->mWCollider = WCollider::Create(world_id, WCollider::kColliderShape_Cylinder, 0x1C, this->mCollisionMask);
+    this->CreateGeometries();
+    this->mMaps[this->mData->index] = this;
+    this->mCount++;
+    this->mData->SetStatus(0x200);
 }
 
 RigidBody::~RigidBody() {
@@ -176,10 +264,6 @@ RigidBody::~RigidBody() {
     Dynamics::Articulation::Release(this);
     TheRigidBodies.Remove(this);
 }
-
-IMPLEMENT_SAP_GRID(RigidBody);
-
-static char RBGrid_Memory[6912];
 
 void RigidBody::Reset() {
     this->mWCollider->Clear();
@@ -569,8 +653,59 @@ void RigidBody::ResolveForce(const UMath::Vector3 &force, const UMath::Vector3 &
 
 void RigidBody::Debug() {}
 
-// TODO
-void RigidBody::DoIntegration(const float dT) {}
+void RigidBody::DoIntegration(const float dT) {
+    Volatile &data = *this->mData;
+
+    if (data.state != STATE_AWAKE) {
+        UMath::Clear(data.linearVel);
+        UMath::Clear(data.angularVel);
+        return;
+    }
+
+    data.Validate();
+
+    UMath::Vector4 temp_quat;
+    UMath::Vector4 aVel;
+    UMath::Vector3 cg0;
+    UMath::Vector3 cg1;
+    UMath::Vector3 dcg;
+
+    UMath::Rotate(this->mCOG, data.bodyMatrix, cg0);
+
+    UMath::ScaleAdd(data.force, dT * data.oom, data.linearVel, data.linearVel);
+    UMath::Scale(data.torque, dT, data.torque);
+    UMath::ScaleAdd(data.linearVel, dT, data.position, data.position);
+    UMath::Rotate(data.torque, this->mInvWorldTensor, data.torque);
+    UMath::Add(data.angularVel, data.torque, data.angularVel);
+
+    data.linearVel.x = UMath::Bound(data.linearVel.x, 300.0f);
+    data.linearVel.y = UMath::Bound(data.linearVel.y, 300.0f);
+    data.linearVel.z = UMath::Bound(data.linearVel.z, 300.0f);
+
+    data.angularVel.x = UMath::Bound(data.angularVel.x, 30.0f);
+    data.angularVel.y = UMath::Bound(data.angularVel.y, 30.0f);
+    data.angularVel.z = UMath::Bound(data.angularVel.z, 30.0f);
+
+    if (UMath::LengthSquare(data.angularVel) != 0.0f) {
+        UMath::Scale(data.angularVel, dT, reinterpret_cast<UMath::Vector3 &>(aVel));
+        aVel.w = 0.0f;
+        UMath::Mult(aVel, data.orientation, temp_quat);
+        UMath::ScaleAdd(temp_quat, 0.5f, data.orientation, data.orientation);
+
+        float rlen = UMath::LengthSquare(data.orientation);
+        UMath::Scale(data.orientation, 1.0f / sqrtf(rlen), data.orientation);
+
+        UMath::QuaternionToMatrix4(data.orientation, data.bodyMatrix);
+    }
+
+    data.inertiaTensor.GetInverseWorldTensor(data.bodyMatrix, this->mInvWorldTensor);
+
+    UMath::Rotate(this->mCOG, data.bodyMatrix, cg1);
+    UMath::Sub(cg0, cg1, dcg);
+    UMath::Add(data.position, dcg, data.position);
+
+    data.Validate();
+}
 
 void RigidBody::SetAnimating(bool animating) {
     if (animating) {
@@ -582,7 +717,6 @@ void RigidBody::SetAnimating(bool animating) {
 
 static const bool Tweak_SingleGroundCollisions = true; // TODO use
 
-// UNSOLVED, regswaps
 void RigidBody::ResolveGroundCollision(const CollisionPacket *bcp, const int numContacts) {
     Volatile &data = *this->mData;
     bool first = true;
@@ -648,8 +782,147 @@ bool RigidBody::CanCollideWithGround() const {
     return true;
 }
 
-static const unsigned int Tweak_MaxGroundCollisionResults = 16; // TODO use
-static const unsigned int BOX_CORNERS = 8;                      // TODO use
+static const unsigned int Tweak_MaxGroundCollisionResults = 16;
+static const unsigned int BOX_CORNERS = 8;
+
+// UNSOLVED, y_vel and tolerance math twice
+void RigidBody::DoInstanceCollision2d(const float dT) {
+    Volatile &data = *this->mData;
+    data.leversInContact = 0;
+
+    UMath::Vector4 deepest_ground_penetration = UMath::Vector4::kZero;
+    const float speedXZ = UMath::Lengthxz(data.linearVel);
+    UMath::Vector3 world_cog;
+    UMath::Rotate(this->mCOG, data.bodyMatrix, world_cog);
+    WWorldPos world_pos = this->Behavior::GetOwner()->GetWPos();
+    UMath::Vector4 world_normal = this->mGroundNormal;
+    unsigned int counter = 0;
+    CollisionPacket collision_packets[Tweak_MaxGroundCollisionResults];
+
+    UMath::Vector3 y_extent;
+    y_extent.x = data.bodyMatrix[0][1] * this->mDimension.x;
+    y_extent.y = data.bodyMatrix[1][1] * this->mDimension.y;
+    y_extent.z = data.bodyMatrix[2][1] * this->mDimension.z;
+
+    float depth = UMath::Length(y_extent);
+    CollisionPacket *bcp = collision_packets;
+    const float ceiling = depth + data.position.y;
+
+    for (Primitive *prim = this->mPrimitives.GetHead(); prim != this->mPrimitives.EndOfList(); prim = prim->GetNext()) {
+        if (!prim->IsEnabled() || !(prim->GetFlags() & Primitive::VSGROUND) || prim->GetShape() != Dynamics::Collision::Geometry::BOX) {
+            continue;
+        }
+
+        static const UMath::Vector4 diagnols[BOX_CORNERS] = {{-1.0f, -1.0f, -1.0f, 1.0f}, {1.0f, -1.0f, -1.0f, 1.0f}, {-1.0f, 1.0f, -1.0f, 1.0f},
+                                                             {1.0f, 1.0f, -1.0f, 1.0f},   {-1.0f, -1.0f, 1.0f, 1.0f}, {1.0f, -1.0f, 1.0f, 1.0f},
+                                                             {-1.0f, 1.0f, 1.0f, 1.0f},   {1.0f, 1.0f, 1.0f, 1.0f}};
+
+        const Attrib::Collection *bodysuface = prim->GetMaterial();
+        const UMath::Vector3 &dim = prim->GetDimension();
+
+        UMath::Matrix4 ortho_scaled_matrix;
+        UMath::Matrix4 world_scaled_matrix;
+        UMath::QuaternionToMatrix4(prim->GetOrientation(), ortho_scaled_matrix);
+        UMath::Scale(ortho_scaled_matrix, dim);
+        ortho_scaled_matrix.v3 = UMath::Vector4Make(prim->GetOffset(), 1.0f);
+        UMath::Mult(ortho_scaled_matrix, data.bodyMatrix, world_scaled_matrix);
+
+        UMath::Vector4 world_arms[BOX_CORNERS];
+        UMath::RotateTranslate(diagnols, world_scaled_matrix, world_arms, BOX_CORNERS);
+
+        for (int loop = 0; loop < BOX_CORNERS && counter < Tweak_MaxGroundCollisionResults; ++loop) {
+            UMath::Vector3 world_point;
+            const UMath::Vector3 &world_arm = UMath::Vector4To3(world_arms[loop]);
+
+            UMath::Add(world_arm, data.position, world_point);
+
+            float y_vel = (world_arm.x - world_cog.x) * data.angularVel.z + data.linearVel.y;
+            y_vel = data.angularVel.x * (world_arm.z - world_cog.z) - y_vel;
+
+            float tolerance = speedXZ * dT + depth;
+            tolerance += UMath::Max(y_vel * dT, 0.0f);
+            tolerance = UMath::Clamp(ceiling - world_point.y, 0.25f, tolerance);
+
+            world_pos.SetTolerance(tolerance);
+            world_pos.Update(world_point, world_normal, true, this->mWCollider, true);
+
+            if (world_pos.OnValidFace() && world_normal.w > UMath::Epsilon) {
+                if (world_normal.w > deepest_ground_penetration.w) {
+                    deepest_ground_penetration = world_normal;
+                }
+
+                counter++;
+                UMath::RotateTranslate(UMath::Vector4To3(diagnols[loop]), ortho_scaled_matrix, bcp->arm);
+                bcp->lever = world_arm;
+                bcp->normal = UMath::Vector4To3(world_normal);
+                bcp->penetration = world_normal.w;
+                bcp->surface = world_pos.GetSurface();
+                bcp->bodysurface = bodysuface;
+                bcp++;
+            }
+        }
+    }
+
+    for (Mesh *mesh = this->mMeshes.GetHead(); mesh != this->mMeshes.EndOfList() && counter < Tweak_MaxGroundCollisionResults;
+         mesh = mesh->GetNext()) {
+        if (!mesh->IsEnabled()) {
+            continue;
+        }
+
+        const Attrib::Collection *bodysuface = mesh->GetMaterial();
+        int limit = mesh->GetNumVertices();
+        UMath::Vector4 world_arms[Tweak_MaxGroundCollisionResults];
+
+        UMath::RotateTranslate(mesh->GetOrtho(), data.bodyMatrix, world_arms, limit);
+
+        for (int loop = 0; loop < limit && counter < Tweak_MaxGroundCollisionResults; ++loop) {
+            const UMath::Vector3 &ortho = UMath::Vector4To3(mesh->GetOrtho(loop));
+            UMath::Vector3 world_point;
+            const UMath::Vector3 &world_arm = UMath::Vector4To3(world_arms[loop]);
+
+            UMath::Add(world_arm, data.position, world_point);
+
+            float y_vel = data.angularVel.z * (world_arm.x - world_cog.x) + data.linearVel.y;
+            y_vel = data.angularVel.x * (world_arm.z - world_cog.z) - y_vel;
+
+            float tolerance = speedXZ * dT + depth;
+            tolerance += UMath::Max(y_vel * dT, 0.0f);
+            tolerance = UMath::Clamp(ceiling - world_point.y, 0.25f, tolerance);
+
+            world_pos.SetTolerance(tolerance);
+            world_pos.Update(world_point, world_normal, true, this->mWCollider, true);
+
+            if (world_pos.OnValidFace() && world_normal.w > UMath::Epsilon) {
+                if (world_normal.w > deepest_ground_penetration.w) {
+                    deepest_ground_penetration = world_normal;
+                }
+
+                counter++;
+                bcp->lever = world_arm;
+                bcp->normal = UMath::Vector4To3(world_normal);
+                bcp->penetration = world_normal.w;
+                bcp->arm = ortho;
+                bcp->surface = world_pos.GetSurface();
+                bcp->bodysurface = bodysuface;
+                bcp++;
+            }
+        }
+    }
+
+    if (counter != 0) {
+        data.leversInContact = counter;
+
+        if (counter > 1) {
+            std::sort(collision_packets, collision_packets + counter);
+        }
+
+        this->ResolveGroundCollision(collision_packets, UMath::Min(Tweak_MaxGroundCollisionResults, counter));
+
+        if (deepest_ground_penetration.w > 0.0f) {
+            UMath::ScaleAdd(UMath::Vector4To3(deepest_ground_penetration), deepest_ground_penetration.w, data.position, data.position);
+        }
+    }
+}
 
 void RigidBody::ModifyCollision(const SimSurface &other, const Dynamics::Collision::Plane &plane, Dynamics::Collision::Moment &myMoment) {
     myMoment.SetInertiaScale(UMath::Vector4To3(this->mSpecs.WORLD_MOMENT_SCALE()));
@@ -1035,11 +1308,10 @@ void RigidBody::UpdateCollider() {
     Behavior::GetOwner()->GetWPos().Update(data.position, this->mGroundNormal, true, this->mWCollider, true);
 }
 
-// UNSOLVED but functionally matching
 bool RigidBody::CanCollideWithWorld() const {
     const Volatile &data = *this->mData;
 
-    if (Tweak_DisableWorldCollisions && data.GetStatus(0x40) && !this->mSpecs.NO_WORLD_COLLISIONS() && !this->IsSleeping()) {
+    if (!Tweak_DisableWorldCollisions && data.GetStatus(0x40) && !this->mSpecs.NO_WORLD_COLLISIONS() && !this->IsSleeping()) {
         if (this->mPrimitives.Size() == 0) {
             return false;
         }
@@ -1065,8 +1337,8 @@ bool RigidBody::OnWCollide(const WCollisionMgr::WorldCollisionInfo &cInfo, const
     }
     COLLISION_INFO collisionInfo;
 
-    if (this->ResolveWorldCollision(UVector3(cInfo.fNormal), cPoint, &collisionInfo, reinterpret_cast<Primitive *>(userdata)->GetMaterial(), surface, wV) >
-        0.0f) {
+    if (this->ResolveWorldCollision(UVector3(cInfo.fNormal), cPoint, &collisionInfo, reinterpret_cast<Primitive *>(userdata)->GetMaterial(), surface,
+                                    wV) > 0.0f) {
         new ECollision(collisionInfo);
     }
     return true;
@@ -1082,7 +1354,46 @@ void RigidBody::DoWorldCollisions(const float dT) {
     }
 }
 
-void RigidBody::DoBarrierCollision(float dT) {}
+void RigidBody::DoBarrierCollision(float dT) {
+    if (this->mWCollider->GetBarrierList().empty()) {
+        return;
+    }
+
+    Volatile &data = *this->mData;
+    WCollisionMgr::WorldCollisionInfo cInfo;
+    Dynamics::Collision::Geometry thisGeom;
+    const WCollisionBarrierList &barriers = this->mWCollider->GetBarrierList();
+    bool testall = true;
+
+    if (this->mPrimitives.Size() > 1) {
+        UVector3 dVdT(data.linearVel);
+
+        dVdT *= dT;
+
+        float rad = this->mPrimitives.GetRadius();
+        UVector3 dim(rad, rad, rad);
+
+        thisGeom.Set(data.bodyMatrix, data.position, dim, Dynamics::Collision::Geometry::SPHERE, dVdT);
+        testall = WCollisionMgr(this->mCollisionMask, 3).Collide(&thisGeom, &barriers, nullptr, nullptr, false) == true;
+    }
+
+    if (testall) {
+        for (Primitive *collider = this->mPrimitives.GetHead(); collider != this->mPrimitives.EndOfList(); collider = collider->GetNext()) {
+            if (((collider->GetFlags() ^ 1) & 1) != 0) {
+                continue;
+            }
+            if ((collider->GetFlags() & 8) != 0) {
+                continue;
+            }
+            if (!collider->SetCollision(data, thisGeom)) {
+                continue;
+            }
+
+            bool force_single_sided = (collider->GetFlags() & Primitive::ONESIDED) != 0;
+            WCollisionMgr(this->mCollisionMask, 3).Collide(&thisGeom, &barriers, this, collider, force_single_sided);
+        }
+    }
+}
 
 void RigidBody::DoInstanceCollision(float dT) {
     if (!this->mSpecs.INSTANCE_COLLISIONS_3D()) {
@@ -1096,10 +1407,60 @@ void RigidBody::DoInstanceCollision3d(float dT) {
     Volatile &data = *this->mData;
     WCollisionMgr::WorldCollisionInfo cInfo;
     Dynamics::Collision::Geometry thisGeom;
-    const struct WCollisionInstanceCacheList &instances = this->mWCollider->GetInstanceList();
+    const WCollisionInstanceCacheList &instances = this->mWCollider->GetInstanceList();
     for (Primitive *collider = this->mPrimitives.GetHead(); collider != this->mPrimitives.EndOfList(); collider = collider->GetNext()) {
         if ((((collider->GetFlags() ^ 1) & 1) == 0) && !(collider->GetFlags() & 8) && collider->SetCollision(data, thisGeom)) {
             WCollisionMgr(this->mCollisionMask, 3).Collide(&thisGeom, &instances, this, collider);
+        }
+    }
+}
+
+void RigidBody::DoObbCollision(float dT) {
+    if (this->mWCollider->GetObbList().empty()) {
+        return;
+    }
+
+    Volatile &data = *this->mData;
+    WCollisionMgr::WorldCollisionInfo cInfo;
+    Dynamics::Collision::Geometry thisGeom;
+    Dynamics::Collision::Geometry otherGeom;
+    const WCollisionObjectList &obbObjectList = this->mWCollider->GetObbList();
+
+    for (const WCollisionObject *const *it = obbObjectList.begin(); it != obbObjectList.end(); ++it) {
+        const WCollisionObject &obbObject = **it;
+        UMath::Vector3 objectVel;
+        WSurface surface;
+
+        WCollisionMgr(this->mCollisionMask, 3).BuildGeomFromWorldObb(obbObject, dT, otherGeom, objectVel, surface);
+
+        for (Primitive *collider = this->mPrimitives.GetHead(); collider != this->mPrimitives.EndOfList(); collider = collider->GetNext()) {
+            if (((collider->GetFlags() ^ Primitive::VSWORLD) & Primitive::VSWORLD) != 0) {
+                continue;
+            }
+            if ((collider->GetFlags() & Primitive::DISABLED) != 0) {
+                continue;
+            }
+            if (!collider->SetCollision(data, thisGeom)) {
+                continue;
+            }
+
+            if (Dynamics::Collision::Geometry::FindIntersection(&thisGeom, &otherGeom, &thisGeom)) {
+                const UMath::Vector3 &collisionNormal = thisGeom.GetCollisionNormal();
+                const UMath::Vector3 &collisionPoint = thisGeom.GetCollisionPoint();
+                float overlap = -thisGeom.GetOverlap();
+                COLLISION_INFO collisionInfo;
+
+                collisionInfo.objA = this->GetOwner()->GetInstanceHandle();
+
+                data.SetStatus(Volatile::HAS_HAD_OBJECT_COLLISION);
+                UMath::ScaleAdd(collisionNormal, overlap, data.position, data.position);
+
+                if (this->ResolveWorldOBBCollision(collisionNormal, collisionPoint, &collisionInfo, &otherGeom, objectVel,
+                                                   SimSurface(collider->GetMaterial()), surface.GetSimSurface())) {
+                    data.SetStatus(Volatile::HAS_HAD_WORLD_COLLISION);
+                    new ECollision(collisionInfo);
+                }
+            }
         }
     }
 }
@@ -1121,13 +1482,14 @@ void RigidBody::Accelerate(const UMath::Vector3 &a, float dT) {
 }
 
 bool RigidBody::AddCollisionSphere(float radius, const UMath::Vector3 &offset, const SimSurface &material, unsigned int flags, const UCrc32 &name) {
-    return this->mPrimitives.Create(UVector3(radius, radius, radius), offset, material, Dynamics::Collision::Geometry::SPHERE, UMath::Vector4::kIdentity,
-                              flags | 0x10, name);
+    return this->mPrimitives.Create(UVector3(radius, radius, radius), offset, material, Dynamics::Collision::Geometry::SPHERE,
+                                    UMath::Vector4::kIdentity, flags | 0x10, name);
 }
 
 bool RigidBody::AddCollisionBox(const UMath::Vector3 &dim, const UMath::Vector3 &offset, const SimSurface &material, const UMath::Vector4 &orient,
                                 unsigned int flags, const UCrc32 &name) {
-    return this->mPrimitives.Create(dim + this->mSpecs.COLLISION_BOX_PAD(), offset, material, Dynamics::Collision::Geometry::BOX, orient, flags, name);
+    return this->mPrimitives.Create(dim + this->mSpecs.COLLISION_BOX_PAD(), offset, material, Dynamics::Collision::Geometry::BOX, orient, flags,
+                                    name);
 }
 
 bool RigidBody::CanCollideWithObjects() const {
@@ -1162,6 +1524,25 @@ void RigidBody::PushSP(void *workspace) {
 void RigidBody::PopSP() {
     mOnSP = false;
     ScratchPtr<RigidBody::Volatile>::Pop();
+}
+
+void RigidBody::Update(const float dT) {
+    int overlapx = 0;
+    int overlapz = 0;
+
+    for (RigidBody *body = TheRigidBodies.GetHead(); body != TheRigidBodies.EndOfList(); body = body->GetNext()) {
+        body->OnBeginFrame(dT);
+        body->UpdateGrid(overlapx, overlapz);
+    }
+
+    unsigned int numit = SAP::Grid<RigidBody>::Sweep();
+    SAP::Grid<RigidBody>::Prune(overlapx < overlapz, RigidBody::OnObjectOverlap, dT);
+
+    for (RigidBody *body = TheRigidBodies.GetHead(); body != TheRigidBodies.EndOfList(); body = body->GetNext()) {
+        body->OnEndFrame(dT);
+    }
+
+    Dynamics::Articulation::Resolve();
 }
 
 void RigidBody::Damp(float amount) {
@@ -1207,10 +1588,10 @@ IRigidBody *RigidBody::Get(unsigned int index) {
 }
 
 unsigned int RigidBody::AssignSlot() {
-    for (std::size_t i = 0; i < NUM_ELEMENTS(mMaps); ++i) {
+    for (unsigned int i = 0; i < NUM_ELEMENTS(mMaps); ++i) {
         if (mMaps[i] == nullptr) {
             return i;
         }
     }
-    return static_cast<unsigned int>(-1);
+    return ~0;
 }

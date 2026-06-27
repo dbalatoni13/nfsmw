@@ -3,6 +3,7 @@
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/smackable.h"
 #include "Speed/Indep/Src/Interfaces/IListener.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ICollisionBody.h"
+#include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISuspension.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
 #include "Speed/Indep/Src/Physics/Behavior.h"
@@ -14,6 +15,14 @@
 // total size: 0x20
 class EffectLookup {
   public:
+    EffectLookup()
+        : mEffect(),       //
+          mSourceKey(0),   //
+          mDataKey(0),     //
+          mSurfaceKey(0),  //
+          mMinSpeed(0.0f), //
+          mMaxSpeed(0.0f) {}
+
     float GetMinSpeed() {
         return mMinSpeed;
     }
@@ -120,8 +129,12 @@ class Effects : public Behavior, public Sim::Collision::IListener {
     void OnPause() override;
 };
 
-Effects::Effects(const BehaviorParams &bp) : Behavior(bp, 0) {
-    // TODO
+Effects::Effects(const struct BehaviorParams &bp)
+    : Behavior(bp, 0),      //
+      mIRBComplex(nullptr), //
+      mScrapeTimeOut(0.0f), //
+      mScrape(static_cast<ISimable *>(bp.fowner)->GetWorldID(), static_cast<ISimable *>(bp.fowner)->GetAttributes().GetConstCollection()) {
+    Sim::Collision::AddListener(this, GetOwner(), "Effects");
 }
 
 Effects::~Effects() {
@@ -250,7 +263,39 @@ void Effects::OnHitGround(const SimSurface &othersurface, float impulse, const U
 }
 
 void Effects::OnCollision(const COLLISION_INFO &cinfo) {
-    // TODO annoying virtuals
+    if (this->IsPaused()) {
+        return;
+    }
+    
+    if (cinfo.type == Sim::Collision::Info::WORLD) {
+        this->OnHitWorld(SimSurface(cinfo.objBsurface), cinfo.impulseA, cinfo.position, cinfo.closingVel, cinfo.normal);
+
+        this->OnScrapeWorld(SimSurface(cinfo.objBsurface), cinfo.position, cinfo.slidingVel, cinfo.normal);
+    }
+
+    if (cinfo.type == Sim::Collision::Info::OBJECT) {
+        UMath::Vector3 normal = cinfo.normal;
+        SimSurface surface(cinfo.objBsurface);
+        float impulse = cinfo.impulseA;
+        HSIMABLE hother = cinfo.objB;
+
+        if (hother == this->GetOwner()->GetInstanceHandle()) {
+            UMath::Scale(normal, -1.0f);
+            surface = SimSurface(cinfo.objAsurface);
+            impulse = cinfo.impulseB;
+            hother = cinfo.objA;
+        }
+
+        this->OnHitObject(surface, impulse, cinfo.position, cinfo.closingVel, normal, hother);
+
+        this->OnScrapeObject(surface, cinfo.position, cinfo.slidingVel, normal, hother);
+    }
+
+    if (cinfo.type == Sim::Collision::Info::GROUND) {
+        this->OnHitGround(SimSurface(cinfo.objBsurface), cinfo.impulseA, cinfo.position, cinfo.closingVel, cinfo.normal);
+
+        this->OnScrapeGround(SimSurface(cinfo.objBsurface), cinfo.position, cinfo.slidingVel, cinfo.normal);
+    }
 }
 
 // total size: 0xF4
@@ -383,12 +428,12 @@ void EffectsSmackable::OnCollision(const COLLISION_INFO &cinfo) {
     HSIMABLE hsimable = GetOwner()->GetInstanceHandle();
     if (cinfo.objADetached && cinfo.objA == hsimable) {
         if (this->DoHit(SimSurface(cinfo.objBsurface), UMath::Length(cinfo.closingVel), cinfo.position, cinfo.closingVel, cinfo.normal,
-                  Attrib::Hash::smackable::OnDetached, cinfo.objB)) {
+                        Attrib::Hash::smackable::OnDetached, cinfo.objB)) {
             return;
         }
     } else if (cinfo.objBDetached && cinfo.objB == hsimable) {
         if (this->DoHit(SimSurface(cinfo.objAsurface), UMath::Length(cinfo.closingVel), cinfo.position, cinfo.closingVel, cinfo.normal,
-                  Attrib::Hash::smackable::OnDetached, cinfo.objA)) {
+                        Attrib::Hash::smackable::OnDetached, cinfo.objA)) {
             return;
         }
     }

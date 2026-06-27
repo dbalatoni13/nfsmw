@@ -6,7 +6,9 @@
 #include "Speed/Indep/Src/Interfaces/Simables/ISimpleBody.h"
 #include "Speed/Indep/Src/Main/ScratchPtr.h"
 #include "Speed/Indep/Src/Physics/Behavior.h"
+#include "Speed/Indep/Src/Physics/Behaviors/RigidBody.h"
 #include "Speed/Indep/Src/Physics/PhysicsObject.h"
+#include "Speed/Indep/Src/Sim/OBB.h"
 #include "Speed/Indep/Src/Sim/SimTypes.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/bWare/Inc/bTypes.hpp"
@@ -17,7 +19,7 @@ IMPLEMENT_SCRATCHPTR(SimpleRigidBody::Volatile);
 typedef bTList<SimpleRigidBody> SimpleBodyList;
 SimpleBodyList TheSimpleBodies;
 
-SimCollisionMap SimpleRigidBody::mCollisionMap[SimpleRigidBody::Volatile::MaxInstances];
+SimCollisionMap SimpleRigidBody::mCollisionMap[Sim::MaxSimpleBodies];
 
 SimpleRigidBody::SimpleRigidBody(const BehaviorParams &bp, const RBSimpleParams &params)
     : Behavior(bp, 0),       //
@@ -56,6 +58,10 @@ SimpleRigidBody::Volatile::Volatile() {}
 
 ISimable *SimpleRigidBody::GetOwner() const {
     return Behavior::GetOwner();
+}
+
+void SimpleRigidBody::RecalcOrientMat(UMath::Matrix4 &resultMat4) const {
+    UMath::QuaternionToMatrix4(mData->orientation, resultMat4);
 }
 
 void SimpleRigidBody::GetForwardVector(UMath::Vector3 &vec) const {
@@ -115,6 +121,112 @@ void SimpleRigidBody::DoIntegration(const float dT) {
     }
 }
 
+void SimpleRigidBody::DoSRBCollisions(SimpleRigidBody *other) {
+    Volatile &data = *this->mData;
+
+    if ((this->mData->flags | other->mData->flags) & 0x4000) {
+        if (other->GetSimableType() == this->GetSimableType()) {
+            return;
+        }
+    }
+
+    SimCollisionMap &cmap = this->mCollisionMap[this->GetIndex()];
+    SimCollisionMap &cmapother = this->mCollisionMap[other->GetIndex()];
+
+    UMath::Vector3 posSRB = other->GetPosition();
+    float radiusSRB = UMath::Max(0.25f, other->GetRadius());
+    float thisRadius = UMath::Max(0.25f, this->GetRadius());
+    UMath::Vector3 vec;
+
+    UMath::Sub(this->GetPosition(), posSRB, vec);
+
+    float distSquared = UMath::LengthSquare(vec);
+    float testRadius = thisRadius + radiusSRB;
+
+    if (distSquared >= testRadius * testRadius) {
+        return;
+    }
+
+    if (((this->mData->flags & 0x80) != 0) && ((other->mData->flags & 0x80) != 0)) {
+        OBB obbThis;
+        OBB obbOther;
+        UMath::Matrix4 orientThis;
+        UMath::Matrix4 orientOther;
+
+        UMath::QuaternionToMatrix4(this->GetOrientation(), orientThis);
+        UMath::QuaternionToMatrix4(other->GetOrientation(), orientOther);
+
+        const UMath::Vector3 &posThis = this->GetPosition();
+        UMath::Vector3 &posOther = posSRB;
+
+        UMath::Vector3 dimThis;
+        dimThis.x = dimThis.y = thisRadius;
+        dimThis.z = thisRadius * this->GetScalarVelocity();
+
+        UMath::Vector4 dimOther;
+        dimOther.x = dimOther.y = dimOther.z = radiusSRB;
+        dimOther.z *= other->GetScalarVelocity();
+
+        obbThis.Reset(orientThis, posThis, dimThis);
+        obbOther.Reset(orientOther, posOther, reinterpret_cast<UMath::Vector3 &>(dimOther));
+
+        if (obbThis.CheckOBBOverlap(&obbOther)) {
+            cmap.SetCollisionWithSRB(other->GetIndex());
+            cmapother.SetCollisionWithSRB(this->GetIndex());
+        }
+    } else {
+        cmap.SetCollisionWithSRB(other->GetIndex());
+        cmapother.SetCollisionWithSRB(this->GetIndex());
+    }
+}
+
+void SimpleRigidBody::DoRBCollisions(const float dT) {
+    SimCollisionMap &cmap = this->mCollisionMap[this->GetIndex()];
+    Volatile &data = *this->mData;
+    Dynamics::Collision::Geometry geomSRB;
+    const float thisRadius = UMath::Max(0.25f, this->GetRadius());
+    UVector3 dimSRB(thisRadius, thisRadius, thisRadius);
+
+    if (data.flags & 0x8000) {
+        geomSRB.Set(UMath::Matrix4::kIdentity, this->GetPosition(), dimSRB, Dynamics::Collision::Geometry::SPHERE,
+                    UVector3(this->GetLinearVelocity()) * dT);
+    } else if (data.flags & 0x40) {
+        UMath::Matrix4 orientSimple;
+
+        UMath::QuaternionToMatrix4(this->GetOrientation(), orientSimple);
+
+        geomSRB.Set(orientSimple, this->GetPosition(), dimSRB, Dynamics::Collision::Geometry::BOX, UVector3(this->GetLinearVelocity()) * dT);
+    }
+
+    for (RigidBody *body = TheRigidBodies.GetHead(); body != TheRigidBodies.EndOfList(); body = body->GetNext()) {
+        if (!body->IsModeling()) {
+            continue;
+        }
+
+        bool useobb = (data.flags & 0x8040) != 0;
+        const float vdist = useobb ? UMath::Distance(this->GetLinearVelocity(), body->GetLinearVelocity()) * dT : 0.0f;
+        const float distSquared = UMath::DistanceSquare(this->GetPosition(), body->GetPosition());
+        const float testRadius = thisRadius + body->GetRadius() + vdist;
+
+        if (distSquared >= testRadius * testRadius) {
+            continue;
+        }
+
+        if (useobb) {
+            Dynamics::Collision::Geometry geomRB(body->GetMatrix4(), body->GetPosition(), body->GetDimension(), Dynamics::Collision::Geometry::BOX,
+                                                 UVector3(body->GetLinearVelocity()) * dT);
+
+            if (!Dynamics::Collision::Geometry::FindIntersection(&geomRB, &geomSRB, &geomSRB)) {
+                continue;
+            }
+
+            cmap.SetCollisionWithRB(body->GetIndex());
+        } else {
+            cmap.SetCollisionWithRB(body->GetIndex());
+        }
+    }
+}
+
 // STRIPPED
 void SimpleRigidBody::SetCanHitTrigger(bool canHit) {}
 
@@ -171,13 +283,71 @@ void SimpleRigidBody::ResolveForce(const UMath::Vector3 &force, const UMath::Vec
 
 void SimpleRigidBody::ResolveTorque(const UMath::Vector3 &torque) {}
 
-// TODO
 unsigned int SimpleRigidBody::GetTriggerFlags() const {
-    return 0;
+    if (!this->CanHitTrigger()) {
+        return 0;
+    }
+
+    bool isplayer = this->GetOwner()->IsPlayer();
+    unsigned int flag = 0x40;
+
+    if (this->GetOwner()->GetSimableType() == SIMABLE_EXPLOSION) {
+        flag = 0x50;
+    }
+
+    if (this->GetOwner()->GetSimableType() == SIMABLE_HUMAN) {
+        flag |= 0x10000;
+
+        if (!isplayer) {
+            flag |= 8;
+        }
+    }
+
+    if (isplayer) {
+        flag |= 4;
+    }
+
+    return flag;
 }
 
 void SimpleRigidBody::Update(const float dT, void *workspace) {
-    // TODO really ugly output
+    ScratchPtr<Volatile>::Push(workspace);
+
+    bTList<SimpleRigidBody>::iterator beginIter = TheSimpleBodies.begin();
+    bTList<SimpleRigidBody>::iterator endIter = TheSimpleBodies.end();
+    bTList<SimpleRigidBody>::iterator iter = beginIter;
+
+    for (; iter != endIter; ++iter) {
+        (*iter)->DoIntegration(dT);
+    }
+
+    for (int i = 0; i < Sim::MaxSimpleBodies; ++i) {
+        mCollisionMap[i].Clear();
+    }
+
+    for (iter = beginIter; iter != endIter; ++iter) {
+        SimpleRigidBody *srb = *iter;
+
+        if (srb->CanCollideWithRB()) {
+            srb->DoRBCollisions(dT);
+        }
+
+        if (srb->CanCollideWithSRB()) {
+            bTList<SimpleRigidBody>::iterator iternext = iter;
+
+            ++iternext;
+
+            for (; iternext != endIter; ++iternext) {
+                SimpleRigidBody *srbother = *iternext;
+
+                if (srbother->CanCollideWithSRB()) {
+                    srb->DoSRBCollisions(srbother);
+                }
+            }
+        }
+    }
+
+    ScratchPtr<Volatile>::Pop();
 }
 
 IRigidBody *SimpleRigidBody::Get(unsigned int index) {
