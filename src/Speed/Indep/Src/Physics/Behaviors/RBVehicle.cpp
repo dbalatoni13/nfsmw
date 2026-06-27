@@ -89,7 +89,7 @@ void RBVehicle::OnBeginFrame(const float dT) {
 }
 
 void RBVehicle::OnTaskSimulate(float dT) {
-    Behavior::OnTaskSimulate(dT);
+    RigidBody::OnTaskSimulate(dT);
     this->mFrame++;
     if ((this->mInvulnerableState != INVULNERABLE_NONE) && (Sim::GetTime() > this->mLastPenetration + 1.0f) &&
         (this->mInvulnerableTimer -= dT) <= 0.0f) {
@@ -228,7 +228,8 @@ void RBVehicle::OnBehaviorChange(const UCrc32 &mechanic) {
 
 bool RBVehicle::CanCollideWithGround() const {
     if (!this->GetOwner()->IsPlayer() && (this->mSuspension != nullptr)) {
-        if (this->mSuspension->GetNumWheels() == this->mSuspension->GetNumWheelsOnGround() && this->mSuspension->GetNumWheels() > 2 && !HasHadObjectCollision()) {
+        if (this->mSuspension->GetNumWheels() == this->mSuspension->GetNumWheelsOnGround() && this->mSuspension->GetNumWheels() > 2 &&
+            !HasHadObjectCollision()) {
             return false;
         }
     }

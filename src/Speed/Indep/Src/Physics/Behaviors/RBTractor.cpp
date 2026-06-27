@@ -7,6 +7,7 @@
 #include "Speed/Indep/Src/Physics/Behaviors/RBVehicle.h"
 #include "Speed/Indep/Src/Physics/Bounds.h"
 #include "Speed/Indep/Src/Physics/Dynamics.h"
+#include "Speed/Indep/Src/Physics/PVehicle.h"
 
 static const float Tweak_OffGroundDetachTrailerTimer = 2.0f;
 static const float Tweak_TrailerTractorDetachLimit = 0.8f;
@@ -227,7 +228,52 @@ void RBTractor::PlaceObject(const UMath::Matrix4 &orientMat, const UMath::Vector
     }
 }
 
-// RBTractor::RBTractor(const BehaviorParams &bp, const RBComplexParams &params) {}
+RBTractor::~RBTractor() {
+    if (this->mHitched) {
+        Dynamics::Articulation::Release(this);
+        this->mHitched = false;
+    }
+    if (this->mTrailer != nullptr) {
+        this->mTrailer->GetSimable()->Kill();
+    }
+    if (this->mTrailerTask != nullptr) {
+        this->RemoveTask(this->mTrailerTask);
+        this->mTrailerTask = nullptr;
+    }
+}
+
+RBTractor::RBTractor(const BehaviorParams &bp, const RBComplexParams &params)
+    : RBVehicle(bp, params),            //
+      IArticulatedVehicle(bp.fowner),   //
+      IVehicleCache(this),              //
+      mTrailer(nullptr),                //
+      mIInput(nullptr),                 //
+      mTrailerTask(nullptr),            //
+      mHitched(false),                  //
+      m5thWheel(UMath::Vector3::kZero), //
+      mTrailer5thWheel(UMath::Vector3::kZero) {
+    this->GetOwner()->QueryInterface(&this->mIInput);
+
+    unsigned int spec = this->GetVehicle()->GetVehicleAttributes().Trailer().GetCollectionKey();
+
+    if (spec != 0) {
+        UMath::Vector3 dir = this->GetForwardVector();
+        UMath::Vector3 pos = this->GetPosition();
+
+        // TODO wrong assignment order inside the constructor?
+        VehicleParams params(this, DRIVER_NONE, spec, dir, pos, 4, nullptr, nullptr);
+        ISimable *isim = ISimable::CreateInstance(UCrc32("PVehicle"), params);
+
+        if (isim != nullptr) {
+            if (isim->QueryInterface(&this->mTrailer)) {
+                this->GetOwner()->Attach(this->mTrailer);
+                this->SetHitch(true);
+            } else {
+                isim->Kill();
+            }
+        }
+    }
+}
 
 bool RBTractor::Pose() {
     if ((this->mTrailer == nullptr) || !this->mHitched) {
