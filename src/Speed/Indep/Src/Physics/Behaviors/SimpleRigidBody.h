@@ -1,3 +1,4 @@
+#include "Speed/Indep/Src/Sim/SimTypes.h"
 #ifndef __SIMPLERIGIDBODY_H
 #define __SIMPLERIGIDBODY_H 1
 
@@ -16,7 +17,7 @@ class SimpleRigidBody : public Behavior, public IRigidBody, public ISimpleBody, 
   public:
     // total size: 0x40
     struct Volatile {
-        enum { MaxInstances = 96 };
+        enum { MaxInstances = Sim::MaxSimpleBodies };
         enum {
             CAN_COLLIDE_WITH_SRB = 1,
             CAN_COLLIDE_WITH_RB = 1 << 1,
@@ -231,8 +232,8 @@ class SimpleRigidBody : public Behavior, public IRigidBody, public ISimpleBody, 
     void DoRBCollisions(const float dT);
     void DoSRBCollisions(SimpleRigidBody *other);
 
-    static SimCollisionMap mCollisionMap[Volatile::MaxInstances];
-    static SimpleRigidBody *mMaps[Volatile::MaxInstances];
+    static SimCollisionMap mCollisionMap[Sim::MaxSimpleBodies];
+    static SimpleRigidBody *mMaps[Sim::MaxSimpleBodies];
     static unsigned int mCount;
 
     ScratchPtr<Volatile> mData; // offset 0x70, size 0x4

@@ -3,6 +3,7 @@
 
 #include "Speed/Indep/Libs/Support/Utility/UCrc.h"
 #include "Speed/Indep/bWare/Inc/bDebug.hpp"
+#include "Speed/Indep/bWare/Inc/bTypes.hpp"
 
 #define DECLARE_SIMHANDLE(name)                                                                                                                      \
     struct name##__ {                                                                                                                                \
@@ -16,6 +17,30 @@ DECLARE_SIMHANDLE(HSIMSERVICE);
 DECLARE_SIMHANDLE(HSIMTASK);
 DECLARE_SIMHANDLE(HMODEL);
 DECLARE_SIMHANDLE(HCAUSE);
+
+// TODO are these values correct for MW?
+namespace Sim {
+
+static const unsigned int MaxPlayers = 8;
+
+static const unsigned int MaxServers = 5;
+static const unsigned int MaxRigidBodies = 64;
+static const unsigned int MaxSimpleBodies = 96;
+static const unsigned int MaxAnyBodies = MaxRigidBodies + MaxSimpleBodies;
+static const unsigned int MaxCollisionListeners = 160;
+
+static const unsigned int MaxActivities = 40;
+static const unsigned int MaxScenery = 2048;
+static const unsigned int MaxVehicles = 30;
+static const unsigned int MaxSceneryFragments = 96;
+static const unsigned int MaxVehicleFragments = 180;
+static const unsigned int MaxFragments = 276;
+static const unsigned int MaxPlaceables = 12;
+static const unsigned int MaxModels = 2366;
+static const unsigned int MaxConnections = 2474;
+static const unsigned int MaxTasks = 1000;
+
+} // namespace Sim
 
 enum SimableType {
     SIMABLE_INVALID = 0,
@@ -72,18 +97,32 @@ class Param {
         return value;                                                                                                                                \
     }
 
+class IRigidBody;
+
 // total size: 0x18
 class SimCollisionMap {
   public:
-    class IRigidBody *GetRB(int rbIndex) const;
-    class IRigidBody *GetSRB(int srbIndex) const;
-    class IRigidBody *GetOrderedBody(int index) const;
-
     void Clear() {
-        for (unsigned int i = 0; i < 3; ++i) {
+        for (unsigned int i = 0; i < NUM_ELEMENTS(fBitMap); ++i) {
             fBitMap[i] = 0;
         }
     }
+
+    void SetBit(unsigned int index) {
+        this->fBitMap[index / Sim::MaxRigidBodies] |= 1ULL << (index & (Sim::MaxRigidBodies - 1));
+    }
+
+    void SetCollisionWithRB(int rbIndex) {
+        this->SetBit(rbIndex);
+    }
+
+    void SetCollisionWithSRB(int srbIndex) {
+        this->SetBit(srbIndex + Sim::MaxRigidBodies);
+    }
+
+    IRigidBody *GetRB(int rbIndex) const;
+    IRigidBody *GetSRB(int srbIndex) const;
+    IRigidBody *GetOrderedBody(int index) const;
 
   private:
     unsigned long long fBitMap[3]; // offset 0x0, size 0x18

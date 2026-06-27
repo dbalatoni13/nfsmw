@@ -32,7 +32,7 @@ class Behavior : public Sim::Object, public UTL::COM::Factory<const BehaviorPara
         return mSignature;
     }
 
-    bool IsPaused() {
+    bool IsPaused() const {
         return mPaused;
     }
 

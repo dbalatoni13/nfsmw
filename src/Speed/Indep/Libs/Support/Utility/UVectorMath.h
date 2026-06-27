@@ -94,6 +94,7 @@ void VU0_v3quatrotate(const UMath::Vector4 &q, const UMath::Vector3 &v, UMath::V
 void VU0_m4toquat(const UMath::Matrix4 &mat, UMath::Vector4 &result);
 void VU0_MATRIX4_vect3mult(const UMath::Vector3 &v, const UMath::Matrix4 &m, UMath::Vector3 &result);
 void VU0_MATRIX4_vect4mult(const UMath::Vector4 &v, const UMath::Matrix4 &m, UMath::Vector4 &result);
+void VU0_MATRIX4_vect4mult(const UMath::Vector4 *v, const UMath::Matrix4 &m, UMath::Vector4 *result, int count);
 void VU0_MATRIX4setyrot(UMath::Matrix4 &dest, const float yangle);
 void VU0_Matrix4ToEuler(const UMath::Matrix4 &m, UMath::Vector3 &e);
 
