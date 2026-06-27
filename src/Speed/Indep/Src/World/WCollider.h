@@ -13,9 +13,9 @@
 #include "WCollisionSTL.h"
 #include "WorldTypes.h"
 
+// total size: 0x9C
 class WCollider : public UTL::Collections::Listable<WCollider, 100> {
   public:
-    // total size: 0x9C
     enum eColliderShape {
         kColliderShape_Sphere = 0,
         kColliderShape_Cylinder = 1,
@@ -43,6 +43,14 @@ class WCollider : public UTL::Collections::Listable<WCollider, 100> {
     static void InvalidateAllCachedData();
 
     USE_FASTALLOC(WCollider);
+
+    WCollisionBarrierList &GetBarrierList() {
+        return fBarrierList;
+    }
+
+    const WCollisionBarrierList &GetBarrierList() const {
+        return fBarrierList;
+    }
 
     WCollisionInstanceCacheList &GetInstanceList() {
         return this->fInstanceCacheList;

@@ -146,6 +146,10 @@ inline void RotateTranslate(const Vector4 &a, const Matrix4 &m, Vector4 &r) {
     VU0_MATRIX4_vect4mult(a, m, r);
 }
 
+inline void RotateTranslate(const Vector4 *a, const Matrix4 &m, Vector4 *r, int count) {
+    VU0_MATRIX4_vect4mult(a, m, r, count);
+}
+
 inline void Init(Matrix4 &m, const float xx, const float yy, const float zz) {
     VU0_MATRIX4Init(m, xx, yy, zz);
 }
@@ -237,6 +241,12 @@ inline void Scale(const Vector4 &a, const float s, Vector4 &r) {
 
 inline void Scale(Vector4 &r, const float s) {
     VU0_v4scale(r, s, r);
+}
+
+inline void Scale(UMath::Matrix4 &r, const UMath::Vector3 &s) {
+    for (int i = 0; i < 3; ++i) {
+        VU0_v4scalexyz(r[i], s[i], r[i]);
+    }
 }
 
 inline void ScaleAdd(const Vector3 &a, const float s, const Vector3 &b, Vector3 &r) {
