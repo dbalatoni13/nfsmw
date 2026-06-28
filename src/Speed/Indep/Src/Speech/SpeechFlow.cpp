@@ -3,8 +3,12 @@
 #include "Speed/Indep/Src/EAXSound/Stream/GameSpeech.hpp"
 #include "Speed/Indep/Src/EAXSound/Stream/NISSFXModule.hpp"
 #include "Speed/Indep/Src/EAXSound/snd_gen/copspeech.hpp"
+#include "Speed/Indep/Src/Interfaces/Simables/IRenderable.h"
+#include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
 #include "Speed/Indep/Src/Misc/Config.h"
 #include "Speed/Indep/Src/Speech/SpeechFlow.h"
+#include "Speed/Indep/Src/Speech/SoundAI.h"
+#include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 struct CLUMP_ITEMtag {
     unsigned int key;
@@ -612,20 +616,132 @@ ScheduledSpeechEvent *Manager::GetNextEvent() {
     return best;
 }
 
-int Manager::PostValidate(ScheduledSpeechEvent *evt, unsigned int mask) {
-    if (!evt) {
-        return 1;
+SpeechValRtnType Manager::PostValidate(ScheduledSpeechEvent *evt, unsigned int mask) {
+    if (evt == 0) {
+        return kKeepEvt;
     }
 
-    if ((evt->flags & static_cast<short>(mask)) != 0) {
-        return 2;
+    const History *history = mGlobalHistory.Find(evt->ID);
+    Attrib::Gen::speech event(mHashMap.GetHash(evt->ID), 0, 0);
+    SoundAI *ai = SoundAI::Get();
+    float elapsed;
+    float expiry;
+    float last_heard;
+    short curr_heat;
+    float pspeed;
+
+    if (evt->flags & 2) {
+        float delay = event.InitDelay();
+        elapsed = (WorldTimer - evt->entry_time).GetSeconds();
+        if (elapsed >= delay) {
+            evt->entry_time = WorldTimer;
+            evt->flags = static_cast<short>(evt->flags & ~2);
+        } else {
+            return kDitchEvt;
+        }
     }
 
-    if (IsEventDead(evt) > 0.0f) {
-        return 3;
+    elapsed = (WorldTimer - evt->entry_time).GetSeconds();
+    expiry = event.expiry();
+    if (elapsed >= expiry && (mask & 1)) {
+        return kDitchEvt;
     }
 
-    return 0;
+    if (event.MaxPlayback() > -1 && (mask & 2)) {
+        if (mGlobalHistory.GetCount(evt->ID) > event.MaxPlayback()) {
+            return kDitchEvt;
+        }
+    }
+
+    if (mask & 4) {
+        if (event.DeadAir() > 0.0f && m_deadair < event.DeadAir()) {
+            return kDeferEvt;
+        }
+    }
+
+    if (history->count != 0 && (mask & 8)) {
+        last_heard = (WorldTimer - history->time).GetSeconds();
+        if (last_heard < event.Interval()) {
+            return kDeferEvt;
+        }
+    }
+
+    if (evt->actor != 0) {
+        if (evt->actor->GetDistance() > event.CullingRange() && (mask & 0x10)) {
+            return kDeferEvt;
+        }
+    }
+
+    if (event.Num_DepFollow() != 0 && (mask & 0x20)) {
+        bool pass = false;
+
+        if (event.BackTime() > 0.0f) {
+            unsigned int i;
+            for (i = 0; i < event.Num_DepFollow(); ++i) {
+                Attrib::Gen::speech dependency(event.DepFollow(i).GetCollectionKey(), 0, 0);
+                Timer elapsed = WorldTimer - mGlobalHistory.GetTime(dependency.SpeechID());
+                int count = mGlobalHistory.GetCount(dependency.SpeechID());
+                bool dep_is_playing = IsCopSpeechPlaying(dependency.SpeechID());
+                float t_elapsed = elapsed.GetSeconds();
+
+                if ((t_elapsed < event.BackTime() && count > 0) || dep_is_playing) {
+                    pass = true;
+                    break;
+                }
+            }
+        } else if (mEvtHistory.size() != 0) {
+            SPCHType_1_EventID last_evt_id = mEvtHistory.front();
+            unsigned int last_hist_key = mHashMap.GetHash(last_evt_id);
+            unsigned int i;
+
+            for (i = 0; i < event.Num_DepFollow(); ++i) {
+                Attrib::Gen::speech dependency(event.DepFollow(i).GetCollectionKey(), 0, 0);
+                bool dep_is_playing = IsCopSpeechPlaying(dependency.SpeechID());
+                unsigned int dep_key = dependency.GetCollection();
+
+                if (dep_key == last_hist_key || dep_is_playing) {
+                    pass = true;
+                    break;
+                }
+            }
+        }
+
+        if (!pass) {
+            return kDeferEvt;
+        }
+    }
+
+    if (event.OnScreenOnly() && (mask & 0x40) && evt->actor != 0) {
+        IRenderable *render = 0;
+        ISimable *simable = ISimable::FindInstance(evt->actor->GetHandle());
+
+        if (simable != 0) {
+            simable->QueryInterface(&render);
+        }
+        if (render != 0 && !render->InView()) {
+            return kDeferEvt;
+        }
+    }
+
+    if (event.reqLOS() && (mask & 0x80) && evt->actor != 0 && !evt->actor->HasLOS()) {
+        return kDeferEvt;
+    }
+
+    curr_heat = static_cast<short>(ai->GetHeat());
+    if (event.MaxHeat() < curr_heat || curr_heat < event.MinHeat()) {
+        if (mask & 0x100) {
+            return kDeferEvt;
+        }
+    }
+
+    pspeed = bAbs(ai->GetPlayerSpeed());
+    if (pspeed < event.MinPlayerSpeed() || event.MaxPlayerSpeed() < pspeed) {
+        if (mask & 0x200) {
+            return kDeferEvt;
+        }
+    }
+
+    return kKeepEvt;
 }
 
 int Manager::PreValidate(ScheduledSpeechEvent &evt) {

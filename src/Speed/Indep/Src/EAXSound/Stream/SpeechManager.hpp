@@ -39,6 +39,15 @@ struct CLUMP_IDX_FILEtag;
 
 namespace Speech {
 
+enum SpeechValRtnType {
+    kKeepEvt = 0,
+    kIntEvt = 1,
+    kDitchEvt = 2,
+    kEvtNotFound = 3,
+    kDeferEvt = 4,
+    MAX_RETURN_TYPES = 5,
+};
+
 struct ScheduledSpeechEvent;
 
 struct SPCHSampleRequest {
@@ -192,7 +201,7 @@ class Manager {
     static float IsEventDead(ScheduledSpeechEvent *evt);
     static void NotifyEventCompletion(ScheduledSpeechEvent *evt, bool playback_complete);
     static ScheduledSpeechEvent *GetNextEvent();
-    static int PostValidate(ScheduledSpeechEvent *evt, unsigned int mask);
+    static SpeechValRtnType PostValidate(ScheduledSpeechEvent *evt, unsigned int mask);
     static int PreValidate(ScheduledSpeechEvent &evt);
     static bool CanPlayback(Attrib::Gen::speech &event_attribs);
     static void CalcProbPlayback();
