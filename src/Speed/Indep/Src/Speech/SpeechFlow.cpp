@@ -1,14 +1,20 @@
 #include "Speed/Indep/Src/EAXSound/Stream/SpeechManager.hpp"
+#include "Speed/Indep/Src/EAXSound/Csis.hpp"
+#include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/Src/EAXSound/Stream/EAXS_StreamChannel.h"
 #include "Speed/Indep/Src/EAXSound/Stream/GameSpeech.hpp"
 #include "Speed/Indep/Src/EAXSound/Stream/NISSFXModule.hpp"
 #include "Speed/Indep/Src/EAXSound/snd_gen/copspeech.hpp"
+#include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
+#include "Speed/Indep/Src/Generated/Messages/MNotifyCellCallComplete.h"
+#include "Speed/Indep/Src/Generated/Messages/MNotifyCellCallStarted.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRenderable.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
 #include "Speed/Indep/Src/Misc/Config.h"
 #include "Speed/Indep/Src/Speech/SpeechFlow.h"
 #include "Speed/Indep/Src/Speech/SoundAI.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
+#include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
 
 struct CLUMP_ITEMtag {
     unsigned int key;
@@ -230,18 +236,95 @@ int Manager::GetGlobalHistoryCount(SPCHType_1_EventID) {
     return 0;
 }
 
-void Manager::ScheduleSpeechPartII(unsigned int sample_size, void *sample_data, Csis::InterfaceId &, Csis::FunctionHandle &, EAXCharacter *actor) {
-    if (!sample_data || !actor || (sample_size < sizeof(SPCHType_SampleRequestData))) {
-        return;
-    }
+ScheduledSpeechEvent *Manager::ScheduleSpeechPartII(unsigned int size, void *data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) {
+    unsigned int eventkey;
+    SPCHType_1_EventID eventID;
 
-    SPCHSampleRequest req;
-    req.data = *reinterpret_cast<SPCHType_SampleRequestData *>(sample_data);
-    req.owner = 0;
-    req.offset = static_cast<unsigned int>(req.data.sampleOffset);
-    req.sample_index = 0xFF;
-    mLastSpeakerID = static_cast<short>(actor->GetSpeakerID());
-    mSampleRequests.push_back(req);
+    if ((IsSpeechEnabled == 0) || (m_speechMode == SPEECH_SPLITSCREEN_MODE) || (g_pEAXSound == 0) ||
+        (g_pEAXSound->GetCurAudioSettings() == 0) || (g_pEAXSound->GetCurAudioSettings()->SpeechVol == 0.0f)) {
+        eventkey = Attrib::StringToLowerCaseKey(iid.pString);
+        eventID = mHashMap.GetID(eventkey);
+        if (eventID == kSPCH1_EventID_CellCall) {
+            MNotifyCellCallStarted msg;
+            msg.Send(UCrc32(0x20d60dbf));
+            MNotifyCellCallComplete msg2;
+            msg2.Send(UCrc32(0x20d60dbf));
+        }
+    } else {
+        SlotPool *pool = gSpeechCache.GetEventPool();
+        if (pool->IsFull()) {
+            return 0;
+        }
+
+        eventkey = Attrib::StringToLowerCaseKey(iid.pString);
+        eventID = mHashMap.GetID(eventkey);
+        Attrib::Gen::speech event_atr(eventkey, 0, 0);
+        ScheduledSpeechEvent *event;
+        Timer now = WorldTimer;
+
+        for (int i = 0; i < 4; ++i) {
+            for (SchedSpchEvents::iterator iter = mEvents[i].begin(); iter != mEvents[i].end(); ++iter) {
+                ScheduledSpeechEvent *this_event = *iter;
+                if (this_event->ID == eventID) {
+                    bool obj_updated = false;
+                    if (actor == 0) {
+                        if (this_event->actor == 0) {
+                            obj_updated = true;
+                        }
+                    } else if ((this_event->actor != 0) && (this_event->actor != actor)) {
+                        obj_updated = true;
+                    }
+
+                    if (obj_updated) {
+                        this_event->actor = actor;
+                        this_event->entry_time = now;
+                        if (size != 0) {
+                            bMemCpy(this_event->GetData(0), data, size);
+                        }
+                    }
+                    goto cleanup;
+                }
+            }
+        }
+
+        if (event_atr.DoNotDropout() || CanPlayback(event_atr)) {
+            if (event_atr.Num_RecallList() != 0) {
+                for (unsigned int i = 0; i < event_atr.Num_RecallList(); ++i) {
+                    Attrib::Gen::speech recall(event_atr.RecallList(i).GetCollectionKey(), 0, 0);
+                    SPCHType_1_EventID recall_id = recall.SpeechID();
+                    if (IsQueued(recall_id, 4)) {
+                        RecallSpeechEvent(recall_id);
+                    }
+                }
+            }
+
+            event = new (size) ScheduledSpeechEvent();
+            if (event != 0) {
+                goto have_event;
+            }
+        }
+    cleanup:
+        return 0;
+    have_event:
+        event->iid = &iid;
+        event->fh = &fh;
+        event->actor = actor;
+        event->ID = eventID;
+        if (!event_atr.interrupt()) {
+            event->priority = static_cast<unsigned char>(event_atr.priority());
+        } else {
+            event->priority = static_cast<unsigned char>(event_atr.priority() + 100);
+        }
+        if (event_atr.InitDelay() > 0.0f) {
+            event->flags |= 2;
+        }
+        mEvents[0].push_back(event);
+        if (size != 0) {
+            bMemCpy(event->GetData(0), data, size);
+        }
+        return event;
+    }
+    return 0;
 }
 
 int Manager::IndirectSpeechEvent(ScheduledSpeechEvent *evt, bool test_only) {

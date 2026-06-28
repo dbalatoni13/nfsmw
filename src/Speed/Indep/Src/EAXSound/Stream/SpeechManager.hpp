@@ -129,8 +129,8 @@ struct SPCHEventList : public UTL::Std::list<SPCHType_1_EventID, _type_list>, pu
 };
 
 struct ScheduledSpeechEvent {
-    InterfaceId *iid;                   // offset 0x0, size 0x4
-    FunctionHandle *fh;                 // offset 0x4, size 0x4
+    Csis::InterfaceId *iid;             // offset 0x0, size 0x4
+    Csis::FunctionHandle *fh;           // offset 0x4, size 0x4
     SPCHType_1_EventID ID;              // offset 0x8, size 0x4
     EAXCharacter *actor;                // offset 0xC, size 0x4
     Timer entry_time;                   // offset 0x10, size 0x4
@@ -165,7 +165,7 @@ class Manager {
 
     static void FlushSpeechForActor(EAXCharacter *actor);
     static int GetGlobalHistoryCount(SPCHType_1_EventID id);
-    static void ScheduleSpeechPartII(unsigned int sample_size, void *sample_data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor);
+    static ScheduledSpeechEvent *ScheduleSpeechPartII(unsigned int sample_size, void *sample_data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor);
     static int IndirectSpeechEvent(ScheduledSpeechEvent *evt, bool test_only);
     static int TestSentenceRuleCallback(EventSpec *event_info, int rule_id, int parm_value, int user_num);
     static int ReparmCallback(int rule_id, unsigned int *parms);
