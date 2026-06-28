@@ -9,7 +9,6 @@
 #include "Speed/Indep/Src/EAXSound/SFX_base.hpp"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/speech.h"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
-#include "Speed/Indep/Tools/AttribSys/Runtime/VecHashMap64.h"
 #include "Speed/Indep/Src/Speech/EAXCharacter.h"
 #include "Speed/Indep/Src/Speech/SpeechCache.h"
 #include "SpeechModule.hpp"
@@ -40,15 +39,6 @@ namespace Speech {
 
 struct ScheduledSpeechEvent;
 
-struct TablePolicy_FixedAudio {
-    static void *Alloc(unsigned int bytes);
-    static void Free(void *ptr, unsigned int bytes);
-    static unsigned int TableSize(unsigned int entries);
-    static unsigned int GrowRequest(unsigned int currententries, bool collisionoverflow);
-    static unsigned int KeyIndex(unsigned long long k, unsigned int tableSize, unsigned int keyShift);
-    static unsigned int WrapIndex(unsigned int index, unsigned int tableSize, unsigned int keyShift);
-};
-
 struct SPCHSampleRequest {
     SPCHType_SampleRequestData data; // offset 0x0, size 0x20
     ScheduledSpeechEvent *owner;     // offset 0x20, size 0x4
@@ -62,28 +52,6 @@ DECLARE_CONTAINER_TYPE(SampleReqList);
 
 class SampleReqList : public UTL::Std::vector<SPCHSampleRequest, _type_SampleReqList>, public AudioMemBase {
   public:
-};
-
-struct SpeechSampleData {
-    unsigned int size;          // offset 0x0, size 0x4
-    bool ready;                 // offset 0x4, size 0x1
-    int age;                    // offset 0x8, size 0x4
-    int speakerID;              // offset 0xC, size 0x4
-    SPCHType_1_EventID eventID; // offset 0x10, size 0x4
-    int HSTRM;                  // offset 0x14, size 0x4
-    bool lock;                  // offset 0x18, size 0x1
-    bool cached;                // offset 0x1C, size 0x1
-    Timer t_req;                // offset 0x20, size 0x4
-    Timer t_load;               // offset 0x24, size 0x4
-    Timer t_play;               // offset 0x28, size 0x4
-    unsigned int dataoffset;    // offset 0x2C, size 0x4
-
-    ~SpeechSampleData() {}
-    void Lock() { lock = true; }
-    void Unlock() { lock = false; }
-
-    static void Destruct(SpeechSampleData *ptr);
-    static SpeechSampleData *Construct(SPCHType_SampleRequestData *data, unsigned int key, bool is_cached);
 };
 
 struct History {
@@ -147,12 +115,6 @@ struct SPCHEventList : public UTL::Std::list<SPCHType_1_EventID, _type_list>, pu
   public:
     SPCHEventList() {}
     virtual ~SPCHEventList();
-};
-
-struct SpchSampleMap : public VecHashMap64<SpeechSampleData, TablePolicy_FixedAudio, false, 100>, public AudioMemBase {
-  public:
-    SpchSampleMap(unsigned int reserve) : VecHashMap64<SpeechSampleData, TablePolicy_FixedAudio, false, 100>(reserve) {}
-    virtual ~SpchSampleMap();
 };
 
 struct ScheduledSpeechEvent {

@@ -6,7 +6,9 @@
 #endif
 
 #include "Speed/Indep/Libs/Support/Utility/UStandard.h"
+#include "Speed/Indep/Src/EAXSound/AudioMemBase.hpp"
 #include "Speed/Indep/Src/EAXSound/Stream/SpeechModule.hpp"
+#include "Speed/Indep/Tools/AttribSys/Runtime/VecHashMap64.h"
 
 struct SlotPool;
 
@@ -15,7 +17,44 @@ namespace Speech {
 struct SpeechSampleData;
 class Module;
 
-class Cache {
+struct TablePolicy_FixedAudio {
+    static void *Alloc(unsigned int bytes);
+    static void Free(void *ptr, unsigned int bytes);
+    static unsigned int TableSize(unsigned int entries);
+    static unsigned int GrowRequest(unsigned int currententries, bool collisionoverflow);
+    static unsigned int KeyIndex(unsigned long long k, unsigned int tableSize, unsigned int keyShift);
+    static unsigned int WrapIndex(unsigned int index, unsigned int tableSize, unsigned int keyShift);
+};
+
+struct SpeechSampleData {
+    unsigned int size;          // offset 0x0, size 0x4
+    bool ready;                 // offset 0x4, size 0x1
+    int age;                    // offset 0x8, size 0x4
+    int speakerID;              // offset 0xC, size 0x4
+    SPCHType_1_EventID eventID; // offset 0x10, size 0x4
+    int HSTRM;                  // offset 0x14, size 0x4
+    bool lock;                  // offset 0x18, size 0x1
+    bool cached;                // offset 0x1C, size 0x1
+    Timer t_req;                // offset 0x20, size 0x4
+    Timer t_load;               // offset 0x24, size 0x4
+    Timer t_play;               // offset 0x28, size 0x4
+    unsigned int dataoffset;    // offset 0x2C, size 0x4
+
+    ~SpeechSampleData() {}
+    void Lock() { lock = true; }
+    void Unlock() { lock = false; }
+
+    static void Destruct(SpeechSampleData *ptr);
+    static SpeechSampleData *Construct(SPCHType_SampleRequestData *data, unsigned int key, bool is_cached);
+};
+
+struct SpchSampleMap : public VecHashMap64<SpeechSampleData, TablePolicy_FixedAudio, false, 100>, public AudioMemBase {
+  public:
+    SpchSampleMap(unsigned int reserve) : VecHashMap64<SpeechSampleData, TablePolicy_FixedAudio, false, 100>(reserve) {}
+    virtual ~SpchSampleMap();
+};
+
+class Cache : public AudioMemBase {
   public:
     typedef UTL::Std::list<int, _type_list> VoiceIDs;
 
@@ -77,7 +116,7 @@ class Cache {
     int mCacheSize;        // offset 0xC, size 0x4
     int mInitialMemFree;   // offset 0x10, size 0x4
     SlotPool *mEventPool;  // offset 0x14, size 0x4
-    int mIndex;            // offset 0x18, size 0x4
+    SpchSampleMap mIndex;  // offset 0x18, size 0x14
 };
 
 } // namespace Speech

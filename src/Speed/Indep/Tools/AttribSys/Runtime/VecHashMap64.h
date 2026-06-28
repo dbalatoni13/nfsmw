@@ -155,6 +155,28 @@ template <typename KeyType, typename T, typename Policy, bool Unk2, std::size_t 
         return index < mTableSize && mTable[index].IsValid();
     }
 
+    std::size_t GetNextValidIndex(std::size_t startPoint) const {
+        std::size_t index = startPoint;
+        while (index < mTableSize && !mTable[index].IsValid()) {
+            index++;
+        }
+        return index;
+    }
+
+    T *GetPtrAtIndex(std::size_t index) const {
+        if (ValidIndex(index)) {
+            return mTable[index].Get();
+        }
+        return nullptr;
+    }
+
+    void DeleteIndex(std::size_t actualIndex) {
+        T *obj = RemoveIndex(actualIndex);
+        if (obj) {
+            delete obj;
+        }
+    }
+
     T *Find(KeyType key) const {
         if (key == 0) {
             return nullptr;

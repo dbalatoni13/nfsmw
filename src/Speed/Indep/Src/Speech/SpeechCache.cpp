@@ -11,17 +11,6 @@ extern int bCountFreeMemory(int pool);
 extern Timer WorldTimer;
 
 namespace {
-struct CacheEntry {
-    unsigned long long key;
-    Speech::SpeechSampleData *sample;
-};
-
-DECLARE_CONTAINER_TYPE(SpeechCacheEntries);
-
-class SpeechCacheEntries : public UTL::Std::vector<CacheEntry, _type_SpeechCacheEntries> {};
-
-SpeechCacheEntries gCacheEntries;
-
 bool IsSpeakerActive(const Speech::Cache::VoiceIDs *speakers, int speaker_id) {
     if (!speakers) {
         return false;
@@ -49,7 +38,7 @@ Cache::Cache()
       mCacheSize(0), //
       mInitialMemFree(0), //
       mEventPool(0), //
-      mIndex(0) {}
+      mIndex(100) {}
 
 Cache::~Cache() {
     FlushAllUnlocked();
@@ -94,8 +83,7 @@ void Cache::Init(int memsize) {
     }
 
     mInitialMemFree = bCountFreeMemory(speech_pool);
-    mIndex = 0;
-    gCacheEntries.clear();
+    mIndex.Clear();
 }
 
 void Cache::Dump() {
@@ -111,16 +99,11 @@ bool Cache::IsCached(SPCHType_SampleRequestData *data, bool check_preparedness) 
         return false;
     }
 
-    const unsigned long long key = CreateKey(data->bankNum, data->sampleOffset);
-    SpeechCacheEntries::iterator it = gCacheEntries.begin();
-    while (it != gCacheEntries.end()) {
-        SpeechSampleData *sample = it->sample;
-        if (sample && sample->cached && (it->key == key)) {
-            if (!check_preparedness || sample->ready) {
-                return true;
-            }
+    SpeechSampleData *sample = mIndex.Find(CreateKey(data->bankNum, data->sampleOffset));
+    if (sample && sample->cached) {
+        if (!check_preparedness || sample->ready) {
+            return true;
         }
-        ++it;
     }
 
     return false;
@@ -135,16 +118,13 @@ SpeechSampleData *Cache::GetUncached(Module *, SPCHType_SampleRequestData *data)
         return 0;
     }
 
-    const unsigned long long key = CreateKey(data->bankNum, data->sampleOffset);
+    unsigned long long key = CreateKey(data->bankNum, data->sampleOffset);
     SpeechSampleData *sample = SpeechSampleData::Construct(data, static_cast<unsigned int>(key), false);
     if (!sample) {
         return 0;
     }
 
-    CacheEntry entry;
-    entry.key = key;
-    entry.sample = sample;
-    gCacheEntries.push_back(entry);
+    mIndex.Add(key, sample);
     return sample;
 }
 
@@ -153,20 +133,21 @@ SpeechSampleData *Cache::GetSample(Module *module, SPCHType_SampleRequestData *d
         return 0;
     }
 
-    const unsigned long long key = CreateKey(data->bankNum, data->sampleOffset);
-    SpeechCacheEntries::iterator it = gCacheEntries.begin();
-    while (it != gCacheEntries.end()) {
-        if (it->sample && (it->key == key)) {
-            return it->sample;
+    unsigned long long key = CreateKey(data->bankNum, data->sampleOffset);
+    SpeechSampleData *sample = mIndex.Find(key);
+
+    if (!sample) {
+        if (IsCached(data, false)) {
+            sample = LoadSample(module, data);
+        } else {
+            sample = GetUncached(module, data);
         }
-        ++it;
     }
 
-    if (IsCached(data, false)) {
-        return LoadSample(module, data);
+    if (sample) {
+        sample->Lock();
     }
-
-    return GetUncached(module, data);
+    return sample;
 }
 
 SpeechSampleData *Cache::LoadSample(Module *module, SPCHType_SampleRequestData *data) {
@@ -176,16 +157,13 @@ SpeechSampleData *Cache::LoadSample(Module *module, SPCHType_SampleRequestData *
         return 0;
     }
 
-    const unsigned long long key = CreateKey(data->bankNum, data->sampleOffset);
-    SpeechCacheEntries::iterator it = gCacheEntries.begin();
-    while (it != gCacheEntries.end()) {
-        if (it->sample && (it->key == key)) {
-            return it->sample;
-        }
-        ++it;
+    unsigned long long key = CreateKey(data->bankNum, data->sampleOffset);
+    SpeechSampleData *sample = mIndex.Find(key);
+    if (sample) {
+        return sample;
     }
 
-    SpeechSampleData *sample = SpeechSampleData::Construct(data, static_cast<unsigned int>(key), true);
+    sample = SpeechSampleData::Construct(data, static_cast<unsigned int>(key), true);
     if (!sample) {
         return 0;
     }
@@ -193,10 +171,7 @@ SpeechSampleData *Cache::LoadSample(Module *module, SPCHType_SampleRequestData *
     sample->ready = true;
     sample->t_load = WorldTimer;
 
-    CacheEntry entry;
-    entry.key = key;
-    entry.sample = sample;
-    gCacheEntries.push_back(entry);
+    mIndex.Add(key, sample);
     return sample;
 }
 
@@ -221,12 +196,12 @@ void Cache::Free(void *mem) {
 }
 
 SpeechSampleData *Cache::MakeSpaceFor(SPCHType_SampleRequestData *, bool) {
-    if (gCacheEntries.size() < 100) {
+    if (mIndex.Size() < 100) {
         return 0;
     }
 
     FlushLRU();
-    if (gCacheEntries.size() >= 100) {
+    if (mIndex.Size() >= 100) {
         FlushAllUnlocked();
     }
 
@@ -238,80 +213,87 @@ void Cache::TossSample(SpeechSampleData *data) {
         return;
     }
 
-    for (SpeechCacheEntries::iterator it = gCacheEntries.begin(); it != gCacheEntries.end(); ++it) {
-        if (it->sample == data) {
-            gCacheEntries.erase(it);
-            break;
+    unsigned int index = mIndex.GetNextValidIndex(0);
+    while (mIndex.ValidIndex(index)) {
+        SpeechSampleData *sample = mIndex.GetPtrAtIndex(index);
+        if (sample == data && !data->lock) {
+            mIndex.DeleteIndex(index);
+            return;
         }
+        index = mIndex.GetNextValidIndex(index + 1);
     }
-
-    if (data->lock) {
-        data->Unlock();
-    }
-    SpeechSampleData::Destruct(data);
 }
 
 void Cache::FlushUncached() {
-    for (SpeechCacheEntries::iterator it = gCacheEntries.begin(); it != gCacheEntries.end();) {
-        SpeechSampleData *sample = it->sample;
+    unsigned int index = mIndex.GetNextValidIndex(0);
+    while (mIndex.ValidIndex(index)) {
+        SpeechSampleData *sample = mIndex.GetPtrAtIndex(index);
         if (sample && !sample->cached && !sample->lock) {
-            SpeechSampleData::Destruct(sample);
-            it = gCacheEntries.erase(it);
+            mIndex.DeleteIndex(index);
         } else {
-            ++it;
+            index++;
         }
+        index = mIndex.GetNextValidIndex(index);
     }
 }
 
 void Cache::FlushLRU() {
-    SpeechCacheEntries::iterator victim = gCacheEntries.end();
-    int max_age = -1;
+    unsigned int prelargest = 0;
+    unsigned int index = mIndex.GetNextValidIndex(0);
+    unsigned int postlargest = 0;
 
-    for (SpeechCacheEntries::iterator it = gCacheEntries.begin(); it != gCacheEntries.end(); ++it) {
-        SpeechSampleData *sample = it->sample;
-        if (sample && !sample->lock && (sample->age > max_age)) {
-            max_age = sample->age;
-            victim = it;
+    while (mIndex.ValidIndex(index)) {
+        SpeechSampleData *sample = mIndex.GetPtrAtIndex(index);
+        if (sample && !sample->lock) {
+            if (!prelargest || sample->age > static_cast<int>(postlargest)) {
+                prelargest = index;
+                postlargest = static_cast<unsigned int>(sample->age);
+            }
         }
+        index = mIndex.GetNextValidIndex(index + 1);
     }
 
-    if (victim != gCacheEntries.end() && victim->sample) {
-        SpeechSampleData::Destruct(victim->sample);
-        gCacheEntries.erase(victim);
+    if (mIndex.ValidIndex(prelargest)) {
+        mIndex.DeleteIndex(prelargest);
     }
 }
 
 void Cache::FlushAllUnlocked() {
-    for (SpeechCacheEntries::iterator it = gCacheEntries.begin(); it != gCacheEntries.end();) {
-        SpeechSampleData *sample = it->sample;
+    unsigned int index = mIndex.GetNextValidIndex(0);
+    while (mIndex.ValidIndex(index)) {
+        SpeechSampleData *sample = mIndex.GetPtrAtIndex(index);
         if (sample && !sample->lock) {
-            SpeechSampleData::Destruct(sample);
-            it = gCacheEntries.erase(it);
+            mIndex.DeleteIndex(index);
         } else {
-            ++it;
+            index++;
         }
+        index = mIndex.GetNextValidIndex(index);
     }
 }
 
 void Cache::FlushInactiveSpeakers() {
-    for (SpeechCacheEntries::iterator it = gCacheEntries.begin(); it != gCacheEntries.end();) {
-        SpeechSampleData *sample = it->sample;
+    unsigned int index = mIndex.GetNextValidIndex(0);
+    while (mIndex.ValidIndex(index)) {
+        SpeechSampleData *sample = mIndex.GetPtrAtIndex(index);
         if (sample && !sample->lock && !IsSpeakerActive(mSpeakers, sample->speakerID)) {
-            SpeechSampleData::Destruct(sample);
-            it = gCacheEntries.erase(it);
+            mIndex.DeleteIndex(index);
         } else {
-            ++it;
+            index++;
         }
+        index = mIndex.GetNextValidIndex(index);
     }
 }
 
 void Cache::DebugPrintAllocations() {}
 
 void Cache::Validate() {
-    for (SpeechCacheEntries::iterator it = gCacheEntries.begin(); it != gCacheEntries.end(); ++it) {
-        if (it->sample && (it->sample->size == 0)) {
-            it->sample->ready = false;
+    unsigned int index = mIndex.GetNextValidIndex(0);
+    while (mIndex.ValidIndex(index)) {
+        SpeechSampleData *sample = mIndex.GetPtrAtIndex(index);
+        if (sample && (sample->size == 0)) {
+            sample->ready = false;
         }
+        index = mIndex.GetNextValidIndex(index + 1);
     }
 }
 
