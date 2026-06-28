@@ -290,58 +290,55 @@ void Manager::Init(SPEECH_MODE mode) {
 }
 
 void Manager::Init2() {
-    if (IsSoundEnabled == 0 || m_SPEECH_initted != 0) {
+    if (IsSoundEnabled == 0) {
         return;
     }
 
-    if (m_speechMode != SPEECH_FRONTEND_MODE) {
-        if (m_speechMode == SPEECH_GAME_MODE) {
-            if (IsSpeechEnabled && m_SpeechModule[COPSPEECH_MODULE] && m_SpeechModule[COPSPEECH_MODULE]->IsDataLoaded() && !m_gameSpeechInitted) {
-                Module *cop_speech = m_SpeechModule[COPSPEECH_MODULE];
-                m_numberSpeechBanks += cop_speech->GetNumBanks();
-                Csis::System::Subscribe(cop_speech->GetCSIptr());
+    switch (m_speechMode) {
+        case SPEECH_GAME_MODE:
+            if (IsSpeechEnabled && m_SpeechModule[COPSPEECH_MODULE]->IsDataLoaded() && !m_gameSpeechInitted) {
+                m_numberSpeechBanks += m_SpeechModule[COPSPEECH_MODULE]->GetNumBanks();
+                Csis::System::Subscribe(m_SpeechModule[COPSPEECH_MODULE]->GetCSIptr());
                 Csis::CacheHandlesEvents();
-                SPCH_AddEventDB(cop_speech->GetEventDat(), static_cast<unsigned int>(cop_speech->GetChannel()));
+                SPCH_AddEventDB(m_SpeechModule[COPSPEECH_MODULE]->GetEventDat(), static_cast<unsigned int>(m_SpeechModule[COPSPEECH_MODULE]->GetChannel()));
                 m_gameSpeechInitted = 1;
             }
 
-            if (IsNISAudioEnabled && m_SpeechModule[NISSFX_MODULE] && m_SpeechModule[NISSFX_MODULE]->IsDataLoaded() && !m_NISAudioInitted) {
-                Module *nis_speech = m_SpeechModule[NISSFX_MODULE];
-                m_numberSpeechBanks += nis_speech->GetNumBanks();
-                Csis::System::Subscribe(nis_speech->GetCSIptr());
+            if (IsNISAudioEnabled && m_SpeechModule[NISSFX_MODULE]->IsDataLoaded() && !m_NISAudioInitted) {
+                m_numberSpeechBanks += m_SpeechModule[NISSFX_MODULE]->GetNumBanks();
+                Csis::System::Subscribe(m_SpeechModule[NISSFX_MODULE]->GetCSIptr());
                 Csis::CacheHandlesEventsNIS();
-                SPCH_AddEventDB(nis_speech->GetEventDat(), static_cast<unsigned int>(nis_speech->GetChannel()));
+                SPCH_AddEventDB(m_SpeechModule[NISSFX_MODULE]->GetEventDat(), static_cast<unsigned int>(m_SpeechModule[NISSFX_MODULE]->GetChannel()));
                 m_NISAudioInitted = 1;
             }
 
             if ((m_SpeechModule[COPSPEECH_MODULE] && !m_gameSpeechInitted) || (m_SpeechModule[NISSFX_MODULE] && !m_NISAudioInitted)) {
                 return;
             }
-        } else if (m_speechMode == SPEECH_SPLITSCREEN_MODE) {
-            if (IsNISAudioEnabled && m_SpeechModule[NISSFX_MODULE] && m_SpeechModule[NISSFX_MODULE]->IsDataLoaded() && !m_NISAudioInitted) {
-                Module *nis_speech = m_SpeechModule[NISSFX_MODULE];
-                m_numberSpeechBanks += nis_speech->GetNumBanks();
-                Csis::System::Subscribe(nis_speech->GetCSIptr());
+            break;
+        case SPEECH_SPLITSCREEN_MODE:
+            if (IsNISAudioEnabled && m_SpeechModule[NISSFX_MODULE]->IsDataLoaded() && !m_NISAudioInitted) {
+                m_numberSpeechBanks += m_SpeechModule[NISSFX_MODULE]->GetNumBanks();
+                Csis::System::Subscribe(m_SpeechModule[NISSFX_MODULE]->GetCSIptr());
                 Csis::CacheHandlesEventsNIS();
-                SPCH_AddEventDB(nis_speech->GetEventDat(), static_cast<unsigned int>(nis_speech->GetChannel()));
+                SPCH_AddEventDB(m_SpeechModule[NISSFX_MODULE]->GetEventDat(), static_cast<unsigned int>(m_SpeechModule[NISSFX_MODULE]->GetChannel()));
                 m_NISAudioInitted = 1;
             }
-        }
+            break;
     }
 
-    int buffSize = SPCH_GetBankPtrMemSize(m_numberSpeechBanks);
-    m_SPEECH_bankPtrMem = gAudioMemoryManager.AllocateMemoryChar(buffSize, "AUD:Speech Bank Ptrs", false);
+    m_SPEECH_bankPtrMem = gAudioMemoryManager.AllocateMemoryChar(SPCH_GetBankPtrMemSize(m_numberSpeechBanks), "AUD:Speech Bank Ptrs", false);
     SPCH_InitBankMem(m_numberSpeechBanks, m_SPEECH_bankPtrMem);
 
     if (m_speechMode == SPEECH_GAME_MODE) {
-        if (IsSpeechEnabled && m_SpeechModule[COPSPEECH_MODULE]) {
+        if (IsSpeechEnabled) {
             m_SpeechModule[COPSPEECH_MODULE]->LoadBanks();
         }
-        if (IsNISAudioEnabled && m_SpeechModule[NISSFX_MODULE]) {
+        if (IsNISAudioEnabled) {
             m_SpeechModule[NISSFX_MODULE]->LoadBanks();
         }
     } else if (m_speechMode == SPEECH_SPLITSCREEN_MODE) {
-        if (IsNISAudioEnabled && m_SpeechModule[NISSFX_MODULE]) {
+        if (IsNISAudioEnabled) {
             m_SpeechModule[NISSFX_MODULE]->LoadBanks();
         }
     }

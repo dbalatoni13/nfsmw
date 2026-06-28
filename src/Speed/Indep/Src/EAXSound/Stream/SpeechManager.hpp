@@ -28,9 +28,11 @@ enum SpeechModuleIndex {
 };
 
 enum SPEECH_MODE {
-    SPEECH_FRONTEND_MODE = 1,
-    SPEECH_GAME_MODE = 2,
+    SPEECH_NONE_MODE = 0,
+    SPEECH_GAME_MODE = 1,
+    SPEECH_FRONTEND_MODE = 2,
     SPEECH_SPLITSCREEN_MODE = 3,
+    NUM_SPEECH_MODES = 4,
 };
 
 struct CLUMP_IDX_FILEtag;
