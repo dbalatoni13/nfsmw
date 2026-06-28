@@ -75,6 +75,7 @@ static float prev_heat_30802 = 0.0f;
 static unsigned int dir_tracking_30959 = 0;
 static Timer t_currdir_30960 = 0;
 static unsigned int dir_init_30961 = 0;
+static float CopMinClosingVelSq;
 
 SoundAI::SoundAI()
     : Sim::Activity(1),
@@ -381,38 +382,42 @@ void SoundAI::OnVehicleAdded(IVehicle *ivehicle) {
 }
 
 void SoundAI::OnCollision(const COLLISION_INFO &cinfo) {
-    if (VU0_v3lengthsquare(cinfo.closingVel) < mTune.CollisionMinClosingVelSq()) {
+    if (VU0_v3lengthsquare(cinfo.closingVel) < CopMinClosingVelSq) {
         return;
     }
 
-    ISimable *objA = ISimable::FindInstance(cinfo.objA);
-    ISimable *objB = ISimable::FindInstance(cinfo.objB);
-    if (!objA && !objB) {
+    short actors_involved = 0;
+    short objects_visible = 0;
+    IRenderable *renderA;
+    IRenderable *renderB;
+    EAXCop *actorA;
+    EAXCop *actorB;
+    ISimable *simableA = ISimable::FindInstance(cinfo.objA);
+    ISimable *simableB = ISimable::FindInstance(cinfo.objB);
+    if (!simableA && !simableB) {
         return;
     }
 
-    EAXCop *actorA = mActors.Find(cinfo.objA);
-    EAXCop *actorB = mActors.Find(cinfo.objB);
+    actorA = mActors.Find(cinfo.objA);
+    actorB = mActors.Find(cinfo.objB);
 
-    int cops_involved = 0;
     if (actorA) {
-        cops_involved++;
+        actors_involved++;
     }
     if (actorB) {
-        cops_involved++;
+        actors_involved++;
     }
 
-    int visible_count = 0;
-    if (objA) {
-        IRenderable *renderable = 0;
-        if (objA->QueryInterface(&renderable) && renderable->InView()) {
-            visible_count++;
+    if (simableA) {
+        renderA = 0;
+        if (simableA->QueryInterface(&renderA) && renderA->InView()) {
+            objects_visible++;
         }
     }
-    if (objB) {
-        IRenderable *renderable = 0;
-        if (objB->QueryInterface(&renderable) && renderable->InView()) {
-            visible_count++;
+    if (simableB) {
+        renderB = 0;
+        if (simableB->QueryInterface(&renderB) && renderB->InView()) {
+            objects_visible++;
         }
     }
 
@@ -431,7 +436,7 @@ void SoundAI::OnCollision(const COLLISION_INFO &cinfo) {
     EAXCop *cop_actor = actorA ? actorA : actorB;
 
     if (cinfo.type == Sim::Collision::Info::WORLD) {
-        if ((cops_involved != 1) || !cop_actor || (visible_count == 0) || !cop_actor->IsActive()) {
+        if ((actors_involved != 1) || !cop_actor || (objects_visible == 0) || !cop_actor->IsActive()) {
             return;
         }
 
@@ -453,7 +458,7 @@ void SoundAI::OnCollision(const COLLISION_INFO &cinfo) {
         return;
     }
 
-    if (cops_involved == 0) {
+    if (actors_involved == 0) {
         IPlayer *player = IPlayer::First(PLAYER_LOCAL);
         if (!player) {
             return;
@@ -462,11 +467,11 @@ void SoundAI::OnCollision(const COLLISION_INFO &cinfo) {
         ISimable *player_sim = player->GetSimable();
         ISimable *other = 0;
         const UMath::Vector3 *player_vel = 0;
-        if (player_sim && objA && (objA->GetOwnerHandle() == player_sim->GetOwnerHandle())) {
-            other = objB;
+        if (player_sim && simableA && (simableA->GetOwnerHandle() == player_sim->GetOwnerHandle())) {
+            other = simableB;
             player_vel = &cinfo.objAVel;
-        } else if (player_sim && objB && (objB->GetOwnerHandle() == player_sim->GetOwnerHandle())) {
-            other = objA;
+        } else if (player_sim && simableB && (simableB->GetOwnerHandle() == player_sim->GetOwnerHandle())) {
+            other = simableA;
             player_vel = &cinfo.objBVel;
         }
         if (!other) {
@@ -519,12 +524,12 @@ void SoundAI::OnCollision(const COLLISION_INFO &cinfo) {
         return;
     }
 
-    if (cops_involved != 1 || !cop_actor) {
+    if (actors_involved != 1 || !cop_actor) {
         return;
     }
 
-    ISimable *cop_sim = actorA ? objA : objB;
-    ISimable *other_sim = actorA ? objB : objA;
+    ISimable *cop_sim = actorA ? simableA : simableB;
+    ISimable *other_sim = actorA ? simableB : simableA;
     if (!cop_sim || !other_sim) {
         return;
     }
