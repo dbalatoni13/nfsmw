@@ -1,7 +1,9 @@
 #include "Speed/Indep/Src/EAXSound/Stream/SpeechManager.hpp"
 #include "Speed/Indep/Src/EAXSound/Csis.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
+#include "Speed/Indep/Src/EAXSound/AudioMemoryManager.hpp"
 #include "Speed/Indep/Src/EAXSound/Stream/EAXS_StreamChannel.h"
+#include "Speed/Indep/Src/EAXSound/Stream/EAXS_StreamManager.h"
 #include "Speed/Indep/Src/EAXSound/Stream/GameSpeech.hpp"
 #include "Speed/Indep/Src/EAXSound/Stream/NISSFXModule.hpp"
 #include "Speed/Indep/Src/EAXSound/snd_gen/copspeech.hpp"
@@ -11,6 +13,8 @@
 #include "Speed/Indep/Src/Interfaces/Simables/IRenderable.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
 #include "Speed/Indep/Src/Misc/Config.h"
+#include "Speed/Indep/Src/Misc/bFile.hpp"
+#include "Speed/Indep/Src/Misc/QueuedFile.hpp"
 #include "Speed/Indep/Src/Speech/SpeechFlow.h"
 #include "Speed/Indep/Src/Speech/SoundAI.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
@@ -34,6 +38,8 @@ extern int SPCH_AddBank(char *bankHdr);
 extern int SPCH_AddEventDB(char *event_dat, unsigned int channel);
 extern int SPCH_GetBankPtrMemSize(int num_banks);
 extern int SPCH_InitBankMem(int num_banks, char *bank_ptr_mem);
+extern void *bMalloc(int size, int allocation_params);
+extern EAXS_StreamManager *gpEAXS_StrmMgr;
 extern "C" bool InteruptedAndNotDelayed__6SpeechPQ26Speech20ScheduledSpeechEvent(Speech::ScheduledSpeechEvent *this_event);
 
 namespace Speech {
@@ -1175,11 +1181,92 @@ SED_NISSFX::~SED_NISSFX() {
 }
 
 void SED_NISSFX::Init(int channel) {
-    m_channel = channel;
-    m_moduleIsInitted = true;
-    m_paused = false;
-    m_speechCycle = 0;
-    m_currentIntensity = 0;
+    if (IsNISAudioEnabled) {
+        m_channel = channel;
+
+        const Attrib::Collection *localizedCollection = g_pEAXSound->GetAttributes().nissfxstreams(0).GetCollection();
+        Attrib::Gen::audiosystem *atr = new Attrib::Gen::audiosystem(localizedCollection, 0, 0);
+
+        m_strm = gpEAXS_StrmMgr->GetStreamChannel(2);
+        m_filename = atr->BIGPath();
+
+        Attrib::StringKey evtfile(atr->EVTPath());
+        Attrib::StringKey csifile(atr->CSIPath());
+        Attrib::StringKey idxfile(atr->IDXPath());
+
+        int nfilesize;
+        {
+            const char *filename = evtfile.GetString();
+            if (filename == 0) {
+                filename = "";
+            }
+            nfilesize = bFileSize(filename);
+        }
+        char **eventDat = &m_eventDat;
+        if (nfilesize > 0) {
+            *eventDat = gAudioMemoryManager.AllocateMemoryChar(nfilesize, "AUD: SED_NISSFX events", false);
+        } else {
+            *eventDat = 0;
+        }
+
+        if (m_eventDat != 0) {
+            int thisobj = 0;
+            mLoadState.push_back(thisobj);
+            const char *filename = evtfile.GetString();
+            if (filename == 0) {
+                filename = "";
+            }
+            AddQueuedFile(m_eventDat, filename, 0, nfilesize, LoadingCallback, reinterpret_cast<int>(this), 0);
+        }
+
+        {
+            const char *filename = idxfile.GetString();
+            if (filename == 0) {
+                filename = "";
+            }
+            nfilesize = bFileSize(filename);
+        }
+        char **tempCharPtr = &m_tempCharPtr;
+        if (nfilesize > 0) {
+            *tempCharPtr = static_cast<char *>(bMalloc(nfilesize, 0x1040));
+        } else {
+            *tempCharPtr = 0;
+        }
+
+        if (m_tempCharPtr != 0) {
+            int thisobj = 1;
+            mLoadState.push_back(thisobj);
+            const char *filename = idxfile.GetString();
+            if (filename == 0) {
+                filename = "";
+            }
+            AddQueuedFile(m_tempCharPtr, filename, 0, nfilesize, LoadingCallback, reinterpret_cast<int>(this), 0);
+        }
+
+        {
+            const char *filename = csifile.GetString();
+            if (filename == 0) {
+                filename = "";
+            }
+            nfilesize = bFileSize(filename);
+        }
+        char **csisData = &m_csisData;
+        if (nfilesize > 0) {
+            *csisData = gAudioMemoryManager.AllocateMemoryChar(nfilesize, "AUD: SED_NISSFX CSIS data", false);
+        } else {
+            *csisData = 0;
+        }
+
+        if (m_csisData != 0) {
+            int thisobj = 2;
+            mLoadState.push_back(thisobj);
+            const char *filename = csifile.GetString();
+            if (filename == 0) {
+                filename = "";
+            }
+            AddQueuedFile(m_csisData, filename, 0, nfilesize, LoadingCallback, reinterpret_cast<int>(this), 0);
+        }
+    }
 }
 
 void SED_NISSFX::LoadingCallback(int, int error_status) {
