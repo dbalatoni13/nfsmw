@@ -192,7 +192,8 @@ void StrategyFlow::ReqBackup() {
                 ++iter;
             }
 
-            if (!active.empty()) {
+            if (active.empty()) {
+            } else {
                 if (active.size() > 1) {
                     std::sort(active.begin(), active.end());
                 }
@@ -211,8 +212,9 @@ void StrategyFlow::ReqBackup() {
                         if (eta_valid && (bRandom(1.0f) > 0.5f) && ((this->mFlags & BUDENIED) == 0)) {
                             ai->GetDispatch()->BackupETA();
                         } else {
-                            ai->GetDispatch()->BackupReply(caller, ((this->mFlags ^ BUDENIED) >> 1) & 1, this->mBackupType);
-                            if ((this->mFlags & BUDENIED) != 0) {
+                            unsigned int flags = this->mFlags;
+                            ai->GetDispatch()->BackupReply(caller, ((flags ^ BUDENIED) >> 1) & 1, this->mBackupType);
+                            if ((flags & BUDENIED) != 0) {
                                 caller->NegativeBackupReply();
                             }
                         }
@@ -229,10 +231,10 @@ void StrategyFlow::ReqBackup() {
                         }
                     } else if ((Manager::mGlobalHistory.GetCount(static_cast<SPCHType_1_EventID>(0x49)) == 0) && !ai->IsHighIntensity()) {
                         float t_since_req = (WorldTimer - this->mT_requested).GetSeconds();
-                        if ((t_since_req < ai->GetTune().BURemindTime()) || (this->mLastBackupType != this->mBackupType)) {
-                            caller->CallForBackup(this->mBackupType);
-                        } else {
+                        if ((t_since_req >= ai->GetTune().BURemindTime()) && (this->mLastBackupType == this->mBackupType)) {
                             caller->BackupReminder(this->mBackupType);
+                        } else {
+                            caller->CallForBackup(this->mBackupType);
                         }
                         if (eta_valid && (bRandom(1.0f) > 0.5f) && ((this->mFlags & BUDENIED) == 0)) {
                             ai->GetDispatch()->BackupETA();
