@@ -1,11 +1,15 @@
 #include "StrategyFlow.h"
 #include "EAXAirSupport.h"
 #include "EAXCop.h"
+#include "EAXDispatch.h"
 #include "SoundAI.h"
 #include "Speed/Indep/Src/EAXSound/Stream/SpeechManager.hpp"
 #include "Speed/Indep/Src/Generated/Messages/MNotifySpeechStatus.h"
 #include "Speed/Indep/Src/Generated/Messages/MReqBackup.h"
 #include <algorithm>
+
+extern "C" void SwarmingReply__10MiscSpeech();
+extern "C" void SwarmingReplyFollow__10MiscSpeech();
 
 namespace Speech {
 
@@ -163,25 +167,104 @@ void StrategyFlow::CallToPos() {
 
 void StrategyFlow::ReqBackup() {
     SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
-    if (!ai) {
+
+    if ((ai->GetPursuitState() == SoundAI::kInactive) || (ai->GetFocus() != 2)) {
+        this->ChangeStateTo(kTerminal);
         return;
     }
 
-    if (!mBusy) {
-        mBackupType = ai->GetFocus();
-        mLastBackupType = mBackupType;
-        mFlags |= REQUESTABLE;
-        mBusy = 1;
-        mT_requested = WorldTimer;
+    IPursuit *pursuit = ai->GetPursuit();
+    if (!pursuit) {
         return;
     }
 
     if (!Manager::IsCopSpeechBusy()) {
-        mBusy = 0;
-        if ((mFlags & BUDENIED) != 0) {
-            ChangeStateTo(kTerminal);
-        } else {
-            ChangeStateTo(kCallToPos);
+        if (!mBusy) {
+            copList active;
+            active.reserve(ai->GetActors().size());
+
+            copMap::const_iterator iter = ai->GetActors().begin();
+            while (iter != ai->GetActors().end()) {
+                EAXCop *cop = iter->cop;
+                if (cop->IsActive()) {
+                    active.push_back(cop);
+                }
+                ++iter;
+            }
+
+            if (!active.empty()) {
+                if (active.size() > 1) {
+                    std::sort(active.begin(), active.end());
+                }
+
+                EAXCop *caller = active.front();
+                if (caller) {
+                    bool eta_valid = false;
+                    if (pursuit->GetBackupETA() > 10.0f) {
+                        if (pursuit->GetBackupETA() < 200.0f) {
+                            eta_valid = true;
+                        }
+                    }
+
+                    if ((Manager::mGlobalHistory.GetCount(static_cast<SPCHType_1_EventID>(0xa1)) == 0) && !ai->IsHighIntensity()) {
+                        caller->InitialCallForBackup();
+                        if (eta_valid && (bRandom(1.0f) > 0.5f) && ((this->mFlags & BUDENIED) == 0)) {
+                            ai->GetDispatch()->BackupETA();
+                        } else {
+                            ai->GetDispatch()->BackupReply(caller, ((this->mFlags ^ BUDENIED) >> 1) & 1, this->mBackupType);
+                            if ((this->mFlags & BUDENIED) != 0) {
+                                caller->NegativeBackupReply();
+                            }
+                        }
+                    } else if ((Manager::mGlobalHistory.GetCount(static_cast<SPCHType_1_EventID>(0x43)) == 0) ||
+                               (ai->GetNumActiveCopCars() > 1)) {
+                        caller->CallForBackup(this->mBackupType);
+                        if (eta_valid && (bRandom(1.0f) > 0.5f) && ((this->mFlags & BUDENIED) == 0)) {
+                            ai->GetDispatch()->BackupETA();
+                        } else {
+                            ai->GetDispatch()->BackupReply(caller, ((this->mFlags ^ BUDENIED) >> 1) & 1, this->mBackupType);
+                            if ((this->mFlags & BUDENIED) != 0) {
+                                caller->NegativeBackupReply();
+                            }
+                        }
+                    } else if ((Manager::mGlobalHistory.GetCount(static_cast<SPCHType_1_EventID>(0x49)) == 0) && !ai->IsHighIntensity()) {
+                        float t_since_req = (WorldTimer - this->mT_requested).GetSeconds();
+                        if ((t_since_req < ai->GetTune().BURemindTime()) || (this->mLastBackupType != this->mBackupType)) {
+                            caller->CallForBackup(this->mBackupType);
+                        } else {
+                            caller->BackupReminder(this->mBackupType);
+                        }
+                        if (eta_valid && (bRandom(1.0f) > 0.5f) && ((this->mFlags & BUDENIED) == 0)) {
+                            ai->GetDispatch()->BackupETA();
+                        } else {
+                            ai->GetDispatch()->BackupUpdate(caller, ((this->mFlags ^ BUDENIED) >> 1) & 1);
+                        }
+                    } else {
+                        caller->CallForSwarming();
+                        if ((this->mFlags & BUDENIED) == 0) {
+                            ai->GetDispatch()->BackupETA();
+                            if (ai->GetHeli() && (bRandom(1.0f) > 0.5f)) {
+                                ai->GetHeli()->Swarming();
+                            } else {
+                                SwarmingReply__10MiscSpeech();
+                            }
+                            SwarmingReplyFollow__10MiscSpeech();
+                        } else {
+                            ai->GetDispatch()->BackupUpdate(caller, ((this->mFlags ^ BUDENIED) >> 1) & 1);
+                        }
+                    }
+
+                    this->mBusy++;
+                    return;
+                }
+            }
+        }
+    }
+
+    if (this->mBusy) {
+        if (!Manager::IsCopSpeechBusy()) {
+            this->mBusy = 0;
+            this->ChangeStateTo(this->mLastState);
         }
     }
 }

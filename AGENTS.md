@@ -346,17 +346,7 @@ Commit your changes when it makes sense for you.
 
 ## Parallel Sub-Agent Matching
 
-When working on a translation unit with multiple non-matching functions, use sub-agents selectively for **read-only exploration** around individual functions. Each sub-agent should focus on **exactly one function** — do not assign a sub-agent more than one function at a time.
-
-**Limit: never run more than 5 sub-agents concurrently.** Spawning too many at once causes resource contention and makes it harder to reason about progress.
-
-Guidelines:
-
-- Prefer solving difficult matching work in the main worker. Use sub-agents to inspect one function's context, diff, DWARF, or related call paths without editing files.
-- Spawn a sub-agent per function only when the functions are independent (no shared edits to the same source lines).
-- Sub-agents stay read-only. Let them inspect existing diff/context output rather than compiling or rebuilding.
-- Do not sit idle waiting for sub-agents to finish. Continue with other independent investigation while they run.
-- After a useful result lands and you make a real improvement, check the updated match percentage and commit if it improved.
+Don't use subagents
 
 ## Matching Philosophy
 

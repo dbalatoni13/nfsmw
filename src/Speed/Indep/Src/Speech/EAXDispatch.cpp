@@ -1,4 +1,4 @@
-#include "EAXCop.h"
+#include "EAXDispatch.h"
 #include "ScheduleSpeech.hpp"
 #include "SoundAI.h"
 #include "Speed/Indep/Src/EAXSound/Csis.hpp"
@@ -38,14 +38,6 @@ enum Type_num_suspects {
     Type_num_suspects_multiple_suspects = 2,
 };
 
-enum Type_pursuit_type {
-    Type_pursuit_type_Generic_Speeder = 1,
-    Type_pursuit_type_Possible_Wanted = 2,
-    Type_pursuit_type_Hit_and_Run = 4,
-    Type_pursuit_type_Reckless = 8,
-    Type_pursuit_type_Unit_Rammed = 16,
-};
-
 enum Type_address_group_type {
     Type_address_group_type_college_town = 1,
     Type_address_group_type_city = 2,
@@ -59,11 +51,6 @@ enum Type_location_region {
     Type_location_region_coastal = 2,
     Type_location_region_coastal_extra = 4,
     Type_location_region_city = 8,
-};
-
-enum Type_jurisdiction {
-    Type_jurisdiction_state = 1,
-    Type_jurisdiction_federal = 2,
 };
 
 enum Type_roadblock_type {
@@ -229,30 +216,6 @@ extern FunctionHandle gSetup_DispNoVehDescripHandle;
 extern FunctionHandle gStaticRoadblock_DispSubRBHandle;
 }
 
-
-struct EAXDispatch : public EAXCharacter {
-    EAXDispatch(int sID);
-
-    ~EAXDispatch() override;
-    void Update() override;
-    void BackupReply(EAXCop *cop, int yes, int type);
-    void ArrestReply();
-    void PursuitUpdate(EAXCop *cop);
-    void PursuitEscalationGeneric();
-    void PursuitEscalation();
-    void BackupUpdate(EAXCop *cop, int yes);
-    void BreakAway();
-    void GoAhead();
-    void TimeExpired();
-    void Report911(Csis::Type_pursuit_type infraction);
-    void RBUpdate(EAXCop *cop, signed char true_false);
-    void RBReply(EAXCop *cop, signed char true_false, unsigned int type);
-    void JurisShift(Csis::Type_jurisdiction jurisdiction);
-    void BackupETA();
-    void VehicleDescription();
-    void NoVehicleDescription();
-    void SubRBReply();
-};
 
 EAXDispatch::~EAXDispatch() {}
 
