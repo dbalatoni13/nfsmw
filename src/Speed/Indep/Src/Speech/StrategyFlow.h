@@ -41,15 +41,15 @@ class StrategyFlow : public SpeechFlow {
     void Update() override;
     bool IsTransitionable() override;
 
-    void CullCheck();
-    void SoloCheck();
-    void CallToPos();
-    void ReqBackup();
-    void Waiting();
-    void Outrun();
-    void Lost();
-    void Terminal();
-    void Outcome();
+    virtual void CullCheck();
+    virtual void SoloCheck();
+    virtual void CallToPos();
+    virtual void ReqBackup();
+    virtual void Waiting();
+    virtual void Outrun();
+    virtual void Lost();
+    virtual void Terminal();
+    virtual void Outcome();
     void MessageReqBackup(const MReqBackup &message);
     void MessageBackupDenied(const MReqBackup &message);
     void MessageEventComplete(const MNotifySpeechStatus &message);

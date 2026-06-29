@@ -1,8 +1,11 @@
 #include "StrategyFlow.h"
+#include "EAXAirSupport.h"
+#include "EAXCop.h"
 #include "SoundAI.h"
 #include "Speed/Indep/Src/EAXSound/Stream/SpeechManager.hpp"
 #include "Speed/Indep/Src/Generated/Messages/MNotifySpeechStatus.h"
 #include "Speed/Indep/Src/Generated/Messages/MReqBackup.h"
+#include <algorithm>
 
 namespace Speech {
 
@@ -185,44 +188,219 @@ void StrategyFlow::ReqBackup() {
 
 void StrategyFlow::Waiting() {
     SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
-    if (!ai) {
-        return;
-    }
+    IPursuit *pursuit = ai->GetPursuit();
 
     if (ai->GetPursuitState() == SoundAI::kInactive) {
-        ChangeStateTo(kLost);
+        this->ChangeStateTo(kTerminal);
         return;
     }
 
-    if (ai->GetPursuitState() == SoundAI::kOtherTarget) {
-        ChangeStateTo(kTerminal);
+    if (!ai->GetLeader()) {
         return;
     }
 
-    if ((mFlags & REQUESTABLE) == 0) {
-        ChangeStateTo(kReqBackup);
+    if (Manager::IsCopSpeechBusy()) {
         return;
     }
 
-    if ((WorldTimer - mT_requested).GetSeconds() > 3.0f) {
-        ChangeStateTo(kOutcome);
+    if (ai->GetPursuitState() == SoundAI::kSearching) {
+        this->ChangeStateTo(kOutrun);
+        return;
     }
+
+    copList active;
+    active.reserve(ai->GetActors().size());
+
+    copMap::const_iterator iter = ai->GetActors().begin();
+    while (iter != ai->GetActors().end()) {
+        EAXCop *cop = iter->cop;
+        if (cop->IsActive()) {
+            active.push_back(cop);
+        }
+        ++iter;
+    }
+
+    if (active.size() == 1) {
+        this->mFlags |= SOLO;
+    } else if (active.empty()) {
+        this->ChangeStateTo(kTerminal);
+        goto cleanup;
+    }
+
+    if ((this->mFormationType != pursuit->GetFormationType()) && (pursuit->GetFormationType() != FOLLOW) && (pursuit->GetFormationType() != STAGGER_FOLLOW) &&
+        (active.size() > 1)) {
+        ai->GetLeader()->StrategyReset(true);
+        this->ChangeStateTo(kSoloCheck);
+        goto cleanup;
+    }
+
+    if (pursuit->IsCollapseActive() || pursuit->IsFinisherActive()) {
+        switch (pursuit->GetFormationType()) {
+        case PIT:
+            if (active.size() < 2) {
+                goto cleanup;
+            }
+            if (bRandom(1.0f) > 0.5f) {
+                EAXCop *cop = ai->FindClosestCop(false, false);
+                if (cop) {
+                    cop->IntentToRam();
+                }
+            } else {
+                ai->GetLeader()->StrategyExecute();
+            }
+            this->ChangeStateTo(kOutcome);
+            goto cleanup;
+        case BOX_IN:
+        case ROLLING_BLOCK:
+            if (active.size() < 2) {
+                goto cleanup;
+            }
+            if (bRandom(1.0f) > 0.5f) {
+                ai->GetLeader()->StrategyExecute();
+            } else {
+                this->CallToPos();
+            }
+            this->ChangeStateTo(kOutcome);
+            goto cleanup;
+        default: {
+            EAXCop *cop = ai->FindClosestCop(false, false);
+            if (cop) {
+                cop->Bullhorn();
+            }
+            goto cleanup;
+        }
+        case HELI_PURSUIT:
+            if (ai->GetHeli()) {
+                ai->GetHeli()->SelfStrategy(1);
+            }
+            goto cleanup;
+        }
+    }
+
+    if (ai->GetPursuitState() == SoundAI::kActive) {
+        bool contact_strategy = false;
+        if ((pursuit->GetFormationType() == PIT) || (pursuit->GetFormationType() == BOX_IN) || (pursuit->GetFormationType() == ROLLING_BLOCK) ||
+            (pursuit->GetFormationType() == HERD)) {
+            contact_strategy = true;
+        }
+        if (contact_strategy && ai->GetCopsInFormation().empty() && (active.size() > 1)) {
+            this->ChangeStateTo(kCallToPos);
+            goto cleanup;
+        }
+
+        copMap::const_iterator ci = ai->GetActors().begin();
+        while (ci != ai->GetActors().end()) {
+            if (ci->cop->GetInFormation()) {
+                ci->cop->Bullhorn();
+            }
+            ++ci;
+        }
+
+        if (ai->GetPursuitDistance() > ai->GetTune().SuspectOutrunRange()) {
+            this->ChangeStateTo(kOutrun);
+            goto cleanup;
+        }
+    }
+
+    if (ai->GetCopsInFormation().size() >= static_cast<unsigned int>(this->mFormationCount)) {
+        if ((pursuit->GetEvadeLevel() <= 0.25f) && (active.size() != 1)) {
+            goto no_backup;
+        }
+    }
+
+    this->mBackupType = 0x20;
+    this->mFormationCount = static_cast<int>(ai->GetCopsInFormation().size());
+    this->ChangeStateTo(kReqBackup);
+cleanup:;
+    return;
+no_backup:
+    this->mFormationCount = static_cast<int>(ai->GetCopsInFormation().size());
 }
 
 void StrategyFlow::Outrun() {
     SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
-    if (!ai) {
+
+    if ((ai->GetPursuitState() != SoundAI::kSearching) && (ai->GetPursuitState() != SoundAI::kActive)) {
+        this->ChangeStateTo(kTerminal);
         return;
     }
 
-    if (ai->GetPursuitState() == SoundAI::kActive) {
-        ChangeStateTo(kSoloCheck);
+    if (!ai->GetLeader()) {
         return;
     }
 
-    if (ai->GetPursuitState() == SoundAI::kInactive) {
-        ChangeStateTo(kLost);
+    if (Manager::IsCopSpeechBusy()) {
+        return;
     }
+
+    copList losList;
+    losList.reserve(ai->GetActors().size());
+
+    copMap::const_iterator iter = ai->GetActors().begin();
+    while (iter != ai->GetActors().end()) {
+        EAXCop *cop = iter->cop;
+        if (cop->IsActive() && cop->HasLOS()) {
+            losList.push_back(cop);
+        }
+        ++iter;
+    }
+
+    if (losList.size() > 1) {
+        this->ChangeStateTo(kWaiting);
+        return;
+    }
+
+    ai->GetTune().PursuitInactivityTimer(0);
+    float t_comment = ai->GetTune().NoLOSCommentaryTime();
+
+    if ((losList.size() == 1) && !ai->AreCopsAhead() && (ai->GetPursuitDistance() >= ai->GetTune().SuspectOutrunRange())) {
+        EAXCop *outrunee = losList.front();
+        outrunee->SuspectOutrun();
+        this->ChangeStateTo(kWaiting);
+        return;
+    }
+
+    if (losList.empty()) {
+        if (ai->GetPerpLostTime() >= t_comment) {
+            copList closeList;
+            closeList.reserve(ai->GetActors().size());
+
+            iter = ai->GetActors().begin();
+            while (iter != ai->GetActors().end()) {
+                EAXCop *cop = iter->cop;
+                if (cop->IsActive()) {
+                    closeList.push_back(cop);
+                }
+                ++iter;
+            }
+
+            if (!closeList.empty()) {
+                if (closeList.size() > 1) {
+                    std::sort(closeList.begin(), closeList.end());
+                }
+
+                EAXCop *closest = closeList.front();
+                if (closest->IsHeli()) {
+                    ai->GetHeli()->LostVisual();
+                } else {
+                    closest->LostVisual();
+
+                    EAXAirSupport *heli = ai->GetHeli();
+                    if (heli && heli->HasLOS() && heli->IsActive()) {
+                        heli->Spotter();
+                        heli->LocationReport();
+                    }
+                }
+
+            }
+
+            this->ChangeStateTo(kLost);
+            return;
+        }
+
+    }
+
+    this->ChangeStateTo(kWaiting);
 }
 
 void StrategyFlow::Lost() {
