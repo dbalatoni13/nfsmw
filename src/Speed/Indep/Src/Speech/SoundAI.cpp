@@ -1741,19 +1741,61 @@ unsigned char SoundAI::GetCustomized(IVehicle *vehicle, CarCustomizations &custr
     bool has_decals;
 
     has_vinyls = false;
-    has_custom_paint = false;
     has_racing_numbers = false;
     has_decals = false;
-    custrec.color = 0;
+    has_custom_paint = has_decals;
 
     record = vehicle->GetCustomizations();
     custrec.flags = 0;
-    if (!record) {
+    if (record) {
+        CarPart *paint_part =
+            GetInstalledPart__C21FECustomizationRecord7CarTypei(record, vehicle->GetModelType(), 0x4c);
+        if (paint_part) {
+            unsigned int colour_hash = GetAppliedAttributeUParam__7CarPartUiUi(paint_part, 0xd68a7bab, 0);
+            for (int i = 0; i < NumberOfColourHashToSoundColourMaps; i++) {
+                if (ColourHashToSoundColourMap[i].Hash == colour_hash) {
+                    custrec.color = ColourHashToSoundColourMap[i].SoundColour;
+                    break;
+                }
+            }
+
+            CarPart *vinyls =
+                GetInstalledPart__C21FECustomizationRecord7CarTypei(record, vehicle->GetModelType(), 0x4d);
+            if (vinyls) {
+                has_vinyls = true;
+            }
+
+            CarPart *left_number1 =
+                GetInstalledPart__C21FECustomizationRecord7CarTypei(record, vehicle->GetModelType(), 0x69);
+            CarPart *left_number2 =
+                GetInstalledPart__C21FECustomizationRecord7CarTypei(record, vehicle->GetModelType(), 0x6a);
+            CarPart *right_number1 =
+                GetInstalledPart__C21FECustomizationRecord7CarTypei(record, vehicle->GetModelType(), 0x71);
+            CarPart *right_number2 =
+                GetInstalledPart__C21FECustomizationRecord7CarTypei(record, vehicle->GetModelType(), 0x72);
+            if (left_number1 || left_number2 || right_number1 || right_number2) {
+                has_racing_numbers = true;
+            }
+
+            CarPart *left_door_decal =
+                GetInstalledPart__C21FECustomizationRecord7CarTypei(record, vehicle->GetModelType(), 0x48);
+            CarPart *right_door_decal =
+                GetInstalledPart__C21FECustomizationRecord7CarTypei(record, vehicle->GetModelType(), 0x49);
+            CarPart *left_quarter =
+                GetInstalledPart__C21FECustomizationRecord7CarTypei(record, vehicle->GetModelType(), 0x4a);
+            CarPart *right_quarter =
+                GetInstalledPart__C21FECustomizationRecord7CarTypei(record, vehicle->GetModelType(), 0x4b);
+            if (left_door_decal || right_door_decal || left_quarter || right_quarter) {
+                has_decals = true;
+            }
+        }
+    } else {
+        CarTypeInfo *type_info = &CarTypeInfoArray[vehicle->GetModelType()];
         CarPart *paint_part = NewGetCarPart__15CarPartDatabase7CarTypeiUiP7CarParti(
             &CarPartDB,
             vehicle->GetModelType(),
             0x4c,
-            static_cast<unsigned int>(CarTypeInfoArray[vehicle->GetModelType()].DefaultBasePaint),
+            static_cast<unsigned int>(type_info->DefaultBasePaint),
             0,
             -1);
         if (paint_part) {
@@ -1763,37 +1805,6 @@ unsigned char SoundAI::GetCustomized(IVehicle *vehicle, CarCustomizations &custr
                     custrec.color = ColourHashToSoundColourMap[i].SoundColour;
                     break;
                 }
-            }
-        }
-    } else {
-        has_custom_paint = true;
-        CarType model = vehicle->GetModelType();
-        CarPart *paint_part = GetInstalledPart__C21FECustomizationRecord7CarTypei(record, model, 0x4c);
-        if (paint_part) {
-            unsigned int colour_hash = GetAppliedAttributeUParam__7CarPartUiUi(paint_part, 0xd68a7bab, 0);
-            for (int i = 0; i < NumberOfColourHashToSoundColourMaps; i++) {
-                if (ColourHashToSoundColourMap[i].Hash == colour_hash) {
-                    custrec.color = ColourHashToSoundColourMap[i].SoundColour;
-                    break;
-                }
-            }
-
-            has_vinyls = (GetInstalledPart__C21FECustomizationRecord7CarTypei(record, model, 0x4d) != 0);
-
-            CarPart *left_number1 = GetInstalledPart__C21FECustomizationRecord7CarTypei(record, model, 0x69);
-            CarPart *left_number2 = GetInstalledPart__C21FECustomizationRecord7CarTypei(record, model, 0x6a);
-            CarPart *right_number1 = GetInstalledPart__C21FECustomizationRecord7CarTypei(record, model, 0x71);
-            CarPart *right_number2 = GetInstalledPart__C21FECustomizationRecord7CarTypei(record, model, 0x72);
-            if (left_number1 || left_number2 || right_number1 || right_number2) {
-                has_racing_numbers = true;
-            }
-
-            CarPart *left_door_decal = GetInstalledPart__C21FECustomizationRecord7CarTypei(record, model, 0x48);
-            CarPart *right_door_decal = GetInstalledPart__C21FECustomizationRecord7CarTypei(record, model, 0x49);
-            CarPart *left_quarter = GetInstalledPart__C21FECustomizationRecord7CarTypei(record, model, 0x4a);
-            CarPart *right_quarter = GetInstalledPart__C21FECustomizationRecord7CarTypei(record, model, 0x4b);
-            if (left_door_decal || right_door_decal || left_quarter || right_quarter) {
-                has_decals = true;
             }
         }
     }
