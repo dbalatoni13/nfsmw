@@ -108,6 +108,7 @@ class Module : public AudioMemBase {
     void AttachSFXOBJ(SFX_Base *psfx, eSFXOBJ_MAIN_TYPES sfxtype);
     virtual void ReleaseResource();
     EAXS_StreamChannel *GetStreamChannel() { return m_strm; }
+    bool TestFlag(unsigned int flag) { return (m_flags & flag) != 0; }
     void PurgeSpeech();
     void Pause();
     void UnPause();

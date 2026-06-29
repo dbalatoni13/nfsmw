@@ -565,16 +565,69 @@ bool Manager::HasBeenSaid(SPCHType_1_EventID event_id) {
 }
 
 bool Manager::ServiceInterruptEvents() {
-    bool changed = false;
-    for (SPCHSampleRequest *it = mSampleRequests.begin(); it != mSampleRequests.end();) {
-        if ((it->owner && InteruptedAndNotDelayed__6SpeechPQ26Speech20ScheduledSpeechEvent(it->owner)) || (it->data.interruptFlag != 0)) {
-            it = mSampleRequests.erase(it);
-            changed = true;
-        } else {
-            ++it;
+    if (mEvents[3].size() != 0) {
+        if (mEvents[3].size() > 1) {
+            std::sort(mEvents[3].begin(), mEvents[3].end());
         }
+
+        SchedSpchEvents::iterator priority_event_iter = mEvents[3].begin();
+        ScheduledSpeechEvent *priority_event = *priority_event_iter;
+        bool interruptable = true;
+        GameSpeech *gamespeech = static_cast<GameSpeech *>(m_SpeechModule[COPSPEECH_MODULE]);
+        ScheduledSpeechEvent *curr_event = gamespeech->m_currEvent;
+
+        if (curr_event != 0) {
+            Attrib::Gen::speech pb(mHashMap.GetHash(curr_event->ID), 0, 0);
+            bool curr_is_interrupt = pb.interrupt();
+            interruptable = pb.Interruptable();
+            if (gamespeech->TestFlag(4)) {
+                interruptable = true;
+            }
+            if (curr_is_interrupt && (priority_event->priority > curr_event->priority)) {
+                interruptable = true;
+            }
+        }
+
+        if (interruptable) {
+            if (mEvents[1].size() != 0) {
+                mEvents[0] = mEvents[1];
+                mEvents[1].clear();
+            }
+
+            int rval = IndirectSpeechEvent(priority_event, false);
+            if (rval == -2) {
+                goto allocated_interrupt;
+            }
+            if (rval > -2) {
+                goto queue_interrupt;
+            }
+            if (rval == -5) {
+                delete priority_event;
+                mEvents[3].erase(priority_event_iter);
+                return false;
+            }
+
+        allocated_interrupt:
+            if (PostValidate(priority_event, 1U) != kDitchEvt) {
+                mEvents[0].insert(mEvents[0].begin(), priority_event);
+                mEvents[3].erase(priority_event_iter);
+                return true;
+            }
+
+        queue_interrupt:
+            if (mEvents[2].size() != 0) {
+                SchedSpchEvents::iterator i =
+                    std::remove_if(mEvents[2].begin(), mEvents[2].end(), InteruptedAndNotDelayed__6SpeechPQ26Speech20ScheduledSpeechEvent);
+                mEvents[2].erase(i, mEvents[2].end());
+            }
+            mEvents[2].insert(mEvents[2].begin(), priority_event);
+        } else {
+            mEvents[0] = mEvents[3];
+        }
+
+        mEvents[3].clear();
     }
-    return changed;
+    return true;
 }
 
 } // namespace Speech
