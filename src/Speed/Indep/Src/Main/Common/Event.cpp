@@ -11,6 +11,9 @@ static char *gCreationPoint = nullptr;
 static char *gDeletionPoint = nullptr;
 static unsigned int gHighWaterMem = 0;
 
+Event *EventManager::fgCurrentEvent = nullptr;
+bool EventManager::fgHaltCurrentList = false;
+
 void EventManager::Init() {
     gMemoryBuffer = (char *)bMalloc(0x4000, GetVirtualMemoryAllocParams());
     EventManager::Reset();
