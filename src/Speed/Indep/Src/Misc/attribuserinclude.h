@@ -44,6 +44,13 @@ class StringKey {
         return mHash32;
     }
 
+    bool IsEmpty() const {
+        if (mString != nullptr) {
+            return mString[0] == 0;
+        }
+        return true;
+    }
+
     bool IsValid() const {
         return mString != nullptr;
     }

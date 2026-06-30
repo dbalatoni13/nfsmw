@@ -11,8 +11,19 @@
 #include "Speed/Indep/Libs/Support/Miscellaneous/CARP.h"
 #include "Speed/Indep/Src/Misc/Hermes.h"
 
-extern char *gCreationPoint;
-extern char *gDeletionPoint;
+struct RegisterEvent {
+    typedef void (* MakeEventCallback)(const void *);
+
+    typedef void (* ResolveEventCallback)(void *, const struct UGroup *);
+
+    typedef int (* LuaBinding)(struct lua_State *);
+
+    static void (* LookupEvent(unsigned int tag))(const void *);
+
+    static void (* ResolveEvent(unsigned int tag))(void *, const struct UGroup *);
+
+    static int (* GetLuaBinding(unsigned int tag))(struct lua_State *);
+};
 
 class Event {
   public:
@@ -65,5 +76,8 @@ class EventManager {
     static Event *fgCurrentEvent;  // size: 0x4, address: 0x8041E458
     static bool fgHaltCurrentList; // size: 0x1, address: 0x8041E45C
 };
+
+template<typename T>
+unsigned int GetEmbeddedObjectSize(T *ptr); // ???
 
 #endif
