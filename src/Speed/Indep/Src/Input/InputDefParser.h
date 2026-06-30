@@ -2,6 +2,7 @@
 #define __INPUT_DEF_PARSER_H__
 
 #include "Speed/Indep/Libs/Support/Utility/FastMem.h"
+#include "Speed/Indep/Libs/Support/Utility/UStandard.h"
 #include "Speed/Indep/Src/Input/Action.h"
 #include "Speed/Indep/Src/Input/InputDevice.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/Common/AttribPrivate.h"
@@ -32,7 +33,7 @@ struct InputMapEntry {
 
 class InputMapping {
 public:
-    typedef struct _STL::list<InputMapEntry> Entries;
+    typedef struct UTL::Std::list<InputMapEntry, _type_list> Entries;
 
     // static void operator delete(void *mem, const char *name) {};
     InputMapping(InputDevice *device, const Attrib::Collection *spec);
