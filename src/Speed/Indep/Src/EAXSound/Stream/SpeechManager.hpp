@@ -218,7 +218,7 @@ class Manager {
     static float m_clock_in_ms;
     static float m_timestep;
     static float m_deadair;
-    static int mCurrentEvent;
+    static ScheduledSpeechEvent *mCurrentEvent;
     static short m_frameindex;
     static float mProbPlayback;
     static short mLastSpeakerID;

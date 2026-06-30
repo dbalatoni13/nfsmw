@@ -17,6 +17,7 @@
 #include "Speed/Indep/Src/Misc/QueuedFile.hpp"
 #include "Speed/Indep/Src/Speech/SpeechFlow.h"
 #include "Speed/Indep/Src/Speech/SoundAI.h"
+#include "Speed/Indep/Src/World/TrackStreamer.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
 
@@ -40,6 +41,8 @@ extern int SPCH_GetBankPtrMemSize(int num_banks);
 extern int SPCH_InitBankMem(int num_banks, char *bank_ptr_mem);
 extern void *bMalloc(int size, int allocation_params);
 extern EAXS_StreamManager *gpEAXS_StrmMgr;
+extern Timer RealTimer;
+extern float TRACKSTREAMER_BACKLOG_THRESH;
 extern "C" bool InteruptedAndNotDelayed__6SpeechPQ26Speech20ScheduledSpeechEvent(Speech::ScheduledSpeechEvent *this_event);
 
 namespace Speech {
@@ -55,7 +58,7 @@ int Manager::m_NISAudioInitted = 0;
 float Manager::m_clock_in_ms = 0.0f;
 float Manager::m_timestep = 0.0f;
 float Manager::m_deadair = 0.0f;
-int Manager::mCurrentEvent = 0;
+ScheduledSpeechEvent *Manager::mCurrentEvent = 0;
 short Manager::m_frameindex = 0;
 float Manager::mProbPlayback = 1.0f;
 short Manager::mLastSpeakerID = 0;
@@ -509,21 +512,58 @@ void Manager::SpchLibAbort(const char *, ...) {
 }
 
 int Manager::SampleRequestCallback(SPCHType_SampleRequestData *data) {
-    if (!data) {
-        return 0;
+    if (!m_speechDisable) {
+        if (data->channel == 1) {
+            goto done;
+        }
+        if (data->channel > 1) {
+            goto check_nis_channel;
+        }
+        if (data->channel == 0) {
+            goto cop_channel;
+        }
+        goto done;
+
+    check_nis_channel:
+        if (data->channel == 2) {
+            goto nis_callback;
+        }
+        goto done;
+
+    cop_channel:
+        if (mSampleRequests.begin() == mSampleRequests.end()) {
+            mSampleReqTimer = RealTimer;
+        }
+
+        SPCHType_1_EventID id = static_cast<SPCHType_1_EventID>(data->eventSpec.eventID);
+        if (TheTrackStreamer.GetLoadingBacklog() >= TRACKSTREAMER_BACKLOG_THRESH) {
+            mCurrentEvent->flags = static_cast<short>(mCurrentEvent->flags | 1);
+        }
+
+        if (gSpeechCache.IsCached(data, false)) {
+            if (SpeechSampleData *sample = gSpeechCache.GetSample(m_SpeechModule[COPSPEECH_MODULE], data)) {
+                mCurrentEvent->AddSample(sample, 0xff);
+            }
+        } else {
+            if (IsCacheable(id)) {
+                SPCHSampleRequest new_req;
+                new_req.data = *data;
+                new_req.offset = m_SpeechModule[COPSPEECH_MODULE]->GetBankOffset(data->bankNum) + data->sampleOffset;
+                new_req.owner = mCurrentEvent;
+                new_req.sample_index = mCurrentEvent->ReserveSample();
+                mSampleRequests.push_back(new_req);
+            } else {
+                SpeechSampleData *sample = gSpeechCache.GetUncached(m_SpeechModule[COPSPEECH_MODULE], data);
+                mCurrentEvent->AddSample(sample, 0xff);
+            }
+        }
     }
 
-    int module_index = data->channel;
-    if (module_index < 0 || module_index >= NUM_SPEECH_MODULES) {
-        module_index = COPSPEECH_MODULE;
-    }
+done:
+    return 0;
 
-    Module *module = m_SpeechModule[module_index];
-    if (!module) {
-        return 0;
-    }
-
-    return static_cast<int>(module->SampleRequestCallback(data));
+nis_callback:
+    return static_cast<int>(m_SpeechModule[NISSFX_MODULE]->SampleRequestCallback(data));
 }
 
 int Manager::LoadSpeechBank(CLUMP_IDX_FILEtag *index, int &type, int &number, SPEECH_BANK *sb) {

@@ -163,6 +163,7 @@ class TrackStreamer {
     }
 
     int GetLoadingPhase() const { return static_cast<int>(LoadingPhase); }
+    float GetLoadingBacklog() const { return LoadingBacklog; }
 
   private:
     TrackStreamingSection *pTrackStreamingSections;       // offset 0x0, size 0x4
