@@ -13,7 +13,12 @@ template <typename T, int U> class UCircularQueue {
     T Elements[U]; // offset 0x10, size 0x258
 
   public:
-    // UCircularQueue() {}
+    UCircularQueue() {
+        this->Size = 0;
+        this->Head = -1;
+        this->Tail = 0;
+        this->MaxSize = 50;
+    }
 
     // void enqueue(const T &insert) {}
 
@@ -27,9 +32,15 @@ template <typename T, int U> class UCircularQueue {
     // int newindex;
     // }
 
-    // void reset() {}
+    void reset() {
+        this->Size = 0;
+        this->Head = -1;
+        this->Tail = 0;
+    }
 
-    // int size() const {}
+    int size() const {
+        return this->Size;
+    }
 };
 
 #endif

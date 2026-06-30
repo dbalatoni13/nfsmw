@@ -181,17 +181,17 @@ template <typename T, int Size, int Alignment = 16> class FixedVector : public V
     // TODO also put the typedefs here according to the dwarf?
 
   protected:
-    virtual std::size_t GetGrowSize(std::size_t minSize) const {
+    virtual std::size_t GetGrowSize(std::size_t minSize) const override {
         return Size;
     }
 
-    virtual typename Vector<T, Alignment>::pointer AllocVectorSpace(std::size_t num, unsigned int alignment) {
+    virtual typename Vector<T, Alignment>::pointer AllocVectorSpace(std::size_t num, unsigned int alignment) override {
         return reinterpret_cast<typename Vector<T, Alignment>::pointer>(mVectorSpace);
     }
 
-    virtual void FreeVectorSpace(typename Vector<T, Alignment>::pointer buffer, std::size_t) {}
+    virtual void FreeVectorSpace(typename Vector<T, Alignment>::pointer buffer, std::size_t) override {}
 
-    virtual std::size_t GetMaxCapacity() const {
+    virtual std::size_t GetMaxCapacity() const override {
         return Size;
     }
 

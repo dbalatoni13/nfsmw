@@ -10,24 +10,26 @@
 
 // total size: 0x4
 class ActionRef {
-  public:
-    // void Print() const {}
+public:
+    ActionRef(ActionData *p);
 
     int ID() const {
-        return actiondata ? actiondata->ID() : 0;
+        return actiondata != nullptr ? actiondata->ID() : 0;
     }
 
     float Data() const {
-        return actiondata ? actiondata->Data() : 0.0f;
+        return actiondata != nullptr ? actiondata->Data() : 0.0f;
     }
 
     int Slot() const {
-        return actiondata ? actiondata->Slot() : 0;
+        return actiondata != nullptr ? actiondata->Slot() : 0;
     }
 
     bool IsNull() const {
         return actiondata != nullptr;
     }
+
+    // void Print() const {}
 
   private:
     ActionData *actiondata; // offset 0x0, size 0x4
