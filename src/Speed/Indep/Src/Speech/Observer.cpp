@@ -194,10 +194,96 @@ void Observer::AssessFlippage() {
 }
 
 void Observer::Assess180() {
-    float dot = CalcFWVec_Road_Car();
-    mDotTrack = dot;
-    if (dot < -0.2f) {
-        mTracking |= UTurn;
+    SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
+    if (ai->NumCopsWithLOS() > 0) {
+        float fwDot = CalcFWVec_Road_Car();
+        if ((fwDot >= -0.2f) && ((mTracking & UTurnResult) == 0)) {
+            mT_unstable = WorldTimer;
+        }
+
+        static UMath::Vector3 fw0 = UMath::Vector3::kZero;
+        static UMath::Vector3 startpos = UMath::Vector3::kZero;
+        static char datapts = 0;
+
+        if (fwDot < -0.2f) {
+            if ((mTracking ^ UTurn) & UTurn) {
+                if ((mTracking & UTurnResult) == 0) {
+                    mDotTrack = fwDot;
+                    fw0 = mFwRoad;
+                    mTracking |= UTurn;
+                    datapts = 0;
+                    startpos = ai->GetPlayerPos();
+                }
+            }
+        }
+
+        {
+            unsigned int tracking = mTracking;
+            if ((tracking & UTurn) == 0) {
+                return;
+            }
+            if (fwDot > 0.2f) {
+                if ((tracking & UTurnResult) == 0) {
+                    if (fwDot > mDotTrack) {
+                        mTracking = tracking & ~UTurn;
+                        mT_unstable = WorldTimer;
+                        datapts = 0;
+                        startpos = UMath::Vector3::kZero;
+                    } else {
+                        mDotTrack = fwDot;
+                        datapts++;
+                    }
+                }
+            }
+
+            if (fwDot <= 0.2f) {
+                if (datapts >= ai->GetTune().MinContigFramesFor180()) {
+                    if ((mTracking & UTurnResult) == 0) {
+                        UMath::Vector3 endpos = ai->GetPlayerPos();
+                        float dist_from_start = UMath::Distance(startpos, endpos);
+                        if (dist_from_start > ai->GetTune().MaxRangeFor180()) {
+                            mTracking &= ~UTurn;
+                            mT_unstable = WorldTimer;
+                            datapts = 0;
+                            startpos = UMath::Vector3::kZero;
+                        } else {
+                            mTracking |= UTurnResult;
+                            mT_unstable = WorldTimer;
+                        }
+                    }
+                }
+            }
+
+            if ((mTracking & UTurnResult) != 0) {
+                float delta_dot = UMath::Dot(mFwPlayer, fw0);
+                float t_unstable = (WorldTimer - mT_unstable).GetSeconds();
+                if (delta_dot <= 0.2f) {
+                    if (t_unstable > ai->GetTune().MaxTimeFor180()) {
+                        EAXCop *cop = ai->FindClosestCop(true, true);
+                        if (cop) {
+                            typedef void (*VoidMethodPtr)(void *);
+                            char *vtable = *reinterpret_cast<char **>(cop);
+                            register VoidMethodPtr method asm("r0") = *reinterpret_cast<VoidMethodPtr *>(vtable + 0x1A4);
+                            asm volatile("" : : : "memory");
+                            short thisAdjust = *reinterpret_cast<short *>(vtable + 0x1A0);
+                            method(reinterpret_cast<char *>(cop) + thisAdjust);
+                        } else {
+                            return;
+                        }
+                    } else {
+                        return;
+                    }
+                }
+                mTracking &= ~UTurn;
+                mTracking &= ~UTurnResult;
+                mT_unstable = WorldTimer;
+                datapts = 0;
+            }
+        }
+    } else {
+        mTracking &= ~UTurn;
+        mTracking &= ~UTurnResult;
+        mT_unstable = WorldTimer;
     }
 }
 
