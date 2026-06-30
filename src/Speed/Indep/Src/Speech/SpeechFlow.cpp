@@ -1151,12 +1151,8 @@ void GameSpeech::ReleaseResource() {
 }
 
 unsigned int GameSpeech::SampleRequestCallback(SPCHType_SampleRequestData *data) {
-    SpeechSampleData *sample = ::gSpeechCache.GetSample(this, data);
-    if (sample) {
-        m_pendingList.push_back(sample);
-        return 1;
-    }
-    return 0;
+    IssueSampleRequests();
+    return 1;
 }
 
 void GameSpeech::IssueSampleRequests() {
@@ -1335,12 +1331,17 @@ bool SED_NISSFX::QueStream(eNISSFX_TYPE stream_type, void (*callback)(), bool) {
 }
 
 unsigned int SED_NISSFX::SampleRequestCallback(SPCHType_SampleRequestData *data) {
-    SpeechSampleData *sample = ::gSpeechCache.GetSample(this, data);
-    if (sample) {
-        m_SyncObject.qsObject = sample;
-        return 1;
+    if (IsNISAudioEnabled && m_strm) {
+        int rval;
+        m_SyncObject.qsObject = static_cast<SpeechSampleData *>(AllocateMemory(0x30, "NIS SampleData"));
+        m_SyncObject.holdtime = -1;
+        m_SyncObject.qsObject->cached = false;
+        m_SyncObject.qsObject->ready = false;
+        m_SyncObject.qsObject->dataoffset = GetBankOffset(data->bankNum) + data->sampleOffset;
+        rval = m_strm->AddToStrmReq(GetFilename(), m_SyncObject.qsObject->dataoffset, -1);
+        m_SyncObject.handle = rval;
     }
-    return 0;
+    return 1;
 }
 
 bool SED_NISSFX::PlayStream(int stream_id) {
