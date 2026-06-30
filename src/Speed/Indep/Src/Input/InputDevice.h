@@ -50,6 +50,10 @@ class InputDevice : public UTL::COM::Object, public UTL::COM::Factory<int, Input
     virtual float *SaveCurrentState();
     virtual void RestoreToState(float *currentState);
 
+    DeviceScalar *GetDeviceScalar(int i) {
+        return &this->fDeviceScalar[i];
+    };
+
   protected:
     DeviceScalar *fDeviceScalar; // offset 0x14, size 0x4
     float *fPrevValues;          // offset 0x18, size 0x4

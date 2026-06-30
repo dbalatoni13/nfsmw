@@ -1,7 +1,11 @@
 #ifndef __INPUT_DEF_PARSER_H__
 #define __INPUT_DEF_PARSER_H__
 
-#include "Speed/Indep/Src/Input/ActionData.h"
+#include "Speed/Indep/Libs/Support/Utility/FastMem.h"
+#include "Speed/Indep/Src/Input/Action.h"
+#include "Speed/Indep/Src/Input/InputDevice.h"
+#include "Speed/Indep/Tools/AttribSys/Runtime/Common/AttribPrivate.h"
+#include "stl/_list.h"
 
 enum InputUpdateType {
     kUpdate = 0,
@@ -22,7 +26,28 @@ struct InputMapEntry {
     float PreviousValue;        // offset 0x14, size 0x4
     float CurrentValue;         // offset 0x18, size 0x4
 
-    bool HasChanged() const {}
+    bool HasChanged() const {
+        return this->CurrentValue < 0; // ?
+    }
+};
+
+class InputMapping {
+public:
+    typedef struct _STL::list<InputMapEntry> Entries;
+
+    // static void operator delete(void *mem, const char *name) {};
+    InputMapping(InputDevice *device, const Attrib::Collection *spec);
+    ~InputMapping();
+
+
+    Entries &GetEntries() { return this->mEntries; }
+
+    USE_FASTALLOC(InputMapping)
+
+
+
+private:
+    Entries mEntries;
 };
 
 #endif

@@ -12,9 +12,9 @@
 #include "Speed/Indep/Src/EAXSound/EAXSoundEnums.hpp"
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_Enums.hpp"
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_EnumAttributes.hpp"
-#include "Speed/Indep/Src/EAXSound/SND_GEN/copspeech.hpp"
-#include "Speed/Indep/Src/EAXSound/SND_GEN/NISAudio.hpp"
-#include "Speed/Indep/Src/EAXSound/SND_GEN/STITCH_COL.h"
+#include "Speed/Indep/Src/EAXSound/snd_gen/copspeech.hpp"
+#include "Speed/Indep/Src/EAXSound/snd_gen/NISAudio.hpp"
+#include "Speed/Indep/Src/EAXSound/snd_gen/STITCH_COL.h"
 #include "Speed/Indep/Src/Gameplay/GReflected.h"
 #include "Speed/Indep/Src/Sim/SimSurfaceTypes.h"
 
