@@ -1,4 +1,5 @@
 #include "Speed/Indep/Src/Input/ActionQueue.h"
+#include "Speed/Indep/Libs/Support/Utility/UStandard.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/controller.h"
 #include "Speed/Indep/Src/Input/Action.h"
 #include "Speed/Indep/Src/Input/ActionData.h"
@@ -10,6 +11,7 @@
 #include "Speed/Indep/Src/Misc/Joylog.hpp"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 #include "Speed/Indep/Tools/AttribSys/Runtime/Common/AttribPrivate.h"
+#include "stl/_iterator_base.h"
 
 static const int PrintActionQueue = 0;
 
@@ -113,9 +115,9 @@ void ActionQueue::Enable(bool b) {
 
 // unfinished
 void ActionQueue::FetchCurrentValues(InputDevice *device) {
-    _STL::list<InputMapEntry> &e = this->mMappings->GetEntries();
+    UTL::Std::list<InputMapEntry, _type_list> &e = this->mMappings->GetEntries();
 
-    for (_STL::list<InputMapEntry>::iterator iter = e.begin(); iter != e.end(); iter++) {
+    for (UTL::Std::list<InputMapEntry, _STL::_Nonconst_traits<InputMapEntry> >::iterator iter = e.begin(); iter != e.end(); iter++) {
         if (iter->DeviceScalarIndex != 0) {
             InputMapEntry &entry = *iter;
             DeviceScalar *button = device->GetDeviceScalar(0);
@@ -157,8 +159,8 @@ void ActionQueue::IO_UpdateFromDevice() {
 
     this->FetchCurrentValues(device);
 
-    _STL::list<InputMapEntry> &e = this->mMappings->GetEntries();
-    for (_STL::list<InputMapEntry>::iterator iaction = e.begin(); iaction != e.end(); iaction++) {
+    UTL::Std::list<InputMapEntry, _type_list> &e = this->mMappings->GetEntries();
+    for (UTL::Std::list<InputMapEntry, _STL::_Nonconst_traits<InputMapEntry> >::iterator iaction = e.begin(); iaction != e.end(); iaction++) {
         InputMapEntry &entry = *iaction;
         if (entry.HasChanged()) {
             iaction++;
@@ -231,8 +233,9 @@ void ActionQueue::Flush() {
     this->fQueue.reset();
 
     if (this->mMappings != nullptr) {
-        _STL::list<InputMapEntry> &e = this->mMappings->GetEntries();
-        for (_STL::list<InputMapEntry>::iterator iter = e.begin(); iter != e.end(); iter++) {
+        UTL::Std::list<InputMapEntry, _type_list> &e = this->mMappings->GetEntries();
+
+        for (UTL::Std::list<InputMapEntry, _STL::_Nonconst_traits<InputMapEntry> >::iterator iter = e.begin(); iter != e.end(); iter++) {
             InputMapEntry &entry = *iter;
             entry.PreviousValue = -1.0;
             entry.CurrentValue = -1.0;
