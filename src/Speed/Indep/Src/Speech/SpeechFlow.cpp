@@ -198,7 +198,7 @@ SpeechHashIDMap::~SpeechHashIDMap() {}
 
 EventHistory::~EventHistory() {}
 
-SchedSpchEvents::~SchedSpchEvents() {}
+inline SchedSpchEvents::~SchedSpchEvents() {}
 
 SPCHEventList::~SPCHEventList() {}
 
@@ -469,45 +469,62 @@ void Manager::Destroy() {
 
 void Manager::Deduce() {
     SchedSpchEvents deferredEvents;
+    bool service;
 
-    while (!mEvents[0].empty()) {
-        SchedSpchEvents::iterator it = mEvents[0].begin();
-        ScheduledSpeechEvent *this_event = *it;
-        mEvents[0].erase(it);
+    if (mEvents[0].size() != 0) {
+        for (SchedSpchEvents::iterator i = mEvents[0].begin(); i != mEvents[0].end(); i = mEvents[0].begin()) {
+            ScheduledSpeechEvent *this_event = *i;
+            SpeechValRtnType keep = static_cast<SpeechValRtnType>(PreValidate(*this_event));
 
-        int keep = PreValidate(*this_event);
-        if (keep == 0) {
-            mEvents[1].push_back(this_event);
-        } else if (keep == 1) {
-            mEvents[3].push_back(this_event);
-        } else if (keep == 4) {
-            deferredEvents.push_back(this_event);
-        } else {
-            delete this_event;
+            switch (keep) {
+                case kIntEvt:
+                    mEvents[3].push_back(this_event);
+                    break;
+                case kKeepEvt:
+                    mEvents[1].push_back(this_event);
+                    break;
+                case kDeferEvt:
+                    deferredEvents.push_back(this_event);
+                    break;
+                case kDitchEvt:
+                case kEvtNotFound:
+                default:
+                    delete this_event;
+                    this_event = 0;
+                    break;
+            }
+
+            mEvents[0].erase(i);
         }
+        mEvents[0].clear();
     }
 
-    for (SchedSpchEvents::iterator i = deferredEvents.begin(); i != deferredEvents.end();) {
-        ScheduledSpeechEvent *deferral = *i;
-        if (PostValidate(deferral, 1U) != 0) {
-            i = deferredEvents.erase(i);
-            delete deferral;
-            continue;
+    if (deferredEvents.size() != 0) {
+        SchedSpchEvents::iterator i = deferredEvents.begin();
+        while (i != deferredEvents.end()) {
+            ScheduledSpeechEvent *deferral = *i;
+            if (PostValidate(deferral, 1U) == kDitchEvt) {
+                i = deferredEvents.erase(i);
+                delete deferral;
+                deferral = 0;
+            } else {
+                Attrib::Gen::speech deferral_atr(mHashMap.GetHash(deferral->ID), 0, 0);
+                if (!deferral_atr.interrupt()) {
+                    mEvents[0].insert(mEvents[0].begin(), deferral);
+                } else {
+                    mEvents[3].push_back(deferral);
+                }
+                ++i;
+            }
         }
 
-        Attrib::Gen::speech deferral_atr(mHashMap.GetHash(deferral->ID), 0, 0);
-        if (!deferral_atr.interrupt()) {
-            mEvents[0].push_back(deferral);
-        } else {
-            mEvents[3].push_back(deferral);
-        }
-
-        i = deferredEvents.erase(i);
+        deferredEvents.clear();
     }
 
     ServiceFilteredEvents();
-    while (!ServiceInterruptEvents()) {
-    }
+    do {
+        service = ServiceInterruptEvents();
+    } while (!service);
 }
 
 void Manager::Update(float) {
