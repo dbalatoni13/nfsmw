@@ -2,6 +2,7 @@
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/controller.h"
 #include "Speed/Indep/Src/Input/Action.h"
 #include "Speed/Indep/Src/Input/ActionData.h"
+#include "Speed/Indep/Src/Input/ActionRef.h"
 #include "Speed/Indep/Src/Input/IOModule.h"
 #include "Speed/Indep/Src/Input/InputDefParser.h"
 #include "Speed/Indep/Src/Input/InputDevice.h"
@@ -115,7 +116,7 @@ void ActionQueue::Enable(bool b) {
 void ActionQueue::FetchCurrentValues(InputDevice *device) {
     _STL::list<InputMapEntry> &e = this->mMappings->GetEntries();
 
-    for (_STL::list<InputMapEntry>::iterator iter = e.begin(); iter != e.end(); ++iter) {
+    for (_STL::list<InputMapEntry>::iterator iter = e.begin(); iter != e.end(); iter++) {
         if (iter->DeviceScalarIndex != 0) {
             InputMapEntry &entry = *iter;
             DeviceScalar *button = device->GetDeviceScalar(0);
@@ -126,7 +127,7 @@ void ActionQueue::FetchCurrentValues(InputDevice *device) {
 }
 
 ActionQueue *ActionQueue::FindActionQueue(int id) {
-    for (ActionQueue *const *iter = _mTable.begin(); iter != _mTable.end(); ++iter) {
+    for (ActionQueue *const *iter = _mTable.begin(); iter != _mTable.end(); iter++) {
         ActionQueue *q = *iter;
 
         if (q->mUniqueID == id) {
@@ -158,7 +159,7 @@ void ActionQueue::IO_UpdateFromDevice() {
     this->FetchCurrentValues(device);
 
     _STL::list<InputMapEntry> &e = this->mMappings->GetEntries();
-    for (_STL::list<InputMapEntry>::iterator iaction = e.begin(); iaction != e.end(); ++iaction) {
+    for (_STL::list<InputMapEntry>::iterator iaction = e.begin(); iaction != e.end(); iaction++) {
         InputMapEntry &entry = *iaction;
         if (entry.HasChanged()) {
             iaction++;
@@ -195,7 +196,7 @@ bool ActionQueue::ReceiveAction(ActionData &action) {
     if (action.Slot() != this->mPort) {
         return false;
     }
-    if (action.ID() == ACTION_UNPLUGGED) {
+    if (action.ID() != ACTION_UNPLUGGED) {
         this->mLastAnyActionTime = RealTimer;
     }
     Joylog::AddData(this->mUniqueID, 8, JOYLOG_CHANNEL_JOYEVENTS);
@@ -214,4 +215,60 @@ bool ActionQueue::ReceiveAction(ActionData &action) {
         this->Flush();
     }
     this->mActionTime = RealTimer;
+
+    this->fQueue.size(); // dwarf nonsense
+    this->fQueue.enqueue(action);
+
+    return true;
+}
+
+void ActionQueue::PopAction() {
+    if (this->fQueue.size() > 0) {
+        this->fQueue.dequeue();
+    }
+}
+
+void ActionQueue::Flush() {
+    this->fQueue.reset();
+
+    if (this->mMappings != nullptr) {
+        _STL::list<InputMapEntry> &e = this->mMappings->GetEntries();
+        for (_STL::list<InputMapEntry>::iterator iter = e.begin(); iter != e.end(); iter++) {
+            InputMapEntry &entry = *iter;
+            entry.PreviousValue = -1.0;
+            entry.CurrentValue = -1.0;
+        }
+    }
+}
+
+const ActionRef ActionQueue::GetAction() {
+    if (this->fQueue.size() > 0) {
+        ActionData *a = &this->fQueue.tail();
+        return ActionRef(a);
+    } else {
+        return ActionRef(nullptr);
+    }
+}
+
+void ActionQueue::BeginJoylogFrame() {
+    sInJoylogFrame = true;
+    if (Joylog::IsReplaying()) {
+        while (true) {
+            int queue_id = Joylog::GetSignedData(0x8, JOYLOG_CHANNEL_JOYEVENTS);
+            if (queue_id == -1) return;
+
+            ActionQueue *q = ActionQueue::FindActionQueue(queue_id);
+            int action_id = Joylog::GetData(0x8, JOYLOG_CHANNEL_JOYEVENTS);
+            float data = Joylog::GetData(JOYLOG_CHANNEL_JOYEVENTS);
+            ActionData a = ActionData(action_id, data, q->mPort);
+            q->ReceiveAction(a);
+        }
+    }
+}
+
+void ActionQueue::EndJoylogFrame() {
+    if (!Joylog::IsReplaying()) {
+        Joylog::AddData(-1, 0x8, JOYLOG_CHANNEL_JOYEVENTS);
+    }
+    sInJoylogFrame = false;
 }
