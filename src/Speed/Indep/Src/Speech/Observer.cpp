@@ -203,20 +203,86 @@ void Observer::Assess180() {
 
 void Observer::AssessOutcome() {
     SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
-    if (!ai) {
+    if (ai->GetFocus() != SoundAI::kStrategyFlow) {
+        return;
+    }
+    if (ai->GetPursuitState() != SoundAI::kActive) {
         return;
     }
 
-    int cur = static_cast<int>(ai->GetPursuitState());
-    if (cur != mPrevPursuitState) {
-        mTracking |= Outcome;
-        mT_trackingOutcome = WorldTimer;
-        if (cur == SoundAI::kSearching) {
-            mOutcomeIntensity = Csis::Type_intensity_Normal;
-        } else if (cur == SoundAI::kInactive) {
-            mOutcomeIntensity = Csis::Type_intensity_High;
+    {
+        float t_busted = ai->GetPursuit()->TimeUntilBusted();
+        if ((t_busted > 0.0f) && (t_busted < 2.0f) || ai->GetPursuit()->IsCollapseActive()) {
+            EAXCop *cop = ai->GetRandomActiveCop(1, false);
+            if (cop && !cop->IsHeli() && !Manager::IsQueued(static_cast<SPCHType_1_EventID>(0x5A), 4)) {
+                cop->AnticipateSuccess();
+            }
         }
-        mPrevPursuitState = cur;
+
+        if ((mTracking & Outcome) == 0) {
+            return;
+        }
+        if (t_busted >= 2.0f) {
+            return;
+        }
+
+        {
+            float t_tracking = (WorldTimer - mT_trackingOutcome).GetSeconds();
+            if (t_tracking < ai->GetTune().OutcomeTrackTime()) {
+                return;
+            }
+
+            {
+                copList primvisual;
+                primvisual.reserve(ai->GetActors().size());
+                {
+                    copMap::const_iterator iter = ai->GetActors().begin();
+                    while (iter != ai->GetActors().end()) {
+                        EAXCop *cop = iter->cop;
+                        if (cop->IsActive() && cop->HasLOS() && cop->IsPrimary()) {
+                            primvisual.push_back(cop);
+                        }
+                        ++iter;
+                    }
+                }
+
+                if (primvisual.empty()) {
+                    return;
+                }
+
+                {
+                    bool say_outcome = true;
+                    EAXCop *cop;
+                    if (primvisual.size() > 1) {
+                        _STL::sort(primvisual.begin(), primvisual.end());
+                    }
+
+                    cop = *primvisual.begin();
+                    if (mTracking & CarRam) {
+                        if (mRamCop) {
+                            say_outcome = false;
+                            if (mRamCop->GetTimeLastRammed() <= t_tracking) {
+                                mRamCop->AnticipateSuccess();
+                            } else {
+                                mRamCop->AnticipateFail();
+                            }
+                        }
+                        mTracking &= ~CarRam;
+                        ai->ClearImmunity();
+                    }
+
+                    if (say_outcome) {
+                        if (ai->GetPlayerSpeed() >= ai->GetTune().OutcomeFailSpeed()) {
+                            cop->OutcomeFail(-1);
+                        } else if (!cop->IsHeli()) {
+                            cop->AnticipateSuccess();
+                        }
+                    }
+
+                    mTracking &= ~Outcome;
+                }
+            }
+        }
     }
 }
 

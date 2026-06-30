@@ -388,7 +388,9 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
 
     // void MakeCopsImmune() {}
 
-    // void ClearImmunity() {}
+    void ClearImmunity() {
+        mFlags &= ~COPS_IMMUNE;
+    }
 
     // const unsigned char GetRacerCount() {}
 
