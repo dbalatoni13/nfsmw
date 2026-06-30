@@ -52,6 +52,16 @@ inline void *SpeechSampleData::GetData() {
     return reinterpret_cast<void *>(reinterpret_cast<unsigned int>(this) + 0x40);
 }
 
+inline SpeechSampleData *SpeechSampleVec::Find(int handle) const {
+    for (SpeechSampleData *const *i = begin(); i != end(); ++i) {
+        if ((*i)->HSTRM == handle) {
+            return *i;
+        }
+    }
+
+    return 0;
+}
+
 Module *Manager::m_SpeechModule[NUM_SPEECH_MODULES] = { 0, 0 };
 SPEECH_MODE Manager::m_speechMode = static_cast<SPEECH_MODE>(0);
 int Manager::m_numberSpeechBanks = 0;
@@ -1119,11 +1129,145 @@ SPCHType_EventRuleResult GameSpeech::EventRuleCallback(int) {
     return kSPCH_EventRule_OK;
 }
 
+bool Unlocked(SpeechSampleData *data) {
+    if (!data->cached) {
+        gSpeechCache.TossSample(data);
+        return true;
+    }
+
+    return data->lock != 0;
+}
+
 void GameSpeech::Update() {
-    CheckNextEvent();
-    IssueSampleRequests();
+    if (TestFlag(2)) {
+        return;
+    }
+
     UpdateChirps();
-    ClearCompletedRequests();
+    if (!m_strm || !IsSpeechEnabled || !m_pSFXOBJ_Speech) {
+        return;
+    }
+
+    int LowPassFilter = m_pSFXOBJ_Speech->GetDMixOutput(0xC, DMX_FREQ);
+    m_strm->SetLowPass(LowPassFilter);
+
+    SNDSTREAMSTATUS ss;
+    m_strm->GetStatus(&ss);
+
+    static int requests_in_queue = ss.outstandingrequests;
+    static int req_timer = 0;
+
+    if (ss.outstandingrequests > 0) {
+        float fvol;
+        SNDREQUESTSTATUS srs;
+        m_flags |= 8;
+        requests_in_queue = ss.outstandingrequests;
+        int err = m_strm->GetRequestStatus(ss.currentrequest, &srs);
+        if (err >= 0) {
+            SpeechSampleData *sample;
+            if (m_pendingList.size() != 0) {
+                sample = m_pendingList.Find(ss.currentrequest);
+            } else {
+                sample = 0;
+            }
+            switch (srs.state) {
+                case 3:
+                    if (sample) {
+                        sample->t_play = WorldTimer;
+                        sample->lock = false;
+                    }
+                    req_timer = 0;
+                    break;
+                case 1:
+                case 0: {
+                    int nQVol;
+                    if (TestFlag(0x20)) {
+                        nQVol = 0x7FFF;
+                    } else {
+                        nQVol = 0;
+                    }
+                    m_pSFXOBJ_Speech->SetDMIX_Input(2, nQVol);
+                    break;
+                }
+                case 2: {
+                    m_currEventTime += srs.currenttime - req_timer;
+                    req_timer = srs.currenttime;
+                    if ((m_currEventTime > 3000) && !TestFlag(0x10)) {
+                        Manager::NotifyEventCompletion(m_currEvent, false);
+                        m_flags |= 0x10;
+                    }
+
+                    if (TestFlag(0x20)) {
+                        m_pSFXOBJ_Speech->SetDMIX_Input(2, 0x7FFF);
+                        m_strm->SetAz(m_pSFXOBJ_Speech->GetDMixOutput(0, DMX_AZIM));
+                    } else {
+                        m_pSFXOBJ_Speech->SetDMIX_Input(2, 0);
+                        m_strm->SetAz(0);
+                    }
+
+                    int nQVol = GetVolForSpeaker(m_currEventSpeakerID);
+                    m_pSFXOBJ_Speech->SetDMIX_Input(3, m_currEventClarity);
+                    SndStrmWrapper *strm = m_strm;
+                    fvol = static_cast<float>(nQVol);
+                    fvol *= 0.01f;
+                    fvol *= 32767.0f;
+                    if (m_enable) {
+                        nQVol = static_cast<int>(fvol);
+                    } else {
+                        nQVol = 0;
+                    }
+                    strm->SetVol(nQVol, false);
+                    CheckNextEvent();
+                    break;
+                }
+            }
+        }
+
+        if (m_pendingList.size() != 0) {
+            SpeechSampleData **i = std::remove_if(m_pendingList.begin(), m_pendingList.end(), Unlocked);
+            m_pendingList.erase(i, m_pendingList.end());
+        }
+        mLastEventTimestamp = WorldTimer;
+    } else if (ss.outstandingrequests == 0) {
+        if (requests_in_queue > 0) {
+            if (m_currEvent) {
+                if (m_currEvent->finish_time == Timer(0)) {
+                    m_currEvent->finish_time = WorldTimer;
+                    if (!TestFlag(0x10)) {
+                        Manager::NotifyEventCompletion(m_currEvent, false);
+                        m_flags |= 0x10;
+                    }
+                    Manager::NotifyEventCompletion(m_currEvent, true);
+                    RadioChirp(1);
+                }
+
+                if (Manager::IsEventDead(m_currEvent) < 0.0f) {
+                    requests_in_queue = ss.outstandingrequests;
+                    mLastEventTimestamp = WorldTimer;
+                    if (!m_currEvent) {
+                        return;
+                    }
+                    delete m_currEvent;
+                    m_currEvent = 0;
+                    for (unsigned int i = 0; i < m_pendingList.size(); ++i) {
+                        m_pendingList[i]->lock = false;
+                    }
+                    m_pendingList.clear();
+                    m_flags &= ~0xC;
+                } else {
+                    m_flags |= 0xC;
+                    CheckNextEvent();
+                    return;
+                }
+            } else {
+                unsigned int flags = m_flags;
+                requests_in_queue = 0;
+                m_flags = flags & ~0xC;
+            }
+        } else {
+            CheckNextEvent();
+        }
+    }
 }
 
 void GameSpeech::CheckNextEvent() {

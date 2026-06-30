@@ -18,7 +18,9 @@ struct ScheduledSpeechEvent;
 
 DECLARE_CONTAINER_TYPE(SpeechSampleVec);
 
-struct SpeechSampleVec : public UTL::Std::vector<SpeechSampleData *, _type_SpeechSampleVec>, public AudioMemBase {};
+struct SpeechSampleVec : public UTL::Std::vector<SpeechSampleData *, _type_SpeechSampleVec>, public AudioMemBase {
+    SpeechSampleData *Find(int handle) const;
+};
 
 // total size: 0xD0
 struct GameSpeech : public Module {
