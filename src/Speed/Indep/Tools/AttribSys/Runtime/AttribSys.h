@@ -573,6 +573,9 @@ class Attribute {
     void SendChangeMsg() const;
     // TODO
     template <typename T> const T &Get(unsigned int index, T &result) const;
+    // TODO
+    template <typename T> const T &Get(unsigned int index) const;
+
 
     void operator delete(void *ptr, std::size_t bytes) {
         Free(ptr, bytes, "Attrib::Attribute");
