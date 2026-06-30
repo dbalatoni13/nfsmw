@@ -2,6 +2,7 @@
 #include "SoundAI.h"
 #include "Speed/Indep/Src/EAXSound/Stream/SpeechManager.hpp"
 #include "Speed/Indep/Src/Generated/Messages/MNotifyMusicFlow.h"
+#include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 namespace Speech {
 
@@ -167,24 +168,94 @@ void MusicFlow::Waiting() {
 
 void MusicFlow::Neutral() {
     SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
-    if (!ai) {
+    bool in_cooldown;
+
+    if (ai->GetPursuit()) {
+        in_cooldown = ai->GetPursuit()->GetPursuitStatus() == 2;
+    } else {
+        in_cooldown = false;
+    }
+
+    int *busy = &mBusy;
+    if (in_cooldown) {
+        *busy = 0;
+    } else {
+        int busy_value;
+        if (mElapsed < 30.0f || mRestrained) {
+            busy_value = mBusy;
+            mBusy = busy_value + 1;
+        } else {
+            busy_value = 0;
+        }
+        *busy = busy_value;
+    }
+
+    UpdateIntensity(mAvgPursuitDist < 32.0f ? 1.0f : 0.0f);
+    UpdateIntensity(ai->GetTimeLastCrashed() >= 2.5f ? mIntensity : 1.0f);
+    UpdateIntensity(ai->GetTimeLastNailedCop() >= 2.5f ? mIntensity : 1.0f);
+
+    if (mRestrained) {
+        mIntensity = bClamp(mIntensity, 0.0f, 0.5f);
+    }
+
+    if (ai->GetPursuitState() == SoundAI::kInactive) {
+        ChangeStateTo(kTerminal);
+        return;
+    }
+
+    if (mRestrained && !in_cooldown) {
+        if (mElapsed <= 30.0f && ai->GetFocus() != 2) {
+            return;
+        }
+        mRestrained = in_cooldown;
+        mIntensity = 1.0f;
+        mTimer = WorldTimer;
+    }
+
+    if (ai->GetPlayerSpeed() < mTopSpeed * 0.125f) {
+        if (ai->GetPursuit()->IsCollapseActive()) {
+            mIntensity = 0.86f;
+            ChangeStateTo(kLose);
+            return;
+        }
+
+        if (ai->GetPlayerSpeed() < mTopSpeed * 0.125f && ai->GetPursuitState() == SoundAI::kSearching &&
+            ai->GetPerpLostTime() > 4.0f && ai->GetTimeLastCrashed() > 4.0f) {
+            ChangeStateTo(kElude);
+            return;
+        }
+    }
+
+    if (mBusy != 0) {
         return;
     }
 
     if (ai->GetPursuitState() == SoundAI::kInactive) {
-        ChangeStateTo(kWaiting);
         return;
     }
-    if (ai->GetPursuitState() == SoundAI::kSearching) {
-        ChangeStateTo(kElude);
-        return;
-    }
-    if (mAvgPlayerSpeed < 6.0f) {
+
+    if (in_cooldown) {
+        if (ai->GetPlayerSpeed() >= mTopSpeed * 0.35f) {
+            ChangeStateTo(kWin);
+        } else {
+            ChangeStateTo(kElude);
+        }
+    } else {
+        if (mAvgPlayerSpeed < mTopSpeed * 0.125f && ai->GetPursuitState() == SoundAI::kSearching) {
+            ChangeStateTo(kElude);
+            return;
+        }
+
+        if (mAvgPlayerSpeed > mTopSpeed * 0.5f) {
+            ChangeStateTo(kWin);
+            return;
+        }
+
+        if (mAvgPursuitDist >= 32.0f) {
+            return;
+        }
         ChangeStateTo(kLose);
-        return;
-    }
-    if (mRequestedSwap) {
-        ChangeStateTo(kWin);
+        mIntensity = 0.35f;
     }
 }
 
