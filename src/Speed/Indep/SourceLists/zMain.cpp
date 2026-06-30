@@ -7,3 +7,5 @@
 #include "Speed/Indep/Src/Input/Common/InputDefParser.cpp"
 
 #include "Speed/Indep/Src/Input/Common/InputDevice.cpp"
+
+#include "Speed/Indep/Src/Math/Common/SimRandom.cpp"

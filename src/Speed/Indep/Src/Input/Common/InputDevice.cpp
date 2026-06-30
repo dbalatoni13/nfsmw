@@ -1,7 +1,6 @@
 #include "Speed/Indep/Src/Input/InputDevice.h"
 #include "Speed/Indep/Libs/Support/Miscellaneous/StringHash.h"
 #include "Speed/Indep/Libs/Support/Utility/UCrc.h"
-#include "Speed/Indep/Src/Sim/SimObject.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 DeviceScalar::DeviceScalar() {
