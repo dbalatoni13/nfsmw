@@ -29,6 +29,7 @@ public:
 
     ActionQueue(bool required);
     ActionQueue(int port, unsigned int config, const char *queue_name, bool required);
+
     ~ActionQueue();
 
     const char *GetName() {
@@ -43,42 +44,49 @@ public:
     bool IsEmpty();
 
     const ActionRef GetAction();
+
     void PopAction();
+
     void Flush();
+
     void SetConfig(unsigned int config, const char *queue_name);
+
     bool IsValid() const {
         return this->mMappings != nullptr;
     }
-    void SetPort(int port);
-    // int GetPort() const {}
 
+    void SetPort(int port);
+    int GetPort() const {
+        return this->mPort;
+    }
     bool IsActive() const {
         return this->IsValid();
     }
-
     bool IsEnabled() const;
+
     void Enable(bool b);
+
     const ActionRef operator[](int i);
     // int Size() {}
+
     // Timer LastActionTime() const {}
+
     // Timer ActivationTime() const {}
+
     // static Timer LastAnyActionTime() {}
 
-    USE_FASTALLOC(ActionQueue)
-
-    // void *operator new(std::size_t size, void *ptr) {}
-
-    // void operator delete(void *mem, void *ptr) {}
-
-    // bool IsActive() const {}
+    unsigned int GetConfig() const {
+        return mConfig;
+    }
 
     bool IsConnected() const;
 
     bool ReceiveAction(ActionData &action);
 
-    unsigned int GetConfig() const {
-        return mConfig;
-    }
+    static void BeginJoylogFrame();
+    static void EndJoylogFrame();
+
+    USE_FASTALLOC(ActionQueue)
 
 private:
     static ActionQueue::List _mTable;
