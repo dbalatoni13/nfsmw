@@ -5,7 +5,6 @@
 #include "Speed/Indep/Src/Input/Action.h"
 #include "Speed/Indep/Src/Input/InputDevice.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/Common/AttribPrivate.h"
-#include "stl/_list.h"
 
 enum InputUpdateType {
     kUpdate = 0,
