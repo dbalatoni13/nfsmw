@@ -6,6 +6,7 @@
 #include "Speed/Indep/Src/EAXSound/Stream/EAXS_StreamManager.h"
 #include "Speed/Indep/Src/EAXSound/Stream/GameSpeech.hpp"
 #include "Speed/Indep/Src/EAXSound/Stream/NISSFXModule.hpp"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/audiosystem.h"
 #include "Speed/Indep/Src/EAXSound/snd_gen/copspeech.hpp"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/speech.h"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
@@ -1120,14 +1121,94 @@ GameSpeech::~GameSpeech() {
 
 void GameSpeech::Init(int channel) {
     m_channel = channel;
-    m_currentIntensity = 0;
-    m_speechCycle = 0;
-    m_currEvent = 0;
-    m_currEventTime = 0;
-    m_currEventClarity = 0;
-    m_currEventSpeakerID = 0;
-    m_pendingList.clear();
-    mLoadState.clear();
+
+    Attrib::Gen::audiosystem *localizedCollection = new Attrib::Gen::audiosystem(g_pEAXSound->GetLocalAttr());
+    if (localizedCollection->GetLayoutPointer() == 0) {
+        localizedCollection->SetDefaultLayout(sizeof(Attrib::Gen::audiosystem::_LayoutStruct));
+    }
+
+    m_strm = gpEAXS_StrmMgr->GetStreamChannel(0);
+    m_filename = localizedCollection->BIGPath();
+
+    Attrib::StringKey evtfile(localizedCollection->EVTPath());
+    Attrib::StringKey csifile(localizedCollection->CSIPath());
+    Attrib::StringKey idxfile(localizedCollection->IDXPath());
+
+    int nfilesize;
+    {
+        const char *filename = evtfile.GetString();
+        if (filename == 0) {
+            filename = "";
+        }
+        nfilesize = bFileSize(filename);
+    }
+
+    char **eventDat = &m_eventDat;
+    if (nfilesize > 0) {
+        *eventDat = gAudioMemoryManager.AllocateMemoryChar(nfilesize, "AUD: Game speech events", false);
+    } else {
+        *eventDat = 0;
+    }
+
+    if (m_eventDat != 0) {
+        int thisobj = 0;
+        mLoadState.push_back(thisobj);
+        const char *filename = evtfile.GetString();
+        if (filename == 0) {
+            filename = "";
+        }
+        AddQueuedFile(m_eventDat, filename, 0, nfilesize, LoadingCallback, reinterpret_cast<int>(this), 0);
+    }
+
+    {
+        const char *filename = idxfile.GetString();
+        if (filename == 0) {
+            filename = "";
+        }
+        nfilesize = bFileSize(filename);
+    }
+
+    char **tempCharPtr = &m_tempCharPtr;
+    if (nfilesize > 0) {
+        *tempCharPtr = static_cast<char *>(bMalloc(nfilesize, 0x1040));
+    } else {
+        *tempCharPtr = 0;
+    }
+
+    if (m_tempCharPtr != 0) {
+        int thisobj = 1;
+        mLoadState.push_back(thisobj);
+        const char *filename = idxfile.GetString();
+        if (filename == 0) {
+            filename = "";
+        }
+        AddQueuedFile(m_tempCharPtr, filename, 0, nfilesize, LoadingCallback, reinterpret_cast<int>(this), 0);
+    }
+
+    {
+        const char *filename = csifile.GetString();
+        if (filename == 0) {
+            filename = "";
+        }
+        nfilesize = bFileSize(filename);
+    }
+
+    char **csisData = &m_csisData;
+    if (nfilesize > 0) {
+        *csisData = gAudioMemoryManager.AllocateMemoryChar(nfilesize, "AUD: Game speech CSIS data", false);
+    } else {
+        *csisData = 0;
+    }
+
+    if (m_csisData != 0) {
+        int thisobj = 2;
+        mLoadState.push_back(thisobj);
+        const char *filename = csifile.GetString();
+        if (filename == 0) {
+            filename = "";
+        }
+        AddQueuedFile(m_csisData, filename, 0, nfilesize, LoadingCallback, reinterpret_cast<int>(this), 0);
+    }
 }
 
 void GameSpeech::LoadingCallback(int, int) {}
