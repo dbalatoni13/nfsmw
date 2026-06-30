@@ -7,6 +7,7 @@
 #include "Speed/Indep/Src/EAXSound/Stream/GameSpeech.hpp"
 #include "Speed/Indep/Src/EAXSound/Stream/NISSFXModule.hpp"
 #include "Speed/Indep/Src/EAXSound/snd_gen/copspeech.hpp"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/speech.h"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Generated/Messages/MNotifyCellCallComplete.h"
 #include "Speed/Indep/Src/Generated/Messages/MNotifyCellCallStarted.h"
@@ -46,6 +47,10 @@ extern float TRACKSTREAMER_BACKLOG_THRESH;
 extern "C" bool InteruptedAndNotDelayed__6SpeechPQ26Speech20ScheduledSpeechEvent(Speech::ScheduledSpeechEvent *this_event);
 
 namespace Speech {
+
+inline void *SpeechSampleData::GetData() {
+    return reinterpret_cast<void *>(reinterpret_cast<unsigned int>(this) + 0x40);
+}
 
 Module *Manager::m_SpeechModule[NUM_SPEECH_MODULES] = { 0, 0 };
 SPEECH_MODE Manager::m_speechMode = static_cast<SPEECH_MODE>(0);
@@ -1128,9 +1133,82 @@ void GameSpeech::CheckNextEvent() {
 }
 
 void GameSpeech::IssuePlayback(ScheduledSpeechEvent *nextevent) {
+    Attrib::Gen::speech speech(Manager::mHashMap.GetHash(nextevent->ID), 0, 0);
+
+    if (m_pSFXOBJ_Speech) {
+        float scale = static_cast<unsigned int>(speech.Clarity());
+        scale *= 0.01f;
+        scale *= 32767.0f;
+        m_currEventClarity = static_cast<int>(scale);
+    }
+
+    {
+        MNotifySpeechStatus(nextevent).Send(UCrc32("SpeechStatus"));
+    }
+
+    if (nextevent && (nextevent->ID == kSPCH1_EventID_CellCall)) {
+        MNotifyCellCallStarted().Post(UCrc32(0x20d60dbf));
+    }
+
+    if (speech.Pan()) {
+        m_flags |= 0x20;
+    } else {
+        m_flags &= ~0x20;
+    }
+
+    if (speech.RadioChirp()) {
+        m_flags |= 0x400;
+    } else {
+        m_flags &= ~0x400;
+    }
+
+    unsigned char err_count = 0;
+    for (short i = 0; i < nextevent->assoc_samples_count; ++i) {
+        SpeechSampleData *stitch = nextevent->assoc_samples[i];
+        if (stitch) {
+            bool stitch_hdr_check_passes = false;
+            const unsigned int snd_chunk_hdr = 0x5343486c;
+            if ((stitch->cached == false) || (*reinterpret_cast<const unsigned int *>(stitch->GetData()) == snd_chunk_hdr)) {
+                stitch_hdr_check_passes = true;
+            } else {
+                err_count++;
+            }
+
+            if (stitch_hdr_check_passes) {
+                stitch->t_load = WorldTimer;
+                stitch->lock = true;
+                m_pendingList.push_back(stitch);
+                if (stitch->cached) {
+                    stitch->HSTRM = m_strm->AddToStream(0, stitch->GetData(), 0, 0);
+                } else {
+                    stitch->HSTRM = m_strm->AddToStrmReq(GetFilename(), stitch->dataoffset, 0);
+                }
+                m_flags |= 8;
+            }
+        } else {
+            err_count++;
+        }
+    }
+
+    m_currEventTime = 0;
+    m_flags &= ~0x10;
+
+    if (err_count) {
+        {
+            MNotifySpeechStatus(nextevent).Send(UCrc32(0x20d60dbf));
+        }
+        if (nextevent->ID == kSPCH1_EventID_CellCall) {
+            MNotifyCellCallComplete().Send(UCrc32(0x20d60dbf));
+        }
+        delete nextevent;
+        nextevent = 0;
+    }
+
     m_currEvent = nextevent;
-    if (nextevent && nextevent->actor) {
-        m_currEventSpeakerID = static_cast<short>(nextevent->actor->GetSpeakerID());
+    Manager::Expire(m_currEvent);
+    m_currEventSpeakerID = 0;
+    if (m_currEvent && m_currEvent->actor) {
+        m_currEventSpeakerID = static_cast<short>(m_currEvent->actor->GetSpeakerID());
     }
 }
 
