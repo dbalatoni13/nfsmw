@@ -128,28 +128,71 @@ void StrategyFlow::CullCheck() {
 
 void StrategyFlow::SoloCheck() {
     SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
-    if (!ai) {
+    IPursuit *pursuit;
+
+    mDistance[0] = ai->GetPursuitDistance();
+    mSpeed[0] = ai->GetPlayerSpeed();
+
+    if ((ai->GetPursuitState() == SoundAI::kInactive) || (ai->GetFocus() != SoundAI::kStrategyFlow)) {
+        ChangeStateTo(kTerminal);
         return;
     }
 
-    mLOSCount = ai->NumCopsWithLOS();
-    mFormationCount = static_cast<int>(ai->GetCopsInFormation().size());
-    mDistance[0] = mDistance[1];
-    mDistance[1] = ai->GetPursuitDistance();
-    mSpeed[0] = mSpeed[1];
-    mSpeed[1] = ai->GetPlayerSpeed();
-
-    if ((mLOSCount <= 0) || (mFormationCount <= 1)) {
-        ChangeStateTo(kReqBackup);
+    if (!ai->GetLeader()) {
         return;
     }
 
-    if (ai->GetPursuitState() == SoundAI::kSearching) {
-        ChangeStateTo(kOutrun);
+    if (Manager::IsCopSpeechBusy()) {
         return;
     }
 
-    ChangeStateTo(kWaiting);
+    {
+        copList active;
+        active.reserve(ai->GetActors().size());
+        {
+            copMap::const_iterator iter = ai->GetActors().begin();
+            while (iter != ai->GetActors().end()) {
+                EAXCop *cop = iter->cop;
+                if (cop->IsActive()) {
+                    active.push_back(cop);
+                }
+                ++iter;
+            }
+        }
+
+        if ((active.size() == 1) || (ai->NumCopsWithLOS() == 0)) {
+            mBackupType = 32;
+            ChangeStateTo(kReqBackup);
+            return;
+        }
+
+        pursuit = ai->GetPursuit();
+        mFormationType = pursuit->GetFormationType();
+        if ((ai->NumCopsWithLOS() <= 1) || (ai->GetCopsInFormation().size() <= 1)) {
+            if (ai->GetLeader()->IsHeli()) {
+                if (ai->GetHeli()->IsActive()) {
+                    ai->GetHeli()->SelfStrategy(1);
+                }
+            } else if (ai->GetLeader()->IsActive()) {
+                ai->GetLeader()->SelfStrategy(mFormationType);
+            }
+            mFlags |= SOLO;
+        } else {
+            if (ai->GetLeader()->IsActive()) {
+                typedef void (*VoidIntMethodPtr)(void *, int);
+                register EAXCop *leader asm("r11") = ai->GetLeader();
+                int formationType = mFormationType;
+                char *vtable = *reinterpret_cast<char **>(leader);
+                register VoidIntMethodPtr method asm("r0") = *reinterpret_cast<VoidIntMethodPtr *>(vtable + 0x14C);
+                asm volatile("" : : : "memory");
+                short thisAdjust = *reinterpret_cast<short *>(vtable + 0x148);
+                method(reinterpret_cast<char *>(leader) + thisAdjust, formationType);
+            }
+            mFlags &= ~SOLO;
+        }
+        mDistance[0] = ai->GetPursuitDistance();
+        ChangeStateTo(kWaiting);
+    }
 }
 
 void StrategyFlow::CallToPos() {
