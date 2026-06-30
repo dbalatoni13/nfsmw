@@ -16,7 +16,9 @@ struct Map {};
 struct EventStaticData {
     // char *StaticData() {}
 
-    // const char *StaticData() const {}
+    const char *StaticData() const {
+        return reinterpret_cast<const char *>(this) + fDataOffset;
+    }
 
     // EventStaticData *NextEvent() {}
 
@@ -32,6 +34,10 @@ struct EventStaticData {
 struct EventList {
     EventStaticData *Event() {
         return reinterpret_cast<EventStaticData *>(&this[1]);
+    }
+
+    const EventStaticData *Event() const {
+        return reinterpret_cast<const EventStaticData *>(&this[1]);
     }
 
     // const EventStaticData *Event() const {}

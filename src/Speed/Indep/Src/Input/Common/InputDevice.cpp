@@ -1,5 +1,6 @@
 #include "Speed/Indep/Src/Input/InputDevice.h"
 #include "Speed/Indep/Libs/Support/Miscellaneous/StringHash.h"
+#include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Libs/Support/Utility/UCrc.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
@@ -16,6 +17,8 @@ void DeviceScalar::InitializeDeviceScalar(DeviceScalarType type, const char *nam
     this->fPrevValue = prev_value;
     this->fCurrentValue = current_value;
 }
+
+IMPLEMENT_FACTORY(InputDevice)
 
 InputDevice::InputDevice(int deviceIndex) : UTL::COM::Object(4) {
     this->fDeviceIndex = deviceIndex;

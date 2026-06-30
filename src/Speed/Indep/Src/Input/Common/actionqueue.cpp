@@ -14,7 +14,7 @@
 
 static const int PrintActionQueue = 0;
 
-bool ActionQueue::sInJoylogFrame;
+bool ActionQueue::sInJoylogFrame = false;
 Timer ActionQueue::mLastAnyActionTime;
 
 ActionQueue::List ActionQueue::_mTable;
