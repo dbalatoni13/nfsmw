@@ -19,6 +19,44 @@ Timer ActionQueue::mLastAnyActionTime;
 
 ActionQueue::List ActionQueue::_mTable;
 
+ActionQueue::ActionQueue(bool required) {
+    this->mRequired = required;
+    this->mPort = -1;
+    this->mMappings = nullptr;
+    this->mConfig = 0;
+    this->mActionTime = Timer();
+    this->mActivationTime = Timer();
+    this->mState = AQS_ENABLED;
+    this->mUniqueID = this->AssignUniqueID();
+    this->mQueueName = "Unnamed";
+    this->mConnected = false;
+
+    this->fQueue.reset();
+}
+
+ActionQueue::ActionQueue(int port, unsigned int config, const char *queue_name, bool required) {
+    this->mRequired = required;
+    this->mPort = -1;
+    this->mMappings = nullptr;
+    this->mConfig = 0;
+    this->mActionTime = Timer();
+    this->mActivationTime = Timer();
+    this->mState = AQS_ENABLED;
+    this->mUniqueID = this->AssignUniqueID();
+    this->mConnected = false;
+
+    this->fQueue.reset();
+    this->mPort = port;
+
+    this->SetConfig(config, queue_name);
+}
+
+ActionQueue::~ActionQueue() {
+    if (this->mMappings != nullptr) {
+        delete this->mMappings;
+    }
+}
+
 // const ActionRef ActionQueue::operator[](int i) {
 
 // }

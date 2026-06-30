@@ -147,4 +147,6 @@ enum ActionID {
     MAX_ACTIONID,
 };
 
+char *getActionIdString(ActionID actionID);
+
 #endif
