@@ -11,7 +11,6 @@
 #include "Speed/Indep/Src/Misc/Joylog.hpp"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 #include "Speed/Indep/Tools/AttribSys/Runtime/Common/AttribPrivate.h"
-#include "stl/_iterator_base.h"
 
 static const int PrintActionQueue = 0;
 
