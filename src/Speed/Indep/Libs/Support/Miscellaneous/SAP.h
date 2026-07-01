@@ -36,6 +36,10 @@ template <typename T> class Grid {
                 }
             }
 
+            ~Node() {
+                Unlink();
+            }
+
             Axis &GetAxis() {
                 return this->mAxis;
             }
@@ -152,6 +156,8 @@ template <typename T> class Grid {
             Node *&mRoot;    // offset 0x14, size 0x4
         };
 
+        ~Axis() {}
+
         Axis(Grid<T> &grid, Node *&root, float position, float radius)
             : mMin(*this, root, position - radius), mMax(*this, root, position + radius), mGrid(grid) {}
 
@@ -187,8 +193,6 @@ template <typename T> class Grid {
     };
 
     typedef typename Axis::Node Node;
-
-    ~Grid();
 
     Grid(T &owner, const UMath::Vector3 &position, float radius)
         : mX(*this, mRootX, position.x, radius), mZ(*this, mRootZ, position.z, radius), mOwner(owner) {}

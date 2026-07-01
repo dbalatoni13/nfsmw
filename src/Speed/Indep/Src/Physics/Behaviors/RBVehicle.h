@@ -24,23 +24,23 @@ class RBVehicle : public RigidBody, public IRBVehicle {
 
     // IRBVehicle
     void SetCollisionMass(float mass) override {
-        mCollisionMass = mass;
+        this->mCollisionMass = mass;
     }
 
     void SetCollisionCOG(const UMath::Vector3 &cog) override {
-        mCollisionCOG = cog;
+        this->mCollisionCOG = cog;
     }
 
     void SetPlayerReactions(const Attrib::Gen::collisionreactions &reactions) override {
-        mPlayerReactions = reactions;
+        this->mPlayerReactions = reactions;
     }
 
     const Attrib::Gen::collisionreactions &GetPlayerReactions() const override {
-        return mPlayerReactions;
+        return this->mPlayerReactions;
     }
 
     void EnableObjectCollisions(bool enable) override {
-        mObjectCollisionsEnabled = enable;
+        this->mObjectCollisionsEnabled = enable;
     }
 
   protected:
@@ -55,18 +55,18 @@ class RBVehicle : public RigidBody, public IRBVehicle {
 
     // IRBVehicle
     void SetInvulnerability(eInvulnerablitiy state, float time) override {
-        mInvulnerableTimer = time;
-        mInvulnerableState = state;
+        this->mInvulnerableState = state;
+        this->mInvulnerableTimer = time;
     }
 
     eInvulnerablitiy GetInvulnerability() const override {
-        return mInvulnerableState;
+        return this->mInvulnerableState;
     }
 
     // RigidBody
     bool DoPenetration(const RigidBody &other) override {
-        if (mInvulnerableState != INVULNERABLE_NONE) {
-            mLastPenetration = Sim::GetTime();
+        if (this->mInvulnerableState != INVULNERABLE_NONE) {
+            this->mLastPenetration = Sim::GetTime();
             return false;
         }
         return true;
@@ -77,7 +77,7 @@ class RBVehicle : public RigidBody, public IRBVehicle {
     void OnBehaviorChange(const UCrc32 &mechanic) override;
 
     IVehicle *GetVehicle() const {
-        return mVehicle;
+        return this->mVehicle;
     }
 
   private:

@@ -1,4 +1,5 @@
 #include "DamageRacer.h"
+#include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Generated/Events/ETireBlown.hpp"
 #include "Speed/Indep/Src/Generated/Events/ETirePunctured.hpp"
 #include "Speed/Indep/Src/Generated/Hash.hpp"
@@ -23,9 +24,15 @@ Behavior *DamageRacer::Construct(const BehaviorParams &params) {
     return new DamageRacer(params, dp);
 }
 
-DamageRacer::~DamageRacer() {
-    // TODO
+DamageRacer::DamageRacer(const BehaviorParams &bp, const DamageParams &dp)
+    : DamageVehicle(bp, dp), //
+      ISpikeable(bp.fowner) {
+    this->GetOwner()->QueryInterface(&this->mSuspension);
+    bMemSet(this->mBlowOutTimes, 0, sizeof(this->mBlowOutTimes));
+    bMemSet(this->mDamage, 0, sizeof(this->mDamage));
 }
+
+DamageRacer::~DamageRacer() {}
 
 eTireDamage DamageRacer::GetTireDamage(unsigned int wheelId) const {
     if (wheelId > 3) {
@@ -76,8 +83,13 @@ DamageZone::Info DamageRacer::GetZoneDamage() const {
 }
 
 bool DamageRacer::CanDamageVisuals() const {
-    // TODO
-    return true;
+    if (FEDatabase != nullptr) {
+        // TODO
+        // if (!FEDatabase->GetGameplaySettings()->Damage) {
+        //     return false;
+        // }
+    }
+    return DamageVehicle::CanDamageVisuals();
 }
 
 void DamageRacer::OnTaskSimulate(float dT) {

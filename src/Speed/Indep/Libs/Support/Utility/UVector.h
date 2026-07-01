@@ -2,10 +2,6 @@
 #define SUPPORT_UTILITY_UVECTOR_H
 
 #include "types.h"
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
 #include "UMath.h"
 
 // TODO class
@@ -36,6 +32,14 @@ struct ALIGN_16 UVector3 : public UMath::Vector3 {
         x = fx;
         y = fy;
         z = fz;
+    }
+
+    float Normalize() {
+        float m = UMath::Length(*this);
+        if (m != 0.0f) {
+            UMath::Scale(*this, 1.0f / m, *this);
+        }
+        return m;
     }
 
     float Magnitude() const {

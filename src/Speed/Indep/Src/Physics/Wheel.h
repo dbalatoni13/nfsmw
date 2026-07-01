@@ -102,7 +102,7 @@ class Wheel {
         return this->mAirTime;
     }
 
-    void SetLocalArm(UMath::Vector3 &arm) {
+    void SetLocalArm(const UMath::Vector3 &arm) {
         this->mLocalArm = arm;
     }
 

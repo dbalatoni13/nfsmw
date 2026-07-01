@@ -26,11 +26,20 @@ class RBTractor : public RBVehicle, public IArticulatedVehicle, public IVehicleC
     // IUnknown
     ~RBTractor() override;
 
-    void SetInvulnerability(eInvulnerablitiy state, float time) override {}
+    void SetInvulnerability(eInvulnerablitiy state, float time) override {
+        if ((this->mTrailer != nullptr) && IsHitched()) {
+            IRBVehicle *irbv = nullptr;
+            this->mTrailer->QueryInterface(&irbv);
+            if (irbv != nullptr) {
+                irbv->SetInvulnerability(state, time);
+            }
+        }
+        RBVehicle::SetInvulnerability(state, time);
+    }
 
     // IArticulatedVehicle
     IVehicle *GetTrailer() const override {
-        return mTrailer;
+        return this->mTrailer;
     }
 
     void SetHitch(bool hitched) override;

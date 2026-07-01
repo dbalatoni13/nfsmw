@@ -40,12 +40,25 @@ class DamageVehicle : public VehicleBehavior,
     void OnCollision(const COLLISION_INFO &cinfo) override;
 
     bool IsLightDamaged(VehicleFX::ID idx) const override {
+        if (IsDestroyed()) {
+            return true;
+        }
         return (mLightDamage & idx) != VehicleFX::LIGHT_NONE;
     }
 
-    void DamageLight(VehicleFX::ID idx, bool b) override {}
+    void DamageLight(VehicleFX::ID idx, bool b) override {
+        if (CanDamageVisuals()) {
+            if (b) {
+                mLightDamage |= idx;
+            } else {
+                mLightDamage &= ~idx;
+            }
+        }
+    }
 
-    float GetHealth() const override {}
+    float GetHealth() const override {
+        return UMath::Clamp(1.0f - mDamageTotal, 0.0f, 1.0f);
+    }
 
     DamageZone::Info GetZoneDamage() const override {
         return mZoneDamage;
@@ -54,9 +67,16 @@ class DamageVehicle : public VehicleBehavior,
     // IDamageable
     void SetInShock(float scale) override;
     void SetShockForce(float f) override;
+
+    float InShock() const override {
+        return mShockTimer;
+    }
+
     void ResetDamage() override;
 
-    bool IsDestroyed() const override {}
+    bool IsDestroyed() const override {
+        return mDamageTotal >= 1.0f;
+    }
 
     void Destroy() override;
 

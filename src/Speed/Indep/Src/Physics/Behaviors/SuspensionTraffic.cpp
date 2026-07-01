@@ -5,6 +5,8 @@
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/transmission.h"
 #include "Speed/Indep/Src/Generated/Hash.hpp"
 #include "Speed/Indep/Src/Physics/Behavior.h"
+#include "Speed/Indep/Src/Physics/Common/VehicleSystem.h"
+#include "Speed/Indep/Src/Physics/PhysicsInfo.hpp"
 #include "Speed/Indep/Src/Physics/Wheel.h"
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 
@@ -56,7 +58,9 @@ class SuspensionTraffic : public Chassis {
         float GetCurrentSlip() const {
             return this->mSlip;
         }
-        float GetTraction() const {}
+        float GetTraction() const {
+            return mEBrake > 0.0f ? 0.0f : 1.0f;
+        }
 
         void BeginFrame();
         void EndFrame(float dT);
@@ -79,6 +83,10 @@ class SuspensionTraffic : public Chassis {
 
         void UpdateLoaded(float lat_vel, float fwd_vel, float load, float dT);
         void UpdateFree(float dT);
+
+        float GetSlipAngle() const {
+            return mSlipAngle;
+        }
 
       private:
         const float mRadius;                // offset 0xC4, size 0x4
@@ -107,29 +115,69 @@ class SuspensionTraffic : public Chassis {
 
     // ISuspension
     void MatchSpeed(float speed) override;
-    float GetWheelAngularVelocity(int index) const override {}
-    float GetWheelRadius(unsigned int index) const override {}
-    float GetWheelSlip(unsigned int idx) const override {}
-    Mps GetToleratedSlip(unsigned int idx) const override {}
-    float GetWheelSkid(unsigned int idx) const override {}
-    Newtons GetWheelLoad(unsigned int i) const override {}
-    float GetWheelTraction(unsigned int index) const override {}
+    float GetWheelAngularVelocity(int index) const override {
+        return mTires[index]->GetAngularVelocity();
+    }
+    float GetWheelRadius(unsigned int index) const override {
+        return mTires[index]->GetRadius();
+    }
+    float GetWheelSlip(unsigned int idx) const override {
+        return mTires[idx]->GetCurrentSlip();
+    }
+    Mps GetToleratedSlip(unsigned int idx) const override {
+        return 1.0f;
+    }
+    float GetWheelSkid(unsigned int idx) const override {
+        return mTires[idx]->GetLateralSpeed();
+    }
+    Newtons GetWheelLoad(unsigned int i) const override {
+        return mTires[i]->GetLoad();
+    }
+    float GetWheelTraction(unsigned int index) const override {
+        return mTires[index]->GetTraction();
+    }
     void SetWheelAngularVelocity(int wheel, float w) override {}
-    unsigned int GetNumWheels() const override {}
-    const UMath::Vector3 &GetWheelPos(unsigned int i) const override {}
-    const UMath::Vector3 &GetWheelLocalPos(unsigned int i) const override {}
+    unsigned int GetNumWheels() const override {
+        return 4;
+    }
+    const UMath::Vector3 &GetWheelPos(unsigned int i) const override {
+        return mTires[i]->GetPosition();
+    }
+    const UMath::Vector3 &GetWheelLocalPos(unsigned int i) const override {
+        return mTires[i]->GetLocalArm();
+    }
     UMath::Vector3 GetWheelCenterPos(unsigned int i) const override;
     void ApplyVehicleEntryForces(bool enteringVehicle, const UMath::Vector3 &pos, bool calledfromEvent) override {}
-    const float GetWheelRoadHeight(unsigned int i) const override {}
-    float GetCompression(unsigned int i) const override {}
-    const UMath::Vector4 &GetWheelRoadNormal(unsigned int i) const override {}
-    bool IsWheelOnGround(unsigned int i) const override {}
-    const SimSurface &GetWheelRoadSurface(unsigned int i) const override {}
-    const UMath::Vector3 &GetWheelVelocity(unsigned int i) const override {}
-    int GetNumWheelsOnGround() const override {}
-    float GetWheelSteer(unsigned int wheel) const override {}
-    float GetMaxSteering() const override {}
-    Angle GetWheelSlipAngle(unsigned int idx) const override {}
+    const float GetWheelRoadHeight(unsigned int i) const override {
+        return mTires[i]->GetNormal().w;
+    }
+    float GetCompression(unsigned int i) const override {
+        return mTires[i]->GetCompression();
+    }
+    const UMath::Vector4 &GetWheelRoadNormal(unsigned int i) const override {
+        return mTires[i]->GetNormal();
+    }
+    bool IsWheelOnGround(unsigned int i) const override {
+        return mTires[i]->IsOnGround();
+    }
+    const SimSurface &GetWheelRoadSurface(unsigned int i) const override {
+        return mTires[i]->GetSurface();
+    }
+    const UMath::Vector3 &GetWheelVelocity(unsigned int i) const override {
+        return mTires[i]->GetVelocity();
+    }
+    int GetNumWheelsOnGround() const override {
+        return mNumWheelsOnGround;
+    }
+    float GetWheelSteer(unsigned int wheel) const override {
+        return DEG2ANGLE(mLastSteer);
+    }
+    float GetMaxSteering() const override {
+        return DEG2ANGLE(mMaxSteering);
+    }
+    Angle GetWheelSlipAngle(unsigned int idx) const override {
+        return mTires[idx]->GetSlipAngle();
+    }
 
     // Behavior
     void OnTaskSimulate(float dT) override;
@@ -216,9 +264,127 @@ void SuspensionTraffic::Tire::UpdateFree(float dT) {
     this->mLongitudeForce = 0.0f;
 }
 
+extern float BrakingTorque;
+extern float EBrakingTorque;
+
+// UNSOLVED, stack issues due to scheduling
+void SuspensionTraffic::Tire::UpdateLoaded(float lat_vel, float fwd_vel, float load, float dT) {
+    float slip_speed;
+    float catchupfriction;
+    float skid_speed;
+
+    if (this->mLoad <= 0.0f) {
+        this->mAV = fwd_vel / this->mRadius;
+    }
+
+    this->mRoadSpeed = fwd_vel;
+    this->mLateralSpeed = lat_vel;
+    this->mLoad = UMath::Max(load, 0.0f);
+
+    if (0.0f < this->mBrake) {
+        const float brake_spec = this->mBrakes->BRAKES().At(this->mAxleIndex);
+        float bt = this->mBrake * (FTLB2NM(brake_spec) * BrakingTorque);
+        if (0.0f < this->mAV) {
+            bt = -bt;
+        }
+        this->ApplyTorque(bt);
+    }
+
+    if (0.0f < this->mEBrake) {
+        const float ebrake_spec = this->mBrakes->EBRAKE();
+        float ebt = this->mEBrake * (FTLB2NM(ebrake_spec) * EBrakingTorque);
+        if (0.0f < this->mAV) {
+            ebt = -ebt;
+        }
+        this->ApplyTorque(ebt);
+    }
+
+    this->mSlipAngle = UMath::Atan2a(lat_vel, UMath::Abs(fwd_vel));
+    slip_speed = this->mAV * this->mRadius - fwd_vel;
+
+    if (0.0f < this->mEBrake && 1.0f < UMath::Abs(fwd_vel)) {
+        this->mSlip = slip_speed;
+    } else {
+        this->mSlip = 0.0f;
+    }
+
+    skid_speed = UMath::Sqrt(slip_speed * slip_speed + lat_vel * lat_vel);
+    if (this->mEBrake > 0.5f && skid_speed > 1.0f) {
+        this->mSlipping = true;
+        this->mLongitudeForce = ((-fwd_vel * 2) * this->mLoad * this->mSpecs->GRIP_SCALE().At(this->mAxleIndex)) / skid_speed;
+    } else {
+        this->mLongitudeForce = this->mAppliedTorque / this->mRadius;
+    }
+
+    this->mLateralForce = (-lat_vel * 2) * this->mLoad * this->mSpecs->GRIP_SCALE().At(this->mAxleIndex);
+    if (1.0f < skid_speed) {
+        this->mLateralForce /= skid_speed;
+    }
+
+    if (1.0f < UMath::Abs(fwd_vel)) {
+        this->mLongitudeForce -= UMath::Sina(this->mSlipAngle) * this->mLateralForce * 0.5f;
+    } else {
+        catchupfriction = UMath::Min(UMath::Abs(lat_vel), 1.0f);
+        this->mLateralForce *= catchupfriction;
+    }
+
+    this->mAV = ((1.0f - this->mEBrake) * fwd_vel) / this->mRadius;
+}
+
 Behavior *SuspensionTraffic::Construct(const BehaviorParams &params) {
     SuspensionParams sp(params.fparams.Fetch<SuspensionParams>(UCrc32(UCRC32_BASE)));
     return new SuspensionTraffic(params, sp);
+}
+
+SuspensionTraffic::SuspensionTraffic(const BehaviorParams &bp, const SuspensionParams &sp)
+    : Chassis(bp),              //
+      mTireInfo(this, 0),       //
+      mBrakeInfo(this, 0),      //
+      mSuspensionInfo(this, 0), //
+      mDrivetrainInfo(this, 0), //
+      mLastSteer(0.0f),         //
+      mMaxSteering(45.0f) {
+    this->mRB = nullptr;
+    this->mRBComplex = nullptr;
+    this->mInput = nullptr;
+    this->mNumWheelsOnGround = 0;
+
+    this->EnableProfile("TODO");
+
+    this->GetOwner()->QueryInterface(&this->mRB);
+    this->GetOwner()->QueryInterface(&this->mRBComplex);
+    this->GetOwner()->QueryInterface(&this->mInput);
+    this->GetOwner()->QueryInterface(&this->mTransmission);
+
+    for (int i = 0; i < 4; ++i) {
+        bool is_front = i < 2;
+        float diameter = Physics::Info::WheelDiameter(this->mTireInfo, is_front);
+        this->mTires[i] = new Tire(diameter * 0.5f, i, this->mTireInfo, this->mBrakeInfo);
+    }
+
+    UMath::Vector3 dimension;
+    this->GetOwner()->GetRigidBody()->GetDimension(dimension);
+
+    float wheelbase = this->mSuspensionInfo->WHEEL_BASE();
+    float axle_width_f = this->mSuspensionInfo->TRACK_WIDTH().Front - this->mTireInfo->SECTION_WIDTH().Front * 0.001f;
+    float axle_width_r = this->mSuspensionInfo->TRACK_WIDTH().Rear - this->mTireInfo->SECTION_WIDTH().Rear * 0.001f;
+    float front_axle = this->mSuspensionInfo->FRONT_AXLE();
+
+    UVector3 fl(-axle_width_f * 0.5f, -dimension.y, front_axle);
+    UVector3 fr(axle_width_f * 0.5f, -dimension.y, front_axle);
+    UVector3 rl(-axle_width_r * 0.5f, -dimension.y, front_axle - wheelbase);
+    UVector3 rr(axle_width_r * 0.5f, -dimension.y, front_axle - wheelbase);
+
+    this->GetWheel(0).SetLocalArm(fl);
+    this->GetWheel(1).SetLocalArm(fr);
+    this->GetWheel(2).SetLocalArm(rl);
+    this->GetWheel(3).SetLocalArm(rr);
+}
+
+SuspensionTraffic::~SuspensionTraffic() {
+    for (int i = 0; i < 4; ++i) {
+        delete mTires[i];
+    }
 }
 
 void SuspensionTraffic::OnBehaviorChange(const UCrc32 &mechanic) {
@@ -355,3 +521,191 @@ void SuspensionTraffic::DoDriveForces(State &state) {
 }
 
 static const float TrafficRollAdjust = 0.0f; // TODO value and use
+
+// UNSOLVED, float math
+void SuspensionTraffic::DoWheelForces(State &state) {
+    const float dT = state.time;
+    UVector3 steerR;
+    UVector3 steerL;
+
+    this->DoSteering(state, steerR, steerL);
+
+    for (int i = 0; i < 4; ++i) {
+        this->mTires[i]->SetBrake(state.brake_input);
+        if (i > 1) {
+            this->mTires[i]->SetEBrake(state.ebrake_input);
+        }
+    }
+
+    unsigned int wheelsOnGround = 0;
+    float maxDelta = 0.0f;
+    const UMath::Vector3 &vFwd = state.GetForwardVector();
+    const UMath::Vector3 &vUp = state.GetUpVector();
+    const float mass = state.mass;
+
+    UMath::Vector3 cog;
+    UMath::Rotate(state.cog, state.matrix, cog);
+
+    float shock_specs[2];
+    float spring_specs[2];
+    float sway_specs[2];
+    float travel_specs[2];
+    float rideheight_specs[2];
+    float progression[2];
+
+    for (unsigned int i = 0; i < 2; ++i) {
+        shock_specs[i] = LBIN2NM(this->mSuspensionInfo->SHOCK_STIFFNESS().At(i));
+        spring_specs[i] = LBIN2NM(this->mSuspensionInfo->SPRING_STIFFNESS().At(i));
+        sway_specs[i] = LBIN2NM(this->mSuspensionInfo->SWAYBAR_STIFFNESS().At(i));
+        travel_specs[i] = INCH2METERS(this->mSuspensionInfo->TRAVEL().At(i));
+        rideheight_specs[i] = INCH2METERS(this->mSuspensionInfo->RIDE_HEIGHT().At(i));
+        progression[i] = this->mSuspensionInfo->SPRING_PROGRESSION().At(i);
+    }
+
+    float sway_stiffness[4];
+    sway_stiffness[0] = (this->mTires[0]->GetCompression() - this->mTires[1]->GetCompression()) * sway_specs[0];
+    sway_stiffness[1] = -sway_stiffness[0];
+    sway_stiffness[2] = (this->mTires[2]->GetCompression() - this->mTires[3]->GetCompression()) * sway_specs[1];
+    sway_stiffness[3] = -sway_stiffness[2];
+
+    UMath::Vector4 steering_normals[4];
+    steering_normals[0] = UMath::Vector4Make(steerL, 0.0f);
+    steering_normals[1] = UMath::Vector4Make(steerR, 0.0f);
+    steering_normals[2] = UMath::Vector4Make(vFwd, 0.0f);
+    steering_normals[3] = UMath::Vector4Make(vFwd, 0.0f);
+
+    bool resolve = false;
+
+    for (unsigned int i = 0; i < 4; ++i) {
+        int axle = i / 2;
+        Tire &wheel = this->GetWheel(i);
+        UMath::Vector3 wp = wheel.GetWorldArm();
+
+        wheel.UpdatePosition(state.angular_vel, state.linear_vel, state.matrix, cog, state.time, wheel.GetRadius(), true, state.collider,
+                             state.dimension.y * 2.0f);
+
+        const UVector3 groundNormal(wheel.GetNormal());
+        const UVector3 forwardNormal(steering_normals[i]);
+        UVector3 lateralNormal;
+        UMath::UnitCross(groundNormal, forwardNormal, lateralNormal);
+
+        float penetration = wheel.GetNormal().w;
+        float upness = UMath::Clamp(UMath::Dot(groundNormal, vUp), 0.0f, 1.0f);
+        const float oldCompression = wheel.GetCompression();
+        float newCompression = rideheight_specs[axle] * upness + penetration;
+        float max_compression = travel_specs[axle];
+
+        if (wheel.GetCompression() == 0.0f) {
+            maxDelta = UMath::Max(maxDelta, newCompression - max_compression);
+        }
+
+        newCompression = UMath::Max(newCompression, 0.0f);
+        if (newCompression > max_compression) {
+            float delta = newCompression - max_compression;
+            maxDelta = UMath::Max(maxDelta, delta);
+            newCompression = max_compression;
+        }
+
+        if (newCompression > 0.0f && upness > VehicleSystem::ENABLE_ROLL_STOPS_THRESHOLD) {
+            ++wheelsOnGround;
+
+            float springForce;
+            const float diff = newCompression - wheel.GetCompression();
+            const float rise = diff / dT;
+            float spring = newCompression * spring_specs[axle];
+            float damp = rise * shock_specs[axle];
+
+            springForce = spring * (newCompression * progression[axle] + 1.0f);
+
+            if (damp > this->mSuspensionInfo.SHOCK_BLOWOUT() * (mass * 9.81f)) {
+                damp = 0.0f;
+            }
+
+            springForce = damp + springForce;
+            springForce += sway_stiffness[i];
+            springForce = UMath::Max(springForce, 0.0f);
+
+            UVector3 verticalForce = vUp * springForce;
+            UVector3 driveForce;
+            UVector3 lateralForce;
+            UVector3 c;
+
+            UMath::Cross(forwardNormal, groundNormal, c);
+            UMath::Cross(c, forwardNormal, c);
+
+            float d2 = UMath::Dot(c, groundNormal);
+            float load = UMath::Max(d2 * 4.0f - 3.0f, 0.0f) * springForce;
+
+            const UMath::Vector3 &pointVelocity = wheel.GetVelocity();
+            UVector3 vNorm(pointVelocity);
+            float speed = vNorm.Normalize();
+            float vdot = UMath::Dot(vNorm, lateralNormal);
+            float xspeed = UMath::Dot(pointVelocity, lateralNormal);
+            float zspeed = UMath::Dot(pointVelocity, forwardNormal);
+
+            wheel.UpdateLoaded(xspeed, zspeed, load, state.time);
+
+            float traction_force = wheel.GetLateralForce();
+            float max_traction = UMath::Abs((xspeed / dT) * (0.25f * mass));
+            traction_force = UMath::Clamp(traction_force, -max_traction, max_traction);
+
+            lateralForce = lateralNormal * traction_force;
+            UMath::UnitCross(lateralNormal, groundNormal, driveForce);
+            UMath::Scale(driveForce, wheel.GetLongitudeForce());
+
+            UMath::Vector3 force;
+            UMath::Add(lateralForce, driveForce, force);
+            UMath::Add(force, verticalForce, force);
+
+            wheel.SetForce(force);
+            resolve = true;
+        } else {
+            wheel.SetForce(UMath::Vector3::kZero);
+            wheel.UpdateFree(dT);
+        }
+
+        if (newCompression == 0.0f) {
+            wheel.IncAirTime(dT);
+        } else {
+            wheel.SetAirTime(0.0f);
+        }
+
+        wheel.SetCompression(newCompression);
+    }
+
+    if (resolve) {
+        UMath::Vector3 cg;
+        UMath::RotateTranslate(state.cog, state.matrix, cg);
+
+        for (unsigned int i = 0; i < this->GetNumWheels(); ++i) {
+            Tire &wheel = this->GetWheel(i);
+            UVector3 p(wheel.GetLocalArm());
+
+            p.y += wheel.GetCompression();
+            const UMath::Vector3 &force = wheel.GetForce();
+            p.y = p.y - rideheight_specs[i / 2];
+
+            UMath::RotateTranslate(p, state.matrix, p);
+            wheel.SetPosition(p);
+
+            UMath::Vector3 torque;
+            UMath::Vector3 r;
+            UMath::Sub(p, cg, r);
+            r.y *= 0.5f;
+
+            UMath::Cross(r, force, torque);
+            this->mRB->Resolve(force, torque);
+        }
+    }
+
+    if (0.0f < maxDelta) {
+        for (unsigned int i = 0; i < this->GetNumWheels(); ++i) {
+            Wheel &wheel = this->GetWheel(i);
+            wheel.SetY(wheel.GetPosition().y + maxDelta);
+        }
+
+        this->mRB->ModifyYPos(maxDelta);
+    }
+
+    this->mNumWheelsOnGround = wheelsOnGround;
+}
