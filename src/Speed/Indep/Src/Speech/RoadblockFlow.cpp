@@ -1,4 +1,6 @@
 #include "RoadblockFlow.h"
+#include "EAXCop.h"
+#include "EAXDispatch.h"
 #include "SoundAI.h"
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Src/EAXSound/Stream/SpeechManager.hpp"
@@ -8,6 +10,11 @@
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRenderable.h"
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
+
+namespace MiscSpeech {
+void RBAverted();
+void RBEngaged(bool spikes_hit);
+}
 
 namespace Speech {
 
@@ -192,9 +199,78 @@ void RoadblockFlow::Approach() {
 }
 
 void RoadblockFlow::Effect() {
-    mFlags |= ENGAGED;
-    if (HasNailedSpikes()) {
-        mFlags |= NAILED_SPIKES;
+    SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
+    if (ai == 0) {
+        return;
+    }
+
+    if ((mFlags & OUTCOMETIMERSET) == 0) {
+        return;
+    }
+
+    float t_engaged = (WorldTimer - mT_engaged).GetSeconds();
+    float t_averted = (WorldTimer - mT_averted).GetSeconds();
+
+    if ((mFlags & (AVERTED | ENGAGED)) == (AVERTED | ENGAGED)) {
+        if (t_averted >= ai->GetTune().RBOutcomeTimer() && t_engaged >= ai->GetTune().RBOutcomeTimer()) {
+            mFlags &= ~OUTCOMETIMERSET;
+        }
+    }
+
+    if ((mFlags & (AVERTED | ENGAGED)) == AVERTED) {
+        if (t_averted >= ai->GetTune().RBOutcomeTimer()) {
+            mFlags &= ~OUTCOMETIMERSET;
+        }
+    }
+
+    if ((mFlags & (AVERTED | ENGAGED)) == ENGAGED && t_engaged >= ai->GetTune().RBOutcomeTimer() && (mFlags & LOS) != 0) {
+        EAXCop *cop = ai->GetRandomActiveCop(0, true);
+        if (cop != 0) {
+            cop->Arrest();
+        }
+    }
+
+    if ((mFlags & OUTCOMETIMERSET) != 0) {
+        return;
+    }
+
+    IRoadBlock *block = ai->GetRoadblock();
+    if (block != 0) {
+        EAXCop *secondary = ai->GetRandomCop(2);
+        EAXCop *randcop = ai->GetRandomCop(0);
+
+        if (block->GetNumCopsDamaged() > 0 || block->GetNumCopsDestroyed() > 0 || (mFlags & ENGAGED) != 0) {
+            if (secondary != 0 && bRandom(1.0f) > 0.5f) {
+                secondary->RBEngage((mFlags & NAILED_SPIKES) != 0);
+            } else {
+                MiscSpeech::RBEngaged((mFlags & NAILED_SPIKES) != 0);
+            }
+        } else {
+            bool disp_response = false;
+            if (block->GetNumSpikeStrips() > 0) {
+                MiscSpeech::RBAverted();
+            } else if (bRandom(1.0f) > 0.5f) {
+                disp_response = true;
+                ai->GetDispatch()->SubRBReply();
+            } else if (secondary != 0 && bRandom(1.0f) > 0.5f) {
+                secondary->RBAverted();
+            } else {
+                MiscSpeech::RBAverted();
+            }
+
+            if (!disp_response && randcop != 0 && randcop->IsPrimary()) {
+                randcop->CallForSubRB();
+            } else {
+                ai->GetDispatch()->SubRBReply();
+            }
+        }
+
+        mFlags &= ~REQ_SERVICE;
+    }
+
+    if ((mFlags & (AVERTED | ENGAGED)) != 0 && (mFlags & REQ_SERVICE) == 0) {
+        mFlags |= RESET_PENDING;
+        mT_reset = WorldTimer;
     }
 }
 
