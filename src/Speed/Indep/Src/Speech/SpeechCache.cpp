@@ -8,7 +8,10 @@ extern void bFree(void *ptr);
 extern int bGetFreeMemoryPoolNum();
 extern void bInitMemoryPool(int pool, void *mem, int size, const char *name);
 extern int bCountFreeMemory(int pool);
+extern int bLargestMalloc(int pool);
 extern Timer WorldTimer;
+extern int SpeechMemoryPool;
+extern int flushcount_lru;
 
 namespace {
 bool IsSpeakerActive(const Speech::Cache::VoiceIDs *speakers, int speaker_id) {
@@ -238,24 +241,25 @@ void Cache::FlushUncached() {
 }
 
 void Cache::FlushLRU() {
+    bLargestMalloc(SpeechMemoryPool);
+
     unsigned int prelargest = 0;
-    unsigned int index = mIndex.GetNextValidIndex(0);
+    unsigned int index = mIndex.GetNextValidIndex(prelargest);
     unsigned int postlargest = 0;
 
     while (mIndex.ValidIndex(index)) {
-        SpeechSampleData *sample = mIndex.GetPtrAtIndex(index);
-        if (sample && !sample->lock) {
-            if (!prelargest || sample->age > static_cast<int>(postlargest)) {
-                prelargest = index;
-                postlargest = static_cast<unsigned int>(sample->age);
+        SpeechSampleData *sample = mIndex.GetPtrAtValidIndex(index);
+        if (sample != 0 && !sample->lock) {
+            if (sample->ready && sample->cached && sample->age < 2) {
+                SpeechSampleData::Destruct(sample);
+                mIndex.RemoveIndex(index);
             }
         }
         index = mIndex.GetNextValidIndex(index + 1);
     }
 
-    if (mIndex.ValidIndex(prelargest)) {
-        mIndex.DeleteIndex(prelargest);
-    }
+    bLargestMalloc(SpeechMemoryPool);
+    ++flushcount_lru;
 }
 
 void Cache::FlushAllUnlocked() {

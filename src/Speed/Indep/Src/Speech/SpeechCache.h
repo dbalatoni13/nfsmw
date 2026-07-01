@@ -20,10 +20,18 @@ class Module;
 struct TablePolicy_FixedAudio {
     static void *Alloc(unsigned int bytes);
     static void Free(void *ptr, unsigned int bytes);
-    static unsigned int TableSize(unsigned int entries);
-    static unsigned int GrowRequest(unsigned int currententries, bool collisionoverflow);
-    static unsigned int KeyIndex(unsigned long long k, unsigned int tableSize, unsigned int keyShift);
-    static unsigned int WrapIndex(unsigned int index, unsigned int tableSize, unsigned int keyShift);
+    static unsigned int TableSize(unsigned int entries) {
+        return entries;
+    }
+    static unsigned int GrowRequest(unsigned int currententries, bool collisionoverflow) {
+        return currententries;
+    }
+    static unsigned int KeyIndex(unsigned long long k, unsigned int tableSize, unsigned int keyShift) {
+        return Attrib::RotateNTo32(k, keyShift) % tableSize;
+    }
+    static unsigned int WrapIndex(unsigned int index, unsigned int tableSize, unsigned int keyShift) {
+        return index % tableSize;
+    }
 };
 
 struct SpeechSampleData {
