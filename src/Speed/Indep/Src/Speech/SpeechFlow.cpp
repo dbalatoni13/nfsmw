@@ -929,7 +929,52 @@ extern "C" int LoadSpeechBank__Q26Speech7ManagerP17CLUMP_IDX_FILEtagRiT2PQ26Spee
     int &type,
     int &number,
     Speech::SPEECH_BANK *sb) {
-    return Speech::Manager::LoadSpeechBank(index, type, number, reinterpret_cast< ::SPEECH_BANK *>(sb));
+    unsigned int key = static_cast<unsigned int>(type) * 0x1000000 + static_cast<unsigned int>(number);
+    int lower = 0;
+    int upper = static_cast<int>(index->count) - 1;
+    int i = upper >> 1;
+
+    if (index->item[i].key != key) {
+        while ((i != lower) && (i != upper)) {
+            if (index->item[i].key < key) {
+                lower = i;
+            } else {
+                upper = i;
+            }
+            i = (lower + upper) >> 1;
+            if (index->item[i].key == key) {
+                goto found;
+            }
+        }
+
+        if (index->item[i].key == key) {
+            goto found;
+        }
+        if (index->item[lower].key == key) {
+            i = lower;
+            goto found;
+        } else if (index->item[upper].key == key) {
+            i = upper;
+            goto found;
+        }
+        sb->mem = 0;
+        sb->offset = 0;
+        sb->bank = -1;
+        return -1;
+    }
+
+found:
+    if (index->item[i].size == 0) {
+        sb->mem = 0;
+        sb->bank = -1;
+        sb->offset = 0;
+        return -1;
+    }
+
+    sb->mem = reinterpret_cast<char *>(index->numbanks) + (index->item[i].header - 4);
+    sb->bank = static_cast<int>(index->item[i].size);
+    sb->offset = static_cast<int>(index->item[i].sample);
+    return 0;
 }
 
 extern "C" int AddHeaders__Q26Speech7ManagerPPcPQ26Speech11SPEECH_BANKiPQ26Speech6Module(
