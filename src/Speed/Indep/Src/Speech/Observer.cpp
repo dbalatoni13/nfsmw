@@ -5,7 +5,20 @@
 #include "Speed/Indep/Src/Generated/Messages/MGamePlayMoment.h"
 #include "Speed/Indep/Src/Generated/Messages/MMiscSound.h"
 #include "Speed/Indep/Src/Generated/Messages/MNotifySpeechStatus.h"
+#include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IINput.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
+
+namespace UTL {
+namespace COM {
+template <> inline bool IUnknown::QueryInterface<IInput>(IInput **out) {
+    HINTERFACE handle = IInput::_IHandle();
+
+    *out = (IInput *)_mCOMObject->_mInterfaces.Find(handle);
+    return *out;
+}
+}
+}
 
 namespace Csis {
 struct AnytimeEvents_CollisionWorldStruct {
@@ -390,12 +403,56 @@ void Observer::AssessOutcome() {
 
 void Observer::AssessBraking() {
     SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
-    if (!ai) {
+    if (ai->NumCopsWithLOS() <= 0) {
         return;
     }
-    if ((ai->GetPlayerSpeed() < 7.0f) && ai->GetLeader()) {
-        mTracking |= Braking;
-        ai->GetLeader()->SuspectBrake();
+
+    IPlayer *player = IPlayer::First(PLAYER_LOCAL);
+    if (!player) {
+        return;
+    }
+
+    IInput *input;
+    player->GetSimable()->QueryInterface(&input);
+    if (!input) {
+        return;
+    }
+
+    float steer = CalcFWVec_Road_Car();
+    float brake = UMath::Clamp(input->GetControls().fBrake, 0.0f, 1.0f);
+    float ebrake = UMath::Clamp(input->GetControls().fHandBrake, 0.0f, 1.0f);
+
+    static float speed0 = ai->GetPlayerSpeed();
+    static Timer t_brake_start = WorldTimer;
+
+    float t_last_crashed = bMin(ai->GetTimeLastCrashed(), ai->GetTimeLastNailedCop());
+    if ((mTracking & Braking) == 0) {
+        if ((steer >= 0.7f) && ((brake >= 1.0f) || (ebrake >= 1.0f)) && (ai->GetPlayerSpeed() > 60.0f) && (t_last_crashed > 5.0f)) {
+            mTracking |= Braking;
+            speed0 = ai->GetPlayerSpeed();
+            t_brake_start = WorldTimer;
+        }
+
+        if ((mTracking & Braking) == 0) {
+            return;
+        }
+    }
+
+    if ((steer < 0.7f) || ((brake < 0.5f) && (ebrake < 0.5f)) || (t_last_crashed < 5.0f)) {
+        mTracking &= ~Braking;
+        return;
+    }
+
+    {
+        float curr_speed = ai->GetPlayerSpeed();
+        float pct_decrease = curr_speed / speed0;
+        if (pct_decrease < (1.0f - ai->GetTune().CrashSlowdownPct())) {
+            EAXCop *cop = ai->FindClosestCop(true, true);
+            if (cop) {
+                cop->SuspectBrake();
+                mTracking &= ~Braking;
+            }
+        }
     }
 }
 
