@@ -376,7 +376,9 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
         return mTimeSinceLastChase;
     }
 
-    // const float GetTimeInView() {}
+    const float GetTimeInView() {
+        return (WorldTimer - mT_LOS).GetSeconds();
+    }
 
     BlowByRecord &GetRecentBlowby() {
         return mRecentBlowby;

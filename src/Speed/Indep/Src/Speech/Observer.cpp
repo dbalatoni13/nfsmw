@@ -401,12 +401,45 @@ void Observer::AssessBraking() {
 
 void Observer::AssessOutrun() {
     SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
-    if (!ai || !ai->GetLeader()) {
+    if (ai->NumCopsWithLOS() <= 0) {
         return;
     }
-    if (ai->GetPursuitState() == SoundAI::kSearching) {
-        mTracking |= Lost;
-        ai->GetLeader()->SuspectOutrun();
+
+    if (ai->GetTimeInView() < 2.0f) {
+        return;
+    }
+
+    copList visual;
+    visual.reserve(ai->GetActors().size());
+
+    copMap::const_iterator iter = ai->GetActors().begin();
+    while (iter != ai->GetActors().end()) {
+        EAXCop *cop = iter->cop;
+        if (cop->IsActive() && cop->HasLOS()) {
+            visual.push_back(cop);
+        }
+        ++iter;
+    }
+
+    if (visual.empty()) {
+        return;
+    }
+
+    unsigned char num_being_outrun = 0;
+    copList::iterator i = visual.begin();
+    while (i != visual.end()) {
+        EAXCop *cop = *i;
+        if (cop->GetTimeLastClosing() > 8.0f) {
+            num_being_outrun++;
+        }
+        ++i;
+    }
+
+    if ((num_being_outrun == visual.size()) && !ai->AreCopsAhead()) {
+        EAXCop *cop = ai->GetRandomActiveCop(0, false);
+        if (cop) {
+            cop->SuspectOutrun();
+        }
     }
 }
 
