@@ -45,6 +45,7 @@ extern void *bMalloc(int size, int allocation_params);
 extern EAXS_StreamManager *gpEAXS_StrmMgr;
 extern Timer RealTimer;
 extern float TRACKSTREAMER_BACKLOG_THRESH;
+extern int SPEECH_DISPLAY_HISTORY;
 extern "C" bool InteruptedAndNotDelayed__6SpeechPQ26Speech20ScheduledSpeechEvent(Speech::ScheduledSpeechEvent *this_event);
 
 namespace Speech {
@@ -528,16 +529,77 @@ void Manager::Deduce() {
     } while (!service);
 }
 
-void Manager::Update(float) {
-    for (int i = 0; i < NUM_SPEECH_MODULES; ++i) {
-        if (m_SpeechModule[i]) {
-            m_SpeechModule[i]->Update();
+void Manager::Update(float t) {
+    static unsigned int max_samplerequests;
+
+    m_timestep = t;
+    m_frameindex = 0;
+
+    if (m_speechMode == SPEECH_FRONTEND_MODE) {
+        goto done;
+    }
+
+    if (m_speechMode < SPEECH_SPLITSCREEN_MODE) {
+        if (m_speechMode == SPEECH_GAME_MODE) {
+            goto game_mode;
+        }
+        goto done;
+    } else {
+        if (m_speechMode == SPEECH_SPLITSCREEN_MODE && m_SpeechModule[NISSFX_MODULE] && IsNISAudioEnabled) {
+            m_SpeechModule[NISSFX_MODULE]->Update();
+        }
+        goto done;
+    }
+
+game_mode:
+    {
+        if (m_SpeechModule[NISSFX_MODULE] && IsNISAudioEnabled) {
+            m_SpeechModule[NISSFX_MODULE]->Update();
+        }
+
+        if (m_SpeechModule[COPSPEECH_MODULE] && IsSpeechEnabled) {
+            m_deadair = g_EAXIsPaused() ? 65535.0f : (WorldTimer - GetTimeSinceLastEvent(COPSPEECH_MODULE)).GetSeconds();
+
+            CalcProbPlayback();
+
+            bool track_streamer_busy = TheTrackStreamer.GetLoadingBacklog() >= TRACKSTREAMER_BACKLOG_THRESH;
+            if (mSampleRequests.size() != 0 && !track_streamer_busy) {
+                for (int ndx = 0; ndx < 4; ++ndx) {
+                    for (SchedSpchEvents::iterator i = mEvents[ndx].begin(); i != mEvents[ndx].end(); ++i) {
+                        ScheduledSpeechEvent *this_event = *i;
+                        if ((this_event->flags & 1) != 0) {
+                            this_event->flags = static_cast<short>(this_event->flags & ~1);
+                        }
+                    }
+                }
+
+                if (mSampleRequests.size() > max_samplerequests) {
+                    max_samplerequests = mSampleRequests.size();
+                }
+
+                m_SpeechModule[COPSPEECH_MODULE]->SampleRequestCallback(0);
+            }
+
+            m_SpeechModule[COPSPEECH_MODULE]->Update();
+
+            if (SPEECH_DISPLAY_HISTORY != 0) {
+                SPCHEventList::iterator i = mEvtHistory.begin();
+                int y;
+                int x;
+                for (; i != mEvtHistory.end(); i++) {
+                    SPCHType_1_EventID event = *i;
+                    History *hist = mGlobalHistory.Find(event);
+                    if (hist != 0) {
+                        Attrib::Gen::speech speech(mHashMap.GetHash(event), 0, 0);
+                        speech.CollectionName();
+                    }
+                }
+            }
         }
     }
 
-    ServiceFilteredEvents();
-    ServiceInterruptEvents();
-    CalcProbPlayback();
+done:
+    ;
 }
 
 void Manager::SpchLibAbort(const char *, ...) {
