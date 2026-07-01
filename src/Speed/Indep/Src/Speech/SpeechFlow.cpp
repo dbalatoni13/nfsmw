@@ -409,11 +409,18 @@ int Manager::IndirectSpeechEvent(ScheduledSpeechEvent *evt, bool test_only) {
 }
 
 void Manager::ClearPlayback() {
-    mSampleRequests.clear();
-    for (int i = 0; i < sQueuedEventCount; ++i) {
-        sQueuedEvents[i] = 0;
+    for (int ndx = 0; ndx < 4; ++ndx) {
+        if (mEvents[ndx].size() != 0) {
+            for (SchedSpchEvents::iterator i = mEvents[ndx].begin(); i != mEvents[ndx].end(); ++i) {
+                ScheduledSpeechEvent *this_event = *i;
+                if (this_event != 0) {
+                    delete this_event;
+                }
+            }
+            mEvents[ndx].clear();
+        }
     }
-    sQueuedEventCount = 0;
+    mSampleRequests.clear();
 }
 
 void Manager::Init(SPEECH_MODE mode) {
