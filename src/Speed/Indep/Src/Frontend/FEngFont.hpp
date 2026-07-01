@@ -29,10 +29,10 @@ class FEngFont : public bTNode<FEngFont> {
     float CalculateXOffset(uint32 ulJustification, float fLineWidth);  // Decl: speed/indep/src/frontend/FEngFont.hpp:31
     float CalculateYOffset(uint32 ulJustification, float fTextHeight); // Decl: speed/indep/src/frontend/FEngFont.hpp:32
 
-    u16 ConvertCharacter(u16 c);                                                  // Decl: speed/indep/src/frontend/FEngFont.hpp:34
-    float GetNextWordWidth(int16 *pcString, u32 flags);                           // Decl: speed/indep/src/frontend/FEngFont.hpp:35
-    float GetCharacterWidth(i16 Char, i16 PrevChar, u32 Flags);                   // Decl: speed/indep/src/frontend/FEngFont.hpp:36
-    float GetLineWidth(int16 *pcString, u32 flags, u32 maxWidth, bool word_wrap); // Decl: speed/indep/src/frontend/FEngFont.hpp:37
+    u16 ConvertCharacter(u16 c);                                                        // Decl: speed/indep/src/frontend/FEngFont.hpp:34
+    float GetNextWordWidth(const int16 *pcString, u32 flags);                           // Decl: speed/indep/src/frontend/FEngFont.hpp:35
+    float GetCharacterWidth(i16 Char, i16 PrevChar, u32 Flags);                         // Decl: speed/indep/src/frontend/FEngFont.hpp:36
+    float GetLineWidth(const int16 *pcString, u32 flags, u32 maxWidth, bool word_wrap); // Decl: speed/indep/src/frontend/FEngFont.hpp:37
     float GetTextHeight(const int16 *pcString, int32 ilLeading, u32 flags, u32 maxWidth,
                         bool word_wrap); // Decl: speed/indep/src/frontend/FEngFont.hpp:38
 
@@ -40,14 +40,14 @@ class FEngFont : public bTNode<FEngFont> {
 
     float GetHeight(); // Decl: speed/indep/src/frontend/FEngFont.hpp:42
 
-    static bool IsJoyEventTexture(i16 *pInputString, u32 Flags); // Decl: speed/indep/src/frontend/FEngFont.hpp:49
+    static bool IsJoyEventTexture(const i16 *pInputString, u32 Flags); // Decl: speed/indep/src/frontend/FEngFont.hpp:49
 
-    static i16 *const SkipJoyEventTexture(i16 *pInputString, u32 Flags); // Decl: speed/indep/src/frontend/FEngFont.hpp:52
+    static const i16 *SkipJoyEventTexture(const i16 *pInputString, u32 Flags); // Decl: speed/indep/src/frontend/FEngFont.hpp:52
 
-    float GetJoyEventTextureWidth(i16 *pInputString); // Decl: speed/indep/src/frontend/FEngFont.hpp:55
+    float GetJoyEventTextureWidth(const i16 *pInputString); // Decl: speed/indep/src/frontend/FEngFont.hpp:55
 
   private:
-    TextureInfo *const GetJoyEventTextureInfo(i16 *pInputString); // Decl: speed/indep/src/frontend/FEngFont.hpp:59
+    const TextureInfo *GetJoyEventTextureInfo(const i16 *pInputString); // Decl: speed/indep/src/frontend/FEngFont.hpp:59
 
     float RenderJoyEventTexture(const i16 *input, float fX, float fY, uint32 *render_colors, FERenderObject *cached,
                                 FEPackageRenderInfo *pkg_render_info); // Decl: speed/indep/src/frontend/FEngFont.hpp:60
@@ -56,7 +56,7 @@ class FEngFont : public bTNode<FEngFont> {
                         FEPackageRenderInfo *pkg_render_info) {} // Decl: speed/indep/src/frontend/FEngFont.hpp:67
     float PrintSpecialCharacter(TextureInfo *texture_info, float fX, float fY, uint32 *render_colors, FERenderObject *cached,
                                 FEPackageRenderInfo *pkg_render_info) {} // Decl: speed/indep/src/frontend/FEngFont.hpp:68
-    i16 *const HandleJoyEventTexture(const i16 *input, float fX, float fY, uint32 *render_colors, FERenderObject *cached, float &advance,
+    const i16 *HandleJoyEventTexture(const i16 *input, float fX, float fY, uint32 *render_colors, FERenderObject *cached, float &advance,
                                      FEPackageRenderInfo *pkg_render_info); // Decl: speed/indep/src/frontend/FEngFont.hpp:69
 
     TextureInfo *pTextureInfo; // offset 0x8, size 0x4
@@ -73,5 +73,6 @@ class FEngFont : public bTNode<FEngFont> {
 
 void FEngFontNotifyTextureLoading(TexturePack *texture_pack, bool loading);
 FEngFont *FindFont(uint32 handle);
+bool IsNewlineChar(i16 c);
 
 #endif

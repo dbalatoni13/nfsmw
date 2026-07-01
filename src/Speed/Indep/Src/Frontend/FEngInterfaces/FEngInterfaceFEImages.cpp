@@ -26,7 +26,7 @@ void FEngSetTextureHash(FEImage *image, uint32 texture_hash) {
         return;
     }
     image->Handle = texture_hash;
-    image->Flags |= 0x2400000;
+    image->Flags |= FF_DirtyCode | FF_Dirty;
 }
 
 void FEngSetButtonTexture(FEImage *img, uint32 tex_hash) {

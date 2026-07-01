@@ -3,18 +3,15 @@
 #include "Speed/Indep/Src/FEng/FEGroup.h"
 #include "Speed/Indep/Src/FEng/FEMultiImage.h"
 #include "Speed/Indep/Src/FEng/FEString.h"
-#include "Speed/Indep/Src/FEng/feimage.h"
+#include "Speed/Indep/Src/FEng/FEImage.h"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEImages.hpp"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEObjects.hpp"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEStrings.hpp"
 
 HudElement::HudElement(const char *pkg_name, unsigned long long mask)
-    : pPackageName(pkg_name) //
-      ,
-      Mask(mask) //
-      ,
-      CurrentHudFeatures(0) //
-      ,
+    : pPackageName(pkg_name), //
+      Mask(mask),             //
+      CurrentHudFeatures(0),  //
       mCurrentlySetVisible(false) {}
 
 FEString *HudElement::RegisterString(unsigned int hash) {

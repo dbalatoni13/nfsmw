@@ -1,34 +1,26 @@
 
 #include "FEGroup.h"
-#include "FEngStandard.h"
 
 FEGroup::FEGroup(const FEGroup &Object, bool bCloneChildren, bool bReference) : FEObject(Object, bReference) {
     if (bCloneChildren) {
-        for (FEObject *pChild = static_cast<FEObject *>(Object.Children.GetHead()); pChild; pChild = pChild->GetNext()) {
-            FEObject *pClone = pChild->Clone(bReference);
-            Children.AddNode(Children.GetTail(), pClone);
+        for (FEObject *pObject = static_cast<FEObject *>(Object.Children.GetHead()); pObject; pObject = pObject->GetNext()) {
+            AddObject(pObject->Clone(bReference));
         }
     }
 }
 
-FEObject *FEGroup::FindChildRecursive(unsigned long NameHash) const {
-    FEObject *pChild = static_cast<FEObject *>(Children.GetHead());
-    while (pChild) {
+FEObject *FEGroup::FindChildRecursive(u32 NameHash) const {
+    for (FEObject *pChild = static_cast<FEObject *>(Children.GetHead()); pChild; pChild = pChild->GetNext()) {
         if (pChild->NameHash == NameHash) {
             return pChild;
         }
-        FEObject *pFound = nullptr;
+        FEObject *groupChild = nullptr;
         if (pChild->Type == FE_Group) {
-            pFound = static_cast<FEGroup *>(pChild)->FindChildRecursive(NameHash);
+            groupChild = static_cast<FEGroup *>(pChild)->FindChildRecursive(NameHash);
         }
-        if (pFound) {
-            return pFound;
+        if (groupChild) {
+            return groupChild;
         }
-        pChild = pChild->GetNext();
     }
     return nullptr;
-}
-
-FEObject *FEGroup::Clone(bool bReference) {
-    return FNEW FEGroup(*this, true, bReference);
 }

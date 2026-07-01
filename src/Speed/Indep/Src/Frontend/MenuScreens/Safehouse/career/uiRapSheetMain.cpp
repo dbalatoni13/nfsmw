@@ -6,8 +6,7 @@
 #include "Speed/Indep/Src/Frontend/Localization/Localize.hpp"
 
 uiRapSheetMain::uiRapSheetMain(ScreenConstructorData *sd)
-    : UIWidgetMenu(sd) //
-      ,
+    : UIWidgetMenu(sd), //
       button_pressed(0) {
     RefreshHeader();
 }

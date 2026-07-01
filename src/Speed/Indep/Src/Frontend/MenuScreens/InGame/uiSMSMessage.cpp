@@ -88,8 +88,8 @@ void uiSMSMessage::NotificationMessage(u32 msg, FEObject *pobj, u32 param1, u32 
             break;
         }
         case 0xc519bfc4: {
-            DialogInterface::ShowTwoButtons(GetPackageName(), "InGameDialog.fng", static_cast<eDialogTitle>(1), 0x70e01038, 0x417b25e4, 0xd05fc3a3,
-                                            0x34dc1bcf, 0x34dc1bcf, static_cast<eDialogFirstButtons>(1), 0x8c3c2171);
+            DialogInterface::ShowTwoButtons(GetPackageName(), "InGameDialog.fng", dialog_alert, 0x70e01038, 0x417b25e4, 0xd05fc3a3, 0x34dc1bcf,
+                                            0x34dc1bcf, first_dialog_button2, 0x8c3c2171);
             break;
         }
         case 0xd05fc3a3: {

@@ -1,23 +1,20 @@
 #ifndef __FECUSTOMIZE_HPP__
 #define __FECUSTOMIZE_HPP__
 
-#include "Speed/Indep/Src/FEng/FEImage.h"
 #include "Speed/Indep/Src/Frontend/Database/VehicleDB.hpp"
-#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
-#include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEIconScrollerMenu.hpp"
 #include "Speed/Indep/Src/Gameplay/GRace.h"
 
 #define CC_MAKE_HIWORD(_a) (_a << 16) // :63
 #define CC_GET_HIWORD(_a) (_a >> 16)  // :64
 
 typedef enum {
-    FEMSG_ADD_TO_CART = -1847599228,
-    FEMSG_ICON_START = 1584310645,
-    FEMSG_EXIT_PURCHASE = 388018468,
-    FEMSG_EXIT_NO_PURCHASE = 2050068192,
-    FEMSG_FROM_CART = -812537139,
-    FEMSG_BACK_OUT = 1519550488,
-    FEMSG_MAX_OUT_PERFORMANCE = 1746985534
+    FEMSG_ADD_TO_CART = -0x6e20207c,
+    FEMSG_ICON_START = 0x5e6ea975,
+    FEMSG_EXIT_PURCHASE = 0x1720b124,
+    FEMSG_EXIT_NO_PURCHASE = 0x7a318ee0,
+    FEMSG_FROM_CART = -0x306e5533,
+    FEMSG_BACK_OUT = 0x5a928018,
+    FEMSG_MAX_OUT_PERFORMANCE = 0x6820e23e
 } eCustomizeScreenMessages;
 
 typedef enum {
@@ -118,73 +115,28 @@ typedef enum {
 
 typedef enum { CCT_PART_PRICES = 0, CCT_TRADE_IN = 1, CCT_TOTAL = 2 } eCustomizeCartTotals;
 
-// total size: 0x50
-struct CustomizeMeter {
-    CustomizeMeter();
-
-    virtual ~CustomizeMeter() {}
-
-    void Init(const char *pkg_name, const char *name, float min, float max, float current, float preview);
-    void SetCurrent(float current);
-    void SetPreview(float preview);
-    void Draw();
-    void SetVisibility(bool b);
-
-    float Min;                // offset 0x0, size 0x4
-    float Max;                // offset 0x4, size 0x4
-    float Current;            // offset 0x8, size 0x4
-    float Preview;            // offset 0xC, size 0x4
-    float PreviousPreview;    // offset 0x10, size 0x4
-    int NumStages;            // offset 0x14, size 0x4
-    FEImage *pMultiplier;     // offset 0x18, size 0x4
-    FEImage *pMultiplierZoom; // offset 0x1C, size 0x4
-    FEImage *pBases[10];      // offset 0x20, size 0x28
-    FEObject *pMeterGroup;    // offset 0x48, size 0x4
-    // vtable at 0x4C
-};
-
 // total size: 0x2C
-struct SelectablePart : public bTNode<SelectablePart> {
-    static void *operator new(size_t s) {
-        return ::operator new[](s);
-    }
-    static void operator delete(void *p) {
-        ::operator delete[](p);
-    }
-
+class SelectablePart : public bTNode<SelectablePart> {
+  public:
     SelectablePart(SelectablePart *part)
-        : ThePart(part->ThePart) //
-          ,
-          CarSlotID(part->CarSlotID) //
-          ,
-          UpgradeLevel(part->UpgradeLevel) //
-          ,
-          PhysicsType(part->PhysicsType) //
-          ,
-          PerformancePkg(part->PerformancePkg) //
-          ,
-          PartState(part->PartState) //
-          ,
-          Price(part->Price) //
-          ,
+        : ThePart(part->ThePart),               //
+          CarSlotID(part->CarSlotID),           //
+          UpgradeLevel(part->UpgradeLevel),     //
+          PhysicsType(part->PhysicsType),       //
+          PerformancePkg(part->PerformancePkg), //
+          PartState(part->PartState),           //
+          Price(part->Price),                   //
           JunkmanPart(part->JunkmanPart) {}
 
-    SelectablePart(CarPart *part, int slot_id, unsigned int lvl, GRace::Type phys_type, bool is_perf, eCustomizePartState state, int price,
+    SelectablePart(CarPart *part, int slot_id, uint32 lvl, Physics::Upgrades::Type phys_type, bool is_perf, eCustomizePartState state, int price,
                    bool junkman)
-        : ThePart(part) //
-          ,
-          CarSlotID(slot_id) //
-          ,
-          UpgradeLevel(lvl) //
-          ,
-          PhysicsType(phys_type) //
-          ,
-          PerformancePkg(is_perf) //
-          ,
-          PartState(state) //
-          ,
-          Price(price) //
-          ,
+        : ThePart(part),           //
+          CarSlotID(slot_id),      //
+          UpgradeLevel(lvl),       //
+          PhysicsType(phys_type),  //
+          PerformancePkg(is_perf), //
+          PartState(state),        //
+          Price(price),            //
           JunkmanPart(junkman) {}
 
     virtual ~SelectablePart() {}
@@ -195,13 +147,13 @@ struct SelectablePart : public bTNode<SelectablePart> {
     int GetSlotID() {
         return CarSlotID;
     }
-    unsigned int GetUpgradeLevel() {
+    uint32 GetUpgradeLevel() {
         return UpgradeLevel;
     }
-    GRace::Type GetPhysicsType() {
+    Physics::Upgrades::Type GetPhysicsType() {
         return PhysicsType;
     }
-    int IsPerformancePkg() {
+    bool IsPerformancePkg() {
         return PerformancePkg;
     }
     eCustomizePartState GetPartState() {
@@ -210,11 +162,11 @@ struct SelectablePart : public bTNode<SelectablePart> {
     int GetPrice() {
         return Price;
     }
-    int IsJunkmanPart() {
+    bool IsJunkmanPart() {
         return JunkmanPart;
     }
 
-    void SetSlotID(unsigned int id) {
+    void SetSlotID(uint32 id) {
         CarSlotID = static_cast<int>(id);
     }
 
@@ -240,7 +192,7 @@ struct SelectablePart : public bTNode<SelectablePart> {
         return (PartState & CPS_IN_CART) != 0;
     }
 
-    void SetPartState(unsigned int state) {
+    void SetPartState(uint32 state) {
         PartState = static_cast<eCustomizePartState>(state);
     }
     void SetInCart() {
@@ -262,31 +214,23 @@ struct SelectablePart : public bTNode<SelectablePart> {
         Price = price;
     }
 
-    CarPart *ThePart;              // offset 0x8, size 0x4
-    int CarSlotID;                 // offset 0xC, size 0x4
-    unsigned int UpgradeLevel;     // offset 0x10, size 0x4
-    GRace::Type PhysicsType;       // offset 0x14, size 0x4
-    int PerformancePkg;            // offset 0x18, size 0x4
-    eCustomizePartState PartState; // offset 0x1C, size 0x4
-    int Price;                     // offset 0x20, size 0x4
-    int JunkmanPart;               // offset 0x24, size 0x4
-    // vtable at 0x28
+  protected:
+    CarPart *ThePart;                    // offset 0x8, size 0x4
+    int CarSlotID;                       // offset 0xC, size 0x4
+    uint32 UpgradeLevel;                 // offset 0x10, size 0x4
+    Physics::Upgrades::Type PhysicsType; // offset 0x14, size 0x4
+    bool PerformancePkg;                 // offset 0x18, size 0x4
+    eCustomizePartState PartState;       // offset 0x1C, size 0x4
+    int Price;                           // offset 0x20, size 0x4
+    bool JunkmanPart;                    // offset 0x24, size 0x4
 };
 
 // total size: 0x18
-struct ShoppingCartItem : public bTNode<ShoppingCartItem> {
-    static void *operator new(size_t s) {
-        return ::operator new[](s);
-    }
-    static void operator delete(void *p) {
-        ::operator delete[](p);
-    }
-
+class ShoppingCartItem : public bTNode<ShoppingCartItem> {
+  public:
     ShoppingCartItem(SelectablePart *to_buy, SelectablePart *trade_in)
-        : ToBuy(to_buy) //
-          ,
-          TradeIn(trade_in) //
-          ,
+        : ToBuy(to_buy),     //
+          TradeIn(trade_in), //
           bActive(true) {}
 
     virtual ~ShoppingCartItem() {
@@ -316,168 +260,17 @@ struct ShoppingCartItem : public bTNode<ShoppingCartItem> {
     SelectablePart *ToBuy;   // offset 0x8, size 0x4
     SelectablePart *TradeIn; // offset 0xC, size 0x4
     bool bActive;            // offset 0x10, size 0x1
-    // vtable at 0x14
 };
 
-// total size: 0x64
-struct CustomizePartOption : public IconOption {
-    CustomizePartOption(SelectablePart *part, unsigned int tex_hash, unsigned int name_hash, unsigned int desc_hash, unsigned int unlock_blurb)
-        : IconOption(tex_hash, name_hash, desc_hash) //
-          ,
-          ThePart(part) //
-          ,
-          UnlockBlurb(unlock_blurb) {}
-
-    ~CustomizePartOption() override {
-        delete ThePart;
-    }
-
-    void React(const char *pkg_name, unsigned int data, FEObject *obj, unsigned int param1, unsigned int param2) override {}
-
-    void SetPart(SelectablePart *part) {
-        ThePart = part;
-    }
-    SelectablePart *GetPart() {
-        return ThePart;
-    }
-    unsigned int GetUnlockBlurb() {
-        return UnlockBlurb;
-    }
-
-    SelectablePart *ThePart;  // offset 0x5C, size 0x4
-    unsigned int UnlockBlurb; // offset 0x60, size 0x4
-};
-
-// total size: 0x68
-struct CustomizeMainOption : public IconOption {
-    CustomizeMainOption(const char *to_pkg, unsigned int tex_hash, unsigned int name_hash, unsigned int to_cat, unsigned int from_cat)
-        : IconOption(tex_hash, name_hash, 0) //
-          ,
-          ToPkg(to_pkg) {
-        UnlockStatus = CPS_AVAILABLE;
-        Category = to_cat | (from_cat << 16);
-    }
-
-    ~CustomizeMainOption() override {}
-
-    void React(const char *pkg_name, unsigned int data, FEObject *obj, unsigned int param1, unsigned int param2) override {
-        if (data == 0xc407210) {
-            cFEng::Get()->QueuePackageSwitch(ToPkg, Category, 0, false);
-        }
-    }
-
-    virtual bool IsStockOption() {
-        return false;
-    }
-
-    const char *ToPkg;                // offset 0x5C, size 0x4
-    unsigned int Category;            // offset 0x60, size 0x4
-    eCustomizePartState UnlockStatus; // offset 0x64, size 0x4
-};
-
-// total size: 0x6C
-struct SetStockPartOption : public CustomizeMainOption {
-    SetStockPartOption(SelectablePart *part, unsigned int icon, unsigned int to_cat)
-        : CustomizeMainOption("", icon, 0x60a662f5, to_cat, to_cat) //
-          ,
-          ThePart(part) {
-        SetReactImmediately(true);
-    }
-
-    ~SetStockPartOption() override {
-        delete ThePart;
-    }
-
-    void React(const char *pkg_name, unsigned int data, FEObject *obj, unsigned int param1, unsigned int param2) override;
-    bool IsStockOption() override {
-        return true;
-    }
-
-    SelectablePart *ThePart; // offset 0x68, size 0x4
-};
-
-// total size: 0x74
-struct HUDLayerOption : public CustomizePartOption {
-    HUDLayerOption(unsigned int layer, unsigned int icon_hash, unsigned int name_hash);
-    ~HUDLayerOption() override {}
-
-    void React(const char *parent_pkg, unsigned int data, FEObject *obj, unsigned int param1, unsigned int param2) override {}
-
-    unsigned int GetLayer() {
-        return HUDLayer;
-    }
-
-    unsigned int HUDLayer;            // offset 0x64, size 0x4
-    bTList<SelectablePart> TheColors; // offset 0x68, size 0x8
-    SelectablePart *SelectedPart;     // offset 0x70, size 0x4
-};
-
-// total size: 0x64
-struct HUDColorOption : public IconOption {
-    HUDColorOption(SelectablePart *part)
-        : IconOption(0, 0, 0) //
-          ,
-          ThePart(part) {}
-
-    ~HUDColorOption() override {}
-
-    void React(const char *parent_pkg, unsigned int data, FEObject *obj, unsigned int param1, unsigned int param2) override {}
-
-    SelectablePart *ThePart; // offset 0x5C, size 0x4
-    unsigned int color;      // offset 0x60, size 0x4
-};
-
-// total size: 0x64
-struct CustomizationScreenHelper {
-    CustomizationScreenHelper(const char *pkg_name);
-
-    virtual ~CustomizationScreenHelper() {}
-
-    const char *GetPackageName() {
-        return pPackageName;
-    }
-    void SetTitleHash(unsigned int hash) {
-        TitleHash = hash;
-    }
-    unsigned int GetTitleHash() {
-        return TitleHash;
-    }
-    void SetInitComplete(bool b) {
-        bInitComplete = b;
-    }
-    bool IsInitComplete() {
-        return bInitComplete;
-    }
-    void PlayLocked() {}
-    void PlayInCart() {}
-    void PlayInstalled() {}
-    void DrawMeters() {
-        HeatMeter.Draw();
-    }
-    void SetHeatValue(float f) {
-        HeatMeter.SetCurrent(f);
-    }
-    void SetHeatPreview(float f) {
-        HeatMeter.SetPreview(f);
-    }
-
-    void DrawTitle();
-    void SetCareerStatusIcon(eCustomizePartState state);
-    void SetPlayerCarStatusIcon(eCustomizePartState state);
-    void SetCashVisibility(bool visible);
-    void SetUnlockOverlayState(bool show, unsigned int blurb_hash);
-    void SetCareerStuff(SelectablePart *part, unsigned int cat, unsigned int tradeInValue);
-    void SetPartStatus(SelectablePart *part, unsigned int unlock_blurb, int part_num, int max_parts);
-    void FlashStatusIcon(eCustomizePartState state, bool play_sound);
-
-    const char *pPackageName;   // offset 0x0, size 0x4
-    unsigned int TitleHash;     // offset 0x4, size 0x4
-    bool bUnlockOverlayShowing; // offset 0x8, size 0x1
-    bool bInitComplete;         // offset 0xC, size 0x1
-    CustomizeMeter HeatMeter;   // offset 0x10, size 0x50
-    // vtable at 0x60
-};
+extern eCustomizeEntryPoint g_TheCustomizeEntryPoint;
+extern FECarRecord *g_pCustomizeCarRecordToUse;
 
 void BeginCarCustomize(eCustomizeEntryPoint entry_point, FECarRecord *theCustomCar);
+bool CustomizeIsInBackRoom();
+void CustomizeSetInBackRoom(bool b);
+bool CustomizeIsInPerformance();
+void CustomizeSetInPerformance(bool b);
+bool CustomizeIsInParts();
+void CustomizeSetInParts(bool b);
 
 #endif

@@ -1,6 +1,7 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiShowcase.hpp"
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEImages.hpp"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEStrings.hpp"
 #include "Speed/Indep/Src/Frontend/Localization/Localize.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/FEPkg_GarageMain.hpp"
@@ -14,10 +15,7 @@ uint32 Showcase::BlackListNumber;
 int32 Showcase::FromFilter;
 void *Showcase::FromColor[3];
 
-Showcase::Showcase(ScreenConstructorData *sd)
-    : MenuScreen(sd) //
-      ,
-      RivalStreamer(sd->PackageFilename, false) {
+Showcase::Showcase(ScreenConstructorData *sd) : MenuScreen(sd), RivalStreamer(sd->PackageFilename, false) {
     if (eIsWidescreen()) {
         cFEng::Get()->QueuePackageMessage(bStringHash("WidescreenFix"), GetPackageName(), 0);
     }
@@ -78,11 +76,11 @@ Showcase::Showcase(ScreenConstructorData *sd)
 
 Showcase::~Showcase() {}
 
-void Showcase::NotificationMessage(unsigned long msg, FEObject *pObj, unsigned long param1, unsigned long param2) {
+void Showcase::NotificationMessage(u32 msg, FEObject *pObj, u32 param1, u32 param2) {
     if (msg == 0x406415e3 || msg == 0x911ab364) {
         cFEng::Get()->QueuePackageSwitch(FromPackage, FromArgs, 0, false);
         if (BlackListNumber != 0) {
-            car->Handle = 0xFFFFFFFF;
+            car->Handle = INVALID_CAR_HANDLE;
             GarageMainScreen::GetInstance()->DisableCarRendering();
         }
         FromArgs = 0;

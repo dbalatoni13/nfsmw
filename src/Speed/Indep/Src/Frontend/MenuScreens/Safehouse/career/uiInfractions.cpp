@@ -133,7 +133,7 @@ void PostPursuitInfractionsScreen::NotificationMessage(u32 msg, FEObject *pobj, 
             const int FEObj_Button1 = 0xB8A7C6CD;
             if (bFirstTimeBusted) {
                 FEngSetCurrentButton(GetPackageName(), FEObj_Button2);
-                DialogInterface::ShowOneButton(GetPackageName(), "", static_cast<eDialogTitle>(1), 0x417b2601, 0xb4edeb6d, 0x9c14b5f1);
+                DialogInterface::ShowOneButton(GetPackageName(), "", dialog_alert, 0x417b2601, 0xb4edeb6d, 0x9c14b5f1);
             } else {
                 FEngSetCurrentButton(GetPackageName(), FEObj_Button1);
             }
@@ -181,7 +181,7 @@ void PostPursuitInfractionsScreen::NotificationMessage(u32 msg, FEObject *pobj, 
 
             if (message_hash != 0) {
                 WorkingCareerRecord->TheImpoundData.BecomeImpounded(impound_reason);
-                DialogInterface::ShowOneButton(GetPackageName(), "", static_cast<eDialogTitle>(1), 0x417b2601, 0x34dc1bec, message_hash);
+                DialogInterface::ShowOneButton(GetPackageName(), "", dialog_alert, 0x417b2601, 0x34dc1bec, message_hash);
             } else {
                 if (paid_with_marker) {
                     cFEng::Get()->QueuePackageSwitch("Car_Select.fng", 0, 0, false);

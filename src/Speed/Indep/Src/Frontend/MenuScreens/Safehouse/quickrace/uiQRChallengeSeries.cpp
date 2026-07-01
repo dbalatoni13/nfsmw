@@ -1,25 +1,23 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiQRChallengeSeries.hpp"
 
+#include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
+#include "Speed/Indep/Src/Frontend/FEngFrontend.hpp"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/Frontend/Careers/UnlockSystem.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEImages.hpp"
+#include "Speed/Indep/Src/Frontend/Localization/Localize.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEAnyTutorialScreen.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/feDialogBox.hpp"
+#include "Speed/Indep/Src/Frontend/RaceStarter.hpp"
 #include "Speed/Indep/Src/Gameplay/GRaceDatabase.h"
+#include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 
 extern GRaceParameters *theChallengeRace;
-extern int GetMikeMannBuild();
-extern int bStrCmp(const char *, const char *);
-extern int bStrICmp(const char *, const char *);
-extern unsigned int FEngHashString(const char *, ...);
-extern void FEAnyTutorialScreen_LaunchMovie(const char *movie, const char *pkg);
 
-class RaceStarter {
-  public:
-    static void StartRace();
-};
 extern const char *gTUTORIAL_MOVIE_TOLLBOOTH;
 
-void ChallengeDatum::NotificationMessage(unsigned long msg, FEObject *pObj, unsigned long param1, unsigned long param2) {
+void ChallengeDatum::NotificationMessage(u32 msg, FEObject *pObj, u32 param1, u32 param2) {
     if (msg != 0x0C407210)
         return;
     if (!IsLocked()) {
@@ -30,10 +28,8 @@ void ChallengeDatum::NotificationMessage(unsigned long msg, FEObject *pObj, unsi
 }
 
 UIQRChallengeSeries::UIQRChallengeSeries(ScreenConstructorData *sd)
-    : ArrayScrollerMenu(sd, 4, 3, true) //
-      ,
-      prev_race_hash(0) //
-      ,
+    : ArrayScrollerMenu(sd, 4, 3, true), //
+      prev_race_hash(0),                 //
       pMovieName(0) {
     theChallengeRace = nullptr;
     int numSlots = GetWidth() * GetHeight();
@@ -51,7 +47,7 @@ UIQRChallengeSeries::UIQRChallengeSeries(ScreenConstructorData *sd)
 
 UIQRChallengeSeries::~UIQRChallengeSeries() {}
 
-eMenuSoundTriggers UIQRChallengeSeries::NotifySoundMessage(unsigned long msg, eMenuSoundTriggers maybe) {
+eMenuSoundTriggers UIQRChallengeSeries::NotifySoundMessage(u32 msg, eMenuSoundTriggers maybe) {
     ArrayScrollerMenu::NotifySoundMessage(msg, maybe);
     if (msg == 0x480c9a58) {
         return static_cast<eMenuSoundTriggers>(5);
@@ -59,7 +55,7 @@ eMenuSoundTriggers UIQRChallengeSeries::NotifySoundMessage(unsigned long msg, eM
     return maybe;
 }
 
-void UIQRChallengeSeries::NotificationMessage(unsigned long msg, FEObject *obj, unsigned long param1, unsigned long param2) {
+void UIQRChallengeSeries::NotificationMessage(u32 msg, FEObject *obj, u32 param1, u32 param2) {
     ArrayScrollerMenu::NotificationMessage(msg, obj, param1, param2);
     switch (msg) {
         case 0xc98356ba:
@@ -70,15 +66,15 @@ void UIQRChallengeSeries::NotificationMessage(unsigned long msg, FEObject *obj, 
                 g_pEAXSound->PlayUISoundFX(static_cast<eMenuSoundTriggers>(7));
                 return;
             }
-            DialogInterface::ShowTwoButtons(GetPackageName(), "", static_cast<eDialogTitle>(1), 0x70e01038, 0x417b25e4, 0xd05fc3a3, 0x34dc1bcf,
-                                            0x34dc1bcf, static_cast<eDialogFirstButtons>(1), 0x77cf03c5);
+            DialogInterface::ShowTwoButtons(GetPackageName(), "", dialog_alert, 0x70e01038, 0x417b25e4, 0xd05fc3a3, 0x34dc1bcf, 0x34dc1bcf,
+                                            first_dialog_button2, 0x77cf03c5);
             break;
         case 0xc519bfc3:
-            if (static_cast<ChallengeDatum *>(currentDatum)->race->GetChallengeType() != 0) {
+            if (static_cast<ChallengeDatum *>(GetCurrentDatum())->race->GetChallengeType() != 0) {
                 return;
             }
             FEngSetScript(GetPackageName(), 0x99344537, 0x16a259, true);
-            FEAnyTutorialScreen_LaunchMovie(gTUTORIAL_MOVIE_TOLLBOOTH, GetPackageName());
+            FEAnyTutorialScreen::LaunchMovie(gTUTORIAL_MOVIE_TOLLBOOTH, GetPackageName());
             break;
         case 0x1a2826e1:
             FEDatabase->GetPlayerSettings(0)->Transmission = 0;
@@ -110,13 +106,13 @@ void UIQRChallengeSeries::NotificationMessage(unsigned long msg, FEObject *obj, 
 }
 
 void UIQRChallengeSeries::ChooseTransmission() {
-    DialogInterface::ShowTwoButtons(GetPackageName(), "", static_cast<eDialogTitle>(3), 0x317d3005, 0x8cd532a0, 0x5f5e3886, 0x1a2826e1, 0x34dc1bcf,
+    DialogInterface::ShowTwoButtons(GetPackageName(), "", dialog_confirmation, 0x317d3005, 0x8cd532a0, 0x5f5e3886, 0x1a2826e1, 0x34dc1bcf,
                                     (eDialogFirstButtons)(FEDatabase->GetPlayerSettings(0)->Transmission == 0), 0x6f5401d1);
 }
 
 void UIQRChallengeSeries::RefreshHeader() {
     ArrayScrollerMenu::RefreshHeader();
-    if (!currentDatum)
+    if (!GetCurrentDatum())
         return;
 
     // TODO
@@ -124,7 +120,7 @@ void UIQRChallengeSeries::RefreshHeader() {
     FEPrintf(GetPackageName(), 0x5a856a34, "%d", pos);
     FEPrintf(GetPackageName(), 0x2d4d22c8, "%d", GetNumDatum());
 
-    ChallengeDatum *cd = static_cast<ChallengeDatum *>(currentDatum);
+    ChallengeDatum *cd = static_cast<ChallengeDatum *>(GetCurrentDatum());
     GRaceParameters *race = cd->race;
     if (!race || prev_race_hash == race->GetEventHash())
         return;
@@ -171,7 +167,7 @@ void UIQRChallengeSeries::RefreshHeader() {
     const char *desc = GetLocalizedString(descHash);
     FEPrintf(pkg, 0x7b230d64, desc, buf, buf);
 
-    if (static_cast<ChallengeDatum *>(currentDatum)->IsLocked()) {
+    if (static_cast<ChallengeDatum *>(GetCurrentDatum())->IsLocked()) {
         cFEng::Get()->QueuePackageMessage(0xc5dd9d68, GetPackageName(), nullptr);
         // TODO
         int lockedPos; // = data.TraversebList(currentDatum);

@@ -4,108 +4,16 @@
 #include "Speed/Indep/Src/Frontend/Careers/UnlockSystem.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Frontend/Database/VehicleDB.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEButtons.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEImages.hpp"
+#include "Speed/Indep/Src/Frontend/Localization/Localize.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRepSheetRivalFlow.hpp"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/frontend.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
-extern cFrontendDatabase *FEDatabase;
-extern unsigned int FEngHashString(const char *, ...);
-extern void FEngSetScript(FEObject *, unsigned int, bool);
-extern void FEngSetCurrentButton(const char *, unsigned int);
-extern FEObject *FEngGetCurrentButton(const char *);
-extern bool DoesCategoryHaveNewUnlock(eUnlockableEntity);
-extern void GetLocalizedString(char *buffer, unsigned int bufsize, unsigned int string_label);
-
-// total size: 0x1C
-struct MarkerSelectInfo {
-    FEMarkerManager::ePossibleMarker Marker; // offset 0x0
-    unsigned int IconHash;                   // offset 0x4
-    unsigned int CategoryIconHash;           // offset 0x8
-    unsigned int NameHash;                   // offset 0xC
-    unsigned int CategoryNameHash;           // offset 0x10
-    unsigned int BlurbHash;                  // offset 0x14
-    unsigned int CategoryBlurbHash;          // offset 0x18
-};
-
-extern MarkerSelectInfo MarkerSelectInfos[];
-
-MarkerSelectInfo *GetMarkerSelectInfo(FEMarkerManager::ePossibleMarker marker) {
-    for (int i = 0; i < 0x15; i++) {
-        if (MarkerSelectInfos[i].Marker == marker) {
-            return &MarkerSelectInfos[i];
-        }
-    }
-    return nullptr;
-}
-
-unsigned int FEMarkerSelection::GetIconHashForType(FEMarkerManager::ePossibleMarker marker) {
-    MarkerSelectInfo *info = GetMarkerSelectInfo(marker);
-    return info->IconHash;
-}
-
-unsigned int FEMarkerSelection::GetCategoryIconHashForType(FEMarkerManager::ePossibleMarker marker) {
-    MarkerSelectInfo *info = GetMarkerSelectInfo(marker);
-    return info->CategoryIconHash;
-}
-
-unsigned int FEMarkerSelection::GetNameHashForType(FEMarkerManager::ePossibleMarker marker) {
-    MarkerSelectInfo *info = GetMarkerSelectInfo(marker);
-    return info->NameHash;
-}
-
-unsigned int FEMarkerSelection::GetCategoryNameHashForType(FEMarkerManager::ePossibleMarker marker) {
-    MarkerSelectInfo *info = GetMarkerSelectInfo(marker);
-    return info->CategoryNameHash;
-}
-
-unsigned int FEMarkerSelection::GetBlurbHashForType(FEMarkerManager::ePossibleMarker marker) {
-    MarkerSelectInfo *info = GetMarkerSelectInfo(marker);
-    return info->BlurbHash;
-}
-
-unsigned int FEMarkerSelection::GetCategoryBlurbHashForType(FEMarkerManager::ePossibleMarker marker) {
-    MarkerSelectInfo *info = GetMarkerSelectInfo(marker);
-    return info->CategoryBlurbHash;
-}
-
-int FEMarkerSelection::GetNumSelected() {
-    int count = 0;
-    for (int i = 0; i < NumVisibleMarkers; i++) {
-        if (TheMarkers[i].Marker != static_cast<FEMarkerManager::ePossibleMarker>(0) && TheMarkers[i].Selected) {
-            count++;
-        }
-    }
-    return count;
-}
-
-int FEMarkerSelection::GetButtonIndex(unsigned int hash) {
-    if (hash == 0xcda0a66b)
-        return 0;
-    if (hash == 0xcda0a66c)
-        return 1;
-    if (hash == 0xcda0a66d)
-        return 2;
-    if (hash == 0xcda0a66e)
-        return 3;
-    if (hash == 0xcda0a66f)
-        return 4;
-    if (hash == 0xcda0a670)
-        return 5;
-    return 0;
-}
-
-int FEMarkerSelection::GetSelectedButtonIndex() {
-    FEObject *btn = FEngGetCurrentButton(GetPackageName());
-    if (btn) {
-        return GetButtonIndex(btn->NameHash);
-    }
-    return 0;
-}
-
 FEMarkerSelection::FEMarkerSelection(ScreenConstructorData *sd)
-    : MenuScreen(sd) //
-      ,
-      NumVisibleMarkers(0) //
-      ,
+    : MenuScreen(sd),       //
+      NumVisibleMarkers(0), //
       RivalStreamer(sd->PackageFilename, false) {
     unsigned int CategoryOrder[] = {0xbdaa5794, 0xe69d4f7c, 0x73272ed2, 0xc61c8d3a};
     for (int cat = 0; cat < 4; cat++) {
@@ -186,7 +94,7 @@ void FEMarkerSelection::NotificationMessage(unsigned long msg, FEObject *pobj, u
                         FEDatabase->GetPlayerCarStable(0)->AwardRivalCar(TheMarkers[idx].Param);
                         break;
                     case 0x13:
-                        FEDatabase->GetCareerSettings()->AddCash(TheMarkers[idx].Param);
+                        FEDatabase->GetCareerSettings()->AwardCash(TheMarkers[idx].Param);
                         break;
                     default:
                         TheFEMarkerManager.AddMarkerToInventory(TheMarkers[idx].Marker, TheMarkers[idx].Param);
@@ -203,7 +111,7 @@ void FEMarkerSelection::NotificationMessage(unsigned long msg, FEObject *pobj, u
         }
         case 0xabc08912: {
             FEPackage *pkg = cFEng::Get()->FindPackage(GetPackageName());
-            if (!pkg->bInputEnabled)
+            if (!pkg->IsInputEnabled())
                 return;
             int idx = GetButtonIndex(pobj->NameHash);
             if (TheMarkers[idx].Selected) {
@@ -218,7 +126,7 @@ void FEMarkerSelection::NotificationMessage(unsigned long msg, FEObject *pobj, u
             break;
         case 0x55d1e635: {
             FEPackage *pkg = cFEng::Get()->FindPackage(GetPackageName());
-            if (!pkg->bInputEnabled)
+            if (!pkg->IsInputEnabled())
                 return;
             int idx = GetButtonIndex(pobj->NameHash);
             if (TheMarkers[idx].Selected) {
@@ -229,6 +137,92 @@ void FEMarkerSelection::NotificationMessage(unsigned long msg, FEObject *pobj, u
             break;
         }
     }
+}
+
+int FEMarkerSelection::GetButtonIndex(unsigned int hash) {
+    if (hash == 0xcda0a66b)
+        return 0;
+    if (hash == 0xcda0a66c)
+        return 1;
+    if (hash == 0xcda0a66d)
+        return 2;
+    if (hash == 0xcda0a66e)
+        return 3;
+    if (hash == 0xcda0a66f)
+        return 4;
+    if (hash == 0xcda0a670)
+        return 5;
+    return 0;
+}
+
+int FEMarkerSelection::GetSelectedButtonIndex() {
+    FEObject *btn = FEngGetCurrentButton(GetPackageName());
+    if (btn) {
+        return GetButtonIndex(btn->NameHash);
+    }
+    return 0;
+}
+
+// total size: 0x1C
+struct MarkerSelectInfo {
+    FEMarkerManager::ePossibleMarker Marker; // offset 0x0
+    uint32 IconHash;                         // offset 0x4
+    uint32 CategoryIconHash;                 // offset 0x8
+    uint32 NameHash;                         // offset 0xC
+    uint32 CategoryNameHash;                 // offset 0x10
+    uint32 BlurbHash;                        // offset 0x14
+    uint32 CategoryBlurbHash;                // offset 0x18
+};
+
+extern MarkerSelectInfo MarkerSelectInfos[];
+
+MarkerSelectInfo *GetMarkerSelectInfo(FEMarkerManager::ePossibleMarker marker) {
+    for (int i = 0; i < 0x15; i++) {
+        if (MarkerSelectInfos[i].Marker == marker) {
+            return &MarkerSelectInfos[i];
+        }
+    }
+    return nullptr;
+}
+
+uint32 FEMarkerSelection::GetIconHashForType(FEMarkerManager::ePossibleMarker marker) {
+    MarkerSelectInfo *info = GetMarkerSelectInfo(marker);
+    return info->IconHash;
+}
+
+uint32 FEMarkerSelection::GetCategoryIconHashForType(FEMarkerManager::ePossibleMarker marker) {
+    MarkerSelectInfo *info = GetMarkerSelectInfo(marker);
+    return info->CategoryIconHash;
+}
+
+uint32 FEMarkerSelection::GetNameHashForType(FEMarkerManager::ePossibleMarker marker) {
+    MarkerSelectInfo *info = GetMarkerSelectInfo(marker);
+    return info->NameHash;
+}
+
+uint32 FEMarkerSelection::GetCategoryNameHashForType(FEMarkerManager::ePossibleMarker marker) {
+    MarkerSelectInfo *info = GetMarkerSelectInfo(marker);
+    return info->CategoryNameHash;
+}
+
+uint32 FEMarkerSelection::GetBlurbHashForType(FEMarkerManager::ePossibleMarker marker) {
+    MarkerSelectInfo *info = GetMarkerSelectInfo(marker);
+    return info->BlurbHash;
+}
+
+uint32 FEMarkerSelection::GetCategoryBlurbHashForType(FEMarkerManager::ePossibleMarker marker) {
+    MarkerSelectInfo *info = GetMarkerSelectInfo(marker);
+    return info->CategoryBlurbHash;
+}
+
+int FEMarkerSelection::GetNumSelected() {
+    int count = 0;
+    for (int i = 0; i < NumVisibleMarkers; i++) {
+        if (TheMarkers[i].Marker != static_cast<FEMarkerManager::ePossibleMarker>(0) && TheMarkers[i].Selected) {
+            count++;
+        }
+    }
+    return count;
 }
 
 void FEMarkerSelection::Redraw() {

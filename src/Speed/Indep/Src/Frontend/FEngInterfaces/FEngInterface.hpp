@@ -49,7 +49,9 @@ class cFEng {
 
     void PrintLoadedPackages(); // Decl: speed/indep/src/frontend/fenginterfaces/FEngInterface.hpp:94
 
-    void UnloadPackage(FEPackage *pPackagePtr) {} // Decl: speed/indep/src/frontend/fenginterfaces/FEngInterface.hpp:70
+    void UnloadPackage(FEPackage *pPackagePtr) { // Decl: speed/indep/src/frontend/fenginterfaces/FEngInterface.hpp:70
+        mFEng->UnloadPackage(pPackagePtr);
+    }
 
     void QueuePackageMessage(uint32 pMessage, const char *pPackageName,
                              FEObject *obj); // Decl: speed/indep/src/frontend/fenginterfaces/FEngInterface.hpp:60

@@ -45,6 +45,7 @@ extern int SkipDDayRaces;
 extern int UnlockAllThings;
 extern int MikeMannBuild;
 extern bool IsCollectorsEdition;
+extern bool CarGuysCamera;
 extern eTrackDirection SkipFETrackDirection;
 extern int OnlineEnabled;
 extern bool gVerboseTesterOutput;

@@ -1,11 +1,9 @@
 #include "uiOptionsTrailers.hpp"
 
+#include "Speed/Indep/Src/Frontend/FEPackageData.hpp"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/FEPkg_GarageMain.hpp"
-
-void FEngSetLanguageHash(const char *pkg_name, unsigned int obj_hash, unsigned int language);
-unsigned char FEngGetLastButton(const char *pkg_name);
 
 UIOptionsTrailers::UIOptionsTrailers(ScreenConstructorData *sd) : IconScrollerMenu(sd) {
     Setup();

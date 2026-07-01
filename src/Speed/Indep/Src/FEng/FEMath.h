@@ -67,6 +67,33 @@ inline f32 QuaternionDot(const FEQuaternion &q0, const FEQuaternion &q1) {
     return q0.x * q1.x + q0.y * q1.y + q0.z * q1.z + q0.w * q1.w;
 }
 
+inline FEQuaternion operator*(const FEQuaternion &q, f32 fScaler) {
+    FEQuaternion r;
+    r.x = q.x * fScaler;
+    r.y = q.y * fScaler;
+    r.z = q.z * fScaler;
+    r.w = q.w * fScaler;
+    return r;
+}
+
+inline FEQuaternion operator+(const FEQuaternion &q0, const FEQuaternion &q1) {
+    FEQuaternion q;
+    q.x = q0.x + q1.x;
+    q.y = q0.y + q1.y;
+    q.z = q0.z + q1.z;
+    q.w = q0.w + q1.w;
+    return q;
+}
+
+inline FEQuaternion operator-(const FEQuaternion &q0, const FEQuaternion &q1) {
+    FEQuaternion q;
+    q.x = q0.x - q1.x;
+    q.y = q0.y - q1.y;
+    q.z = q0.z - q1.z;
+    q.w = q0.w - q1.w;
+    return q;
+}
+
 inline f32 QuaternionNorm(const FEQuaternion &q) {
     return q.x * q.x + q.y * q.y + q.z * q.z + q.w * q.w;
 }
@@ -96,7 +123,9 @@ class FEVector2 {
   public:
     f32 x, y; // offset 0x0, size 0x4, Decl: speed/indep/src/feng/FEMath.h:84
 
-    FEVector2() : x(0.0f), y(0.0f) {} // Decl: speed/indep/src/feng/FEMath.h:86
+    FEVector2() { // Decl: speed/indep/src/feng/FEMath.h:86
+        x = y = 0.0f;
+    }
     FEVector2(float v) : x(v), y(v) {}
     FEVector2(float vx, float vy) : x(vx), y(vy) {}
     FEVector2(float *pf) : x(pf[0]), y(pf[1]) {}
@@ -170,7 +199,9 @@ class FEVector3 {
   public:
     f32 x, y, z; // offset 0x0, size 0x4, Decl: speed/indep/src/feng/FEMath.h:125
 
-    FEVector3() : x(0.0f), y(0.0f), z(0.0f) {} // Decl: speed/indep/src/feng/FEMath.h:127
+    FEVector3() { // Decl: speed/indep/src/feng/FEMath.h:127
+        x = y = z = 0.0f;
+    }
     FEVector3(float v) : x(v), y(v), z(v) {}
     FEVector3(float vx, float vy, float vz) : x(vx), y(vy), z(vz) {}
     FEVector3(float *pf) : x(pf[0]), y(pf[1]), z(pf[2]) {}
@@ -247,22 +278,7 @@ class FEMatrix4 {
     }
 
     FEMatrix4 &operator=(const FEMatrix4 &m) {
-        m11 = m.m11;
-        m12 = m.m12;
-        m13 = m.m13;
-        m14 = m.m14;
-        m21 = m.m21;
-        m22 = m.m22;
-        m23 = m.m23;
-        m24 = m.m24;
-        m31 = m.m31;
-        m32 = m.m32;
-        m33 = m.m33;
-        m34 = m.m34;
-        m41 = m.m41;
-        m42 = m.m42;
-        m43 = m.m43;
-        m44 = m.m44;
+        FEngMemCpy(this, &m, sizeof(FEMatrix4));
         return *this;
     }
 

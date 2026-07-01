@@ -1,12 +1,8 @@
-#ifndef FRONTEND_MENUSCREENS_SAFEHOUSE_CAREER_UIREPSHEETRIVALSTREAMER_H
-#define FRONTEND_MENUSCREENS_SAFEHOUSE_CAREER_UIREPSHEETRIVALSTREAMER_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef __UI_REP_SHEET_RIVAL_STREAMER_HPP__
+#define __UI_REP_SHEET_RIVAL_STREAMER_HPP__
 
 #include <types.h>
-#include "Speed/Indep/Src/FEng/feimage.h"
+#include "Speed/Indep/Src/FEng/FEImage.h"
 
 // total size: 0x3C
 class uiRepSheetRivalStreamer {

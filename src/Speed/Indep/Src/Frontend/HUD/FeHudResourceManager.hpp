@@ -32,11 +32,11 @@ class HudResourceManager {
     void LoadRequiredResources(ePlayerHudType ht, const char *pkg_name);
     void UnloadRequiredResources(ePlayerHudType ht);
     bool AreResourcesLoaded(ePlayerHudType ht);
-    char *const GetHudTexPackFilename(ePlayerHudType ht);
+    const char *GetHudTexPackFilename(ePlayerHudType ht);
     static CarPart *GetCarPart(ePlayerHudType ht, CAR_SLOT_ID carSlotId);
     static int GetCustomHudColour(ePlayerHudType ht, CAR_SLOT_ID carSlotId);
     static bool GetCustomHudTexPackFilename(ePlayerHudType ht, char *const hudTexturePackName);
-    static char *const GetHudFengName(ePlayerHudType ht);
+    static const char *GetHudFengName(ePlayerHudType ht);
     static void ChooseLoadableTextures(ePlayerHudType hudType, int &textureHash, float &redlineRotation);
     static bool ChooseMinimapTextureName(ePlayerHudType hudType, char *texture_name, uint32 texture_name_size, char *minimap_texture_name,
                                          uint32 minimap_texture_name_size);

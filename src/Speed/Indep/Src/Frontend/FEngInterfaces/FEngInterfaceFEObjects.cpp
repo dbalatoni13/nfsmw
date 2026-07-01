@@ -37,7 +37,7 @@ FEGroup *FEngFindGroup(const char *pkg_name, unsigned int obj_hash) {
 void FEngSetInvisible(FEObject *obj) {
     if (obj != nullptr) {
         obj->Flags |= 1;
-        obj->Flags |= 0x2400000;
+        obj->Flags |= FF_DirtyCode | FF_Dirty;
         if (obj->Type == FE_Group) {
             FEGroup *group = static_cast<FEGroup *>(obj);
             FEObject *child = group->GetFirstChild();
@@ -52,7 +52,7 @@ void FEngSetInvisible(FEObject *obj) {
 
 void FEngSetVisible(FEObject *obj) {
     if (obj != nullptr && !(obj->Flags & 8)) {
-        obj->Flags = (obj->Flags & ~1) | 0x2400000;
+        obj->Flags = (obj->Flags & ~1) | FF_DirtyCode | FF_Dirty;
         if (obj->Type == FE_Group) {
             FEGroup *group = static_cast<FEGroup *>(obj);
             FEObject *child = group->GetFirstChild();
@@ -164,7 +164,7 @@ void FEngSetMultiImageRot(FEMultiImage *image, float angle_degrees) {
     }
     FEMultiImageData *image_data = static_cast<FEMultiImageData *>(image->GetObjData());
     image_data->PivotRot.z = angle_degrees;
-    image->Flags |= 0x400000;
+    image->Flags |= FF_DirtyCode;
 }
 
 void FEngSetMultiImageBottomRightUVs(FEMultiImage *image, FEVector2 &bottomRightUVs, int textureNumber) {
@@ -173,7 +173,7 @@ void FEngSetMultiImageBottomRightUVs(FEMultiImage *image, FEVector2 &bottomRight
         FEVector2 currBottomRightUVs;
         image->GetUVs(textureNumber, currTopLeftUVs, currBottomRightUVs);
         image->SetUVs(textureNumber, currTopLeftUVs, bottomRightUVs);
-        image->Flags |= 0x400000;
+        image->Flags |= FF_DirtyCode;
     }
 }
 
@@ -510,7 +510,7 @@ void FEngSetScaleX(FEObject *object, float x) {
 
     const float SizeEpsilon = 0.001f;
     if (scale + SizeEpsilon < size || scale - SizeEpsilon > size) {
-        object->Flags |= 0x400000;
+        object->Flags |= FF_DirtyCode;
     }
 }
 
@@ -539,7 +539,7 @@ void FEngSetScaleY(FEObject *object, float y) {
 
     const float SizeEpsilon = 0.001f;
     if (scale + SizeEpsilon < size || scale - SizeEpsilon > size) {
-        object->Flags |= 0x400000;
+        object->Flags |= FF_DirtyCode;
     }
 }
 
@@ -606,7 +606,7 @@ void FEngSetSize(FEObject *object, float x, float y) {
 
     data->Size.x = x;
     data->Size.y = y;
-    object->Flags |= 0x400000;
+    object->Flags |= FF_DirtyCode;
 }
 
 void FEngGetBottomRightUV(FEImage *img, float &u, float &v) {
@@ -622,7 +622,7 @@ void FEngSetBottomRightUV(FEImage *img, float u, float v) {
         TextureInfo *pTex = GetTextureInfo(img->Handle, 1, 0);
         img->GetImageData()->LowerRight.x = u / static_cast<float>(pTex->Width);
         img->GetImageData()->LowerRight.y = v / static_cast<float>(pTex->Height);
-        img->Flags |= 0x400000;
+        img->Flags |= FF_DirtyCode;
     }
 }
 

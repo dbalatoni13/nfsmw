@@ -209,7 +209,7 @@ void FEKeyboard::Initialize() {
     FEngSetLanguageHash(GetPackageName(), 0x42ADB44C, 0x7F042BCD);
 
     mpInputString->string = mDisplayString;
-    mpInputString->Flags |= 0x400000;
+    mpInputString->Flags |= FF_DirtyCode;
 
     mnCursorIndex = bStrLen(mString);
     KeyboardActive = true;
@@ -237,9 +237,9 @@ void FEKeyboard::UpdateVisuals() {
             bMemSet(bla, 0, 0x20);
             bla[0] = static_cast<short>(ch);
             mpKeyName[i]->string = bla;
-            mpKeyName[i]->Flags |= 0x400000;
+            mpKeyName[i]->Flags |= FF_DirtyCode;
             mpKeyNameShadow[i]->string = bla;
-            mpKeyNameShadow[i]->Flags |= 0x400000;
+            mpKeyNameShadow[i]->Flags |= FF_DirtyCode;
         } else {
             FEPrintf(mpKeyName[i], "%c", ch);
             FEPrintf(mpKeyNameShadow[i], "%c", ch);

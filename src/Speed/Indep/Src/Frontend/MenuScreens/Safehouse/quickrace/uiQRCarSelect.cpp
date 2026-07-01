@@ -4,9 +4,12 @@
 #include "Speed/Indep/Src/Frontend/Careers/UnlockSystem.hpp"
 #include "Speed/Indep/Src/Frontend/FEngFrontend.hpp"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
-#include "Speed/Indep/Src/Frontend/MenuScreens/MemCard/uiMemcard.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEImages.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/feWidget.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/MemCard/uiMemcardInterface.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/FEPkg_GarageMain.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiQRBrief.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiShowcase.hpp"
 #include "Speed/Indep/Src/Physics/PhysicsInfo.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/feDialogBox.hpp"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
@@ -14,45 +17,19 @@
 #include "Speed/Indep/Src/Frontend/MemoryCard/MemoryCard.hpp"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/frontend.h"
 #include "Speed/Indep/Src/Frontend/RaceStarter.hpp"
+#include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 
-extern void eLoadStreamingTexture(unsigned int *textures, int count, void (*callback)(unsigned int), void *user, int priority);
-extern void eUnloadStreamingTexture(unsigned int *textures, int count);
-// extern int GetMikeMannBuild();
-extern FEMarkerManager TheFEMarkerManager;
-extern int CheatImpounded;
+extern int g_MaximumMaximumTimesBusted;
+
 extern int CheatBustedCount;
 extern int CheatMaxBusted;
-extern int CheatReleasable;
-extern int CheatCanAddImpoundBox;
-extern int CheatReleaseFromImpoundMarker;
-extern int g_MaximumMaximumTimesBusted;
+extern bool CheatImpounded;
+extern bool CheatCanAddImpoundBox;
+extern bool CheatReleaseFromImpoundMarker;
+extern bool CheatReleasable;
 extern int gPlayerNum;
 
-// extern void LoadOneTexture(const char *pkg_name, unsigned int hash, void (*callback)(unsigned int), unsigned int param);
-// extern bool GetIsCollectorsEdition();
-// extern FEImage *FEngFindImage(const char *pkg, int hash);
-// extern void FEngSetTextureHash(FEImage *img, unsigned int hash);
-// extern void FEngSetScript(const char *pkg, unsigned int obj_hash, unsigned int script_hash, bool p);
-// extern bool FEngIsScriptSet(const char *pkg, unsigned int obj_hash, unsigned int script_hash);
-// extern void FEngSetLanguageHash(const char *pkg, unsigned int obj_hash, unsigned int lang_hash);
-// extern unsigned int FEngHashString(const char *fmt, ...);
-
-extern Timer RealTimer;
-extern int Showcase_FromIndex;
-extern const char *Showcase_FromPackage;
-extern unsigned int Showcase_FromArgs;
-extern int Showcase_FromFilter;
-
-extern int bSNPrintf(char *buf, int size, const char *fmt, ...);
-extern const char *GetLocalizedString(unsigned int hash);
-extern unsigned long FEHashUpper(const char *str);
-extern FEObject *FEngFindObject(const char *pkg_name, unsigned int obj_hash);
-extern void FEngSetInvisible(FEObject *obj);
-
-// void MemcardEnter(const char *from, const char *to, unsigned int op, void (*pTermFunc)(void *), void *pTermFuncParam, unsigned int msgSuccess,
-//                   unsigned int msgFailed);
-
-unsigned int UIQRCarSelect::ForceCar;
+uint32 UIQRCarSelect::ForceCar;
 bool QRCarSelectBustedManager::bPlayerJustGotBusted;
 
 QRCarSelectBustedManager::QRCarSelectBustedManager(const char *pkg_name, int flags) {
@@ -66,24 +43,20 @@ QRCarSelectBustedManager::QRCarSelectBustedManager(const char *pkg_name, int fla
 
 QRCarSelectBustedManager::~QRCarSelectBustedManager() {
     if (ImpoundStampHash) {
-        unsigned int hash = ImpoundStampHash;
-        eUnloadStreamingTexture(&hash, 1);
+        eUnloadStreamingTexture(ImpoundStampHash);
         ImpoundStampHash = 0;
     }
 }
 
 bool QRCarSelectBustedManager::IsImpoundInfoVisible() {
-    unsigned int mode = FEDatabase->GetGameMode();
-    if (!(mode & 1))
-        return false;
-    return !(mode & 0x8000);
+    return FEDatabase->IsCareerMode() && !FEDatabase->IsCarLotMode();
 }
 
 bool QRCarSelectBustedManager::ShowImpoundedTexture() {
     return WorkingCareerRecord->TheImpoundData.IsImpounded();
 }
 
-void QRCarSelectBustedManager::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
+void QRCarSelectBustedManager::NotificationMessage(u32 msg, FEObject *pobj, u32 param1, u32 param2) {
     switch (msg) {
         case 0x8defa48b:
             TheFEMarkerManager.UtilizeMarker(FEMarkerManager::MARKER_ADD_IMPOUND_BOX, 0);
@@ -112,7 +85,7 @@ void QRCarSelectBustedManager::NotificationMessage(unsigned long msg, FEObject *
             if (!CalcGameOver())
                 return;
             FEDatabase->GetCareerSettings()->SetGameOver();
-            DialogInterface::ShowOneButton(ParentPkg, "GameOver.fng", static_cast<eDialogTitle>(1), 0x417b2601, 0x3fdc64c1, 0x164bed94);
+            DialogInterface::ShowOneButton(ParentPkg, "GameOver.fng", dialog_alert, 0x417b2601, 0x3fdc64c1, 0x164bed94);
             return;
         default:
             return;
@@ -138,56 +111,52 @@ void QRCarSelectBustedManager::TextureLoadedCallback() {
 }
 
 void QRCarSelectBustedManager::LoadImpoundTexture() {
-    int lang = GetCurrentLanguage();
-    unsigned int hash;
-    switch (lang) {
+    switch (GetCurrentLanguage()) {
         case 1:
-            hash = 0xce184740;
+            ImpoundStampHash = 0xce184740;
             break;
         case 2:
-            hash = 0xce1849e1;
+            ImpoundStampHash = 0xce1849e1;
             break;
         case 3:
-            hash = 0xce185441;
+            ImpoundStampHash = 0xce185441;
             break;
         case 4:
-            hash = 0xce187e47;
+            ImpoundStampHash = 0xce187e47;
             break;
         case 5:
-            hash = 0xce183f30;
+            ImpoundStampHash = 0xce183f30;
             break;
         case 6:
-            hash = 0xce187f32;
+            ImpoundStampHash = 0xce187f32;
             break;
         case 7:
-            hash = 0xce183c96;
+            ImpoundStampHash = 0xce183c96;
             break;
         case 8:
-            hash = 0xce185c2f;
+            ImpoundStampHash = 0xce185c2f;
             break;
         case 9:
-            hash = 0xce183937;
+            ImpoundStampHash = 0xce183937;
             break;
         case 10:
-            hash = 0xce18561e;
+            ImpoundStampHash = 0xce18561e;
             break;
         case 11:
-            hash = 0xce188180;
+            ImpoundStampHash = 0xce188180;
             break;
         case 12:
-            hash = 0xce18716e;
+            ImpoundStampHash = 0xce18716e;
             break;
         case 13:
-            hash = 0xce184620;
+            ImpoundStampHash = 0xce184620;
             break;
         default:
-            hash = 0xce18427d;
+            ImpoundStampHash = 0xce18427d;
             break;
     }
-    ImpoundStampHash = hash;
-    unsigned int texArray[1];
-    texArray[0] = ImpoundStampHash;
-    eLoadStreamingTexture(texArray, 1, TextureLoadedCallbackAccessor, reinterpret_cast<void *>(this), 0);
+
+    eLoadStreamingTexture(ImpoundStampHash, TextureLoadedCallbackAccessor, reinterpret_cast<uint32>(this), 0);
 }
 
 void QRCarSelectBustedManager::SetSelectedCar(FECarRecord *record) {
@@ -275,10 +244,9 @@ void QRCarSelectBustedManager::RefreshHeader() {
             }
         }
     } else {
-        signed char impState = WorkingCareerRecord->TheImpoundData.ImpoundedState;
-        if (impState == 4) {
+        if (WorkingCareerRecord->TheImpoundData.IsReleasable()) {
             FEngSetInvisible(FEngFindObject(ParentPkg, 0x75721326));
-        } else if (impState != 0) {
+        } else if (WorkingCareerRecord->TheImpoundData.IsImpounded()) {
             FEngSetInvisible(FEngFindObject(ParentPkg, 0x75721326));
         } else {
             bNotImpounded = true;
@@ -321,7 +289,7 @@ void QRCarSelectBustedManager::MaybeReleaseCar() {
             DialogInterface::ShowTwoButtons(ParentPkg, "", dialog_confirmation, 0x417b2601, 0x1a294dad, 0xe845bc1c, 0xcad5722e, 0x5ee58948,
                                             first_dialog_button2, 0xb715ae8f);
         } else {
-            DialogInterface::ShowOneButton(ParentPkg, "", static_cast<eDialogTitle>(1), 0x417b2601, 0x5ee58948, 0xe96fa0c5);
+            DialogInterface::ShowOneButton(ParentPkg, "", dialog_alert, 0x417b2601, 0x5ee58948, 0xe96fa0c5);
         }
     }
 }
@@ -335,10 +303,10 @@ void QRCarSelectBustedManager::MaybeAddImpoundBox() {
     }
     bool showDialog = canAdd || CheatCanAddImpoundBox != 0;
     if (showDialog) {
-        DialogInterface::ShowTwoButtons(ParentPkg, "", static_cast<eDialogTitle>(3), 0x417b2601, 0x1a294dad, 0x8defa48b, 0xb4edeb6d, 0xb4edeb6d,
+        DialogInterface::ShowTwoButtons(ParentPkg, "", dialog_confirmation, 0x417b2601, 0x1a294dad, 0x8defa48b, 0xb4edeb6d, 0xb4edeb6d,
                                         first_dialog_button2, 0xcebda20);
     } else if (g_MaximumMaximumTimesBusted <= static_cast<int>(WorkingCareerRecord->TheImpoundData.MaxBusted)) {
-        DialogInterface::ShowOneButton(ParentPkg, "", static_cast<eDialogTitle>(2), 0x417b2601, 0xb4edeb6d, 0xbcae8539);
+        DialogInterface::ShowOneButton(ParentPkg, "", dialog_info, 0x417b2601, 0xb4edeb6d, 0xbcae8539);
     }
 }
 
@@ -405,7 +373,7 @@ UIQRCarSelect::UIQRCarSelect(ScreenConstructorData *sd)
 
 UIQRCarSelect::~UIQRCarSelect() {}
 
-bool UIQRCarSelect::IsCarImpounded(unsigned int handle) {
+bool UIQRCarSelect::IsCarImpounded(uint32 handle) {
     FECarRecord *car = FEDatabase->GetPlayerCarStable(0)->GetCarRecordByHandle(handle);
     if (!car)
         return false;
@@ -421,7 +389,7 @@ void UIQRCarSelect::CommitChangeStartRace(bool allowError) {
     RaceStarter::StartRace();
 }
 
-void UIQRCarSelect::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
+void UIQRCarSelect::NotificationMessage(u32 msg, FEObject *pobj, u32 param1, u32 param2) {
     if (TheBustedManager.IsImpoundInfoVisible()) {
         TheBustedManager.NotificationMessage(msg, pobj, param1, param2);
     }
@@ -503,7 +471,7 @@ void UIQRCarSelect::NotificationMessage(unsigned long msg, FEObject *pobj, unsig
             FECarRecord *car = GetSelectedCarRecord();
             FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(0);
             unsigned int cost = car->GetCost();
-            FEDatabase->GetCareerSettings()->AddCash(static_cast<int>(cost >> 1));
+            FEDatabase->GetCareerSettings()->AwardCash(static_cast<int>(cost >> 1));
             FEPlayerCarDB *stable2 = FEDatabase->GetPlayerCarStable(iPlayerNum);
             stable2->DeleteCareerCar(pSelectedCar->mHandle, true);
             unsigned int old_handle = pSelectedCar->mHandle;
@@ -530,15 +498,15 @@ void UIQRCarSelect::NotificationMessage(unsigned long msg, FEObject *pobj, unsig
                 FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(iPlayerNum);
                 FECareerRecord *career = stable->GetCareerRecordByHandle(car->CareerHandle);
                 if (career->TheImpoundData.IsImpounded()) {
-                    DialogInterface::ShowOneButton(reinterpret_cast<MenuScreen *>(this)->GetPackageName(), "", static_cast<eDialogTitle>(1),
-                                                   0x417b2601, 0x34dc1bcf, 0x80e4f27c);
+                    DialogInterface::ShowOneButton(reinterpret_cast<MenuScreen *>(this)->GetPackageName(), "", dialog_alert, 0x417b2601, 0x34dc1bcf,
+                                                   0x80e4f27c);
                     return;
                 }
             }
             FEPlayerCarDB *stable2 = FEDatabase->GetPlayerCarStable(iPlayerNum);
             if (stable2->GetNumAvailableCareerCars() < 2) {
-                DialogInterface::ShowOneButton(reinterpret_cast<MenuScreen *>(this)->GetPackageName(), "", static_cast<eDialogTitle>(1), 0x417b2601,
-                                               0x34dc1bcf, 0x9a772bd6);
+                DialogInterface::ShowOneButton(reinterpret_cast<MenuScreen *>(this)->GetPackageName(), "", dialog_alert, 0x417b2601, 0x34dc1bcf,
+                                               0x9a772bd6);
                 return;
             }
             unsigned int cost = car->GetCost();
@@ -546,8 +514,8 @@ void UIQRCarSelect::NotificationMessage(unsigned long msg, FEObject *pobj, unsig
             char cost_str[16];
             bSNPrintf(cost_str, 0x10, "%d", cost >> 1);
             bSNPrintf(buf, 0x200, GetLocalizedString(0xb4a40135), cost_str);
-            DialogInterface::ShowTwoButtons(reinterpret_cast<MenuScreen *>(this)->GetPackageName(), "", static_cast<eDialogTitle>(1), 0x70e01038,
-                                            0x417b25e4, 0xa46253ba, 0x34dc1bcf, 0x34dc1bcf, static_cast<eDialogFirstButtons>(1), buf);
+            DialogInterface::ShowTwoButtons(reinterpret_cast<MenuScreen *>(this)->GetPackageName(), "", dialog_alert, 0x70e01038, 0x417b25e4,
+                                            0xa46253ba, 0x34dc1bcf, 0x34dc1bcf, first_dialog_button2, buf);
             return;
         }
         case 0xc519bfc3: {
@@ -573,9 +541,9 @@ void UIQRCarSelect::NotificationMessage(unsigned long msg, FEObject *pobj, unsig
             if (bShowcaseMode) {
                 FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(iPlayerNum);
                 FECarRecord *car = stable->GetCarRecordByHandle(pSelectedCar->mHandle);
-                Showcase_FromPackage = reinterpret_cast<MenuScreen *>(this)->GetPackageName();
+                Showcase::FromPackage = reinterpret_cast<MenuScreen *>(this)->GetPackageName();
                 ForceCar = pSelectedCar->mHandle;
-                Showcase_FromArgs = iPlayerNum;
+                Showcase::FromArgs = iPlayerNum;
                 cFEng::Get()->QueuePackageSwitch("Showcase.fng", reinterpret_cast<int>(car), 0, false);
                 return;
             }
@@ -718,29 +686,28 @@ void UIQRCarSelect::NotificationMessage(unsigned long msg, FEObject *pobj, unsig
             }
             if ((flags & 1) != 0) {
                 if ((flags & 0x8000) != 0) {
-                    if (MemoryCard::GetInstance()->m_bListingOldSaveFiles)
+                    if (MemoryCard::GetInstance()->IsListingOldSaveFiles())
                         return;
                     unsigned int cost = GetSelectedCarRecord()->GetCost();
                     if (cost > static_cast<unsigned int>(FEDatabase->GetCareerSettings()->GetCash())) {
-                        DialogInterface::ShowOneButton(reinterpret_cast<MenuScreen *>(this)->GetPackageName(), "", static_cast<eDialogTitle>(1),
-                                                       0x417b2601, 0x34dc1bcf, 0x40fa955d);
+                        DialogInterface::ShowOneButton(reinterpret_cast<MenuScreen *>(this)->GetPackageName(), "", dialog_alert, 0x417b2601,
+                                                       0x34dc1bcf, 0x40fa955d);
                         return;
                     }
                     FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(iPlayerNum);
                     if (stable->GetNumPurchasedCars() > 9) {
-                        DialogInterface::ShowOneButton(reinterpret_cast<MenuScreen *>(this)->GetPackageName(), "", static_cast<eDialogTitle>(1),
-                                                       0x417b2601, 0x34dc1bcf, 0x41030a1b);
+                        DialogInterface::ShowOneButton(reinterpret_cast<MenuScreen *>(this)->GetPackageName(), "", dialog_alert, 0x417b2601,
+                                                       0x34dc1bcf, 0x41030a1b);
                         return;
                     }
                     if (FEDatabase->GetCareerSettings()->GetCurrentBin() > 15) {
-                        DialogInterface::ShowTwoButtons(reinterpret_cast<MenuScreen *>(this)->GetPackageName(), "", static_cast<eDialogTitle>(1),
-                                                        0x70e01038, 0x417b25e4, 0xd05fc3a3, 0x34dc1bcf, 0x34dc1bcf,
-                                                        static_cast<eDialogFirstButtons>(1), 0x74317cbc);
+                        DialogInterface::ShowTwoButtons(reinterpret_cast<MenuScreen *>(this)->GetPackageName(), "", dialog_alert, 0x70e01038,
+                                                        0x417b25e4, 0xd05fc3a3, 0x34dc1bcf, 0x34dc1bcf, first_dialog_button2, 0x74317cbc);
                         return;
                     }
-                    DialogInterface::ShowThreeButtons(reinterpret_cast<MenuScreen *>(this)->GetPackageName(), "", static_cast<eDialogTitle>(1),
-                                                      0x5b9d89d0, 0x889d822e, 0x1a294dad, 0xd05fc3a3, 0xb1ee867d, 0x34dc1bcf, 0x34dc1bcf,
-                                                      static_cast<eDialogFirstButtons>(2), 0x8c451eba);
+                    DialogInterface::ShowThreeButtons(reinterpret_cast<MenuScreen *>(this)->GetPackageName(), "", dialog_alert, 0x5b9d89d0,
+                                                      0x889d822e, 0x1a294dad, 0xd05fc3a3, 0xb1ee867d, 0x34dc1bcf, 0x34dc1bcf, first_dialog_button3,
+                                                      0x8c451eba);
                     return;
                 }
                 FEPlayerCarDB *stable2 = FEDatabase->GetPlayerCarStable(0);
@@ -794,7 +761,7 @@ void UIQRCarSelect::NotificationMessage(unsigned long msg, FEObject *pobj, unsig
                 FECarRecord *car = stable->GetCarRecordByHandle(originalCar);
                 FECareerRecord *career = stable->GetCareerRecordByHandle(car->CareerHandle);
                 if (career->TheImpoundData.IsImpounded() || career->TheImpoundData.ImpoundedState == FEImpoundData::IMPOUND_RELEASED) {
-                    DialogInterface::ShowOk(reinterpret_cast<MenuScreen *>(this)->GetPackageName(), "", static_cast<eDialogTitle>(1), 0x630931b6);
+                    DialogInterface::ShowOk(reinterpret_cast<MenuScreen *>(this)->GetPackageName(), "", dialog_alert, 0x630931b6);
                     bShouldProceed = false;
                 }
             } else {
@@ -1347,7 +1314,7 @@ void UIQRCarSelect::RefreshHeader() {
 }
 
 void UIQRCarSelect::ChooseTransmission() {
-    DialogInterface::ShowTwoButtons(reinterpret_cast<MenuScreen *>(this)->GetPackageName(), "", static_cast<eDialogTitle>(3), 0x317d3005, 0x8cd532a0,
+    DialogInterface::ShowTwoButtons(reinterpret_cast<MenuScreen *>(this)->GetPackageName(), "", dialog_confirmation, 0x317d3005, 0x8cd532a0,
                                     0x5f5e3886, 0x1a2826e1, 0x34dc1bcf,
                                     (eDialogFirstButtons)(FEDatabase->GetPlayerSettings(iPlayerNum)->Transmission == 0), 0x6f5401d1);
 }
@@ -1540,16 +1507,40 @@ void UIQRCarSelect::ScrollCars(eScrollDir dir) {
     }
 }
 
+// UNSOLVED
 void UIQRCarSelect::ScrollLists(eScrollDir dir) {
-    if (dir == eSD_NEXT) {
-        filter++;
-        if (filter >= NUM_LISTS)
-            filter = 0;
-    } else {
-        filter--;
-        if (filter < 0)
-            filter = NUM_LISTS - 1;
+    if (FEDatabase->IsCareerMode()) {
+        return;
     }
+    if (FEDatabase->IsCustomizeMode()) {
+        return;
+    }
+
+    uint32 region = this->filter;
+    uint32 list = region & 0xffff;
+
+    if (GetMikeMannBuild() == 2) {
+        if (list == 1) {
+            list = 4;
+        } else if (list == 4) {
+            list = 16;
+        }
+    } else if (dir == eSD_PREV) {
+        if (list == 1) {
+            list = 8;
+        } else {
+            list = list / 2;
+        }
+    } else if (dir == eSD_NEXT) {
+        if (list != 8) {
+            list = list * 2;
+        }
+    } else {
+        list = 1;
+    }
+
+    filter = (region & 0xffff0000) | list;
+
     RefreshCarList();
     RefreshHeader();
 }

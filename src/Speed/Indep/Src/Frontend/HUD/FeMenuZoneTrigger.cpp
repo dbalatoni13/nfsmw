@@ -1,7 +1,7 @@
 #include "Speed/Indep/Src/Frontend/HUD/FeMenuZoneTrigger.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
-#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/customize/CustomizeTypes.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEImages.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/customize/FECustomize.hpp"
 #include "Speed/Indep/Src/Gameplay/GActivity.h"
@@ -152,7 +152,7 @@ void MenuZoneTrigger::PulseDPadButton(ENGAGE_DPAD_ELEMENT_DIRECTION direction, F
     if (iconToShow && !FEngIsScriptSet(iconToShow, 0x5079C8F8) && !FEngIsScriptSet(iconToShow, 0x280164F)) {
         FEngSetScript(iconToShow, 0x5079C8F8, true);
     }
-    if (direction == ENGAGE_DPAD_ELEMENT_NONE) {
+    if (direction == ENGAGE_DPAD_ELEMENT_UP) {
         if (!FEngIsScriptSet(mEngageMechanic, 0x5079C8F8)) {
             FEngSetScript(mEngageMechanic, 0x5079C8F8, true);
             g_pEAXSound->PlayUISoundFX(static_cast<eMenuSoundTriggers>(0x13));

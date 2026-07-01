@@ -1,20 +1,11 @@
 #include "feArrayScrollerMenu.hpp"
 
+#include "Speed/Indep/Src/Frontend/FEngFrontend.hpp"
+#include "Speed/Indep/Src/Frontend/FEngHashes/FEHash_FeBonusCards.hpp"
+#include "Speed/Indep/Src/Frontend/FEngHashes/SoundHashes.hpp"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
-
-extern void FEngSetTextureHash(FEImage *image, unsigned int hash);
-extern void FEngSetVisible(FEObject *object);
-extern void FEngSetInvisible(FEObject *object);
-extern bool FEngIsScriptSet(FEObject *object, unsigned int hash);
-extern void FEngSetScript(FEObject *object, unsigned int hash, bool play);
-extern unsigned long FEHashUpper(const char *string);
-extern FEObject *FEngFindObject(const char *pkg_name, unsigned int obj_hash);
-extern void FEngSetLanguageHash(const char *pkg_name, unsigned int obj_hash, unsigned int language);
-extern void FEngSetCurrentButton(const char *pkg_name, unsigned int hash);
-
-// ============================================================
-// ArrayScripts
-// ============================================================
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEImages.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/feWidget.hpp"
 
 ArrayScripts::ArrayScripts() {
     SetNormalHash(FEHashUpper("INIT"));
@@ -23,13 +14,8 @@ ArrayScripts::ArrayScripts() {
     SetUnHighlightHash(FEHashUpper("UNHIGHLIGHT"));
 }
 
-// ============================================================
-// ArraySlot
-// ============================================================
-
 ArraySlot::ArraySlot(FEObject *obj)
-    : FEngObject(obj) //
-      ,
+    : FEngObject(obj), //
       scripts(nullptr) {}
 
 void ArraySlot::Update(ArrayDatum *datum, bool isSelected) {
@@ -59,10 +45,6 @@ void ArraySlot::Update(ArrayDatum *datum, bool isSelected) {
     }
 }
 
-// ============================================================
-// ImageArraySlot
-// ============================================================
-
 ImageArraySlot::ImageArraySlot(FEImage *img) : ArraySlot(static_cast<FEObject *>(static_cast<void *>(img))) {}
 
 void ImageArraySlot::SetTexture(unsigned int tex_hash) {
@@ -76,56 +58,30 @@ void ImageArraySlot::Update(ArrayDatum *datum, bool isSelected) {
     }
 }
 
-// ============================================================
-// ArrayDatum
-// ============================================================
-
 ArrayDatum::ArrayDatum(uint32 h, uint32 d)
-    : hash(h) //
-      ,
-      desc(d) //
-      ,
-      enabled(true) //
-      ,
-      greyedOut(false) //
-      ,
-      locked(false) //
-      ,
+    : hash(h),          //
+      desc(d),          //
+      enabled(true),    //
+      greyedOut(false), //
+      locked(false),    //
       checked(false) {}
 
-// ============================================================
-// ArrayScroller
-// ============================================================
-
 ArrayScroller::ArrayScroller(const char *name, int w, int h, bool selectable)
-    : bShouldPlaySound(false) //
-      ,
-      currentDatum(nullptr) //
-      ,
-      startDatum(0) //
-      ,
-      width(w) //
-      ,
-      height(h) //
-      ,
-      descLabel(0) //
-      ,
-      pkg_name(name) //
-      ,
-      pScrollRegion(nullptr) //
-      ,
-      bSelectableArray(selectable) //
-      ,
-      mouseDownMsg(0) //
-      ,
-      bInClickToSelectMode(false) //
-{
-    ScrollBar.~FEScrollBar();
-    new (&ScrollBar) FEScrollBar(name, "scrollbar", true, true, false);
-    scripts.~ArrayScripts();
-    new (&scripts) ArrayScripts();
+    : bShouldPlaySound(false),                         //
+      currentDatum(nullptr),                           //
+      startDatum(0),                                   //
+      width(w),                                        //
+      height(h),                                       //
+      descLabel(0),                                    //
+      pkg_name(name),                                  //
+      pScrollRegion(nullptr),                          //
+      bSelectableArray(selectable),                    //
+      mouseDownMsg(0),                                 //
+      bInClickToSelectMode(false),                     //
+      ScrollBar(name, "scrollbar", true, true, false), //
+      scripts() {
     pScrollRegion = FEngFindObject(name, FEHashUpper("ARRAY_SCROLL_REGION"));
-    pkg = cFEng::mInstance->FindPackage(name);
+    pkg = cFEng::Get()->FindPackage(name);
 }
 
 void ArrayScroller::RefreshHeader() {
@@ -149,7 +105,7 @@ void ArrayScroller::AddSlot(ArraySlot *slot) {
 void ArrayScroller::AddDatum(ArrayDatum *datum) {
     data.AddTail(datum);
     if (!currentDatum) {
-        currentDatum = datum;
+        SetSelection(datum, 0);
     }
 }
 
@@ -350,26 +306,21 @@ void ArrayScroller::NotificationMessage(u32 msg, FEObject *pObj, u32 param1, u32
     if (currentDatum) {
         currentDatum->NotificationMessage(msg, pObj, param1, param2);
     }
-    if (msg == 0x9120409E) {
+    if (msg == __PAD_LEFT__) {
         ScrollHor(eSD_PREV);
-    } else if (msg == 0x72619778) {
+    } else if (msg == __PAD_UP__) {
         ScrollVer(eSD_PREV);
-    } else if (msg == 0x911C0A4B) {
+    } else if (msg == __PAD_DOWN__) {
         ScrollVer(eSD_NEXT);
-    } else if (msg == 0x9803F6E2) {
+    } else if (msg == FEMSG_MOUSE_CHANGED) {
         UpdateMouse();
-    } else if (msg == 0xB5971BF1) {
+    } else if (msg == __PAD_RIGHT__) {
         ScrollHor(eSD_NEXT);
     }
 }
 
-// ============================================================
-// ArrayScrollerMenu
-// ============================================================
-
 ArrayScrollerMenu::ArrayScrollerMenu(ScreenConstructorData *sd, int w, int h, bool selectable)
-    : MenuScreen(sd) //
-      ,
+    : MenuScreen(sd),                                      //
       ArrayScroller(sd->PackageFilename, w, h, selectable) //
 {}
 
@@ -378,10 +329,10 @@ void ArrayScrollerMenu::NotificationMessage(u32 msg, FEObject *pObj, u32 param1,
 }
 
 eMenuSoundTriggers ArrayScrollerMenu::NotifySoundMessage(u32 msg, eMenuSoundTriggers maybe) {
-    if (msg == 0x9120409E || msg == 0xB5971BF1 || msg == 0x911C0A4B || msg == 0x72619778 || msg == 0x480DF13F || msg == 0xB205316C ||
-        msg == 0x48122792 || msg == 0x4AC5E165) {
+    if (msg == __PAD_LEFT__ || msg == __PAD_RIGHT__ || msg == __PAD_DOWN__ || msg == __PAD_UP__ || msg == FEHASH_SOUND_DOWN ||
+        msg == FEHASH_SOUND_UP || msg == FEHASH_SOUND_LEFT || msg == FEHASH_SOUND_RIGHT) {
         if (!bShouldPlaySound) {
-            maybe = static_cast<eMenuSoundTriggers>(-1);
+            maybe = UISND_NONE;
         }
         bShouldPlaySound = false;
     }

@@ -24,11 +24,18 @@ typedef enum {
     Num_BaseFETracks = 11
 } FEKeyTrack_Indices;
 
+static const u32 FEHash_Init = 0x1744b3; // size: 0x4, Decl: speed/indep/src/feng/FEScript.h:50
+
+static const u32 SF_ActionMask = 3; // size: 0x4, Decl: speed/indep/src/feng/FEScript.h:53
+static const u32 SF_PlayOnce = 0;   // size: 0x4, Decl: speed/indep/src/feng/FEScript.h:54
+static const u32 SF_PlayLoop = 1;   // size: 0x4, Decl: speed/indep/src/feng/FEScript.h:55
+static const u32 SF_PingPong = 2;   // size: 0x4, Decl: speed/indep/src/feng/FEScript.h:56
+
 // total size: 0x34
 // Decl: speed/indep/src/feng/FEScript.h:68
 class FEScript : public FEMinNode {
   private:
-    static struct ObjectPool<FEScript, 32> NodePool; // size: 0x10, address: 0x80473DFC, Decl: speed/indep/src/feng/FEScript.cpp:27
+    static ObjectPool<FEScript, 32> NodePool; // size: 0x10, address: 0x80473DFC, Decl: speed/indep/src/feng/FEScript.cpp:27
 
   public:
     i32 Length;          // offset 0xC, size 0x4, Decl: speed/indep/src/feng/FEScript.h:73

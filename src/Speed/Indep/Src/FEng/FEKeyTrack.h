@@ -3,7 +3,13 @@
 
 #include "FEGenericVal.h"
 #include "FERefList.h"
+#include "Speed/Indep/Src/FEng/FEList.h"
 #include "Speed/Indep/Src/FEng/ObjectPool.h"
+
+// Decl: d:/eax-build1-s04-ps3/carbon/branches/leadplat/speed/indep/src/feng/FEKeyTrack.h:51
+inline i32 FEFramesToTicks(i32 Frames) {
+    return Frames * 16;
+}
 
 // File: speed/indep/src/feng/FEKeyTrack.h
 // total size: 0x14
@@ -32,12 +38,12 @@ class FEKeyNode : public FEMinNode {
 
   private:
     void Init() { // Decl: speed/indep/src/feng/FEKeyTrack.h:74
-        next = reinterpret_cast<FEMinNode *>(LIST_MAGIC);
-        prev = reinterpret_cast<FEMinNode *>(LIST_MAGIC);
     }
 
   public:
-    FEKeyNode() {} // Decl: speed/indep/src/feng/FEKeyTrack.h:77
+    FEKeyNode() { // Decl: speed/indep/src/feng/FEKeyTrack.h:77
+        Init();
+    }
 
     // TODO: this is definitely FEKeyData
     i32 tTime;        // offset 0xC, size 0x4, Decl: speed/indep/src/feng/FEKeyTrack.h:85
@@ -99,15 +105,8 @@ class FEKeyTrack {
     }
 
     void BreakReference(); // Decl: speed/indep/src/feng/FEKeyTrack.h:147
-
-    FEKeyTrack() { // Decl: speed/indep/src/feng/FEKeyTrack.h:149
-        ParamType = 0;
-        ParamSize = 0;
-        InterpType = 0;
-        InterpAction = 0;
-        Length = 0;
-        LongOffset = 0;
-    }
+                           // Decl: speed/indep/src/feng/FEKeyTrack.h:149
+    FEKeyTrack() : ParamType(0), ParamSize(0), InterpType(0), InterpAction(0), Length(0), LongOffset(0), BaseKey(), DeltaKeys() {}
     ~FEKeyTrack() {}
 
     bool SetKeyValueAt(i32 tTime, i32 &Val);

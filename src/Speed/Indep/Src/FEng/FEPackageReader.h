@@ -25,19 +25,19 @@ class FETag {
     }
 
     u8 *Data() { // Decl: speed/indep/src/feng/FEPackageReader.h:40
-        return reinterpret_cast<unsigned char *>(this) + 4;
+        return reinterpret_cast<u8 *>(this) + 4;
     }
     u32 Getu32(u32 Index) {
         return FEngGetu32(reinterpret_cast<u32 *>(Data())[Index]);
     }
     i32 Geti32(u32 Index) {
-        return reinterpret_cast<i32 *>(Data())[Index];
+        return FEngGeti32(reinterpret_cast<i32 *>(Data())[Index]);
     }
     u16 Getu16(u32 Index) {
-        return reinterpret_cast<u16 *>(Data())[Index];
+        return FEngGetu16(reinterpret_cast<u16 *>(Data())[Index]);
     }
     i16 Geti16(u32 Index) {
-        return reinterpret_cast<i16 *>(Data())[Index];
+        return FEngGeti16(reinterpret_cast<i16 *>(Data())[Index]);
     }
     f32 Getf32(u32 Index) {
         return FEngGetf32(reinterpret_cast<f32 *>(Data())[Index]);

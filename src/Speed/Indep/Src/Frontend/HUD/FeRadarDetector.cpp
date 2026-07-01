@@ -14,22 +14,14 @@ extern float TWK_RadarDetectorMinThreshold;
 float RadarDetector::mStaticRange;
 
 RadarDetector::RadarDetector(UTL::COM::Object *pOutter, const char *pkg_name, int player_number)
-    : HudElement(pkg_name, 0x200000) //
-      ,
-      IRadarDetector(pOutter) //
-      ,
-      mRange(0.0f) //
-      ,
-      mDirection(0.0f) //
-      ,
-      mTargetType(RADAR_TARGET_NONE) //
-      ,
-      mCurrLedAmountShowing(0.3f) //
-      ,
-      mInPursuit(false) //
-      ,
-      mIsCoolingDown(false) //
-      ,
+    : HudElement(pkg_name, 0x200000), //
+      IRadarDetector(pOutter),        //
+      mRange(0.0f),                   //
+      mDirection(0.0f),               //
+      mTargetType(RADAR_TARGET_NONE), //
+      mCurrLedAmountShowing(0.3f),    //
+      mInPursuit(false),              //
+      mIsCoolingDown(false),          //
       mTimeCycleStarted(0) {
     mpDataRadarDetectorGroup = RegisterGroup(0x062743f5);
     mpDataRadarDetectorLightsLeft = FEngFindObject(pkg_name, 0x69aa01e7);

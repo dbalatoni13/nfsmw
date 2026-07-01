@@ -2,45 +2,36 @@
 #include "Speed/Indep/Src/FEng/FETypeNode.h"
 #include "Speed/Indep/Src/FEng/FETypes.h"
 #include "Speed/Indep/Src/FEng/FEngStandard.h"
+#include "Speed/Indep/bWare/Inc/bPrintf.hpp"
 
-extern int bSPrintf(char *buf, const char *fmt, ...);
-
-static const char *FEColor1Name = "Top Left";
-static const char *FEColor2Name = "Top Right";
-static const char *FEColor3Name = "Bottom Right";
-static const char *FEColor4Name = "Bottom Left";
-static const char *FEFrameNumName = "Frame Number";
+static const char *FEColor1Name = "Top Left";       // size: 0x4, address: 0x8041D160, Decl: speed/indep/src/feng/FETypeLib.cpp:23
+static const char *FEColor2Name = "Top Right";      // size: 0x4, address: 0x8041D164, Decl: speed/indep/src/feng/FETypeLib.cpp:24
+static const char *FEColor3Name = "Bottom Right";   // size: 0x4, address: 0x8041D168, Decl: speed/indep/src/feng/FETypeLib.cpp:25
+static const char *FEColor4Name = "Bottom Left";    // size: 0x4, address: 0x8041D16C, Decl: speed/indep/src/feng/FETypeLib.cpp:26
+static const char *FEFrameNumName = "Frame Number"; // size: 0x4, address: 0x8041D170, Decl: speed/indep/src/feng/FETypeLib.cpp:27
 
 FETypeNode *FETypeLib::CreateBaseObjectType(const char *pName) {
-    FEVector3 ZeroVect;
-    FEVector3 SizeVect;
+    FETypeNode *pType;
+    FEFieldNode *pField;
+    FEVector3 ZeroVect, SizeVect;
     FEQuaternion ZeroQuat;
     FEColor White;
 
-    FETypeNode *pType = FNEW FETypeNode();
+    pType = FNEW FETypeNode();
     pType->SetName(pName);
 
-    pType->AddField("Color", 6);
-    pType->AddField("Pivot", 4);
-    pType->AddField("Position", 4);
-    pType->AddField("Rotation", 5);
-    pType->AddField("Size", 4);
+    pType->AddField("Color", PT_Color);
+    pType->AddField("Pivot", PT_Vector3);
+    pType->AddField("Position", PT_Vector3);
+    pType->AddField("Rotation", PT_Quaternion);
+    pType->AddField("Size", PT_Vector3);
 
-    ZeroVect.x = 0.0f;
-    ZeroVect.y = 0.0f;
-    ZeroVect.z = 0.0f;
-
-    SizeVect.x = 1.0f;
-    SizeVect.y = 1.0f;
-    SizeVect.z = 1.0f;
-
-    ZeroQuat.x = 0.0f;
-    ZeroQuat.y = 0.0f;
-    ZeroQuat.z = 0.0f;
-    ZeroQuat.w = 1.0f;
+    ZeroVect.x = ZeroVect.y = ZeroVect.z = 0.0f;
+    ZeroQuat.x = ZeroQuat.y = ZeroQuat.z = 0.0f;
+    SizeVect.x = SizeVect.y = SizeVect.z = ZeroQuat.w = 1.0f;
 
     White = FEColor(0xFFFFFFFF);
-    FEFieldNode *pField = pType->GetFirstField();
+    pField = pType->GetFirstField();
     pField->SetDefault(&White);
     pField = pField->GetNext();
     pField->SetDefault(&ZeroVect);
@@ -55,16 +46,17 @@ FETypeNode *FETypeLib::CreateBaseObjectType(const char *pName) {
 }
 
 FETypeNode *FETypeLib::CreateImageObjectType(const char *pName) {
-    FEVector2 ZeroVect;
-    FEVector2 OneVect;
+    FETypeNode *pType;
+    FEFieldNode *pField;
+    FEVector2 ZeroVect, OneVect;
 
-    FETypeNode *pType = CreateBaseObjectType(pName);
+    pType = CreateBaseObjectType(pName);
 
     pType->AddField("Upper Left", 3);
     pType->AddField("Lower Right", 3);
 
     ZeroVect = FEVector2(0.0f, 0.0f);
-    FEFieldNode *pField = pType->GetField("Upper Left");
+    pField = pType->GetField("Upper Left");
     pField->SetDefault(&ZeroVect);
     OneVect = FEVector2(1.0f, 1.0f);
     pField->GetNext()->SetDefault(&OneVect);
@@ -73,7 +65,11 @@ FETypeNode *FETypeLib::CreateImageObjectType(const char *pName) {
 }
 
 FETypeNode *FETypeLib::CreateMultiImageObjectType(const char *pName) {
-    FETypeNode *pType = CreateImageObjectType(pName);
+    FETypeNode *pType;
+    FEFieldNode *pField;
+
+    pType = CreateImageObjectType(pName);
+
     char sztemp[32];
     FEVector3 pivot_rot(0.0f, 0.0f, 0.0f);
     FEVector2 top_left(0.0f, 0.0f);
@@ -82,19 +78,19 @@ FETypeNode *FETypeLib::CreateMultiImageObjectType(const char *pName) {
     for (int i = 1; i < 4; i++) {
         bSPrintf(sztemp, "Tex %d: Top Left", i);
         pType->AddField(sztemp, 3);
-        FEFieldNode *pField = pType->GetField(sztemp);
+        pField = pType->GetField(sztemp);
         pField->SetDefault(&top_left);
     }
     for (int i = 1; i < 4; i++) {
         bSPrintf(sztemp, "Tex %d: Bottom Right", i);
         pType->AddField(sztemp, 3);
-        FEFieldNode *pField = pType->GetField(sztemp);
+        pField = pType->GetField(sztemp);
         pField->SetDefault(&bottom_right);
     }
 
     bSPrintf(sztemp, "Pivot Rot (Z)");
     pType->AddField(sztemp, 4);
-    FEFieldNode *pField = pType->GetField(sztemp);
+    pField = pType->GetField(sztemp);
     pField->SetDefault(&pivot_rot);
 
     return pType;
@@ -102,8 +98,9 @@ FETypeNode *FETypeLib::CreateMultiImageObjectType(const char *pName) {
 
 bool FETypeLib::Startup() {
     FETypeNode *pType;
+    FEFieldNode *pField;
     FEColor White;
-    int DefaultFrame;
+    i32 DefaultFrame;
 
     pType = CreateImageObjectType("Image");
     pType->SetID(1);
@@ -115,7 +112,7 @@ bool FETypeLib::Startup() {
     pType->AddField(FEColor3Name, 6);
     pType->AddField(FEColor4Name, 6);
     White = FEColor(0xFFFFFFFF);
-    FEFieldNode *pField;
+
     pField = pType->GetField(FEColor1Name);
     pField->SetDefault(&White);
     pField = pType->GetField(FEColor2Name);

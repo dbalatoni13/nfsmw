@@ -14,10 +14,29 @@ eSolidIndexEntry *GetSolidIndexEntry(eSolidListHeader *list_header, uint32 name_
 eSolid *eFindSolid(uint32 name_hash);
 eSolid *eFindSolid(uint32 name_hash, eSolidListHeader *solid_list_header);
 
-LoadedTable SolidLoadedTable;
-bTList<eSolidListHeader> SolidListHeaderList;
 int eDirtySolids;
 float TotalFindSolidTime;
+
+// total size: 0x14
+// Decl: speed/indep/src/ecstasy/eSolid.cpp:59
+class eLoadedSolidStats {
+  public:
+    uint32 NumLoadedLists;           // offset 0x0, size 0x4, Decl: speed/indep/src/ecstasy/eSolid.cpp:64
+    uint32 NumLoadedSolids;          // offset 0x4, size 0x4, Decl: speed/indep/src/ecstasy/eSolid.cpp:66
+    uint32 TotalSolidsByteSize;      // offset 0x8, size 0x4, Decl: speed/indep/src/ecstasy/eSolid.cpp:67
+    uint32 TotalNormalSmootherBytes; // offset 0xC, size 0x4, Decl: speed/indep/src/ecstasy/eSolid.cpp:70
+    uint32 TotalDamageBytes;         // offset 0x10, size 0x4, Decl: speed/indep/src/ecstasy/eSolid.cpp:72
+};
+
+static const int EnableBlockingSolidUnload = 1; // size: 0x4, Decl: speed/indep/src/ecstasy/eSolid.cpp:82
+
+bTList<eSolidListHeader> SolidListHeaderList; // size: 0x8, address: 0x8045ED08, Decl: speed/indep/src/ecstasy/eSolid.cpp:93
+
+bTList<eSolid> InvalidSolidList; // size: 0x8, address: 0x8045ED10, Decl: speed/indep/src/ecstasy/eSolid.cpp:94
+
+eLoadedSolidStats LoadedSolidStats; // size: 0x14, address: 0x8046B120, Decl: speed/indep/src/ecstasy/eSolid.cpp:98
+
+LoadedTable SolidLoadedTable; // size: 0x2004, address: 0x8045ED20, Decl: speed/indep/src/ecstasy/eSolid.cpp:102
 
 void eSolid::GetBoundingBox(bVector3 *min, bVector3 *max) {
     float minx = this->AABBMinX;

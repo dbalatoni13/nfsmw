@@ -4,8 +4,7 @@
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEObjects.hpp"
 
 GenericMessage::GenericMessage(UTL::COM::Object *pOutter, const char *pkg_name, int player_number)
-    : HudElement(pkg_name, 0x01000000ULL) //
-      ,
+    : HudElement(pkg_name, 0x01000000ULL), //
       IGenericMessage(pOutter) {
     mPriority = GenericMessage_Priority_None;
     mNumFramesPlayed = 0;

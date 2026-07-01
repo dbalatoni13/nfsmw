@@ -55,8 +55,6 @@ void FEngSetScript(FEObject *object, uint32 script_hash, bool start_at_beginning
 
 void FEngSetScript(const char *pkg_name, uint32 obj_hash, uint32 script_hash, bool start_at_beginning);
 
-inline void FEngSetCurrentButton(const char *pkg_name, FEObject *obj) {}
-
 void FEngSetTopLeft(struct FEObject *object /* r31 */, float x /* f29 */, float y /* f28 */);
 
 void FEngSetSize(struct FEObject *object /* r3 */, float x /* f1 */, float y /* f2 */);
@@ -71,7 +69,11 @@ void FEngGetSize(FEObject *object, float &x, float &y);
 void FEngSetCenter(FEObject *object, float x, float y);
 void FEngGetTopLeft(FEObject *object, float &x, float &y);
 void FEngSetTopLeft(FEObject *object, float x, float y);
-void FEngSetCurrentButton(const char *pkg_name, unsigned int hash);
+void FEngSetCurrentButton(const char *pkg_name, uint32 hash);
+
+inline void FEngSetCurrentButton(const char *pkg_name, FEObject *obj) {
+    FEngSetCurrentButton(pkg_name, obj->NameHash);
+}
 
 bool FEngIsScriptSet(const char *pkg_name /* r3 */, unsigned int obj_hash /* r4 */, unsigned int script_hash /* r30 */);
 bool FEngIsScriptSet(struct FEObject *obj /* r3 */, unsigned int script_hash /* r4 */);

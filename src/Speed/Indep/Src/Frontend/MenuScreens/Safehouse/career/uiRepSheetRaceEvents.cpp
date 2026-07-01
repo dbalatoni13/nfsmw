@@ -84,8 +84,8 @@ void UISafehouseRaceSheet::NotificationMessage(u32 msg, FEObject *obj, u32 param
             if (bIsInGame) {
                 dialog = "InGameDialog.fng";
             }
-            DialogInterface::ShowTwoButtons(GetPackageName(), dialog, static_cast<eDialogTitle>(1), 0x70E01038, 0x417B25E4, 0xD05FC3A3, 0x34DC1BCF,
-                                            0x34DC1BCF, static_cast<eDialogFirstButtons>(1), 0x77CF03C5);
+            DialogInterface::ShowTwoButtons(GetPackageName(), dialog, dialog_alert, 0x70E01038, 0x417B25E4, 0xD05FC3A3, 0x34DC1BCF, 0x34DC1BCF,
+                                            first_dialog_button2, 0x77CF03C5);
             break;
         }
         case 0xd05fc3a3:

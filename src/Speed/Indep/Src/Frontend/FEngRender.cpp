@@ -1,6 +1,6 @@
 #include "Speed/Indep/Src/Frontend/FEngRender.hpp"
 #include "Speed/Indep/Src/FEng/FEObject.h"
-#include "Speed/Indep/Src/FEng/feimage.h"
+#include "Speed/Indep/Src/FEng/FEImage.h"
 #include "Speed/Indep/Src/FEng/FEMultiImage.h"
 #include "Speed/Indep/Src/FEng/FEColoredImage.h"
 #include "Speed/Indep/Src/FEng/FEString.h"
@@ -38,7 +38,7 @@ uint32 next_power_of_2(uint32 number) {
     return 0;
 }
 
-FEClipInfo *cFEngRender::MakeRenderMatrix(FEObjData *pData, bMatrix4 *trans, FEColor &color, int GroupIndex, float extra_scale) {
+FEClipInfo *cFEngRender::MakeRenderMatrix(FEObjData *pData, bMatrix4 *trans, FEColor &color, int32 GroupIndex, float extra_scale) {
     int do_pivot = 0;
     if (pData->Pivot.x != 0.0f || pData->Pivot.y != 0.0f || pData->Pivot.z != 0.0f) {
         do_pivot = 1;
@@ -393,13 +393,13 @@ void cFEngRender::RenderString(FEString *string, FERenderObject *cached, FEPacka
         extra_scale = 2.0f;
     }
 
-    const short *characters = nullptr;
     FEObjData *obj_data = reinterpret_cast<FEObjData *>(string->pData);
-    short localized_string_buffer[1024];
-    unsigned int labelHash = string->GetLabelHash();
+    u32 label_hash = string->GetLabelHash();
+    const int16 *characters = nullptr;
+    int16 localized_string_buffer[1024];
 
     if (!(string->Flags & 2)) {
-        if (GetLocalizedWideString(localized_string_buffer, 0x800, labelHash)) {
+        if (GetLocalizedWideString(localized_string_buffer, 0x800, label_hash)) {
             characters = localized_string_buffer;
         }
     }
@@ -443,12 +443,12 @@ void cFEngRender::RenderObject(FEObject *object, FEPackageRenderInfo *pkg_render
     if (object->Flags & 8) {
         return;
     }
-    if (object->Type == 7) {
-        object->Flags |= 0x2000000;
+    if (object->Type == FE_Movie) {
+        object->Flags |= FF_Dirty;
     }
     ProfileNode profile_node("TODO", 0);
     FERenderObject *cached = FindCachedRender(object);
-    if (cached && cached->IsReadyToRender() && !(object->Flags & 0x2000000)) {
+    if (cached && cached->IsReadyToRender() && !(object->Flags & FF_Dirty)) {
         cached->Render();
     } else {
         switch (object->Type) {

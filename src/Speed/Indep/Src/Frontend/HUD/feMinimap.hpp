@@ -91,7 +91,7 @@ class Minimap : public HudElement {
 
     FEObject *TrackmapLayout;                    // offset 0x30, size 0x4, Decl: speed/indep/src/frontend/hud/FeMinimap.hpp:96
     FEMultiImage *TrackmapArt[4];                // offset 0x34, size 0x10, Decl: speed/indep/src/frontend/hud/FeMinimap.hpp:97
-    FEVector2 TrackmapArtUVs[4];                 // offset 0x44, size 0x40, Decl: speed/indep/src/frontend/hud/FeMinimap.hpp:98
+    FEVector2 TrackmapArtUVs[4][2];              // offset 0x44, size 0x40, Decl: speed/indep/src/frontend/hud/FeMinimap.hpp:98
     FEImage *TrackmapNorth;                      // offset 0x84, size 0x4, Decl: speed/indep/src/frontend/hud/FeMinimap.hpp:99
     FEImage *mPlayerCarIndicator;                // offset 0x88, size 0x4, Decl: speed/indep/src/frontend/hud/FeMinimap.hpp:102
     FEImage *mPlayerCarIndicator2;               // offset 0x8C, size 0x4, Decl: speed/indep/src/frontend/hud/FeMinimap.hpp:103
@@ -110,7 +110,7 @@ class Minimap : public HudElement {
     FEImage *mRacerElementArt[8];                // offset 0xE8, size 0x20
     FEImage *mCheckpointElementArt;              // offset 0x108, size 0x4
     FEImage *mGPSSelectionElementArt;            // offset 0x10C, size 0x4, Decl: speed/indep/src/frontend/hud/FeMinimap.hpp:137
-    FEImage *mGameplayIcons[17];                 // offset 0x110, size 0x220
+    FEImage *mGameplayIcons[17][8];              // offset 0x110, size 0x220
     static GameplayIconInfo kGameplayIconInfo[]; // size: 0x0, address: 0x8041BCA0, Decl: speed/indep/src/frontend/hud/FeMinimap.cpp:69
 };
 

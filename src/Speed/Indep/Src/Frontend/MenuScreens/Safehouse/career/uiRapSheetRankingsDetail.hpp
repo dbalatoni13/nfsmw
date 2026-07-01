@@ -1,9 +1,5 @@
-#ifndef FRONTEND_MENUSCREENS_SAFEHOUSE_CAREER_UIRAPSHEETRANKINGSDETAIL_H
-#define FRONTEND_MENUSCREENS_SAFEHOUSE_CAREER_UIRAPSHEETRANKINGSDETAIL_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef __UI_RAP_SHEET_DETAIL_HPP__
+#define __UI_RAP_SHEET_DETAIL_HPP__
 
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/feArrayScrollerMenu.hpp"
 #include "Speed/Indep/Src/Frontend/Database/RaceDB.hpp"
@@ -60,7 +56,7 @@ class RapSheetRankingsTimerArraySlot : public RapSheetRankingsArraySlot {
 class uiRapSheetRankingsDetail : public ArrayScrollerMenu {
   public:
     uiRapSheetRankingsDetail(ScreenConstructorData *sd);
-    ~uiRapSheetRankingsDetail() override;
+    ~uiRapSheetRankingsDetail() override {};
     void NotificationMessage(u32 msg, FEObject *pobj, u32 param1, u32 param2) override;
     void RefreshHeader() override;
 

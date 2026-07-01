@@ -1,21 +1,14 @@
-#ifndef FRONTEND_MENUSCREENS_SAFEHOUSE_CAREER_UIMARKERSELECT_H
-#define FRONTEND_MENUSCREENS_SAFEHOUSE_CAREER_UIMARKERSELECT_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef __UI_MARKER_SELECT_HPP__
+#define __UI_MARKER_SELECT_HPP__
 
 #include "Speed/Indep/Src/Frontend/Careers/UnlockSystem.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRepSheetRivalStreamer.hpp"
 #include <types.h>
 
-struct FEImage;
-
-#include "Speed/Indep/Src/Generated/AttribSys/Classes/frontend.h"
-
 // total size: 0xC8 (from DWARF: 0xC0 data + 0x8 for possible trailing alignment)
-struct FEMarkerSelection : public MenuScreen {
+class FEMarkerSelection : public MenuScreen {
+  public:
     // total size: 0xC
     struct Selection {
         FEMarkerManager::ePossibleMarker Marker; // offset 0x0, size 0x4
@@ -26,21 +19,24 @@ struct FEMarkerSelection : public MenuScreen {
     FEMarkerSelection(ScreenConstructorData *sd);
     ~FEMarkerSelection() override {}
 
-    void NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) override;
+    void NotificationMessage(u32 msg, FEObject *pobj, u32 param1, u32 param2) override;
 
-    void SetUnlockIcon(eUnlockableEntity ent, unsigned int message);
-    int GetButtonIndex(unsigned int hash);
+  protected:
     int GetSelectedButtonIndex();
-    unsigned int GetIconHashForType(FEMarkerManager::ePossibleMarker marker);
-    unsigned int GetCategoryIconHashForType(FEMarkerManager::ePossibleMarker marker);
-    unsigned int GetNameHashForType(FEMarkerManager::ePossibleMarker marker);
-    unsigned int GetCategoryNameHashForType(FEMarkerManager::ePossibleMarker marker);
-    unsigned int GetBlurbHashForType(FEMarkerManager::ePossibleMarker marker);
-    unsigned int GetCategoryBlurbHashForType(FEMarkerManager::ePossibleMarker marker);
-    int GetNumSelected();
+    int GetButtonIndex(uint32 hash);
+    uint32 GetIconHashForType(FEMarkerManager::ePossibleMarker marker);
+    uint32 GetCategoryIconHashForType(FEMarkerManager::ePossibleMarker marker);
+    uint32 GetNameHashForType(FEMarkerManager::ePossibleMarker marker);
+    uint32 GetCategoryNameHashForType(FEMarkerManager::ePossibleMarker marker);
+    uint32 GetBlurbHashForType(FEMarkerManager::ePossibleMarker marker);
+    uint32 GetCategoryBlurbHashForType(FEMarkerManager::ePossibleMarker marker);
     void Redraw();
+    int GetNumSelected();
+    void SetUnlockIcon(eUnlockableEntity ent, uint32 message);
 
-    int NumVisibleMarkers;                 // offset 0x2C, size 0x4
+  public:
+    int NumVisibleMarkers; // offset 0x2C, size 0x4
+  protected:
     FEImage *pRivalImg;                    // offset 0x30, size 0x4
     FEImage *pTagImg;                      // offset 0x34, size 0x4
     FEImage *pBGImg;                       // offset 0x38, size 0x4

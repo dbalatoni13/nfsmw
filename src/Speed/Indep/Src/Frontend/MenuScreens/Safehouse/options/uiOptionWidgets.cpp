@@ -8,22 +8,10 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/options/uiOptionsMain.hpp"
 #include "Speed/Indep/Src/Input/IOModule.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
-#include "Speed/Indep/Src/FEng/feimage.h"
 
 #ifdef EA_PLATFORM_GAMECUBE
 #include "dolphin/os.h"
 #endif
-
-void FEngSetLanguageHash(FEString *text, uint32 hash);
-int FEPrintf(FEString *text, const char *fmt, ...);
-FEObject *FEngFindObject(const char *pkg_name, uint32 obj_hash);
-void FEngSetInvisible(FEObject *obj);
-void FEngSetVisible(FEObject *obj);
-void FEngSetInvisible(const char *pkg_name, uint32 obj_hash);
-void FEngSetVisible(const char *pkg_name, uint32 obj_hash);
-
-POVTypes GetPOVTypeFromPlayerCamera(ePlayerSettingsCameras cam);
-bool IsPlayerCameraSelectable(POVTypes pov_type);
 
 void OMAudio::React(const char *pkg_name, uint32 data, FEObject *obj, uint32 param1, uint32 param2) {
     if (data != 0xC407210) {

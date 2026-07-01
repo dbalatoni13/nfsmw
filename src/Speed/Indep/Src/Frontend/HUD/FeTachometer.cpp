@@ -29,24 +29,15 @@ static float CalcAngleForRPM(float rpm, float redline) {
 }
 
 Tachometer::Tachometer(UTL::COM::Object *pOutter, const char *pkg_name, int player_number)
-    : HudElement(pkg_name, 2) //
-      ,
-      ITachometer(pOutter) //
-      ,
-      mRpm(0.0f) //
-      ,
-      mRedline(0.0f) //
-      ,
-      mMaxRpm(0.0f) //
-      ,
-      mGear(G_NEUTRAL) //
-      ,
-      mIsShifting(false) //
-      ,
-      mInPerfectLaunchRange(false) //
-      ,
-      mShiftPotential(SHIFT_POTENTIAL_NONE) //
-      ,
+    : HudElement(pkg_name, 2),               //
+      ITachometer(pOutter),                  //
+      mRpm(0.0f),                            //
+      mRedline(0.0f),                        //
+      mMaxRpm(0.0f),                         //
+      mGear(G_NEUTRAL),                      //
+      mIsShifting(false),                    //
+      mInPerfectLaunchRange(false),          //
+      mShiftPotential(SHIFT_POTENTIAL_NONE), //
       mNeedleColourSetToPerfectLaunch(false) //
 {
     RegisterGroup(FEHashUpper("GaugeCluster"));

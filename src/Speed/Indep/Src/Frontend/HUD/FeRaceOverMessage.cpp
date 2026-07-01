@@ -16,12 +16,9 @@ static const unsigned int RaceOverFinishStrings[8] = {
 };
 
 RaceOverMessage::RaceOverMessage(UTL::COM::Object *pOutter, const char *pkg_name, int player_number)
-    : HudElement(pkg_name, 4) //
-      ,
-      IRaceOverMessage(pOutter) //
-      ,
-      bShowMessage(false) //
-      ,
+    : HudElement(pkg_name, 4),   //
+      IRaceOverMessage(pOutter), //
+      bShowMessage(false),       //
       bShowTotalledMessage(false) {}
 
 void RaceOverMessage::Update(IPlayer *player) {

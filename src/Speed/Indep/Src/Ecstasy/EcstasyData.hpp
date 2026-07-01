@@ -5,10 +5,17 @@
 #pragma once
 #endif
 
+#ifdef EA_PLATFORM_GAMECUBE
+#include "Speed/GameCube/Src/Ecstasy/eSolidPlat.hpp"
+#elif EA_PLATFORM_PS2
+#include "Speed/PSX2/Src/Ecstasy/eSolidPlat.hpp"
+#endif
+
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "Speed/Indep/Src/Ecstasy/eSprites.hpp"
+#include "Speed/Indep/bWare/Inc/bChunk.hpp"
 
 struct TextureInfo;
 struct eLightContext;
@@ -248,36 +255,22 @@ class eViewPlatInterface {
     eViewPlatInfo *PlatInfo; // offset 0x0, size 0x4
 };
 
-class eLoadedSolidStats {
-    // total size: 0x14
-  public:
-    uint32 NumLoadedLists;           // offset 0x0, size 0x4
-    uint32 NumLoadedSolids;          // offset 0x4, size 0x4
-    uint32 TotalSolidsByteSize;      // offset 0x8, size 0x4
-    uint32 TotalNormalSmootherBytes; // offset 0xC, size 0x4
-    uint32 TotalDamageBytes;         // offset 0x10, size 0x4
-};
+class eSolidPlatInterface {
+    // total size: 0x4
+    eSolidPlatInfo *PlatInfo; // offset 0x0, size 0x4
 
-class eSolidPlatInfo {
-    // total size: 0x24
   public:
-    uint16 Version;    // offset 0x0, size 0x2
-    uint16 StripFlags; // offset 0x2, size 0x2
-    uint16 NumStrips;  // offset 0x4, size 0x2
-#ifndef EA_BUILD_A124
-    uint16 NumIdxClrTable; // offset 0x6, size 0x2
-#else
-    uint16 pad0;
-#endif
-    uint32 SizeofStripData; // offset 0x8, size 0x4
-#ifndef EA_BUILD_A124
-    uint32 DataOffset0; // offset 0xC, size 0x4
-    uint32 DataOffset1; // offset 0x10, size 0x4
-    uint32 DataOffset2; // offset 0x14, size 0x4
-    uint32 DataOffset3; // offset 0x18, size 0x4
-#endif
-    struct eStripEntry *StripEntryTable; // offset 0x1C, size 0x4
-    uint8 *StripDataStart;               // offset 0x20, size 0x4
+    int UnloaderPlatChunks(bChunk *chunk);
+    int FixPlatInfo();
+    int UnFixPlatInfo();
+
+    eSolidPlatInfo *GetPlatInfo() {
+        return this->PlatInfo;
+    }
+
+  protected:
+    void SetSmoothVertex(uint32 vertex_offset, float nx, float ny, float nz);
+    void ApplyDamagePlat(struct eDamaggeInfo *damage_info);
 };
 
 #endif

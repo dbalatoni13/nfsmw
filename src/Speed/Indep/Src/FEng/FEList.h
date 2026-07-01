@@ -2,6 +2,7 @@
 #define FELIST_H
 
 #include <types.h>
+#include "Speed/Indep/Src/FEng/FETypes.h"
 
 #define LIST_MAGIC 0xABadCafe // :32
 
@@ -13,7 +14,10 @@ class FEMinNode {
     FEMinNode *next, *prev; // offset 0x0, size 0x4, Decl: speed/indep/src/feng/FEList.h:55
 
   public:
-    FEMinNode() {} // Decl: speed/indep/src/feng/FEList.h:58
+    FEMinNode() { // Decl: speed/indep/src/feng/FEList.h:58
+        next = reinterpret_cast<FEMinNode *>(LIST_MAGIC);
+        prev = reinterpret_cast<FEMinNode *>(LIST_MAGIC);
+    }
     virtual ~FEMinNode() {}
 
     FEMinNode *GetNext() const {
@@ -29,7 +33,7 @@ class FEMinNode {
     friend class FEngine;
     friend class FESlotPool;
     friend class FEMultiPool;
-    friend struct FEPackage;
+    friend class FEPackage;
 };
 
 // total size: 0x14
@@ -153,7 +157,9 @@ class FEList : public FEMinList {
         return static_cast<FENode *>(FEMinList::GetHead());
     }
 
-    FENode *GetTail() const {}
+    FENode *GetTail() const {
+        return static_cast<FENode *>(FEMinList::GetTail());
+    }
 
     FENode *RemHead() {} // Decl: speed/indep/src/feng/FEList.h:178
 
@@ -248,6 +254,7 @@ class FEHashList {
     FEHashNode *GetTail() const {}
 };
 
+u32 FEHash(const char *String);
 u32 FEHashUpper(const char *String);
 
 #endif

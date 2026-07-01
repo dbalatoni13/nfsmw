@@ -8,7 +8,7 @@
 #include "Speed/Indep/Src/Generated/Events/EShowResults.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
-#include "Speed/Indep/Src/FEng/feimage.h"
+#include "Speed/Indep/Src/FEng/FEImage.h"
 
 struct load_info {
     FEImage *LoadIntoImage;

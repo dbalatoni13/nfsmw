@@ -1,12 +1,30 @@
 #ifndef __UNLOCKSYSTEM_HPP
 #define __UNLOCKSYSTEM_HPP
 
-#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/customize/FECustomize.hpp"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/gameplay.h"
 #include "Speed/Indep/Src/Physics/PhysicsUpgrades.hpp"
+#include "Speed/Indep/Src/World/CarInfo.hpp"
 
 #define UNLOCK_SYSTEM_MAX_ITEMS 1000                            // :12
 #define NUM_PERF_PACKAGE_UNLOCKS Physics::Upgrades::PUT_MAX * 3 // :42
+
+// total size: 0x8
+struct UnlockDatum {
+    int8 CareerUnlockLevel;    // offset 0x0, size 0x1
+    int8 CareerIsNewPart;      // offset 0x1, size 0x1
+    int8 CareerTimesSeen;      // offset 0x2, size 0x1
+    int8 pad1;                 // offset 0x3, size 0x1
+    int8 QuickRaceUnlockLevel; // offset 0x4, size 0x1
+    int8 QuickRaceIsNewPart;   // offset 0x5, size 0x1
+    int8 QuickRaceTimesSeen;   // offset 0x6, size 0x1
+    int8 pad2;                 // offset 0x7, size 0x1
+};
+
+// File: speed/indep/src/database/datalogic/UnlockSystem.hpp
+// Decl: speed/indep/src/database/datalogic/UnlockSystem.hpp:35
+typedef enum { UNLOCK_QUICK_RACE = 1, UNLOCK_CAREER_MODE = 2, UNLOCK_ONLINE = 4, UNLOCK_BACKROOM = 10 } eUnlockFilters;
+
+typedef enum { UNLOCK_IS_OLD = -1, UNLOCK_LEVEL_ANY = -2 } eUnlockNewStatus;
 
 // total size: 0x1
 // Decl: speed/indep/src/database/datalogic/UnlockSystem.hpp:53
@@ -131,5 +149,13 @@ class FEMarkerManager {
 };
 
 extern FEMarkerManager TheFEMarkerManager;
+extern UnlockDatum TheUnlockData[57];
+
+bool DoesCategoryHaveNewUnlock(eUnlockableEntity entity);
+void DefaultUnlockData();
+void MarkUnlockableThingSeen(eUnlockableEntity entity, uint32 filter);
+
+eUnlockableEntity MapPerfPkgToUnlockable(Physics::Upgrades::Type pkg_type);
+eUnlockableEntity MapCarPartToUnlockable(int carslot, CarPart *part);
 
 #endif

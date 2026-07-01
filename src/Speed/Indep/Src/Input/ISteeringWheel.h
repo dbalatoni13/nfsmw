@@ -1,9 +1,5 @@
-#ifndef INPUT_ISTEERINGWHEEL_H
-#define INPUT_ISTEERINGWHEEL_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef __ISTEERINGWHEEL_H__
+#define __ISTEERINGWHEEL_H__
 
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"

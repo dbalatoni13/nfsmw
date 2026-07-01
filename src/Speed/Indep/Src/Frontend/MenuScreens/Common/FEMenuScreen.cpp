@@ -1,57 +1,40 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
 
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
-#include "Speed/Indep/Src/FEng/FEImage.h"
-#include "Speed/Indep/Src/FEng/FEString.h"
+#include "Speed/Indep/Src/Frontend/FEngFrontend.hpp"
+#include "Speed/Indep/Src/Frontend/FEngHashes/FEHash_FeBonusCards.hpp"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEImages.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/feKeyboardInput.hpp"
 
 extern KeyboardEditString gKeyboardManager;
 extern MenuScreen *g_pOLCurrentScreen;
 
-extern void FESoundControl(bool, const char *);
-extern FEImage *FEngFindImage(const char *pkg_name, int hash);
-extern void FEngSetButtonTexture(FEImage *img, unsigned int tex_hash);
-extern int bStrCmp(const char *s1, const char *s2);
-extern char *bStrNCpy(char *to, const char *from, int max_count);
-extern void bMemSet(void *dst, int value, unsigned int size);
-
-extern const char lbl_803E59BC[];
-extern const char lbl_803E5CB8[];
-extern const char lbl_803E5EEC[];
-extern const char lbl_803E6D54[];
-extern const char lbl_803E6D6C[];
-extern const char lbl_803E6D8C[];
-extern const char lbl_803E7FC4[];
-extern const char lbl_803E85A8[];
-extern const char lbl_803E85C4[];
-extern const char lbl_803E85E0[];
-extern const char lbl_803E8600[];
-
 MenuScreen::MenuScreen(ScreenConstructorData *sd)
-    : mPlaySound(true) //
-      ,
-      mDirectionForNextSound(0) //
-      ,
-      bEnableEAMessenger(false) //
-      ,
-      PackageFilename(sd->PackageFilename) //
-      ,
-      ConstructData(*sd) //
-      ,
-      IsGarageScreen(false) //
-      ,
-      TextInputObject(nullptr) //
-      ,
+    : mPlaySound(true),                     //
+      mDirectionForNextSound(0),            //
+      bEnableEAMessenger(false),            //
+      PackageFilename(sd->PackageFilename), //
+      ConstructData(*sd),                   //
+      IsGarageScreen(false),                //
+      TextInputObject(nullptr),             //
       mStartCapturingFromKeyboard(0) {
     FESoundControl(true, PackageFilename);
     FEngSetButtonTexture(FEngFindImage(PackageFilename, 0x6B364F8B), 0x5BC);
     FEngSetButtonTexture(FEngFindImage(PackageFilename, 0x79354351), 0x682);
 
-    if (bStrCmp(PackageFilename, lbl_803E5EEC) == 0 || bStrCmp(PackageFilename, lbl_803E6D54) == 0 || bStrCmp(PackageFilename, lbl_803E7FC4) == 0 ||
-        bStrCmp(PackageFilename, lbl_803E6D6C) == 0 || bStrCmp(PackageFilename, lbl_803E59BC) == 0 || bStrCmp(PackageFilename, lbl_803E6D8C) == 0 ||
-        bStrCmp(PackageFilename, lbl_803E85A8) == 0 || bStrCmp(PackageFilename, lbl_803E85C4) == 0 || bStrCmp(PackageFilename, lbl_803E85E0) == 0) {
-    } else if (!cFEng::Get()->IsPackagePushed(lbl_803E8600)) {
+    if (bStrCmp(PackageFilename, "InGameDialog.fng") == 0                  //
+        || bStrCmp(PackageFilename, "OL_Dialog.fng") == 0                  //
+        || bStrCmp(PackageFilename, "ControllerUnplugged.fng") == 0        //
+        || bStrCmp(PackageFilename, "Dialog.fng") == 0                     //
+        || bStrCmp(PackageFilename, "EA_Trax.fng") == 0                    //
+        || bStrCmp(PackageFilename, "OL_Dialog_Stacked_Buttons.fng") == 0  //
+        || bStrCmp(PackageFilename, "OL_GameRoom_Car_Select.fng") == 0     //
+        || bStrCmp(PackageFilename, "OL_GameRoom_Edit_Race.fng") == 0      //
+        || bStrCmp(PackageFilename, "OL_GameRoom_Player_Details.fng") == 0 //
+        || bStrCmp(PackageFilename, "OL_EAMessenger.fng") == 0) {
+    } else if (!cFEng::Get()->IsPackagePushed("OL_EAMessenger.fng")) {
         g_pOLCurrentScreen = this;
     }
 }
@@ -59,17 +42,19 @@ MenuScreen::MenuScreen(ScreenConstructorData *sd)
 MenuScreen::~MenuScreen() {
     FESoundControl(false, PackageFilename);
 
-    if (bStrCmp(PackageFilename, lbl_803E5EEC) == 0 || bStrCmp(PackageFilename, lbl_803E6D54) == 0 || bStrCmp(PackageFilename, lbl_803E7FC4) == 0 ||
-        bStrCmp(PackageFilename, lbl_803E6D6C) == 0 || bStrCmp(PackageFilename, lbl_803E59BC) == 0 || bStrCmp(PackageFilename, lbl_803E6D8C) == 0 ||
-        bStrCmp(PackageFilename, lbl_803E85A8) == 0 || bStrCmp(PackageFilename, lbl_803E85C4) == 0 || bStrCmp(PackageFilename, lbl_803E85E0) == 0) {
-    } else if (!cFEng::Get()->IsPackagePushed(lbl_803E8600)) {
+    if (bStrCmp(PackageFilename, "InGameDialog.fng") == 0 || bStrCmp(PackageFilename, "OL_Dialog.fng") == 0 ||
+        bStrCmp(PackageFilename, "ControllerUnplugged.fng") == 0 || bStrCmp(PackageFilename, "Dialog.fng") == 0 ||
+        bStrCmp(PackageFilename, "EA_Trax.fng") == 0 || bStrCmp(PackageFilename, "OL_Dialog_Stacked_Buttons.fng") == 0 ||
+        bStrCmp(PackageFilename, "OL_GameRoom_Car_Select.fng") == 0 || bStrCmp(PackageFilename, "OL_GameRoom_Edit_Race.fng") == 0 ||
+        bStrCmp(PackageFilename, "OL_GameRoom_Player_Details.fng") == 0 || bStrCmp(PackageFilename, "OL_EAMessenger.fng") == 0) {
+    } else if (!cFEng::Get()->IsPackagePushed("OL_EAMessenger.fng")) {
         g_pOLCurrentScreen = nullptr;
     }
 }
 
 void MenuScreen::BaseNotify(u32 Message, FEObject *pObject, u32 Param1, u32 Param2) {
     if (!CheckKeyboard(Message)) {
-        if (Message != 0x9803F6E2 || ConstructData.pPackage->Controllers != 0) {
+        if (Message != FEMSG_MOUSE_CHANGED || ConstructData.pPackage->GetControlMask() != 0) {
             NotificationMessage(Message, pObject, Param1, Param2);
         }
     }
@@ -123,41 +108,40 @@ void MenuScreen::FEngBeginTextInput(uint32 /* object_hash */, uint32 edit_mode, 
             break;
     }
 
-    cFEng::Get()->QueuePackagePush(lbl_803E5CB8, 0, 0, false);
+    cFEng::Get()->QueuePackagePush("Keyboard_GC.fng", 0, 0, false);
 }
 
 bool MenuScreen::CheckKeyboard(uint32 msg) {
-    if (msg == 0xC98356BA) {
+    if (msg == FEMSG_SCREEN_TICK) {
         if (TextInputObject == nullptr) {
             return false;
         }
 
         if (mStartCapturingFromKeyboard == 1) {
-            mStartCapturingFromKeyboard = 2;
+            mStartCapturingFromKeyboard++;
             return true;
         }
 
         if (mStartCapturingFromKeyboard == 2) {
-            mStartCapturingFromKeyboard = 3;
-            gKeyboardManager.KeysProcessed = 1;
+            mStartCapturingFromKeyboard++;
+            gKeyboardManager.Enable();
         }
     }
 
-    if (TextInputObject == nullptr) {
-        return false;
-    }
-
-    if (gKeyboardManager.KeysProcessed != 0 && gKeyboardManager.MaxTextLength != 0) {
-        if (msg == 0x911AB364) {
-            TextInputObject->EscapePressed();
-        } else if (msg == 0x406415E3) {
-            TextInputObject->ReturnPressed();
-        } else {
-            TextInputObject->Notify(msg);
+    if (TextInputObject != nullptr) {
+        if (gKeyboardManager.IsCapturing()) {
+            if (msg == __PAD_BACK__) {
+                TextInputObject->EscapePressed();
+            } else if (msg == __PAD_ACCEPT__) {
+                TextInputObject->ReturnPressed();
+            } else {
+                TextInputObject->Notify(msg);
+            }
         }
+        return true;
     }
 
-    return true;
+    return false;
 }
 
 void MenuScreen::BaseNotifySound(u32 msg, FEObject * /* obj */, u32 /* controller_mask */, u32 /* pkg_ptr */) {

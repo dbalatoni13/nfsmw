@@ -75,8 +75,8 @@ class pm_RestartRace : public IconOption {
     void React(const char *pkg_name, uint32 data, FEObject *obj, uint32 param1, uint32 param2) override {
         if (data == 0x0C407210) {
             PauseMenu::SetSelectionHash(0xFBDF2EE3);
-            DialogInterface::ShowTwoButtons(pkg_name, "InGameDialog.fng", static_cast<eDialogTitle>(1), 0x417B2601, 0x1A294DAD, 0xE1A57D51,
-                                            0xB4623F67, 0xB4623F67, static_cast<eDialogFirstButtons>(1), 0x4D3399A8);
+            DialogInterface::ShowTwoButtons(pkg_name, "InGameDialog.fng", dialog_alert, 0x417B2601, 0x1A294DAD, 0xE1A57D51, 0xB4623F67, 0xB4623F67,
+                                            first_dialog_button2, 0x4D3399A8);
         }
     };
 };
@@ -105,8 +105,7 @@ class pm_SwitchToTuning : public IconOption {
         if (data == 0x0C407210) {
             PauseMenu::SetSelectionHash(0x78F1C035);
             if (Locked) {
-                DialogInterface::ShowOneButton(pkg_name, "InGameDialog.fng", static_cast<eDialogTitle>(1), 0x417B2601, 0xB4623F67, 0xB4623F67,
-                                               0xA7EE8554);
+                DialogInterface::ShowOneButton(pkg_name, "InGameDialog.fng", dialog_alert, 0x417B2601, 0xB4623F67, 0xB4623F67, 0xA7EE8554);
             } else {
                 FEngSetScript(pkg_name, 0x47FF4E7C, 0xDE6EFF34, true);
             }
@@ -123,8 +122,8 @@ class pm_QuitMainMenu : public IconOption {
     void React(const char *pkg_name, uint32 data, FEObject *obj, uint32 param1, uint32 param2) override {
         if (data == 0x0C407210) {
             PauseMenu::SetSelectionHash(0xE5C9C609);
-            DialogInterface::ShowTwoButtons(pkg_name, "InGameDialog.fng", static_cast<eDialogTitle>(1), 0x417B2601, 0x1A294DAD, 0xC9BFD1C3,
-                                            0xB4623F67, 0xB4623F67, static_cast<eDialogFirstButtons>(1), 0xA2E9B449);
+            DialogInterface::ShowTwoButtons(pkg_name, "InGameDialog.fng", dialog_alert, 0x417B2601, 0x1A294DAD, 0xC9BFD1C3, 0xB4623F67, 0xB4623F67,
+                                            first_dialog_button2, 0xA2E9B449);
         }
     };
 };
@@ -138,8 +137,8 @@ class pm_QuitQuickRace : public IconOption {
     void React(const char *pkg_name, uint32 data, FEObject *obj, uint32 param1, uint32 param2) override {
         if (data == 0x0C407210) {
             PauseMenu::SetSelectionHash(0xE5C9C609);
-            DialogInterface::ShowTwoButtons(pkg_name, "InGameDialog.fng", static_cast<eDialogTitle>(1), 0x417B2601, 0x1A294DAD, 0x30F32A49,
-                                            0xB4623F67, 0xB4623F67, static_cast<eDialogFirstButtons>(1), 0x1DB1CDE5);
+            DialogInterface::ShowTwoButtons(pkg_name, "InGameDialog.fng", dialog_alert, 0x417B2601, 0x1A294DAD, 0x30F32A49, 0xB4623F67, 0xB4623F67,
+                                            first_dialog_button2, 0x1DB1CDE5);
         }
     }
 };
@@ -153,8 +152,8 @@ class pm_QuitRaceToFreeRoam : public IconOption {
     void React(const char *pkg_name, uint32 data, FEObject *obj, uint32 param1, uint32 param2) override {
         if (data == 0x0C407210) {
             PauseMenu::SetSelectionHash(0xCDD2635A);
-            DialogInterface::ShowTwoButtons(pkg_name, "InGameDialog.fng", static_cast<eDialogTitle>(1), 0x417B2601, 0x1A294DAD, 0x451E768E,
-                                            0xB4623F67, 0xB4623F67, static_cast<eDialogFirstButtons>(1), 0x9887EB98);
+            DialogInterface::ShowTwoButtons(pkg_name, "InGameDialog.fng", dialog_alert, 0x417B2601, 0x1A294DAD, 0x451E768E, 0xB4623F67, 0xB4623F67,
+                                            first_dialog_button2, 0x9887EB98);
         }
     };
 };
@@ -188,8 +187,8 @@ class pm_QuitRaceToFE : public IconOption {
                     }
                 }
             }
-            DialogInterface::ShowTwoButtons(pkg_name, "InGameDialog.fng", static_cast<eDialogTitle>(1), 0x417B2601, 0x1A294DAD, 0x43DA9FD0,
-                                            0xB4623F67, 0xB4623F67, static_cast<eDialogFirstButtons>(1), quitMessageHash);
+            DialogInterface::ShowTwoButtons(pkg_name, "InGameDialog.fng", dialog_alert, 0x417B2601, 0x1A294DAD, 0x43DA9FD0, 0xB4623F67, 0xB4623F67,
+                                            first_dialog_button2, quitMessageHash);
         }
     }
 };

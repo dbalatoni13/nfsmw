@@ -1,56 +1,30 @@
 #include "Speed/Indep/Src/FEng/FEList.h"
-#include "Speed/Indep/Src/FEng/FEPackage.h"
 #include "Speed/Indep/Src/FEng/FEngStandard.h"
+#include "types.h"
 
 char FEUpperCase(char val) {
-    return static_cast<unsigned int>(val - 'a') > 25 ? val : static_cast<char>(val - 0x20);
+    return static_cast<unsigned int>(val - 'a') > 25 ? val : val - 0x20;
 }
 
-u32 FEHash(const char *String) {
-    u32 Hash = 0xFFFFFFFF;
+// STRIPPED
+char FELowerCase(char val) {}
 
-    if (String) {
-        while (*String) {
-            Hash += Hash << 5;
-            Hash += *reinterpret_cast<const u8 *>(String);
-            String++;
-        }
-    }
-
-    return Hash;
-}
-
-u32 FEHashUpper(const char *String) {
-    u32 Hash = 0xFFFFFFFF;
-
-    if (String) {
-        while (*String) {
-            Hash = (Hash << 5) + Hash;
-            Hash += FEUpperCase(*String) & 0xFF;
-            String++;
-        }
-    }
-
-    return Hash;
-}
-
-int FEStricmp(const char *s1, const char *s2) {
-    int c1, c2;
+int FEStricmp(const char *dst, const char *src) {
+    char f, l;
     do {
-        c1 = FEUpperCase(*s1);
-        s1++;
-        c2 = FEUpperCase(*s2);
-        s2++;
-        if (c1 == 0) {
+        f = FEUpperCase(*dst++);
+        l = FEUpperCase(*src++);
+        if (f == 0) {
             break;
         }
-    } while (c1 == c2);
-    return c1 - c2;
+    } while (f == l);
+    return f - l;
 }
 
-FENode::FENode()
-    : name(nullptr), //
-      nameHash(0) {}
+// STRIPPED
+bool FEStrInStr(const char *pString, const char *pSubString) {}
+
+FENode::FENode() : name(nullptr), nameHash(0) {}
 
 FENode::~FENode() {
     if (name) {
@@ -105,37 +79,36 @@ void FEMinList::AddNode(FEMinNode *insertpoint, FEMinNode *node) {
 }
 
 FEMinNode *FEMinList::RemNode(FEMinNode *node) {
-    if (!node) {
-        return nullptr;
+    if (node) {
+        if (node == head) {
+            head = node->next;
+        }
+        if (node == tail) {
+            tail = node->prev;
+        }
+        if (node->prev) {
+            node->prev->next = node->next;
+        }
+        if (node->next) {
+            node->next->prev = node->prev;
+        }
+        node->next = reinterpret_cast<FEMinNode *>(LIST_MAGIC);
+        node->prev = reinterpret_cast<FEMinNode *>(LIST_MAGIC);
+        numElements--;
     }
-    if (node == head) {
-        head = node->next;
-    }
-    if (node == tail) {
-        tail = node->prev;
-    }
-    if (node->prev) {
-        node->prev->next = node->next;
-    }
-    if (node->next) {
-        node->next->prev = node->prev;
-    }
-    node->next = reinterpret_cast<FEMinNode *>(LIST_MAGIC);
-    node->prev = reinterpret_cast<FEMinNode *>(LIST_MAGIC);
-    numElements--;
     return node;
 }
 
 FEMinNode *FEMinList::RemHead() {
-    FEMinNode *node = head;
-    if (node) {
-        RemNode(node);
+    FEMinNode *n = head;
+    if (n) {
+        RemNode(n);
     }
-    return node;
+    return n;
 }
 
-FEMinNode *FEMinList::FindNode(unsigned long ordinalnumber) const {
-    unsigned long i = 0;
+FEMinNode *FEMinList::FindNode(u32 ordinalnumber) const {
+    u32 i = 0;
     FEMinNode *n = GetHead();
     while (n && i != ordinalnumber) {
         n = n->GetNext();
@@ -145,23 +118,51 @@ FEMinNode *FEMinList::FindNode(unsigned long ordinalnumber) const {
 }
 
 FENode *FEList::FindNode(const char *pName, FENode *node) const {
-    FENode *result = nullptr;
-    unsigned long hash = FEHashUpper(pName);
+    FENode *retn = nullptr;
+    u32 Hash = FEHashUpper(pName);
     while (node) {
-        if (node->name) {
-            if (hash == node->nameHash && FEStricmp(node->name, pName) == 0) {
-                result = node;
+        if (node->GetName()) {
+            if (Hash == node->GetNameHash() && FEStricmp(node->GetName(), pName) == 0) {
+                retn = node;
                 break;
             }
         } else if (!pName) {
-            result = node;
+            retn = node;
             break;
         }
         node = node->GetNext();
     }
-    return result;
+    return retn;
 }
 
 FENode *FEList::FindNode(const char *pName) const {
     return FindNode(pName, static_cast<FENode *>(head));
+}
+
+u32 FEHash(const char *String) {
+    u32 Hash = 0xFFFFFFFF;
+
+    if (String) {
+        while (*String) {
+            Hash += Hash << 5;
+            Hash += *reinterpret_cast<const u8 *>(String);
+            String++;
+        }
+    }
+
+    return Hash;
+}
+
+u32 FEHashUpper(const char *String) {
+    u32 Hash = 0xFFFFFFFF;
+
+    if (String) {
+        while (*String) {
+            Hash += Hash << 5;
+            Hash += FEUpperCase(*String) & 0xFF;
+            String++;
+        }
+    }
+
+    return Hash;
 }

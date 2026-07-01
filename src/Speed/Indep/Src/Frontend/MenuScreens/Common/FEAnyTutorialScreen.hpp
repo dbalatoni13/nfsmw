@@ -1,9 +1,5 @@
-#ifndef FRONTEND_MENUSCREENS_COMMON_FEANYTUTORIALSCREEN_H
-#define FRONTEND_MENUSCREENS_COMMON_FEANYTUTORIALSCREEN_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef FEAnyTutorialScreen_HPP
+#define FEAnyTutorialScreen_HPP
 
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
 #include "Speed/Indep/Src/Frontend/SubTitle.hpp"

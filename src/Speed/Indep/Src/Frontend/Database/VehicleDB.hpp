@@ -28,11 +28,11 @@
 // Decl: speed/indep/src/database/VehicleDB.hpp:102
 class FECustomizationRecord {
   private:
-    FECarPartIndex InstalledPartIndices[139];    // offset 0x0, size 0x116
-    Physics::Upgrades::Package InstalledPhysics; // offset 0x118, size 0x20, Decl: speed/indep/src/database/VehicleDB.hpp:110
-    Physics::Tunings Tunings[3];                 // offset 0x138, size 0x54, Decl: speed/indep/src/database/VehicleDB.hpp:115
-    eCustomTuningType ActiveTuning;              // offset 0x18C, size 0x4, Decl: speed/indep/src/database/VehicleDB.hpp:116
-    int32 Preset;                                // offset 0x190, size 0x4, Decl: speed/indep/src/database/VehicleDB.hpp:118
+    FECarPartIndex InstalledPartIndices[139];     // offset 0x0, size 0x116
+    Physics::Upgrades::Package InstalledPhysics;  // offset 0x118, size 0x20, Decl: speed/indep/src/database/VehicleDB.hpp:110
+    Physics::Tunings Tunings[NUM_CUSTOM_TUNINGS]; // offset 0x138, size 0x54, Decl: speed/indep/src/database/VehicleDB.hpp:115
+    eCustomTuningType ActiveTuning;               // offset 0x18C, size 0x4, Decl: speed/indep/src/database/VehicleDB.hpp:116
+    int32 Preset;                                 // offset 0x190, size 0x4, Decl: speed/indep/src/database/VehicleDB.hpp:118
   public:
     FECustomizationHandle Handle; // offset 0x194, size 0x1, Decl: speed/indep/src/database/VehicleDB.hpp:119
 
@@ -73,15 +73,31 @@ class FECustomizationRecord {
 
     void SetInstalledPart(int carslotid, CarPart *part); // Decl: speed/indep/src/database/VehicleDB.hpp:184
 
-    bool GetInstalledJunkman(Physics::Upgrades::Type id) {} // Decl: speed/indep/src/database/VehicleDB.hpp:251
+    bool GetInstalledJunkman(Physics::Upgrades::Type id) { // Decl: speed/indep/src/database/VehicleDB.hpp:251
+        int mask = (1 << id);
+        return (InstalledPhysics.Junkman & mask) != 0;
+    }
 
-    void SetInstalledJunkman(Physics::Upgrades::Type id, bool b) {} // Decl: speed/indep/src/database/VehicleDB.hpp:255
+    void SetInstalledJunkman(Physics::Upgrades::Type id, bool b) { // Decl: speed/indep/src/database/VehicleDB.hpp:255
+        int mask = (1 << id);
+        if (b) {
+            InstalledPhysics.Junkman |= mask;
+        } else {
+            InstalledPhysics.Junkman &= ~mask;
+        }
+    }
 
-    void SetInstalledPhysics(const Physics::Upgrades::Package &package) {}
+    void SetInstalledPhysics(const Physics::Upgrades::Package &package) {
+        InstalledPhysics = package;
+    }
 
-    void SetInstalledPhysics(Physics::Upgrades::Type id, int level) {}
+    void SetInstalledPhysics(Physics::Upgrades::Type id, int level) {
+        InstalledPhysics.Part[id] = level;
+    }
 
-    const Physics::Upgrades::Package *GetInstalledPhysics() const {}
+    const Physics::Upgrades::Package *GetInstalledPhysics() const {
+        return &InstalledPhysics;
+    }
 
     void SetTuning(Physics::Tunings::Path id, float value) {}
 
@@ -146,8 +162,12 @@ class FEImpoundData {
 
     void Default(); // Decl: speed/indep/src/database/VehicleDB.hpp:352
     void BecomeImpounded(eImpoundReasons reason);
-    bool IsImpounded() const {}
-    bool IsReleasable() const {}
+    bool IsImpounded() const {
+        return ImpoundedState != IMPOUND_REASON_NONE;
+    }
+    bool IsReleasable() const {
+        return ImpoundedState == IMPOUND_RELEASED;
+    }
     void NotifyPlayerPaidToRelease();
     void NotifyPlayerUsedMarkerToRelease();
     bool NotifyWin();
@@ -368,6 +388,7 @@ class FEPlayerCarDB {
       public:
         MyCallback() {}
         virtual ~MyCallback() {}
+        virtual uint32 Callback(const FECareerRecord &record) const = 0;
     };
 
     bool IsHeroCar(FECarHandle handle); // Decl: speed/indep/src/database/VehicleDB.hpp:626
@@ -398,6 +419,8 @@ class FEPlayerCarDB {
     uint16 SoldHistoryNumBustedPursuits;              // offset 0x8CA6, size 0x2, Decl: speed/indep/src/database/VehicleDB.hpp:691
     FEInfractionsData SoldHistoryUnservedInfractions; // offset 0x8CA8, size 0x10, Decl: speed/indep/src/database/VehicleDB.hpp:692
     FEInfractionsData SoldHistoryServedInfractions;   // offset 0x8CB8, size 0x10, Decl: speed/indep/src/database/VehicleDB.hpp:693
+
+    friend class DebugCarCustomizeScreen;
 };
 
 void AdjustStableImpound_EvadePursuit(int playerNum);

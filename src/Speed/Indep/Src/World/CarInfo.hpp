@@ -640,10 +640,16 @@ class CarPart {
     int8 GetSpokeCount() {};
     bool GetMirrored() {};
     uint32 GetCarTypeNameHash();
-    uint32 GetPartNameHash() {};
+    uint32 GetPartNameHash() {
+        return static_cast<uint32>(this->PartNameHashTop) << 16 | this->PartNameHashBot;
+    };
     int8 GetPartID() {};
-    int8 GetUpgradeLevel() {};
-    int8 GetGroupNumber() {};
+    int8 GetUpgradeLevel() {
+        return GroupNumber_UpgradeLevel >> 5;
+    };
+    int8 GetGroupNumber() {
+        return GroupNumber_UpgradeLevel & 0x1f;
+    };
     uint32 GetModelNameHash(int model_num, int lod);
     void Print();
     void EndianSwap() {};
@@ -1030,11 +1036,14 @@ class DriverInfo {
 };
 
 extern CarTypeInfo *CarTypeInfoArray;
+extern CarPartDatabase CarPartDB;
+extern int32 CarTypeInfoArrayUpdated; // size: 0x4, address: 0x80437984, Decl: speed/indep/src/world/CarInfo.cpp:352
 
 inline CarTypeInfo *GetCarTypeInfo(CarType type) {
     return &CarTypeInfoArray[type];
 }
 
 CarTypeInfo *GetCarTypeInfoFromHash(uint32 car_type_hash);
+CAR_PART_ID GetCarPartFromSlot(CAR_SLOT_ID slot);
 
 #endif

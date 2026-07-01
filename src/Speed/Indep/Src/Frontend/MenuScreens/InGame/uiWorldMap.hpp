@@ -56,8 +56,8 @@ typedef enum { WMZ_ALL = 0, WMZ_LEVEL_1 = 1, WMZ_LEVEL_2 = 2, WMZ_LEVEL_4 = 3, W
 // Decl: speed/indep/src/frontend/menuscreens/ingame/uiWorldMap.hpp:37
 class MapItem : public bTNode<MapItem> {
   public:
-    MapItem(eWorldMapItemType type, FEObject *iconObj, bVector2 &map_pos, float world_pos, float rot, GIcon *icon) {
-    } // Decl: speed/indep/src/frontend/menuscreens/ingame/uiWorldMap.hpp:40
+    MapItem(eWorldMapItemType type, FEObject *iconObj, bVector2 &map_pos, bVector2 &world_pos, float rot,
+            GIcon *icon); // Decl: speed/indep/src/frontend/menuscreens/ingame/uiWorldMap.hpp:40
 
     virtual ~MapItem() {} // Decl: speed/indep/src/frontend/menuscreens/ingame/uiWorldMap.hpp:61
 
@@ -131,7 +131,7 @@ class MapItem : public bTNode<MapItem> {
 // Decl: speed/indep/src/frontend/menuscreens/ingame/uiWorldMap.hpp:155
 class CopItem : public MapItem {
   public:
-    CopItem(FEObject *icon, bVector2 &pos, float world_pos, float rot, eWorldMapItemType type)
+    CopItem(FEObject *icon, bVector2 &pos, bVector2 &world_pos, float rot, eWorldMapItemType type)
         : MapItem(type, icon, pos, world_pos, rot, nullptr) { // Decl: speed/indep/src/frontend/menuscreens/ingame/uiWorldMap.hpp:158
         FlashTimer = -1;
     }
@@ -148,7 +148,7 @@ class CopItem : public MapItem {
 // Decl: speed/indep/src/frontend/menuscreens/ingame/uiWorldMap.hpp:172
 class HeliItem : public CopItem {
   public:
-    HeliItem(FEImage *view, FEObject *icon, bVector2 &pos, float world_pos,
+    HeliItem(FEImage *view, FEObject *icon, bVector2 &pos, bVector2 &world_pos,
              float rot) // Decl: speed/indep/src/frontend/menuscreens/ingame/uiWorldMap.hpp:175
         : CopItem(icon, pos, world_pos, rot, WMIT_COP_HELI) {
         pViewCone = view;

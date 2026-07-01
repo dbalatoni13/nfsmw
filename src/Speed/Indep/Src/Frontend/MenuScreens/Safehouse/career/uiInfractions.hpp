@@ -1,5 +1,5 @@
-#ifndef __UIINFRACTIONS_HPP__
-#define __UIINFRACTIONS_HPP__
+#ifndef __UI_INFRACTIONS_HPP__
+#define __UI_INFRACTIONS_HPP__
 
 #include "Speed/Indep/Src/Frontend/Database/VehicleDB.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"

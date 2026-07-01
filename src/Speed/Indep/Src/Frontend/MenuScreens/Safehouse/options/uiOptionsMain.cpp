@@ -1,5 +1,7 @@
 #include "uiOptionsMain.hpp"
 
+#include "Speed/Indep/Src/Frontend/FEPackageData.hpp"
+#include "Speed/Indep/Src/Frontend/FEngFrontend.hpp"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/options/uiOptionWidgets.hpp"
@@ -8,19 +10,10 @@
 #include "Speed/Indep/Src/Generated/Events/EUnPause.hpp"
 #include "Speed/Indep/Src/Misc/Config.h"
 
-void FEngSetLanguageHash(const char *pkg_name, unsigned int obj_hash, unsigned int language);
-unsigned char FEngGetLastButton(const char *pkg_name);
-void FEngSetScript(const char *pkg_name, unsigned int obj_hash, unsigned int script_hash, bool start_at_beginning);
-bool FEngIsScriptRunning(const char *pkg_name, unsigned int obj_hash, unsigned int script_hash);
-void MemcardEnter(const char *from, const char *to, unsigned int op, void (*pTermFunc)(void *), void *pTermFuncParam, unsigned int msgSuccess,
-                  unsigned int msgFailed);
-int FEngMapJoyParamToJoyport(int feng_param);
-
 extern const char *gOnlineMainMenu;
 
 UIOptionsMain::UIOptionsMain(ScreenConstructorData *sd)
-    : IconScrollerMenu(sd) //
-      ,
+    : IconScrollerMenu(sd), //
       mCalledFromPauseMenu(sd->Arg != 0) {
     if (mCalledFromPauseMenu) {
         Options.SetIdleColor(0xFFFFAE40);
@@ -129,14 +122,7 @@ void UIOptionsMain::Setup() {
         AddOption(new OMCredits(0x51009E20, 0x0905101F, 0));
     }
 
-    int lastButton = FEngGetLastButton(GetPackageName());
-    if (bFadeInIconsImmediately) {
-        Options.bDelayUpdate = false;
-        Options.bFadingOut = false;
-        Options.StartFadeIn();
-    }
-
-    Options.SetInitialPos(lastButton);
+    this->SetInitialOption(FEngGetLastButton(GetPackageName()));
 
     if (!mCalledFromPauseMenu) {
         const uint32 FEObj_TITLEGROUP = 0xB71B576D;

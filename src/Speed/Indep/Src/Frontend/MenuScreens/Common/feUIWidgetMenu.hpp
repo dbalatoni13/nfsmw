@@ -1,9 +1,8 @@
-#ifndef FRONTEND_MENUSCREENS_COMMON_FEUIWIDGETMENU_H
-#define FRONTEND_MENUSCREENS_COMMON_FEUIWIDGETMENU_H
+#ifndef FEUIWIDGETMENU_H
+#define FEUIWIDGETMENU_H
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/feWidget.hpp"
 
 // total size: 0x138
 class UIWidgetMenu : public MenuScreen {

@@ -1,9 +1,5 @@
-#ifndef FRONTEND_MENUSCREENS_SAFEHOUSE_CAREER_UIRAPSHEETVD_H
-#define FRONTEND_MENUSCREENS_SAFEHOUSE_CAREER_UIRAPSHEETVD_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef __UI_RAP_SHEET_VD_HPP__
+#define __UI_RAP_SHEET_VD_HPP__
 
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/feArrayScrollerMenu.hpp"
 

@@ -10,7 +10,7 @@
 // total size: 0x68
 // Decl: speed/indep/src/frontend/hud/FeRadarDetector.hpp:8
 class RadarDetector : public HudElement, public IRadarDetector {
-
+  public:
     RadarDetector(UTL::COM::Object *pOutter, const char *pkg_name, int player_number);
     ~RadarDetector() override {} // Decl: speed/indep/src/frontend/hud/FeRadarDetector.hpp:11
 

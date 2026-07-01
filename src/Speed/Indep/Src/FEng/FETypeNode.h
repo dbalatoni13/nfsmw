@@ -2,11 +2,26 @@
 #define FETYPENODE_H_
 
 #include <types.h>
-
+#include "Speed/Indep/Src/FEng/FETypes.h"
 #include "Speed/Indep/Src/FEng/FEList.h"
 
 // total size: 0x28
 class FEFieldNode;
+
+typedef enum {
+    PT_Bool = 0,
+    PT_Int = 1,
+    PT_Float = 2,
+    PT_Vector2 = 3,
+    PT_Vector3 = 4,
+    PT_Quaternion = 5,
+    PT_Color = 6,
+    PT_ParamTypeCount = 7
+} FEParamType;
+
+typedef enum { IT_None = 0, IT_Linear = 1, IT_Spline = 2, IT_MoveToLinear = 3, IT_MoveToSpline = 4, IT_InterpTypeCount = 5 } FEInterpMethod;
+
+typedef enum { AT_Once = 0, AT_Loop = 1, AT_PingPong = 2, AT_ActionTypeCount = 3 } FEPlayActions;
 
 // File: speed/indep/src/feng/FETypeNode.h
 // total size: 0x24
@@ -19,8 +34,12 @@ class FEFieldNode : public FENode {
     u8 *pDefault; // offset 0x20, size 0x4, Decl: speed/indep/src/feng/FETypeNode.h:30
 
   public:
-    FEFieldNode() {}           // Decl: speed/indep/src/feng/FETypeNode.h:33
-    ~FEFieldNode() override {} // Decl: speed/indep/src/feng/FETypeNode.h:34
+    FEFieldNode() : Size(0), Offset(0), pDefault(nullptr) {} // Decl: speed/indep/src/feng/FETypeNode.h:33
+    ~FEFieldNode() override {                                // Decl: speed/indep/src/feng/FETypeNode.h:34
+        if (pDefault) {
+            delete[] pDefault;
+        }
+    }
 
     i32 GetType() const {
         return Type;
@@ -68,20 +87,26 @@ class FETypeNode : public FENode {
 
   public:
     void InsertField(FEFieldNode *pField, FEFieldNode *pInsertAfter) {} // Decl: speed/indep/src/feng/FETypeNode.h:71
-    void AppendField(FEFieldNode *pField) {}                            // Decl: speed/indep/src/feng/FETypeNode.h:72
-    void RemoveField(FEFieldNode *pField) {}                            // Decl: speed/indep/src/feng/FETypeNode.h:73
+    void AppendField(FEFieldNode *pField) {                             // Decl: speed/indep/src/feng/FETypeNode.h:72
+        Fields.AddTail(pField);
+    }
+    void RemoveField(FEFieldNode *pField) { // Decl: speed/indep/src/feng/FETypeNode.h:73
+        Fields.RemNode(pField);
+    }
 
-    void AddField(const char *pName, int Type);
+    void AddField(const char *pName, i32 Type);
 
     void UpdateOffsets();
 
-    i32 GetFieldCount() {} // Decl: speed/indep/src/feng/FETypeNode.h:78
+    i32 GetFieldCount() { // Decl: speed/indep/src/feng/FETypeNode.h:78
+        return Fields.GetNumElements();
+    }
 
     FEFieldNode *GetField(i32 Index) { // Decl: speed/indep/src/feng/FETypeNode.h:80
         return reinterpret_cast<FEFieldNode *>(Fields.FindNode(static_cast<u32>(Index)));
     }
 
-    FEFieldNode *GetField(char *pName); // Decl: speed/indep/src/feng/FETypeNode.h:80
+    FEFieldNode *GetField(const char *pName); // Decl: speed/indep/src/feng/FETypeNode.h:80
 
     FEFieldNode *GetFirstField() { // Decl: speed/indep/src/feng/FETypeNode.h:81
         return reinterpret_cast<FEFieldNode *>(Fields.GetHead());

@@ -1,5 +1,4 @@
 #include "Speed/Indep/Src/Frontend/HUD/FeCountdown.hpp"
-#include "Speed/Indep/Src/Animation/AnimWorldTypes.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEObjects.hpp"
@@ -9,12 +8,9 @@
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 
 Countdown::Countdown(UTL::COM::Object *pOutter, const char *pkg_name, int player_number)
-    : HudElement(pkg_name, 0x400) //
-      ,
-      ICountdown(pOutter) //
-      ,
-      mCountdown(RACE_COUNTDOWN_NUMBER_NONE) //
-      ,
+    : HudElement(pkg_name, 0x400),            //
+      ICountdown(pOutter),                    //
+      mCountdown(RACE_COUNTDOWN_NUMBER_NONE), //
       mSecondTimer(0) {
     pMessageGroup = RegisterGroup(FEHashUpper("321_GO_GROUP"));
     pMessage = static_cast<FEString *>(FEngFindObject(pkg_name, FEHashUpper("321_GO")));

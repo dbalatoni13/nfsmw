@@ -5,6 +5,7 @@
 #include "Speed/Indep/Src/FEng/FEPackage.h"
 #include "Speed/Indep/Src/FEng/FEString.h"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
+#include "Speed/Indep/Src/Misc/Timer.hpp"
 
 // File: speed/indep/src/frontend/menuscreens/ingame/FEPkg_MU_Keyboard.hpp
 // total size: 0x360
@@ -164,5 +165,7 @@ const char FEKeyboard::mLetterMap[8][2][45] = {
 ; // size: 0x2D0, address: 0x803E59E5, Decl: speed/indep/src/frontend/menuscreens/ingame/FEPkg_MU_Keyboard.hpp:106
 
 const char mEmailSymbols[45] = {}; // size: 0x2D, Decl: speed/indep/src/frontend/menuscreens/ingame/FEPkg_MU_Keyboard.hpp:107
+
+extern Timer KBCreationTimer;
 
 #endif

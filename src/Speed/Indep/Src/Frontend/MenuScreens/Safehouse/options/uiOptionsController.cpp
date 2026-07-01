@@ -2,29 +2,19 @@
 
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
-#include "Speed/Indep/Src/Frontend/FEJoyInput.hpp"
 #include "Speed/Indep/Src/Frontend/FEngFrontend.hpp"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEImages.hpp"
 #include "Speed/Indep/Src/Frontend/Localization/Localize.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/options/uiOptionWidgets.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/options/uiOptionsMain.hpp"
 #include "Speed/Indep/Src/Generated/Events/EUnPause.hpp"
+#include "Speed/Indep/Src/Input/IOModule.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/feDialogBox.hpp"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 
-void FEngSetButtonTexture(FEImage *img, unsigned int tex_hash);
-unsigned long FEHashUpper(const char *str);
-unsigned int FindButtonNameHashForFEString(int config, int string_number, JoystickPort player);
-bool IsJoystickTypeWheel(JoystickPort port);
-
-void eLoadStreamingTexture(unsigned int *textures, int count, void (*callback)(void *), void *param, int pool);
-void eUnloadStreamingTexture(unsigned int *textures, int count);
-
 int UIOptionsController::PortToConfigure = 0;
 int UIOptionsController::isWheelConfig = 0;
-
-void MyFinishLoadingControllerTextureCallbackBridge(unsigned int p);
 
 UIOptionsController::UIOptionsController(ScreenConstructorData *sd) : UIWidgetMenu(sd) {
     WhichControllerTexture = 0;
@@ -103,8 +93,8 @@ void UIOptionsController::NotificationMessage(u32 msg, FEObject *pobj, u32 param
             if (OptionsDidNotChange()) {
                 cFEng::Get()->QueuePackageMessage(0x587C018B, GetPackageName(), 0);
             } else {
-                DialogInterface::ShowTwoButtons(GetPackageName(), "", static_cast<eDialogTitle>(1), 0x70E01038, 0x417B25E4, 0x775DBA97, 0x34DC1BCF,
-                                                0x34DC1BCF, static_cast<eDialogFirstButtons>(1), GetLocalizedString(0xE9CB802F));
+                DialogInterface::ShowTwoButtons(GetPackageName(), "", dialog_alert, 0x70E01038, 0x417B25E4, 0x775DBA97, 0x34DC1BCF, 0x34DC1BCF,
+                                                first_dialog_button2, GetLocalizedString(0xE9CB802F));
             }
             break;
         case 0x775DBA97:
@@ -123,8 +113,8 @@ void UIOptionsController::NotificationMessage(u32 msg, FEObject *pobj, u32 param
                 } else {
                     dlg_pkg = "Dialog.fng";
                 }
-                DialogInterface::ShowTwoButtons(pkgName, dlg_pkg, static_cast<eDialogTitle>(1), 0x70E01038, 0x417B25E4, 0x9A5AD46D, 0xA2A07AC4,
-                                                0x34DC1BCF, static_cast<eDialogFirstButtons>(1), buf);
+                DialogInterface::ShowTwoButtons(pkgName, dlg_pkg, dialog_alert, 0x70E01038, 0x417B25E4, 0x9A5AD46D, 0xA2A07AC4, 0x34DC1BCF,
+                                                first_dialog_button2, buf);
             } else {
                 cFEng::Get()->QueueGameMessage(0x9A5AD46D, 0, 0xFF);
             }

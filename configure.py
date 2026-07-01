@@ -322,6 +322,7 @@ if config.platform == Platform.GC_WII:
         "-D__SN__",
         "-D_STLP_VENDOR_EXCEPT_STD=std",
         "-DCLANGD_DAMNIT",  # used in cases where intellisense breaks
+        "-D__HONOR_STD"
     ]
 
     cflags_dolphin = [

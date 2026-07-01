@@ -257,8 +257,8 @@ void uiSMS::NotificationMessage(u32 msg, FEObject *obj, u32 param1, u32 param2) 
             if (!the_sms_msg->IsValid()) {
                 goto fallthrough_msg;
             }
-            DialogInterface::ShowTwoButtons(GetPackageName(), "InGameDialog.fng", static_cast<eDialogTitle>(1), 0x70e01038, 0x417b25e4, 0xd05fc3a3,
-                                            0x34dc1bcf, 0x34dc1bcf, static_cast<eDialogFirstButtons>(1), 0x8c3c2171);
+            DialogInterface::ShowTwoButtons(GetPackageName(), "InGameDialog.fng", dialog_alert, 0x70e01038, 0x417b25e4, 0xd05fc3a3, 0x34dc1bcf,
+                                            0x34dc1bcf, first_dialog_button2, 0x8c3c2171);
             break;
         case 0xd05fc3a3: {
             cFEng::Get()->QueuePackageMessage(0x8cb81f09, GetPackageName(), nullptr);

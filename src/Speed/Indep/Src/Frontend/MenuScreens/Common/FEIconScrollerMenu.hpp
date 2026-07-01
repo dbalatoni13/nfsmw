@@ -125,9 +125,18 @@ class IconPanel {
     virtual ~IconPanel() {}
     virtual void Update();
     virtual FEImage *AddOption(IconOption *option);
-    virtual void RemoveAll() {}
+    virtual void RemoveAll() {
+        while (Options.GetHead() != Options.EndOfList()) {
+            IconOption *node = Options.GetHead();
+            node->Remove();
+            delete node;
+        }
+        iIndexToAdd = 1;
+    }
     virtual void Act(uint32 data, FEObject *obj, uint32 param1, uint32 param2);
-    virtual IconOption *GetHead() {}
+    virtual IconOption *GetHead() {
+        return Options.GetHead();
+    }
     IconOption *GetCurrentOption() {
         return pCurrentNode;
     }
@@ -135,14 +144,39 @@ class IconPanel {
         return pMaster;
     }
     IconOption *GetOption(int to_find);
-    bool AtHead() {}
-    bool AtTail() {}
-    virtual bool IsHead(IconOption *option) {}
-    virtual bool IsTail(IconOption *option) {}
-    virtual bool IsEndOfList(IconOption *opt) {}
-    uint32 GetCurrentDesc() {}
-    uint32 GetCurrentName() {}
-    bool CurrentReactsImmediately() {}
+    bool AtHead() {
+        return IsHead(pCurrentNode);
+    }
+    bool AtTail() {
+        return IsTail(pCurrentNode);
+    }
+    virtual bool IsHead(IconOption *option) {
+        return option == Options.GetHead();
+    }
+    virtual bool IsTail(IconOption *option) {
+        return option == Options.GetTail();
+    }
+    virtual bool IsEndOfList(IconOption *opt) {
+        return opt == Options.EndOfList();
+    }
+    uint32 GetCurrentDesc() {
+        if (this->pCurrentNode != nullptr) {
+            return pCurrentNode->GetDesc();
+        }
+        return 0;
+    }
+    uint32 GetCurrentName() {
+        if (this->pCurrentNode != nullptr) {
+            return pCurrentNode->GetName();
+        }
+        return 0;
+    }
+    bool CurrentReactsImmediately() {
+        if (this->pCurrentNode != nullptr) {
+            return pCurrentNode->ReactsImmediately();
+        }
+        return false;
+    }
     int GetIndexToAdd() {
         return iIndexToAdd;
     }
@@ -153,8 +187,20 @@ class IconPanel {
         return 0;
     }
     virtual int GetOptionIndex(IconOption *to_find);
-    void ScrollNext() {}
-    void ScrollPrev() {}
+    void ScrollNext() {
+        if (bWrap) {
+            ScrollWrapped(eSD_NEXT);
+        } else {
+            Scroll(eSD_NEXT);
+        }
+    }
+    void ScrollPrev() {
+        if (bWrap) {
+            ScrollWrapped(eSD_PREV);
+        } else {
+            Scroll(eSD_PREV);
+        }
+    }
     virtual bool SetSelection(IconOption *option);
     bool JustScrolled() {
         return bJustScrolled;
@@ -187,8 +233,8 @@ class IconPanel {
     IconOption *pCurrentNode;   // offset 0x8, size 0x4
     FEObject *pMaster;          // offset 0xC, size 0x4
     FEObject *pScrollRegion;    // offset 0x10, size 0x4
-    char *pPackageName;         // offset 0x14, size 0x4
-    char *pButtonName;          // offset 0x18, size 0x4
+    const char *pPackageName;   // offset 0x14, size 0x4
+    const char *pButtonName;    // offset 0x18, size 0x4
     float fIconSpacing;         // offset 0x1C, size 0x4
     int iIndexToAdd;            // offset 0x20, size 0x4
     bool bWrap;                 // offset 0x24, size 0x1
@@ -222,8 +268,9 @@ class IconScroller : public IconPanel {
         fCurFadeTime = 0.0f;
     }
     void StartFadeOut() {
+        bFadingIn = false;
+        fCurFadeTime = fMaxFadeTime;
         bFadingOut = true;
-        fCurFadeTime = 0.0f;
     }
     void SetIdleColor(uint32 color) {
         IdleColor = color;
@@ -234,10 +281,18 @@ class IconScroller : public IconPanel {
     FEScrollBar *GetScrollBar() {
         return &ScrollBar;
     }
-    IconOption *GetHead() override {}
-    bool IsHead(IconOption *option) override {}
-    bool IsTail(IconOption *option) override {}
-    bool IsEndOfList(IconOption *opt) override {}
+    IconOption *GetHead() override {
+        return static_cast<IconOption *>(HeadBookEnd->GetNext());
+    }
+    bool IsHead(IconOption *option) override {
+        return option == static_cast<IconOption *>(HeadBookEnd->GetNext());
+    }
+    bool IsTail(IconOption *option) override {
+        return option == static_cast<IconOption *>(TailBookEnd->GetPrev());
+    }
+    bool IsEndOfList(IconOption *opt) override {
+        return opt == TailBookEnd || opt == HeadBookEnd;
+    }
     bool IsInitialized() {
         return bInitialized;
     }
@@ -245,8 +300,12 @@ class IconScroller : public IconPanel {
         bInitialized = true;
     }
     int GetOptionIndex(IconOption *to_find) override;
-    int CountElements() {}
-    bool IsEmpty() {}
+    int CountElements() {
+        return Options.CountElements();
+    }
+    bool IsEmpty() {
+        return Options.CountElements() == iNumBookEnds;
+    }
 
   protected:
     void Scroll(eScrollDir dir) override;
@@ -296,7 +355,8 @@ class IconScrollerMenu : public MenuScreen {
     eMenuSoundTriggers NotifySoundMessage(u32 msg, eMenuSoundTriggers maybe) override;
 
     void DelayFadeIn() {
-        bFadeInIconsImmediately = true;
+        bFadeInIconsImmediately = false;
+        Options.DelayUpdate();
     }
 
     void SetInitialOption(int index) {

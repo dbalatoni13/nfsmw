@@ -5,10 +5,8 @@
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 
 uiRapSheetLogin::uiRapSheetLogin(ScreenConstructorData *sd)
-    : MenuScreen(sd) //
-      ,
-      screen(sd->Arg) //
-      ,
+    : MenuScreen(sd),  //
+      screen(sd->Arg), //
       returnToMainMenu(false) {
     Setup();
 }

@@ -82,24 +82,6 @@ class eDamageInfo {
     float PreviousCells[64]; // offset 0x100, size 0x100
 };
 
-class eSolidPlatInterface {
-    // total size: 0x4
-    eSolidPlatInfo *PlatInfo; // offset 0x0, size 0x4
-
-  public:
-    int UnloaderPlatChunks(bChunk *chunk);
-    int FixPlatInfo();
-    int UnFixPlatInfo();
-
-    eSolidPlatInfo *GetPlatInfo() {
-        return this->PlatInfo;
-    }
-
-  protected:
-    void SetSmoothVertex(uint32 vertex_offset, float nx, float ny, float nz);
-    void ApplyDamagePlat(eDamageInfo *damage_info);
-};
-
 class eSolid : public eSolidPlatInterface, public bTNode<eSolid> {
   public:
     // total size: 0xE0
@@ -454,7 +436,7 @@ int eSmoothNormals(eSolid **solid_table, int num_solids);
 
 void SetDuplicateTextureWarning(int enabled);
 
-extern eLoadedSolidStats LoadedSolidStats;
+// extern eLoadedSolidStats LoadedSolidStats;
 extern uint32 eFrameCounter;
 extern bool WaitUntilRenderingDoneDisabled;
 

@@ -13,4 +13,6 @@ class FEObjectCallback {
     virtual bool Callback(FEObject *obj) = 0;
 };
 
+static const u32 DEFAULT_NUM_FEOBJECTS = 1024; // size: 0x4, Decl: speed/indep/src/feng/FEObjectSorter.h:30
+
 #endif

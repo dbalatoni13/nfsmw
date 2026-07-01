@@ -1,48 +1,21 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/feUIWidgetMenu.hpp"
-#include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEInputWidget.hpp"
-#include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEIconScrollerMenu.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEImages.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEStrings.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/InGame/FEPkg_MU_Keyboard.hpp"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEObjects.hpp"
 
-extern void FEngSetVisible(FEObject *obj);
-extern void FEngSetInvisible(FEObject *obj);
-extern void FEngSetScript(FEObject *object, unsigned int script_hash, bool start_at_beginning);
-extern FEString *FEngFindString(const char *pkg_name, int name_hash);
-extern FEImage *FEngFindImage(const char *pkg_name, int name_hash);
-extern FEObject *FEngFindObject(const char *pkg_name, unsigned int hash);
-extern unsigned long FEHashUpper(const char *str);
-extern int FEngSNPrintf(char *dest, int size, const char *fmt, ...);
-extern void FEngGetTopLeft(FEObject *object, float &x, float &y);
-extern void FEngSetTopLeft(FEObject *object, float x, float y);
-extern void FEngGetSize(FEObject *object, float &x, float &y);
-extern void FEngSetSize(FEObject *object, float x, float y);
-extern char *bStrCat(char *dest, const char *src1, const char *src2);
-extern unsigned int FEngHashString(const char *, ...);
-extern void FEngSetCurrentButton(const char *pkg_name, unsigned int hash);
-
-extern char *bStrNCpy(char *dest, const char *src, int n);
-
-extern Timer RealTimer;
-extern Timer KBCreationTimer;
 extern float g_KBDelaySeconds;
 
 UIWidgetMenu::UIWidgetMenu(ScreenConstructorData *sd)
-    : MenuScreen(sd) //
-      ,
-      pCurrentOption(nullptr) //
-      ,
-      pViewTop(nullptr) //
-      ,
-      pTitleMaster(nullptr) //
-      ,
-      pDataMaster(nullptr) //
-      ,
-      pPrevButtonObj(nullptr) //
-      ,
-      pDone(nullptr) //
-{
-    ScrollBar.~FEScrollBar();
-    new (&ScrollBar) FEScrollBar(GetPackageName(), "scrollbar", true, false, false);
+    : MenuScreen(sd),          //
+      pCurrentOption(nullptr), //
+      pViewTop(nullptr),       //
+      pTitleMaster(nullptr),   //
+      pDataMaster(nullptr),    //
+      pPrevButtonObj(nullptr), //
+      pDone(nullptr),          //
+      ScrollBar(GetPackageName(), "scrollbar", true, false, false) {
     iIndexToAdd = 1;
     iLastSelectedIndex = 1;
     bScrollWrapped = true;
@@ -79,7 +52,7 @@ UIWidgetMenu::UIWidgetMenu(ScreenConstructorData *sd)
     }
 }
 
-void UIWidgetMenu::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
+void UIWidgetMenu::NotificationMessage(u32 msg, FEObject *pobj, u32 param1, u32 param2) {
     switch (msg) {
         case 0x35f8620b:
             if (!pCurrentOption)
@@ -156,7 +129,7 @@ void UIWidgetMenu::NotificationMessage(unsigned long msg, FEObject *pobj, unsign
     }
 }
 
-eMenuSoundTriggers UIWidgetMenu::NotifySoundMessage(unsigned long msg, eMenuSoundTriggers maybe) {
+eMenuSoundTriggers UIWidgetMenu::NotifySoundMessage(u32 msg, eMenuSoundTriggers maybe) {
     if ((msg == 0x48122792 || msg == 0x4AC5E165) && pCurrentOption && !pCurrentOption->IsEnabled()) {
         return static_cast<eMenuSoundTriggers>(-1);
     }
@@ -175,312 +148,6 @@ FEWidget *UIWidgetMenu::GetWidget(unsigned int id) {
         return nullptr;
     }
     return static_cast<FEWidget *>(Options.GetNode(id - 1));
-}
-
-unsigned int UIWidgetMenu::GetWidgetIndex(FEWidget *opt) {
-    unsigned int index = 1;
-    {
-        FEWidget *w = Options.GetHead();
-        while (w != Options.EndOfList()) {
-            if (opt == w) {
-                return index;
-            }
-            index++;
-            w = w->GetNext();
-        }
-    }
-    return 0;
-}
-
-void UIWidgetMenu::IncrementStartPos() {
-    float y = vWidgetSize.y + vWidgetSpacing.y + vLastWidgetPos.y;
-    vLastWidgetPos.y = y;
-    vDataPos.y = y;
-}
-
-FEString *UIWidgetMenu::GetCurrentFEString(const char *string_name) {
-    char sztemp[32];
-    char sztemp2[32];
-    bStrCat(sztemp, string_name, "%d");
-    FEngSNPrintf(sztemp2, 0x20, sztemp, iIndexToAdd);
-    return FEngFindString(GetPackageName(), FEHashUpper(sztemp2));
-}
-
-FEImage *UIWidgetMenu::GetCurrentFEImage(const char *img_name) {
-    char sztemp[32];
-    char sztemp2[32];
-    bStrCat(sztemp, img_name, "%d");
-    FEngSNPrintf(sztemp2, 0x20, sztemp, iIndexToAdd);
-    FEImage *obj = FEngFindImage(GetPackageName(), FEHashUpper(sztemp2));
-    if (!obj) {
-        obj = FEngFindImage(GetPackageName(), FEngHashString("%s0", img_name));
-    }
-    return obj;
-}
-
-FEObject *UIWidgetMenu::GetCurrentFEObject(const char *name) {
-    char sztemp[32];
-    char sztemp2[32];
-    bStrCat(sztemp, name, "%d");
-    FEngSNPrintf(sztemp2, 0x20, sztemp, iIndexToAdd);
-    return FEngFindObject(GetPackageName(), FEHashUpper(sztemp2));
-}
-
-void UIWidgetMenu::RefreshWidgets() {
-    {
-        FEWidget *w = Options.GetHead();
-        while (w != Options.EndOfList()) {
-            w->Draw();
-            w = w->GetNext();
-        }
-    }
-}
-
-void UIWidgetMenu::SetOption(FEWidget *opt) {
-    FEWidget *old = pCurrentOption;
-    if (old != opt && old) {
-        old->UnsetFocus();
-    }
-    pCurrentOption = opt;
-    if (opt) {
-        opt->SetFocus(GetPackageName());
-    }
-    UpdateCursorPos();
-}
-
-void UIWidgetMenu::SetInitialPositions() {
-    FEngGetTopLeft(pTitleMaster, vWidgetStartPos.x, vWidgetStartPos.y);
-    vLastWidgetPos = vWidgetStartPos;
-    FEngGetTopLeft(pDataMaster, vDataPos.x, vDataPos.y);
-    FEngGetSize(pTitleMaster, vMaxTitleSize.x, vMaxTitleSize.y);
-    FEngGetSize(pDataMaster, vMaxDataSize.x, vMaxDataSize.y);
-    vWidgetSize.y = vMaxTitleSize.y;
-    vWidgetSize.x = bAbs(vWidgetStartPos.x - (vDataPos.x + vMaxDataSize.x));
-}
-
-void UIWidgetMenu::ClearWidgets() {
-    FEWidget *w = Options.GetHead();
-    while (w != Options.EndOfList()) {
-        w->Hide();
-        w->UnsetFocus();
-        w = w->GetNext();
-    }
-    while (!Options.IsEmpty()) {
-        FEWidget *head = Options.RemoveHead();
-        delete head;
-    }
-    pCurrentOption = nullptr;
-    iIndexToAdd = 1;
-    bCurrentOptionSet = false;
-    iLastSelectedIndex = 1;
-    SetInitialPositions();
-}
-
-void UIWidgetMenu::UpdateCursorPos() {
-    if (pCursor) {
-        if (pCurrentOption) {
-            unsigned int pos = GetWidgetIndex(pCurrentOption);
-            pos -= GetWidgetIndex(pViewTop);
-            if (pos + 1 && pos + 1 <= iMaxWidgetsOnScreen) {
-                FEngSetScript(pCursor, FEngHashString("POS%d", pos + 1), true);
-            } else {
-                FEngSetScript(pCursor, 0x16a259, true);
-            }
-        } else {
-            FEngSetScript(pCursor, 0x16a259, true);
-        }
-    }
-}
-
-void UIWidgetMenu::Reset() {
-    FEWidget *head = Options.GetHead();
-    if (head != Options.EndOfList()) {
-        bViewNeedsSync = false;
-        pCurrentOption = head;
-        pViewTop = head;
-        SetOption(head);
-        Reposition();
-    }
-}
-
-void UIWidgetMenu::Reposition() {
-    unsigned int index = 1;
-    unsigned int view_index = GetWidgetIndex(pViewTop);
-    float pos = vWidgetStartPos.y;
-    {
-        FEWidget *w = Options.GetHead();
-        while (w != Options.EndOfList()) {
-            if (index >= view_index && index < view_index + iMaxWidgetsOnScreen) {
-                w->Show();
-                w->SetPosY(pos);
-                w->Draw();
-                w->Position();
-                pos += vWidgetSize.y;
-            } else {
-                w->SetPosY(6969.0f);
-                w->Hide();
-            }
-            index++;
-            w = w->GetNext();
-        }
-    }
-    UpdateCursorPos();
-}
-
-void UIWidgetMenu::SyncViewToSelection() {
-    if (Options.IsEmpty()) {
-        return;
-    }
-    if (!pCurrentOption && !pDone) {
-        Reset();
-        return;
-    }
-    if (static_cast<unsigned int>(iIndexToAdd - 1) > iMaxWidgetsOnScreen &&
-        GetWidgetIndex(pCurrentOption) <= static_cast<unsigned int>(iIndexToAdd - iMaxWidgetsOnScreen)) {
-        pViewTop = pCurrentOption;
-    } else {
-        int node_index = iIndexToAdd - iMaxWidgetsOnScreen;
-        node_index = node_index - 1;
-        if (node_index < 0) {
-            node_index = 0;
-        }
-        pViewTop = static_cast<FEWidget *>(Options.GetNode(node_index));
-    }
-    Reposition();
-    bViewNeedsSync = false;
-}
-
-unsigned int UIWidgetMenu::AddButtonOption(FEButtonWidget *option) {
-    option->SetTitleObject(GetCurrentFEString(pTitleName));
-    option->SetBacking(GetCurrentFEObject(pBackingName));
-    option->SetTopLeft(vLastWidgetPos);
-    option->SetMaxTitleSize(vMaxTitleSize);
-    Options.AddTail(option);
-    iIndexToAdd++;
-    IncrementStartPos();
-    if (!option->IsEnabled()) {
-        option->Disable();
-    }
-    option->Show();
-    option->Draw();
-    option->Position();
-    option->SetWidth(bAbs(vWidgetSize.x));
-    option->SetHeight(bAbs(vWidgetSize.y));
-    return iIndexToAdd - 1;
-}
-
-unsigned int UIWidgetMenu::AddToggleOption(FEToggleWidget *option, bool use_arrow) {
-    float img_left;
-    float img_right;
-
-    option->SetTitleObject(GetCurrentFEString(pTitleName));
-    option->SetDataObject(GetCurrentFEString(pDataName));
-    option->SetBacking(GetCurrentFEObject(pBackingName));
-    option->SetTopLeft(vLastWidgetPos);
-    option->SetMaxTitleSize(vMaxTitleSize);
-    option->SetMaxDataSize(vMaxDataSize);
-    option->SetDataPos(vDataPos);
-    option->SetLeftImage(GetCurrentFEImage(pLeftArrowName));
-    option->SetRightImage(GetCurrentFEImage(pRightArrowName));
-    Options.AddTail(option);
-    iIndexToAdd++;
-    IncrementStartPos();
-    if (!option->IsEnabled()) {
-        option->Disable();
-    }
-    option->Show();
-    option->Draw();
-    option->Position();
-    img_left = FEngGetTopLeftX(reinterpret_cast<FEObject *>(option->GetRightImage())) +
-               bAbs(FEngGetSizeX(reinterpret_cast<FEObject *>(option->GetRightImage())));
-    option->SetWidth(bAbs(option->GetTopLeftX() - img_left));
-    img_right = bAbs(FEngGetSizeY(reinterpret_cast<FEObject *>(option->GetRightImage())));
-    option->SetHeight(img_right);
-    return iIndexToAdd - 1;
-}
-
-unsigned int UIWidgetMenu::AddSliderOption(FESliderWidget *option, bool use_arrow) {
-    char sztemp[64];
-    float img_left;
-    float img_right;
-
-    FEngSNPrintf(sztemp, 0x40, "%s%d", pSliderName, iIndexToAdd);
-    option->SetTitleObject(GetCurrentFEString(pTitleName));
-    option->InitSliderObjects(GetPackageName(), sztemp);
-    option->SetInitialValues();
-    option->SetTopLeft(vLastWidgetPos);
-    option->SetMaxTitleSize(vMaxTitleSize);
-    option->SetMaxDataSize(vMaxDataSize);
-    option->SetDataPos(vDataPos);
-    option->SetLeftImage(GetCurrentFEImage(pLeftArrowName));
-    option->SetRightImage(GetCurrentFEImage(pRightArrowName));
-    Options.AddTail(option);
-    iIndexToAdd++;
-    IncrementStartPos();
-    if (!option->IsEnabled()) {
-        option->Disable();
-    }
-    option->Show();
-    option->Draw();
-    option->Position();
-    img_left = FEngGetTopLeftX(reinterpret_cast<FEObject *>(option->GetRightImage())) +
-               bAbs(FEngGetSizeX(reinterpret_cast<FEObject *>(option->GetRightImage())));
-    option->SetWidth(bAbs(option->GetTopLeftX() - img_left));
-    img_right = bAbs(FEngGetSizeY(reinterpret_cast<FEObject *>(option->GetTitleObject())));
-    option->SetHeight(img_right);
-    return iIndexToAdd - 1;
-}
-
-void UIWidgetMenu::SetInitialOption(int number) {
-    if (Options.IsEmpty()) {
-        if (bHasScrollBar) {
-            ScrollBar.Update(iMaxWidgetsOnScreen, iIndexToAdd - 1, GetWidgetIndex(pViewTop), GetWidgetIndex(pCurrentOption));
-        }
-        return;
-    }
-    if (bCurrentOptionSet)
-        goto update_scrollbar;
-
-    bool need_first_avail;
-    need_first_avail = false;
-    if (number != 0) {
-        FEWidget *w = GetWidget(number);
-        if (!w || w == Options.EndOfList() || !w->IsEnabled()) {
-            need_first_avail = true;
-        } else {
-            SetOption(w);
-            iLastSelectedIndex = number;
-            bCurrentOptionSet = true;
-        }
-    } else {
-        if (pDone) {
-            if (pCurrentOption) {
-                pCurrentOption->UnsetFocus();
-                pCurrentOption = nullptr;
-            }
-            FEngSetCurrentButton(GetPackageName(), pDone->NameHash);
-        } else {
-            need_first_avail = true;
-        }
-    }
-    if (need_first_avail) {
-        FEWidget *w = Options.GetHead();
-        iLastSelectedIndex = 1;
-        while (w) {
-            if (w->IsEnabled() || w == Options.EndOfList()) {
-                SetOption(w);
-                bCurrentOptionSet = true;
-                break;
-            }
-            w = w->GetNext();
-            iLastSelectedIndex++;
-        }
-    }
-    SyncViewToSelection();
-update_scrollbar:
-    if (bHasScrollBar) {
-        ScrollBar.Update(iMaxWidgetsOnScreen, iIndexToAdd - 1, GetWidgetIndex(pViewTop), GetWidgetIndex(pCurrentOption));
-    }
 }
 
 void UIWidgetMenu::Scroll(eScrollDir dir) {
@@ -610,4 +277,309 @@ void UIWidgetMenu::ScrollWrapped(eScrollDir dir) {
             ScrollBar.Update(iMaxWidgetsOnScreen, iIndexToAdd - 1, GetWidgetIndex(pViewTop), GetWidgetIndex(pCurrentOption));
         }
     }
+}
+
+uint32 UIWidgetMenu::AddButtonOption(FEButtonWidget *option) {
+    option->SetTitleObject(GetCurrentFEString(pTitleName));
+    option->SetBacking(GetCurrentFEObject(pBackingName));
+    option->SetTopLeft(vLastWidgetPos);
+    option->SetMaxTitleSize(vMaxTitleSize);
+    Options.AddTail(option);
+    iIndexToAdd++;
+    IncrementStartPos();
+    if (!option->IsEnabled()) {
+        option->Disable();
+    }
+    option->Show();
+    option->Draw();
+    option->Position();
+    option->SetWidth(bAbs(vWidgetSize.x));
+    option->SetHeight(bAbs(vWidgetSize.y));
+    return iIndexToAdd - 1;
+}
+
+uint32 UIWidgetMenu::AddToggleOption(FEToggleWidget *option, bool use_arrow) {
+    float img_left;
+    float img_right;
+
+    option->SetTitleObject(GetCurrentFEString(pTitleName));
+    option->SetDataObject(GetCurrentFEString(pDataName));
+    option->SetBacking(GetCurrentFEObject(pBackingName));
+    option->SetTopLeft(vLastWidgetPos);
+    option->SetMaxTitleSize(vMaxTitleSize);
+    option->SetMaxDataSize(vMaxDataSize);
+    option->SetDataPos(vDataPos);
+    option->SetLeftImage(GetCurrentFEImage(pLeftArrowName));
+    option->SetRightImage(GetCurrentFEImage(pRightArrowName));
+    Options.AddTail(option);
+    iIndexToAdd++;
+    IncrementStartPos();
+    if (!option->IsEnabled()) {
+        option->Disable();
+    }
+    option->Show();
+    option->Draw();
+    option->Position();
+    img_left = FEngGetTopLeftX(reinterpret_cast<FEObject *>(option->GetRightImage())) +
+               bAbs(FEngGetSizeX(reinterpret_cast<FEObject *>(option->GetRightImage())));
+    option->SetWidth(bAbs(option->GetTopLeftX() - img_left));
+    img_right = bAbs(FEngGetSizeY(reinterpret_cast<FEObject *>(option->GetRightImage())));
+    option->SetHeight(img_right);
+    return iIndexToAdd - 1;
+}
+
+uint32 UIWidgetMenu::AddSliderOption(FESliderWidget *option, bool use_arrow) {
+    char sztemp[64];
+    float img_left;
+    float img_right;
+
+    FEngSNPrintf(sztemp, sizeof(sztemp), "%s%d", pSliderName, iIndexToAdd);
+    option->SetTitleObject(GetCurrentFEString(pTitleName));
+    option->InitSliderObjects(GetPackageName(), sztemp);
+    // option->SetInitialValues();
+    option->SetTopLeft(vLastWidgetPos);
+    option->SetMaxTitleSize(vMaxTitleSize);
+    option->SetMaxDataSize(vMaxDataSize);
+    option->SetDataPos(vDataPos);
+    option->SetLeftImage(GetCurrentFEImage(pLeftArrowName));
+    option->SetRightImage(GetCurrentFEImage(pRightArrowName));
+    Options.AddTail(option);
+    iIndexToAdd++;
+    IncrementStartPos();
+    if (!option->IsEnabled()) {
+        option->Disable();
+    }
+    option->Show();
+    option->Draw();
+    option->Position();
+    img_left = FEngGetTopLeftX(reinterpret_cast<FEObject *>(option->GetRightImage())) +
+               bAbs(FEngGetSizeX(reinterpret_cast<FEObject *>(option->GetRightImage())));
+    option->SetWidth(bAbs(option->GetTopLeftX() - img_left));
+    img_right = bAbs(FEngGetSizeY(reinterpret_cast<FEObject *>(option->GetTitleObject())));
+    option->SetHeight(img_right);
+    return iIndexToAdd - 1;
+}
+
+FEString *UIWidgetMenu::GetCurrentFEString(const char *string_name) {
+    char sztemp[32];
+    char sztemp2[32];
+    bStrCat(sztemp, string_name, "%d");
+    FEngSNPrintf(sztemp2, 0x20, sztemp, iIndexToAdd);
+    return FEngFindString(GetPackageName(), FEHashUpper(sztemp2));
+}
+
+FEImage *UIWidgetMenu::GetCurrentFEImage(const char *img_name) {
+    char sztemp[32];
+    char sztemp2[32];
+    bStrCat(sztemp, img_name, "%d");
+    FEngSNPrintf(sztemp2, 0x20, sztemp, iIndexToAdd);
+    FEImage *obj = FEngFindImage(GetPackageName(), FEHashUpper(sztemp2));
+    if (!obj) {
+        obj = FEngFindImage(GetPackageName(), FEngHashString("%s0", img_name));
+    }
+    return obj;
+}
+
+FEObject *UIWidgetMenu::GetCurrentFEObject(const char *name) {
+    char sztemp[32];
+    char sztemp2[32];
+    bStrCat(sztemp, name, "%d");
+    FEngSNPrintf(sztemp2, 0x20, sztemp, iIndexToAdd);
+    return FEngFindObject(GetPackageName(), FEHashUpper(sztemp2));
+}
+
+void UIWidgetMenu::ClearWidgets() {
+    FEWidget *w = Options.GetHead();
+    while (w != Options.EndOfList()) {
+        w->Hide();
+        w->UnsetFocus();
+        w = w->GetNext();
+    }
+    while (!Options.IsEmpty()) {
+        FEWidget *head = Options.RemoveHead();
+        delete head;
+    }
+    pCurrentOption = nullptr;
+    iIndexToAdd = 1;
+    bCurrentOptionSet = false;
+    iLastSelectedIndex = 1;
+    SetInitialPositions();
+}
+
+void UIWidgetMenu::RefreshWidgets() {
+    {
+        FEWidget *w = Options.GetHead();
+        while (w != Options.EndOfList()) {
+            w->Draw();
+            w = w->GetNext();
+        }
+    }
+}
+
+void UIWidgetMenu::SetInitialOption(int number) {
+    if (Options.IsEmpty()) {
+        if (bHasScrollBar) {
+            ScrollBar.Update(iMaxWidgetsOnScreen, iIndexToAdd - 1, GetWidgetIndex(pViewTop), GetWidgetIndex(pCurrentOption));
+        }
+        return;
+    }
+    if (bCurrentOptionSet)
+        goto update_scrollbar;
+
+    bool need_first_avail;
+    need_first_avail = false;
+    if (number != 0) {
+        FEWidget *w = GetWidget(number);
+        if (!w || w == Options.EndOfList() || !w->IsEnabled()) {
+            need_first_avail = true;
+        } else {
+            SetOption(w);
+            iLastSelectedIndex = number;
+            bCurrentOptionSet = true;
+        }
+    } else {
+        if (pDone) {
+            if (pCurrentOption) {
+                pCurrentOption->UnsetFocus();
+                pCurrentOption = nullptr;
+            }
+            FEngSetCurrentButton(GetPackageName(), pDone->NameHash);
+        } else {
+            need_first_avail = true;
+        }
+    }
+    if (need_first_avail) {
+        FEWidget *w = Options.GetHead();
+        iLastSelectedIndex = 1;
+        while (w) {
+            if (w->IsEnabled() || w == Options.EndOfList()) {
+                SetOption(w);
+                bCurrentOptionSet = true;
+                break;
+            }
+            w = w->GetNext();
+            iLastSelectedIndex++;
+        }
+    }
+    SyncViewToSelection();
+update_scrollbar:
+    if (bHasScrollBar) {
+        ScrollBar.Update(iMaxWidgetsOnScreen, iIndexToAdd - 1, GetWidgetIndex(pViewTop), GetWidgetIndex(pCurrentOption));
+    }
+}
+
+void UIWidgetMenu::SetOption(FEWidget *opt) {
+    FEWidget *old = pCurrentOption;
+    if (old != opt && old) {
+        old->UnsetFocus();
+    }
+    pCurrentOption = opt;
+    if (opt) {
+        opt->SetFocus(GetPackageName());
+    }
+    UpdateCursorPos();
+}
+
+void UIWidgetMenu::SetInitialPositions() {
+    FEngGetTopLeft(pTitleMaster, vWidgetStartPos.x, vWidgetStartPos.y);
+    vLastWidgetPos = vWidgetStartPos;
+    FEngGetTopLeft(pDataMaster, vDataPos.x, vDataPos.y);
+    FEngGetSize(pTitleMaster, vMaxTitleSize.x, vMaxTitleSize.y);
+    FEngGetSize(pDataMaster, vMaxDataSize.x, vMaxDataSize.y);
+    vWidgetSize.y = vMaxTitleSize.y;
+    vWidgetSize.x = bAbs(vWidgetStartPos.x - (vDataPos.x + vMaxDataSize.x));
+}
+
+void UIWidgetMenu::Reposition() {
+    unsigned int index = 1;
+    unsigned int view_index = GetWidgetIndex(pViewTop);
+    float pos = vWidgetStartPos.y;
+    {
+        FEWidget *w = Options.GetHead();
+        while (w != Options.EndOfList()) {
+            if (index >= view_index && index < view_index + iMaxWidgetsOnScreen) {
+                w->Show();
+                w->SetPosY(pos);
+                w->Draw();
+                w->Position();
+                pos += vWidgetSize.y;
+            } else {
+                w->SetPosY(6969.0f);
+                w->Hide();
+            }
+            index++;
+            w = w->GetNext();
+        }
+    }
+    UpdateCursorPos();
+}
+
+void UIWidgetMenu::Reset() {
+    FEWidget *head = Options.GetHead();
+    if (head != Options.EndOfList()) {
+        bViewNeedsSync = false;
+        pCurrentOption = head;
+        pViewTop = head;
+        SetOption(head);
+        Reposition();
+    }
+}
+
+void UIWidgetMenu::UpdateCursorPos() {
+    if (pCursor) {
+        if (pCurrentOption) {
+            unsigned int pos = GetWidgetIndex(pCurrentOption);
+            pos -= GetWidgetIndex(pViewTop);
+            if (pos + 1 && pos + 1 <= iMaxWidgetsOnScreen) {
+                FEngSetScript(pCursor, FEngHashString("POS%d", pos + 1), true);
+            } else {
+                FEngSetScript(pCursor, 0x16a259, true);
+            }
+        } else {
+            FEngSetScript(pCursor, 0x16a259, true);
+        }
+    }
+}
+
+void UIWidgetMenu::IncrementStartPos() {
+    float y = vWidgetSize.y + vWidgetSpacing.y + vLastWidgetPos.y;
+    vLastWidgetPos.y = y;
+    vDataPos.y = y;
+}
+
+void UIWidgetMenu::SyncViewToSelection() {
+    if (Options.IsEmpty()) {
+        return;
+    }
+    if (!pCurrentOption && !pDone) {
+        Reset();
+        return;
+    }
+    if (iIndexToAdd - 1 > iMaxWidgetsOnScreen && GetWidgetIndex(pCurrentOption) <= iIndexToAdd - iMaxWidgetsOnScreen) {
+        pViewTop = pCurrentOption;
+    } else {
+        int node_index = iIndexToAdd - iMaxWidgetsOnScreen;
+        node_index = node_index - 1;
+        if (node_index < 0) {
+            node_index = 0;
+        }
+        pViewTop = static_cast<FEWidget *>(Options.GetNode(node_index));
+    }
+    Reposition();
+    bViewNeedsSync = false;
+}
+
+uint32 UIWidgetMenu::GetWidgetIndex(FEWidget *opt) {
+    uint32 index = 1;
+    {
+        FEWidget *w = Options.GetHead();
+        while (w != Options.EndOfList()) {
+            if (opt == w) {
+                return index;
+            }
+            index++;
+            w = w->GetNext();
+        }
+    }
+    return 0;
 }

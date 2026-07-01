@@ -10,11 +10,15 @@ class FEMovie : public FEObject {
   public:
     u32 CurTime; // offset 0x5C, size 0x4, Decl: speed/indep/src/feng/FEMovie.h:28
 
-    FEMovie() : FEObject(), CurTime(0) {} // Decl: speed/indep/src/feng/FEMovie.h:30
-    FEMovie(const struct FEMovie &Object, bool bReference) {}
+    FEMovie() : FEObject(), CurTime(0) { // Decl: speed/indep/src/feng/FEMovie.h:30
+        Type = FE_Movie;
+    }
+    FEMovie(const FEMovie &Object, bool bReference) {}
     ~FEMovie() override {}
 
-    FEObject *Clone(bool bReference) override {} // Decl: speed/indep/src/feng/FEMovie.h:34
+    FEObject *Clone(bool bReference) override { // Decl: speed/indep/src/feng/FEMovie.h:34
+        return FNEW FEMovie(*this, bReference);
+    }
 
     void Update(u32 tDelta) {}
 };

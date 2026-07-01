@@ -742,8 +742,8 @@ void PostRaceResultsScreen::NotificationMessage(u32 msg, FEObject *pObject, u32 
                 return;
             }
 
-            DialogInterface::ShowTwoButtons(GetPackageName(), "InGameDialog.fng", static_cast<eDialogTitle>(1), 0x417B2601, 0x1A294DAD, 0xE1A57D51,
-                                            0xB4623F67, 0xB4623F67, static_cast<eDialogFirstButtons>(1), static_cast<unsigned int>(0x4D3399A8));
+            DialogInterface::ShowTwoButtons(GetPackageName(), "InGameDialog.fng", dialog_alert, 0x417B2601, 0x1A294DAD, 0xE1A57D51, 0xB4623F67,
+                                            0xB4623F67, first_dialog_button2, static_cast<unsigned int>(0x4D3399A8));
             return;
         }
         case 0xE1A57D51:
@@ -773,9 +773,8 @@ void PostRaceResultsScreen::NotificationMessage(u32 msg, FEObject *pObject, u32 
                 }
 
                 if (playerDone && mPlayerRacerInfo->GetRanking() != 1) {
-                    DialogInterface::ShowTwoButtons(GetPackageName(), "InGameDialog.fng", static_cast<eDialogTitle>(1), 0x417B2601, 0x1A294DAD,
-                                                    0x30ED2368, 0xB4623F67, 0xB4623F67, static_cast<eDialogFirstButtons>(1),
-                                                    static_cast<unsigned int>(0x9887EB98));
+                    DialogInterface::ShowTwoButtons(GetPackageName(), "InGameDialog.fng", dialog_alert, 0x417B2601, 0x1A294DAD, 0x30ED2368,
+                                                    0xB4623F67, 0xB4623F67, first_dialog_button2, static_cast<unsigned int>(0x9887EB98));
                     return;
                 }
             }

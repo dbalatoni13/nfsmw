@@ -2,6 +2,7 @@
 #define FEGROUP_H_
 
 #include "FEObject.h"
+#include "types.h"
 
 // File: speed/indep/src/feng/FEGroup.h
 // total size: 0x6C
@@ -11,10 +12,14 @@ class FEGroup : public FEObject {
     FEMinList Children; // offset 0x5C, size 0x10, Decl: speed/indep/src/feng/FEGroup.h:30
 
   public:
-    FEGroup() {} // Decl: speed/indep/src/feng/FEGroup.h:33
+    FEGroup() { // Decl: speed/indep/src/feng/FEGroup.h:33
+        Type = FE_Group;
+    }
     FEGroup(const FEGroup &Object, bool bCloneChildren, bool bReference);
     ~FEGroup() override {}
-    FEObject *Clone(bool bReference) override {} // Decl: speed/indep/src/feng/FEGroup.h:36
+    FEObject *Clone(bool bReference) override { // Decl: speed/indep/src/feng/FEGroup.h:36
+        return FNEW FEGroup(*this, true, bReference);
+    }
 
     void AddObject(FEObject *pObj) { // Decl: speed/indep/src/feng/FEGroup.h:38
         Children.AddTail(pObj);

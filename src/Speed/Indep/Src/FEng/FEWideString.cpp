@@ -1,70 +1,22 @@
 #include "Speed/Indep/Src/FEng/FEWideString.h"
 #include "Speed/Indep/Src/FEng/FEngStandard.h"
 
-unsigned long GetStringLength(const short* pString) {
+u32 GetStringLength(const i16 *pString) {
     if (!pString) {
         return 0;
     }
 
-    unsigned long length = 0;
+    u32 i = 0;
 
     if (*pString == 0) {
         return 0;
     }
 
     do {
-        length++;
-    } while (pString[length] != 0);
+        i++;
+    } while (pString[i] != 0);
 
-    return length;
-}
-
-template <class T> void CopyString(short* pDst, const T* pSrc) {
-    if (!pDst) {
-        return;
-    }
-
-    if (pSrc) {
-        unsigned short value = *pSrc;
-
-        while (value != 0) {
-            *pDst = value;
-            pSrc++;
-            pDst++;
-            value = *pSrc;
-        }
-    }
-
-    *pDst = 0;
-}
-
-template <class T> void CopyString(short* pDst, const T* pSrc, unsigned long ulMaxLength) {
-    if (!pDst) {
-        return;
-    }
-
-    if (ulMaxLength == 0) {
-        return;
-    }
-
-    if (pSrc) {
-        T ch = *pSrc;
-        unsigned long length = 0;
-        ulMaxLength--;
-        if (ch != 0 && ulMaxLength != 0) {
-            do {
-                length++;
-                *pDst = *pSrc;
-                pDst++;
-                pSrc++;
-                if (*pSrc == 0) {
-                    break;
-                }
-            } while (ulMaxLength != length);
-        }
-    }
-
-    *pDst = 0;
+    return i;
 }
 
 FEWideString::FEWideString() {
@@ -73,7 +25,7 @@ FEWideString::FEWideString() {
     mulBufferLength = Length();
 }
 
-FEWideString::FEWideString(const FEWideString& string) {
+FEWideString::FEWideString(const FEWideString &string) {
     mpsString = 0;
     mulBufferLength = 0;
     *this = string;
@@ -86,55 +38,48 @@ FEWideString::~FEWideString() {
     }
 }
 
-FEWideString& FEWideString::operator=(const FEWideString& string) {
+FEWideString &FEWideString::operator=(const FEWideString &string) {
     if (string.mpsString) {
-        short* pString = AllocateString(GetStringLength(string.mpsString) + 1);
-
-        mpsString = pString;
-        CopyString(pString, string.mpsString);
+        mpsString = AllocateString(GetStringLength(string.mpsString) + 1);
+        CopyString(mpsString, string.mpsString);
     }
 
     return *this;
 }
 
-FEWideString& FEWideString::operator=(const short* psString) {
+FEWideString &FEWideString::operator=(const i16 *psString) {
     if (!psString) {
         return *this;
     }
 
-    short* pString = AllocateString(GetStringLength(psString) + 1);
-
-    mpsString = pString;
-    CopyString(pString, psString);
+    mpsString = AllocateString(GetStringLength(psString) + 1);
+    CopyString(mpsString, psString);
 
     return *this;
 }
 
-unsigned long FEWideString::Length() const { return GetStringLength(mpsString); }
+u32 FEWideString::Length() const {
+    return GetStringLength(mpsString);
+}
 
-void FEWideString::SetLength(const unsigned long newLength) {
-    unsigned long length = Length();
+void FEWideString::SetLength(const u32 newLength) {
+    u32 length = Length();
 
     if (newLength > length) {
-        short* pString;
-
         mulBufferLength = newLength;
-        pString = static_cast<short*>(FEngMalloc((newLength + 1) * 2, 0, 0));
-        CopyString(pString, mpsString);
+        i16 *psNewString = FNEW i16[newLength + 1];
+        CopyString(psNewString, mpsString);
         if (mpsString) {
             delete[] mpsString;
         }
-        mpsString = pString;
+        mpsString = psNewString;
     }
 }
 
-short* FEWideString::AllocateString(const unsigned long newLength) {
+i16 *FEWideString::AllocateString(const u32 newLength) {
     if (newLength > mulBufferLength) {
         SetLength(newLength);
     }
 
     return mpsString;
 }
-
-template void CopyString<short>(short* pDst, const short* pSrc);
-template void CopyString<short>(short* pDst, const short* pSrc, unsigned long ulMaxLength);

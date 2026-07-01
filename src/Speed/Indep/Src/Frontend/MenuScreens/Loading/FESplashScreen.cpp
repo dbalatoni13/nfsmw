@@ -45,10 +45,10 @@ SplashScreen::SplashScreen(ScreenConstructorData *sd)
     FEngSetLanguageHash(GetPackageName(), FEObj_LicenseBlurb, 0x9b580a55);
 
     if (pObject) {
-        if ((pObject->Flags & 0x10000000) != 0) {
-            pObject->Flags &= ~0x10000000;
+        if ((pObject->Flags & FF_IsButton) != 0) {
+            pObject->Flags &= ~FF_IsButton;
         }
-        pObject->Flags |= 0x400000;
+        pObject->Flags |= FF_DirtyCode;
     }
 
     SplashStartedTimer = RealTimer;
@@ -100,13 +100,13 @@ extern float SplashScreenTotalTimeout;
 void SplashScreen::NotificationMessage(u32 msg, FEObject *obj, u32 param1, u32 param2) {
     switch (msg) {
         case 0x98257537:
-            DialogInterface::ShowOneButton(GetPackageName(), "", static_cast<eDialogTitle>(1), 0x417b2601, 0x1fab5998, 0x53f13fd1);
+            DialogInterface::ShowOneButton(GetPackageName(), "", dialog_alert, 0x417b2601, 0x1fab5998, 0x53f13fd1);
             break;
         case 0x6521e5c2:
-            DialogInterface::ShowOneButton(GetPackageName(), "", static_cast<eDialogTitle>(1), 0x417b2601, 0x1fab5998, 0x6521e5c2);
+            DialogInterface::ShowOneButton(GetPackageName(), "", dialog_alert, 0x417b2601, 0x1fab5998, 0x6521e5c2);
             break;
         case 0xa6813b08:
-            DialogInterface::ShowOneButton(GetPackageName(), "", static_cast<eDialogTitle>(1), 0x417b2601, 0x1fab5998, 0xa1161aaf);
+            DialogInterface::ShowOneButton(GetPackageName(), "", dialog_alert, 0x417b2601, 0x1fab5998, 0xa1161aaf);
             break;
         case 0xc98356ba: {
             Timer lastJoyTime = CalculateLastJoyEventTime();

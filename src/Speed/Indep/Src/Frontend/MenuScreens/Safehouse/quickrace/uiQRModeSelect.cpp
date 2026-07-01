@@ -1,33 +1,24 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiQRModeSelect.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
+#include "Speed/Indep/Src/Frontend/FEPackageData.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEIconScrollerMenu.hpp"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/Gameplay/GRace.h"
 
-extern int QRMode;
-// extern int GetMikeMannBuild();
-extern int FEngGetLastButton(const char *pkg_name);
-void FEngSetLanguageHash(const char *pkg_name, unsigned int obj_hash, unsigned int lang_hash);
 extern const char *gOnlineMainMenu;
 
-struct MSOption : public IconOption {
-    MSOption(unsigned int tex_hash, unsigned int name_hash, GRace::Type race_type)
-        : IconOption(tex_hash, name_hash, 0) //
-          ,
-          raceType(race_type) {}
+class MSOption : public IconOption {
+  public:
+    MSOption(uint32 tex_hash, uint32 name_hash, GRace::Type race_type) : IconOption(tex_hash, name_hash, 0), raceType(race_type) {}
 
-    void React(const char *pkg_name, unsigned int data, FEObject *obj, unsigned int param1, unsigned int param2) override;
+    void React(const char *pkg_name, uint32 data, FEObject *obj, uint32 param1, uint32 param2) override {
+        if (data == 0xc407210) {
+            FEDatabase->RaceMode = raceType;
+        }
+    };
 
     GRace::Type raceType; // offset 0x5C, size 0x4
 };
-
-void MSOption::React(const char *pkg_name, unsigned int data, FEObject *obj, unsigned int param1, unsigned int param2) {
-    if (data == 0xc407210) {
-        FEDatabase->RaceMode = raceType;
-    }
-}
-
-UIQRModeSelect::~UIQRModeSelect() {}
 
 UIQRModeSelect::UIQRModeSelect(ScreenConstructorData *sd) : IconScrollerMenu(sd) {
     Setup();
@@ -36,7 +27,7 @@ UIQRModeSelect::UIQRModeSelect(ScreenConstructorData *sd) : IconScrollerMenu(sd)
 
 void UIQRModeSelect::RefreshHeader() {
     IconScrollerMenu::RefreshHeader();
-    unsigned int hash = 0x1f203817;
+    uint32 hash = 0x1f203817;
     if (FEDatabase->IsOnlineMode() || FEDatabase->IsLANMode()) {
         hash = 0x6703b807;
     } else {
@@ -86,17 +77,11 @@ void UIQRModeSelect::Setup() {
         }
     }
     int lastBtn = FEngGetLastButton(GetPackageName());
-    if (bFadeInIconsImmediately) {
-        Options.bFadingIn = true;
-        Options.bFadingOut = false;
-        Options.bDelayUpdate = false;
-        Options.fCurFadeTime = 0.0f;
-    }
-    Options.SetInitialPos(lastBtn);
+    SetInitialOption(lastBtn);
     cFEng::Get()->QueuePackageMessage(0x21828323, GetPackageName(), nullptr);
 }
 
-void UIQRModeSelect::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
+void UIQRModeSelect::NotificationMessage(u32 msg, FEObject *pobj, u32 param1, u32 param2) {
     IconScrollerMenu::NotificationMessage(msg, pobj, param1, param2);
     switch (msg) {
         case 0x911ab364:

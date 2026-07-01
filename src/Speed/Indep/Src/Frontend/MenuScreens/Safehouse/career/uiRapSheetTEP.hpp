@@ -1,16 +1,13 @@
-#ifndef FRONTEND_MENUSCREENS_SAFEHOUSE_CAREER_UIRAPSHEETTEP_H
-#define FRONTEND_MENUSCREENS_SAFEHOUSE_CAREER_UIRAPSHEETTEP_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef __UI_RAP_SHEET_TEP_HPP__
+#define __UI_RAP_SHEET_TEP_HPP__
 
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/feUIWidgetMenu.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
 
 class uiRapSheetTEP : public UIWidgetMenu {
   public:
     uiRapSheetTEP(ScreenConstructorData *sd);
-    ~uiRapSheetTEP() override;
+    ~uiRapSheetTEP() override {};
     void NotificationMessage(u32 msg, FEObject *pobj, u32 param1, u32 param2) override;
 
   private:

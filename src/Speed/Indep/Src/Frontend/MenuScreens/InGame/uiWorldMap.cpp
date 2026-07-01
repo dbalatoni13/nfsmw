@@ -25,16 +25,10 @@
 extern int iCurrentViewBin;
 
 inline MapItem::MapItem(eWorldMapItemType type, FEObject *iconObj, bVector2 &map_pos, bVector2 &world_pos, float rot, GIcon *icon) {
-    unsigned int *initial_pos_words = reinterpret_cast<unsigned int *>(&InitialPos);
-    unsigned int *world_pos_words = reinterpret_cast<unsigned int *>(&WorldPos);
-    const unsigned int *map_pos_words = reinterpret_cast<const unsigned int *>(&map_pos);
-    const unsigned int *source_world_pos_words = reinterpret_cast<const unsigned int *>(&world_pos);
-
     pIcon = iconObj;
-    initial_pos_words[0] = map_pos_words[0];
-    initial_pos_words[1] = map_pos_words[1];
-    world_pos_words[0] = source_world_pos_words[0];
-    world_pos_words[1] = source_world_pos_words[1];
+    InitialPos = map_pos;
+    WorldPos = world_pos;
+
     Rot = rot;
     TheType = type;
     TheIcon = icon;
@@ -456,8 +450,8 @@ handle_toggle_or_dialog:
             message_hash = 0x1a294dad;
             button_hash = 0xa6be2ebb;
         }
-        DialogInterface::ShowTwoButtons(GetPackageName(), "InGameDialog.fng", static_cast<eDialogTitle>(3), title_hash, message_hash, 0xa16ca7bd,
-                                        0xb4edeb6d, 0xb4edeb6d, static_cast<eDialogFirstButtons>(1), button_hash);
+        DialogInterface::ShowTwoButtons(GetPackageName(), "InGameDialog.fng", dialog_confirmation, title_hash, message_hash, 0xa16ca7bd, 0xb4edeb6d,
+                                        0xb4edeb6d, first_dialog_button2, button_hash);
     }
     return;
 
@@ -475,7 +469,7 @@ handle_gps:
 
     eUnSwizzleWorldVector(SelectedItem->GetIcon()->GetPosition(), reinterpret_cast<bVector3 &>(pos));
     if (GPS_Engage(pos, 0.0f) == 0) {
-        DialogInterface::ShowOneButton(GetPackageName(), "", static_cast<eDialogTitle>(1), 0x417b2601, 0x34dc1bec, 0x7afdf4cc);
+        DialogInterface::ShowOneButton(GetPackageName(), "", dialog_alert, 0x417b2601, 0x34dc1bec, 0x7afdf4cc);
         goto refresh_and_end;
     }
     SetGPSing(SelectedItem->GetIcon());

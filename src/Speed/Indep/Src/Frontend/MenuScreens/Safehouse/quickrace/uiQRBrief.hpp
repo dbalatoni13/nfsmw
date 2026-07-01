@@ -1,13 +1,10 @@
-#ifndef FRONTEND_MENUSCREENS_SAFEHOUSE_QUICKRACE_UIQRBRIEF_H
-#define FRONTEND_MENUSCREENS_SAFEHOUSE_QUICKRACE_UIQRBRIEF_H
+#ifndef UIQRBRIEF_H
+#define UIQRBRIEF_H
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
-#include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
+#include "Speed/Indep/Src/Frontend/Database/RaceDB.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/Slider.hpp"
+#include "Speed/Indep/Src/Gameplay/GRaceDatabase.h"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 
 #include <types.h>
@@ -15,10 +12,7 @@
 // total size: 0x10
 class SelectableCar : public bTNode<SelectableCar> {
   public:
-    SelectableCar(uint32 handle, bool locked)
-        : mHandle(handle) //
-          ,
-          bLocked(locked) {}
+    SelectableCar(uint32 handle, bool locked) : mHandle(handle), bLocked(locked) {}
 
     ~SelectableCar() {}
 
@@ -36,12 +30,7 @@ class SelectableTrack : public bTNode<SelectableTrack> {
     //     ::operator delete[](p);
     // }
 
-    SelectableTrack(GRaceParameters *rp, bool locked, int bin_num)
-        : pRaceParams(rp) //
-          ,
-          bLocked(locked) //
-          ,
-          bin(bin_num) {}
+    SelectableTrack(GRaceParameters *rp, bool locked, int bin_num) : pRaceParams(rp), bLocked(locked), bin(bin_num) {}
 
     ~SelectableTrack() {}
 

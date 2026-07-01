@@ -17,12 +17,8 @@ void FEMouse::Reset() {
     bMoved = false;
 }
 
-void FEMouse::Update(FEMouseInfo& Info, unsigned long tDelta) {
-    bool moved = false;
-    if (Info.XPos != XPos || Info.YPos != YPos) {
-        moved = true;
-    }
-    bMoved = moved;
+void FEMouse::Update(FEMouseInfo &Info, u32 tDelta) {
+    bMoved = Info.XPos != XPos || Info.YPos != YPos;
     XPos = Info.XPos;
     YPos = Info.YPos;
     WheelDelta = Info.WheelDelta;
@@ -39,6 +35,6 @@ void FEMouse::Update(FEMouseInfo& Info, unsigned long tDelta) {
     }
 }
 
-bool FEMouse::IsDown(unsigned short Mask) {
+bool FEMouse::IsDown(u16 Mask) {
     return (CurMask & Mask) == Mask;
 }

@@ -46,8 +46,8 @@ class cFEngRender {
     cFEngRender(); // Decl: speed/indep/src/frontend/FEngRender.hpp:82
 
   private:
-    void MakeRenderMatrix(FEObjData *pData, bMatrix4 *trans, FEColor &color, int32 GroupIndex,
-                          float extra_scale); // Decl: speed/indep/src/frontend/FEngRender.hpp:79
+    FEClipInfo *MakeRenderMatrix(FEObjData *pData, bMatrix4 *trans, FEColor &color, int32 GroupIndex,
+                                 float extra_scale); // Decl: speed/indep/src/frontend/FEngRender.hpp:79
 
     void RenderCBVImage(FEColoredImage *image, FERenderObject *cached,
                         FEPackageRenderInfo *pkg_render_info); // Decl: speed/indep/src/frontend/FEngRender.hpp:64
@@ -95,5 +95,7 @@ class cFEngRender {
     uint32 Highwater;             // offset 0x0, size 0x4, Decl: speed/indep/src/frontend/FEngRender.hpp:106
     RenderContext RContexts[180]; // offset 0x4, size 0x7080, Decl: speed/indep/src/frontend/FEngRender.hpp:107
 };
+
+uint32 FEngColorToEpolyColor(FEColor c);
 
 #endif

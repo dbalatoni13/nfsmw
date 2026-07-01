@@ -30,7 +30,7 @@ class FETypeLib {
         return static_cast<FETypeNode *>(List.FindNode(pName));
     }
 
-    FETypeNode *FindType(unsigned long TypeID);
+    FETypeNode *FindType(u32 TypeID);
 
     void AddType(FETypeNode *pNode) { // Decl: speed/indep/src/feng/FETypeLib.h:48
         List.AddTail(pNode);
@@ -44,11 +44,11 @@ class FETypeLib {
     }
 
     FEObject *CreateFEObject(FETypeNode *pType, bool bInitScript); // Decl: speed/indep/src/feng/FETypeLib.h:53
-    FEObject *CreateFEObject(unsigned long TypeID, bool bInitScript);
+    FEObject *CreateFEObject(u32 TypeID, bool bInitScript);
 
     FEScript *CreateObjectScript(FETypeNode *pType); // Decl: speed/indep/src/feng/FETypeLib.h:56
 
-    FEScript *CreateObjectScript(unsigned long TypeID);
+    FEScript *CreateObjectScript(u32 TypeID);
 
     FEList *const GetList() { // Decl: speed/indep/src/feng/FETypeLib.h:60
         return &List;

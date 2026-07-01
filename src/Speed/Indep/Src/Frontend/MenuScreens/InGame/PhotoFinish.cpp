@@ -114,16 +114,11 @@ float PhotoFinishScreen::mSpeedtrapBounty = 0.0f;
 bool PhotoFinishScreen::mActive = false;
 
 PhotoFinishScreen::PhotoFinishScreen(ScreenConstructorData *sd)
-    : MenuScreen(sd) //
-      ,
-      mIceCamTimer() //
-      ,
-      mSlowdownTimer() //
-      ,
-      fResultType(static_cast<FERESULTTYPE>(sd->Arg)) //
-      ,
-      mPhotoHash(0) //
-      ,
+    : MenuScreen(sd),                                  //
+      mIceCamTimer(),                                  //
+      mSlowdownTimer(),                                //
+      fResultType(static_cast<FERESULTTYPE>(sd->Arg)), //
+      mPhotoHash(0),                                   //
       StreamTex("GLOBAL\\HUDTEXTURESPHOTOFINISH.BIN") {
     if (fResultType == FERESULTTYPE_RACE) {
         if (GRaceStatus::Exists()) {
@@ -240,8 +235,8 @@ void PhotoFinishScreen::NotificationMessage(unsigned long msg, FEObject *, unsig
             return;
         case 0xC519BFC4:
             if (fResultType != FERESULTTYPE_SPEEDTRAP) {
-                DialogInterface::ShowTwoButtons(GetPackageName(), "InGameDialog.fng", static_cast<eDialogTitle>(1), 0x417B2601, 0x1A294DAD,
-                                                0xE1A57D51, 0xB4623F67, 0xB4623F67, static_cast<eDialogFirstButtons>(1), 0x4D3399A8);
+                DialogInterface::ShowTwoButtons(GetPackageName(), "InGameDialog.fng", dialog_alert, 0x417B2601, 0x1A294DAD, 0xE1A57D51, 0xB4623F67,
+                                                0xB4623F67, first_dialog_button2, 0x4D3399A8);
             }
             return;
         case 0xE1A57D51:
@@ -397,7 +392,7 @@ void PhotoFinishScreen::Setup() {
     }
 
     if (race_params->GetEventHash() == Attrib::StringHash32("19.8.31")) {
-        DialogInterface::ShowOneButton(GetPackageName(), "", static_cast<eDialogTitle>(1), 0x417B2601, 0x1FAB5998, 0x4C54B7EA);
+        DialogInterface::ShowOneButton(GetPackageName(), "", dialog_alert, 0x417B2601, 0x1FAB5998, 0x4C54B7EA);
         FEDatabase->GetCareerSettings()->SpecialFlags |= 0x2000;
     }
 }

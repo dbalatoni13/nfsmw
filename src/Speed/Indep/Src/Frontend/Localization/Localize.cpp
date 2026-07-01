@@ -134,7 +134,6 @@ void InitLocalization() {
 }
 
 void LanguageHasChanged(eLanguages new_language) {
-    EAXSound::ChangeLanguage(new_language);
     if (FEDatabase) {
         eLanguages lang = GetCurrentLanguage();
         if (lang != eLANGUAGE_ENGLISH) {

@@ -75,6 +75,13 @@ typedef enum {
     FF_MouseObject = 1 << 17
 } FEObject_Flags;
 
+static const i32 FF_GameFlagsMask = 0x0000FFFF;   // size: 0x4, Decl: speed/indep/src/feng/FEObject.h:119
+static const i32 FF_EngineFlagsMask = 0xFFFF0000; // size: 0x4, Decl: speed/indep/src/feng/FEObject.h:120
+
+static const u32 GameFlagsMask = 0x7FFFF; // size: 0x4, Decl: speed/indep/src/feng/FEObject.h:122
+static const u32 FEngDirtyFlagsMask =
+    FF_DirtyCode | FF_DirtyColor | FF_DirtyTransform | FF_Dirty; // size: 0x4, Decl: speed/indep/src/feng/FEObject.h:123
+
 // total size: 0x5C
 // Decl: speed/indep/src/feng/FEObject.h:131
 class FEObject : public FEMinNode {
@@ -113,9 +120,13 @@ class FEObject : public FEMinNode {
         return reinterpret_cast<FEScript *>(Scripts.GetHead());
     }
 
-    u32 GetNumScripts() const {} // Decl: speed/indep/src/feng/FEObject.h:171
+    u32 GetNumScripts() const { // Decl: speed/indep/src/feng/FEObject.h:171
+        return Scripts.GetNumElements();
+    }
 
-    FEScript *GetScript(u32 Index) const {} // Decl: speed/indep/src/feng/FEObject.h:172
+    FEScript *GetScript(u32 Index) const { // Decl: speed/indep/src/feng/FEObject.h:172
+        return static_cast<FEScript *>(Scripts.FindNode(Index));
+    }
 
     FEScript *FindScript(u32 ID) const;
 
@@ -123,9 +134,13 @@ class FEObject : public FEMinNode {
         return reinterpret_cast<FEMessageResponse *>(Responses.GetHead());
     }
 
-    u32 GetNumResponses() const {} // Decl: speed/indep/src/feng/FEObject.h:176
+    u32 GetNumResponses() const { // Decl: speed/indep/src/feng/FEObject.h:176
+        return Responses.GetNumElements();
+    }
 
-    FEMessageResponse *GetResponse(u32 Index) const {} // Decl: speed/indep/src/feng/FEObject.h:177
+    FEMessageResponse *GetResponse(u32 Index) const { // Decl: speed/indep/src/feng/FEObject.h:177
+        return static_cast<FEMessageResponse *>(Responses.FindNode(Index));
+    }
 
     FEMessageResponse *FindResponse(u32 MsgID) const;
 
@@ -137,7 +152,9 @@ class FEObject : public FEMinNode {
 
     void SetName(const char *pNewName);
 
-    void SetNameHash(u32 nameHash) {} // Decl: speed/indep/src/feng/FEObject.h:192
+    void SetNameHash(u32 nameHash) { // Decl: speed/indep/src/feng/FEObject.h:192
+        NameHash = nameHash;
+    }
 
     void SetPivot(const FEVector3 &pivot, bool bRelative);
 

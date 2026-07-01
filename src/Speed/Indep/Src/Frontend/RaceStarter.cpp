@@ -1,6 +1,5 @@
 #include "Speed/Indep/Src/Frontend/RaceStarter.hpp"
 
-#include "Speed/Indep/Src/Frontend/FEJoyInput.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Misc/GameFlow.hpp"
 #include "Speed/Indep/Src/World/RaceParameters.hpp"

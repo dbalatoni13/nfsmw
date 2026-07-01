@@ -1,9 +1,5 @@
-#ifndef FRONTEND_MENUSCREENS_SAFEHOUSE_CAREER_UIRAPSHEETLOGIN_H
-#define FRONTEND_MENUSCREENS_SAFEHOUSE_CAREER_UIRAPSHEETLOGIN_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef __UI_RAPSHEET_LOGIN_HPP__
+#define __UI_RAPSHEET_LOGIN_HPP__
 
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
 

@@ -91,7 +91,7 @@ bool FEngMovieStarter::Callback(FEObject *obj) {
 }
 
 bool FEngMovieStopper::Callback(FEObject *obj) {
-    if (obj->Type == 7) {
+    if (obj->Type == FE_Movie) {
         if (gMoviePlayer != nullptr) {
             gMoviePlayer->Stop();
         }
@@ -104,10 +104,10 @@ bool FEngMovieStopper::Callback(FEObject *obj) {
 bool FEngHidePCObjects::Callback(FEObject *obj) {
     if (obj->Flags & 0x8) {
         FEngSetInvisible(obj);
-        if (obj->Flags & 0x10000000) {
-            obj->Flags &= ~0x10000000;
+        if (obj->Flags & FF_IsButton) {
+            obj->Flags &= ~FF_IsButton;
         }
-        obj->Flags |= 0x00400000;
+        obj->Flags |= FF_DirtyCode;
     }
     return true;
 }
@@ -132,7 +132,7 @@ bool RenderObjectDisconnect::Callback(FEObject *pObj) {
 }
 
 bool ObjectDirtySetter::Callback(FEObject *obj) {
-    obj->Flags |= 0x00400000;
+    obj->Flags |= FF_DirtyCode;
     cFEngRender::mInstance->RemoveCachedRender(obj, pRenderInfo);
     return true;
 }

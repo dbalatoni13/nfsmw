@@ -1,11 +1,46 @@
 #include "Speed/Indep/Src/Frontend/FEPackageData.hpp"
+#include "Speed/Indep/Src/FEng/FEChunk.h"
+#include "Speed/Indep/Src/FEng/FEList.h"
+#include "Speed/Indep/Src/FEng/FEPackageChunks.h"
+#include "Speed/Indep/Src/FEng/FETypes.h"
+#include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Frontend/FEObjectCallbacks.hpp"
+#include "Speed/Indep/Src/Frontend/FEngFrontend.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Career/FEGameWonScreen.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Career/FEPkg_EngageEventDialog.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/ControllerUnplugged.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/InGame/CustomTuning.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/InGame/FeBustedOverlay.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/InGame/FeFadeScreen.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/InGame/uiSMS.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/InGame/uiSMSMessage.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/InGame/uiSixDaysLater.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Loading/FEMovieScreen.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Loading/FESplashScreen.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiMarkerSelect.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRapSheetCTS.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRapSheetLogin.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRapSheetMain.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRapSheetPD.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRapSheetRS.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRapSheetRankings.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRapSheetRankingsDetail.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRapSheetTEP.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRapSheetUS.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRapSheetVD.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRepSheetBounty.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRepSheetMain.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRepSheetMilestones.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRepSheetRaceEvents.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRepSheetRival.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiRepSheetRivalBio.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiSafehouseRegionUnlock.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/customize/CarCustomize.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/customize/DebugCarCustomize.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/customize/MyCarsManager.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/options/uiCredits.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/options/uiEATraxJukebox.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/options/uiOptionsController.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/options/uiOptionsScreen.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiQRBrief.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiQRCarSelect.hpp"
@@ -17,13 +52,11 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/uiMain.hpp"
 #include "Speed/Indep/Src/Frontend/FEngRender.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
-#include "Speed/Indep/Src/Frontend/MenuScreens/InGame/CustomTuning.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/InGame/uiPause.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Loading/FELanguageSelect.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Loading/FELoadingControllerScreen.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Loading/FELoadingScreen.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Loading/FELoadingTips.hpp"
-#include "Speed/Indep/Src/Input/ActionQueue.h"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiCareerMain.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/career/uiCareerManager.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/options/uiOptionsMain.hpp"
@@ -34,41 +67,34 @@
 #include "Speed/Indep/Src/Misc/LZCompress.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "Speed/Indep/bWare/Inc/bMemory.hpp"
-#include "Speed/Indep/Src/Generated/Events/ESndGameState.hpp"
-#include "Speed/Indep/Src/Generated/Messages/MAcceptEnterCareerEvent.h"
-#include "Speed/Indep/Src/Generated/Messages/MDeclineEnterCareerEvent.h"
-#include "Speed/Indep/Src/Frontend/MenuScreens/Loading/FEBootFlowManager.hpp"
-#include "Speed/Indep/Src/Frontend/SubTitle.hpp"
-#include "Speed/Indep/Src/Misc/EasterEggs.hpp"
-#include "Speed/Indep/Src/Generated/Messages/MControlPathfinder.h"
 #include "Speed/Indep/Src/Frontend/FEPackageManager.hpp"
-#include "Speed/Indep/Src/Frontend/MenuScreens/InGame/InGameMovieScreen.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/InGame/uiWorldMap.hpp"
+#include "types.h"
 
 // File: speed/indep/src/frontend/FEPackageData.cpp
-// total size: 0x8
-// Decl: speed/indep/src/frontend/FEPackageData.cpp:437
-struct ScreenFactoryDatum {
-    char *FEngPackageFilename;                    // offset 0x0, size 0x4, Decl: speed/indep/src/frontend/FEPackageData.cpp:438
-    MenuScreenCreateFunction ConstructorFunction; // offset 0x4, size 0x4, Decl: speed/indep/src/frontend/FEPackageData.cpp:439
-};
+const char *gLoadinScreenPackageName; // size: 0x4, address: 0x8041C4BC, Decl: speed/indep/src/frontend/FEPackageData.cpp:176
 
-static const char *gLoadinScreenPackageName;
+// Decl: speed/indep/src/frontend/FEPackageData.cpp:178
+// Range: 0x8016BDDC -> 0x8016BDE8
+void SetLoadingScreenPackageName(const char *name) {}
 
-void SetLoadingScreenPackageName(const char *name) {
-    gLoadinScreenPackageName = name;
-}
-
+// Decl: speed/indep/src/frontend/FEPackageData.cpp:183
+// Range: 0x8016BDE8 -> 0x8016BDF4
 const char *GetLoadingScreenPackageName() {
     return gLoadinScreenPackageName;
 }
 
+// STRIPPED
 const char *GetSplashScreenPackageName() {}
 
+// Decl: speed/indep/src/frontend/FEPackageData.cpp:194
+// Range: 0x8016BDF4 -> 0x8016BE2C
 static MenuScreen *CreateMainMenu(ScreenConstructorData *sd) {
     return new ("", 0) UIMain(sd);
 }
 
+// Decl: speed/indep/src/frontend/FEPackageData.cpp:196
+// Range: 0x8016BE2C -> 0x8016BF20
 static MenuScreen *CreateSubMenu(ScreenConstructorData *sd) {
     if (FEDatabase->IsOptionsMode()) {
         if (FEDatabase->GetOptionsSettings()->CurrentCategory == OC_TRAILERS) {
@@ -156,6 +182,10 @@ static MenuScreen *CreateMovieScreen(ScreenConstructorData *sd) {
 
 static MenuScreen *CreateSplashScreen(ScreenConstructorData *sd) {
     return new ("", 0) SplashScreen(sd);
+}
+
+static MenuScreen *CreateLoadingTipsScreen(ScreenConstructorData *sd) {
+    return new LoadingTips(sd);
 }
 
 static MenuScreen *CreateLanguageSelectScreen(ScreenConstructorData *sd) {
@@ -298,6 +328,14 @@ static MenuScreen *CreateCustomizePerformanceScreen(ScreenConstructorData *sd) {
     return new ("", 0) CustomizePerformance(sd);
 }
 
+static MenuScreen *CreateCustomTuningScreen(ScreenConstructorData *sd) {
+    return new CustomTuningScreen(sd);
+}
+
+static MenuScreen *CreatePostRaceResultsScreen(ScreenConstructorData *sd) {
+    return new ("", 0) PostRaceResultsScreen(sd);
+}
+
 static MenuScreen *CreateBustedOverlayScreen(ScreenConstructorData *sd) {
     return new ("", 0) BustedOverlayScreen(sd);
 }
@@ -318,17 +356,6 @@ static MenuScreen *CreateUIEATraxScreen(ScreenConstructorData *sd) {
     return new ("", 0) UIEATraxScreen(sd);
 }
 
-static MenuScreen *CreateOptionsControllerScreen(ScreenConstructorData *sd) {
-    return new ("", 0) UIOptionsController(sd);
-}
-
-static MenuScreen *CreatePostRaceResultsScreen(ScreenConstructorData *sd) { //(line 347)
-    return new ("", 0) PostRaceResultsScreen(sd);
-}
-
-static MenuScreen *CreateLoadingTipsScreen(ScreenConstructorData *sd) {
-    return new LoadingTips(sd);
-}
 static MenuScreen *CreateLoadingScreen(ScreenConstructorData *sd) {
     return new LoadingScreen(sd);
 }
@@ -336,6 +363,30 @@ static MenuScreen *CreateLoadingScreen(ScreenConstructorData *sd) {
 static MenuScreen *CreateLoadingControllerScreen(ScreenConstructorData *sd) {
     return new LoadingControllerScreen(sd);
 }
+
+static MenuScreen *CreateOptionsControllerScreen(ScreenConstructorData *sd) {
+    return new ("", 0) UIOptionsController(sd);
+}
+
+// File: speed/indep/src/frontend/fenginterfaces/FEngInterfaceFEButtons.cpp
+// total size: 0xC
+// Decl: speed/indep/src/frontend/fenginterfaces/FEngInterfaceFEButtons.cpp:93
+struct ScreenButtonDatum {
+    uint32 ScreenHash; // offset 0x0, size 0x4, Decl: speed/indep/src/frontend/fenginterfaces/FEngInterfaceFEButtons.cpp:94
+    uint8 LastButton;  // offset 0x4, size 0x1, Decl: speed/indep/src/frontend/fenginterfaces/FEngInterfaceFEButtons.cpp:95
+    uint32 GameMode;   // offset 0x8, size 0x4, Decl: speed/indep/src/frontend/fenginterfaces/FEngInterfaceFEButtons.cpp:96
+};
+
+// size: 0x258, address: 0x8041C908, Decl: speed/indep/src/frontend/fenginterfaces/FEngInterfaceFEButtons.cpp:101
+static ScreenButtonDatum ScreenButtonData[0x32] = {};
+
+// File: speed/indep/src/frontend/FEPackageData.cpp
+// total size: 0x8
+// Decl: speed/indep/src/frontend/FEPackageData.cpp:437
+struct ScreenFactoryDatum {
+    char *FEngPackageFilename;                    // offset 0x0, size 0x4, Decl: speed/indep/src/frontend/FEPackageData.cpp:438
+    MenuScreenCreateFunction ConstructorFunction; // offset 0x4, size 0x4, Decl: speed/indep/src/frontend/FEPackageData.cpp:439
+};
 
 static ScreenFactoryDatum ScreenFactoryData[] = {
     {"MainMenu.fng", CreateMainMenu},
@@ -477,9 +528,9 @@ static ScreenFactoryDatum ScreenFactoryData[] = {
     {"MC_Main_GC.fng", nullptr},
 };
 
-static MenuScreen *ScreenFactory(unsigned int hash, FEPackage *pkg, int arg) {
-    for (int i = 0; i < kScreenFactoryDataCount; i++) {
-        unsigned int nameHash = FEHashUpper(ScreenFactoryData[i].FEngPackageFilename);
+static MenuScreen *ScreenFactory(uint32 hash, FEPackage *pkg, int arg) {
+    for (int i = 0; i < NUM_ENTRIES(ScreenFactoryData); i++) {
+        uint32 nameHash = FEHashUpper(ScreenFactoryData[i].FEngPackageFilename);
         if (hash == nameHash && ScreenFactoryData[i].ConstructorFunction) {
             ScreenConstructorData sd;
             sd.PackageFilename = ScreenFactoryData[i].FEngPackageFilename;
@@ -491,9 +542,9 @@ static MenuScreen *ScreenFactory(unsigned int hash, FEPackage *pkg, int arg) {
     return nullptr;
 }
 
-static ScreenFactoryDatum *FindScreenCreateData(unsigned int hash) {
-    for (int i = 0; i < kScreenFactoryDataCount; i++) {
-        unsigned int nameHash = FEHashUpper(ScreenFactoryData[i].FEngPackageFilename);
+static ScreenFactoryDatum *FindScreenCreateData(uint32 hash) {
+    for (int i = 0; i < NUM_ENTRIES(ScreenFactoryData); i++) {
+        uint32 nameHash = FEHashUpper(ScreenFactoryData[i].FEngPackageFilename);
         if (hash == nameHash) {
             return &ScreenFactoryData[i];
         }
@@ -501,13 +552,10 @@ static ScreenFactoryDatum *FindScreenCreateData(unsigned int hash) {
     return nullptr;
 }
 
-static ScreenButtonDatum ScreenButtonData[0x32];
-
-ScreenButtonDatum *FindScreenButtonDatum(unsigned int screen_filename_hash) {
-    cFrontendDatabase *db = FEDatabase;
-    for (int i = 0; i <= 0x31; i++) {
+ScreenButtonDatum *FindScreenButtonDatum(uint32 screen_filename_hash) {
+    for (int i = 0; i <= NUM_ENTRIES(ScreenButtonData); i++) {
         if (screen_filename_hash == ScreenButtonData[i].ScreenHash) {
-            if (ScreenButtonData[i].GameMode == 0xFFFFFFFF || db->MatchesGameMode(ScreenButtonData[i].GameMode)) {
+            if (ScreenButtonData[i].GameMode == 0xFFFFFFFF || FEDatabase->MatchesGameMode(ScreenButtonData[i].GameMode)) {
                 return &ScreenButtonData[i];
             }
         }
@@ -524,17 +572,16 @@ static ScreenButtonDatum *FindAvailableButtonDatum() {
     return nullptr;
 }
 
-unsigned char FEngGetLastButton(const char *pkg_name) {
+uint8 FEngGetLastButton(const char *pkg_name) {
     ScreenButtonDatum *sd = FindScreenButtonDatum(FEHashUpper(pkg_name));
-    if (!sd) {
-        return 0;
+    if (sd) {
+        return sd->LastButton;
     }
-    return sd->LastButton;
+    return 0;
 }
 
-void FEngSetLastButton(const char *pkg_name, unsigned char button_hash) {
-    unsigned int hash = FEHashUpper(pkg_name);
-    ScreenButtonDatum *sd = FindScreenButtonDatum(hash);
+void FEngSetLastButton(const char *pkg_name, uint8 button_hash) {
+    ScreenButtonDatum *sd = FindScreenButtonDatum(FEHashUpper(pkg_name));
     if (sd) {
         sd->LastButton = button_hash;
         return;
@@ -548,11 +595,10 @@ void FEngSetLastButton(const char *pkg_name, unsigned char button_hash) {
 }
 
 void FEngSetCreateCallback(const char *abstract_pkg_name, MenuScreenCreateFunction function) {
-    for (int i = 0; i < sizeof(ScreenFactoryData) / sizeof(ScreenFactoryData[0]); i++) {
+    for (int i = 0; i < NUM_ENTRIES(ScreenFactoryData); i++) {
         ScreenFactoryDatum &sfd = ScreenFactoryData[i];
         if (bStrICmp(abstract_pkg_name, sfd.FEngPackageFilename) == 0) {
             sfd.ConstructorFunction = function;
-            return;
         }
     }
 }
@@ -613,9 +659,11 @@ void FEPackageData::UnActivate() {
 void FEPackageData::Close() {
     if (pPackage) {
         HackClearCache(pPackage);
-        RenderObjectDisconnect cb(HACK_FEPkgMgr_GetPackageRenderInfo(pPackage), cFEngRender::mInstance);
-        pPackage->ForAllObjects(cb);
-        cFEng::Get()->GetEngine()->UnloadPackage(pPackage);
+        RenderObjectDisconnect disconnect;
+        disconnect.pFEngRenderer = cFEngRender::mInstance;
+        disconnect.PkgRenderInfo = HACK_FEPkgMgr_GetPackageRenderInfo(pPackage);
+        pPackage->ForAllObjects(disconnect);
+        cFEng::Get()->UnloadPackage(pPackage);
         UnActivate();
     }
 }
@@ -633,24 +681,36 @@ void *FEPackageData::GetDataChunk() {
     return nullptr;
 }
 
-unsigned int FEPackageData::GetNameHash() {
+uint32 FEPackageData::GetNameHash() {
     if (MyChunk->GetID() == 0x30203) {
-        unsigned int *data = static_cast<unsigned int *>(GetDataChunk());
-        unsigned int magic = data[0];
-        unsigned int swappedMagic = (magic >> 24) | (magic << 24) | ((magic & 0xFF00) << 8) | ((magic >> 8) & 0xFF00);
-        if (swappedMagic == 0xE76E4546) {
-            unsigned int pkHd = data[2];
-            unsigned int swappedPkHd = (pkHd >> 24) | (pkHd << 24) | ((pkHd & 0xFF00) << 8) | ((pkHd >> 8) & 0xFF00);
-            if (swappedPkHd == 0x64486B50) {
-                unsigned int version = data[4];
-                unsigned int swappedVersion = (version >> 24) | (version << 24) | ((version & 0xFF00) << 8) | ((version >> 8) & 0xFF00);
-                if (swappedVersion > 0x1FFFF) {
-                    return FEHashUpper(reinterpret_cast<const char *>(data + 10));
-                }
-            }
+        FEChunk *chunk = static_cast<FEChunk *>(GetDataChunk());
+
+        if (chunk->GetID() != Chunk_FEPackage) {
+            return 0;
         }
+
+        FEChunk *pHeadChunk = pHeadChunk->GetFirstChunk();
+
+        if (pHeadChunk->GetID() != Chunk_FEPackageHeader) {
+            return 0;
+        }
+
+        u32 *pData = (u32 *)pHeadChunk->GetData();
+
+        if (FEngGetu32(pData[0]) > 0x1FFFF) {
+            return 0;
+        }
+
+        u32 NameLen = FEngGetu32(pData[4]);
+        u32 FileNameLen = FEngGetu32(pData[5]);
+        const char *pShortName = reinterpret_cast<const char *>(pData[6]);
+        uint32 hash = FEHashUpper(pShortName);
+        return hash;
+
     } else if (MyChunk->GetID() == 0x30210) {
-        return reinterpret_cast<unsigned int *>(MyChunk)[2];
+        uint32 *chunk_data = reinterpret_cast<uint32 *>(MyChunk->GetData());
+        uint32 hash = chunk_data[0];
+        return hash;
     }
     return 0;
 }

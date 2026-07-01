@@ -54,9 +54,8 @@ void UIOptionsScreen::NotificationMessage(u32 msg, FEObject *pobj, u32 param1, u
             } else {
                 const char *pkg_name = GetPackageName();
                 const char *prompt = GetLocalizedString(0xE9CB802F);
-                DialogInterface::ShowTwoButtons(pkg_name, mCalledFromPauseMenu ? "InGameDialog.fng" : "Dialog.fng", static_cast<eDialogTitle>(1),
-                                                0x70E01038, 0x417B25E4, 0x775DBA97, 0x34DC1BCF, 0x34DC1BCF, static_cast<eDialogFirstButtons>(1),
-                                                prompt);
+                DialogInterface::ShowTwoButtons(pkg_name, mCalledFromPauseMenu ? "InGameDialog.fng" : "Dialog.fng", dialog_alert, 0x70E01038,
+                                                0x417B25E4, 0x775DBA97, 0x34DC1BCF, 0x34DC1BCF, first_dialog_button2, prompt);
             }
             break;
         case 0x775DBA97:
@@ -67,8 +66,8 @@ void UIOptionsScreen::NotificationMessage(u32 msg, FEObject *pobj, u32 param1, u
         case 0xC519BFC4: {
             const char *pkg_name = GetPackageName();
             const char *prompt = GetLocalizedString(0x8AEF5AE8);
-            DialogInterface::ShowTwoButtons(pkg_name, mCalledFromPauseMenu ? "InGameDialog.fng" : "Dialog.fng", static_cast<eDialogTitle>(1),
-                                            0x70E01038, 0x417B25E4, 0xD05FC3A3, 0x34DC1BCF, 0x34DC1BCF, static_cast<eDialogFirstButtons>(1), prompt);
+            DialogInterface::ShowTwoButtons(pkg_name, mCalledFromPauseMenu ? "InGameDialog.fng" : "Dialog.fng", dialog_alert, 0x70E01038, 0x417B25E4,
+                                            0xD05FC3A3, 0x34DC1BCF, 0x34DC1BCF, first_dialog_button2, prompt);
             break;
         }
         case 0xD9FEEC59:
@@ -87,9 +86,8 @@ void UIOptionsScreen::NotificationMessage(u32 msg, FEObject *pobj, u32 param1, u
                     char buf[128];
                     const char *fmt = GetLocalizedString(0xBA463431);
                     FEngSNPrintf(buf, 128, fmt, GetPlayerToEditForOptions() + 1);
-                    DialogInterface::ShowTwoButtons(GetPackageName(), mCalledFromPauseMenu ? "InGameDialog.fng" : "Dialog.fng",
-                                                    static_cast<eDialogTitle>(1), 0x70E01038, 0x417B25E4, 0x9A5AD46D, 0xA2A07AC4, 0x34DC1BCF,
-                                                    static_cast<eDialogFirstButtons>(1), buf);
+                    DialogInterface::ShowTwoButtons(GetPackageName(), mCalledFromPauseMenu ? "InGameDialog.fng" : "Dialog.fng", dialog_alert,
+                                                    0x70E01038, 0x417B25E4, 0x9A5AD46D, 0xA2A07AC4, 0x34DC1BCF, first_dialog_button2, buf);
                 } else {
                     eng->QueueGameMessage(0x9A5AD46D, 0, 0xFF);
                 }

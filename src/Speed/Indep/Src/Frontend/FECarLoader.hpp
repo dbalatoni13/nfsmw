@@ -8,6 +8,7 @@
 // Decl: speed/indep/src/frontend/FECarLoader.hpp:9
 class GarageCarLoader {
   private:
+    friend void InitGarageCarLoaders();
     void Init(); // Decl: speed/indep/src/frontend/FECarLoader.hpp:15
 
   public:
@@ -40,6 +41,7 @@ class GarageCarLoader {
     ~GarageCarLoader(); // Decl: speed/indep/src/frontend/FECarLoader.hpp:36
 
   private:
+    friend void CleanUpGarageCarLoaders();
     void CleanUp(); // Decl: speed/indep/src/frontend/FECarLoader.hpp:40
 
     RideInfo LoadingRideInfo;              // offset 0x0, size 0x310, Decl: speed/indep/src/frontend/FECarLoader.hpp:43
@@ -55,5 +57,6 @@ class GarageCarLoader {
 void InitGarageCarLoaders();
 void CleanUpGarageCarLoaders();
 void UpdateGarageCarLoaders();
+GarageCarLoader *GetGarageCarLoader();
 
 #endif

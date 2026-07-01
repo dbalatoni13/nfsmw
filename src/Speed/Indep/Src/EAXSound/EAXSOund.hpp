@@ -5,10 +5,8 @@
 #include "Speed/Indep/Src/EAXSound/EAXAudioParams.hpp"
 #include "Speed/Indep/Src/EAXSound/States/STATE_Base.hpp"
 #include "Speed/Indep/Src/EAXSound/Stream/SpeechModule.hpp"
-#include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
 #include "Speed/Indep/Src/EAXSound/SFX_base.hpp"
 #include "Speed/Indep/Src/EAXSound/STICH_Playback.h"
-#include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/audiosystem.h"
 #include "Speed/Indep/Src/Main/Event.h"
 #include "Speed/Indep/Src/Misc/Hermes.h"
@@ -573,7 +571,7 @@ class EAXSound : public AudioMemBase {
 
     void QueueNISButtonThrough(uint32 anim_id, int camera_track_number);
 
-    void QueueNISStream(uint32 anim_id, int camera_track_number, void (*setmstimecb)(), bool bbuttonthrough);
+    void QueueNISStream(uint32 anim_id, int camera_track_number, void (*setmstimecb)(unsigned int, int));
 
     bool IsNISStreamQueued();
 
@@ -824,6 +822,8 @@ bool g_EAXIsPaused(void);
 void SetSoundControlState(bool bON, eSNDCTLSTATE esndstate, const char *Reason);
 
 void SoundPause(bool bpause, eSNDPAUSE_REASON esndpause);
+
+void FESoundControl(bool bOn, const char *name);
 
 extern EAXSound *g_pEAXSound;
 

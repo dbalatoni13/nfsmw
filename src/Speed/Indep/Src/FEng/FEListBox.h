@@ -6,6 +6,29 @@
 #include "Speed/Indep/Src/FEng/FEWideString.h"
 
 // File: speed/indep/src/feng/FEListBox.h
+static const u32 INVALID_RESOURCE_HANDLE = 0xFFFFFFFF;   // size: 0x4, Decl: speed/indep/src/feng/FEListBox.h:26
+static const u16 INVALID_RESOURCE_HANDLE_SHORT = 0xFFFF; // size: 0x2, Decl: speed/indep/src/feng/FEListBox.h:27
+static const u32 INVALID_LIST_ENTRY = 0xFFFFFFFF;        // size: 0x4, Decl: speed/indep/src/feng/FEListBox.h:28
+
+static const u32 FELISTBOX_FLAGS_INITIALIZED = 1; // size: 0x4, Decl: speed/indep/src/feng/FEListBox.h:42
+static const u32 FELISTBOX_FLAGS_SCROLL = 2;      // size: 0x4, Decl: speed/indep/src/feng/FEListBox.h:43
+static const u32 FELISTBOX_FLAGS_DONTWRAP = 4;    // size: 0x4, Decl: speed/indep/src/feng/FEListBox.h:44
+static const u32 FELISTBOX_FLAGS_WRAPH = 8;       // size: 0x4, Decl: speed/indep/src/feng/FEListBox.h:45
+static const u32 FELISTBOX_FLAGS_WRAPV = 16;      // size: 0x4, Decl: speed/indep/src/feng/FEListBox.h:46
+static const u32 FELISTBOX_FLAGS_SCROLLH = 32;    // size: 0x4, Decl: speed/indep/src/feng/FEListBox.h:47
+static const u32 FELISTBOX_FLAGS_SCROLLV = 64;    // size: 0x4, Decl: speed/indep/src/feng/FEListBox.h:48
+
+static const u32 FENG_HASH_SCROLLLEFT = 0xE10C4AF9;  // size: 0x4, Decl: speed/indep/src/feng/FEListBox.h:55
+static const u32 FENG_HASH_SCROLLRIGHT = 0x030471AC; // size: 0x4, Decl: speed/indep/src/feng/FEListBox.h:56
+static const u32 FENG_HASH_SCROLLUP = 0xFB814F13;    // size: 0x4, Decl: speed/indep/src/feng/FEListBox.h:57
+static const u32 FENG_HASH_SCROLLDOWN = 0xE10814A6;  // size: 0x4, Decl: speed/indep/src/feng/FEListBox.h:58
+
+#define FENG_MESSAGE_SCROLLLEFT "Scroll Left"   // :50
+#define FENG_MESSAGE_SCROLLRIGHT "Scroll Right" // :51
+#define FENG_MESSAGE_SCROLLUP "Scroll Up"       // :52
+#define FENG_MESSAGE_SCROLLDOWN "Scroll Down"   // :53
+
+// File: speed/indep/src/feng/FEListBox.h
 // total size: 0xC
 // Decl: speed/indep/src/feng/FEListBox.h:62
 struct ListBoxResource {
@@ -15,7 +38,11 @@ struct ListBoxResource {
 
     ListBoxResource() {} // Decl: speed/indep/src/feng/FEListBox.h:67
 
-    void Set(u32 ulHandle, u32 ulUserParam, u32 ulResourceIndex) {}
+    void Set(u32 ulHandle, u32 ulUserParam, u32 ulResourceIndex) {
+        this->Handle = ulHandle;
+        this->UserParam = ulUserParam;
+        this->ResourceIndex = ulResourceIndex;
+    }
 };
 
 // total size: 0x30
@@ -128,11 +155,11 @@ class FEListBox : public FEObject {
     }
 
     void SetCurrentColumn(u32 ulCurrentColumn) {
-        mulCurrentColumn = mulNumColumns == 0 ? 0 : ulCurrentColumn < mulNumColumns ? ulCurrentColumn : ulCurrentColumn - 1;
+        mulCurrentColumn = mulNumColumns == 0 ? 0 : ulCurrentColumn < mulNumColumns ? ulCurrentColumn : mulNumColumns - 1;
     }
 
     void SetCurrentRow(u32 ulCurrentRow) {
-        mulCurrentRow = mulNumRows == 0 ? 0 : ulCurrentRow < mulNumRows ? ulCurrentRow : ulCurrentRow - 1;
+        mulCurrentRow = mulNumRows == 0 ? 0 : ulCurrentRow < mulNumRows ? ulCurrentRow : mulNumRows - 1;
     }
 
     void IncrementCellByRow();
@@ -152,24 +179,21 @@ class FEListBox : public FEObject {
     }
 
     void SetCellColor(const FEColor &stColor) {
-        mpstCells[mulCurrentRow * mulNumColumns + mulCurrentColumn].ulColor = stColor;
+        GetPCellData(mulCurrentColumn, mulCurrentRow)->ulColor = stColor;
     }
 
     void SetCellScale(const FEPoint &stScale) {
-        mpstCells[mulCurrentRow * mulNumColumns + mulCurrentColumn].stScale = stScale;
+        GetPCellData(mulCurrentColumn, mulCurrentRow)->stScale = stScale;
     }
 
     void SetCellResource(u32 ulResHandle, u32 ulResParam, u32 ulResIndex) {
-        FEListBoxCell *pCell = &mpstCells[mulCurrentRow * mulNumColumns + mulCurrentColumn];
-        pCell->stResource.Handle = ulResHandle;
-        pCell->stResource.UserParam = ulResParam;
-        pCell->stResource.ResourceIndex = ulResIndex;
+        GetPCellData(mulCurrentColumn, mulCurrentRow)->stResource.Set(ulResHandle, ulResParam, ulResIndex);
     }
 
     void SetCellType(u32 ulType);
 
     void SetCellUV(const FERect &stUV) {
-        *reinterpret_cast<FERect *>(&mpstCells[mulCurrentRow * mulNumColumns + mulCurrentColumn].u.rect) = stUV;
+        *reinterpret_cast<FERect *>(&GetPCellData(mulCurrentColumn, mulCurrentRow)->u.rect) = stUV;
     }
 
     void SetCellString(const i16 *psString);
@@ -214,16 +238,16 @@ class FEListBox : public FEObject {
         return &mpstCells[ulRow * mulNumColumns + ulColumn];
     }
 
-    FEListBoxCell *const GetCurrentCellData() const {
-        return &mpstCells[mulCurrentRow * mulNumColumns + mulCurrentColumn];
+    const FEListBoxCell *GetCurrentCellData() const {
+        return GetCellData(mulCurrentColumn, mulCurrentRow);
     }
 
-    FEListEntryData *const GetCurrentColumnData() const {
+    const FEListEntryData *GetCurrentColumnData() const {
         return &mpstColumnData[mulCurrentColumn];
     }
 
-    FEListEntryData *const GetCurrentRowData() const {
-        return &mpstRowData[mulCurrentRow];
+    const FEListEntryData *GetCurrentRowData() const {
+        return GetRowData(mulCurrentRow);
     }
 
     u32 GetFirstVisibleColumn() const;
@@ -255,7 +279,9 @@ class FEListBox : public FEObject {
     }
 
   private:
-    FEListBoxCell *GetPCellData(u32 ulColumn, u32 ulRow) {}
+    FEListBoxCell *GetPCellData(u32 ulColumn, u32 ulRow) {
+        return &mpstCells[ulRow * mulNumColumns + ulColumn];
+    }
 
     FEListEntryData *GetPColumnData(u32 ulColumn) {
         return &mpstColumnData[ulColumn];
@@ -278,6 +304,9 @@ class FEListBox : public FEObject {
     void RecalculateCummulative();
 
     void CompleteScroll();
+
+    friend class FECodeListBox;
+    friend class FEPackageReader;
 };
 
 #endif

@@ -91,8 +91,8 @@ class FEngine {
 
     FETypeLib TypeLib; // offset 0x4140, size 0x14, Decl: speed/indep/src/feng/FEngine.h:133
 
-    i32 CurrentPackageRecordIndex; // offset 0x4154, size 0x4, Decl: speed/indep/src/feng/FEngine.h:135
-    char RecordedPackageNames[16]; // offset 0x4158, size 0x1000, Decl: speed/indep/src/feng/FEngine.h:136
+    i32 CurrentPackageRecordIndex;      // offset 0x4154, size 0x4, Decl: speed/indep/src/feng/FEngine.h:135
+    char RecordedPackageNames[16][256]; // offset 0x4158, size 0x1000, Decl: speed/indep/src/feng/FEngine.h:136
 
     i32 NextButtonRecordIndex;                     // offset 0x5158, size 0x4, Decl: speed/indep/src/feng/FEngine.h:138
     FEPackageButtonRec RecordedPackageButtons[32]; // offset 0x515C, size 0x100, Decl: speed/indep/src/feng/FEngine.h:139
@@ -105,17 +105,17 @@ class FEngine {
 
     bool bDebugMessages; // offset 0x5264, size 0x1, Decl: speed/indep/src/feng/FEngine.h:157
   public:
-    void RenderGroup(FEGroup *pGroup, FEMatrix4 &stParent, FEMatrix4 &stView, unsigned short uContext);
-    void RenderObject(FEObject *pObj, FEMatrix4 &stView, unsigned short uContext);
+    void RenderGroup(FEGroup *pGroup, FEMatrix4 &stParent, FEMatrix4 &stView, u16 uContext);
+    void RenderObject(FEObject *pObj, FEMatrix4 &stView, u16 uContext);
     void ProcessPadsForPackage(FEPackage *pPackage);                                      // Decl: speed/indep/src/feng/FEngine.h:161
     void ProcessMouseForPackage(FEPackage *pPackage);                                     // Decl: speed/indep/src/feng/FEngine.h:162
     void UpdateMouseState(FEPackage *pkg, FEObjectMouseState *state, float mx, float my); // Decl: speed/indep/src/feng/FEngine.h:163
   private:
     void ProcessMessageQueue(); // Decl: speed/indep/src/feng/FEngine.h:165
   public:
-    bool ProcessListBoxResponses(FEObject *pObj, u32 MsgID);
+    bool ProcessListBoxResponses(FEObject *pObj, FEPackage *pPack, u32 MsgID);
 
-    bool ProcessCodeListBoxResponses(FEObject *pObj, u32 MsgID);
+    bool ProcessCodeListBoxResponses(FEObject *pObj, FEPackage *pPack, u32 MsgID);
 
     void ProcessObjectMessage(FEObject *pObj, FEPackage *pPack, u32 MsgID, u32 ControlMask);
 
@@ -187,7 +187,7 @@ class FEngine {
 
     void ResetState(); // Decl: speed/indep/src/feng/FEngine.h:223
 
-    void Update(const long tDeltaTicks, unsigned int lock);
+    void Update(const i32 tDeltaTicks, uint32 lock);
 
     void Render(); // Decl: speed/indep/src/feng/FEngine.h:230
 
@@ -211,7 +211,7 @@ class FEngine {
 
     FEPackage *PushPackage(const char *pPackageName, const u8 Level, const u32 ControlMask);
 
-    void QueuePackageCommand(int command, u32 ControlMask, const char *pPackageName);
+    void QueuePackageCommand(i32 command, u32 ControlMask, const char *pPackageName);
 
     void QueuePackageSwitch(const char *pPackageName, u32 ControlMask);
 
@@ -254,7 +254,7 @@ class FEngine {
 
     const char *GetPackageMarker(u32 Index) const {}
 
-    char *const RecallPackageMarker(); // Decl: speed/indep/src/feng/FEngine.h:289
+    const char *RecallPackageMarker(); // Decl: speed/indep/src/feng/FEngine.h:289
 
     void ClearPackageMarkers(); // Decl: speed/indep/src/feng/FEngine.h:290
 

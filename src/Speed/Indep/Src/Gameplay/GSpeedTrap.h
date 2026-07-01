@@ -58,8 +58,13 @@ class GSpeedTrap {
     void ClearFlag(unsigned int mask) {
         mFlags &= ~mask;
     }
-    bool IsFlagSet(unsigned int mask) const;
-    bool IsFlagClear(unsigned int mask) const;
+    bool IsFlagSet(unsigned int mask) const {
+        return (mFlags & mask) != 0;
+    };
+    bool IsFlagClear(unsigned int mask) const {
+        return (mFlags & mask) == 0;
+    };
+
     void Init(Attrib::Key trapKey);
     void Reset();
     void Unlock();

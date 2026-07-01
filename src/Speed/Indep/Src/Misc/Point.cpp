@@ -19,6 +19,7 @@ void cPoint::SplineSeek(tCubic1D *p, float time, float fDClamp, float fDDClamp) 
             float interval = time / p->duration;
             p->time = p->time + interval;
             if (p->time > 1.0f) {
+                p->time = 1.0f;
                 p->Snap();
             }
             float t = p->time;
@@ -102,29 +103,30 @@ void tCubic1D::ClampSecondDerivative(float fMag) {
     }
 }
 
-void tCubic1D::Update(float dt, float maxDeriv, float maxSecondDeriv) {
+void tCubic1D::Update(float fSeconds, float fDClamp, float fDDClamp) {
     switch (state) {
         case 2: {
             time = 0;
             if (flags == 0) {
                 state = 1;
             }
-            if (maxDeriv > 0.0f) {
-                ClampDerivative(maxDeriv);
+            if (fDClamp > 0.0f) {
+                ClampDerivative(fDClamp);
             }
             MakeCoeffs();
-            if (maxSecondDeriv > 0.0f) {
-                ClampSecondDerivative(maxSecondDeriv);
+            if (fDDClamp > 0.0f) {
+                ClampSecondDerivative(fDDClamp);
             }
         }
         case 1: {
             if (duration > 1e-05f) {
-                float interval = dt / duration;
+                float interval = fSeconds / duration;
                 time += interval;
             } else {
                 time = 1.0f;
             }
             if (time > 1.0f) {
+                time = 1.0f;
                 Snap();
             }
             float t = time;

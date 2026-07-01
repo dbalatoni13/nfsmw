@@ -53,7 +53,7 @@ class MenuZoneTrigger : public HudElement, public IMenuZoneTrigger {
     FEGroup *mEngageMechanic;         // offset 0x30, size 0x4, Decl: speed/indep/src/frontend/hud/FeMenuZoneTrigger.hpp:56
     FEImage *mEventIcon;              // offset 0x34, size 0x4, Decl: speed/indep/src/frontend/hud/FeMenuZoneTrigger.hpp:57
     FEGroup *mCingularIcon;           // offset 0x38, size 0x4
-    char *mZoneType;                  // offset 0x3C, size 0x4
+    const char *mZoneType;            // offset 0x3C, size 0x4
     GRuntimeInstance *mpRaceActivity; // offset 0x40, size 0x4
     bool mbCingularQueued;            // offset 0x44, size 0x1, Decl: speed/indep/src/frontend/hud/FeMenuZoneTrigger.hpp:61
     bool mbInsideTrigger;             // offset 0x48, size 0x1

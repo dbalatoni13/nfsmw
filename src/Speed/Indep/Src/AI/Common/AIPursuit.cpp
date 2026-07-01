@@ -20,8 +20,6 @@
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
-#include <algorithm>
-#include <cmath>
 #include <cstdlib>
 
 PursuitFormation::PursuitFormation()

@@ -3,34 +3,42 @@
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Frontend/Database/VehicleDB.hpp"
-#include "Speed/Indep/Src/Frontend/FEManager.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEImages.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/feDialogBox.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/MemCard/uiMemcardInterface.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/FEPkg_GarageMain.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/customize/FECustomize.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiShowcase.hpp"
+#include "Speed/Indep/Src/Misc/Config.h"
 #include "Speed/Indep/Src/Physics/PhysicsInfo.hpp"
 #include "Speed/Indep/Src/World/CarInfo.hpp"
 #include "Speed/Indep/Src/Frontend/FECarViewer.hpp"
 
-extern cFrontendDatabase *FEDatabase;
-extern Timer RealTimer;
-extern bool IsMemcardEnabled;
-extern unsigned int FEngHashString(const char *, ...);
-
-void MemcardEnter(const char *from, const char *to, unsigned int op, void (*termFunc)(void *), void *termParam, unsigned int successMsg,
-                  unsigned int failedMsg);
-extern void BeginCarCustomize(eCustomizeEntryPoint entry, FECarRecord *car);
+void CarDatum::NotificationMessage(u32 msg, FEObject *pObj, u32 param1, u32 param2) {
+    if (msg == 0xc407210 || msg == 0x406415e3) {
+        if (Handle == 0xFFFFFFFF) {
+            FEDatabase->SetGameMode(static_cast<eFEGameModes>(FEDatabase->GetGameMode() | 0x20));
+            cFEng::Get()->QueuePackageSwitch("Car_Select.fng", 0, 0, false);
+        } else {
+            FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(0);
+            FECarRecord *carRecord = stable->GetCarRecordByHandle(Handle);
+            if (carRecord) {
+                if (!carRecord->IsCustomized()) {
+                    carRecord = stable->CreateNewCustomCar(carRecord->Handle);
+                }
+                BeginCarCustomize(CEP_MAIN_MENU, carRecord);
+            }
+        }
+    }
+}
 
 MyCarsManager::MyCarsManager(ScreenConstructorData *sd)
-    : ArrayScrollerMenu(sd, 5, 2, true) //
-      ,
-      AccelerationSlider() //
-      ,
-      TopSpeedSlider() //
-      ,
-      HandlingSlider() //
-      ,
+    : ArrayScrollerMenu(sd, 5, 2, true), //
+      AccelerationSlider(),              //
+      TopSpeedSlider(),                  //
+      HandlingSlider(),                  //
       bGoToShowcase(false) {
-    bShouldPlaySound = true;
+    SetClickToSelectMode(true);
     pSelectedCar = nullptr;
     tCarLoadTimer.UnSet();
     Setup();
@@ -83,8 +91,8 @@ void MyCarsManager::NotificationMessage(unsigned long msg, FEObject *obj, unsign
         case 0xc519bfc4: {
             FECarRecord *car = FEDatabase->GetPlayerCarStable(0)->GetCarRecordByHandle(static_cast<CarDatum *>(GetCurrentDatum())->Handle);
             if (car->IsValid()) {
-                DialogInterface::ShowTwoButtons(GetPackageName(), "", static_cast<eDialogTitle>(1), 0x70e01038, 0x417b25e4, 0xd05fc3a3, 0x34dc1bcf,
-                                                0x34dc1bcf, static_cast<eDialogFirstButtons>(1), 0x4f68196e);
+                DialogInterface::ShowTwoButtons(GetPackageName(), "", dialog_alert, 0x70e01038, 0x417b25e4, 0xd05fc3a3, 0x34dc1bcf, 0x34dc1bcf,
+                                                first_dialog_button2, 0x4f68196e);
             }
             break;
         }
@@ -94,7 +102,7 @@ void MyCarsManager::NotificationMessage(unsigned long msg, FEObject *obj, unsign
             FEDatabase->NotifyDeleteCar(handle);
             carDB->DeleteCustomCar(handle);
             RefreshCarList();
-            if (data.CountElements() >= 2) {
+            if (GetNumDatum() >= 2) {
                 pSelectedCar = carDB->GetCarRecordByHandle(static_cast<CarDatum *>(GetCurrentDatum())->Handle);
             } else {
                 pSelectedCar = nullptr;
@@ -124,7 +132,8 @@ void MyCarsManager::Setup() {
         ImageArraySlot *slot = new ImageArraySlot(img);
         AddSlot(slot);
     }
-    descLabel = 0xb271b295;
+    const u32 FEObj_CARNAME = 0xb271b295;
+    SetDescLabel(FEObj_CARNAME);
     RefreshCarList();
     AccelerationSlider.Init(GetPackageName(), "ACCELERATION", 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 160.0f);
     TopSpeedSlider.Init(GetPackageName(), "TOPSPEED", 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 160.0f);
@@ -169,6 +178,9 @@ void MyCarsManager::RefreshCarList() {
 }
 
 void MyCarsManager::RefreshHeader() {
+
+    const u32 FEObj_addcar = 0x42ea22dd;
+    const u32 FEObj_editdeletecar = 0x06d41ccc;
     ArrayScrollerMenu::RefreshHeader();
     if (GetCurrentDatum()) {
         unsigned int handle = static_cast<CarDatum *>(GetCurrentDatum())->Handle;
@@ -181,17 +193,17 @@ void MyCarsManager::RefreshHeader() {
         }
         if (static_cast<CarDatum *>(GetCurrentDatum())->Handle == 0xFFFFFFFF) {
             FEngSetLanguageHash(GetPackageName(), 0xbfa25765, 0xc2598bd8);
-            cFEng::Get()->QueuePackageMessage(0x42ea22dd, GetPackageName(), nullptr);
+            cFEng::Get()->QueuePackageMessage(FEObj_addcar, GetPackageName(), nullptr);
         } else {
             FEngSetLanguageHash(GetPackageName(), 0xbfa25765, 0xc9847935);
-            cFEng::Get()->QueuePackageMessage(0x06d41ccc, GetPackageName(), nullptr);
+            cFEng::Get()->QueuePackageMessage(FEObj_editdeletecar, GetPackageName(), nullptr);
             for (int i = 0; i < 0xb; i++) {
                 RaceSettings *rs = FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(i));
                 rs->SelectedCar[0] = static_cast<CarDatum *>(GetCurrentDatum())->Handle;
             }
         }
-        FEPrintf(GetPackageName(), 0x6f25a248, "%d", data.IsInList(static_cast<bNode *>(GetCurrentDatum())));
-        FEPrintf(GetPackageName(), 0xb2037bdc, "%d", data.CountElements());
+        FEPrintf(GetPackageName(), 0x6f25a248, "%d", GetCurrentDatumNum());
+        FEPrintf(GetPackageName(), 0xb2037bdc, "%d", GetNumDatum());
         UpdateSliders();
         UpdateCar();
     }
@@ -242,24 +254,6 @@ void MyCarsManager::UpdateCar() {
                 pSelectedCar = carDB->GetCarRecordByHandle(handle);
             }
             tCarLoadTimer = RealTimer;
-        }
-    }
-}
-
-void CarDatum::NotificationMessage(u32 msg, FEObject *pObj, u32 param1, u32 param2) {
-    if (msg == 0xc407210 || msg == 0x406415e3) {
-        if (Handle == 0xFFFFFFFF) {
-            FEDatabase->SetGameMode(static_cast<eFEGameModes>(FEDatabase->GetGameMode() | 0x20));
-            cFEng::Get()->QueuePackageSwitch("Car_Select.fng", 0, 0, false);
-        } else {
-            FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(0);
-            FECarRecord *carRecord = stable->GetCarRecordByHandle(Handle);
-            if (carRecord) {
-                if (!carRecord->IsCustomized()) {
-                    carRecord = stable->CreateNewCustomCar(carRecord->Handle);
-                }
-                BeginCarCustomize(static_cast<eCustomizeEntryPoint>(1), carRecord);
-            }
         }
     }
 }

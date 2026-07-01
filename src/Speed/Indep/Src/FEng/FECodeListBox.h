@@ -6,50 +6,35 @@
 
 class FEGameInterface;
 
-inline int GetValidIndex(int lIndex, int lRange) {
+static const i32 INVALID_REAL_INDEX = -1; // size: 0x4, Decl: speed/indep/src/feng/FECodeListBox.h:28
+
+static const u32 FECODELISTBOX_FLAGS_INITIALIZED = 1;           // size: 0x4, Decl: speed/indep/src/feng/FECodeListBox.h:44
+static const u32 FECODELISTBOX_FLAGS_DONTWRAP = 2;              // size: 0x4, Decl: speed/indep/src/feng/FECodeListBox.h:45
+static const u32 FECODELISTBOX_FLAGS_SELECTIONLESS = 4;         // size: 0x4, Decl: speed/indep/src/feng/FECodeListBox.h:46
+static const u32 FECODELISTBOX_FLAGS_SCROLLFROMCENTER = 8;      // size: 0x4, Decl: speed/indep/src/feng/FECodeListBox.h:47
+static const u32 FECODELISTBOX_FLAGS_IGNORESELECTIONCOLOR = 16; // size: 0x4, Decl: speed/indep/src/feng/FECodeListBox.h:48
+static const u32 FECODELISTBOX_FLAGS_SCROLLH = 32;              // size: 0x4, Decl: speed/indep/src/feng/FECodeListBox.h:49
+static const u32 FECODELISTBOX_FLAGS_SCROLLV = 64;              // size: 0x4, Decl: speed/indep/src/feng/FECodeListBox.h:50
+
+static const u32 FECODELISTBOX_PUBLICFLAGS_MASK = 0xFFFFFFFE; // size: 0x4, Decl: speed/indep/src/feng/FECodeListBox.h:52
+
+inline i32 GetValidIndex(i32 lIndex, i32 lRange) { // Decl: speed/indep/src/feng/FECodeListBox.h:58
     if (lIndex >= 0) {
-        int rem = lIndex - (lIndex / lRange) * lRange;
-        return rem;
+        return lIndex - (lIndex / lRange) * lRange;
     }
 
     int posIndex = -lIndex;
-    int ret = 0;
     int rem = posIndex - (posIndex / lRange) * lRange;
     if (lRange > 1) {
-        ret = lRange - rem;
+        return lRange - rem;
     }
-    return ret;
+    return 0;
 }
 
-inline int GetRealValue(int i, int lNumTotal, int lCurrentVirtual, int lNumVisible) {
-    int lRet;
+class FECodeListBox;
 
-    if (lNumTotal == 0) {
-        return -1;
-    }
-
-    if (i >= lNumTotal) {
-        i = i % lNumTotal;
-    }
-
-    lRet = i - lCurrentVirtual;
-    if (lRet < 0) {
-        lRet += lNumTotal;
-    }
-
-    if (lRet >= 0) {
-        int rem = lRet - (lRet / lNumVisible) * lNumVisible;
-        return rem;
-    }
-
-    int posIndex = -lRet;
-    int ret = 0;
-    int rem = posIndex - (posIndex / lNumVisible) * lNumVisible;
-    if (lNumVisible > 1) {
-        ret = lNumVisible - rem;
-    }
-    return ret;
-}
+typedef void (*FECodeListBoxSelectCB)(FECodeListBox *);                    // Decl: speed/indep/src/feng/FECodeListBox.h:86
+typedef void (*FECodeListBoxSetCellCB)(void *, FECodeListBox *, u32, u32); // Decl: speed/indep/src/feng/FECodeListBox.h:87
 
 // total size: 0xC8
 // Decl: speed/indep/src/feng/FECodeListBox.h:96
@@ -99,7 +84,9 @@ class FECodeListBox : public FEObject {
 
     void CopyProperties(const FECodeListBox &Object);
 
-    void SetGameInterface(FEGameInterface *pobGameInterface) {} // Decl: speed/indep/src/feng/FECodeListBox.h:144
+    void SetGameInterface(FEGameInterface *pobGameInterface) { // Decl: speed/indep/src/feng/FECodeListBox.h:144
+        this->mpobRenderer = pobGameInterface;
+    }
 
     void FillAllCells();
 
@@ -113,7 +100,10 @@ class FECodeListBox : public FEObject {
 
     void SetCurrentRow(u32 ulVCurrentRow);
 
-    void SetViewDimensions(const FEPoint &stViewDimensions) {}
+    void SetViewDimensions(const FEPoint &stViewDimensions) {
+        mstViewDimensions.h = stViewDimensions.h;
+        mstViewDimensions.v = stViewDimensions.v;
+    }
 
     u32 GetTotalNumColumns() const {}
 
@@ -196,9 +186,17 @@ class FECodeListBox : public FEObject {
         return mfCurrentAlpha;
     }
 
-    void SetFlags(u32 ulFlag, bool bSet) {}
+    void SetFlags(u32 ulFlag, bool bSet) {
+        if (bSet) {
+            Flags |= ulFlag;
+        } else {
+            Flags &= ~ulFlag;
+        }
+    }
 
-    u32 GetFlags() const {}
+    u32 GetFlags() const {
+        return Flags;
+    }
 
     void SetSelectionColor(const FEColor &stColor) {
         mstSelectionColor = stColor;
@@ -210,18 +208,18 @@ class FECodeListBox : public FEObject {
 
     void Reset();
 
-    void SetSetCellCallback(void (*pCallback)(void *, FECodeListBox *, u32, u32), void *pvData) {
+    void SetSetCellCallback(FECodeListBoxSetCellCB pCallback, void *pvData) {
         mpSetCellCallback = pCallback;
         mpvCallbackData = pData;
     }
 
     static void DefaultSelectCallback(FECodeListBox *pobListBox);
 
-    void SetSelectionCallback(void (*pSelectionCallback)(FECodeListBox *)) {
+    void SetSelectionCallback(FECodeListBoxSelectCB pSelectionCallback) {
         mpSelectionCallback = pSelectionCallback;
     }
 
-    static void SetDefaultSelectionCallback(void (*pSelectionCallback)(FECodeListBox *)) {}
+    static void SetDefaultSelectionCallback(FECodeListBoxSelectCB pSelectionCallback) {}
 
     u32 GetVisualSelectionColumn() { // Decl: speed/indep/src/feng/FECodeListBox.h:224
         return mulCurrentVirtualColumn % mulNumVisibleColumns;

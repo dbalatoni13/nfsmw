@@ -1,5 +1,5 @@
 #include "Speed/Indep/Src/Frontend/HUD/FeTachometerDrag.hpp"
-#include "Speed/Indep/Src/FEng/feimage.h"
+#include "Speed/Indep/Src/FEng/FEImage.h"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEObjects.hpp"
 #include "Speed/Indep/Src/Frontend/HUD/FeTachometer.hpp"

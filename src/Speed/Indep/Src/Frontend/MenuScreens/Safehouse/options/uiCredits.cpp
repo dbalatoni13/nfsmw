@@ -69,7 +69,7 @@ void uiCredits::NotificationMessage(u32 msg, FEObject *pobj, u32 param1, u32 par
                     ns->Cached = nullptr;
                     *ns->GetObjData() = *prototypeStr_->GetObjData();
                     ns->SetString(creditLine);
-                    ns->Flags |= 0x400000;
+                    ns->Flags |= FF_DirtyCode;
                     if (!FEDatabase->IsBeatGameMode()) {
                         ns->SetScript(FEHashUpper("RollCredit"), false);
                     } else {

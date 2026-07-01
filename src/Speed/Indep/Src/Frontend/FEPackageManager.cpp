@@ -2,88 +2,20 @@
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
-
-extern unsigned long FEHashUpper(const char *str);
-extern unsigned int bStringHash(const char *str);
-extern cFEng *cFEng_mInstance;
-extern void HackClearCache(FEPackage *pkg);
-extern bool IsCurrentlyHotChunking();
+#include "Speed/Indep/Src/Misc/ResourceLoader.hpp"
+#include "types.h"
 
 FEPackageManager *FEPackageManager::mInstance;
 int FEPackageData::mInScreenConstructor;
-
-FEPackageManager *FEPackageManager::Get() {
-    return mInstance;
-}
-
-void FEPackageManager::ErrorTick() {
-    BroadcastMessage(0xD0678849);
-}
-
-void FEPackageManager::Tick() {
-    BroadcastMessage(0xC98356BA);
-}
-
-unsigned int FEngGetActiveScreensChecksum() {
-    return FEPackageManager::Get()->GetActiveScreensChecksum();
-}
-
-FEPackage *FEPackageManager::FindPackage(const char *pkg_name) {
-    FEPackageData *data = FindFEPackageData(pkg_name);
-    if (!data) {
-        return nullptr;
-    }
-    return data->GetPackage();
-}
-
-void *FEPackageManager::GetPackageData(const char *pkg_name) {
-    FEPackageData *data = FindFEPackageData(pkg_name);
-    if (!data) {
-        return nullptr;
-    }
-    return data->GetDataChunk();
-}
-
-MenuScreen *FEPackageManager::FindScreen(const char *pkg_name) {
-    FEPackageData *data = FindFEPackageData(pkg_name);
-    if (!data) {
-        return nullptr;
-    }
-    return data->GetScreen();
-}
-
-MenuScreen *FEngFindScreen(const char *package_name) {
-    return FEPackageManager::Get()->FindScreen(package_name);
-}
-
-FEPackageRenderInfo *HACK_FEPkgMgr_GetPackageRenderInfo(FEPackage *pkg) {
-    unsigned long userParam = pkg->GetUserParam();
-    if (userParam == 0) {
-        return nullptr;
-    }
-    return reinterpret_cast<FEPackageRenderInfo *>(userParam + 0x28);
-}
-
-FEPackageData *FEPackageManager::FindFEPackageData(bChunk *chunk) {
-    for (FEPackageData *f = ScreenList.GetHead(); f != ScreenList.EndOfList(); f = f->GetNext()) {
-        if (f->GetChunk() == chunk) {
-            return f;
-        }
-    }
-    return nullptr;
-}
-
-void FEPackageManager::PackageWillBeUnloaded(FEPackage *pkg) {
-    FEPackageData *data = FindFEPackageData(pkg->GetName());
-    if (data) {
-        data->UnActivate();
-    }
-}
 
 void FEPackageManager::Init() {
     if (!mInstance) {
         mInstance = new ("", 0) FEPackageManager();
     }
+}
+
+FEPackageManager *FEPackageManager::Get() {
+    return mInstance;
 }
 
 void FEPackageManager::BroadcastMessage(u32 msg) {
@@ -106,8 +38,8 @@ void FEPackageManager::BroadcastMessage(u32 msg) {
     }
 }
 
-unsigned long FEPackageManager::GetActiveScreensChecksum() {
-    unsigned long checksum = 0;
+u32 FEPackageManager::GetActiveScreensChecksum() {
+    u32 checksum = 0;
     for (FEPackageData *f = ScreenList.GetHead(); f != ScreenList.EndOfList(); f = f->GetNext()) {
         if (f->GetPackage()) {
             if (bStrICmp(f->GetPackage()->GetName(), "EA_TRAX.fng") != 0) {
@@ -116,6 +48,10 @@ unsigned long FEPackageManager::GetActiveScreensChecksum() {
         }
     }
     return checksum;
+}
+
+uint32 FEngGetActiveScreensChecksum() {
+    return FEPackageManager::Get()->GetActiveScreensChecksum();
 }
 
 void FEPackageManager::NotifySoundMessage(u32 Message, FEObject *obj, u32 controller_mask, u32 pkg_ptr) {
@@ -151,6 +87,22 @@ const char *FEPackageManager::GetBasePkgName(const char *pkg_name) {
     return ptr;
 }
 
+FEPackage *FEPackageManager::FindPackage(const char *pkg_name) {
+    FEPackageData *data = FindFEPackageData(pkg_name);
+    if (!data) {
+        return nullptr;
+    }
+    return data->GetPackage();
+}
+
+void *FEPackageManager::GetPackageData(const char *pkg_name) {
+    FEPackageData *data = FindFEPackageData(pkg_name);
+    if (!data) {
+        return nullptr;
+    }
+    return data->GetDataChunk();
+}
+
 void FEPackageManager::CloseAllPackages(int close_permanent) {
     for (FEPackageData *f = ScreenList.GetHead(); f != ScreenList.EndOfList(); f = f->GetNext()) {
         if (!f->GetPermanent() || close_permanent) {
@@ -159,6 +111,31 @@ void FEPackageManager::CloseAllPackages(int close_permanent) {
             HackClearCache(f->GetPackage());
         }
     }
+}
+
+bool FEPackageManager::GetVisibility(const char *pkg_name) {
+    FEPackageData *data = FindFEPackageData(pkg_name);
+    if (!data) {
+        return false;
+    }
+    return data->GetVisibility();
+}
+
+MenuScreen *FEPackageManager::FindScreen(const char *pkg_name) {
+    FEPackageData *data = FindFEPackageData(pkg_name);
+    if (!data) {
+        return nullptr;
+    }
+    return data->GetScreen();
+}
+
+FEPackageData *FEPackageManager::FindFEPackageData(bChunk *chunk) {
+    for (FEPackageData *f = ScreenList.GetHead(); f != ScreenList.EndOfList(); f = f->GetNext()) {
+        if (f->GetChunk() == chunk) {
+            return f;
+        }
+    }
+    return nullptr;
 }
 
 FEPackageData *FEPackageManager::FindFEPackageData(const char *pkg_name) {
@@ -197,6 +174,13 @@ void FEPackageManager::PackageWasLoaded(FEPackage *pkg) {
     }
 }
 
+void FEPackageManager::PackageWillBeUnloaded(FEPackage *pkg) {
+    FEPackageData *data = FindFEPackageData(pkg->GetName());
+    if (data) {
+        data->UnActivate();
+    }
+}
+
 void FEPackageManager::Loader(bChunk *chunk, bool hotchunk_flag) {
     FEPackageData *data = new ("", 0) FEPackageData(chunk);
     if (chunk->GetID() == 0x30210) {
@@ -210,7 +194,7 @@ void FEPackageManager::Loader(bChunk *chunk, bool hotchunk_flag) {
 }
 
 void FEPackageManager::UnLoader(bChunk *chunk, bool hotchunk_flag) {
-    cFEng_mInstance->ServiceFengOnly();
+    cFEng::Get()->ServiceFengOnly();
     FEPackageData *data = FindFEPackageData(chunk);
     if (data) {
         data->ClearHotchunk();
@@ -221,14 +205,24 @@ void FEPackageManager::UnLoader(bChunk *chunk, bool hotchunk_flag) {
     }
 }
 
-FEPackageManager::~FEPackageManager() {}
+void FEPackageManager::ErrorTick() {
+    BroadcastMessage(0xD0678849);
+}
 
-bool FEPackageManager::GetVisibility(const char *pkg_name) {
-    FEPackageData *data = FindFEPackageData(pkg_name);
-    if (!data) {
-        return false;
+void FEPackageManager::Tick() {
+    BroadcastMessage(0xC98356BA);
+}
+
+FEPackageRenderInfo *HACK_FEPkgMgr_GetPackageRenderInfo(FEPackage *pkg) {
+    FEPackageData *pkg_data = reinterpret_cast<FEPackageData *>(pkg->GetUserParam());
+    if (pkg_data != nullptr) {
+        return pkg_data->GetRenderInfo();
     }
-    return data->GetVisibility();
+    return nullptr;
+}
+
+MenuScreen *FEngFindScreen(const char *package_name) {
+    return FEPackageManager::Get()->FindScreen(package_name);
 }
 
 int LoaderFEngPackage(bChunk *chunk) {

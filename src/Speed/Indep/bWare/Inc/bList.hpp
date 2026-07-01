@@ -155,7 +155,7 @@ class bList {
     }
 
     int CountElements() {
-        return TraversebList(nullptr);
+        return this->TraversebList(nullptr);
     }
 
     void Sort(long (*check_flip)(bNode *, bNode *)) {} // TODO

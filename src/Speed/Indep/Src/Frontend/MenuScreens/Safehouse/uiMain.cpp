@@ -98,7 +98,6 @@ UIMain::UIMain(ScreenConstructorData *sd) : IconScrollerMenu(sd) {
 
 void UIMain::NotificationMessage(u32 msg, FEObject *obj, u32 param1, u32 param2) {
     IconScrollerMenu::NotificationMessage(msg, obj, param1, param2);
-
     switch (msg) {
         case 0x1265ece9:
             GarageMainScreen::GetInstance()->UpdateCurrentCameraView(false);
@@ -131,13 +130,7 @@ void UIMain::NotificationMessage(u32 msg, FEObject *obj, u32 param1, u32 param2)
             break;
         case 0xc519bfc4:
             if (FEDatabase->bProfileLoaded) {
-                const char *scriptName;
-                if (!m_bStatsShowing) {
-                    scriptName = "GAMESTATS_APPEAR";
-                } else {
-                    scriptName = "GAMESTATS_LEAVE";
-                }
-                cFEng::Get()->QueuePackageMessage(FEHashUpper(scriptName), GetPackageName(), nullptr);
+                cFEng::Get()->QueuePackageMessage(FEHashUpper(m_bStatsShowing ? "GAMESATS_LEAVE" : "GAMESTATS_APPEAR"), GetPackageName(), nullptr);
                 m_bStatsShowing = !m_bStatsShowing;
             }
             break;
@@ -179,13 +172,7 @@ void UIMain::Setup() {
     FEngSetLanguageHash(GetPackageName(), FEObj_TITLEGROUP, 0xb24aae58);
     uint8 lastButton = FEngGetLastButton(GetPackageName());
 
-    if (bFadeInIconsImmediately) {
-        Options.bDelayUpdate = false;
-        Options.bFadingOut = false;
-        Options.StartFadeIn();
-    }
-
-    Options.SetInitialPos(lastButton);
+    SetInitialOption(lastButton);
     RefreshHeader();
     UpdateProfileData();
 }

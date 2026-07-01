@@ -62,24 +62,15 @@ void UIMemcardKeyboard::NotificationMessage(unsigned long msg, FEObject *obj, un
 // ===== UIMemcardBase =====
 
 UIMemcardBase::UIMemcardBase(ScreenConstructorData *sd)
-    : UIMemcardKeyboard(sd) //
-      ,
-      mIndex(1) //
-      ,
-      m_ExpectingInput(false) //
-      ,
-      m_LoadedNetConfig(0) //
-      ,
-      m_nMsgOptions(0) //
-      ,
-      m_bVisible(false) //
-      ,
-      m_bDelayedFailed(false) //
-      ,
-      m_bInButtonAnimation(false) //
-      ,
-      m_pChild(nullptr) //
-      ,
+    : UIMemcardKeyboard(sd),       //
+      mIndex(1),                   //
+      m_ExpectingInput(false),     //
+      m_LoadedNetConfig(0),        //
+      m_nMsgOptions(0),            //
+      m_bVisible(false),           //
+      m_bDelayedFailed(false),     //
+      m_bInButtonAnimation(false), //
+      m_pChild(nullptr),           //
       m_SimPausedForMemcard(false) {}
 
 UIMemcardBase::~UIMemcardBase() {
@@ -964,8 +955,7 @@ void UIMemcardBase::HandleAutoSaveOverwriteMessage() {
 // ===== UIMemcardList =====
 
 UIMemcardList::UIMemcardList(ScreenConstructorData *sd)
-    : MenuScreen(sd) //
-      ,
+    : MenuScreen(sd),                                                             //
       m_SaveGameList(GetPackageName(), "", "Scrollbar", true, true, false, false) //
 {
     m_Initialized = 0;

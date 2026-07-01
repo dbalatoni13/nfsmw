@@ -209,8 +209,8 @@ class FEStatWidget : public FEWidget {
         pData = string;
     }
     void SetPos(bVector2 &pos) override {
-        vDataPos.x = pos.x;
-        vDataPos.y = pos.y;
+        SetPosX(pos.x);
+        SetPosY(pos.y);
     }
     void SetPosX(float x) override;
     void SetPosY(float y) override;
@@ -503,13 +503,17 @@ class FEScrollBar {
     void Update(int num_view_items, int num_list_items, int view_head_index,
                 int selected_item); // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:527
     void UpdateMouse();
-    void SetGroupVisible(bool visible);       // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:545
-    void SetArrow1Visibility(bool visible) {} // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:550
-    void SetArrow2Visibility(bool visible) {} // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:551
-    void SetBackingVisibility(bool visible);  // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:553
-    void SetArrow1Dim(bool dim);              // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:555
-    void SetArrow2Dim(bool dim);              // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:556
-    bool IsVisible() {                        // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:530
+    void SetGroupVisible(bool visible);      // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:545
+    void SetArrow1Visibility(bool visible) { // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:550
+        this->SetArrowVisibility(1, visible);
+    }
+    void SetArrow2Visibility(bool visible) { // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:551
+        this->SetArrowVisibility(2, visible);
+    }
+    void SetBackingVisibility(bool visible); // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:553
+    void SetArrow1Dim(bool dim);             // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:555
+    void SetArrow2Dim(bool dim);             // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:556
+    bool IsVisible() {                       // Decl: speed/indep/src/frontend/menuscreens/common/feWidget.hpp:530
         return bVisible;
     }
 

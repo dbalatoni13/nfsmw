@@ -99,13 +99,7 @@ void UIProfileManager::Setup() {
     del->SetReactImmediately(true);
     AddOption(del);
 
-    int lastButton = FEngGetLastButton(GetPackageName());
-    if (bFadeInIconsImmediately) {
-        Options.bDelayUpdate = false;
-        Options.bFadingOut = false;
-        Options.StartFadeIn();
-    }
-    Options.SetInitialPos(lastButton);
+    this->SetInitialOption(FEngGetLastButton(GetPackageName()));
 
     Refresh();
 }

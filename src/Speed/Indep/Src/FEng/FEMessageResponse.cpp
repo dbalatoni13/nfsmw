@@ -1,21 +1,6 @@
 #include "FEMessageResponse.h"
-#include "FESlotPool.h"
 #include "FEngStandard.h"
 #include "ObjectPool.h"
-
-ObjectPool<FEMessageResponse, 64> FEMessageResponse::NodePool;
-
-void *FEMessageResponse::operator new(unsigned int) {
-    FEMessageResponse *pNode = NodePool.AllocSingle();
-    pNode->Init();
-    return pNode;
-}
-
-void FEMessageResponse::operator delete(void *pNode) {
-    FEMessageResponse *pDeleteNode = static_cast<FEMessageResponse *>(pNode);
-    pDeleteNode->~FEMessageResponse();
-    NodePool.FreeSingleNoDestroy(pDeleteNode);
-}
 
 FEResponse::~FEResponse() {
     ReleaseParam();
@@ -23,9 +8,8 @@ FEResponse::~FEResponse() {
 
 FEResponse &FEResponse::operator=(FEResponse &rhs) {
     ReleaseParam();
-    unsigned long id = rhs.ResponseID;
-    ResponseID = id;
-    if (FEResponse::HasString(id)) {
+    ResponseID = rhs.ResponseID;
+    if (FEResponse::HasString(ResponseID)) {
         SetParam(reinterpret_cast<const char *>(rhs.ResponseParam));
     } else {
         ResponseParam = rhs.ResponseParam;
@@ -37,10 +21,10 @@ FEResponse &FEResponse::operator=(FEResponse &rhs) {
 void FEResponse::SetParam(const char *pString) {
     ReleaseParam();
     if (pString) {
-        unsigned long Len = FEngStrLen(pString);
+        u32 Len = FEngStrLen(pString);
         char *pPathCopy = FNEW char[Len + 1];
         FEngStrCpy(pPathCopy, pString);
-        ResponseParam = reinterpret_cast<unsigned long>(pPathCopy);
+        ResponseParam = reinterpret_cast<u32>(pPathCopy);
     }
 }
 
@@ -51,8 +35,22 @@ void FEResponse::ReleaseParam() {
     ResponseParam = 0;
 }
 
+ObjectPool<FEMessageResponse, 64> FEMessageResponse::NodePool;
+
 FEMessageResponse::~FEMessageResponse() {
     PurgeResponses();
+}
+
+void *FEMessageResponse::operator new(size_t) {
+    FEMessageResponse *pNode = NodePool.AllocSingle();
+    pNode->Init();
+    return pNode;
+}
+
+void FEMessageResponse::operator delete(void *pNode) {
+    FEMessageResponse *pDeleteNode = static_cast<FEMessageResponse *>(pNode);
+    pDeleteNode->~FEMessageResponse();
+    NodePool.FreeSingle(pDeleteNode);
 }
 
 void FEMessageResponse::PurgeResponses() {
@@ -61,30 +59,30 @@ void FEMessageResponse::PurgeResponses() {
     Count = 0;
 }
 
-void FEMessageResponse::SetCount(unsigned long NewCount) {
+void FEMessageResponse::SetCount(u32 NewCount) {
     if (NewCount != Count) {
         if (NewCount == 0) {
             PurgeResponses();
         } else {
-            FEResponse *pNew = new FEResponse[NewCount];
-            unsigned long copyCount = Count;
+            FEResponse *pNewList = FNEW FEResponse[NewCount];
+            u32 copyCount = Count;
             if (copyCount > NewCount) {
                 copyCount = NewCount;
             }
-            unsigned long i = 0;
+            u32 i = 0;
             while (i < copyCount) {
-                pNew[i] = pResponseList[i];
+                pNewList[i] = pResponseList[i];
                 i++;
             }
             delete[] pResponseList;
-            pResponseList = pNew;
+            pResponseList = pNewList;
             Count = NewCount;
         }
     }
 }
 
-unsigned long FEMessageResponse::FindResponse(unsigned long ResponseID) const {
-    for (unsigned long i = 0; i < Count; i++) {
+u32 FEMessageResponse::FindResponse(u32 ResponseID) const {
+    for (u32 i = 0; i < Count; i++) {
         if (pResponseList[i].ResponseID == ResponseID) {
             return i;
         }
@@ -92,32 +90,28 @@ unsigned long FEMessageResponse::FindResponse(unsigned long ResponseID) const {
     return 0xFFFFFFFF;
 }
 
-unsigned long FEMessageResponse::FindConditionBranchTarget(unsigned long Index) const {
-    if (Index == Count - 1) {
-        return Count;
+u32 FEMessageResponse::FindConditionBranchTarget(u32 Index) const {
+    u32 Nest = Count;
+    if (Index != Nest - 1) {
+        u32 Result = 1;
+        do {
+            Index++;
+            switch (pResponseList[Index].ResponseID) {
+                case MR_IfScriptEquals:
+                case MR_IfScriptNotEquals:
+                    Result++;
+                    break;
+                case MR_Else:
+                    if (Result == 1) {
+                        Result = 0;
+                    }
+                    break;
+                case MR_EndIf:
+                    Result--;
+                    break;
+            }
+        } while (Index < Nest && Result != 0);
+        return Index;
     }
-    unsigned long Nest = 1;
-    goto body;
-    do {
-        if (Nest == 0)
-            break;
-    body:
-        Index++;
-        unsigned long id = pResponseList[Index].ResponseID;
-        switch (id) {
-            case 0x300:
-            case 0x301:
-                Nest++;
-                break;
-            case 0x500:
-                if (Nest == 1) {
-                    Nest = 0;
-                }
-                break;
-            case 0x501:
-                Nest--;
-                break;
-        }
-    } while (Index < Count);
-    return Index;
+    return Nest;
 }

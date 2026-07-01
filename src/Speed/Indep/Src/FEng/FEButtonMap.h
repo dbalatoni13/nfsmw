@@ -2,6 +2,7 @@
 #define FEBUTTONMAP_H_
 
 #include <types.h>
+#include "Speed/Indep/Src/FEng/FETypes.h"
 #include "FEObject.h"
 // #include "Speed/Indep/Src/FEng/FEGameInterface.h"
 
@@ -38,9 +39,11 @@ class FEButtonMap {
         return pList[Index];
     }
 
-    FEObject *GetButtonFrom(FEObject *pButton, long Direction, FEGameInterface *pInterface, FEButtonWrapMode WrapMode);
+    FEObject *GetButtonFrom(FEObject *pButton, i32 Direction, FEGameInterface *pInterface, FEButtonWrapMode WrapMode);
 
     void ComputeButtonLocation(FEObject *pObj, FEGameInterface *pInterface, FEVector2 &Loc); // Decl: speed/indep/src/feng/FEButtonMap.h:72
 };
+
+extern u32 FEDirection_Message[8];
 
 #endif

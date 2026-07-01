@@ -45,13 +45,13 @@ FEString *FEngFindString(const char *pkg_name, int name_hash) {
     return static_cast<FEString *>(obj);
 }
 
-void FEngSetLanguageHash(FEString *text, unsigned int hash) {
-    if (text != nullptr) {
-        text->SetLabelHash(hash);
+void FEngSetLanguageHash(FEString *pkg_name, uint32 hash) {
+    if (pkg_name != nullptr) {
+        pkg_name->SetLabelHash(hash);
     }
 }
 
-void FEngSetLanguageHash(const char *pkg_name, unsigned int obj_hash, unsigned int language) {
+void FEngSetLanguageHash(const char *pkg_name, uint32 obj_hash, uint32 language) {
     FEObject *obj = FEngFindObject(pkg_name, obj_hash);
     if (obj != nullptr) {
         if (obj->Type == FE_Group) {
@@ -68,7 +68,7 @@ void FEngSetLanguageHash(const char *pkg_name, unsigned int obj_hash, unsigned i
 void FESetString(FEString *text, const short *string) {
     if (string != nullptr && text != nullptr) {
         text->SetString(const_cast<short *>(string));
-        text->Flags |= 0x400002;
+        text->Flags |= FF_DirtyCode | 0x2;
     }
 }
 
@@ -79,7 +79,7 @@ static int DoFEngPrintf(FEString *text, char *string, int len) {
             string[length - 1] = 0;
         }
         text->SetString(string);
-        text->Flags |= 0x400002;
+        text->Flags |= FF_DirtyCode | 0x2;
         return len;
     }
     return 0;

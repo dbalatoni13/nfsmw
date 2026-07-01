@@ -660,7 +660,7 @@ void bInitFileSystem() {
     if (!bFileSlotPool) {
         MUTEX_create(&bFileMutex);
         unsigned int slot_size = 64;
-        bFileSlotPool = bNewSlotPool(slot_size, 68, "bFile", 0);
+        bFileSlotPool = bNewSlotPool(slot_size, 68, "bFile System", 0);
     }
 }
 
@@ -812,14 +812,14 @@ int bFPrintf(bFile *f, const char *fmt, ...) {
     if (!f) {
         va_list arg_list;
         va_start(arg_list, fmt);
-        int len = bVPrintf(fmt, &arg_list);
+        int len = bVPrintf(fmt, arg_list);
         va_end(arg_list);
         return len;
     }
     char *buffer = new ("bFPrintf", 0) char[0x2000];
     va_list arg_list;
     va_start(arg_list, fmt);
-    int len = bVSPrintf(buffer, fmt, &arg_list);
+    int len = bVSPrintf(buffer, fmt, arg_list);
     va_end(arg_list);
     bWrite(f, buffer, len);
     delete[] buffer;

@@ -12,6 +12,7 @@
 #include "Speed/Indep/Src/World/WCollisionMgr.h"
 #include "Speed/Indep/Src/World/WWorldPos.h"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
+#include "Speed/Indep/Src/Camera/CameraInfo.hpp"
 
 class eView;
 

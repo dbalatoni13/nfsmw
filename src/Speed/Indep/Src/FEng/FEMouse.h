@@ -3,6 +3,14 @@
 
 #include "types.h"
 
+static const u32 FEMouseIndex_Left = 0;   // size: 0x4, Decl: speed/indep/src/feng/FEMouse.h:16
+static const u32 FEMouseIndex_Right = 1;  // size: 0x4, Decl: speed/indep/src/feng/FEMouse.h:17
+static const u32 FEMouseIndex_Middle = 2; // size: 0x4, Decl: speed/indep/src/feng/FEMouse.h:18
+
+static const u32 FEMouse_Left = 1;   // size: 0x4, Decl: speed/indep/src/feng/FEMouse.h:20
+static const u32 FEMouse_Right = 2;  // size: 0x4, Decl: speed/indep/src/feng/FEMouse.h:21
+static const u32 FEMouse_Middle = 4; // size: 0x4, Decl: speed/indep/src/feng/FEMouse.h:22
+
 // File: speed/indep/src/feng/FEMouse.h
 // total size: 0x8
 // Decl: speed/indep/src/feng/FEMouse.h:26

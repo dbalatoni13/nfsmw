@@ -6,15 +6,11 @@
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 
 SpeedBreakerMeter::SpeedBreakerMeter(UTL::COM::Object *pOutter, const char *pkg_name, int player_number)
-    : HudElement(pkg_name, 0x40000) //
-      ,
-      ISpeedBreakerMeter(pOutter) //
-      ,
-      mPursuitLevelChanged(true) //
-      ,
-      mSpeedBreakerBarOriginalWidth(0.0f) //
-      ,
-      mPursuitLevel(0.0f) //
+    : HudElement(pkg_name, 0x40000),       //
+      ISpeedBreakerMeter(pOutter),         //
+      mPursuitLevelChanged(true),          //
+      mSpeedBreakerBarOriginalWidth(0.0f), //
+      mPursuitLevel(0.0f)                  //
 {
     RegisterGroup(FEHashUpper("Speedbreaker_Meter_Group"));
     mpSpeedBreakerMeterIcon = FEngFindObject(GetPackageName(), FEHashUpper("SPEEDBREAKER_METER_ICON_GROUP"));

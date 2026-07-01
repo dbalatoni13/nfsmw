@@ -46,7 +46,9 @@ class KeyboardEditString {
         return mEnabled && TextInputObject != nullptr;
     }
     void EndCapture();
-    void Enable() {}
+    void Enable() {
+        mEnabled = true;
+    }
     void Disable() {}
     void NotifyChar(int keycode);
     void ProcessHotkeys(int keycode);

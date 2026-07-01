@@ -1,14 +1,10 @@
-#ifndef FRONTEND_MENUSCREENS_COMMON_FEARRAYSCROLLERMENU_H
-#define FRONTEND_MENUSCREENS_COMMON_FEARRAYSCROLLERMENU_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef FEARRAYSCROLLERMENU_HPP
+#define FEARRAYSCROLLERMENU_HPP
 
 #include "FEMenuScreen.hpp"
 #include "Speed/Indep/Src/FEng/FEString.h"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/feWidget.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
-#include "feScrollerina.hpp"
 
 // total size: 0x14
 class ArrayScripts {
@@ -129,18 +125,6 @@ class ArrayDatum : public bTNode<ArrayDatum> {
     bool greyedOut; // offset 0x14, size 0x1
     bool locked;    // offset 0x18, size 0x1
     bool checked;   // offset 0x1C, size 0x1
-};
-
-// total size: 0x28
-class CarDatum : public ArrayDatum {
-  public:
-    CarDatum(uint32 hash, uint32 desc, uint32 handle) : ArrayDatum(hash, desc), Handle(handle) {}
-
-    ~CarDatum() override {}
-
-    void NotificationMessage(u32 msg, FEObject *pObj, u32 param1, u32 param2) override;
-
-    uint32 Handle; // offset 0x24, size 0x4
 };
 
 // total size: 0x14
@@ -295,9 +279,9 @@ class ArrayScroller {
 
     int ForceSelectionOnScreen(int new_datum, int start);
 
-    void ScrollHor(enum eScrollDir dir);
+    void ScrollHor(eScrollDir dir);
 
-    void ScrollVer(enum eScrollDir dir);
+    void ScrollVer(eScrollDir dir);
 
     void UpdateScrollbar();
 
@@ -317,6 +301,8 @@ class ArrayScroller {
     ArrayScripts scripts;      // offset 0x9C, size 0x14
     uint32 mouseDownMsg;       // offset 0xB0, size 0x4
     bool bInClickToSelectMode; // offset 0xB4, size 0x1
+
+    friend class ArrayScrollerMenu;
 };
 
 // total size: 0xE8

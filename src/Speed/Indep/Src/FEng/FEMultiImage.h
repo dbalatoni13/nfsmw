@@ -2,6 +2,7 @@
 #define __FEMULTIIMAGE_H__
 
 #include "FEImage.h"
+#include "Speed/Indep/Src/FEng/FEObject.h"
 
 typedef enum { FEMI_MASK = 1, FEMI_TILE_U = 2, FEMI_TILE_V = 4 } eFEMultiImageUsage;
 
@@ -25,19 +26,26 @@ class FEMultiImage : public FEImage {
     u32 TextureFlags[3]; // offset 0x6C, size 0xC, Decl: speed/indep/src/feng/FEMultiImage.h:55
 
     FEMultiImage() : FEImage() { // Decl: speed/indep/src/feng/FEMultiImage.h:62
+        Type = FE_MultiImage;
         for (int i = 0; i <= 2; i++) {
             hTexture[i] = 0;
             TextureFlags[i] = 1;
         }
     }
 
-    FEMultiImage(const FEMultiImage &Object, bool bReference) {}
+    FEMultiImage(const FEMultiImage &Object, bool bReference) : FEImage(Object, bReference) {
+        Type = FE_MultiImage;
+    }
 
     ~FEMultiImage() override {} // Decl: speed/indep/src/feng/FEMultiImage.h:77
 
-    FEMultiImageData *GetMultiImageData() {} // Decl: speed/indep/src/feng/FEMultiImage.h:79
+    FEMultiImageData *GetMultiImageData() { // Decl: speed/indep/src/feng/FEMultiImage.h:79
+        return reinterpret_cast<FEMultiImageData *>(pData);
+    }
 
-    FEObject *Clone(bool bReference) override {} // Decl: speed/indep/src/feng/FEMultiImage.h:81
+    FEObject *Clone(bool bReference) override { // Decl: speed/indep/src/feng/FEMultiImage.h:81
+        return FNEW FEMultiImage(*this, bReference);
+    }
 
     u32 GetTexture(u32 tex_num);
 

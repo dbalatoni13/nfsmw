@@ -4,11 +4,9 @@
 #include "Speed/Indep/Src/Sim/Simulation.h"
 
 NitrousGauge::NitrousGauge(UTL::COM::Object *pOutter, const char *pkg_name, int player_number)
-    : HudElement(pkg_name, 0x80000800ULL) //
-      ,
-      INos(pOutter) //
-      ,
-      mNos(0) //
+    : HudElement(pkg_name, 0x80000800ULL), //
+      INos(pOutter),                       //
+      mNos(0)                              //
 {
     RegisterGroup(0x87C38E97);
     mpDataNosMeterIcon = FEngFindObject(GetPackageName(), 0x27DDF583);

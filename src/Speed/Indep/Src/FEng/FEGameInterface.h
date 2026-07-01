@@ -16,10 +16,10 @@ typedef enum { FR_UnnecessaryLoad = -0x80000000, FR_ShapeResource = 0x40000000 }
 // total size: 0x18
 // Decl: speed/indep/src/feng/FEGameInterface.h:34
 typedef struct {
-    u32 ID;          // offset 0x0, size 0x4, Decl: speed/indep/src/feng/FEGameInterface.h:35
-    char *pFilename; // offset 0x4, size 0x4, Decl: speed/indep/src/feng/FEGameInterface.h:36
-    u32 Type;        // offset 0x8, size 0x4, Decl: speed/indep/src/feng/FEGameInterface.h:37
-    u32 Flags;       // offset 0xC, size 0x4, Decl: speed/indep/src/feng/FEGameInterface.h:38
+    u32 ID;                // offset 0x0, size 0x4, Decl: speed/indep/src/feng/FEGameInterface.h:35
+    const char *pFilename; // offset 0x4, size 0x4, Decl: speed/indep/src/feng/FEGameInterface.h:36
+    u32 Type;              // offset 0x8, size 0x4, Decl: speed/indep/src/feng/FEGameInterface.h:37
+    u32 Flags;             // offset 0xC, size 0x4, Decl: speed/indep/src/feng/FEGameInterface.h:38
 
     u32 Handle;    // offset 0x10, size 0x4, Decl: speed/indep/src/feng/FEGameInterface.h:41
     u32 UserParam; // offset 0x14, size 0x4, Decl: speed/indep/src/feng/FEGameInterface.h:42

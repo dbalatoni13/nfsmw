@@ -666,8 +666,8 @@ inline float V3DistanceSquared(const UMath::Vector3 &a, const UMath::Vector3 &b)
     return dx * dx + dy * dy + dz * dz;
 }
 
-// TODO where to put these? TODO only one of them uses IntAsFloat actually
-static const float kFloatScaleUp = IntAsFloat(0x00800000);
-static const float kFloatScaleDown = 1.0f / kFloatScaleUp;
+// TODO put in place.
+static const float kFloatScaleUp = IntAsFloat(0x00800000); // size: 0x4, address: 0x80457778, Decl: speed/indep/libs/support/utility/UVectorMath.h:167
+static const float kFloatScaleDown = 1.0f / kFloatScaleUp; // size: 0x4, address: 0x804565FC, Decl: speed/indep/libs/support/utility/UVectorMath.h:168
 
 #endif

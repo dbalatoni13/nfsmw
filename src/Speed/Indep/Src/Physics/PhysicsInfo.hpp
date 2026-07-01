@@ -83,6 +83,8 @@ bool EstimatePerformance(const Attrib::Gen::pvehicle &pvehicle, Performance &per
 bool EstimatePerformance(Performance &perf);
 bool ComputeAccelerationTable(const Attrib::Gen::pvehicle &pvehicle, float &top_speed, float *table, int num_entries);
 
+float Redline(const Attrib::Gen::pvehicle &pvehicle);
+
 extern Performance PerformanceWeights[7];
 
 } // namespace Info

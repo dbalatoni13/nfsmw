@@ -10,6 +10,7 @@
 #include "Speed/Indep/Src/FEng/FEGameInterface.h"
 #include "Speed/Indep/Src/FEng/FEGroup.h"
 #include "Speed/Indep/Src/FEng/FELibraryRef.h"
+#include "Speed/Indep/Src/FEng/FEList.h"
 #include "Speed/Indep/Src/FEng/FEObjectCallback.h"
 
 class FEngine;
@@ -47,10 +48,18 @@ class FEObjectComment : public FEMinNode {
 
     FEObjectComment() {}
 
-    FEObjectComment *GetNext() {} // Decl: speed/indep/src/feng/FEPackage.h:70
+    FEObjectComment *GetNext() { // Decl: speed/indep/src/feng/FEPackage.h:70
+        return static_cast<FEObjectComment *>(FEMinNode::GetNext());
+    }
 
-    FEObjectComment *GetPrev() {} // Decl: speed/indep/src/feng/FEPackage.h:71
+    FEObjectComment *GetPrev() { // Decl: speed/indep/src/feng/FEPackage.h:71
+        return static_cast<FEObjectComment *>(FEMinNode::GetPrev());
+    }
 };
+
+static const u32 FEMouseFlag_MouseOver = 1;         // size: 0x4, Decl: speed/indep/src/feng/FEPackage.h:80
+static const u32 FEMouseFlag_MouseLeftPressed = 2;  // size: 0x4, Decl: speed/indep/src/feng/FEPackage.h:81
+static const u32 FEMouseFlag_MouseRightPressed = 4; // size: 0x4, Decl: speed/indep/src/feng/FEPackage.h:82
 
 // total size: 0x10
 // Decl: speed/indep/src/feng/FEPackage.h:85
@@ -292,7 +301,7 @@ class FEPackage : public FENode {
         return static_cast<FEObject *>(Objects.GetTail());
     }
 
-    void Update(FEngine *pEngine, const long tDeltaTicks);
+    void Update(FEngine *pEngine, const i32 tDeltaTicks);
 
     bool ForAllChildren(FEGroup *pGroup, FEObjectCallback &Callback);
 
@@ -310,7 +319,9 @@ class FEPackage : public FENode {
         return &pMsgTargets[Index];
     }
 
-    u32 GetNumMessageTargets() const {} // Decl: speed/indep/src/feng/FEPackage.h:269
+    u32 GetNumMessageTargets() const { // Decl: speed/indep/src/feng/FEPackage.h:269
+        return NumMsgTargets;
+    }
 
     FEMsgTargetList *GetMessageTargets(u32 MsgID);
 
@@ -322,17 +333,23 @@ class FEPackage : public FENode {
 
     void SetComment(u32 ObjectGUID, const char *pString);
 
-    FEMinList &GetCommentList() {} // Decl: speed/indep/src/feng/FEPackage.h:278
+    FEMinList &GetCommentList() { // Decl: speed/indep/src/feng/FEPackage.h:278
+        return Comments;
+    }
 
     void AddMouseObjectState(FEObject *obj);
 
     void UpdateMouseObjectOffsets(FEObject *obj);
 
-    FEObjectMouseState *GetMouseObjectStates() {} // Decl: speed/indep/src/feng/FEPackage.h:282
+    FEObjectMouseState *GetMouseObjectStates() { // Decl: speed/indep/src/feng/FEPackage.h:282
+        return MouseObjectStates;
+    }
 
     FEObjectMouseState *GetMouseObjectState(FEObject *obj);
 
-    int GetNumMouseObjects() const {}
+    int GetNumMouseObjects() const {
+        return NumMouseObjects;
+    }
 
   public:
     bool AddLibraryReference(u32 ObjGUID, u32 LibGUID, FEPackage *pLibPackage);
@@ -341,13 +358,18 @@ class FEPackage : public FENode {
 
     bool RemoveLibraryReference(u32 ObjGUID);
 
-    u32 NumLibraryReferences() const {} // Decl: speed/indep/src/feng/FEPackage.h:290
-
-    FELibraryRef *GetLibraryReference(u32 Index) const {} // Decl: speed/indep/src/feng/FEPackage.h:291
+    u32 NumLibraryReferences() const { // Decl: speed/indep/src/feng/FEPackage.h:290
+        return NumLibRefs;
+    }
+    FELibraryRef *GetLibraryReference(u32 Index) const { // Decl: speed/indep/src/feng/FEPackage.h:291
+        return pLibRefs;
+    }
 
     void PurgeUnusedPackageLibraries();
 
-    FEList &GetLibraryList() {} // Decl: speed/indep/src/feng/FEPackage.h:297
+    FEList &GetLibraryList() { // Decl: speed/indep/src/feng/FEPackage.h:297
+        return LibrariesUsed;
+    }
 
     void ConnectObjectResources();
 
@@ -360,6 +382,9 @@ class FEPackage : public FENode {
     void SetTickIncrement(i32 tDeltaTicks) { // Decl: speed/indep/src/feng/FEPackage.h:311
         iTickIncrement = tDeltaTicks;
     }
+
+    friend class FEngine;
+    friend class FEPackageReader;
 };
 
 #endif

@@ -1,9 +1,5 @@
-#ifndef FRONTEND_MENUSCREENS_SAFEHOUSE_CAREER_UIRAPSHEETMAIN_H
-#define FRONTEND_MENUSCREENS_SAFEHOUSE_CAREER_UIRAPSHEETMAIN_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef __UI_RAP_SHEET_MAIN_HPP__
+#define __UI_RAP_SHEET_MAIN_HPP__
 
 #include "types.h"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/feUIWidgetMenu.hpp"

@@ -1,9 +1,5 @@
-#ifndef FRONTEND_MENUSCREENS_SAFEHOUSE_CAREER_UIRAPSHEETRANKINGS_H
-#define FRONTEND_MENUSCREENS_SAFEHOUSE_CAREER_UIRAPSHEETRANKINGS_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef __UI_RAP_SHEET_RANKINGS_HPP__
+#define __UI_RAP_SHEET_RANKINGS_HPP__
 
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
 #include "Speed/Indep/Src/Frontend/Database/RaceDB.hpp"
@@ -11,7 +7,7 @@
 class uiRapSheetRankings : public MenuScreen {
   public:
     uiRapSheetRankings(ScreenConstructorData *sd);
-    ~uiRapSheetRankings() override;
+    ~uiRapSheetRankings() override {};
     void NotificationMessage(u32 msg, FEObject *pobj, u32 param1, u32 param2) override;
     void RefreshHeader();
 

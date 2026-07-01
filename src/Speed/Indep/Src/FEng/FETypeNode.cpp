@@ -1,13 +1,12 @@
 #include "Speed/Indep/Src/FEng/FETypeNode.h"
 #include "Speed/Indep/Src/FEng/FEngStandard.h"
 
-extern const unsigned long FEKeyTypeSize[];
+const u32 FEKeyTypeSize[7] = {4, 4, 4, 8, 12, 16, 16}; // size: 0x1C, address: 0x803EA920, Decl: speed/indep/src/feng/FEKeyTypes.cpp:11
 
-FEFieldNode::~FEFieldNode() {
-    if (pDefault) {
-        delete[] pDefault;
-    }
-}
+const bool FEKeyInterpValid[7][5] = { // size: 0x23, address: 0xFFFFFFFF, Decl: speed/indep/src/feng/FEKeyTypes.cpp:21
+    {1, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {1, 0, 0, 0, 1}, {0, 0, 0, 1, 0}, {0, 0, 1, 0, 0}};
+
+i32 FEKeyInterpDefault[7] = {0, 1, 1, 1, 1, 1, 1}; // size: 0x1C, address: 0xFFFFFFFF, Decl: speed/indep/src/feng/FEKeyTypes.cpp:32
 
 void FEFieldNode::SetDefault(void *pSrc) {
     if (pDefault) {
@@ -15,7 +14,7 @@ void FEFieldNode::SetDefault(void *pSrc) {
     }
     pDefault = nullptr;
     if (Size != 0) {
-        pDefault = reinterpret_cast<unsigned char *>(FNEW char[Size]);
+        pDefault = FNEW u8[Size];
         FEngMemCpy(pDefault, pSrc, Size);
     }
 }
@@ -26,18 +25,18 @@ void FEFieldNode::GetDefault(void *pDest) {
     }
 }
 
-void FETypeNode::AddField(const char *pName, long iType) {
+void FETypeNode::AddField(const char *pName, i32 iType) {
     FEFieldNode *pField;
     pField = FNEW FEFieldNode();
     pField->SetName(pName);
     pField->SetType(iType);
     pField->SetSize(FEKeyTypeSize[iType]);
-    Fields.AddNode(static_cast<FEMinNode *>(Fields.GetTail()), pField);
+    AppendField(pField);
     UpdateOffsets();
 }
 
 void FETypeNode::UpdateOffsets() {
-    unsigned long Offset = 0;
+    u32 Offset = 0;
     FEFieldNode *pField = GetFirstField();
     while (pField) {
         pField->SetOffset(Offset);
@@ -46,8 +45,8 @@ void FETypeNode::UpdateOffsets() {
     }
 }
 
-unsigned long FETypeNode::GetTypeSize() {
-    unsigned long Size = 0;
+u32 FETypeNode::GetTypeSize() {
+    u32 Size = 0;
     FEFieldNode *pField = GetFirstField();
     while (pField) {
         Size += pField->GetSize();

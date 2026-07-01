@@ -1,9 +1,5 @@
-#ifndef FRONTEND_RACESTARTER_H
-#define FRONTEND_RACESTARTER_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef __RACESTARTER_HPP__
+#define __RACESTARTER_HPP__
 
 #include "Speed/Indep/Src/World/RaceParameters.hpp"
 #include "Speed/Indep/Src/Frontend/FEJoyInput.hpp"

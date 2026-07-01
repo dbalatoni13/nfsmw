@@ -1,16 +1,16 @@
 #ifndef EAXSOUND_EAXFRONTEND_H
 #define EAXSOUND_EAXFRONTEND_H
 
-#include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
-#include "Speed/Indep/Src/World/Car.hpp"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
 
+#include "Speed/Indep/Src/World/Car.hpp"
 #include "Speed/Indep/Src/Camera/Camera.hpp"
 #include "Speed/Indep/Src/EAXSound/SFX_base.hpp"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #include "Speed/Indep/Src/EAXSound/EAXSndUtil.h"
+#include "Speed/Indep/Src/EAXSound/AemsDef.hpp"
 
 struct Class;
 
@@ -783,9 +783,9 @@ class EAXFrontEnd {
 
     void SetFEDrivingCarState(bVector3 *car_position, bVector3 *car_velocity, Camera *camera, int view_id);
 
-    void PlayDriveOnSnd(enum eMenuSoundTriggers etrigger, int view_id, CarType eCarType);
+    void PlayDriveOnSnd(eMenuSoundTriggers etrigger, int view_id, CarType eCarType);
 
-    void EndDriveOnSnd(enum eMenuSoundTriggers etrigger, int view_id);
+    void EndDriveOnSnd(eMenuSoundTriggers etrigger, int view_id);
 
     void DestroyDriveOn(DRIVE_ON_STATE SndIndex, DRIVE_ON_CAR_INDEX CarIndex);
 

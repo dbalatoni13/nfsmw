@@ -2,6 +2,7 @@
 #define FEEVENT_H_
 
 #include "types.h"
+#include "Speed/Indep/Src/FEng/FETypes.h"
 
 // total size: 0xC
 // Decl: speed/indep/src/feng/FEEvent.h:23
@@ -18,17 +19,23 @@ class FEEventList {
     i32 Count;       // offset 0x0, size 0x4, Decl: speed/indep/src/feng/FEEvent.h:47
     FEEvent *pEvent; // offset 0x4, size 0x4, Decl: speed/indep/src/feng/FEEvent.h:48
 
-    void Insert(int Index);
+    void Insert(i32 Index);
 
   public:
-    FEEventList() {}                        // Decl: speed/indep/src/feng/FEEvent.h:53
-    FEEventList(struct FEEventList &Src) {} // Decl: speed/indep/src/feng/FEEvent.h:54
-    ~FEEventList() {}
+    FEEventList() { // Decl: speed/indep/src/feng/FEEvent.h:53
+        Count = 0;
+        pEvent = nullptr;
+    }
+    FEEventList(FEEventList &Src) {} // Decl: speed/indep/src/feng/FEEvent.h:54
+    ~FEEventList() {
+        delete[] pEvent;
+        pEvent = nullptr;
+    }
 
     FEEvent &operator[](int Index) {
         return pEvent[Index];
     }
-    void operator=(struct FEEventList &Src); // Decl: speed/indep/src/feng/FEEvent.h:62
+    void operator=(FEEventList &Src); // Decl: speed/indep/src/feng/FEEvent.h:62
 
     void SetCount(i32 NewCount);
     i32 AddEvent(u32 EventID, u32 Target, u32 tTime);

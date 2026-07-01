@@ -1,4 +1,5 @@
 #include "Speed/Indep/Src/Frontend/Database/VehicleDB.hpp"
+#include "Speed/Indep/Src/Camera/CameraInfo.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/FEng/FEList.h"
 #include "Speed/Indep/Src/Main/AttribSupport.h"
@@ -15,6 +16,7 @@
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #include "Speed/Indep/Src/Ecstasy/EcstasyE.hpp"
 #include "Speed/Indep/Src/Frontend/Careers/UnlockSystem.hpp"
+#include "Speed/Indep/Src/World/CarInfo.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "Speed/Indep/Src/Gameplay/GManager.h"
@@ -34,26 +36,25 @@ int GetNumPresetCars();
 PresetCar *GetPresetCarAt(int index);
 extern bool ShowAllCarsInFE;
 extern bool ShowAllPresetsInFE;
-unsigned int bStringHashUpper(const char *text);
 
 POVTypes GetPOVTypeFromPlayerCamera(ePlayerSettingsCameras cam) {
     switch (cam) {
-        case 0:
-            return static_cast<POVTypes>(0);
-        case 1:
-            return static_cast<POVTypes>(1);
-        case 2:
-            return static_cast<POVTypes>(2);
-        case 3:
-            return static_cast<POVTypes>(3);
-        case 4:
-            return static_cast<POVTypes>(4);
-        case 5:
-            return static_cast<POVTypes>(5);
-        case 6:
-            return static_cast<POVTypes>(6);
+        case PSC_BUMPER:
+            return POV_BUMPER;
+        case PSC_HOOD:
+            return POV_HOOD;
+        case PSC_CLOSE:
+            return POV_OUTSIDE_CLOSE;
+        case PSC_FAR:
+            return POV_OUTSIDE_FAR;
+        case PSC_SUPER_FAR:
+            return POV_SUPER_FAR;
+        case PSC_DRIFT:
+            return POV_DRIFT;
+        case PSC_PURSUIT:
+            return POV_PURSUIT;
         default:
-            return static_cast<POVTypes>(2);
+            return POV_OUTSIDE_CLOSE;
     }
 }
 
@@ -78,25 +79,25 @@ bool IsPlayerCameraSelectable(POVTypes pov_type) {
 
     const Attrib::RefSpec *ref_spec = nullptr;
     switch (pov_type) {
-        case 0:
+        case POV_BUMPER:
             ref_spec = &car_info.CameraInfo_Bumper(0);
             break;
-        case 1:
+        case POV_HOOD:
             ref_spec = &car_info.CameraInfo_Hood(0);
             break;
-        case 2:
+        case POV_OUTSIDE_CLOSE:
             ref_spec = &car_info.CameraInfo_Close(0);
             break;
-        case 3:
+        case POV_OUTSIDE_FAR:
             ref_spec = &car_info.CameraInfo_Far(0);
             break;
-        case 4:
+        case POV_SUPER_FAR:
             ref_spec = &car_info.CameraInfo_SuperFar(0);
             break;
-        case 5:
+        case POV_DRIFT:
             ref_spec = &car_info.CameraInfo_Drift(0);
             break;
-        case 6:
+        case POV_PURSUIT:
             ref_spec = &car_info.CameraInfo_Pursuit(0);
             break;
     }
@@ -257,7 +258,7 @@ FECareerRecord *FEPlayerCarDB::CreateNewCareerRecord() {
 uint16 FEPlayerCarDB::GetNumInfraction(GInfractionManager::InfractionType type, bool get_unserved) {
     class NumInfraction : public FEPlayerCarDB::MyCallback {
       public:
-        virtual uint32 Callback(const FECareerRecord &record) const {
+        uint32 Callback(const FECareerRecord &record) const override {
             return record.GetNumInfraction(type, get_unserved);
         }
 
@@ -277,7 +278,7 @@ uint16 FEPlayerCarDB::GetNumInfraction(GInfractionManager::InfractionType type, 
 uint32 FEPlayerCarDB::GetTotalNumInfractions(bool get_unserved) {
     class TotalNumInfractions : public FEPlayerCarDB::MyCallback {
       public:
-        virtual uint32 Callback(const FECareerRecord &record) const {
+        uint32 Callback(const FECareerRecord &record) const override {
             return record.GetInfractions(get_unserved).NumInfractions();
         }
 
@@ -304,7 +305,7 @@ uint16 FEPlayerCarDB::GetNumInfractionsOnCar(uint32 car_handle, bool get_unserve
 
 uint32 FEPlayerCarDB::GetTotalBounty() {
     class Bounty : public FEPlayerCarDB::MyCallback {
-        virtual uint32 Callback(const FECareerRecord &record) const {
+        uint32 Callback(const FECareerRecord &record) const override {
             return record.GetBounty();
         }
     };
@@ -315,7 +316,7 @@ uint32 FEPlayerCarDB::GetTotalBounty() {
 
 uint32 FEPlayerCarDB::GetTotalEvadedPursuits() {
     class EvadedPursuits : public FEPlayerCarDB::MyCallback {
-        virtual uint32 Callback(const FECareerRecord &record) const {
+        uint32 Callback(const FECareerRecord &record) const override {
             return record.GetNumEvadedPursuits();
         }
     };
@@ -327,7 +328,7 @@ uint32 FEPlayerCarDB::GetTotalEvadedPursuits() {
 uint32 FEPlayerCarDB::GetTotalBustedPursuits() {
     class BustedPursuits : public FEPlayerCarDB::MyCallback {
       public:
-        virtual uint32 Callback(const FECareerRecord &record) const {
+        uint32 Callback(const FECareerRecord &record) const override {
             return record.GetNumBustedPursuits();
         }
     };
@@ -339,7 +340,7 @@ uint32 FEPlayerCarDB::GetTotalBustedPursuits() {
 uint32 FEPlayerCarDB::GetNumImpoundedCars() {
     class IsImpounded : public FEPlayerCarDB::MyCallback {
       public:
-        virtual uint32 Callback(const FECareerRecord &record) const {
+        uint32 Callback(const FECareerRecord &record) const override {
             return record.TheImpoundData.IsImpounded();
         }
     };
@@ -351,7 +352,7 @@ uint32 FEPlayerCarDB::GetNumImpoundedCars() {
 uint32 FEPlayerCarDB::GetTotalFines(bool get_unserved) {
     class Fines : public FEPlayerCarDB::MyCallback {
       public:
-        virtual uint32 Callback(const FECareerRecord &record) const {
+        uint32 Callback(const FECareerRecord &record) const override {
             return record.GetInfractions(get_unserved).GetFineValue();
         }
 
@@ -366,7 +367,7 @@ uint32 FEPlayerCarDB::GetTotalFines(bool get_unserved) {
 uint32 FEPlayerCarDB::GetNumCareerCarsWithARecord() {
     class NumCars : public FEPlayerCarDB::MyCallback {
       public:
-        virtual uint32 Callback(const FECareerRecord &record) const {
+        uint32 Callback(const FECareerRecord &record) const override {
             return 1;
         }
     };
@@ -591,7 +592,7 @@ FECarRecord *FEPlayerCarDB::CreateCar(uint32 fromCar, int FilterBits) {
     car->FilterBits = (car->FilterBits & 0xFFFF0000) | static_cast<unsigned int>(FilterBits);
 
     RideInfo ride;
-    ride.Init(static_cast<CarType>(-1), CarRenderUsage_Player, 0, 0);
+    ride.Init(CARTYPE_NONE, CarRenderUsage_Player, 0, 0);
     ride.Init(car->GetType(), CarRenderUsage_Player, 0, 0);
     ride.SetRandomPaint();
     ride.SetStockParts();
@@ -999,7 +1000,7 @@ uint32 GetFECarNameHashFromFEKey(Attrib::Key feKey) {
 
 void FECustomizationRecord::Default() {
     for (int i = 0; i < 139; i++) {
-        InstalledPartIndices[i] = -1;
+        InstalledPartIndices[i] = INVALID_CAR_PART_RECORD_INDEX;
     }
 
     bMemSet(&InstalledPhysics, 0, 0x20);
@@ -1007,7 +1008,7 @@ void FECustomizationRecord::Default() {
         bMemSet(&Tunings[i], 0, sizeof(Tunings[i]));
     }
     Preset = 0;
-    ActiveTuning = static_cast<Physics::eCustomTuningType>(0);
+    ActiveTuning = CTT_SETTING_1;
 }
 
 bool FECustomizationRecord::WriteRecordIntoPhysics(Attrib::Gen::pvehicle &attributes) const {
@@ -1018,15 +1019,15 @@ void FECustomizationRecord::WritePhysicsIntoRecord(const Attrib::Gen::pvehicle &
     Physics::Upgrades::GetPackage(attributes, InstalledPhysics);
 }
 
-struct CarPart *FECustomizationRecord::GetInstalledPart(CarType cartype, int carslotid) const {
+CarPart *FECustomizationRecord::GetInstalledPart(CarType cartype, int carslotid) const {
     return CarPartDB.GetCarPartByIndex(InstalledPartIndices[carslotid]);
 }
 
-void FECustomizationRecord::SetInstalledPart(int carslotid, struct CarPart *part) {
+void FECustomizationRecord::SetInstalledPart(int carslotid, CarPart *part) {
     if (part != nullptr) {
         InstalledPartIndices[carslotid] = static_cast<short>(CarPartDB.GetPartIndex(part));
     } else {
-        InstalledPartIndices[carslotid] = -1;
+        InstalledPartIndices[carslotid] = INVALID_CAR_PART_RECORD_INDEX;
     }
 }
 
@@ -1044,8 +1045,8 @@ void FECustomizationRecord::WriteRideIntoRecord(const RideInfo *ride) {
 
 FECustomizationRecord::FECustomizationRecord() {
     bMemSet(&InstalledPhysics, 0, sizeof(InstalledPhysics));
-    ActiveTuning = static_cast<Physics::eCustomTuningType>(0);
-    for (int i = 0; i < 3; i++) {
+    ActiveTuning = CTT_SETTING_1;
+    for (int i = 0; i < NUM_CUSTOM_TUNINGS; i++) {
         bMemSet(&Tunings[i], 0, sizeof(Tunings[i]));
     }
     Handle = 0xFF;

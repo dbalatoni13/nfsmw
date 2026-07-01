@@ -1,20 +1,19 @@
-#ifndef FRONTEND_MENUSCREENS_SAFEHOUSE_QUICKRACE_UIQRPRESSSTART_H
-#define FRONTEND_MENUSCREENS_SAFEHOUSE_QUICKRACE_UIQRPRESSSTART_H
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef UIQRPRESSSTART_H
+#define UIQRPRESSSTART_H
 
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
 
 #include <types.h>
 
 // total size: 0x34
-struct uiQRPressStart : public MenuScreen {
+class uiQRPressStart : public MenuScreen {
+  public:
     uiQRPressStart(ScreenConstructorData *sd);
     ~uiQRPressStart() override;
 
-    void NotificationMessage(unsigned long msg, FEObject *obj, unsigned long param1, unsigned long param2) override;
+    void NotificationMessage(u32 msg, FEObject *obj, u32 param1, u32 param2) override;
 
+  private:
     void Setup();
 
     int iPlayerNum; // offset 0x2C, size 0x4

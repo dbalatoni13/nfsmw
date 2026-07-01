@@ -86,7 +86,9 @@ class FEMessageResponse : public FEMinNode {
     }
 
   public:
-    FEMessageResponse() : MsgID(0), Count(0), pResponseList(nullptr) {} // Decl: speed/indep/src/feng/FEMessageResponse.h:142
+    FEMessageResponse() : FEMinNode() { // Decl: speed/indep/src/feng/FEMessageResponse.h:142
+        Init();
+    }
     ~FEMessageResponse() override;
 
     static void *operator new(size_t size, int) {}

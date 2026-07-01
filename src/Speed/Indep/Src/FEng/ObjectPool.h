@@ -9,7 +9,7 @@
 // Decl: speed/indep/src/feng/ObjectPool.h:20
 template <class T, int N> class FEPoolNode : public FEMinNode {
   public:
-    T Pool[256];    // offset 0xC, size 0x2000, Decl: speed/indep/src/feng/ObjectPool.h:22
+    T Pool[N];      // offset 0xC, size 0x2000, Decl: speed/indep/src/feng/ObjectPool.h:22
     FEMinList Free; // offset 0x200C, size 0x10, Decl: speed/indep/src/feng/ObjectPool.h:23
     int Used;       // offset 0x201C, size 0x4, Decl: speed/indep/src/feng/ObjectPool.h:24
 
@@ -24,7 +24,9 @@ template <class T, int N> class FEPoolNode : public FEMinNode {
         }
     }
 
-    bool Contains(T *pNode) {} // Decl: speed/indep/src/feng/ObjectPool.h:46
+    bool Contains(T *pNode) { // Decl: speed/indep/src/feng/ObjectPool.h:46
+        return pNode >= &Pool[0] && pNode < &Pool[N];
+    }
 
     FEPoolNode<T, N> *GetNext() { // Decl: speed/indep/src/feng/ObjectPool.h:51
         return static_cast<FEPoolNode *>(FEMinNode::GetNext());
@@ -41,6 +43,7 @@ template <class T, int N> class ObjectPool {
     ObjectPool() {}
 
     T *AllocSingle() { // Decl: speed/indep/src/feng/ObjectPool.h:73
+        T *pNode;
         FEPoolNode<T, N> *pPool = static_cast<FEPoolNode<T, N> *>(Pools.GetHead());
         while (pPool) {
             if (pPool->Free.GetNumElements() != 0) {
@@ -52,21 +55,15 @@ template <class T, int N> class ObjectPool {
             pPool = FNEW FEPoolNode<T, N>();
             Pools.AddHead(pPool);
         }
-        T *pNode = static_cast<T *>(pPool->Free.RemHead());
+        pNode = static_cast<T *>(pPool->Free.RemHead());
         pPool->Used++;
         return pNode;
     }
 
     void FreeSingle(T *pNode) { // Decl: speed/indep/src/feng/ObjectPool.h:102
-        pNode->~T();
-
         FEPoolNode<T, N> *pPool = static_cast<FEPoolNode<T, N> *>(Pools.GetHead());
         while (pPool) {
-            bool bInPool = false;
-            if (pNode >= &pPool->Pool[0]) {
-                bInPool = pNode < &pPool->Pool[N];
-            }
-            if (bInPool) {
+            if (pPool->Contains(pNode)) {
                 pPool->Free.AddNode(pPool->Free.GetTail(), pNode);
                 pPool->Used--;
                 if (pPool->Used == 0) {

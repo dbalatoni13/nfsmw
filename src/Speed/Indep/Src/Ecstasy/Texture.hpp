@@ -376,8 +376,10 @@ void eLoadStreamingTexture(uint32 *name_hash_table, int num_hashes, void (*callb
 void eWaitForStreamingTexturePackLoading(const char *filename);
 void eUnloadAllStreamingTextures(const char *filename);
 int eUnloadStreamingTexturePack(const char *filename);
-void eUnloadStreamingTexture(unsigned int *name_hash_table /* r3 */, int num_hashes /* r5 */);
-inline void eUnloadStreamingTexture(unsigned int name_hash) {}
+void eUnloadStreamingTexture(uint32 *name_hash_table /* r3 */, int num_hashes /* r5 */);
+inline void eUnloadStreamingTexture(uint32 name_hash) {
+    eUnloadStreamingTexture(&name_hash, 1);
+}
 
 TextureInfo *eCreateTextureInfo();
 void eDestroyTextureInfo(TextureInfo *texture_info);

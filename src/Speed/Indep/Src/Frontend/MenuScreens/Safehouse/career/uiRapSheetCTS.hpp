@@ -1,9 +1,5 @@
-#ifndef FRONTEND_MENUSCREENS_SAFEHOUSE_CAREER_UIRAPSHEETCTS_H
-#define FRONTEND_MENUSCREENS_SAFEHOUSE_CAREER_UIRAPSHEETCTS_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef __UI_RAP_SHEET_CTS_HPP__
+#define __UI_RAP_SHEET_CTS_HPP__
 
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/feArrayScrollerMenu.hpp"
 
@@ -44,7 +40,7 @@ class RapSheetCTSArraySlot : public ArraySlot {
 class uiRapSheetCTS : public ArrayScrollerMenu {
   public:
     uiRapSheetCTS(ScreenConstructorData *sd);
-    ~uiRapSheetCTS() override;
+    ~uiRapSheetCTS() override {};
     void NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) override;
     void RefreshHeader() override;
 

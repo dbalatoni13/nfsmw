@@ -1,20 +1,13 @@
-#ifndef FRONTEND_MENUSCREENS_SAFEHOUSE_QUICKRACE_UIQRTRACKSELECT_H
-#define FRONTEND_MENUSCREENS_SAFEHOUSE_QUICKRACE_UIQRTRACKSELECT_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef UIQRTRACKSELECT_H
+#define UIQRTRACKSELECT_H
 
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
-#include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEIconScrollerMenu.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/feWidget.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiQRBrief.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiTrackMapStreamer.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 
 #include <types.h>
-
-struct FEMultiImage;
-struct GRaceParameters;
-struct SelectableTrack;
 
 // total size: 0x120
 class UIQRTrackSelect : public MenuScreen {

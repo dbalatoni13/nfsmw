@@ -1,5 +1,5 @@
-#ifndef __UIREPSHEETRIVALFLOW_HPP_
-#define __UIREPSHEETRIVALFLOW_HPP_
+#ifndef __UI_REP_SHEET_RIVAL_FLOW_HPP_
+#define __UI_REP_SHEET_RIVAL_FLOW_HPP_
 
 #include <types.h>
 

@@ -13,7 +13,7 @@ void FEJoyPad::Reset() {
     }
 }
 
-void FEJoyPad::Update(unsigned long NewMask, unsigned long tDelta) {
+void FEJoyPad::Update(u32 NewMask, u32 tDelta) {
     LastMask = CurMask;
     CurMask = NewMask;
     for (int i = 0; i < 32; i++) {
@@ -27,19 +27,19 @@ void FEJoyPad::Update(unsigned long NewMask, unsigned long tDelta) {
     }
 }
 
-bool FEJoyPad::WasPressed(unsigned long Mask) {
+bool FEJoyPad::WasPressed(u32 Mask) {
     return (CurMask & Mask) == Mask && (LastMask & Mask) != Mask;
 }
 
-bool FEJoyPad::WasHeld(unsigned long Mask) {
+bool FEJoyPad::WasHeld(u32 Mask) {
     return (CurMask & Mask) == Mask && (LastMask & Mask) == Mask;
 }
 
-unsigned long FEJoyPad::HeldFor(unsigned long Mask) {
-    unsigned long result = 0xFFFFFFFF;
+u32 FEJoyPad::HeldFor(u32 Mask) {
+    u32 result = 0xFFFFFFFF;
     for (int i = 0; i < 32; i++) {
         if (Mask & (1 << i)) {
-            unsigned long v = HeldCount[i];
+            u32 v = HeldCount[i];
             if (v > result) {
                 v = result;
             }
@@ -49,11 +49,11 @@ unsigned long FEJoyPad::HeldFor(unsigned long Mask) {
     return result;
 }
 
-bool FEJoyPad::WasReleased(unsigned long Mask) {
+bool FEJoyPad::WasReleased(u32 Mask) {
     return (CurMask & Mask) != Mask && (LastMask & Mask) == Mask;
 }
 
-void FEJoyPad::DecrementHold(unsigned long Mask, unsigned long Amount) {
+void FEJoyPad::DecrementHold(u32 Mask, u32 Amount) {
     for (int i = 0; i < 32; i++) {
         if (Mask & (1 << i)) {
             if (HeldCount[i] > Amount) {

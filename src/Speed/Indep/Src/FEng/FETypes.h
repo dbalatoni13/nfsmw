@@ -1,9 +1,23 @@
 #ifndef FETYPES_H_
 #define FETYPES_H_
 
-#include <types.h>
+#ifdef EA_PLATFORM_GAMECUBE
+typedef unsigned long u32;
+typedef long i32;
+typedef unsigned short u16;
+typedef short i16;
+typedef unsigned char u8;
+#else
+typedef unsigned int u32;   // Decl: speed/indep/src/feng/FETypes.h:26
+typedef int i32;            // Decl: speed/indep/src/feng/FETypes.h:27
+typedef unsigned short u16; // Decl: speed/indep/src/feng/FETypes.h:28
+typedef short i16;          // Decl: speed/indep/src/feng/FETypes.h:29
+typedef unsigned char u8;   // Decl: speed/indep/src/feng/FETypes.h:30
+#endif
 
 #define FENG_BIG_ENDIAN // :32 // TODO: probably set conditionally by build platform
+
+static const u32 FEngLibVersion = 78339; // size: 0x4, Decl: speed/indep/src/feng/FETypes.h:67
 
 #define FEMAX(a, b) ((a) > (b) ? (a) : (b))                    // :76
 #define FEMIN(a, b) ((a) < (b) ? (a) : (b))                    // :77
@@ -87,7 +101,12 @@ class FERect {
     FERect operator*(const FEPoint &p) const {} // Decl: speed/indep/src/feng/FETypes.h:144
     FERect &operator*=(const FEPoint &p) {}     // Decl: speed/indep/src/feng/FETypes.h:145
 
-    void operator()(float l, float t, float r, float b) {} // Decl: speed/indep/src/feng/FETypes.h:147
+    void operator()(float l, float t, float r, float b) { // Decl: speed/indep/src/feng/FETypes.h:147
+        left = l;
+        top = t;
+        right = r;
+        bottom = b;
+    }
 };
 
 // Decl: speed/indep/src/feng/FETypes.h:152-154 // TODO: probably checks FENG_BIG_ENDIAN for byte swaps
@@ -95,8 +114,16 @@ inline u32 FEngGetu32(u32 Val) {
     return (Val >> 24) | (Val << 24) | ((Val & 0xFF00) << 8) | ((Val >> 8) & 0xFF00);
 }
 
+inline i32 FEngGeti32(i32 Val) {
+    return (Val >> 24) | (Val << 24) | ((Val & 0xFF00) << 8) | ((Val >> 8) & 0xFF00);
+}
+
 inline u16 FEngGetu16(u16 Val) {
     return static_cast<u16>((Val >> 8) | (Val << 8));
+}
+
+inline u16 FEngGeti16(i16 Val) {
+    return static_cast<i16>((Val >> 8) | (Val << 8));
 }
 
 inline float FEngGetf32(float &Val) {

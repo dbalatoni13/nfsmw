@@ -26,9 +26,6 @@ typedef float float_t;
 typedef double double_t;
 typedef unsigned int type_operator_new;
 
-typedef short i16;
-typedef int i32;
-
 #define ALIGN_16
 
 #define ONLINE_SUPPORT (0)

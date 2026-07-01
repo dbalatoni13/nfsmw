@@ -4,18 +4,16 @@
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Frontend/Database/VehicleDB.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/customize/CustomizeManager.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/customize/FECustomize.hpp"
 #include "Speed/Indep/Src/World/CarInfo.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 
-// CarPart is already defined in CustomizeManager.cpp (earlier in jumbo build)
+// TODO: 0x802DC758: d:/mw/speed/indep/src/world/CarPartNames.cpp (line 449)
+const char *GetCarPartNameFromID(int32 car_part_id);
+// TODO: 0x802DC898: d:/mw/speed/indep/src/world/CarPartNames.cpp (line 524)
+const char *GetCarSlotNameFromID(int32 car_slot_id);
 
-extern cFrontendDatabase *FEDatabase;
-extern CarCustomizeManager gCarCustomizeManager;
 extern int gLookupCarSlotID;
-extern const char *GetCarSlotNameFromID(int id);
-extern CarPart *GetCarPartFromSlot(int slot_id);
-extern const char *GetCarPartNameFromID(int id);
-extern unsigned int bStringHash(const char *text);
 
 int SortCarsByName(DebugCar *before, DebugCar *after) {
     FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(0);
@@ -24,13 +22,8 @@ int SortCarsByName(DebugCar *before, DebugCar *after) {
     return bStrCmp(before_name, after_name) <= 0;
 }
 
-DebugCarCustomizeScreen::DebugCarOption::DebugCarOption(const char *name, int value) : Intval(value) {
-    bStrNCpy(String, name, 0x40);
-}
-
 DebugCarCustomizeScreen::DebugCarCustomizeScreen(ScreenConstructorData *sd)
-    : MenuScreen(sd) //
-      ,
+    : MenuScreen(sd), //
       iFastScroll(1) {
     FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(0xb));
     FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(0);
@@ -102,7 +95,7 @@ void DebugCarCustomizeScreen::LoadCurrentCar() {
             wasCarCustomized = true;
         }
         gCarCustomizeManager.RelinquishControl();
-        gCarCustomizeManager.TakeControl(static_cast<eCustomizeEntryPoint>(1), car);
+        gCarCustomizeManager.TakeControl(CEP_MAIN_MENU, car);
     }
 }
 
@@ -110,18 +103,18 @@ void DebugCarCustomizeScreen::RebuildPartsList() {
     FECarRecord *car = FEDatabase->GetPlayerCarStable(0)->GetCarRecordByHandle(pDebugCar->mHandle);
     if (car->Customization != 0xFF) {
         InstallableParts.DeleteAllElements();
-        int slotId = CurrentLookupSlotID->GetValue();
-        GetCarPartFromSlot(slotId);
+        CAR_SLOT_ID part_slot = static_cast<CAR_SLOT_ID>(CurrentLookupSlotID->GetValue());
+        GetCarPartFromSlot(part_slot);
         bStringHash("CARPARTNAME_ANY");
-        CarType type = car->GetType();
-        for (CarPart *part = CarPartDB.NewGetFirstCarPart(type, slotId, 0, -1); part; part = CarPartDB.NewGetNextCarPart(part, type, slotId, 0, -1)) {
+        CarType car_type = car->GetType();
+        for (CarPart *part = CarPartDB.NewGetFirstCarPart(car_type, part_slot, 0, -1); part;
+             part = CarPartDB.NewGetNextCarPart(part, car_type, part_slot, 0, -1)) {
             InstallableParts.AddTail(part);
         }
         CurrentInstallablePart = InstallableParts.GetHead();
         bPNode *node = InstallableParts.GetHead();
         while (node != reinterpret_cast<bPNode *>(&InstallableParts)) {
-            CarPart *cp = static_cast<CarPart *>(node->GetpObject());
-            if (cp == gCarCustomizeManager.GetInstalledCarPart(slotId)) {
+            if (node->GetpObject() == gCarCustomizeManager.GetInstalledCarPart(part_slot)) {
                 CurrentInstallablePart = node;
                 break;
             }
@@ -203,7 +196,7 @@ dash_section:
 end:;
 }
 
-void DebugCarCustomizeScreen::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
+void DebugCarCustomizeScreen::NotificationMessage(u32 msg, FEObject *pobj, u32 param1, u32 param2) {
     switch (msg) {
         case 0xc519bfc2:
             iFastScroll = 10;

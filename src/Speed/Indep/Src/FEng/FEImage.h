@@ -18,21 +18,27 @@ class FEImage : public FEObject {
   public:
     u32 ImageFlags; // offset 0x5C, size 0x4, Decl: speed/indep/src/feng/feimage.h:46
 
-    FEImage() : FEObject(), ImageFlags(0) {} // Decl: speed/indep/src/feng/feimage.h:48
-    FEImage(const FEImage &Object, bool bReference) : FEObject(Object, bReference), ImageFlags(Object.ImageFlags) {}
+    FEImage() : FEObject(), ImageFlags(0) { // Decl: speed/indep/src/feng/feimage.h:48
+        Type = FE_Image;
+    }
+    FEImage(const FEImage &Object, bool bReference) : FEObject(Object, bReference), ImageFlags(Object.ImageFlags) {
+        Type = FE_Image;
+    }
     ~FEImage() override {} // Decl: speed/indep/src/feng/feimage.h:50
 
     FEImageData *GetImageData() {} // Decl: speed/indep/src/feng/feimage.h:52
 
-    FEObject *Clone(bool bReference) override {} // Decl: speed/indep/src/feng/feimage.h:54
+    FEObject *Clone(bool bReference) override { // Decl: speed/indep/src/feng/feimage.h:54
+        return FNEW FEImage(*this, bReference);
+    }
 
     void SetTopLeft(const FEVector2 &topright, bool bRelative) { // Decl: speed/indep/src/feng/feimage.h:56
         SetTrackValue(FETrack_UpperLeft, topright, bRelative);
-        Flags |= 0x400000;
+        Flags |= FF_DirtyCode;
     }
     void SetBottomRight(const FEVector2 &bottomright, bool bRelative) { // Decl: speed/indep/src/feng/feimage.h:57
         SetTrackValue(FETrack_LowerRight, bottomright, bRelative);
-        Flags |= 0x400000;
+        Flags |= FF_DirtyCode;
     }
 };
 

@@ -5,9 +5,9 @@
 
 FEString *FEngFindString(const char *pkg_name /* r3 */, int name_hash /* r4 */);
 
-void FEngSetLanguageHash(struct FEString *text /* r31 */, unsigned int hash /* r4 */);
+void FEngSetLanguageHash(FEString *pkg_name, uint32 hash);
 
-void FEngSetLanguageHash(const char *pkg_name /* r29 */, unsigned int obj_hash /* r4 */, unsigned int language /* r28 */);
+void FEngSetLanguageHash(const char *pkg_name, uint32 obj_hash, uint32 language);
 unsigned int FEngHashString(const char *fmt /* r4 */, ...);
 int FEngSNPrintf(char *buffer /* r3 */, int buf_size /* r4 */, const char *fmt /* r5 */, ...);
 

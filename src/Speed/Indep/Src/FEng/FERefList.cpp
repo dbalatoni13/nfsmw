@@ -1,46 +1,40 @@
+#include "types.h"
 #include "Speed/Indep/Src/FEng/FERefList.h"
 
-static FEMinNode* const kRemovedNode = reinterpret_cast<FEMinNode*>(0xABADCAFE);
-
-void FERefList::ReferenceList(FERefList* pList) {
-    FEMinNode* n;
+void FERefList::ReferenceList(FERefList *pList) {
+    FEMinNode *n;
 
     if (pList) {
         if (!bIsReference) {
-            while ((n = RemHead()) != nullptr) {
-                delete n;
-            }
+            Purge();
         }
 
         pRef = pList;
         bIsReference = true;
     } else {
-        *reinterpret_cast<FERefList**>(reinterpret_cast<char*>(this) + 0x4) = pList;
-        *reinterpret_cast<FEMinNode**>(reinterpret_cast<char*>(this) + 0x8) = nullptr;
-        *reinterpret_cast<unsigned long*>(this) = reinterpret_cast<unsigned long>(pList);
+        this->pRef = pList;
+        this->tail = nullptr;
+        this->bIsReference = false;
     }
 }
 
-void FERefList::AddNode(FEMinNode* insertpoint, FEMinNode* node) {
-    FEMinNode* n;
+void FERefList::AddNode(FEMinNode *insertpoint, FEMinNode *node) {
 
     if (!node) {
         return;
     }
 
     if (insertpoint) {
-        n = insertpoint->next;
-        node->next = n;
-        if (n) {
-            n->prev = node;
+        node->next = insertpoint->next;
+        if (node->next) {
+            node->next->prev = node;
         }
         node->prev = insertpoint;
         insertpoint->next = node;
     } else {
-        n = head;
-        node->next = n;
-        if (n) {
-            n->prev = node;
+        node->next = head;
+        if (node->next) {
+            node->next->prev = node;
         }
         node->prev = nullptr;
         head = node;
@@ -51,37 +45,33 @@ void FERefList::AddNode(FEMinNode* insertpoint, FEMinNode* node) {
     }
 }
 
-FEMinNode* FERefList::RemNode(FEMinNode* node) {
-    FERefList* pList = this;
-    FEMinNode* ret = node;
+FEMinNode *FERefList::RemNode(FEMinNode *node) {
+    if (node) {
+        if (node == head) {
+            head = node->next;
+        }
 
-    if (!ret) {
-        return ret;
+        if (node == tail) {
+            tail = node->prev;
+        }
+
+        if (node->prev) {
+            node->prev->next = node->next;
+        }
+
+        if (node->next) {
+            node->next->prev = node->prev;
+        }
+
+        node->next = reinterpret_cast<FEMinNode *>(LIST_MAGIC);
+        node->prev = reinterpret_cast<FEMinNode *>(LIST_MAGIC);
     }
 
-    if (ret == pList->head) {
-        pList->head = ret->next;
-    }
-
-    if (ret == pList->tail) {
-        pList->tail = ret->prev;
-    }
-
-    if (ret->prev) {
-        ret->prev->next = ret->next;
-    }
-
-    if (ret->next) {
-        ret->next->prev = ret->prev;
-    }
-
-    ret->next = kRemovedNode;
-    ret->prev = kRemovedNode;
-    return ret;
+    return node;
 }
 
-FEMinNode* FERefList::RemHead() {
-    FEMinNode* n = head;
+FEMinNode *FERefList::RemHead() {
+    FEMinNode *n = head;
 
     if (n) {
         RemNode(n);
@@ -90,9 +80,9 @@ FEMinNode* FERefList::RemHead() {
     return n;
 }
 
-unsigned long FERefList::GetNumElements() {
-    unsigned long Count = 0;
-    FEMinNode* pNode = GetHead();
+u32 FERefList::GetNumElements() {
+    u32 Count = 0;
+    FEMinNode *pNode = GetHead();
 
     while (pNode) {
         pNode = pNode->GetNext();
@@ -101,5 +91,3 @@ unsigned long FERefList::GetNumElements() {
 
     return Count;
 }
-
-// destructor moved to header for inlining

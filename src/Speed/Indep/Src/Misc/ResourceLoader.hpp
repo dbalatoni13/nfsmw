@@ -223,4 +223,6 @@ inline void SetDelayedResourceCallback(void (*callback)(int), int param) {
     SetDelayedResourceCallback(reinterpret_cast<void (*)(void *)>(callback), reinterpret_cast<void *>(param));
 }
 
+bool IsCurrentlyHotChunking();
+
 #endif

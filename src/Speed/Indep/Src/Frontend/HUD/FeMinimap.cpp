@@ -1,8 +1,7 @@
 #include "Speed/Indep/Src/Frontend/HUD/feMinimap.hpp"
 
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
-#include "Speed/Indep/Src/FEng/FETypes.h"
-#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEImages.hpp"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEStrings.hpp"
 #include "Speed/Indep/Src/Frontend/HUD/FeMinimapStreamer.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
@@ -19,21 +18,9 @@
 
 #include "Speed/Indep/Src/AI/AITarget.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ICollisionBody.h"
-#include "Speed/Indep/Src/Misc/MD5.hpp"
 #include "Speed/Indep/Src/Physics/Common/VehicleSystem.h"
-#include "Speed/Indep/Src/Physics/PhysicsTunings.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
-// extern void FEngSetRotationZ(FEObject *obj, float rot);
-// extern void FEngSetVisible(FEObject *obj);
-// extern void FEngSetInvisible(FEObject *obj);
-// extern void FEngSetCenter(FEObject *obj, float x, float y);
-// extern void FEngSetColor(FEObject *obj, unsigned int color);
-// extern FEColor FEngGetObjectColor(FEObject *obj);
-// extern bool FEngIsScriptSet(FEObject *obj, unsigned int script_hash);
-// extern void FEngSetScript(FEObject *object, unsigned int script_hash, bool start_at_beginning);
-// extern unsigned long FEHashUpper(const char *str);
-// extern void FEngSetTextureHash(FEImage *img, unsigned int hash);
 extern bool GPS_IsEngaged();
 
 extern float MinimapPivotX;
@@ -249,7 +236,7 @@ void Minimap::SetupMinimap(IPlayer *player) {
 void Minimap::RefreshMapItems() {
     MiniMapItem *item = StaticMiniMapItems.GetHead();
     while (item != StaticMiniMapItems.EndOfList()) {
-        FEngSetInvisible(item->mpIcon);
+        FEngSetInvisible(item->pIcon);
         item = item->GetNext();
     }
     StaticMiniMapItems.DeleteAllElements();
@@ -548,17 +535,16 @@ void Minimap::AdjustForWidescreen(bool moveOutwards) {
 }
 
 void Minimap::UpdateMiniMapItems() {
-    bVector2 defaultDir;
     for (MiniMapItem *item = static_cast<MiniMapItem *>(StaticMiniMapItems.GetHead()); item != StaticMiniMapItems.EndOfList();
          item = static_cast<MiniMapItem *>(item->GetNext())) {
-        if (item->mHidden) {
-            FEngSetInvisible(item->mpIcon);
+        if (item->bHidden) {
+            FEngSetInvisible(item->pIcon);
         } else {
-            FEngSetVisible(item->mpIcon);
-            defaultDir.x = 0.0f;
-            defaultDir.y = 1.0f;
-            UpdateElementArt(&item->mPos, &defaultDir, item->mpIcon, false);
-            FEngSetRotationZ(item->mpIcon, 0.0f);
+            FEngSetVisible(item->pIcon);
+
+            bVector2 dir(0.0f, 1.0f);
+            UpdateElementArt(&item->ItemPosition, &dir, item->pIcon, false);
+            FEngSetRotationZ(item->pIcon, 0.0f);
         }
     }
 }

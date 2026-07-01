@@ -22,15 +22,11 @@ extern const float lbl_803E48AC;
 extern const float lbl_803E48B0;
 
 HeatMeter::HeatMeter(UTL::COM::Object *pOutter, const char *pkg_name, int player_number)
-    : HudElement(pkg_name, 0x40004000ULL) //
-      ,
-      IHeatMeter(pOutter) //
-      ,
-      mHeatChanged(true) //
-      ,
-      mPursuitHeat(lbl_803E4888) //
-      ,
-      mVehicleHeat(lbl_803E4888) //
+    : HudElement(pkg_name, 0x40004000ULL), //
+      IHeatMeter(pOutter),                 //
+      mHeatChanged(true),                  //
+      mPursuitHeat(lbl_803E4888),          //
+      mVehicleHeat(lbl_803E4888)           //
 {
     RegisterGroup(0xC46A80A9);
     mpDataHeatMultiplier = FEngFindObject(GetPackageName(), 0x7F91DA62);

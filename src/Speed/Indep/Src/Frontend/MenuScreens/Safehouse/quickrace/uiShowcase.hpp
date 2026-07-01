@@ -1,9 +1,5 @@
-#ifndef FRONTEND_MENUSCREENS_SAFEHOUSE_QUICKRACE_UISHOWCASE_H
-#define FRONTEND_MENUSCREENS_SAFEHOUSE_QUICKRACE_UISHOWCASE_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef UISHOWCASE_H
+#define UISHOWCASE_H
 
 #include <types.h>
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"

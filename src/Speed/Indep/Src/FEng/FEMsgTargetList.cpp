@@ -1,8 +1,10 @@
 #include "Speed/Indep/Src/FEng/FEMsgTargetList.h"
+#include "Speed/Indep/Src/FEng/FEObject.h"
 #include "Speed/Indep/Src/FEng/FEObjectCallback.h"
 #include "Speed/Indep/Src/FEng/FEngStandard.h"
+#include "Speed/Indep/Src/FEng/FEPackage.h"
 
-void FEMsgTargetList::Allocate(unsigned long NewAlloc) {
+void FEMsgTargetList::Allocate(u32 NewAlloc) {
     if (NewAlloc == 0) {
         if (pTargets) {
             delete[] reinterpret_cast<char *>(pTargets);
@@ -11,7 +13,7 @@ void FEMsgTargetList::Allocate(unsigned long NewAlloc) {
         Count = 0;
         Alloc = 0;
     } else if (NewAlloc != Alloc) {
-        FEObject **pNewTargets = static_cast<FEObject **>(FEngMalloc(NewAlloc * sizeof(FEObject *), nullptr, 0));
+        FEObject **pNewTargets = FNEW FEObject *[NewAlloc];
         if (NewAlloc < Alloc) {
             FEngMemCpy(pNewTargets, pTargets, NewAlloc * sizeof(FEObject *));
         } else {
@@ -57,3 +59,15 @@ class FEBuildMsgs : public FEObjectCallback {
 
     bool Callback(struct FEObject *pObj) override; // Decl: speed/indep/src/feng/FEMsgTargetList.cpp:137
 };
+
+// Decl: speed/indep/src/feng/FEMsgTargetList.cpp:198
+// Range: 0x801856DC -> 0x8018571C
+// this: r3
+FEMsgTargetList *FEPackage::GetMessageTargets(u32 MsgID) {
+    for (u32 i = 0; i < NumMsgTargets; i++) {
+        if (pMsgTargets[i].GetMsgID() == MsgID) {
+            return &pMsgTargets[i];
+        }
+    }
+    return nullptr;
+}

@@ -9,9 +9,11 @@
 #include "Speed/Indep/Libs/Support/Utility/UListable.h"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Input/IFeedBack.h"
-#include "Speed/Indep/Src/Input/ISteeringWheel.h"
+// #include "Speed/Indep/Src/Input/ISteeringWheel.h"
 #include "Speed/Indep/Src/Interfaces/IFengHud.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
+
+class ISteeringWheel;
 
 // File: speed/indep/src/interfaces/simentities/IPlayer.h
 // Decl: speed/indep/src/interfaces/simentities/IPlayer.h:11

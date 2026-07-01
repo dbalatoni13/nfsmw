@@ -17,6 +17,25 @@ struct ColorSpecialSequence {
     bool operator==(const u8 *pString) {}
 };
 
+static const i16 WIDE_CODE_RESERVED = -32768; // size: 0x2, Decl: speed/indep/src/feng/FEWideString.h:67
+static const i16 WIDE_CODE_MASK = -255;       // size: 0x2, Decl: speed/indep/src/feng/FEWideString.h:68
+static const i16 WIDE_VALUE_MASK = 255;       // size: 0x2, Decl: speed/indep/src/feng/FEWideString.h:69
+static const i16 WIDE_MODE_MASK = -16384;     // size: 0x2, Decl: speed/indep/src/feng/FEWideString.h:70
+static const i16 RED_CODE = -32512;           // size: 0x2, Decl: speed/indep/src/feng/FEWideString.h:72
+static const i16 GREEN_CODE = -32256;         // size: 0x2, Decl: speed/indep/src/feng/FEWideString.h:73
+static const i16 BLUE_CODE = -32000;          // size: 0x2, Decl: speed/indep/src/feng/FEWideString.h:74
+static const i16 ALPHA_CODE = -31744;         // size: 0x2, Decl: speed/indep/src/feng/FEWideString.h:75
+static const i16 WHOLE_CODE = -31488;         // size: 0x2, Decl: speed/indep/src/feng/FEWideString.h:76
+static const i16 WHOLEA_CODE = -31232;        // size: 0x2, Decl: speed/indep/src/feng/FEWideString.h:77
+static const i16 SETR_CODE = -30976;          // size: 0x2, Decl: speed/indep/src/feng/FEWideString.h:78
+static const i16 SETG_CODE = -30720;          // size: 0x2, Decl: speed/indep/src/feng/FEWideString.h:79
+static const i16 SETB_CODE = -30464;          // size: 0x2, Decl: speed/indep/src/feng/FEWideString.h:80
+
+static const i16 MODCOLOR_CODE = -16128;  // size: 0x2, Decl: speed/indep/src/feng/FEWideString.h:82
+static const i16 SETCOLOR_CODE = -15872;  // size: 0x2, Decl: speed/indep/src/feng/FEWideString.h:83
+static const i16 SETCOLORA_CODE = -15616; // size: 0x2, Decl: speed/indep/src/feng/FEWideString.h:84
+static const i16 ADDCOLOR_CODE = -15360;  // size: 0x2, Decl: speed/indep/src/feng/FEWideString.h:85
+
 #define ESCAPE_CHARACTER '\\' // :87
 
 // File: speed/indep/src/feng/FEWideString.h
@@ -28,7 +47,7 @@ class FEWideString {
     u32 mulBufferLength; // offset 0x4, size 0x4, Decl: speed/indep/src/feng/FEWideString.h:98
 
     FEWideString(); // Decl: speed/indep/src/feng/FEWideString.h:100
-    FEWideString(const short *psString);
+    FEWideString(const i16 *psString);
     FEWideString(const char *pcString);
     FEWideString(const FEWideString &string);
     ~FEWideString(); // Decl: speed/indep/src/feng/FEWideString.h:104
@@ -36,10 +55,11 @@ class FEWideString {
     bool operator==(const FEWideString &string); // Decl: speed/indep/src/feng/FEWideString.h:106
 
     FEWideString &operator=(const FEWideString &string);
-    FEWideString &operator=(const short *psString);
+    FEWideString &operator=(const i16 *psString);
+    FEWideString &operator=(const char *pcString);
 
     FEWideString &operator+=(const FEWideString &string);
-    FEWideString &operator+=(const short *pString);
+    FEWideString &operator+=(const i16 *pString);
     FEWideString &operator+=(const char *pcString);
 
     void Associate(i16 *pString) {} // Decl: speed/indep/src/feng/FEWideString.h:116
@@ -75,5 +95,53 @@ class FEWideString {
     void ConvertFromSpecial(i16 *psString);
     void ConvertFromSpecial(FEWideString &string); // Decl: speed/indep/src/feng/FEWideString.h:141
 };
+
+template <class T>
+void CopyString(i16 *pDst, const T *pSrc) // Decl: speed/indep/src/feng/FEWideString.h:149
+{
+    if (pDst == nullptr) {
+        return;
+    }
+    if (pSrc != nullptr) {
+        while (*pSrc != '\0') {
+            *pDst = *pSrc;
+            pSrc++;
+            pDst++;
+        }
+    }
+
+    *pDst = '\0';
+}
+
+template <class T>
+void CopyString(i16 *pDst, const T *pSrc, u32 ulMaxLength) // Decl: speed/indep/src/feng/FEWideString.h:171
+{
+    if (pDst == nullptr) {
+        return;
+    }
+    if (ulMaxLength == 0) {
+        return;
+    }
+
+    if (pSrc != nullptr) {
+        u32 i = 0;
+        ulMaxLength--;
+        if (*pSrc != 0 && ulMaxLength != 0) {
+            do {
+                i++;
+                *pDst = *pSrc;
+                pSrc++;
+                pDst++;
+                if (*pSrc == '\0') {
+                    break;
+                }
+            } while (ulMaxLength != i);
+        }
+    }
+
+    *pDst = '\0';
+}
+
+u32 GetStringLength(const i16 *pString);
 
 #endif

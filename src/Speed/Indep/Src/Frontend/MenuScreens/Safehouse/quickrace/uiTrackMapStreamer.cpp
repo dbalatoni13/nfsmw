@@ -49,18 +49,12 @@ extern float RealTimeElapsed;
 static UITrackMapStreamer *pInstance;
 
 UITrackMapStreamer::UITrackMapStreamer()
-    : bMapPackLoaded(false) //
-      ,
-      bLoadingMap(false) //
-      ,
-      pCurrentTrack(nullptr) //
-      ,
-      TrackMap(nullptr) //
-      ,
-      MapHash(0) //
-      ,
-      ZoomCubic(0, 1.0f) //
-      ,
+    : bMapPackLoaded(false),  //
+      bLoadingMap(false),     //
+      pCurrentTrack(nullptr), //
+      TrackMap(nullptr),      //
+      MapHash(0),             //
+      ZoomCubic(0, 1.0f),     //
       PanCubic(0, 1.0f) {
     bUsingTrackForAnim = true;
     pInstance = this;

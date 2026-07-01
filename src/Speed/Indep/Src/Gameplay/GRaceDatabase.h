@@ -64,6 +64,8 @@ struct GRaceSaveInfo {
     GHighScoresUnion mHighScores;            // offset 0x8, size 0x4
     FixedPoint<uint16, 10, 2> mTopSpeed;     // offset 0xC, size 0x2
     FixedPoint<uint16, 10, 2> mAverageSpeed; // offset 0xE, size 0x2
+
+    GRaceSaveInfo() : mTopSpeed(0), mAverageSpeed(0) {}
 };
 
 // class GRaceParameters { // 0x14
@@ -536,8 +538,12 @@ class GRaceDatabase {
     bool CheckRaceScoreFlags(unsigned int eventHash, ScoreFlags mask);
     const char *GetNextDDayRace();
     GRaceSaveInfo *GetScoreInfo(unsigned int eventHash);
-    GRaceSaveInfo *GetScoreInfo();
-    unsigned int GetScoreInfoCount();
+    GRaceSaveInfo *GetScoreInfo() {
+        return mRaceScoreInfo;
+    };
+    unsigned int GetScoreInfoCount() {
+        return mRaceCountStatic;
+    };
     void LoadBestScores(GRaceSaveInfo *entries, unsigned int count);
     void SimulateDDayComplete();
     void ClearRaceScores();

@@ -1,20 +1,16 @@
 #ifndef UIQRCARSELECT_H
 #define UIQRCARSELECT_H
 
+#include "Speed/Indep/Src/Frontend/Database/VehicleDB.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
-#include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEIconScrollerMenu.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/Slider.hpp"
-#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/customize/CustomizeTypes.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/feWidget.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/customize/CarCustomize.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiQRBrief.hpp"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 
 #include <types.h>
-
-struct FEImage;
-struct FEString;
-struct FECarRecord;
-struct FECareerRecord;
-struct SelectableCar;
 
 // File: speed/indep/src/frontend/StateManagers/FECarSelectStateManager.hpp
 // total size: 0x1C
@@ -73,7 +69,7 @@ class QRCarSelectBustedManager {
     static bool bIsCross;             // size: 0x1, address: 0xFFFFFFFF
 
     uint32 ImpoundStampHash; // offset 0xC, size 0x4
-    char *ParentPkg;         // offset 0x10, size 0x4
+    const char *ParentPkg;   // offset 0x10, size 0x4
     bool bWantsImpound;      // offset 0x14, size 0x1
 };
 

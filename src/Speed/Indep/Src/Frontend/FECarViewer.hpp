@@ -5,8 +5,9 @@
 #pragma once
 #endif
 
-#include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/FEPkg_GarageMain.hpp"
 #include "Speed/Indep/Src/World/CarInfo.hpp"
+
+typedef enum { SET_RIDE_INFO_REASON_VINYL = 0, SET_RIDE_INFO_REASON_LOAD_CAR = 1, SET_RIDE_INFO_REASON_CATCHALL = 2 } eSetRideInfoReasons;
 
 typedef enum { eCARVIEWER_PLAYER1_CAR = 0, eCARVIEWER_PLAYER2_CAR = 1 } eCarViewerWhichCar;
 
@@ -21,7 +22,7 @@ typedef enum {
 
 class CarViewer {
   private:
-    static GarageMainScreen *FindWhichScreenToUpdate(eCarViewerWhichCar which_car);
+    static struct GarageMainScreen *FindWhichScreenToUpdate(eCarViewerWhichCar which_car);
     static RideInfo *FindWhichRideInfoToUpdate(/* parameters unknown */); // STRIPPED
 
   public:
@@ -35,5 +36,8 @@ class CarViewer {
 
     static bool haveLoadedOnce;
 };
+
+extern RideInfo TopOrFullScreenRide;                     // size: 0x310, address: 0x804AB0D4
+extern eSetRideInfoReasons TopOrFullScreenLoadingReason; // size: 0x4, address: 0x804AB5A8
 
 #endif

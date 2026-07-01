@@ -23,7 +23,7 @@ class FEChunk {
         return FEngGetu32(ID);
     }
     u32 GetSize() { // Decl: speed/indep/src/feng/FEChunk.h:38
-        return Size;
+        return FEngGetu32(Size);
     }
     bool IsNestedChunk() { // Decl: speed/indep/src/feng/FEChunk.h:39
         return (ID & NESTED_FECHUNK) != 0;

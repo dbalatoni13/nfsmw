@@ -40,6 +40,13 @@ void Flush();
 bool SetPackage(Attrib::Gen::pvehicle &vehicle, const Package &package);
 void GetPackage(const Attrib::Gen::pvehicle &vehicle, Package &package);
 
+bool CanInstallJunkman(const Attrib::Gen::pvehicle &pvehicle, Type type);
+bool SetJunkman(Attrib::Gen::pvehicle &vehicle, Type type);
+
+void SetLevel(Attrib::Gen::pvehicle &pvehicle, Type type, int level);
+
+float GetHeat(Attrib::Gen::pvehicle pvehicle, Type type, int level);
+
 }; // namespace Upgrades
 
 }; // namespace Physics

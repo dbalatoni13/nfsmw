@@ -9,11 +9,9 @@
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 Speedometer::Speedometer(UTL::COM::Object *pOutter, const char *pkg_name, int player_number)
-    : HudElement(pkg_name, 0x8000000) //
-      ,
-      ISpeedometer(pOutter) //
-      ,
-      mSpeed(0.0f) //
+    : HudElement(pkg_name, 0x8000000), //
+      ISpeedometer(pOutter),           //
+      mSpeed(0.0f)                     //
 {
     RegisterGroup(FEHashUpper("SpeedometerGroup"));
     mpSpeedDigit1 = static_cast<FEString *>(FEngFindObject(pkg_name, FEHashUpper("SPEED_DIGIT_1")));

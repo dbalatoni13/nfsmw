@@ -6,13 +6,10 @@
 extern float warningPulseMinRpm;
 
 EngineTempGauge::EngineTempGauge(UTL::COM::Object *pOutter, const char *pkg_name, int player_number)
-    : HudElement(pkg_name, 0x40) //
-      ,
-      IEngineTempGauge(pOutter) //
-      ,
-      mEngineTemp(0.0f) //
-      ,
-      mEngineTempChanged(true) //
+    : HudElement(pkg_name, 0x40), //
+      IEngineTempGauge(pOutter),  //
+      mEngineTemp(0.0f),          //
+      mEngineTempChanged(true)    //
 {
     RegisterGroup(FEHashUpper("Engine_Heat_Meter_Group"));
     mpWarningLight = FEngFindObject(GetPackageName(), FEHashUpper("ENGINE_HEAT_ICON_GROUP"));

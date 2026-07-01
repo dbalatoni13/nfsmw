@@ -37,8 +37,7 @@ void UIEATraxScreen::AddTrackSlot(ScrollerSlot *slot, unsigned int baseHash, int
 }
 
 UIEATraxScreen::UIEATraxScreen(ScreenConstructorData *sd)
-    : MenuScreen(sd) //
-      ,
+    : MenuScreen(sd),                                                                       //
       Tracks(GetPackageName(), "ARRAY_SCROLL_REGION", "ScrollBar", true, true, false, true) //
 {
     const unsigned long FEObj_TrackModeType = 0xCA74A2FA;
@@ -257,8 +256,8 @@ void UIEATraxScreen::NotificationMessage(u32 msg, FEObject *pObject, u32 Param1,
                 cFEng::Get()->QueuePackageMessage(0x587C018B, GetPackageName(), nullptr);
             } else {
                 const char *blurb = GetLocalizedString(0xE9CB802F);
-                DialogInterface::ShowTwoButtons(GetPackageName(), "Dialog.fng", static_cast<eDialogTitle>(1), 0x70E01038, 0x417B25E4, 0x775DBA97,
-                                                0x34DC1BCF, 0x34DC1BCF, static_cast<eDialogFirstButtons>(1), blurb);
+                DialogInterface::ShowTwoButtons(GetPackageName(), "Dialog.fng", dialog_alert, 0x70E01038, 0x417B25E4, 0x775DBA97, 0x34DC1BCF,
+                                                0x34DC1BCF, first_dialog_button2, blurb);
             }
             MControlPathfinder(true, 0, 0, 0).Send("EATraxInit");
             break;

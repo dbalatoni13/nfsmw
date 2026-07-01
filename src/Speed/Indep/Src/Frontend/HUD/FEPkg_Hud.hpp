@@ -31,7 +31,9 @@ class FEngHud : public UTL::COM::Object, public IHud {
         return CurrentHudFeatures != 0;
     }
 
-    OnlineHUDSupport *GetOnlineHUDSupport() {}
+    OnlineHUDSupport *GetOnlineHUDSupport() {
+        return static_cast<OnlineHUDSupport *>(pOnlineSupport);
+    }
 
     void HideAll() override { // Decl: speed/indep/src/frontend/hud/FEPkg_Hud.hpp:40
         SetHudFeatures(0);
@@ -66,7 +68,7 @@ class FEngHud : public UTL::COM::Object, public IHud {
 
     HudFeaturesType CurrentHudFeatures; // offset 0x20, size 0x8, Decl: speed/indep/src/frontend/hud/FEPkg_Hud.hpp:57
     ePlayerHudType mPlayerHudType;      // offset 0x28, size 0x4, Decl: speed/indep/src/frontend/hud/FEPkg_Hud.hpp:58
-    char *pPackageName;                 // offset 0x2C, size 0x4, Decl: speed/indep/src/frontend/hud/FEPkg_Hud.hpp:59
+    const char *pPackageName;           // offset 0x2C, size 0x4, Decl: speed/indep/src/frontend/hud/FEPkg_Hud.hpp:59
     IPlayer *pPlayer;                   // offset 0x30, size 0x4, Decl: speed/indep/src/frontend/hud/FEPkg_Hud.hpp:60
     int PlayerNumber;                   // offset 0x34, size 0x4, Decl: speed/indep/src/frontend/hud/FEPkg_Hud.hpp:61
     ActionQueue mActionQ;               // offset 0x38, size 0x294, Decl: speed/indep/src/frontend/hud/FEPkg_Hud.hpp:62

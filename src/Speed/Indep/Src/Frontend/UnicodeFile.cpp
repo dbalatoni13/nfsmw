@@ -4,10 +4,8 @@
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 UnicodeFile::UnicodeFile()
-    : data_(nullptr) //
-      ,
-      next_(nullptr) //
-      ,
+    : data_(nullptr), //
+      next_(nullptr), //
       end_(nullptr) {}
 
 UnicodeFile::~UnicodeFile() {

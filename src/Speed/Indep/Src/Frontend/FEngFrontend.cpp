@@ -2,13 +2,10 @@
 
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/FEng/FEPackage.h"
-#include "Speed/Indep/Src/Frontend/FEJoyInput.hpp"
+#include "Speed/Indep/Src/Input/IOModule.h"
+#include "Speed/Indep/bWare/Inc/bPrintf.hpp"
+#include <cstdarg.h>
 
-#include <stdarg.h>
-
-extern int bVSPrintf(char *buf, const char *fmt, va_list args);
-extern unsigned int bStringHash(const char *str);
-extern bool IsJoystickTypeWheel(JoystickPort port);
 extern unsigned int Button_Action_Hashes_GAMECUBE[][5];
 extern unsigned int Button_Action_Hashes_GAMECUBE_Wheel[][5];
 
@@ -20,36 +17,6 @@ unsigned int FindButtonNameHashForFEString(int config, int string_number, Joysti
         hashes = Button_Action_Hashes_GAMECUBE;
     }
     return hashes[string_number][config];
-}
-
-extern int bStrLen(const unsigned short *s);
-
-void FEngSNMakeHidden(char *outBuffer, int out_buf_size, const char *strInput) {
-    int nLen = bStrLen(strInput);
-    int i = 0;
-    if (i < nLen && i != out_buf_size - 1) {
-        do {
-            outBuffer[i] = '*';
-            i++;
-            if (i >= nLen)
-                break;
-        } while (i != out_buf_size - 1);
-    }
-    outBuffer[i] = '\0';
-}
-
-void FEngSNMakeHidden(char *outBuffer, int out_buf_size, unsigned short *strInput) {
-    int nLen = bStrLen(strInput);
-    int i = 0;
-    if (i < nLen && i != out_buf_size - 1) {
-        do {
-            outBuffer[i] = '*';
-            i++;
-            if (i >= nLen)
-                break;
-        } while (i != out_buf_size - 1);
-    }
-    outBuffer[i] = '\0';
 }
 
 int FEngMapJoyParamToJoyport(int feng_param) {
@@ -76,7 +43,35 @@ int FEngMapJoyportToJoyParam(int joyport) {
     return 0;
 }
 
-void FEngTickSinglePackage(const char *pkg_name, unsigned int ticks) {
+void FEngSNMakeHidden(char *outBuffer, int out_buf_size, const char *strInput) {
+    int nLen = bStrLen(strInput);
+    int i = 0;
+    if (i < nLen && i != out_buf_size - 1) {
+        do {
+            outBuffer[i] = '*';
+            i++;
+            if (i >= nLen)
+                break;
+        } while (i != out_buf_size - 1);
+    }
+    outBuffer[i] = '\0';
+}
+
+void FEngSNMakeHidden(char *outBuffer, int out_buf_size, u16 *strInput) {
+    int nLen = bStrLen(strInput);
+    int i = 0;
+    if (i < nLen && i != out_buf_size - 1) {
+        do {
+            outBuffer[i] = '*';
+            i++;
+            if (i >= nLen)
+                break;
+        } while (i != out_buf_size - 1);
+    }
+    outBuffer[i] = '\0';
+}
+
+void FEngTickSinglePackage(const char *pkg_name, uint32 ticks) {
     FEPackage *single_package = cFEng::Get()->FindPackage(pkg_name);
     if (single_package) {
         single_package->SetTickIncrement(ticks);
@@ -88,7 +83,7 @@ void FEngTickSinglePackage(const char *pkg_name, unsigned int ticks) {
     }
 }
 
-unsigned int FEngHashString(const char *fmt, ...) {
+uint32 FEngHashString(const char *fmt, ...) {
     unsigned int result;
     char buffer[256];
     va_list args;

@@ -4,12 +4,12 @@
 #include <types.h>
 
 #include "RaceDB.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/InGame/uiWorldMap.hpp"
 #include "Speed/Indep/Src/Gameplay/GInfractionManager.h"
 #include "Speed/Indep/Src/Gameplay/GRace.h"
 #include "VehicleDB.hpp"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEStrings.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
-#include "Speed/Indep/Src/Frontend/MenuScreens/InGame/uiWorldMap.hpp"
 
 #if ONLINE_SUPPORT
 #include "Speed/Indep/Src/Online/OnlineCfg.hpp"
@@ -212,7 +212,11 @@ class OptionsSettings {
     PlayerSettings ThePlayerSettings[2];  // offset 0x68, size 0x58
 };
 
+#ifdef EA_BUILD_A124
 typedef uint16 FESMSHandle;
+#else
+typedef uint8 FESMSHandle;
+#endif
 
 typedef enum { SMS_FLAG_UNREAD = 1, SMS_FLAG_READ = 2 } SMSMessageFlags;
 
@@ -626,7 +630,9 @@ class cFrontendDatabase {
     bool IsOnlineMode() {
         return FEGameMode & 8;
     }
-    bool IsOnlineCustomizeMode() {}
+    bool IsOnlineCustomizeMode() {
+        return FEGameMode & 40;
+    }
     bool IsCustomizeMode() {
         return FEGameMode & 32;
     }
@@ -678,7 +684,7 @@ class cFrontendDatabase {
 #endif
     FEKeyboardSettings *GetFEKeyboardSettings() {}
     FEPlayerCarDB *GetPlayerCarStable(int player) {
-        if (static_cast<unsigned int>(player) <= 1)
+        if (player >= 0 && player <= 1)
             return &CurrentUserProfiles[player]->PlayersCarStable;
         return nullptr;
     }
@@ -736,6 +742,9 @@ class cFrontendDatabase {
 };
 
 extern cFrontendDatabase *FEDatabase;
+
+char *SaveSomeData(void *save_to, void *save_from, int bytes, void *maxptr);
+char *LoadSomeData(void *load_to, void *load_from, int bytes, void *maxptr);
 
 void InitFrontendDatabase();
 int GetMikeMannBuild();

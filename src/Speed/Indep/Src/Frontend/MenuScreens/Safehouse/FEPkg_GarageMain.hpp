@@ -2,6 +2,7 @@
 #define __FEPKG_GARAGEMAIN_H__
 
 #include <types.h>
+#include "Speed/Indep/Src/Frontend/FECarViewer.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/Src/FEng/FEString.h"
@@ -9,8 +10,6 @@
 #include "Speed/Indep/Src/Input/ActionQueue.h"
 #include "Speed/Indep/Src/World/CarRender.hpp"
 #include "Speed/Indep/Src/Camera/Movers/SelectCar.hpp"
-
-typedef enum { SET_RIDE_INFO_REASON_VINYL = 0, SET_RIDE_INFO_REASON_LOAD_CAR = 1, SET_RIDE_INFO_REASON_CATCHALL = 2 } eSetRideInfoReasons;
 
 class FEGeometryModels {
   public:

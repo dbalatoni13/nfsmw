@@ -1,6 +1,8 @@
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
+#include "Speed/Indep/Src/FEng/FEngStandard.h"
 #include "Speed/Indep/Src/Frontend/Careers/UnlockSystem.hpp"
 #include "Speed/Indep/Src/Frontend/Database/RaceDB.hpp"
+#include "Speed/Indep/Src/Frontend/FECarViewer.hpp"
 #include "Speed/Indep/Src/Frontend/FEJoyInput.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/Src/Frontend/Localization/Localize.hpp"
@@ -16,6 +18,8 @@
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "Speed/Indep/Src/Misc/Config.h"
+#include "Speed/Indep/Src/Misc/EasterEggs.hpp"
+#include "Speed/Indep/Src/Misc/MD5.hpp"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bPrintf.hpp"
@@ -51,7 +55,7 @@ extern Attrib::Key DriveConfigs[5][2];
 cFrontendDatabase *FEDatabase;
 
 char *SaveSomeData(void *save_to, void *save_from, int bytes, void *maxptr) {
-    if (reinterpret_cast<unsigned int>(save_to) + bytes <= reinterpret_cast<unsigned int>(maxptr)) {
+    if (reinterpret_cast<uint32>(save_to) + bytes <= reinterpret_cast<uint32>(maxptr)) {
         bMemCpy(save_to, save_from, bytes);
         save_to = static_cast<char *>(save_to) + bytes;
     }
@@ -59,7 +63,7 @@ char *SaveSomeData(void *save_to, void *save_from, int bytes, void *maxptr) {
 }
 
 char *LoadSomeData(void *load_to, void *load_from, int bytes, void *maxptr) {
-    if (reinterpret_cast<unsigned int>(load_from) + bytes <= reinterpret_cast<unsigned int>(maxptr)) {
+    if (reinterpret_cast<uint32>(load_from) + bytes <= reinterpret_cast<uint32>(maxptr)) {
         bMemCpy(load_to, load_from, bytes);
     }
     return static_cast<char *>(load_from) + bytes;
@@ -365,7 +369,13 @@ void CareerSettings::StartNewCareer(bool bEnterGameplay) {
         RaceStarter::StartCareerFreeRoam();
     }
 }
-void CareerSettings::TryAwardDemoMarker() {};
+
+void CareerSettings::TryAwardDemoMarker() {
+    if (!HasBeenAwardedDemoMarker() && gEasterEggs.IsEasterEggUnlocked(static_cast<EasterEggsSpecial>(5))) {
+        TheFEMarkerManager.AddMarkerToInventory(FEMarkerManager::ePossibleMarker(2), 0);
+        SetAwardedDemoMarker();
+    }
+}
 
 void CareerSettings::ResumeCareer() {
     bool bDDayCompleted = false;
@@ -433,8 +443,37 @@ void CareerSettings::GenerateCaseFileName() {
     bToUpper(CaseFileName);
 }
 
-char *CareerSettings::SaveToBuffer(void *buffer, void *maxbuf) {};
-char *CareerSettings::LoadFromBuffer(void *buffer, void *maxbuf) {};
+char *CareerSettings::SaveToBuffer(void *buffer, void *maxbuf) {
+    char *buf = SaveGameplayData(buffer, maxbuf);
+    buf = SaveSomeData(buf, &CurrentCar, 4, maxbuf);
+    buf = SaveSomeData(buf, &CurrentBin, 1, maxbuf);
+    buf = SaveSomeData(buf, &CurrentCash, 4, maxbuf);
+    buf = SaveSomeData(buf, &AdaptiveDifficulty, 2, maxbuf);
+    buf = SaveSomeData(buf, &SpecialFlags, 4, maxbuf);
+    buf = SaveSomeData(buf, SMSMessages, 600, maxbuf);
+    buf = SaveSomeData(buf, &SMSSortOrder, 2, maxbuf);
+    buf = SaveSomeData(buf, CaseFileName, 16, maxbuf);
+    buf = SaveRaceData(buf, maxbuf);
+    buf = SaveUnlockData(buf, maxbuf);
+    TheFEMarkerManager.SaveToBuffer(buf);
+    return buf;
+}
+
+char *CareerSettings::LoadFromBuffer(void *buffer, void *maxbuf) {
+    char *buf = LoadGameplayData(buffer, maxbuf);
+    buf = LoadSomeData(&CurrentCar, buf, 4, maxbuf);
+    buf = LoadSomeData(&CurrentBin, buf, 1, maxbuf);
+    buf = LoadSomeData(&CurrentCash, buf, 4, maxbuf);
+    buf = LoadSomeData(&AdaptiveDifficulty, buf, 2, maxbuf);
+    buf = LoadSomeData(&SpecialFlags, buf, 4, maxbuf);
+    buf = LoadSomeData(SMSMessages, buf, 600, maxbuf);
+    buf = LoadSomeData(&SMSSortOrder, buf, 2, maxbuf);
+    buf = LoadSomeData(CaseFileName, buf, 16, maxbuf);
+    buf = LoadRaceData(buf, maxbuf);
+    buf = LoadUnlockData(buf, maxbuf);
+    TheFEMarkerManager.LoadFromBuffer(buf);
+    return buf;
+}
 
 int32 CareerSettings::GetSaveBufferSize(bool bExcludeGameplay) {
     int size = TheFEMarkerManager.GetSaveBufferSize() + 0x441;
@@ -444,18 +483,102 @@ int32 CareerSettings::GetSaveBufferSize(bool bExcludeGameplay) {
     return size;
 }
 
-char *CareerSettings::SaveRaceData(void *save_to, void *maxptr) {}
-char *CareerSettings::SaveUnlockData(void *save_to, void *maxptr) {}
-char *CareerSettings::SaveGameplayData(void *save_to, void *maxptr) {}
-char *CareerSettings::LoadRaceData(void *load_from, void *maxptr) {}
-char *CareerSettings::LoadUnlockData(void *load_from, void *maxptr) {}
-char *CareerSettings::LoadGameplayData(void *load_from, void *maxptr) {}
+char *CareerSettings::SaveRaceData(void *save_to, void *maxptr) {
+    char *buf = static_cast<char *>(save_to);
+    if (GRaceDatabase::Exists()) {
+        unsigned int nEntries = GRaceDatabase::Get().GetScoreInfoCount();
+        nEntries = bMin(static_cast<int>(nEntries), 300);
+        buf = SaveSomeData(buf, &nEntries, 4, maxptr);
+        GRaceSaveInfo *current = GRaceDatabase::Get().GetScoreInfo();
+        for (unsigned int index = 0; index < nEntries; index++) {
+            if (gVerboseTesterOutput && current->mRaceHash != 0 && (current->mFlags & 2)) {
+                GRaceDatabase::Get().GetRaceFromHash(current->mRaceHash);
+            }
+            buf = SaveSomeData(buf, current, 0x10, maxptr);
+            current++;
+        }
+    }
+    return static_cast<char *>(save_to) + 0x12C8;
+}
+
+char *CareerSettings::SaveUnlockData(void *save_to, void *maxptr) {
+    char *buf = static_cast<char *>(save_to);
+    for (unsigned int i = 0; i < 0x39; i++) {
+        buf = SaveSomeData(buf, &TheUnlockData[i], 8, maxptr);
+    }
+    return buf;
+}
+
+char *CareerSettings::SaveGameplayData(void *save_to, void *maxptr) {
+    char *buf = static_cast<char *>(save_to);
+    if (!GManager::Exists()) {
+        bMemSet(buf, 0, 0x4000);
+    } else {
+        GManager::Get().SaveGameplayData(reinterpret_cast<uint8 *>(buf), 0x4000);
+    }
+    return buf + 0x4000;
+}
+
+char *CareerSettings::LoadRaceData(void *load_from_here, void *maxptr) {
+    char *buf = static_cast<char *>(load_from_here);
+    if (GRaceDatabase::Exists()) {
+        unsigned int nEntries = 0;
+        buf = LoadSomeData(&nEntries, buf, 4, maxptr);
+        nEntries = bMin(static_cast<int>(nEntries), 300);
+        GRaceSaveInfo saveInfoEntries[300];
+        GRaceSaveInfo *current = saveInfoEntries;
+        for (unsigned int index = 0; index < nEntries; index++) {
+            buf = LoadSomeData(current, buf, 0x10, maxptr);
+            if (gVerboseTesterOutput && current->mRaceHash != 0 && (current->mFlags & 2)) {
+                GRaceDatabase::Get().GetRaceFromHash(current->mRaceHash);
+            }
+            current++;
+        }
+        GRaceDatabase::Get().LoadBestScores(saveInfoEntries, nEntries);
+    }
+    return static_cast<char *>(load_from_here) + 0x12C8;
+}
+
+char *CareerSettings::LoadUnlockData(void *load_from, void *maxptr) {
+    char *buf = static_cast<char *>(load_from);
+    for (unsigned int i = 0; i < 0x39; i++) {
+        buf = LoadSomeData(&TheUnlockData[i], buf, 8, maxptr);
+    }
+    return buf;
+}
+
+char *CareerSettings::LoadGameplayData(void *load_from_here, void *maxptr) {
+    char *buf = static_cast<char *>(load_from_here);
+    if (GManager::Exists()) {
+        GManager::Get().LoadGameplayData(reinterpret_cast<unsigned char *>(buf), 0x4000);
+    }
+    return buf + 0x4000;
+}
 
 UserProfile::UserProfile() : TheOptionsSettings(), TheCareerSettings(), HighScores() {}
 
 UserProfile::~UserProfile() {}
 
-void UserProfile::SetProfileName(const char *pName, bool isP1) {}
+void UserProfile::SetProfileName(const char *pName, bool isP1) {
+    bool named = false;
+    if (pName && bStrLen(pName) > 0) {
+        named = true;
+    }
+    bMemSet(m_aProfileName, 0, 0x20);
+    if (named) {
+        bStrNCpy(m_aProfileName, pName, 0x20);
+        m_bNamed = true;
+    } else {
+        char defaultName[32];
+        if (isP1) {
+            GetLocalizedString(defaultName, 0x20, 0x7b070984);
+        } else {
+            GetLocalizedString(defaultName, 0x20, 0x7b070985);
+        }
+        bStrNCpy(m_aProfileName, defaultName, 0x20);
+        m_bNamed = false;
+    }
+}
 
 const char *UserProfile::GetProfileName() {}
 
@@ -552,10 +675,88 @@ void UserProfile::CommitPursuitInfo(IPursuit *iPursuit, uint32 car_handle, uint3
 
 void UserProfile::IncInfration(GInfractionManager::InfractionType infrat, unsigned int car) {}
 void UserProfile::CommitServeInfractions(unsigned int car) {}
-void UserProfile::WriteProfileHash(void *bufferToHash, void *bufferToWrite, int bytes, void *maxptr) {}
-bool UserProfile::VerifyProfileHash(void *bufferToHash, void *bufferHash, int bytes) {}
-void UserProfile::SaveToBuffer(void *buffer, int size) {}
-bool UserProfile::LoadFromBuffer(void *buffer, int size, bool commit_changes, int player_id) {}
+
+void UserProfile::WriteProfileHash(void *bufferToHash, void *bufferToWrite, int bytes, void *maxptr) {
+    MD5 md5;
+    md5.Reset();
+    md5.Update(bufferToHash, bytes);
+    md5.GetRaw();
+    SaveSomeData(bufferToWrite, md5.GetRaw(), 0x10, maxptr);
+}
+
+bool UserProfile::VerifyProfileHash(void *bufferToHash, void *bufferHash, int bytes) {
+    MD5 md5;
+    md5.Reset();
+    md5.Update(bufferToHash, bytes);
+    md5.GetRaw();
+    return bMemCmp(md5.GetRaw(), bufferHash, 0x10) == 0;
+}
+
+void UserProfile::SaveToBuffer(void *buffer, int size) {
+    char *buf = static_cast<char *>(buffer);
+    char *maxbuf = buf + size;
+    bMemSet(buf, 0, size);
+    char aVersion[16];
+    bMemSet(aVersion, 0, 0x10);
+    buf = SaveSomeData(buf, aVersion, 0x10, maxbuf);
+    buf = TheCareerSettings.SaveToBuffer(buf, maxbuf);
+    buf = SaveSomeData(buf, &FEDatabase->iDefaultStableHash, 4, maxbuf);
+    buf = SaveSomeData(buf, m_aProfileName, 0x20, maxbuf);
+    buf = SaveSomeData(buf, Playlist, 0xF0, maxbuf);
+    buf = SaveSomeData(buf, &TheOptionsSettings, 0xC0, maxbuf);
+    int stableSize = PlayersCarStable.GetSaveBufferSize();
+    buf = PlayersCarStable.SaveToBuffer(buf, stableSize);
+    buf = SaveSomeData(buf, &CareerModeHasBeenCompletedAtLeastOnce, 4, maxbuf);
+    buf = SaveSomeData(buf, &HighScores, 0xBD8, maxbuf);
+    for (int i = 0; i < 11; i++) {
+        RaceSettings *settings = FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(i));
+        unsigned int h = settings->GetSelectedCar(0);
+        buf = SaveSomeData(buf, &h, 4, maxbuf);
+    }
+    WriteProfileHash(static_cast<char *>(buffer) + 0x10, buf, size - 0x20, maxbuf);
+}
+
+bool UserProfile::LoadFromBuffer(void *buffer, int size, bool commit_changes, int player_id) {
+    char *buf = static_cast<char *>(buffer);
+    char *maxbuf = buf + size;
+    char aVersion[16];
+    buf = LoadSomeData(aVersion, buf, 0x10, maxbuf);
+    if (!player_id) {
+        buf = TheCareerSettings.LoadFromBuffer(buf, maxbuf);
+        TheCareerSettings.TryAwardDemoMarker();
+    } else {
+        int careerSize = TheCareerSettings.GetSaveBufferSize(false);
+        buf = buf + careerSize;
+    }
+    unsigned int version;
+    buf = LoadSomeData(&version, buf, 4, maxbuf);
+    if (version != FEDatabase->iDefaultStableHash) {
+        return false;
+    }
+    buf = LoadSomeData(m_aProfileName, buf, 0x20, maxbuf);
+    if (!player_id) {
+        buf = LoadSomeData(Playlist, buf, 0xF0, maxbuf);
+    } else {
+        buf = buf + 0xF0;
+    }
+    buf = LoadSomeData(&TheOptionsSettings, buf, 0xC0, maxbuf);
+    int stableSize = PlayersCarStable.GetSaveBufferSize();
+    buf = PlayersCarStable.LoadFromBuffer(buf, stableSize);
+    PlayersCarStable.AwardBonusCars();
+    buf = LoadSomeData(&CareerModeHasBeenCompletedAtLeastOnce, buf, 4, maxbuf);
+    buf = LoadSomeData(&HighScores, buf, 0xBD8, maxbuf);
+    for (int i = 0; i < 11; i++) {
+        unsigned int h;
+        buf = LoadSomeData(&h, buf, 4, maxbuf);
+        RaceSettings *settings = FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(i));
+        settings->SelectedCar[player_id] = h;
+    }
+    if (!VerifyProfileHash(static_cast<char *>(buffer) + 0x10, buf, size - 0x20)) {
+        return false;
+    }
+    m_bNamed = true;
+    return true;
+}
 
 int32 UserProfile::GetSaveBufferSize(bool bExcludeGameplay) {
     int size = TheCareerSettings.GetSaveBufferSize(bExcludeGameplay) + 0x1e4;
@@ -606,10 +807,40 @@ void cFrontendDatabase::Default() {
     }
 }
 
-void cFrontendDatabase::DefaultProfile() {}
+void cFrontendDatabase::DefaultProfile() {
+    CurrentUserProfiles[0]->Default(0, true);
+    bAutoSaveOverwriteConfirmed = false;
+    DefaultRaceSettings();
+    unsigned int default_car = GetDefaultCar();
+    GetCareerSettings()->SetCurrentCar(default_car);
+    bIsOptionsDirty = false;
+    GetPlayerCarStable(0)->Default();
+    MemoryCard::GetInstance()->SetCardRemovedWithAutoSaveEnabled(false);
+    DefaultUnlockData();
+    TheFEMarkerManager.Default();
+    if (GRaceDatabase::Exists()) {
+        GRaceDatabase::Get().ClearRaceScores();
+    }
+    if (GManager::Exists()) {
+        GManager::Get().ResetAllGameplayData();
+    }
+}
 
-void cFrontendDatabase::DefaultRaceSettings() {}
-
+void cFrontendDatabase::DefaultRaceSettings() {
+    unsigned int default_car = GetDefaultCar();
+    for (unsigned int i = 0; i < 11; i++) {
+        RaceSettings &settings = TheQuickRaceSettings[i];
+        settings.Default();
+        settings.SetSelectedCar(default_car, 0);
+        settings.SetSelectedCar(default_car, 1);
+    }
+    TheQuickRaceSettings[0].NumLaps = 1;
+    TheQuickRaceSettings[2].NumLaps = 1;
+    TheQuickRaceSettings[5].NumLaps = 1;
+    TheQuickRaceSettings[4].NumOpponents = 0;
+    TheQuickRaceSettings[3].NumLaps = TheQuickRaceSettings[3].NumOpponents;
+    TheQuickRaceSettings[4].NumLaps = 1;
+}
 void cFrontendDatabase::NotifyDeleteCar(uint32 handle) {
     uint32 default_car = GetDefaultCar();
     for (unsigned int i = 0; i < 11; i++) {
@@ -648,10 +879,32 @@ uint32 cFrontendDatabase::GetDefaultCar() {
     return default_car;
 }
 
-void cFrontendDatabase::CreateMultiplayerProfile(int player) {}
+void cFrontendDatabase::CreateMultiplayerProfile(int player) {
+    if (!CurrentUserProfiles[player]) {
+        CurrentUserProfiles[player] = FNEW UserProfile;
+        CurrentUserProfiles[player]->Default(player, true);
+    }
+}
 
-void cFrontendDatabase::DeleteMultiplayerProfile(int player) {}
-
+void cFrontendDatabase::DeleteMultiplayerProfile(int player) {
+    if (player == 1 && CurrentUserProfiles[1]) {
+        RaceSettings *settings = GetQuickRaceSettings(static_cast<GRace::Type>(11));
+        FEPlayerCarDB *stable = GetPlayerCarStable(1);
+        FECarRecord *record = stable->GetCarRecordByHandle(settings->GetSelectedCar(1));
+        FECustomizationRecord *customization = stable->GetCustomizationRecordByHandle(record->Customization);
+        bStrCpy(SplitScreenCarType, record->GetDebugName());
+        if (!customization) {
+            SplitScreenCustomization = nullptr;
+        } else {
+            SplitScreenCustomization = static_cast<FECustomizationRecord *>(bMalloc(sizeof(FECustomizationRecord), 0x47));
+            bMemCpy(SplitScreenCustomization, customization, sizeof(FECustomizationRecord));
+        }
+        if (CurrentUserProfiles[1]) {
+            delete CurrentUserProfiles[1];
+        }
+        CurrentUserProfiles[1] = nullptr;
+    }
+}
 void cFrontendDatabase::AllocBackupDB(bool bForce) {
     if (!m_pDBBackup && bForce) {
         m_pDBBackup = static_cast<char *>(bMalloc(GetUserProfileSaveSize(false), nullptr, 0, 0x40));
@@ -666,8 +919,12 @@ void cFrontendDatabase::DeallocBackupDB() {
     }
 }
 
-void cFrontendDatabase::RestoreFromBackupDB() {}
-
+void cFrontendDatabase::RestoreFromBackupDB() {
+    if (m_pDBBackup) {
+        LoadUserProfileFromBuffer(m_pDBBackup, GetUserProfileSaveSize(false), 0);
+        DeallocBackupDB();
+    }
+}
 void cFrontendDatabase::BackupCarStable() {
     if (!m_pCarStableBackup) {
         m_pCarStableBackup = static_cast<char *>(bMalloc(GetPlayerCarStable(0)->GetSaveBufferSize(), 0));
@@ -685,7 +942,18 @@ bool cFrontendDatabase::IsCarStableDirty() {
     return result;
 }
 
-void cFrontendDatabase::RefreshCurrentRide() {}
+void cFrontendDatabase::RefreshCurrentRide() {
+    RideInfo ride;
+    FEPlayerCarDB *stable = GetPlayerCarStable(0);
+    if (IsCareerMode() || IsSafehouseMode() || IsCareerManagerMode()) {
+        BuildCurrentRideForPlayer(0, &ride);
+    } else {
+        RaceSettings *settings = GetQuickRaceSettings(static_cast<GRace::Type>(11));
+        unsigned int handle = settings->GetSelectedCar(0);
+        stable->BuildRideForPlayer(handle, 0, &ride);
+    }
+    CarViewer::SetRideInfo(&ride, static_cast<eSetRideInfoReasons>(2), static_cast<eCarViewerWhichCar>(0));
+}
 
 RaceSettings *cFrontendDatabase::GetQuickRaceSettings(GRace::Type type) {
     if (static_cast<int>(type) > 10) {
@@ -790,7 +1058,16 @@ void cFrontendDatabase::SaveUserProfileToBuffer(void *buffer, int32 bufsize) {
     CurrentUserProfiles[0]->SaveToBuffer(buffer, bufsize);
 }
 
-bool cFrontendDatabase::LoadUserProfileFromBuffer(void *buffer, int32 bufsize, int player) {}
+bool cFrontendDatabase::LoadUserProfileFromBuffer(void *buffer, int bufsize, int player) {
+    if (player == 0) {
+        return CurrentUserProfiles[0]->LoadFromBuffer(buffer, bufsize, true, 0);
+    } else {
+        bool result = CurrentUserProfiles[player]->LoadFromBuffer(buffer, bufsize, false, player);
+        bMemCpy(&CurrentUserProfiles[0]->GetOptions()->ThePlayerSettings[1], &CurrentUserProfiles[1]->GetOptions()->ThePlayerSettings[0],
+                sizeof(PlayerSettings));
+        return result;
+    }
+}
 
 uint32 cFrontendDatabase::GetChallengeHeaderHash(uint32 hal_id) {
     return FEngHashString("CHALLENGE_HEADER_%d", index);

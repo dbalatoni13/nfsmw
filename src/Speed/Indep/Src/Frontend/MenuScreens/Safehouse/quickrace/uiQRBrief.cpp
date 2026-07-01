@@ -3,34 +3,36 @@
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/Src/Frontend/Database/VehicleDB.hpp"
 #include "Speed/Indep/Src/Frontend/Careers/UnlockSystem.hpp"
-#include "Speed/Indep/Src/Frontend/FEManager.hpp"
+#include "Speed/Indep/Src/Frontend/FECarViewer.hpp"
 #include "Speed/Indep/Src/Frontend/FEngFrontend.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEImages.hpp"
+#include "Speed/Indep/Src/Frontend/Localization/Localize.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/FEPkg_GarageMain.hpp"
+#include "Speed/Indep/Src/Frontend/RaceStarter.hpp"
 #include "Speed/Indep/Src/Gameplay/GRaceDatabase.h"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/frontend.h"
 #include "Speed/Indep/Src/World/CarInfo.hpp"
 
-extern FEImage *FEngFindImage(const char *pkg, int hash);
-extern void FEngSetTextureHash(FEImage *img, unsigned int hash);
-struct TextureInfo;
-extern TextureInfo *GetTextureInfo(unsigned int hash, int, int);
-extern unsigned int CalcLanguageHash(const char *prefix, GRaceParameters *params);
-extern bool DoesStringExist(unsigned int hash);
-extern int FEPrintf(const char *pkg, int hash, const char *fmt, ...);
-extern void FEngSetLanguageHash(const char *pkg, unsigned int hash, unsigned int lang_hash);
-extern const char *GetLocalizedString(unsigned int hash);
-extern void FEngSetScript(const char *pkg, unsigned int hash, unsigned int script, bool);
-extern void SetRideInfo(RideInfo *ride, eSetRideInfoReasons reason, eCarViewerWhichCar car);
-extern void PlayUISoundFX(EAXSound *snd, eMenuSoundTriggers trigger);
-extern EAXSound *g_pEAXSound;
-extern void StartRace();
+// extern FEImage *FEngFindImage(const char *pkg, int hash);
+// extern void FEngSetTextureHash(FEImage *img, unsigned int hash);
+// struct TextureInfo;
+// extern TextureInfo *GetTextureInfo(unsigned int hash, int, int);
+// extern unsigned int CalcLanguageHash(const char *prefix, GRaceParameters *params);
+// extern bool DoesStringExist(unsigned int hash);
+// extern int FEPrintf(const char *pkg, int hash, const char *fmt, ...);
+// extern void FEngSetLanguageHash(const char *pkg, unsigned int hash, unsigned int lang_hash);
+// extern const char *GetLocalizedString(unsigned int hash);
+// extern void FEngSetScript(const char *pkg, unsigned int hash, unsigned int script, bool);
+// extern void SetRideInfo(RideInfo *ride, eSetRideInfoReasons reason, eCarViewerWhichCar car);
+// extern void PlayUISoundFX(EAXSound *snd, eMenuSoundTriggers trigger);
+// // extern EAXSound *g_pEAXSound;
+// extern void StartRace();
 
 UIQRBrief::UIQRBrief(ScreenConstructorData *sd)
-    : MenuScreen(sd) //
-      ,
-      pSelectedCar(nullptr) //
-      ,
-      pSelectedTrack(nullptr) //
-      ,
+    : MenuScreen(sd),          //
+      pSelectedCar(nullptr),   //
+      pSelectedTrack(nullptr), //
       randomCount(0) {
     raceSettings.Default();
     Setup();
@@ -40,52 +42,6 @@ UIQRBrief::UIQRBrief(ScreenConstructorData *sd)
                         0.0f, 0.0f, 0.0f, 0.0f);
     HandlingSlider.Init(reinterpret_cast<MenuScreen *>(this)->GetPackageName(), reinterpret_cast<MenuScreen *>(this)->GetPackageName(), 0.0f, 1.0f,
                         0.0f, 0.0f, 0.0f, 0.0f);
-}
-
-UIQRBrief::~UIQRBrief() {}
-
-SelectableCar *UIQRBrief::GetRandomCar() {
-    int size = FilteredCarsList.CountElements();
-    return FilteredCarsList.GetNode(bRandom(size));
-}
-
-SelectableTrack *UIQRBrief::GetRandomTrack() {
-    int size = FilteredTracksList.CountElements();
-    return FilteredTracksList.GetNode(bRandom(size));
-}
-
-void UIQRBrief::Setup() {
-    FilteredCarsList.DeleteAllElements();
-    FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(0);
-    unsigned int current_bin = FEDatabase->GetCareerSettings()->GetCurrentBin();
-    for (int i = 0; i < 200; i++) {
-        FECarRecord *fe_car = stable->GetCarByIndex(i);
-        if (fe_car->IsValid() && fe_car->MatchesFilter(0xf0001)) {
-            Attrib::Gen::frontend fe_attrib(Attrib::FindCollection(Attrib::Gen::frontend::ClassKey(), fe_car->FEKey), 0, nullptr);
-            unsigned char unlocked_at = fe_attrib.UnlockedAt();
-            if (static_cast<int>(unlocked_at) >= static_cast<int>(current_bin - 1) && unlocked_at <= current_bin + 3 &&
-                fe_attrib.GetCollection() != static_cast<unsigned int>(-0x3e3cd251)) {
-                SelectableCar *car = new SelectableCar(fe_car->Handle, false);
-                FilteredCarsList.AddTail(car);
-            }
-        }
-    }
-    for (unsigned int i = 0; i < GRaceDatabase::Get().GetRaceCount(); i++) {
-        GRaceParameters *parms = GRaceDatabase::Get().GetRaceParameters(i);
-        if (parms->GetRaceType() != static_cast<GRace::Type>(8) && parms->GetRaceType() != static_cast<GRace::Type>(9) &&
-            parms->GetRaceType() != static_cast<GRace::Type>(10) && parms->GetRaceType() != static_cast<GRace::Type>(-1) &&
-            parms->GetRaceType() != static_cast<GRace::Type>(4)) {
-            if (parms->GetEventHash() != Attrib::StringHash32("19.8.31")) {
-                if (UnlockSystem::IsEventAvailable(parms->GetEventHash())) {
-                    if (UnlockSystem::IsTrackUnlocked(static_cast<eUnlockFilters>(1), parms->GetEventHash(), 0)) {
-                        SelectableTrack *track = new SelectableTrack(parms, true, 0);
-                        FilteredTracksList.AddTail(track);
-                    }
-                }
-            }
-        }
-    }
-    cFEng::Get()->QueueGameMessage(0xc519bfc4, reinterpret_cast<MenuScreen *>(this)->GetPackageName(), 0xff);
 }
 
 void UIQRBrief::RefreshHeader() {
@@ -228,7 +184,41 @@ void UIQRBrief::UpdateSliders() {
     HandlingSlider.Draw();
 }
 
-void UIQRBrief::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
+void UIQRBrief::Setup() {
+    FilteredCarsList.DeleteAllElements();
+    FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(0);
+    unsigned int current_bin = FEDatabase->GetCareerSettings()->GetCurrentBin();
+    for (int i = 0; i < 200; i++) {
+        FECarRecord *fe_car = stable->GetCarByIndex(i);
+        if (fe_car->IsValid() && fe_car->MatchesFilter(0xf0001)) {
+            Attrib::Gen::frontend fe_attrib(Attrib::FindCollection(Attrib::Gen::frontend::ClassKey(), fe_car->FEKey), 0, nullptr);
+            unsigned char unlocked_at = fe_attrib.UnlockedAt();
+            if (static_cast<int>(unlocked_at) >= static_cast<int>(current_bin - 1) && unlocked_at <= current_bin + 3 &&
+                fe_attrib.GetCollection() != static_cast<unsigned int>(-0x3e3cd251)) {
+                SelectableCar *car = new SelectableCar(fe_car->Handle, false);
+                FilteredCarsList.AddTail(car);
+            }
+        }
+    }
+    for (unsigned int i = 0; i < GRaceDatabase::Get().GetRaceCount(); i++) {
+        GRaceParameters *parms = GRaceDatabase::Get().GetRaceParameters(i);
+        if (parms->GetRaceType() != static_cast<GRace::Type>(8) && parms->GetRaceType() != static_cast<GRace::Type>(9) &&
+            parms->GetRaceType() != static_cast<GRace::Type>(10) && parms->GetRaceType() != static_cast<GRace::Type>(-1) &&
+            parms->GetRaceType() != static_cast<GRace::Type>(4)) {
+            if (parms->GetEventHash() != Attrib::StringHash32("19.8.31")) {
+                if (UnlockSystem::IsEventAvailable(parms->GetEventHash())) {
+                    if (UnlockSystem::IsTrackUnlocked(static_cast<eUnlockFilters>(1), parms->GetEventHash(), 0)) {
+                        SelectableTrack *track = new SelectableTrack(parms, true, 0);
+                        FilteredTracksList.AddTail(track);
+                    }
+                }
+            }
+        }
+    }
+    cFEng::Get()->QueueGameMessage(0xc519bfc4, reinterpret_cast<MenuScreen *>(this)->GetPackageName(), 0xff);
+}
+
+void UIQRBrief::NotificationMessage(u32 msg, FEObject *pobj, u32 param1, u32 param2) {
     switch (msg) {
         case 0xc98356ba: {
             if (randomCount < 1)
@@ -246,7 +236,7 @@ void UIQRBrief::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned 
             FEDatabase->GetRandomRaceOptions(&raceSettings, pSelectedTrack->pRaceParams->GetRaceType());
             RefreshHeader();
             randomCount--;
-            PlayUISoundFX(g_pEAXSound, static_cast<eMenuSoundTriggers>(0x8b));
+            g_pEAXSound->PlayUISoundFX(static_cast<eMenuSoundTriggers>(0x8b));
             if (randomCount != 0)
                 return;
             FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(0);
@@ -268,7 +258,7 @@ void UIQRBrief::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned 
             stable->BuildRideForPlayer(pSelectedCar->mHandle, 0, &ride);
             ride.SetRandomPaint();
             ride.SetRandomParts();
-            SetRideInfo(&ride, static_cast<eSetRideInfoReasons>(1), static_cast<eCarViewerWhichCar>(0));
+            CarViewer::SetRideInfo(&ride, static_cast<eSetRideInfoReasons>(1), static_cast<eCarViewerWhichCar>(0));
             break;
         }
         case 0x406415e3: {
@@ -296,7 +286,7 @@ void UIQRBrief::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned 
             FEDatabase->FillCustomRace(custom, &raceSettings);
             GRaceDatabase::Get().SetStartupRace(custom, kRaceContext_QuickRace);
             GRaceDatabase::Get().FreeCustomRace(custom);
-            StartRace();
+            RaceStarter::StartRace();
             break;
         }
         case 0xc519bfc4:
@@ -311,4 +301,14 @@ void UIQRBrief::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned 
             cFEng::Get()->QueuePackageSwitch("FeQuickRaceMainMenu.fng", 0, 0, false);
             break;
     }
+}
+
+SelectableCar *UIQRBrief::GetRandomCar() {
+    int size = FilteredCarsList.CountElements();
+    return FilteredCarsList.GetNode(bRandom(size));
+}
+
+SelectableTrack *UIQRBrief::GetRandomTrack() {
+    int size = FilteredTracksList.CountElements();
+    return FilteredTracksList.GetNode(bRandom(size));
 }

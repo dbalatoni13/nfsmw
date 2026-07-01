@@ -1,31 +1,31 @@
-#ifndef FRONTEND_MENUSCREENS_SAFEHOUSE_CUSTOMIZE_DEBUGCARCUSTOMIZE_H
-#define FRONTEND_MENUSCREENS_SAFEHOUSE_CUSTOMIZE_DEBUGCARCUSTOMIZE_H
+#ifndef __DEBUGCARCUSTOMIZE_HPP__
+#define __DEBUGCARCUSTOMIZE_HPP__
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
+#include "Speed/Indep/Src/Frontend/Database/VehicleDB.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
+#include "Speed/Indep/Src/World/CarInfo.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 
 #include <types.h>
 
-struct CarPart;
-struct FECustomizationRecord;
-
 // total size: 0xC
-struct DebugCar : public bTNode<DebugCar> {
-    DebugCar(unsigned int handle) : mHandle(handle) {}
+class DebugCar : public bTNode<DebugCar> {
+  public:
+    DebugCar(FECarHandle handle) : mHandle(handle) {}
     ~DebugCar() {}
 
-    unsigned int mHandle; // offset 0x8, size 0x4
+    FECarHandle mHandle; // offset 0x8, size 0x4
 };
 
 // total size: 0x80
-struct DebugCarCustomizeScreen : public MenuScreen {
+class DebugCarCustomizeScreen : public MenuScreen {
+  public:
     // total size: 0x4C
-    struct DebugCarOption : public bTNode<DebugCarOption> {
-        DebugCarOption(const char *name, int value);
+    class DebugCarOption : public bTNode<DebugCarOption> {
+      public:
+        DebugCarOption(const char *name, int value) : Intval(value) {
+            bStrNCpy(String, name, 0x40);
+        }
 
         int GetValue() {
             return Intval;
@@ -39,20 +39,23 @@ struct DebugCarCustomizeScreen : public MenuScreen {
         int Intval;      // offset 0x48, size 0x4
     };
 
-    DebugCarCustomizeScreen(ScreenConstructorData *sd);
-    ~DebugCarCustomizeScreen() override;
-
-    void NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) override;
-
-    DebugCarOption *FindElement(bTList<DebugCarOption> &list, int id);
-    void BuildOptionsLists();
+  private:
     void LoadCurrentCar();
+    void BuildOptionsLists();
     void RebuildPartsList();
+    void Redraw();
     void NewPreviewPart();
     void InstallPreviewingPart();
     void DumpPresetRide();
-    void Redraw();
+    DebugCarOption *FindElement(bTList<DebugCarOption> &list, int id);
 
+  public:
+    DebugCarCustomizeScreen(ScreenConstructorData *sd);
+    ~DebugCarCustomizeScreen() override;
+
+    void NotificationMessage(u32 msg, FEObject *pobj, u32 param1, u32 param2) override;
+
+  private:
     bTList<DebugCar> FilteredCarsList;        // offset 0x2C, size 0x8
     DebugCar *pDebugCar;                      // offset 0x34, size 0x4
     bTList<DebugCarOption> CarTypeNameHashes; // offset 0x38, size 0x8

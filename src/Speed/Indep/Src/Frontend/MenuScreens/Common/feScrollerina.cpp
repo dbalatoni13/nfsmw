@@ -1,172 +1,9 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/feScrollerina.hpp"
 
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEImages.hpp"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEObjects.hpp"
-
-extern EAXSound *g_pEAXSound;
-extern FEImage *FEngFindImage(const char *pkg_name, int hash);
-extern void FEngGetTopLeft(FEObject *object, float &x, float &y);
-extern void FEngGetSize(FEObject *object, float &x, float &y);
-extern unsigned long FEHashUpper(const char *string);
-extern int FEPrintf(FEString *text, const char *fmt, ...);
-extern void FEngSetLanguageHash(FEString *text, unsigned int hash);
-
-Scrollerina::Scrollerina(const char *parent_pkg, const char *backing, const char *scrollbar, bool vert, bool resize, bool wrapped,
-                         bool alwaysShowBacking)
-    : pParentPkg(parent_pkg) //
-      ,
-      iNumSlots(0) //
-      ,
-      iNumData(0) //
-      ,
-      iViewHeadDataIndex(0) //
-      ,
-      SelectedDatum(nullptr) //
-      ,
-      TopDatum(nullptr) //
-      ,
-      SelectedSlot(nullptr) //
-      ,
-      pBacking(nullptr) //
-      ,
-      ScrollBar(parent_pkg, scrollbar, vert, resize, false) //
-      ,
-      vTopLeft(0.0f, 0.0f) //
-      ,
-      vSize(0.0f, 0.0f) //
-      ,
-      bHasScrollBar(true) //
-      ,
-      bViewNeedsSync(false) //
-      ,
-      bWrapped(wrapped) //
-      ,
-      bAlwaysShowBacking(alwaysShowBacking) //
-      ,
-      bVertical(vert) //
-      ,
-      mouseDownMsg(0x406415e3) //
-      ,
-      bInClickToSelectMode(false), pScrollRegion(nullptr) {
-    if (!backing) {
-        bHasScrollBar = false;
-    } else {
-        unsigned int hash = FEHashUpper(backing);
-        pBacking = FEngFindImage(parent_pkg, hash);
-        FEngGetTopLeft(pBacking, vTopLeft.x, vTopLeft.y);
-        FEngGetSize(pBacking, vSize.x, vSize.y);
-    }
-}
-
-void Scrollerina::FindSize() {
-    bVector2 top_left;
-    bVector2 size;
-    ScrollerSlot *slot;
-    float top;
-    float bottom;
-    float left;
-    float right;
-
-    if (!pBacking) {
-        slot = Slots.GetHead();
-        slot->GetTopLeft(top_left);
-        slot->GetSize(size);
-        top = top_left.y;
-        bottom = top + vSize.y;
-        left = top_left.x;
-        right = left + vSize.x;
-
-        while (slot != Slots.EndOfList()) {
-            slot->GetTopLeft(top_left);
-            slot->GetSize(size);
-            left = bMin(left, top_left.x);
-            top = bMin(top, top_left.y);
-            bottom = bMax(bottom, top_left.y + size.y);
-            right = bMax(right, top_left.x + size.x);
-            slot = slot->GetNext();
-        }
-
-        if (pScrollRegion) {
-            FEngGetTopLeft(pScrollRegion, top_left.x, top_left.y);
-            FEngGetSize(pScrollRegion, size.x, size.y);
-            top = bMin(top, top_left.y);
-            bottom = bMax(bottom, top_left.y + size.y);
-            left = bMin(left, top_left.x);
-            right = bMax(right, top_left.x + size.x);
-        }
-
-        vTopLeft.x = left;
-        vSize.x = bAbs(right - left);
-        vSize.y = bAbs(bottom - top);
-        vTopLeft.y = top;
-    }
-}
-
-unsigned int Scrollerina::GetNodeIndex(ScrollerDatum *datum) {
-    ScrollerDatum *node = Data.GetHead();
-    unsigned int index = 1;
-    while (node != Data.EndOfList()) {
-        if (datum == node)
-            return index;
-        index++;
-        node = node->GetNext();
-    }
-    return 0;
-}
-
-unsigned int Scrollerina::GetNodeIndex(ScrollerSlot *slot) {
-    ScrollerSlot *node = Slots.GetHead();
-    unsigned int index = 1;
-    while (node != Slots.EndOfList()) {
-        if (slot == node)
-            return index;
-        index++;
-        node = node->GetNext();
-    }
-    return 0;
-}
-
-void Scrollerina::AddData(ScrollerDatum *datum) {
-    Data.AddTail(datum);
-    iNumData++;
-    if (!TopDatum) {
-        iViewHeadDataIndex = 1;
-        TopDatum = Data.GetHead();
-    }
-    if (!SelectedDatum) {
-        SelectedDatum = Data.GetHead();
-    }
-}
-
-ScrollerDatum *Scrollerina::FindDatumInSlot(ScrollerSlot *to_find) {
-    ScrollerSlot *slot_node = Slots.GetHead();
-    if (slot_node == Slots.EndOfList() || Data.GetHead() == Data.EndOfList() || !to_find) {
-        return nullptr;
-    }
-    ScrollerDatum *datum_node = TopDatum;
-    while (slot_node != Slots.EndOfList()) {
-        if (slot_node == to_find)
-            return datum_node;
-        if (datum_node == Data.EndOfList())
-            return nullptr;
-        datum_node = datum_node->GetNext();
-        slot_node = slot_node->GetNext();
-    }
-    return nullptr;
-}
-
-void Scrollerina::DrawScrollBar() {
-    if (bHasScrollBar) {
-        ScrollBar.Update(iNumSlots, iNumData, iViewHeadDataIndex, GetSelectedNodeIndex());
-    }
-}
-
-void Scrollerina::Update(bool print) {
-    if (print) {
-        Print();
-    }
-    DrawScrollBar();
-}
 
 void ScrollerSlot::SetScript(unsigned int script_hash) {
     ScrollerSlotNode *node = FEStrings.GetHead();
@@ -218,6 +55,35 @@ void ScrollerSlot::Hide() {
     FEngSetInvisible(pBacking);
 }
 
+Scrollerina::Scrollerina(const char *parent_pkg, const char *backing, const char *scrollbar, bool vert, bool resize, bool wrapped,
+                         bool alwaysShowBacking)
+    : pParentPkg(parent_pkg),                                //
+      iNumSlots(0),                                          //
+      iNumData(0),                                           //
+      iViewHeadDataIndex(0),                                 //
+      SelectedDatum(nullptr),                                //
+      TopDatum(nullptr),                                     //
+      SelectedSlot(nullptr),                                 //
+      pBacking(nullptr),                                     //
+      ScrollBar(parent_pkg, scrollbar, vert, resize, false), //
+      vTopLeft(0.0f, 0.0f),                                  //
+      vSize(0.0f, 0.0f),                                     //
+      bHasScrollBar(true),                                   //
+      bViewNeedsSync(false),                                 //
+      bWrapped(wrapped),                                     //
+      bAlwaysShowBacking(alwaysShowBacking),                 //
+      bVertical(vert),                                       //
+      mouseDownMsg(0x406415e3),                              //
+      bInClickToSelectMode(false), pScrollRegion(nullptr) {
+    if (!backing) {
+        bHasScrollBar = false;
+    } else {
+        pBacking = FEngFindImage(parent_pkg, FEHashUpper(backing));
+        FEngGetTopLeft(pBacking, vTopLeft.x, vTopLeft.y);
+        FEngGetSize(pBacking, vSize.x, vSize.y);
+    }
+}
+
 void Scrollerina::AddSlot(ScrollerSlot *slot) {
     Slots.AddTail(slot);
     iNumSlots++;
@@ -225,6 +91,35 @@ void Scrollerina::AddSlot(ScrollerSlot *slot) {
         SelectedSlot = Slots.GetHead();
     }
     slot->FindSize();
+}
+
+void Scrollerina::AddData(ScrollerDatum *datum) {
+    Data.AddTail(datum);
+    iNumData++;
+    if (!TopDatum) {
+        iViewHeadDataIndex = 1;
+        TopDatum = Data.GetHead();
+    }
+    if (!SelectedDatum) {
+        SelectedDatum = Data.GetHead();
+    }
+}
+
+ScrollerDatum *Scrollerina::FindDatumInSlot(ScrollerSlot *to_find) {
+    ScrollerSlot *slot_node = Slots.GetHead();
+    if (slot_node == Slots.EndOfList() || Data.GetHead() == Data.EndOfList() || !to_find) {
+        return nullptr;
+    }
+    ScrollerDatum *datum_node = TopDatum;
+    while (slot_node != Slots.EndOfList()) {
+        if (slot_node == to_find)
+            return datum_node;
+        if (datum_node == Data.EndOfList())
+            return nullptr;
+        datum_node = datum_node->GetNext();
+        slot_node = slot_node->GetNext();
+    }
+    return nullptr;
 }
 
 ScrollerSlot *Scrollerina::FindSlotWithDatum(ScrollerDatum *to_find) {
@@ -244,34 +139,6 @@ ScrollerSlot *Scrollerina::FindSlotWithDatum(ScrollerDatum *to_find) {
         slot = slot->GetNext();
     }
     return nullptr;
-}
-
-void Scrollerina::SetDisabledScripts() {
-    ScrollerSlot *slot = Slots.GetHead();
-    ScrollerDatum *datum = TopDatum;
-    while (slot != Slots.EndOfList()) {
-        if (datum->IsEnabled()) {
-            slot->Enable();
-        } else {
-            slot->Disable();
-        }
-        datum = datum->GetNext();
-        slot = slot->GetNext();
-    }
-}
-
-void Scrollerina::Enable(ScrollerDatum *datum) {
-    if (!datum) {
-        return;
-    }
-    datum->Enable();
-    if (Slots.IsEmpty() || Data.IsEmpty()) {
-        return;
-    }
-    ScrollerSlot *slot = FindSlotWithDatum(datum);
-    if (slot) {
-        slot->Enable();
-    }
 }
 
 void Scrollerina::ScrollNext() {
@@ -313,14 +180,14 @@ bool Scrollerina::Scroll(eScrollDir dir) {
     } else {
         ScrollerDatum *new_datum = SelectedDatum;
         ScrollerDatum *new_view = TopDatum;
-        unsigned int new_view_head = iViewHeadDataIndex;
+        uint32 new_view_head = iViewHeadDataIndex;
 
         if (dir == eSD_NEXT) {
             do {
                 if (new_datum == GetLastDatum())
                     return false;
                 new_datum = new_datum->GetNext();
-                unsigned int idx = GetNodeIndex(new_datum);
+                uint32 idx = GetNodeIndex(new_datum);
                 if (idx >= new_view_head + iNumSlots) {
                     new_view = new_view->GetNext();
                     new_view_head++;
@@ -362,7 +229,7 @@ bool Scrollerina::ScrollWrapped(eScrollDir dir) {
     } else {
         ScrollerDatum *new_datum = SelectedDatum;
         ScrollerDatum *new_view = TopDatum;
-        unsigned int new_view_head = iViewHeadDataIndex;
+        uint32 new_view_head = iViewHeadDataIndex;
 
         if (dir == eSD_NEXT) {
             do {
@@ -372,7 +239,7 @@ bool Scrollerina::ScrollWrapped(eScrollDir dir) {
                     new_datum = new_view;
                 } else {
                     new_datum = new_datum->GetNext();
-                    unsigned int idx = GetNodeIndex(new_datum);
+                    uint32 idx = GetNodeIndex(new_datum);
                     if (idx >= new_view_head + iNumSlots) {
                         new_view = new_view->GetNext();
                         new_view_head++;
@@ -433,7 +300,7 @@ bool Scrollerina::MoveSelected(eScrollDir dir, bool bprint) {
             if (TopDatum == SelectedDatum) {
                 TopDatum = SelectedDatum->GetPrev();
             } else {
-                unsigned int idx = GetNodeIndex(SelectedDatum);
+                uint32 idx = GetNodeIndex(SelectedDatum);
                 if (idx >= iViewHeadDataIndex + iNumSlots) {
                     iViewHeadDataIndex++;
                     TopDatum = TopDatum->GetNext();
@@ -513,7 +380,7 @@ void Scrollerina::SyncViewToSelection() {
         return;
     }
 
-    unsigned int idx = GetNodeIndex(SelectedDatum);
+    uint32 idx = GetNodeIndex(SelectedDatum);
     if (idx > iNumData - iNumSlots + 1) {
         TopDatum = Data.GetNode(iNumData - iNumSlots);
         SelectedSlot = FindSlotWithDatum(SelectedDatum);
@@ -528,6 +395,20 @@ void Scrollerina::SyncViewToSelection() {
         SelectedSlot->SetScript(0x249db7b7);
     }
     CountListIndices();
+}
+
+void Scrollerina::SetDisabledScripts() {
+    ScrollerSlot *slot = Slots.GetHead();
+    ScrollerDatum *datum = TopDatum;
+    while (slot != Slots.EndOfList()) {
+        if (datum->IsEnabled()) {
+            slot->Enable();
+        } else {
+            slot->Disable();
+        }
+        datum = datum->GetNext();
+        slot = slot->GetNext();
+    }
 }
 
 void Scrollerina::Print() {
@@ -558,6 +439,33 @@ void Scrollerina::Print() {
     }
 }
 
+void Scrollerina::DrawScrollBar() {
+    if (bHasScrollBar) {
+        ScrollBar.Update(iNumSlots, iNumData, iViewHeadDataIndex, GetSelectedNodeIndex());
+    }
+}
+
+void Scrollerina::Update(bool print) {
+    if (print) {
+        Print();
+    }
+    DrawScrollBar();
+}
+
+void Scrollerina::Enable(ScrollerDatum *datum) {
+    if (!datum) {
+        return;
+    }
+    datum->Enable();
+    if (Slots.IsEmpty() || Data.IsEmpty()) {
+        return;
+    }
+    ScrollerSlot *slot = FindSlotWithDatum(datum);
+    if (slot) {
+        slot->Enable();
+    }
+}
+
 void Scrollerina::CountListIndices() {
     bool found_view = false;
     iNumSlots = 0;
@@ -584,6 +492,30 @@ void Scrollerina::CountListIndices() {
     }
 }
 
+uint32 Scrollerina::GetNodeIndex(ScrollerDatum *datum) {
+    ScrollerDatum *node = Data.GetHead();
+    uint32 index = 1;
+    while (node != Data.EndOfList()) {
+        if (datum == node)
+            return index;
+        index++;
+        node = node->GetNext();
+    }
+    return 0;
+}
+
+uint32 Scrollerina::GetNodeIndex(ScrollerSlot *slot) {
+    ScrollerSlot *node = Slots.GetHead();
+    uint32 index = 1;
+    while (node != Slots.EndOfList()) {
+        if (slot == node)
+            return index;
+        index++;
+        node = node->GetNext();
+    }
+    return 0;
+}
+
 void Scrollerina::SetSelected(ScrollerSlot *slot) {
     if (!slot)
         return;
@@ -598,4 +530,48 @@ void Scrollerina::SetSelected(ScrollerSlot *slot) {
     HighlightSelected();
     Update(true);
     bViewNeedsSync = false;
+}
+
+void Scrollerina::FindSize() {
+    bVector2 top_left;
+    bVector2 size;
+    ScrollerSlot *slot;
+    float top;
+    float bottom;
+    float left;
+    float right;
+
+    if (!pBacking) {
+        slot = Slots.GetHead();
+        slot->GetTopLeft(top_left);
+        slot->GetSize(size);
+        top = top_left.y;
+        bottom = top + vSize.y;
+        left = top_left.x;
+        right = left + vSize.x;
+
+        while (slot != Slots.EndOfList()) {
+            slot->GetTopLeft(top_left);
+            slot->GetSize(size);
+            left = bMin(left, top_left.x);
+            top = bMin(top, top_left.y);
+            bottom = bMax(bottom, top_left.y + size.y);
+            right = bMax(right, top_left.x + size.x);
+            slot = slot->GetNext();
+        }
+
+        if (pScrollRegion) {
+            FEngGetTopLeft(pScrollRegion, top_left.x, top_left.y);
+            FEngGetSize(pScrollRegion, size.x, size.y);
+            top = bMin(top, top_left.y);
+            bottom = bMax(bottom, top_left.y + size.y);
+            left = bMin(left, top_left.x);
+            right = bMax(right, top_left.x + size.x);
+        }
+
+        vTopLeft.x = left;
+        vSize.x = bAbs(right - left);
+        vSize.y = bAbs(bottom - top);
+        vTopLeft.y = top;
+    }
 }

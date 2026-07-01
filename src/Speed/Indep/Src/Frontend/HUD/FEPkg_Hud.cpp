@@ -1,24 +1,42 @@
 #include "Speed/Indep/Src/Frontend/HUD/FEPkg_Hud.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEImages.hpp"
+#include "Speed/Indep/Src/Frontend/HUD/FeBustedMeter.hpp"
+#include "Speed/Indep/Src/Frontend/HUD/FeCostToState.hpp"
 #include "Speed/Indep/Src/Frontend/HUD/FeCountdown.hpp"
 #include "Speed/Indep/Src/Frontend/HUD/FeEngineTempGauge.hpp"
+#include "Speed/Indep/Src/Frontend/HUD/FeGenericMessage.hpp"
+#include "Speed/Indep/Src/Frontend/HUD/FeGetawayMeter.hpp"
+#include "Speed/Indep/Src/Frontend/HUD/FeHeatMeter.hpp"
+#include "Speed/Indep/Src/Frontend/HUD/FeInfractions.hpp"
 #include "Speed/Indep/Src/Frontend/HUD/FeLeaderBoard.hpp"
+#include "Speed/Indep/Src/Frontend/HUD/FeMenuZoneTrigger.hpp"
+#include "Speed/Indep/Src/Frontend/HUD/FeMilestoneBoard.hpp"
 #include "Speed/Indep/Src/Frontend/HUD/FeMinimapStreamer.hpp"
 #include "Speed/Indep/Src/Frontend/HUD/FeNitrousGauge.hpp"
 #include "Speed/Indep/Src/Frontend/HUD/FeOnlineHudSupport.hpp"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/FEng/FEList.h"
+#include "Speed/Indep/Src/Frontend/HUD/FePursuitBoard.hpp"
 #include "Speed/Indep/Src/Frontend/HUD/FeRaceInformation.hpp"
 #include "Speed/Indep/Src/Frontend/HUD/FeRaceOverMessage.hpp"
+#include "Speed/Indep/Src/Frontend/HUD/FeRadarDetector.hpp"
+#include "Speed/Indep/Src/Frontend/HUD/FeReputation.hpp"
 #include "Speed/Indep/Src/Frontend/HUD/FeShiftUpdater.hpp"
+#include "Speed/Indep/Src/Frontend/HUD/FeSpeedBreakerMeter.hpp"
 #include "Speed/Indep/Src/Frontend/HUD/FeSpeedometer.hpp"
+#include "Speed/Indep/Src/Frontend/HUD/FeTachometer.hpp"
+#include "Speed/Indep/Src/Frontend/HUD/FeTachometerDrag.hpp"
+#include "Speed/Indep/Src/Frontend/HUD/FeTimeExtension.hpp"
 #include "Speed/Indep/Src/Frontend/HUD/FeTurboMeter.hpp"
 #include "Speed/Indep/Src/Frontend/HUD/FeWrongWIndi.hpp"
 #include "Speed/Indep/Src/Frontend/HUD/feMinimap.hpp"
 #include "Speed/Indep/Src/Frontend/MemoryCard/MemoryCard.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/InGame/FeFadeScreen.hpp"
 #include "Speed/Indep/Src/Generated/Events/EFadeScreenOff.hpp"
+#include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
 #include "Speed/Indep/Src/Misc/GameFlow.hpp"
+#include "Speed/Indep/Src/Misc/Joystick.hpp"
 #include "Speed/Indep/Src/Misc/Profiler.hpp"
 #include "Speed/Indep/Src/World/OnlineManager.hpp"
 
@@ -43,6 +61,7 @@
 #include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Src/World/TrackInfo.hpp"
 #include "Speed/Indep/bWare/Inc/bPrintf.hpp"
+#include "Speed/Indep/Src/Misc/Joystick.hpp"
 
 extern bool bIsRestartingRace;
 extern int SkipFE;
@@ -448,16 +467,11 @@ bool HudResourceManager::AreResourcesLoaded(ePlayerHudType ht) {
 }
 
 FEngHud::FEngHud(ePlayerHudType ht, const char *pkg_name, IPlayer *player, int player_number)
-    : UTL::COM::Object(0x14) //
-      ,
-      IHud(this) //
-      ,
-      mPlayerHudType(ht) //
-      ,
-      PlayerNumber(player_number) //
-      ,
-      mActionQ(true) //
-      ,
+    : UTL::COM::Object(0x14),      //
+      IHud(this),                  //
+      mPlayerHudType(ht),          //
+      PlayerNumber(player_number), //
+      mActionQ(true),              //
       mCurrentWidescreenSetting(false) {
     pPlayer = player;
     mInPursuit = false;
@@ -1201,9 +1215,4 @@ float FEngHud::ChooseMaxRpmTextureNumber(float rpm) {
         return 9000.0f;
     }
     return 10000.0f;
-}
-
-// STRIPPED TODO: find where it goes
-OnlineHUDSupport *FEngHud::GetOnlineHUDSupport() {
-    return static_cast<OnlineHUDSupport *>(pOnlineSupport);
 }

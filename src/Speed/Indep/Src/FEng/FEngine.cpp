@@ -1,8 +1,10 @@
 #include "Speed/Indep/Src/FEng/FEngine.h"
+#include "Speed/Indep/Src/FEng/FEColoredImage.h"
+#include "Speed/Indep/Src/FEng/FEMessageNode.h"
 #include "Speed/Indep/Src/FEng/FEMessageResponse.h"
+#include "Speed/Indep/Src/FEng/FEObject.h"
 #include "Speed/Indep/Src/FEng/FEObjectCallback.h"
 #include "Speed/Indep/Src/FEng/FEScript.h"
-#include "Speed/Indep/Src/FEng/FESlotPool.h"
 #include "Speed/Indep/Src/FEng/FEJoyPad.h"
 #include "Speed/Indep/Src/FEng/FEngStandard.h"
 #include "Speed/Indep/Src/FEng/FEPackageReader.h"
@@ -11,8 +13,16 @@
 #include "Speed/Indep/Src/FEng/FEListBox.h"
 #include "Speed/Indep/Src/FEng/FECodeListBox.h"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEObjects.hpp"
+#include <new>
 
 extern "C" int printf(const char *, ...);
+
+static const u32 FEAutoRepeatFrames = 6;       // size: 0x4, Decl: speed/indep/src/feng/FEngine.cpp:26
+static const u32 FEAutoRepeatFirstFrames = 16; // size: 0x4, Decl: speed/indep/src/feng/FEngine.cpp:27
+
+static const u32 Msg_Global_DisableInputs = 0x5D4CE32D; // size: 0x4, Decl: speed/indep/src/feng/FEngine.cpp:29
+static const u32 Msg_Global_EnableInputs = 0x59BED120;  // size: 0x4, Decl: speed/indep/src/feng/FEngine.cpp:30
 
 // total size: 0x4
 // Decl: speed/indep/src/feng/FEngine.cpp:33
@@ -21,63 +31,18 @@ typedef struct {
     u16 Dir;           // offset 0x2, size 0x2, Decl: speed/indep/src/feng/FEngine.cpp:35
 } PadDirImpulse;
 
+static PadDirImpulse ImpulseDir[8] = {
+    // size: 0x20, address: 0x8041D080, Decl: speed/indep/src/feng/FEngine.cpp:38
+    {0x00, 0x02, 0x0007}, {0x00, 0x03, 0x0001}, {0x01, 0x02, 0x0005}, {0x01, 0x03, 0x0003},
+    {0x00, 0xFF, 0x0000}, {0x02, 0xFF, 0x0006}, {0x01, 0xFF, 0x0004}, {0x03, 0xFF, 0x0002},
+};
+
 // total size: 0x4
 // Decl: speed/indep/src/feng/FEngine.cpp:674
 class FEngSetDirtyFlagsCallback : public FEObjectCallback {
   private:
-    bool Callback(struct FEObject *pObj) override {} // Decl: speed/indep/src/feng/FEngine.cpp:675
+    bool Callback(FEObject *pObj) override {} // Decl: speed/indep/src/feng/FEngine.cpp:675
 };
-
-// total size: 0xC
-struct FEFindByHash : public FEObjectCallback {
-    unsigned long Hash; // offset 0x4, size 0x4
-    FEObject *pFound;   // offset 0x8, size 0x4
-
-    bool Callback(FEObject *pObj) override;
-};
-
-// total size: 0xC
-struct FEFindByGUID : public FEObjectCallback {
-    unsigned long GUID; // offset 0x4, size 0x4
-    FEObject *pFound;   // offset 0x8, size 0x4
-
-    bool Callback(FEObject *pObj) override;
-};
-
-// total size: 0x8
-struct MouseStateObjectCounter : public FEObjectCallback {
-    int NumMouseObjects; // offset 0x4, size 0x4
-
-    bool Callback(FEObject *pObj) override;
-};
-
-// total size: 0x8
-struct MouseStateArrayBuilder : public FEObjectCallback {
-    FEPackage *pPack; // offset 0x4, size 0x4
-
-    bool Callback(FEObject *pObj) override;
-};
-
-// total size: 0x8
-struct MouseStateArrayOffsetUpdater : public FEObjectCallback {
-    FEPackage *pPack; // offset 0x4, size 0x4
-
-    bool Callback(FEObject *pObj) override;
-};
-
-// total size: 0xC
-struct ResourceConnector : public FEObjectCallback {
-    FEPackage *pPack;             // offset 0x4, size 0x4
-    FEResourceRequest **pReqList; // offset 0x8, size 0x4
-
-    bool Callback(FEObject *pObj) override;
-    void ConnectListBoxResources(FEListBox *pList);
-};
-
-unsigned long FEngine::SysGUID;
-
-FEMultiPool ObjDataPool;
-FEColoredImageData MaximumObjData;
 
 FEngine::FEngine() {
     bExecuting = true;
@@ -100,13 +65,13 @@ FEngine::FEngine() {
     TypeLib.Startup();
 }
 
-void FEngine::SetNumJoyPads(unsigned char Count) {
+void FEngine::SetNumJoyPads(u8 Count) {
     FEJoyPad **ppJoyPad = &pJoyPad;
     if (*ppJoyPad) {
         delete[] *ppJoyPad;
     }
     if (Count) {
-        FEJoyPad *pPads = static_cast<FEJoyPad *>(FEngMalloc(Count * sizeof(FEJoyPad), nullptr, 0));
+        FEJoyPad *pPads = FNEW FEJoyPad[Count];
         long i = Count - 1;
         if (Count != 0) {
             FEJoyPad *pCur = pPads;
@@ -123,11 +88,17 @@ void FEngine::SetNumJoyPads(unsigned char Count) {
 
 void FEngine::SetExecution(bool bProcessEverything) {
     FEPackage *pPack = PackList.GetFirstPackage();
-    bExecuting = bProcessEverything;
     while (pPack) {
-        pPack->bExecuting = bExecuting;
+        pPack->SetExecute(bProcessEverything);
         pPack = pPack->GetNext();
     }
+}
+
+void FEngine::SetProcessInput(FEPackage *pkg, bool bProcess) {
+    if (!pkg) {
+        return;
+    }
+    pkg->SetInputEnabled(bProcess);
 }
 
 void FEngine::SetInitialState() {
@@ -141,184 +112,6 @@ void FEngine::SetInitialState() {
     if (bMouseActive) {
         Mouse.Reset();
     }
-}
-
-FEPackage *FEngine::FindIdlePackage(const char *pName) const {
-    return static_cast<FEPackage *>(IdleList.FindNode(pName));
-}
-
-FEPackage *FEngine::FindPackageWithControl() {
-    FEPackage *pPack = PackList.GetLastPackage();
-    while (pPack) {
-        if (pPack->Controllers) {
-            return pPack;
-        }
-        pPack = pPack->GetPrev();
-    }
-    return nullptr;
-}
-
-bool FEngine::ForAllObjects(FEObjectCallback &Callback) {
-    FEPackage *pPack = PackList.GetFirstPackage();
-    while (pPack) {
-        if (!pPack->ForAllObjects(Callback)) {
-            return false;
-        }
-        pPack = pPack->GetNext();
-    }
-    return true;
-}
-
-// total size: 0x20
-struct FEMessageNode : public FEMinNode {
-    FEObject *pMsgFrom;        // offset 0xC, size 0x4
-    FEObject *pMsgTarget;      // offset 0x10, size 0x4
-    FEPackage *pFromPackage;   // offset 0x14, size 0x4
-    unsigned long MsgID;       // offset 0x18, size 0x4
-    unsigned long ControlMask; // offset 0x1C, size 0x4
-
-    ~FEMessageNode() override;
-};
-
-// total size: 0x20
-struct FEPackageCommand : public FENode {
-    int iCommand;               // offset 0x14, size 0x4
-    unsigned long uControlMask; // offset 0x18, size 0x4
-    FEPackage *pPackage;        // offset 0x1C, size 0x4
-};
-
-FEMessageNode::~FEMessageNode() {}
-
-void FEngine::SetProcessInput(FEPackage *pkg, bool bProcess) {
-    if (!pkg) {
-        return;
-    }
-    pkg->SetInputEnabled(bProcess);
-}
-
-FEPackage *FEngine::GetFirstLibrary() const {
-    return static_cast<FEPackage *>(LibraryList.GetHead());
-}
-
-void FEngine::AddToIdleList(FEPackage *pPack) {
-    IdleList.AddNode(IdleList.GetTail(), pPack);
-}
-
-void FEngine::AddToLibraryList(FEPackage *pPack) {
-    LibraryList.AddNode(LibraryList.GetTail(), pPack);
-}
-
-void FEngine::RemoveFromLibraryList(FEPackage *pPack) {
-    LibraryList.RemNode(pPack);
-}
-
-FEPackage *FEngine::FindLibraryPackage(unsigned long NameHash) const {
-    FEPackage *pPack = GetFirstLibrary();
-    while (pPack) {
-        if (FEHashUpper(pPack->pFilename + 2) == NameHash) {
-            return pPack;
-        }
-        pPack = pPack->GetNext();
-    }
-    return nullptr;
-}
-
-void FEngine::QueueMessage(unsigned long MsgID, FEObject *pFrom, FEPackage *pFromPackage, FEObject *pTo, unsigned long ControlMask) {
-    FEMessageNode *pNode = FNEW FEMessageNode();
-    pNode->MsgID = MsgID;
-    pNode->pMsgFrom = pFrom;
-    pNode->pFromPackage = pFromPackage;
-    pNode->pMsgTarget = pTo;
-    pNode->ControlMask = ControlMask;
-    if (bDebugMessages) {
-        int iVar2 = *reinterpret_cast<int *>(pInterface);
-        typedef void (*DebugFn)(void *, unsigned long, FEPackage *, FEObject *, FEObject *, unsigned long);
-        (*reinterpret_cast<DebugFn *>(iVar2 + 0xB4))(
-            reinterpret_cast<void *>(reinterpret_cast<char *>(pInterface) + *reinterpret_cast<short *>(iVar2 + 0xB0)), MsgID, pFromPackage, pTo,
-            pFrom, ControlMask);
-    }
-    MsgQ.AddTail(pNode);
-}
-
-void FEngine::SendMessageToGame(unsigned long MsgID, FEObject *pFrom, FEPackage *pFromPackage, unsigned long uControlMask) {
-    int iVar1 = *reinterpret_cast<int *>(pInterface);
-    typedef void (*GameMsgFn)(void *, unsigned long, FEObject *, unsigned long, FEPackage *);
-    GameMsgFn fn = *reinterpret_cast<GameMsgFn *>(iVar1 + 0x3C);
-    void *adjusted = reinterpret_cast<void *>(reinterpret_cast<char *>(pInterface) + *reinterpret_cast<short *>(iVar1 + 0x38));
-    fn(adjusted, MsgID, pFrom, uControlMask, pFromPackage);
-}
-
-void FEngine::QueuePackageSwitch(const char *pPackageName, unsigned long ControlMask) {
-    QueuePackageCommand(3, ControlMask, pPackageName);
-}
-
-void FEngine::QueuePackagePush(const char *pPackageName, unsigned long ControlMask) {
-    QueuePackageCommand(2, ControlMask, pPackageName);
-}
-
-void FEngine::QueuePackagePop() {
-    QueuePackageCommand(1, 0, nullptr);
-}
-
-FEPackageCommand *FEngine::FindQueuedNodeWithControl() {
-    FEPackageCommand *pCmd = static_cast<FEPackageCommand *>(PackageCommands.GetTail());
-    while (pCmd) {
-        if (pCmd->iCommand & 2) {
-            return pCmd;
-        }
-        pCmd = static_cast<FEPackageCommand *>(pCmd->GetPrev());
-    }
-    return nullptr;
-}
-
-void FEngine::RecordLastPackageButton(unsigned long PackHash, unsigned long ButtonGUID) {
-    int i = 0;
-    do {
-        if (RecordedPackageButtons[i].PackageHash == PackHash) {
-            RecordedPackageButtons[i].PackageHash = 0;
-        }
-        i++;
-    } while (i < 32);
-    RecordedPackageButtons[NextButtonRecordIndex].PackageHash = PackHash;
-    RecordedPackageButtons[NextButtonRecordIndex].ButtonGUID = ButtonGUID;
-    NextButtonRecordIndex = (NextButtonRecordIndex + 1) % 32;
-}
-
-unsigned long FEngine::RecallLastPackageButton(unsigned long PackHash) {
-    for (int i = 0; i < 32; i++) {
-        if (RecordedPackageButtons[i].PackageHash == PackHash) {
-            return RecordedPackageButtons[i].ButtonGUID;
-        }
-    }
-    return 0;
-}
-
-bool FEngine::RecordPackageMarker(const char *pName) {
-    int idx = CurrentPackageRecordIndex;
-    if (idx == 16) {
-        return false;
-    }
-    CurrentPackageRecordIndex = idx + 1;
-    FEngStrCpy(RecordedPackageNames[idx], pName);
-    return true;
-}
-
-const char *FEngine::RecallPackageMarker() {
-    if (CurrentPackageRecordIndex == 0) {
-        return nullptr;
-    }
-    return RecordedPackageNames[--CurrentPackageRecordIndex];
-}
-
-void FEngine::ClearPackageMarkers() {
-    {
-        unsigned long i = 0;
-        do {
-            RecordedPackageNames[i][0] = '\0';
-            i++;
-        } while (i < 16);
-    }
-    CurrentPackageRecordIndex = 0;
 }
 
 FEPackage *FEngine::LoadPackage(const void *pPackageData, bool bLoadAsLibrary) {
@@ -382,147 +175,6 @@ bool FEngine::UnloadPackage(FEPackage *pPackage) {
     return false;
 }
 
-FEPackage *FEngine::PushPackage(const char *pPackageName, const unsigned char Level, const unsigned long ControlMask) {
-    FEPackage *pPack = FindIdlePackage(pPackageName);
-    if (!pPack) {
-        char len = static_cast<char>(FEngStrLen(pPackageName));
-        const char *pBaseName = pPackageName + len - 1;
-        char c = *pBaseName;
-        while (c != '/' && c != '\\' && len > 0) {
-            c = *--pBaseName;
-            len--;
-        }
-        if (len != 0) {
-            pBaseName++;
-        }
-        pPack = FindIdlePackage(pBaseName);
-    }
-    if (pPack) {
-        PackageInitStateCB cb;
-        pPack->bUseIdleList = true;
-        pPack->ForAllObjects(cb);
-        IdleList.RemNode(pPack);
-    } else {
-        unsigned char *pBlockStart;
-        bool bDeleteBlock;
-        unsigned char *pPackData = pInterface->GetPackageData(pPackageName, &pBlockStart, bDeleteBlock);
-        if (!pPackData) {
-            return nullptr;
-        }
-        pPack = LoadPackage(pPackData, false);
-        if (bDeleteBlock && pBlockStart) {
-            delete[] pBlockStart;
-        }
-        if (!pPack) {
-            return nullptr;
-        }
-    }
-    pPack->Controllers = ControlMask;
-    pPack->Priority = Level;
-    pPack->bExecuting = bExecuting;
-    if (pInterface) {
-        pInterface->PackageWasLoaded(pPack);
-    }
-    PackList.AddPackage(pPack);
-    return pPack;
-}
-
-void FEngine::QueuePackageUserTransfer(FEPackage *pFrom, bool bToChild, unsigned long ControlMask) {
-    printf("If you get this, come see Gary or Lolley!\n");
-    FEPackageCommand *pCom = FNEW FEPackageCommand();
-    pCom->iCommand = 0;
-    pCom->uControlMask = 0;
-    pCom->pPackage = pFrom;
-    pCom->uControlMask = pFrom->GetControlMask() & ControlMask;
-    pCom->iCommand = bToChild ? 8 : 4;
-    PackageCommands.AddTail(pCom);
-}
-
-int FEngine::GetNumPackagesBelowPriority(unsigned char priority) {
-    int count = 0;
-    FEPackage *package = PackList.GetFirstPackage();
-    while (package) {
-        if (package->GetPriority() < priority) {
-            count++;
-        }
-        package = package->GetNext();
-    }
-    FEPackageCommand *pNode = static_cast<FEPackageCommand *>(PackageCommands.GetHead());
-    while (pNode) {
-        if (count == 0 && (pNode->iCommand & 3)) {
-            count = 1;
-        } else if (pNode->iCommand & 2) {
-            count++;
-        } else if (pNode->iCommand & 1) {
-            count--;
-        }
-        pNode = static_cast<FEPackageCommand *>(pNode->GetNext());
-    }
-    return count;
-}
-
-void FEngine::ProcessObjectMessage(FEObject *pObj, FEPackage *pPack, unsigned long MsgID, unsigned long uControlMask) {
-    if (pObj->Type == FE_List) {
-        if (ProcessListBoxResponses(pObj, pPack, MsgID)) {
-            return;
-        }
-    }
-    if (pObj->Type == FE_CodeList) {
-        if (ProcessCodeListBoxResponses(pObj, pPack, MsgID)) {
-            return;
-        }
-    }
-    FEMessageResponse *pResp = pObj->FindResponse(MsgID);
-    if (pResp) {
-        ProcessResponses(pResp, pObj, pPack, uControlMask);
-    }
-}
-
-void FEngine::ProcessGlobalMessage(FEPackage *pPack, unsigned long MsgID, unsigned long uControlMask) {
-    FEMessageResponse *pResp = pPack->FindResponse(MsgID);
-    if (pResp) {
-        ProcessResponses(pResp, nullptr, pPack, uControlMask);
-    }
-}
-
-bool FEngine::ProcessListBoxResponses(FEObject *pObj, FEPackage *pPack, unsigned long MsgID) {
-    FEListBox *pList = static_cast<FEListBox *>(pObj);
-    switch (MsgID) {
-        case 0xe10c4af9:
-            pList->ScrollSelection(-1, 0);
-            return true;
-        case 0x030471ac:
-            pList->ScrollSelection(1, 0);
-            return true;
-        case 0xfb814f13:
-            pList->ScrollSelection(0, -1);
-            return true;
-        case 0xe10814a6:
-            pList->ScrollSelection(0, 1);
-            return true;
-    }
-    return false;
-}
-
-bool FEngine::ProcessCodeListBoxResponses(FEObject *pObj, FEPackage *pPack, unsigned long MsgID) {
-    FECodeListBox *pList = static_cast<FECodeListBox *>(pObj);
-    switch (MsgID) {
-        case 0xe10c4af9:
-            pList->ScrollSelection(-1, 0);
-            return true;
-        case 0x030471ac:
-            pList->ScrollSelection(1, 0);
-            return true;
-        case 0xfb814f13:
-            pList->ScrollSelection(0, -1);
-            return true;
-        case 0xe10814a6:
-            pList->ScrollSelection(0, 1);
-            return true;
-    }
-    return false;
-}
-
 void FEngine::UnloadLibraryPackage(FEPackage *pLibPack) {
     bool bDelete = pInterface->UnloadUnreferencedLibrary(pLibPack);
     if (bDelete) {
@@ -540,137 +192,83 @@ void FEngine::UnloadLibraryPackage(FEPackage *pLibPack) {
     }
 }
 
-void FEngine::Render() {
-    FEMatrix4 mView;
-    FEMatrix4 mIdentity;
-    mIdentity.Identify();
-    pInterface->GetViewTransformation(&mView);
-    FEPackage *aPackages[32];
-    int numPackages = 0;
-    for (FEPackage *pPack = PackList.GetFirstPackage(); pPack; pPack = pPack->GetNext()) {
-        aPackages[numPackages] = pPack;
-        numPackages++;
-    }
-    int i;
-    for (i = 0; i < numPackages; i++) {
-        PackList.RemovePackage(aPackages[i]);
-    }
-    for (i = 0; i < numPackages; i++) {
-        PackList.AddPackage(aPackages[i]);
-    }
-    FEPackage *pPack = PackList.GetFirstPackage();
-    uGroupContext = 0;
-    while (pPack) {
-        pInterface->BeginPackageRendering(pPack);
-        Sorter.Zero();
-        FEObject *pObj = pPack->GetFirstObject();
-        while (pObj) {
-            if (pObj->Type == FE_Group) {
-                RenderGroup(static_cast<FEGroup *>(pObj), mIdentity, mView, 0);
-            } else {
-                RenderObject(pObj, mView, 0);
-            }
-            pObj = pObj->GetNext();
+FEPackage *FEngine::PushPackage(const char *pPackageName, const u8 Level, const u32 ControlMask) {
+    FEPackage *pPack = FindIdlePackage(pPackageName);
+    if (!pPack) {
+        char len = static_cast<char>(FEngStrLen(pPackageName));
+        const char *pBaseName = pPackageName + len - 1;
+        char c = *pBaseName;
+        while (c != '/' && c != '\\' && len > 0) {
+            c = *--pBaseName;
+            len--;
         }
-        Sorter.SortObjects();
-        pInterface->RenderObjectList(reinterpret_cast<FEObjectListEntry *>(Sorter.GetListPtr()), Sorter.GetNumObjects());
-        pInterface->EndPackageRendering(pPack);
+        if (len != 0) {
+            pBaseName++;
+        }
+        pPack = FindIdlePackage(pBaseName);
+    }
+    if (pPack) {
+        PackageInitStateCB cb;
+        pPack->SetUseIdleList(true);
+        pPack->ForAllObjects(cb);
+        IdleList.RemNode(pPack);
+    } else {
+        u8 *pBlockStart;
+        bool bDeleteBlock;
+        u8 *pPackData = pInterface->GetPackageData(pPackageName, &pBlockStart, bDeleteBlock);
+        if (!pPackData) {
+            return nullptr;
+        }
+        pPack = LoadPackage(pPackData, false);
+        if (bDeleteBlock && pBlockStart) {
+            delete[] pBlockStart;
+        }
+        if (!pPack) {
+            return nullptr;
+        }
+    }
+    pPack->SetControlMask(ControlMask);
+    pPack->SetPriority(Level);
+    pPack->SetExecute(bExecuting);
+    if (pInterface) {
+        pInterface->PackageWasLoaded(pPack);
+    }
+    PackList.AddPackage(pPack);
+    return pPack;
+}
+
+void FEngine::AddToIdleList(FEPackage *pPack) {
+    IdleList.AddNode(IdleList.GetTail(), pPack);
+}
+
+FEPackage *FEngine::FindIdlePackage(const char *pName) const {
+    return static_cast<FEPackage *>(IdleList.FindNode(pName));
+}
+
+FEPackage *FEngine::GetFirstLibrary() const {
+    return static_cast<FEPackage *>(LibraryList.GetHead());
+}
+
+void FEngine::AddToLibraryList(FEPackage *pPack) {
+    LibraryList.AddNode(LibraryList.GetTail(), pPack);
+}
+
+void FEngine::RemoveFromLibraryList(FEPackage *pPack) {
+    LibraryList.RemNode(pPack);
+}
+
+FEPackage *FEngine::FindLibraryPackage(u32 NameHash) const {
+    FEPackage *pPack = GetFirstLibrary();
+    while (pPack) {
+        if (FEHashUpper(pPack->GetFilename() + 2) == NameHash) {
+            return pPack;
+        }
         pPack = pPack->GetNext();
     }
-    bRenderedRecently = bExecuting;
+    return nullptr;
 }
 
-void FEngine::RenderGroup(FEGroup *pGroup, FEMatrix4 &mParent, FEMatrix4 &mAccum, unsigned short RenderContext) {
-    FEObjData *pData = pGroup->GetObjData();
-    FEMatrix4 stTemp;
-    FEMatrix4 stContext;
-    FEMatrix4 stContextView;
-    FEVector3 stOffset(0.0f);
-    FEVector3 stPivot(0.0f);
-    if (pData->Col.a != 0) {
-        if (bExecuting || static_cast<int>(pGroup->Flags) >= 0) {
-            pData->Rot.GetMatrix(&stTemp);
-            stPivot = pData->Pivot;
-            stPivot *= -1.0f;
-            FEMultMatrix(&stOffset, &stTemp, &stPivot);
-            stTemp.m41 = stOffset.x + pData->Pivot.x + pData->Pos.x;
-            stTemp.m42 = stOffset.y + pData->Pivot.y + pData->Pos.y;
-            stTemp.m43 = stOffset.z + pData->Pivot.z + pData->Pos.z;
-            FEMultMatrix(&stContext, &stTemp, &mParent);
-            FEMultMatrix(&stContextView, &stContext, &mAccum);
-            unsigned short ctx = uGroupContext + 1;
-            uGroupContext = ctx;
-            pGroup->RenderContext = RenderContext;
-            pInterface->GenerateRenderContext(ctx, pGroup);
-            FEObject *pObj = pGroup->GetFirstChild();
-            while (pObj) {
-                if (pObj->Type == FE_Group) {
-                    RenderGroup(static_cast<FEGroup *>(pObj), stContext, mAccum, ctx);
-                } else {
-                    RenderObject(pObj, stContextView, ctx);
-                }
-                pObj = pObj->GetNext();
-            }
-        }
-    }
-}
-
-void FEngine::RenderObject(FEObject *pObj, FEMatrix4 &mParent, unsigned short RenderContext) {
-    FEObjData *pData = pObj->GetObjData();
-    if (pData->Col.a != 0) {
-        FEVector3 pos(pData->Pivot);
-        FEVector3 result;
-        result.z = 0.0f;
-        result.y = 0.0f;
-        result.x = 0.0f;
-        pos.x = pos.x + pData->Pos.x;
-        pos.y = pos.y + pData->Pos.y;
-        pos.z = pData->Pos.z + pos.z;
-        FEMultMatrix(&result, &mParent, &pos);
-        pObj->RenderContext = RenderContext;
-        if (result.z > 0.0f) {
-            Sorter.AddObject(pObj, result.z);
-        }
-    }
-}
-
-void FEngine::QueuePackageCommand(long command, unsigned long ControlMask, const char *pPackageName) {
-    FEPackageCommand *pCom = nullptr;
-    FEPackage *pPackageWithControl = FindPackageWithControl();
-    FEPackageCommand *Node = FNEW FEPackageCommand();
-    Node->iCommand = 0;
-    Node->uControlMask = 0;
-    Node->pPackage = pPackageWithControl;
-    if (pPackageWithControl) {
-        if (ControlMask == 0) {
-            Node->uControlMask = pPackageWithControl->GetControlMask();
-        } else {
-            Node->uControlMask = ControlMask;
-        }
-        pPackageWithControl->SetOldControlMask(pPackageWithControl->GetControlMask());
-        pPackageWithControl->SetControlMask(0);
-    } else {
-        pCom = FindQueuedNodeWithControl();
-        if (pCom) {
-            if (ControlMask == 0) {
-                Node->uControlMask = pCom->uControlMask;
-            } else {
-                Node->uControlMask = ControlMask;
-            }
-        } else {
-            if (ControlMask == 0) {
-                Node->uControlMask = 0xFF;
-            } else {
-                Node->uControlMask = ControlMask;
-            }
-        }
-    }
-    Node->iCommand = command;
-    Node->SetName(pPackageName);
-    PackageCommands.AddTail(Node);
-}
-
-void FEngine::Update(const long tDeltaTicks, unsigned int lock) {
+void FEngine::Update(const i32 tDeltaTicks, uint32 lock) {
     FEPackage *pPackage;
     if (bDebugMessages) {
         pInterface->DebugMessageBeginUpdate();
@@ -693,8 +291,8 @@ void FEngine::Update(const long tDeltaTicks, unsigned int lock) {
                 }
             }
         }
-        unsigned long i = 0;
-        unsigned long MaskBit = 1;
+        u32 i = 0;
+        u32 MaskBit = 1;
         do {
             if ((PadHoldRegistered & MaskBit) != 0) {
                 for (unsigned char PadIdx = 0; PadIdx < NumJoyPads; PadIdx++) {
@@ -747,52 +345,36 @@ void FEngine::Update(const long tDeltaTicks, unsigned int lock) {
     }
 }
 
-struct ImpulseDirEntry {
-    unsigned char dir0;
-    unsigned char dir1;
-    unsigned short directionIndex;
-};
-
-static unsigned long PadButtonHash[19] = {
+// size: 0x4C, address: 0x8041D0A0, Decl: speed/indep/src/feng/FEngine.cpp:873
+static u32 PadButtonHash[19] = {
     0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0x406415E3u, 0x911AB364u, 0xB5AF2461u, 0x5073EF13u, 0xD9FEEC59u, 0xC519BFBFu,
     0xC519BFC0u, 0xC519BFC1u, 0xC519BFC2u, 0xC519BFC3u, 0xC519BFC4u, 0xC519BFC5u, 0xC519BFC6u, 0xC519BFC7u, 0xC519BFC8u,
 };
 
-static unsigned long PadButtonHeldHash[2] = {
+// size: 0x8, address: 0x8041D0EC, Decl: speed/indep/src/feng/FEngine.cpp:881
+static u32 PadButtonHeldHash[2] = {
     0x447315AFu,
     0x20AD4EB5u,
 };
 
-static unsigned long PadReleasedHash[19] = {
+// size: 0x4C, address: 0x8041D0F4, Decl: speed/indep/src/feng/FEngine.cpp:886
+static u32 PadReleasedHash[19] = {
     0x00000000u, 0x00000000u, 0x00000000u, 0x00000000u, 0xC12E9E27u, 0xC2F8FCC8u, 0xEBFCDA65u, 0x091DCD57u, 0x7A39195Du, 0xD4671F83u,
     0xD871B0A4u, 0xDC7C41C5u, 0xE086D2E6u, 0xE4916407u, 0xE89BF528u, 0xECA68649u, 0xF0B1176Au, 0xF4BBA88Bu, 0xF8C639ACu,
 };
 
-unsigned long FEDirection_Message[8] = {
-    0x72619778u, 0x6FD81B16u, 0xB5971BF1u, 0xAB1A49C9u, 0x911C0A4Bu, 0x79891376u, 0x9120409Eu, 0x6FFB6F23u,
-};
-
-static ImpulseDirEntry ImpulseDir[8] = {
-    {0x00, 0x02, 0x0007}, {0x00, 0x03, 0x0001}, {0x01, 0x02, 0x0005}, {0x01, 0x03, 0x0003},
-    {0x00, 0xFF, 0x0000}, {0x02, 0xFF, 0x0006}, {0x01, 0xFF, 0x0004}, {0x03, 0xFF, 0x0002},
-};
-
-inline int FEFramesToTicks(int Frames) {
-    return Frames * 16;
-}
-
 void FEngine::ProcessPadsForPackage(FEPackage *pPackage) {
-    unsigned long Pressed;
-    unsigned long Released;
-    unsigned long Held;
-    unsigned long Mask;
-    unsigned long HeldFor[19];
-    unsigned char FromPadHeld[19];
-    unsigned char FromPadPressed[19];
-    unsigned char FromPadReleased[19];
-    unsigned char PadIndex;
-    unsigned long i;
-    unsigned long JoyMask;
+    u32 Pressed;
+    u32 Released;
+    u32 Held;
+    u32 Mask;
+    u32 HeldFor[19];
+    u8 FromPadHeld[19];
+    u8 FromPadPressed[19];
+    u8 FromPadReleased[19];
+    u8 PadIndex;
+    u32 i;
+    u32 JoyMask;
     bool bSomethingActive;
 
     JoyMask = pPackage->GetControlMask();
@@ -897,8 +479,8 @@ void FEngine::ProcessPadsForPackage(FEPackage *pPackage) {
 
         held_handler:
             if ((Held & Mask) != 0) {
-                unsigned long PadMask = FromPadPressed[i];
-                unsigned long MsgID = PadButtonHeldHash[i - 7];
+                u32 PadMask = FromPadPressed[i];
+                u32 MsgID = PadButtonHeldHash[i - 7];
                 if (pCurButton && pCurButton->FindResponse(MsgID) != nullptr) {
                     QueueMessage(MsgID, nullptr, pPackage, pCurButton, PadMask);
                     QueueMessage(MsgID, pCurButton, pPackage, reinterpret_cast<FEObject *>(0xFFFFFFFB), PadMask);
@@ -910,9 +492,9 @@ void FEngine::ProcessPadsForPackage(FEPackage *pPackage) {
 
         default_press:
             if ((Pressed & Mask) != 0) {
-                unsigned long PadMask = FromPadPressed[i];
+                u32 PadMask = FromPadPressed[i];
                 HeldButtons[i] = pCurButton;
-                unsigned long MsgID = PadButtonHash[i];
+                u32 MsgID = PadButtonHash[i];
                 if (pCurButton && pCurButton->FindResponse(MsgID) != nullptr) {
                     QueueMessage(MsgID, nullptr, pPackage, pCurButton, PadMask);
                     QueueMessage(MsgID, pCurButton, pPackage, reinterpret_cast<FEObject *>(0xFFFFFFFB), PadMask);
@@ -924,8 +506,8 @@ void FEngine::ProcessPadsForPackage(FEPackage *pPackage) {
 
         check_released:
             if ((Released & Mask) != 0) {
-                unsigned long PadMask = FromPadReleased[i];
-                unsigned long MsgID = PadReleasedHash[i];
+                u32 PadMask = FromPadReleased[i];
+                u32 MsgID = PadReleasedHash[i];
                 if (HeldButtons[i] == pCurButton && pCurButton != nullptr) {
                     HeldButtons[i] = nullptr;
                     if (i == 4) {
@@ -976,10 +558,10 @@ void FEngine::ProcessPadsForPackage(FEPackage *pPackage) {
 
     i = 0;
     {
-        unsigned long Result;
-        unsigned long Compare;
-        unsigned long JustPressed;
-        unsigned long PadMask;
+        u32 Result;
+        u32 Compare;
+        u32 JustPressed;
+        u32 PadMask;
         FEObject *pCurButton;
         while (true) {
             if (i > 7) {
@@ -990,18 +572,18 @@ void FEngine::ProcessPadsForPackage(FEPackage *pPackage) {
             }
 
             pCurButton = pPackage->GetCurrentButton();
-            if (ImpulseDir[i].dir1 != 0xFF) {
-                Result = HeldFor[ImpulseDir[i].dir1];
-                if (HeldFor[ImpulseDir[i].dir0] < HeldFor[ImpulseDir[i].dir1]) {
-                    Result = HeldFor[ImpulseDir[i].dir0];
+            if (ImpulseDir[i].Index2 != 0xFF) {
+                Result = HeldFor[ImpulseDir[i].Index2];
+                if (HeldFor[ImpulseDir[i].Index1] < HeldFor[ImpulseDir[i].Index2]) {
+                    Result = HeldFor[ImpulseDir[i].Index1];
                 }
-                JustPressed = (Pressed >> ImpulseDir[i].dir0) & (Pressed >> ImpulseDir[i].dir1);
-                PadMask = (FromPadPressed[ImpulseDir[i].dir0] & FromPadPressed[ImpulseDir[i].dir1]) |
-                          (FromPadHeld[ImpulseDir[i].dir0] & FromPadHeld[ImpulseDir[i].dir1]);
+                JustPressed = (Pressed >> ImpulseDir[i].Index1) & (Pressed >> ImpulseDir[i].Index2);
+                PadMask = (FromPadPressed[ImpulseDir[i].Index1] & FromPadPressed[ImpulseDir[i].Index2]) |
+                          (FromPadHeld[ImpulseDir[i].Index1] & FromPadHeld[ImpulseDir[i].Index2]);
             } else {
-                JustPressed = Pressed >> ImpulseDir[i].dir0;
-                Result = HeldFor[ImpulseDir[i].dir0];
-                PadMask = FromPadPressed[ImpulseDir[i].dir0] | FromPadHeld[ImpulseDir[i].dir0];
+                JustPressed = Pressed >> ImpulseDir[i].Index1;
+                Result = HeldFor[ImpulseDir[i].Index1];
+                PadMask = FromPadPressed[ImpulseDir[i].Index1] | FromPadHeld[ImpulseDir[i].Index1];
             }
 
             Compare = FEFramesToTicks(20);
@@ -1027,43 +609,43 @@ void FEngine::ProcessPadsForPackage(FEPackage *pPackage) {
         if (Result != 0) {
             FastRepCache = FastRepCache | (1 << i);
         }
-        HoldDecrement[ImpulseDir[i].dir0] = Compare;
-        if (ImpulseDir[i].dir1 != 0xFF) {
-            HoldDecrement[ImpulseDir[i].dir1] = Compare;
-            HeldFor[ImpulseDir[i].dir0] = 0;
-            HeldFor[ImpulseDir[i].dir1] = 0;
-            PadHoldRegistered = PadHoldRegistered | (1 << ImpulseDir[i].dir0) | (1 << ImpulseDir[i].dir1);
+        HoldDecrement[ImpulseDir[i].Index1] = Compare;
+        if (ImpulseDir[i].Index2 != 0xFF) {
+            HoldDecrement[ImpulseDir[i].Index2] = Compare;
+            HeldFor[ImpulseDir[i].Index1] = 0;
+            HeldFor[ImpulseDir[i].Index2] = 0;
+            PadHoldRegistered = PadHoldRegistered | (1 << ImpulseDir[i].Index1) | (1 << ImpulseDir[i].Index2);
             goto fire_direction;
         }
         {
-            HeldFor[ImpulseDir[i].dir0] = 0;
-            PadHoldRegistered = PadHoldRegistered | (1 << ImpulseDir[i].dir0);
+            HeldFor[ImpulseDir[i].Index1] = 0;
+            PadHoldRegistered = PadHoldRegistered | (1 << ImpulseDir[i].Index1);
         }
 
     fire_direction:
         if (pCurButton) {
             FEObject *pNewButton = nullptr;
-            unsigned long MsgID = FEDirection_Message[ImpulseDir[i].directionIndex];
+            u32 MsgID = FEDirection_Message[ImpulseDir[i].Dir];
             FEMessageResponse *pResponse = pCurButton->FindResponse(MsgID);
             if (pResponse) {
                 QueueMessage(MsgID, nullptr, pPackage, pCurButton, PadMask);
-                if ((pCurButton->Flags & 0x80000) == 0) {
+                if ((pCurButton->Flags & FF_DontNavigate) == 0) {
                     if (pResponse->FindResponse(0x104) == -1) {
-                        pNewButton = pPackage->GetButtonMap()->GetButtonFrom(pCurButton, ImpulseDir[i].directionIndex, pInterface, WrapMode);
+                        pNewButton = pPackage->GetButtonMap()->GetButtonFrom(pCurButton, ImpulseDir[i].Dir, pInterface, WrapMode);
                     }
                 }
             } else {
-                if ((pCurButton->Flags & 0x80000) == 0) {
-                    pNewButton = pPackage->GetButtonMap()->GetButtonFrom(pCurButton, ImpulseDir[i].directionIndex, pInterface, WrapMode);
+                if ((pCurButton->Flags & FF_DontNavigate) == 0) {
+                    pNewButton = pPackage->GetButtonMap()->GetButtonFrom(pCurButton, ImpulseDir[i].Dir, pInterface, WrapMode);
                 }
                 QueueMessage(MsgID, nullptr, pPackage, reinterpret_cast<FEObject *>(0xFFFFFFFD), PadMask);
             }
             QueueMessage(MsgID, pCurButton, pPackage, reinterpret_cast<FEObject *>(0xFFFFFFFB), PadMask);
             if (pNewButton != nullptr) {
-                for (unsigned long j = 4; j < 19; j++) {
+                for (u32 j = 4; j < 19; j++) {
                     if (HeldButtons[j] != nullptr && pCurButton != nullptr) {
-                        unsigned long PadMask;
-                        unsigned long MsgID;
+                        u32 PadMask;
+                        u32 MsgID;
                         HeldButtons[j] = nullptr;
                         PadMask = FromPadReleased[j];
                         MsgID = PadReleasedHash[j];
@@ -1079,7 +661,7 @@ void FEngine::ProcessPadsForPackage(FEPackage *pPackage) {
                 pPackage->SetCurrentButton(pNewButton, true);
             }
         } else {
-            unsigned long MsgID = FEDirection_Message[ImpulseDir[i].directionIndex];
+            u32 MsgID = FEDirection_Message[ImpulseDir[i].Dir];
             if (pPackage->FindResponse(MsgID) != nullptr) {
                 QueueMessage(MsgID, nullptr, pPackage, reinterpret_cast<FEObject *>(0xFFFFFFFD), PadMask);
                 QueueMessage(MsgID, nullptr, pPackage, reinterpret_cast<FEObject *>(0xFFFFFFFB), PadMask);
@@ -1088,22 +670,9 @@ void FEngine::ProcessPadsForPackage(FEPackage *pPackage) {
     }
 }
 
-void FEngine::ProcessMouseForPackage(FEPackage *pPackage) {
-    unsigned long JoyMask = pPackage->GetControlMask();
-    if (JoyMask != 0 && ((JoyMask ^ 1) & 1) == 0 && pPackage->IsInputEnabled()) {
-        float mx = static_cast<float>(Mouse.XPos);
-        float my = static_cast<float>(Mouse.YPos);
-        int NumMO = pPackage->NumMouseObjects;
-        FEObjectMouseState *pStates = pPackage->MouseObjectStates;
-        for (int i = 0; i < NumMO; i++) {
-            UpdateMouseState(pPackage, pStates + i, mx, my);
-        }
-    }
-}
-
 void FEngine::UpdateMouseState(FEPackage *pkg, FEObjectMouseState *state, float mx, float my) {
     FEObject *obj = state->pObject;
-    if (obj && (obj->Flags & 0x14000000) == 0x14000000) {
+    if (obj && (obj->Flags & (FF_IgnoreButton | FF_IsButton)) == (FF_IgnoreButton | FF_IsButton)) {
         return;
     }
     float objX, objY;
@@ -1166,9 +735,211 @@ skip_left:
         }
     }
 set_bits:
-    state->SetBit(1, is_mouse_over);
-    state->SetBit(2, is_left_down);
-    state->SetBit(4, is_right_down);
+    state->SetBit(FEMouseFlag_MouseOver, is_mouse_over);
+    state->SetBit(FEMouseFlag_MouseLeftPressed, is_left_down);
+    state->SetBit(FEMouseFlag_MouseRightPressed, is_right_down);
+}
+
+void FEngine::ProcessMouseForPackage(FEPackage *pPackage) {
+    u32 JoyMask = pPackage->GetControlMask();
+    if (JoyMask != 0 && ((JoyMask ^ 1) & 1) == 0 && pPackage->IsInputEnabled()) {
+        float fMouseX = Mouse.GetXPos();
+        float fMouseY = Mouse.GetYPos();
+        int NumMO = pPackage->NumMouseObjects;
+        FEObjectMouseState *pStates = pPackage->MouseObjectStates;
+        for (int i = 0; i < NumMO; i++) {
+            UpdateMouseState(pPackage, pStates + i, fMouseX, fMouseY);
+        }
+    }
+}
+
+void FEngine::Render() {
+    FEMatrix4 mView;
+    FEMatrix4 mIdentity;
+    mIdentity.Identify();
+    pInterface->GetViewTransformation(&mView);
+    FEPackage *aPackages[32];
+    int numPackages = 0;
+    for (FEPackage *pPack = PackList.GetFirstPackage(); pPack; pPack = pPack->GetNext()) {
+        aPackages[numPackages] = pPack;
+        numPackages++;
+    }
+    int i;
+    for (i = 0; i < numPackages; i++) {
+        PackList.RemovePackage(aPackages[i]);
+    }
+    for (i = 0; i < numPackages; i++) {
+        PackList.AddPackage(aPackages[i]);
+    }
+    FEPackage *pPack = PackList.GetFirstPackage();
+    uGroupContext = 0;
+    while (pPack) {
+        pInterface->BeginPackageRendering(pPack);
+        Sorter.Zero();
+        FEObject *pObj = pPack->GetFirstObject();
+        while (pObj) {
+            if (pObj->Type == FE_Group) {
+                RenderGroup(static_cast<FEGroup *>(pObj), mIdentity, mView, 0);
+            } else {
+                RenderObject(pObj, mView, 0);
+            }
+            pObj = pObj->GetNext();
+        }
+        Sorter.SortObjects();
+        pInterface->RenderObjectList(reinterpret_cast<FEObjectListEntry *>(Sorter.GetListPtr()), Sorter.GetNumObjects());
+        pInterface->EndPackageRendering(pPack);
+        pPack = pPack->GetNext();
+    }
+    bRenderedRecently = bExecuting;
+}
+
+void FEngine::RenderGroup(FEGroup *pGroup, FEMatrix4 &mParent, FEMatrix4 &mAccum, u16 RenderContext) {
+    FEObjData *pData = pGroup->GetObjData();
+    FEMatrix4 stTemp;
+    FEMatrix4 stContext;
+    FEMatrix4 stContextView;
+    FEVector3 stOffset(0.0f);
+    FEVector3 stPivot(0.0f);
+    if (pData->Col.a != 0) {
+        if (bExecuting || static_cast<int>(pGroup->Flags) >= 0) {
+            pData->Rot.GetMatrix(&stTemp);
+            stPivot = pData->Pivot;
+            stPivot *= -1.0f;
+            FEMultMatrix(&stOffset, &stTemp, &stPivot);
+            stTemp.m41 = stOffset.x + pData->Pivot.x + pData->Pos.x;
+            stTemp.m42 = stOffset.y + pData->Pivot.y + pData->Pos.y;
+            stTemp.m43 = stOffset.z + pData->Pivot.z + pData->Pos.z;
+            FEMultMatrix(&stContext, &stTemp, &mParent);
+            FEMultMatrix(&stContextView, &stContext, &mAccum);
+            u16 ctx = uGroupContext + 1;
+            uGroupContext = ctx;
+            pGroup->RenderContext = RenderContext;
+            pInterface->GenerateRenderContext(ctx, pGroup);
+            FEObject *pObj = pGroup->GetFirstChild();
+            while (pObj) {
+                if (pObj->Type == FE_Group) {
+                    RenderGroup(static_cast<FEGroup *>(pObj), stContext, mAccum, ctx);
+                } else {
+                    RenderObject(pObj, stContextView, ctx);
+                }
+                pObj = pObj->GetNext();
+            }
+        }
+    }
+}
+
+void FEngine::RenderObject(FEObject *pObj, FEMatrix4 &mParent, u16 RenderContext) {
+    FEObjData *pData = pObj->GetObjData();
+    if (pData->Col.a != 0) {
+        FEVector3 pos(pData->Pivot);
+        FEVector3 result;
+        result.z = 0.0f;
+        result.y = 0.0f;
+        result.x = 0.0f;
+        pos.x = pos.x + pData->Pos.x;
+        pos.y = pos.y + pData->Pos.y;
+        pos.z = pData->Pos.z + pos.z;
+        FEMultMatrix(&result, &mParent, &pos);
+        pObj->RenderContext = RenderContext;
+        if (result.z > 0.0f) {
+            Sorter.AddObject(pObj, result.z);
+        }
+    }
+}
+
+bool FEngine::ForAllObjects(FEObjectCallback &Callback) {
+    FEPackage *pPack = PackList.GetFirstPackage();
+    while (pPack) {
+        if (!pPack->ForAllObjects(Callback)) {
+            return false;
+        }
+        pPack = pPack->GetNext();
+    }
+    return true;
+}
+
+void FEngine::QueueMessage(u32 MsgID, FEObject *pFrom, FEPackage *pFromPackage, FEObject *pTo, u32 ControlMask) {
+    FEMessageNode *pNode = FNEW FEMessageNode();
+    pNode->MsgID = MsgID;
+    pNode->pMsgFrom = pFrom;
+    pNode->pFromPackage = pFromPackage;
+    pNode->pMsgTarget = pTo;
+    pNode->ControlMask = ControlMask;
+    if (bDebugMessages) {
+        int iVar2 = *reinterpret_cast<int *>(pInterface);
+        typedef void (*DebugFn)(void *, u32, FEPackage *, FEObject *, FEObject *, u32);
+        (*reinterpret_cast<DebugFn *>(iVar2 + 0xB4))(
+            reinterpret_cast<void *>(reinterpret_cast<char *>(pInterface) + *reinterpret_cast<short *>(iVar2 + 0xB0)), MsgID, pFromPackage, pTo,
+            pFrom, ControlMask);
+    }
+    MsgQ.AddTail(pNode);
+}
+
+void FEngine::SendMessageToGame(u32 MsgID, FEObject *pFrom, FEPackage *pFromPackage, u32 uControlMask) {
+    int iVar1 = *reinterpret_cast<int *>(pInterface);
+    typedef void (*GameMsgFn)(void *, u32, FEObject *, u32, FEPackage *);
+    GameMsgFn fn = *reinterpret_cast<GameMsgFn *>(iVar1 + 0x3C);
+    void *adjusted = reinterpret_cast<void *>(reinterpret_cast<char *>(pInterface) + *reinterpret_cast<short *>(iVar1 + 0x38));
+    fn(adjusted, MsgID, pFrom, uControlMask, pFromPackage);
+}
+
+void FEngine::QueuePackageSwitch(const char *pPackageName, u32 ControlMask) {
+    QueuePackageCommand(3, ControlMask, pPackageName);
+}
+
+void FEngine::QueuePackagePush(const char *pPackageName, u32 ControlMask) {
+    QueuePackageCommand(2, ControlMask, pPackageName);
+}
+
+void FEngine::QueuePackagePop() {
+    QueuePackageCommand(1, 0, nullptr);
+}
+
+void FEngine::QueuePackageCommand(i32 command, u32 ControlMask, const char *pPackageName) {
+    FEPackageCommand *pCom = nullptr;
+    FEPackage *pPackageWithControl = FindPackageWithControl();
+    FEPackageCommand *Node = FNEW FEPackageCommand();
+    Node->iCommand = 0;
+    Node->uControlMask = 0;
+    Node->pPackage = pPackageWithControl;
+    if (pPackageWithControl) {
+        if (ControlMask == 0) {
+            Node->uControlMask = pPackageWithControl->GetControlMask();
+        } else {
+            Node->uControlMask = ControlMask;
+        }
+        pPackageWithControl->SetOldControlMask(pPackageWithControl->GetControlMask());
+        pPackageWithControl->SetControlMask(0);
+    } else {
+        pCom = FindQueuedNodeWithControl();
+        if (pCom) {
+            if (ControlMask == 0) {
+                Node->uControlMask = pCom->uControlMask;
+            } else {
+                Node->uControlMask = ControlMask;
+            }
+        } else {
+            if (ControlMask == 0) {
+                Node->uControlMask = 0xFF;
+            } else {
+                Node->uControlMask = ControlMask;
+            }
+        }
+    }
+    Node->iCommand = command;
+    Node->SetName(pPackageName);
+    PackageCommands.AddTail(Node);
+}
+
+void FEngine::QueuePackageUserTransfer(FEPackage *pFrom, bool bToChild, u32 ControlMask) {
+    printf("If you get this, come see Gary or Lolley!\n");
+    FEPackageCommand *pCom = FNEW FEPackageCommand();
+    pCom->iCommand = 0;
+    pCom->uControlMask = 0;
+    pCom->pPackage = pFrom;
+    pCom->uControlMask = pFrom->GetControlMask() & ControlMask;
+    pCom->iCommand = bToChild ? 8 : 4;
+    PackageCommands.AddTail(pCom);
 }
 
 void FEngine::ProcessMessageQueue() {
@@ -1178,16 +949,16 @@ void FEngine::ProcessMessageQueue() {
         if (bDebugMessages) {
             pInterface->DebugMessageProcessed(pNode->MsgID, pNode->pMsgTarget, pNode->pMsgFrom, pNode->pFromPackage, pNode->ControlMask);
         }
-        switch (reinterpret_cast<unsigned long>(pNode->pMsgTarget)) {
+        switch (reinterpret_cast<u32>(pNode->pMsgTarget)) {
             case 0: {
                 pPack = PackList.GetFirstPackage();
                 while (pPack) {
                     ProcessGlobalMessage(pPack, pNode->MsgID, pNode->ControlMask);
                     FEMsgTargetList *pTargList = pPack->GetMessageTargets(pNode->MsgID);
                     if (pTargList) {
-                        unsigned long Count = pTargList->GetCount();
-                        unsigned long i = 0;
-                        unsigned long MsgID = pNode->MsgID;
+                        u32 Count = pTargList->GetCount();
+                        u32 i = 0;
+                        u32 MsgID = pNode->MsgID;
                         while (i < Count) {
                             ProcessObjectMessage(pTargList->GetTarget(i), pPack, MsgID, pNode->ControlMask);
                             i++;
@@ -1198,8 +969,7 @@ void FEngine::ProcessMessageQueue() {
                 break;
             }
             case 0xFFFFFFFF:
-                pInterface->NotificationMessage(pNode->MsgID, pNode->pMsgFrom, pNode->ControlMask,
-                                                reinterpret_cast<unsigned long>(pNode->pFromPackage));
+                pInterface->NotificationMessage(pNode->MsgID, pNode->pMsgFrom, pNode->ControlMask, reinterpret_cast<u32>(pNode->pFromPackage));
                 break;
             case 0xFFFFFFFE:
                 pPack = PackList.GetFirstPackage();
@@ -1220,9 +990,9 @@ void FEngine::ProcessMessageQueue() {
                     ProcessGlobalMessage(pPack, pNode->MsgID, pNode->ControlMask);
                     FEMsgTargetList *pTargList = pPack->GetMessageTargets(pNode->MsgID);
                     if (pTargList) {
-                        unsigned long Count = pTargList->GetCount();
-                        unsigned long i = 0;
-                        unsigned long MsgID = pNode->MsgID;
+                        u32 Count = pTargList->GetCount();
+                        u32 i = 0;
+                        u32 MsgID = pNode->MsgID;
                         while (i < Count) {
                             ProcessObjectMessage(pTargList->GetTarget(i), pPack, MsgID, pNode->ControlMask);
                             i++;
@@ -1232,15 +1002,14 @@ void FEngine::ProcessMessageQueue() {
                 break;
             }
             case 0xFFFFFFFB:
-                pInterface->NotifySoundMessage(pNode->MsgID, pNode->pMsgFrom, pNode->ControlMask,
-                                               reinterpret_cast<unsigned long>(pNode->pFromPackage));
+                pInterface->NotifySoundMessage(pNode->MsgID, pNode->pMsgFrom, pNode->ControlMask, reinterpret_cast<u32>(pNode->pFromPackage));
                 break;
             case 0xFFFFFFFA: {
                 switch (pNode->MsgID) {
-                    case 0x5d4ce32d:
+                    case Msg_Global_DisableInputs:
                         SetProcessInput(pNode->pFromPackage, false);
                         break;
-                    case 0x59bed120:
+                    case Msg_Global_EnableInputs:
                         SetProcessInput(pNode->pFromPackage, true);
                         break;
                 }
@@ -1255,9 +1024,71 @@ void FEngine::ProcessMessageQueue() {
     }
 }
 
-void FEngine::ProcessResponses(FEMessageResponse *pRespList, FEObject *pObj, FEPackage *pPack, unsigned long ControlMask) {
-    unsigned long Count = pRespList->GetCount();
-    for (unsigned long i = 0; i < Count; i++) {
+bool FEngine::ProcessListBoxResponses(FEObject *pObj, FEPackage *pPack, u32 MsgID) {
+    FEListBox *pList = static_cast<FEListBox *>(pObj);
+    switch (MsgID) {
+        case 0xe10c4af9:
+            pList->ScrollSelection(-1, 0);
+            return true;
+        case 0x030471ac:
+            pList->ScrollSelection(1, 0);
+            return true;
+        case 0xfb814f13:
+            pList->ScrollSelection(0, -1);
+            return true;
+        case 0xe10814a6:
+            pList->ScrollSelection(0, 1);
+            return true;
+    }
+    return false;
+}
+
+bool FEngine::ProcessCodeListBoxResponses(FEObject *pObj, FEPackage *pPack, u32 MsgID) {
+    FECodeListBox *pList = static_cast<FECodeListBox *>(pObj);
+    switch (MsgID) {
+        case 0xe10c4af9:
+            pList->ScrollSelection(-1, 0);
+            return true;
+        case 0x030471ac:
+            pList->ScrollSelection(1, 0);
+            return true;
+        case 0xfb814f13:
+            pList->ScrollSelection(0, -1);
+            return true;
+        case 0xe10814a6:
+            pList->ScrollSelection(0, 1);
+            return true;
+    }
+    return false;
+}
+
+void FEngine::ProcessObjectMessage(FEObject *pObj, FEPackage *pPack, u32 MsgID, u32 uControlMask) {
+    if (pObj->Type == FE_List) {
+        if (ProcessListBoxResponses(pObj, pPack, MsgID)) {
+            return;
+        }
+    }
+    if (pObj->Type == FE_CodeList) {
+        if (ProcessCodeListBoxResponses(pObj, pPack, MsgID)) {
+            return;
+        }
+    }
+    FEMessageResponse *pResp = pObj->FindResponse(MsgID);
+    if (pResp) {
+        ProcessResponses(pResp, pObj, pPack, uControlMask);
+    }
+}
+
+void FEngine::ProcessGlobalMessage(FEPackage *pPack, u32 MsgID, u32 uControlMask) {
+    FEMessageResponse *pResp = pPack->FindResponse(MsgID);
+    if (pResp) {
+        ProcessResponses(pResp, nullptr, pPack, uControlMask);
+    }
+}
+
+void FEngine::ProcessResponses(FEMessageResponse *pRespList, FEObject *pObj, FEPackage *pPack, u32 ControlMask) {
+    u32 Count = pRespList->GetCount();
+    for (u32 i = 0; i < Count; i++) {
         FEResponse *pResp = pRespList->GetResponse(i);
         switch (pResp->ResponseID) {
             case 0:
@@ -1271,7 +1102,7 @@ void FEngine::ProcessResponses(FEMessageResponse *pRespList, FEObject *pObj, FEP
                 break;
             case 1: {
                 FEObject *pTo = reinterpret_cast<FEObject *>(pResp->ResponseTarget);
-                if (reinterpret_cast<unsigned long>(pTo) != 0xFFFFFFFC && reinterpret_cast<unsigned long>(pTo) != 0xFFFFFFFF) {
+                if (reinterpret_cast<u32>(pTo) != 0xFFFFFFFC && reinterpret_cast<u32>(pTo) != 0xFFFFFFFF) {
                     pTo = pPack->FindObjectByGUID(pResp->ResponseTarget);
                 }
                 QueueMessage(pResp->ResponseParam, pObj, pPack, pTo, ControlMask);
@@ -1308,7 +1139,7 @@ void FEngine::ProcessResponses(FEMessageResponse *pRespList, FEObject *pObj, FEP
                 break;
             case 0x103: {
                 FEObject *pButton = nullptr;
-                unsigned long recalled = RecallLastPackageButton(pPack->GetNameHash());
+                u32 recalled = RecallLastPackageButton(pPack->GetNameHash());
                 if (recalled != 0) {
                     pButton = pPack->FindObjectByGUID(recalled);
                 }
@@ -1342,7 +1173,7 @@ void FEngine::ProcessResponses(FEMessageResponse *pRespList, FEObject *pObj, FEP
                 QueuePackagePush(reinterpret_cast<const char *>(pResp->ResponseParam), pPack->GetControlMask());
                 break;
             case 0x202: {
-                unsigned long pad = 0;
+                u32 pad = 0;
                 do {
                     if (ControlMask & (1 << pad)) {
                         QueuePackagePush(reinterpret_cast<const char *>(pResp->ResponseParam), ControlMask);
@@ -1385,6 +1216,27 @@ void FEngine::ProcessResponses(FEMessageResponse *pRespList, FEObject *pObj, FEP
                 break;
         }
     }
+}
+
+FEPackage *FEngine::FindPackageWithControl() {
+    FEPackage *pPack = PackList.GetLastPackage();
+    while (pPack) {
+        if (pPack->GetControlMask()) {
+            return pPack;
+        }
+        pPack = pPack->GetPrev();
+    }
+    return nullptr;
+}
+FEPackageCommand *FEngine::FindQueuedNodeWithControl() {
+    FEPackageCommand *pCmd = static_cast<FEPackageCommand *>(PackageCommands.GetTail());
+    while (pCmd) {
+        if (pCmd->iCommand & 2) {
+            return pCmd;
+        }
+        pCmd = static_cast<FEPackageCommand *>(pCmd->GetPrev());
+    }
+    return nullptr;
 }
 
 void FEngine::ProcessPackageCommands() {
@@ -1443,7 +1295,7 @@ void FEngine::ProcessPackageCommands() {
             FEPackage *pPack = pNode->pPackage;
             FEPackage *pParent = pPack->pParentPackage;
             if (pParent) {
-                unsigned long PassedMask = pPack->Controllers & pNode->uControlMask;
+                u32 PassedMask = pPack->Controllers & pNode->uControlMask;
                 pPack->Controllers &= ~PassedMask;
                 pParent->Controllers |= PassedMask;
                 QueueMessage(0x334c5493u, nullptr, pParent, reinterpret_cast<FEObject *>(0xFFFFFFFCu), pNode->uControlMask);
@@ -1461,7 +1313,7 @@ void FEngine::ProcessPackageCommands() {
                 pChild = pChild->GetNext();
             }
             if (pChild) {
-                unsigned long PassedMask = pNode->pPackage->Controllers & pNode->uControlMask;
+                u32 PassedMask = pNode->pPackage->Controllers & pNode->uControlMask;
                 pNode->pPackage->Controllers &= ~PassedMask;
                 pChild->Controllers |= PassedMask;
                 QueueMessage(0x334c5493u, nullptr, pChild, reinterpret_cast<FEObject *>(0xFFFFFFFCu), pNode->uControlMask);
@@ -1470,4 +1322,77 @@ void FEngine::ProcessPackageCommands() {
 
         delete pNode;
     } while (true);
+}
+
+int FEngine::GetNumPackagesBelowPriority(u8 priority) {
+    int count = 0;
+    FEPackage *package = PackList.GetFirstPackage();
+    while (package) {
+        if (package->GetPriority() < priority) {
+            count++;
+        }
+        package = package->GetNext();
+    }
+    FEPackageCommand *pNode = static_cast<FEPackageCommand *>(PackageCommands.GetHead());
+    while (pNode) {
+        if (count == 0 && (pNode->iCommand & 3)) {
+            count = 1;
+        } else if (pNode->iCommand & 2) {
+            count++;
+        } else if (pNode->iCommand & 1) {
+            count--;
+        }
+        pNode = static_cast<FEPackageCommand *>(pNode->GetNext());
+    }
+    return count;
+}
+
+void FEngine::RecordLastPackageButton(u32 PackHash, u32 ButtonGUID) {
+    int i = 0;
+    do {
+        if (RecordedPackageButtons[i].PackageHash == PackHash) {
+            RecordedPackageButtons[i].PackageHash = 0;
+        }
+        i++;
+    } while (i < 32);
+    RecordedPackageButtons[NextButtonRecordIndex].PackageHash = PackHash;
+    RecordedPackageButtons[NextButtonRecordIndex].ButtonGUID = ButtonGUID;
+    NextButtonRecordIndex = (NextButtonRecordIndex + 1) % 32;
+}
+
+u32 FEngine::RecallLastPackageButton(u32 PackHash) {
+    for (int i = 0; i < 32; i++) {
+        if (RecordedPackageButtons[i].PackageHash == PackHash) {
+            return RecordedPackageButtons[i].ButtonGUID;
+        }
+    }
+    return 0;
+}
+
+bool FEngine::RecordPackageMarker(const char *pName) {
+    int idx = CurrentPackageRecordIndex;
+    if (idx == 16) {
+        return false;
+    }
+    CurrentPackageRecordIndex = idx + 1;
+    FEngStrCpy(RecordedPackageNames[idx], pName);
+    return true;
+}
+
+const char *FEngine::RecallPackageMarker() {
+    if (CurrentPackageRecordIndex == 0) {
+        return nullptr;
+    }
+    return RecordedPackageNames[--CurrentPackageRecordIndex];
+}
+
+void FEngine::ClearPackageMarkers() {
+    {
+        u32 i = 0;
+        do {
+            RecordedPackageNames[i][0] = '\0';
+            i++;
+        } while (i < 16);
+    }
+    CurrentPackageRecordIndex = 0;
 }
