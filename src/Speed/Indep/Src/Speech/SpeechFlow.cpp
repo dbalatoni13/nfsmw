@@ -548,13 +548,49 @@ void Manager::Init2() {
 }
 
 void Manager::Destroy() {
-    mSampleRequests.clear();
-    for (int i = 0; i < NUM_SPEECH_MODULES; ++i) {
-        if (m_SpeechModule[i]) {
-            delete m_SpeechModule[i];
-            m_SpeechModule[i] = 0;
-        }
+    if (m_speechMode == SPEECH_FRONTEND_MODE) {
+        goto cleanup;
     }
+    if (m_speechMode > SPEECH_FRONTEND_MODE) {
+        goto check_split_destroy;
+    }
+    if (m_speechMode == SPEECH_GAME_MODE) {
+        goto game_destroy;
+    }
+    goto cleanup;
+
+check_split_destroy:
+    if (m_speechMode == SPEECH_SPLITSCREEN_MODE) {
+        goto split_destroy;
+    }
+    goto cleanup;
+
+game_destroy:
+    if (m_SpeechModule[COPSPEECH_MODULE]) {
+        delete m_SpeechModule[COPSPEECH_MODULE];
+    }
+    m_SpeechModule[COPSPEECH_MODULE] = 0;
+    if (m_SpeechModule[NISSFX_MODULE]) {
+        delete m_SpeechModule[NISSFX_MODULE];
+        m_SpeechModule[NISSFX_MODULE] = 0;
+    }
+    goto cleanup;
+
+split_destroy:
+    if (m_SpeechModule[NISSFX_MODULE]) {
+        delete m_SpeechModule[NISSFX_MODULE];
+        m_SpeechModule[NISSFX_MODULE] = 0;
+    }
+
+cleanup:
+    if (m_SPEECH_bankPtrMem) {
+        gAudioMemoryManager.FreeMemory(m_SPEECH_bankPtrMem);
+        m_SPEECH_bankPtrMem = 0;
+    }
+    ClearPlayback();
+    mEvtHistory.clear();
+    mGlobalHistory.clear();
+    mSampleRequests.clear();
 }
 
 void Manager::Deduce() {
