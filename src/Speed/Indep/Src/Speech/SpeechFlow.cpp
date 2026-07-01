@@ -52,10 +52,12 @@ struct SPCHType_ExtVecs {
 
 extern int SPCH_AddBank(char *bankHdr);
 extern int SPCH_AddEventDB(char *event_dat, unsigned int channel);
+extern int SPCH_Choose(unsigned int inChannel);
 extern int SPCH_GetBankPtrMemSize(int num_banks);
 extern SPCHType_ExtVecs *SPCH_GetExtVecs();
 extern int SPCH_GetSampleDataRate(int sampleRate, int sampleBits, CompressionType type);
 extern int SPCH_InitBankMem(int num_banks, char *bank_ptr_mem);
+extern int SPCH_Play(unsigned int inChannel);
 extern void SPCH_Init(int (*request)(SPCHType_SampleRequestData *), unsigned int seed, int rate);
 extern void SPCH_InitEventRuleCallback(SPCHType_EventRuleResult (*callback)(EventSpec *));
 extern void SPCH_InitReparmCallback(int (*callback)(int, unsigned int *));
@@ -388,24 +390,34 @@ ScheduledSpeechEvent *Manager::ScheduleSpeechPartII(unsigned int size, void *dat
 }
 
 int Manager::IndirectSpeechEvent(ScheduledSpeechEvent *evt, bool test_only) {
-    if (!evt) {
-        return -1;
+    if ((IsSpeechEnabled == 0) || (m_speechMode == SPEECH_SPLITSCREEN_MODE) || (evt == 0)) {
+        return -2;
     }
 
-    if (PreValidate(*evt) != 0) {
-        return 1;
+    int result = Csis::Function::Call(evt->fh, evt->GetData(0));
+    int rval;
+
+    if (result < 0) {
+        evt->fh->Set(evt->iid);
+        result = Csis::Function::Call(evt->fh, evt->GetData(0));
     }
 
-    if (!test_only) {
-        if (sQueuedEventCount < 256) {
-            sQueuedEvents[sQueuedEventCount] = evt;
-            ++sQueuedEventCount;
-        } else {
-            return 2;
+    mCurrentEvent = evt;
+    rval = SPCH_Choose(static_cast<unsigned int>(m_SpeechModule[COPSPEECH_MODULE]->GetChannel()));
+
+    if (rval != 0) {
+        if (!test_only) {
+            rval = SPCH_Play(static_cast<unsigned int>(m_SpeechModule[COPSPEECH_MODULE]->GetChannel()));
+            evt->assoc_samples_count = static_cast<unsigned char>(rval);
+            if (evt->assoc_samples_count == 0) {
+                result = -2;
+            }
         }
+    } else {
+        result = -5;
     }
 
-    return PostValidate(evt, 0U);
+    return result;
 }
 
 void Manager::ClearPlayback() {
