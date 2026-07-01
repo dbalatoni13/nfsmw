@@ -1,9 +1,25 @@
 #include "Observer.h"
+#include "EAXDispatch.h"
+#include "RoadblockFlow.h"
 #include "SoundAI.h"
 #include "Speed/Indep/Src/Generated/Messages/MGamePlayMoment.h"
 #include "Speed/Indep/Src/Generated/Messages/MMiscSound.h"
 #include "Speed/Indep/Src/Generated/Messages/MNotifySpeechStatus.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
+
+namespace Csis {
+struct AnytimeEvents_CollisionWorldStruct {
+    int speaker_id;
+    int world_object_type;
+    int num_units;
+};
+}
+
+namespace MiscSpeech {
+bool IsVehicleTypeOK();
+int MoreDetails(int spkrID);
+int Unit911Reply(int spkrID);
+}
 
 namespace Speech {
 
@@ -409,8 +425,144 @@ void Observer::AssessOffroad() {
     }
 }
 
-void Observer::MessageEventComplete(const MNotifySpeechStatus &) {
-    mBusy = 0;
+void Observer::MessageEventComplete(const MNotifySpeechStatus &message) {
+    ScheduledSpeechEvent *speech = message.GetEvent();
+    if (speech == 0) {
+        return;
+    }
+
+    static int spkrID911;
+    bool outcome_req = false;
+    mOutcomeIntensity = Csis::Type_intensity_High;
+
+    switch (speech->ID) {
+    case kSPCH1_EventID_OffroadMoment: {
+        Csis::AnytimeEvents_OffroadMomentStruct *data =
+            static_cast<Csis::AnytimeEvents_OffroadMomentStruct *>(speech->GetData(0));
+        if (data != 0) {
+            unsigned int offroad_id = data->offroad_id;
+            if ((mOffroadHistory & offroad_id) == 0) {
+                mOffroadHistory |= offroad_id;
+            }
+        }
+        break;
+    }
+    case kSPCH1_EventID_CollisionWorld: {
+        Csis::AnytimeEvents_CollisionWorldStruct *data =
+            static_cast<Csis::AnytimeEvents_CollisionWorldStruct *>(speech->GetData(0));
+        outcome_req = true;
+        if (data != 0 && data->world_object_type == 0x40) {
+            mOutcomeIntensity = Csis::Type_intensity_Normal;
+        }
+        break;
+    }
+    case kSPCH1_EventID_RBEngage:
+    case kSPCH1_EventID_ExtraRBEngage:
+    case kSPCH1_EventID_HeliBullhornArrest: {
+        outcome_req = true;
+        SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
+        if (ai != 0 && ai->GetRBFlow() != 0) {
+            outcome_req = ai->GetRBFlow()->HasNailedSpikes() == 0;
+        }
+        break;
+    }
+    case kSPCH1_EventID_StrategyExecute: {
+        Csis::RollingStrategy_StrategyExecuteStruct *data =
+            static_cast<Csis::RollingStrategy_StrategyExecuteStruct *>(speech->GetData(0));
+        outcome_req = true;
+        if (data != 0) {
+            mOutcomeIntensity = static_cast<Csis::Type_intensity>(data->intensity);
+        }
+        break;
+    }
+    case kSPCH1_EventID_Arrest: {
+        Csis::Arrest_ArrestStruct *data = static_cast<Csis::Arrest_ArrestStruct *>(speech->GetData(0));
+        outcome_req = true;
+        if (data != 0) {
+            mOutcomeIntensity = static_cast<Csis::Type_intensity>(data->intensity);
+        }
+        break;
+    }
+    case kSPCH1_EventID_BullhornArrest: {
+        Csis::Arrest_BullhornArrestStruct *data = static_cast<Csis::Arrest_BullhornArrestStruct *>(speech->GetData(0));
+        outcome_req = true;
+        if (data != 0) {
+            mOutcomeIntensity = static_cast<Csis::Type_intensity>(data->intensity);
+        }
+        break;
+    }
+    case kSPCH1_EventID_CollWorld_Flip: {
+        Csis::AnytimeEvents_CollWorld_FlipStruct *data =
+            static_cast<Csis::AnytimeEvents_CollWorld_FlipStruct *>(speech->GetData(0));
+        outcome_req = true;
+        if (data != 0) {
+            mOutcomeIntensity = static_cast<Csis::Type_intensity>(data->intensity);
+        }
+        break;
+    }
+    case kSPCH1_EventID_IntentToRam: {
+        Csis::AnytimeEvents_IntentToRamStruct *data = static_cast<Csis::AnytimeEvents_IntentToRamStruct *>(speech->GetData(0));
+        if (data != 0) {
+            if (data->speaker_id == 2) {
+                mTracking &= ~CarRam;
+            } else {
+                SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
+                mTracking |= CarRam;
+                if (ai != 0) {
+                    mRamCop = ai->GetCop(data->speaker_id);
+                    if (mRamCop != 0) {
+                        ai->MakeCopsImmune();
+                    }
+                }
+            }
+            outcome_req = true;
+            mOutcomeIntensity = static_cast<Csis::Type_intensity>(data->intensity);
+        }
+        break;
+    }
+    case kSPCH1_EventID_LostVisual:
+    case kSPCH1_EventID_LostSuspect:
+    case kSPCH1_EventID_HeliLostVisual:
+        if ((mTracking & Lost) == 0) {
+            mTracking |= Lost;
+        }
+        break;
+    case kSPCH1_EventID_ReInitPursuit:
+        if ((mTracking & Lost) != 0) {
+            mTracking &= ~Lost;
+        }
+        if (Manager::IsQueued(kSPCH1_EventID_RegainVisual, 4)) {
+            Manager::RecallSpeechEvent(kSPCH1_EventID_RegainVisual);
+        }
+        break;
+    case kSPCH1_EventID_Disp911Report:
+        spkrID911 = MiscSpeech::MoreDetails(0);
+        if (UTL::Collections::Singleton<SoundAI>::Get() != 0) {
+            UTL::Collections::Singleton<SoundAI>::Get()->Force911State();
+        }
+        break;
+    case kSPCH1_EventID_MoreDetails: {
+        SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
+        if (ai != 0 && ai->GetPursuitState() != SoundAI::kActive) {
+            if (ai->GetPlayerCarColor() != 0 && MiscSpeech::IsVehicleTypeOK() && bRandom(1.0f) > 0.5f) {
+                ai->GetDispatch()->VehicleDescription();
+            } else {
+                ai->GetDispatch()->NoVehicleDescription();
+            }
+            if (spkrID911 > 0) {
+                MiscSpeech::Unit911Reply(spkrID911);
+            }
+        }
+        break;
+    }
+    default:
+        break;
+    }
+
+    if (outcome_req) {
+        mTracking |= Outcome;
+        mT_trackingOutcome = WorldTimer;
+    }
 }
 
 void Observer::MessageBlewPastCop(const MGamePlayMoment &) {

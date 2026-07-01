@@ -65,7 +65,7 @@ class RoadblockFlow : public SpeechFlow {
     bool IsTransitionable() override;
 
     bool HasNailedSpikes() const {
-        return (mFlags & NAILED_SPIKES) != 0;
+        return mFlags & NAILED_SPIKES;
     }
 
   private:

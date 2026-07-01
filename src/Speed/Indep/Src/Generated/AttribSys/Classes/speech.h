@@ -13,7 +13,24 @@
 #include "Speed/Indep/Tools/AttribSys/Runtime/Common/AttribPrivate.h"
 
 enum SPCHType_1_EventID {
+    kSPCH1_EventID_RBEngage = 0x50,
+    kSPCH1_EventID_StrategyExecute = 0x59,
+    kSPCH1_EventID_Arrest = 0x5f,
+    kSPCH1_EventID_CollisionWorld = 0x62,
+    kSPCH1_EventID_Disp911Report = 0x66,
+    kSPCH1_EventID_LostVisual = 0x6a,
+    kSPCH1_EventID_RegainVisual = 0x6b,
+    kSPCH1_EventID_LostSuspect = 0x6c,
+    kSPCH1_EventID_IntentToRam = 0x71,
+    kSPCH1_EventID_ReInitPursuit = 0xa0,
+    kSPCH1_EventID_OffroadMoment = 0xa6,
+    kSPCH1_EventID_HeliLostVisual = 0xa9,
     kSPCH1_EventID_CellCall = 0xcc,
+    kSPCH1_EventID_CollWorld_Flip = 0xd5,
+    kSPCH1_EventID_BullhornArrest = 0xde,
+    kSPCH1_EventID_MoreDetails = 0xe8,
+    kSPCH1_EventID_ExtraRBEngage = 0xf5,
+    kSPCH1_EventID_HeliBullhornArrest = 0x103,
     kSPCH1_EventID_MaxEventID = 0x108,
 };
 

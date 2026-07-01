@@ -386,7 +386,9 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
         return mActorPool;
     }
 
-    // void MakeCopsImmune() {}
+    void MakeCopsImmune() {
+        mFlags |= COPS_IMMUNE;
+    }
 
     void ClearImmunity() {
         mFlags &= ~COPS_IMMUNE;
