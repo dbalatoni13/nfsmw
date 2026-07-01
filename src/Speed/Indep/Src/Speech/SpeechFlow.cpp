@@ -914,17 +914,100 @@ void Manager::NotifyEventCompletion(ScheduledSpeechEvent *evt, bool playback_com
 }
 
 ScheduledSpeechEvent *Manager::GetNextEvent() {
-    ScheduledSpeechEvent *best = 0;
-    for (int i = 0; i < sQueuedEventCount; ++i) {
-        ScheduledSpeechEvent *evt = sQueuedEvents[i];
-        if (!evt) {
-            continue;
+    if (mEvents[2].size() != 0) {
+        SchedSpchEvents::iterator iter;
+
+        if (mEvents[2].size() > 1) {
+            bool requires_sort = true;
+            SchedSpchEvents::iterator start = mEvents[2].begin();
+            ScheduledSpeechEvent *head = *start;
+            while (start != mEvents[2].end()) {
+                if (head->priority <= 100) {
+                    break;
+                }
+                ++start;
+                if (start == mEvents[2].end()) {
+                    requires_sort = false;
+                }
+            }
+            if (requires_sort) {
+                std::sort(start, mEvents[2].end(), ScheduledSpeechEvent::sort_nested_priority);
+            }
         }
-        if (!best || ScheduledSpeechEvent::sort_nested_priority(evt, best)) {
-            best = evt;
-        }
+
+        iter = mEvents[2].begin();
+        do {
+            if (iter == mEvents[2].end()) {
+                return 0;
+            }
+
+            ScheduledSpeechEvent *next = *iter;
+            if (next->assoc_samples_prep == 0) {
+                short prepared_count = 0;
+                for (short i = 0; i < 7; ++i) {
+                    SpeechSampleData *stitch = next->assoc_samples[i];
+                    if (stitch != 0 && stitch->ready) {
+                        ++prepared_count;
+                    }
+                }
+
+                if (prepared_count == next->assoc_samples_count) {
+                    next->assoc_samples_prep = 1;
+                    if ((next->flags & 2U) == 0) {
+                        next->entry_time = WorldTimer;
+                    }
+                } else {
+                    SpeechValRtnType keep = PostValidate(next, 1U);
+                    if (next->assoc_samples_count == 0 || keep == kDitchEvt) {
+                        goto remove_event;
+                    }
+
+                    {
+                        Attrib::Gen::speech event(mHashMap.GetHash(next->ID), 0, 0);
+                        if (event.interrupt()) {
+                            return 0;
+                        }
+                    }
+                }
+            }
+
+        check_prepared:
+            if (next->assoc_samples_prep != 0) {
+                SpeechValRtnType keep = PostValidate(next, 0xffffffff);
+                if (keep != kDitchEvt) {
+                    goto check_keep;
+                }
+                goto remove_event;
+
+            check_keep:
+                if (keep == kDeferEvt) {
+                    goto defer_next;
+                }
+                if (keep == kKeepEvt) {
+                    return next;
+                }
+                goto next_loop;
+            }
+            goto return_null;
+
+        remove_event:
+            mEvents[2].erase(iter);
+            delete next;
+            return 0;
+
+        defer_next:
+            if (iter == mEvents[2].end()) {
+                return 0;
+            }
+            ++iter;
+
+        next_loop:
+            ;
+        } while (true);
     }
-    return best;
+
+return_null:
+    return 0;
 }
 
 SpeechValRtnType Manager::PostValidate(ScheduledSpeechEvent *evt, unsigned int mask) {
