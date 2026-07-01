@@ -245,17 +245,32 @@ void Observer::AssessArrest() {
 
 void Observer::AssessLOS() {
     SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
-    if (!ai) {
-        return;
+    if (((ai->GetFocus() == SoundAI::kPursuitFlow) || (ai->GetFocus() == SoundAI::kLost)) && (mTracking & Lost)) {
+        mTracking &= ~Lost;
     }
 
-    int prev = mNumCopsWithLOS;
-    mNumCopsWithLOS = ai->NumCopsWithLOS();
-    if (ai->GetLeader()) {
-        if ((prev > 0) && (mNumCopsWithLOS <= 0)) {
-            ai->GetLeader()->LostVisual();
-        } else if ((prev <= 0) && (mNumCopsWithLOS > 0)) {
-            ai->GetLeader()->RegainVisual();
+    if ((ai->GetTimeInView() > 0.0f) && (mTracking & Lost)) {
+        copList losList;
+        losList.reserve(ai->GetActors().size());
+        {
+            copMap::const_iterator iter = ai->GetActors().begin();
+            while (iter != ai->GetActors().end()) {
+                EAXCop *cop = iter->cop;
+                if (cop->IsActive() && cop->HasLOS()) {
+                    losList.push_back(cop);
+                }
+                ++iter;
+            }
+        }
+
+        if (losList.size() > 1) {
+            _STL::sort(losList.begin(), losList.end());
+        }
+
+        if (!losList.empty()) {
+            EAXCop *closest = losList.front();
+            closest->RegainVisual();
+            mTracking &= ~Lost;
         }
     }
 }
