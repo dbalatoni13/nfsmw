@@ -147,12 +147,9 @@ void PursuitFlow::CloseInCheck() {
 
 void PursuitFlow::PrimaryBranch() {
     SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
-    if (!ai) {
-        return;
-    }
 
     if (ai->GetPursuitState() == SoundAI::kInactive) {
-        ChangeStateTo(kPlayerStopped);
+        ChangeStateTo(kBailout);
         return;
     }
 
@@ -161,28 +158,97 @@ void PursuitFlow::PrimaryBranch() {
         return;
     }
 
-    if (mBusy) {
-        if (!Manager::IsCopSpeechBusy()) {
-            ChangeStateTo(kTerminal);
-            mBusy = 0;
+    if (!mBusy) {
+        EAXCop *newprim = ai->FindClosestCop(false, false);
+        if (!newprim) {
+            ChangeStateTo(kCullCheck);
+            return;
         }
+
+        if (!newprim->IsPrimary() && !ai->MakeLeader(newprim)) {
+            ChangeStateTo(kCullCheck);
+            return;
+        }
+
+        if (newprim->IsHeli()) {
+            ChangeStateTo(kCullCheck);
+            return;
+        }
+
+        if (mCauseofPursuit == kReacquired) {
+            newprim->ReinitiatePursuit();
+        } else {
+            if (mReqRestart) {
+                if (mSpeaker > 0) {
+                    if (newprim->GetSpeakerID() != mSpeaker) {
+                        EAXCop *oldprim = ai->GetCop(mSpeaker);
+                        if (oldprim) {
+                            newprim->SwapVoices(oldprim);
+                        }
+                    }
+                }
+                mReqRestart = false;
+            }
+
+            newprim->AttemptVehicleStop();
+            mSpeaker = newprim->GetSpeakerID();
+
+            if (!ai->GetLeader()) {
+                ai->MakeLeader(newprim);
+            }
+
+            if (ai->GetDispatch()) {
+                ai->GetDispatch()->GoAhead();
+            }
+
+            if ((mCauseofPursuit != kCopAssaulted) && (mCauseofPursuit != kCopAssaultedScripted)) {
+                newprim->VehicleReport();
+            }
+
+            if (mCauseofPursuit == kCopAssaultedScripted) {
+                ChangeStateTo(kTerminal);
+                return;
+            }
+
+            if (ai->NumPursuits() > 1) {
+                if (ai->NumPursuits() > 2) {
+                    EAXCop *rp = ai->GetRandomActiveCop(1, false);
+                    if (rp) {
+                        if (rp->GetHandle() != newprim->GetHandle()) {
+                            rp->DriverHistory();
+                        } else {
+                            ai->GetDispatch()->DriverHistory();
+                        }
+                    }
+                } else {
+                    newprim->SuspectConfirmed();
+                }
+                mCauseofPursuit = kReacquired;
+            }
+        }
+
+        mBusy++;
         return;
     }
 
-    EAXCop *leader = ai->FindClosestCop(false, false);
-    if (!leader || !ai->MakeLeader(leader)) {
-        ChangeStateTo(kCullCheck);
-        return;
+    if (ai->GetPlayerStopTime() >= ai->GetTune().MinTimeConsideredStopped()) {
+        if ((mCauseofPursuit != kCopAssaulted) && (mCauseofPursuit != kCopAssaultedScripted)) {
+            mBusy = 0;
+            ChangeStateTo(kPlayerStopped);
+            return;
+        }
     }
 
-    mFirstOnScene = leader;
-    if (ai->GetPlayerStopTime() > ai->GetTune().MinTimeConsideredStopped()) {
-        ChangeStateTo(kPlayerStopped);
-    } else if (ai->NumPursuits() > 1) {
-        leader->PrimaryEngage();
+    if (!Manager::IsCopSpeechBusy()) {
+        if (!mBusy) {
+            return;
+        }
+        if (mReqRestart) {
+            return;
+        }
+        ChangeStateTo(kTerminal);
+        mBusy = 0;
     }
-
-    mBusy++;
 }
 
 void PursuitFlow::PlayerStopped() {
