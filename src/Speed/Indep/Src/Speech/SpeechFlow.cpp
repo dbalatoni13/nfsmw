@@ -809,13 +809,47 @@ extern "C" bool InteruptedAndNotDelayed__6SpeechPQ26Speech20ScheduledSpeechEvent
 namespace Speech {
 
 void Manager::ServiceFilteredEvents() {
-    for (SPCHSampleRequest *it = mSampleRequests.begin(); it != mSampleRequests.end();) {
-        SPCHType_1_EventID id = static_cast<SPCHType_1_EventID>(it->data.eventSpec.eventID);
-        if (!IsCacheable(id)) {
-            it = mSampleRequests.erase(it);
-        } else {
-            ++it;
+    if (mEvents[1].size() != 0) {
+        std::sort(mEvents[1].begin(), mEvents[1].end());
+
+        SchedSpchEvents::iterator i = mEvents[1].begin();
+        while (i != mEvents[1].end()) {
+            bool trimmed = false;
+            ScheduledSpeechEvent *this_event = *i;
+
+            if (this_event->assoc_samples_count == 0) {
+                int rval = IndirectSpeechEvent(this_event, false);
+                if (rval == -2) {
+                    goto validate_event;
+                }
+                if (rval > -2) {
+                    goto defer_event;
+                }
+                if (rval != -5) {
+                    goto defer_event;
+                }
+                delete this_event;
+                i = mEvents[1].erase(i);
+                trimmed = true;
+                goto next_event;
+
+            validate_event:
+                if (PostValidate(this_event, 1U) != kDitchEvt) {
+                    mEvents[0].insert(mEvents[0].begin(), this_event);
+                }
+                goto next_event;
+
+            defer_event:
+                mEvents[2].push_back(this_event);
+            }
+
+        next_event:
+            if (!trimmed) {
+                ++i;
+            }
         }
+
+        mEvents[1].clear();
     }
 }
 
