@@ -5,6 +5,7 @@
 #include "Speed/Indep/Src/Generated/Messages/MGamePlayMoment.h"
 #include "Speed/Indep/Src/Generated/Messages/MMiscSound.h"
 #include "Speed/Indep/Src/Generated/Messages/MNotifySpeechStatus.h"
+#include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IINput.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
@@ -184,11 +185,61 @@ void Observer::GasStationAftermath() {
 
 void Observer::AssessArrest() {
     SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
-    if (!ai) {
-        return;
+    float t_busted = 0.0f;
+    Speech::Module *cop_speech = nullptr;
+    if (ai->GetPursuit()) {
+        t_busted = ai->GetPursuit()->TimeUntilBusted();
+        if ((t_busted > 0.8f) && !Manager::IsQueued(kSPCH1_EventID_HeliBullhornArrest, 4) &&
+            !Manager::IsCopSpeechPlaying(kSPCH1_EventID_HeliBullhornArrest) && !Manager::IsQueued(kSPCH1_EventID_BullhornArrest, 4) &&
+            !Manager::IsCopSpeechPlaying(kSPCH1_EventID_BullhornArrest)) {
+            GRaceParameters *parms = GRaceStatus::Exists() ? GRaceStatus::Get().GetRaceParameters() : nullptr;
+            bool isEpicPursuit = false;
+            if (parms && parms->GetIsEpicPursuitRace()) {
+                isEpicPursuit = true;
+            }
+            bool isEpicCellCallQueued = false;
+            if (isEpicPursuit && (Manager::IsQueued(kSPCH1_EventID_CellCall, 4) || Manager::IsCopSpeechPlaying(kSPCH1_EventID_CellCall))) {
+                isEpicCellCallQueued = true;
+            }
+
+            if (!isEpicCellCallQueued) {
+                mTracking |= Arrest;
+                EAXCop *cop = ai->GetRandomActiveCop(0, true);
+                if (cop) {
+                    cop_speech = Manager::GetSpeechModule(COPSPEECH_MODULE);
+                    if (cop_speech) {
+                        cop_speech->ReleaseResource();
+                    }
+                    Manager::ClearPlayback();
+                    if (ai->GetHeli() && (ai->GetHeli()->GetDistance() < 100.0f) && ai->GetHeli()->IsActive()) {
+                        ai->GetHeli()->BullhornArrest();
+                    } else {
+                        cop->BullhornArrest();
+                    }
+                }
+            }
+        } else {
+            mTracking &= ~Arrest;
+        }
     }
-    if (ai->GetPursuitState() == SoundAI::kInactive) {
-        mTracking |= Arrest;
+
+    if (!cop_speech) {
+        cop_speech = Manager::GetSpeechModule(COPSPEECH_MODULE);
+        if (!cop_speech) {
+            return;
+        }
+    }
+
+    if (cop_speech->GetSFXOBJ_Speech()) {
+        float ftmp = t_busted * 32767.0f;
+        if (ftmp > 32767.0f) {
+            ftmp = 32767.0f;
+        }
+        if (ftmp < 0.0f) {
+            ftmp = 0.0f;
+        }
+        int q15scale = static_cast<int>(ftmp);
+        cop_speech->GetSFXOBJ_Speech()->SetDMIX_Input(5, q15scale);
     }
 }
 
