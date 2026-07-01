@@ -261,14 +261,64 @@ void MusicFlow::Neutral() {
 
 void MusicFlow::Lose() {
     SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
-    if (!ai) {
+    bool in_cooldown;
+
+    int *busy = &mBusy;
+    int busy_value;
+    if (mElapsed < 60.0f) {
+        busy_value = mBusy;
+        mBusy = busy_value + 1;
+    } else {
+        busy_value = 0;
+    }
+    *busy = busy_value;
+
+    if (ai->GetPursuitState() == SoundAI::kInactive) {
+        ChangeStateTo(kTerminal);
         return;
     }
 
-    if (ai->GetPursuitState() == SoundAI::kActive) {
+    if (ai->GetPlayerSpeed() < mTopSpeed * 0.125f && ai->GetPursuit()->TimeUntilBusted() > 0.5f && ai->IsHighIntensity()) {
+        mIntensity = 1.0f;
+    } else {
+        if (mIntensity >= 0.93f) {
+            mIntensity = 0.8f;
+        }
+        UpdateIntensity(ai->GetPlayerSpeed() < mTopSpeed * 0.375f ? 0.86f : 0.0f);
+        UpdateIntensity(ai->GetTimeLastCrashed() >= 2.5f ? mIntensity : 0.86f);
+        UpdateIntensity(ai->GetTimeLastNailedCop() >= 2.5f ? mIntensity : 0.86f);
+    }
+
+    if (ai->GetPursuit()) {
+        in_cooldown = ai->GetPursuit()->GetPursuitStatus() == 2;
+    } else {
+        in_cooldown = false;
+    }
+
+    if ((ai->GetPursuitState() == SoundAI::kSearching || in_cooldown) && ai->GetPerpLostTime() > 4.0f) {
+        if (ai->GetPlayerSpeed() < mTopSpeed * 0.65f) {
+            ChangeStateTo(kElude);
+            mIntensity = 1.0f;
+        } else {
+            ChangeStateTo(kWin);
+            mIntensity = 1.0f;
+        }
+    } else {
+        if (mBusy != 0) {
+            return;
+        }
+
+        if (mAvgPlayerSpeed <= mTopSpeed * 0.5f) {
+            float t_lost = ai->GetPerpLostTime();
+            if (t_lost <= 5.0f) {
+                if (mElapsed <= 90.0f) {
+                    return;
+                }
+            }
+        }
+
         ChangeStateTo(kNeutral);
-    } else if (ai->GetPursuitState() == SoundAI::kInactive) {
-        ChangeStateTo(kWaiting);
+        mIntensity = 0.35f;
     }
 }
 
