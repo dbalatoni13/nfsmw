@@ -1,6 +1,7 @@
 #include "Speed/Indep/Src/EAXSound/Stream/SpeechManager.hpp"
 #include "Speed/Indep/Src/EAXSound/Csis.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
+#include "Speed/Indep/Src/EAXSound/AudioMemBase.hpp"
 #include "Speed/Indep/Src/EAXSound/AudioMemoryManager.hpp"
 #include "Speed/Indep/Src/EAXSound/Stream/EAXS_StreamChannel.h"
 #include "Speed/Indep/Src/EAXSound/Stream/EAXS_StreamManager.h"
@@ -37,16 +38,49 @@ struct CLUMP_IDX_FILEtag {
     CLUMP_ITEMtag item[1];
 };
 
+enum CompressionType {
+    kSPCH_Compression_None = 0,
+    kSPCH_Compression_MicroTalk = 1,
+    kSPCH_Compression_XA = 2,
+};
+
+struct SPCHType_ExtVecs {
+    void (*spchAbortMessage)(const char *, ...);
+    int (*spchPrint)(const char *, ...);
+    int (*spchGetTick)();
+};
+
 extern int SPCH_AddBank(char *bankHdr);
 extern int SPCH_AddEventDB(char *event_dat, unsigned int channel);
 extern int SPCH_GetBankPtrMemSize(int num_banks);
+extern SPCHType_ExtVecs *SPCH_GetExtVecs();
+extern int SPCH_GetSampleDataRate(int sampleRate, int sampleBits, CompressionType type);
 extern int SPCH_InitBankMem(int num_banks, char *bank_ptr_mem);
+extern void SPCH_Init(int (*request)(SPCHType_SampleRequestData *), unsigned int seed, int rate);
+extern void SPCH_InitEventRuleCallback(SPCHType_EventRuleResult (*callback)(EventSpec *));
+extern void SPCH_InitReparmCallback(int (*callback)(int, unsigned int *));
+extern void SPCH_InitRuleCallbacks(int (*test)(EventSpec *, int, int, int), void (*set)(EventSpec *, int, int, int));
+extern void SPCH_SetMemCallbacks(void *(*memAlloc)(unsigned int), void (*memFree)(void *));
 extern void *bMalloc(int size, int allocation_params);
 extern EAXS_StreamManager *gpEAXS_StrmMgr;
+extern SlotPool *pCsisSlotPools[];
 extern Timer RealTimer;
 extern float TRACKSTREAMER_BACKLOG_THRESH;
 extern int SPEECH_DISPLAY_HISTORY;
 extern "C" bool InteruptedAndNotDelayed__6SpeechPQ26Speech20ScheduledSpeechEvent(Speech::ScheduledSpeechEvent *this_event);
+
+static void *CSISAllocatorMemAlloc(unsigned int numBytes);
+static void CSISAllocatorMemFree(void *memPtr);
+static unsigned int gSpeechSeed;
+
+static void *CSISAllocatorMemAlloc(unsigned int numBytes) {
+    (void)numBytes;
+    return bOMalloc(pCsisSlotPools[0]);
+}
+
+static void CSISAllocatorMemFree(void *memPtr) {
+    bFree(pCsisSlotPools[0], memPtr);
+}
 
 namespace Speech {
 
@@ -383,22 +417,76 @@ void Manager::ClearPlayback() {
 }
 
 void Manager::Init(SPEECH_MODE mode) {
-    mSampleRequests.clear();
-    m_frameindex = 0;
-    mLastSpeakerID = 0;
+    if (IsSoundEnabled != 0) {
+        mEvtHistory.clear();
+        for (int ndx = 0; ndx < 4; ++ndx) {
+            mEvents[ndx].clear();
+        }
 
-    if (!m_SpeechModule[COPSPEECH_MODULE]) {
-        m_SpeechModule[COPSPEECH_MODULE] = new GameSpeech();
-    }
-    if (m_SpeechModule[COPSPEECH_MODULE]) {
-        m_SpeechModule[COPSPEECH_MODULE]->Init(mode);
-    }
+        mGlobalHistory.clear();
+        mSampleRequests.reserve(20);
+        mSampleRequests.clear();
+        m_numberSpeechBanks = 0;
+        m_speechMode = mode;
 
-    if (!m_SpeechModule[NISSFX_MODULE]) {
-        m_SpeechModule[NISSFX_MODULE] = new SED_NISSFX();
-    }
-    if (m_SpeechModule[NISSFX_MODULE]) {
-        m_SpeechModule[NISSFX_MODULE]->Init(2);
+        int rate = SPCH_GetSampleDataRate(0x5622, 0x10, kSPCH_Compression_MicroTalk);
+        SPCHType_ExtVecs *spchVecs = SPCH_GetExtVecs();
+
+        if (gSpeechSeed == 0) {
+            gSpeechSeed = g_pEAXSound->Random(-1);
+        } else {
+            ++gSpeechSeed;
+        }
+
+        SPCH_SetMemCallbacks(CSISAllocatorMemAlloc, CSISAllocatorMemFree);
+        SPCH_Init(SampleRequestCallback, static_cast<unsigned int>(bAbs(static_cast<int>(gSpeechSeed))), rate);
+        spchVecs->spchAbortMessage = SpchLibAbort;
+        spchVecs->spchGetTick = GetTicker;
+        SPCH_InitRuleCallbacks(TestSentenceRuleCallback, SetSentenceRuleCallback);
+        SPCH_InitEventRuleCallback(EventRuleCallback);
+        SPCH_InitReparmCallback(ReparmCallback);
+
+        if (m_speechMode == SPEECH_FRONTEND_MODE) {
+            goto init_done;
+        }
+        if (m_speechMode > SPEECH_FRONTEND_MODE) {
+            goto check_splitscreen;
+        }
+        if (m_speechMode == SPEECH_GAME_MODE) {
+            goto game_mode;
+        }
+        goto init_done;
+
+    check_splitscreen:
+        if (m_speechMode == SPEECH_SPLITSCREEN_MODE) {
+            goto splitscreen_mode;
+        }
+        goto init_done;
+
+    game_mode:
+        m_gameSpeechInitted = 0;
+        m_NISAudioInitted = 0;
+        if (IsSpeechEnabled) {
+            m_SpeechModule[COPSPEECH_MODULE] = new ("AUD:GameSpeech") GameSpeech();
+            m_SpeechModule[COPSPEECH_MODULE]->Init(SPEECH_NONE_MODE);
+        }
+        if (IsNISAudioEnabled) {
+            m_SpeechModule[NISSFX_MODULE] = new ("AUD:NISSFXModule") SED_NISSFX();
+            m_SpeechModule[NISSFX_MODULE]->Init(SPEECH_FRONTEND_MODE);
+        }
+        goto init_done;
+
+    splitscreen_mode:
+        m_NISAudioInitted = 0;
+        m_gameSpeechInitted = 0;
+        if (IsNISAudioEnabled) {
+            m_SpeechModule[NISSFX_MODULE] = new ("AUD:NISSFXModule") SED_NISSFX();
+            m_SpeechModule[NISSFX_MODULE]->Init(SPEECH_FRONTEND_MODE);
+        }
+
+    init_done:
+        PopulateHashMap();
+        mGlobalHistory.Init();
     }
 }
 
