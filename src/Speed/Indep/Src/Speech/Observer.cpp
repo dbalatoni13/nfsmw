@@ -8,6 +8,7 @@
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IINput.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 namespace UTL {
@@ -282,9 +283,28 @@ void Observer::NotifyAirborne(float alt, float t) {
 }
 
 void Observer::AssessFlippage() {
-    if (mAirborneHeight > 1.0f) {
-        mTracking |= UTurnResult;
-        mT_flipped = WorldTimer;
+    SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
+    if (ai->NumCopsWithLOS() > 0) {
+        bool flipped = false;
+        IPlayer *player = IPlayer::First(PLAYER_LOCAL);
+        if (player) {
+            ISimable *simable = player->GetSimable();
+            IRigidBody *irb = simable->GetRigidBody();
+            UMath::Vector3 upVec;
+            irb->GetUpVector(upVec);
+            flipped = upVec.y < 0.0f;
+            if (!flipped) {
+                mT_flipped = WorldTimer;
+            }
+        }
+
+        float t_flipped = (WorldTimer - mT_flipped).GetSeconds();
+        if (flipped && (t_flipped >= ai->GetTune().FlipTimeForCommentary())) {
+            EAXCop *cop = ai->FindClosestCop(true, true);
+            if (cop) {
+                cop->SuspectRollover(ai->GetPlayerSpeed() > ai->GetTune().SpeedThreshFlyFlipIntensity() ? Csis::Type_intensity_High : Csis::Type_intensity_Normal);
+            }
+        }
     }
 }
 
