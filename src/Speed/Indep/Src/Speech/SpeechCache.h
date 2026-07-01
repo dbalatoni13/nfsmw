@@ -51,7 +51,9 @@ struct SpeechSampleData {
     ~SpeechSampleData() {}
     void Lock() { lock = true; }
     void Unlock() { lock = false; }
-    void *GetData();
+    void *GetData() {
+        return reinterpret_cast<void *>(reinterpret_cast<unsigned int>(this) + 0x40);
+    }
 
     static void Destruct(SpeechSampleData *ptr);
     static SpeechSampleData *Construct(SPCHType_SampleRequestData *data, unsigned int key, bool is_cached);

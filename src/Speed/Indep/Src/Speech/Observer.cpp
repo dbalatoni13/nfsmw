@@ -377,12 +377,7 @@ void Observer::Assess180() {
                     if (t_unstable > ai->GetTune().MaxTimeFor180()) {
                         EAXCop *cop = ai->FindClosestCop(true, true);
                         if (cop) {
-                            typedef void (*VoidMethodPtr)(void *);
-                            char *vtable = *reinterpret_cast<char **>(cop);
-                            register VoidMethodPtr method asm("r0") = *reinterpret_cast<VoidMethodPtr *>(vtable + 0x1A4);
-                            asm volatile("" : : : "memory");
-                            short thisAdjust = *reinterpret_cast<short *>(vtable + 0x1A0);
-                            method(reinterpret_cast<char *>(cop) + thisAdjust);
+                            SPEECH_EAXCOP_CALL_SUSPECT_UTURN(cop);
                         } else {
                             return;
                         }

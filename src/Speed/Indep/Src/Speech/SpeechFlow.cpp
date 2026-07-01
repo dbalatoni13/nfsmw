@@ -86,10 +86,6 @@ static void CSISAllocatorMemFree(void *memPtr) {
 
 namespace Speech {
 
-inline void *SpeechSampleData::GetData() {
-    return reinterpret_cast<void *>(reinterpret_cast<unsigned int>(this) + 0x40);
-}
-
 inline SpeechSampleData *SpeechSampleVec::Find(int handle) const {
     for (SpeechSampleData *const *i = begin(); i != end(); ++i) {
         if ((*i)->HSTRM == handle) {

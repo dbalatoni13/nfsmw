@@ -180,13 +180,10 @@ void StrategyFlow::SoloCheck() {
         } else {
             if (ai->GetLeader()->IsActive()) {
                 typedef void (*VoidIntMethodPtr)(void *, int);
-                register EAXCop *leader asm("r11") = ai->GetLeader();
+                EAXCop *leader = ai->GetLeader();
                 int formationType = mFormationType;
                 char *vtable = *reinterpret_cast<char **>(leader);
-                register VoidIntMethodPtr method asm("r0") = *reinterpret_cast<VoidIntMethodPtr *>(vtable + 0x14C);
-                asm volatile("" : : : "memory");
-                short thisAdjust = *reinterpret_cast<short *>(vtable + 0x148);
-                method(reinterpret_cast<char *>(leader) + thisAdjust, formationType);
+                SPEECH_EAXCOP_CALL_INITIATE_STRATEGY_VTABLE(leader, formationType, vtable);
             }
             mFlags &= ~SOLO;
         }

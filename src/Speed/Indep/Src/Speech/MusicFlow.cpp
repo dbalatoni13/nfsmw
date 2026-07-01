@@ -328,18 +328,64 @@ void MusicFlow::RequestSwap() {
 
 void MusicFlow::Win() {
     SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
-    if (!ai) {
+
+    int *busy = &mBusy;
+    int busy_value;
+    if (mElapsed < 45.0f) {
+        busy_value = mBusy;
+        mBusy = busy_value + 1;
+    } else {
+        busy_value = 0;
+    }
+    *busy = busy_value;
+
+    UpdateIntensity(mAvgPlayerSpeed > (mTopSpeed * 0.625f) ? 1.0f : 0.0f);
+
+    if ((ai->GetTimeLastCrashed() < 5.0f) || (ai->GetTimeLastNailedCop() < 5.0f)) {
+        mIntensity = 0.25f;
+    }
+
+    if ((ai->GetTimeLastCrashed() > 10.0f) && (ai->GetTimeLastNailedCop() > 10.0f) && (ai->GetPlayerSpeed() > (mTopSpeed * 0.8f))) {
+        float t_lastboosted = (WorldTimer - mBoostTimer).GetSeconds();
+        if (t_lastboosted > 10.0f) {
+            mIntensity *= 1.15f;
+            mBoostTimer = WorldTimer;
+        }
+    }
+
+    if (ai->GetPursuitState() == SoundAI::kInactive) {
+        ChangeStateTo(kTerminal);
         return;
     }
 
-    if (ai->GetPursuitState() == SoundAI::kActive) {
-        ChangeStateTo(kNeutral);
+    if ((ai->GetPlayerSpeed() < (mTopSpeed * 0.125f)) && ai->GetPursuit()->IsCollapseActive()) {
+        ChangeStateTo(kLose);
         return;
     }
 
-    if (!Manager::IsCopSpeechBusy()) {
-        ChangeStateTo(kWaiting);
+    bool in_cooldown;
+    if (ai->GetPursuit()) {
+        in_cooldown = ai->GetPursuit()->GetPursuitStatus() == PS_COOL_DOWN;
+    } else {
+        in_cooldown = false;
     }
+
+    if (mAvgPlayerSpeed < (mTopSpeed * 0.125f)) {
+        if ((ai->GetPursuitState() == SoundAI::kSearching) || in_cooldown) {
+            ChangeStateTo(kElude);
+            return;
+        }
+    }
+
+    if (mBusy != 0) {
+        return;
+    }
+
+    if (mElapsed <= 90.0f) {
+        return;
+    }
+
+    ChangeStateTo(kNeutral);
 }
 
 void MusicFlow::Elude() {
