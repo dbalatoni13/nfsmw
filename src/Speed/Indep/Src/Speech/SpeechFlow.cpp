@@ -1347,8 +1347,8 @@ Timer Manager::GetTimeSinceLastEvent(SpeechModuleIndex) {
 }
 
 void Manager::ResetGlobalHistory() {
-    mLastSpeakerID = 0;
-    mProbPlayback = 1.0f;
+    mGlobalHistory.Reset();
+    mEvtHistory.clear();
 }
 
 void Manager::FlushSpeechForActor(EAXCharacter *actor) {
