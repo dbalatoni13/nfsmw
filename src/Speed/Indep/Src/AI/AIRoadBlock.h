@@ -25,9 +25,9 @@ static const int MAX_RB_ELEMENTS = 6;
 
 // total size: 0x68
 struct RoadblockSetup {
-    float mMinimumWidthRequired;   // offset 0x0, size 0x4
-    int mRequiredVehicles;         // offset 0x4, size 0x4
-    RoadblockElement mContents[6]; // offset 0x8, size 0x60
+    float mMinimumWidthRequired;                 // offset 0x0, size 0x4
+    int mRequiredVehicles;                       // offset 0x4, size 0x4
+    RoadblockElement mContents[MAX_RB_ELEMENTS]; // offset 0x8, size 0x60
 };
 
 extern RoadblockSetup RoadblockCandidateList[16];

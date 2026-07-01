@@ -11,13 +11,14 @@ namespace CARP {
 
 struct Map {};
 
+// TODO fix the order of these
+
 // total size: 0x10
 struct EventStaticData {
     // char *StaticData() {}
 
-    const char *StaticData() const {
-        return reinterpret_cast<const char *>(this) + fDataOffset;
-    }
+    // Decl: 253
+    // const char *StaticData() const {}
 
     // EventStaticData *NextEvent() {}
 
@@ -31,6 +32,7 @@ struct EventStaticData {
 
 // total size: 0x10
 struct EventList {
+    // Decl: 97
     EventStaticData *Event() {
         return reinterpret_cast<EventStaticData *>(&this[1]);
     }
@@ -43,6 +45,95 @@ struct EventList {
 
     unsigned int fNumEvents; // offset 0x0, size 0x4
     unsigned int fPad[3];    // offset 0x4, size 0xC
+};
+
+// total size: 0x10
+struct EventSeqAction {
+    uint32 *GetTagList() {}
+
+    float *GetTimeList() {}
+
+    EventList **GetEventListArray() {}
+
+    const EventList *GetEventList(bool tagIndex, unsigned int index) const {}
+
+    // Decl: 420
+    unsigned int GetTagIndex(unsigned int tag) const {}
+
+    unsigned int GetTimeIndex(float t) const {}
+
+    const uint32 *GetTagList() const {}
+
+    const float *GetTimeList() const {}
+
+    const EventList *const *GetEventListArray() const {}
+
+    uint32 mName;     // offset 0x0, size 0x4
+    uint32 mNumTags;  // offset 0x4, size 0x4
+    uint32 mNumTimes; // offset 0x8, size 0x4
+    float mDuration;  // offset 0xC, size 0x4
+};
+
+// total size: 0x8
+struct EventSeqResponse {
+    uint32 mEndState;           // offset 0x0, size 0x4
+    EventSeqAction *mActionSeq; // offset 0x4, size 0x4
+};
+
+// total size: 0x10
+struct StimulusFilter {
+    struct QueryDesc *GetQueries() {}
+
+    const struct QueryDesc *GetQueries() const {}
+
+    struct Expression *GetExpression() {}
+
+    const struct Expression *GetExpression() const {}
+
+    char *GetStaticData() {}
+
+    // Decl: 547
+    const char *GetStaticData() const {}
+
+    unsigned int mNumQueries;     // offset 0x0, size 0x4
+    unsigned int mNumInputs;      // offset 0x4, size 0x4
+    unsigned int mExpressionSize; // offset 0x8, size 0x4
+    unsigned int mPad;            // offset 0xC, size 0x4
+};
+
+// total size: 0x8
+struct EventSeqState {
+    unsigned int *GetStimuli() {}
+
+    EventSeqResponse *GetResponses() {}
+
+    const uint32 *GetStimuli() const {}
+
+    // Decl: 378
+    const EventSeqResponse *GetResponses() const {}
+
+    const EventSeqResponse *FindResponse(unsigned int stimulus) const {}
+
+    uint32 mNumStimuli;      // offset 0x0, size 0x4
+    StimulusFilter *mFilter; // offset 0x4, size 0x4
+};
+
+// total size: 0xC
+struct EventSeqSystem {
+    unsigned int *GetStateIDs() {}
+
+    EventSeqState **GetStates() {}
+
+    const uint32 *GetStateIDs() const {}
+
+    // Decl: 353
+    const EventSeqState *FindState(unsigned int state) const {}
+
+    const EventSeqState *const *GetStates() const {}
+
+    uint32 mInitialState; // offset 0x0, size 0x4
+    uint32 mDefaultState; // offset 0x4, size 0x4
+    uint32 mNumStates;    // offset 0x8, size 0x4
 };
 
 // total size: 0x4
@@ -104,31 +195,31 @@ struct Trigger {
 };
 
 union ExprValType { // 0x4
-	/* 0x0 */ float f;
-	/* 0x0 */ unsigned int u;
-	/* 0x0 */ int i;
-	/* 0x0 */ bool b;
+    /* 0x0 */ float f;
+    /* 0x0 */ unsigned int u;
+    /* 0x0 */ int i;
+    /* 0x0 */ bool b;
 };
 
 struct StimulusFilter {
-    unsigned int mNumQueries; // offset 0x0, size 0x4
-    unsigned int mNumInputs; // offset 0x4, size 0x4
+    unsigned int mNumQueries;     // offset 0x0, size 0x4
+    unsigned int mNumInputs;      // offset 0x4, size 0x4
     unsigned int mExpressionSize; // offset 0x8, size 0x4
-    unsigned int mPad; // offset 0xC, size 0x4
+    unsigned int mPad;            // offset 0xC, size 0x4
 
-    QueryDesc * GetQueries() {}
+    QueryDesc *GetQueries() {}
 
-    struct Expression * GetExpression() {}
+    struct Expression *GetExpression() {}
 
-    char * GetStaticData() {}
+    char *GetStaticData() {}
 
     const QueryDesc *GetQueries() const {
         return reinterpret_cast<const QueryDesc *>(&this[1]);
     }
 
-    const struct Expression * GetExpression() const {}
+    const struct Expression *GetExpression() const {}
 
-    const char * GetStaticData() const {}
+    const char *GetStaticData() const {}
 };
 
 unsigned int ResolveTagReferences(const UGroup *g, unsigned int deltaAddress);

@@ -60,8 +60,6 @@ enum ShiftPotential {
     SHIFT_POTENTIAL_NONE = 0,
 };
 
-
-
 enum DriverStyle {
     STYLE_RACING = 0,
     STYLE_DRAG = 1,
@@ -102,7 +100,7 @@ inline bool IsFront(unsigned int i) {
 }
 
 // Physics::Wheels::IsRear
-inline bool IsRear(unsigned int i) {
+inline bool IsRear(const unsigned int i) {
     return i > 1;
 }
 

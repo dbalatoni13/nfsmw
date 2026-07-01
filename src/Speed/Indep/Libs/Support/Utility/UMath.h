@@ -591,18 +591,16 @@ inline size_t Max(const size_t a, const size_t b) {
 // Credits: Brawltendo
 // Limits the input value to the range [a,l]
 inline float Limit(const float a, const float l) {
-    float retval;
-    if (!(a * l > 0.f)) {
-        retval = a;
+    if (a * l <= 0.f) {
+        return a;
     } else {
         if (a > 0.f) {
-            retval = Min(a, l);
+            return Min(a, l);
 
         } else {
-            retval = Max(a, l);
+            return Max(a, l);
         }
     }
-    return retval;
 }
 
 } // namespace UMath
