@@ -34,6 +34,7 @@ namespace MiscSpeech {
 bool IsVehicleTypeOK();
 int MoreDetails(int spkrID);
 int Unit911Reply(int spkrID);
+bool GetSPAMLocation(int SPAMID, Csis::Type_offroad_moment_id &id);
 }
 
 namespace Speech {
@@ -588,16 +589,19 @@ void Observer::AssessOutrun() {
 
 void Observer::AssessOffroad() {
     SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
-    if (!ai || !ai->GetLeader()) {
-        return;
-    }
+    if ((ai->NumCopsWithLOS() > 0) && (ai->GetTimeInView() >= 2.0f)) {
+        unsigned int id = ai->GetPlayerOffroadID();
+        if (mCurrOffroadID != static_cast<int>(id)) {
+            EAXCop *cop = ai->FindClosestCop(true, true);
+            if (cop) {
+                mCurrOffroadID = static_cast<int>(id);
+                Csis::Type_offroad_moment_id speech_id;
+                if (MiscSpeech::GetSPAMLocation(id, speech_id)) {
+                    cop->Offroad(speech_id, (mOffroadHistory & speech_id) != 0);
+                }
+            }
+        }
 
-    unsigned int id = ai->GetPlayerOffroadID();
-    if (static_cast<int>(id) != mCurrOffroadID) {
-        mCurrOffroadID = static_cast<int>(id);
-        mOffroadHistory <<= 1;
-        mOffroadHistory |= (id != 0) ? 1 : 0;
-        ai->GetLeader()->Offroad(id, (mOffroadHistory & 1) != 0);
     }
 }
 
