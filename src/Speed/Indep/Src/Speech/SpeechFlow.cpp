@@ -898,19 +898,38 @@ void Manager::NotifyEventCompletion(ScheduledSpeechEvent *evt, bool playback_com
         return;
     }
 
-    evt->finish_time = WorldTimer;
-    if (playback_complete) {
-        evt->flags |= 2;
+    SoundAI *ai;
+    unsigned short speakerID;
+
+    if (evt->actor != 0) {
+        speakerID = static_cast<unsigned short>(evt->actor->GetSpeakerID());
     } else {
-        evt->flags |= 1;
+        speakerID = 0;
     }
 
-    for (int i = 0; i < sQueuedEventCount; ++i) {
-        if (sQueuedEvents[i] == evt) {
-            sQueuedEvents[i] = 0;
+    if (speakerID > 1) {
+        mLastSpeakerID = speakerID;
+    }
+
+    if (!playback_complete) {
+        History *hist = mGlobalHistory.Touch(evt->ID, speakerID);
+        mEvtHistory.push_front(evt->ID);
+        if (mEvtHistory.size() > 10) {
+            mEvtHistory.pop_back();
         }
     }
-    CompactQueuedEvents();
+
+    if (!playback_complete) {
+        return;
+    }
+
+    MNotifySpeechStatus msg(evt);
+    msg.Send(UCrc32(0x20d60dbf));
+
+    if (evt->ID == kSPCH1_EventID_CellCall) {
+        MNotifyCellCallComplete msg2;
+        msg2.Send(UCrc32(0x20d60dbf));
+    }
 }
 
 ScheduledSpeechEvent *Manager::GetNextEvent() {
