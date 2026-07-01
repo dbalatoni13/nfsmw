@@ -982,7 +982,35 @@ extern "C" int AddHeaders__Q26Speech7ManagerPPcPQ26Speech11SPEECH_BANKiPQ26Speec
     Speech::SPEECH_BANK *banks,
     int numBanks,
     Speech::Module *module) {
-    return Speech::Manager::AddHeaders(dest, reinterpret_cast< ::SPEECH_BANK *>(banks), numBanks, module);
+    int size = 0;
+    Speech::SPEECH_BANK *sb = banks;
+    {
+        Speech::SPEECH_BANK *end = banks + numBanks;
+        while (sb < end) {
+            if (sb->mem) {
+                size += sb->bank;
+            }
+            ++sb;
+        }
+    }
+
+    char *mem = gAudioMemoryManager.AllocateMemoryChar(size, "AUD:Relocated speech headers", false);
+    *dest = mem;
+
+    {
+        Speech::SPEECH_BANK *end = banks + numBanks;
+        sb = banks;
+        while (sb < end) {
+            if (sb->mem) {
+                bMemCpy(mem, sb->mem, sb->bank);
+                sb->mem = mem;
+                mem += sb->bank;
+                sb->bank = SPCH_AddBank(sb->mem);
+            }
+            ++sb;
+        }
+    }
+    return 0;
 }
 
 extern "C" bool InteruptedAndNotDelayed__6SpeechPQ26Speech20ScheduledSpeechEvent(Speech::ScheduledSpeechEvent *this_event) {
