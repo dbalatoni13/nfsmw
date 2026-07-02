@@ -1,4 +1,5 @@
 #include "Speed/Indep/Src/EAXSound/Stream/SpeechManager.hpp"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/speech.h"
 #include "Speed/Indep/Libs/Support/Utility/UStandard.h"
 #include "Speed/Indep/Src/Misc/Config.h"
 #include "Speed/Indep/Src/Misc/QueuedFile.hpp"
@@ -11,6 +12,7 @@ extern void bInitMemoryPool(int pool, void *mem, int size, const char *name);
 extern void bCloseMemoryPool(int pool);
 extern int bCountFreeMemory(int pool);
 extern int bLargestMalloc(int pool);
+extern void bMemoryPrintAllocations(int pool_num, int from_allocation, int to_allocation);
 extern Timer WorldTimer;
 extern int SpeechMemoryPool;
 extern int PRINT_SPEECH_CACHE_IO;
@@ -381,7 +383,21 @@ void Cache::FlushInactiveSpeakers() {
     }
 }
 
-void Cache::DebugPrintAllocations() {}
+void Cache::DebugPrintAllocations() {
+    bMemoryPrintAllocations(SpeechMemoryPool, 0, 0x7fffffff);
+
+    unsigned int index = mIndex.GetNextValidIndex(0);
+    for (;;) {
+        int valid = mIndex.ValidIndex(index);
+        if (valid == 0) {
+            break;
+        }
+        SpchSampleMap *map = &mIndex;
+        SpeechSampleData *sample = map->GetPtrAtValidIndex(index);
+        Attrib::Gen::speech speech(Manager::mHashMap.GetHash(sample->eventID), 0, 0);
+        index = map->GetNextValidIndex(index + 1);
+    }
+}
 
 void Cache::Validate() {
     unsigned int index = mIndex.GetNextValidIndex(0);

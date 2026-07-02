@@ -205,6 +205,12 @@ class Manager {
     static int PreValidate(ScheduledSpeechEvent &evt);
     static bool CanPlayback(Attrib::Gen::speech &event_attribs);
     static void CalcProbPlayback();
+    static SPCHType_1_EventID GetLastEventID() {
+        if (mEvtHistory.empty()) {
+            return kSPCH1_EventID_MaxEventID;
+        }
+        return mEvtHistory.front();
+    }
     static EventHistory &GetHistory() { return mGlobalHistory; }
     static SampleReqList &GetSampleRequests() { return mSampleRequests; }
 

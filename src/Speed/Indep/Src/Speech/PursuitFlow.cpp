@@ -287,46 +287,80 @@ void PursuitFlow::PlayerStopped() {
 
 void PursuitFlow::SpotterBranch() {
     SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
-    if (!ai) {
-        return;
-    }
 
     SoundAI::PursuitState pstate = ai->GetPursuitState();
-    if ((pstate != SoundAI::kActive) && (pstate != SoundAI::kSearching)) {
-        if (pstate == SoundAI::kInactive) {
-            ChangeStateTo(kBailout);
-        } else if (pstate == SoundAI::kOtherTarget) {
-            ChangeStateTo(kChangeTarget);
-        }
+    if (pstate == SoundAI::kActive) {
+    } else if (pstate == SoundAI::kSearching) {
+    } else if (pstate == SoundAI::kInactive) {
+        ChangeStateTo(kBailout);
+        return;
+    } else if (pstate == SoundAI::kOtherTarget) {
+        ChangeStateTo(kChangeTarget);
+        return;
+    } else {
         return;
     }
 
     if (!mBusy) {
-        EAXCop *anothercop = ai->FindClosestCop(false, ai->IsHighIntensity() || (ai->GetLastInfraction() == 0x40));
-        if (!anothercop) {
-            return;
+        if (ai->IsHighIntensity() || (ai->GetLastInfraction() == 0x40)) {
+            EAXCop *cop = ai->FindClosestCop(false, true);
+            if (!cop) {
+                return;
+            }
+            mFirstOnScene = cop;
+            cop->SpotterWanted();
+        } else {
+            EAXCop *cop = ai->FindClosestCop(false, false);
+            if (!cop) {
+                return;
+            }
+            mFirstOnScene = cop;
+            cop->Spotter();
         }
 
-        mFirstOnScene = anothercop;
-        if (ai->IsHighIntensity() || (ai->GetLastInfraction() == 0x40)) {
-            anothercop->SpotterWanted();
-        } else {
-            anothercop->Spotter();
+        if (bRandom(1.0f) > 0.5f) {
+            mFirstOnScene->VehicleReport();
         }
+
+        if (bRandom(1.0f) > 0.5f) {
+            ai->GetDispatch()->GoAhead();
+        } else {
+            ai->GetDispatch()->Ack();
+        }
+
+        EAXCop *anothercop = ai->FindClosestCop(false, true);
+        if (mFirstOnScene) {
+            if (anothercop && anothercop->GetSpeakerID() != mFirstOnScene->GetSpeakerID()) {
+                anothercop->Reply911();
+            }
+        } else {
+            if (anothercop) {
+                anothercop->Reply911();
+            }
+        }
+
         mBusy++;
         return;
     }
 
-    if (Manager::IsCopSpeechBusy()) {
+    if ((ai->GetPlayerStopTime() >= ai->GetTune().MinTimeConsideredStopped()) && (mCauseofPursuit != kCopAssaulted) &&
+        (mCauseofPursuit != kCopAssaultedScripted)) {
+        mBusy = 0;
+        ChangeStateTo(kPlayerStopped);
         return;
     }
 
-    if (ai->NumCopsWithLOS() < 1) {
-        ChangeStateTo(kLostWhileSpotWait);
-    } else {
-        ChangeStateTo(kWaitForSpotter);
+    if (!Manager::IsCopSpeechBusy() && mBusy) {
+        if (ai->NumCopsWithLOS() > 0) {
+            ChangeStateTo(kWaitForSpotter);
+        } else {
+            if (mFirstOnScene) {
+                mFirstOnScene->LostVisual();
+            }
+            ChangeStateTo(kLostWhileSpotWait);
+        }
+        mBusy = 0;
     }
-    mBusy = 0;
 }
 
 void PursuitFlow::ScriptedBranch() {

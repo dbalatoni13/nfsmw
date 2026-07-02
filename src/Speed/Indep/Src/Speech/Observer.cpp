@@ -39,6 +39,16 @@ bool GetSPAMLocation(int SPAMID, Csis::Type_offroad_moment_id &id);
 
 namespace Speech {
 
+struct ComComparator {
+    const UTL::COM::IUnknown *Me;
+
+    ComComparator(const UTL::COM::IUnknown *me) : Me(me) {}
+
+    bool operator()(IVehicle *vehicle) const {
+        return UTL::COM::ComparePtr(vehicle, Me);
+    }
+};
+
 Observer::Observer()
     : mObservations(), //
       mObserveMask(Braking | Outcome), //
@@ -749,25 +759,36 @@ void Observer::MessageTunnelUpdate(const MMiscSound &message) {
 }
 
 void Observer::MessageGamePlayMoment(const MGamePlayMoment &message) {
-    if (message.GetAttribKey() != 0) {
-        Observe(kCollision_Cop_Suspect, -1, 1.0f);
+    if (message.GetAttribKey() == 0xa1794c23) {
+        SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
+        if (ai->GetFocus() != SoundAI::kStrategyFlow) {
+            return;
+        }
+
+        bool player_started = false;
+        ISimable *simable = ISimable::FindInstance(reinterpret_cast<HSIMABLE>(message.GethSimable()));
+
+        if (simable) {
+            ICause *causer = ICause::FindInstance(simable->GetCausality());
+            if (IVehicle::FindIf(VEHICLE_PLAYERS, ComComparator(causer)) != nullptr) {
+                player_started = true;
+            }
+        }
+
+        if (player_started) {
+            EAXCop *closest = ai->FindClosestCop(false, true);
+            if (closest && closest->HasLOS()) {
+                closest->Collision(0xd, 1.0f, closest);
+            }
+        }
+
+        mT_gasstationexpl = WorldTimer;
+        mGasStationPos = UMath::Vector4To3(message.GetPosition());
     }
 }
 
 void Observer::DetachRamCop() {
     mRamCop = 0;
-}
-
-EAXCop *Observer::GetRamCop() {
-    return mRamCop;
-}
-
-bool Observer::WeatherExists() {
-    return mWeather;
-}
-
-bool Observer::PlayerInTunnel() {
-    return mTunnel;
 }
 
 void Observer::SetMask(unsigned int mask) {

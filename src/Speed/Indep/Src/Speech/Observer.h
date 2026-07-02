@@ -87,9 +87,18 @@ class Observer : public SpeechFlow {
     void MessageTunnelUpdate(const MMiscSound &message);
     void MessageGamePlayMoment(const MGamePlayMoment &message);
     void DetachRamCop();
-    EAXCop *GetRamCop();
-    bool WeatherExists();
-    bool PlayerInTunnel();
+    EAXCop *GetRamCop() {
+        return mRamCop;
+    }
+
+    bool WeatherExists() {
+        return mWeather;
+    }
+
+    bool PlayerInTunnel() {
+        return mTunnel;
+    }
+
     void SetMask(unsigned int mask);
     SpeechObservations GetLastEvent();
 

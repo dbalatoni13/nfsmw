@@ -189,16 +189,50 @@ void StrategyFlow::SoloCheck() {
 }
 
 void StrategyFlow::CallToPos() {
-    if (!mBusy) {
-        mBusy = 1;
-        mT_requested = WorldTimer;
+    SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
+    IPursuit *pursuit = ai->GetPursuit();
+
+    if ((ai->GetPursuitState() == SoundAI::kInactive) || (ai->GetFocus() != SoundAI::kStrategyFlow)) {
+        ChangeStateTo(kTerminal);
         return;
     }
 
-    if (!Manager::IsCopSpeechBusy()) {
-        mBusy = 0;
-        ChangeStateTo(kWaiting);
+    EAXCop *leader = ai->GetLeader();
+    if (!leader && !pursuit) {
+        return;
     }
+
+    if (leader->IsHeli()) {
+        ChangeStateTo(kWaiting);
+        return;
+    }
+
+    if (!ai->GetLeader()->IsActive()) {
+        return;
+    }
+
+    {
+        copMap::const_iterator ci = ai->GetActors().begin();
+        while (ci != ai->GetActors().end()) {
+            if (ci->cop->GetInFormation() && ci->cop->IsActive() && !ci->cop->GetInPosition()) {
+                if (Manager::HasBeenSaid(static_cast<SPCHType_1_EventID>(0x54))) {
+                    ai->GetLeader()->CallToPositionReminder();
+                } else {
+                    ai->GetLeader()->CallToPosition(ci->cop);
+                }
+
+                if ((Manager::GetLastEventID() == static_cast<SPCHType_1_EventID>(0x54)) ||
+                    (Manager::GetLastEventID() == static_cast<SPCHType_1_EventID>(0x56))) {
+                    if (!Manager::IsQueued(static_cast<SPCHType_1_EventID>(0x39), 4)) {
+                        ci->cop->Ack();
+                    }
+                }
+            }
+            ++ci;
+        }
+    }
+
+    ChangeStateTo(kWaiting);
 }
 
 void StrategyFlow::ReqBackup() {

@@ -130,6 +130,15 @@ template <typename T, int ListSize, typename Enum, std::size_t EnumMax> class Li
         return std::for_each(l.begin(), l.end(), f);
     }
 
+    template <typename Functor> static iterator FindIf(Enum idx, Functor f) {
+        List &l = _mLists._buckets[idx];
+        typename List::iterator iter = std::find_if(l.begin(), l.end(), f);
+        if (iter != l.end()) {
+            return *iter;
+        }
+        return nullptr;
+    }
+
     static const List &GetList(Enum idx) {
         return _mLists._buckets[idx];
     }

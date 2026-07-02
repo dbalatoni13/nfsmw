@@ -518,7 +518,7 @@ void SoundAI::OnCollision(const COLLISION_INFO &cinfo) {
                     }
                 }
             }
-            if (!cop_is_in_rb && mObserver) {
+            if (!cop_is_in_rb) {
                 mObserver->Observe(3, -1, intensity);
             }
 
