@@ -478,6 +478,17 @@ elif config.platform == Platform.PS2:
 
     config.extra_clang_flags = [
         "-std=gnu++98",
+        "-DCLANGD_DAMNIT",
+        "-U_MIPS_SIM",
+        "-U __mips",
+        "-D__mips=3",
+        "-D__mips_eabi",
+        "-DR5900",
+        "-D_R5900",
+        "-D__mips_single_float",
+        "-D__builtin_next_arg(x)=((void *)0)",
+        "-D__builtin_args_info(x)=1",
+        "-msoft-float",
     ]
 
 cflags_cmn = [

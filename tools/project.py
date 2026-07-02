@@ -2225,7 +2225,7 @@ def generate_compile_commands(
                 "clang",
                 "-nostdinc",
                 "-fno-builtin",
-                "--target=mips-linux-gnu",
+                "--target=mips64el-ps2-none-eabi",
                 *cflags,
                 "-c",
                 obj.src_path,
