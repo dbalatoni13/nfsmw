@@ -1,9 +1,5 @@
-#ifndef FRONTEND_MENUSCREENS_INGAME_FEPKG_POSTRACE_H
-#define FRONTEND_MENUSCREENS_INGAME_FEPKG_POSTRACE_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef __FEPKG_POSTRACE_H__
+#define __FEPKG_POSTRACE_H__
 
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
@@ -18,8 +14,6 @@
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/Frontend/Localization/Localize.hpp"
 #include "Speed/Indep/bWare/Inc/bPrintf.hpp"
-
-class PursuitData;
 
 typedef enum {
     POSTRACESCREENMODE_RESULTS = 0,

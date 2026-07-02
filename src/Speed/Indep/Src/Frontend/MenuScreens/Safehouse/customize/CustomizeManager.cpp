@@ -18,9 +18,11 @@ void CarCustomizeManager::TakeControl(eCustomizeEntryPoint entry_point, FECarRec
     if (!g_bCustomizeManagerHasControl) {
         FEDatabase->SetGameMode(eFE_GAME_MODE_CUSTOMIZE);
         g_bCustomizeManagerHasControl = 1;
+#ifndef EA_BUILD_A124
         for (int i = 0; i < 3; i++) {
             Showcase::FromColor[i] = nullptr;
         }
+#endif
         TheTempColoredPart = nullptr;
         EntryPoint = entry_point;
         TuningCar = tuning_car;
@@ -37,12 +39,14 @@ void CarCustomizeManager::TakeControl(eCustomizeEntryPoint entry_point, FECarRec
 }
 
 void CarCustomizeManager::RelinquishControl() {
+#ifndef EA_BUILD_A124
     FEDatabase->ClearGameMode(eFE_GAME_MODE_CUSTOMIZE);
     for (int i = 0; i < 3; i++) {
         // TODO: ???
         delete static_cast<CarPart *>(Showcase::FromColor[i]);
         Showcase::FromColor[i] = nullptr;
     }
+#endif
     ClearTempColoredPart();
     g_bCustomizeManagerHasControl = 0;
 }

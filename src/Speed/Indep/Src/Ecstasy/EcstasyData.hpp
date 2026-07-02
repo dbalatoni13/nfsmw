@@ -7,7 +7,7 @@
 
 #ifdef EA_PLATFORM_GAMECUBE
 #include "Speed/GameCube/Src/Ecstasy/eSolidPlat.hpp"
-#elif EA_PLATFORM_PS2
+#elif EA_PLATFORM_PLAYSTATION2
 #include "Speed/PSX2/Src/Ecstasy/eSolidPlat.hpp"
 #endif
 

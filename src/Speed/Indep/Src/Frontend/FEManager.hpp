@@ -26,10 +26,12 @@ class FEManager {
 
     static FEManager *Get(); // Decl: speed/indep/src/frontend/FeManager.hpp:122
 
-    void SetFirstScreen(const char *pPackageName, int arg, unsigned int controlMask) {
+    void SetFirstScreen(const char *pPackageName, int arg, uint32 controlMask) {
         mFirstScreen = pPackageName;
         mFirstScreenArg = arg;
+#ifndef EA_BUILD_A124
         mFirstScreenMask = controlMask;
+#endif
     }
     void RequestBootFlow() {
         mFirstBoot = true;
@@ -146,7 +148,7 @@ class FEManager {
     const char *mFirstScreen;      // offset 0x28, size 0x4
     int mFirstScreenArg;           // offset 0x2C, size 0x4
 #ifndef EA_BUILD_A124
-    unsigned int mFirstScreenMask; // offset 0x30, size 0x4
+    uint32 mFirstScreenMask; // offset 0x30, size 0x4
 #endif
     eGarageType mGarageType;         // offset 0x34, size 0x4, Decl: speed/indep/src/frontend/FeManager.hpp:265
     eGarageType mPreviousGarageType; // offset 0x38, size 0x4, Decl: speed/indep/src/frontend/FeManager.hpp:266

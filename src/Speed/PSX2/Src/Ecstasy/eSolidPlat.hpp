@@ -2,7 +2,9 @@
 #ifndef ESOLIDPLAT_HPP
 #define ESOLIDPLAT_HPP
 
-#include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
+// #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
+#include "Speed/Indep/bWare/Inc/bList.hpp"
+#include <types.h>
 
 // TODO: these are from ps3 carbon and probably arent accurate
 
@@ -33,7 +35,7 @@
 #define MAX_VERTEX_BUFFER_PER_SOLID 16   //  :66
 #define MAX_VERTEX_STREAMS 1             //  :95
 
-extern bTList<eSolid> SolidList;
+extern bTList<class eSolid> SolidList; // size: 0x8, Decl: speed/ps3/src/ecstasy/eSolidPlat.cpp:23
 
 struct eStripEntry {         // 0x10
     uint16 Flags;            /* 0x0 */

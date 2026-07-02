@@ -62,8 +62,8 @@ class FEngHud : public UTL::COM::Object, public IHud {
     static bool bIsRestartingRace; // size: 0x1, address: 0x8041BE48
 
   private:
-    void SetHudFeatures(uint64 hud_features);
-    uint64 DetermineHudFeatures(IPlayer *player);
+    void SetHudFeatures(HudFeaturesType hud_features);
+    HudFeaturesType DetermineHudFeatures(IPlayer *player);
     void SetWideScreenMode();
 
     HudFeaturesType CurrentHudFeatures; // offset 0x20, size 0x8, Decl: speed/indep/src/frontend/hud/FEPkg_Hud.hpp:57

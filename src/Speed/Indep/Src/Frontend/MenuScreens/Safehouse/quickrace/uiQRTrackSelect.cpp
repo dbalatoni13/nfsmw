@@ -74,7 +74,7 @@ void UIQRTrackSelect::NotificationMessage(u32 msg, FEObject *pobj, u32 param1, u
                     return;
                 }
             }
-            cFEng::Get()->QueuePackageSwitch("Track_Options.fng", static_cast<u32>(reinterpret_cast<unsigned int>(pCurrentTrack)), 0, false);
+            cFEng::Get()->QueuePackageSwitch("Track_Options.fng", reinterpret_cast<u32>(pCurrentTrack), 0, false);
             RefreshHeader();
             break;
         case 0x911ab364: {
@@ -176,7 +176,7 @@ void UIQRTrackSelect::TryToAddTrack(GRaceParameters *parms, int unlock_filter, i
     } else {
         RaceSettings *settings = FEDatabase->GetQuickRaceSettings(static_cast<GRace::Type>(0xb));
         unsigned char region = settings->RegionFilterBits;
-        if (parms->GetRegion() != region && region != kRaceRegion_NumRegions) {
+        if (parms->GetRegion() != region && region != GRace::kRaceRegion_NumRegions) {
             return;
         }
         unsigned int eventHash = parms->GetEventHash();

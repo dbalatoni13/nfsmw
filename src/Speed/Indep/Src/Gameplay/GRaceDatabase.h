@@ -324,7 +324,7 @@ class GRaceParameters {
     GRace::Type GetRaceType() const;
 
     // enum Region GetRegion() const;
-    Region GetRegion() const;
+    GRace::Region GetRegion() const;
 
     void ExtractPosition(Attrib::Gen::gameplay &collection, UMath::Vector3 &pos) const;
 
@@ -344,7 +344,7 @@ class GRaceParameters {
 
     GRace::Difficulty GetDifficulty() const;
 
-    CopDensity GetCopDensity() const;
+    GRace::CopDensity GetCopDensity() const;
 
     bool GetCanBeReversed() const;
 

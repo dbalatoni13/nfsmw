@@ -159,7 +159,7 @@ PhotoFinishScreen::~PhotoFinishScreen() {
     mActive = false;
 }
 
-void PhotoFinishScreen::NotificationMessage(unsigned long msg, FEObject *, unsigned long, unsigned long) {
+void PhotoFinishScreen::NotificationMessage(u32 msg, FEObject *, u32, u32) {
     switch (msg) {
         case 0x406415E3:
             if (fResultType == FERESULTTYPE_SPEEDTRAP) {

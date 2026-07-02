@@ -24,16 +24,6 @@ enum eOnlineDisconnectPerc {
 
 enum eOnlinePrevPage { ePrevPage_None = 0, ePrevPage_LobbyRoom = 1 };
 
-struct OnlineRaceParameters { // 0xc
-    void Default();
-
-    /* 0x0 */ uint32 EventHash;
-    /* 0x4 */ uint8 NumLaps;
-    /* 0x5 */ uint8 TrackDirection;
-    /* 0x6 */ uint8 CopDensity;
-    /* 0x8 */ bool IsLapKO;
-};
-
 // TODO
 namespace TODO {
 enum eOnlineState {

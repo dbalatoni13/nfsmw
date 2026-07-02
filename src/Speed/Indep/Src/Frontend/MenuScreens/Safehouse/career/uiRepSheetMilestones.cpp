@@ -19,7 +19,7 @@ extern const char *gTUTORIAL_MOVIE_PURSUIT;
 
 MilestoneDatum *theMilestone;
 
-void MilestoneDatum::NotificationMessage(unsigned long msg, FEObject *pObj, unsigned long param1, unsigned long param2) {
+void MilestoneDatum::NotificationMessage(u32 msg, FEObject *pObj, u32 param1, u32 param2) {
     if (msg != 0xc407210) {
         return;
     }
@@ -50,7 +50,7 @@ uiRepSheetMilestones::uiRepSheetMilestones(ScreenConstructorData *sd) : ArrayScr
     Setup();
 }
 
-eMenuSoundTriggers uiRepSheetMilestones::NotifySoundMessage(unsigned long msg, eMenuSoundTriggers maybe) {
+eMenuSoundTriggers uiRepSheetMilestones::NotifySoundMessage(u32 msg, eMenuSoundTriggers maybe) {
     eMenuSoundTriggers result = ArrayScrollerMenu::NotifySoundMessage(msg, maybe);
     if (msg == 0x7b6b89d7 && bIsInGame) {
         return static_cast<eMenuSoundTriggers>(-1);
@@ -58,7 +58,7 @@ eMenuSoundTriggers uiRepSheetMilestones::NotifySoundMessage(unsigned long msg, e
     return result;
 }
 
-void uiRepSheetMilestones::NotificationMessage(unsigned long msg, FEObject *obj, unsigned long param1, unsigned long param2) {
+void uiRepSheetMilestones::NotificationMessage(u32 msg, FEObject *obj, u32 param1, u32 param2) {
     int currentIndex = GetNumDatum() - 1;
     ArrayScrollerMenu::NotificationMessage(msg, obj, param1, param2);
     if (msg == 0x911c0a4b) {

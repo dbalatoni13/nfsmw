@@ -11,7 +11,9 @@ DragTachometer::DragTachometer(UTL::COM::Object *pOutter, const char *pkg_name, 
     : HudElement(pkg_name, 0x2), ITachometer(pOutter), ITachometerDrag(pOutter) {
     mMaxRpm = 0.0f;
     mGear = G_NEUTRAL;
+#ifndef EA_BUILD_A124
     mNeedleColourSetToPerfectLaunch = false;
+#endif
     mRpm = 0.0f;
     mRedline = 0.0f;
     mGearShifting = false;
@@ -25,25 +27,26 @@ DragTachometer::DragTachometer(UTL::COM::Object *pOutter, const char *pkg_name, 
     pRedline = RegisterMultiImage(FEHashUpper("RPM_Redline"));
     TachNeedle = RegisterImage(FEHashUpper("3rdPersonNeedle"));
     pGearString = RegisterString(FEHashUpper("3rdPersonGear"));
+#ifndef EA_BUILD_A124
     mOriginalNeedleWidth = TachNeedle->GetObjData()->Size.x;
     mOriginalNeedleLeftX = FEngGetTopLeftX(TachNeedle);
+#endif
 }
 
 void DragTachometer::Update(IPlayer *player) {
+#ifndef EA_BUILD_A124
     if (Sim::GetUserMode() == Sim::USER_SPLIT_SCREEN) {
         float normalizedRev = mRpm / mMaxRpm;
-        float w, h;
-        FEngGetSize(TachNeedle, w, h);
-        FEngSetSize(TachNeedle, normalizedRev * mOriginalNeedleWidth, h);
-        float x, y;
-        FEngGetTopLeft(TachNeedle, x, y);
-        FEngSetTopLeft(TachNeedle, mOriginalNeedleLeftX, y);
+        FEngSetSizeX(TachNeedle, normalizedRev * mOriginalNeedleWidth);
+        FEngSetTopLeftX(TachNeedle, mOriginalNeedleLeftX);
         if (mRpm < mRedline) {
             FEngSetScript(TachNeedle, 0x1744B3, true);
         } else {
             FEngSetScript(TachNeedle, 0x61D30442, true);
         }
-    } else {
+    } else
+#endif
+    {
         FEngSetRotationZ(TachNeedle, CalcAngleForRPMDrag(mRpm, mMaxRpm));
     }
 
@@ -57,7 +60,7 @@ void DragTachometer::Update(IPlayer *player) {
             FEngSetColor(pGearString, static_cast<unsigned int>(colourGearChanging));
         }
     }
-
+#ifndef EA_BUILD_A124
     if (!mInPerfectLaunchRange) {
         if (mNeedleColourSetToPerfectLaunch) {
             mNeedleColourSetToPerfectLaunch = false;
@@ -71,6 +74,7 @@ void DragTachometer::Update(IPlayer *player) {
         unsigned int oppositeOriginal = static_cast<unsigned int>(originalNeedleColour);
         FEngSetColor(TachNeedle, ~oppositeOriginal | 0xFF000000);
     }
+#endif
 }
 
 float DragTachometer::CalcAngleForRPMDrag(float rpm, float redline) {

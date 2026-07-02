@@ -13,7 +13,9 @@ uint32 Showcase::FromArgs;
 uint32 Showcase::FromIndex;
 uint32 Showcase::BlackListNumber;
 int32 Showcase::FromFilter;
+#ifndef EA_BUILD_A124
 void *Showcase::FromColor[3];
+#endif
 
 Showcase::Showcase(ScreenConstructorData *sd) : MenuScreen(sd), RivalStreamer(sd->PackageFilename, false) {
     if (eIsWidescreen()) {

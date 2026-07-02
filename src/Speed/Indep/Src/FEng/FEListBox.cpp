@@ -245,15 +245,15 @@ void FEListBox::ScrollSelection(i32 lColumnNum, i32 lRowNum) {
         u32 ulCurrentRow = mulCurrentRow;
         u32 ulNewRow = ulCurrentRow + lRowNum;
         if (mulFlags & 4) {
-            if (static_cast<long>(ulNewRow) >= static_cast<long>(mulNumRows)) {
+            if (static_cast<i32>(ulNewRow) >= static_cast<i32>(mulNumRows)) {
                 ulNewRow = mulNumRows - 1;
             }
-            if (static_cast<long>(ulNewRow) < 0) {
+            if (static_cast<i32>(ulNewRow) < 0) {
                 ulNewRow = 0;
             }
             goto set_row;
         } else {
-            if (static_cast<long>(ulNewRow) < 0) {
+            if (static_cast<i32>(ulNewRow) < 0) {
                 u32 numRows = mulNumRows;
                 u32 i = numRows + ulNewRow;
                 float fCummulativeValue = mpstRowData[i].fCummulativeValue;

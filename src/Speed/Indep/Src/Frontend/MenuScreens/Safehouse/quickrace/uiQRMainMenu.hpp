@@ -14,7 +14,7 @@ struct UIQRMainMenu : public IconScrollerMenu {
     UIQRMainMenu(ScreenConstructorData *sd);
     ~UIQRMainMenu() override;
 
-    void NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) override;
+    void NotificationMessage(u32 msg, FEObject *pobj, u32 param1, u32 param2) override;
 
     void RefreshHeader() override;
     void Setup() override;

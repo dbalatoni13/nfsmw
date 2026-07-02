@@ -598,6 +598,7 @@ class CarPartAttribute {
 };
 
 class CarPartAttributeTable {
+  public:
     void EndianSwap() {};
     uint32 GetByteSize() {};
     CarPartAttribute *GetAttribute() {};

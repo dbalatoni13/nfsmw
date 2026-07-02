@@ -1,6 +1,7 @@
 
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEMovies.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/InGame/FEPkg_Chyron.hpp"
 #include "Speed/Indep/Src/World/CarLoader.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
@@ -42,7 +43,7 @@ MenuScreen *InGameAnyMovieScreen::Create(ScreenConstructorData *sd) {
     return new ("InGameAnyMovieScreen", 0) InGameAnyMovieScreen(sd);
 }
 
-void InGameAnyMovieScreen::NotificationMessage(unsigned long msg, FEObject *obj, unsigned long param1, unsigned long param2) {
+void InGameAnyMovieScreen::NotificationMessage(u32 msg, FEObject *obj, u32 param1, u32 param2) {
     mSubtitler.Update(msg);
     if (msg != 0xb5af2461) {
         if (msg > 0xb5af2461) {

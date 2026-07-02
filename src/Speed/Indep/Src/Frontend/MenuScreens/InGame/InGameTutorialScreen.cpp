@@ -88,7 +88,7 @@ MenuScreen *InGameAnyTutorialScreen::Create(ScreenConstructorData *sd) {
     return new ("", 0) InGameAnyTutorialScreen(sd);
 }
 
-void InGameAnyTutorialScreen::NotificationMessage(unsigned long msg, FEObject *obj, unsigned long param1, unsigned long param2) {
+void InGameAnyTutorialScreen::NotificationMessage(u32 msg, FEObject *obj, u32 param1, u32 param2) {
     mSubtitler.Update(msg);
     if (msg != 0xb5af2461) {
         if (msg > 0xb5af2461) {

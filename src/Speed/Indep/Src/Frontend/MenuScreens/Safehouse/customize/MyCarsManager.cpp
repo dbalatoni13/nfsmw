@@ -44,7 +44,7 @@ MyCarsManager::MyCarsManager(ScreenConstructorData *sd)
     Setup();
 }
 
-eMenuSoundTriggers MyCarsManager::NotifySoundMessage(unsigned long msg, eMenuSoundTriggers maybe) {
+eMenuSoundTriggers MyCarsManager::NotifySoundMessage(u32 msg, eMenuSoundTriggers maybe) {
     ArrayScrollerMenu::NotifySoundMessage(msg, maybe);
     if (msg == 0x480c9a58) {
         return static_cast<eMenuSoundTriggers>(5);
@@ -52,7 +52,7 @@ eMenuSoundTriggers MyCarsManager::NotifySoundMessage(unsigned long msg, eMenuSou
     return maybe;
 }
 
-void MyCarsManager::NotificationMessage(unsigned long msg, FEObject *obj, unsigned long param1, unsigned long param2) {
+void MyCarsManager::NotificationMessage(u32 msg, FEObject *obj, u32 param1, u32 param2) {
     ArrayScrollerMenu::NotificationMessage(msg, obj, param1, param2);
 
     switch (msg) {

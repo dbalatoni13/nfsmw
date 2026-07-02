@@ -32,7 +32,9 @@ GameplayActivity::GameplayActivity(Sim::Param params) : Sim::Activity(0) {
     mUpdateTask = AddTask("GameplayActivity", 1.0f, 0.0f, Sim::TASK_FRAME_FIXED);
     Sim::ProfileTask(mUpdateTask, "GameplayActivity");
 
+#ifndef EA_BUILD_A124
     GManager::Get().PreBeginGameplay();
+#endif
     GRaceStatus::Init();
     LuaRuntime::Init(0x10000);
     LuaPostOffice::Init();

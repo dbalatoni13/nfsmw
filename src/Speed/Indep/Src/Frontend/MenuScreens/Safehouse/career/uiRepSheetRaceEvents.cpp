@@ -29,7 +29,9 @@ void RaceDatum::NotificationMessage(u32 msg, FEObject *pObj, u32 param1, u32 par
 UISafehouseRaceSheet::UISafehouseRaceSheet(ScreenConstructorData *sd) : ArrayScrollerMenu(sd, 3, 3, true) {
     bIsInGame = sd->Arg != 0;
     currentEvents = true;
+#ifndef EA_BUILD_A124
     currentIndex = 0;
+#endif
     theRace = nullptr;
     for (int i = 0; i < GetWidth() * GetHeight(); i++) {
         FEImage *image = FEngFindImage(GetPackageName(), FEngHashString("EVENT_ICON_%d", i + 1));

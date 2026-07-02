@@ -31,7 +31,7 @@ struct SongInfoList {
 extern SongInfoList Songs;
 extern cFrontendDatabase *FEDatabase;
 
-void UIEATraxScreen::AddTrackSlot(ScrollerSlot *slot, unsigned int baseHash, int num) {
+void UIEATraxScreen::AddTrackSlot(ScrollerSlot *slot, uint32 baseHash, int num) {
     FEObject *string = FEngFindObject(GetPackageName(), baseHash + num);
     slot->AddData(string);
 }
@@ -40,7 +40,7 @@ UIEATraxScreen::UIEATraxScreen(ScreenConstructorData *sd)
     : MenuScreen(sd),                                                                       //
       Tracks(GetPackageName(), "ARRAY_SCROLL_REGION", "ScrollBar", true, true, false, true) //
 {
-    const unsigned long FEObj_TrackModeType = 0xCA74A2FA;
+    const u32 FEObj_TrackModeType = 0xCA74A2FA;
     NumSlots = 4;
     bTrackGrabbed = false;
     Tracks.SetMouseDownMsg(1);
@@ -50,7 +50,9 @@ UIEATraxScreen::UIEATraxScreen(ScreenConstructorData *sd)
     JukeboxEntry *playlist = FEDatabase->GetUserProfile(0)->Playlist;
     OriginalPlaylist = new (__FILE__, __LINE__) JukeboxEntry[NumSongs];
     bMemCpy(OriginalPlaylist, playlist, NumSongs * sizeof(JukeboxEntry));
+#ifndef EA_BUILD_A124
     OriginalPlayState = FEDatabase->GetAudioSettings()->PlayState;
+#endif
     SetupSongList();
 }
 
@@ -128,14 +130,14 @@ void UIEATraxScreen::SetupSongList() {
     RefreshHeader();
 }
 
-void UIEATraxScreen::ScrollOrderState(unsigned long msg) {
+void UIEATraxScreen::ScrollOrderState(u32 msg) {
     unsigned char state = FEDatabase->GetAudioSettings()->PlayState;
     FEDatabase->GetAudioSettings()->PlayState = (state == 0);
     RefreshHeader();
     MControlPathfinder(true, 0, 0, 0).Send("EATraxInit");
 }
 
-void UIEATraxScreen::ScrollTracks(unsigned long msg) {
+void UIEATraxScreen::ScrollTracks(u32 msg) {
     if (msg == 0x72619778) {
         if (!Tracks.IsAtHead()) {
             Tracks.ScrollPrev();
@@ -147,7 +149,7 @@ void UIEATraxScreen::ScrollTracks(unsigned long msg) {
     }
 }
 
-void UIEATraxScreen::ScrollTrackPlayability(unsigned long msg) {
+void UIEATraxScreen::ScrollTrackPlayability(u32 msg) {
     JukeBoxScrollerDatum *datum = static_cast<JukeBoxScrollerDatum *>(Tracks.GetSelectedDatum());
     JukeboxEntry *entry;
     JukeboxEntry *playlist = FEDatabase->GetUserProfile(0)->Playlist;
@@ -183,7 +185,7 @@ void UIEATraxScreen::ScrollTrackPlayability(unsigned long msg) {
     MControlPathfinder(true, 0, 0, 0).Send("EATraxInit");
 }
 
-void UIEATraxScreen::MoveTrack(unsigned long msg) {
+void UIEATraxScreen::MoveTrack(u32 msg) {
     ScrollerSlot *old_slot = Tracks.GetSelectedSlot();
     int oldSlotIndex = Tracks.GetSelectedSlotIndex();
 
@@ -290,14 +292,18 @@ bool UIEATraxScreen::OptionsDidNotChange() {
     JukeboxEntry *playlist = FEDatabase->GetUserProfile(0)->Playlist;
     int cmp = bMemCmp(playlist, OriginalPlaylist, NumSongs * sizeof(JukeboxEntry));
     ret = (cmp == 0);
+#ifndef EA_BUILD_A124
     if (FEDatabase->GetAudioSettings()->PlayState != OriginalPlayState) {
         ret = false;
     }
+#endif
     return ret;
 }
 
 void UIEATraxScreen::RestoreOriginals() {
     JukeboxEntry *playlist = FEDatabase->GetUserProfile(0)->Playlist;
     bMemCpy(playlist, OriginalPlaylist, NumSongs * sizeof(JukeboxEntry));
+#ifndef EA_BUILD_A124
     FEDatabase->GetAudioSettings()->PlayState = OriginalPlayState;
+#endif
 }

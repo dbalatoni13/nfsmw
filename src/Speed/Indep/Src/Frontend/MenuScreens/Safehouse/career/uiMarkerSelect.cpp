@@ -73,7 +73,7 @@ void FEMarkerSelection::SetUnlockIcon(eUnlockableEntity ent, unsigned int messag
     }
 }
 
-void FEMarkerSelection::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
+void FEMarkerSelection::NotificationMessage(u32 msg, FEObject *pobj, u32 param1, u32 param2) {
     switch (msg) {
         case 0xe1fde1d1:
             TheFEMarkerManager.ClearMarkersForLaterSelection();

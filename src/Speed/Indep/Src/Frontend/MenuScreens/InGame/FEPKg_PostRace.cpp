@@ -3,6 +3,7 @@
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/Frontend/FEManager.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEImages.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/feDialogBox.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/InGame/PhotoFinish.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/MemCard/uiMemcardInterface.hpp"
@@ -276,10 +277,12 @@ void PostRaceResultsScreen::SetupStat_NosUsed() {
         nos *= 0.45359f;
     }
 
+#ifndef EA_BUILD_A124
     if (GRaceStatus::Get().GetRaceTimeElapsed() > 0.0f && racerInfo.AreStatsReady()) {
         RacerStats[mIndexOfCurrentRacer].AddGenericStat(nos, 0x114E759F, mass_units, "%$0.0f");
         return;
     }
+#endif
 
     RacerStats[mIndexOfCurrentRacer].AddInfoStat(0x114E759F, 0x0FC1BF40);
 }
@@ -294,10 +297,12 @@ void PostRaceResultsScreen::SetupStat_TopSpeed() {
         speed *= 1.60931f;
     }
 
+#ifndef EA_BUILD_A124
     if (GRaceStatus::Get().GetRaceTimeElapsed() > 0.0f && racerInfo.AreStatsReady()) {
         RacerStats[mIndexOfCurrentRacer].AddGenericStat(speed, 0x0EF34382, speedUnits, "%$0.0f");
         return;
     }
+#endif
 
     RacerStats[mIndexOfCurrentRacer].AddInfoStat(0x0EF34382, 0x0FC1BF40);
 }
@@ -312,10 +317,12 @@ void PostRaceResultsScreen::SetupStat_AverageSpeed() {
         speed *= 1.60931f;
     }
 
+#ifndef EA_BUILD_A124
     if (GRaceStatus::Get().GetRaceTimeElapsed() > 0.0f && racerInfo.AreStatsReady()) {
         RacerStats[mIndexOfCurrentRacer].AddGenericStat(speed, 0x57F4140A, speedUnits, "%$0.0f");
         return;
     }
+#endif
 
     RacerStats[mIndexOfCurrentRacer].AddInfoStat(0x57F4140A, 0x0FC1BF40);
 }
@@ -373,7 +380,12 @@ void PostRaceResultsScreen::SetupStat_ZeroToSixty() {
         speedUnits = 0xB8CF16FC;
     }
 
-    if (*reinterpret_cast<const float *>(reinterpret_cast<const char *>(&racerInfo) + 0x138) > 0.0f && racerInfo.AreStatsReady()) {
+    if (*reinterpret_cast<const float *>(reinterpret_cast<const char *>(&racerInfo) + 0x138) > 0.0f
+#ifndef EA_BUILD_A124
+        && racerInfo.AreStatsReady()
+#endif
+
+    ) {
         RacerStats[mIndexOfCurrentRacer].AddTimerStat(*reinterpret_cast<const float *>(reinterpret_cast<const char *>(&racerInfo) + 0x138),
                                                       speedUnits);
         return;
@@ -390,7 +402,11 @@ void PostRaceResultsScreen::SetupStat_QuarterMile() {
         timeUnits = 0x1C6F2A82;
     }
 
-    if (*reinterpret_cast<const float *>(reinterpret_cast<const char *>(&racerInfo) + 0x13C) > 0.0f && racerInfo.AreStatsReady()) {
+    if (*reinterpret_cast<const float *>(reinterpret_cast<const char *>(&racerInfo) + 0x13C) > 0.0f
+#ifndef EA_BUILD_A124
+        && racerInfo.AreStatsReady()
+#endif
+    ) {
         RacerStats[mIndexOfCurrentRacer].AddTimerStat(*reinterpret_cast<const float *>(reinterpret_cast<const char *>(&racerInfo) + 0x13C),
                                                       timeUnits);
         return;
@@ -402,7 +418,11 @@ void PostRaceResultsScreen::SetupStat_QuarterMile() {
 void PostRaceResultsScreen::SetupStat_PerfectShifts() {
     GRacerInfo &racerInfo = GRaceStatus::Get().GetRacerInfo(mIndexOfCurrentRacer);
 
-    if (GRaceStatus::Get().GetRaceTimeElapsed() > 0.0f && racerInfo.AreStatsReady()) {
+    if (GRaceStatus::Get().GetRaceTimeElapsed() > 0.0f
+#ifndef EA_BUILD_A124
+        && racerInfo.AreStatsReady()
+#endif
+    ) {
         RacerStats[mIndexOfCurrentRacer].AddGenericStat(
             static_cast<float>(*reinterpret_cast<const int *>(reinterpret_cast<const char *>(&racerInfo) + 0x128)), 0x680AC597, 0, "%$0.0f");
         return;
@@ -618,9 +638,11 @@ void PostRaceResultsScreen::SetupLapStats(int racerIndex, GRacerInfo *racer_info
         case GRace::kRaceType_P2P:
         case GRace::kRaceType_Drag: {
             for (int i = 0; i < 4; ++i) {
+#ifndef EA_BUILD_A124
                 RacerStats[racerIndex].AddStat(new ("", 0) StageStat(
                     RacerStats[racerIndex].GetCurrentString("COLUMN1_DATA"), RacerStats[racerIndex].GetCurrentString("COLUMN3_DATA"),
                     RacerStats[racerIndex].GetCurrentString("COLUMN2_DATA"), i, racer_info->GetSplitTime(i), racer_info->GetSplitRanking(i)));
+#endif
             }
 
             float final_time = 0.0f;
@@ -1265,7 +1287,7 @@ PostRaceMilestonesScreen::PostRaceMilestonesScreen(ScreenConstructorData *sd) : 
 
 PostRaceMilestonesScreen::~PostRaceMilestonesScreen() {}
 
-void PostRaceMilestonesScreen::NotificationMessage(unsigned long msg, FEObject *pobj, unsigned long param1, unsigned long param2) {
+void PostRaceMilestonesScreen::NotificationMessage(u32 msg, FEObject *pobj, u32 param1, u32 param2) {
     if (msg == 0x35f8620b) {
         StartBountyAnimations(false);
         return;

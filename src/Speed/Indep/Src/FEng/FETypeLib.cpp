@@ -171,7 +171,7 @@ bool FETypeLib::Startup() {
     return true;
 }
 
-FETypeNode *FETypeLib::FindType(unsigned long TypeID) {
+FETypeNode *FETypeLib::FindType(u32 TypeID) {
     FETypeNode *pNode = GetFirstType();
     for (;;) {
         if (!pNode) {

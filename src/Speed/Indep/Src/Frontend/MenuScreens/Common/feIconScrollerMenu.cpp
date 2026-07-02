@@ -814,14 +814,14 @@ void IconScrollerMenu::NotificationMessage(u32 msg, FEObject *pobj, u32 param1, 
     }
 }
 
-eMenuSoundTriggers IconScrollerMenu::NotifySoundMessage(unsigned long msg, eMenuSoundTriggers maybe) {
+eMenuSoundTriggers IconScrollerMenu::NotifySoundMessage(u32 msg, eMenuSoundTriggers maybe) {
     if ((msg == 0x48122792 || msg == 0x4ac5e165) && !Options.JustScrolled()) {
         return static_cast<eMenuSoundTriggers>(-1);
     }
     return maybe;
 }
 
-void IconScrollerMenu::StorePrevNotification(unsigned int msg, FEObject *pobj, unsigned int param1, unsigned int param2) {
+void IconScrollerMenu::StorePrevNotification(uint32 msg, FEObject *pobj, uint32 param1, uint32 param2) {
     PrevButtonMessage = msg;
     PrevButtonObj = pobj;
     PrevParam1 = param1;

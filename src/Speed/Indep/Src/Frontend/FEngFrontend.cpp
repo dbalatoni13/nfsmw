@@ -4,13 +4,12 @@
 #include "Speed/Indep/Src/FEng/FEPackage.h"
 #include "Speed/Indep/Src/Input/IOModule.h"
 #include "Speed/Indep/bWare/Inc/bPrintf.hpp"
-#include <cstdarg.h>
 
 extern unsigned int Button_Action_Hashes_GAMECUBE[][5];
 extern unsigned int Button_Action_Hashes_GAMECUBE_Wheel[][5];
 
 unsigned int FindButtonNameHashForFEString(int config, int string_number, JoystickPort player) {
-    unsigned int(*hashes)[5];
+    unsigned int (*hashes)[5];
     if (IsJoystickTypeWheel(player)) {
         hashes = Button_Action_Hashes_GAMECUBE_Wheel;
     } else {

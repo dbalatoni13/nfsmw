@@ -1,8 +1,6 @@
 #ifndef GAMEPLAY_GRACE_STATUS_H
 #define GAMEPLAY_GRACE_STATUS_H
 
-#include "Speed/Indep/Src/World/WorldModel.hpp"
-#include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
@@ -17,6 +15,8 @@
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/gameplay.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/IVehicleCache.h"
 #include "Speed/Indep/Src/Misc/Table.hpp"
+#include "Speed/Indep/Src/World/WorldModel.hpp"
+#include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 
 #include <types.h>
 
@@ -720,7 +720,7 @@ class GRaceCustom : public GRaceParameters {
     void SetCopsEnabled(bool copsEnabled);
 
 #if EA_BUILD_A124
-    void SetCopDensity();
+    void SetCopDensity(GRace::CopDensity copDensity);
 #else
     void SetHeatLevel(int level) {
         mHeatLevel = level;

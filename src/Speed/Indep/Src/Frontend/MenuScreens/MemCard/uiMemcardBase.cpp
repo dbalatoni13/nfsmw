@@ -53,7 +53,7 @@ void UIMemcardKeyboard::ShowKeyboard() {
     FEDatabase->LoadSaveGame = static_cast<eLoadSaveGame>(5);
 }
 
-void UIMemcardKeyboard::NotificationMessage(unsigned long msg, FEObject *obj, unsigned long param1, unsigned long param2) {
+void UIMemcardKeyboard::NotificationMessage(u32 msg, FEObject *obj, u32 param1, u32 param2) {
     if (msg == 0xC9D30688) {
         FEngSetScript(GetPackageName(), 0x47FF4E7C, 0x03D8EABC, true);
     }
@@ -125,7 +125,7 @@ void UIMemcardBase::InitCompleteDoList() {
     SetStringCheckingCard();
     MemoryCard::GetInstance()->RequestTask(7, nullptr);
     cFEng *pFeng = cFEng::Get();
-    unsigned long hash = FEHashUpper("SHOW LOADER");
+    u32 hash = FEHashUpper("SHOW LOADER");
     pFeng->QueuePackageMessage(hash, GetPackageName(), nullptr);
 }
 
@@ -343,7 +343,7 @@ void UIMemcardBase::ExitComplete() {
     }
 }
 
-eMenuSoundTriggers UIMemcardBase::NotifySoundMessage(unsigned long msg, eMenuSoundTriggers maybe) {
+eMenuSoundTriggers UIMemcardBase::NotifySoundMessage(u32 msg, eMenuSoundTriggers maybe) {
     if (m_bAnyButtonVisible) {
         return maybe;
     }
@@ -353,7 +353,7 @@ eMenuSoundTriggers UIMemcardBase::NotifySoundMessage(unsigned long msg, eMenuSou
     return maybe;
 }
 
-void UIMemcardBase::NotificationMessage(unsigned long msg, FEObject *obj, unsigned long param1, unsigned long param2) {
+void UIMemcardBase::NotificationMessage(u32 msg, FEObject *obj, u32 param1, u32 param2) {
     if (msg != 0xc407210 && MemoryCard::GetInstance()->GetOp() == 0) {
         UIMemcardKeyboard::NotificationMessage(msg, obj, param1, param2);
     }
@@ -409,7 +409,7 @@ void UIMemcardBase::NotificationMessage(unsigned long msg, FEObject *obj, unsign
     }
 }
 
-void UIMemcardBase::HandleButtonPressed(unsigned long msg, FEObject *obj, unsigned long param1, unsigned long param2, bool bPadBack) {
+void UIMemcardBase::HandleButtonPressed(u32 msg, FEObject *obj, u32 param1, u32 param2, bool bPadBack) {
     bool isSecondBtn = (obj->NameHash == gButtonIDs[0]) && !bPadBack;
     int promptFlags = gMemcardSetup.mOp & 0xf000000;
     gMemcardSetup.mOp = gMemcardSetup.mOp & 0xf0ffffff;
@@ -522,7 +522,7 @@ void UIMemcardBase::HandleButtonPressed(unsigned long msg, FEObject *obj, unsign
             }
             if (MemoryCard::GetInstance()->GetOp() == 7) {
                 cFEng *feng = cFEng::Get();
-                unsigned long hash = FEHashUpper("SHOW LOADER");
+                u32 hash = FEHashUpper("SHOW LOADER");
                 feng->QueuePackageMessage(hash, GetPackageName(), nullptr);
             }
             break;
@@ -591,7 +591,7 @@ void UIMemcardBase::SetMessage(short *pMsg) {
 
 void UIMemcardBase::ShowOK(unsigned int textHash, unsigned int flag) {
     cFEng *pFeng = cFEng::Get();
-    unsigned long msg = FEHashUpper("HIDE LOADER");
+    u32 msg = FEHashUpper("HIDE LOADER");
     pFeng->QueuePackageMessage(msg, GetPackageName(), nullptr);
     SetMessageBlurbText(textHash);
     gMemcardSetup.mOp = gMemcardSetup.mOp | static_cast<int>(flag & 0xf000000);
@@ -606,7 +606,7 @@ void UIMemcardBase::ShowOK(unsigned int textHash, unsigned int flag) {
 
 void UIMemcardBase::ShowYesNo(unsigned int textHash, unsigned int flag) {
     cFEng *pFeng = cFEng::Get();
-    unsigned long msg = FEHashUpper("HIDE LOADER");
+    u32 msg = FEHashUpper("HIDE LOADER");
     pFeng->QueuePackageMessage(msg, GetPackageName(), nullptr);
     SetMessageBlurbText(textHash);
     gMemcardSetup.mOp = gMemcardSetup.mOp | static_cast<int>(flag & 0xf000000);
@@ -624,11 +624,11 @@ void UIMemcardBase::SetScreenVisible(bool bVisible, int nButtons) {
     if (m_bVisible != bVisible) {
         cFEng *pFeng = cFEng::Get();
         m_bVisible = bVisible;
-        unsigned long msg = bVisible ? 0xc0f2ae7cUL : 0x4f3559b5UL;
+        u32 msg = bVisible ? 0xc0f2ae7cUL : 0x4f3559b5UL;
         pFeng->QueuePackageMessage(msg, GetPackageName(), nullptr);
         if (bVisible) {
             pFeng = cFEng::Get();
-            unsigned long resetMsg = FEHashUpper("INITIALIZE_SCREEN");
+            u32 resetMsg = FEHashUpper("INITIALIZE_SCREEN");
             pFeng->QueuePackageMessage(resetMsg, GetPackageName(), nullptr);
         }
         MemoryCard::GetInstance()->SetMemcardScreenInitialized(m_bVisible);
@@ -637,7 +637,7 @@ void UIMemcardBase::SetScreenVisible(bool bVisible, int nButtons) {
         char buf[36];
         bSPrintf(buf, "%d_BUTTONS", nButtons);
         cFEng *pFeng = cFEng::Get();
-        unsigned long hash = FEHashUpper(buf);
+        u32 hash = FEHashUpper(buf);
         pFeng->QueuePackageMessage(hash, GetPackageName(), nullptr);
     }
 }
@@ -651,7 +651,7 @@ void UIMemcardBase::TranslateButton(FEObject *obj) {
     if (obj->Flags & 1) {
         return;
     }
-    unsigned long nameHash = obj->NameHash;
+    u32 nameHash = obj->NameHash;
     if (nameHash == gButtonIDs[0]) {
         MemoryCard::GetInstance()->MessageDone(static_cast<RealmcIface::MessageChoices>(1));
     } else if (nameHash == gButtonIDs[1]) {
@@ -702,8 +702,8 @@ void UIMemcardBase::SetupAutoSaveConfirmPrompt() {
     FEngSetInvisible(FEngFindObject(GetPackageName(), gButtonIDs[2]));
     FEngSetInvisible(FEngFindObject(GetPackageName(), gButtonTextIDs[2]));
     FEngSetCurrentButton(GetPackageName(), gButtonIDs[0]);
-    unsigned long handlerHash = FEHashUpper("HANDLER");
-    unsigned long forwardHash = FEHashUpper("FORWARD");
+    u32 handlerHash = FEHashUpper("HANDLER");
+    u32 forwardHash = FEHashUpper("FORWARD");
     FEngSetScript(GetPackageName(), handlerHash, forwardHash, true);
     SetScreenVisible(true, 2);
 }
@@ -743,7 +743,7 @@ void UIMemcardBase::SetStringCheckingCard() {
     SetScreenVisible(true, 0);
     SetMessageBlurbText(static_cast<unsigned int>(0x99054304));
     cFEng *pFeng = cFEng::Get();
-    unsigned long hash = FEHashUpper("0_BUTTONS");
+    u32 hash = FEHashUpper("0_BUTTONS");
     pFeng->QueuePackageMessage(hash, GetPackageName(), nullptr);
     HideAllButtons();
     m_ExpectingInput = false;

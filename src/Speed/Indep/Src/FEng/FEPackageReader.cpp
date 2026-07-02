@@ -23,7 +23,6 @@
 #include "FEMsgTargetList.h"
 #include "FEWideString.h"
 #include "Speed/Indep/Src/FEng/FEngine.h"
-#include "dolphin/types.h"
 #include "types.h"
 
 // File: speed/indep/src/feng/FEPackageReader.cpp

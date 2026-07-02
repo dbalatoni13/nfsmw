@@ -8,6 +8,7 @@
 #include "Speed/Indep/Src/Frontend/HUD/FeGenericMessage.hpp"
 #include "Speed/Indep/Src/Frontend/HUD/FeGetawayMeter.hpp"
 #include "Speed/Indep/Src/Frontend/HUD/FeHeatMeter.hpp"
+#include "Speed/Indep/Src/Frontend/HUD/FeHudElement.hpp"
 #include "Speed/Indep/Src/Frontend/HUD/FeInfractions.hpp"
 #include "Speed/Indep/Src/Frontend/HUD/FeLeaderBoard.hpp"
 #include "Speed/Indep/Src/Frontend/HUD/FeMenuZoneTrigger.hpp"
@@ -190,9 +191,9 @@ bool HudResourceManager::ChooseMinimapTextureName(ePlayerHudType hudType, char *
                 GRaceParameters *raceParams = GRaceStatus::Get().GetRaceParameters();
                 if (raceParams) {
                     if (raceParams->GetIsPursuitRace()) {
-                        if (raceParams->GetRegion() == kRaceRegion_College) {
+                        if (raceParams->GetRegion() == GRace::kRaceRegion_College) {
                             bSNPrintf(texture_name, texture_name_size, "MINI_MAP_UNLOCK_1");
-                        } else if (raceParams->GetRegion() == kRaceRegion_Coastal) {
+                        } else if (raceParams->GetRegion() == GRace::kRaceRegion_Coastal) {
                             bSNPrintf(texture_name, texture_name_size, "MINI_MAP_UNLOCK_2");
                         } else {
                             bSNPrintf(texture_name, texture_name_size, "MINI_MAP");
@@ -633,7 +634,7 @@ FEngHud::~FEngHud() {
 void FEngHud::Update(IPlayer *player, float dT) {
     ProfileNode profile_node("FEngHud::Update", 0);
 
-    unsigned long long hudFeatures = DetermineHudFeatures(player);
+    HudFeaturesType hudFeatures = DetermineHudFeatures(player);
     if (hudFeatures != CurrentHudFeatures) {
         SetHudFeatures(hudFeatures);
     }
@@ -877,8 +878,8 @@ void FEngHud::JoyHandle(IPlayer *player) {
     }
 }
 
-unsigned long long FEngHud::DetermineHudFeatures(IPlayer *player) {
-    unsigned long long hud_features = 0;
+HudFeaturesType FEngHud::DetermineHudFeatures(IPlayer *player) {
+    HudFeaturesType hud_features = 0;
 
     eView *view = eGetView(player->GetRenderPort(), false);
     CameraMover *cammover = nullptr;
@@ -1035,86 +1036,86 @@ bool FEngHud::AreResourcesLoaded() {
     return TheHudResourceManager.AreResourcesLoaded(mPlayerHudType);
 }
 
-void FEngHud::SetHudFeatures(unsigned long long hud_features) {
-    unsigned long long diff = CurrentHudFeatures ^ hud_features;
-    if (pSpeedometer != nullptr && (diff & 0x8000000)) {
+void FEngHud::SetHudFeatures(HudFeaturesType hud_features) {
+    HudFeaturesType xor_hud_features = CurrentHudFeatures ^ hud_features;
+    if (pSpeedometer != nullptr && (xor_hud_features & 0x8000000)) {
         pSpeedometer->Toggle(hud_features);
     }
-    if (pTachometer != nullptr && (diff & 0x2)) {
+    if (pTachometer != nullptr && (xor_hud_features & 0x2)) {
         pTachometer->Toggle(hud_features);
     }
-    if (pTachometerDrag != nullptr && (diff & 0x2)) {
+    if (pTachometerDrag != nullptr && (xor_hud_features & 0x2)) {
         pTachometerDrag->Toggle(hud_features);
     }
-    if (pShiftUpdater != nullptr && (diff & 0x20000000)) {
+    if (pShiftUpdater != nullptr && (xor_hud_features & 0x20000000)) {
         pShiftUpdater->Toggle(hud_features);
     }
-    if (pTurboMeter != nullptr && (diff & 0x20000)) {
+    if (pTurboMeter != nullptr && (xor_hud_features & 0x20000)) {
         pTurboMeter->Toggle(hud_features);
     }
-    if (pEngineTemp != nullptr && (diff & 0x40)) {
+    if (pEngineTemp != nullptr && (xor_hud_features & 0x40)) {
         pEngineTemp->Toggle(hud_features);
     }
-    if (pNitrous != nullptr && (diff & 0x800)) {
+    if (pNitrous != nullptr && (xor_hud_features & 0x800)) {
         pNitrous->Toggle(hud_features);
     }
-    if (pSpeedBreakerMeter != nullptr && (diff & 0x40000)) {
+    if (pSpeedBreakerMeter != nullptr && (xor_hud_features & 0x40000)) {
         pSpeedBreakerMeter->Toggle(hud_features);
     }
-    if (pHeatMeter != nullptr && (diff & 0x4000)) {
+    if (pHeatMeter != nullptr && (xor_hud_features & 0x4000)) {
         pHeatMeter->Toggle(hud_features);
     }
-    if (pMinimap != nullptr && (diff & 0x10000)) {
+    if (pMinimap != nullptr && (xor_hud_features & 0x10000)) {
         pMinimap->Toggle(hud_features);
     }
-    if (pGetAwayMeter != nullptr && (diff & 0x200)) {
+    if (pGetAwayMeter != nullptr && (xor_hud_features & 0x200)) {
         pGetAwayMeter->Toggle(hud_features);
     }
-    if (pMenuZoneTrigger != nullptr && (diff & 0x400000)) {
+    if (pMenuZoneTrigger != nullptr && (xor_hud_features & 0x400000)) {
         pMenuZoneTrigger->Toggle(hud_features);
     }
-    if (pRaceInformation != nullptr && (diff & 0x4000000)) {
+    if (pRaceInformation != nullptr && (xor_hud_features & 0x4000000)) {
         pRaceInformation->Toggle(hud_features);
     }
     if (pLeaderBoard != nullptr) {
-        if ((diff & 0x8) || (diff & 0x10)) {
+        if ((xor_hud_features & 0x8) || (xor_hud_features & 0x10)) {
             pLeaderBoard->Toggle(hud_features);
         }
     }
-    if (pPursuitBoard != nullptr && (diff & 0x100000)) {
+    if (pPursuitBoard != nullptr && (xor_hud_features & 0x100000)) {
         pPursuitBoard->Toggle(hud_features);
     }
-    if (pMilestoneBoard != nullptr && (diff & 0x400000000ULL)) {
+    if (pMilestoneBoard != nullptr && (xor_hud_features & 0x400000000ULL)) {
         pMilestoneBoard->Toggle(hud_features);
     }
-    if (pBustedMeter != nullptr && (diff & 0x800000)) {
+    if (pBustedMeter != nullptr && (xor_hud_features & 0x800000)) {
         pBustedMeter->Toggle(hud_features);
     }
-    if (pTimeExtension != nullptr && (diff & 0x2000000)) {
+    if (pTimeExtension != nullptr && (xor_hud_features & 0x2000000)) {
         pTimeExtension->Toggle(hud_features);
     }
-    if (pCostToState != nullptr && (diff & 0x1000)) {
+    if (pCostToState != nullptr && (xor_hud_features & 0x1000)) {
         pCostToState->Toggle(hud_features);
     }
-    if (pReputation != nullptr && (diff & 0x1000)) {
+    if (pReputation != nullptr && (xor_hud_features & 0x1000)) {
         pReputation->Toggle(hud_features);
     }
-    if (pWrongWIndi != nullptr && (diff & 0x20)) {
+    if (pWrongWIndi != nullptr && (xor_hud_features & 0x20)) {
         pWrongWIndi->Toggle(hud_features);
     }
-    if (pRaceOverMessage != nullptr && (diff & 0x4)) {
+    if (pRaceOverMessage != nullptr && (xor_hud_features & 0x4)) {
         pRaceOverMessage->Toggle(hud_features);
     }
-    if (pGenericMessage != nullptr && (diff & 0x1000000)) {
+    if (pGenericMessage != nullptr && (xor_hud_features & 0x1000000)) {
         pGenericMessage->Toggle(hud_features);
     }
-    if (pRadarDetector != nullptr && (diff & 0x200000)) {
+    if (pRadarDetector != nullptr && (xor_hud_features & 0x200000)) {
         pRadarDetector->Toggle(hud_features);
     }
-    if (p321Go != nullptr && (diff & 0x400)) {
+    if (p321Go != nullptr && (xor_hud_features & 0x400)) {
         p321Go->Toggle(hud_features);
     }
-    if (pInfractions != nullptr && (diff & 0x200000000ULL)) {
+    if (pInfractions != nullptr && (xor_hud_features & 0x200000000ULL)) {
         pInfractions->Toggle(hud_features);
     }
     CurrentHudFeatures = hud_features;

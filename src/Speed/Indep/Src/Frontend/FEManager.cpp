@@ -22,6 +22,7 @@
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Generated/Messages/MControlPathfinder.h"
 #include "Speed/Indep/Src/Input/IOModule.h"
+#include "Speed/Indep/Src/Input/ISteeringWheel.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Interfaces/IFengHud.h"
@@ -41,7 +42,10 @@ extern int SummonChyronNow;
 extern int DoScreenPrintf;
 
 FEManager::FEManager()
-    : bSuppressControllerError(false), bAllowControllerError(false), mFirstScreen(nullptr), mFirstScreenArg(0), mFirstScreenMask(0xFF),
+    : bSuppressControllerError(false), bAllowControllerError(false), mFirstScreen(nullptr), mFirstScreenArg(0),
+#ifndef EA_BUILD_A124
+      mFirstScreenMask(0xFF),
+#endif
       mGarageType(GARAGETYPE_NONE), mPreviousGarageType(GARAGETYPE_NONE), mGarageBackground(nullptr), mFirstBoot(true), mEATraxDelay(0),
       mEATraxFirstButton(false) {
     for (int port = 0; port < 8; port++) {
@@ -269,7 +273,13 @@ void FEManager::StartFE() {
         bWantControllerError[port] = false;
     }
     mPauseRequest = 0;
-    cFEng::Get()->QueuePackagePush(mFirstScreen, mFirstScreenArg, mFirstScreenMask, false);
+    cFEng::Get()->QueuePackagePush(mFirstScreen, mFirstScreenArg,
+#ifdef EA_BUILD_A124
+                                   0,
+#else
+                                   mFirstScreenMask,
+#endif
+                                   false);
 }
 
 void FEManager::StopFE() {

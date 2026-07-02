@@ -7,6 +7,7 @@
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/Src/Frontend/Localization/Localize.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/MemCard/uiMemcardInterface.hpp"
+#include "Speed/Indep/Src/Gameplay/GRace.h"
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Gameplay/GRaceDatabase.h"
 #include "Speed/Indep/Src/Gameplay/GManager.h"
@@ -999,9 +1000,13 @@ void cFrontendDatabase::FillCustomRace(GRaceCustom *parms, RaceSettings *race) {
     }
     parms->SetCatchUp(race->CatchUp);
     parms->SetCopsEnabled(race->CopsOn);
+#ifdef EA_BUILD_A124
+    parms->SetCopDensity(static_cast<GRace::CopDensity>(race->CopDensity));
+#else
     if (race->CopsOn) {
         parms->SetHeatLevel(race->CopDensity);
     }
+#endif
     parms->SetDifficulty(static_cast<GRace::Difficulty>(race->AISkill));
     parms->SetNumLaps(race->NumLaps);
     parms->SetNumOpponents(race->NumOpponents);

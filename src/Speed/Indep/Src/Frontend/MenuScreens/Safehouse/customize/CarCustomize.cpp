@@ -3603,9 +3603,11 @@ void CustomizePaint::NotificationMessage(u32 msg, FEObject *pobj, u32 param1, u3
         case 0xc519bfbf:
             Showcase::FromFilter = TheFilter;
             Showcase::FromIndex = ThePaints.GetCurrentDatumNum();
+#ifndef EA_BUILD_A124
             for (int i = 0; i < 3; i++) {
                 Showcase::FromColor[i] = VinylColors[i];
             }
+#endif
             break;
         case 0x5073ef13:
             ScrollFilters(static_cast<eScrollDir>(-1));
@@ -3658,7 +3660,9 @@ void CustomizePaint::NotificationMessage(u32 msg, FEObject *pobj, u32 param1, u3
                     delete VinylColors[i];
                 }
                 VinylColors[i] = nullptr;
+#ifndef EA_BUILD_A124
                 Showcase::FromColor[i] = nullptr;
+#endif
             }
             gCarCustomizeManager.ResetPreview();
             {
@@ -3854,6 +3858,7 @@ void CustomizePaint::SetupVinylColor() {
     } else {
         cFEng::Get()->QueuePackageMessage(0x1a7240f3, GetPackageName(), nullptr);
     }
+#ifndef EA_BUILD_A124
     for (int i = 0; i < 3; i++) {
         int slotID = i + 0x4f;
         if (!Showcase::FromColor[i]) {
@@ -3870,6 +3875,7 @@ void CustomizePaint::SetupVinylColor() {
             Showcase::FromColor[i] = nullptr;
         }
     }
+#endif
 }
 
 uint32 CustomizePaint::CalcBrandHash(CarPart *part) {
@@ -3907,9 +3913,11 @@ void CustomizePaint::BuildSwatchList(unsigned int slot) {
         default:
             goto skip_color;
     }
+#ifndef EA_BUILD_A124
     if (Showcase::FromColor[colorIndex] && !VinylColors[colorIndex]) {
         matchPart = static_cast<SelectablePart *>(Showcase::FromColor[colorIndex])->GetPart();
     }
+#endif
 skip_color:
     if (!matchPart) {
         matchPart = gCarCustomizeManager.GetActivePartFromSlot(slot);

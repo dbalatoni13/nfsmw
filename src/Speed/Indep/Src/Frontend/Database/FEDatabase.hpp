@@ -676,10 +676,10 @@ class cFrontendDatabase {
     void SetAutoSave(bool flag) {}
 #if ONLINE_SUPPORT
     cOnlineSettings *GetOnlineSettings() {
-        return OnlineSettings;
+        return &OnlineSettings;
     };
     OnlineCreateUserSettings *GetOnlineCreateUserSettings() {
-        return mOnlineCreateUserSettings;
+        return &mOnlineCreateUserSettings;
     };
 #endif
     FEKeyboardSettings *GetFEKeyboardSettings() {}

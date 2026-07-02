@@ -244,7 +244,7 @@ void FEPackage::IssueScriptMessages(FEngine *pEngine, FEObject *pObj, FEScript *
     }
 }
 
-void FEPackage::UpdateGroup(FEGroup *pGroup, long tDeltaTicks) {
+void FEPackage::UpdateGroup(FEGroup *pGroup, i32 tDeltaTicks) {
     FEObject *pChild = pGroup->GetFirstChild();
     while (pChild) {
         UpdateObject(pChild, tDeltaTicks);
@@ -257,7 +257,7 @@ uint32 eFrameCounter = 0; // size: 0x4, Decl: speed/indep/src/feng/FEPackage.cpp
 uint32 eFrameCounterOLD;  // size: 0x4, address: 0x80473E0C, Decl: speed/indep/src/feng/FEPackage.cpp:401
 uint32 objCount;          // size: 0x4, address: 0x80473E10, Decl: speed/indep/src/feng/FEPackage.cpp:402
 
-void FEPackage::UpdateObject(FEObject *pObj, long tDeltaTicks) {
+void FEPackage::UpdateObject(FEObject *pObj, i32 tDeltaTicks) {
     if (eFrameCounterOLD == eFrameCounter) {
         objCount++;
     } else {
@@ -458,7 +458,7 @@ class MouseStateArrayOffsetUpdater : public FEObjectCallback {
 };
 
 // Decl: speed/indep/src/feng/FEPackage.cpp:765
-void FEPackage::Update(FEngine *pEngine, long tDeltaTicks) {
+void FEPackage::Update(FEngine *pEngine, i32 tDeltaTicks) {
     FEObject *pObject = static_cast<FEObject *>(Objects.GetHead());
     pEnginePtr = pEngine;
     iTickIncrement = tDeltaTicks;
