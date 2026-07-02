@@ -179,11 +179,7 @@ void StrategyFlow::SoloCheck() {
             mFlags |= SOLO;
         } else {
             if (ai->GetLeader()->IsActive()) {
-                typedef void (*VoidIntMethodPtr)(void *, int);
-                EAXCop *leader = ai->GetLeader();
-                int formationType = mFormationType;
-                char *vtable = *reinterpret_cast<char **>(leader);
-                SPEECH_EAXCOP_CALL_INITIATE_STRATEGY_VTABLE(leader, formationType, vtable);
+                ai->GetLeader()->InitiateStrategy(mFormationType);
             }
             mFlags &= ~SOLO;
         }

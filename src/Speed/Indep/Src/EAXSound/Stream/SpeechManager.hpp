@@ -205,6 +205,7 @@ class Manager {
     static int PreValidate(ScheduledSpeechEvent &evt);
     static bool CanPlayback(Attrib::Gen::speech &event_attribs);
     static void CalcProbPlayback();
+    static EventHistory &GetHistory() { return mGlobalHistory; }
     static SampleReqList &GetSampleRequests() { return mSampleRequests; }
 
     static Module *m_SpeechModule[NUM_SPEECH_MODULES];

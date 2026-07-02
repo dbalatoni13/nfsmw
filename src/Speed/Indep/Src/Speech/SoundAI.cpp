@@ -5,6 +5,7 @@
 #include "RoadblockFlow.h"
 #include "StrategyFlow.h"
 #include "Speed/Indep/Src/EAXSound/Csis.hpp"
+#include "Speed/Indep/Src/EAXSound/States/STATE_DriveBy.hpp"
 #include "Speed/Indep/Src/EAXSound/Stream/SpeechManager.hpp"
 #include "Speed/Indep/Src/Interfaces/Simables/IRenderable.h"
 #include "Speed/Indep/Src/Misc/Config.h"
@@ -16,6 +17,7 @@
 #include "Speed/Indep/Src/Speech/EAXCharacter.h"
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Gameplay/GRaceDatabase.h"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/smackable.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/ICopMgr.h"
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IINput.h"
@@ -390,293 +392,418 @@ void SoundAI::OnCollision(const COLLISION_INFO &cinfo) {
     short objects_visible = 0;
     IRenderable *renderA;
     IRenderable *renderB;
-    EAXCop *actorA;
-    EAXCop *actorB;
+    EAXCop *actorA = 0;
+    EAXCop *actorB = 0;
     ISimable *simableA = ISimable::FindInstance(cinfo.objA);
     ISimable *simableB = ISimable::FindInstance(cinfo.objB);
-    if (!simableA && !simableB) {
-        return;
-    }
-
-    actorA = mActors.Find(cinfo.objA);
-    actorB = mActors.Find(cinfo.objB);
-
-    if (actorA) {
-        actors_involved++;
-    }
-    if (actorB) {
-        actors_involved++;
-    }
 
     if (simableA) {
+        actorA = mActors.Find(cinfo.objA);
+        if (actorA) {
+            actors_involved++;
+        }
         renderA = 0;
         if (simableA->QueryInterface(&renderA) && renderA->InView()) {
             objects_visible++;
         }
     }
     if (simableB) {
+        actorB = mActors.Find(cinfo.objB);
+        if (actorB) {
+            actors_involved++;
+        }
         renderB = 0;
         if (simableB->QueryInterface(&renderB) && renderB->InView()) {
             objects_visible++;
         }
     }
-
-    float min_smash = mTune.PlayerSmashSpeedRange(0) * 0.44703f;
-    float max_smash = mTune.PlayerSmashSpeedRange(1) * 0.44703f;
-    float impact = 0.0f;
-    if (max_smash > min_smash) {
-        impact = (cinfo.impulseA + cinfo.impulseB - min_smash) / (max_smash - min_smash);
-    }
-    if (impact < 0.0f) {
-        impact = 0.0f;
-    } else if (impact > 1.0f) {
-        impact = 1.0f;
+    if (!simableA && !simableB) {
+        return;
     }
 
-    EAXCop *cop_actor = actorA ? actorA : actorB;
+    float collisionspeed = cinfo.impulseA + cinfo.impulseB;
+    float minspeed = mTune.PlayerSmashSpeedRange(0) * 0.44703f;
+    float maxspeed = mTune.PlayerSmashSpeedRange(1) * 0.44703f;
+    float intensity = UMath::Clamp((collisionspeed - minspeed) / (maxspeed - minspeed), 0.0f, 1.0f);
 
-    if (cinfo.type == Sim::Collision::Info::WORLD) {
-        if ((actors_involved != 1) || !cop_actor || (objects_visible == 0) || !cop_actor->IsActive()) {
+    if (cinfo.type != Sim::Collision::Info::OBJECT) {
+        if (cinfo.type < Sim::Collision::Info::WORLD) {
             return;
         }
-
-        if (impact >= mTune.MinIntensityCopSmash()) {
-            Csis::Type_intensity intensity = (impact > 0.75f) ? Csis::Type_intensity_High : Csis::Type_intensity_Normal;
-            if (mObserver && mObserver->WeatherExists()) {
-                cop_actor->HeadOn(intensity);
-            } else {
-                cop_actor->RearEnded(intensity);
-            }
-        }
-
-        if (cop_actor->IsPrimary() && (mCopsInFormation.size() > 1)) {
-            RandomBailoutDeny(cop_actor);
-        }
-        if (mObserver) {
-            mObserver->Observe(4, cop_actor->GetSpeakerID(), impact);
+        if (cinfo.type == Sim::Collision::Info::WORLD) {
+            goto collision_world;
         }
         return;
     }
 
-    if (actors_involved == 0) {
+    {
+        if (actors_involved == 2) {
+            return;
+        }
+
+        if (actors_involved == 1) {
+            ISimable *theOtherObj = simableA ? simableA : simableB;
+            EAXCop *actor = actorA ? actorA : actorB;
+
+            IVehicle *theOtherCar = 0;
+            if (!theOtherObj->QueryInterface(&theOtherCar)) {
+                return;
+            }
+
+            DriverClass driver_class = theOtherCar->GetDriverClass();
+            if (driver_class != DRIVER_HUMAN) {
+                if (driver_class != DRIVER_TRAFFIC) {
+                    return;
+                }
+                mObserver->Observe(2, -1, intensity);
+                actor->JustHitTraffic();
+                if ((mPursuitState == kActive) && (mFocus == kStrategyFlow) && actor->IsActive()) {
+                    actor->BailoutTraffic();
+                    RandomBailoutDeny(actor);
+                }
+                return;
+            }
+
+            bool cop_is_in_rb = false;
+            bool cop_rammed = false;
+            bool cop_is_suv = false;
+            bool cop_is_braking = false;
+            ISimable *simableCop = simableA;
+            if (theOtherObj == simableA) {
+                simableCop = simableB;
+            }
+            if (!simableCop) {
+                return;
+            }
+
+            IInput *inputcop = 0;
+            if (simableCop->QueryInterface(&inputcop)) {
+                InputControls &controls = inputcop->GetControls();
+                float brake = UMath::Clamp(controls.fBrake, 0.0f, 1.0f);
+                float ebrake = UMath::Clamp(controls.fHandBrake, 0.0f, 1.0f);
+                if ((brake > 0.0f) || (ebrake > 0.0f)) {
+                    cop_is_braking = true;
+                }
+            }
+
+            if ((mFocus == kPursuitFlow) && ((mFlags & SETUP_RESTARTED) == 0)) {
+                Speech::PursuitFlow::PursuitCause cause = mPursuitFlow->GetPursuitCause();
+                if ((cause != Speech::PursuitFlow::kScripted) && (cause != Speech::PursuitFlow::kCopAssaulted) &&
+                    (cause != Speech::PursuitFlow::kCopAssaultedScripted) && mPursuitFlow->RequiresRestart()) {
+                    Speech::Module *cop_speech = Speech::Manager::GetSpeechModule(COPSPEECH_MODULE);
+                    if (cop_speech) {
+                        Speech::Manager::ClearPlayback();
+                        cop_speech->ReleaseResource();
+                        mT_lastCopNailed = WorldTimer;
+                        actor->WasRammed();
+                        if (mPursuitFlow->GetPursuitCause() == Speech::PursuitFlow::kScripted) {
+                            mPursuitFlow->SetPursuitCause(Speech::PursuitFlow::kCopAssaultedScripted);
+                        } else {
+                            mPursuitFlow->SetPursuitCause(Speech::PursuitFlow::kCopAssaulted);
+                        }
+                        mPursuitFlow->ChangeStateTo(Speech::PursuitFlow::kPrimaryBranch);
+                        mPursuitFlow->Reset();
+                        mFlags |= SETUP_RESTARTED;
+                    }
+                }
+            }
+
+            IRoadBlock *block = GetRoadblock();
+            if (block) {
+                IVehicle *car = block->IsComprisedOf(simableCop->GetOwnerHandle());
+                if (car) {
+                    cop_is_in_rb = true;
+                    if (UTL::COM::ComparePtr(car, simableCop)) {
+                        mRoadblockFlow->NailedSomethingInRB(0x40);
+                    }
+                }
+            }
+            if (!cop_is_in_rb && mObserver) {
+                mObserver->Observe(3, -1, intensity);
+            }
+
+            IVehicle *vehicleCop = 0;
+            simableCop->QueryInterface(&vehicleCop);
+            if (vehicleCop) {
+                unsigned int vtype = vehicleCop->GetVehicleAttributes().GetCollection();
+                if ((vtype == 0x38b38226) || (vtype == 0x54b10e38) || (vtype == 0x2e149eac)) {
+                    cop_is_suv = true;
+                }
+            }
+
+            IRigidBody *rbCop = simableCop->GetRigidBody();
+            IRigidBody *rbRacer = theOtherObj->GetRigidBody();
+            if (!rbCop || !rbRacer) {
+                return;
+            }
+
+            UMath::Vector3 armCop = actorA ? cinfo.armA : cinfo.armB;
+            UMath::Vector3 armRacer = actorA ? cinfo.armB : cinfo.armA;
+            UMath::Vector3 fwCop;
+            UMath::Vector3 fwRacer;
+            UMath::Vector3 dimCop;
+            UMath::Vector3 dimRacer;
+            UMath::Vector3 velCop = (simableCop->GetOwnerHandle() == cinfo.objA) ? cinfo.objAVel : cinfo.objBVel;
+            UMath::Vector3 velRacer = (theOtherObj->GetOwnerHandle() == cinfo.objA) ? cinfo.objAVel : cinfo.objBVel;
+            UMath::Vector3 cnormal = cinfo.normal;
+            rbCop->GetForwardVector(fwCop);
+            rbCop->GetDimension(dimCop);
+            rbRacer->GetForwardVector(fwRacer);
+            rbRacer->GetDimension(dimRacer);
+
+            VehicleImpactType coll_type = kUnknown;
+            float fwDot = UMath::Dot(fwRacer, fwCop);
+            float vel_norm_dotCop = UMath::Dot(velCop, cnormal);
+            float vel_norm_dotRacer = UMath::Dot(velRacer, cnormal);
+
+            if (fwDot >= 0.7f) {
+                if ((bAbs(armCop.x) <= dimCop.x * 0.75f) || (bAbs(armRacer.x) <= dimRacer.x * 0.75f)) {
+                    if ((dimCop.z * 0.75f <= armCop.z) && (armRacer.z <= dimRacer.z * -0.75f)) {
+                        coll_type = kCopREperp;
+                    }
+                    if ((dimRacer.z * 0.75f <= armRacer.z) && (armCop.z <= dimCop.z * -0.75f)) {
+                        float speedCop = VU0_v3length(velCop);
+                        float speedRacer = VU0_v3length(velRacer);
+                        cop_rammed = speedRacer < speedCop;
+                        coll_type = kPerpRECop;
+                    }
+                } else if (bAbs(vel_norm_dotCop) <= bAbs(vel_norm_dotRacer)) {
+                    coll_type = kPerpSSCop;
+                    cop_rammed = true;
+                } else {
+                    coll_type = kCopSSPerp;
+                }
+            } else if (fwDot <= -0.7f) {
+                if (bAbs(vel_norm_dotRacer) <= bAbs(vel_norm_dotCop)) {
+                    coll_type = kCopHOPerp;
+                } else {
+                    coll_type = kPerpHOCop;
+                    cop_rammed = true;
+                }
+            } else {
+                if (dimRacer.z * 0.7f <= armRacer.z) {
+                    coll_type = kPerpTBCop;
+                    cop_rammed = true;
+                }
+                if (dimCop.z * 0.7f <= armCop.z) {
+                    coll_type = kCopTBPerp;
+                }
+            }
+
+            if (!cop_rammed) {
+                return;
+            }
+            mT_lastCopNailed = WorldTimer;
+            if (cop_is_in_rb || cop_is_suv || cop_is_braking || ((mFlags & COPS_IMMUNE) != 0)) {
+                return;
+            }
+            actor->WasRammed();
+            if ((mFocus == kPursuitFlow) || (mFocus == kTerminal) || actor->IsDead() || !actor->IsActive()) {
+                return;
+            }
+
+            if (intensity > 0.15f) {
+                if (intensity <= 0.5f) {
+                    if (intensity > 0.75f) {
+                        actor->SuspectSpunout(Csis::Type_intensity_High);
+                    } else {
+                        float rand_select = bRandom(1.0f);
+                        if (rand_select >= 0.67f) {
+                            actor->Deny();
+                        } else {
+                            Csis::Type_intensity csis_intensity = Csis::Type_intensity_High;
+                            if (coll_type == kPerpRECop) {
+                                actor->RearEnded(csis_intensity);
+                            } else if (coll_type == kPerpTBCop) {
+                                actor->TBoned(csis_intensity);
+                            } else if ((coll_type == kPerpHOCop) && !cop_is_suv) {
+                                actor->HeadOn(csis_intensity);
+                            } else if (coll_type == kPerpSSCop) {
+                                actor->SideSwiped(csis_intensity);
+                            } else {
+                                actor->Ack();
+                            }
+                        }
+                    }
+                } else if (intensity <= 0.75f) {
+                    Csis::Type_intensity csis_intensity = Csis::Type_intensity_Normal;
+                    if (coll_type == kPerpRECop) {
+                        actor->RearEnded(csis_intensity);
+                    } else if (coll_type == kPerpTBCop) {
+                        actor->TBoned(csis_intensity);
+                    } else if (coll_type == kPerpHOCop) {
+                        actor->HeadOn(csis_intensity);
+                    } else if (coll_type == kPerpSSCop) {
+                        actor->SideSwiped(csis_intensity);
+                    }
+                } else {
+                    actor->SuspectSpunout(Csis::Type_intensity_High);
+                }
+            }
+            return;
+        }
+
         IPlayer *player = IPlayer::First(PLAYER_LOCAL);
         if (!player) {
             return;
         }
 
+        IVehicle *pvehicle = 0;
         ISimable *player_sim = player->GetSimable();
-        ISimable *other = 0;
-        const UMath::Vector3 *player_vel = 0;
-        if (player_sim && simableA && (simableA->GetOwnerHandle() == player_sim->GetOwnerHandle())) {
-            other = simableB;
-            player_vel = &cinfo.objAVel;
-        } else if (player_sim && simableB && (simableB->GetOwnerHandle() == player_sim->GetOwnerHandle())) {
-            other = simableA;
-            player_vel = &cinfo.objBVel;
+        ISimable *otherObj = 0;
+        if (player_sim && simableA && UTL::COM::ComparePtr(player_sim, simableA)) {
+            pvehicle = 0;
+            simableA->QueryInterface(&pvehicle);
+            otherObj = simableB;
+        } else if (player_sim && simableB && UTL::COM::ComparePtr(player_sim, simableB)) {
+            pvehicle = 0;
+            simableB->QueryInterface(&pvehicle);
+            otherObj = simableA;
         }
-        if (!other) {
+        if (!pvehicle || !otherObj) {
             return;
         }
 
-        IVehicle *other_vehicle = 0;
-        other->QueryInterface(&other_vehicle);
-        if (!other_vehicle) {
+        IModel *model = otherObj->GetModel();
+        IVehicle *otherVehicle = 0;
+        otherObj->QueryInterface(&otherVehicle);
+
+        minspeed = mTune.PlayerSmashSpeedRange(0) * 0.44703f;
+        maxspeed = mTune.PlayerSmashSpeedRange(1) * 0.44703f;
+        intensity = UMath::Clamp((collisionspeed - minspeed) / (maxspeed - minspeed), 0.0f, 1.0f);
+
+        const UMath::Vector3 &player_vel =
+            (pvehicle->GetSimable()->GetOwnerHandle() == cinfo.objA) ? cinfo.objAVel : cinfo.objBVel;
+        float speed_b4_impact = VU0_v3length(player_vel);
+        float curr_speed = pvehicle->GetSpeed();
+        float pct_decrease = 1.0f;
+        if (speed_b4_impact > 0.0f) {
+            pct_decrease = curr_speed / speed_b4_impact;
+        }
+        if (pct_decrease < (1.0f - mTune.CrashSlowdownPct())) {
+            mT_lastCrashed = WorldTimer;
+        }
+
+        if (model) {
+            model->GetAttributes().GetCollection();
+            if (model->InView() && (mPursuitState == kInactive)) {
+                Attrib::Gen::smackable obj_atr(model->GetAttributes());
+                mCTS911 += obj_atr.COST_TO_STATE();
+            }
+        }
+
+        IRoadBlock *block = GetRoadblock();
+        if (block) {
+            const IRoadBlock::Smackables &objects = block->GetSmackables();
+            if (objects.size() != 0) {
+                for (IRoadBlock::Smackables::const_iterator i = objects.begin(); i != objects.end(); ++i) {
+                    IPlaceableScenery *object = *i;
+                    if (UTL::COM::ComparePtr(object, model) && model) {
+                        if (model->GetAttributes().GetCollection() == 0xca89ef8f) {
+                            mRoadblockFlow->NailedSomethingInRB(0x10);
+                            EAXCop *spkr = FindClosestCop(false, true);
+                            int spkrID = -1;
+                            if (spkr) {
+                                spkrID = spkr->GetSpeakerID();
+                            }
+                            mObserver->Observe(0xe, spkrID, intensity);
+                        } else {
+                            mRoadblockFlow->NailedSomethingInRB(0x20);
+                        }
+                    }
+                }
+            }
+        }
+
+        if (!otherVehicle) {
             return;
         }
-
-        if (player_vel) {
-            IVehicle *player_vehicle = 0;
-            if (player_sim) {
-                player_sim->QueryInterface(&player_vehicle);
-            }
-            if (!player_vehicle) {
-                return;
-            }
-            float player_speed = player_vehicle->GetSpeed();
-            float vel_mag = VU0_sqrt(VU0_v3lengthsquare(*player_vel));
-            if ((vel_mag > 0.0f) && ((player_speed / vel_mag) < (1.0f - mTune.CrashSlowdownPct()))) {
-                mT_lastCrashed = WorldTimer;
-            }
-        }
-
-        if (other_vehicle->GetDriverClass() == DRIVER_TRAFFIC) {
-            int speaker = -1;
+        if (otherVehicle->GetDriverClass() == DRIVER_TRAFFIC) {
+            mObserver->Observe(7, -1, intensity);
+            int spkrID = -1;
             EAXCop *spkr = FindClosestCop(true, true);
             if (spkr) {
-                speaker = spkr->GetSpeakerID();
+                spkrID = spkr->GetSpeakerID();
             }
-            if (mObserver) {
-                mObserver->Observe(7, speaker, impact);
+            if ((otherVehicle->GetVehicleClass() == VehicleClass::TRACTOR) || (otherVehicle->GetVehicleClass() == VehicleClass::TRAILER)) {
+                if (intensity >= mTune.MinIntensityTrafficSmash()) {
+                    mObserver->Observe(0xc, spkrID, intensity);
+                }
+            } else {
+                mObserver->Observe(7, spkrID, intensity);
             }
-            if (impact >= mTune.MinIntensityTrafficSmash()) {
+            if (intensity >= mTune.MinIntensityTrafficSmash()) {
                 mTrafficHits911++;
             }
+        } else if (otherVehicle->GetDriverClass() == DRIVER_HUMAN) {
+            mObserver->Observe(6, -1, intensity);
+        } else if (otherVehicle->GetDriverClass() == DRIVER_NONE) {
+            mObserver->Observe(7, -1, intensity);
+        }
+        return;
+    }
+
+collision_world:
+    IVehicle *ivehicle = 0;
+    ISimable *isimable = simableA;
+    if (isimable) {
+        isimable->QueryInterface(&ivehicle);
+    }
+    minspeed = mTune.PlayerSmashSpeedRange(0) * 0.44703f;
+    maxspeed = mTune.PlayerSmashSpeedRange(1) * 0.44703f;
+    intensity = UMath::Clamp((collisionspeed - minspeed) / (maxspeed - minspeed), 0.0f, 1.0f);
+    if (!ivehicle) {
+        return;
+    }
+    if (ivehicle->GetDriverClass() == DRIVER_HUMAN) {
+        const UMath::Vector3 &player_vel = cinfo.objAVel;
+        float speed_b4_impact = VU0_v3length(player_vel);
+        IVehicle *pvehicle = 0;
+        if (isimable) {
+            isimable->QueryInterface(&pvehicle);
+        }
+        if (!pvehicle) {
             return;
         }
-
-        if (other_vehicle->GetDriverClass() == DRIVER_HUMAN) {
-            if (mObserver) {
-                mObserver->Observe(6, -1, impact);
-            }
-        } else if (mObserver) {
-            mObserver->Observe(7, -1, impact);
+        float curr_speed = pvehicle->GetSpeed();
+        float pct_decrease = 1.0f;
+        if (speed_b4_impact > 0.0f) {
+            pct_decrease = curr_speed / speed_b4_impact;
         }
-        return;
-    }
-
-    if (actors_involved != 1 || !cop_actor) {
-        return;
-    }
-
-    ISimable *cop_sim = actorA ? simableA : simableB;
-    ISimable *other_sim = actorA ? simableB : simableA;
-    if (!cop_sim || !other_sim) {
-        return;
-    }
-
-    IVehicle *cop_vehicle = 0;
-    IVehicle *other_vehicle = 0;
-    cop_sim->QueryInterface(&cop_vehicle);
-    other_sim->QueryInterface(&other_vehicle);
-    if (!cop_vehicle || !other_vehicle) {
-        return;
-    }
-
-    if (other_vehicle->GetDriverClass() == DRIVER_TRAFFIC) {
-        if (mObserver) {
-            mObserver->Observe(2, -1, impact);
+        if (pct_decrease >= (1.0f - mTune.CrashSlowdownPct())) {
+            return;
         }
-        cop_actor->JustHitTraffic();
-        if ((mPursuitState == kActive) && (mFocus == kStrategyFlow) && cop_actor->IsActive()) {
-            cop_actor->BailoutTraffic();
-            RandomBailoutDeny(cop_actor);
-        }
-        return;
-    }
-
-    bool cop_is_in_rb = false;
-    IRoadBlock *roadblock = GetRoadblock();
-    if (roadblock) {
-        if (roadblock->IsComprisedOf(other_sim->GetOwnerHandle()) == other_vehicle) {
-            cop_is_in_rb = true;
-            if (mRoadblockFlow) {
-                mRoadblockFlow->NailedSomethingInRB(0x40);
+        mT_lastCrashed = WorldTimer;
+        if ((mPursuitState == kActive) && (mFocus == kStrategyFlow)) {
+            EAXCop *actor = GetRandomActiveCop(0, true);
+            if (actor) {
+                mObserver->Observe(5, actor->GetSpeakerID(), intensity);
             }
         }
-    } else if (mObserver) {
-        mObserver->Observe(3, -1, impact);
+        return;
     }
-
-    bool cop_is_braking = false;
-    IInput *input = 0;
-    if (other_sim->QueryInterface(&input)) {
-        InputControls &controls = input->GetControls();
-        cop_is_braking = (controls.fBrake > 0.0f) || (controls.fHandBrake > 0.0f);
-    }
-
-    UMath::Vector3 fwCop;
-    UMath::Vector3 fwRacer;
-    UMath::Vector3 dimCop;
-    UMath::Vector3 dimRacer;
-    UMath::Vector3 armCop = actorA ? cinfo.armA : cinfo.armB;
-    UMath::Vector3 armRacer = actorA ? cinfo.armB : cinfo.armA;
-    UMath::Vector3 velCop = (cop_sim->GetOwnerHandle() == cinfo.objA) ? cinfo.objAVel : cinfo.objBVel;
-    UMath::Vector3 velRacer = (other_sim->GetOwnerHandle() == cinfo.objA) ? cinfo.objAVel : cinfo.objBVel;
-    UMath::Vector3 cnormal = cinfo.normal;
-
-    IRigidBody *cop_body = cop_sim->GetRigidBody();
-    IRigidBody *racer_body = other_sim->GetRigidBody();
-    if (!cop_body || !racer_body) {
+    if (ivehicle->GetDriverClass() != DRIVER_COP) {
         return;
     }
 
-    cop_body->GetForwardVector(fwCop);
-    racer_body->GetForwardVector(fwRacer);
-    cop_body->GetDimension(dimCop);
-    racer_body->GetDimension(dimRacer);
-
-    bool process = false;
-    int collision_type = 8;
-    float dot_heading = UMath::Dot(fwRacer, fwCop);
-    float dot_vel_cop = UMath::Dot(velCop, cnormal);
-    float dot_vel_racer = UMath::Dot(velRacer, cnormal);
-
-    if (dot_heading >= 0.7f) {
-        float arm_cop_x = (armCop.x < 0.0f) ? -armCop.x : armCop.x;
-        float arm_racer_x = (armRacer.x < 0.0f) ? -armRacer.x : armRacer.x;
-        if ((arm_cop_x <= dimCop.x * 0.75f) || (arm_racer_x <= dimRacer.x * 0.75f)) {
-            if ((dimCop.z * 0.75f <= armCop.z) && (armRacer.z <= dimRacer.z * -0.75f)) {
-                collision_type = 0;
-                process = true;
-            } else if ((dimRacer.z * 0.75f <= armRacer.z) && (armCop.z <= dimCop.z * -0.75f)) {
-                collision_type = 1;
-                process = true;
-            }
-        } else if ((dot_vel_cop < 0.0f ? -dot_vel_cop : dot_vel_cop) <= (dot_vel_racer < 0.0f ? -dot_vel_racer : dot_vel_racer)) {
-            collision_type = 7;
-            process = true;
+    EAXCop *actor = actorA ? actorA : actorB;
+    if (!actor || (objects_visible <= 0) || !actor->IsActive()) {
+        return;
+    }
+    if (intensity >= mTune.MinIntensityCopSmash()) {
+        if (mObserver && mObserver->WeatherExists()) {
+            actor->BailoutBadRoad();
         } else {
-            collision_type = 6;
-            process = true;
+            actor->Bailout();
         }
-    } else if (dot_heading <= -0.7f) {
-        if ((dot_vel_cop < 0.0f ? -dot_vel_cop : dot_vel_cop) <= (dot_vel_racer < 0.0f ? -dot_vel_racer : dot_vel_racer)) {
-            collision_type = 5;
-        } else {
-            collision_type = 4;
-        }
-        process = true;
+    }
+    if (actor->GetInFormation() && (mCopsInFormation.size() > 1)) {
+        RandomBailoutDeny(actor);
+    }
+    if (mObserver) {
+        mObserver->Observe(4, actor->GetSpeakerID(), intensity);
     } else {
-        if (dimRacer.z * 0.7f <= armRacer.z) {
-            collision_type = 3;
-            process = true;
-        }
-        if (dimCop.z * 0.7f <= armCop.z) {
-            collision_type = 2;
-            process = true;
-        }
-    }
-
-    if (!process) {
-        return;
-    }
-
-    mT_lastCopNailed = WorldTimer;
-    if (cop_is_in_rb || cop_is_braking || ((mFlags & COPS_IMMUNE) != 0)) {
-        return;
-    }
-
-    cop_actor->WasRammed();
-    if ((mFocus == kPursuitFlow) || (mFocus == kTerminal) || cop_actor->IsDead() || !cop_actor->IsActive() || (impact <= 0.15f)) {
-        return;
-    }
-
-    Csis::Type_intensity intensity = (impact > 0.75f) ? Csis::Type_intensity_High : Csis::Type_intensity_Normal;
-    if ((impact <= 0.5f) || (impact > 0.75f)) {
-        switch (collision_type) {
-        case 1:
-            cop_actor->RearEnded(intensity);
-            break;
-        case 3:
-            cop_actor->TBoned(intensity);
-            break;
-        case 5:
-            cop_actor->HeadOn(intensity);
-            break;
-        case 7:
-            cop_actor->SideSwiped(intensity);
-            break;
-        default:
-            cop_actor->SuspectSpunout(intensity);
-            break;
-        }
-    } else {
-        float chance = bRandom(1.0f);
-        if (0.5f <= chance) {
-            cop_actor->Deny();
-        } else {
-            cop_actor->Ack();
-        }
+        mObserver->Observe(4, -1, intensity);
     }
 }
 

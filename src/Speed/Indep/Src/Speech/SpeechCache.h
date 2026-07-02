@@ -18,8 +18,13 @@ struct SpeechSampleData;
 class Module;
 
 struct TablePolicy_FixedAudio {
-    static void *Alloc(unsigned int bytes);
-    static void Free(void *ptr, unsigned int bytes);
+    static void *Alloc(unsigned int bytes) {
+        return gAudioMemoryManager.AllocateMemory(bytes, "SpeechSampleMap node", false);
+    }
+    static void Free(void *ptr, unsigned int bytes) {
+        (void)bytes;
+        gAudioMemoryManager.FreeMemory(ptr);
+    }
     static unsigned int TableSize(unsigned int entries) {
         return entries;
     }

@@ -14,6 +14,8 @@
 namespace MiscSpeech {
 void RBAverted();
 void RBEngaged(bool spikes_hit);
+void RBPosition(int pos);
+void RBWarning();
 }
 
 namespace Speech {
@@ -185,13 +187,120 @@ void RoadblockFlow::MessageEventComplete(const MNotifySpeechStatus &) {
 }
 
 void RoadblockFlow::Request() {
-    mFlags |= REQUESTED;
-    mT_setup = WorldTimer;
+    SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
+    if (ai != 0) {
+        bool roadblocks_enabled = false;
+        if (ai->RoadblocksEnabled()) {
+            roadblocks_enabled = true;
+        }
+
+        if (!roadblocks_enabled && (mFlags & (REQUESTED | RB_ENABLED)) == 0) {
+            if (Manager::GetHistory().GetCount(static_cast<SPCHType_1_EventID>(0x4c)) == 0 &&
+                !Manager::IsQueued(static_cast<SPCHType_1_EventID>(0x4c), 4) &&
+                !Manager::IsCopSpeechPlaying(static_cast<SPCHType_1_EventID>(0x4c)) && ai->GetLeader() != 0) {
+                ai->GetLeader()->CallForRB();
+                ai->GetDispatch()->RBReply(ai->GetLeader(), 0, 0);
+                ai->GetLeader()->NegRBReply();
+            }
+        } else {
+            bool request_roadblock = false;
+            if (ai->RoadblocksEnabled()) {
+                request_roadblock = true;
+            }
+
+            if (((request_roadblock && (mFlags & RB_ENABLED) == 0) ||
+                 (ai->SpikesEnabled() && (mFlags & (RB_ENABLED | SPIKES_ENABLED | CALLED_4_SPIKES)) == RB_ENABLED)) &&
+                ai->GetLeader() != 0) {
+                if (Manager::GetHistory().GetCount(static_cast<SPCHType_1_EventID>(0x4c)) == 0) {
+                    ai->GetLeader()->CallForRB();
+                } else {
+                    ai->GetLeader()->RBReminder();
+                }
+                ai->GetDispatch()->RBReply(ai->GetLeader(), 1, 0);
+
+                unsigned int flags = mFlags;
+                mFlags = flags | RB_ENABLED;
+                if (ai->SpikesEnabled()) {
+                    mFlags = flags | (RB_ENABLED | SPIKES_ENABLED);
+                }
+            }
+
+            bool roadblocks_enabled = false;
+            if (ai->RoadblocksEnabled()) {
+                roadblocks_enabled = true;
+            }
+
+            if (roadblocks_enabled) {
+                unsigned int flags = mFlags;
+                if ((flags & RB_ENABLED) != 0 && ai->HeliRoadblocksEnabled() && (flags & HELIRB_ENABLED) == 0 &&
+                    (flags & (CALLED_4_SPIKES | CALLED_4_NORMAL)) != 0 && (flags & REQUESTED) != 0 && ai->GetLeader() != 0) {
+                    ai->GetLeader()->CallForBackup(8);
+                    ai->GetDispatch()->RBReply(ai->GetLeader(), 0, 4);
+                    mFlags |= HELIRB_ENABLED;
+                }
+            }
+        }
+    }
 }
 
 void RoadblockFlow::Setup() {
-    mFlags |= SETUP;
-    mT_engaged = WorldTimer;
+    SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
+    if (((mFlags ^ SETUP) & SETUP) != 0) {
+        EAXCop *primary = ai->GetRandomCop(1);
+        EAXCop *secondary = ai->GetRandomCop(2);
+
+        if (mNumBlocks >= 2 && secondary != 0) {
+            if (bRandom(1.0f) > 0.5f) {
+                secondary->CallForSubRB();
+            } else {
+                ai->GetDispatch()->SubRBReply();
+            }
+        } else {
+            ai->GetDispatch()->RBUpdate(primary, 0);
+            if (!primary->IsHeli()) {
+                primary->NegRBReply();
+            }
+        }
+    } else {
+        if ((mFlags & POSITIONED) != 0) {
+            bool pos_comment = true;
+            if (ai->GetRoadblock() != 0) {
+                pos_comment = ai->GetRoadblock()->GetNumSpikeStrips() <= 1;
+            }
+
+            if (pos_comment) {
+                MiscSpeech::RBPosition(mSpikeOffset);
+            } else {
+                EAXCop *cop_in_rb = ai->GetCopInRB();
+                if (cop_in_rb == 0) {
+                    cop_in_rb = ai->GetRandomCop(2);
+                }
+                if (cop_in_rb != 0) {
+                    cop_in_rb->RBApproach();
+                } else {
+                    MiscSpeech::RBWarning();
+                }
+            }
+        } else {
+            bool should_interrupt_dispatch = false;
+            if (Manager::IsCopSpeechPlaying(static_cast<SPCHType_1_EventID>(0x4d)) ||
+                Manager::IsCopSpeechPlaying(static_cast<SPCHType_1_EventID>(0x4e))) {
+                should_interrupt_dispatch = true;
+            }
+            if (bRandom(1.0f) > 0.5f && !should_interrupt_dispatch) {
+                EAXCop *primary = ai->GetRandomActiveCop(1, false);
+                if (primary == 0) {
+                    return;
+                }
+                ai->GetDispatch()->RBUpdate(primary, 1);
+                primary->PursuitApproaching();
+            } else {
+                MiscSpeech::RBWarning();
+            }
+        }
+    }
+
+    mFlags &= ~REQ_SERVICE;
 }
 
 void RoadblockFlow::Approach() {

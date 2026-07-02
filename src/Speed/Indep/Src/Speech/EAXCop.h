@@ -17,25 +17,6 @@ enum Type_intensity {
 };
 }
 
-#define SPEECH_EAXCOP_CALL_SUSPECT_UTURN(cop_)                                                                            \
-    do {                                                                                                                  \
-        typedef void (*VoidMethodPtr)(void *);                                                                            \
-        char *vtable = *reinterpret_cast<char **>(cop_);                                                                  \
-        register VoidMethodPtr method asm("r0") = *reinterpret_cast<VoidMethodPtr *>(vtable + 0x1A4);                     \
-        asm volatile("" : : : "memory");                                                                                 \
-        short thisAdjust = *reinterpret_cast<short *>(vtable + 0x1A0);                                                    \
-        method(reinterpret_cast<char *>(cop_) + thisAdjust);                                                              \
-    } while (0)
-
-#define SPEECH_EAXCOP_CALL_INITIATE_STRATEGY_VTABLE(leader_, formationType_, vtable_)                                    \
-    do {                                                                                                                  \
-        typedef void (*VoidIntMethodPtr)(void *, int);                                                                    \
-        register VoidIntMethodPtr method asm("r0") = *reinterpret_cast<VoidIntMethodPtr *>((vtable_) + 0x14C);            \
-        asm volatile("" : : : "memory");                                                                                 \
-        short thisAdjust = *reinterpret_cast<short *>((vtable_) + 0x148);                                                 \
-        method(reinterpret_cast<char *>(leader_) + thisAdjust, formationType_);                                           \
-    } while (0)
-
 // total size: 0x84
 class EAXCop : public EAXCharacter {
   public:

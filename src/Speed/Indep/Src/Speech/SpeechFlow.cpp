@@ -1886,10 +1886,37 @@ unsigned int GameSpeech::SampleRequestCallback(SPCHType_SampleRequestData *data)
 }
 
 void GameSpeech::IssueSampleRequests() {
-    for (SpeechSampleVec::iterator it = m_pendingList.begin(); it != m_pendingList.end(); ++it) {
-        if (*it && !(*it)->ready) {
-            (*it)->ready = true;
-            (*it)->t_play = WorldTimer;
+    SPCHSampleRequest *i;
+
+    if (IsSpeechEnabled) {
+        SampleReqList &requests = Manager::GetSampleRequests();
+        if (requests.empty()) {
+            return;
+        }
+
+        if (requests.size() > 1) {
+            std::sort(requests.begin(), requests.end());
+        }
+
+        for (i = requests.begin(); i != requests.end();) {
+            SPCHSampleRequest &req = *i;
+            SPCHType_SampleRequestData &data = req.data;
+            SpeechSampleData *sample = gSpeechCache.LoadSample(this, &data);
+
+            if (sample) {
+                if (req.owner) {
+                    req.owner->AddSample(sample, req.sample_index);
+                } else if (!sample->cached) {
+                    gSpeechCache.TossSample(sample);
+                }
+            } else if (req.owner) {
+                sample = gSpeechCache.GetUncached(this, &data);
+                if (gSpeechCache.IsCached(&data, false)) {
+                    req.owner->AddSample(sample, req.sample_index);
+                }
+            }
+
+            i = requests.erase(i);
         }
     }
 }

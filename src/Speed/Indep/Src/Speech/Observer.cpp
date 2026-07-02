@@ -377,7 +377,7 @@ void Observer::Assess180() {
                     if (t_unstable > ai->GetTune().MaxTimeFor180()) {
                         EAXCop *cop = ai->FindClosestCop(true, true);
                         if (cop) {
-                            SPEECH_EAXCOP_CALL_SUSPECT_UTURN(cop);
+                            cop->SuspectUTurn();
                         } else {
                             return;
                         }
