@@ -20,8 +20,8 @@ template <typename T, int Alignment = 16> class Vector {
     typedef const value_type &const_reference;
     typedef const value_type *const_iterator;
     typedef const value_type *const_reverse_iterator;
-    typedef std::size_t size_type;
-    typedef std::ptrdiff_t difference_type;
+    typedef size_t size_type;
+    typedef ptrdiff_t difference_type;
 
   public:
     void Init() {}

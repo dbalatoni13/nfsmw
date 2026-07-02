@@ -7,6 +7,7 @@
 
 #include <types.h>
 
+#include "Speed/Indep/Src/Frontend/Database/RaceDB.hpp"
 #include "Speed/Indep/Src/Gameplay/GRace.h"
 
 // TODO right place for these?

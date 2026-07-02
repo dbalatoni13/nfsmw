@@ -479,6 +479,8 @@ elif config.platform == Platform.PS2:
     config.extra_clang_flags = [
         "-std=gnu++98",
         "-DCLANGD_DAMNIT",
+        "-D__HONOR_STD",
+        "-D__STL_MEMBER_TEMPLATE_KEYWORD",
         "-U_MIPS_SIM",
         "-U __mips",
         "-D__mips=3",

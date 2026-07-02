@@ -2226,6 +2226,7 @@ def generate_compile_commands(
                 "-nostdinc",
                 "-fno-builtin",
                 "--target=mips64el-ps2-none-eabi",
+                "-mabi=o32",
                 *cflags,
                 "-c",
                 obj.src_path,
