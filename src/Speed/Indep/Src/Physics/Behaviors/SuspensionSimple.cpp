@@ -844,7 +844,7 @@ void SuspensionSimple::DoDriveForces(State &state) {
     }
     float traction_boost = state.nos_boost * state.shift_boost;
     if (is_staging) {
-        traction_boost *= Tweak_SimpleStagingTraction;
+        traction_boost *= 0.25f;
     }
     if (front_drive != 0.0f) {
         for (unsigned int i = 0; i < 2; ++i) {
@@ -869,6 +869,7 @@ void SuspensionSimple::DoDriveForces(State &state) {
     }
 }
 
+// UNSOLVED, float math
 void SuspensionSimple::DoWheelForces(State &state) {
     const float dT = state.time;
 
@@ -881,18 +882,22 @@ void SuspensionSimple::DoWheelForces(State &state) {
     }
 
     for (unsigned int i = 0; i < 4; ++i) {
-        float speedmph = MPS2MPH(state.speed);
+        float speedmph = MPS2MPH(state.local_vel.z);
 
-        this->mTires[i]->SetBrake(state.brake_input);
+        if (state.gas_input > 0.8f && state.brake_input > 0.5f && speedmph < 10.0f && i <= 1) {
+            this->mTires[i]->SetBrake(state.brake_input);
+        } else {
+            this->mTires[i]->SetBrake(state.brake_input);
+        }
     }
 
     float steerdrag_reduction = 0.5f;
     if (state.driver_class == 3 && state.driver_style != 1) {
         float cheat;
-        if (this->mCheater == nullptr) {
-            cheat = 1.0f;
-        } else {
+        if (this->mCheater != nullptr) {
             cheat = this->mCheater->GetCatchupCheat();
+        } else {
+            cheat = 0.0f;
         }
         steerdrag_reduction = UMath::Lerp(0.23f, 0.5f, cheat);
     }
@@ -901,7 +906,7 @@ void SuspensionSimple::DoWheelForces(State &state) {
     float maxDelta = 0.0f;
     const UMath::Vector3 &vFwd = state.GetForwardVector();
     const UMath::Vector3 &vUp = state.GetUpVector();
-    const float mass = state.mass * 0.25f;
+    const float mass = state.mass;
 
     float shock_specs[2];
     float spring_specs[2];
@@ -914,15 +919,15 @@ void SuspensionSimple::DoWheelForces(State &state) {
     float progression[2];
 
     for (unsigned int i = 0; i < 2; ++i) {
-        shock_specs[i] = LBIN2NM(this->mSuspensionInfo->SHOCK_STIFFNESS().At(i));
-        shock_ext_specs[i] = LBIN2NM(this->mSuspensionInfo->SHOCK_EXT_STIFFNESS().At(i));
-        shock_valving[i] = INCH2METERS(this->mSuspensionInfo->SHOCK_VALVING().At(i));
+        shock_specs[i] = LBIN2NM(this->mSuspensionInfo.SHOCK_STIFFNESS().At(i));
+        shock_ext_specs[i] = LBIN2NM(this->mSuspensionInfo.SHOCK_EXT_STIFFNESS().At(i));
+        shock_valving[i] = INCH2METERS(this->mSuspensionInfo.SHOCK_VALVING().At(i));
         shock_digression[i] = 1.0f - this->mSuspensionInfo->SHOCK_DIGRESSION().At(i);
-        spring_specs[i] = LBIN2NM(this->mSuspensionInfo->SPRING_STIFFNESS().At(i));
-        sway_specs[i] = LBIN2NM(this->mSuspensionInfo->SWAYBAR_STIFFNESS().At(i));
-        travel_specs[i] = INCH2METERS(this->mSuspensionInfo->TRAVEL().At(i));
-        rideheight_specs[i] = INCH2METERS(this->mSuspensionInfo->RIDE_HEIGHT().At(i));
-        progression[i] = this->mSuspensionInfo->SPRING_PROGRESSION().At(i);
+        spring_specs[i] = LBIN2NM(this->mSuspensionInfo.SPRING_STIFFNESS().At(i));
+        sway_specs[i] = LBIN2NM(this->mSuspensionInfo.SWAYBAR_STIFFNESS().At(i));
+        travel_specs[i] = INCH2METERS(this->mSuspensionInfo.TRAVEL().At(i));
+        rideheight_specs[i] = INCH2METERS(this->mSuspensionInfo.RIDE_HEIGHT().At(i));
+        progression[i] = this->mSuspensionInfo.SPRING_PROGRESSION().At(i);
     }
 
     float sway_stiffness[4];
@@ -932,10 +937,10 @@ void SuspensionSimple::DoWheelForces(State &state) {
     sway_stiffness[3] = -sway_stiffness[2];
 
     UMath::Vector4 steering_normals[4];
-    steering_normals[0] = UMath::Vector4Make(steerL, 0.0f);
-    steering_normals[1] = UMath::Vector4Make(steerR, 0.0f);
-    steering_normals[2] = UMath::Vector4Make(vFwd, 0.0f);
-    steering_normals[3] = UMath::Vector4Make(vFwd, 0.0f);
+    steering_normals[0] = UMath::Vector4Make(steerL, 1.0f);
+    steering_normals[1] = UMath::Vector4Make(steerR, 1.0f);
+    steering_normals[2] = UMath::Vector4Make(vFwd, 1.0f);
+    steering_normals[3] = UMath::Vector4Make(vFwd, 1.0f);
 
     bool resolve = false;
 
@@ -956,49 +961,38 @@ void SuspensionSimple::DoWheelForces(State &state) {
         float newCompression = rideheight_specs[axle] * upness + penetration;
         float max_compression = travel_specs[axle];
 
-        if (oldCompression == 0.0f) {
+        if (wheel.GetCompression() == 0.0f) {
             float delta = newCompression - max_compression;
             maxDelta = UMath::Max(maxDelta, delta);
         }
 
         newCompression = UMath::Max(newCompression, 0.0f);
-        if (max_compression < newCompression) {
+        if (newCompression > max_compression) {
             maxDelta = UMath::Max(maxDelta, newCompression - max_compression);
             newCompression = max_compression;
         }
 
-        if (newCompression <= UMath::Epsilon || upness <= VehicleSystem::ENABLE_ROLL_STOPS_THRESHOLD) {
-            wheel.SetForce(UMath::Vector3::kZero);
-            wheel.UpdateFree(dT);
-        } else {
+        if (newCompression > UMath::Epsilon && upness > VehicleSystem::ENABLE_ROLL_STOPS_THRESHOLD) {
             ++wheelsOnGround;
 
-            float springForce = newCompression * spring_specs[axle];
+            // TODO DWARF in this whole block
             const float diff = newCompression - oldCompression;
             float rise = diff / dT;
-            float spring = springForce * (newCompression * progression[axle] + 1.0f);
-            float damp;
 
             if (UMath::Epsilon < shock_valving[axle] && shock_digression[axle] < 1.0f) {
                 float abs_rise = UMath::Abs(rise);
                 float valving = shock_valving[axle];
-                if (valving < abs_rise) {
+                if (abs_rise > valving) {
                     float digression = valving * UMath::Pow(abs_rise / valving, shock_digression[axle]);
-                    if (rise < 0.0f) {
-                        rise = -digression;
-                    } else {
-                        rise = digression;
-                    }
+                    rise = rise > 0.0f ? digression : -digression;
                 }
             }
 
-            if (rise <= 0.0f) {
-                damp = rise * shock_ext_specs[axle];
-            } else {
-                damp = rise * shock_specs[axle];
-            }
+            float springForce = newCompression * spring_specs[axle];
+            float spring = springForce * (newCompression * progression[axle] + 1.0f);
+            float damp = rise > 0.0f ? rise * shock_specs[axle] : rise * shock_ext_specs[axle];
 
-            if ((this->mSuspensionInfo->SHOCK_BLOWOUT() * mass * 9.81f) < damp) {
+            if (damp > this->mSuspensionInfo.SHOCK_BLOWOUT() * (mass * 9.81f)) {
                 damp = 0.0f;
             }
 
@@ -1008,13 +1002,15 @@ void SuspensionSimple::DoWheelForces(State &state) {
             const UMath::Vector3 &pointVelocity = wheel.GetVelocity();
             float xspeed = UMath::Dot(pointVelocity, lateralNormal);
             float zspeed = UMath::Dot(pointVelocity, forwardNormal);
-            float traction_force = wheel.UpdateLoaded(xspeed, state.local_vel.z, state.local_vel.z, load, dT, steerdrag_reduction);
+            float traction_force = wheel.UpdateLoaded(xspeed, zspeed, state.local_vel.z, load, state.time, steerdrag_reduction);
 
-            float max_traction = UMath::Abs((xspeed / dT) * 9.81f * mass);
-            traction_force = UMath::Clamp(traction_force, -max_traction, max_traction);
+            float max_traction = xspeed / dT;
+            max_traction *= 0.25f;
+            max_traction *= mass;
+            max_traction = UMath::Abs(max_traction);
 
             UMath::Vector3 lateralForce;
-            UMath::Scale(lateralNormal, traction_force, lateralForce);
+            UMath::Scale(lateralNormal, UMath::Clamp(traction_force, -max_traction, max_traction), lateralForce);
 
             UMath::Vector3 driveForce;
             UMath::UnitCross(lateralNormal, groundNormal, driveForce);
@@ -1029,6 +1025,9 @@ void SuspensionSimple::DoWheelForces(State &state) {
             wheel.SetForce(force);
 
             resolve = true;
+        } else {
+            wheel.SetForce(UMath::Vector3::kZero);
+            wheel.UpdateFree(dT);
         }
 
         if (newCompression == 0.0f) {
@@ -1048,10 +1047,11 @@ void SuspensionSimple::DoWheelForces(State &state) {
             UVector3 p = wheel.GetLocalArm();
             p.y += wheel.GetCompression();
             p.y -= rideheight_specs[i >> 1];
-            UMath::RotateTranslate(p, state.matrix, p);
-            wheel.SetPosition(p);
 
             const UMath::Vector3 &force = wheel.GetForce();
+
+            UMath::RotateTranslate(p, state.matrix, p);
+            wheel.SetPosition(p);
 
             UMath::Vector3 torque;
             UMath::Vector3 r;
@@ -1063,9 +1063,9 @@ void SuspensionSimple::DoWheelForces(State &state) {
             UMath::Add(total_torque, torque, total_torque);
         }
 
-        float yaw = UMath::Dot(vUp, total_torque);
-        float counter_yaw = yaw * this->mTireInfo->YAW_SPEED() - yaw;
-        UMath::ScaleAdd(vUp, counter_yaw, total_torque, total_torque);
+        float yaw = UMath::Dot(UMath::Vector4To3(state.matrix.v1), total_torque);
+        float counter_yaw = yaw * this->mTireInfo.YAW_SPEED() - yaw;
+        UMath::ScaleAdd(UMath::Vector4To3(state.matrix.v1), counter_yaw, total_torque, total_torque);
         this->mRB->Resolve(total_force, total_torque);
     }
 
@@ -1085,3 +1085,6 @@ void SuspensionSimple::DoWheelForces(State &state) {
 
     this->mNumWheelsOnGround = wheelsOnGround;
 }
+
+// STRIPPED
+void SuspensionSimple::OnDebugDraw() {}

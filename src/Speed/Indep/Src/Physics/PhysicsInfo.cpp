@@ -138,7 +138,7 @@ float Physics::Info::Torque(const Attrib::Gen::engine &engine, float rpm) {
 }
 
 // Credits: Brawltendo
-float Physics::Info::WheelDiameter(const Attrib::Gen::tires &tires, bool front) {
+Meters Physics::Info::WheelDiameter(const Attrib::Gen::tires &tires, bool front) {
     int axle = front ? 0 : 1;
     float diameter = INCH2METERS(tires.RIM_SIZE().At(axle));
     return diameter + tires.SECTION_WIDTH().At(axle) * 0.001f * 2.0f * (tires.ASPECT_RATIO().At(axle) * 0.01f);

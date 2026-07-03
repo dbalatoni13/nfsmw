@@ -13,7 +13,9 @@
 #include "UVectorMath.h"
 
 // TODO UEALibs not working???
+extern "C" void MATRIX4_multxrot(const UMath::Matrix4 *m4, float xbangle, UMath::Matrix4 *resultm);
 extern "C" void MATRIX4_multyrot(const UMath::Matrix4 *m4, float ybangle, UMath::Matrix4 *resultm);
+extern "C" void MATRIX4_multzrot(const UMath::Matrix4 *m4, float zbangle, UMath::Matrix4 *resultm);
 
 namespace UMath {
 // TODO apply these
@@ -178,9 +180,17 @@ inline void Unitxyz(const Vector4 &a, Vector4 &r) {
     VU0_v4unitxyz(a, r);
 }
 
+inline void MultXRot(const UMath::Matrix4 &m, float a, UMath::Matrix4 &r) {
+    MATRIX4_multxrot(&m, a, &r);
+}
+
 inline void MultYRot(const Matrix4 &m, float a, Matrix4 &r) {
     r = m;
     MATRIX4_multyrot(&r, a, &r);
+}
+
+inline void MultZRot(const UMath::Matrix4 &m, float a, UMath::Matrix4 &r) {
+    MATRIX4_multzrot(&m, a, &r);
 }
 
 #ifdef EA_PLATFORM_XENON
@@ -459,6 +469,10 @@ inline float LengthSquare(const Vector4 &a) {
 
 inline float LengthSquarexyz(const UMath::Vector4 &a) {
     return VU0_v4lengthsquarexyz(a);
+}
+
+inline float ASina(const float x) {
+    return VU0_ASin(x);
 }
 
 inline float Atan2d(float o, float a) {
