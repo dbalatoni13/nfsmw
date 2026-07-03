@@ -80,25 +80,25 @@ bool IsPlayerCameraSelectable(POVTypes pov_type) {
     const Attrib::RefSpec *ref_spec = nullptr;
     switch (pov_type) {
         case POV_BUMPER:
-            ref_spec = &car_info.CameraInfo_Bumper(0);
+            ref_spec = &car_info.CameraInfo_Bumper();
             break;
         case POV_HOOD:
-            ref_spec = &car_info.CameraInfo_Hood(0);
+            ref_spec = &car_info.CameraInfo_Hood();
             break;
         case POV_OUTSIDE_CLOSE:
-            ref_spec = &car_info.CameraInfo_Close(0);
+            ref_spec = &car_info.CameraInfo_Close();
             break;
         case POV_OUTSIDE_FAR:
-            ref_spec = &car_info.CameraInfo_Far(0);
+            ref_spec = &car_info.CameraInfo_Far();
             break;
         case POV_SUPER_FAR:
-            ref_spec = &car_info.CameraInfo_SuperFar(0);
+            ref_spec = &car_info.CameraInfo_SuperFar();
             break;
         case POV_DRIFT:
-            ref_spec = &car_info.CameraInfo_Drift(0);
+            ref_spec = &car_info.CameraInfo_Drift();
             break;
         case POV_PURSUIT:
-            ref_spec = &car_info.CameraInfo_Pursuit(0);
+            ref_spec = &car_info.CameraInfo_Pursuit();
             break;
     }
 

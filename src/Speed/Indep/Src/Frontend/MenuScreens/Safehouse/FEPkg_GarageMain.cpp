@@ -1,5 +1,6 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/FEPkg_GarageMain.hpp"
 #include "Speed/Indep/Src/Ecstasy/eMath.hpp"
+#include "Speed/Indep/Src/Ecstasy/eLight.hpp"
 #include "Speed/Indep/Src/Frontend/FEManager.hpp"
 #include "Speed/Indep/Src/Frontend/FEPackageManager.hpp"
 #include "Speed/Indep/Src/Frontend/FEngFrontend.hpp"

@@ -10,7 +10,6 @@
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
-#include "Speed/Indep/Src/Ecstasy/eSprites.hpp"
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
 
 struct TextureInfo;
@@ -236,7 +235,7 @@ class eViewPlatInterface {
     void Render(ePoly *poly, TextureInfo *texture_info, bMatrix4 *local_to_world, int use_previous_data, float bbRad);
     void Render(ePoly *poly, TextureInfo *texture_info, TextureInfo *texture_info_mask, int use_previous_data);
     void Render(ePoly *poly, TextureInfo *texture_info, int use_previous_data);
-    void Render(ePointSprite3D *sprite, TextureInfo *texture_info, bMatrix4 *local_world, int num_sprites);
+    void Render(class ePointSprite3D *sprite, TextureInfo *texture_info, bMatrix4 *local_world, int num_sprites);
     eVisibleState GetVisibleStateGB(const bVector3 *aabb_min, const bVector3 *aabb_max, bMatrix4 *local_world);
     eVisibleState GetVisibleStateSB(const bVector3 *aabb_min, const bVector3 *aabb_max, bMatrix4 *local_world);
     eVisibleState GetVisibleStateSB(const bVector3 *position, bMatrix4 *local_world);

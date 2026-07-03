@@ -72,7 +72,9 @@ class ActionQueue : public UTL::Collections::Listable<ActionQueue, MAX_ACTIONQ> 
     const ActionRef operator[](int i);
     // int Size() {}
 
-    // Timer LastActionTime() const {}
+    Timer LastActionTime() const {
+        return mActionTime;
+    }
 
     // Timer ActivationTime() const {}
 

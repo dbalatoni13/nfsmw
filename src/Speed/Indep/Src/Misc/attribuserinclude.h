@@ -40,6 +40,10 @@ class StringKey {
         return mHash32;
     }
 
+    const char *GetString() const {
+        return mString;
+    }
+
     unsigned int GetHash32() const {
         return mHash32;
     }

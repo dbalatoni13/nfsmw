@@ -6,6 +6,7 @@
 
 #include "Speed/Indep/Src/AI/aireflectedtypes.h"
 #include "Speed/Indep/Src/Ecstasy/GenTypes/EffectParticleAnimation.h"
+#include "Speed/Indep/Src/Frontend/FEReflected.hpp"
 #include "Speed/Indep/Src/Ecstasy/GenTypes/EffectParticleConstraint.h"
 #include "Speed/Indep/Src/Generated/TexturePacks/texenumgen_particletextures.h"
 #include "Speed/Indep/Src/Input/InputDefParser.h"

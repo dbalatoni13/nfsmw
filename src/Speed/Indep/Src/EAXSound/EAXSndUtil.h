@@ -1,11 +1,7 @@
 #ifndef EAXSOUND_EAXSNDUTIL_H
 #define EAXSOUND_EAXSNDUTIL_H
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
-typedef enum { LINEAR = 0, PARABOLIC = 1, INV_PARABOLIC = 2, SINUSOID = 3, POWER = 4, EQ_PWR_SQ = 5 } eCURVETYPE;
+#include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_EnumAttributes.hpp"
 
 // total size: 0x8C
 class cPathLine {

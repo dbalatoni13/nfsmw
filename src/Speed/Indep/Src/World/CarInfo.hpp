@@ -770,6 +770,7 @@ CarTypeInfo *GetCarTypeInfoFromHash(uint32 car_type_hash);
 char *GetCarTypeName(CarType car_type);
 
 extern CarPartDatabase CarPartDB;
+extern int32 CarTypeInfoArrayUpdated; // TODO declared in FEPkg_GarageMain.cpp before it's used?
 
 inline CarTypeInfo *GetCarTypeInfo(CarType car_type) {
     return &CarTypeInfoArray[car_type];
@@ -779,6 +780,7 @@ bool CarInfo_IsSkinned(CarType type);
 unsigned int CarInfo_GetResourceCost(CarType type, bool is_player, bool split_screen);
 void GetUsedCarTextureInfo(UsedCarTextureInfo *info, RideInfo *ride_info, int front_end_only);
 int UsedCarTextureAddToTable(uint32 *used_textures, int num_used_textures, int max_textures, uint32 texture_name_hash);
+CAR_PART_ID GetCarPartFromSlot(CAR_SLOT_ID slot);
 
 // TODO these are in CarPartNames, but parts don't have a separate header
 int GetNumCarSlotIDNames();

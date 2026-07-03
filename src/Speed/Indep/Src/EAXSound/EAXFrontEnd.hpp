@@ -734,19 +734,6 @@ struct FX_Scrape { // 0x28
     void CommitMemberData();
 };
 
-typedef enum {
-    SFXOBJ_MUSIC = 0,
-    SFXOBJ_SPEECH = 1,
-    SFXOBJ_AMBIENCE = 2,
-    SFXOBJ_MOVIES = 3,
-    SFXOBJ_COMMON = 4,
-    SFXOBJ_NISPROJ_STRMS = 5,
-    SFXOBJ_MOMENT_STRMS = 6,
-    SFXOBJ_FEHUD = 7
-} eSFXOBJ_MAIN_TYPES;
-
-typedef eSFXOBJ_MAIN_TYPES reflection_typedef_eSFXOBJ_MAIN_TYPES;
-
 typedef enum { DRIVE_ON_NONE = -1, DRIVE_ON_IDLEING = 0, DRIVE_ON_ENTERING = 1, DRIVE_ON_LEAVING = 2, NUM_DRIVE_ON_STATES = 3 } DRIVE_ON_STATE;
 
 typedef enum { CAR_1 = 0, CAR_2 = 1, NUM_CAR_INDEXS = 2 } DRIVE_ON_CAR_INDEX;

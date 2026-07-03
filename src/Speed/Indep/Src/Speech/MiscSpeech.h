@@ -2,11 +2,7 @@
 #ifndef SPEECH_MISCSPEECH_H
 #define SPEECH_MISCSPEECH_H
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
-#include "Speed/Indep/Src/World/WRoadNetwork.h"
+#include "Speed/Indep/Src/Speech/MWRoadNames.h"
 
 typedef enum {} SPCH_Rules;
 

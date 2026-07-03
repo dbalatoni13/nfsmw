@@ -43,6 +43,8 @@ enum eSFXOBJ_MAIN_TYPES {
     SFXOBJ_FEHUD = 7,
 };
 
+typedef eSFXOBJ_MAIN_TYPES reflection_typedef_eSFXOBJ_MAIN_TYPES;
+
 enum eVOL_WOOSH {
     eAZI_WOOSH_AZI = 0,
     eVOL_WOOSH_TREE = 1,

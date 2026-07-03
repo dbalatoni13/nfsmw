@@ -609,7 +609,7 @@ void UserProfile::Default(int player_number, bool commit_default) {
 
             Attrib::Gen::audiosystem *playlist_atrs = new Attrib::Gen::audiosystem(0x7E4B0ED2, 0, nullptr);
             if (playlist_atrs->IsValid()) {
-                Attrib::Gen::audiosystem licensed_music(playlist_atrs->LicensedMusic(0), 0, nullptr);
+                Attrib::Gen::audiosystem licensed_music(playlist_atrs->LicensedMusic(), 0, nullptr);
                 g_MaxSongs = licensed_music.Num_PFMapping();
 
                 for (int i = 0; i < static_cast<int>(Songs.size()); i++) {

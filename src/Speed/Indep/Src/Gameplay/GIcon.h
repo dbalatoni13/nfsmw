@@ -9,7 +9,7 @@ struct WorldModel;
 
 class GIcon {
   public:
-    typedef enum {
+    enum Type {
         kType_Invalid = 0,
         kType_RaceSprint = 1,
         kType_RaceCircuit = 2,
@@ -24,9 +24,11 @@ class GIcon {
         kType_HidingSpot = 11,
         kType_PursuitBreaker = 12,
         kType_SpeedTrap = 13,
-        kType_Checkpoint = 14,
-        kType_Count = 15
-    } Type;
+        kType_SpeedTrapInRace = 14,
+        kType_AreaUnlock = 15,
+        kType_Checkpoint = 16,
+        kType_Count = 17,
+    };
 
     void Show() {}             // Decl: speed/indep/src/Gameplay/GIcon.h:62
     void Hide() {}             // Decl: speed/indep/src/Gameplay/GIcon.h:63

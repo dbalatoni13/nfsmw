@@ -8,6 +8,7 @@
 #include "bSlotPool.hpp"
 #include "bTypes.hpp"
 
+// TODO move these to the correct place
 // #define PLAT_NEXT_GEN
 #define NATIVE_ENDIAN_BIG
 #define MEMORY_DUMP
@@ -17,7 +18,6 @@
 #define bPrintf (1) ? ((void)0) : bNullPrintf
 #define bMilestonePutString bReleasePutString
 #define bMilestonePrintf bReleasePrintf
-#define bAssert(exp)
 #define bAssertMsg(exp, msg)
 #define bAssertMsg1(exp, msg, arg1)
 #define bAssertMsg2(exp, msg, arg1, arg2)
