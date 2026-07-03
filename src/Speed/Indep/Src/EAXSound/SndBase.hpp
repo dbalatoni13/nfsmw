@@ -49,7 +49,7 @@ struct SndBase : public AudioMemBase {
             m_pInputBlock[15] = 1;
     }
     virtual void Destroy() {}
-    virtual void UpdateParams(float) {}
+    virtual void UpdateParams(float t) {}
     virtual void ProcessUpdate() {}
     virtual void Detach() {}
     virtual void UpdateMixerOutputs() {}

@@ -1,5 +1,4 @@
 #include "Stomper.hpp"
-#include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "Speed/Indep/Src/Ecstasy/EcstasyE.hpp"
 #include "Speed/Indep/Src/World/CarRender.hpp"
 #include "types.h"

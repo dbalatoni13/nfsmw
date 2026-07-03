@@ -5,6 +5,6 @@
 #pragma once
 #endif
 
-
+void InitializeEATrax(bool breset);
 
 #endif

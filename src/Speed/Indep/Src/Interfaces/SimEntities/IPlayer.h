@@ -9,6 +9,21 @@
 #include "Speed/Indep/Src/Interfaces/IFengHud.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
 
+class ISteeringWheel;
+
+// File: speed/indep/src/interfaces/simentities/IPlayer.h
+// Decl: speed/indep/src/interfaces/simentities/IPlayer.h:11
+enum ePlayerHudType {
+    PHT_NONE = 0,
+    PHT_STANDARD = 1,
+    PHT_DRAG = 2,
+    PHT_SPLIT1 = 3,
+    PHT_SPLIT2 = 4,
+    PHT_DRAG_SPLIT1 = 5,
+    PHT_DRAG_SPLIT2 = 6,
+};
+
+// Decl: speed/indep/src/interfaces/simentities/IPlayer.h:23
 enum ePlayerList {
     PLAYER_ALL = 0,
     PLAYER_LOCAL = 1,
@@ -22,16 +37,15 @@ class IPlayer : public UTL::COM::IUnknown, public UTL::Collections::ListableSet<
         return (HINTERFACE)_IHandle;
     }
 
+  protected:
+    virtual ~IPlayer() {}
     IPlayer(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
 
-    virtual ~IPlayer() {}
-
+  public:
     virtual ISimable *GetSimable() const;
-
 #ifndef EA_BUILD_A124
     virtual bool IsLocal() const;
 #endif
-
     virtual const UMath::Vector3 &GetPosition() const;
     virtual bool SetPosition(const UMath::Vector3 &position);
     virtual PlayerSettings *GetSettings() const;

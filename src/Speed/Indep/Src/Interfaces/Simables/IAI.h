@@ -24,12 +24,12 @@ enum eLaneSelection {
     SELECT_VALID_LANE = 2,
 };
 
-struct IVehicle;
+class IVehicle;
 
 DECLARE_CONTAINER_TYPE(IRoadBlockVehicles);
 DECLARE_CONTAINER_TYPE(IRoadBlockSmackables);
 
-struct IPursuit;
+class IPursuit;
 
 class IRoadBlock : public UTL::COM::IUnknown, public UTL::Collections::Listable<IRoadBlock, 8> {
   protected:

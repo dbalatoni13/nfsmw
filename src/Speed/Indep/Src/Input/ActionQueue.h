@@ -19,13 +19,13 @@ static const int MAX_ACTIONQ = 20;
 
 // total size: 0x294
 class ActionQueue : public UTL::Collections::Listable<ActionQueue, MAX_ACTIONQ> {
-public:
+  public:
     enum eState {
         AQS_DISABLED = 0,
         AQS_ENABLED = 1,
     };
 
-    // static void operator delete(void *mem, void *ptr) {}
+    USE_FASTALLOC(ActionQueue);
 
     ActionQueue(bool required);
     ActionQueue(int port, unsigned int config, const char *queue_name, bool required);
@@ -37,9 +37,12 @@ public:
             return "";
         return mQueueName;
     }
-    bool IsRequired() const { return mRequired; }
-    void SetRequired(bool b) { mRequired = b; }
-
+    bool IsRequired() const {
+        return mRequired;
+    }
+    void SetRequired(bool b) {
+        mRequired = b;
+    }
 
     bool IsEmpty();
 
@@ -73,7 +76,9 @@ public:
 
     // Timer ActivationTime() const {}
 
-    // static Timer LastAnyActionTime() {}
+    static Timer LastAnyActionTime() {
+        return mLastAnyActionTime;
+    }
 
     unsigned int GetConfig() const {
         return mConfig;
@@ -86,17 +91,12 @@ public:
     static void BeginJoylogFrame();
     static void EndJoylogFrame();
 
-    USE_FASTALLOC(ActionQueue)
-
-private:
-    static ActionQueue::List _mTable;
-
+  private:
     UCircularQueue<ActionData, 50> fQueue; // offset 0x4, size 0x268
 
     void IO_SetConnected(bool plugged);
     void IO_Flush();
     void IO_UpdateFromDevice();
-
 
     void Init(int port, unsigned int config);
 
@@ -106,25 +106,23 @@ private:
 
     static ActionQueue *FindActionQueue(int id);
 
-
     static int AssignUniqueID();
-
 
     static Attrib::Key ConvertFromChar(char *key, int numBytes);
 
-    int mPort;                             // offset 0x26C, size 0x4
-    eState mState;                         // offset 0x270, size 0x4
-    InputMapping *mMappings;               // offset 0x274, size 0x4
-    unsigned int mConfig;                  // offset 0x278, size 0x4
-    const char *mQueueName;                // offset 0x27C, size 0x4
-    int mUniqueID;                         // offset 0x280, size 0x4
-    bool mConnected;                       // offset 0x284, size 0x1
-    bool mRequired;                        // offset 0x288, size 0x1
+    int mPort;               // offset 0x26C, size 0x4
+    eState mState;           // offset 0x270, size 0x4
+    InputMapping *mMappings; // offset 0x274, size 0x4
+    unsigned int mConfig;    // offset 0x278, size 0x4
+    const char *mQueueName;  // offset 0x27C, size 0x4
+    int mUniqueID;           // offset 0x280, size 0x4
+    bool mConnected;         // offset 0x284, size 0x1
+    bool mRequired;          // offset 0x288, size 0x1
 
     static bool sInJoylogFrame;
 
-    Timer mActionTime;                     // offset 0x28C, size 0x4
-    Timer mActivationTime;                 // offset 0x290, size 0x4
+    Timer mActionTime;     // offset 0x28C, size 0x4
+    Timer mActivationTime; // offset 0x290, size 0x4
 
     static Timer mLastAnyActionTime;
 

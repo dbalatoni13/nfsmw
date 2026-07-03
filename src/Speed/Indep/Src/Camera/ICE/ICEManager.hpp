@@ -59,6 +59,7 @@ class ICEManager {
     void Resolve();
     ICEData *GetCameraData(uint32 scene_hash, int camTrack);
     int GetNumSceneCameraTrack(uint32 scene_hash);
+    void SetGenericCameraToPlay(const char *group_name, const char *track_name);
 
     bool IsEditorOn() {
         // TODO maybe negated?

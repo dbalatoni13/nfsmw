@@ -20,6 +20,8 @@ enum eDRIVE_BY_TYPE {
     MAX_DRIVE_BY_TYPES = 13,
 };
 
+typedef eDRIVE_BY_TYPE reflection_typedef_eDRIVE_BY_TYPE;
+
 // total size: 0x10
 
 struct CollisionStream {

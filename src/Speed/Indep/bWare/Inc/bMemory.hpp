@@ -158,4 +158,6 @@ void bSetMemoryPoolOverrideInfo(int pool_num, MemoryPoolOverrideInfo *override_i
 
 void *bWareMalloc(int size, const char *debug_text, int debug_line, int allocation_params);
 
+bool bSetMemoryPoolDebugTracing(int pool_num, bool on_off);
+
 #endif

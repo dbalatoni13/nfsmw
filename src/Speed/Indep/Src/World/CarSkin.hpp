@@ -28,6 +28,7 @@ struct SkinCompositeParams {
     int NumLayers;                     // offset 0x4C, size 0x4
 };
 
+uint32 GetVinylLayerHash(CarPart *car_part, CarType car_type, int skin_type);
 int GetTempCarSkinTextures(unsigned int *textures_to_load, int num_textures, int max_textures, RideInfo *ride);
 int CompositeSkin(RideInfo *ride_info);
 void UpdateSkinCompositeCache(SkinCompositeParams *skin_composite_params);

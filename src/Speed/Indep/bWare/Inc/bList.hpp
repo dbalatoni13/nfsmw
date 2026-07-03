@@ -145,14 +145,17 @@ class bList {
     bNode *RemoveTail() {
         return this->GetTail()->Remove();
     }
-    int GetNodeNumber(bNode *node); // TODO
+
+    int GetNodeNumber(bNode *node) {
+        return this->TraversebList(node);
+    }
 
     int IsInList(bNode *node) {
         return this->TraversebList(node);
     }
 
     int CountElements() {
-        return TraversebList(nullptr);
+        return this->TraversebList(nullptr);
     }
 
     void Sort(long (*check_flip)(bNode *, bNode *)) {} // TODO

@@ -1,16 +1,14 @@
-#ifndef FRONTEND_MENUSCREENS_COMMON_FEARRAYSCROLLERMENU_H
-#define FRONTEND_MENUSCREENS_COMMON_FEARRAYSCROLLERMENU_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef FEARRAYSCROLLERMENU_HPP
+#define FEARRAYSCROLLERMENU_HPP
 
 #include "FEMenuScreen.hpp"
+#include "Speed/Indep/Src/FEng/FEString.h"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/feWidget.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
-#include "feScrollerina.hpp"
 
 // total size: 0x14
-struct ArrayScripts {
+class ArrayScripts {
+  public:
     ArrayScripts();
 
     virtual ~ArrayScripts() {}
@@ -57,6 +55,19 @@ struct ArrayScripts {
 // total size: 0x24
 class ArrayDatum : public bTNode<ArrayDatum> {
   public:
+    ArrayDatum() {
+        hash = 0;
+        desc = 0;
+        enabled = true;
+        greyedOut = false;
+        locked = false;
+        checked = false;
+    }
+
+    ArrayDatum(uint32 hash, uint32 desc);
+
+    virtual ~ArrayDatum() {}
+
     void SetHash(uint32 newHash) {
         hash = newHash;
     }
@@ -72,6 +83,8 @@ class ArrayDatum : public bTNode<ArrayDatum> {
     uint32 GetDesc() {
         return desc;
     }
+
+    virtual void NotificationMessage(u32 msg, FEObject *pObj, u32 param1, u32 param2) {}
 
     bool IsEnabled() {
         return enabled;
@@ -105,10 +118,6 @@ class ArrayDatum : public bTNode<ArrayDatum> {
         checked = b;
     }
 
-    virtual ~ArrayDatum() {}
-
-    virtual void NotificationMessage(u32 msg, FEObject *pObj, u32 param1, u32 param2) {}
-
   private:
     uint32 hash;    // offset 0x8, size 0x4
     uint32 desc;    // offset 0xC, size 0x4
@@ -140,6 +149,23 @@ class ArraySlot : public bTNode<ArraySlot> {
     ArrayScripts *scripts; // offset 0xC, size 0x4
 };
 
+// total size: 0x14
+class ImageArraySlot : public ArraySlot {
+  public:
+    ImageArraySlot(FEImage *img);
+    ~ImageArraySlot() override {}
+    void Update(ArrayDatum *datum, bool isSelected) override;
+    void SetTexture(uint32 tex_hash);
+};
+
+class StringArraySlot : ArraySlot {
+  public:
+    StringArraySlot(FEString *str);
+    ~StringArraySlot() override;
+    void Update(ArrayDatum *datum, bool isSelected) override;
+    void SetNameHash(uint32 name_hash);
+};
+
 // total size: 0xBC
 class ArrayScroller {
   public:
@@ -155,67 +181,84 @@ class ArrayScroller {
 
     void AddDatum(ArrayDatum *datum);
 
-    void SetSelection(ArrayDatum *newDatum, int newStartDatum);
+    void SetDescLabel(uint32 hash) {
+        descLabel = hash;
+    }
 
-    void SetSelectionAsOffScreen();
+    void SetDimensions(int w, int h) {
+        width = w;
+        height = h;
+    }
 
-    int ForceSelectionOnScreen(int new_datum, int start);
+    int GetWidth() {
+        return width;
+    }
 
-    // void ScrollHor(enum eScrollDir dir);
+    int GetHeight() {
+        return height;
+    }
 
-    // void ScrollVer(enum eScrollDir dir);
+    void ScrollLeft() {
+        ScrollHor(eSD_PREV);
+    }
 
-    void UpdateScrollbar();
+    void ScrollRight() {
+        ScrollHor(eSD_NEXT);
+    }
 
-    ArraySlot *GetSlotAt(int index);
+    void ScrollUp() {
+        ScrollVer(eSD_PREV);
+    }
 
-    ArrayDatum *GetDatumAt(int index);
-
-    void SetInitialPosition(int index);
+    void ScrollDown() {
+        ScrollVer(eSD_NEXT);
+    }
 
     void UpdateMouse();
 
-    void ClearData();
+    void SetMouseDownMsg(uint32 msg) {
+        mouseDownMsg = msg;
+    }
 
-    void SetDescLabel(uint32 hash) {}
+    void SetClickToSelectMode(bool flag) {
+        bInClickToSelectMode = flag;
+    }
 
-    void SetDimensions(int w, int h) {}
+    int GetNumSlots() {
+        return slots.CountElements();
+    }
 
-    int GetWidth() {}
+    ArraySlot *GetSlotAt(int index);
 
-    int GetHeight() {}
+    int GetStartDatumNum() {
+        return startDatum;
+    }
 
-    void ScrollLeft() {}
+    int GetCurrentDatumNum() {
+        return data.GetNodeNumber(currentDatum);
+    }
 
-    void ScrollRight() {}
+    int GetNumDatum() {
+        return data.CountElements();
+    }
 
-    void ScrollUp() {}
-
-    void ScrollDown() {}
-
-    void SetMouseDownMsg(uint32 msg) {}
-
-    void SetClickToSelectMode(bool flag) {}
-
-    int GetNumSlots() {}
-
-    int GetStartDatumNum() {}
-
-    int GetCurrentDatumNum() {}
-
-    int GetNumDatum() {}
+    ArrayDatum *GetDatumAt(int index);
 
     ArrayDatum *GetCurrentDatum() {
         return currentDatum;
     }
 
+    void SetInitialPosition(int index);
+
     const char *GetPkgName() {
         return pkg_name;
     }
 
-    struct FEPackage *GetPkg() {
+    FEPackage *GetPkg() {
         return pkg;
     }
+
+    void ClearData();
 
     bool IsSelectableArray() {
         return bSelectableArray;
@@ -230,6 +273,18 @@ class ArrayScroller {
     }
 
   private:
+    void SetSelection(ArrayDatum *newDatum, int newStartDatum);
+
+    void SetSelectionAsOffScreen();
+
+    int ForceSelectionOnScreen(int new_datum, int start);
+
+    void ScrollHor(eScrollDir dir);
+
+    void ScrollVer(eScrollDir dir);
+
+    void UpdateScrollbar();
+
     bool bShouldPlaySound;     // offset 0x0, size 0x1
     bTList<ArraySlot> slots;   // offset 0x4, size 0x8
     bTList<ArrayDatum> data;   // offset 0xC, size 0x8
@@ -239,13 +294,15 @@ class ArrayScroller {
     int height;                // offset 0x20, size 0x4
     uint32 descLabel;          // offset 0x24, size 0x4
     const char *pkg_name;      // offset 0x28, size 0x4
-    struct FEPackage *pkg;     // offset 0x2C, size 0x4
+    FEPackage *pkg;            // offset 0x2C, size 0x4
     FEScrollBar ScrollBar;     // offset 0x30, size 0x64
     FEObject *pScrollRegion;   // offset 0x94, size 0x4
     bool bSelectableArray;     // offset 0x98, size 0x1
     ArrayScripts scripts;      // offset 0x9C, size 0x14
     uint32 mouseDownMsg;       // offset 0xB0, size 0x4
     bool bInClickToSelectMode; // offset 0xB4, size 0x1
+
+    friend class ArrayScrollerMenu;
 };
 
 // total size: 0xE8

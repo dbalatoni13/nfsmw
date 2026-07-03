@@ -7,6 +7,7 @@
 
 // total size: 0x44
 struct CSTATE_Base : public AudioMemBase {
+  public:
     friend struct CSTATEMGR_Base;
     struct StateInfo {
         // total size: 0x10

@@ -19,8 +19,8 @@ template <typename T, int Alignment = DEFAULT_VECTOR_ALIGNMENT> class Vector {
     typedef const value_type &const_reference;
     typedef const value_type *const_iterator;
     typedef const value_type *const_reverse_iterator;
-    typedef std::size_t size_type;
-    typedef std::ptrdiff_t difference_type;
+    typedef size_t size_type;
+    typedef ptrdiff_t difference_type;
 
   public:
     void Init() {}
@@ -59,6 +59,10 @@ template <typename T, int Alignment = DEFAULT_VECTOR_ALIGNMENT> class Vector {
     }
 
     reference operator[](size_type idx) {
+        return mBegin[idx];
+    }
+
+    const_reference operator[](size_type idx) const {
         return mBegin[idx];
     }
 

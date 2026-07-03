@@ -1,6 +1,7 @@
 #ifndef BWARE_STRINGS_H
 #define BWARE_STRINGS_H
 
+#include "types.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
@@ -79,24 +80,30 @@ class bSharedStringPool {
 };
 
 char *bStrNCpy(char *to, const char *from, int m);
+uint16 *bStrNCpy(uint16 *to, const char *from, int m);
 char *bSafeStrCpy(char *to, const char *from, int max_size);
+char *bStrCat(char *dest, const char *s1, const char *s2);
 int bStrCmp(const char *s1, const char *s2);
 int bStrNCmp(const char *s1, const char *s2, int n);
 int bStrNICmp(const char *s1, const char *s2, int n);
 int bStrICmp(const char *s1, const char *s2);
 const char *bAllocateSharedString(const char *s);
 void bFreeSharedString(const char *s);
+unsigned int bStringHashUpper(const char *text);
 unsigned int bStringHash(const char *text);
 unsigned int bStringHash(const char *text, int prefix_hash);
 int bStrToLong(const char *s);
 float bStrToFloat(const char *s);
 int bStrLen(const char *s);
-int bStrLen(const unsigned short *s);
+int bStrLen(const uint16 *s);
 char *bStrStr(const char *s1, const char *s2);
+char *bStrIStr(const char *s1 /* r31 */, const char *s2 /* r30 */);
 char *bStrCpy(char *to, const char *from);
 char *bStrCat(char *to, const char *from);
 char *bStrCat(char *dest, const char *src1, const char *src2);
 char *bStrCopy(char *to, const char *from);
+uint16 *bStrCpy(uint16 *to, const char *from);
+uint16 *bStrCpy(uint16 *to, const uint16 *from);
 int bMatchNameWithWildcard(const char *wild, const char *string);
 
 inline char bToUpper(char c) {
@@ -105,5 +112,7 @@ inline char bToUpper(char c) {
     }
     return c;
 }
+
+char *bToUpper(char *s);
 
 #endif

@@ -13,6 +13,7 @@
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
+#include "Speed/Indep/Libs/Support/Miscellaneous/StringHash.h"
 
 #ifdef EA_PLATFORM_GAMECUBE
 #include "Speed/GameCube/Src/Ecstasy/TextureInfoPlat.hpp"
@@ -638,7 +639,7 @@ void TextureLoadingStreamingPackPhase2(eStreamingPackHeaderLoadingInfoPhase2 *lo
     loading_info->pTexturePackHeader = texture_pack_header;
 }
 
-void eUnloadStreamingTexturePack(const char *filename) {
+int eUnloadStreamingTexturePack(const char *filename) {
     StreamingTexturePackLoader.DeleteStreamingPack(filename);
 }
 

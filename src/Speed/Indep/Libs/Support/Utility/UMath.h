@@ -559,7 +559,7 @@ inline unsigned int Max(const unsigned int a, const unsigned int b) {
     return a < b ? b : a;
 }
 
-#ifdef CLANGD_DAMNIT
+#if defined(CLANGD_DAMNIT) && defined(EA_PLATFORM_GAMECUBE)
 inline size_t Max(const size_t a, const size_t b) {
     return a < b ? b : a;
 }

@@ -276,6 +276,7 @@ int elSetupLightContext(eDynamicLightContext *light_context, eShaperLightRig *sh
                         bVector4 *camera_world_position, eView *view);
 void RestoreShaperRig(eShaperLightRig *ShaperRigP, uint32 slot, eShaperLightRig *ShaperRigBP);
 void AddQuickDynamicLight(eShaperLightRig *ShaperRigP, uint32 slot, float r, float g, float b, float intensity, bVector3 *position);
+void SetSelectCarLighting(int, float, int);
 
 extern int PrintLightQuery;
 

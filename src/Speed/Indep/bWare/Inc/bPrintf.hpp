@@ -24,10 +24,12 @@ struct bOutputInfo {
 
 void bReleasePutString(char terminal_channel, const char *s);
 int bReleasePrintf(const char *fmt, ...);
-int bVPrintf(const char *fmt, va_list *argList);
+int bVPrintf(const char *fmt, va_list argList);
 int bSPrintf(char *destString, const char *fmt, ...);
 int bSNPrintf(char *buf, int max_len, const char *format, ...);
-int bVSPrintf(char *destString, const char *fmt, va_list *argList);
-int bVSNPrintf(char *destString, int max_len, const char *fmt, va_list *argList);
+int bVSPrintf(char *destString, const char *fmt, va_list argList);
+int bVSNPrintf(char *destString, int max_len, const char *fmt, va_list argList);
+
+void bPrintfSetLocaleInfo(char decimal_char /* r3 */, char group_char /* r4 */, char group_len /* r5 */);
 
 #endif

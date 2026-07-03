@@ -17,7 +17,8 @@ static const int PrintActionQueue = 0;
 bool ActionQueue::sInJoylogFrame = false;
 Timer ActionQueue::mLastAnyActionTime;
 
-ActionQueue::List ActionQueue::_mTable;
+// TODO change macro to not include length
+IMPLEMENT_LISTABLE(ActionQueue, MAX_ACTIONQ);
 
 ActionQueue::ActionQueue(bool required) {
     this->mRequired = required;
@@ -189,7 +190,8 @@ int ActionQueue::AssignUniqueID() {
 
 // unfinished
 void ActionQueue::IO_UpdateFromDevice() {
-    if (this->mMappings == nullptr || this->mState == AQS_DISABLED || this->mPort < 0) return;
+    if (this->mMappings == nullptr || this->mState == AQS_DISABLED || this->mPort < 0)
+        return;
 
     InputDevice *device = IOModule::GetIOModule().GetDevice(this->mPort);
     ActionData ad = ActionData(0, 0.0f, 0);
@@ -294,7 +296,8 @@ void ActionQueue::BeginJoylogFrame() {
     if (Joylog::IsReplaying()) {
         while (true) {
             int queue_id = Joylog::GetSignedData(0x8, JOYLOG_CHANNEL_JOYEVENTS);
-            if (queue_id == -1) return;
+            if (queue_id == -1)
+                return;
 
             ActionQueue *q = ActionQueue::FindActionQueue(queue_id);
             int action_id = Joylog::GetData(0x8, JOYLOG_CHANNEL_JOYEVENTS);

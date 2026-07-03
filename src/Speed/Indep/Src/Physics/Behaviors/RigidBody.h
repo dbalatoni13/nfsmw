@@ -1,10 +1,10 @@
 #ifndef PHYSICS_BEHAVIORS_RIGIDBODY_H
 #define PHYSICS_BEHAVIORS_RIGIDBODY_H
 
-#include "types.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
+#include "types.h"
 
 #include "Speed/Indep/Libs/Support/Miscellaneous/SAP.h"
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"

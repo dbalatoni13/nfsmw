@@ -62,10 +62,14 @@ enum eVOL_WOOSH {
     eVRB_WOOSH_VERB = 15,
 };
 
+typedef eVOL_WOOSH reflection_typedef_eVOL_WOOSH;
+
 enum eSFX_NITROUS {
     SFX_NITROUS_NONE = 0,
     SFX_NITROUS_ON = 1,
 };
+
+typedef eSFX_NITROUS reflection_typedef_eSFX_NITROUS;
 
 enum eVOL_ROADNOISE {
     eAZI_ROADNOISE_LEFT_AZ = 0,
@@ -86,11 +90,15 @@ enum eVOL_ROADNOISE {
     eVRB_ROADNOISE_VERB = 15,
 };
 
+typedef eVOL_ROADNOISE reflection_typedef_eVOL_ROADNOISE;
+
 enum eSFX_TURBO {
     SFXTURBO_NONE = 0,
     SFXTURBO_SPOOLING = 1,
     SFXTURBO_BLOWOFF = 2,
 };
+
+typedef eSFX_TURBO reflection_typedef_eSFX_TURBO;
 
 enum eVOL_COLLISION {
     eAZI_COLLISION_COLLISION_AZI = 0,
@@ -114,6 +122,8 @@ enum eVOL_COLLISION {
     ePCH_COLLISION_SCRAPE_PITCH = 18,
 };
 
+typedef eVOL_COLLISION reflection_typedef_eVOL_COLLISION;
+
 enum eVOL_MOMENT {
     eAZI_MOMENT_3DPOS = 0,
     eVOL_MOMENT_JACKNIFE = 1,
@@ -129,6 +139,8 @@ enum eVOL_MOMENT {
     eVOL_MOMENT_SPOT_COP = 11,
     eVOL_MOMENT_PHOTOFINISH = 12,
 };
+
+typedef eVOL_MOMENT reflection_typedef_eVOL_MOMENT;
 
 enum eREVERBFX {
     RVRB_CARSHOW_SML = 0,

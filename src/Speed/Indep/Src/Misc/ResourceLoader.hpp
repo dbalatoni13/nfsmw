@@ -176,6 +176,8 @@ void EndianSwapChunkHeadersRecursive(bChunk *first_chunk, bChunk *last_chunk);
 
 int ServiceResourceLoading();
 ResourceFile *CreateResourceFile(const char *filename, ResourceFileType type, int flags, int flag_offset, int file_size);
+ResourceFile *LoadResourceFile(const char *filename, ResourceFileType type, int flags, void (*callback)(void *), void *callback_param,
+                               int file_offset, int file_size);
 void UnloadResourceFile(ResourceFile *resource_file);
 void SetDelayedResourceCallback(void (*callback)(void *), void *param);
 
@@ -209,5 +211,7 @@ inline int GetChunkMovementOffset() {
 inline void SetDelayedResourceCallback(void (*callback)(intptr_t), intptr_t param) {
     SetDelayedResourceCallback(reinterpret_cast<void (*)(void *)>(callback), reinterpret_cast<void *>(param));
 }
+
+bool IsCurrentlyHotChunking();
 
 #endif

@@ -1,9 +1,17 @@
 #ifndef __ECSTASY_ENGINE__ECSTASYDATA_HPP
 #define __ECSTASY_ENGINE__ECSTASYDATA_HPP
 
+#ifdef EA_PLATFORM_GAMECUBE
+#include "Speed/GameCube/Src/Ecstasy/eSolidPlat.hpp"
+#elif EA_PLATFORM_PLAYSTATION2
+#include "Speed/PSX2/Src/Ecstasy/eSolidPlat.hpp"
+#endif
+
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
+#include "Speed/Indep/Src/Ecstasy/eSprites.hpp"
+#include "Speed/Indep/bWare/Inc/bChunk.hpp"
 
 struct TextureInfo;
 struct eLightContext;
@@ -212,61 +220,54 @@ class eViewPlatInfo;
 
 // total size: 0x4
 class eViewPlatInterface {
-    eViewPlatInfo *PlatInfo; // offset 0x0, size 0x4
-
   public:
     eViewPlatInfo *GetPlatInfo() {
         return PlatInfo;
     }
+    int GetPixelWidth();
+    int GetPixelHeight();
+    void FEBeginBatchRender(int numPolys);
+    void FERender(ePoly *poly, TextureInfo *texture_info, bMatrix4 *local_to_world, int use_previous_data, float bbRad);
+    void FERender(ePoly *poly, TextureInfo *texture_info, TextureInfo *texture_info_mask, int use_previous_data);
+    void FERender(ePoly *poly, TextureInfo *texture_info, int use_previous_data);
+    void FEEndBatchRender();
+
+    void Render(eModel *model, bMatrix4 *local_to_world, eLightContext *light_context, uint32 flags, bMatrix4 *blending_matricies);
+    void Render(ePoly *poly, TextureInfo *texture_info, bMatrix4 *local_to_world, int use_previous_data, float bbRad);
+    void Render(ePoly *poly, TextureInfo *texture_info, TextureInfo *texture_info_mask, int use_previous_data);
+    void Render(ePoly *poly, TextureInfo *texture_info, int use_previous_data);
+    void Render(ePointSprite3D *sprite, TextureInfo *texture_info, bMatrix4 *local_world, int num_sprites);
+    eVisibleState GetVisibleStateGB(const bVector3 *aabb_min, const bVector3 *aabb_max, bMatrix4 *local_world);
+    eVisibleState GetVisibleStateSB(const bVector3 *aabb_min, const bVector3 *aabb_max, bMatrix4 *local_world);
+    eVisibleState GetVisibleStateSB(const bVector3 *position, bMatrix4 *local_world);
+    void GetScreenPosition(bVector3 *screen_position, const bVector3 *world_position);
+
+  protected:
     void SetPlatInfo(eViewPlatInfo *info) {
         PlatInfo = info;
     }
-
     static eViewPlatInfo *GimmeMyViewPlatInfo(int view_id);
-    eVisibleState GetVisibleStateGB(const bVector3 *aabb_min, const bVector3 *aabb_max, bMatrix4 *local_world);
-    eVisibleState GetVisibleStateSB(const bVector3 *aabb_min, const bVector3 *aabb_max, bMatrix4 *local_world);
-    void GetScreenPosition(bVector3 *screen_position, const bVector3 *world_position);
 
-    void Render(eModel *model, bMatrix4 *local_to_world, eLightContext *light_context, uint32 flags, bMatrix4 *blending_matricies);
-    void FERender(ePoly *poly, TextureInfo *texture_info, bMatrix4 *local_to_world, int use_previous_data, float bbRad);
-    void Render(ePoly *poly, TextureInfo *texture_info, bMatrix4 *local_to_world, int use_previous_data, float bbRad);
-    void FERender(ePoly *poly, TextureInfo *texture_info, TextureInfo *texture_info_mask, int use_previous_data);
-    void Render(ePoly *poly, TextureInfo *texture_info, TextureInfo *texture_info_mask, int use_previous_data);
-    void FERender(ePoly *poly, TextureInfo *texture_info, int use_previous_data);
-    void Render(ePoly *poly, TextureInfo *texture_info, int use_previous_data);
-    void Render(struct ePointSprite3D *sprite, TextureInfo *texture_info, bMatrix4 *local_world, int num_sprites);
+  public:
+    eViewPlatInfo *PlatInfo; // offset 0x0, size 0x4
 };
 
-class eLoadedSolidStats {
-    // total size: 0x14
-  public:
-    uint32 NumLoadedLists;           // offset 0x0, size 0x4
-    uint32 NumLoadedSolids;          // offset 0x4, size 0x4
-    uint32 TotalSolidsByteSize;      // offset 0x8, size 0x4
-    uint32 TotalNormalSmootherBytes; // offset 0xC, size 0x4
-    uint32 TotalDamageBytes;         // offset 0x10, size 0x4
-};
+// total size: 0x4
+class eSolidPlatInterface {
+    eSolidPlatInfo *PlatInfo; // offset 0x0, size 0x4
 
-class eSolidPlatInfo {
-    // total size: 0x24
   public:
-    uint16 Version;    // offset 0x0, size 0x2
-    uint16 StripFlags; // offset 0x2, size 0x2
-    uint16 NumStrips;  // offset 0x4, size 0x2
-#ifndef EA_BUILD_A124
-    uint16 NumIdxClrTable; // offset 0x6, size 0x2
-#else
-    uint16 pad0;
-#endif
-    uint32 SizeofStripData; // offset 0x8, size 0x4
-#ifndef EA_BUILD_A124
-    uint32 DataOffset0; // offset 0xC, size 0x4
-    uint32 DataOffset1; // offset 0x10, size 0x4
-    uint32 DataOffset2; // offset 0x14, size 0x4
-    uint32 DataOffset3; // offset 0x18, size 0x4
-#endif
-    struct eStripEntry *StripEntryTable; // offset 0x1C, size 0x4
-    uint8 *StripDataStart;               // offset 0x20, size 0x4
+    int UnloaderPlatChunks(bChunk *chunk);
+    int FixPlatInfo();
+    int UnFixPlatInfo();
+
+    eSolidPlatInfo *GetPlatInfo() {
+        return this->PlatInfo;
+    }
+
+  protected:
+    void SetSmoothVertex(uint32 vertex_offset, float nx, float ny, float nz);
+    void ApplyDamagePlat(struct eDamaggeInfo *damage_info);
 };
 
 #endif

@@ -481,6 +481,19 @@ elif config.platform == Platform.PS2:
 
     config.extra_clang_flags = [
         "-std=gnu++98",
+        "-DCLANGD_DAMNIT",
+        "-D__HONOR_STD",
+        "-D__STL_MEMBER_TEMPLATE_KEYWORD",
+        "-U_MIPS_SIM",
+        "-U __mips",
+        "-D__mips=3",
+        "-D__mips_eabi",
+        "-DR5900",
+        "-D_R5900",
+        "-D__mips_single_float",
+        "-D__builtin_next_arg(x)=((void *)0)",
+        "-D__builtin_args_info(x)=1",
+        "-msoft-float",
     ]
 
 cflags_cmn = [
@@ -546,8 +559,22 @@ config.libs = [
             Object(NonMatching, "Speed/Indep/SourceLists/zTrack.cpp"),
             Object(NonMatching, "Speed/Indep/SourceLists/zWorld.cpp"),
             Object(NonMatching, "Speed/Indep/SourceLists/zWorld2.cpp"),
-            Object(NonMatching, "Speed/Indep/SourceLists/zOnline.cpp"),
-            Object(NonMatching, "Speed/Indep/SourceLists/zFeOverlay.cpp"),
+            Object(
+                NonMatching,
+                "Speed/Indep/SourceLists/zOnline.cpp",
+                section_renames=(
+                    (".text", ".over"),
+                    (".rela.text", ".rela.over"),
+                ),
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/SourceLists/zFeOverlay.cpp",
+                section_renames=(
+                    (".text", ".over"),
+                    (".rela.text", ".rela.over"),
+                ),
+            ),
         ],
     },
     {

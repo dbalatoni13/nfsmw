@@ -1,9 +1,5 @@
-#ifndef BWARE_BWARE_H
-#define BWARE_BWARE_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef BWARE_HPP
+#define BWARE_HPP
 
 #include "Strings.hpp"
 #include "bMath.hpp"
@@ -82,6 +78,10 @@
 void *bMalloc(int size, int allocation_params);
 #ifdef MILESTONE_OPT
 void *bMalloc(int size, const char *debug_text, int debug_line, int allocation_params);
+
+inline void *bMalloc(int size, int allocation_params) {
+    return bMalloc(size, nullptr, 0, allocation_params);
+}
 #else
 
 inline void *bMalloc(int size, const char *debug_text, int debug_line, int allocation_params) {
@@ -157,6 +157,9 @@ void bPlatEndianSwap(bVector2 *value);
 void bPlatEndianSwap(bVector3 *value);
 void bPlatEndianSwap(bVector4 *value);
 void bPlatEndianSwap(bMatrix4 *value);
+inline void bEndianSwap(short *value) {
+    bEndianSwap16(value);
+}
 
 void bInitSharedStringPool(int size);
 void bCloseSharedStringPool();
@@ -254,5 +257,9 @@ inline int bMemoryGetTopBit(int allocation_params) {
 inline int bMemoryGetAlignmentOffset(int allocation_params) {
     return (allocation_params >> 17) & 0x1ffc;
 }
+
+void bAssertFailMsg(char *fmt, const char *filename, int line_number, ...);
+
+#define bAssert(exp) bAssertFailMsg(exp) // : 427
 
 #endif

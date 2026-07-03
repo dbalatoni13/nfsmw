@@ -316,7 +316,7 @@ inline float VU0_fabs(const float a) {
         return -a;
     }
     return a;
-        // return a < 0.0f ? -a : a;
+    // return a < 0.0f ? -a : a;
 #endif
 }
 
@@ -594,7 +594,7 @@ inline void VU0_MATRIX4_mult(const UMath::Matrix4 &m1, const UMath::Matrix4 &m2,
     UMath::Matrix4 temp;
     for (int i = 0; i < 4; ++i) {
         for (int j = 0; j < 4; ++j) {
-            result[i][j] = m1[i][0] * m2[0][j] + m1[i][1] * m2[1][j] + m1[i][2] * m2[2][j] + m1[i][3] * m2[3][j];
+            temp[i][j] = m1[i][0] * m2[0][j] + m1[i][1] * m2[1][j] + m1[i][2] * m2[2][j] + m1[i][3] * m2[3][j];
         }
     }
 
@@ -623,24 +623,24 @@ inline void VU0_MATRIX4Copy(const UMath::Matrix4 &a, UMath::Matrix4 &b) {
 // TODO
 inline void VU0_v4Copy(const UMath::Vector4 &a, UMath::Vector4 &b) {
 #ifdef EA_PLATFORM_PLAYSTATION2
-        // u_long128 _t0;
-        // u_long128 _t1;
-        // asm __volatile__("lq %0, 0x0(%2)\n"
-        //                  "lq %1, 0x10(%2)\n"
-        //                  "sq %0, %3\n"
-        //                  "sq %1, %4\n"
-        //                  "lq %0, 0x20(%2)\n"
-        //                  "lq %1, 0x30(%2)\n"
-        //                  "sq %0, %5\n"
-        //                  "sq %1, %6\n"
-        //                  :
-        //                  : "r"(_t0), "r"(_t1), "r"(&a), "o"(b.v0), "o"(b.v1), "o"(b.v2), "o"(b.v3));
+    // u_long128 _t0;
+    // u_long128 _t1;
+    // asm __volatile__("lq %0, 0x0(%2)\n"
+    //                  "lq %1, 0x10(%2)\n"
+    //                  "sq %0, %3\n"
+    //                  "sq %1, %4\n"
+    //                  "lq %0, 0x20(%2)\n"
+    //                  "lq %1, 0x30(%2)\n"
+    //                  "sq %0, %5\n"
+    //                  "sq %1, %6\n"
+    //                  :
+    //                  : "r"(_t0), "r"(_t1), "r"(&a), "o"(b.v0), "o"(b.v1), "o"(b.v2), "o"(b.v3));
 #else
     b = a;
-        // *reinterpret_cast<int *>(&b.x) = *reinterpret_cast<const int *>(&a.x);
-        // *reinterpret_cast<int *>(&b.y) = *reinterpret_cast<const int *>(&a.y);
-        // *reinterpret_cast<int *>(&b.z) = *reinterpret_cast<const int *>(&a.z);
-        // *reinterpret_cast<int *>(&b.w) = *reinterpret_cast<const int *>(&a.w);
+    // *reinterpret_cast<int *>(&b.x) = *reinterpret_cast<const int *>(&a.x);
+    // *reinterpret_cast<int *>(&b.y) = *reinterpret_cast<const int *>(&a.y);
+    // *reinterpret_cast<int *>(&b.z) = *reinterpret_cast<const int *>(&a.z);
+    // *reinterpret_cast<int *>(&b.w) = *reinterpret_cast<const int *>(&a.w);
 #endif
 }
 
@@ -748,12 +748,12 @@ inline float V3DistanceSquared(const UMath::Vector3 &a, const UMath::Vector3 &b)
     return dx * dx + dy * dy + dz * dz;
 }
 
+// TODO put in place.
 inline int FLOAT2INT(float f) {
     return static_cast<int>(f);
 }
 
-// TODO where to put these?
-static const float kFloatScaleUp = IntAsFloat(0x00800000);
-static const float kFloatScaleDown = 1.0f / kFloatScaleUp;
+static const float kFloatScaleUp = IntAsFloat(0x00800000); // size: 0x4, address: 0x80457778, Decl: speed/indep/libs/support/utility/UVectorMath.h:167
+static const float kFloatScaleDown = 1.0f / kFloatScaleUp; // size: 0x4, address: 0x804565FC, Decl: speed/indep/libs/support/utility/UVectorMath.h:168
 
 #endif

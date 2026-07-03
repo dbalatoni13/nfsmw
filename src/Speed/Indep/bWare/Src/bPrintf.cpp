@@ -55,7 +55,7 @@ int bReleasePrintf(const char *fmt, ...) {
     if (EnableReleasePrintf) {
         va_start(argList, fmt);
         // TODO returning this causes issues??
-        bVPrintf(fmt, &argList);
+        bVPrintf(fmt, argList);
         va_end(argList);
     } else {
         return 0;
@@ -78,14 +78,14 @@ int bVPrintf(char terminal_channel, char *fmt, char *argList) {}
 int bSPrintf(char *destString, const char *fmt, ...) {
     va_list argList;
     va_start(argList, fmt);
-    bVSPrintf(destString, fmt, &argList);
+    bVSPrintf(destString, fmt, argList);
     va_end(argList);
 }
 
 int bSNPrintf(char *buf, int max_len, const char *format, ...) {
     va_list argList;
     va_start(argList, format);
-    bVSNPrintf(buf, max_len, format, &argList);
+    bVSNPrintf(buf, max_len, format, argList);
     va_end(argList);
 }
 

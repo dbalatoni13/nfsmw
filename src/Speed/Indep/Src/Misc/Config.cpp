@@ -6,6 +6,7 @@
 // TODO do all of these
 const char *BuildVersionChangelistName = "191527 191537 191573 191602...";
 
+int EmergencySaveMemory = 0;
 int SkipFE = 0;
 int SkipFETrackNumber = 2000;
 char SkipFERaceID[16] = {};
@@ -44,6 +45,8 @@ int IsNISAudioEnabled = 1;
 bool ShutJosieUp = 0;
 int IsMemcardEnabled = 1;
 int IsAutoSaveEnabled = 1;
+bool IsCollectorsEdition = false;
+bool CarGuysCamera = false;
 
 void InitConfig() {
     if (SkipFETrackNumber != -1) {
@@ -58,12 +61,12 @@ void JoylogConfigItems() {
     SkipFENumPlayerCars = Joylog::AddOrGetData(SkipFENumPlayerCars, 32, JOYLOG_CHANNEL_CONFIG);
     SkipFENumAICars = Joylog::AddOrGetData(SkipFENumAICars, 32, JOYLOG_CHANNEL_CONFIG);
     SkipFENumLaps = Joylog::AddOrGetData(SkipFENumLaps, 32, JOYLOG_CHANNEL_CONFIG);
-    SkipFERaceType = Joylog::AddOrGetData(SkipFERaceType, 32, JOYLOG_CHANNEL_CONFIG);
+    SkipFERaceType = static_cast<RaceTypes>(Joylog::AddOrGetData(SkipFERaceType, 32, JOYLOG_CHANNEL_CONFIG));
     SkipFEMaxCops = Joylog::AddOrGetData(SkipFEMaxCops, 32, JOYLOG_CHANNEL_CONFIG);
     SkipFEHelicopter = Joylog::AddOrGetData(SkipFEHelicopter, 32, JOYLOG_CHANNEL_CONFIG);
     SkipFETrafficDensity = Joylog::AddOrGetData(SkipFETrafficDensity, 32, JOYLOG_CHANNEL_CONFIG);
     SkipFETrafficOncoming = Joylog::AddOrGetData(SkipFETrafficOncoming, JOYLOG_CHANNEL_CONFIG);
-    SkipFEDifficulty = Joylog::AddOrGetData(SkipFEDifficulty, 32, JOYLOG_CHANNEL_CONFIG);
+    SkipFEDifficulty = static_cast<eOpponentStrength>(Joylog::AddOrGetData(SkipFEDifficulty, 32, JOYLOG_CHANNEL_CONFIG));
     IsSoundEnabled = Joylog::AddOrGetData(IsSoundEnabled, 32, JOYLOG_CHANNEL_CONFIG);
     IsAudioStreamingEnabled = Joylog::AddOrGetData(IsAudioStreamingEnabled, 32, JOYLOG_CHANNEL_CONFIG);
     IsSpeechEnabled = Joylog::AddOrGetData(IsSpeechEnabled, 32, JOYLOG_CHANNEL_CONFIG);

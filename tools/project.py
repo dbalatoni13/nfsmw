@@ -70,6 +70,7 @@ class Object:
             "extra_cflags": [],
             "extra_clang_flags": [],
             "lib": None,
+            "section_renames": None,
             "toolchain_version": None,
             "progress_category": None,
             "scratch_preset_id": None,
@@ -83,6 +84,7 @@ class Object:
         self.src_path: Optional[Path] = None
         self.asm_path: Optional[Path] = None
         self.src_obj_path: Optional[Path] = None
+        self.objdiff_obj_path: Optional[Path] = None
         self.asm_obj_path: Optional[Path] = None
         self.ctx_path: Optional[Path] = None
 
@@ -131,6 +133,11 @@ class Object:
         obj_extension = ".obj" if config.platform == Platform.X360 else ".o"
         base_name = Path(self.name).with_suffix("")
         obj.src_obj_path = build_dir / "src" / base_name.with_suffix(obj_extension)
+        if obj.options["section_renames"]:
+            obj.objdiff_obj_path = (
+                obj.src_obj_path.parent
+                / f"{obj.src_obj_path.stem}.objdiff{obj.src_obj_path.suffix}"
+            )
         obj.asm_obj_path = build_dir / "mod" / base_name.with_suffix(obj_extension)
         obj.ctx_path = build_dir / "src" / base_name.with_suffix(".ctx")
         return obj
@@ -529,6 +536,13 @@ def generate_build_ninja(
         description="CTX $in",
         depfile="$out.d",
         deps="gcc",
+    )
+
+    rename_section = config.tools_dir / "rename_section.py"
+    n.rule(
+        name="rename_sections",
+        command=f"$python {rename_section} $in $out $renames",
+        description="RENSEC $out",
     )
 
     cargo_rule_written = False
@@ -1217,10 +1231,31 @@ def generate_build_ninja(
                         "defines": defines,
                     },
                 )
+
+            objdiff_output = obj.src_obj_path
+            section_renames = obj.options["section_renames"]
+            if (
+                section_renames
+                and obj.objdiff_obj_path is not None
+                and obj.objdiff_obj_path not in source_added
+            ):
+                source_added.add(obj.objdiff_obj_path)
+                rename_args = " ".join(
+                    f"{old_name} {new_name}"
+                    for old_name, new_name in section_renames
+                )
+                n.build(
+                    outputs=obj.objdiff_obj_path,
+                    rule="rename_sections",
+                    inputs=obj.src_obj_path,
+                    implicit=rename_section,
+                    variables={"renames": rename_args},
+                )
+                objdiff_output = obj.objdiff_obj_path
             n.newline()
 
             if obj.options["add_to_all"]:
-                source_inputs.append(obj.src_obj_path)
+                source_inputs.append(objdiff_output)
 
             return obj.src_obj_path
 
@@ -1865,7 +1900,7 @@ def generate_objdiff_config(
 
         src_exists = obj.src_path is not None and obj.src_path.exists()
         if src_exists:
-            unit_config["base_path"] = obj.src_obj_path
+            unit_config["base_path"] = obj.objdiff_obj_path or obj.src_obj_path
             unit_config["metadata"]["source_path"] = obj.src_path
 
         # Filter out include directories
@@ -2252,7 +2287,8 @@ def generate_compile_commands(
                 "clang",
                 "-nostdinc",
                 "-fno-builtin",
-                "--target=mips-linux-gnu",
+                "--target=mips64el-ps2-none-eabi",
+                "-mabi=o32",
                 *cflags,
                 "-c",
                 obj.src_path,

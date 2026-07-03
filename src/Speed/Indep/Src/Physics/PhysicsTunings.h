@@ -5,14 +5,9 @@
 #pragma once
 #endif
 
-namespace Physics {
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
 
-enum eCustomTuningType {
-    CTT_SETTING_1 = 0,
-    CTT_SETTING_2 = 1,
-    CTT_SETTING_3 = 2,
-    NUM_CUSTOM_TUNINGS = 3,
-};
+namespace Physics {
 
 struct Tunings {
     enum Path {
@@ -25,10 +20,13 @@ struct Tunings {
         INDUCTION = 6,
         MAX_TUNINGS = 7,
     };
-    float Value[7]; // offset 0x0, size 0x1C
 
     static float LowerLimit(Path path);
     static float UpperLimit(Path path);
+
+    void Default();
+
+    float Value[7]; // offset 0x0, size 0x1C
 };
 
 } // namespace Physics

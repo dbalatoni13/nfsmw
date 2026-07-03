@@ -1,10 +1,10 @@
-#ifndef FENG_FENGINE_H
-#define FENG_FENGINE_H
+#ifndef MISC_MAIN_H
+#define MISC_MAIN_H
 
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
 
-
+void MiniMainLoop();
 
 #endif

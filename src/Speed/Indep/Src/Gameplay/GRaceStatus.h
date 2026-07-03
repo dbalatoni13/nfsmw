@@ -8,26 +8,226 @@
 #include "GCharacter.h"
 #include "GRace.h"
 #include "GRaceDatabase.h"
+#include "GActivity.h"
 #include "GTimer.h"
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 #include "Speed/Indep/Src/Ecstasy/EmitterSystem.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/gameplay.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/IVehicleCache.h"
-#include "Speed/Indep/Src/Interfaces/Simables/isimable.h"
 #include "Speed/Indep/Src/Misc/Table.hpp"
+#include "Speed/Indep/Src/World/WorldModel.hpp"
+#include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 
 #include <types.h>
 
 // total size: 0x1A8
-struct GRacerInfo {
+class GRacerInfo {
   public:
+    GRacerInfo();
+    ~GRacerInfo();
+    ISimable *GetSimable() const {
+        return ISimable::FindInstance(mhSimable);
+    }
     GCharacter *GetGameCharacter() const {
         return mGameCharacter;
     }
-
+    bool GetIsHuman() const {
+        return !mGameCharacter;
+    };
+    const char *GetName() const {
+        return mName;
+    }
+    int GetIndex() const {
+        return mIndex;
+    };
+    int GetRanking() const {
+        return mRanking;
+    }
+    int GetAiRanking() const {
+        return mAiRanking;
+    };
     float GetPctRaceComplete() const {
         return mPctRaceComplete;
     }
+    float GetHudPctRaceComplete() const;
+#ifndef EA_BUILD_A124
+    void UpdateSplits();
+    int GetSpeedTrapsCrossed() const {
+        return mSpeedTrapsCrossed;
+    }
+#endif
+    bool GetIsKnockedOut() const {
+        return mKnockedOut;
+    }
+    bool GetIsTotalled() const {
+        return mTotalled;
+    }
+    bool GetIsEngineBlown() const {
+        return mEngineBlown;
+    }
+    bool GetIsBusted() const {
+        return mBusted;
+    }
+    bool GetChallengeComplete() const {
+        return mChallengeComplete;
+    };
+    bool GetCameraDetached() const {
+        return mCameraDetached;
+    };
+    float GetPctLapComplete() const {
+        return mPctLapComplete;
+    };
+    int GetLapsCompleted() const {
+        return mLapsCompleted;
+    };
+    int GetChecksHitThisLap() const {
+        return mCheckpointsHitThisLap;
+    };
+    int GetTollboothsCrossed() const {
+        return mTollboothsCrossed;
+    };
+    float GetDistToNextCheck() const {
+        return mDistToNextCheckpoint;
+    };
+    float GetDistDriven() const {
+        return mDistanceDriven;
+    };
+    float GetTopSpeed() const {
+        return mTopSpeed;
+    };
+    float GetFinishingSpeed() const {
+        return mFinishingSpeed;
+    }
+    float GetPoundsNOSUsed() const {
+        return mPoundsNOSUsed;
+    };
+    float GetRaceTime() const {
+        return mRaceTimer.GetTime();
+    };
+    float GetLapTime() const {
+        return mLapTimer.GetTime();
+    };
+    float GetCheckTime() const {
+        return mCheckTimer.GetTime();
+    };
+    int GetPerfectShifts() const {
+        return mNumPerfectShifts;
+    };
+    int GetTrafficCarsHit() const {
+        return mNumTrafficCarsHit;
+    };
+    float GetSpeedBreakerTime() const {
+        return mSpeedBreakerTime;
+    };
+    float GetPointTotal() const {
+        return mPointTotal;
+    }
+    float GetZeroToSixtyTime() const {
+        return mZeroToSixtyTime;
+    };
+    float GetQuarterMileTime() const {
+        return mQuarterMileTime;
+    };
+#ifndef EA_BUILD_A124
+    void SetRaceTime(float f) {}
+    void SetLapsCompleted(int n) {
+        mLapsCompleted = n;
+    }
+    void SetPctRaceComplete(float f) {
+        mPctRaceComplete = f;
+    }
+    void SetDistDriven(float f) {
+        mDistanceDriven = f;
+    }
+    void SetTopSpeed(float f) {
+        mTopSpeed = f;
+    }
+    void SetPoundsNOSUsed(float f) {
+        mPoundsNOSUsed = f;
+    }
+    void SetZeroToSixtyTime(float f) {
+        mZeroToSixtyTime = f;
+    }
+    void SetQuarterMileTime(float f) {
+        mQuarterMileTime = f;
+    }
+    void SetPerfectShifts(int i) {
+        mNumPerfectShifts = i;
+    }
+    float GetSplitTime(int split) const {
+        return mSplitTimes[split];
+    }
+    int GetSplitRanking(int split) const {
+        return mSplitRankings[split];
+    }
+    void SetSplitTime(int split, float time) {
+        mSplitTimes[split] = time;
+    }
+    void SetSplitRanking(int split, int rank) {
+        mSplitRankings[split] = rank;
+    }
+    bool GetDNF() const {
+        return mDNF;
+    }
+#endif
+    bool IsLoading() const;
+    void GetPosition(UMath::Vector3 &pos) const;
+    void GetLinearVelocity(UMath::Vector3 &vel) const;
+    float CalcAverageSpeed() const;
+    void SetSimable(ISimable *simable);
+    void SetName(char *name);
+    void SetIndex(int index);
+    void SetRanking(int ranking);
+    void AddToPointTotal(float points);
+    void KnockOut();
+    void BlowEngine();
+    void TotalVehicle();
+    void Busted();
+    void ChallengeComplete();
+    void ForceStop();
+    void EndForceStop();
+    void Update(float dT);
+    void SaveStartPosition();
+    void RestoreStartPosition();
+    void ForceStartPosition(const UMath::Vector3 &pos, const UMath::Vector3 &dir);
+    void StartRace();
+    void StartLap(int lapIndexOneBased);
+    void StartCheckpoint(int checkIndex);
+    void FinishRace();
+    bool IsFinishedRacing() const {
+        return mFinishedRacing;
+    }
+#ifndef EA_BUILD_A124
+    bool AreStatsReady() const;
+#endif
+    void DetachCamera() {
+        mCameraDetached = true;
+    };
+    void IncPerfectShifts() {
+        mNumPerfectShifts++;
+    };
+    void NotifyTrafficCollision() {
+        mNumTrafficCarsHit++;
+    };
+    void NotifyTollboothCrossed(float RaceClock) {
+        mTollboothsCrossed++;
+    };
+    void NotifySpeedTrapTriggered(float mps) {
+        mSpeedTrapsCrossed++;
+    };
+    bool IsAheadOf(const struct GRacerInfo &rhs) {};
+    bool IsBehind(const struct GRacerInfo &rhs);
+    IVehicle *CreateVehicle(unsigned int default_key);
+    void FinalizeRaceStats();
+    void ClearRaceStats() {};
+
+  private:
+    // GRacerInfo();
+    void Kill();
+    void ClearAll() {};
+    void ChooseRandomName();
+    bool ChooseBossName();
+    bool ChooseRacerName();
 
   private:
     HSIMABLE mhSimable;              // offset 0x0, size 0x4
@@ -83,214 +283,6 @@ struct GRacerInfo {
 
 DECLARE_CONTAINER_TYPE(ID_GRaceStatusTriggerList);
 
-// total size: 0x14
-class GRaceParameters {
-  public:
-    unsigned int GetCollectionKey() const;
-
-    float GetRaceLengthMeters() const;
-
-    int GetReputation() const;
-
-    float GetCashValue() const;
-
-    int GetLocalizationTag() const;
-
-    int GetNumLaps() const;
-
-    const char *GetEventID() const;
-
-    float GetRivalBestTime() const;
-
-    float GetChallengeGoal() const;
-
-    bool GetInitiallyUnlockedQuickRace() const;
-
-    bool GetInitiallyUnlockedOnline() const;
-
-    bool GetInitiallyUnlockedChallenge() const;
-
-    bool GetIsDDayRace() const;
-
-    bool GetIsBossRace() const;
-
-    bool GetIsMarkerRace() const;
-
-    bool GetIsPursuitRace() const;
-
-    bool GetIsLoopingRace() const;
-
-    bool GetRankPlayersByPoints() const;
-
-    bool GetRankPlayersByDistance() const;
-
-    bool GetCopsEnabled() const;
-
-    bool GetScriptedCopsInRace() const;
-
-    bool GetNeverInQuickRace() const;
-
-    bool GetIsChallengeSeriesRace() const;
-
-    bool GetIsCollectorsEditionRace() const;
-
-    float GetTimeLimit() const;
-
-    float GetMaxHeatLevel() const;
-
-    bool GetNoPostRaceScreen() const;
-
-    bool GetUseWorldHeatInRace() const;
-
-    float GetForceHeatLevel() const;
-
-    float GetMaxRaceHeatLevel() const;
-
-    float GetInitialPlayerSpeed() const;
-
-    bool GetIsRollingStart() const;
-
-    bool GetIsEpicPursuitRace() const;
-
-    const char *GetPlayerCarType() const;
-
-    float GetPlayerCarPerformance() const;
-
-    int GetBustedLives() const;
-
-    int GetKnockoutsPerLap() const;
-
-    float GetTimedKnockout() const;
-
-    bool GetCatchUp() const;
-
-    bool GetCatchUpOverride() const;
-
-    const char *GetCatchUpSkill() const;
-
-    const char *GetCatchUpSpread() const;
-
-    float GetCatchUpIntegral() const;
-
-    float GetCatchUpDerivative() const;
-
-    bool GetPhotofinish() const;
-
-    unsigned int GetNumCheckpoints() const;
-
-    bool GetCheckpointsVisible() const;
-
-    unsigned int GetNumShortcuts() const;
-
-    unsigned int GetNumBarrierExemptions() const;
-
-    unsigned int GetBarrierCount() const;
-
-    const char *GetTrafficPattern() const;
-
-    const char *GetPhotoFinishCamera() const;
-
-    const char *GetPhotoFinishTexture() const;
-
-    float GetTimeOfDay() const;
-
-    float GetStartTime() const;
-
-    float GetStartPercent() const;
-
-    const char *GetSpeedTrapCamera() const;
-
-    inline void EnsureLoaded() const {}
-
-    void BlockUntilLoaded();
-
-    bool GetIsLoaded() const;
-
-    GRaceParameters(unsigned int collectionKey, struct GRaceIndexData *index);
-
-    virtual ~GRaceParameters();
-
-    void GenerateIndex(struct GRaceIndexData *index);
-
-    void NotifyParentVaultUnloading();
-
-    void NotifyParentVaultLoaded();
-
-    const Attrib::Gen::gameplay *GetGameplayObj() const;
-
-    struct GActivity *GetActivity() const;
-
-    struct GVault *GetChildVault() const;
-
-    struct GVault *GetParentVault() const;
-
-    void GetBoundingBox(UMath::Vector2 &topLeft, UMath::Vector2 &botRight) const;
-
-    unsigned int GetChallengeType() const;
-
-    GRace::Type GetRaceType() const;
-
-    // enum Region GetRegion() const;
-
-    void ExtractPosition(Attrib::Gen::gameplay &collection, UMath::Vector3 &pos) const;
-
-    void ExtractDirection(Attrib::Gen::gameplay &collection, UMath::Vector3 &dir, float rotate) const;
-
-    unsigned int GetEventHash() const;
-
-    // bool GetIsAvailable(enum Context context) const;
-
-    bool GetIsSunsetRace() const;
-
-    bool GetIsMiddayRace() const;
-
-    void SetupTimeOfDay();
-
-    int GetTrafficDensity() const;
-
-    // enum Difficulty GetDifficulty() const;
-
-    // enum CopDensity GetCopDensity() const;
-
-    bool GetCanBeReversed() const;
-
-    struct GCharacter *GetOpponentChar(unsigned int index) const;
-
-    int GetNumOpponents() const;
-
-    void GetStartPosition(UMath::Vector3 &pos) const;
-
-    void GetStartDirection(UMath::Vector3 &dir) const;
-
-    float GetStartAngle() const;
-
-    bool HasFinishLine() const;
-
-    void GetFinishPosition(UMath::Vector3 &pos) const;
-
-    void GetFinishDirection(UMath::Vector3 &dir) const;
-
-    virtual void GetCheckpointPosition(unsigned int index, UMath::Vector3 &pos) const;
-
-    virtual void GetCheckpointDirection(unsigned int index, UMath::Vector3 &dir) const;
-
-    struct GMarker *GetShortcut(unsigned int index) const;
-
-    struct GMarker *GetBarrierExemption(unsigned int index) const;
-
-    const char *GetBarrierName(unsigned int index) const;
-
-    unsigned int GetBarrierHash(unsigned int index) const;
-
-    bool GetBarrierIsFlipped(unsigned int index) const;
-
-  protected:
-    struct GRaceIndexData *mIndex;      // offset 0x0, size 0x4
-    Attrib::Gen::gameplay *mRaceRecord; // offset 0x4, size 0x4
-    struct GVault *mParentVault;        // offset 0x8, size 0x4
-    struct GVault *mChildVault;         // offset 0xC, size 0x4
-};
-
 // total size: 0x46AC
 class GRaceStatus : public UTL::COM::Object, public IVehicleCache {
   public:
@@ -299,42 +291,74 @@ class GRaceStatus : public UTL::COM::Object, public IVehicleCache {
         kPlayMode_Racing = 1,
     };
 
+    enum eAdaptiveGainReason {
+        kAdaptiveGain_FromEngineBlown = 0,
+        kAdaptiveGain_FromVehicleDestroyed = 1,
+        kAdaptiveGain_FromFinalizeRace = 2,
+        kAdaptiveGain_FromRacerKOed = 3,
+        kAdaptiveGain_FromRacerFinished = 4,
+        kAdaptiveGain_FromRestart = 5,
+    };
+
     typedef UTL::Std::vector<struct GTrigger *, _type_ID_GRaceStatusTriggerList> TriggerList;
 
     static void Init();
+
     static void Shutdown();
 
-    void EnableBinBarriers();
+    static GRaceStatus &Get() {
+        return *fObj;
+    }
 
-    void DisableBinBarriers();
+    static bool Exists() {
+        return fObj != nullptr;
+    }
 
-    void RefreshBinWhileInGame();
-
-    void EnterBin(unsigned int binNumber);
+    void Update(float dT);
 
     void CalculateRankings();
 
     void SortCheckPointRankings();
 
-    void Update(float dT);
+    PlayMode GetPlayMode() const {
+        return mPlayMode;
+    }
 
-    bool CanUnspawnRoamer(const IVehicle *roamer) const;
-
-    // Overrides: IVehicleCache
-    enum eVehicleCacheResult OnQueryVehicleCache(const IVehicle *removethis, const IVehicleCache *whosasking) const override;
-
-    // Overrides: IVehicleCache
-    void OnRemovedVehicleCache(IVehicle *ivehicle) override;
+    GRace::Context GetRaceContext() const {
+        return mRaceContext;
+    }
 
     void SetRaceContext(GRace::Context context);
+
+    void SetIsLoading(bool loading) {
+        mIsLoading = loading;
+    };
+
+    bool GetIsLoading() const {
+        return mIsLoading;
+    };
+
+    GRace::Type GetRaceType() const {
+        return mRaceParms ? mRaceParms->GetRaceType() : GRace::kRaceType_None;
+    }
+
+    GRaceParameters *GetRaceParameters() const {
+        return mRaceParms;
+    }
+
+    GRaceBin *GetCurrentBin() const {
+        return mRaceBin;
+    }
+
+    void RefreshBinWhileInGame();
 
     GRacerInfo &GetRacerInfo(int index);
 
     GRacerInfo *GetRacerInfo(ISimable *isim);
 
-    GRacerInfo *GetWinningPlayerInfo();
-
     int GetRacerCount() const;
+
+    GRacerInfo *GetWinningPlayerInfo();
 
     void StartMasterTimer();
 
@@ -342,67 +366,11 @@ class GRaceStatus : public UTL::COM::Object, public IVehicleCache {
 
     float GetRaceTimeElapsed() const;
 
+    bool GetIsTimeLimited() const {
+        return mRaceParms && mRaceParms->GetTimeLimit() > 0.0f;
+    }
+
     float GetRaceTimeRemaining() const;
-
-    void SkipToEndOfRaceForRacer(ISimable *thisPlayer, int index, float time);
-
-    void SkipToEndOfRaceInPlace(int place, float finishTime);
-
-    void ClearRacers();
-
-    GRacerInfo &AddSimablePlayer(ISimable *isim);
-
-    void AddRacer(GRuntimeInstance *racer);
-
-    void SetRaceActivity(GActivity *activity);
-
-    void EnableBarriers();
-
-    void DisableBarriers();
-
-    void SetRoaming();
-
-    void SetRacing();
-
-    void NotifyScriptWhenLoaded();
-
-    void AddAvailableEventToMap(GRuntimeInstance *trigger, GRuntimeInstance *activity);
-
-    void AddSpeedTrapToMap(GRuntimeInstance *trigger);
-
-    void AwardBonusTime(float seconds);
-
-    void ClearCheckpoints();
-
-    void AddCheckpoint(GRuntimeInstance *trigger);
-
-    static void NotifyEmitterGroupDelete(void *obj, EmitterGroup *group);
-
-    void SetNextCheckpointPos(GRuntimeInstance *trigger);
-
-    float DetermineRaceSegmentLength(const UMath::Vector4 *positions, const UMath::Vector4 *directions, int start, int end);
-
-    void DetermineRaceLength();
-
-    void ParseCatchUpData(const char *skill, const char *spread);
-
-    float GetAdaptiveDifficutly() const;
-
-    void SyncronizeAdaptiveBonus();
-
-    // void UpdateAdaptiveDifficulty(enum eAdaptiveGainReason reason, struct ISimable *who);
-
-    bool ComputeCatchUpSkill(GRacerInfo *racer_info, PidError *pid, float *output, float *skill, bool off_world);
-
-    void MakeDefaultCatchUpData();
-
-    void MakeCatchUpData();
-
-    int GetCheckpointCount();
-
-    GTrigger *GetCheckpoint(int index);
-
-    GTrigger *GetNextCheckpoint();
 
     void ClearTimes();
 
@@ -426,6 +394,199 @@ class GRaceStatus : public UTL::COM::Object, public IVehicleCache {
 
     int GetLapsLed(int racerIndex);
 
+    bool GetRaceRouteError() {}
+
+    float GetRaceLength() const {
+        return fRaceLength;
+    }
+
+    float GetFirstLapLength() {}
+
+    float GetSegmentLength(int n) {
+        return mSegmentLengths[n];
+    }
+
+    float GetSubsequentLapLength() {
+        return fSubsequentLapLength;
+    }
+
+    float GetLapLength(int lap) {}
+
+    float GetSegmentLength(int segment, int lap);
+
+    float GetAveragePercentComplete() {
+        return fAveragePercentComplete;
+    }
+
+    bool IsLoading();
+
+    bool IsAudioLoading();
+
+    bool IsModelsLoading();
+
+    bool GetIsScriptWaitingForLoading() const {
+        return mScriptWaitingForLoad;
+    }
+
+    static bool IsDragRace() {
+        return Exists() && Get().GetRaceType() == GRace::kRaceType_Drag;
+    }
+
+    static bool IsP2PRace() {
+        return Exists() && Get().GetRaceType() == GRace::kRaceType_P2P;
+    }
+
+    static bool IsSprintRace() {
+        return IsP2PRace();
+    }
+
+    static bool IsCircuitRace() {
+        return Exists() && Get().GetRaceType() == GRace::kRaceType_Circuit;
+    }
+
+    static bool IsKnockoutRace() {
+        return Exists() && Get().GetRaceType() == GRace::kRaceType_Knockout;
+    }
+
+    static bool IsTollboothRace() {
+        return Exists() && Get().GetRaceType() == GRace::kRaceType_Tollbooth;
+    }
+
+    static bool IsChallengeRace() {
+        return Exists() && Get().GetRaceType() == GRace::kRaceType_Challenge;
+    }
+
+    static bool IsSpeedTrapRace() {
+        return Exists() && Get().GetRaceType() == GRace::kRaceType_SpeedTrap;
+    }
+
+    static bool IsFinalEpicPursuit() {
+        return GRaceStatus::Exists() && (GRaceStatus::Get().GetRaceParameters() != nullptr) &&
+               GRaceStatus::Get().GetRaceParameters()->GetIsEpicPursuitRace();
+    }
+
+    float GetBinBaseHeat() const {
+        return mRaceBin->GetBaseOpenWorldHeat();
+    }
+
+    float GetBinMaxHeat() const {
+        return mRaceBin->GetMaxOpenWorldHeat();
+    }
+
+    float GetBinHeatScale() const {
+        return mRaceBin->GetScaleOpenWorldHeat();
+    }
+
+    void SkipToEndOfRaceForRacer(ISimable *thisPlayer, int index, float time);
+
+    void SkipToEndOfRaceInPlace(int place, float finishTime);
+
+    void ClearRacers();
+
+    GRacerInfo &AddSimablePlayer(ISimable *isim);
+
+    void AddRacer(GRuntimeInstance *racer);
+
+    void NotifyScriptWhenLoaded();
+
+    void LockVehicleCache(bool lock) {
+        mVehicleCacheLocked = lock;
+    }
+
+    int GetTrafficDensity() const {
+        return mTrafficDensity;
+    }
+
+    void SetTrafficDensity(int density) {
+        mTrafficDensity = density;
+    }
+
+    Attrib::Key GetTrafficPattern() const {
+        return mTrafficPattern;
+    }
+
+    void SetTrafficPattern(Attrib::Key key) {
+        mTrafficPattern = key;
+    }
+
+    void ClearTrafficPattern() {}
+
+    void SetRoaming();
+
+    void SetRacing();
+
+    void SetRaceActivity(GActivity *activity);
+
+    void EnterSuddenDeath() {
+        mSuddenDeathMode = true;
+    }
+
+    bool GetIsSuddenDeath() const {
+        return mSuddenDeathMode;
+    }
+
+    void EnableBarriers();
+
+    void DisableBarriers();
+
+    void EnableBinBarriers();
+
+    void DisableBinBarriers();
+
+    void ClearCheckpoints();
+
+    void AddCheckpoint(GRuntimeInstance *trigger);
+
+    void SetNextCheckpointPos(GRuntimeInstance *trigger);
+
+    void DetermineRaceLength();
+
+    void MakeCatchUpData();
+
+    bool ComputeCatchUpSkill(GRacerInfo *racer_info, PidError *pid, float *output, float *skill, bool off_world);
+
+#if EA_BUILD_A124
+    void UpdateAdaptiveBonus();
+#endif
+
+    void SyncronizeAdaptiveBonus();
+
+    float GetAdaptiveDifficutly() const;
+
+    void UpdateAdaptiveDifficulty(eAdaptiveGainReason reason, ISimable *who);
+
+    void AddAvailableEventToMap(GRuntimeInstance *trigger, GRuntimeInstance *activity);
+
+    void AddSpeedTrapToMap(GRuntimeInstance *trigger);
+
+    void AwardBonusTime(float seconds);
+
+    void SetTaskTime(float seconds) {
+        mTaskTime = seconds;
+    }
+
+    float GetTaskTime() const {
+        return mTaskTime;
+    }
+
+    void SetActivelyRacing(bool racing) {
+        mActivelyRacing = racing;
+    }
+
+    bool GetActivelyRacing() const {
+        return mActivelyRacing;
+    }
+
+    int GetCheckpointCount();
+
+    GTrigger *GetCheckpoint(int index);
+
+    GTrigger *GetNextCheckpoint();
+
+    int GetNumRaceSpeedTraps() {
+        return nSpeedTraps;
+    }
+
     float GetRaceSpeedTrapSpeed(int trapIndex, int racerIndex);
 
     int GetRaceSpeedTrapPosition(int trapIndex, int racerIndex);
@@ -433,6 +594,14 @@ class GRaceStatus : public UTL::COM::Object, public IVehicleCache {
     float GetBestSpeedTrapSpeed(int racerIndex);
 
     float GetWorstSpeedTrapSpeed(int racerIndex);
+
+    GTrigger *GetRaceSpeedTrap(int n) {
+        return aSpeedTraps[n];
+    }
+
+    int GetNumRaceTollbooths() {
+        return mNumTollbooths;
+    }
 
     float GetRaceTollboothTime(int boothIndex, int racerIndex);
 
@@ -442,74 +611,24 @@ class GRaceStatus : public UTL::COM::Object, public IVehicleCache {
 
     void FinalizeRaceStats();
 
-    bool IsAudioLoading();
+    // Overrides: IVehicleCache
+    enum eVehicleCacheResult OnQueryVehicleCache(const IVehicle *removethis, const IVehicleCache *whosasking) const override;
 
-    bool IsModelsLoading();
+    // Overrides: IVehicleCache
+    void OnRemovedVehicleCache(IVehicle *ivehicle) override;
 
-    bool IsLoading();
-
-    float GetSegmentLength(int segment, int lap);
-
-    GRaceStatus();
-
-    GRaceParameters *GetRaceParameters() const {
-        return mRaceParms;
-    }
-
-    static GRaceStatus &Get() {
-        return *fObj;
-    }
-
-    static bool Exists() {
-        return fObj != nullptr;
-    }
-
-    GRace::Type GetRaceType() const {
-        return mRaceParms ? mRaceParms->GetRaceType() : GRace::kRaceType_None;
-    }
-
-    static bool IsChallengeRace() {
-        return Exists() && Get().GetRaceType() == GRace::kRaceType_Challenge;
-    }
-
-    static bool IsDragRace() {
-        return Exists() && Get().GetRaceType() == GRace::kRaceType_Drag;
-    }
-
-    PlayMode GetPlayMode() const {
-        return mPlayMode;
-    }
-
-    unsigned int GetTrafficPattern() const {
-        return mTrafficPattern;
-    }
-
-    bool GetActivelyRacing() const {
-        return mActivelyRacing;
-    }
-
-    GRace::Context GetRaceContext() const {
-        return mRaceContext;
-    }
-
-    static bool IsFinalEpicPursuit() {
-        return GRaceStatus::Exists() && GRaceStatus::Get().GetRaceParameters() && GRaceStatus::Get().GetRaceParameters()->GetIsEpicPursuitRace();
-    }
-
-    float GetBinBaseHeat() const {
-        return mRaceBin->GetBaseOpenWorldHeat();
-    }
-
-    float GRaceStatusGetBinMaxHeat() const {
-        return mRaceBin->GetMaxOpenWorldHeat();
-    }
-
-    float GetBinHeatScale() const {
-        return mRaceBin->GetScaleOpenWorldHeat();
-    }
+    bool CanUnspawnRoamer(const IVehicle *roamer) const;
 
   private:
-    static struct GRaceStatus *fObj;
+    GRaceStatus();
+    ~GRaceStatus() override;
+    void EnterBin(unsigned int binNumber);
+    float DetermineRaceSegmentLength(const UMath::Vector4 *positions, const UMath::Vector4 *directions, int start, int end);
+    static void NotifyEmitterGroupDelete(void *obj, EmitterGroup *group);
+    void ParseCatchUpData(const char *skill, const char *spread);
+    void MakeDefaultCatchUpData();
+
+    static GRaceStatus *fObj;
 
     GRacerInfo mRacerInfo[16];   // offset 0x1C, size 0x1A80
     int mRacerCount;             // offset 0x1A9C, size 0x4
@@ -522,15 +641,15 @@ class GRaceStatus : public UTL::COM::Object, public IVehicleCache {
 #ifndef EA_BUILD_A124
     bool mPlayerPursuitInCooldown; // offset 0x1AC0, size 0x1
 #endif
-    float mBonusTime;                    // offset 0x1AC4, size 0x4
-    float mTaskTime;                     // offset 0x1AC8, size 0x4
-    bool mSuddenDeathMode;               // offset 0x1ACC, size 0x1
-    bool mTimeExpiredMsgSent;            // offset 0x1AD0, size 0x1
-    bool mActivelyRacing;                // offset 0x1AD4, size 0x1
-    int mLastSecondTickSent;             // offset 0x1AD8, size 0x4
-    struct WorldModel *mCheckpointModel; // offset 0x1ADC, size 0x4
-    EmitterGroup *mCheckpointEmitter;    // offset 0x1AE0, size 0x4
-    bool mQueueBinChange;                // offset 0x1AE4, size 0x1
+    float mBonusTime;                 // offset 0x1AC4, size 0x4
+    float mTaskTime;                  // offset 0x1AC8, size 0x4
+    bool mSuddenDeathMode;            // offset 0x1ACC, size 0x1
+    bool mTimeExpiredMsgSent;         // offset 0x1AD0, size 0x1
+    bool mActivelyRacing;             // offset 0x1AD4, size 0x1
+    int mLastSecondTickSent;          // offset 0x1AD8, size 0x4
+    WorldModel *mCheckpointModel;     // offset 0x1ADC, size 0x4
+    EmitterGroup *mCheckpointEmitter; // offset 0x1AE0, size 0x4
+    bool mQueueBinChange;             // offset 0x1AE4, size 0x1
 #ifndef EA_BUILD_A124
     unsigned int mWarpWhenInFreeRoam; // offset 0x1AE8, size 0x4
 #endif
@@ -539,37 +658,37 @@ class GRaceStatus : public UTL::COM::Object, public IVehicleCache {
 #ifndef EA_BUILD_A124
     bool mRefreshBinAfterRace; // offset 0x1AF4, size 0x1
 #endif
-    TriggerList mCheckpoints;         // offset 0x1AF8, size 0x10
-    struct GTrigger *mNextCheckpoint; // offset 0x1B08, size 0x4
-    float mLapTimes[10][16];          // offset 0x1B0C, size 0x280
-    float mCheckTimes[10][16][16];    // offset 0x1D8C, size 0x2800
-    float mSegmentLengths[18];        // offset 0x458C, size 0x48
-    float fRaceLength;                // offset 0x45D4, size 0x4
-    float fFirstLapLength;            // offset 0x45D8, size 0x4
-    float fSubsequentLapLength;       // offset 0x45DC, size 0x4
+    TriggerList mCheckpoints;      // offset 0x1AF8, size 0x10
+    GTrigger *mNextCheckpoint;     // offset 0x1B08, size 0x4
+    float mLapTimes[10][16];       // offset 0x1B0C, size 0x280
+    float mCheckTimes[10][16][16]; // offset 0x1D8C, size 0x2800
+    float mSegmentLengths[18];     // offset 0x458C, size 0x48
+    float fRaceLength;             // offset 0x45D4, size 0x4
+    float fFirstLapLength;         // offset 0x45D8, size 0x4
+    float fSubsequentLapLength;    // offset 0x45DC, size 0x4
 #ifndef EA_BUILD_A124
     bool mCaluclatedAdaptiveGain; // offset 0x45E0, size 0x1
 #endif
-    float fCatchUpIntegral;           // offset 0x45E4, size 0x4
-    float fCatchUpDerivative;         // offset 0x45E8, size 0x4
-    float fCatchUpAdaptiveBonus;      // offset 0x45EC, size 0x4
-    float fAveragePercentComplete;    // offset 0x45F0, size 0x4
-    int nCatchUpSkillEntries;         // offset 0x45F4, size 0x4
-    float aCatchUpSkillData[11];      // offset 0x45F8, size 0x2C
-    int nCatchUpSpreadEntries;        // offset 0x4624, size 0x4
-    float aCatchUpSpreadData[11];     // offset 0x4628, size 0x2C
-    int nSpeedTraps;                  // offset 0x4654, size 0x4
-    struct GTrigger *aSpeedTraps[16]; // offset 0x4658, size 0x40
-    bool mVehicleCacheLocked;         // offset 0x4698, size 0x1
-    bool bRaceRouteError;             // offset 0x469C, size 0x1
-    int mTrafficDensity;              // offset 0x46A0, size 0x4
-    unsigned int mTrafficPattern;     // offset 0x46A4, size 0x4
-    bool mHasBeenWon;                 // offset 0x46A8, size 0x1
+    float fCatchUpIntegral;        // offset 0x45E4, size 0x4
+    float fCatchUpDerivative;      // offset 0x45E8, size 0x4
+    float fCatchUpAdaptiveBonus;   // offset 0x45EC, size 0x4
+    float fAveragePercentComplete; // offset 0x45F0, size 0x4
+    int nCatchUpSkillEntries;      // offset 0x45F4, size 0x4
+    float aCatchUpSkillData[11];   // offset 0x45F8, size 0x2C
+    int nCatchUpSpreadEntries;     // offset 0x4624, size 0x4
+    float aCatchUpSpreadData[11];  // offset 0x4628, size 0x2C
+    int nSpeedTraps;               // offset 0x4654, size 0x4
+    GTrigger *aSpeedTraps[16];     // offset 0x4658, size 0x40
+    bool mVehicleCacheLocked;      // offset 0x4698, size 0x1
+    bool bRaceRouteError;          // offset 0x469C, size 0x1
+    int mTrafficDensity;           // offset 0x46A0, size 0x4
+    Attrib::Key mTrafficPattern;   // offset 0x46A4, size 0x4
+    bool mHasBeenWon;              // offset 0x46A8, size 0x1
 };
 
 // total size: 0x28
 class GRaceCustom : public GRaceParameters {
-  public:
+  private:
     // void *operator new(unsigned int size, void *ptr) {}
 
     // void operator delete(void *mem, void *ptr) {}
@@ -584,52 +703,59 @@ class GRaceCustom : public GRaceParameters {
 
     // void operator delete(void *mem, unsigned int size, const char *name) {}
 
-    GRaceCustom(const struct GRaceParameters &other);
-
-    // Overrides: GRaceParameters
-    ~GRaceCustom() override;
-
-    void CreateRaceActivity();
-
-    GActivity *GetRaceActivity() const;
-
+  public:
     // Overrides: GRaceParameters
     void GetCheckpointPosition(unsigned int index, UMath::Vector3 &pos) const override;
 
     // Overrides: GRaceParameters
     void GetCheckpointDirection(unsigned int index, UMath::Vector3 &dir) const override;
 
-    void SetReversed(bool isReverseDir);
+    void SetNumLaps(int numLaps);
+
+    void SetBustedLives(int bustedLives);
 
     void SetPositionalKnockout(bool enabled, int knockoutsPerLap);
 
     void SetTimedKnockout(bool enabled, float secondsBehindLeader);
 
-    void SetNumLaps(int numLaps);
-
-    void SetTrafficDensity(int density);
-
-    void SetNumOpponents(int numOpponents);
-
-    void SetDifficulty(GRace::Difficulty difficulty);
-
-    void SetCatchUp(bool catchUpEnabled);
-
     void SetCopsEnabled(bool copsEnabled);
 
-    void SetBustedLives(int bustedLives);
-
-    void SetForceHeatLevel(int level);
-
-    void SetAttribute(unsigned int key, const int &value, unsigned int index);
-
-    void SetAttribute(unsigned int key, const float &value, unsigned int index);
-
-    void SetAttribute(unsigned int key, const bool &value, unsigned int index);
-
+#if EA_BUILD_A124
+    void SetCopDensity(GRace::CopDensity copDensity);
+#else
     void SetHeatLevel(int level) {
         mHeatLevel = level;
     }
+
+    void SetForceHeatLevel(int level);
+
+    void SetAttribute(Attrib::Key key, const int &value, Attrib::Key index);
+
+    void SetAttribute(Attrib::Key key, const float &value, unsigned int index);
+
+    void SetAttribute(unsigned int key, const bool &value, unsigned int index);
+
+#endif
+
+    void SetTrafficDensity(int density);
+
+    void SetDifficulty(GRace::Difficulty difficulty);
+
+    void SetReversed(bool isReverseDir);
+
+    void SetCatchUp(bool catchUpEnabled);
+
+    void SetNumOpponents(int numOpponents);
+
+    void CreateRaceActivity();
+
+    GActivity *GetRaceActivity() const;
+
+  private:
+    GRaceCustom(const struct GRaceParameters &other);
+
+    // Overrides: GRaceParameters
+    ~GRaceCustom() override;
 
     void SetFreedByOwner() {
         mFreedByOwner = true;
@@ -639,7 +765,6 @@ class GRaceCustom : public GRaceParameters {
         return mFreedByOwner;
     }
 
-  private:
     GActivity *mRaceActivity;   // offset 0x14, size 0x4
     unsigned int mNumOpponents; // offset 0x18, size 0x4
     bool mReversed;             // offset 0x1C, size 0x1
