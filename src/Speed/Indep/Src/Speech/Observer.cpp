@@ -750,8 +750,38 @@ void Observer::MessageEventComplete(const MNotifySpeechStatus &message) {
     }
 }
 
-void Observer::MessageBlewPastCop(const MGamePlayMoment &) {
-    Observe(kCollision_Suspect_Traffic, -1, 1.0f);
+void Observer::MessageBlewPastCop(const MGamePlayMoment &message) {
+    SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
+    if ((ai->GetFocus() == SoundAI::kStrategyFlow) &&
+        ((ai->GetPursuitState() == SoundAI::kActive) || (ai->GetPursuitState() == SoundAI::kSearching)) && (ai->NumCopsWithLOS() < 2)) {
+        unsigned int copID = message.GethSimable();
+        copMap::const_iterator i = ai->GetActors().begin();
+        while (i != ai->GetActors().end()) {
+            EAXCop *cop = i->cop;
+            ISimable *simable = ISimable::FindInstance(cop->GetHandle());
+            if (simable && (simable->GetWorldID() == copID)) {
+                IVehicle *vehicle = nullptr;
+                if (simable->QueryInterface(&vehicle)) {
+                    float cop_speed = MPS2MPH(vehicle->GetSpeed());
+                    if (ai->GetPlayerSpeed() > (cop_speed + 50.0f)) {
+                        bool cop_in_rb = false;
+                        IRoadBlock *block = ai->GetRoadblock();
+                        if (block) {
+                            IVehicle *car = block->IsComprisedOf(simable->GetOwnerHandle());
+                            if (car) {
+                                cop_in_rb = true;
+                            }
+                        }
+
+                        if (!cop_in_rb) {
+                            cop->Spotted();
+                        }
+                    }
+                }
+            }
+            ++i;
+        }
+    }
 }
 
 void Observer::MessageTunnelUpdate(const MMiscSound &message) {

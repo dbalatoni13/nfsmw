@@ -109,6 +109,7 @@ class Module : public AudioMemBase {
     virtual void ReleaseResource();
     EAXS_StreamChannel *GetStreamChannel() { return m_strm; }
     bool TestFlag(unsigned int flag) { return (m_flags & flag) != 0; }
+    void SetFlag(unsigned int flag) { m_flags |= flag; }
     void PurgeSpeech();
     void Pause();
     void UnPause();

@@ -1621,7 +1621,39 @@ void GameSpeech::Init(int channel) {
     }
 }
 
-void GameSpeech::LoadingCallback(int, int) {}
+void GameSpeech::LoadingCallback(int param, int) {
+    GameSpeech *obj = reinterpret_cast<GameSpeech *>(param);
+
+    if (!obj->mLoadState.empty()) {
+        int loadstate = obj->mLoadState.front();
+        switch (loadstate) {
+        case 0:
+            Manager::GetSpeechModule(COPSPEECH_MODULE)->SetFlag(0x80);
+            break;
+        case 1: {
+            m_clumpIdx = reinterpret_cast<CLUMP_IDX_FILEtag *>(m_tempCharPtr);
+            int numbanktypes = m_clumpIdx->numtypes;
+            for (int i = 0; i < numbanktypes; i++) {
+                obj->m_numBanks += m_clumpIdx->numbanks[i];
+            }
+            Manager::GetSpeechModule(COPSPEECH_MODULE)->SetFlag(0x100);
+            break;
+        }
+        case 2:
+            Manager::GetSpeechModule(COPSPEECH_MODULE)->SetFlag(0x40);
+            break;
+        default:
+            break;
+        }
+        obj->mLoadState.pop_front();
+    }
+
+    if (Manager::GetSpeechModule(COPSPEECH_MODULE)->TestFlag(0x40) && Manager::GetSpeechModule(COPSPEECH_MODULE)->TestFlag(0x100) &&
+        Manager::GetSpeechModule(COPSPEECH_MODULE)->TestFlag(0x80)) {
+        Manager::GetSpeechModule(COPSPEECH_MODULE)->SetFlag(1);
+        Manager::Init2();
+    }
+}
 
 void GameSpeech::LoadBanks() {}
 
@@ -1936,11 +1968,54 @@ void GameSpeech::UpdateChirps() {
 }
 
 int GameSpeech::GetVolForSpeaker(int id) {
-    int vol = 0x7fff - id * 64;
-    if (vol < 0) {
-        return 0;
+    int vol = 0;
+    if (m_pSFXOBJ_Speech) {
+        switch (id) {
+        case 1:
+            vol = m_pSFXOBJ_Speech->GetDMixOutput(0xb, DMX_VOL);
+            break;
+        case 2:
+            vol = m_pSFXOBJ_Speech->GetDMixOutput(0xa, DMX_VOL);
+            break;
+        case 3:
+            vol = m_pSFXOBJ_Speech->GetDMixOutput(3, DMX_VOL);
+            break;
+        case 4:
+            vol = m_pSFXOBJ_Speech->GetDMixOutput(4, DMX_VOL);
+            break;
+        case 5:
+            vol = m_pSFXOBJ_Speech->GetDMixOutput(5, DMX_VOL);
+            break;
+        case 6:
+            vol = m_pSFXOBJ_Speech->GetDMixOutput(6, DMX_VOL);
+            break;
+        case 7:
+            vol = m_pSFXOBJ_Speech->GetDMixOutput(7, DMX_VOL);
+            break;
+        case 8:
+            vol = m_pSFXOBJ_Speech->GetDMixOutput(8, DMX_VOL);
+            break;
+        default:
+            vol = m_pSFXOBJ_Speech->GetDMixOutput(0xe, DMX_VOL);
+            if (m_currEvent && (m_currEvent->ID == kSPCH1_EventID_CellCall) && m_currEvent->GetData(nullptr)) {
+                Csis::CellCallStruct *data = static_cast<Csis::CellCallStruct *>(m_currEvent->GetData(nullptr));
+                if (data && (data->cell_call_bucket == Csis::Type_cell_call_bucket_bucket_01) &&
+                    (data->cell_call_number == Csis::Type_cell_call_number_call_07)) {
+                    vol += vol;
+                }
+            }
+            break;
+        }
     }
-    return vol;
+
+    if (TestFlag(0x200)) {
+        if (TestFlag(0x20)) {
+            return vol;
+        }
+        return 0;
+    } else {
+        return vol;
+    }
 }
 
 char *GameSpeech::GetCSIptr() {
