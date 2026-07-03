@@ -1,5 +1,6 @@
 #include "uiMain.hpp"
 
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "Speed/Indep/Src/FEng/FEList.h"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Frontend/FEPackageData.hpp"
@@ -76,7 +77,9 @@ class MainCareer : public IconOption {
 
 class Challenge : public IconOption {
   public:
-    Challenge(uint32 tex_hash, uint32 name_hash, uint32 desc_hash) : IconOption(tex_hash, name_hash, desc_hash) {}
+    Challenge(uint32 tex_hash, uint32 name_hash, uint32 desc_hash) : IconOption(tex_hash, name_hash, desc_hash) {
+        SetReactImmediately(true);
+    }
     ~Challenge() override {}
     void React(const char *pkg_name, uint32 data, FEObject *obj, uint32 param1, uint32 param2) override {
         if (data == 0x0C407210) {
@@ -149,30 +152,24 @@ void UIMain::Setup() {
     FEDatabase->SetPlayersJoystickPort(0, -1);
 
     if (GetMikeMannBuild()) {
-        Challenge *challenge = new Challenge(0x9a962438, 0xcc8cb746, 0);
-        challenge->SetReactImmediately(true);
-        AddOption(challenge);
-        AddOption(new MainQuickRace(0x4e6fbb02, 0x54020a7a, 0));
-        AddOption(new MainCustomize(0xb0c46023, 0x1afd5be6, 0));
-        AddOption(new MainOptions(0x3058fe37, 0x19a8c0af, 0));
+        AddOption(new ("Challenge", 0) Challenge(0x9a962438, 0xcc8cb746, 0));
+        AddOption(new ("MainQuickRace", 0) MainQuickRace(0x4e6fbb02, 0x54020a7a, 0));
+        AddOption(new ("MainCustomize", 0) MainCustomize(0xb0c46023, 0x1afd5be6, 0));
+        AddOption(new ("MainOptions", 0) MainOptions(0x3058fe37, 0x19a8c0af, 0));
         UnlockAllThings = 1;
     } else {
-        AddOption(new MainCareer(0x3704f3d, 0x5815a2b5, 0));
-        Challenge *challenge = new Challenge(0x9a962438, 0xcc8cb746, 0);
-        challenge->SetReactImmediately(true);
-        AddOption(challenge);
-        AddOption(new MainQuickRace(0x4e6fbb02, 0x54020a7a, 0));
-        AddOption(new MainCustomize(0xb0c46023, 0x1afd5be6, 0));
+        AddOption(new ("MainCareer", 0) MainCareer(0x3704f3d, 0x5815a2b5, 0));
+        AddOption(new ("Challenge", 0) Challenge(0x9a962438, 0xcc8cb746, 0));
+        AddOption(new ("MainQuickRace", 0) MainQuickRace(0x4e6fbb02, 0x54020a7a, 0));
+        AddOption(new ("MainCustomize", 0) MainCustomize(0xb0c46023, 0x1afd5be6, 0));
         if (IsMemcardEnabled) {
-            AddOption(new MainProfileManager(0x6b303856, 0xbcb18f38, 0));
+            AddOption(new ("MainProfileManager", 0) MainProfileManager(0x6b303856, 0xbcb18f38, 0));
         }
-        AddOption(new MainOptions(0x3058fe37, 0x19a8c0af, 0));
+        AddOption(new ("MainOptions", 0) MainOptions(0x3058fe37, 0x19a8c0af, 0));
     }
 
     FEngSetLanguageHash(GetPackageName(), FEObj_TITLEGROUP, 0xb24aae58);
-    uint8 lastButton = FEngGetLastButton(GetPackageName());
-
-    SetInitialOption(lastButton);
+    SetInitialOption(FEngGetLastButton(GetPackageName()));
     RefreshHeader();
     UpdateProfileData();
 }
@@ -180,10 +177,10 @@ void UIMain::Setup() {
 void UIMain::UpdateProfileData() {
     if (FEDatabase->bProfileLoaded) {
         GameCompletionStats stats = FEDatabase->GetGameCompletionStats();
+        const char *szPercentUnit = "%";
+        eLanguages currLang = GetCurrentLanguage();
         const uint32 FEObj_PLAYERNAMEGROUP = 0xb514e2d8;
 
-        const char *szPercentUnit = "%";
-        eLanguages currLang = static_cast<eLanguages>(GetCurrentLanguage());
         if (currLang == eLANGUAGE_DANISH || currLang == eLANGUAGE_FINNISH || currLang == eLANGUAGE_FRENCH || currLang == eLANGUAGE_GERMAN ||
             currLang == eLANGUAGE_SWEDISH) {
             szPercentUnit = " %";

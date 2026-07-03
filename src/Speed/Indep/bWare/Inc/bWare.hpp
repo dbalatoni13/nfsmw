@@ -1,9 +1,5 @@
-#ifndef BWARE_BWARE_H
-#define BWARE_BWARE_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef BWARE_HPP
+#define BWARE_HPP
 
 #include "Strings.hpp"
 #include "bMath.hpp"
@@ -181,5 +177,9 @@ inline int bMemoryGetTopBit(int allocation_params) {
 inline int bMemoryGetAlignmentOffset(int allocation_params) {
     return (allocation_params >> 17) & 0x1ffc;
 }
+
+void bAssertFailMsg(char *fmt, const char *filename, int line_number, ...);
+
+#define bAssert(exp) bAssertFailMsg(exp) // : 427
 
 #endif

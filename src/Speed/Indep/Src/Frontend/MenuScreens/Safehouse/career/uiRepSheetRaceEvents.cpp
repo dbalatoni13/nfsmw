@@ -3,6 +3,7 @@
 #include "Speed/Indep/Src/Frontend/FEngFrontend.hpp"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEImages.hpp"
 #include "Speed/Indep/Src/Frontend/Localization/Localize.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/feDialogBox.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiTrackMapStreamer.hpp"
@@ -115,22 +116,21 @@ void UISafehouseRaceSheet::NotificationMessage(u32 msg, FEObject *obj, u32 param
 
 void UISafehouseRaceSheet::RefreshHeader() {
     ArrayScrollerMenu::RefreshHeader();
-    // TODO
-    // FEPrintf(GetPackageName(), 0x5a856a34, "%d", data.TraversebList(currentDatum));
-    // FEPrintf(GetPackageName(), 0x2d4d22c8, "%d", data.TraversebList(nullptr));
-    unsigned int eventsHash = 0x6475236d;
+
+    FEPrintf(GetPackageName(), 0x5a856a34, "%d", GetCurrentDatumNum());
+    FEPrintf(GetPackageName(), 0x2d4d22c8, "%d", GetNumDatum());
+    uint32 hash = 0x6475236d;
     if (currentEvents) {
-        eventsHash = 0xc948ef80;
+        hash = 0xc948ef80;
     }
-    FEngSetLanguageHash(GetPackageName(), 0x78008599, eventsHash);
+    FEngSetLanguageHash(GetPackageName(), 0x78008599, hash);
     FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(0);
     FEPrintf(GetPackageName(), 0xb514e2d8, "%s %", GetLocalizedString(0xce6b99b1), stable->GetTotalBounty());
     FEPrintf(GetPackageName(), 0xf91a59f6, "%s %", GetLocalizedString(0x73b79e0), FEDatabase->GetCareerSettings()->GetCash());
-    ArrayDatum *datum = GetCurrentDatum();
-    if (datum == nullptr) {
+    if (GetCurrentDatum() == nullptr) {
         return;
     }
-    GRaceParameters *race = static_cast<RaceDatum *>(datum)->race;
+    GRaceParameters *race = static_cast<RaceDatum *>(GetCurrentDatum())->race;
     FEPrintf(GetPackageName(), 0x13c45e, "%.0f", race->GetCashValue());
     const char *distUnits;
     if (FEDatabase->GetGameplaySettings()->SpeedoUnits == 1) {
@@ -139,16 +139,9 @@ void UISafehouseRaceSheet::RefreshHeader() {
         distUnits = GetLocalizedString(0x867dcfd9);
     }
     FEPrintf(GetPackageName(), 0x18b36f, "%d", race->GetNumLaps());
-    FEPrintf(GetPackageName(), 0x80c9daa, "%ash.1f %s", race->GetRaceLengthMeters() * 0.001f, distUnits);
-    unsigned int trackNameHash = CalcLanguageHash("TRACKNAME_", race);
-    FEngSetLanguageHash(GetPackageName(), 0xf2cd475, trackNameHash);
-    unsigned int copsHash;
-    if (race->GetCopsEnabled()) {
-        copsHash = 0x61d1c5a5;
-    } else {
-        copsHash = 0x73c615a3;
-    }
-    FEngSetLanguageHash(GetPackageName(), 0x9b21, copsHash);
+    FEPrintf(GetPackageName(), 0x80c9daa, "%$0.1f %s", race->GetRaceLengthMeters() * 0.001f, distUnits);
+    FEngSetLanguageHash(GetPackageName(), 0xf2cd475, CalcLanguageHash("TRACKNAME_", race));
+    FEngSetLanguageHash(GetPackageName(), 0x9b21, race->GetCopsEnabled() ? 0x61d1c5a5 : 0x73c615a3);
     FEngSetInvisible(FEngFindObject(GetPackageName(), 0x1c8fc866));
     FEngSetInvisible(FEngFindObject(GetPackageName(), 0x7af67920));
     FEngSetInvisible(FEngFindObject(GetPackageName(), 0xbbf970cd));
@@ -178,9 +171,9 @@ void UISafehouseRaceSheet::RefreshHeader() {
         avg_speed = MPS2MPH(static_cast<float>(info->mAverageSpeed));
         top_speed = MPS2MPH(static_cast<float>(info->mTopSpeed));
     }
-    FEPrintf(GetPackageName(), 0xebd7f926, "%ash.2f %s", top_speed, distUnits);
-    FEPrintf(GetPackageName(), 0xde9145fb, "%ash.2f %s", avg_speed, distUnits);
-    FEPrintf(GetPackageName(), 0x763f4b5b, "%ash.0f", race->GetCashValue());
+    FEPrintf(GetPackageName(), 0xebd7f926, "%$0.1f %s", top_speed, distUnits);
+    FEPrintf(GetPackageName(), 0xde9145fb, "%$0.1f %s", avg_speed, distUnits);
+    FEPrintf(GetPackageName(), 0x763f4b5b, "%$0.0f", race->GetCashValue());
     uint32 iconHash = FEDatabase->GetRaceIconHash(race->GetRaceType());
     FEImage *img = FEngFindImage(GetPackageName(), 0xf97ec5d5);
     FEngSetTextureHash(img, iconHash);
@@ -199,11 +192,10 @@ void UISafehouseRaceSheet::RefreshHeader() {
             FEngSetTextureHash(FEngFindImage(GetPackageName(), check_hash), 0x28feadd);
         }
     }
-    // TODO
-    // if (currentIndex != data.TraversebList(currentDatum) - 1 && currentDatum != nullptr) {
-    //     TrackMapStreamer.Init(static_cast<RaceDatum *>(currentDatum)->race, TrackMap, 0, 0);
-    //     currentIndex = data.TraversebList(currentDatum) - 1;
-    // }
+    if (currentIndex != GetCurrentDatumNum() - 1 && GetCurrentDatum() != nullptr) {
+        TrackMapStreamer.Init(static_cast<RaceDatum *>(GetCurrentDatum())->race, TrackMap, 0, 0);
+        currentIndex = GetCurrentDatumNum() - 1;
+    }
 }
 
 bool UISafehouseRaceSheet::AddRace(GRaceParameters *race) {

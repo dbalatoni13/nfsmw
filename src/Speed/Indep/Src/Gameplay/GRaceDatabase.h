@@ -36,34 +36,34 @@ typedef union { // 0x4
 
 // total size: 0x30
 struct GRaceIndexData {
-    Attrib::Key mKey;                                  // offset 0x0, size 0x4
-    char mEventID[10];                                 // offset 0x4, size 0xA
-    FloatingPoint<int16, 10, 3, 5, 11> mChallengeGoal; // offset 0xE, size 0x2
-    uint32 mChallengeType;                             // offset 0x10, size 0x4
-    uint32 mRaceHash;                                  // offset 0x14, size 0x4
-    uint32 mFlags;                                     // offset 0x18, size 0x4
-    float mLength;                                     // offset 0x1C, size 0x4
-    short mLocalizationTag;                            // offset 0x20, size 0x2
-    FloatingPoint<int16, 10, 3, 5, 11> mCash;          // offset 0x22, size 0x2
-    FloatingPoint<int16, 10, 3, 5, 11> mReputation;    // offset 0x24, size 0x2
-    FixedPoint<uint16, 10, 2> mRivalBest;              // offset 0x26, size 0x2
-    uint8 mNumLaps;                                    // offset 0x28, size 0x1
-    uint8 mRegion;                                     // offset 0x29, size 0x1
-    int8 mCopDensity;                                  // offset 0x2A, size 0x1
-    int8 mRaceType;                                    // offset 0x2B, size 0x1
-    uint8 mMapX1;                                      // offset 0x2C, size 0x1
-    uint8 mMapY1;                                      // offset 0x2D, size 0x1
-    uint8 mMapX2;                                      // offset 0x2E, size 0x1
-    uint8 mMapY2;                                      // offset 0x2F, size 0x1
+    Attrib::Key mKey;         // offset 0x0, size 0x4
+    char mEventID[10];        // offset 0x4, size 0xA
+    decimal16 mChallengeGoal; // offset 0xE, size 0x2
+    uint32 mChallengeType;    // offset 0x10, size 0x4
+    uint32 mRaceHash;         // offset 0x14, size 0x4
+    uint32 mFlags;            // offset 0x18, size 0x4
+    float mLength;            // offset 0x1C, size 0x4
+    short mLocalizationTag;   // offset 0x20, size 0x2
+    decimal16 mCash;          // offset 0x22, size 0x2
+    decimal16 mReputation;    // offset 0x24, size 0x2
+    udecfix16 mRivalBest;     // offset 0x26, size 0x2
+    uint8 mNumLaps;           // offset 0x28, size 0x1
+    uint8 mRegion;            // offset 0x29, size 0x1
+    int8 mCopDensity;         // offset 0x2A, size 0x1
+    int8 mRaceType;           // offset 0x2B, size 0x1
+    uint8 mMapX1;             // offset 0x2C, size 0x1
+    uint8 mMapY1;             // offset 0x2D, size 0x1
+    uint8 mMapX2;             // offset 0x2E, size 0x1
+    uint8 mMapY2;             // offset 0x2F, size 0x1
 };
 
 // total size: 0x10
 struct GRaceSaveInfo {
-    uint32 mRaceHash;                        // offset 0x0, size 0x4
-    uint32 mFlags;                           // offset 0x4, size 0x4
-    GHighScoresUnion mHighScores;            // offset 0x8, size 0x4
-    FixedPoint<uint16, 10, 2> mTopSpeed;     // offset 0xC, size 0x2
-    FixedPoint<uint16, 10, 2> mAverageSpeed; // offset 0xE, size 0x2
+    uint32 mRaceHash;             // offset 0x0, size 0x4
+    uint32 mFlags;                // offset 0x4, size 0x4
+    GHighScoresUnion mHighScores; // offset 0x8, size 0x4
+    udecfix16 mTopSpeed;          // offset 0xC, size 0x2
+    udecfix16 mAverageSpeed;      // offset 0xE, size 0x2
 
     GRaceSaveInfo() : mTopSpeed(0), mAverageSpeed(0) {}
 };

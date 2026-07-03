@@ -5,7 +5,9 @@
 #include "Speed/Indep/Src/Frontend/FEPackageData.hpp"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEImages.hpp"
 #include "Speed/Indep/Src/Frontend/HUD/feMinimap.hpp"
+#include "Speed/Indep/Src/Frontend/Localization/Localize.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/feDialogBox.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Safehouse/quickrace/uiTrackMapStreamer.hpp"
 #include "Speed/Indep/Src/Gameplay/GIcon.h"
@@ -164,13 +166,13 @@ GIcon *WorldMap::mGPSingIcon;
 void WorldMap::SetGPSing(GIcon *icon) {
     if (icon != nullptr) {
         mGPSingIcon = icon;
-        icon->SetFlag(0x80);
+        icon->SetGPSing();
     }
 }
 
 void WorldMap::ClearGPSing() {
     if (mGPSingIcon != nullptr) {
-        mGPSingIcon->ClearFlag(0x80);
+        mGPSingIcon->ClearGPSing();
         mGPSingIcon = nullptr;
     }
 }
@@ -1135,7 +1137,7 @@ void WorldMap::SetupEvent() {
     AddIcons(GIcon::kType_RaceSpeedtrap);
     AddIcons(GIcon::kType_RaceRival);
     AddIcons(GIcon::kType_SpeedTrap);
-    AddIcons(GIcon::kType_SpeedTrapInRace);
+    AddIcons(GIcon::kType_Checkpoint);
 }
 
 void WorldMap::SetupPursuit() {
