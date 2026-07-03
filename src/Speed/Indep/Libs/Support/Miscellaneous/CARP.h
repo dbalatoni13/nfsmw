@@ -7,6 +7,7 @@
 
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 #include "Speed/Indep/Libs/Support/Utility/UGroup.hpp"
+#include "Speed/Indep/Tools/EventSys/Runtime/Common/eventsysdata.h"
 
 namespace CARP {
 
@@ -61,6 +62,34 @@ struct Trigger {
     unsigned short fFingerprint;   // offset 0x1E, size 0x2
     UMath::Vector4 fMatRow2Length; // offset 0x20, size 0x10
     UMath::Vector4 fPosRadius;     // offset 0x30, size 0x10
+};
+
+union ExprValType { // 0x4
+	/* 0x0 */ float f;
+	/* 0x0 */ unsigned int u;
+	/* 0x0 */ int i;
+	/* 0x0 */ bool b;
+};
+
+struct StimulusFilter {
+    unsigned int mNumQueries; // offset 0x0, size 0x4
+    unsigned int mNumInputs; // offset 0x4, size 0x4
+    unsigned int mExpressionSize; // offset 0x8, size 0x4
+    unsigned int mPad; // offset 0xC, size 0x4
+
+    QueryDesc * GetQueries() {}
+
+    struct Expression * GetExpression() {}
+
+    char * GetStaticData() {}
+
+    const QueryDesc *GetQueries() const {
+        return reinterpret_cast<const QueryDesc *>(&this[1]);
+    }
+
+    const struct Expression * GetExpression() const {}
+
+    const char * GetStaticData() const {}
 };
 
 unsigned int ResolveTagReferences(const UGroup *g, unsigned int deltaAddress);

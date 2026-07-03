@@ -105,6 +105,9 @@ struct System {
     enum {
         kQueueLength = 4,
     };
+
+    bool Update(unsigned int index, float externalTime);
+
     unsigned int ID() const;
 
     // TODO it's EventSequencer::Engine
