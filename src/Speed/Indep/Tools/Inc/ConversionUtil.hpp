@@ -11,7 +11,6 @@
 
 typedef float Angle;
 
-
 inline Mph MPS2MPH(const Mps _mps_) {
     return _mps_ * 2.23699f;
 }

@@ -62,7 +62,7 @@ float InductionRPM(const Attrib::Gen::engine &engine, const Attrib::Gen::inducti
 float InductionBoost(const Attrib::Gen::engine &engine, const Attrib::Gen::induction &induction, float rpm, float spool, const Tunings *tunings,
                      float *psi);
 float Torque(const Attrib::Gen::engine &engine, float rpm);
-float WheelDiameter(const Attrib::Gen::tires &tires, bool front);
+Meters WheelDiameter(const Attrib::Gen::tires &tires, bool front);
 float MaxInductedPower(const Attrib::Gen::pvehicle &pvehicle, const Tunings *tunings);
 FtLbs AvgInductedTorque(const Attrib::Gen::engine &engine, const Attrib::Gen::induction &induction, const Attrib::Gen::transmission &transmission,
                         bool from_peak, const Tunings *tunings);
