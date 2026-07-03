@@ -93,9 +93,9 @@ inline UVector3 operator+(const UVector3 &v1, const UVector3 &v2) {
     return result;
 }
 
-inline UVector3 operator-(const UVector3 &v1, const UMath::Vector3 &b) {
+inline UVector3 operator-(const UVector3 &v1, const UMath::Vector3 &v2) {
     UMath::Vector3 result;
-    UMath::Sub(v1, b, result);
+    UMath::Sub(v1, v2, result);
     return result;
 }
 

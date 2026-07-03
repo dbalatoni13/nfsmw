@@ -1,9 +1,5 @@
-#ifndef ECSTASY_ECSTASY_DATA_H
-#define ECSTASY_ECSTASY_DATA_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef __ECSTASY_ENGINE__ECSTASYDATA_HPP
+#define __ECSTASY_ENGINE__ECSTASYDATA_HPP
 
 #ifdef EA_PLATFORM_GAMECUBE
 #include "Speed/GameCube/Src/Ecstasy/eSolidPlat.hpp"
@@ -14,7 +10,6 @@
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
-#include "Speed/Indep/Src/Ecstasy/eSprites.hpp"
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
 
 struct TextureInfo;
@@ -108,11 +103,11 @@ enum FILTER_ID {
 };
 
 enum EVIEWMODE {
-    EVIEWMODE_TWOV = 4,
-    EVIEWMODE_TWOH = 3,
-    EVIEWMODE_ONE_RVM = 2,
-    EVIEWMODE_ONE = 1,
     EVIEWMODE_NONE = 0,
+    EVIEWMODE_ONE = 1,
+    EVIEWMODE_ONE_RVM = 2,
+    EVIEWMODE_TWOH = 3,
+    EVIEWMODE_TWOV = 4,
 };
 
 class eTextureEntry {
@@ -204,8 +199,8 @@ class eNormalSmoother {
     void EndianSwap() {}
 };
 
+// total size: 0x50
 class ePositionMarker {
-    // total size: 0x50
   public:
     uint32 NameHash; // offset 0x0, size 0x4
     int32 iParam0;   // offset 0x4, size 0x4
@@ -235,11 +230,12 @@ class eViewPlatInterface {
     void FERender(ePoly *poly, TextureInfo *texture_info, TextureInfo *texture_info_mask, int use_previous_data);
     void FERender(ePoly *poly, TextureInfo *texture_info, int use_previous_data);
     void FEEndBatchRender();
+
     void Render(eModel *model, bMatrix4 *local_to_world, eLightContext *light_context, uint32 flags, bMatrix4 *blending_matricies);
     void Render(ePoly *poly, TextureInfo *texture_info, bMatrix4 *local_to_world, int use_previous_data, float bbRad);
     void Render(ePoly *poly, TextureInfo *texture_info, TextureInfo *texture_info_mask, int use_previous_data);
     void Render(ePoly *poly, TextureInfo *texture_info, int use_previous_data);
-    void Render(ePointSprite3D *sprite, TextureInfo *texture_info, bMatrix4 *local_world, int num_sprites);
+    void Render(class ePointSprite3D *sprite, TextureInfo *texture_info, bMatrix4 *local_world, int num_sprites);
     eVisibleState GetVisibleStateGB(const bVector3 *aabb_min, const bVector3 *aabb_max, bMatrix4 *local_world);
     eVisibleState GetVisibleStateSB(const bVector3 *aabb_min, const bVector3 *aabb_max, bMatrix4 *local_world);
     eVisibleState GetVisibleStateSB(const bVector3 *position, bMatrix4 *local_world);
@@ -255,8 +251,8 @@ class eViewPlatInterface {
     eViewPlatInfo *PlatInfo; // offset 0x0, size 0x4
 };
 
+// total size: 0x4
 class eSolidPlatInterface {
-    // total size: 0x4
     eSolidPlatInfo *PlatInfo; // offset 0x0, size 0x4
 
   public:

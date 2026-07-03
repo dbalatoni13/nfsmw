@@ -14,7 +14,7 @@ AIGoal::~AIGoal() {
 
 void AIGoal::AddAction(const char *name) {
     AIActionParams params(mOwner);
-    AIAction *action = UTL::COM::Factory<AIActionParams *, AIAction, UCrc32>::CreateInstance(name, &params);
+    AIAction *action = AIAction::CreateInstance(name, &params);
 
     action->SetActionName(name);
 

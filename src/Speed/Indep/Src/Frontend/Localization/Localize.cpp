@@ -129,7 +129,7 @@ void InitLocalization() {
         pLanguageMemoryPoolMemory = bMalloc(LanguageMemoryPoolSize, 0);
         bInitMemoryPool(LanguageMemoryPoolNumber, pLanguageMemoryPoolMemory, LanguageMemoryPoolSize, "LanguageMemoryPool");
     }
-    eLoadStreamingTexturePack("LANGUAGES\\LANGUAGETEXTURES.BIN", nullptr, nullptr, 0);
+    eLoadStreamingTexturePack("LANGUAGES\\LANGUAGETEXTURES.BIN");
     eWaitForStreamingTexturePackLoading("LANGUAGES\\LANGUAGETEXTURES.BIN");
 }
 

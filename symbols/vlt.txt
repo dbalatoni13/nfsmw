@@ -1533,6 +1533,7 @@
 0x416b7076 - brakelightglassred
 0xadcd9f43 - BrakeMagnitude
 0x552c3d22 - brakes_current
+0x3a377301 - BRAKES
 0x75d4d323 - BRAKES_CUSTOMIZE
 0xf9dd9a61 - brakes_front
 0x77bad8d5 - brakes_lvl_1_kit00
@@ -2665,6 +2666,7 @@
 0x005d00ab - CooldownSpawnChanceSide
 0x0ba332b4 - cooling_system
 0xb69edb78 - cop_civic
+0xa9811b93 - cops
 0xf0ee3da6 - cop_copsuv_1
 0xb654799c - cop_copsuv_a
 0x73f26729 - cop_copsuv_h
@@ -9598,6 +9600,7 @@
 0xae298718 - ReflectionOffset
 0x4ce0afd0 - reflectivesign
 0x1dafcfc0 - refractionMap
+0x0de009be - region
 0xcb01e454 - Region
 0xe10a4659 - RegionName
 0x1362d141 - regpaintblack

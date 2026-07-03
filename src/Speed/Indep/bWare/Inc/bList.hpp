@@ -101,7 +101,7 @@ class bList {
     }
 
     int IsEmpty() {
-        return this->HeadNode.GetNext() == &this->HeadNode; // TODO
+        return static_cast<int>(this->HeadNode.GetNext() == &this->HeadNode);
     }
 
     bNode *EndOfList() {
@@ -265,7 +265,10 @@ template <typename T> class bTList : public bList {
         pointer _Ptr; // offset 0x0, size 0x4
         bList *_Lst;  // offset 0x4, size 0x4
 
-        void validate() {}
+        void validate() {
+            // TODO
+            // bAssert(_Ptr && _Lst && _Ptr != _Lst->EndOfList());
+        }
 
       public:
         iterator() {}
@@ -277,24 +280,28 @@ template <typename T> class bTList : public bList {
 
         iterator &operator--() {
             validate();
-            return _Ptr->GetPrev();
+            _Ptr = _Ptr->GetPrev();
+            return *this;
         }
 
         iterator &operator--(int) {
             validate();
-            iterator tmp = _Ptr;
+            iterator tmp;
+            tmp._Ptr = _Ptr;
             _Ptr = _Ptr->GetPrev();
             return tmp;
         }
 
         iterator &operator++() {
             validate();
-            return _Ptr->GetNext();
+            _Ptr = _Ptr->GetNext();
+            return *this;
         }
 
         iterator &operator++(int) {
             validate();
-            iterator tmp = _Ptr;
+            iterator tmp;
+            tmp._Ptr = _Ptr;
             _Ptr = _Ptr->GetNext();
             return tmp;
         }
@@ -304,11 +311,11 @@ template <typename T> class bTList : public bList {
             return _Ptr;
         }
 
-        bool operator==(const iterator &rhs) {
+        bool operator==(const iterator &rhs) const {
             return _Ptr == rhs._Ptr;
         }
 
-        bool operator!=(const iterator &rhs) {
+        bool operator!=(const iterator &rhs) const {
             return _Ptr != rhs._Ptr;
         }
     };
@@ -322,7 +329,7 @@ template <typename T> class bTList : public bList {
     }
 };
 
-template <typename T> T *bTList<T>::AddSorted(typename bTList<T>::SortFuncT check_flip, T *node) {
+template <typename T> T *bTList<T>::AddSorted(SortFuncT check_flip, T *node) {
     T *insert_point = GetHead();
     while (insert_point != EndOfList()) {
         if (check_flip(node, insert_point) == 0) {
@@ -389,10 +396,14 @@ template <typename T> class bPList : public bTList<bPNode> {
     }
 };
 
+template <typename T> class bSList;
+
 template <typename T> class bSNode {
   public:
+    friend class bSList<T>;
+
     T *GetNext() {
-        return Next;
+        return this->Next;
     }
 
   private:
@@ -401,24 +412,47 @@ template <typename T> class bSNode {
 
 template <typename T> class bSList {
   public:
-    // Functions
-    bSList() {}
+    bSList() {
+        this->Head = reinterpret_cast<T *>(this);
+        this->Tail = reinterpret_cast<T *>(this);
+    }
 
-    int IsEmpty() {}
+    ~bSList() {
+        while (!this->IsEmpty()) {
+            delete this->RemoveHead();
+        }
+    }
 
-    T *RemoveHead() {}
+    int IsEmpty() {
+        return static_cast<int>(this->Head == reinterpret_cast<T *>(this));
+    }
 
-    ~bSList() {}
+    T *RemoveHead() {
+        T *remove_node = this->Head;
+        this->Head = remove_node->GetNext();
+
+        if (this->Tail == remove_node) {
+            this->Tail = reinterpret_cast<T *>(this);
+        }
+
+        return remove_node;
+    }
 
     T *GetHead() {
-        return Head;
+        return this->Head;
     }
 
     T *EndOfList() {
-        return (T *)this;
+        return reinterpret_cast<T *>(this);
     }
 
-    T *AddTail(T *node) {}
+    T *AddTail(T *node) {
+        T *prev_tail = this->Tail;
+        this->Tail = node;
+        prev_tail->Next = node;
+        node->Next = this->EndOfList();
+        return node;
+    }
 
   private:
     T *Head; // offset 0x0, size 0x4

@@ -67,7 +67,7 @@ class PrecullerBooBooManager {
         return static_cast<unsigned char>(1 << (section_number & 7));
     }
 
-    unsigned char BitField[0x800];
+    uint8 BitField[0x800];
 };
 
 // TODO move these?
@@ -158,7 +158,7 @@ void SceneryOverrideInfo::AssignOverrides(ScenerySectionHeader *section_header) 
 
 void SceneryOverrideInfo::AssignOverrides() {
     ScenerySectionHeader *section_header = GetScenerySectionHeader(SectionNumber);
-    if (section_header) {
+    if (section_header != nullptr) {
         AssignOverrides(section_header);
     }
 }
@@ -169,7 +169,7 @@ void LoadPrecullerBooBooScript(const char *filename, bool reset) {
     }
 
     SpeedScript script(filename, 1);
-    while (script.GetNextCommand("BOOBOO:")) {
+    while (script.GetNextCommand("BOOBOO:") != nullptr) {
         char *region;
         if (bStrICmp(script.GetNextArgumentString(), TrackInfo::GetLoadedTrackInfo()->RegionName) == 0) {
             char *section = script.GetNextArgumentString();
@@ -228,19 +228,19 @@ SceneryGroup *FindSceneryGroup(unsigned int name_hash) {
             return group;
         }
     }
-    return 0;
+    return nullptr;
 }
 
 void EnableSceneryGroup(unsigned int group_name_hash, bool flip_artwork) {
     SceneryGroup *group = static_cast<SceneryGroup *>(FindSceneryGroup(group_name_hash));
-    if (group) {
+    if (group != nullptr) {
         group->EnableRendering(flip_artwork);
     }
 }
 
 void DisableSceneryGroup(unsigned int name_hash) {
     SceneryGroup *group = FindSceneryGroup(name_hash);
-    if (group) {
+    if (group != nullptr) {
         group->DisableRendering();
         SceneryGroupEnabledTable[group->GroupNumber] = 0;
     }
@@ -257,7 +257,7 @@ void DisableAllSceneryGroups() {
 
 ScenerySectionHeader *GetScenerySectionHeader(int section_number) {
     VisibleSectionUserInfo *user_info = TheVisibleSectionManager.GetUserInfo(section_number);
-    if (user_info) {
+    if (user_info != nullptr) {
         return user_info->pScenerySectionHeader;
     }
     return nullptr;
@@ -398,15 +398,15 @@ int LoaderScenery(bChunk *chunk) {
                     if (name_hash != 0 && name_hash != 0xBE43EDBB && name_hash != 0x90F70174) {
                         eModel *model = nullptr;
                         for (int i = 0; i < detail_level; i++) {
-                            if (scenery_info->pModel[i] && scenery_info->pModel[i]->GetNameHash() == name_hash) {
+                            if ((scenery_info->pModel[i] != nullptr) && scenery_info->pModel[i]->GetNameHash() == name_hash) {
                                 model = scenery_info->pModel[i];
                                 break;
                             }
                         }
 
-                        if (!model) {
+                        if (model == nullptr) {
                             model = new eModel(scenery_info->NameHash[detail_level]);
-                            if (ModelConnectionCallback) {
+                            if (ModelConnectionCallback != nullptr) {
                                 ModelConnectionCallback(section_header, n, model);
                             }
                         }
@@ -414,20 +414,20 @@ int LoaderScenery(bChunk *chunk) {
                     }
                 }
 
-                if (!scenery_info->pModel[2] && scenery_info->pModel[1]) {
+                if ((scenery_info->pModel[2] == nullptr) && (scenery_info->pModel[1] != nullptr)) {
                     scenery_info->pModel[2] = scenery_info->pModel[1];
                 }
-                if (!scenery_info->pModel[0] && scenery_info->pModel[1]) {
+                if ((scenery_info->pModel[0] == nullptr) && (scenery_info->pModel[1] != nullptr)) {
                     scenery_info->pModel[0] = scenery_info->pModel[1];
                 }
             }
 
-            if (SectionConnectionCallback) {
+            if (SectionConnectionCallback != nullptr) {
                 SectionConnectionCallback(section_header);
             }
         }
 
-        section_header->ChunksLoaded = true;
+        section_header->ChunksLoaded = 1;
         return 1;
     }
 
@@ -503,13 +503,13 @@ int UnloaderScenery(bChunk *chunk) {
                         break;
                     }
 
-                    if (scenery_info->pModel[detail_level]) {
+                    if (scenery_info->pModel[detail_level] != nullptr) {
                         for (int i = detail_level + 1; i < 4; i++) {
                             if (scenery_info->pModel[i] == scenery_info->pModel[detail_level]) {
                                 scenery_info->pModel[i] = nullptr;
                             }
                         }
-                        if (ModelDisconnectionCallback) {
+                        if (ModelDisconnectionCallback != nullptr) {
                             ModelDisconnectionCallback(section_header, n, scenery_info->pModel[detail_level]);
                         }
 
@@ -519,7 +519,7 @@ int UnloaderScenery(bChunk *chunk) {
                 }
             }
 
-            if (SectionDisconnectionCallback) {
+            if (SectionDisconnectionCallback != nullptr) {
                 SectionDisconnectionCallback(section_header);
             }
         }
@@ -534,7 +534,7 @@ int UnloaderScenery(bChunk *chunk) {
             ModelHeirarchy::Node *node = mH->GetNodes();
 
             for (unsigned int i = 0; i < mH->mNumNodes; i++) {
-                if (node[i].mModel) {
+                if (node[i].mModel != nullptr) {
                     delete node[i].mModel;
                     node[i].mModel = nullptr;
                 }
@@ -561,12 +561,12 @@ SceneryInfo *FindSceneryInfo(unsigned int name_hash) {
          section_header = section_header->GetNext()) {
         for (int scenery_number = 0; scenery_number < section_header->NumSceneryInfo; scenery_number++) {
             SceneryInfo *scenery_info = &section_header->pSceneryInfo[scenery_number];
-            if (scenery_info->pModel[0] && scenery_info->pModel[0]->GetNameHash() == name_hash) {
+            if ((scenery_info->pModel[0] != nullptr) && scenery_info->pModel[0]->GetNameHash() == name_hash) {
                 return scenery_info;
             }
         }
     }
-    return 0;
+    return nullptr;
 }
 
 SceneryInstance *FindSceneryInstance(unsigned int name_hash) {
@@ -577,12 +577,12 @@ SceneryInstance *FindSceneryInstance(unsigned int name_hash) {
             SceneryInstance *scenery_instance = &section_header->pSceneryInstance[scenery_instance_number];
             SceneryInfo *scenery_info = section_header->GetSceneryInfo(scenery_instance->SceneryInfoNumber);
 
-            if (scenery_info->pModel[0] && scenery_info->pModel[0]->GetNameHash() == name_hash) {
+            if ((scenery_info->pModel[0] != nullptr) && scenery_info->pModel[0]->GetNameHash() == name_hash) {
                 return scenery_instance;
             }
         }
     }
-    return 0;
+    return nullptr;
 }
 
 // UNSOLVED
@@ -611,7 +611,7 @@ void RenderVisibleSectionBoundary(VisibleSectionBoundary *boundary, eView *view)
                 int pixel_size = view->GetPixelSize(&position, 1.0f);
                 if (pixel_size > 0) {
                     bMatrix4 *matrix = eFrameMallocMatrix(1);
-                    if (matrix) {
+                    if (matrix != nullptr) {
                         bIdentity(matrix);
                         bCopy(&matrix->v3, &position, 1.0f);
                         view->Render(pVisibleZoneBoundaryModel, matrix, nullptr, 0, nullptr);
@@ -627,17 +627,17 @@ void RenderVisibleSectionBoundary(VisibleSectionBoundary *boundary, eView *view)
 }
 
 void RenderVisibleZones(eView *view) {
-    if (ShowSectionBoarder && pVisibleZoneBoundaryModel) {
+    if (ShowSectionBoarder && (pVisibleZoneBoundaryModel != nullptr)) {
         DrivableScenerySection *scenery_section =
             TheVisibleSectionManager.FindDrivableSection(reinterpret_cast<const bVector2 *>(view->GetCamera()->GetPosition()));
-        if (scenery_section) {
+        if (scenery_section != nullptr) {
             RenderVisibleSectionBoundary(scenery_section->GetBoundary(), view);
         }
     }
 }
 
 void InitVisibleZones() {
-    if (!pVisibleZoneBoundaryModel) {
+    if (pVisibleZoneBoundaryModel == nullptr) {
         pVisibleZoneBoundaryModel = new eModel(bStringHash("MARKER_BOUNDARY"));
     }
 }
@@ -701,7 +701,7 @@ void ScenerySectionHeader::DrawAScenery(int scenery_instance_number, SceneryCull
         bVector3 bbox_min;
         bVector3 bbox_max;
         scenery_instance->GetBBox(&bbox_min, &bbox_max);
-        visibility_state = scenery_cull_info->pView->GetVisibleState(&bbox_min, &bbox_max, 0);
+        visibility_state = scenery_cull_info->pView->GetVisibleState(&bbox_min, &bbox_max, nullptr);
         if (visibility_state == EVISIBLESTATE_NOT) {
             return;
         }
@@ -745,9 +745,9 @@ void ScenerySectionHeader::DrawAScenery(int scenery_instance_number, SceneryCull
     } else if (pixel_size > 0x11) {
         float density = 8.7f;
 
-        if (scenery_info->pModel[0]) {
-            eSolid *solid = scenery_info->pModel[0] ? scenery_info->pModel[0]->GetSolid() : nullptr;
-            if (solid && solid->NumPolys > 39) {
+        if (scenery_info->pModel[0] != nullptr) {
+            eSolid *solid = (scenery_info->pModel[0] != nullptr) ? scenery_info->pModel[0]->GetSolid() : nullptr;
+            if ((solid != nullptr) && solid->NumPolys > 39) {
                 float ratio = solid->Density;
                 if (ratio < 6.0f) {
                     ratio = 6.0f;
@@ -762,7 +762,7 @@ void ScenerySectionHeader::DrawAScenery(int scenery_instance_number, SceneryCull
         }
     }
 
-    if (!model) {
+    if (model == nullptr) {
         return;
     }
 
@@ -774,14 +774,14 @@ void ScenerySectionHeader::DrawAScenery(int scenery_instance_number, SceneryCull
 
         scenery_cull_info->pCurrentDrawInfo = draw_info + 1;
         draw_info->pModel = reinterpret_cast<eModel *>(reinterpret_cast<uintptr_t>(model) + visibility_state);
-        draw_info->pMatrix = 0;
+        draw_info->pMatrix = nullptr;
         draw_info->SceneryInst = scenery_instance;
         return;
     }
 
     {
         bMatrix4 *matrix = eFrameMallocMatrix(1);
-        if (!matrix) {
+        if (matrix == nullptr) {
             return;
         }
 
@@ -803,7 +803,7 @@ void ScenerySectionHeader::DrawAScenery(int scenery_instance_number, SceneryCull
 
             scenery_cull_info->pCurrentDrawInfo = draw_info + 1;
             draw_info->pModel = reinterpret_cast<eModel *>(reinterpret_cast<uintptr_t>(model) + visibility_state);
-            if ((scenery_cull_info->ExcludeFlags & 0x4000) && model->GetSolid() && (model->GetSolid()->Flags & 0x80)) {
+            if ((scenery_cull_info->ExcludeFlags & 0x4000) && (model->GetSolid() != nullptr) && (model->GetSolid()->Flags & 0x80)) {
                 bMatrix4 windrot;
                 int offset = static_cast<int>(matrix->v3.x * 60.0f) % 0x168; // TODO magic
                 CreateWindRotMatrix(scenery_cull_info->pView, &windrot, offset, matrix);
@@ -814,11 +814,11 @@ void ScenerySectionHeader::DrawAScenery(int scenery_instance_number, SceneryCull
             draw_info->SceneryInst = scenery_instance;
 
             if (scenery_cull_info->pView == eGetView(1, false) || scenery_cull_info->pView == eGetView(2, false)) {
-                ePositionMarker *position_marker = 0;
-                while ((position_marker = model->GetPostionMarker(position_marker)) != 0) {
-                    if (model->GetSolid()) {
+                ePositionMarker *position_marker = nullptr;
+                while ((position_marker = model->GetPostionMarker(position_marker)) != nullptr) {
+                    if (model->GetSolid() != nullptr) {
                         eLightFlare *light_flare = eGetNextLightFlareInPool(scenery_cull_info->pView == eGetView(1, false) ? 1 : 2);
-                        if (light_flare) {
+                        if (light_flare != nullptr) {
                             bVector4 ps;
                             ps.x = position_marker->Matrix.v3.x - model->GetSolid()->PivotMatrix.v3.x;
                             ps.y = position_marker->Matrix.v3.y - model->GetSolid()->PivotMatrix.v3.y;
@@ -826,7 +826,8 @@ void ScenerySectionHeader::DrawAScenery(int scenery_instance_number, SceneryCull
                             ps.w = 1.0f;
                             eMulVector(&ps, draw_info->pMatrix, &ps);
 
-                            if (scenery_cull_info->pView->Precipitation && 0.0f < scenery_cull_info->pView->Precipitation->GetRoadDampness() &&
+                            if ((scenery_cull_info->pView->Precipitation != nullptr) &&
+                                0.0f < scenery_cull_info->pView->Precipitation->GetRoadDampness() &&
                                 (light_flare->PositionX != ps.x || light_flare->PositionY != ps.y || light_flare->PositionZ != ps.z)) {
                                 light_flare->ReflectPosZ = 999.0f;
                             }
@@ -834,8 +835,8 @@ void ScenerySectionHeader::DrawAScenery(int scenery_instance_number, SceneryCull
                             light_flare->PositionX = ps.x;
                             light_flare->PositionY = ps.y;
                             light_flare->PositionZ = ps.z;
-                            light_flare->Type = position_marker->iParam0 + 14;
-                            if (static_cast<unsigned int>(position_marker->iParam0 - 3) < 3) {
+                            light_flare->Type = position_marker->iParam0 + ELF_CATSEYE_ORANGE;
+                            if (position_marker->iParam0 >= ELF_CAR_REVERSELIGHT && position_marker->iParam0 <= ELF_CAR_COPLIGHTRED) {
                                 light_flare->Flags = 4;
                                 bVector2 dr(ps.x - draw_info->pMatrix->v3.x, ps.y - draw_info->pMatrix->v3.y);
                                 bNormalize(&dr, &dr);
@@ -872,7 +873,7 @@ void ScenerySectionHeader::TreeCull(SceneryCullInfo *scenery_cull_info) {
             bVector3 bbox_max;
 
             node->GetBBox(&bbox_min, &bbox_max);
-            visibility_state = scenery_cull_info->pView->GetVisibleState(&bbox_min, &bbox_max, 0);
+            visibility_state = scenery_cull_info->pView->GetVisibleState(&bbox_min, &bbox_max, nullptr);
         }
 
         if (visibility_state != 0) {
@@ -912,7 +913,7 @@ int GrandSceneryCullInfo::WhatSectionsShouldWeDraw(short *sections_to_draw, int 
     }
 
     int num_sections_to_draw = 0;
-    if (!drivable_scenery_section) {
+    if (drivable_scenery_section == nullptr) {
         for (ScenerySectionHeader *section_header = ScenerySectionHeaderList.GetHead(); section_header != ScenerySectionHeaderList.EndOfList();
              section_header = section_header->GetNext()) {
             int section_number = section_header->GetSectionNumber();
@@ -924,7 +925,7 @@ int GrandSceneryCullInfo::WhatSectionsShouldWeDraw(short *sections_to_draw, int 
         }
     } else {
         for (int section_number = MakeScenerySectionNumber('Z', 0); section_number < MakeScenerySectionNumber('Z', 100); section_number++) {
-            if (GetScenerySectionHeader(section_number) && num_sections_to_draw < max_sections_to_draw) {
+            if ((GetScenerySectionHeader(section_number) != nullptr) && num_sections_to_draw < max_sections_to_draw) {
                 ScenerySectionHeader *section_header; // ?
                 sections_to_draw[num_sections_to_draw] = static_cast<short>(section_number);
                 num_sections_to_draw++;
@@ -933,7 +934,7 @@ int GrandSceneryCullInfo::WhatSectionsShouldWeDraw(short *sections_to_draw, int 
 
         for (int i = 0; i < drivable_scenery_section->GetNumVisibleSections(); i++) {
             int section_number = drivable_scenery_section->GetVisibleSection(i);
-            if (section_number >= 0 && GetScenerySectionHeader(section_number) && num_sections_to_draw < max_sections_to_draw) {
+            if (section_number >= 0 && (GetScenerySectionHeader(section_number) != nullptr) && num_sections_to_draw < max_sections_to_draw) {
                 ScenerySectionHeader *section_header; // ?
                 sections_to_draw[num_sections_to_draw] = static_cast<short>(section_number);
                 num_sections_to_draw++;
@@ -943,7 +944,7 @@ int GrandSceneryCullInfo::WhatSectionsShouldWeDraw(short *sections_to_draw, int 
 
     if (scenery_cull_info->pView->GetID() == EVIEW_PLAYER1) {
         int current_zone_number = -1;
-        if (drivable_scenery_section) {
+        if (drivable_scenery_section != nullptr) {
             current_zone_number = drivable_scenery_section->GetSectionNumber();
         }
 
@@ -952,7 +953,7 @@ int GrandSceneryCullInfo::WhatSectionsShouldWeDraw(short *sections_to_draw, int 
             if (!SeeulatorToolActive) {
                 return num_sections_to_draw;
             }
-            if (drivable_scenery_section) {
+            if (drivable_scenery_section != nullptr) {
                 bFunkCallASync("Seeulator", 1, &CurrentZoneNumber, 4);
             }
         }
@@ -981,7 +982,7 @@ void GrandSceneryCullInfo::CullView(SceneryCullInfo *scenery_cull_info) {
         int section_number = sections_to_draw[i];
         if (section_number >= 0) {
             ScenerySectionHeader *section_header = GetScenerySectionHeader(section_number);
-            if (section_header && section_header->SceneryTreeNodeTable) {
+            if ((section_header != nullptr) && (section_header->SceneryTreeNodeTable != nullptr)) {
                 section_header->TreeCull(scenery_cull_info);
             }
         }
@@ -1165,11 +1166,11 @@ void GrandSceneryCullInfo::StuffScenery(eView *view, int stuff_flags) {
                 C = (flags & exclude_flags) == 0;
             }
             if (A || B || C) {
-                if (!info->pMatrix) {
+                if (info->pMatrix == nullptr) {
                     bMatrix4 *local_world = eGetIdentityMatrix();
-                    view->Render(pDebugModel, local_world, 0, flags, 0);
+                    view->Render(pDebugModel, local_world, nullptr, flags, nullptr);
                 } else {
-                    view->Render(pDebugModel, info->pMatrix, 0, flags, 0);
+                    view->Render(pDebugModel, info->pMatrix, nullptr, flags, nullptr);
                 }
                 pDebugModel = reinterpret_cast<eModel *>(sceneryLightContext);
             }

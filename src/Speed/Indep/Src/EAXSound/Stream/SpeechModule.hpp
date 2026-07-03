@@ -6,36 +6,14 @@
 #endif
 
 #include "Speed/Indep/Src/EAXSound/AudioMemBase.hpp"
+#include "Speed/Indep/Src/EAXSound/EAXSoundEnums.hpp"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribHash.h"
 
 // TODO move
-enum eMasterMixChannel {
-    eMASTER_VOL = 0,
-    eSPEECH_VOL = 1,
-    eMUSIC_VOL = 2,
-    eFEMUSIC_VOL = 3,
-    eSFX_VOL = 4,
-    eENGINE_VOL = 5,
-    eTIRE_VOL = 6,
-    eAMBIENT_VOL = 7,
-    eSPEED_VOL = 8,
-    eCOLLISION_VOL = 9,
-};
-
 enum SPCHType_EventRuleResult {
     kSPCH_EventRule_Delete = 0,
     kSPCH_EventRule_OK = 1,
-};
-
-enum eNISSFX_TYPE {
-    STRM_SFX_MOMENT = 5,
-    STRM_SFX_COLLISION = 4,
-    STRM_THUNDER = 3,
-    STRM_NIS_BUSTED = 2,
-    STRM_NIS_RACE_BUTTONTHROUGH = 1,
-    STRM_NIS_RACE_START = 0,
-    STRM_NONE = -1,
 };
 
 namespace Speech {

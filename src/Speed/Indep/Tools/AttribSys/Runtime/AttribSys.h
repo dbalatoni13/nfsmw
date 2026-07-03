@@ -1,9 +1,5 @@
-#ifndef ATTRIBSYS_ATTRIBSYS_H
-#define ATTRIBSYS_ATTRIBSYS_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef _attribsys_h_
+#define _attribsys_h_
 
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Src/Misc/AttribAlloc.h"
@@ -14,7 +10,7 @@
 namespace Attrib {
 
 typedef uint32_t HashInt;
-typedef HashInt Key;
+typedef HashInt Key; // TODO might be in the global namespace
 typedef HashInt Type;
 
 // const int kTypeHandlerCount = 7;
@@ -38,6 +34,36 @@ inline unsigned int RotateNTo32(unsigned long long v, unsigned int amount) {
     return (v << amount) | (v >> (64 - amount));
 }
 
+// TODO maybe the name is always passed here and it gets omitted in Alloc/Free? Depends on whether doing this leaves the string in .rodata
+#ifdef MILESTONE_OPT
+#define USE_ATTRIB_ALLOC(name)                                                                                                                       \
+    void *operator new(size_t bytes) {                                                                                                               \
+        return (Attrib::Alloc(bytes, name));                                                                                                         \
+    };                                                                                                                                               \
+    void operator delete(void *ptr, size_t bytes) {                                                                                                  \
+        Attrib::Free(ptr, bytes, name);                                                                                                              \
+    }                                                                                                                                                \
+    void *operator new(size_t, void *ptr) {                                                                                                          \
+        return (ptr);                                                                                                                                \
+    }                                                                                                                                                \
+    void operator delete(void *, void *) {}
+#else
+#define USE_ATTRIB_ALLOC(name)                                                                                                                       \
+    void *operator new(size_t bytes) {                                                                                                               \
+        return (Attrib::Alloc(bytes, NULL));                                                                                                         \
+    };                                                                                                                                               \
+    void operator delete(void *ptr, size_t bytes) {                                                                                                  \
+        Attrib::Free(ptr, bytes, NULL);                                                                                                              \
+    }                                                                                                                                                \
+    void *operator new(size_t, void *ptr) {                                                                                                          \
+        return (ptr);                                                                                                                                \
+    }                                                                                                                                                \
+    void operator delete(void *, void *) {}
+#endif
+
+#define ATTRIB_TYPE_ASSERT(TYPE, ATTRIB)
+#define ATTRIB_CLASS_ASSERT(KEY1, KEY2, CKEY)
+
 // TODO why no inline?
 #ifdef EA_PLATFORM_XENON
 __declspec(noinline)
@@ -60,12 +86,13 @@ inline void Free(void *ptr, std::size_t bytes, const char *name) {
     }
 }
 
-inline void *TableAllocFunc(std::size_t bytes) {
-    return AttribAlloc::Allocate(bytes, "Attrib::CollectionHashMap");
-}
-
+// TODO move these to AttribPrivate.h?
 inline void TableFreeFunc(void *ptr, std::size_t bytes) {
     AttribAlloc::Free(ptr, bytes, "Attrib::CollectionHashMap");
+}
+
+inline void *TableAllocFunc(std::size_t bytes) {
+    return AttribAlloc::Allocate(bytes, "Attrib::CollectionHashMap");
 }
 
 class Instance;
@@ -77,6 +104,7 @@ class ClassPrivate;
 class Collection;
 class ExportManager;
 class Vault;
+class RefSpec;
 
 class ITypeHandler {
   public:
@@ -84,14 +112,6 @@ class ITypeHandler {
     virtual void *Clone(void *obj) = 0;
     virtual void Clean(void *obj) = 0;
     virtual void Release(void *obj) = 0;
-};
-
-class IExportPolicy {
-  public:
-    virtual void Initialize(Vault &v, const Type &type, const unsigned int &id, const char *name, void *data, std::size_t bytes);
-    virtual bool IsReferenced(const Vault &v, const Type &type, const unsigned int &id);
-    virtual void Clean(Vault &v, const Type &type, const unsigned int &id);
-    virtual void Deinitialize(Vault &v, const Type &type, const unsigned int &id);
 };
 
 // total size: 0x14
@@ -187,9 +207,11 @@ class Database {
     DatabasePrivate &mPrivates; // offset 0x0, size 0x4
 };
 
+// TODO move to AttribHashMap.h
 class Array {
 #define Flag_AlignedAt16 (1 << 15)
-  private: // Returns the base location of this array's data
+  private:
+    // Returns the base location of this array's data
     unsigned char *BasePointer() const {
         return (unsigned char *)(&this[1]);
     }
@@ -373,6 +395,9 @@ class Array {
     uint16_t mEncodedTypePad;
 };
 
+#undef Flag_AlignedAt16
+
+// TOOD move to AttribHashMap.h
 // Credit: Brawltendo
 // total size: 0xC
 class Node {
@@ -451,7 +476,7 @@ class Node {
         if (IsByValue()) {
             return &mValue;
         } else if (IsLaidOut()) {
-            return (void *)(uintptr_t(layoutptr) + uintptr_t(mPtr));
+            return (void *)((uintptr_t)(layoutptr) + (uintptr_t)(mPtr));
         } else {
             return mPtr;
         }
@@ -459,7 +484,7 @@ class Node {
 
     Array *GetArray(void *layoutptr) const {
         if (IsLaidOut()) {
-            return (Array *)(uintptr_t(layoutptr) + uintptr_t(mArray));
+            return (Array *)((uintptr_t)(layoutptr) + (uintptr_t)(mArray));
         } else {
             return mArray;
         }
@@ -511,6 +536,295 @@ class Node {
     uint16_t mTypeIndex;
     uint8_t mMax;
     uint8_t mFlags;
+};
+
+#define USER_ATTRIB_MIN(A, B) (((A) < (B)) ? (A) : (B))
+
+#define ATTRIB_INIT_KEY(k64, k32) k32
+#define ATTRIB_KEY_HIWORD(key) 0U
+#define ATTRIB_KEY_LOWORD(key) key
+#define ATTRIB_KEY_WORDS(key) 0U, key
+
+// total size: 0x10
+class Attribute {
+  protected:
+    void *GetElementPointer(unsigned int index) const {
+        if (mDataPointer) {
+            return index == 0 ? mDataPointer : nullptr;
+        }
+        return GetInternalPointer(index);
+    }
+
+  public:
+    Attribute(const Attribute &src);
+    Attribute();
+    Attribute(const Instance &instance, const Collection *collection, Node *node);
+    ~Attribute();
+    const Attribute &operator=(const Attribute &rhs);
+    bool operator==(const Attribute &rhs) const;
+    bool operator!=(const Attribute &rhs) const;
+    bool IsValid() const;
+    bool IsInherited() const;
+    bool IsMutable() const;
+    bool IsLocatable();
+    Key GetKey() const;
+    Type GetType() const;
+    const Instance *GetInstance() const;
+    const Collection *GetCollection() const;
+    unsigned int GetSize() const;
+    unsigned int GetLength() const;
+    bool SetLength(unsigned int);
+    void SendChangeMsg() const;
+    // TODO
+    template <typename T> const T &Get(unsigned int index, T &result) const;
+    // TODO
+    template <typename T> const T &Get(unsigned int index) const;
+
+    void operator delete(void *ptr, std::size_t bytes) {
+        Free(ptr, bytes, "Attrib::Attribute");
+    }
+
+    Key GetCollectionKey() const {
+        // TODO
+    }
+
+    const void *GetDataAddress() const {
+        return mDataPointer;
+    }
+
+    Node *GetInternal() const {
+        return mInternal;
+    }
+
+    template <typename T> bool Get(unsigned int index, T &result) {
+        const T *resultptr = reinterpret_cast<const T *>(GetElementPointer(index));
+
+        if (resultptr != nullptr) {
+            result = *resultptr;
+            return true;
+        }
+
+        return false;
+    }
+
+  private:
+    void *GetInternalPointer(unsigned int index) const;
+
+    const Instance *mInstance;     // offset 0x0, size 0x4
+    const Collection *mCollection; // offset 0x4, size 0x4
+    Node *mInternal;               // offset 0x8, size 0x4
+    void *mDataPointer;            // offset 0xC, size 0x4
+};
+
+namespace Gen {
+class GenericAccessor;
+};
+
+// TODO how to use private inheritance and not run into issues when calling IsValid in effects.h?
+template <typename T> class TAttrib : public Attribute {
+  public:
+    typedef T TypeOf;
+
+    void operator delete(void *ptr, std::size_t bytes) {
+        Free(ptr, bytes, "Attrib::TAttrib");
+    }
+
+    TAttrib() {}
+    TAttrib(const Attribute &src) : Attribute(src) {}
+    ~TAttrib() {}
+
+    const TypeOf &Get(unsigned int index) const;
+    // TODO
+    bool Set(unsigned int index, const TypeOf &input) {}
+};
+
+// total size: 0xC
+class AttributeIterator {
+  public:
+    AttributeIterator(const Collection *c);
+    bool Advance();
+
+    bool Valid() {
+        return mCurrentKey != 0;
+    }
+
+    Key GetKey() const {
+        return mCurrentKey;
+    }
+
+  private:
+    Key mCurrentKey;               // offset 0x0, size 0x4
+    const Collection *mCollection; // offset 0x4, size 0x4
+    bool mInLayout;                // offset 0x8, size 0x1
+};
+
+class Instance {
+  public:
+    enum Flags { kDynamic = 1 };
+
+    Instance(const Instance &src);
+    Instance(const struct Collection *collection, uint32_t msgPort, UTL::COM::IUnknown *owner);
+    Instance(const RefSpec &refspec, uint32_t msgPort, UTL::COM::IUnknown *owner);
+    ~Instance();
+    Key GetClass() const;
+    Key GetCollection() const;
+    Key GetParent() const;
+    void SetParent(Key parent);
+    const Instance &operator=(const Instance &rhs);
+    Attribute Get(Key attributeKey) const;
+    bool Lookup(Key attributeKey, Attribute &attrib) const;
+    bool Contains(Key attributeKey) const;
+    unsigned int LocalAttribCount() const;
+    bool Add(Key attributeKey, unsigned int count);
+    bool Remove(Key attributeKey);
+
+    // TODO
+    template <typename T> TAttrib<T> GetOrClone(Key attributeKey) {}
+
+    bool Modify(Key dynamicCollectionKey, unsigned int spaceForAdditionalAttributes);
+    bool ModifyInternal(Key classKey, Key dynamicCollectionKey, unsigned int reserve);
+    void Unmodify();
+    Key GenerateUniqueKey(const char *name, bool registerName) const;
+    void Change(const Collection *collection);
+    void Change(const RefSpec &refspec);
+    void ChangeWithDefault(const RefSpec &refspec);
+    const void *GetAttributePointer(Key attribkey, unsigned int index = 0) const;
+
+    void operator delete(void *ptr, std::size_t bytes) {
+        Free(ptr, bytes, "Attrib::Instance");
+    }
+
+    void *GetLayoutPointer() const {
+        return mLayoutPtr;
+    }
+
+    void *GetLayoutPointer() {
+        return mLayoutPtr;
+    }
+
+    const Collection *GetConstCollection() const {
+        return mCollection;
+    }
+
+    void SetDefaultLayout(unsigned int bytes) const {
+        if (mLayoutPtr == nullptr) {
+            const_cast<Instance *>(this)->mLayoutPtr = const_cast<void *>(DefaultDataArea(bytes));
+        }
+    }
+
+    bool IsValid() const {
+        return mCollection != nullptr;
+    }
+
+    bool IsDynamic() const {
+        return (mFlags & 1) != 0;
+    }
+
+    // TODO is this right in all cases?
+    Collection *GetDynamicCollection() const {
+        if (IsDynamic()) {
+            return const_cast<Collection *>(mCollection);
+        }
+        return nullptr;
+    }
+
+    const Attrib::Collection *GetParentCollection() const {}
+
+    void Lock() const {
+        mLocks++;
+    }
+
+    void Unlock() const {
+        // TODO call LockReleased
+        mLocks--;
+    }
+
+    AttributeIterator Iterator() const;
+
+    const Gen::GenericAccessor *operator->() const {
+        return reinterpret_cast<const Gen::GenericAccessor *>(this);
+    }
+
+  protected:
+    Key GUKeyInternal(Key classKey, const char *name, bool registerName) const;
+
+  private:
+    void LockReleased() const {}
+
+    UTL::COM::IUnknown *mOwner;    // offset 0x0, size 0x4
+    const Collection *mCollection; // offset 0x4, size 0x4
+    mutable void *mLayoutPtr;      // offset 0x8, size 0x4
+    uint32_t mMsgPort;             // offset 0xC, size 0x4
+    uint16_t mFlags;               // offset 0x10, size 0x2
+    mutable uint16_t mLocks;       // offset 0x12, size 0x2
+};
+
+// total size: 0x10
+class Definition {
+  public:
+    enum Flags {
+        kArray = 1 << 0,
+        kInLayout = 1 << 1,
+        kIsBound = 1 << 2,
+        kIsNotSearchable = 1 << 3,
+    };
+
+    Definition(unsigned int k) {
+        mKey = k;
+    }
+
+    bool IsArray() const {
+        return GetFlag(kArray);
+    }
+
+    bool InLayout() const {
+        return GetFlag(kInLayout);
+    }
+
+    bool IsBound() const {
+        return GetFlag(kIsBound);
+    }
+
+    bool IsNotSearchable() const {
+        return GetFlag(kIsNotSearchable);
+    }
+
+    bool GetFlag(unsigned int f) const {
+        return (mFlags & f) != 0;
+    }
+
+    Key GetKey() const {
+        return mKey;
+    }
+
+    unsigned int GetType() const {
+        return mType;
+    }
+
+    unsigned int GetOffset() const {
+        return mOffset;
+    }
+
+    unsigned int GetSize() const {
+        return mSize;
+    }
+
+    unsigned int GetMaxCount() const {
+        return mMaxCount;
+    }
+
+    bool operator<(const Definition &rhs) const {
+        return mKey < rhs.mKey;
+    }
+
+  private:
+    Key mKey;           // offset 0x0, size 0x4
+    Type mType;         // offset 0x4, size 0x4
+    uint16_t mOffset;   // offset 0x8, size 0x2
+    uint16_t mSize;     // offset 0xA, size 0x2
+    uint16_t mMaxCount; // offset 0xC, size 0x2
+    uint8_t mFlags;     // offset 0xE, size 0x1
+    uint8_t mAlignment; // offset 0xF, size 0x1
 };
 
 // total size: 0xC
@@ -612,6 +926,12 @@ class RefSpec {
     const Collection *GetCollection() const;
     const Collection *GetCollectionWithDefault() const;
     RefSpec &operator=(const RefSpec &rhs);
+    RefSpec &operator=(int rhs) {
+        mClassKey = 0;
+        mCollectionKey = 0;
+        mCollectionPtr = nullptr;
+        return *this;
+    }
     void Clean() const;
 
     void operator delete(void *ptr, std::size_t bytes) {
@@ -621,7 +941,7 @@ class RefSpec {
     RefSpec() : mClassKey(0), mCollectionKey(0), mCollectionPtr(nullptr) {}
 
     ~RefSpec() {
-        if (mCollectionPtr) {
+        if (mCollectionPtr != nullptr) {
             Clean();
         }
     }
@@ -640,264 +960,6 @@ class RefSpec {
     mutable const Collection *mCollectionPtr; // offset 0x8, size 0x4
 };
 
-class Attribute {
-  protected:
-    void *GetElementPointer(unsigned int index) const {
-        if (mDataPointer) {
-            return index == 0 ? mDataPointer : nullptr;
-        }
-        return GetInternalPointer(index);
-    }
-
-  public:
-    Attribute(const Attribute &src);
-    Attribute();
-    Attribute(const Instance &instance, const Collection *collection, Node *node);
-    ~Attribute();
-    const Attribute &operator=(const Attribute &rhs);
-    bool operator==(const Attribute &rhs) const;
-    bool operator!=(const Attribute &rhs) const;
-    bool IsValid() const;
-    bool IsInherited() const;
-    bool IsMutable() const;
-    bool IsLocatable();
-    Key GetKey() const;
-    Type GetType() const;
-    const Instance *GetInstance() const;
-    const Collection *GetCollection() const;
-    unsigned int GetSize() const;
-    unsigned int GetLength() const;
-    bool SetLength(unsigned int);
-    void SendChangeMsg() const;
-    // TODO
-    template <typename T> const T &Get(unsigned int index, T &result) const;
-
-    void operator delete(void *ptr, std::size_t bytes) {
-        Free(ptr, bytes, "Attrib::Attribute");
-    }
-
-    Key GetCollectionKey() const {
-        // TODO
-    }
-
-    const void *GetDataAddress() const {
-        return mDataPointer;
-    }
-
-    Node *GetInternal() const {
-        return mInternal;
-    }
-
-    bool Get(unsigned int index, RefSpec &result) {
-        const RefSpec *resultptr = reinterpret_cast<const RefSpec *>(GetElementPointer(index));
-
-        if (resultptr) {
-            result = *resultptr;
-            return true;
-        }
-
-        return false;
-    }
-
-  private:
-    void *GetInternalPointer(unsigned int index) const;
-
-    // total size: 0x10
-    const Instance *mInstance;     // offset 0x0, size 0x4
-    const Collection *mCollection; // offset 0x4, size 0x4
-    Node *mInternal;               // offset 0x8, size 0x4
-    void *mDataPointer;            // offset 0xC, size 0x4
-};
-
-// total size: 0xC
-class AttributeIterator {
-  public:
-    AttributeIterator(const Collection *c);
-    bool Advance();
-
-    bool Valid() {
-        return mCurrentKey != 0;
-    }
-
-    Key GetKey() const {
-        return mCurrentKey;
-    }
-
-  private:
-    Key mCurrentKey;               // offset 0x0, size 0x4
-    const Collection *mCollection; // offset 0x4, size 0x4
-    bool mInLayout;                // offset 0x8, size 0x1
-};
-
-namespace Gen {
-class GenericAccessor;
-};
-
-class Instance {
-  public:
-    enum Flags { kDynamic = 1 };
-
-    Instance(const Instance &src);
-    Instance(const struct Collection *collection, uint32_t msgPort, UTL::COM::IUnknown *owner);
-    Instance(const RefSpec &refspec, uint32_t msgPort, UTL::COM::IUnknown *owner);
-    ~Instance();
-    Key GetClass() const;
-    Key GetCollection() const;
-    Key GetParent() const;
-    void SetParent(Key parent);
-    const Instance &operator=(const Instance &rhs);
-    Attribute Get(Key attributeKey) const;
-    bool Lookup(Key attributeKey, Attribute &attrib) const;
-    bool Contains(Key attributeKey) const;
-    unsigned int LocalAttribCount() const;
-    bool Add(Key attributeKey, unsigned int count);
-    bool Remove(Key attributeKey);
-    bool Modify(Key dynamicCollectionKey, unsigned int spaceForAdditionalAttributes);
-    bool ModifyInternal(Key classKey, Key dynamicCollectionKey, unsigned int reserve);
-    void Unmodify();
-    Key GenerateUniqueKey(const char *name, bool registerName) const;
-    void Change(const Collection *collection);
-    void Change(const RefSpec &refspec);
-    void ChangeWithDefault(const RefSpec &refspec);
-    const void *GetAttributePointer(Key attribkey, unsigned int index) const;
-
-    void operator delete(void *ptr, std::size_t bytes) {
-        Free(ptr, bytes, "Attrib::Instance");
-    }
-
-    void *GetLayoutPointer() const {
-        return mLayoutPtr;
-    }
-
-    void *GetLayoutPointer() {
-        return mLayoutPtr;
-    }
-
-    const Collection *GetConstCollection() const {
-        return mCollection;
-    }
-
-    void SetDefaultLayout(unsigned int bytes) const {
-        if (mLayoutPtr == nullptr) {
-            mLayoutPtr = const_cast<void *>(DefaultDataArea(bytes));
-        }
-    }
-
-    bool IsValid() const {
-        return mCollection != nullptr;
-    }
-
-    bool IsDynamic() const {
-        return mFlags & 1;
-    }
-
-    // TODO is this right in all cases?
-    Collection *GetDynamicCollection() const {
-        if (IsDynamic()) {
-            return const_cast<Collection *>(mCollection);
-        }
-        return nullptr;
-    }
-
-    const Attrib::Collection *GetParentCollection() const {}
-
-    void Lock() const {
-        mLocks++;
-    }
-
-    void Unlock() const {
-        // TODO call LockReleased
-        mLocks--;
-    }
-
-    AttributeIterator Iterator() const;
-
-    const Gen::GenericAccessor *operator->() const {
-        return reinterpret_cast<const Gen::GenericAccessor *>(this);
-    }
-
-  protected:
-    Key GUKeyInternal(Key classKey, const char *name, bool registerName) const;
-
-  private:
-    void LockReleased() const {}
-
-    UTL::COM::IUnknown *mOwner;    // offset 0x0, size 0x4
-    const Collection *mCollection; // offset 0x4, size 0x4
-    mutable void *mLayoutPtr;              // offset 0x8, size 0x4
-    uint32_t mMsgPort;             // offset 0xC, size 0x4
-    uint16_t mFlags;               // offset 0x10, size 0x2
-    mutable uint16_t mLocks;       // offset 0x12, size 0x2
-};
-
-// total size: 0x10
-class Definition {
-  public:
-    enum Flags {
-        kArray = 1 << 0,
-        kInLayout = 1 << 1,
-        kIsBound = 1 << 2,
-        kIsNotSearchable = 1 << 3,
-    };
-
-    Definition(unsigned int k) {
-        mKey = k;
-    }
-
-    bool IsArray() const {
-        return GetFlag(kArray);
-    }
-
-    bool InLayout() const {
-        return GetFlag(kInLayout);
-    }
-
-    bool IsBound() const {
-        return GetFlag(kIsBound);
-    }
-
-    bool IsNotSearchable() const {
-        return GetFlag(kIsNotSearchable);
-    }
-
-    bool GetFlag(unsigned int f) const {
-        return mFlags & f;
-    }
-
-    Key GetKey() const {
-        return mKey;
-    }
-
-    unsigned int GetType() const {
-        return mType;
-    }
-
-    unsigned int GetOffset() const {
-        return mOffset;
-    }
-
-    unsigned int GetSize() const {
-        return mSize;
-    }
-
-    unsigned int GetMaxCount() const {
-        return mMaxCount;
-    }
-
-    bool operator<(const Definition &rhs) const {
-        return mKey < rhs.mKey;
-    }
-
-  private:
-    Key mKey;           // offset 0x0, size 0x4
-    Type mType;         // offset 0x4, size 0x4
-    uint16_t mOffset;   // offset 0x8, size 0x2
-    uint16_t mSize;     // offset 0xA, size 0x2
-    uint16_t mMaxCount; // offset 0xC, size 0x2
-    uint8_t mFlags;     // offset 0xE, size 0x1
-    uint8_t mAlignment; // offset 0xF, size 0x1
-};
-
 // TODO where is this in the file?
 // total size: 0x8
 class Blob {
@@ -906,49 +968,115 @@ class Blob {
     const void *mData; // offset 0x4, size 0x4
 };
 
-template <typename t> class TAttrib : public Attribute {
-  public:
-    void operator delete(void *ptr, std::size_t bytes) {
-        Free(ptr, bytes, "Attrib::TAttrib");
-    }
+const Key key_default = 0xeec2271a;
+const Key h64_default = 0xeec2271a;
 
-    TAttrib(const Attribute &src) : Attribute(src) {}
-    ~TAttrib() {}
+}; // namespace Attrib
 
-    bool &Get(unsigned int index) const;
-};
+namespace EA {
+namespace Reflection {
 
-} // namespace Attrib
+typedef int64_t Int64;
+typedef int32_t Int32;
+typedef int16_t Int16;
+typedef int8_t Int8;
+typedef uint64_t UInt64;
+typedef uint32_t UInt32;
+typedef uint16_t UInt16;
+typedef uint8_t UInt8;
+typedef char Char;
+typedef bool Bool;
+typedef float Float;
+typedef double Double;
+typedef const char *Text;
+typedef void *Reference;
 
-template <typename T> class AttributeStructPtr : public T {
-  public:
-    static Attrib::Key GetClassKey() {
-        return mAttributeClass;
-    }
+} // namespace Reflection
+} // namespace EA
 
-    AttributeStructPtr(Attrib::Key namekey) : T(namekey, 0, nullptr) {
-        if (!T::IsValid()) {
-            T::Change(0xeec2271a);
-        }
-        T::IsValid();
-    }
+#define ATTRIB_CODEGEN_GETATTRIB(TYPE, KEY)                                                                                                          \
+    result = TAttrib<TYPE>(this->Get(KEY));                                                                                                          \
+    return (result.IsValid())
 
-    ~AttributeStructPtr() {}
+#define ATTRIB_CODEGEN_GETLENGTH(KEY) return (this->Get(KEY).GetLength())
+#define ATTRIB_CODEGEN_GETLAYOUTLENGTH(FIELD) return (static_cast<_LayoutStruct *>(this->GetLayoutPointer())->_Array_##FIELD.GetLength())
+#define ATTRIB_CODEGEN_GETSTATICLENGTH(FIELD) return (gStatics.FIELD.GetLength())
 
-    const T &operator*() const {
-        return *this;
-    }
+#define ATTRIB_CODEGEN_GETVALUE(TYPE, KEY)                                                                                                           \
+    const TYPE *resultptr = static_cast<const TYPE *>(this->GetAttributePointer(KEY));                                                               \
+    return ((resultptr != NULL) ? *resultptr : *static_cast<const TYPE *>(Attrib::DefaultDataArea(sizeof(TYPE))))
 
-    const T *operator->() const {
-        return this;
-    }
+#define ATTRIB_CODEGEN_CHECKEDGETVALUE(TYPE, KEY, RESULT)                                                                                            \
+    const TYPE *resultptr = static_cast<const TYPE *>(this->GetAttributePointer(KEY));                                                               \
+    if (resultptr != NULL) {                                                                                                                         \
+        RESULT = *resultptr;                                                                                                                         \
+        return (true);                                                                                                                               \
+    } else                                                                                                                                           \
+        return (false)
 
-    operator const T *() const {
-        return this;
-    }
+// TODO I made this up
+#define ATTRIB_CODEGEN_CHECKEDGETLAYOUT(FIELD, RESULT)                                                                                               \
+    RESULT = static_cast<_LayoutStruct *>(this->GetLayoutPointer())->FIELD;                                                                          \
+    return (true)
 
-  private:
-    static Attrib::Key mAttributeClass;
-};
+#define ATTRIB_CODEGEN_GETLAYOUT(FIELD) return (static_cast<_LayoutStruct *>(this->GetLayoutPointer())->FIELD)
+#define ATTRIB_CODEGEN_GETSTATIC(FIELD) return (gStatics.FIELD)
+
+#define ATTRIB_CODEGEN_GETLAYOUTINDEXED(TYPE, FIELD, INDEX)                                                                                          \
+    const _LayoutStruct *lp = static_cast<_LayoutStruct *>(this->GetLayoutPointer());                                                                \
+    if (INDEX < lp->_Array_##FIELD.GetLength())                                                                                                      \
+        return (lp->FIELD[INDEX]);                                                                                                                   \
+    else                                                                                                                                             \
+        return (*static_cast<const TYPE *>(Attrib::DefaultDataArea(sizeof(TYPE))))
+
+#define ATTRIB_CODEGEN_GETVALUEINDEXED(TYPE, KEY, INDEX)                                                                                             \
+    const TYPE *resultptr = static_cast<const TYPE *>(this->GetAttributePointer(KEY, INDEX));                                                        \
+    return ((resultptr != NULL) ? *resultptr : *static_cast<const TYPE *>(Attrib::DefaultDataArea(sizeof(TYPE))))
+
+#define ATTRIB_CODEGEN_GETSTATICINDEXED(TYPE, FIELD, INDEX)                                                                                          \
+    if (INDEX < gStatics.FIELD.GetLength())                                                                                                          \
+        return (gStatics.FIELD[INDEX]);                                                                                                              \
+    else                                                                                                                                             \
+        return (*static_cast<const TYPE *>(Attrib::DefaultDataArea(sizeof(TYPE))))
+
+#define ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(TYPE, KEY, RESULT, INDEX)                                                                              \
+    const TYPE *resultptr = static_cast<const TYPE *>(this->GetAttributePointer(KEY, INDEX));                                                        \
+    if (resultptr != NULL) {                                                                                                                         \
+        RESULT = *resultptr;                                                                                                                         \
+        return (true);                                                                                                                               \
+    } else                                                                                                                                           \
+        return (false)
+
+#define ATTRIB_CODEGEN_CHECKEDGETLAYOUTINDEXED(FIELD, RESULT, INDEX)                                                                                 \
+    RESULT = static_cast<_LayoutStruct *>(this->GetLayoutPointer())->FIELD[INDEX];                                                                   \
+    return (true)
+
+#define ATTRIB_CODEGEN_GETVALIDATTRIB(TYPE, KEY, INDEX, OUT)                                                                                         \
+    TAttrib<TYPE> attr(this->Get(KEY));                                                                                                              \
+    if (attr.IsValid()) {                                                                                                                            \
+        OUT = attr.Get(INDEX);                                                                                                                       \
+        return (true);                                                                                                                               \
+    } else                                                                                                                                           \
+        return (false)
+
+#define ATTRIB_CODEGEN_SETVALUE(TYPE, KEY, INPUT)                                                                                                    \
+    TAttrib<TYPE> attr(this->GetOrClone<TYPE>(KEY));                                                                                                 \
+    return (attr.IsValid() ? attr.Set(0, INPUT) : false)
+
+#define ATTRIB_CODEGEN_SETLAYOUT(FIELD, INPUT)                                                                                                       \
+    static_cast<_LayoutStruct *>(this->GetLayoutPointer())->FIELD = INPUT;                                                                           \
+    return (true)
+
+#define ATTRIB_CODEGEN_SETVALUEINDEXED(TYPE, KEY, INPUT, INDEX)                                                                                      \
+    TAttrib<TYPE> attr(this->GetOrClone<TYPE>(KEY));                                                                                                 \
+    return (attr.IsValid() ? attr.Set(index, INPUT) : false)
+
+#define ATTRIB_CODEGEN_SETLAYOUTINDEXED(FIELD, INPUT, INDEX)                                                                                         \
+    _LayoutStruct *lp = static_cast<_LayoutStruct *>(this->GetLayoutPointer());                                                                      \
+    if (INDEX < lp->_Array_##FIELD.GetLength()) {                                                                                                    \
+        lp->FIELD[INDEX] = INPUT;                                                                                                                    \
+        return (true);                                                                                                                               \
+    } else                                                                                                                                           \
+        return (false)
 
 #endif

@@ -1,9 +1,5 @@
-#ifndef MISC_BUILDREGION_H
-#define MISC_BUILDREGION_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef BUILD_REGION_HPP
+#define BUILD_REGION_HPP
 
 namespace BuildRegion {
 
@@ -26,56 +22,34 @@ typedef enum {
     BUILD_REGION_EUROPE = 1
 } eBuildRegion;
 
-// Range: 0xFFFFFFFF -> 0x801FB34C
 eBuildRegion GetBuildRegion();
 
-// Range: 0xFFFFFFFF -> 0x801FB34C
 const char *GetName();
 
-// Range: 0xFFFFFFFF -> 0x801FB34C
 const char *GetAbbreviation();
 
-// Range: 0x801FB34C -> 0x801FB354
 bool IsAmerica();
-
-// Range: 0x801FB354 -> 0x801FB35C
 bool IsEurope();
-
-// Range: 0xFFFFFFFF -> 0x801FB35C
 bool IsEuropeEng();
-
-// Range: 0x801FB35C -> 0x801FB364
 bool IsEuropeFr();
-
-// Range: 0x801FB364 -> 0x801FB36C
 bool IsEuropeGer();
-
-// Range: 0xFFFFFFFF -> 0x801FB36C
 bool IsEuropeSpan();
-
-// Range: 0xFFFFFFFF -> 0x801FB36C
 bool IsEuropeItal();
-
-// Range: 0xFFFFFFFF -> 0x801FB36C
 bool IsEuropeEngItalSpan();
-
-// Range: 0xFFFFFFFF -> 0x801FB36C
 bool IsEuropeEngFrGer();
-
-// Range: 0xFFFFFFFF -> 0x801FB36C
 bool IsAsia();
-
-// Range: 0x801FB36C -> 0x801FB374
 bool IsJapan();
-
-// Range: 0x801FB374 -> 0x801FB37C
 bool IsKorea();
-
-// Range: 0x801FB37C -> 0x801FB39C
 bool IsPal();
-
-// Range: 0x801FB39C -> 0x801FB3A4
 bool ShowLanguageSelect();
+
+inline const char *GetCarBadgingSuffix() {
+    if (IsEurope()) {
+        return "_EU";
+    } else {
+        return nullptr;
+    }
+}
 
 }; // namespace BuildRegion
 

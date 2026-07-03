@@ -13,15 +13,7 @@
 #include "Speed/Indep/Src/Sim/SimEffect.h"
 #include "Speed/Indep/Src/Sim/SimSurface.h"
 
-struct EffectLinkageRecord {
-    // total size: 0x20
-    Attrib::RefSpec mSurface; // offset 0x0, size 0xC
-    Attrib::RefSpec mEffect;  // offset 0xC, size 0xC
-    float mMinSpeed;          // offset 0x18, size 0x4
-    float mMaxSpeed;          // offset 0x1C, size 0x4
-};
-
-// TODO here or in SimEffect.h?
+// TODO move to the cpp file
 class EffectLookup {
   public:
     const Attrib::Collection *GetEffect() {
@@ -85,6 +77,7 @@ class EffectLookup {
     float mMaxSpeed;          // offset 0x1C, size 0x4
 };
 
+// TODO move to the cpp file
 // total size: 0xF4
 class Effects : public Behavior, public Sim::Collision::IListener {
   public:
@@ -108,18 +101,18 @@ class Effects : public Behavior, public Sim::Collision::IListener {
     void OnCollision(const COLLISION_INFO &cinfo) override;
 
     // Virtual methods
-    void OnScrapeWorld(const SimSurface &othersurface, const UMath::Vector3 &position, const UMath::Vector3 &velocity,
-                       const UMath::Vector3 &normal) override;
-    void OnHitWorld(const SimSurface &othersurface, float impulse, const UMath::Vector3 &position, const UMath::Vector3 &velocity,
-                    const UMath::Vector3 &normal) override;
-    void OnScrapeObject(const SimSurface &othersurface, const UMath::Vector3 &position, const UMath::Vector3 &velocity, const UMath::Vector3 &normal,
-                        HSIMABLE hother) override;
-    void OnHitObject(const SimSurface &othersurface, float impulse, const UMath::Vector3 &position, const UMath::Vector3 &velocity,
-                     const UMath::Vector3 &normal, HSIMABLE hother) override;
-    void OnScrapeGround(const SimSurface &othersurface, const UMath::Vector3 &position, const UMath::Vector3 &velocity,
-                        const UMath::Vector3 &normal) override;
-    void OnHitGround(const SimSurface &othersurface, float impulse, const UMath::Vector3 &position, const UMath::Vector3 &velocity,
-                     const UMath::Vector3 &normal) override;
+    virtual void OnScrapeWorld(const SimSurface &othersurface, const UMath::Vector3 &position, const UMath::Vector3 &velocity,
+                               const UMath::Vector3 &normal);
+    virtual void OnHitWorld(const SimSurface &othersurface, float impulse, const UMath::Vector3 &position, const UMath::Vector3 &velocity,
+                            const UMath::Vector3 &normal);
+    virtual void OnScrapeObject(const SimSurface &othersurface, const UMath::Vector3 &position, const UMath::Vector3 &velocity,
+                                const UMath::Vector3 &normal, HSIMABLE hother);
+    virtual void OnHitObject(const SimSurface &othersurface, float impulse, const UMath::Vector3 &position, const UMath::Vector3 &velocity,
+                             const UMath::Vector3 &normal, HSIMABLE hother);
+    virtual void OnScrapeGround(const SimSurface &othersurface, const UMath::Vector3 &position, const UMath::Vector3 &velocity,
+                                const UMath::Vector3 &normal);
+    virtual void OnHitGround(const SimSurface &othersurface, float impulse, const UMath::Vector3 &position, const UMath::Vector3 &velocity,
+                             const UMath::Vector3 &normal);
 
   private:
     ICollisionBody *mIRBComplex; // offset 0x50, size 0x4

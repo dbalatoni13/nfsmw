@@ -1,8 +1,12 @@
-#ifndef WORLD_ONLINEMANAGER_H
-#define WORLD_ONLINEMANAGER_H
+#ifndef ONLINE_MANAGER_HPP
+#define ONLINE_MANAGER_HPP
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
+// TODO check #if ONLINE_PLATFORM instead
+#if defined(EA_PLATFORM_GAMECUBE)
+#elif defined(EA_PLATFORM_XENON)
+#define ONLINE_ENABLED
+#elif defined(EA_PLATFORM_PLAYSTATION2)
+#define ONLINE_ENABLED
 #endif
 
 #include <types.h>
@@ -21,13 +25,14 @@ enum eOnlineState {
 class OnlineManager {
   public:
     void StartSimFrame();
+    void InitQuantizers();
 
     void EndSimFrame() {}
 
     void Initialize(int argc, char **argv) {}
 
     bool IsOnlineRace() {
-#if !ONLINE_SUPPORT
+#ifndef ONLINE_ENABLED
         return false;
 #else
         // TODO

@@ -8,7 +8,7 @@
 #include "Speed/Indep/Src/FEng/FEString.h"
 #include "Speed/Indep/Src/Frontend/FECarLoader.hpp"
 #include "Speed/Indep/Src/Input/ActionQueue.h"
-#include "Speed/Indep/Src/World/CarRender.hpp"
+#include "Speed/Indep/Src/World/Car.hpp"
 #include "Speed/Indep/Src/Camera/Movers/SelectCar.hpp"
 
 class FEGeometryModels {

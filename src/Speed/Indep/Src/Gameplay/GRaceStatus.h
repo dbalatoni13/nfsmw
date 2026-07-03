@@ -461,7 +461,8 @@ class GRaceStatus : public UTL::COM::Object, public IVehicleCache {
     }
 
     static bool IsFinalEpicPursuit() {
-        return GRaceStatus::Exists() && GRaceStatus::Get().GetRaceParameters() && GRaceStatus::Get().GetRaceParameters()->GetIsEpicPursuitRace();
+        return GRaceStatus::Exists() && (GRaceStatus::Get().GetRaceParameters() != nullptr) &&
+               GRaceStatus::Get().GetRaceParameters()->GetIsEpicPursuitRace();
     }
 
     float GetBinBaseHeat() const {

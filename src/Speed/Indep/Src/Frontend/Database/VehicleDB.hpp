@@ -57,7 +57,10 @@ class FECustomizationRecord {
     eCustomTuningType GetActiveTuning() const {}    // Decl: speed/indep/src/database/VehicleDB.hpp:152
     void SetActiveTuning(eCustomTuningType type) {} // Decl: speed/indep/src/database/VehicleDB.hpp:153
 
-    bool IsPreset() const {} // Decl: speed/indep/src/database/VehicleDB.hpp:155
+    // Decl: speed/indep/src/database/VehicleDB.hpp:155
+    bool IsPreset() const {
+        return this->Preset != 0;
+    }
 
     int GetNumInstalledPartNames() {} // Decl: speed/indep/src/database/VehicleDB.hpp:158
 
@@ -111,7 +114,7 @@ class FECustomizationRecord {
 };
 
 // Decl: speed/indep/src/database/VehicleDB.hpp:302
-typedef enum {
+enum ePlayerSettingsCameras {
     PSC_BUMPER = 0,
     PSC_HOOD = 1,
     PSC_CLOSE = 2,
@@ -121,7 +124,7 @@ typedef enum {
     PSC_PURSUIT = 6,
     NUM_CAMERAS_IN_OPTIONS = 7,
     PSC_DEFAULT = 2
-} ePlayerSettingsCameras;
+};
 
 // total size: 0x10
 // Decl: speed/indep/src/database/VehicleDB.hpp:322

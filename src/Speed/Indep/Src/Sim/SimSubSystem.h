@@ -1,9 +1,5 @@
-#ifndef SIM_SIMSUBSYSTEM_H
-#define SIM_SIMSUBSYSTEM_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef SIM_SUBSYTEM
+#define SIM_SUBSYTEM
 
 #include "Speed/Indep/Libs/Support/Utility/UCrc.h"
 
@@ -12,10 +8,20 @@ namespace Sim {
 // total size: 0x14
 class SubSystem {
   public:
-    void ValidateHeap(bool before, bool initializing);
+    typedef void (*InitCallback)();
+    typedef void (*RestoreCallback)();
 
-    SubSystem(const char *name, void (* initcb)(), void (* restorecb)()) {
-        
+#if EA_BUILD_A124 // TODO is this necessary?
+    SubSystem(const char *name, InitCallback initcb, RestoreCallback restorecb) {
+
+#else
+    SubSystem(const char *name, InitCallback initcb, RestoreCallback restorecb)
+        : mInit(initcb),       //
+          mRestore(restorecb), //
+          mSig(name),          //
+          mNext(mHead),        //
+          mName(name) {
+#endif
     }
 
     static void Init(const UCrc32 &sig) {
@@ -43,15 +49,19 @@ class SubSystem {
     }
 
   private:
-    static SubSystem *mHead;
+    void ValidateHeap(bool before, bool initializing);
 
-    void (*mInit)();    // offset 0x0, size 0x4
-    void (*mRestore)(); // offset 0x4, size 0x4
-    SubSystem *mNext;   // offset 0x8, size 0x4
-    UCrc32 mSig;        // offset 0xC, size 0x4
-    const char *mName;  // offset 0x10, size 0x4
+    InitCallback mInit;       // offset 0x0, size 0x4
+    RestoreCallback mRestore; // offset 0x4, size 0x4
+    SubSystem *mNext;         // offset 0x8, size 0x4
+    UCrc32 mSig;              // offset 0xC, size 0x4
+    const char *mName;        // offset 0x10, size 0x4
+    static SubSystem *mHead;
 };
 
 }; // namespace Sim
+
+#define BIND_SIM_SUBSYSTEM(_CLASSNAME_, _INITFUNCTION_, _RESTOREFUNCTION_)                                                                           \
+    Sim::SubSystem _Physics_System_##_CLASSNAME_(#_CLASSNAME_, _INITFUNCTION_, _RESTOREFUNCTION_);
 
 #endif

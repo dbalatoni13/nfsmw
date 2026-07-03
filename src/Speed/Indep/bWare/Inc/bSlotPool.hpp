@@ -1,9 +1,5 @@
-#ifndef BWARE_BSLOT_POOL_H
-#define BWARE_BSLOT_POOL_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef BSLOTPOOL_HPP
+#define BSLOTPOOL_HPP
 
 #include "bList.hpp"
 
@@ -13,14 +9,18 @@ enum SlotPoolFlags {
     SLOTPOOL_FLAG_ZERO_ALLOCATED_MEMORY = 2,
     SLOTPOOL_FLAG_OVERFLOW_IF_FULL = 1,
 };
+
+#define DEFAULT_SLOTPOOL_FLAGS                                                                                                                       \
+    (SLOTPOOL_FLAG_OVERFLOW_IF_FULL | SLOTPOOL_FLAG_ZERO_ALLOCATED_MEMORY | SLOTPOOL_FLAG_WARN_IF_OVERFLOW | SLOTPOOL_FLAG_WARN_IF_NONEMPTY_DELETE)
+
+// total size: 0x4
 class SlotPoolEntry {
-    // total size: 0x4
   public:
     SlotPoolEntry *Next; // offset 0x0, size 0x4
 };
 
+// total size: 0x34
 class SlotPool : public bTNode<SlotPool> {
-    // total size: 0x34
 
     friend class SlotPoolManager; // only way I can think to allow SlotPoolManager::DeleteSlotPool to access NextSlotPool
 
@@ -114,6 +114,7 @@ class SlotPoolManager {
 
 int bCountFreeSlots(SlotPool *slot_pool);
 int bCountTotalSlots(SlotPool *slot_pool);
+int bIsSlotPoolFull(SlotPool *slot_pool);
 SlotPool *bNewSlotPool(int slot_size, int num_slots, const char *debug_name, int memory_pool);
 void bDeleteSlotPool(SlotPool *slot_pool);
 int bIsSlotPoolFull(SlotPool *slot_pool);

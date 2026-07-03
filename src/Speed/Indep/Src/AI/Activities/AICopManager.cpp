@@ -59,6 +59,7 @@ float AICopManager::mCopMaxSpawnDist = 400.0f;
 
 AICopManager *TheOneCopManager = nullptr;
 
+// TODO apply macros everywhere in zAI 
 UTL::COM::Factory<Sim::Param, Sim::IActivity, UCrc32>::Prototype _AIPursuit("AIPursuit", AIPursuit::Construct);
 // UTL::COM::Factory<Sim::Param, Sim::IActivity, UCrc32>::Prototype _AIRoadBlock("AIRoadBlock", AIRoadBlock::Construct);
 UTL::COM::Factory<Sim::Param, Sim::IActivity, UCrc32>::Prototype _AICopManager("AICopManager", AICopManager::Construct);
@@ -87,7 +88,7 @@ AICopManager::AICopManager(Sim::Param params)
       mPlatformBudgetCopCars(8),                          //
       mSpeech(nullptr) {
     MakeDebugable(DBG_AI);
-    mSpeech = UTL::COM::Factory<Sim::Param, Sim::IActivity, UCrc32>::CreateInstance("SoundAI", Sim::Param());
+    mSpeech = Sim::IActivity::CreateInstance("SoundAI", Sim::Param());
     // TODO is the if check in Attach?
     if (mSpeech) {
         Attach(mSpeech);
@@ -320,8 +321,8 @@ IVehicle *AICopManager::GetAvailableCopVehicleByName(const char *name) {
 
     UMath::Vector3 initialVec = {0.0f, 1.0f, 0.0f};
     UMath::Vector3 initialPos = {0.0f, 0.0f, 0.0f};
-    ISimable *isimable = UTL::COM::Factory<Sim::Param, ISimable, UCrc32>::CreateInstance(
-        "PVehicle", VehicleParams(this, DRIVER_COP, Attrib::StringToKey(name), initialVec, initialPos, 0, nullptr, 0));
+    ISimable *isimable =
+        ISimable::CreateInstance("PVehicle", VehicleParams(this, DRIVER_COP, Attrib::StringToKey(name), initialVec, initialPos, 0, nullptr, 0));
     if (isimable) {
         Attach(isimable);
         IVehicle *ivehicle;
@@ -380,7 +381,7 @@ IPursuit *AICopManager::GetPursuitActivity(ISimable *itargetSimable) {
     }
 
     IPursuit *ipursuitActivity;
-    Sim::IActivity *newinstance = UTL::COM::Factory<Sim::Param, Sim::IActivity, UCrc32>::CreateInstance("AIPursuit", Sim::Param());
+    Sim::IActivity *newinstance = Sim::IActivity::CreateInstance("AIPursuit", Sim::Param());
     newinstance->QueryInterface(&ipursuitActivity);
     Attach(ipursuitActivity);
     IAttachable *targetattachable;
@@ -1397,7 +1398,7 @@ void AICopManager::UpdatePursuits() {
     }
 
     if (mPursuitRequestVehicle) {
-        Sim::IActivity *ipursuitActivity = UTL::COM::Factory<Sim::Param, Sim::IActivity, UCrc32>::CreateInstance("AIPursuit", Sim::Param());
+        Sim::IActivity *ipursuitActivity = Sim::IActivity::CreateInstance("AIPursuit", Sim::Param());
         IPursuit *ipursuit;
         ipursuitActivity->QueryInterface(&ipursuit);
         Attach(ipursuit);
@@ -1566,7 +1567,7 @@ void AICopManager::PursueAtHeatLevel(int minHeatLevel) {
         }
 
         if (!alreadyPursued) {
-            Sim::IActivity *ipursuitActivity = UTL::COM::Factory<Sim::Param, Sim::IActivity, UCrc32>::CreateInstance("AIPursuits", Sim::Param());
+            Sim::IActivity *ipursuitActivity = Sim::IActivity::CreateInstance("AIPursuits", Sim::Param());
             IPursuit *ipursuit;
             ipursuitActivity->QueryInterface(&ipursuit);
             Attach(ipursuit);

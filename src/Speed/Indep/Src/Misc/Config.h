@@ -4,6 +4,8 @@
 #include "Speed/Indep/Src/Frontend/Localization/Localize.hpp"
 #include "Speed/Indep/Src/World/RaceParameters.hpp"
 
+// TODO this file was made up. What should we use instead? Maybe Speed.hpp?
+
 extern const char *BuildVersionChangelistName;
 
 extern int IsSoundEnabled;
@@ -47,6 +49,8 @@ extern int MikeMannBuild;
 extern bool IsCollectorsEdition;
 extern bool CarGuysCamera;
 extern eTrackDirection SkipFETrackDirection;
+extern int TimeOfDaySwapEnable;
+extern bVector3 *SkipFEOverrideStartPosition;
 extern int OnlineEnabled;
 extern bool gVerboseTesterOutput;
 

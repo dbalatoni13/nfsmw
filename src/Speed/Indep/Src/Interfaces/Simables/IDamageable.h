@@ -6,8 +6,8 @@
 #endif
 
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
-#include "Speed/Indep/Src/Physics/PhysicsTypes.h"
 #include "Speed/Indep/Src/World/Damagezones.h"
+#include "Speed/Indep/Src/World/VehicleFX.h"
 
 class IDamageable : public UTL::COM::IUnknown {
   public:

@@ -8,10 +8,22 @@
 #include <cstddef>
 #include <types.h>
 
+#include "Speed/Indep/Libs/Support/Miscellaneous/CARP.h"
 #include "Speed/Indep/Src/Misc/Hermes.h"
 
-extern char *gCreationPoint;
-extern char *gDeletionPoint;
+struct RegisterEvent {
+    typedef void (* MakeEventCallback)(const void *);
+
+    typedef void (* ResolveEventCallback)(void *, const struct UGroup *);
+
+    typedef int (* LuaBinding)(struct lua_State *);
+
+    static void (* LookupEvent(unsigned int tag))(const void *);
+
+    static void (* ResolveEvent(unsigned int tag))(void *, const struct UGroup *);
+
+    static int (* GetLuaBinding(unsigned int tag))(struct lua_State *);
+};
 
 class Event {
   public:
@@ -44,11 +56,11 @@ class EventManager {
 
     static void RunEvents();
 
-    static void FireEventList(const struct EventList *eventList, bool verbose);
+    static void FireEventList(const CARP::EventList *eventList, bool verbose);
 
-    static void FireOneEvent(const struct EventList *eventList, unsigned int eventToFire, bool verbose);
+    static void FireOneEvent(const CARP::EventList *eventList, unsigned int eventToFire, bool verbose);
 
-    static bool ListHasEvent(const struct EventList *eventList, unsigned int eventID, const struct EventStaticData **foundEvent);
+    static bool ListHasEvent(const CARP::EventList *eventList, unsigned int eventID, const CARP::EventStaticData **foundEvent);
 
     static void AbortCurrentEventList();
 
@@ -58,11 +70,14 @@ class EventManager {
 
     static Hermes::Message *EmbedField(Event *event, Hermes::Message *ptr);
 
-    // static inline Event *GetCurrentEvent() {}
+    // static Event *GetCurrentEvent() {}
 
   private:
     static Event *fgCurrentEvent;  // size: 0x4, address: 0x8041E458
     static bool fgHaltCurrentList; // size: 0x1, address: 0x8041E45C
 };
+
+template<typename T>
+unsigned int GetEmbeddedObjectSize(T *ptr); // ???
 
 #endif

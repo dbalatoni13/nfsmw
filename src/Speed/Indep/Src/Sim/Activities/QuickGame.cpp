@@ -38,7 +38,7 @@ QuickGame::QuickGame(Sim::Param params)
     bool foundIntroNIS = false;
     GRaceCustom *quickRace = GRaceDatabase::Get().GetStartupRace();
     if (quickRace) {
-        const char *nisName = quickRace->GetGameplayObj()->IntroNIS(0);
+        const char *nisName = quickRace->GetGameplayObj()->IntroNIS();
         if (nisName && nisName[0] != '\0') {
             foundIntroNIS = true;
         }
@@ -97,7 +97,7 @@ Sim::IActivity *QuickGame::Construct(Sim::Param params) {
 
 void QuickGame::CreatePlayers() {
     bool split_screen = Sim::GetUserMode() == Sim::USER_SPLIT_SCREEN;
-    Sim::IEntity *entity = UTL::COM::Factory<Sim::Param, Sim::IEntity, UCrc32>::CreateInstance("LocalPlayer", Sim::Param());
+    Sim::IEntity *entity = Sim::IEntity::CreateInstance("LocalPlayer", Sim::Param());
     IPlayer *player;
 
     if (entity->QueryInterface(&player)) {
@@ -107,7 +107,7 @@ void QuickGame::CreatePlayers() {
     }
 
     if (split_screen) {
-        entity = UTL::COM::Factory<Sim::Param, Sim::IEntity, UCrc32>::CreateInstance("LocalPlayer", Sim::Param());
+        entity = Sim::IEntity::CreateInstance("LocalPlayer", Sim::Param());
         if (entity->QueryInterface(&player)) {
             player->SetControllerPort(FEDatabase->PlayerJoyports[1]);
             player->SetSettings(1);
@@ -139,14 +139,14 @@ void QuickGame::OnBeginState() {
             new ECommitRenderAssets();
             break;
         case RACESTATE_LOADING_ACTIVITIES:
-            UTL::COM::Factory<Sim::Param, Sim::IActivity, UCrc32>::CreateInstance("AvoidableManager", Sim::Param());
-            UTL::COM::Factory<Sim::Param, Sim::IActivity, UCrc32>::CreateInstance("AICopManager", Sim::Param());
-            UTL::COM::Factory<Sim::Param, Sim::IActivity, UCrc32>::CreateInstance("AITrafficManager", Sim::Param());
-            UTL::COM::Factory<Sim::Param, Sim::IActivity, UCrc32>::CreateInstance("AIParkedCarSpawner", Sim::Param());
-            UTL::COM::Factory<Sim::Param, Sim::IActivity, UCrc32>::CreateInstance("PathFinder", Sim::Param());
-            UTL::COM::Factory<Sim::Param, Sim::IActivity, UCrc32>::CreateInstance("GameplayActivity", Sim::Param());
-            UTL::COM::Factory<Sim::Param, Sim::IActivity, UCrc32>::CreateInstance("Gps", Sim::Param());
-            UTL::COM::Factory<Sim::Param, Sim::IActivity, UCrc32>::CreateInstance("NISListenerActivity", Sim::Param());
+            Sim::IActivity::CreateInstance("AvoidableManager", Sim::Param());
+            Sim::IActivity::CreateInstance("AICopManager", Sim::Param());
+            Sim::IActivity::CreateInstance("AITrafficManager", Sim::Param());
+            Sim::IActivity::CreateInstance("AIParkedCarSpawner", Sim::Param());
+            Sim::IActivity::CreateInstance("PathFinder", Sim::Param());
+            Sim::IActivity::CreateInstance("GameplayActivity", Sim::Param());
+            Sim::IActivity::CreateInstance("Gps", Sim::Param());
+            Sim::IActivity::CreateInstance("NISListenerActivity", Sim::Param());
             break;
         case RACESTATE_LOADING_OPPONENT_AUDIO:
         case RACESTATE_LOADING_PLAYER_AUDIO:

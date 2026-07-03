@@ -5,26 +5,18 @@
 #pragma once
 #endif
 
-#include "./WCollision.h"
 #include "WSurfaceTypes.h"
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
-#include "Speed/Indep/Libs/Support/Utility/UStandard.h"
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
-
-// TODO
-void v3unit(const UMath::Vector3 *v, UMath::Vector3 *result);
 
 // total size: 0x30
 struct WCollisionTri {
     WCollisionTri() {}
 
-    UMath::Vector3 fPt0;                  // offset 0x0, size 0xC
-    const struct SimSurface *fSurfaceRef; // offset 0xC, size 0x4
-    UMath::Vector3 fPt1;                  // offset 0x10, size 0xC
-    unsigned int fFlags;                  // offset 0x1C, size 0x4
-    UMath::Vector3 fPt2;                  // offset 0x20, size 0xC
-    WSurface fSurface;                    // offset 0x2C, size 0x2
-    unsigned short PAD;                   // offset 0x2E, size 0x2
+    float MinY() const {
+        float minY = UMath::Min(fPt0.y, fPt1.y);
+        return UMath::Min(minY, fPt2.y);
+    }
 
     void GetNormal(UMath::Vector3 *norm) const {
         UMath::Vector3 vecX;
@@ -48,28 +40,14 @@ struct WCollisionTri {
             v3unit(&normal, norm);
         }
     }
+
+    UMath::Vector3 fPt0;                  // offset 0x0, size 0xC
+    const struct SimSurface *fSurfaceRef; // offset 0xC, size 0x4
+    UMath::Vector3 fPt1;                  // offset 0x10, size 0xC
+    unsigned int fFlags;                  // offset 0x1C, size 0x4
+    UMath::Vector3 fPt2;                  // offset 0x20, size 0xC
+    WSurface fSurface;                    // offset 0x2C, size 0x2
+    unsigned short PAD;                   // offset 0x2E, size 0x2
 };
-
-DECLARE_CONTAINER_TYPE(WCollisionWarnVector);
-DECLARE_CONTAINER_TYPE(WCollisionVector);
-
-// TODO move these?
-template <typename T, std::size_t N> class WCollisionWarnVector : public UTL::Std::vector<T, _type_WCollisionWarnVector> {};
-
-struct WCollisionInstanceCacheList : public WCollisionWarnVector<const WCollisionInstance *, 80> {
-    // total size: 0x10
-};
-
-template <typename T> class WCollisionVector : public UTL::Std::vector<T, _type_WCollisionVector> {};
-
-struct WCollisionBarrierList : public WCollisionVector<WCollisionBarrierListEntry> {
-    // total size: 0x10
-};
-
-struct WCollisionTriBlock : public WCollisionVector<WCollisionTri> {};
-
-struct WCollisionTriList : public WCollisionVector<WCollisionTriBlock *> {};
-
-struct WCollisionObjectList : public WCollisionVector<const WCollisionObject *> {};
 
 #endif

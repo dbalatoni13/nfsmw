@@ -22,6 +22,10 @@ Single-file mode (--file):
     python tools/lookup.py --file <path> struct   <StructName>
     python tools/lookup.py --file <path> function <FunctionAddress>
     ...  (all kinds searched in the one file)
+
+Alternate globals file:
+    python tools/lookup.py --globals-file globals.unified.nothpp symbols/Dwarf enum eTrafficDensity
+    python tools/lookup.py --globals-file unified symbols/Dwarf struct RaceParameters
 """
 
 import re
@@ -34,22 +38,25 @@ import argparse
 # ---------------------------------------------------------------------------
 
 re_total_size = re.compile(r"^// total size:\s*0x[0-9A-Fa-f]+")
-# PS2 format: struct Name ... { // 0x28
-re_struct_inline = re.compile(r"^struct\s+\w+.*\{\s*//\s*0x[0-9A-Fa-f]")
-re_struct_name = re.compile(r"\bstruct\s+(\w+)")
+# PS2 format: struct/class Name ... { // 0x28
+re_struct_inline = re.compile(r"^(?:struct|class)\s+\w+.*\{\s*//\s*0x[0-9A-Fa-f]")
+re_struct_name = re.compile(r"\b(?:struct|class)\s+(\w+)")
 re_enum_start = re.compile(r"^enum\s+(?:class\s+)?(\w+)\s*(?::\s*[\w:]+\s*)?\{")
 re_enum_name = re.compile(r"^enum\s+(?:class\s+)?(\w+)")
 re_func_range = re.compile(r"^// Range:\s*(0x[0-9A-Fa-f]+)\s*->\s*(0x[0-9A-Fa-f]+)")
 re_typedef_name = re.compile(r"^typedef\s+.+?(\w+)\s*;")
+re_decl_comment = re.compile(r"^// Decl:\s+")
+re_file_comment = re.compile(r"^// File:\s+")
 
-# Global name: last \w+ token before the optional trailing ';' or '// comment'.
+# Global name: last \w+ token before an optional initializer and trailing ';'.
 # Handles all of:
 #   int asd;
 #   struct CAnimCandidateData * TheAnimCandidateData;
 #   extern int foo;
 #   const struct UCrc32 CAR; // size: 0x4
-# We extract the last word before the semicolon (skipping pointer stars etc.)
-re_global_name = re.compile(r"^(?:[\w\s:<>*&]+?)\b(\w+)\s*;")
+#   const Key Attrib::Hash::ecar::CollectionName = 2627848441; // size: 0x4
+# We extract the last word before the initializer/semicolon (skipping pointer stars etc.)
+re_global_name = re.compile(r"^(?:[\w\s:<>*&]+?)\b(\w+)\s*(?:=[^;]*)?;")
 
 # ---------------------------------------------------------------------------
 # Struct splitter
@@ -86,7 +93,7 @@ def split_structs(text: str) -> list[tuple[str, str]]:
                 pending = []
                 continue
             if pending:
-                # Next line after total_size header — should be the struct line
+                # Allow comment/blank lines between total_size header and struct line.
                 pending.append(line)
                 if "{" in line:
                     current = pending
@@ -94,8 +101,10 @@ def split_structs(text: str) -> list[tuple[str, str]]:
                     brace_depth = sum(l.count("{") - l.count("}") for l in current)
                     pending = []
                 else:
-                    # Not a struct line, discard pending
-                    pending = []
+                    stripped = line.strip()
+                    if stripped and not stripped.startswith("//"):
+                        # Not a struct line, discard pending
+                        pending = []
             continue
 
         current.append(line)
@@ -136,12 +145,20 @@ def _extract_nested_enums(struct_name: str, block: str) -> list[tuple[str, str]]
         brace_depth += line.count("{") - line.count("}")
         if brace_depth == 0 and stripped.endswith("};"):
             enum_block = "".join(current)
-            m = re_enum_name.match(enum_block.strip())
-            if m:
-                results.append((f"{struct_name}::{m.group(1)}", enum_block))
+            enum_name = _block_enum_name(enum_block)
+            if enum_name:
+                results.append((f"{struct_name}::{enum_name}", enum_block))
             in_enum = False
 
     return results
+
+
+def _block_enum_name(block: str) -> str | None:
+    for line in block.splitlines():
+        m = re_enum_name.match(line.strip())
+        if m:
+            return m.group(1)
+    return None
 
 
 def split_enums(text: str) -> list[tuple[str, str]]:
@@ -152,6 +169,7 @@ def split_enums(text: str) -> list[tuple[str, str]]:
     results: list[tuple[str, str]] = []
     lines = text.splitlines(keepends=True)
     current: list[str] = []
+    pending: list[str] = []
     in_block = False
     brace_depth = 0
 
@@ -159,18 +177,24 @@ def split_enums(text: str) -> list[tuple[str, str]]:
     for line in lines:
         stripped = line.strip()
         if not in_block:
+            if re_decl_comment.match(line) or re_file_comment.match(line):
+                pending.append(line)
+                continue
             if re_enum_start.match(line):
-                current = [line]
+                current = pending + [line]
+                pending = []
                 in_block = True
                 brace_depth = line.count("{") - line.count("}")
+            elif stripped:
+                pending = []
             continue
         current.append(line)
         brace_depth += line.count("{") - line.count("}")
         if brace_depth == 0 and stripped.endswith("};"):
             block = "".join(current)
-            m = re_enum_name.match(block.strip())
-            if m:
-                results.append((m.group(1), block))
+            enum_name = _block_enum_name(block)
+            if enum_name:
+                results.append((enum_name, block))
             in_block = False
 
     # nested enums
@@ -404,6 +428,12 @@ KIND_TO_FILE = {
     "function": "functions.nothpp",
 }
 
+GLOBALS_FILE_ALIASES = {
+    "base": "globals.nothpp",
+    "globals": "globals.nothpp",
+    "unified": "globals.unified.nothpp",
+}
+
 VALID_KINDS = list(KIND_TO_FILE.keys())
 
 
@@ -413,6 +443,13 @@ def read_text(path: str) -> str:
         sys.exit(1)
     with open(path, "r", encoding="utf-8", errors="ignore") as f:
         return f.read()
+
+
+def resolve_globals_file(folder: str, value: str) -> str:
+    filename = GLOBALS_FILE_ALIASES.get(value, value)
+    if os.path.isabs(filename):
+        return filename
+    return os.path.join(folder, filename)
 
 
 # ---------------------------------------------------------------------------
@@ -430,6 +467,14 @@ def main():
         "--file",
         metavar="PATH",
         help="Query a single combined file instead of a folder.",
+    )
+    parser.add_argument(
+        "--globals-file",
+        default="globals.nothpp",
+        help=(
+            "Globals file to use in folder mode for struct/enum/global/typedef "
+            "lookups. Accepts 'base', 'unified', or a filename/path."
+        ),
     )
     parser.add_argument(
         "source", nargs="?", default=None, help="Folder path (omit when using --file)"
@@ -458,7 +503,10 @@ def main():
                 f"Error: '{folder}' is not a directory. Use --file for a single file."
             )
             sys.exit(1)
-        text = read_text(os.path.join(folder, KIND_TO_FILE[kind]))
+        if kind == "function":
+            text = read_text(os.path.join(folder, KIND_TO_FILE[kind]))
+        else:
+            text = read_text(resolve_globals_file(folder, args.globals_file))
 
     # Dispatch
     if kind == "struct":

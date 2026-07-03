@@ -1,11 +1,35 @@
-#ifndef SUPPORT_UTILITY_FASTMEM_H
-#define SUPPORT_UTILITY_FASTMEM_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef __FastMem_h_
+#define __FastMem_h_
 
 #include "Speed/Indep/bWare/Inc/bMemory.hpp"
+#include "Speed/Indep/bWare/Inc/bPrintf.hpp"
+
+// TODO
+#define FASTMEM_ASSERT(_a_) bAssert(_a_)
+#define FASTMEM_ABORT(_a_) bAssert(0)
+#define FASTMEM_ASSERT_MESSAGE(_a_, _m_)                                                                                                             \
+    // {                                                                                                                                                \
+    //     if (!(_a_)) {                                                                                                                                \
+    //         bPrintf(_m_);                                                                                                                            \
+    //         bAssert(_a_);                                                                                                                            \
+    //     }                                                                                                                                            \
+    // }
+#define FASTMEMDEBUGCODE(CODE)
+#define FAST_NAME(NAME) NULL
+#define USE_FASTALLOC(CLASSNAME)                                                                                                                     \
+    void *operator new(size_t size) {                                                                                                                \
+        return (gFastMem.Alloc(size, FAST_NAME(#CLASSNAME)));                                                                                        \
+    };                                                                                                                                               \
+    void operator delete(void *mem, size_t size) {                                                                                                   \
+        if (mem != NULL)                                                                                                                             \
+            gFastMem.Free(mem, size, FAST_NAME(#CLASSNAME));                                                                                         \
+    };                                                                                                                                               \
+    void *operator new(size_t size, const char *name) {                                                                                              \
+        return (gFastMem.Alloc(size, FAST_NAME(#CLASSNAME)));                                                                                        \
+    };                                                                                                                                               \
+    void operator delete(void *mem, const char *name) {                                                                                              \
+        FASTMEM_ASSERT_MESSAGE(false, "Do not call this.\n");                                                                                        \
+    };
 
 // total size: 0x32C
 class FastMem {

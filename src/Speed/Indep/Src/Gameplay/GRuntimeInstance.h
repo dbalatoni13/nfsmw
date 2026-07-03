@@ -1,16 +1,15 @@
 #ifndef GAMEPLAY_GRUNTIMEINSTANCE_H
 #define GAMEPLAY_GRUNTIMEINSTANCE_H
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
+#include "GUserIncludes.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/gameplay.h"
 
 // total size: 0x28
 class GRuntimeInstance : public Attrib::Gen::gameplay {
   public:
     GRuntimeInstance(const Attrib::Key &key, GameplayObjType type);
+    virtual ~GRuntimeInstance();
+    virtual GameplayObjType GetType() const;
 
   private:
     unsigned short mFlags;                // offset 0x14, size 0x2

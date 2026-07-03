@@ -2,12 +2,13 @@
 #include "Ecstasy.hpp"
 #include "Speed/Indep/Src/Misc/ResourceLoader.hpp"
 #include "Speed/Indep/bWare/Inc/bDebug.hpp"
+#include "Speed/Indep/bWare/Inc/bTypes.hpp"
 #include "Texture.hpp"
 
 #include <types.h>
 
+// total size: 0x8
 struct ReplacementTextureTableFixup {
-    // total size: 0x8
     eReplacementTextureTable *pReplacementTextureTable; // offset 0x0, size 0x4
     int16 NumReplacementTextures;                       // offset 0x4, size 0x2
     int16 RefCount;                                     // offset 0x6, size 0x2
@@ -26,11 +27,9 @@ float TotalNotifyTime;
 int NumNotifyLoads;
 int NumNotifyUnloads;
 
-#define NUM_REPLACEMENTS (182)
-
 void AddReplacementTextureTableFixup(eReplacementTextureTable *r, int num) {
     ReplacementTextureTableFixup *free_fixup = nullptr;
-    for (int index = 0; index < NUM_REPLACEMENTS; index++) {
+    for (int index = 0; index < NUM_ELEMENTS(ReplacementTextureTableFixups); index++) {
         ReplacementTextureTableFixup *fixup = &ReplacementTextureTableFixups[index];
         if (!free_fixup && !fixup->pReplacementTextureTable) {
             free_fixup = fixup;
@@ -48,7 +47,7 @@ void AddReplacementTextureTableFixup(eReplacementTextureTable *r, int num) {
 }
 
 void RemoveReplacementTextureTableFixup(eReplacementTextureTable *r) {
-    for (int index = 0; index < NUM_REPLACEMENTS; index++) {
+    for (int index = 0; index < NUM_ELEMENTS(ReplacementTextureTableFixups); index++) {
         ReplacementTextureTableFixup *fixup = &ReplacementTextureTableFixups[index];
         if (fixup->pReplacementTextureTable == r) {
             fixup->RefCount--;
@@ -62,7 +61,7 @@ void RemoveReplacementTextureTableFixup(eReplacementTextureTable *r) {
 }
 
 void eFixupReplacementTextureTables() {
-    for (int index = 0; index < NUM_REPLACEMENTS; index++) {
+    for (int index = 0; index < NUM_ELEMENTS(ReplacementTextureTableFixups); index++) {
         ReplacementTextureTableFixup *fixup = &ReplacementTextureTableFixups[index];
         if (fixup->pReplacementTextureTable) {
             for (int n = 0; n < fixup->NumReplacementTextures; n++) {
@@ -74,7 +73,7 @@ void eFixupReplacementTextureTables() {
 }
 
 void eFixupReplacementTexturesAfterUnloading(TextureInfo *texture_info) {
-    for (int index = 0; index < NUM_REPLACEMENTS; index++) {
+    for (int index = 0; index < NUM_ELEMENTS(ReplacementTextureTableFixups); index++) {
         ReplacementTextureTableFixup *fixup = &ReplacementTextureTableFixups[index];
         if (fixup->pReplacementTextureTable) {
             for (int n = 0; n < fixup->NumReplacementTextures; n++) {

@@ -1103,7 +1103,7 @@ FEMarkerManager::ePossibleMarker FEMarkerManager::ConvertBigBangMarkerAward(cons
 }
 
 void FEMarkerManager::AwardMarker(Attrib::Gen::gameplay &inst, bool immediate_reward) {
-    ePossibleMarker marker = ConvertBigBangMarkerAward(inst.RewardMarkerType(0), inst.UpgradePartID(0));
+    ePossibleMarker marker = ConvertBigBangMarkerAward(inst.RewardMarkerType(), inst.UpgradePartID());
     if (marker != MARKER_NONE) {
         int param = 0;
         if (immediate_reward) {
@@ -1113,7 +1113,7 @@ void FEMarkerManager::AwardMarker(Attrib::Gen::gameplay &inst, bool immediate_re
             if (marker != MARKER_CASH) {
                 goto add_inventory;
             }
-            param = static_cast<int>(inst.CashReward(0));
+            param = static_cast<int>(inst.CashReward());
             FEDatabase->GetCareerSettings()->CurrentCash = FEDatabase->GetCareerSettings()->CurrentCash + param;
             goto award_done;
 
@@ -1129,7 +1129,7 @@ void FEMarkerManager::AwardMarker(Attrib::Gen::gameplay &inst, bool immediate_re
         } else {
             if (marker != MARKER_PINK_SLIP) {
                 if (marker == MARKER_CASH) {
-                    param = static_cast<int>(inst.CashReward(0));
+                    param = static_cast<int>(inst.CashReward());
                 }
             } else {
                 param = FEngHashString("BL%d", FEDatabase->GetCareerSettings()->GetCurrentBin(), 0);
@@ -1187,9 +1187,9 @@ eUnlockableEntity ConvertBigBangUpgradeAward(const char *partname) {
 }
 
 void AwardUnlockUpgrade(Attrib::Gen::gameplay &inst) {
-    const char *upgradePartName = inst.UpgradePartName(0);
-    const char *upgradePartID = inst.UpgradePartID(0);
-    int upgradeLevel = inst.UpgradeLevel(0);
+    const char *upgradePartName = inst.UpgradePartName();
+    const char *upgradePartID = inst.UpgradePartID();
+    int upgradeLevel = inst.UpgradeLevel();
     eUnlockableEntity entity = ConvertBigBangUpgradeAward(upgradePartID);
     if (entity != UNLOCKABLE_THING_UNKNOWN) {
         if (entity == static_cast<eUnlockableEntity>(0x32)) {

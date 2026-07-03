@@ -4,8 +4,6 @@
 #include "Speed/Indep/Src/World/RaceParameters.hpp"
 #include "Speed/Indep/Src/Frontend/FEJoyInput.hpp"
 
-typedef enum { PLAYER_1 = 0, PLAYER_2 = 1, MAX_NUM_PLAYERS = 2 } PlayerNumbers;
-
 class RaceStarter {
   public:
     static void StartRace();

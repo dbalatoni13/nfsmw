@@ -633,7 +633,7 @@ void RigidBody::ModifyCollision(const RigidBody &other, const Dynamics::Collisio
 
 bool RigidBody::Separate(RigidBody &objA, bool objAImmobile, RigidBody &objB, bool objBImmobile, const UMath::Vector3 &normal, UMath::Vector3 &point,
                          float overlap, bool APenetratesB) {
-    if (overlap <= FLOAT_EPSILON) {
+    if (overlap <= UMath::Epsilon) {
         return false;
     }
     Volatile &dataA = *objA.mData;
@@ -659,7 +659,7 @@ bool RigidBody::Separate(RigidBody &objA, bool objAImmobile, RigidBody &objB, bo
         float normal_speedA = -UMath::Dot(dataA.linearVel, normal);
         float normal_speedB = UMath::Dot(dataB.linearVel, normal);
         float closingspeed = normal_speedA + normal_speedB;
-        if ((UMath::Abs(closingspeed) > FLOAT_EPSILON) && (objA.mSimableType == objB.mSimableType) && (objA.mSimableType == SIMABLE_SMACKABLE)) {
+        if ((UMath::Abs(closingspeed) > UMath::Epsilon) && (objA.mSimableType == objB.mSimableType) && (objA.mSimableType == SIMABLE_SMACKABLE)) {
             float t = overlap / closingspeed;
             float xA = normal_speedA * t;
             float xB = normal_speedB * t;
@@ -997,7 +997,11 @@ bool RigidBody::CanCollideWithWorld() const {
 bool RigidBody::OnWCollide(const WCollisionMgr::WorldCollisionInfo &cInfo, const UMath::Vector3 &cPoint, void *userdata) {
     Volatile &data = *mData;
     data.SetStatus(Volatile::HAS_HAD_WORLD_COLLISION);
+#ifdef EA_BUILD_A124
+    SimSurface surface(cInfo.fBle.fSurfaceHash.GetValue());
+#else
     SimSurface surface(cInfo.fBle.fSurfaceRef);
+#endif
     surface.DebugOverride();
     UVector3 wV;
     if (cInfo.fNormal.w > 0.0f) {

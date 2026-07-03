@@ -445,7 +445,7 @@ void EngineSpline::OnTaskSimulate(float dT) {
     if (mNeutralRev) {
         float rpm_diff = mEngineInfo.RED_LINE() - mEngineInfo.IDLE();
 
-        if (mNeutralRevSpeed <= FLOAT_EPSILON) {
+        if (mNeutralRevSpeed <= UMath::Epsilon) {
             mRPM = mNeutralRevRPM;
         } else if (mRPM < mNeutralRevRPM) {
             mRPM += mNeutralRevSpeed * rpm_diff * dT;

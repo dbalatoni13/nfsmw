@@ -1,92 +1,90 @@
-#ifndef WORLD_SPACENODE_H
-#define WORLD_SPACENODE_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef SPACENODE_HPP
+#define SPACENODE_HPP
 
 #include "Speed/Indep/Src/Misc/Replay.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
+#include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
 
 #include <types.h>
 
+extern SlotPool *SpaceNodeSlotPool;
+
+// total size: 0xF4
 class SpaceNode : public bTNode<SpaceNode> {
   public:
-    // void *operator new(unsigned int size) {}
+    USE_SLOTALLOC(SpaceNodeSlotPool);
 
-    // void operator delete(void *ptr) {}
-
-    void SetNameHash(unsigned int name_hash) {
-        NameHash = name_hash;
+    void SetNameHash(uint32 name_hash) {
+        this->NameHash = name_hash;
     }
 
     const char *GetName() {
-        return Name;
+        return this->Name;
     }
 
     unsigned int GetNameHash() {
-        return NameHash;
+        return this->NameHash;
     }
 
     SpaceNode *GetParent() {
-        return Parent;
+        return this->Parent;
     }
 
     bMatrix4 *GetWorldMatrix() {
-        if (Dirty) {
-            Update();
+        if (this->Dirty) {
+            this->Update();
         }
-        return &WorldMatrix;
+        return &this->WorldMatrix;
     }
 
     bVector3 *GetWorldVelocity() {
-        if (Dirty) {
-            Update();
+        if (this->Dirty) {
+            this->Update();
         }
-        return &WorldVelocity;
+        return &this->WorldVelocity;
     }
 
     bVector3 *GetWorldAngularVelocity() {
-        if (Dirty) {
-            Update();
+        if (this->Dirty) {
+            this->Update();
         }
-        return &WorldAngularVelocity;
+        return &this->WorldAngularVelocity;
     }
 
     bMatrix4 *GetLocalMatrix() {
-        return &LocalMatrix;
+        return &this->LocalMatrix;
     }
 
     bVector3 *GetLocalVelocity() {
-        return &LocalVelocity;
+        return &this->LocalVelocity;
     }
 
     bVector3 *GetLocalAngularVelocity() {
-        return &LocalAngularVelocity;
+        return &this->LocalAngularVelocity;
     }
 
     bMatrix4 *GetBlendingMatrices() {
-        return BlendingMatrices;
+        return this->BlendingMatrices;
     }
 
     void SetLocalMatrix(bMatrix4 *matrix) {
-        LocalMatrix = *matrix;
-        SetDirty();
+        this->LocalMatrix = *matrix;
+        this->SetDirty();
     }
 
     void SetLocalVelocity(bVector3 *velocity) {
-        LocalVelocity = *velocity;
-        SetDirty();
+        this->LocalVelocity = *velocity;
+        this->SetDirty();
     }
 
     void SetBlendingMatrices(bMatrix4 *matrix) {
-        BlendingMatrices = matrix;
+        this->BlendingMatrices = matrix;
     }
 
     void SetDirty() {
-        if (!Dirty) {
-            ReallySetDirty();
+        if (!this->Dirty) {
+            this->ReallySetDirty();
         }
     }
 
@@ -121,22 +119,24 @@ class SpaceNode : public bTNode<SpaceNode> {
     void SetWorldVelocity(bVector3 *velocity);
 
   private:
-    bTList<SpaceNode> ChildrenList;   // offset 0x8, size 0x8
-    bMatrix4 WorldMatrix;             // offset 0x10, size 0x40
-    bMatrix4 LocalMatrix;             // offset 0x50, size 0x40
-    bVector3 WorldVelocity;           // offset 0x90, size 0x10
-    bVector3 LocalVelocity;           // offset 0xA0, size 0x10
-    bVector3 WorldAngularVelocity;    // offset 0xB0, size 0x10
-    bVector3 LocalAngularVelocity;    // offset 0xC0, size 0x10
-    unsigned int NameHash;            // offset 0xD0, size 0x4
-    const char *Name;                 // offset 0xD4, size 0x4
-    int ReferenceCount;               // offset 0xD8, size 0x4
-    unsigned int LastUpdateTimeStamp; // offset 0xDC, size 0x4
-    SpaceNode *Parent;                // offset 0xE0, size 0x4
-    unsigned int Dirty;               // offset 0xE4, size 0x4
-    bMatrix4 *BlendingMatrices;       // offset 0xE8, size 0x4
+    bTList<SpaceNode> ChildrenList; // offset 0x8, size 0x8
+    bMatrix4 WorldMatrix;           // offset 0x10, size 0x40
+    bMatrix4 LocalMatrix;           // offset 0x50, size 0x40
+    bVector3 WorldVelocity;         // offset 0x90, size 0x10
+    bVector3 LocalVelocity;         // offset 0xA0, size 0x10
+    bVector3 WorldAngularVelocity;  // offset 0xB0, size 0x10
+    bVector3 LocalAngularVelocity;  // offset 0xC0, size 0x10
+    uint32 NameHash;                // offset 0xD0, size 0x4
+    const char *Name;               // offset 0xD4, size 0x4
+    int32 ReferenceCount;           // offset 0xD8, size 0x4
+    uint32 LastUpdateTimeStamp;     // offset 0xDC, size 0x4
+    SpaceNode *Parent;              // offset 0xE0, size 0x4
+    uint32 Dirty;                   // offset 0xE4, size 0x4
+    bMatrix4 *BlendingMatrices;     // offset 0xE8, size 0x4
+    uint32 pad1;                    // offset 0xEC, size 0x4
 };
 
+void ServiceSpaceNodes();
 void InitSpaceNodes();
 void CloseSpaceNodes();
 SpaceNode *CreateSpaceNode(SpaceNode *parent);

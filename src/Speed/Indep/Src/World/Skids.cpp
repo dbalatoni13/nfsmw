@@ -65,7 +65,7 @@ void SkidSegment::GetPoints(bVector3 *position, bVector3 *delta_position) {
     position->y = y;
     position->z = z;
 
-    if (delta_position) {
+    if (delta_position != nullptr) {
         delta_position->x = dx;
         delta_position->y = dy;
         delta_position->z = dz;
@@ -111,7 +111,7 @@ SkidSet::SkidSet(SkidMaker *skid_maker, bVector3 *position, bVector3 *delta_posi
 }
 
 SkidSet::~SkidSet() {
-    if (pSkidMaker) {
+    if (pSkidMaker != nullptr) {
         pSkidMaker->MakeNoSkid();
     }
 
@@ -186,12 +186,12 @@ int SkidSet::AddSegment(bVector3 *position, bVector3 *delta_position, bool skid_
 }
 
 void SkidSet::FinishedAddingSkids() {
-    if (pSkidMaker) {
+    if (pSkidMaker != nullptr) {
         pSkidMaker->pSkidSet = nullptr;
         pSkidMaker = nullptr;
 
         if (RemoteCaffeinating && PlotSkidsInCaffeine && NumSkidSegments > 1) {
-            unsigned int obj = espCreateObject("Skids", "Skid", 0);
+            unsigned int obj = espCreateObject("Skids", "Skid", nullptr);
             espSetObjectPosition(obj, reinterpret_cast<FloatVector *>(&Position));
             espCreateUserMesh(obj, NumSkidSegments - 1);
 
@@ -219,7 +219,7 @@ void SkidSet::FinishedAddingSkids() {
 }
 
 void SkidSet::Render(eView *view, uint8 intensityReduction) {
-    if (!SkidTextureInfo[TheTerrainType]) {
+    if (SkidTextureInfo[TheTerrainType] == nullptr) {
         return;
     }
 
@@ -266,7 +266,7 @@ void SkidSet::Render(eView *view, uint8 intensityReduction) {
 SkidSet *CreateNewSkidSet(SkidMaker *skid_maker, bVector3 *position, bVector3 *delta_position, int terrain_type, float intensity) {
     if (bIsSlotPoolFull(SkidSetSlotPool)) {
         SkidSet *oldest_skid_set = SkidSetList.RemoveTail();
-        if (oldest_skid_set) {
+        if (oldest_skid_set != nullptr) {
             delete oldest_skid_set;
         }
     }
@@ -278,7 +278,7 @@ SkidSet *CreateNewSkidSet(SkidMaker *skid_maker, bVector3 *position, bVector3 *d
 
 void SkidMaker::MakeSkid(Car *pCar, bVector3 *position, bVector3 *delta_position, int terrain_type, float intensity) {
     bool make_flaming_skids = false;
-    if (pCar) {
+    if (pCar != nullptr) {
         float distance_from_car = bDistBetween(0, position);
         if (distance_from_car > 4.0f) {
             pCar->GetGeometryPosition();
@@ -286,7 +286,7 @@ void SkidMaker::MakeSkid(Car *pCar, bVector3 *position, bVector3 *delta_position
         }
     }
 
-    if (!pSkidSet) {
+    if (pSkidSet == nullptr) {
         pSkidSet = CreateNewSkidSet(this, position, delta_position, terrain_type, intensity);
     } else if (pSkidSet->GetTerrainType() != terrain_type || pSkidSet->AddSegment(position, delta_position, make_flaming_skids, intensity) != 0) {
         bVector3 last_position;
@@ -302,34 +302,34 @@ void SkidMaker::MakeSkid(Car *pCar, bVector3 *position, bVector3 *delta_position
 }
 
 void SkidMaker::MakeNoSkid() {
-    if (pSkidSet) {
+    if (pSkidSet != nullptr) {
         pSkidSet->FinishedAddingSkids();
     }
 }
 
 void InitSkids(int max_skids) {
-    if (!SkidSetSlotPool) {
+    if (SkidSetSlotPool == nullptr) {
         SkidSetSlotPool = bNewSlotPool(0xF0, max_skids, "SkidSetSlotPool", GetVirtualMemoryAllocParams());
         SkidSetSlotPool->ClearFlag(SLOTPOOL_FLAG_OVERFLOW_IF_FULL);
     }
 
     for (int n = 0; n < 29; n++) {
-        SkidTextureInfo[n] = 0;
+        SkidTextureInfo[n] = nullptr;
         SkidTextureInfo[n] = GetTextureInfo(bStringHash("SKID_ROAD"), 1, 0);
     }
 
-    PlotSkidsInCaffeine = false;
-    PlotSkidPointsInCaffeine = false;
+    PlotSkidsInCaffeine = 0;
+    PlotSkidPointsInCaffeine = 0;
     if (RemoteCaffeinating) {
-        PlotSkidsInCaffeine = espGetLayerState("Skids") != 0;
+        PlotSkidsInCaffeine = static_cast<int>(espGetLayerState("Skids") != 0);
         if (espGetLayerState("SkidPoints")) {
-            PlotSkidPointsInCaffeine = true;
+            PlotSkidPointsInCaffeine = 1;
         }
     }
 }
 
 void CloseSkids() {
-    if (SkidSetSlotPool) {
+    if (SkidSetSlotPool != nullptr) {
         bDeleteSlotPool(SkidSetSlotPool);
         SkidSetSlotPool = nullptr;
     }

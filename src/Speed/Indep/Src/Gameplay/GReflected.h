@@ -1,9 +1,5 @@
-#ifndef GAMEPLAY_GREFLECTED_H
-#define GAMEPLAY_GREFLECTED_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef GREFLECTED_H__
+#define GREFLECTED_H__
 
 // total size: 0x4
 struct GCollectionKey {

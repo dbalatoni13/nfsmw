@@ -2,10 +2,12 @@
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
-void RaceParameters::InitWithDefaults() {
-    bMemSet(this, 0, 0xA0);
+RaceParameters TheRaceParameters;
 
-    this->TrackNumber = 0x7D0;
+void RaceParameters::InitWithDefaults() {
+    bMemSet(this, 0, sizeof(*this));
+
+    this->TrackNumber = 2000;
     this->TrackDirection = eDIRECTION_FORWARD;
     this->TrafficDensity = eTRAFFICDENSITY_HIGH;
     this->TrafficOncoming = 0.5f;
@@ -21,7 +23,7 @@ void RaceParameters::InitWithDefaults() {
     this->PlayerStartPosition[1] = 8;
     this->NumOnlinePlayerCars = 0;
     this->NumOnlineAICars = 0;
-    this->DamageEnabled = 1;
+    this->DamageEnabled = true;
     this->HandlingMode = HANDLING_MODE_EXTREME;
     this->FinishLineNumber = 0;
     this->bDragRaceFlag = false;
@@ -47,3 +49,75 @@ void RaceParameters::InitWithDefaults() {
     this->TimeTrialTime.ResetLow();
     this->bCareerEventRace = false;
 }
+
+// STRIPPED
+void RaceParameters::DoSnapshot(ReplaySnapshot *snapshot) {}
+
+// STRIPPED
+void RaceParameters::AddDriverInfo(DriverInfo &driver_info) {}
+
+// STRIPPED
+void RaceParameters::RemoveDriverInfo(int driver_number) {}
+
+// STRIPPED
+void RaceParameters::SetDriverInfo(DriverInfo &driver_info, int index) {}
+
+// STRIPPED
+DriverInfo *RaceParameters::GetDriverInfo(int n) {}
+
+// STRIPPED
+DriverInfo *RaceParameters::GetDriverInfoByDriverNumber(int nDriverNumber) {}
+
+// STRIPPED
+DriverInfo *RaceParameters::GetDriverInfoByPlayerNumber(int player_number) {}
+
+// STRIPPED
+int RaceParameters::GetDriverNumber(int player_number) {}
+
+// STRIPPED
+DriverInfo *RaceParameters::EliminateDriver(int nDriverNumber, int nRank) {}
+
+// STRIPPED
+void RaceParameters::ClearEliminatedDrivers() {}
+
+// STRIPPED
+int RaceParameters::GetNumEliminated() {}
+
+// STRIPPED
+void RaceParameters::ResetStartingPositions() {}
+
+// STRIPPED
+bool RaceParameters::AreThereTooManyUniqueCarGeometries(RideInfo *ride_info) {}
+
+// STRIPPED
+void RaceParameters::Print() {}
+
+// STRIPPED
+void RunTimePlayerSettings::ResetToDefaults() {}
+
+// STRIPPED
+void RunTimePlayerSettings::SetName(const char *name) {}
+
+// STRIPPED
+void RunTimePlayerSettings::DoSnapshot(ReplaySnapshot *snapshot) {}
+
+// STRIPPED
+void RunTimePlayerSettings::ToggleHudHotkey() {}
+
+// STRIPPED
+void RunTimePlayerSettings::ToggleLookback() {}
+
+// STRIPPED
+void RunTimePlayerSettings::CycleAlternateCamera() {}
+
+// STRIPPED
+void RunTimePlayerSettings::ToggleCameraSpring() {}
+
+// STRIPPED
+unsigned int RaceParameters::Checksum() {}
+
+// STRIPPED
+void RaceParameters::ChooseHudTextures() {}
+
+// STRIPPED
+bool RaceParameters::IsFreeRun() {}

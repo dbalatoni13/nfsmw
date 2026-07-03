@@ -1,10 +1,6 @@
 #ifndef WORLD_TRACKPATH_H
 #define WORLD_TRACKPATH_H
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
@@ -28,6 +24,8 @@ enum eTrackPathZoneType {
     TRACK_PATH_ZONE_RESET = 0,
 };
 
+bool DoLinesIntersect(const bVector2 &a, const bVector2 &b, const bVector2 &c, const bVector2 &d);
+
 // total size: 0x18
 class TrackPathBarrier {
   public:
@@ -39,15 +37,23 @@ class TrackPathBarrier {
         bPlatEndianSwap(&GroupHash);
     }
 
-    bool IsEnabled();
-    bool IsPlayerBarrier();
+    bool IsEnabled() {
+        return Enabled != 0;
+    }
+
+    bool IsPlayerBarrier() {
+        return PlayerBarrier != 0;
+    }
+
     void SetGroup(uint32 group_hash);
 
     bool HasGroup(uint32 group_hash) {
         return GroupHash == group_hash;
     }
 
-    bool Intersects(const bVector2 *pointa, const bVector2 *pointb);
+    bool Intersects(const bVector2 *pointa, const bVector2 *pointb) {
+        return DoLinesIntersect(Points[0], Points[1], *pointa, *pointb);
+    }
 
     bVector2 Points[2]; // offset 0x0, size 0x10
     int8 Enabled;       // offset 0x10, size 0x1
@@ -131,6 +137,11 @@ class TrackPathManager {
     int Loader(bChunk *chunk);
     int Unloader(bChunk *chunk);
     void Clear();
+
+    int GetNumBarriers() {
+        return NumBarriers;
+    }
+
     void EnableBarriers(const char *group_name);
     void DisableAllBarriers();
     void BuildZoneInfoTable();

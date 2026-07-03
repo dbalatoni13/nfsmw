@@ -7,31 +7,20 @@
 
 #include "Speed/Indep/Libs/Support/Utility/UGroup.hpp"
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
+#include "Speed/Indep/Libs/Support/Miscellaneous/CARP.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/world.h"
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
 
 // total size: 0x24
 class WWorld {
   public:
-    static void Init();
+    void *operator new(size_t size) {
+        return gFastMem.Alloc(size, nullptr);
+    }
 
-    WWorld();
-
-    int Loader(bChunk *chunk);
-
-    int Unloader(bChunk *chunk);
-
-    ~WWorld();
-
-    bool Open();
-
-    void GetStartPosition(UMath::Vector3 &position);
-
-    void Close();
-
-    // static void *operator new(unsigned int size, void *ptr) {}
-
-    // static void operator delete(void *mem, void *ptr) {}
+    void operator delete(void *mem, size_t size) {
+        gFastMem.Free(mem, size, nullptr);
+    }
 
     // static void *operator new(unsigned int size) {}
 
@@ -43,31 +32,50 @@ class WWorld {
 
     // static void operator delete(void *mem, unsigned int size, const char *name) {}
 
+    WWorld();
+    ~WWorld();
+
     // static bool IsPresent() {}
 
     static WWorld &Get() {
         return *fgWorld;
     }
 
+    static void Init();
+
     // static void Shutdown() {}
 
-    // const struct world &GetAttributes() const {}
+    int Loader(bChunk *chunk);
+    int Unloader(bChunk *chunk);
+    bool Open();
+    void Close();
 
-    // bool IsValid() {}
+    const Attrib::Gen::world &GetAttributes() const {
+        return fAttributes;
+    }
 
-    // const struct UGroup &GetMapGroup() const {}
+    bool IsValid() {
+        return fRootWorldGroup != nullptr;
+    }
 
-    // const struct UGroup *GetMapGroup() {}
+    const UGroup &GetMapGroup() const {
+        return *fRootWorldGroup;
+    }
+
+    const UGroup *GetMapGroup() {
+        return fRootWorldGroup;
+    }
+
+    void GetStartPosition(UMath::Vector3 &position);
 
   private:
     static WWorld *fgWorld;               // size: 0x4
+    Attrib::Gen::world fAttributes;       // offset 0x0, size 0x14
+    const UGroup *fRootWorldGroup;        // offset 0x14, size 0x4
+    const void *fCarpData;                // offset 0x18, size 0x4
+    unsigned int fCarpDataSize;           // offset 0x1C, size 0x4
+    CARP::Map *fMap;                      // offset 0x20, size 0x4
     static UMath::Vector4 mStartPosition; // size: 0x10
-
-    Attrib::Gen::world fAttributes; // offset 0x0, size 0x14
-    const UGroup *fRootWorldGroup;  // offset 0x14, size 0x4
-    const void *fCarpData;          // offset 0x18, size 0x4
-    unsigned int fCarpDataSize;     // offset 0x1C, size 0x4
-    struct Map *fMap;               // offset 0x20, size 0x4
 };
 
 #endif

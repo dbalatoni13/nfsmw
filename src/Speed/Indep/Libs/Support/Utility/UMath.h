@@ -1,10 +1,6 @@
 #ifndef SUPPORT_UTILITY_UMATH_H
 #define SUPPORT_UTILITY_UMATH_H
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
 #include <cmath>
 
 #ifdef EA_PLATFORM_XENON
@@ -16,25 +12,49 @@
 #include "UTypes.h"
 #include "UVectorMath.h"
 
-#define FLOAT_EPSILON 0.000001f
+namespace UMath {
+// TODO apply these
+const float PI = 3.141592653589793f; // size: 0x4, Decl: UMath.h:15
+const float OOPI = 1.0f / PI;        // size: 0x4, Decl: UMath.h:16
+const float TWOPI = 2 * PI;          // size: 0x4, Decl: UMath.h:18
+const float OOTWOPI = 1.0f / TWOPI;  // size: 0x4, Decl: UMath.h:19
+const float Epsilon = 0.000001f;     // size: 0x4, Decl: UMath.h:22
+}; // namespace UMath
+
+// TODO are these in the namespace?
+typedef float Radians; // Decl: UMath.h:37
+
+typedef float Degrees; // Decl: UMath.h:40
+
+typedef float Angle; // Decl: UMath.h:43
 
 namespace UMath {
 
-inline float Sina(const float a) {
-    return VU0_Sin(a * (float)M_TWOPI);
+inline float Sina(const Angle a) {
+    return VU0_Sin(a * TWOPI);
 }
 
-inline float Cosa(const float a) {
-    return VU0_Cos(a * (float)M_TWOPI);
+inline float Cosa(const Angle a) {
+    return VU0_Cos(a * TWOPI);
 }
 
-inline float Sinr(const float a) {
-    return VU0_Sin(RAD2ANGLE(a) * (float)M_TWOPI);
+inline float Sinr(const float r) {
+    return VU0_Sin(RAD2ANGLE(r) * TWOPI);
 }
 
-inline float Cosr(const float a) {
-    return VU0_Cos(RAD2ANGLE(a) * (float)M_TWOPI);
+inline float Cosr(const float r) {
+    return VU0_Cos(RAD2ANGLE(r) * TWOPI);
 }
+
+#ifndef EA_PLATFORM_PLAYSTATION2
+inline float ASinr(const float x) {
+    return ANGLE2RAD(VU0_ASin(x));
+}
+#else
+inline float ASinr(const float x) {
+    return asinf(x);
+}
+#endif
 
 void BuildRotate(Matrix4 &m, float r, float x, float y, float z);
 
@@ -57,7 +77,11 @@ inline float DistanceSquare(const Vector3 &a, const Vector3 &b) {
 }
 
 inline float DistanceSquarexz(const Vector3 &a, const Vector3 &b) {
+#ifdef EA_PLATFORM_PLAYSTATION2
     return VU0_v3distancesquare(a, b);
+#else
+    return VU0_v3distancesquarexz(a, b);
+#endif
 }
 
 inline void Clear(Vector3 &r) {
@@ -172,6 +196,10 @@ inline void Add(const Vector3 &a, const Vector3 &b, Vector3 &r) {
 #endif
 }
 
+inline void Add(const Vector4 &a, const Vector4 &b, Vector4 &r) {
+    VU0_v4add(a, b, r);
+}
+
 inline void Scale(const Vector3 &a, const Vector3 &b, Vector3 &r) {
 #ifdef EA_PLATFORM_XENON
     r.x = a.x * b.x;
@@ -224,6 +252,11 @@ inline void ScaleAdd(const Vector4 &a, const float s, const Vector4 &b, Vector4 
     VU0_v4scaleadd(a, s, b, r);
 }
 
+inline void ScaleAdd(const Vector2 &a, const float s, const Vector2 &b, Vector2 &r) {
+    r.x = a.x + s * b.x;
+    r.y = a.y + s * b.y;
+}
+
 inline void ScaleAddxyz(const Vector4 &a, const float s, const Vector4 &b, Vector4 &r) {
     VU0_v4scaleaddxyz(a, s, b, r);
 }
@@ -247,6 +280,30 @@ inline void Sub(const Vector3 &a, const Vector3 &b, Vector3 &r) {
 
 inline void Subxyz(const Vector4 &a, const Vector4 &b, Vector4 &r) {
     VU0_v4subxyz(a, b, r);
+}
+
+inline void Addxyz(const Vector4 &a, const Vector4 &b, Vector4 &r) {
+    VU0_v4addxyz(a, b, r);
+}
+
+inline void Scalexyz(const Vector4 &a, const float s, Vector4 &r) {
+    VU0_v4scalexyz(a, s, r);
+}
+
+inline void Scalexyz(const Vector4 &a, const Vector4 &b, Vector4 &r) {
+    VU0_v4scalexyz(a, b, r);
+}
+
+inline void Negatexyz(Vector4 &r) {
+    VU0_v4negatexyz(r);
+}
+
+inline float DistanceSquarexyz(const Vector4 &a, const Vector4 &b) {
+    return VU0_v4distancesquarexyz(a, b);
+}
+
+inline float Distancexyz(const Vector4 &a, const Vector4 &b) {
+    return VU0_v4distancexyz(a, b);
 }
 
 inline void SetYRot(Matrix4 &r, float a) {
@@ -282,6 +339,10 @@ inline void Rotate(const Vector3 &a, const Matrix4 &m, Vector3 &r) {
 #endif
 }
 
+inline void Rotate(const Vector4 &a, const Matrix4 &m, Vector4 &r) {
+    VU0_MATRIX3x4_vect4mult(a, m, r);
+}
+
 inline float Dot(const Vector3 &a, const Vector3 &b) {
 #ifdef EA_PLATFORM_XENON
     return a.x * b.x + a.y * b.y + a.z * b.z;
@@ -290,8 +351,18 @@ inline float Dot(const Vector3 &a, const Vector3 &b) {
 #endif
 }
 
-inline float Dot(const Vector2 &a, const Vector2 &b) {
+inline float Dot(const Vector2 &a, Vector2 &b) {
     return a.x * b.x + a.y * b.y;
+}
+
+inline void Scale(Vector2 &r, const float s) {
+    r.x *= s;
+    r.y *= s;
+}
+
+inline void Scale(const Vector2 &a, const float s, Vector2 &r) {
+    r.x = a.x * s;
+    r.y = a.y * s;
 }
 
 inline void Dot(const Vector3 &a, const Matrix4 &b, Vector3 &r) {
@@ -318,6 +389,14 @@ inline void Cross(const Vector3 &a, const Vector3 &b, Vector3 &r) {
 #endif
 }
 
+inline void Crossxyz(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &r) {
+#ifdef EA_PLATFORM_XENON
+        // TODO
+#else
+    VU0_v4crossprodxyz(a, b, r);
+#endif
+}
+
 #ifdef EA_PLATFORM_XENON
 void UnitCross(const Vector3 &a, const Vector3 &b, Vector3 &r);
 #else
@@ -330,6 +409,14 @@ inline float Normalize(Vector3 &r) {
     float m = VU0_v3length(r);
     if (m != 0.0f) {
         VU0_v3scale(r, 1.0f / m, r);
+    }
+    return m;
+}
+
+inline float Normalize(Vector4 &r) {
+    float m = VU0_v4length(r);
+    if (m != 0.0f) {
+        VU0_v4scale(r, 1.0f / m, r);
     }
     return m;
 }
@@ -375,6 +462,16 @@ inline float Sqrt(const float f) {
 #endif
 }
 
+inline float Normalize(Vector2 &r) {
+    float h = r.x * r.x + r.y * r.y;
+    float ret = Sqrt(h);
+    float l = ret < 1e-6f ? 1e-6f : ret;
+    float c = 1.0f / l;
+    r.x *= c;
+    r.y *= c;
+    return l;
+}
+
 inline float Length(const Vector3 &a) {
 #ifdef EA_PLATFORM_XENON
     return Sqrt(LengthSquare(a));
@@ -386,6 +483,15 @@ inline float Length(const Vector3 &a) {
 inline void Matrix4ToQuaternion(const Matrix4 &m, Vector4 &q) {
     VU0_m4toquat(m, q);
 }
+
+inline void Matrix4ToEuler(const UMath::Matrix4 &m, UMath::Vector3 &e) {
+    VU0_Matrix4ToEuler(m, e);
+}
+
+#ifdef EA_BUILD_A124
+// they moved this since outside the namespace after the alpha
+void OrthoInverse(UMath::Matrix4 &m);
+#endif
 
 inline int Clamp(const int a, const int amin, const int amax) {
     return a < amin ? amin : (a > amax ? amax : a);
@@ -405,11 +511,25 @@ inline float Pow(const float f, const float e) {
 
 inline float Ramp(const float a, const float amin, const float amax) {
     float arange = amax - amin;
-    return arange > FLOAT_EPSILON ? VU0_floatmax(0.0f, VU0_floatmin((a - amin) / arange, 1.0f)) : 0.0f;
+    return arange > UMath::Epsilon ? VU0_floatmax(0.0f, VU0_floatmin((a - amin) / arange, 1.0f)) : 0.0f;
 }
 
 inline float Lerp(const float a, const float b, const float t) {
     return a + (b - a) * t;
+}
+
+inline void Lerp(const Vector2 &a, const Vector2 &b, const float t, Vector2 &r) {
+    float u = 1.0f - t;
+    r.x = a.x * t + b.x * u;
+    r.y = a.y * t + b.y * u;
+}
+
+inline float Cross(const Vector2 &a, const Vector2 &b) {
+    return a.x * b.y - b.x * a.y;
+}
+
+inline void Lerp(const Vector3 &a, const Vector3 &b, const float t, Vector3 &r) {
+    VU0_v3lerp(a, b, t, r);
 }
 
 inline void Negate(Vector3 &r) {
@@ -424,11 +544,11 @@ inline float Max(const float a, const float b) {
     return VU0_floatmax(a, b);
 }
 
-inline unsigned int Min(const int a, const int b) {
+inline int Min(const int a, const int b) {
     return a > b ? b : a;
 }
 
-inline unsigned int Max(const int a, const int b) {
+inline int Max(const int a, const int b) {
     return a < b ? b : a;
 }
 inline unsigned int Min(const unsigned int a, const unsigned int b) {
@@ -463,5 +583,56 @@ inline float Limit(const float a, const float l) {
 }
 
 } // namespace UMath
+
+#ifndef EA_BUILD_A124
+// TODO inline
+// they moved this since outside the namespace after the alpha
+void OrthoInverse(UMath::Matrix4 &m);
+#endif
+
+struct UQuat : public UMath::Vector4 {
+    UQuat() {
+        *static_cast<UMath::Vector4 *>(this) = UMath::Vector4::kIdentity;
+    }
+
+    UQuat(const UMath::Vector4 &From) {
+        x = From.x;
+        y = From.y;
+        z = From.z;
+        w = From.w;
+    }
+
+    const UQuat &operator=(const UMath::Vector4 &From) {
+        x = From.x;
+        y = From.y;
+        z = From.z;
+        w = From.w;
+        return *this;
+    }
+
+    void BuildDeltaAxis(const UMath::Vector3 &normal1, const UMath::Vector3 &normal2) {
+        const float angle = UMath::Dot(normal1, normal2);
+        if (angle > 0.99999f) {
+            *this = UMath::Vector4::kIdentity;
+            return;
+        }
+        UMath::Vector3 axis;
+        UMath::Cross(normal1, normal2, axis);
+        if (angle < -0.99999f) {
+            x = axis.x;
+            y = axis.y;
+            z = axis.z;
+            w = 0.0f;
+            UMath::Normalize(*static_cast<UMath::Vector4 *>(this));
+            return;
+        }
+        const float s = UMath::Sqrt(2.0f * (1.0f + angle));
+        const float invs = 1.0f / s;
+        x = axis.x * invs;
+        y = axis.y * invs;
+        z = axis.z * invs;
+        w = s * 0.5f;
+    }
+};
 
 #endif

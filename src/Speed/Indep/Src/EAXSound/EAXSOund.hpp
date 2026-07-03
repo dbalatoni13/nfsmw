@@ -2,6 +2,7 @@
 #define EAX_SOUND_HPP
 
 #include "Speed/Indep/Src/EAXSound/AudioMemBase.hpp"
+#include "Speed/Indep/Src/EAXSound/EAXSoundEnums.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXAudioParams.hpp"
 #include "Speed/Indep/Src/EAXSound/States/STATE_Base.hpp"
 #include "Speed/Indep/Src/EAXSound/Stream/SpeechModule.hpp"
@@ -26,6 +27,7 @@ class AudioSettings;
 #define NO_SNDPRINTF              // :471
 #define SndPrintf if (0)          // :478
 
+// TODO probably move all of these enums
 typedef enum {
     SSC_LINEAR = 0,
     SSC_EQPWR = 1,
@@ -169,25 +171,6 @@ typedef enum {
 typedef eSFXOUT_SPEECH reflection_typedef_eSFXOUT_SPEECH;
 
 typedef enum {
-    eAZI_WOOSH_AZI = 0,
-    eVOL_WOOSH_TREE = 1,
-    eVOL_WOOSH_LAMPPOST = 2,
-    eVOL_WOOSH_AICAR = 3,
-    eVOL_WOOSH_TUNNEL_IN = 4,
-    eVOL_WOOSH_TUNNEL_OUT = 5,
-    eVOL_WOOSH_OVERPASS_IN = 6,
-    eVOL_WOOSH_OVERPASS_OUT = 7,
-    eVOL_WOOSH_SMOKABLE = 8,
-    eVOL_WOOSH_BRIDGE = 9,
-    TRIG_WOOSH_EVENT = 10,
-    TRIG_WOOSH_INTENSITY = 11,
-    ePCH_WOOSH_PITCH = 12,
-    eVRB_WOOSH_VERB = 13
-} eVOL_WOOSH;
-
-typedef eVOL_WOOSH reflection_typedef_eVOL_WOOSH;
-
-typedef enum {
     eAZI_PRE_COL_WOOSH_AZI = 0,
     eVOL_PRE_COL_WOOSH_WOOSH = 1,
     TRIG_PRE_COL_WOOSH_TRIG = 2,
@@ -223,10 +206,6 @@ typedef enum {
 
 typedef eVOL_ENGINE reflection_typedef_eVOL_ENGINE;
 
-typedef enum { SFX_NITROUS_NONE = 0, SFX_NITROUS_ON = 1 } eSFX_NITROUS;
-
-typedef eSFX_NITROUS reflection_typedef_eSFX_NITROUS;
-
 typedef enum {
     eAZI_NITROUS_AZ = 0,
     eVOL_NITROUS_MAIN = 1,
@@ -241,27 +220,6 @@ typedef eVOL_NITROUS reflection_typedef_eVOL_NITROUS;
 typedef enum { eVOL_RAIN_OUTSIDE = 0, eVOL_RAIN_INSIDE = 1, eTRG_RAINING_TRG = 2 } eVOL_RAIN;
 
 typedef eVOL_RAIN reflection_typedef_eVOL_RAIN;
-
-typedef enum {
-    eAZI_ROADNOISE_LEFT_AZ = 0,
-    eAZI_ROADNOISE_RIGHT_AZ = 1,
-    eVOL_ROADNOISE_TRANSITION = 2,
-    eVOL_ROADNOISE_WET_ROAD = 3,
-    eVOL_ROADNOISE_STITCH_TRANS = 4,
-    eVOL_ROADNOISE_GRAVEL = 5,
-    eVOL_ROADNOISE_SIDEWALK = 6,
-    eVOL_ROADNOISE_COBBLESTONE = 7,
-    eVOL_ROADNOISE_DEEPWATER = 8,
-    eVOL_ROADNOISE_WETROAD = 9,
-    eVOL_ROADNOISE_ASHPHALT = 10,
-    eVOL_ROADNOISE_METAL = 11,
-    eVOL_ROADNOISE_STITCH_LOOP = 12,
-    eVOL_ROADNOISE_SPIKE = 13,
-    eVOL_ROADNOISE_BLOWN = 14,
-    eVRB_ROADNOISE_VERB = 15
-} eVOL_ROADNOISE;
-
-typedef eVOL_ROADNOISE reflection_typedef_eVOL_ROADNOISE;
 
 typedef enum { eTRIG_ROADNOISE_TRANSITION = 0 } eTRIG_ROADNOISE;
 
@@ -329,10 +287,6 @@ typedef enum {
 
 typedef eVOL_TRAFFIC_ENG reflection_typedef_eVOL_TRAFFIC_ENG;
 
-typedef enum { SFXTURBO_NONE = 0, SFXTURBO_SPOOLING = 1, SFXTURBO_BLOWOFF = 2 } eSFX_TURBO;
-
-typedef eSFX_TURBO reflection_typedef_eSFX_TURBO;
-
 typedef enum { eAZI_TURBO_AZI = 0, eVOL_TURBO_SPOOLING = 1, eVOL_TURBO_BLOWOFF1 = 2, eVOL_TURBO_BLOWOFF2 = 3 } eVOL_TURBO;
 
 typedef eVOL_TURBO reflection_typedef_eVOL_TURBO;
@@ -351,30 +305,6 @@ typedef eVOL_WINDNOISE reflection_typedef_eVOL_WINDNOISE;
 typedef enum { eVOL_BACKGROUND = 0 } eVOL_AMBIENCE;
 
 typedef eVOL_AMBIENCE reflection_typedef_eVOL_AMBIENCE;
-
-typedef enum {
-    eAZI_COLLISION_COLLISION_AZI = 0,
-    eAZI_COLLISION_SCRAPE_AZI = 1,
-    eVOL_COLLISION_SMACKABLE_AZI = 2,
-    eVOL_COLLISION_CAR_FRONT = 3,
-    eVOL_COLLISION_CAR_SIDE = 4,
-    eVOL_COLLISION_WORLD_ROLLOVER = 5,
-    eVOL_COLLISION_WORLD_BOTTEMOUT = 6,
-    eVOL_COLLISION_WORLD_WALL_FRONT = 7,
-    eVOL_COLLISION_WORLD_WALL_SIDE = 8,
-    eVOL_COLLISION_WORLD_CHAINFENCE = 9,
-    eVOL_COLLISION_SMOKABLE_CAR = 10,
-    eVOL_COLLISION_SMOKABLE_WORLD = 11,
-    eVOL_COLLISION_SCRAPE = 12,
-    eVRB_COLLISION_RVRB_COL = 13,
-    eVRB_COLLISION_RVRB_SMAK = 14,
-    eVRB_COLLISION_RVRB_SCRP = 15,
-    ePCH_COLLISION_COL_PITCH = 16,
-    ePCH_COLLISION_SMAK_PITCH = 17,
-    ePCH_COLLISION_SCRAPE_PITCH = 18
-} eVOL_COLLISION;
-
-typedef eVOL_COLLISION reflection_typedef_eVOL_COLLISION;
 
 typedef enum { eAZI_FE_AZI = 0, eVOL_COMMON = 1, eVOL_FRONTEND = 2, eVOL_RADAR = 3 } eVOL_FEHUD;
 
@@ -405,23 +335,6 @@ typedef enum { eVOL_COMMON_CAMERASNAP = 0, eVOL_COMMON_CAMERACHARGE = 1, eVOL_CO
 
 typedef eVOL_COMMONFX reflection_typedef_eVOL_COMMONFX;
 
-typedef enum {
-    eAZI_MOMENT_3DPOS = 0,
-    eVOL_MOMENT_JACKNIFE = 1,
-    eVOL_MOMENT_COL_SWT = 2,
-    eVOL_MOMENT_GASPUMP = 3,
-    eVOL_MOMENT_BLOWNENGINE = 4,
-    eVOL_MOMENT_PURSUIT_BREAKER = 5,
-    eVOL_MOMENT_TOTALLED_ENGINE = 6,
-    eVOL_MOMENT_JUMPCAM = 7,
-    eVOL_MOMENT_THUNDER = 8,
-    eVOL_MOMENT_GAMEPLAY = 9,
-    eVOL_MOMENT_FLY_IN_CAM = 10,
-    eVOL_MOMENT_SPOT_COP = 11
-} eVOL_MOMENT;
-
-typedef eVOL_MOMENT reflection_typedef_eVOL_MOMENT;
-
 typedef enum { eAZI_TRUCK_AZI = 0, eVOL_TRUCK_SFX = 1, ePCH_TRUCK_PITCH = 2 } eVOL_TRUCKSOUNDS;
 
 typedef eVOL_TRUCKSOUNDS reflection_typedef_eVOL_TRUCKSOUNDS;
@@ -444,40 +357,8 @@ typedef eMISC_SOUNDS reflection_typedef_eMISC_SOUNDS;
 
 // typedef eGameFlowSndState reflection_typedef_eGameFlowSndState;
 
-typedef enum {
-    RVRB_CARSHOW_SML = 0,
-    RVRB_CARSHOW_BASS = 1,
-    RVRB_CARSHOW_BASS_2 = 2,
-    RVRB_GARAGE = 3,
-    RVRB_GARAGE_SML = 4,
-    RVRB_SIMPLE_TUNNEL = 5,
-    RVRB_SIMPLE_TUNNEL_SML = 6,
-    RVRB_HILLS_CLOSE = 7,
-    RVRB_HILLS = 8,
-    RVRB_CITYOPEN = 9,
-    RVRB_CITYDENSE = 10,
-    RVRB_ALLEY = 11,
-    RVRB_MAX_TYPES = 12
-} eREVERBFX;
-
-typedef enum {
-    DRIVE_BY_UNKNOWN = 0,
-    DRIVE_BY_TREE = 1,
-    DRIVE_BY_LAMPPOST = 2,
-    DRIVE_BY_SMOKABLE = 3,
-    DRIVE_BY_TUNNEL_IN = 4,
-    DRIVE_BY_TUNNEL_OUT = 5,
-    DRIVE_BY_OVERPASS_IN = 6,
-    DRIVE_BY_OVERPASS_OUT = 7,
-    DRIVE_BY_AI_CAR = 8,
-    DRIVE_BY_TRAFFIC = 9,
-    DRIVE_BY_BRIDGE = 10,
-    DRIVE_BY_PRE_COL = 11,
-    MAX_DRIVE_BY_TYPES = 12
-} eDRIVE_BY_TYPE;
-
-typedef eDRIVE_BY_TYPE reflection_typedef_eDRIVE_BY_TYPE;
-
+// TODO move
+// Decl: speed/indep/src/eaxsound/soundpause.h:8
 enum eSNDPAUSE_REASON {
     eSNDPAUSE_SMS_MESSAGE = 11,
     eSNDPAUSE_PHOTOFINISH = 10,
@@ -494,40 +375,8 @@ enum eSNDPAUSE_REASON {
     ePAUSE_ERROR = -1,
 };
 
-enum eEAXGameState {
-    EAXGS_EXIT_FE = 11,
-    EAXGS_EXIT_GAME = 10,
-    EAXGS_PAUSE_FE_MUSIC = 9,
-    EAXGS_PLAY_FE_MUSIC = 8,
-    EAXGS_RETURNTOGAME = 7,
-    EAXGS_RESUME = 6,
-    EAXGS_PAUSE = 5,
-    EAXGS_ENTERINGPAUSE = 4,
-    EAXGS_INGAME = 3,
-    EAXGS_ENTERINGGAME = 2,
-    EAXGS_FRONTEND = 1,
-    EAXGS_INITIALIZING = 0,
-};
-
-enum e3DPlayerMix {
-    EAXS3D_TWO_PLAYER_MIX = 1,
-    EAXS3D_SINGLE_PLAYER_MIX = 0,
-};
-
-enum eAemsStreamBanks {
-    MAX_AEMSSTREAMBANKS = 10,
-    EAX_AEMS_SPEECH_JAPANESE = 9,
-    EAX_AEMS_SPEECH_SPANISH = 8,
-    EAX_AEMS_SPEECH_ITALIAN = 7,
-    EAX_AEMS_SPEECH_GERMAN = 6,
-    EAX_AEMS_SPEECH_FRENCH = 5,
-    EAX_AEMS_SPEECH_ENGLISH = 4,
-    EAX_AEMS_SPECIAL_CASE = 3,
-    EAX_AEMS_AMB_MONOPOINT = 2,
-    EAX_AEMS_AMB_STEREO = 1,
-    EAX_AEMS_MUSIC_UG0_S = 0,
-};
-
+// TODO move
+// Decl: speed/indep/src/eaxsound/soundpause.h:29
 enum eSNDCTLSTATE {
     MAX_SNDCTL_STATES = 18,
     SNDSTATE_SYSTEM_HUD = 17,

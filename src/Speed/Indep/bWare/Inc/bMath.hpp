@@ -1,9 +1,5 @@
-#ifndef BWARE_BMATH_H
-#define BWARE_BMATH_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef BMATH_HPP
+#define BMATH_HPP
 
 #include <math.h>
 #include <types.h>
@@ -15,15 +11,14 @@
 #elif defined(EA_PLATFORM_XENON)
 #include <ppcintrinsics.h>
 #elif defined(EA_PLATFORM_PLAYSTATION2)
-// TODO
+#include "Speed/PSX2/bWare/Src/ee/include/eetypes.h"
 #else
 #error Choose a platform
 #endif
 
-// TODO: should these be in this file?
 typedef int32 bFix;
-typedef short unsigned int bAngle;
-typedef short int bSignedAngle;
+typedef unsigned short bAngle;
+typedef short bSignedAngle;
 
 struct bPolar {
     float r;
@@ -206,7 +201,7 @@ inline bAngle bDegToAng(float degrees) {
 }
 
 inline bAngle bRadToAng(float radians) {
-    return static_cast<int>(radians * (65536.0f / (2 * static_cast<float>(M_PI))));
+    return static_cast<int>(radians * (65536.0f / (static_cast<float>(M_TWOPI))));
 }
 
 inline float bAngToRad(bAngle angle) {
@@ -214,7 +209,7 @@ inline float bAngToRad(bAngle angle) {
 }
 
 inline float bDegToRad(float degrees) {
-    return degrees * 0.017453292f;
+    return degrees * 0.017453294f;
 }
 
 inline float bAngToDeg(bAngle angle) {
@@ -232,7 +227,7 @@ inline float bAngToRad(short angle) {}
 inline float bAngToDeg(short angle) {}
 
 inline int bEqual(float a, float b, float epsilon) {
-    return bAbs(a - b) <= epsilon;
+    return static_cast<int>(bAbs(a - b) <= epsilon);
 }
 
 inline int bGetTablePos(short *table, int num_elements, short element) {
@@ -315,13 +310,13 @@ inline bVector2 *bCopy(bVector2 *dest, const bVector2 *v) {
     return dest;
 }
 
+inline bVector2::bVector2(float _x, float _y) {
+    bFill(this, _x, _y);
+}
+
 inline bVector2 &bVector2::operator=(const bVector2 &v) {
     bCopy(this, &v);
     return *this;
-}
-
-inline bVector2::bVector2(float _x, float _y) {
-    bFill(this, _x, _y);
 }
 
 inline bVector2 bVector2::operator+(const bVector2 &v) const {
@@ -389,14 +384,22 @@ inline float bDot(const bVector2 *v1, const bVector2 *v2) {
     return v1->x * v2->x + v1->y * v2->y;
 }
 
+inline float bCross(const bVector2 *a, const bVector2 *b) {
+    return a->x * b->y - b->x * a->y;
+}
+
+inline float bDot(const bVector2 &v1, const bVector2 &v2) {
+    return bDot(&v1, &v2);
+}
+
 static inline float bDistBetween(const bVector2 *v1, const bVector2 *v2) {
     float x = v1->x - v2->x;
     float y = v1->y - v2->y;
     return bSqrt(x * x + y * y);
 }
 
+// total size: 0x10
 struct ALIGN_16 bVector3 {
-    // total size: 0x10
     float x;   // offset 0x0, size 0x4
     float y;   // offset 0x4, size 0x4
     float z;   // offset 0x8, size 0x4
@@ -415,19 +418,19 @@ struct ALIGN_16 bVector3 {
     bVector3 &operator=(const bVector3 &v);
     bVector3 operator-(const bVector3 &v) const;
     bVector3 operator*(float f) const;
+    bVector3 &operator-=(const bVector3 &v);
 
     int operator==(const bVector3 &v) {}
 
     float &operator[](int index) {}
 
     bVector3 operator-() {}
-
-    bVector3 &operator-=(const bVector3 &v) {}
 };
 
 bVector3 *bNormalize(bVector3 *dest, const bVector3 *v);
 bVector3 *bNormalize(bVector3 *dest, const bVector3 *v, float length);
 bVector3 *bScaleAdd(bVector3 *dest, const bVector3 *v1, const bVector3 *v2, float scale);
+bVector3 *bCross(bVector3 *dest, const bVector3 *v1, const bVector3 *v2);
 
 inline bVector3 *bFill(bVector3 *dest, float x, float y, float z) {
     dest->x = x;
@@ -437,10 +440,18 @@ inline bVector3 *bFill(bVector3 *dest, float x, float y, float z) {
 }
 
 inline bVector3 *bCopy(bVector3 *dest, const bVector3 *v) {
+#ifdef EA_PLATFORM_PLAYSTATION2
+    asm("lqc2 vf1, %1\n"
+        "sqc2 vf1, %0"
+        : "=o"(*dest)
+        : "o"(*v));
+
+#else
     float x = v->x;
     float y = v->y;
     float z = v->z;
     bFill(dest, x, y, z);
+#endif
     return dest;
 }
 
@@ -501,10 +512,6 @@ inline bVector3::bVector3(float _x, float _y, float _z) {
     bFill(this, _x, _y, _z);
 }
 
-inline bVector3::bVector3(const bVector3 &v) {
-    bCopy(this, &v);
-}
-
 inline bVector3 &bVector3::operator*=(float scale) {
     bScale(this, this, scale);
     return *this;
@@ -534,6 +541,11 @@ inline bVector3 bVector3::operator*(float f) const {
 
 inline bVector3 &bVector3::operator=(const bVector3 &v) {
     bCopy(this, &v);
+    return *this;
+}
+
+inline bVector3 &bVector3::operator-=(const bVector3 &v) {
+    bSub(this, this, &v);
     return *this;
 }
 
@@ -567,6 +579,9 @@ inline bVector3 bNeg(const bVector3 &v) {
 
 inline bVector3 bCross(const bVector3 &v1, const bVector3 &v2) {
     bVector3 dest;
+
+    bCross(&dest, &v1, &v2);
+    return dest;
 }
 
 inline float bDot(const bVector3 &v1, const bVector3 &v2) {
@@ -599,10 +614,17 @@ inline bVector3 bScaleAdd(const bVector3 &v1, const bVector3 &v2, float scale) {
 
 inline bVector3 bNormalize(const bVector3 &v) {
     bVector3 dest;
+
+    bNormalize(&dest, &v);
+    return dest;
 }
 
 inline bVector3 bNormalize(const bVector3 &v, float length) {
     bVector3 dest;
+}
+
+inline bVector3::bVector3(const bVector3 &v) {
+    bCopy(this, &v);
 }
 
 inline bVector3 bMin(const bVector3 &v1, const bVector3 &v2) {
@@ -613,8 +635,8 @@ inline bVector3 bMax(const bVector3 &v1, const bVector3 &v2) {
     bVector3 dest;
 }
 
-struct bVector4 {
-    // total size: 0x10
+// total size: 0x10
+struct ALIGN_16 bVector4 {
     float x; // offset 0x0, size 0x4
     float y; // offset 0x4, size 0x4
     float z; // offset 0x8, size 0x4
@@ -650,23 +672,7 @@ struct bVector4 {
         return reinterpret_cast<const float *>(this)[index];
     }
 
-    bVector4 operator+(const bVector4 &v) {
-        bVector4 *pv;
-        float x1 = x;
-        float y1 = y;
-        float z1 = z;
-        float w1 = w;
-        float x2 = v.x;
-        float y2 = v.y;
-        float z2 = v.z;
-        float w2 = v.w;
-        float _x = x1 + x2;
-        float _y = y1 + y2;
-        float _z = z1 + z2;
-        float _w = w1 + w2;
-
-        return bVector4(_x, _y, _z, _w);
-    }
+    bVector4 operator+(const bVector4 &v);
 
     bVector4 operator-() {
         float x1;
@@ -693,12 +699,20 @@ inline bVector4 *bFill(bVector4 *dest, float x, float y, float z, float w) {
 }
 
 inline bVector4 *bCopy(bVector4 *dest, const bVector4 *v) {
+#ifdef EA_PLATFORM_PLAYSTATION2
+    // TODO is this right?
+    asm("lqc2 vf1, %1\n"
+        "sqc2 vf1, %0"
+        : "=o"(*dest)
+        : "o"(*v));
+#else
     float x = v->x;
     float y = v->y;
     float z = v->z;
     float w = v->w;
 
     bFill(dest, x, y, z, w);
+#endif
     return dest;
 }
 
@@ -731,27 +745,22 @@ inline bVector4 *bAdd(bVector4 *dest, const bVector4 *v1, const bVector4 *v2) {
     float z2 = v2->z;
     float w2 = v2->w;
 
-    dest->x = x1 + x2;
-    dest->y = y1 + y2;
-    dest->z = z1 + z2;
-    dest->w = w1 + w2;
-}
-
-inline bVector4 &bVector4::operator+=(const bVector4 &v) {
-    bAdd(this, this, &v);
-
-    return *this;
+    bFill(dest, x1 + x2, y1 + y2, z1 + z2, w1 + w2);
+    return dest;
 }
 
 inline bVector4 *bSub(bVector4 *dest, const bVector4 *v1, const bVector4 *v2) {
-    float x1;
-    float y1;
-    float z1;
-    float w1;
-    float x2;
-    float y2;
-    float z2;
-    float w2;
+    float x1 = v1->x;
+    float y1 = v1->y;
+    float z1 = v1->z;
+    float w1 = v1->w;
+    float x2 = v2->x;
+    float y2 = v2->y;
+    float z2 = v2->z;
+    float w2 = v2->w;
+
+    bFill(dest, x1 - x2, y1 - y2, z1 - z2, w1 - w2);
+    return dest;
 }
 
 inline bVector4 *bNeg(bVector4 *dest, const bVector4 *v) {
@@ -852,6 +861,32 @@ inline bVector4::bVector4(float _x, float _y, float _z, float _w) {
     bFill(this, _x, _y, _z, _w);
 }
 
+inline bVector4 bVector4::operator+(const bVector4 &v) {
+    bVector4 *pv = const_cast<bVector4 *>(&v);
+    float x1 = this->x;
+    float y1 = this->y;
+    float z1 = this->z;
+    float w1 = this->w;
+
+    float x2 = pv->x;
+    float y2 = pv->y;
+    float z2 = pv->z;
+    float w2 = pv->w;
+
+    float _x = x1 + x2;
+    float _y = y1 + y2;
+    float _z = z1 + z2;
+    float _w = w1 + w2;
+
+    return bVector4(_x, _y, _z, _w);
+}
+
+inline bVector4 &bVector4::operator+=(const bVector4 &v) {
+    bAdd(this, this, &v);
+
+    return *this;
+}
+
 inline bVector4 &bVector4::operator=(const bVector4 &v) {
     bCopy(this, &v);
     return *this;
@@ -863,16 +898,16 @@ inline bVector4 &bVector4::operator*=(float scale) {
 }
 
 inline bVector4 bVector4::operator-(const bVector4 &v) {
-    bVector4 *pv;
-    float x1 = x;
-    float y1 = y;
-    float z1 = z;
-    float w1 = w;
+    bVector4 *pv = const_cast<bVector4 *>(&v);
+    float x1 = this->x;
+    float y1 = this->y;
+    float z1 = this->z;
+    float w1 = this->w;
 
-    float x2 = v.x;
-    float y2 = v.y;
-    float z2 = v.z;
-    float w2 = v.w;
+    float x2 = pv->x;
+    float y2 = pv->y;
+    float z2 = pv->z;
+    float w2 = pv->w;
 
     float _x = x1 - x2;
     float _y = y1 - y2;
@@ -928,8 +963,8 @@ inline bVector3 &bConvertToBond(bVector3 &dest, const bVector3 &v) {
     return dest;
 }
 
+// total size: 0x40
 struct bMatrix4 {
-    // total size: 0x40
     bVector4 v0; // offset 0x0, size 0x10
     bVector4 v1; // offset 0x10, size 0x10
     bVector4 v2; // offset 0x20, size 0x10
@@ -955,7 +990,19 @@ inline bMatrix4 *bCopy(bMatrix4 *dest, const bMatrix4 *v) {
 #elif defined(EA_PLATFORM_XENON)
 // TODO
 #elif defined(EA_PLATFORM_PLAYSTATION2)
-// TODO
+    // TODO is it right?
+    // TODO why should there be 4 uint128_t t variables in this call?
+    asm("lqc2 vf1, %4\n"
+        "lqc2 vf2, %5\n"
+        "lqc2 vf3, %6\n"
+        "lqc2 vf4, %7\n"
+        "sqc2 vf1, %0\n"
+        "sqc2 vf2, %1\n"
+        "sqc2 vf3, %2\n"
+        "sqc2 vf4, %3"
+        : "=o"(dest->v0), "=o"(dest->v1), "=o"(dest->v2), "=o"(dest->v3)
+        : "o"(v->v0), "o"(v->v1), "o"(v->v2), "o"(v->v3)
+        : "memory");
 #else
 #error Choose a platform
 #endif
@@ -968,11 +1015,26 @@ inline void bIdentity(bMatrix4 *a) {
 #elif defined(EA_PLATFORM_XENON)
 // TODO
 #elif defined(EA_PLATFORM_PLAYSTATION2)
-// TODO
+    // TODO is it right?
+    u_long128 t;
+
+    asm("por  %0, $0, $0\n"
+        "lui  %0, 0x3f80"
+        : "=r"(t));
+    asm("sq   %1, %0" : "=o"(a->v0) : "r"(t));
+    asm("pexew %0, %0" : "+r"(t));
+    asm("sq   %1, %0" : "=o"(a->v2) : "r"(t));
+    asm("pexcw %0, %0" : "+r"(t));
+    asm("sq   %1, %0" : "=o"(a->v1) : "r"(t));
+    asm("pextlw %0, %0, $0" : "+r"(t));
+    asm("sq   %1, %0" : "=o"(a->v3) : "r"(t));
 #else
 #error Choose a platform
 #endif
 }
+
+void bConvertFromBond(bMatrix4 &dest, const bMatrix4 &m);
+void bConvertToBond(bMatrix4 &dest, const bMatrix4 &m);
 
 inline void eIdentity(bMatrix4 *a) {
     bIdentity(a);
@@ -988,9 +1050,21 @@ inline bMatrix4 &bMatrix4::operator=(const bMatrix4 &m) {
 }
 
 // UNUSED
-inline bMatrix4 *bCopy(bMatrix4 *dest, const bMatrix4 *v, const struct bVector4 *position) {}
+inline bMatrix4 *bCopy(bMatrix4 *dest, const bMatrix4 *v, const bVector4 *position) {
+    dest->v0 = v->v0;
+    dest->v1 = v->v1;
+    dest->v2 = v->v2;
+    dest->v3 = *position;
+    return dest;
+}
 
-inline bMatrix4 *bCopy(bMatrix4 *dest, const bMatrix4 *v, const struct bVector3 *position) {}
+inline bMatrix4 *bCopy(bMatrix4 *dest, const bMatrix4 *v, const bVector3 *position) {
+    dest->v0 = v->v0;
+    dest->v1 = v->v1;
+    dest->v2 = v->v2;
+    bCopy(&dest->v3, position, 1.0f);
+    return dest;
+}
 
 void bMulMatrix(bMatrix4 *dest, const bMatrix4 *a, const bMatrix4 *b);
 void bMulMatrix(bVector3 *dest, const bMatrix4 *a, const bVector3 *b);
@@ -1001,12 +1075,8 @@ void bInvertMatrix(bMatrix4 *dest, const bMatrix4 *src);
 void bConvertToBond(bMatrix4 &dest, const bMatrix4 &m);
 void bConvertFromBond(bMatrix4 &dest, const bMatrix4 &m);
 
+// total size: 0x10
 struct bQuaternion {
-    // total size: 0x10
-    float x; // offset 0x0, size 0x4
-    float y; // offset 0x4, size 0x4
-    float z; // offset 0x8, size 0x4
-    float w; // offset 0xC, size 0x4
 
     bQuaternion() {}
 
@@ -1017,15 +1087,27 @@ struct bQuaternion {
         this->w = _w;
     }
 
-    void GetMatrix(bMatrix4 &mat) const;
-    inline void GetMatrix(bMatrix4 *mat) const {
-        GetMatrix(*mat);
+    bQuaternion(const bMatrix4 &m);
+
+    void GetMatrix(bMatrix4 *mat) const {
+        return this->GetMatrix(*mat);
     }
 
+    void GetMatrix(bMatrix4 &mat) const {}
+
     bQuaternion &Slerp(bQuaternion &r, const bQuaternion &target, float t) const;
+
+    float x; // offset 0x0, size 0x4
+    float y; // offset 0x4, size 0x4
+    float z; // offset 0x8, size 0x4
+    float w; // offset 0xC, size 0x4
 };
 
 void bMatrixToQuaternion(bQuaternion &quat, const bMatrix4 &m);
+
+inline bQuaternion::bQuaternion(const bMatrix4 &m) {
+    bMatrixToQuaternion(*this, m);
+}
 
 inline void bMemZero(void *dest, unsigned int size) {
     bMemSet(dest, 0, size);
@@ -1034,7 +1116,7 @@ inline void bMemZero(void *dest, unsigned int size) {
 class bBitTable {
   public:
     bBitTable() {
-        Bits = 0;
+        Bits = nullptr;
         NumBits = 0;
     }
 
@@ -1070,12 +1152,19 @@ class bBitTable {
 
 void hermite_basis(bMatrix4 *b, bMatrix4 *p, float u1, float u2, float u3, float u4);
 void hermite_parameter(bVector4 *dest, const bMatrix4 *b, float t);
+
+void bExpandBoundingBox(bVector2 *bbox_min, bVector2 *bbox_max, const bVector2 *point);
 void bExpandBoundingBox(bVector3 *bbox_min, bVector3 *bbox_max, const bVector3 *bbox2_min, const bVector3 *bbox2_max);
 void bExpandBoundingBox(bVector3 *bbox_min, bVector3 *bbox_max, const bVector3 *point, float extra_width);
+void bInitializeBoundingBox(bVector2 *bbox_min, bVector2 *bbox_max);
+void bInitializeBoundingBox(bVector2 *bbox_min, bVector2 *bbox_max, const bVector2 *point);
+void bInitializeBoundingBox(bVector3 *bbox_min, bVector3 *bbox_max);
 void bInitializeBoundingBox(bVector3 *bbox_min, bVector3 *bbox_max, const bVector3 *point);
 int bBoundingBoxIsInside(const bVector2 *bbox_min, const bVector2 *bbox_max, const bVector2 *point, float extra_width);
+int bBoundingBoxIsInside(const bVector3 *bbox_min, const bVector3 *bbox_max, const bVector3 *point, float extra_width);
 int bBoundingBoxOverlapping(const bVector2 *bbox_min, const bVector2 *bbox_max, const bVector2 *bbox2_min, const bVector2 *bbox2_max);
 bool bIsPointInPoly(const bVector2 *point, const bVector2 *points, int num_points);
+bool bIsPointInPoly(const bVector2 *point, const bVector3 *points, int num_points);
 float bDistToLine(const bVector2 *point, const bVector2 *line_p1, const bVector2 *line_p2);
 
 extern bVector3 ZeroVector;

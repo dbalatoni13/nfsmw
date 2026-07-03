@@ -6,6 +6,7 @@
 #endif
 
 #include "./Camera.hpp"
+#include "CameraInfo.hpp"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/camerainfo.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/ecar.h"
 #include "Speed/Indep/Src/Sim/SimSurface.h"
@@ -49,6 +50,10 @@ class CameraAnchor {
         return mWorldID;
     }
 
+    short GetPOVType() {
+        return this->mPOV.Type;
+    }
+
   private:
     bVector3 mVelocity;                            // offset 0x0, size 0x10
     float mVelMag;                                 // offset 0x10, size 0x4
@@ -87,8 +92,17 @@ class CameraMover : public bTNode<CameraMover>, public WCollisionMgr::ICollision
         return Type;
     }
 
+    WUID GetAnchorID();
+
     bVector3 *GetPosition() {
         return pCamera->GetPosition();
+    }
+
+    float GetDistanceTo(const bVector3 *to) {
+        bVector3 rel;
+
+        bSub(&rel, GetPosition(), to);
+        return bLength(&rel);
     }
 
     // Virtual methods
@@ -116,6 +130,8 @@ class CameraMover : public bTNode<CameraMover>, public WCollisionMgr::ICollision
     virtual unsigned short GetLookbackAngle() {}
 
     virtual void ResetState() {}
+
+    virtual bool IsHoodCamera() {}
 
     // ICollisionHandler
     bool OnWCollide(const WCollisionMgr::WorldCollisionInfo &cInfo, const UMath::Vector3 &cPoint, void *userdata) override;

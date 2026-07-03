@@ -1,28 +1,26 @@
-#ifndef GAMEPLAY_GMARKER_H
-#define GAMEPLAY_GMARKER_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef GMARKER_H__
+#define GMARKER_H__
 
 #include "Speed/Indep/Src/Gameplay/GRuntimeInstance.h"
 
-class GMarker : /* 0x00 */ GRuntimeInstance { // 0x50
+class GMarker : public GRuntimeInstance {
   public:
-    GMarker(const Attrib::Key &markerKey);
-    /* vtable[1] */ ~GMarker() override;
-    /* vtable[2] */ GameplayObjType GetType() override {};
-    UMath::Vector3 &GetPosition() {
+    GMarker(const unsigned int &markerKey);
+
+    GameplayObjType GetType() const override {}
+
+    const UMath::Vector3 &GetPosition() const {
         return mPosition;
-    };
-    UMath::Vector3 &GetDirection() {
+    }
+    const UMath::Vector3 &GetDirection() const {
         return mDirection;
-    };
-    void CalcTransform(struct UMath::Matrix4 &mat) const;
+    }
+
+    void CalcTransform(UMath::Matrix4 &mat) const;
 
   private:
-    /* 0x30 */ UMath::Vector3 mPosition;
-    /* 0x40 */ UMath::Vector3 mDirection;
+    UMath::Vector3 mPosition;  // offset 0x28, size 0xC
+    UMath::Vector3 mDirection; // offset 0x34, size 0xC
 };
 
 #endif

@@ -29,7 +29,7 @@
 
 #include <algorithm>
 
-UTL::COM::Factory<Sim::Param, Sim::IActivity, UCrc32>::Prototype _AITrafficManager("AITrafficManager", AITrafficManager::Construct);
+BIND_ACTIVITY_FACTORY(AITrafficManager);
 
 // Functionally matching
 // https://decomp.me/scratch/qvQEg
@@ -61,7 +61,7 @@ AITrafficManager::AITrafficManager(Sim::Param params)
         Attrib::Key cKey = patternclass->GetFirstCollection();
 
         while (cKey != 0) {
-            Attrib::Gen::trafficpattern pattern(cKey, 0, nullptr);
+            Attrib::Gen::trafficpattern pattern(cKey, 0, NULL);
             const char *name = pattern.CollectionName();
 
             PatternKey key;
@@ -200,8 +200,8 @@ IVehicle *AITrafficManager::GetAvailableTrafficVehicle(Attrib::Key key, bool mak
     }
     UMath::Vector3 initialVec = {0.0f, 0.0f, 1.0f};
     UMath::Vector3 initialPos = {0.0f, 0.0f, 0.0f};
-    VehicleParams params(this, DRIVER_TRAFFIC, key, initialVec, initialPos, 0, nullptr, 0);
-    ISimable *isimable = UTL::COM::Factory<Sim::Param, ISimable, UCrc32>::CreateInstance("PVehicle", params);
+    VehicleParams params(this, DRIVER_TRAFFIC, key, initialVec, initialPos, 0, nullptr, NULL);
+    ISimable *isimable = ISimable::CreateInstance("PVehicle", params);
     if (isimable) {
         static_cast<IActivity *>(this)->Attach(isimable);
         IVehicle *ivehicle;
@@ -232,7 +232,7 @@ bool AITrafficManager::SpawnTraffic() {
         return false;
     }
 
-    IVehicle *availableVehicle = GetAvailableTrafficVehicle(key, mNewInstanceTimer > mPattern.SpawnTime(0));
+    IVehicle *availableVehicle = GetAvailableTrafficVehicle(key, mNewInstanceTimer > mPattern.SpawnTime());
     if (availableVehicle == nullptr) {
         return false;
     }
@@ -251,11 +251,11 @@ bool AITrafficManager::SpawnTraffic() {
 
     ITrafficAI *itv;
     if (availableVehicle->QueryInterface(&itv)) {
-        float start_speed = UMath::Min(mPattern.SpeedStreet(0), mPattern.SpeedHighway(0));
+        float start_speed = UMath::Min(mPattern.SpeedStreet(), mPattern.SpeedHighway());
         itv->StartDriving(MPH2MPS(start_speed) * 0.75f);
     }
 
-    MSetTrafficSpeed ai_msg(mPattern.SpeedStreet(0), mPattern.SpeedHighway(0), false);
+    MSetTrafficSpeed ai_msg(mPattern.SpeedStreet(), mPattern.SpeedHighway(), false);
     ai_msg.SetID(availableVehicle->GetSimable()->GetWorldID());
     ai_msg.Post("AIAction");
 

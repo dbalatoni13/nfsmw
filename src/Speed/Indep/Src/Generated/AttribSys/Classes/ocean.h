@@ -1,97 +1,156 @@
-#ifndef ATTRIBSYS_CLASSES_OCEAN_H
-#define ATTRIBSYS_CLASSES_OCEAN_H
+#ifndef _attrib_gen_ocean_h
+#define _attrib_gen_ocean_h
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
-#include <cstddef>
-
-#include "Speed/Indep/Libs/Support/Utility/UTypes.h"
-#include "Speed/Indep/Src/Main/AttribSupport.h"
-#include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
-#include "Speed/Indep/Tools/AttribSys/Runtime/Common/AttribPrivate.h"
+#include "Speed/Indep/Src/Misc/MWAttribUserTypes.h"
 
 namespace Attrib {
 namespace Gen {
 
 struct ocean : Instance {
-    void *operator new(size_t bytes) {
-        return Attrib::Alloc(bytes, "ocean");
-    }
+    typedef UMath::Vector4 TypeOf_layer1_specular_colour;
+    typedef UMath::Vector2 TypeOf_layer1_tile_xy;
+    typedef UMath::Vector4 TypeOf_layer2_specular_colour;
+    typedef UMath::Vector2 TypeOf_layer2_tile_xy;
+    typedef EA::Reflection::Float TypeOf_reflection_amount;
 
-    void operator delete(void *ptr, size_t bytes) {
-        Attrib::Free(ptr, bytes, "ocean");
-    }
-
+    static Key ClassKey();
+    USE_ATTRIB_ALLOC("ocean");
     ocean(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {}
-
     ocean(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {}
-
+    ocean(const Instance &src) : Instance(src) {}
     ocean(const ocean &src) : Instance(src) {}
-
     ocean(const RefSpec &refspec, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(refspec, msgPort, owner) {}
-
     ~ocean() {}
-
+    Instance &GetBase() {
+        return *this;
+    }
+    const Instance &GetBase() const {
+        return *this;
+    }
+    Key GetClass() {
+        return 0x093d7c56;
+    }
+    void Modify(Key dynamicCollectionKey, unsigned int spaceForAdditionalAttributes) {
+        ModifyInternal(0x093d7c56, dynamicCollectionKey, spaceForAdditionalAttributes);
+    }
+    Key GenerateUniqueKey(const char *name, bool registerName) const {
+        return GenerateUniqueKey(name, registerName);
+    }
     void Change(const Collection *c) {
         Instance::Change(c);
     }
-
-    void Change(Key collectionkey) {
-        Change(FindCollection(ClassKey(), collectionkey));
-    }
-
     void Change(const RefSpec &refspec) {
         Instance::Change(refspec);
     }
-
-    static Key ClassKey() {
-        return 0x093d7c56;
+    void Change(Key collectionkey) {
+        Change(FindCollection(ClassKey(), collectionkey));
     }
-
-    const UMath::Vector4 &layer2_specular_colour() const {
-        const UMath::Vector4 *resultptr = reinterpret_cast<const UMath::Vector4 *>(GetAttributePointer(0x19be3d84, 0));
-        if (!resultptr) {
-            resultptr = reinterpret_cast<const UMath::Vector4 *>(DefaultDataArea(sizeof(UMath::Vector4)));
-        }
-        return *resultptr;
+    void ChangeWithDefault(const RefSpec &refspec) {
+        Instance::ChangeWithDefault(refspec);
     }
-
-    const UMath::Vector2 &layer1_tile_xy() const {
-        const UMath::Vector2 *resultptr = reinterpret_cast<const UMath::Vector2 *>(GetAttributePointer(0x270e8256, 0));
-        if (!resultptr) {
-            resultptr = reinterpret_cast<const UMath::Vector2 *>(DefaultDataArea(sizeof(UMath::Vector2)));
-        }
-        return *resultptr;
+    void ChangeWithDefault(Key collectionkey) {
+        Change(FindCollectionWithDefault(ClassKey(), collectionkey));
     }
-
-    const UMath::Vector2 &layer2_tile_xy() const {
-        const UMath::Vector2 *resultptr = reinterpret_cast<const UMath::Vector2 *>(GetAttributePointer(0x8813b330, 0));
-        if (!resultptr) {
-            resultptr = reinterpret_cast<const UMath::Vector2 *>(DefaultDataArea(sizeof(UMath::Vector2)));
-        }
-        return *resultptr;
+    const ocean &operator=(const ocean &rhs) {
+        operator=(rhs.GetBase());
+        return *this;
     }
-
+    const ocean &operator=(const Instance &rhs) {
+        Instance::operator=(rhs);
+        return *this;
+    }
+    bool layer1_specular_colour(TAttrib<UMath::Vector4> &result) const {
+        ATTRIB_CODEGEN_GETATTRIB(UMath::Vector4, 0xd9e53379);
+    }
+    bool layer1_specular_colour(UMath::Vector4 &result) const {
+        ATTRIB_CODEGEN_CHECKEDGETVALUE(UMath::Vector4, 0xd9e53379, result);
+    }
     const UMath::Vector4 &layer1_specular_colour() const {
-        const UMath::Vector4 *resultptr = reinterpret_cast<const UMath::Vector4 *>(GetAttributePointer(0xd9e53379, 0));
-        if (!resultptr) {
-            resultptr = reinterpret_cast<const UMath::Vector4 *>(DefaultDataArea(sizeof(UMath::Vector4)));
-        }
-        return *resultptr;
+        ATTRIB_CODEGEN_GETVALUE(UMath::Vector4, 0xd9e53379);
+    }
+    bool SET_layer1_specular_colour(const UMath::Vector4 &input) {
+        ATTRIB_CODEGEN_SETVALUE(UMath::Vector4, 0xd9e53379, input);
+    }
+    bool layer1_tile_xy(TAttrib<UMath::Vector2> &result) const {
+        ATTRIB_CODEGEN_GETATTRIB(UMath::Vector2, 0x270e8256);
+    }
+    bool layer1_tile_xy(UMath::Vector2 &result) const {
+        ATTRIB_CODEGEN_CHECKEDGETVALUE(UMath::Vector2, 0x270e8256, result);
+    }
+    const UMath::Vector2 &layer1_tile_xy() const {
+        ATTRIB_CODEGEN_GETVALUE(UMath::Vector2, 0x270e8256);
+    }
+    bool SET_layer1_tile_xy(const UMath::Vector2 &input) {
+        ATTRIB_CODEGEN_SETVALUE(UMath::Vector2, 0x270e8256, input);
+    }
+    bool layer2_specular_colour(TAttrib<UMath::Vector4> &result) const {
+        ATTRIB_CODEGEN_GETATTRIB(UMath::Vector4, 0x19be3d84);
+    }
+    bool layer2_specular_colour(UMath::Vector4 &result) const {
+        ATTRIB_CODEGEN_CHECKEDGETVALUE(UMath::Vector4, 0x19be3d84, result);
+    }
+    const UMath::Vector4 &layer2_specular_colour() const {
+        ATTRIB_CODEGEN_GETVALUE(UMath::Vector4, 0x19be3d84);
+    }
+    bool SET_layer2_specular_colour(const UMath::Vector4 &input) {
+        ATTRIB_CODEGEN_SETVALUE(UMath::Vector4, 0x19be3d84, input);
+    }
+    bool layer2_tile_xy(TAttrib<UMath::Vector2> &result) const {
+        ATTRIB_CODEGEN_GETATTRIB(UMath::Vector2, 0x8813b330);
+    }
+    bool layer2_tile_xy(UMath::Vector2 &result) const {
+        ATTRIB_CODEGEN_CHECKEDGETVALUE(UMath::Vector2, 0x8813b330, result);
+    }
+    const UMath::Vector2 &layer2_tile_xy() const {
+        ATTRIB_CODEGEN_GETVALUE(UMath::Vector2, 0x8813b330);
+    }
+    bool SET_layer2_tile_xy(const UMath::Vector2 &input) {
+        ATTRIB_CODEGEN_SETVALUE(UMath::Vector2, 0x8813b330, input);
+    }
+    bool reflection_amount(TAttrib<EA::Reflection::Float> &result) const {
+        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xe956e716);
+    }
+    bool reflection_amount(EA::Reflection::Float &result) const {
+        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xe956e716, result);
+    }
+    const EA::Reflection::Float &reflection_amount() const {
+        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0xe956e716);
+    }
+    bool SET_reflection_amount(const EA::Reflection::Float &input) {
+        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xe956e716, input);
     }
 
-    const float &reflection_amount() const {
-        const float *resultptr = reinterpret_cast<const float *>(GetAttributePointer(0xe956e716, 0));
-        if (!resultptr) {
-            resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
-        }
-        return *resultptr;
+  private:
+    unsigned int GetLayoutSize() {
+        return 0;
     }
+    ocean &ConvertFromInstance(Instance &src) {}
+    const ocean &ConvertFromInstance(const Instance &src) {}
 };
+}; // namespace Gen
 
-} // namespace Gen
-} // namespace Attrib
+namespace ClassName {
+
+static const Key ocean = 0x093d7c56;
+
+}; // namespace ClassName
+
+namespace Hash {
+namespace ocean {
+
+static const Key layer1_specular_colour = 0xd9e53379;
+static const Key layer1_tile_xy = 0x270e8256;
+static const Key layer2_specular_colour = 0x19be3d84;
+static const Key layer2_tile_xy = 0x8813b330;
+static const Key reflection_amount = 0xe956e716;
+
+}; // namespace ocean
+}; // namespace Hash
+
+inline Key Gen::ocean::ClassKey() {
+    return ClassName::ocean;
+}
+
+}; // namespace Attrib
 
 #endif

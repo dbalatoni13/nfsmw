@@ -29,15 +29,30 @@ enum BoundFlags {
     kBounds_Disabled = 1,
 };
 
+// total size: 0x6
 struct _V3c {
-    // total size: 0x6
+    void Decompress(UMath::Vector3 &to) const {
+        to.x = static_cast<float>(x) * 0.001f;
+        to.y = static_cast<float>(y) * 0.001f;
+        to.z = static_cast<float>(z) * 0.001f;
+    }
+
+  private:
     short x; // offset 0x0, size 0x2
     short y; // offset 0x2, size 0x2
     short z; // offset 0x4, size 0x2
 };
 
+// total size: 0x8
 struct _Q4c {
-    // total size: 0x8
+    void Decompress(struct UMath::Vector4 &to) const {
+        to.x = static_cast<float>(this->x) * 3.051851e-05f;
+        to.y = static_cast<float>(this->y) * 3.051851e-05f;
+        to.z = static_cast<float>(this->z) * 3.051851e-05f;
+        to.w = static_cast<float>(this->w) * 3.051851e-05f;
+    }
+
+  private:
     short x; // offset 0x0, size 0x2
     short y; // offset 0x2, size 0x2
     short z; // offset 0x4, size 0x2
@@ -52,14 +67,7 @@ struct BoundsHeader {
     int fPad;         // offset 0xC, size 0x4
 };
 
-struct Bounds;
-class IBoundable;
-
-struct Collection : public BoundsHeader {
-    // total size: 0x10
-
-    bool AddTo(IBoundable *irbc, const Bounds *root, const SimSurface &defsurface, bool parsechildren) const;
-};
+class Collection;
 
 // total size: 0x30
 struct Bounds {
@@ -76,7 +84,13 @@ struct Bounds {
     UCrc32 fNameHash;           // offset 0x28, size 0x4
     Collection *fCollection;    // offset 0x2C, size 0x4
 
-    void GetPivot(UMath::Vector3 &to) const {}
+    void GetOrientation(UMath::Vector4 &to) const {
+        this->fOrientation.Decompress(to);
+    }
+
+    void GetPivot(UMath::Vector3 &to) const {
+        this->fPivot.Decompress(to);
+    }
 };
 
 class IBoundable : public UTL::COM::IUnknown {
@@ -96,7 +110,14 @@ class IBoundable : public UTL::COM::IUnknown {
                                   CollisionGeometry::BoundFlags flags, bool persistant);
 };
 
-const Attrib::Collection *Lookup(UCrc32 object_name_hash);
+// total size: 0x10
+struct Collection : public BoundsHeader {
+    Bounds *const GetRoot() const;
+    Bounds *const GetBounds(UCrc32 hash_name) const;
+    bool AddTo(IBoundable *irbc, const Bounds *root, const SimSurface &defsurface, bool parsechildren) const;
+};
+
+const Collection *Lookup(UCrc32 object_name_hash);
 bool CreateJoint(IBoundable *ifemale, struct UCrc32 femalenode_name, IBoundable *imale, UCrc32 malenode_name, UMath::Vector3 *out_female,
                  UMath::Vector3 *out_male, unsigned int joint_flags);
 

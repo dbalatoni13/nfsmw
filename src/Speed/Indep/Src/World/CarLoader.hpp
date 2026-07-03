@@ -1,152 +1,22 @@
-#ifndef WORLD_CAR_LOADER_H
-#define WORLD_CAR_LOADER_H
+#ifndef CARLOADER_HPP
+#define CARLOADER_HPP
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#define REMOVE_CARPART_ANIMS
 
 #include "CarInfo.hpp"
-#include "Speed/Indep/Src/Ecstasy/eStreamingPack.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
-
-enum CarLoadState {
-    CARLOADSTATE_QUEUED = 0,
-    CARLOADSTATE_LOADING = 1,
-    CARLOADSTATE_LOADED = 2,
-};
 
 typedef int32 CarLoaderHandle;
 
 extern int CarLoaderMemoryPoolNumber;
 
-// total size: 0x18
-class LoadedSolidPack : public bTNode<LoadedSolidPack> {
-  public:
-    const char *Filename;           // offset 0x8, size 0x4
-    eStreamingPack *pStreamingPack; // offset 0xC, size 0x4
-    ResourceFile *pResourceFile;    // offset 0x10, size 0x4
-    int16 NumInstances;             // offset 0x14, size 0x2
-    int8 LoadState;                 // offset 0x16, size 0x1
-
-    const char *GetName();
-};
-
-// total size: 0x18
-class LoadedTexturePack : public bTNode<LoadedTexturePack> {
-  public:
-    const char *Filename;           // offset 0x8, size 0x4
-    int16 NumInstances;             // offset 0xC, size 0x2
-    char LoadState;                 // offset 0xE, size 0x1
-    char Pad0;                      // offset 0xF, size 0x1
-    int32 MaxHeaderSize;            // offset 0x10, size 0x4
-    eStreamingPack *pStreamingPack; // offset 0x14, size 0x4
-
-    const char *GetName();
-};
-
-// total size: 0x10
-class LoadedSkinLayer : public bTNode<LoadedSkinLayer> {
-  public:
-    uint32 NameHash;    // offset 0x8, size 0x4
-    int16 NumInstances; // offset 0xC, size 0x2
-    char LoadState;     // offset 0xE, size 0x1
-    char pad0;          // offset 0xF, size 0x1
-};
-
-// total size: 0x7C
-class LoadedWheel : public bTNode<LoadedWheel> {
-  public:
-    CarLoadState LoadState;                   // offset 0x8, size 0x4
-    CarLoadState LoadStateSkinPerm;           // offset 0xC, size 0x4
-    CarLoadState LoadStateSkinTemp;           // offset 0x10, size 0x4
-    uint32 PartNameHash;                      // offset 0x14, size 0x4
-    uint32 TextureBaseNameHash;               // offset 0x18, size 0x4
-    CarPart *pCarPart;                        // offset 0x1C, size 0x4
-    uint32 ModelNameHashes[5][1];             // offset 0x20, size 0x14
-    uint32 SkinNameHashesPerm[4];             // offset 0x34, size 0x10
-    uint32 SkinNameHashesTemp[4];             // offset 0x44, size 0x10
-    LoadedSkinLayer *LoadedSkinLayersPerm[4]; // offset 0x54, size 0x10
-    LoadedSkinLayer *LoadedSkinLayersTemp[4]; // offset 0x64, size 0x10
-  private:
-    CARPART_LOD mMinLodLevel; // offset 0x74, size 0x4
-    CARPART_LOD mMaxLodLevel; // offset 0x78, size 0x4
-
-  public:
-    CARPART_LOD GetMinLodLevel() {
-        return mMinLodLevel;
-    };
-    CARPART_LOD GetMaxLodLevel() {
-        return mMaxLodLevel;
-    };
-    void SetLodLevel(CARPART_LOD min, CARPART_LOD max);
-};
-
-// total size: 0x2E0
-class LoadedSkin : public bTNode<LoadedSkin> {
-  public:
-    RideInfo *pRideInfo;                       // offset 0x8, size 0x4
-    char LoadStatePerm;                        // offset 0xC, size 0x1
-    char LoadStateTemp;                        // offset 0xD, size 0x1
-    char DoneComposite;                        // offset 0xE, size 0x1
-    int IsPlayerSkin;                          // offset 0x10, size 0x4
-    int InFrontEnd;                            // offset 0x14, size 0x4
-    LoadedTexturePack *pLoadedTexturesPack;    // offset 0x18, size 0x4
-    LoadedTexturePack *pLoadedVinylsPack;      // offset 0x1C, size 0x4
-    int NumLoadedSkinLayersPerm;               // offset 0x20, size 0x4
-    LoadedSkinLayer *LoadedSkinLayersPerm[87]; // offset 0x24, size 0x15C
-    int NumLoadedSkinLayersTemp;               // offset 0x180, size 0x4
-    LoadedSkinLayer *LoadedSkinLayersTemp[87]; // offset 0x184, size 0x15C
-
-    LoadedSkin(RideInfo *ride_info, int in_front_end, int is_player_skin);
-    const char *GetName();
-    int IsLoaded();
-    int GetTextureHashes(uint32 *texture_hashes, int max_texture_hashes, int perm);
-};
-
-// total size: 0x20
-class LoadedCar : public bTNode<LoadedCar> {
-  public:
-    CarType Type;                      // offset 0x8, size 0x4
-    struct RideInfo *pRideInfo;        // offset 0xC, size 0x4
-    int InFrontEnd;                    // offset 0x10, size 0x4
-    int IsTwoPlayer;                   // offset 0x14, size 0x4
-    CarLoadState LoadState;            // offset 0x18, size 0x4
-    LoadedSolidPack *pLoadedSolidPack; // offset 0x1C, size 0x4
-
-    LoadedCar(RideInfo *ride_info, int in_front_end, int is_two_player);
-    int ShouldWeStream();
-    int GetModelHashes(uint32 *model_hashes, int max_model_hashes);
-};
-
-// total size: 0x6D4
-class LoadedRideInfo : public bTNode<LoadedRideInfo> {
-  public:
-    int NumInstances;           // offset 0x8, size 0x4
-    CarLoadState LoadState;     // offset 0xC, size 0x4
-    int HighPriority;           // offset 0x10, size 0x4
-    int PrintedLoading;         // offset 0x14, size 0x4
-    int IsPlayerCar;            // offset 0x18, size 0x4
-    RideInfo TheRideInfo;       // offset 0x1C, size 0x310
-    CarTypeInfo *pCarTypeInfo;  // offset 0x32C, size 0x4
-    char Name[24];              // offset 0x330, size 0x18
-    LoadedCar *pLoadedCar;      // offset 0x348, size 0x4
-    LoadedWheel *pLoadedWheel;  // offset 0x34C, size 0x4
-    LoadedSkin *pLoadedSkin;    // offset 0x350, size 0x4
-    LoadedCar TheLoadedCar;     // offset 0x354, size 0x20
-    LoadedWheel TheLoadedWheel; // offset 0x374, size 0x7C
-    LoadedSkin TheLoadedSkin;   // offset 0x3F0, size 0x2E0
-    int ID;                     // offset 0x6D0, size 0x4
-
-    static int sNextID;
-
-    LoadedRideInfo(RideInfo *ride_info, int in_front_end, int is_two_player, int is_player_car);
-    RideInfo *GetRideInfo() {
-        return &TheRideInfo;
-    };
-    char *GetName() {
-        return Name;
-    };
-};
+class LoadedTexturePack;
+class LoadedSolidPack;
+class LoadedSkinLayer;
+class LoadedSkin;
+class LoadedWheel;
+class LoadedCar;
+class LoadedRideInfo;
 
 // total size: 0x8B0
 class CarLoader {
@@ -163,75 +33,81 @@ class CarLoader {
 
     void SetMemoryPoolSize(int size);
 
-    int IsAddressInMemoryPool(void *address);
+    int GetMemoryPoolSize() {
+        return this->MemoryPoolSize;
+    }
 
-    int IsInMemoryPool(LoadedTexturePack *loaded_texture_pack);
+    bool MakeSpaceInPool(int size);
 
-    int GetMemoryEntries(LoadedTexturePack *loaded_texture_pack, void **memory_entries, int num_memory_entries);
+    void *AllocateUserMemory(int size, const char *debug_name) {
+        return bMalloc(size, debug_name, 0, CarLoaderMemoryPoolNumber & 0xF | 0x2000);
+    };
 
-    int IsInMemoryPool(LoadedSolidPack *loaded_solid_pack);
+    void FreeUserMemory(void *mem);
 
-    int GetMemoryEntries(LoadedSolidPack *loaded_solid_pack, void **memory_entries, int num_memory_entries);
+    CarLoaderHandle Load(RideInfo *ride_info);
 
-    void PrintInventory();
+    void BeginLoading(void (*callback)(uintptr_t), uintptr_t param);
 
-    void PrintMemoryUsage(bool on_screen);
+    int IsLoaded(CarLoaderHandle handle);
 
-    int GetMemoryRequired(LoadedRideInfo *loaded_ride_info);
+    void Unload(CarLoaderHandle handle);
+
+    void UnloadEverything();
+
+    int DefragmentPool();
 
     void ServiceTweakables();
 
-    char *GetPrintHeader();
+    int IsLoadingInProgress() {
+        return LoadingInProgress;
+    }
 
+    void EnsureHasLoaded(CarLoaderHandle handle);
+
+  private:
     LoadedSolidPack *AllocateSolidPack(const char *filename);
-
-    void UnallocateSolidPack(LoadedSolidPack *loaded_solid_pack);
-
-    void LoadSolidPack(LoadedSolidPack *loaded_solid_pack, int stream_solids);
-
-    void LoadedTrackStreamerCallback();
-
-    void LoadedSolidPackCallback(LoadedSolidPack *loaded_solid_pack);
-
-    int UnloadSolidPack(LoadedSolidPack *loaded_solid_pack);
 
     LoadedTexturePack *AllocateTexturePack(const char *filename, int max_header_size);
 
+    int AllocateSkinLayers(uint32 *name_hash_table, int num_name_hashes, LoadedSkinLayer **loaded_skin_layer_table, int max_loaded_skin_layers,
+                           const char *filename);
+
+    LoadedRideInfo *AllocateRideInfo(RideInfo *ride_info, int is_player_car);
+
+    void UnallocateSolidPack(LoadedSolidPack *loaded_solid_pack);
+
     void UnallocateTexturePack(LoadedTexturePack *loaded_texture_pack);
+
+    void UnallocateSkinLayers(LoadedSkinLayer **loaded_skin_layer_table, int num_loaded_skin_layers);
+
+    int UnallocateRideInfo(LoadedRideInfo *loaded_ride_info);
+
+    void ServiceLoading();
+
+    void LoadSolidPack(LoadedSolidPack *loaded_solid_pack, int stream_solids);
 
     int LoadTexturePack(LoadedTexturePack *loaded_texture_pack, int use_memory_pool);
 
-    void LoadedTexturePackCallback(LoadedTexturePack *loaded_texture_pack);
-
-    int UnloadTexturePack(LoadedTexturePack *loaded_texture_pack);
-
     int LoadCar(LoadedCar *loaded_car);
-
-    void LoadedCarCallback(LoadedCar *loaded_car);
-
-    int UnloadCar(LoadedCar *loaded_car);
 
     int LoadAllWheelModels();
 
-    void LoadedWheelModelsCallback();
-
     int LoadAllWheelTextures();
-
-    void LoadedWheelTexturesCallback();
-
-    int UnloadWheel(LoadedWheel *loaded_wheel);
-
-    int GetMemoryEntries(LoadedWheel *loaded_wheel, void **memory_entries, int num_memory_entries);
 
     int LoadAllTexturesFromPack(const char *filename, int load_perm_layers);
 
-    void LoadedAllTexturesFromPackCallback();
-
     int LoadSkin(LoadedSkin *loaded_skin, int load_perm_layers);
 
-    void LoadedSkinCallback(LoadedSkin *loaded_skin);
+    int LoadSkinLayers(uint32 *name_hash_table, int max_name_hashes, LoadedSkinLayer **loaded_skin_layer_table, int num_loaded_skin_layers);
 
-    void CompositeSkin(LoadedSkin *loaded_skin);
+    int UnloadSolidPack(LoadedSolidPack *loaded_solid_pack);
+
+    int UnloadTexturePack(LoadedTexturePack *loaded_texture_pack);
+
+    int UnloadCar(LoadedCar *loaded_car);
+
+    int UnloadWheel(LoadedWheel *loaded_wheel);
 
     int UnloadSkinTemporaries(LoadedSkin *loaded_skin, int force_unload);
 
@@ -239,24 +115,45 @@ class CarLoader {
 
     int UnloadSkin(LoadedSkin *loaded_skin);
 
-    int IsSkinInMemoryPool(LoadedSkin *loaded_skin);
+    int UnloadSkinLayers(uint32 *name_hash_table, int max_name_hashes, LoadedSkinLayer **loaded_skin_layer_table, int num_loaded_skin_layers);
 
-    int GetMemoryEntries(LoadedSkin *loaded_skin, void **memory_entries, int num_memory_entries);
+    void LoadingDoneCallback();
 
-    int AllocateSkinLayers(uint32 *name_hash_table, int num_name_hashes, LoadedSkinLayer **loaded_skin_layer_table, int max_loaded_skin_layers,
-                           const char *filename);
+    void LoadedTrackStreamerCallback();
 
-    void UnallocateSkinLayers(LoadedSkinLayer **loaded_skin_layer_table, int num_loaded_skin_layers);
+    void LoadedSolidPackCallback(LoadedSolidPack *loaded_solid_pack);
 
-    int LoadSkinLayers(uint32 *name_hash_table, int max_name_hashes, LoadedSkinLayer **loaded_skin_layer_table, int num_loaded_skin_layers);
+    void LoadedTexturePackCallback(LoadedTexturePack *loaded_texture_pack);
+
+    void LoadedCarCallback(LoadedCar *loaded_car);
+
+    void LoadedWheelModelsCallback();
+
+    void LoadedWheelTexturesCallback();
+
+    void LoadedAllTexturesFromPackCallback();
+
+    void LoadedSkinCallback(LoadedSkin *loaded_skin);
 
     void LoadedSkinLayers(LoadedSkinLayer **loaded_skin_layer_table, int num_loaded_skin_layers);
 
-    int UnloadSkinLayers(uint32 *name_hash_table, int max_name_hashes, LoadedSkinLayer **loaded_skin_layer_table, int num_loaded_skin_layers);
+    static void LoadedTrackStreamerCallbackBridge(intptr_t param);
 
-    int IsSkinLayerInMemoryPool(LoadedSkinLayer *loaded_skin_layer);
+    static void LoadedTexturePackCallbackBridge(uintptr_t param);
 
-    int GetMemoryEntries(LoadedSkinLayer *loaded_skin_layer, void **memory_entries, int num_memory_entries);
+    static void LoadedCarCallbackBridge(uintptr_t param);
+
+    static void LoadedWheelModelsCallbackBridge(uintptr_t param);
+
+    static void LoadedWheelTexturesCallbackBridge(uintptr_t param);
+
+    static void LoadedAllTexturesFromPackCallbackBridge(uintptr_t param);
+
+    static void LoadedSkinCallbackBridge(uintptr_t param);
+
+    static void LoadedSolidPackCallbackBridge(uintptr_t param);
+
+    static void LoadedSolidPackCallbackBridge(intptr_t param);
 
     LoadedSolidPack *FindLoadedSolidPack(const char *filename);
 
@@ -268,85 +165,62 @@ class CarLoader {
 
     LoadedRideInfo *FindLoadedRideInfo(RideInfo *ride_info);
 
-    int Load(RideInfo *ride_info);
-
-    void Unload(CarLoaderHandle handle);
-
-    int IsLoaded(CarLoaderHandle handle);
-
     int IsLoaded(LoadedRideInfo *loaded_ride_info);
 
-    void EnsureHasLoaded(CarLoaderHandle handle);
+    int IsAddressInMemoryPool(void *address);
 
-    LoadedRideInfo *AllocateRideInfo(RideInfo *ride_info, int is_player_car);
+    int IsInMemoryPool(LoadedTexturePack *loaded_texture_pack);
 
-    int UnallocateRideInfo(LoadedRideInfo *loaded_ride_info);
+    int IsInMemoryPool(LoadedSolidPack *loaded_solid_pack);
 
-    int UnloadRideInfo(LoadedRideInfo *loaded_ride_info, int leave_if_in_mempool);
+    int IsCarInMemoryPool(LoadedCar *loaded_car);
 
-    void UnloadEverything();
+    int IsSkinInMemoryPool(LoadedSkin *loaded_skin);
 
-    void UnloadOverflowedResources();
+    int IsSkinLayerInMemoryPool(LoadedSkinLayer *loaded_skin_layer);
+
+    int GetMemoryEntries(LoadedTexturePack *loaded_texture_pack, void **memory_entries, int num_memory_entries);
+
+    int GetMemoryEntries(LoadedSolidPack *loaded_solid_pack, void **memory_entries, int num_memory_entries);
+
+    int GetMemoryEntries(LoadedWheel *loaded_wheel, void **memory_entries, int num_memory_entries);
+
+    int GetMemoryEntries(LoadedSkin *loaded_skin, void **memory_entries, int num_memory_entries);
+
+    int GetMemoryEntries(LoadedSkinLayer *loaded_skin_layer, void **memory_entries, int num_memory_entries);
+
+    int GetMemoryEntries(LoadedCar *loaded_car, void **memory_entries, int num_memory_entries);
+
+    void CompositeSkin(LoadedSkin *loaded_skin);
+
+    void PrintInventory();
+
+    void PrintMemoryUsage(bool on_screen);
+
+    int GetMemoryRequired(LoadedRideInfo *loaded_ride_info);
+
+    char *GetPrintHeader();
+
+    int RemoveSomethingFromCarMemoryPool(bool force_unload);
 
     void UnloadUnallocatedRideInfos(int max_left_unloaded);
 
     void UnloadAllSkinTemporaries();
 
-    int IsCarInMemoryPool(LoadedCar *loaded_car);
-
-    int GetMemoryEntries(LoadedCar *loaded_car, void **memory_entries, int num_memory_entries);
-
-    int RemoveSomethingFromCarMemoryPool(bool force_unload);
-
-    bool MakeSpaceInPool(int size);
-
     int MakeSpaceInCarMemoryPool(int largest_malloc_needed, int amount_free_needed, bool allocating_stream_header_chunks);
 
+    void UnloadOverflowedResources();
+
+    int UnloadRideInfo(LoadedRideInfo *loaded_ride_info, int leave_if_in_mempool);
+
     bool DefragmentAllocation(void *allocation);
+
+    static void CallUserCallback(intptr_t param);
 
     bool AllocateDefragmentStorage();
 
     void FreeDefragmentStorage();
 
-    int DefragmentPool();
-
-    void BeginLoading(void (*callback)(uint32), uint32 param);
-
-    void ServiceLoading();
-
-    static void CallUserCallback(int param);
-
-    void LoadingDoneCallback();
-
-    static void LoadedTrackStreamerCallbackBridge(int32 param);
-
-    static void LoadedSolidPackCallbackBridge(uint32 param);
-
-    static void LoadedSolidPackCallbackBridge(int32 param);
-
-    static void LoadedTexturePackCallbackBridge(uint32 param);
-
-    static void LoadedCarCallbackBridge(uint32 param);
-
-    static void LoadedWheelModelsCallbackBridge(uint32 param);
-
-    static void LoadedWheelTexturesCallbackBridge(uint32 param);
-
-    static void LoadedAllTexturesFromPackCallbackBridge(uint32 param);
-
-    static void LoadedSkinCallbackBridge(uint32 param);
-
-    int IsLoadingInProgress() {
-        return LoadingInProgress;
-    }
-
-    void *AllocateUserMemory(int size, const char *debug_name) {
-        return bMalloc(size, debug_name, 0, CarLoaderMemoryPoolNumber & 0xF | 0x2000);
-    };
-
-    void FreeUserMemory(void *mem);
-
-  private:
     void (*pCallback)(uint32);                       // offset 0x0, size 0x4
     uint32 Param;                                    // offset 0x4, size 0x4
     eLoadingMode LoadingMode;                        // offset 0x8, size 0x4
@@ -375,7 +249,9 @@ class CarLoader {
 void *MoveDefragmentAllocation(void *allocation);
 void InitCarLoader();
 void CloseCarLoader();
+int CarInfo_GetMaxCompositingBufferSize();
 
 extern CarLoader TheCarLoader;
+extern int UsePrecompositeVinyls;
 
 #endif

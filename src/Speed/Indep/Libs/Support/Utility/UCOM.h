@@ -1,14 +1,11 @@
-#ifndef SUPPORT_UTILITY_UCOM_H
-#define SUPPORT_UTILITY_UCOM_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef UCOM_H
+#define UCOM_H
 
 #include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 #include "Speed/Indep/Libs/Support/Utility/UStandard.h"
 #include "types.h"
 
+// TODO move into the UTL::COM namespace
 typedef void *HINTERFACE;
 
 DECLARE_CONTAINER_TYPE(UComObject);
@@ -93,6 +90,23 @@ class ALIGN_16 IUnknown {
     Object *_mCOMObject; // offset 0x0, size 0x4
 };
 
+// TODO move HINTERFACE into the UTL::COM namespace
+#define DECL_INTERFACE(_Interface_)                                                                                                                  \
+  public:                                                                                                                                            \
+    static HINTERFACE _IHandle() {                                                                                                                   \
+        return (HINTERFACE)_IHandle;                                                                                                                 \
+    }                                                                                                                                                \
+                                                                                                                                                     \
+  protected:                                                                                                                                         \
+    ~_Interface_() override {}                                                                                                                       \
+    _Interface_(UTL::COM::Object *owner) : IUnknown(owner, _Interface_::_IHandle()) {}                                                               \
+                                                                                                                                                     \
+  private:                                                                                                                                           \
+    _Interface_(const _Interface_ &);                                                                                                                \
+    const _Interface_ &operator=(const _Interface_ &);                                                                                               \
+                                                                                                                                                     \
+  public:
+
 template <typename T> inline T *QueryInterface(IUnknown *pUnk) {
     T *ptr = nullptr;
     if (pUnk) {
@@ -111,10 +125,10 @@ template <typename T> inline T *QueryInterface(IUnknown *pUnk) {
  * @return false otherwise
  */
 inline bool ComparePtr(const IUnknown *pUnk1, const IUnknown *pUnk2) {
-    if (pUnk1 && pUnk2) {
+    if ((pUnk1 != nullptr) && (pUnk2 != nullptr)) {
         return pUnk1->_mCOMObject == pUnk2->_mCOMObject;
     }
-    return !pUnk1 && !pUnk2;
+    return (pUnk1 == nullptr) && (pUnk2 == nullptr);
 }
 
 inline void ValidatePtr(const IUnknown *pUnk) {}
@@ -136,9 +150,10 @@ template <typename T, typename U, typename V> class Factory {
 
         friend class Factory;
 
-        Prototype(const _PRODUCT_SIGNATURE &classsig, _CONSTRUCTOR constructor) {
-            mSignature = classsig;
-            mConstructor = constructor;
+        Prototype(const _PRODUCT_SIGNATURE &classsig, _CONSTRUCTOR constructor)
+            : mSignature(classsig),      //
+              mConstructor(constructor), //
+              mTail(mHead) {
             mHead = this;
         }
 
@@ -173,6 +188,8 @@ template <typename T, typename U, typename V> class Factory {
     //     return nullptr;
     // }
 };
+
+#define IMPLEMENT_FACTORY(_Factory_) template <> _Factory_::Prototype *_Factory_::Prototype::mHead = NULL;
 
 } // namespace COM
 } // namespace UTL

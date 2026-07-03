@@ -1,82 +1,129 @@
-#ifndef ATTRIBSYS_CLASSES_VISUALRGBTWEAKER_H
-#define ATTRIBSYS_CLASSES_VISUALRGBTWEAKER_H
+#ifndef _attrib_gen_visualrgbtweaker_h
+#define _attrib_gen_visualrgbtweaker_h
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
-#include <cstddef>
-
-#include "Speed/Indep/Libs/Support/Utility/UTypes.h"
-#include "Speed/Indep/Src/Main/AttribSupport.h"
-#include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
-#include "Speed/Indep/Tools/AttribSys/Runtime/Common/AttribPrivate.h"
+#include "Speed/Indep/Src/Misc/MWAttribUserTypes.h"
 
 namespace Attrib {
 namespace Gen {
 
 struct visualrgbtweaker : Instance {
-    void *operator new(size_t bytes) {
-        return Attrib::Alloc(bytes, "visualrgbtweaker");
-    }
+    typedef UMath::Matrix4 TypeOf_blue;
+    typedef UMath::Matrix4 TypeOf_green;
+    typedef UMath::Matrix4 TypeOf_red;
 
-    void operator delete(void *ptr, size_t bytes) {
-        Attrib::Free(ptr, bytes, "visualrgbtweaker");
-    }
-
+    static Key ClassKey();
+    USE_ATTRIB_ALLOC("visualrgbtweaker");
     visualrgbtweaker(Key collectionKey, unsigned int msgPort, UTL::COM::IUnknown *owner)
         : Instance(FindCollection(ClassKey(), collectionKey), msgPort, owner) {}
-
     visualrgbtweaker(const Collection *collection, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(collection, msgPort, owner) {}
-
+    visualrgbtweaker(const Instance &src) : Instance(src) {}
     visualrgbtweaker(const visualrgbtweaker &src) : Instance(src) {}
-
     visualrgbtweaker(const RefSpec &refspec, unsigned int msgPort, UTL::COM::IUnknown *owner) : Instance(refspec, msgPort, owner) {}
-
     ~visualrgbtweaker() {}
-
+    Instance &GetBase() {
+        return *this;
+    }
+    const Instance &GetBase() const {
+        return *this;
+    }
+    Key GetClass() {
+        return 0xaf1837ca;
+    }
+    void Modify(Key dynamicCollectionKey, unsigned int spaceForAdditionalAttributes) {
+        ModifyInternal(0xaf1837ca, dynamicCollectionKey, spaceForAdditionalAttributes);
+    }
+    Key GenerateUniqueKey(const char *name, bool registerName) const {
+        return GenerateUniqueKey(name, registerName);
+    }
     void Change(const Collection *c) {
         Instance::Change(c);
     }
-
-    void Change(Key collectionkey) {
-        Change(FindCollection(ClassKey(), collectionkey));
-    }
-
     void Change(const RefSpec &refspec) {
         Instance::Change(refspec);
     }
-
-    static Key ClassKey() {
-        return 0xaf1837ca;
+    void Change(Key collectionkey) {
+        Change(FindCollection(ClassKey(), collectionkey));
     }
-
+    void ChangeWithDefault(const RefSpec &refspec) {
+        Instance::ChangeWithDefault(refspec);
+    }
+    void ChangeWithDefault(Key collectionkey) {
+        Change(FindCollectionWithDefault(ClassKey(), collectionkey));
+    }
+    const visualrgbtweaker &operator=(const visualrgbtweaker &rhs) {
+        operator=(rhs.GetBase());
+        return *this;
+    }
+    const visualrgbtweaker &operator=(const Instance &rhs) {
+        Instance::operator=(rhs);
+        return *this;
+    }
+    bool blue(TAttrib<UMath::Matrix4> &result) const {
+        ATTRIB_CODEGEN_GETATTRIB(UMath::Matrix4, 0x1c641189);
+    }
+    bool blue(UMath::Matrix4 &result) const {
+        ATTRIB_CODEGEN_CHECKEDGETVALUE(UMath::Matrix4, 0x1c641189, result);
+    }
     const UMath::Matrix4 &blue() const {
-        const UMath::Matrix4 *resultptr = reinterpret_cast<const UMath::Matrix4 *>(GetAttributePointer(0x1c641189, 0));
-        if (!resultptr) {
-            resultptr = reinterpret_cast<const UMath::Matrix4 *>(DefaultDataArea(sizeof(UMath::Matrix4)));
-        }
-        return *resultptr;
+        ATTRIB_CODEGEN_GETVALUE(UMath::Matrix4, 0x1c641189);
     }
-
+    bool SET_blue(const UMath::Matrix4 &input) {
+        ATTRIB_CODEGEN_SETVALUE(UMath::Matrix4, 0x1c641189, input);
+    }
+    bool green(TAttrib<UMath::Matrix4> &result) const {
+        ATTRIB_CODEGEN_GETATTRIB(UMath::Matrix4, 0x3ffd271c);
+    }
+    bool green(UMath::Matrix4 &result) const {
+        ATTRIB_CODEGEN_CHECKEDGETVALUE(UMath::Matrix4, 0x3ffd271c, result);
+    }
     const UMath::Matrix4 &green() const {
-        const UMath::Matrix4 *resultptr = reinterpret_cast<const UMath::Matrix4 *>(GetAttributePointer(0x3ffd271c, 0));
-        if (!resultptr) {
-            resultptr = reinterpret_cast<const UMath::Matrix4 *>(DefaultDataArea(sizeof(UMath::Matrix4)));
-        }
-        return *resultptr;
+        ATTRIB_CODEGEN_GETVALUE(UMath::Matrix4, 0x3ffd271c);
     }
-
+    bool SET_green(const UMath::Matrix4 &input) {
+        ATTRIB_CODEGEN_SETVALUE(UMath::Matrix4, 0x3ffd271c, input);
+    }
+    bool red(TAttrib<UMath::Matrix4> &result) const {
+        ATTRIB_CODEGEN_GETATTRIB(UMath::Matrix4, 0x5cd90211);
+    }
+    bool red(UMath::Matrix4 &result) const {
+        ATTRIB_CODEGEN_CHECKEDGETVALUE(UMath::Matrix4, 0x5cd90211, result);
+    }
     const UMath::Matrix4 &red() const {
-        const UMath::Matrix4 *resultptr = reinterpret_cast<const UMath::Matrix4 *>(GetAttributePointer(0x5cd90211, 0));
-        if (!resultptr) {
-            resultptr = reinterpret_cast<const UMath::Matrix4 *>(DefaultDataArea(sizeof(UMath::Matrix4)));
-        }
-        return *resultptr;
+        ATTRIB_CODEGEN_GETVALUE(UMath::Matrix4, 0x5cd90211);
     }
-};
+    bool SET_red(const UMath::Matrix4 &input) {
+        ATTRIB_CODEGEN_SETVALUE(UMath::Matrix4, 0x5cd90211, input);
+    }
 
-} // namespace Gen
-} // namespace Attrib
+  private:
+    unsigned int GetLayoutSize() {
+        return 0;
+    }
+    visualrgbtweaker &ConvertFromInstance(Instance &src) {}
+    const visualrgbtweaker &ConvertFromInstance(const Instance &src) {}
+};
+}; // namespace Gen
+
+namespace ClassName {
+
+static const Key visualrgbtweaker = 0xaf1837ca;
+
+}; // namespace ClassName
+
+namespace Hash {
+namespace visualrgbtweaker {
+
+static const Key blue = 0x1c641189;
+static const Key green = 0x3ffd271c;
+static const Key red = 0x5cd90211;
+
+}; // namespace visualrgbtweaker
+}; // namespace Hash
+
+inline Key Gen::visualrgbtweaker::ClassKey() {
+    return ClassName::visualrgbtweaker;
+}
+
+}; // namespace Attrib
 
 #endif

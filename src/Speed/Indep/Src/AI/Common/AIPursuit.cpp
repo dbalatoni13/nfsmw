@@ -549,7 +549,7 @@ void AIPursuit::OnAttached(IAttachable *pOther) {
 
             IPerpetrator *iperp;
             if (mTarget->QueryInterface(&iperp) && mRepPointsPerMinute == 0) {
-                int perpHeat = iperp->GetHeat();
+                int perpHeat = static_cast<int>(iperp->GetHeat());
                 if (plevels) {
                     mRepPointsPerMinute = plevels->RepPointsPerMinute();
                 }

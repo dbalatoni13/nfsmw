@@ -6,18 +6,20 @@
 #endif
 
 #include "types.h"
+#include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 #include "Speed/Indep/Libs/Support/Utility/UListable.h"
 #include "Speed/Indep/Libs/Support/Utility/UStandard.h"
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
-#include "Speed/Indep/Src/World/WCollisionTri.h"
+#include "WCollisionSTL.h"
+#include "WorldTypes.h"
 
 class WCollider : public UTL::Collections::Listable<WCollider, 100> {
   public:
     // total size: 0x9C
     enum eColliderShape {
-        kColliderShape_FORCE_INT = 2147483647,
-        kColliderShape_Cylinder = 1,
         kColliderShape_Sphere = 0,
+        kColliderShape_Cylinder = 1,
+        kColliderShape_FORCE_INT = 2147483647,
     };
 
     struct InstValidationRec {
@@ -30,15 +32,58 @@ class WCollider : public UTL::Collections::Listable<WCollider, 100> {
         // total size: 0x10
     };
 
-    static void Destroy(WCollider *col);
-
-    void Clear();
-    bool IsEmpty() const;
+    WCollider(eColliderShape colliderShape, unsigned int typeMask, unsigned int exclusionMask);
+    ~WCollider();
     void Refresh(const UMath::Vector3 &pt, float radius, bool predictiveSizing);
 
+    static WCollider *Get(WUID wuid);
+    static WCollider *Create(WUID wuid, eColliderShape shape, unsigned int typeCheckMask, unsigned int exclusionMask);
+    static void Destroy(WCollider *col);
+    static void InvalidateIntersectingColliders(const UMath::Vector4 &posRad);
+    static void InvalidateAllCachedData();
+
+    USE_FASTALLOC(WCollider);
+
     WCollisionInstanceCacheList &GetInstanceList() {
-        return fInstanceCacheList;
+        return this->fInstanceCacheList;
     }
+
+    const WCollisionTriList &GetTriList() const {
+        return this->fTriList;
+    }
+
+    WCollisionTriList &GetTriList() {
+        return this->fTriList;
+    }
+
+    const WCollisionObjectList &GetObbList() const {
+        return this->fObbList;
+    }
+
+    WCollisionObjectList &GetObbList() {
+        return this->fObbList;
+    }
+
+    void Clear();
+    void EmptyLists(unsigned int typeMask);
+    bool IsEmpty() const;
+
+  private:
+    void AddRef() {
+        ++this->fRefCount;
+    }
+
+    void RemoveRef() {
+        --this->fRefCount;
+    }
+
+    unsigned int GetUpdateMask(const UMath::Vector4 *seg);
+    unsigned int GetUpdateMask(const UMath::Vector3 &pt, float radius);
+    bool Validate() const;
+    void PrepareRegion(unsigned int updateMask);
+    bool InRegion(const UMath::Vector3 &pt, float radius) const;
+    void ClearLists(unsigned int typeMask);
+    void ReserveLists(unsigned int typeMask);
 
     ALIGN_16 UMath::Vector3 fRequestedPosition;     // offset 0x4, size 0xC
     float fRequestedRadius;                         // offset 0x10, size 0x4
@@ -55,8 +100,10 @@ class WCollider : public UTL::Collections::Listable<WCollider, 100> {
     eColliderShape fColliderShape;                  // offset 0x88, size 0x4
     unsigned int fTypeMask;                         // offset 0x8C, size 0x4
     unsigned int fRefCount;                         // offset 0x90, size 0x4
-    unsigned int fWorldID;                          // offset 0x94, size 0x4
+    WUID fWorldID;                                  // offset 0x94, size 0x4
     unsigned int fExclusionFlags;                   // offset 0x98, size 0x4
+
+    static UTL::Std::map<unsigned int, WCollider *, _type_map> fWuidMap;
 };
 
 #endif

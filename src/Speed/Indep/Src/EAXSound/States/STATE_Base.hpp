@@ -1,30 +1,12 @@
 #ifndef EAXSOUND_STATES_STATE_BASE_H
 #define EAXSOUND_STATES_STATE_BASE_H
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_Enums.hpp"
 #include "Speed/Indep/Src/EAXSound/AudioMemBase.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL.hpp"
 
-typedef enum {
-    eMM_MAIN = 0,
-    eMM_MUSIC = 1,
-    eMM_PLAYERCAR = 2,
-    eMM_AIRACECAR = 3,
-    eMM_COPCAR = 4,
-    eMM_TRAFFIC = 5,
-    eMM_ENVIRONMENT = 6,
-    eMM_COLLISION = 7,
-    eMM_DRIVEBY = 8,
-    eMM_PLANE = 9,
-    eMM_TRAIN = 10,
-    eMM_HELICOPTER = 11,
-    eMM_TRUCK = 12,
-    eMM_MAX_MAIN_MIXSTATES = 13
-} eMAINMAPSTATES;
-
-class CSTATE_Base : public AudioMemBase {
+// total size: 0x44
+struct CSTATE_Base : public AudioMemBase {
   public:
     friend struct CSTATEMGR_Base;
     struct StateInfo {
@@ -62,7 +44,6 @@ class CSTATE_Base : public AudioMemBase {
     }
 
   public:
-    // total size: 0x44
     CSTATE_Base *m_pNextState;          // offset 0x4, size 0x4
     CSTATE_Base *m_pPreviousState;      // offset 0x8, size 0x4
     struct CSTATEMGR_Base *m_pStateMgr; // offset 0xC, size 0x4

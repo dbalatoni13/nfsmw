@@ -7,10 +7,11 @@
 
 #include <cstddef>
 
+#include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 
 // total size: 0x810
-template <typename T, std::size_t U> class CookieTrail {
+template <typename T, int U> class CookieTrail {
     int mCount;          // offset 0x0, size 0x4
     int mLast;           // offset 0x4, size 0x4
     const int mCapacity; // offset 0x8, size 0x4
@@ -19,6 +20,43 @@ template <typename T, std::size_t U> class CookieTrail {
 
   public:
     CookieTrail() : mCount(0), mLast(-1), mCapacity(U) {}
+
+    void Clear() {
+        mCount = 0;
+        mLast = -1;
+    }
+
+    int Count() const {
+        return mCount;
+    }
+
+    T *GetData() {
+        return mData;
+    }
+
+    T &Newest() {
+        return mData[mLast];
+    }
+
+    const T &Newest() const {
+        return mData[mLast];
+    }
+
+    int Capacity() {
+        return mCapacity;
+    }
+
+    void AddNew(const T &t) {
+        mLast = (mLast + 1) % mCapacity;
+        if (mCount < mCapacity) {
+            mCount++;
+        }
+        mData[mLast] = t;
+    }
+
+    T &NthOldest(int n) {
+        return mData[mCount < mCapacity ? (n % mCount) : ((mLast + 1 + n) % mCapacity)];
+    }
 };
 
 // TODO move?
@@ -37,6 +75,15 @@ struct NavCookie {
     short SegmentParameter;            // offset 0x3C, size 0x2
     unsigned short SegmentNumber : 15; // offset 0x3E, size 0x2
     unsigned short SegmentNodeInd : 1; // offset 0x3E, size 0x2
+
+    void SetSegmentParameter(float t) {
+        SegmentParameter = static_cast<short>(bClamp(t, 0.0f, 1.0f) * 65535.0f);
+    }
+
+    float GetSegmentParameter() const {
+        const float recip = 1.0f / 65535.0f;
+        return static_cast<float>(SegmentParameter) * recip;
+    }
 };
 
 struct ResetCookie {

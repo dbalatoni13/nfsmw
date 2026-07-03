@@ -13,23 +13,56 @@ template <typename T, int U> class UCircularQueue {
     T Elements[U]; // offset 0x10, size 0x258
 
   public:
-    // UCircularQueue() {}
+    UCircularQueue() {
+        this->Size = 0;
+        this->Head = -1;
+        this->Tail = 0;
+        this->MaxSize = 50;
+    }
 
-    // void enqueue(const T &insert) {}
+    void enqueue(const T &insert) {
+        if (++this->Head > this->MaxSize - 1) {
+            this->Head = 0;
+        }
 
-    // void dequeue() {}
+        if (++this->Size > this->MaxSize) {
+            if (++this->Tail > this->MaxSize - 1) {
+                this->Tail = 0;
+            }
+            this->Size = this->MaxSize;
+        }
 
-    // T &tail() {}
+        this->Elements[this->Head] = insert;
+    }
 
-    // T &head() {}
+    void dequeue() {
+        if (++this->Tail > this->MaxSize - 1) {
+            this->Tail = 0;
+        }
+        this->Size--;
+    }
+
+    T &tail() {
+        return this->Elements[this->Tail];
+    }
+
+    T &head() {
+        return this->Elements[this->Head];
+    }
 
     // T &operator[](int i) {
     // int newindex;
     // }
 
-    // void reset() {}
+    void reset() {
+        this->Size = 0;
+        this->Head = -1;
+        this->Tail = 0;
+    }
 
-    // int size() const {}
+    int size() const {
+        return this->Size;
+    }
 };
 
 #endif

@@ -119,4 +119,35 @@ typedef eMenuSoundTriggers reflection_typedef_eMenuSoundTriggers;
 #define AEMS_EVENT_PLAYCOMMONSAMPLE 0   // :306
 #define AEMS_EVENT_PLAYFRONTENDSAMPLE 1 // :307
 
+// Decl: speed/indep/src/eaxsound/AemsDef.hpp:312
+enum eEAXGameState {
+    EAXGS_INITIALIZING = 0,
+    EAXGS_FRONTEND = 1,
+    EAXGS_ENTERINGGAME = 2,
+    EAXGS_INGAME = 3,
+    EAXGS_ENTERINGPAUSE = 4,
+    EAXGS_PAUSE = 5,
+    EAXGS_RESUME = 6,
+    EAXGS_RETURNTOGAME = 7,
+    EAXGS_PLAY_FE_MUSIC = 8,
+    EAXGS_PAUSE_FE_MUSIC = 9,
+    EAXGS_EXIT_GAME = 10,
+    EAXGS_EXIT_FE = 11,
+};
+
+// Decl: speed/indep/src/eaxsound/AemsDef.hpp:483
+enum eAemsStreamBanks {
+    EAX_AEMS_MUSIC_UG0_S = 0,
+    EAX_AEMS_AMB_STEREO = 1,
+    EAX_AEMS_AMB_MONOPOINT = 2,
+    EAX_AEMS_SPECIAL_CASE = 3,
+    EAX_AEMS_SPEECH_ENGLISH = 4,
+    EAX_AEMS_SPEECH_FRENCH = 5,
+    EAX_AEMS_SPEECH_GERMAN = 6,
+    EAX_AEMS_SPEECH_ITALIAN = 7,
+    EAX_AEMS_SPEECH_SPANISH = 8,
+    EAX_AEMS_SPEECH_JAPANESE = 9,
+    MAX_AEMSSTREAMBANKS = 10,
+};
+
 #endif

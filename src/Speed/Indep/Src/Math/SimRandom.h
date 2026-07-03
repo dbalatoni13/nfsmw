@@ -1,13 +1,17 @@
-#ifndef MATH_SIMRANDOM_H
-#define MATH_SIMRANDOM_H
+#ifndef _SIMRANDOM_H_
+#define _SIMRANDOM_H_
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#include "Speed/Indep/Libs/Support/Utility/FastMem.h"
+#define SimRandom_Float() _SimRandom_Float()
+#define SimRandom_FloatRange(_range) _SimRandom_FloatRange((_range))
+#define SimRandom_IntRange(_range) _SimRandom_IntRange((_range))
+#define SimRandom_32Bit() _SimRandom_32Bit()
 
 // total size: 0x10
 class SimRandom {
-  public:
+public:
+    USE_FASTALLOC(SimRandom)
+
     SimRandom();
     ~SimRandom();
     void Reset();

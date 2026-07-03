@@ -102,17 +102,6 @@ python tools/elf_lookup.py 0x002F1234 --game ps2
 This is the preferred replacement for ad-hoc Python snippets that manually parse the ELF
 to chase `@stringBase0` or other rodata/data references.
 
-### code-style — Repo-local style guidance
-
-When you are writing code, polishing code you already touched, or doing a style-review pass,
-consult `.github/skills/code_style/SKILL.md` first. It captures repo-specific formatting and
-cleanup rules, including jumbo include spacing, initializer-list comment markers, declaration
-placement, pointer style, and how to keep style work safe in match-sensitive code.
-
-Use `python tools/code_style.py audit --base origin/main` before a branch-wide style pass.
-It classifies changed files, reports repo-specific findings, and can run clang-format
-across eligible changed C/C++ files by default.
-
 ### decomp-diff.py — Diff & symbol overview
 
 Overview mode lists all symbols in a translation unit with match status:

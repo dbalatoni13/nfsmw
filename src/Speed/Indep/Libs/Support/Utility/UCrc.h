@@ -5,8 +5,8 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/Src/Misc/attribuserinclude.h"
 #include "Speed/Indep/Libs/Support/Miscellaneous/StringHash.h"
-#include "Speed/Indep/Tools/AttribSys/Runtime/AttribHash.h"
 
 class bHash32 {
     unsigned int mCRC;
@@ -17,13 +17,14 @@ class bHash32 {
     bHash32(const bHash32 &from) {}
     bHash32(unsigned int crc) {}
 
-    bHash32 &operator=(bHash32 &from) {
+    const bHash32 &operator=(const bHash32 &from) {
         this->mCRC = from.mCRC;
         return *this;
     }
+
     bHash32 &operator=(const char *from) {}
 
-    unsigned int GetValue() {
+    unsigned int GetValue() const {
         return mCRC;
     }
 };

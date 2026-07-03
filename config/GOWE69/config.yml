@@ -55,3 +55,61 @@ block_relocations:
 
 - source: .text:0x802c0e2c
   end: .text:0x802c0e38
+
+# LoaderParameterMaps: chunk ID constant
+- source: .text:0x802E63EC
+  end: .text:0x802E63F0
+- source: .text:0x802E63F4
+  end: .text:0x802E63F8
+
+# UnloaderParameterMaps: chunk ID constant
+- source: .text:0x802E650C
+  end: .text:0x802E6514
+
+# MissingCarPartTable: SystemAbortBuffer pointers
+- source: .data:0x80437DF4
+  end: .data:0x80437DF8
+- source: .data:0x80437DFC
+  end: .data:0x80437E00
+- source: .data:0x80437E04
+  end: .data:0x80437E08
+- source: .data:0x80437E0C
+  end: .data:0x80437E10
+- source: .data:0x80437E14
+  end: .data:0x80437E18
+
+add_relocations:
+- source: .text:0x802c57b0
+  type: ha
+  target: lbl_8040A274
+  addend: 0
+
+- source: .text:0x802dfa94
+  type: ha
+  target: last_result_was_textures.35424
+  addend: 0
+
+- source: .text:0x802F5A3C
+  type: ha
+  target: _5WGrid.fgGrid
+  addend: 0
+
+- source: .text:0x802F5A44
+  type: ha
+  target: _5WGrid.fgGrid
+  addend: 0
+
+- source: .text:0x8030242C
+  type: ha
+  target: lbl_8040E9E0
+  addend: 0
+
+- source: .text:0x80302A24
+  type: ha
+  target: lbl_8040EA1C
+  addend: 0
+
+- source: .text:0x802FFCF8
+  type: ha
+  target: lbl_8040E930
+  addend: 0

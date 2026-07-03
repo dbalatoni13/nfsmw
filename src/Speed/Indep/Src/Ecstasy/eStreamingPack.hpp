@@ -15,8 +15,8 @@
 #include <types.h>
 #include <cstddef>
 
+// total size: 0x18
 class eStreamingEntry {
-    // total size: 0x18
   public:
     uint32 NameHash;        // offset 0x0, size 0x4
     uint32 ChunkByteOffset; // offset 0x4, size 0x4
@@ -46,8 +46,8 @@ class eStreamingPackHeaderLoadingInfo {
 
 extern SlotPool *eStreamingPackSlotPool;
 
+// total size: 0x44
 class eStreamingPack : public bTNode<eStreamingPack> {
-    // total size: 0x44
   public:
     const char *Filename;                         // offset 0x8, size 0x4
     int16 HeaderMemoryPoolNum;                    // offset 0xC, size 0x2
@@ -92,8 +92,8 @@ class eStreamingPack : public bTNode<eStreamingPack> {
     }
 };
 
+// total size: 0x10
 class eStreamingPackHeaderLoadingInfoPhase1 {
-    // total size: 0x10
   public:
     const char *Filename;     // offset 0x0, size 0x4
     bChunk *TempHeaderChunks; // offset 0x4, size 0x4
@@ -101,8 +101,8 @@ class eStreamingPackHeaderLoadingInfoPhase1 {
     int32 NextLoadAmount;     // offset 0xC, size 0x4
 };
 
+// total size: 0x28
 class eStreamingPackHeaderLoadingInfoPhase2 {
-    // total size: 0x28
   public:
     const char *Filename;                     // offset 0x0, size 0x4
     bChunk *HeaderChunks;                     // offset 0x4, size 0x4
@@ -116,23 +116,9 @@ class eStreamingPackHeaderLoadingInfoPhase2 {
     int32 LoadResourceFileAmount;             // offset 0x24, size 0x4
 };
 
+// total size: 0x38
 class eStreamPackLoader {
-    // total size: 0x38
-    int32 RequiredChunkAlignment;                                                          // offset 0x0, size 0x4
-    void (*LoadedStreamingEntryCallback)(bChunk *, eStreamingEntry *, eStreamingPack *);   // offset 0x4, size 0x4
-    void (*UnloadedStreamingEntryCallback)(bChunk *, eStreamingEntry *, eStreamingPack *); // offset 0x8, size 0x4
-    void (*LoadingHeaderPhase1Callback)(eStreamingPackHeaderLoadingInfoPhase1 *);          // offset 0xC, size 0x4
-    void (*LoadingHeaderPhase2Callback)(eStreamingPackHeaderLoadingInfoPhase2 *);          // offset 0x10, size 0x4
-    void (*UnloadingHeaderCallback)(eStreamingPack *);                                     // offset 0x14, size 0x4
-    bTList<eStreamingPack> LoadedStreamingPackList;                                        // offset 0x18, size 0x8
   public:
-    int32 PrintLoading;                      // offset 0x20, size 0x4
-    int32 PrintInventory;                    // offset 0x24, size 0x4
-    const char *(*DebugGetNameFunc)(uint32); // offset 0x28, size 0x4
-    int32 NumLoadedStreamingPacks;           // offset 0x2C, size 0x4
-    int32 NumLoadedStreamingEntries;         // offset 0x30, size 0x4
-    int32 NumLoadedBytes;                    // offset 0x34, size 0x4
-
     eStreamPackLoader(int required_chunk_alignment, void (*loaded_streaming_entry_callback)(bChunk *, eStreamingEntry *, eStreamingPack *),
                       void (*unloaded_streaming_entry_callback)(bChunk *, eStreamingEntry *, eStreamingPack *),
                       void (*loading_header_phase1_callback)(eStreamingPackHeaderLoadingInfoPhase1 *),
@@ -150,7 +136,7 @@ class eStreamPackLoader {
                                     struct eStreamingEntry *streaming_entry);
 
     void LoadStreamingEntry(uint32 *name_hash_table, int num_hashes, void (*callback)(void *), void *param0, int memory_pool_num);
-    void LoadStreamingEntry(uint32 name_hash, void (*callback)(void *) /* r5 */, void *param0 /* r0 */, int memory_pool_num /* r8 */);
+    void LoadStreamingEntry(uint32 name_hash, void (*callback)(void *), void *param0, int memory_pool_num);
     int IsLoaded(uint32 name_hash);
     void UnloadStreamingEntry(uint32 name_hash, eStreamingPack *streaming_pack);
     void UnloadStreamingEntry(uint32 *name_hash_table, int num_hashes);
@@ -179,11 +165,29 @@ class eStreamPackLoader {
 
     void InternalUnloadStreamingEntry(eStreamingPack *streaming_pack, eStreamingEntry *streaming_entry);
 
-    bTList<eStreamingPack> *GetLoadedStreamingPackList() {}
+    bTList<eStreamingPack> *GetLoadedStreamingPackList() {
+        return &this->LoadedStreamingPackList;
+    }
+
+    int32 RequiredChunkAlignment;                                                          // offset 0x0, size 0x4
+    void (*LoadedStreamingEntryCallback)(bChunk *, eStreamingEntry *, eStreamingPack *);   // offset 0x4, size 0x4
+    void (*UnloadedStreamingEntryCallback)(bChunk *, eStreamingEntry *, eStreamingPack *); // offset 0x8, size 0x4
+    void (*LoadingHeaderPhase1Callback)(eStreamingPackHeaderLoadingInfoPhase1 *);          // offset 0xC, size 0x4
+    void (*LoadingHeaderPhase2Callback)(eStreamingPackHeaderLoadingInfoPhase2 *);          // offset 0x10, size 0x4
+    void (*UnloadingHeaderCallback)(eStreamingPack *);                                     // offset 0x14, size 0x4
+    bTList<eStreamingPack> LoadedStreamingPackList;                                        // offset 0x18, size 0x8
+
+  public:
+    int32 PrintLoading;                      // offset 0x20, size 0x4
+    int32 PrintInventory;                    // offset 0x24, size 0x4
+    const char *(*DebugGetNameFunc)(uint32); // offset 0x28, size 0x4
+    int32 NumLoadedStreamingPacks;           // offset 0x2C, size 0x4
+    int32 NumLoadedStreamingEntries;         // offset 0x30, size 0x4
+    int32 NumLoadedBytes;                    // offset 0x34, size 0x4
 };
 
+// total size: 0x10
 class eStreamingPackLoadTable {
-    // total size: 0x10
   public:
     int8 MemoryPoolNum;                  // offset 0x0, size 0x1
     int8 Locked;                         // offset 0x1, size 0x1
@@ -193,8 +197,8 @@ class eStreamingPackLoadTable {
     eStreamPackLoader *StreamPackLoader; // offset 0xC, size 0x4
 };
 
+// total size: 0x14
 class eStreamPackLoadEntryInfo : public bTNode<eStreamPackLoadEntryInfo> {
-    // total size: 0x14
   public:
     eStreamingPack *StreamingPack;   // offset 0x8, size 0x4
     eStreamingEntry *StreamingEntry; // offset 0xC, size 0x4
@@ -205,6 +209,7 @@ extern eStreamPackLoader StreamingTexturePackLoader;
 extern eStreamPackLoader StreamingSolidPackLoader;
 
 void InitStreamingPacks();
+void *ScanHashTableKey8(unsigned char key_value, void *table_start, int table_length, int entry_key_offset, int entry_size);
 void *ScanHashTableKey32(uint32 key_value, void *table_start, int table_length, int entry_key_offset, int entry_size);
 
 #endif

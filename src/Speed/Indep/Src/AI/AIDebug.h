@@ -5,6 +5,10 @@
 #pragma once
 #endif
 
+namespace AI {
 
+inline void Debug() {}
+
+}; // namespace AI
 
 #endif
