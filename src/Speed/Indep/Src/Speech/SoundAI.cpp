@@ -78,6 +78,7 @@ static unsigned int dir_tracking_30959 = 0;
 static Timer t_currdir_30960 = 0;
 static unsigned int dir_init_30961 = 0;
 static float CopMinClosingVelSq;
+static int DESTROY_COPS_ON_INACTIVITY;
 
 SoundAI::SoundAI()
     : Sim::Activity(1),
@@ -1034,26 +1035,15 @@ bool SoundAI::IsHeadingValid() {
 
 void SoundAI::SyncPlayers() {
     IPlayer *player = IPlayer::First(PLAYER_LOCAL);
-    if (!player) {
-        return;
-    }
 
     IVehicle *vehicle = 0;
     IPerpetrator *perp = 0;
     IVehicleAI *vai = 0;
     player->GetSimable()->QueryInterface(&vehicle);
     player->GetSimable()->QueryInterface(&perp);
-    if (vehicle) {
-        vehicle->QueryInterface(&vai);
-    }
-    if (!vehicle || !vai) {
-        return;
-    }
+    vehicle->QueryInterface(&vai);
 
     WRoadNav *nav = vai->GetDriveToNav();
-    if (!nav) {
-        return;
-    }
 
     mPlayerCurrent[0].roadID = static_cast<RoadNames>(nav->GetRoadSpeechId());
     mPlayerCurrent[0].direction = CalcPlayerDirection(false);
@@ -1081,12 +1071,14 @@ void SoundAI::SyncPlayers() {
         return;
     }
 
-    const Attrib::Instance &vehicle_attrib = player->GetSimable()->GetAttributes();
-    if (mPVehicle.GetCollection() != vehicle_attrib.GetCollection()) {
-        mPVehicle.Change(Attrib::FindCollectionWithDefault(Attrib::Gen::pvehicle::ClassKey(), vehicle_attrib.GetCollection()));
+    if (mPVehicle.GetCollection() != player->GetSimable()->GetAttributes().GetCollection()) {
+        mPVehicle.ChangeWithDefault(player->GetSimable()->GetAttributes().GetCollection());
     }
 
-    if (!mPlayerCarCustom) {
+    if (!mPlayerCarCustom || (mPlayerCarCustom->color == 0)) {
+        if (mPlayerCarCustom) {
+            delete mPlayerCarCustom;
+        }
         mPlayerCarCustom = new CarCustomizations;
         if (!GetCustomized(vehicle, *mPlayerCarCustom)) {
             delete mPlayerCarCustom;
@@ -1095,19 +1087,22 @@ void SoundAI::SyncPlayers() {
     }
 
     mPlayerSpeed = MPS2MPH(vehicle->GetSpeed());
-    if ((mTune.MinTimeConsideredStopped() <= mPlayerSpeed) || ((mFlags & LOWSPEEDTIMER) != 0)) {
-        if (mTune.MinSpeedConsideredStopped() <= mPlayerSpeed) {
-            mFlags &= ~LOWSPEEDTIMER;
+    if (mPlayerSpeed < mTune.MinSpeedConsideredStopped()) {
+        if ((mFlags & LOWSPEEDTIMER) == 0) {
+            mFlags |= LOWSPEEDTIMER;
             mT_reallylowspeed = WorldTimer;
         }
     } else {
-        mFlags |= LOWSPEEDTIMER;
+        mFlags &= ~LOWSPEEDTIMER;
         mT_reallylowspeed = WorldTimer;
     }
 
+    UMath::Vector3 vel;
+
     mPlayerPos = player->GetPosition();
     if (SPAMAccessorSpeech.Layer) {
-        SPAMAccessorSpeech.CaptureData(mPlayerPos.z, -mPlayerPos.x);
+        const bVector2 ppos(mPlayerPos.z, -mPlayerPos.x);
+        SPAMAccessorSpeech.CaptureData(ppos.x, ppos.y);
         mPlayerOffroadID = SPAMAccessorSpeech.GetDataInt(1);
     }
 
@@ -1151,24 +1146,24 @@ void SoundAI::SyncPlayers() {
 
     Attrib::Gen::pursuitlevels *pursuitatr = perp->GetPursuitLevelAttrib();
     if (pursuitatr && (mPursuitLevel.GetCollection() != pursuitatr->GetCollection())) {
-        mPursuitLevel.Change(Attrib::FindCollectionWithDefault(Attrib::Gen::pursuitlevels::ClassKey(), pursuitatr->GetCollection()));
+        mPursuitLevel.ChangeWithDefault(pursuitatr->GetCollection());
     }
 
     if (mPursuitLevel.GetCollection()) {
-        if (mPursuitLevel.roadblockprobability() <= 0.0f) {
-            mFlags &= ~RB_ENABLED;
-        } else {
+        if (0.0f < mPursuitLevel.roadblockprobability()) {
             mFlags |= RB_ENABLED;
-        }
-        if (mPursuitLevel.roadblockhelichance() <= 0.0f) {
-            mFlags &= ~HELIRB_ENABLED;
         } else {
+            mFlags &= ~RB_ENABLED;
+        }
+        if (0.0f < mPursuitLevel.roadblockhelichance()) {
             mFlags |= HELIRB_ENABLED;
-        }
-        if (mPursuitLevel.roadblockspikechance(0) <= 0.0f) {
-            mFlags &= ~SPIKES_ENABLED;
         } else {
+            mFlags &= ~HELIRB_ENABLED;
+        }
+        if (0.0f < mPursuitLevel.roadblockspikechance(0)) {
             mFlags |= SPIKES_ENABLED;
+        } else {
+            mFlags &= ~SPIKES_ENABLED;
         }
 
         mNumCopsInWave = mPursuitLevel.NumCopsToTriggerBackup();
@@ -1178,17 +1173,24 @@ void SoundAI::SyncPlayers() {
             bool is_pursuit_race = false;
             bool is_roaming = false;
             if (GRaceStatus::Exists()) {
-                is_roaming = (GRaceStatus::Get().GetPlayMode() == GRaceStatus::kPlayMode_Roaming);
-                GRaceParameters *parms = GRaceStatus::Get().GetRaceParameters();
-                if (parms) {
-                    is_DDay = parms->GetIsDDayRace();
-                    is_pursuit_race = parms->GetIsPursuitRace();
+                if (GRaceStatus::Get().GetPlayMode() == GRaceStatus::kPlayMode_Roaming) {
+                    is_roaming = true;
+                } else if (GRaceDatabase::Exists() && !GRaceDatabase::Get().GetStartupRace()) {
+                    is_roaming = true;
                 }
+            } else if (GRaceDatabase::Exists() && !GRaceDatabase::Get().GetStartupRace()) {
+                is_roaming = true;
             }
 
             ICopMgr *copmgr = UTL::Collections::Singleton<ICopMgr>::Get();
             if (copmgr && ICopMgr::AreCopsEnabled()) {
                 float t_lockout = copmgr->GetLockoutTimeRemaining();
+                if (GRaceStatus::Get().GetRaceParameters() && GRaceStatus::Get().GetRaceParameters()->GetIsDDayRace()) {
+                    is_DDay = true;
+                }
+                if (GRaceStatus::Get().GetRaceParameters() && GRaceStatus::Get().GetRaceParameters()->GetIsPursuitRace()) {
+                    is_pursuit_race = true;
+                }
                 bool scripted_911 = ((mPursuitLevel.Lifetime911(0) < t_lockout) && (t_lockout < mPursuitLevel.Lifetime911(1)) && !is_pursuit_race &&
                                      !is_roaming);
                 bool req911_met = false;
@@ -1203,14 +1205,12 @@ void SoundAI::SyncPlayers() {
         }
     }
 
-    UMath::Vector3 player_fw;
-    player->GetSimable()->GetRigidBody()->GetForwardVector(player_fw);
-    UMath::Vector3 unit_fw;
-    UMath::Unit(player_fw, unit_fw);
-    mPlayerFW = unit_fw;
-    mSmoothedFWRoad.x = (mSmoothedFWRoad.x * 0.8f) + (unit_fw.x * 0.2f);
-    mSmoothedFWRoad.y = (mSmoothedFWRoad.y * 0.8f) + (unit_fw.y * 0.2f);
-    mSmoothedFWRoad.z = (mSmoothedFWRoad.z * 0.8f) + (unit_fw.z * 0.2f);
+    player->GetSimable()->GetRigidBody()->GetForwardVector(vel);
+    UMath::Unit(vel, vel);
+    mPlayerFW = vel;
+    mSmoothedFWRoad.x = (mSmoothedFWRoad.x * 0.8f) + (vel.x * 0.2f);
+    mSmoothedFWRoad.y = (mSmoothedFWRoad.y * 0.8f) + (vel.y * 0.2f);
+    mSmoothedFWRoad.z = (mSmoothedFWRoad.z * 0.8f) + (vel.z * 0.2f);
 }
 
 int SoundAI::GetBattalionFromRoadID(int roadID) {
@@ -1347,36 +1347,57 @@ void SoundAI::UpdateStateMachines() {
 }
 
 void SoundAI::AttemptReattachPursuit() {
-    bool playerfound = false;
-    bool aifound = false;
+    short playerfound = false;
+    short aifound = false;
 
     if (mPursuit && mPursuit->IsPlayerPursuit()) {
         playerfound = true;
     }
-    if (mAIPursuit && !mAIPursuit->IsPlayerPursuit()) {
-        aifound = true;
-    }
+    aifound = mAIPursuit && !mAIPursuit->IsPlayerPursuit();
 
     const UTL::Collections::Listable<IPursuit, 8>::List &pursuits = UTL::Collections::Listable<IPursuit, 8>::GetList();
-    UTL::Collections::Listable<IPursuit, 8>::List::const_iterator i = pursuits.begin();
-    while (i != pursuits.end()) {
-        IPursuit *pursuit = *i;
-        if (pursuit->IsPlayerPursuit()) {
-            playerfound = true;
-            if (mPursuit != pursuit) {
-                mPursuitCount++;
-                if (!mPursuit) {
-                    mT_pursuitStart = WorldTimer;
+    if (pursuits.size() != 0) {
+        UTL::Collections::Listable<IPursuit, 8>::List::const_iterator i = pursuits.begin();
+        if (!playerfound) {
+            while (i != pursuits.end()) {
+                IPursuit *pursuit = *i;
+                if (pursuit->IsPlayerPursuit() && !playerfound) {
+                    playerfound = true;
+                    if (mPursuit != pursuit) {
+                        mPursuitCount++;
+                        if (!mPursuit) {
+                            mT_pursuitStart = WorldTimer;
+                        } else {
+                            if (IsAttached(mPursuit)) {
+                                Detach(mPursuit);
+                            }
+                            mPursuit = 0;
+                        }
+                        if (!IsAttached(pursuit)) {
+                            Attach(pursuit);
+                        }
+                        mPursuit = pursuit;
+                    }
+                } else if (!aifound) {
+                    aifound = true;
+                    if (mAIPursuit != pursuit) {
+                        if (mAIPursuit) {
+                            if (IsAttached(mAIPursuit)) {
+                                Detach(mAIPursuit);
+                            }
+                            mAIPursuit = 0;
+                        }
+                        if (!IsAttached(pursuit)) {
+                            if (Attach(pursuit)) {
+                                mAIPursuit = pursuit;
+                            }
+                        }
+                        mAIPursuit = pursuit;
+                    }
                 }
-                mPursuit = pursuit;
-            }
-        } else {
-            if (!aifound) {
-                aifound = true;
-                mAIPursuit = pursuit;
+                ++i;
             }
         }
-        ++i;
     }
 
     if (!playerfound) {
@@ -1854,24 +1875,19 @@ bool SoundAI::MakeLeader(EAXCop *newprim) {
     EAXCop *wannab;
     Speech::copPair *primary;
 
-    if (!newprim) {
-        return false;
-    }
-
-    if (mLeader && (mLeader->GetSpeakerID() == newprim->GetSpeakerID())) {
+    if (mLeader && newprim && (mLeader->GetSpeakerID() == newprim->GetSpeakerID())) {
         return true;
     }
 
     if (newprim->IsActive()) {
-        int speaker = newprim->GetSpeakerID();
-        if ((speaker == 5) || (speaker == 4) || (speaker == 3) || (speaker == 2) || (speaker == 9)) {
+        if ((newprim->GetSpeakerID() == 5) || (newprim->GetSpeakerID() == 4) || (newprim->GetSpeakerID() == 3) ||
+            (newprim->GetSpeakerID() == 2) || (newprim->GetSpeakerID() == 9)) {
             if (mLeader != newprim) {
                 mLeader = newprim;
                 if (mFocus == kStrategyFlow) {
                     newprim->PrimaryEngage();
                 }
             }
-            gSpeechCache.AddSpeaker(mLeader->GetSpeakerID());
             return true;
         }
     }
@@ -1881,33 +1897,31 @@ bool SoundAI::MakeLeader(EAXCop *newprim) {
         return false;
     }
 
-    primary = mActors.end();
-    Speech::copPair *iter = mActors.begin();
-    while (iter != mActors.end()) {
-        EAXCop *cop = iter->cop;
-        int speaker = cop->GetSpeakerID();
-        if ((speaker == 5) || (speaker == 4) || (speaker == 3) || (speaker == 9)) {
-            primary = iter;
+    primary = mActors.begin();
+    while (primary != mActors.end()) {
+        EAXCop *cop = primary->cop;
+        if ((cop->GetSpeakerID() == 5) || (cop->GetSpeakerID() == 4) || (cop->GetSpeakerID() == 3) ||
+            (cop->GetSpeakerID() == 9)) {
             break;
         }
-        ++iter;
+        ++primary;
     }
 
-    if (primary != mActors.end()) {
-        int spkrA = wannab->GetSpeakerID();
-        int spkrB = primary->cop->GetSpeakerID();
-        wannab->SetSpeakerID(spkrB);
-        primary->cop->SetSpeakerID(spkrA);
-    } else {
+    if (primary == mActors.end()) {
         int rand = bRandom(3);
-        if (rand == 1) {
+        switch (rand) {
+        case 0:
+            newprim->SetSpeakerID(3);
+            break;
+        case 1:
             newprim->SetSpeakerID(4);
-        } else if (rand == 0) {
-            newprim->SetSpeakerID(3);
-        } else if (rand == 2) {
+            break;
+        case 2:
             newprim->SetSpeakerID(5);
-        } else {
+            break;
+        default:
             newprim->SetSpeakerID(3);
+            break;
         }
 
         int *i = mUsage.voices.begin();
@@ -1918,6 +1932,20 @@ bool SoundAI::MakeLeader(EAXCop *newprim) {
             }
             ++i;
         }
+
+        if (mLeader != newprim) {
+            mLeader = newprim;
+            if (mFocus == kStrategyFlow) {
+                newprim->PrimaryEngage();
+            }
+        }
+        gSpeechCache.AddSpeaker(mLeader->GetSpeakerID());
+        return true;
+    } else {
+        int spkrA = wannab->GetSpeakerID();
+        int spkrB = primary->cop->GetSpeakerID();
+        wannab->SetSpeakerID(spkrB);
+        primary->cop->SetSpeakerID(spkrA);
     }
 
     if (mLeader != newprim) {
@@ -1926,7 +1954,6 @@ bool SoundAI::MakeLeader(EAXCop *newprim) {
             newprim->PrimaryEngage();
         }
     }
-    gSpeechCache.AddSpeaker(mLeader->GetSpeakerID());
     return true;
 }
 
@@ -2122,7 +2149,9 @@ void SoundAI::SyncCarsToActors() {
         }
     }
 
-    if (closest > mTune.AIRacerProximity()) {
+    if (closest <= mTune.AIRacerProximity()) {
+        mFlags |= RACERS_PROXIMAL;
+    } else {
         if ((mFlags & RACERS_PROXIMAL) != 0) {
             EAXCop *cop = GetRandomActiveCop(0, false);
             if (cop) {
@@ -2130,8 +2159,6 @@ void SoundAI::SyncCarsToActors() {
             }
         }
         mFlags &= ~RACERS_PROXIMAL;
-    } else {
-        mFlags |= RACERS_PROXIMAL;
     }
 
     unsigned char cops_in_view = 0;
@@ -2202,10 +2229,14 @@ void SoundAI::SyncCarsToActors() {
 
                     EAXCop *actor = mActors.Find(thisObj);
                     if (actor) {
-                        if (!vehicle->IsActive()) {
+                        if (vehicle->IsActive()) {
+                            if (!actor->IsActive()) {
+                                actor->SetActive(true);
+                            }
+                        } else if (DESTROY_COPS_ON_INACTIVITY) {
+                            RemoveCop(actor->GetHandle());
+                        } else {
                             actor->SetActive(false);
-                        } else if (!actor->IsActive()) {
-                            actor->SetActive(true);
                         }
 
                         actor->SetLOS(has_visual);
@@ -2371,7 +2402,31 @@ void SoundAI::ResetPursuit(bool including_music) {
 }
 
 void SoundAI::TerminatePursuit(BailoutType type) {
-    if ((type == kOutrunBail) || (type != kForcedBail)) {
+    if ((type != kOutrunBail) && (type == kForcedBail)) {
+        mMusicFlow->ChangeStateTo(kTerminal);
+
+        bool is_DDay = false;
+        GRaceParameters *parms = GRaceStatus::Get().GetRaceParameters();
+        if (parms) {
+            is_DDay = parms->GetIsDDayRace();
+        }
+
+        if (!is_DDay) {
+            Speech::Module *cop_speech = Speech::Manager::GetSpeechModule(1);
+            if (cop_speech) {
+                cop_speech->ReleaseResource();
+            }
+            Speech::Manager::ClearPlayback();
+        }
+
+        EAXCop *bailer = GetRandomActiveCop(0, false);
+        if (bailer) {
+            MiscSpeech::Bailout(bailer->GetSpeakerID());
+        } else {
+            MiscSpeech::Bailout(0);
+        }
+        mFocus = kTerminal;
+    } else {
         bool cops_visible = false;
         const UTL::Collections::ListableSet<IVehicle, 10, eVehicleList, 10>::List &vehicles =
             UTL::Collections::ListableSet<IVehicle, 10, eVehicleList, 10>::GetList(VEHICLE_AICOPS);
@@ -2391,35 +2446,8 @@ void SoundAI::TerminatePursuit(BailoutType type) {
         mDispatch->BreakAway();
         mFocus = kLost;
         mQuadrantState = kInitial;
-        mFlags &= ~DISP911_ACTIVE;
-        return;
+        mFlags &= ~SETUP_RESTARTED;
     }
-
-    if (mMusicFlow) {
-        mMusicFlow->ChangeStateTo(kTerminal);
-    }
-
-    bool is_DDay = false;
-    GRaceParameters *parms = GRaceStatus::Get().GetRaceParameters();
-    if (parms) {
-        is_DDay = parms->GetIsDDayRace();
-    }
-
-    if (!is_DDay) {
-        Speech::Module *cop_speech = Speech::Manager::GetSpeechModule(1);
-        if (cop_speech) {
-            cop_speech->ReleaseResource();
-        }
-        Speech::Manager::ClearPlayback();
-    }
-
-    EAXCop *bailer = GetRandomActiveCop(0, false);
-    if (bailer) {
-        MiscSpeech::Bailout(bailer->GetSpeakerID());
-    } else {
-        MiscSpeech::Bailout(0);
-    }
-    mFocus = kTerminal;
 }
 
 void SoundAI::RemoveCop(HSIMABLE seeya) {
@@ -2431,6 +2459,8 @@ void SoundAI::RemoveCop(HSIMABLE seeya) {
     if (!cop) {
         return;
     }
+
+    gSpeechCache.RemoveSpeaker(cop->GetSpeakerID());
 
     Speech::copList::iterator i = mCopsInFormation.begin();
     while (i != mCopsInFormation.end()) {
@@ -2457,21 +2487,17 @@ void SoundAI::RemoveCop(HSIMABLE seeya) {
 
     mPursuitFlow->OnCopRemoved(cop);
     mUsage.voices.push_back(cop->GetSpeakerID());
-    cop->SetActive(false);
+    delete cop;
 }
 
 void SoundAI::AddNewCop(IVehicle *newcop) {
+    IVehicleAI *vai = 0;
+    newcop->QueryInterface(&vai);
     HSIMABLE newbie = newcop->GetSimable()->GetOwnerHandle();
-    IVehicleAI *vai = newcop->GetAIVehiclePtr();
-    int roadID = -1;
+    vai->GetAttributes();
+    WRoadNav *nav = vai->GetDriveToNav();
+    int roadID = nav->GetRoadSpeechId();
     bool is_rb_cop = false;
-
-    if (vai) {
-        WRoadNav *nav = vai->GetDriveToNav();
-        if (nav) {
-            roadID = nav->GetRoadSpeechId();
-        }
-    }
 
     bool is_cross = (newcop->GetVehicleKey() == static_cast<unsigned int>(-0x2c837f93));
     IRoadBlock *block = GetRoadblock();
@@ -2493,14 +2519,15 @@ void SoundAI::AddNewCop(IVehicle *newcop) {
     EAXCop *latest_cop = 0;
     if (mUsage.voices.empty() || !is_cross) {
         UMath::Vector3 cop_pos = newcop->GetPosition();
+        UMath::Vector3 pPos = mPlayerPos;
         UMath::Vector3 delta;
-        VU0_v3sub(mPlayerPos, cop_pos, delta);
+        VU0_v3sub(pPos, cop_pos, delta);
         float distance = VU0_sqrt(VU0_v3lengthsquare(delta));
 
         Speech::copMap::iterator i = mActors.begin();
         while (i != mActors.end()) {
             EAXCop *cop = i->cop;
-            if (!cop->IsActive() && !is_rb_cop && (distance < cop->GetDistance()) && !cop->IsHeli()) {
+            if (!cop->IsHeli() && !is_rb_cop && (distance < cop->GetDistance()) && !cop->IsHeli()) {
                 if (cop->GetCallsign() != bID) {
                     int keyedID = GetBattalionFromKey(newcop->GetVehicleKey());
                     if (keyedID > 0) {
@@ -2521,7 +2548,7 @@ void SoundAI::AddNewCop(IVehicle *newcop) {
                 cop->SetHandle(newbie);
                 cop->SetCallsign(bID);
                 cop->SetUnitNumber(GetCallsign(static_cast<Csis::Type_speaker_battalion>(bID)));
-                cop->Reset();
+                cop->Update();
                 latest_cop = cop;
                 break;
             }
@@ -2544,7 +2571,8 @@ void SoundAI::AddNewCop(IVehicle *newcop) {
                 latest_cop = new EAXCop(voice, newbie, bID, cID);
                 latest_cop->SetRank(mActors.size());
                 mActors.Add(newbie, latest_cop);
-                latest_cop->Reset();
+                gSpeechCache.AddSpeaker(voice);
+                latest_cop->Update();
             }
         }
         if (!latest_cop) {
@@ -2556,9 +2584,9 @@ void SoundAI::AddNewCop(IVehicle *newcop) {
     if ((mPursuitState < kInactive) && !is_rb_cop && (mFocus == kStrategyFlow)) {
         float random = bRandom(1.0f);
         if (random <= 0.5f) {
-            mLatestCop->PrimaryEngage();
-        } else {
             mLatestCop->BackupArrives();
+        } else {
+            mLatestCop->UnitBackupReply();
         }
     }
 }

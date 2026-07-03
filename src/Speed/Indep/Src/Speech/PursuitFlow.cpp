@@ -427,7 +427,7 @@ void PursuitFlow::SpotterWait() {
         EAXCop *cansee = ai->FindClosestCop(true, true);
         if (cansee && ai->MakeLeader(cansee) && (mCauseofPursuit != kScripted)) {
             if (mCauseofPursuit == k911Reported) {
-                if (!ai->AreCopsAhead() && cansee->IsAhead()) {
+                if (ai->AreCopsAhead() || !cansee->IsPrimary()) {
                     cansee->Spotted();
                 } else {
                     cansee->SpotterReply();
@@ -435,7 +435,7 @@ void PursuitFlow::SpotterWait() {
             } else {
                 if (mFirstOnScene) {
                     if (mFirstOnScene->GetSpeakerID() != cansee->GetSpeakerID()) {
-                        if (!ai->AreCopsAhead() && cansee->IsAhead()) {
+                        if (ai->AreCopsAhead() || !cansee->IsPrimary()) {
                             cansee->Spotted();
                         } else {
                             cansee->SpotterReply();

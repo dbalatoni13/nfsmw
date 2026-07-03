@@ -79,18 +79,22 @@ class Cache : public AudioMemBase {
 
     void AddSpeaker(int spkrID) {
         if (!mSpeakers) {
-            mSpeakers = new VoiceIDs();
+            return;
         }
 
+        bool exists = false;
         VoiceIDs::iterator it = mSpeakers->begin();
         while (it != mSpeakers->end()) {
             if (*it == spkrID) {
-                return;
+                exists = true;
+                break;
             }
-            ++it;
+            it++;
         }
 
-        mSpeakers->push_back(spkrID);
+        if (!exists) {
+            mSpeakers->push_back(spkrID);
+        }
     }
 
     void RemoveSpeaker(int spkrID) {
@@ -98,11 +102,9 @@ class Cache : public AudioMemBase {
             return;
         }
 
-        for (VoiceIDs::iterator it = mSpeakers->begin(); it != mSpeakers->end(); ++it) {
-            if (*it == spkrID) {
-                mSpeakers->erase(it);
-                return;
-            }
+        VoiceIDs::iterator newend = remove(mSpeakers->begin(), mSpeakers->end(), spkrID);
+        if (newend != mSpeakers->end()) {
+            mSpeakers->erase(newend, mSpeakers->end());
         }
     }
     SlotPool *GetEventPool();
