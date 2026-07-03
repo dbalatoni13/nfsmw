@@ -468,7 +468,12 @@ void SoundAI::OnCollision(const COLLISION_INFO &cinfo) {
             bool cop_rammed = false;
             bool cop_is_suv = false;
             bool cop_is_braking = false;
+            IRigidBody *rbCop;
+            IRigidBody *rbRacer;
+            IVehicle *vehicleCop;
+            IInput *inputcop;
             ISimable *simableCop = simableA;
+            IRoadBlock *block;
             if (theOtherObj == simableA) {
                 simableCop = simableB;
             }
@@ -476,7 +481,7 @@ void SoundAI::OnCollision(const COLLISION_INFO &cinfo) {
                 return;
             }
 
-            IInput *inputcop = 0;
+            inputcop = 0;
             if (simableCop->QueryInterface(&inputcop)) {
                 InputControls &controls = inputcop->GetControls();
                 float brake = UMath::Clamp(controls.fBrake, 0.0f, 1.0f);
@@ -508,7 +513,7 @@ void SoundAI::OnCollision(const COLLISION_INFO &cinfo) {
                 }
             }
 
-            IRoadBlock *block = GetRoadblock();
+            block = GetRoadblock();
             if (block) {
                 IVehicle *car = block->IsComprisedOf(simableCop->GetOwnerHandle());
                 if (car) {
@@ -522,7 +527,7 @@ void SoundAI::OnCollision(const COLLISION_INFO &cinfo) {
                 mObserver->Observe(3, -1, intensity);
             }
 
-            IVehicle *vehicleCop = 0;
+            vehicleCop = 0;
             simableCop->QueryInterface(&vehicleCop);
             if (vehicleCop) {
                 unsigned int vtype = vehicleCop->GetVehicleAttributes().GetCollection();
@@ -531,8 +536,8 @@ void SoundAI::OnCollision(const COLLISION_INFO &cinfo) {
                 }
             }
 
-            IRigidBody *rbCop = simableCop->GetRigidBody();
-            IRigidBody *rbRacer = theOtherObj->GetRigidBody();
+            rbCop = simableCop->GetRigidBody();
+            rbRacer = theOtherObj->GetRigidBody();
             if (!rbCop || !rbRacer) {
                 return;
             }
@@ -1573,48 +1578,66 @@ void SoundAI::DealWithDeadAir() {
 
 EAXCop *SoundAI::GetRandomCop(int type) {
     EAXCop *spkr = 0;
-    unsigned int actor_count = mActors.size();
 
-    if ((type == 0) && (actor_count > 1)) {
-        unsigned int idx = bRandom(static_cast<int>(actor_count));
-        return mActors[idx].cop;
-    }
-
-    if (actor_count == 1) {
-        EAXCop *cop = mActors.begin()->cop;
-        if (type == 1) {
-            if (!cop->IsPrimary()) {
-                return 0;
+    if ((type == 0) && (mActors.size() > 1)) {
+        spkr = mActors[bRandom(static_cast<int>(mActors.size()))].cop;
+    } else {
+        unsigned int actor_count = mActors.size();
+        if (actor_count == 1) {
+            switch (type) {
+            case 1:
+                if (!mActors[0].cop->IsPrimary()) {
+                    return spkr;
+                }
+                spkr = mActors[0].cop;
+                break;
+            case 2:
+                if (mActors[0].cop->IsPrimary()) {
+                    return spkr;
+                }
+                spkr = mActors[0].cop;
+                break;
+            case 0:
+                spkr = mActors[0].cop;
+                break;
+            default:
+                return spkr;
             }
+        } else if (type == 1) {
+            UTL::Std::vector<EAXCop *, _type_vector> primaries;
+            primaries.reserve(actor_count);
+
+            Speech::copMap::iterator i = mActors.begin();
+            while (i != mActors.end()) {
+                if (i->cop->IsPrimary()) {
+                    primaries.push_back(i->cop);
+                }
+                ++i;
+            }
+
+            if (!primaries.empty()) {
+                spkr = primaries[bRandom(static_cast<int>(primaries.size()))];
+            }
+            primaries.clear();
         } else if (type == 2) {
-            if (cop->IsPrimary()) {
-                return 0;
+            UTL::Std::vector<EAXCop *, _type_vector> secondaries;
+            secondaries.reserve(actor_count);
+
+            Speech::copMap::iterator i = mActors.begin();
+            while (i != mActors.end()) {
+                if (!i->cop->IsPrimary()) {
+                    secondaries.push_back(i->cop);
+                }
+                ++i;
             }
-        } else if (type != 0) {
-            return 0;
+
+            if (!secondaries.empty()) {
+                spkr = secondaries[bRandom(static_cast<int>(secondaries.size()))];
+            }
+            secondaries.clear();
         }
-        return cop;
     }
 
-    if ((type != 1) && (type != 2)) {
-        return 0;
-    }
-
-    Speech::copList secondaries;
-    secondaries.reserve(actor_count);
-
-    Speech::copMap::iterator iter = mActors.begin();
-    while (iter != mActors.end()) {
-        EAXCop *cop = iter->cop;
-        if ((type == 1 && cop->IsPrimary()) || (type == 2 && !cop->IsPrimary())) {
-            secondaries.push_back(cop);
-        }
-        ++iter;
-    }
-
-    if (!secondaries.empty()) {
-        spkr = secondaries[bRandom(static_cast<int>(secondaries.size()))];
-    }
     return spkr;
 }
 
@@ -1632,48 +1655,67 @@ EAXCop *SoundAI::GetRandomActiveCop(int type, bool reqLOS) {
     }
 
     if (active.empty()) {
+        active.clear();
         return 0;
     }
 
+    EAXCop *spkr = 0;
     if ((type == 0) && (active.size() > 1)) {
-        return active[bRandom(static_cast<int>(active.size()))];
-    }
-
-    if (active.size() == 1) {
-        EAXCop *cop = active.front();
-        if (type == 1) {
-            if (!cop->IsPrimary()) {
-                return 0;
+        spkr = active[bRandom(static_cast<int>(active.size()))];
+    } else if (active.size() == 1) {
+        switch (type) {
+        case 1:
+            if (active[0]->IsPrimary()) {
+                spkr = active[0];
             }
-        } else if (type == 2) {
-            if (cop->IsPrimary()) {
-                return 0;
+            break;
+        case 2:
+            if (!active[0]->IsPrimary()) {
+                spkr = active[0];
             }
-        } else if (type != 0) {
-            return 0;
+            break;
+        case 0:
+            spkr = active[0];
+            break;
+        default:
+            break;
         }
-        return cop;
-    }
+    } else if (type == 1) {
+        UTL::Std::vector<EAXCop *, _type_vector> primaries;
+        primaries.reserve(active.size());
 
-    if ((type != 1) && (type != 2)) {
-        return 0;
-    }
-
-    Speech::copList secondaries;
-    secondaries.reserve(active.size());
-    Speech::copList::iterator i = active.begin();
-    while (i != active.end()) {
-        EAXCop *cop = *i;
-        if ((type == 1 && cop->IsPrimary()) || (type == 2 && !cop->IsPrimary())) {
-            secondaries.push_back(cop);
+        Speech::copList::iterator i = active.begin();
+        while (i != active.end()) {
+            if ((*i)->IsPrimary()) {
+                primaries.push_back(*i);
+            }
+            ++i;
         }
-        ++i;
+
+        if (!primaries.empty()) {
+            spkr = primaries[bRandom(static_cast<int>(primaries.size()))];
+        }
+        primaries.clear();
+    } else if (type == 2) {
+        UTL::Std::vector<EAXCop *, _type_vector> secondaries;
+        secondaries.reserve(active.size());
+
+        Speech::copList::iterator i = active.begin();
+        while (i != active.end()) {
+            if (!(*i)->IsPrimary()) {
+                secondaries.push_back(*i);
+            }
+            ++i;
+        }
+
+        if (!secondaries.empty()) {
+            spkr = secondaries[bRandom(static_cast<int>(secondaries.size()))];
+        }
+        secondaries.clear();
     }
 
-    if (!secondaries.empty()) {
-        return secondaries[bRandom(static_cast<int>(secondaries.size()))];
-    }
-    return 0;
+    active.clear();
+    return spkr;
 }
 
 void SoundAI::RandomizeCallsign(Speech::voiceIDs &cs, Csis::Type_speaker_call_sign_id start, Csis::Type_speaker_call_sign_id finish) {
@@ -2070,7 +2112,7 @@ void SoundAI::SyncCarsToActors() {
         while (i != vehicles.end()) {
             IVehicle *vehicle = *i;
             IRenderable *renderable = 0;
-            if (vehicle && vehicle->QueryInterface(&renderable)) {
+            if (vehicle->QueryInterface(&renderable)) {
                 float dist2cam = renderable->DistanceToView();
                 if (dist2cam < closest) {
                     closest = dist2cam;
@@ -2080,7 +2122,6 @@ void SoundAI::SyncCarsToActors() {
         }
     }
 
-    mClosestRacerDist = closest;
     if (closest > mTune.AIRacerProximity()) {
         if ((mFlags & RACERS_PROXIMAL) != 0) {
             EAXCop *cop = GetRandomActiveCop(0, false);
@@ -2104,14 +2145,17 @@ void SoundAI::SyncCarsToActors() {
     UTL::Collections::ListableSet<IVehicle, 10, eVehicleList, 10>::List::const_iterator i = vehicles.begin();
     while (i != vehicles.end()) {
         IVehicle *vehicle = *i;
+        IRenderable *renderable = 0;
+        vehicle->QueryInterface(&renderable);
         if (vehicle) {
-            IRenderable *renderable = 0;
-            vehicle->QueryInterface(&renderable);
+            bool has_visual = false;
+            bool is_ahead = false;
+            bool in_view = false;
+            bool is_in_rb = false;
 
             ISimable *simable = vehicle->GetSimable();
             HSIMABLE thisObj = simable->GetOwnerHandle();
 
-            bool is_in_rb = false;
             IRoadBlock *irb = GetRoadblock();
             if (irb) {
                 is_in_rb = (irb->IsComprisedOf(thisObj) == vehicle);
@@ -2122,10 +2166,6 @@ void SoundAI::SyncCarsToActors() {
                 vehicle->QueryInterface(&ai);
 
                 if (vehicle->GetVehicleClass() == VehicleClass::CAR) {
-                    bool has_visual = false;
-                    bool is_ahead = false;
-                    bool in_view = false;
-
                     if (renderable && renderable->InView()) {
                         cops_in_view++;
                         in_view = true;
@@ -2139,7 +2179,7 @@ void SoundAI::SyncCarsToActors() {
                     UMath::Vector3 player_pos = mPlayerPos;
                     UMath::Vector3 copcar_pos = vehicle->GetPosition();
                     UMath::Vector3 player_fw = mPlayerFW;
-                    if (vehicle->IsActive() || in_view) {
+                    if (vehicle->IsActive() || (renderable && renderable->InView())) {
                         UMath::Vector3 playerToCop;
                         UMath::Sub(copcar_pos, player_pos, playerToCop);
                         UMath::Unit(playerToCop, playerToCop);
@@ -2161,9 +2201,7 @@ void SoundAI::SyncCarsToActors() {
                     }
 
                     EAXCop *actor = mActors.Find(thisObj);
-                    if (!actor) {
-                        new_cop_cars.push_back(vehicle);
-                    } else {
+                    if (actor) {
                         if (!vehicle->IsActive()) {
                             actor->SetActive(false);
                         } else if (!actor->IsActive()) {
@@ -2187,12 +2225,12 @@ void SoundAI::SyncCarsToActors() {
                             mRecentBlowby.speed = mPlayerSpeed - actor->GetSpeed();
                             mRecentBlowby.timestamp = WorldTimer;
                         }
+                    } else {
+                        new_cop_cars.push_back(vehicle);
                     }
                 }
             } else if (vehicle->GetVehicleClass() == VehicleClass::CHOPPER) {
-                if (!mHeli) {
-                    AddNewHeli(vehicle);
-                } else {
+                if (mHeli) {
                     if (mHeli->GetHandle() != thisObj) {
                         mHeli->SetHandle(thisObj);
                     }
@@ -2211,6 +2249,8 @@ void SoundAI::SyncCarsToActors() {
                         mHeli->SetLOS(ai->GetTimeSinceTargetSeen() < 0.05f);
                     }
                     mHeli->Update();
+                } else {
+                    AddNewHeli(vehicle);
                 }
             }
         }
@@ -2524,7 +2564,7 @@ void SoundAI::AddNewCop(IVehicle *newcop) {
 }
 
 void SoundAI::ShuffleActors() {
-    if (mActors.empty()) {
+    if (mActors.size() == 0) {
         return;
     }
 
@@ -2559,69 +2599,54 @@ void SoundAI::ShuffleActors() {
         ++i;
     }
 
-    bool changed = true;
-    while (changed) {
-        changed = false;
-        active.clear();
-        Speech::copMap::iterator it = mActors.begin();
-        while (it != mActors.end()) {
-            EAXCop *cop = it->cop;
-            if (cop->IsActive()) {
-                active.push_back(cop);
-            }
-            ++it;
-        }
-
-        Speech::copList::iterator a = active.begin();
-        while (a != active.end()) {
-            Speech::copList::iterator b = a;
-            ++b;
-            while (b != active.end()) {
-                if ((*a)->GetSpeakerID() == (*b)->GetSpeakerID() && ((*a)->GetHandle() != (*b)->GetHandle())) {
-                    if ((*b)->GetDistance() <= (*a)->GetDistance()) {
-                        RemoveCop((*a)->GetHandle());
-                    } else {
-                        RemoveCop((*b)->GetHandle());
-                    }
-                    changed = true;
-                    break;
-                }
-                ++b;
-            }
-            if (changed) {
+    if (active.size() > 1) {
+        bool item_removed = false;
+        Speech::copList::iterator i = active.begin();
+        while (i != active.end()) {
+            if (active.size() <= 1) {
                 break;
             }
-            ++a;
+            Speech::copList::iterator j = i + 1;
+            while (j != active.end()) {
+                EAXCop *a = *i;
+                EAXCop *b = *j;
+                if ((a->GetSpeakerID() == b->GetSpeakerID()) && (a->GetHandle() != b->GetHandle())) {
+                    if (b->GetDistance() <= a->GetDistance()) {
+                        RemoveCop(a->GetHandle());
+                        active.erase(i);
+                    } else {
+                        RemoveCop(b->GetHandle());
+                        active.erase(j);
+                    }
+                    item_removed = true;
+                    break;
+                }
+                ++j;
+            }
+            if (!item_removed) {
+                ++i;
+            }
+            item_removed = false;
         }
     }
 
-    active.clear();
-    Speech::copMap::iterator final_iter = mActors.begin();
-    while (final_iter != mActors.end()) {
-        EAXCop *cop = final_iter->cop;
-        if (cop->IsActive()) {
-            active.push_back(cop);
-        }
-        ++final_iter;
-    }
-
-    if (!active.empty()) {
+    if (active.size() != 0) {
         if (!mLeader || !mLeader->IsActive() || mLeader->IsHeli()) {
             Speech::copList::iterator c = active.begin();
             while (c != active.end()) {
                 EAXCop *cop = *c;
                 if (cop->IsPrimary() && cop->HasLOS()) {
                     mLeader = cop;
-                    if ((mFocus == kStrategyFlow) && !mLeader->HasLOS()) {
-                        mLeader->SpotterWanted();
+                    if ((mFocus == kStrategyFlow) && !mLeader->IsHeli()) {
+                        mLeader->PrimaryEngage();
                     }
                     break;
                 }
                 ++c;
             }
         }
-        if (mLeader && !mLeader->IsPrimary()) {
-            MakeLeader(mLeader);
+        if (mLeader && !mLeader->IsActive() && !MakeLeader(mLeader)) {
+            return;
         }
     }
 }

@@ -1,8 +1,13 @@
 #include "MusicFlow.h"
 #include "SoundAI.h"
+#include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
+#include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
+#include "Speed/Indep/Src/Generated/Messages/MControlPathfinder.h"
 #include "Speed/Indep/Src/EAXSound/Stream/SpeechManager.hpp"
 #include "Speed/Indep/Src/Generated/Messages/MNotifyMusicFlow.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
+
+extern int gXMP_DOWNSTATE;
 
 namespace Speech {
 
@@ -101,44 +106,62 @@ void MusicFlow::Reacquire() {
 }
 
 void MusicFlow::Update() {
-    SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
-    if (ai) {
-        mTimeInPiece = (WorldTimer - mT_currPiece).GetSeconds();
-        mAvgNumCopsInForm = static_cast<float>(ai->GetCopsInFormation().size());
-        mAvgNumCopsLOS = static_cast<float>(ai->NumCopsWithLOS());
-        mAvgPlayerSpeed = ai->GetPlayerSpeed();
-        mAvgPursuitDist = ai->GetPursuitDistance();
-        if (mAvgPlayerSpeed > mTopSpeed) {
-            mTopSpeed = mAvgPlayerSpeed;
+    if ((g_pEAXSound->GetCurMusicVolume() == 0.0f) ||
+        (g_pEAXSound->GetCurAudioSettings()->InteractiveMusicMode == 0) || (gXMP_DOWNSTATE != 0)) {
+        if (mState != kTransition) {
+            Reset();
         }
-        mElapsed += (WorldTimer - mTimer).GetSeconds();
+        return;
+    }
+
+    if (mState != kTransition) {
+        SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
+        mElapsed = (WorldTimer - mTimer).GetSeconds();
+        mTimeInPiece = (WorldTimer - mT_currPiece).GetSeconds();
+        mAvgNumCopsInForm = mAvgNumCopsInForm * 0.97f + static_cast<float>(ai->GetCopsInFormation().size()) * 0.03f;
+        mAvgNumCopsLOS = mAvgNumCopsLOS * 0.97f + static_cast<float>(ai->NumCopsWithLOS()) * 0.03f;
+        mAvgPlayerSpeed = mAvgPlayerSpeed * 0.01f + ai->GetPlayerSpeed() * 0.99f;
+        if (ai->GetPursuitDistance() > 0.0f) {
+            mAvgPursuitDist = mAvgPursuitDist * 0.97f + ai->GetPursuitDistance() * 0.03f;
+        } else {
+            mAvgPursuitDist = mAvgPursuitDist * 0.97f + mAvgPursuitDist * 0.03f;
+        }
         mTimer = WorldTimer;
     }
 
     switch (mState) {
-    case kTransition:
-        return;
-    case kWaiting:
-        Waiting();
-        return;
     case kNeutral:
         Neutral();
-        return;
+        break;
     case kLose:
         Lose();
-        return;
+        break;
     case kWin:
         Win();
-        return;
+        break;
     case kElude:
         Elude();
-        return;
+        break;
+    case kWaiting:
+        Waiting();
+        break;
     case kTerminal:
         Terminal();
-        return;
+        break;
     default:
-        ChangeStateTo(kWaiting);
-        return;
+        break;
+    }
+
+    if (mRequestedSwap) {
+        if ((mState != kWaiting) && (mState != kTerminal) && (mState != kTransition)) {
+            mRequestedSwap = false;
+        }
+    }
+
+    if (mState != kTransition) {
+        int intensity = static_cast<int>(mIntensity * 127.0f);
+        MControlPathfinder message(false, 0x20, intensity, 0);
+        message.Send(UCrc32("Control"));
     }
 }
 

@@ -3,6 +3,9 @@
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/Src/EAXSound/AudioMemBase.hpp"
 #include "Speed/Indep/Src/EAXSound/AudioMemoryManager.hpp"
+#include "Speed/Indep/Src/Misc/Hermes.h"
+#include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_NISStream.hpp"
+#include "Speed/Indep/Src/EAXSound/SFX_base.hpp"
 #include "Speed/Indep/Src/EAXSound/Stream/EAXS_StreamChannel.h"
 #include "Speed/Indep/Src/EAXSound/Stream/EAXS_StreamManager.h"
 #include "Speed/Indep/Src/EAXSound/Stream/GameSpeech.hpp"
@@ -2191,17 +2194,73 @@ void SED_NISSFX::ClearStream() {
 }
 
 void SED_NISSFX::Update() {
-    if (m_paused) {
+    if (m_SyncObject.id < STRM_NIS_RACE_START) {
         return;
     }
 
-    if (m_bIsStreamQueued) {
-        PlayStream(static_cast<int>(m_SyncObject.id));
+    if (IsNISAudioEnabled == 0) {
+        return;
     }
 
-    if (m_SyncObject.callback && m_SyncObject.qsObject && m_SyncObject.qsObject->ready) {
-        m_SyncObject.callback();
+    if (m_SyncObject.id == STRM_SFX_MOMENT) {
+        SFX_Base *sfxmoment = m_pSFXOBJ_Moment;
+        if (sfxmoment) {
+            int vol = sfxmoment->GetDMixOutput(*reinterpret_cast<int *>(reinterpret_cast<char *>(sfxmoment) + 0x544), DMX_VOL);
+            m_strm->SetVol(vol >> 8, true);
+            if (*reinterpret_cast<bool *>(reinterpret_cast<char *>(sfxmoment) + 0x548)) {
+                m_strm->SetAz(sfxmoment->GetDMixOutput(0, DMX_AZIM));
+            } else {
+                m_strm->SetAz(0);
+            }
+        }
+    } else if (m_SyncObject.id == STRM_NIS_RACE_START) {
+        if (m_pSFXOBJ_NISStream) {
+            int vol = m_pSFXOBJ_NISStream->GetDMixOutput(1, DMX_VOL);
+            m_strm->SetVol(vol >> 8, true);
+            m_strm->SetAz(0);
+        }
+    } else if (m_SyncObject.id == STRM_NIS_BUSTED) {
+        if (m_pSFXOBJ_NISStream) {
+            int vol = m_pSFXOBJ_NISStream->GetDMixOutput(2, DMX_VOL);
+            m_strm->SetVol(vol >> 8, true);
+            m_strm->SetAz(0);
+        }
+    } else {
+        m_strm->SetVol(100, true);
+        m_strm->SetAz(0);
+    }
+
+    if (m_SyncObject.holdtime != -1) {
+        m_SyncObject.holdtime -= static_cast<int>(SndBase::m_fDeltaTime * 1000.0f);
+        if (m_SyncObject.holdtime < 0) {
+            m_SyncObject.holdtime = 0;
+            FreeMemory(m_SyncObject.qsObject);
+            m_SyncObject.qsObject = 0;
+        }
+    } else if (m_strm->GetTimeBuffered() > 0) {
+        if (m_SyncObject.qsObject == 0) {
+            goto check_done;
+        }
+
+        m_bIsStreamQueued = true;
+        if (m_SyncObject.callback && (m_SyncObject.id >= STRM_NIS_RACE_START) &&
+            ((m_SyncObject.id < STRM_THUNDER) || (m_SyncObject.id == STRM_SFX_MOMENT)) && (m_SyncObject.holdtime <= 0)) {
+            m_SyncObject.callback();
+        }
         m_SyncObject.callback = 0;
+        FreeMemory(m_SyncObject.qsObject);
+        m_SyncObject.qsObject = 0;
+    }
+
+check_done:
+    if (m_SyncObject.qsObject == 0) {
+        if (!m_strm->IsPlaying()) {
+            m_SyncObject.id = STRM_NONE;
+            if (m_pSFXOBJ_NISStream) {
+                static_cast<SFXObj_NISStream *>(m_pSFXOBJ_NISStream)->NISActivityDone();
+            }
+            mLastEventTimestamp = WorldTimer;
+        }
     }
 }
 

@@ -417,36 +417,57 @@ void PursuitFlow::LostWhileSpotterWait() {
 
 void PursuitFlow::SpotterWait() {
     SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
-    if (!ai) {
-        return;
-    }
 
-    if (mBusy) {
-        if (!Manager::IsCopSpeechBusy()) {
-            ChangeStateTo(kTerminal);
-            mBusy = 0;
+    if (!mBusy) {
+        if (ai->GetPursuitState() != SoundAI::kActive) {
+            ChangeStateTo(kLostWhileSpotWait);
+            return;
         }
+
+        EAXCop *cansee = ai->FindClosestCop(true, true);
+        if (cansee && ai->MakeLeader(cansee) && (mCauseofPursuit != kScripted)) {
+            if (mCauseofPursuit == k911Reported) {
+                if (!ai->AreCopsAhead() && cansee->IsAhead()) {
+                    cansee->Spotted();
+                } else {
+                    cansee->SpotterReply();
+                }
+            } else {
+                if (mFirstOnScene) {
+                    if (mFirstOnScene->GetSpeakerID() != cansee->GetSpeakerID()) {
+                        if (!ai->AreCopsAhead() && cansee->IsAhead()) {
+                            cansee->Spotted();
+                        } else {
+                            cansee->SpotterReply();
+                        }
+                    }
+                }
+            }
+
+            if (mCauseofPursuit != k911Reported) {
+                if ((bRandom(1.0f) > 0.5f) && ai->IsHeadingValid()) {
+                    ai->GetDispatch()->PursuitEscalation();
+                } else {
+                    ai->GetDispatch()->PursuitEscalationGeneric();
+                }
+            }
+        }
+
+        mBusy++;
         return;
     }
 
-    if (ai->GetPursuitState() != SoundAI::kActive) {
-        ChangeStateTo(kLostWhileSpotWait);
+    if ((ai->GetPlayerStopTime() >= ai->GetTune().MinTimeConsideredStopped()) && (mCauseofPursuit != kCopAssaulted) &&
+        (mCauseofPursuit != kCopAssaultedScripted)) {
+        mBusy = 0;
+        ChangeStateTo(kPlayerStopped);
         return;
     }
 
-    EAXCop *cansee = ai->FindClosestCop(true, true);
-    if (!cansee || !ai->MakeLeader(cansee)) {
-        ChangeStateTo(kLostWhileSpotWait);
-        return;
+    if (!Manager::IsCopSpeechBusy() && mBusy) {
+        ChangeStateTo(kTerminal);
+        mBusy = 0;
     }
-
-    if (mCauseofPursuit == k911Reported) {
-        cansee->SpotterReply();
-    } else {
-        cansee->Spotter();
-    }
-
-    mBusy++;
 }
 
 void PursuitFlow::Bailout() {
