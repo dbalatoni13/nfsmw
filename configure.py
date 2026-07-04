@@ -492,10 +492,7 @@ cflags_cmn = [
 ]
 
 cflags_libc = [*cflags_base_prodg]
-cflags_eathread = [
-    *cflags_game,
-    "-D__SN__",
-]
+cflags_eathread = [*cflags_game]
 
 Matching = True  # Object matches and should be linked
 NonMatching = False  # Object does not match and should not be linked
