@@ -1,8 +1,14 @@
 #include "Speed/Indep/Src/Main/EventSequencer.h"
 #include "Speed/Indep/Libs/Support/Miscellaneous/CARP.h"
 #include "Speed/Indep/Libs/Support/Miscellaneous/PackedBinaryTree.h"
+#include "Speed/Indep/Libs/Support/Utility/UCrc.h"
 #include "Speed/Indep/Libs/Support/Utility/UGroup.hpp"
-#include "Speed/Indep/Libs/Support/Utility/UStandard.h"
+
+#include <map>
+
+inline void *operator new(std::size_t, void *place, unsigned int) {
+    return place;
+}
 
 // unfinished
 static CARP::ExprValType StimulusFilterLookup(unsigned int name, unsigned int subindex, const void *context, const CARP::ExprValType *value) {
@@ -21,8 +27,21 @@ static CARP::ExprValType StimulusFilterLookup(unsigned int name, unsigned int su
 }
 
 namespace EventSequencer {
+UTL::Collections::Instanceable<HENGINE, IEngine, 434>::_List
+UTL::Collections::Instanceable<HENGINE, IEngine, 434>::_mList;
 
-typedef struct UTL::Std::map<UCrc32,const UData *,_STL::less<UCrc32>,_STL::allocator<_STL::pair<const UCrc32,const UData *> > > NameHashToDataMap;
+typedef std::map<UCrc32, const UData *> NameHashToDataMap;
+
+static unsigned int gCreateStimulus;
+static unsigned int gTriggerStimulus;
+static unsigned int gStartAction;
+static unsigned int gEndAction;
+static unsigned int gStopAction;
+static unsigned int gPauseAction;
+static unsigned int gResumeAction;
+static unsigned int gUnloadAction;
+static unsigned int gStimulusParameter;
+static unsigned int gStimulusResult;
 
 static NameHashToDataMap gEngineData;
 static unsigned int gNumActiveSystems = 0;
@@ -59,7 +78,67 @@ void UpdateDelta(float deltaTime) {
 }
 
 static void RegisterEngines(const UGroup *group) {
+    for (unsigned int activeIndex = 0; activeIndex < group->DataCountType(0x65452020); activeIndex++) {
+        const UData *data = group->DataLocate(0x65452020, activeIndex);
+        const EventSeqEngine *engine = (EventSeqEngine *)data->GetDataConst();
+        UCrc32 nameHash(engine->mName);
 
+        gEngineData[nameHash] = data;
+    }
+}
+
+static void UnregisterEngines(const UGroup *group) {
+    for (unsigned int activeIndex = 0; activeIndex < group->DataCountType(0x65452020); activeIndex++) {
+        const UData *data = group->DataLocate(0x65452020, activeIndex);
+        const EventSeqEngine *engine = (EventSeqEngine *)data->GetDataConst();
+        UCrc32 nameHash(engine->mName);
+
+        gEngineData.erase(nameHash);
+    }
+}
+
+static const UData *FindEngineData(UCrc32 name) {
+    NameHashToDataMap::iterator iter = gEngineData.find(UCrc32(name));
+    if (iter != gEngineData.end()) {
+        return (*iter).second;
+    }
+
+    return nullptr;
+}
+
+IEngine *Create(UTL::COM::Object *baseObject, IContext *context, const UData *data, float externalTime, float rate);
+
+IEngine *Create(UTL::COM::Object *baseObject, IContext *context, UCrc32 name, float externalTime, float rate) {
+    const UData *data = FindEngineData(UCrc32(name));
+    if (data == nullptr) {
+        return nullptr;
+    }
+
+    return Create(baseObject, context, data, externalTime, rate);
+}
+
+const UGroup *PrepareBinary(const void *binData) {
+    const UGroup *g = UGroup::Deserialize(binData, true, 0);
+    CARP::ResolveTagReferences(g, 0);
+    return g;
+}
+
+unsigned int StringToID(const char *str) {
+    unsigned int hash = stringhash32(str);
+    return hash;
+}
+
+static bool EraseActiveSystem(unsigned int index) {
+    if (index < gNumActiveSystems) {
+        for (unsigned int i = index; i < gNumActiveSystems - 1; i++) {
+            gActiveSystemList[i] = gActiveSystemList[i + 1];
+        }
+
+        gActiveSystemList[--gNumActiveSystems] = nullptr;
+        return true;
+    }
+
+    return false;
 }
 
 }
