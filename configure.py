@@ -254,10 +254,10 @@ if config.platform == Platform.GC_WII:
         "-I src/Speed/GameCube/Libs/stl/STLport-4.5/stlport",
         "-I src/Speed/GameCube/bWare/GameCube/SN/include",
         "-I src/Packages/eathread/1.1.0/include",
-        "-I include",
         f"-I {dolphinsdk_root}/include",
         "-I src/Packages",
-        "-I ./",
+        "-I src/Speed/GameCube/bWare/GameCube/SN",
+        # "-I ./",
         "-I src",
         "-DEA_PLATFORM_GAMECUBE",
         "-DEA_REGION_AMERICA",
@@ -429,7 +429,7 @@ elif config.platform == Platform.PS2:
         "-I src/Packages/eathread/1.1.0/include",
         "-I src/Packages",
         "-I src",
-        "-DEA_PLATFORM_PLAYSTATION2", # TODO rename to PS2
+        "-DEA_PLATFORM_PLAYSTATION2",  # TODO rename to PS2
         "-DEA_BUILD_A124",
         "-D_NOTHREADS",  # TODO is this necessary?
         f"-I build/{config.version}/include",
@@ -1574,10 +1574,16 @@ if config.platform == Platform.GC_WII:
                 "cflags": cflags_eathread,
                 "progress_category": "libs",
                 "objects": [
-                    Object(Matching, "Packages/eathread/1.1.0/source/eathread_semaphore.cpp"),
-                    Object(NonMatching, "Packages/eathread/1.1.0/source/eathread_thread.cpp"),
-                ]
-            }
+                    Object(
+                        Matching,
+                        "Packages/eathread/1.1.0/source/eathread_semaphore.cpp",
+                    ),
+                    Object(
+                        NonMatching,
+                        "Packages/eathread/1.1.0/source/eathread_thread.cpp",
+                    ),
+                ],
+            },
         ]
     )
 
