@@ -21,13 +21,10 @@ typedef unsigned char Bool;
 #define FALSE 0
 #define TRUE 1
 
-#if defined(__MWERKS__)
-#define AT_ADDRESS(addr) : (addr)
-#elif defined(__GNUC__)
-//#define AT_ADDRESS(addr) __attribute__((address((addr))))
-#define AT_ADDRESS(addr)  // was removed in GCC. define in linker script instead.
+#ifdef __SN__
+#define AT_ADDRESS(xyz) __attribute__((address((xyz))))
 #else
-#error unknown compiler
+#define AT_ADDRESS(xyz) : (xyz)
 #endif
 
 #define ATTRIBUTE_ALIGN(num) __attribute__((aligned(num)))
