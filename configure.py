@@ -1577,7 +1577,7 @@ if config.platform == Platform.GC_WII:
                 "progress_category": "libs",
                 "objects": [
                     Object(Matching, "Packages/eathread/1.1.0/source/eathread_semaphore.cpp"),
-                    Object(Matching, "Packages/eathread/1.1.0/source/eathread_thread.cpp"),
+                    Object(NonMatching, "Packages/eathread/1.1.0/source/eathread_thread.cpp"),
                 ]
             }
         ]
