@@ -158,31 +158,47 @@ void Observer::Reset() {
 void Observer::Observe(int currobsrvation, int speaker, float score) {
     SpeechObservation obs;
     obs.observation = currobsrvation;
-    obs.speaker = speaker;
-    obs.score = score;
+    obs.time = WorldTimer;
+    obs.force = score;
+    obs.speakerID = speaker;
     mLastEvent = static_cast<SpeechObservations>(currobsrvation);
     mObservations.push_back(obs);
 }
 
 void Observer::Process() {
-    observations::iterator it = mObservations.begin();
-    while (it != mObservations.end()) {
-        const SpeechObservation &obs = *it;
-        if ((obs.observation >= kCollision_Cop_Cop) && (obs.observation <= kCollision_Suspect_Spikebelt)) {
-            SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
-            if (ai && ai->GetLeader()) {
-                ai->GetLeader()->Collision(obs.observation, obs.score, mRamCop);
+    SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
+    if (ai->GetPursuit() && (((ai->GetFocus() != SoundAI::kPursuitFlow) || (ai->GetPursuit()->TimeUntilBusted() >= 0.5f)) &&
+                             (ai->GetFocus() != SoundAI::kTerminal))) {
+        observations::iterator i = mObservations.begin();
+        while (i != mObservations.end()) {
+            SpeechObservation &obs = *i;
+            EAXCop *speaker = ai->GetCop(obs.speakerID);
+            if (speaker) {
+                speaker->Collision(obs.observation, obs.force, ai->GetRandomCop(0));
             }
+            mObservations.erase(i);
+            if (mObservations.empty()) {
+                break;
+            }
+            i = mObservations.begin();
         }
-        ++it;
+        IPlayer *player = IPlayer::First(PLAYER_LOCAL);
+        if (player) {
+            player->GetSimable()->GetRigidBody()->GetForwardVector(mFwPlayer);
+        }
+        AssessArrest();
+        if ((mTracking & Arrest) == 0) {
+            AssessLOS();
+            AssessFlippage();
+            Assess180();
+            AssessOutcome();
+            AssessBraking();
+            AssessOutrun();
+            AssessOffroad();
+            GasStationAftermath();
+        }
+        mNumCopsWithLOS = ai->NumCopsWithLOS();
     }
-    mObservations.clear();
-    AssessLOS();
-    AssessOutcome();
-    AssessBraking();
-    AssessOutrun();
-    AssessOffroad();
-    AssessArrest();
 }
 
 float Observer::CalcFWVec_Road_Car() {

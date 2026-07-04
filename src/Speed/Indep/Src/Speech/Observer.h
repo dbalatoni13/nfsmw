@@ -38,8 +38,9 @@ enum SpeechObservations {
 
 struct SpeechObservation {
     int observation;
-    int speaker;
-    float score;
+    Timer time;
+    float force;
+    int speakerID;
 };
 
 DECLARE_CONTAINER_TYPE(observations);

@@ -438,10 +438,45 @@ bool MusicFlow::IsTransitionable() {
 }
 
 void MusicFlow::ChangeStateTo(int new_state) {
-    SpeechFlow::ChangeStateTo(new_state);
-    if (new_state == kTransition) {
-        mBusy = 0;
-        mRequestedSwap = false;
+    if (new_state != mState) {
+        SoundAI *ai = SoundAI::Get();
+        SpeechFlow::ChangeStateTo(kWaiting);
+        int nevt = -1;
+        Timer timer = WorldTimer;
+        mBusy = 1;
+        mTimer = timer;
+        switch (new_state) {
+            case kNeutral:
+                if (mCurrentPart != 4) {
+                    nevt = 0xa;
+                }
+                break;
+            case kLose:
+                if (mCurrentPart != 1) {
+                    nevt = 0xb;
+                }
+                break;
+            case kWin:
+                if (mCurrentPart != 3) {
+                    nevt = 0xc;
+                }
+                break;
+            case kElude:
+                mAvgPlayerSpeed = 0.0f;
+                if (mCurrentPart != 2) {
+                    nevt = 0xd;
+                }
+                break;
+            case kTerminal:
+                if ((static_cast<unsigned int>(mCurrentPart - 5) > 2) && (ai->GetFocus() != kTerminal) && (ai->GetFocus() != kTransition)) {
+                    nevt = 0xe;
+                }
+                break;
+        }
+        if (nevt != -1) {
+            MControlPathfinder message(false, static_cast<unsigned int>(nevt), 0, 0);
+            message.Send(UCrc32("Event"));
+        }
     }
 }
 
