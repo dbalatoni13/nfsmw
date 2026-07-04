@@ -25,7 +25,7 @@ enum Type_jurisdiction {
 }
 
 struct EAXDispatch : public EAXCharacter {
-    EAXDispatch(int sID);
+    EAXDispatch(int sID) : EAXCharacter(sID, 0, 0, 0) {}
 
     ~EAXDispatch() override;
     void Update() override;

@@ -80,8 +80,8 @@ static int DESTROY_COPS_ON_INACTIVITY;
 
 SoundAI::SoundAI()
     : Sim::Activity(1),
-      mMainUpdate(0),
-      mProcessObservations(0),
+      mMainUpdate(AddTask("Speech", 1.0f, 0.0f, Sim::TASK_FRAME_FIXED)),
+      mProcessObservations(AddTask("Comment", 1.0f, 0.0f, Sim::TASK_FRAME_FIXED)),
       mFlags(0),
       mActors(10),
       mUsage(),
@@ -144,9 +144,6 @@ SoundAI::SoundAI()
       mMsgInfraction(0),
       mMsgUnspawnCop(0),
       mMsgTireBlown(0) {
-    mMainUpdate = AddTask("Speech", 1.0f, 0.0f, Sim::TASK_FRAME_FIXED);
-    mProcessObservations = AddTask("Comment", 1.0f, 0.0f, Sim::TASK_FRAME_FIXED);
-
     mUsage.voices.reserve(8);
     mUsage.cs_Rhino.reserve(6);
     mUsage.cs_SuperPursuit.reserve(6);
@@ -162,6 +159,7 @@ SoundAI::SoundAI()
     mMsgUnspawnCop = Hermes::Handler::Create<MUnspawnCop, SoundAI, SoundAI>(this, &SoundAI::MessageUnspawnCop, "SoundAI", 0);
     mMsgTireBlown = Hermes::Handler::Create<MGamePlayMoment, SoundAI, SoundAI>(this, &SoundAI::MessageTireBlown, "TireBlo", 0);
 
+    mCopsInFormation.clear();
     SoundAI::mRefCount = 1;
     mRecentBlowby.distance = 32767.0f;
     mRecentBlowby.speed = 0.0f;
@@ -170,8 +168,8 @@ SoundAI::SoundAI()
     Sim::ProfileTask(mMainUpdate, "Speech");
     Sim::ProfileTask(mProcessObservations, "Speech");
 
-    mTune.Change(Attrib::FindCollectionWithDefault(Attrib::Gen::speechtune::ClassKey(), 0));
-    mPursuitLevel.Change(Attrib::FindCollectionWithDefault(Attrib::Gen::pursuitlevels::ClassKey(), 0));
+    mTune.ChangeWithDefault(0);
+    mPursuitLevel.ChangeWithDefault(0);
 
     mActorPool = bNewSlotPool(0xA0, 10, "VoiceActors slotpool", AudioMemoryPool);
     if (mActorPool) {
@@ -179,12 +177,12 @@ SoundAI::SoundAI()
         mActorPool->ClearFlag(SLOTPOOL_FLAG_WARN_IF_NONEMPTY_DELETE);
     }
 
-    mDispatch = reinterpret_cast<EAXDispatch *>(new EAXCharacter(1, 0, 0, 0));
-    mPursuitFlow = new (::operator new(0x28)) Speech::PursuitFlow;
-    mStrategyFlow = new (::operator new(0x48)) Speech::StrategyFlow;
-    mObserver = new (::operator new(0xA0)) Speech::Observer;
-    mRoadblockFlow = new (::operator new(0x44)) Speech::RoadblockFlow;
-    mMusicFlow = new (::operator new(0x68)) Speech::MusicFlow;
+    mDispatch = new EAXDispatch(1);
+    mPursuitFlow = new ("SpeechFlow: Pursuit", 0) Speech::PursuitFlow;
+    mStrategyFlow = new ("SpeechFlow: Strategy", 0) Speech::StrategyFlow;
+    mObserver = new ("SpeechFlow: Observer", 0) Speech::Observer;
+    mRoadblockFlow = new ("SpeechFlow: Roadblock", 0) Speech::RoadblockFlow;
+    mMusicFlow = new ("MusicFlow: Interactive", 0) Speech::MusicFlow;
 
     for (int i = 0; i < 2; i++) {
         mPlayerCurrent[i].direction = CalcPlayerDirection(false);

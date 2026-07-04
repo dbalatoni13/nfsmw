@@ -156,13 +156,32 @@ void Observer::Reset() {
 }
 
 void Observer::Observe(int currobsrvation, int speaker, float score) {
-    SpeechObservation obs;
-    obs.observation = currobsrvation;
-    obs.time = WorldTimer;
-    obs.force = score;
-    obs.speakerID = speaker;
-    mLastEvent = static_cast<SpeechObservations>(currobsrvation);
-    mObservations.push_back(obs);
+    SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
+    if (ai->GetPursuit() && (ai->GetFocus() != SoundAI::kPursuitFlow) && (ai->GetFocus() != SoundAI::kTerminal)) {
+        bool found = false;
+        for (observations::iterator i = mObservations.begin(); i != mObservations.end(); i++) {
+            SpeechObservation &curr = *i;
+            if (curr.observation == currobsrvation) {
+                curr.time = WorldTimer;
+                curr.speakerID = speaker;
+                float force = curr.force;
+                if (force < score) {
+                    force = score;
+                }
+                curr.force = force;
+                found = true;
+            }
+        }
+        if (!found) {
+            SpeechObservation newObs;
+            newObs.speakerID = speaker;
+            newObs.time = WorldTimer;
+            newObs.force = score;
+            newObs.observation = static_cast<SpeechObservations>(currobsrvation);
+            mObservations.push_back(newObs);
+        }
+        mLastEvent = static_cast<SpeechObservations>(currobsrvation);
+    }
 }
 
 void Observer::Process() {

@@ -37,6 +37,10 @@ enum SpeechObservations {
 };
 
 struct SpeechObservation {
+    SpeechObservation() {}
+    SpeechObservation(SpeechObservations obs, int spkr, float f) : observation(obs), time(WorldTimer), force(f), speakerID(spkr) {}
+    SpeechObservation(SpeechObservations obs, int spkr) : observation(obs), time(WorldTimer), force(1.0f), speakerID(spkr) {}
+
     int observation;
     Timer time;
     float force;
