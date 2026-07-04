@@ -202,7 +202,7 @@ class Manager {
     static void NotifyEventCompletion(ScheduledSpeechEvent *evt, bool playback_complete);
     static ScheduledSpeechEvent *GetNextEvent();
     static SpeechValRtnType PostValidate(ScheduledSpeechEvent *evt, unsigned int mask);
-    static int PreValidate(ScheduledSpeechEvent &evt);
+    static SpeechValRtnType PreValidate(ScheduledSpeechEvent &evt);
     static bool CanPlayback(Attrib::Gen::speech &event_attribs);
     static void CalcProbPlayback();
     static SPCHType_1_EventID GetLastEventID() {

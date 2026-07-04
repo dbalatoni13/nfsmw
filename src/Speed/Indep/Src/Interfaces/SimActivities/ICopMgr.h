@@ -27,9 +27,6 @@ class ICopMgr : public UTL::COM::IUnknown, public UTL::Collections::Singleton<IC
     virtual bool VehicleSpawningEnabled(bool isdespawn);
 #endif
     virtual void ResetCopsForRestart(bool release);
-#ifndef EA_BUILD_A124
-    virtual float GetLockoutTimeRemaining() const; // maybe 1 higher and maybe this is SetAllBusted's place
-#endif
     virtual void PursuitIsEvaded(struct IPursuit *ipursuit);
     virtual bool IsCopRequestPending();
     virtual bool IsCopSpawnPending() const;
@@ -41,14 +38,21 @@ class ICopMgr : public UTL::COM::IUnknown, public UTL::Collections::Singleton<IC
     virtual void NoNewPursuitsOrCops();
     virtual void PursueAtHeatLevel(int minHeatLevel);
 #ifndef EA_BUILD_A124
-    virtual void SetAllBustedTimersToZero(); // TODO fix the position of this
+    virtual void SetAllBustedTimersToZero();
+    virtual float GetLockoutTimeRemaining() const;
 #endif
 
-    static void EnableCops() {}
+    static void EnableCops() {
+        mDisableCops = 0;
+    }
 
-    static void DisableCops() {}
+    static void DisableCops() {
+        mDisableCops = 1;
+    }
 
-    static bool AreCopsEnabled() {}
+    static bool AreCopsEnabled() {
+        return mDisableCops == 0;
+    }
 };
 
 #endif

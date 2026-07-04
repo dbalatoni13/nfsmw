@@ -4,6 +4,7 @@
 #include "PursuitFlow.h"
 #include "RoadblockFlow.h"
 #include "StrategyFlow.h"
+#include "Speed/Indep/Src/Speech/EAXDispatch.h"
 #include "Speed/Indep/Src/EAXSound/Csis.hpp"
 #include "Speed/Indep/Src/EAXSound/States/STATE_DriveBy.hpp"
 #include "Speed/Indep/Src/EAXSound/Stream/SpeechManager.hpp"
@@ -69,9 +70,6 @@ extern "C" CarPart *NewGetCarPart__15CarPartDatabase7CarTypeiUiP7CarParti(
     unsigned int car_part_namehash,
     CarPart *prev_part,
     int upg_level);
-
-void EAXDispatch_Report911(void *dispatch, int infraction);
-void EAXDispatch_JurisShift(void *dispatch, int jurisdiction);
 
 static float prev_heat_30802 = 0.0f;
 static unsigned int dir_tracking_30959 = 0;
@@ -610,25 +608,21 @@ void SoundAI::OnCollision(const COLLISION_INFO &cinfo) {
 
             if (intensity > 0.15f) {
                 if (intensity <= 0.5f) {
-                    if (intensity > 0.75f) {
-                        actor->SuspectSpunout(Csis::Type_intensity_High);
+                    float rand_select = bRandom(1.0f);
+                    if (rand_select >= 0.67f) {
+                        actor->Deny();
                     } else {
-                        float rand_select = bRandom(1.0f);
-                        if (rand_select >= 0.67f) {
-                            actor->Deny();
+                        Csis::Type_intensity csis_intensity = Csis::Type_intensity_High;
+                        if (coll_type == kPerpRECop) {
+                            actor->RearEnded(csis_intensity);
+                        } else if (coll_type == kPerpTBCop) {
+                            actor->TBoned(csis_intensity);
+                        } else if ((coll_type == kPerpHOCop) && !cop_is_suv) {
+                            actor->HeadOn(csis_intensity);
+                        } else if (coll_type == kPerpSSCop) {
+                            actor->SideSwiped(csis_intensity);
                         } else {
-                            Csis::Type_intensity csis_intensity = Csis::Type_intensity_High;
-                            if (coll_type == kPerpRECop) {
-                                actor->RearEnded(csis_intensity);
-                            } else if (coll_type == kPerpTBCop) {
-                                actor->TBoned(csis_intensity);
-                            } else if ((coll_type == kPerpHOCop) && !cop_is_suv) {
-                                actor->HeadOn(csis_intensity);
-                            } else if (coll_type == kPerpSSCop) {
-                                actor->SideSwiped(csis_intensity);
-                            } else {
-                                actor->Ack();
-                            }
+                            actor->Ack();
                         }
                     }
                 } else if (intensity <= 0.75f) {
@@ -1046,24 +1040,23 @@ void SoundAI::SyncPlayers() {
     WRoadNav *nav = vai->GetDriveToNav();
 
     mPlayerCurrent[0].roadID = static_cast<RoadNames>(nav->GetRoadSpeechId());
-    mPlayerCurrent[0].direction = CalcPlayerDirection(false);
+    unsigned int dir = CalcPlayerDirection(false);
+
+    mPlayerCurrent[0].direction = dir;
 
     if (IsHeadingValid()) {
-        RoadNames last_road = mPlayerCurrent[1].roadID;
-        RoadNames curr_road = mPlayerCurrent[0].roadID;
-        unsigned int curr_dir = mPlayerCurrent[0].direction;
-        unsigned int known_dir = mLastKnown.direction;
-        mPlayerCurrent[1].roadID = curr_road;
-        mPlayerCurrent[1].direction = curr_dir;
-        if ((known_dir != curr_dir) && mPursuit && mPursuit->IsPerpInSight() && (last_road != curr_road)) {
+        bool road_changed = (mPlayerCurrent[1].roadID != mPlayerCurrent[0].roadID);
+        mPlayerCurrent[1].roadID = mPlayerCurrent[0].roadID;
+        mPlayerCurrent[1].direction = mPlayerCurrent[0].direction;
+        if ((mLastKnown.direction != dir) && mPursuit && mPursuit->IsPerpInSight() && road_changed) {
             if ((mPursuitState == kActive) && (mFocus != kPursuitFlow)) {
                 EAXCop *cop = FindClosestCop(true, true);
                 if (cop) {
                     cop->DirectionChange();
                 }
             }
-            mLastKnown.direction = curr_dir;
-            mLastKnown.roadID = curr_road;
+            mLastKnown.direction = dir;
+            mLastKnown.roadID = mPlayerCurrent[0].roadID;
         }
     }
 
@@ -1079,7 +1072,7 @@ void SoundAI::SyncPlayers() {
         if (mPlayerCarCustom) {
             delete mPlayerCarCustom;
         }
-        mPlayerCarCustom = new CarCustomizations;
+        mPlayerCarCustom = new ("SoundAI CarCustomization", 0) CarCustomizations;
         if (!GetCustomized(vehicle, *mPlayerCarCustom)) {
             delete mPlayerCarCustom;
             mPlayerCarCustom = 0;
@@ -1092,7 +1085,7 @@ void SoundAI::SyncPlayers() {
             mFlags |= LOWSPEEDTIMER;
             mT_reallylowspeed = WorldTimer;
         }
-    } else {
+    } else if (mTune.MinSpeedConsideredStopped() <= mPlayerSpeed) {
         mFlags &= ~LOWSPEEDTIMER;
         mT_reallylowspeed = WorldTimer;
     }
@@ -1100,56 +1093,57 @@ void SoundAI::SyncPlayers() {
     UMath::Vector3 vel;
 
     mPlayerPos = player->GetPosition();
-    if (SPAMAccessorSpeech.Layer) {
+    if (SPAMAccessorSpeech.IsValid()) {
         const bVector2 ppos(mPlayerPos.z, -mPlayerPos.x);
         SPAMAccessorSpeech.CaptureData(ppos.x, ppos.y);
         mPlayerOffroadID = SPAMAccessorSpeech.GetDataInt(1);
     }
 
-    float heat = perp->GetHeat();
-    mPlayerHeat = static_cast<int>(heat);
+    int heat = static_cast<int>(perp->GetHeat());
+    mPlayerHeat = heat;
 
-    if ((mFocus != kPursuitFlow) && (60.0f < mPursuitDuration) && (prev_heat_30802 < heat)) {
-        bool crossed = false;
-        int cutoff_index = 3;
-        while (cutoff_index > -1) {
-            float cutoff = heat_cutoffs[cutoff_index].value;
-            if ((prev_heat_30802 < cutoff) && (cutoff <= heat)) {
-                crossed = true;
-                prev_heat_30802 = heat;
+    if ((mFocus != kPursuitFlow) && (60.0f < mPursuitDuration) && (prev_heat_30802 < perp->GetHeat())) {
+        bool jump = false;
+        int i = 3;
+        while (i > -1) {
+            if ((prev_heat_30802 < heat_cutoffs[i].value) && (heat_cutoffs[i].value <= perp->GetHeat())) {
+                jump = true;
+                prev_heat_30802 = perp->GetHeat();
                 break;
             }
-            cutoff_index--;
+            i--;
         }
 
-        if (crossed && (mPursuitState < kInactive)) {
+        if (jump && (mPursuitState < kInactive)) {
             if (bRandom(1.0f) <= 0.5f) {
                 EAXCop *cop = GetRandomActiveCop(1, false);
                 if (mHeli && (bRandom(1.0f) > 0.5f)) {
-                    mHeli->HeatJump(heat_cutoffs[cutoff_index].heat_level);
+                    mHeli->HeatJump(heat_cutoffs[i].heat_level);
                 } else if (cop) {
-                    cop->HeatJump(heat_cutoffs[cutoff_index].heat_level);
+                    cop->HeatJump(heat_cutoffs[i].heat_level);
                 }
-            } else if (mDispatch) {
-                reinterpret_cast<EAXCharacter *>(mDispatch)->HeatJump(heat_cutoffs[cutoff_index].heat_level);
+            } else {
+                mDispatch->HeatJump(heat_cutoffs[i].heat_level);
             }
 
-            if (bRandom(1.0f) > 0.5f && mDispatch) {
-                if ((3.0f <= heat) && (heat < 6.0f)) {
-                    EAXDispatch_JurisShift(mDispatch, 1);
-                } else if (6.0f <= heat) {
-                    EAXDispatch_JurisShift(mDispatch, 2);
+            if (bRandom(1.0f) > 0.5f) {
+                if ((3.0f <= perp->GetHeat()) && (perp->GetHeat() < 6.0f)) {
+                    mDispatch->JurisShift(Csis::Type_jurisdiction_state);
+                } else if (6.0f <= perp->GetHeat()) {
+                    mDispatch->JurisShift(Csis::Type_jurisdiction_federal);
                 }
             }
         }
     }
 
     Attrib::Gen::pursuitlevels *pursuitatr = perp->GetPursuitLevelAttrib();
-    if (pursuitatr && (mPursuitLevel.GetCollection() != pursuitatr->GetCollection())) {
-        mPursuitLevel.ChangeWithDefault(pursuitatr->GetCollection());
+    if (pursuitatr && pursuitatr->IsValid()) {
+        if (mPursuitLevel.GetCollection() != pursuitatr->GetCollection()) {
+            mPursuitLevel.ChangeWithDefault(pursuitatr->GetCollection());
+        }
     }
 
-    if (mPursuitLevel.GetCollection()) {
+    if (mPursuitLevel.IsValid()) {
         if (0.0f < mPursuitLevel.roadblockprobability()) {
             mFlags |= RB_ENABLED;
         } else {
@@ -1170,47 +1164,47 @@ void SoundAI::SyncPlayers() {
 
         if ((mPursuitState == kInactive) && ((mFlags & DISP911_ACTIVE) == 0)) {
             bool is_DDay = false;
-            bool is_pursuit_race = false;
-            bool is_roaming = false;
+            bool is_Race = false;
+            bool is_Roaming = false;
             if (GRaceStatus::Exists()) {
                 if (GRaceStatus::Get().GetPlayMode() == GRaceStatus::kPlayMode_Roaming) {
-                    is_roaming = true;
+                    is_Roaming = true;
                 } else if (GRaceDatabase::Exists() && !GRaceDatabase::Get().GetStartupRace()) {
-                    is_roaming = true;
+                    is_Roaming = true;
                 }
             } else if (GRaceDatabase::Exists() && !GRaceDatabase::Get().GetStartupRace()) {
-                is_roaming = true;
+                is_Roaming = true;
             }
 
             ICopMgr *copmgr = UTL::Collections::Singleton<ICopMgr>::Get();
             if (copmgr && ICopMgr::AreCopsEnabled()) {
                 float t_lockout = copmgr->GetLockoutTimeRemaining();
-                if (GRaceStatus::Get().GetRaceParameters() && GRaceStatus::Get().GetRaceParameters()->GetIsDDayRace()) {
-                    is_DDay = true;
+                if (GRaceStatus::Get().GetRaceParameters()) {
+                    if (GRaceStatus::Get().GetRaceParameters()->GetIsDDayRace()) {
+                        is_DDay = true;
+                    }
+                    if (GRaceStatus::Get().GetRaceParameters()->GetIsPursuitRace()) {
+                        is_Race = true;
+                    }
                 }
-                if (GRaceStatus::Get().GetRaceParameters() && GRaceStatus::Get().GetRaceParameters()->GetIsPursuitRace()) {
-                    is_pursuit_race = true;
-                }
-                bool scripted_911 = ((mPursuitLevel.Lifetime911(0) < t_lockout) && (t_lockout < mPursuitLevel.Lifetime911(1)) && !is_pursuit_race &&
-                                     !is_roaming);
+                bool scripted_911 = ((mPursuitLevel.Lifetime911(0) < t_lockout) && (t_lockout < mPursuitLevel.Lifetime911(1)) && !is_Race &&
+                                     !is_Roaming);
                 bool req911_met = false;
                 if ((mCTS911 >= mPursuitLevel.CTSFor911()) || (mTrafficHits911 >= mPursuitLevel.NumCiviHitsFor911(0))) {
                     req911_met = true;
                 }
 
                 if ((req911_met || scripted_911) && !is_DDay && mDispatch) {
-                    EAXDispatch_Report911(mDispatch, IsHighIntensity() ? 2 : 1);
+                    mDispatch->Report911(IsHighIntensity() ? Csis::Type_pursuit_type_Possible_Wanted : Csis::Type_pursuit_type_Generic_Speeder);
                 }
             }
         }
     }
 
-    player->GetSimable()->GetRigidBody()->GetForwardVector(vel);
-    UMath::Unit(vel, vel);
-    mPlayerFW = vel;
-    mSmoothedFWRoad.x = (mSmoothedFWRoad.x * 0.8f) + (vel.x * 0.2f);
-    mSmoothedFWRoad.y = (mSmoothedFWRoad.y * 0.8f) + (vel.y * 0.2f);
-    mSmoothedFWRoad.z = (mSmoothedFWRoad.z * 0.8f) + (vel.z * 0.2f);
+    UMath::Unit(player->GetSimable()->GetRigidBody()->GetLinearVelocity(), vel);
+    mSmoothedFWRoad.x = (mSmoothedFWRoad.x * 0.9f) + (vel.x * 0.1f);
+    mSmoothedFWRoad.y = (mSmoothedFWRoad.y * 0.9f) + (vel.y * 0.1f);
+    mSmoothedFWRoad.z = (mSmoothedFWRoad.z * 0.9f) + (vel.z * 0.1f);
 }
 
 int SoundAI::GetBattalionFromRoadID(int roadID) {
@@ -2324,7 +2318,20 @@ void SoundAI::SyncFormations() {
     Speech::copMap::iterator iter = mActors.begin();
     while (iter != mActors.end()) {
         EAXCop *cop = iter->cop;
-        if (!cop->GetInFormation() || cop->IsHeli()) {
+        if (cop->GetInFormation() && !cop->IsHeli()) {
+            bool found = false;
+            Speech::copList::iterator i = mCopsInFormation.begin();
+            while (i != mCopsInFormation.end()) {
+                EAXCop *copInFormation = *i;
+                if (copInFormation && copInFormation->GetHandle() == cop->GetHandle()) {
+                    found = true;
+                }
+                ++i;
+            }
+            if (!found && !cop->IsHeli()) {
+                mCopsInFormation.push_back(cop);
+            }
+        } else if (!mCopsInFormation.empty()) {
             Speech::copList::iterator i = mCopsInFormation.begin();
             while (i != mCopsInFormation.end()) {
                 EAXCop *copInFormation = *i;
@@ -2334,20 +2341,6 @@ void SoundAI::SyncFormations() {
                 }
                 ++i;
             }
-        } else {
-            bool found = false;
-            Speech::copList::iterator i = mCopsInFormation.begin();
-            while (i != mCopsInFormation.end()) {
-                EAXCop *copInFormation = *i;
-                if (copInFormation && copInFormation->GetHandle() == cop->GetHandle()) {
-                    found = true;
-                    break;
-                }
-                ++i;
-            }
-            if (!found && !cop->IsHeli()) {
-                mCopsInFormation.push_back(cop);
-            }
         }
         ++iter;
     }
@@ -2355,7 +2348,7 @@ void SoundAI::SyncFormations() {
     if (mCopsInFormation.size() == 1) {
         mLastCopInFormation = mCopsInFormation.front();
     }
-    if (!mCopsInFormation.empty()) {
+    if (mCopsInFormation.size() != 0) {
         mT_outofFormation = WorldTimer;
     }
 }

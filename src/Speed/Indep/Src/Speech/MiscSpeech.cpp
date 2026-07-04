@@ -171,13 +171,13 @@ int ResolveSpeaker(int speaker_id) {
     return static_cast<int>(bRandom(3.0f) + 1.0f);
 }
 
-bool SetLocation(Csis::Type_location_region &region, Csis::Type_location &location, Csis::Type_location_region region_value, Csis::Type_location location_value) {
+static inline bool SetLocation(Csis::Type_location_region &region, Csis::Type_location &location, Csis::Type_location_region region_value, Csis::Type_location location_value) {
     region = region_value;
     location = location_value;
     return true;
 }
 
-bool SetRegionAsLocation(Csis::Type_location_region &region, Csis::Type_location &location, Csis::Type_location_region region_value) {
+static inline bool SetRegionAsLocation(Csis::Type_location_region &region, Csis::Type_location &location, Csis::Type_location_region region_value) {
     region = region_value;
     location = (Csis::Type_location)region_value;
     return true;
@@ -509,180 +509,357 @@ bool GetSPAMLocation(int SPAMID, Csis::Type_offroad_moment_id &id) {
 }
 
 bool GetLocation(RoadNames id, Csis::Type_location_region &region, Csis::Type_location &location) {
+    int region_value;
+    int location_value;
+
     switch (id) {
     case on_Highway99:
-        return SetRegionAsLocation(region, location, Csis::Type_location_region_college_town);
+        region_value = Csis::Type_location_region_college_town;
+        location_value = static_cast<Csis::Type_location>(static_cast<int>(region_value));
+        break;
     case thru_Campus_Interchange:
-        return SetLocation(region, location, Csis::Type_location_region_college_town, Csis::Type_location_Location_2);
+        region_value = Csis::Type_location_region_college_town;
+        location_value = Csis::Type_location_Location_2;
+        break;
     case on_Kilgore_Bridge:
-        return SetLocation(region, location, Csis::Type_location_region_college_town, Csis::Type_location_Location_3);
+        region_value = Csis::Type_location_region_college_town;
+        location_value = Csis::Type_location_Location_3;
+        break;
     case thru_Camden_Interchange:
-        return SetLocation(region, location, Csis::Type_location_region_college_town, Csis::Type_location_Location_4);
+        region_value = Csis::Type_location_region_college_town;
+        location_value = Csis::Type_location_Location_4;
+        break;
     case thru_Petersburg_Interchange:
-        return SetLocation(region, location, Csis::Type_location_region_college_town, Csis::Type_location_Location_5);
+        region_value = Csis::Type_location_region_college_town;
+        location_value = Csis::Type_location_Location_5;
+        break;
     case thru_Stadium_Interchange:
-        return SetLocation(region, location, Csis::Type_location_region_college_town, Csis::Type_location_Location_6);
+        region_value = Csis::Type_location_region_college_town;
+        location_value = Csis::Type_location_Location_6;
+        break;
     case past_Ironwood_Estates:
-        return SetLocation(region, location, Csis::Type_location_region_college_town, Csis::Type_location_Location_7);
+        region_value = Csis::Type_location_region_college_town;
+        location_value = Csis::Type_location_Location_7;
+        break;
     case past_Hillcrest:
-        return SetLocation(region, location, Csis::Type_location_region_college_town, Csis::Type_location_Location_8);
+        region_value = Csis::Type_location_region_college_town;
+        location_value = Csis::Type_location_Location_8;
+        break;
     case on_Hillcrest_Drive:
-        return SetLocation(region, location, Csis::Type_location_region_college_town, Csis::Type_location_Location_9);
+        region_value = Csis::Type_location_region_college_town;
+        location_value = Csis::Type_location_Location_9;
+        break;
     case on_Union_Row:
-        return SetLocation(region, location, Csis::Type_location_region_college_town, Csis::Type_location_Location_10);
+        region_value = Csis::Type_location_region_college_town;
+        location_value = Csis::Type_location_Location_10;
+        break;
     case past_Rosewood_Park:
-        return SetLocation(region, location, Csis::Type_location_region_college_town, Csis::Type_location_Location_11);
+        region_value = Csis::Type_location_region_college_town;
+        location_value = Csis::Type_location_Location_11;
+        break;
     case on_Clubhouse_Road:
-        return SetLocation(region, location, Csis::Type_location_region_college_town, Csis::Type_location_Location_12);
+        region_value = Csis::Type_location_region_college_town;
+        location_value = Csis::Type_location_Location_12;
+        break;
     case on_Campus_Circle:
-        return SetLocation(region, location, Csis::Type_location_region_college_town, Csis::Type_location_Location_13);
+        region_value = Csis::Type_location_region_college_town;
+        location_value = Csis::Type_location_Location_13;
+        break;
     case on_Campus_Way:
-        return SetLocation(region, location, Csis::Type_location_region_college_town, Csis::Type_location_Location_14);
+        region_value = Csis::Type_location_region_college_town;
+        location_value = Csis::Type_location_Location_14;
+        break;
     case on_Chancellor_Way:
-        return SetLocation(region, location, Csis::Type_location_region_college_town, Csis::Type_location_Location_15);
+        region_value = Csis::Type_location_region_college_town;
+        location_value = Csis::Type_location_Location_15;
+        break;
     case past_Rosewood_College_Hospital:
-        return SetLocation(region, location, Csis::Type_location_region_college_town, Csis::Type_location_Location_16);
+        region_value = Csis::Type_location_region_college_town;
+        location_value = Csis::Type_location_Location_16;
+        break;
     case past_Rosewood_College_Research_Center:
-        return SetLocation(region, location, Csis::Type_location_region_college_town, Csis::Type_location_Location_17);
+        region_value = Csis::Type_location_region_college_town;
+        location_value = Csis::Type_location_Location_17;
+        break;
     case past_Diamond_Park:
-        return SetLocation(region, location, Csis::Type_location_region_college_town, Csis::Type_location_Location_18);
+        region_value = Csis::Type_location_region_college_town;
+        location_value = Csis::Type_location_Location_18;
+        break;
     case on_State_Street:
-        return SetLocation(region, location, Csis::Type_location_region_college_town, Csis::Type_location_Location_19);
+        region_value = Csis::Type_location_region_college_town;
+        location_value = Csis::Type_location_Location_19;
+        break;
     case on_Hollis_Blvd:
-        return SetLocation(region, location, Csis::Type_location_region_college_town, Csis::Type_location_Location_20);
+        region_value = Csis::Type_location_region_college_town;
+        location_value = Csis::Type_location_Location_20;
+        break;
     case on_Rockridge_Drive:
-        return SetLocation(region, location, Csis::Type_location_region_college_town, Csis::Type_location_Location_21);
+        region_value = Csis::Type_location_region_college_town;
+        location_value = Csis::Type_location_Location_21;
+        break;
     case past_Heritage_Heights:
-        return SetLocation(region, location, Csis::Type_location_region_college_town, Csis::Type_location_Location_22);
+        region_value = Csis::Type_location_region_college_town;
+        location_value = Csis::Type_location_Location_22;
+        break;
     case past_Highlander_Stadium:
-        return SetLocation(region, location, Csis::Type_location_region_college_town, Csis::Type_location_Location_23);
+        region_value = Csis::Type_location_region_college_town;
+        location_value = Csis::Type_location_Location_23;
+        break;
     case past_Hickley_Field:
-        return SetLocation(region, location, Csis::Type_location_region_college_town, Csis::Type_location_Location_24);
+        region_value = Csis::Type_location_region_college_town;
+        location_value = Csis::Type_location_Location_24;
+        break;
     case on_Stadium_Blvd:
-        return SetLocation(region, location, Csis::Type_location_region_college_town, Csis::Type_location_Location_25);
+        region_value = Csis::Type_location_region_college_town;
+        location_value = Csis::Type_location_Location_25;
+        break;
     case past_Forest_Green_Country_Club:
-        return SetLocation(region, location, Csis::Type_location_region_college_town, Csis::Type_location_Location_26);
+        region_value = Csis::Type_location_region_college_town;
+        location_value = Csis::Type_location_Location_26;
+        break;
     case past_Rosewood_Bus_Station:
-        return SetLocation(region, location, Csis::Type_location_region_college_town, Csis::Type_location_Location_27);
+        region_value = Csis::Type_location_region_college_town;
+        location_value = Csis::Type_location_Location_27;
+        break;
     case on_Boundary_Road:
-        return SetLocation(region, location, Csis::Type_location_region_college_town, Csis::Type_location_Location_28);
+        region_value = Csis::Type_location_region_college_town;
+        location_value = Csis::Type_location_Location_28;
+        break;
     case past_Boundary_Mall:
-        return SetLocation(region, location, Csis::Type_location_region_college_town, Csis::Type_location_Location_29);
+        region_value = Csis::Type_location_region_college_town;
+        location_value = Csis::Type_location_Location_29;
+        break;
     case on_Riverside_Drive:
-        return SetLocation(region, location, Csis::Type_location_region_college_town, Csis::Type_location_Location_30);
+        region_value = Csis::Type_location_region_college_town;
+        location_value = Csis::Type_location_Location_30;
+        break;
     case on_Bristol_Road:
-        return SetLocation(region, location, Csis::Type_location_region_coastal, Csis::Type_location_Location_1);
+        region_value = Csis::Type_location_region_coastal;
+        location_value = Csis::Type_location_Location_1;
+        break;
     case on_North_Bay_Road:
-        return SetRegionAsLocation(region, location, Csis::Type_location_region_coastal);
+        region_value = Csis::Type_location_region_coastal;
+        location_value = static_cast<Csis::Type_location>(static_cast<int>(region_value));
+        break;
     case on_Cannery_Way:
-        return SetLocation(region, location, Csis::Type_location_region_coastal, Csis::Type_location_Location_3);
+        region_value = Csis::Type_location_region_coastal;
+        location_value = Csis::Type_location_Location_3;
+        break;
     case through_Dunwich_Village:
-        return SetLocation(region, location, Csis::Type_location_region_coastal, Csis::Type_location_Location_4);
+        region_value = Csis::Type_location_region_coastal;
+        location_value = Csis::Type_location_Location_4;
+        break;
     case on_Fisher_Road:
-        return SetLocation(region, location, Csis::Type_location_region_coastal, Csis::Type_location_Location_5);
+        region_value = Csis::Type_location_region_coastal;
+        location_value = Csis::Type_location_Location_5;
+        break;
     case through_North_Bay:
-        return SetLocation(region, location, Csis::Type_location_region_coastal, Csis::Type_location_Location_6);
+        region_value = Csis::Type_location_region_coastal;
+        location_value = Csis::Type_location_Location_6;
+        break;
     case past_North_Bay_Cannery:
-        return SetLocation(region, location, Csis::Type_location_region_coastal, Csis::Type_location_Location_7);
+        region_value = Csis::Type_location_region_coastal;
+        location_value = Csis::Type_location_Location_7;
+        break;
     case over_Seagate_Bridge:
-        return SetLocation(region, location, Csis::Type_location_region_coastal, Csis::Type_location_Location_8);
+        region_value = Csis::Type_location_region_coastal;
+        location_value = Csis::Type_location_Location_8;
+        break;
     case on_Route_55:
-        return SetLocation(region, location, Csis::Type_location_region_coastal, Csis::Type_location_Location_9);
+        region_value = Csis::Type_location_region_coastal;
+        location_value = Csis::Type_location_Location_9;
+        break;
     case on_Chase_Road:
-        return SetLocation(region, location, Csis::Type_location_region_coastal, Csis::Type_location_Location_10);
+        region_value = Csis::Type_location_region_coastal;
+        location_value = Csis::Type_location_Location_10;
+        break;
     case past_Asylum:
-        return SetLocation(region, location, Csis::Type_location_region_coastal, Csis::Type_location_Location_11);
+        region_value = Csis::Type_location_region_coastal;
+        location_value = Csis::Type_location_Location_11;
+        break;
     case past_Horn:
-        return SetLocation(region, location, Csis::Type_location_region_coastal, Csis::Type_location_Location_12);
+        region_value = Csis::Type_location_region_coastal;
+        location_value = Csis::Type_location_Location_12;
+        break;
     case past_Camden_Beach:
-        return SetLocation(region, location, Csis::Type_location_region_coastal, Csis::Type_location_Location_13);
+        region_value = Csis::Type_location_region_coastal;
+        location_value = Csis::Type_location_Location_13;
+        break;
     case on_Coast_Road:
-        return SetLocation(region, location, Csis::Type_location_region_coastal, Csis::Type_location_Location_14);
+        region_value = Csis::Type_location_region_coastal;
+        location_value = Csis::Type_location_Location_14;
+        break;
     case past_Ocean_Hills:
-        return SetLocation(region, location, Csis::Type_location_region_coastal, Csis::Type_location_Location_15);
+        region_value = Csis::Type_location_region_coastal;
+        location_value = Csis::Type_location_Location_15;
+        break;
     case on_Ocean_Hills_Drive:
-        return SetLocation(region, location, Csis::Type_location_region_coastal, Csis::Type_location_Location_16);
+        region_value = Csis::Type_location_region_coastal;
+        location_value = Csis::Type_location_Location_16;
+        break;
     case thru_Boardwalk:
-        return SetLocation(region, location, Csis::Type_location_region_coastal, Csis::Type_location_Location_17);
+        region_value = Csis::Type_location_region_coastal;
+        location_value = Csis::Type_location_Location_17;
+        break;
     case over_Seaside_bridge:
-        return SetLocation(region, location, Csis::Type_location_region_coastal, Csis::Type_location_Location_18);
+        region_value = Csis::Type_location_region_coastal;
+        location_value = Csis::Type_location_Location_18;
+        break;
     case on_Seaside_Highway:
-        return SetLocation(region, location, Csis::Type_location_region_coastal, Csis::Type_location_Location_19);
+        region_value = Csis::Type_location_region_coastal;
+        location_value = Csis::Type_location_Location_19;
+        break;
     case past_Beacon_Point:
-        return SetLocation(region, location, Csis::Type_location_region_coastal, Csis::Type_location_Location_20);
+        region_value = Csis::Type_location_region_coastal;
+        location_value = Csis::Type_location_Location_20;
+        break;
     case past_Beacon_Point_Marina:
-        return SetLocation(region, location, Csis::Type_location_region_coastal, Csis::Type_location_Location_21);
+        region_value = Csis::Type_location_region_coastal;
+        location_value = Csis::Type_location_Location_21;
+        break;
     case on_Harbour_Road:
-        return SetLocation(region, location, Csis::Type_location_region_coastal, Csis::Type_location_Location_22);
+        region_value = Csis::Type_location_region_coastal;
+        location_value = Csis::Type_location_Location_22;
+        break;
     case past_Shipyard:
-        return SetLocation(region, location, Csis::Type_location_region_coastal, Csis::Type_location_Location_23);
+        region_value = Csis::Type_location_region_coastal;
+        location_value = Csis::Type_location_Location_23;
+        break;
     case thru_Camden_Tunnel:
-        return SetLocation(region, location, Csis::Type_location_region_coastal, Csis::Type_location_Location_24);
+        region_value = Csis::Type_location_region_coastal;
+        location_value = Csis::Type_location_Location_24;
+        break;
     case over_Bay_Bridge:
-        return SetLocation(region, location, Csis::Type_location_region_coastal, Csis::Type_location_Location_25);
+        region_value = Csis::Type_location_region_coastal;
+        location_value = Csis::Type_location_Location_25;
+        break;
     case on_Camden_Tunnel_Road:
-        return SetLocation(region, location, Csis::Type_location_region_coastal, Csis::Type_location_Location_26);
+        region_value = Csis::Type_location_region_coastal;
+        location_value = Csis::Type_location_Location_26;
+        break;
     case on_Bayshore_Blvd:
-        return SetLocation(region, location, Csis::Type_location_region_coastal, Csis::Type_location_Location_27);
+        region_value = Csis::Type_location_region_coastal;
+        location_value = Csis::Type_location_Location_27;
+        break;
     case over_Terminal_Bridge:
-        return SetLocation(region, location, Csis::Type_location_region_coastal, Csis::Type_location_Location_28);
+        region_value = Csis::Type_location_region_coastal;
+        location_value = Csis::Type_location_Location_28;
+        break;
     case past_Omega_Power_Station:
-        return SetLocation(region, location, Csis::Type_location_region_coastal, Csis::Type_location_Location_29);
+        region_value = Csis::Type_location_region_coastal;
+        location_value = Csis::Type_location_Location_29;
+        break;
     case past_Penitentiary:
-        return SetLocation(region, location, Csis::Type_location_region_coastal, Csis::Type_location_Location_30);
+        region_value = Csis::Type_location_region_coastal;
+        location_value = Csis::Type_location_Location_30;
+        break;
     case by_Smugglers_Wharf:
-        return SetLocation(region, location, Csis::Type_location_region_coastal, Csis::Type_location_Location_31);
+        region_value = Csis::Type_location_region_coastal;
+        location_value = Csis::Type_location_Location_31;
+        break;
     case past_Omega_Industries:
-        return SetRegionAsLocation(region, location, Csis::Type_location_region_coastal_extra);
+        region_value = Csis::Type_location_region_coastal_extra;
+        location_value = static_cast<Csis::Type_location>(static_cast<int>(region_value));
+        break;
     case past_Point_Camden_trainyard:
-        return SetLocation(region, location, Csis::Type_location_region_coastal_extra, Csis::Type_location_Location_1);
+        region_value = Csis::Type_location_region_coastal_extra;
+        location_value = Csis::Type_location_Location_1;
+        break;
     case on_Highway_201:
-        return SetLocation(region, location, Csis::Type_location_region_city, Csis::Type_location_Location_1);
+        region_value = Csis::Type_location_region_city;
+        location_value = Csis::Type_location_Location_1;
+        break;
     case thru_Valley_Interchange:
-        return SetLocation(region, location, Csis::Type_location_region_city, Csis::Type_location_Location_3);
+        region_value = Csis::Type_location_region_city;
+        location_value = Csis::Type_location_Location_3;
+        break;
     case thru_Lyons_Tunnel:
-        return SetRegionAsLocation(region, location, Csis::Type_location_region_city);
+        region_value = Csis::Type_location_region_city;
+        location_value = static_cast<Csis::Type_location>(static_cast<int>(region_value));
+        break;
     case over_Ironhorse_Bridge:
-        return SetLocation(region, location, Csis::Type_location_region_city, Csis::Type_location_Location_5);
+        region_value = Csis::Type_location_region_city;
+        location_value = Csis::Type_location_Location_5;
+        break;
     case on_Hastings_Road:
-        return SetLocation(region, location, Csis::Type_location_region_city, Csis::Type_location_Location_6);
+        region_value = Csis::Type_location_region_city;
+        location_value = Csis::Type_location_Location_6;
+        break;
     case on_Warrant_Road:
-        return SetLocation(region, location, Csis::Type_location_region_city, Csis::Type_location_Location_7);
+        region_value = Csis::Type_location_region_city;
+        location_value = Csis::Type_location_Location_7;
+        break;
     case on_Lennox_Road:
-        return SetLocation(region, location, Csis::Type_location_region_city, Csis::Type_location_Location_8);
+        region_value = Csis::Type_location_region_city;
+        location_value = Csis::Type_location_Location_8;
+        break;
     case near_Grand_Terrace:
-        return SetLocation(region, location, Csis::Type_location_region_city, Csis::Type_location_Location_9);
+        region_value = Csis::Type_location_region_city;
+        location_value = Csis::Type_location_Location_9;
+        break;
     case past_Projects:
-        return SetLocation(region, location, Csis::Type_location_region_city, Csis::Type_location_Location_10);
+        region_value = Csis::Type_location_region_city;
+        location_value = Csis::Type_location_Location_10;
+        break;
     case on_Bond_Blvd:
-        return SetLocation(region, location, Csis::Type_location_region_city, Csis::Type_location_Location_11);
+        region_value = Csis::Type_location_region_city;
+        location_value = Csis::Type_location_Location_11;
+        break;
     case past_City_Park:
-        return SetLocation(region, location, Csis::Type_location_region_city, Csis::Type_location_Location_12);
+        region_value = Csis::Type_location_region_city;
+        location_value = Csis::Type_location_Location_12;
+        break;
     case past_Fairmount_Bowl:
-        return SetLocation(region, location, Csis::Type_location_region_city, Csis::Type_location_Location_13);
+        region_value = Csis::Type_location_region_city;
+        location_value = Csis::Type_location_Location_13;
+        break;
     case past_Riverfront_Stadium:
-        return SetLocation(region, location, Csis::Type_location_region_city, Csis::Type_location_Location_14);
+        region_value = Csis::Type_location_region_city;
+        location_value = Csis::Type_location_Location_14;
+        break;
     case through_Little_Italy:
-        return SetLocation(region, location, Csis::Type_location_region_city, Csis::Type_location_Location_15);
+        region_value = Csis::Type_location_region_city;
+        location_value = Csis::Type_location_Location_15;
+        break;
     case thru_Financial_District:
-        return SetLocation(region, location, Csis::Type_location_region_city, Csis::Type_location_Location_16);
+        region_value = Csis::Type_location_region_city;
+        location_value = Csis::Type_location_Location_16;
+        break;
     case through_Downtown:
-        return SetLocation(region, location, Csis::Type_location_region_city, Csis::Type_location_Location_17);
+        region_value = Csis::Type_location_region_city;
+        location_value = Csis::Type_location_Location_17;
+        break;
     case through_Century_Square:
-        return SetLocation(region, location, Csis::Type_location_region_city, Csis::Type_location_Location_18);
+        region_value = Csis::Type_location_region_city;
+        location_value = Csis::Type_location_Location_18;
+        break;
     case Seaside_Interchange:
-        return SetLocation(region, location, Csis::Type_location_region_city, Csis::Type_location_Location_19);
+        region_value = Csis::Type_location_region_city;
+        location_value = Csis::Type_location_Location_19;
+        break;
     case on_I17:
-        return SetLocation(region, location, Csis::Type_location_region_city, Csis::Type_location_Location_20);
+        region_value = Csis::Type_location_region_city;
+        location_value = Csis::Type_location_Location_20;
+        break;
     case thru_Student_Housing:
-        return SetLocation(region, location, Csis::Type_location_region_college_town, Csis::Type_location_Location_31);
+        region_value = Csis::Type_location_region_college_town;
+        location_value = Csis::Type_location_Location_31;
+        break;
     case over_Beacon_Bridge:
-        return SetLocation(region, location, Csis::Type_location_region_coastal_extra, Csis::Type_location_Location_4);
+        region_value = Csis::Type_location_region_coastal_extra;
+        location_value = Csis::Type_location_Location_4;
+        break;
     case past_Cascade_Park:
-        return SetLocation(region, location, Csis::Type_location_region_city, Csis::Type_location_Location_21);
+        region_value = Csis::Type_location_region_city;
+        location_value = Csis::Type_location_Location_21;
+        break;
     default:
         return false;
     }
+
+    region = static_cast<Csis::Type_location_region>(region_value);
+    location = static_cast<Csis::Type_location>(location_value);
+    return true;
 }
 } // namespace MiscSpeech
 

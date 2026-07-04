@@ -1372,14 +1372,36 @@ SpeechValRtnType Manager::PostValidate(ScheduledSpeechEvent *evt, unsigned int m
     return kKeepEvt;
 }
 
-int Manager::PreValidate(ScheduledSpeechEvent &evt) {
-    if (!evt.actor) {
-        return 1;
+SpeechValRtnType Manager::PreValidate(ScheduledSpeechEvent &evt) {
+    if (evt.flags & 1) {
+        return kDeferEvt;
     }
-    if (evt.ID == kSPCH1_EventID_MaxEventID) {
-        return 2;
+
+    Attrib::Gen::speech event(mHashMap.GetHash(evt.ID), 0, 0);
+    SpeechValRtnType rval = kKeepEvt;
+    bool is_int = false;
+
+    if (evt.flags & 2) {
+        float delay = event.InitDelay();
+        float elapsed = (WorldTimer - evt.entry_time).GetSeconds();
+        if (elapsed < delay) {
+            return kDeferEvt;
+        }
+
+        evt.entry_time = WorldTimer;
+        evt.flags = static_cast<short>(evt.flags & ~2);
     }
-    return 0;
+
+    is_int = event.interrupt();
+    if (is_int) {
+        rval = PostValidate(&evt, static_cast<unsigned int>(-1));
+        if (rval == kKeepEvt) {
+            return kIntEvt;
+        }
+        return rval;
+    }
+
+    return kKeepEvt;
 }
 
 bool Manager::CanPlayback(Attrib::Gen::speech &) {
