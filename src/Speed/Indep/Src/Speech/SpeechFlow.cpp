@@ -1549,8 +1549,38 @@ GameSpeech::GameSpeech()
       m_ChirpParams() {}
 
 GameSpeech::~GameSpeech() {
+    ClearCompletedRequests();
+    if (m_strm != 0) {
+        m_strm->Stop();
+    }
+    if (m_bankHeaders != 0) {
+        gAudioMemoryManager.FreeMemory(m_bankHeaders);
+        m_bankHeaders = 0;
+    }
+    if (m_eventDat != 0) {
+        gAudioMemoryManager.FreeMemory(m_eventDat);
+        m_eventDat = 0;
+    }
+    if (m_speechBanks != 0) {
+        gAudioMemoryManager.FreeMemory(m_speechBanks);
+        m_numBanks = 0;
+        m_speechBanks = 0;
+    }
+    if (m_csisData != 0) {
+        Csis::System::Unsubscribe(m_csisData);
+        gAudioMemoryManager.FreeMemory(m_csisData);
+        m_csisData = 0;
+    }
+    mLoadState.clear();
+    if (m_strm != 0) {
+        gpEAXS_StrmMgr->RemoveStreamChannel(STYPE_COPSPEECH);
+        m_strm = 0;
+    }
     m_pendingList.clear();
-    m_currEvent = 0;
+    m_pSFXOBJ_Speech = 0;
+    if (m_Chirper != 0) {
+        delete m_Chirper;
+    }
     m_Chirper = 0;
 }
 

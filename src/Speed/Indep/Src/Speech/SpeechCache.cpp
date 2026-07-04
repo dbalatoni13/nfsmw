@@ -18,6 +18,8 @@ extern int SpeechMemoryPool;
 extern int PRINT_SPEECH_CACHE_IO;
 extern int flushcount_uncached;
 extern int flushcount_lru;
+extern int flushcount_inactive_spkrs;
+extern int flushcount_all;
 extern bool SPEECH_CACHE_STATS;
 
 namespace {
@@ -358,29 +360,56 @@ void Cache::FlushLRU() {
 }
 
 void Cache::FlushAllUnlocked() {
-    unsigned int index = mIndex.GetNextValidIndex(0);
+    bLargestMalloc(SpeechMemoryPool);
+
+    unsigned int prelargest = 0;
+    unsigned int index = mIndex.GetNextValidIndex(prelargest);
+    unsigned int postlargest = 0;
+
     while (mIndex.ValidIndex(index)) {
-        SpeechSampleData *sample = mIndex.GetPtrAtIndex(index);
-        if (sample && !sample->lock) {
+        SpeechSampleData *sample = mIndex.GetPtrAtValidIndex(index);
+        if (!sample->lock && sample->ready && sample->cached) {
+            SpeechSampleData::Destruct(sample);
             mIndex.DeleteIndex(index);
-        } else {
-            index++;
         }
+
+        index++;
         index = mIndex.GetNextValidIndex(index);
     }
+
+    bLargestMalloc(SpeechMemoryPool);
+    ++flushcount_all;
 }
 
 void Cache::FlushInactiveSpeakers() {
-    unsigned int index = mIndex.GetNextValidIndex(0);
+    bLargestMalloc(SpeechMemoryPool);
+
+    unsigned int prelargest = 0;
+    unsigned int index = mIndex.GetNextValidIndex(prelargest);
+    unsigned int postlargest = 0;
+
     while (mIndex.ValidIndex(index)) {
-        SpeechSampleData *sample = mIndex.GetPtrAtIndex(index);
-        if (sample && !sample->lock && !IsSpeakerActive(mSpeakers, sample->speakerID)) {
-            mIndex.DeleteIndex(index);
-        } else {
-            index++;
+        SpeechSampleData *sample = mIndex.GetPtrAtValidIndex(index);
+        if (!sample->lock && sample->ready && sample->cached) {
+            bool inactive = true;
+            for (VoiceIDs::iterator i = mSpeakers->begin(); i != mSpeakers->end(); i++) {
+                if ((*i == sample->speakerID) || (sample->speakerID == 0xffff)) {
+                    inactive = false;
+                }
+            }
+
+            if (inactive) {
+                SpeechSampleData::Destruct(sample);
+                mIndex.DeleteIndex(index);
+            }
         }
+
+        index++;
         index = mIndex.GetNextValidIndex(index);
     }
+
+    bLargestMalloc(SpeechMemoryPool);
+    ++flushcount_inactive_spkrs;
 }
 
 void Cache::DebugPrintAllocations() {

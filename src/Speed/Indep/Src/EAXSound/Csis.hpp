@@ -85,6 +85,7 @@ enum Result {
 };
 
 Result Subscribe(void *desc);
+Result Unsubscribe(void *desc);
 void *Alloc(int bytes);
 void Free(void *memory);
 } // namespace System

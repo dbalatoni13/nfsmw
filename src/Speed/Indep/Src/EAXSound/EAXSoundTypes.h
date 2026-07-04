@@ -27,7 +27,9 @@ DECLARE_CONTAINER_TYPE(copMap);
 
 class copMap : public UTL::Std::vector<copPair, _type_copMap> {
   public:
-    copMap(int size) {}
+    copMap(int size) {
+        reserve(size);
+    }
     void Add(HSIMABLE__ *hsimable, EAXCop *cop);
     EAXCop *Remove(HSIMABLE__ *hsimable);
     void ModifyHandle(HSIMABLE__ *hsimable, HSIMABLE__ *newhandle);
@@ -44,7 +46,15 @@ struct voiceIDs : public UTL::Std::vector<int, _type_voiceIDs> {};
 
 // total size: 0x70
 struct VoiceUsage {
-    VoiceUsage() {}
+    VoiceUsage() {
+        voices.reserve(8);
+        cs_Rhino.reserve(6);
+        cs_SuperPursuit.reserve(6);
+        cs_City.reserve(20);
+        cs_Coastal.reserve(10);
+        cs_Rosewood.reserve(10);
+        cs_Alpine.reserve(10);
+    }
 
     voiceIDs voices;          // offset 0x0, size 0x10
     voiceIDs cs_Rhino;        // offset 0x10, size 0x10

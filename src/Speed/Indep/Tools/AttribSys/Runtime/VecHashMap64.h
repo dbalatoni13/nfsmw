@@ -177,7 +177,7 @@ template <typename KeyType, typename T, typename Policy, bool Unk2, std::size_t 
     void DeleteIndex(std::size_t actualIndex) {
         T *obj = RemoveIndex(actualIndex);
         if (obj) {
-            delete obj;
+            obj->~T();
         }
     }
 

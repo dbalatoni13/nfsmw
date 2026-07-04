@@ -509,8 +509,8 @@ bool GetSPAMLocation(int SPAMID, Csis::Type_offroad_moment_id &id) {
 }
 
 bool GetLocation(RoadNames id, Csis::Type_location_region &region, Csis::Type_location &location) {
-    int region_value;
-    int location_value;
+    Csis::Type_location_region region_value;
+    Csis::Type_location location_value;
 
     switch (id) {
     case on_Highway99:
@@ -857,8 +857,8 @@ bool GetLocation(RoadNames id, Csis::Type_location_region &region, Csis::Type_lo
         return false;
     }
 
-    region = static_cast<Csis::Type_location_region>(region_value);
-    location = static_cast<Csis::Type_location>(location_value);
+    region = region_value;
+    location = location_value;
     return true;
 }
 } // namespace MiscSpeech

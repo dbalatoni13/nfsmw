@@ -101,14 +101,12 @@ SoundAI::SoundAI()
       mFocus(kPursuitFlow),
       mPursuitDist(0.0f),
       mT_PerpLastSeen(0.0f),
-      mLOSCount(0),
       mTrafficHits911(0),
       mCTS911(0),
       mHavoc(0),
       mPursuitCount(0),
       mNumRoadBlocks(0),
       mRacerCount(0),
-      mClosestRacerDist(0.0f),
       mTimeSinceLastChase(0.0f),
       mPVehicle(static_cast<const Attrib::Collection *>(0), 0, 0),
       mTune(static_cast<const Attrib::Collection *>(0), 0, 0),
@@ -144,14 +142,6 @@ SoundAI::SoundAI()
       mMsgInfraction(0),
       mMsgUnspawnCop(0),
       mMsgTireBlown(0) {
-    mUsage.voices.reserve(8);
-    mUsage.cs_Rhino.reserve(6);
-    mUsage.cs_SuperPursuit.reserve(6);
-    mUsage.cs_City.reserve(20);
-    mUsage.cs_Coastal.reserve(10);
-    mUsage.cs_Rosewood.reserve(10);
-    mUsage.cs_Alpine.reserve(10);
-
     mMsgPerpBusted = Hermes::Handler::Create<MPerpBusted, SoundAI, SoundAI>(this, &SoundAI::MessagePerpBusted, "Speech", 0);
     mMsgAIPerpBusted = Hermes::Handler::Create<MPerpBusted, SoundAI, SoundAI>(this, &SoundAI::MessageAIPerpBusted, "AIRacerBusted", 0);
     mMsgRestartRace = Hermes::Handler::Create<MRestartRace, SoundAI, SoundAI>(this, &SoundAI::MessageRestart, "Speech", 0);
