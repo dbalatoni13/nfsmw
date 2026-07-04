@@ -248,4 +248,6 @@ template <typename T, typename Tag> class Container {
 }; // namespace Collections
 }; // namespace UTL
 
+#define IMPLEMENT_INSTANCABLE(HANDLETYPE,TYPE) template<> UTL::Collections::Instanceable<HANDLETYPE,TYPE,TYPE::InstanceLimit>::_List UTL::Collections::Instanceable<HANDLETYPE,TYPE,TYPE::InstanceLimit>::_mList=UTL::Collections::Instanceable<HANDLETYPE,TYPE,TYPE::InstanceLimit>::_List(); template<> unsigned UTL::Collections::Instanceable<HANDLETYPE,TYPE,TYPE::InstanceLimit>::_mHNext=0;
+
 #endif

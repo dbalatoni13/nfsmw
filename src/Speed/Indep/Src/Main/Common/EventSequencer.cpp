@@ -1,6 +1,7 @@
 #include "Speed/Indep/Src/Main/EventSequencer.h"
 #include "Speed/Indep/Libs/Support/Miscellaneous/CARP.h"
 #include "Speed/Indep/Libs/Support/Miscellaneous/PackedBinaryTree.h"
+#include "Speed/Indep/Libs/Support/Utility/UCollections.h"
 #include "Speed/Indep/Libs/Support/Utility/UCrc.h"
 #include "Speed/Indep/Libs/Support/Utility/UGroup.hpp"
 
@@ -26,9 +27,9 @@ static CARP::ExprValType StimulusFilterLookup(unsigned int name, unsigned int su
     return result;
 }
 
+IMPLEMENT_INSTANCABLE(EventSequencer::HENGINE, EventSequencer::IEngine)
+
 namespace EventSequencer {
-UTL::Collections::Instanceable<HENGINE, IEngine, 434>::_List
-UTL::Collections::Instanceable<HENGINE, IEngine, 434>::_mList;
 
 typedef std::map<UCrc32, const UData *> NameHashToDataMap;
 
@@ -78,8 +79,8 @@ void UpdateDelta(float deltaTime) {
 }
 
 static void RegisterEngines(const UGroup *group) {
-    for (unsigned int activeIndex = 0; activeIndex < group->DataCountType(0x65452020); activeIndex++) {
-        const UData *data = group->DataLocate(0x65452020, activeIndex);
+    for (unsigned int activeIndex = 0; activeIndex < group->DataCountType('eE  '); activeIndex++) {
+        const UData *data = group->DataLocate('eE  ', activeIndex);
         const EventSeqEngine *engine = (EventSeqEngine *)data->GetDataConst();
         UCrc32 nameHash(engine->mName);
 
@@ -88,8 +89,8 @@ static void RegisterEngines(const UGroup *group) {
 }
 
 static void UnregisterEngines(const UGroup *group) {
-    for (unsigned int activeIndex = 0; activeIndex < group->DataCountType(0x65452020); activeIndex++) {
-        const UData *data = group->DataLocate(0x65452020, activeIndex);
+    for (unsigned int activeIndex = 0; activeIndex < group->DataCountType('eE  '); activeIndex++) {
+        const UData *data = group->DataLocate('eE  ', activeIndex);
         const EventSeqEngine *engine = (EventSeqEngine *)data->GetDataConst();
         UCrc32 nameHash(engine->mName);
 

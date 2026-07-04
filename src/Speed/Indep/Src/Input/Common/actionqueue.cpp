@@ -18,8 +18,7 @@ static const int PrintActionQueue = 0;
 bool ActionQueue::sInJoylogFrame = false;
 Timer ActionQueue::mLastAnyActionTime;
 
-UTL::Collections::Listable<ActionQueue, MAX_ACTIONQ>::List
-UTL::Collections::Listable<ActionQueue, MAX_ACTIONQ>::_mTable;
+IMPLEMENT_LISTABLE(ActionQueue, MAX_ACTIONQ)
 
 ActionQueue::ActionQueue(bool required) {
     this->mRequired = required;

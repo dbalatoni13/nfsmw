@@ -65,7 +65,11 @@ enum QueueMode {
 };
 
 class IEngine : public UTL::COM::IUnknown, public UTL::Collections::Instanceable<HENGINE, IEngine, 434> {
-  public:
+public:
+    enum {
+        InstanceLimit = 434
+    };
+
     static HINTERFACE _IHandle() {
         return (HINTERFACE)_IHandle;
     }
