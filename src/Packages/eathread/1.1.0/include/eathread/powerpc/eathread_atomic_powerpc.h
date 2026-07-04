@@ -36,7 +36,7 @@ public:
     AtomicInt<ValueType> &operator=(ValueType n) {}
 
 protected:
-    ValueType mValue; // offset 0x0, size 0x4
+    volatile ValueType mValue; // offset 0x0, size 0x4
 };
 
 // TODO find int32_t

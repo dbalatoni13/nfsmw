@@ -9,7 +9,7 @@ EAThreadDynamicData *AllocateThreadDynamicData() {}
 static const unsigned int kMaxThreadDynamicDataCount = 32;
 
 char gThreadDynamicData[832][kMaxThreadDynamicDataCount] = {0};
-AtomicInt32 gThreadDynamicDataAllocated[kMaxThreadDynamicDataCount];
+AtomicInt<int> gThreadDynamicDataAllocated[kMaxThreadDynamicDataCount];
 
 }
 }

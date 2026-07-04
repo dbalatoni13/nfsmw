@@ -32,11 +32,10 @@ public:
         kResultTimeout = -2,
     };
 
-protected:
-    EASemaphoreData mSemaphoreData; // offset 0x0, size 0x10
-
 public:
     Semaphore() {}
+
+    Semaphore(const struct SemaphoreParameters * pSemaphoreParameters, bool bDefaultParameters);
 
     ~Semaphore();
 
@@ -51,13 +50,11 @@ public:
     void * GetPlatformData() {}
 
 private:
+    Semaphore(int initialCount);
+
     // Semaphore &operator=() {}
 
-public:
-    Semaphore(const struct SemaphoreParameters * pSemaphoreParameters, bool bDefaultParameters);
-
-private:
-    Semaphore(int initialCount);
+    EASemaphoreData mSemaphoreData; // offset 0x0, size 0x10
 };
 
 void ThreadSleep(const ThreadTime &timeout);

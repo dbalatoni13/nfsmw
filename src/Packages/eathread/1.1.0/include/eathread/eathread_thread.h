@@ -3,8 +3,8 @@
 
 #include "dolphin/os/OSThread.h"
 #include "eathread/powerpc/eathread_atomic_powerpc.h"
+#include <stdint.h>
 
-typedef int intptr_t;
 typedef unsigned long long ThreadId;
 
 namespace EA {
@@ -27,7 +27,7 @@ struct EAThreadDynamicData {
     bool mbFunctionOrRunnable; // offset 0x32C, size 0x1, Decl: speed/indep/libs/eathread/1.09.00/include/eathread/eathread_thread.h:83
     void * mpStack; // offset 0x330, size 0x4, Decl: speed/indep/libs/eathread/1.09.00/include/eathread/eathread_thread.h:85
     void * mpAllocatedStack; // offset 0x334, size 0x4, Decl: speed/indep/libs/eathread/1.09.00/include/eathread/eathread_thread.h:86
-    AtomicInt32 mnRefCount; // offset 0x338, size 0x4, Decl: speed/indep/libs/eathread/1.09.00/include/eathread/eathread_thread.h:88
+    AtomicInt<int> mnRefCount; // offset 0x338, size 0x4, Decl: speed/indep/libs/eathread/1.09.00/include/eathread/eathread_thread.h:88
 };
 
 }

@@ -2,15 +2,13 @@
 #include "dolphin/os.h"
 #include "dolphin/os/OSSemaphore.h"
 #include "dolphin/os/OSThread.h"
+#include "eathread/powerpc/eathread_atomic_powerpc.h"
 #include <cstddef>
-// #include <cstring>
 
+// TODO
 extern "C" void *memset(void *, int, size_t, ...);
 
-EASemaphoreData::EASemaphoreData() {
-    memset(this, 0, sizeof(int) * 3);
-    this->mnCount = AtomicInt<int>(0);
-}
+EASemaphoreData::EASemaphoreData() : mSemaphore(), mnCount(0) {}
 
 namespace EA {
 namespace Thread {
