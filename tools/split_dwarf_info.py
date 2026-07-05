@@ -230,6 +230,20 @@ def _split_code_comment(line: str) -> tuple[str, str]:
     return line[:index].rstrip(), line[index:].strip()
 
 
+def _is_top_level_inline_func(line: str) -> bool:
+    stripped = line.strip()
+    return (
+        bool(stripped)
+        and not line[0].isspace()
+        and "inline" in stripped
+        and "{" in stripped
+        and "(" in stripped
+        and ")" in stripped
+        and ";" not in stripped
+        and not stripped.startswith("typedef")
+    )
+
+
 def _initializer_index(code: str) -> int:
     depth = 0
     for index, char in enumerate(code):
@@ -470,9 +484,14 @@ def extract_function_blocks(lines: list[str], exclude_stripped: bool) -> list[st
     in_block = False
     brace_depth = 0
     skip = False
+    pending_decl: str | None = None
 
     for line in lines:
+        stripped = line.strip()
         if not in_block:
+            if re_decl_comment.match(line):
+                pending_decl = line
+                continue
             m = re_func_range.match(line)
             if m:
                 start, end = m.group(1).upper(), m.group(2).upper()
@@ -482,6 +501,20 @@ def extract_function_blocks(lines: list[str], exclude_stripped: bool) -> list[st
                 current = [line]
                 in_block = True
                 brace_depth = 0
+                pending_decl = None
+                continue
+            if _is_top_level_inline_func(line):
+                current = ([pending_decl] if pending_decl else []) + [line]
+                in_block = True
+                brace_depth = line.count("{") - line.count("}")
+                skip = False
+                pending_decl = None
+                if brace_depth == 0 and "}" in line:
+                    blocks.append("".join(current))
+                    in_block = False
+                continue
+            if stripped:
+                pending_decl = None
             continue
         current.append(line)
         brace_depth += line.count("{") - line.count("}")
