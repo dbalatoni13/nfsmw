@@ -73,7 +73,8 @@ void Update(float externalTime) {
 }
 
 void UpdateDelta(float deltaTime) {
-    if (deltaTime <= 0.0f) return;
+    if (deltaTime <= 0.0f)
+        return;
 
     Update(gLastUpdateTime + deltaTime);
 }
@@ -81,7 +82,7 @@ void UpdateDelta(float deltaTime) {
 static void RegisterEngines(const UGroup *group) {
     for (unsigned int activeIndex = 0; activeIndex < group->DataCountType('eE  '); activeIndex++) {
         const UData *data = group->DataLocate('eE  ', activeIndex);
-        const EventSeqEngine *engine = (EventSeqEngine *)data->GetDataConst();
+        const EventSeqEngine *engine = static_cast<const EventSeqEngine *>(data->GetDataConst());
         UCrc32 nameHash(engine->mName);
 
         gEngineData[nameHash] = data;
@@ -91,7 +92,7 @@ static void RegisterEngines(const UGroup *group) {
 static void UnregisterEngines(const UGroup *group) {
     for (unsigned int activeIndex = 0; activeIndex < group->DataCountType('eE  '); activeIndex++) {
         const UData *data = group->DataLocate('eE  ', activeIndex);
-        const EventSeqEngine *engine = (EventSeqEngine *)data->GetDataConst();
+        const EventSeqEngine *engine = static_cast<const EventSeqEngine *>(data->GetDataConst());
         UCrc32 nameHash(engine->mName);
 
         gEngineData.erase(nameHash);
@@ -142,4 +143,4 @@ static bool EraseActiveSystem(unsigned int index) {
     return false;
 }
 
-}
+} // namespace EventSequencer

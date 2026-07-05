@@ -892,6 +892,8 @@ void SuspensionSimple::DoWheelForces(State &state) {
     }
 
     float steerdrag_reduction = 0.5f;
+// TODO PS2
+#ifndef EA_PLATFORM_PLAYSTATION2
     if (state.driver_class == 3 && state.driver_style != 1) {
         float cheat;
         if (this->mCheater != nullptr) {
@@ -901,6 +903,7 @@ void SuspensionSimple::DoWheelForces(State &state) {
         }
         steerdrag_reduction = UMath::Lerp(0.23f, 0.5f, cheat);
     }
+#endif
 
     unsigned int wheelsOnGround = 0;
     float maxDelta = 0.0f;

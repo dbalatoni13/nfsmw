@@ -291,6 +291,11 @@ inline void VU0_MATRIX4_vect3mult(const UMath::Vector3 &v, const UMath::Matrix4 
                      : "o"(v), "r"(&m));
 }
 
+// TODO
+inline float VU0_ASin(float x) {
+    return asinf(x) / (float)M_TWOPI;
+}
+
 #else
 
 inline float VU0_Sin(float x) {

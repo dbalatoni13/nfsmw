@@ -95,6 +95,9 @@ class System {
     enum {
         kQueueLength = 4,
     };
+
+    friend void Update(float externalTime);
+
     unsigned int ID() const;
 
     IContext *GetContext() const;
@@ -161,6 +164,23 @@ class System {
     unsigned int mQueueEndState;    // offset 0x28, size 0x4, Decl: speed/indep/tools/eventsys/runtime/common/../eventsequencer.h:387
     float mQueueDuration;           // offset 0x2C, size 0x4
     unsigned int mQueuedStimuli[4]; // offset 0x30, size 0x10, Decl: speed/indep/tools/eventsys/runtime/common/../eventsequencer.h:390
+};
+
+struct EventSeqEngine {
+    char *mName;        // offset 0x0, size 0x4
+    uint32 mNumSystems; // offset 0x4, size 0x4
+
+    // unsigned int * GetSystemIDs() {}
+
+    // struct EventSeqSystem * * GetSystems() {}
+
+    // const unsigned int FindSystemIndex(unsigned int ident) const {}
+
+    // const struct EventSeqSystem * FindSystem(unsigned int ident) const {}
+
+    // const unsigned int * GetSystemIDs() const {}
+
+    // const struct EventSeqSystem * const * GetSystems() const {}
 };
 
 void UpdateDelta(float deltaTime);
