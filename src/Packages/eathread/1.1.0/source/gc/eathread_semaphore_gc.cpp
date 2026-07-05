@@ -5,9 +5,6 @@
 #include "eathread/powerpc/eathread_atomic_powerpc.h"
 #include <cstddef>
 
-// TODO
-extern "C" void *memset(void *, int, size_t, ...);
-
 EASemaphoreData::EASemaphoreData() : mSemaphore(), mnCount(0) {}
 
 namespace EA {
