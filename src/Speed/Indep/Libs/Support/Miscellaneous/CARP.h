@@ -140,6 +140,27 @@ struct EventSeqSystem {
     uint32 mNumStates;    // offset 0x8, size 0x4
 };
 
+struct EventSeqEngine {
+    unsigned int * GetSystemIDs() {}
+
+    EventSeqSystem **GetSystems() {}
+
+    const unsigned int FindSystemIndex(unsigned int ident) const {}
+
+    const EventSeqSystem *FindSystem(unsigned int ident) const {}
+
+    const unsigned int *GetSystemIDs() const {
+        return &this->mNumSystems + 1;
+    }
+
+    const EventSeqSystem *const *GetSystems() const {
+        return reinterpret_cast<const EventSeqSystem *const *>(&this->GetSystemIDs()[this->mNumSystems]);
+    }
+
+    const char *mName; // offset 0x0, size 0x4
+    uint32 mNumSystems; // offset 0x4, size 0x4
+};
+
 // total size: 0x4
 struct TagReference {
     unsigned int fData; // offset 0x0, size 0x4

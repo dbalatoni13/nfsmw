@@ -11,3 +11,5 @@
 #include "Speed/Indep/Libs/Support/Utility/FastMem.cpp"
 
 #include "Speed/Indep/Libs/Support/Utility/UVectorMath.cpp"
+
+#include "Speed/Indep/Libs/Support/Miscellaneous/Carp.cpp"

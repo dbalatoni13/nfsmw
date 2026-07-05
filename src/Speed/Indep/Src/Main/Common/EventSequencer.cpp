@@ -5,6 +5,7 @@
 #include "Speed/Indep/Libs/Support/Utility/UCrc.h"
 #include "Speed/Indep/Libs/Support/Utility/UGroup.hpp"
 
+#include <cstddef>
 #include <map>
 
 inline void *operator new(std::size_t, void *place, unsigned int) {
@@ -82,7 +83,7 @@ void UpdateDelta(float deltaTime) {
 static void RegisterEngines(const UGroup *group) {
     for (unsigned int activeIndex = 0; activeIndex < group->DataCountType('eE  '); activeIndex++) {
         const UData *data = group->DataLocate('eE  ', activeIndex);
-        const EventSeqEngine *engine = static_cast<const EventSeqEngine *>(data->GetDataConst());
+        const CARP::EventSeqEngine *engine = static_cast<const CARP::EventSeqEngine *>(data->GetDataConst());
         UCrc32 nameHash(engine->mName);
 
         gEngineData[nameHash] = data;
@@ -92,7 +93,7 @@ static void RegisterEngines(const UGroup *group) {
 static void UnregisterEngines(const UGroup *group) {
     for (unsigned int activeIndex = 0; activeIndex < group->DataCountType('eE  '); activeIndex++) {
         const UData *data = group->DataLocate('eE  ', activeIndex);
-        const EventSeqEngine *engine = static_cast<const EventSeqEngine *>(data->GetDataConst());
+        const CARP::EventSeqEngine *engine = static_cast<const CARP::EventSeqEngine *>(data->GetDataConst());
         UCrc32 nameHash(engine->mName);
 
         gEngineData.erase(nameHash);
@@ -108,7 +109,17 @@ static const UData *FindEngineData(UCrc32 name) {
     return nullptr;
 }
 
-IEngine *Create(UTL::COM::Object *baseObject, IContext *context, const UData *data, float externalTime, float rate);
+// unfinished
+IEngine *Create(UTL::COM::Object *baseObject, IContext *context, const UData *data, float externalTime, float rate) {
+    Engine *e = new Engine(baseObject, context, static_cast<const CARP::EventSeqEngine *>(data->GetDataConst()), externalTime, rate);
+
+    e->ProcessStimulus(gCreateStimulus, externalTime, nullptr, QUEUE_ALLOW);
+
+    if (e != NULL) {
+        return e;
+    }
+    return NULL;
+}
 
 IEngine *Create(UTL::COM::Object *baseObject, IContext *context, UCrc32 name, float externalTime, float rate) {
     const UData *data = FindEngineData(UCrc32(name));

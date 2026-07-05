@@ -1,8 +1,12 @@
 #ifndef MAIN_EVENTSEQUENCER_H
 #define MAIN_EVENTSEQUENCER_H
 
+#include "Speed/Indep/Libs/Support/Utility/FastMem.h"
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
+
 #include "Speed/Indep/Libs/Support/Miscellaneous/CARP.h"
-#include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Libs/Support/Utility/UCollections.h"
 #include "Speed/Indep/Libs/Support/Utility/UCrc.h"
@@ -96,9 +100,12 @@ class System {
         kQueueLength = 4,
     };
 
+    System(EventSequencer::Engine *engine, const CARP::EventSeqSystem *system, float externalTime, float rate);
+
     friend void Update(float externalTime);
 
     unsigned int ID() const;
+
 
     IContext *GetContext() const;
     IEngine *GetEngine() const;
@@ -131,7 +138,6 @@ class System {
     bool FireEventTag(unsigned int tag, IContext *ifiringcontext) const;
 
   private:
-    System(EventSequencer::Engine *engine, const CARP::EventSeqSystem *system, float externalTime, float rate);
     ~System();
 
     bool Update(unsigned int index, float externalTime);
@@ -166,21 +172,54 @@ class System {
     unsigned int mQueuedStimuli[4]; // offset 0x30, size 0x10, Decl: speed/indep/tools/eventsys/runtime/common/../eventsequencer.h:390
 };
 
-struct EventSeqEngine {
-    char *mName;        // offset 0x0, size 0x4
-    uint32 mNumSystems; // offset 0x4, size 0x4
+class Engine : public UTL::COM::Object, public IEngine {
+public:
+    USE_FASTALLOC(Engine)
 
-    // unsigned int * GetSystemIDs() {}
+    Engine(
+        UTL::COM::Object *baseObj,
+        IContext *context,
+        const CARP::EventSeqEngine *engineData,
+        float externalTime,
+        float rate
+    ) : UTL::COM::Object(*baseObj), IEngine(baseObj) {
+        void *block;
+        const CARP::EventSeqSystem *const *sysData = engineData->GetSystems();
 
-    // struct EventSeqSystem * * GetSystems() {}
+        this->mContext = context;
+        this->mEngine = const_cast<CARP::EventSeqEngine *>(engineData);
+        this->mVerbose = false;
+        this->mNumSystems = engineData->mNumSystems;
 
-    // const unsigned int FindSystemIndex(unsigned int ident) const {}
+        new (this->mEngine) System(this, sysData[engineData->mNumSystems], externalTime, rate);
 
-    // const struct EventSeqSystem * FindSystem(unsigned int ident) const {}
+        for (unsigned int i = 0; i < engineData->mNumSystems; i++) {
+            new (&this->mSystems[i]) System(this, sysData[i], externalTime, rate);
+        }
+    }
 
-    // const unsigned int * GetSystemIDs() const {}
+    // ~Engine() override {}
 
-    // const struct EventSeqSystem * const * GetSystems() const {}
+    // void Release() override {}
+
+    // const char *Name() const override {}
+
+    // void Relocate(unsigned int deltaAddress) override {}
+
+    // void Unload() override {}
+
+    // IContext *GetContext() const override {}
+
+    // void SetContext(IContext *context) override {}
+
+    // unsigned int NumSystems() const override {}
+
+private:
+    CARP::EventSeqEngine *mEngine;    // offset 0x1C, size 0x4
+    IContext *mContext;         // offset 0x20, size 0x4
+    System *mSystems;           // offset 0x24, size 0x4
+    unsigned int mNumSystems;   // offset 0x28, size 0x4
+    bool mVerbose;              // offset 0x2C, size 0x1
 };
 
 void UpdateDelta(float deltaTime);
