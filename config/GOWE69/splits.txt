@@ -244,7 +244,7 @@ Speed/Indep/SourceLists/zFeOverlay.cpp:
 
 asd2:
 	.text       start:0x8030EB08 end:0x8031F4C0
-	.ctors      start:0x803C8BE8 end:0x803C8C20
+	.ctors      start:0x803C8BE8 end:0x803C8C1C
 	.dtors      start:0x803C8C44 end:0x803C8C5C
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/base/PPCArch.c:
@@ -1445,6 +1445,13 @@ Speed/GameCube/bWare/GameCube/dolphinsdk/src/card/CARDDelete.c:
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/card/CARDStat.c:
 	.text       start:0x803A2910 end:0x803A2DD8
+
+Packages/eathread/1.1.0/source/eathread_semaphore.cpp:
+	.text       start:0x803A2DD8 end:0x803A3058
+
+Packages/eathread/1.1.0/source/eathread_thread.cpp:
+	.text       start:0x803A3058 end:0x803A30AC
+	.ctors      start:0x803C8C1C end:0x803C8C20
 
 Packages/snd/9/source/library/cmn/sbpatinf.c:
 	.text       start:0x803A30AC end:0x803A3190
