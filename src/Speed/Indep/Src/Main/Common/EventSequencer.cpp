@@ -14,18 +14,23 @@ inline void *operator new(std::size_t, void *place, unsigned int) {
 
 // unfinished
 static CARP::ExprValType StimulusFilterLookup(unsigned int name, unsigned int subindex, const void *context, const CARP::ExprValType *value) {
-    CARP::ExprValType result = *value;
+    CARP::ExprValType result;
     const CARP::StimulusFilter *sf = reinterpret_cast<const CARP::StimulusFilter *>(context);
     unsigned int index = SearchPackedBinaryTree<const QueryDesc, unsigned int>(sf->mNumQueries, sf->GetQueries(), name);
 
-    if (index < value->u && (unsigned int)context < value->u) {
-        const QueryDesc *qDesc = sf->GetQueries() + index;
-        result.u = qDesc->mDataOffset;
-    } else {
+    if (index < sf->mNumQueries) {
+        const QueryDesc *qDesc = &sf->GetQueries()[index];
+        if (subindex < qDesc->mCount) {
+            return value[qDesc->mIndex + subindex];
+        }
+
         result.u = 0;
+        return result;
     }
 
+    result.u = 0;
     return result;
+
 }
 
 IMPLEMENT_INSTANCABLE(EventSequencer::HENGINE, EventSequencer::IEngine)
