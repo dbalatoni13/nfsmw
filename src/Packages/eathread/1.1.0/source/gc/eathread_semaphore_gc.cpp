@@ -26,7 +26,7 @@ Semaphore::~Semaphore() {}
 
 bool Semaphore::Init(const SemaphoreParameters *parameters) {
     if (parameters != NULL) {
-        OSInitSemaphore((OSSemaphore *)&this->mSemaphoreData, parameters->mInitialCount);
+        OSInitSemaphore(&this->mSemaphoreData.mSemaphore, parameters->mInitialCount);
         return true;
     } else {
         return false;
@@ -36,13 +36,13 @@ bool Semaphore::Init(const SemaphoreParameters *parameters) {
 int Semaphore::Wait(const ThreadTime &timeoutAbsolute) {
     int nLastCount;
     if (timeoutAbsolute == -1) {
-        nLastCount = OSWaitSemaphore((OSSemaphore *)&this->mSemaphoreData);
+        nLastCount = OSWaitSemaphore(&this->mSemaphoreData.mSemaphore);
     } else if (timeoutAbsolute == 0) {
-        nLastCount = OSTryWaitSemaphore((OSSemaphore *)&this->mSemaphoreData);
+        nLastCount = OSTryWaitSemaphore(&this->mSemaphoreData.mSemaphore);
         if (nLastCount < 0) return -2;
     } else {
         const unsigned int nTimeout = GetThreadTime() + timeoutAbsolute;
-        while ((nLastCount = OSTryWaitSemaphore((OSSemaphore *)&this->mSemaphoreData)) < 0 && GetThreadTime() < nTimeout) {
+        while ((nLastCount = OSTryWaitSemaphore(&this->mSemaphoreData.mSemaphore)) < 0 && GetThreadTime() < nTimeout) {
             ThreadSleep(1);
         }
         if (nLastCount < 0) return -2;
@@ -53,7 +53,7 @@ int Semaphore::Wait(const ThreadTime &timeoutAbsolute) {
 int Semaphore::Post(int count) {
     int nLastCount = this->mSemaphoreData.mSemaphore.count;
     while (count-- > 0) {
-        nLastCount = OSSignalSemaphore((OSSemaphore *)&this->mSemaphoreData);
+        nLastCount = OSSignalSemaphore(&this->mSemaphoreData.mSemaphore);
     }
 
     return ++nLastCount;
