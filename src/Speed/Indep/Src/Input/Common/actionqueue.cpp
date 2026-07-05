@@ -1,4 +1,5 @@
 #include "Speed/Indep/Src/Input/ActionQueue.h"
+#include "Speed/Indep/Libs/Support/Utility/UListable.h"
 #include "Speed/Indep/Libs/Support/Utility/UStandard.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/controller.h"
 #include "Speed/Indep/Src/Input/Action.h"
@@ -17,7 +18,7 @@ static const int PrintActionQueue = 0;
 bool ActionQueue::sInJoylogFrame = false;
 Timer ActionQueue::mLastAnyActionTime;
 
-ActionQueue::List ActionQueue::_mTable;
+IMPLEMENT_LISTABLE(ActionQueue, MAX_ACTIONQ)
 
 ActionQueue::ActionQueue(bool required) {
     this->mRequired = required;
@@ -165,7 +166,7 @@ void ActionQueue::FetchCurrentValues(InputDevice *device) {
 }
 
 ActionQueue *ActionQueue::FindActionQueue(int id) {
-    for (ActionQueue *const *iter = _mTable.begin(); iter != _mTable.end(); iter++) {
+    for (ActionQueue *const *iter = ActionQueue::GetList().begin(); iter != ActionQueue::GetList().end(); iter++) {
         ActionQueue *q = *iter;
 
         if (q->mUniqueID == id) {

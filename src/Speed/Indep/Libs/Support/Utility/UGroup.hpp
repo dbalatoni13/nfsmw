@@ -74,6 +74,7 @@ class UGroup {
         bool mSkipGroups; // offset 0x4, size 0x1
     };
 
+    static const UGroup *Deserialize(const void *serializedData, bool resolveOffsets, unsigned int deltaAddress);
     static const UGroup *Deserialize(unsigned int numParts, const unsigned int *dataLengths, const void **serializedData, unsigned int deltaAddress);
     unsigned int GroupCountType(unsigned int type) const;
     const UGroup *GroupLocateFirst(unsigned int type, unsigned int baseIndex, unsigned int maxIndex) const;

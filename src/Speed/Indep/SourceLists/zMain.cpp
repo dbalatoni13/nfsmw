@@ -11,3 +11,5 @@
 #include "Speed/Indep/Src/Math/Common/SimRandom.cpp"
 
 #include "Speed/Indep/Src/Main/Common/Event.cpp"
+
+#include "Speed/Indep/Src/Main/Common/EventSequencer.cpp"

@@ -89,8 +89,6 @@ public:
     USE_FASTALLOC(ActionQueue)
 
 private:
-    static ActionQueue::List _mTable;
-
     UCircularQueue<ActionData, 50> fQueue; // offset 0x4, size 0x268
 
     void IO_SetConnected(bool plugged);
