@@ -1112,14 +1112,6 @@ struct AABB {
     }
 };
 
-inline float PTDir(const UMath::Vector3 &vert, const UMath::Vector3 &p0, const UMath::Vector3 &p1) {
-    float x0 = vert.x - p0.x;
-    float z0 = vert.z - p0.z;
-    float x1 = p1.x - p0.x;
-    float z1 = p1.z - p0.z;
-    return x1 * z0 - x0 * z1;
-}
-
 inline float PtDir(const UMath::Vector3 &p1, const UMath::Vector3 &p2, const UMath::Vector3 &p3) {
     return (p2.x - p3.x) * (p1.z - p3.z) - (p1.x - p3.x) * (p2.z - p3.z);
 }
