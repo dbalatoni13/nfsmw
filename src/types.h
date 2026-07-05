@@ -39,6 +39,9 @@ typedef unsigned int type_operator_new;
 typedef int BOOL;
 typedef bool Bool;
 
+#define TRUE 1
+#define FALSE 0
+
 #if !defined(__cplusplus) || __cplusplus < 201103L
 
 #ifndef nullptr

@@ -3,7 +3,7 @@
 
 #include "dolphin/os/OSThread.h"
 #include "eathread/powerpc/eathread_atomic_powerpc.h"
-#include <stdint.h>
+#include "types.h"
 
 typedef unsigned long long ThreadId;
 

@@ -311,7 +311,6 @@ class RBTrailer : public RBVehicle {
 
   protected:
     RBTrailer(const BehaviorParams &bp, const RBComplexParams &params);
-    ~RBTrailer() override;
 
     // RigidBody
     void ModifyCollision(const RigidBody &other, const Dynamics::Collision::Plane &plane, Dynamics::Collision::Moment &myMoment) override;

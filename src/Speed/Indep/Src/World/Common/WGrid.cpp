@@ -128,7 +128,6 @@ void WGrid::FindNodes(const UMath::Vector4 *seg, UTL::Vector<unsigned int, 16> &
     UMath::Vector2 points[2];
     bool bStartPosOut;
     bool bEndPosOut;
-    float fLength;
 
     points[0].x = seg[0].x;
     points[0].y = seg[0].z;
@@ -167,8 +166,6 @@ void WGrid::FindNodes(const UMath::Vector4 *seg, UTL::Vector<unsigned int, 16> &
             float fBarrierPosY;
             float fRevDirX = -fDirX;
             float fRevDirY = -fDirY;
-            float fBarrierDistX;
-            float fBarrierDistY;
 
             if (fRevDirX > 0.0f) {
                 fBarrierPosX = static_cast<float>(fNumCols) * fEdgeSize + fMin.x - 0.1f;
@@ -181,8 +178,8 @@ void WGrid::FindNodes(const UMath::Vector4 *seg, UTL::Vector<unsigned int, 16> &
                 fBarrierPosY = fMin.z + 0.1f;
             }
 
-            fBarrierDistX = (fBarrierPosX - points[1].x) / fRevDirX;
-            fBarrierDistY = (fBarrierPosY - points[1].y) / fRevDirY;
+            float fBarrierDistX = (fBarrierPosX - points[1].x) / fRevDirX;
+            float fBarrierDistY = (fBarrierPosY - points[1].y) / fRevDirY;
 
             if (fBarrierDistX < fBarrierDistY) {
                 points[0].x = fBarrierPosX;
@@ -198,23 +195,21 @@ void WGrid::FindNodes(const UMath::Vector4 *seg, UTL::Vector<unsigned int, 16> &
     } else {
         if (bEndPosOut) {
             float fBarrierPosX;
-            float fBarrierPosY;
-            float fBarrierDistX;
-            float fBarrierDistY;
-
             if (fDirX > 0.0f) {
                 fBarrierPosX = static_cast<float>(fNumCols) * fEdgeSize + fMin.x - 0.1f;
             } else {
                 fBarrierPosX = fMin.x + 0.1f;
             }
+
+            float fBarrierPosY;
             if (fDirY > 0.0f) {
                 fBarrierPosY = static_cast<float>(fNumRows) * fEdgeSize + fMin.z - 0.1f;
             } else {
                 fBarrierPosY = fMin.z + 0.1f;
             }
 
-            fBarrierDistX = (fBarrierPosX - points[0].x) / fDirX;
-            fBarrierDistY = (fBarrierPosY - points[0].y) / fDirY;
+            float fBarrierDistX = (fBarrierPosX - points[0].x) / fDirX;
+            float fBarrierDistY = (fBarrierPosY - points[0].y) / fDirY;
 
             if (fBarrierDistX < fBarrierDistY) {
                 points[1].x = fBarrierPosX;
@@ -232,7 +227,7 @@ void WGrid::FindNodes(const UMath::Vector4 *seg, UTL::Vector<unsigned int, 16> &
     nodeIndList.push_back(GetNodeInd(iStartPosY, iStartPosX));
     iNumNodes = 1;
 
-    fLength = UMath::Sqrt(fDirX * fDirX + fDirY * fDirY);
+    float fLength = UMath::Sqrt(fDirX * fDirX + fDirY * fDirY);
 
     // TODO only one push back call here
     if (fLength <= fEdgeSize) {

@@ -281,10 +281,14 @@ void EngineSpline::Reset() {
 }
 
 // STRIPPED
-float EngineSpline::GetGearMaxAV(int whichGear) {}
+float EngineSpline::GetGearMaxAV(int whichGear) {
+    return 0.0f;
+}
 
 // STRIPPED
-float EngineSpline::GetAVRpmRatio(int whichGear) {}
+float EngineSpline::GetAVRpmRatio(int whichGear) {
+    return 0.0f;
+}
 
 float EngineSpline::GetTorquePoint(float rpm) const {
     float ftlbs = Physics::Info::Torque(this->mEngineInfo, rpm);

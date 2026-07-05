@@ -1426,7 +1426,7 @@ void RigidBody::DoObbCollision(float dT) {
     Dynamics::Collision::Geometry otherGeom;
     const WCollisionObjectList &obbObjectList = this->mWCollider->GetObbList();
 
-    for (const WCollisionObject *const *it = obbObjectList.begin(); it != obbObjectList.end(); ++it) {
+    for (WCollisionObjectList::const_iterator it = obbObjectList.begin(); it != obbObjectList.end(); ++it) {
         const WCollisionObject &obbObject = **it;
         UMath::Vector3 objectVel;
         WSurface surface;
