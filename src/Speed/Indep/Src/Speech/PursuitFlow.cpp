@@ -1,6 +1,7 @@
 #include "PursuitFlow.h"
 #include "SoundAI.h"
 #include "Speed/Indep/Src/EAXSound/Stream/SpeechManager.hpp"
+#include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Generated/Messages/MNotifySpeechStatus.h"
 
 namespace Speech {
@@ -106,16 +107,15 @@ bool PursuitFlow::RequiresRestart() {
 
 void PursuitFlow::CloseInCheck() {
     SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
-    if (!ai) {
-        return;
-    }
+    const copMap &cops = ai->GetActors();
 
-    if ((ai->GetPursuitState() == SoundAI::kInactive) || ai->GetActors().empty()) {
+    if ((ai->GetPursuitState() == SoundAI::kInactive) || (cops.size() == 0)) {
         Reset();
         return;
     }
 
-    if (!ai->GetPursuit()) {
+    IPursuit *pursuit = ai->GetPursuit();
+    if (!pursuit) {
         return;
     }
 
@@ -123,7 +123,10 @@ void PursuitFlow::CloseInCheck() {
         return;
     }
 
-    if (ai->GetRecentBlowby().distance < ai->GetTune().RangeForSpotterBranch()) {
+    SoundAI::BlowByRecord &recent = ai->GetRecentBlowby();
+    float lastblowby = (WorldTimer - recent.timestamp).GetSeconds();
+    if ((recent.distance < ai->GetTune().RangeForSpotterBranch()) && (recent.speed >= ai->GetTune().SpeedDiffForBlowby()) &&
+        (lastblowby < ai->GetTune().BlowbyInterval()) && (35.0f <= ai->GetPlayerSpeed()) && !ai->AreCopsAhead()) {
         mCauseofPursuit = kSpotted;
     }
 
@@ -131,17 +134,34 @@ void PursuitFlow::CloseInCheck() {
         mCauseofPursuit = k911Reported;
     }
 
-    if (ai->GetTimeLastNailedCop() < 10.0f) {
+    bool pursuitRace = false;
+    if (GRaceStatus::Get().GetRaceParameters()) {
+        pursuitRace = GRaceStatus::Get().GetRaceParameters()->GetIsPursuitRace();
+    }
+    if (pursuitRace) {
+        mCauseofPursuit = kScripted;
+    }
+
+    bool officer_assaulted = ai->GetTimeLastNailedCop() < 10.0f;
+    if (officer_assaulted && (mCauseofPursuit != kScripted)) {
         mCauseofPursuit = kCopAssaulted;
     }
 
-    if (mCauseofPursuit == kSpotted) {
+    switch (mCauseofPursuit) {
+    case kSpotted:
         ChangeStateTo(kSpotterBranch);
-    } else if ((mCauseofPursuit == k911Reported) || (mCauseofPursuit == kCopAssaulted) || (mCauseofPursuit == kCopAssaultedScripted) ||
-               (mCauseofPursuit == kReacquired)) {
+        break;
+    case k911Reported:
+        ChangeStateTo(kWaitForSpotter);
+        break;
+    case kCopAssaulted:
+    case kCopAssaultedScripted:
+    case kUnknown:
         ChangeStateTo(kPrimaryBranch);
-    } else {
+        break;
+    default:
         ChangeStateTo(kScriptedBranch);
+        break;
     }
 }
 
@@ -253,9 +273,6 @@ void PursuitFlow::PrimaryBranch() {
 
 void PursuitFlow::PlayerStopped() {
     SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
-    if (!ai) {
-        return;
-    }
 
     if (ai->GetPursuitState() == SoundAI::kInactive) {
         ChangeStateTo(kBailout);
@@ -268,21 +285,31 @@ void PursuitFlow::PlayerStopped() {
     }
 
     if (!mBusy) {
-        if ((ai->GetTune().MinTimeConsideredStopped() < ai->GetPlayerStopTime()) && ai->GetLeader()) {
+        if ((Manager::HasBeenSaid(static_cast<SPCHType_1_EventID>(0x9a)) ||
+             Manager::IsCopSpeechPlaying(static_cast<SPCHType_1_EventID>(0x9a)) ||
+             Manager::HasBeenSaid(static_cast<SPCHType_1_EventID>(0x3a)) ||
+             Manager::IsCopSpeechPlaying(static_cast<SPCHType_1_EventID>(0x3a)) ||
+             Manager::HasBeenSaid(static_cast<SPCHType_1_EventID>(0x3b)) ||
+             Manager::IsCopSpeechPlaying(static_cast<SPCHType_1_EventID>(0x3b)) ||
+             Manager::HasBeenSaid(static_cast<SPCHType_1_EventID>(0xae)) ||
+             Manager::IsCopSpeechPlaying(static_cast<SPCHType_1_EventID>(0xae))) &&
+            ((1.0f < ai->GetPlayerStopTime()) || (ai->GetPlayerSpeed() < 10.0f)) && ai->GetLeader()) {
             ai->GetLeader()->AttemptVehicleStop();
             mBusy++;
-            return;
         }
-        ChangeStateTo(kTransition);
+    } else if ((ai->GetPlayerStopTime() >= ai->GetTune().MinTimeConsideredStopped()) && ai->GetLeader()) {
+        ai->GetLeader()->AttemptVehicleStop();
+        ChangeStateTo(kTerminal);
         mBusy = 0;
         return;
     }
 
-    if ((ai->GetTune().MinTimeConsideredStopped() <= ai->GetPlayerStopTime()) && ai->GetLeader()) {
-        ai->GetLeader()->AttemptVehicleStop();
-        ChangeStateTo(kTerminal);
-        mBusy = 0;
+    if (mBusy) {
+        return;
     }
+
+    ChangeStateTo(kTransition);
+    mBusy = 0;
 }
 
 void PursuitFlow::SpotterBranch() {

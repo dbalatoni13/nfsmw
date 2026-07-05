@@ -262,10 +262,11 @@ void EAXDispatch::PursuitEscalationGeneric() {
 
     if (ai) {
         data.speaker_id = mSpeakerID;
-        data.num_suspects = Csis::Type_num_suspects_one_suspect;
+        register int num_suspects = Csis::Type_num_suspects_one_suspect;
         if (ai->AreRacersNearby()) {
-            data.num_suspects = Csis::Type_num_suspects_multiple_suspects;
+            num_suspects = Csis::Type_num_suspects_multiple_suspects;
         }
+        data.num_suspects = num_suspects;
         ScheduleSpeech(data, Csis::AnytimeEvents_DispPursEscGenId, Csis::gAnytimeEvents_DispPursEscGenHandle, this);
     }
 }

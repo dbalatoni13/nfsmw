@@ -13,6 +13,7 @@
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/audiosystem.h"
 #include "Speed/Indep/Src/EAXSound/snd_gen/copspeech.hpp"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/speech.h"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/speechtune.h"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Generated/Messages/MNotifyCellCallComplete.h"
 #include "Speed/Indep/Src/Generated/Messages/MNotifyCellCallStarted.h"
@@ -21,6 +22,7 @@
 #include "Speed/Indep/Src/Misc/Config.h"
 #include "Speed/Indep/Src/Misc/bFile.hpp"
 #include "Speed/Indep/Src/Misc/QueuedFile.hpp"
+#include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Src/Speech/SpeechFlow.h"
 #include "Speed/Indep/Src/Speech/SoundAI.h"
 #include "Speed/Indep/Src/World/TrackStreamer.hpp"
@@ -822,14 +824,23 @@ int Manager::GetTicker() {
 }
 
 void Manager::PopulateHashMap() {
-    for (int i = 0; i < sQueuedEventCount; ++i) {
-        ScheduledSpeechEvent *evt = sQueuedEvents[i];
-        if (!evt) {
-            continue;
+    if (mHashMap.size() == 0) {
+        const Attrib::Class *speechevents = Attrib::Database::Get().GetClass(0xc593dd47);
+        unsigned int eventkey = speechevents->GetFirstCollection();
+        while (eventkey != 0) {
+            Attrib::Gen::speech event_collection(eventkey, 0, 0);
+            SPCHType_1_EventID id = event_collection.SpeechID();
+            mHashMap.Add(eventkey, id);
+            eventkey = speechevents->GetNextCollection(eventkey);
         }
-        if (evt->priority > 0xFE) {
-            evt->priority = 0xFE;
-        }
+    }
+
+    for (unsigned int i = 0; i < mHashMap.size(); ++i) {
+        SpeechEventPair &data = mHashMap[i];
+        SPCHType_1_EventID test_id = mHashMap.GetID(data.hash);
+        unsigned int test_hash = mHashMap.GetHash(data.id);
+        (void)test_id;
+        (void)test_hash;
     }
 }
 
@@ -1099,13 +1110,20 @@ bool Manager::IsQueued(SPCHType_1_EventID evtID, int indices) {
 }
 
 float Manager::IsEventDead(ScheduledSpeechEvent *evt) {
-    if (!evt) {
-        return 1.0f;
+    Attrib::Gen::speech event(mHashMap.GetHash(evt->ID), 0, 0);
+    float enforce_time = event.EnforceDeadAir();
+    if (enforce_time > 0.0f) {
+        float elapsed = (WorldTimer - evt->finish_time).GetSeconds();
+        float remaining;
+        if (elapsed < enforce_time) {
+            remaining = enforce_time - elapsed;
+        } else {
+            remaining = -1.0f;
+        }
+        return remaining;
     }
-    if ((evt->flags & 1) != 0) {
-        return 1.0f;
-    }
-    return 0.0f;
+
+    return -1.0f;
 }
 
 void Manager::NotifyEventCompletion(ScheduledSpeechEvent *evt, bool playback_complete) {
@@ -1404,11 +1422,18 @@ SpeechValRtnType Manager::PreValidate(ScheduledSpeechEvent &evt) {
     return kKeepEvt;
 }
 
-bool Manager::CanPlayback(Attrib::Gen::speech &) {
-    if (mProbPlayback <= 0.0f) {
-        return false;
+bool Manager::CanPlayback(Attrib::Gen::speech &event_attribs) {
+    if (GetHistory().GetCount(event_attribs.SpeechID()) == 0) {
+        return true;
     }
-    return true;
+
+    static Attrib::Gen::speechtune tune(static_cast<const Attrib::Collection *>(0), 0, 0);
+    if (!tune.IsValid()) {
+        tune.ChangeWithDefault(0);
+    }
+
+    float sim_prob = Sim::GetRandom()._SimRandom_FloatRange(1.0f);
+    return sim_prob <= mProbPlayback;
 }
 
 void Manager::CalcProbPlayback() {
@@ -1952,13 +1977,27 @@ void GameSpeech::IssuePlayback(ScheduledSpeechEvent *nextevent) {
 }
 
 void GameSpeech::ClearCompletedRequests() {
-    for (SpeechSampleVec::iterator it = m_pendingList.begin(); it != m_pendingList.end();) {
-        if (*it && (*it)->ready) {
-            it = m_pendingList.erase(it);
-        } else {
-            ++it;
+    if (m_strm && m_strm->IsPlaying()) {
+        m_strm->Stop();
+    }
+
+    if (m_pendingList.size() != 0) {
+        SpeechSampleData **i = std::remove_if(m_pendingList.begin(), m_pendingList.end(), Unlocked);
+        m_pendingList.erase(i, m_pendingList.end());
+        for (unsigned int i = 0; i < m_pendingList.size(); ++i) {
+            SpeechSampleData *sample = m_pendingList[i];
+            if (sample) {
+                sample->Unlock();
+            }
         }
     }
+
+    m_pendingList.clear();
+    if (m_currEvent) {
+        delete m_currEvent;
+    }
+    m_currEvent = 0;
+    ClearFlag(0x1c);
 }
 
 void GameSpeech::ReleaseResource() {
@@ -2099,8 +2138,40 @@ SED_NISSFX::SED_NISSFX()
       m_backupstrm(0) {}
 
 SED_NISSFX::~SED_NISSFX() {
-    ClearStream();
-    m_moduleIsInitted = false;
+    if (m_strm) {
+        m_strm->Stop();
+    }
+    if (m_bankHeaders) {
+        FreeMemory(m_bankHeaders);
+        m_bankHeaders = 0;
+    }
+    if (m_eventDat) {
+        FreeMemory(m_eventDat);
+        m_eventDat = 0;
+    }
+    if (m_speechBanks) {
+        FreeMemory(m_speechBanks);
+        m_speechBanks = 0;
+        m_numBanks = 0;
+    }
+    if (m_csisData) {
+        Csis::System::Unsubscribe(m_csisData);
+        FreeMemory(m_csisData);
+        m_csisData = 0;
+    }
+    m_dataIsLoaded = false;
+    if (m_SyncObject.qsObject) {
+        FreeMemory(m_SyncObject.qsObject);
+        m_SyncObject.qsObject = 0;
+    }
+    mLoadState.clear();
+    if (m_strm) {
+        gpEAXS_StrmMgr->RemoveStreamChannel(STYPE_NISSFX);
+        m_strm = 0;
+    }
+    if (m_SyncObject.qsObject) {
+        m_SyncObject.qsObject->lock = 0;
+    }
 }
 
 void SED_NISSFX::Init(int channel) {

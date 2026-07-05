@@ -1547,35 +1547,34 @@ void SoundAI::DealWithDeadAir() {
         return;
     }
 
-    if (mPursuitDuration > 60.0f) {
+    if (!Speech::Manager::IsQueued(static_cast<SPCHType_1_EventID>(0x63), 4) && (mPursuitDuration > 60.0f)) {
         mDispatch->PursuitUpdate(mLeader);
     }
 
-    if ((WorldTimer - mT_noLOS).GetSeconds() < mTune.NoLOSCommentaryTime()) {
-        if (mPursuitDuration > 60.0f) {
-            if (IsHeadingValid() && (mPlayerOffroadID > -1) && (bRandom(1.0f) <= 0.5f)) {
+    if ((WorldTimer - mT_noLOS).GetSeconds() >= mTune.NoLOSCommentaryTime()) {
+        if (!mHeli) {
+            mLeader->LostVisual();
+        } else if (!mHeli->HasLOS()) {
+            mHeli->LostVisual();
+        } else if (IsHeadingValid() && (mPlayerOffroadID >= 0) && (bRandom(1.0f) <= 0.5f)) {
+            mHeli->LocationReport();
+        } else {
+            mHeli->PursuitUpdateReply();
+        }
+    } else {
+        if (!Speech::Manager::IsQueued(static_cast<SPCHType_1_EventID>(0x64), 4) &&
+            !Speech::Manager::IsQueued(static_cast<SPCHType_1_EventID>(0x9e), 4) && (mPursuitDuration > 60.0f)) {
+            if (IsHeadingValid() && (mPlayerOffroadID >= 0) && (bRandom(1.0f) <= 0.5f)) {
                 mLeader->LocationReport();
             } else {
                 mLeader->PursuitUpdateReply();
             }
         }
-        return;
     }
 
-    if (!mHeli) {
-        mLeader->LostVisual();
-        return;
-    }
-
-    if (!mHeli->HasLOS()) {
-        mHeli->LostVisual();
-        return;
-    }
-
-    if (IsHeadingValid() && (mPlayerOffroadID > -1) && (bRandom(1.0f) <= 0.5f)) {
-        mHeli->LocationReport();
-    } else {
-        mHeli->PursuitUpdateReply();
+    if (Speech::Manager::IsQueued(static_cast<SPCHType_1_EventID>(0x9e), 4) &&
+        Speech::Manager::HasBeenSaid(static_cast<SPCHType_1_EventID>(0x63))) {
+        mLeader->PursuitUpdateReply();
     }
 }
 

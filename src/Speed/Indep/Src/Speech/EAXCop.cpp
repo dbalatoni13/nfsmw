@@ -13,6 +13,13 @@ bool GetLocation(RoadNames road, int &region, int &location);
 }
 
 namespace Csis {
+enum Type_position {
+    Type_position_Right_Side = 1,
+    Type_position_Left_Side = 2,
+    Type_position_Ahead = 4,
+    Type_position_Behind = 8,
+};
+
 struct AnytimeEvents_Unit911ReplyStruct {
     int speaker_id;
 };
@@ -170,6 +177,14 @@ struct AnytimeEvents_RegainVisualStruct {
 struct RollingStrategy_CallToPositionRemStruct {
     int speaker_id;
     int intensity;
+};
+
+struct RollingStrategy_CallToPositionStruct {
+    int speaker_id;
+    Type_intensity intensity;
+    Type_position position;
+    int subject_battalion;
+    int subject_call_sign_id;
 };
 
 struct RollingStrategy_StrategyExecuteStruct {
@@ -376,6 +391,7 @@ extern InterfaceId AnytimeEvents_LostSuspectId;
 extern InterfaceId Arrest_ArrestId;
 extern InterfaceId AnytimeEvents_LostVisualId;
 extern InterfaceId AnytimeEvents_RegainVisualId;
+extern InterfaceId RollingStrategy_CallToPositionId;
 extern InterfaceId RollingStrategy_CallToPositionRemId;
 extern InterfaceId RollingStrategy_StrategyExecuteId;
 extern InterfaceId RollingStrategy_InitStrategyId;
@@ -443,6 +459,7 @@ extern FunctionHandle gAnytimeEvents_LostSuspectHandle;
 extern FunctionHandle gArrest_ArrestHandle;
 extern FunctionHandle gAnytimeEvents_LostVisualHandle;
 extern FunctionHandle gAnytimeEvents_RegainVisualHandle;
+extern FunctionHandle gRollingStrategy_CallToPositionHandle;
 extern FunctionHandle gRollingStrategy_CallToPositionRemHandle;
 extern FunctionHandle gRollingStrategy_StrategyExecuteHandle;
 extern FunctionHandle gRollingStrategy_InitStrategyHandle;
@@ -1049,9 +1066,25 @@ void EAXCop::InitiateStrategy(int type) {
 }
 
 void EAXCop::CallToPosition(EAXCop *cop) {
-    if (cop) {
-        mTgtOffset = cop->mTgtOffset;
+    Csis::RollingStrategy_CallToPositionStruct call;
+    SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
+    register int intensity;
+    if (ai->IsHighIntensity()) {
+        intensity = Csis::Type_intensity_High;
+    } else {
+        intensity = Csis::Type_intensity_Normal;
     }
+    call.intensity = static_cast<Csis::Type_intensity>(intensity);
+    call.speaker_id = mSpeakerID;
+    call.subject_battalion = cop->GetCallsign();
+    call.subject_call_sign_id = cop->GetUnitNumber();
+    float zmag = UMath::Abs(mTgtOffset.z);
+    float xmag = UMath::Abs(mTgtOffset.x);
+    call.position = (xmag > zmag) ? ((0.0f < mTgtOffset.x) ? Csis::Type_position_Right_Side
+                                                            : Csis::Type_position_Left_Side)
+                                  : ((0.0f < mTgtOffset.z) ? Csis::Type_position_Ahead
+                                                           : Csis::Type_position_Behind);
+    ScheduleSpeech(call, Csis::RollingStrategy_CallToPositionId, Csis::gRollingStrategy_CallToPositionHandle, this);
 }
 
 void EAXCop::CallToPositionReminder() {

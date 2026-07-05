@@ -221,7 +221,22 @@ void Observer::Process() {
 }
 
 float Observer::CalcFWVec_Road_Car() {
-    return UMath::Dot(mFwRoad, mFwPlayer);
+    float rval = 0.0f;
+    IPlayer *player = IPlayer::First(PLAYER_LOCAL);
+    if (player) {
+        IVehicleAI *vai = 0;
+        player->GetSimable()->QueryInterface(&vai);
+        if (vai) {
+            WRoadNav *nav = vai->GetDriveToNav();
+            UMath::Vector3 fwRoad = nav->GetForwardVector();
+            UMath::Vector3 fwCar;
+            player->GetSimable()->GetRigidBody()->GetForwardVector(fwCar);
+            rval = UMath::Dot(fwCar, fwRoad);
+            mFwPlayer = fwCar;
+            mFwRoad = fwRoad;
+        }
+    }
+    return rval;
 }
 
 void Observer::GasStationAftermath() {
