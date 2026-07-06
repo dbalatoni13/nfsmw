@@ -73,13 +73,13 @@ class IVehicleAI : public UTL::COM::IUnknown {
     virtual void DoGasBrake();
     virtual void DoDriving(unsigned int flags);
     virtual void DoNOS();
-    virtual float GetDriveSpeed() const;
+    virtual float GetDriveSpeed();
     virtual void SetDriveSpeed(float driveSpeed);
     virtual void SetDriveTarget(const UMath::Vector3 &dest);
     virtual float GetLookAhead();
     virtual const UMath::Vector3 &GetDriveTarget();
     virtual WRoadNav *GetDriveToNav();
-    virtual bool GetDrivableToDriveToNav();
+    virtual bool GetDrivableToDriveToNav() const;
     virtual void ResetDriveToNav(eLaneSelection lane_selection);
 #ifdef EA_BUILD_A124
     virtual void ResetDriveToNav(UMath::Vector3 &target);

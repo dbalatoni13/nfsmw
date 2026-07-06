@@ -8,6 +8,7 @@
 #include "AIAvoidable.h"
 #include "AIGoal.h"
 #include "AdaptivePIDController.h"
+#include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 #include "Speed/Indep/Libs/Support/Utility/UCrc.h"
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 #include "Speed/Indep/Src/AI/AIAvoidable.h"
@@ -30,6 +31,8 @@
 // total size: 0x754
 class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable, public Debugable {
   public:
+    USE_FASTALLOC(AIVehicle);
+
     static Behavior *Construct(const BehaviorParams &bp);
 
     float GetOverSteerCorrection(float steer);
@@ -57,16 +60,6 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
 
     const UMath::Vector3 &GetUpVector() const;
     const UMath::Vector3 &GetRightVector() const;
-
-    void *operator new(std::size_t size) {
-        return gFastMem.Alloc(size, nullptr);
-    }
-
-    void operator delete(void *mem, std::size_t size) {
-        if (mem) {
-            gFastMem.Free(mem, size, nullptr);
-        }
-    }
 
     // Behavior
     void OnTaskSimulate(float dT) override;
