@@ -7,6 +7,8 @@
 
 namespace UMath {
 
+extern float Infinity;
+
     // total size: 0x8
 struct Vector2 {
     float x; // offset 0x0, size 0x4

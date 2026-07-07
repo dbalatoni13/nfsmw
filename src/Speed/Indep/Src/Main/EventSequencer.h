@@ -34,6 +34,8 @@ struct EventDynamicData {
     unsigned int fEventSeqState;     // offset 0x60, size 0x4
 };
 
+extern EventDynamicData gEventDynamicData;
+
 namespace EventSequencer {
 
 class System;
@@ -100,7 +102,7 @@ class System {
         kQueueLength = 4,
     };
 
-    System(EventSequencer::Engine *engine, const CARP::EventSeqSystem *system, float externalTime, float rate);
+    System(Engine *engine, const CARP::EventSeqSystem *system, float externalTime, float rate);
 
     friend void Update(float externalTime);
 
@@ -132,8 +134,8 @@ class System {
     void Resume(float externalTime, IContext *ifiringcontext);
     void Reset(float externalTime, float rate, IContext *ifiringcontext);
 
-    bool ProcessStimulus(unsigned int stimulus, float externalTime, IContext *ifiringcontext, enum EventSequencer::QueueMode mode);
-    bool Trigger(float externalTime, IContext *ifiringcontext, enum EventSequencer::QueueMode mode);
+    bool ProcessStimulus(unsigned int stimulus, float externalTime, IContext *ifiringcontext, EventSequencer::QueueMode mode);
+    bool Trigger(float externalTime, IContext *ifiringcontext, EventSequencer::QueueMode mode);
 
     bool FireEventTag(unsigned int tag, IContext *ifiringcontext) const;
 
@@ -161,15 +163,15 @@ class System {
     CARP::EventSeqSystem *mSystem;  // offset 0x4, size 0x4
     CARP::EventSeqState *mState;    // offset 0x8, size 0x4
     CARP::EventSeqAction *mAction;  // offset 0xC, size 0x4
-    float mActionRate;              // offset 0x10, size 0x4, Decl: speed/indep/tools/eventsys/runtime/common/../eventsequencer.h:379
-    float mActionTime;              // offset 0x14, size 0x4, Decl: speed/indep/tools/eventsys/runtime/common/../eventsequencer.h:380
-    float mActionLast;              // offset 0x18, size 0x4, Decl: speed/indep/tools/eventsys/runtime/common/../eventsequencer.h:381
-    float mPausedAt;                // offset 0x1C, size 0x4, Decl: speed/indep/tools/eventsys/runtime/common/../eventsequencer.h:383
-    unsigned int mCurrentState;     // offset 0x20, size 0x4, Decl: speed/indep/tools/eventsys/runtime/common/../eventsequencer.h:385
-    unsigned int mEndState;         // offset 0x24, size 0x4, Decl: speed/indep/tools/eventsys/runtime/common/../eventsequencer.h:386
-    unsigned int mQueueEndState;    // offset 0x28, size 0x4, Decl: speed/indep/tools/eventsys/runtime/common/../eventsequencer.h:387
+    float mActionRate;              // offset 0x10, size 0x4
+    float mActionTime;              // offset 0x14, size 0x4
+    float mActionLast;              // offset 0x18, size 0x4
+    float mPausedAt;                // offset 0x1C, size 0x4
+    unsigned int mCurrentState;     // offset 0x20, size 0x4
+    unsigned int mEndState;         // offset 0x24, size 0x4
+    unsigned int mQueueEndState;    // offset 0x28, size 0x4
     float mQueueDuration;           // offset 0x2C, size 0x4
-    unsigned int mQueuedStimuli[4]; // offset 0x30, size 0x10, Decl: speed/indep/tools/eventsys/runtime/common/../eventsequencer.h:390
+    unsigned int mQueuedStimuli[4]; // offset 0x30, size 0x10
 };
 
 class Engine : public UTL::COM::Object, public IEngine {
@@ -213,6 +215,18 @@ public:
     // void SetContext(IContext *context) override {}
 
     // unsigned int NumSystems() const override {}
+
+    IContext *Context() const {
+        return this->mContext;
+    }
+
+    System *GetSystems() const {
+        return this->mSystems;
+    }
+
+    bool IsVerbose() const {
+        return this->mVerbose;
+    }
 
 private:
     CARP::EventSeqEngine *mEngine;    // offset 0x1C, size 0x4
