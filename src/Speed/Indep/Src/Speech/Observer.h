@@ -15,6 +15,7 @@
 struct MGamePlayMoment;
 struct MMiscSound;
 struct MNotifySpeechStatus;
+class SoundAI;
 
 namespace Speech {
 
@@ -108,6 +109,8 @@ class Observer : public SpeechFlow {
     SpeechObservations GetLastEvent();
 
   private:
+    friend class ::SoundAI;
+
     observations mObservations;                 // offset 0x10, size 0xC
     unsigned int mObserveMask;                  // offset 0x1C, size 0x4
     SpeechObservations mLastEvent;              // offset 0x20, size 0x4

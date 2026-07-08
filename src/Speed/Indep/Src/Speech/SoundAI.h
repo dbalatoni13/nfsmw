@@ -6,6 +6,7 @@
 #endif
 
 #include "EAXAirSupport.h"
+#include "Observer.h"
 #include "Speed/Indep/Src/EAXSound/EAXSoundTypes.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/speechtune.h"
 #include "Speed/Indep/Src/Generated/Messages/MUnspawnCop.h"
@@ -316,7 +317,13 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
         return mHavoc;
     }
 
-    // enum SpeechObservations GetLastObservation() {}
+    int GetLastObservation() {
+        int last = 0;
+        if (mObserver) {
+            last = mObserver->mLastEvent;
+        }
+        return last;
+    }
 
     const int GetFocus() {
         return mFocus;

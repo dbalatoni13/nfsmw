@@ -1482,17 +1482,37 @@ void Manager::ResetGlobalHistory() {
     mEvtHistory.clear();
 }
 
-void Manager::FlushSpeechForActor(EAXCharacter *actor) {
+int Manager::FlushSpeechForActor(EAXCharacter *actor) {
     if (!actor) {
-        return;
+        return 0;
     }
 
-    for (int i = 0; i < sQueuedEventCount; ++i) {
-        if (sQueuedEvents[i] && sQueuedEvents[i]->actor == actor) {
-            sQueuedEvents[i] = 0;
+    int num_flushed = 0;
+    for (int ndx = 0; ndx < 4; ++ndx) {
+        if (mEvents[ndx].size() != 0) {
+            SchedSpchEvents::iterator i = mEvents[ndx].begin();
+            while (i != mEvents[ndx].end()) {
+                ScheduledSpeechEvent *this_event = *i;
+                if (this_event->actor && (this_event->actor == actor)) {
+                    this_event->actor = 0;
+                    num_flushed++;
+                } else {
+                    ++i;
+                }
+            }
         }
     }
-    CompactQueuedEvents();
+
+    if (mCurrentEvent && (mCurrentEvent->actor == actor)) {
+        mCurrentEvent->actor = 0;
+    }
+
+    GameSpeech *gamespeech = static_cast<GameSpeech *>(m_SpeechModule[COPSPEECH_MODULE]);
+    ScheduledSpeechEvent *curr_event = gamespeech->m_currEvent;
+    if (curr_event && curr_event->actor && (curr_event->actor == actor)) {
+        curr_event->actor = 0;
+    }
+    return num_flushed;
 }
 
 Module::Module()
@@ -1735,7 +1755,19 @@ void GameSpeech::LoadingCallback(int param, int) {
     }
 }
 
-void GameSpeech::LoadBanks() {}
+void GameSpeech::LoadBanks() {
+    int type = 1;
+    m_speechBanks =
+        static_cast< ::SPEECH_BANK *>(gAudioMemoryManager.AllocateMemory(m_numBanks * sizeof(::SPEECH_BANK), "AUD: Game speech banks", false));
+    int i = 0;
+    while (i < m_numBanks) {
+        Manager::LoadSpeechBank(m_clumpIdx, type, i, &m_speechBanks[i]);
+        i++;
+    }
+    Manager::AddHeaders(&m_bankHeaders, m_speechBanks, m_numBanks, this);
+    bFree(m_clumpIdx);
+    m_clumpIdx = 0;
+}
 
 int GameSpeech::TestSentenceRuleCallback(int, int, int) {
     return 0;
@@ -2052,7 +2084,22 @@ bool GameSpeech::ShouldPause() {
 }
 
 void GameSpeech::RadioChirp(unsigned char type) {
-    m_ChirpParams.ID = type;
+    if ((m_pSFXOBJ_Speech != 0) && (m_Chirper == 0) && TestFlag(0x400)) {
+        int stich_id;
+        if (type != 0) {
+            if (bRandom(1.0f) > 0.67f) {
+                stich_id = bRandom(4);
+            } else {
+                stich_id = bRandom(0xf) + 7;
+            }
+        } else {
+            stich_id = bRandom(6) + 4;
+        }
+
+        SND_Stich *chirpData = &g_pEAXSound->GetStichPlayer()->GetStich(STICH_TYPE_STATIC, stich_id);
+        m_Chirper = new cStichWrapper(*chirpData);
+        m_Chirper->Play(&m_ChirpParams);
+    }
 }
 
 void GameSpeech::UpdateChirps() {
@@ -2263,11 +2310,47 @@ void SED_NISSFX::Init(int channel) {
     }
 }
 
-void SED_NISSFX::LoadingCallback(int, int error_status) {
-    m_dataIsLoaded = (error_status == 0);
+void SED_NISSFX::LoadingCallback(int param, int) {
+    SED_NISSFX *obj = reinterpret_cast<SED_NISSFX *>(param);
+    if (!obj->mLoadState.empty()) {
+        int loadstate = obj->mLoadState.front();
+        switch (loadstate) {
+        case 0:
+            break;
+        case 1: {
+            m_clumpIdx = reinterpret_cast<CLUMP_IDX_FILEtag *>(m_tempCharPtr);
+            int numbanktypes = m_clumpIdx->numtypes;
+            for (int i = 0; i < numbanktypes; i++) {
+                obj->m_numBanks += m_clumpIdx->numbanks[i];
+            }
+            break;
+        }
+        case 2:
+            m_dataIsLoaded = true;
+            Manager::Init2();
+            break;
+        default:
+            break;
+        }
+        obj->mLoadState.pop_front();
+    }
 }
 
-void SED_NISSFX::LoadBanks() {}
+void SED_NISSFX::LoadBanks() {
+    if (IsNISAudioEnabled) {
+        int type = 1;
+        m_speechBanks =
+            static_cast< ::SPEECH_BANK *>(gAudioMemoryManager.AllocateMemory(m_numBanks * sizeof(::SPEECH_BANK), "AUD: Game speech banks", false));
+        int i = 0;
+        while (i < m_numBanks) {
+            Manager::LoadSpeechBank(m_clumpIdx, type, i, &m_speechBanks[i]);
+            i++;
+        }
+        Manager::AddHeaders(&m_bankHeaders, m_speechBanks, m_numBanks, this);
+        bFree(m_clumpIdx);
+        m_clumpIdx = 0;
+    }
+}
 
 int SED_NISSFX::TestSentenceRuleCallback(int, int, int) {
     return 0;
@@ -2282,9 +2365,30 @@ SPCHType_EventRuleResult SED_NISSFX::EventRuleCallback(int) {
 }
 
 bool SED_NISSFX::QueStream(eNISSFX_TYPE stream_type, void (*callback)(), bool) {
-    m_SyncObject.id = stream_type;
+    if (m_SyncObject.qsObject != 0) {
+        if (stream_type > STRM_NIS_BUSTED) {
+            return true;
+        }
+        m_strm->PurgeStream();
+        FreeMemory(m_SyncObject.qsObject);
+        m_SyncObject.qsObject = 0;
+    }
+    if (m_strm->IsPlaying() && ((stream_type == STRM_NIS_RACE_START) || (stream_type == STRM_SFX_MOMENT))) {
+        if (stream_type != STRM_NIS_BUSTED) {
+            m_strm->Stop();
+        }
+        if ((stream_type == STRM_SFX_MOMENT) && m_pSFXOBJ_NISStream) {
+            static_cast<SFXObj_NISStream *>(m_pSFXOBJ_NISStream)->NISActivityDone();
+        }
+    }
     m_SyncObject.callback = callback;
-    m_bIsStreamQueued = true;
+    m_SyncObject.id = stream_type;
+    m_SyncObject.qsObject = 0;
+    m_SyncObject.handle = -1;
+    m_bIsStreamQueued = false;
+    if (SPCH_Play(2) == 0) {
+        return false;
+    }
     return true;
 }
 

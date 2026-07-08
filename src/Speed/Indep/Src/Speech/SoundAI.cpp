@@ -943,61 +943,65 @@ void SoundAI::RandomBailoutDeny(EAXCop *wimp) {
 }
 
 int SoundAI::GetVoice(int type) {
-    int return_voice;
-    Speech::voiceIDs::iterator i = mUsage.voices.begin();
-    Speech::voiceIDs::iterator end = mUsage.voices.end();
+    int return_voice = -1;
 
-    if (i == end) {
+    if (mUsage.voices.empty()) {
         return -1;
     }
 
     if (type == 2) {
-        while (i != end) {
-            return_voice = *i;
-            if (static_cast<unsigned int>(return_voice - 6) < 3) {
+        int *i = mUsage.voices.begin();
+        int *end = mUsage.voices.end();
+        while (i < end) {
+            if (static_cast<unsigned int>(*i - 6) < 3) {
+                return_voice = *i;
                 mUsage.voices.erase(i);
                 return return_voice;
             }
             ++i;
-            end = mUsage.voices.end();
         }
         return -1;
     }
 
     if (type < 3) {
         if (type == 1) {
-            while (i != end) {
-                return_voice = *i;
-                if (static_cast<unsigned int>(return_voice - 3) < 3) {
+            int *i = mUsage.voices.begin();
+            int *end = mUsage.voices.end();
+            while (i < end) {
+                if (static_cast<unsigned int>(*i - 3) < 3) {
+                    return_voice = *i;
                     mUsage.voices.erase(i);
                     return return_voice;
                 }
                 ++i;
-                end = mUsage.voices.end();
             }
             return -1;
         }
     } else if (type == 3) {
-        while (i != end) {
-            return_voice = *i;
-            if (return_voice == 9) {
+        int *i = mUsage.voices.begin();
+        int *end = mUsage.voices.end();
+        while (i < end) {
+            if (*i == 9) {
+                return_voice = 9;
                 mUsage.voices.erase(i);
-                return 9;
+                return return_voice;
             }
             ++i;
-            end = mUsage.voices.end();
         }
         return -1;
     }
 
-    while (i != end) {
-        return_voice = *i;
-        if (static_cast<unsigned int>(return_voice - 3) < 6) {
-            mUsage.voices.erase(i);
-            return return_voice;
+    {
+        int *i = mUsage.voices.begin();
+        int *end = mUsage.voices.end();
+        while (i < end) {
+            if (static_cast<unsigned int>(*i - 3) < 6) {
+                return_voice = *i;
+                mUsage.voices.erase(i);
+                return return_voice;
+            }
+            ++i;
         }
-        ++i;
-        end = mUsage.voices.end();
     }
     return -1;
 }

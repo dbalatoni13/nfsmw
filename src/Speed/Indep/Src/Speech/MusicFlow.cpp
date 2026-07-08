@@ -413,17 +413,44 @@ void MusicFlow::Win() {
 
 void MusicFlow::Elude() {
     SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
-    if (!ai) {
+
+    int *busy = &mBusy;
+    int busy_value;
+    if (mElapsed < 5.0f) {
+        busy_value = mBusy;
+        mBusy = busy_value + 1;
+    } else {
+        busy_value = 0;
+    }
+    *busy = busy_value;
+
+    if (ai->GetPursuitState() == SoundAI::kInactive) {
+        ChangeStateTo(kTerminal);
         return;
     }
 
-    if (ai->GetPursuitState() == SoundAI::kActive) {
-        ChangeStateTo(kNeutral);
+    UpdateIntensity(mAvgPlayerSpeed > 10.0f ? 1.0f : 0.0f);
+
+    if (ai->GetPursuitState() != SoundAI::kActive) {
+        goto not_active;
+    }
+
+    if (ai->GetPursuitDistance() > 50.0f) {
+        goto neutral;
+    }
+    ChangeStateTo(kLose);
+    return;
+
+neutral:
+    ChangeStateTo(kNeutral);
+    mIntensity = 0.8f;
+    return;
+
+not_active:
+    if (mAvgPlayerSpeed <= mTopSpeed * 0.45f) {
         return;
     }
-    if (ai->GetPursuitState() == SoundAI::kInactive) {
-        ChangeStateTo(kWin);
-    }
+    ChangeStateTo(kWin);
 }
 
 void MusicFlow::Terminal() {

@@ -163,7 +163,7 @@ class Manager {
         ScheduleSpeechPartII(sizeof(T), &data, iid, fh, actor);
     }
 
-    static void FlushSpeechForActor(EAXCharacter *actor);
+    static int FlushSpeechForActor(EAXCharacter *actor);
     static int GetGlobalHistoryCount(SPCHType_1_EventID id);
     static ScheduledSpeechEvent *ScheduleSpeechPartII(unsigned int sample_size, void *sample_data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor);
     static int IndirectSpeechEvent(ScheduledSpeechEvent *evt, bool test_only);

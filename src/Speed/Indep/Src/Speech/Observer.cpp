@@ -875,8 +875,4 @@ void Observer::SetMask(unsigned int mask) {
     mObserveMask = mask;
 }
 
-SpeechObservations Observer::GetLastEvent() {
-    return mLastEvent;
-}
-
 } // namespace Speech

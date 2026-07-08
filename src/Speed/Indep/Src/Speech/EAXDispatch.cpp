@@ -275,18 +275,13 @@ void EAXDispatch::PursuitEscalation() {
     SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
     bool result;
     EAXCop *furthest;
-    unsigned int dir;
-    int location_region;
+    int dir;
+    int region;
     int location;
     int last;
+    register int address_group_type;
+    register unsigned int direction;
     Csis::AnytimeEvents_DispPursuitEscalationStruct data;
-    Speech::Observer *observer;
-    unsigned int last_known_direction;
-    unsigned int player_direction_0;
-    unsigned int player_direction_1;
-    RoadNames last_known_road;
-    RoadNames player_road_0;
-    RoadNames player_road_1;
 
     if (!ai) {
         return;
@@ -296,27 +291,25 @@ void EAXDispatch::PursuitEscalation() {
         return;
     }
     data.speaker_id = mSpeakerID;
-    data.address_group_type = Csis::Type_address_group_type_generic_any_;
     furthest = ai->FindFurthestCop(true);
     if (furthest) {
-        data.address_group_type = furthest->GetCallsign();
-        if (data.address_group_type == Csis::Type_address_group_type_city) {
-            data.address_group_type = Csis::Type_address_group_type_coastal;
-        } else if (data.address_group_type < 3) {
-            if (data.address_group_type != Csis::Type_address_group_type_college_town) {
-                data.address_group_type = Csis::Type_address_group_type_generic_any_;
+        address_group_type = furthest->GetCallsign();
+        if (address_group_type == Csis::Type_address_group_type_city) {
+            address_group_type = Csis::Type_address_group_type_coastal;
+        } else if (address_group_type < 3) {
+            if (address_group_type != Csis::Type_address_group_type_college_town) {
+                address_group_type = Csis::Type_address_group_type_generic_any_;
             }
-        } else if (data.address_group_type == Csis::Type_address_group_type_coastal) {
-            data.address_group_type = Csis::Type_address_group_type_city;
-        } else if (data.address_group_type != Csis::Type_address_group_type_alpine) {
-            data.address_group_type = Csis::Type_address_group_type_generic_any_;
+        } else if (address_group_type == Csis::Type_address_group_type_coastal) {
+            address_group_type = Csis::Type_address_group_type_city;
+        } else if (address_group_type != Csis::Type_address_group_type_alpine) {
+            address_group_type = Csis::Type_address_group_type_generic_any_;
         }
+        data.address_group_type = address_group_type;
+    } else {
+        data.address_group_type = Csis::Type_address_group_type_generic_any_;
     }
-    last = 0;
-    observer = ai->GetObserver();
-    if (observer) {
-        last = observer->GetState();
-    }
+    last = ai->GetLastObservation();
     if (last < Collision_Suspect_Train) {
         if ((last > Collision_Suspect_Structure) || (last == Collision_Suspect_World)) {
             data.pursuit_type = Csis::Type_pursuit_type_Reckless;
@@ -346,32 +339,27 @@ void EAXDispatch::PursuitEscalation() {
     if (ai->AreRacersNearby()) {
         data.num_suspects = Csis::Type_num_suspects_multiple_suspects;
     }
-    last_known_direction = ai->GetLastKnownDirection();
-    player_direction_0 = ai->GetPlayerDirection(0);
-    player_direction_1 = ai->GetPlayerDirection(1);
-    last_known_road = ai->GetLastKnownRoad();
-    player_road_0 = ai->GetPlayerRoadID(0);
-    player_road_1 = ai->GetPlayerRoadID(1);
-    result = MiscSpeech::GetLocation(last_known_road, location_region, location);
+    result = MiscSpeech::GetLocation(ai->GetLastKnownRoad(), region, location);
     if (!result) {
-        result = MiscSpeech::GetLocation(player_road_0, location_region, location);
+        result = MiscSpeech::GetLocation(ai->GetPlayerRoadID(0), region, location);
         if (!result) {
-            MiscSpeech::GetLocation(player_road_1, location_region, location);
+            MiscSpeech::GetLocation(ai->GetPlayerRoadID(1), region, location);
         }
     }
-    data.location_region = location_region;
+    data.location_region = region;
     data.location = location;
-    data.direction = last_known_direction;
-    if (data.direction == 0) {
-        data.direction = player_direction_0;
-        if (data.direction == 0) {
-            data.direction = player_direction_1;
-            if (data.direction == 0) {
+    direction = ai->GetLastKnownDirection();
+    if (direction == 0) {
+        direction = ai->GetPlayerDirection(0);
+        if (direction == 0) {
+            direction = ai->GetPlayerDirection(1);
+            if (direction == 0) {
                 dir = bRandom(4);
-                data.direction = 1 << (dir & 0x3F);
+                direction = 1 << dir;
             }
         }
     }
+    data.direction = direction;
     ScheduleSpeech(data, Csis::AnytimeEvents_DispPursuitEscalationId, Csis::gAnytimeEvents_DispPursuitEscalationHandle, this);
 }
 
