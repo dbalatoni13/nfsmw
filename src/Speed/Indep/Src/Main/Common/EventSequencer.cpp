@@ -7,9 +7,7 @@
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 #include "Speed/Indep/Src/Main/Event.h"
 #include "Speed/Indep/Src/Misc/SpeedChunks.hpp"
-#include "Speed/Indep/Src/World/WCollisionTri.h"
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
-#include "stl/_vector.h"
 
 #include <cstddef>
 
