@@ -7,6 +7,10 @@
 
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
+#include "Speed/Indep/Src/Camera/ICE/ICEMath.hpp"
+#include "Speed/Indep/Src/Misc/Timer.hpp"
+
+#include "Speed/Indep/bWare/Src/bFunkPlat.cpp"
 
 struct CameraParams {
     // total size: 0xD4
@@ -29,9 +33,34 @@ struct CameraParams {
     unsigned short DummyAngle;  // offset 0xD0, size 0x2
 };
 
+struct JollyRancherResponsePacket {
+    int UseMatrix;          // offset 0x0
+    int Pad1;               // offset 0x4
+    int Pad2;               // offset 0x8
+    int Pad3;               // offset 0xC
+    bMatrix4 CamMatrix;     // offset 0x10
+};
+
+
+extern int DisableCommunication;
+
+struct CameraLink {
+    int field_3469;  
+};
+extern CameraLink cameralink;
+
+struct JR2Request {
+        JollyRancherResponsePacket *response;
+        int disableComm;
+        bMatrix4 scaledMatrix;
+        char cameraName[24];
+    } request;
+
 // total size: 0x290
 class Camera {
   public:
+    static bool StopUpdating;
+    static JollyRancherResponsePacket JollyRancherResponse;
     static void UpdateAll(float dT);
 
     bMatrix4 *GetCameraMatrix() {
@@ -41,6 +70,13 @@ class Camera {
     int GetRenderDash() {
         return this->RenderDash;
     }
+
+    Camera();
+    void SetCameraMatrix(bMatrix4 *m,float fTime);
+
+    void CommunicateWithJollyRancher(char *cameraname);
+
+    unsigned short FovRelativeAngle(unsigned short a);
 
     // float GetFocalDistance() {}
 
@@ -53,6 +89,7 @@ class Camera {
     bVector3 *GetPosition() {
         return &this->CurrentKey.Position;
     }
+
 
     bVector3 *GetDirection() {
         return &this->CurrentKey.Direction;
@@ -68,6 +105,8 @@ class Camera {
 
         return vec;
     }
+
+    
 
     // bVector3 *GetPreviousPosition() {}
 

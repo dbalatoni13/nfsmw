@@ -82,6 +82,8 @@ class CameraAnchor {
     Attrib::Gen::camerainfo mCameraInfoAttributes; // offset 0x110, size 0x14
 };
 
+static int DisablePrecullerCounter = 0;
+
 // total size: 0x80
 class CameraMover : public bTNode<CameraMover>, public WCollisionMgr::ICollisionHandler {
   public:
@@ -90,7 +92,7 @@ class CameraMover : public bTNode<CameraMover>, public WCollisionMgr::ICollision
     CameraMoverTypes GetType() {
         return Type;
     }
-
+    
     WUID GetAnchorID();
 
     bVector3 *GetPosition() {
