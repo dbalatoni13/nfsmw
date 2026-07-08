@@ -129,14 +129,14 @@ static const UData *FindEngineData(UCrc32 name) {
         return (*iter).second;
     }
 
-    return nullptr;
+    return NULL;
 }
 
 // unfinished
 IEngine *Create(UTL::COM::Object *baseObject, IContext *context, const UData *data, float externalTime, float rate) {
     Engine *e = new Engine(baseObject, context, static_cast<const CARP::EventSeqEngine *>(data->GetDataConst()), externalTime, rate);
 
-    e->ProcessStimulus(gCreateStimulus, externalTime, nullptr, QUEUE_ALLOW);
+    e->ProcessStimulus(gCreateStimulus, externalTime, NULL, QUEUE_ALLOW);
 
     if (e != NULL) {
         return e;
@@ -146,8 +146,8 @@ IEngine *Create(UTL::COM::Object *baseObject, IContext *context, const UData *da
 
 IEngine *Create(UTL::COM::Object *baseObject, IContext *context, UCrc32 name, float externalTime, float rate) {
     const UData *data = FindEngineData(UCrc32(name));
-    if (data == nullptr) {
-        return nullptr;
+    if (data == NULL) {
+        return NULL;
     }
 
     return Create(baseObject, context, data, externalTime, rate);
@@ -170,7 +170,7 @@ static bool EraseActiveSystem(unsigned int index) {
             gActiveSystemList[i] = gActiveSystemList[i + 1];
         }
 
-        gActiveSystemList[--gNumActiveSystems] = nullptr;
+        gActiveSystemList[--gNumActiveSystems] = NULL;
         return true;
     }
 
@@ -355,7 +355,7 @@ bool System::FireEventTag(unsigned int tag, IContext *ifiringcontext) const {
 System::System(Engine *engine, const CARP::EventSeqSystem *system, float externalTime, float rate) {
     this->mEngine = engine;
     this->mSystem = const_cast<CARP::EventSeqSystem *>(system);
-    this->mAction = nullptr;
+    this->mAction = NULL;
 
     this->InternalReset(externalTime, rate);
 }
