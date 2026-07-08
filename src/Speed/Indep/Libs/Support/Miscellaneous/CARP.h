@@ -4,8 +4,9 @@
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 #include "Speed/Indep/Libs/Support/Utility/UGroup.hpp"
 #include "Speed/Indep/Tools/EventSys/Runtime/Common/eventsysdata.h"
-#include "stl/_algo.h"
 #include "types.h"
+
+#include <algorithm>
 #include <cmath>
 
 struct WCollisionArticle;
