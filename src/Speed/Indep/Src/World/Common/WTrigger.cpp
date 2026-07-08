@@ -34,8 +34,6 @@ struct FireOnExitList : public std::set<FireOnExitRec> {
     USE_FASTALLOC(FireOnExitList);
 };
 
-extern EventDynamicData gEventDynamicData;
-
 WTrigger::WTrigger() {
     bMemSet(this, 0, sizeof(WTrigger));
 }

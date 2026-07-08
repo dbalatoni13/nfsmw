@@ -4,6 +4,10 @@
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 #include "Speed/Indep/Libs/Support/Utility/UGroup.hpp"
 #include "Speed/Indep/Tools/EventSys/Runtime/Common/eventsysdata.h"
+#include "types.h"
+
+#include <algorithm>
+#include <cmath>
 
 struct WCollisionArticle;
 
@@ -51,24 +55,62 @@ struct EventList {
 
 // total size: 0x10
 struct EventSeqAction {
-    uint32 *GetTagList() {}
+    uint32 *GetTagList() {
+        return reinterpret_cast<uint32 *>(&this[1]);
+    }
 
-    float *GetTimeList() {}
+    float *GetTimeList() {
+        return reinterpret_cast<float *>(&this->GetTagList()[this->mNumTags]);
+    }
 
-    EventList **GetEventListArray() {}
+    EventList **GetEventListArray() {
+        return reinterpret_cast<EventList **>(&this->GetTimeList()[this->mNumTimes]);
+    }
 
-    const EventList *GetEventList(bool tagIndex, unsigned int index) const {}
+    const uint32 *GetTagList() const {
+        return reinterpret_cast<const uint32 *>(&this[1]);
+    }
+
+    const float *GetTimeList() const {
+        return reinterpret_cast<const float *>(&this->GetTagList()[this->mNumTags]);
+    }
+
+    const EventList *const *GetEventListArray() const {
+        return reinterpret_cast<const EventList *const *>(&this->GetTimeList()[this->mNumTimes]);
+    }
+
+    const EventList *GetEventList(bool tagIndex, unsigned int index) const {
+        unsigned int actualIndex = index;
+        const EventList *const *eventLists = this->GetEventListArray();
+
+        if (!tagIndex) {
+            actualIndex += this->mNumTags;
+        }
+        return eventLists[actualIndex];
+    }
+
+    unsigned int GetTimeIndex(float t) const {
+        const float *timeEntry = this->GetTimeList();
+        const float *timeList = std::lower_bound(timeEntry, &timeEntry[this->mNumTimes], t);
+
+        if (timeList < &timeEntry[this->mNumTimes]) {
+            return timeList - timeEntry;
+        } else {
+            return -1;
+        }
+    }
 
     // Decl: 420
-    unsigned int GetTagIndex(unsigned int tag) const {}
+    unsigned int GetTagIndex(unsigned int tag) const {
+        const unsigned int *tagEntry = this->GetTagList();
+        const unsigned int *tagList = std::lower_bound(tagEntry, &tagEntry[this->mNumTags], tag);
 
-    unsigned int GetTimeIndex(float t) const {}
-
-    const uint32 *GetTagList() const {}
-
-    const float *GetTimeList() const {}
-
-    const EventList *const *GetEventListArray() const {}
+        if (tagList < &tagEntry[this->mNumTags] && *tagList == tag) {
+            return tagList - tagEntry;
+        } else {
+            return -1;
+        }
+    }
 
     uint32 mName;     // offset 0x0, size 0x4
     uint32 mNumTags;  // offset 0x4, size 0x4
@@ -82,22 +124,49 @@ struct EventSeqResponse {
     EventSeqAction *mActionSeq; // offset 0x4, size 0x4
 };
 
+struct Expression {
+    // Functions
+    unsigned int *ParamNames() {}
+
+    const unsigned int *ParamNames() const {}
+
+    unsigned char *OpCodes() {}
+
+    const unsigned char *OpCodes() const {}
+
+    unsigned int Size() const {}
+
+    // Members
+    unsigned int mNumOpCodes; // offset 0x0, size 0x4
+    unsigned int mNumParams; // offset 0x4, size 0x4
+};
+
 // total size: 0x10
 struct StimulusFilter {
-    struct QueryDesc *GetQueries() {}
+    QueryDesc *GetQueries() {
+        return reinterpret_cast<QueryDesc *>(&this[1]);
+    }
 
-    const struct QueryDesc *GetQueries() const {
+    const QueryDesc *GetQueries() const {
         return reinterpret_cast<const QueryDesc *>(&this[1]);
     }
 
-    struct Expression *GetExpression() {}
+    Expression *GetExpression() {
+        return reinterpret_cast<Expression *>(&this->GetQueries()[this->mNumQueries]);
+    }
 
-    const struct Expression *GetExpression() const {}
+    const Expression *GetExpression() const {
+        return reinterpret_cast<const Expression *>(&this->GetQueries()[this->mNumQueries]);
+    }
 
-    char *GetStaticData() {}
+    char *GetStaticData() {
+        return reinterpret_cast<char *>(&this->GetExpression()[this->mExpressionSize] + (unsigned int)&this[1]);
+    }
 
     // Decl: 547
-    const char *GetStaticData() const {}
+    const char *GetStaticData() const {
+        return reinterpret_cast<const char *>(&this->GetExpression()[this->mExpressionSize]);
+    }
 
     unsigned int mNumQueries;     // offset 0x0, size 0x4
     unsigned int mNumInputs;      // offset 0x4, size 0x4
@@ -107,16 +176,33 @@ struct StimulusFilter {
 
 // total size: 0x8
 struct EventSeqState {
-    unsigned int *GetStimuli() {}
+    unsigned int *GetStimuli() {
+        return reinterpret_cast<uint32 *>(&this[1]);
+    }
 
-    EventSeqResponse *GetResponses() {}
+    EventSeqResponse *GetResponses() {
+        return reinterpret_cast<EventSeqResponse *>(&this->GetStimuli()[this->mNumStimuli]);
+    }
 
-    const uint32 *GetStimuli() const {}
+    const uint32 *GetStimuli() const {
+        return reinterpret_cast<const uint32 *>(&this[1]);
+    }
 
     // Decl: 378
-    const EventSeqResponse *GetResponses() const {}
+    const EventSeqResponse *GetResponses() const {
+        return reinterpret_cast<const EventSeqResponse *>(&this->GetStimuli()[this->mNumStimuli]);
+    }
 
-    const EventSeqResponse *FindResponse(unsigned int stimulus) const {}
+    const EventSeqResponse *FindResponse(unsigned int stimulus) const {
+        const unsigned int *stimEntry = this->GetStimuli();
+        const unsigned int *stimList = std::lower_bound(stimEntry, &stimEntry[this->mNumStimuli], stimulus);
+
+        if (stimList < &stimEntry[this->mNumStimuli] && *stimList == stimulus) {
+            return &this->GetResponses()[stimList - stimEntry];
+        } else {
+            return nullptr;
+        }
+    }
 
     uint32 mNumStimuli;      // offset 0x0, size 0x4
     StimulusFilter *mFilter; // offset 0x4, size 0x4
@@ -124,20 +210,58 @@ struct EventSeqState {
 
 // total size: 0xC
 struct EventSeqSystem {
-    unsigned int *GetStateIDs() {}
+    unsigned int *GetStateIDs() {
+        return reinterpret_cast<uint32 *>(&this[1]);
+    }
 
-    EventSeqState **GetStates() {}
+    EventSeqState **GetStates() {
+        return reinterpret_cast<EventSeqState **>(&this->GetStateIDs()[this->mNumStates]);
+    }
 
-    const uint32 *GetStateIDs() const {}
+    const uint32 *GetStateIDs() const {
+        return reinterpret_cast<const uint32 *>(&this[1]);
+    }
+
+    const EventSeqState *const *GetStates() const {
+        return reinterpret_cast<const EventSeqState *const *>(&this->GetStateIDs()[this->mNumStates]);
+    }
 
     // Decl: 353
-    const EventSeqState *FindState(unsigned int state) const {}
+    const EventSeqState *FindState(unsigned int state) const {
+        const unsigned int *stateEntry = this->GetStateIDs();
+        const unsigned int *stateList = std::lower_bound(stateEntry, &stateEntry[this->mNumStates], state);
 
-    const EventSeqState *const *GetStates() const {}
+        if (stateList < &stateEntry[this->mNumStates] && *stateList == state) {
+            return this->GetStates()[stateList - stateEntry];
+        } else {
+            return nullptr;
+        }
+    }
 
     uint32 mInitialState; // offset 0x0, size 0x4
     uint32 mDefaultState; // offset 0x4, size 0x4
     uint32 mNumStates;    // offset 0x8, size 0x4
+};
+
+struct EventSeqEngine {
+    unsigned int * GetSystemIDs() {}
+
+    EventSeqSystem **GetSystems() {}
+
+    const unsigned int FindSystemIndex(unsigned int ident) const {}
+
+    const EventSeqSystem *FindSystem(unsigned int ident) const {}
+
+    const unsigned int *GetSystemIDs() const {
+        return &this->mNumSystems + 1;
+    }
+
+    const EventSeqSystem *const *GetSystems() const {
+        return reinterpret_cast<const EventSeqSystem *const *>(&this->GetSystemIDs()[this->mNumSystems]);
+    }
+
+    const char *mName; // offset 0x0, size 0x4
+    uint32 mNumSystems; // offset 0x4, size 0x4
 };
 
 // total size: 0x4
@@ -206,6 +330,12 @@ union ExprValType { // 0x4
 };
 
 unsigned int ResolveTagReferences(const UGroup *g, unsigned int deltaAddress);
+ExprValType ExpressionEvaluator(
+    const Expression *expr,
+    ExprValType (*lookup)(unsigned int, unsigned int, const void *, const ExprValType *),
+    const void *context,
+    const ExprValType *values
+);
 
 }; // namespace CARP
 
