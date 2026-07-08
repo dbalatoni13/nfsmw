@@ -1170,83 +1170,83 @@ Packages/snd/9/source/library/mix/scrsfl.c:
 Packages/snd/9/source/library/cmn/SNDI_findprime.c:
 	.text       start:0x80372DD4 end:0x80372ED0
 
-Packages/realcore/6.24.00/source/file/cmn/filesys_c.cpp:
+Speed/Indep/Libs/realcore/6.24.00/source/file/cmn/filesys_c.cpp:
 	.text       start:0x80381654 end:0x80381874
 
-Packages/realcore/6.24.00/source/file/cmn/filesys_cc.cpp:
+Speed/Indep/Libs/realcore/6.24.00/source/file/cmn/filesys_cc.cpp:
 	.text       start:0x80381874 end:0x80381A94
 
-Packages/realcore/6.24.00/source/file/cmn/filesys.cpp:
+Speed/Indep/Libs/realcore/6.24.00/source/file/cmn/filesys.cpp:
 	.text       start:0x80381A94 end:0x803844B4
 	.bss        start:0x804CCE80 end:0x804CCE94
 	.sdata      start:0x804FF610 end:0x804FF618
 	.sbss       start:0x804FFD40 end:0x804FFD44
 
-Packages/realcore/6.24.00/source/file/cmn/filesysopts.cpp:
+Speed/Indep/Libs/realcore/6.24.00/source/file/cmn/filesysopts.cpp:
 	.text       start:0x8038450C end:0x80384604
 	.data       start:0x80451F84 end:0x80451FBC
 	.bss        start:0x804CCE94 end:0x804CCEA0
 	.sdata      start:0x804FF618 end:0x804FF61C
 
-Packages/realcore/6.24.00/source/file/cmn/hlafile.cpp:
+Speed/Indep/Libs/realcore/6.24.00/source/file/cmn/hlafile.cpp:
 	.text       start:0x80384630 end:0x80385008
 	.bss        start:0x804CCEA0 end:0x804CCEC0
 	.sdata      start:0x804FF61C end:0x804FF620
 	.sbss       start:0x804FFD44 end:0x804FFD54
 
-Packages/realcore/6.24.00/source/file/gc/device.cpp:
+Speed/Indep/Libs/realcore/6.24.00/source/file/gc/device.cpp:
 	.sdata      start:0x804FF620 end:0x804FF628
 
-Packages/realcore/6.24.00/source/file/cmn/hlsfile.cpp:
+Speed/Indep/Libs/realcore/6.24.00/source/file/cmn/hlsfile.cpp:
 	.text       start:0x80385034 end:0x8038510C
 
-Packages/realcore/6.24.00/source/file/cmn/syncfile.cpp:
+Speed/Indep/Libs/realcore/6.24.00/source/file/cmn/syncfile.cpp:
 	.text       start:0x8038510C end:0x803852B8
 
-Packages/realcore/6.24.00/source/file/gc/dvd_device.cpp:
+Speed/Indep/Libs/realcore/6.24.00/source/file/gc/dvd_device.cpp:
 	.text       start:0x803852B8 end:0x80385CF0
 	.bss        start:0x804CCEC0 end:0x804D5000
 
-Packages/realcore/6.24.00/source/file/gc/hd_device.cpp:
+Speed/Indep/Libs/realcore/6.24.00/source/file/gc/hd_device.cpp:
 	.text       start:0x80385D48 end:0x80386024
 	.bss        start:0x804D5000 end:0x804D5018
 
-Packages/realcore/6.24.00/source/system/gc/inittmr.cpp:
+Speed/Indep/Libs/realcore/6.24.00/source/system/gc/inittmr.cpp:
 	.text       start:0x8038607C end:0x80386254
 	.bss        start:0x804D5018 end:0x804D5040
 	.sdata      start:0x804FF628 end:0x804FF630
 
-Packages/realcore/6.24.00/source/system/gc/signals.cpp:
+Speed/Indep/Libs/realcore/6.24.00/source/system/gc/signals.cpp:
 	.text       start:0x80386254 end:0x80386308
 
-Packages/realcore/6.24.00/source/system/gc/threads.cpp:
+Speed/Indep/Libs/realcore/6.24.00/source/system/gc/threads.cpp:
 	.text       start:0x80386308 end:0x803866CC
 	.sbss       start:0x804FFD54 end:0x804FFD58
 
-Packages/realcore/6.24.00/source/system/gc/timerthread.cpp:
+Speed/Indep/Libs/realcore/6.24.00/source/system/gc/timerthread.cpp:
 	.text       start:0x803866CC end:0x8038682C
 	.bss        start:0x804D5040 end:0x804D63F8
 	.sdata      start:0x804FF630 end:0x804FF640
 
-Packages/realcore/6.24.00/source/system/cmn/exit.cpp:
+Speed/Indep/Libs/realcore/6.24.00/source/system/cmn/exit.cpp:
 	.text       start:0x8038682C end:0x80386898
 	.data       start:0x80451FBC end:0x804520BC
 
-Packages/realcore/6.24.00/source/system/cmn/systemvars.cpp:
+Speed/Indep/Libs/realcore/6.24.00/source/system/cmn/systemvars.cpp:
 	.data       start:0x804520BC end:0x804520FC
 	.sdata      start:0x804FF640 end:0x804FF660
 
-Packages/realcore/6.24.00/source/system/cmn/mutex.cpp:
+Speed/Indep/Libs/realcore/6.24.00/source/system/cmn/mutex.cpp:
 	.text       start:0x80386898 end:0x8038693C
 
-Packages/realcore/6.24.00/source/system/cmn/systask.cpp:
+Speed/Indep/Libs/realcore/6.24.00/source/system/cmn/systask.cpp:
 	.text       start:0x8038693C end:0x80386B38
 	.bss        start:0x804D63F8 end:0x804D6540
 
-Packages/realcore/6.24.00/source/system/cmn/timer.cpp:
+Speed/Indep/Libs/realcore/6.24.00/source/system/cmn/timer.cpp:
 	.text       start:0x80386B38 end:0x80386B40
 
-Packages/realcore/6.24.00/source/system/gc/initvblt.cpp:
+Speed/Indep/Libs/realcore/6.24.00/source/system/gc/initvblt.cpp:
 	.text       start:0x80386B40 end:0x80386B9C
 
 Packages/realmemcard/3.04.01-layer2/source/lib/cmn/memcard_interface.cpp:
@@ -1307,77 +1307,77 @@ Packages/realmemcard/3.04.01-layer2/source/lib/cmn/interfaceimp.cpp:
 Packages/realmemcard/3.04.01-layer2/source/lib/gc/gc_blockcalculator.cpp:
 	.text       start:0x80398D08 end:0x80398E40
 
-Packages/realcore/6.24.00/source/system/gc/memcopy.cpp:
+Speed/Indep/Libs/realcore/6.24.00/source/system/gc/memcopy.cpp:
 	.text       start:0x80398E40 end:0x80399038
 
-Packages/realcore/6.24.00/source/system/gc/memfill.cpp:
+Speed/Indep/Libs/realcore/6.24.00/source/system/gc/memfill.cpp:
 	.text       start:0x80399038 end:0x8039917C
 
-Packages/realcore/6.24.00/source/std/cmn/locale.cpp:
+Speed/Indep/Libs/realcore/6.24.00/source/std/cmn/locale.cpp:
 	.text       start:0x8039917C end:0x80399560
 
-Packages/realcore/6.24.00/source/std/cmn/memclear.cpp:
+Speed/Indep/Libs/realcore/6.24.00/source/std/cmn/memclear.cpp:
 	.text       start:0x80399560 end:0x80399588
 
-Packages/realcore/6.24.00/source/system/debug/cmn/abortmsg.cpp:
+Speed/Indep/Libs/realcore/6.24.00/source/system/debug/cmn/abortmsg.cpp:
 	.text       start:0x80399588 end:0x80399738
 	.bss        start:0x804D9668 end:0x804DA668
 	.sdata      start:0x804FF6AC end:0x804FF6B0
 
-Packages/realcore/6.24.00/source/debug/cmn/debugger.cpp:
+Speed/Indep/Libs/realcore/6.24.00/source/debug/cmn/debugger.cpp:
 	.text       start:0x80399738 end:0x8039976C
 
-Packages/realcore/6.24.00/source/debug/cmn/printvstr.cpp:
+Speed/Indep/Libs/realcore/6.24.00/source/debug/cmn/printvstr.cpp:
 	.text       start:0x8039976C end:0x80399800
 
-Packages/realcore/6.24.00/source/system/debug/cmn/printstr.cpp:
+Speed/Indep/Libs/realcore/6.24.00/source/system/debug/cmn/printstr.cpp:
 	.text       start:0x80399800 end:0x8039989C
 	.data       start:0x804524FC end:0x804527FC
 
-Packages/realcore/6.24.00/source/debug/gc/printdrv.cpp:
+Speed/Indep/Libs/realcore/6.24.00/source/debug/gc/printdrv.cpp:
 	.text       start:0x8039989C end:0x803998C8
 
-Packages/realcore/6.24.00/source/input/gc/gc_effect.cpp:
+Speed/Indep/Libs/realcore/6.24.00/source/input/gc/gc_effect.cpp:
 	.text       start:0x803998C8 end:0x80399B28
 
-Packages/realcore/6.24.00/source/input/cmn/effectimp.cpp:
+Speed/Indep/Libs/realcore/6.24.00/source/input/cmn/effectimp.cpp:
 	.text       start:0x80399B28 end:0x80399C4C
 
-Packages/realcore/6.24.00/source/input/cmn/interface.cpp:
+Speed/Indep/Libs/realcore/6.24.00/source/input/cmn/interface.cpp:
 	.text       start:0x80399C4C end:0x80399D18
 	.sdata      start:0x804FF6B0 end:0x804FF6B8
 
-Packages/realcore/6.24.00/source/input/cmn/memvectors.cpp:
+Speed/Indep/Libs/realcore/6.24.00/source/input/cmn/memvectors.cpp:
 	.text       start:0x80399D18 end:0x80399EBC
 	.sdata      start:0x804FF6B8 end:0x804FF6C0
 
-Packages/realcore/6.24.00/source/input/gc/gc_device.cpp:
+Speed/Indep/Libs/realcore/6.24.00/source/input/gc/gc_device.cpp:
 	.text       start:0x80399EBC end:0x80399FD8
 
-Packages/realcore/6.24.00/source/input/gc/gc_interface.cpp:
+Speed/Indep/Libs/realcore/6.24.00/source/input/gc/gc_interface.cpp:
 	.text       start:0x80399FD8 end:0x8039A3C8
 	.bss        start:0x804DA668 end:0x804FE9CC
 	.sdata      start:0x804FF6C0 end:0x804FF6C8
 
-Packages/realcore/6.24.00/source/input/gc/gc_pad.cpp:
+Speed/Indep/Libs/realcore/6.24.00/source/input/gc/gc_pad.cpp:
 	.text       start:0x8039A3C8 end:0x8039AA1C
 
-Packages/realcore/6.24.00/source/input/cmn/interfaceimp.cpp:
+Speed/Indep/Libs/realcore/6.24.00/source/input/cmn/interfaceimp.cpp:
 	.text       start:0x8039AA1C end:0x8039ADF8
 
-Packages/realcore/6.24.00/source/input/cmn/device.cpp:
+Speed/Indep/Libs/realcore/6.24.00/source/input/cmn/device.cpp:
 	.text       start:0x8039ADF8 end:0x8039AF04
 
-Packages/realcore/6.24.00/source/input/cmn/effect.cpp:
+Speed/Indep/Libs/realcore/6.24.00/source/input/cmn/effect.cpp:
 	.text       start:0x8039AF04 end:0x8039AF70
 
-Packages/realcore/6.24.00/source/input/cmn/event.cpp:
+Speed/Indep/Libs/realcore/6.24.00/source/input/cmn/event.cpp:
 	.text       start:0x8039AF70 end:0x8039AFD8
 
-Packages/realcore/6.24.00/source/input/cmn/eventqueue.cpp:
+Speed/Indep/Libs/realcore/6.24.00/source/input/cmn/eventqueue.cpp:
 	.text       start:0x8039AFD8 end:0x8039B238
 
-Packages/realcore/6.24.00/source/input/cmn/itimer.cpp:
+Speed/Indep/Libs/realcore/6.24.00/source/input/cmn/itimer.cpp:
 	.text       start:0x8039B238 end:0x8039B258
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/ar/arq.c:
