@@ -22,14 +22,6 @@ template <> inline bool IUnknown::QueryInterface<IInput>(IInput **out) {
 }
 }
 
-namespace Csis {
-struct AnytimeEvents_CollisionWorldStruct {
-    int speaker_id;
-    int world_object_type;
-    int num_units;
-};
-}
-
 namespace MiscSpeech {
 bool IsVehicleTypeOK();
 int MoreDetails(int spkrID);
@@ -835,7 +827,11 @@ void Observer::MessageBlewPastCop(const MGamePlayMoment &message) {
 }
 
 void Observer::MessageTunnelUpdate(const MMiscSound &message) {
-    mTunnel = message.GetSoundID() != 0;
+    mTunnel = message.GetSoundID() > 0;
+    SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
+    if (ai && mTunnel && ai->GetHeli() && ai->GetHeli()->IsActive() && ai->GetHeli()->HasLOS()) {
+        ai->GetHeli()->HazardAlert(Csis::Type_heli_hazard_alert_type_approaching_tunnel);
+    }
 }
 
 void Observer::MessageGamePlayMoment(const MGamePlayMoment &message) {

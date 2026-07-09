@@ -845,7 +845,12 @@ void Manager::PopulateHashMap() {
 }
 
 bool Manager::IsCacheable(SPCHType_1_EventID event_id) {
-    return static_cast<int>(event_id) >= 0;
+    unsigned int key = mHashMap.GetHash(event_id);
+    if (key != 0) {
+        Attrib::Gen::speech event(key, 0, 0);
+        return event.cache_OnCreate();
+    }
+    return false;
 }
 
 bool Manager::HasBeenSaid(SPCHType_1_EventID event_id) {
@@ -1080,12 +1085,22 @@ void Manager::ServiceFilteredEvents() {
 }
 
 bool Manager::RecallSpeechEvent(SPCHType_1_EventID recall_id) {
-    for (int i = 0; i < sQueuedEventCount; ++i) {
-        if (sQueuedEvents[i] && sQueuedEvents[i]->ID == recall_id) {
-            return true;
+    bool found_event = false;
+    for (int ndx = 0; ndx < 4; ++ndx) {
+        if (mEvents[ndx].size() != 0) {
+            for (SchedSpchEvents::iterator i = mEvents[ndx].begin(); i != mEvents[ndx].end();) {
+                ScheduledSpeechEvent *this_event = *i;
+                if (this_event->ID == recall_id) {
+                    delete this_event;
+                    i = mEvents[ndx].erase(i);
+                    found_event = true;
+                } else {
+                    ++i;
+                }
+            }
         }
     }
-    return false;
+    return found_event;
 }
 
 void Manager::Expire(ScheduledSpeechEvent *event) {
@@ -2432,13 +2447,13 @@ void SED_NISSFX::Update() {
     if (m_SyncObject.id == STRM_SFX_MOMENT) {
         SFX_Base *sfxmoment = m_pSFXOBJ_Moment;
         if (sfxmoment) {
-            int vol = sfxmoment->GetDMixOutput(*reinterpret_cast<int *>(reinterpret_cast<char *>(sfxmoment) + 0x544), DMX_VOL);
-            m_strm->SetVol(vol >> 8, true);
-            if (*reinterpret_cast<bool *>(reinterpret_cast<char *>(sfxmoment) + 0x548)) {
-                m_strm->SetAz(sfxmoment->GetDMixOutput(0, DMX_AZIM));
-            } else {
-                m_strm->SetAz(0);
-            }
+            // int vol = sfxmoment->GetDMixOutput(*<int *>(<char *>(sfxmoment) + 0x544), DMX_VOL);
+            // m_strm->SetVol(vol >> 8, true);
+            // if (*<bool *>(<char *>(sfxmoment) + 0x548)) {
+            //     m_strm->SetAz(sfxmoment->GetDMixOutput(0, DMX_AZIM));
+            // } else {
+            //     m_strm->SetAz(0);
+            // }
         }
     } else if (m_SyncObject.id == STRM_NIS_RACE_START) {
         if (m_pSFXOBJ_NISStream) {

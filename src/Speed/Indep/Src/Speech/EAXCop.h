@@ -15,6 +15,35 @@ enum Type_intensity {
     Type_intensity_Normal = 1,
     Type_intensity_High = 2,
 };
+
+enum Type_world_object_type {
+    Type_world_object_type_generic = 1,
+    Type_world_object_type_guardrail = 2,
+    Type_world_object_type_train = 4,
+    Type_world_object_type_semi = 8,
+    Type_world_object_type_gas_station = 16,
+    Type_world_object_type_spike_belt = 32,
+    Type_world_object_type_low_heat_collision = 64,
+};
+
+enum Type_num_units {
+    Type_num_units_one_unit_in_pursuit = 1,
+    Type_num_units_multiple_units_in_pursuit = 2,
+};
+
+struct AnytimeEvents_CollisionWorldStruct {
+    int speaker_id;
+    Type_world_object_type world_object_type;
+    Type_num_units num_units;
+};
+
+struct Setup_AttmptVehStpStruct {
+    int speaker_id;
+    int pursuit_type;
+    int num_suspects;
+    int speaker_battalion;
+    int speaker_call_sign_id;
+};
 }
 
 // total size: 0x84

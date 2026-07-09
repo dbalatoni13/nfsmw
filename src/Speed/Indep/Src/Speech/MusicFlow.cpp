@@ -5,7 +5,9 @@
 #include "Speed/Indep/Src/Generated/Messages/MControlPathfinder.h"
 #include "Speed/Indep/Src/EAXSound/Stream/SpeechManager.hpp"
 #include "Speed/Indep/Src/Generated/Messages/MNotifyMusicFlow.h"
+#include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
+#include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 
 extern int gXMP_DOWNSTATE;
 
@@ -73,9 +75,23 @@ void MusicFlow::MessageNewPart(const MNotifyMusicFlow &message) {
 }
 
 void MusicFlow::MessageInitFlow(const MNotifyMusicFlow &message) {
-    mStartEvent = message.GetPart();
-    mStartDelay = true;
+    SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
+    IPlayer *player;
+    IVehicleAI *vai;
+
+    ChangeStateTo(kWaiting);
+    player = IPlayer::First(PLAYER_LOCAL);
+    player->GetSimable()->QueryInterface(&vai);
+    if (vai) {
+        float top_speed_mps = vai->GetTopSpeed();
+        mTopSpeed = MPS2MPH(top_speed_mps);
+    } else {
+        mTopSpeed = 160.0f;
+    }
+
     mTimer = WorldTimer;
+    mStartDelay = true;
+    mStartEvent = message.GetPart();
 }
 
 void MusicFlow::MessageTerminate(const MNotifyMusicFlow &) {
@@ -177,15 +193,14 @@ float MusicFlow::UpdateIntensity(float adj) {
 }
 
 void MusicFlow::Waiting() {
-    if (mStartDelay) {
-        if ((WorldTimer - mTimer).GetSeconds() > 1.0f) {
-            mStartDelay = false;
-            ChangeStateTo(kNeutral);
-        }
-        return;
+    if (mStartDelay && (mElapsed > 1.0f)) {
+        mStartDelay = false;
+        MControlPathfinder(false, 0x11, 0, 0).Send(UCrc32("Event"));
+        mT_currPiece = WorldTimer;
     }
-    if (!Manager::IsCopSpeechBusy()) {
-        ChangeStateTo(kNeutral);
+
+    if (mRequestedSwap) {
+        mT_currPiece = WorldTimer;
     }
 }
 

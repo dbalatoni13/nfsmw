@@ -221,73 +221,62 @@ SoundAI::~SoundAI() {
 
     if (mActorPool) {
         bDeleteSlotPool(mActorPool);
-        mActorPool = 0;
     }
 
     Sim::Collision::RemoveListener(this);
+    mLeader = 0;
+    mHeli = 0;
 
     if (mPursuitFlow) {
-        mPursuitFlow->~PursuitFlow();
-        ::operator delete(mPursuitFlow);
-        mPursuitFlow = 0;
+        delete mPursuitFlow;
     }
+    mPursuitFlow = 0;
     if (mStrategyFlow) {
-        mStrategyFlow->~StrategyFlow();
-        ::operator delete(mStrategyFlow);
-        mStrategyFlow = 0;
+        delete mStrategyFlow;
     }
+    mStrategyFlow = 0;
     if (mObserver) {
-        mObserver->~Observer();
-        ::operator delete(mObserver);
-        mObserver = 0;
+        delete mObserver;
     }
+    mObserver = 0;
     if (mRoadblockFlow) {
-        mRoadblockFlow->~RoadblockFlow();
-        ::operator delete(mRoadblockFlow);
-        mRoadblockFlow = 0;
+        delete mRoadblockFlow;
     }
+    mRoadblockFlow = 0;
     if (mMusicFlow) {
-        mMusicFlow->~MusicFlow();
-        ::operator delete(mMusicFlow);
-        mMusicFlow = 0;
+        delete mMusicFlow;
     }
+    mMusicFlow = 0;
 
     if (mPlayerCarCustom) {
         delete mPlayerCarCustom;
-        mPlayerCarCustom = 0;
     }
+    mPlayerCarCustom = 0;
     if (mAICarCustom) {
         delete mAICarCustom;
-        mAICarCustom = 0;
     }
+    mAICarCustom = 0;
 
     if (mMsgPerpBusted) {
         Hermes::Handler::Destroy(mMsgPerpBusted);
-        mMsgPerpBusted = 0;
     }
     if (mMsgAIPerpBusted) {
         Hermes::Handler::Destroy(mMsgAIPerpBusted);
-        mMsgAIPerpBusted = 0;
     }
     if (mMsgForcePursuitStart) {
         Hermes::Handler::Destroy(mMsgForcePursuitStart);
-        mMsgForcePursuitStart = 0;
     }
     if (mMsgRestartRace) {
         Hermes::Handler::Destroy(mMsgRestartRace);
-        mMsgRestartRace = 0;
-    }
-    if (mMsgInfraction) {
-        Hermes::Handler::Destroy(mMsgInfraction);
-        mMsgInfraction = 0;
     }
     if (mMsgUnspawnCop) {
         Hermes::Handler::Destroy(mMsgUnspawnCop);
-        mMsgUnspawnCop = 0;
+    }
+    if (mMsgInfraction) {
+        Hermes::Handler::Destroy(mMsgInfraction);
     }
     if (mMsgTireBlown) {
         Hermes::Handler::Destroy(mMsgTireBlown);
-        mMsgTireBlown = 0;
     }
 }
 
@@ -976,61 +965,45 @@ int SoundAI::GetVoice(int type) {
         return -1;
     }
 
-    if (type == 2) {
-        int *i = mUsage.voices.begin();
-        int *end = mUsage.voices.end();
-        while (i < end) {
+    switch (type) {
+    case 1:
+        for (int *i = mUsage.voices.begin(); i < mUsage.voices.end(); ++i) {
+            if (static_cast<unsigned int>(*i - 3) < 3) {
+                return_voice = *i;
+                mUsage.voices.erase(i);
+                break;
+            }
+        }
+        break;
+    case 2:
+        for (int *i = mUsage.voices.begin(); i < mUsage.voices.end(); ++i) {
             if (static_cast<unsigned int>(*i - 6) < 3) {
                 return_voice = *i;
                 mUsage.voices.erase(i);
-                return return_voice;
+                break;
             }
-            ++i;
         }
-        return -1;
-    }
-
-    if (type < 3) {
-        if (type == 1) {
-            int *i = mUsage.voices.begin();
-            int *end = mUsage.voices.end();
-            while (i < end) {
-                if (static_cast<unsigned int>(*i - 3) < 3) {
-                    return_voice = *i;
-                    mUsage.voices.erase(i);
-                    return return_voice;
-                }
-                ++i;
-            }
-            return -1;
-        }
-    } else if (type == 3) {
-        int *i = mUsage.voices.begin();
-        int *end = mUsage.voices.end();
-        while (i < end) {
+        break;
+    case 3:
+        for (int *i = mUsage.voices.begin(); i < mUsage.voices.end(); ++i) {
             if (*i == 9) {
                 return_voice = 9;
                 mUsage.voices.erase(i);
-                return return_voice;
+                break;
             }
-            ++i;
         }
-        return -1;
-    }
-
-    {
-        int *i = mUsage.voices.begin();
-        int *end = mUsage.voices.end();
-        while (i < end) {
+        break;
+    default:
+        for (int *i = mUsage.voices.begin(); i < mUsage.voices.end(); ++i) {
             if (static_cast<unsigned int>(*i - 3) < 6) {
                 return_voice = *i;
                 mUsage.voices.erase(i);
-                return return_voice;
+                break;
             }
-            ++i;
         }
+        break;
     }
-    return -1;
+    return return_voice;
 }
 
 void SoundAI::Release() {
@@ -2264,8 +2237,9 @@ void SoundAI::SyncCarsToActors() {
 
                         if ((actor->GetDistance() < mRecentBlowby.distance) && (actor->GetSpeed() < mPlayerSpeed) && !is_ahead &&
                             ((mPlayerSpeed * 0.75f) < (mPlayerSpeed - actor->GetSpeed()))) {
+                            float speed_diff = mPlayerSpeed - actor->GetSpeed();
                             mRecentBlowby.distance = actor->GetDistance();
-                            mRecentBlowby.speed = mPlayerSpeed - actor->GetSpeed();
+                            mRecentBlowby.speed = speed_diff;
                             mRecentBlowby.timestamp = WorldTimer;
                         }
                     } else {
@@ -2274,8 +2248,8 @@ void SoundAI::SyncCarsToActors() {
                 }
             } else if (vehicle->GetVehicleClass() == VehicleClass::CHOPPER) {
                 if (mHeli) {
-                    if (mHeli->GetHandle() != thisObj) {
-                        mHeli->SetHandle(thisObj);
+                    if (mHeli->GetHandle() != vehicle->GetSimable()->GetOwnerHandle()) {
+                        mHeli->SetHandle(vehicle->GetSimable()->GetOwnerHandle());
                     }
 
                     if (vehicle->IsActive()) {
@@ -2310,10 +2284,12 @@ void SoundAI::SyncCarsToActors() {
         mFlags &= ~COPS_ARE_AHEAD;
     }
 
-    IVehicles::iterator add_it = new_cop_cars.begin();
-    while (add_it != new_cop_cars.end()) {
-        AddNewCop(*add_it);
-        ++add_it;
+    if (new_cop_cars.size() != 0) {
+        IVehicles::iterator add_it = new_cop_cars.begin();
+        while (add_it != new_cop_cars.end()) {
+            AddNewCop(*add_it);
+            ++add_it;
+        }
     }
     new_cop_cars.clear();
 

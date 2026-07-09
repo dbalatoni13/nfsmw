@@ -384,12 +384,31 @@ void RoadblockFlow::Effect() {
 }
 
 void RoadblockFlow::Service() {
-    if (Manager::IsCopSpeechBusy()) {
+    SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
+    if ((ai->GetFocus() != SoundAI::kStrategyFlow) && (ai->GetFocus() != SoundAI::kLost)) {
+        ChangeStateTo(kTerminal);
         return;
     }
-    mFlags &= ~REQ_SERVICE;
-    mFlags |= RESET_PENDING;
-    mT_reset = WorldTimer;
+
+    if (((mFlags & REQUESTED) == 0) &&
+        ((Manager::GetHistory().GetCount(kSPCH1_EventID_InitStrategy) > 0) ||
+         (Manager::GetHistory().GetCount(kSPCH1_EventID_SelfStrategy) > 0))) {
+        Request();
+    }
+
+    if ((mFlags & REQ_SERVICE) != 0) {
+        if ((mFlags & (AVERTED | ENGAGED)) == 0) {
+            if ((mFlags & LOS) != 0) {
+                Approach();
+            } else if ((mFlags & SETUP) != 0) {
+                Setup();
+            }
+        }
+    }
+
+    if ((mFlags & OUTCOMETIMERSET) != 0) {
+        Effect();
+    }
 }
 
 void RoadblockFlow::Terminal() {

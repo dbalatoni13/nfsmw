@@ -1,5 +1,6 @@
 #include "PursuitFlow.h"
 #include "SoundAI.h"
+#include "EAXDispatch.h"
 #include "Speed/Indep/Src/EAXSound/Stream/SpeechManager.hpp"
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Generated/Messages/MNotifySpeechStatus.h"
@@ -563,11 +564,32 @@ bool PursuitFlow::IsTransitionable() {
 }
 
 void PursuitFlow::MessageEventComplete(const MNotifySpeechStatus &message) {
-    if (!message.GetEvent()) {
+    ScheduledSpeechEvent *speech = message.GetEvent();
+    if (speech == 0) {
         return;
     }
-    if (mReqRestart) {
-        mReqRestart = false;
+
+    switch (speech->ID) {
+    case kSPCH1_EventID_AttmptVehStp: {
+        Csis::Setup_AttmptVehStpStruct *data = static_cast<Csis::Setup_AttmptVehStpStruct *>(speech->GetData(0));
+        if ((data != 0) && (data->pursuit_type == Csis::Type_pursuit_type_Unit_Rammed)) {
+            mAVSUnitRammedSaid = true;
+        }
+        break;
+    }
+    case kSPCH1_EventID_ReInitPursuit: {
+        SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
+        if ((ai != 0) && (ai->NumPursuits() > 2)) {
+            if ((bRandom(1.0f) > 0.5f) && ai->IsHeadingValid()) {
+                ai->GetDispatch()->PursuitEscalation();
+            } else {
+                ai->GetDispatch()->PursuitEscalationGeneric();
+            }
+        }
+        break;
+    }
+    default:
+        break;
     }
 }
 

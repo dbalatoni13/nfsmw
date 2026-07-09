@@ -269,7 +269,7 @@ def expected_kind_from_ps2(name: str) -> Optional[str]:
         return None
 
     result = subprocess.run(
-        ["python", "tools/lookup.py", "--file", ps2_types_path, "struct", name],
+        [sys.executable, "tools/lookup.py", "--file", ps2_types_path, "struct", name],
         cwd=root_dir,
         capture_output=True,
         text=True,

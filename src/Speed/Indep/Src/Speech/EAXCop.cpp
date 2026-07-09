@@ -2,6 +2,7 @@
 #include "ScheduleSpeech.hpp"
 #include "SoundAI.h"
 #include "Speed/Indep/Src/EAXSound/Csis.hpp"
+#include "Speed/Indep/Src/EAXSound/snd_gen/copspeech.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IDamageable.h"
@@ -132,14 +133,6 @@ struct Setup_VehicleReportStruct {
     int car_type;
     int speed;
     int measurement;
-};
-
-struct Setup_AttmptVehStpStruct {
-    int speaker_id;
-    int pursuit_type;
-    int num_suspects;
-    int speaker_battalion;
-    int speaker_call_sign_id;
 };
 
 struct Setup_SelfStrategyStruct {
@@ -1800,14 +1793,15 @@ void EAXCop::SuspectBrake() {
 }
 
 void EAXCop::SwapVoices(EAXCop *cop) {
-    if (cop) {
-        int callsign = mCallsign.name;
-        int unit = mCallsign.number;
-        mCallsign.name = cop->mCallsign.name;
-        mCallsign.number = cop->mCallsign.number;
-        cop->mCallsign.name = callsign;
-        cop->mCallsign.number = unit;
-    }
+    int callsign = cop->GetCallsign();
+    int unitnum = cop->GetUnitNumber();
+    int spkrID = cop->GetSpeakerID();
+    cop->SetSpeakerID(mSpeakerID);
+    cop->SetCallsign(mCallsign.name);
+    cop->SetUnitNumber(mCallsign.number);
+    mSpeakerID = spkrID;
+    mCallsign.name = callsign;
+    mCallsign.number = unitnum;
 }
 
 bool EAXCop::IsPrimary() {
@@ -1831,7 +1825,19 @@ bool EAXCop::SetRank(int newrank) {
     return did_reset;
 }
 
-void EAXCop::Impact_Suspect_World() {}
+void EAXCop::Impact_Suspect_World() {
+    SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
+    Csis::AnytimeEvents_CollisionWorldStruct data;
+    data.speaker_id = mSpeakerID;
+    data.world_object_type = (Speech::Manager::GetHistory().GetCount(kSPCH1_EventID_CollisionWorld) > 0) || ai->IsHighIntensity()
+        ? Csis::Type_world_object_type_generic
+        : Csis::Type_world_object_type_low_heat_collision;
+    data.num_units = Csis::Type_num_units_one_unit_in_pursuit;
+    if ((ai->GetPursuit() != 0) && (ai->NumCopsWithLOS() > 1)) {
+        data.num_units = Csis::Type_num_units_multiple_units_in_pursuit;
+    }
+    ScheduleSpeech(data, Csis::AnytimeEvents_CollisionWorldId, Csis::gAnytimeEvents_CollisionWorldHandle, this);
+}
 
 void EAXCop::Impact_Suspect_Semi() {}
 
@@ -1841,7 +1847,23 @@ void EAXCop::Impact_Suspect_Guardrail() {}
 
 void EAXCop::Impact_Suspect_GasStation() {}
 
-void EAXCop::Impact_Suspect_Spikebelt() {}
+void EAXCop::Impact_Suspect_Spikebelt() {
+    Speech::Module *cop_speech = Speech::Manager::GetSpeechModule(COPSPEECH_MODULE);
+    if (cop_speech) {
+        cop_speech->ReleaseResource();
+    }
+    Speech::Manager::ClearPlayback();
+
+    SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
+    Csis::AnytimeEvents_CollisionWorldStruct data;
+    data.speaker_id = mSpeakerID;
+    data.world_object_type = Csis::Type_world_object_type_spike_belt;
+    data.num_units = Csis::Type_num_units_one_unit_in_pursuit;
+    if ((ai->GetPursuit() != 0) && (ai->NumCopsWithLOS() > 1)) {
+        data.num_units = Csis::Type_num_units_multiple_units_in_pursuit;
+    }
+    ScheduleSpeech(data, Csis::AnytimeEvents_CollisionWorldId, Csis::gAnytimeEvents_CollisionWorldHandle, this);
+}
 
 void EAXCop::Impact_Suspect_Traffic(Csis::Type_intensity intensity) {
     Csis::AnytimeEvents_CollWorld_CiviStruct data;
