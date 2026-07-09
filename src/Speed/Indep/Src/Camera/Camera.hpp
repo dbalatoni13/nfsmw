@@ -9,8 +9,26 @@
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/Src/Camera/ICE/ICEMath.hpp"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
-
 #include "Speed/Indep/bWare/Src/bFunkPlat.cpp"
+#include "Speed/Indep/Src/Gameplay/GManager.h"
+#include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
+#include "Speed/Indep/Libs/Support/Utility/UCollections.h"
+#include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
+#include "Speed/Indep/Src/World/TrackStreamer.hpp"
+#include "Speed/Indep/bWare/Inc/bList.hpp"
+
+// TODO GET RID OF THESE (from GameFlow.cpp)
+#include "Speed/Indep/Src/Misc/GameFlow.cpp"
+
+
+// TODO GET RID OF THESE
+extern int32 RealTime; 
+extern int32 LastUpdateTimeJR2;
+extern int WeHaveCheckedIfJR2ServerExists; 
+extern int bStreamingPositionFromICE;
+extern int JR2ServerExists;
+
+void UpdateCameraMovers(float dT);
 
 struct CameraParams {
     // total size: 0xD4
@@ -58,10 +76,13 @@ struct JR2Request {
 
 // total size: 0x290
 class Camera {
+    friend class CameraMover;
+    friend void UpdateCameraMovers(float dT);
+
   public:
     static bool StopUpdating;
     static JollyRancherResponsePacket JollyRancherResponse;
-    static void UpdateAll(float dT);
+    static int JR2ServerExists;
 
     bMatrix4 *GetCameraMatrix() {
         return &this->CurrentKey.Matrix;
@@ -77,6 +98,14 @@ class Camera {
     void CommunicateWithJollyRancher(char *cameraname);
 
     unsigned short FovRelativeAngle(unsigned short a);
+
+    void UpdateAll(float dT);
+
+
+
+    // void UpdateCameraMovers(float dT); // not a member of Camera, but a global function
+
+    // void UpdateCameraShakers(float dT); // not a member of Camera, but a global function
 
     // float GetFocalDistance() {}
 
@@ -193,5 +222,6 @@ class Camera {
 
 // TODO move?
 extern bool gCinematicMomementCamera;
+extern TrackStreamer TheTrackStreamer;
 
 #endif

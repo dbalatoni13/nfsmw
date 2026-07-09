@@ -1,8 +1,9 @@
 #include "Speed/Indep/Src/Camera/Camera.hpp"
 #include "Speed/Indep/Src/Camera/CameraMover.hpp"
 
+
 Camera TheCamera;
-CameraMover CamMover;
+// CameraMover CamMover;
 
 static int g_DisableCommunication = 0;
 
@@ -16,6 +17,7 @@ Camera::Camera() {
 
     bClearVelocity = false;
     Camera::StopUpdating = false;
+    JR2ServerExists = 0;
     ElapsedTime = 0.0f;
     LastUpdateTime = 0;
     LastDisparateTime = 0;
@@ -173,12 +175,12 @@ void Camera::SetCameraMatrix(bMatrix4 *m, float fTime) {
 }
 
 void Camera::CommunicateWithJollyRancher(char *cameraname) {
-        
-        char data[0x60];         
-    Mtx44 scaledmatrix;       
 
-    JollyRancherResponsePacket *local_10; 
-            int local_c;
+    char data[0x60];
+    Mtx44 scaledmatrix;
+
+    JollyRancherResponsePacket *local_10;
+    int local_c;
 
     if (DisableCommunication == 0) {
 
@@ -188,14 +190,14 @@ void Camera::CommunicateWithJollyRancher(char *cameraname) {
         bMemCpy(data, &local_10, 4);
         bMemCpy(data + 4, &local_c, 4);
         {
-        PSMTX44Copy((const float (*)[4])this, (float (*)[4])&scaledmatrix);
+            PSMTX44Copy((const float (*)[4])this, (float (*)[4]) & scaledmatrix);
         }
         scaledmatrix[3][0] *= 100.0f;
         scaledmatrix[3][1] *= 100.0f;
         scaledmatrix[3][2] *= 100.0f;
-        scaledmatrix[3][3]  = 1.0f;
+        scaledmatrix[3][3] = 1.0f;
         {
-        bMemCpy(data + 8, (void*)(&scaledmatrix), 0x40);
+            bMemCpy(data + 8, (void *)(&scaledmatrix), 0x40);
         }
         bStrCpy(data + 0x48, cameraname);
         bFunkCallASync("JR2Server", 1, data, 0x60);
@@ -203,11 +205,136 @@ void Camera::CommunicateWithJollyRancher(char *cameraname) {
     return;
 }
 
+unsigned short Camera::FovRelativeAngle(unsigned short a) {
+    float sin_a = bSin(a);
+    float sin_fov = bSin((unsigned short)(this->CurrentKey.FieldOfView >> 1));
+    float sin_baseline = bSin((unsigned short)(aBaselineFovNoise >> 1));
 
-unsigned short Camera::FovRelativeAngle(unsigned short a){
-  float sin_a = bSin(a);
-  float sin_fov = bSin((unsigned short)(this->CurrentKey.FieldOfView >> 1));
-  float sin_baseline = bSin((unsigned short)(aBaselineFovNoise >> 1));
+    return bASin((float)(sin_a * sin_fov) / sin_baseline);
+}
 
-  return bASin((float)(sin_a * sin_fov) / sin_baseline);
+void Camera::UpdateAll(float dT){
+    UpdateCameraMovers(dT);
+    //UpdateCameraShakers((float)dT); //TODO
+}
+
+void UpdateCameraMovers(float dT) {
+
+  bool bVar1;
+  int iVar2;
+  Vector3 *sl;
+  bNode *pbVar3;
+  Camera *pCVar4;
+  bNode *pbVar5;
+  bNode *pbVar6;
+  Camera *camera;
+  int uVar7;
+  unsigned long long in_f31;
+  double dVar8;
+  bVector3 pos;
+  bVector3 vel;
+  bVector3 dir;
+  //LongVector fix_look;
+  bVector3 local_78;
+  bVector3 local_68;
+  bVector3 local_58 [2];
+  char local_8 [8];
+  
+  dVar8 = (double)dT;
+  uVar7 = 0;
+
+  camera = (Camera *)0x0;
+  do {
+    if ((int)camera * 0x68 != 0x7fb9e0a4) {
+      bNode* head = (bNode*)&eViews[(int)camera].CameraMoverList;
+      bNode* first = head->Next;
+    //   if (pbVar6 != (bNode *)((int)camera * 0x68 + -0x7fb9e068)) { 
+    //     pbVar5 = pbVar6;
+    //   }
+      if (first != head) { 
+        
+        CameraMover* mover = (CameraMover*)first; 
+        mover->Update(dT);
+
+      }
+    }
+    camera = (Camera *)((int)&(camera->CurrentKey).Matrix.v0.x + 1);
+  } while ((int)camera < 0x16);
+  if (WeHaveCheckedIfJR2ServerExists == 0) { // who is owner of this variable? Camera class? World?
+    JR2ServerExists = bFunkDoesServerExist("JR2Server");
+    WeHaveCheckedIfJR2ServerExists = 1;
+  }
+  if ((JR2ServerExists != 0) && (eViews[1].pCamera != 0x0)) {
+    iVar2 = RealTime - LastUpdateTimeJR2; // who is owner of the JR?
+    if (iVar2 < 0) {
+      iVar2 = -iVar2;
+    }
+    if (0x10 < iVar2) {
+      LastUpdateTimeJR2 = RealTime;
+      eViews[1].pCamera->CommunicateWithJollyRancher("SpeedCam");
+    }
+  }
+  if (((GManager::Get().mObj == (GManager *)0x0) || (*(int *)&GManager::mObj->mWarping == 0)) && 
+     ((GRaceStatus::fObj == (GRaceStatus *)0x0 ||
+      (*(int *)&GRaceStatus::fObj->mScriptWaitingForLoad == 0)))) {
+    dVar8 = 0.0;
+    bVar1 = false;
+    iVar2 = 1;
+    do {
+      if (eViews[iVar2].Active != '\0') {
+        //pbVar3 = eViews[iVar2].CameraMoverList.__base.HeadNode.Next; 
+        bNode* firstNode = eViews[iVar2].CameraMoverList.GetHead()->Next;
+        pbVar6 = (bNode *)(iVar2 * 0x68 + -0x7fb9e068);
+        pbVar5 = (bNode *)0x0;
+        if (pbVar3 != pbVar6) {
+          pbVar5 = pbVar3;
+        }
+        if (pbVar5 != (bNode *)0x0) {
+          if (!bVar1) {
+            TheTrackStreamer.ClearStreamingPositions();
+            bVar1 = true;
+          }
+          pCVar4 = eViews[iVar2].pCamera;
+          local_78.x = pCVar4->CurrentKey.Position.x;
+          local_78.y = (pCVar4->CurrentKey).Position.y;
+          local_78.z = (pCVar4->CurrentKey).Position.z;
+          local_68.z = (pCVar4->VelocityKey).Position.z;
+          local_68.x = (pCVar4->VelocityKey).Position.x;
+          local_68.y = (pCVar4->VelocityKey).Position.y;
+          pCVar4 = eViews[iVar2].pCamera;
+          local_58[0].z = (pCVar4->CurrentKey).Direction.z;
+          local_58[0].x = (pCVar4->CurrentKey).Direction.x;
+          local_58[0].y = (pCVar4->CurrentKey).Direction.y;
+          if (bStreamingPositionFromICE != 0) {
+            if (UTL::Collections::Singleton<INIS>::Get() != (INIS *)0x0) {
+              sl = (Vector3 *)((UTL::Collections::Singleton<INIS>::Get()->GetStartCameraLocation()));
+              local_78.x = sl->z;
+              local_78.z = sl->y;
+              local_78.y = -sl->x;
+            }
+            local_68.x = (float)dVar8;
+            local_58[0].z = local_68.z;
+            local_68.y = (float)dVar8;
+            local_58[0].x = (float)dVar8;
+            local_58[0].y = (float)dVar8;
+          }
+          pbVar3 = (bNode*)&eViews[iVar2].CameraMoverList;
+          pbVar5 = (bNode *)0x0;
+          if (pbVar3 != pbVar6) {
+            pbVar5 = pbVar3;
+          }
+          TheTrackStreamer.PredictStreamingPosition(
+            (unsigned int)(iVar2 == 2),
+            &local_78,
+            &local_68,
+            local_58,
+            pbVar5[1].Prev == (bNode *)0x1
+        );
+        }
+      }
+      iVar2 = iVar2 + 1;
+    } while (iVar2 < 3);
+  }
+  return;
+
 }

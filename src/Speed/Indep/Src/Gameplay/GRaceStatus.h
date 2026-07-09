@@ -293,6 +293,7 @@ class GRaceParameters {
 
 // total size: 0x46AC
 class GRaceStatus : public UTL::COM::Object, public IVehicleCache {
+    friend void UpdateCameraMovers(float dT);
   public:
     enum PlayMode {
         kPlayMode_Roaming = 0,
