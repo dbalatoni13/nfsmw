@@ -448,19 +448,7 @@ void SoundAI::OnCollision(const COLLISION_INFO &cinfo) {
             }
 
             switch (theOtherCar->GetDriverClass()) {
-            case DRIVER_HUMAN:
-                break;
-            case DRIVER_TRAFFIC:
-                mObserver->Observe(2, -1, intensity);
-                actor->JustHitTraffic();
-                if ((mPursuitState == kActive) && (mFocus == kStrategyFlow) && actor->IsActive()) {
-                    actor->BailoutTraffic();
-                    RandomBailoutDeny(actor);
-                }
-                return;
-            default:
-                return;
-            }
+            case DRIVER_HUMAN: {
 
             bool cop_is_in_rb = false;
             bool cop_rammed = false;
@@ -481,9 +469,8 @@ void SoundAI::OnCollision(const COLLISION_INFO &cinfo) {
 
             inputcop = 0;
             if (simableCop->QueryInterface(&inputcop)) {
-                InputControls &controls = inputcop->GetControls();
-                float brake = UMath::Clamp(controls.fBrake, 0.0f, 1.0f);
-                float ebrake = UMath::Clamp(controls.fHandBrake, 0.0f, 1.0f);
+                float brake = UMath::Clamp(inputcop->GetControls().fBrake, 0.0f, 1.0f);
+                float ebrake = UMath::Clamp(inputcop->GetControls().fHandBrake, 0.0f, 1.0f);
                 if ((brake > 0.0f) || (ebrake > 0.0f)) {
                     cop_is_braking = true;
                 }
@@ -536,18 +523,15 @@ void SoundAI::OnCollision(const COLLISION_INFO &cinfo) {
 
             rbCop = simableCop->GetRigidBody();
             rbRacer = theOtherObj->GetRigidBody();
-            if (!rbCop || !rbRacer) {
-                return;
-            }
 
-            UMath::Vector3 armCop = actorA ? cinfo.armA : cinfo.armB;
-            UMath::Vector3 armRacer = actorA ? cinfo.armB : cinfo.armA;
+            UMath::Vector3 armCop = actorA ? cinfo.armB : cinfo.armA;
+            UMath::Vector3 armRacer = actorA ? cinfo.armA : cinfo.armB;
             UMath::Vector3 fwCop;
             UMath::Vector3 fwRacer;
             UMath::Vector3 dimCop;
             UMath::Vector3 dimRacer;
-            UMath::Vector3 velCop;
             UMath::Vector3 velRacer;
+            UMath::Vector3 velCop;
             UMath::Vector3 cnormal = cinfo.normal;
             rbCop->GetForwardVector(fwCop);
             rbCop->GetDimension(dimCop);
@@ -558,40 +542,44 @@ void SoundAI::OnCollision(const COLLISION_INFO &cinfo) {
 
             VehicleImpactType coll_type = kUnknown;
             float fwDot = UMath::Dot(fwRacer, fwCop);
-            float vel_norm_dotCop = bAbs(UMath::Dot(velCop, cnormal));
             float vel_norm_dotRacer = bAbs(UMath::Dot(velRacer, cnormal));
+            float vel_norm_dotCop = bAbs(UMath::Dot(velCop, cnormal));
 
             if (fwDot >= 0.7f) {
-                if ((bAbs(armCop.x) <= dimCop.x * 0.75f) || (bAbs(armRacer.x) <= dimRacer.x * 0.75f)) {
-                    if ((dimCop.z * 0.75f <= armCop.z) && (armRacer.z <= dimRacer.z * -0.75f)) {
+                if ((bAbs(armCop.x) > dimCop.x * 0.75f) && (bAbs(armRacer.x) > dimRacer.x * 0.75f)) {
+                    coll_type = kCopSSPerp;
+                    if (vel_norm_dotRacer <= vel_norm_dotCop) {
+                        coll_type = kPerpSSCop;
+                        cop_rammed = true;
+                    }
+                } else {
+                    if ((armCop.z >= dimCop.z * 0.75f) && (armRacer.z <= armRacer.z * -0.75f)) {
                         coll_type = kCopREperp;
                     }
-                    if ((dimRacer.z * 0.75f <= armRacer.z) && (dimCop.z * -0.75f <= armCop.z)) {
+                    if ((armRacer.z >= dimRacer.z * 0.75f) && (armCop.z <= dimCop.z * -0.75f)) {
                         float speedCop = VU0_v3length(velCop);
                         float speedRacer = VU0_v3length(velRacer);
-                        cop_rammed = speedRacer < speedCop;
+                        if (speedCop <= speedRacer) {
+                        } else {
+                            cop_rammed = true;
+                        }
                         coll_type = kPerpRECop;
                     }
-                } else if (vel_norm_dotRacer <= vel_norm_dotCop) {
-                    coll_type = kPerpSSCop;
-                    cop_rammed = true;
-                } else {
-                    coll_type = kCopSSPerp;
                 }
-            } else if (fwDot <= -0.7f) {
+            } else if (fwDot > -0.7f) {
+                if (armRacer.z >= dimRacer.z * 0.7f) {
+                    coll_type = kPerpTBCop;
+                    cop_rammed = true;
+                }
+                if (armCop.z >= dimCop.z * 0.7f) {
+                    coll_type = kCopTBPerp;
+                }
+            } else {
                 if (vel_norm_dotCop <= vel_norm_dotRacer) {
                     coll_type = kCopHOPerp;
                 } else {
                     coll_type = kPerpHOCop;
                     cop_rammed = true;
-                }
-            } else {
-                if (dimRacer.z * 0.7f <= armCop.z) {
-                    coll_type = kPerpTBCop;
-                    cop_rammed = true;
-                }
-                if (dimCop.z * 0.7f <= armRacer.z) {
-                    coll_type = kCopTBPerp;
                 }
             }
 
@@ -619,29 +607,48 @@ void SoundAI::OnCollision(const COLLISION_INFO &cinfo) {
                     } else if (coll_type == kPerpSSCop) {
                         actor->SideSwiped(csis_intensity);
                     }
-                } else if (intensity <= 0.75f) {
-                    float rand_select = bRandom(1.0f);
-                    if (rand_select >= 0.67f) {
-                        actor->InterruptExpletive();
-                    } else {
-                        Csis::Type_intensity csis_intensity = Csis::Type_intensity_High;
-                        if (coll_type == kPerpRECop) {
-                            actor->RearEnded(csis_intensity);
-                        } else if (coll_type == kPerpTBCop) {
-                            actor->TBoned(csis_intensity);
-                        } else if ((coll_type == kPerpHOCop) && !cop_is_suv) {
-                            actor->HeadOn(csis_intensity);
-                        } else if (coll_type == kPerpSSCop) {
-                            actor->SideSwiped(csis_intensity);
-                        } else {
-                            actor->InterruptExpletive();
-                        }
-                    }
-                } else {
-                    actor->InterruptViolent();
+                    return;
                 }
             }
+            if (intensity <= 0.5f) {
+                return;
+            }
+            if (intensity <= 0.75f) {
+                float rand_select = bRandom(1.0f);
+                if (rand_select < 0.67f) {
+                    Csis::Type_intensity csis_intensity = Csis::Type_intensity_High;
+                    if (coll_type == kPerpRECop) {
+                        actor->RearEnded(csis_intensity);
+                    } else if (coll_type == kPerpTBCop) {
+                        actor->TBoned(csis_intensity);
+                    } else if ((coll_type == kPerpHOCop) && !cop_is_suv) {
+                        actor->HeadOn(csis_intensity);
+                    } else if (coll_type == kPerpSSCop) {
+                        actor->SideSwiped(csis_intensity);
+                    } else {
+                        actor->InterruptExpletive();
+                    }
+                } else {
+                    actor->InterruptExpletive();
+                }
+            } else {
+                actor->InterruptViolent();
+            }
             return;
+            }
+
+            case DRIVER_TRAFFIC:
+                mObserver->Observe(2, -1, intensity);
+                actor->JustHitTraffic();
+                if ((mPursuitState == kActive) && (mFocus == kStrategyFlow) && actor->IsActive()) {
+                    actor->BailoutTraffic();
+                    RandomBailoutDeny(actor);
+                }
+                return;
+
+            default:
+                return;
+            }
         }
 
         IVehicle *pvehicle = 0;
