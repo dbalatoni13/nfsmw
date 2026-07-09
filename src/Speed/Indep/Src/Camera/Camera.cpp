@@ -2,6 +2,62 @@
 #include "Speed/Indep/Src/Camera/CameraMover.hpp"
 
 
+// NOISE 
+// TODO: rename variables, delete ghidra pseudocods
+
+float NoiseBase(int x)
+
+{
+  unsigned int uVar1;
+  
+  uVar1 = x << 0xd ^ x;
+  return 1.0 - (float)(int)(uVar1 * (uVar1 * uVar1 * 0x3d73 + 0xc0ae5) + 0x5208dd0d & 0x7fffffff) *
+               9.313226e-10;
+}
+
+
+float NoiseInterpolated(float x)
+
+{
+  int x_00;
+  float fVar1;
+  float fVar2;
+  
+  fVar1 = (float)(int)x;
+  if (x < fVar1) {
+    fVar1 = fVar1 - 1.0;
+  }
+  x_00 = (int)fVar1;
+  fVar1 = NoiseBase(x_00);
+  fVar2 = NoiseBase(x_00 + 1);
+  return (x - (float)x_00) * fVar2 + (1.0 - (x - (float)x_00)) * fVar1;
+}
+
+float Noise(float x)
+
+{
+  float fVar1;
+  float fVar2;
+  float fVar3;
+  int i;
+  float fVar4;
+  
+  fVar1 = 1.0;
+  fVar2 = 0.0;
+  i = 0;
+  fVar3 = fVar1;
+  do {
+    i = i + 1;
+    fVar4 = NoiseInterpolated(x * fVar1);
+    fVar1 = fVar1 + fVar1;
+    fVar2 = fVar3 * fVar4 + fVar2;
+    fVar3 = fVar3 * 0.5;
+  } while (i < 6);
+  return fVar2;
+}
+
+/////////////////
+
 Camera TheCamera;
 // CameraMover CamMover;
 
@@ -74,8 +130,6 @@ Camera::Camera() {
     SetCameraMatrix(&defaultMatrix, 1.0);
     SetCameraMatrix(&defaultMatrix, 1.0);
 }
-
-
 
 void Camera::SetCameraMatrix(bMatrix4 *m, float fTime) {
     bMatrix4 bStack_a8;
@@ -218,6 +272,73 @@ void Camera::UpdateAll(float dT){
     //UpdateCameraShakers((float)dT); //TODO
 }
 
+//TODO: rename variables, delete ghidra pseudocods
+//TODO2: magic nubers is who?
+void Camera::ApplyNoise(bMatrix4 *p_matrix,float time,float intensity){
+    int iVar1;
+  float fVar2;
+  float fVar3;
+  float fVar4;
+  float fVar5;
+  float fVar6;
+  float fVar7;
+  float fVar8;
+  float fVar9;
+  unsigned short uVar10;
+  float fVar11;
+  float fVar12;
+  float fVar13;
+  float fVar14;
+  float fVar15;
+  float fVar16;
+  float fVar17;
+  float fVar18;
+  bVector4 v;
+  bVector4 v1;
+  bVector4 v2;
+  bVector4 v_noise;
+  bMatrix4 m;
+  bMatrix4 bStack_88;
+  long long local_48;
+  
+  fVar2 = (this->CurrentKey).NoiseFrequency1.y;
+  fVar3 = (this->CurrentKey).NoiseFrequency1.z;
+  fVar4 = (this->CurrentKey).NoiseFrequency1.w;
+  fVar11 = Noise((this->CurrentKey).NoiseFrequency1.x * time);
+  fVar12 = Noise(fVar2 * time);
+  fVar13 = Noise(fVar3 * time);
+  fVar14 = Noise(fVar4 * time);
+  fVar2 = (this->CurrentKey).NoiseAmplitude1.x;
+  fVar3 = (this->CurrentKey).NoiseAmplitude1.y;
+  fVar4 = (this->CurrentKey).NoiseAmplitude1.z;
+  fVar5 = (this->CurrentKey).NoiseAmplitude1.w;
+  fVar6 = (this->CurrentKey).NoiseFrequency2.y;
+  fVar7 = (this->CurrentKey).NoiseFrequency2.z;
+  fVar8 = (this->CurrentKey).NoiseFrequency2.w;
+  fVar15 = Noise((this->CurrentKey).NoiseFrequency2.x * time);
+  fVar16 = Noise(fVar6 * time);
+  fVar17 = Noise(fVar7 * time);
+  fVar18 = Noise(fVar8 * time);
+  fVar6 = (this->CurrentKey).NoiseAmplitude2.x;
+  fVar7 = (this->CurrentKey).NoiseAmplitude2.y;
+  fVar8 = (this->CurrentKey).NoiseAmplitude2.z;
+  fVar9 = (this->CurrentKey).NoiseAmplitude2.w;
+  PSMTX44Identity( (float (*)[4])&bStack_88);
+  iVar1 = (int)((fVar13 * fVar4 + fVar17 * fVar8) * intensity * 65536.0);
+  local_48 = (long long)iVar1;
+  bStack_88.v3.x = (fVar11 * fVar2 + fVar15 * fVar6) * intensity;
+  bStack_88.v3.y = (fVar12 * fVar3 + fVar16 * fVar7) * intensity;
+  uVar10 = Camera::FovRelativeAngle((unsigned short)(iVar1 / 0x168));
+  eRotateX(&bStack_88,&bStack_88,uVar10);
+  iVar1 = (int)((fVar14 * fVar5 + fVar18 * fVar9) * intensity * 65536.0);
+  local_48 = (long long)iVar1;
+  uVar10 = Camera::FovRelativeAngle((unsigned short)(iVar1 / 0x168));
+  eRotateY(&bStack_88,&bStack_88,uVar10);
+  eMulMatrix(p_matrix,p_matrix,&bStack_88);
+  return;
+}
+
+//TODO: rename variables, delete ghidra pseudocods
 void UpdateCameraMovers(float dT) {
 
   bool bVar1;
@@ -282,7 +403,6 @@ void UpdateCameraMovers(float dT) {
     iVar2 = 1;
     do {
       if (eViews[iVar2].Active != '\0') {
-        //pbVar3 = eViews[iVar2].CameraMoverList.__base.HeadNode.Next; 
         bNode* firstNode = eViews[iVar2].CameraMoverList.GetHead()->Next;
         pbVar6 = (bNode *)(iVar2 * 0x68 + -0x7fb9e068);
         pbVar5 = (bNode *)0x0;
@@ -338,3 +458,9 @@ void UpdateCameraMovers(float dT) {
   return;
 
 }
+
+
+
+
+
+

@@ -101,7 +101,7 @@ class Camera {
 
     void UpdateAll(float dT);
 
-
+    void ApplyNoise(bMatrix4 *p_matrix,float time,float intensity);
 
     // void UpdateCameraMovers(float dT); // not a member of Camera, but a global function
 
@@ -225,3 +225,4 @@ extern bool gCinematicMomementCamera;
 extern TrackStreamer TheTrackStreamer;
 
 #endif
+

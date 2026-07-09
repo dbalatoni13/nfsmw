@@ -1,10 +1,10 @@
 #include "Speed\Indep\Src\Camera\CameraMover.hpp"
 
 bool DoesCameraTypeDisablePreculler(CameraMoverTypes type) {
-    if (type != CM_DEBUG_WORLD) {
-        return type == CM_TRACK_CAR;
+    if (type == CM_DEBUG_WORLD) {
+        return true;
     }
-    return true;
+    return type == CM_TRACK_CAR;
 }
 
 CameraMover::CameraMover(int view_id, CameraMoverTypes type) {
@@ -71,46 +71,53 @@ void CameraMover::Enable() {
     }
 }
 
-void CameraMover::ComputeBankedUpVector(bVector3 *up,bVector3 *eye,bVector3 *look,bAngle bank){
-        bMatrix4 axis_rotation;
-        bVector3 axis;
-        bVector3 new_up;
-        bMatrix4 bStack_78;
-        bVector3 local_38;
-        bVector3 local_28;
+void CameraMover::ComputeBankedUpVector(bVector3 *up, bVector3 *eye, bVector3 *look, bAngle bank) {
 
-        local_38.z = look->z - eye->z;
-        local_38.x = look->x - eye->x;
-        local_38.y = look->y - eye->y;
-        bNormalize(&local_38,&local_38);
-        eCreateAxisRotationMatrix(&bStack_78,*&local_38,bank);
-        local_28.y = 0.0;
-        local_28.z = 1.0;
-        local_28.x = 0.0;
-        eMulVector(up,&bStack_78,&local_28);
-        return;
+    bVector3 diff;
+
+    diff.x = look->x - eye->x;
+    diff.z = look->z - eye->z;
+    diff.y = look->y - eye->y;
+
+    bVector3 axis;
+    bNormalize(&axis, &diff);
+
+    bMatrix4 rotationMatrix;
+    eCreateAxisRotationMatrix(&rotationMatrix, *&axis, bank);
+    // defaultVec.y = 0.0;
+    // defaultVec.z = 1.0;
+    // defaultVec.x = 0.0;
+    bVector3 defaultVec = bVector3(0.0, 0.0, 1.0);
+    eMulVector(up, &rotationMatrix, &defaultVec);
+    return;
 }
 
 void CameraMover::Disable()
 
 {
-  if (this->Enabled != 0) {
-    this->Enabled = 0;
-    this->RenderDash = this->pCamera->RenderDash;
-    this->pView->UnattachCameraMover(this);
-  }
-  return;
+    if (this->Enabled != 0) {
+        this->Enabled = 0;
+        this->RenderDash = this->pCamera->RenderDash;
+        this->pView->UnattachCameraMover(this);
+    }
+    return;
 }
 
 CameraMover::~CameraMover() {
+
+    WCollider::Destroy(mCollider);
+
     if (DoesCameraTypeDisablePreculler(Type)) {
         DisablePrecullerCounter--;
     }
-
     Disable();
+}
 
-    if (mCollider) {
-        WCollider::Destroy(mCollider);
-        mCollider = nullptr;
-    }
+
+void CameraMover::Update(float dT) {
+    return;
+}
+
+void CameraMover::Render(eView *view) {
+    return;
 }
