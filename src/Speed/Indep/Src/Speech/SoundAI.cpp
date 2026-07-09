@@ -381,8 +381,18 @@ void SoundAI::OnCollision(const COLLISION_INFO &cinfo) {
     IRenderable *renderB;
     EAXCop *actorA = 0;
     EAXCop *actorB = 0;
-    ISimable *simableA = ISimable::FindInstance(cinfo.objA);
-    ISimable *simableB = ISimable::FindInstance(cinfo.objB);
+    ISimable *simableA;
+    if (cinfo.objA) {
+        simableA = ISimable::FindInstance(cinfo.objA);
+    } else {
+        simableA = 0;
+    }
+    ISimable *simableB;
+    if (cinfo.objB) {
+        simableB = ISimable::FindInstance(cinfo.objB);
+    } else {
+        simableB = 0;
+    }
 
     if (simableA) {
         actorA = mActors.Find(cinfo.objA);
@@ -429,25 +439,26 @@ void SoundAI::OnCollision(const COLLISION_INFO &cinfo) {
         }
 
         if (actors_involved == 1) {
+            IVehicle *theOtherCar;
             ISimable *theOtherObj = simableA ? simableA : simableB;
             EAXCop *actor = actorA ? actorA : actorB;
 
-            IVehicle *theOtherCar = 0;
             if (!theOtherObj->QueryInterface(&theOtherCar)) {
                 return;
             }
 
-            DriverClass driver_class = theOtherCar->GetDriverClass();
-            if (driver_class != DRIVER_HUMAN) {
-                if (driver_class != DRIVER_TRAFFIC) {
-                    return;
-                }
+            switch (theOtherCar->GetDriverClass()) {
+            case DRIVER_HUMAN:
+                break;
+            case DRIVER_TRAFFIC:
                 mObserver->Observe(2, -1, intensity);
                 actor->JustHitTraffic();
                 if ((mPursuitState == kActive) && (mFocus == kStrategyFlow) && actor->IsActive()) {
                     actor->BailoutTraffic();
                     RandomBailoutDeny(actor);
                 }
+                return;
+            default:
                 return;
             }
 
@@ -494,7 +505,7 @@ void SoundAI::OnCollision(const COLLISION_INFO &cinfo) {
                             mPursuitFlow->SetPursuitCause(Speech::PursuitFlow::kCopAssaulted);
                         }
                         mPursuitFlow->ChangeStateTo(Speech::PursuitFlow::kPrimaryBranch);
-                        mPursuitFlow->Reset();
+                        mPursuitFlow->Update();
                         mFlags |= SETUP_RESTARTED;
                     }
                 }
@@ -535,49 +546,51 @@ void SoundAI::OnCollision(const COLLISION_INFO &cinfo) {
             UMath::Vector3 fwRacer;
             UMath::Vector3 dimCop;
             UMath::Vector3 dimRacer;
-            UMath::Vector3 velCop = (simableCop->GetOwnerHandle() == cinfo.objA) ? cinfo.objAVel : cinfo.objBVel;
-            UMath::Vector3 velRacer = (theOtherObj->GetOwnerHandle() == cinfo.objA) ? cinfo.objAVel : cinfo.objBVel;
+            UMath::Vector3 velCop;
+            UMath::Vector3 velRacer;
             UMath::Vector3 cnormal = cinfo.normal;
             rbCop->GetForwardVector(fwCop);
             rbCop->GetDimension(dimCop);
+            velRacer = (theOtherObj->GetOwnerHandle() == cinfo.objA) ? cinfo.objAVel : cinfo.objBVel;
             rbRacer->GetForwardVector(fwRacer);
             rbRacer->GetDimension(dimRacer);
+            velCop = (simableCop->GetOwnerHandle() == cinfo.objA) ? cinfo.objAVel : cinfo.objBVel;
 
             VehicleImpactType coll_type = kUnknown;
             float fwDot = UMath::Dot(fwRacer, fwCop);
-            float vel_norm_dotCop = UMath::Dot(velCop, cnormal);
-            float vel_norm_dotRacer = UMath::Dot(velRacer, cnormal);
+            float vel_norm_dotCop = bAbs(UMath::Dot(velCop, cnormal));
+            float vel_norm_dotRacer = bAbs(UMath::Dot(velRacer, cnormal));
 
             if (fwDot >= 0.7f) {
                 if ((bAbs(armCop.x) <= dimCop.x * 0.75f) || (bAbs(armRacer.x) <= dimRacer.x * 0.75f)) {
                     if ((dimCop.z * 0.75f <= armCop.z) && (armRacer.z <= dimRacer.z * -0.75f)) {
                         coll_type = kCopREperp;
                     }
-                    if ((dimRacer.z * 0.75f <= armRacer.z) && (armCop.z <= dimCop.z * -0.75f)) {
+                    if ((dimRacer.z * 0.75f <= armRacer.z) && (dimCop.z * -0.75f <= armCop.z)) {
                         float speedCop = VU0_v3length(velCop);
                         float speedRacer = VU0_v3length(velRacer);
                         cop_rammed = speedRacer < speedCop;
                         coll_type = kPerpRECop;
                     }
-                } else if (bAbs(vel_norm_dotCop) <= bAbs(vel_norm_dotRacer)) {
+                } else if (vel_norm_dotRacer <= vel_norm_dotCop) {
                     coll_type = kPerpSSCop;
                     cop_rammed = true;
                 } else {
                     coll_type = kCopSSPerp;
                 }
             } else if (fwDot <= -0.7f) {
-                if (bAbs(vel_norm_dotRacer) <= bAbs(vel_norm_dotCop)) {
+                if (vel_norm_dotCop <= vel_norm_dotRacer) {
                     coll_type = kCopHOPerp;
                 } else {
                     coll_type = kPerpHOCop;
                     cop_rammed = true;
                 }
             } else {
-                if (dimRacer.z * 0.7f <= armRacer.z) {
+                if (dimRacer.z * 0.7f <= armCop.z) {
                     coll_type = kPerpTBCop;
                     cop_rammed = true;
                 }
-                if (dimCop.z * 0.7f <= armCop.z) {
+                if (dimCop.z * 0.7f <= armRacer.z) {
                     coll_type = kCopTBPerp;
                 }
             }
@@ -596,9 +609,20 @@ void SoundAI::OnCollision(const COLLISION_INFO &cinfo) {
 
             if (intensity > 0.15f) {
                 if (intensity <= 0.5f) {
+                    Csis::Type_intensity csis_intensity = Csis::Type_intensity_Normal;
+                    if (coll_type == kPerpRECop) {
+                        actor->RearEnded(csis_intensity);
+                    } else if (coll_type == kPerpTBCop) {
+                        actor->TBoned(csis_intensity);
+                    } else if (coll_type == kPerpHOCop) {
+                        actor->HeadOn(csis_intensity);
+                    } else if (coll_type == kPerpSSCop) {
+                        actor->SideSwiped(csis_intensity);
+                    }
+                } else if (intensity <= 0.75f) {
                     float rand_select = bRandom(1.0f);
                     if (rand_select >= 0.67f) {
-                        actor->Deny();
+                        actor->InterruptExpletive();
                     } else {
                         Csis::Type_intensity csis_intensity = Csis::Type_intensity_High;
                         if (coll_type == kPerpRECop) {
@@ -610,60 +634,55 @@ void SoundAI::OnCollision(const COLLISION_INFO &cinfo) {
                         } else if (coll_type == kPerpSSCop) {
                             actor->SideSwiped(csis_intensity);
                         } else {
-                            actor->Ack();
+                            actor->InterruptExpletive();
                         }
                     }
-                } else if (intensity <= 0.75f) {
-                    Csis::Type_intensity csis_intensity = Csis::Type_intensity_Normal;
-                    if (coll_type == kPerpRECop) {
-                        actor->RearEnded(csis_intensity);
-                    } else if (coll_type == kPerpTBCop) {
-                        actor->TBoned(csis_intensity);
-                    } else if (coll_type == kPerpHOCop) {
-                        actor->HeadOn(csis_intensity);
-                    } else if (coll_type == kPerpSSCop) {
-                        actor->SideSwiped(csis_intensity);
-                    }
                 } else {
-                    actor->SuspectSpunout(Csis::Type_intensity_High);
+                    actor->InterruptViolent();
                 }
             }
             return;
         }
 
+        IVehicle *pvehicle = 0;
         IPlayer *player = IPlayer::First(PLAYER_LOCAL);
         if (!player) {
             return;
         }
 
-        IVehicle *pvehicle = 0;
-        ISimable *player_sim = player->GetSimable();
-        ISimable *otherObj = 0;
-        if (player_sim && simableA && UTL::COM::ComparePtr(player_sim, simableA)) {
-            pvehicle = 0;
+        if (UTL::COM::ComparePtr(player->GetSimable(), simableA)) {
             simableA->QueryInterface(&pvehicle);
-            otherObj = simableB;
-        } else if (player_sim && simableB && UTL::COM::ComparePtr(player_sim, simableB)) {
-            pvehicle = 0;
+        } else if (UTL::COM::ComparePtr(player->GetSimable(), simableB)) {
             simableB->QueryInterface(&pvehicle);
-            otherObj = simableA;
         }
-        if (!pvehicle || !otherObj) {
+        if (!pvehicle) {
             return;
         }
 
-        IModel *model = otherObj->GetModel();
+        ISimable *otherObj = simableA;
+        if (pvehicle->GetSimable()->GetOwnerHandle() == cinfo.objA) {
+            otherObj = simableB;
+        }
+        IModel *model;
+        if (otherObj) {
+            model = otherObj->GetModel();
+        } else {
+            model = 0;
+        }
         IVehicle *otherVehicle = 0;
-        otherObj->QueryInterface(&otherVehicle);
+        if (otherObj) {
+            otherObj->QueryInterface(&otherVehicle);
+        }
 
-        minspeed = mTune.PlayerSmashSpeedRange(0) * 0.44703f;
-        maxspeed = mTune.PlayerSmashSpeedRange(1) * 0.44703f;
-        intensity = UMath::Clamp((collisionspeed - minspeed) / (maxspeed - minspeed), 0.0f, 1.0f);
+        float collisionspeed = cinfo.impulseA + cinfo.impulseB;
+        float minspeed = mTune.PlayerSmashSpeedRange(0) * 0.44703f;
+        float maxspeed = mTune.PlayerSmashSpeedRange(1) * 0.44703f;
+        float intensity = UMath::Clamp((collisionspeed - minspeed) / (maxspeed - minspeed), 0.0f, 1.0f);
 
         const UMath::Vector3 &player_vel =
             (pvehicle->GetSimable()->GetOwnerHandle() == cinfo.objA) ? cinfo.objAVel : cinfo.objBVel;
         float speed_b4_impact = VU0_v3length(player_vel);
-        float curr_speed = pvehicle->GetSpeed();
+        float curr_speed = pvehicle->GetSimable()->GetRigidBody()->GetSpeed();
         float pct_decrease = 1.0f;
         if (speed_b4_impact > 0.0f) {
             pct_decrease = curr_speed / speed_b4_impact;
@@ -674,15 +693,14 @@ void SoundAI::OnCollision(const COLLISION_INFO &cinfo) {
 
         if (model) {
             model->GetAttributes().GetCollection();
-            if (model->InView() && (mPursuitState == kInactive)) {
+            if (model->IsRootModel() && (mPursuitState == kInactive)) {
                 Attrib::Gen::smackable obj_atr(model->GetAttributes());
                 mCTS911 += obj_atr.COST_TO_STATE();
             }
         }
 
-        IRoadBlock *block = GetRoadblock();
-        if (block) {
-            const IRoadBlock::Smackables &objects = block->GetSmackables();
+        if (GetRoadblock()) {
+            const IRoadBlock::Smackables &objects = GetRoadblock()->GetSmackables();
             if (objects.size() != 0) {
                 for (IRoadBlock::Smackables::const_iterator i = objects.begin(); i != objects.end(); ++i) {
                     IPlaceableScenery *object = *i;
@@ -690,9 +708,11 @@ void SoundAI::OnCollision(const COLLISION_INFO &cinfo) {
                         if (model->GetAttributes().GetCollection() == 0xca89ef8f) {
                             mRoadblockFlow->NailedSomethingInRB(0x10);
                             EAXCop *spkr = FindClosestCop(false, true);
-                            int spkrID = -1;
+                            int spkrID;
                             if (spkr) {
                                 spkrID = spkr->GetSpeakerID();
+                            } else {
+                                spkrID = -1;
                             }
                             mObserver->Observe(0xe, spkrID, intensity);
                         } else {
@@ -706,7 +726,12 @@ void SoundAI::OnCollision(const COLLISION_INFO &cinfo) {
         if (!otherVehicle) {
             return;
         }
-        if ((otherVehicle->GetDriverClass() == DRIVER_TRAFFIC) || (otherVehicle->GetDriverClass() == DRIVER_NONE)) {
+        switch (otherVehicle->GetDriverClass()) {
+        case DRIVER_HUMAN:
+            mObserver->Observe(6, -1, intensity);
+            return;
+        case DRIVER_TRAFFIC:
+        case DRIVER_NONE: {
             mObserver->Observe(7, -1, intensity);
             int spkrID = -1;
             EAXCop *spkr = FindClosestCop(true, true);
@@ -723,35 +748,27 @@ void SoundAI::OnCollision(const COLLISION_INFO &cinfo) {
             if (intensity >= mTune.MinIntensityTrafficSmash()) {
                 mTrafficHits911++;
             }
-        } else if (otherVehicle->GetDriverClass() == DRIVER_HUMAN) {
-            mObserver->Observe(6, -1, intensity);
+            return;
+        }
         }
         return;
     }
 
-collision_world:
-    IVehicle *ivehicle = 0;
+collision_world: {
     ISimable *isimable = simableA;
-    if (isimable) {
-        isimable->QueryInterface(&ivehicle);
-    }
-    minspeed = mTune.PlayerSmashSpeedRange(0) * 0.44703f;
-    maxspeed = mTune.PlayerSmashSpeedRange(1) * 0.44703f;
-    intensity = UMath::Clamp((collisionspeed - minspeed) / (maxspeed - minspeed), 0.0f, 1.0f);
-    if (!ivehicle) {
+    IVehicle *ivehicle;
+    float collisionspeed = cinfo.impulseA + cinfo.impulseB;
+    float minspeed = mTune.PlayerSmashSpeedRange(0) * 0.44703f;
+    float maxspeed = mTune.PlayerSmashSpeedRange(1) * 0.44703f;
+    float intensity = UMath::Clamp((collisionspeed - minspeed) / (maxspeed - minspeed), 0.0f, 1.0f);
+    if (!isimable->QueryInterface(&ivehicle)) {
         return;
     }
-    if (ivehicle->GetDriverClass() == DRIVER_HUMAN) {
+    switch (ivehicle->GetDriverClass()) {
+    case DRIVER_HUMAN: {
         const UMath::Vector3 &player_vel = cinfo.objAVel;
         float speed_b4_impact = VU0_v3length(player_vel);
-        IVehicle *pvehicle = 0;
-        if (isimable) {
-            isimable->QueryInterface(&pvehicle);
-        }
-        if (!pvehicle) {
-            return;
-        }
-        float curr_speed = pvehicle->GetSpeed();
+        float curr_speed = isimable->GetRigidBody()->GetSpeed();
         float pct_decrease = 1.0f;
         if (speed_b4_impact > 0.0f) {
             pct_decrease = curr_speed / speed_b4_impact;
@@ -768,7 +785,9 @@ collision_world:
         }
         return;
     }
-    if (ivehicle->GetDriverClass() != DRIVER_COP) {
+    case DRIVER_COP:
+        break;
+    default:
         return;
     }
 
@@ -786,7 +805,8 @@ collision_world:
     if (actor->GetInFormation() && (mCopsInFormation.size() > 1)) {
         RandomBailoutDeny(actor);
     }
-    mObserver->Observe(4, actor->GetSpeakerID(), intensity);
+    mObserver->Observe(4, actor ? actor->GetSpeakerID() : -1, intensity);
+    }
 }
 
 void SoundAI::OnAttached(IAttachable *pOther) {
