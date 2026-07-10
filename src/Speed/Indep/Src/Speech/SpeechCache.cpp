@@ -323,7 +323,6 @@ void Cache::FlushUncached() {
     unsigned int index = mIndex.GetNextValidIndex(0);
     while (mIndex.ValidIndex(index)) {
         SpeechSampleData *sample = mIndex.GetPtrAtIndex(index);
-        unsigned int next_index = index + 1;
         if (!sample->lock && sample->ready && !sample->cached) {
             if (PRINT_SPEECH_CACHE_IO) {
                 Attrib::Gen::speech speech(Manager::mHashMap.GetHash(sample->eventID), 0, 0);
@@ -331,7 +330,7 @@ void Cache::FlushUncached() {
             SpeechSampleData::Destruct(sample);
             mIndex.RemoveIndex(index);
         }
-        index = mIndex.GetNextValidIndex(next_index);
+        index = mIndex.GetNextValidIndex(index + 1);
     }
 
     ++flushcount_uncached;

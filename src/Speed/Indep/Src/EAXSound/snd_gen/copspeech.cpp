@@ -284,9 +284,9 @@ FunctionHandle gCross_CrossMultiStrategyHandle;
 FunctionHandle gCross_CrossBailoutDeny_subHandle;
 FunctionHandle gD_DayHandle;
 FunctionHandle gDispIntroRaceHandle;
-FunctionHandle gNIS_Select_StartHandle;
-FunctionHandle gNIS_Select_EndHandle;
-FunctionHandle gSoundFX_SelectHandle;
-FunctionHandle gNIS_Select_BlacklistHandle;
+extern FunctionHandle gNIS_Select_StartHandle;
+extern FunctionHandle gNIS_Select_EndHandle;
+extern FunctionHandle gSoundFX_SelectHandle;
+extern FunctionHandle gNIS_Select_BlacklistHandle;
 
 } // namespace Csis

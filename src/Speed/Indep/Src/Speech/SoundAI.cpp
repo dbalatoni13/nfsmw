@@ -135,24 +135,21 @@ SoundAI::SoundAI()
       mPlayerCarCustom(0),
       mAICarCustom(0),
       mActorPool(0),
-      mMsgPerpBusted(0),
-      mMsgAIPerpBusted(0),
-      mMsgForcePursuitStart(0),
-      mMsgRestartRace(0),
-      mMsgInfraction(0),
-      mMsgUnspawnCop(0),
-      mMsgTireBlown(0) {
-    mMsgPerpBusted =
-        Hermes::Handler::Create<MPerpBusted, SoundAI, SoundAI>(this, &SoundAI::MessagePerpBusted, UCrc32(0x20D60DBF), 0);
-    mMsgAIPerpBusted = Hermes::Handler::Create<MPerpBusted, SoundAI, SoundAI>(this, &SoundAI::MessageAIPerpBusted, "AIRacerBusted", 0);
-    mMsgRestartRace =
-        Hermes::Handler::Create<MRestartRace, SoundAI, SoundAI>(this, &SoundAI::MessageRestart, UCrc32(0x20D60DBF), 0);
-    mMsgInfraction = Hermes::Handler::Create<MMiscSound, SoundAI, SoundAI>(this, &SoundAI::MessageInfraction, "Infraction", 0);
-    mMsgUnspawnCop = Hermes::Handler::Create<MUnspawnCop, SoundAI, SoundAI>(this, &SoundAI::MessageUnspawnCop, "SoundAI", 0);
-    mMsgTireBlown = Hermes::Handler::Create<MGamePlayMoment, SoundAI, SoundAI>(this, &SoundAI::MessageTireBlown, "TireBlo", 0);
+      mMsgPerpBusted(Hermes::Handler::Create<MPerpBusted, SoundAI, SoundAI>(
+          this, &SoundAI::MessagePerpBusted, UCrc32(0x20D60DBF), 0)),
+      mMsgAIPerpBusted(Hermes::Handler::Create<MPerpBusted, SoundAI, SoundAI>(
+          this, &SoundAI::MessageAIPerpBusted, "AIRacerBusted", 0)),
+      mMsgRestartRace(Hermes::Handler::Create<MRestartRace, SoundAI, SoundAI>(
+          this, &SoundAI::MessageRestart, UCrc32(0x20D60DBF), 0)),
+      mMsgInfraction(Hermes::Handler::Create<MMiscSound, SoundAI, SoundAI>(
+          this, &SoundAI::MessageInfraction, "Infraction", 0)),
+      mMsgUnspawnCop(Hermes::Handler::Create<MUnspawnCop, SoundAI, SoundAI>(
+          this, &SoundAI::MessageUnspawnCop, "SoundAI", 0)),
+      mMsgTireBlown(Hermes::Handler::Create<MGamePlayMoment, SoundAI, SoundAI>(
+          this, &SoundAI::MessageTireBlown, "TireBlo", 0)) {
 
-    mCopsInFormation.clear();
     SoundAI::mRefCount = 1;
+    mCopsInFormation.clear();
     mRecentBlowby.distance = 32767.0f;
     mRecentBlowby.speed = 0.0f;
     mRecentBlowby.timestamp = Timer(0);
@@ -164,10 +161,8 @@ SoundAI::SoundAI()
     mPursuitLevel.ChangeWithDefault(0);
 
     mActorPool = bNewSlotPool(0xA0, 10, "VoiceActors slotpool", AudioMemoryPool);
-    if (mActorPool) {
-        mActorPool->ClearFlag(SLOTPOOL_FLAG_OVERFLOW_IF_FULL);
-        mActorPool->ClearFlag(SLOTPOOL_FLAG_WARN_IF_NONEMPTY_DELETE);
-    }
+    mActorPool->ClearFlag(SLOTPOOL_FLAG_OVERFLOW_IF_FULL);
+    mActorPool->ClearFlag(SLOTPOOL_FLAG_WARN_IF_NONEMPTY_DELETE);
 
     mDispatch = new EAXDispatch(1);
     mPursuitFlow = new ("SpeechFlow: Pursuit", 0) Speech::PursuitFlow;
@@ -178,14 +173,14 @@ SoundAI::SoundAI()
 
     for (int i = 0; i < 2; i++) {
         mPlayerCurrent[i].direction = CalcPlayerDirection(false);
-        mPlayerCurrent[i].roadID = untagged;
         mAICurrent[i].direction = 0;
         mAICurrent[i].roadID = untagged;
+        mPlayerCurrent[i].roadID = untagged;
     }
 
-    mLastKnown.direction = 0;
     mLastKnown.roadID = untagged;
     mAILastKnown.direction = 0;
+    mLastKnown.direction = 0;
     mAILastKnown.roadID = untagged;
 
     for (int i = 3; i < 10; i++) {
@@ -1074,11 +1069,9 @@ void SoundAI::SyncPlayers() {
     }
 
     mPlayerSpeed = MPS2MPH(vehicle->GetSpeed());
-    if (mPlayerSpeed < mTune.MinSpeedConsideredStopped()) {
-        if ((mFlags & LOWSPEEDTIMER) == 0) {
-            mFlags |= LOWSPEEDTIMER;
-            mT_reallylowspeed = WorldTimer;
-        }
+    if ((mPlayerSpeed < mTune.MinSpeedConsideredStopped()) && ((mFlags & LOWSPEEDTIMER) == 0)) {
+        mFlags |= LOWSPEEDTIMER;
+        mT_reallylowspeed = WorldTimer;
     } else if (mTune.MinSpeedConsideredStopped() <= mPlayerSpeed) {
         mFlags &= ~LOWSPEEDTIMER;
         mT_reallylowspeed = WorldTimer;
@@ -1109,7 +1102,7 @@ void SoundAI::SyncPlayers() {
         }
 
         if (jump && (mPursuitState < kInactive)) {
-            if (bRandom(1.0f) <= 0.5f) {
+            if (bRandom(1.0f) > 0.5f) {
                 EAXCop *cop = GetRandomActiveCop(1, false);
                 if (mHeli && (bRandom(1.0f) > 0.5f)) {
                     mHeli->HeatJump(heat_cutoffs[i].heat_level);
@@ -1160,13 +1153,8 @@ void SoundAI::SyncPlayers() {
             bool is_DDay = false;
             bool is_Race = false;
             bool is_Roaming = false;
-            if (GRaceStatus::Exists()) {
-                if (GRaceStatus::Get().GetPlayMode() == GRaceStatus::kPlayMode_Roaming) {
-                    is_Roaming = true;
-                } else if (GRaceDatabase::Exists() && !GRaceDatabase::Get().GetStartupRace()) {
-                    is_Roaming = true;
-                }
-            } else if (GRaceDatabase::Exists() && !GRaceDatabase::Get().GetStartupRace()) {
+            if ((GRaceStatus::Exists() && (GRaceStatus::Get().GetPlayMode() == GRaceStatus::kPlayMode_Roaming)) ||
+                (GRaceDatabase::Exists() && !GRaceDatabase::Get().GetStartupRace())) {
                 is_Roaming = true;
             }
 
@@ -2179,7 +2167,8 @@ void SoundAI::SyncCarsToActors() {
 
             IRoadBlock *irb = GetRoadblock();
             if (irb) {
-                is_in_rb = (irb->IsComprisedOf(thisObj) == vehicle);
+                IVehicle *car_in_rb = irb->IsComprisedOf(thisObj);
+                is_in_rb = (car_in_rb == vehicle);
             }
 
             if (vehicle->GetDriverClass() == DRIVER_COP) {
@@ -2192,9 +2181,12 @@ void SoundAI::SyncCarsToActors() {
                         in_view = true;
                     }
 
-                    if (vehicle->IsActive() && ai && ((ai->GetTimeSinceTargetSeen() < 0.05f) || (is_in_rb && in_view))) {
-                        has_visual = true;
-                        cops_with_los++;
+                    if (vehicle->IsActive() && ai) {
+                        float t_tgt_last_seen = ai->GetTimeSinceTargetSeen();
+                        if ((t_tgt_last_seen < 0.05f) || (is_in_rb && in_view)) {
+                            has_visual = true;
+                            cops_with_los++;
+                        }
                     }
 
                     UMath::Vector3 player_pos = mPlayerPos;
@@ -2610,12 +2602,10 @@ void SoundAI::ShuffleActors() {
 
     Speech::copList::iterator i = inactive.begin();
     while (i != inactive.end()) {
-        EAXCop *inact = *i;
         Speech::copList::iterator j = active.begin();
         while (j != active.end()) {
-            EAXCop *act = *j;
-            if (inact->GetSpeakerID() == act->GetSpeakerID()) {
-                RemoveCop(inact->GetHandle());
+            if ((*i)->GetSpeakerID() == (*j)->GetSpeakerID()) {
+                RemoveCop((*i)->GetHandle());
                 break;
             }
             ++j;
@@ -2656,17 +2646,17 @@ void SoundAI::ShuffleActors() {
 
     if (active.size() != 0) {
         if (!mLeader || !mLeader->IsActive() || mLeader->IsHeli()) {
-            Speech::copList::iterator c = active.begin();
-            while (c != active.end()) {
-                EAXCop *cop = *c;
-                if (cop->IsPrimary() && cop->HasLOS()) {
-                    mLeader = cop;
+            Speech::copList::iterator i = active.begin();
+            while (i != active.end()) {
+                EAXCop *activecop = *i;
+                if (activecop->IsPrimary() && activecop->HasLOS()) {
+                    mLeader = activecop;
                     if ((mFocus == kStrategyFlow) && !mLeader->IsHeli()) {
                         mLeader->PrimaryEngage();
                     }
                     break;
                 }
-                ++c;
+                ++i;
             }
         }
         if (mLeader && !mLeader->IsActive() && !MakeLeader(mLeader)) {

@@ -405,6 +405,11 @@ void StrategyFlow::Waiting() {
             }
             this->ChangeStateTo(kOutcome);
             goto cleanup;
+        case HELI_PURSUIT:
+            if (ai->GetHeli()) {
+                ai->GetHeli()->SelfStrategy(1);
+            }
+            goto cleanup;
         case BOX_IN:
         case ROLLING_BLOCK:
             if (active.size() < 2) {
@@ -424,11 +429,6 @@ void StrategyFlow::Waiting() {
             }
             goto cleanup;
         }
-        case HELI_PURSUIT:
-            if (ai->GetHeli()) {
-                ai->GetHeli()->SelfStrategy(1);
-            }
-            goto cleanup;
         }
     }
 
