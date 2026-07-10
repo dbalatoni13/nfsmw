@@ -314,7 +314,7 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
     }
 
     const int GetHavoc() {
-        return mHavoc;
+        return mCTS911;
     }
 
     int GetLastObservation() {

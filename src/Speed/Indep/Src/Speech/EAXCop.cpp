@@ -1,4 +1,5 @@
 #include "EAXCop.h"
+#include "EAXDispatch.h"
 #include "ScheduleSpeech.hpp"
 #include "SoundAI.h"
 #include "Speed/Indep/Src/EAXSound/Csis.hpp"
@@ -492,6 +493,12 @@ extern FunctionHandle gStaticRoadblock_RBEngageHandle;
 extern FunctionHandle gStaticRoadblock_RBApproachHandle;
 }
 
+template void Speech::Manager::ScheduleSpeech<Csis::Setup_AttmptVehStpStruct>(
+    Csis::Setup_AttmptVehStpStruct &data,
+    Csis::InterfaceId &iid,
+    Csis::FunctionHandle &fh,
+    EAXCharacter *actor);
+
 extern "C" float speed_test_28362[];
 
 EAXCop::EAXCop(int speakerID, HSIMABLE handle, int bID, int cID)
@@ -555,8 +562,8 @@ void EAXCop::Update() {
     EAXCharacter::Update();
     HSIMABLE handle = GetHandle();
     if (!handle) {
-        *reinterpret_cast<unsigned int *>(&mInPosition) = 0;
         *reinterpret_cast<unsigned int *>(&mInFormation) = 0;
+        *reinterpret_cast<unsigned int *>(&mInPosition) = 0;
         mPctTractiveTires = 1.0f;
         mTimeAirborne = WorldTimer;
         EAXCharacter::Reset();
@@ -570,13 +577,13 @@ void EAXCop::Update() {
     } else {
         simable = 0;
     }
-    IDamageable *damageable = 0;
-    IVehicle *vehicle = 0;
+    IDamageable *damage = 0;
+    IVehicle *copcar = 0;
     ISuspension *suspension = 0;
-    IPursuitAI *pursuit_ai = 0;
-    IVehicleAI *vehicle_ai = 0;
-    UMath::Vector3 cop_pos;
-    UMath::Vector3 player_pos;
+    IPursuitAI *pursuitAI = 0;
+    IVehicleAI *vai = 0;
+    UMath::Vector3 coppos;
+    UMath::Vector3 ppos;
     UMath::Vector3 delta;
 
     if (*reinterpret_cast<unsigned int *>(&mSuspectLOS) != 0) {
@@ -584,19 +591,19 @@ void EAXCop::Update() {
     }
 
     if (simable) {
-        simable->QueryInterface(&vehicle);
-        simable->QueryInterface(&damageable);
-        simable->QueryInterface(&pursuit_ai);
+        simable->QueryInterface(&copcar);
+        simable->QueryInterface(&damage);
+        simable->QueryInterface(&pursuitAI);
         simable->QueryInterface(&suspension);
-        simable->QueryInterface(&vehicle_ai);
+        simable->QueryInterface(&vai);
     } else {
         SetActive(false);
     }
 
-    if (pursuit_ai && (*reinterpret_cast<unsigned int *>(&mActive) != 0)) {
-        SetInFormation(pursuit_ai->GetInFormation());
-        SetInPosition(pursuit_ai->GetInPosition());
-        SetTgtOffset(pursuit_ai->GetPursuitOffset());
+    if (pursuitAI && (*reinterpret_cast<unsigned int *>(&mActive) != 0)) {
+        SetInFormation(pursuitAI->GetInFormation());
+        SetInPosition(pursuitAI->GetInPosition());
+        SetTgtOffset(pursuitAI->GetPursuitOffset());
     } else {
         SetInFormation(false);
         SetInPosition(false);
@@ -609,9 +616,8 @@ void EAXCop::Update() {
             mPctTractiveTires = 1.0f;
         } else {
             mPctTractiveTires = 1.0f;
-            int num_wheels_on_ground = suspension->GetNumWheelsOnGround();
-            if (num_wheels_on_ground != 0) {
-                unsigned int wheel_traction = static_cast<unsigned int>(num_wheels_on_ground);
+            if (suspension->GetNumWheels() != 0) {
+                unsigned int wheel_traction = static_cast<unsigned int>(suspension->GetNumWheelsOnGround());
                 unsigned int num_wheels = suspension->GetNumWheels();
                 wheel_traction = wheel_traction / num_wheels;
                 mPctTractiveTires = static_cast<float>(wheel_traction);
@@ -625,36 +631,36 @@ void EAXCop::Update() {
         mTimeAirborne = WorldTimer;
     }
 
-    if (damageable) {
-        *reinterpret_cast<unsigned int *>(&mDestroyed) = damageable->IsDestroyed();
-        mHealth = damageable->GetHealth();
+    if (damage) {
+        *reinterpret_cast<unsigned int *>(&mDestroyed) = damage->IsDestroyed();
+        mHealth = damage->GetHealth();
     }
 
-    if (vehicle_ai) {
+    if (vai) {
         if (*reinterpret_cast<unsigned int *>(&mActive) == 0) {
             mCurrRoad = MAX_ROADNAMES;
         } else {
-            WRoadNav *nav = vehicle_ai->GetCurrentRoad();
-            RoadNames road = static_cast<RoadNames>(nav->GetRoadSpeechId());
-            if (road != MAX_ROADNAMES) {
-                mCurrRoad = road;
+            WRoadNav *nav = vai->GetCurrentRoad();
+            unsigned int roadID = nav->GetRoadSpeechId();
+            if (roadID != MAX_ROADNAMES) {
+                mCurrRoad = static_cast<RoadNames>(roadID);
             }
         }
     } else {
         mCurrRoad = MAX_ROADNAMES;
     }
 
-    if ((*reinterpret_cast<unsigned int *>(&mActive) != 0) && (*reinterpret_cast<unsigned int *>(&mSuspectLOS) != 0) && vehicle) {
+    if ((*reinterpret_cast<unsigned int *>(&mActive) != 0) && (*reinterpret_cast<unsigned int *>(&mSuspectLOS) != 0) && copcar) {
         SoundAI *ai = SoundAI::Get();
         if (!ai) {
             return;
         }
-        const UMath::Vector3 &v_pos = vehicle->GetPosition();
-        *reinterpret_cast<unsigned int *>(&cop_pos.x) = *reinterpret_cast<const unsigned int *>(&v_pos.x);
-        *reinterpret_cast<unsigned int *>(&cop_pos.y) = *reinterpret_cast<const unsigned int *>(&v_pos.y);
-        *reinterpret_cast<unsigned int *>(&cop_pos.z) = *reinterpret_cast<const unsigned int *>(&v_pos.z);
-        player_pos = ai->GetPlayerPos();
-        VU0_v3sub(cop_pos, player_pos, delta);
+        const UMath::Vector3 &v_pos = copcar->GetPosition();
+        *reinterpret_cast<unsigned int *>(&coppos.x) = *reinterpret_cast<const unsigned int *>(&v_pos.x);
+        *reinterpret_cast<unsigned int *>(&coppos.y) = *reinterpret_cast<const unsigned int *>(&v_pos.y);
+        *reinterpret_cast<unsigned int *>(&coppos.z) = *reinterpret_cast<const unsigned int *>(&v_pos.z);
+        ppos = ai->GetPlayerPos();
+        VU0_v3sub(coppos, ppos, delta);
         float dist = VU0_sqrt(VU0_v3lengthsquare(delta));
         if (dist <= mDistance) {
             mT_closingDist = WorldTimer;
@@ -663,29 +669,6 @@ void EAXCop::Update() {
 }
 
 void EAXCop::SetActive(bool activity) {
-    typedef void (*VoidMethodPtr)(void *);
-    typedef void (*VoidBoolMethodPtr)(void *, bool);
-    typedef int (*IntMethodPtr)(void *);
-    const int kRegainAdjustOffset = 0x288;
-    const int kRegainMethodOffset = 0x28C;
-    const int kLostAdjustOffset = 0x1B8;
-    const int kLostMethodOffset = 0x1BC;
-    const int kCallToPositionAdjustOffset = 0x140;
-    const int kCallToPositionMethodOffset = 0x144;
-    const int kCallForSwarmingAdjustOffset = 0x1F0;
-    const int kCallForSwarmingMethodOffset = 0x1F4;
-    const int kBailoutTrafficAdjustOffset = 0x228;
-    const int kBailoutTrafficMethodOffset = 0x22C;
-    const int kIsPrimaryAdjustOffset = 0x348;
-    const int kIsPrimaryMethodOffset = 0x34C;
-    const int kBailoutAdjustOffset = 0x210;
-    const int kBailoutMethodOffset = 0x214;
-    const int kBailoutBadRoadAdjustOffset = 0x208;
-    const int kBailoutBadRoadMethodOffset = 0x20C;
-    const int kHiBailoutAdjustOffset = 0x220;
-    const int kHiBailoutMethodOffset = 0x224;
-    const int kLoBailoutAdjustOffset = 0x218;
-    const int kLoBailoutMethodOffset = 0x21C;
     unsigned int active = static_cast<unsigned int>(activity);
     if (*reinterpret_cast<unsigned int *>(&mActive) == active) {
         return;
@@ -696,7 +679,6 @@ void EAXCop::SetActive(bool activity) {
     if (!ai) {
         return;
     }
-    char *vtable = *reinterpret_cast<char **>(this);
 
     if (active != 0) {
         int focus = ai->GetFocus();
@@ -706,11 +688,9 @@ void EAXCop::SetActive(bool activity) {
 
         if (*reinterpret_cast<unsigned int *>(&mSuspectLOS) != 0) {
             if (bRandom(1.0f) > 0.5f) {
-                short thisAdjust = *reinterpret_cast<short *>(vtable + kRegainAdjustOffset);
-                (*reinterpret_cast<VoidMethodPtr *>(vtable + kRegainMethodOffset))(reinterpret_cast<char *>(this) + thisAdjust);
+                Spotted();
             } else {
-                short thisAdjust = *reinterpret_cast<short *>(vtable + kLostAdjustOffset);
-                (*reinterpret_cast<VoidMethodPtr *>(vtable + kLostMethodOffset))(reinterpret_cast<char *>(this) + thisAdjust);
+                RegainVisual();
             }
             return;
         } else {
@@ -721,22 +701,19 @@ void EAXCop::SetActive(bool activity) {
                 return;
             }
 
-            IRoadBlock *roadblock = ai->GetRoadblock();
-            if (!roadblock) {
+            IRoadBlock *block = ai->GetRoadblock();
+            if (!block) {
                 return;
             }
 
-            HSIMABLE handle = GetHandle();
-            if (roadblock->IsComprisedOf(handle) != 0) {
+            if (block->IsComprisedOf(GetHandle()) != 0) {
                 return;
             }
 
             if (bRandom(1.0f) > 0.5f) {
-                short thisAdjust = *reinterpret_cast<short *>(vtable + kCallToPositionAdjustOffset);
-                (*reinterpret_cast<VoidMethodPtr *>(vtable + kCallToPositionMethodOffset))(reinterpret_cast<char *>(this) + thisAdjust);
+                UnitBackupReply();
             } else {
-                short thisAdjust = *reinterpret_cast<short *>(vtable + kCallForSwarmingAdjustOffset);
-                (*reinterpret_cast<VoidMethodPtr *>(vtable + kCallForSwarmingMethodOffset))(reinterpret_cast<char *>(this) + thisAdjust);
+                BackupArrives();
             }
             return;
         }
@@ -746,7 +723,7 @@ void EAXCop::SetActive(bool activity) {
         return;
     }
 
-    Speech::Manager::FlushSpeechForActor(this);
+    int num_events_flushed = Speech::Manager::FlushSpeechForActor(this);
     if ((*reinterpret_cast<unsigned int *>(&mInFormation) == 0) && (*reinterpret_cast<unsigned int *>(&mInPosition) == 0)) {
         return;
     }
@@ -754,49 +731,47 @@ void EAXCop::SetActive(bool activity) {
     mT_lastactivity = WorldTimer;
 
     if (mTrafficHitCount > 1) {
-        short thisAdjust = *reinterpret_cast<short *>(vtable + kBailoutTrafficAdjustOffset);
-        (*reinterpret_cast<VoidMethodPtr *>(vtable + kBailoutTrafficMethodOffset))(reinterpret_cast<char *>(this) + thisAdjust);
-        mTrafficHitCount = activity;
+        BailoutTraffic();
+        mTrafficHitCount = 0;
         int state = ai->GetPursuitState();
-        if (state == 0 || state == 1) {
-            ai->RandomBailoutDeny(this);
+        if (state == SoundAI::kActive) {
+        } else if (state == SoundAI::kSearching) {
+        } else {
+            return;
         }
+        ai->RandomBailoutDeny(this);
         return;
     }
 
-    short isPrimaryAdjust = *reinterpret_cast<short *>(vtable + kIsPrimaryAdjustOffset);
-    if ((*reinterpret_cast<IntMethodPtr *>(vtable + kIsPrimaryMethodOffset))(reinterpret_cast<char *>(this) + isPrimaryAdjust)) {
-        short thisAdjust = *reinterpret_cast<short *>(vtable + kBailoutAdjustOffset);
-        (*reinterpret_cast<VoidMethodPtr *>(vtable + kBailoutMethodOffset))(reinterpret_cast<char *>(this) + thisAdjust);
+    if (IsHeli()) {
+        Bailout();
         return;
     }
 
     if (*reinterpret_cast<unsigned int *>(&mDestroyed) != 0) {
         EAXCop *rand_cop = ai->FindClosestCop(true, true);
-        bool different_battalion = false;
         if (rand_cop) {
-            int their_battalion = rand_cop->GetCallsign();
-            int my_battalion = GetCallsign();
-            different_battalion = their_battalion != my_battalion;
+            rand_cop->UnitDisabled(rand_cop->GetSpeakerID() != GetSpeakerID());
+        } else {
+            UnitDisabled(false);
         }
-        short thisAdjust = *reinterpret_cast<short *>(vtable + kBailoutBadRoadAdjustOffset);
-        (*reinterpret_cast<VoidBoolMethodPtr *>(vtable + kBailoutBadRoadMethodOffset))(reinterpret_cast<char *>(this) + thisAdjust, different_battalion);
         return;
     }
 
     float min_health = ai->GetTune().MinHealthForCommentary();
     if (mHealth < min_health) {
-        short thisAdjust = *reinterpret_cast<short *>(vtable + kHiBailoutAdjustOffset);
-        (*reinterpret_cast<VoidMethodPtr *>(vtable + kHiBailoutMethodOffset))(reinterpret_cast<char *>(this) + thisAdjust);
+        HiBailout();
         return;
     }
 
-    short thisAdjust = *reinterpret_cast<short *>(vtable + kLoBailoutAdjustOffset);
-    (*reinterpret_cast<VoidMethodPtr *>(vtable + kLoBailoutMethodOffset))(reinterpret_cast<char *>(this) + thisAdjust);
+    LoBailout();
     int state = ai->GetPursuitState();
-    if (state == 0 || state == 1) {
-        ai->RandomBailoutDeny(this);
+    if (state == SoundAI::kActive) {
+    } else if (state == SoundAI::kSearching) {
+    } else {
+        return;
     }
+    ai->RandomBailoutDeny(this);
 }
 
 void EAXCop::Reset() {
@@ -816,8 +791,10 @@ void EAXCop::Reset() {
 void EAXCop::AttemptVehicleStop() {
     SoundAI *ai = SoundAI::Get();
     if (ai) {
-        int pursuit_type = 0x10;
+        Speech::EventHistory &g_hist = Speech::Manager::GetHistory();
+        Csis::Setup_AttmptVehStpStruct data;
         float t_last_nailed = ai->GetTimeLastNailedCop();
+        data.pursuit_type = Csis::Type_pursuit_type_Unit_Rammed;
         if (t_last_nailed >= 5.0f) {
             int infraction = ai->GetLastInfraction();
             if (infraction > 0) {
@@ -825,57 +802,58 @@ void EAXCop::AttemptVehicleStop() {
                 case 1:
                 case 2:
                     if (ai->IsHighIntensity()) {
-                        pursuit_type = 2;
+                        data.pursuit_type = Csis::Type_pursuit_type_Possible_Wanted;
                     } else {
-                        pursuit_type = 1;
+                        data.pursuit_type = Csis::Type_pursuit_type_Generic_Speeder;
                     }
                     break;
                 case 4:
                 case 0x80:
-                    pursuit_type = 8;
+                    data.pursuit_type = Csis::Type_pursuit_type_Reckless;
                     break;
                 case 8:
-                    pursuit_type = 0x10;
+                    data.pursuit_type = Csis::Type_pursuit_type_Unit_Rammed;
                     break;
                 case 0x10:
                 case 0x20:
-                    pursuit_type = 4;
+                    data.pursuit_type = Csis::Type_pursuit_type_Hit_and_Run;
                     break;
                 case 0x40:
-                    pursuit_type = 2;
+                    data.pursuit_type = Csis::Type_pursuit_type_Possible_Wanted;
                     break;
                 default:
                     break;
                 }
             } else {
                 if (ai->IsHighIntensity()) {
-                    pursuit_type = 2;
+                    data.pursuit_type = Csis::Type_pursuit_type_Possible_Wanted;
                 } else if (bRandom(1.0f) > 0.5f) {
-                    pursuit_type = 4;
+                    data.pursuit_type = Csis::Type_pursuit_type_Hit_and_Run;
                     if (ai->NumTrafficHits() > 0) {
-                        pursuit_type = 4;
-                    } else if (ai->Is911Active()) {
-                        pursuit_type = 8;
-                    } else if (Speech::Manager::GetGlobalHistoryCount(static_cast<SPCHType_1_EventID>(0x9A)) > 0 || Speech::Manager::GetGlobalHistoryCount(static_cast<SPCHType_1_EventID>(0x3A)) > 0 || Speech::Manager::GetGlobalHistoryCount(static_cast<SPCHType_1_EventID>(0xB2)) > 0) {
-                        pursuit_type = 2;
+                        data.pursuit_type = Csis::Type_pursuit_type_Hit_and_Run;
+                    } else if (ai->GetHavoc() > 1000) {
+                        data.pursuit_type = Csis::Type_pursuit_type_Reckless;
+                    } else if (g_hist.GetCount(static_cast<SPCHType_1_EventID>(0x9A)) > 0 ||
+                               g_hist.GetCount(static_cast<SPCHType_1_EventID>(0x3A)) > 0 ||
+                               g_hist.GetCount(static_cast<SPCHType_1_EventID>(0xB2)) > 0) {
+                        data.pursuit_type = Csis::Type_pursuit_type_Possible_Wanted;
                     } else {
-                        pursuit_type = 1;
+                        data.pursuit_type = Csis::Type_pursuit_type_Generic_Speeder;
                     }
-                } else if (Speech::Manager::GetGlobalHistoryCount(static_cast<SPCHType_1_EventID>(0x9A)) > 0 || Speech::Manager::GetGlobalHistoryCount(static_cast<SPCHType_1_EventID>(0x3A)) > 0 || Speech::Manager::GetGlobalHistoryCount(static_cast<SPCHType_1_EventID>(0xB2)) > 0) {
-                    pursuit_type = 2;
+                } else if (g_hist.GetCount(static_cast<SPCHType_1_EventID>(0x9A)) > 0 ||
+                           g_hist.GetCount(static_cast<SPCHType_1_EventID>(0x3A)) > 0 ||
+                           g_hist.GetCount(static_cast<SPCHType_1_EventID>(0xB2)) > 0) {
+                    data.pursuit_type = Csis::Type_pursuit_type_Possible_Wanted;
                 } else {
-                    pursuit_type = 1;
+                    data.pursuit_type = Csis::Type_pursuit_type_Generic_Speeder;
                 }
             }
         }
 
-        Csis::Setup_AttmptVehStpStruct data;
-        int num_suspects = 1;
-        data.pursuit_type = pursuit_type;
+        data.num_suspects = 1;
         if (ai->AreRacersNearby()) {
-            num_suspects = 2;
+            data.num_suspects = 2;
         }
-        data.num_suspects = num_suspects;
         data.speaker_battalion = GetCallsign();
         data.speaker_call_sign_id = GetUnitNumber();
         data.speaker_id = mSpeakerID;

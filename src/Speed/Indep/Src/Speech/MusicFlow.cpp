@@ -70,8 +70,33 @@ MusicFlow::~MusicFlow() {
 
 void MusicFlow::MessageNewPart(const MNotifyMusicFlow &message) {
     mCurrentPart = message.GetPart();
-    mStartDelay = false;
-    mT_currPiece = WorldTimer;
+
+    switch (mCurrentPart) {
+    case 4:
+        SpeechFlow::ChangeStateTo(kNeutral);
+        return;
+    case 1:
+        SpeechFlow::ChangeStateTo(kLose);
+        return;
+    case 3:
+        SpeechFlow::ChangeStateTo(kWin);
+        return;
+    case 2:
+        SpeechFlow::ChangeStateTo(kElude);
+        return;
+    case 5:
+    case 6:
+    case 7:
+        SpeechFlow::ChangeStateTo(kTerminal);
+        return;
+    case -1:
+    case 0:
+    case 8:
+        SpeechFlow::ChangeStateTo(kTerminal);
+        return;
+    default:
+        return;
+    }
 }
 
 void MusicFlow::MessageInitFlow(const MNotifyMusicFlow &message) {

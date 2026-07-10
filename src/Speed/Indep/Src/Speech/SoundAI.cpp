@@ -142,9 +142,11 @@ SoundAI::SoundAI()
       mMsgInfraction(0),
       mMsgUnspawnCop(0),
       mMsgTireBlown(0) {
-    mMsgPerpBusted = Hermes::Handler::Create<MPerpBusted, SoundAI, SoundAI>(this, &SoundAI::MessagePerpBusted, "Speech", 0);
+    mMsgPerpBusted =
+        Hermes::Handler::Create<MPerpBusted, SoundAI, SoundAI>(this, &SoundAI::MessagePerpBusted, UCrc32(0x20D60DBF), 0);
     mMsgAIPerpBusted = Hermes::Handler::Create<MPerpBusted, SoundAI, SoundAI>(this, &SoundAI::MessageAIPerpBusted, "AIRacerBusted", 0);
-    mMsgRestartRace = Hermes::Handler::Create<MRestartRace, SoundAI, SoundAI>(this, &SoundAI::MessageRestart, "Speech", 0);
+    mMsgRestartRace =
+        Hermes::Handler::Create<MRestartRace, SoundAI, SoundAI>(this, &SoundAI::MessageRestart, UCrc32(0x20D60DBF), 0);
     mMsgInfraction = Hermes::Handler::Create<MMiscSound, SoundAI, SoundAI>(this, &SoundAI::MessageInfraction, "Infraction", 0);
     mMsgUnspawnCop = Hermes::Handler::Create<MUnspawnCop, SoundAI, SoundAI>(this, &SoundAI::MessageUnspawnCop, "SoundAI", 0);
     mMsgTireBlown = Hermes::Handler::Create<MGamePlayMoment, SoundAI, SoundAI>(this, &SoundAI::MessageTireBlown, "TireBlo", 0);
@@ -1301,32 +1303,39 @@ bool SoundAI::OnTask(HSIMTASK htask, float) {
 }
 
 void SoundAI::UpdateStateMachines() {
-    if ((IsSpeechEnabled == 0) || ((mFlags & BUSTED) != 0)) {
-        mMusicFlow->Update();
-        return;
-    }
+    if ((IsSpeechEnabled != 0) && ((mFlags & BUSTED) == 0)) {
+        switch (mFocus) {
+        case kRoadblockFlow:
+            goto update_strategy;
 
-    int focus = mFocus;
-    if (focus == kPursuitFlow) {
-        mPursuitFlow->Update();
-        if (mPursuitFlow->IsTransitionable()) {
-            mFocus = kStrategyFlow;
-            mStrategyFlow->ChangeStateTo(0);
-        }
-    } else if ((focus == kStrategyFlow) || (focus == kRoadblockFlow)) {
-        if (mStrategyFlow->IsTransitionable()) {
-            mStrategyFlow->ChangeStateTo(kWaiting);
-        }
-        mStrategyFlow->Update();
-    } else if (focus == kWaiting) {
-        if ((mPursuit != 0) && (mPursuitState == kSearching)) {
-            if (mStrategyFlow->GetState() != kOtherTarget) {
-                mStrategyFlow->ChangeStateTo(kOtherTarget);
+        case kPursuitFlow:
+            mPursuitFlow->Update();
+            if (mPursuitFlow->IsTransitionable()) {
+                mFocus = kStrategyFlow;
+                mStrategyFlow->ChangeStateTo(0);
+            }
+            break;
+
+        case kStrategyFlow:
+        update_strategy:
+            if (mStrategyFlow->IsTransitionable()) {
+                mStrategyFlow->ChangeStateTo(kWaiting);
             }
             mStrategyFlow->Update();
+            break;
+
+        case kLost:
+            if ((mPursuit != 0) && (mPursuitState == kSearching)) {
+                if (mStrategyFlow->GetState() != kOtherTarget) {
+                    mStrategyFlow->ChangeStateTo(kOtherTarget);
+                }
+                mStrategyFlow->Update();
+            }
+            break;
+
+        default:
+            break;
         }
-    } else if (!mPursuit) {
-        ResetPursuit(false);
     }
 
     mMusicFlow->Update();

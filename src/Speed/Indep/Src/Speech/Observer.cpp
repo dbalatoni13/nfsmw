@@ -232,8 +232,19 @@ float Observer::CalcFWVec_Road_Car() {
 }
 
 void Observer::GasStationAftermath() {
-    if ((WorldTimer - mT_gasstationexpl).GetSeconds() > 5.0f) {
-        mGasStationPos = UMath::Vector3::kZero;
+    SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
+
+    if ((WorldTimer - mT_gasstationexpl).GetSeconds() < 15.0f) {
+        copMap::const_iterator iter = ai->GetActors().begin();
+        while (iter != ai->GetActors().end()) {
+            EAXCop *cop = iter->cop;
+            UMath::Vector3 cop_pos = cop->GetPosition();
+            float rel_dist_expl = UMath::Distance(mGasStationPos, cop_pos);
+            if (rel_dist_expl < 50.0f) {
+                cop->CallforEV(2);
+            }
+            ++iter;
+        }
     }
 }
 
@@ -330,9 +341,18 @@ void Observer::AssessLOS() {
 }
 
 void Observer::NotifyAirborne(float alt, float t) {
-    mAirborneHeight = alt;
-    mAirborneLength = t;
-    mT_airborne = WorldTimer;
+    SoundAI *ai = SoundAI::Get();
+
+    if (ai->NumCopsWithLOS() > 0 && alt >= ai->GetTune().MinHeightAirborne()) {
+        if (t >= ai->GetTune().HangTimeForCommentary()) {
+            EAXCop *cop = ai->FindClosestCop(true, true);
+            if (cop) {
+                cop->SuspectAirborne(ai->GetPlayerSpeed() < ai->GetTune().SpeedThreshFlyFlipIntensity()
+                                         ? Csis::Type_intensity_Normal
+                                         : Csis::Type_intensity_High);
+            }
+        }
+    }
 }
 
 void Observer::AssessFlippage() {

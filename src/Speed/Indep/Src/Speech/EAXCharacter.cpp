@@ -53,6 +53,41 @@ extern FunctionHandle gAnytimeEvents_DriverHistoryHandle;
 extern FunctionHandle gAnytimeEvents_HeatJumpHandle;
 }
 
+template void Speech::Manager::ScheduleSpeech<Csis::AcknowledgeStruct>(
+    Csis::AcknowledgeStruct &data,
+    Csis::InterfaceId &iid,
+    Csis::FunctionHandle &fh,
+    EAXCharacter *actor);
+template void Speech::Manager::ScheduleSpeech<Csis::Interrupts_StaticInterruptStruct>(
+    Csis::Interrupts_StaticInterruptStruct &data,
+    Csis::InterfaceId &iid,
+    Csis::FunctionHandle &fh,
+    EAXCharacter *actor);
+template void Speech::Manager::ScheduleSpeech<Csis::Interrupts_InterruptRamStruct>(
+    Csis::Interrupts_InterruptRamStruct &data,
+    Csis::InterfaceId &iid,
+    Csis::FunctionHandle &fh,
+    EAXCharacter *actor);
+template void Speech::Manager::ScheduleSpeech<Csis::Interrupts_InterruptRamHighStruct>(
+    Csis::Interrupts_InterruptRamHighStruct &data,
+    Csis::InterfaceId &iid,
+    Csis::FunctionHandle &fh,
+    EAXCharacter *actor);
+template void Speech::Manager::ScheduleSpeech<Csis::Interrupts_InterruptStruct>(
+    Csis::Interrupts_InterruptStruct &data,
+    Csis::InterfaceId &iid,
+    Csis::FunctionHandle &fh,
+    EAXCharacter *actor);
+template void Speech::Manager::ScheduleSpeech<Csis::AnytimeEvents_DriverHistoryStruct>(
+    Csis::AnytimeEvents_DriverHistoryStruct &data,
+    Csis::InterfaceId &iid,
+    Csis::FunctionHandle &fh,
+    EAXCharacter *actor);
+template void Speech::Manager::ScheduleSpeech<Csis::AnytimeEvents_HeatJumpStruct>(
+    Csis::AnytimeEvents_HeatJumpStruct &data,
+    Csis::InterfaceId &iid,
+    Csis::FunctionHandle &fh,
+    EAXCharacter *actor);
 
 extern void *NullPointer;
 

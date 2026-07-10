@@ -29,22 +29,16 @@ RoadblockFlow::RoadblockFlow()
       mFlags(0), //
       mSpikeOffset(0), //
       mPertinentRB(0), //
-      mNumBlocks(0), //
-      mMsgReqHeliJoinRB(0), //
-      mMsgRoadBlockDodged(0), //
-      mMsgPosition(0), //
-      mMsgNotifyEventCompletion(0) {
-    mState = kWaiting;
+      mNumBlocks(0) {
     mLastState = kTransition;
 
     mMsgReqHeliJoinRB =
-        Hermes::Handler::Create<MReqRoadBlock, RoadblockFlow, RoadblockFlow>(this, &RoadblockFlow::MessageReqHeliJoinRB, "ReqHeliJoinRB", 0);
+        Hermes::Handler::Create<MReqRoadBlock, RoadblockFlow, RoadblockFlow>(this, &RoadblockFlow::MessageReqHeliJoinRB, "ReqHeliJoin", 0);
     mMsgRoadBlockDodged = Hermes::Handler::Create<MReqRoadBlock, RoadblockFlow, RoadblockFlow>(
-        this, &RoadblockFlow::MessageRoadBlockDodged, "RoadBlockDodged", 0);
+        this, &RoadblockFlow::MessageRoadBlockDodged, "Dodged", 0);
     mMsgPosition = Hermes::Handler::Create<MReqRoadBlock, RoadblockFlow, RoadblockFlow>(
-        this, &RoadblockFlow::MessagePositionUpdate, "PositionUpdate", 0);
-    mMsgNotifyEventCompletion = Hermes::Handler::Create<MNotifySpeechStatus, RoadblockFlow, RoadblockFlow>(
-        this, &RoadblockFlow::MessageEventComplete, UCrc32(0x20d60dbf), 0);
+        this, &RoadblockFlow::MessagePositionUpdate, "Position", 0);
+    mState = kWaiting;
 }
 
 RoadblockFlow::~RoadblockFlow() {

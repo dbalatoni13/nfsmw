@@ -101,6 +101,8 @@ inline SpeechSampleData *SpeechSampleVec::Find(int handle) const {
     return 0;
 }
 
+template void std::vector<SpeechSampleData *, UTL::Std::Allocator<SpeechSampleData *, _type_SpeechSampleVec> >::reserve(unsigned int);
+
 Module *Manager::m_SpeechModule[NUM_SPEECH_MODULES] = { 0, 0 };
 SPEECH_MODE Manager::m_speechMode = static_cast<SPEECH_MODE>(0);
 int Manager::m_numberSpeechBanks = 0;
@@ -1452,15 +1454,19 @@ bool Manager::CanPlayback(Attrib::Gen::speech &event_attribs) {
 }
 
 void Manager::CalcProbPlayback() {
-    int queued = sQueuedEventCount;
-    int requested = static_cast<int>(mSampleRequests.size());
-    int total = queued + requested;
-    if (total <= 0) {
-        mProbPlayback = 1.0f;
-    } else if (total > 12) {
-        mProbPlayback = 0.25f;
-    } else {
-        mProbPlayback = 1.0f - static_cast<float>(total) * 0.05f;
+    SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
+    if (ai) {
+        float basic_prob;
+        if ((ai->GetPursuitDuration() >= ai->GetTune().SpeechDropoffRamp().x) &&
+            (ai->GetPursuitDuration() <= ai->GetTune().SpeechDropoffRamp().y)) {
+            basic_prob = 1.0f - (ai->GetPursuitDuration() - ai->GetTune().SpeechDropoffRamp().x) /
+                                      (ai->GetTune().SpeechDropoffRamp().y - ai->GetTune().SpeechDropoffRamp().x);
+        } else if (ai->GetPursuitDuration() < ai->GetTune().SpeechDropoffRamp().x) {
+            basic_prob = 1.0f;
+        } else if (ai->GetPursuitDuration() > ai->GetTune().SpeechDropoffRamp().y) {
+            basic_prob = 0.0f;
+        }
+        mProbPlayback = basic_prob;
     }
 }
 
@@ -1598,15 +1604,21 @@ void Module::ReleaseResource() {
 
 GameSpeech::GameSpeech()
     : mLoadState(), //
-      m_currentIntensity(0), //
       m_speechCycle(0), //
       m_pendingList(), //
       m_currEvent(0), //
       m_currEventTime(0), //
-      m_currEventClarity(0), //
       m_currEventSpeakerID(0), //
       m_Chirper(0), //
-      m_ChirpParams() {}
+      m_ChirpParams() {
+    mLoadState.clear();
+    if ((m_strm == 0) && IsSpeechEnabled) {
+        m_pendingList.reserve(7);
+    }
+    m_ChirpParams.Vol = 0;
+    m_ChirpParams.Az = 0;
+    m_ChirpParams.Pitch = 0x1000;
+}
 
 GameSpeech::~GameSpeech() {
     ClearCompletedRequests();
@@ -1938,8 +1950,19 @@ void GameSpeech::Update() {
 }
 
 void GameSpeech::CheckNextEvent() {
-    if (m_currEvent) {
-        return;
+    ScheduledSpeechEvent *nextevent = Manager::GetNextEvent();
+
+    if (nextevent) {
+        if (nextevent->priority <= 100) {
+            if (!TestFlag(8)) {
+                IssuePlayback(nextevent);
+                RadioChirp(0);
+            }
+        } else {
+            static_cast<Module *>(this)->ReleaseResource();
+            IssuePlayback(nextevent);
+            RadioChirp(0);
+        }
     }
 }
 
@@ -2049,8 +2072,7 @@ void GameSpeech::ClearCompletedRequests() {
 
 void GameSpeech::ReleaseResource() {
     Module::ReleaseResource();
-    m_pendingList.clear();
-    m_currEvent = 0;
+    ClearCompletedRequests();
 }
 
 unsigned int GameSpeech::SampleRequestCallback(SPCHType_SampleRequestData *data) {
@@ -2118,8 +2140,14 @@ void GameSpeech::RadioChirp(unsigned char type) {
 }
 
 void GameSpeech::UpdateChirps() {
-    if (m_Chirper && !m_Chirper->IsPlaying()) {
-        m_Chirper = 0;
+    if (m_Chirper) {
+        if (!m_Chirper->IsPlaying()) {
+            delete m_Chirper;
+            m_Chirper = 0;
+        } else {
+            m_ChirpParams.Vol = m_pSFXOBJ_Speech->GetDMixOutput(0xD, DMX_VOL);
+            m_Chirper->Update(&m_ChirpParams);
+        }
     }
 }
 

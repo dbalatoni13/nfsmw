@@ -16,11 +16,11 @@
 
 #include "Speed/Indep/Src/Speech/RoadblockFlow.cpp"
 
+#include "Speed/Indep/Src/Speech/SpeechFlow.cpp"
+
 #include "Speed/Indep/Src/Speech/SoundAI.cpp"
 
 #include "Speed/Indep/Src/Speech/SpeechCache.cpp"
-
-#include "Speed/Indep/Src/Speech/SpeechFlow.cpp"
 
 #include "Speed/Indep/Src/EAXSound/snd_gen/copspeech.cpp"
 
