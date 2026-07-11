@@ -1744,12 +1744,6 @@ int SoundAI::GetCallsign(Csis::Type_speaker_battalion battalion) {
     Speech::voiceIDs *cs_pool = 0;
 
     switch (battalion) {
-    case Csis::Type_speaker_battalion_City:
-        cs_pool = &mUsage.cs_City;
-        if (cs_pool->empty()) {
-            RandomizeCallsign(*cs_pool, Csis::Type_speaker_call_sign_id_CallSign01, Csis::Type_speaker_call_sign_id_CallSign20);
-        }
-        break;
     case Csis::Type_speaker_battalion_Rosewood:
         cs_pool = &mUsage.cs_Rosewood;
         if (cs_pool->empty()) {
@@ -1762,16 +1756,22 @@ int SoundAI::GetCallsign(Csis::Type_speaker_battalion battalion) {
             RandomizeCallsign(*cs_pool, Csis::Type_speaker_call_sign_id_CallSign01, Csis::Type_speaker_call_sign_id_CallSign10);
         }
         break;
-    case Csis::Type_speaker_battalion_Super_Pursuit:
-        cs_pool = &mUsage.cs_SuperPursuit;
+    case Csis::Type_speaker_battalion_City:
+        cs_pool = &mUsage.cs_City;
         if (cs_pool->empty()) {
-            RandomizeCallsign(*cs_pool, Csis::Type_speaker_call_sign_id_CallSign01, Csis::Type_speaker_call_sign_id_CallSign05);
+            RandomizeCallsign(*cs_pool, Csis::Type_speaker_call_sign_id_CallSign01, Csis::Type_speaker_call_sign_id_CallSign20);
         }
         break;
     case Csis::Type_speaker_battalion_Alpine:
         cs_pool = &mUsage.cs_Alpine;
         if (cs_pool->empty()) {
             RandomizeCallsign(*cs_pool, Csis::Type_speaker_call_sign_id_CallSign01, Csis::Type_speaker_call_sign_id_CallSign10);
+        }
+        break;
+    case Csis::Type_speaker_battalion_Super_Pursuit:
+        cs_pool = &mUsage.cs_SuperPursuit;
+        if (cs_pool->empty()) {
+            RandomizeCallsign(*cs_pool, Csis::Type_speaker_call_sign_id_CallSign01, Csis::Type_speaker_call_sign_id_CallSign05);
         }
         break;
     case Csis::Type_speaker_battalion_Rhino_Units:
@@ -1784,14 +1784,14 @@ int SoundAI::GetCallsign(Csis::Type_speaker_battalion battalion) {
         break;
     }
 
-    if (!cs_pool) {
+    if (cs_pool != nullptr) {
+        Speech::voiceIDs::iterator iter = cs_pool->begin();
+        int id = *iter;
+        cs_pool->erase(iter);
+        return id;
+    } else {
         return -1;
     }
-
-    Speech::voiceIDs::iterator iter = cs_pool->begin();
-    int id = *iter;
-    cs_pool->erase(iter);
-    return id;
 }
 
 void SoundAI::Force911State() {

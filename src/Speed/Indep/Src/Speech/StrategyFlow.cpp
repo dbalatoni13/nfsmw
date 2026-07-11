@@ -71,6 +71,39 @@ void StrategyFlow::Reset() {
 }
 
 void StrategyFlow::Update() {
+    int y;
+    int x;
+
+    if (SPEECHFLOW_DISPLAY != 0) {
+        SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
+        if (ai->GetPursuitState() == SoundAI::kActive) {
+            switch (ai->GetPursuit()->GetFormationType()) {
+            case PIT:
+                y = 0;
+                break;
+            case BOX_IN:
+                y = 1;
+                break;
+            case ROLLING_BLOCK:
+                y = 2;
+                break;
+            case FOLLOW:
+            case STAGGER_FOLLOW:
+                y = 3;
+                break;
+            case HELI_PURSUIT:
+                y = 4;
+                break;
+            case HERD:
+                y = 5;
+                break;
+            default:
+                y = 6;
+                break;
+            }
+        }
+    }
+
     switch (mState) {
     case kTransition:
         return;
@@ -80,13 +113,13 @@ void StrategyFlow::Update() {
     case kSoloCheck:
         SoloCheck();
         return;
-    case kReqBackup:
-        ReqBackup();
-        return;
-    case kCallToPos:
+    case 333:
         CallToPos();
         return;
-    case kWaiting:
+    case 999:
+        ReqBackup();
+        return;
+    case 1000:
         Waiting();
         return;
     case kOutrun:
@@ -95,10 +128,10 @@ void StrategyFlow::Update() {
     case kLost:
         Lost();
         return;
-    case kTerminal:
+    case 4:
         Terminal();
         return;
-    case kOutcome:
+    case 5:
         Outcome();
         return;
     default:

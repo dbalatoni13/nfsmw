@@ -36,8 +36,8 @@ class SFXObj_MomentStrm : public CARSFX {
     static float m_TimeBeforeRetrigger;
     static bool bHoldStream;
 
-    HHANDLER mMsgReceiveMoment;   // offset 0x28, size 0x4
-    HHANDLER mMsgPursuitBreaker;  // offset 0x2C, size 0x4
+    Hermes::HHANDLER mMsgReceiveMoment;   // offset 0x28, size 0x4
+    Hermes::HHANDLER mMsgPursuitBreaker;  // offset 0x2C, size 0x4
     MomentList mMomentPositonsList;   // offset 0x30, size 0x510
     SFXCTL_3DObjPos *m_p3DPos;        // offset 0x540, size 0x4
     eVOL_MOMENT VolSlot;              // offset 0x544, size 0x4

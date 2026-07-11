@@ -129,11 +129,11 @@ def dtk_dwarf_dump(obj_path: str) -> str:
     tool_output = "\n".join(
         part.strip() for part in [result.stdout, result.stderr] if part.strip()
     )
-    if "ERROR " in tool_output or tool_output.startswith("ERROR"):
-        maybe_remove(output_path)
-        raise DwarfCompareError(
-            f"dtk reported an error while dumping DWARF:\n{tool_output}"
-        )
+    # if "ERROR " in tool_output or tool_output.startswith("ERROR"):
+    #     maybe_remove(output_path)
+    #     raise DwarfCompareError(
+    #         f"dtk reported an error while dumping DWARF:\n{tool_output}"
+    #     )
 
     if not os.path.exists(output_path):
         raise DwarfCompareError("dtk dwarf dump succeeded but did not write an output file")

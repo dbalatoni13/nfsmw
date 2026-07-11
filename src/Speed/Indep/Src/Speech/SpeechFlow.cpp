@@ -4,6 +4,7 @@
 #include "Speed/Indep/Src/EAXSound/AudioMemBase.hpp"
 #include "Speed/Indep/Src/EAXSound/AudioMemoryManager.hpp"
 #include "Speed/Indep/Src/Misc/Hermes.h"
+#include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_MomentStrm.hpp"
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_NISStream.hpp"
 #include "Speed/Indep/Src/EAXSound/SFX_base.hpp"
 #include "Speed/Indep/Src/EAXSound/Stream/EAXS_StreamChannel.h"
@@ -2472,32 +2473,38 @@ void SED_NISSFX::Update() {
         return;
     }
 
-    if (m_SyncObject.id == STRM_SFX_MOMENT) {
-        SFX_Base *sfxmoment = m_pSFXOBJ_Moment;
+    switch (m_SyncObject.id) {
+    case STRM_SFX_MOMENT: {
+        SFXObj_MomentStrm *sfxmoment = static_cast<SFXObj_MomentStrm *>(m_pSFXOBJ_Moment);
         if (sfxmoment) {
-            // int vol = sfxmoment->GetDMixOutput(*<int *>(<char *>(sfxmoment) + 0x544), DMX_VOL);
-            // m_strm->SetVol(vol >> 8, true);
-            // if (*<bool *>(<char *>(sfxmoment) + 0x548)) {
-            //     m_strm->SetAz(sfxmoment->GetDMixOutput(0, DMX_AZIM));
-            // } else {
-            //     m_strm->SetAz(0);
-            // }
+            int vol = sfxmoment->GetDMixOutput(sfxmoment->VolSlot, DMX_VOL);
+            m_strm->SetVol(vol >> 8, true);
+            if (sfxmoment->m_IsPositioned) {
+                m_strm->SetAz(sfxmoment->GetDMixOutput(0, DMX_AZIM));
+            } else {
+                m_strm->SetAz(0);
+            }
         }
-    } else if (m_SyncObject.id == STRM_NIS_RACE_START) {
+        break;
+    }
+    case STRM_NIS_RACE_START:
         if (m_pSFXOBJ_NISStream) {
             int vol = m_pSFXOBJ_NISStream->GetDMixOutput(1, DMX_VOL);
             m_strm->SetVol(vol >> 8, true);
             m_strm->SetAz(0);
         }
-    } else if (m_SyncObject.id == STRM_NIS_BUSTED) {
+        break;
+    case STRM_NIS_BUSTED:
         if (m_pSFXOBJ_NISStream) {
             int vol = m_pSFXOBJ_NISStream->GetDMixOutput(2, DMX_VOL);
             m_strm->SetVol(vol >> 8, true);
             m_strm->SetAz(0);
         }
-    } else {
+        break;
+    default:
         m_strm->SetVol(100, true);
         m_strm->SetAz(0);
+        break;
     }
 
     if (m_SyncObject.holdtime != -1) {

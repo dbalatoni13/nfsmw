@@ -279,7 +279,7 @@ void EAXDispatch::PursuitEscalation() {
     int region;
     int location;
     int last;
-    register int address_group_type;
+    register int num_suspects;
     register unsigned int direction;
     Csis::AnytimeEvents_DispPursuitEscalationStruct data;
 
@@ -293,52 +293,56 @@ void EAXDispatch::PursuitEscalation() {
     data.speaker_id = mSpeakerID;
     furthest = ai->FindFurthestCop(true);
     if (furthest) {
-        address_group_type = furthest->GetCallsign();
-        if (address_group_type == Csis::Type_address_group_type_city) {
-            address_group_type = Csis::Type_address_group_type_coastal;
-        } else if (address_group_type < 3) {
-            if (address_group_type != Csis::Type_address_group_type_college_town) {
-                address_group_type = Csis::Type_address_group_type_generic_any_;
-            }
-        } else if (address_group_type == Csis::Type_address_group_type_coastal) {
-            address_group_type = Csis::Type_address_group_type_city;
-        } else if (address_group_type != Csis::Type_address_group_type_alpine) {
-            address_group_type = Csis::Type_address_group_type_generic_any_;
+        switch (furthest->GetCallsign()) {
+        case Csis::Type_address_group_type_college_town:
+            data.address_group_type = Csis::Type_address_group_type_college_town;
+            break;
+        case Csis::Type_address_group_type_city:
+            data.address_group_type = Csis::Type_address_group_type_coastal;
+            break;
+        case Csis::Type_address_group_type_coastal:
+            data.address_group_type = Csis::Type_address_group_type_city;
+            break;
+        case Csis::Type_address_group_type_alpine:
+            data.address_group_type = Csis::Type_address_group_type_alpine;
+            break;
+        default:
+            data.address_group_type = Csis::Type_address_group_type_generic_any_;
+            break;
         }
-        data.address_group_type = address_group_type;
     } else {
         data.address_group_type = Csis::Type_address_group_type_generic_any_;
     }
     last = ai->GetLastObservation();
-    if (last < Collision_Suspect_Train) {
-        if ((last > Collision_Suspect_Structure) || (last == Collision_Suspect_World)) {
-            data.pursuit_type = Csis::Type_pursuit_type_Reckless;
-        } else if (last < Collision_Suspect_Suspect) {
-            if (last == Collision_Cop_Suspect) {
-                data.pursuit_type = Csis::Type_pursuit_type_Unit_Rammed;
-            } else {
-                data.pursuit_type = Csis::Type_pursuit_type_Generic_Speeder;
-            }
-        } else if (last == Collision_Suspect_Suspect || last == Collision_Suspect_Spikebelt) {
-            data.pursuit_type = Csis::Type_pursuit_type_Possible_Wanted;
-        } else if (last == Collision_Suspect_Traffic) {
-            data.pursuit_type = Csis::Type_pursuit_type_Hit_and_Run;
-        } else {
-            data.pursuit_type = Csis::Type_pursuit_type_Generic_Speeder;
-        }
-    } else if (last == Collision_Suspect_GasStation || last == Collision_Suspect_Structure || last == Collision_Suspect_Tree || last == Collision_Suspect_Guardrail) {
-        data.pursuit_type = Csis::Type_pursuit_type_Reckless;
-    } else if (last < Collision_Suspect_GasStation) {
-        data.pursuit_type = Csis::Type_pursuit_type_Hit_and_Run;
-    } else if (last == Collision_Suspect_Spikebelt) {
+    switch (last) {
+    case Collision_Cop_Suspect:
+        data.pursuit_type = Csis::Type_pursuit_type_Unit_Rammed;
+        break;
+    case Collision_Suspect_Suspect:
+    case Collision_Suspect_Spikebelt:
         data.pursuit_type = Csis::Type_pursuit_type_Possible_Wanted;
-    } else {
+        break;
+    case Collision_Suspect_Traffic:
+    case Collision_Suspect_Train:
+    case Collision_Suspect_Semi:
+        data.pursuit_type = Csis::Type_pursuit_type_Hit_and_Run;
+        break;
+    case Collision_Suspect_World:
+    case Collision_Suspect_Structure:
+    case Collision_Suspect_Tree:
+    case Collision_Suspect_Guardrail:
+    case Collision_Suspect_GasStation:
+        data.pursuit_type = Csis::Type_pursuit_type_Reckless;
+        break;
+    default:
         data.pursuit_type = Csis::Type_pursuit_type_Generic_Speeder;
+        break;
     }
-    data.num_suspects = Csis::Type_num_suspects_one_suspect;
+    num_suspects = Csis::Type_num_suspects_one_suspect;
     if (ai->AreRacersNearby()) {
-        data.num_suspects = Csis::Type_num_suspects_multiple_suspects;
+        num_suspects = Csis::Type_num_suspects_multiple_suspects;
     }
+    data.num_suspects = num_suspects;
     result = MiscSpeech::GetLocation(ai->GetLastKnownRoad(), region, location);
     if (!result) {
         result = MiscSpeech::GetLocation(ai->GetPlayerRoadID(0), region, location);
@@ -435,73 +439,59 @@ void EAXDispatch::TimeExpired() {
 
 void EAXDispatch::Report911(Csis::Type_pursuit_type infraction) {
     SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
+    Csis::AnytimeEvents_Disp911ReportStruct data;
+    int location;
+    int location_region;
     bool result;
     unsigned int dir;
-    int location_region;
-    int location;
-    Csis::AnytimeEvents_Disp911ReportStruct data;
-    unsigned int last_known_direction;
-    unsigned int player_direction_0;
-    unsigned int player_direction_1;
-    RoadNames last_known_road;
-    RoadNames player_road_0;
-    RoadNames player_road_1;
+    register int num_suspects;
+    register int address_group_type;
 
     if (!ai) {
         return;
     }
     data.speaker_id = mSpeakerID;
-    data.num_suspects = Csis::Type_num_suspects_one_suspect;
-    if (ai->AreRacersNearby()) {
-        data.num_suspects = Csis::Type_num_suspects_multiple_suspects;
-    }
-    data.encounter = Csis::Type_encounter_first_encounter;
     data.pursuit_type = infraction;
-    last_known_direction = ai->GetLastKnownDirection();
-    player_direction_0 = ai->GetPlayerDirection(0);
-    player_direction_1 = ai->GetPlayerDirection(1);
-    last_known_road = ai->GetLastKnownRoad();
-    player_road_0 = ai->GetPlayerRoadID(0);
-    player_road_1 = ai->GetPlayerRoadID(1);
-    result = MiscSpeech::GetLocation(last_known_road, location_region, location);
+    num_suspects = Csis::Type_num_suspects_one_suspect;
+    if (ai->AreRacersNearby()) {
+        num_suspects = Csis::Type_num_suspects_multiple_suspects;
+    }
+    data.num_suspects = num_suspects;
+    data.encounter = Csis::Type_encounter_first_encounter;
+    result = MiscSpeech::GetLocation(ai->GetLastKnownRoad(), location_region, location);
     if (!result) {
-        result = MiscSpeech::GetLocation(player_road_0, location_region, location);
+        result = MiscSpeech::GetLocation(ai->GetPlayerRoadID(0), location_region, location);
         if (!result) {
-            MiscSpeech::GetLocation(player_road_1, location_region, location);
+            MiscSpeech::GetLocation(ai->GetPlayerRoadID(1), location_region, location);
         }
     }
     data.location_region = location_region;
     data.location = location;
-    data.direction = last_known_direction;
-    if (data.direction == 0) {
-        data.direction = player_direction_0;
-        if (data.direction == 0) {
-            data.direction = player_direction_1;
-            if (data.direction == 0) {
-                dir = bRandom(4);
-                data.direction = 1 << (dir & 0x3F);
-            }
+    {
+        register unsigned int direction = ai->GetLastKnownDirection();
+        if ((direction == 0) && ((direction = ai->GetPlayerDirection(0)) == 0) &&
+            ((direction = ai->GetPlayerDirection(1)) == 0)) {
+            dir = bRandom(4);
+            direction = 1 << dir;
         }
+        data.direction = direction;
     }
-    if (location_region != Csis::Type_location_region_coastal) {
-        if (location_region < 3) {
-            if (location_region == Csis::Type_location_region_college_town) {
-                data.address_group_type = Csis::Type_address_group_type_college_town;
-            } else {
-                data.address_group_type = Csis::Type_address_group_type_generic_any_;
-            }
-        } else if (location_region != Csis::Type_location_region_coastal_extra) {
-            if (location_region == Csis::Type_location_region_city) {
-                data.address_group_type = Csis::Type_address_group_type_city;
-            } else {
-                data.address_group_type = Csis::Type_address_group_type_generic_any_;
-            }
-        } else {
-            data.address_group_type = Csis::Type_address_group_type_coastal;
-        }
-    } else {
-        data.address_group_type = Csis::Type_address_group_type_coastal;
+    address_group_type = location_region;
+    switch (address_group_type) {
+    case Csis::Type_location_region_coastal:
+    case Csis::Type_location_region_coastal_extra:
+        address_group_type = Csis::Type_address_group_type_coastal;
+        break;
+    case Csis::Type_location_region_city:
+        address_group_type = Csis::Type_address_group_type_city;
+        break;
+    case Csis::Type_location_region_college_town:
+        break;
+    default:
+        address_group_type = Csis::Type_address_group_type_generic_any_;
+        break;
     }
+    data.address_group_type = address_group_type;
     dir = bRandom(3);
     if (dir == 2) {
         data.address_group_type = Csis::Type_address_group_type_generic_any_;
@@ -572,29 +562,20 @@ void EAXDispatch::BackupETA() {
     if (ai && (pursuit = ai->GetPursuit(), pursuit)) {
         data.speaker_id = mSpeakerID;
         eta = pursuit->GetBackupETA();
-        if ((eta <= 10.0f) || (eta >= 20.0f)) {
-            if ((eta <= 20.0f) || (eta >= 40.0f)) {
-                if ((eta <= 40.0f) || (eta >= 75.0f)) {
-                    if ((eta <= 75.0f) || (eta >= 100.0f)) {
-                        if ((eta <= 100.0f) || (eta >= 140.0f)) {
-                            if (eta <= 140.0f) {
-                                return;
-                            }
-                            data.disp_backup_eta = Csis::Type_disp_backup_eta_2min_;
-                        } else {
-                            data.disp_backup_eta = Csis::Type_disp_backup_eta_2min;
-                        }
-                    } else {
-                        data.disp_backup_eta = Csis::Type_disp_backup_eta_1min30sec;
-                    }
-                } else {
-                    data.disp_backup_eta = Csis::Type_disp_backup_eta_1min;
-                }
-            } else {
-                data.disp_backup_eta = Csis::Type_disp_backup_eta_30sec;
-            }
-        } else {
+        if ((eta > 10.0f) && (eta < 20.0f)) {
             data.disp_backup_eta = Csis::Type_disp_backup_eta_15sec;
+        } else if ((eta > 20.0f) && (eta < 40.0f)) {
+            data.disp_backup_eta = Csis::Type_disp_backup_eta_30sec;
+        } else if ((eta > 40.0f) && (eta < 75.0f)) {
+            data.disp_backup_eta = Csis::Type_disp_backup_eta_1min;
+        } else if ((eta > 75.0f) && (eta < 100.0f)) {
+            data.disp_backup_eta = Csis::Type_disp_backup_eta_1min30sec;
+        } else if ((eta > 100.0f) && (eta < 140.0f)) {
+            data.disp_backup_eta = Csis::Type_disp_backup_eta_2min;
+        } else if (eta > 140.0f) {
+            data.disp_backup_eta = Csis::Type_disp_backup_eta_2min_;
+        } else {
+            return;
         }
         ScheduleSpeech(data, Csis::Backup_DispBUETAId, Csis::gBackup_DispBUETAHandle, this);
     }

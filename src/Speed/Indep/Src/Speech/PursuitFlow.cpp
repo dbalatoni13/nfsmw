@@ -5,6 +5,8 @@
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Generated/Messages/MNotifySpeechStatus.h"
 
+extern int SPEECHFLOW_DISPLAY;
+
 namespace Speech {
 
 PursuitFlow::PursuitFlow()
@@ -32,6 +34,60 @@ void PursuitFlow::OnCopRemoved(EAXCop *cop) {
 }
 
 void PursuitFlow::Update() {
+    int y;
+    int x;
+
+    if (SPEECHFLOW_DISPLAY != 0) {
+        switch (mCauseofPursuit) {
+        case k911Reported:
+            x = 0;
+            break;
+        case kCopAssaulted:
+            x = 1;
+            break;
+        case kSpotted:
+            x = 2;
+            break;
+        case kReacquired:
+            x = 3;
+            break;
+        case kScripted:
+            x = 4;
+            break;
+        default:
+            x = 5;
+            break;
+        }
+
+        SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
+        if ((ai != nullptr) && (ai->GetPursuitState() == SoundAI::kActive)) {
+            switch (ai->GetPursuit()->GetFormationType()) {
+            case PIT:
+                y = 0;
+                break;
+            case BOX_IN:
+                y = 1;
+                break;
+            case ROLLING_BLOCK:
+                y = 2;
+                break;
+            case FOLLOW:
+            case STAGGER_FOLLOW:
+                y = 3;
+                break;
+            case HELI_PURSUIT:
+                y = 4;
+                break;
+            case HERD:
+                y = 5;
+                break;
+            default:
+                y = 6;
+                break;
+            }
+        }
+    }
+
     switch (mState) {
     case kTransition:
         return;

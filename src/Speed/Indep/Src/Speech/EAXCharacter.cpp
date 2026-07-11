@@ -213,27 +213,22 @@ void EAXCharacter::Update() {
     IVehicle *vehicle = 0;
     SoundAI *ai;
 
-    if (!simable) {
+    if (simable) {
+        simable->QueryInterface(&vehicle);
+    } else {
         *reinterpret_cast<unsigned int *>(&mActive) = 0;
         mHandle = 0;
-    } else {
-        simable->QueryInterface(&vehicle);
     }
     ai = SoundAI::Get();
     if (ai && vehicle && *reinterpret_cast<unsigned int *>(&mActive)) {
         UMath::Vector3 pPos;
         UMath::Vector3 cPos;
-        UMath::Vector3 temp;
-        const UMath::Vector3 &pos = vehicle->GetPosition();
 
-        mPos.x = pos.x;
-        mPos.y = pos.y;
-        mPos.z = pos.z;
+        mPos = vehicle->GetPosition();
         pPos = ai->GetPlayerPos();
         cPos = mPos;
-        mSpeed = vehicle->GetAbsoluteSpeed() * 2.23699f;
-        VU0_v3sub(cPos, pPos, temp);
-        mDistance = VU0_sqrt(VU0_v3lengthsquare(temp));
+        mSpeed = MPS2MPH(vehicle->GetAbsoluteSpeed());
+        mDistance = UMath::Distance(cPos, pPos);
     }
 }
 
