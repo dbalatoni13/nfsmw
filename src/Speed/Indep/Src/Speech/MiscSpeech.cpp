@@ -200,18 +200,28 @@ static inline bool IsVehicleTypeOK_Impl() {
         ok = false;
     }
 
-    while (ok && pcar.GetCollection() != 0xEEC2271A) {
-        unsigned int collection = pcar.GetCollection();
-        if (collection == 0xDF9C02AC || collection == 0xA9811B93 || collection == 0x230EB710) {
+    register unsigned int root_collection = 0xEEC2271A;
+    register unsigned int excluded_collection_1 = 0xDF9C02AC;
+    register unsigned int excluded_collection_3 = 0x230EB710;
+    register unsigned int excluded_collection_2 = 0xA9811B93;
+
+    while ((pcar.GetCollection() != root_collection) && ok) {
+        if ((pcar.GetCollection() == excluded_collection_1) || (pcar.GetCollection() == excluded_collection_2) ||
+            (pcar.GetCollection() == excluded_collection_3)) {
             ok = false;
-            break;
         }
 
-        const Attrib::Collection *parent = Attrib::GetCollectionParent(pcar.GetConstCollection());
-        pcar.Change(parent);
+        if (ok) {
+            const Attrib::Collection *parent = Attrib::GetCollectionParent(pcar.GetConstCollection());
+            pcar.Change(parent);
+        }
     }
 
     return ok;
+}
+
+extern "C" bool IsVehicleTypeOK__10MiscSpeech() {
+    return MiscSpeech::IsVehicleTypeOK_Impl();
 }
 
 int LostSuspect(int spkrID) {
@@ -858,9 +868,6 @@ bool GetLocation(RoadNames id, Csis::Type_location_region &region, Csis::Type_lo
 }
 } // namespace MiscSpeech
 
-extern "C" bool IsVehicleTypeOK__10MiscSpeech() {
-    return MiscSpeech::IsVehicleTypeOK_Impl();
-}
 
 extern "C" void RBAverted__10MiscSpeech() {
     MiscSpeech::RBAverted_Impl();

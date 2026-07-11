@@ -502,35 +502,32 @@ template void Speech::Manager::ScheduleSpeech<Csis::Setup_AttmptVehStpStruct>(
 extern "C" float speed_test_28362[];
 
 EAXCop::EAXCop(int speakerID, HSIMABLE handle, int bID, int cID)
-    : EAXCharacter(speakerID, handle, bID, cID) {
+    : EAXCharacter(speakerID, handle, bID, cID), //
+      mRank(0), //
+      mInFormation(0), //
+      mInPosition(0), //
+      mAhead(0), //
+      mPctTractiveTires(0.0f), //
+      mTimeAirborne(WorldTimer), //
+      mTrafficHitCount(0), //
+      mTimeNoLOS(WorldTimer), //
+      mNumRammed(0), //
+      mLastRammedTime(0), //
+      mT_lastactivity(0), //
+      mT_closingDist(0), //
+      mOrigin(MAX_ROADNAMES), //
+      mCurrRoad(MAX_ROADNAMES), //
+      mTgtOffset(UMath::Vector3::kZero) {
     ISimable *simable;
 
-    mPctTractiveTires = 0.0f;
-    mRank = 0;
-    *reinterpret_cast<unsigned int *>(&mInFormation) = 0;
-    *reinterpret_cast<unsigned int *>(&mInPosition) = 0;
-    *reinterpret_cast<unsigned int *>(&mAhead) = 0;
-    mTimeAirborne = WorldTimer;
-    mTrafficHitCount = 0;
-    mTimeNoLOS = WorldTimer;
-    mT_closingDist = 0;
-    mCurrRoad = MAX_ROADNAMES;
-    mTgtOffset.x = UMath::Vector3::kZero.x;
-    mNumRammed = 0;
-    mLastRammedTime = 0;
-    mT_lastactivity = 0;
-    mOrigin = MAX_ROADNAMES;
-    mTgtOffset.z = UMath::Vector3::kZero.z;
-    mTgtOffset.y = UMath::Vector3::kZero.y;
     simable = ISimable::FindInstance(handle);
     if (simable) {
         IVehicleAI *vai;
-        if (simable->QueryInterface(&vai) && vai) {
+        if (simable->QueryInterface(&vai)) {
             WRoadNav *nav = vai->GetDriveToNav();
             if (nav) {
-                unsigned int road_id = nav->GetRoadSpeechId();
-                if (road_id != 0x6B) {
-                    mOrigin = static_cast<RoadNames>(road_id);
+                if (nav->GetRoadSpeechId() != 0x6B) {
+                    mOrigin = static_cast<RoadNames>(nav->GetRoadSpeechId());
                 }
             }
         }

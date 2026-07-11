@@ -586,19 +586,19 @@ void PursuitFlow::ChangeTarget() {
 
 void PursuitFlow::Terminal() {
     SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
-    if (!ai) {
-        return;
-    }
 
     if (!mBusy) {
         EAXCop *leader = ai->GetLeader();
-        if ((ai->GetTune().MinTimeConsideredStopped() <= ai->GetPlayerSpeed()) && leader) {
-            leader->PrimaryEngage();
+        if ((60.0f <= ai->GetPlayerSpeed()) && leader && (mCauseofPursuit != kSpotted) && (mCauseofPursuit != k911Reported) &&
+            (mCauseofPursuit != kScripted) && (mCauseofPursuit != kReacquired) && (mCauseofPursuit != kCopAssaultedScripted) &&
+            (mCauseofPursuit != kCopAssaulted)) {
+            leader->InitiatePursuit();
         }
-        if (!ai->IsHighIntensity() && leader) {
-            leader->VehicleReport();
+        if (!ai->IsHighIntensity() && leader && (mCauseofPursuit != kCopAssaulted) && (mCauseofPursuit != kCopAssaultedScripted)) {
+            leader->LocationReport();
         }
-        if (ai->GetTune().MinHavocForSuspectBehavior() <= ai->GetHavoc()) {
+        if ((ai->GetTune().MinHavocForSuspectBehavior() <= ai->GetHavoc()) && (mCauseofPursuit != kCopAssaulted) &&
+            (mCauseofPursuit != kCopAssaultedScripted)) {
             EAXCop *cansee = ai->FindClosestCop(true, true);
             if (cansee) {
                 cansee->SuspectBehavior();

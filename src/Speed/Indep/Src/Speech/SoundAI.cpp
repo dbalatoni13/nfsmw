@@ -11,6 +11,7 @@
 #include "Speed/Indep/Src/Interfaces/Simables/IRenderable.h"
 #include "Speed/Indep/Src/Misc/Config.h"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
+#include "Speed/Indep/Src/Misc/Profiler.hpp"
 #include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Src/EAXSound/AudioMemoryManager.hpp"
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
@@ -1255,12 +1256,16 @@ bool SoundAI::IsHighIntensity() {
 }
 
 bool SoundAI::OnTask(HSIMTASK htask, float) {
-    float tout = 0.0f;
+    ProfileNode profile_node("SoundAI::OnTask", 0);
+    float tout;
+    float *dead_air = &mDeadAir;
 
-    if (!Speech::Manager::IsCopSpeechBusy()) {
+    if (Speech::Manager::IsCopSpeechBusy()) {
+        tout = 0.0f;
+    } else {
         tout = (WorldTimer - Speech::Manager::GetTimeSinceLastEvent(COPSPEECH_MODULE)).GetSeconds();
     }
-    mDeadAir = tout;
+    *dead_air = tout;
 
     if (htask == mMainUpdate) {
         if (FORCE_VOICE_RANDOMIZATION != 0) {
