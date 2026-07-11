@@ -42,6 +42,11 @@ enum CameraMoverTypes {
     CM_SHOWCASE = 18,
 };
 
+// from _GLOBAL_.I._6Camera.StopUpdating in __static_initialization_and_destruction_0
+// TODO GET RID OF THESE
+bVector4 CameraNoiseHandheldAmplitude = bVector4( 0.01,  0.01, 0.03, 0.03);
+bVector4 CameraNoiseHandheldFrequency = bVector4( 0.01,  0.175, 0.153, 0.03);
+
 // total size: 0x124
 class CameraAnchor {
   public:
@@ -121,6 +126,10 @@ class CameraMover : public bTNode<CameraMover>, public WCollisionMgr::ICollision
     virtual void Update(float dT);
     virtual void Render(eView *view);
 
+    void HandheldNoise(bMatrix4 *world_to_camera,float f_scale,bool useWorldTimer);
+
+    void ChopperNoise(bMatrix4 *world_to_camera,float f_scale,bool useWorldTimer);
+
     virtual CameraAnchor *GetAnchor() {}
 
     virtual void SetLookBack(bool b) {}
@@ -165,6 +174,11 @@ class CameraMover : public bTNode<CameraMover>, public WCollisionMgr::ICollision
     float fSavedAdjust;          // offset 0x6C, size 0x4
     bVector3 vSavedForward;      // offset 0x70, size 0x10
 };
+
+extern Timer WorldTimer;
+// extern int WorldTime;
+// extern float WorldTimeSeconds;
+extern Timer RealTimer;
 
 void CameraMoverRestartRace();
 
