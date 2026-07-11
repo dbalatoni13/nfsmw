@@ -734,53 +734,53 @@ config.libs = [
         "progress_category": "libs",  # str | List[str]
         "objects": [
             Object(
-                NonMatching, "Packages/realcore/6.24.00/source/input/cmn/device.cpp"
+                NonMatching, "Speed/Indep/Libs/realcore/6.24.00/source/input/cmn/device.cpp"
             ),
             Object(
-                NonMatching, "Packages/realcore/6.24.00/source/file/cmn/filesys.cpp"
+                NonMatching, "Speed/Indep/Libs/realcore/6.24.00/source/file/cmn/filesys.cpp"
             ),
             Object(
-                NonMatching, "Packages/realcore/6.24.00/source/file/cmn/filesysopts.cpp"
+                NonMatching, "Speed/Indep/Libs/realcore/6.24.00/source/file/cmn/filesysopts.cpp"
             ),
             Object(
-                NonMatching, "Packages/realcore/6.24.00/source/file/cmn/syncfile.cpp"
+                NonMatching, "Speed/Indep/Libs/realcore/6.24.00/source/file/cmn/syncfile.cpp"
             ),
             Object(
-                NonMatching, "Packages/realcore/6.24.00/source/file/cmn/hlafile.cpp"
+                NonMatching, "Speed/Indep/Libs/realcore/6.24.00/source/file/cmn/hlafile.cpp"
             ),
             Object(
-                NonMatching, "Packages/realcore/6.24.00/source/file/cmn/hlsfile.cpp"
+                NonMatching, "Speed/Indep/Libs/realcore/6.24.00/source/file/cmn/hlsfile.cpp"
             ),
             Object(
-                NonMatching, "Packages/realcore/6.24.00/source/system/cmn/timer.cpp"
+                NonMatching, "Speed/Indep/Libs/realcore/6.24.00/source/system/cmn/timer.cpp"
             ),
             Object(
-                NonMatching, "Packages/realcore/6.24.00/source/system/cmn/systask.cpp"
+                NonMatching, "Speed/Indep/Libs/realcore/6.24.00/source/system/cmn/systask.cpp"
             ),
             Object(
-                NonMatching, "Packages/realcore/6.24.00/source/system/gc/threads.cpp"
+                NonMatching, "Speed/Indep/Libs/realcore/6.24.00/source/system/gc/threads.cpp"
             ),
             Object(
-                NonMatching, "Packages/realcore/6.24.00/source/system/gc/signals.cpp"
-            ),
-            Object(
-                NonMatching,
-                "Packages/realcore/6.24.00/source/system/debug/cmn/printstr.cpp",
+                NonMatching, "Speed/Indep/Libs/realcore/6.24.00/source/system/gc/signals.cpp"
             ),
             Object(
                 NonMatching,
-                "Packages/realcore/6.24.00/source/system/debug/cmn/abortmsg.cpp",
+                "Speed/Indep/Libs/realcore/6.24.00/source/system/debug/cmn/printstr.cpp",
             ),
-            Object(
-                NonMatching, "Packages/realcore/6.24.00/source/std/cmn/memclear.cpp"
-            ),
-            Object(NonMatching, "Packages/realcore/6.24.00/source/std/cmn/exit.cpp"),
             Object(
                 NonMatching,
-                "Packages/realcore/6.24.00/source/system/gc/timerthread.cpp",
+                "Speed/Indep/Libs/realcore/6.24.00/source/system/debug/cmn/abortmsg.cpp",
             ),
             Object(
-                NonMatching, "Packages/realcore/6.24.00/source/system/gc/memfill.cpp"
+                NonMatching, "Speed/Indep/Libs/realcore/6.24.00/source/std/cmn/memclear.cpp"
+            ),
+            Object(NonMatching, "Speed/Indep/Libs/realcore/6.24.00/source/std/cmn/exit.cpp"),
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/realcore/6.24.00/source/system/gc/timerthread.cpp",
+            ),
+            Object(
+                NonMatching, "Speed/Indep/Libs/realcore/6.24.00/source/system/gc/memfill.cpp"
             ),
         ],
     },

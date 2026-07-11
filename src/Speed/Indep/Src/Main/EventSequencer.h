@@ -1,8 +1,12 @@
 #ifndef MAIN_EVENTSEQUENCER_H
 #define MAIN_EVENTSEQUENCER_H
 
+#include "Speed/Indep/Libs/Support/Utility/FastMem.h"
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
+
 #include "Speed/Indep/Libs/Support/Miscellaneous/CARP.h"
-#include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Libs/Support/Utility/UCollections.h"
 #include "Speed/Indep/Libs/Support/Utility/UCrc.h"
@@ -29,6 +33,8 @@ struct EventDynamicData {
     unsigned int fEventSeqSystem;    // offset 0x5C, size 0x4
     unsigned int fEventSeqState;     // offset 0x60, size 0x4
 };
+
+extern EventDynamicData gEventDynamicData;
 
 namespace EventSequencer {
 
@@ -96,9 +102,12 @@ class System {
         kQueueLength = 4,
     };
 
+    System(Engine *engine, const CARP::EventSeqSystem *system, float externalTime, float rate);
+
     friend void Update(float externalTime);
 
     unsigned int ID() const;
+
 
     IContext *GetContext() const;
     IEngine *GetEngine() const;
@@ -125,13 +134,12 @@ class System {
     void Resume(float externalTime, IContext *ifiringcontext);
     void Reset(float externalTime, float rate, IContext *ifiringcontext);
 
-    bool ProcessStimulus(unsigned int stimulus, float externalTime, IContext *ifiringcontext, enum EventSequencer::QueueMode mode);
-    bool Trigger(float externalTime, IContext *ifiringcontext, enum EventSequencer::QueueMode mode);
+    bool ProcessStimulus(unsigned int stimulus, float externalTime, IContext *ifiringcontext, EventSequencer::QueueMode mode);
+    bool Trigger(float externalTime, IContext *ifiringcontext, EventSequencer::QueueMode mode);
 
     bool FireEventTag(unsigned int tag, IContext *ifiringcontext) const;
 
   private:
-    System(EventSequencer::Engine *engine, const CARP::EventSeqSystem *system, float externalTime, float rate);
     ~System();
 
     bool Update(unsigned int index, float externalTime);
@@ -155,32 +163,77 @@ class System {
     CARP::EventSeqSystem *mSystem;  // offset 0x4, size 0x4
     CARP::EventSeqState *mState;    // offset 0x8, size 0x4
     CARP::EventSeqAction *mAction;  // offset 0xC, size 0x4
-    float mActionRate;              // offset 0x10, size 0x4, Decl: speed/indep/tools/eventsys/runtime/common/../eventsequencer.h:379
-    float mActionTime;              // offset 0x14, size 0x4, Decl: speed/indep/tools/eventsys/runtime/common/../eventsequencer.h:380
-    float mActionLast;              // offset 0x18, size 0x4, Decl: speed/indep/tools/eventsys/runtime/common/../eventsequencer.h:381
-    float mPausedAt;                // offset 0x1C, size 0x4, Decl: speed/indep/tools/eventsys/runtime/common/../eventsequencer.h:383
-    unsigned int mCurrentState;     // offset 0x20, size 0x4, Decl: speed/indep/tools/eventsys/runtime/common/../eventsequencer.h:385
-    unsigned int mEndState;         // offset 0x24, size 0x4, Decl: speed/indep/tools/eventsys/runtime/common/../eventsequencer.h:386
-    unsigned int mQueueEndState;    // offset 0x28, size 0x4, Decl: speed/indep/tools/eventsys/runtime/common/../eventsequencer.h:387
+    float mActionRate;              // offset 0x10, size 0x4
+    float mActionTime;              // offset 0x14, size 0x4
+    float mActionLast;              // offset 0x18, size 0x4
+    float mPausedAt;                // offset 0x1C, size 0x4
+    unsigned int mCurrentState;     // offset 0x20, size 0x4
+    unsigned int mEndState;         // offset 0x24, size 0x4
+    unsigned int mQueueEndState;    // offset 0x28, size 0x4
     float mQueueDuration;           // offset 0x2C, size 0x4
-    unsigned int mQueuedStimuli[4]; // offset 0x30, size 0x10, Decl: speed/indep/tools/eventsys/runtime/common/../eventsequencer.h:390
+    unsigned int mQueuedStimuli[4]; // offset 0x30, size 0x10
 };
 
-struct EventSeqEngine {
-    char *mName;        // offset 0x0, size 0x4
-    uint32 mNumSystems; // offset 0x4, size 0x4
+class Engine : public UTL::COM::Object, public IEngine {
+public:
+    USE_FASTALLOC(Engine)
 
-    // unsigned int * GetSystemIDs() {}
+    Engine(
+        UTL::COM::Object *baseObj,
+        IContext *context,
+        const CARP::EventSeqEngine *engineData,
+        float externalTime,
+        float rate
+    ) : UTL::COM::Object(*baseObj), IEngine(baseObj) {
+        void *block;
+        const CARP::EventSeqSystem *const *sysData = engineData->GetSystems();
 
-    // struct EventSeqSystem * * GetSystems() {}
+        this->mContext = context;
+        this->mEngine = const_cast<CARP::EventSeqEngine *>(engineData);
+        this->mVerbose = false;
+        this->mNumSystems = engineData->mNumSystems;
 
-    // const unsigned int FindSystemIndex(unsigned int ident) const {}
+        new (this->mEngine) System(this, sysData[engineData->mNumSystems], externalTime, rate);
 
-    // const struct EventSeqSystem * FindSystem(unsigned int ident) const {}
+        for (unsigned int i = 0; i < engineData->mNumSystems; i++) {
+            new (&this->mSystems[i]) System(this, sysData[i], externalTime, rate);
+        }
+    }
 
-    // const unsigned int * GetSystemIDs() const {}
+    // ~Engine() override {}
 
-    // const struct EventSeqSystem * const * GetSystems() const {}
+    // void Release() override {}
+
+    // const char *Name() const override {}
+
+    // void Relocate(unsigned int deltaAddress) override {}
+
+    // void Unload() override {}
+
+    // IContext *GetContext() const override {}
+
+    // void SetContext(IContext *context) override {}
+
+    // unsigned int NumSystems() const override {}
+
+    IContext *Context() const {
+        return this->mContext;
+    }
+
+    System *GetSystems() const {
+        return this->mSystems;
+    }
+
+    bool IsVerbose() const {
+        return this->mVerbose;
+    }
+
+private:
+    CARP::EventSeqEngine *mEngine;    // offset 0x1C, size 0x4
+    IContext *mContext;         // offset 0x20, size 0x4
+    System *mSystems;           // offset 0x24, size 0x4
+    unsigned int mNumSystems;   // offset 0x28, size 0x4
+    bool mVerbose;              // offset 0x2C, size 0x1
 };
 
 void UpdateDelta(float deltaTime);
