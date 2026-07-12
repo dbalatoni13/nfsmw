@@ -486,10 +486,6 @@ void PursuitFlow::ScriptedBranch() {
 
 void PursuitFlow::LostWhileSpotterWait() {
     SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
-    if (!ai) {
-        return;
-    }
-
     if (!mBusy) {
         if (ai->GetPursuitState() == SoundAI::kInactive) {
             ChangeStateTo(kBailout);
@@ -501,8 +497,9 @@ void PursuitFlow::LostWhileSpotterWait() {
         }
         if (ai->NumCopsWithLOS() > 0) {
             ChangeStateTo(kWaitForSpotter);
+            mBusy = 0;
+            return;
         }
-        return;
     }
 
     if (Manager::IsCopSpeechBusy()) {
