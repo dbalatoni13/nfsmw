@@ -206,17 +206,20 @@ static int LostSuspect(int spkrID) {
     return 0;
 }
 
-int Bailout(int spkrID) {
-    SoundAI *sound_ai = SoundAI::Get();
-    if (!sound_ai) {
-        return 0;
+static int Bailout(int spkrID) {
+    SoundAI *ai = SoundAI::Get();
+    if (ai) {
+        Csis::AnytimeEvents_BailoutStruct data;
+        if (spkrID > 0) {
+            data.speaker_id = spkrID;
+        } else {
+            data.speaker_id = static_cast<int>(bRandom(6.0f) + 3.0f);
+        }
+        data.bailout_type = 0x10;
+        ScheduleSpeech(data, Csis::AnytimeEvents_BailoutId, Csis::gAnytimeEvents_BailoutHandle, static_cast<EAXCharacter *>(0));
+        return data.speaker_id;
     }
-
-    Csis::AnytimeEvents_BailoutStruct data;
-    data.speaker_id = ResolveSpeaker(spkrID);
-    data.bailout_type = 8;
-    ScheduleSpeech(data, Csis::AnytimeEvents_BailoutId, Csis::gAnytimeEvents_BailoutHandle, static_cast<EAXCharacter *>(0));
-    return data.speaker_id;
+    return 0;
 }
 
 static inline void RBAverted_Impl() {
