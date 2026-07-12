@@ -1256,15 +1256,11 @@ bool SoundAI::IsHighIntensity() {
 
 bool SoundAI::OnTask(HSIMTASK htask, float dT) {
     ProfileNode profile_node("SoundAI::OnTask", 0);
-    float tout;
-    float *dead_air = &mDeadAir;
+    float tout = (WorldTimer - WorldTimer).GetSeconds();
 
-    if (Speech::Manager::IsCopSpeechBusy()) {
-        tout = 0.0f;
-    } else {
-        tout = (WorldTimer - Speech::Manager::GetTimeSinceLastEvent(COPSPEECH_MODULE)).GetSeconds();
-    }
-    *dead_air = tout;
+    mDeadAir = Speech::Manager::IsCopSpeechBusy()
+                   ? 0.0f
+                   : (WorldTimer - Speech::Manager::GetTimeSinceLastEvent(COPSPEECH_MODULE)).GetSeconds();
 
     if (htask == mMainUpdate) {
         if (FORCE_VOICE_RANDOMIZATION != 0) {
