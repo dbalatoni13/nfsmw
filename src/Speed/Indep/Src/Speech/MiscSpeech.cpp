@@ -190,17 +190,20 @@ extern "C" bool IsVehicleTypeOK__10MiscSpeech() {
     return MiscSpeech::IsVehicleTypeOK_Impl();
 }
 
-int LostSuspect(int spkrID) {
-    SoundAI *sound_ai = SoundAI::Get();
-    if (!sound_ai) {
-        return 0;
+static int LostSuspect(int spkrID) {
+    SoundAI *ai = SoundAI::Get();
+    if (ai) {
+        Csis::AnytimeEvents_LostSuspectStruct data;
+        if (spkrID > 0) {
+            data.speaker_id = spkrID;
+        } else {
+            data.speaker_id = static_cast<int>(bRandom(6.0f) + 3.0f);
+        }
+        data.intensity = ai->IsHighIntensity() ? Csis::Type_intensity_High : Csis::Type_intensity_Normal;
+        ScheduleSpeech(data, Csis::AnytimeEvents_LostSuspectId, Csis::gAnytimeEvents_LostSuspectHandle, static_cast<EAXCharacter *>(0));
+        return data.speaker_id;
     }
-
-    Csis::AnytimeEvents_LostSuspectStruct data;
-    data.speaker_id = ResolveSpeaker(spkrID);
-    data.intensity = sound_ai->IsHighIntensity() ? Csis::Type_intensity_High : Csis::Type_intensity_Normal;
-    ScheduleSpeech(data, Csis::AnytimeEvents_LostSuspectId, Csis::gAnytimeEvents_LostSuspectHandle, static_cast<EAXCharacter *>(0));
-    return data.speaker_id;
+    return 0;
 }
 
 int Bailout(int spkrID) {
