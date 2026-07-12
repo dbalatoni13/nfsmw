@@ -2584,7 +2584,7 @@ void SoundAI::ShuffleActors() {
     active.reserve(mActors.size());
     inactive.reserve(mActors.size());
 
-    Speech::copMap::iterator iter = mActors.begin();
+    Speech::copMap::const_iterator iter = mActors.begin();
     while (iter != mActors.end()) {
         EAXCop *cop = iter->cop;
         if (cop->IsActive()) {
@@ -2592,7 +2592,7 @@ void SoundAI::ShuffleActors() {
         } else {
             inactive.push_back(cop);
         }
-        ++iter;
+        iter++;
     }
 
     Speech::copList::iterator i = inactive.begin();
@@ -2617,15 +2617,15 @@ void SoundAI::ShuffleActors() {
             }
             Speech::copList::iterator j = i + 1;
             while (j != active.end()) {
-                EAXCop *a = *i;
-                EAXCop *b = *j;
-                if ((a->GetSpeakerID() == b->GetSpeakerID()) && (a->GetHandle() != b->GetHandle())) {
-                    if (b->GetDistance() <= a->GetDistance()) {
-                        RemoveCop(a->GetHandle());
-                        active.erase(i);
-                    } else {
+                if (((*i)->GetSpeakerID() == (*j)->GetSpeakerID()) && ((*i)->GetHandle() != (*j)->GetHandle())) {
+                    EAXCop *a = *i;
+                    EAXCop *b = *j;
+                    if (a->GetDistance() < b->GetDistance()) {
                         RemoveCop(b->GetHandle());
                         active.erase(j);
+                    } else {
+                        RemoveCop(a->GetHandle());
+                        active.erase(i);
                     }
                     item_removed = true;
                     break;
