@@ -363,11 +363,7 @@ void EAXDispatch::PursuitEscalation() {
 void EAXDispatch::BackupUpdate(EAXCop *cop, int yes) {
     Csis::Backup_DispBackupUpdateStruct data;
     data.speaker_id = mSpeakerID;
-    if (yes != 0) {
-        data.yes_no = Csis::Type_yes_no_Yes_True;
-    } else {
-        data.yes_no = Csis::Type_yes_no_No_False;
-    }
+    data.yes_no = yes != 0 ? Csis::Type_yes_no_Yes_True : Csis::Type_yes_no_No_False;
     Speech::Manager::ScheduleSpeech(data, Csis::Backup_DispBackupUpdateId, Csis::gBackup_DispBackupUpdateHandle, this);
 }
 
@@ -475,20 +471,14 @@ void EAXDispatch::Report911(Csis::Type_pursuit_type infraction) {
     Speech::Manager::ScheduleSpeech(data, Csis::AnytimeEvents_Disp911ReportId, Csis::gAnytimeEvents_Disp911ReportHandle, this);
 }
 
-void EAXDispatch::RBUpdate(EAXCop *, signed char true_false) {
+void EAXDispatch::RBUpdate(EAXCop *cop, signed char true_false) {
     SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
     Csis::StaticRoadblock_DispRBUpdateStruct data;
 
     data.speaker_id = mSpeakerID;
     data.code = GetRandomizedCode();
-    data.roadblock_type = Csis::Type_roadblock_type_Roadblock_Generic_;
-    if (ai->NumRoadBlocks() > 1) {
-        data.roadblock_type = Csis::Type_roadblock_type_Multiple_Roadblocks_disp_only_;
-    }
-    data.yes_no = Csis::Type_yes_no_No_False;
-    if (true_false > 0) {
-        data.yes_no = Csis::Type_yes_no_Yes_True;
-    }
+    data.roadblock_type = ai->NumRoadBlocks() > 1 ? Csis::Type_roadblock_type_Multiple_Roadblocks_disp_only_ : Csis::Type_roadblock_type_Roadblock_Generic_;
+    data.yes_no = true_false > 0 ? Csis::Type_yes_no_Yes_True : Csis::Type_yes_no_No_False;
     Speech::Manager::ScheduleSpeech(data, Csis::StaticRoadblock_DispRBUpdateId, Csis::gStaticRoadblock_DispRBUpdateHandle, this);
 }
 

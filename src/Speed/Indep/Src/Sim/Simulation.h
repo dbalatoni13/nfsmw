@@ -54,6 +54,9 @@ float GetTimeStep();
 const State GetState();
 const float GetFrameTimeElapsed();
 eUserMode GetUserMode();
+inline bool IsSplitScreen() {
+    return GetUserMode() == USER_SPLIT_SCREEN;
+}
 void SetStream(UMath::Vector3 &location, bool blocking);
 void ProfileTask(HSIMTASK htask, const char *name);
 HSIMTASK AddTask(const UCrc32 &schedule, float rate, ITaskable *handler, float start_offset, TaskMode mode);

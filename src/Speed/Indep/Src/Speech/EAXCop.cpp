@@ -1603,17 +1603,13 @@ void EAXCop::NegRBReply() {
 
 void EAXCop::RBApproach() {
     SoundAI *ai = SoundAI::Get();
+    IRoadBlock *block;
+    Csis::StaticRoadblock_RBApproachStruct data;
     if (ai) {
-        IRoadBlock *roadblock = ai->GetRoadblock();
-        if (roadblock) {
-            Csis::StaticRoadblock_RBApproachStruct data;
-            int roadblock_type;
+        block = ai->GetRoadblock();
+        if (block) {
             data.speaker_id = mSpeakerID;
-            roadblock_type = 1;
-            if (roadblock->GetNumSpikeStrips() > 0) {
-                roadblock_type = 2;
-            }
-            data.approach_type = roadblock_type;
+            data.approach_type = block->GetNumSpikeStrips() > 0 ? 2 : 1;
             Speech::Manager::ScheduleSpeech(data, Csis::StaticRoadblock_RBApproachId, Csis::gStaticRoadblock_RBApproachHandle, this);
         }
     }

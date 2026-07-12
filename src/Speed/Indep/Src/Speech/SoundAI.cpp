@@ -846,25 +846,20 @@ void SoundAI::OnDetached(IAttachable *pOther) {
     Sim::Activity::OnDetached(pOther);
 }
 
-Sim::IActivity *SoundAI::Construct(Sim::Param) {
-    Sim::IActivity *activity;
-
-    if ((IsSoundEnabled != 0) && (Sim::GetUserMode() != Sim::USER_SPLIT_SCREEN)) {
-        SoundAI *instance = UTL::Collections::Singleton<SoundAI>::Get();
-        if (instance) {
-            activity = static_cast<Sim::IActivity *>(instance);
-            SoundAI::mRefCount = SoundAI::mRefCount + 1;
-        } else {
-            SoundAI *result = new SoundAI;
-            activity = 0;
-            if (result) {
-                activity = static_cast<Sim::IActivity *>(result);
-            }
-        }
-    } else {
-        activity = 0;
+Sim::IActivity *SoundAI::Construct(Sim::Param params) {
+    if ((IsSoundEnabled == 0) || Sim::IsSplitScreen()) {
+        return nullptr;
     }
-    return activity;
+
+    SoundAI *result;
+    result = UTL::Collections::Singleton<SoundAI>::Get();
+    if (result) {
+        SoundAI::mRefCount = SoundAI::mRefCount + 1;
+        return static_cast<Sim::IActivity *>(result);
+    }
+
+    result = new SoundAI;
+    return static_cast<Sim::IActivity *>(result);
 }
 
 IRoadBlock *SoundAI::GetRoadblock() {
