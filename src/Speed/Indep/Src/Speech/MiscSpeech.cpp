@@ -1,4 +1,4 @@
-#include "ScheduleSpeech.hpp"
+#include "Speed/Indep/Src/EAXSound/Stream/SpeechManager.hpp"
 #include "SoundAI.h"
 #include "Speed/Indep/Src/EAXSound/Csis.hpp"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/pvehicle.h"
@@ -200,7 +200,7 @@ static int LostSuspect(int spkrID) {
             data.speaker_id = static_cast<int>(bRandom(6.0f) + 3.0f);
         }
         data.intensity = ai->IsHighIntensity() ? Csis::Type_intensity_High : Csis::Type_intensity_Normal;
-        ScheduleSpeech(data, Csis::AnytimeEvents_LostSuspectId, Csis::gAnytimeEvents_LostSuspectHandle, static_cast<EAXCharacter *>(0));
+        Speech::Manager::ScheduleSpeech(data, Csis::AnytimeEvents_LostSuspectId, Csis::gAnytimeEvents_LostSuspectHandle, static_cast<EAXCharacter *>(0));
         return data.speaker_id;
     }
     return 0;
@@ -216,7 +216,7 @@ static int Bailout(int spkrID) {
             data.speaker_id = static_cast<int>(bRandom(6.0f) + 3.0f);
         }
         data.bailout_type = 0x10;
-        ScheduleSpeech(data, Csis::AnytimeEvents_BailoutId, Csis::gAnytimeEvents_BailoutHandle, static_cast<EAXCharacter *>(0));
+        Speech::Manager::ScheduleSpeech(data, Csis::AnytimeEvents_BailoutId, Csis::gAnytimeEvents_BailoutHandle, static_cast<EAXCharacter *>(0));
         return data.speaker_id;
     }
     return 0;
@@ -238,13 +238,13 @@ static inline void RBAverted_Impl() {
     if (roadblock->GetNumSpikeStrips() > 0) {
         data.roadblock_engage_type = 2;
     }
-    ScheduleSpeech(data, Csis::ExtraCops_ExtraRBAvertedId, Csis::gExtraCops_ExtraRBAvertedHandle, static_cast<EAXCharacter *>(0));
+    Speech::Manager::ScheduleSpeech(data, Csis::ExtraCops_ExtraRBAvertedId, Csis::gExtraCops_ExtraRBAvertedHandle, static_cast<EAXCharacter *>(0));
 }
 
 int Unit911Reply(int spkrID) {
     Csis::AnytimeEvents_Unit911ReplyStruct data;
     data.speaker_id = ResolveSpeaker(spkrID);
-    ScheduleSpeech(data, Csis::AnytimeEvents_Unit911ReplyId, Csis::gAnytimeEvents_Unit911ReplyHandle, static_cast<EAXCharacter *>(0));
+    Speech::Manager::ScheduleSpeech(data, Csis::AnytimeEvents_Unit911ReplyId, Csis::gAnytimeEvents_Unit911ReplyHandle, static_cast<EAXCharacter *>(0));
     return data.speaker_id;
 }
 
@@ -261,13 +261,13 @@ void RBEngaged(bool spikes_hit) {
 
     Csis::ExtraCops_ExtraRBEngageStruct data;
     data.roadblock_engage_type = spikes_hit ? 2 : 1;
-    ScheduleSpeech(data, Csis::ExtraCops_ExtraRBEngageId, Csis::gExtraCops_ExtraRBEngageHandle, static_cast<EAXCharacter *>(0));
+    Speech::Manager::ScheduleSpeech(data, Csis::ExtraCops_ExtraRBEngageId, Csis::gExtraCops_ExtraRBEngageHandle, static_cast<EAXCharacter *>(0));
 }
 
 int MoreDetails(int spkrID) {
     Csis::Setup_MoreDetailsStruct data;
     data.speaker_id = ResolveSpeaker(spkrID);
-    ScheduleSpeech(data, Csis::Setup_MoreDetailsId, Csis::gSetup_MoreDetailsHandle, static_cast<EAXCharacter *>(0));
+    Speech::Manager::ScheduleSpeech(data, Csis::Setup_MoreDetailsId, Csis::gSetup_MoreDetailsHandle, static_cast<EAXCharacter *>(0));
     return data.speaker_id;
 }
 
@@ -280,69 +280,69 @@ void RBPosition(int pos) {
     } else {
         data.spikebelt_position = 2;
     }
-    ScheduleSpeech(data, Csis::ExtraCops_RBPositionId, Csis::gExtraCops_RBPositionHandle, static_cast<EAXCharacter *>(0));
+    Speech::Manager::ScheduleSpeech(data, Csis::ExtraCops_RBPositionId, Csis::gExtraCops_RBPositionHandle, static_cast<EAXCharacter *>(0));
 }
 
 void SMSCellCall(int SMS_ID) {
     Csis::CellCallStruct data;
     if (MapSMSToSPCHEnums(SMS_ID, data)) {
-        ScheduleSpeech(data, Csis::CellCallId, Csis::gCellCallHandle, static_cast<EAXCharacter *>(0));
+        Speech::Manager::ScheduleSpeech(data, Csis::CellCallId, Csis::gCellCallHandle, static_cast<EAXCharacter *>(0));
     }
 }
 
 static inline void WrongSuspect_Impl() {
     Csis::ExtraCops_WrongSuspectStruct data;
-    ScheduleSpeech(data, Csis::ExtraCops_WrongSuspectId, Csis::gExtraCops_WrongSuspectHandle, static_cast<EAXCharacter *>(0));
+    Speech::Manager::ScheduleSpeech(data, Csis::ExtraCops_WrongSuspectId, Csis::gExtraCops_WrongSuspectHandle, static_cast<EAXCharacter *>(0));
 }
 
 static inline void SwarmingReplyFollow_Impl() {
     Csis::ExtraCops_SwarmingReplyFollowStruct data;
-    ScheduleSpeech(data, Csis::ExtraCops_SwarmingReplyFollowId, Csis::gExtraCops_SwarmingReplyFollowHandle, static_cast<EAXCharacter *>(0));
+    Speech::Manager::ScheduleSpeech(data, Csis::ExtraCops_SwarmingReplyFollowId, Csis::gExtraCops_SwarmingReplyFollowHandle, static_cast<EAXCharacter *>(0));
 }
 
 static inline void SwarmingReply_Impl() {
     Csis::ExtraCops_SwarmingReplyStruct data;
-    ScheduleSpeech(data, Csis::ExtraCops_SwarmingReplyId, Csis::gExtraCops_SwarmingReplyHandle, static_cast<EAXCharacter *>(0));
+    Speech::Manager::ScheduleSpeech(data, Csis::ExtraCops_SwarmingReplyId, Csis::gExtraCops_SwarmingReplyHandle, static_cast<EAXCharacter *>(0));
 }
 
 static inline void SuspectPossiblyGone_Impl() {
     Csis::ExtraCops_SuspectPossiblyGoneStruct data;
-    ScheduleSpeech(data, Csis::ExtraCops_SuspectPossiblyGoneId, Csis::gExtraCops_SuspectPossiblyGoneHandle, static_cast<EAXCharacter *>(0));
+    Speech::Manager::ScheduleSpeech(data, Csis::ExtraCops_SuspectPossiblyGoneId, Csis::gExtraCops_SuspectPossiblyGoneHandle, static_cast<EAXCharacter *>(0));
 }
 
 static inline void RBWarning_Impl() {
     Csis::ExtraCops_RBWarningStruct data;
-    ScheduleSpeech(data, Csis::ExtraCops_RBWarningId, Csis::gExtraCops_RBWarningHandle, static_cast<EAXCharacter *>(0));
+    Speech::Manager::ScheduleSpeech(data, Csis::ExtraCops_RBWarningId, Csis::gExtraCops_RBWarningHandle, static_cast<EAXCharacter *>(0));
 }
 
 static inline void QuadrantMoving_Impl() {
     Csis::ExtraCops_QuadrentMovingStruct data;
-    ScheduleSpeech(data, Csis::ExtraCops_QuadrentMovingId, Csis::gExtraCops_QuadrentMovingHandle, static_cast<EAXCharacter *>(0));
+    Speech::Manager::ScheduleSpeech(data, Csis::ExtraCops_QuadrentMovingId, Csis::gExtraCops_QuadrentMovingHandle, static_cast<EAXCharacter *>(0));
 }
 
 static inline void QuadrantForming_Impl() {
     Csis::ExtraCops_QuadrentFormingStruct data;
-    ScheduleSpeech(data, Csis::ExtraCops_QuadrentFormingId, Csis::gExtraCops_QuadrentFormingHandle, static_cast<EAXCharacter *>(0));
+    Speech::Manager::ScheduleSpeech(data, Csis::ExtraCops_QuadrentFormingId, Csis::gExtraCops_QuadrentFormingHandle, static_cast<EAXCharacter *>(0));
 }
 
 static inline void PossibleSuspect_Impl() {
     Csis::ExtraCops_PossibleSuspectStruct data;
-    ScheduleSpeech(data, Csis::ExtraCops_PossibleSuspectId, Csis::gExtraCops_PossibleSuspectHandle, static_cast<EAXCharacter *>(0));
+    Speech::Manager::ScheduleSpeech(data, Csis::ExtraCops_PossibleSuspectId, Csis::gExtraCops_PossibleSuspectHandle, static_cast<EAXCharacter *>(0));
 }
 
 static inline void OtherLead_Impl() {
     Csis::ExtraCops_OtherLeadStruct data;
-    ScheduleSpeech(data, Csis::ExtraCops_OtherLeadId, Csis::gExtraCops_OtherLeadHandle, static_cast<EAXCharacter *>(0));
+    Speech::Manager::ScheduleSpeech(data, Csis::ExtraCops_OtherLeadId, Csis::gExtraCops_OtherLeadHandle, static_cast<EAXCharacter *>(0));
 }
 
 static inline void DispIntroRace_Impl() {
     Csis::DispIntroRaceStruct data;
-    ScheduleSpeech(data, Csis::DispIntroRaceId, Csis::gDispIntroRaceHandle, static_cast<EAXCharacter *>(0));
+    Speech::Manager::ScheduleSpeech(data, Csis::DispIntroRaceId, Csis::gDispIntroRaceHandle, static_cast<EAXCharacter *>(0));
 }
 
 static inline void D_Day_Impl() {
     Csis::D_DayStruct data;
-    ScheduleSpeech(data, Csis::D_DayId, Csis::gD_DayHandle, static_cast<EAXCharacter *>(0));
+    Speech::Manager::ScheduleSpeech(data, Csis::D_DayId, Csis::gD_DayHandle, static_cast<EAXCharacter *>(0));
 }
 
 bool MapSMSToSPCHEnums(int SMS_ID, Csis::CellCallStruct &data) {

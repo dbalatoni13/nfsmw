@@ -1,3 +1,5 @@
+#include "Speed/Indep/Src/EAXSound/Stream/SpeechManager.cpp"
+
 #include "Speed/Indep/Src/Speech/EAXCharacter.cpp"
 
 #include "Speed/Indep/Src/Speech/EAXCop.cpp"

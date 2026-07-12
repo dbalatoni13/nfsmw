@@ -1,6 +1,6 @@
 #include "EAXCop.h"
 #include "EAXDispatch.h"
-#include "ScheduleSpeech.hpp"
+#include "Speed/Indep/Src/EAXSound/Stream/SpeechManager.hpp"
 #include "SoundAI.h"
 #include "Speed/Indep/Src/EAXSound/Csis.hpp"
 #include "Speed/Indep/Src/EAXSound/snd_gen/copspeech.hpp"
@@ -493,12 +493,6 @@ extern FunctionHandle gStaticRoadblock_RBEngageHandle;
 extern FunctionHandle gStaticRoadblock_RBApproachHandle;
 }
 
-template void Speech::Manager::ScheduleSpeech<Csis::Setup_AttmptVehStpStruct>(
-    Csis::Setup_AttmptVehStpStruct &data,
-    Csis::InterfaceId &iid,
-    Csis::FunctionHandle &fh,
-    EAXCharacter *actor);
-
 extern "C" float speed_test_28362[];
 
 EAXCop::EAXCop(int speakerID, HSIMABLE handle, int bID, int cID)
@@ -832,7 +826,7 @@ void EAXCop::AttemptVehicleStop() {
         data.speaker_battalion = GetCallsign();
         data.speaker_call_sign_id = GetUnitNumber();
         data.speaker_id = mSpeakerID;
-        ScheduleSpeech(data, Csis::Setup_AttmptVehStpId, Csis::gSetup_AttmptVehStpHandle, this);
+        Speech::Manager::ScheduleSpeech(data, Csis::Setup_AttmptVehStpId, Csis::gSetup_AttmptVehStpHandle, this);
     }
 }
 
@@ -868,7 +862,7 @@ void EAXCop::VehicleReport() {
                     }
                     data.speed = 2 << (ndx - 1);
                 }
-                ScheduleSpeech(data, Csis::Setup_VehicleReportId, Csis::gSetup_VehicleReportHandle, this);
+                Speech::Manager::ScheduleSpeech(data, Csis::Setup_VehicleReportId, Csis::gSetup_VehicleReportHandle, this);
             }
         }
     }
@@ -884,7 +878,7 @@ void EAXCop::InitiatePursuit() {
         }
         data.num_suspects = num_suspects;
         data.speaker_id = mSpeakerID;
-        ScheduleSpeech(data, Csis::Setup_InitPursuitId, Csis::gSetup_InitPursuitHandle, this);
+        Speech::Manager::ScheduleSpeech(data, Csis::Setup_InitPursuitId, Csis::gSetup_InitPursuitHandle, this);
     }
 }
 
@@ -913,7 +907,7 @@ void EAXCop::LocationReport() {
                 }
                 data.encounter = encounter;
                 data.speaker_id = mSpeakerID;
-                ScheduleSpeech(data, Csis::Setup_LocationReportId, Csis::gSetup_LocationReportHandle, this);
+                Speech::Manager::ScheduleSpeech(data, Csis::Setup_LocationReportId, Csis::gSetup_LocationReportHandle, this);
             }
         }
     }
@@ -958,7 +952,7 @@ void EAXCop::SelfStrategy(int type) {
         }
         data.code = GetRandomizedCode();
         data.speaker_id = mSpeakerID;
-        ScheduleSpeech(data, Csis::Setup_SelfStrategyId, Csis::gSetup_SelfStrategyHandle, this);
+        Speech::Manager::ScheduleSpeech(data, Csis::Setup_SelfStrategyId, Csis::gSetup_SelfStrategyHandle, this);
     }
 }
 
@@ -968,12 +962,12 @@ void EAXCop::InitialCallForBackup() {
         if (ai->AreRacersNearby()) {
             Csis::Setup_InitialCallForBU_MSStruct data;
             data.speaker_id = mSpeakerID;
-            ScheduleSpeech(data, Csis::Setup_InitialCallForBU_MSId, Csis::gSetup_InitialCallForBU_MSHandle, this);
+            Speech::Manager::ScheduleSpeech(data, Csis::Setup_InitialCallForBU_MSId, Csis::gSetup_InitialCallForBU_MSHandle, this);
         } else {
             Csis::Setup_InitialCallForBUStruct data;
             data.code = GetRandomizedCode();
             data.speaker_id = mSpeakerID;
-            ScheduleSpeech(data, Csis::Setup_InitialCallForBUId, Csis::gSetup_InitialCallForBUHandle, this);
+            Speech::Manager::ScheduleSpeech(data, Csis::Setup_InitialCallForBUId, Csis::gSetup_InitialCallForBUHandle, this);
         }
     }
 }
@@ -983,13 +977,13 @@ void EAXCop::CallForBackup(int type) {
     data.code_type = GetRandomizedCode();
     data.backup_type = GetBackupTypeFromDispatch(type);
     data.speaker_id = mSpeakerID;
-    ScheduleSpeech(data, Csis::Backup_CallForBUId, Csis::gBackup_CallForBUHandle, this);
+    Speech::Manager::ScheduleSpeech(data, Csis::Backup_CallForBUId, Csis::gBackup_CallForBUHandle, this);
 }
 
 void EAXCop::UnitBackupReply() {
     Csis::Backup_UnitBUReplyStruct data;
     data.speaker_id = mSpeakerID;
-    ScheduleSpeech(data, Csis::Backup_UnitBUReplyId, Csis::gBackup_UnitBUReplyHandle, this);
+    Speech::Manager::ScheduleSpeech(data, Csis::Backup_UnitBUReplyId, Csis::gBackup_UnitBUReplyHandle, this);
 }
 
 void EAXCop::InitiateStrategy(int type) {
@@ -1012,7 +1006,7 @@ void EAXCop::InitiateStrategy(int type) {
         return;
     }
     init.speaker_id = mSpeakerID;
-    ScheduleSpeech(init, Csis::RollingStrategy_InitStrategyId, Csis::gRollingStrategy_InitStrategyHandle, this);
+    Speech::Manager::ScheduleSpeech(init, Csis::RollingStrategy_InitStrategyId, Csis::gRollingStrategy_InitStrategyHandle, this);
 }
 
 void EAXCop::CallToPosition(EAXCop *cop) {
@@ -1034,7 +1028,7 @@ void EAXCop::CallToPosition(EAXCop *cop) {
                                                             : Csis::Type_position_Left_Side)
                                   : ((0.0f < mTgtOffset.z) ? Csis::Type_position_Ahead
                                                            : Csis::Type_position_Behind);
-    ScheduleSpeech(call, Csis::RollingStrategy_CallToPositionId, Csis::gRollingStrategy_CallToPositionHandle, this);
+    Speech::Manager::ScheduleSpeech(call, Csis::RollingStrategy_CallToPositionId, Csis::gRollingStrategy_CallToPositionHandle, this);
 }
 
 void EAXCop::CallToPositionReminder() {
@@ -1047,7 +1041,7 @@ void EAXCop::CallToPositionReminder() {
     }
     data.intensity = intensity;
     data.speaker_id = mSpeakerID;
-    ScheduleSpeech(data, Csis::RollingStrategy_CallToPositionRemId, Csis::gRollingStrategy_CallToPositionRemHandle, this);
+    Speech::Manager::ScheduleSpeech(data, Csis::RollingStrategy_CallToPositionRemId, Csis::gRollingStrategy_CallToPositionRemHandle, this);
 }
 
 void EAXCop::StrategyExecute() {
@@ -1060,7 +1054,7 @@ void EAXCop::StrategyExecute() {
     }
     data.intensity = intensity;
     data.speaker_id = mSpeakerID;
-    ScheduleSpeech(data, Csis::RollingStrategy_StrategyExecuteId, Csis::gRollingStrategy_StrategyExecuteHandle, this);
+    Speech::Manager::ScheduleSpeech(data, Csis::RollingStrategy_StrategyExecuteId, Csis::gRollingStrategy_StrategyExecuteHandle, this);
 }
 
 void EAXCop::Collision(int collisionType, float force, EAXCop *spkr) {
@@ -1107,13 +1101,13 @@ void EAXCop::Collision(int collisionType, float force, EAXCop *spkr) {
 void EAXCop::AnticipateSuccess() {
     Csis::Outcome_AnticipateSuccessStruct data;
     data.speaker_id = mSpeakerID;
-    ScheduleSpeech(data, Csis::Outcome_AnticipateSuccessId, Csis::gOutcome_AnticipateSuccessHandle, this);
+    Speech::Manager::ScheduleSpeech(data, Csis::Outcome_AnticipateSuccessId, Csis::gOutcome_AnticipateSuccessHandle, this);
 }
 
 void EAXCop::AnticipateFail() {
     Csis::Outcome_AnticipateFailStruct data;
     data.speaker_id = mSpeakerID;
-    ScheduleSpeech(data, Csis::Outcome_AnticipateFailId, Csis::gOutcome_AnticipateFailHandle, this);
+    Speech::Manager::ScheduleSpeech(data, Csis::Outcome_AnticipateFailId, Csis::gOutcome_AnticipateFailHandle, this);
 }
 
 void EAXCop::OutcomeFail(short intensity) {
@@ -1131,7 +1125,7 @@ void EAXCop::OutcomeFail(short intensity) {
         data.intensity = intensity;
     }
     data.speaker_id = mSpeakerID;
-    ScheduleSpeech(data, Csis::Outcome_OutcomeFailId, Csis::gOutcome_OutcomeFailHandle, this);
+    Speech::Manager::ScheduleSpeech(data, Csis::Outcome_OutcomeFailId, Csis::gOutcome_OutcomeFailHandle, this);
 }
 
 void EAXCop::StrategyReset(bool new_strategy) {
@@ -1149,7 +1143,7 @@ void EAXCop::StrategyReset(bool new_strategy) {
         data.strategy_type = 1;
     }
     data.speaker_id = mSpeakerID;
-    ScheduleSpeech(data, Csis::Outcome_StrategyResetId, Csis::gOutcome_StrategyResetHandle, this);
+    Speech::Manager::ScheduleSpeech(data, Csis::Outcome_StrategyResetId, Csis::gOutcome_StrategyResetHandle, this);
 }
 
 void EAXCop::SuspectBehavior() {
@@ -1163,7 +1157,7 @@ void EAXCop::SuspectBehavior() {
             num_suspects = 2;
         }
         data.num_suspects = num_suspects;
-        ScheduleSpeech(data, Csis::AnytimeEvents_SuspectBehaviourId, Csis::gAnytimeEvents_SuspectBehaviourHandle, this);
+        Speech::Manager::ScheduleSpeech(data, Csis::AnytimeEvents_SuspectBehaviourId, Csis::gAnytimeEvents_SuspectBehaviourHandle, this);
     }
 }
 
@@ -1177,7 +1171,7 @@ void EAXCop::SuspectOutrun() {
         intensity = 1;
     }
     data.intensity = intensity;
-    ScheduleSpeech(data, Csis::AnytimeEvents_SuspectOutrunId, Csis::gAnytimeEvents_SuspectOutrunHandle, this);
+    Speech::Manager::ScheduleSpeech(data, Csis::AnytimeEvents_SuspectOutrunId, Csis::gAnytimeEvents_SuspectOutrunHandle, this);
 }
 
 void EAXCop::SuspectUTurn() {
@@ -1190,7 +1184,7 @@ void EAXCop::SuspectUTurn() {
         intensity = 1;
     }
     data.intensity = intensity;
-    ScheduleSpeech(data, Csis::AnytimeEvents_SuspectUTurnId, Csis::gAnytimeEvents_SuspectUTurnHandle, this);
+    Speech::Manager::ScheduleSpeech(data, Csis::AnytimeEvents_SuspectUTurnId, Csis::gAnytimeEvents_SuspectUTurnHandle, this);
 }
 
 void EAXCop::LostSuspect() {
@@ -1203,7 +1197,7 @@ void EAXCop::LostSuspect() {
     }
     data.intensity = intensity;
     data.speaker_id = mSpeakerID;
-    ScheduleSpeech(data, Csis::AnytimeEvents_LostSuspectId, Csis::gAnytimeEvents_LostSuspectHandle, this);
+    Speech::Manager::ScheduleSpeech(data, Csis::AnytimeEvents_LostSuspectId, Csis::gAnytimeEvents_LostSuspectHandle, this);
 }
 
 void EAXCop::LostVisual() {
@@ -1216,7 +1210,7 @@ void EAXCop::LostVisual() {
     }
     data.intensity = intensity;
     data.speaker_id = mSpeakerID;
-    ScheduleSpeech(data, Csis::AnytimeEvents_LostVisualId, Csis::gAnytimeEvents_LostVisualHandle, this);
+    Speech::Manager::ScheduleSpeech(data, Csis::AnytimeEvents_LostVisualId, Csis::gAnytimeEvents_LostVisualHandle, this);
 }
 
 void EAXCop::RegainVisual() {
@@ -1229,12 +1223,12 @@ void EAXCop::RegainVisual() {
     }
     data.intensity = intensity;
     data.speaker_id = mSpeakerID;
-    ScheduleSpeech(data, Csis::AnytimeEvents_RegainVisualId, Csis::gAnytimeEvents_RegainVisualHandle, this);
+    Speech::Manager::ScheduleSpeech(data, Csis::AnytimeEvents_RegainVisualId, Csis::gAnytimeEvents_RegainVisualHandle, this);
 }
 
 void EAXCop::SwarmingReply() {
     Csis::ExtraCops_SwarmingReplyStruct data;
-    ScheduleSpeech(data, Csis::ExtraCops_SwarmingReplyId, Csis::gExtraCops_SwarmingReplyHandle, this);
+    Speech::Manager::ScheduleSpeech(data, Csis::ExtraCops_SwarmingReplyId, Csis::gExtraCops_SwarmingReplyHandle, this);
 }
 
 void EAXCop::Arrest() {
@@ -1247,13 +1241,13 @@ void EAXCop::Arrest() {
     }
     data.intensity = intensity;
     data.speaker_id = mSpeakerID;
-    ScheduleSpeech(data, Csis::Arrest_ArrestId, Csis::gArrest_ArrestHandle, this);
+    Speech::Manager::ScheduleSpeech(data, Csis::Arrest_ArrestId, Csis::gArrest_ArrestHandle, this);
 }
 
 void EAXCop::PursuitUpdateReply() {
     Csis::AnytimeEvents_PursuitUpdateRepStruct data;
     data.speaker_id = mSpeakerID;
-    ScheduleSpeech(data, Csis::AnytimeEvents_PursuitUpdateRepId, Csis::gAnytimeEvents_PursuitUpdateRepHandle, this);
+    Speech::Manager::ScheduleSpeech(data, Csis::AnytimeEvents_PursuitUpdateRepId, Csis::gAnytimeEvents_PursuitUpdateRepHandle, this);
 }
 
 
@@ -1275,7 +1269,7 @@ void EAXCop::ReinitiatePursuit() {
             }
             data.num_suspects = ai->AreRacersNearby() ? 2 : 1;
             data.speaker_id = mSpeakerID;
-            ScheduleSpeech(data, Csis::Setup_ReInitPursuitId, Csis::gSetup_ReInitPursuitHandle, this);
+            Speech::Manager::ScheduleSpeech(data, Csis::Setup_ReInitPursuitId, Csis::gSetup_ReInitPursuitHandle, this);
         }
     }
 }
@@ -1283,7 +1277,7 @@ void EAXCop::ReinitiatePursuit() {
 void EAXCop::NegativeBackupReply() {
     Csis::Backup_NegativeBUReplyStruct data;
     data.speaker_id = mSpeakerID;
-    ScheduleSpeech(data, Csis::Backup_NegativeBUReplyId, Csis::gBackup_NegativeBUReplyHandle, this);
+    Speech::Manager::ScheduleSpeech(data, Csis::Backup_NegativeBUReplyId, Csis::gBackup_NegativeBUReplyHandle, this);
 }
 
 void EAXCop::BackupReminder(int type) {
@@ -1291,7 +1285,7 @@ void EAXCop::BackupReminder(int type) {
     data.code_type = GetRandomizedCode();
     data.backup_type = GetBackupTypeFromDispatch(type);
     data.speaker_id = mSpeakerID;
-    ScheduleSpeech(data, Csis::Backup_BUReminderId, Csis::gBackup_BUReminderHandle, this);
+    Speech::Manager::ScheduleSpeech(data, Csis::Backup_BUReminderId, Csis::gBackup_BUReminderHandle, this);
 }
 
 void EAXCop::BackupArrives() {
@@ -1299,7 +1293,7 @@ void EAXCop::BackupArrives() {
     data.speaker_id = mSpeakerID;
     data.callsign = GetCallsign();
     data.unit_number = GetUnitNumber();
-    ScheduleSpeech(data, Csis::Backup_BUArrivesId, Csis::gBackup_BUArrivesHandle, this);
+    Speech::Manager::ScheduleSpeech(data, Csis::Backup_BUArrivesId, Csis::gBackup_BUArrivesHandle, this);
 }
 
 void EAXCop::IntentToRam() {
@@ -1312,7 +1306,7 @@ void EAXCop::IntentToRam() {
     }
     data.intensity = intensity;
     data.speaker_id = mSpeakerID;
-    ScheduleSpeech(data, Csis::AnytimeEvents_IntentToRamId, Csis::gAnytimeEvents_IntentToRamHandle, this);
+    Speech::Manager::ScheduleSpeech(data, Csis::AnytimeEvents_IntentToRamId, Csis::gAnytimeEvents_IntentToRamHandle, this);
 }
 
 void EAXCop::CallforEV(unsigned int type) {
@@ -1330,7 +1324,7 @@ void EAXCop::CallforEV(unsigned int type) {
             data.ev_type = 1;
         }
         data.speaker_id = mSpeakerID;
-        ScheduleSpeech(data, Csis::AnytimeEvents_CallForEVId, Csis::gAnytimeEvents_CallForEVHandle, this);
+        Speech::Manager::ScheduleSpeech(data, Csis::AnytimeEvents_CallForEVId, Csis::gAnytimeEvents_CallForEVHandle, this);
     }
 }
 
@@ -1350,7 +1344,7 @@ void EAXCop::UnitDisabled(int other) {
     }
     data.intensity = intensity;
     data.speaker_id = mSpeakerID;
-    ScheduleSpeech(data, Csis::AnytimeEvents_UnitDisabledId, Csis::gAnytimeEvents_UnitDisabledHandle, this);
+    Speech::Manager::ScheduleSpeech(data, Csis::AnytimeEvents_UnitDisabledId, Csis::gAnytimeEvents_UnitDisabledHandle, this);
 }
 
 void EAXCop::Bailout() {
@@ -1360,7 +1354,7 @@ void EAXCop::Bailout() {
             Csis::AnytimeEvents_BailoutStruct data;
             data.speaker_id = mSpeakerID;
             data.bailout_type = 8;
-            ScheduleSpeech(data, Csis::AnytimeEvents_BailoutId, Csis::gAnytimeEvents_BailoutHandle, this);
+            Speech::Manager::ScheduleSpeech(data, Csis::AnytimeEvents_BailoutId, Csis::gAnytimeEvents_BailoutHandle, this);
         }
     }
 }
@@ -1372,7 +1366,7 @@ void EAXCop::LoBailout() {
             Csis::AnytimeEvents_BailoutStruct data;
             data.speaker_id = mSpeakerID;
             data.bailout_type = 1;
-            ScheduleSpeech(data, Csis::AnytimeEvents_BailoutId, Csis::gAnytimeEvents_BailoutHandle, this);
+            Speech::Manager::ScheduleSpeech(data, Csis::AnytimeEvents_BailoutId, Csis::gAnytimeEvents_BailoutHandle, this);
         }
     }
 }
@@ -1384,7 +1378,7 @@ void EAXCop::HiBailout() {
             Csis::AnytimeEvents_BailoutStruct data;
             data.speaker_id = mSpeakerID;
             data.bailout_type = 0x10;
-            ScheduleSpeech(data, Csis::AnytimeEvents_BailoutId, Csis::gAnytimeEvents_BailoutHandle, this);
+            Speech::Manager::ScheduleSpeech(data, Csis::AnytimeEvents_BailoutId, Csis::gAnytimeEvents_BailoutHandle, this);
         }
     }
 }
@@ -1396,7 +1390,7 @@ void EAXCop::BailoutTraffic() {
             Csis::AnytimeEvents_BailoutStruct data;
             data.speaker_id = mSpeakerID;
             data.bailout_type = 2;
-            ScheduleSpeech(data, Csis::AnytimeEvents_BailoutId, Csis::gAnytimeEvents_BailoutHandle, this);
+            Speech::Manager::ScheduleSpeech(data, Csis::AnytimeEvents_BailoutId, Csis::gAnytimeEvents_BailoutHandle, this);
         }
     }
 }
@@ -1408,7 +1402,7 @@ void EAXCop::BailoutBadRoad() {
             Csis::AnytimeEvents_BailoutStruct data;
             data.speaker_id = mSpeakerID;
             data.bailout_type = 4;
-            ScheduleSpeech(data, Csis::AnytimeEvents_BailoutId, Csis::gAnytimeEvents_BailoutHandle, this);
+            Speech::Manager::ScheduleSpeech(data, Csis::AnytimeEvents_BailoutId, Csis::gAnytimeEvents_BailoutHandle, this);
         }
     }
 }
@@ -1424,7 +1418,7 @@ void EAXCop::Spotter() {
             num_suspects = 2;
         }
         data.num_suspects = num_suspects;
-        ScheduleSpeech(data, Csis::Setup_SpotterId, Csis::gSetup_SpotterHandle, this);
+        Speech::Manager::ScheduleSpeech(data, Csis::Setup_SpotterId, Csis::gSetup_SpotterHandle, this);
     }
 }
 
@@ -1439,20 +1433,20 @@ void EAXCop::SpotterReply() {
             num_suspects = 2;
         }
         data.num_suspects = num_suspects;
-        ScheduleSpeech(data, Csis::Setup_SpotterReplyId, Csis::gSetup_SpotterReplyHandle, this);
+        Speech::Manager::ScheduleSpeech(data, Csis::Setup_SpotterReplyId, Csis::gSetup_SpotterReplyHandle, this);
     }
 }
 
 void EAXCop::Reply911() {
     Csis::AnytimeEvents_Unit911ReplyStruct data;
     data.speaker_id = mSpeakerID;
-    ScheduleSpeech(data, Csis::AnytimeEvents_Unit911ReplyId, Csis::gAnytimeEvents_Unit911ReplyHandle, this);
+    Speech::Manager::ScheduleSpeech(data, Csis::AnytimeEvents_Unit911ReplyId, Csis::gAnytimeEvents_Unit911ReplyHandle, this);
 }
 
 void EAXCop::DenyBailout() {
     Csis::AnytimeEvents_BailoutDenyStruct data;
     data.speaker_id = mSpeakerID;
-    ScheduleSpeech(data, Csis::AnytimeEvents_BailoutDenyId, Csis::gAnytimeEvents_BailoutDenyHandle, this);
+    Speech::Manager::ScheduleSpeech(data, Csis::AnytimeEvents_BailoutDenyId, Csis::gAnytimeEvents_BailoutDenyHandle, this);
 }
 
 void EAXCop::PrimaryEngage() {
@@ -1460,21 +1454,21 @@ void EAXCop::PrimaryEngage() {
     data.speaker_id = mSpeakerID;
     data.callsign = GetCallsign();
     data.unit_number = GetUnitNumber();
-    ScheduleSpeech(data, Csis::Setup_PrimaryEngageId, Csis::gSetup_PrimaryEngageHandle, this);
+    Speech::Manager::ScheduleSpeech(data, Csis::Setup_PrimaryEngageId, Csis::gSetup_PrimaryEngageHandle, this);
 }
 
 void EAXCop::Bullhorn() {
     if (MiscSpeech::IsVehicleTypeOK()) {
         Csis::Setup_BullhornStruct data;
         data.speaker_id = mSpeakerID;
-        ScheduleSpeech(data, Csis::Setup_BullhornId, Csis::gSetup_BullhornHandle, this);
+        Speech::Manager::ScheduleSpeech(data, Csis::Setup_BullhornId, Csis::gSetup_BullhornHandle, this);
     }
 }
 
 void EAXCop::PreBullhorn() {
     Csis::Setup_BullhornPrefixStruct data;
     data.speaker_id = mSpeakerID;
-    ScheduleSpeech(data, Csis::Setup_BullhornPrefixId, Csis::gSetup_BullhornPrefixHandle, this);
+    Speech::Manager::ScheduleSpeech(data, Csis::Setup_BullhornPrefixId, Csis::gSetup_BullhornPrefixHandle, this);
 }
 
 void EAXCop::BullhornArrest() {
@@ -1490,7 +1484,7 @@ void EAXCop::BullhornArrest() {
                 intensity = 1;
             }
             data.intensity = intensity;
-            ScheduleSpeech(data, Csis::Arrest_BullhornArrestId, Csis::gArrest_BullhornArrestHandle, this);
+            Speech::Manager::ScheduleSpeech(data, Csis::Arrest_BullhornArrestId, Csis::gArrest_BullhornArrestHandle, this);
         }
     }
 }
@@ -1506,7 +1500,7 @@ void EAXCop::SuspectConfirmed() {
             num_suspects = 2;
         }
         data.num_suspects = num_suspects;
-        ScheduleSpeech(data, Csis::Setup_SuspectConfirmedId, Csis::gSetup_SuspectConfirmedHandle, this);
+        Speech::Manager::ScheduleSpeech(data, Csis::Setup_SuspectConfirmedId, Csis::gSetup_SuspectConfirmedHandle, this);
     }
 }
 
@@ -1520,7 +1514,7 @@ void EAXCop::FocusChange() {
         intensity = 1;
     }
     data.intensity = intensity;
-    ScheduleSpeech(data, Csis::AnytimeEvents_FocusChangeId, Csis::gAnytimeEvents_FocusChangeHandle, this);
+    Speech::Manager::ScheduleSpeech(data, Csis::AnytimeEvents_FocusChangeId, Csis::gAnytimeEvents_FocusChangeHandle, this);
 }
 
 
@@ -1534,7 +1528,7 @@ void EAXCop::Spotted() {
         intensity = 1;
     }
     data.intensity = intensity;
-    ScheduleSpeech(data, Csis::AnytimeEvents_SpottedId, Csis::gAnytimeEvents_SpottedHandle, this);
+    Speech::Manager::ScheduleSpeech(data, Csis::AnytimeEvents_SpottedId, Csis::gAnytimeEvents_SpottedHandle, this);
 }
 
 void EAXCop::DirectionChange() {
@@ -1545,7 +1539,7 @@ void EAXCop::DirectionChange() {
             Csis::AnytimeEvents_DirectionHighStruct data;
             data.speaker_id = mSpeakerID;
             data.direction_type = direction_type;
-            ScheduleSpeech(data, Csis::AnytimeEvents_DirectionHighId, Csis::gAnytimeEvents_DirectionHighHandle, this);
+            Speech::Manager::ScheduleSpeech(data, Csis::AnytimeEvents_DirectionHighId, Csis::gAnytimeEvents_DirectionHighHandle, this);
         }
     }
 }
@@ -1553,13 +1547,13 @@ void EAXCop::DirectionChange() {
 void EAXCop::CallForSwarming() {
     Csis::Backup_CallForSwarmingStruct data;
     data.speaker_id = mSpeakerID;
-    ScheduleSpeech(data, Csis::Backup_CallForSwarmingId, Csis::gBackup_CallForSwarmingHandle, this);
+    Speech::Manager::ScheduleSpeech(data, Csis::Backup_CallForSwarmingId, Csis::gBackup_CallForSwarmingHandle, this);
 }
 
 void EAXCop::SpotterWanted() {
     Csis::Setup_SpotterWantedStruct data;
     data.speaker_id = mSpeakerID;
-    ScheduleSpeech(data, Csis::Setup_SpotterWantedId, Csis::gSetup_SpotterWantedHandle, this);
+    Speech::Manager::ScheduleSpeech(data, Csis::Setup_SpotterWantedId, Csis::gSetup_SpotterWantedHandle, this);
 }
 
 void EAXCop::Offroad(unsigned int id, bool subsequent) {
@@ -1567,13 +1561,13 @@ void EAXCop::Offroad(unsigned int id, bool subsequent) {
     data.offroad_id = static_cast<int>(id);
     data.speaker_id = mSpeakerID;
     data.offroad_type = subsequent ? 2 : 1;
-    ScheduleSpeech(data, Csis::AnytimeEvents_OffroadMomentId, Csis::gAnytimeEvents_OffroadMomentHandle, this);
+    Speech::Manager::ScheduleSpeech(data, Csis::AnytimeEvents_OffroadMomentId, Csis::gAnytimeEvents_OffroadMomentHandle, this);
 }
 
 void EAXCop::WeatherReport() {
     Csis::AnytimeEvents_WeatherReportStruct data;
     data.speaker_id = mSpeakerID;
-    ScheduleSpeech(data, Csis::AnytimeEvents_WeatherReportId, Csis::gAnytimeEvents_WeatherReportHandle, this);
+    Speech::Manager::ScheduleSpeech(data, Csis::AnytimeEvents_WeatherReportId, Csis::gAnytimeEvents_WeatherReportHandle, this);
 }
 
 void EAXCop::CallForRB() {
@@ -1588,7 +1582,7 @@ void EAXCop::CallForRB() {
             roadblock_type = 2;
         }
         data.roadblock_type = roadblock_type;
-        ScheduleSpeech(data, Csis::StaticRoadblock_CallForRBId, Csis::gStaticRoadblock_CallForRBHandle, this);
+        Speech::Manager::ScheduleSpeech(data, Csis::StaticRoadblock_CallForRBId, Csis::gStaticRoadblock_CallForRBHandle, this);
     }
 }
 
@@ -1596,14 +1590,14 @@ void EAXCop::RBReminder() {
     Csis::StaticRoadblock_RBReminderStruct data;
     data.speaker_id = mSpeakerID;
     data.code_type = GetRandomizedCode();
-    ScheduleSpeech(data, Csis::StaticRoadblock_RBReminderId, Csis::gStaticRoadblock_RBReminderHandle, this);
+    Speech::Manager::ScheduleSpeech(data, Csis::StaticRoadblock_RBReminderId, Csis::gStaticRoadblock_RBReminderHandle, this);
 }
 
 void EAXCop::NegRBReply() {
     if (!IsHeli()) {
         Csis::StaticRoadblock_NegativeRBReplyStruct data;
         data.speaker_id = mSpeakerID;
-        ScheduleSpeech(data, Csis::StaticRoadblock_NegativeRBReplyId, Csis::gStaticRoadblock_NegativeRBReplyHandle, this);
+        Speech::Manager::ScheduleSpeech(data, Csis::StaticRoadblock_NegativeRBReplyId, Csis::gStaticRoadblock_NegativeRBReplyHandle, this);
     }
 }
 
@@ -1620,7 +1614,7 @@ void EAXCop::RBApproach() {
                 roadblock_type = 2;
             }
             data.approach_type = roadblock_type;
-            ScheduleSpeech(data, Csis::StaticRoadblock_RBApproachId, Csis::gStaticRoadblock_RBApproachHandle, this);
+            Speech::Manager::ScheduleSpeech(data, Csis::StaticRoadblock_RBApproachId, Csis::gStaticRoadblock_RBApproachHandle, this);
         }
     }
 }
@@ -1637,7 +1631,7 @@ void EAXCop::RBEngage(bool spikes_hit) {
                 engage_type = 2;
             }
             data.engage_type = engage_type;
-            ScheduleSpeech(data, Csis::StaticRoadblock_RBEngageId, Csis::gStaticRoadblock_RBEngageHandle, this);
+            Speech::Manager::ScheduleSpeech(data, Csis::StaticRoadblock_RBEngageId, Csis::gStaticRoadblock_RBEngageHandle, this);
         }
     }
 }
@@ -1653,21 +1647,21 @@ void EAXCop::PursuitApproaching() {
             num_suspects = 2;
         }
         data.num_suspects = num_suspects;
-        ScheduleSpeech(data, Csis::StaticRoadblock_PursuitApproachingId, Csis::gStaticRoadblock_PursuitApproachingHandle, this);
+        Speech::Manager::ScheduleSpeech(data, Csis::StaticRoadblock_PursuitApproachingId, Csis::gStaticRoadblock_PursuitApproachingHandle, this);
     }
 }
 
 void EAXCop::RBAverted() {
     Csis::StaticRoadblock_RBAvertedStruct data;
     data.speaker_id = mSpeakerID;
-    ScheduleSpeech(data, Csis::StaticRoadblock_RBAvertedId, Csis::gStaticRoadblock_RBAvertedHandle, this);
+    Speech::Manager::ScheduleSpeech(data, Csis::StaticRoadblock_RBAvertedId, Csis::gStaticRoadblock_RBAvertedHandle, this);
 }
 
 void EAXCop::CallForSubRB() {
     if (SoundAI::Get()) {
         Csis::StaticRoadblock_CallForRB_subStruct data;
         data.speaker_id = mSpeakerID;
-        ScheduleSpeech(data, Csis::StaticRoadblock_CallForRB_subId, Csis::gStaticRoadblock_CallForRB_subHandle, this);
+        Speech::Manager::ScheduleSpeech(data, Csis::StaticRoadblock_CallForRB_subId, Csis::gStaticRoadblock_CallForRB_subHandle, this);
     }
 }
 
@@ -1675,55 +1669,55 @@ void EAXCop::RearEnded(Csis::Type_intensity intensity) {
     Csis::Interrupts_InterruptRam_REStruct data;
     data.speaker_id = mSpeakerID;
     data.intensity = intensity;
-    ScheduleSpeech(data, Csis::Interrupts_InterruptRam_REId, Csis::gInterrupts_InterruptRam_REHandle, this);
+    Speech::Manager::ScheduleSpeech(data, Csis::Interrupts_InterruptRam_REId, Csis::gInterrupts_InterruptRam_REHandle, this);
 }
 
 void EAXCop::HeadOn(Csis::Type_intensity intensity) {
     Csis::Interrupts_InterruptRam_HOStruct data;
     data.speaker_id = mSpeakerID;
     data.intensity = intensity;
-    ScheduleSpeech(data, Csis::Interrupts_InterruptRam_HOId, Csis::gInterrupts_InterruptRam_HOHandle, this);
+    Speech::Manager::ScheduleSpeech(data, Csis::Interrupts_InterruptRam_HOId, Csis::gInterrupts_InterruptRam_HOHandle, this);
 }
 
 void EAXCop::SideSwiped(Csis::Type_intensity intensity) {
     Csis::Interrupts_InterruptRam_SSStruct data;
     data.speaker_id = mSpeakerID;
     data.intensity = intensity;
-    ScheduleSpeech(data, Csis::Interrupts_InterruptRam_SSId, Csis::gInterrupts_InterruptRam_SSHandle, this);
+    Speech::Manager::ScheduleSpeech(data, Csis::Interrupts_InterruptRam_SSId, Csis::gInterrupts_InterruptRam_SSHandle, this);
 }
 
 void EAXCop::TBoned(Csis::Type_intensity intensity) {
     Csis::Interrupts_InterruptRam_TBStruct data;
     data.speaker_id = mSpeakerID;
     data.intensity = intensity;
-    ScheduleSpeech(data, Csis::Interrupts_InterruptRam_TBId, Csis::gInterrupts_InterruptRam_TBHandle, this);
+    Speech::Manager::ScheduleSpeech(data, Csis::Interrupts_InterruptRam_TBId, Csis::gInterrupts_InterruptRam_TBHandle, this);
 }
 
 void EAXCop::SuspectRollover(Csis::Type_intensity intensity) {
     Csis::AnytimeEvents_CollWorld_FlipStruct data;
     data.speaker_id = mSpeakerID;
     data.intensity = intensity;
-    ScheduleSpeech(data, Csis::AnytimeEvents_CollWorld_FlipId, Csis::gAnytimeEvents_CollWorld_FlipHandle, this);
+    Speech::Manager::ScheduleSpeech(data, Csis::AnytimeEvents_CollWorld_FlipId, Csis::gAnytimeEvents_CollWorld_FlipHandle, this);
 }
 
 void EAXCop::SuspectAirborne(Csis::Type_intensity intensity) {
     Csis::AnytimeEvents_CollWorld_AirStruct data;
     data.speaker_id = mSpeakerID;
     data.intensity = intensity;
-    ScheduleSpeech(data, Csis::AnytimeEvents_CollWorld_AirId, Csis::gAnytimeEvents_CollWorld_AirHandle, this);
+    Speech::Manager::ScheduleSpeech(data, Csis::AnytimeEvents_CollWorld_AirId, Csis::gAnytimeEvents_CollWorld_AirHandle, this);
 }
 
 void EAXCop::SuspectSpunout(Csis::Type_intensity intensity) {
     Csis::AnytimeEvents_CollWorld_SpinStruct data;
     data.speaker_id = mSpeakerID;
     data.intensity = intensity;
-    ScheduleSpeech(data, Csis::AnytimeEvents_CollWorld_SpinId, Csis::gAnytimeEvents_CollWorld_SpinHandle, this);
+    Speech::Manager::ScheduleSpeech(data, Csis::AnytimeEvents_CollWorld_SpinId, Csis::gAnytimeEvents_CollWorld_SpinHandle, this);
 }
 
 void EAXCop::SuspectBrake() {
     Csis::AnytimeEvents_SuspectBrakeStruct data;
     data.speaker_id = mSpeakerID;
-    ScheduleSpeech(data, Csis::AnytimeEvents_SuspectBrakeId, Csis::gAnytimeEvents_SuspectBrakeHandle, this);
+    Speech::Manager::ScheduleSpeech(data, Csis::AnytimeEvents_SuspectBrakeId, Csis::gAnytimeEvents_SuspectBrakeHandle, this);
 }
 
 void EAXCop::SwapVoices(EAXCop *cop) {
@@ -1751,7 +1745,7 @@ bool EAXCop::SetRank(int newrank) {
     if (newrank == 0 && mRank > 0) {
         Csis::Setup_PrimaryEngageStruct data;
         data.speaker_id = mSpeakerID;
-        ScheduleSpeech(data, Csis::Setup_PrimaryEngageId, Csis::gSetup_PrimaryEngageHandle, this);
+        Speech::Manager::ScheduleSpeech(data, Csis::Setup_PrimaryEngageId, Csis::gSetup_PrimaryEngageHandle, this);
         Reset();
         did_reset = true;
     }
@@ -1770,7 +1764,7 @@ void EAXCop::Impact_Suspect_World() {
     if ((ai->GetPursuit() != 0) && (ai->NumCopsWithLOS() > 1)) {
         data.num_units = Csis::Type_num_units_multiple_units_in_pursuit;
     }
-    ScheduleSpeech(data, Csis::AnytimeEvents_CollisionWorldId, Csis::gAnytimeEvents_CollisionWorldHandle, this);
+    Speech::Manager::ScheduleSpeech(data, Csis::AnytimeEvents_CollisionWorldId, Csis::gAnytimeEvents_CollisionWorldHandle, this);
 }
 
 void EAXCop::Impact_Suspect_Semi() {
@@ -1782,7 +1776,7 @@ void EAXCop::Impact_Suspect_Semi() {
     if ((ai->GetPursuit() != 0) && (ai->NumCopsWithLOS() > 1)) {
         data.num_units = Csis::Type_num_units_multiple_units_in_pursuit;
     }
-    ScheduleSpeech(data, Csis::AnytimeEvents_CollisionWorldId, Csis::gAnytimeEvents_CollisionWorldHandle, this);
+    Speech::Manager::ScheduleSpeech(data, Csis::AnytimeEvents_CollisionWorldId, Csis::gAnytimeEvents_CollisionWorldHandle, this);
 }
 
 void EAXCop::Impact_Suspect_Train() {
@@ -1794,7 +1788,7 @@ void EAXCop::Impact_Suspect_Train() {
     if ((ai->GetPursuit() != 0) && (ai->NumCopsWithLOS() > 1)) {
         data.num_units = Csis::Type_num_units_multiple_units_in_pursuit;
     }
-    ScheduleSpeech(data, Csis::AnytimeEvents_CollisionWorldId, Csis::gAnytimeEvents_CollisionWorldHandle, this);
+    Speech::Manager::ScheduleSpeech(data, Csis::AnytimeEvents_CollisionWorldId, Csis::gAnytimeEvents_CollisionWorldHandle, this);
 }
 
 void EAXCop::Impact_Suspect_Guardrail() {
@@ -1807,7 +1801,7 @@ void EAXCop::Impact_Suspect_Guardrail() {
     if ((ai->GetPursuit() != 0) && (ai->NumCopsWithLOS() > 1)) {
         data.num_units = Csis::Type_num_units_multiple_units_in_pursuit;
     }
-    ScheduleSpeech(data, Csis::AnytimeEvents_CollisionWorldId, Csis::gAnytimeEvents_CollisionWorldHandle, this);
+    Speech::Manager::ScheduleSpeech(data, Csis::AnytimeEvents_CollisionWorldId, Csis::gAnytimeEvents_CollisionWorldHandle, this);
 }
 
 void EAXCop::Impact_Suspect_GasStation() {
@@ -1817,7 +1811,7 @@ void EAXCop::Impact_Suspect_GasStation() {
         data.speaker_id = mSpeakerID;
         data.world_object_type = Csis::Type_world_object_type_gas_station;
         data.num_units = Csis::Type_num_units_one_unit_in_pursuit;
-        ScheduleSpeech(data, Csis::AnytimeEvents_CollisionWorldId, Csis::gAnytimeEvents_CollisionWorldHandle, this);
+        Speech::Manager::ScheduleSpeech(data, Csis::AnytimeEvents_CollisionWorldId, Csis::gAnytimeEvents_CollisionWorldHandle, this);
     }
 }
 
@@ -1836,12 +1830,12 @@ void EAXCop::Impact_Suspect_Spikebelt() {
     if ((ai->GetPursuit() != 0) && (ai->NumCopsWithLOS() > 1)) {
         data.num_units = Csis::Type_num_units_multiple_units_in_pursuit;
     }
-    ScheduleSpeech(data, Csis::AnytimeEvents_CollisionWorldId, Csis::gAnytimeEvents_CollisionWorldHandle, this);
+    Speech::Manager::ScheduleSpeech(data, Csis::AnytimeEvents_CollisionWorldId, Csis::gAnytimeEvents_CollisionWorldHandle, this);
 }
 
 void EAXCop::Impact_Suspect_Traffic(Csis::Type_intensity intensity) {
     Csis::AnytimeEvents_CollWorld_CiviStruct data;
     data.speaker_id = mSpeakerID;
     data.intensity = intensity;
-    ScheduleSpeech(data, Csis::AnytimeEvents_CollWorld_CiviId, Csis::gAnytimeEvents_CollWorld_CiviHandle, this);
+    Speech::Manager::ScheduleSpeech(data, Csis::AnytimeEvents_CollWorld_CiviId, Csis::gAnytimeEvents_CollWorld_CiviHandle, this);
 }

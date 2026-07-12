@@ -1,6 +1,6 @@
 #include "EAXAirSupport.h"
 #include "Observer.h"
-#include "ScheduleSpeech.hpp"
+#include "Speed/Indep/Src/EAXSound/Stream/SpeechManager.hpp"
 #include "SoundAI.h"
 #include "Speed/Indep/Src/EAXSound/Csis.hpp"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
@@ -140,7 +140,7 @@ void EAXAirSupport::SelfStrategy(int type) {
     Csis::HeliSpecific_HeliSelfStrategyStruct data;
     data.speaker_id = mSpeakerID;
     data.heli_self_strategy_type = static_cast<Csis::Type_heli_self_strategy_type>(type);
-    ScheduleSpeech(data, Csis::HeliSpecific_HeliSelfStrategyId, Csis::gHeliSpecific_HeliSelfStrategyHandle, this);
+    Speech::Manager::ScheduleSpeech(data, Csis::HeliSpecific_HeliSelfStrategyId, Csis::gHeliSpecific_HeliSelfStrategyHandle, this);
 }
 
 void EAXAirSupport::LostVisual() {
@@ -155,65 +155,65 @@ void EAXAirSupport::LostVisual() {
         }
     }
     data.heli_lost_visual = lostVisual;
-    ScheduleSpeech(data, Csis::HeliSpecific_HeliLostVisualId, Csis::gHeliSpecific_HeliLostVisualHandle, this);
+    Speech::Manager::ScheduleSpeech(data, Csis::HeliSpecific_HeliLostVisualId, Csis::gHeliSpecific_HeliLostVisualHandle, this);
 }
 
 void EAXAirSupport::Bailout() {
     Csis::HeliSpecific_HeliBailoutStruct data;
     data.speaker_id = mSpeakerID;
     data.heli_bailout_type = GetCauseOfBailout();
-    ScheduleSpeech(data, Csis::HeliSpecific_HeliBailoutId, Csis::gHeliSpecific_HeliBailoutHandle, this);
+    Speech::Manager::ScheduleSpeech(data, Csis::HeliSpecific_HeliBailoutId, Csis::gHeliSpecific_HeliBailoutHandle, this);
 }
 
 void EAXAirSupport::Spotter() {
     Csis::HeliSpecific_HeliSpotterStruct data;
     data.speaker_id = mSpeakerID;
-    ScheduleSpeech(data, Csis::HeliSpecific_HeliSpotterId, Csis::gHeliSpecific_HeliSpotterHandle, this);
+    Speech::Manager::ScheduleSpeech(data, Csis::HeliSpecific_HeliSpotterId, Csis::gHeliSpecific_HeliSpotterHandle, this);
 }
 
 void EAXAirSupport::JoinRB() {
     Csis::HeliSpecific_HeliSelfStrategyStruct data;
     data.speaker_id = mSpeakerID;
     data.heli_self_strategy_type = Csis::Type_heli_self_strategy_type_heli_roadblock;
-    ScheduleSpeech(data, Csis::HeliSpecific_HeliSelfStrategyId, Csis::gHeliSpecific_HeliSelfStrategyHandle, this);
+    Speech::Manager::ScheduleSpeech(data, Csis::HeliSpecific_HeliSelfStrategyId, Csis::gHeliSpecific_HeliSelfStrategyHandle, this);
 }
 
 void EAXAirSupport::IntentToBail() {
     Csis::HeliSpecific_HeliIntentToBailStruct data;
     data.speaker_id = mSpeakerID;
     data.heli_bailout_type = GetCauseOfBailout();
-    ScheduleSpeech(data, Csis::HeliSpecific_HeliIntentToBailId, Csis::gHeliSpecific_HeliIntentToBailHandle, this);
+    Speech::Manager::ScheduleSpeech(data, Csis::HeliSpecific_HeliIntentToBailId, Csis::gHeliSpecific_HeliIntentToBailHandle, this);
 }
 
 void EAXAirSupport::Swarming() {
     Csis::HeliSpecific_HeliSwarmingStruct data;
     data.speaker_id = mSpeakerID;
-    ScheduleSpeech(data, Csis::HeliSpecific_HeliSwarmingId, Csis::gHeliSpecific_HeliSwarmingHandle, this);
+    Speech::Manager::ScheduleSpeech(data, Csis::HeliSpecific_HeliSwarmingId, Csis::gHeliSpecific_HeliSwarmingHandle, this);
 }
 
 void EAXAirSupport::HazardAlert(Csis::Type_heli_hazard_alert_type type) {
     Csis::HeliSpecific_HeliHazardAlertStruct data;
     data.speaker_id = mSpeakerID;
     data.heli_hazard_alert_type = type;
-    ScheduleSpeech(data, Csis::HeliSpecific_HeliHazardAlertId, Csis::gHeliSpecific_HeliHazardAlertHandle, this);
+    Speech::Manager::ScheduleSpeech(data, Csis::HeliSpecific_HeliHazardAlertId, Csis::gHeliSpecific_HeliHazardAlertHandle, this);
 }
 
 void EAXAirSupport::Quadrant() {
     Csis::HeliSpecific_HeliQuadrentStruct data;
     data.speaker_id = mSpeakerID;
-    ScheduleSpeech(data, Csis::HeliSpecific_HeliQuadrentId, Csis::gHeliSpecific_HeliQuadrentHandle, this);
+    Speech::Manager::ScheduleSpeech(data, Csis::HeliSpecific_HeliQuadrentId, Csis::gHeliSpecific_HeliQuadrentHandle, this);
 }
 
 void EAXAirSupport::QuadrantMoving() {
     Csis::HeliSpecific_HeliQuadrentMovingStruct data;
     data.speaker_id = mSpeakerID;
-    ScheduleSpeech(data, Csis::HeliSpecific_HeliQuadrentMovingId, Csis::gHeliSpecific_HeliQuadrentMovingHandle, this);
+    Speech::Manager::ScheduleSpeech(data, Csis::HeliSpecific_HeliQuadrentMovingId, Csis::gHeliSpecific_HeliQuadrentMovingHandle, this);
 }
 
 void EAXAirSupport::BullhornArrest() {
     if (MiscSpeech::IsVehicleTypeOK()) {
         Csis::HeliSpecific_HeliBullhornArrestStruct data;
         data.speaker_id = mSpeakerID;
-        ScheduleSpeech(data, Csis::HeliSpecific_HeliBullhornArrestId, Csis::gHeliSpecific_HeliBullhornArrestHandle, this);
+        Speech::Manager::ScheduleSpeech(data, Csis::HeliSpecific_HeliBullhornArrestId, Csis::gHeliSpecific_HeliBullhornArrestHandle, this);
     }
 }

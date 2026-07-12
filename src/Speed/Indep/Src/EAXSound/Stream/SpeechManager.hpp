@@ -161,9 +161,7 @@ struct ScheduledSpeechEvent {
 class Manager {
   public:
     template <typename T>
-    static void ScheduleSpeech(T &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor) {
-        ScheduleSpeechPartII(sizeof(T), &data, iid, fh, actor);
-    }
+    static void ScheduleSpeech(T &data, Csis::InterfaceId &iid, Csis::FunctionHandle &fh, EAXCharacter *actor);
 
     static int FlushSpeechForActor(EAXCharacter *actor);
     static int GetGlobalHistoryCount(SPCHType_1_EventID id);
