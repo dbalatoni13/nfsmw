@@ -1303,12 +1303,18 @@ SpeechValRtnType Manager::PostValidate(ScheduledSpeechEvent *evt, unsigned int m
     elapsed = (WorldTimer - evt->entry_time).GetSeconds();
     expiry = event.expiry();
     if (elapsed >= expiry && (mask & 1)) {
-        return kDitchEvt;
+        goto ditch_event;
     }
+    goto expiry_valid;
+
+ditch_event:
+    return kDitchEvt;
+
+expiry_valid:
 
     if (event.MaxPlayback() > -1 && (mask & 2)) {
         if (mGlobalHistory.GetCount(evt->ID) > event.MaxPlayback()) {
-            return kDitchEvt;
+            goto ditch_event;
         }
     }
 
@@ -1332,7 +1338,7 @@ SpeechValRtnType Manager::PostValidate(ScheduledSpeechEvent *evt, unsigned int m
     }
 
     if (event.Num_DepFollow() != 0 && (mask & 0x20)) {
-        bool pass = false;
+        short pass = false;
 
         if (event.BackTime() > 0.0f) {
             unsigned int i;
@@ -1387,7 +1393,7 @@ SpeechValRtnType Manager::PostValidate(ScheduledSpeechEvent *evt, unsigned int m
     }
 
     curr_heat = static_cast<short>(ai->GetHeat());
-    if (event.MaxHeat() < curr_heat || curr_heat < event.MinHeat()) {
+    if (curr_heat > event.MaxHeat() || curr_heat < event.MinHeat()) {
         if (mask & 0x100) {
             return kDeferEvt;
         }
