@@ -2476,36 +2476,39 @@ void SoundAI::AddNewCop(IVehicle *newcop) {
     WRoadNav *nav = vai->GetDriveToNav();
     int roadID = nav->GetRoadSpeechId();
     bool is_rb_cop = false;
-
     bool is_cross = (newcop->GetVehicleKey() == static_cast<unsigned int>(-0x2c837f93));
     IRoadBlock *block = GetRoadblock();
     if (block) {
         is_rb_cop = (block->IsComprisedOf(newbie) == newcop);
     }
 
-    int bID = GetBattalionFromKey(newcop->GetVehicleKey());
-    if (bID < 1) {
+    EAXCop *latest_cop = 0;
+    int bID;
+    int bid = GetBattalionFromKey(newcop->GetVehicleKey());
+    if (bid > 0) {
+        bID = bid;
+    } else {
         if (roadID == 0x6b) {
             return;
         }
-        bID = GetBattalionFromRoadID(roadID);
-        if (bID < 1) {
-            bID = 1 << (bRandom(4) & 0x3F);
+        bid = GetBattalionFromRoadID(roadID);
+        if (bid > 0) {
+            bID = bid;
+        } else {
+            bID = 1 << bRandom(4);
         }
     }
 
-    EAXCop *latest_cop = 0;
     if (mUsage.voices.empty() || !is_cross) {
         UMath::Vector3 cop_pos = newcop->GetPosition();
         UMath::Vector3 pPos = mPlayerPos;
-        UMath::Vector3 delta;
-        VU0_v3sub(pPos, cop_pos, delta);
-        float distance = VU0_sqrt(VU0_v3lengthsquare(delta));
+        float distance = UMath::Distance(pPos, cop_pos);
 
-        Speech::copMap::iterator i = mActors.begin();
+        Speech::copMap::const_iterator i = mActors.begin();
         while (i != mActors.end()) {
             EAXCop *cop = i->cop;
             if (!cop->IsHeli() && !is_rb_cop && (distance < cop->GetDistance()) && !cop->IsHeli()) {
+                int cID;
                 if (cop->GetCallsign() != bID) {
                     int keyedID = GetBattalionFromKey(newcop->GetVehicleKey());
                     if (keyedID > 0) {
@@ -2515,7 +2518,7 @@ void SoundAI::AddNewCop(IVehicle *newcop) {
                         if (keyedID > 0) {
                             bID = keyedID;
                         } else {
-                            bID = 1 << (bRandom(4) & 0x3F);
+                            bID = 1 << bRandom(4);
                         }
                     } else {
                         return;
@@ -2524,8 +2527,9 @@ void SoundAI::AddNewCop(IVehicle *newcop) {
 
                 mActors.ModifyHandle(cop->GetHandle(), newbie);
                 cop->SetHandle(newbie);
+                cID = GetCallsign(static_cast<Csis::Type_speaker_battalion>(bID));
                 cop->SetCallsign(bID);
-                cop->SetUnitNumber(GetCallsign(static_cast<Csis::Type_speaker_battalion>(bID)));
+                cop->SetUnitNumber(cID);
                 cop->Update();
                 latest_cop = cop;
                 break;
@@ -2535,21 +2539,15 @@ void SoundAI::AddNewCop(IVehicle *newcop) {
     }
 
     if (!latest_cop) {
-        if (!mUsage.voices.empty() || !is_cross) {
-            int type = 0;
-            if (is_cross) {
-                type = 3;
-            } else if (is_rb_cop) {
-                type = 2;
-            }
-
-            int voice = GetVoice(type);
+        if (!mUsage.voices.empty() || is_cross) {
+            int voice = GetVoice(is_cross ? 3 : (is_rb_cop ? 2 : 0));
             if (voice > 0) {
                 int cID = GetCallsign(static_cast<Csis::Type_speaker_battalion>(bID));
-                latest_cop = new EAXCop(voice, newbie, bID, cID);
-                latest_cop->SetRank(mActors.size());
-                mActors.Add(newbie, latest_cop);
+                EAXCop *primary = new EAXCop(voice, newbie, bID, cID);
+                primary->SetRank(mActors.size());
+                mActors.Add(newbie, primary);
                 gSpeechCache.AddSpeaker(voice);
+                latest_cop = primary;
                 latest_cop->Update();
             }
         }
@@ -2559,9 +2557,9 @@ void SoundAI::AddNewCop(IVehicle *newcop) {
     }
 
     mLatestCop = latest_cop;
-    if ((mPursuitState < kInactive) && !is_rb_cop && (mFocus == kStrategyFlow)) {
-        float random = bRandom(1.0f);
-        if (random <= 0.5f) {
+    if ((static_cast<unsigned int>(mPursuitState) < static_cast<unsigned int>(kInactive)) && !is_rb_cop &&
+        (mFocus == kStrategyFlow)) {
+        if (bRandom(1.0f) > 0.5f) {
             mLatestCop->BackupArrives();
         } else {
             mLatestCop->UnitBackupReply();
