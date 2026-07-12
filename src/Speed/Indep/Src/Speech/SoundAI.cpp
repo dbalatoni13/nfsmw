@@ -1411,8 +1411,8 @@ void SoundAI::SyncPursuit() {
             if (mAIPursuit && (mRacerCount > 0)) {
                 mPursuitState = kOtherTarget;
             } else {
-                mPursuitState = kInactive;
                 mT_sinceLastPursuit = WorldTimer;
+                mPursuitState = kInactive;
             }
         }
     } else {
@@ -1421,21 +1421,23 @@ void SoundAI::SyncPursuit() {
             ai_searching = true;
         }
 
-        bool heli_los = false;
-        if (mHeli && mHeli->HasLOS()) {
-            heli_los = mHeli->GetInFormation() != 0;
+        bool heli_LOS;
+        if (mHeli && mHeli->IsActive()) {
+            heli_LOS = mHeli->HasLOS();
+        } else {
+            heli_LOS = false;
         }
 
-        if (ai_searching || ((mLOSCount == 0) && !heli_los)) {
+        if (ai_searching || ((NumCopsWithLOS() == 0) && !heli_LOS)) {
             mPursuitState = kSearching;
-        } else if ((mLOSCount > 0) || heli_los || GetRoadblock()) {
+        } else if (((!ai_searching) && ((NumCopsWithLOS() > 0) || (heli_LOS == true))) || GetRoadblock()) {
             if (mPursuitState != kActive) {
                 mTimeSinceLastChase = (WorldTimer - mT_sinceLastPursuit).GetSeconds();
             }
             mPursuitState = kActive;
         }
 
-        if (mPursuitState <= kSearching) {
+        if (static_cast<unsigned int>(mPursuitState) <= static_cast<unsigned int>(kSearching)) {
             mTrafficHits911 = 0;
             mCTS911 = 0;
         }
@@ -1443,8 +1445,7 @@ void SoundAI::SyncPursuit() {
 
     float t_lost = GetPerpLostTime();
     if (mPursuitState == kActive) {
-        mT_noLOS = WorldTimer;
-        mT_sinceLastPursuit = WorldTimer;
+        mT_noLOS = mT_sinceLastPursuit = WorldTimer;
     } else {
         mT_LOS = WorldTimer;
     }
@@ -1470,7 +1471,7 @@ void SoundAI::SyncPursuit() {
         }
     }
 
-    if (mFocus == kLost) {
+    else if (mFocus == kLost) {
         if (((mPursuitState == kSearching) || (mPursuitState == kInactive)) && (t_lost > inactivity_cutoff[0]) &&
             (t_lost < inactivity_cutoff[1]) &&
             !Speech::Manager::IsCopSpeechBusy() &&
@@ -1488,7 +1489,7 @@ void SoundAI::SyncPursuit() {
                     mQuadrantState = kFiction1;
                     int rand = bRandom(3);
                     if (rand != 1) {
-                        if (rand == 0) {
+                        if ((rand < 2) && (rand == 0)) {
                             MiscSpeech::SuspectPossiblyGone();
                         } else {
                             MiscSpeech::OtherLead();
@@ -1508,8 +1509,9 @@ void SoundAI::SyncPursuit() {
             default:
                 break;
             }
-        } else if (((mPursuitState == kSearching) || (mPursuitState == kInactive)) && (t_lost > inactivity_cutoff[0]) &&
-                   (!mPursuit || ((mPursuit->GetPursuitStatus() == PS_COOL_DOWN) && (mPursuit->GetCoolDownTimeRemaining() == 0.0f)))) {
+        } else if ((mFocus == kLost) && ((mPursuitState == kSearching) || (mPursuitState == kInactive)) &&
+                   (!mPursuit || ((mPursuit->GetPursuitStatus() == PS_COOL_DOWN) &&
+                                  (mPursuit->GetCoolDownTimeRemaining() == 0.0f)))) {
             if ((mQuadrantState == kExpired) &&
                 (!mPursuit || (mPursuit->GetPursuitStatus() == PS_EVADED)) && ((mFlags & PURSUIT_EXPIRED) == 0)) {
                 Speech::Manager::ClearPlayback();
@@ -1518,9 +1520,6 @@ void SoundAI::SyncPursuit() {
                 mFlags |= PURSUIT_EXPIRED;
             } else if (t_lost > inactivity_cutoff[1]) {
                 ResetPursuit(false);
-                while (!mActors.empty()) {
-                    RemoveCop(mActors.begin()->hsimable);
-                }
             }
         }
     }
@@ -1529,11 +1528,9 @@ void SoundAI::SyncPursuit() {
         mPursuitState = kInactive;
     }
 
-    if ((static_cast<unsigned int>(mPursuitState) < static_cast<unsigned int>(kInactive)) && mPursuit) {
-        mPursuitDuration = (WorldTimer - mT_pursuitStart).GetSeconds();
-    } else {
-        mPursuitDuration = -1.0f;
-    }
+    mPursuitDuration = ((static_cast<unsigned int>(mPursuitState) < static_cast<unsigned int>(kInactive)) && mPursuit)
+                           ? (WorldTimer - mT_pursuitStart).GetSeconds()
+                           : -1.0f;
 
     if (((mFlags & HELI_INTRO_REQ) != 0) && mHeli && (mFocus == kStrategyFlow) && (mPursuitState != kInactive)) {
         mHeli->BackupArrives();
