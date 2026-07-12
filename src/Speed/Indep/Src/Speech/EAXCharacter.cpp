@@ -67,8 +67,6 @@ EAXCharacter::EAXCharacter(int sID, HSIMABLE wID, int bID, int cID)
       mActive(false), //
       mSuspectLOS(false) {}
 
-EAXCharacter::~EAXCharacter() {}
-
 void *EAXCharacter::operator new(unsigned int) {
     SoundAI *ai = SoundAI::Get();
     if (ai == nullptr || ai->GetActorPool()->IsFull()) {
@@ -82,6 +80,42 @@ void EAXCharacter::operator delete(void *ptr) {
     if (ai) {
         SlotPool *pool = ai->GetActorPool();
         pool->Free(ptr);
+    }
+}
+
+void EAXCharacter::Reset() {
+    mActive = false;
+    mDestroyed = false;
+    mHealth = 0.0f;
+    mDistance = 0.0f;
+    mPos = UMath::Vector3::kZero;
+    mSpeed = 0.0f;
+    mSuspectLOS = false;
+}
+
+EAXCharacter::~EAXCharacter() {}
+
+void EAXCharacter::Update() {
+    ISimable *simable = ISimable::FindInstance(GetHandle());
+    IVehicle *vehicle = 0;
+    SoundAI *ai;
+
+    if (simable) {
+        simable->QueryInterface(&vehicle);
+    } else {
+        *reinterpret_cast<unsigned int *>(&mActive) = 0;
+        mHandle = 0;
+    }
+    ai = SoundAI::Get();
+    if (ai && vehicle && *reinterpret_cast<unsigned int *>(&mActive)) {
+        UMath::Vector3 pPos;
+        UMath::Vector3 cPos;
+
+        mPos = vehicle->GetPosition();
+        pPos = ai->GetPlayerPos();
+        cPos = mPos;
+        mSpeed = MPS2MPH(vehicle->GetAbsoluteSpeed());
+        mDistance = UMath::Distance(cPos, pPos);
     }
 }
 
@@ -151,38 +185,4 @@ void EAXCharacter::HeatJump(Csis::Type_heat_level heat) {
         data.heat_level = heat;
         Speech::Manager::ScheduleSpeech(data, Csis::AnytimeEvents_HeatJumpId, Csis::gAnytimeEvents_HeatJumpHandle, this);
     }
-}
-
-void EAXCharacter::Update() {
-    ISimable *simable = ISimable::FindInstance(GetHandle());
-    IVehicle *vehicle = 0;
-    SoundAI *ai;
-
-    if (simable) {
-        simable->QueryInterface(&vehicle);
-    } else {
-        *reinterpret_cast<unsigned int *>(&mActive) = 0;
-        mHandle = 0;
-    }
-    ai = SoundAI::Get();
-    if (ai && vehicle && *reinterpret_cast<unsigned int *>(&mActive)) {
-        UMath::Vector3 pPos;
-        UMath::Vector3 cPos;
-
-        mPos = vehicle->GetPosition();
-        pPos = ai->GetPlayerPos();
-        cPos = mPos;
-        mSpeed = MPS2MPH(vehicle->GetAbsoluteSpeed());
-        mDistance = UMath::Distance(cPos, pPos);
-    }
-}
-
-void EAXCharacter::Reset() {
-    mActive = false;
-    mDestroyed = false;
-    mHealth = 0.0f;
-    mDistance = 0.0f;
-    mPos = UMath::Vector3::kZero;
-    mSpeed = 0.0f;
-    mSuspectLOS = false;
 }

@@ -7,6 +7,7 @@
 #include "Speed/Indep/Src/World/WRoadNetwork.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
+#ifndef SPEECH_MISC_TYPES_DEFINED
 namespace Csis {
 enum Type_offroad_moment_id {
     Type_offroad_moment_id_gas_station = 1,
@@ -128,6 +129,7 @@ extern FunctionHandle gDispIntroRaceHandle;
 extern InterfaceId D_DayId;
 extern FunctionHandle gD_DayHandle;
 } // namespace Csis
+#endif
 
 namespace {
 int ResolveSpeaker(int speaker_id) {

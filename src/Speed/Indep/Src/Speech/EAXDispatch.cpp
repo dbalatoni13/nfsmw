@@ -269,8 +269,8 @@ void EAXDispatch::PursuitEscalation() {
     bool result;
     EAXCop *furthest;
     int dir;
-    int region;
-    int location;
+    Csis::Type_location_region region;
+    Csis::Type_location location;
     int last;
     register int num_suspects;
     register unsigned int direction;
@@ -412,8 +412,8 @@ void EAXDispatch::TimeExpired() {
 void EAXDispatch::Report911(Csis::Type_pursuit_type infraction) {
     SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
     Csis::AnytimeEvents_Disp911ReportStruct data;
-    int location;
-    int location_region;
+    Csis::Type_location location;
+    Csis::Type_location_region location_region;
     bool result;
     unsigned int dir;
     register int num_suspects;

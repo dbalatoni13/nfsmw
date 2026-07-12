@@ -18,6 +18,7 @@
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Generated/Messages/MNotifyCellCallComplete.h"
 #include "Speed/Indep/Src/Generated/Messages/MNotifyCellCallStarted.h"
+#include "Speed/Indep/Src/Generated/Messages/MNotifySpeechStatus.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRenderable.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
 #include "Speed/Indep/Src/Misc/Config.h"

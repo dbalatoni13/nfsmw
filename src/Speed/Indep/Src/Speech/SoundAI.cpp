@@ -38,8 +38,8 @@
 
 namespace MiscSpeech {
 bool GetLocation(RoadNames road, Csis::Type_location_region &region, Csis::Type_location &location);
-int LostSuspect(int speaker);
-int Bailout(int speaker);
+static int LostSuspect(int speaker);
+static int Bailout(int speaker);
 void QuadrantForming();
 void SuspectPossiblyGone();
 void QuadrantMoving();
