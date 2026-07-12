@@ -336,9 +336,9 @@ void Observer::NotifyAirborne(float alt, float t) {
         if (t >= ai->GetTune().HangTimeForCommentary()) {
             EAXCop *cop = ai->FindClosestCop(true, true);
             if (cop) {
-                cop->SuspectAirborne(ai->GetPlayerSpeed() < ai->GetTune().SpeedThreshFlyFlipIntensity()
-                                         ? Csis::Type_intensity_Normal
-                                         : Csis::Type_intensity_High);
+                cop->SuspectAirborne(ai->GetPlayerSpeed() >= ai->GetTune().SpeedThreshFlyFlipIntensity()
+                                         ? Csis::Type_intensity_High
+                                         : Csis::Type_intensity_Normal);
             }
         }
     }
