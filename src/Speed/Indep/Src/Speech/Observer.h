@@ -72,7 +72,7 @@ class Observer : public SpeechFlow {
     Observer();
     ~Observer() override;
     void Update() override;
-    void CullCheck();
+    virtual void CullCheck();
     bool IsTransitionable() override;
     void Reset() override;
     void Observe(int currobsrvation, int speaker, float score);

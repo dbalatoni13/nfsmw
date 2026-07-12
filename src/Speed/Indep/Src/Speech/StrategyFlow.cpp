@@ -31,15 +31,12 @@ StrategyFlow::StrategyFlow()
 StrategyFlow::~StrategyFlow() {
     if (mMsgReqBackup) {
         Hermes::Handler::Destroy(mMsgReqBackup);
-        mMsgReqBackup = 0;
     }
     if (mMsgBackupDenied) {
         Hermes::Handler::Destroy(mMsgBackupDenied);
-        mMsgBackupDenied = 0;
     }
     if (mMsgNotifyEventCompletion) {
         Hermes::Handler::Destroy(mMsgNotifyEventCompletion);
-        mMsgNotifyEventCompletion = 0;
     }
 }
 

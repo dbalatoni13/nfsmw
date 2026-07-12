@@ -44,19 +44,12 @@ RoadblockFlow::RoadblockFlow()
 RoadblockFlow::~RoadblockFlow() {
     if (mMsgReqHeliJoinRB) {
         Hermes::Handler::Destroy(mMsgReqHeliJoinRB);
-        mMsgReqHeliJoinRB = 0;
     }
     if (mMsgRoadBlockDodged) {
         Hermes::Handler::Destroy(mMsgRoadBlockDodged);
-        mMsgRoadBlockDodged = 0;
     }
     if (mMsgPosition) {
         Hermes::Handler::Destroy(mMsgPosition);
-        mMsgPosition = 0;
-    }
-    if (mMsgNotifyEventCompletion) {
-        Hermes::Handler::Destroy(mMsgNotifyEventCompletion);
-        mMsgNotifyEventCompletion = 0;
     }
 }
 
@@ -179,8 +172,10 @@ void RoadblockFlow::MessageReqHeliJoinRB(const MReqRoadBlock &message) {
     }
 }
 
-void RoadblockFlow::MessagePositionUpdate(const MReqRoadBlock &) {
+void RoadblockFlow::MessagePositionUpdate(const MReqRoadBlock &message) {
     mFlags |= POSITIONED;
+    mFlags |= REQ_SERVICE;
+    mSpikeOffset = message.GetData();
 }
 
 void RoadblockFlow::MessageEventComplete(const MNotifySpeechStatus &) {

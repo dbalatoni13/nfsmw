@@ -360,12 +360,13 @@ void EAXDispatch::PursuitEscalation() {
     Speech::Manager::ScheduleSpeech(data, Csis::AnytimeEvents_DispPursuitEscalationId, Csis::gAnytimeEvents_DispPursuitEscalationHandle, this);
 }
 
-void EAXDispatch::BackupUpdate(EAXCop *, int yes) {
+void EAXDispatch::BackupUpdate(EAXCop *cop, int yes) {
     Csis::Backup_DispBackupUpdateStruct data;
-    data.yes_no = Csis::Type_yes_no_No_False;
     data.speaker_id = mSpeakerID;
     if (yes != 0) {
         data.yes_no = Csis::Type_yes_no_Yes_True;
+    } else {
+        data.yes_no = Csis::Type_yes_no_No_False;
     }
     Speech::Manager::ScheduleSpeech(data, Csis::Backup_DispBackupUpdateId, Csis::gBackup_DispBackupUpdateHandle, this);
 }

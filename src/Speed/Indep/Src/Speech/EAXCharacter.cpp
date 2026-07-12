@@ -71,14 +71,10 @@ EAXCharacter::~EAXCharacter() {}
 
 void *EAXCharacter::operator new(unsigned int) {
     SoundAI *ai = SoundAI::Get();
-    void *p = NullPointer;
-    if (ai) {
-        SlotPool *pool = ai->GetActorPool();
-        if (pool->NumAllocatedSlots != pool->TotalNumSlots) {
-            p = pool->Malloc(1, 0);
-        }
+    if (ai == nullptr || ai->GetActorPool()->IsFull()) {
+        return NullPointer;
     }
-    return p;
+    return ai->GetActorPool()->Malloc(1, nullptr);
 }
 
 void EAXCharacter::operator delete(void *ptr) {

@@ -48,23 +48,18 @@ MusicFlow::MusicFlow()
 MusicFlow::~MusicFlow() {
     if (mMsgNewPart) {
         Hermes::Handler::Destroy(mMsgNewPart);
-        mMsgNewPart = 0;
     }
     if (mMsgInitFlow) {
         Hermes::Handler::Destroy(mMsgInitFlow);
-        mMsgInitFlow = 0;
     }
     if (mMsgTerminate) {
         Hermes::Handler::Destroy(mMsgTerminate);
-        mMsgTerminate = 0;
     }
     if (mMsgDone) {
         Hermes::Handler::Destroy(mMsgDone);
-        mMsgDone = 0;
     }
     if (mMsgX360UserTunes) {
         Hermes::Handler::Destroy(mMsgX360UserTunes);
-        mMsgX360UserTunes = 0;
     }
 }
 
@@ -492,10 +487,15 @@ not_active:
 }
 
 void MusicFlow::Terminal() {
-    if (Manager::IsCopSpeechBusy()) {
-        return;
+    switch (mCurrentPart) {
+    case 5:
+    case 6:
+    case 7:
+        break;
+    default:
+        Reset();
+        break;
     }
-    ChangeStateTo(kTransition);
 }
 
 bool MusicFlow::IsTransitionable() {

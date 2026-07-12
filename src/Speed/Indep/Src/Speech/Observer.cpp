@@ -91,20 +91,22 @@ Observer::~Observer() {
 }
 
 void Observer::Update() {
-    switch (mState) {
-    case kTransition:
-        return;
-    case kCullCheck:
-        CullCheck();
-        return;
-    default:
-        ChangeStateTo(kCullCheck);
-        return;
+    int y;
+    int x;
+    if (mState != kTransition) {
+        if (mState == kCullCheck) {
+            CullCheck();
+            return;
+        }
     }
+    ChangeStateTo(kCullCheck);
 }
 
 void Observer::CullCheck() {
-    Process();
+    SoundAI *ai = SoundAI::Get();
+    if (ai->GetPursuitState() == SoundAI::kActive) {
+        Process();
+    }
 }
 
 bool Observer::IsTransitionable() {

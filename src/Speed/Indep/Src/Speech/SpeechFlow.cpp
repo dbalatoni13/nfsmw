@@ -275,10 +275,10 @@ void SpeechFlow::OnCopAdded(EAXCop *) {}
 void SpeechFlow::OnCopRemoved(EAXCop *) {}
 
 Module *Manager::GetSpeechModule(int nindex) {
-    if (nindex > 1) {
-        return 0;
+    if (nindex <= 1) {
+        return m_SpeechModule[nindex];
     }
-    return m_SpeechModule[nindex];
+    return nullptr;
 }
 
 int Manager::TestSentenceRuleCallback(EventSpec *, int, int, int) {
@@ -1587,13 +1587,7 @@ int Manager::FlushSpeechForActor(EAXCharacter *actor) {
 }
 
 Module::Module()
-    : m_enable(false), //
-      m_datID(0), //
-      m_projID(0), //
-      m_speechBanks(0), //
-      m_mixChannel(static_cast<eMasterMixChannel>(0)), //
-      m_streamID(0), //
-      m_fileNum(0), //
+    : m_speechBanks(0), //
       m_bankHeaders(0), //
       m_numBanks(0), //
       m_flags(0), //
@@ -1602,8 +1596,7 @@ Module::Module()
       mLastEventTimestamp(0), //
       m_pSFXOBJ_Speech(0), //
       m_pSFXOBJ_Moment(0), //
-      m_pSFXOBJ_NISStream(0), //
-      m_bIsStreamQueued(false) {}
+      m_pSFXOBJ_NISStream(0) {}
 
 Module::~Module() {}
 
@@ -1618,17 +1611,33 @@ unsigned int Module::GetBankOffset(int bnum) {
 
 void Module::AttachSFXOBJ(SFX_Base *psfx, eSFXOBJ_MAIN_TYPES sfxtype) {
     m_enable = true;
-    if (psfx && psfx->GetGroupID()) {
-        return;
-    }
-    if (sfxtype == SFXOBJ_SPEECH) {
-        m_pSFXOBJ_Speech = psfx;
-    }
-    if (sfxtype == SFXOBJ_NISPROJ_STRMS) {
-        m_pSFXOBJ_NISStream = psfx;
-    }
-    if (sfxtype == SFXOBJ_MOMENT_STRMS) {
-        m_pSFXOBJ_Moment = psfx;
+    if (psfx != nullptr) {
+        if (psfx->GetGroupID()) {
+            return;
+        }
+        if (sfxtype == SFXOBJ_SPEECH) {
+            m_pSFXOBJ_Speech = psfx;
+        }
+        if (sfxtype == SFXOBJ_NISPROJ_STRMS) {
+            m_pSFXOBJ_NISStream = psfx;
+        }
+        if (sfxtype == SFXOBJ_MOMENT_STRMS) {
+            m_pSFXOBJ_Moment = psfx;
+        }
+    } else {
+        switch (sfxtype) {
+        case SFXOBJ_SPEECH:
+            m_pSFXOBJ_Speech = nullptr;
+            break;
+        case SFXOBJ_NISPROJ_STRMS:
+            m_pSFXOBJ_NISStream = nullptr;
+            break;
+        case SFXOBJ_MOMENT_STRMS:
+            m_pSFXOBJ_Moment = nullptr;
+            break;
+        default:
+            break;
+        }
     }
 }
 

@@ -243,7 +243,11 @@ static inline void RBAverted_Impl() {
 
 int Unit911Reply(int spkrID) {
     Csis::AnytimeEvents_Unit911ReplyStruct data;
-    data.speaker_id = ResolveSpeaker(spkrID);
+    if (spkrID > 0) {
+        data.speaker_id = spkrID;
+    } else {
+        data.speaker_id = static_cast<int>(bRandom(6.0f) + 3.0f);
+    }
     Speech::Manager::ScheduleSpeech(data, Csis::AnytimeEvents_Unit911ReplyId, Csis::gAnytimeEvents_Unit911ReplyHandle, static_cast<EAXCharacter *>(0));
     return data.speaker_id;
 }
@@ -266,20 +270,18 @@ void RBEngaged(bool spikes_hit) {
 
 int MoreDetails(int spkrID) {
     Csis::Setup_MoreDetailsStruct data;
-    data.speaker_id = ResolveSpeaker(spkrID);
+    if (spkrID > 0) {
+        data.speaker_id = spkrID;
+    } else {
+        data.speaker_id = static_cast<int>(bRandom(4.0f) + 3.0f);
+    }
     Speech::Manager::ScheduleSpeech(data, Csis::Setup_MoreDetailsId, Csis::gSetup_MoreDetailsHandle, static_cast<EAXCharacter *>(0));
     return data.speaker_id;
 }
 
 void RBPosition(int pos) {
     Csis::ExtraCops_RBPositionStruct data;
-    if (pos < -3) {
-        data.spikebelt_position = 1;
-    } else if (pos > 4) {
-        data.spikebelt_position = 4;
-    } else {
-        data.spikebelt_position = 2;
-    }
+    data.spikebelt_position = pos <= -4 ? 1 : pos > 4 ? 4 : 2;
     Speech::Manager::ScheduleSpeech(data, Csis::ExtraCops_RBPositionId, Csis::gExtraCops_RBPositionHandle, static_cast<EAXCharacter *>(0));
 }
 
