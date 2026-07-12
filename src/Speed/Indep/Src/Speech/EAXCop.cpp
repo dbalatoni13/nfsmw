@@ -557,8 +557,7 @@ int EAXCop::GetBackupTypeFromDispatch(int type) {
 
 void EAXCop::Update() {
     EAXCharacter::Update();
-    HSIMABLE handle = GetHandle();
-    if (!handle) {
+    if (!GetHandle()) {
         *reinterpret_cast<unsigned int *>(&mInFormation) = 0;
         *reinterpret_cast<unsigned int *>(&mInPosition) = 0;
         mPctTractiveTires = 1.0f;
@@ -567,22 +566,12 @@ void EAXCop::Update() {
         return;
     }
 
-    HSIMABLE find_handle = GetHandle();
-    ISimable *simable;
-    if (find_handle) {
-        simable = ISimable::FindInstance(find_handle);
-    } else {
-        simable = 0;
-    }
+    ISimable *simable = ISimable::FindInstance(GetHandle());
     IDamageable *damage = 0;
     IVehicle *copcar = 0;
     ISuspension *suspension = 0;
     IPursuitAI *pursuitAI = 0;
     IVehicleAI *vai = 0;
-    UMath::Vector3 coppos;
-    UMath::Vector3 ppos;
-    UMath::Vector3 delta;
-
     if (*reinterpret_cast<unsigned int *>(&mSuspectLOS) != 0) {
         mTimeNoLOS = WorldTimer;
     }
@@ -607,25 +596,17 @@ void EAXCop::Update() {
         SetTgtOffset(UMath::Vector3::kZero);
     }
 
-    if (suspension) {
-        if (*reinterpret_cast<unsigned int *>(&mActive) == 0) {
-            mTimeAirborne = WorldTimer;
-            mPctTractiveTires = 1.0f;
-        } else {
-            mPctTractiveTires = 1.0f;
-            if (suspension->GetNumWheels() != 0) {
-                unsigned int wheel_traction = static_cast<unsigned int>(suspension->GetNumWheelsOnGround());
-                unsigned int num_wheels = suspension->GetNumWheels();
-                wheel_traction = wheel_traction / num_wheels;
-                mPctTractiveTires = static_cast<float>(wheel_traction);
-            }
-            if (mPctTractiveTires > 0.25f) {
-                mTimeAirborne = WorldTimer;
-            }
+    if (suspension && (*reinterpret_cast<unsigned int *>(&mActive) != 0)) {
+        mPctTractiveTires = suspension->GetNumWheels() != 0
+                                ? static_cast<float>(static_cast<unsigned int>(suspension->GetNumWheelsOnGround()) /
+                                                     suspension->GetNumWheels())
+                                : 1.0f;
+        if (mPctTractiveTires > 0.25f) {
+            static_cast<void>(mTimeAirborne = WorldTimer);
         }
     } else {
+        static_cast<void>(mTimeAirborne = WorldTimer);
         mPctTractiveTires = 1.0f;
-        mTimeAirborne = WorldTimer;
     }
 
     if (damage) {
@@ -637,7 +618,7 @@ void EAXCop::Update() {
         if (*reinterpret_cast<unsigned int *>(&mActive) == 0) {
             mCurrRoad = MAX_ROADNAMES;
         } else {
-            WRoadNav *nav = vai->GetCurrentRoad();
+            WRoadNav *nav = vai->GetDriveToNav();
             unsigned int roadID = nav->GetRoadSpeechId();
             if (roadID != MAX_ROADNAMES) {
                 mCurrRoad = static_cast<RoadNames>(roadID);
@@ -649,18 +630,15 @@ void EAXCop::Update() {
 
     if ((*reinterpret_cast<unsigned int *>(&mActive) != 0) && (*reinterpret_cast<unsigned int *>(&mSuspectLOS) != 0) && copcar) {
         SoundAI *ai = SoundAI::Get();
-        if (!ai) {
-            return;
-        }
-        const UMath::Vector3 &v_pos = copcar->GetPosition();
-        *reinterpret_cast<unsigned int *>(&coppos.x) = *reinterpret_cast<const unsigned int *>(&v_pos.x);
-        *reinterpret_cast<unsigned int *>(&coppos.y) = *reinterpret_cast<const unsigned int *>(&v_pos.y);
-        *reinterpret_cast<unsigned int *>(&coppos.z) = *reinterpret_cast<const unsigned int *>(&v_pos.z);
-        ppos = ai->GetPlayerPos();
-        VU0_v3sub(coppos, ppos, delta);
-        float dist = VU0_sqrt(VU0_v3lengthsquare(delta));
-        if (dist <= mDistance) {
-            mT_closingDist = WorldTimer;
+        if (ai) {
+            UMath::Vector3 coppos;
+            UMath::Vector3 ppos;
+            coppos = copcar->GetPosition();
+            ppos = ai->GetPlayerPos();
+            float dist = UMath::Distance(coppos, ppos);
+            if (dist <= mDistance) {
+                mT_closingDist = WorldTimer;
+            }
         }
     }
 }
