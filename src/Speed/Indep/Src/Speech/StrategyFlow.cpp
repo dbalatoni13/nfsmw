@@ -101,14 +101,14 @@ void StrategyFlow::Update() {
     case kSoloCheck:
         SoloCheck();
         return;
-    case 333:
-        CallToPos();
-        return;
-    case 999:
-        ReqBackup();
-        return;
-    case 1000:
+    case kWaiting:
         Waiting();
+        return;
+    case kTerminal:
+        Terminal();
+        return;
+    case kOutcome:
+        Outcome();
         return;
     case kOutrun:
         Outrun();
@@ -116,11 +116,11 @@ void StrategyFlow::Update() {
     case kLost:
         Lost();
         return;
-    case 4:
-        Terminal();
+    case kReqBackup:
+        ReqBackup();
         return;
-    case 5:
-        Outcome();
+    case kCallToPos:
+        CallToPos();
         return;
     default:
         ChangeStateTo(kCullCheck);
@@ -387,13 +387,15 @@ void StrategyFlow::Waiting() {
     copList active;
     active.reserve(ai->GetActors().size());
 
-    copMap::const_iterator iter = ai->GetActors().begin();
-    while (iter != ai->GetActors().end()) {
-        EAXCop *cop = iter->cop;
-        if (cop->IsActive()) {
-            active.push_back(cop);
+    {
+        copMap::const_iterator iter = ai->GetActors().begin();
+        while (iter != ai->GetActors().end()) {
+            EAXCop *cop = iter->cop;
+            if (cop->IsActive()) {
+                active.push_back(cop);
+            }
+            ++iter;
         }
-        ++iter;
     }
 
     if (active.size() == 1) {
@@ -403,7 +405,8 @@ void StrategyFlow::Waiting() {
         goto cleanup;
     }
 
-    if ((this->mFormationType != pursuit->GetFormationType()) && (pursuit->GetFormationType() != FOLLOW) && (pursuit->GetFormationType() != STAGGER_FOLLOW) &&
+    if ((this->mFormationType != ai->GetPursuit()->GetFormationType()) && (ai->GetPursuit()->GetFormationType() != FOLLOW) &&
+        (ai->GetPursuit()->GetFormationType() != STAGGER_FOLLOW) &&
         (active.size() > 1)) {
         ai->GetLeader()->StrategyReset(true);
         this->ChangeStateTo(kSoloCheck);
@@ -417,9 +420,9 @@ void StrategyFlow::Waiting() {
                 goto cleanup;
             }
             if (bRandom(1.0f) > 0.5f) {
-                EAXCop *cop = ai->FindClosestCop(false, false);
-                if (cop) {
-                    cop->IntentToRam();
+                EAXCop *closest = ai->FindClosestCop(false, false);
+                if (closest) {
+                    closest->IntentToRam();
                 }
             } else {
                 ai->GetLeader()->StrategyExecute();
@@ -444,9 +447,9 @@ void StrategyFlow::Waiting() {
             this->ChangeStateTo(kOutcome);
             goto cleanup;
         default: {
-            EAXCop *cop = ai->FindClosestCop(false, false);
-            if (cop) {
-                cop->Bullhorn();
+            EAXCop *closest = ai->FindClosestCop(false, false);
+            if (closest) {
+                closest->Bullhorn();
             }
             goto cleanup;
         }
@@ -459,17 +462,19 @@ void StrategyFlow::Waiting() {
             (pursuit->GetFormationType() == HERD)) {
             contact_strategy = true;
         }
-        if (contact_strategy && ai->GetCopsInFormation().empty() && (active.size() > 1)) {
+        if (contact_strategy && (ai->GetCopsInFormation().size() == 0) && (active.size() > 1)) {
             this->ChangeStateTo(kCallToPos);
             goto cleanup;
         }
 
-        copMap::const_iterator ci = ai->GetActors().begin();
-        while (ci != ai->GetActors().end()) {
-            if (ci->cop->GetInFormation()) {
-                ci->cop->Bullhorn();
+        {
+            copMap::const_iterator ci = ai->GetActors().begin();
+            while (ci != ai->GetActors().end()) {
+                if (ci->cop->GetInFormation()) {
+                    ci->cop->Bullhorn();
+                }
+                ++ci;
             }
-            ++ci;
         }
 
         if (ai->GetPursuitDistance() > ai->GetTune().SuspectOutrunRange()) {

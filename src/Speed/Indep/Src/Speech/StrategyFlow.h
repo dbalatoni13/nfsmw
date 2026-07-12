@@ -43,13 +43,13 @@ class StrategyFlow : public SpeechFlow {
 
     virtual void CullCheck();
     virtual void SoloCheck();
-    virtual void CallToPos();
-    virtual void ReqBackup();
     virtual void Waiting();
-    virtual void Outrun();
-    virtual void Lost();
     virtual void Terminal();
     virtual void Outcome();
+    virtual void Outrun();
+    virtual void Lost();
+    virtual void ReqBackup();
+    virtual void CallToPos();
     void MessageReqBackup(const MReqBackup &message);
     void MessageBackupDenied(const MReqBackup &message);
     void MessageEventComplete(const MNotifySpeechStatus &message);
