@@ -1259,41 +1259,21 @@ void EAXCop::PursuitUpdateReply() {
 
 void EAXCop::ReinitiatePursuit() {
     SoundAI *ai = SoundAI::Get();
+    Csis::Setup_ReInitPursuitStruct data;
     if (ai) {
         if (ai->GetTimeSinceLastChase() < ai->GetTune().TimeConsideredLostNoLOS()) {
-            typedef float (*FloatMethodPtr)(void *);
-            typedef void (*VoidMethodPtr)(void *);
-            const int kSpeedAdjustOffset = 0x3D0;
-            const int kSpeedMethodOffset = 0x3D4;
-            const int kReinitMethodAdjustOffset = 0x288;
-            const int kReinitMethodOffset = 0x28C;
-            const int kLostMethodAdjustOffset = 0x1B8;
-            const int kLostMethodOffset = 0x1BC;
-            char *vtable = *reinterpret_cast<char **>(this);
-            short speedAdjust = *reinterpret_cast<short *>(vtable + kSpeedAdjustOffset);
-            float speed = (*reinterpret_cast<FloatMethodPtr *>(vtable + kSpeedMethodOffset))(reinterpret_cast<char *>(this) + speedAdjust);
-            if (speed != 0.0f) {
-                short thisAdjust = *reinterpret_cast<short *>(vtable + kReinitMethodAdjustOffset);
-                (*reinterpret_cast<VoidMethodPtr *>(vtable + kReinitMethodOffset))(reinterpret_cast<char *>(this) + thisAdjust);
+            if (IsAhead() != 0.0f) {
+                Spotted();
             } else {
-                short thisAdjust = *reinterpret_cast<short *>(vtable + kLostMethodAdjustOffset);
-                (*reinterpret_cast<VoidMethodPtr *>(vtable + kLostMethodOffset))(reinterpret_cast<char *>(this) + thisAdjust);
+                RegainVisual();
             }
         } else {
-            Csis::Setup_ReInitPursuitStruct data;
-            int time_since_lost;
-            int num_suspects;
             if (ai->GetTimeSinceLastChase() < 30.0f) {
-                time_since_lost = 1;
+                data.time_since_lost = 1;
             } else {
-                time_since_lost = 2;
+                data.time_since_lost = 2;
             }
-            data.time_since_lost = time_since_lost;
-            num_suspects = 1;
-            if (ai->AreRacersNearby()) {
-                num_suspects = 2;
-            }
-            data.num_suspects = num_suspects;
+            data.num_suspects = ai->AreRacersNearby() ? 2 : 1;
             data.speaker_id = mSpeakerID;
             ScheduleSpeech(data, Csis::Setup_ReInitPursuitId, Csis::gSetup_ReInitPursuitHandle, this);
         }
