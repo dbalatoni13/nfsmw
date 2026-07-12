@@ -19,7 +19,10 @@ class SpeechFlow {
     virtual void ChangeStateTo(int new_state);
 
     virtual int GetState();
-    virtual void Reset();
+    virtual void Reset() {
+        ChangeStateTo(-1);
+        mBusy = 0;
+    }
     virtual bool IsBusy();
     virtual void OnCopAdded(EAXCop *cop);
     virtual void OnCopRemoved(EAXCop *cop);

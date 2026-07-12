@@ -8,6 +8,54 @@
 namespace Csis {
 struct Class;
 
+enum Type_location_region {
+    Type_location_region_college_town = 1,
+    Type_location_region_coastal = 2,
+    Type_location_region_coastal_extra = 4,
+    Type_location_region_city = 8,
+};
+
+enum Type_location {
+    Type_location_Location_1 = 1,
+    Type_location_Location_2 = 2,
+    Type_location_Location_3 = 4,
+    Type_location_Location_4 = 8,
+    Type_location_Location_5 = 16,
+    Type_location_Location_6 = 32,
+    Type_location_Location_7 = 64,
+    Type_location_Location_8 = 128,
+    Type_location_Location_9 = 256,
+    Type_location_Location_10 = 512,
+    Type_location_Location_11 = 1024,
+    Type_location_Location_12 = 2048,
+    Type_location_Location_13 = 4096,
+    Type_location_Location_14 = 8192,
+    Type_location_Location_15 = 16384,
+    Type_location_Location_16 = 32768,
+    Type_location_Location_17 = 65536,
+    Type_location_Location_18 = 131072,
+    Type_location_Location_19 = 262144,
+    Type_location_Location_20 = 524288,
+    Type_location_Location_21 = 1048576,
+    Type_location_Location_22 = 2097152,
+    Type_location_Location_23 = 4194304,
+    Type_location_Location_24 = 8388608,
+    Type_location_Location_25 = 16777216,
+    Type_location_Location_26 = 33554432,
+    Type_location_Location_27 = 67108864,
+    Type_location_Location_28 = 134217728,
+    Type_location_Location_29 = 268435456,
+    Type_location_Location_30 = 536870912,
+    Type_location_Location_31 = 1073741824,
+};
+
+enum Type_direction {
+    Type_direction_Northbound = 1,
+    Type_direction_Southbound = 2,
+    Type_direction_Eastbound = 4,
+    Type_direction_Westbound = 8,
+};
+
 union Parameter {
     int iVal;
     float fVal;

@@ -214,6 +214,7 @@ class Manager {
         return mEvtHistory.front();
     }
     static EventHistory &GetHistory() { return mGlobalHistory; }
+    static SpeechHashIDMap &GetHashIDMap() { return mHashMap; }
     static SampleReqList &GetSampleRequests() { return mSampleRequests; }
 
     static Module *m_SpeechModule[NUM_SPEECH_MODULES];

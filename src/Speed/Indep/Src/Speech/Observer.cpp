@@ -115,33 +115,26 @@ bool Observer::IsTransitionable() {
 }
 
 void Observer::Reset() {
-    mObservations.clear();
-    mObserveMask = Braking | Outcome;
-    mLastEvent = kNone;
+    SpeechFlow::Reset();
+    mPrevPursuitState = 2;
+    mRamCop = 0;
+    mAirborneLength = 0.0f;
     mNumCopsWithLOS = 0;
-    mT_bullhorn = WorldTimer;
-    mT_unstable = WorldTimer;
-    mT_airborne = WorldTimer;
-    mT_flipped = WorldTimer;
-    mT_trackingOutcome = WorldTimer;
+    mT_bullhorn = Timer(0);
+    mT_unstable = Timer(0);
+    mT_airborne = Timer(0);
+    mT_flipped = Timer(0);
+    mT_trackingOutcome = Timer(0);
+    mT_gasstationexpl = Timer(0);
     mDotTrack = 0.0f;
     mOffroadHistory = 0;
-    mCurrOffroadID = -1;
     mTracking = 0;
-    mT_gasstationexpl = WorldTimer;
-    mPrevPursuitState = 2;
     mWeather = false;
     mTunnel = false;
-    mOutcomeIntensity = Csis::Type_intensity_Normal;
-    mRamCop = 0;
     mAirborneHeight = 0.0f;
-    mAirborneLength = 0.0f;
     mGasStationPos = UMath::Vector3::kZero;
     mFwPlayer = UMath::Vector3::kZero;
     mFwRoad = UMath::Vector3::kZero;
-    mBusy = 0;
-    mState = kCullCheck;
-    mLastState = kTransition;
 }
 
 void Observer::Observe(int currobsrvation, int speaker, float score) {

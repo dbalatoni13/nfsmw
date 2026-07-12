@@ -23,14 +23,15 @@ class ICopMgr : public UTL::COM::IUnknown, public UTL::Collections::Singleton<IC
     ~ICopMgr() override {}
 
   public:
-#ifndef EA_BUILD_A124
     virtual bool VehicleSpawningEnabled(bool isdespawn);
-#endif
     virtual void ResetCopsForRestart(bool release);
     virtual void PursuitIsEvaded(struct IPursuit *ipursuit);
     virtual bool IsCopRequestPending();
     virtual bool IsCopSpawnPending() const;
     virtual void SpawnCop(UMath::Vector3 &InitialPos, UMath::Vector3 &InitialVec, const char *VehicleName, bool InPursuit, bool RoadBlock);
+#ifndef EA_BUILD_A124
+    virtual void SetAllBustedTimersToZero();
+#endif
     virtual bool PlayerPursuitHasCop() const;
     virtual bool CanPursueRacers();
     virtual bool IsPlayerPursuitActive();
@@ -38,7 +39,6 @@ class ICopMgr : public UTL::COM::IUnknown, public UTL::Collections::Singleton<IC
     virtual void NoNewPursuitsOrCops();
     virtual void PursueAtHeatLevel(int minHeatLevel);
 #ifndef EA_BUILD_A124
-    virtual void SetAllBustedTimersToZero();
     virtual float GetLockoutTimeRemaining() const;
 #endif
 

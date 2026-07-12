@@ -147,6 +147,14 @@ struct pursuitlevels : Instance {
         return *resultptr;
     }
 
+    const float &Lifetime911() const {
+        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x0e823327, 0));
+        if (!resultptr) {
+            resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
+        }
+        return *resultptr;
+    }
+
     const float &SpeedReactionTime(unsigned int index) const {
         const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x0f575b64, index));
         if (!resultptr) {

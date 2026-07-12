@@ -6,7 +6,7 @@
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 namespace MiscSpeech {
-bool GetLocation(RoadNames road, int &region, int &location);
+bool GetLocation(RoadNames road, Csis::Type_location_region &region, Csis::Type_location &location);
 }
 
 enum SpeechObservations {
@@ -44,13 +44,6 @@ enum Type_address_group_type {
     Type_address_group_type_coastal = 4,
     Type_address_group_type_alpine = 8,
     Type_address_group_type_generic_any_ = 16,
-};
-
-enum Type_location_region {
-    Type_location_region_college_town = 1,
-    Type_location_region_coastal = 2,
-    Type_location_region_coastal_extra = 4,
-    Type_location_region_city = 8,
 };
 
 enum Type_roadblock_type {
@@ -115,9 +108,9 @@ struct Backup_DispBackupUpdateStruct {
 
 struct AnytimeEvents_DispBreakAwayStruct {
     int speaker_id;
-    int location_region;
-    int location;
-    int direction;
+    Type_location_region location_region;
+    Type_location location;
+    Type_direction direction;
 };
 
 struct Setup_DispGoAheadStruct {
@@ -379,47 +372,29 @@ void EAXDispatch::BackupUpdate(EAXCop *, int yes) {
 
 void EAXDispatch::BreakAway() {
     SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
+    Csis::AnytimeEvents_DispBreakAwayStruct data;
+    Csis::Type_location_region region;
+    Csis::Type_location location;
     bool result;
     unsigned int dir;
-    int location_region;
-    int location;
-    Csis::AnytimeEvents_DispBreakAwayStruct data;
-    unsigned int last_known_direction;
-    unsigned int player_direction_0;
-    unsigned int player_direction_1;
-    RoadNames last_known_road;
-    RoadNames player_road_0;
-    RoadNames player_road_1;
 
     if (ai) {
-        last_known_direction = ai->GetLastKnownDirection();
-        player_direction_0 = ai->GetPlayerDirection(0);
-        player_direction_1 = ai->GetPlayerDirection(1);
-        last_known_road = ai->GetLastKnownRoad();
-        player_road_0 = ai->GetPlayerRoadID(0);
-        player_road_1 = ai->GetPlayerRoadID(1);
-        result = MiscSpeech::GetLocation(last_known_road, location_region, location);
+        result = MiscSpeech::GetLocation(ai->GetLastKnownRoad(), region, location);
         if (!result) {
-            result = MiscSpeech::GetLocation(player_road_0, location_region, location);
+            result = MiscSpeech::GetLocation(ai->GetPlayerRoadID(0), region, location);
             if (!result) {
-                MiscSpeech::GetLocation(player_road_1, location_region, location);
+                MiscSpeech::GetLocation(ai->GetPlayerRoadID(1), region, location);
             }
         }
-        data.location_region = location_region;
+        data.location_region = region;
         data.location = location;
-        data.direction = last_known_direction;
-        if (data.direction == 0) {
-            data.direction = player_direction_0;
-            if (data.direction == 0) {
-                data.direction = player_direction_1;
-                if (data.direction == 0) {
-                    dir = bRandom(4);
-                    data.direction = 1 << (dir & 0x3F);
-                }
-            }
+        dir = ai->GetLastKnownDirection();
+        if ((dir == 0) && ((dir = ai->GetPlayerDirection(0)) == 0) && ((dir = ai->GetPlayerDirection(1)) == 0)) {
+            dir = 1 << bRandom(4);
         }
+        data.direction = static_cast<Csis::Type_direction>(dir);
         data.speaker_id = mSpeakerID;
-        data.location_region = location_region;
+        data.location_region = region;
         data.location = location;
         ScheduleSpeech(data, Csis::AnytimeEvents_DispBreakAwayId, Csis::gAnytimeEvents_DispBreakAwayHandle, this);
     }

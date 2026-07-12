@@ -75,7 +75,9 @@ extern SlotPool *pCsisSlotPools[];
 extern Timer RealTimer;
 extern float TRACKSTREAMER_BACKLOG_THRESH;
 extern int SPEECH_DISPLAY_HISTORY;
-extern "C" bool InteruptedAndNotDelayed__6SpeechPQ26Speech20ScheduledSpeechEvent(Speech::ScheduledSpeechEvent *this_event);
+namespace Speech {
+static bool InteruptedAndNotDelayed(ScheduledSpeechEvent *this_event);
+}
 
 static void *CSISAllocatorMemAlloc(unsigned int numBytes);
 static void CSISAllocatorMemFree(void *memPtr);
@@ -260,11 +262,6 @@ void SpeechFlow::ChangeStateTo(int new_state) {
 
 int SpeechFlow::GetState() {
     return mState;
-}
-
-void SpeechFlow::Reset() {
-    ChangeStateTo(-1);
-    mBusy = 0;
 }
 
 bool SpeechFlow::IsBusy() {
@@ -917,7 +914,7 @@ bool Manager::ServiceInterruptEvents() {
         queue_interrupt:
             if (mEvents[2].size() != 0) {
                 SchedSpchEvents::iterator i =
-                    std::remove_if(mEvents[2].begin(), mEvents[2].end(), InteruptedAndNotDelayed__6SpeechPQ26Speech20ScheduledSpeechEvent);
+                    std::remove_if(mEvents[2].begin(), mEvents[2].end(), InteruptedAndNotDelayed);
                 mEvents[2].erase(i, mEvents[2].end());
             }
             mEvents[2].insert(mEvents[2].begin(), priority_event);
@@ -1029,16 +1026,16 @@ extern "C" int AddHeaders__Q26Speech7ManagerPPcPQ26Speech11SPEECH_BANKiPQ26Speec
     return 0;
 }
 
-extern "C" bool InteruptedAndNotDelayed__6SpeechPQ26Speech20ScheduledSpeechEvent(Speech::ScheduledSpeechEvent *this_event) {
-    Attrib::Gen::speech pb(static_cast<unsigned int>(this_event->ID), 0, 0);
-    if (!pb.interrupt() || ((this_event->flags & 2U) != 0)) {
-        return false;
-    }
-    this_event->flags = static_cast<short>(this_event->flags | 3);
-    return true;
-}
-
 namespace Speech {
+
+static bool InteruptedAndNotDelayed(ScheduledSpeechEvent *this_event) {
+    Attrib::Gen::speech pb(Manager::GetHashIDMap().GetHash(this_event->ID), 0, 0);
+    if (pb.interrupt() && ((this_event->flags & 2U) == 0)) {
+        delete this_event;
+        return true;
+    }
+    return false;
+}
 
 void Manager::ServiceFilteredEvents() {
     if (mEvents[1].size() != 0) {

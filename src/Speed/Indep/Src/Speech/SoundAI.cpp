@@ -1791,16 +1791,12 @@ int SoundAI::GetCallsign(Csis::Type_speaker_battalion battalion) {
 void SoundAI::Force911State() {
     IPlayer *player = IPlayer::First(PLAYER_LOCAL);
     IPerpetrator *perp = 0;
-    ICopMgr *copmgr = UTL::Collections::Singleton<ICopMgr>::Get();
-
-    if (!player) {
-        return;
-    }
 
     player->GetSimable()->QueryInterface(&perp);
-    if (copmgr && ICopMgr::AreCopsEnabled() && perp && mPursuitLevel.GetCollection()) {
+    ICopMgr *copmgr = UTL::Collections::Singleton<ICopMgr>::Get();
+    if (copmgr && ICopMgr::AreCopsEnabled() && perp && mPursuitLevel.IsValid()) {
         mFlags |= DISP911_ACTIVE;
-        perp->Set911CallTime(mPursuitLevel.Lifetime911(0));
+        perp->Set911CallTime(mPursuitLevel.Lifetime911());
         copmgr->LockoutCops(false);
     }
 }
