@@ -31,7 +31,9 @@ enum Type_code {
 // TODO where to put this?
 // total size: 0x8
 struct Battalion {
-    Battalion(int nam, int num) {}
+    Battalion(int nam, int num)
+        : name(nam), //
+          number(num) {}
 
     int name;   // offset 0x0, size 0x4
     int number; // offset 0x4, size 0x4

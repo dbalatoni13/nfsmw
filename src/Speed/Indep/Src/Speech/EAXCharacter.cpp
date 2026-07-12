@@ -92,22 +92,16 @@ template void Speech::Manager::ScheduleSpeech<Csis::AnytimeEvents_HeatJumpStruct
 extern void *NullPointer;
 
 EAXCharacter::EAXCharacter(int sID, HSIMABLE wID, int bID, int cID)
-    : mCallsign(bID, cID) {
-    float fVar1 = UMath::Vector3::kZero.z;
-    float fVar2 = UMath::Vector3::kZero.y;
-
-    mSpeakerID = sID;
-    mHandle = wID;
-    mPos.x = UMath::Vector3::kZero.x;
-    mPos.z = fVar1;
-    mPos.y = fVar2;
-    mDistance = 0.0f;
-    mHealth = 1.0f;
-    *reinterpret_cast<unsigned int *>(&mSuspectLOS) = 0;
-    mSpeed = 0.0f;
-    *reinterpret_cast<unsigned int *>(&mDestroyed) = 0;
-    *reinterpret_cast<unsigned int *>(&mActive) = 0;
-}
+    : mSpeakerID(sID), //
+      mHandle(wID), //
+      mCallsign(bID, cID), //
+      mPos(UMath::Vector3::kZero), //
+      mSpeed(0.0f), //
+      mDistance(0.0f), //
+      mHealth(1.0f), //
+      mDestroyed(false), //
+      mActive(false), //
+      mSuspectLOS(false) {}
 
 EAXCharacter::~EAXCharacter() {}
 
