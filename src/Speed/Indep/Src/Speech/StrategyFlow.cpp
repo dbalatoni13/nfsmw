@@ -44,18 +44,8 @@ StrategyFlow::~StrategyFlow() {
 }
 
 void StrategyFlow::Reset() {
-    mFlags = 0;
-    mDistance[0] = 0.0f;
-    mDistance[1] = 0.0f;
-    mSpeed[0] = 0.0f;
-    mSpeed[1] = 0.0f;
-    mLOSCount = 0;
-    mFormationCount = 0;
-    mFormationType = 0;
-    mBackupType = 0;
-    mLastBackupType = 0;
-    mBusy = 0;
-    ChangeStateTo(kCullCheck);
+    Terminal();
+    SpeechFlow::Reset();
 }
 
 void StrategyFlow::Update() {
@@ -130,21 +120,9 @@ void StrategyFlow::Update() {
 
 void StrategyFlow::CullCheck() {
     SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
-    if (!ai) {
-        return;
+    if (ai->GetPursuitState() == SoundAI::kActive || ai->GetPursuitState() == SoundAI::kSearching) {
+        ChangeStateTo(kSoloCheck);
     }
-
-    if (ai->GetPursuitState() == SoundAI::kInactive) {
-        ChangeStateTo(kLost);
-        return;
-    }
-
-    if (ai->GetPursuitState() == SoundAI::kOtherTarget) {
-        ChangeStateTo(kTerminal);
-        return;
-    }
-
-    ChangeStateTo(kSoloCheck);
 }
 
 void StrategyFlow::SoloCheck() {
@@ -609,14 +587,25 @@ void StrategyFlow::Lost() {
 }
 
 void StrategyFlow::Terminal() {
-    if (Manager::IsCopSpeechBusy()) {
-        return;
-    }
+    mBusy = 0;
     ChangeStateTo(kTransition);
+    mLOSCount = 0;
+    mDistance[1] = 0.0f;
+    mDistance[0] = 0.0f;
+    mSpeed[1] = 0.0f;
+    mSpeed[0] = 0.0f;
+    mFormationCount = 0;
+    mBackupType = 0;
+    mFormationType = 0;
+    mFlags = 0;
+    mT_requested = Timer(0);
 }
 
 bool StrategyFlow::IsTransitionable() {
-    return mState == kTransition;
+    if (mState == kTransition || mState == kWaiting) {
+        return true;
+    }
+    return false;
 }
 
 void StrategyFlow::Outcome() {
@@ -655,17 +644,48 @@ void StrategyFlow::Outcome() {
     ChangeStateTo(kWaiting);
 }
 
-void StrategyFlow::MessageReqBackup(const MReqBackup &) {
-    mFlags |= REQUESTABLE;
-    mT_requested = WorldTimer;
+void StrategyFlow::MessageReqBackup(const MReqBackup &message) {
+    mBackupType = message.GetBackupType();
+    SoundAI *ai = SoundAI::Get();
+    mFlags &= ~BUDENIED;
+    if (ai->GetPursuitState() == SoundAI::kActive && ai->GetFocus() == 2) {
+        ChangeStateTo(kReqBackup);
+    }
 }
 
-void StrategyFlow::MessageBackupDenied(const MReqBackup &) {
+void StrategyFlow::MessageBackupDenied(const MReqBackup &message) {
+    mBackupType = message.GetBackupType();
+    SoundAI *ai = SoundAI::Get();
     mFlags |= BUDENIED;
+    if (ai->GetPursuitState() == SoundAI::kActive && ai->GetFocus() == 2) {
+        ChangeStateTo(kReqBackup);
+    }
 }
 
-void StrategyFlow::MessageEventComplete(const MNotifySpeechStatus &) {
-    mBusy = 0;
+void StrategyFlow::MessageEventComplete(const MNotifySpeechStatus &message) {
+    ScheduledSpeechEvent *speech = message.GetEvent();
+    if (speech != nullptr) {
+        switch (speech->ID) {
+        case static_cast<SPCHType_1_EventID>(67): {
+            Csis::Backup_CallForBUStruct *data = static_cast<Csis::Backup_CallForBUStruct *>(speech->GetData(nullptr));
+            if (data != nullptr) {
+                mLastBackupType = data->backup_type;
+                mT_requested = WorldTimer;
+            }
+            break;
+        }
+        case static_cast<SPCHType_1_EventID>(73): {
+            Csis::Backup_BUReminderStruct *data = static_cast<Csis::Backup_BUReminderStruct *>(speech->GetData(nullptr));
+            if (data != nullptr) {
+                mLastBackupType = data->backup_type;
+                mT_requested = WorldTimer;
+            }
+            break;
+        }
+        default:
+            break;
+        }
+    }
 }
 
 } // namespace Speech

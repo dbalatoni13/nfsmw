@@ -1528,8 +1528,12 @@ bool Manager::IsCopSpeechBusy() {
     return true;
 }
 
-Timer Manager::GetTimeSinceLastEvent(SpeechModuleIndex) {
-    return Timer(0);
+Timer Manager::GetTimeSinceLastEvent(SpeechModuleIndex idx) {
+    Timer rval = WorldTimer;
+    if (m_SpeechModule[idx] && !IsPlaying(idx)) {
+        rval = m_SpeechModule[idx]->GetLastEventTimestamp();
+    }
+    return rval;
 }
 
 void Manager::ResetGlobalHistory() {

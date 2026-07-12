@@ -115,6 +115,7 @@ class Module : public AudioMemBase {
     void Pause();
     void UnPause();
     SFX_Base *GetSFXOBJ_Speech() { return m_pSFXOBJ_Speech; }
+    Timer GetLastEventTimestamp() { return mLastEventTimestamp; }
 
   protected:
     bool m_enable;                        // offset 0x4, size 0x1
