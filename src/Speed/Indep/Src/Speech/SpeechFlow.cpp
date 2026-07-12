@@ -1121,12 +1121,21 @@ void Manager::Expire(ScheduledSpeechEvent *event) {
 }
 
 bool Manager::IsQueued(SPCHType_1_EventID evtID, int indices) {
-    int found = 0;
-    for (int i = 0; i < sQueuedEventCount; ++i) {
-        if (sQueuedEvents[i] && sQueuedEvents[i]->ID == evtID) {
-            ++found;
-            if (found >= indices) {
-                return true;
+    int start_index = 0;
+    if (indices != 4) {
+        start_index = indices;
+    }
+    int end_index = 4;
+    if (indices != 4) {
+        end_index = indices + 1;
+    }
+    for (int ndx = start_index; ndx < end_index; ++ndx) {
+        if (mEvents[ndx].size() != 0) {
+            for (SchedSpchEvents::iterator i = mEvents[ndx].begin(); i != mEvents[ndx].end(); ++i) {
+                ScheduledSpeechEvent *this_event = *i;
+                if (this_event->ID == evtID) {
+                    return true;
+                }
             }
         }
     }
