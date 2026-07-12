@@ -72,7 +72,6 @@ extern "C" CarPart *NewGetCarPart__15CarPartDatabase7CarTypeiUiP7CarParti(
     CarPart *prev_part,
     int upg_level);
 
-static float prev_heat_30802 = 0.0f;
 static unsigned int dir_tracking_30959 = 0;
 static Timer t_currdir_30960 = 0;
 static unsigned int dir_init_30961 = 0;
@@ -1009,8 +1008,8 @@ bool SoundAI::IsHeadingValid() {
 void SoundAI::SyncPlayers() {
     IPlayer *player = IPlayer::First(PLAYER_LOCAL);
 
-    IVehicle *vehicle = 0;
     IPerpetrator *perp = 0;
+    IVehicle *vehicle = 0;
     IVehicleAI *vai = 0;
     player->GetSimable()->QueryInterface(&vehicle);
     player->GetSimable()->QueryInterface(&perp);
@@ -1018,7 +1017,8 @@ void SoundAI::SyncPlayers() {
 
     WRoadNav *nav = vai->GetDriveToNav();
 
-    mPlayerCurrent[0].roadID = static_cast<RoadNames>(nav->GetRoadSpeechId());
+    unsigned int roadID = nav->GetRoadSpeechId();
+    mPlayerCurrent[0].roadID = static_cast<RoadNames>(roadID);
     unsigned int dir = CalcPlayerDirection(false);
 
     mPlayerCurrent[0].direction = dir;
@@ -1043,6 +1043,12 @@ void SoundAI::SyncPlayers() {
         return;
     }
 
+    {
+        int heat;
+        static float prev_heat = 0.0f;
+        Attrib::Gen::pursuitlevels *pursuitatr;
+        UMath::Vector3 vel;
+
     if (mPVehicle.GetCollection() != player->GetSimable()->GetAttributes().GetCollection()) {
         mPVehicle.ChangeWithDefault(player->GetSimable()->GetAttributes().GetCollection());
     }
@@ -1060,14 +1066,12 @@ void SoundAI::SyncPlayers() {
 
     mPlayerSpeed = MPS2MPH(vehicle->GetSpeed());
     if ((mPlayerSpeed < mTune.MinSpeedConsideredStopped()) && ((mFlags & LOWSPEEDTIMER) == 0)) {
-        mFlags |= LOWSPEEDTIMER;
         mT_reallylowspeed = WorldTimer;
-    } else if (mTune.MinSpeedConsideredStopped() <= mPlayerSpeed) {
+        mFlags |= LOWSPEEDTIMER;
+    } else if (mPlayerSpeed >= mTune.MinSpeedConsideredStopped()) {
         mFlags &= ~LOWSPEEDTIMER;
         mT_reallylowspeed = WorldTimer;
     }
-
-    UMath::Vector3 vel;
 
     mPlayerPos = player->GetPosition();
     if (SPAMAccessorSpeech.IsValid()) {
@@ -1076,23 +1080,23 @@ void SoundAI::SyncPlayers() {
         mPlayerOffroadID = SPAMAccessorSpeech.GetDataInt(1);
     }
 
-    int heat = static_cast<int>(perp->GetHeat());
+    heat = static_cast<int>(perp->GetHeat());
     mPlayerHeat = heat;
 
-    if ((mFocus != kPursuitFlow) && (60.0f < mPursuitDuration) && (prev_heat_30802 < perp->GetHeat())) {
+    if ((mFocus != kPursuitFlow) && (60.0f < mPursuitDuration) && (perp->GetHeat() > prev_heat)) {
         bool jump = false;
         int i = 3;
         while (i > -1) {
-            if ((prev_heat_30802 < heat_cutoffs[i].value) && (heat_cutoffs[i].value <= perp->GetHeat())) {
+            if ((prev_heat < heat_cutoffs[i].value) && (perp->GetHeat() >= heat_cutoffs[i].value)) {
                 jump = true;
-                prev_heat_30802 = perp->GetHeat();
+                prev_heat = perp->GetHeat();
                 break;
             }
             i--;
         }
 
         if (jump && (mPursuitState < kInactive)) {
-            if (bRandom(1.0f) > 0.5f) {
+            if (bRandom(1.0f) <= 0.5f) {
                 EAXCop *cop = GetRandomActiveCop(1, false);
                 if (mHeli && (bRandom(1.0f) > 0.5f)) {
                     mHeli->HeatJump(heat_cutoffs[i].heat_level);
@@ -1113,7 +1117,7 @@ void SoundAI::SyncPlayers() {
         }
     }
 
-    Attrib::Gen::pursuitlevels *pursuitatr = perp->GetPursuitLevelAttrib();
+    pursuitatr = perp->GetPursuitLevelAttrib();
     if (pursuitatr && pursuitatr->IsValid()) {
         if (mPursuitLevel.GetCollection() != pursuitatr->GetCollection()) {
             mPursuitLevel.ChangeWithDefault(pursuitatr->GetCollection());
@@ -1131,7 +1135,7 @@ void SoundAI::SyncPlayers() {
         } else {
             mFlags &= ~HELIRB_ENABLED;
         }
-        if (0.0f < mPursuitLevel.roadblockspikechance(0)) {
+        if (0.0f < mPursuitLevel.roadblockspikechance()) {
             mFlags |= SPIKES_ENABLED;
         } else {
             mFlags &= ~SPIKES_ENABLED;
@@ -1143,14 +1147,20 @@ void SoundAI::SyncPlayers() {
             bool is_DDay = false;
             bool is_Race = false;
             bool is_Roaming = false;
+            bool copsEnabled;
+            float t_lockout;
+            ICopMgr *copmgr;
             if ((GRaceStatus::Exists() && (GRaceStatus::Get().GetPlayMode() == GRaceStatus::kPlayMode_Roaming)) ||
                 (GRaceDatabase::Exists() && !GRaceDatabase::Get().GetStartupRace())) {
                 is_Roaming = true;
             }
 
-            ICopMgr *copmgr = UTL::Collections::Singleton<ICopMgr>::Get();
-            if (copmgr && ICopMgr::AreCopsEnabled()) {
-                float t_lockout = copmgr->GetLockoutTimeRemaining();
+            copmgr = UTL::Collections::Singleton<ICopMgr>::Get();
+            if (copmgr) {
+                copsEnabled = ICopMgr::AreCopsEnabled();
+            }
+            if (copmgr && copsEnabled) {
+                t_lockout = copmgr->GetLockoutTimeRemaining();
                 if (GRaceStatus::Get().GetRaceParameters()) {
                     if (GRaceStatus::Get().GetRaceParameters()->GetIsDDayRace()) {
                         is_DDay = true;
@@ -1159,10 +1169,9 @@ void SoundAI::SyncPlayers() {
                         is_Race = true;
                     }
                 }
-                bool scripted_911 = ((mPursuitLevel.Lifetime911(0) < t_lockout) && (t_lockout < mPursuitLevel.Lifetime911(1)) && !is_Race &&
-                                     !is_Roaming);
+                bool scripted_911 = ((0.0f < t_lockout) && (t_lockout < 20.0f) && !is_Race && !is_Roaming);
                 bool req911_met = false;
-                if ((mCTS911 >= mPursuitLevel.CTSFor911()) || (mTrafficHits911 >= mPursuitLevel.NumCiviHitsFor911(0))) {
+                if ((mCTS911 >= mPursuitLevel.CTSFor911()) || (mTrafficHits911 >= mPursuitLevel.NumCiviHitsFor911())) {
                     req911_met = true;
                 }
 
@@ -1177,6 +1186,7 @@ void SoundAI::SyncPlayers() {
     mSmoothedFWRoad.x = (mSmoothedFWRoad.x * 0.9f) + (vel.x * 0.1f);
     mSmoothedFWRoad.y = (mSmoothedFWRoad.y * 0.9f) + (vel.y * 0.1f);
     mSmoothedFWRoad.z = (mSmoothedFWRoad.z * 0.9f) + (vel.z * 0.1f);
+    }
 }
 
 int SoundAI::GetBattalionFromRoadID(int roadID) {

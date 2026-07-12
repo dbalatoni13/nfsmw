@@ -24,7 +24,7 @@ class ParameterAccessor : public bTNode<ParameterAccessor> {
     const char *DebugName;            // offset 0x10, size 0x4
     void *CurrentParameterData;       // offset 0x14, size 0x4
 
-    bool IsValid() {
+    int IsValid() {
         return Layer != nullptr;
     }
 

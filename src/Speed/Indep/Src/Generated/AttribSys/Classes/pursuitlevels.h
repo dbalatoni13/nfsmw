@@ -203,6 +203,14 @@ struct pursuitlevels : Instance {
         return *resultptr;
     }
 
+    const float &roadblockspikechance() const {
+        const float *resultptr = reinterpret_cast<const float *>(this->GetAttributePointer(0x5a318af6, 0));
+        if (!resultptr) {
+            resultptr = reinterpret_cast<const float *>(DefaultDataArea(sizeof(float)));
+        }
+        return *resultptr;
+    }
+
     const CopFormationRecord &CopFormations(unsigned int index) const {
         const CopFormationRecord *resultptr = reinterpret_cast<const CopFormationRecord *>(this->GetAttributePointer(0x5c2a7972, index));
         if (!resultptr) {
@@ -231,10 +239,18 @@ struct pursuitlevels : Instance {
         return *resultptr;
     }
 
-    const char &NumCiviHitsFor911(unsigned int index) const {
-        const char *resultptr = reinterpret_cast<const char *>(this->GetAttributePointer(0x6e590f57, index));
+    const signed char &NumCiviHitsFor911(unsigned int index) const {
+        const signed char *resultptr = reinterpret_cast<const signed char *>(this->GetAttributePointer(0x6e590f57, index));
         if (!resultptr) {
-            resultptr = reinterpret_cast<const char *>(DefaultDataArea(sizeof(char)));
+            resultptr = reinterpret_cast<const signed char *>(DefaultDataArea(sizeof(signed char)));
+        }
+        return *resultptr;
+    }
+
+    const signed char &NumCiviHitsFor911() const {
+        const signed char *resultptr = reinterpret_cast<const signed char *>(this->GetAttributePointer(0x6e590f57, 0));
+        if (!resultptr) {
+            resultptr = reinterpret_cast<const signed char *>(DefaultDataArea(sizeof(signed char)));
         }
         return *resultptr;
     }
