@@ -821,36 +821,25 @@ void SoundAI::OnVehicleRemoved(IVehicle *ivehicle) {
 
 void SoundAI::OnDetached(IAttachable *pOther) {
     IVehicle *ivehicle = 0;
-    IPursuit *pursuit;
-    bool detached;
-    Timer t = WorldTimer;
 
-    detached = pOther->QueryInterface(&ivehicle);
-    if (detached) {
+    if (pOther->QueryInterface(&ivehicle)) {
         OnVehicleRemoved(ivehicle);
     }
 
-    detached = UTL::COM::ComparePtr(mPursuit, pOther);
-    if (detached) {
-        PursuitState state = kInactive;
-        pursuit = mAIPursuit;
+    if (UTL::COM::ComparePtr(mPursuit, pOther)) {
         mPursuit = 0;
-        if (pursuit) {
-            state = kOtherTarget;
-        }
-        mT_pursuitStart = t;
-        mPursuitState = state;
-    } else {
-        pursuit = mAIPursuit;
+        mT_pursuitStart = WorldTimer;
+        mPursuitState = mAIPursuit ? kOtherTarget : kInactive;
     }
 
-    detached = UTL::COM::ComparePtr(pursuit, pOther);
-    if (detached) {
+    if (UTL::COM::ComparePtr(mAIPursuit, pOther)) {
         mAIPursuit = 0;
         if ((mPursuitState == kOtherTarget) && !mPursuit) {
             mPursuitState = kInactive;
         }
     }
+
+    Sim::Activity::OnDetached(pOther);
 }
 
 Sim::IActivity *SoundAI::Construct(Sim::Param) {

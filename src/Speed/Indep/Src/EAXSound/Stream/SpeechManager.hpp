@@ -56,7 +56,9 @@ struct SPCHSampleRequest {
     unsigned int offset;             // offset 0x24, size 0x4
     unsigned char sample_index;      // offset 0x28, size 0x1
 
-    bool operator<(const SPCHSampleRequest &from) const;
+    bool operator<(const SPCHSampleRequest &from) const {
+        return offset < from.offset;
+    }
 };
 
 DECLARE_CONTAINER_TYPE(SampleReqList);

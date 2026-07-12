@@ -15,30 +15,18 @@ namespace Speech {
 
 StrategyFlow::StrategyFlow()
     : mFlags(0), //
-      mDistance(), //
-      mSpeed(), //
       mLOSCount(0), //
       mFormationCount(0), //
       mFormationType(0), //
       mBackupType(0), //
       mT_requested(0), //
       mLastBackupType(0), //
-      mMsgReqBackup(0), //
-      mMsgBackupDenied(0), //
-      mMsgNotifyEventCompletion(0) {
-    mDistance[0] = 0.0f;
-    mDistance[1] = 0.0f;
-    mSpeed[0] = 0.0f;
-    mSpeed[1] = 0.0f;
-    mState = kCullCheck;
-    mLastState = kTransition;
-
-    mMsgReqBackup = Hermes::Handler::Create<MReqBackup, StrategyFlow, StrategyFlow>(this, &StrategyFlow::MessageReqBackup, "ReqBackup", 0);
-    mMsgBackupDenied =
-        Hermes::Handler::Create<MReqBackup, StrategyFlow, StrategyFlow>(this, &StrategyFlow::MessageBackupDenied, "BackupDenied", 0);
-    mMsgNotifyEventCompletion = Hermes::Handler::Create<MNotifySpeechStatus, StrategyFlow, StrategyFlow>(
-        this, &StrategyFlow::MessageEventComplete, UCrc32(0x20d60dbf), 0);
-}
+      mMsgReqBackup(Hermes::Handler::Create<MReqBackup, StrategyFlow, StrategyFlow>(
+          this, &StrategyFlow::MessageReqBackup, "Request", 0)), //
+      mMsgBackupDenied(Hermes::Handler::Create<MReqBackup, StrategyFlow, StrategyFlow>(
+          this, &StrategyFlow::MessageBackupDenied, "ReqDenied", 0)), //
+      mMsgNotifyEventCompletion(Hermes::Handler::Create<MNotifySpeechStatus, StrategyFlow, StrategyFlow>(
+          this, &StrategyFlow::MessageEventComplete, UCrc32(0x20d60dbf), 0)) {}
 
 StrategyFlow::~StrategyFlow() {
     if (mMsgReqBackup) {

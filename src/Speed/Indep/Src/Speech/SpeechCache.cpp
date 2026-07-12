@@ -58,22 +58,7 @@ Cache::Cache()
       mIndex(100) {}
 
 Cache::~Cache() {
-    FlushAllUnlocked();
-
-    if (mEventPool) {
-        bDeleteSlotPool(mEventPool);
-        mEventPool = 0;
-    }
-
-    if (mSpeakers) {
-        delete mSpeakers;
-        mSpeakers = 0;
-    }
-
-    if (mCache) {
-        bFree(mCache);
-        mCache = 0;
-    }
+    Dump();
 }
 
 void Cache::Init(int memsize) {

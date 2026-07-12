@@ -943,34 +943,38 @@ void EAXCop::LocationReport() {
 
 void EAXCop::SelfStrategy(int type) {
     SoundAI *ai = SoundAI::Get();
+    Csis::Setup_SelfStrategyStruct data;
     if (ai && ai->GetPursuitState() == SoundAI::kActive) {
-        Csis::Setup_SelfStrategyStruct data;
         switch (type) {
         case 1: {
-            unsigned int select = bRandom(4);
-            if (select == 1) {
+            int select = bRandom(4);
+            switch (select) {
+            case 0:
+                data.self_strategy_type = 0x20;
+                break;
+            case 1:
                 data.self_strategy_type = 0x40;
-            } else if (static_cast<int>(select) < 2) {
-                if (select == 0) {
-                    data.self_strategy_type = 0x20;
-                } else {
-                    data.self_strategy_type = 8;
-                }
-            } else if (select == 2) {
+                break;
+            case 2:
                 data.self_strategy_type = 0x10;
-            } else {
+                break;
+            default:
                 data.self_strategy_type = 8;
+                break;
             }
             break;
         }
         case 2:
         case 3:
-        case 6:
-            data.self_strategy_type = 4;
-            if (bRandom(1.0f) > 0.5f) {
+        case 6: {
+            float select = bRandom(1.0f);
+            if (select > 0.5f) {
                 data.self_strategy_type = 2;
+            } else {
+                data.self_strategy_type = 4;
             }
             break;
+        }
         default:
             return;
         }

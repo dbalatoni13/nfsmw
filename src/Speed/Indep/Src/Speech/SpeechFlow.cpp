@@ -244,8 +244,6 @@ inline SchedSpchEvents::~SchedSpchEvents() {}
 
 SPCHEventList::~SPCHEventList() {}
 
-SpchSampleMap::~SpchSampleMap() {}
-
 SpeechFlow::SpeechFlow()
     : mState(0), //
       mLastState(-1), //

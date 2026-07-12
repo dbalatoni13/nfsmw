@@ -43,7 +43,7 @@ struct ComComparator {
 
 Observer::Observer()
     : mObservations(), //
-      mObserveMask(Braking | Outcome), //
+      mObserveMask(CarRam | Outcome), //
       mLastEvent(kNone), //
       mNumCopsWithLOS(0), //
       mT_bullhorn(WorldTimer), //
@@ -59,22 +59,19 @@ Observer::Observer()
       mPrevPursuitState(2), //
       mWeather(false), //
       mTunnel(false), //
-      mOutcomeIntensity(Csis::Type_intensity_Normal), //
       mRamCop(0), //
-      mAirborneHeight(0.0f), //
-      mAirborneLength(0.0f), //
       mGasStationPos(UMath::Vector3::kZero), //
       mFwPlayer(UMath::Vector3::kZero), //
       mFwRoad(UMath::Vector3::kZero), //
-      mMsgBlewPastCop(0), //
-      mMsgGamePlayMoment(0), //
-      mMsgNotifyEventCompletion(0), //
-      mMsgTunnelUpdate(0) {
-    mMsgBlewPastCop = Hermes::Handler::Create<MGamePlayMoment, Observer, Observer>(this, &Observer::MessageBlewPastCop, "BlewByCop", 0);
-    mMsgGamePlayMoment = Hermes::Handler::Create<MGamePlayMoment, Observer, Observer>(this, &Observer::MessageGamePlayMoment, "MomentStrm", 0);
-    mMsgNotifyEventCompletion =
-        Hermes::Handler::Create<MNotifySpeechStatus, Observer, Observer>(this, &Observer::MessageEventComplete, UCrc32(0x20d60dbf), 0);
-    mMsgTunnelUpdate = Hermes::Handler::Create<MMiscSound, Observer, Observer>(this, &Observer::MessageTunnelUpdate, "TunnelUpdate", 0);
+      mMsgBlewPastCop(Hermes::Handler::Create<MGamePlayMoment, Observer, Observer>(
+          this, &Observer::MessageBlewPastCop, "BlewByCop", 0)), //
+      mMsgGamePlayMoment(Hermes::Handler::Create<MGamePlayMoment, Observer, Observer>(
+          this, &Observer::MessageGamePlayMoment, "MomentStrm", 0)), //
+      mMsgNotifyEventCompletion(Hermes::Handler::Create<MNotifySpeechStatus, Observer, Observer>(
+          this, &Observer::MessageEventComplete, UCrc32(0x20d60dbf), 0)), //
+      mMsgTunnelUpdate(Hermes::Handler::Create<MMiscSound, Observer, Observer>(
+          this, &Observer::MessageTunnelUpdate, "TunnelUpdate", 0)) {
+    mObservations.clear();
 }
 
 Observer::~Observer() {

@@ -67,7 +67,7 @@ struct SpeechSampleData {
 struct SpchSampleMap : public VecHashMap64<SpeechSampleData, TablePolicy_FixedAudio, false, 100>, public AudioMemBase {
   public:
     SpchSampleMap(unsigned int reserve) : VecHashMap64<SpeechSampleData, TablePolicy_FixedAudio, false, 100>(reserve) {}
-    virtual ~SpchSampleMap();
+    virtual ~SpchSampleMap() {}
 };
 
 class Cache : public AudioMemBase {
