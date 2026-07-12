@@ -859,9 +859,10 @@ bool Manager::IsCacheable(SPCHType_1_EventID event_id) {
 }
 
 bool Manager::HasBeenSaid(SPCHType_1_EventID event_id) {
-    for (int i = 0; i < sQueuedEventCount; ++i) {
-        ScheduledSpeechEvent *evt = sQueuedEvents[i];
-        if (evt && evt->ID == event_id) {
+    SPCHEventList::iterator i = mEvtHistory.begin();
+    for (; i != mEvtHistory.end(); i++) {
+        SPCHType_1_EventID event = *i;
+        if (event == event_id) {
             return true;
         }
     }
