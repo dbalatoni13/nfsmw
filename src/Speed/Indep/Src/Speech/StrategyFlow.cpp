@@ -509,74 +509,81 @@ void StrategyFlow::Outrun() {
         return;
     }
 
-    copList losList;
-    losList.reserve(ai->GetActors().size());
+    {
+        copList losList;
+        float t_permalost;
+        float t_comment;
+        losList.reserve(ai->GetActors().size());
 
-    copMap::const_iterator iter = ai->GetActors().begin();
-    while (iter != ai->GetActors().end()) {
-        EAXCop *cop = iter->cop;
-        if (cop->IsActive() && cop->HasLOS()) {
-            losList.push_back(cop);
-        }
-        ++iter;
-    }
-
-    if (losList.size() > 1) {
-        this->ChangeStateTo(kWaiting);
-        return;
-    }
-
-    ai->GetTune().PursuitInactivityTimer(0);
-    float t_comment = ai->GetTune().NoLOSCommentaryTime();
-
-    if ((losList.size() == 1) && !ai->AreCopsAhead() && (ai->GetPursuitDistance() >= ai->GetTune().SuspectOutrunRange())) {
-        EAXCop *outrunee = losList.front();
-        outrunee->SuspectOutrun();
-        this->ChangeStateTo(kWaiting);
-        return;
-    }
-
-    if (losList.empty()) {
-        if (ai->GetPerpLostTime() >= t_comment) {
-            copList closeList;
-            closeList.reserve(ai->GetActors().size());
-
-            iter = ai->GetActors().begin();
+        {
+            copMap::const_iterator iter = ai->GetActors().begin();
             while (iter != ai->GetActors().end()) {
                 EAXCop *cop = iter->cop;
-                if (cop->IsActive()) {
-                    closeList.push_back(cop);
+                if (cop->IsActive() && cop->HasLOS()) {
+                    losList.push_back(cop);
                 }
                 ++iter;
             }
+        }
 
-            if (!closeList.empty()) {
-                if (closeList.size() > 1) {
-                    std::sort(closeList.begin(), closeList.end());
-                }
-
-                EAXCop *closest = closeList.front();
-                if (closest->IsHeli()) {
-                    ai->GetHeli()->LostVisual();
-                } else {
-                    closest->LostVisual();
-
-                    EAXAirSupport *heli = ai->GetHeli();
-                    if (heli && heli->HasLOS() && heli->IsActive()) {
-                        heli->Spotter();
-                        heli->LocationReport();
-                    }
-                }
-
-            }
-
-            this->ChangeStateTo(kLost);
+        if (losList.size() > 1) {
+            this->ChangeStateTo(kWaiting);
             return;
         }
 
-    }
+        ai->GetTune().PursuitInactivityTimer(0);
+        t_permalost = ai->GetTune().TimeConsideredLostNoLOS();
+        t_comment = ai->GetTune().NoLOSCommentaryTime();
 
-    this->ChangeStateTo(kWaiting);
+        if ((losList.size() == 1) && !ai->AreCopsAhead() && (ai->GetPursuitDistance() >= ai->GetTune().SuspectOutrunRange())) {
+            EAXCop *outrunee = losList.front();
+            outrunee->SuspectOutrun();
+            this->ChangeStateTo(kWaiting);
+            goto cleanup;
+        }
+
+        if (losList.empty()) {
+            if (ai->GetPerpLostTime() >= t_comment) {
+                copList closeList;
+                closeList.reserve(ai->GetActors().size());
+
+                {
+                    copMap::const_iterator iter = ai->GetActors().begin();
+                    while (iter != ai->GetActors().end()) {
+                        EAXCop *cop = iter->cop;
+                        if (cop->IsActive()) {
+                            closeList.push_back(cop);
+                        }
+                        ++iter;
+                    }
+                }
+
+                if (!closeList.empty()) {
+                    if (closeList.size() > 1) {
+                        std::sort(closeList.begin(), closeList.end());
+                    }
+
+                    EAXCop *closest = closeList.front();
+                    if (closest->IsHeli()) {
+                        ai->GetHeli()->LostVisual();
+                    } else {
+                        closest->LostVisual();
+
+                        if (ai->GetHeli() && ai->GetHeli()->HasLOS() && ai->GetHeli()->IsActive()) {
+                            ai->GetHeli()->Spotter();
+                            ai->GetHeli()->LocationReport();
+                        }
+                    }
+                }
+
+                this->ChangeStateTo(kLost);
+                goto cleanup;
+            }
+        }
+
+        this->ChangeStateTo(kWaiting);
+    cleanup:;
+    }
 }
 
 void StrategyFlow::Lost() {
