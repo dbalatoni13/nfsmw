@@ -1254,7 +1254,7 @@ bool SoundAI::IsHighIntensity() {
     return false;
 }
 
-bool SoundAI::OnTask(HSIMTASK htask, float) {
+bool SoundAI::OnTask(HSIMTASK htask, float dT) {
     ProfileNode profile_node("SoundAI::OnTask", 0);
     float tout;
     float *dead_air = &mDeadAir;
