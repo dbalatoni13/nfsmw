@@ -31,6 +31,7 @@ from _common import (
     load_objdiff_config,
     make_abs,
 )
+from compare_common import build_diff_lines, count_lines_for_opcodes
 from dwarf1_gcc_line_info import process_file as export_debug_lines
 from lookup import (
     _candidate_func_names,
@@ -45,11 +46,16 @@ from split_dwarf_info import apply_umath_fixups
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 TOOLS_DIR = os.path.join(ROOT_DIR, "tools")
 GC_DWARF = os.path.join(ROOT_DIR, "symbols", "Dwarf")
-DTK = os.path.join(ROOT_DIR, "build", "tools", "dtk")
+DTK = os.path.join(
+    ROOT_DIR, "build", "tools", "dtk.exe" if os.name == "nt" else "dtk"
+)
 HEX_RE = re.compile(r"(?<!\+)0x[0-9A-Fa-f]+")
 RANGE_RE = re.compile(r"^(\s*)// Range:\s*(0x[0-9A-Fa-f]+)\s*->\s*(0x[0-9A-Fa-f]+)")
 DEBUG_LINE_RE = re.compile(
     r"^\s*(?:0x)?([0-9A-Fa-f]+):\s*(.+?)\s+\(line\s+(\d+)(?:,\s+column\s+(\d+))?\)\s*$"
+)
+SIGNATURE_FUNCTION_RE = re.compile(
+    r"(?<![\w:])([~A-Za-z_]\w*(?:::[~A-Za-z_]\w*)*)\s*\("
 )
 
 
@@ -58,6 +64,7 @@ class DwarfCompareError(RuntimeError):
 
 
 FunctionBlock = Tuple[str, str, str, str]
+FUNCTION_BLOCK_CACHE_VERSION = 1
 
 
 def tool_path(name: str) -> str:
@@ -133,14 +140,14 @@ def dtk_dwarf_dump(obj_path: str) -> str:
             )
         )
 
-    tool_output = "\n".join(
-        part.strip() for part in [result.stdout, result.stderr] if part.strip()
-    )
-    if "ERROR " in tool_output or tool_output.startswith("ERROR"):
-        maybe_remove(output_path)
-        raise DwarfCompareError(
-            f"dtk reported an error while dumping DWARF:\n{tool_output}"
-        )
+    # tool_output = "\n".join(
+    #     part.strip() for part in [result.stdout, result.stderr] if part.strip()
+    # )
+    # if "ERROR " in tool_output or tool_output.startswith("ERROR"):
+    #     maybe_remove(output_path)
+    #     raise DwarfCompareError(
+    #         f"dtk reported an error while dumping DWARF:\n{tool_output}"
+    #     )
 
     if not os.path.exists(output_path):
         raise DwarfCompareError(
@@ -150,17 +157,101 @@ def dtk_dwarf_dump(obj_path: str) -> str:
     return output_path
 
 
+def function_blocks_cache_db_path() -> str:
+    return os.path.join(debug_lines_cache_dir(), "dwarf_compare.sqlite3")
+
+
+def function_blocks_cache_key(path: str, apply_split_fixups_in_ram: bool) -> str:
+    hasher = hashlib.sha1()
+    hasher.update(f"v{FUNCTION_BLOCK_CACHE_VERSION}:".encode("ascii"))
+    hasher.update(b"fixups:" if apply_split_fixups_in_ram else b"plain:")
+    with open(path, "rb") as f:
+        while chunk := f.read(1024 * 1024):
+            hasher.update(chunk)
+    return hasher.hexdigest()
+
+
+def ensure_function_blocks_cache_db(conn: sqlite3.Connection) -> None:
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS function_blocks (
+            cache_key TEXT NOT NULL,
+            ordinal INTEGER NOT NULL,
+            start_addr TEXT NOT NULL,
+            end_addr TEXT NOT NULL,
+            signature_line TEXT NOT NULL,
+            block TEXT NOT NULL,
+            PRIMARY KEY (cache_key, ordinal)
+        )
+        """
+    )
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS function_block_cache_entries (
+            cache_key TEXT PRIMARY KEY,
+            source_path TEXT NOT NULL,
+            block_count INTEGER NOT NULL
+        )
+        """
+    )
+
+
 def load_function_blocks(
     path: str, folder_mode: bool, apply_split_fixups_in_ram: bool = False
 ) -> List[FunctionBlock]:
-    if folder_mode:
-        text = read_text(os.path.join(path, "functions.nothpp"))
-    else:
-        text = read_text(path)
-    if apply_split_fixups_in_ram:
-        # Keep fixups in-memory only (do not rewrite dump files on disk).
-        text = apply_umath_fixups(text)
-    return split_functions(text)
+    source_path = os.path.join(path, "functions.nothpp") if folder_mode else path
+    cache_key = function_blocks_cache_key(source_path, apply_split_fixups_in_ram)
+    conn = sqlite3.connect(function_blocks_cache_db_path())
+    try:
+        ensure_function_blocks_cache_db(conn)
+        entry = conn.execute(
+            "SELECT block_count FROM function_block_cache_entries WHERE cache_key = ?",
+            (cache_key,),
+        ).fetchone()
+        if entry is not None:
+            cached = conn.execute(
+                """
+                SELECT start_addr, end_addr, signature_line, block
+                FROM function_blocks
+                WHERE cache_key = ?
+                ORDER BY ordinal
+                """,
+                (cache_key,),
+            ).fetchall()
+            if len(cached) == entry[0]:
+                return cached
+
+        text = read_text(source_path)
+        if apply_split_fixups_in_ram:
+            # Keep fixups in-memory only (do not rewrite dump files on disk).
+            text = apply_umath_fixups(text)
+        funcs = split_functions(text)
+
+        # Publish the completion marker last so an interrupted write is never a hit.
+        conn.execute("DELETE FROM function_blocks WHERE cache_key = ?", (cache_key,))
+        conn.executemany(
+            """
+            INSERT INTO function_blocks(
+                cache_key, ordinal, start_addr, end_addr, signature_line, block
+            ) VALUES (?, ?, ?, ?, ?, ?)
+            """,
+            (
+                (cache_key, ordinal, start, end, signature, block)
+                for ordinal, (start, end, signature, block) in enumerate(funcs)
+            ),
+        )
+        conn.execute(
+            """
+            INSERT OR REPLACE INTO function_block_cache_entries(
+                cache_key, source_path, block_count
+            ) VALUES (?, ?, ?)
+            """,
+            (cache_key, os.path.abspath(source_path), len(funcs)),
+        )
+        conn.commit()
+        return funcs
+    finally:
+        conn.close()
 
 
 def find_function_blocks(
@@ -180,6 +271,117 @@ def find_function_blocks(
     if exact_substring_matches:
         return exact_substring_matches
     return matches
+
+
+def build_function_block_index(
+    funcs: Iterable[FunctionBlock],
+) -> Dict[str, List[FunctionBlock]]:
+    index: Dict[str, List[FunctionBlock]] = {}
+    for func in funcs:
+        matches = list(SIGNATURE_FUNCTION_RE.finditer(func[2]))
+        if not matches:
+            continue
+        function_name = matches[-1].group(1)
+        for candidate in _candidate_func_names(function_name):
+            index.setdefault(candidate, []).append(func)
+    return index
+
+
+def function_query_from_signature(signature: str) -> Optional[str]:
+    """Return the name-and-parameters portion of a DWARF function signature."""
+    matches = list(SIGNATURE_FUNCTION_RE.finditer(signature))
+    if not matches:
+        return None
+    match = matches[-1]
+    open_at = signature.find("(", match.start(1) + len(match.group(1)))
+    if open_at == -1:
+        return None
+    depth = 0
+    for index in range(open_at, len(signature)):
+        char = signature[index]
+        if char == "(":
+            depth += 1
+        elif char == ")":
+            depth -= 1
+            if depth == 0:
+                return signature[match.start(1) : index + 1]
+    return None
+
+
+def indexed_function_blocks(
+    funcs: List[FunctionBlock],
+    index: Dict[str, List[FunctionBlock]],
+    query: str,
+) -> List[FunctionBlock]:
+    parameter_at = query.rfind("(")
+    bare_name = query[:parameter_at] if parameter_at != -1 else query
+    indexed: List[FunctionBlock] = []
+    seen: Set[Tuple[str, str, str]] = set()
+    for candidate in _candidate_func_names(bare_name):
+        for func in index.get(candidate, []):
+            identity = (func[0], func[1], func[2])
+            if identity not in seen:
+                seen.add(identity)
+                indexed.append(func)
+    # Complex operator/template spellings that the lightweight index cannot
+    # parse retain the original full-scan behavior.
+    return indexed or funcs
+
+
+def signature_parameters(signature: str, function_name: str) -> List[str]:
+    """Extract comma-separated parameters while preserving nested template types."""
+    name_at = signature.find(function_name)
+    if name_at == -1:
+        return []
+    open_at = signature.find("(", name_at + len(function_name))
+    if open_at == -1:
+        return []
+    depth = 0
+    current: List[str] = []
+    parameters: List[str] = []
+    for char in signature[open_at + 1 :]:
+        if char in "(<[":
+            depth += 1
+        elif char in ")>]":
+            if char == ")" and depth == 0:
+                if current or parameters:
+                    parameters.append("".join(current))
+                break
+            depth -= 1
+        if char == "," and depth == 0:
+            parameters.append("".join(current))
+            current = []
+        else:
+            current.append(char)
+    return parameters
+
+
+def compact_parameter(parameter: str) -> str:
+    parameter = re.sub(r"/\*.*?\*/", "", parameter)
+    parameter = re.sub(r"\b(?:struct|class|enum)\s+", "", parameter)
+    return re.sub(r"\s+", "", parameter.strip())
+
+
+def signature_types_match(query: str, signature: str) -> bool:
+    parameter_at = query.rfind("(")
+    if parameter_at == -1:
+        return True
+    function_name = query[:parameter_at].strip()
+    if not _sig_contains_name(signature, function_name):
+        return False
+    query_parameters = signature_parameters(query, function_name)
+    dwarf_parameters = signature_parameters(signature, function_name)
+    if len(query_parameters) != len(dwarf_parameters):
+        return False
+    for expected, actual in zip(query_parameters, dwarf_parameters):
+        expected_compact = compact_parameter(expected)
+        actual_compact = compact_parameter(actual)
+        if expected_compact == "void" and not actual_compact:
+            continue
+        # DWARF parameters append the source variable name to the type.
+        if not actual_compact.startswith(expected_compact):
+            return False
+    return True
 
 
 def last_name_token(query: str) -> str:
@@ -217,6 +419,10 @@ def choose_function_block(
     funcs: List[FunctionBlock], query: str, label: str
 ) -> FunctionBlock:
     matches = find_function_blocks(funcs, query)
+    if len(matches) > 1 and "(" in query:
+        typed_matches = [match for match in matches if signature_types_match(query, match[2])]
+        if typed_matches:
+            matches = typed_matches
     if not matches:
         if not funcs:
             raise DwarfCompareError(
@@ -563,14 +769,14 @@ def build_range_source_summary(
             if rebuilt_entry is not None
             else []
         )
-        original_locations = (
-            dedupe_source_locations(original_items)
-            if original_entry is not None
-            else []
-        )
-        rebuilt_locations = (
-            dedupe_source_locations(rebuilt_items) if rebuilt_entry is not None else []
-        )
+        # original_locations = (
+        #     dedupe_source_locations(original_items)
+        #     if original_entry is not None
+        #     else []
+        # )
+        # rebuilt_locations = (
+        #     dedupe_source_locations(rebuilt_items) if rebuilt_entry is not None else []
+        # )
         original_files_display = (
             dedupe_source_files(original_items) if original_entry is not None else []
         )
@@ -644,8 +850,8 @@ def build_range_source_summary(
                 "signature": (original_entry or rebuilt_entry or {}).get(
                     "signature", "<missing>"
                 ),
-                "original_locations": original_locations,
-                "rebuilt_locations": rebuilt_locations,
+                # "original_locations": original_locations,
+                # "rebuilt_locations": rebuilt_locations,
                 "common_files": common_files,
                 "original_only_files": original_only_files,
                 "rebuilt_only_files": rebuilt_only_files,
@@ -660,73 +866,6 @@ def build_range_source_summary(
     }
 
 
-def count_lines_for_opcodes(
-    opcodes: Sequence[Tuple[str, int, int, int, int]],
-) -> Dict[str, int]:
-    matching = 0
-    original_only = 0
-    rebuilt_only = 0
-    changed_groups = 0
-    for tag, i1, i2, j1, j2 in opcodes:
-        if tag == "equal":
-            matching += i2 - i1
-            continue
-        changed_groups += 1
-        if tag in ("replace", "delete"):
-            original_only += i2 - i1
-        if tag in ("replace", "insert"):
-            rebuilt_only += j2 - j1
-    return {
-        "matching_lines": matching,
-        "original_only_lines": original_only,
-        "rebuilt_only_lines": rebuilt_only,
-        "changed_groups": changed_groups,
-    }
-
-
-def build_diff_lines(
-    original_lines: Sequence[str],
-    rebuilt_lines: Sequence[str],
-    function_name: str,
-    context: int,
-    collapse: bool,
-) -> List[str]:
-    if list(original_lines) == list(rebuilt_lines):
-        return []
-
-    rendered: List[str] = [
-        f"--- original:{function_name}",
-        f"+++ rebuilt:{function_name}",
-    ]
-
-    matcher = difflib.SequenceMatcher(a=original_lines, b=rebuilt_lines)
-    for group in matcher.get_grouped_opcodes(
-        context if collapse else max(len(original_lines), len(rebuilt_lines))
-    ):
-        first = group[0]
-        last = group[-1]
-        a_start = first[1] + 1
-        a_len = last[2] - first[1]
-        b_start = first[3] + 1
-        b_len = last[4] - first[3]
-        rendered.append(f"@@ -{a_start},{a_len} +{b_start},{b_len} @@")
-
-        for tag, i1, i2, j1, j2 in group:
-            if tag == "equal":
-                for idx in range(i1, i2):
-                    rendered.append(f"  L{idx + 1:04d} {original_lines[idx]}")
-                continue
-
-            if tag in ("replace", "delete"):
-                for idx in range(i1, i2):
-                    rendered.append(f"- L{idx + 1:04d} {original_lines[idx]}")
-            if tag in ("replace", "insert"):
-                for idx in range(j1, j2):
-                    rendered.append(f"+ L{idx + 1:04d} {rebuilt_lines[idx]}")
-
-    return rendered
-
-
 def build_report(
     unit_name: str,
     function_name: str,
@@ -735,6 +874,7 @@ def build_report(
     collapse: bool,
     context: int,
     rebuilt_debug_lines_path: Optional[str],
+    include_diff: bool = True,
 ) -> Dict[str, Any]:
     original_raw = original_block[3].splitlines()
     rebuilt_raw = rebuilt_block[3].splitlines()
@@ -752,15 +892,19 @@ def build_report(
     raw_exact_match = original_raw == rebuilt_raw
     normalized_exact_match = original_lines == rebuilt_lines
 
-    diff_lines = build_diff_lines(
-        original_lines,
-        rebuilt_lines,
-        function_name,
-        context=context,
-        collapse=collapse,
+    diff_lines = (
+        build_diff_lines(
+            original_lines,
+            rebuilt_lines,
+            function_name,
+            context=context,
+            collapse=collapse,
+        )
+        if include_diff
+        else []
     )
     mismatch_summaries: List[str] = []
-    for tag, i1, i2, j1, j2 in opcodes:
+    for tag, i1, i2, j1, j2 in opcodes if include_diff else []:
         if tag == "equal":
             continue
         original_span = (
@@ -787,11 +931,11 @@ def build_report(
             )
         mismatch_summaries.append(f"- {original_span} -> {rebuilt_span}: {detail}")
 
-    range_sources = build_range_source_summary(
-        original_block,
-        rebuilt_block,
-        rebuilt_debug_lines_path=rebuilt_debug_lines_path,
-    )
+    # range_sources = build_range_source_summary(
+    #     original_block,
+    #     rebuilt_block,
+    #     rebuilt_debug_lines_path=rebuilt_debug_lines_path,
+    # )
 
     return {
         "unit": unit_name,
@@ -812,7 +956,7 @@ def build_report(
         "original_range": [original_block[0], original_block[1]],
         "rebuilt_range": [rebuilt_block[0], rebuilt_block[1]],
         "mismatch_summaries": mismatch_summaries,
-        "range_sources": range_sources,
+        # "range_sources": range_sources,
         "diff_lines": diff_lines,
     }
 
@@ -843,20 +987,20 @@ def print_summary(report: Dict[str, Any]) -> None:
         "Address-only range differences are normalized out so the percentage tracks "
         "structural/function-body DWARF changes."
     )
-    if report["range_sources"].get("available"):
-        line_drifts = (
-            report["range_sources"]["file_matches"]
-            - report["range_sources"]["exact_matches"]
-        )
-        print(
-            f"Range source ownership: files agree {report['range_sources']['file_matches']}/"
-            f"{report['range_sources']['total']}"
-            f" | file mismatches {report['range_sources']['total'] - report['range_sources']['file_matches']}/"
-            f"{report['range_sources']['total']}"
-            f" | line drifts {line_drifts}/{report['range_sources']['total']}"
-        )
-    else:
-        print("Range source ownership: unavailable (missing debug-line export data)")
+    # if report["range_sources"].get("available"):
+    #     line_drifts = (
+    #         report["range_sources"]["file_matches"]
+    #         - report["range_sources"]["exact_matches"]
+    #     )
+    #     print(
+    #         f"Range source ownership: files agree {report['range_sources']['file_matches']}/"
+    #         f"{report['range_sources']['total']}"
+    #         f" | file mismatches {report['range_sources']['total'] - report['range_sources']['file_matches']}/"
+    #         f"{report['range_sources']['total']}"
+    #         f" | line drifts {line_drifts}/{report['range_sources']['total']}"
+    #     )
+    # else:
+    #     print("Range source ownership: unavailable (missing debug-line export data)")
     if not report["signature_match"]:
         print()
         print("Original signature:")
@@ -866,23 +1010,23 @@ def print_summary(report: Dict[str, Any]) -> None:
 
 
 def print_diff(report: Dict[str, Any]) -> None:
-    if not report["range_sources"].get("available"):
-        file_mismatches = []
-        line_drifts = []
-    elif report["range_sources"]["rows"]:
-        file_mismatches = [
-            row
-            for row in report["range_sources"]["rows"]
-            if row["file_status"] != "match"
-        ]
-        line_drifts = [
-            row
-            for row in report["range_sources"]["rows"]
-            if row["file_status"] == "match" and row["exact_status"] != "match"
-        ]
-    else:
-        file_mismatches = []
-        line_drifts = []
+    # if not report["range_sources"].get("available"):
+    #     file_mismatches = []
+    #     line_drifts = []
+    # elif report["range_sources"]["rows"]:
+    #     file_mismatches = [
+    #         row
+    #         for row in report["range_sources"]["rows"]
+    #         if row["file_status"] != "match"
+    #     ]
+    #     line_drifts = [
+    #         row
+    #         for row in report["range_sources"]["rows"]
+    #         if row["file_status"] == "match" and row["exact_status"] != "match"
+    #     ]
+    # else:
+    file_mismatches = []
+    line_drifts = []
 
     if file_mismatches:
         print_section("Range Source Ownership")
@@ -899,8 +1043,8 @@ def print_diff(report: Dict[str, Any]) -> None:
                 print(
                     f"  rebuilt-only files:  {render_list(row['rebuilt_only_files'])}"
                 )
-            print(f"  original lines:      {render_list(row['original_locations'])}")
-            print(f"  rebuilt lines:       {render_list(row['rebuilt_locations'])}")
+            # print(f"  original lines:      {render_list(row['original_locations'])}")
+            # print(f"  rebuilt lines:       {render_list(row['rebuilt_locations'])}")
         if line_drifts:
             print()
             print(
@@ -933,8 +1077,11 @@ def build_parser() -> argparse.ArgumentParser:
         )
     )
     parser.add_argument("-u", "--unit", required=True, help="Translation unit name")
-    parser.add_argument(
-        "-f", "--function", required=True, help="Function name to compare"
+    functions = parser.add_mutually_exclusive_group(required=True)
+    functions.add_argument("-f", "--function", help="Function name to compare")
+    functions.add_argument(
+        "--functions-file",
+        help="Read a JSON array of function names and emit a JSON array of reports",
     )
     parser.add_argument(
         "--summary",
@@ -975,6 +1122,21 @@ def build_parser() -> argparse.ArgumentParser:
 def main() -> None:
     parser = build_parser()
     args = parser.parse_args()
+    if args.functions_file and not args.json:
+        parser.error("--functions-file requires --json")
+
+    if args.functions_file:
+        try:
+            with open(args.functions_file, encoding="utf-8") as f:
+                function_queries = json.load(f)
+        except (OSError, json.JSONDecodeError) as e:
+            parser.error(f"failed to read --functions-file: {e}")
+        if not isinstance(function_queries, list) or not all(
+            isinstance(query, str) and query for query in function_queries
+        ):
+            parser.error("--functions-file must contain a JSON array of non-empty strings")
+    else:
+        function_queries = [args.function]
 
     rebuilt_dwarf_path: Optional[str] = None
     rebuilt_debug_lines_path: Optional[str] = None
@@ -1007,29 +1169,52 @@ def main() -> None:
             folder_mode=False,
             apply_split_fixups_in_ram=True,
         )
+        original_func_index = build_function_block_index(original_funcs)
+        rebuilt_func_index = build_function_block_index(rebuilt_funcs)
 
-        original_block = choose_function_block(
-            original_funcs, args.function, "original DWARF"
-        )
-        rebuilt_block = choose_function_block(
-            rebuilt_funcs, args.function, "rebuilt DWARF"
-        )
-
-        report = build_report(
-            args.unit,
-            args.function,
-            original_block,
-            rebuilt_block,
-            collapse=not args.no_collapse,
-            context=args.context,
-            rebuilt_debug_lines_path=rebuilt_debug_lines_path,
-        )
+        reports: List[Dict[str, Any]] = []
+        for function_query in function_queries:
+            try:
+                original_block = choose_function_block(
+                    indexed_function_blocks(
+                        original_funcs, original_func_index, function_query
+                    ),
+                    function_query,
+                    "original DWARF",
+                )
+                rebuilt_block = choose_function_block(
+                    indexed_function_blocks(
+                        rebuilt_funcs, rebuilt_func_index, function_query
+                    ),
+                    function_query,
+                    "rebuilt DWARF",
+                )
+                reports.append(
+                    build_report(
+                        args.unit,
+                        function_query,
+                        original_block,
+                        rebuilt_block,
+                        collapse=not args.no_collapse,
+                        context=args.context,
+                        rebuilt_debug_lines_path=rebuilt_debug_lines_path,
+                    )
+                )
+            except DwarfCompareError as e:
+                if not args.functions_file:
+                    raise
+                reports.append({"function": function_query, "error": str(e)})
 
         if args.json:
-            print(json.dumps(report, indent=2))
-            if args.require_exact and not report["normalized_exact_match"]:
+            output: Any = reports if args.functions_file else reports[0]
+            print(json.dumps(output, indent=2))
+            if args.require_exact and any(
+                not report.get("normalized_exact_match", False) for report in reports
+            ):
                 sys.exit(1)
             return
+
+        report = reports[0]
 
         print_summary(report)
         if not args.summary:

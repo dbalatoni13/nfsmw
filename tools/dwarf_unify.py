@@ -566,6 +566,18 @@ def merge_carbon_param_type(base_type: str, carbon_type: str) -> str:
 def merge_ps2_param_type(base_type: str, ps2_type: str) -> str:
     if not ps2_type:
         return format_type_name(base_type)
+
+    # PS2 debug information is frequently less precise than the GC DWARF.  In
+    # particular, it drops const qualifiers and namespace qualification.  Use
+    # it as a spelling source only when doing so cannot discard either piece of
+    # information from the canonical GC declaration.
+    base_has_const = "const" in IDENT_RE.findall(base_type)
+    ps2_has_const = "const" in IDENT_RE.findall(ps2_type)
+    if base_has_const != ps2_has_const:
+        return format_type_name(base_type)
+    if type_uses_namespace(base_type) and not type_uses_namespace(ps2_type):
+        return format_type_name(base_type)
+
     if (
         has_pointee_const(base_type)
         and not has_pointee_const(ps2_type)
