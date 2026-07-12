@@ -1108,11 +1108,14 @@ bool Manager::RecallSpeechEvent(SPCHType_1_EventID recall_id) {
 }
 
 void Manager::Expire(ScheduledSpeechEvent *event) {
-    if (!event) {
-        return;
+    if (event) {
+        for (SchedSpchEvents::iterator j = mEvents[2].begin(); j != mEvents[2].end(); ++j) {
+            if (*j == event) {
+                mEvents[2].erase(j);
+                return;
+            }
+        }
     }
-    event->flags |= 1;
-    event->finish_time = WorldTimer;
 }
 
 bool Manager::IsQueued(SPCHType_1_EventID evtID, int indices) {
