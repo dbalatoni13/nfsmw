@@ -2228,12 +2228,16 @@ bool GameSpeech::IsDataLoaded() {
 
 SED_NISSFX::SED_NISSFX()
     : mLoadState(), //
-      m_currentIntensity(0), //
       m_moduleIsInitted(false), //
       m_speechCycle(0), //
       m_paused(false), //
-      m_SyncObject(), //
-      m_backupstrm(0) {}
+      m_SyncObject() {
+    mLoadState.clear();
+    if (m_pSFXOBJ_NISStream) {
+        static_cast<SFXObj_NISStream *>(m_pSFXOBJ_NISStream)->NISActivityDone();
+    }
+    m_strm = 0;
+}
 
 SED_NISSFX::~SED_NISSFX() {
     if (m_strm) {

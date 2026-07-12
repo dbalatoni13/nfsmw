@@ -22,7 +22,13 @@ struct SyncAudioObject {
     int handle;                         // offset 0xC, size 0x4
     short holdtime;                     // offset 0x10, size 0x2
 
-    SyncAudioObject() {}
+    SyncAudioObject() {
+        callback = 0;
+        qsObject = 0;
+        holdtime = 0;
+        id = STRM_NONE;
+        handle = -1;
+    }
     ~SyncAudioObject() {}
 };
 
