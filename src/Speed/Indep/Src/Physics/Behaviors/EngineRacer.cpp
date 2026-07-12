@@ -1355,7 +1355,7 @@ static const bool bNoEngineBlown = false;
 class EngineDragster : public EngineRacer, public IDragEngine, public IDragTransmission {
   public:
     // Methods
-    static Behavior *Construct(const BehaviorParams &params);
+    static Behavior *Construct(const BehaviorParams &parms);
 
     EngineDragster(const BehaviorParams &bp);
     float CalcPotentialShiftBonus(Rpm rpm, GearID gear, GearID nextgear) const;
@@ -1425,14 +1425,23 @@ class EngineDragster : public EngineRacer, public IDragEngine, public IDragTrans
     ISuspension *mSuspension; // offset 0x1D4, size 0x4
 };
 
+BIND_BEHAVIOR_FACTORY(EngineDragster);
+
 EngineDragster::EngineDragster(const BehaviorParams &bp)
-    : EngineRacer(bp), IDragEngine(bp.fowner), IDragTransmission(bp.fowner), mPotentialBonus(0.0f), mPerfectShiftTime(0.0f), mBoost(0.0f),
-      mOverrev(0.0f), mHeat(0.0f), mSuspension(nullptr) {
+    : EngineRacer(bp),              //
+      IDragEngine(bp.fowner),       //
+      IDragTransmission(bp.fowner), //
+      mPotentialBonus(0.0f),        //
+      mPerfectShiftTime(0.0f),      //
+      mBoost(0.0f),                 //
+      mOverrev(0.0f),               //
+      mHeat(0.0f),                  //
+      mSuspension(nullptr) {
     this->GetOwner()->QueryInterface(&mSuspension);
 }
 
-Behavior *EngineDragster::Construct(const BehaviorParams &params) {
-    return new EngineDragster(params);
+Behavior *EngineDragster::Construct(const BehaviorParams &parms) {
+    return new EngineDragster(parms);
 }
 
 void EngineDragster::Reset() {

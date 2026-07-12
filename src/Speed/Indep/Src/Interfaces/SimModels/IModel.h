@@ -12,6 +12,8 @@
 // total size: 0x4
 class IModel : public UTL::COM::IUnknown, public UTL::Collections::Instanceable<HMODEL, IModel, 434>, public UTL::Collections::Listable<IModel, 434> {
   public:
+    enum { InstanceLimit = 434 };
+
     DECL_INTERFACE(IModel);
     struct Enumerator {
         virtual bool OnModel(IModel *model);

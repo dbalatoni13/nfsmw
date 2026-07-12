@@ -2,10 +2,6 @@
 #define SIM_SIMMODEL_H
 
 #include "Speed/Indep/Src/World/WorldTypes.h"
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
 #include "SimAttachable.h"
 #include "SimObject.h"
 #include "Speed/Indep/Src/Interfaces/IAttachable.h"
@@ -29,7 +25,7 @@ class Model : public Sim::Object,
 
         ~Effect() {}
 
-        ALIGN_16 const UCrc32 Identifire; // offset 0x5C, size 0x4
+        PS2ALIGN16 const UCrc32 Identifire; // offset 0x5C, size 0x4
     };
 
     Model(IModel *parent, const CollisionGeometry::Bounds *geometry, UCrc32 nodename, std::size_t numinterfaces);
@@ -143,7 +139,10 @@ class Model : public Sim::Object,
     void EndDraw();
     void EndSimulation();
 
-    void UpdateVisibility(bool visible) {}
+    void UpdateVisibility(bool visible, float distance) {
+        this->mInView = visible;
+        this->mDistanceToView = distance;
+    }
 
     bool IsRendering() const {}
 

@@ -38,6 +38,10 @@
 
 #include "Speed/Indep/Src/Physics/Behaviors/EngineSpline.cpp"
 
+#include "Speed/Indep/Src/Physics/Behaviors/SimpleChopper.cpp"
+
 #include "Speed/Indep/Src/Physics/Behaviors/EngineTraffic.cpp"
+
+#include "Speed/Indep/Src/Physics/Behaviors/DrawVehicle.cpp"
 
 #include "Speed/Indep/Src/Physics/Behaviors/SoundHeli.cpp"

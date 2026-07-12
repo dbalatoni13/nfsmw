@@ -57,14 +57,6 @@ struct _Q4c {
     int16 w; // offset 0x6, size 0x2
 };
 
-// total size: 0x10
-struct BoundsHeader {
-    UCrc32 fNameHash; // offset 0x0, size 0x4
-    int fNumBounds;   // offset 0x4, size 0x4
-    int fIsResolved;  // offset 0x8, size 0x4
-    int fPad;         // offset 0xC, size 0x4
-};
-
 class Collection;
 
 // total size: 0x30
@@ -89,6 +81,21 @@ struct Bounds {
     void GetPivot(UMath::Vector3 &to) const {
         this->fPivot.Decompress(to);
     }
+
+    void GetHalfDimensions(UMath::Vector3 &to) const {
+        fHalfDimensions.Decompress(to);
+    }
+
+    const Bounds *GetChild(unsigned int idx) const;
+    const Bounds *GetChild(UCrc32 namehash) const;
+};
+
+// total size: 0x10
+struct BoundsHeader {
+    UCrc32 fNameHash; // offset 0x0, size 0x4
+    int fNumBounds;   // offset 0x4, size 0x4
+    int fIsResolved;  // offset 0x8, size 0x4
+    int fPad;         // offset 0xC, size 0x4
 };
 
 // total size: 0x10
@@ -118,9 +125,19 @@ class IBoundable : public UTL::COM::IUnknown {
 // total size: 0x10
 struct Collection : public BoundsHeader {
     Bounds *const GetRoot() const;
+    const Bounds *GetChild(const Bounds *parent, unsigned int idx) const;
+    const Bounds *GetChild(const Bounds *parent, UCrc32 name) const;
+
     Bounds *const GetBounds(UCrc32 hash_name) const;
     bool AddTo(IBoundable *irbc, const Bounds *root, const SimSurface &defsurface, bool parsechildren) const;
 };
+
+inline const Bounds *Bounds::GetChild(unsigned int idx) const {
+    return fCollection->GetChild(this, idx);
+}
+inline const Bounds *Bounds::GetChild(UCrc32 namehash) const {
+    return fCollection->GetChild(this, namehash);
+}
 
 const Collection *Lookup(UCrc32 object_name_hash);
 bool CreateJoint(IBoundable *ifemale, struct UCrc32 femalenode_name, IBoundable *imale, UCrc32 malenode_name, UMath::Vector3 *out_female,

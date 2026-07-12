@@ -42,16 +42,16 @@ class EngineSpline : protected VehicleBehavior, protected ITransmission, protect
         return mRPM;
     }
     float GetMaxRPM() const override {
-        return mEngineInfo.MAX_RPM();
+        return mEngineInfo->MAX_RPM();
     }
     float GetPeakTorqueRPM() const override {
         return mMaxTorqueRPM;
     }
     float GetRedline() const override {
-        return mEngineInfo.RED_LINE();
+        return mEngineInfo->RED_LINE();
     }
     float GetMinRPM() const override {
-        return mEngineInfo.IDLE();
+        return mEngineInfo->IDLE();
     }
     void MatchSpeed(float speed) override;
 
@@ -67,8 +67,8 @@ class EngineSpline : protected VehicleBehavior, protected ITransmission, protect
     float GetNOSFlowRate() const override {
         return mNOSInfo.FLOW_RATE();
     }
-    void ChargeNOS(float charge) override {
-        mNOSCapacity = UMath::Clamp(mNOSCapacity + charge, 0.0f, 1.0f);
+    void ChargeNOS(float amount) override {
+        mNOSCapacity = UMath::Clamp(mNOSCapacity + amount, 0.0f, 1.0f);
     }
     float GetNOSBoost() const override {
         return 1.0f;

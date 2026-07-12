@@ -48,6 +48,10 @@ template <typename T, int U> class Listable {
         // List &operator=(List &);
     };
 
+    static int Count() {
+        return _mTable.size();
+    }
+
     typedef void (*ForEachFunc)(pointer);
     typedef bool (*ComparisonFunc)(pointer, pointer);
 

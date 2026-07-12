@@ -1,6 +1,7 @@
 #ifndef SIM_SIMATTACHABLE_H
 #define SIM_SIMATTACHABLE_H
 
+#include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
@@ -19,22 +20,13 @@ class Attachments {
 
     virtual ~Attachments();
 
-    // Inlines
-    void *operator new(std::size_t size) {
-        return gFastMem.Alloc(size, nullptr);
-    }
-
-    void operator delete(void *mem, std::size_t size) {
-        if (mem) {
-            gFastMem.Free(mem, size, nullptr);
-        }
-    }
+    USE_FASTALLOC(Sim::Attachments);
 
     Attachments(IAttachable *pOwner) {
         mOwner = pOwner;
     }
 
-    const UTL::Std::list<IAttachable *, _type_IAttachableList> &GetList() const {
+    const IAttachable::List &GetList() const {
         return mList;
     }
 
