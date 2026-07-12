@@ -109,6 +109,12 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
     };
     // total size: 0xC
     struct BlowByRecord {
+        void Set(float dist, float vel) {
+            this->distance = dist;
+            this->speed = vel;
+            this->timestamp = WorldTimer;
+        }
+
         // Members
         float distance;    // offset 0x0, size 0x4
         float speed;       // offset 0x4, size 0x4

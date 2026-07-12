@@ -2102,13 +2102,17 @@ void SoundAI::SyncCarsToActors() {
     new_cop_cars.clear();
 
     float closest = 32767.0f;
+    unsigned char cops_in_view;
+    unsigned char cops_with_los;
+    unsigned char cops_ahead;
+    unsigned char num_active;
+    float pursuit_distance;
     mRacerCount = static_cast<char>(UTL::Collections::ListableSet<IVehicle, 10, eVehicleList, 10>::GetList(VEHICLE_AIRACERS).size());
 
     {
-        const UTL::Collections::ListableSet<IVehicle, 10, eVehicleList, 10>::List &vehicles =
-            UTL::Collections::ListableSet<IVehicle, 10, eVehicleList, 10>::GetList(VEHICLE_AIRACERS);
-        UTL::Collections::ListableSet<IVehicle, 10, eVehicleList, 10>::List::const_iterator i = vehicles.begin();
-        while (i != vehicles.end()) {
+        UTL::Collections::ListableSet<IVehicle, 10, eVehicleList, 10>::List::const_iterator i =
+            UTL::Collections::ListableSet<IVehicle, 10, eVehicleList, 10>::GetList(VEHICLE_AIRACERS).begin();
+        while (i != UTL::Collections::ListableSet<IVehicle, 10, eVehicleList, 10>::GetList(VEHICLE_AIRACERS).end()) {
             IVehicle *vehicle = *i;
             IRenderable *renderable = 0;
             if (vehicle->QueryInterface(&renderable)) {
@@ -2133,16 +2137,15 @@ void SoundAI::SyncCarsToActors() {
         mFlags &= ~RACERS_PROXIMAL;
     }
 
-    unsigned char cops_in_view = 0;
-    unsigned char cops_with_los = 0;
-    unsigned char cops_ahead = 0;
-    unsigned char num_active = 0;
-    float pursuit_distance = 32767.0f;
+    cops_in_view = 0;
+    cops_with_los = 0;
+    cops_ahead = 0;
+    num_active = 0;
+    pursuit_distance = 32767.0f;
 
-    const UTL::Collections::ListableSet<IVehicle, 10, eVehicleList, 10>::List &vehicles =
-        UTL::Collections::ListableSet<IVehicle, 10, eVehicleList, 10>::GetList(VEHICLE_AICOPS);
-    UTL::Collections::ListableSet<IVehicle, 10, eVehicleList, 10>::List::const_iterator i = vehicles.begin();
-    while (i != vehicles.end()) {
+    UTL::Collections::ListableSet<IVehicle, 10, eVehicleList, 10>::List::const_iterator i =
+        UTL::Collections::ListableSet<IVehicle, 10, eVehicleList, 10>::GetList(VEHICLE_AICOPS).begin();
+    while (i != UTL::Collections::ListableSet<IVehicle, 10, eVehicleList, 10>::GetList(VEHICLE_AICOPS).end()) {
         IVehicle *vehicle = *i;
         IRenderable *renderable = 0;
         vehicle->QueryInterface(&renderable);
@@ -2182,8 +2185,9 @@ void SoundAI::SyncCarsToActors() {
                     UMath::Vector3 player_pos = mPlayerPos;
                     UMath::Vector3 copcar_pos = vehicle->GetPosition();
                     UMath::Vector3 player_fw = mPlayerFW;
+                    UMath::Vector3 playerToCop;
+                    EAXCop *actor;
                     if (vehicle->IsActive() || (renderable && renderable->InView())) {
-                        UMath::Vector3 playerToCop;
                         UMath::Sub(copcar_pos, player_pos, playerToCop);
                         UMath::Unit(playerToCop, playerToCop);
                         float dot = UMath::Dot(playerToCop, player_fw);
@@ -2203,7 +2207,7 @@ void SoundAI::SyncCarsToActors() {
                         }
                     }
 
-                    EAXCop *actor = mActors.Find(thisObj);
+                    actor = mActors.Find(thisObj);
                     if (actor) {
                         if (vehicle->IsActive()) {
                             if (!actor->IsActive()) {
@@ -2221,17 +2225,13 @@ void SoundAI::SyncCarsToActors() {
 
                         float t_lastblowby = (WorldTimer - mRecentBlowby.timestamp).GetSeconds();
                         if ((mTune.BlowbyInterval() < t_lastblowby) && (actor->GetSpeed() < mPlayerSpeed) && !is_ahead) {
-                            mRecentBlowby.distance = actor->GetDistance();
-                            mRecentBlowby.speed = mPlayerSpeed - actor->GetSpeed();
-                            mRecentBlowby.timestamp = WorldTimer;
+                            mRecentBlowby.Set(actor->GetDistance(), mPlayerSpeed - actor->GetSpeed());
                         }
 
                         if ((actor->GetDistance() < mRecentBlowby.distance) && (actor->GetSpeed() < mPlayerSpeed) && !is_ahead &&
                             ((mPlayerSpeed * 0.75f) < (mPlayerSpeed - actor->GetSpeed()))) {
                             float speed_diff = mPlayerSpeed - actor->GetSpeed();
-                            mRecentBlowby.distance = actor->GetDistance();
-                            mRecentBlowby.speed = speed_diff;
-                            mRecentBlowby.timestamp = WorldTimer;
+                            mRecentBlowby.Set(actor->GetDistance(), speed_diff);
                         }
                     } else {
                         new_cop_cars.push_back(vehicle);
@@ -2276,10 +2276,10 @@ void SoundAI::SyncCarsToActors() {
     }
 
     if (new_cop_cars.size() != 0) {
-        IVehicles::iterator add_it = new_cop_cars.begin();
-        while (add_it != new_cop_cars.end()) {
-            AddNewCop(*add_it);
-            ++add_it;
+        IVehicles::iterator i = new_cop_cars.begin();
+        while (i != new_cop_cars.end()) {
+            AddNewCop(*i);
+            ++i;
         }
     }
     new_cop_cars.clear();
