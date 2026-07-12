@@ -69,7 +69,7 @@ struct GameSpeech : public Module {
     char *GetCSIptr() override;
     int GetChannel() override;
     char *GetEventDat() override;
-    bool IsDataLoaded() override;
+    bool IsDataLoaded() override { return TestFlag(1); }
 };
 
 } // namespace Speech

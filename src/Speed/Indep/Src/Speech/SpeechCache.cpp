@@ -4,6 +4,7 @@
 #include "Speed/Indep/Src/Misc/Config.h"
 #include "Speed/Indep/Src/Misc/QueuedFile.hpp"
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 extern void *bMalloc(int size, int allocation_params);
 extern void bFree(void *ptr);
@@ -54,8 +55,7 @@ Cache::Cache()
       mCache(0), //
       mCacheSize(0), //
       mInitialMemFree(0), //
-      mEventPool(0), //
-      mIndex(100) {}
+      mIndex(0) {}
 
 Cache::~Cache() {
     Dump();
@@ -219,17 +219,22 @@ SpeechSampleData *Cache::LoadSample(Module *module, SPCHType_SampleRequestData *
 }
 
 void Cache::LoadedSampleDataCB(int param, int error_status) {
-    SpeechSampleData *sample = reinterpret_cast<SpeechSampleData *>(static_cast<unsigned int>(param));
-    if (!sample) {
-        return;
-    }
-
-    sample->ready = (error_status == 0);
-    sample->t_load = WorldTimer;
+    SpeechLoadCBData *CBdata = reinterpret_cast<SpeechLoadCBData *>(static_cast<unsigned int>(param));
+    CBdata->data->ready = true;
+    ++CBdata->data->age;
+    CBdata->data->t_load = WorldTimer;
+    delete CBdata;
 }
 
-void *Cache::Alloc(int size, unsigned int) {
-    return bMalloc(size, 0);
+void *Cache::Alloc(int size, unsigned int key) {
+    void *memptr = nullptr;
+    if (size <= bLargestMalloc(SpeechMemoryPool)) {
+        const char *allocname;
+        memptr = bMalloc(size, allocname, 0, (SpeechMemoryPool & 0xf) | 0x1000);
+    } else if (SPEECH_CACHE_STATS) {
+        DebugPrintAllocations();
+    }
+    return memptr;
 }
 
 void Cache::Free(void *mem) {

@@ -123,9 +123,8 @@ void MusicFlow::MessageTerminate(const MNotifyMusicFlow &) {
     ChangeStateTo(kTerminal);
 }
 
-void MusicFlow::MessageDone(const MNotifyMusicFlow &) {
-    mRequestedSwap = false;
-    mBusy = 0;
+void MusicFlow::MessageDone(const MNotifyMusicFlow &message) {
+    Reset();
 }
 
 void MusicFlow::MessageX360UserTunes(const MNotifyMusicFlow &message) {
@@ -211,13 +210,8 @@ void MusicFlow::Update() {
 }
 
 float MusicFlow::UpdateIntensity(float adj) {
-    mIntensity += adj;
-    if (mIntensity < static_cast<float>(kLow)) {
-        mIntensity = static_cast<float>(kLow);
-    }
-    if (mIntensity > static_cast<float>(kHigh)) {
-        mIntensity = static_cast<float>(kHigh);
-    }
+    mIntensity = mIntensity * 0.99f + adj * 0.01f;
+    mIntensity = bClamp(mIntensity, 0.0f, 1.0f);
     return mIntensity;
 }
 
@@ -505,7 +499,7 @@ void MusicFlow::Terminal() {
 }
 
 bool MusicFlow::IsTransitionable() {
-    return mState == kTransition;
+    return false;
 }
 
 void MusicFlow::ChangeStateTo(int new_state) {
@@ -552,26 +546,16 @@ void MusicFlow::ChangeStateTo(int new_state) {
 }
 
 void MusicFlow::Reset() {
-    mStartDelay = false;
-    mStartEvent = 0;
+    mState = kTransition;
     mTimer = Timer(0);
-    mBoostTimer = Timer(0);
-    mT_currPiece = Timer(0);
     mElapsed = 0.0f;
+    mRequestedSwap = false;
+    mRestrained = true;
     mIntensity = 0.0f;
     mAvgNumCopsInForm = 0.0f;
     mAvgNumCopsLOS = 0.0f;
     mAvgPlayerSpeed = 0.0f;
     mAvgPursuitDist = 0.0f;
-    mCurrentPart = -1;
-    mRestrained = true;
-    mTopSpeed = 0.0f;
-    mTimeInPiece = 0.0f;
-    mRequestedSwap = false;
-    mX360UserTunes = false;
-    mBusy = 0;
-    mState = kTransition;
-    mLastState = kTransition;
 }
 
 } // namespace Speech

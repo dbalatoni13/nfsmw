@@ -1501,15 +1501,27 @@ void Manager::AttachSFXOBJ(SpeechModuleIndex module, SFX_Base *psb, eSFXOBJ_MAIN
     }
 }
 
-bool Manager::IsPlaying(SpeechModuleIndex module) {
-    if ((module < 0) || (module >= NUM_SPEECH_MODULES)) {
-        return false;
+bool Manager::IsPlaying(SpeechModuleIndex idx) {
+    if (m_SpeechModule[idx] != nullptr) {
+        EAXS_StreamChannel *strm = m_SpeechModule[idx]->GetStreamChannel();
+        if (strm != nullptr) {
+            return strm->IsPlaying();
+        }
     }
-    return m_SpeechModule[module] && !m_SpeechModule[module]->DonePlaying();
+    return false;
 }
 
-bool Manager::IsCopSpeechPlaying(SPCHType_1_EventID) {
-    return IsPlaying(COPSPEECH_MODULE);
+bool Manager::IsCopSpeechPlaying(SPCHType_1_EventID event_id) {
+    if (m_SpeechModule[COPSPEECH_MODULE] != nullptr) {
+        GameSpeech *gamespeech = static_cast<GameSpeech *>(m_SpeechModule[COPSPEECH_MODULE]);
+        {
+            ScheduledSpeechEvent *curr = gamespeech->GetCurrentEvent();
+            if (curr != nullptr && curr->ID == event_id) {
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 bool Manager::IsCopSpeechBusy() {
@@ -2252,10 +2264,6 @@ char *GameSpeech::GetEventDat() {
     return m_eventDat;
 }
 
-bool GameSpeech::IsDataLoaded() {
-    return m_csisData != 0;
-}
-
 SED_NISSFX::SED_NISSFX()
     : mLoadState(), //
       m_moduleIsInitted(false), //
@@ -2505,11 +2513,11 @@ bool SED_NISSFX::PlayStream(int stream_id) {
 }
 
 void SED_NISSFX::ClearStream() {
-    m_SyncObject.qsObject = 0;
-    m_SyncObject.callback = 0;
-    m_SyncObject.id = STRM_NONE;
-    m_SyncObject.handle = -1;
-    m_SyncObject.holdtime = 0;
+    if (m_SyncObject.qsObject != nullptr) {
+        m_SyncObject.holdtime = 0;
+        FreeMemory(m_SyncObject.qsObject);
+        m_SyncObject.qsObject = nullptr;
+    }
 }
 
 void SED_NISSFX::Update() {

@@ -108,7 +108,7 @@ void Observer::CullCheck() {
 }
 
 bool Observer::IsTransitionable() {
-    return mState == kTransition;
+    return true;
 }
 
 void Observer::Reset() {

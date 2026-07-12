@@ -61,13 +61,19 @@ RoadblockFlow::~RoadblockFlow() {
 }
 
 void RoadblockFlow::NailedSomethingInRB(unsigned int what) {
-    mFlags |= what;
-    mFlags |= REQ_SERVICE;
+    if ((mFlags & (OUTCOMETIMERSET | AVERTED | ENGAGED)) == 0) {
+        mT_engaged = WorldTimer;
+        mFlags |= OUTCOMETIMERSET;
+    }
+    mFlags |= ENGAGED | what;
 }
 
-void RoadblockFlow::MessageRoadBlockDodged(const MReqRoadBlock &) {
+void RoadblockFlow::MessageRoadBlockDodged(const MReqRoadBlock &message) {
+    if ((mFlags & (OUTCOMETIMERSET | AVERTED | ENGAGED)) == 0) {
+        mT_averted = WorldTimer;
+        mFlags |= OUTCOMETIMERSET;
+    }
     mFlags |= AVERTED;
-    mT_averted = WorldTimer;
 }
 
 void RoadblockFlow::SyncRoadblock() {
@@ -156,20 +162,21 @@ void RoadblockFlow::SyncRoadblock() {
 }
 
 void RoadblockFlow::Update() {
-    if (mState == kTransition) {
-        return;
+    this->SyncRoadblock();
+    this->Service();
+    int y;
+    int x;
+    {
+        unsigned int color;
     }
-
-    if (mState == kTerminal) {
-        Terminal();
-        return;
-    }
-
-    SyncRoadblock();
 }
 
-void RoadblockFlow::MessageReqHeliJoinRB(const MReqRoadBlock &) {
+void RoadblockFlow::MessageReqHeliJoinRB(const MReqRoadBlock &message) {
+    SoundAI *ai = SoundAI::Get();
     mFlags |= HELIJOINED;
+    if (ai->GetHeli() != nullptr && ai->GetPursuitState() == SoundAI::kActive) {
+        ai->GetHeli()->JoinRB();
+    }
 }
 
 void RoadblockFlow::MessagePositionUpdate(const MReqRoadBlock &) {
@@ -298,7 +305,12 @@ void RoadblockFlow::Setup() {
 }
 
 void RoadblockFlow::Approach() {
-    mFlags |= POSITIONED;
+    SoundAI *ai = SoundAI::Get();
+    EAXCop *cop_LOS = ai->GetRandomCop(2);
+    if (cop_LOS != nullptr) {
+        cop_LOS->RBApproach();
+        mFlags &= ~REQ_SERVICE;
+    }
 }
 
 void RoadblockFlow::Effect() {
@@ -406,25 +418,20 @@ void RoadblockFlow::Service() {
 }
 
 void RoadblockFlow::Terminal() {
-    if (Manager::IsCopSpeechBusy()) {
-        return;
-    }
-    ChangeStateTo(kTransition);
+    mBusy = 0;
+    mFlags = 0;
+    mSpikeOffset = 0;
+    mPertinentRB = nullptr;
+    mLoDist2RB = 0.0f;
 }
 
 void RoadblockFlow::Reset() {
-    mFlags = 0;
-    mSpikeOffset = 0;
-    mPertinentRB = 0;
-    mNumBlocks = 0;
-    mLoDist2RB = 0.0f;
-    mBusy = 0;
-    mState = kWaiting;
-    mLastState = kTransition;
+    Terminal();
+    SpeechFlow::Reset();
 }
 
 bool RoadblockFlow::IsTransitionable() {
-    return mState == kTransition;
+    return true;
 }
 
 } // namespace Speech

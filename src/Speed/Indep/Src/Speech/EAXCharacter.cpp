@@ -191,17 +191,11 @@ void EAXCharacter::Update() {
 }
 
 void EAXCharacter::Reset() {
-    float fVar = 0.0f;
-    float fVar1 = UMath::Vector3::kZero.z;
-    float fVar2 = UMath::Vector3::kZero.y;
-
-    *reinterpret_cast<unsigned int *>(&mActive) = 0;
-    *reinterpret_cast<unsigned int *>(&mDestroyed) = 0;
-    mHealth = fVar;
-    mDistance = fVar;
-    mPos.x = UMath::Vector3::kZero.x;
-    mPos.z = fVar1;
-    mPos.y = fVar2;
-    *reinterpret_cast<unsigned int *>(&mSuspectLOS) = 0;
-    mSpeed = fVar;
+    mActive = false;
+    mDestroyed = false;
+    mHealth = 0.0f;
+    mDistance = 0.0f;
+    mPos = UMath::Vector3::kZero;
+    mSpeed = 0.0f;
+    mSuspectLOS = false;
 }
