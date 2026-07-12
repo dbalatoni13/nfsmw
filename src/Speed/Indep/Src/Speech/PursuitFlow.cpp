@@ -466,21 +466,21 @@ void PursuitFlow::SpotterBranch() {
 
 void PursuitFlow::ScriptedBranch() {
     SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
-    if (!ai) {
-        return;
-    }
-
     if (!mBusy) {
-        if (ai->GetLeader()) {
-            ai->GetLeader()->SpotterReply();
+        if (ai->IsHeadingValid()) {
+            ai->GetDispatch()->PursuitEscalation();
+        } else {
+            ai->GetDispatch()->PursuitEscalationGeneric();
+        }
+        if ((ai->GetPlayerCarColor() != 0) && MiscSpeech::IsVehicleTypeOK()) {
+            ai->GetDispatch()->VehicleDescription();
         }
         mBusy++;
-        return;
-    }
-
-    if (!Manager::IsCopSpeechBusy() && mBusy) {
-        ChangeStateTo(kTerminal);
-        mBusy = 0;
+    } else {
+        if (!Manager::IsCopSpeechBusy() && mBusy) {
+            ChangeStateTo(kTerminal);
+            mBusy = 0;
+        }
     }
 }
 
