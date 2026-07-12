@@ -1502,7 +1502,19 @@ bool Manager::IsCopSpeechPlaying(SPCHType_1_EventID) {
 }
 
 bool Manager::IsCopSpeechBusy() {
-    return !mSampleRequests.empty();
+    bool module_busy = false;
+    GameSpeech *gamespeech = static_cast<GameSpeech *>(m_SpeechModule[COPSPEECH_MODULE]);
+    bool speech_busy;
+    if (gamespeech) {
+        speech_busy = gamespeech->IsBusy();
+        if (speech_busy || !gamespeech->DonePlaying()) {
+            module_busy = true;
+        }
+    }
+    if (!module_busy) {
+        return false;
+    }
+    return true;
 }
 
 Timer Manager::GetTimeSinceLastEvent(SpeechModuleIndex) {

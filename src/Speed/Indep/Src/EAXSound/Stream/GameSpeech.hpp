@@ -54,6 +54,9 @@ struct GameSpeech : public Module {
     ScheduledSpeechEvent *GetCurrentEvent() {
         return this->m_currEvent;
     }
+    bool IsBusy() {
+        return TestFlag(8);
+    }
     void IssuePlayback(ScheduledSpeechEvent *nextevent);
     void ClearCompletedRequests();
     void ReleaseResource() override;
