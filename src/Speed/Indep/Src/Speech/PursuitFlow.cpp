@@ -1,6 +1,7 @@
 #include "PursuitFlow.h"
 #include "SoundAI.h"
 #include "EAXDispatch.h"
+#include "Speed/Indep/Src/EAXSound/Stream/GameSpeech.hpp"
 #include "Speed/Indep/Src/EAXSound/Stream/SpeechManager.hpp"
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Generated/Messages/MNotifySpeechStatus.h"
@@ -154,12 +155,28 @@ void PursuitFlow::Reacquire() {
 }
 
 bool PursuitFlow::RequiresRestart() {
-    if (!mAVSUnitRammedSaid) {
-        mBusy = 0;
-        mReqRestart = true;
-        return true;
+    if (Manager::IsCopSpeechPlaying(kSPCH1_EventID_AttmptVehStp)) {
+        Module *cop_speech = Manager::GetSpeechModule(1);
+        if (cop_speech != nullptr) {
+            GameSpeech *gamespeech = static_cast<GameSpeech *>(cop_speech);
+            ScheduledSpeechEvent *avs = gamespeech->GetCurrentEvent();
+            if (avs != nullptr) {
+                Csis::Setup_AttmptVehStpStruct *data = static_cast<Csis::Setup_AttmptVehStpStruct *>(avs->GetData(nullptr));
+                if ((data != nullptr) && (data->pursuit_type == Csis::Type_pursuit_type_Unit_Rammed)) {
+                    mCauseofPursuit = kCopAssaulted;
+                    mAVSUnitRammedSaid = true;
+                }
+            }
+        }
     }
-    return false;
+
+    if (mAVSUnitRammedSaid) {
+        return false;
+    }
+
+    mBusy = 0;
+    mReqRestart = true;
+    return true;
 }
 
 void PursuitFlow::CloseInCheck() {

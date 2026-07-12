@@ -51,6 +51,9 @@ struct GameSpeech : public Module {
     SPCHType_EventRuleResult EventRuleCallback(int eventID) override;
     void Update() override;
     void CheckNextEvent();
+    ScheduledSpeechEvent *GetCurrentEvent() {
+        return this->m_currEvent;
+    }
     void IssuePlayback(ScheduledSpeechEvent *nextevent);
     void ClearCompletedRequests();
     void ReleaseResource() override;
