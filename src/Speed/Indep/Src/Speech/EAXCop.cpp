@@ -1796,13 +1796,53 @@ void EAXCop::Impact_Suspect_World() {
     ScheduleSpeech(data, Csis::AnytimeEvents_CollisionWorldId, Csis::gAnytimeEvents_CollisionWorldHandle, this);
 }
 
-void EAXCop::Impact_Suspect_Semi() {}
+void EAXCop::Impact_Suspect_Semi() {
+    SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
+    Csis::AnytimeEvents_CollisionWorldStruct data;
+    data.speaker_id = mSpeakerID;
+    data.world_object_type = Csis::Type_world_object_type_semi;
+    data.num_units = Csis::Type_num_units_one_unit_in_pursuit;
+    if ((ai->GetPursuit() != 0) && (ai->NumCopsWithLOS() > 1)) {
+        data.num_units = Csis::Type_num_units_multiple_units_in_pursuit;
+    }
+    ScheduleSpeech(data, Csis::AnytimeEvents_CollisionWorldId, Csis::gAnytimeEvents_CollisionWorldHandle, this);
+}
 
-void EAXCop::Impact_Suspect_Train() {}
+void EAXCop::Impact_Suspect_Train() {
+    SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
+    Csis::AnytimeEvents_CollisionWorldStruct data;
+    data.speaker_id = mSpeakerID;
+    data.world_object_type = Csis::Type_world_object_type_train;
+    data.num_units = Csis::Type_num_units_one_unit_in_pursuit;
+    if ((ai->GetPursuit() != 0) && (ai->NumCopsWithLOS() > 1)) {
+        data.num_units = Csis::Type_num_units_multiple_units_in_pursuit;
+    }
+    ScheduleSpeech(data, Csis::AnytimeEvents_CollisionWorldId, Csis::gAnytimeEvents_CollisionWorldHandle, this);
+}
 
-void EAXCop::Impact_Suspect_Guardrail() {}
+void EAXCop::Impact_Suspect_Guardrail() {
+    SoundAI *ai;
+    Csis::AnytimeEvents_CollisionWorldStruct data;
+    data.num_units = Csis::Type_num_units_one_unit_in_pursuit;
+    data.speaker_id = mSpeakerID;
+    ai = UTL::Collections::Singleton<SoundAI>::Get();
+    data.world_object_type = Csis::Type_world_object_type_guardrail;
+    if ((ai->GetPursuit() != 0) && (ai->NumCopsWithLOS() > 1)) {
+        data.num_units = Csis::Type_num_units_multiple_units_in_pursuit;
+    }
+    ScheduleSpeech(data, Csis::AnytimeEvents_CollisionWorldId, Csis::gAnytimeEvents_CollisionWorldHandle, this);
+}
 
-void EAXCop::Impact_Suspect_GasStation() {}
+void EAXCop::Impact_Suspect_GasStation() {
+    SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
+    Csis::AnytimeEvents_CollisionWorldStruct data;
+    if (ai->GetPursuitState() == SoundAI::kActive) {
+        data.speaker_id = mSpeakerID;
+        data.world_object_type = Csis::Type_world_object_type_gas_station;
+        data.num_units = Csis::Type_num_units_one_unit_in_pursuit;
+        ScheduleSpeech(data, Csis::AnytimeEvents_CollisionWorldId, Csis::gAnytimeEvents_CollisionWorldHandle, this);
+    }
+}
 
 void EAXCop::Impact_Suspect_Spikebelt() {
     Speech::Module *cop_speech = Speech::Manager::GetSpeechModule(COPSPEECH_MODULE);
