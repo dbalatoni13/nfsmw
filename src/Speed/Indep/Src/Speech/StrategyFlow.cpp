@@ -272,6 +272,7 @@ void StrategyFlow::ReqBackup() {
     if (!Manager::IsCopSpeechBusy()) {
         if (!mBusy) {
             copList active;
+            EAXCop *caller;
             active.reserve(ai->GetActors().size());
 
             copMap::const_iterator iter = ai->GetActors().begin();
@@ -284,12 +285,13 @@ void StrategyFlow::ReqBackup() {
             }
 
             if (active.empty()) {
+                return;
             } else {
                 if (active.size() > 1) {
                     std::sort(active.begin(), active.end());
                 }
 
-                EAXCop *caller = active.front();
+                caller = active.front();
                 if (caller) {
                     bool eta_valid = false;
                     if (pursuit->GetBackupETA() > 10.0f) {
@@ -300,20 +302,27 @@ void StrategyFlow::ReqBackup() {
 
                     if ((Manager::mGlobalHistory.GetCount(static_cast<SPCHType_1_EventID>(0xa1)) == 0) && !ai->IsHighIntensity()) {
                         caller->InitialCallForBackup();
-                        if (eta_valid && (bRandom(1.0f) > 0.5f) && ((this->mFlags & BUDENIED) == 0)) {
-                            ai->GetDispatch()->BackupETA();
-                        } else {
+                        if (!eta_valid || (bRandom(1.0f) <= 0.5f) || ((this->mFlags & BUDENIED) != 0)) {
+                            goto initial_backup_reply;
+                        }
+
+                    backup_eta:
+                        ai->GetDispatch()->BackupETA();
+                        goto backup_done;
+
+                    initial_backup_reply: {
                             unsigned int flags = this->mFlags;
                             ai->GetDispatch()->BackupReply(caller, ((flags ^ BUDENIED) >> 1) & 1, this->mBackupType);
                             if ((flags & BUDENIED) != 0) {
                                 caller->NegativeBackupReply();
                             }
-                        }
+                            goto backup_done;
+                    }
                     } else if ((Manager::mGlobalHistory.GetCount(static_cast<SPCHType_1_EventID>(0x43)) == 0) ||
                                (ai->GetNumActiveCopCars() > 1)) {
                         caller->CallForBackup(this->mBackupType);
                         if (eta_valid && (bRandom(1.0f) > 0.5f) && ((this->mFlags & BUDENIED) == 0)) {
-                            ai->GetDispatch()->BackupETA();
+                            goto backup_eta;
                         } else {
                             ai->GetDispatch()->BackupReply(caller, ((this->mFlags ^ BUDENIED) >> 1) & 1, this->mBackupType);
                             if ((this->mFlags & BUDENIED) != 0) {
@@ -328,7 +337,7 @@ void StrategyFlow::ReqBackup() {
                             caller->CallForBackup(this->mBackupType);
                         }
                         if (eta_valid && (bRandom(1.0f) > 0.5f) && ((this->mFlags & BUDENIED) == 0)) {
-                            ai->GetDispatch()->BackupETA();
+                            goto backup_eta;
                         } else {
                             ai->GetDispatch()->BackupUpdate(caller, ((this->mFlags ^ BUDENIED) >> 1) & 1);
                         }
@@ -347,6 +356,7 @@ void StrategyFlow::ReqBackup() {
                         }
                     }
 
+                backup_done:
                     this->mBusy++;
                     return;
                 }
