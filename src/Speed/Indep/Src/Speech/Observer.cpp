@@ -75,21 +75,18 @@ Observer::Observer()
 }
 
 Observer::~Observer() {
+    mObservations.clear();
     if (mMsgBlewPastCop) {
         Hermes::Handler::Destroy(mMsgBlewPastCop);
-        mMsgBlewPastCop = 0;
-    }
-    if (mMsgGamePlayMoment) {
-        Hermes::Handler::Destroy(mMsgGamePlayMoment);
-        mMsgGamePlayMoment = 0;
     }
     if (mMsgNotifyEventCompletion) {
         Hermes::Handler::Destroy(mMsgNotifyEventCompletion);
-        mMsgNotifyEventCompletion = 0;
+    }
+    if (mMsgGamePlayMoment) {
+        Hermes::Handler::Destroy(mMsgGamePlayMoment);
     }
     if (mMsgTunnelUpdate) {
         Hermes::Handler::Destroy(mMsgTunnelUpdate);
-        mMsgTunnelUpdate = 0;
     }
 }
 
