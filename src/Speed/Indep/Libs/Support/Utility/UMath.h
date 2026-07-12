@@ -171,6 +171,10 @@ inline void Unit(const Vector3 &a, Vector3 &r) {
     VU0_v3unit(a, r);
 }
 
+inline void Unit(Vector3 &a) {
+    VU0_v3unit(a, a);
+}
+
 inline void Unit(const Vector4 &a, Vector4 &r) {
     VU0_v4unit(a, r);
 }

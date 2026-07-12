@@ -73,6 +73,17 @@ struct SuspensionParams : public Sim::Param {
 };
 
 // total size: 0x10
+struct EngineParams : public Sim::Param {
+    EngineParams(const EngineParams &_ctor_arg) : Sim::Param(_ctor_arg) {}
+    EngineParams() : Sim::Param(TypeName(), static_cast<EngineParams *>(nullptr)) {}
+
+    static UCrc32 TypeName() {
+        static UCrc32 value = "EngineParams";
+        return value;
+    }
+};
+
+// total size: 0x10
 struct DamageParams : public Sim::Param {
     DamageParams(const DamageParams &_ctor_arg) : Sim::Param(_ctor_arg) {}
 
