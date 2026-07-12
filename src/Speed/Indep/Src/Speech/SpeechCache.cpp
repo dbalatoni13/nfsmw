@@ -413,14 +413,6 @@ void Cache::DebugPrintAllocations() {
 }
 
 void Cache::Validate() {
-    unsigned int index = mIndex.GetNextValidIndex(0);
-    while (mIndex.ValidIndex(index)) {
-        SpeechSampleData *sample = mIndex.GetPtrAtIndex(index);
-        if (sample && (sample->size == 0)) {
-            sample->ready = false;
-        }
-        index = mIndex.GetNextValidIndex(index + 1);
-    }
 }
 
 void Cache::DebugPrints() {}
