@@ -29,6 +29,8 @@
 #include "Speed/Indep/Src/World/TrackStreamer.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bSlotPool.hpp"
+#include <stdarg.h>
+#include <stdio.h>
 
 struct CLUMP_ITEMtag {
     unsigned int key;
@@ -744,8 +746,12 @@ done:
     ;
 }
 
-void Manager::SpchLibAbort(const char *, ...) {
-    ClearPlayback();
+void Manager::SpchLibAbort(const char *format, ...) {
+    static char msg[512];
+    va_list arglist;
+    va_start(arglist, format);
+    vsprintf(msg, format, arglist);
+    va_end(arglist);
 }
 
 int Manager::SampleRequestCallback(SPCHType_SampleRequestData *data) {
