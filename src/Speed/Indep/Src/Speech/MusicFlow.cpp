@@ -134,15 +134,19 @@ void MusicFlow::MessageX360UserTunes(const MNotifyMusicFlow &message) {
 }
 
 void MusicFlow::Reacquire() {
-    mElapsed = 0.0f;
-    mIntensity = 0.0f;
-    mTopSpeed = 0.0f;
-    mTimeInPiece = 0.0f;
-    mRequestedSwap = false;
-    mStartDelay = false;
-    mT_currPiece = WorldTimer;
-    if (mState == kTransition) {
-        ChangeStateTo(kNeutral);
+    SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
+    if (ai) {
+        if (static_cast<unsigned int>(mState - kWin) <= static_cast<unsigned int>(kElude - kWin)) {
+            if (ai->GetPursuitDistance() <= 50.0f) {
+                ChangeStateTo(kLose);
+                mIntensity = 0.5f;
+            } else {
+                ChangeStateTo(kNeutral);
+                mIntensity = 0.8f;
+            }
+        } else if (mState == kNeutral) {
+            mIntensity = 1.0f;
+        }
     }
 }
 
