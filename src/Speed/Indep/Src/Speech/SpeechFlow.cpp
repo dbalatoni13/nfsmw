@@ -824,7 +824,8 @@ int Manager::AddHeaders(char **dest, SPEECH_BANK *banks, int numBanks, Module *m
 }
 
 int Manager::GetTicker() {
-    return WorldTimer.GetPackedTime();
+    m_clock_in_ms = FramesToSeconds(RealTimeFrames) * 1000.0f;
+    return static_cast<int>(m_clock_in_ms);
 }
 
 void Manager::PopulateHashMap() {

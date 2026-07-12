@@ -94,6 +94,10 @@ extern float WorldTimeElapsed;
 extern int RealTimeFrames;
 extern Timer WorldTimer;
 
+inline float FramesToSeconds(int num_frames) {
+    return static_cast<float>(num_frames) * (1.0f / 60.0f);
+}
+
 void PrepareRealTimestep(float video_time_elapsed);
 void PrepareWorldTimestep(float elapsed_time);
 void AdvanceRealTime();
