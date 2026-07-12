@@ -870,10 +870,6 @@ void Observer::MessageGamePlayMoment(const MGamePlayMoment &message) {
     }
 }
 
-void Observer::DetachRamCop() {
-    mRamCop = 0;
-}
-
 void Observer::SetMask(unsigned int mask) {
     mObserveMask = mask;
 }

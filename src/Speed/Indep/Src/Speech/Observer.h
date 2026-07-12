@@ -92,7 +92,9 @@ class Observer : public SpeechFlow {
     void MessageBlewPastCop(const MGamePlayMoment &message);
     void MessageTunnelUpdate(const MMiscSound &message);
     void MessageGamePlayMoment(const MGamePlayMoment &message);
-    void DetachRamCop();
+    void DetachRamCop() {
+        mRamCop = 0;
+    }
     EAXCop *GetRamCop() {
         return mRamCop;
     }

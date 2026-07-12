@@ -814,8 +814,13 @@ void SoundAI::OnAttached(IAttachable *pOther) {
 
 void SoundAI::OnVehicleRemoved(IVehicle *ivehicle) {
     Sim::Collision::RemoveListener(this, ivehicle);
-
-    (void)ivehicle;
+    EAXCop *cop = mObserver->GetRamCop();
+    if (cop) {
+        EAXCop *actor = mActors.Find(ivehicle->GetSimable()->GetOwnerHandle());
+        if (actor == cop) {
+            mObserver->DetachRamCop();
+        }
+    }
 }
 
 void SoundAI::OnDetached(IAttachable *pOther) {
