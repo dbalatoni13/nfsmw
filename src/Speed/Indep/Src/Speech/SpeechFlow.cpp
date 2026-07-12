@@ -2465,9 +2465,16 @@ unsigned int SED_NISSFX::SampleRequestCallback(SPCHType_SampleRequestData *data)
 }
 
 bool SED_NISSFX::PlayStream(int stream_id) {
-    m_SyncObject.handle = stream_id;
-    m_bIsStreamQueued = false;
-    return true;
+    if (m_strm) {
+        m_strm->ModifyHold(m_SyncObject.handle, 0);
+        m_bIsStreamQueued = false;
+        if (m_SyncObject.qsObject) {
+            gAudioMemoryManager.FreeMemory(m_SyncObject.qsObject);
+            m_SyncObject.qsObject = 0;
+        }
+        return true;
+    }
+    return false;
 }
 
 void SED_NISSFX::ClearStream() {
