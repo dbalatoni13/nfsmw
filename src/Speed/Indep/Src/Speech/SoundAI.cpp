@@ -37,7 +37,7 @@
 #include "Speed/Indep/Src/World/CarInfo.hpp"
 
 namespace MiscSpeech {
-bool GetLocation(RoadNames road, int &region, int &location);
+bool GetLocation(RoadNames road, Csis::Type_location_region &region, Csis::Type_location &location);
 int LostSuspect(int speaker);
 int Bailout(int speaker);
 void QuadrantForming();
@@ -893,13 +893,10 @@ IRoadBlock *SoundAI::GetRoadblock() {
 }
 
 bool SoundAI::IsMusicActive() {
-    bool result;
-    if (mMusicFlow) {
-        result = mMusicFlow->GetState() != -1;
-    } else {
-        result = false;
+    if (mMusicFlow == nullptr) {
+        return false;
     }
-    return result;
+    return mMusicFlow->GetState() != -1;
 }
 
 EAXCop *SoundAI::GetCopInRB() {
@@ -1195,30 +1192,24 @@ void SoundAI::SyncPlayers() {
 }
 
 int SoundAI::GetBattalionFromRoadID(int roadID) {
-    int region;
-    int location;
+    Csis::Type_location_region region;
+    Csis::Type_location location;
     bool result = MiscSpeech::GetLocation(static_cast<RoadNames>(roadID), region, location);
 
     if (!result) {
         return -1;
     }
-    if (region != 2) {
-        if (region < 3) {
-            if (region == 1) {
-                return 1;
-            }
-            return -1;
-        }
-        if (region != 4) {
-            if (region != 8) {
-                return -1;
-            }
-            return 4;
-        } else {
-            return 2;
-        }
+    switch (region) {
+    case 8:
+        return 4;
+    case 2:
+    case 4:
+        return 2;
+    case 1:
+        return 1;
+    default:
+        return -1;
     }
-    return 2;
 }
 
 void SoundAI::AddNewHeli(IVehicle *heli) {

@@ -1492,12 +1492,9 @@ void Manager::CalcProbPlayback() {
     }
 }
 
-void Manager::AttachSFXOBJ(SpeechModuleIndex module, SFX_Base *psb, eSFXOBJ_MAIN_TYPES type) {
-    if ((module < 0) || (module >= NUM_SPEECH_MODULES)) {
-        return;
-    }
-    if (m_SpeechModule[module]) {
-        m_SpeechModule[module]->AttachSFXOBJ(psb, type);
+void Manager::AttachSFXOBJ(SpeechModuleIndex idx, SFX_Base *psfx, eSFXOBJ_MAIN_TYPES sfxtype) {
+    if (m_SpeechModule[idx]) {
+        m_SpeechModule[idx]->AttachSFXOBJ(psfx, sfxtype);
     }
 }
 

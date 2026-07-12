@@ -577,10 +577,10 @@ void StrategyFlow::Outrun() {
 }
 
 void StrategyFlow::Lost() {
-    if (Manager::IsCopSpeechBusy()) {
-        return;
+    SoundAI *ai = SoundAI::Get();
+    if (ai->GetPursuitState() == SoundAI::kInactive) {
+        ChangeStateTo(kTerminal);
     }
-    ChangeStateTo(kTransition);
 }
 
 void StrategyFlow::Terminal() {

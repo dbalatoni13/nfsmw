@@ -86,12 +86,10 @@ void EAXCharacter::operator delete(void *ptr) {
 }
 
 void EAXCharacter::Ack() {
+    SoundAI *ai = SoundAI::Get();
     Csis::AcknowledgeStruct ack;
-    ack.yes_no = 1;
     ack.speaker_id = mSpeakerID;
-    if (*reinterpret_cast<unsigned int *>(&mDestroyed) != 0) {
-        ack.yes_no = 2;
-    }
+    ack.yes_no = *reinterpret_cast<unsigned int *>(&mDestroyed) != 0 ? 2 : 1;
     ack.intensity = 1;
     Speech::Manager::ScheduleSpeech(ack, Csis::AcknowledgeId, Csis::gAcknowledgeHandle, this);
 }
@@ -99,17 +97,10 @@ void EAXCharacter::Ack() {
 void EAXCharacter::Deny() {
     SoundAI *ai = SoundAI::Get();
     Csis::AcknowledgeStruct ack;
-    int intensity = 1;
 
-    ack.yes_no = 1;
     ack.speaker_id = mSpeakerID;
-    if (*reinterpret_cast<unsigned int *>(&mDestroyed) != 0) {
-        ack.yes_no = 2;
-    }
-    if (!ai->IsHighIntensity()) {
-        intensity = 2;
-    }
-    ack.intensity = intensity;
+    ack.yes_no = *reinterpret_cast<unsigned int *>(&mDestroyed) != 0 ? 2 : 1;
+    ack.intensity = ai->IsHighIntensity() ? 1 : 2;
     Speech::Manager::ScheduleSpeech(ack, Csis::AcknowledgeId, Csis::gAcknowledgeHandle, this);
 }
 

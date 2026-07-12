@@ -234,10 +234,7 @@ static inline void RBAverted_Impl() {
     }
 
     Csis::ExtraCops_ExtraRBAvertedStruct data;
-    data.roadblock_engage_type = 1;
-    if (roadblock->GetNumSpikeStrips() > 0) {
-        data.roadblock_engage_type = 2;
-    }
+    data.roadblock_engage_type = roadblock->GetNumSpikeStrips() > 0 ? 2 : 1;
     Speech::Manager::ScheduleSpeech(data, Csis::ExtraCops_ExtraRBAvertedId, Csis::gExtraCops_ExtraRBAvertedHandle, static_cast<EAXCharacter *>(0));
 }
 

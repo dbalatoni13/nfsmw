@@ -133,7 +133,7 @@ void PursuitFlow::Update() {
 
 void PursuitFlow::CullCheck() {
     SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
-    if (ai && (ai->GetPursuitState() == SoundAI::kActive)) {
+    if (ai->GetPursuitState() == SoundAI::kActive) {
         ChangeStateTo(kCloseInCheck);
     }
 }

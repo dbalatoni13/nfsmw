@@ -123,8 +123,7 @@ void MusicFlow::MessageDone(const MNotifyMusicFlow &message) {
 }
 
 void MusicFlow::MessageX360UserTunes(const MNotifyMusicFlow &message) {
-    mX360UserTunes = message.GetPart() != 0;
-    mRequestedSwap = mX360UserTunes;
+    mX360UserTunes = message.GetPart() > 0;
 }
 
 void MusicFlow::Reacquire() {
