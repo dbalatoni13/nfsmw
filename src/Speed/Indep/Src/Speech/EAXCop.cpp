@@ -1317,20 +1317,17 @@ void EAXCop::IntentToRam() {
 
 void EAXCop::CallforEV(unsigned int type) {
     SoundAI *ai = SoundAI::Get();
+    Csis::AnytimeEvents_CallForEVStruct data;
     if (ai && ai->GetPursuitState() == SoundAI::kActive && ai->GetFocus() != 1) {
-        Csis::AnytimeEvents_CallForEVStruct data;
-        data.ev_type = type;
-        if (type == 0) {
-            if (IsHeli()) {
-                data.ev_type = 4;
-            } else {
-                IPursuit *pursuit = ai->GetPursuit();
-                int destroyed = pursuit->GetNumCopsDestroyed();
-                if (destroyed < 2) {
-                    return;
-                }
-                data.ev_type = 1;
+        if (type != 0) {
+            data.ev_type = type;
+        } else if (IsHeli()) {
+            data.ev_type = 4;
+        } else {
+            if (ai->GetPursuit()->GetNumCopsDestroyed() < 2) {
+                return;
             }
+            data.ev_type = 1;
         }
         data.speaker_id = mSpeakerID;
         ScheduleSpeech(data, Csis::AnytimeEvents_CallForEVId, Csis::gAnytimeEvents_CallForEVHandle, this);
