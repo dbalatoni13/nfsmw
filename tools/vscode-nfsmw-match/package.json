@@ -1,0 +1,72 @@
+{
+  "name": "nfsmw-match-annotations",
+  "displayName": "NFSMW Match Annotations",
+  "description": "Annotate C/C++ functions with objdiff and DWARF match percentages.",
+  "version": "0.1.0",
+  "publisher": "nfsmw",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": ["Other"],
+  "files": [
+    "extension.js",
+    "README.md"
+  ],
+  "activationEvents": [
+    "onLanguage:c",
+    "onLanguage:cpp"
+  ],
+  "main": "./extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "nfsmwMatch.refreshCurrentFile",
+        "title": "NFSMW: Refresh Match Annotations for Current File",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "nfsmwMatch.setStdumpPath",
+        "title": "NFSMW: Set PS2 stdump Path"
+      },
+      {
+        "command": "nfsmwMatch.enableObjdiff",
+        "title": "NFSMW: Enable objdiff Metrics"
+      },
+      {
+        "command": "nfsmwMatch.disableObjdiff",
+        "title": "NFSMW: Disable objdiff Metrics"
+      }
+    ],
+    "configuration": {
+      "title": "NFSMW Match Annotations",
+      "properties": {
+        "nfsmwMatch.pythonPath": {
+          "type": "string",
+          "default": "python",
+          "description": "Python executable used to run the repository tools."
+        },
+        "nfsmwMatch.cacheMaxMB": {
+          "type": "number",
+          "default": 500,
+          "minimum": 1,
+          "maximum": 500,
+          "description": "Maximum annotation cache size. Values are always capped at 500 MB."
+        },
+        "nfsmwMatch.stdumpPath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to ccc stdump for PS2 struct/class comparisons. The extension prompts when first needed."
+        },
+        "nfsmwMatch.objdiffEnabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Fetch and display objdiff function metrics. Disable this to keep only DWARF metrics or PS2 type comparisons."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "test": "node --check extension.js"
+  },
+  "license": "MIT"
+}
