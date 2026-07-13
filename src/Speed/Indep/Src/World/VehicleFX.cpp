@@ -1,15 +1,8 @@
 #include "VehicleFX.h"
 #include "Speed/Indep/Src/Generated/Hash.hpp"
-#include "Speed/Indep/Tools/AttribSys/Runtime/AttribHash.h"
 #include "Speed/Indep/Libs/Support/Utility/UCrc.h"
 
 namespace VehicleFX {
-
-struct Maps {
-    ID id;
-    Attrib::StringKey name;
-    uint32 marker;
-};
 
 static const Maps vehicle_fx_maps[22] = {
     {LIGHT_LHEAD, Attrib::StringKey("LIGHT_LHEAD"), STRINGHASH_LEFT_HEADLIGHT},

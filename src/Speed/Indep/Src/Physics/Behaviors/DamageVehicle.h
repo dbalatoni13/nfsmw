@@ -9,7 +9,7 @@
 #include "Speed/Indep/Src/Interfaces/Simables/IDamageable.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRenderable.h"
 #include "Speed/Indep/Src/Physics/VehicleBehaviors.h"
-#include "Speed/Indep/Src/Sim/Collision.h"
+#include "Speed/Indep/Src/Sim/SimTypes.h"
 
 // total size: 0xB8
 class DamageVehicle : public VehicleBehavior,

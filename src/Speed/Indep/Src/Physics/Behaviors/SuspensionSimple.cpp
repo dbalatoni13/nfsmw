@@ -491,7 +491,7 @@ float SuspensionSimple::Tire::UpdateLoaded(float lat_vel, float fwd_vel, float b
         this->mLateralForce = this->mLateralForce * UMath::Min(UMath::Abs(lat_vel), 1.0f);
     }
 
-    if (!braking && IsRear(this->mWheelIndex)) {
+    if (!braking && Physics::Wheels::IsRear(this->mWheelIndex)) {
         this->mLongitudeForce = this->mLongitudeForce * this->GetSurface().DRIVE_GRIP();
         this->mLateralForce = this->mLateralForce * this->GetSurface().LATERAL_GRIP();
     }
