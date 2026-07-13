@@ -18,6 +18,10 @@
 
 #define FLOAT_EPSILON 0.000001f
 
+inline float MPH2KPH(const float _mph_) {
+    return _mph_ * 1.60931f;
+}
+
 namespace UMath {
 
 inline float Sina(const float a) {

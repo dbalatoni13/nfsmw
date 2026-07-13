@@ -578,7 +578,7 @@ void StrategyFlow::Outrun() {
 
 void StrategyFlow::Lost() {
     SoundAI *ai = SoundAI::Get();
-    if (ai->GetPursuitState() == SoundAI::kInactive) {
+    if (ai->GetPursuitState() != SoundAI::kInactive) {
         ChangeStateTo(kTerminal);
     }
 }
@@ -618,25 +618,28 @@ void StrategyFlow::Outcome() {
         return;
     }
 
-    float delta = ai->GetPursuitDistance() - mDistance[0];
-    mDistance[1] = ai->GetPursuitDistance();
-    float deltav = ai->GetPlayerSpeed() - mSpeed[0];
-    mSpeed[1] = ai->GetPlayerSpeed();
-    if ((delta > 0.0f) || (deltav > 0.0f)) {
-        if ((ai->GetPursuitDistance() > 50.0f) || (ai->NumCopsWithLOS() == 0) || !ai->AreCopsAhead()) {
-            EAXCop *spokesperson;
-            if (ai->GetLeader()->IsHeli()) {
-                spokesperson = ai->FindClosestCop(false, false);
+    {
+        mDistance[1] = ai->GetPursuitDistance();
+        float delta = mDistance[1] - mDistance[0];
+        mSpeed[1] = ai->GetPlayerSpeed();
+        float deltav = mSpeed[1] - mSpeed[0];
+        if ((delta > 0.0f) || (deltav > 0.0f)) {
+            if ((ai->GetPursuitDistance() > 50.0f) || (ai->NumCopsWithLOS() == 0) || !ai->AreCopsAhead()) {
+                {
+                    EAXCop *spokesperson;
+                    if (ai->GetLeader()->IsHeli()) {
+                        spokesperson = ai->FindClosestCop(false, false);
+                    } else {
+                        spokesperson = ai->GetLeader();
+                    }
+                    spokesperson->AnticipateFail();
+                }
             } else {
-                spokesperson = ai->GetLeader();
+                ai->GetLeader()->StrategyReset(mFormationType != ai->GetPursuit()->GetFormationType());
             }
-            spokesperson->AnticipateFail();
-        } else {
-            pursuit = ai->GetPursuit();
-            ai->GetLeader()->StrategyReset(mFormationType != pursuit->GetFormationType());
+        } else if (((mFlags ^ SOLO) & SOLO) != 0) {
+            ai->GetLeader()->AnticipateSuccess();
         }
-    } else if ((mFlags & SOLO) != SOLO) {
-        ai->GetLeader()->AnticipateSuccess();
     }
     ChangeStateTo(kWaiting);
 }

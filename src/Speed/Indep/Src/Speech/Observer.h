@@ -108,7 +108,9 @@ class Observer : public SpeechFlow {
     }
 
     void SetMask(unsigned int mask);
-    SpeechObservations GetLastEvent();
+    SpeechObservations GetLastEvent() {
+        return mLastEvent;
+    }
 
   private:
     friend class ::SoundAI;

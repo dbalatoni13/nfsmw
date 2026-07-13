@@ -2206,7 +2206,7 @@ int GameSpeech::GetVolForSpeaker(int id) {
                 Csis::CellCallStruct *data = static_cast<Csis::CellCallStruct *>(m_currEvent->GetData(nullptr));
                 if (data && (data->cell_call_bucket == Csis::Type_cell_call_bucket_bucket_01) &&
                     (data->cell_call_number == Csis::Type_cell_call_number_call_07)) {
-                    vol += vol;
+                    bClamp(vol += vol, 0, 0x7fff);
                 }
             }
             break;

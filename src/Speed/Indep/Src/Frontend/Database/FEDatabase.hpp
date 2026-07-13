@@ -283,6 +283,10 @@ class cFrontendDatabase {
         return &CurrentUserProfiles[0]->GetOptions()->TheAudioSettings;
     }
 
+    GameplaySettings *GetGameplaySettings() {
+        return &CurrentUserProfiles[0]->GetOptions()->TheGameplaySettings;
+    }
+
     UserProfile *GetUserProfile(int player) {
         return CurrentUserProfiles[player];
     }

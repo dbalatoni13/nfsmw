@@ -323,12 +323,11 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
         return mCTS911;
     }
 
-    int GetLastObservation() {
-        int last = 0;
+    Speech::SpeechObservations GetLastObservation() {
         if (mObserver) {
-            last = mObserver->mLastEvent;
+            return mObserver->GetLastEvent();
         }
-        return last;
+        return Speech::kNone;
     }
 
     const int GetFocus() {

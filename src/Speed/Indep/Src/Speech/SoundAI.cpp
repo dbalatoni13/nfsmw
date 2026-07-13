@@ -860,26 +860,25 @@ Sim::IActivity *SoundAI::Construct(Sim::Param params) {
 }
 
 IRoadBlock *SoundAI::GetRoadblock() {
-    IPursuit *pursuit = mPursuit;
-
-    if (pursuit) {
-        return pursuit->GetRoadBlock();
+    if (mPursuit) {
+        return mPursuit->GetRoadBlock();
     }
 
-    const UTL::Collections::Listable<IRoadBlock, 8>::List &blocks = UTL::Collections::Listable<IRoadBlock, 8>::GetList();
-    UTL::Collections::Listable<IRoadBlock, 8>::List::const_iterator i = blocks.begin();
-    while (i != blocks.end()) {
-        IRoadBlock *rb = *i;
-        if (rb) {
-            pursuit = rb->GetPursuit();
-            if (pursuit) {
-                int active = pursuit->ContingentHasActiveCops();
-                if (active) {
-                    return rb;
+    {
+        const UTL::Collections::Listable<IRoadBlock, 8>::List &blocks = UTL::Collections::Listable<IRoadBlock, 8>::GetList();
+        {
+            UTL::Collections::Listable<IRoadBlock, 8>::List::const_iterator i = blocks.begin();
+            while (i != blocks.end()) {
+                IRoadBlock *rb = *i;
+                if (rb) {
+                    IPursuit *pursuit = rb->GetPursuit();
+                    if (pursuit && pursuit->IsPlayerPursuit()) {
+                        return rb;
+                    }
                 }
+                ++i;
             }
         }
-        ++i;
     }
     return 0;
 }
@@ -895,11 +894,12 @@ EAXCop *SoundAI::GetCopInRB() {
     IRoadBlock *block = GetRoadblock();
 
     if (block) {
-        Speech::copMap::iterator iter = mActors.begin();
+        const Speech::copPair *iter = mActors.begin();
         while (iter != mActors.end()) {
             EAXCop *cop = iter->cop;
-            if ((cop->GetInFormation() != 0) && !cop->IsPrimary()) {
-                if (block->IsComprisedOf(cop->GetHandle())) {
+            if (cop->IsActive() && !cop->IsPrimary()) {
+                IVehicle *car = block->IsComprisedOf(cop->GetHandle());
+                if (car) {
                     return cop;
                 }
             }
@@ -1278,9 +1278,6 @@ bool SoundAI::OnTask(HSIMTASK htask, float dT) {
 void SoundAI::UpdateStateMachines() {
     if ((IsSpeechEnabled != 0) && ((mFlags & BUSTED) == 0)) {
         switch (mFocus) {
-        case kRoadblockFlow:
-            goto update_strategy;
-
         case kPursuitFlow:
             mPursuitFlow->Update();
             if (mPursuitFlow->IsTransitionable()) {
@@ -1289,8 +1286,8 @@ void SoundAI::UpdateStateMachines() {
             }
             break;
 
+        case kRoadblockFlow:
         case kStrategyFlow:
-        update_strategy:
             if (mStrategyFlow->IsTransitionable()) {
                 mStrategyFlow->ChangeStateTo(kWaiting);
             }
@@ -1983,12 +1980,12 @@ unsigned char SoundAI::GetCustomized(IVehicle *vehicle, CarCustomizations &custr
             }
         }
     } else {
-        CarTypeInfo *type_info = &CarTypeInfoArray[vehicle->GetModelType()];
+        CarTypeInfo *type_info = GetCarTypeInfo(vehicle->GetModelType());
         CarPart *paint_part = NewGetCarPart__15CarPartDatabase7CarTypeiUiP7CarParti(
             &CarPartDB,
             vehicle->GetModelType(),
             0x4c,
-            static_cast<unsigned int>(type_info->DefaultBasePaint),
+            type_info->GetDefaultBasePaint(),
             0,
             -1);
         if (paint_part) {

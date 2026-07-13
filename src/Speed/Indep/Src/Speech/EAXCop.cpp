@@ -493,8 +493,6 @@ extern FunctionHandle gStaticRoadblock_RBEngageHandle;
 extern FunctionHandle gStaticRoadblock_RBApproachHandle;
 }
 
-extern "C" float speed_test_28362[];
-
 EAXCop::EAXCop(int speakerID, HSIMABLE handle, int bID, int cID)
     : EAXCharacter(speakerID, handle, bID, cID), //
       mRank(0), //
@@ -638,109 +636,113 @@ void EAXCop::Update() {
 }
 
 void EAXCop::SetActive(bool activity) {
-    unsigned int active = static_cast<unsigned int>(activity);
-    if (*reinterpret_cast<unsigned int *>(&mActive) == active) {
+    if (*reinterpret_cast<unsigned int *>(&mActive) == static_cast<unsigned int>(activity)) {
         return;
     }
 
-    *reinterpret_cast<unsigned int *>(&mActive) = active;
-    SoundAI *ai = SoundAI::Get();
-    if (!ai) {
-        return;
-    }
-
-    if (active != 0) {
-        int focus = ai->GetFocus();
-        if (focus != 0x29A && focus != 2) {
+    *reinterpret_cast<unsigned int *>(&mActive) = static_cast<unsigned int>(activity);
+    {
+        SoundAI *ai = SoundAI::Get();
+        if (!ai) {
             return;
         }
 
-        if (*reinterpret_cast<unsigned int *>(&mSuspectLOS) != 0) {
-            if (bRandom(1.0f) > 0.5f) {
-                Spotted();
+        if (activity) {
+            if (ai->GetFocus() != 0x29A && ai->GetFocus() != 2) {
+                return;
+            }
+
+            if (*reinterpret_cast<unsigned int *>(&mSuspectLOS) != 0) {
+                if (bRandom(1.0f) > 0.5f) {
+                    Spotted();
+                } else {
+                    RegainVisual();
+                }
+                return;
             } else {
-                RegainVisual();
+                if (ai->GetFocus() != 2) {
+                    return;
+                }
+                if (ai->GetPursuitState() == SoundAI::kInactive) {
+                    return;
+                }
+
+                {
+                    IRoadBlock *block = ai->GetRoadblock();
+                    if (!block) {
+                        return;
+                    }
+
+                    if (block->IsComprisedOf(GetHandle()) != 0) {
+                        return;
+                    }
+
+                    if (bRandom(1.0f) > 0.5f) {
+                        UnitBackupReply();
+                    } else {
+                        BackupArrives();
+                    }
+                    return;
+                }
             }
-            return;
-        } else {
-            if (focus != 2) {
-                return;
-            }
-            if (ai->GetPursuitState() == SoundAI::kInactive) {
+        }
+
+        {
+            float t_lastactivity = (WorldTimer - mT_lastactivity).GetSeconds();
+            int num_events_flushed;
+            if (t_lastactivity < 2.0f) {
                 return;
             }
 
-            IRoadBlock *block = ai->GetRoadblock();
-            if (!block) {
+            num_events_flushed = Speech::Manager::FlushSpeechForActor(this);
+            if ((*reinterpret_cast<unsigned int *>(&mInFormation) == 0) &&
+                (*reinterpret_cast<unsigned int *>(&mInPosition) == 0)) {
                 return;
             }
 
-            if (block->IsComprisedOf(GetHandle()) != 0) {
+            mT_lastactivity = WorldTimer;
+
+            if (mTrafficHitCount > 1) {
+                BailoutTraffic();
+                mTrafficHitCount = 0;
+                if (ai->GetPursuitState() == SoundAI::kActive) {
+                } else if (ai->GetPursuitState() == SoundAI::kSearching) {
+                } else {
+                    return;
+                }
+                ai->RandomBailoutDeny(this);
                 return;
             }
 
-            if (bRandom(1.0f) > 0.5f) {
-                UnitBackupReply();
+            if (IsHeli()) {
+                Bailout();
+                return;
+            }
+
+            if (*reinterpret_cast<unsigned int *>(&mDestroyed) != 0) {
+                EAXCop *rand_cop = ai->FindClosestCop(true, true);
+                if (rand_cop) {
+                    rand_cop->UnitDisabled(rand_cop->GetSpeakerID() != GetSpeakerID());
+                } else {
+                    UnitDisabled(false);
+                }
+                return;
+            }
+
+            if (mHealth < ai->GetTune().MinHealthForCommentary()) {
+                HiBailout();
+                return;
+            }
+
+            LoBailout();
+            if (ai->GetPursuitState() == SoundAI::kActive) {
+            } else if (ai->GetPursuitState() == SoundAI::kSearching) {
             } else {
-                BackupArrives();
+                return;
             }
-            return;
+            ai->RandomBailoutDeny(this);
         }
     }
-
-    if ((WorldTimer - mT_lastactivity).GetSeconds() < 2.0f) {
-        return;
-    }
-
-    int num_events_flushed = Speech::Manager::FlushSpeechForActor(this);
-    if ((*reinterpret_cast<unsigned int *>(&mInFormation) == 0) && (*reinterpret_cast<unsigned int *>(&mInPosition) == 0)) {
-        return;
-    }
-
-    mT_lastactivity = WorldTimer;
-
-    if (mTrafficHitCount > 1) {
-        BailoutTraffic();
-        mTrafficHitCount = 0;
-        int state = ai->GetPursuitState();
-        if (state == SoundAI::kActive) {
-        } else if (state == SoundAI::kSearching) {
-        } else {
-            return;
-        }
-        ai->RandomBailoutDeny(this);
-        return;
-    }
-
-    if (IsHeli()) {
-        Bailout();
-        return;
-    }
-
-    if (*reinterpret_cast<unsigned int *>(&mDestroyed) != 0) {
-        EAXCop *rand_cop = ai->FindClosestCop(true, true);
-        if (rand_cop) {
-            rand_cop->UnitDisabled(rand_cop->GetSpeakerID() != GetSpeakerID());
-        } else {
-            UnitDisabled(false);
-        }
-        return;
-    }
-
-    float min_health = ai->GetTune().MinHealthForCommentary();
-    if (mHealth < min_health) {
-        HiBailout();
-        return;
-    }
-
-    LoBailout();
-    int state = ai->GetPursuitState();
-    if (state == SoundAI::kActive) {
-    } else if (state == SoundAI::kSearching) {
-    } else {
-        return;
-    }
-    ai->RandomBailoutDeny(this);
 }
 
 void EAXCop::Reset() {
@@ -831,41 +833,48 @@ void EAXCop::AttemptVehicleStop() {
 }
 
 void EAXCop::VehicleReport() {
+    static const float speed_test[11] = {100.0f, 120.0f, 140.0f, 160.0f, 180.0f, 200.0f,
+                                         220.0f, 240.0f, 260.0f, 280.0f, 300.0f};
     int ndx = 0;
-    if (FEDatabase) {
-        SoundAI *ai = SoundAI::Get();
-        if (ai) {
-            int color = 0;
-            color = ai->GetPlayerCarColor();
-            if (color && MiscSpeech::IsVehicleTypeOK()) {
-                Csis::Setup_VehicleReportStruct data;
-                float speedo;
-                data.speaker_id = mSpeakerID;
-                data.car_color = color;
-                data.car_type = static_cast<int>(ai->GetPlayerSpecs().VerbalType());
-                speedo = ai->GetPlayerSpeed();
-                if (FEDatabase->CurrentUserProfiles[0]->GetOptions()->TheGameplaySettings.SpeedoUnits == 1) {
-                    data.measurement = 4;
-                    speedo = speedo * 1.60931f;
-                } else {
-                    data.measurement = 2;
-                }
-                while (ndx <= 10 && speed_test_28362[ndx] <= speedo) {
-                    ndx++;
-                }
-                if (ndx == 0) {
-                    data.speed = 1;
-                    data.measurement = 1;
-                } else {
-                    if (bRandom(1.0f) > 0.5f) {
-                        data.measurement = 1;
-                    }
-                    data.speed = 2 << (ndx - 1);
-                }
-                Speech::Manager::ScheduleSpeech(data, Csis::Setup_VehicleReportId, Csis::gSetup_VehicleReportHandle, this);
-            }
-        }
+    SoundAI *ai;
+    unsigned int color;
+    if (FEDatabase == nullptr) {
+        return;
     }
+    ai = SoundAI::Get();
+    if (ai == nullptr) {
+        return;
+    }
+    color = ai->GetPlayerCarColor();
+    if (!color || !MiscSpeech::IsVehicleTypeOK()) {
+        return;
+    }
+    const Attrib::Gen::pvehicle &pcar = ai->GetPlayerSpecs();
+    Csis::Setup_VehicleReportStruct data;
+    float speedo;
+    data.speaker_id = mSpeakerID;
+    data.car_color = color;
+    data.car_type = static_cast<int>(pcar.VerbalType());
+    speedo = ai->GetPlayerSpeed();
+    if (FEDatabase->GetGameplaySettings()->SpeedoUnits == 1) {
+        data.measurement = 4;
+        speedo = MPH2KPH(speedo);
+    } else {
+        data.measurement = 2;
+    }
+    while (ndx <= 10 && speedo >= speed_test[ndx]) {
+        ndx++;
+    }
+    if (ndx == 0) {
+        data.speed = 1;
+        data.measurement = 1;
+    } else {
+        if (bRandom(1.0f) > 0.5f) {
+            data.measurement = 1;
+        }
+        data.speed = 2 << (ndx - 1);
+    }
+    Speech::Manager::ScheduleSpeech(data, Csis::Setup_VehicleReportId, Csis::gSetup_VehicleReportHandle, this);
 }
 
 void EAXCop::InitiatePursuit() {

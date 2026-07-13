@@ -267,15 +267,13 @@ void EAXDispatch::PursuitEscalationGeneric() {
 
 void EAXDispatch::PursuitEscalation() {
     SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
-    bool result;
+    Csis::AnytimeEvents_DispPursuitEscalationStruct data;
     EAXCop *furthest;
-    int dir;
+    Speech::SpeechObservations last;
     Csis::Type_location_region region;
     Csis::Type_location location;
-    int last;
-    int num_suspects;
-    unsigned int direction;
-    Csis::AnytimeEvents_DispPursuitEscalationStruct data;
+    bool result;
+    unsigned int dir;
 
     if (!ai) {
         return;
@@ -332,11 +330,8 @@ void EAXDispatch::PursuitEscalation() {
         data.pursuit_type = Csis::Type_pursuit_type_Generic_Speeder;
         break;
     }
-    num_suspects = Csis::Type_num_suspects_one_suspect;
-    if (ai->AreRacersNearby()) {
-        num_suspects = Csis::Type_num_suspects_multiple_suspects;
-    }
-    data.num_suspects = num_suspects;
+    data.num_suspects = ai->AreRacersNearby() ? Csis::Type_num_suspects_multiple_suspects
+                                              : Csis::Type_num_suspects_one_suspect;
     result = MiscSpeech::GetLocation(ai->GetLastKnownRoad(), region, location);
     if (!result) {
         result = MiscSpeech::GetLocation(ai->GetPlayerRoadID(0), region, location);
@@ -346,18 +341,17 @@ void EAXDispatch::PursuitEscalation() {
     }
     data.location_region = region;
     data.location = location;
-    direction = ai->GetLastKnownDirection();
-    if (direction == 0) {
-        direction = ai->GetPlayerDirection(0);
-        if (direction == 0) {
-            direction = ai->GetPlayerDirection(1);
-            if (direction == 0) {
-                dir = bRandom(4);
-                direction = 1 << dir;
+    dir = ai->GetLastKnownDirection();
+    if (dir == 0) {
+        dir = ai->GetPlayerDirection(0);
+        if (dir == 0) {
+            dir = ai->GetPlayerDirection(1);
+            if (dir == 0) {
+                dir = 1 << bRandom(4);
             }
         }
     }
-    data.direction = direction;
+    data.direction = dir;
     Speech::Manager::ScheduleSpeech(data, Csis::AnytimeEvents_DispPursuitEscalationId, Csis::gAnytimeEvents_DispPursuitEscalationHandle, this);
 }
 

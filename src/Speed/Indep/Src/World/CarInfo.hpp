@@ -108,6 +108,10 @@ struct DriverInfo {
 
 // total size: 0xD0
 struct CarTypeInfo {
+    unsigned int GetDefaultBasePaint() {
+        return static_cast<unsigned int>(DefaultBasePaint);
+    }
+
     char CarTypeName[16];                       // offset 0x0, size 0x10
     char BaseModelName[16];                     // offset 0x10, size 0x10
     char GeometryFilename[32];                  // offset 0x20, size 0x20
@@ -138,5 +142,11 @@ struct CarTypeInfo {
     int Padding;                                // offset 0xC8, size 0x4
     int DefaultBasePaint;                       // offset 0xCC, size 0x4
 };
+
+extern CarTypeInfo *CarTypeInfoArray;
+
+inline CarTypeInfo *GetCarTypeInfo(CarType car_type) {
+    return &CarTypeInfoArray[car_type];
+}
 
 #endif
