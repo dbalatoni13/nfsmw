@@ -973,32 +973,28 @@ extern "C" int AddHeaders__Q26Speech7ManagerPPcPQ26Speech11SPEECH_BANKiPQ26Speec
     int numBanks,
     Speech::Module *module) {
     int size = 0;
+    char *mem;
     Speech::SPEECH_BANK *sb = banks;
-    {
-        Speech::SPEECH_BANK *end = banks + numBanks;
-        while (sb < end) {
-            if (sb->mem) {
-                size += sb->bank;
-            }
-            ++sb;
+    Timer t_validate;
+    while (sb < banks + numBanks) {
+        if (sb->mem) {
+            size += sb->bank;
         }
+        ++sb;
     }
 
-    char *mem = gAudioMemoryManager.AllocateMemoryChar(size, "AUD:Relocated speech headers", false);
+    mem = gAudioMemoryManager.AllocateMemoryChar(size, "AUD:Relocated speech headers", false);
     *dest = mem;
 
-    {
-        Speech::SPEECH_BANK *end = banks + numBanks;
-        sb = banks;
-        while (sb < end) {
-            if (sb->mem) {
-                bMemCpy(mem, sb->mem, sb->bank);
-                sb->mem = mem;
-                mem += sb->bank;
-                sb->bank = SPCH_AddBank(sb->mem);
-            }
-            ++sb;
+    sb = banks;
+    while (sb < banks + numBanks) {
+        if (sb->mem) {
+            bMemCpy(mem, sb->mem, sb->bank);
+            sb->mem = mem;
+            mem += sb->bank;
+            sb->bank = SPCH_AddBank(sb->mem);
         }
+        ++sb;
     }
     return 0;
 }

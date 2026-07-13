@@ -168,10 +168,10 @@ static inline bool IsVehicleTypeOK_Impl() {
         ok = false;
     }
 
-    register unsigned int root_collection = 0xEEC2271A;
-    register unsigned int excluded_collection_1 = 0xDF9C02AC;
-    register unsigned int excluded_collection_3 = 0x230EB710;
-    register unsigned int excluded_collection_2 = 0xA9811B93;
+    unsigned int root_collection = 0xEEC2271A;
+    unsigned int excluded_collection_1 = 0xDF9C02AC;
+    unsigned int excluded_collection_3 = 0x230EB710;
+    unsigned int excluded_collection_2 = 0xA9811B93;
 
     while ((pcar.GetCollection() != root_collection) && ok) {
         if ((pcar.GetCollection() == excluded_collection_1) || (pcar.GetCollection() == excluded_collection_2) ||

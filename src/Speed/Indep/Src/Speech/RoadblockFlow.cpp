@@ -24,20 +24,18 @@ RoadblockFlow::RoadblockFlow()
     : mT_setup(0), //
       mT_engaged(0), //
       mT_averted(0), //
-      mT_reset(0), //
+      mT_reset(), //
       mLoDist2RB(0.0f), //
       mFlags(0), //
       mSpikeOffset(0), //
       mPertinentRB(0), //
-      mNumBlocks(0) {
-    mLastState = kTransition;
-
-    mMsgReqHeliJoinRB =
-        Hermes::Handler::Create<MReqRoadBlock, RoadblockFlow, RoadblockFlow>(this, &RoadblockFlow::MessageReqHeliJoinRB, "ReqHeliJoin", 0);
-    mMsgRoadBlockDodged = Hermes::Handler::Create<MReqRoadBlock, RoadblockFlow, RoadblockFlow>(
-        this, &RoadblockFlow::MessageRoadBlockDodged, "Dodged", 0);
-    mMsgPosition = Hermes::Handler::Create<MReqRoadBlock, RoadblockFlow, RoadblockFlow>(
-        this, &RoadblockFlow::MessagePositionUpdate, "Position", 0);
+      mNumBlocks(0), //
+      mMsgReqHeliJoinRB(Hermes::Handler::Create<MReqRoadBlock, RoadblockFlow, RoadblockFlow>(
+          this, &RoadblockFlow::MessageReqHeliJoinRB, "ReqHeliJoin", 0)), //
+      mMsgRoadBlockDodged(Hermes::Handler::Create<MReqRoadBlock, RoadblockFlow, RoadblockFlow>(
+          this, &RoadblockFlow::MessageRoadBlockDodged, "Dodged", 0)), //
+      mMsgPosition(Hermes::Handler::Create<MReqRoadBlock, RoadblockFlow, RoadblockFlow>(
+          this, &RoadblockFlow::MessagePositionUpdate, "Position", 0)) {
     mState = kWaiting;
 }
 

@@ -28,7 +28,8 @@ enum Type_heli_bailout_type {
 
 // total size: 0x84
 struct EAXAirSupport : public EAXCop {
-    EAXAirSupport(int speakerID, HSIMABLE handle);
+    EAXAirSupport(int speakerID, HSIMABLE handle)
+        : EAXCop(speakerID, handle, 64, 1) {}
     Type_heli_bailout_type GetCauseOfBailout();
 
     // Virtual overrides

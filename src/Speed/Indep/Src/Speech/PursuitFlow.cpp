@@ -16,15 +16,12 @@ PursuitFlow::PursuitFlow()
       mReqRestart(false), //
       mAVSUnitRammedSaid(false), //
       mSpeaker(0), //
-      mMsgNotifyEventCompletion(0) {
-    mMsgNotifyEventCompletion = Hermes::Handler::Create<MNotifySpeechStatus, PursuitFlow, PursuitFlow>(
-        this, &PursuitFlow::MessageEventComplete, UCrc32(0x20d60dbf), 0);
-}
+      mMsgNotifyEventCompletion(Hermes::Handler::Create<MNotifySpeechStatus, PursuitFlow, PursuitFlow>(
+          this, &PursuitFlow::MessageEventComplete, UCrc32(0x20d60dbf), 0)) {}
 
 PursuitFlow::~PursuitFlow() {
     if (mMsgNotifyEventCompletion) {
         Hermes::Handler::Destroy(mMsgNotifyEventCompletion);
-        mMsgNotifyEventCompletion = 0;
     }
 }
 
@@ -517,6 +514,7 @@ void PursuitFlow::SpotterWait() {
     SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
 
     if (!mBusy) {
+        IPursuit *pursuit = ai->GetPursuit();
         if (ai->GetPursuitState() != SoundAI::kActive) {
             ChangeStateTo(kLostWhileSpotWait);
             return;
@@ -524,21 +522,12 @@ void PursuitFlow::SpotterWait() {
 
         EAXCop *cansee = ai->FindClosestCop(true, true);
         if (cansee && ai->MakeLeader(cansee) && (mCauseofPursuit != kScripted)) {
-            if (mCauseofPursuit == k911Reported) {
+            if ((mCauseofPursuit == k911Reported) ||
+                (mFirstOnScene && (mFirstOnScene->GetSpeakerID() != cansee->GetSpeakerID()))) {
                 if (ai->AreCopsAhead() || !cansee->IsPrimary()) {
                     cansee->Spotted();
                 } else {
                     cansee->SpotterReply();
-                }
-            } else {
-                if (mFirstOnScene) {
-                    if (mFirstOnScene->GetSpeakerID() != cansee->GetSpeakerID()) {
-                        if (ai->AreCopsAhead() || !cansee->IsPrimary()) {
-                            cansee->Spotted();
-                        } else {
-                            cansee->SpotterReply();
-                        }
-                    }
                 }
             }
 
@@ -594,6 +583,7 @@ void PursuitFlow::ChangeTarget() {
         closest->FocusChange();
     }
 
+    ai->GetDispatch()->PursuitEscalation();
     ChangeStateTo(kTransition);
     Reset();
 }

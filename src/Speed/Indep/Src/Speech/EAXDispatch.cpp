@@ -223,11 +223,12 @@ void EAXDispatch::BackupReply(EAXCop *cop, int yes, int type) {
 
     if (ai) {
         data.speaker_id = mSpeakerID;
-        data.yes_no = Csis::Type_yes_no_Yes_True;
+        data.code = Type_code_dont_use_10_code;
         if (yes == 0) {
+            data.yes_no = Csis::Type_yes_no_Yes_True;
+        } else {
             data.yes_no = Csis::Type_yes_no_No_False;
         }
-        data.code = Type_code_dont_use_10_code;
         data.subject_battalion = cop->GetCallsign();
         data.subject_call_sign_id = cop->GetUnitNumber();
         data.disp_backup_type = type;
@@ -255,7 +256,7 @@ void EAXDispatch::PursuitEscalationGeneric() {
 
     if (ai) {
         data.speaker_id = mSpeakerID;
-        register int num_suspects = Csis::Type_num_suspects_one_suspect;
+        int num_suspects = Csis::Type_num_suspects_one_suspect;
         if (ai->AreRacersNearby()) {
             num_suspects = Csis::Type_num_suspects_multiple_suspects;
         }
@@ -272,8 +273,8 @@ void EAXDispatch::PursuitEscalation() {
     Csis::Type_location_region region;
     Csis::Type_location location;
     int last;
-    register int num_suspects;
-    register unsigned int direction;
+    int num_suspects;
+    unsigned int direction;
     Csis::AnytimeEvents_DispPursuitEscalationStruct data;
 
     if (!ai) {
@@ -416,8 +417,8 @@ void EAXDispatch::Report911(Csis::Type_pursuit_type infraction) {
     Csis::Type_location_region location_region;
     bool result;
     unsigned int dir;
-    register int num_suspects;
-    register int address_group_type;
+    int num_suspects;
+    int address_group_type;
 
     if (!ai) {
         return;
@@ -440,7 +441,7 @@ void EAXDispatch::Report911(Csis::Type_pursuit_type infraction) {
     data.location_region = location_region;
     data.location = location;
     {
-        register unsigned int direction = ai->GetLastKnownDirection();
+        unsigned int direction = ai->GetLastKnownDirection();
         if ((direction == 0) && ((direction = ai->GetPlayerDirection(0)) == 0) &&
             ((direction = ai->GetPlayerDirection(1)) == 0)) {
             dir = bRandom(4);
@@ -551,10 +552,13 @@ void EAXDispatch::VehicleDescription() {
     SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
     Csis::Setup_DispVehDescripStruct data;
     if (ai) {
+        unsigned int color;
         data.speaker_id = mSpeakerID;
-        data.car_color = ai->GetPlayerCarColor();
-        if (data.car_color != 0) {
-            data.car_type = static_cast<int>(ai->GetPlayerSpecs().VerbalType());
+        color = ai->GetPlayerCarColor();
+        if (color != 0) {
+            const Attrib::Gen::pvehicle &pcar = ai->GetPlayerSpecs();
+            data.car_color = color;
+            data.car_type = static_cast<int>(pcar.VerbalType());
             Speech::Manager::ScheduleSpeech(data, Csis::Setup_DispVehDescripId, Csis::gSetup_DispVehDescripHandle, this);
         }
     }

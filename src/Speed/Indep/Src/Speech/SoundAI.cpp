@@ -72,9 +72,6 @@ extern "C" CarPart *NewGetCarPart__15CarPartDatabase7CarTypeiUiP7CarParti(
     CarPart *prev_part,
     int upg_level);
 
-static unsigned int dir_tracking_30959 = 0;
-static Timer t_currdir_30960 = 0;
-static unsigned int dir_init_30961 = 0;
 static float CopMinClosingVelSq;
 static int DESTROY_COPS_ON_INACTIVITY;
 
@@ -929,10 +926,9 @@ void SoundAI::RandomBailoutDeny(EAXCop *wimp) {
         if ((mActors.size() > 1) && (mPursuitState != kInactive)) {
             Speech::copMap::iterator iter = mActors.begin();
             while (iter != mActors.end()) {
-                EAXCop *cop = iter->cop;
-                if (cop->IsPrimary()) {
-                    if (cop->GetSpeakerID() != wimp->GetSpeakerID()) {
-                        cop->DenyBailout();
+                if (iter->cop->IsPrimary()) {
+                    if (iter->cop->GetSpeakerID() != wimp->GetSpeakerID()) {
+                        iter->cop->DenyBailout();
                     }
                 }
                 ++iter;
@@ -1210,14 +1206,12 @@ int SoundAI::GetBattalionFromRoadID(int roadID) {
 void SoundAI::AddNewHeli(IVehicle *heli) {
     HSIMABLE handle = heli->GetSimable()->GetOwnerHandle();
     EAXAirSupport *chopper = new EAXAirSupport(2, handle);
-    int focus;
 
     mActors.Add(handle, chopper);
-    focus = mFocus;
     mHeli = chopper;
 
-    if (focus != 1) {
-        if ((focus != 999) && (focus != 0)) {
+    if (mFocus != 1) {
+        if ((mFocus != 999) && (mFocus != 0)) {
             chopper->BackupArrives();
             return;
         }
@@ -1540,23 +1534,27 @@ void SoundAI::DealWithDeadAir() {
         mDispatch->PursuitUpdate(mLeader);
     }
 
-    if ((WorldTimer - mT_noLOS).GetSeconds() >= mTune.NoLOSCommentaryTime()) {
+    if (GetPerpLostTime() >= mTune.NoLOSCommentaryTime()) {
         if (!mHeli) {
             mLeader->LostVisual();
-        } else if (!mHeli->HasLOS()) {
-            mHeli->LostVisual();
-        } else if (IsHeadingValid() && (mPlayerOffroadID >= 0) && (bRandom(1.0f) <= 0.5f)) {
-            mHeli->LocationReport();
         } else {
-            mHeli->PursuitUpdateReply();
+            if (mHeli->HasLOS()) {
+                if (!IsHeadingValid() || (mPlayerOffroadID < 0) || (bRandom(1.0f) > 0.5f)) {
+                    mHeli->PursuitUpdateReply();
+                } else {
+                    mHeli->LocationReport();
+                }
+            } else {
+                mHeli->LostVisual();
+            }
         }
     } else {
         if (!Speech::Manager::IsQueued(static_cast<SPCHType_1_EventID>(0x64), 4) &&
             !Speech::Manager::IsQueued(static_cast<SPCHType_1_EventID>(0x9e), 4) && (mPursuitDuration > 60.0f)) {
-            if (IsHeadingValid() && (mPlayerOffroadID >= 0) && (bRandom(1.0f) <= 0.5f)) {
-                mLeader->LocationReport();
-            } else {
+            if (!IsHeadingValid() || (mPlayerOffroadID < 0) || (bRandom(1.0f) > 0.5f)) {
                 mLeader->PursuitUpdateReply();
+            } else {
+                mLeader->LocationReport();
             }
         }
     }
@@ -1796,43 +1794,48 @@ void SoundAI::Force911State() {
 }
 
 EAXCop *SoundAI::FindFurthestCop(bool includeHeli) {
-    EAXCop *furthest = 0;
-
     if (!mActors.size()) {
         return 0;
     }
 
-    Speech::copPair *iter = mActors.begin();
-    while (iter != mActors.end()) {
-        EAXCop *cop = iter->cop;
-        if (cop) {
-            if (!furthest || (furthest->GetDistance() < cop->GetDistance())) {
-                if ((cop->IsHeli() && includeHeli) || !cop->IsHeli()) {
-                    furthest = cop;
+    EAXCop *furthest = 0;
+    {
+        const Speech::copPair *iter = mActors.begin();
+        while (iter != mActors.end()) {
+            EAXCop *cop = iter->cop;
+            if (cop) {
+                if (!furthest || (cop->GetDistance() > furthest->GetDistance())) {
+                    if ((cop->IsHeli() && includeHeli) || !cop->IsHeli()) {
+                        furthest = cop;
+                    }
                 }
             }
+            ++iter;
         }
-        ++iter;
     }
     return furthest;
 }
 
 EAXCop *SoundAI::FindClosestCop(bool enforceLOS, bool includeHeli) {
-    EAXCop *closest = 0;
-
     if (!mActors.size()) {
         return 0;
     }
 
-    Speech::copPair *iter = mActors.begin();
-    while (iter != mActors.end()) {
-        EAXCop *cop = iter->cop;
-        if (cop && (!enforceLOS || cop->HasLOS()) && (includeHeli || !cop->IsHeli())) {
-            if (!closest || (cop->GetDistance() < closest->GetDistance())) {
-                closest = cop;
+    EAXCop *closest = 0;
+    {
+        const Speech::copPair *iter = mActors.begin();
+        while (iter != mActors.end()) {
+            EAXCop *cop = iter->cop;
+            if (cop && (!enforceLOS || cop->HasLOS()) && (includeHeli || !cop->IsHeli())) {
+                if (!closest) {
+                    closest = cop;
+                }
+                if (cop->GetDistance() < closest->GetDistance()) {
+                    closest = cop;
+                }
             }
+            ++iter;
         }
-        ++iter;
     }
     return closest;
 }
@@ -2015,32 +2018,30 @@ unsigned char SoundAI::GetCustomized(IVehicle *vehicle, CarCustomizations &custr
 }
 
 unsigned int SoundAI::CalcPlayerDirection(bool force_set) {
-    if (!dir_init_30961) {
-        t_currdir_30960 = Timer(0);
-        dir_init_30961 = 1;
-    }
+    static unsigned int dir_tracking = 0;
+    static Timer t_currdir(0);
 
+    unsigned int dir;
     float zmag = UMath::Abs(mSmoothedFWRoad.z);
     float xmag = UMath::Abs(mSmoothedFWRoad.x);
-    unsigned int dir;
-    if (xmag <= zmag) {
-        dir = 1;
-        if (0.0f < mSmoothedFWRoad.z) {
-            dir = 2;
-        }
-    } else {
+    if (xmag > zmag) {
         dir = 8;
         if (0.0f < mSmoothedFWRoad.x) {
             dir = 4;
         }
+    } else {
+        dir = 1;
+        if (0.0f < mSmoothedFWRoad.z) {
+            dir = 2;
+        }
     }
 
-    if ((dir != 0) && (dir != dir_tracking_30959)) {
-        t_currdir_30960 = WorldTimer;
-        dir_tracking_30959 = dir;
+    if ((dir != 0) && (dir != dir_tracking)) {
+        t_currdir = WorldTimer;
+        dir_tracking = dir;
     }
 
-    float t_samedir = (WorldTimer - t_currdir_30960).GetSeconds();
+    float t_samedir = (WorldTimer - t_currdir).GetSeconds();
     if ((t_samedir <= 3.0f) && !force_set) {
         dir = 0;
     }
@@ -2378,9 +2379,8 @@ void SoundAI::TerminatePursuit(BailoutType type) {
         mMusicFlow->ChangeStateTo(kTerminal);
 
         bool is_DDay = false;
-        GRaceParameters *parms = GRaceStatus::Get().GetRaceParameters();
-        if (parms) {
-            is_DDay = parms->GetIsDDayRace();
+        if (GRaceStatus::Get().GetRaceParameters()) {
+            is_DDay = GRaceStatus::Get().GetRaceParameters()->GetIsDDayRace();
         }
 
         if (!is_DDay) {

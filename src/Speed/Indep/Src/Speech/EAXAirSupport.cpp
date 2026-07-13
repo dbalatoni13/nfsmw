@@ -144,17 +144,11 @@ void EAXAirSupport::SelfStrategy(int type) {
 }
 
 void EAXAirSupport::LostVisual() {
-    Csis::HeliSpecific_HeliLostVisualStruct data;
     SoundAI *ai = SoundAI::Get();
-    Csis::Type_heli_lost_visual lostVisual = Csis::Type_heli_lost_visual_Generic;
+    Csis::HeliSpecific_HeliLostVisualStruct data;
     data.speaker_id = mSpeakerID;
-    if (ai) {
-        Speech::Observer *observer = ai->GetObserver();
-        if (observer && observer->WeatherExists()) {
-            lostVisual = Csis::Type_heli_lost_visual_In_tunnel;
-        }
-    }
-    data.heli_lost_visual = lostVisual;
+    data.heli_lost_visual = ai && ai->GetObserver()->PlayerInTunnel() ? Csis::Type_heli_lost_visual_In_tunnel
+                                                                     : Csis::Type_heli_lost_visual_Generic;
     Speech::Manager::ScheduleSpeech(data, Csis::HeliSpecific_HeliLostVisualId, Csis::gHeliSpecific_HeliLostVisualHandle, this);
 }
 

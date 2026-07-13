@@ -28,19 +28,17 @@ MusicFlow::MusicFlow()
       mCurrentPart(-1), //
       mRestrained(true), //
       mTopSpeed(0.0f), //
-      mTimeInPiece(0.0f), //
-      mRequestedSwap(false), //
       mX360UserTunes(false), //
-      mMsgNewPart(0), //
-      mMsgInitFlow(0), //
-      mMsgTerminate(0), //
-      mMsgDone(0), //
-      mMsgX360UserTunes(0) {
-    mMsgNewPart = Hermes::Handler::Create<MNotifyMusicFlow, MusicFlow, MusicFlow>(this, &MusicFlow::MessageNewPart, "PartUpdate", 0);
-    mMsgInitFlow = Hermes::Handler::Create<MNotifyMusicFlow, MusicFlow, MusicFlow>(this, &MusicFlow::MessageInitFlow, "Init", 0);
-    mMsgTerminate = Hermes::Handler::Create<MNotifyMusicFlow, MusicFlow, MusicFlow>(this, &MusicFlow::MessageTerminate, "Terminate", 0);
-    mMsgDone = Hermes::Handler::Create<MNotifyMusicFlow, MusicFlow, MusicFlow>(this, &MusicFlow::MessageDone, "InteractiveDone", 0);
-    mMsgX360UserTunes = Hermes::Handler::Create<MNotifyMusicFlow, MusicFlow, MusicFlow>(this, &MusicFlow::MessageX360UserTunes, "X360UserTunes", 0);
+      mMsgNewPart(Hermes::Handler::Create<MNotifyMusicFlow, MusicFlow, MusicFlow>(
+          this, &MusicFlow::MessageNewPart, "PartUpdate", 0)), //
+      mMsgInitFlow(Hermes::Handler::Create<MNotifyMusicFlow, MusicFlow, MusicFlow>(
+          this, &MusicFlow::MessageInitFlow, "Init", 0)), //
+      mMsgTerminate(Hermes::Handler::Create<MNotifyMusicFlow, MusicFlow, MusicFlow>(
+          this, &MusicFlow::MessageTerminate, "Terminate", 0)), //
+      mMsgDone(Hermes::Handler::Create<MNotifyMusicFlow, MusicFlow, MusicFlow>(
+          this, &MusicFlow::MessageDone, "InteractiveDone", 0)), //
+      mMsgX360UserTunes(Hermes::Handler::Create<MNotifyMusicFlow, MusicFlow, MusicFlow>(
+          this, &MusicFlow::MessageX360UserTunes, "X360UserTunes", 0)) {
     mState = kTransition;
     mBusy = 0;
 }
@@ -144,6 +142,8 @@ void MusicFlow::Reacquire() {
 }
 
 void MusicFlow::Update() {
+    int y;
+    int x;
     if ((g_pEAXSound->GetCurMusicVolume() == 0.0f) ||
         (g_pEAXSound->GetCurAudioSettings()->InteractiveMusicMode == 0) || (gXMP_DOWNSTATE != 0)) {
         if (mState != kTransition) {
@@ -164,7 +164,6 @@ void MusicFlow::Update() {
         } else {
             mAvgPursuitDist = mAvgPursuitDist * 0.97f + mAvgPursuitDist * 0.03f;
         }
-        mTimer = WorldTimer;
     }
 
     switch (mState) {

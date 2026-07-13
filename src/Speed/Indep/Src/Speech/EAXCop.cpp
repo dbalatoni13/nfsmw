@@ -11,7 +11,7 @@
 
 namespace MiscSpeech {
 bool IsVehicleTypeOK();
-bool GetLocation(RoadNames road, int &region, int &location);
+bool GetLocation(RoadNames road, Csis::Type_location_region &region, Csis::Type_location &location);
 }
 
 namespace Csis {
@@ -760,8 +760,8 @@ void EAXCop::Reset() {
 void EAXCop::AttemptVehicleStop() {
     SoundAI *ai = SoundAI::Get();
     if (ai) {
-        Speech::EventHistory &g_hist = Speech::Manager::GetHistory();
         Csis::Setup_AttmptVehStpStruct data;
+        Speech::EventHistory &g_hist = Speech::Manager::GetHistory();
         float t_last_nailed = ai->GetTimeLastNailedCop();
         data.pursuit_type = Csis::Type_pursuit_type_Unit_Rammed;
         if (t_last_nailed >= 5.0f) {
@@ -884,28 +884,20 @@ void EAXCop::InitiatePursuit() {
 
 void EAXCop::LocationReport() {
     SoundAI *ai = SoundAI::Get();
+    Csis::Setup_LocationReportStruct data;
+    Csis::Type_location_region region;
+    Csis::Type_location location;
+    RoadNames road;
+    bool result;
     if (ai) {
         if (ai->IsHeadingValid()) {
-            Csis::Setup_LocationReportStruct data;
-            int num_suspects;
-            int region;
-            int location;
-            bool result;
-            num_suspects = 1;
-            if (ai->AreRacersNearby()) {
-                num_suspects = 2;
-            }
-            data.num_suspects = num_suspects;
+            data.num_suspects = ai->AreRacersNearby() ? 2 : 1;
             data.direction = ai->GetPlayerDirection(0);
             result = MiscSpeech::GetLocation(ai->GetPlayerRoadID(0), region, location);
             if (result) {
-                int encounter = 1;
-                data.location = location;
                 data.location_region = region;
-                if (Speech::Manager::GetGlobalHistoryCount(static_cast<SPCHType_1_EventID>(0x9E)) > 1) {
-                    encounter = 2;
-                }
-                data.encounter = encounter;
+                data.location = location;
+                data.encounter = Speech::Manager::GetHistory().GetCount(static_cast<SPCHType_1_EventID>(0x9E)) > 1 ? 2 : 1;
                 data.speaker_id = mSpeakerID;
                 Speech::Manager::ScheduleSpeech(data, Csis::Setup_LocationReportId, Csis::gSetup_LocationReportHandle, this);
             }
@@ -1012,7 +1004,7 @@ void EAXCop::InitiateStrategy(int type) {
 void EAXCop::CallToPosition(EAXCop *cop) {
     Csis::RollingStrategy_CallToPositionStruct call;
     SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
-    register int intensity;
+    int intensity;
     if (ai->IsHighIntensity()) {
         intensity = Csis::Type_intensity_High;
     } else {
@@ -1033,7 +1025,7 @@ void EAXCop::CallToPosition(EAXCop *cop) {
 
 void EAXCop::CallToPositionReminder() {
     Csis::RollingStrategy_CallToPositionRemStruct data;
-    register int intensity;
+    int intensity;
     if (SoundAI::Get()->IsHighIntensity()) {
         intensity = 2;
     } else {
@@ -1046,7 +1038,7 @@ void EAXCop::CallToPositionReminder() {
 
 void EAXCop::StrategyExecute() {
     Csis::RollingStrategy_StrategyExecuteStruct data;
-    register int intensity;
+    int intensity;
     if (SoundAI::Get()->IsHighIntensity()) {
         intensity = 2;
     } else {
@@ -1058,16 +1050,16 @@ void EAXCop::StrategyExecute() {
 }
 
 void EAXCop::Collision(int collisionType, float force, EAXCop *spkr) {
-    int intensity = 1;
+    Csis::Type_intensity intensity = Csis::Type_intensity_Normal;
     if (force > 0.75f) {
-        intensity = 2;
+        intensity = Csis::Type_intensity_High;
     }
     switch (collisionType) {
     case 5:
         Impact_Suspect_World();
         break;
     case 7:
-        Impact_Suspect_Traffic(static_cast<Csis::Type_intensity>(intensity));
+        Impact_Suspect_Traffic(intensity);
         break;
     case 10:
         Impact_Suspect_Guardrail();
@@ -1085,13 +1077,13 @@ void EAXCop::Collision(int collisionType, float force, EAXCop *spkr) {
         Impact_Suspect_Spikebelt();
         break;
     case 15:
-        SuspectSpunout(static_cast<Csis::Type_intensity>(intensity));
+        SuspectSpunout(intensity);
         break;
     case 16:
-        SuspectAirborne(static_cast<Csis::Type_intensity>(intensity));
+        SuspectAirborne(intensity);
         break;
     case 17:
-        SuspectRollover(static_cast<Csis::Type_intensity>(intensity));
+        SuspectRollover(intensity);
         break;
     default:
         break;
@@ -1114,7 +1106,7 @@ void EAXCop::OutcomeFail(short intensity) {
     Csis::Outcome_OutcomeFailStruct data;
     SoundAI *ai = SoundAI::Get();
     if (intensity < 0) {
-        register int new_intensity;
+        int new_intensity;
         if (ai->IsHighIntensity()) {
             new_intensity = 2;
         } else {
@@ -1130,7 +1122,7 @@ void EAXCop::OutcomeFail(short intensity) {
 
 void EAXCop::StrategyReset(bool new_strategy) {
     Csis::Outcome_StrategyResetStruct data;
-    register int intensity;
+    int intensity;
     if (SoundAI::Get()->IsHighIntensity()) {
         intensity = 2;
     } else {
@@ -1164,7 +1156,7 @@ void EAXCop::SuspectBehavior() {
 void EAXCop::SuspectOutrun() {
     Csis::AnytimeEvents_SuspectOutrunStruct data;
     data.speaker_id = mSpeakerID;
-    register int intensity;
+    int intensity;
     if (SoundAI::Get()->IsHighIntensity()) {
         intensity = 2;
     } else {
@@ -1177,7 +1169,7 @@ void EAXCop::SuspectOutrun() {
 void EAXCop::SuspectUTurn() {
     Csis::AnytimeEvents_SuspectUTurnStruct data;
     data.speaker_id = mSpeakerID;
-    register int intensity;
+    int intensity;
     if (SoundAI::Get()->IsHighIntensity()) {
         intensity = 2;
     } else {
@@ -1189,7 +1181,7 @@ void EAXCop::SuspectUTurn() {
 
 void EAXCop::LostSuspect() {
     Csis::AnytimeEvents_LostSuspectStruct data;
-    register int intensity;
+    int intensity;
     if (SoundAI::Get()->IsHighIntensity()) {
         intensity = 2;
     } else {
@@ -1202,7 +1194,7 @@ void EAXCop::LostSuspect() {
 
 void EAXCop::LostVisual() {
     Csis::AnytimeEvents_LostVisualStruct data;
-    register int intensity;
+    int intensity;
     if (SoundAI::Get()->IsHighIntensity()) {
         intensity = 2;
     } else {
@@ -1215,7 +1207,7 @@ void EAXCop::LostVisual() {
 
 void EAXCop::RegainVisual() {
     Csis::AnytimeEvents_RegainVisualStruct data;
-    register int intensity;
+    int intensity;
     if (SoundAI::Get()->IsHighIntensity()) {
         intensity = 2;
     } else {
@@ -1233,7 +1225,7 @@ void EAXCop::SwarmingReply() {
 
 void EAXCop::Arrest() {
     Csis::Arrest_ArrestStruct data;
-    register int intensity;
+    int intensity;
     if (SoundAI::Get()->IsHighIntensity()) {
         intensity = 2;
     } else {
@@ -1298,7 +1290,7 @@ void EAXCop::BackupArrives() {
 
 void EAXCop::IntentToRam() {
     Csis::AnytimeEvents_IntentToRamStruct data;
-    register int intensity;
+    int intensity;
     if (SoundAI::Get()->IsHighIntensity()) {
         intensity = 2;
     } else {
@@ -1477,7 +1469,7 @@ void EAXCop::BullhornArrest() {
         if (ai) {
             Csis::Arrest_BullhornArrestStruct data;
             data.speaker_id = mSpeakerID;
-            register int intensity;
+            int intensity;
             if (ai->IsHighIntensity()) {
                 intensity = 2;
             } else {
