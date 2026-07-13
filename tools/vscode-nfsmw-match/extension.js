@@ -7,7 +7,7 @@ const os = require("os");
 const util = require("util");
 
 const execFile = util.promisify(cp.execFile);
-const ANNOTATION_CACHE_VERSION = 6;
+const ANNOTATION_CACHE_VERSION = 7;
 const FUNCTION_KINDS = new Set([
   vscode.SymbolKind.Function,
   vscode.SymbolKind.Method,
@@ -63,6 +63,87 @@ function symbolSourcePrefix(document, symbol) {
   );
 }
 
+function parameterList(text) {
+  const openAt = text.indexOf("(");
+  if (openAt === -1) return undefined;
+  let depth = 0;
+  for (let index = openAt; index < text.length; index += 1) {
+    if (text[index] === "(") depth += 1;
+    if (text[index] === ")") {
+      depth -= 1;
+      if (depth === 0) return text.slice(openAt, index + 1);
+    }
+  }
+  return undefined;
+}
+
+function symbolFunctionName(symbol) {
+  const container = symbol.containerName || symbolContainers.get(symbol) || "";
+  return [container, functionLeaf(symbol.name || "")].filter(Boolean).join("::");
+}
+
+function symbolFunctionQuery(document, symbol) {
+  const qualifiedName = symbolFunctionName(symbol);
+  const parameters = parameterList(symbol.name || "")
+    || parameterList(symbolSourcePrefix(document, symbol));
+  return parameters ? `${qualifiedName}${parameters}` : qualifiedName;
+}
+
+function signatureParameters(signature) {
+  const parameters = parameterList(signature);
+  if (!parameters) return undefined;
+  const result = [];
+  let current = "";
+  let depth = 0;
+  for (const char of parameters.slice(1, -1)) {
+    if ("(<[".includes(char)) depth += 1;
+    if (")>]".includes(char)) depth -= 1;
+    if (char === "," && depth === 0) {
+      result.push(current);
+      current = "";
+    } else {
+      current += char;
+    }
+  }
+  if (current || result.length) result.push(current);
+  return result;
+}
+
+function compactParameter(parameter) {
+  return parameter
+    .replace(/\/\*.*?\*\//g, "")
+    .replace(/\b(?:struct|class|enum)\s+/g, "")
+    .replace(/(?:\b[~A-Za-z_]\w*::)+/g, "")
+    .replace(/\b(H(?:[A-Z0-9_]*[A-Z0-9])?)\b/g, "$1__ *")
+    .replace(/\s+/g, "")
+    .trim();
+}
+
+function parameterListsMatch(left, right) {
+  const leftParameters = signatureParameters(left);
+  const rightParameters = signatureParameters(right);
+  if (!leftParameters || !rightParameters) return true;
+  if (leftParameters.length !== rightParameters.length) return false;
+  return leftParameters.every((parameter, index) => {
+    const leftCompact = compactParameter(parameter);
+    const rightCompact = compactParameter(rightParameters[index]);
+    if (leftCompact === "void" && !rightCompact) return true;
+    if (rightCompact === "void" && !leftCompact) return true;
+    // Source symbols include parameter names while demangled objdiff names do not.
+    return leftCompact.startsWith(rightCompact) || rightCompact.startsWith(leftCompact);
+  });
+}
+
+function definitionScore(document, symbol) {
+  const source = symbolSourcePrefix(document, symbol);
+  const parameters = parameterList(source);
+  if (!parameters) return 0;
+  const tail = source.slice(source.indexOf(parameters) + parameters.length);
+  const braceAt = tail.indexOf("{");
+  const semicolonAt = tail.indexOf(";");
+  return braceAt !== -1 && (semicolonAt === -1 || braceAt < semicolonAt) ? 5 : 0;
+}
+
 function scoreSymbol(functionName, symbol, document) {
   const parameterAt = functionName.lastIndexOf("(");
   const wantedName = functionName.slice(0, parameterAt === -1 ? undefined : parameterAt);
@@ -72,14 +153,19 @@ function scoreSymbol(functionName, symbol, document) {
     .toLowerCase();
   const leaf = functionLeaf(functionName).toLowerCase();
   const candidateLeaf = functionLeaf(symbol.name || "").toLowerCase();
-  if (candidate.includes(wanted)) return 100;
+  const requestedParameters = parameterList(functionName);
+  const symbolQuery = symbolFunctionQuery(document, symbol);
+  if (requestedParameters && !parameterListsMatch(functionName, symbolQuery)) return -1;
+  const overloadScore = requestedParameters ? 1000 : 0;
+  const sourceScore = definitionScore(document, symbol);
+  if (candidate.includes(wanted)) return overloadScore + sourceScore + 100;
   if (candidateLeaf !== leaf) return -1;
   const ownerAt = wantedName.lastIndexOf("::");
   if (ownerAt !== -1) {
     const owner = wantedName.slice(0, ownerAt).replace(/\s+/g, "").toLowerCase();
-    return candidate.includes(`${owner}::`) ? 20 : -1;
+    return candidate.includes(`${owner}::`) ? overloadScore + sourceScore + 20 : -1;
   }
-  return 10;
+  return overloadScore + sourceScore + 10;
 }
 
 async function locateFunctions(document, functionNames) {
@@ -522,10 +608,9 @@ async function activate(context) {
         let functionNames = sourceRows.map((row) => row.name);
         if (!objdiffEnabled && platform !== "ps2") {
           const rawSymbols = await vscode.commands.executeCommand("vscode.executeDocumentSymbolProvider", document.uri);
-          functionNames = [...new Set(flattenSymbols(rawSymbols || []).map((symbol) => {
-            const container = symbol.containerName || symbolContainers.get(symbol) || "";
-            return [container, symbol.name].filter(Boolean).join("::");
-          }))];
+          functionNames = [...new Set(
+            flattenSymbols(rawSymbols || []).map((symbol) => symbolFunctionQuery(document, symbol)),
+          )];
         }
         if (functionNames.length === 0 && platform !== "ps2") {
           throw new Error(objdiffEnabled
