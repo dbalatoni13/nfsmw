@@ -57,6 +57,11 @@ DEBUG_LINE_RE = re.compile(
 SIGNATURE_FUNCTION_RE = re.compile(
     r"(?<![\w:])([~A-Za-z_]\w*(?:::[~A-Za-z_]\w*)*)\s*\("
 )
+SIGNATURE_REGISTER_RE = re.compile(
+    r"\s*/\*\s*[rf]\d+(?:\s*\+\s*0x[0-9A-Fa-f]+)?\s*\*/"
+)
+TYPE_QUALIFIER_RE = re.compile(r"(?:\b[~A-Za-z_]\w*::)+")
+SIM_HANDLE_RE = re.compile(r"\b(H(?:[A-Z0-9_]*[A-Z0-9])?)\b")
 
 
 class DwarfCompareError(RuntimeError):
@@ -257,13 +262,15 @@ def load_function_blocks(
 def find_function_blocks(
     funcs: Iterable[FunctionBlock], query: str
 ) -> List[FunctionBlock]:
-    candidates = _candidate_func_names(query)
+    function_name = signature_function_name(query) or query
+    candidates = _candidate_func_names(function_name)
     matches: List[FunctionBlock] = []
     exact_substring_matches: List[FunctionBlock] = []
+    normalized_query = normalize_signature_registers(query)
 
     for func in funcs:
         sig_line = func[2]
-        if query in sig_line:
+        if normalized_query in normalize_signature_registers(sig_line):
             exact_substring_matches.append(func)
         if any(_sig_contains_name(sig_line, candidate) for candidate in candidates):
             matches.append(func)
@@ -271,6 +278,17 @@ def find_function_blocks(
     if exact_substring_matches:
         return exact_substring_matches
     return matches
+
+
+def normalize_signature_registers(signature: str) -> str:
+    """Remove DWARF parameter-location annotations from a signature."""
+    return SIGNATURE_REGISTER_RE.sub("", signature)
+
+
+def signature_function_name(signature: str) -> Optional[str]:
+    """Extract the qualified function name, excluding its return type."""
+    matches = list(SIGNATURE_FUNCTION_RE.finditer(signature))
+    return matches[-1].group(1) if matches else None
 
 
 def build_function_block_index(
@@ -313,8 +331,7 @@ def indexed_function_blocks(
     index: Dict[str, List[FunctionBlock]],
     query: str,
 ) -> List[FunctionBlock]:
-    parameter_at = query.rfind("(")
-    bare_name = query[:parameter_at] if parameter_at != -1 else query
+    bare_name = signature_function_name(query) or query
     indexed: List[FunctionBlock] = []
     seen: Set[Tuple[str, str, str]] = set()
     for candidate in _candidate_func_names(bare_name):
@@ -359,6 +376,8 @@ def signature_parameters(signature: str, function_name: str) -> List[str]:
 def compact_parameter(parameter: str) -> str:
     parameter = re.sub(r"/\*.*?\*/", "", parameter)
     parameter = re.sub(r"\b(?:struct|class|enum)\s+", "", parameter)
+    parameter = TYPE_QUALIFIER_RE.sub("", parameter)
+    parameter = SIM_HANDLE_RE.sub(r"\1__ *", parameter)
     return re.sub(r"\s+", "", parameter.strip())
 
 
@@ -366,7 +385,9 @@ def signature_types_match(query: str, signature: str) -> bool:
     parameter_at = query.rfind("(")
     if parameter_at == -1:
         return True
-    function_name = query[:parameter_at].strip()
+    function_name = signature_function_name(query)
+    if function_name is None:
+        function_name = query[:parameter_at].strip()
     if not _sig_contains_name(signature, function_name):
         return False
     query_parameters = signature_parameters(query, function_name)
@@ -419,10 +440,10 @@ def choose_function_block(
     funcs: List[FunctionBlock], query: str, label: str
 ) -> FunctionBlock:
     matches = find_function_blocks(funcs, query)
-    if len(matches) > 1 and "(" in query:
-        typed_matches = [match for match in matches if signature_types_match(query, match[2])]
-        if typed_matches:
-            matches = typed_matches
+    if matches and "(" in query:
+        matches = [
+            match for match in matches if signature_types_match(query, match[2])
+        ]
     if not matches:
         if not funcs:
             raise DwarfCompareError(
