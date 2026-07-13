@@ -25,6 +25,7 @@
 #include "Speed/Indep/Src/Physics/PhysicsObject.h"
 #include "Speed/Indep/Src/Physics/PhysicsTypes.h"
 #include "Speed/Indep/Src/Physics/VehicleBehaviors.h"
+#include "Speed/Indep/Src/Render/RenderConn.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Src/Sim/UTil.h"
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
@@ -784,11 +785,11 @@ float EngineRacer::GetDriveWheelSlippage() const {
     int drivewheels = 0;
     if (this->RearWheelDrive()) {
         drivewheels += 2;
-        retval += this->mSuspension->GetWheelSlip(TIRE_RR) + this->mSuspension->GetWheelSlip(TIRE_RL);
+        retval += this->mSuspension->GetWheelSlip(2) + this->mSuspension->GetWheelSlip(3);
     }
     if (this->FrontWheelDrive()) {
         drivewheels += 2;
-        retval += this->mSuspension->GetWheelSlip(TIRE_FL) + this->mSuspension->GetWheelSlip(TIRE_FR);
+        retval += this->mSuspension->GetWheelSlip(2) + this->mSuspension->GetWheelSlip(3);
     }
 
     return retval / drivewheels;

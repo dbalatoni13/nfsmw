@@ -60,48 +60,25 @@ enum ShiftPotential {
     SHIFT_POTENTIAL_NONE = 0,
 };
 
-enum DriverStyle {
-    STYLE_RACING = 0,
-    STYLE_DRAG = 1,
-};
+namespace Physics {
 
-enum PhysicsMode {
-    PHYSICS_MODE_INACTIVE = 0,
-    PHYSICS_MODE_SIMULATED = 1,
-    PHYSICS_MODE_EMULATED = 2,
-};
+namespace Wheels {
 
-enum eTireIdx {
-    // The front left wheel
-    TIRE_FL,
-    // The front right wheel
-    TIRE_FR,
-    // The number of wheels on the front axle
-    TIRE_MAX_FRONT = 2,
-    // The rear right wheel
-    TIRE_RR = 2,
-    // The rear left wheel
-    TIRE_RL,
-    // The total number of wheels
-    TIRE_MAX,
-};
-
-enum eInvulnerablitiy {
-    INVULNERABLE_NONE = 0,
-    INVULNERABLE_FROM_MANUAL_RESET = 1,
-    INVULNERABLE_FROM_RESET = 2,
-    INVULNERABLE_FROM_CONTROL_SWITCH = 3,
-    INVULNERABLE_FROM_PHYSICS_SWITCH = 4,
-};
-
-// TODO Physics::Wheels::IsFront
-inline bool IsFront(unsigned int i) {
+inline bool IsLeft(const unsigned int i) {
+    return (i & 1) == 0;
+}
+inline bool IsRight(const unsigned int i) {
+    return (i & 1) != 0;
+}
+inline bool IsFront(const unsigned int i) {
     return i < 2;
 }
-
-// Physics::Wheels::IsRear
 inline bool IsRear(const unsigned int i) {
     return i > 1;
 }
+
+}; // namespace Wheels
+
+}; // namespace Physics
 
 #endif

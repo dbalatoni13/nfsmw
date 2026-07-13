@@ -3198,7 +3198,7 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
                 if (reflexion == 0) {
                     eModel *model = model_lod_base->GetModel();
                     model->ReplaceLightMaterial(STRINGHASH_CARSKIN, this->LightMaterial_CarSkin);
-                    view->Render(model, biased_local_world, light_context, disable_env_flag | extra_render_flags | body_render_flags, 0);
+                    view->Render(model, biased_local_world, light_context, disable_env_flag | extra_render_flags | body_render_flags, nullptr);
                 }
 
             done_model_part:;

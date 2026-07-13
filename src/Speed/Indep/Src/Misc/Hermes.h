@@ -1,13 +1,9 @@
 #ifndef MISC_HERMES_H
 #define MISC_HERMES_H
 
-#include "Speed/Indep/Libs/Support/Utility/FastMem.h"
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
 #include <cstddef>
 
+#include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 #include "Speed/Indep/Libs/Support/Utility/UCrc.h"
 #include "Speed/Indep/Libs/Support/Utility/UStandard.h"
 #include "Speed/Indep/Src/Misc/AttribAlloc.h"
