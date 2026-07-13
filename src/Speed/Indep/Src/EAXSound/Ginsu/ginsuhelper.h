@@ -42,4 +42,16 @@ static inline int IntRound(float x) {
     return static_cast<int>(x);
 }
 
+static inline short convertsample(float x) {
+    int val = static_cast<int>(x);
+    if (val < 0x8000) {
+        if (val < -0x8000) {
+            val = -0x8000;
+        }
+    } else {
+        val = 0x7FFF;
+    }
+    return static_cast<short>(val);
+}
+
 #endif

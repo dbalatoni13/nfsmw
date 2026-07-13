@@ -208,32 +208,28 @@ GinsuSynthesis::~GinsuSynthesis() {
 }
 
 bool GinsuSynthesis::SetSynthData(GinsuSynthData &data) {
-    int samprate;
-    int nojumpsize;
-    int packetsize;
-    int overlapsize;
-
-    samprate = data.GetSampleRate();
-    if (samprate != 0) {
-        if (mSampleRate > 0 && samprate != mSampleRate) {
-            return false;
-        }
-
-        nojumpsize = IntRound(static_cast<float>(samprate) * 0.011f);
-        packetsize = IntRound(static_cast<float>(samprate) * 0.011f);
-        overlapsize = IntRound(static_cast<float>(samprate) * 0.0005f);
-        if (packetsize + overlapsize <= mMaxPacketSize) {
-            SNDSYS_entercritical();
-            mSynthData = &data;
-            mNoJumpSize = nojumpsize;
-            mPacketSize = packetsize;
-            mOverlapSize = overlapsize;
-            SNDSYS_leavecritical();
-            return true;
-        }
+    int samprate = data.GetSampleRate();
+    if (samprate == 0) {
+        return false;
+    }
+    if (mSampleRate > 0 && samprate != mSampleRate) {
+        return false;
     }
 
-    return false;
+    int nojumpsize = IntRound(static_cast<float>(samprate) * 0.011f);
+    int packetsize = IntRound(static_cast<float>(samprate) * 0.011f);
+    int overlapsize = IntRound(static_cast<float>(samprate) * 0.0005f);
+    if (overlapsize + packetsize > mMaxPacketSize) {
+        return false;
+    }
+
+    SNDSYS_entercritical();
+    mNoJumpSize = nojumpsize;
+    mPacketSize = packetsize;
+    mOverlapSize = overlapsize;
+    mSynthData = &data;
+    SNDSYS_leavecritical();
+    return true;
 }
 
 int GinsuSynthesis::StartSynthesis(float startFreq) {
@@ -264,7 +260,7 @@ int GinsuSynthesis::StartSynthesis(float startFreq) {
 
     SNDSYS_entercritical();
     mSndHandle = SNDPKTPLAY_start(mPacketHandle, &ssf, &ssa, &spo);
-    if (mSndHandle > -1) {
+    if (mSndHandle >= 0) {
         bMemSet(mPacketData[0], 0, mPacketSize * 2);
         bMemSet(mPacketData[1], 0, mPacketSize * 2);
 
