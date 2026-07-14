@@ -112,4 +112,8 @@ struct CSTATE_Base : public AudioMemBase {
     void SortSFXCtl();
 };
 
+inline EAX_CarState *SndBase::GetPhysCar() {
+    return m_pStateBase->GetPhysCar();
+}
+
 #endif

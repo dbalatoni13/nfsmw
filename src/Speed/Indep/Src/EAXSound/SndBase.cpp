@@ -104,10 +104,6 @@ void SndBase::SetupSFX(CSTATE_Base *_StateBase) {
     SetStateBase(_StateBase);
 }
 
-inline EAX_CarState *SndBase::GetPhysCar() {
-    return m_pStateBase->GetPhysCar();
-}
-
 void SndBase::LoadAsset(Attrib::StringKey filename,
                         eSNDDATAPATH path,
                         eSNDDATATYPE datatype,
