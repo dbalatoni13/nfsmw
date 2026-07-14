@@ -6,19 +6,19 @@ SndStrmWrapper::SndStrmWrapper() {
     m_StreamID = 0;
 }
 
-int SndStrmWrapper::Create(int maxChunks, int maxRequests, int buffersize) {
+int SndStrmWrapper::Create(const int maxChunks, const int maxRequests, const int buffersize) {
     SNDPLAYOPTS STRMopts;
+    int overhead;
     SNDplaysetdef(&STRMopts);
     STRMopts.vol = 100;
     STRMopts.fxlevel0 = 0;
 
-    int overhead = SNDSTRM_overhead(maxRequests, maxChunks);
-    int total = overhead + buffersize;
-    m_BufferSize = total;
-    m_RealStreamBuffer = reinterpret_cast<int>(m_buffer + overhead);
-    char *pmem = gAudioMemoryManager.AllocateMemoryChar(total, "AUD:Stream buffer", false);
-    m_buffer = pmem;
-    return CreateStream(maxChunks, maxRequests, pmem, buffersize, &STRMopts);
+    overhead = SNDSTRM_overhead(maxRequests, maxChunks);
+    m_RealStreamBuffer = reinterpret_cast<int>(m_buffer) + overhead;
+    overhead += buffersize;
+    m_BufferSize = overhead;
+    m_buffer = gAudioMemoryManager.AllocateMemoryChar(overhead, "AUD:Stream buffer", false);
+    return CreateStream(maxChunks, maxRequests, m_buffer, buffersize, &STRMopts);
 }
 
 int SndStrmWrapper::CreateStream(const int maxChunks, const int maxRequests, char *pmem, const int buffersize,
