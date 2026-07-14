@@ -50,6 +50,10 @@ jobs:
             --binutils "$BINUTILS" --compilers /compilers
         ninja all_source progress build/${{ matrix.version }}/report.json
 
+    - name: Generate GC Dwarf report
+      if: ${{ github.event_name == 'push' && matrix.version == 'GOWE69' }}
+      run: python tools/generate-dwarf-report.py
+
     # Upload map files
     - name: Upload map
       uses: actions/upload-artifact@v4
@@ -63,3 +67,10 @@ jobs:
       with:
         name: ${{ matrix.version }}_report
         path: build/${{ matrix.version }}/report.json
+
+    - name: Upload GC Dwarf report
+      if: ${{ github.event_name == 'push' && matrix.version == 'GOWE69' }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: GC_Dwarf_report
+        path: build/GC_Dwarf/report.json
