@@ -121,7 +121,7 @@ DECLARE_CONTAINER_TYPE(SchedSpchEvents);
 struct SchedSpchEvents : public UTL::Std::vector<ScheduledSpeechEvent *, _type_SchedSpchEvents>, public AudioMemBase {
   public:
     SchedSpchEvents() {}
-    virtual ~SchedSpchEvents();
+    virtual ~SchedSpchEvents() {}
 };
 
 struct SPCHEventList : public UTL::Std::list<SPCHType_1_EventID, _type_list>, public AudioMemBase {

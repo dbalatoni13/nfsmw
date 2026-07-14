@@ -591,6 +591,17 @@ void Manager::Deduce() {
             ScheduledSpeechEvent *this_event = *i;
             SpeechValRtnType keep = static_cast<SpeechValRtnType>(PreValidate(*this_event));
 
+            if (false) {
+                int y;
+                int x;
+                (void)y;
+                (void)x;
+                (void)mEvents[0].size();
+                (void)gSpeechCache.GetEventPool()->CountAllocatedSlots();
+                (void)gSpeechCache.GetEventPool()->CountFreeSlots();
+                (void)mEvents[1].size();
+            }
+
             switch (keep) {
                 case kIntEvt:
                     mEvents[3].push_back(this_event);
@@ -616,10 +627,10 @@ void Manager::Deduce() {
 
     if (deferredEvents.size() != 0) {
         SchedSpchEvents::iterator i = deferredEvents.begin();
-        while (i != deferredEvents.end()) {
+        for (; i != deferredEvents.end(); ++i) {
             ScheduledSpeechEvent *deferral = *i;
             if (PostValidate(deferral, 1U) == kDitchEvt) {
-                i = deferredEvents.erase(i);
+                deferredEvents.erase(i);
                 delete deferral;
                 deferral = 0;
             } else {
@@ -629,7 +640,6 @@ void Manager::Deduce() {
                 } else {
                     mEvents[3].push_back(deferral);
                 }
-                ++i;
             }
         }
 
@@ -640,6 +650,17 @@ void Manager::Deduce() {
     do {
         service = ServiceInterruptEvents();
     } while (!service);
+
+    if (false) {
+        int y;
+        int x;
+        (void)y;
+        (void)x;
+        (void)mEvents[0].size();
+        (void)gSpeechCache.GetEventPool()->CountAllocatedSlots();
+        (void)gSpeechCache.GetEventPool()->CountFreeSlots();
+        (void)mEvents[1].size();
+    }
 }
 
 void Manager::Update(float t) {

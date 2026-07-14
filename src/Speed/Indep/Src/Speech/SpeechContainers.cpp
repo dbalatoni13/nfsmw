@@ -6,8 +6,6 @@ SpeechHashIDMap::~SpeechHashIDMap() {}
 
 EventHistory::~EventHistory() {}
 
-inline SchedSpchEvents::~SchedSpchEvents() {}
-
 SPCHEventList::~SPCHEventList() {}
 
 
