@@ -1829,13 +1829,13 @@ SPCHType_EventRuleResult GameSpeech::EventRuleCallback(int) {
     return kSPCH_EventRule_OK;
 }
 
-bool Unlocked(SpeechSampleData *data) {
-    if (!data->cached) {
-        gSpeechCache.TossSample(data);
-        return true;
+static bool Unlocked(SpeechSampleData *data) {
+    if (data->cached) {
+        return *reinterpret_cast<unsigned int *>(&data->lock) == 0;
     }
 
-    return data->lock != 0;
+    gSpeechCache.TossSample(data);
+    return true;
 }
 
 void GameSpeech::Update() {
