@@ -71,10 +71,10 @@ void cPathLine::Update(float delta_time) {
         return;
     }
 
-    delta_time = ElapsedTime + delta_time;
+    delta_time += ElapsedTime;
     ElapsedTime = delta_time;
 
-    if (Length[cur_stage] < delta_time) {
+    if (delta_time > Length[cur_stage]) {
         CurValue = Finish[cur_stage];
         if (cur_stage < num_stages - 1) {
             ElapsedTime = delta_time - Length[cur_stage];
@@ -88,35 +88,36 @@ void cPathLine::Update(float delta_time) {
         return;
     }
 
-    if (CurveTypes[cur_stage] == PARABOLIC) {
-        float t = delta_time / Length[cur_stage];
-        float s = Finish[cur_stage] - Start[cur_stage];
-        float x = Start[cur_stage];
-        CurValue = s * t * t + x;
-        return;
+    switch (CurveTypes[cur_stage]) {
+    case LINEAR:
+    default:
+        CurValue = (Finish[cur_stage] - Start[cur_stage]) * (delta_time / Length[cur_stage]) + Start[cur_stage];
+        break;
+    case PARABOLIC: {
+        float t = Finish[cur_stage] - Start[cur_stage];
+        float s;
+        float x;
+        CurValue = t * (delta_time / Length[cur_stage]) * (delta_time / Length[cur_stage]) + Start[cur_stage];
+        break;
     }
-
-    if (CurveTypes[cur_stage] <= 1) {
-        float t = delta_time / Length[cur_stage];
-        float s = Finish[cur_stage] - Start[cur_stage];
-        float x = Start[cur_stage];
-        CurValue = s * t + x;
-        return;
+    case INV_PARABOLIC: {
+        float t = Finish[cur_stage] - Start[cur_stage];
+        float s;
+        float x;
+        CurValue = t * (-(delta_time / Length[cur_stage] - 1.0f) * (delta_time / Length[cur_stage] - 1.0f) + 1.0f) +
+                   Start[cur_stage];
+        break;
     }
-
-    if (CurveTypes[cur_stage] == INV_PARABOLIC) {
-        float t = delta_time / Length[cur_stage] - 1.0f;
-        float s = Finish[cur_stage] - Start[cur_stage];
-        float x = Start[cur_stage];
-        CurValue = s * (-t * t + 1.0f) + x;
-        return;
-    }
-
-    if (CurveTypes[cur_stage] == EQ_PWR_SQ) {
-        float s = Finish[cur_stage] - Start[cur_stage];
+    case EQ_PWR_SQ: {
+        float t = Finish[cur_stage] - Start[cur_stage];
+        float s;
+        float x;
         int Delta = bClamp(static_cast<int>((delta_time * 32767.0f) / Length[cur_stage]), 0, 0x7fff);
         float Result = static_cast<float>(NFSMixShape::GetCurveOutput(::SHAPE_UP_EQPWR_SQ, Delta, false));
-        CurValue = s * Result * 3.051851e-05f + Start[cur_stage];
+        Result *= 3.051851e-05f;
+        CurValue = t * Result + Start[cur_stage];
+        break;
+    }
     }
 }
 
@@ -158,37 +159,44 @@ void cInterpLine::Update(float delta_time) {
         return;
     }
 
-    float length = Length;
-    float elapsed = ElapsedTime + delta_time;
-    ElapsedTime = elapsed;
+    delta_time += ElapsedTime;
+    ElapsedTime = delta_time;
 
-    if (elapsed > length) {
+    if (delta_time > Length) {
         bComplete = true;
         CurValue = Finish;
         return;
     }
 
     switch (CurveTypes) {
+    case LINEAR:
+    default:
+        CurValue = (Finish - Start) * (delta_time / Length) + Start;
+        break;
     case PARABOLIC: {
-        float t = elapsed / length;
-        CurValue = Start + (Finish - Start) * t * t;
+        float t = Finish - Start;
+        float s;
+        float x;
+        CurValue = t * (delta_time / Length) * (delta_time / Length) + Start;
         break;
     }
     case INV_PARABOLIC: {
-        float t = elapsed / length - 1.0f;
-        CurValue = Start + (Finish - Start) * (-t * t + 1.0f);
+        float t = Finish - Start;
+        float s;
+        float x;
+        CurValue = t * (-(delta_time / Length - 1.0f) * (delta_time / Length - 1.0f) + 1.0f) + Start;
         break;
     }
     case EQ_PWR_SQ: {
-        float range = Finish - Start;
-        int Delta = bClamp(static_cast<int>((elapsed * 32767.0f) / length), 0, 0x7fff);
+        float t = Finish - Start;
+        float s;
+        float x;
+        int Delta = bClamp(static_cast<int>((delta_time * 32767.0f) / Length), 0, 0x7fff);
         float Result = static_cast<float>(NFSMixShape::GetCurveOutput(::SHAPE_UP_EQPWR_SQ, Delta, false));
-        CurValue = Start + range * Result * 3.051851e-05f;
+        Result *= 3.051851e-05f;
+        CurValue = t * Result + Start;
         break;
     }
-    default:
-        CurValue = Start + (Finish - Start) * (elapsed / length);
-        break;
     }
 }
 
