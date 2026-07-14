@@ -48,4 +48,6 @@
 
 #include "Speed/Indep/Src/Physics/Behaviors/DrawCar.cpp"
 
+#include "Speed/Indep/Src/Physics/Behaviors/SoundCar.cpp"
+
 #include "Speed/Indep/Src/Physics/Behaviors/SoundHeli.cpp"

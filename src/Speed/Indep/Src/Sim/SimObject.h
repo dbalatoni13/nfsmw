@@ -24,17 +24,15 @@ class Object : public UTL::COM::Object, public IServiceable, public ITaskable, p
     void CloseService(HSIMSERVICE hservice);
     ConnStatus CheckService(HSIMSERVICE hservice) const;
 
-    // Virtual functions
-    // IUnknown
-    virtual ~Object();
+    ~Object() override;
 
     // IServiceable
-    virtual bool OnService(HSIMSERVICE hCon, Sim::Packet *pkt) {
+    bool OnService(HSIMSERVICE hCon, Sim::Packet *pkt) override {
         return false;
     }
 
     // ITaskable
-    virtual bool OnTask(HSIMTASK htask, float dT) {
+    bool OnTask(HSIMTASK htask, float dT) override {
         return false;
     }
 
