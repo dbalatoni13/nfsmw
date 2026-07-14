@@ -111,7 +111,10 @@ int SndStrmWrapper::Stop() {
 }
 
 int SndStrmWrapper::AddToStream(const char *filename, long offset, int holdtime) {
-    int request = SNDSTRM_queuefile(m_handle, holdtime, filename, offset);
+    int request;
+    if ((request = SNDSTRM_queuefile(m_handle, holdtime, filename, offset)) == 0) {
+        return request;
+    }
     return request;
 }
 
