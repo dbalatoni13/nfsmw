@@ -9,9 +9,9 @@ class ISpikeable : public UTL::COM::IUnknown, public UTL::Collections::Listable<
   public:
     DECL_INTERFACE(ISpikeable);
 
-    virtual eTireDamage GetTireDamage(unsigned int wheelId) const;
-    virtual unsigned int GetNumBlowouts() const;
-    virtual void Puncture(unsigned int wheelId);
+    virtual eTireDamage GetTireDamage(unsigned int wheelId) const = 0;
+    virtual unsigned int GetNumBlowouts() const = 0;
+    virtual void Puncture(unsigned int wheelId) = 0;
 };
 
 #endif

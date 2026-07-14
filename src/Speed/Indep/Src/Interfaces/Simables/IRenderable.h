@@ -1,5 +1,5 @@
-#ifndef INTERFACES_SIMABLES_IRENDERABLE_H
-#define INTERFACES_SIMABLES_IRENDERABLE_H
+#ifndef IRENDERABLE_H
+#define IRENDERABLE_H
 
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Src/Interfaces/SimModels/IModel.h"

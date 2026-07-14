@@ -47,6 +47,10 @@ class SimSurface : public Attrib::Gen::simsurface {
     static const Attrib::Collection *mOverride;
 };
 
+inline bool operator==(const SimSurface &surfaceA, const SimSurface &surfaceB) {
+    return surfaceA.GetConstCollection() == surfaceB.GetConstCollection();
+}
+
 inline bool operator!=(const SimSurface &surfaceA, const SimSurface &surfaceB) {
     return surfaceA.GetConstCollection() != surfaceB.GetConstCollection();
 }

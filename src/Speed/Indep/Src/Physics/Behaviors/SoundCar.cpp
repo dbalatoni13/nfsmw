@@ -199,6 +199,7 @@ void SoundCar::OnBehaviorChange(const UCrc32 &mechanic) {
         this->GetOwner()->QueryInterface(&this->mAI);
         this->GetOwner()->QueryInterface(&this->mHumanAI);
     }
+    Behavior::OnBehaviorChange(mechanic);
 }
 
 bool SoundCar::OnService(HSIMSERVICE hCon, Sim::Packet *pkt) {
@@ -390,13 +391,14 @@ Behavior *SoundRacer::Construct(const BehaviorParams &params) {
 }
 
 void SoundRacer::OnServiceTire(SoundConn::Pkt_Car_Service &pkt, unsigned int wheelid, Sound::WheelConfig sndId) {
+    Base::OnServiceTire(pkt, wheelid, sndId);
     if (this->mSpikeDamage != nullptr) {
         pkt.SetTireBlown(sndId, this->mSpikeDamage->GetTireDamage(wheelid));
     }
 }
 
 void SoundRacer::OnService(SoundConn::Pkt_Car_Service &svc) {
-    this->SoundCar::OnService(svc);
+    Base::OnService(svc);
 
     if (this->mEngineDamage != nullptr) {
         if (this->mEngineDamage->IsBlown()) {
@@ -409,7 +411,7 @@ void SoundRacer::OnService(SoundConn::Pkt_Car_Service &svc) {
 }
 
 void SoundRacer::OnBehaviorChange(const UCrc32 &mechanic) {
-    this->SoundCar::OnBehaviorChange(mechanic);
+    Base::OnBehaviorChange(mechanic);
     if (mechanic == BEHAVIOR_MECHANIC_ENGINE) {
         this->GetOwner()->QueryInterface(&this->mEngineDamage);
     } else if (mechanic == BEHAVIOR_MECHANIC_DAMAGE) {

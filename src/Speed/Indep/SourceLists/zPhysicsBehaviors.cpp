@@ -1,3 +1,5 @@
+#include "Speed/Indep/Src/Physics/Behaviors/BehaviorSpecs.cpp"
+
 #include "Speed/Indep/Src/Physics/Behaviors/RigidBody.cpp"
 
 #include "Speed/Indep/Src/Physics/Behaviors/SimpleRigidBody.cpp"
@@ -50,4 +52,8 @@
 
 #include "Speed/Indep/Src/Physics/Behaviors/SoundCar.cpp"
 
+#include "Speed/Indep/Src/Physics/Behaviors/ResetCar.cpp"
+
 #include "Speed/Indep/Src/Physics/Behaviors/SoundHeli.cpp"
+
+#include "Speed/Indep/Src/Physics/Behaviors/SpikeStrip.cpp"

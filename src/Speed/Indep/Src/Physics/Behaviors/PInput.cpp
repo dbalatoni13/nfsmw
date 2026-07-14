@@ -10,7 +10,6 @@
 #include "Speed/Indep/Src/Interfaces/Simables/IINput.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IResetable.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
-#include "Speed/Indep/Src/Interfaces/Simables/ITiptronic.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ITransmission.h"
 #include "Speed/Indep/Src/Physics/Behavior.h"
 #include "Speed/Indep/Src/Physics/Common/VehicleSystem.h"
@@ -60,6 +59,7 @@ InputPlayer::InputPlayer(const BehaviorParams &bp) : PInput(bp), IInputPlayer(bp
 }
 
 void InputPlayer::OnBehaviorChange(const UCrc32 &mechanic) {
+    Behavior::OnBehaviorChange(mechanic);
     if (mechanic == BEHAVIOR_MECHANIC_AI) {
         this->GetOwner()->QueryInterface(&this->mHumanAI);
     }
@@ -353,9 +353,7 @@ bool InputPlayer::IsAutomaticShift() const {
     return true;
 }
 
-Behavior *InputPlayerDrag::Construct(const BehaviorParams &params) {
-    return new InputPlayerDrag(params);
-}
+BIND_BEHAVIOR_FACTORY(InputPlayerDrag);
 
 InputPlayerDrag::InputPlayerDrag(const BehaviorParams &bp) : InputPlayer(bp) {}
 
@@ -383,5 +381,7 @@ bool InputPlayerDrag::OnAction(const ActionRef &a) {
     InputPlayer::OnAction(a);
     return true;
 }
+
+BIND_BEHAVIOR_FACTORY(InputNIS);
 
 InputNIS::InputNIS(const BehaviorParams &bp) : PInput(bp) {}

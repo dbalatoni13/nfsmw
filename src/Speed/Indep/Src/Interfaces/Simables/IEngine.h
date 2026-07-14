@@ -1,5 +1,5 @@
-#ifndef INTERFACES_SIMABLES_IENGINE_H
-#define INTERFACES_SIMABLES_IENGINE_H
+#ifndef IENGINE_H
+#define IENGINE_H
 
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
@@ -9,36 +9,36 @@ class IEngine : public UTL::COM::IUnknown {
   public:
     DECL_INTERFACE(IEngine);
 
-    virtual float GetRPM() const;
-    virtual float GetRedline() const;
-    virtual float GetMaxRPM() const;
-    virtual float GetMinRPM() const;
-    virtual float GetPeakTorqueRPM() const;
-    virtual void MatchSpeed(float speed);
-    virtual float GetNOSCapacity() const;
-    virtual bool IsNOSEngaged() const;
-    virtual float GetNOSFlowRate() const;
-    virtual float GetNOSBoost() const;
-    virtual bool HasNOS() const;
-    virtual void ChargeNOS(float charge);
-    virtual float GetMaxHorsePower() const;
-    virtual Hp GetMinHorsePower() const;
-    virtual float GetHorsePower() const;
+    virtual float GetRPM() const = 0;
+    virtual float GetRedline() const = 0;
+    virtual float GetMaxRPM() const = 0;
+    virtual float GetMinRPM() const = 0;
+    virtual float GetPeakTorqueRPM() const = 0;
+    virtual void MatchSpeed(float speed) = 0;
+    virtual float GetNOSCapacity() const = 0;
+    virtual bool IsNOSEngaged() const = 0;
+    virtual float GetNOSFlowRate() const = 0;
+    virtual float GetNOSBoost() const = 0;
+    virtual bool HasNOS() const = 0;
+    virtual void ChargeNOS(float charge) = 0;
+    virtual float GetMaxHorsePower() const = 0;
+    virtual Hp GetMinHorsePower() const = 0;
+    virtual float GetHorsePower() const = 0;
 };
 
 class IDragEngine : public UTL::COM::IUnknown {
   public:
     DECL_INTERFACE(IDragEngine);
 
-    virtual float GetOverRev() const;
-    virtual float GetHeat() const;
+    virtual float GetOverRev() const = 0;
+    virtual float GetHeat() const = 0;
 };
 
 class IRaceEngine : public UTL::COM::IUnknown {
   public:
     DECL_INTERFACE(IRaceEngine);
 
-    virtual float GetPerfectLaunchRange(float &range);
+    virtual float GetPerfectLaunchRange(float &range) = 0;
 };
 
 #endif

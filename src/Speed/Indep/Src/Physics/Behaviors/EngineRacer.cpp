@@ -16,7 +16,6 @@
 #include "Speed/Indep/Src/Interfaces/Simables/IINput.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IInductable.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISuspension.h"
-#include "Speed/Indep/Src/Interfaces/Simables/ITiptronic.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ITransmission.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #include "Speed/Indep/Src/Misc/Table.hpp"
@@ -789,7 +788,7 @@ float EngineRacer::GetDriveWheelSlippage() const {
     }
     if (this->FrontWheelDrive()) {
         drivewheels += 2;
-        retval += this->mSuspension->GetWheelSlip(2) + this->mSuspension->GetWheelSlip(3);
+        retval += this->mSuspension->GetWheelSlip(0) + this->mSuspension->GetWheelSlip(1);
     }
 
     return retval / drivewheels;

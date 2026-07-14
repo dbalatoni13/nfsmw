@@ -1,5 +1,5 @@
-#ifndef INTERFACES_SIMABLES_IRIGIDBODY_H
-#define INTERFACES_SIMABLES_IRIGIDBODY_H
+#ifndef IRIGIDBODY_H
+#define IRIGIDBODY_H
 
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Libs/Support/Utility/UListable.h"

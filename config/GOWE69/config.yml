@@ -96,6 +96,11 @@ add_relocations:
   type: ha
   target: lbl_803FB614
   addend: 0
+
+- source: .text:0x802678e4
+  type: ha
+  target: _Q33UTL11Collectionst12Instanceable3ZP8HMODEL__Z6IModeli434._mList
+  addend: 0
   
 - source: .text:0x802c57b0
   type: ha
