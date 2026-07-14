@@ -1,5 +1,5 @@
-#ifndef INTERFACES_SIMABLES_IDISPOSABLE_H
-#define INTERFACES_SIMABLES_IDISPOSABLE_H
+#ifndef IDISPOSEABLE_H
+#define IDISPOSEABLE_H
 
 #include "Speed/Indep/Libs/Support/Utility/UListable.h"
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
@@ -8,7 +8,7 @@ class IDisposable : public UTL::COM::IUnknown, public UTL::Collections::Listable
   public:
     DECL_INTERFACE(IDisposable);
 
-    virtual bool IsRequired() const;
+    virtual bool IsRequired() const = 0;
 };
 
 #endif

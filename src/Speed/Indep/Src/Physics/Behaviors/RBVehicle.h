@@ -9,7 +9,6 @@
 // total size: 0x1A4
 class RBVehicle : public RigidBody, public IRBVehicle {
   public:
-    ~RBVehicle() override;
     RBVehicle(const BehaviorParams &bp, const RBComplexParams &params);
     static Behavior *Construct(const BehaviorParams &params);
 

@@ -135,8 +135,25 @@ class SimCollisionMap {
         }
     }
 
+    bool TestBit(unsigned int index) const {
+        return ((this->fBitMap[index / 64] >> (index % 64)) & 1) != 0;
+    }
+
     void SetBit(unsigned int index) {
         this->fBitMap[index / Sim::MaxRigidBodies] |= 1ULL << (index & (Sim::MaxRigidBodies - 1));
+    }
+
+    bool CollisionWithAny() const {
+        for (int i = 0; i < 3; ++i) {
+            if (this->fBitMap[i] != 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    bool CollisionWithOrderedBody(int obIndex) const {
+        return this->TestBit(obIndex);
     }
 
     void SetCollisionWithRB(int rbIndex) {
@@ -152,7 +169,7 @@ class SimCollisionMap {
     IRigidBody *GetOrderedBody(int index) const;
 
   private:
-    unsigned long long fBitMap[3]; // offset 0x0, size 0x18
+    uint64 fBitMap[3]; // offset 0x0, size 0x18
 };
 
 namespace Sim {

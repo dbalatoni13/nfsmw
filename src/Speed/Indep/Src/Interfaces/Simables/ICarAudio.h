@@ -9,7 +9,7 @@ class ICarAudio : public UTL::COM::IUnknown {
   public:
     DECL_INTERFACE(ICarAudio);
 
-    virtual Rpm GetRPM() const;
+    virtual Rpm GetRPM() const = 0;
 };
 
 #endif

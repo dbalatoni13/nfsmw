@@ -36,7 +36,6 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
     static Behavior *Construct(const BehaviorParams &bp);
 
     float GetOverSteerCorrection(float steer);
-    void UpdateRoads();
 
     const UMath::Vector3 &GetAngularVelocity() const {
         return mCollisionBody->GetAngularVelocity();
@@ -303,6 +302,9 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
     bool WorldCollision(const UMath::Vector3 &pos, const UMath::Vector3 &dest);
     bool BarriersInPath(bool reverse);
 
+    // Overrides: IVehicleAI
+    bool GetWorldAvoidanceInfo(float dT, UMath::Vector3 &leftCollNormal, UMath::Vector3 &rightCollNormal) const override;
+
     virtual bool IsTetheredToTarget(UTL::COM::IUnknown *object) {
         return false;
     }
@@ -337,6 +339,8 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
     bool mSteeringBehind;              // offset 0xB0, size 0x1
 
   private:
+    void UpdateRoads();
+
     HSIMTASK mThinkTask;                         // offset 0xB4, size 0x4
     float mLastSpawnTime;                        // offset 0xB8, size 0x4
     bool mCanRespawn;                            // offset 0xBC, size 0x1

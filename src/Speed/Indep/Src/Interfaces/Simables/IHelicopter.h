@@ -13,34 +13,34 @@ class ISimpleChopper : public UTL::COM::IUnknown {
   public:
     DECL_INTERFACE(ISimpleChopper);
 
-    virtual void SetDesiredVelocity(const UMath::Vector3 &vel);
-    virtual void GetDesiredVelocity(UMath::Vector3 &vel);
-    virtual void MaxDeceleration(bool t);
-    virtual void SetDesiredFacingVector(const UMath::Vector3 &facingDir);
-    virtual void GetDesiredFacingVector(UMath::Vector3 &facingDir);
+    virtual void SetDesiredVelocity(const UMath::Vector3 &vel) = 0;
+    virtual void GetDesiredVelocity(UMath::Vector3 &vel) = 0;
+    virtual void MaxDeceleration(bool t) = 0;
+    virtual void SetDesiredFacingVector(const UMath::Vector3 &facingDir) = 0;
+    virtual void GetDesiredFacingVector(UMath::Vector3 &facingDir) = 0;
 };
 
 class IAIHelicopter : public UTL::COM::IUnknown {
   public:
     DECL_INTERFACE(IAIHelicopter);
 
-    virtual float GetDesiredHeightOverDest() const;
-    virtual void SetDesiredHeightOverDest(const float height);
-    virtual void SetLookAtPosition(UMath::Vector3 la);
-    virtual UMath::Vector3 GetLookAtPosition() const;
-    virtual void SetDestinationVelocity(const UMath::Vector3 &v);
-    virtual void SteerToNav(WRoadNav *road_nav, float height, float speed, bool bStopAtDest);
-    virtual bool StartPathToPoint(UMath::Vector3 &point);
-    virtual bool StrafeToDestIsSet() const;
-    virtual void SetStrafeToDest(bool strafe);
-    virtual bool FilterHeliAltitude(UMath::Vector3 &point);
-    virtual void RestrictPointToRoadNet(UMath::Vector3 &seekPosition);
-    virtual void SetFuelFull();
-    virtual float GetFuelTimeRemaining();
-    virtual void SetShadowScale(float s);
-    virtual float GetShadowScale();
-    virtual void SetDustStormIntensity(float d);
-    virtual float GetDustStormIntensity();
+    virtual float GetDesiredHeightOverDest() const = 0;
+    virtual void SetDesiredHeightOverDest(const float height) = 0;
+    virtual void SetLookAtPosition(UMath::Vector3 la) = 0;
+    virtual UMath::Vector3 GetLookAtPosition() const = 0;
+    virtual void SetDestinationVelocity(const UMath::Vector3 &v) = 0;
+    virtual void SteerToNav(WRoadNav *road_nav, float height, float speed, bool bStopAtDest) = 0;
+    virtual bool StartPathToPoint(UMath::Vector3 &point) = 0;
+    virtual bool StrafeToDestIsSet() const = 0;
+    virtual void SetStrafeToDest(bool strafe) = 0;
+    virtual bool FilterHeliAltitude(UMath::Vector3 &point) = 0;
+    virtual void RestrictPointToRoadNet(UMath::Vector3 &seekPosition) = 0;
+    virtual void SetFuelFull() = 0;
+    virtual float GetFuelTimeRemaining() = 0;
+    virtual void SetShadowScale(float s) = 0;
+    virtual float GetShadowScale() = 0;
+    virtual void SetDustStormIntensity(float d) = 0;
+    virtual float GetDustStormIntensity() = 0;
 };
 
 #endif

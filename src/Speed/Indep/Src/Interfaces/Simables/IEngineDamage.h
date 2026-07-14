@@ -8,11 +8,11 @@ class IEngineDamage : public UTL::COM::IUnknown {
   public:
     DECL_INTERFACE(IEngineDamage);
 
-    virtual bool IsBlown() const;
-    virtual bool Blow();
-    virtual void Sabotage(float time);
-    virtual bool IsSabotaged() const;
-    virtual void Repair();
+    virtual bool IsBlown() const = 0;
+    virtual bool Blow() = 0;
+    virtual void Sabotage(float time) = 0;
+    virtual bool IsSabotaged() const = 0;
+    virtual void Repair() = 0;
 };
 
 #endif

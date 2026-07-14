@@ -1,5 +1,5 @@
-#ifndef INTERFACES_SIMABLES_ISIMPLEBODY_H
-#define INTERFACES_SIMABLES_ISIMPLEBODY_H
+#ifndef ISIMPLEBODY_H
+#define ISIMPLEBODY_H
 
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Libs/Support/Utility/UListable.h"
@@ -9,12 +9,12 @@ class ISimpleBody : public UTL::COM::IUnknown, public UTL::Collections::Listable
   public:
     DECL_INTERFACE(ISimpleBody);
 
-    virtual void ModifyFlags(unsigned int uRemove, unsigned int uAdd);
-    virtual bool CanCollideWithSRB() const;
-    virtual bool CanCollideWithRB() const;
-    virtual bool CanHitTrigger() const;
-    virtual const SimCollisionMap *GetCollisionMap() const;
-    virtual SimCollisionMap *GetCollisionMap();
+    virtual void ModifyFlags(unsigned int uRemove, unsigned int uAdd) = 0;
+    virtual bool CanCollideWithSRB() const = 0;
+    virtual bool CanCollideWithRB() const = 0;
+    virtual bool CanHitTrigger() const = 0;
+    virtual const SimCollisionMap *GetCollisionMap() const = 0;
+    virtual SimCollisionMap *GetCollisionMap() = 0;
 };
 
 #endif

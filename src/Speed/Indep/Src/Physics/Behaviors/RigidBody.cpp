@@ -44,6 +44,9 @@ BIND_BEHAVIOR_SPECS(rigidbodyspecs);
 bTList<RigidBody> TheRigidBodies;
 
 unsigned int RigidBody::mCount = 0;
+
+IMPLEMENT_SAP_GRID(RigidBody);
+
 bool RigidBody::mOnSP = false;
 
 BIND_BEHAVIOR_FACTORY(RigidBody);
@@ -158,8 +161,6 @@ void RigidBody::ShutdownRigidBodySystem() {}
 
 // STRIPPED
 void RigidBody::DebugSystem() {}
-
-IMPLEMENT_SAP_GRID(RigidBody);
 
 static char RBGrid_Memory[6912];
 
@@ -813,9 +814,9 @@ void RigidBody::DoInstanceCollision2d(const float dT) {
             continue;
         }
 
-        static const UMath::Vector4 diagnols[BOX_CORNERS] = {{-1.0f, -1.0f, -1.0f, 1.0f}, {1.0f, -1.0f, -1.0f, 1.0f}, {-1.0f, 1.0f, -1.0f, 1.0f},
-                                                             {1.0f, 1.0f, -1.0f, 1.0f},   {-1.0f, -1.0f, 1.0f, 1.0f}, {1.0f, -1.0f, 1.0f, 1.0f},
-                                                             {-1.0f, 1.0f, 1.0f, 1.0f},   {1.0f, 1.0f, 1.0f, 1.0f}};
+        static const UMath::Vector4 diagnols[BOX_CORNERS] = {{-1.0f, -1.0f, 1.0f, 1.0f},  {1.0f, -1.0f, 1.0f, 1.0f}, {1.0f, -1.0f, -1.0f, 1.0f},
+                                                             {-1.0f, -1.0f, -1.0f, 1.0f}, {-1.0f, 1.0f, 1.0f, 1.0f}, {1.0f, 1.0f, 1.0f, 1.0f},
+                                                             {1.0f, 1.0f, -1.0f, 1.0f},   {-1.0f, 1.0f, -1.0f, 1.0f}};
 
         const Attrib::Collection *bodysuface = prim->GetMaterial();
         const UMath::Vector3 &dim = prim->GetDimension();

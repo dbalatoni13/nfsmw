@@ -10,7 +10,7 @@ class DamageDragster : public DamageRacer {
     typedef DamageRacer Base;
 
     // IUnknown
-    ~DamageDragster() override;
+    ~DamageDragster() override {}
 
     static Behavior *Construct(const BehaviorParams &params);
 

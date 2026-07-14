@@ -82,33 +82,41 @@ class TrackPathZone {
     bVector2 Points[64];     // offset 0x44, size 0x200
 
     bool IsPointOnBoundary(const bVector2 *point);
+    bool IsPointInside(const bVector2 *point);
     void GetOpposite(bVector2 *in0, bVector2 *in1, bVector2 *opp0, bVector2 *opp1);
     bool GetIntercept(bVector2 &InterceptPoint, const bVector2 *Start, const bVector2 *Direction);
-    bool IsPointInside(const bVector2 *point);
     float GetSegmentNextTo(bVector2 *point, bVector2 *segment_point_a, bVector2 *segment_point_b);
 
-    float GetElevation() {
-        return Elevation;
+    bVector2 *GetDirection() {
+        return &Direction;
+    }
+
+    bVector2 *GetPosition() {
+        return &Position;
     }
 
     eTrackPathZoneType GetType() {
         return Type;
     }
 
-    int GetMemoryImageSize() {
-        return MemoryImageSize;
+    float GetElevation() {
+        return Elevation;
+    }
+
+    int32 GetData(int index) {
+        return Data[index];
     }
 
     void SetVisitInfo(int v) {
         VisitInfo = v;
     }
 
-    TrackPathZone *GetMemoryImageNext() {
-        return reinterpret_cast<TrackPathZone *>(reinterpret_cast<char *>(this) + GetMemoryImageSize());
+    int GetMemoryImageSize() {
+        return MemoryImageSize;
     }
 
-    int32 GetData(int index) {
-        return Data[index];
+    TrackPathZone *GetMemoryImageNext() {
+        return reinterpret_cast<TrackPathZone *>(reinterpret_cast<char *>(this) + GetMemoryImageSize());
     }
 };
 
