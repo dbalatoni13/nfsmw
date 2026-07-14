@@ -7,12 +7,8 @@ const os = require("os");
 const util = require("util");
 
 const execFile = util.promisify(cp.execFile);
-const ANNOTATION_CACHE_VERSION = 7;
-const FUNCTION_KINDS = new Set([
-  vscode.SymbolKind.Function,
-  vscode.SymbolKind.Method,
-  vscode.SymbolKind.Constructor,
-]);
+const ANNOTATION_CACHE_VERSION = 11;
+const FUNCTION_KINDS = new Set([vscode.SymbolKind.Function, vscode.SymbolKind.Method, vscode.SymbolKind.Constructor]);
 const CONTAINER_KINDS = new Set([
   vscode.SymbolKind.Namespace,
   vscode.SymbolKind.Class,
@@ -78,14 +74,16 @@ function parameterList(text) {
 }
 
 function symbolFunctionName(symbol) {
+  const parametersAt = (symbol.name || "").lastIndexOf("(");
+  const declaredName = (symbol.name || "").slice(0, parametersAt === -1 ? undefined : parametersAt).trim();
+  if (declaredName.includes("::")) return declaredName;
   const container = symbol.containerName || symbolContainers.get(symbol) || "";
-  return [container, functionLeaf(symbol.name || "")].filter(Boolean).join("::");
+  return [container, declaredName].filter(Boolean).join("::");
 }
 
 function symbolFunctionQuery(document, symbol) {
   const qualifiedName = symbolFunctionName(symbol);
-  const parameters = parameterList(symbol.name || "")
-    || parameterList(symbolSourcePrefix(document, symbol));
+  const parameters = parameterList(symbol.name || "") || parameterList(symbolSourcePrefix(document, symbol));
   return parameters ? `${qualifiedName}${parameters}` : qualifiedName;
 }
 
@@ -119,6 +117,27 @@ function compactParameter(parameter) {
     .trim();
 }
 
+function parameterTypeVariants(parameter) {
+  const variants = new Set([parameter]);
+  if (parameter.startsWith("i32")) {
+    variants.add(`int${parameter.slice(3)}`);
+    variants.add(`long${parameter.slice(3)}`);
+  } else if (parameter.startsWith("u32")) {
+    variants.add(`unsignedint${parameter.slice(3)}`);
+    variants.add(`unsignedlong${parameter.slice(3)}`);
+  }
+  return variants;
+}
+
+function compactParametersMatch(left, right) {
+  for (const leftVariant of parameterTypeVariants(left)) {
+    for (const rightVariant of parameterTypeVariants(right)) {
+      if (leftVariant.startsWith(rightVariant) || rightVariant.startsWith(leftVariant)) return true;
+    }
+  }
+  return false;
+}
+
 function parameterListsMatch(left, right) {
   const leftParameters = signatureParameters(left);
   const rightParameters = signatureParameters(right);
@@ -130,7 +149,7 @@ function parameterListsMatch(left, right) {
     if (leftCompact === "void" && !rightCompact) return true;
     if (rightCompact === "void" && !leftCompact) return true;
     // Source symbols include parameter names while demangled objdiff names do not.
-    return leftCompact.startsWith(rightCompact) || rightCompact.startsWith(leftCompact);
+    return compactParametersMatch(leftCompact, rightCompact);
   });
 }
 
@@ -144,18 +163,16 @@ function definitionScore(document, symbol) {
   return braceAt !== -1 && (semicolonAt === -1 || braceAt < semicolonAt) ? 5 : 0;
 }
 
-function scoreSymbol(functionName, symbol, document) {
+function scoreSymbol(functionName, symbol, document, checkParameters = true) {
   const parameterAt = functionName.lastIndexOf("(");
   const wantedName = functionName.slice(0, parameterAt === -1 ? undefined : parameterAt);
   const wanted = wantedName.replace(/\s+/g, "").toLowerCase();
-  const candidate = `${symbolName(symbol)} ${symbolSourcePrefix(document, symbol)}`
-    .replace(/\s+/g, "")
-    .toLowerCase();
+  const candidate = `${symbolName(symbol)} ${symbolSourcePrefix(document, symbol)}`.replace(/\s+/g, "").toLowerCase();
   const leaf = functionLeaf(functionName).toLowerCase();
   const candidateLeaf = functionLeaf(symbol.name || "").toLowerCase();
   const requestedParameters = parameterList(functionName);
   const symbolQuery = symbolFunctionQuery(document, symbol);
-  if (requestedParameters && !parameterListsMatch(functionName, symbolQuery)) return -1;
+  if (checkParameters && requestedParameters && !parameterListsMatch(functionName, symbolQuery)) return -1;
   const overloadScore = requestedParameters ? 1000 : 0;
   const sourceScore = definitionScore(document, symbol);
   if (candidate.includes(wanted)) return overloadScore + sourceScore + 100;
@@ -168,49 +185,55 @@ function scoreSymbol(functionName, symbol, document) {
   return overloadScore + sourceScore + 10;
 }
 
-async function locateFunctions(document, functionNames) {
-  const raw = await vscode.commands.executeCommand(
-    "vscode.executeDocumentSymbolProvider",
-    document.uri,
+function matchingSymbolCandidates(functionName, symbols, document, excluded = new Set()) {
+  const wantedLeaf = functionLeaf(functionName).toLowerCase();
+  const named = symbols
+    .map((symbol, index) => ({ symbol, index }))
+    .filter((candidate) => !excluded.has(candidate.index))
+    .filter((candidate) => functionLeaf(candidate.symbol.name || "").toLowerCase() === wantedLeaf)
+    .map((candidate) => ({
+      ...candidate,
+      score: scoreSymbol(functionName, candidate.symbol, document, false),
+    }))
+    .filter((candidate) => candidate.score >= 0);
+  const signatures = new Set(
+    named.map(({ symbol }) => parameterList(symbol.detail || "") || parameterList(symbol.name || "") || ""),
   );
+  if (signatures.size <= 1) return named;
+  return named
+    .map((candidate) => ({
+      ...candidate,
+      score: scoreSymbol(functionName, candidate.symbol, document, true),
+    }))
+    .filter((candidate) => candidate.score >= 0);
+}
+
+async function locateFunctions(document, functionNames) {
+  const raw = await vscode.commands.executeCommand("vscode.executeDocumentSymbolProvider", document.uri);
   const symbols = flattenSymbols(raw || []);
   const used = new Set();
   const locations = new Map();
 
   for (const name of functionNames) {
-    let best;
-    let bestScore = -1;
-    for (let index = 0; index < symbols.length; index += 1) {
-      if (used.has(index)) continue;
-      const score = scoreSymbol(name, symbols[index], document);
-      if (score > bestScore) {
-        best = index;
-        bestScore = score;
-      }
-    }
-    if (best !== undefined && bestScore >= 0) {
-      used.add(best);
-      locations.set(
-        name,
-        symbolRange(symbols[best]),
-      );
+    const candidates = matchingSymbolCandidates(name, symbols, document, used).sort(
+      (left, right) => right.score - left.score,
+    );
+    const best = candidates[0];
+    if (best) {
+      used.add(best.index);
+      locations.set(name, symbolRange(best.symbol));
     }
   }
   return locations;
 }
 
 async function locateFunctionOccurrences(document, functionNames) {
-  const raw = await vscode.commands.executeCommand(
-    "vscode.executeDocumentSymbolProvider",
-    document.uri,
-  );
+  const raw = await vscode.commands.executeCommand("vscode.executeDocumentSymbolProvider", document.uri);
   const symbols = flattenSymbols(raw || []);
   const locations = new Map();
 
   for (const name of functionNames) {
-    const scored = symbols
-      .map((symbol) => ({ symbol, score: scoreSymbol(name, symbol, document) }))
-      .filter((candidate) => candidate.score >= 0);
+    const scored = matchingSymbolCandidates(name, symbols, document);
     const bestScore = scored.reduce((best, candidate) => Math.max(best, candidate.score), -1);
     const seen = new Set();
     const ranges = scored
@@ -244,10 +267,7 @@ function collectTypeSymbols(symbols, output = [], containers = []) {
 }
 
 async function locateTypes(document) {
-  const raw = await vscode.commands.executeCommand(
-    "vscode.executeDocumentSymbolProvider",
-    document.uri,
-  );
+  const raw = await vscode.commands.executeCommand("vscode.executeDocumentSymbolProvider", document.uri);
   return new Map(collectTypeSymbols(raw || []).map((item) => [item.name, item.range]));
 }
 
@@ -312,23 +332,32 @@ function unitsForDocument(repo, document) {
   const sourceListUnits = units.filter((unit) =>
     normalizedPath(unit.metadata?.source_path || "").includes("/sourcelists/"),
   );
-  const includedBy = (candidates) => candidates.filter((unit) => {
-    const unitySource = path.resolve(repo, unit.metadata.source_path);
-    return unityIncludesSource(repo, unitySource, document.uri.fsPath);
-  });
+  const includedBy = (candidates) =>
+    candidates.filter((unit) => {
+      const unitySource = path.resolve(repo, unit.metadata.source_path);
+      return unityIncludesSource(repo, unitySource, document.uri.fsPath);
+    });
   let matches = includedBy(sourceListUnits);
   if (matches.length === 0) {
     const sourceListNames = new Set(sourceListUnits.map((unit) => unit.name));
-    matches = includedBy(
-      units.filter(
-        (unit) => unit.metadata?.source_path && !sourceListNames.has(unit.name),
-      ),
-    );
+    matches = includedBy(units.filter((unit) => unit.metadata?.source_path && !sourceListNames.has(unit.name)));
   }
   if (!matches.length) {
     throw new Error(`No objdiff translation unit directly or transitively includes '${relative}'.`);
   }
   return matches;
+}
+
+function comparisonToolsKey(repo) {
+  return ["decomp-diff.py", "dwarf-compare.py", "ps2-type-compare.py"]
+    .map((name) => {
+      try {
+        return `${name}:${fs.statSync(path.join(repo, "tools", name)).mtimeMs}`;
+      } catch (_) {
+        return `${name}:missing`;
+      }
+    })
+    .join("|");
 }
 
 async function runJson(python, script, args, cwd, signal) {
@@ -365,10 +394,7 @@ class AnnotationCache {
     try {
       const value = JSON.parse(await fs.promises.readFile(filename, "utf8"));
       const stat = await fs.promises.stat(source);
-      if (
-        value.cacheVersion !== ANNOTATION_CACHE_VERSION ||
-        value.sourceMtimeMs !== stat.mtimeMs
-      ) return undefined;
+      if (value.cacheVersion !== ANNOTATION_CACHE_VERSION || value.sourceMtimeMs !== stat.mtimeMs) return undefined;
       await fs.promises.utimes(filename, new Date(), new Date());
       return value;
     } catch (_) {
@@ -438,33 +464,40 @@ class MatchCodeLensProvider {
     for (const annotation of annotations) {
       if (annotation.kind === "type") {
         const match = annotation.typePercent == null ? "not found" : `${annotation.typePercent.toFixed(1)}%`;
-        lenses.push(new vscode.CodeLens(annotation.range, {
-          title: `$(symbol-struct) PS2 type ${match}`,
-          command: annotation.comparisonDiff ? "nfsmwMatch.showDwarfDiff" : "",
-          arguments: annotation.comparisonDiff ? [annotation] : [],
-          tooltip: annotation.error || `${annotation.type}\nPS2 struct definition ${match}`,
-        }));
+        lenses.push(
+          new vscode.CodeLens(annotation.range, {
+            title: `$(symbol-struct) PS2 type ${match}`,
+            command: annotation.comparisonDiff ? "nfsmwMatch.showDwarfDiff" : "",
+            arguments: annotation.comparisonDiff ? [annotation] : [],
+            tooltip: annotation.error || `${annotation.type}\nPS2 struct definition ${match}`,
+          }),
+        );
         continue;
       }
       const objdiff = annotation.objdiffPercent == null ? "n/a" : `${annotation.objdiffPercent.toFixed(1)}%`;
       const hasObjdiff = annotation.objdiffPercent != null;
       if (annotation.platform === "ps2") {
         if (!hasObjdiff) continue;
-        lenses.push(new vscode.CodeLens(annotation.range, {
-          title: `$(pulse) objdiff ${objdiff}`,
-          command: "",
-          tooltip: `${annotation.function}\nobjdiff ${objdiff}; DWARF unavailable on PS2`,
-        }));
+        lenses.push(
+          new vscode.CodeLens(annotation.range, {
+            title: `$(pulse) objdiff ${objdiff}`,
+            command: "",
+            tooltip: `${annotation.function}\nobjdiff ${objdiff}; DWARF unavailable on PS2`,
+          }),
+        );
         continue;
       }
       const dwarf = annotation.dwarfPercent == null ? "not found" : `${annotation.dwarfPercent.toFixed(1)}%`;
-      const tooltip = annotation.error || `${annotation.function}\n${hasObjdiff ? `objdiff ${objdiff}; ` : ""}DWARF ${dwarf}`;
-      lenses.push(new vscode.CodeLens(annotation.range, {
-        title: hasObjdiff ? `$(pulse) objdiff ${objdiff}  ·  DWARF ${dwarf}` : `$(pulse) DWARF ${dwarf}`,
-        command: annotation.dwarfDiff ? "nfsmwMatch.showDwarfDiff" : "",
-        arguments: annotation.dwarfDiff ? [annotation] : [],
-        tooltip,
-      }));
+      const tooltip =
+        annotation.error || `${annotation.function}\n${hasObjdiff ? `objdiff ${objdiff}; ` : ""}DWARF ${dwarf}`;
+      lenses.push(
+        new vscode.CodeLens(annotation.range, {
+          title: hasObjdiff ? `$(pulse) objdiff ${objdiff}  ·  DWARF ${dwarf}` : `$(pulse) DWARF ${dwarf}`,
+          command: annotation.dwarfDiff ? "nfsmwMatch.showDwarfDiff" : "",
+          arguments: annotation.dwarfDiff ? [annotation] : [],
+          tooltip,
+        }),
+      );
     }
     return lenses;
   }
@@ -504,7 +537,10 @@ async function activate(context) {
   const runningRefreshes = new Map();
   const lastResults = new Map();
   let lastDiffViewColumn;
-  const selector = [{ language: "c", scheme: "file" }, { language: "cpp", scheme: "file" }];
+  const selector = [
+    { language: "c", scheme: "file" },
+    { language: "cpp", scheme: "file" },
+  ];
   context.subscriptions.push(
     vscode.languages.registerCodeLensProvider(selector, lenses),
     vscode.workspace.registerTextDocumentContentProvider("nfsmw-dwarf-diff", diffs),
@@ -516,12 +552,13 @@ async function activate(context) {
     lastResults.set(document.uri.toString(), result);
     const functionItems = result.annotations.filter((item) => item.kind !== "type");
     const typeItems = result.annotations.filter((item) => item.kind === "type");
-    const locations = await locateFunctionOccurrences(document, functionItems.map((item) => item.function));
+    const locations = await locateFunctionOccurrences(
+      document,
+      functionItems.map((item) => item.function),
+    );
     const typeLocations = typeItems.length ? await locateTypes(document) : new Map();
     const annotations = [
-      ...functionItems
-        .flatMap((item) => (locations.get(item.function) || [])
-          .map((range) => ({ ...item, range }))),
+      ...functionItems.flatMap((item) => (locations.get(item.function) || []).map((range) => ({ ...item, range }))),
       ...typeItems
         .filter((item) => typeLocations.get(item.type))
         .map((item) => ({ ...item, range: typeLocations.get(item.type) })),
@@ -531,16 +568,21 @@ async function activate(context) {
     for (const annotation of annotations) {
       const mismatches = [
         ["objdiff", annotation.objdiffPercent],
-        [annotation.kind === "type" ? "PS2 type" : "DWARF", annotation.kind === "type" ? annotation.typePercent : annotation.dwarfPercent],
+        [
+          annotation.kind === "type" ? "PS2 type" : "DWARF",
+          annotation.kind === "type" ? annotation.typePercent : annotation.dwarfPercent,
+        ],
       ].filter(([, value]) => value != null && Math.abs(value - 100) > 0.000001);
       if (!mismatches.length) continue;
       const line = annotation.range.start.line;
       const lineRange = document.lineAt(line).range;
-      errors.push(new vscode.Diagnostic(
-        lineRange,
-        `${mismatches.map(([name, value]) => `${name} ${value.toFixed(1)}%`).join("; ")} is not a full match`,
-        vscode.DiagnosticSeverity.Warning,
-      ));
+      errors.push(
+        new vscode.Diagnostic(
+          lineRange,
+          `${mismatches.map(([name, value]) => `${name} ${value.toFixed(1)}%`).join("; ")} is not a full match`,
+          vscode.DiagnosticSeverity.Warning,
+        ),
+      );
     }
     diagnostics.set(document.uri, errors);
     return annotations.length;
@@ -572,7 +614,7 @@ async function activate(context) {
       .sort()
       .join("|");
     const objdiffEnabled = vscode.workspace.getConfiguration("nfsmwMatch").get("objdiffEnabled", true);
-    const cacheKey = `${candidateKey}|objdiff:${objdiffEnabled}`;
+    const cacheKey = `${candidateKey}|objdiff:${objdiffEnabled}|tools:${comparisonToolsKey(repo)}`;
     if (!force) {
       const cached = await cache.read(repo, document.uri.fsPath);
       if (cached && cached.candidateKey === cacheKey) {
@@ -584,17 +626,29 @@ async function activate(context) {
     const python = vscode.workspace.getConfiguration("nfsmwMatch").get("pythonPath", "python");
     const progress = force ? vscode.window.withProgress.bind(vscode.window) : async (_, task) => task();
     await progress(
-      { location: vscode.ProgressLocation.Notification, title: `Refreshing match annotations for ${path.basename(document.fileName)}`, cancellable: true },
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: `Refreshing match annotations for ${path.basename(document.fileName)}`,
+        cancellable: true,
+      },
       async (_, token) => {
         token?.onCancellationRequested(cancel);
         const inspectedUnits = [];
         for (const candidate of candidateUnits) {
           if (signal.aborted) throw new vscode.CancellationError();
-          const rows = objdiffEnabled ? await runJson(
-            python, path.join(repo, "tools", "decomp-diff.py"),
-            ["-u", candidate.name, "-t", "function", "--json"], repo, signal,
-          ) : [];
-          const sourceLocations = await locateFunctions(document, rows.map((row) => row.name));
+          const rows = objdiffEnabled
+            ? await runJson(
+                python,
+                path.join(repo, "tools", "decomp-diff.py"),
+                ["-u", candidate.name, "-t", "function", "--json"],
+                repo,
+                signal,
+              )
+            : [];
+          const sourceLocations = await locateFunctions(
+            document,
+            rows.map((row) => row.name),
+          );
           inspectedUnits.push({
             config: candidate,
             sourceRows: rows.filter((row) => sourceLocations.get(row.name)),
@@ -608,14 +662,16 @@ async function activate(context) {
         let functionNames = sourceRows.map((row) => row.name);
         if (!objdiffEnabled && platform !== "ps2") {
           const rawSymbols = await vscode.commands.executeCommand("vscode.executeDocumentSymbolProvider", document.uri);
-          functionNames = [...new Set(
-            flattenSymbols(rawSymbols || []).map((symbol) => symbolFunctionQuery(document, symbol)),
-          )];
+          functionNames = [
+            ...new Set(flattenSymbols(rawSymbols || []).map((symbol) => symbolFunctionQuery(document, symbol))),
+          ];
         }
         if (functionNames.length === 0 && platform !== "ps2") {
-          throw new Error(objdiffEnabled
-            ? "No objdiff functions could be matched to document symbols in this file."
-            : "No function definitions could be matched to document symbols in this file.");
+          throw new Error(
+            objdiffEnabled
+              ? "No objdiff functions could be matched to document symbols in this file."
+              : "No function definitions could be matched to document symbols in this file.",
+          );
         }
 
         if (platform === "ps2") {
@@ -642,7 +698,8 @@ async function activate(context) {
                     python,
                     path.join(repo, "tools", "ps2-type-compare.py"),
                     ["-u", inspected.config.name, "--stdump", stdumpPath, "--types-file", requestFile, "--json"],
-                    repo, signal,
+                    repo,
+                    signal,
                   );
                 } catch (error) {
                   if (signal.aborted) throw error;
@@ -651,9 +708,7 @@ async function activate(context) {
                 for (const report of reports) {
                   const previous = bestReports.get(report.type);
                   const reportScore = report.error ? -1 : report.match_percent;
-                  const previousScore = !previous || previous.report.error
-                    ? -1
-                    : previous.report.match_percent;
+                  const previousScore = !previous || previous.report.error ? -1 : previous.report.match_percent;
                   if (!previous || reportScore > previousScore) {
                     bestReports.set(report.type, {
                       report,
@@ -674,19 +729,18 @@ async function activate(context) {
                 platform,
                 unit: selected?.unit || unit,
                 type: typeName,
-                typePercent: error ? null : report?.match_percent ?? null,
+                typePercent: error ? null : (report?.match_percent ?? null),
                 error,
-                comparisonDiff:
-                  error || !report?.diff_lines?.length
-                    ? undefined
-                    : report.diff_lines.join("\n") + "\n",
+                comparisonDiff: error || !report?.diff_lines?.length ? undefined : report.diff_lines.join("\n") + "\n",
               });
             }
           }
           if (!annotations.length) {
-            throw new Error(objdiffEnabled
-              ? "No objdiff functions or struct/class definitions were found in this file."
-              : "No struct/class definitions were found in this PS2 file.");
+            throw new Error(
+              objdiffEnabled
+                ? "No objdiff functions or struct/class definitions were found in this file."
+                : "No struct/class definitions were found in this PS2 file.",
+            );
           }
           const result = { unit, platform, candidateKey: cacheKey, annotations };
           if (signal.aborted) throw new vscode.CancellationError();
@@ -706,7 +760,8 @@ async function activate(context) {
               python,
               path.join(repo, "tools", "dwarf-compare.py"),
               ["-u", unit, "--functions-file", requestFile, "--json"],
-              repo, signal,
+              repo,
+              signal,
             );
           } else {
             let best;
@@ -719,7 +774,8 @@ async function activate(context) {
                   python,
                   path.join(repo, "tools", "dwarf-compare.py"),
                   ["-u", inspected.config.name, "--functions-file", requestFile, "--json"],
-                  repo, signal,
+                  repo,
+                  signal,
                 );
               } catch (error) {
                 if (signal.aborted) throw error;
@@ -738,7 +794,9 @@ async function activate(context) {
         const dwarfByFunction = new Map(dwarfReports.map((report) => [report.function, report]));
         const annotationRows = objdiffEnabled
           ? sourceRows
-          : dwarfReports.filter((report) => !report.error).map((report) => ({ name: report.function, match_percent: null }));
+          : dwarfReports
+              .filter((report) => !report.error)
+              .map((report) => ({ name: report.function, match_percent: null }));
         const annotations = annotationRows.map((row) => {
           const dwarf = dwarfByFunction.get(row.name);
           const error = dwarf?.error;
@@ -748,12 +806,9 @@ async function activate(context) {
             unit,
             function: row.name,
             objdiffPercent: row.match_percent,
-            dwarfPercent: error ? null : dwarf?.match_percent ?? null,
+            dwarfPercent: error ? null : (dwarf?.match_percent ?? null),
             error,
-            dwarfDiff:
-              error || !dwarf?.diff_lines?.length
-                ? undefined
-                : dwarf.diff_lines.join("\n") + "\n",
+            dwarfDiff: error || !dwarf?.diff_lines?.length ? undefined : dwarf.diff_lines.join("\n") + "\n",
           };
         });
         const result = { unit, platform, candidateKey: cacheKey, annotations };
@@ -796,12 +851,18 @@ async function activate(context) {
       }
     }),
     vscode.commands.registerCommand("nfsmwMatch.enableObjdiff", async () => {
-      await vscode.workspace.getConfiguration("nfsmwMatch").update("objdiffEnabled", true, vscode.ConfigurationTarget.Workspace);
+      await vscode.workspace
+        .getConfiguration("nfsmwMatch")
+        .update("objdiffEnabled", true, vscode.ConfigurationTarget.Workspace);
       vscode.window.showInformationMessage("NFSMW objdiff annotations enabled.");
     }),
     vscode.commands.registerCommand("nfsmwMatch.disableObjdiff", async () => {
-      await vscode.workspace.getConfiguration("nfsmwMatch").update("objdiffEnabled", false, vscode.ConfigurationTarget.Workspace);
-      vscode.window.showInformationMessage("NFSMW objdiff annotations disabled. Refresh a file to show only DWARF or PS2 type metrics.");
+      await vscode.workspace
+        .getConfiguration("nfsmwMatch")
+        .update("objdiffEnabled", false, vscode.ConfigurationTarget.Workspace);
+      vscode.window.showInformationMessage(
+        "NFSMW objdiff annotations disabled. Refresh a file to show only DWARF or PS2 type metrics.",
+      );
     }),
     vscode.commands.registerCommand("nfsmwMatch.setStdumpPath", async () => {
       try {
@@ -827,9 +888,7 @@ async function activate(context) {
       lastDiffViewColumn = editor.viewColumn;
     }),
     vscode.window.onDidChangeVisibleTextEditors((editors) => {
-      const visibleDiff = editors.find(
-        (editor) => editor.document.uri.scheme === "nfsmw-dwarf-diff",
-      );
+      const visibleDiff = editors.find((editor) => editor.document.uri.scheme === "nfsmw-dwarf-diff");
       if (visibleDiff?.viewColumn) lastDiffViewColumn = visibleDiff.viewColumn;
     }),
     vscode.workspace.onDidOpenTextDocument((document) => {

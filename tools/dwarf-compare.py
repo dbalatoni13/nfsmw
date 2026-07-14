@@ -42,13 +42,10 @@ from lookup import (
 )
 from split_dwarf_info import apply_umath_fixups
 
-
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 TOOLS_DIR = os.path.join(ROOT_DIR, "tools")
 GC_DWARF = os.path.join(ROOT_DIR, "symbols", "Dwarf")
-DTK = os.path.join(
-    ROOT_DIR, "build", "tools", "dtk.exe" if os.name == "nt" else "dtk"
-)
+DTK = os.path.join(ROOT_DIR, "build", "tools", "dtk.exe" if os.name == "nt" else "dtk")
 HEX_RE = re.compile(r"(?<!\+)0x[0-9A-Fa-f]+")
 RANGE_RE = re.compile(r"^(\s*)// Range:\s*(0x[0-9A-Fa-f]+)\s*->\s*(0x[0-9A-Fa-f]+)")
 DEBUG_LINE_RE = re.compile(
@@ -57,9 +54,7 @@ DEBUG_LINE_RE = re.compile(
 SIGNATURE_FUNCTION_RE = re.compile(
     r"(?<![\w:])([~A-Za-z_]\w*(?:::[~A-Za-z_]\w*)*)\s*\("
 )
-SIGNATURE_REGISTER_RE = re.compile(
-    r"\s*/\*\s*[rf]\d+(?:\s*\+\s*0x[0-9A-Fa-f]+)?\s*\*/"
-)
+SIGNATURE_REGISTER_RE = re.compile(r"\s*/\*\s*[rf]\d+(?:\s*\+\s*0x[0-9A-Fa-f]+)?\s*\*/")
 TYPE_QUALIFIER_RE = re.compile(r"(?:\b[~A-Za-z_]\w*::)+")
 SIM_HANDLE_RE = re.compile(r"\b(H(?:[A-Z0-9_]*[A-Z0-9])?)\b")
 
@@ -177,8 +172,7 @@ def function_blocks_cache_key(path: str, apply_split_fixups_in_ram: bool) -> str
 
 
 def ensure_function_blocks_cache_db(conn: sqlite3.Connection) -> None:
-    conn.execute(
-        """
+    conn.execute("""
         CREATE TABLE IF NOT EXISTS function_blocks (
             cache_key TEXT NOT NULL,
             ordinal INTEGER NOT NULL,
@@ -188,17 +182,14 @@ def ensure_function_blocks_cache_db(conn: sqlite3.Connection) -> None:
             block TEXT NOT NULL,
             PRIMARY KEY (cache_key, ordinal)
         )
-        """
-    )
-    conn.execute(
-        """
+        """)
+    conn.execute("""
         CREATE TABLE IF NOT EXISTS function_block_cache_entries (
             cache_key TEXT PRIMARY KEY,
             source_path TEXT NOT NULL,
             block_count INTEGER NOT NULL
         )
-        """
-    )
+        """)
 
 
 def load_function_blocks(
@@ -441,9 +432,16 @@ def choose_function_block(
 ) -> FunctionBlock:
     matches = find_function_blocks(funcs, query)
     if matches and "(" in query:
-        matches = [
+        typed_matches = [
             match for match in matches if signature_types_match(query, match[2])
         ]
+        # DWARF often expands a source typedef (for example i32) to its base
+        # type, and some toolchains disagree on equivalent 32-bit spellings
+        # such as int versus long. Parameter text is only necessary when the
+        # qualified function name is overloaded; a unique name match is
+        # already unambiguous.
+        if typed_matches or len(matches) > 1:
+            matches = typed_matches
     if not matches:
         if not funcs:
             raise DwarfCompareError(
@@ -528,8 +526,7 @@ def ensure_debug_lines_cache_db(path: str) -> str:
     try:
         conn.execute("PRAGMA journal_mode=OFF")
         conn.execute("PRAGMA synchronous=OFF")
-        conn.execute(
-            """
+        conn.execute("""
             CREATE TABLE IF NOT EXISTS entries (
                 ordinal INTEGER PRIMARY KEY,
                 address INTEGER NOT NULL,
@@ -538,19 +535,16 @@ def ensure_debug_lines_cache_db(path: str) -> str:
                 normalized_file TEXT NOT NULL,
                 normalized TEXT NOT NULL
             )
-            """
-        )
+            """)
         conn.execute(
             "CREATE INDEX IF NOT EXISTS idx_entries_address ON entries(address)"
         )
-        conn.execute(
-            """
+        conn.execute("""
             CREATE TABLE IF NOT EXISTS metadata (
                 key TEXT PRIMARY KEY,
                 value TEXT NOT NULL
             )
-            """
-        )
+            """)
         ready = conn.execute(
             "SELECT value FROM metadata WHERE key = 'ready'"
         ).fetchone()
@@ -1155,7 +1149,9 @@ def main() -> None:
         if not isinstance(function_queries, list) or not all(
             isinstance(query, str) and query for query in function_queries
         ):
-            parser.error("--functions-file must contain a JSON array of non-empty strings")
+            parser.error(
+                "--functions-file must contain a JSON array of non-empty strings"
+            )
     else:
         function_queries = [args.function]
 
