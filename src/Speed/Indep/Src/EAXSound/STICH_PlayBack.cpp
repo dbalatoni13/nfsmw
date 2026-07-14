@@ -498,9 +498,10 @@ bool cSTICH_PlayBack::AddStich(STICH_TYPE StichType, SND_Stich &NewStichData) {
 }
 
 SND_Stich &cSTICH_PlayBack::GetStich(STICH_TYPE StichType, int Index) {
-    bPList<SND_Stich> &list = StichList[StichType];
-    return *static_cast<SND_Stich *>(list.GetNode(Index)->GetpObject());
+    return *static_cast<SND_Stich *>(GetStichList(StichType).GetNode(Index)->GetpObject());
 }
+
+inline bPList<SND_Stich> &cSTICH_PlayBack::GetStichList(STICH_TYPE StichType) { return StichList[StichType]; }
 
 void cSTICH_PlayBack::Update(float t) {
     for (int n = 0; n < MAX_NUM_STICH_TYPE; n++) {
