@@ -1129,7 +1129,7 @@ void Manager::NotifyEventCompletion(ScheduledSpeechEvent *evt, bool playback_com
         return;
     }
 
-    SoundAI *ai;
+    SoundAI *ai = UTL::Collections::Singleton<SoundAI>::Get();
     unsigned short speakerID;
 
     if (evt->actor != 0) {
@@ -1154,12 +1154,10 @@ void Manager::NotifyEventCompletion(ScheduledSpeechEvent *evt, bool playback_com
         return;
     }
 
-    MNotifySpeechStatus msg(evt);
-    msg.Send(UCrc32(0x20d60dbf));
+    MNotifySpeechStatus(evt).Send(UCrc32(0x20d60dbf));
 
     if (evt->ID == kSPCH1_EventID_CellCall) {
-        MNotifyCellCallComplete msg2;
-        msg2.Send(UCrc32(0x20d60dbf));
+        MNotifyCellCallComplete().Send(UCrc32(0x20d60dbf));
     }
 }
 
@@ -1186,11 +1184,7 @@ ScheduledSpeechEvent *Manager::GetNextEvent() {
         }
 
         iter = mEvents[2].begin();
-        do {
-            if (iter == mEvents[2].end()) {
-                return 0;
-            }
-
+        while (iter != mEvents[2].end()) {
             ScheduledSpeechEvent *next = *iter;
             if (next->assoc_samples_prep == 0) {
                 short prepared_count = 0;
@@ -1209,54 +1203,39 @@ ScheduledSpeechEvent *Manager::GetNextEvent() {
                 } else {
                     SpeechValRtnType keep = PostValidate(next, 1U);
                     if (next->assoc_samples_count == 0 || keep == kDitchEvt) {
-                        goto remove_event;
+                        mEvents[2].erase(iter);
+                        delete next;
+                        return 0;
                     }
 
-                    {
-                        Attrib::Gen::speech event(mHashMap.GetHash(next->ID), 0, 0);
-                        if (event.interrupt()) {
-                            return 0;
-                        }
+                    Attrib::Gen::speech event(mHashMap.GetHash(next->ID), 0, 0);
+                    if (event.interrupt()) {
+                        return 0;
                     }
                 }
             }
 
-        check_prepared:
             if (next->assoc_samples_prep != 0) {
                 SpeechValRtnType keep = PostValidate(next, 0xffffffff);
-                if (keep != kDitchEvt) {
-                    goto check_keep;
+                if (keep == kDitchEvt) {
+                    mEvents[2].erase(iter);
+                    delete next;
+                    return 0;
                 }
-                goto remove_event;
-
-            check_keep:
                 if (keep == kDeferEvt) {
-                    goto defer_next;
-                }
-                if (keep == kKeepEvt) {
+                    if (iter == mEvents[2].end()) {
+                        return 0;
+                    }
+                    ++iter;
+                } else if (keep == kKeepEvt) {
                     return next;
                 }
-                goto next_loop;
-            }
-            goto return_null;
-
-        remove_event:
-            mEvents[2].erase(iter);
-            delete next;
-            return 0;
-
-        defer_next:
-            if (iter == mEvents[2].end()) {
+            } else {
                 return 0;
             }
-            ++iter;
-
-        next_loop:
-            ;
-        } while (true);
+        }
     }
 
-return_null:
     return 0;
 }
 

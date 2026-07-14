@@ -115,18 +115,21 @@ SlotPool *Cache::GetEventPool() {
 }
 
 bool Cache::IsCached(SPCHType_SampleRequestData *data, bool check_preparedness) {
-    if (!data) {
+    if (!IsSpeechEnabled) {
         return false;
     }
 
-    SpeechSampleData *sample = mIndex.Find(CreateKey(data->bankNum, data->sampleOffset));
-    if (sample && sample->cached) {
-        if (!check_preparedness || sample->ready) {
-            return true;
-        }
+    unsigned long long indexKey = CreateKey(data->bankNum, data->sampleOffset);
+    SpeechSampleData *sample = mIndex.Find(indexKey);
+    if (!sample) {
+        return false;
     }
 
-    return false;
+    if (!check_preparedness) {
+        return true;
+    }
+
+    return sample->ready;
 }
 
 unsigned long long Cache::CreateKey(int bank, int offset) {
