@@ -125,37 +125,35 @@ EAXSND8Wrapper::~EAXSND8Wrapper() {
 }
 
 bool EAXSND8Wrapper::Initialize() {
-    if (IsSoundEnabled == 0) {
-        IsAudioStreamingEnabled = IsSoundEnabled;
-        IsNISAudioEnabled = IsSoundEnabled;
-        IsSpeechEnabled = IsSoundEnabled;
-        return false;
+    if (IsSoundEnabled != 0) {
+        pCsisSlotPools[0] =
+            static_cast<SlotPool *>(bNewSlotPool(nCsisSlotPoolSizes[0], 0x100, "AUD:Csis SlotPools", AudioMemoryPool));
+        Csis::System::SetAllocator(static_cast<EA::Allocator::ICoreAllocator *>(static_cast<void *>(&g_CSISCoreAllocator)));
+        Csis::System::Init();
+        Snd::System::VectorToCsisMutex();
+        Snd::System::VectorToReal6();
+        Snd::System::SetMaxBanks(0x20);
+
+        m_nHeapSize = 0x33000;
+        m_pSoundHeap = gAudioMemoryManager.AllocateMemoryChar(m_nHeapSize, "SND Heap", false);
+        Snd::System::SetOutputSampleRate(Snd::DEVICE_MAIN, MAIN_SAMPLERATE);
+
+        SetAudioRenderMode(m_eLastAudioMode = m_eCurrentAudioMode = GetDefaultPlatformAudioMode());
+
+        Snd::System::SetVoices(Snd::DEVICE_MAIN, 8);
+        Snd::System::SetOutputSampleRate(Snd::DEVICE_IOP, 32000);
+        Snd::System::SetOutputSampleRate(Snd::DEVICE_MAIN, MAIN_SAMPLERATE);
+        Snd::System::SetSndInitsAram(true);
+        Snd::Memory::SetHeap(Snd::DEVICE_MAIN, m_pSoundHeap, m_nHeapSize);
+        Snd::Memory::SetHeapThreshold(Snd::DEVICE_MAIN, 1.0f);
+        Snd::System::Init(0x90600);
+        return true;
     }
 
-    pCsisSlotPools[0] = static_cast<SlotPool *>(bNewSlotPool(nCsisSlotPoolSizes[0], 0x100, "AUD:Csis SlotPools", AudioMemoryPool));
-    Csis::System::SetAllocator(static_cast<EA::Allocator::ICoreAllocator *>(static_cast<void *>(&g_CSISCoreAllocator)));
-    Csis::System::Init();
-    Snd::System::VectorToCsisMutex();
-    Snd::System::VectorToReal6();
-    Snd::System::SetMaxBanks(0x20);
-
-    m_nHeapSize = 0x33000;
-    m_pSoundHeap = gAudioMemoryManager.AllocateMemoryChar(m_nHeapSize, "SND Heap", false);
-    Snd::System::SetOutputSampleRate(Snd::DEVICE_MAIN, MAIN_SAMPLERATE);
-
-    eSndAudioMode mode = GetDefaultPlatformAudioMode();
-    m_eCurrentAudioMode = mode;
-    m_eLastAudioMode = mode;
-    SetAudioRenderMode(mode);
-
-    Snd::System::SetVoices(Snd::DEVICE_MAIN, 8);
-    Snd::System::SetOutputSampleRate(Snd::DEVICE_IOP, 32000);
-    Snd::System::SetOutputSampleRate(Snd::DEVICE_MAIN, MAIN_SAMPLERATE);
-    Snd::System::SetSndInitsAram(true);
-    Snd::Memory::SetHeap(Snd::DEVICE_MAIN, m_pSoundHeap, m_nHeapSize);
-    Snd::Memory::SetHeapThreshold(Snd::DEVICE_MAIN, 1.0f);
-    Snd::System::Init(0x90600);
-    return true;
+    IsAudioStreamingEnabled = IsSoundEnabled;
+    IsSpeechEnabled = IsSoundEnabled;
+    IsNISAudioEnabled = IsSoundEnabled;
+    return false;
 }
 
 void EAXSND8Wrapper::ReInit() {
