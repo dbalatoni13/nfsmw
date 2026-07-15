@@ -69,16 +69,16 @@ jobs:
         name: ${{ matrix.version }}_maps
         path: build/${{ matrix.version }}/**/*.MAP
 
-    # Upload progress report
-    - name: Upload report
-      uses: actions/upload-artifact@v4
-      with:
-        name: ${{ matrix.version }}_report
-        path: build/${{ matrix.version }}/report.json
-
     - name: Upload GC Dwarf report
       if: ${{ github.event_name == 'push' && matrix.version == 'GOWE69' }}
       uses: actions/upload-artifact@v4
       with:
         name: GC_Dwarf_report
         path: build/GC_Dwarf/report.json
+
+    # Upload progress report
+    - name: Upload report
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ matrix.version }}_report
+        path: build/${{ matrix.version }}/report.json
