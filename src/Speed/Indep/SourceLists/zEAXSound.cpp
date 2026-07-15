@@ -28,7 +28,7 @@
 
 #include "Speed/Indep/Src/EAXSound/SoundConn.cpp"
 
-// #include "Speed/Indep/Src/EAXSound/EaxSoundTypes.cpp"
+#include "Speed/Indep/Src/EAXSound/EaxSoundTypes.cpp"
 
 #include "Speed/Indep/Src/EAXSound/Stream/EAXS_StreamManager.cpp"
 

@@ -16,49 +16,6 @@ struct ISndAttachable;
 
 namespace Speech {
 
-struct History {
-    Timer time;            // offset 0x0, size 0x4
-    unsigned short count;  // offset 0x4, size 0x2
-    unsigned short speakers; // offset 0x6, size 0x2
-};
-
-struct HistoryPair {
-    SPCHType_1_EventID id; // offset 0x0, size 0x4
-    History history;       // offset 0x4, size 0x8
-
-    bool operator<(const HistoryPair &rhs) const {
-        return id < rhs.id;
-    }
-};
-
-struct SpeechEventPair {
-    unsigned int hash;     // offset 0x0, size 0x4
-    SPCHType_1_EventID id; // offset 0x4, size 0x4
-
-    bool operator<(const SpeechEventPair &rhs) const {
-        return id < rhs.id;
-    }
-};
-
-struct SpeechHashIDMap : public UTL::FixedVector<SpeechEventPair, 264, 16>, public AudioMemBase {
-  public:
-    SpeechHashIDMap() {}
-    void Add(unsigned int hash, SPCHType_1_EventID id);
-    SPCHType_1_EventID GetID(unsigned int hash);
-    unsigned int GetHash(SPCHType_1_EventID id);
-};
-
-struct EventHistory : public UTL::FixedVector<HistoryPair, 264, 16>, public AudioMemBase {
-  public:
-    EventHistory() {}
-    void Init();
-    History *Find(SPCHType_1_EventID id);
-    int GetCount(SPCHType_1_EventID id);
-    Timer GetTime(SPCHType_1_EventID id);
-    History *Touch(SPCHType_1_EventID id, unsigned short speaker);
-    void Reset();
-};
-
 short Manager::m_frameindex = 0;
 
 Attrib::Key Attrib::Gen::speech::ClassKey() {
@@ -144,20 +101,17 @@ unsigned int SpeechHashIDMap::GetHash(SPCHType_1_EventID id) {
 }
 
 void EventHistory::Init() {
-    Attrib::Class *speechClass = Attrib::Database::Get().GetClass(0xC593DD47);
-    unsigned int collectionKey = speechClass->GetFirstCollection();
-    while (collectionKey != 0) {
-        HistoryPair pair;
-        pair.id = kSPCH1_EventID_MaxEventID;
-        pair.history.time = Timer(0);
-        pair.history.count = 0;
-        pair.history.speakers = 0;
-
-        const Attrib::Collection *collection = Attrib::FindCollection(Attrib::Gen::speech::ClassKey(), collectionKey);
-        Attrib::Gen::speech event_collection(collection, 0, nullptr);
-        pair.id = event_collection.SpeechID();
-        insert(std::upper_bound(begin(), end(), pair), pair);
-        collectionKey = speechClass->GetNextCollection(collectionKey);
+    const Attrib::Class *speechevents = Attrib::Database::Get().GetClass(0xC593DD47);
+    unsigned int eventkey = speechevents->GetFirstCollection();
+    while (eventkey != 0) {
+        HistoryPair p;
+        Attrib::Gen::speech event_collection(eventkey, 0, nullptr);
+        p.id = event_collection.SpeechID();
+        {
+            iterator iter = std::upper_bound(begin(), end(), p);
+            insert(iter, p);
+        }
+        eventkey = speechevents->GetNextCollection(eventkey);
     }
 
     Reset();

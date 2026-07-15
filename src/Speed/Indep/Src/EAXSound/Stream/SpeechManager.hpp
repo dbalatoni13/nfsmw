@@ -68,12 +68,20 @@ class SampleReqList : public UTL::Std::vector<SPCHSampleRequest, _type_SampleReq
 };
 
 struct History {
+    History() {
+        this->time = Timer(0);
+        this->count = 0;
+        this->speakers = 0;
+    }
+
     Timer time;             // offset 0x0, size 0x4
     unsigned short count;   // offset 0x4, size 0x2
     unsigned short speakers; // offset 0x6, size 0x2
 };
 
 struct HistoryPair {
+    HistoryPair() : id(kSPCH1_EventID_MaxEventID), history() {}
+
     SPCHType_1_EventID id; // offset 0x0, size 0x4
     History history;       // offset 0x4, size 0x8
 
