@@ -65,6 +65,8 @@ enum eTEMPALLOCLOCATION {
 };
 
 struct stAssetDescription {
+    stAssetDescription() {}
+
     eSNDDATATYPE eDataType;     // offset 0x0, size 0x4
     Attrib::StringKey FileName; // offset 0x8, size 0x10
     eSNDDATAPATH DataPath;      // offset 0x18, size 0x4
@@ -183,6 +185,8 @@ struct stSndDataLoadParams {
 };
 
 struct stSndAssetQueue {
+    stSndAssetQueue() {}
+
     stAssetDescription Asset; // offset 0x0, size 0x20
     SndBase *pThis;           // offset 0x20, size 0x4
     EAX_CarState *pCar;       // offset 0x24, size 0x4
