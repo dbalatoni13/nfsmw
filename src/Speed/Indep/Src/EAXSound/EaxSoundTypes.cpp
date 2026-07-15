@@ -31,18 +31,18 @@ void copMap::Add(HSIMABLE__ *hsimable, EAXCop *cop) {
 }
 
 EAXCop *copMap::Remove(HSIMABLE__ *hsimable) {
-    copPair pair;
-    pair.hsimable = hsimable;
-    pair.cop = nullptr;
+    EAXCop *result = nullptr;
+    copPair p;
+    p.hsimable = hsimable;
+    p.cop = nullptr;
 
-    iterator it = std::lower_bound(begin(), end(), pair);
-    if (it != end() && it->hsimable == hsimable) {
-        EAXCop *cop = it->cop;
-        erase(it);
-        return cop;
+    iterator iter = std::lower_bound(begin(), end(), p);
+    if (iter != end() && iter->hsimable == hsimable) {
+        result = iter->cop;
+        erase(iter);
     }
 
-    return nullptr;
+    return result;
 }
 
 void copMap::ModifyHandle(HSIMABLE__ *hsimable, HSIMABLE__ *newhandle) {
