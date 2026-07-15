@@ -40,6 +40,20 @@ struct TablePolicy_FixedAudio {
 };
 
 struct SpeechSampleData {
+    SpeechSampleData(SPCHType_SampleRequestData *data, bool is_cached)
+        : size(data->numBytes),        //
+          ready(false),               //
+          age(0),                     //
+          speakerID(data->subID),     //
+          eventID(static_cast<SPCHType_1_EventID>(data->eventSpec.eventID)), //
+          HSTRM(-1),                  //
+          lock(true),                 //
+          cached(is_cached),          //
+          t_req(WorldTimer),          //
+          t_load(0),                  //
+          t_play(0),                  //
+          dataoffset(0) {}
+
     unsigned int size;          // offset 0x0, size 0x4
     bool ready;                 // offset 0x4, size 0x1
     int age;                    // offset 0x8, size 0x4

@@ -175,29 +175,19 @@ void SpeechSampleData::Destruct(SpeechSampleData *ptr) {
 }
 
 SpeechSampleData *SpeechSampleData::Construct(SPCHType_SampleRequestData *data, unsigned int key, bool is_cached) {
-    (void)key;
-    unsigned int total = 0x40;
+    unsigned int total;
     if (is_cached) {
         total = data->numBytes + 0x40;
+    } else {
+        total = 0x40;
     }
 
-    SpeechSampleData *sample = static_cast<SpeechSampleData *>(::operator new(total));
-    if (sample != nullptr) {
-        sample->size = data->numBytes;
-        sample->ready = false;
-        sample->age = 0;
-        sample->speakerID = data->subID;
-        sample->eventID = static_cast<SPCHType_1_EventID>(data->eventSpec.eventID);
-        sample->HSTRM = -1;
-        sample->Lock();
-        sample->cached = is_cached;
-        sample->t_req = WorldTimer;
-        sample->t_load = Timer(0);
-        sample->t_play = Timer(0);
-        sample->dataoffset = 0;
+    void *ptr = gSpeechCache.Alloc(total, key);
+    if (ptr == nullptr) {
+        return nullptr;
     }
 
-    return sample;
+    return new (ptr) SpeechSampleData(data, is_cached);
 }
 
 ScheduledSpeechEvent::ScheduledSpeechEvent()
