@@ -143,11 +143,11 @@ int EventHistory::GetCount(SPCHType_1_EventID id) {
 
 Timer EventHistory::GetTime(SPCHType_1_EventID id) {
     History *hist = Find(id);
-    if (hist == nullptr) {
-        return Timer(0);
+    if (hist != nullptr) {
+        return hist->time;
     }
 
-    return hist->time;
+    return Timer(0);
 }
 
 History *EventHistory::Touch(SPCHType_1_EventID id, unsigned short speaker) {
