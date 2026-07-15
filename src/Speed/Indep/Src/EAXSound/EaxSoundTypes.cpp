@@ -152,14 +152,11 @@ Timer EventHistory::GetTime(SPCHType_1_EventID id) {
 
 History *EventHistory::Touch(SPCHType_1_EventID id, unsigned short speaker) {
     History *hist = Find(id);
-    if (hist != nullptr) {
-        hist->time = WorldTimer;
-        hist->count = hist->count + 1;
-        if (speaker < 10 && ((hist->speakers >> speaker) & 1) == 0) {
-            hist->speakers = static_cast<unsigned short>(hist->speakers | (1 << speaker));
-        }
+    if (hist == nullptr) {
+        return nullptr;
     }
 
+    hist->Touch(speaker);
     return hist;
 }
 

@@ -74,6 +74,14 @@ struct History {
         this->speakers = 0;
     }
 
+    void Touch(unsigned short spkrID) {
+        this->time = WorldTimer;
+        this->count = this->count + 1;
+        if (spkrID < 10 && ((((this->speakers >> spkrID) ^ 1) & 1) != 0)) {
+            this->speakers = static_cast<unsigned short>(this->speakers | (1 << spkrID));
+        }
+    }
+
     Timer time;             // offset 0x0, size 0x4
     unsigned short count;   // offset 0x4, size 0x2
     unsigned short speakers; // offset 0x6, size 0x2
