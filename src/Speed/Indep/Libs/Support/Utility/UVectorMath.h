@@ -32,6 +32,7 @@ float VU0_v3lengthsquare(const UMath::Vector3 &a);
 void VU0_v3unit(const UMath::Vector3 &a, UMath::Vector3 &result);
 
 void VU0_v4scaleadd(const UMath::Vector4 &a, const float scaleby, const UMath::Vector4 &b, UMath::Vector4 &result);
+void VU0_v4sub(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &result);
 void VU0_v4scaleaddxyz(const UMath::Vector4 &a, const float scaleby, const UMath::Vector4 &b, UMath::Vector4 &result);
 float VU0_v4lengthsquare(const UMath::Vector4 &a);
 float VU0_v4lengthsquarexyz(const UMath::Vector4 &a);
@@ -40,6 +41,11 @@ float VU0_v4dotprodxyz(const UMath::Vector4 &a, const UMath::Vector4 &b);
 void VU0_v4scale(const UMath::Vector4 &a, const float scaleby, UMath::Vector4 &result);
 void VU0_v4scalexyz(const UMath::Vector4 &a, const float scaleby, UMath::Vector4 &result);
 float VU0_v4distancesquarexyz(const UMath::Vector4 &p1, const UMath::Vector4 &p2);
+inline float VU0_v4distancexyz(const UMath::Vector4 &p1, const UMath::Vector4 &p2) {
+    UMath::Vector4 temp;
+    VU0_v4subxyz(p1, p2, temp);
+    return VU0_sqrt(VU0_v4lengthsquarexyz(temp));
+}
 void VU0_MATRIX3x4_vect3mult(const UMath::Vector3 &v, const UMath::Matrix4 &m, UMath::Vector3 &result);
 void VU0_qmul(const UMath::Vector4 &b, const UMath::Vector4 &a, UMath::Vector4 &dest);
 

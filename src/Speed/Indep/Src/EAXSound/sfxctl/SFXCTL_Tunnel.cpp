@@ -363,38 +363,38 @@ void SFXCTL_Tunnel::UpdateOcclusion(float t) {
         return;
     }
 
-    UMath::Vector4 originToBarrier[2];
-    UMath::Vector4 directionVec;
-    UMath::Vector4 testDirectionVec;
+    {
+        UMath::Vector4 originToBarrier[2];
+        UMath::Vector4 DirectionVec;
 
-    originToBarrier[0].x = -SndCamera::GetV3WorldCarPos(0)->y;
-    originToBarrier[0].y = SndCamera::GetV3WorldCarPos(0)->z;
-    originToBarrier[0].z = SndCamera::GetV3WorldCarPos(0)->x;
+        originToBarrier[0].x = -SndCamera::GetWorldCarPos3(0)->y;
+        originToBarrier[0].y = SndCamera::GetWorldCarPos3(0)->z;
+        originToBarrier[0].z = SndCamera::GetWorldCarPos3(0)->x;
 
-    originToBarrier[1].z = m_pStateBase->GetPhysCar()->mMatrix.v3.x;
-    originToBarrier[1].x = -m_pStateBase->GetPhysCar()->mMatrix.v3.y;
-    originToBarrier[1].y = m_pStateBase->GetPhysCar()->mMatrix.v3.z;
+        originToBarrier[1].z = GetPhysCar()->GetPosition()->x;
+        originToBarrier[1].x = -GetPhysCar()->GetPosition()->y;
+        originToBarrier[1].y = GetPhysCar()->GetPosition()->z;
 
-    VU0_v4subxyz(originToBarrier[0], originToBarrier[1], testDirectionVec);
-    float testDist = VU0_sqrt(VU0_v4lengthsquarexyz(testDirectionVec));
-    if (testDist > MaxDistanceToOccludeTest) {
-        testDist = MaxDistanceToOccludeTest;
-    }
-
-    originToBarrier[0].y = originToBarrier[0].y + 2.0f;
-    VU0_v4sub(originToBarrier[0], originToBarrier[1], directionVec);
-    VU0_v4scale(directionVec, VU0_rsqrt(VU0_v4lengthsquare(directionVec)), directionVec);
-    VU0_v4scaleadd(originToBarrier[1], testDist, originToBarrier[0], directionVec);
-
-    WCollisionMgr::WorldCollisionInfo cInfo;
-    if (WCollisionMgr(0, 3).CheckHitWorld(originToBarrier, cInfo, 2)) {
-        if (VU0_v4distancesquarexyz(originToBarrier[0], cInfo.fCollidePt) < testDist * testDist - 9.0f) {
-            IsOccluded = true;
-            return;
+        float fTestDist = UMath::Distancexyz(originToBarrier[0], originToBarrier[1]);
+        if (fTestDist > MaxDistanceToOccludeTest) {
+            fTestDist = MaxDistanceToOccludeTest;
         }
-    }
 
-    IsOccluded = false;
+        originToBarrier[0].y = originToBarrier[0].y + 2.0f;
+        UMath::Sub(originToBarrier[0], originToBarrier[1], DirectionVec);
+        UMath::Unit(DirectionVec, DirectionVec);
+        VU0_v4scaleadd(originToBarrier[1], fTestDist, originToBarrier[0], DirectionVec);
+
+        WCollisionMgr::WorldCollisionInfo cInfo;
+        if (WCollisionMgr(0, 3).CheckHitWorld(originToBarrier, cInfo, 2)) {
+            if (!(UMath::DistanceSquarexyz(originToBarrier[0], cInfo.fCollidePt) >= fTestDist * fTestDist - 9.0f)) {
+                IsOccluded = true;
+                return;
+            }
+        }
+
+        IsOccluded = false;
+    }
 }
 
 void SFXCTL_Tunnel::UpdateMixerOutputs() {

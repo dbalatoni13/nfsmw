@@ -64,6 +64,14 @@ inline float DistanceSquarexz(const Vector3 &a, const Vector3 &b) {
     return VU0_v3distancesquare(a, b);
 }
 
+inline float Distancexyz(const Vector4 &a, const Vector4 &b) {
+    return VU0_v4distancexyz(a, b);
+}
+
+inline float DistanceSquarexyz(const Vector4 &a, const Vector4 &b) {
+    return VU0_v4distancesquarexyz(a, b);
+}
+
 inline void Clear(Vector3 &r) {
 #ifdef EA_PLATFORM_PLAYSTATION2
     *reinterpret_cast<uint64 *>(&r.x) = 0;
@@ -247,6 +255,10 @@ inline void Sub(const Vector3 &a, const Vector3 &b, Vector3 &r) {
 #else
     VU0_v3sub(a, b, r);
 #endif
+}
+
+inline void Sub(const Vector4 &a, const Vector4 &b, Vector4 &r) {
+    VU0_v4sub(a, b, r);
 }
 
 inline void Subxyz(const Vector4 &a, const Vector4 &b, Vector4 &r) {
