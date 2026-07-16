@@ -530,6 +530,8 @@ inline float bDistBetween(const bVector3 &v1, const bVector3 &v2) {
 
 inline bVector3 bScale(const bVector3 &v, float scale) {
     bVector3 dest;
+    bScale(&dest, &v, scale);
+    return dest;
 }
 
 inline bVector3 bScale(const bVector3 &v1, const bVector3 &v2) {

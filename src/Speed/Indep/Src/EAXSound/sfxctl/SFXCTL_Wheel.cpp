@@ -89,16 +89,14 @@ void SFXCTL_Wheel::InitSFX() {
 
 void SFXCTL_Wheel::GenerateWheelPosition() {
     const bVector3 *pv3CarPos;
-    bVector3 pv3LeftDir;
-    bVector3 FwdOffsetVec;
 
     if (GetPhysCar()->GetContext() == Sound::kRaceContext_Count) {
         return;
     }
 
     pv3CarPos = GetPhysCar()->GetPosition();
-    pv3LeftDir = bScale(*GetPhysCar()->GetLeftVector(), gfTireOffsetDist);
-    FwdOffsetVec = bScale(*GetPhysCar()->GetForwardVector(), gfTireFwdOffsetDist);
+    bVector3 pv3LeftDir = bScale(*GetPhysCar()->GetLeftVector(), gfTireOffsetDist);
+    bVector3 FwdOffsetVec = bScale(*GetPhysCar()->GetForwardVector(), gfTireFwdOffsetDist);
     v3NewPosRight = bSub(*pv3CarPos, pv3LeftDir);
     v3NewPosRight += FwdOffsetVec;
     v3NewPosLeft = bAdd(*pv3CarPos, pv3LeftDir);
