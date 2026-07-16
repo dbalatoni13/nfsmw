@@ -822,13 +822,12 @@ int cSampleWarpper::Prune(STICH_TYPE type, int priority, int num_to_clear) {
 
     int num_pruned = 0;
     typedef UTL::Std::list<cSampleWarpper *, _type_list> Destroyed;
+    const cSampleListSet::List &samplelist = cSampleListSet::GetList(type);
     Destroyed destroyed;
-    cSampleListSet::List &samplelist = const_cast<cSampleListSet::List &>(cSampleListSet::GetList(type));
 
-    for (cSampleWarpper **iter = samplelist.begin(); iter != samplelist.end(); ++iter) {
+    for (cSampleWarpper *const *iter = samplelist.begin(); iter != samplelist.end(); ++iter) {
         cSampleWarpper *sampleref = *iter;
-        if ((sampleref->m_eIsPlaying != eSTITCH_PLAY_STATUS_OFF) &&
-            (static_cast<int>(sampleref->GetData().Priority) <= priority)) {
+        if (sampleref->IsPlaying() && static_cast<int>(sampleref->GetData().Priority) <= priority) {
             destroyed.push_back(sampleref);
             num_pruned++;
         }
