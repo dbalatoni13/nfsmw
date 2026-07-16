@@ -249,19 +249,19 @@ static void queuerequest(STREAMHEADERtag *strm, REQUESTSTRUCTtag *req) {
     MUTEX_unlock(&strm->mutex);
 }
 
-REQUESTSTRUCTtag *locaterequest(STREAMHEADERtag *stream, int requesthandle) {
-    STREAMHEADER *header = reinterpret_cast<STREAMHEADER *>(stream);
-    unsigned int requestIndex = static_cast<unsigned int>(requesthandle) & 0xFF;
-    if (static_cast<int>(requestIndex) >= header->requests) {
+static REQUESTSTRUCTtag *locaterequest(STREAMHEADERtag *strm, int requestid) {
+    REQUESTSTRUCTtag *req;
+    int index = requestid & 0xFF;
+    if (index >= strm->requests) {
         return nullptr;
     }
 
-    REQUESTSTRUCT *request = header->request + requestIndex;
-    if (requesthandle == request->id) {
-        if (request->state == STREAMREQUEST_FREE) {
+    req = strm->request + index;
+    if (requestid == strm->request[index].id) {
+        if (req->state == STREAMREQUEST_FREE) {
             return nullptr;
         }
-        return reinterpret_cast<REQUESTSTRUCTtag *>(request);
+        return req;
     }
     return nullptr;
 }
