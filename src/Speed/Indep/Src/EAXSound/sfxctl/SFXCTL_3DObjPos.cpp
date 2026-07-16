@@ -58,17 +58,13 @@ SFXCTL_3DObjPos::~SFXCTL_3DObjPos() {}
 void SFXCTL_3DObjPos::SetPlayerRef(int i) { m_PlayerRef = i; }
 
 void SFXCTL_3DObjPos::SetCameraAngle() {
-    bVector2 v2Pos;
-    bVector2 v2NormPos;
-    float fdotobj;
+    bVector2 v2Pos(0.0f, 0.0f);
+    bSub(&v2Pos, &m_v2ObjPosCopy, m_pv2AzimRefPos);
 
-    v2Pos.x = m_v2ObjPosCopy.x - m_pv2AzimRefPos->x;
-    v2Pos.y = m_v2ObjPosCopy.y - m_pv2AzimRefPos->y;
-    v2NormPos.x = 0.0f;
-    v2NormPos.y = 0.0f;
+    bVector2 v2NormPos(0.0f, 0.0f);
     bNormalize(&v2NormPos, &v2Pos);
 
-    fdotobj = bDot(&v2NormPos, m_pv2AzimRefDir);
+    float fdotobj = bDot(&v2NormPos, m_pv2AzimRefDir);
     m_CameraAngle = bACos(fdotobj);
 
     if (-v2NormPos.y * m_pv2AzimRefDir->x + v2NormPos.x * m_pv2AzimRefDir->y < 0.0f) {

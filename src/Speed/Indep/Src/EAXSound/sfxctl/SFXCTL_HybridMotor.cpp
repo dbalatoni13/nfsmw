@@ -13,34 +13,19 @@ SFXCTL_HybridMotor::SFXCTL_HybridMotor()
     , m_AvgDeltaRPM(4) {
     m_AvgDeltaRPM.Flush(0.0f);
     m_GinsuLPFVal = 24000.0f;
-    bVector2 point0;
-    bVector2 point1;
-    bVector2 point2;
-    bVector2 point3;
-    bVector2 point4;
-
-    point0 = bVector2(0.0f, 0.0f);
-    point1 = bVector2(0.0f, 0.0f);
-    point2 = bVector2(0.0f, 0.0f);
-    point3 = bVector2(0.0f, 0.0f);
-    point4 = bVector2(0.0f, 0.0f);
-
-    CrossFadesPoints[0] = point0;
-    CrossFadesPoints[1] = point1;
-    CrossFadesPoints[2] = point2;
-    CrossFadesPoints[3] = point3;
-    CrossFadesPoints[4] = point4;
-    tSteadyDuration = 0.0f;
-    m_GinsuScaledRPM = 0.0f;
-    mPrevPhyDeltaRPM = 0.0f;
+    PrevRPM = 0.0f;
     m_CurPhyDeltaRPMVal = 0.0f;
     m_CurAudDeltaRPMVal = 0.0f;
-    PrevRPM = 0.0f;
     PercentOfAccelThreshold = 0.0f;
-    PercentOfDecelThreshold = 0.0f;
-    m_EngVolRedLine = 0;
-    mPrevDeltaRPM = 0;
+    tSteadyDuration = 0.0f;
+    CrossFadesPoints[0] = bVector2(0.0f, 0.0f);
+    CrossFadesPoints[1] = bVector2(0.0f, 0.0f);
+    CrossFadesPoints[2] = bVector2(0.0f, 0.0f);
+    CrossFadesPoints[3] = bVector2(0.0f, 0.0f);
+    CrossFadesPoints[4] = bVector2(0.0f, 0.0f);
+    CrossFadesPoints[5] = bVector2(0.0f, 0.0f);
     SteadyFrameCnt = 0;
+    mPrevDeltaRPM = 0;
 }
 
 SndBase::TypeInfo *SFXCTL_HybridMotor::GetTypeInfo() const { return &s_TypeInfo; }

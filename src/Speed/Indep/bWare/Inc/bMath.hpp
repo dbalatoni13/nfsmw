@@ -217,8 +217,6 @@ struct bVector2 {
 
     bVector2(float _x, float _y);
 
-    bVector2(const bVector2 &v) {}
-
     bVector2 operator-(const bVector2 &v);
 
     bVector2 &operator=(const bVector2 &v);
@@ -304,7 +302,8 @@ inline bVector2 *bScale(bVector2 *dest, const bVector2 *v, float scale) {
     float x = v->x;
     float y = v->y;
 
-    bFill(dest, x * scale, y * scale);
+    dest->x = x * scale;
+    dest->y = y * scale;
     return dest;
 }
 

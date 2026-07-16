@@ -2,6 +2,7 @@
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/Libs/Support/Utility/UVectorMath.h"
 #include "Speed/Indep/Src/EAXSound/OldSoundTemplates.hpp"
+#include "Speed/Indep/Src/EAXSound/States/STATE_DriveBy.hpp"
 #include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_Base.hpp"
 #include "Speed/Indep/Src/World/ParameterMaps.hpp"
 #include "Speed/Indep/Src/Generated/Messages/MMiscSound.h"
@@ -21,35 +22,6 @@ extern unsigned int TickerTimeAccum;
 extern unsigned int bGetTicker();
 
 extern stREVERB_PARAMS g_REVERBFXMODULES[];
-
-namespace {
-enum eDRIVE_BY_TYPE {
-    DRIVE_BY_UNKNOWN = 0,
-    DRIVE_BY_TREE = 1,
-    DRIVE_BY_LAMPPOST = 2,
-    DRIVE_BY_SMOKABLE = 3,
-    DRIVE_BY_TUNNEL_IN = 4,
-    DRIVE_BY_TUNNEL_OUT = 5,
-    DRIVE_BY_OVERPASS_IN = 6,
-    DRIVE_BY_OVERPASS_OUT = 7,
-    DRIVE_BY_AI_CAR = 8,
-    DRIVE_BY_TRAFFIC = 9,
-    DRIVE_BY_BRIDGE = 10,
-    DRIVE_BY_PRE_COL = 11,
-    DRIVE_BY_CAMERA_BY = 12,
-    MAX_DRIVE_BY_TYPES = 13,
-};
-
-// total size: 0x20
-struct stDriveByInfo {
-    eDRIVE_BY_TYPE eDriveByType; // offset 0x0, size 0x4
-    EAXCar *pEAXCar;             // offset 0x4, size 0x4
-    float ClosingVelocity;       // offset 0x8, size 0x4
-    bVector3 vLocation;          // offset 0xC, size 0x10
-    unsigned int UniqueID;       // offset 0x1C, size 0x4
-};
-
-} // namespace
 
 eTrackPathZoneType SFXCTL_Tunnel::m_PlayerZoneType = TRACK_PATH_ZONE_RESET;
 
@@ -126,14 +98,9 @@ int SFXCTL_Tunnel::GetController(int Index) { return -1; }
 void SFXCTL_Tunnel::AttachController(SFXCTL *psfxctl) {}
 
 void SFXCTL_Tunnel::UpdateDriveBySnds(float t) {
+    bool InTunnel;
     eTrackPathZoneType PrevFutureZoneType = FutureZoneType;
     TrackPathZone *zone;
-    const bVector2 *CurCarPos;
-    bVector3 FutureCarPos;
-    bVector2 UnNormalCurCarDir;
-    bVector2 CurCarDir;
-    bVector2 FutureCarDir;
-    bVector2 FutureCar2dPos;
 
     bPlayDriveBy = false;
     bPlayTunnelExit = false;
@@ -150,17 +117,17 @@ void SFXCTL_Tunnel::UpdateDriveBySnds(float t) {
     (void)PrevFutureZoneType;
     FutureZoneType = TRACK_PATH_ZONE_RESET;
 
-    CurCarPos = m_pEAXCar->GetPhysCar()->GetPosition2D();
-    bFill(&UnNormalCurCarDir,
+    const bVector2 *CurCarPos = m_pEAXCar->GetPhysCar()->GetPosition2D();
+    bVector2 UnNormalCurCarDir(
         m_pEAXCar->GetPhysCar()->GetForwardVector()->x,
         m_pEAXCar->GetPhysCar()->GetForwardVector()->y);
-    bNormalize(&CurCarDir, &UnNormalCurCarDir);
-    bScale(&FutureCarDir, &CurCarDir, m_pEAXCar->GetPhysCar()->GetForwardSpeed() * 0.4f);
-    bAdd(&FutureCar2dPos, CurCarPos, &FutureCarDir);
-    bFill(&FutureCarPos,
+    bVector2 CurCarDir = bNormalize(UnNormalCurCarDir);
+    bVector2 FutureCarDir = bScale(CurCarDir, m_pEAXCar->GetPhysCar()->GetForwardSpeed() * 0.4f);
+    bVector2 FutureCar2dPos = bAdd(*CurCarPos, FutureCarDir);
+    bVector3 FutureCarPos(
         FutureCar2dPos.x,
         FutureCar2dPos.y,
-        m_pEAXCar->GetPhysCar()->GetPosition()->z);
+        GetPhysCar()->GetPosition()->z);
 
     FutureZoneType = TRACK_PATH_ZONE_TUNNEL;
     zone = GetTunnelType(FutureCarPos, TRACK_PATH_ZONE_TUNNEL);
@@ -176,33 +143,33 @@ void SFXCTL_Tunnel::UpdateDriveBySnds(float t) {
         }
     }
 
-    bool InTunnel = m_bIsInTunnel;
-    if (!InTunnel) {
+    if (!m_bIsInTunnel) {
         if (FutureZoneType != TRACK_PATH_ZONE_RESET &&
             ((tTimeToWaitBeforeAnotherDriveBy < 0.01f && pLastZoneWePlayedWooshFor == zone) ||
              pLastZoneWePlayedWooshFor != zone)) {
             if (g_WooshVol_vs_Vel.GetValue(m_pEAXCar->GetPhysCar()->GetVelocityMagnitude()) > 0.01f) {
-                stDriveByInfo tmpdrivebypackage;
-                CSTATE_Base *ReturnedObj;
-
                 bPlayDriveBy = true;
                 tTimeToWaitBeforeAnotherDriveBy = 3.0f;
                 pLastZoneWePlayedWooshFor = zone;
                 vDriveByLoc = bVector3(FutureCarPos.x, FutureCarPos.y, m_pEAXCar->GetPhysCar()->GetPosition()->z + 10.0f);
                 m_fIntensity = g_WooshVol_vs_Vel.GetValue(m_pEAXCar->GetPhysCar()->GetVelocityMagnitude());
+                stDriveByInfo tmpdrivebypackage;
                 tmpdrivebypackage.eDriveByType = DRIVE_BY_TUNNEL_IN;
                 tmpdrivebypackage.pEAXCar = m_pEAXCar;
-                tmpdrivebypackage.ClosingVelocity = m_pEAXCar->GetPhysCar()->GetVelocityMagnitude();
+                tmpdrivebypackage.ClosingVelocity = GetPhysCar()->GetVelocityMagnitude();
+                tmpdrivebypackage.UniqueID = reinterpret_cast<unsigned int>(pLastZoneWePlayedWooshFor);
                 tmpdrivebypackage.vLocation = vDriveByLoc;
-                tmpdrivebypackage.UniqueID = 0;
-                ReturnedObj = EAXSound::GetStateMgr(eMM_DRIVEBY)->GetFreeState(&tmpdrivebypackage);
+                CSTATE_Base *ReturnedObj = EAXSound::GetStateMgr(eMM_DRIVEBY)->GetFreeState(&tmpdrivebypackage);
                 if (ReturnedObj) {
                     ReturnedObj->Attach(&tmpdrivebypackage);
+                }
+                {
+                    int break_here;
                 }
             }
         }
 
-        if (!InTunnel) {
+        if (!m_bIsInTunnel) {
             return;
         }
     }
@@ -212,22 +179,23 @@ void SFXCTL_Tunnel::UpdateDriveBySnds(float t) {
         ((tTimeToWaitBeforeAnotherExitDriveBy < 0.01f && pLastZoneWePlayedExitWooshFor == zone) ||
          pLastZoneWePlayedExitWooshFor != zone)) {
         if (g_WooshVol_vs_Vel.GetValue(m_pEAXCar->GetPhysCar()->GetVelocityMagnitude()) > 0.01f) {
-            stDriveByInfo tmpdrivebypackage;
-            CSTATE_Base *ReturnedObj;
-
             bPlayTunnelExit = true;
             tTimeToWaitBeforeAnotherExitDriveBy = 3.0f;
             pLastZoneWePlayedExitWooshFor = zone;
             vDriveByLoc = bVector3(FutureCarPos.x, FutureCarPos.y, m_pEAXCar->GetPhysCar()->GetPosition()->z + 10.0f);
             m_fExitIntensity = g_WooshVol_vs_Vel.GetValue(m_pEAXCar->GetPhysCar()->GetVelocityMagnitude());
+            stDriveByInfo tmpdrivebypackage;
             tmpdrivebypackage.eDriveByType = DRIVE_BY_TUNNEL_OUT;
             tmpdrivebypackage.pEAXCar = m_pEAXCar;
-            tmpdrivebypackage.ClosingVelocity = m_pEAXCar->GetPhysCar()->GetVelocityMagnitude();
-            tmpdrivebypackage.vLocation = vDriveByLoc;
+            tmpdrivebypackage.ClosingVelocity = GetPhysCar()->GetVelocityMagnitude();
             tmpdrivebypackage.UniqueID = 0;
-            ReturnedObj = EAXSound::GetStateMgr(eMM_DRIVEBY)->GetFreeState(&tmpdrivebypackage);
+            tmpdrivebypackage.vLocation = vDriveByLoc;
+            CSTATE_Base *ReturnedObj = EAXSound::GetStateMgr(eMM_DRIVEBY)->GetFreeState(&tmpdrivebypackage);
             if (ReturnedObj) {
                 ReturnedObj->Attach(&tmpdrivebypackage);
+            }
+            {
+                int break_here;
             }
         }
     }

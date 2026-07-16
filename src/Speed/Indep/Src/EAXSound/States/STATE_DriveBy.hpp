@@ -35,7 +35,9 @@ struct stDriveByInfo {
     unsigned int UniqueID;       // offset 0x1C, size 0x4
 
     stDriveByInfo() {
+        ClosingVelocity = 0.0f;
         vLocation = bVector3(0.0f, 0.0f, 0.0f);
+        UniqueID = 0;
     }
 
     stDriveByInfo &operator=(const stDriveByInfo &from) {
