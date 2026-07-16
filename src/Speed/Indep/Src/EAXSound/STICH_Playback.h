@@ -26,7 +26,7 @@ struct SND_SampleRef {
     unsigned short Volume;      // offset 0x2, size 0x2
     unsigned short Pitch;       // offset 0x4, size 0x2
     unsigned short Offset;      // offset 0x6, size 0x2
-    short Az;                   // offset 0x8, size 0x2
+    unsigned short Az;          // offset 0x8, size 0x2
     unsigned short RND_Vol;     // offset 0xA, size 0x2
     short RND_Pitch;            // offset 0xC, size 0x2
     unsigned char Priority;     // offset 0xE, size 0x1

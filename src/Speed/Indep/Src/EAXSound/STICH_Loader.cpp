@@ -85,48 +85,48 @@ void cStitchLoop::Update(const SND_Params *Params, float dt) {
 }
 
 int LoaderSoundStichs(bChunk *chunk) {
-    if (chunk->ID != 0x8003b500) {
-        return 0;
-    }
+    if (chunk->GetID() == 0x8003b500) {
+        bChunk *first_chunk = chunk->GetFirstChunk();
+        bChunk *last_chunk = chunk->GetLastChunk();
 
-    bChunk *last_chunk = chunk->GetLastChunk();
-    chunk = chunk + 1;
+        for (bChunk *chunk = first_chunk; chunk < last_chunk; chunk = chunk->GetNext()) {
+            if (chunk->GetID() != 0x3b502) {
+                break;
+            }
+            {
+                SND_Stich *NewStich = reinterpret_cast<SND_Stich *>(chunk->GetData());
+                bPlatEndianSwap(&NewStich->NameHash);
+                bPlatEndianSwap(&NewStich->Volume);
+                bPlatEndianSwap(&NewStich->StichIndex);
+                bPlatEndianSwap(reinterpret_cast<signed char *>(&NewStich->eStichType));
+                bPlatEndianSwap(&NewStich->Num_SampleRefs);
+                bPlatEndianSwap(&NewStich->RND_Pitch);
+                bPlatEndianSwap(&NewStich->RND_Vol);
 
-    while (chunk < last_chunk) {
-        if (chunk->GetID() != 0x3b502) {
-            break;
-        }
-        SND_Stich *NewStich = reinterpret_cast<SND_Stich *>(chunk->GetData());
-        bEndianSwap32(NewStich);
-        bEndianSwap16(chunk->GetData() + 4);
-        bEndianSwap16(chunk->GetData() + 6);
-        bEndianSwap16(chunk->GetData() + 0xA);
-        bEndianSwap16(chunk->GetData() + 0xC);
+                if (g_pEAXSound && g_pEAXSound->GetStichPlayer()) {
+                    g_pEAXSound->GetStichPlayer()->AddStich(static_cast<STICH_TYPE>(NewStich->eStichType), *NewStich);
+                }
 
-        if (g_pEAXSound) {
-            cSTICH_PlayBack *playback = g_pEAXSound->GetSTICHPlayback();
-            if (playback) {
-                playback->AddStich(static_cast<STICH_TYPE>(NewStich->eStichType), *NewStich);
+                chunk = chunk->GetNext();
+                NewStich->pSampleRefList = reinterpret_cast<SND_SampleRef *>(chunk->GetData());
+                for (int i = 0; i < static_cast<int>(NewStich->Num_SampleRefs); i++) {
+                    GlobalStichSizes += 0x10;
+                    bPlatEndianSwap(&NewStich->pSampleRefList[i].SampleIndex);
+                    bPlatEndianSwap(reinterpret_cast<signed char *>(&NewStich->pSampleRefList[i].eStichType));
+                    bPlatEndianSwap(&NewStich->pSampleRefList[i].Volume);
+                    bPlatEndianSwap(&NewStich->pSampleRefList[i].Pitch);
+                    bPlatEndianSwap(&NewStich->pSampleRefList[i].Offset);
+                    bPlatEndianSwap(&NewStich->pSampleRefList[i].Az);
+                    bPlatEndianSwap(&NewStich->pSampleRefList[i].RND_Vol);
+                    bPlatEndianSwap(&NewStich->pSampleRefList[i].RND_Pitch);
+                    bPlatEndianSwap(&NewStich->pSampleRefList[i].Priority);
+                    bPlatEndianSwap(&NewStich->pSampleRefList[i].eRollOffType);
+                }
             }
         }
-
-        bChunk *sampleRefChunk = chunk->GetNext();
-        NewStich->pSampleRefList = reinterpret_cast<SND_SampleRef *>(sampleRefChunk->GetData());
-        for (int i = 0; i < static_cast<int>(NewStich->Num_SampleRefs); i++) {
-            GlobalStichSizes += 0x10;
-            SND_SampleRef &sampleRef = NewStich->pSampleRefList[i];
-            bEndianSwap16(&sampleRef.Volume);
-            bEndianSwap16(&sampleRef.Pitch);
-            bEndianSwap16(&sampleRef.Offset);
-            bEndianSwap16(&sampleRef.Az);
-            bEndianSwap16(&sampleRef.RND_Vol);
-            bEndianSwap16(&sampleRef.RND_Pitch);
-        }
-
-        chunk = sampleRefChunk->GetNext();
+        return 1;
     }
-
-    return 1;
+    return 0;
 }
 
 int UnloaderSoundStichs(bChunk *chunk) {

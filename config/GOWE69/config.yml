@@ -35,5 +35,8 @@ block_relocations:
 - source: .text:0x80047c1c
   end: .text:0x80047c28
 
+- source: .text:0x800B2C5C
+  end: .text:0x800B2C68
+
 - source: .text:0x800B2DE4
   end: .text:0x800B2DEC
