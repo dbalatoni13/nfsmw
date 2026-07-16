@@ -271,13 +271,13 @@ static REQUESTSTRUCTtag *locaterequest(STREAMHEADERtag *strm, int requestid) {
     }
 
     req = strm->request + index;
-    if (requestid == strm->request[index].id) {
-        if (req->state == STREAMREQUEST_FREE) {
-            return nullptr;
-        }
-        return req;
+    if (requestid != strm->request[index].id) {
+        return nullptr;
     }
-    return nullptr;
+    if (req->state == STREAMREQUEST_FREE) {
+        return nullptr;
+    }
+    return req;
 }
 
 static void freerequest(STREAMHEADERtag *strm, REQUESTSTRUCTtag *req) {
