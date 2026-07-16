@@ -177,7 +177,7 @@ static int validatehandle(int handle, STREAMHEADERtag **strmptr, TAPSTRUCTtag **
     return 0;
 }
 
-int inbetween(char *startptr, char *endptr, char *ptr) {
+static int inbetween(char *startptr, char *endptr, char *ptr) {
     if (startptr <= endptr) {
         if (ptr < startptr) {
             return 0;
@@ -185,7 +185,7 @@ int inbetween(char *startptr, char *endptr, char *ptr) {
         return ptr < endptr;
     }
     if (ptr < startptr) {
-        if (endptr <= ptr) {
+        if (ptr >= endptr) {
             return 0;
         }
     }
