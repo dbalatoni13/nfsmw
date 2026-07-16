@@ -754,37 +754,21 @@ int STREAM_create(int requests, int filters, int taps, void *buffer, int size) {
     return reinterpret_cast<int>(strm->tap);
 }
 
-void STREAM_setfilter(int sndstreamhandle, int filternum, int mask, int value, int tapnum) {
-    STREAMHEADERtag *streamRaw;
-    TAPSTRUCTtag *tapRaw;
-    int status = validatehandle(sndstreamhandle, &streamRaw, &tapRaw);
-    if (status != 0) {
-        return;
+void STREAM_setfilter(int handle, int filternum, int mask, int value, int tapnum) {
+    STREAMHEADERtag *strm;
+    FILTERSTRUCTtag *filt;
+    TAPSTRUCTtag *tap;
+    if (validatehandle(handle, &strm, &tap) == 0 && filternum > 0) {
+        if (filternum <= strm->filters &&
+            (filternum != strm->filters || (mask | value) == 0) &&
+            (tapnum > 0 || tapnum == -1 || tapnum == -2) && tapnum <= strm->taps &&
+            strm->state == STREAM_IDLE_STATE) {
+            filt = strm->filter + (filternum - 1);
+            filt->mask = mask;
+            filt->value = value;
+            filt->tapnum = tapnum;
+        }
     }
-
-    if (filternum <= 0 || filternum > streamRaw->filters) {
-        return;
-    }
-    if (filternum == streamRaw->filters && (mask != 0 || value != 0)) {
-        return;
-    }
-
-    int taps = streamRaw->taps;
-    if (tapnum < 1 && tapnum != -1 && tapnum != -2) {
-        return;
-    }
-    if (tapnum > taps) {
-        return;
-    }
-    if (streamRaw->state != STREAM_IDLE_STATE) {
-        return;
-    }
-
-    FILTERSTRUCT *filter =
-        static_cast<FILTERSTRUCT *>(static_cast<void *>(streamRaw->filter)) + (filternum - 1);
-    filter->tapnum = tapnum;
-    filter->mask = mask;
-    filter->value = value;
 }
 
 void STREAM_destroy(int sndstreamhandle) {
