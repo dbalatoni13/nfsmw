@@ -82,8 +82,7 @@ void SFXCTL_Tunnel::InitSFX() {
     m_bWasInTunnel = false;
     m_bIsInTunnel = false;
 
-    EAX_CarState *car = m_pStateBase->GetPhysCar();
-    if (static_cast<int>(car->mContext) != 0) {
+    if (GetPhysCar()->GetContext() != Sound::kRaceContext_QuickRace) {
         m_IsLeadCar = false;
     } else if (m_pStateBase->m_InstNum != 0) {
         m_IsLeadCar = false;
