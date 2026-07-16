@@ -246,10 +246,10 @@ HeliSoundConn::HeliSoundConn(const Sim::ConnectionData &data)
     if (!modelName) {
         modelName = "";
     }
-    bStringHash(modelName);
+    unsigned int namehash = bStringHash(modelName);
+    (void)namehash;
 
-    mState = static_cast<EAX_HeliState *>(::operator new[](0xA0));
-    new (mState) EAX_HeliState(att.GetConstCollection(), oc->mWorldID);
+    mState = new (__FILE__, __LINE__) EAX_HeliState(att.GetConstCollection(), oc->mWorldID);
     g_pEAXSound->SpawnHelicopter(mState);
     mState->mSimUpdating = false;
 }

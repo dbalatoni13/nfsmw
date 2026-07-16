@@ -18,7 +18,6 @@ struct EAX_HeliState : public UTL::Collections::Listable<EAX_HeliState, 10> {
     Attrib::Instance mAttributes; // offset 0x80, size 0x14
     Sound::Context mContext;      // offset 0x94, size 0x4
     bool mSimUpdating;            // offset 0x98, size 0x1
-    char _pad_sim[3];
     unsigned int mWorldID;        // offset 0x9C, size 0x4
 
     EAX_HeliState(const Attrib::Collection *atr, unsigned int wuid)
@@ -29,7 +28,7 @@ struct EAX_HeliState : public UTL::Collections::Listable<EAX_HeliState, 10> {
         mVel1 = mVel0;
         mSimUpdating = true;
         mWorldID = wuid;
-        PSMTX44Identity((Mtx44)&mMatrix);
+        bIdentity(&mMatrix);
     }
     ~EAX_HeliState() {}
 
