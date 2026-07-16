@@ -41,6 +41,14 @@ struct SFXObj_Pathfinder : CARSFX {
             m_Flags &= ~0x200u;
         }
     }
+
+    void SetSplitScreen(bool bIsSplitScreen) {
+        if (bIsSplitScreen) {
+            m_Flags |= 2;
+        } else {
+            m_Flags &= ~2u;
+        }
+    }
 };
 
 #endif

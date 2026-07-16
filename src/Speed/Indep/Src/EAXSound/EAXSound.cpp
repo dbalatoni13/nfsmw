@@ -615,6 +615,8 @@ void EAXSound::InitializeSoundBootLoad() {
 }
 
 void EAXSound::StartNewGamePlay() {
+    int id;
+
     if (!IsSoundEnabled) {
         return;
     }
@@ -627,28 +629,24 @@ void EAXSound::StartNewGamePlay() {
             m_pCmnSnd = nullptr;
         }
 
-        if (m_pStreamManager) {
-            for (int i = 0; i < 4; i++) {
-                EAXS_StreamChannel *channel = m_pStreamManager->GetStreamChannel(i);
-                if (channel && i != 1) {
-                    m_pStreamManager->GetStreamChannel(i)->Stop();
-                    m_pStreamManager->GetStreamChannel(i)->PurgeStream();
-                }
+        for (int s = 0; s < 4; s++) {
+            if (m_pStreamManager->GetStreamChannel(s) && s != 1) {
+                m_pStreamManager->GetStreamChannel(s)->Stop();
+                m_pStreamManager->GetStreamChannel(s)->PurgeStream();
             }
         }
 
-        for (int i = 0; i < 13; i++) {
-            if (i != 1) {
-                CSTATEMGR_Base *mgr = m_pStateMgr[i];
-                if (mgr) {
-                    mgr->ExitWorld();
+        for (int n = 0; n < 13; n++) {
+            if (n != 1) {
+                if (m_pStateMgr[n]) {
+                    m_pStateMgr[n]->ExitWorld();
                 }
-            } else if (m_pStateMgr[i]) {
-                m_pStateMgr[i]->DisconnectMixMap();
+            } else {
+                m_pStateMgr[n]->DisconnectMixMap();
             }
         }
 
-        if (m_pNFSMixMaster->m_bMapReady) {
+        if (m_pNFSMixMaster->IsMixMapReady()) {
             m_pNFSMixMaster->DestroyMainMainMap();
         }
 
@@ -656,14 +654,14 @@ void EAXSound::StartNewGamePlay() {
     }
 
     if (m_ePlayerMixMode != EAXS3D_TWO_PLAYER_MIX) {
-        EAXAemsManager::m_RequiredSlots[3]++;
+        EAXAemsManager::QueueSlots(eBANK_SLOT_PATHFINDER, 1);
     }
 
     CSTATEMGR_AICar::QueueSlots();
     gAEMSMgr.InitializeSlots(!bHasStartNewGameOccured);
-    g_ShiftInfo = nullptr;
     bHasStartNewGameOccured = true;
     g_TurboInfo = nullptr;
+    g_ShiftInfo = nullptr;
 
     if (!bIsMapInQueuedFileLoad) {
         bIsMapInQueuedFileLoad = true;
@@ -672,49 +670,41 @@ void EAXSound::StartNewGamePlay() {
         if (GRaceStatus::Exists()) {
             race = GRaceStatus::Get().GetRaceParameters();
         } else {
-            GRaceCustom *startupRace = GRaceDatabase::Get().GetStartupRace();
-            race = startupRace;
+            race = GRaceDatabase::Get().GetStartupRace();
         }
 
         if (race) {
-            GRace::Type raceType = race->GetRaceType();
-            if (raceType == GRace::kRaceType_Drag) {
-                eSndGameMode oldMode = m_eSndGameMode;
-                m_eSndGameMode = SND_DRAGRACE;
-                m_prevSndGameMode = oldMode;
+            GRace::Type rt = race->GetRaceType();
+            if (rt == GRace::kRaceType_Drag) {
+                SetSndGameMode(SND_DRAGRACE);
                 if (Sim::GetUserMode() == Sim::USER_SPLIT_SCREEN) {
                     m_pNFSMixMaster->CreateMainMainMap(eRACE_TWODRG);
                 } else {
                     m_pNFSMixMaster->CreateMainMainMap(eRACE_DRAG);
                 }
             } else {
-                SFXObj_PFEATrax *track = static_cast<SFXObj_PFEATrax *>(GetSFXBase_Object(0x40010010));
-                if (track) {
-                    track->RestartRace();
+                int id = 0x40010010;
+                SFXObj_PFEATrax *ppf = static_cast<SFXObj_PFEATrax *>(GetSFXBase_Object(id));
+                if (ppf) {
+                    ppf->RestartRace();
                 }
-                eSndGameMode oldMode = m_eSndGameMode;
-                eSndGameMode gameMode;
-                if (raceType == GRace::kRaceType_Challenge) {
-                    gameMode = SND_CHALLENGERACE;
+                if (rt == GRace::kRaceType_Challenge) {
+                    SetSndGameMode(SND_CHALLENGERACE);
                 } else {
-                    gameMode = SND_STREETRACE;
+                    SetSndGameMode(SND_STREETRACE);
                 }
-                m_eSndGameMode = gameMode;
-                m_prevSndGameMode = oldMode;
-                if (Sim::GetUserMode() != Sim::USER_SPLIT_SCREEN) {
-                    m_pNFSMixMaster->CreateMainMainMap(eRACE_CIRCUIT);
-                } else {
+                if (Sim::GetUserMode() == Sim::USER_SPLIT_SCREEN) {
                     m_pNFSMixMaster->CreateMainMainMap(eRACE_TWOCIRC);
+                } else {
+                    m_pNFSMixMaster->CreateMainMainMap(eRACE_CIRCUIT);
                 }
             }
         } else {
-            eSndGameMode oldMode = m_eSndGameMode;
-            m_eSndGameMode = SND_FREEROAM;
-            m_prevSndGameMode = oldMode;
-            if (Sim::GetUserMode() != Sim::USER_SPLIT_SCREEN) {
-                m_pNFSMixMaster->CreateMainMainMap(eRACE_CIRCUIT);
-            } else {
+            SetSndGameMode(SND_FREEROAM);
+            if (Sim::GetUserMode() == Sim::USER_SPLIT_SCREEN) {
                 m_pNFSMixMaster->CreateMainMainMap(eRACE_TWOCIRC);
+            } else {
+                m_pNFSMixMaster->CreateMainMainMap(eRACE_CIRCUIT);
             }
         }
     }
@@ -722,18 +712,15 @@ void EAXSound::StartNewGamePlay() {
     InitializeInGame();
     m_pNFSMixMaster->InitMixMap(0);
 
-    SFXObj_Pathfinder *ppf = static_cast<SFXObj_Pathfinder *>(GetSFXBase_Object(0x40010010));
+    id = 0x40010010;
+    SFXObj_Pathfinder *ppf = static_cast<SFXObj_Pathfinder *>(GetSFXBase_Object(id));
     if (ppf) {
         if (m_ePlayerMixMode == EAXS3D_TWO_PLAYER_MIX) {
-            ppf->m_Flags |= 2;
+            ppf->SetSplitScreen(true);
         } else {
-            ppf->m_Flags &= ~2u;
+            ppf->SetSplitScreen(false);
         }
 
-        if (GRaceStatus::Exists() && GRaceStatus::Get().GetRaceParameters() &&
-            GRaceStatus::Get().GetRaceParameters()->GetRaceType() != GRace::kRaceType_Drag) {
-            ppf->m_Flags |= 1;
-        }
     }
 
     gbHasStartNewGamePlayBeenProcessed = true;
