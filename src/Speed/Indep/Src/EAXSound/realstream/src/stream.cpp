@@ -211,23 +211,23 @@ static void decbufferusage(STREAMHEADERtag *strm, int amount) {
     }
 }
 
-REQUESTSTRUCTtag *getfreerequest(STREAMHEADERtag *stream) {
-    STREAMHEADER *header = reinterpret_cast<STREAMHEADER *>(stream);
-    REQUESTSTRUCT *request = nullptr;
+static REQUESTSTRUCTtag *getfreerequest(STREAMHEADERtag *strm) {
+    REQUESTSTRUCTtag *req = nullptr;
+    int lockstate;
 
-    MUTEX_lock(&header->mutex);
-    request = header->freereq;
-    if (request) {
+    MUTEX_lock(&strm->mutex);
+    if (strm->freereq) {
+        req = strm->freereq;
+        strm->freereq = req->next;
         requestidcounter += 0x100;
-        header->freereq = request->next;
         if (requestidcounter == 0) {
             requestidcounter = 0x100;
         }
-        request->id = (request->id & 0xFF) | requestidcounter;
+        req->id = (req->id & 0xFF) | requestidcounter;
     }
-    MUTEX_unlock(&header->mutex);
+    MUTEX_unlock(&strm->mutex);
 
-    return reinterpret_cast<REQUESTSTRUCTtag *>(request);
+    return req;
 }
 
 static void queuerequest(STREAMHEADERtag *strm, REQUESTSTRUCTtag *req) {
