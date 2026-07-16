@@ -459,7 +459,7 @@ static void KillSample(cSampleWarpper *sampleref) {
 
 void cSTICH_PlayBack::RemoveFromList(SampleQueueItem sampleitem) {
     STICH_TYPE type = static_cast<STICH_TYPE>(sampleitem.pStitch->GetData().eStichType);
-    for (SampleQueueItem *iter = mQueuedSampleList[type].begin(); iter != mQueuedSampleList[type].end(); ++iter) {
+    for (SampleQueueItem *iter = GetQueueList(type).begin(); iter != GetQueueList(type).end(); ++iter) {
         SampleQueueItem compareto = *iter;
         if (compareto == sampleitem) {
             GetQueueList(type).erase(iter);
