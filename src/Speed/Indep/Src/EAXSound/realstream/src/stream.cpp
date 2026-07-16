@@ -935,24 +935,23 @@ int STREAM_queuemem(int handle, void *address, int length, int endchunkid) {
     return req->id;
 }
 
-void STREAM_cancelrequest(int sndstreamhandle, int requesthandle) {
+void STREAM_cancelrequest(int handle, int requestid) {
     STREAMHEADERtag *strm;
-    TAPSTRUCTtag *tap;
     REQUESTSTRUCTtag *req;
+    TAPSTRUCTtag *tap;
     STREAMCHUNKHDR *chunk;
-    char *dataStart = nullptr;
-    int lockstate = validatehandle(sndstreamhandle, &strm, &tap);
-    char *requestStart = nullptr;
-    char *requestEnd = nullptr;
+    char *datastart = nullptr;
+    char *reqstart = nullptr;
+    char *reqend = nullptr;
     int chunksize;
     int chunktap;
+    int lockstate;
     int finished;
     int i;
-    int next;
 
-    if (lockstate == 0) {
+    if (validatehandle(handle, &strm, &tap) == 0) {
         MUTEX_lock(&strm->mutex);
-        req = locaterequest(strm, requesthandle);
+        req = locaterequest(strm, requestid);
         if (!req || req->state == STREAMREQUEST_CANCELED) {
             finished = true;
         } else if (req->state == STREAMREQUEST_PENDING) {
@@ -960,55 +959,51 @@ void STREAM_cancelrequest(int sndstreamhandle, int requesthandle) {
             freerequest(strm, req);
         } else {
             req->state = STREAMREQUEST_CANCELED;
-            dataStart = strm->datastart;
-            requestStart = dataStart;
-            if (req != strm->firstreq) {
-                requestStart = req->datastart;
+            datastart = strm->datastart;
+            if (req == strm->firstreq) {
+                reqstart = datastart;
+            } else {
+                reqstart = req->datastart;
             }
             req = req->next;
             if (!req || req->state == STREAMREQUEST_PENDING) {
-                requestEnd = strm->datatail;
+                reqend = strm->datatail;
             } else {
-                requestEnd = req->datastart;
+                reqend = req->datastart;
             }
             finished = false;
         }
         MUTEX_unlock(&strm->mutex);
         if ((!finished) && (i = 0, i < strm->taps)) {
             do {
-                next = i + 1;
                 tap = strm->tap + i;
                 if (tap->gettable > 0) {
-                    lockstate = inbetween(dataStart, requestStart, tap->getptr);
+                    lockstate = inbetween(datastart, reqstart, tap->getptr);
                     if (lockstate != 0) {
-                        finished = reinterpret_cast<int>(requestStart);
-                        chunktap = tap->tapnum;
-                        if (requestStart != requestEnd) {
-                            while (reinterpret_cast<char *>(finished) != requestEnd) {
+                        finished = reinterpret_cast<int>(reqstart);
+                        chunktap = tap->tapnum << 24;
+                        if (reqstart != reqend) {
+                            while (reinterpret_cast<char *>(finished) != reqend) {
                                 chunk = reinterpret_cast<STREAMCHUNKHDR *>(finished);
-                                if (ReadChunkWord(&chunk->type) == -1) {
+                                if (static_cast<int>(little_get(&chunk->type, 4)) == -1) {
                                     finished = reinterpret_cast<int>(strm->bufferstart);
                                 } else {
-                                    chunksize = ReadChunkWord(&chunk->size) & 0xFFFFFF;
-                                    if ((ReadChunkWord(&chunk->size) & 0xFF000000U) ==
-                                        (static_cast<unsigned int>(chunktap) << 24)) {
+                                    chunksize = little_get(&chunk->size, 4) & 0xFFFFFF;
+                                    if ((little_get(&chunk->size, 4) & 0xFF000000U) ==
+                                        static_cast<unsigned int>(chunktap)) {
                                         MUTEX_lock(&strm->mutex);
                                         tap->gettable -= chunksize;
                                         MUTEX_unlock(&strm->mutex);
                                         decbufferusage(strm, chunksize);
-                                        WriteChunkWord(&chunk->size, chunksize);
-                                        WriteChunkWord(&chunk->type, -2);
+                                        little_put(&chunk->type, -2, 4);
+                                        little_put(&chunk->size, chunksize, 4);
                                     }
                                     finished += chunksize;
                                 }
                             }
                         }
                     } else {
-                        while (true) {
-                            lockstate = inbetween(requestStart, requestEnd, tap->getptr);
-                            if (lockstate == 0) {
-                                break;
-                            }
+                        while (inbetween(reqstart, reqend, tap->getptr)) {
                             chunk = STREAM_get(reinterpret_cast<int>(tap));
                             STREAM_release(reinterpret_cast<int>(tap), chunk);
                             if (tap->gettable < 1) {
@@ -1017,8 +1012,8 @@ void STREAM_cancelrequest(int sndstreamhandle, int requesthandle) {
                         }
                     }
                 }
-                i = next;
-            } while (next < strm->taps);
+                i++;
+            } while (i < strm->taps);
         }
     }
 }
