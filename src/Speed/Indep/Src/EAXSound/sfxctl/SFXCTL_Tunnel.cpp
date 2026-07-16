@@ -79,15 +79,13 @@ void SFXCTL_Tunnel::SetupSFX(CSTATE_Base *_StateBase) {
 
 void SFXCTL_Tunnel::InitSFX() {
     SFXCTL::InitSFX();
-    m_bWasInTunnel = false;
     m_bIsInTunnel = false;
+    m_bWasInTunnel = false;
 
-    if (GetPhysCar()->GetContext() != Sound::kRaceContext_QuickRace) {
-        m_IsLeadCar = false;
-    } else if (m_pStateBase->m_InstNum != 0) {
-        m_IsLeadCar = false;
-    } else {
+    if (GetPhysCar()->GetContext() == Sound::kRaceContext_QuickRace && m_pStateBase->m_InstNum == 0) {
         m_IsLeadCar = true;
+    } else {
+        m_IsLeadCar = false;
     }
     IsOccluded = false;
 }
