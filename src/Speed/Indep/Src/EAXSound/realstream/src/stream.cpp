@@ -815,16 +815,21 @@ void STREAM_setpriority(int sndstreamhandle, int prioritylow, int priorityhigh) 
     }
 }
 
-void STREAM_setgreedylevel(int sndstreamhandle, int greedylevel) {
-    STREAMHEADERtag *streamRaw;
-    TAPSTRUCTtag *tapRaw;
-    int status = validatehandle(sndstreamhandle, &streamRaw, &tapRaw);
-    if (status == 0) {
-        int bufferUsage = streamRaw->bufferusage;
-        int oldGreedyLevel = streamRaw->greedylevel;
-        streamRaw->greedylevel = greedylevel;
-        if ((bufferUsage < oldGreedyLevel) != (bufferUsage < greedylevel)) {
-            STREAM_setgreedystate(sndstreamhandle, static_cast<int>(bufferUsage < greedylevel));
+void STREAM_setgreedylevel(int handle, int greedylevel) {
+    STREAMHEADERtag *strm;
+    TAPSTRUCTtag *tap;
+    int oldgreedylevel;
+    int bufferusage;
+    int oldside;
+    int newside;
+    if (validatehandle(handle, &strm, &tap) == 0) {
+        oldgreedylevel = strm->greedylevel;
+        strm->greedylevel = greedylevel;
+        bufferusage = strm->bufferusage;
+        oldside = bufferusage < oldgreedylevel;
+        newside = bufferusage < greedylevel;
+        if (oldside != newside) {
+            STREAM_setgreedystate(handle, newside);
         }
     }
 }
