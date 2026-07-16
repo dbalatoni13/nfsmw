@@ -841,15 +841,14 @@ void STREAM_setgreedystate(int sndstreamhandle, int greedystate) {
     }
 }
 
-int STREAM_taphandle(int sndstreamhandle, int tapindex) {
-    STREAMHEADERtag *streamRaw;
-    TAPSTRUCTtag *tapRaw;
-    int status = validatehandle(sndstreamhandle, &streamRaw, &tapRaw);
-    if (status != 0 || tapindex <= 0) {
+int STREAM_taphandle(int handle, int tapnum) {
+    STREAMHEADERtag *strm;
+    TAPSTRUCTtag *tap;
+    if (validatehandle(handle, &strm, &tap) != 0 || tapnum <= 0) {
         return 0;
     }
-    if (tapindex <= streamRaw->taps) {
-        return reinterpret_cast<int>(streamRaw->tap + tapindex - 1);
+    if (tapnum <= strm->taps) {
+        return reinterpret_cast<int>(strm->tap + (tapnum - 1));
     }
     return 0;
 }
