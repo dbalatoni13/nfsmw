@@ -220,12 +220,17 @@ stBankSlot *BankSlotSystem::GetFreeSlot(eBANK_SLOT_TYPE Type) {
 }
 
 void BankSlotSystem::DestroySlots() {
-    for (BankSlotSystem::iterator i = begin(); i != end(); i++) {
-        if ((*i).LoadFailed == 0 && (*i).pAssetParams != nullptr) {
-            gAEMSMgr.UnloadSndData((*i).pAssetParams->AssetDescription.FileName);
-        }
-        if ((*i).MAINmemLocation != nullptr) {
-            gAudioMemoryManager.FreeMemory((*i).MAINmemLocation);
+    BankSlotSystem::iterator i = begin();
+    while (i != end()) {
+        {
+            stBankSlot &curslot = *i;
+            if (curslot.LoadFailed == 0 && curslot.pAssetParams != nullptr) {
+                gAEMSMgr.UnloadSndData(curslot.pAssetParams->AssetDescription.FileName);
+            }
+            if (curslot.MAINmemLocation != nullptr) {
+                gAudioMemoryManager.FreeMemory(curslot.MAINmemLocation);
+            }
+            i++;
         }
     }
 
