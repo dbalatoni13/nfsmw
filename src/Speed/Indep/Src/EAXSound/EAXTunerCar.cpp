@@ -71,12 +71,9 @@ int EAXTunerCar::SFXMessage(eSFXMessageType SFXMessageType, unsigned int param1,
 void DebugPrintSkidBar(int Horz, int Vert, char *Str, int Value) {}
 
 int EAXTunerCar::UpdateRotation() {
-    int val = 0;
     m_Rotation = 0;
-    val = bMax(val, 0);
-    val = bMin(val, 0x400);
-    m_Rotation = val;
-    return val;
+    m_Rotation = bClamp(m_Rotation, 0, 0x400);
+    return m_Rotation;
 }
 
 void EAXTunerCar::UpdatePov() {
