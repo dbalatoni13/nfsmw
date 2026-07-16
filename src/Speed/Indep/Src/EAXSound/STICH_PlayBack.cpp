@@ -690,77 +690,44 @@ void cSampleWarpper::Initialize() {
 }
 
 void cSampleWarpper::Update(const SND_Params *Params) {
-    int TempPitch = m_nLocalPitch;
-    int TempVol = m_nLocalVolume * Params->Vol >> 0xF;
-    int refCountWsh;
-    int refCountCol;
-    int refCountStatic;
+    int TempVol;
+    int TempPitch;
+
+    TempVol = m_nLocalVolume * Params->Vol >> 0xF;
+    TempPitch = m_nLocalPitch;
 
     if (AEMS_ActiveSampleWsh) {
-        int az = static_cast<unsigned short>(SampleRefData->Az) + 0x10000 + Params->Az;
-        int azWrap = az;
-        if (az < 0) {
-            azWrap = az + 0xFFFF;
-        }
-        az += (azWrap >> 16) * -0x10000;
-        if (az < 0) {
-            az = 0;
-        } else if (az > 0x10000) {
-            az = 0x10000;
-        }
-        AEMS_ActiveSampleWsh->SetAz(az);
+        AEMS_ActiveSampleWsh->SetAz(
+            (static_cast<unsigned short>(GetData().Az) + 0x10000 + Params->Az) % 0x10000);
         AEMS_ActiveSampleWsh->SetVol(TempVol);
         AEMS_ActiveSampleWsh->SetPitch(TempPitch);
         AEMS_ActiveSampleWsh->SetFilter_WetFX(Params->RVerb);
         AEMS_ActiveSampleWsh->CommitMemberData();
-        refCountWsh = AEMS_ActiveSampleWsh->GetRefCount();
-        if (refCountWsh < 2) {
+        if (AEMS_ActiveSampleWsh->GetRefCount() < 2) {
             Destroy();
         }
     }
 
     if (AEMS_ActiveSampleCol) {
-        int az = static_cast<unsigned short>(SampleRefData->Az) + 0x10000 + Params->Az;
-        int azWrap = az;
-        if (az < 0) {
-            azWrap = az + 0xFFFF;
-        }
-        az += (azWrap >> 16) * -0x10000;
-        if (az < 0) {
-            az = 0;
-        } else if (az > 0x10000) {
-            az = 0x10000;
-        }
-        AEMS_ActiveSampleCol->SetAz(az);
+        AEMS_ActiveSampleCol->SetAz(
+            (static_cast<unsigned short>(GetData().Az) + 0x10000 + Params->Az) % 0x10000);
         AEMS_ActiveSampleCol->SetVol(TempVol);
         AEMS_ActiveSampleCol->SetPitch(TempPitch);
         AEMS_ActiveSampleCol->SetFilter_WetFX(Params->RVerb);
         AEMS_ActiveSampleCol->CommitMemberData();
-        refCountCol = AEMS_ActiveSampleCol->GetRefCount();
-        if (refCountCol < 2) {
+        if (AEMS_ActiveSampleCol->GetRefCount() < 2) {
             Destroy();
         }
     }
 
     if (AEMS_ActiveSampleStatic) {
-        int az = static_cast<unsigned short>(SampleRefData->Az) + 0x10000 + Params->Az;
-        int azWrap = az;
-        if (az < 0) {
-            azWrap = az + 0xFFFF;
-        }
-        az += (azWrap >> 16) * -0x10000;
-        if (az < 0) {
-            az = 0;
-        } else if (az > 0x10000) {
-            az = 0x10000;
-        }
-        AEMS_ActiveSampleStatic->SetAz(az);
+        AEMS_ActiveSampleStatic->SetAz(
+            (static_cast<unsigned short>(GetData().Az) + 0x10000 + Params->Az) % 0x10000);
         AEMS_ActiveSampleStatic->SetVol(TempVol);
         AEMS_ActiveSampleStatic->SetPitch(TempPitch);
         AEMS_ActiveSampleStatic->SetFilter_WetFX(Params->RVerb);
         AEMS_ActiveSampleStatic->CommitMemberData();
-        refCountStatic = AEMS_ActiveSampleStatic->GetRefCount();
-        if (refCountStatic < 2) {
+        if (AEMS_ActiveSampleStatic->GetRefCount() < 2) {
             Destroy();
         }
     }
