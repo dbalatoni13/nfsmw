@@ -884,46 +884,48 @@ int STREAM_queuefile(int handle, const char *fname, int offset, int endchunkid) 
     return req->id;
 }
 
-int STREAM_queuemem(int sndstreamhandle, void *address, int length, int holdtime) {
-    STREAMHEADERtag *streamRaw;
-    TAPSTRUCTtag *tapRaw;
-    int status = validatehandle(sndstreamhandle, &streamRaw, &tapRaw);
-    int requestId = 0;
-    if (status == 0) {
-        REQUESTSTRUCTtag *requestRaw = getfreerequest(streamRaw);
-        if (requestRaw) {
-            if (length == 0) {
-                int totalLength = 0;
-                STREAMCHUNKHDR *chunk = static_cast<STREAMCHUNKHDR *>(address);
-                while (ReadChunkWord(&chunk->type) != holdtime) {
-                    int chunkLength = ReadChunkWord(&chunk->size);
-                    chunk = static_cast<STREAMCHUNKHDR *>(
-                        static_cast<void *>(static_cast<char *>(static_cast<void *>(&chunk->type)) + chunkLength));
-                    totalLength += chunkLength;
-                }
-                length = totalLength + ReadChunkWord(&chunk->size);
-            }
-
-            requestRaw->parm = length;
-            requestRaw->address = static_cast<char *>(address);
-            requestRaw->endchunkid = holdtime;
-            requestRaw->type = MEMREAD;
-            queuerequest(streamRaw, requestRaw);
-
-            MUTEX_lock(&streamRaw->mutex);
-            int streamState = streamRaw->state;
-            if (streamState == STREAM_IDLE_STATE) {
-                streamRaw->state = STREAM_RUNNING_STATE;
-            }
-            MUTEX_unlock(&streamRaw->mutex);
-
-            if (streamState == STREAM_IDLE_STATE) {
-                startnextrequest(streamRaw, 0);
-            }
-            requestId = requestRaw->id;
-        }
+int STREAM_queuemem(int handle, void *address, int length, int endchunkid) {
+    STREAMHEADERtag *strm;
+    REQUESTSTRUCTtag *req;
+    TAPSTRUCTtag *tap;
+    STREAMCHUNKHDR *chunk;
+    STREAMSTATE streamstate;
+    int lockstate;
+    int chunksize;
+    if (validatehandle(handle, &strm, &tap) != 0) {
+        return 0;
     }
-    return requestId;
+    req = getfreerequest(strm);
+    if (!req) {
+        return 0;
+    }
+    if (length == 0) {
+        chunk = static_cast<STREAMCHUNKHDR *>(address);
+        while (static_cast<int>(little_get(&chunk->type, 4)) != endchunkid) {
+            chunksize = little_get(&chunk->size, 4);
+            length += chunksize;
+            chunk = reinterpret_cast<STREAMCHUNKHDR *>(reinterpret_cast<char *>(chunk) + chunksize);
+        }
+        length += little_get(&chunk->size, 4);
+    }
+
+    req->parm = length;
+    req->address = static_cast<char *>(address);
+    req->endchunkid = endchunkid;
+    req->type = MEMREAD;
+    queuerequest(strm, req);
+
+    MUTEX_lock(&strm->mutex);
+    streamstate = strm->state;
+    if (streamstate == STREAM_IDLE_STATE) {
+        strm->state = STREAM_RUNNING_STATE;
+    }
+    MUTEX_unlock(&strm->mutex);
+
+    if (streamstate == STREAM_IDLE_STATE) {
+        startnextrequest(strm, 0);
+    }
+    return req->id;
 }
 
 void STREAM_cancelrequest(int sndstreamhandle, int requesthandle) {
