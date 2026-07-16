@@ -325,70 +325,42 @@ void SFXCTL_Engine::UpdateVolume(float t) {
 }
 
 void SFXCTL_Engine::UpdateRPM(float t) {
+    float Cur_RPM;
     float VisualRPM;
     float NormalRPM;
     float PhysicsNewAudioRPM;
 
-    if (m_pShiftCtl) {
-        int shiftActive = 1;
-        if (m_pShiftCtl->eShiftState == SHFT_NONE) {
-            shiftActive = 0;
-        }
-        if (shiftActive != 0) {
-            VisualRPM = m_pShiftCtl->GetShiftingRPM();
-            goto have_cur_rpm;
-        }
+    Cur_RPM = m_pShiftCtl && m_pShiftCtl->IsActive()
+                  ? m_pShiftCtl->GetShiftingRPM()
+                  : m_pAccelTransitionCtl && m_pAccelTransitionCtl->IsActive()
+                        ? m_pAccelTransitionCtl->m_InterpEngRPM.GetValue()
+                        : GetPhysRPM();
+
+    if (bClutchStateOn && !m_pShiftCtl->IsActive()) {
+        Cur_RPM = smooth(GetEngRPM(), GetPhysRPM(), 999.0f, 60.0f);
     }
 
-    if (m_pAccelTransitionCtl) {
-        int accelActive = 1;
-        if (m_pAccelTransitionCtl->eAccelTransFxState == 0) {
-            accelActive = 0;
-        }
-        if (accelActive != 0) {
-            VisualRPM = m_pAccelTransitionCtl->m_InterpEngRPM.GetValue();
-            goto have_cur_rpm;
-        }
-    }
-
-    VisualRPM = m_pEAXCar->PhysRPM;
-
-have_cur_rpm:
-    if (bClutchStateOn) {
-        int shiftActive = 1;
-        if (m_pShiftCtl->eShiftState == SHFT_NONE) {
-            shiftActive = 0;
-        }
-        if (shiftActive == 0) {
-            VisualRPM =
-                smooth(GetEngRPM(),
-                       m_pEAXCar->PhysRPM,
-                       999.0f, 60.0f);
-        }
-    }
-
-    NormalRPM = VisualRPM + m_RPM_LFO + m_ComppressionRPM.CurValue + m_RPM_LFO;
+    VisualRPM = Cur_RPM;
+    NormalRPM = VisualRPM + m_RPM_LFO + m_ComppressionRPM.GetValue() + m_RPM_LFO;
     m_fPrevRPM = m_fEng_RPM;
-    m_fEng_RPM = NormalRPM;
+    SetEngRPM(NormalRPM);
     m_fSmoothedEng_RPM = m_fSmoothedEng_RPM * 0.95f + NormalRPM * 0.05f;
 
     if (static_cast<unsigned int>(m_pShiftCtl->eShiftState - SHFT_UP_DISENGAGE) < 2u) {
         VisualRPM = m_pShiftCtl->m_VisualRPM.GetValue();
     } else if (m_pAccelTransitionCtl->eAccelTransFxState == 1) {
-        VisualRPM = m_pEAXCar->PhysRPM;
+        VisualRPM = GetPhysRPM();
     } else {
         if (bIsRedlining) {
-            float target = 200.0f;
+            float Target = 200.0f;
             if (bRedliningBounce) {
-                float offset = smooth(RedlineingVisualOffset, target, 50.0f);
-                RedlineingVisualOffset = offset;
-                if (offset == target) {
+                RedlineingVisualOffset = smooth(RedlineingVisualOffset, Target, 50.0f);
+                if (RedlineingVisualOffset == Target) {
                     bRedliningBounce = false;
                 }
             } else {
-                float offset = smooth(RedlineingVisualOffset, 0.0f, 50.0f);
-                RedlineingVisualOffset = offset;
-                if (offset == 0.0f) {
+                RedlineingVisualOffset = smooth(RedlineingVisualOffset, 0.0f, 50.0f);
+                if (RedlineingVisualOffset == 0.0f) {
                     bRedliningBounce = true;
                 }
             }
@@ -399,23 +371,22 @@ have_cur_rpm:
     VisRpmAvg.Record(VisualRPM);
     VisRpmAvg.Recalculate();
 
-    PhysicsNewAudioRPM = (VisRpmAvg.GetValue() - 1000.0f) * 0.00011111111f;
-    EAX_CarState *car = m_pStateBase->GetPhysCar();
-    if (car->mContext == 0) {
+    PhysicsNewAudioRPM = (static_cast<const Average &>(VisRpmAvg).GetValue() - 1000.0f) * 0.00011111111f;
+    if (GetPhysCar()->IsLocalPlayerCar()) {
         if (bPreRace != 0) {
-            PhysicsNewAudioRPM = car->mVisualRPM;
+            PhysicsNewAudioRPM = GetPhysCar()->GetRPMPct();
         } else if (tMergeWithPhysicsOffStart > 0.0f) {
             tMergeWithPhysicsOffStart -= t;
             if (tMergeWithPhysicsOffStart < 0.0f) {
                 tMergeWithPhysicsOffStart = 0.0f;
             }
             float PercentInterp = (0.7f - tMergeWithPhysicsOffStart) * 1.4285715f;
-            PhysicsNewAudioRPM =
-                (PhysicsNewAudioRPM - car->mVisualRPM) * PercentInterp + car->mVisualRPM;
+            PhysicsNewAudioRPM = (PhysicsNewAudioRPM - GetPhysCar()->GetRPMPct()) * PercentInterp +
+                                 GetPhysCar()->GetRPMPct();
         }
     }
 
-    m_pEAXCar->m_fAudioRPM = PhysicsNewAudioRPM;
+    m_pEAXCar->SetFinalAudioRPM(PhysicsNewAudioRPM);
 }
 
 void SFXCTL_Engine::UpdateTorque(float t) {

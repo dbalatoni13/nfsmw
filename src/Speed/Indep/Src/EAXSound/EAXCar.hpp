@@ -80,6 +80,7 @@ struct EAXCar : public CSTATE_Base {
     void SetCurGear(Sound::Gear _CurGear) { CurGear = _CurGear; }
     void SetThrottle(float _fTrottle) { fTrottle = _fTrottle; }
     float GetFinalAudioRPM() { return m_fAudioRPM; }
+    void SetFinalAudioRPM(float _RPM) { m_fAudioRPM = _RPM; }
     bool IsHoodCameraOn();
     bool IsBumperCameraOn();
 
