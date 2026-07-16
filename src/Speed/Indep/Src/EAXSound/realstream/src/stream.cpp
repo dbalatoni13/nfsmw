@@ -111,6 +111,13 @@ inline unsigned int little_get(const void *src, int n) {
            static_cast<const unsigned char *>(src)[0];
 }
 
+inline void little_put(void *dst, unsigned int data, int n) {
+    static_cast<unsigned char *>(dst)[0] = static_cast<unsigned char>(data);
+    static_cast<unsigned char *>(dst)[1] = static_cast<unsigned char>(data >> 8);
+    static_cast<unsigned char *>(dst)[2] = static_cast<unsigned char>(data >> 16);
+    static_cast<unsigned char *>(dst)[3] = static_cast<unsigned char>(data >> 24);
+}
+
 inline void WriteChunkWord(int *field, int value) {
     unsigned char *bytes = static_cast<unsigned char *>(static_cast<void *>(field));
     bytes[0] = static_cast<unsigned char>(value);
@@ -1136,34 +1143,30 @@ STREAMCHUNKHDR *STREAM_get(int sndstreamhandle) {
     return chunk;
 }
 
-void STREAM_release(int sndstreamhandle, STREAMCHUNKHDR *chunk) {
-    STREAMHEADERtag *streamRaw;
-    TAPSTRUCTtag *tapRaw;
-    int status = validatehandle(sndstreamhandle, &streamRaw, &tapRaw);
-    if (status != 0) {
-        return;
-    }
+void STREAM_release(int handle, STREAMCHUNKHDR *chunk) {
+    STREAMHEADERtag *strm;
+    TAPSTRUCTtag *tap;
+    STREAMSTATE streamstate;
+    int lockstate;
+    if (validatehandle(handle, &strm, &tap) == 0 &&
+        chunk >= reinterpret_cast<STREAMCHUNKHDR *>(strm->bufferstart) &&
+        chunk <= reinterpret_cast<STREAMCHUNKHDR *>(strm->bufferend - 8) &&
+        static_cast<int>(little_get(&chunk->type, 4)) != -2) {
+        little_put(&chunk->type, -2, 4);
+        decbufferusage(strm, little_get(&chunk->size, 4));
+        MUTEX_lock(&strm->mutex);
+        streamstate = strm->state;
+        if (streamstate == STREAM_STOPPED_STATE) {
+            strm->state = STREAM_RUNNING_STATE;
+        }
+        MUTEX_unlock(&strm->mutex);
 
-    STREAMCHUNKHDR *bufferStart = reinterpret_cast<STREAMCHUNKHDR *>(streamRaw->bufferstart);
-    STREAMCHUNKHDR *bufferEnd = reinterpret_cast<STREAMCHUNKHDR *>(streamRaw->bufferend - 8);
-    if (!(bufferStart <= chunk && chunk <= bufferEnd && ReadChunkWord(&chunk->type) != -2)) {
-        return;
-    }
-
-    WriteChunkWord(&chunk->type, -2);
-    decbufferusage(streamRaw, ReadChunkWord(&chunk->size));
-    MUTEX_lock(&streamRaw->mutex);
-    int streamState = streamRaw->state;
-    if (streamState == STREAM_STOPPED_STATE) {
-        streamRaw->state = STREAM_RUNNING_STATE;
-    }
-    MUTEX_unlock(&streamRaw->mutex);
-
-    if (streamState == STREAM_STOPPED_STATE) {
-        if (streamRaw->greedystate == 0) {
-            restartstream(streamRaw, streamRaw->prioritylow);
-        } else {
-            restartstream(streamRaw, streamRaw->priorityhigh);
+        if (streamstate == STREAM_STOPPED_STATE) {
+            if (strm->greedystate != 0) {
+                restartstream(strm, strm->priorityhigh);
+            } else {
+                restartstream(strm, strm->prioritylow);
+            }
         }
     }
 }
