@@ -845,43 +845,43 @@ int STREAM_taphandle(int handle, int tapnum) {
     return 0;
 }
 
-int STREAM_queuefile(int sndstreamhandle, const char *filename, int offset, int holdtime) {
-    STREAMHEADERtag *streamRaw;
-    TAPSTRUCTtag *tapRaw;
-    int status = validatehandle(sndstreamhandle, &streamRaw, &tapRaw);
-    int requestId = 0;
-    if (status != 0) {
+int STREAM_queuefile(int handle, const char *fname, int offset, int endchunkid) {
+    STREAMHEADERtag *strm;
+    REQUESTSTRUCTtag *req;
+    TAPSTRUCTtag *tap;
+    STREAMSTATE streamstate;
+    int lockstate;
+    if (validatehandle(handle, &strm, &tap) != 0) {
         return 0;
     }
 
-    REQUESTSTRUCTtag *requestRaw = getfreerequest(streamRaw);
-    if (!requestRaw) {
+    req = getfreerequest(strm);
+    if (!req) {
         return 0;
     }
 
-    requestRaw->type = FILEREAD;
-    strncpy(requestRaw->fname, filename, 0xFE);
-    requestRaw->parm = offset;
-    requestRaw->endchunkid = holdtime;
-    queuerequest(streamRaw, requestRaw);
+    req->type = FILEREAD;
+    strncpy(req->fname, fname, 0xFE);
+    req->parm = offset;
+    req->endchunkid = endchunkid;
+    queuerequest(strm, req);
 
-    MUTEX_lock(&streamRaw->mutex);
-    bool wasIdle = streamRaw->state == STREAM_IDLE_STATE;
-    if (wasIdle) {
-        streamRaw->state = STREAM_RUNNING_STATE;
+    MUTEX_lock(&strm->mutex);
+    streamstate = strm->state;
+    if (streamstate == STREAM_IDLE_STATE) {
+        strm->state = STREAM_RUNNING_STATE;
     }
-    MUTEX_unlock(&streamRaw->mutex);
+    MUTEX_unlock(&strm->mutex);
 
-    if (wasIdle) {
-        if (streamRaw->greedystate == 0) {
-            startnextrequest(streamRaw, streamRaw->prioritylow);
+    if (streamstate == STREAM_IDLE_STATE) {
+        if (strm->greedystate != 0) {
+            startnextrequest(strm, strm->priorityhigh);
         } else {
-            startnextrequest(streamRaw, streamRaw->priorityhigh);
+            startnextrequest(strm, strm->prioritylow);
         }
     }
 
-    requestId = requestRaw->id;
-    return requestId;
+    return req->id;
 }
 
 int STREAM_queuemem(int sndstreamhandle, void *address, int length, int holdtime) {
