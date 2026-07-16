@@ -10,19 +10,25 @@ EAXS_StreamManager *gpEAXS_StrmMgr = nullptr;
 
 bool IsWorldDataStreaming(unsigned int strmhandle) {
     bool bStreamBlock = false;
-    if (strmhandle != 0) {
-        unsigned int poolStart = reinterpret_cast<unsigned int>(gAudioMemoryManager.GetMemPoolMem());
-        unsigned int poolEnd = poolStart + static_cast<unsigned int>(gAudioMemoryManager.GetMemoryPoolSize());
-        if (strmhandle <= poolStart || strmhandle >= poolEnd) {
-            return bStreamBlock;
-        }
-    }
-    if (TheCarLoader.IsLoadingInProgress() != 0) {
-        bStreamBlock = true;
-    } else {
-        bool isStreaming = TheTrackStreamer.GetLoadingPhase() != 0;
-        if (isStreaming) {
+    if (strmhandle == 0) {
+        if (TheCarLoader.IsLoadingInProgress() != 0) {
             bStreamBlock = true;
+        } else if (TheTrackStreamer.IsLoadingInProgressNonRepeatable()) {
+            bStreamBlock = true;
+        }
+    } else {
+        {
+            unsigned int nStartAudioMemPool =
+                reinterpret_cast<unsigned int>(gAudioMemoryManager.GetMemoryPoolStart());
+            unsigned int nEndAudioMemPool =
+                nStartAudioMemPool + static_cast<unsigned int>(gAudioMemoryManager.GetMemoryPoolSize());
+            if (strmhandle > nStartAudioMemPool && strmhandle < nEndAudioMemPool) {
+                if (TheCarLoader.IsLoadingInProgress() != 0) {
+                    bStreamBlock = true;
+                } else if (TheTrackStreamer.IsLoadingInProgressNonRepeatable()) {
+                    bStreamBlock = true;
+                }
+            }
         }
     }
     return bStreamBlock;

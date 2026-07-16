@@ -163,6 +163,7 @@ class TrackStreamer {
     }
 
     int GetLoadingPhase() const { return static_cast<int>(LoadingPhase); }
+    bool IsLoadingInProgressNonRepeatable() { return LoadingPhase != LOADING_IDLE; }
     float GetLoadingBacklog() const { return LoadingBacklog; }
 
   private:
