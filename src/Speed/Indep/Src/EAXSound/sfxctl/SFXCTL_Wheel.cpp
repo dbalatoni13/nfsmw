@@ -181,16 +181,18 @@ void SFXCTL_Wheel::UpdateTireParams() {
 
 bVector3 *SFXCTL_Wheel::GetWheelPos(int wheelID, int numtires) {
     switch (numtires) {
+    case 1:
+        return GetPhysCar()->GetPosition();
     case 2:
         if (wheelID == 0) {
             return &v3NewPosLeft;
         }
         return &v3NewPosRight;
-    case 1:
-        return GetPhysCar()->GetPosition();
+    case 3:
     default:
         return GetPhysCar()->GetPosition();
     }
+    return GetPhysCar()->GetPosition();
 }
 
 void SFXCTL_Wheel::GenerateTerrainTypes() {
