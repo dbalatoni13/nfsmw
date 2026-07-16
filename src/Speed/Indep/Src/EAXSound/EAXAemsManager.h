@@ -192,8 +192,13 @@ struct stSndAssetQueue {
     EAX_CarState *pCar;       // offset 0x24, size 0x4
 
     bool operator==(const stSndAssetQueue &rhs) const {
-        return pThis == rhs.pThis && Asset.FileName.GetHash32() == rhs.Asset.FileName.GetHash32() &&
-               Asset.FileName.GetString() == rhs.Asset.FileName.GetString();
+        if (pThis != rhs.pThis) {
+            return false;
+        }
+        if (Asset.FileName != rhs.Asset.FileName) {
+            return false;
+        }
+        return true;
     }
 };
 

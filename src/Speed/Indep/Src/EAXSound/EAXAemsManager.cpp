@@ -477,9 +477,9 @@ void EAXAemsManager::SetupNextLoad() {
                 ;
             }
 
-            deleteCount--;
         RemoveQueuedLoads:
             do {
+                deleteCount--;
                 i = waitForResolve->begin();
                 while (i != waitForResolve->end()) {
                     stSndAssetQueue currequst = *i;
@@ -493,7 +493,7 @@ void EAXAemsManager::SetupNextLoad() {
 
             ContinueDeleting:
                 ;
-            } while (deleteCount-- > 0);
+            } while (deleteCount > 0);
 
             RemoveBankListing(m_nCurLoadedBankIndex);
             SetupNextLoad();
