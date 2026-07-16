@@ -212,19 +212,28 @@ TrackPathZone *SFXCTL_Tunnel::GetTunnelType(bVector3 &pos, eTrackPathZoneType zo
 }
 
 void SFXCTL_Tunnel::UpdateParams(float t) {
+    int ninst;
+    int nother;
+    EAXCar *peaxcar_a;
+
     SFXCTL::UpdateParams(t);
 
-    g_pEAXSound->GetPlayerTunerCar(m_pStateBase->m_InstNum);
+    ninst = GetStateBase()->m_InstNum;
+    nother = static_cast<int>(GetPhysCar()->GetContext());
+    peaxcar_a = g_pEAXSound->GetPlayerTunerCar(ninst);
 
     UpdateIsInTunnel(t);
     UpdateDriveBySnds(t);
     UpdateCityVerb(t);
     UpdateReflectionParams(t);
 
-    int context = static_cast<int>(m_pStateBase->GetPhysCar()->mContext);
-    if (context == 1 || context == 2) {
-        UpdateOcclusion(t);
+    nother = static_cast<int>(GetPhysCar()->GetContext());
+    if (nother != kRaceContext_Online) {
+        if (nother != kRaceContext_Career) {
+            return;
+        }
     }
+    UpdateOcclusion(t);
 }
 
 void SFXCTL_Tunnel::UpdateIsInTunnel(float t) {
