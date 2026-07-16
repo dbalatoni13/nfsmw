@@ -104,6 +104,13 @@ inline int ReadChunkWord(const int *field) {
            static_cast<int>(bytes[0]);
 }
 
+inline unsigned int little_get(const void *src, int n) {
+    return (static_cast<const unsigned char *>(src)[3] << 24) |
+           (static_cast<const unsigned char *>(src)[2] << 16) |
+           (static_cast<const unsigned char *>(src)[1] << 8) |
+           static_cast<const unsigned char *>(src)[0];
+}
+
 inline void WriteChunkWord(int *field, int value) {
     unsigned char *bytes = static_cast<unsigned char *>(static_cast<void *>(field));
     bytes[0] = static_cast<unsigned char>(value);
@@ -292,20 +299,16 @@ static void freerequest(STREAMHEADERtag *strm, REQUESTSTRUCTtag *req) {
     strm->freereq = req;
 }
 
-int filterchunk(STREAMHEADERtag *stream, STREAMCHUNKHDR *chunk) {
-    int chunktype = ReadChunkWord(&chunk->type);
-    int i = 0;
+static int filterchunk(STREAMHEADERtag *strm, STREAMCHUNKHDR *chunk) {
+    FILTERSTRUCTtag *filt;
+    int chunktype = little_get(&chunk->type, 4);
+    int i;
 
-    if (i < stream->filters) {
-        FILTERSTRUCTtag *filt = stream->filter;
-        int filters = stream->filters;
-
-        do {
-            if ((chunktype & filt[i].mask) == filt[i].value) {
-                return filt[i].tapnum;
-            }
-            i++;
-        } while (i < filters);
+    for (i = 0; i < strm->filters; i++) {
+        filt = strm->filter + i;
+        if ((chunktype & filt->mask) == filt->value) {
+            return filt->tapnum;
+        }
     }
     return -2;
 }
