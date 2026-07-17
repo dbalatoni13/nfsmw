@@ -5,10 +5,10 @@
 void EAXSound::START_321Countdown() {
     if (IsSoundEnabled && IsAudioStreamingEnabled) {
         SFX_Base *obj = GetSFXBase_Object(0x40010010);
-        if (obj) {
+        if (obj != nullptr) {
         }
         SFX_Base *nis = GetSFXBase_Object(0x40010050);
-        if (nis) {
+        if (nis != nullptr) {
             // nis->StartNIS();
         }
     }
@@ -42,8 +42,9 @@ EAXSound::EAXSound() {
     bPlayCameraSnapShot = false;
     mmsgMRestartRace = nullptr;
     m_bPause_MainFNG = false;
-    mData.fEventID = 0xF2D10992; // TODO magic
     mEventID = 0;
+    mData.fEventID = 0xF2D10992; // TODO magic
+    int nloop = 0;
 }
 
 EAXSound::~EAXSound() {

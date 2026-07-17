@@ -1,12 +1,9 @@
 #ifndef BWARE_BMEMORY_H
 #define BWARE_BMEMORY_H
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
 #include "bDebug.hpp"
 #include "bList.hpp"
+#include <Allocator/iallocator.h>
 
 // TODO this doesn't exist
 
@@ -88,34 +85,6 @@ struct bVirtualMemoryManager {
     void Quit();
     void Alloc();
 };
-
-// TODO move
-namespace EA {
-struct TagValuePair {
-    // total size: 0xC
-    unsigned int mTag; // offset 0x0, size 0x4
-    union {
-        int mInt;              // offset 0x0, size 0x4
-        size_t mSize;          // offset 0x0, size 0x4
-        float mFloat;          // offset 0x0, size 0x4
-        const void *mPointer;  // offset 0x0, size 0x4
-    } mValue;                  // offset 0x4, size 0x4
-    const TagValuePair *mNext; // offset 0x8, size 0x4
-};
-
-namespace Allocator {
-class IAllocator {
-  public:
-    virtual void *Alloc(size_t size, const TagValuePair &flags) = 0;
-    virtual void Free(void *pBlock, size_t size) = 0;
-    virtual int AddRef() = 0;
-    virtual int Release() = 0;
-
-  protected:
-    virtual ~IAllocator() {}
-};
-} // namespace Allocator
-}; // namespace EA
 
 class bMemoryAllocator : public EA::Allocator::IAllocator {
     // total size: 0xC

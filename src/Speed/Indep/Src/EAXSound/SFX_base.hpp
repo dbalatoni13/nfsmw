@@ -1,14 +1,12 @@
-#ifndef EAXSOUND_SFX_BASE_H
-#define EAXSOUND_SFX_BASE_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef SFX_BASE_H
+#define SFX_BASE_H
 
 #include "Speed/Indep/Src/EAXSound/SndBase.hpp"
 
-struct SFX_Base : public SndBase {
-    // total size: 0x24
+// total size: 0x24
+class SFX_Base : public SndBase {
+  public:
+    SFX_Base() {}
 };
 
 #endif

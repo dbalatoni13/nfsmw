@@ -317,6 +317,8 @@ if config.platform == Platform.GC_WII:
         # "-fno-ident",
         "-DLUA_NUMBER=float",
         "-DDISABLE_RAIN",
+        "-I src/Speed/Indep/Libs/csis/dev/include",
+        "-I src/Speed/Indep/Libs/allocator/1.5.0",
     ]
 
     config.extra_clang_flags = [
@@ -382,7 +384,7 @@ elif config.platform == Platform.X360:
         # "/Z7",  # /Zi enables debug info (pdb), /Zd for line numbers only (pdb), /Z7 generates debug info per obj file
         "/EHsc",  # enable exception handling (and extern C notthrow?)
         "/I src/Packages/xenonsdk/2.0.2135.2/installed/include/xbox",
-        "-I src/Packages/eathread/1.1.0/include",
+        "/I src/Packages/eathread/1.1.0/include",
         "/I src/Packages",
         "/I src",
         "/DEA_PLATFORM_XENON",
@@ -403,6 +405,8 @@ elif config.platform == Platform.X360:
         *cflags_base_prodg,
         "/DLUA_NUMBER=float",
         "/DMILESTONE_OPT",
+        "/I src/Speed/Indep/Libs/csis/dev/include",
+        "/I src/Speed/Indep/Libs/allocator/1.5.0",
     ]
 
     config.extra_clang_flags = [
@@ -481,6 +485,8 @@ elif config.platform == Platform.PS2:
         # "-fcaller-saves",
         "-DLUA_NUMBER=float",
         "-DMILESTONE_OPT",
+        "-I src/Speed/Indep/Libs/csis/dev/include",
+        "-I src/Speed/Indep/Libs/allocator/1.5.0",
     ]
 
     config.extra_clang_flags = [
@@ -734,34 +740,44 @@ config.libs = [
         "progress_category": "libs",  # str | List[str]
         "objects": [
             Object(
-                NonMatching, "Speed/Indep/Libs/realcore/6.24.00/source/input/cmn/device.cpp"
+                NonMatching,
+                "Speed/Indep/Libs/realcore/6.24.00/source/input/cmn/device.cpp",
             ),
             Object(
-                NonMatching, "Speed/Indep/Libs/realcore/6.24.00/source/file/cmn/filesys.cpp"
+                NonMatching,
+                "Speed/Indep/Libs/realcore/6.24.00/source/file/cmn/filesys.cpp",
             ),
             Object(
-                NonMatching, "Speed/Indep/Libs/realcore/6.24.00/source/file/cmn/filesysopts.cpp"
+                NonMatching,
+                "Speed/Indep/Libs/realcore/6.24.00/source/file/cmn/filesysopts.cpp",
             ),
             Object(
-                NonMatching, "Speed/Indep/Libs/realcore/6.24.00/source/file/cmn/syncfile.cpp"
+                NonMatching,
+                "Speed/Indep/Libs/realcore/6.24.00/source/file/cmn/syncfile.cpp",
             ),
             Object(
-                NonMatching, "Speed/Indep/Libs/realcore/6.24.00/source/file/cmn/hlafile.cpp"
+                NonMatching,
+                "Speed/Indep/Libs/realcore/6.24.00/source/file/cmn/hlafile.cpp",
             ),
             Object(
-                NonMatching, "Speed/Indep/Libs/realcore/6.24.00/source/file/cmn/hlsfile.cpp"
+                NonMatching,
+                "Speed/Indep/Libs/realcore/6.24.00/source/file/cmn/hlsfile.cpp",
             ),
             Object(
-                NonMatching, "Speed/Indep/Libs/realcore/6.24.00/source/system/cmn/timer.cpp"
+                NonMatching,
+                "Speed/Indep/Libs/realcore/6.24.00/source/system/cmn/timer.cpp",
             ),
             Object(
-                NonMatching, "Speed/Indep/Libs/realcore/6.24.00/source/system/cmn/systask.cpp"
+                NonMatching,
+                "Speed/Indep/Libs/realcore/6.24.00/source/system/cmn/systask.cpp",
             ),
             Object(
-                NonMatching, "Speed/Indep/Libs/realcore/6.24.00/source/system/gc/threads.cpp"
+                NonMatching,
+                "Speed/Indep/Libs/realcore/6.24.00/source/system/gc/threads.cpp",
             ),
             Object(
-                NonMatching, "Speed/Indep/Libs/realcore/6.24.00/source/system/gc/signals.cpp"
+                NonMatching,
+                "Speed/Indep/Libs/realcore/6.24.00/source/system/gc/signals.cpp",
             ),
             Object(
                 NonMatching,
@@ -772,15 +788,19 @@ config.libs = [
                 "Speed/Indep/Libs/realcore/6.24.00/source/system/debug/cmn/abortmsg.cpp",
             ),
             Object(
-                NonMatching, "Speed/Indep/Libs/realcore/6.24.00/source/std/cmn/memclear.cpp"
+                NonMatching,
+                "Speed/Indep/Libs/realcore/6.24.00/source/std/cmn/memclear.cpp",
             ),
-            Object(NonMatching, "Speed/Indep/Libs/realcore/6.24.00/source/std/cmn/exit.cpp"),
+            Object(
+                NonMatching, "Speed/Indep/Libs/realcore/6.24.00/source/std/cmn/exit.cpp"
+            ),
             Object(
                 NonMatching,
                 "Speed/Indep/Libs/realcore/6.24.00/source/system/gc/timerthread.cpp",
             ),
             Object(
-                NonMatching, "Speed/Indep/Libs/realcore/6.24.00/source/system/gc/memfill.cpp"
+                NonMatching,
+                "Speed/Indep/Libs/realcore/6.24.00/source/system/gc/memfill.cpp",
             ),
         ],
     },
