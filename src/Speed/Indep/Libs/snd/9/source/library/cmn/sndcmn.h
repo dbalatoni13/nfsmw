@@ -415,10 +415,38 @@ typedef struct SNDSTREAMSTATE {
 
 extern SNDGLOBALSTATE sndgs; // Decl: 861
 
+#include "sndenum.h"
+
 namespace Snd {
 
 extern void (*gMutexLockFn)();
 extern void (*gMutexUnlockFn)();
+
+// TODO: move?
+class Hal {
+public:
+    static int SetPresetFx(void *pData, FxPreset fxPreset);
+
+    static int SetPresetFxEx(void *pData, void *pFxPresetData);
+
+    static unsigned int SetCustomFx(void *pData, void *pFxDefinition);
+
+    static unsigned int Reset(void *pData);
+
+    static int SetFxOutputLevel(void *pData, Channel outputChannel);
+
+    static void SetVol(int voice);
+
+    static void SetDry(int voice);
+
+    static void SetPan(int voice);
+
+private:
+    static void SetVolInternal(int voice); // guess
+};
+
+// TODO: move?
+extern FoldDownTarget gFoldDownTarget;
 
 }; // namespace Snd
 
@@ -438,6 +466,13 @@ inline int SNDI_ftoiround(float val) {
 // 1202
 inline int SNDI_ftoifast(float val) {
     return SNDI_ftoiround(val * 127.0f);
+}
+
+// 1610
+static inline int SNDI_clipint32(int val, int minval, int maxval) {
+    if (val < minval) return minval;
+    if (val > maxval) return maxval;
+    return val;
 }
 
 // sst.c
