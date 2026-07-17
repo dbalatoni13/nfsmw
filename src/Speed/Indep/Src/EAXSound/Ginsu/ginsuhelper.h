@@ -1,10 +1,9 @@
-#ifndef EAXSOUND_GINSU_GINSUHELPER_H
-#define EAXSOUND_GINSU_GINSUHELPER_H
+//
+//
+#ifndef GINSUHELPER_H
+#define GINSUHELPER_H
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
-
+//
+#define GINSU_USE_BMATH
 
 #endif

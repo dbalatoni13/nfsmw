@@ -1,12 +1,11 @@
-#ifndef EAXSOUND_EAXSOUND_H
-#define EAXSOUND_EAXSOUND_H
+#ifndef EAX_SOUND_HPP
+#define EAX_SOUND_HPP // Decl: 37
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
+#include "Speed/Indep/Src/EAXSound/AemsDef.hpp"
 #include "Speed/Indep/Src/EAXSound/AudioMemBase.hpp"
+#include "Speed/Indep/Src/EAXSound/EAXAudioParams.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSoundEnums.hpp"
+#include "Speed/Indep/Src/EAXSound/SoundPause.h"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
 #include "Speed/Indep/Src/EAXSound/SFX_base.hpp"
 #include "Speed/Indep/Src/EAXSound/STICH_Playback.h"
@@ -14,87 +13,19 @@
 #include "Speed/Indep/Src/Main/Event.h"
 #include "Speed/Indep/Src/Misc/Hermes.h"
 
-// yes that is the correct name for the file
+#define MAX_EAXMODS 32; // Decl: 39
 
-enum eSNDPAUSE_REASON {
-    eSNDPAUSE_SMS_MESSAGE = 11,
-    eSNDPAUSE_PHOTOFINISH = 10,
-    eSNDPAUSE_NISON = 9,
-    eSNDPAUSE_QUITTOFE = 8,
-    eSNDPAUSE_STARTNEWGAME = 7,
-    eSNDPAUSE_MOVIE = 6,
-    eSNDPAUSE_ONLINE = 5,
-    eSNDPAUSE_MEMCARD = 4,
-    eSNDPAUSE_SIMSTATE_ACTIVE = 3,
-    eSNDPAUSE_SIMSTATE_INIT = 2,
-    eSNDPAUSE_SIMSTATE_IDLE = 1,
-    eSNDPAUSE_PAUSEMENU = 0,
-    ePAUSE_ERROR = -1,
-};
+#define MAX_NUM_DEBUG_BANKS 15 // Decl: 41
 
-enum eEAXGameState {
-    EAXGS_EXIT_FE = 11,
-    EAXGS_EXIT_GAME = 10,
-    EAXGS_PAUSE_FE_MUSIC = 9,
-    EAXGS_PLAY_FE_MUSIC = 8,
-    EAXGS_RETURNTOGAME = 7,
-    EAXGS_RESUME = 6,
-    EAXGS_PAUSE = 5,
-    EAXGS_ENTERINGPAUSE = 4,
-    EAXGS_INGAME = 3,
-    EAXGS_ENTERINGGAME = 2,
-    EAXGS_FRONTEND = 1,
-    EAXGS_INITIALIZING = 0,
-};
+#define SND_HIGH_DETAIL 44100 // Decl: 43
 
-enum eSndGameMode {
-    SND_PURSUITBREAKER = 10,
-    SND_LOADING_SCREEN = 9,
-    SND_CARSHOW = 8,
-    SND_FREEROAM = 7,
-    SND_CHALLENGERACE = 6,
-    SND_STREETRACE = 5,
-    SND_SMOKESHOW = 4,
-    SND_DRIFTRACE = 3,
-    SND_DRAGRACE = 2,
-    SND_FRONTEND = 1,
-    SND_MODE_NONE = 0,
-};
-enum eAemsStreamBanks {
-    MAX_AEMSSTREAMBANKS = 10,
-    EAX_AEMS_SPEECH_JAPANESE = 9,
-    EAX_AEMS_SPEECH_SPANISH = 8,
-    EAX_AEMS_SPEECH_ITALIAN = 7,
-    EAX_AEMS_SPEECH_GERMAN = 6,
-    EAX_AEMS_SPEECH_FRENCH = 5,
-    EAX_AEMS_SPEECH_ENGLISH = 4,
-    EAX_AEMS_SPECIAL_CASE = 3,
-    EAX_AEMS_AMB_MONOPOINT = 2,
-    EAX_AEMS_AMB_STEREO = 1,
-    EAX_AEMS_MUSIC_UG0_S = 0,
-};
+#define SND_LOW_DETAIL 22050   // Decl: 44
+#define MAX_EAX_AITUNERCARS 10 // Decl: 46
 
-enum eSNDCTLSTATE {
-    MAX_SNDCTL_STATES = 18,
-    SNDSTATE_SYSTEM_HUD = 17,
-    SNDSTATE_ERROR = 16,
-    SNDSTATE_FADEOUT = 15,
-    SNDSTATE_MINILOAD = 14,
-    SNDSTATE_GAMESTARTRACE = 13,
-    SNDSTATE_STOP_MUSIC = 12,
-    SNDSTATE_FMV = 11,
-    SNDSTATE_NIS_ARREST = 10,
-    SNDSTATE_NIS_BLK = 9,
-    SNDSTATE_NIS_321 = 8,
-    SNDSTATE_NIS_INTRO = 7,
-    SNDSTATE_NIS_STORY = 6,
-    SNDSTATE_FE_SMS_MESSAGE = 5,
-    SNDSTATE_FE_UPSCREEN = 4,
-    SNDSTATE_FE = 3,
-    SNDSTATE_INGAME = 2,
-    SNDSTATE_PAUSE = 1,
-    SNDSTATE_OFF = 0,
-};
+#define SNDPRINTF_BUFFER_SIZE 512 // Decl: 467
+#define SNDPRINTF_CHANNEL 9       // Decl: 468
+#define NO_SNDPRINTF              // Decl: 471
+#define SndPrintf if (0)          // Decl: 478
 
 // total size: 0xBC
 class EAXSound : public AudioMemBase {
@@ -143,7 +74,7 @@ class EAXSound : public AudioMemBase {
     bool m_X360_UI_Override;                     // offset 0x58, size 0x1
     char *m_pcsCsisName;                         // offset 0x5C, size 0x4
     struct stSongInfo *m_pNewSongInfoSt;         // offset 0x60, size 0x4
-    enum eEAXGameState m_streamManagerState;     // offset 0x64, size 0x4
+    eEAXGameState m_streamManagerState;          // offset 0x64, size 0x4
     char *m_pEAX_SysHeap;                        // offset 0x68, size 0x4
     struct EAXFrontEnd *m_pFESnd;                // offset 0x6C, size 0x4
     struct EAXCommon *m_pCmnSnd;                 // offset 0x70, size 0x4

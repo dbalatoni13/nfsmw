@@ -1,15 +1,6 @@
 #include "./STATE_Base.hpp"
 
-CSTATE_Base::StateInfo *CSTATE_Base::GetStateInfo(void) const {
-    return &s_StateInfo;
-}
-char *CSTATE_Base::GetStateName(void) const {
-    return s_StateInfo.stateName;
-}
-
-CSTATE_Base *CSTATE_Base::CreateState(unsigned int allocator) {
-    return new CSTATE_Base;
-}
+ROOTSTATETYPE_IMPLEMENT(0, CSTATE_Base);
 
 CSTATE_Base::CSTATE_Base() {
     m_pNextState = nullptr;
@@ -43,9 +34,9 @@ void CSTATE_Base::DisconnectMixMap() {}
 void CSTATE_Base::SafeConnectOrphanObjects() {}
 
 void CSTATE_Base::CreateSFXObjs() {
-    for (int i = 0; i < 32; i++) {
-        if ((m_SFXFlags >> i) & 1) {
-            NewSFXObj(i);
+    for (int n = 0; n < 32; n++) {
+        if ((m_SFXFlags >> n) & 1) {
+            NewSFXObj(n);
         }
     }
 }

@@ -1,30 +1,25 @@
-#ifndef EAXSOUND_SFXCTL_SFXCTL_H
-#define EAXSOUND_SFXCTL_SFXCTL_H
+//
+#ifndef SFXCTL_HPP
+#define SFXCTL_HPP
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
+#include "Speed/Indep/Src/EAXSound/AemsDef.hpp"
 #include "Speed/Indep/Src/EAXSound/SndBase.hpp"
 
-struct SFXCTL : public SndBase {
-  protected:
-    static TypeInfo s_TypeInfo;
+#define MAX_NUM_SFX_CTLS 64 // Decl: 8
+
+class SFXCTL : public SndBase {
+    DECLARE_TYPEINFO();
 
   public:
-    /* 0x24 */ eAemsUpgradeLevel m_UGL;
-
     SFXCTL();
     ~SFXCTL() override;
-    TypeInfo *GetTypeInfo() override;
-    char *GetTypeName() const override;
     void InitSFX() override;
-    void UpdateParams() override;
+    void UpdateParams(float t) override;
 
-    float GetPhysTRQ();
-    float GetPhysRPM();
+    float GetPhysTRQ() {}
+    float GetPhysRPM() {}
 
-    static TypeInfo *GetStaticTypeInfo(void);
+    eAemsUpgradeLevel m_UGL; // Decl: 26
 };
 
 #endif
