@@ -8,21 +8,20 @@
 
 inline int IntRound(float x) {
     if (0.0f < x) {
-        x += 0.5f;
+        return static_cast<int>(x + 0.5f);
     } else {
-        x -= 0.5f;
+        return static_cast<int>(x - 0.5f);
     }
-    return static_cast<int>(x);
 }
 
 inline int IntCeil(float x) {
     if (0.0f < x) {
-        int i = static_cast<int>(x) + 1;
-        if (static_cast<float>(i - 1) == x) {
-            i--;
+        int i = static_cast<int>(x);
+        if (static_cast<float>(i) == x) {
+            return i;
+        } else {
+            return i + 1;
         }
-
-        return i;
     }
 
     return static_cast<int>(x);
@@ -32,11 +31,11 @@ inline int IntFloor(float x) {
     if (0.0f <= x) {
         return static_cast<int>(x);
     } else {
-        int i = static_cast<int>(x) - 1;
-        if (static_cast<float>(i + 1) == x) {
-            return i + 1;
-        } else {
+        int i = static_cast<int>(x);
+        if (static_cast<float>(i) == x) {
             return i;
+        } else {
+            return i - 1;
         }
     }
 }

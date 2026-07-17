@@ -46,13 +46,14 @@ static float xatablef[16][16] = {
 
 static inline short convertsample(float x) {
     int val = static_cast<int>(x);
-    if (val < 0x8000) {
-        if (val < -0x8000) {
-            val = -0x8000;
-        }
-    } else {
-        val = 0x7FFF;
+
+    if (val >= 0x8000) {
+        return 0x7fff;
     }
+    if (val < -0x8000) {
+        return -0x8000;
+    }
+
     return static_cast<short>(val);
 }
 
@@ -238,41 +239,28 @@ float GinsuSynthData::CyclePeriod(float cycle) const {
     return startPeriod + a * (endPeriod - startPeriod);
 }
 
-// TODO continue from here
 float GinsuSynthData::SampleToCycle(int sample) const {
-    int low;
-    int high;
-    int guess;
-    float s1;
-    float s2;
-    float cycle;
-
-    high = mCycleCount;
-    low = 0;
-    if (high <= 0) {
+    if (mCycleCount <= 0) {
         return 0.0f;
     }
-
     if (sample <= mCyclePos[0]) {
         return 0.0f;
     }
-
-    if (sample >= mCyclePos[high]) {
-        return static_cast<float>(high);
+    if (sample >= mCyclePos[mCycleCount]) {
+        return static_cast<float>(mCycleCount);
     }
 
+    int low = 0;
+    int high = mCycleCount;
+    int guess;
     while (true) {
         while (true) {
-            cycle =
-                (static_cast<float>(sample - mCyclePos[low]) / static_cast<float>(mCyclePos[high] - mCyclePos[low])) * static_cast<float>(high - low);
-            guess = low + IntFloor(cycle);
+            guess = low + IntFloor((static_cast<float>(sample - mCyclePos[low]) / static_cast<float>(mCyclePos[high] - mCyclePos[low])) *
+                                   static_cast<float>(high - low));
             if (sample >= mCyclePos[guess]) {
                 break;
-            }
-
-            {
-                cycle = static_cast<float>(mCyclePos[guess] - sample) / mMinPeriod;
-                int newlow = guess - IntCeil(cycle);
+            } else {
+                int newlow = guess - IntCeil(static_cast<float>(mCyclePos[guess] - sample) / mMinPeriod);
                 high = guess;
                 if (newlow > low) {
                     low = newlow;
@@ -282,11 +270,8 @@ float GinsuSynthData::SampleToCycle(int sample) const {
 
         if (sample < mCyclePos[guess + 1]) {
             break;
-        }
-
-        {
-            cycle = static_cast<float>(sample - mCyclePos[guess]) / mMinPeriod;
-            int newhigh = guess + IntCeil(cycle) + 1;
+        } else {
+            int newhigh = guess + IntCeil(static_cast<float>(sample - mCyclePos[guess]) / mMinPeriod) + 1;
             low = guess + 1;
             if (newhigh < high) {
                 high = newhigh;
@@ -294,37 +279,34 @@ float GinsuSynthData::SampleToCycle(int sample) const {
         }
     }
 
-    s1 = static_cast<float>(mCyclePos[guess]);
-    s2 = static_cast<float>(mCyclePos[guess + 1]);
-    cycle = (static_cast<float>(sample) - s1) / (s2 - s1);
+    float s1 = static_cast<float>(mCyclePos[guess]);
+    float s2 = static_cast<float>(mCyclePos[guess + 1]);
+    float cycle = (static_cast<float>(sample) - s1) / (s2 - s1);
     return cycle + static_cast<float>(guess);
 }
 
 bool GinsuSynthData::GetSamples(int startSample, int numSamples, short *dest) {
-    int endSample;
-    int block;
-    int index;
+    int endSample = startSample + numSamples - 1;
 
-    if (startSample < 0 || mSampleCount <= startSample + numSamples - 1) {
+    if (startSample < 0 || endSample >= this->mSampleCount) {
         return false;
     }
 
-    block = startSample >> 5;
-    if (block != mCurrentBlock) {
-        DecodeBlock(block);
+    int block = startSample >> 5;
+
+    if (block != this->mCurrentBlock) {
+        this->DecodeBlock(block);
     }
 
-    index = startSample & 0x1F;
-    if (numSamples > 0) {
-        int i;
-        for (i = 0; i < numSamples; i++) {
-            endSample = convertsample(mSample[index]);
-            dest[i] = endSample;
-            index++;
-            if (index == 0x20) {
-                DecodeBlock(mCurrentBlock + 1);
-                index = 0;
-            }
+    int index = startSample & 0x1f;
+
+    for (int i = 0; i < numSamples; i++) {
+        dest[i] = convertsample(this->mSample[index]);
+        index++;
+
+        if (index == 0x20) {
+            this->DecodeBlock(this->mCurrentBlock + 1);
+            index = 0;
         }
     }
 

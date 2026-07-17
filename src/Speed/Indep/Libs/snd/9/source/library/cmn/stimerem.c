@@ -1,7 +1,6 @@
 #include "./sndcmn.h"
 #include "../gc/sndgc.h"
 
-
 int SNDtimeremaining(int shandle) {
     CHANPUB *ppubv;
     int currentframe;
@@ -22,13 +21,14 @@ int SNDtimeremaining(int shandle) {
             } else {
                 currentframe = SNDPLATFORM_getcurframe(setvoice);
             }
-            if (currentframe < 0) continue;
+            if (currentframe < 0)
+                continue;
 
             framesleft = ppubv->frames;
             framesleft -= currentframe;
-             
+
             framesleft = (framesleft) * 0x64 / ppubv->samplerate;
-            
+
             if ((unsigned int)ppubv->finalpitch > 0x10) {
                 timeleft = (framesleft << 12) / ppubv->finalpitch;
                 timeleft = (timeleft << 12) / ppubv->timemult;
@@ -36,7 +36,8 @@ int SNDtimeremaining(int shandle) {
                 timeleft = 0x7FFFFFFF;
             }
 
-            if (timeleft <= rc) continue;
+            if (timeleft <= rc)
+                continue;
 
             rc = timeleft;
         }

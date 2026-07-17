@@ -1,9 +1,15 @@
 #include "./sndcmn.h"
 
-void SNDSYS_entercritical() {
+namespace Snd {
+    CListDStack gVariableTimerList;
+};
 
+void SNDSYS_entercritical() {
+    Snd::gMutexLockFn();
+    sndgs.incritical++;
 }
 
 void SNDSYS_leavecritical() {
-
+    sndgs.incritical--;
+    Snd::gMutexUnlockFn();
 }
