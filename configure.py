@@ -317,14 +317,16 @@ if config.platform == Platform.GC_WII:
         # "-fno-ident",
         "-DLUA_NUMBER=float",
         "-DDISABLE_RAIN",
-        "-I src/Speed/Indep/Libs/csis/dev/include",
         "-I src/Speed/Indep/Libs/allocator/1.5.0",
+        "-I src/Speed/Indep/Libs/csis/dev/include",
+        "-I src/Packages/eathread/1.1.0/include",
         "-I src/Speed/Indep/Libs/snd/9/include",
     ]
 
     cflags_snd = [
         *cflags_game,
-        "-x c++"
+        "-x c++",
+        "-I src/Speed/Indep/Libs/snd/9/include",
     ]
 
     config.extra_clang_flags = [
@@ -390,7 +392,6 @@ elif config.platform == Platform.X360:
         # "/Z7",  # /Zi enables debug info (pdb), /Zd for line numbers only (pdb), /Z7 generates debug info per obj file
         "/EHsc",  # enable exception handling (and extern C notthrow?)
         "/I src/Packages/xenonsdk/2.0.2135.2/installed/include/xbox",
-        "/I src/Packages/eathread/1.1.0/include",
         "/I src/Packages",
         "/I src",
         "/DEA_PLATFORM_XENON",
@@ -411,13 +412,15 @@ elif config.platform == Platform.X360:
         *cflags_base_prodg,
         "/DLUA_NUMBER=float",
         "/DMILESTONE_OPT",
-        "/I src/Speed/Indep/Libs/csis/dev/include",
         "/I src/Speed/Indep/Libs/allocator/1.5.0",
+        "/I src/Speed/Indep/Libs/csis/dev/include",
+        "/I src/Packages/eathread/1.1.0/include",
         "/I src/Speed/Indep/Libs/snd/9/include",
     ]
 
     cflags_snd = [
         *cflags_game,
+        "/I src/Speed/Indep/Libs/snd/9/include",
     ]
 
     config.extra_clang_flags = [
@@ -441,7 +444,6 @@ elif config.platform == Platform.PS2:
         "-I src/Speed/PSX2/bWare/src/ee/gcc/lib/gcc-lib/ee/2.9-ee-991111/include",
         "-I src/Speed/PSX2/bWare/src/ee/gcc/ee",
         "-I src/Speed/PSX2/bWare/src/ee/gcc/lib/gcc-lib/ee/2.9-ee-991111",
-        "-I src/Packages/eathread/1.1.0/include",
         "-I src/Packages",
         "-I src",
         "-DEA_PLATFORM_PLAYSTATION2",  # TODO rename to PS2
@@ -496,14 +498,15 @@ elif config.platform == Platform.PS2:
         # "-fcaller-saves",
         "-DLUA_NUMBER=float",
         "-DMILESTONE_OPT",
-        "-I src/Speed/Indep/Libs/csis/dev/include",
         "-I src/Speed/Indep/Libs/allocator/1.5.0",
+        "-I src/Speed/Indep/Libs/csis/dev/include",
+        "-I src/Packages/eathread/1.1.0/include",
         "-I src/Speed/Indep/Libs/snd/9/include",
     ]
 
     cflags_snd = [
         *cflags_game,
-        "-x c++"
+        "-x c++",
     ]
 
     config.extra_clang_flags = [

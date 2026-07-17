@@ -1,16 +1,88 @@
 #ifndef SNDCMN_H
 #define SNDCMN_H
 
+#include "./slinklist.h"
+#include <snd/sndo.h>
+
+// total size: 0xFC
+// Decl: 470
+struct SNDIPATCHHEADER {
+    short masterranddetune;            // offset 0x0, size 0x2, Decl: 471
+    signed char platformver;           // offset 0x2, size 0x1, Decl: 472
+    signed char numchan;               // offset 0x3, size 0x1, Decl: 473
+    short detune;                      // offset 0x4, size 0x2, Decl: 475
+    short randdetune;                  // offset 0x6, size 0x2, Decl: 476
+    signed char velmin;                // offset 0x8, size 0x1, Decl: 478
+    signed char velmax;                // offset 0x9, size 0x1, Decl: 479
+    signed char keymin;                // offset 0xA, size 0x1, Decl: 480
+    signed char keymax;                // offset 0xB, size 0x1, Decl: 481
+    signed char priority;              // offset 0xC, size 0x1, Decl: 483
+    signed char basekey;               // offset 0xD, size 0x1, Decl: 484
+    signed char releaseenvelope;       // offset 0xE, size 0x1, Decl: 485
+    signed char numenvelopes;          // offset 0xF, size 0x1, Decl: 486
+    signed char bendrange;             // offset 0x10, size 0x1
+    signed char pan;                   // offset 0x11, size 0x1, Decl: 488
+    signed char randpan;               // offset 0x12, size 0x1, Decl: 489
+    unsigned char samplerep;           // offset 0x13, size 0x1, Decl: 490
+    signed char vol;                   // offset 0x14, size 0x1, Decl: 491
+    signed char randvol;               // offset 0x15, size 0x1, Decl: 493
+    signed char fxlevel0;              // offset 0x16, size 0x1, Decl: 494
+    signed char numuserdata;           // offset 0x17, size 0x1, Decl: 495
+    short unsigned int rendermode;     // offset 0x18, size 0x2
+    signed char initialenvvol;         // offset 0x1A, size 0x1, Decl: 496
+    unsigned char lfovollength;        // offset 0x1B, size 0x1, Decl: 498
+    signed char lfovolrand;            // offset 0x1C, size 0x1, Decl: 501
+    unsigned char lfopitchlength;      // offset 0x1D, size 0x1, Decl: 502
+    unsigned char lfopitchrand;        // offset 0x1E, size 0x1, Decl: 503
+    signed char panmult;               // offset 0x1F, size 0x1, Decl: 504
+    void *pvoltable;                   // offset 0x20, size 0x4, Decl: 506
+    void *pbendtable;                  // offset 0x24, size 0x4
+    void *penvelope;                   // offset 0x28, size 0x4, Decl: 507
+    void *plfovol;                     // offset 0x2C, size 0x4, Decl: 508
+    void *plfopitch;                   // offset 0x30, size 0x4, Decl: 509
+    void *puserdata[4];                // offset 0x34, size 0x10, Decl: 510
+    int userdatasize[4];               // offset 0x44, size 0x10, Decl: 511
+    short lfopitchdepth;               // offset 0x54, size 0x2, Decl: 513
+    unsigned short samplerate;         // offset 0x56, size 0x2, Decl: 514
+    int totalframes;                   // offset 0x58, size 0x4, Decl: 516
+    int sustainstart;                  // offset 0x5C, size 0x4, Decl: 517
+    int sustainend;                    // offset 0x60, size 0x4, Decl: 518
+    int *paudioramaddr;                // offset 0x64, size 0x4
+    int sampleoffset[6];               // offset 0x68, size 0x18, Decl: 520
+    int loopoffset[6];                 // offset 0x80, size 0x18, Decl: 522
+    void *ptimestretchdata[6];         // offset 0x98, size 0x18, Decl: 525
+    unsigned short timestretchsize[6]; // offset 0xB0, size 0xC, Decl: 526
+    unsigned short azimuth[6];         // offset 0xBC, size 0xC, Decl: 529
+    void *pcodebookdata[6];            // offset 0xC8, size 0x18
+    void *ploopstatedata[6];           // offset 0xE0, size 0x18
+    void *ptimbre;                     // offset 0xF8, size 0x4, Decl: 531
+};
+
+// total size: 0x8
+// Decl: 538
+typedef struct ENVELOPE {
+    int duration;  // offset 0x0, size 0x4
+    int targetvol; // offset 0x4, size 0x4
+} ENVELOPE;
+
+// total size: 0x80
+// Decl: 545
+typedef struct SCALINGTABLE {
+    signed char xlate[128]; // offset 0x0, size 0x80
+} SCALINGTABLE;
+
+// total size: 0x8
+// Decl: 553
 typedef struct TAGGEDPATCH {
-    // total size: 0x8
     short id;               // offset 0x0, size 0x2
     unsigned char platform; // offset 0x2, size 0x1
     unsigned char flags;    // offset 0x3, size 0x1
     int hdrsize;            // offset 0x4, size 0x4
 } TAGGEDPATCH;
 
+// total size: 0x814
+// Decl: 564
 typedef struct BANKVER5 {
-    // total size: 0x814
     int id;                    // offset 0x0, size 0x4
     unsigned char ver;         // offset 0x4, size 0x1
     char resolved;             // offset 0x5, size 0x1
@@ -21,30 +93,24 @@ typedef struct BANKVER5 {
     TAGGEDPATCH *patch[512];   // offset 0x14, size 0x800
 } BANKVER5;
 
+// total size: 0xC
+// Decl: 577
 typedef struct BANKLIST {
-    // total size: 0xC
     BANKVER5 *phdr;     // offset 0x0, size 0x4
     void *pspuram;      // offset 0x4, size 0x4
     signed char locked; // offset 0x8, size 0x1
     char pad[3];        // offset 0x9, size 0x3
 } BANKLIST;
 
+// total size: 0x4
+// Decl: 587
 typedef struct FXVOLUME {
-    // total size: 0x4
     float fxLevel; // offset 0x0, size 0x4
 } FXVOLUME;
-typedef struct ENVELOPE {
-    // total size: 0x8
-    int duration;  // offset 0x0, size 0x4
-    int targetvol; // offset 0x4, size 0x4
-} ENVELOPE;
-typedef struct SCALINGTABLE {
-    // total size: 0x80
-    signed char xlate[128]; // offset 0x0, size 0x80
-} SCALINGTABLE;
 
+// total size: 0x90
+// Decl: 598
 typedef struct CHANPUB {
-    // total size: 0x90
     int handle;                       // offset 0x0, size 0x4
     short voices[6];                  // offset 0x4, size 0xC
     unsigned short patnum;            // offset 0x10, size 0x2
@@ -101,23 +167,14 @@ typedef struct CHANPUB {
     unsigned short finalpitch;        // offset 0x8E, size 0x2
 } CHANPUB;
 
-typedef struct SNDUSERDATACBINFO {
-    // total size: 0x14
-    int type;           // offset 0x0, size 0x4
-    void *pdata;        // offset 0x4, size 0x4
-    int size;           // offset 0x8, size 0x4
-    int shandle;        // offset 0xC, size 0x4
-    int sndstrmrequest; // offset 0x10, size 0x4
-} SNDUSERDATACBINFO;
-
+// total size: 0x8
 typedef struct SNDMEMREC {
-    // total size: 0x8
     unsigned int addr; // offset 0x0, size 0x4
     int size;          // offset 0x4, size 0x4
 } SNDMEMREC;
 
+// total size: 0x18
 typedef struct SNDMEMSTATE {
-    // total size: 0x18
     char *pheap;          // offset 0x0, size 0x4
     SNDMEMREC *r;         // offset 0x4, size 0x4
     int heapsize;         // offset 0x8, size 0x4
@@ -126,8 +183,9 @@ typedef struct SNDMEMSTATE {
     int nummallocs;       // offset 0x14, size 0x4
 } SNDMEMSTATE;
 
+// total size: 0x1A
+// Decl: 789
 typedef struct SNDSYSCAP {
-    // total size: 0x1A
     unsigned short outputratemin;    // offset 0x0, size 0x2
     unsigned short outputratemax;    // offset 0x2, size 0x2
     unsigned char outputchannelsmin; // offset 0x4, size 0x1
@@ -142,8 +200,9 @@ typedef struct SNDSYSCAP {
     unsigned short rendermode[6];    // offset 0xE, size 0xC
 } SNDSYSCAP;
 
+// total size: 0x9C
+// Decl: 796
 typedef struct SNDSYSSET {
-    // total size: 0x9C
     int packetbufsize;                      // offset 0x0, size 0x4
     unsigned int randomseed;                // offset 0x4, size 0x4
     unsigned short maxbanks;                // offset 0x8, size 0x2
@@ -185,8 +244,9 @@ typedef struct SNDSYSSET {
     unsigned short virtualspkrcfg3d[6][6];  // offset 0x54, size 0x48
 } SNDSYSSET;
 
+// total size: 0x14
+// Decl: 812
 typedef struct SNDSYSVEC {
-    // total size: 0x14
     unsigned int (*aramalloc)(unsigned int); // offset 0x0, size 0x4
     void (*aramfree)(unsigned int);          // offset 0x4, size 0x4
     void (*abortmsg)(char *);                // offset 0x8, size 0x4
@@ -194,15 +254,17 @@ typedef struct SNDSYSVEC {
     void (*profileleave)(const char *);      // offset 0x10, size 0x4
 } SNDSYSVEC;
 
+// total size: 0xCC
+// Decl: 818
 typedef struct SNDSYSOPTS {
-    // total size: 0xCC
     SNDSYSCAP cap; // offset 0x0, size 0x1A
     SNDSYSSET set; // offset 0x1C, size 0x9C
     SNDSYSVEC vec; // offset 0xB8, size 0x14
 } SNDSYSOPTS;
 
+// total size: 0x244
+// Decl: 825
 typedef struct SNDGLOBALSTATE {
-    // total size: 0x244
     SNDSYSOPTS sso;                                          // offset 0x0, size 0xCC
     SNDSYSSET prevset;                                       // offset 0xCC, size 0x9C
     signed char installed;                                   // offset 0x168, size 0x1
@@ -239,87 +301,51 @@ typedef struct SNDGLOBALSTATE {
     char debugpad[2];                                        // offset 0x240, size 0x2
 } SNDGLOBALSTATE;
 
-typedef struct SNDSAMPLEFORMAT {
-    // total size: 0x4
-    unsigned short samplerate; // offset 0x0, size 0x2
-    unsigned char channels;    // offset 0x2, size 0x1
-    unsigned char samplerep;   // offset 0x3, size 0x1
-} SNDSAMPLEFORMAT;
-
-typedef struct SNDSAMPLEATTR {
-    // total size: 0x68
-    short detune;              // offset 0x0, size 0x2
-    signed char priority;      // offset 0x2, size 0x1
-    signed char vol;           // offset 0x3, size 0x1
-    signed char pan;           // offset 0x4, size 0x1
-    signed char fxlevel0;      // offset 0x5, size 0x1
-    signed char bendrange;     // offset 0x6, size 0x1
-    unsigned char platformver; // offset 0x7, size 0x1
-    unsigned short rendermode; // offset 0x8, size 0x2
-    char padchar[2];           // offset 0xA, size 0x2
-    unsigned short azimuth[6]; // offset 0xC, size 0xC
-    void *ptsdata[6];          // offset 0x18, size 0x18
-    int tsdatasize[6];         // offset 0x30, size 0x18
-    void *puserdata[4];        // offset 0x48, size 0x10
-    int userdatasize[4];       // offset 0x58, size 0x10
-} SNDSAMPLEATTR;
-
-typedef struct SNDSAMPLEDESC {
-    // total size: 0x1C
-    unsigned int totalframes; // offset 0x0, size 0x4
-    void *psamples[6];        // offset 0x4, size 0x18
-} SNDSAMPLEDESC;
-
-typedef struct SNDPLAYOPTS {
-    // total size: 0x18
-    signed char vol;               // offset 0x0, size 0x1
-    signed char bend;              // offset 0x1, size 0x1
-    signed char keynum;            // offset 0x2, size 0x1
-    signed char velocity;          // offset 0x3, size 0x1
-    signed char drylevel;          // offset 0x4, size 0x1
-    signed char fxlevel0;          // offset 0x5, size 0x1
-    char pad[2];                   // offset 0x6, size 0x2
-    unsigned short azimuth;        // offset 0x8, size 0x2
-    short elevation;               // offset 0xA, size 0x2
-    unsigned short pitchmult;      // offset 0xC, size 0x2
-    unsigned short timemult;       // offset 0xE, size 0x2
-    unsigned short tempomult;      // offset 0x10, size 0x2
-    unsigned short pad2;           // offset 0x12, size 0x2
-    unsigned short lowpasscutoff;  // offset 0x14, size 0x2
-    unsigned short highpasscutoff; // offset 0x16, size 0x2
-} SNDPLAYOPTS;
-
-typedef struct SNDSTREAMFXVOLUME {
-    // total size: 0x4
-    float fxLevel; // offset 0x0, size 0x4
-} SNDSTREAMFXVOLUME;
-
-typedef struct SNDFILTERDEF {
-    // total size: 0x18
-    int id;                                          // offset 0x0, size 0x4
-    int statesize;                                   // offset 0x4, size 0x4
-    int priority;                                    // offset 0x8, size 0x4
-    void (*filterinit)(void *, int, int);            // offset 0xC, size 0x4
-    int (*filter)(void *, int, void *, void *, int); // offset 0x10, size 0x4
-    void (*filterrestore)(void *);                   // offset 0x14, size 0x4
-} SNDFILTERDEF;
-
-typedef struct SNDLINKLIST {
-    // total size: 0xC
-    struct SNDLINKNODE *phead; // offset 0x0, size 0x4
-    struct SNDLINKNODE *ptail; // offset 0x4, size 0x4
-    int items;                 // offset 0x8, size 0x4
-} SNDLINKLIST;
-
+// total size: 0x8
+// Decl: 761
 typedef struct SNDLINKNODE {
-    // total size: 0x8
-    struct SNDLINKNODE *pnext; // offset 0x0, size 0x4
-    struct SNDLINKNODE *pprev; // offset 0x4, size 0x4
+    SNDLINKNODE *pnext; // offset 0x0, size 0x4
+    SNDLINKNODE *pprev; // offset 0x4, size 0x4
 } SNDLINKNODE;
 
+// total size: 0xC
+// Decl: 767
+typedef struct SNDLINKLIST {
+    SNDLINKNODE *phead; // offset 0x0, size 0x4
+    SNDLINKNODE *ptail; // offset 0x4, size 0x4
+    int items;          // offset 0x8, size 0x4
+} SNDLINKLIST;
+
+namespace Snd {
+
+// total size: 0x10
+// Decl: 1244
+typedef struct VariableTimerClient {
+    CListDNode ln;               // offset 0x0, size 0x8
+    void (*pClientFunc)(void *); // offset 0x8, size 0x4
+    void *pClientData;           // offset 0xC, size 0x4
+} VariableTimerClient;
+
+// total size: 0x1
+// Decl: 1268
+struct Util {
+    static void ReallocBuf(void **buffer, int *curSize, int newMinSize, int sizeofDataType);
+
+    static unsigned short Az360To65536(float azimuth) {}
+
+    static float Az65536To360(unsigned short azimuth) {}
+
+    static void FastVol(struct CHANPUB *pVoice) {}
+
+    static void AddVariableTimerClient(VariableTimerClient *pClient) {}
+
+    static void RemoveVariableTimerClient(VariableTimerClient *pClient) {}
+};
+
+// total size: 0x28
+// Decl: 64
 typedef struct SNDSTREAMREQUEST {
-    // total size: 0x28
-    struct SNDLINKNODE node;                 // offset 0x0, size 0x8
+    SNDLINKNODE node;                        // offset 0x0, size 0x8
     volatile int streamrequestid;            // offset 0x8, size 0x4
     volatile int sndrequesthandle;           // offset 0xC, size 0x4
     volatile unsigned int avgdatarate;       // offset 0x10, size 0x4
@@ -332,28 +358,20 @@ typedef struct SNDSTREAMREQUEST {
     char pad[2];                             // offset 0x26, size 0x2
 } SNDSTREAMREQUEST;
 
-typedef struct CListDNode {
-    // total size: 0x8
-    struct CListDNode *pnext; // offset 0x0, size 0x4
-    struct CListDNode *pprev; // offset 0x4, size 0x4
-} CListDNode;
+// total size: 0x4
+typedef struct SNDSTREAMFXVOLUME {
+    float fxLevel; // offset 0x0, size 0x4
+} SNDSTREAMFXVOLUME;
 
-typedef struct VariableTimerClient {
-    // total size: 0x10
-    CListDNode ln;               // offset 0x0, size 0x8
-    void (*pClientFunc)(void *); // offset 0x8, size 0x4
-    void *pClientData;           // offset 0xC, size 0x4
-} VariableTimerClient;
-
+// total size: 0x18
 typedef struct Fader {
-    // total size: 0x18
     VariableTimerClient variableTimerClient; // offset 0x0, size 0x10
     float targetVol;                         // offset 0x10, size 0x4
     float incrementPerUpdate;                // offset 0x14, size 0x4
 } Fader;
 
+// total size: 0x24
 typedef struct StreamSourceChannelState {
-    // total size: 0x24
     float azimuth;               // offset 0x0, size 0x4
     unsigned char isDirect;      // offset 0x4, size 0x1
     unsigned char sourceChannel; // offset 0x5, size 0x1
@@ -362,44 +380,63 @@ typedef struct StreamSourceChannelState {
     Fader fader;                 // offset 0xC, size 0x18
 } StreamSourceChannelState;
 
+}; // namespace Snd
+
+typedef int STREAMHANDLE;
+typedef int STREAMREQUESTID;
+
+// total size: 0x214
 typedef struct SNDSTREAMCHANNEL {
-    // total size: 0x214
-    int streamhandle;                               // offset 0x0, size 0x4
-    volatile int shandle;                           // offset 0x4, size 0x4
-    volatile int packetinstancehandle;              // offset 0x8, size 0x4
-    volatile int lastsndrequesthandle;              // offset 0xC, size 0x4
-    volatile signed char state;                     // offset 0x10, size 0x1
-    volatile signed char fromtap;                   // offset 0x11, size 0x1
-    unsigned char useOldAzimuthBehaviour;           // offset 0x12, size 0x1
-    char pad[1];                                    // offset 0x13, size 0x1
-    SNDSAMPLEFORMAT cursf;                          // offset 0x14, size 0x4
-    SNDSAMPLEFORMAT newsf;                          // offset 0x18, size 0x4
-    SNDSAMPLEATTR cursa;                            // offset 0x1C, size 0x68
-    SNDSAMPLEATTR newsa;                            // offset 0x84, size 0x68
-    SNDPLAYOPTS po;                                 // offset 0xEC, size 0x18
-    SNDSTREAMFXVOLUME *pFxVolume;                   // offset 0x104, size 0x4
-    SNDFILTERDEF filter[1];                         // offset 0x108, size 0x18
-    SNDLINKLIST allocatedrequests;                  // offset 0x120, size 0xC
-    SNDLINKLIST freerequests;                       // offset 0x12C, size 0xC
-    volatile SNDSTREAMREQUEST *parsingrequest;      // offset 0x138, size 0x4
-    StreamSourceChannelState sourceChannelState[6]; // offset 0x13C, size 0xD8
+    STREAMHANDLE streamhandle;                           // offset 0x0, size 0x4
+    volatile int shandle;                                // offset 0x4, size 0x4
+    volatile int packetinstancehandle;                   // offset 0x8, size 0x4
+    volatile int lastsndrequesthandle;                   // offset 0xC, size 0x4
+    volatile signed char state;                          // offset 0x10, size 0x1
+    volatile signed char fromtap;                        // offset 0x11, size 0x1
+    unsigned char useOldAzimuthBehaviour;                // offset 0x12, size 0x1
+    char pad[1];                                         // offset 0x13, size 0x1
+    SNDSAMPLEFORMAT cursf;                               // offset 0x14, size 0x4
+    SNDSAMPLEFORMAT newsf;                               // offset 0x18, size 0x4
+    SNDSAMPLEATTR cursa;                                 // offset 0x1C, size 0x68
+    SNDSAMPLEATTR newsa;                                 // offset 0x84, size 0x68
+    SNDPLAYOPTS po;                                      // offset 0xEC, size 0x18
+    Snd::SNDSTREAMFXVOLUME *pFxVolume;                   // offset 0x104, size 0x4
+    SNDFILTERDEF filter[1];                              // offset 0x108, size 0x18
+    SNDLINKLIST allocatedrequests;                       // offset 0x120, size 0xC
+    SNDLINKLIST freerequests;                            // offset 0x12C, size 0xC
+    volatile Snd::SNDSTREAMREQUEST *parsingrequest;      // offset 0x138, size 0x4
+    Snd::StreamSourceChannelState sourceChannelState[6]; // offset 0x13C, size 0xD8
 } SNDSTREAMCHANNEL;
 
-extern SNDGLOBALSTATE sndgs;
+// total size: 0x80
+typedef struct SNDSTREAMSTATE {
+    SNDSTREAMCHANNEL *pssc[32]; // offset 0x0, size 0x80
+} SNDSTREAMSTATE;
 
-static inline int SNDI_ftoiround(float val) {
+extern SNDGLOBALSTATE sndgs; // Decl: 861
+
+namespace Snd {
+
+extern void (*gMutexLockFn)();
+extern void (*gMutexUnlockFn)();
+
+}; // namespace Snd
+
+// Decl: 1041
+inline int SNDI_ftoiround(float val) {
     int result;
 
     if (val >= 0.0f) {
-        result = val + 0.5f;
+        result = static_cast<int>(val + 0.5f);
     } else {
-        result = val - 0.5f;
+        result = static_cast<int>(val - 0.5f);
     }
 
     return result;
 }
 
-static inline int SNDI_ftoifast(float val) {
+// 1202
+inline int SNDI_ftoifast(float val) {
     return SNDI_ftoiround(val * 127.0f);
 }
 
@@ -423,10 +460,6 @@ void SNDMEMI_free(void *paddr);
 
 // sbvalid.c
 int SNDBANKI_valid(int bhandle);
-
-// sserver.c
-void SNDSYS_entercritical();
-void SNDSYS_leavecritical();
 
 // sgetpvol.c
 int SNDCTRL_getprogvol(int shandle);

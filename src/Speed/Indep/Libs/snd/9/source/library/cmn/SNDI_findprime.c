@@ -4,7 +4,7 @@ int SNDI_cheapsqrt(int val) {
     int i = 0;
     int done;
     int temp;
-    done = i != 0;
+    done = static_cast<int>(i != 0);
 
     while (!done) {
         temp = i * i;

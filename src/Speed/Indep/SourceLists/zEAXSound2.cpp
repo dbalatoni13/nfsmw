@@ -7,3 +7,5 @@
 #include "Speed/Indep/Src/EAXSound/States/STATE_Base.cpp"
 
 #include "Speed/Indep/Src/EAXSound/Ginsu/ginsudata.cpp"
+
+#include "Speed/Indep/Src/EAXSound/Ginsu/ginsusynth.cpp"
