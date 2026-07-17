@@ -1,6 +1,6 @@
-#include "snd/9/source/library/cmn/sndcmn.h"
+#include "./sndcmn.h"
+#include "../gc/sndgc.h"
 
-#include "snd/9/source/library/gc/sndgc.h"
 
 int SNDtimeremaining(int shandle) {
     CHANPUB *ppubv;

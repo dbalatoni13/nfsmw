@@ -1,4 +1,4 @@
-#include "snd/9/source/library/cmn/sndcmn.h"
+#include "./sndcmn.h"
 
 // TODO
 SNDSTREAMCHANNEL *SNDSTRMI_getstreamptr(int sndstreamhandle) {

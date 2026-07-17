@@ -1124,7 +1124,7 @@ def generate_build_ninja(
             ) or toolchain_version.startswith("Wii")
 
             def is_lang_flag(flag):
-                return flag.startswith("-lang") or flag in ("/TP", "/TC", "/Tp", "/Tc")
+                return flag.startswith("-lang") or flag.startswith("-x") or flag in ("/TP", "/TC", "/Tp", "/Tc")
 
             # Add appropriate language flag if it doesn't exist already
             # Added directly to the source so it flows to other generation tasks

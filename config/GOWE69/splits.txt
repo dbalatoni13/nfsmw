@@ -696,478 +696,478 @@ Packages/vp6/1.0.6/source/decode/gc/criticalpath.c:
 Packages/vp6/1.0.6/source/decode/cmn/recon.c:
 	.text       start:0x8035A830 end:0x8035A9B0
 
-Packages/snd/9/source/library/cmn/s3dlow.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/s3dlow.c:
 	.text       start:0x8035A9B0 end:0x8035AA7C
 
-Packages/snd/9/source/library/cmn/saems.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/saems.c:
 	.text       start:0x8035AA7C end:0x8035D4A0
 	.data       start:0x80450174 end:0x804502C8
 
-Packages/snd/9/source/library/cmn/saemsamb.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/saemsamb.c:
 	.text       start:0x8035D4A0 end:0x8035D690
 	.bss        start:0x804BE5FC end:0x804BE634
 
-Packages/snd/9/source/library/cmn/saemsstr.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/saemsstr.c:
 	.text       start:0x8035D6BC end:0x8035DFE4
 	.data       start:0x804502C8 end:0x804502D0
 	.bss        start:0x804BE634 end:0x804BE690
 
-Packages/snd/9/source/library/cmn/saemstimupdt.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/saemstimupdt.c:
 	.text       start:0x8035DFE4 end:0x8035E05C
 
-Packages/snd/9/source/library/cmn/salloc.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/salloc.c:
 	.text       start:0x8035E05C end:0x8035E650
 	.bss        start:0x804BE690 end:0x804BE69C
 
-Packages/snd/9/source/library/cmn/sattrdef.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/sattrdef.c:
 	.text       start:0x8035E650 end:0x8035E6E8
 
-Packages/snd/9/source/library/cmn/sbadd.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/sbadd.c:
 	.text       start:0x8035E6E8 end:0x8035E9CC
 
-Packages/snd/9/source/library/cmn/ssballoc.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/ssballoc.c:
 	.text       start:0x8035E9CC end:0x8035EA50
 
-Packages/snd/9/source/library/cmn/sbasync.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/sbasync.c:
 	.text       start:0x8035EA50 end:0x8035F650
 	.data       start:0x804502D0 end:0x804502DC
 
-Packages/snd/9/source/library/cmn/sbasyncm.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/sbasyncm.c:
 	.text       start:0x8035F650 end:0x8035F8E8
 	.bss        start:0x804BE69C end:0x804BE6B0
 
-Packages/snd/9/source/library/cmn/ssbhdrcpy.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/ssbhdrcpy.c:
 	.text       start:0x8035F8E8 end:0x8035F95C
 
-Packages/snd/9/source/library/cmn/ssbhdrsze.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/ssbhdrsze.c:
 	.text       start:0x8035F95C end:0x8035F974
 
-Packages/snd/9/source/library/cmn/ssbplay.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/ssbplay.c:
 	.text       start:0x8035F974 end:0x8035FA0C
 
-Packages/snd/9/source/library/cmn/ssbremove.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/ssbremove.c:
 	.text       start:0x8035FA0C end:0x8035FBA0
 
-Packages/snd/9/source/library/cmn/ssbvalid.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/ssbvalid.c:
 	.text       start:0x8035FBA0 end:0x8035FBFC
 
-Packages/snd/9/source/library/cmn/scheckpo.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/scheckpo.c:
 	.text       start:0x8035FBFC end:0x8035FC28
 
-Packages/snd/9/source/library/cmn/sclnt100.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/sclnt100.c:
 	.text       start:0x8035FC28 end:0x8035FD34
 
-Packages/snd/9/source/library/cmn/sctrldry.cpp:
+Speed/Indep/Libs/snd/9/source/library/cmn/sctrldry.cpp:
 	.text       start:0x8035FD34 end:0x8035FDEC
 
-Packages/snd/9/source/library/cmn/sdata.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/sdata.c:
 	.text       start:0x8035FDEC end:0x8035FDEC
 	.bss        start:0x804BE6B0 end:0x804BE8F4
 
-Packages/snd/9/source/library/cmn/sfxlevel.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/sfxlevel.c:
 	.text       start:0x8035FDEC end:0x8035FEF0
 
-Packages/snd/9/source/library/cmn/slowpass.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/slowpass.c:
 	.text       start:0x8035FEF0 end:0x8035FF58
 
-Packages/snd/9/source/library/cmn/smemcpy.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/smemcpy.c:
 	.text       start:0x8035FF58 end:0x80360150
 
-Packages/snd/9/source/library/cmn/smemdis.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/smemdis.c:
 	.text       start:0x80360150 end:0x80360150
 
-Packages/snd/9/source/library/cmn/smemlmt.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/smemlmt.c:
 	.text       start:0x80360150 end:0x80360198
 
-Packages/snd/9/source/library/cmn/smemlu.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/smemlu.c:
 	.text       start:0x80360198 end:0x803601D8
 
-Packages/snd/9/source/library/cmn/smemman.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/smemman.c:
 	.text       start:0x803601D8 end:0x80360550
 
-Packages/snd/9/source/library/cmn/sndfxbus.cpp:
+Speed/Indep/Libs/snd/9/source/library/cmn/sndfxbus.cpp:
 	.text       start:0x80360550 end:0x80360760
 
-Packages/snd/9/source/library/cmn/spatkey.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/spatkey.c:
 	.text       start:0x80360760 end:0x8036080C
 
-Packages/snd/9/source/library/cmn/spitch.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/spitch.c:
 	.text       start:0x8036080C end:0x803608A0
 
-Packages/snd/9/source/library/cmn/spktplay.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/spktplay.c:
 	.text       start:0x803608A0 end:0x80361480
 	.bss        start:0x804BE8F4 end:0x804BEC78
 
-Packages/snd/9/source/library/cmn/splysdef.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/splysdef.c:
 	.text       start:0x80361480 end:0x803614D8
 
-Packages/snd/9/source/library/cmn/spoutlat.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/spoutlat.c:
 	.text       start:0x803614D8 end:0x80361510
 
-Packages/snd/9/source/library/cmn/srandom.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/srandom.c:
 	.text       start:0x80361510 end:0x8036164C
 	.data       start:0x804502DC end:0x804502F8
 	.bss        start:0x804BEC78 end:0x804BEC90
 
-Packages/snd/9/source/library/cmn/srender.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/srender.c:
 	.text       start:0x8036164C end:0x80361708
 
-Packages/snd/9/source/library/cmn/sresopat.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/sresopat.c:
 	.text       start:0x80361708 end:0x8036178C
 
-Packages/snd/9/source/library/cmn/sserver.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/sserver.c:
 	.text       start:0x8036178C end:0x80361B40
 	.data       start:0x804502F8 end:0x80450300
 	.bss        start:0x804BEC90 end:0x804BEC9C
 
-Packages/snd/9/source/library/cmn/ssine.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/ssine.c:
 	.text       start:0x80361B6C end:0x80361BEC
 	.data       start:0x80450300 end:0x80450504
 
-Packages/snd/9/source/library/cmn/sst.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/sst.c:
 	.text       start:0x80361BEC end:0x80362E80
 	.data       start:0x80450504 end:0x80450528
 	.bss        start:0x804BEC9C end:0x804BED1C
 
-Packages/snd/9/source/library/cmn/sst3dpos.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/sst3dpos.c:
 	.text       start:0x80362E80 end:0x80363134
 
-Packages/snd/9/source/library/cmn/sstautov.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/sstautov.c:
 	.text       start:0x80363134 end:0x8036340C
 
-Packages/snd/9/source/library/cmn/sstcrtap.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/sstcrtap.c:
 	.text       start:0x8036340C end:0x8036344C
 
-Packages/snd/9/source/library/cmn/sstfxlev.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/sstfxlev.c:
 	.text       start:0x8036344C end:0x80363548
 
-Packages/snd/9/source/library/cmn/sstgetrp.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/sstgetrp.c:
 	.text       start:0x80363548 end:0x803635C0
 
-Packages/snd/9/source/library/cmn/ssthold.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/ssthold.c:
 	.text       start:0x803635C0 end:0x80363618
 
-Packages/snd/9/source/library/cmn/sstlowp.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/sstlowp.c:
 	.text       start:0x80363618 end:0x80363668
 
-Packages/snd/9/source/library/cmn/sstop.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/sstop.c:
 	.text       start:0x80363668 end:0x803636C8
 
-Packages/snd/9/source/library/cmn/sstovrhd.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/sstovrhd.c:
 	.text       start:0x803636C8 end:0x80363754
 
-Packages/snd/9/source/library/cmn/sstpmult.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/sstpmult.c:
 	.text       start:0x80363754 end:0x803637B0
 
-Packages/snd/9/source/library/cmn/sstqmem.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/sstqmem.c:
 	.text       start:0x803637B0 end:0x803637DC
 
-Packages/snd/9/source/library/cmn/sstqreqi.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/sstqreqi.c:
 	.text       start:0x803637DC end:0x80363808
 
-Packages/snd/9/source/library/cmn/sstrmdry.cpp:
+Speed/Indep/Libs/snd/9/source/library/cmn/sstrmdry.cpp:
 	.text       start:0x80363808 end:0x80363858
 
-Packages/snd/9/source/library/cmn/sstrstat.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/sstrstat.c:
 	.text       start:0x80363858 end:0x80363A6C
 
-Packages/snd/9/source/library/cmn/sstsetgl.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/sstsetgl.c:
 	.text       start:0x80363A6C end:0x80363AB8
 
-Packages/snd/9/source/library/cmn/sststat.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/sststat.c:
 	.text       start:0x80363AB8 end:0x80363B98
 
-Packages/snd/9/source/library/cmn/ssttmul.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/ssttmul.c:
 	.text       start:0x80363B98 end:0x80363C04
 
-Packages/snd/9/source/library/cmn/sstvol.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/sstvol.c:
 	.text       start:0x80363C04 end:0x80363E50
 	.rodata     start:0x80412908 end:0x80412AE8
 
-Packages/snd/9/source/library/cmn/ssys.cpp:
+Speed/Indep/Libs/snd/9/source/library/cmn/ssys.cpp:
 	.text       start:0x80363E50 end:0x80364790
 	.data       start:0x80450528 end:0x80450530
 	.bss        start:0x804BED1C end:0x804BED68
 
-Packages/snd/9/source/library/cmn/ssysinit.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/ssysinit.c:
 	.text       start:0x80364790 end:0x80364E14
 	.data       start:0x80450530 end:0x80450544
 	.bss        start:0x804BED68 end:0x804BED88
 
-Packages/snd/9/source/library/cmn/ssysserv.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/ssysserv.c:
 	.text       start:0x80364E14 end:0x80364F54
 
-Packages/snd/9/source/library/cmn/ssysveccsismutex.cpp:
+Speed/Indep/Libs/snd/9/source/library/cmn/ssysveccsismutex.cpp:
 	.text       start:0x80364F54 end:0x80364FD0
 
-Packages/snd/9/source/library/cmn/stagpat.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/stagpat.c:
 	.text       start:0x80364FD0 end:0x803658F4
 
-Packages/snd/9/source/library/cmn/stimemul.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/stimemul.c:
 	.text       start:0x803658F4 end:0x8036598C
 
-Packages/snd/9/source/library/cmn/stpparse.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/stpparse.c:
 	.text       start:0x8036598C end:0x80366030
 	.data       start:0x80450544 end:0x80450550
 
-Packages/snd/9/source/library/cmn/svecreal.cpp:
+Speed/Indep/Libs/snd/9/source/library/cmn/svecreal.cpp:
 	.text       start:0x80366030 end:0x803660C8
 
-Packages/snd/9/source/library/cmn/svol.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/svol.c:
 	.text       start:0x803660C8 end:0x80366270
 
-Packages/snd/9/source/library/extern/coda/cmn/lbmpeg.cpp:
+Speed/Indep/Libs/snd/9/source/library/extern/coda/cmn/lbmpeg.cpp:
 	.text       start:0x80366270 end:0x80366298
 	.data       start:0x80450550 end:0x80450558
 
-Packages/snd/9/source/library/extern/coda/cmn/mpeghufftables.cpp:
+Speed/Indep/Libs/snd/9/source/library/extern/coda/cmn/mpeghufftables.cpp:
 	.text       start:0x803662C4 end:0x803662C4
 
-Packages/snd/9/source/library/extern/coda/cmn/mpegl3base.cpp:
+Speed/Indep/Libs/snd/9/source/library/extern/coda/cmn/mpegl3base.cpp:
 	.text       start:0x803662C4 end:0x803662C4
 	.rodata     start:0x80412AE8 end:0x80412CC8
 
-Packages/snd/9/source/library/gc/ssdfx.c:
+Speed/Indep/Libs/snd/9/source/library/gc/ssdfx.c:
 	.text       start:0x803662C4 end:0x8036641C
 
-Packages/snd/9/source/library/gc/sdspmix.c:
+Speed/Indep/Libs/snd/9/source/library/gc/sdspmix.c:
 	.text       start:0x8036641C end:0x80366C64
 	.data       start:0x80450558 end:0x80450D58
 	.bss        start:0x804BED88 end:0x804C03C0
 
-Packages/snd/9/source/library/gc/snddrv.c:
+Speed/Indep/Libs/snd/9/source/library/gc/snddrv.c:
 	.text       start:0x80366C64 end:0x80369AF4
 	.data       start:0x80450D58 end:0x80450D68
 	.bss        start:0x804C03C0 end:0x804CC480
 
-Packages/snd/9/source/library/mix/sfxrevc.c:
+Speed/Indep/Libs/snd/9/source/library/mix/sfxrevc.c:
 	.text       start:0x80369AF4 end:0x8036A948
 	.data       start:0x80450D68 end:0x804513A4
 	.bss        start:0x804CC480 end:0x804CC494
 
-Packages/snd/9/source/library/mix/slinkmix.c:
+Speed/Indep/Libs/snd/9/source/library/mix/slinkmix.c:
 	.text       start:0x8036A948 end:0x8036A9CC
 
-Packages/snd/9/source/library/mix/smixer.c:
+Speed/Indep/Libs/snd/9/source/library/mix/smixer.c:
 	.text       start:0x8036A9CC end:0x8036BB84
 	.bss        start:0x804CC494 end:0x804CC680
 
-Packages/snd/9/source/library/mix/smixfilt.c:
+Speed/Indep/Libs/snd/9/source/library/mix/smixfilt.c:
 	.text       start:0x8036BB84 end:0x8036BC0C
 
-Packages/snd/9/source/library/mix/smixfram.c:
+Speed/Indep/Libs/snd/9/source/library/mix/smixfram.c:
 	.text       start:0x8036BC0C end:0x8036BC54
 
-Packages/snd/9/source/library/mix/smixhip.c:
+Speed/Indep/Libs/snd/9/source/library/mix/smixhip.c:
 	.text       start:0x8036BC54 end:0x8036BD24
 
-Packages/snd/9/source/library/mix/smixlowp.c:
+Speed/Indep/Libs/snd/9/source/library/mix/smixlowp.c:
 	.text       start:0x8036BD24 end:0x8036BE70
 
-Packages/snd/9/source/library/mix/smixptch.c:
+Speed/Indep/Libs/snd/9/source/library/mix/smixptch.c:
 	.text       start:0x8036BE70 end:0x8036BF2C
 
-Packages/snd/9/source/library/mix/smixtmul.c:
+Speed/Indep/Libs/snd/9/source/library/mix/smixtmul.c:
 	.text       start:0x8036BF2C end:0x8036BF68
 
-Packages/snd/9/source/library/mix/smixvec.c:
+Speed/Indep/Libs/snd/9/source/library/mix/smixvec.c:
 	.text       start:0x8036BF68 end:0x8036BF68
 	.bss        start:0x804CC680 end:0x804CC69C
 
-Packages/snd/9/source/library/mix/stretch.c:
+Speed/Indep/Libs/snd/9/source/library/mix/stretch.c:
 	.text       start:0x8036BF68 end:0x8036C8B4
 
-Packages/snd/9/source/library/mix/sx87d16.c:
+Speed/Indep/Libs/snd/9/source/library/mix/sx87d16.c:
 	.text       start:0x8036C8B4 end:0x8036C90C
 
-Packages/snd/9/source/library/cmn/author.cpp:
+Speed/Indep/Libs/snd/9/source/library/cmn/author.cpp:
 	.text       start:0x8036C90C end:0x8036C90C
 	.data       start:0x804513A4 end:0x804513E4
 
-Packages/snd/9/source/library/cmn/satospkr.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/satospkr.c:
 	.text       start:0x8036C90C end:0x8036D010
 	.bss        start:0x804CC69C end:0x804CC6B8
 
-Packages/snd/9/source/library/cmn/sclcptch.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/sclcptch.c:
 	.text       start:0x8036D010 end:0x8036D170
 	.data       start:0x804513E4 end:0x804514E4
 
-Packages/snd/9/source/library/cmn/sctlfilt.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/sctlfilt.c:
 	.text       start:0x8036D170 end:0x8036D1D8
 
-Packages/snd/9/source/library/cmn/sdownmix.cpp:
+Speed/Indep/Libs/snd/9/source/library/cmn/sdownmix.cpp:
 	.text       start:0x8036D1D8 end:0x8036D248
 	.rodata     start:0x80412CC8 end:0x80412D7C
 
-Packages/snd/9/source/library/cmn/sexithndl.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/sexithndl.c:
 	.text       start:0x8036D248 end:0x8036D268
 
-Packages/snd/9/source/library/cmn/sformat.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/sformat.c:
 	.text       start:0x8036D268 end:0x8036D268
 
-Packages/snd/9/source/library/cmn/sgetdata.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/sgetdata.c:
 	.text       start:0x8036D268 end:0x8036D2E8
 
-Packages/snd/9/source/library/cmn/sgettag.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/sgettag.c:
 	.text       start:0x8036D2E8 end:0x8036D3D4
 
-Packages/snd/9/source/library/cmn/slib.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/slib.c:
 	.text       start:0x8036D3D4 end:0x8036D53C
 
-Packages/snd/9/source/library/cmn/slinklst.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/slinklst.c:
 	.text       start:0x8036D53C end:0x8036D668
 
-Packages/snd/9/source/library/cmn/smemhigh.cpp:
+Speed/Indep/Libs/snd/9/source/library/cmn/smemhigh.cpp:
 	.text       start:0x8036D668 end:0x8036D688
 
-Packages/snd/9/source/library/cmn/SNDI_cos.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/SNDI_cos.c:
 	.text       start:0x8036D688 end:0x8036D720
 
-Packages/snd/9/source/library/cmn/SNDI_sin.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/SNDI_sin.c:
 	.text       start:0x8036D720 end:0x8036D7B4
 
-Packages/snd/9/source/library/cmn/soutputmap.cpp:
+Speed/Indep/Libs/snd/9/source/library/cmn/soutputmap.cpp:
 	.text       start:0x8036D7B4 end:0x8036D7B4
 
-Packages/snd/9/source/library/cmn/sover.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/sover.c:
 	.text       start:0x8036D7B4 end:0x8036D7D8
 
-Packages/snd/9/source/library/cmn/spantoaz.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/spantoaz.c:
 	.text       start:0x8036D7D8 end:0x8036D7EC
 	.data       start:0x804514E4 end:0x804515E4
 
-Packages/snd/9/source/library/cmn/spat2hdr.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/spat2hdr.c:
 	.text       start:0x8036D7EC end:0x8036DD08
 
-Packages/snd/9/source/library/cmn/spktctoh.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/spktctoh.c:
 	.text       start:0x8036DD08 end:0x8036DD90
 
-Packages/snd/9/source/library/cmn/sprofvoc.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/sprofvoc.c:
 	.text       start:0x8036DD90 end:0x8036DE54
 
-Packages/snd/9/source/library/cmn/sreallocbuf.cpp:
+Speed/Indep/Libs/snd/9/source/library/cmn/sreallocbuf.cpp:
 	.text       start:0x8036DE54 end:0x8036DEE8
 
-Packages/snd/9/source/library/cmn/srrange.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/srrange.c:
 	.text       start:0x8036DEE8 end:0x8036DF44
 
-Packages/snd/9/source/library/extern/coda/cmn/coda.cpp:
+Speed/Indep/Libs/snd/9/source/library/extern/coda/cmn/coda.cpp:
 	.text       start:0x8036DF44 end:0x8036DF5C
 	.data       start:0x804515E4 end:0x804515E8
 	.bss        start:0x804CC6B8 end:0x804CC6C0
 
-Packages/snd/9/source/library/extern/coda/cmn/setmemcpy.cpp:
+Speed/Indep/Libs/snd/9/source/library/extern/coda/cmn/setmemcpy.cpp:
 	.text       start:0x8036DF5C end:0x8036DF6C
 
-Packages/snd/9/source/library/gc/saramman.c:
+Speed/Indep/Libs/snd/9/source/library/gc/saramman.c:
 	.text       start:0x8036DF6C end:0x8036E48C
 	.bss        start:0x804CC6C0 end:0x804CC6D0
 
-Packages/snd/9/source/library/mix/sfamplf.c:
+Speed/Indep/Libs/snd/9/source/library/mix/sfamplf.c:
 	.text       start:0x8036E48C end:0x8036E5A4
 
-Packages/snd/9/source/library/mix/sfbpffir8.c:
+Speed/Indep/Libs/snd/9/source/library/mix/sfbpffir8.c:
 	.text       start:0x8036E5A4 end:0x8036E730
 
-Packages/snd/9/source/library/mix/sfecho.c:
+Speed/Indep/Libs/snd/9/source/library/mix/sfecho.c:
 	.text       start:0x8036E730 end:0x8036EA40
 
-Packages/snd/9/source/library/mix/sfft24.c:
+Speed/Indep/Libs/snd/9/source/library/mix/sfft24.c:
 	.text       start:0x8036EA40 end:0x8036EAB8
 
-Packages/snd/9/source/library/mix/sfhpffir8.c:
+Speed/Indep/Libs/snd/9/source/library/mix/sfhpffir8.c:
 	.text       start:0x8036EAB8 end:0x8036EC10
 
-Packages/snd/9/source/library/mix/sfilter.c:
+Speed/Indep/Libs/snd/9/source/library/mix/sfilter.c:
 	.text       start:0x8036EC10 end:0x8036EDBC
 
-Packages/snd/9/source/library/mix/sfir.c:
+Speed/Indep/Libs/snd/9/source/library/mix/sfir.c:
 	.text       start:0x8036EDBC end:0x8036F164
 
-Packages/snd/9/source/library/mix/sfir8.c:
+Speed/Indep/Libs/snd/9/source/library/mix/sfir8.c:
 	.text       start:0x8036F164 end:0x8036F250
 
-Packages/snd/9/source/library/mix/sflpf.c:
+Speed/Indep/Libs/snd/9/source/library/mix/sflpf.c:
 	.text       start:0x8036F250 end:0x8036F408
 
-Packages/snd/9/source/library/mix/sflpffir8.c:
+Speed/Indep/Libs/snd/9/source/library/mix/sflpffir8.c:
 	.text       start:0x8036F408 end:0x8036F560
 
-Packages/snd/9/source/library/mix/sfmixer.c:
+Speed/Indep/Libs/snd/9/source/library/mix/sfmixer.c:
 	.text       start:0x8036F560 end:0x8036F6BC
 
-Packages/snd/9/source/library/mix/sfreson.c:
+Speed/Indep/Libs/snd/9/source/library/mix/sfreson.c:
 	.text       start:0x8036F6BC end:0x8036FA0C
 
-Packages/snd/9/source/library/mix/sfrsf.c:
+Speed/Indep/Libs/snd/9/source/library/mix/sfrsf.c:
 	.text       start:0x8036FA0C end:0x8036FD48
 
-Packages/snd/9/source/library/mix/sfsplit.c:
+Speed/Indep/Libs/snd/9/source/library/mix/sfsplit.c:
 	.text       start:0x8036FD48 end:0x8036FEC4
 
-Packages/snd/9/source/library/mix/sfsrc.c:
+Speed/Indep/Libs/snd/9/source/library/mix/sfsrc.c:
 	.text       start:0x8036FEC4 end:0x8036FF58
 
-Packages/snd/9/source/library/mix/sinit16.c:
+Speed/Indep/Libs/snd/9/source/library/mix/sinit16.c:
 	.text       start:0x8036FF58 end:0x8036FFA0
 
-Packages/snd/9/source/library/mix/sinitut.c:
+Speed/Indep/Libs/snd/9/source/library/mix/sinitut.c:
 	.text       start:0x8036FFA0 end:0x80370000
 
-Packages/snd/9/source/library/mix/sinitxa.c:
+Speed/Indep/Libs/snd/9/source/library/mix/sinitxa.c:
 	.text       start:0x80370000 end:0x80370048
 
-Packages/snd/9/source/library/mix/smixc.c:
+Speed/Indep/Libs/snd/9/source/library/mix/smixc.c:
 	.text       start:0x80370048 end:0x80370078
 
-Packages/snd/9/source/library/mix/supf.c:
+Speed/Indep/Libs/snd/9/source/library/mix/supf.c:
 	.text       start:0x80370078 end:0x80370198
 
-Packages/snd/9/source/library/mix/suplf.c:
+Speed/Indep/Libs/snd/9/source/library/mix/suplf.c:
 	.text       start:0x80370198 end:0x803702A0
 
-Packages/snd/9/source/library/mix/supmutf.c:
+Speed/Indep/Libs/snd/9/source/library/mix/supmutf.c:
 	.text       start:0x803702A0 end:0x80370464
 
-Packages/snd/9/source/library/mix/supmutlf.c:
+Speed/Indep/Libs/snd/9/source/library/mix/supmutlf.c:
 	.text       start:0x80370464 end:0x80370640
 
-Packages/snd/9/source/library/mix/supmutpf.c:
+Speed/Indep/Libs/snd/9/source/library/mix/supmutpf.c:
 	.text       start:0x80370640 end:0x80370954
 
-Packages/snd/9/source/library/mix/suppf.c:
+Speed/Indep/Libs/snd/9/source/library/mix/suppf.c:
 	.text       start:0x80370954 end:0x80370AF8
 
-Packages/snd/9/source/library/mix/supxaf.cpp:
+Speed/Indep/Libs/snd/9/source/library/mix/supxaf.cpp:
 	.text       start:0x80370AF8 end:0x80370C50
 
-Packages/snd/9/source/library/mix/supxalf.cpp:
+Speed/Indep/Libs/snd/9/source/library/mix/supxalf.cpp:
 	.text       start:0x80370C50 end:0x80370FE4
 
-Packages/snd/9/source/library/mix/supxapf.cpp:
+Speed/Indep/Libs/snd/9/source/library/mix/supxapf.cpp:
 	.text       start:0x80370FE4 end:0x80371258
 
-Packages/snd/9/source/library/cmn/sgparse.cpp:
+Speed/Indep/Libs/snd/9/source/library/cmn/sgparse.cpp:
 	.text       start:0x80371258 end:0x80371460
 
-Packages/snd/9/source/library/cmn/SNDI_mult16.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/SNDI_mult16.c:
 	.text       start:0x80371460 end:0x80371494
 
-Packages/snd/9/source/library/cmn/SNDI_root1x.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/SNDI_root1x.c:
 	.text       start:0x80371494 end:0x80371524
 
-Packages/snd/9/source/library/extern/coda/cmn/eaxadecf.cpp:
+Speed/Indep/Libs/snd/9/source/library/extern/coda/cmn/eaxadecf.cpp:
 	.text       start:0x80371524 end:0x80371A48
 	.data       start:0x804515E8 end:0x80451A08
 
-Packages/snd/9/source/library/extern/coda/cmn/mtdecf.cpp:
+Speed/Indep/Libs/snd/9/source/library/extern/coda/cmn/mtdecf.cpp:
 	.text       start:0x80371A48 end:0x80372D10
 	.data       start:0x80451A08 end:0x80451E88
 
-Packages/snd/9/source/library/mix/scrsfl.c:
+Speed/Indep/Libs/snd/9/source/library/mix/scrsfl.c:
 	.text       start:0x80372D10 end:0x80372DD4
 
-Packages/snd/9/source/library/cmn/SNDI_findprime.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/SNDI_findprime.c:
 	.text       start:0x80372DD4 end:0x80372ED0
 
 Speed/Indep/Libs/realcore/6.24.00/source/file/cmn/filesys_c.cpp:
@@ -1453,16 +1453,16 @@ Packages/eathread/1.1.0/source/eathread_thread.cpp:
 	.text       start:0x803A3058 end:0x803A30AC
 	.ctors      start:0x803C8C1C end:0x803C8C20
 
-Packages/snd/9/source/library/cmn/sbpatinf.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/sbpatinf.c:
 	.text       start:0x803A30AC end:0x803A3190
 
-Packages/snd/9/source/library/cmn/sgetpvol.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/sgetpvol.c:
 	.text       start:0x803A3190 end:0x803A3224
 	.rodata     start:0x80415154 end:0x80415160
 
-Packages/snd/9/source/library/cmn/sstgetpv.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/sstgetpv.c:
 	.text       start:0x803A3224 end:0x803A32BC
 	.rodata     start:0x80415160 end:0x8041516C
 
-Packages/snd/9/source/library/cmn/stimerem.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/stimerem.c:
 	.text       start:0x803A32BC end:0x803A3398

@@ -12,7 +12,7 @@
 #ifndef AUDIOMEMORYMANAGER_HPP
 #define AUDIOMEMORYMANAGER_HPP
 
-#include "types.h"
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
 
 extern char *g_pcsCSISAllocString;
 enum eAUDMEMPOOLTYPE {

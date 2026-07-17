@@ -1,4 +1,4 @@
-#include "snd/9/source/library/cmn/sndcmn.h"
+#include "./sndcmn.h"
 
 int SNDI_cheapsqrt(int val) {
     int i = 0;

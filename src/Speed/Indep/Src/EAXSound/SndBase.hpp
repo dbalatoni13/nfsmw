@@ -45,6 +45,16 @@ class SndBase : public AudioMemBase {
     ~SndBase() override;
     virtual TypeInfo *GetTypeInfo() const;
     virtual const char *GetTypeName() const;
+    static SndBase::TypeInfo *GetStaticTypeInfo();
+
+    int GetObjectIndex() {
+        return MASK_OBJIDX(GetTypeInfo()->ObjectID);
+    }
+
+    int GetGroupID() {
+        return MASK_GRPID(this->objectID);
+    }
+
     virtual int GetController(int Index) {
         return -1;
     }
