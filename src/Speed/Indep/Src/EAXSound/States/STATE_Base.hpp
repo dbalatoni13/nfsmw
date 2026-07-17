@@ -101,6 +101,14 @@ class CSTATE_Base : public AudioMemBase {
 
     bool IsDataLoaded(void);
 
+    bool IsAttached() {
+        return bIsAttached;
+    }
+
+    bool IsAttachedToThis(void *testattachment) {
+        return testattachment == m_pAttachment;
+    }
+
     // void *operator new(size_t s) {
     //     return gAudioMemoryManager.AllocateMemory(s, GetStaticStateInfo()->stateName, false);
     // }

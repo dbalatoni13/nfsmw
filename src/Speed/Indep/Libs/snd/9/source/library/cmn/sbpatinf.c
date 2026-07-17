@@ -1,4 +1,4 @@
-#include "snd/9/source/library/cmn/sndcmn.h"
+#include "./sndcmn.h"
 
 int SNDBANK_patchinfo(int bhandle, int patnum, SNDSAMPLEFORMAT *pssf, SNDSAMPLEATTR *pssa, SNDSAMPLEDESC *pssd) {
     TAGGEDPATCH *ptp;
