@@ -1,5 +1,6 @@
 #include "LobbyCore.hpp"
 #include "LobbyGames.hpp"
+#include "LobbyGameSessions.hpp"
 
 void *operator new(size_t size, const char *file, int line, int allocationParams);
 void *operator new[](size_t size, const char *file, int line, int allocationParams);

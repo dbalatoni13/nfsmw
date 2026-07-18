@@ -1,4 +1,5 @@
 #include "LobbyGames.hpp"
+#include "LobbyGameSessions.hpp"
 
 extern "C" {
 int PingManagerPingAddress(LobbyPingManagerRefT *pingManager, DirtyAddrT *address, LobbyPingManagerCallbackT *func, void *context);

@@ -141,28 +141,7 @@ void LobbyDisconnect();
 
 struct LobbyGames;
 
-struct LobbyGameSessions {
-    enum SessionStatusCode {
-        SESSION_DELETED = 0,
-        SESSION_CHANGED = 1,
-        SESSION_LIST_CHANGED = 2,
-        SESSION_KICKED = 3,
-        GAME_STARTED = 4
-    };
-
-    static LobbyGameSessions &Instance();
-    GameSession *GetMySession();
-    void SendUpdateCallback(SessionStatusCode status);
-
-  private:
-    int32 Init();
-    void Reset();
-    void Suspend();
-    void Resume();
-    friend int32 LobbyInit();
-    friend void LobbyDisconnect();
-    friend class LobbyCore;
-};
+struct LobbyGameSessions;
 
 struct LobbyUsers {
     static LobbyUsers &Instance();
