@@ -12,11 +12,25 @@ LobbyPingManagerRefT *PingManagerCreate(int timeout);
 void PingManagerDestroy(LobbyPingManagerRefT *pingManager);
 int TagFieldPrintf(char *buffer, int bufferSize, const char *format, ...);
 void TagFieldSetEpoch(char *buffer, int bufferSize, const char *name, uint32 epoch);
+char *NetConnMAC();
+LobbyApiRefT *LobbyApiCreate(const char *version, void *ref, void (*printfn)(void *, const char *));
+int LobbyApiControl(LobbyApiRefT *lobbyRef, int selector, int value);
+void LobbyApiSetCallback(LobbyApiRefT *lobbyRef, LobbyApiCBTypeE type, LobbyApiCallbackT *callback, void *context);
 }
 
 struct BuildRegion {
+    static char *GetAbbreviation();
     static char *GetSkuCode();
+    static char *GetSlusCode();
 };
+
+struct ISOCodes {
+    static char *GetCountryISOCode();
+    static char *GetLanguageISOCode();
+};
+
+extern int BuildVersionChangelistNumber;
+void GetGameVersionNumberString(char *buffer, int bufferSize);
 
 LobbyCore::LobbyCore()
     : pLobbyRef(nullptr),             //
@@ -330,4 +344,53 @@ void LobbyCore::LobbyPrintf(void *ref, const char *text) {
     if (text) {
         bStrLen(text);
     }
+}
+
+int32 LobbyCore::Init() {
+    if (pLobbyRef) {
+        return 0;
+    }
+
+    char vers[1024] = "";
+    char *productName;
+    char *year;
+    char *platform;
+
+    TagFieldSetString(vers, sizeof(vers), "REGN", BuildRegion::GetAbbreviation());
+    TagFieldSetNumber(vers, sizeof(vers), "CLST", BuildVersionChangelistNumber);
+    TagFieldSetNumber(vers, sizeof(vers), "NETV", NetworkCore::Instance().GetNetworkVersionNumber());
+    if (ISOCodes::GetCountryISOCode()) {
+        TagFieldSetString(vers, sizeof(vers), "FROM", ISOCodes::GetCountryISOCode());
+    }
+    if (ISOCodes::GetLanguageISOCode()) {
+        TagFieldSetString(vers, sizeof(vers), "LANG", ISOCodes::GetLanguageISOCode());
+    }
+    TagFieldSetString(vers, sizeof(vers), "MID", NetConnMAC());
+
+    productName = OLGetProductName();
+    year = OLGetProductYear();
+    platform = OLGetPlatform();
+    char temp[64] = "";
+    bSPrintf(temp, "%s-%s-%s", productName, platform, year);
+    TagFieldSetString(vers, sizeof(vers), "PROD", temp);
+
+    char version[16] = "";
+    GetGameVersionNumberString(version, sizeof(version));
+    bSPrintf(temp, "%s/%s-%s", platform, version, "Sep 20 2005");
+    TagFieldSetString(vers, sizeof(vers), "VERS", temp);
+    TagFieldSetString(vers, sizeof(vers), "SLUS", BuildRegion::GetSlusCode());
+    TagFieldSetString(vers, sizeof(vers), "SKU", BuildRegion::GetSkuCode());
+
+    pingManagerRef = PingManagerCreate(1000);
+    pLobbyRef = LobbyApiCreate(vers, nullptr, LobbyPrintf);
+    if (!pLobbyRef) {
+        Reset();
+        return -1;
+    }
+
+    LobbyApiControl(pLobbyRef, 'itim', 40000);
+    LobbyApiSetCallback(pLobbyRef, LOBBYAPI_CBTYPE_CONN, GlobalConnStatusCB, this);
+    LobbyApiSetCallback(pLobbyRef, LOBBYAPI_CBTYPE_RESP, GlobalResponseCB, this);
+    LobbyApiSetCallback(pLobbyRef, LOBBYAPI_CBTYPE_EVNT, GlobalEventCB, this);
+    return 0;
 }

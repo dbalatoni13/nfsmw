@@ -201,6 +201,9 @@ class LobbyCore {
                        CommandCBFunc commandCB, void *commandContext, bool makeNextCommand);
     int32 FindCommandID(int kind, LobbyApiCallbackT *lobbyCB, void *lobbyContext, CommandCBFunc commandCB, void *commandContext);
     static void RankCB(LobbyApiRefT *lobbyRef, LobbyApiMsgT *msg, void *context);
+    static void GlobalConnStatusCB(LobbyApiRefT *lobbyRef, LobbyApiMsgT *msg, void *context);
+    static void GlobalResponseCB(LobbyApiRefT *lobbyRef, LobbyApiMsgT *msg, void *context);
+    static void GlobalEventCB(LobbyApiRefT *lobbyRef, LobbyApiMsgT *msg, void *context);
     void AbortCurrentCommand();
     void AbortAllCommands_HaveMutex();
     void FinishCommand(LobbyApiMsgT *msg, bool doCallback);
