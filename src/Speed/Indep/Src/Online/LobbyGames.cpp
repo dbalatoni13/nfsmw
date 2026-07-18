@@ -1,5 +1,9 @@
 #include "LobbyGames.hpp"
 
+extern "C" {
+int PingManagerPingAddress(LobbyPingManagerRefT *pingManager, DirtyAddrT *address, LobbyPingManagerCallbackT *func, void *context);
+}
+
 LobbyGames::LobbyGames()
     : resultUpdateCB(nullptr), //
       resultContext(nullptr) {
@@ -98,4 +102,63 @@ LobbyApiPlayT *LobbyGames::GetMyGame() const {
         game = const_cast<LobbyApiPlayT *>(&myCurrentGame);
     }
     return game;
+}
+
+inline int LobbyGames::PingPlayer(const char *persona, LobbyApiPlayT *game, LobbyPingManagerCallbackT *func, void *context) {
+    LobbyApiPlayT *theGame = game ? game : GetMyGame();
+    if (!theGame) {
+        return -1;
+    }
+    if (!persona) {
+        persona = FEDatabase->OnlineSettings.GetLobbyPersona();
+    }
+    for (int i = 0; i < theGame->iCount; i++) {
+        if (bStrCmp(persona, theGame->aOpponents[i].strPers) == 0) {
+            int rc = DoPing(i, theGame, func, context);
+            return rc;
+        }
+    }
+    return -1;
+}
+
+inline int LobbyGames::PingPlayer(int index, LobbyApiPlayT *game, LobbyPingManagerCallbackT *func, void *context) {
+    int rc = -1;
+    LobbyApiPlayT *theGame = game ? game : GetMyGame();
+    if (theGame && index >= 0 && index < theGame->iCount) {
+        rc = DoPing(index, theGame, func, context);
+    }
+    return rc;
+}
+
+inline void LobbyGames::AbortCommand(int32 commandID) { LobbyCore::Instance().AbortCommand(commandID); }
+
+int32 LobbyGames::Init() {
+    int32 rc = -1;
+    if (LobbyCore::Instance().pLobbyRef) {
+        Reset();
+        if (LobbyCore::Instance().RegisterGlobalCallback(LOBBYAPI_CBTYPE_EVNT, GlobalEventCB, this) < 0) {
+            Reset();
+        } else {
+            rc = 0;
+        }
+    }
+    return rc;
+}
+
+void LobbyGames::Reset() {
+    LobbyCore::Instance().UnregisterGlobalCallback(LOBBYAPI_CBTYPE_EVNT, GlobalEventCB, this);
+    resultUpdateCB = nullptr;
+    resultContext = nullptr;
+    bMemSet(&myCurrentGame, 0, sizeof(myCurrentGame));
+    myCurrentGame.iIdent = -1;
+}
+
+inline int LobbyGames::DoPing(int index, LobbyApiPlayT *game, LobbyPingManagerCallbackT *func, void *context) {
+    LobbyApiPlayT *theGame = game ? game : GetMyGame();
+    if (!theGame || index < 0 || index >= theGame->iCount) {
+        return -1;
+    }
+    DirtyAddrT addr;
+    DirtyAddrFromHostAddr(&addr, &theGame->aOpponents[index].uAddr);
+    return PingManagerPingAddress(LobbyCore::Instance().pingManagerRef, &addr, func, context);
 }
