@@ -23,7 +23,8 @@ struct ConnApiCbInfoT;
 
 typedef void ConnApiCallbackT(ConnApiRefT *, ConnApiCbInfoT *, void *);
 typedef void LobbyApiCallbackT(LobbyApiRefT *, LobbyApiMsgT *, void *);
-typedef void (*CommandCBFunc)(LobbyApiMsgT *, void *);
+
+#include "LobbyRanks.hpp"
 
 enum LobbyApiCBTypeE {
     LOBBYAPI_CBTYPE_INVALID = -1,
@@ -91,16 +92,6 @@ struct LobbyGameSessions {
 
 struct LobbyChat {
     static LobbyChat &Instance();
-
-  private:
-    int32 Init();
-    void Reset();
-    friend int32 LobbyInit();
-    friend void LobbyDisconnect();
-};
-
-struct LobbyRanks {
-    static LobbyRanks &Instance();
 
   private:
     int32 Init();
@@ -214,11 +205,14 @@ class LobbyCore {
     static void GlobalResponseCB(LobbyApiRefT *lobbyRef, LobbyApiMsgT *msg, void *context);
     static void GlobalEventCB(LobbyApiRefT *lobbyRef, LobbyApiMsgT *msg, void *context);
     static void DefaultCB(LobbyApiRefT *lobbyRef, LobbyApiMsgT *msg, void *context);
+    void StartGroup() { groupStarted = true; }
+    void EndGroup() { groupStarted = false; }
     void AbortCurrentCommand();
     void AbortAllCommands_HaveMutex();
     void FinishCommand(LobbyApiMsgT *msg, bool doCallback);
     friend int32 LobbyInit();
     friend void LobbyDisconnect();
+    friend struct LobbyRanks;
 
     bTList<GlobalCB> globalCBList[6];
     bTList<LobbyCommand> lobbyCommandQueue;
