@@ -11,3 +11,5 @@
 #include "Speed/Indep/Src/Online/NetworkCore.cpp"
 
 #include "Speed/Indep/Src/Online/LobbyLogin.cpp"
+
+#include "Speed/Indep/Src/Online/LobbyCore.cpp"

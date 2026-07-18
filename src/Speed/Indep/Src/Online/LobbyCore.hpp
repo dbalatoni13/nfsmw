@@ -8,11 +8,14 @@
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 
 struct LobbyApiRefT;
+struct LobbyApiMsgT;
 struct LobbyPingManagerRefT;
 struct ConnApiRefT;
 struct ConnApiCbInfoT;
 
 typedef void ConnApiCallbackT(ConnApiRefT *, ConnApiCbInfoT *, void *);
+typedef void LobbyApiCallbackT();
+typedef void (*CommandCBFunc)();
 
 int32 LobbyInit();
 void LobbyDisconnect();
@@ -95,9 +98,30 @@ struct ConnectionCore {
 
 class LobbyCore {
   public:
-    struct GlobalCB;
-    struct LobbyCommand;
-    struct RaceResults;
+    struct GlobalCB : bTNode<GlobalCB> {
+        LobbyApiCallbackT *cbFunc;
+        void *context;
+    };
+
+    struct LobbyCommand : bTNode<LobbyCommand> {
+        int kind;
+        char *req;
+        LobbyApiCallbackT *lobbyCB;
+        void *lobbyContext;
+        CommandCBFunc commandCB;
+        void *commandContext;
+        int32 commandID;
+        int32 groupID;
+        int lobbyCallbackID;
+    };
+
+    struct RaceResults {
+        char auth[64];
+        uint64 when;
+        char rept[16];
+        char name[4][16];
+        char results[1024];
+    };
 
     typedef void (*DisconnectCBFunc)();
 
@@ -110,6 +134,7 @@ class LobbyCore {
   private:
     int32 Init();
     void Reset();
+    void FinishCommand(LobbyApiMsgT *msg, bool doCallback);
     friend int32 LobbyInit();
     friend void LobbyDisconnect();
 
