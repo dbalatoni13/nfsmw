@@ -124,3 +124,73 @@ int32 LobbyChat::RespondToInvite(const char *fromPlayer, int gameIdent, LobbyCha
     lobbyMutex.Unlock("LobbyChat::RespondToInvite");
     return rc;
 }
+
+Invite *LobbyChat::GetReceivedInvite(const char *fromPlayer, int gameIdent) {
+    lobbyMutex.Lock("LobbyChat::GetReceivedInvite");
+    Invite *node;
+    for (node = receivedInvites.GetHead(); node != receivedInvites.EndOfList(); node = node->GetNext()) {
+        if (gameIdent == node->gameIdent && bStrCmp(fromPlayer, node->player) == 0) {
+            break;
+        }
+    }
+    Invite *rc = nullptr;
+    if (node != receivedInvites.EndOfList()) {
+        rc = node;
+    }
+    lobbyMutex.Unlock("LobbyChat::GetReceivedInvite");
+    return rc;
+}
+
+Invite *LobbyChat::GetReceivedInvite(uint32 index) {
+    lobbyMutex.Lock("LobbyChat::GetReceivedInvite");
+    uint32 i = 0;
+    Invite *node = receivedInvites.GetHead();
+    while (node != receivedInvites.EndOfList() && i != index) {
+        node = node->GetNext();
+        i++;
+    }
+    Invite *rc = node;
+    if (node == receivedInvites.EndOfList()) {
+        rc = nullptr;
+    }
+    lobbyMutex.Unlock("LobbyChat::GetReceivedInvite");
+    return rc;
+}
+
+Invite *LobbyChat::GetSentInvite(const char *toPlayer) {
+    lobbyMutex.Lock("LobbyChat::GetSentInvite");
+    Invite *node;
+    for (node = sentInvites.GetHead(); node != sentInvites.EndOfList(); node = node->GetNext()) {
+        if (bStrCmp(toPlayer, node->player) == 0) {
+            break;
+        }
+    }
+    Invite *rc = nullptr;
+    if (node != sentInvites.EndOfList()) {
+        rc = node;
+    }
+    lobbyMutex.Unlock("LobbyChat::GetSentInvite");
+    return rc;
+}
+
+Invite *LobbyChat::GetSentInvite(uint32 index) {
+    lobbyMutex.Lock("LobbyChat::GetSentInvite");
+    uint32 i = 0;
+    Invite *node = sentInvites.GetHead();
+    while (node != sentInvites.EndOfList() && i != index) {
+        node = node->GetNext();
+        i++;
+    }
+    Invite *rc = node;
+    if (node == sentInvites.EndOfList()) {
+        rc = nullptr;
+    }
+    lobbyMutex.Unlock("LobbyChat::GetSentInvite");
+    return rc;
+}
+
+inline int LobbyChat::GetNumSentInvites() { return sentInvites.CountElements(); }
+
+inline int LobbyChat::GetNumReceivedInvites() { return receivedInvites.CountElements(); }
+
+inline void LobbyChat::AbortCommand() { LobbyCore::Instance().AbortCommand(nullptr, true); }

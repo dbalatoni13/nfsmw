@@ -10,6 +10,7 @@
 
 struct LobbyApiMsgT;
 struct LobbyApiPlayT;
+struct LobbyApiRefT;
 struct LobbyApiUserSetT;
 typedef void (*CommandCBFunc)(LobbyApiMsgT *, void *);
 
@@ -78,6 +79,13 @@ struct LobbyChat {
     int32 CancelInvite(const char *toPlayer);
     int32 CancelAllInvites();
     int32 RespondToInvite(const char *fromPlayer, int gameIdent, LobbyChatN::InviteResponse response);
+    Invite *GetReceivedInvite(const char *fromPlayer, int gameIdent);
+    Invite *GetReceivedInvite(uint32 index);
+    Invite *GetSentInvite(const char *toPlayer);
+    Invite *GetSentInvite(uint32 index);
+    inline int GetNumSentInvites();
+    inline int GetNumReceivedInvites();
+    inline void AbortCommand();
 
   private:
     int32 Init();
@@ -85,6 +93,7 @@ struct LobbyChat {
     int32 SendCancelInvite(Invite *node);
     int32 CancelAllInvites_HaveMutex();
     int32 RespondToInvite_HaveMutex(const char *fromPlayer, int gameIdent, LobbyChatN::InviteResponse response);
+    static void GlobalChatCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData);
     static int InviteTimeoutFunc(void *context);
     friend int32 LobbyInit();
     friend void LobbyDisconnect();
