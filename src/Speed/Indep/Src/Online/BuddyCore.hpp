@@ -8,6 +8,8 @@
 struct BuddyCore {
     static BuddyCore *instance();
     void disconnect();
+    void pause();
+    int resume();
 };
 
 #endif
