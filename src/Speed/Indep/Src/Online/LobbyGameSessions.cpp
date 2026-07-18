@@ -175,3 +175,19 @@ void LobbyGameSessions::FinishSessionChanges() {
     LobbyUsers::Instance().SetSessionChangeFlag(false);
     lobbyMutex.Unlock("LobbyGameSessions::FinishSessionChanges");
 }
+
+bool LobbyGameSessions::IsMemberMakingChanges(int32 index) {
+    lobbyMutex.Lock("LobbyGameSessions::IsMemberMakingChanges");
+    bool rc = IsMemberMakingChanges_HaveMutex(index);
+    lobbyMutex.Unlock("LobbyGameSessions::IsMemberMakingChanges");
+    return rc;
+}
+
+bool LobbyGameSessions::IsMemberMakingChanges_HaveMutex(int32 index) {
+    GameSessionMember *member = GetMemberByIndex_HaveMutex(index);
+    bool makingChanges = false;
+    if (member) {
+        makingChanges = TagFieldGetNumber(TagFieldFind(member->strAux, "SCF"), 0) != 0;
+    }
+    return makingChanges;
+}
