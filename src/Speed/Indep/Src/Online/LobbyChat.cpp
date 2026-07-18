@@ -194,3 +194,32 @@ inline int LobbyChat::GetNumSentInvites() { return sentInvites.CountElements(); 
 inline int LobbyChat::GetNumReceivedInvites() { return receivedInvites.CountElements(); }
 
 inline void LobbyChat::AbortCommand() { LobbyCore::Instance().AbortCommand(nullptr, true); }
+
+int32 LobbyChat::Init() {
+    int32 rc = -1;
+    if (LobbyCore::Instance().pLobbyRef) {
+        if (LobbyApiSetCallback(LobbyCore::Instance().pLobbyRef, LOBBYAPI_CBTYPE_CHAT, GlobalChatCB, this) < 0) {
+            Reset();
+        } else {
+            rc = 0;
+        }
+    }
+    return rc;
+}
+
+void LobbyChat::Reset() {
+    CancelAllInvites_HaveMutex();
+    Invite *node = receivedInvites.GetHead();
+    while (node != receivedInvites.EndOfList()) {
+        if (RespondToInvite(node->player, node->gameIdent, LobbyChatN::RESPONSE_DECLINE) < 0) {
+            delete receivedInvites.RemoveHead();
+        }
+        node = receivedInvites.GetHead();
+    }
+    NetworkCore::Instance().UnregisterProcessingFunc(InviteTimeoutFunc, this);
+    if (LobbyCore::Instance().pLobbyRef) {
+        LobbyApiSetCallback(LobbyCore::Instance().pLobbyRef, LOBBYAPI_CBTYPE_CHAT, nullptr, nullptr);
+    }
+    SetChatCallback(nullptr, nullptr);
+    SetInviteCallback(nullptr, nullptr);
+}

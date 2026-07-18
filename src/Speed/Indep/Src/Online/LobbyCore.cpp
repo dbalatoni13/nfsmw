@@ -16,7 +16,7 @@ void TagFieldSetEpoch(char *buffer, int bufferSize, const char *name, uint32 epo
 char *NetConnMAC();
 LobbyApiRefT *LobbyApiCreate(const char *version, void *ref, void (*printfn)(void *, const char *));
 int LobbyApiControl(LobbyApiRefT *lobbyRef, int selector, int value);
-void LobbyApiSetCallback(LobbyApiRefT *lobbyRef, LobbyApiCBTypeE type, LobbyApiCallbackT *callback, void *context);
+int LobbyApiSetCallback(LobbyApiRefT *lobbyRef, LobbyApiCBTypeE type, LobbyApiCallbackT *callback, void *context);
 void LobbyApiClearCallback(LobbyApiRefT *lobbyRef, LobbyApiCBTypeE type);
 void LobbyApiDisconnect(LobbyApiRefT *lobbyRef, int reason);
 void LobbyApiDestroy(LobbyApiRefT *lobbyRef);
