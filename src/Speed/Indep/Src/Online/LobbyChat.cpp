@@ -9,6 +9,22 @@ BuddySettings EA_Messenger_GetBuddySettingsByName(const char *name);
 
 char *GetLocalizedString(uint32 hash);
 
+static const char *ServerStatusMessages1[] = {
+    "has entered the room",
+    "has created the room",
+    "has left the room",
+    "has disconnected from server",
+    "is now the room host",
+    "is now the assistant room host",
+    "Disconnected due to inactivity",
+    "Maximum connection time exceeded"
+};
+
+static const char *ServerStatusMessages2[] = {
+    "You have been kicked out of the room by ",
+    "has been kicked out of the room by "
+};
+
 int LobbyChat::maxActiveInvites = 5;
 
 LobbyChat &LobbyChat::Instance() {
@@ -285,4 +301,25 @@ void LobbyChat::GlobalChatCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData
         }
         LobbyApiDebug(pRef, pMsg);
     }
+}
+
+bool LobbyChat::IsServerStatusMessage(const char *from, const char *msg) {
+    for (int i = 0; i < 8; i++) {
+        if (bStrICmp(msg, ServerStatusMessages1[i]) == 0) {
+            return true;
+        }
+    }
+
+    for (int i = 0; i < 2; i++) {
+        const char *serverMsg = ServerStatusMessages2[i];
+        int serverMsgLen = bStrLen(serverMsg);
+        if (bStrNICmp(msg, serverMsg, serverMsgLen) == 0 && !bStrChr(msg + serverMsgLen, ' ')) {
+            return true;
+        }
+    }
+
+    if (from && bStrCmp(from, "Server") == 0) {
+        return true;
+    }
+    return false;
 }
