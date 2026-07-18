@@ -1,8 +1,13 @@
 #include "LobbyChat.hpp"
+#include "BuddyCore.hpp"
 
 extern "C" {
 void TagFieldSetFlags(char *buffer, int bufferSize, const char *name, int flags);
+uint32 TagFieldGetFlags(const char *field, uint32 defaultValue);
+BuddySettings EA_Messenger_GetBuddySettingsByName(const char *name);
 }
+
+char *GetLocalizedString(uint32 hash);
 
 int LobbyChat::maxActiveInvites = 5;
 
@@ -222,4 +227,62 @@ void LobbyChat::Reset() {
     }
     SetChatCallback(nullptr, nullptr);
     SetInviteCallback(nullptr, nullptr);
+}
+
+void LobbyChat::GlobalChatCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData) {
+    LobbyChat *lobbyChat = static_cast<LobbyChat *>(pData);
+    char desc[64] = "";
+    char attrib[256] = "";
+    char fmt[256] = "";
+    bool pvt_msg = false;
+    char text[1024] = "";
+    uint32 flags;
+
+    TagFieldGetString(TagFieldFind(pMsg->pData, "N"), desc, sizeof(desc), "");
+    if (desc[0] == 'T' && desc[1] == 'o' && desc[2] == ' ') {
+        desc[0] = '-';
+        desc[1] = '>';
+    }
+
+    flags = TagFieldGetFlags(TagFieldFind(pMsg->pData, "F"), 0);
+    if (flags & 0x20000) {
+        TagFieldGetString(TagFieldFind(pMsg->pData, "T"), text, sizeof(text), "");
+        lobbyChat->ProcessInvite(desc, text);
+        return;
+    }
+    if (flags & 0x08000000) {
+        lobbyChat->ProcessCancelInvite(desc, TagFieldGetNumber(TagFieldFind(pMsg->pData, "T"), 0));
+        return;
+    }
+    if (flags & 0x74000040) {
+        lobbyChat->ProcessInviteResponse(desc, TagFieldGetNumber(TagFieldFind(pMsg->pData, "T"), 0), flags);
+        return;
+    }
+
+    TagFieldGetString(TagFieldFind(pMsg->pData, "T"), text, sizeof(text), "");
+    BuddySettings buddySettings;
+    if (!BuddyCore::instance()->getApiRef() ||
+        (!(buddySettings = EA_Messenger_GetBuddySettingsByName(desc)).pBuddy || !buddySettings.isBlocked)) {
+        if (pMsg->kind == 'chat') {
+            if (pMsg->code & 0x08000000) {
+                bSPrintf(fmt, "%s %s", desc, text);
+            } else {
+                bSPrintf(fmt, "%s%s> %s", desc, attrib, text);
+            }
+        } else if (pMsg->kind == 'priv') {
+            if (desc[0] == '-' && desc[1] == '>' && desc[2] == ' ') {
+                bSPrintf(fmt, "%s> %s", GetLocalizedString(0xda2b33af), text);
+            } else {
+                bSPrintf(fmt, "%s%s %s> %s", desc, attrib, GetLocalizedString(0xda2b33af), text);
+            }
+            pvt_msg = true;
+        }
+
+        if (!lobbyChat->IsServerStatusMessage(desc, text)) {
+            if (bStrLen(fmt) > 0 && lobbyChat->userChatCB && lobbyChat->pChatWindow) {
+                lobbyChat->userChatCB(lobbyChat->pChatWindow, fmt, pvt_msg, false, (pMsg->code >> 21) & 1);
+            }
+        }
+        LobbyApiDebug(pRef, pMsg);
+    }
 }

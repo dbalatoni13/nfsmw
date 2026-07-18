@@ -90,7 +90,12 @@ struct LobbyChat {
   private:
     int32 Init();
     void Reset();
+    bool IsServerStatusMessage(const char *from, const char *msg);
     int32 SendCancelInvite(Invite *node);
+    int32 QueueInviteResponse(const char *fromPlayer, int gameIdent, LobbyChatN::InviteResponse response);
+    void ProcessInvite(const char *from, const char *inviteDetails);
+    void ProcessCancelInvite(const char *from, int gameIdent);
+    void ProcessInviteResponse(const char *from, int gameIdent, uint32 flags);
     int32 CancelAllInvites_HaveMutex();
     int32 RespondToInvite_HaveMutex(const char *fromPlayer, int gameIdent, LobbyChatN::InviteResponse response);
     static void GlobalChatCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData);
