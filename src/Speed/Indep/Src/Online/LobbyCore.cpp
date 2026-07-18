@@ -281,3 +281,53 @@ int32 LobbyCore::FindCommandID(int kind, LobbyApiCallbackT *lobbyCB, void *lobby
     }
     return -1;
 }
+
+int LobbyCore::RegisterGlobalCallback(LobbyApiCBTypeE type, LobbyApiCallbackT *func, void *context) {
+    if (type < LOBBYAPI_CBTYPE_RESP || type > LOBBYAPI_CBTYPE_IDLE || !func) {
+        return -1;
+    }
+
+    for (GlobalCB *cb = globalCBList[type].GetHead(); cb != globalCBList[type].EndOfList(); cb = cb->GetNext()) {
+        if (cb->cbFunc == func && cb->context == context) {
+            return 0;
+        }
+    }
+
+    GlobalCB *cb = new ("d:/p4_apex1666_d1001856/mw/speed/indep/src/online/LobbyCore.cpp", 0x40d, 8) GlobalCB;
+    cb->cbFunc = func;
+    cb->context = context;
+    if (cb) {
+        globalCBList[type].AddTail(cb);
+        return 0;
+    }
+    return -1;
+}
+
+void LobbyCore::UnregisterGlobalCallback(LobbyApiCBTypeE type, LobbyApiCallbackT *func, void *context) {
+    if (type < LOBBYAPI_CBTYPE_RESP || type > LOBBYAPI_CBTYPE_IDLE) {
+        return;
+    }
+
+    for (GlobalCB *cb = globalCBList[type].GetHead(); cb != globalCBList[type].EndOfList(); cb = cb->GetNext()) {
+        if (cb->cbFunc == func && cb->context == context) {
+            delete globalCBList[type].Remove(cb);
+            return;
+        }
+    }
+}
+
+void LobbyCore::FinishCommand(LobbyApiMsgT *msg, bool doCallback) {
+    if (currentCommand) {
+        if (doCallback == true && currentCommand->commandCB) {
+            currentCommand->commandCB(msg, currentCommand->commandContext);
+        }
+        delete currentCommand;
+        currentCommand = nullptr;
+    }
+}
+
+void LobbyCore::LobbyPrintf(void *ref, const char *text) {
+    if (text) {
+        bStrLen(text);
+    }
+}

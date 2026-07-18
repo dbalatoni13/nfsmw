@@ -18,6 +18,17 @@ typedef void ConnApiCallbackT(ConnApiRefT *, ConnApiCbInfoT *, void *);
 typedef void LobbyApiCallbackT(LobbyApiRefT *, LobbyApiMsgT *, void *);
 typedef void (*CommandCBFunc)(LobbyApiMsgT *, void *);
 
+enum LobbyApiCBTypeE {
+    LOBBYAPI_CBTYPE_INVALID = -1,
+    LOBBYAPI_CBTYPE_RESP = 0,
+    LOBBYAPI_CBTYPE_CHAT = 1,
+    LOBBYAPI_CBTYPE_DISP = 2,
+    LOBBYAPI_CBTYPE_CONN = 3,
+    LOBBYAPI_CBTYPE_EVNT = 4,
+    LOBBYAPI_CBTYPE_IDLE = 5,
+    LOBBYAPI_CBTYPE_TOTAL = 6
+};
+
 namespace LobbyCoreN {
 enum OnlineDisconnectReason {
     DISC_DISCONNECTED = 0,
@@ -178,6 +189,9 @@ class LobbyCore {
     LobbyApiRefT *GetLobbyApiRef();
     void Suspend();
     void Resume(bool fullResume);
+    int RegisterGlobalCallback(LobbyApiCBTypeE type, LobbyApiCallbackT *func, void *context);
+    void UnregisterGlobalCallback(LobbyApiCBTypeE type, LobbyApiCallbackT *func, void *context);
+    static void LobbyPrintf(void *ref, const char *text);
 
   private:
     int32 Init();
