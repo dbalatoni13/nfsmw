@@ -126,3 +126,19 @@ void LobbyGameSessions::CreateGameInSession() {
     LobbyGames::Instance().CreateGame(myCurrentSession.strOwner, FEDatabase->OnlineSettings, RecreateGameCB, this);
     lobbyMutex.Unlock("LobbyGameSessions::CreateGameInSession");
 }
+
+int32 LobbyGameSessions::LeaveSession(CommandCBFunc leaveSessionCB, void *context) {
+    lobbyMutex.Lock("LobbyGameSessions::LeaveSession");
+    int32 rc = LeaveSession_HaveMutex(leaveSessionCB, context);
+    if (sessionMembers) {
+        LobbyApiListFree(LobbyCore::Instance().pLobbyRef, 0x18, sessionMembers);
+        sessionMembers = nullptr;
+    }
+    bMemSet(&myCurrentSession, 0, sizeof(myCurrentSession));
+    hostInactiveTimer = 0.0f;
+    hostStartSessionTimer = 0.0f;
+    hostHurryTimer = 0.0f;
+    myCurrentSession.iIdent = -1;
+    lobbyMutex.Unlock("LobbyGameSessions::LeaveSession");
+    return rc;
+}

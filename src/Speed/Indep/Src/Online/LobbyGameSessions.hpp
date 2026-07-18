@@ -81,6 +81,7 @@ struct LobbyGameSessions {
     void Reset();
     void Suspend();
     void Resume();
+    int32 LeaveSession_HaveMutex(CommandCBFunc leaveSessionCB, void *context);
     bool IsMemberMakingChanges_HaveMutex(int32 index);
     int GetMemberLatency_HaveMutex(int32 index);
     void UpdateSessionParams(char *params, int size);
