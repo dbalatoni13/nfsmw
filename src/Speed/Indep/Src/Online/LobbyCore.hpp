@@ -25,6 +25,7 @@ typedef void ConnApiCallbackT(ConnApiRefT *, ConnApiCbInfoT *, void *);
 typedef void LobbyApiCallbackT(LobbyApiRefT *, LobbyApiMsgT *, void *);
 
 #include "LobbyRanks.hpp"
+#include "LobbyChat.hpp"
 
 enum LobbyApiCBTypeE {
     LOBBYAPI_CBTYPE_INVALID = -1,
@@ -88,16 +89,6 @@ struct LobbyGameSessions {
     friend int32 LobbyInit();
     friend void LobbyDisconnect();
     friend class LobbyCore;
-};
-
-struct LobbyChat {
-    static LobbyChat &Instance();
-
-  private:
-    int32 Init();
-    void Reset();
-    friend int32 LobbyInit();
-    friend void LobbyDisconnect();
 };
 
 struct LobbyUsers {
@@ -213,6 +204,7 @@ class LobbyCore {
     friend int32 LobbyInit();
     friend void LobbyDisconnect();
     friend struct LobbyRanks;
+    friend struct LobbyChat;
 
     bTList<GlobalCB> globalCBList[6];
     bTList<LobbyCommand> lobbyCommandQueue;

@@ -1,0 +1,75 @@
+#ifndef ONLINE_LOBBY_CHAT_HPP
+#define ONLINE_LOBBY_CHAT_HPP
+
+#ifdef EA_PRAGMA_ONCE_SUPPORTED
+#pragma once
+#endif
+
+#include "Speed/Indep/Src/Misc/Timer.hpp"
+#include "Speed/Indep/bWare/Inc/bList.hpp"
+
+struct LobbyApiMsgT;
+typedef void (*CommandCBFunc)(LobbyApiMsgT *, void *);
+
+namespace LobbyChatN {
+enum CBReason {
+    REASON_INVALID = -1,
+    REASON_NEW_INVITE = 0,
+    REASON_CANCELLED_INVITE = 1,
+    REASON_ACCEPTED_INVITE = 2,
+    REASON_DECLINED_INVITE = 3,
+    REASON_DECLINED_INVITE_AND_BLOCKED = 4,
+    REASON_DECLINE_INVITE_LIST_FULL = 5,
+    REASON_DECLINE_PLAYER_IN_GAME = 6,
+    REASON_INVITE_TIMEOUT = 7
+};
+}
+
+enum InviteResponse {
+    RESPONSE_ACCEPT = 0,
+    RESPONSE_DECLINE = 1,
+    RESPONSE_DECLINE_BLOCK = 2,
+    RESPONSE_DECLINE_INVITE_LIST_FULL = 3,
+    RESPONSE_DECLINE_PLAYER_IN_GAME = 4,
+    NUM_RESPONSES = 5
+};
+
+typedef void (*LobbyChatCBFunc)(void *, char *, bool, bool, bool);
+typedef void (*InviteCBFunc)(const char *, int, LobbyChatN::CBReason, void *);
+
+struct Invite : bTNode<Invite> {
+    int gameIdent;
+    char player[20];
+    char *gameSettings;
+    Timer expireTime;
+};
+
+struct LobbyChat {
+    LobbyChat()
+        : userChatCB(nullptr),      //
+          pChatWindow(nullptr),     //
+          inviteCB(nullptr),        //
+          inviteCBContext(nullptr) {}
+    ~LobbyChat() { Reset(); }
+
+    static LobbyChat &Instance();
+    int32 SendChatMessage(const char *text, const char *toPersona, CommandCBFunc callback, void *context);
+    void SetChatCallback(void *chatWindow, LobbyChatCBFunc callback);
+    void SetInviteCallback(InviteCBFunc callback, void *context);
+
+  private:
+    int32 Init();
+    void Reset();
+    friend int32 LobbyInit();
+    friend void LobbyDisconnect();
+
+    LobbyChatCBFunc userChatCB;
+    void *pChatWindow;
+    bTList<Invite> sentInvites;
+    bTList<Invite> receivedInvites;
+    InviteCBFunc inviteCB;
+    void *inviteCBContext;
+    static int maxActiveInvites;
+};
+
+#endif
