@@ -9,6 +9,13 @@
 
 #include "Speed/Indep/Src/Gameplay/GRace.h"
 
+struct OnlineCfg {
+    static void ReadConfigFile(const char *filename);
+
+  private:
+    static void ProcessSetting(const char *attribute, const char *value);
+};
+
 // TODO right place for these?
 enum eOnlineGameDetails { eHOSTING = 0, eJOINING = 1, eVIEW_PLAYER = 2, eVIEW_GAME = 3 };
 
@@ -49,6 +56,7 @@ enum eOnlineState {
 
 // total size: 0x114
 struct cOnlineSettings {
+    friend struct OnlineCfg;
     /* 0x000 */ int iNumPlayers;
     static uint8 MaxOnlinePlayers;
     /* 0x004 */ uint8 MinOnlinePlayers;

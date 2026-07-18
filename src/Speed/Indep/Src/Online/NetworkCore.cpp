@@ -20,7 +20,7 @@ void TIMER_addtask(void (*timerRoutine)());
 void TIMER_removetask(void (*timerRoutine)());
 void LobbyDisconnect();
 
-extern bool NetworkUseLobbies;
+extern int NetworkUseLobbies;
 
 // TODO: Replace this with the original owner header when VoiceCore is reached in zOnline order.
 class VoiceCore {
