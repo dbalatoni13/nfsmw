@@ -203,3 +203,19 @@ void LobbyGameSessions::SetSessionRaceStatusInfo(int lap, int mapx, int mapy) {
     LobbyUsers::Instance().SetSessionRaceStatusInfo(lap, mapx, mapy);
     lobbyMutex.Unlock("LobbyGameSessions::StartSessionChanges");
 }
+
+int LobbyGameSessions::GetMemberLatency(int32 index) {
+    lobbyMutex.Lock("LobbyGameSessions::IsMemberMakingChanges");
+    int rc = GetMemberLatency_HaveMutex(index);
+    lobbyMutex.Unlock("LobbyGameSessions::IsMemberMakingChanges");
+    return rc;
+}
+
+int LobbyGameSessions::GetMemberLatency_HaveMutex(int32 index) {
+    GameSessionMember *member = GetMemberByIndex_HaveMutex(index);
+    int late = -1;
+    if (member) {
+        late = TagFieldGetNumber(TagFieldFind(member->strAux, "LT"), -1);
+    }
+    return late;
+}
