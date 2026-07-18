@@ -1,6 +1,7 @@
 #include "LobbyCore.hpp"
 
 void *operator new(size_t size, const char *file, int line, int allocationParams);
+void *operator new[](size_t size, const char *file, int line, int allocationParams);
 
 extern "C" {
 void LobbyApiUpdate(LobbyApiRefT *lobbyRef);
@@ -16,6 +17,11 @@ char *NetConnMAC();
 LobbyApiRefT *LobbyApiCreate(const char *version, void *ref, void (*printfn)(void *, const char *));
 int LobbyApiControl(LobbyApiRefT *lobbyRef, int selector, int value);
 void LobbyApiSetCallback(LobbyApiRefT *lobbyRef, LobbyApiCBTypeE type, LobbyApiCallbackT *callback, void *context);
+void LobbyApiClearCallback(LobbyApiRefT *lobbyRef, LobbyApiCBTypeE type);
+void LobbyApiDisconnect(LobbyApiRefT *lobbyRef, int reason);
+void LobbyApiDestroy(LobbyApiRefT *lobbyRef);
+void LobbyApiCancelCB(LobbyApiRefT *lobbyRef);
+void LobbyApiDebug(LobbyApiRefT *lobbyRef, LobbyApiMsgT *msg);
 }
 
 struct BuildRegion {
@@ -393,4 +399,137 @@ int32 LobbyCore::Init() {
     LobbyApiSetCallback(pLobbyRef, LOBBYAPI_CBTYPE_RESP, GlobalResponseCB, this);
     LobbyApiSetCallback(pLobbyRef, LOBBYAPI_CBTYPE_EVNT, GlobalEventCB, this);
     return 0;
+}
+
+void LobbyCore::Reset() {
+    int type;
+    for (type = 0; type < LOBBYAPI_CBTYPE_TOTAL; type++) {
+        while (!globalCBList[type].IsEmpty()) {
+            GlobalCB *cb = globalCBList[type].RemoveHead();
+            delete cb;
+        }
+    }
+
+    if (pLobbyRef) {
+        AbortAllCommands_HaveMutex();
+        for (LobbyApiCBTypeE cb = LOBBYAPI_CBTYPE_RESP; cb < LOBBYAPI_CBTYPE_TOTAL;
+             cb = static_cast<LobbyApiCBTypeE>(cb + 1)) {
+            LobbyApiClearCallback(pLobbyRef, cb);
+        }
+        LobbyApiDisconnect(pLobbyRef, 0);
+        if (pingManagerRef) {
+            PingManagerDestroy(pingManagerRef);
+            pingManagerRef = nullptr;
+        }
+        LobbyApiDestroy(pLobbyRef);
+        pLobbyRef = nullptr;
+    }
+
+    currentCommand = nullptr;
+    disconnectCB = nullptr;
+    disconnectContext = nullptr;
+    groupStarted = false;
+    raceResultsAccepted = false;
+    sendCDKey = false;
+}
+
+void LobbyCore::AbortCurrentCommand() {
+    if (currentCommand) {
+        if (currentCommand->lobbyCallbackID != -1) {
+            LobbyApiCancelCB(pLobbyRef);
+        }
+        delete currentCommand;
+        currentCommand = nullptr;
+    }
+}
+
+void LobbyCore::GlobalConnStatusCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData) {
+    bool boMutexLocked = false;
+    if (!lobbyMutex.IsLocked()) {
+        lobbyMutex.Lock(nullptr);
+        boMutexLocked = true;
+    }
+    if (pMsg->kind == 'disc') {
+        static_cast<LobbyCore *>(pData)->AbortAllCommands_HaveMutex();
+        if (static_cast<LobbyCore *>(pData)->disconnectCB) {
+            static_cast<LobbyCore *>(pData)->disconnectCB(LobbyCoreN::DISC_DISCONNECTED, pMsg,
+                                                          static_cast<LobbyCore *>(pData)->disconnectContext);
+        }
+    }
+    if (boMutexLocked) {
+        lobbyMutex.Unlock(nullptr);
+    }
+}
+
+void LobbyCore::GlobalResponseCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData) {
+    LobbyCore *lobbyCore = static_cast<LobbyCore *>(pData);
+    for (GlobalCB *cb = lobbyCore->globalCBList[LOBBYAPI_CBTYPE_RESP].GetHead();
+         cb != lobbyCore->globalCBList[LOBBYAPI_CBTYPE_RESP].EndOfList(); cb = cb->GetNext()) {
+        cb->cbFunc(pRef, pMsg, cb->context);
+    }
+    LobbyApiDebug(pRef, pMsg);
+}
+
+void LobbyCore::GlobalEventCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData) {
+    LobbyCore *lobbyCore = static_cast<LobbyCore *>(pData);
+    for (GlobalCB *cb = lobbyCore->globalCBList[LOBBYAPI_CBTYPE_EVNT].GetHead();
+         cb != lobbyCore->globalCBList[LOBBYAPI_CBTYPE_EVNT].EndOfList(); cb = cb->GetNext()) {
+        cb->cbFunc(pRef, pMsg, cb->context);
+    }
+    LobbyApiDebug(pRef, pMsg);
+}
+
+void LobbyCore::RankCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData) {
+    LobbyCore *lobbyCore = static_cast<LobbyCore *>(pData);
+    lobbyCore->raceResultsAccepted = true;
+    if (pMsg->code != 0) {
+        lobbyCore->raceResultsAccepted = false;
+    }
+    raceResults.Clear();
+    lobbyCore->FinishCommand(pMsg, true);
+}
+
+void LobbyCore::DefaultCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData) {
+    Instance().FinishCommand(pMsg, true);
+}
+
+LobbyCore::LobbyCommand::LobbyCommand(int commandKind, const char *request, bool commandGroup, LobbyApiCallbackT *callback,
+                                      void *callbackContext, CommandCBFunc completionCallback, void *completionContext) {
+    static unsigned int cmdID = 0;
+    static unsigned int grpID = 0;
+
+    kind = commandKind;
+    lobbyCallbackID = -1;
+    cmdID++;
+    lobbyCB = callback;
+    lobbyContext = callbackContext;
+    commandCB = completionCallback;
+    commandContext = completionContext;
+    req = nullptr;
+    commandID = cmdID;
+    if (commandID < 1) {
+        commandID = 1;
+    }
+    if (commandGroup == true) {
+        if (grpID == 0) {
+            grpID = commandID;
+        }
+        groupID = grpID;
+    } else if (grpID != 0) {
+        grpID = 0;
+    }
+    if (request && *request) {
+        req = new ("d:/p4_apex1666_d1001856/mw/speed/indep/src/online/LobbyCore.cpp", 0x5bf, 8) char[bStrLen(request) + 1];
+        bStrCpy(req, request);
+    }
+}
+
+void LobbyCore::RaceResults::Clear() {
+    raceResults.auth[0] = '\0';
+    raceResults.when = 0;
+    raceResults.rept[0] = '\0';
+    for (int i = 3; i >= 0; i--) {
+        raceResults.name[i][0] = '\0';
+    }
+    raceResults.results[0] = '\0';
 }

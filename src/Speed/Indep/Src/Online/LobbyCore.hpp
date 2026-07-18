@@ -8,7 +8,14 @@
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 
 struct LobbyApiRefT;
-struct LobbyApiMsgT;
+struct LobbyApiMsgT {
+    int id;
+    int type;
+    int kind;
+    int code;
+    char *pData;
+    void *pMisc;
+};
 struct LobbyApiServerStatT;
 struct LobbyPingManagerRefT;
 struct ConnApiRefT;
@@ -162,6 +169,8 @@ class LobbyCore {
     };
 
     struct RaceResults {
+        void Clear();
+
         char auth[64];
         uint64 when;
         char rept[16];
@@ -204,6 +213,7 @@ class LobbyCore {
     static void GlobalConnStatusCB(LobbyApiRefT *lobbyRef, LobbyApiMsgT *msg, void *context);
     static void GlobalResponseCB(LobbyApiRefT *lobbyRef, LobbyApiMsgT *msg, void *context);
     static void GlobalEventCB(LobbyApiRefT *lobbyRef, LobbyApiMsgT *msg, void *context);
+    static void DefaultCB(LobbyApiRefT *lobbyRef, LobbyApiMsgT *msg, void *context);
     void AbortCurrentCommand();
     void AbortAllCommands_HaveMutex();
     void FinishCommand(LobbyApiMsgT *msg, bool doCallback);
