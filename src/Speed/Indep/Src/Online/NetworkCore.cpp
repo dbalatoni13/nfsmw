@@ -26,6 +26,7 @@ extern int NetworkUseLobbies;
 class VoiceCore {
   public:
     void Update();
+    bool IsMuted(const char *persona);
     static VoiceCore *mInstance;
 };
 

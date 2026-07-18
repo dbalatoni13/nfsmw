@@ -27,6 +27,18 @@ typedef _GameResultUpdateT GameResultUpdateT;
 typedef void (*ResultUpdateCBFunc)(const LobbyGamesN::_GameResultUpdateT *, void *);
 typedef void LobbyPingManagerCallbackT();
 
+struct OnlineGame {
+  private:
+    bool m_isPassworded;
+    char m_password[20];
+    bool m_playermuted[8];
+
+  public:
+    void SetPlayerMuted(int index, bool muted) { m_playermuted[index] = muted; }
+};
+
+extern OnlineGame TheOnlineGame;
+
 struct LobbyGames {
     LobbyGames();
     ~LobbyGames() { Reset(); }

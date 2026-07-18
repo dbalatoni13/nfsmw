@@ -3,6 +3,7 @@
 extern "C" {
 int PingManagerPingAddress(LobbyPingManagerRefT *pingManager, DirtyAddrT *address, LobbyPingManagerCallbackT *func, void *context);
 void LobbyApiExtractPlayRecord(LobbyApiPlayT *game, const char *record);
+int TagFieldGetStructure(const char *field, void *buffer, int bufferSize, const char *format);
 }
 
 LobbyGames::LobbyGames()
@@ -251,4 +252,86 @@ void LobbyGames::LeaveGameCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData
         lobbyGames->myCurrentGame.iIdent = -1;
     }
     LobbyCore::Instance().FinishCommand(pMsg, true);
+}
+
+void LobbyGames::GlobalEventCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData) {
+    LobbyGames *lobbyGames = static_cast<LobbyGames *>(pData);
+    static LobbyGamesN::GameResultUpdateT results;
+
+    if (pMsg->kind == 'game' && lobbyGames->myCurrentGame.iIdent != -1) {
+        LobbyApiPlayT &myGame = lobbyGames->myCurrentGame;
+        if (!TagFieldFind(pMsg->pData, "NAME")) {
+            bMemSet(&myGame, 0, sizeof(myGame));
+            myGame.iIdent = -1;
+        } else {
+            LobbyApiExtractPlayRecord(&myGame, pMsg->pData);
+            LobbyUsers::Instance().ClearUserOnlineRecordCache(myGame);
+            if (LobbyUsers::Instance().GetMyUserRecord()->game == 0) {
+                bMemSet(&myGame, 0, sizeof(myGame));
+                myGame.iIdent = -1;
+                ConnectionCore::Instance().UpdatePlayers(myGame);
+                return;
+            }
+        }
+        ConnectionCore::Instance().UpdatePlayers(myGame);
+        LobbyGameSessions::Instance().SendUpdateCallback(LobbyGameSessions::SESSION_CHANGED);
+    } else if (pMsg->kind == 'play') {
+        if (lobbyGames->myCurrentGame.iIdent != -1) {
+            LobbyApiPlayT &myGame = lobbyGames->myCurrentGame;
+            LobbyCore::Instance().AbortAllCommands_HaveMutex();
+            LobbyApiExtractPlayRecord(&myGame, pMsg->pData);
+            LobbyCore::raceResults.Clear();
+            bStrCpy(LobbyCore::raceResults.auth, myGame.strAuth);
+            LobbyCore::raceResults.when = myGame.uWhen;
+            bStrCpy(LobbyCore::raceResults.rept, FEDatabase->OnlineSettings.GetLobbyPersona());
+            for (int i = 0; i < myGame.iCount; i++) {
+                bStrCpy(LobbyCore::raceResults.name[i], myGame.aOpponents[i].strPers);
+            }
+            for (int i = 0; i < myGame.iCount; i++) {
+                int idx = i;
+                TheOnlineGame.SetPlayerMuted(idx, VoiceCore::mInstance->IsMuted(myGame.aOpponents[i].strPers));
+            }
+            LobbyGameSessions::Instance().SendUpdateCallback(LobbyGameSessions::GAME_STARTED);
+        }
+    } else if (pMsg->kind == '$rup' && lobbyGames->resultUpdateCB) {
+        bMemSet(&results, 0, sizeof(results));
+        for (int i = 0; i < 8; i++) {
+            char buf[12] = "";
+            bSPrintf(buf, "OPPO%d", i);
+            TagFieldGetString(TagFieldFind(pMsg->pData, buf), results.name[i], sizeof(results.name[i]), "");
+            bSPrintf(buf, "STAT%d", i);
+            results.status[i] = TagFieldGetNumber(TagFieldFind(pMsg->pData, buf), 0);
+            results.time = TagFieldGetNumber(TagFieldFind(pMsg->pData, "TIME"), 0);
+        }
+        results.final = false;
+        lobbyGames->resultUpdateCB(&results, lobbyGames->resultContext);
+    } else if (pMsg->kind == '$rfn' && lobbyGames->resultUpdateCB) {
+        struct ResultBuffer {
+            int32 score;
+            int32 place;
+            int32 save;
+            int32 reason;
+            int32 points;
+        };
+
+        bMemSet(&results, 0, sizeof(results));
+        for (int i = 0; i < 8; i++) {
+            char buf[12] = "";
+            bSPrintf(buf, "OPPO%d", i);
+            if (TagFieldGetString(TagFieldFind(pMsg->pData, buf), results.name[i], sizeof(results.name[i]), "") > 0) {
+                ResultBuffer rbuf;
+                bSPrintf(buf, "DATA%d", i);
+                TagFieldGetStructure(TagFieldFind(pMsg->pData, buf), &rbuf, sizeof(rbuf), "l*");
+                results.score[i] = rbuf.score;
+                results.place[i] = rbuf.place;
+                results.save[i] = rbuf.save == 1;
+                if (rbuf.save != 1) {
+                    results.reason[i] = rbuf.reason;
+                }
+                results.points[i] = static_cast<unsigned char>(rbuf.points);
+            }
+        }
+        results.final = true;
+        lobbyGames->resultUpdateCB(&results, lobbyGames->resultContext);
+    }
 }

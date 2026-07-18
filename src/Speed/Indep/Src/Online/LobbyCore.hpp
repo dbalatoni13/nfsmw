@@ -6,6 +6,7 @@
 #endif
 
 #include "Speed/Indep/bWare/Inc/bList.hpp"
+#include "NetworkCore.hpp"
 
 struct LobbyApiRefT;
 struct LobbyApiMsgT {
@@ -17,7 +18,6 @@ struct LobbyApiMsgT {
     void *pMisc;
 };
 struct LobbyApiServerStatT;
-struct LobbyApiUserT;
 struct LobbyPingManagerRefT;
 struct ConnApiRefT;
 struct ConnApiCbInfoT;
@@ -104,14 +104,55 @@ struct LobbyApiPlayT {
     LobbyApiPlayerT aOpponents[8];
 };
 
+struct LobbyApiColorT {
+    unsigned char uRed;
+    unsigned char uGreen;
+    unsigned char uBlue;
+    unsigned char uAlpha;
+};
+
+struct LobbyApiUserT {
+    int ident;
+    int flags;
+    char name[16];
+    char ping[8];
+    unsigned int addr;
+    int rank;
+    char stat[132];
+    char aux[132];
+    int game;
+    unsigned int attr;
+    LobbyApiColorT Color;
+    unsigned int uLevel;
+    unsigned int uMedals;
+    char aUserSets[4][36];
+    unsigned int uHwFlags;
+    int iReputation;
+    char strReputation[4];
+    DirtyAddrT MachineAddr;
+    unsigned int uLocalAddr;
+    unsigned int uLocality;
+    char strClubID[20];
+    char strClubTag[8];
+};
+
 int32 LobbyInit();
 void LobbyDisconnect();
 
 struct LobbyGames;
 
 struct LobbyGameSessions {
+    enum SessionStatusCode {
+        SESSION_DELETED = 0,
+        SESSION_CHANGED = 1,
+        SESSION_LIST_CHANGED = 2,
+        SESSION_KICKED = 3,
+        GAME_STARTED = 4
+    };
+
     static LobbyGameSessions &Instance();
     GameSession *GetMySession();
+    void SendUpdateCallback(SessionStatusCode status);
 
   private:
     int32 Init();
@@ -126,6 +167,8 @@ struct LobbyGameSessions {
 struct LobbyUsers {
     static LobbyUsers &Instance();
     void ClearUserOnlineRecordCache();
+    void ClearUserOnlineRecordCache(const LobbyApiPlayT &game);
+    LobbyApiUserT *GetMyUserRecord() const;
 
   private:
     int32 Init();
