@@ -323,3 +323,45 @@ bool LobbyChat::IsServerStatusMessage(const char *from, const char *msg) {
     }
     return false;
 }
+
+int32 LobbyChat::SendCancelInvite(const Invite *node) {
+    char buf[128] = "";
+    TagFieldSetNumber(buf, sizeof(buf), "TEXT", node->gameIdent);
+    TagFieldSetString(buf, sizeof(buf), "PRIV", node->player);
+    TagFieldSetFlags(buf, sizeof(buf), "ATTR", 0x08010020);
+    return LobbyCore::Instance().QueueCommand('mesg', buf, LobbyCore::DefaultCB, nullptr, nullptr, nullptr, false);
+}
+
+int32 LobbyChat::QueueInviteResponse(const char *fromPlayer, int gameIdent, LobbyChatN::InviteResponse response) {
+    if (!fromPlayer || !*fromPlayer || response < 0 || response >= 6) {
+        return LobbyChatN::IERR_INVALID_PARAM;
+    }
+
+    uint32 flags;
+    switch (response) {
+    case LobbyChatN::RESPONSE_ACCEPT:
+        flags = 0x10010020;
+        break;
+    case LobbyChatN::RESPONSE_DECLINE:
+        flags = 0x20010020;
+        break;
+    case LobbyChatN::RESPONSE_DECLINE_BLOCK:
+        flags = 0x40010020;
+        break;
+    case LobbyChatN::RESPONSE_DECLINE_INVITE_LIST_FULL:
+        flags = 0x00010060;
+        break;
+    case LobbyChatN::RESPONSE_DECLINE_PLAYER_IN_GAME:
+        flags = 0x04010020;
+        break;
+    default:
+        flags = 0x00010020;
+        break;
+    }
+
+    char buf[128] = "";
+    TagFieldSetNumber(buf, sizeof(buf), "TEXT", gameIdent);
+    TagFieldSetString(buf, sizeof(buf), "PRIV", fromPlayer);
+    TagFieldSetFlags(buf, sizeof(buf), "ATTR", flags);
+    return LobbyCore::Instance().QueueCommand('mesg', buf, LobbyCore::DefaultCB, nullptr, nullptr, nullptr, false);
+}
