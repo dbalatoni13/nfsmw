@@ -124,6 +124,7 @@ struct LobbyGameSessions {
 
 struct LobbyUsers {
     static LobbyUsers &Instance();
+    void ClearUserOnlineRecordCache();
 
   private:
     int32 Init();

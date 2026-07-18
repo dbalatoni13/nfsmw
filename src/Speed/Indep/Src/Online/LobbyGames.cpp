@@ -162,3 +162,50 @@ inline int LobbyGames::DoPing(int index, LobbyApiPlayT *game, LobbyPingManagerCa
     DirtyAddrFromHostAddr(&addr, &theGame->aOpponents[index].uAddr);
     return PingManagerPingAddress(LobbyCore::Instance().pingManagerRef, &addr, func, context);
 }
+
+int32 LobbyGames::CreateGame(const char *gameName, cOnlineSettings &raceOptions, CommandCBFunc createGameCB, void *context) {
+    if (!gameName || !*gameName || myCurrentGame.iIdent != -1 ||
+        LobbyCore::Instance().FindCommandID('gjoi', nullptr, nullptr, nullptr, nullptr) != -1 ||
+        LobbyCore::Instance().FindCommandID('gcre', nullptr, nullptr, nullptr, nullptr) != -1) {
+        return -1;
+    }
+
+    char buf[1024] = "";
+    TagFieldSetString(buf, sizeof(buf), "NAME", gameName);
+    TagFieldSetNumber(buf, sizeof(buf), "MAXSIZE", cOnlineSettings::MaxOnlinePlayers);
+    TagFieldSetNumber(buf, sizeof(buf), "MINSIZE", raceOptions.MinOnlinePlayers);
+    TagFieldSetNumber(buf, sizeof(buf), "SYSFLAGS", raceOptions.RankedGame == 1 ? 0x40000 : 0);
+    return LobbyCore::Instance().QueueCommand('gcre', buf, GameCreatedCB, this, createGameCB, context, false);
+}
+
+int32 LobbyGames::JoinGame(const char *gameName, const char *password, CommandCBFunc joinGameCB, void *context) {
+    int32 rc = -1;
+    if (myCurrentGame.iIdent == -1 &&
+        LobbyCore::Instance().FindCommandID('gjoi', nullptr, nullptr, nullptr, nullptr) == -1 &&
+        LobbyCore::Instance().FindCommandID('gcre', nullptr, nullptr, nullptr, nullptr) == -1) {
+        LobbyUsers::Instance().ClearUserOnlineRecordCache();
+        OnlineIsServer = 0;
+        char buf[96] = "";
+        TagFieldSetString(buf, sizeof(buf), "NAME", gameName);
+        if (password && *password) {
+            TagFieldSetString(buf, sizeof(buf), "PASS", password);
+        }
+        rc = LobbyCore::Instance().QueueCommand('gjoi', buf, GameCreatedCB, this, joinGameCB, context, false);
+    }
+    return rc;
+}
+
+int32 LobbyGames::LeaveGame(CommandCBFunc leaveGameCB, void *context) {
+    if (myCurrentGame.iIdent == -1 ||
+        LobbyCore::Instance().FindCommandID('gdel', nullptr, nullptr, nullptr, nullptr) != -1 ||
+        LobbyCore::Instance().FindCommandID('glea', nullptr, nullptr, nullptr, nullptr) != -1) {
+        return -1;
+    }
+
+    char buf[64] = "";
+    TagFieldSetString(buf, sizeof(buf), "NAME", myCurrentGame.strName);
+    if (bStrCmp(FEDatabase->OnlineSettings.GetLobbyPersona(), myCurrentGame.strHost) != 0) {
+        return LobbyCore::Instance().QueueCommand('glea', buf, LeaveGameCB, this, leaveGameCB, context, false);
+    }
+    return LobbyCore::Instance().QueueCommand('gdel', buf, LeaveGameCB, this, leaveGameCB, context, false);
+}
