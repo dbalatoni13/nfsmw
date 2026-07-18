@@ -446,3 +446,41 @@ void LobbyChat::ProcessInviteResponse(const char *from, int gameIdent, uint32 re
         }
     }
 }
+
+int32 LobbyChat::CancelAllInvites_HaveMutex() {
+    int32 rc = -1;
+    LobbyCore::Instance().StartGroup();
+    Invite *node = sentInvites.GetHead();
+    while (node != sentInvites.EndOfList()) {
+        int32 rc2 = SendCancelInvite(node);
+        if (rc2 > 0) {
+            rc = rc2;
+        }
+        delete sentInvites.RemoveHead();
+        node = sentInvites.GetHead();
+    }
+    LobbyCore::Instance().EndGroup();
+    return rc;
+}
+
+int32 LobbyChat::RespondToInvite_HaveMutex(const char *fromPlayer, int gameIdent, LobbyChatN::InviteResponse response) {
+    if (!fromPlayer || !*fromPlayer || response < 0 || response >= 6) {
+        return LobbyChatN::IERR_INVALID_PARAM;
+    }
+
+    Invite *node;
+    for (node = receivedInvites.GetHead(); node != receivedInvites.EndOfList(); node = node->GetNext()) {
+        if (gameIdent == node->gameIdent && bStrCmp(fromPlayer, node->player) == 0) {
+            break;
+        }
+    }
+    if (node == receivedInvites.EndOfList()) {
+        return LobbyChatN::IERR_CANT_FIND_INVITE;
+    }
+
+    int32 rc = QueueInviteResponse(fromPlayer, gameIdent, response);
+    if (rc > 0) {
+        delete receivedInvites.Remove(node);
+    }
+    return rc;
+}
