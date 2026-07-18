@@ -110,7 +110,7 @@ struct cOnlineSettings {
     TODO::eOnlineState GetLastState();
     void SetErrorState();
     bool IsInErrorState();
-    OnlineRaceParameters *GetRaceSettings();
+    OnlineRaceParameters *GetRaceSettings() { return &TheOnlineRaceSettings; }
     char *GetLobbyAccountName();
     char *GetLobbyPersona();
     char *GetLobbyPassword();

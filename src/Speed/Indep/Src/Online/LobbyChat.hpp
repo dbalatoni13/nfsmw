@@ -53,7 +53,7 @@ typedef void (*LobbyChatCBFunc)(void *, char *, bool, bool, bool);
 typedef void (*InviteCBFunc)(const char *, int, LobbyChatN::CBReason, void *);
 
 struct Invite : bTNode<Invite> {
-    Invite(const char *playerName, LobbyApiPlayT &game, LobbyApiUserSetT &session, float expireInSeconds);
+    Invite(const char *playerName, const LobbyApiPlayT &game, const LobbyApiUserSetT &session, float expireInSeconds);
     Invite(const char *playerName, const char *gameDetails, float expireInSeconds);
     ~Invite();
 

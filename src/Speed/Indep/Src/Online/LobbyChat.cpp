@@ -528,3 +528,32 @@ int LobbyChat::InviteTimeoutFunc(void *context) {
     lobbyMutex.Unlock("LobbyChat::InviteTimeoutFunc");
     return rc;
 }
+
+Invite::Invite(const char *playerName, const LobbyApiPlayT &game, const LobbyApiUserSetT &session, float expireInSeconds)
+    : gameSettings(nullptr) {
+    gameIdent = session.iIdent;
+    if (playerName) {
+        bStrNCpy(player, playerName, 16);
+    } else {
+        player[0] = '\0';
+    }
+
+    expireTime.SetTime(RealTimer.GetSeconds() + expireInSeconds);
+    char buf[1024] = "";
+    TagFieldSetNumber(buf, sizeof(buf), "GAMEID", session.iIdent);
+    TagFieldSetString(buf, sizeof(buf), "GAMENAME", session.strName);
+    TagFieldSetNumber(buf, sizeof(buf), "GAMEMODE", FEDatabase->OnlineSettings.RaceMode);
+    TagFieldSetNumber(buf, sizeof(buf), "RANKED", FEDatabase->OnlineSettings.RankedGame != 0);
+    TagFieldSetNumber(buf, sizeof(buf), "NUMPLYS", session.iCount);
+    TagFieldSetNumber(buf, sizeof(buf), "COLLON", FEDatabase->OnlineSettings.CollisionDetection != 0);
+    TagFieldSetNumber(buf, sizeof(buf), "CCLASS", FEDatabase->OnlineSettings.PerformanceMatching != 0);
+    TagFieldSetNumber(buf, sizeof(buf), "NOS", FEDatabase->OnlineSettings.UseNOS);
+    TagFieldSetNumber(buf, sizeof(buf), "NUMLAPS", FEDatabase->OnlineSettings.GetRaceSettings()->NumLaps);
+    TagFieldSetString(buf, sizeof(buf), "PASSWORD", FEDatabase->OnlineSettings.Password);
+    TagFieldSetNumber(buf, sizeof(buf), "PRIV", FEDatabase->OnlineSettings.IsPrivateRoom);
+    TagFieldSetNumber(buf, sizeof(buf), "EVHASH", FEDatabase->OnlineSettings.GetRaceSettings()->EventHash);
+    TagFieldSetNumber(buf, sizeof(buf), "TRKDIR", FEDatabase->OnlineSettings.GetRaceSettings()->TrackDirection);
+
+    gameSettings = new ("LobbyChat::Invite", 0) char[bStrLen(buf) + 1];
+    bStrCpy(gameSettings, buf);
+}
