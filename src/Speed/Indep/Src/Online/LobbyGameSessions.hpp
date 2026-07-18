@@ -83,6 +83,11 @@ struct LobbyGameSessions {
     void Resume();
     bool IsMemberMakingChanges_HaveMutex(int32 index);
     int GetMemberLatency_HaveMutex(int32 index);
+    void UpdateSessionParams(char *params, int size);
+    void UpdateSessionFlags(uint32 &flags);
+    static void SessionMembersDispListCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData);
+    static void CreateSessionCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData);
+    static void JoinSessionCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData);
     static void GlobalEventCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData);
     friend int32 LobbyInit();
     friend void LobbyDisconnect();
