@@ -2,6 +2,7 @@
 
 extern "C" {
 int PingManagerPingAddress(LobbyPingManagerRefT *pingManager, DirtyAddrT *address, LobbyPingManagerCallbackT *func, void *context);
+void LobbyApiExtractPlayRecord(LobbyApiPlayT *game, const char *record);
 }
 
 LobbyGames::LobbyGames()
@@ -208,4 +209,46 @@ int32 LobbyGames::LeaveGame(CommandCBFunc leaveGameCB, void *context) {
         return LobbyCore::Instance().QueueCommand('glea', buf, LeaveGameCB, this, leaveGameCB, context, false);
     }
     return LobbyCore::Instance().QueueCommand('gdel', buf, LeaveGameCB, this, leaveGameCB, context, false);
+}
+
+inline int32 LobbyGames::KickPlayer(const char *name) {
+    if (!name || !*name || myCurrentGame.iIdent == -1) {
+        return -1;
+    }
+    char buf[128] = "";
+    TagFieldSetString(buf, sizeof(buf), "NAME", myCurrentGame.strName);
+    TagFieldSetString(buf, sizeof(buf), "PERS", name);
+    return LobbyCore::Instance().QueueCommand('gkik', buf, LobbyCore::DefaultCB, nullptr, nullptr, nullptr, false);
+}
+
+inline void LobbyGames::GamesDispListCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData) {
+    LobbyApiDebug(pRef, pMsg);
+}
+
+void LobbyGames::GameCreatedCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData) {
+    LobbyGames *lobbyGames = static_cast<LobbyGames *>(pData);
+    if (pMsg->code == 0) {
+        LobbyApiExtractPlayRecord(&lobbyGames->myCurrentGame, pMsg->pData);
+        if (bStrCmp(lobbyGames->myCurrentGame.strHost, FEDatabase->OnlineSettings.GetLobbyPersona()) == 0) {
+            OnlineIsServer = 1;
+            ConnectionCore::Instance().HostSession(lobbyGames->myCurrentGame.iIdent, 3);
+        } else {
+            OnlineIsServer = 0;
+            ConnectionCore::Instance().JoinSession(lobbyGames->myCurrentGame.aOpponents[0], lobbyGames->myCurrentGame.iIdent,
+                                                   lobbyGames->myCurrentGame.strSess, 3);
+            for (int i = 1; i < lobbyGames->myCurrentGame.iCount; i++) {
+                ConnectionCore::Instance().AddPlayer(lobbyGames->myCurrentGame.aOpponents[i]);
+            }
+        }
+    }
+    LobbyCore::Instance().FinishCommand(pMsg, true);
+}
+
+void LobbyGames::LeaveGameCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData) {
+    LobbyGames *lobbyGames = static_cast<LobbyGames *>(pData);
+    if (pMsg->code == 0 || pMsg->code == 'ugam') {
+        bMemSet(&lobbyGames->myCurrentGame, 0, sizeof(lobbyGames->myCurrentGame));
+        lobbyGames->myCurrentGame.iIdent = -1;
+    }
+    LobbyCore::Instance().FinishCommand(pMsg, true);
 }

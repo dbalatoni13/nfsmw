@@ -17,6 +17,7 @@ struct LobbyApiMsgT {
     void *pMisc;
 };
 struct LobbyApiServerStatT;
+struct LobbyApiUserT;
 struct LobbyPingManagerRefT;
 struct ConnApiRefT;
 struct ConnApiCbInfoT;
@@ -158,6 +159,10 @@ struct ConnectionCore {
     static ConnectionCore &Instance();
     void Init(int maxNumPlayers, ConnApiCallbackT *cbfunc, void *context);
     void Reset();
+    void HostSession(int gameIdent, int maxPlayers);
+    void JoinSession(LobbyApiPlayerT &host, int gameIdent, void *session, int maxPlayers);
+    void AddPlayer(LobbyApiPlayerT &player);
+    void UpdatePlayers(const LobbyApiPlayT &game);
 };
 
 class LobbyCore {
