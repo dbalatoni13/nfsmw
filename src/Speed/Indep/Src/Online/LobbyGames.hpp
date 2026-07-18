@@ -69,6 +69,7 @@ struct LobbyGames {
     friend int32 LobbyInit();
     friend void LobbyDisconnect();
     friend class LobbyCore;
+    friend struct LobbyGameSessions;
 
     ResultUpdateCBFunc resultUpdateCB;
     void *resultContext;

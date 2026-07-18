@@ -88,6 +88,7 @@ struct LobbyGameSessions {
     static void SessionMembersDispListCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData);
     static void CreateSessionCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData);
     static void JoinSessionCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData);
+    static void RecreateGameCB(LobbyApiMsgT *pMsg, void *pData);
     static void GlobalEventCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData);
     friend int32 LobbyInit();
     friend void LobbyDisconnect();

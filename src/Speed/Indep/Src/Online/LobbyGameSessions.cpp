@@ -120,3 +120,9 @@ int32 LobbyGameSessions::JoinSession(const char *sessionName, const char *passwo
     lobbyMutex.Unlock("LobbyGameSessions::JoinSession");
     return -1;
 }
+
+void LobbyGameSessions::CreateGameInSession() {
+    lobbyMutex.Lock("LobbyGameSessions::CreateGameInSession");
+    LobbyGames::Instance().CreateGame(myCurrentSession.strOwner, FEDatabase->OnlineSettings, RecreateGameCB, this);
+    lobbyMutex.Unlock("LobbyGameSessions::CreateGameInSession");
+}
