@@ -9,6 +9,8 @@
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 
 struct LobbyApiMsgT;
+struct LobbyApiPlayT;
+struct LobbyApiUserSetT;
 typedef void (*CommandCBFunc)(LobbyApiMsgT *, void *);
 
 namespace LobbyChatN {
@@ -34,10 +36,26 @@ enum InviteResponse {
     NUM_RESPONSES = 5
 };
 
+enum InviteError {
+    IERR_NOT_CONNECTED = -1,
+    IERR_OUT_OF_MEMORY = -2,
+    IERR_NOT_IN_GAME = -11,
+    IERR_CANT_SELF_INVITE = -12,
+    IERR_PLAYER_IN_GAME = -13,
+    IERR_ALREADY_PENDING = -14,
+    IERR_CANT_FIND_INVITE = -15,
+    IERR_TOO_MANY_INVITES = -16,
+    IERR_INVALID_PARAM = -20
+};
+
 typedef void (*LobbyChatCBFunc)(void *, char *, bool, bool, bool);
 typedef void (*InviteCBFunc)(const char *, int, LobbyChatN::CBReason, void *);
 
 struct Invite : bTNode<Invite> {
+    Invite(const char *playerName, LobbyApiPlayT &game, LobbyApiUserSetT &session, float expireInSeconds);
+    Invite(const char *playerName, const char *gameDetails, float expireInSeconds);
+    ~Invite();
+
     int gameIdent;
     char player[20];
     char *gameSettings;
@@ -54,12 +72,14 @@ struct LobbyChat {
 
     static LobbyChat &Instance();
     int32 SendChatMessage(const char *text, const char *toPersona, CommandCBFunc callback, void *context);
+    int32 SendGameInvite(const char *toPlayer);
     void SetChatCallback(void *chatWindow, LobbyChatCBFunc callback);
     void SetInviteCallback(InviteCBFunc callback, void *context);
 
   private:
     int32 Init();
     void Reset();
+    static int InviteTimeoutFunc(void *context);
     friend int32 LobbyInit();
     friend void LobbyDisconnect();
 

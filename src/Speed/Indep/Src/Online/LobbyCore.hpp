@@ -63,11 +63,52 @@ struct LobbyApiUserSetT {
 
 typedef LobbyApiUserSetT GameSession;
 
+struct LobbyApiPartitionT {
+    int iSize;
+    char strParams[36];
+};
+
+struct LobbyApiPlayerT {
+    int iIdent;
+    char strPers[16];
+    uint32 uAddr;
+    uint32 uLocalAddr;
+    char strMachineAddr[64];
+    int iPartition;
+    uint32 uFlags;
+    int iPresence;
+    char strParams[36];
+};
+
+struct LobbyApiPlayT {
+    int iIdent;
+    char strName[36];
+    char strSelf[16];
+    char strHost[16];
+    int iRoom;
+    char strSess[128];
+    char strParams[132];
+    char strPlatParams[16];
+    uint32 uCustflags;
+    uint32 uSysflags;
+    int iMinsize;
+    int iMaxsize;
+    uint32 uSeed;
+    uint32 uWhen;
+    char strAuth[64];
+    int iNumPartitions;
+    LobbyApiPartitionT aPartitions[2];
+    int iCount;
+    int iPrivSlots;
+    LobbyApiPlayerT aOpponents[8];
+};
+
 int32 LobbyInit();
 void LobbyDisconnect();
 
 struct LobbyGames {
     static LobbyGames &Instance();
+    LobbyApiPlayT *GetMyGame();
 
   private:
     int32 Init();
