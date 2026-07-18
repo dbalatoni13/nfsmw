@@ -557,3 +557,22 @@ Invite::Invite(const char *playerName, const LobbyApiPlayT &game, const LobbyApi
     gameSettings = new ("LobbyChat::Invite", 0) char[bStrLen(buf) + 1];
     bStrCpy(gameSettings, buf);
 }
+
+Invite::Invite(const char *playerName, const char *gameDetails, float expireInSeconds)
+    : gameSettings(nullptr) {
+    gameIdent = TagFieldGetNumber(TagFieldFind(gameDetails, "GAMEID"), 0);
+    if (playerName) {
+        bStrNCpy(player, playerName, 16);
+    } else {
+        player[0] = '\0';
+    }
+    expireTime.SetTime(RealTimer.GetSeconds() + expireInSeconds);
+    gameSettings = new ("LobbyChat::Invite", 0) char[bStrLen(gameDetails) + 1];
+    bStrCpy(gameSettings, gameDetails);
+}
+
+Invite::~Invite() {
+    if (gameSettings) {
+        delete[] gameSettings;
+    }
+}
