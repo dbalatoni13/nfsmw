@@ -484,3 +484,47 @@ int32 LobbyChat::RespondToInvite_HaveMutex(const char *fromPlayer, int gameIdent
     }
     return rc;
 }
+
+int LobbyChat::InviteTimeoutFunc(void *context) {
+    LobbyChat *lobbyChat = static_cast<LobbyChat *>(context);
+    lobbyMutex.Lock("LobbyChat::InviteTimeoutFunc");
+
+    Invite *node = lobbyChat->sentInvites.GetHead();
+    while (node != lobbyChat->sentInvites.EndOfList()) {
+        if (node->expireTime.GetSeconds() < RealTimer.GetSeconds()) {
+            if (lobbyChat->inviteCB) {
+                lobbyChat->inviteCB(node->player, node->gameIdent, LobbyChatN::REASON_INVITE_TIMEOUT,
+                                    lobbyChat->inviteCBContext);
+            }
+            node = node->GetPrev();
+            delete lobbyChat->sentInvites.Remove(node->GetNext());
+        }
+        node = node->GetNext();
+    }
+
+    node = lobbyChat->receivedInvites.GetHead();
+    while (node != lobbyChat->receivedInvites.EndOfList()) {
+        Invite *next = node->GetNext();
+        if (node->expireTime.GetSeconds() < RealTimer.GetSeconds()) {
+            int rc = lobbyChat->RespondToInvite_HaveMutex(node->player, node->gameIdent, LobbyChatN::RESPONSE_DECLINE);
+            if (rc < 0) {
+                lobbyChat->receivedInvites.Remove(node);
+            }
+            if (lobbyChat->inviteCB) {
+                lobbyChat->inviteCB(node->player, node->gameIdent, LobbyChatN::REASON_INVITE_TIMEOUT,
+                                    lobbyChat->inviteCBContext);
+            }
+            if (rc < 0) {
+                delete node;
+            }
+        }
+        node = next;
+    }
+
+    int rc = 0;
+    if (lobbyChat->sentInvites.IsEmpty() && lobbyChat->receivedInvites.IsEmpty()) {
+        rc = -1;
+    }
+    lobbyMutex.Unlock("LobbyChat::InviteTimeoutFunc");
+    return rc;
+}
