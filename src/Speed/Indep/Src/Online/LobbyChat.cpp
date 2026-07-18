@@ -401,3 +401,48 @@ void LobbyChat::ProcessInvite(const char *from, char *inviteDetails) {
         }
     }
 }
+
+void LobbyChat::ProcessCancelInvite(const char *from, int gameIdent) {
+    if (!from || !*from) {
+        return;
+    }
+
+    for (Invite *node = receivedInvites.GetHead(); node != receivedInvites.EndOfList(); node = node->GetNext()) {
+        if (gameIdent == node->gameIdent && bStrCmp(from, node->player) == 0) {
+            delete receivedInvites.Remove(node);
+            if (inviteCB) {
+                inviteCB(from, gameIdent, LobbyChatN::REASON_CANCELLED_INVITE, inviteCBContext);
+            }
+            return;
+        }
+    }
+}
+
+void LobbyChat::ProcessInviteResponse(const char *from, int gameIdent, uint32 response) {
+    if (!from || !*from) {
+        return;
+    }
+
+    LobbyChatN::CBReason reason = LobbyChatN::REASON_INVALID;
+    if (response & 0x10000000) {
+        reason = LobbyChatN::REASON_ACCEPTED_INVITE;
+    } else if (response & 0x20000000) {
+        reason = LobbyChatN::REASON_DECLINED_INVITE;
+    } else if (response & 0x40000000) {
+        reason = LobbyChatN::REASON_DECLINED_INVITE_AND_BLOCKED;
+    } else if (response & 0x40) {
+        reason = LobbyChatN::REASON_DECLINE_INVITE_LIST_FULL;
+    } else if (response & 0x04000000) {
+        reason = LobbyChatN::REASON_DECLINE_PLAYER_IN_GAME;
+    }
+
+    for (Invite *node = sentInvites.GetHead(); node != sentInvites.EndOfList(); node = node->GetNext()) {
+        if (gameIdent == node->gameIdent && bStrCmp(from, node->player) == 0) {
+            delete sentInvites.Remove(node);
+            if (inviteCB) {
+                inviteCB(from, gameIdent, reason, inviteCBContext);
+            }
+            return;
+        }
+    }
+}
