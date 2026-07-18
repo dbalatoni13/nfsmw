@@ -56,54 +56,65 @@ void OnlineCfg::ReadConfigFile(const char *filename) {
 
     if (bFileExists(filename)) {
         bFile *f;
-        char buffer[2000];
-        char attribute[300];
-        char value[300];
-        char *start;
-        bool finished;
+        register bool finished;
         uint32 i;
 
         finished = false;
+        i = 0;
         f = bOpen(filename, 1, 1);
+        char buffer[2000] = "";
         bMemSet(buffer, '\0', sizeof(buffer));
         bRead(f, buffer, bFileSize(f));
         bClose(f);
-        bMemSet(attribute, '\0', sizeof(attribute));
-        bMemSet(value, '\0', sizeof(value));
 
-        start = buffer;
-        i = 0;
-        while (!finished) {
-            while (buffer[i] != '=') {
+        char attribute[300] = "";
+        char value[300] = "";
+        char *start;
+        signed char *current;
+        register int space = ' ';
+
+        current = reinterpret_cast<signed char *>(buffer);
+        start = reinterpret_cast<char *>(current);
+        do {
+            while (*current != '=') {
                 i++;
                 if (i >= sizeof(buffer) + 1) {
                     finished = true;
                     break;
                 }
-            }
-            if (finished) {
-                break;
+                current = reinterpret_cast<signed char *>(&buffer[i]);
             }
 
-            bMemSet(attribute, '\0', sizeof(attribute));
-            bStrNCpy(attribute, start, &buffer[i] - start);
-            i++;
-            start = &buffer[i];
-            while (buffer[i] != '\r' && buffer[i] != '\0') {
+            if (!finished) {
+                bMemSet(attribute, '\0', sizeof(attribute));
+                bStrNCpy(attribute, start, reinterpret_cast<char *>(current) - start);
                 i++;
-            }
-            bMemSet(value, '\0', sizeof(value));
-            bStrNCpy(value, start, &buffer[i] - start);
-            ProcessSetting(attribute, value);
+                current = reinterpret_cast<signed char *>(&buffer[i]);
+                start = reinterpret_cast<char *>(current);
+                if (*current != '\r' && *current != '\0') {
+                    do {
+                        i++;
+                        current = reinterpret_cast<signed char *>(&buffer[i]);
+                    } while (*current != '\r' && *current != '\0');
+                }
+                bMemSet(value, '\0', sizeof(value));
+                bStrNCpy(value, start, reinterpret_cast<char *>(current) - start);
+                ProcessSetting(attribute, value);
 
-            do {
-                i++;
-            } while (buffer[i] == ' ' || buffer[i] == '\n' || buffer[i] == '\r');
-            if (i >= sizeof(buffer) + 1 || buffer[i] == '\0') {
-                finished = true;
+                do {
+                    i++;
+                } while (buffer[i] == space || buffer[i] == '\n' || buffer[i] == '\r');
+                current = reinterpret_cast<signed char *>(&buffer[i]);
+                if (i < sizeof(buffer) + 1) {
+                    if (*current == '\0') {
+                        finished = true;
+                    }
+                } else {
+                    finished = true;
+                }
+                start = reinterpret_cast<char *>(current);
             }
-            start = &buffer[i];
-        }
+        } while (!finished);
     }
 }
 
