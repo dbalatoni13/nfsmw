@@ -9,6 +9,89 @@
 
 struct LobbyApiRefT;
 struct LobbyPingManagerRefT;
+struct ConnApiRefT;
+struct ConnApiCbInfoT;
+
+typedef void ConnApiCallbackT(ConnApiRefT *, ConnApiCbInfoT *, void *);
+
+int32 LobbyInit();
+void LobbyDisconnect();
+
+struct LobbyGames {
+    static LobbyGames &Instance();
+
+  private:
+    int32 Init();
+    void Reset();
+    friend int32 LobbyInit();
+    friend void LobbyDisconnect();
+};
+
+struct LobbyGameSessions {
+    static LobbyGameSessions &Instance();
+
+  private:
+    int32 Init();
+    void Reset();
+    friend int32 LobbyInit();
+    friend void LobbyDisconnect();
+};
+
+struct LobbyChat {
+    static LobbyChat &Instance();
+
+  private:
+    int32 Init();
+    void Reset();
+    friend int32 LobbyInit();
+    friend void LobbyDisconnect();
+};
+
+struct LobbyRanks {
+    static LobbyRanks &Instance();
+
+  private:
+    int32 Init();
+    void Reset();
+    friend int32 LobbyInit();
+    friend void LobbyDisconnect();
+};
+
+struct LobbyUsers {
+    static LobbyUsers &Instance();
+
+  private:
+    int32 Init();
+    void Reset();
+    friend int32 LobbyInit();
+    friend void LobbyDisconnect();
+};
+
+struct LobbyAccount {
+    static LobbyAccount &Instance();
+
+  private:
+    int32 Init();
+    void Reset();
+    friend int32 LobbyInit();
+    friend void LobbyDisconnect();
+};
+
+struct LobbyRooms {
+    static LobbyRooms &Instance();
+
+  private:
+    int32 Init();
+    void Reset();
+    friend int32 LobbyInit();
+    friend void LobbyDisconnect();
+};
+
+struct ConnectionCore {
+    static ConnectionCore &Instance();
+    void Init(int maxNumPlayers, ConnApiCallbackT *cbfunc, void *context);
+    void Reset();
+};
 
 class LobbyCore {
   public:
@@ -25,6 +108,11 @@ class LobbyCore {
     void DoProcessing();
 
   private:
+    int32 Init();
+    void Reset();
+    friend int32 LobbyInit();
+    friend void LobbyDisconnect();
+
     bTList<GlobalCB> globalCBList[6];
     bTList<LobbyCommand> lobbyCommandQueue;
     LobbyApiRefT *pLobbyRef;

@@ -1,8 +1,14 @@
 #include "LobbyLogin.hpp"
 
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
+#include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
+#include "Speed/Indep/Src/Online/BuddyCore.hpp"
+#include "Speed/Indep/Src/Online/LobbyCore.hpp"
+#include "Speed/Indep/Src/Online/OnlineCfg.hpp"
 
 extern LobbyLoginAlertT LobbyLogin_DefaultAlertTable[];
+
+static OnlineMutex lobbyMutex("Lobby");
 
 extern "C" {
 LobbyLoginRefT *LobbyLoginCreate(const LobbyApiRefT *lobbyRef, const LobbyLoginAlertT *alertTable);
@@ -182,4 +188,44 @@ void LobbyLogin::ContextLoginCB(LobbyLoginRefT *pLogin, LobbyLoginContextE conte
     if (status == LOBBYLOGIN_STATUS_GOTO && (personaList = LobbyLoginGetNameList(pLogin, 0))) {
         bMemCpy(&static_cast<LobbyLogin *>(callbackData)->personas, personaList, sizeof(LobbyLoginNameListT));
     }
+}
+
+char *OLGetProductName() { return "nfs"; }
+
+char *OLGetProductYear() { return "2006"; }
+
+char *OLGetPlatform() { return "ps2"; }
+
+int32 LobbyInit() {
+    LobbyCore::Instance();
+    lobbyMutex.Lock("LobbyInit");
+
+    if (LobbyCore::Instance().Init() >= 0 && LobbyGames::Instance().Init() >= 0 &&
+        LobbyGameSessions::Instance().Init() >= 0 && LobbyChat::Instance().Init() >= 0 &&
+        LobbyRanks::Instance().Init() >= 0 && LobbyUsers::Instance().Init() >= 0 &&
+        LobbyAccount::Instance().Init() >= 0 && LobbyRooms::Instance().Init() >= 0) {
+        ConnectionCore::Instance().Init(cOnlineSettings::MaxOnlinePlayers, nullptr, nullptr);
+        lobbyMutex.Unlock("LobbyInit");
+        return 0;
+    }
+
+    lobbyMutex.Unlock("LobbyInit");
+    return -1;
+}
+
+void LobbyDisconnect() {
+    lobbyMutex.Lock("LobbyDisconnect");
+    LobbyGameSessions::Instance().Reset();
+    LobbyGames::Instance().Reset();
+    LobbyRooms::Instance().Reset();
+    LobbyChat::Instance().Reset();
+    LobbyRanks::Instance().Reset();
+    LobbyUsers::Instance().Reset();
+    LobbyAccount::Instance().Reset();
+    if (!FEDatabase->IsLANMode()) {
+        BuddyCore::instance()->disconnect();
+    }
+    ConnectionCore::Instance().Reset();
+    LobbyCore::Instance().Reset();
+    lobbyMutex.Unlock("LobbyDisconnect");
 }
