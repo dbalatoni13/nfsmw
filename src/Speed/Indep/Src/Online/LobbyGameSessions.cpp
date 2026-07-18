@@ -191,3 +191,15 @@ bool LobbyGameSessions::IsMemberMakingChanges_HaveMutex(int32 index) {
     }
     return makingChanges;
 }
+
+void LobbyGameSessions::SetSessionLatency(int late) {
+    lobbyMutex.Lock("LobbyGameSessions::StartSessionChanges");
+    LobbyUsers::Instance().SetSessionLatency(late);
+    lobbyMutex.Unlock("LobbyGameSessions::StartSessionChanges");
+}
+
+void LobbyGameSessions::SetSessionRaceStatusInfo(int lap, int mapx, int mapy) {
+    lobbyMutex.Lock("LobbyGameSessions::StartSessionChanges");
+    LobbyUsers::Instance().SetSessionRaceStatusInfo(lap, mapx, mapy);
+    lobbyMutex.Unlock("LobbyGameSessions::StartSessionChanges");
+}

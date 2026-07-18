@@ -148,6 +148,8 @@ struct LobbyUsers {
     void ClearUserOnlineRecordCache();
     void ClearUserOnlineRecordCache(const LobbyApiPlayT &game);
     void SetSessionChangeFlag(bool changing);
+    void SetSessionLatency(int latency);
+    void SetSessionRaceStatusInfo(int lap, int mapx, int mapy);
     LobbyApiUserT *GetMyUserRecord() const;
 
   private:
