@@ -28,11 +28,9 @@ void IntQuantizer::Init(const char *name, int min_value, int max_value) {
         m_numBits++;
         max_units = 1 << m_numBits;
     }
-    m_minValuePacked = max_value;
-    m_maxValuePacked = min_value;
-    m_minValuePacked++;
-    m_maxValuePacked--;
     m_isInitialized = true;
+    m_minValuePacked = max_value + 1;
+    m_maxValuePacked = min_value - 1;
 }
 
 uint32 IntQuantizer::Pack(int value) {
@@ -136,9 +134,11 @@ void SmartBitStream::AddRawData(const char *data, int num_bytes) {
 
 int SmartBitStream::GetRawData(char *buffer, int bufsize) {
     int16 length;
-    GetShort(length);
+    length = GetShort();
     for (int i = 0; i < length; i++) {
-        buffer[i] = GetByte();
+        uint32 temp = 0;
+        GetBits(temp, 8);
+        buffer[i] = *reinterpret_cast<volatile uint32 *>(&temp);
     }
     return length;
 }
@@ -163,19 +163,99 @@ int SmartBitStream::GetRawDataWithoutSize(char *buffer, int num_bytes) {
 }
 
 void SmartBitStream::AddFloat(float value) {
-    int v;
+    int v = 0;
     bMemCpy(&v, &value, sizeof(v));
     AddInt(v);
 }
 
 void SmartBitStream::GetFloat(float &value) {
-    int v;
-    GetInt(v);
+    int v = GetInt();
     bMemCpy(&value, &v, sizeof(v));
 }
 
 float SmartBitStream::GetFloat() {
-    float value;
+    float value = 0.0f;
     GetFloat(value);
     return value;
 }
+
+FloatQuantizer::FloatQuantizer()
+    : m_numBits(0), //
+      m_minValue(0.0f), //
+      m_maxValue(0.0f), //
+      m_maxError(0.0f), //
+      m_increment(0.0f), //
+      m_minValuePacked(0.0f), //
+      m_maxValuePacked(0.0f), //
+      m_isInitialized(false) {
+    bStrCpy(m_name, "");
+}
+
+FloatQuantizer::~FloatQuantizer() {}
+
+void FloatQuantizer::Init(const char *name, float min_value, float max_value, float max_acceptable_error) {
+    float range;
+    uint32 num_values;
+    uint32 max_units;
+
+    bStrCpy(m_name, name);
+    m_minValue = min_value;
+    m_maxValue = max_value;
+    m_maxError = max_acceptable_error;
+    m_increment = max_acceptable_error * 2.0f;
+    range = max_value - min_value;
+    num_values = static_cast<uint32>(range / m_increment + 0.5) + 1;
+    max_units = 0;
+    m_numBits = 0;
+    while (max_units < num_values) {
+        m_numBits++;
+        max_units = 1 << m_numBits;
+    }
+    m_increment = range / (max_units - 1);
+    m_maxError = m_increment * 0.5f;
+    m_minValuePacked = FLT_MAX;
+    m_maxValuePacked = -FLT_MAX;
+    m_isInitialized = true;
+}
+
+void FloatQuantizer::Init(const char *name, float min_value, float max_value, int num_bits) {
+    float range;
+    uint32 max_units;
+
+    bStrCpy(m_name, name);
+    m_minValue = min_value;
+    m_maxValue = max_value;
+    m_numBits = num_bits;
+    range = max_value - min_value;
+    max_units = (1 << num_bits) - 1;
+    m_increment = range / max_units;
+    m_maxError = m_increment * 0.5f;
+    m_minValuePacked = FLT_MAX;
+    m_maxValuePacked = -FLT_MAX;
+    m_isInitialized = true;
+}
+
+uint32 FloatQuantizer::Pack(float value) {
+    if (value < m_minValue) {
+        value = m_minValue;
+    }
+    if (value > m_maxValue) {
+        value = m_maxValue;
+    }
+    return static_cast<uint32>((value - m_minValue) / m_increment + 0.5f);
+}
+
+float FloatQuantizer::UnPack(uint32 packed_value) {
+    float value;
+
+    value = m_minValue + packed_value * m_increment;
+    if (value < m_minValue) {
+        value = m_minValue;
+    }
+    if (value > m_maxValue) {
+        value = m_maxValue;
+    }
+    return value;
+}
+
+void FloatQuantizer::PrintUsageReport() {}

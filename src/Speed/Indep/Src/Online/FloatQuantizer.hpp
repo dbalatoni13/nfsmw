@@ -6,6 +6,7 @@
 #endif
 
 #include <types.h>
+#include <float.h>
 
 class FloatQuantizer {
   public:

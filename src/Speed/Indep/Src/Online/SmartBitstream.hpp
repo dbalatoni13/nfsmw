@@ -13,7 +13,7 @@ class SmartBitStream : public BitStream {
   public:
     void AddBool(bool value) { AddBits(value, 1); }
     void GetBool(bool &value) {
-        uint32 temp;
+        uint32 temp = 0;
         GetBits(temp, 1);
         value = temp;
     }
@@ -24,34 +24,34 @@ class SmartBitStream : public BitStream {
     }
     void AddByte(uint8 value) { AddBits(value, 8); }
     void GetByte(uint8 &value) {
-        uint32 temp;
+        uint32 temp = 0;
         GetBits(temp, 8);
         value = temp;
     }
     uint8 GetByte() {
-        uint32 temp;
+        uint32 temp = 0;
         GetBits(temp, 8);
         return temp;
     }
     void AddShort(short value) { AddBits(value, 16); }
     void GetShort(short &value) {
-        uint32 temp;
+        uint32 temp = 0;
         GetBits(temp, 16);
         value = temp;
     }
     short GetShort() {
-        uint32 temp;
+        uint32 temp = 0;
         GetBits(temp, 16);
-        return temp;
+        return *reinterpret_cast<short *>(&temp);
     }
     void AddInt(int value) { AddBits(value, 32); }
     void GetInt(int &value) {
-        uint32 temp;
+        uint32 temp = 0;
         GetBits(temp, 32);
         value = temp;
     }
     int GetInt() {
-        uint32 temp;
+        uint32 temp = 0;
         GetBits(temp, 32);
         return temp;
     }
