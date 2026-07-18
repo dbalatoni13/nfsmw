@@ -25,7 +25,6 @@ enum CBReason {
     REASON_DECLINE_PLAYER_IN_GAME = 6,
     REASON_INVITE_TIMEOUT = 7
 };
-}
 
 enum InviteResponse {
     RESPONSE_ACCEPT = 0,
@@ -47,6 +46,7 @@ enum InviteError {
     IERR_TOO_MANY_INVITES = -16,
     IERR_INVALID_PARAM = -20
 };
+}
 
 typedef void (*LobbyChatCBFunc)(void *, char *, bool, bool, bool);
 typedef void (*InviteCBFunc)(const char *, int, LobbyChatN::CBReason, void *);
@@ -72,13 +72,19 @@ struct LobbyChat {
 
     static LobbyChat &Instance();
     int32 SendChatMessage(const char *text, const char *toPersona, CommandCBFunc callback, void *context);
-    int32 SendGameInvite(const char *toPlayer);
     void SetChatCallback(void *chatWindow, LobbyChatCBFunc callback);
     void SetInviteCallback(InviteCBFunc callback, void *context);
+    int32 SendGameInvite(const char *toPlayer);
+    int32 CancelInvite(const char *toPlayer);
+    int32 CancelAllInvites();
+    int32 RespondToInvite(const char *fromPlayer, int gameIdent, LobbyChatN::InviteResponse response);
 
   private:
     int32 Init();
     void Reset();
+    int32 SendCancelInvite(Invite *node);
+    int32 CancelAllInvites_HaveMutex();
+    int32 RespondToInvite_HaveMutex(const char *fromPlayer, int gameIdent, LobbyChatN::InviteResponse response);
     static int InviteTimeoutFunc(void *context);
     friend int32 LobbyInit();
     friend void LobbyDisconnect();

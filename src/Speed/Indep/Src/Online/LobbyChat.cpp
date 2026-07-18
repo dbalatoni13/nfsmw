@@ -48,29 +48,29 @@ int32 LobbyChat::SendGameInvite(const char *toPlayer) {
     char *myPersona = FEDatabase->OnlineSettings.GetLobbyPersona();
     if (!toPlayer || !*toPlayer) {
         lobbyMutex.Unlock("LobbyChat::SendGameInvite");
-        return IERR_INVALID_PARAM;
+        return LobbyChatN::IERR_INVALID_PARAM;
     }
     if (bStrICmp(myPersona, toPlayer) == 0) {
         lobbyMutex.Unlock("LobbyChat::SendGameInvite");
-        return IERR_CANT_SELF_INVITE;
+        return LobbyChatN::IERR_CANT_SELF_INVITE;
     }
     if (myGame) {
         for (int i = 0; i < myGame->iCount; i++) {
             if (bStrICmp(toPlayer, myGame->aOpponents[i].strPers) == 0) {
                 lobbyMutex.Unlock("LobbyChat::SendGameInvite");
-                return IERR_PLAYER_IN_GAME;
+                return LobbyChatN::IERR_PLAYER_IN_GAME;
             }
         }
     }
     for (Invite *node = sentInvites.GetHead(); node != sentInvites.EndOfList(); node = node->GetNext()) {
         if (bStrICmp(node->player, toPlayer) == 0) {
             lobbyMutex.Unlock("LobbyChat::SendGameInvite");
-            return IERR_ALREADY_PENDING;
+            return LobbyChatN::IERR_ALREADY_PENDING;
         }
     }
     if (sentInvites.CountElements() == maxActiveInvites) {
         lobbyMutex.Unlock("LobbyChat::SendGameInvite");
-        return IERR_TOO_MANY_INVITES;
+        return LobbyChatN::IERR_TOO_MANY_INVITES;
     }
 
     bool firstElement = sentInvites.IsEmpty() && receivedInvites.IsEmpty();
@@ -89,5 +89,38 @@ int32 LobbyChat::SendGameInvite(const char *toPlayer) {
         delete sentInvites.Remove(node);
     }
     lobbyMutex.Unlock("LobbyChat::SendGameInvite");
-    return IERR_OUT_OF_MEMORY;
+    return LobbyChatN::IERR_OUT_OF_MEMORY;
+}
+
+int32 LobbyChat::CancelInvite(const char *toPlayer) {
+    if (!toPlayer || !*toPlayer) {
+        return LobbyChatN::IERR_INVALID_PARAM;
+    }
+
+    lobbyMutex.Lock("LobbyChat::CancelInvite");
+    for (Invite *node = sentInvites.GetHead(); node != sentInvites.EndOfList(); node = node->GetNext()) {
+        if (bStrICmp(toPlayer, node->player) == 0) {
+            sentInvites.Remove(node);
+            int32 rc = SendCancelInvite(node);
+            delete node;
+            lobbyMutex.Unlock("LobbyChat::CancelInvite");
+            return rc;
+        }
+    }
+    lobbyMutex.Unlock("LobbyChat::CancelInvite");
+    return 0;
+}
+
+int32 LobbyChat::CancelAllInvites() {
+    lobbyMutex.Lock("LobbyChat::CancelAllInvites");
+    int32 rc = CancelAllInvites_HaveMutex();
+    lobbyMutex.Unlock("LobbyChat::CancelAllInvites");
+    return rc;
+}
+
+int32 LobbyChat::RespondToInvite(const char *fromPlayer, int gameIdent, LobbyChatN::InviteResponse response) {
+    lobbyMutex.Lock("LobbyChat::RespondToInvite");
+    int32 rc = RespondToInvite_HaveMutex(fromPlayer, gameIdent, response);
+    lobbyMutex.Unlock("LobbyChat::RespondToInvite");
+    return rc;
 }
