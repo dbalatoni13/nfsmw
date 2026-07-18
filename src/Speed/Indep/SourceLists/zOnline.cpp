@@ -7,3 +7,5 @@
 #include "Speed/Indep/Src/Online/OnlineMutex.cpp"
 
 #include "Speed/PSX2/Src/Online/PlatformNetworkCore.cpp"
+
+#include "Speed/Indep/Src/Online/NetworkCore.cpp"

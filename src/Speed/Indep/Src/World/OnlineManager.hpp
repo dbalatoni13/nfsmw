@@ -26,6 +26,8 @@ class OnlineManager {
   public:
     void StartSimFrame();
     void InitQuantizers();
+    void Disconnect(bool force);
+    void Update(bool networkThread);
 
     void EndSimFrame() {}
 
