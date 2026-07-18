@@ -106,17 +106,7 @@ struct LobbyApiPlayT {
 int32 LobbyInit();
 void LobbyDisconnect();
 
-struct LobbyGames {
-    static LobbyGames &Instance();
-    LobbyApiPlayT *GetMyGame();
-
-  private:
-    int32 Init();
-    void Reset();
-    friend int32 LobbyInit();
-    friend void LobbyDisconnect();
-    friend class LobbyCore;
-};
+struct LobbyGames;
 
 struct LobbyGameSessions {
     static LobbyGameSessions &Instance();

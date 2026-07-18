@@ -17,3 +17,5 @@
 #include "Speed/Indep/Src/Online/LobbyRanks.cpp"
 
 #include "Speed/Indep/Src/Online/LobbyChat.cpp"
+
+#include "Speed/Indep/Src/Online/LobbyGames.cpp"

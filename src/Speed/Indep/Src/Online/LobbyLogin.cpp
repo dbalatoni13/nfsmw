@@ -4,6 +4,7 @@
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Online/BuddyCore.hpp"
 #include "Speed/Indep/Src/Online/LobbyCore.hpp"
+#include "Speed/Indep/Src/Online/LobbyGames.hpp"
 #include "Speed/Indep/Src/Online/OnlineCfg.hpp"
 
 extern LobbyLoginAlertT LobbyLogin_DefaultAlertTable[];

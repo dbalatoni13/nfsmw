@@ -1,5 +1,6 @@
 #include "LobbyChat.hpp"
 #include "BuddyCore.hpp"
+#include "LobbyGames.hpp"
 
 extern "C" {
 void TagFieldSetFlags(char *buffer, int bufferSize, const char *name, int flags);
