@@ -93,7 +93,7 @@ struct LobbyChat {
     bool IsServerStatusMessage(const char *from, const char *msg);
     int32 SendCancelInvite(const Invite *node);
     int32 QueueInviteResponse(const char *fromPlayer, int gameIdent, LobbyChatN::InviteResponse response);
-    void ProcessInvite(const char *from, const char *inviteDetails);
+    void ProcessInvite(const char *from, char *inviteDetails);
     void ProcessCancelInvite(const char *from, int gameIdent);
     void ProcessInviteResponse(const char *from, int gameIdent, uint32 flags);
     int32 CancelAllInvites_HaveMutex();

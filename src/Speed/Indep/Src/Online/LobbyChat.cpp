@@ -365,3 +365,39 @@ int32 LobbyChat::QueueInviteResponse(const char *fromPlayer, int gameIdent, Lobb
     TagFieldSetFlags(buf, sizeof(buf), "ATTR", flags);
     return LobbyCore::Instance().QueueCommand('mesg', buf, LobbyCore::DefaultCB, nullptr, nullptr, nullptr, false);
 }
+
+void LobbyChat::ProcessInvite(const char *from, char *inviteDetails) {
+    if (!from || !*from || !inviteDetails || !*inviteDetails) {
+        return;
+    }
+
+    int gameIdent = TagFieldGetNumber(TagFieldFind(inviteDetails, "GAMEID"), 0);
+    for (Invite *node = receivedInvites.GetHead(); node != receivedInvites.EndOfList(); node = node->GetNext()) {
+        if (gameIdent == node->gameIdent && bStrCmp(from, node->player) == 0) {
+            return;
+        }
+    }
+
+    if (LobbyGames::Instance().GetMyGame()) {
+        QueueInviteResponse(from, gameIdent, LobbyChatN::RESPONSE_DECLINE_PLAYER_IN_GAME);
+        return;
+    }
+    if (receivedInvites.CountElements() == maxActiveInvites) {
+        QueueInviteResponse(from, gameIdent, LobbyChatN::RESPONSE_DECLINE_INVITE_LIST_FULL);
+        return;
+    }
+
+    bool firstElement = receivedInvites.IsEmpty();
+    Invite *node = new ("LobbyChat::ProcessInvite", 0) Invite(from, inviteDetails, 120.0f);
+    if (node) {
+        receivedInvites.AddTail(node);
+        if (firstElement && sentInvites.IsEmpty() &&
+            NetworkCore::Instance().RegisterProcessingFunc(InviteTimeoutFunc, this) == -1) {
+            delete receivedInvites.Remove(node);
+            return;
+        }
+        if (inviteCB) {
+            inviteCB(from, gameIdent, LobbyChatN::REASON_NEW_INVITE, inviteCBContext);
+        }
+    }
+}
