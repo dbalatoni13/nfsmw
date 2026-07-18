@@ -31,7 +31,10 @@ void *NetAlloc(int iSize) {
     if (!OnlineMemoryPool) {
         return bMalloc(iSize, "NetAlloc (for Juice)", 0, 0);
     }
-    return bMalloc(iSize, "NetAlloc", count++, iSize < 0x3e801 ? 8 : 0);
+    if (iSize > 0x3e800) {
+        return bMalloc(iSize, "NetAlloc", count++, 0);
+    }
+    return bMalloc(iSize, "NetAlloc", count++, 8);
 }
 
 void NetFree(void *pMem) { bFree(pMem); }
