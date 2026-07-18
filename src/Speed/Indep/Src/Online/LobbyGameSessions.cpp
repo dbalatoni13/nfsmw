@@ -219,3 +219,17 @@ int LobbyGameSessions::GetMemberLatency_HaveMutex(int32 index) {
     }
     return late;
 }
+
+void LobbyGameSessions::GetMemberRaceStatus(int32 index, int &lap, int &mapx, int &mapy) {
+    lobbyMutex.Lock("LobbyGameSessions::IsMemberMakingChanges");
+    GameSessionMember *member = GetMemberByIndex_HaveMutex(index);
+    lap = 0;
+    mapx = 0;
+    mapy = 0;
+    if (member) {
+        lap = TagFieldGetNumber(TagFieldFind(member->strAux, "LP"), 0);
+        mapx = TagFieldGetNumber(TagFieldFind(member->strAux, "MX"), 0);
+        mapy = TagFieldGetNumber(TagFieldFind(member->strAux, "MY"), 0);
+    }
+    lobbyMutex.Unlock("LobbyGameSessions::IsMemberMakingChanges");
+}
