@@ -64,6 +64,7 @@ struct LobbyGameSessions {
     int32 JoinSession(const char *sessionName, const char *password, CommandCBFunc joinSessionCB, void *context);
     void CreateGameInSession();
     int32 LeaveSession(CommandCBFunc leaveSessionCB, void *context);
+    inline int32 KickPlayer(const char *name, CommandCBFunc kickUserCB, void *context);
     void SettingsHaveChanged();
     void StartSessionChanges();
     void FinishSessionChanges();
@@ -85,6 +86,7 @@ struct LobbyGameSessions {
     bool IsMemberMakingChanges_HaveMutex(int32 index);
     int GetMemberLatency_HaveMutex(int32 index);
     void UpdateSessionParams(char *params, int size);
+    int32 UpdateSessionInfo(bool forceUpdate);
     void UpdateSessionFlags(uint32 &flags);
     static void SessionMembersDispListCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData);
     static void CreateSessionCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData);

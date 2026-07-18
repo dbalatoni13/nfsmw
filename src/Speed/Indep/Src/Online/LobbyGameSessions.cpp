@@ -142,3 +142,36 @@ int32 LobbyGameSessions::LeaveSession(CommandCBFunc leaveSessionCB, void *contex
     lobbyMutex.Unlock("LobbyGameSessions::LeaveSession");
     return rc;
 }
+
+inline int32 LobbyGameSessions::KickPlayer(const char *name, CommandCBFunc kickUserCB, void *context) {
+    lobbyMutex.Lock("LobbyGameSessions::KickPlayer");
+    if (name && name[0] && myCurrentSession.iIdent != -1) {
+        char buf[128] = "";
+        TagFieldSetString(buf, sizeof(buf), "NAME", myCurrentSession.strName);
+        TagFieldSetString(buf, sizeof(buf), "PERS", name);
+        int32 rc = LobbyCore::Instance().QueueCommand('ukik', buf, LobbyCore::DefaultCB, nullptr, kickUserCB,
+                                                       context, false);
+        lobbyMutex.Unlock("LobbyGameSessions::KickPlayer");
+        return rc;
+    }
+    lobbyMutex.Unlock("LobbyGameSessions::KickPlayer");
+    return -1;
+}
+
+void LobbyGameSessions::SettingsHaveChanged() {
+    lobbyMutex.Lock("LobbyGameSessions::SettingsHaveChanged");
+    UpdateSessionInfo(false);
+    lobbyMutex.Unlock("LobbyGameSessions::SettingsHaveChanged");
+}
+
+void LobbyGameSessions::StartSessionChanges() {
+    lobbyMutex.Lock("LobbyGameSessions::StartSessionChanges");
+    LobbyUsers::Instance().SetSessionChangeFlag(true);
+    lobbyMutex.Unlock("LobbyGameSessions::StartSessionChanges");
+}
+
+void LobbyGameSessions::FinishSessionChanges() {
+    lobbyMutex.Lock("LobbyGameSessions::FinishSessionChanges");
+    LobbyUsers::Instance().SetSessionChangeFlag(false);
+    lobbyMutex.Unlock("LobbyGameSessions::FinishSessionChanges");
+}

@@ -147,6 +147,7 @@ struct LobbyUsers {
     static LobbyUsers &Instance();
     void ClearUserOnlineRecordCache();
     void ClearUserOnlineRecordCache(const LobbyApiPlayT &game);
+    void SetSessionChangeFlag(bool changing);
     LobbyApiUserT *GetMyUserRecord() const;
 
   private:
