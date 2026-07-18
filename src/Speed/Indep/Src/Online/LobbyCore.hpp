@@ -236,6 +236,7 @@ class LobbyCore {
     friend void LobbyDisconnect();
     friend struct LobbyRanks;
     friend struct LobbyChat;
+    friend struct LobbyGames;
 
     bTList<GlobalCB> globalCBList[6];
     bTList<LobbyCommand> lobbyCommandQueue;
