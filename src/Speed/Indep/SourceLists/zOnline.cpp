@@ -31,3 +31,5 @@
 #include "Speed/Indep/Src/Online/WebOfferUG2.cpp"
 
 #include "Speed/Indep/Src/Online/LobbyAccount.cpp"
+
+#include "Speed/Indep/Src/Online/LobbyUsers.cpp"
