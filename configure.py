@@ -611,7 +611,7 @@ config.libs = [
             ),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/salloc.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/sbadd.c"),
-            Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/sbpatinf.c"),
+            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/sbpatinf.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/sgetpvol.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/ssballoc.c"),
             Object(
@@ -678,7 +678,7 @@ config.libs = [
             ),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/stagpat.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/stimemul.c"),
-            Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/stimerem.c"),
+            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/stimerem.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/stpparse.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/mix/stretch.c"),
             Object(
@@ -690,7 +690,7 @@ config.libs = [
                 NonMatching,
                 "Speed/Indep/Libs/snd/9/source/library/extern/coda/cmn/coda.cpp",
             ),
-            Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/s3dlow.c"),
+            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/s3dlow.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/gc/saramman.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/satospkr.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/sclcptch.c"),
@@ -784,7 +784,7 @@ config.libs = [
                 NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/sgparse.cpp"
             ),
             Object(
-                NonMatching,
+                Matching,
                 "Speed/Indep/Libs/snd/9/source/library/cmn/SNDI_findprime.c",
             ),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/mix/scrsfl.c"),
