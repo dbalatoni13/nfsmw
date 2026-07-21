@@ -1,5 +1,6 @@
 #include "OnlineCfg.hpp"
 #include "ConditionSimulator.hpp"
+#include "InGame/CSCommon.hpp"
 
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Misc/Config.h"
@@ -30,18 +31,6 @@ static char onlinePlayerCar[64];
 
 struct Server {
     static bool m_bForceClientShutdown;
-};
-
-enum DiagnosticLevelEnum {
-    DIAGNOSTICLEVEL_NONE,
-    DIAGNOSTICLEVEL_MEDIUM,
-    DIAGNOSTICLEVEL_HIGH,
-    DIAGNOSTICLEVEL_EXTREME,
-    DIAGNOSTICLEVEL_COUNT
-};
-
-struct CSCommon {
-    static DiagnosticLevelEnum m_diagnosticLevel;
 };
 
 extern "C" uint32 SocketInTextGetAddr(const char *text);
@@ -173,7 +162,8 @@ void OnlineCfg::ProcessSetting(const char *attribute, const char *value) {
         IsSoundEnabled &= sound;
     }
     if (!bStrICmp(attribute, "DIAGNOSTICLEVEL"))
-        CSCommon::m_diagnosticLevel = static_cast<DiagnosticLevelEnum>(bStrToLong(value) & 0xffff);
+        CSCommon::SetDiagnosticLevel(
+            static_cast<DiagnosticLevelEnum>(bStrToLong(value) & 0xffff));
     if (!bStrICmp(attribute, "NetworkDebug"))
         NetworkDebug = bStrToLong(value);
     if (!bStrICmp(attribute, "NetworkUserName"))

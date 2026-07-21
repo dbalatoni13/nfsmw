@@ -1,4 +1,5 @@
 #include "Client.hpp"
+#include "CSCommon.hpp"
 #include "Speed/Indep/Src/Online/SmartBitstream.hpp"
 #include "Speed/Indep/Src/World/OnlineManager.hpp"
 
@@ -108,4 +109,58 @@ void Client::SendCarSpam() {
 void Client::StartClientProcessing() {
     hostConnection = ConnectionCore::Instance().GetPlayer(0);
     SetState(CLIENTSTATE_CONNECTED);
+}
+
+void Client::HandleIncomingPacket(char *data, int numBytes, bool isReliable) {
+    if (CSCommon::GetDiagnosticLevel() >= DIAGNOSTICLEVEL_EXTREME) {
+        CSCommon::DumpBytes(data, numBytes);
+    }
+
+    SmartBitStream bitstream_data;
+    bitstream_data.PokeBytes(data, numBytes);
+    uint32 temp = 0;
+    bitstream_data.GetBits(temp, 8);
+    uint8 message_type = temp;
+
+    switch (message_type) {
+    case 2:
+        ProcessCarMessage(bitstream_data);
+        break;
+    case 4:
+        ProcessCarSpamClockSyncMessage(bitstream_data);
+        break;
+    case 5:
+        ProcessScoreMessage(bitstream_data);
+        break;
+    case 6:
+        ProcessSyncAnimationMessage(bitstream_data);
+        break;
+    case 0:
+        ProcessWelcomeMessage(bitstream_data);
+        break;
+    case 1:
+        ProcessCarDescriptionMessage(bitstream_data);
+        break;
+    case 9:
+        ProcessServerQuitMessage(bitstream_data);
+        break;
+    case 10:
+        ProcessClientLeftMessage(bitstream_data);
+        break;
+    case 7:
+        ProcessDriverFinishMessage(bitstream_data);
+        break;
+    case 12:
+        ProcessServerStateChangeMessage(bitstream_data);
+        break;
+    case 13:
+        ProcessDataCRCMessage(bitstream_data);
+        break;
+    case 14:
+        ProcessRestartLoad(bitstream_data);
+        break;
+    case 15:
+        ProcessStartRaceSyncMessage(bitstream_data);
+        break;
+    }
 }
