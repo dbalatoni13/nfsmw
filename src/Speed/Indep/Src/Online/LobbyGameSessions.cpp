@@ -2,6 +2,10 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
 #include "Speed/Indep/Src/World/OnlineManager.hpp"
 
+extern "C" {
+void DispListFilt(DispListRef *list, int filtcon, int filtmask, int (*filtfn)(void *, int, void *));
+}
+
 bool LobbyGameSessions::mHurryTimerStarted = false;
 bool LobbyGameSessions::mHurryTimerStopped = false;
 LobbyGameSessions *TheLobbyGameSessions;
@@ -300,4 +304,90 @@ int8 LobbyGameSessions::GetSecsBeforeHostCanStart() {
         hostHurryTimer.UnSet();
     }
     return result;
+}
+
+int32 LobbyGameSessions::FindSessions(const FilterGameSessionParamsT &filterParams,
+                                      CommandCBFunc filterSessionsCB, void *context) {
+    lobbyMutex.Lock("LobbyGameSessions::FindSessions");
+    if (LobbyCore::Instance().FindCommandID('usea', nullptr, nullptr, nullptr, nullptr) != -1) {
+        lobbyMutex.Unlock("LobbyGameSessions::FindSessions");
+        return -1;
+    }
+
+    uint32 custflags = 0;
+    uint32 custmask = 1;
+    char buf[512] = "";
+    if (filterParams.sessionNameSubstr[0]) {
+        TagFieldSetString(buf, sizeof(buf), "NAME", filterParams.sessionNameSubstr);
+    } else {
+        if (filterParams.collisionDetection != ANY) {
+            custmask |= 0x400;
+            if (filterParams.collisionDetection == ON) {
+                custflags |= 0x400;
+            }
+        }
+        if (filterParams.performanceMatching != ANY) {
+            custmask |= 0x2000;
+            if (filterParams.performanceMatching == ON) {
+                custflags |= 0x2000;
+            }
+        }
+        switch (filterParams.gameMode) {
+        case GRace::kRaceType_Circuit:
+            custmask |= 0x80000000;
+            custflags |= 0x80000000;
+            break;
+        case GRace::kRaceType_P2P:
+            custmask |= 0x40000000;
+            custflags |= 0x40000000;
+            break;
+        case GRace::kRaceType_Drag:
+            custmask |= 0x20000000;
+            custflags |= 0x20000000;
+            break;
+        default:
+            break;
+        }
+        if (filterParams.rankedGames != ANY) {
+            custmask |= 0x200;
+            if (filterParams.rankedGames == ON) {
+                custflags |= 0x200;
+            }
+        }
+        if (filterParams.disconnectPerc > 0) {
+            custmask |= 0x100000;
+        }
+        if (filterParams.disconnectPerc > 1) {
+            custmask |= 0x200000;
+        }
+        if (filterParams.disconnectPerc > 2) {
+            custmask |= 0x400000;
+        }
+        if (filterParams.disconnectPerc > 3) {
+            custmask |= 0x800000;
+        }
+        if (filterParams.disconnectPerc > 4) {
+            custmask |= 0x1000000;
+        }
+        if (filterParams.disconnectPerc == OLS_DISCONNECT_PERC_ANY) {
+            custmask |= 0x2000000;
+        }
+    }
+
+    TagFieldSetNumber(buf, sizeof(buf), "START", 0);
+    TagFieldSetNumber(buf, sizeof(buf), "COUNT", filterParams.count);
+    TagFieldSetNumber(buf, sizeof(buf), "CUSTFLAGS", custflags);
+    TagFieldSetNumber(buf, sizeof(buf), "CUSTMASK", custmask);
+    if (sessionList) {
+        LobbyApiListFree(LobbyCore::Instance().pLobbyRef, 0x17, sessionList);
+        sessionList = nullptr;
+    }
+    sessionList = LobbyApiListAlloc(LobbyCore::Instance().pLobbyRef,
+                                    static_cast<LobbyRanks::RankListMapping>(0x17), SessionDispListCB, this);
+    extraSessionDataMap.clear();
+    DispListSort(sessionList, 0, currentSortParams, SortFunc);
+    DispListFilt(sessionList, 0, 0, FilterFunc);
+    int32 rc = LobbyCore::Instance().QueueCommand('usea', buf, FindSessionsCB, this, filterSessionsCB, context, false);
+    lobbyMutex.Unlock("LobbyGameSessions::FindSessions");
+    return rc;
 }

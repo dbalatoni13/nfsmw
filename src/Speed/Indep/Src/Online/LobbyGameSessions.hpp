@@ -17,6 +17,15 @@ enum YesNoAny {
     ANY = 2
 };
 
+enum SortField {
+    SORT_PING = 0,
+    SORT_SESSION_NAME = 1,
+    SORT_GAME_MODE = 2,
+    SORT_PLAYER_COUNT = 3,
+    SORT_COURSE_NAME = 4,
+    SORT_INVALID = 0x80000000
+};
+
 struct FilterGameSessionParamsT {
     FilterGameSessionParamsT(uint32 count, GRace::Type gameMode, YesNoAny rankedGames, YesNoAny collisionDetection,
                              YesNoAny performanceMatching, eOnlineDisconnectPerc disconnectPerc);
@@ -74,6 +83,7 @@ struct LobbyGameSessions {
     int GetMemberLatency(int32 index);
     void GetMemberRaceStatus(int32 index, int &lap, int &mapx, int &mapy);
     int8 GetSecsBeforeHostCanStart();
+    int32 FindSessions(const FilterGameSessionParamsT &filterParams, CommandCBFunc filterSessionsCB, void *context);
     GameSession *GetMySession();
     void SendUpdateCallback(SessionStatusCode status);
 
@@ -89,10 +99,14 @@ struct LobbyGameSessions {
     void UpdateSessionParams(char *params, int size);
     int32 UpdateSessionInfo(bool forceUpdate);
     void UpdateSessionFlags(uint32 &flags);
+    static void SessionDispListCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData);
     static void SessionMembersDispListCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData);
     static void CreateSessionCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData);
     static void JoinSessionCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData);
     static void RecreateGameCB(LobbyApiMsgT *pMsg, void *pData);
+    static void FindSessionsCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData);
+    static int SortFunc(void *sortref, int sortcon, void *recptr1, void *recptr2);
+    static int FilterFunc(void *filtref, int filtcon, void *recptr);
     static void GlobalEventCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData);
     friend int32 LobbyInit();
     friend void LobbyDisconnect();
