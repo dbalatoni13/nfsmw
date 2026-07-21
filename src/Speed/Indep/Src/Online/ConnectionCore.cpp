@@ -145,3 +145,14 @@ void ConnectionCore::AddPlayer(ConnApiUserInfoT &userInfo) {
     }
     networkMutex.Unlock("ConnectionCore::AddPlayer");
 }
+
+void ConnectionCore::AddPlayer(LobbyApiUserT &userInfo) {
+    ConnApiUserInfoT realUserInfo;
+
+    networkMutex.Lock("ConnectionCore::AddPlayer");
+    BuildUserInfo(realUserInfo, userInfo);
+    if (bStrCmp(realUserInfo.strName, FEDatabase->OnlineSettings.GetLobbyPersona()) != 0) {
+        ConnApiAddClient(connapi, &realUserInfo);
+    }
+    networkMutex.Unlock("ConnectionCore::AddPlayer");
+}
