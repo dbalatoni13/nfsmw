@@ -252,3 +252,13 @@ void VoiceCore::_AddPlayer(int channel, const char *persona) {
         }
     }
 }
+
+int VoiceCore::_AddPlayer(const char *persona) {
+    for (int i = 0; i < 4; i++) {
+        if (!channels[i].assigned) {
+            _AddPlayer(i, persona);
+            return i;
+        }
+    }
+    return -1;
+}
