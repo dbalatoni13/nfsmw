@@ -9,6 +9,7 @@ void VoipShutdown(VoipRefT *voip);
 void VoipSetLocalUser(VoipRefT *voip, const char *name);
 int VoipControl(VoipRefT *voip, int control, int value);
 unsigned int VoipRemote(VoipRefT *voip, int channel);
+int VoipLocal(VoipRefT *voip);
 }
 
 VoiceCore *VoiceCore::mInstance;
@@ -168,3 +169,34 @@ bool VoiceCore::IsActive(int channel) {
 bool VoiceCore::IsHeadsetConnected() { return _IsHeadsetConnected(); }
 
 bool VoiceCore::IsHeadsetSending() { return _IsHeadsetSending(); }
+
+void VoiceCore::Update() {
+    if (!VoipRef) {
+        mPTT.StopPolling();
+    } else {
+        if (mPTT.IsPressed()) {
+            if (!mTransmit) {
+                SetMicState(true);
+                mTransmit = true;
+            }
+        } else if (mTransmit) {
+            SetMicState(false);
+            mTransmit = false;
+        }
+
+        static int last_local_status;
+        int local_status = VoipLocal(VoipRef);
+        if (local_status != last_local_status) {
+            last_local_status = local_status;
+        }
+
+        for (int i = 0; i < 4; i++) {
+            if (channels[i].assigned) {
+                int remote_status = VoipRemote(VoipRef, i);
+                if (remote_status != last_remote_status[i]) {
+                    last_remote_status[i] = remote_status;
+                }
+            }
+        }
+    }
+}
