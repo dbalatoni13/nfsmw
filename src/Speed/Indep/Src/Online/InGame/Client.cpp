@@ -570,3 +570,30 @@ void Online::JoinPackets(SmartBitStream &joinedPacket, SplitPacketList &splitPac
         node = splitPackets.GetHead();
     }
 }
+
+bool Online::ReceiveChunk(SmartBitStream &bitstream_data, SplitPacketList &splitPackets) {
+    SplitPacketNode *node = new ("Online::ReceiveChunk", 0) SplitPacketNode;
+    node->chunk = bitstream_data.GetByte();
+    node->totalChunks = bitstream_data.GetByte();
+    node->totalBits = bitstream_data.GetShort();
+
+    char buf[100] = "";
+    int bitsLeft = bitstream_data.GetByteLengthRemaining();
+    if (bitsLeft > 0) {
+        bitstream_data.GetRawDataWithoutSize(buf, bitsLeft);
+        node->data.AddRawDataWithoutSize(buf, bitsLeft);
+    }
+
+    bitsLeft = bitstream_data.GetBitLengthRemaining();
+    if (bitsLeft == 8) {
+        bitstream_data.GetRawDataWithoutSize(buf, 1);
+        node->data.AddRawDataWithoutSize(buf, 1);
+    } else if (bitsLeft > 0) {
+        uint32 temp = 0;
+        bitstream_data.GetBits(temp, bitsLeft);
+        node->data.AddBits(temp, bitsLeft);
+    }
+
+    splitPackets.AddTail(node);
+    return node->chunk == node->totalChunks;
+}
