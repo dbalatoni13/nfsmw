@@ -9,6 +9,7 @@ ConnApiRefT *ConnApiCreate(const char *sessionName, int gamePort, int maxClients
 void ConnApiDestroy(ConnApiRefT *connapi);
 int ConnApiHost(ConnApiRefT *connapi, ConnApiUserInfoT *userInfo, int numClients, int sessionID);
 int ConnApiConnect(ConnApiRefT *connapi, ConnApiUserInfoT *userInfo, int numClients, int sessionID);
+int ConnApiAddClient(ConnApiRefT *connapi, ConnApiUserInfoT *userInfo);
 int ConnApiControl(ConnApiRefT *connapi, int control, int value, int value2, void *pValue);
 }
 
@@ -135,4 +136,12 @@ void ConnectionCore::LeaveSession() {
     networkMutex.Lock("ConnectionCore::LeaveSession");
     ResetSession_HaveMutex();
     networkMutex.Unlock("ConnectionCore::LeaveSession");
+}
+
+void ConnectionCore::AddPlayer(ConnApiUserInfoT &userInfo) {
+    networkMutex.Lock("ConnectionCore::AddPlayer");
+    if (bStrCmp(userInfo.strName, FEDatabase->OnlineSettings.GetLobbyPersona()) != 0) {
+        ConnApiAddClient(connapi, &userInfo);
+    }
+    networkMutex.Unlock("ConnectionCore::AddPlayer");
 }
