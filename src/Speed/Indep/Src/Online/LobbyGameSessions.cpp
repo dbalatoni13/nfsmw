@@ -999,3 +999,14 @@ int LobbyGameSessions::FilterFunc(void *filtref, int filtcon, void *recptr) {
     }
     return !hidesession;
 }
+
+void LobbyGameSessions::PingManagerCB(DirtyAddrT *pAddr, unsigned int uPing, void *pData) {
+    LobbyGameSessions &lgs = Instance();
+    ExtraSessionDataMap::iterator esd = lgs.extraSessionDataMap.find(reinterpret_cast<int32>(pData));
+    if (esd != lgs.extraSessionDataMap.end()) {
+        esd->second.pingToHostInMsec = uPing;
+        lobbyMutex.Lock(nullptr);
+        lgs.RefilterAndUpdateSessionsList();
+        lobbyMutex.Unlock(nullptr);
+    }
+}
