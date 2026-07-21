@@ -19,6 +19,8 @@ struct LobbyApiMsgT {
 };
 struct LobbyApiServerStatT;
 struct LobbyPingManagerRefT;
+struct DispListRef;
+struct LobbyApiRoomT;
 struct ConnApiRefT;
 struct NetGameUtilRefT;
 struct NetGameLinkRefT;
@@ -231,12 +233,21 @@ struct LobbyAccount {
 struct LobbyRooms {
     static LobbyRooms &Instance();
 
+    typedef void (*RoomUpdateCBFunc)();
+
   private:
+    LobbyRooms();
+    ~LobbyRooms();
     int32 Init();
     void Reset();
     friend int32 LobbyInit();
     friend void LobbyDisconnect();
     friend class LobbyCore;
+
+    DispListRef *roomList;
+    RoomUpdateCBFunc roomUpdateCB;
+    void *roomUpdateContext;
+    char currentRoomName[36];
 };
 
 struct ConnectionCore {
