@@ -94,7 +94,16 @@ struct Client {
     static void ProcessWelcomeMessage(SmartBitStream &bitstream_data);
     static void ProcessCarDescriptionMessage(SmartBitStream &bitstream_data);
     static void ProcessDriverFinishMessage(SmartBitStream &bitstream_data);
+    static void SendStartRaceSyncMessage();
     static void ProcessStartRaceSyncMessage(SmartBitStream &bitstream_data);
+    static void SendClockSyncMessage(float player_realtime) {
+        SmartBitStream bitstream_data;
+        bitstream_data.AddFloat(player_realtime);
+        SendMessage(4, bitstream_data, false);
+    }
+    static void SignalStartClockSync();
+    static void SignalReady();
+    static void SignalRestart();
     static void ProcessServerQuitMessage(SmartBitStream &bitstream_data);
     static void ProcessClientLeftMessage(SmartBitStream &bitstream_data);
     static void ProcessRestartLoad(SmartBitStream &bitstream_data);

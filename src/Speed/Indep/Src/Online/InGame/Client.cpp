@@ -262,3 +262,35 @@ void Client::SendCarDescriptionMessage() {
         delete node;
     }
 }
+
+void Client::SendStartRaceSyncMessage() {
+    if (m_state > CLIENTSTATE_INITIAL) {
+        if (m_serverState == 6) {
+            SmartBitStream bitstream_data;
+            bitstream_data.AddByte(15);
+            uint32 ret = bGetTicker();
+            bitstream_data.AddInt(ret);
+            SendMessage(15, bitstream_data, false);
+        }
+    }
+}
+
+void Client::ProcessStartRaceSyncMessage(SmartBitStream &bitstream_data) {
+    uint32 ret = bGetTicker();
+    uint32 temp = 0;
+    bitstream_data.GetBits(temp, 32);
+    float time = bitstream_data.GetFloat();
+    TheOnlineManager.SetStartRaceTime(ret, time, bGetTickerDifference(temp, ret) * 0.001f);
+}
+
+void Client::SignalStartClockSync() {
+    SetState(CLIENTSTATE_NIS);
+}
+
+void Client::SignalReady() {
+    SetState(CLIENTSTATE_READY);
+}
+
+void Client::SignalRestart() {
+    SetState(CLIENTSTATE_LOADING);
+}
