@@ -241,3 +241,29 @@ int32 LobbyUsers::GetUserOnlineRecord(const char *persona, CommandCBFunc func, v
     lobbyMutex.Unlock("LobbyUsers::GetUserOnlineRecord");
     return rc;
 }
+
+void LobbyUsers::ClearUserOnlineRecordCache() {
+    OnlineUsersData *oud;
+    while ((oud = userList.GetHead()) != userList.EndOfList()) {
+        oud = userList.Remove(oud);
+        delete oud;
+    }
+}
+
+void LobbyUsers::ClearUserOnlineRecordCache(const LobbyApiPlayT &game) {
+    OnlineUsersData *oud;
+    for (oud = userList.GetHead(); oud != userList.EndOfList(); oud = oud->GetNext()) {
+        bool deleteUser = true;
+        for (int i = 0; i < game.iCount; i++) {
+            if (bStrCmp(oud->user.name, game.aOpponents[i].strPers) == 0) {
+                deleteUser = false;
+                break;
+            }
+        }
+
+        if (deleteUser == true) {
+            oud = oud->GetPrev();
+            delete userList.Remove(oud->GetNext());
+        }
+    }
+}
