@@ -10,6 +10,8 @@ void VoipSetLocalUser(VoipRefT *voip, const char *name);
 int VoipControl(VoipRefT *voip, int control, int value);
 unsigned int VoipRemote(VoipRefT *voip, int channel);
 int VoipLocal(VoipRefT *voip);
+void VoipMicrophone(VoipRefT *voip, int mask);
+void VoipSpeaker(VoipRefT *voip, int mask);
 }
 
 VoiceCore *VoiceCore::mInstance;
@@ -208,3 +210,20 @@ bool VoiceCore::IsInVOIPChat(const char *name, int *channel) {
 char *VoiceCore::GetChannelPersona(int channel) { return channels[channel].persona_name; }
 
 inline bool VoiceCore::IsAssigned(int channel) { return channels[channel].assigned; }
+
+void VoiceCore::SetMuted(int channel, bool mute) {
+    if (!channels[channel].assigned) {
+        return;
+    }
+    channels[channel].muted = mute;
+    int mask = 0;
+    if (!all_muted) {
+        for (int i = 0; i < 4; i++) {
+            if (!channels[i].muted) {
+                mask |= 1 << i;
+            }
+        }
+    }
+    VoipMicrophone(VoipRef, mTransmit ? mask : 0);
+    VoipSpeaker(VoipRef, mask);
+}
