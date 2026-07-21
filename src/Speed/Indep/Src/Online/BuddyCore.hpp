@@ -14,8 +14,16 @@ struct HLBApiRefT;
 struct HLBBudT;
 struct LobbyChalRefT;
 struct LobbyApiMsgT;
-struct BuddyApiMsgT;
 struct BuddyCore;
+
+struct BuddyApiMsgT {
+    int iType;
+    int iKind;
+    int iCode;
+    unsigned int uTimeStamp;
+    unsigned int uUserFlags;
+    char *pData;
+};
 
 template <void (BuddyCore::*Callback)(int, int)> struct buddy_op_callback;
 template <void (BuddyCore::*Callback)(BuddyApiMsgT *)> struct buddy_msg_callback;

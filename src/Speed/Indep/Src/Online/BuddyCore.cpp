@@ -15,6 +15,7 @@ HLBApiRefT *HLBApiCreate2(void *(*alloc)(int), void (*free)(void *), const char 
 void HLBApiSetDebugFunction(HLBApiRefT *api, void *context, void (*callback)(void *, const char *));
 int HLBApiInitialize(HLBApiRefT *api, const char *serverPort, int product, const char *language);
 int HLBApiConnect(HLBApiRefT *api, const char *server, int port, const char *password, const char *context);
+void HLBMsgListDeleteAll(HLBBudT *buddy, int flags);
 int HLBBudIsTemporary(HLBBudT *buddy);
 unsigned int HLBBudGetGameInviteFlags(HLBBudT *buddy);
 int HLBBudIsRealBuddy(HLBBudT *buddy);
@@ -335,4 +336,30 @@ void BuddyCore::buddyListChangedCallback(int op, int opStatus) {
     }
     MenuScreen::UpdateStatusIcons(3, budRequestRec);
     gBuddyListHasChanged = 1;
+}
+
+void BuddyCore::messageCallback(BuddyApiMsgT *pMsg) {
+    int icon = 0;
+    bool status = false;
+
+    if (pMsg->iType != 'chat') {
+        if (pMsg->iType == 'invt') {
+            icon = 3;
+            status = true;
+        }
+    } else {
+        icon = 0;
+        status = true;
+        g_pEAXSound->PlayUISoundFX(UISND_EA_MSGR_MAIL_RECEIVE);
+    }
+    char sender[32] = "";
+    HLBBudT *pBud;
+    TagFieldGetString(TagFieldFind(pMsg->pData, "USER"), sender, sizeof(sender), "unknown sender");
+    pBud = getBuddyByName(sender);
+    if (pBud && HLBBudIsBlocked(pBud)) {
+        HLBMsgListDeleteAll(pBud, 0);
+    } else {
+        MenuScreen::UpdateStatusIcons(icon, status);
+        gBuddyListHasChanged = 1;
+    }
 }
