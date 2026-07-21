@@ -351,6 +351,7 @@ class LobbyCore {
     friend struct LobbyGames;
     friend struct LobbyGameSessions;
     friend struct LobbyRooms;
+    friend struct LobbyAccount;
     friend struct ConnectionCore;
     friend struct BuddyCore;
 
