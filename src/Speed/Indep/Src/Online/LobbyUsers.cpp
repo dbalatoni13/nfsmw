@@ -45,3 +45,30 @@ uint32 PlayerDataT::GetTotalGamesPlayed(int mode) {
     return (stats.raceModeStats[mode].clientLosses + stats.raceModeStats[mode].hostWins) +
            (stats.raceModeStats[mode].hostLosses + stats.raceModeStats[mode].clientWins);
 }
+
+uint32 PlayerDataT::GetTotalWinsAsClient() {
+    uint32 sum = 0;
+    for (int mode = 0; mode < 3; mode++) {
+        sum += stats.raceModeStats[mode].clientWins;
+    }
+    return sum;
+}
+
+uint32 PlayerDataT::GetTotalWinsAsHost() {
+    uint32 sum = 0;
+    for (int mode = 0; mode < 3; mode++) {
+        sum += stats.raceModeStats[mode].hostWins;
+    }
+    return sum;
+}
+
+uint32 PlayerDataT::GetTotalWins(int mode) {
+    uint32 sum = 0;
+    if (mode == 3) {
+        for (int i = 0; i < 3; i++) {
+            sum += stats.raceModeStats[i].clientWins + stats.raceModeStats[i].hostWins;
+        }
+        return sum;
+    }
+    return stats.raceModeStats[mode].clientWins + stats.raceModeStats[mode].hostWins;
+}
