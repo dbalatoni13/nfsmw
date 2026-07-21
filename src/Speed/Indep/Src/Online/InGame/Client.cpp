@@ -48,3 +48,17 @@ void Client::Close() {
         SetState(CLIENTSTATE_INITIAL);
     }
 }
+
+void Client::ReadIncomingPackets() {
+    if (IsConnected()) {
+        NetGamePacketT sGamePacketInbound;
+        bool reliable = false;
+        NetworkCore &networkCore = NetworkCore::Instance();
+        NetGameLinkRefT *linkRef = hostConnection->pGameLinkRef;
+
+        while (networkCore.Recv(linkRef, sGamePacketInbound, reliable)) {
+            HandleIncomingPacket(reinterpret_cast<char *>(sGamePacketInbound.body.data),
+                                 sGamePacketInbound.head.len, reliable);
+        }
+    }
+}

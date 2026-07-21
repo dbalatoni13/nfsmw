@@ -58,6 +58,8 @@ struct Client {
     static void Close();
 
   private:
+    static void ReadIncomingPackets();
+    static void HandleIncomingPacket(char *data, int numBytes, bool isReliable);
     static bool IsConnected();
     static void SimpleSendMessage(uint8 msg_type);
     static void ConnectionCoreCB(ConnApiRefT *connapi, ConnApiCbInfoT *cbinfo, void *context);
