@@ -55,13 +55,27 @@ struct ByteCounter {
 
 struct Client {
     static void Init();
+    static void Close();
 
   private:
+    static bool IsConnected();
+    static void SimpleSendMessage(uint8 msg_type);
     static void ConnectionCoreCB(ConnApiRefT *connapi, ConnApiCbInfoT *cbinfo, void *context);
     static void SetState(ClientStateEnum new_state);
 
     static uint32 m_tSendCarUpdatesTimer[4];
+    static int m_clientId;
+    static int m_driverNumber;
+    static uint16 m_oneWayLatencyMs;
+    static float m_lastClockSyncRealTimeReceived;
     static ClientStateEnum m_state;
+    static int m_timestampCorrectionCount;
+    static int m_timestampErrorCount;
+    static int m_lastErrorSign;
+    static uint32 m_syncAnimationRecvId;
+    static int m_serverDriverNumber;
+    static float m_serverTimestamp;
+    static ConnApiClientT *hostConnection;
 };
 
 #endif

@@ -29,6 +29,7 @@ class OnlineManager {
     void Disconnect(bool force);
     void Update(bool networkThread);
     uint32 GetMasterTime();
+    void DriverLeft(int driver_number, bool he_quit);
 
     void EndSimFrame() {}
 
