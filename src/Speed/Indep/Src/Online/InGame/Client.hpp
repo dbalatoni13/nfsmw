@@ -46,6 +46,10 @@ struct Online {
     static void SignalStartClockSync();
     static void SignalReady();
     static void SignalRestart();
+    static void SignalDriverFinish(SmartBitStream &payload_data);
+    static void SignalScoreMessage(SmartBitStream &payload_data);
+    static void SignalSyncAnimationMessage(SmartBitStream &payload_data);
+    static void SignalDataCRCMessage(SmartBitStream &payload_data);
     static void SplitPacket(MessageTypesEnum type, SmartBitStream &bitstream_data,
                             SplitPacketList &splitPackets);
     static void JoinPackets(SmartBitStream &joinedPacket, SplitPacketList &splitPackets);
@@ -161,5 +165,13 @@ struct Client {
     static float m_serverTimestamp;
     static ConnApiClientT *hostConnection;
 };
+
+inline void Online::SignalScoreMessage(SmartBitStream &payload_data) {
+    if (Server::m_state > SERVERSTATE_INITIAL) {
+        Server::SignalScoreMessage(payload_data);
+    } else {
+        Client::SignalScoreMessage(payload_data);
+    }
+}
 
 #endif

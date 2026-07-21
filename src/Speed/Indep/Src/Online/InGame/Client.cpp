@@ -487,3 +487,23 @@ void Online::SignalRestart() {
         Client::SignalRestart();
     }
 }
+
+void Online::SignalDriverFinish(SmartBitStream &payload_data) {
+    if (Server::m_state > SERVERSTATE_INITIAL) {
+        Server::SignalDriverFinish(payload_data);
+    } else {
+        Client::SignalDriverFinish(payload_data);
+    }
+}
+
+void Online::SignalSyncAnimationMessage(SmartBitStream &payload_data) {
+    Server::SignalSyncAnimationMessage(payload_data);
+}
+
+void Online::SignalDataCRCMessage(SmartBitStream &payload_data) {
+    if (Server::m_state > SERVERSTATE_INITIAL) {
+        Server::SignalDataCRCMessage(payload_data);
+    } else {
+        Client::SignalDataCRCMessage(payload_data);
+    }
+}

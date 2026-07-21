@@ -43,6 +43,10 @@ struct Server {
     static void SignalStartClockSync();
     static void SignalReady();
     static void SignalRestart();
+    static void SignalDriverFinish(SmartBitStream &payload_data);
+    static void SignalScoreMessage(SmartBitStream &payload_data);
+    static void SignalSyncAnimationMessage(SmartBitStream &payload_data);
+    static void SignalDataCRCMessage(SmartBitStream &payload_data);
     static void StartServerProcessing();
 };
 
