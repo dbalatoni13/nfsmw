@@ -507,3 +507,43 @@ void Online::SignalDataCRCMessage(SmartBitStream &payload_data) {
         Client::SignalDataCRCMessage(payload_data);
     }
 }
+
+void Online::SplitPacket(MessageTypesEnum type, SmartBitStream &bitstream_data,
+                         SplitPacketList &splitPackets) {
+    uint8 numChunks = bitstream_data.GetByteLength() / 100 + 1;
+    if (bitstream_data.GetByteLength() % 100 + numChunks * 5 > 100) {
+        numChunks++;
+    }
+
+    for (uint8 i = 1; i <= numChunks; i++) {
+        SplitPacketNode *node = new ("Online::SplitPacket", 0) SplitPacketNode;
+        node->data.AddByte(static_cast<uint8>(type));
+        node->chunk = i;
+        node->data.AddByte(i);
+        node->totalChunks = numChunks;
+        node->data.AddByte(numChunks);
+        node->totalBits = i == numChunks ? bitstream_data.GetBitLengthRemaining() : 95 * 8;
+        node->data.AddShort(node->totalBits);
+
+        int32 bytesThisPacket = 95;
+        if (i == numChunks) {
+            bytesThisPacket = bitstream_data.GetByteLengthRemaining();
+        }
+        if (i == numChunks && bytesThisPacket > 0) {
+            bytesThisPacket--;
+        }
+
+        char buf[100] = "";
+        bitstream_data.GetRawDataWithoutSize(buf, bytesThisPacket);
+        node->data.AddRawDataWithoutSize(buf, bytesThisPacket);
+        if (i == numChunks) {
+            int bitsRemaining = bitstream_data.GetBitLengthRemaining();
+            if (bitsRemaining != 0) {
+                uint32 temp = 0;
+                bitstream_data.GetBits(temp, bitsRemaining);
+                node->data.AddBits(temp, bitsRemaining);
+            }
+        }
+        splitPackets.AddTail(node);
+    }
+}
