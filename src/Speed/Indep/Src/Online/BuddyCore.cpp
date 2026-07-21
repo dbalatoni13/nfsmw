@@ -459,3 +459,13 @@ int BuddyCore::GetNextAvailableVOIPSlot() {
     }
     return -1;
 }
+
+bool BuddyCore::DoIHaveAVOIPInviteFromThisBuddy(char *buddyName) {
+    bool bHaveChallenge = false;
+    for (int i = 0; i < 6; i++) {
+        if (bStrCmp(buddyName, m_voipChallenge[i].challengerName) == 0) {
+            bHaveChallenge = true;
+        }
+    }
+    return bHaveChallenge;
+}
