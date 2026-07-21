@@ -544,3 +544,12 @@ void LobbyUsers::OnlnCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData) {
 
     LobbyCore::Instance().FinishCommand(pMsg, true);
 }
+
+void LobbyUsers::UserCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData) {
+    if (pMsg->code == 0) {
+        static_cast<LobbyUsers *>(pData)->myStats.ExtractRecord(pMsg->pData);
+        static_cast<LobbyUsers *>(pData)->gotMyStats = true;
+    }
+
+    LobbyCore::Instance().FinishCommand(pMsg, true);
+}
