@@ -478,3 +478,11 @@ VOIP_ChallengeInfo *BuddyCore::GetVOIPChallengeInfo(char *buddyName) {
     }
     return nullptr;
 }
+
+void BuddyCore::RemoveVOIPChallenge(char *buddyName) {
+    for (int i = 0; i < 6; i++) {
+        if (bStrCmp(buddyName, m_voipChallenge[i].challengerName) == 0) {
+            bMemSet(&m_voipChallenge[i], 0, sizeof(VOIP_ChallengeInfo));
+        }
+    }
+}
