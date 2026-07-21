@@ -2,6 +2,8 @@
 #include "Speed/Indep/Src/Frontend/Database/VehicleDB.hpp"
 #include "Speed/Indep/Src/Physics/PhysicsInfo.hpp"
 
+void *operator new(size_t size, const char *file, int line, int allocationParams);
+
 extern "C" {
 int TagFieldGetStructure(const char *field, void *buffer, int bufferSize, const char *format);
 void TagFieldSetFloat(char *record, int recordLength, const char *name, float value);
@@ -192,4 +194,50 @@ void LobbyUsers::UpdateCarName() {
         SendAuxiData();
     }
     lobbyMutex.Unlock(nullptr);
+}
+
+int32 LobbyUsers::GetUserOnlineRecord(const char *persona, CommandCBFunc func, void *context) {
+    lobbyMutex.Lock("LobbyUsers::GetUserOnlineRecord");
+    if (bStrCmp(persona, FEDatabase->OnlineSettings.GetLobbyPersona()) == 0) {
+        lobbyMutex.Unlock("LobbyUsers::GetUserOnlineRecord");
+        return 0;
+    }
+
+    OnlineUsersData *oud;
+    for (oud = userList.GetHead(); oud != userList.EndOfList(); oud = oud->GetNext()) {
+        if (bStrCmp(oud->user.name, persona) == 0) {
+            int32 rc = oud->commandID;
+            lobbyMutex.Unlock("LobbyUsers::GetUserOnlineRecord");
+            return rc;
+        }
+    }
+
+    if (userList.CountElements() == 32) {
+        oud = userList.GetTail();
+        userList.Remove(oud);
+        userList.AddHead(oud);
+        oud->Reset();
+        bStrCpy(oud->user.name, persona);
+    } else {
+        oud = new ("d:/p4_apex1666_d1001856/mw/speed/indep/src/online/LobbyUsers.cpp", 0x84,
+                   8) OnlineUsersData;
+        if (!oud) {
+            lobbyMutex.Unlock("LobbyUsers::GetUserOnlineRecord");
+            return -1;
+        }
+        bStrCpy(oud->user.name, persona);
+        userList.AddHead(oud);
+    }
+
+    char buf[64] = "";
+    TagFieldSetString(buf, sizeof(buf), "PERS", persona);
+    int32 rc = oud->commandID =
+        LobbyCore::Instance().QueueCommand('onln', buf, OnlnCB, this, func, context, false);
+    if (rc == -1) {
+        oud->Reset();
+        lobbyMutex.Unlock("LobbyUsers::GetUserOnlineRecord");
+        return -1;
+    }
+    lobbyMutex.Unlock("LobbyUsers::GetUserOnlineRecord");
+    return rc;
 }

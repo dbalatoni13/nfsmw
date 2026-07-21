@@ -145,12 +145,24 @@ struct PlayerDataT {
 
 struct LobbyUsers {
     struct OnlineUsersData : bTNode<OnlineUsersData> {
+        OnlineUsersData()
+            : commandID(0) {
+            bMemSet(&user, 0, sizeof(user));
+        }
+        ~OnlineUsersData() {}
+
+        void Reset() {
+            bMemSet(&user, 0, sizeof(user));
+            commandID = 0;
+        }
+
         LobbyApiUserT user;
         int32 commandID;
     };
 
     static LobbyUsers &Instance();
     void UpdateCarName();
+    int32 GetUserOnlineRecord(const char *persona, CommandCBFunc func, void *context);
     void ClearUserOnlineRecordCache();
     void ClearUserOnlineRecordCache(const LobbyApiPlayT &game);
     void SetSessionChangeFlag(bool changing);
@@ -172,6 +184,7 @@ struct LobbyUsers {
     void Reset();
     void MaybeCreateAuxiBuffer();
     int32 SendAuxiData();
+    static void OnlnCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData);
     friend int32 LobbyInit();
     friend void LobbyDisconnect();
 
