@@ -1,5 +1,6 @@
 #include "LobbyGameSessions.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
+#include "Speed/Indep/Src/Misc/GameFlow.hpp"
 #include "Speed/Indep/Src/World/OnlineManager.hpp"
 
 extern "C" {
@@ -866,4 +867,36 @@ void LobbyGameSessions::LeaveSessionCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, v
         lgs->myCurrentSession.iIdent = -1;
     }
     LobbyCore::Instance().FinishCommand(pMsg, true);
+}
+
+void LobbyGameSessions::GlobalEventCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData) {
+    LobbyGameSessions *lgs = static_cast<LobbyGameSessions *>(pData);
+    if (IsGameFlowInFrontEnd()) {
+        if (pMsg->kind == 'uset' && lgs->myCurrentSession.iIdent != -1) {
+            lgs->hostHurryTimer.UnSet();
+            lgs->hostInactiveTimer.UnSet();
+            if (!TagFieldFind(pMsg->pData, "N")) {
+                lgs->SessionWasDeleted();
+            } else {
+                LobbyApiExtractUserSet(&lgs->myCurrentSession, pMsg->pData);
+                if (!LobbyUsers::Instance().GetMyUserRecord()->aUserSets[0][0]) {
+                    bMemSet(&lgs->myCurrentSession, 0, sizeof(lgs->myCurrentSession));
+                    lgs->myCurrentSession.iIdent = -1;
+                    lgs->SendUpdateCallback(LobbyGameSessionsN::SESSION_KICKED);
+                } else {
+                    if (FEDatabase->OnlineSettings.GameDetails == eJOINING) {
+                        lgs->ExtractSessionInfo();
+                    }
+                    if (FEDatabase->OnlineSettings.GameDetails == eHOSTING) {
+                        lgs->UpdateSessionInfo(false);
+                    }
+                    lgs->SendUpdateCallback(LobbyGameSessionsN::SESSION_CHANGED);
+                }
+            }
+        } else if (pMsg->kind == 'play' && FEDatabase->OnlineSettings.GameDetails == eHOSTING) {
+            char buf[96] = "";
+            TagFieldSetString(buf, sizeof(buf), "NAME", lgs->myCurrentSession.strName);
+            LobbyCore::Instance().QueueCommand('uadm', buf, nullptr, nullptr, nullptr, nullptr, false);
+        }
+    }
 }
