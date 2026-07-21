@@ -900,3 +900,22 @@ void LobbyGameSessions::GlobalEventCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, vo
         }
     }
 }
+
+void LobbyGameSessions::FindSessionsCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData) {
+    LobbyGameSessions *lgs = static_cast<LobbyGameSessions *>(pData);
+    if (LobbyCore::Instance().currentCommand) {
+        if (pMsg->code == 0) {
+            lgs->lastSearchCount = TagFieldGetNumber(TagFieldFind(pMsg->pData, "COUNT"), 0);
+            lgs->SendUpdateCallback(LobbyGameSessionsN::SESSION_LIST_CHANGED);
+            if (lgs->lastSearchCount == 0) {
+                LobbyCore::Instance().FinishCommand(pMsg, true);
+            }
+        } else {
+            LobbyCore::Instance().FinishCommand(pMsg, true);
+        }
+    }
+}
+
+void LobbyGameSessions::SessionUpdateCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData) {
+    LobbyCore::Instance().FinishCommand(pMsg, true);
+}
