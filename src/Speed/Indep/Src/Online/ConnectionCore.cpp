@@ -156,3 +156,9 @@ void ConnectionCore::AddPlayer(LobbyApiUserT &userInfo) {
     }
     networkMutex.Unlock("ConnectionCore::AddPlayer");
 }
+
+void ConnectionCore::AddPlayer(LobbyApiPlayerT &userInfo) {
+    networkMutex.Lock("ConnectionCore::AddPlayer");
+    AddPlayer_HaveMutex(userInfo);
+    networkMutex.Unlock("ConnectionCore::AddPlayer");
+}
