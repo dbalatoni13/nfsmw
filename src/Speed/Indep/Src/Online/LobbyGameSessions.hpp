@@ -121,6 +121,7 @@ struct LobbyGameSessions {
     static void SessionMembersDispListCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData);
     static void CreateSessionCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData);
     static void JoinSessionCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData);
+    static void CreateGameCB(LobbyApiMsgT *pMsg, void *pData);
     static void RecreateGameCB(LobbyApiMsgT *pMsg, void *pData);
     static void LeaveSessionCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData);
     static void FindSessionsCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData);

@@ -8,6 +8,7 @@ int DispListShown(DispListRef *list);
 void *DispListGet(DispListRef *list, int index);
 int LobbyApiListFindByName(LobbyApiRefT *lobbyRef, int selector, const char *name);
 int LobbyApiInfoInt(LobbyApiRefT *lobbyRef, int selector);
+void LobbyApiExtractUserSet(LobbyApiUserSetT *userSet, const char *record);
 void DispListChange(DispListRef *list, int change);
 void DispListOrder(DispListRef *list);
 }
@@ -808,4 +809,61 @@ void LobbyGameSessions::SessionMembersDispListCB(LobbyApiRefT *pRef, LobbyApiMsg
     lgs->hostHurryTimer.UnSet();
     lgs->hostInactiveTimer.UnSet();
     lgs->SendUpdateCallback(LobbyGameSessionsN::SESSION_CHANGED);
+}
+
+void LobbyGameSessions::CreateSessionCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData) {
+    LobbyGameSessions *lgs = static_cast<LobbyGameSessions *>(pData);
+    LobbyCore &lobbyCore = LobbyCore::Instance();
+    if (pMsg->code == 0) {
+        LobbyApiExtractUserSet(&lgs->myCurrentSession, pMsg->pData);
+        lgs->createSessionCB = lobbyCore.currentCommand->commandCB;
+        lgs->createSessionContext = lobbyCore.currentCommand->commandContext;
+        lobbyCore.FinishCommand(pMsg, false);
+        LobbyGames::Instance().CreateGame(lgs->myCurrentSession.strOwner, FEDatabase->OnlineSettings,
+                                          CreateGameCB, lgs);
+    } else {
+        lobbyCore.FinishCommand(pMsg, true);
+    }
+}
+
+void LobbyGameSessions::JoinSessionCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData) {
+    LobbyGameSessions *lgs = static_cast<LobbyGameSessions *>(pData);
+    if (pMsg->code == 0) {
+        LobbyApiExtractUserSet(&lgs->myCurrentSession, pMsg->pData);
+        lgs->ExtractSessionInfo();
+    }
+    LobbyCore::Instance().FinishCommand(pMsg, true);
+}
+
+void LobbyGameSessions::CreateGameCB(LobbyApiMsgT *pMsg, void *pData) {
+    LobbyGameSessions *lgs = static_cast<LobbyGameSessions *>(pData);
+    if (pMsg->code == 0) {
+        lgs->UpdateSessionInfo(false);
+    } else {
+        lgs->LeaveSession_HaveMutex(nullptr, nullptr);
+    }
+    if (lgs->createSessionCB) {
+        lgs->createSessionCB(pMsg, lgs->createSessionContext);
+    }
+}
+
+void LobbyGameSessions::RecreateGameCB(LobbyApiMsgT *pMsg, void *pData) {
+    LobbyGameSessions *lgs = static_cast<LobbyGameSessions *>(pData);
+    if (pMsg->code == 0) {
+        lgs->UpdateSessionInfo(true);
+    } else {
+        lgs->LeaveSession_HaveMutex(nullptr, nullptr);
+    }
+    LobbyCore::Instance().FinishCommand(pMsg, false);
+}
+
+void LobbyGameSessions::LeaveSessionCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData) {
+    LobbyGameSessions *lgs = static_cast<LobbyGameSessions *>(pData);
+    lgs->hostHurryTimer.UnSet();
+    lgs->hostInactiveTimer.UnSet();
+    if (pMsg->code == 0 || pMsg->code == 'join') {
+        bMemSet(&lgs->myCurrentSession, 0, sizeof(lgs->myCurrentSession));
+        lgs->myCurrentSession.iIdent = -1;
+    }
+    LobbyCore::Instance().FinishCommand(pMsg, true);
 }
