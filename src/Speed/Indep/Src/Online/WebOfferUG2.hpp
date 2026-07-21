@@ -7,6 +7,8 @@
 
 #include <types.h>
 
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
+
 struct WebOfferT;
 
 struct WebOfferSetupT {
@@ -165,5 +167,69 @@ class CWebOffer {
     void _ProcessNews();
     void _Finished();
 };
+
+typedef int dialog_handle;
+
+struct SFEngNewsScreenData {
+    MenuScreen *pParentScreen;
+    char *pNewsText;
+    WebOfferNewsT WebOfferNews;
+};
+
+class CWebOfferUG2 : public CWebOffer {
+    SFEngNewsScreenData m_NewsData;
+    WebOfferAlertT m_AlertData;
+
+  private:
+    EProcessAction m_PendingAction;
+    char *m_pCurrentFEngPackage;
+    MenuScreen *m_pOwner;
+    dialog_handle m_Dialog;
+    bool m_bAlertDialogPopulated;
+
+  public:
+    CWebOfferUG2();
+    ~CWebOfferUG2() override;
+    void SetOwner(MenuScreen *owner);
+    void SetPendingAction(EProcessAction action);
+    void DismissDialog();
+    char *DecodeString(char *string);
+
+  protected:
+    void StartAlert(WebOfferAlertT &AlertData) override;
+    void StartHTTP(WebOfferBusyT &BusyData) override;
+    void StartNews(char *pNewsText, WebOfferNewsT &NewsData) override;
+    EProcessAction ProcessAlert() override;
+    EProcessAction ProcessHTTP() override;
+    EProcessAction ProcessNews() override;
+    void EndAlert() override;
+    void EndHTTP() override;
+    void EndNews() override;
+    void Finished(int ResultCode) override;
+    void PopulateAlertDialog();
+};
+
+class CUIWebOfferStart : public MenuScreen {
+  private:
+    CWebOfferUG2 m_WebOffer;
+    MenuScreen *m_pCurrentWebOfferScreen;
+    static char m_NextPackageSuccess[32];
+    static char m_NextPackageFail[32];
+    static char m_WebOfferScript[512];
+
+  public:
+    CUIWebOfferStart(ScreenConstructorData *screenConstructorData);
+    ~CUIWebOfferStart() override;
+    void Shutdown();
+    static void SetNextPackages(const char *successPackage, const char *failPackage);
+    static void MakeURLScript2(const char *url, uint32 titleHash, uint32 messageHash);
+    static void MakeURLScript(const char *url);
+    static int MakeDialogButtonHash(int buttonIndex);
+    void NotificationMessage(uint32 msg, FEObject *obj, uint32 param1, uint32 param2) override;
+
+    friend void ConfigureWebOfferForTOS();
+};
+
+void ConfigureWebOfferForTOS();
 
 #endif

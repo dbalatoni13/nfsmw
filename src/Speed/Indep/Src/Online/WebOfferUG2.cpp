@@ -1,5 +1,8 @@
 #include "WebOfferUG2.hpp"
 
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
+#include "Speed/Indep/Src/Online/LobbyCore.hpp"
+
 extern "C" WebOfferT *WebOfferCreate(uint32 maxScriptSize);
 extern "C" void WebOfferDestroy(WebOfferT *webOffer);
 extern "C" void WebOfferSetup(WebOfferT *webOffer, WebOfferSetupT *setup);
@@ -15,6 +18,9 @@ extern "C" void WebOfferAction(WebOfferT *webOffer, int action);
 extern "C" void WebOfferSetPromo(WebOfferT *webOffer, WebOfferPromoT *promoData);
 extern "C" void WebOfferSetCredit(WebOfferT *webOffer, WebOfferCreditT *creditData);
 extern "C" int WebOfferHttpComplete(WebOfferT *webOffer);
+extern "C" int WebOfferResultData(WebOfferT *webOffer, void *resultData, void *resultSize);
+extern "C" char *TagFieldFind(const char *record, const char *name);
+extern "C" int TagFieldGetString(const char *field, char *buffer, int bufferSize, const char *defaultValue);
 
 CWebOffer::CWebOffer()
     : m_pWebOfferAPI(nullptr) //
@@ -227,5 +233,37 @@ void CWebOffer::_ProcessNews() {
         WebOfferAction(m_pWebOfferAPI, Action);
         m_bProcessingCommand = false;
         EndNews();
+    }
+}
+
+void CWebOffer::_Finished() {
+    int ResultCode = WebOfferResultData(m_pWebOfferAPI, nullptr, nullptr);
+    Finished(ResultCode);
+}
+
+char CUIWebOfferStart::m_WebOfferScript[512];
+
+void ConfigureWebOfferForTOS() {
+    char *config = LobbyCore::Instance().GetServerConfig();
+    char TOSURLFromServerConfig[256];
+    TOSURLFromServerConfig[0] = '\0';
+    if (config) {
+        TagFieldGetString(TagFieldFind(config, "TOSAC_URL"), TOSURLFromServerConfig, 255, "");
+    }
+
+    char *pURL = TOSURLFromServerConfig;
+    char *pURLScriptFormat =
+        "%%{ CMD=http\nTIME=%d\nMESG=0x%x\nURL-GET=%s\nSUCCESS-GOTO=$http\nBTN1-GOTO=$exit=-1\n%%}\n"
+        "%%{FAILURE CMD=alrt\nTITLE=0x%x\nMESG=0x%x\nBTN1=0x%x\nBTN1-GOTO=$exit=%d\n%%}";
+    if (bStrLen(pURL) == 0) {
+        char FudgedURL[32];
+        memcpy(FudgedURL, "http://1mdi71", 14);
+        pURL = FudgedURL;
+    }
+
+    int TotalStrLen = bStrLen(pURLScriptFormat) + 36;
+    if (TotalStrLen < 0x200) {
+        bSPrintf(CUIWebOfferStart::m_WebOfferScript, pURLScriptFormat, 30, 0x780207ca, pURL, 0,
+                 0x9016a670, 0x417b2601, -1);
     }
 }
