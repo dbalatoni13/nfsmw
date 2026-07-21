@@ -277,3 +277,18 @@ void VoiceCore::_RemoveAllPlayers() {
         }
     }
 }
+
+bool VoiceCore::_IsInVOIPChat(const char *name, int *channel) {
+    for (int i = 0; i < 4; i++) {
+        if (channels[i].assigned && bStrCmp(name, channels[i].persona_name) == 0) {
+            if (channel) {
+                *channel = i;
+            }
+            return true;
+        }
+    }
+    if (channel) {
+        *channel = -1;
+    }
+    return false;
+}
