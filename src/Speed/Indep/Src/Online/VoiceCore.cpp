@@ -362,3 +362,11 @@ inline void VoiceCore::_SetSpeakerState(bool enable) {}
 void VoiceCore::_SetSpeakerVolume(float v) {
     speaker_volume_remember = VU0_floatmin(1.0f, VU0_floatmax(0.0f, v));
 }
+
+void VoiceCore::_SetPlaybackVolume(float v) {
+    v = VU0_floatmin(1.0f, VU0_floatmax(0.0f, v));
+    playback_volume_remember = v;
+    if (VoipRef) {
+        VoipControl(VoipRef, 'play', static_cast<int>(v * 99.0f));
+    }
+}
