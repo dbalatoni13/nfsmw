@@ -11,6 +11,8 @@ extern "C" void WebOfferGetCredit(WebOfferT *webOffer, WebOfferCreditT *creditDa
 extern "C" void WebOfferGetBusy(WebOfferT *webOffer, WebOfferBusyT *busyData);
 extern "C" void WebOfferHttp(WebOfferT *webOffer);
 extern "C" char *WebOfferGetNews(WebOfferT *webOffer, WebOfferNewsT *newsData);
+extern "C" void WebOfferAction(WebOfferT *webOffer, int action);
+extern "C" void WebOfferSetPromo(WebOfferT *webOffer, WebOfferPromoT *promoData);
 
 CWebOffer::CWebOffer()
     : m_pWebOfferAPI(nullptr) //
@@ -119,4 +121,60 @@ void CWebOffer::_StartNews() {
     char *pNewsText = WebOfferGetNews(m_pWebOfferAPI, &NewsData);
     StartNews(pNewsText, NewsData);
     m_bProcessingCommand = true;
+}
+
+void CWebOffer::ProcessCommand() {
+    switch (m_pCurrentCommand->iCommand) {
+    case 'alrt':
+        _ProcessAlert();
+        break;
+    case 'prom':
+        _ProcessPromo();
+        break;
+    case 'card':
+        _ProcessCredit();
+        break;
+    case 'http':
+        _ProcessHTTP();
+        break;
+    case 'news':
+        _ProcessNews();
+        break;
+    }
+}
+
+void CWebOffer::_ProcessAlert() {
+    int Action = ProcessAlert();
+    if (Action < eProcessAction_Nothing) {
+        WebOfferAction(m_pWebOfferAPI, Action);
+        m_bProcessingCommand = false;
+        EndAlert();
+    }
+}
+
+void CWebOffer::_ProcessPromo() {
+    int Action = ProcessPromo();
+    if (Action < eProcessAction_Nothing) {
+        bool bSubmit = false;
+        WebOfferPromoT PromoData;
+        WebOfferGetPromo(m_pWebOfferAPI, &PromoData);
+        if (Action == eProcessAction_Button1 && PromoData.Button[0].strType[0] == '^') {
+            bSubmit = true;
+        }
+        if (Action == eProcessAction_Button2 && PromoData.Button[1].strType[0] == '^') {
+            bSubmit = true;
+        }
+        if (Action == eProcessAction_Button3 && PromoData.Button[2].strType[0] == '^') {
+            bSubmit = true;
+        }
+        if (Action == eProcessAction_Button4 && PromoData.Button[3].strType[0] == '^') {
+            bSubmit = true;
+        }
+        if (bSubmit && FillInPromoSubmitData(PromoData.strPromo, sizeof(PromoData.strPromo))) {
+            WebOfferSetPromo(m_pWebOfferAPI, &PromoData);
+        }
+        WebOfferAction(m_pWebOfferAPI, Action);
+        m_bProcessingCommand = false;
+        EndPromo();
+    }
 }
