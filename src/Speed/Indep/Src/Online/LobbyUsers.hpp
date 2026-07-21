@@ -6,6 +6,7 @@
 #endif
 
 #include "LobbyCore.hpp"
+#include "Speed/Indep/Src/Misc/Timer.hpp"
 
 struct PlayerDataT {
     struct OnlineModeStats {
@@ -77,8 +78,15 @@ struct PlayerDataT {
     }
     float GetTotalDisconnectPercentage();
     float GetTopSpeedInMPS(int mode);
-    float GetFastestDragFinish();
-    char *GetFastestDragFinishString();
+    float GetFastestDragFinish() {
+        return static_cast<float>(stats.fastestDragFinish) * 0.001f;
+    }
+    char *GetFastestDragFinishString() {
+        static char time[32];
+        Timer tmptime(GetFastestDragFinish());
+        tmptime.PrintToString(time, 4);
+        return time;
+    }
     uint32 GetTotalNOS(int mode);
     float GetLongestJumpDuration(int mode);
     char *GetLongestJumpDurationString();
