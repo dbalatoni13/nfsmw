@@ -13,6 +13,7 @@ int ConnApiAddClient(ConnApiRefT *connapi, ConnApiUserInfoT *userInfo);
 ConnApiClientListT *ConnApiGetClientList(ConnApiRefT *connapi);
 int ConnApiRemoveClient(ConnApiRefT *connapi, const char *clientName, int clientIndex);
 int ConnApiOnline(ConnApiRefT *connapi, const char *name, DirtyAddrT *dirtyAddr);
+void ConnApiDisconnect(ConnApiRefT *connapi);
 int ConnApiControl(ConnApiRefT *connapi, int control, int value, int value2, void *pValue);
 }
 
@@ -348,5 +349,16 @@ void ConnectionCore::AddPlayer_HaveMutex(const LobbyApiPlayerT &userInfo) {
     BuildUserInfo(realUserInfo, userInfo);
     if (bStrCmp(realUserInfo.strName, FEDatabase->OnlineSettings.GetLobbyPersona()) != 0) {
         ConnApiAddClient(connapi, &realUserInfo);
+    }
+}
+
+void ConnectionCore::ResetSession_HaveMutex() {
+    if (connapi) {
+        ConnApiClientListT *clientList = ConnApiGetClientList(connapi);
+        if (clientList && clientList->iNumClients != 0) {
+            ConnApiDisconnect(connapi);
+            numConnectedPlayers = 0;
+            VoiceCore::mInstance->RemoveAllPlayers();
+        }
     }
 }
