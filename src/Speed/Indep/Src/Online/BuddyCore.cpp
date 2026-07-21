@@ -23,6 +23,7 @@ int HLBBudIsRealBuddy(HLBBudT *buddy);
 int HLBBudIsWannaBeMyBuddy(HLBBudT *buddy);
 int HLBBudIsIWannaBeHisBuddy(HLBBudT *buddy);
 int HLBBudIsBlocked(HLBBudT *buddy);
+int HLBBudTempBuddyIs(HLBBudT *buddy, int flags);
 int HLBBudGetState(HLBBudT *buddy);
 const char *HLBBudGetName(HLBBudT *buddy);
 void HLBApiCancelOp(HLBApiRefT *api);
@@ -538,4 +539,14 @@ void BuddyCore::initVoiceAndPresence() {
         HLBApiPresenceDiff(HLBud, "BlackBox Games", "English");
         RichPresence::Instance()->Init();
     }
+}
+
+void BuddyCore::AddTempBuddy(char *name, int tempType) {
+    HLBBudT *pBud = getBuddyByName(name);
+    if (pBud && HLBBudTempBuddyIs(pBud, tempType)) {
+        return;
+    }
+
+    GetNumberTempBuddys();
+    HLBListFlagTempBuddy(instance()->HLBud, name, tempType);
 }
