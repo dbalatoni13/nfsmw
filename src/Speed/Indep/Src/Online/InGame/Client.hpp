@@ -5,6 +5,19 @@
 #pragma once
 #endif
 
+#include "Speed/Indep/Src/Online/LobbyCore.hpp"
+
+enum ClientStateEnum {
+    CLIENTSTATE_INITIAL = 0,
+    CLIENTSTATE_WAITING = 1,
+    CLIENTSTATE_CONNECTED = 2,
+    CLIENTSTATE_DESCRIBED = 3,
+    CLIENTSTATE_LOADING = 4,
+    CLIENTSTATE_NIS = 5,
+    CLIENTSTATE_READY = 6,
+    CLIENTSTATE_RACING = 7
+};
+
 struct ByteCounter {
     ByteCounter(int LengthOfSecond)
         : m_lengthOfSecond(LengthOfSecond) //
@@ -38,6 +51,17 @@ struct ByteCounter {
     int m_time;
     int m_bytes;
     int m_bps;
+};
+
+struct Client {
+    static void Init();
+
+  private:
+    static void ConnectionCoreCB(ConnApiRefT *connapi, ConnApiCbInfoT *cbinfo, void *context);
+    static void SetState(ClientStateEnum new_state);
+
+    static uint32 m_tSendCarUpdatesTimer[4];
+    static ClientStateEnum m_state;
 };
 
 #endif

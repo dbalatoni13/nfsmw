@@ -37,3 +37,5 @@
 #include "Speed/Indep/Src/Online/LobbyUsers.cpp"
 
 #include "Speed/Indep/Src/Online/ConditionSimulator.cpp"
+
+#include "Speed/Indep/Src/Online/InGame/Client.cpp"
