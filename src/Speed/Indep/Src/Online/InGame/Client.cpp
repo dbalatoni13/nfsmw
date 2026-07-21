@@ -433,3 +433,12 @@ void Online::Close() {
         Server::Close();
     }
 }
+
+void Online::ReadIncomingPackets() {
+    if (Client::m_state > CLIENTSTATE_INITIAL) {
+        Client::ReadIncomingPackets();
+    }
+    if (Server::m_state > SERVERSTATE_INITIAL) {
+        Server::ReadIncomingPackets();
+    }
+}

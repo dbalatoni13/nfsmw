@@ -39,6 +39,7 @@ struct Online {
     static void Init();
     static void Close();
     static bool IsInitialized();
+    static void ReadIncomingPackets();
     static void SplitPacket(MessageTypesEnum type, SmartBitStream &bitstream_data,
                             SplitPacketList &splitPackets);
     static void JoinPackets(SmartBitStream &joinedPacket, SplitPacketList &splitPackets);

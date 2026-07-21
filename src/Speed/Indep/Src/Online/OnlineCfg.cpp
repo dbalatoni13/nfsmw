@@ -38,6 +38,7 @@ struct Server {
     static ServerStateEnum m_state;
     static void Init();
     static void Close();
+    static void ReadIncomingPackets();
     static void StartServerProcessing();
 };
 
