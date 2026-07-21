@@ -93,6 +93,7 @@ struct Client {
     static bool IsConnected();
     static void SimpleSendMessage(uint8 msg_type);
     static void SendMessage(uint8 msg_type, SmartBitStream &bitstream_data, bool isReliable);
+    static void SendCarDescriptionMessage();
     static void ConnectionCoreCB(ConnApiRefT *connapi, ConnApiCbInfoT *cbinfo, void *context);
     static void SetState(ClientStateEnum new_state);
 

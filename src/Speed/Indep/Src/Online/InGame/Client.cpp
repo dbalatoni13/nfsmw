@@ -218,3 +218,12 @@ void Client::ProcessSyncAnimationMessage(SmartBitStream &bitstream_data) {
 void Client::ProcessDataCRCMessage(SmartBitStream &bitstream_data) {
     TheOnlineManager.SignalDataCRCMessage(bitstream_data);
 }
+
+void Client::ProcessWelcomeMessage(SmartBitStream &bitstream_data) {
+    m_clientId = bitstream_data.GetInt();
+    m_driverNumber = bitstream_data.GetInt();
+    m_serverDriverNumber = bitstream_data.GetInt();
+    TheOnlineManager.ImportRaceParams(m_driverNumber, m_serverDriverNumber, bitstream_data);
+    SendCarDescriptionMessage();
+    SetState(CLIENTSTATE_DESCRIBED);
+}
