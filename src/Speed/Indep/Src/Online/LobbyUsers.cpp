@@ -72,3 +72,30 @@ uint32 PlayerDataT::GetTotalWins(int mode) {
     }
     return stats.raceModeStats[mode].clientWins + stats.raceModeStats[mode].hostWins;
 }
+
+uint32 PlayerDataT::GetTotalLossesAsClient() {
+    uint32 sum = 0;
+    for (int mode = 0; mode < 3; mode++) {
+        sum += stats.raceModeStats[mode].clientLosses;
+    }
+    return sum;
+}
+
+uint32 PlayerDataT::GetTotalLossesAsHost() {
+    uint32 sum = 0;
+    for (int mode = 0; mode < 3; mode++) {
+        sum += stats.raceModeStats[mode].hostLosses;
+    }
+    return sum;
+}
+
+uint32 PlayerDataT::GetTotalLosses(int mode) {
+    uint32 sum = 0;
+    if (mode == 3) {
+        for (int i = 0; i < 3; i++) {
+            sum += stats.raceModeStats[i].clientLosses + stats.raceModeStats[i].hostLosses;
+        }
+        return sum;
+    }
+    return stats.raceModeStats[mode].clientLosses + stats.raceModeStats[mode].hostLosses;
+}
