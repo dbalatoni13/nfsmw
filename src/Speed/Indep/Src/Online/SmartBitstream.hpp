@@ -11,6 +11,7 @@
 
 class SmartBitStream : public BitStream {
   public:
+    void AddQuantizedInt(int value, IntQuantizer &iq);
     void AddBool(bool value) { AddBits(value, 1); }
     void GetBool(bool &value) {
         uint32 temp = 0;

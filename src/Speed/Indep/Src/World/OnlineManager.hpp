@@ -11,6 +11,20 @@
 
 #include <types.h>
 
+class SmartBitStream;
+struct Client;
+struct OnlineRacer;
+
+enum ePosDataPriorityMask {
+    PDP_MASK_NONE = 0,
+    PDP_MASK_CRITICAL = 1,
+    PDP_MASK_NORMAL = 2,
+    PDP_MASK_LOW = 4,
+    PDP_MASK_AESTHETIC = 8,
+    PDP_MASK_INFLIGHT = 32,
+    PDP_MASK_ALL = 47
+};
+
 enum eOnlineState {
     OLS_DISCONNECTED = 0,
     OLS_LOBBY_IN_LOBBY = 1,
@@ -30,6 +44,8 @@ class OnlineManager {
     void Update(bool networkThread);
     uint32 GetMasterTime();
     void DriverLeft(int driver_number, bool he_quit);
+    void ExportPositionData(int driver_number, SmartBitStream &bitstream_data,
+                            ePosDataPriorityMask priority_mask);
 
     void EndSimFrame() {}
 
@@ -56,6 +72,13 @@ class OnlineManager {
     eOnlineState GetState() {
         return OLS_DISCONNECTED;
     }
+
+  protected:
+    eOnlineState State;
+    OnlineRacer *pLocalRacer;
+    OnlineRacer *pRacers[4];
+
+    friend struct Client;
 };
 
 extern OnlineManager TheOnlineManager;

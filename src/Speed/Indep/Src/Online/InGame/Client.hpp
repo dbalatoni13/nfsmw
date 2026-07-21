@@ -6,6 +6,9 @@
 #endif
 
 #include "Speed/Indep/Src/Online/LobbyCore.hpp"
+#include "Speed/Indep/Src/World/OnlineManager.hpp"
+
+class IntQuantizer;
 
 enum ClientStateEnum {
     CLIENTSTATE_INITIAL = 0,
@@ -18,14 +21,8 @@ enum ClientStateEnum {
     CLIENTSTATE_RACING = 7
 };
 
-enum ePosDataPriorityMask {
-    PDP_MASK_NONE = 0,
-    PDP_MASK_CRITICAL = 1,
-    PDP_MASK_NORMAL = 2,
-    PDP_MASK_LOW = 4,
-    PDP_MASK_AESTHETIC = 8,
-    PDP_MASK_INFLIGHT = 32,
-    PDP_MASK_ALL = 47
+struct Online {
+    static IntQuantizer m_driverNumberQuantizer;
 };
 
 struct ByteCounter {
@@ -70,9 +67,11 @@ struct Client {
   private:
     static void ReadIncomingPackets();
     static ePosDataPriorityMask BuildPosDataPriorityMask();
+    static void SendCarSpam();
     static void HandleIncomingPacket(char *data, int numBytes, bool isReliable);
     static bool IsConnected();
     static void SimpleSendMessage(uint8 msg_type);
+    static void SendMessage(uint8 msg_type, SmartBitStream &bitstream_data, bool isReliable);
     static void ConnectionCoreCB(ConnApiRefT *connapi, ConnApiCbInfoT *cbinfo, void *context);
     static void SetState(ClientStateEnum new_state);
 
@@ -88,6 +87,7 @@ struct Client {
     static int m_lastErrorSign;
     static uint32 m_syncAnimationRecvId;
     static int m_serverDriverNumber;
+    static int m_serverState;
     static float m_serverTimestamp;
     static ConnApiClientT *hostConnection;
 };

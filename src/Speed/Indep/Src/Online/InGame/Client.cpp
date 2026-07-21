@@ -1,4 +1,5 @@
 #include "Client.hpp"
+#include "Speed/Indep/Src/Online/SmartBitstream.hpp"
 #include "Speed/Indep/Src/World/OnlineManager.hpp"
 
 uint32 Client::m_tSendCarUpdatesTimer[4];
@@ -13,6 +14,7 @@ int Client::m_timestampErrorCount;
 int Client::m_lastErrorSign;
 uint32 Client::m_syncAnimationRecvId;
 int Client::m_serverDriverNumber;
+int Client::m_serverState;
 float Client::m_serverTimestamp;
 ConnApiClientT *Client::hostConnection;
 
@@ -81,4 +83,24 @@ ePosDataPriorityMask Client::BuildPosDataPriorityMask() {
         }
     }
     return return_mask;
+}
+
+void Client::SendCarSpam() {
+    if (IsConnected()) {
+        ePosDataPriorityMask pdp_mask = BuildPosDataPriorityMask();
+        if (m_driverNumber >= 0 && m_state >= CLIENTSTATE_READY &&
+            m_serverState >= CLIENTSTATE_READY && pdp_mask != PDP_MASK_NONE) {
+            int driver_number = m_driverNumber;
+            if (TheOnlineManager.pRacers[driver_number]) {
+                SmartBitStream bitstream_data;
+                bitstream_data.AddByte(2);
+                uint32 ret = bGetTicker();
+                bitstream_data.AddInt(ret);
+                bitstream_data.AddQuantizedInt(m_driverNumber, Online::m_driverNumberQuantizer);
+                bitstream_data.AddByte(static_cast<uint8>(pdp_mask));
+                TheOnlineManager.ExportPositionData(m_driverNumber, bitstream_data, pdp_mask);
+                SendMessage(2, bitstream_data, false);
+            }
+        }
+    }
 }
