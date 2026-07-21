@@ -6,7 +6,7 @@
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/Src/Online/LobbyCore.hpp"
-#include "Speed/Indep/Src/Online/RichPresence.hpp"
+#include "Speed/Indep/Src/Online/NetworkCore.hpp"
 #include "Speed/Indep/Src/Online/VoiceCore.hpp"
 
 extern "C" {
@@ -700,4 +700,10 @@ RichPresenceMsg BuddyCore::GetRichPresence(BuddySettings *buddySettings) {
 RichPresence *RichPresence::Instance() {
     static RichPresence mInstance;
     return &mInstance;
+}
+
+void RichPresence::Init() {
+    mCurrentRichPresence.Default();
+    mBuddyState = HLB_STAT_CHAT;
+    UpdatePresence();
 }

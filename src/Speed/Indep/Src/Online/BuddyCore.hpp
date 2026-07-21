@@ -9,7 +9,7 @@
 
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "Speed/Indep/Src/Online/LobbyChat.hpp"
-#include "Speed/Indep/Src/Online/RichPresence.hpp"
+#include "Speed/Indep/Src/Online/NetworkCore.hpp"
 
 struct HLBApiRefT;
 struct HLBBudT;
@@ -97,6 +97,52 @@ struct BuddySettings {
     char buddyName[32];
     char presence[256];
     char presenceExtra[256];
+};
+
+enum HLBStatE {
+    HLB_STAT_UNDEFINED = -1,
+    HLB_STAT_DISC = 0,
+    HLB_STAT_CHAT = 1,
+    HLB_STAT_AWAY = 2,
+    HLB_STAT_XA = 3,
+    HLB_STAT_DND = 4,
+    HLB_STAT_PASSIVE = 5
+};
+
+struct RichPresenceMsg {
+    char IPaddress[32];
+    uint32 eventHash;
+    uint32 isRacing;
+    char session[32];
+    uint32 isSessionPassworded;
+    char password[32];
+    uint32 isSessionPrivate;
+
+    RichPresenceMsg() {}
+    inline void Default() {
+        bMemSet(this, 0, sizeof(*this));
+        bStrCpy(IPaddress, NetworkCore::MyIPAddressText());
+    }
+};
+
+struct RichPresence {
+  private:
+    RichPresenceMsg mCurrentRichPresence;
+    HLBStatE mBuddyState;
+
+  public:
+    RichPresence();
+    ~RichPresence();
+    static RichPresence *Instance();
+    void Init();
+    void SetEventHash(uint32 eventHash);
+    void SetSession(const char *session);
+    void SetBuddyState(HLBStatE buddyState);
+    void SetIsRacing(bool isRacing);
+    void SetSessionPasswordProtected(bool isPasswordProtected);
+    void SetPassword(const char *password);
+    void SetSessionPrivate(bool isPrivate);
+    void UpdatePresence();
 };
 
 struct BuddyCore {
