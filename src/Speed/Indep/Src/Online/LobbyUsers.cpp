@@ -99,3 +99,10 @@ uint32 PlayerDataT::GetTotalLosses(int mode) {
     }
     return stats.raceModeStats[mode].clientLosses + stats.raceModeStats[mode].hostLosses;
 }
+
+uint32 PlayerDataT::GetMonthlyPointTotals(int mode) {
+    if (static_cast<uint32>(mode) > 2) {
+        return 0;
+    }
+    return stats.raceModeStats[mode].points - lastMonthStats.raceModeStats[mode].points;
+}

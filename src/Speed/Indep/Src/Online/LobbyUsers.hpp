@@ -49,7 +49,12 @@ struct PlayerDataT {
     uint32 GetTotalLossesAsClient();
     uint32 GetTotalLossesAsHost();
     uint32 GetTotalLosses(int mode);
-    uint32 GetWeeklyPointTotals(int mode);
+    uint32 GetWeeklyPointTotals(int mode) {
+        if (static_cast<uint32>(mode) > 2) {
+            return 0;
+        }
+        return stats.raceModeStats[mode].points - lastWeekStats.raceModeStats[mode].points;
+    }
     uint32 GetMonthlyPointTotals(int mode);
     float GetWinPercentage(int mode);
     float GetClientDisconnectPercentage();
