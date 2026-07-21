@@ -324,3 +324,9 @@ void Client::ProcessClientLeftMessage(SmartBitStream &bitstream_data) {
     bool he_quit = bitstream_data.GetBool();
     TheOnlineManager.DriverLeft(driver_number, he_quit);
 }
+
+void Client::ProcessRestartLoad(SmartBitStream &bitstream_data) {
+    uint32 temp = 0;
+    bitstream_data.GetBits(temp, 32);
+    TheOnlineManager.SignalRestartLoad(temp);
+}
