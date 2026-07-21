@@ -653,3 +653,10 @@ void BuddyCore::DisplayVOIPChatEnded() {
         DialogInterface::ShowOneButton("", "", dialog_alert, 0x417b2601, 0xffffffff, 0xffffffff, sztemp);
     }
 }
+
+void BuddyCore::clearEAMStatusIcons() {
+    MenuScreen::UpdateStatusIcons(0, false);
+    MenuScreen::UpdateStatusIcons(1, false);
+    MenuScreen::UpdateStatusIcons(2, false);
+    MenuScreen::UpdateStatusIcons(3, false);
+}
