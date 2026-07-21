@@ -474,3 +474,10 @@ void LobbyUsers::Reset() {
     NetFree(auxiData);
     auxiData = nullptr;
 }
+
+void LobbyUsers::MaybeCreateAuxiBuffer() {
+    if (!auxiData) {
+        auxiData = static_cast<char *>(bMalloc(132, "LobbyUsers::auxiData", 0, 8));
+        auxiData[0] = '\0';
+    }
+}
