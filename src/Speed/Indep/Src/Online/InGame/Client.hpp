@@ -81,6 +81,8 @@ struct Client {
     static void Init();
     static void Close();
     static void StartClientProcessing();
+    static char *DescribeState(int state);
+    static void ShowDiagnostics();
 
   private:
     static void ReadIncomingPackets();

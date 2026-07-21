@@ -386,3 +386,28 @@ bool Client::IsConnected() {
     }
     return false;
 }
+
+char *Client::DescribeState(int state) {
+    switch (state) {
+    case CLIENTSTATE_INITIAL:
+        return "INITIAL";
+    case CLIENTSTATE_WAITING:
+        return "WAITING";
+    case CLIENTSTATE_CONNECTED:
+        return "CONNECTED";
+    case CLIENTSTATE_DESCRIBED:
+        return "DESCRIBED";
+    case CLIENTSTATE_LOADING:
+        return "LOADING";
+    case CLIENTSTATE_NIS:
+        return "NIS";
+    case CLIENTSTATE_READY:
+        return "READY";
+    case CLIENTSTATE_RACING:
+        return "RACING";
+    default:
+        return "Unknown";
+    }
+}
+
+void Client::ShowDiagnostics() {}
