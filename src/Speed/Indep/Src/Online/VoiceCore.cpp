@@ -1,6 +1,12 @@
 #include "VoiceCore.hpp"
 
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
+#include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
+
+extern "C" {
+VoipRefT *VoipStartup(int maxPeers);
+void VoipSetLocalUser(VoipRefT *voip, const char *name);
+}
 
 VoiceCore *VoiceCore::mInstance;
 
@@ -59,3 +65,18 @@ VoiceCore::VoiceCore() {
 inline VoiceCore::~VoiceCore() {}
 
 void VoiceCore::Construct() { mInstance = new ("VoiceCore", 0) VoiceCore; }
+
+void VoiceCore::Startup() {
+    VoipRef = VoipStartup(4);
+    if (!VoipRef) {
+        return;
+    }
+    bMemSet(mute_record, 0, sizeof(mute_record));
+    bMemSet(channels, 0, sizeof(channels));
+    headset_ready_remember = false;
+    all_muted = false;
+    startup_timer = RealTimer;
+    VoipSetLocalUser(VoipRef, FEDatabase->OnlineSettings.GetLobbyPersona());
+    _SetPlaybackVolume(playback_volume_remember);
+    SetMicState(false);
+}
