@@ -130,3 +130,9 @@ void ConnectionCore::JoinSession(LobbyApiPlayerT &hostInfo, int sessionID, void 
     ConnApiConnect(connapi, userInfo, 2, sessionID);
     networkMutex.Unlock("ConnectionCore::JoinSession");
 }
+
+void ConnectionCore::LeaveSession() {
+    networkMutex.Lock("ConnectionCore::LeaveSession");
+    ResetSession_HaveMutex();
+    networkMutex.Unlock("ConnectionCore::LeaveSession");
+}
