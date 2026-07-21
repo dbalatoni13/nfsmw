@@ -106,6 +106,14 @@ struct Client {
     static void SignalReady();
     static void SignalRestart();
     static void SignalDriverFinish(SmartBitStream &payload_data);
+    static void SignalScoreMessage(SmartBitStream &payload_data) {
+        SmartBitStream bitstream_data;
+        bitstream_data.AddByte(5);
+        bitstream_data.AddRawDataWithoutSize(payload_data.GetBuffer(),
+                                             payload_data.GetByteLength());
+        SendMessage(5, bitstream_data, true);
+    }
+    static void SignalDataCRCMessage(SmartBitStream &payload_data);
     static void ProcessServerQuitMessage(SmartBitStream &bitstream_data);
     static void ProcessClientLeftMessage(SmartBitStream &bitstream_data);
     static void ProcessRestartLoad(SmartBitStream &bitstream_data);

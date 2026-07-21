@@ -305,3 +305,10 @@ void Client::SignalDriverFinish(SmartBitStream &payload_data) {
         delete node;
     }
 }
+
+void Client::SignalDataCRCMessage(SmartBitStream &payload_data) {
+    SmartBitStream bitstream_data;
+    bitstream_data.AddByte(13);
+    bitstream_data.AddRawDataWithoutSize(payload_data.GetBuffer(), payload_data.GetByteLength());
+    SendMessage(13, bitstream_data, true);
+}

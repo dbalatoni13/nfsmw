@@ -6,6 +6,7 @@
 #endif
 
 #include <types.h>
+#include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 class BitStream {
   public:
@@ -20,7 +21,10 @@ class BitStream {
     }
     void PokeBytes(const char *buffer, int num_bytes);
     int GetBitLength() const { return m_bitWritePosition; }
-    int GetByteLength() const { return (m_bitWritePosition + 7) >> 3; }
+    int GetByteLength() const {
+        return static_cast<int>(bCeil(static_cast<float>(m_bitWritePosition) /
+                                     static_cast<float>(BIT_DEPTH)));
+    }
     int GetByteLengthRemaining() const { return (GetBitLengthRemaining() + 7) >> 3; }
     int GetBitLengthRemaining() const { return m_bitWritePosition - m_bitReadPosition; }
     char *GetBuffer() { return reinterpret_cast<char *>(m_buffer); }
