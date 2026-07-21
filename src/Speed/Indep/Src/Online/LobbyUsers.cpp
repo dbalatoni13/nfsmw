@@ -106,3 +106,12 @@ uint32 PlayerDataT::GetMonthlyPointTotals(int mode) {
     }
     return stats.raceModeStats[mode].points - lastMonthStats.raceModeStats[mode].points;
 }
+
+float PlayerDataT::GetWinPercentage(int mode) {
+    uint32 gamesPlayed = GetTotalGamesPlayed(mode);
+    if (gamesPlayed != 0) {
+        return (static_cast<float>(GetTotalWins(mode)) / static_cast<float>(gamesPlayed)) *
+               100.0f;
+    }
+    return 0.0f;
+}
