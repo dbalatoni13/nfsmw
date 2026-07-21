@@ -10,3 +10,5 @@ ConnectionCore::ConnectionCore() {
     numConnectedPlayers = 0;
     isOnline = false;
 }
+
+ConnectionCore::~ConnectionCore() { Reset(); }
