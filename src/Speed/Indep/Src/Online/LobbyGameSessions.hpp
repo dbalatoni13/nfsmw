@@ -87,7 +87,7 @@ struct LobbyGameSessions {
     int8 GetSecsBeforeHostCanStart();
     int32 FindSessions(const FilterGameSessionParamsT &filterParams, CommandCBFunc filterSessionsCB, void *context);
     void SetSortField(LobbyGameSessionsN::SortField sortField, bool ascending);
-    GameSession *GetMySession();
+    GameSession *GetMySession() const;
     void SendUpdateCallback(LobbyGameSessionsN::SessionStatusCode status);
 
   private:

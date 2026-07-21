@@ -408,3 +408,11 @@ void LobbyGameSessions::SetSortField_HaveMutex(LobbyGameSessionsN::SortField sor
         DispListSort(sessionList, 0, sortParams, SortFunc);
     }
 }
+
+GameSession *LobbyGameSessions::GetMySession() const {
+    GameSession *session = nullptr;
+    if (myCurrentSession.iIdent != -1) {
+        session = const_cast<GameSession *>(&myCurrentSession);
+    }
+    return session;
+}
