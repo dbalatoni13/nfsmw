@@ -8,6 +8,7 @@ VoipRefT *VoipStartup(int maxPeers);
 void VoipShutdown(VoipRefT *voip);
 void VoipSetLocalUser(VoipRefT *voip, const char *name);
 int VoipControl(VoipRefT *voip, int control, int value);
+unsigned int VoipRemote(VoipRefT *voip, int channel);
 }
 
 VoiceCore *VoiceCore::mInstance;
@@ -140,3 +141,30 @@ bool VoiceCore::IsSpeaking(const char *persona) {
     }
     return rc;
 }
+
+bool VoiceCore::IsConnected(int channel) { return _IsConnected(channel); }
+
+bool VoiceCore::IsConnected(const char *persona) {
+    int channel;
+    bool rc = false;
+    if (_IsInVOIPChat(persona, &channel)) {
+        rc = _IsConnected(channel);
+    }
+    return rc;
+}
+
+bool VoiceCore::IsActive(int channel) {
+    bool rc = false;
+    if (VoipRef) {
+        if (_IsConnected(channel)) {
+            if (VoipRemote(VoipRef, channel) & 8) {
+                rc = true;
+            }
+        }
+    }
+    return rc;
+}
+
+bool VoiceCore::IsHeadsetConnected() { return _IsHeadsetConnected(); }
+
+bool VoiceCore::IsHeadsetSending() { return _IsHeadsetSending(); }
