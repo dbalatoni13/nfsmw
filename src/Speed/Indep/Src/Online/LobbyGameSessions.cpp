@@ -457,3 +457,23 @@ ExtraSessionData *LobbyGameSessions::GetExtraSessionDataByIdent(int32 ident) {
     lobbyMutex.Unlock("LobbyGameSessions::GetExtraSessionDataByIdent");
     return rc;
 }
+
+OnlineRaceModeE LobbyGameSessions::GetRaceMode(const GameSession *session) {
+    lobbyMutex.Lock("LobbyGameSessions::GetRaceMode");
+    const GameSession *theSession = session ? session : &myCurrentSession;
+    if (myCurrentSession.iIdent < 0 && !session) {
+        lobbyMutex.Unlock("LobbyGameSessions::GetRaceMode");
+        return OL_RACE_MODE_INVALID;
+    }
+
+    OnlineRaceModeE theMode = OL_RACE_MODE_INVALID;
+    if (theSession->uCustFlags & 0x80000000) {
+        theMode = OL_RACE_MODE_CIRCUIT;
+    } else if (theSession->uCustFlags & 0x40000000) {
+        theMode = OL_RACE_MODE_SPRINT;
+    } else if (theSession->uCustFlags & 0x20000000) {
+        theMode = OL_RACE_MODE_DRAG;
+    }
+    lobbyMutex.Unlock("LobbyGameSessions::GetRaceMode");
+    return theMode;
+}
