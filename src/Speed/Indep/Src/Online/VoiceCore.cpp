@@ -1,5 +1,9 @@
 #include "VoiceCore.hpp"
 
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
+
+VoiceCore *VoiceCore::mInstance;
+
 VoiceCore::PushToTalk::PushToTalk() { mIsPolling = false; }
 
 void VoiceCore::PushToTalk::StartPolling() {
@@ -53,3 +57,5 @@ VoiceCore::VoiceCore() {
 }
 
 inline VoiceCore::~VoiceCore() {}
+
+void VoiceCore::Construct() { mInstance = new ("VoiceCore", 0) VoiceCore; }
