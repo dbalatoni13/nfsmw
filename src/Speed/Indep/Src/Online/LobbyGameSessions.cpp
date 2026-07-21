@@ -955,3 +955,47 @@ int LobbyGameSessions::SortFunc(void *sortref, int sortcon, void *recptr1, void 
     }
     return ascending ? rc : -rc;
 }
+
+int LobbyGameSessions::FilterFunc(void *filtref, int filtcon, void *recptr) {
+    LobbyApiUserSetT *userset = static_cast<LobbyApiUserSetT *>(recptr);
+    LobbyGameSessions &lgs = Instance();
+    bool hidesession = TagFieldGetNumber(TagFieldFind(userset->strParams, "V"), -1) !=
+                       BuildVersionChangelistNumber;
+    ExtraSessionDataMap::iterator esd = lgs.extraSessionDataMap.find(userset->iIdent);
+    if (esd == lgs.extraSessionDataMap.end()) {
+        ExtraSessionData newesd;
+        newesd.pingToHostInMsec = -1;
+        std::pair<ExtraSessionDataMap::iterator, bool> rc =
+            lgs.extraSessionDataMap.insert(ExtraSessionDataMap::value_type(userset->iIdent, newesd));
+        if (!rc.second) {
+            return 0;
+        }
+        esd = rc.first;
+        if (hidesession) {
+            lgs.lastSearchCount--;
+        }
+    }
+
+    if (!hidesession) {
+        DirtyAddrT daddr;
+        bMemSet(&daddr, 0, sizeof(daddr));
+        char *xnaddr = bStrChr(userset->strDesc, '^');
+        if (!xnaddr) {
+            bStrNCpy(daddr.strMachineAddr, userset->strDesc, 63);
+            daddr.strMachineAddr[63] = '\0';
+        } else {
+            bStrNCpy(daddr.strMachineAddr, userset->strDesc, xnaddr - userset->strDesc);
+            daddr.strMachineAddr[xnaddr - userset->strDesc] = '\0';
+        }
+        esd->second.pingToHostInMsec =
+            PingManagerPingAddress(LobbyCore::Instance().pingManagerRef, &daddr, PingManagerCB,
+                                   reinterpret_cast<void *>(userset->iIdent));
+        if (esd->second.pingToHostInMsec < 0) {
+            esd->second.pingToHostInMsec = TagFieldGetNumber(TagFieldFind(userset->strParams, "P"), -1);
+        }
+        if (esd->second.pingToHostInMsec > 0) {
+            esd->second.pingToHostInMsec /= 2;
+        }
+    }
+    return !hidesession;
+}

@@ -128,6 +128,7 @@ struct LobbyGameSessions {
     static void SessionUpdateCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData);
     static int SortFunc(void *sortref, int sortcon, void *recptr1, void *recptr2);
     static int FilterFunc(void *filtref, int filtcon, void *recptr);
+    static void PingManagerCB(DirtyAddrT *pAddr, unsigned int uPing, void *pData);
     static void GlobalEventCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData);
     friend int32 LobbyInit();
     friend void LobbyDisconnect();

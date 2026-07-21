@@ -25,7 +25,7 @@ typedef _GameResultUpdateT GameResultUpdateT;
 }
 
 typedef void (*ResultUpdateCBFunc)(const LobbyGamesN::_GameResultUpdateT *, void *);
-typedef void LobbyPingManagerCallbackT();
+typedef void LobbyPingManagerCallbackT(DirtyAddrT *, unsigned int, void *);
 
 struct OnlineGame {
   private:
