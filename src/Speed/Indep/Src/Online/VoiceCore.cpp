@@ -237,3 +237,18 @@ void VoiceCore::SetMicState(bool enable) {
         VoipControl(VoipRef, 'micr', enable);
     }
 }
+
+void VoiceCore::_AddPlayer(int channel, const char *persona) {
+    if (!channels[channel].assigned || bStrCmp(persona, channels[channel].persona_name) != 0) {
+        _RemovePlayer(channel);
+        channels[channel].assigned = true;
+        channels[channel].muted = false;
+        bStrCpy(channels[channel].persona_name, persona);
+        last_remote_status[channel] = -1;
+        for (int i = 0; i < 4; i++) {
+            if (bStrCmp(channels[channel].persona_name, mute_record[i].persona_name) == 0) {
+                channels[channel].muted = mute_record[i].muted;
+            }
+        }
+    }
+}
