@@ -132,6 +132,11 @@ struct BuddyCore {
     void DisplayVOIPChatEnded();
     void DisplayDeclinedInvite(const char *name);
     void DisplayTimedOutInvite(const char *name);
+    LobbyChalRefT *GetLobbyChallengeApiRef();
+    int GetNextAvailableVOIPSlot();
+    bool DoIHaveAVOIPInviteFromThisBuddy(char *buddyName);
+    void RemoveVOIPChallenge(char *buddyName);
+    void AddTempBuddy(char *name, int tempType);
     int getBuddyCount();
     HLBBudT *getBuddyByIndex(int index);
     HLBBudT *getBuddyByName(const char *name);

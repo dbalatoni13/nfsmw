@@ -30,6 +30,7 @@ int HLBApiRegisterGameInviteCallback(HLBApiRefT *api, void (*callback)(HLBApiRef
 int HLBApiRegisterNewMsgCallback(HLBApiRefT *api, void (*callback)(HLBApiRefT *, BuddyApiMsgT *, void *), void *context);
 void LobbyChalDeclineChallenge(LobbyChalRefT *challenge, int reason);
 void LobbyChalDestroy(LobbyChalRefT *challenge);
+void LobbyChalBlockChallenge(LobbyChalRefT *challenge);
 void HLBApiSuspend(HLBApiRefT *api);
 void HLBApiResume(HLBApiRefT *api);
 LobbyChalRefT *LobbyChalCreate(LobbyApiRefT *api, const char *persona,
@@ -53,6 +54,7 @@ MenuScreen *FEngFindScreen(const char *packageName);
 extern int gVOIP_InviteState;
 extern int gBuddyListHasChanged;
 extern BuddySettings gBuddySettings;
+extern int gChallengeRecieved;
 
 static char BuddyProductString[9] = "NFS-2006";
 char productString[32];
@@ -361,5 +363,88 @@ void BuddyCore::messageCallback(BuddyApiMsgT *pMsg) {
     } else {
         MenuScreen::UpdateStatusIcons(icon, status);
         gBuddyListHasChanged = 1;
+    }
+}
+
+void BuddyCore::LobbyChallengeCB(LobbyApiMsgT *pMesg) {
+    char buf[512] = "";
+
+    switch (pMesg->kind) {
+    case 'chal': {
+        char gameName[128] = "";
+        TagFieldGetString(TagFieldFind(pMesg->pData, "PARM"), buf, sizeof(buf), "none");
+        TagFieldGetString(TagFieldFind(buf, "GAMENAME"), gameName, sizeof(gameName), "voip");
+        if (bStrCmp(gameName, "voip") == 0) {
+            int slot = GetNextAvailableVOIPSlot();
+            TagFieldGetString(TagFieldFind(pMesg->pData, "NAME"), gameName, sizeof(gameName), "unknown");
+            AddTempBuddy(gameName, 2);
+            HLBBudT *pBud = getBuddyByName(gameName);
+            if (HLBBudIsBlocked(pBud)) {
+                LobbyChalBlockChallenge(instance()->GetLobbyChallengeApiRef());
+                return;
+            }
+            TagFieldGetString(TagFieldFind(pMesg->pData, "NAME"), m_voipChallenge[slot].challengerName,
+                              sizeof(m_voipChallenge[slot].challengerName), "unknown challenger");
+            TagFieldGetString(TagFieldFind(buf, "GAMENAME"), m_voipChallenge[slot].gameRoomName,
+                              sizeof(m_voipChallenge[slot].gameRoomName), "unknown game");
+            bStrCpy(m_voipChallenge[slot].hostName, buf);
+            DirtyAddrT extaddr;
+            DirtyAddrT intaddr;
+            extaddr.strMachineAddr[0] = '\0';
+            intaddr.strMachineAddr[0] = '\0';
+            TagFieldGetString(TagFieldFind(buf, "EXTHOSTNAME"), extaddr.strMachineAddr,
+                              sizeof(extaddr.strMachineAddr), "");
+            TagFieldGetString(TagFieldFind(buf, "INTHOSTNAME"), intaddr.strMachineAddr,
+                              sizeof(intaddr.strMachineAddr), "");
+            bStrCpy(m_voipChallenge[slot].hostName, buf);
+            MenuScreen::UpdateStatusIcons(2, true);
+            g_pEAXSound->PlayUISoundFX(UISND_EA_MSGR_CHAT_REQ);
+            HLBListFlagTempBuddy(HLBud, m_voipChallenge[slot].challengerName, 8);
+            gBuddyListHasChanged = 1;
+            gVOIP_InviteState = 2;
+        }
+        return;
+    }
+    case 'decl':
+        TagFieldGetString(TagFieldFind(pMesg->pData, "NAME"), buf, sizeof(buf), "unknown");
+        if (gVOIP_InviteState == 1) {
+            cFEng::Get()->QueueGameMessage(0x39992a2c, "OL_VoiceChat.fng", 0xff);
+        }
+        gBuddyListHasChanged = 1;
+        return;
+    case 'acpt':
+        TagFieldGetString(TagFieldFind(pMesg->pData, "NAME"), buf, sizeof(buf), "unknown");
+        if (gVOIP_InviteState == 1) {
+            cFEng::Get()->QueueGameMessage(0x7c1bb77f, "OL_VoiceChat.fng", 0xff);
+        }
+        gBuddyListHasChanged = 1;
+        return;
+    case 'cncl':
+        TagFieldGetString(TagFieldFind(pMesg->pData, "NAME"), buf, sizeof(buf), "unknown");
+        if (DoIHaveAVOIPInviteFromThisBuddy(pMesg->pData)) {
+            RemoveVOIPChallenge(pMesg->pData);
+            cFEng::Get()->QueueGameMessage(0x519201f5, nullptr, 0xff);
+            gVOIP_InviteState = 0;
+        }
+        gBuddyListHasChanged = 1;
+        MenuScreen::UpdateStatusIcons(2, false);
+        return;
+    case 'time':
+        TagFieldGetString(TagFieldFind(pMesg->pData, "NAME"), buf, sizeof(buf), "unknown");
+        gVOIP_InviteState = 0;
+        gBuddyListHasChanged = 1;
+        gChallengeRecieved = 0;
+        return;
+    case 'blck':
+    case 'busy':
+        TagFieldGetString(TagFieldFind(pMesg->pData, "NAME"), buf, sizeof(buf), "unknown");
+        gVOIP_InviteState = 0;
+        gBuddyListHasChanged = 1;
+        return;
+    case 'mesg':
+    case 'play':
+        TagFieldGetString(TagFieldFind(pMesg->pData, "NAME"), buf, sizeof(buf), "unknown");
+        gBuddyListHasChanged = 1;
+        return;
     }
 }
