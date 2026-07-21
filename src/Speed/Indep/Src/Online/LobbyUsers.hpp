@@ -9,35 +9,38 @@
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 
 struct PlayerDataT {
-    struct OnlineModeStats {
-        uint32 points;
-        uint32 clientWins;
-        uint32 clientLosses;
-        uint32 hostWins;
-        uint32 hostLosses;
-        uint32 topSpeed;
-        uint32 jumpTime;
-        uint32 avgNOSused;
-        uint32 totalNOSused;
-        uint32 fastestFinishTime;
-        uint32 winPercentage;
-
-        void Clear() {
-            winPercentage = 0;
-            fastestFinishTime = 0;
-            totalNOSused = 0;
-            avgNOSused = 0;
-            jumpTime = 0;
-            topSpeed = 0;
-            hostLosses = 0;
-            hostWins = 0;
-            clientLosses = 0;
-            clientWins = 0;
-            points = 0;
-        }
-    };
-
     struct Stats {
+        struct OnlineModeStats {
+            uint32 points;
+            uint32 clientWins;
+            uint32 clientLosses;
+            uint32 hostWins;
+            uint32 hostLosses;
+            uint32 topSpeed;
+            uint32 jumpTime;
+            uint32 avgNOSused;
+            uint32 totalNOSused;
+            uint32 fastestFinishTime;
+            uint32 winPercentage;
+
+            OnlineModeStats() { Clear(); }
+            ~OnlineModeStats() {}
+
+            void Clear() {
+                winPercentage = 0;
+                fastestFinishTime = 0;
+                totalNOSused = 0;
+                avgNOSused = 0;
+                jumpTime = 0;
+                topSpeed = 0;
+                hostLosses = 0;
+                hostWins = 0;
+                clientLosses = 0;
+                clientWins = 0;
+                points = 0;
+            }
+        };
+
         uint32 disqualifications;
         uint32 clientDisconnects;
         uint32 hostDisconnects;
@@ -47,6 +50,17 @@ struct PlayerDataT {
         uint32 fastestDragFinish;
         uint32 totalNOSusage;
         OnlineModeStats raceModeStats[3];
+
+        Stats()
+            : disqualifications(0) //
+            , clientDisconnects(0) //
+            , hostDisconnects(0) //
+            , topSpeed(0) //
+            , longestPowerSlideDistance(0) //
+            , longestJumpDuration(0) //
+            , fastestDragFinish(0) //
+            , totalNOSusage(0) {}
+        ~Stats() {}
 
         void Clear();
     };
@@ -121,6 +135,55 @@ struct PlayerDataT {
     Stats lastWeekStats;
     Stats lastMonthStats;
     uint32 lastGameTime;
+
+    PlayerDataT()
+        : lastGameTime(0) {
+        persona[0] = '\0';
+    }
+    ~PlayerDataT() {}
 };
+
+struct LobbyUsers {
+    struct OnlineUsersData : bTNode<OnlineUsersData> {
+        LobbyApiUserT user;
+        int32 commandID;
+    };
+
+    static LobbyUsers &Instance();
+    void UpdateCarName();
+    void ClearUserOnlineRecordCache();
+    void ClearUserOnlineRecordCache(const LobbyApiPlayT &game);
+    void SetSessionChangeFlag(bool changing);
+    void SetSessionLatency(int latency);
+    void SetSessionRaceStatusInfo(int lap, int mapx, int mapy);
+    LobbyApiUserT *GetMyUserRecord() const;
+
+  private:
+    LobbyUsers()
+        : gotMyStats(false) //
+        , auxiData(nullptr) //
+        , mLate(-1) //
+        , mCar(-1) //
+        , mLap(0) //
+        , mMapX(0) //
+        , mMapY(0) {}
+    ~LobbyUsers() {}
+    int32 Init();
+    void Reset();
+    friend int32 LobbyInit();
+    friend void LobbyDisconnect();
+
+    bTList<OnlineUsersData> userList;
+    PlayerDataT myStats;
+    bool gotMyStats;
+    char *auxiData;
+    int mLate;
+    uint32 mCar;
+    int mLap;
+    int mMapX;
+    int mMapY;
+};
+
+extern LobbyUsers *pLobbyUsersInstance;
 
 #endif

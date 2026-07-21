@@ -4,6 +4,8 @@ extern "C" {
 int TagFieldGetStructure(const char *field, void *buffer, int bufferSize, const char *format);
 }
 
+LobbyUsers *pLobbyUsersInstance;
+
 int PlayerDataT::ExtractRecord(const char *record) {
     if (!record || !record[0]) {
         return -1;
@@ -155,4 +157,10 @@ void PlayerDataT::Stats::Clear() {
     for (int mode = 0; mode < 3; mode++) {
         raceModeStats[mode].Clear();
     }
+}
+
+LobbyUsers &LobbyUsers::Instance() {
+    static LobbyUsers theLobbyUsers;
+    pLobbyUsersInstance = &theLobbyUsers;
+    return theLobbyUsers;
 }
