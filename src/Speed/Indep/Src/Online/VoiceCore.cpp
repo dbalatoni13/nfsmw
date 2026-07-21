@@ -329,3 +329,16 @@ bool VoiceCore::_IsSpeaking(int c) {
     }
     return rc;
 }
+
+bool VoiceCore::_IsConnected(int c) {
+    bool rc;
+    if (!VoipRef) {
+        rc = false;
+    } else {
+        rc = false;
+        if (channels[c].assigned) {
+            rc = VoipRemote(VoipRef, c) & 1;
+        }
+    }
+    return rc;
+}
