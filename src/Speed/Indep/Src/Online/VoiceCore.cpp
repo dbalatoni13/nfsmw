@@ -311,3 +311,10 @@ bool VoiceCore::_IsMuted(const char *persona) {
     }
     return rc;
 }
+
+void VoiceCore::_ToggleMuted(const char *persona) {
+    int channel;
+    if (_IsInVOIPChat(persona, &channel)) {
+        SetMuted(channel, !IsMuted(channel));
+    }
+}
