@@ -764,3 +764,5 @@ void RichPresence::SetSessionPrivate(bool isPrivate) {
     }
     UpdatePresence();
 }
+
+void RichPresence::UpdatePresence() { BuddyCore::instance()->SetPresence(mCurrentRichPresence, mBuddyState); }
