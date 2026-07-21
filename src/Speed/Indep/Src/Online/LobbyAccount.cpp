@@ -101,3 +101,24 @@ int32 LobbyAccount::CreateAccount(const LobbyAccountT &accountData, CommandCBFun
     lobbyMutex.Unlock("LobbyAccount::CreateAccount");
     return rc;
 }
+
+int32 LobbyAccount::RequestLostUsername(const char *email, CommandCBFunc func, void *context) {
+    lobbyMutex.Lock("LobbyAccount::RequestLostUsername");
+    if (!email || !email[0]) {
+        lobbyMutex.Unlock("LobbyAccount::RequestLostUsername");
+        return -1;
+    }
+
+    char buf[256] = "";
+    TagFieldSetString(buf, sizeof(buf), "MAIL", email);
+    if (ISOCodes::GetCountryISOCode()) {
+        TagFieldSetString(buf, sizeof(buf), "FROM", ISOCodes::GetCountryISOCode());
+    }
+    if (ISOCodes::GetLanguageISOCode()) {
+        TagFieldSetString(buf, sizeof(buf), "LANG", ISOCodes::GetLanguageISOCode());
+    }
+    int32 rc = LobbyCore::Instance().QueueCommand('lost', buf, LobbyCore::DefaultCB, nullptr,
+                                                   func, context, false);
+    lobbyMutex.Unlock("LobbyAccount::RequestLostUsername");
+    return rc;
+}
