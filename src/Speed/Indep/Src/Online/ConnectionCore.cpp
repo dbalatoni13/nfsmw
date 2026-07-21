@@ -405,3 +405,6 @@ void ConnectionCore::ConnApiCallback(ConnApiRefT *connapi, ConnApiCbInfoT *cbinf
         conncore.connapiCallback(connapi, cbinfo, conncore.callbackContext);
     }
 }
+
+inline void ConnectionCore::FrontEndCB(ConnApiRefT *connapi, ConnApiCbInfoT *cbinfo,
+                                       void *context) {}
