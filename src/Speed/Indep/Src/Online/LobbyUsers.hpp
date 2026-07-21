@@ -8,6 +8,12 @@
 #include "LobbyCore.hpp"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 
+namespace Physics {
+namespace Info {
+struct Performance;
+}
+}
+
 struct PlayerDataT {
     struct Stats {
         struct OnlineModeStats {
@@ -164,6 +170,8 @@ struct LobbyUsers {
     void UpdateCarName();
     int32 GetUserOnlineRecord(const char *persona, CommandCBFunc func, void *context);
     LobbyApiUserT *GetUserRecord(const char *persona);
+    bool GetCarNameFromUserRecord(const char *persona, uint32 &carNameHash,
+                                  Physics::Info::Performance &performance);
     void ClearUserOnlineRecordCache();
     void ClearUserOnlineRecordCache(const LobbyApiPlayT &game);
     void SetSessionChangeFlag(bool changing);

@@ -6,6 +6,7 @@ void *operator new(size_t size, const char *file, int line, int allocationParams
 
 extern "C" {
 int TagFieldGetStructure(const char *field, void *buffer, int bufferSize, const char *format);
+float TagFieldGetFloat(const char *field, float defaultValue);
 void TagFieldSetFloat(char *record, int recordLength, const char *name, float value);
 }
 
@@ -286,4 +287,42 @@ LobbyApiUserT *LobbyUsers::GetUserRecord(const char *persona) {
 
     lobbyMutex.Unlock("LobbyUsers::GetUserRecord");
     return user;
+}
+
+bool LobbyUsers::GetCarNameFromUserRecord(const char *persona, uint32 &carNameHash,
+                                          Physics::Info::Performance &performance) {
+    lobbyMutex.Lock("LobbyUsers::GetRideInfoFromUserRecord");
+    if (bStrCmp(persona, FEDatabase->OnlineSettings.GetLobbyPersona()) == 0) {
+        LobbyApiUserT *me = GetMyUserRecord();
+        if (me) {
+            if (me->aux[0]) {
+                carNameHash = TagFieldGetNumber(TagFieldFind(me->aux, "CN"), 0);
+                performance.TopSpeed =
+                    TagFieldGetFloat(TagFieldFind(me->aux, "PT"), 0.0f);
+                performance.Handling =
+                    TagFieldGetFloat(TagFieldFind(me->aux, "PH"), 0.0f);
+                performance.Acceleration =
+                    TagFieldGetFloat(TagFieldFind(me->aux, "PA"), 0.0f);
+                lobbyMutex.Unlock("LobbyUsers::GetCarNameFromUserRecord");
+                return true;
+            }
+        }
+    } else {
+        for (OnlineUsersData *oud = userList.GetHead(); oud != userList.EndOfList();
+             oud = oud->GetNext()) {
+            if (bStrCmp(oud->user.name, persona) == 0) {
+                if (oud->commandID == 0) {
+                    if (oud->user.aux[0]) {
+                        carNameHash =
+                            TagFieldGetNumber(TagFieldFind(oud->user.aux, "CN"), 0);
+                        lobbyMutex.Unlock("LobbyUsers::GetCarNameFromUserRecord");
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+
+    lobbyMutex.Unlock("LobbyUsers::GetCarNameFromUserRecord");
+    return false;
 }
