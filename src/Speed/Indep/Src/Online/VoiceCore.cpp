@@ -300,3 +300,14 @@ bool VoiceCore::_IsMuted(int channel) {
     }
     return rc;
 }
+
+bool VoiceCore::_IsMuted(const char *persona) {
+    int channel;
+    bool rc;
+    if (_IsInVOIPChat(persona, &channel)) {
+        rc = _IsMuted(channel);
+    } else {
+        rc = false;
+    }
+    return rc;
+}
