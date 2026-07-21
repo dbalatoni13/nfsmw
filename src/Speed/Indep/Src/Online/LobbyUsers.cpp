@@ -487,3 +487,16 @@ void LobbyUsers::SetSessionChangeFlag(bool setFlag) {
     TagFieldSetNumber(auxiData, 128, "SCF", setFlag ? 1 : 0);
     SendAuxiData();
 }
+
+void LobbyUsers::SetSessionLatency(int late) {
+    if ((mLate < 0 && late < 0) || (mLate >= 0 && late >= 0)) {
+        if (mLate - late < 26 && late - mLate < 26) {
+            return;
+        }
+    }
+
+    mLate = late;
+    MaybeCreateAuxiBuffer();
+    TagFieldSetNumber(auxiData, 128, "LT", late);
+    SendAuxiData();
+}
