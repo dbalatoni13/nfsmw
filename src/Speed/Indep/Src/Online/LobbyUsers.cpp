@@ -10,6 +10,7 @@ int TagFieldGetStructure(const char *field, void *buffer, int bufferSize, const 
 float TagFieldGetFloat(const char *field, float defaultValue);
 void TagFieldSetFloat(char *record, int recordLength, const char *name, float value);
 void *LobbyApiInfoPtr(LobbyApiRefT *lobbyRef, int selector);
+void LobbyApiExtractUserRecord(LobbyApiUserT *user, const char *record);
 }
 
 LobbyUsers *pLobbyUsersInstance;
@@ -522,4 +523,24 @@ int32 LobbyUsers::SendAuxiData() {
     TagFieldSetString(buf, 128, "TEXT", auxiData);
     return LobbyCore::Instance().QueueCommand('auxi', buf, LobbyCore::DefaultCB, this, nullptr,
                                                nullptr, false);
+}
+
+void LobbyUsers::OnlnCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData) {
+    LobbyUsers *lobbyUsers = static_cast<LobbyUsers *>(pData);
+
+    if (pMsg->code == 0) {
+        char newName[16] = "";
+        TagFieldGetString(TagFieldFind(pMsg->pData, "N"), newName, sizeof(newName), "");
+
+        for (OnlineUsersData *oud = lobbyUsers->userList.GetHead();
+             oud != lobbyUsers->userList.EndOfList(); oud = oud->GetNext()) {
+            if (bStrCmp(oud->user.name, newName) == 0) {
+                LobbyApiExtractUserRecord(&oud->user, pMsg->pData);
+                oud->commandID = 0;
+                break;
+            }
+        }
+    }
+
+    LobbyCore::Instance().FinishCommand(pMsg, true);
 }
