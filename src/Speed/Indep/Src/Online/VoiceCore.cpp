@@ -39,3 +39,15 @@ bool VoiceCore::PushToTalk::IsPressed() {
     }
     return ispressed;
 }
+
+VoiceCore::VoiceCore() {
+    headset_state_at_last_shutdown = true;
+    speaker_volume_remember = 0.7f;
+    playback_volume_remember = 0.7f;
+    mTransmit = false;
+    VoipRef = nullptr;
+    headset_ready_remember = false;
+    speaker_state_remember = false;
+    all_muted = false;
+    startup_timer.UnSet();
+}
