@@ -13,6 +13,8 @@ extern "C" void WebOfferHttp(WebOfferT *webOffer);
 extern "C" char *WebOfferGetNews(WebOfferT *webOffer, WebOfferNewsT *newsData);
 extern "C" void WebOfferAction(WebOfferT *webOffer, int action);
 extern "C" void WebOfferSetPromo(WebOfferT *webOffer, WebOfferPromoT *promoData);
+extern "C" void WebOfferSetCredit(WebOfferT *webOffer, WebOfferCreditT *creditData);
+extern "C" int WebOfferHttpComplete(WebOfferT *webOffer);
 
 CWebOffer::CWebOffer()
     : m_pWebOfferAPI(nullptr) //
@@ -176,5 +178,54 @@ void CWebOffer::_ProcessPromo() {
         WebOfferAction(m_pWebOfferAPI, Action);
         m_bProcessingCommand = false;
         EndPromo();
+    }
+}
+
+void CWebOffer::_ProcessCredit() {
+    int Action = ProcessCredit();
+    if (Action < eProcessAction_Nothing) {
+        bool bSubmit = false;
+        WebOfferCreditT CreditData;
+        WebOfferGetCredit(m_pWebOfferAPI, &CreditData);
+        if (Action == eProcessAction_Button1 && CreditData.Button[0].strType[0] == '^') {
+            bSubmit = true;
+        }
+        if (Action == eProcessAction_Button2 && CreditData.Button[1].strType[0] == '^') {
+            bSubmit = true;
+        }
+        if (Action == eProcessAction_Button3 && CreditData.Button[2].strType[0] == '^') {
+            bSubmit = true;
+        }
+        if (Action == eProcessAction_Button4 && CreditData.Button[3].strType[0] == '^') {
+            bSubmit = true;
+        }
+        if (bSubmit && FillInCreditCardSubmitData(CreditData)) {
+            WebOfferSetCredit(m_pWebOfferAPI, &CreditData);
+        }
+        WebOfferAction(m_pWebOfferAPI, Action);
+        m_bProcessingCommand = false;
+        EndCredit();
+    }
+}
+
+void CWebOffer::_ProcessHTTP() {
+    int Action = ProcessHTTP();
+    bool bComplete = WebOfferHttpComplete(m_pWebOfferAPI);
+    bool bAction = Action < eProcessAction_Nothing;
+    if (bAction) {
+        WebOfferAction(m_pWebOfferAPI, Action);
+    }
+    if (bComplete || bAction) {
+        m_bProcessingCommand = false;
+        EndHTTP();
+    }
+}
+
+void CWebOffer::_ProcessNews() {
+    int Action = ProcessNews();
+    if (Action < eProcessAction_Nothing) {
+        WebOfferAction(m_pWebOfferAPI, Action);
+        m_bProcessingCommand = false;
+        EndNews();
     }
 }
