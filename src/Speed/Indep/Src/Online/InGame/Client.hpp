@@ -43,6 +43,9 @@ struct Online {
     static void ReadIncomingPackets();
     static void SendUpdates();
     static void ShowDiagnostics();
+    static void SignalStartClockSync();
+    static void SignalReady();
+    static void SignalRestart();
     static void SplitPacket(MessageTypesEnum type, SmartBitStream &bitstream_data,
                             SplitPacketList &splitPackets);
     static void JoinPackets(SmartBitStream &joinedPacket, SplitPacketList &splitPackets);

@@ -40,6 +40,9 @@ struct Server {
     static void Close();
     static void ReadIncomingPackets();
     static void ShowDiagnostics();
+    static void SignalStartClockSync();
+    static void SignalReady();
+    static void SignalRestart();
     static void StartServerProcessing();
 };
 

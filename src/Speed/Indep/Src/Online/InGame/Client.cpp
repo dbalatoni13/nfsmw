@@ -463,3 +463,27 @@ void Online::ShowDiagnostics() {
         }
     }
 }
+
+void Online::SignalStartClockSync() {
+    if (Server::m_state > SERVERSTATE_INITIAL) {
+        Server::SignalStartClockSync();
+    } else {
+        Client::SignalStartClockSync();
+    }
+}
+
+void Online::SignalReady() {
+    if (Server::m_state > SERVERSTATE_INITIAL) {
+        Server::SignalReady();
+    } else {
+        Client::SignalReady();
+    }
+}
+
+void Online::SignalRestart() {
+    if (Server::m_state > SERVERSTATE_INITIAL) {
+        Server::SignalRestart();
+    } else {
+        Client::SignalRestart();
+    }
+}
