@@ -481,3 +481,9 @@ void LobbyUsers::MaybeCreateAuxiBuffer() {
         auxiData[0] = '\0';
     }
 }
+
+void LobbyUsers::SetSessionChangeFlag(bool setFlag) {
+    MaybeCreateAuxiBuffer();
+    TagFieldSetNumber(auxiData, 128, "SCF", setFlag ? 1 : 0);
+    SendAuxiData();
+}
