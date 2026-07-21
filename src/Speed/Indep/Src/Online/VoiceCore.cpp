@@ -200,3 +200,11 @@ void VoiceCore::Update() {
         }
     }
 }
+
+bool VoiceCore::IsInVOIPChat(const char *name, int *channel) {
+    return _IsInVOIPChat(name, channel);
+}
+
+char *VoiceCore::GetChannelPersona(int channel) { return channels[channel].persona_name; }
+
+inline bool VoiceCore::IsAssigned(int channel) { return channels[channel].assigned; }
