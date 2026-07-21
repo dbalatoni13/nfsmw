@@ -683,3 +683,16 @@ void BuddyCore::SetPresence(RichPresenceMsg richPresenceMsg, HLBStatE buddyState
     TagFieldSetNumber(parms, sizeof(parms), "R", richPresenceMsg.isRacing);
     HLBApiPresenceSend(HLBud, buddyState, VoiceCore::mInstance->IsHeadsetConnected(), parms, 0);
 }
+
+RichPresenceMsg BuddyCore::GetRichPresence(BuddySettings *buddySettings) {
+    RichPresenceMsg richPresenceMsg;
+    richPresenceMsg.eventHash = TagFieldGetNumber(TagFieldFind(buddySettings->presence, "E"), 0);
+    TagFieldGetString(TagFieldFind(buddySettings->presence, "S"), richPresenceMsg.session,
+                      sizeof(richPresenceMsg.session), "");
+    richPresenceMsg.isSessionPassworded = TagFieldGetNumber(TagFieldFind(buddySettings->presence, "P"), 0);
+    TagFieldGetString(TagFieldFind(buddySettings->presence, "W"), richPresenceMsg.password,
+                      sizeof(richPresenceMsg.password), "");
+    richPresenceMsg.isSessionPrivate = TagFieldGetNumber(TagFieldFind(buddySettings->presence, "V"), 0);
+    richPresenceMsg.isRacing = TagFieldGetNumber(TagFieldFind(buddySettings->presence, "R"), 0);
+    return richPresenceMsg;
+}

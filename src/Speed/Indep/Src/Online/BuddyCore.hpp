@@ -148,6 +148,7 @@ struct BuddyCore {
     void clearEAMStatusIcons();
     void setNetworkCableUnpluggedFlag();
     void SetPresence(RichPresenceMsg richPresenceMsg, HLBStatE buddyState);
+    RichPresenceMsg GetRichPresence(BuddySettings *buddySettings);
     void DisplayVOIPChatEnded();
     void DisplayDeclinedInviteInGame(const char *name);
     void DisplayDeclinedInvite(const char *name);

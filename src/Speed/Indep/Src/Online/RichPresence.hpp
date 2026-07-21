@@ -26,7 +26,7 @@ struct RichPresenceMsg {
     char password[32];
     uint32 isSessionPrivate;
 
-    RichPresenceMsg();
+    RichPresenceMsg() {}
     void Default();
 };
 
