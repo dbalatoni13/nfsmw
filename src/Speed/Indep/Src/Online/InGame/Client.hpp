@@ -38,6 +38,7 @@ struct Online {
     static IntQuantizer m_driverNumberQuantizer;
     static void Init();
     static void Close();
+    static bool IsInitialized();
     static void SplitPacket(MessageTypesEnum type, SmartBitStream &bitstream_data,
                             SplitPacketList &splitPackets);
     static void JoinPackets(SmartBitStream &joinedPacket, SplitPacketList &splitPackets);
@@ -153,5 +154,13 @@ struct Client {
     static float m_serverTimestamp;
     static ConnApiClientT *hostConnection;
 };
+
+inline bool Online::IsInitialized() {
+    bool initialized = false;
+    if (Client::m_state > CLIENTSTATE_INITIAL || Server::m_state > SERVERSTATE_INITIAL) {
+        initialized = true;
+    }
+    return initialized;
+}
 
 #endif
