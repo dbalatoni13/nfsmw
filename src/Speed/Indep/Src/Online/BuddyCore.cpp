@@ -225,3 +225,10 @@ void BuddyCore::doprocessing() {
         HLBApiUpdate(HLBud);
     }
 }
+
+void BuddyCore::handledisconnect() {
+    if (HLBud) {
+        state = disconnected;
+        HLBApiCancelOp(HLBud);
+    }
+}
