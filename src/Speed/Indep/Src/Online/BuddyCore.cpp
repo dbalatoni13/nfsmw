@@ -469,3 +469,12 @@ bool BuddyCore::DoIHaveAVOIPInviteFromThisBuddy(char *buddyName) {
     }
     return bHaveChallenge;
 }
+
+VOIP_ChallengeInfo *BuddyCore::GetVOIPChallengeInfo(char *buddyName) {
+    for (int i = 0; i < 6; i++) {
+        if (bStrCmp(buddyName, m_voipChallenge[i].challengerName) == 0) {
+            return &m_voipChallenge[i];
+        }
+    }
+    return nullptr;
+}

@@ -135,6 +135,7 @@ struct BuddyCore {
     LobbyChalRefT *GetLobbyChallengeApiRef();
     int GetNextAvailableVOIPSlot();
     bool DoIHaveAVOIPInviteFromThisBuddy(char *buddyName);
+    VOIP_ChallengeInfo *GetVOIPChallengeInfo(char *buddyName);
     void RemoveVOIPChallenge(char *buddyName);
     void AddTempBuddy(char *name, int tempType);
     int getBuddyCount();
