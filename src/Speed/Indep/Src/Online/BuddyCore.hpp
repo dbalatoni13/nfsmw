@@ -138,6 +138,7 @@ struct BuddyCore {
     VOIP_ChallengeInfo *GetVOIPChallengeInfo(char *buddyName);
     void RemoveVOIPChallenge(char *buddyName);
     void AddTempBuddy(char *name, int tempType);
+    void CountBuddys();
     int getBuddyCount();
     HLBBudT *getBuddyByIndex(int index);
     HLBBudT *getBuddyByName(const char *name);

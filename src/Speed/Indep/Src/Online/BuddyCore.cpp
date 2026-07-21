@@ -20,6 +20,7 @@ int HLBBudIsTemporary(HLBBudT *buddy);
 unsigned int HLBBudGetGameInviteFlags(HLBBudT *buddy);
 int HLBBudIsRealBuddy(HLBBudT *buddy);
 int HLBBudIsWannaBeMyBuddy(HLBBudT *buddy);
+int HLBBudIsIWannaBeHisBuddy(HLBBudT *buddy);
 int HLBBudIsBlocked(HLBBudT *buddy);
 int HLBBudGetState(HLBBudT *buddy);
 const char *HLBBudGetName(HLBBudT *buddy);
@@ -39,6 +40,7 @@ void HLBListFlagTempBuddy(HLBApiRefT *api, const char *name, int flags);
 void HLBListAnswerGameInvite(HLBApiRefT *api, const char *name, int answer, int gameId, int flags);
 HLBBudT *HLBListGetBuddyByIndex(HLBApiRefT *api, int index);
 HLBBudT *HLBListGetBuddyByName(HLBApiRefT *api, const char *name);
+int HLBListGetBuddyCount(HLBApiRefT *api);
 void HLBApiDisconnect(HLBApiRefT *api);
 void HLBApiDestroy(HLBApiRefT *api);
 void HLBApiPresenceVOIPSend(HLBApiRefT *api, int status);
@@ -483,6 +485,28 @@ void BuddyCore::RemoveVOIPChallenge(char *buddyName) {
     for (int i = 0; i < 6; i++) {
         if (bStrCmp(buddyName, m_voipChallenge[i].challengerName) == 0) {
             bMemSet(&m_voipChallenge[i], 0, sizeof(VOIP_ChallengeInfo));
+        }
+    }
+}
+
+void BuddyCore::CountBuddys() {
+    m_realBuddys = 0;
+    m_tempBuddys = 0;
+    m_blockedBuddys = 0;
+    m_friendRequestBuddys = 0;
+    for (int i = 0; i < HLBListGetBuddyCount(HLBud); i++) {
+        HLBBudT *pBud = getBuddyByIndex(i);
+        if (HLBBudIsRealBuddy(pBud)) {
+            m_realBuddys++;
+        }
+        if (HLBBudIsBlocked(pBud)) {
+            m_blockedBuddys++;
+        }
+        if (HLBBudIsTemporary(pBud)) {
+            m_tempBuddys++;
+        }
+        if (HLBBudIsWannaBeMyBuddy(pBud) || HLBBudIsIWannaBeHisBuddy(pBud)) {
+            m_friendRequestBuddys++;
         }
     }
 }
