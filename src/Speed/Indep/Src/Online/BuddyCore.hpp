@@ -16,6 +16,22 @@ struct LobbyChalRefT;
 struct LobbyApiMsgT;
 struct BuddyCore;
 
+char *GetLocalizedString(uint32 hash);
+int FEngSNPrintf(char *buffer, int32 bufferSize, const char *format, ...);
+
+enum eDialogTitle {
+    dialog_none = 0,
+    dialog_alert = 1,
+    dialog_info = 2,
+    dialog_confirmation = 3
+};
+
+struct DialogInterface {
+    static int ShowOneButton(const char *fromPackage, const char *dialogPackage, eDialogTitle title,
+                             uint32 buttonTextHash, uint32 buttonPressedMessage, uint32 cancelMessage,
+                             const char *format, ...);
+};
+
 struct BuddyApiMsgT {
     int iType;
     int iKind;
@@ -135,6 +151,11 @@ struct BuddyCore {
     void DisplayBlockedInvite(const char *name);
     void DisplayTimedOutInvite(const char *name);
     void DisplayRevokedInvite(const char *name);
+    inline void DisplayBusyInvite(const char *name) {
+        char sztemp[128];
+        FEngSNPrintf(sztemp, sizeof(sztemp), GetLocalizedString(0x6c02f6e1), name);
+        DialogInterface::ShowOneButton("", "", dialog_alert, 0x417b2601, 0xffffffff, 0xffffffff, sztemp);
+    }
     LobbyChalRefT *GetLobbyChallengeApiRef();
     int GetNextAvailableVOIPSlot();
     bool DoIHaveAVOIPInviteFromThisBuddy(char *buddyName);

@@ -55,21 +55,6 @@ int TagFieldGetString(const char *field, char *buffer, int bufferSize, const cha
 }
 
 MenuScreen *FEngFindScreen(const char *packageName);
-char *GetLocalizedString(uint32 hash);
-int FEngSNPrintf(char *buffer, int32 bufferSize, const char *format, ...);
-
-enum eDialogTitle {
-    dialog_none = 0,
-    dialog_alert = 1,
-    dialog_info = 2,
-    dialog_confirmation = 3
-};
-
-struct DialogInterface {
-    static int ShowOneButton(const char *fromPackage, const char *dialogPackage, eDialogTitle title,
-                             uint32 buttonTextHash, uint32 buttonPressedMessage, uint32 cancelMessage,
-                             const char *format, ...);
-};
 
 extern int gVOIP_InviteState;
 extern int gBuddyListHasChanged;
@@ -659,4 +644,12 @@ void BuddyCore::DisplayRevokedInvite(const char *name) {
     char sztemp[128];
     FEngSNPrintf(sztemp, sizeof(sztemp), GetLocalizedString(0x88a7cf05));
     DialogInterface::ShowOneButton("", "", dialog_alert, 0x417b2601, 0x1cad26e2, 0x1cad26e2, sztemp);
+}
+
+void BuddyCore::DisplayVOIPChatEnded() {
+    char sztemp[128];
+    if (!FEngFindScreen(g_GameRoomName)) {
+        FEngSNPrintf(sztemp, sizeof(sztemp), GetLocalizedString(0x0266ba2c));
+        DialogInterface::ShowOneButton("", "", dialog_alert, 0x417b2601, 0xffffffff, 0xffffffff, sztemp);
+    }
 }
