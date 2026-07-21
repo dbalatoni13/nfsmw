@@ -391,3 +391,20 @@ int32 LobbyGameSessions::FindSessions(const FilterGameSessionParamsT &filterPara
     lobbyMutex.Unlock("LobbyGameSessions::FindSessions");
     return rc;
 }
+
+void LobbyGameSessions::SetSortField(LobbyGameSessionsN::SortField sortField, bool ascending) {
+    lobbyMutex.Lock("LobbyGameSessions::SetSortField");
+    SetSortField_HaveMutex(sortField, ascending);
+    lobbyMutex.Unlock("LobbyGameSessions::SetSortField");
+}
+
+void LobbyGameSessions::SetSortField_HaveMutex(LobbyGameSessionsN::SortField sortField, bool ascending) {
+    if (sessionList && sortField >= LobbyGameSessionsN::SORT_PING) {
+        uint32 sortParams = sortField | LobbyGameSessionsN::SORT_INVALID;
+        if (!ascending) {
+            sortParams = sortField;
+        }
+        currentSortParams = sortParams;
+        DispListSort(sessionList, 0, sortParams, SortFunc);
+    }
+}

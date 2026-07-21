@@ -17,14 +17,24 @@ enum YesNoAny {
     ANY = 2
 };
 
+namespace LobbyGameSessionsN {
 enum SortField {
     SORT_PING = 0,
     SORT_SESSION_NAME = 1,
     SORT_GAME_MODE = 2,
     SORT_PLAYER_COUNT = 3,
     SORT_COURSE_NAME = 4,
-    SORT_INVALID = 0x80000000
+    SORT_INVALID = (-2147483647 - 1)
 };
+
+enum SessionStatusCode {
+    SESSION_DELETED = 0,
+    SESSION_CHANGED = 1,
+    SESSION_LIST_CHANGED = 2,
+    SESSION_KICKED = 3,
+    GAME_STARTED = 4
+};
+}
 
 struct FilterGameSessionParamsT {
     FilterGameSessionParamsT(uint32 count, GRace::Type gameMode, YesNoAny rankedGames, YesNoAny collisionDetection,
@@ -56,15 +66,7 @@ struct LobbyApiUserSetMemberT {
 typedef LobbyApiUserSetMemberT GameSessionMember;
 
 struct LobbyGameSessions {
-    enum SessionStatusCode {
-        SESSION_DELETED = 0,
-        SESSION_CHANGED = 1,
-        SESSION_LIST_CHANGED = 2,
-        SESSION_KICKED = 3,
-        GAME_STARTED = 4
-    };
-
-    typedef void (*SessionUpdateCBFunc)(SessionStatusCode, const LobbyApiUserSetT *, void *);
+    typedef void (*SessionUpdateCBFunc)(LobbyGameSessionsN::SessionStatusCode, const LobbyApiUserSetT *, void *);
 
     LobbyGameSessions();
     ~LobbyGameSessions() { Reset(); }
@@ -84,8 +86,9 @@ struct LobbyGameSessions {
     void GetMemberRaceStatus(int32 index, int &lap, int &mapx, int &mapy);
     int8 GetSecsBeforeHostCanStart();
     int32 FindSessions(const FilterGameSessionParamsT &filterParams, CommandCBFunc filterSessionsCB, void *context);
+    void SetSortField(LobbyGameSessionsN::SortField sortField, bool ascending);
     GameSession *GetMySession();
-    void SendUpdateCallback(SessionStatusCode status);
+    void SendUpdateCallback(LobbyGameSessionsN::SessionStatusCode status);
 
   private:
     int32 Init();
@@ -96,6 +99,7 @@ struct LobbyGameSessions {
     GameSessionMember *GetMemberByIndex_HaveMutex(int32 index);
     bool IsMemberMakingChanges_HaveMutex(int32 index);
     int GetMemberLatency_HaveMutex(int32 index);
+    void SetSortField_HaveMutex(LobbyGameSessionsN::SortField sortField, bool ascending);
     void UpdateSessionParams(char *params, int size);
     int32 UpdateSessionInfo(bool forceUpdate);
     void UpdateSessionFlags(uint32 &flags);

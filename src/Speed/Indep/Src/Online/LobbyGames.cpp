@@ -275,7 +275,7 @@ void LobbyGames::GlobalEventCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pDa
             }
         }
         ConnectionCore::Instance().UpdatePlayers(myGame);
-        LobbyGameSessions::Instance().SendUpdateCallback(LobbyGameSessions::SESSION_CHANGED);
+        LobbyGameSessions::Instance().SendUpdateCallback(LobbyGameSessionsN::SESSION_CHANGED);
     } else if (pMsg->kind == 'play') {
         if (lobbyGames->myCurrentGame.iIdent != -1) {
             LobbyApiPlayT &myGame = lobbyGames->myCurrentGame;
@@ -292,7 +292,7 @@ void LobbyGames::GlobalEventCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pDa
                 int idx = i;
                 TheOnlineGame.SetPlayerMuted(idx, VoiceCore::mInstance->IsMuted(myGame.aOpponents[i].strPers));
             }
-            LobbyGameSessions::Instance().SendUpdateCallback(LobbyGameSessions::GAME_STARTED);
+            LobbyGameSessions::Instance().SendUpdateCallback(LobbyGameSessionsN::GAME_STARTED);
         }
     } else if (pMsg->kind == '$rup' && lobbyGames->resultUpdateCB) {
         bMemSet(&results, 0, sizeof(results));
