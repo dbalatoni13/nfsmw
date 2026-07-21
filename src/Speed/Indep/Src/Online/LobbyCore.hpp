@@ -20,7 +20,66 @@ struct LobbyApiMsgT {
 struct LobbyApiServerStatT;
 struct LobbyPingManagerRefT;
 struct ConnApiRefT;
-struct ConnApiCbInfoT;
+struct NetGameUtilRefT;
+struct NetGameLinkRefT;
+struct NetGameDistRefT;
+
+enum ConnApiCbTypeE {
+    CONNAPI_CBTYPE_GAMEEVENT = 0,
+    CONNAPI_CBTYPE_VOIPEVENT = 1,
+    CONNAPI_CBTYPE_SESSEVENT = 2,
+    CONNAPI_NUMCBTYPES = 3
+};
+
+enum ConnApiConnStatusE {
+    CONNAPI_STATUS_INIT = 0,
+    CONNAPI_STATUS_CONN = 1,
+    CONNAPI_STATUS_MNGL = 2,
+    CONNAPI_STATUS_ACTV = 3,
+    CONNAPI_STATUS_CLSE = 4,
+    CONNAPI_STATUS_DISC = 5,
+    CONNAPI_NUMSTATUSTYPES = 6
+};
+
+struct ConnApiCbInfoT {
+    int iClientId;
+    ConnApiCbTypeE eType;
+    ConnApiConnStatusE eOldStatus;
+    ConnApiConnStatusE eNewStatus;
+};
+
+struct ConnApiUserInfoT {
+    unsigned int uAddr;
+    unsigned int uLocalAddr;
+    DirtyAddrT DirtyAddr;
+    char strName[32];
+    char strUniqueId[32];
+};
+
+struct ConnApiConnInfoT {
+    ConnApiConnStatusE eStatus;
+    unsigned short uMnglPort;
+    unsigned short bDemangling;
+};
+
+struct ConnApiClientT {
+    ConnApiUserInfoT UserInfo;
+    ConnApiConnInfoT GameInfo;
+    ConnApiConnInfoT VoipInfo;
+    NetGameUtilRefT *pGameUtilRef;
+    NetGameLinkRefT *pGameLinkRef;
+    NetGameDistRefT *pGameDistRef;
+    int iConnStart;
+    int iVoipConnId;
+    unsigned short uConnFlags;
+    unsigned short uFlags;
+};
+
+struct ConnApiClientListT {
+    int iNumClients;
+    int iMaxClients;
+    ConnApiClientT Clients[1];
+};
 
 typedef void ConnApiCallbackT(ConnApiRefT *, ConnApiCbInfoT *, void *);
 typedef void LobbyApiCallbackT(LobbyApiRefT *, LobbyApiMsgT *, void *);
@@ -181,13 +240,47 @@ struct LobbyRooms {
 };
 
 struct ConnectionCore {
+    ConnectionCore();
+    ~ConnectionCore();
+
     static ConnectionCore &Instance();
     void Init(int maxNumPlayers, ConnApiCallbackT *cbfunc, void *context);
     void Reset();
-    void HostSession(int gameIdent, int maxPlayers);
-    void JoinSession(LobbyApiPlayerT &host, int gameIdent, void *session, int maxPlayers);
-    void AddPlayer(LobbyApiPlayerT &player);
-    void UpdatePlayers(const LobbyApiPlayT &game);
+    void SetCallback(ConnApiCallbackT *cbfunc, void *context);
+    void HostSession(int sessionID, int connectionType);
+    void JoinSession(ConnApiUserInfoT &hostInfo, int sessionID, int connectionType);
+    void JoinSession(LobbyApiUserT &hostInfo, int sessionID, int connectionType);
+    void JoinSession(LobbyApiPlayerT &hostInfo, int sessionID, void *strSess, int connectionType);
+    bool IsSessionStarted();
+    void LeaveSession();
+    void AddPlayer(ConnApiUserInfoT &userInfo);
+    void AddPlayer(LobbyApiUserT &userInfo);
+    void AddPlayer(LobbyApiPlayerT &userInfo);
+    void UpdatePlayers(LobbyApiPlayT &game);
+    void RemovePlayer(char *playerName);
+    void RemovePlayer(int index);
+    int GetNumPlayers();
+    int GetNumConnectedPlayers();
+    ConnApiClientT *GetPlayer(char *name);
+    ConnApiClientT *GetPlayer(int index);
+    ConnApiClientT *GetHost();
+    static void BuildUserInfo(ConnApiUserInfoT &dest, LobbyApiUserT &src);
+    static void BuildUserInfo(ConnApiUserInfoT &dest, LobbyApiPlayerT &src);
+    int GetStatus();
+
+  private:
+    void UpdateNumConnectedPlayers();
+    void MaybeGoOnline();
+    void AddPlayer_HaveMutex(LobbyApiPlayerT &userInfo);
+    void ResetSession_HaveMutex();
+    static void ConnApiCallback(ConnApiRefT *connapi, ConnApiCbInfoT *cbinfo, void *context);
+    static void FrontEndCB(ConnApiRefT *connapi, ConnApiCbInfoT *cbinfo, void *context);
+
+    ConnApiRefT *connapi;
+    ConnApiCallbackT *connapiCallback;
+    void *callbackContext;
+    int numConnectedPlayers;
+    bool isOnline;
 };
 
 class LobbyCore {
