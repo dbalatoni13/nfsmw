@@ -296,3 +296,17 @@ ConnApiClientT *ConnectionCore::GetPlayer(int index) {
     networkMutex.Unlock("ConnectionCore::GetPlayer");
     return player;
 }
+
+void ConnectionCore::BuildUserInfo(ConnApiUserInfoT &dest, const LobbyApiUserT &src) {
+    dest.uAddr = src.addr;
+    dest.uLocalAddr = src.uLocalAddr;
+    bMemCpy(&dest.DirtyAddr, &src.MachineAddr, sizeof(dest.DirtyAddr));
+    bStrCpy(dest.strName, src.name);
+}
+
+void ConnectionCore::BuildUserInfo(ConnApiUserInfoT &dest, const LobbyApiPlayerT &src) {
+    dest.uAddr = src.uAddr;
+    dest.uLocalAddr = src.uLocalAddr;
+    bStrCpy(dest.DirtyAddr.strMachineAddr, src.strMachineAddr);
+    bStrCpy(dest.strName, src.strPers);
+}
