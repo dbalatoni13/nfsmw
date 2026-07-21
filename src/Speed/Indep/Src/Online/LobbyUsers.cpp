@@ -422,3 +422,14 @@ void LobbyUsers::ClearUserStats() {
     gotMyStats = false;
     lobbyMutex.Unlock("LobbyUsers::ClearUserStats");
 }
+
+int32 LobbyUsers::GetOtherUserStats(PlayerDataT &userStats, const char *persona,
+                                    CommandCBFunc func, void *context) {
+    lobbyMutex.Lock("LobbyUsers::GetOtherUserStats");
+    char buf[128] = "";
+    TagFieldSetString(buf, sizeof(buf), "PERS", persona);
+    int32 rc = LobbyCore::Instance().QueueCommand('user', buf, LobbyCore::DefaultCB, this, func,
+                                                   context, false);
+    lobbyMutex.Unlock("LobbyUsers::GetOtherUserStats");
+    return rc;
+}

@@ -176,6 +176,8 @@ struct LobbyUsers {
     bool GetDisqualificationsFromUserRecord(const char *persona, uint32 &disqs);
     int32 GetMyUserStats(PlayerDataT &userStats, CommandCBFunc func, void *context);
     void ClearUserStats();
+    int32 GetOtherUserStats(PlayerDataT &userStats, const char *persona, CommandCBFunc func,
+                            void *context);
     void ClearUserOnlineRecordCache();
     void ClearUserOnlineRecordCache(const LobbyApiPlayT &game);
     void SetSessionChangeFlag(bool changing);
