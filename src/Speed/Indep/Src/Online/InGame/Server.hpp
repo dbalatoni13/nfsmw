@@ -16,7 +16,13 @@ struct OnlineCfg;
 
 enum ServerStateEnum {
     SERVERSTATE_INITIAL = 0,
-    SERVERSTATE_WELCOME = 1
+    SERVERSTATE_WELCOME = 1,
+    SERVERSTATE_WAITJOINS = 2,
+    SERVERSTATE_LOADING = 3,
+    SERVERSTATE_NIS = 4,
+    SERVERSTATE_WAITLOADS = 5,
+    SERVERSTATE_READY = 6,
+    SERVERSTATE_RACING = 7
 };
 
 struct Server {
@@ -36,6 +42,8 @@ struct Server {
     static void Think();
     static void HandleIncomingPacket(int client_id, char *data, int num_bytes, bool reliable);
     static void SendQuitMessage();
+    static void SendWelcomeMessage(int client_id);
+    static void SendCarDescriptionMessage(int client_id, int driver_number);
     static void ShowDiagnostics();
     static void SignalStartClockSync();
     static void SignalReady();

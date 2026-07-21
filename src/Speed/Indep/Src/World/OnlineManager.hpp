@@ -62,6 +62,7 @@ class OnlineManager {
     void ImportDriverInfo(int driver_number, SmartBitStream &bitstream_data);
     void ExportDriverInfo(int driver_number, SmartBitStream &bitstream_data);
     void SetStartRaceTime(uint32 tick, float time, float ping);
+    float GetStartRaceTime(uint32 tick);
     bool GetRestartingRace();
     void RequestRestart();
     void SignalLoad();

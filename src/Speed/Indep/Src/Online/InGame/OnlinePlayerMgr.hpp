@@ -15,6 +15,9 @@ struct OnlinePlayerMgr {
   public:
     static void Init();
     static void Close();
+    static OnlinePlayer *GetOnlinePlayer(int player_num);
+    static int GetNumPlayers() { return m_numPlayers; }
+    static OnlinePlayer *AddOnlinePlayer(int client_id);
 };
 
 #endif
