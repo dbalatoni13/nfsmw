@@ -442,3 +442,9 @@ void Online::ReadIncomingPackets() {
         Server::ReadIncomingPackets();
     }
 }
+
+void Online::SendUpdates() {
+    if (Client::m_state > CLIENTSTATE_INITIAL) {
+        Client::SendCarSpam();
+    }
+}
