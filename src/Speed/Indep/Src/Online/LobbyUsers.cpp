@@ -9,6 +9,7 @@ extern "C" {
 int TagFieldGetStructure(const char *field, void *buffer, int bufferSize, const char *format);
 float TagFieldGetFloat(const char *field, float defaultValue);
 void TagFieldSetFloat(char *record, int recordLength, const char *name, float value);
+void *LobbyApiInfoPtr(LobbyApiRefT *lobbyRef, int selector);
 }
 
 LobbyUsers *pLobbyUsersInstance;
@@ -454,4 +455,12 @@ int32 LobbyUsers::SubmitFeedback(const char *persona, const char *feedback, Comm
                                                    func, context, false);
     lobbyMutex.Unlock("LobbyUsers::SubmitFeedback");
     return rc;
+}
+
+LobbyApiUserT *LobbyUsers::GetMyUserRecord() const {
+    if (!LobbyCore::Instance().pLobbyRef) {
+        return nullptr;
+    }
+    return static_cast<LobbyApiUserT *>(
+        LobbyApiInfoPtr(LobbyCore::Instance().pLobbyRef, 'self'));
 }
