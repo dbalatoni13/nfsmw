@@ -88,6 +88,8 @@ struct LobbyGameSessions {
     int32 FindSessions(const FilterGameSessionParamsT &filterParams, CommandCBFunc filterSessionsCB, void *context);
     void SetSortField(LobbyGameSessionsN::SortField sortField, bool ascending);
     GameSession *GetMySession() const;
+    char *GetSessionDisplayName(const GameSession *session);
+    inline eOnlineDisconnectPerc GetSessionDisconnectPercentage(const GameSession *session);
     void SendUpdateCallback(LobbyGameSessionsN::SessionStatusCode status);
 
   private:

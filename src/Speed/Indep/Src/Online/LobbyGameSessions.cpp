@@ -416,3 +416,33 @@ GameSession *LobbyGameSessions::GetMySession() const {
     }
     return session;
 }
+
+char *LobbyGameSessions::GetSessionDisplayName(const GameSession *session) {
+    static char realName[36];
+    const GameSession *theSession = session ? session : &myCurrentSession;
+    char *tmp;
+    if (theSession->iIdent == -1 || !(tmp = bStrChr(theSession->strName, '.'))) {
+        return nullptr;
+    }
+    bStrNCpy(realName, tmp + 1, 32);
+    return realName;
+}
+
+inline eOnlineDisconnectPerc LobbyGameSessions::GetSessionDisconnectPercentage(const GameSession *session) {
+    const GameSession *theSession = session ? session : &myCurrentSession;
+    eOnlineDisconnectPerc eDisconnectPercentage = OLS_DISCONNECT_PERC_5;
+    if (theSession->uCustFlags & 0x2000000) {
+        eDisconnectPercentage = OLS_DISCONNECT_PERC_ANY;
+    } else if (theSession->uCustFlags & 0x1000000) {
+        eDisconnectPercentage = OLS_DISCONNECT_PERC_50;
+    } else if (theSession->uCustFlags & 0x800000) {
+        eDisconnectPercentage = OLS_DISCONNECT_PERC_25;
+    } else if (theSession->uCustFlags & 0x400000) {
+        eDisconnectPercentage = OLS_DISCONNECT_PERC_20;
+    } else if (theSession->uCustFlags & 0x200000) {
+        eDisconnectPercentage = OLS_DISCONNECT_PERC_15;
+    } else if (theSession->uCustFlags & 0x100000) {
+        eDisconnectPercentage = OLS_DISCONNECT_PERC_10;
+    }
+    return eDisconnectPercentage;
+}
