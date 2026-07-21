@@ -246,3 +246,18 @@ inline void ConnectionCore::RemovePlayer(int index) {
     }
     networkMutex.Unlock("ConnectionCore::RemovePlayer");
 }
+
+int ConnectionCore::GetNumPlayers() {
+    int tmp;
+
+    networkMutex.Lock("ConnectionCore::GetNumPlayers");
+    ConnApiClientListT *clientList = ConnApiGetClientList(connapi);
+    if (!clientList) {
+        networkMutex.Unlock("ConnectionCore::GetNumPlayers");
+        tmp = 0;
+    } else {
+        tmp = clientList->iNumClients;
+        networkMutex.Unlock("ConnectionCore::GetNumPlayers");
+    }
+    return tmp;
+}
