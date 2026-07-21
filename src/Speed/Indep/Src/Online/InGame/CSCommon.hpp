@@ -19,6 +19,7 @@ struct CSCommon {
     static void SetDiagnosticLevel(DiagnosticLevelEnum level) { m_diagnosticLevel = level; }
     static DiagnosticLevelEnum GetDiagnosticLevel() { return m_diagnosticLevel; }
     static void DumpBytes(const char *raw_data, int num_bytes);
+    static void ShowDiagnostics();
     static void PossiblyDoDataCorruption(char *raw_data, int num_bytes) {}
 
   private:

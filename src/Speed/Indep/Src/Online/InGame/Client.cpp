@@ -448,3 +448,18 @@ void Online::SendUpdates() {
         Client::SendCarSpam();
     }
 }
+
+void Online::ShowDiagnostics() {
+    if (IsInitialized()) {
+        if (Client::m_state > CLIENTSTATE_INITIAL) {
+            Client::ShowDiagnostics();
+        }
+        if (Server::m_state > SERVERSTATE_INITIAL) {
+            Server::ShowDiagnostics();
+        }
+        if (CLIENTSTATE_INITIAL < Client::m_state || SERVERSTATE_INITIAL < Server::m_state) {
+            TheOnlineGame.ShowDiagnostics();
+            CSCommon::ShowDiagnostics();
+        }
+    }
+}

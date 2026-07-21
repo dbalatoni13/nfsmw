@@ -39,6 +39,7 @@ struct Server {
     static void Init();
     static void Close();
     static void ReadIncomingPackets();
+    static void ShowDiagnostics();
     static void StartServerProcessing();
 };
 

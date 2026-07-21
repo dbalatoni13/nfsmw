@@ -35,6 +35,7 @@ struct OnlineGame {
 
   public:
     void SetPlayerMuted(int index, bool muted) { m_playermuted[index] = muted; }
+    void ShowDiagnostics();
 };
 
 extern OnlineGame TheOnlineGame;
