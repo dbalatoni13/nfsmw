@@ -37,6 +37,7 @@ struct RichPresence {
 
   public:
     RichPresence();
+    ~RichPresence();
     static RichPresence *Instance();
     void Init();
     void SetEventHash(uint32 eventHash);

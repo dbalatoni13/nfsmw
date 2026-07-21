@@ -696,3 +696,8 @@ RichPresenceMsg BuddyCore::GetRichPresence(BuddySettings *buddySettings) {
     richPresenceMsg.isRacing = TagFieldGetNumber(TagFieldFind(buddySettings->presence, "R"), 0);
     return richPresenceMsg;
 }
+
+RichPresence *RichPresence::Instance() {
+    static RichPresence mInstance;
+    return &mInstance;
+}
