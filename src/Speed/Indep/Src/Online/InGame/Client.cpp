@@ -164,3 +164,11 @@ void Client::HandleIncomingPacket(char *data, int numBytes, bool isReliable) {
         break;
     }
 }
+
+void Client::ConnectionCoreCB(ConnApiRefT *connapi, ConnApiCbInfoT *cbinfo, void *context) {
+    if (hostConnection && cbinfo->eType == CONNAPI_CBTYPE_GAMEEVENT && cbinfo->iClientId == 0 &&
+        cbinfo->eNewStatus == CONNAPI_STATUS_DISC) {
+        Close();
+        return;
+    }
+}
