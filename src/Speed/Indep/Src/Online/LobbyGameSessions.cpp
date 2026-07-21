@@ -7,6 +7,8 @@ void DispListFilt(DispListRef *list, int filtcon, int filtmask, int (*filtfn)(vo
 int DispListShown(DispListRef *list);
 void *DispListGet(DispListRef *list, int index);
 int LobbyApiListFindByName(LobbyApiRefT *lobbyRef, int selector, const char *name);
+void DispListChange(DispListRef *list, int change);
+void DispListOrder(DispListRef *list);
 }
 
 bool LobbyGameSessions::mHurryTimerStarted = false;
@@ -543,4 +545,63 @@ void LobbyGameSessions::SetSessionUpdateCB(SessionUpdateCBFunc func, void *conte
         }
     }
     lobbyMutex.Unlock("LobbyGameSessions::SetSessionUpdateCB");
+}
+
+int32 LobbyGameSessions::Init() {
+    if (!sessionList) {
+        Resume();
+        extraSessionDataMap.clear();
+    }
+    return 0;
+}
+
+void LobbyGameSessions::Resume() {
+    LobbyCore::Instance().RegisterGlobalCallback(LOBBYAPI_CBTYPE_EVNT, GlobalEventCB, this);
+    sessionList = LobbyApiListAlloc(LobbyCore::Instance().pLobbyRef,
+                                    static_cast<LobbyRanks::RankListMapping>(0x17), SessionDispListCB, this);
+    sessionMembers = LobbyApiListAlloc(LobbyCore::Instance().pLobbyRef,
+                                       static_cast<LobbyRanks::RankListMapping>(0x18), SessionMembersDispListCB, this);
+    SetSortField_HaveMutex(LobbyGameSessionsN::SORT_PING, true);
+    DispListFilt(sessionList, 0, 0, FilterFunc);
+    hostInactiveTimer.UnSet();
+    hostStartSessionTimer.UnSet();
+    hostHurryTimer.UnSet();
+}
+
+void LobbyGameSessions::Reset() {
+    Suspend();
+    extraSessionDataMap.clear();
+    sessionUpdateCB = nullptr;
+    updateContext = nullptr;
+    createSessionCB = nullptr;
+    createSessionContext = nullptr;
+    lastSearchCount = 0;
+    hostStartSessionTimer.UnSet();
+    hostHurryTimer.UnSet();
+    hostInactiveTimer.UnSet();
+    currentSortParams = LobbyGameSessionsN::SORT_INVALID;
+    bMemSet(&myCurrentSession, 0, sizeof(myCurrentSession));
+    myCurrentSession.iIdent = -1;
+}
+
+void LobbyGameSessions::Suspend() {
+    LobbyCore::Instance().UnregisterGlobalCallback(LOBBYAPI_CBTYPE_EVNT, GlobalEventCB, this);
+    if (LobbyCore::Instance().pLobbyRef) {
+        if (sessionList) {
+            LobbyApiListFree(LobbyCore::Instance().pLobbyRef, 0x17, sessionList);
+            sessionList = nullptr;
+        }
+        if (sessionMembers) {
+            LobbyApiListFree(LobbyCore::Instance().pLobbyRef, 0x18, sessionMembers);
+            sessionMembers = nullptr;
+        }
+    }
+}
+
+void LobbyGameSessions::RefilterAndUpdateSessionsList() {
+    if (sessionList) {
+        DispListChange(sessionList, 1);
+        DispListOrder(sessionList);
+        SendUpdateCallback(LobbyGameSessionsN::SESSION_LIST_CHANGED);
+    }
 }

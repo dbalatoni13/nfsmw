@@ -104,6 +104,7 @@ struct LobbyGameSessions {
     void Reset();
     void Suspend();
     void Resume();
+    void RefilterAndUpdateSessionsList();
     int32 LeaveSession_HaveMutex(CommandCBFunc leaveSessionCB, void *context);
     GameSession *GetSessionByIndex_HaveMutex(int32 index) const;
     GameSessionMember *GetMemberByIndex_HaveMutex(int32 index) const;
