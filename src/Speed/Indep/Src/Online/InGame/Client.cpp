@@ -294,3 +294,14 @@ void Client::SignalReady() {
 void Client::SignalRestart() {
     SetState(CLIENTSTATE_LOADING);
 }
+
+void Client::SignalDriverFinish(SmartBitStream &payload_data) {
+    SplitPacketList splitPackets;
+    Online::SplitPacket(MSG_R_BI_DRIVERFINISH, payload_data, splitPackets);
+    SplitPacketNode *node;
+    while ((node = splitPackets.GetHead()) != splitPackets.EndOfList()) {
+        SendMessage(7, node->data, true);
+        splitPackets.RemoveHead();
+        delete node;
+    }
+}

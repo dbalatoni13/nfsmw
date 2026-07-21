@@ -30,7 +30,8 @@ struct SplitPacketNode : bTNode<SplitPacketNode> {
 typedef bTList<SplitPacketNode> SplitPacketList;
 
 enum MessageTypesEnum {
-    MSG_R_BI_CARDESCRIPTION = 1
+    MSG_R_BI_CARDESCRIPTION = 1,
+    MSG_R_BI_DRIVERFINISH = 7
 };
 
 struct Online {
@@ -104,6 +105,7 @@ struct Client {
     static void SignalStartClockSync();
     static void SignalReady();
     static void SignalRestart();
+    static void SignalDriverFinish(SmartBitStream &payload_data);
     static void ProcessServerQuitMessage(SmartBitStream &bitstream_data);
     static void ProcessClientLeftMessage(SmartBitStream &bitstream_data);
     static void ProcessRestartLoad(SmartBitStream &bitstream_data);
