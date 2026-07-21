@@ -36,6 +36,7 @@ enum MessageTypesEnum {
 
 struct Online {
     static IntQuantizer m_driverNumberQuantizer;
+    static void Init();
     static void SplitPacket(MessageTypesEnum type, SmartBitStream &bitstream_data,
                             SplitPacketList &splitPackets);
     static void JoinPackets(SmartBitStream &joinedPacket, SplitPacketList &splitPackets);

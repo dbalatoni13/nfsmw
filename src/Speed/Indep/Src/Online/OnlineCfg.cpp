@@ -31,6 +31,8 @@ static char onlinePlayerCar[64];
 
 struct Server {
     static bool m_bForceClientShutdown;
+    static void Init();
+    static void StartServerProcessing();
 };
 
 extern "C" uint32 SocketInTextGetAddr(const char *text);

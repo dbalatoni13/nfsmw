@@ -21,6 +21,8 @@ int Client::m_serverState;
 float Client::m_serverTimestamp;
 ConnApiClientT *Client::hostConnection;
 
+extern int OnlineIsServer;
+
 void Client::Init() {
     uint32 time = NetworkCore::Instance().GetTime();
     for (int i = 3; i >= 0; i--) {
@@ -411,3 +413,14 @@ char *Client::DescribeState(int state) {
 }
 
 void Client::ShowDiagnostics() {}
+
+void Online::Init() {
+    m_driverNumberQuantizer.Init("m_driverNumberQuantizer", 0, 3);
+    if (OnlineIsServer) {
+        Server::Init();
+        Server::StartServerProcessing();
+    } else {
+        Client::Init();
+        Client::StartClientProcessing();
+    }
+}
