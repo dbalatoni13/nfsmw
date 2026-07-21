@@ -466,3 +466,11 @@ LobbyApiUserT *LobbyUsers::GetMyUserRecord() const {
 }
 
 int32 LobbyUsers::Init() { return 0; }
+
+void LobbyUsers::Reset() {
+    ClearUserOnlineRecordCache();
+    myStats.Clear();
+    gotMyStats = false;
+    NetFree(auxiData);
+    auxiData = nullptr;
+}
