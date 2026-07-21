@@ -349,3 +349,10 @@ bool VoiceCore::_IsHeadsetConnected() {
     }
     return (VoipLocal(VoipRef) >> 6) & 1;
 }
+
+bool VoiceCore::_IsHeadsetSending() {
+    if (!VoipRef) {
+        return false;
+    }
+    return (VoipLocal(VoipRef) >> 8) & 1;
+}
