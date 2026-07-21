@@ -106,3 +106,5 @@ void VoiceCore::RemovePlayer(const char *name) {
         _RemovePlayer(channel);
     }
 }
+
+void VoiceCore::RemoveAllPlayers() { _RemoveAllPlayers(); }
