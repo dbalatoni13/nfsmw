@@ -263,3 +263,36 @@ int ConnectionCore::GetNumPlayers() {
 }
 
 int ConnectionCore::GetNumConnectedPlayers() { return numConnectedPlayers; }
+
+inline ConnApiClientT *ConnectionCore::GetPlayer(char *name) {
+    ConnApiClientT *player = nullptr;
+    char *realName = name;
+
+    networkMutex.Lock("ConnectionCore::GetPlayer");
+    ConnApiClientListT *clientList = ConnApiGetClientList(connapi);
+    if (!realName) {
+        realName = FEDatabase->OnlineSettings.GetLobbyPersona();
+    }
+    if (clientList) {
+        for (int i = 0; i < clientList->iNumClients; i++) {
+            if (bStrCmp(clientList->Clients[i].UserInfo.strName, realName) == 0) {
+                player = &clientList->Clients[i];
+                break;
+            }
+        }
+    }
+    networkMutex.Unlock("ConnectionCore::GetPlayer");
+    return player;
+}
+
+ConnApiClientT *ConnectionCore::GetPlayer(int index) {
+    networkMutex.Lock("ConnectionCore::GetPlayer");
+    ConnApiClientListT *clientList = ConnApiGetClientList(connapi);
+    if (!clientList || clientList->iNumClients == 0 || index > clientList->iNumClients) {
+        networkMutex.Unlock("ConnectionCore::GetPlayer");
+        return nullptr;
+    }
+    ConnApiClientT *player = &clientList->Clients[index];
+    networkMutex.Unlock("ConnectionCore::GetPlayer");
+    return player;
+}
