@@ -636,3 +636,9 @@ void BuddyCore::DisplayDeclinedInviteInGame(const char *name) {
     FEngSNPrintf(sztemp, sizeof(sztemp), GetLocalizedString(0xade22a0e), name);
     DialogInterface::ShowOneButton("", "", dialog_alert, 0x417b2601, 0xffffffff, 0xffffffff, sztemp);
 }
+
+void BuddyCore::DisplayDeclinedInvite(const char *name) {
+    char sztemp[128] = "";
+    FEngSNPrintf(sztemp, sizeof(sztemp), GetLocalizedString(0xd0ba5d76), name);
+    DialogInterface::ShowOneButton("", "", dialog_alert, 0x417b2601, 0xffffffff, 0xffffffff, sztemp);
+}
