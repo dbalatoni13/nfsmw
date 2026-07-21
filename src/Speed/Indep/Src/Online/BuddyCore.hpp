@@ -134,6 +134,7 @@ struct BuddyCore {
     void DisplayDeclinedInvite(const char *name);
     void DisplayBlockedInvite(const char *name);
     void DisplayTimedOutInvite(const char *name);
+    void DisplayRevokedInvite(const char *name);
     LobbyChalRefT *GetLobbyChallengeApiRef();
     int GetNextAvailableVOIPSlot();
     bool DoIHaveAVOIPInviteFromThisBuddy(char *buddyName);
