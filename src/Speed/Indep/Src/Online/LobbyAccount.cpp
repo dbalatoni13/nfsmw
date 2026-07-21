@@ -122,3 +122,24 @@ int32 LobbyAccount::RequestLostUsername(const char *email, CommandCBFunc func, v
     lobbyMutex.Unlock("LobbyAccount::RequestLostUsername");
     return rc;
 }
+
+int32 LobbyAccount::RequestLostPassword(const char *username, CommandCBFunc func, void *context) {
+    lobbyMutex.Lock("LobbyAccount::RequestLostPassword");
+    if (!username || !username[0]) {
+        lobbyMutex.Unlock("LobbyAccount::RequestLostPassword");
+        return -1;
+    }
+
+    char buf[256] = "";
+    TagFieldSetString(buf, sizeof(buf), "NAME", username);
+    if (ISOCodes::GetCountryISOCode()) {
+        TagFieldSetString(buf, sizeof(buf), "FROM", ISOCodes::GetCountryISOCode());
+    }
+    if (ISOCodes::GetLanguageISOCode()) {
+        TagFieldSetString(buf, sizeof(buf), "LANG", ISOCodes::GetLanguageISOCode());
+    }
+    int32 rc = LobbyCore::Instance().QueueCommand('lost', buf, LobbyCore::DefaultCB, nullptr,
+                                                   func, context, false);
+    lobbyMutex.Unlock("LobbyAccount::RequestLostPassword");
+    return rc;
+}

@@ -143,6 +143,7 @@ struct LobbyAccount {
     static LobbyAccount &Instance();
     int32 CreateAccount(const LobbyAccountT &accountData, CommandCBFunc func, void *context);
     int32 RequestLostUsername(const char *email, CommandCBFunc func, void *context);
+    int32 RequestLostPassword(const char *username, CommandCBFunc func, void *context);
 
   private:
     LobbyAccount() { pendingPersona[0] = '\0'; }
