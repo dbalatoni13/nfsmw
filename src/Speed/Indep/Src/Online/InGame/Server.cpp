@@ -135,3 +135,11 @@ void Server::Think() {
         break;
     }
 }
+
+int Server::FindRandomAvailableDriverNumber() {
+    int driver_number;
+    do {
+        driver_number = bRandom(4);
+    } while (driver_number == m_driverNumber || OnlinePlayerMgr::FindPlayerWithDriverNumber(driver_number));
+    return driver_number;
+}
