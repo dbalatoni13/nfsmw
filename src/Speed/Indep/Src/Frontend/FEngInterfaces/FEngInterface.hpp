@@ -17,6 +17,7 @@ class cFEng {
     void QueuePackagePop(int all);
     void ServiceFengOnly();
     void QueuePackageSwitch(const char *name, int param2, unsigned int param3, bool param4);
+    void QueuePackagePush(const char *name, int param2, unsigned int param3, bool param4);
 
     static cFEng *Get() {
         return mInstance;

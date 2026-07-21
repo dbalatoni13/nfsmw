@@ -2,6 +2,7 @@
 
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "Speed/Indep/Src/FEng/FEString.h"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEObjects.hpp"
 #include "Speed/Indep/Src/Online/LobbyCore.hpp"
 
@@ -495,4 +496,12 @@ EProcessAction CWebOfferUG2::ProcessHTTP() {
     EProcessAction Action = m_PendingAction;
     m_PendingAction = eProcessAction_Nothing;
     return Action;
+}
+
+void CWebOfferUG2::StartNews(const char *pNewsText, const WebOfferNewsT &NewsData) {
+    m_NewsData.pNewsText = const_cast<char *>(pNewsText);
+    m_NewsData.pParentScreen = m_pOwner;
+    bMemCpy(&m_NewsData.WebOfferNews, &NewsData, sizeof(WebOfferNewsT));
+    cFEng::Get()->QueuePackagePush("OL_News_and_Terms.fng",
+                                   reinterpret_cast<int>(&m_NewsData), 0, false);
 }
