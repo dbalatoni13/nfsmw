@@ -357,3 +357,11 @@ void Client::SimpleSendMessage(uint8 msg_type) {
     bitstream_data.AddByte(msg_type);
     SendMessage(msg_type, bitstream_data, true);
 }
+
+void Client::SendMessage(uint8 msg_type, SmartBitStream &bitstream_data, bool is_reliable) {
+    if (NetworkCore::Instance().Send(hostConnection->pGameLinkRef, bitstream_data.GetBuffer(),
+                                     bitstream_data.GetByteLength(), is_reliable) != 0 &&
+        CSCommon::GetDiagnosticLevel() >= DIAGNOSTICLEVEL_EXTREME) {
+        CSCommon::DumpBytes(bitstream_data.GetBuffer(), bitstream_data.GetByteLength());
+    }
+}
