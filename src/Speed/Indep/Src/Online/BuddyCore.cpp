@@ -60,6 +60,7 @@ extern int gVOIP_InviteState;
 extern int gBuddyListHasChanged;
 extern BuddySettings gBuddySettings;
 extern int gChallengeRecieved;
+extern char *g_GameRoomName;
 
 static char BuddyProductString[9] = "NFS-2006";
 char productString[32];
@@ -549,4 +550,68 @@ void BuddyCore::AddTempBuddy(char *name, int tempType) {
 
     GetNumberTempBuddys();
     HLBListFlagTempBuddy(instance()->HLBud, name, tempType);
+}
+
+void BuddyCore::InviteCB(const char *fromPlayer, int gameIdent, LobbyChatN::CBReason reason, void *context) {
+    BuddyCore *pBuddyCore = static_cast<BuddyCore *>(context);
+    char buf[512] = "";
+
+    switch (reason) {
+    case LobbyChatN::REASON_NEW_INVITE: {
+        HLBBudT *pBud = pBuddyCore->getBuddyByName(fromPlayer);
+        if (!pBud) {
+            HLBListFlagTempBuddy(pBuddyCore->HLBud, fromPlayer, 0x40);
+        }
+        pBud = pBuddyCore->getBuddyByName(fromPlayer);
+        if (HLBBudIsBlocked(pBud)) {
+            LobbyChat::Instance().RespondToInvite(fromPlayer, gameIdent, LobbyChatN::RESPONSE_DECLINE_BLOCK);
+            gBuddyListHasChanged = 1;
+            return;
+        }
+        g_pEAXSound->PlayUISoundFX(UISND_EA_MSGR_CHALLENGE_REQ);
+        MenuScreen::UpdateStatusIcons(1, true);
+        gBuddyListHasChanged = 1;
+        return;
+    }
+    case LobbyChatN::REASON_CANCELLED_INVITE:
+        cFEng::Get()->QueueGameMessage(0xf9e94d58, nullptr, 0xff);
+        goto check_invites;
+    case LobbyChatN::REASON_ACCEPTED_INVITE:
+        cFEng::Get()->QueueGameMessage(0x4fbee42a, g_GameRoomName, 0xff);
+        gBuddyListHasChanged = 1;
+        return;
+    case LobbyChatN::REASON_DECLINED_INVITE:
+        if (FEngFindScreen(g_GameRoomName)) {
+            pBuddyCore->DisplayDeclinedInvite(fromPlayer);
+            gBuddyListHasChanged = 1;
+            return;
+        }
+        break;
+    case LobbyChatN::REASON_DECLINED_INVITE_AND_BLOCKED:
+        if (FEngFindScreen(g_GameRoomName)) {
+            pBuddyCore->DisplayBlockedInvite(fromPlayer);
+            gBuddyListHasChanged = 1;
+            return;
+        }
+        break;
+    case LobbyChatN::REASON_INVITE_TIMEOUT:
+        cFEng::Get()->QueueGameMessage(0x67bfa959, nullptr, 0xff);
+        if (FEngFindScreen(g_GameRoomName)) {
+            pBuddyCore->DisplayTimedOutInvite(fromPlayer);
+        }
+    check_invites:
+        if (!LobbyChat::Instance().GetReceivedInvite(0)) {
+            MenuScreen::UpdateStatusIcons(1, false);
+        }
+        break;
+    case LobbyChatN::REASON_DECLINE_PLAYER_IN_GAME:
+        if (FEngFindScreen(g_GameRoomName)) {
+            pBuddyCore->DisplayDeclinedInviteInGame(fromPlayer);
+        }
+        break;
+    default:
+        break;
+    }
+
+    gBuddyListHasChanged = 1;
 }

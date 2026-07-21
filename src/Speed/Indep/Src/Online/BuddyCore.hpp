@@ -130,7 +130,9 @@ struct BuddyCore {
     void initVoiceAndPresence();
     void clearEAMStatusIcons();
     void DisplayVOIPChatEnded();
+    void DisplayDeclinedInviteInGame(const char *name);
     void DisplayDeclinedInvite(const char *name);
+    void DisplayBlockedInvite(const char *name);
     void DisplayTimedOutInvite(const char *name);
     LobbyChalRefT *GetLobbyChallengeApiRef();
     int GetNextAvailableVOIPSlot();
