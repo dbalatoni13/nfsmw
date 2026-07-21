@@ -365,3 +365,17 @@ void Client::SendMessage(uint8 msg_type, SmartBitStream &bitstream_data, bool is
         CSCommon::DumpBytes(bitstream_data.GetBuffer(), bitstream_data.GetByteLength());
     }
 }
+
+void Client::SetState(ClientStateEnum new_state) {
+    m_state = new_state;
+    if (CLIENTSTATE_CONNECTED < new_state) {
+        SmartBitStream bitstream_data;
+        bitstream_data.AddByte(11);
+        bitstream_data.AddInt(m_state);
+        if (new_state == CLIENTSTATE_READY) {
+            uint32 ret = bGetTicker();
+            bitstream_data.AddInt(ret);
+        }
+        SendMessage(11, bitstream_data, true);
+    }
+}
