@@ -259,10 +259,15 @@ class CWebOfferUG2 : public CWebOffer {
     bool m_bAlertDialogPopulated;
 
   public:
-    CWebOfferUG2();
+    CWebOfferUG2()
+        : m_PendingAction(eProcessAction_Nothing) //
+        , m_pCurrentFEngPackage(nullptr) //
+        , m_pOwner(nullptr) //
+        , m_Dialog(0) //
+        , m_bAlertDialogPopulated(false) {}
     ~CWebOfferUG2() override;
-    void SetOwner(MenuScreen *owner);
-    void SetPendingAction(EProcessAction action);
+    void SetOwner(MenuScreen *owner) { m_pOwner = owner; }
+    void SetPendingAction(EProcessAction action) { m_PendingAction = action; }
     void DismissDialog();
     char *DecodeString(char *string);
 
@@ -289,7 +294,11 @@ class CUIWebOfferStart : public MenuScreen {
     static char m_WebOfferScript[512];
 
   public:
-    CUIWebOfferStart(ScreenConstructorData *screenConstructorData);
+    CUIWebOfferStart(ScreenConstructorData *screenConstructorData)
+        : MenuScreen(screenConstructorData) //
+        , m_pCurrentWebOfferScreen(nullptr) {
+        m_WebOffer.SetOwner(this);
+    }
     ~CUIWebOfferStart() override;
     void Shutdown();
     static void SetNextPackages(const char *successPackage, const char *failPackage);
@@ -299,9 +308,11 @@ class CUIWebOfferStart : public MenuScreen {
     void NotificationMessage(uint32 msg, FEObject *obj, uint32 param1, uint32 param2) override;
 
     friend void ConfigureWebOfferForTOS();
+    friend MenuScreen *CreateOnlineWebOfferScreen(ScreenConstructorData *sd);
 };
 
 void ConfigureWebOfferForTOS();
 MenuScreen *CreateOnlineNews(ScreenConstructorData *sd);
+MenuScreen *CreateOnlineWebOfferScreen(ScreenConstructorData *sd);
 
 #endif

@@ -16,6 +16,18 @@ void FEngSetScript(const char *pkg_name, uint32 obj_hash, uint32 script_hash,
 void FEngSetCurrentButton(const char *pkg_name, uint32 hash);
 FEngFont *FindFont(uint32 font_hash);
 bool ConvertUTF8ToUCS2(uint16 *ucs2_data, int ucs2_data_len, uint8 *utf8_data);
+char *OLGetProductName();
+char *OLGetPlatform();
+extern char LobbyLKEY[32];
+
+namespace BuildRegion {
+char *GetSlusCode();
+}
+
+namespace ISOCodes {
+char *GetLanguageISOCode();
+char *GetCountryISOCode();
+}
 
 extern "C" WebOfferT *WebOfferCreate(uint32 maxScriptSize);
 extern "C" void WebOfferDestroy(WebOfferT *webOffer);
@@ -400,4 +412,27 @@ MenuScreen *CreateOnlineNews(ScreenConstructorData *sd) {
     }
 
     return pScreen;
+}
+
+inline MenuScreen *CreateOnlineWebOfferScreen(ScreenConstructorData *sd) {
+    CUIWebOfferStart *pScreen = new ("UIOnlineWebOffer", 0) CUIWebOfferStart(sd);
+    CWebOffer::SOfferData OfferData;
+    OfferData.pPersonaName = FEDatabase->OnlineSettings.GetLobbyPersona();
+    OfferData.pProductName = OLGetProductName();
+    OfferData.pPlatformName = OLGetPlatform();
+    OfferData.pLanguage = ISOCodes::GetLanguageISOCode();
+    OfferData.pCountry = ISOCodes::GetCountryISOCode();
+    OfferData.pSLUSCode = BuildRegion::GetSlusCode();
+    OfferData.pLobbyKey = LobbyLKEY;
+    OfferData.pOfferURL = CUIWebOfferStart::m_WebOfferScript;
+    pScreen->m_WebOffer.Initialise(0x4000);
+    pScreen->m_WebOffer.Start(OfferData);
+    return pScreen;
+}
+
+void CWebOfferUG2::DismissDialog() {
+    if (m_Dialog) {
+        DialogInterface::DismissDialog(m_Dialog);
+        m_Dialog = 0;
+    }
 }

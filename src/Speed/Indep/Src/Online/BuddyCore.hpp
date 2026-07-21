@@ -28,6 +28,7 @@ enum eDialogTitle {
 };
 
 struct DialogInterface {
+    static void DismissDialog(int handle);
     static int ShowOneButton(const char *fromPackage, const char *dialogPackage, eDialogTitle title,
                              uint32 buttonTextHash, uint32 buttonPressedMessage, uint32 cancelMessage,
                              const char *format, ...);
