@@ -29,3 +29,19 @@ int PlayerDataT::ExtractRecord(const LobbyApiUserT &user) {
     TagFieldGetStructure(user.stat, &stats, sizeof(stats), "l*");
     return 0;
 }
+
+uint32 PlayerDataT::GetTotalGamesPlayedAsClient() {
+    return GetTotalWinsAsClient() + GetTotalLossesAsClient();
+}
+
+uint32 PlayerDataT::GetTotalGamesPlayedAsHost() {
+    return GetTotalWinsAsHost() + GetTotalLossesAsHost();
+}
+
+uint32 PlayerDataT::GetTotalGamesPlayed(int mode) {
+    if (mode == 3) {
+        return GetTotalWins(mode) + GetTotalLosses(mode);
+    }
+    return (stats.raceModeStats[mode].clientLosses + stats.raceModeStats[mode].hostWins) +
+           (stats.raceModeStats[mode].hostLosses + stats.raceModeStats[mode].clientWins);
+}
