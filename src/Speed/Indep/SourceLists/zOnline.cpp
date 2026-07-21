@@ -43,3 +43,7 @@
 #include "Speed/Indep/Src/Online/InGame/Online.cpp"
 
 #include "Speed/Indep/Src/Online/InGame/OnlineGame.cpp"
+
+#include "Speed/Indep/Src/Online/InGame/OnlinePlayer.hpp"
+
+#include "Speed/Indep/Src/Online/InGame/Server.cpp"

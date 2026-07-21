@@ -1,6 +1,7 @@
 #include "OnlineCfg.hpp"
 #include "ConditionSimulator.hpp"
 #include "InGame/CSCommon.hpp"
+#include "InGame/Server.hpp"
 
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Misc/Config.h"
@@ -28,27 +29,6 @@ extern int OnlineAutomaticLogin;
 
 static char onlineCfgFilename[64] = "online.cfg";
 static char onlinePlayerCar[64];
-
-enum ServerStateEnum {
-    SERVERSTATE_INITIAL = 0
-};
-
-struct Server {
-    static bool m_bForceClientShutdown;
-    static ServerStateEnum m_state;
-    static void Init();
-    static void Close();
-    static void ReadIncomingPackets();
-    static void ShowDiagnostics();
-    static void SignalStartClockSync();
-    static void SignalReady();
-    static void SignalRestart();
-    static void SignalDriverFinish(SmartBitStream &payload_data);
-    static void SignalScoreMessage(SmartBitStream &payload_data);
-    static void SignalSyncAnimationMessage(SmartBitStream &payload_data);
-    static void SignalDataCRCMessage(SmartBitStream &payload_data);
-    static void StartServerProcessing();
-};
 
 extern "C" uint32 SocketInTextGetAddr(const char *text);
 

@@ -8,6 +8,7 @@
 #include "Speed/Indep/Src/Online/LobbyCore.hpp"
 #include "Speed/Indep/Src/Online/LobbyGames.hpp"
 #include "Speed/Indep/Src/Online/SmartBitstream.hpp"
+#include "Server.hpp"
 #include "Speed/Indep/Src/World/OnlineManager.hpp"
 
 enum ClientStateEnum {
