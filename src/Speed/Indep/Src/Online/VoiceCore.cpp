@@ -97,3 +97,12 @@ inline void VoiceCore::AddPlayer(int channel, const char *persona) {
 }
 
 int VoiceCore::AddPlayer(const char *persona) { return _AddPlayer(persona); }
+
+inline void VoiceCore::RemovePlayer(int channel) { _RemovePlayer(channel); }
+
+void VoiceCore::RemovePlayer(const char *name) {
+    int channel;
+    if (_IsInVOIPChat(name, &channel)) {
+        _RemovePlayer(channel);
+    }
+}
