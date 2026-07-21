@@ -90,6 +90,7 @@ struct LobbyGameSessions {
     GameSession *GetMySession() const;
     char *GetSessionDisplayName(const GameSession *session);
     inline eOnlineDisconnectPerc GetSessionDisconnectPercentage(const GameSession *session);
+    ExtraSessionData *GetExtraSessionDataByIdent(int32 ident);
     void SendUpdateCallback(LobbyGameSessionsN::SessionStatusCode status);
 
   private:

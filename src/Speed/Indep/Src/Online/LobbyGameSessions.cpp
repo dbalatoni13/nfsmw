@@ -446,3 +446,14 @@ inline eOnlineDisconnectPerc LobbyGameSessions::GetSessionDisconnectPercentage(c
     }
     return eDisconnectPercentage;
 }
+
+ExtraSessionData *LobbyGameSessions::GetExtraSessionDataByIdent(int32 ident) {
+    ExtraSessionData *rc = nullptr;
+    lobbyMutex.Lock("LobbyGameSessions::GetExtraSessionDataByIdent");
+    ExtraSessionDataMap::iterator esd = extraSessionDataMap.find(ident);
+    if (esd != extraSessionDataMap.end()) {
+        rc = &esd->second;
+    }
+    lobbyMutex.Unlock("LobbyGameSessions::GetExtraSessionDataByIdent");
+    return rc;
+}
