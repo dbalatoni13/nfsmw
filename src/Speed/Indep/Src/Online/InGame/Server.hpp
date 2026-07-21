@@ -9,11 +9,14 @@
 
 class SmartBitStream;
 class Timer;
+struct ConnApiRefT;
+struct ConnApiCbInfoT;
 struct Online;
 struct OnlineCfg;
 
 enum ServerStateEnum {
-    SERVERSTATE_INITIAL = 0
+    SERVERSTATE_INITIAL = 0,
+    SERVERSTATE_WELCOME = 1
 };
 
 struct Server {
@@ -26,6 +29,9 @@ struct Server {
     friend struct OnlineCfg;
 
     static void Init();
+    static void SetState(ServerStateEnum new_state);
+    static int FindRandomAvailableDriverNumber();
+    static void ConnectionCoreCB(ConnApiRefT *connapi, ConnApiCbInfoT *cbinfo, void *context);
     static void ReadIncomingPackets();
     static void ShowDiagnostics();
     static void SignalStartClockSync();
