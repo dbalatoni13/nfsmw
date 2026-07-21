@@ -310,3 +310,15 @@ void ConnectionCore::BuildUserInfo(ConnApiUserInfoT &dest, const LobbyApiPlayerT
     bStrCpy(dest.DirtyAddr.strMachineAddr, src.strMachineAddr);
     bStrCpy(dest.strName, src.strPers);
 }
+
+void ConnectionCore::UpdateNumConnectedPlayers() {
+    numConnectedPlayers = 0;
+    ConnApiClientListT *clientList = ConnApiGetClientList(connapi);
+    if (clientList) {
+        for (int i = 0; i < clientList->iMaxClients; i++) {
+            if (clientList->Clients[i].GameInfo.eStatus == CONNAPI_STATUS_ACTV) {
+                numConnectedPlayers++;
+            }
+        }
+    }
+}
