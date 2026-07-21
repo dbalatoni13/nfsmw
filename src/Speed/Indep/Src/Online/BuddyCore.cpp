@@ -237,3 +237,16 @@ void BuddyCore::debugoutput(const char *str) {
     char time_buffer[16];
     bSPrintf(time_buffer, "%-6d: ", RealLoopCounter);
 }
+
+void BuddyCore::connectchanged(int op, int status) {
+    if (connectcallback) {
+        connectcallback(status, connectcontext);
+        if (status != 2) {
+            connectcallback = nullptr;
+        }
+    }
+    if (op == 1 && status == 0) {
+        handledisconnect();
+    }
+    gBuddyListHasChanged = 1;
+}
