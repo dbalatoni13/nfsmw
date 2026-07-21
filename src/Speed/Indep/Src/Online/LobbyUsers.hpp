@@ -174,6 +174,7 @@ struct LobbyUsers {
                                   Physics::Info::Performance &performance);
     bool GetPointsFromUserRecord(const char *persona, uint32 &points, OnlineRaceModeE mode);
     bool GetDisqualificationsFromUserRecord(const char *persona, uint32 &disqs);
+    int32 GetMyUserStats(PlayerDataT &userStats, CommandCBFunc func, void *context);
     void ClearUserOnlineRecordCache();
     void ClearUserOnlineRecordCache(const LobbyApiPlayT &game);
     void SetSessionChangeFlag(bool changing);
@@ -196,6 +197,7 @@ struct LobbyUsers {
     void MaybeCreateAuxiBuffer();
     int32 SendAuxiData();
     static void OnlnCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData);
+    static void UserCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData);
     friend int32 LobbyInit();
     friend void LobbyDisconnect();
 

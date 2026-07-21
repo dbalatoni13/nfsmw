@@ -399,3 +399,19 @@ bool LobbyUsers::GetDisqualificationsFromUserRecord(const char *persona, uint32 
     lobbyMutex.Unlock("LobbyUsers::GetDisqualificationsFromUserRecord");
     return false;
 }
+
+int32 LobbyUsers::GetMyUserStats(PlayerDataT &userStats, CommandCBFunc func, void *context) {
+    lobbyMutex.Lock("LobbyUsers::GetMyUserStats");
+    if (gotMyStats == true) {
+        bMemCpy(&userStats, &myStats, sizeof(PlayerDataT));
+        lobbyMutex.Unlock("LobbyUsers::GetMyUserStats");
+        return 0;
+    }
+
+    char buf[128] = "";
+    TagFieldSetString(buf, sizeof(buf), "PERS", FEDatabase->OnlineSettings.GetLobbyPersona());
+    int32 rc = LobbyCore::Instance().QueueCommand('user', buf, UserCB, this, func, context,
+                                                   false);
+    lobbyMutex.Unlock("LobbyUsers::GetMyUserStats");
+    return rc;
+}
