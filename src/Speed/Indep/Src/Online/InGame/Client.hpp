@@ -37,6 +37,7 @@ enum MessageTypesEnum {
 struct Online {
     static IntQuantizer m_driverNumberQuantizer;
     static void Init();
+    static void Close();
     static void SplitPacket(MessageTypesEnum type, SmartBitStream &bitstream_data,
                             SplitPacketList &splitPackets);
     static void JoinPackets(SmartBitStream &joinedPacket, SplitPacketList &splitPackets);
@@ -86,6 +87,7 @@ struct Client {
     static void ShowDiagnostics();
 
   private:
+    friend struct Online;
     static void ReadIncomingPackets();
     static ePosDataPriorityMask BuildPosDataPriorityMask();
     static void SendCarSpam();

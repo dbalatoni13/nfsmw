@@ -29,9 +29,15 @@ extern int OnlineAutomaticLogin;
 static char onlineCfgFilename[64] = "online.cfg";
 static char onlinePlayerCar[64];
 
+enum ServerStateEnum {
+    SERVERSTATE_INITIAL = 0
+};
+
 struct Server {
     static bool m_bForceClientShutdown;
+    static ServerStateEnum m_state;
     static void Init();
+    static void Close();
     static void StartServerProcessing();
 };
 

@@ -424,3 +424,12 @@ void Online::Init() {
         Client::StartClientProcessing();
     }
 }
+
+void Online::Close() {
+    if (Client::m_state > CLIENTSTATE_INITIAL) {
+        Client::Close();
+    }
+    if (SERVERSTATE_INITIAL < Server::m_state) {
+        Server::Close();
+    }
+}
