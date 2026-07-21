@@ -505,3 +505,12 @@ void CWebOfferUG2::StartNews(const char *pNewsText, const WebOfferNewsT &NewsDat
     cFEng::Get()->QueuePackagePush("OL_News_and_Terms.fng",
                                    reinterpret_cast<int>(&m_NewsData), 0, false);
 }
+
+EProcessAction CWebOfferUG2::ProcessAlert() {
+    EProcessAction Action = m_PendingAction;
+    if (!m_bAlertDialogPopulated) {
+        PopulateAlertDialog();
+    }
+    m_PendingAction = eProcessAction_Nothing;
+    return Action;
+}
