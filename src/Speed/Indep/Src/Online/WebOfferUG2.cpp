@@ -15,6 +15,7 @@ void FEngSetButtonState(const char *pkg_name, uint32 button_hash, bool enabled);
 void FEngSetScript(const char *pkg_name, uint32 obj_hash, uint32 script_hash,
                    bool start_at_beginning);
 void FEngSetCurrentButton(const char *pkg_name, uint32 hash);
+void FEngSetLanguageHash(const char *pkg_name, uint32 object_hash, uint32 language_hash);
 FEngFont *FindFont(uint32 font_hash);
 bool ConvertUTF8ToUCS2(uint16 *ucs2_data, int ucs2_data_len, uint8 *utf8_data);
 char *OLGetProductName();
@@ -564,4 +565,74 @@ void CWebOfferUG2::PopulateAlertDialog() {
             m_bAlertDialogPopulated = true;
         }
     }
+}
+
+MenuScreen *CreateForeignReg(ScreenConstructorData *sd) {
+    CUIWebOfferForeignReg *pScreen =
+        new ("CUIWebOfferForeignReg", 0) CUIWebOfferForeignReg(sd);
+    SButtonInit sbi[1];
+    SButtonInit *pButtonInit = sbi;
+    pButtonInit->pButtonText = GetLocalizedString(0x417b2601);
+    pScreen->m_NumButtons = 1;
+
+    char FEngName[32];
+    for (int FEngButtonCount = 1; FEngButtonCount <= 3; ++FEngButtonCount) {
+        bSPrintf(FEngName, "Button%d", FEngButtonCount);
+        FEObject *pFEObject = FEngFindObject(pScreen->GetPackageName(), FEHashUpper(FEngName));
+        FEngSetInvisible(pFEObject);
+        FEngSetButtonState(pScreen->GetPackageName(), pFEObject->GetNameHash(), false);
+        bSPrintf(FEngName, "Button%d_Text", FEngButtonCount);
+        pFEObject = FEngFindObject(pScreen->GetPackageName(), FEHashUpper(FEngName));
+        FEngSetInvisible(pFEObject);
+    }
+
+    pScreen->m_Buttons[0].Action = eProcessAction_Button1;
+    bSPrintf(FEngName, "Button%d", 1);
+    pScreen->m_Buttons[0].NameHash = FEHashUpper(FEngName);
+    FEObject *pFEObject =
+        FEngFindObject(pScreen->GetPackageName(), pScreen->m_Buttons[0].NameHash);
+    FEngSetVisible(pFEObject);
+    FEngSetButtonState(pScreen->GetPackageName(), pScreen->m_Buttons[0].NameHash, true);
+    FEngSetScript(pScreen->GetPackageName(), pScreen->m_Buttons[0].NameHash, 0x249db7b7, true);
+    bSPrintf(FEngName, "Button%d_Text", 1);
+    FEString *pFEString = FEngFindString(pScreen->GetPackageName(), FEHashUpper(FEngName));
+    pFEObject = FEngFindObject(pScreen->GetPackageName(), FEHashUpper(FEngName));
+    pFEString->SetStringFromUTF8(sbi[0].pButtonText);
+    FEngSetVisible(pFEObject);
+    FEngSetScript(pScreen->GetPackageName(), FEHashUpper(FEngName), 0x249db7b7, true);
+    FEngSetCurrentButton(pScreen->GetPackageName(), pScreen->m_Buttons[0].NameHash);
+    FEngSetInvisible(pScreen->GetPackageName(), 0x7c64b811);
+
+    FEngSetLanguageHash(pScreen->GetPackageName(), 0x42adb44c, 0x18d812be);
+    FEngSetScript(pScreen->GetPackageName(), FEHashUpper("HELP GROUP"), 0x16a259, true);
+    FEngSetScript(pScreen->GetPackageName(), 0x3df39a82, 0x16a259, true);
+    FEngSetScript(pScreen->GetPackageName(), 0xfcd5b255, 0x16a259, true);
+
+    FEString *pFERankModeString =
+        FEngFindString(pScreen->GetPackageName(), FEHashUpper("RankMode_Type"));
+    pFERankModeString->string = const_cast<char *>("");
+    pFERankModeString->SetFlags(pFERankModeString->GetFlags() | 0x400000);
+
+    char *szRegText = GetLocalizedString(0x27b12668);
+    FEString *pString =
+        FEngFindString(pScreen->GetPackageName(), FEHashUpper("Scroll_Text_1"));
+    FEngFont *pFont = FindFont(pString->GetHandle());
+    pScreen->m_TextScroller.Initialise(pScreen, pString->MaxWidth, 11,
+                                       const_cast<char *>("Scroll_Text_%d"), pFont);
+    pScreen->m_TextScroller.UseScrollBar(&pScreen->m_ScrollBar);
+
+    int TextSize = bStrLen(szRegText) + 1;
+    if (TextSize < 1) {
+        pScreen->m_TextScroller.SetText(nullptr);
+    } else {
+        int16 *pText =
+            new ("CUIWebOfferForeignReg(UTF8toUCS)", 0, 0x40) int16[TextSize];
+        ConvertUTF8ToUCS2(reinterpret_cast<uint16 *>(pText), TextSize,
+                          reinterpret_cast<uint8 *>(szRegText));
+        pScreen->m_TextScroller.SetText(pText);
+        if (pText) {
+            delete[] pText;
+        }
+    }
+    return pScreen;
 }

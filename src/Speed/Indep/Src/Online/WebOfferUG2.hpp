@@ -250,6 +250,21 @@ struct CUIWebOfferNews : CUIWebOfferScreen {
     friend MenuScreen *CreateOnlineNews(ScreenConstructorData *sd);
 };
 
+struct CUIWebOfferForeignReg : CUIWebOfferScreen {
+  private:
+    FEScrollBar m_ScrollBar;
+    CTextScroller m_TextScroller;
+
+  public:
+    CUIWebOfferForeignReg(ScreenConstructorData *sd)
+        : CUIWebOfferScreen(sd) //
+        , m_ScrollBar(sd->PackageFilename, "Scrollbar", true, false, false) {}
+    ~CUIWebOfferForeignReg() override {}
+    void NotificationMessage(uint32 msg, FEObject *obj, uint32 param1, uint32 param2) override;
+
+    friend MenuScreen *CreateForeignReg(ScreenConstructorData *sd);
+};
+
 class CWebOfferUG2 : public CWebOffer {
     SFEngNewsScreenData m_NewsData;
     WebOfferAlertT m_AlertData;
@@ -325,5 +340,6 @@ class CUIWebOfferStart : public MenuScreen {
 void ConfigureWebOfferForTOS();
 MenuScreen *CreateOnlineNews(ScreenConstructorData *sd);
 MenuScreen *CreateOnlineWebOfferScreen(ScreenConstructorData *sd);
+MenuScreen *CreateForeignReg(ScreenConstructorData *sd);
 
 #endif
