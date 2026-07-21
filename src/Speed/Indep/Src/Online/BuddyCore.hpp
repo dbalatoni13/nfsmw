@@ -94,6 +94,9 @@ struct BuddyCore {
     void disconnect();
     void pause();
     int resume();
+    void clearEAMStatusIcons();
+    int getBuddyCount();
+    HLBBudT *getBuddyByIndex(int index);
 };
 
 #endif
