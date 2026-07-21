@@ -90,7 +90,7 @@ void UnloadChunks(bChunk *chunks, int sizeof_chunks, const char *debug_name) {
     while (first_chunk < last_chunk) {
         int num_prev_chunks = 0;
         const int max_prev_chunks = 64;
-        bChunk *prev_chunk_table[64];
+        bChunk *prev_chunk_table[max_prev_chunks];
         for (bChunk *chunk = first_chunk; chunk < last_chunk; chunk = chunk->GetNext()) {
             prev_chunk_table[num_prev_chunks % max_prev_chunks] = chunk;
             num_prev_chunks++;
@@ -160,17 +160,17 @@ void MoveChunks(bChunk *dest_chunks, bChunk *source_chunks, int32 sizeof_chunks,
             current_chunk_class = chunk_class;
         }
     }
-    int movement_offset = (uintptr_t)dest_chunks - (uintptr_t)source_chunks;
+    int movement_offset = (intptr_t)dest_chunks - (intptr_t)source_chunks;
     ChunkMovementOffset = movement_offset;
     chunk_range_table[num_chunk_ranges] = last_chunk;
     if (movement_offset < 0) {
         for (int n = 0; n < num_chunk_ranges; n++) {
-            int size = (uintptr_t)chunk_range_table[n + 1] - (uintptr_t)chunk_range_table[n];
+            int size = (intptr_t)chunk_range_table[n + 1] - (intptr_t)chunk_range_table[n];
             MoveChunksRange(chunk_range_table[n], size, movement_offset, debug_name);
         }
     } else {
         for (int n = num_chunk_ranges - 1; n > -1; n--) {
-            int size = (uintptr_t)chunk_range_table[n + 1] - (uintptr_t)chunk_range_table[n];
+            int size = (intptr_t)chunk_range_table[n + 1] - (intptr_t)chunk_range_table[n];
             MoveChunksRange(chunk_range_table[n], size, movement_offset, debug_name);
         }
     }
@@ -661,7 +661,7 @@ void MoveFileIntoVirtualMemoryThenLoadChunks(intptr_t param, int err) {
         bPlatEndianSwap(&header->CompressedSize);
         if (LZValidHeader(header)) {
             sizeofchunks = header->UncompressedSize;
-            uint8 *compressed_data = (uint8_t *)old_memory;
+            uint8 *compressed_data = static_cast<uint8_t *>(old_memory);
             old_memory = nullptr;
             if (sizeofchunks != 0) {
                 int allocation_params = GetVirtualMemoryAllocParams();
@@ -681,14 +681,14 @@ void MoveFileIntoVirtualMemoryThenLoadChunks(intptr_t param, int err) {
         bFree(old_memory);
     }
     if (new_mem) {
-        EndianSwapChunkHeadersRecursive((bChunk *)new_mem, sizeofchunks);
+        EndianSwapChunkHeadersRecursive(static_cast<bChunk *>(new_mem), sizeofchunks);
     }
     LoadChunks((bChunk *)new_mem, sizeofchunks, vm_file->mFilename);
     vm_file->mSizeOfChunks = sizeofchunks;
 }
 
 void UnloadFileFromVirtualMemory(VMFile *vm_file) {
-    UnloadChunks((bChunk *)vm_file->mVirtMemAddr, vm_file->mSizeOfChunks, vm_file->mFilename);
+    UnloadChunks(static_cast<bChunk *>(vm_file->mVirtMemAddr), vm_file->mSizeOfChunks, vm_file->mFilename);
     bFree(vm_file->mVirtMemAddr);
     vm_file->mFilename[0] = '\0';
     vm_file->mSize = 0;

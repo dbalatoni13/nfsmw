@@ -47,8 +47,7 @@ JoylogBuffer::JoylogBuffer(const char *filename, int top_position) {
     this->BufferStartPosition = 0;
     bMemSet(this->Buffer, 0, sizeof(this->Buffer));
     if (bIsCodeineConnected()) {
-        bFunkJoylogCaptureInitPacket packet;
-        memset(&packet, 0, sizeof(packet));
+        bFunkJoylogCaptureInitPacket packet = {};
         packet.BufferAddress = reinterpret_cast<intptr_t>(&this->Buffer);
         packet.BufferSizeAddress = reinterpret_cast<intptr_t>(&this->NumBytesInBuffer);
 

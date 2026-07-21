@@ -27,7 +27,7 @@ class StringKey {
           mString(src.mString) {}
 
     const char *GetString() const {
-        return this->mString;
+        return (this->mString != nullptr) ? this->mString : "";
     }
 
     uint64_t GetHash64() const {

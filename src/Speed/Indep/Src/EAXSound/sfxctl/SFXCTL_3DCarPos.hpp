@@ -6,9 +6,9 @@
 // total size: 0x64
 // Decl: 8
 class SFXCTL_3DCarPos : public SFXCTL_3DObjPos {
+  public:
     DECLARE_CREATABLE();
 
-  public:
     SFXCTL_3DCarPos();
     ~SFXCTL_3DCarPos() override;
 };

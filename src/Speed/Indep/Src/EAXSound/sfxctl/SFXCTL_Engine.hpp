@@ -18,9 +18,9 @@ class SFXCTL_3DCarPos;
 // total size: 0x1E4
 // Decl: 17
 class SFXCTL_Engine : public SFXCTL {
+  public:
     DECLARE_CREATABLE();
 
-  public:
     SFXCTL_Engine();
     ~SFXCTL_Engine() override;
 
@@ -57,18 +57,32 @@ class SFXCTL_Engine : public SFXCTL {
     bool bRedliningBounce;           // offset 0x10C, size 0x1, Decl: 74
     float RedlineingVisualOffset;    // offset 0x110, size 0x4, Decl: 75
 
-    void SetEngRPM(float _RPM) {}        // Decl: 78
-    virtual float GetEngRPM() {}         // Decl: 79
-    float m_fEng_RPM;                    // offset 0x114, size 0x4, Decl: 80
-    float m_fPrevRPM;                    // offset 0x118, size 0x4, Decl: 81
-    float m_fSmoothedEng_RPM;            // offset 0x11C, size 0x4, Decl: 82
-    virtual float GetSmoothedEngRPM() {} // Decl: 83
+    void SetEngRPM(float _RPM) {
+        this->m_fEng_RPM = _RPM;
+    } // Decl: 78
+    virtual float GetEngRPM() {
+        return this->m_fEng_RPM;
+    } // Decl: 79
+    float m_fEng_RPM;         // offset 0x114, size 0x4, Decl: 80
+    float m_fPrevRPM;         // offset 0x118, size 0x4, Decl: 81
+    float m_fSmoothedEng_RPM; // offset 0x11C, size 0x4, Decl: 82
+    virtual float GetSmoothedEngRPM() {
+        return this->m_fSmoothedEng_RPM;
+    } // Decl: 83
 
-    void SetEngTorque(float _torque) {}     // Decl: 86
-    virtual float GetEngTorque() {}         // Decl: 87
-    float m_fEng_Trq;                       // offset 0x120, size 0x4, Decl: 88
-    float m_fSmoothedEng_Trq;               // offset 0x124, size 0x4, Decl: 89
-    virtual float GetSmoothedEngTorque() {} // Decl: 90
+    void SetEngTorque(float _torque) {
+        _torque += this->m_TRQ_LFO;
+        this->m_fEng_Trq = _torque;
+        this->m_fSmoothedEng_Trq = this->m_fSmoothedEng_Trq * 0.95f + _torque * 0.05f;
+    } // Decl: 86
+    virtual float GetEngTorque() {
+        return this->m_fEng_Trq;
+    } // Decl: 87
+    float m_fEng_Trq;         // offset 0x120, size 0x4, Decl: 88
+    float m_fSmoothedEng_Trq; // offset 0x124, size 0x4, Decl: 89
+    virtual float GetSmoothedEngTorque() {
+        return this->m_fSmoothedEng_Trq;
+    } // Decl: 90
 
     int m_Rotation; // offset 0x128, size 0x4, Decl: 92
 

@@ -125,7 +125,7 @@ class CAR {
         } else if (x > 99) {
             x = 99;
         }
-        mData.car_class = x;
+        this->mData.car_class = x;
     }
 
     void SetRPM(int x) {
@@ -134,11 +134,16 @@ class CAR {
         } else if (x > 10000) {
             x = 10000;
         }
-        mData.rPM = x;
+        this->mData.rPM = x;
     }
 
     void SetTRQ_ENG(int x) {
-        mData.tRQ_ENG = x;
+        if (x < 0) {
+            x = 0;
+        } else if (x > 1024) {
+            x = 1024;
+        }
+        this->mData.tRQ_ENG = x;
     }
 
     void SetTORQUE(int x) {
@@ -147,7 +152,7 @@ class CAR {
         } else if (x > 1024) {
             x = 1024;
         }
-        mData.tORQUE = x;
+        this->mData.tORQUE = x;
     }
 
     void SetVOL_ENG(int x) {
@@ -156,7 +161,7 @@ class CAR {
         } else if (x > 0) {
             x = 0;
         }
-        mData.vOL_ENG = x;
+        this->mData.vOL_ENG = x;
     }
 
     void SetVOL_EXH(int x) {
@@ -165,31 +170,61 @@ class CAR {
         } else if (x > 0) {
             x = 0;
         }
-        mData.vOL_EXH = x;
+        this->mData.vOL_EXH = x;
     }
 
     void SetTRQ_LFO_AMP(int x) {
-        mData.tRQ_LFO_AMP = x;
+        if (x < 0) {
+            x = 0;
+        } else if (x > 32767) {
+            x = 32767;
+        }
+        this->mData.tRQ_LFO_AMP = x;
     }
 
     void SetTRQ_LFO_FREQ(int x) {
-        mData.tRQ_LFO_FREQ = x;
+        if (x < 0) {
+            x = 0;
+        } else if (x > 32767) {
+            x = 32767;
+        }
+        this->mData.tRQ_LFO_FREQ = x;
     }
 
     void SetRPMLFO_AMP(int x) {
-        mData.rPMLFO_AMP = x;
+        if (x < 0) {
+            x = 0;
+        } else if (x > 32767) {
+            x = 32767;
+        }
+        this->mData.rPMLFO_AMP = x;
     }
 
     void SetRPM_LFO_FREQ(int x) {
-        mData.rPM_LFO_FREQ = x;
+        if (x < 0) {
+            x = 0;
+        } else if (x > 32767) {
+            x = 32767;
+        }
+        this->mData.rPM_LFO_FREQ = x;
     }
 
     void SetVOL_LFO_AMP(int x) {
-        mData.vOL_LFO_AMP = x;
+        if (x < 0) {
+            x = 0;
+        } else if (x > 32767) {
+            x = 32767;
+        }
+        this->mData.vOL_LFO_AMP = x;
     }
 
     void SetVOL_LFO_FREQ(int x) {
-        mData.vOL_LFO_FREQ = x;
+        if (x < 0) {
+            x = 0;
+        } else if (x > 32767) {
+            x = 32767;
+        }
+        this->mData.vOL_LFO_FREQ = x;
     }
 
     void SetSPU_or_EE(int x) {
@@ -198,15 +233,25 @@ class CAR {
         } else if (x > 2) {
             x = 2;
         }
-        mData.sPU_or_EE = x;
+        this->mData.sPU_or_EE = x;
     }
 
     void SetFX_DRY(int x) {
-        mData.fX_DRY = x;
+        if (x < 0) {
+            x = 0;
+        } else if (x > 32767) {
+            x = 32767;
+        }
+        this->mData.fX_DRY = x;
     }
 
     void SetFX_AMOUNT(int x) {
-        mData.fX_AMOUNT = x;
+        if (x < 0) {
+            x = 0;
+        } else if (x > 32767) {
+            x = 32767;
+        }
+        this->mData.fX_AMOUNT = x;
     }
 
     void SetCOMMON_PARAMETERS_AZIMUTH(int x) {
@@ -215,7 +260,7 @@ class CAR {
         } else if (x > 0x10000) {
             x = 0x10000;
         }
-        mData.cOMMON_PARAMETERS_AZIMUTH = x;
+        this->mData.cOMMON_PARAMETERS_AZIMUTH = x;
     }
 
     void SetCOMMON_PARAMETERS_PITCH_OFFSET(int x) {
@@ -224,7 +269,7 @@ class CAR {
         } else if (x > 0x3FFF) {
             x = 0x3FFF;
         }
-        mData.cOMMON_PARAMETERS_PITCH_OFFSET = x;
+        this->mData.cOMMON_PARAMETERS_PITCH_OFFSET = x;
     }
 
     void SetCOMMON_PARAMETERS_ROTATION(int x) {
@@ -233,35 +278,70 @@ class CAR {
         } else if (x > 0x400) {
             x = 0x400;
         }
-        mData.cOMMON_PARAMETERS_ROTATION = x;
+        this->mData.cOMMON_PARAMETERS_ROTATION = x;
     }
 
     void SetTWEAKERS_XOVER_IDLE_2_LO(int x) {
-        mData.tWEAKERS_XOVER_IDLE_2_LO = x;
+        if (x < 0) {
+            x = 0;
+        } else if (x > 10000) {
+            x = 10000;
+        }
+        this->mData.tWEAKERS_XOVER_IDLE_2_LO = x;
     }
 
     void SetTWEAKERS_XOVER_LO_2_MID(int x) {
-        mData.tWEAKERS_XOVER_LO_2_MID = x;
+        if (x < 0) {
+            x = 0;
+        } else if (x > 10000) {
+            x = 10000;
+        }
+        this->mData.tWEAKERS_XOVER_LO_2_MID = x;
     }
 
     void SetTWEAKERS_XOVER_MID_2_HI(int x) {
-        mData.tWEAKERS_XOVER_MID_2_HI = x;
+        if (x < 0) {
+            x = 0;
+        } else if (x > 10000) {
+            x = 10000;
+        }
+        this->mData.tWEAKERS_XOVER_MID_2_HI = x;
     }
 
     void SetFILTERS_FILTER(int x) {
-        mData.fILTERS_FILTER = x;
+        if (x < 0) {
+            x = 0;
+        } else if (x > 25000) {
+            x = 25000;
+        }
+        this->mData.fILTERS_FILTER = x;
     }
 
     void SetFILTERS_FILTER_RND(int x) {
-        mData.fILTERS_FILTER_RND = x;
+        if (x < 0) {
+            x = 0;
+        } else if (x > 25000) {
+            x = 25000;
+        }
+        this->mData.fILTERS_FILTER_RND = x;
     }
 
     void SetFILTERS_FILTER_Dist(int x) {
-        mData.fILTERS_FILTER_Dist = x;
+        if (x < 0) {
+            x = 0;
+        } else if (x > 25000) {
+            x = 25000;
+        }
+        this->mData.fILTERS_FILTER_Dist = x;
     }
 
     void SetFILTERS_FILTER_Trig(int x) {
-        mData.fILTERS_FILTER_Trig = x;
+        if (x < 0) {
+            x = 0;
+        } else if (x > 25000) {
+            x = 25000;
+        }
+        this->mData.fILTERS_FILTER_Trig = x;
     }
 
     void SetMAX_RPM(int x) {
@@ -270,14 +350,14 @@ class CAR {
         } else if (x > 0x7FFF) {
             x = 0x7FFF;
         }
-        mData.mAX_RPM = x;
+        this->mData.mAX_RPM = x;
     }
 
     int GetRefCount() {
         int refCount = 0;
 
-        if (mpClass != nullptr) {
-            mpClass->GetRefCount(&refCount);
+        if (this->mpClass != nullptr) {
+            this->mpClass->GetRefCount(&refCount);
         }
 
         return refCount;
@@ -295,49 +375,49 @@ class CAR {
         int rPM_LFO_FREQ, int vOL_LFO_AMP, int vOL_LFO_FREQ, int sPU_or_EE, int fX_DRY, int fX_AMOUNT, int cOMMON_PARAMETERS_AZIMUTH,
         int cOMMON_PARAMETERS_PITCH_OFFSET, int cOMMON_PARAMETERS_ROTATION, int tWEAKERS_XOVER_IDLE_2_LO, int tWEAKERS_XOVER_LO_2_MID,
         int tWEAKERS_XOVER_MID_2_HI, int fILTERS_FILTER, int fILTERS_FILTER_RND, int fILTERS_FILTER_Dist, int fILTERS_FILTER_Trig, int mAX_RPM) {
-        SetCar_class(car_class);
-        SetRPM(rPM);
-        SetTRQ_ENG(tRQ_ENG);
-        SetTORQUE(tORQUE);
-        SetVOL_ENG(vOL_ENG);
-        SetVOL_EXH(vOL_EXH);
-        SetTRQ_LFO_AMP(tRQ_LFO_AMP);
-        SetTRQ_LFO_FREQ(tRQ_LFO_FREQ);
-        SetRPMLFO_AMP(rPMLFO_AMP);
-        SetRPM_LFO_FREQ(rPM_LFO_FREQ);
-        SetVOL_LFO_AMP(vOL_LFO_AMP);
-        SetVOL_LFO_FREQ(vOL_LFO_FREQ);
-        SetSPU_or_EE(sPU_or_EE);
-        SetFX_DRY(fX_DRY);
-        SetFX_AMOUNT(fX_AMOUNT);
-        SetCOMMON_PARAMETERS_AZIMUTH(cOMMON_PARAMETERS_AZIMUTH);
-        SetCOMMON_PARAMETERS_PITCH_OFFSET(cOMMON_PARAMETERS_PITCH_OFFSET);
-        SetCOMMON_PARAMETERS_ROTATION(cOMMON_PARAMETERS_ROTATION);
-        SetTWEAKERS_XOVER_IDLE_2_LO(tWEAKERS_XOVER_IDLE_2_LO);
-        SetTWEAKERS_XOVER_LO_2_MID(tWEAKERS_XOVER_LO_2_MID);
-        SetTWEAKERS_XOVER_MID_2_HI(tWEAKERS_XOVER_MID_2_HI);
-        SetFILTERS_FILTER(fILTERS_FILTER);
-        SetFILTERS_FILTER_RND(fILTERS_FILTER_RND);
-        SetFILTERS_FILTER_Dist(fILTERS_FILTER_Dist);
-        SetFILTERS_FILTER_Trig(fILTERS_FILTER_Trig);
-        SetMAX_RPM(mAX_RPM);
+        this->SetCar_class(car_class);
+        this->SetRPM(rPM);
+        this->SetTRQ_ENG(tRQ_ENG);
+        this->SetTORQUE(tORQUE);
+        this->SetVOL_ENG(vOL_ENG);
+        this->SetVOL_EXH(vOL_EXH);
+        this->SetTRQ_LFO_AMP(tRQ_LFO_AMP);
+        this->SetTRQ_LFO_FREQ(tRQ_LFO_FREQ);
+        this->SetRPMLFO_AMP(rPMLFO_AMP);
+        this->SetRPM_LFO_FREQ(rPM_LFO_FREQ);
+        this->SetVOL_LFO_AMP(vOL_LFO_AMP);
+        this->SetVOL_LFO_FREQ(vOL_LFO_FREQ);
+        this->SetSPU_or_EE(sPU_or_EE);
+        this->SetFX_DRY(fX_DRY);
+        this->SetFX_AMOUNT(fX_AMOUNT);
+        this->SetCOMMON_PARAMETERS_AZIMUTH(cOMMON_PARAMETERS_AZIMUTH);
+        this->SetCOMMON_PARAMETERS_PITCH_OFFSET(cOMMON_PARAMETERS_PITCH_OFFSET);
+        this->SetCOMMON_PARAMETERS_ROTATION(cOMMON_PARAMETERS_ROTATION);
+        this->SetTWEAKERS_XOVER_IDLE_2_LO(tWEAKERS_XOVER_IDLE_2_LO);
+        this->SetTWEAKERS_XOVER_LO_2_MID(tWEAKERS_XOVER_LO_2_MID);
+        this->SetTWEAKERS_XOVER_MID_2_HI(tWEAKERS_XOVER_MID_2_HI);
+        this->SetFILTERS_FILTER(fILTERS_FILTER);
+        this->SetFILTERS_FILTER_RND(fILTERS_FILTER_RND);
+        this->SetFILTERS_FILTER_Dist(fILTERS_FILTER_Dist);
+        this->SetFILTERS_FILTER_Trig(fILTERS_FILTER_Trig);
+        this->SetMAX_RPM(mAX_RPM);
 
-        Result result = Result(Class::CreateInstance(&gCARHandle, &mData, &mpClass));
-        if (result < 0) {
+        Result result = Class::CreateInstance(&gCARHandle, &this->mData, &this->mpClass);
+        if (result < RESULT_OK) {
             gCARHandle.Set(&CARId);
-            Class::CreateInstance(&gCARHandle, &mData, &mpClass);
+            Class::CreateInstance(&gCARHandle, &this->mData, &this->mpClass);
         }
     }
 
     ~CAR() {
-        if (mpClass != nullptr) {
-            mpClass->Release();
+        if (this->mpClass != nullptr) {
+            this->mpClass->Release();
         }
     }
 
     void CommitMemberData() {
-        if (mpClass != nullptr) {
-            mpClass->SetMemberData(&mData);
+        if (this->mpClass != nullptr) {
+            this->mpClass->SetMemberData(&mData);
         }
     }
 
@@ -359,7 +439,7 @@ class CAR_TRANNY {
         } else if (x > 60) {
             x = 60;
         }
-        mData.car_class = x;
+        this->mData.car_class = x;
     }
 
     void SetMagnitude(int x) {
@@ -368,7 +448,7 @@ class CAR_TRANNY {
         } else if (x > 10000) {
             x = 10000;
         }
-        mData.magnitude = x;
+        this->mData.magnitude = x;
     }
 
     void SetVOL(int x) {
@@ -377,7 +457,7 @@ class CAR_TRANNY {
         } else if (x > 32787) {
             x = 32787;
         }
-        mData.vOL = x;
+        this->mData.vOL = x;
     }
 
     void SetAZIMUTH(int x) {
@@ -386,7 +466,7 @@ class CAR_TRANNY {
         } else if (x > 65536) {
             x = 65536;
         }
-        mData.aZIMUTH = x;
+        this->mData.aZIMUTH = x;
     }
 
     void SetPITCH_OFFSET(int x) {
@@ -395,7 +475,7 @@ class CAR_TRANNY {
         } else if (x > 16383) {
             x = 16383;
         }
-        mData.pITCH_OFFSET = x;
+        this->mData.pITCH_OFFSET = x;
     }
 
     void SetREVERB_AND_FILTERS_LoPass(int x) {
@@ -404,7 +484,7 @@ class CAR_TRANNY {
         } else if (x > 25000) {
             x = 25000;
         }
-        mData.rEVERB_AND_FILTERS_LoPass = x;
+        this->mData.rEVERB_AND_FILTERS_LoPass = x;
     }
 
     void SetREVERB_AND_FILTERS_Wet(int x) {
@@ -413,7 +493,7 @@ class CAR_TRANNY {
         } else if (x > 32767) {
             x = 32767;
         }
-        mData.rEVERB_AND_FILTERS_Wet = x;
+        this->mData.rEVERB_AND_FILTERS_Wet = x;
     }
 
     void SetREVERB_AND_FILTERS_Dry(int x) {
@@ -422,18 +502,23 @@ class CAR_TRANNY {
         } else if (x > 32767) {
             x = 32767;
         }
-        mData.rEVERB_AND_FILTERS_Dry = x;
+        this->mData.rEVERB_AND_FILTERS_Dry = x;
     }
 
     void SetSingle_Shot(int x) {
-        mData.single_Shot = x;
+        if (x < 0) {
+            x = 0;
+        } else if (x > 1) {
+            x = 1;
+        }
+        this->mData.single_Shot = x;
     }
 
     int GetRefCount() {
         int refCount = 0;
 
-        if (mpClass != nullptr) {
-            mpClass->GetRefCount(&refCount);
+        if (this->mpClass != nullptr) {
+            this->mpClass->GetRefCount(&refCount);
         }
 
         return refCount;
@@ -449,32 +534,32 @@ class CAR_TRANNY {
 
     CAR_TRANNY(int car_class, int magnitude, int vOL, int aZIMUTH, int pITCH_OFFSET, int rEVERB_AND_FILTERS_LoPass, int rEVERB_AND_FILTERS_Wet,
                int rEVERB_AND_FILTERS_Dry, int single_Shot) {
-        SetCar_class(car_class);
-        SetMagnitude(magnitude);
-        SetVOL(vOL);
-        SetAZIMUTH(aZIMUTH);
-        SetPITCH_OFFSET(pITCH_OFFSET);
-        SetREVERB_AND_FILTERS_LoPass(rEVERB_AND_FILTERS_LoPass);
-        SetREVERB_AND_FILTERS_Wet(rEVERB_AND_FILTERS_Wet);
-        SetREVERB_AND_FILTERS_Dry(rEVERB_AND_FILTERS_Dry);
-        SetSingle_Shot(single_Shot);
+        this->SetCar_class(car_class);
+        this->SetMagnitude(magnitude);
+        this->SetVOL(vOL);
+        this->SetAZIMUTH(aZIMUTH);
+        this->SetPITCH_OFFSET(pITCH_OFFSET);
+        this->SetREVERB_AND_FILTERS_LoPass(rEVERB_AND_FILTERS_LoPass);
+        this->SetREVERB_AND_FILTERS_Wet(rEVERB_AND_FILTERS_Wet);
+        this->SetREVERB_AND_FILTERS_Dry(rEVERB_AND_FILTERS_Dry);
+        this->SetSingle_Shot(single_Shot);
 
-        Result result = Class::CreateInstance(&gCAR_TRANNYHandle, &mData, &mpClass);
+        Result result = Class::CreateInstance(&gCAR_TRANNYHandle, &this->mData, &this->mpClass);
         if (result < 0) {
             gCAR_TRANNYHandle.Set(&CAR_TRANNYId);
-            Class::CreateInstance(&gCAR_TRANNYHandle, &mData, &mpClass);
+            Class::CreateInstance(&gCAR_TRANNYHandle, &this->mData, &this->mpClass);
         }
     }
 
     ~CAR_TRANNY() {
-        if (mpClass != nullptr) {
-            mpClass->Release();
+        if (this->mpClass != nullptr) {
+            this->mpClass->Release();
         }
     }
 
     void CommitMemberData() {
-        if (mpClass != nullptr) {
-            mpClass->SetMemberData(&mData);
+        if (this->mpClass != nullptr) {
+            this->mpClass->SetMemberData(&mData);
         }
     }
 

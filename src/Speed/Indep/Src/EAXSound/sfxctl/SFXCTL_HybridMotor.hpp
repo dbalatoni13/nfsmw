@@ -26,9 +26,9 @@ class SFXCTL_Shifting;
 // total size: 0xDC
 // Decl: 28
 class SFXCTL_HybridMotor : public SFXCTL {
+  public:
     DECLARE_CREATABLE();
 
-  public:
     SFXCTL_HybridMotor();
     ~SFXCTL_HybridMotor() override;
 

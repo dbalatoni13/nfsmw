@@ -873,8 +873,7 @@ void bFree(void *ptr) {
     AllocationHeader *header = &static_cast<AllocationHeader *>(ptr)[-1];
     int pool_num = header->PoolNum;
     MemoryPool *pool = MemoryPools[pool_num];
-    char debug_name[32];
-    memset(debug_name, 0, sizeof(debug_name));
+    char debug_name[32] = {};
     if (bMemoryAutomaticVerifyPoolIntegrity && (bMemoryAllocationNumber % bMemoryAutomaticVerifyPoolIntegrity == 0)) {
         bVerifyPoolIntegrity(pool_num);
     }

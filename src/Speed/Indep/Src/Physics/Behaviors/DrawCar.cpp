@@ -91,9 +91,6 @@ DrawCar::DrawCar(const BehaviorParams &params, CarRenderUsage usage)
 
     if (this->mSuspension != nullptr) {
         const char *model = this->GetVehicle()->GetVehicleAttributes().MODEL().GetString();
-        if (model == nullptr) {
-            model = "";
-        }
 
         RenderConn::Pkt_Car_Open pkt(model, this->GetOwner()->GetWorldID(), usage, this->GetVehicle()->GetCustomizations(),
                                      this->GetOwner()->GetAttributes().GetCollection(), this->GetVehicle()->IsSpooled());

@@ -70,30 +70,54 @@ class EAXCar : public CSTATE_Base {
     SFXCTL_Physics *GetPhysicsCTL() {} // Decl: 108
     SFXCTL_Physics *m_pPhysicsCTL;     // offset 0x5C, size 0x4, Decl: 109
 
-    float GetPhysTRQ() {}    // Decl: 112
-    float GetPhysRPM() {}    // Decl: 113
-    bool IsAccelerating() {} // Decl: 114
-    Gear GetCurGear() {}     // Decl: 115
-    float GetThrottle() {}   // Decl: 116
+    float GetPhysTRQ() {
+        return this->PhysTRQ;
+    } // Decl: 112
+    float GetPhysRPM() {
+        return this->PhysRPM;
+    } // Decl: 113
+    bool IsAccelerating() {
+        return this->bIsAccelerating;
+    } // Decl: 114
+    Gear GetCurGear() {
+        return CurGear;
+    } // Decl: 115
+    float GetThrottle() {
+        return this->fTrottle;
+    } // Decl: 116
 
-    void SetPhysTRQ(float _TRQ) {} // Decl: 118
-    float PhysTRQ;                 // offset 0x60, size 0x4, Decl: 119
+    void SetPhysTRQ(float _TRQ) {
+        this->PhysTRQ = _TRQ;
+    } // Decl: 118
+    float PhysTRQ; // offset 0x60, size 0x4, Decl: 119
 
-    void SetPhysRPM(float _RPM) {} // Decl: 121
-    float PhysRPM;                 // offset 0x64, size 0x4, Decl: 122
+    void SetPhysRPM(float _RPM) {
+        this->PhysRPM = _RPM;
+    } // Decl: 121
+    float PhysRPM; // offset 0x64, size 0x4, Decl: 122
 
-    void SetIsAccelerating(float _IsAccelerating) {} // Decl: 124
-    bool bIsAccelerating;                            // offset 0x68, size 0x1, Decl: 125
+    void SetIsAccelerating(float _IsAccelerating) {
+        this->bIsAccelerating = _IsAccelerating != 0.0f;
+    } // Decl: 124
+    bool bIsAccelerating; // offset 0x68, size 0x1, Decl: 125
 
-    void SetCurGear(Gear _CurGear) {} // Decl: 127
-    Gear CurGear;                     // offset 0x6C, size 0x4, Decl: 128
+    void SetCurGear(Gear _CurGear) {
+        this->CurGear = _CurGear;
+    } // Decl: 127
+    Gear CurGear; // offset 0x6C, size 0x4, Decl: 128
 
-    void SetThrottle(float _fTrottle) {} // Decl: 130
-    float fTrottle;                      // offset 0x70, size 0x4, Decl: 131
+    void SetThrottle(float _fTrottle) {
+        this->fTrottle = _fTrottle;
+    } // Decl: 130
+    float fTrottle; // offset 0x70, size 0x4, Decl: 131
 
-    void SetFinalAudioRPM(float _RPM) {} // Decl: 133
-    float GetFinalAudioRPM() {}          // Decl: 134
-    float m_fAudioRPM;                   // offset 0x74, size 0x4, Decl: 135
+    void SetFinalAudioRPM(float _RPM) {
+        this->m_fAudioRPM = _RPM;
+    } // Decl: 133
+    float GetFinalAudioRPM() {
+        return this->m_fAudioRPM;
+    } // Decl: 134
+    float m_fAudioRPM; // offset 0x74, size 0x4, Decl: 135
 
     float t_CurTime;   // offset 0x78, size 0x4, Decl: 137
     float t_DeltaTime; // offset 0x7C, size 0x4, Decl: 138
@@ -106,7 +130,9 @@ class EAXCar : public CSTATE_Base {
 
     eGINSU_ENG_TYPE m_EngineType; // offset 0x9C, size 0x4, Decl: 147
 
-    virtual eAemsUpgradeLevel GetEngineUpgradeLevel() {} // Decl: 149
+    virtual eAemsUpgradeLevel GetEngineUpgradeLevel() {
+        return this->m_EngUGL;
+    } // Decl: 149
 
     eAemsUpgradeLevel m_nTrueEngineUpgradeLevel; // offset 0xA0, size 0x4, Decl: 151
 
@@ -119,23 +145,35 @@ class EAXCar : public CSTATE_Base {
     virtual int SFXMessage(eSFXMessageType SFXMessageType, uint32 param1, uint32 param2);
 
     virtual void UpdatePov();
-    int GetPOV() {} // Decl: 167
-    int m_PovType;  // offset 0xB8, size 0x4, Decl: 168
+    int GetPOV() {
+        return this->m_PovType;
+    } // Decl: 167
+    int m_PovType; // offset 0xB8, size 0x4, Decl: 168
 
     int m_IsDriveCamera; // offset 0xBC, size 0x4, Decl: 170
     bool IsBumperCameraOn();
     bool IsRearCameraOn();
     bool IsHoodCameraOn();
 
-    int GetRotation() {} // Decl: 177
+    int GetRotation() {
+        return this->m_Rotation;
+    } // Decl: 177
     virtual int UpdateRotation();
     int m_Rotation; // offset 0xC0, size 0x4, Decl: 179
     float GetVelocityMagnitudeMPH();
 
-    Attrib::Gen::engineaudio &GetAttributes() {} // Decl: 184
-    Attrib::Gen::shiftpattern &GetShiftInfo() {} // Decl: 185
-    Attrib::Gen::turbosfx &GetTurboInfo() {}     // Decl: 186
-    Attrib::Gen::acceltrans &GetAccelInfo() {}   // Decl: 187
+    Attrib::Gen::engineaudio &GetAttributes() {
+        return this->mEngineInfo;
+    } // Decl: 184
+    Attrib::Gen::shiftpattern &GetShiftInfo() {
+        return this->mShiftInfo;
+    } // Decl: 185
+    Attrib::Gen::turbosfx &GetTurboInfo() {
+        return this->mTurboInfo;
+    } // Decl: 186
+    Attrib::Gen::acceltrans &GetAccelInfo() {
+        return this->mAccelInfo;
+    } // Decl: 187
 
     Attrib::Gen::engineaudio mEngineInfo; // offset 0xC4, size 0x14, Decl: 193
     Attrib::Gen::shiftpattern mShiftInfo; // offset 0xD8, size 0x14, Decl: 195

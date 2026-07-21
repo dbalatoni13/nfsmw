@@ -51,9 +51,9 @@ class CARSFX_EngineBase : public CARSFX {
 // total size: 0x44
 // Decl: 105
 class CARSFX_AEMSEngine : public CARSFX_EngineBase {
+  public:
     DECLARE_CREATABLE();
 
-  public:
     CARSFX_AEMSEngine();
     ~CARSFX_AEMSEngine() override;
 
@@ -106,7 +106,13 @@ class CARSFX_GinsuEngine : public CARSFX_EngineBase {
 
     // Decl: 159
     struct stGinsuData {
-        stGinsuData() {} // Decl: 160
+        stGinsuData()
+            : mSynthData(nullptr),  //
+              mSynth(nullptr),      //
+              mSynthBlock(nullptr), //
+              mMaxFrequency(0.0f),  //
+              mMinFrequency(0.0f),  //
+              mSNDhandle(-1) {}     // Decl: 160
 
         GinsuSynthData *mSynthData; // offset 0x0, size 0x4, Decl: 170
         GinsuSynthesis *mSynth;     // offset 0x4, size 0x4, Decl: 171
@@ -116,7 +122,7 @@ class CARSFX_GinsuEngine : public CARSFX_EngineBase {
         int mSNDhandle;             // offset 0x14, size 0x4, Decl: 175
     } m_GinsuData[2];               // offset 0x54, size 0x30, Decl: 176
 
-    virtual void SetGinsuParams(); // Decl: 178
+    virtual void SetGinsuParams() = 0; // Decl: 178
 
     float m_GinsuRPM;    // offset 0x84, size 0x4, Decl: 181
     int m_GinsuAccelVol; // offset 0x88, size 0x4
@@ -129,9 +135,9 @@ class CARSFX_GinsuEngine : public CARSFX_EngineBase {
 // total size: 0x90
 // Decl: 196
 class CARSFX_DualGinsuEng : public CARSFX_GinsuEngine {
+  public:
     DECLARE_CREATABLE();
 
-  public:
     CARSFX_DualGinsuEng();
     ~CARSFX_DualGinsuEng() override;
 
@@ -145,9 +151,9 @@ class CARSFX_DualGinsuEng : public CARSFX_GinsuEngine {
 // total size: 0x90
 // Decl: 208
 class CARSFX_SingleGinsuEng : public CARSFX_GinsuEngine {
+  public:
     DECLARE_CREATABLE();
 
-  public:
     CARSFX_SingleGinsuEng();
     ~CARSFX_SingleGinsuEng() override;
 

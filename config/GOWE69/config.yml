@@ -92,6 +92,71 @@ block_relocations:
   end: .data:0x8044C320
 
 add_relocations:
+- source: .text:0x800d965c
+  type: ha
+  target: gAudioMemoryManager
+  addend: 0
+
+- source: .text:0x800da220
+  type: ha
+  target: gAudioMemoryManager
+  addend: 0
+
+- source: .text:0x800da2b0
+  type: ha
+  target: gAudioMemoryManager
+  addend: 0
+
+- source: .text:0x800da33c
+  type: ha
+  target: gAudioMemoryManager
+  addend: 0
+
+- source: .text:0x800da678
+  type: ha
+  target: gAudioMemoryManager
+  addend: 0
+
+- source: .text:0x800db9a4
+  type: ha
+  target: gAudioMemoryManager
+  addend: 0
+
+- source: .text:0x800dbc80
+  type: ha
+  target: gAudioMemoryManager
+  addend: 0
+
+- source: .text:0x800dc0a8
+  type: ha
+  target: gAudioMemoryManager
+  addend: 0
+
+- source: .text:0x800dc8a4
+  type: ha
+  target: gAudioMemoryManager
+  addend: 0
+
+- source: .text:0x800dd2c4
+  type: ha
+  target: gAudioMemoryManager
+  addend: 0
+
+- source: .text:0x800ddc40
+  type: ha
+  target: gAudioMemoryManager
+  addend: 0
+
+- source: .text:0x800de940
+  type: ha
+  target: gAudioMemoryManager
+  addend: 0
+
+- source: .text:0x800df21c
+  type: ha
+  target: gAudioMemoryManager
+  addend: 0
+
 - source: .text:0x80249960
   type: ha
   target: lbl_803FB614

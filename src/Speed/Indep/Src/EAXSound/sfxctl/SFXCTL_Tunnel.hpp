@@ -9,9 +9,9 @@
 // total size: 0xE8
 // Decl: 31
 class SFXCTL_Tunnel : public SFXCTL {
+  public:
     DECLARE_CREATABLE();
 
-  public:
     SFXCTL_Tunnel();
     ~SFXCTL_Tunnel() override;
 

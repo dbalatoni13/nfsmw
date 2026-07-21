@@ -52,8 +52,19 @@ DEBUG_LINE_RE = re.compile(
     r"^\s*(?:0x)?([0-9A-Fa-f]+):\s*(.+?)\s+\(line\s+(\d+)(?:,\s+column\s+(\d+))?\)\s*$"
 )
 SIGNATURE_FUNCTION_RE = re.compile(
-    r"(?<![\w:])([~A-Za-z_]\w*(?:::[~A-Za-z_]\w*)*)\s*\("
+    r"(?<![\w:])((?:[~A-Za-z_]\w*::)*(?:"
+    r"operator\s+(?:new|delete)(?:\[\])?"
+    r"|operator\s*(?:\(\)|\[\]|[-+*/%<>=!&|^~,]+)"
+    r"|[~A-Za-z_]\w*"
+    r"))\s*\("
 )
+PARAMETER_NAME_RE = re.compile(
+    r"(?:(?<=\s)|(?<=[*&]))([A-Za-z_]\w*)\s*(?=(?:\[[^\]]*\])?\s*$)"
+)
+TYPE_NAME_TOKENS = {
+    "bool", "char", "double", "float", "int", "long", "short", "signed",
+    "unsigned", "void", "wchar_t", "char8_t", "char16_t", "char32_t",
+}
 SIGNATURE_REGISTER_RE = re.compile(r"\s*/\*\s*[rf]\d+(?:\s*\+\s*0x[0-9A-Fa-f]+)?\s*\*/")
 TYPE_QUALIFIER_RE = re.compile(r"(?:\b[~A-Za-z_]\w*::)+")
 SIM_HANDLE_RE = re.compile(r"\b(H(?:[A-Z0-9_]*[A-Z0-9])?)\b")
@@ -364,12 +375,43 @@ def signature_parameters(signature: str, function_name: str) -> List[str]:
     return parameters
 
 
-def compact_parameter(parameter: str) -> str:
+def compact_parameter(parameter: str, strip_name: bool = False) -> str:
+    had_dwarf_comment = "/*" in parameter
     parameter = re.sub(r"/\*.*?\*/", "", parameter)
+    name_matches = list(PARAMETER_NAME_RE.finditer(parameter))
+    if (strip_name or had_dwarf_comment) and name_matches and name_matches[-1].group(1) not in TYPE_NAME_TOKENS:
+        name = name_matches[-1]
+        parameter = parameter[: name.start(1)] + parameter[name.end(1) :]
+    has_const = re.search(r"\bconst\b", parameter) is not None
+    parameter = re.sub(r"\bconst\b", "", parameter)
     parameter = re.sub(r"\b(?:struct|class|enum)\s+", "", parameter)
     parameter = TYPE_QUALIFIER_RE.sub("", parameter)
     parameter = SIM_HANDLE_RE.sub(r"\1__ *", parameter)
-    return re.sub(r"\s+", "", parameter.strip())
+    compact = re.sub(r"\s+", "", parameter.strip())
+    return ("const" if has_const else "") + compact
+
+
+def parameter_type_variants(parameter: str) -> Set[str]:
+    variants = {parameter}
+    const_prefix = "const" if parameter.startswith("const") else ""
+    value = parameter[len(const_prefix):]
+    families = (
+        (("int8_t", "int8", "i8"), ("signedchar",)),
+        (("uint8_t", "uint8", "u8"), ("unsignedchar",)),
+        (("int16_t", "int16", "i16"), ("short",)),
+        (("uint16_t", "uint16", "u16"), ("unsignedshort", "shortunsignedint")),
+        (("int32_t", "int32", "i32"), ("int", "long")),
+        (("uint32_t", "uint32", "size_t", "u32"), ("unsignedint", "unsignedlong")),
+    )
+    for aliases, concrete_types in families:
+        alias = next((candidate for candidate in aliases if value.startswith(candidate)), None)
+        if alias is None:
+            continue
+        suffix = value[len(alias):]
+        variants.update(const_prefix + concrete + suffix for concrete in concrete_types)
+    if value in {"va_list", "__builtin_va_list"}:
+        variants.add(const_prefix + "__va_list_tag*")
+    return variants
 
 
 def signature_types_match(query: str, signature: str) -> bool:
@@ -387,11 +429,17 @@ def signature_types_match(query: str, signature: str) -> bool:
         return False
     for expected, actual in zip(query_parameters, dwarf_parameters):
         expected_compact = compact_parameter(expected)
-        actual_compact = compact_parameter(actual)
+        actual_compact = compact_parameter(actual, strip_name=True)
         if expected_compact == "void" and not actual_compact:
             continue
         # DWARF parameters append the source variable name to the type.
-        if not actual_compact.startswith(expected_compact):
+        expected_variants = parameter_type_variants(expected_compact)
+        actual_variants = parameter_type_variants(actual_compact)
+        if not any(
+            actual.startswith(expected)
+            for expected in expected_variants
+            for actual in actual_variants
+        ):
             return False
     return True
 
@@ -431,6 +479,15 @@ def choose_function_block(
     funcs: List[FunctionBlock], query: str, label: str
 ) -> FunctionBlock:
     matches = find_function_blocks(funcs, query)
+    function_name = signature_function_name(query)
+    if function_name and "::" in function_name:
+        qualified_matches = [
+            match
+            for match in matches
+            if signature_function_name(match[2]) == function_name
+        ]
+        if qualified_matches:
+            matches = qualified_matches
     if matches and "(" in query:
         typed_matches = [
             match for match in matches if signature_types_match(query, match[2])

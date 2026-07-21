@@ -1,7 +1,6 @@
 #ifndef WORLDCONN_H
 #define WORLDCONN_H
 
-#include "Speed/Indep/Src/EAXSound/SoundCollision.hpp"
 #include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
