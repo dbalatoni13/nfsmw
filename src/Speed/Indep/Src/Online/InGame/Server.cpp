@@ -32,3 +32,26 @@ void Server::Close() {
         SetState(SERVERSTATE_INITIAL);
     }
 }
+
+void Server::ReadIncomingPackets() {
+    ConnectionCore &cc = ConnectionCore::Instance();
+    if (cc.GetNumConnectedPlayers() == 0 && m_state > SERVERSTATE_INITIAL) {
+        Close();
+    } else {
+        NetworkCore &networkCore = NetworkCore::Instance();
+        int numPlayers = cc.GetNumPlayers();
+        for (int clientID = 0; clientID < numPlayers; clientID++) {
+            NetGamePacketT sGamePacketInbound;
+            bool reliable = false;
+            ConnApiClientT *player = cc.GetPlayer(clientID);
+            if (player->GameInfo.eStatus == CONNAPI_STATUS_ACTV) {
+                while (networkCore.Recv(player->pGameLinkRef, sGamePacketInbound, reliable)) {
+                    HandleIncomingPacket(
+                        clientID, reinterpret_cast<char *>(sGamePacketInbound.body.data),
+                        sGamePacketInbound.head.len, reliable);
+                }
+            }
+        }
+        Think();
+    }
+}

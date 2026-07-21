@@ -33,6 +33,8 @@ struct Server {
     static int FindRandomAvailableDriverNumber();
     static void ConnectionCoreCB(ConnApiRefT *connapi, ConnApiCbInfoT *cbinfo, void *context);
     static void ReadIncomingPackets();
+    static void Think();
+    static void HandleIncomingPacket(int client_id, char *data, int num_bytes, bool reliable);
     static void SendQuitMessage();
     static void ShowDiagnostics();
     static void SignalStartClockSync();
