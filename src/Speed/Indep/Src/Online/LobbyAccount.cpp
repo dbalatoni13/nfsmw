@@ -185,3 +185,25 @@ int32 LobbyAccount::DeletePersona(const char *name, CommandCBFunc func, void *co
     lobbyMutex.Unlock("LobbyAccount::DeletePersona");
     return -1;
 }
+
+int32 LobbyAccount::Init() { return 0; }
+
+void LobbyAccount::Reset() { pendingPersona[0] = '\0'; }
+
+void LobbyAccount::CperCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData) {
+    LobbyAccount *lobbyAccount = static_cast<LobbyAccount *>(pData);
+    if (pMsg->code == 0) {
+        LobbyLogin::Instance().AddPersona(lobbyAccount->pendingPersona);
+    }
+    lobbyAccount->pendingPersona[0] = '\0';
+    LobbyCore::Instance().FinishCommand(pMsg, true);
+}
+
+void LobbyAccount::DperCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData) {
+    LobbyAccount *lobbyAccount = static_cast<LobbyAccount *>(pData);
+    if (pMsg->code == 0) {
+        LobbyLogin::Instance().DeletePersona(lobbyAccount->pendingPersona);
+    }
+    lobbyAccount->pendingPersona[0] = '\0';
+    LobbyCore::Instance().FinishCommand(pMsg, true);
+}

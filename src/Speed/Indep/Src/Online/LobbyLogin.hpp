@@ -9,6 +9,7 @@
 
 struct LobbyApiRefT;
 struct LobbyLoginRefT;
+struct LobbyAccount;
 
 enum LobbyLoginAlertE {
     LOBBYLOGIN_ALERT_ERROR = 0,
@@ -93,6 +94,7 @@ class LobbyLogin {
     void AddPersona(char *persona);
     void DeletePersona(char *persona);
     static void ContextLoginCB(LobbyLoginRefT *pLogin, LobbyLoginContextE context, LobbyLoginStatusE status, void *callbackData);
+    friend struct LobbyAccount;
 
     LobbyLoginRefT *lobbylogin;
     bool doingRetryAttempt;
