@@ -14,6 +14,7 @@ struct OnlinePlayerMgr {
 
   public:
     static void Init();
+    static void Close();
 };
 
 #endif
