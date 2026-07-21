@@ -57,6 +57,7 @@ class OnlineManager {
     void SignalGetAwayLostMessage(SmartBitStream &bitstream_data);
     void ImportRaceParams(int driver_number, int server_driver_number,
                           SmartBitStream &bitstream_data);
+    void ImportDriverInfo(int driver_number, SmartBitStream &bitstream_data);
 
     void EndSimFrame() {}
 

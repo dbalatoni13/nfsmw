@@ -227,3 +227,14 @@ void Client::ProcessWelcomeMessage(SmartBitStream &bitstream_data) {
     SendCarDescriptionMessage();
     SetState(CLIENTSTATE_DESCRIBED);
 }
+
+void Client::ProcessCarDescriptionMessage(SmartBitStream &bitstream_data) {
+    static SplitPacketList splitPackets;
+    if (Online::ReceiveChunk(bitstream_data, splitPackets) == true) {
+        SmartBitStream reassembledData;
+        Online::JoinPackets(reassembledData, splitPackets);
+        uint32 temp = 0;
+        reassembledData.GetBits(temp, 32);
+        TheOnlineManager.ImportDriverInfo(temp, reassembledData);
+    }
+}

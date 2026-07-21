@@ -6,9 +6,8 @@
 #endif
 
 #include "Speed/Indep/Src/Online/LobbyCore.hpp"
+#include "Speed/Indep/Src/Online/SmartBitstream.hpp"
 #include "Speed/Indep/Src/World/OnlineManager.hpp"
-
-class IntQuantizer;
 
 enum ClientStateEnum {
     CLIENTSTATE_INITIAL = 0,
@@ -21,8 +20,19 @@ enum ClientStateEnum {
     CLIENTSTATE_RACING = 7
 };
 
+struct SplitPacketNode : bTNode<SplitPacketNode> {
+    uint8 chunk;
+    uint8 totalChunks;
+    uint16 totalBits;
+    SmartBitStream data;
+};
+
+typedef bTList<SplitPacketNode> SplitPacketList;
+
 struct Online {
     static IntQuantizer m_driverNumberQuantizer;
+    static void JoinPackets(SmartBitStream &joinedPacket, SplitPacketList &splitPackets);
+    static bool ReceiveChunk(SmartBitStream &bitstream_data, SplitPacketList &splitPackets);
 };
 
 struct ByteCounter {
