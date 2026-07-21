@@ -91,3 +91,9 @@ void VoiceCore::Shutdown() {
         VoipRef = nullptr;
     }
 }
+
+inline void VoiceCore::AddPlayer(int channel, const char *persona) {
+    _AddPlayer(channel, persona);
+}
+
+int VoiceCore::AddPlayer(const char *persona) { return _AddPlayer(persona); }
