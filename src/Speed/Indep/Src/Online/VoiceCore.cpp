@@ -12,3 +12,12 @@ void VoiceCore::PushToTalk::StartPolling() {
         mIsPolling = true;
     }
 }
+
+void VoiceCore::PushToTalk::StopPolling() {
+    if (mIsPolling) {
+        for (int i = 0; i < 2; i++) {
+            delete mActionQ[i];
+        }
+        mIsPolling = false;
+    }
+}
