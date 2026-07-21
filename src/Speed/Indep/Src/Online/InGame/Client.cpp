@@ -351,3 +351,9 @@ void Client::ProcessServerStateChangeMessage(SmartBitStream &bitstream_data) {
         SetState(CLIENTSTATE_RACING);
     }
 }
+
+void Client::SimpleSendMessage(uint8 msg_type) {
+    SmartBitStream bitstream_data;
+    bitstream_data.AddByte(msg_type);
+    SendMessage(msg_type, bitstream_data, true);
+}
