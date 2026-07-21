@@ -49,6 +49,7 @@ class OnlineManager {
     OnlineRacer *GetOnlineRacer(int driver_number);
     void ImportPositionData(int driver_number, SmartBitStream &bitstream_data, float timestamp,
                             ePosDataPriorityMask priority_mask);
+    void SetServerTime(uint32 time);
 
     void EndSimFrame() {}
 
@@ -80,6 +81,19 @@ class OnlineManager {
     eOnlineState State;
     OnlineRacer *pLocalRacer;
     OnlineRacer *pRacers[4];
+    uint8 NumRacers;
+    bool bOnlineRace;
+    bool bHasStalled;
+    uint32 mLastUpdateTime;
+    uint32 mMasterTime;
+    uint32 mStartTime;
+    uint32 mServerTime;
+    bool mStartRaceIsSet;
+    uint32 mStartRaceTick;
+    float mStartRaceTime;
+    float mPostCountdownStartRaceTime;
+    float mStartRacePing;
+    float mPosUpdatePing;
 
     friend struct Client;
 };

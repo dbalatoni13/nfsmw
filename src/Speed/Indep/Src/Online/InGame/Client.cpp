@@ -193,3 +193,11 @@ void Client::ProcessPartialCarMessage(float player_timestamp, SmartBitStream &bi
         }
     }
 }
+
+void Client::ProcessCarSpamClockSyncMessage(SmartBitStream &bitstream_data) {
+    uint32 start_ticks = bitstream_data.GetInt();
+    uint32 time = bitstream_data.GetInt();
+    TheOnlineManager.mPosUpdatePing = bGetTickerDifference(start_ticks) * 0.001f;
+    TheOnlineManager.SetServerTime(time);
+    ProcessPartialCarMessage(RealTimer.GetSeconds(), bitstream_data);
+}
