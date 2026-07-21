@@ -1,18 +1,24 @@
 #include "BuddyCore.hpp"
 
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
+#include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
+#include "Speed/Indep/Src/Online/LobbyCore.hpp"
 
 extern "C" {
 int HLBBudIsTemporary(HLBBudT *buddy);
 const char *HLBBudGetName(HLBBudT *buddy);
 void HLBApiCancelOp(HLBApiRefT *api);
-void HLBApiRegisterBuddyChangeCallback(HLBApiRefT *api, void *callback, void *context);
-void HLBApiRegisterConnectCallback(HLBApiRefT *api, void *callback, void *context);
-void HLBApiRegisterGameInviteCallback(HLBApiRefT *api, void *callback, void *context);
-void HLBApiRegisterNewMsgCallback(HLBApiRefT *api, void *callback, void *context);
+int HLBApiRegisterBuddyChangeCallback(HLBApiRefT *api, void (*callback)(HLBApiRefT *, int, int, void *), void *context);
+int HLBApiRegisterConnectCallback(HLBApiRefT *api, void (*callback)(HLBApiRefT *, int, int, void *), void *context);
+int HLBApiRegisterGameInviteCallback(HLBApiRefT *api, void (*callback)(HLBApiRefT *, HLBBudT *, int, void *), void *context);
+int HLBApiRegisterNewMsgCallback(HLBApiRefT *api, void (*callback)(HLBApiRefT *, BuddyApiMsgT *, void *), void *context);
 void LobbyChalDeclineChallenge(LobbyChalRefT *challenge, int reason);
 void LobbyChalDestroy(LobbyChalRefT *challenge);
 void HLBApiSuspend(HLBApiRefT *api);
+void HLBApiResume(HLBApiRefT *api);
+LobbyChalRefT *LobbyChalCreate(LobbyApiRefT *api, const char *persona,
+                               void (*callback)(LobbyChalRefT *, LobbyApiMsgT *, void *), void *context, int timeout);
+void HLBListFlagTempBuddy(HLBApiRefT *api, const char *name, int flags);
 }
 
 extern int gVOIP_InviteState;
@@ -59,4 +65,33 @@ void BuddyCore::pause() {
         HLBApiSuspend(HLBud);
         m_paused = true;
     }
+}
+
+int BuddyCore::resume() {
+    int rc;
+    HLBApiResume(HLBud);
+    if ((rc = HLBApiRegisterBuddyChangeCallback(
+             HLBud, buddy_op_callback<&BuddyCore::buddyListChangedCallback>::invoke, this)) > 0 ||
+        (rc = HLBApiRegisterConnectCallback(HLBud, buddy_op_callback<&BuddyCore::connectchanged>::invoke, this)) > 0 ||
+        (rc = HLBApiRegisterGameInviteCallback(HLBud, gameinvite, this)) > 0 ||
+        (rc = HLBApiRegisterNewMsgCallback(
+             HLBud, buddy_msg_callback<&BuddyCore::messageCallback>::invoke, this)) > 0) {
+        disconnect();
+        return rc;
+    }
+
+    m_lobbyChalRefT = LobbyChalCreate(
+        LobbyCore::Instance().GetLobbyApiRef(), FEDatabase->OnlineSettings.GetLobbyPersona(),
+        challenge_op_callback<&BuddyCore::LobbyChallengeCB>::invoke, this, 120000);
+    LobbyChat::Instance().SetInviteCallback(InviteCB, instance());
+    for (int i = 0; i < 10; i++) {
+        if (bStrLen(savedNames[i]) > 0 &&
+            bStrCmp(FEDatabase->OnlineSettings.GetLobbyPersona(), savedNames[i]) != 0) {
+            HLBListFlagTempBuddy(HLBud, savedNames[i], 0x40);
+        }
+    }
+    bMemSet(savedNames, 0, sizeof(savedNames));
+    initVoiceAndPresence();
+    m_paused = false;
+    return 0;
 }

@@ -8,10 +8,19 @@
 #include <types.h>
 
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
+#include "Speed/Indep/Src/Online/LobbyChat.hpp"
 
 struct HLBApiRefT;
 struct HLBBudT;
 struct LobbyChalRefT;
+struct LobbyApiMsgT;
+struct BuddyApiMsgT;
+struct BuddyCore;
+
+template <void (BuddyCore::*Callback)(int, int)> struct buddy_op_callback;
+template <void (BuddyCore::*Callback)(BuddyApiMsgT *)> struct buddy_msg_callback;
+template <void (BuddyCore::*Callback)(LobbyApiMsgT *)> struct challenge_op_callback;
+template <void (BuddyCore::*Callback)(const char *)> struct buddy_print_callback;
 
 typedef void (*BuddyConnectCallback)(int status, void *context);
 
@@ -70,6 +79,19 @@ struct BuddyCore {
     char savedNames[10][16];
 
   private:
+    void connectchanged(int op, int status);
+    static void gameinvite(HLBApiRefT *api, HLBBudT *bud, int action, void *context);
+    void debugoutput(const char *str);
+    void buddyListChangedCallback(int op, int opStatus);
+    void messageCallback(BuddyApiMsgT *pMsg);
+    void LobbyChallengeCB(LobbyApiMsgT *pMesg);
+    static void InviteCB(const char *fromPlayer, int gameIdent, LobbyChatN::CBReason reason, void *context);
+
+    template <void (BuddyCore::*Callback)(int, int)> friend struct buddy_op_callback;
+    template <void (BuddyCore::*Callback)(BuddyApiMsgT *)> friend struct buddy_msg_callback;
+    template <void (BuddyCore::*Callback)(LobbyApiMsgT *)> friend struct challenge_op_callback;
+    template <void (BuddyCore::*Callback)(const char *)> friend struct buddy_print_callback;
+
     HLBApiRefT *HLBud;
     state_type state;
     BuddyConnectCallback connectcallback;
@@ -94,9 +116,34 @@ struct BuddyCore {
     void disconnect();
     void pause();
     int resume();
+    void initVoiceAndPresence();
     void clearEAMStatusIcons();
     int getBuddyCount();
     HLBBudT *getBuddyByIndex(int index);
+};
+
+template <void (BuddyCore::*Callback)(int, int)> struct buddy_op_callback {
+    static void invoke(HLBApiRefT *, int op, int status, void *context) {
+        (static_cast<BuddyCore *>(context)->*Callback)(op, status);
+    }
+};
+
+template <void (BuddyCore::*Callback)(BuddyApiMsgT *)> struct buddy_msg_callback {
+    static void invoke(HLBApiRefT *, BuddyApiMsgT *message, void *context) {
+        (static_cast<BuddyCore *>(context)->*Callback)(message);
+    }
+};
+
+template <void (BuddyCore::*Callback)(LobbyApiMsgT *)> struct challenge_op_callback {
+    static void invoke(LobbyChalRefT *, LobbyApiMsgT *message, void *context) {
+        (static_cast<BuddyCore *>(context)->*Callback)(message);
+    }
+};
+
+template <void (BuddyCore::*Callback)(const char *)> struct buddy_print_callback {
+    static void invoke(void *context, const char *str) {
+        (static_cast<BuddyCore *>(context)->*Callback)(str);
+    }
 };
 
 #endif
