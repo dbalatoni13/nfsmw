@@ -787,3 +787,25 @@ int32 LobbyGameSessions::LeaveSession_HaveMutex(CommandCBFunc leaveSessionCB, vo
 bool LobbyGameSessions::FoundAllSessions() {
     return lastSearchCount == static_cast<uint32>(DispListShown(sessionList));
 }
+
+void LobbyGameSessions::SessionDispListCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData) {
+    LobbyGameSessions *lgs = static_cast<LobbyGameSessions *>(pData);
+    if (lgs->sessionUpdateCB) {
+        if (lgs->myCurrentSession.iIdent != -1 &&
+            TagFieldGetNumber(TagFieldFind(pMsg->pData, "IDENT"), -2) == lgs->myCurrentSession.iIdent) {
+            return;
+        }
+        lgs->SendUpdateCallback(LobbyGameSessionsN::SESSION_LIST_CHANGED);
+    }
+    LobbyCore &lobbyCore = LobbyCore::Instance();
+    if (lobbyCore.currentCommand && lobbyCore.currentCommand->kind == 'usea') {
+        lobbyCore.FinishCommand(pMsg, true);
+    }
+}
+
+void LobbyGameSessions::SessionMembersDispListCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData) {
+    LobbyGameSessions *lgs = static_cast<LobbyGameSessions *>(pData);
+    lgs->hostHurryTimer.UnSet();
+    lgs->hostInactiveTimer.UnSet();
+    lgs->SendUpdateCallback(LobbyGameSessionsN::SESSION_CHANGED);
+}
