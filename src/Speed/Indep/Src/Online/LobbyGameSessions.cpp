@@ -648,3 +648,49 @@ int32 LobbyGameSessions::UpdateSessionInfo(bool forceUpdate) {
     }
     return 0;
 }
+
+void LobbyGameSessions::ExtractSessionInfo() {
+    cOnlineSettings *settings = &FEDatabase->OnlineSettings;
+    settings->RankedGame = (myCurrentSession.uCustFlags >> 9) & 1;
+    settings->CollisionDetection = (myCurrentSession.uCustFlags >> 10) & 1;
+    settings->UseNOS = (myCurrentSession.uCustFlags >> 11) & 1;
+    settings->PerformanceMatching = (myCurrentSession.uCustFlags >> 13) & 1;
+
+    if (myCurrentSession.uCustFlags & 0x80000000) {
+        settings->RaceMode = GRace::kRaceType_Circuit;
+    } else if (myCurrentSession.uCustFlags & 0x40000000) {
+        settings->RaceMode = GRace::kRaceType_P2P;
+    } else if (myCurrentSession.uCustFlags & 0x20000000) {
+        settings->RaceMode = GRace::kRaceType_Drag;
+    }
+
+    settings->GetRaceSettings()->EventHash =
+        TagFieldGetNumber(TagFieldFind(myCurrentSession.strParams, "E"), 0);
+    settings->GetRaceSettings()->NumLaps =
+        TagFieldGetNumber(TagFieldFind(myCurrentSession.strParams, "L"), 0);
+    settings->GetRaceSettings()->TrackDirection = (myCurrentSession.uCustFlags >> 12) & 1;
+    settings->MinOnlinePlayers = TagFieldGetNumber(TagFieldFind(myCurrentSession.strParams, "M"), 0);
+
+    if (myCurrentSession.uCustFlags & 0x100000) {
+        settings->DisconnectPerc = OLS_DISCONNECT_PERC_5;
+    } else if (myCurrentSession.uCustFlags & 0x200000) {
+        settings->DisconnectPerc = OLS_DISCONNECT_PERC_10;
+    } else if (myCurrentSession.uCustFlags & 0x400000) {
+        settings->DisconnectPerc = OLS_DISCONNECT_PERC_15;
+    } else if (myCurrentSession.uCustFlags & 0x800000) {
+        settings->DisconnectPerc = OLS_DISCONNECT_PERC_20;
+    } else if (myCurrentSession.uCustFlags & 0x1000000) {
+        settings->DisconnectPerc = OLS_DISCONNECT_PERC_25;
+    } else if (myCurrentSession.uCustFlags & 0x2000000) {
+        settings->DisconnectPerc = OLS_DISCONNECT_PERC_50;
+    } else {
+        settings->DisconnectPerc = OLS_DISCONNECT_PERC_ANY;
+    }
+
+    if (!LobbyGames::Instance().GetMyGame()) {
+        char *hostName = bStrChr(myCurrentSession.strName, '.');
+        if (hostName) {
+            LobbyGames::Instance().JoinGame(hostName + 1, nullptr, nullptr, nullptr);
+        }
+    }
+}
