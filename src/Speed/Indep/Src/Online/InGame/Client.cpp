@@ -330,3 +330,24 @@ void Client::ProcessRestartLoad(SmartBitStream &bitstream_data) {
     bitstream_data.GetBits(temp, 32);
     TheOnlineManager.SignalRestartLoad(temp);
 }
+
+void Client::ProcessServerStateChangeMessage(SmartBitStream &bitstream_data) {
+    uint32 temp = 0;
+    bitstream_data.GetBits(temp, 32);
+    m_serverState = temp;
+    if (temp == 6) {
+        uint32 ret = bGetTicker();
+        TheOnlineManager.SetStartRaceTime(ret, 2.0f, 2.0f);
+    } else if (static_cast<int>(temp) < 7) {
+        if (temp == 3) {
+            if (TheOnlineManager.GetRestartingRace() || static_cast<int>(m_state) > 3) {
+                TheOnlineManager.RequestRestart();
+            } else {
+                TheOnlineManager.SignalLoad();
+                SetState(CLIENTSTATE_LOADING);
+            }
+        }
+    } else if (temp == 7) {
+        SetState(CLIENTSTATE_RACING);
+    }
+}
