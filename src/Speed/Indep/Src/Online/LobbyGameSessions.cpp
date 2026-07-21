@@ -759,3 +759,27 @@ void LobbyGameSessions::SendUpdateCallback(LobbyGameSessionsN::SessionStatusCode
         sessionUpdateCB(code, includeSession ? &myCurrentSession : nullptr, updateContext);
     }
 }
+
+int32 LobbyGameSessions::LeaveSession_HaveMutex(CommandCBFunc leaveSessionCB, void *context) {
+    if (myCurrentSession.iIdent != -1 &&
+        LobbyCore::Instance().FindCommandID('udel', nullptr, nullptr, nullptr, nullptr) == -1 &&
+        LobbyCore::Instance().FindCommandID('ulea', nullptr, nullptr, nullptr, nullptr) == -1) {
+        if (LobbyGames::Instance().GetMyGame()) {
+            LobbyGames::Instance().LeaveGame(nullptr, nullptr);
+        }
+
+        char buf[64] = "";
+        TagFieldSetString(buf, sizeof(buf), "NAME", myCurrentSession.strName);
+        int32 rc;
+        if (bStrCmp(FEDatabase->OnlineSettings.GetLobbyPersona(), myCurrentSession.strOwner) != 0) {
+            char buf2[32] = "";
+            TagFieldSetString(buf2, sizeof(buf2), "USERSET0", "");
+            LobbyCore::Instance().QueueCommand('sele', buf2, nullptr, nullptr, nullptr, nullptr, false);
+            rc = LobbyCore::Instance().QueueCommand('ulea', buf, LeaveSessionCB, this, leaveSessionCB, context, false);
+        } else {
+            rc = LobbyCore::Instance().QueueCommand('udel', buf, LeaveSessionCB, this, leaveSessionCB, context, false);
+        }
+        return rc;
+    }
+    return -1;
+}
