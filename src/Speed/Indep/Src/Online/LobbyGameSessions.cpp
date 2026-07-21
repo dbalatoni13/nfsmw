@@ -1,5 +1,6 @@
 #include "LobbyGameSessions.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
+#include "Speed/Indep/Src/World/OnlineManager.hpp"
 
 bool LobbyGameSessions::mHurryTimerStarted = false;
 bool LobbyGameSessions::mHurryTimerStopped = false;
@@ -232,4 +233,71 @@ void LobbyGameSessions::GetMemberRaceStatus(int32 index, int &lap, int &mapx, in
         mapy = TagFieldGetNumber(TagFieldFind(member->strAux, "MY"), 0);
     }
     lobbyMutex.Unlock("LobbyGameSessions::IsMemberMakingChanges");
+}
+
+int8 LobbyGameSessions::GetSecsBeforeHostCanStart() {
+    lobbyMutex.Lock("LobbyGameSessions::GetSecsBeforeHostCanStart");
+
+    float MasterSecs = TheOnlineManager.GetMasterTime() * 0.001f;
+    LobbyApiPlayT *myGame = LobbyGames::Instance().GetMyGame();
+    if (myCurrentSession.iIdent == -1 || !myGame || myGame->iCount < 2 || (myGame->uSysflags & 0x80000) ||
+        myGame->iCount < FEDatabase->OnlineSettings.MinOnlinePlayers) {
+        lobbyMutex.Unlock("LobbyGameSessions::GetSecsBeforeHostCanStart");
+        hostInactiveTimer.UnSet();
+        hostStartSessionTimer.UnSet();
+        hostHurryTimer.UnSet();
+        return -1;
+    }
+
+    if (!hostStartSessionTimer.IsSet()) {
+        hostStartSessionTimer.SetTime(MasterSecs + 60.0f);
+    }
+
+    bool memberIsMakingChanges = false;
+    for (int i = 0; i < myCurrentSession.iCount; i++) {
+        if (IsMemberMakingChanges_HaveMutex(i)) {
+            memberIsMakingChanges = true;
+            break;
+        }
+    }
+
+    if (memberIsMakingChanges) {
+        mHurryTimerStopped = true;
+        hostInactiveTimer.UnSet();
+        hostHurryTimer.UnSet();
+    } else {
+        if (!hostInactiveTimer.IsSet()) {
+            hostInactiveTimer.SetTime(MasterSecs + 5.0f);
+        }
+        if (!hostHurryTimer.IsSet() && hostInactiveTimer.GetSeconds() - MasterSecs <= 0.0f) {
+            mHurryTimerStarted = true;
+            hostHurryTimer.SetTime(MasterSecs + 10.0f + 0.95f);
+        }
+    }
+
+    float hurryDiff = 61.0f;
+    if (hostHurryTimer.IsSet()) {
+        hurryDiff = hostHurryTimer.GetSeconds() - MasterSecs;
+        if (hurryDiff < 0.0f) {
+            hurryDiff = 0.0f;
+        }
+    }
+
+    float diff = hostStartSessionTimer.GetSeconds() - MasterSecs;
+    if (diff < 0.0f) {
+        diff = 0.0f;
+    }
+
+    lobbyMutex.Unlock("LobbyGameSessions::GetSecsBeforeHostCanStart");
+    if (hostHurryTimer.IsSet() && (diff > 10.0f || hurryDiff <= diff)) {
+        diff = hurryDiff;
+    }
+
+    int8 result = static_cast<int8>(static_cast<int>(diff));
+    if (static_cast<int>(diff) == 0) {
+        hostInactiveTimer.UnSet();
+        hostStartSessionTimer.UnSet();
+        hostHurryTimer.UnSet();
+    }
+    return result;
 }

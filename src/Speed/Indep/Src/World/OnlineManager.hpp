@@ -28,6 +28,7 @@ class OnlineManager {
     void InitQuantizers();
     void Disconnect(bool force);
     void Update(bool networkThread);
+    uint32 GetMasterTime();
 
     void EndSimFrame() {}
 
