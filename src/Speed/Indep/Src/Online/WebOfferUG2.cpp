@@ -436,3 +436,44 @@ void CWebOfferUG2::DismissDialog() {
         m_Dialog = 0;
     }
 }
+
+void CWebOfferUG2::StartAlert(const WebOfferAlertT &AlertData) {
+    m_bAlertDialogPopulated = false;
+    m_AlertData = AlertData;
+
+    int NumButtons = 0;
+    int ButtonAction = 1;
+    int ButtonActionHashes[4];
+    if (m_Dialog) {
+        DialogInterface::DismissDialog(m_Dialog);
+    }
+    for (int ButtonNumber = 0; ButtonNumber < 4; ++ButtonNumber) {
+        if (AlertData.Button[ButtonNumber].strText[0]) {
+            ++NumButtons;
+            ButtonActionHashes[NumButtons - 1] = 0x0eb0ffe0 | ButtonAction;
+            ++ButtonAction;
+        }
+    }
+
+    bool bMsgTextWasLabel;
+    char *pMsgText = DecodeString(AlertData.strMessage, &bMsgTextWasLabel);
+    if (NumButtons == 1) {
+        m_Dialog = DialogInterface::ShowOneButton(m_pOwner->GetPackageName(), "", dialog_alert, 0,
+                                                   ButtonActionHashes[0], pMsgText);
+    } else if (NumButtons == 0) {
+        m_Dialog =
+            DialogInterface::ShowMessage(m_pOwner->GetPackageName(), "", dialog_alert, pMsgText);
+    } else if (NumButtons == 2) {
+        m_Dialog = DialogInterface::ShowTwoButtons(
+            m_pOwner->GetPackageName(), "", dialog_alert, 0, 0, ButtonActionHashes[0],
+            ButtonActionHashes[1], ButtonActionHashes[1], first_dialog_button1, pMsgText);
+    } else if (NumButtons == 3) {
+        m_Dialog = DialogInterface::ShowThreeButtons(
+            m_pOwner->GetPackageName(), "", dialog_alert, 0, 0, 0, ButtonActionHashes[0],
+            ButtonActionHashes[1], ButtonActionHashes[2], 0, first_dialog_button1, pMsgText);
+    }
+    if (m_Dialog && !bMsgTextWasLabel) {
+        DialogInterface::SetBlurbIsUTF8();
+    }
+    PopulateAlertDialog();
+}

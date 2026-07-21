@@ -12,6 +12,9 @@
 
 struct WebOfferT;
 
+char *GetLocalizedString(uint32 hash);
+int bStrToLong(const char *string);
+
 struct WebOfferSetupT {
     char strPersona[20];
     char strFavTeam[32];
@@ -134,11 +137,11 @@ class CWebOffer {
     void Tick();
 
   protected:
-    virtual void StartAlert(WebOfferAlertT &) {}
-    virtual void StartPromo(WebOfferPromoT &) {}
-    virtual void StartCredit(WebOfferCreditT &) {}
-    virtual void StartHTTP(WebOfferBusyT &) {}
-    virtual void StartNews(char *, WebOfferNewsT &) {}
+    virtual void StartAlert(const WebOfferAlertT &) {}
+    virtual void StartPromo(const WebOfferPromoT &) {}
+    virtual void StartCredit(const WebOfferCreditT &) {}
+    virtual void StartHTTP(const WebOfferBusyT &) {}
+    virtual void StartNews(const char *, const WebOfferNewsT &) {}
     virtual EProcessAction ProcessAlert() { return eProcessAction_Nothing; }
     virtual EProcessAction ProcessPromo() { return eProcessAction_Nothing; }
     virtual EProcessAction ProcessCredit() { return eProcessAction_Nothing; }
@@ -269,12 +272,20 @@ class CWebOfferUG2 : public CWebOffer {
     void SetOwner(MenuScreen *owner) { m_pOwner = owner; }
     void SetPendingAction(EProcessAction action) { m_PendingAction = action; }
     void DismissDialog();
-    char *DecodeString(char *string);
+    char *DecodeString(const char *pString, bool *pbWasLabel) {
+        if (pString && pString[0] == '0' && pString[1] == 'x') {
+            int StringLabel = bStrToLong(pString);
+            *pbWasLabel = true;
+            return GetLocalizedString(StringLabel);
+        }
+        *pbWasLabel = false;
+        return const_cast<char *>(pString);
+    }
 
   protected:
-    void StartAlert(WebOfferAlertT &AlertData) override;
-    void StartHTTP(WebOfferBusyT &BusyData) override;
-    void StartNews(char *pNewsText, WebOfferNewsT &NewsData) override;
+    void StartAlert(const WebOfferAlertT &AlertData) override;
+    void StartHTTP(const WebOfferBusyT &BusyData) override;
+    void StartNews(const char *pNewsText, const WebOfferNewsT &NewsData) override;
     EProcessAction ProcessAlert() override;
     EProcessAction ProcessHTTP() override;
     EProcessAction ProcessNews() override;

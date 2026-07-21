@@ -27,11 +27,34 @@ enum eDialogTitle {
     dialog_confirmation = 3
 };
 
+enum eDialogFirstButtons {
+    first_dialog_button1 = 0,
+    first_dialog_button2 = 1,
+    first_dialog_button3 = 2
+};
+
 struct DialogInterface {
     static void DismissDialog(int handle);
+    static int ShowMessage(const char *fromPackage, const char *dialogPackage, eDialogTitle title,
+                           const char *message);
+    static int ShowOneButton(const char *fromPackage, const char *dialogPackage, eDialogTitle title,
+                             uint32 buttonTextHash, uint32 buttonPressedMessage,
+                             const char *format);
     static int ShowOneButton(const char *fromPackage, const char *dialogPackage, eDialogTitle title,
                              uint32 buttonTextHash, uint32 buttonPressedMessage, uint32 cancelMessage,
                              const char *format, ...);
+    static int ShowTwoButtons(const char *fromPackage, const char *dialogPackage, eDialogTitle title,
+                              uint32 button1TextHash, uint32 button2TextHash,
+                              uint32 button1PressedMessage, uint32 button2PressedMessage,
+                              uint32 cancelMessage, eDialogFirstButtons firstButton,
+                              const char *format);
+    static int ShowThreeButtons(const char *fromPackage, const char *dialogPackage,
+                                eDialogTitle title, uint32 button1TextHash,
+                                uint32 button2TextHash, uint32 button3TextHash,
+                                uint32 button1PressedMessage, uint32 button2PressedMessage,
+                                uint32 button3PressedMessage, uint32 cancelMessage,
+                                eDialogFirstButtons firstButton, const char *format);
+    static void SetBlurbIsUTF8();
 };
 
 struct BuddyApiMsgT {
