@@ -71,6 +71,7 @@ struct Client {
     static void SendCarSpam();
     static void HandleIncomingPacket(char *data, int numBytes, bool isReliable);
     static void ProcessCarMessage(SmartBitStream &bitstream_data);
+    static void ProcessPartialCarMessage(float player_timestamp, SmartBitStream &bitstream_data);
     static void ProcessCarSpamClockSyncMessage(SmartBitStream &bitstream_data);
     static void ProcessScoreMessage(SmartBitStream &bitstream_data);
     static void ProcessSyncAnimationMessage(SmartBitStream &bitstream_data);

@@ -1,6 +1,7 @@
 #include "Client.hpp"
 #include "CSCommon.hpp"
 #include "Speed/Indep/Src/Online/SmartBitstream.hpp"
+#include "Speed/Indep/Src/Misc/Timer.hpp"
 #include "Speed/Indep/Src/World/OnlineManager.hpp"
 
 uint32 Client::m_tSendCarUpdatesTimer[4];
@@ -171,4 +172,10 @@ void Client::ConnectionCoreCB(ConnApiRefT *connapi, ConnApiCbInfoT *cbinfo, void
         Close();
         return;
     }
+}
+
+void Client::ProcessCarMessage(SmartBitStream &bitstream_data) {
+    uint32 temp = 0;
+    bitstream_data.GetBits(temp, 32);
+    ProcessPartialCarMessage(RealTimer.GetSeconds(), bitstream_data);
 }
