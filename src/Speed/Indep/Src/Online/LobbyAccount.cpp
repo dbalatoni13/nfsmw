@@ -51,3 +51,8 @@ void LobbyRooms::RoomsDispListCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *p
         lobbyRooms->roomUpdateCB(lobbyRooms->roomUpdateContext, pMsg);
     }
 }
+
+LobbyAccount &LobbyAccount::Instance() {
+    static LobbyAccount theLobbyAccount;
+    return theLobbyAccount;
+}

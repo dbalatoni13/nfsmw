@@ -12,6 +12,19 @@ struct LobbyApiRoomT;
 
 typedef void (*RoomUpdateCBFunc)(void *context, LobbyApiMsgT *msg);
 
+struct LobbyAccountT {
+    char name[20];
+    char password[20];
+    char email[52];
+    int birthDay;
+    int birthMonth;
+    int birthYear;
+    bool male;
+    bool spamFromEA;
+    bool spamFromAll;
+    char parentEmail[52];
+};
+
 extern "C" {
 void TagFieldSetString(char *record, int recordLength, const char *name, const char *value);
 void TagFieldSetNumber(char *record, int recordLength, const char *name, int value);
@@ -124,6 +137,20 @@ struct LobbyRooms {
     RoomUpdateCBFunc roomUpdateCB;
     void *roomUpdateContext;
     char currentRoomName[36];
+};
+
+struct LobbyAccount {
+    static LobbyAccount &Instance();
+
+  private:
+    LobbyAccount() { pendingPersona[0] = '\0'; }
+    ~LobbyAccount() {}
+    int32 Init();
+    void Reset();
+    friend int32 LobbyInit();
+    friend void LobbyDisconnect();
+
+    char pendingPersona[16];
 };
 
 #endif

@@ -221,16 +221,7 @@ struct LobbyUsers {
 };
 
 struct LobbyRooms;
-
-struct LobbyAccount {
-    static LobbyAccount &Instance();
-
-  private:
-    int32 Init();
-    void Reset();
-    friend int32 LobbyInit();
-    friend void LobbyDisconnect();
-};
+struct LobbyAccount;
 
 struct ConnectionCore {
     ConnectionCore();
