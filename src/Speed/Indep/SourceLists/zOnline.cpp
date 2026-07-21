@@ -35,3 +35,5 @@
 #include "Speed/Indep/Src/Online/LobbyAccount.cpp"
 
 #include "Speed/Indep/Src/Online/LobbyUsers.cpp"
+
+#include "Speed/Indep/Src/Online/ConditionSimulator.cpp"

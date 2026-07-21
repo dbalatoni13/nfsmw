@@ -1,4 +1,5 @@
 #include "OnlineCfg.hpp"
+#include "ConditionSimulator.hpp"
 
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Misc/Config.h"
@@ -41,10 +42,6 @@ enum DiagnosticLevelEnum {
 
 struct CSCommon {
     static DiagnosticLevelEnum m_diagnosticLevel;
-};
-
-struct ConditionSimulator {
-    static void SetSimCondition(int condition);
 };
 
 extern "C" uint32 SocketInTextGetAddr(const char *text);
