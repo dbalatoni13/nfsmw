@@ -41,17 +41,6 @@ enum EProcessAction {
     eProcessAction_Button4 = 4
 };
 
-struct SOfferData {
-    char *pPersonaName;
-    char *pProductName;
-    char *pPlatformName;
-    char *pLanguage;
-    char *pCountry;
-    char *pSLUSCode;
-    char *pLobbyKey;
-    char *pOfferURL;
-};
-
 class CWebOffer {
   protected:
     WebOfferT *m_pWebOfferAPI;
@@ -62,6 +51,17 @@ class CWebOffer {
     bool m_bProcessingCommand;
 
   public:
+    struct SOfferData {
+        char *pPersonaName;
+        char *pProductName;
+        char *pPlatformName;
+        char *pLanguage;
+        char *pCountry;
+        char *pSLUSCode;
+        char *pLobbyKey;
+        char *pOfferURL;
+    };
+
     CWebOffer();
     virtual ~CWebOffer();
     bool Initialise(uint32 MaxScriptSize);

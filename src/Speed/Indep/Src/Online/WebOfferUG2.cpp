@@ -2,6 +2,8 @@
 
 extern "C" WebOfferT *WebOfferCreate(uint32 maxScriptSize);
 extern "C" void WebOfferDestroy(WebOfferT *webOffer);
+extern "C" void WebOfferSetup(WebOfferT *webOffer, WebOfferSetupT *setup);
+extern "C" void WebOfferExecute(WebOfferT *webOffer, const char *offerURL);
 
 CWebOffer::CWebOffer()
     : m_pWebOfferAPI(nullptr) //
@@ -20,4 +22,23 @@ void CWebOffer::Shutdown() {
         WebOfferDestroy(m_pWebOfferAPI);
         m_pWebOfferAPI = nullptr;
     }
+}
+
+bool CWebOffer::Start(SOfferData &OfferData) {
+    bool bStarted = false;
+    if (m_pWebOfferAPI) {
+        bStrNCpy(m_WebOfferSetup.strPersona, OfferData.pPersonaName, 19);
+        bStrNCpy(m_WebOfferSetup.strProduct, OfferData.pProductName, 31);
+        bStrNCpy(m_WebOfferSetup.strPlatform, OfferData.pPlatformName, 31);
+        bStrNCpy(m_WebOfferSetup.strLanguage, OfferData.pLanguage, 3);
+        bStrNCpy(m_WebOfferSetup.strCountry, OfferData.pCountry, 3);
+        bStrNCpy(m_WebOfferSetup.strSlusCode, OfferData.pSLUSCode, 31);
+        bStrNCpy(m_WebOfferSetup.strLKey, OfferData.pLobbyKey, 39);
+        m_WebOfferSetup.strFavTeam[0] = '\0';
+        WebOfferSetup(m_pWebOfferAPI, &m_WebOfferSetup);
+        WebOfferExecute(m_pWebOfferAPI, OfferData.pOfferURL);
+        m_bProcessingCommand = false;
+        bStarted = true;
+    }
+    return bStarted;
 }
