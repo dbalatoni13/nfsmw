@@ -123,3 +123,20 @@ void VoiceCore::SetHeadsetPort(int port) {
 }
 
 void VoiceCore::SetMicStatus(bool enable) { SetMicState(enable); }
+
+bool VoiceCore::IsMuted(int channel) { return _IsMuted(channel); }
+
+bool VoiceCore::IsMuted(const char *persona) { return _IsMuted(persona); }
+
+void VoiceCore::ToggleMuted(const char *persona) { _ToggleMuted(persona); }
+
+bool VoiceCore::IsSpeaking(int channel) { return _IsSpeaking(channel); }
+
+bool VoiceCore::IsSpeaking(const char *persona) {
+    int channel;
+    bool rc = false;
+    if (_IsInVOIPChat(persona, &channel)) {
+        rc = _IsSpeaking(channel);
+    }
+    return rc;
+}
