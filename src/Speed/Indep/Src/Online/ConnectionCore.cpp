@@ -14,6 +14,7 @@ ConnApiClientListT *ConnApiGetClientList(ConnApiRefT *connapi);
 int ConnApiRemoveClient(ConnApiRefT *connapi, const char *clientName, int clientIndex);
 int ConnApiOnline(ConnApiRefT *connapi, const char *name, DirtyAddrT *dirtyAddr);
 void ConnApiDisconnect(ConnApiRefT *connapi);
+int ConnApiStatus2(ConnApiRefT *connapi, int selector, void *buffer, int bufferSize);
 int ConnApiControl(ConnApiRefT *connapi, int control, int value, int value2, void *pValue);
 }
 
@@ -360,5 +361,47 @@ void ConnectionCore::ResetSession_HaveMutex() {
             numConnectedPlayers = 0;
             VoiceCore::mInstance->RemoveAllPlayers();
         }
+    }
+}
+
+void ConnectionCore::ConnApiCallback(ConnApiRefT *connapi, ConnApiCbInfoT *cbinfo, void *context) {
+    ConnApiClientListT *clientList = ConnApiGetClientList(connapi);
+    ConnectionCore &conncore = Instance();
+    ConnApiClientT &client = clientList->Clients[cbinfo->iClientId];
+
+    if (cbinfo->eType == CONNAPI_CBTYPE_GAMEEVENT) {
+        if (cbinfo->eNewStatus == CONNAPI_STATUS_ACTV) {
+            conncore.numConnectedPlayers++;
+        } else if (cbinfo->eNewStatus == CONNAPI_STATUS_DISC &&
+                   static_cast<unsigned int>(cbinfo->eOldStatus - CONNAPI_STATUS_ACTV) < 2) {
+            conncore.numConnectedPlayers--;
+        }
+    }
+
+    if (!SkipFE && cbinfo->eType == CONNAPI_CBTYPE_VOIPEVENT) {
+        if (cbinfo->eNewStatus == CONNAPI_STATUS_ACTV) {
+            if (!VoiceCore::mInstance->IsInVOIPChat(client.UserInfo.strName, nullptr)) {
+                VoiceCore::mInstance->AddPlayer(client.UserInfo.strName);
+            }
+        } else if (cbinfo->eNewStatus == CONNAPI_STATUS_DISC &&
+                   static_cast<unsigned int>(cbinfo->eOldStatus - CONNAPI_STATUS_ACTV) < 2) {
+            VoiceCore::mInstance->RemovePlayer(client.UserInfo.strName);
+        }
+    }
+
+    if (cbinfo->eType == CONNAPI_CBTYPE_SESSEVENT && cbinfo->eNewStatus == CONNAPI_STATUS_ACTV) {
+        char strSess[128];
+        ConnApiStatus2(conncore.connapi, 'sess', strSess, sizeof(strSess));
+        char buf[144] = "";
+        TagFieldSetString(buf, sizeof(buf), "SESS", strSess);
+        lobbyMutex.Lock("ConnectionCore::ConnApiCallback");
+        LobbyCore::Instance().QueueCommand('gset', buf, LobbyCore::DefaultCB, nullptr, nullptr,
+                                           nullptr, false);
+        lobbyMutex.Unlock("ConnectionCore::ConnApiCallback");
+        LobbyGameSessions::Instance().SettingsHaveChanged();
+    }
+
+    if (conncore.connapiCallback) {
+        conncore.connapiCallback(connapi, cbinfo, conncore.callbackContext);
     }
 }

@@ -29,6 +29,8 @@ class VoiceCore {
     void Shutdown();
     void Update();
     bool IsMuted(const char *persona);
+    bool IsInVOIPChat(const char *persona, int *channel);
+    void AddPlayer(const char *persona);
     void RemovePlayer(const char *persona);
     void RemoveAllPlayers();
     void SetHeadsetPort(int port);
