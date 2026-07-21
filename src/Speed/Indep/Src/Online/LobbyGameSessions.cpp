@@ -7,6 +7,7 @@ void DispListFilt(DispListRef *list, int filtcon, int filtmask, int (*filtfn)(vo
 int DispListShown(DispListRef *list);
 void *DispListGet(DispListRef *list, int index);
 int LobbyApiListFindByName(LobbyApiRefT *lobbyRef, int selector, const char *name);
+int LobbyApiInfoInt(LobbyApiRefT *lobbyRef, int selector);
 void DispListChange(DispListRef *list, int change);
 void DispListOrder(DispListRef *list);
 }
@@ -604,4 +605,12 @@ void LobbyGameSessions::RefilterAndUpdateSessionsList() {
         DispListOrder(sessionList);
         SendUpdateCallback(LobbyGameSessionsN::SESSION_LIST_CHANGED);
     }
+}
+
+void LobbyGameSessions::UpdateSessionParams(char *buf, int bufsize) {
+    TagFieldPrintf(buf, bufsize, "V=%d P=%d E=%d L=%d M=%d", BuildVersionChangelistNumber,
+                   LobbyApiInfoInt(LobbyCore::Instance().GetLobbyApiRef(), 'ping'),
+                   FEDatabase->OnlineSettings.GetRaceSettings()->EventHash,
+                   FEDatabase->OnlineSettings.GetRaceSettings()->NumLaps,
+                   FEDatabase->OnlineSettings.MinOnlinePlayers);
 }
