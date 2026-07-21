@@ -9,6 +9,7 @@
 
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "Speed/Indep/Src/Online/LobbyChat.hpp"
+#include "Speed/Indep/Src/Online/RichPresence.hpp"
 
 struct HLBApiRefT;
 struct HLBBudT;
@@ -145,6 +146,8 @@ struct BuddyCore {
     int resume();
     void initVoiceAndPresence();
     void clearEAMStatusIcons();
+    void setNetworkCableUnpluggedFlag();
+    void SetPresence(RichPresenceMsg richPresenceMsg, HLBStatE buddyState);
     void DisplayVOIPChatEnded();
     void DisplayDeclinedInviteInGame(const char *name);
     void DisplayDeclinedInvite(const char *name);

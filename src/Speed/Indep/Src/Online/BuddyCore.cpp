@@ -52,6 +52,9 @@ void *LobbyApiInfoPtr(LobbyApiRefT *api, int selector);
 char *TagFieldFind(const char *record, const char *name);
 int TagFieldGetNumber(const char *field, int defaultValue);
 int TagFieldGetString(const char *field, char *buffer, int bufferSize, const char *defaultValue);
+void TagFieldSetNumber(char *buffer, int bufferSize, const char *name, int value);
+void TagFieldSetString(char *buffer, int bufferSize, const char *name, const char *value);
+void HLBApiPresenceSend(HLBApiRefT *api, HLBStatE state, bool voipState, const char *presence, int waitForCompletion);
 }
 
 MenuScreen *FEngFindScreen(const char *packageName);
@@ -659,4 +662,24 @@ void BuddyCore::clearEAMStatusIcons() {
     MenuScreen::UpdateStatusIcons(1, false);
     MenuScreen::UpdateStatusIcons(2, false);
     MenuScreen::UpdateStatusIcons(3, false);
+}
+
+int BuddyCore::getBuddyCount() {
+    if (HLBud) {
+        return HLBListGetBuddyCount(HLBud);
+    }
+    return 0;
+}
+
+void BuddyCore::setNetworkCableUnpluggedFlag() { m_networkCableUnplugged = true; }
+
+void BuddyCore::SetPresence(RichPresenceMsg richPresenceMsg, HLBStatE buddyState) {
+    char parms[80] = "";
+    TagFieldSetNumber(parms, sizeof(parms), "E", richPresenceMsg.eventHash);
+    TagFieldSetString(parms, sizeof(parms), "S", richPresenceMsg.session);
+    TagFieldSetNumber(parms, sizeof(parms), "P", richPresenceMsg.isSessionPassworded);
+    TagFieldSetString(parms, sizeof(parms), "W", richPresenceMsg.password);
+    TagFieldSetNumber(parms, sizeof(parms), "V", richPresenceMsg.isSessionPrivate);
+    TagFieldSetNumber(parms, sizeof(parms), "R", richPresenceMsg.isRacing);
+    HLBApiPresenceSend(HLBud, buddyState, VoiceCore::mInstance->IsHeadsetConnected(), parms, 0);
 }
