@@ -500,3 +500,14 @@ void LobbyUsers::SetSessionLatency(int late) {
     TagFieldSetNumber(auxiData, 128, "LT", late);
     SendAuxiData();
 }
+
+void LobbyUsers::SetSessionRaceStatusInfo(int lap, int mapx, int mapy) {
+    if (mLap != lap) {
+        mLap = lap;
+        mMapX = mapx;
+        mMapY = mapy;
+        MaybeCreateAuxiBuffer();
+        TagFieldSetNumber(auxiData, 128, "LP", mLap);
+        SendAuxiData();
+    }
+}
