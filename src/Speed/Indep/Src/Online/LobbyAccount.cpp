@@ -1,4 +1,4 @@
-#include "LobbyCore.hpp"
+#include "LobbyAccount.hpp"
 
 LobbyRooms::LobbyRooms()
     : roomList(nullptr) //
@@ -8,3 +8,8 @@ LobbyRooms::LobbyRooms()
 }
 
 LobbyRooms::~LobbyRooms() { Reset(); }
+
+LobbyRooms &LobbyRooms::Instance() {
+    static LobbyRooms theLobbyRooms;
+    return theLobbyRooms;
+}
