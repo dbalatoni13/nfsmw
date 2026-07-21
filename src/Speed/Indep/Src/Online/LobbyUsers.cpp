@@ -326,3 +326,40 @@ bool LobbyUsers::GetCarNameFromUserRecord(const char *persona, uint32 &carNameHa
     lobbyMutex.Unlock("LobbyUsers::GetCarNameFromUserRecord");
     return false;
 }
+
+bool LobbyUsers::GetPointsFromUserRecord(const char *persona, uint32 &points,
+                                         OnlineRaceModeE mode) {
+    lobbyMutex.Lock("LobbyUsers::GetPointsFromUserRecord");
+    if (bStrCmp(persona, FEDatabase->OnlineSettings.GetLobbyPersona()) == 0) {
+        if (gotMyStats) {
+            points = myStats.stats.raceModeStats[mode].points;
+            lobbyMutex.Unlock("LobbyUsers::GetPointsFromUserRecord");
+            return true;
+        }
+
+        LobbyApiUserT *me = GetMyUserRecord();
+        if (me) {
+            PlayerDataT tmp;
+            tmp.ExtractRecord(*me);
+            points = tmp.stats.raceModeStats[mode].points;
+            lobbyMutex.Unlock("LobbyUsers::GetPointsFromUserRecord");
+            return true;
+        }
+    } else {
+        for (OnlineUsersData *oud = userList.GetHead(); oud != userList.EndOfList();
+             oud = oud->GetNext()) {
+            if (bStrCmp(oud->user.name, persona) == 0) {
+                if (oud->commandID == 0) {
+                    PlayerDataT tmp;
+                    tmp.ExtractRecord(oud->user);
+                    points = tmp.stats.raceModeStats[mode].points;
+                    lobbyMutex.Unlock("LobbyUsers::GetPointsFromUserRecord");
+                    return true;
+                }
+            }
+        }
+    }
+
+    lobbyMutex.Unlock("LobbyUsers::GetPointsFromUserRecord");
+    return false;
+}

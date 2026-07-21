@@ -172,6 +172,7 @@ struct LobbyUsers {
     LobbyApiUserT *GetUserRecord(const char *persona);
     bool GetCarNameFromUserRecord(const char *persona, uint32 &carNameHash,
                                   Physics::Info::Performance &performance);
+    bool GetPointsFromUserRecord(const char *persona, uint32 &points, OnlineRaceModeE mode);
     void ClearUserOnlineRecordCache();
     void ClearUserOnlineRecordCache(const LobbyApiPlayT &game);
     void SetSessionChangeFlag(bool changing);
