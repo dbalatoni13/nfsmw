@@ -2,6 +2,7 @@
 #include "Speed/Indep/Src/World/OnlineManager.hpp"
 
 uint32 Client::m_tSendCarUpdatesTimer[4];
+float Client::m_sendCarFrequencyHz[4];
 int Client::m_clientId;
 int Client::m_driverNumber;
 uint16 Client::m_oneWayLatencyMs;
@@ -61,4 +62,23 @@ void Client::ReadIncomingPackets() {
                                  sGamePacketInbound.head.len, reliable);
         }
     }
+}
+
+ePosDataPriorityMask Client::BuildPosDataPriorityMask() {
+    ePosDataPriorityMask return_mask = PDP_MASK_NONE;
+    uint32 time = NetworkCore::Instance().GetTime();
+
+    for (int i = 0; i < 4; i++) {
+        if (m_sendCarFrequencyHz[i] > 0.0f &&
+            static_cast<float>(time - m_tSendCarUpdatesTimer[i]) * 0.001f >=
+                1.0f / m_sendCarFrequencyHz[i]) {
+            if (i != 0 && return_mask == PDP_MASK_NONE) {
+                return PDP_MASK_NONE;
+            }
+            m_tSendCarUpdatesTimer[i] = time;
+            return_mask =
+                static_cast<ePosDataPriorityMask>(return_mask | static_cast<int>(1U << i));
+        }
+    }
+    return return_mask;
 }

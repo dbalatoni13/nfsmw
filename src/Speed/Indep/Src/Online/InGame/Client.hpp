@@ -18,6 +18,16 @@ enum ClientStateEnum {
     CLIENTSTATE_RACING = 7
 };
 
+enum ePosDataPriorityMask {
+    PDP_MASK_NONE = 0,
+    PDP_MASK_CRITICAL = 1,
+    PDP_MASK_NORMAL = 2,
+    PDP_MASK_LOW = 4,
+    PDP_MASK_AESTHETIC = 8,
+    PDP_MASK_INFLIGHT = 32,
+    PDP_MASK_ALL = 47
+};
+
 struct ByteCounter {
     ByteCounter(int LengthOfSecond)
         : m_lengthOfSecond(LengthOfSecond) //
@@ -59,6 +69,7 @@ struct Client {
 
   private:
     static void ReadIncomingPackets();
+    static ePosDataPriorityMask BuildPosDataPriorityMask();
     static void HandleIncomingPacket(char *data, int numBytes, bool isReliable);
     static bool IsConnected();
     static void SimpleSendMessage(uint8 msg_type);
@@ -66,6 +77,7 @@ struct Client {
     static void SetState(ClientStateEnum new_state);
 
     static uint32 m_tSendCarUpdatesTimer[4];
+    static float m_sendCarFrequencyHz[4];
     static int m_clientId;
     static int m_driverNumber;
     static uint16 m_oneWayLatencyMs;
