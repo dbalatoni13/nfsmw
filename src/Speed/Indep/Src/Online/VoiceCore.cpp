@@ -262,3 +262,10 @@ int VoiceCore::_AddPlayer(const char *persona) {
     }
     return -1;
 }
+
+void VoiceCore::_RemovePlayer(int channel) {
+    if (channels[channel].assigned) {
+        bMemCpy(&mute_record[channel], &channels[channel], sizeof(channel_type));
+        bMemSet(&channels[channel], 0, sizeof(channel_type));
+    }
+}
