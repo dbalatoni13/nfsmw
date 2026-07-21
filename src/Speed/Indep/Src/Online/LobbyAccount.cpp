@@ -143,3 +143,18 @@ int32 LobbyAccount::RequestLostPassword(const char *username, CommandCBFunc func
     lobbyMutex.Unlock("LobbyAccount::RequestLostPassword");
     return rc;
 }
+
+int32 LobbyAccount::CreatePersona(const char *name, CommandCBFunc func, void *context) {
+    lobbyMutex.Lock("LobbyAccount::CreatePersona");
+    if (pendingPersona[0]) {
+        lobbyMutex.Unlock("LobbyAccount::CreatePersona");
+        return -1;
+    }
+
+    bStrNCpy(pendingPersona, name, 15);
+    char buf[64] = "";
+    TagFieldSetString(buf, sizeof(buf), "PERS", name);
+    int32 rc = LobbyCore::Instance().QueueCommand('cper', buf, CperCB, this, func, context, false);
+    lobbyMutex.Unlock("LobbyAccount::CreatePersona");
+    return rc;
+}
