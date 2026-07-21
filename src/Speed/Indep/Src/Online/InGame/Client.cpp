@@ -312,3 +312,9 @@ void Client::SignalDataCRCMessage(SmartBitStream &payload_data) {
     bitstream_data.AddRawDataWithoutSize(payload_data.GetBuffer(), payload_data.GetByteLength());
     SendMessage(13, bitstream_data, true);
 }
+
+void Client::ProcessServerQuitMessage(SmartBitStream &bitstream_data) {
+    uint32 temp = 0;
+    bitstream_data.GetBits(temp, 1);
+    Close();
+}
