@@ -4,6 +4,9 @@
 
 extern "C" {
 void DispListFilt(DispListRef *list, int filtcon, int filtmask, int (*filtfn)(void *, int, void *));
+int DispListShown(DispListRef *list);
+void *DispListGet(DispListRef *list, int index);
+int LobbyApiListFindByName(LobbyApiRefT *lobbyRef, int selector, const char *name);
 }
 
 bool LobbyGameSessions::mHurryTimerStarted = false;
@@ -476,4 +479,16 @@ OnlineRaceModeE LobbyGameSessions::GetRaceMode(const GameSession *session) {
     }
     lobbyMutex.Unlock("LobbyGameSessions::GetRaceMode");
     return theMode;
+}
+
+int LobbyGameSessions::GetNumSessions() const {
+    return sessionList ? DispListShown(sessionList) : 0;
+}
+
+GameSession *LobbyGameSessions::GetSessionByName(const char *sessionName) const {
+    lobbyMutex.Lock("LobbyGameSessions::GetSessionByName");
+    GameSession *session = static_cast<GameSession *>(
+        DispListGet(sessionList, LobbyApiListFindByName(LobbyCore::Instance().pLobbyRef, 0x17, sessionName)));
+    lobbyMutex.Unlock("LobbyGameSessions::GetSessionByName");
+    return session;
 }
