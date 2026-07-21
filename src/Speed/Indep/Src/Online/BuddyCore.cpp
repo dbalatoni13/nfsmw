@@ -448,3 +448,5 @@ void BuddyCore::LobbyChallengeCB(LobbyApiMsgT *pMesg) {
         return;
     }
 }
+
+LobbyChalRefT *BuddyCore::GetLobbyChallengeApiRef() { return m_lobbyChalRefT; }
