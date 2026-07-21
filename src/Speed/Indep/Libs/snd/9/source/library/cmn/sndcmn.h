@@ -326,6 +326,9 @@ typedef struct VariableTimerClient {
     void *pClientData;           // offset 0xC, size 0x4
 } VariableTimerClient;
 
+extern float gVariableTimerPeriod;
+extern float gMasterVol;
+
 // total size: 0x1
 // Decl: 1268
 struct Util {
@@ -335,7 +338,9 @@ struct Util {
 
     static float Az65536To360(unsigned short azimuth) {}
 
-    static void FastVol(struct CHANPUB *pVoice) {}
+    static void FastVol(struct CHANPUB *pVoice) {
+        pVoice->finalvol = pVoice->programmedVol * Snd::gMasterVol;
+    }
 
     static void AddVariableTimerClient(VariableTimerClient *pClient) {}
 
@@ -463,9 +468,19 @@ inline int SNDI_ftoiround(float val) {
     return result;
 }
 
+inline int SNDI_ftoitruncpositive(float val) {
+    return SNDI_ftoiround(val - 0.5f);
+}
+
+inline int SNDI_ftoiroundpositive(float val) {
+    int result = static_cast<int>(val + 0.5f);
+
+    return result;
+}
+
 // 1202
 inline int SNDI_ftoifast(float val) {
-    return SNDI_ftoiround(val * 127.0f);
+    return SNDI_ftoiround(val);
 }
 
 // 1610
@@ -504,5 +519,36 @@ int SNDSTRM_getprogvol(int sndstreamhandle);
 
 // stimerem.c
 int SNDtimeremaining(int shandle);
+
+// srandom.c
+unsigned int iSNDrandom();
+
+// snddrv.c
+int SNDPLATFORM_setpitch(int voice);
+int SNDPLATFORM_timemult(int voice, int timemult);
+int SNDPLATFORM_setfxlevel(int voice, int bus);
+void SNDPLATFORM_lowpass(int voice, int cutofffreq);
+void SNDPLATFORM_highpass(int voice, int cutofffreq);
+int SNDPLATFORM_getcurframe(int voice);
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// sbplay.c
+int SNDBANK_play(int bhandle, int patnum, SNDPLAYOPTS *pspo);
+
+// sstop.c
+int SNDstop(int shandle);
+
+// spitch.c
+int SNDpitchmult(int shandle, int pitchmult);
+
+// svol.c
+int SNDvol(int shandle, int vol);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

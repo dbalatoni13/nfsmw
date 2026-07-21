@@ -326,6 +326,7 @@ if config.platform == Platform.GC_WII:
     cflags_snd = [
         *cflags_game,
         "-x c++",
+        "-fno-force-addr",
         "-I src/Speed/Indep/Libs/snd/9/include",
     ]
 
