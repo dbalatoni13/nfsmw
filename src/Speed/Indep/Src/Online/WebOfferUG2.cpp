@@ -514,3 +514,9 @@ EProcessAction CWebOfferUG2::ProcessAlert() {
     m_PendingAction = eProcessAction_Nothing;
     return Action;
 }
+
+EProcessAction CWebOfferUG2::ProcessNews() {
+    EProcessAction Action = m_PendingAction;
+    m_PendingAction = eProcessAction_Nothing;
+    return Action;
+}
