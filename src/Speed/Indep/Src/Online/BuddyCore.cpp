@@ -2,6 +2,8 @@
 
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
 #include "Speed/Indep/Src/Online/LobbyCore.hpp"
 #include "Speed/Indep/Src/Online/VoiceCore.hpp"
 
@@ -38,8 +40,11 @@ int TagFieldGetNumber(const char *field, int defaultValue);
 int TagFieldGetString(const char *field, char *buffer, int bufferSize, const char *defaultValue);
 }
 
+MenuScreen *FEngFindScreen(const char *packageName);
+
 extern int gVOIP_InviteState;
 extern int gBuddyListHasChanged;
+extern BuddySettings gBuddySettings;
 
 static char BuddyProductString[9] = "NFS-2006";
 char productString[32];
@@ -248,5 +253,37 @@ void BuddyCore::connectchanged(int op, int status) {
     if (op == 1 && status == 0) {
         handledisconnect();
     }
+    gBuddyListHasChanged = 1;
+}
+
+void BuddyCore::gameinvite(HLBApiRefT *api, HLBBudT *bud, int action, void *context) {
+    BuddyCore *pBuddyCore = static_cast<BuddyCore *>(context);
+    int icon = 0;
+    bool status = false;
+
+    switch (action) {
+    case 0x400:
+        pBuddyCore->DisplayDeclinedInvite(HLBBudGetName(bud));
+        return;
+    case 0x4000000:
+        pBuddyCore->DisplayTimedOutInvite(HLBBudGetName(bud));
+    case 0x800:
+        icon = 1;
+        status = false;
+        if (bStrCmp(gBuddySettings.buddyName, HLBBudGetName(bud)) == 0 &&
+            FEngFindScreen("OL_FriendDialogue.fng")) {
+            cFEng::Get()->QueuePackageMessage(0x1cad26e2, "OL_FriendDialogue.fng", nullptr);
+        }
+        if (LobbyChat::Instance().GetNumReceivedInvites()) {
+            gBuddyListHasChanged = 1;
+            return;
+        }
+        break;
+    case 0x400000:
+        icon = 1;
+        status = true;
+        break;
+    }
+    MenuScreen::UpdateStatusIcons(icon, status);
     gBuddyListHasChanged = 1;
 }

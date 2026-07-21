@@ -5,9 +5,12 @@
 #pragma once
 #endif
 
+struct FEObject;
+
 class cFEng {
   public:
     void QueueGameMessage(unsigned int pMessage, const char *pPackageName, unsigned int controlMask);
+    void QueuePackageMessage(unsigned int pMessage, const char *pPackageName, FEObject *obj);
     bool IsPackagePushed(const char *name);
     bool IsPackageInControl(const char *name);
     void PopNoControlPackage(const char *name);

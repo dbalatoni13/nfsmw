@@ -122,6 +122,8 @@ struct BuddyCore {
     void initVoiceAndPresence();
     void clearEAMStatusIcons();
     void DisplayVOIPChatEnded();
+    void DisplayDeclinedInvite(const char *name);
+    void DisplayTimedOutInvite(const char *name);
     int getBuddyCount();
     HLBBudT *getBuddyByIndex(int index);
 };
