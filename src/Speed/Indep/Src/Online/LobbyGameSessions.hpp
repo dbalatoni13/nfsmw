@@ -96,6 +96,7 @@ struct LobbyGameSessions {
     GameSession *GetSessionByName(const char *sessionName) const;
     GameSession *GetSessionByIndex(int32 index) const;
     GameSessionMember *GetMemberByIndex(int32 index) const;
+    void SetSessionUpdateCB(SessionUpdateCBFunc func, void *context);
     void SendUpdateCallback(LobbyGameSessionsN::SessionStatusCode status);
 
   private:

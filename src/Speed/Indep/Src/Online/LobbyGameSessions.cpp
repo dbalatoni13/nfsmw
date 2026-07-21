@@ -529,3 +529,18 @@ GameSessionMember *LobbyGameSessions::GetMemberByIndex_HaveMutex(int32 index) co
     }
     return member;
 }
+
+void LobbyGameSessions::SetSessionUpdateCB(SessionUpdateCBFunc func, void *context) {
+    lobbyMutex.Lock("LobbyGameSessions::SetSessionUpdateCB");
+    updateContext = context;
+    sessionUpdateCB = func;
+    if (func) {
+        if (myCurrentSession.iIdent != -1) {
+            SendUpdateCallback(LobbyGameSessionsN::SESSION_CHANGED);
+        }
+        if (sessionList) {
+            SendUpdateCallback(LobbyGameSessionsN::SESSION_LIST_CHANGED);
+        }
+    }
+    lobbyMutex.Unlock("LobbyGameSessions::SetSessionUpdateCB");
+}
