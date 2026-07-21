@@ -131,3 +131,7 @@ float PlayerDataT::GetTopSpeedInMPS(int mode) {
 }
 
 uint32 PlayerDataT::GetTotalNOS(int mode) { return stats.raceModeStats[mode].totalNOSused; }
+
+float PlayerDataT::GetLongestJumpDuration(int mode) {
+    return static_cast<float>(stats.raceModeStats[mode].jumpTime) * 0.001f;
+}

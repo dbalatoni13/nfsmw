@@ -89,8 +89,15 @@ struct PlayerDataT {
     }
     uint32 GetTotalNOS(int mode);
     float GetLongestJumpDuration(int mode);
-    char *GetLongestJumpDurationString();
-    float GetLongestPowerSlideInMetres();
+    char *GetLongestJumpDurationString() {
+        static char time[32];
+        Timer tmptime(static_cast<float>(stats.longestJumpDuration) * 0.001f);
+        tmptime.PrintToString(time, 4);
+        return time;
+    }
+    float GetLongestPowerSlideInMetres() {
+        return static_cast<float>(stats.longestPowerSlideDistance) * 0.001f;
+    }
     void Clear();
 
   private:
