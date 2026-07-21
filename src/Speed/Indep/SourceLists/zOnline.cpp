@@ -23,3 +23,5 @@
 #include "Speed/Indep/Src/Online/LobbyGameSessions.cpp"
 
 #include "Speed/Indep/Src/Online/ConnectionCore.cpp"
+
+#include "Speed/Indep/Src/Online/VoiceCore.cpp"

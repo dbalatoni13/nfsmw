@@ -1,5 +1,6 @@
 #include "NetworkCore.hpp"
 #include "LobbyCore.hpp"
+#include "VoiceCore.hpp"
 
 #include <string.h>
 
@@ -21,21 +22,6 @@ void TIMER_removetask(void (*timerRoutine)());
 void LobbyDisconnect();
 
 extern int NetworkUseLobbies;
-
-// TODO: Replace this with the original owner header when VoiceCore is reached in zOnline order.
-class VoiceCore {
-  public:
-    void Startup();
-    void Shutdown();
-    void Update();
-    bool IsMuted(const char *persona);
-    bool IsInVOIPChat(const char *persona, int *channel);
-    void AddPlayer(const char *persona);
-    void RemovePlayer(const char *persona);
-    void RemoveAllPlayers();
-    void SetHeadsetPort(int port);
-    static VoiceCore *mInstance;
-};
 
 uint64 networkTime;
 

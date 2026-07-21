@@ -1,4 +1,5 @@
 #include "LobbyCore.hpp"
+#include "VoiceCore.hpp"
 
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Misc/Config.h"
