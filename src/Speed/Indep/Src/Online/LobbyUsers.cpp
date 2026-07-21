@@ -19,3 +19,13 @@ int PlayerDataT::ExtractRecord(const char *record) {
     lastGameTime = TagFieldGetNumber(TagFieldFind(record, "LGAME"), 0);
     return 0;
 }
+
+int PlayerDataT::ExtractRecord(const LobbyApiUserT &user) {
+    Clear();
+    if (!user.name[0]) {
+        return -1;
+    }
+    bStrCpy(persona, user.name);
+    TagFieldGetStructure(user.stat, &stats, sizeof(stats), "l*");
+    return 0;
+}
