@@ -261,3 +261,5 @@ int ConnectionCore::GetNumPlayers() {
     }
     return tmp;
 }
+
+int ConnectionCore::GetNumConnectedPlayers() { return numConnectedPlayers; }
