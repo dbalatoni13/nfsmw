@@ -178,6 +178,9 @@ struct LobbyUsers {
     void ClearUserStats();
     int32 GetOtherUserStats(PlayerDataT &userStats, const char *persona, CommandCBFunc func,
                             void *context);
+    void AbortCommand(int32 commandID) { LobbyCore::Instance().AbortCommand(commandID); }
+    int32 SubmitFeedback(const char *persona, const char *feedback, CommandCBFunc func,
+                         void *context);
     void ClearUserOnlineRecordCache();
     void ClearUserOnlineRecordCache(const LobbyApiPlayT &game);
     void SetSessionChangeFlag(bool changing);

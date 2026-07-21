@@ -1,5 +1,6 @@
 #include "LobbyUsers.hpp"
 #include "Speed/Indep/Src/Frontend/Database/VehicleDB.hpp"
+#include "Speed/Indep/Src/Misc/BuildRegion.hpp"
 #include "Speed/Indep/Src/Physics/PhysicsInfo.hpp"
 
 void *operator new(size_t size, const char *file, int line, int allocationParams);
@@ -431,5 +432,26 @@ int32 LobbyUsers::GetOtherUserStats(PlayerDataT &userStats, const char *persona,
     int32 rc = LobbyCore::Instance().QueueCommand('user', buf, LobbyCore::DefaultCB, this, func,
                                                    context, false);
     lobbyMutex.Unlock("LobbyUsers::GetOtherUserStats");
+    return rc;
+}
+
+int32 LobbyUsers::SubmitFeedback(const char *persona, const char *feedback, CommandCBFunc func,
+                                 void *context) {
+    lobbyMutex.Lock("LobbyUsers::SubmitFeedback");
+    if (!persona || !persona[0]) {
+        lobbyMutex.Unlock("LobbyUsers::SubmitFeedback");
+        return -1;
+    }
+
+    char buf[64] = "";
+    TagFieldSetString(buf, sizeof(buf), "PERS", persona);
+    TagFieldSetString(buf, sizeof(buf), "REGN", BuildRegion::GetAbbreviation());
+    if (feedback && feedback[0]) {
+        TagFieldSetString(buf, sizeof(buf), "REPT", feedback);
+    }
+
+    int32 rc = LobbyCore::Instance().QueueCommand('rept', buf, LobbyCore::DefaultCB, nullptr,
+                                                   func, context, false);
+    lobbyMutex.Unlock("LobbyUsers::SubmitFeedback");
     return rc;
 }
