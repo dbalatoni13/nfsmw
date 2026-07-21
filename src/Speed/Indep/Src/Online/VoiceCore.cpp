@@ -358,3 +358,7 @@ bool VoiceCore::_IsHeadsetSending() {
 }
 
 inline void VoiceCore::_SetSpeakerState(bool enable) {}
+
+void VoiceCore::_SetSpeakerVolume(float v) {
+    speaker_volume_remember = VU0_floatmin(1.0f, VU0_floatmax(0.0f, v));
+}
