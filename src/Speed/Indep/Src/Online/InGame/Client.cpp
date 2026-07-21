@@ -318,3 +318,9 @@ void Client::ProcessServerQuitMessage(SmartBitStream &bitstream_data) {
     bitstream_data.GetBits(temp, 1);
     Close();
 }
+
+void Client::ProcessClientLeftMessage(SmartBitStream &bitstream_data) {
+    int driver_number = bitstream_data.GetInt();
+    bool he_quit = bitstream_data.GetBool();
+    TheOnlineManager.DriverLeft(driver_number, he_quit);
+}

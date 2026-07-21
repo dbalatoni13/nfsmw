@@ -24,9 +24,9 @@ class SmartBitStream : public BitStream {
         value = temp;
     }
     bool GetBool() {
-        bool value;
-        GetBool(value);
-        return value;
+        uint32 temp = 0;
+        GetBits(temp, 1);
+        return temp == 1;
     }
     void AddByte(uint8 value) { AddBits(value, 8); }
     void GetByte(uint8 &value) {
