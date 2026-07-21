@@ -292,3 +292,11 @@ bool VoiceCore::_IsInVOIPChat(const char *name, int *channel) {
     }
     return false;
 }
+
+bool VoiceCore::_IsMuted(int channel) {
+    bool rc = false;
+    if (channels[channel].assigned) {
+        rc = channels[channel].muted != 0;
+    }
+    return rc;
+}
