@@ -4,6 +4,7 @@
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
+#include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/Src/Online/LobbyCore.hpp"
 #include "Speed/Indep/Src/Online/VoiceCore.hpp"
 
@@ -16,6 +17,10 @@ int HLBApiInitialize(HLBApiRefT *api, const char *serverPort, int product, const
 int HLBApiConnect(HLBApiRefT *api, const char *server, int port, const char *password, const char *context);
 int HLBBudIsTemporary(HLBBudT *buddy);
 unsigned int HLBBudGetGameInviteFlags(HLBBudT *buddy);
+int HLBBudIsRealBuddy(HLBBudT *buddy);
+int HLBBudIsWannaBeMyBuddy(HLBBudT *buddy);
+int HLBBudIsBlocked(HLBBudT *buddy);
+int HLBBudGetState(HLBBudT *buddy);
 const char *HLBBudGetName(HLBBudT *buddy);
 void HLBApiCancelOp(HLBApiRefT *api);
 int HLBApiRegisterBuddyChangeCallback(HLBApiRefT *api, void (*callback)(HLBApiRefT *, int, int, void *), void *context);
@@ -298,3 +303,36 @@ BuddyCore *BuddyCore::instance() {
 HLBBudT *BuddyCore::getBuddyByIndex(int index) { return HLBListGetBuddyByIndex(HLBud, index); }
 
 HLBBudT *BuddyCore::getBuddyByName(const char *name) { return HLBListGetBuddyByName(HLBud, name); }
+
+void BuddyCore::buddyListChangedCallback(int op, int opStatus) {
+    int i;
+    int buddycount;
+    bool budRequestRec = false;
+    Invite *thisInvite;
+    HLBBudT *thisBuddy;
+
+    buddycount = getBuddyCount();
+    for (i = 0; i < buddycount; i++) {
+        HLBBudT *pBud = getBuddyByIndex(i);
+        if (pBud && !HLBBudIsRealBuddy(pBud) && HLBBudIsWannaBeMyBuddy(pBud) && !HLBBudIsBlocked(pBud)) {
+            budRequestRec = true;
+            HLBListFlagTempBuddy(HLBud, HLBBudGetName(pBud), 1);
+        }
+    }
+    for (i = 0; i < 10; i++) {
+        thisInvite = LobbyChat::Instance().GetSentInvite(i);
+        if (!thisInvite) {
+            break;
+        }
+        thisBuddy = getBuddyByName(thisInvite->player);
+        if (thisBuddy && HLBBudGetState(thisBuddy) == 0) {
+            DisplayDeclinedInvite(thisInvite->player);
+            LobbyChat::Instance().CancelInvite(thisInvite->player);
+        }
+    }
+    if (budRequestRec) {
+        g_pEAXSound->PlayUISoundFX(UISND_EA_MSGR_MAIL_RECEIVE);
+    }
+    MenuScreen::UpdateStatusIcons(3, budRequestRec);
+    gBuddyListHasChanged = 1;
+}
