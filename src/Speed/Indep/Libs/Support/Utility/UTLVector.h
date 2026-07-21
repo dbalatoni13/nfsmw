@@ -8,6 +8,8 @@
 static const int DEFAULT_VECTOR_ALIGNMENT = 16;
 
 namespace UTL {
+
+// total size: 0x10
 template <typename T, int Alignment = DEFAULT_VECTOR_ALIGNMENT> class Vector {
   public:
     typedef T value_type;
@@ -34,12 +36,12 @@ template <typename T, int Alignment = DEFAULT_VECTOR_ALIGNMENT> class Vector {
 
     virtual ~Vector() {}
 
-    size_type capacity() const {
-        return mCapacity;
-    }
-
     size_type size() const {
         return mSize;
+    }
+
+    size_type capacity() const {
+        return mCapacity;
     }
 
     const_iterator begin() const {
@@ -59,6 +61,10 @@ template <typename T, int Alignment = DEFAULT_VECTOR_ALIGNMENT> class Vector {
     }
 
     reference operator[](size_type idx) {
+        return mBegin[idx];
+    }
+
+    const_reference operator[](size_type idx) const {
         return mBegin[idx];
     }
 
@@ -161,7 +167,6 @@ template <typename T, int Alignment = DEFAULT_VECTOR_ALIGNMENT> class Vector {
     virtual void OnGrowRequest(size_type newSize) {}
 
   private:
-    // total size: 0x10
     pointer mBegin;      // offset 0x0, size 0x4
     size_type mCapacity; // offset 0x4, size 0x4
     size_type mSize;     // offset 0x8, size 0x4

@@ -55,11 +55,13 @@ class cInterpLine {
     cInterpLine();
     ~cInterpLine();
 
-    void Initialize(float _Start, float _Finish, float _Length, eCURVETYPE _Curve);
+    void Initialize(float _Start, float _Finish, int _Length, eCURVETYPE _Curve);
 
     void Reset();
 
-    float GetValue() {}
+    float GetValue() {
+        return this->CurValue;
+    }
     int iGetValue() {}
     void Update(float delta_time);
     void Update(float delta_time, float _new_Finish);

@@ -1,3 +1,4 @@
+//
 #ifndef STICH_COLLISION_HPP
 #define STICH_COLLISION_HPP
 

@@ -14,7 +14,9 @@
 
 #include "Dynamic_Mixer/NFSMixerDefines.hpp"
 #include "Speed/Indep/Src/EAXSound/AudioMemBase.hpp"
+#include "Speed/Indep/Src/EAXSound/EAXCarState.hpp"
 #include "Speed/Indep/Src/EAXSound/States/STATE_Base.hpp"
+#include "Speed/Indep/Src/EAXSound/UG/SndDataParams.hpp"
 
 #define SFT_ALLOCTYPE(AllocID) (AllocID << 24)     // Decl: 36
 #define SFT_OBJIDX(ObjectIndex) (ObjectIndex << 4) // Decl: 37
@@ -33,10 +35,10 @@ class SndBase : public AudioMemBase {
   public:
     // total size: 0x10
     struct TypeInfo {
-        int ObjectID;               // offset 0x0, size 0x4
-        char *typeName;             // offset 0x4, size 0x4
-        TypeInfo *baseTypeInfo;     // offset 0x8, size 0x4
-        SndBase *(*createObject)(); // offset 0xC, size 0x4
+        int ObjectID;                           // offset 0x0, size 0x4
+        char *typeName;                         // offset 0x4, size 0x4
+        TypeInfo *baseTypeInfo;                 // offset 0x8, size 0x4
+        SndBase *(*createObject)(unsigned int); // offset 0xC, size 0x4
 
         SndBase *CreateObject(unsigned int allocator) {}
     };
@@ -63,9 +65,12 @@ class SndBase : public AudioMemBase {
     virtual void SetupLoadData() {
         InitSFX();
     }
+    void LoadAsset(Attrib::StringKey filename, eSNDDATAPATH path, eSNDDATATYPE datatype, eBANK_SLOT_TYPE SlotType, bool LoadToTop);
+    void LoadAsset(stSndAssetQueue &queueitem, eBANK_SLOT_TYPE SlotType);
     virtual void InitSFX() {
         if (this->m_pInputBlock != nullptr) {
-            this->m_pInputBlock[15] = 1;
+            int *pctl = &this->m_pInputBlock[MAX_NUMBER_OF_IO_CONNECTIONS - 1];
+            *pctl = 1;
         }
     }
     virtual void Destroy() {}
@@ -74,7 +79,35 @@ class SndBase : public AudioMemBase {
     virtual void Detach() {}
     virtual void UpdateMixerOutputs() {}
 
+    bool IsEnabled() {
+        return this->m_bIsEnabled;
+    }
+
+    void Enable() {
+        this->m_bIsEnabled = true;
+    }
+
+    void Disable() {
+        this->m_bIsEnabled = false;
+    }
+
+    void SetDMIX_Input(int index, int value) {
+        this->m_pOutPutBlock[index] = value;
+    }
+
+    int GetDMIX_InputValue(int index) {
+        return m_pOutPutBlock[index];
+    }
+
     int GetDMixOutput(int idx, DMX_PRESET_TYPE etype);
+
+    CSTATE_Base *GetStateBase() {
+        return this->m_pStateBase;
+    }
+
+    EAX_CarState *GetPhysCar() {
+        return this->m_pStateBase->GetPhysCar();
+    }
 
     SndBase *m_pNextSFX; // offset 0x4, size 0x4, Decl: 236
 

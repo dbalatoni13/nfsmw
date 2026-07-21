@@ -31,9 +31,9 @@ class SFXCTL_Engine;
 // total size: 0x17C
 // Decl: 31
 class SFXCTL_Shifting : public SFXCTL {
+  public:
     DECLARE_CREATABLE();
 
-  public:
     SFXCTL_Shifting();
 
     // Overrides: AudioMemBase
@@ -51,7 +51,9 @@ class SFXCTL_Shifting : public SFXCTL {
     void AttachController(SFXCTL *psfxctl) override;
     void UpdateMixerOutputs() override;
 
-    bool IsActive() {} // Decl: 51
+    bool IsActive() {
+        return this->eShiftState != SHFT_NONE;
+    } // Decl: 51
 
     float GetShiftingRPM();
     float GetShiftingTRQ();
@@ -124,9 +126,9 @@ class SFXCTL_Shifting : public SFXCTL {
 // total size: 0x17C
 // Decl: 143
 class SFXCTL_AIShifting : public SFXCTL_Shifting {
+  public:
     DECLARE_CREATABLE();
 
-  public:
     SFXCTL_AIShifting() {} // Decl: 143
 
     // Overrides: AudioMemBase

@@ -1,4 +1,5 @@
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribLoadAndGo.h"
+#include "Speed/Indep/Src/Misc/AttribAsset.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 
 #include <algorithm>
@@ -151,7 +152,7 @@ Vault::Vault(ExportManager &mgr, unsigned int, void *data, std::size_t bytes, IG
     : mRefCount(1), mExportMgr(mgr), mDeinited(false), mDependencies(nullptr), mDepData(nullptr), mResolvedCount(0), mPointers(nullptr),
       mTransientData(nullptr), mStrings(nullptr), mExports(nullptr), mNumExports(0), mInited(false) {
     ChunkBlock *chunk = reinterpret_cast<ChunkBlock *>(data);
-    ChunkBlock *endofdata = reinterpret_cast<ChunkBlock *>((uintptr_t)data + bytes);
+    ChunkBlock *endofdata = reinterpret_cast<ChunkBlock *>(static_cast<char *>(data) + bytes);
 
     // TODO magic
     while (chunk < endofdata) {
@@ -215,7 +216,7 @@ Vault::~Vault() {
     Free(mDepIDs, (mNumDependencies + mNumExports) * sizeof(*mDepIDs), "Attrib::AssetIDs");
 }
 
-const unsigned int *Vault::GetDependencyList(unsigned int &count) const {
+const AssetID *Vault::GetDependencyList(unsigned int &count) const {
     count = mNumDependencies - 1;
     return &mDepIDs[1];
 }

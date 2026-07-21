@@ -9906,7 +9906,7 @@
 0xb7641b3a - rs4_t
 0x1744effa - rs4_track
 0xf259b965 - rs4_track_highend
-0xd377b339 - RSNMCHUNK_FERESNAMES
+0xd377b339 - Aud_Skid_Type
 0x10c61d5e - rsx_1
 0x25ab2818 - rsx_draghpfall
 0xdd2a7d0a - rsx_highendscgrip

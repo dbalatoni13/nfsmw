@@ -21,9 +21,9 @@ enum NIS_ENGINE_REVING_STATE {
 // total size: 0xD0
 // Decl: 22
 class SFXCTL_Physics : public SFXCTL {
+  public:
     DECLARE_CREATABLE();
 
-  public:
     SFXCTL_Physics();
 
     // Overrides: AudioMemBase
@@ -100,9 +100,9 @@ class SFXCTL_Physics : public SFXCTL {
 // total size: 0x290
 // Decl: 111
 class SFXCTL_AIPhysics : public SFXCTL_Physics {
+  public:
     DECLARE_CREATABLE();
 
-  public:
     SFXCTL_AIPhysics();
 
     // Overrides: AudioMemBase
@@ -147,9 +147,9 @@ class SFXCTL_AIPhysics : public SFXCTL_Physics {
 // total size: 0x290
 // Decl: 170
 class SFXCTL_TruckPhysics : public SFXCTL_AIPhysics {
+  public:
     DECLARE_CREATABLE();
 
-  public:
     SFXCTL_TruckPhysics() {} // Decl: 170
 };
 

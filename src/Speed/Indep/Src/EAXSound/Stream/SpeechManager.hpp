@@ -1,9 +1,5 @@
-#ifndef EAXSOUND_STREAM_SPEECHMANAGER_H
-#define EAXSOUND_STREAM_SPEECHMANAGER_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef _SPEECH_MANAGER_H_
+#define _SPEECH_MANAGER_H_
 
 #include "SpeechModule.hpp"
 
@@ -18,5 +14,9 @@ class Manager {
 };
 
 }; // namespace Speech
+
+// Decl: 225
+#define SCHEDULE_SPEECH(_EVENT_, _DATA_, _CALLER_)                                                                                                   \
+    Speech::Manager::ScheduleSpeech<Csis::_EVENT_##Struct>(_DATA_, Csis::_EVENT_##Id, Csis::g##_EVENT_##Handle, _CALLER_)
 
 #endif

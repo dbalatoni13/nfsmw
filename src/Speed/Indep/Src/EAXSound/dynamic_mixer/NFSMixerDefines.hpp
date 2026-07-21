@@ -1,6 +1,7 @@
 //
 #ifndef NFSMIXERDEFINES_HPP
 #define NFSMIXERDEFINES_HPP
+
 #define MAX_NUM_NFSMIX_EVENTS 5              // Decl: 8
 #define MAXMAPSTATES 4                       // Decl: 9
 #define MAXMAPID 1                           // Decl: 10

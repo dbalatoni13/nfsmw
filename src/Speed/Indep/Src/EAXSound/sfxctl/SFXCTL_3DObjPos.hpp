@@ -15,9 +15,9 @@ enum ePOSMIXTYPE {
 // total size: 0x64
 // Decl: 46
 class SFXCTL_3DObjPos : public SFXCTL {
+  public:
     DECLARE_CREATABLE();
 
-  public:
     SFXCTL_3DObjPos();
     ~SFXCTL_3DObjPos() override;
 

@@ -189,7 +189,15 @@ int SND_attrsetdef(SNDSAMPLEATTR *pssa);
 
 int SNDBANK_patchinfo(int bhandle, int patnum, SNDSAMPLEFORMAT *pssf, SNDSAMPLEATTR *pssa, SNDSAMPLEDESC *pssd);
 
+int SNDCTRL_drylevel(int shandle, int level);
+
 int SNDCTRL_getprogvol(int shandle);
+
+int SNDCTRL_lowpass(int shandle, int lowpasscutoff);
+
+int SNDfxlevel(int shandle, int bus, int level);
+
+int SNDpitchmult(int shandle, int pitchmult);
 
 int SNDplaysetdef(SNDPLAYOPTS *pspo);
 
@@ -206,6 +214,8 @@ void SNDSYS_entercritical();
 void SNDSYS_leavecritical();
 
 int SNDtimeremaining(int shandle);
+
+int SNDvol(int shandle, int vol);
 
 #ifdef __cplusplus
 }

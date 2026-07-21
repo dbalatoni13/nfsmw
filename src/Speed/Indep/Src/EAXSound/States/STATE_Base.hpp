@@ -88,6 +88,18 @@ class CSTATE_Base : public AudioMemBase {
     void SafeConnectOrphanObjects();
     void DisconnectMixMap();
 
+    EAX_CarState *GetPhysCar() {
+        return this->m_pCar;
+    }
+
+    float GetCurTime() {
+        return this->t_CurTime;
+    }
+
+    float GetDeltaTime() {
+        return this->t_DeltaTime;
+    }
+
   protected:
     static CSTATE_Base::StateInfo s_StateInfo;
 

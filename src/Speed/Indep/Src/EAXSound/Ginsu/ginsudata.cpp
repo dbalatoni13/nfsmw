@@ -162,7 +162,6 @@ bool GinsuSynthData::BindToData(void *ptr) {
     return true;
 }
 
-// UNSOLVED
 int GinsuSynthData::FrequencyToSample(float freq) const {
     float seg;
     int i;
@@ -178,8 +177,9 @@ int GinsuSynthData::FrequencyToSample(float freq) const {
     } else {
         seg = static_cast<float>(this->mSegCount) * (freq - this->mMinFrequency) / (this->mMaxFrequency - this->mMinFrequency);
         i = IntFloor(seg);
-        a = static_cast<float>(this->mFreqPos[i + 1] - this->mFreqPos[i]);
-        samp = IntRound(a * (seg - static_cast<float>(i)) + static_cast<float>(this->mFreqPos[i]));
+        a = seg - static_cast<float>(i);
+        samp = IntRound(static_cast<float>(this->mFreqPos[i]) + a * static_cast<float>(this->mFreqPos[i + 1] - this->mFreqPos[i]));
+        return samp;
     }
 
     return samp;
@@ -199,8 +199,8 @@ int GinsuSynthData::CycleToSample(float cycle) const {
         samp = this->mCyclePos[this->mCycleCount];
     } else {
         i = IntFloor(cycle);
-        a = static_cast<float>(this->mCyclePos[i + 1] - this->mCyclePos[i]);
-        samp = IntRound(a * (cycle - static_cast<float>(i)) + static_cast<float>(this->mCyclePos[i]));
+        a = cycle - static_cast<float>(i);
+        return IntRound(static_cast<float>(this->mCyclePos[i]) + a * static_cast<float>(this->mCyclePos[i + 1] - this->mCyclePos[i]));
     }
 
     return samp;
