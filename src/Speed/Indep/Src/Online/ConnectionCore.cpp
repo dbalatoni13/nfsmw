@@ -12,6 +12,7 @@ int ConnApiConnect(ConnApiRefT *connapi, ConnApiUserInfoT *userInfo, int numClie
 int ConnApiAddClient(ConnApiRefT *connapi, ConnApiUserInfoT *userInfo);
 ConnApiClientListT *ConnApiGetClientList(ConnApiRefT *connapi);
 int ConnApiRemoveClient(ConnApiRefT *connapi, const char *clientName, int clientIndex);
+int ConnApiOnline(ConnApiRefT *connapi, const char *name, DirtyAddrT *dirtyAddr);
 int ConnApiControl(ConnApiRefT *connapi, int control, int value, int value2, void *pValue);
 }
 
@@ -320,5 +321,23 @@ void ConnectionCore::UpdateNumConnectedPlayers() {
                 numConnectedPlayers++;
             }
         }
+    }
+}
+
+inline bool ConnectionCore::IsSessionStarted() {
+    ConnApiClientListT *clientList = ConnApiGetClientList(connapi);
+    return clientList && clientList->iNumClients > 0;
+}
+
+void ConnectionCore::MaybeGoOnline() {
+    if (!isOnline) {
+        if (SkipFE) {
+            ConnApiOnline(connapi, FEDatabase->OnlineSettings.GetLobbyPersona(),
+                          &NetworkCore::MyDirtyAddr());
+        } else {
+            LobbyApiUserT *me = LobbyUsers::Instance().GetMyUserRecord();
+            ConnApiOnline(connapi, me->name, &me->MachineAddr);
+        }
+        isOnline = true;
     }
 }
