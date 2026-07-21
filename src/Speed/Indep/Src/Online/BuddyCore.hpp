@@ -116,10 +116,12 @@ struct BuddyCore {
     HLBApiRefT *getApiRef() { return HLBud; }
     void disconnect();
     void handledisconnect();
+    void doprocessing();
     void pause();
     int resume();
     void initVoiceAndPresence();
     void clearEAMStatusIcons();
+    void DisplayVOIPChatEnded();
     int getBuddyCount();
     HLBBudT *getBuddyByIndex(int index);
 };

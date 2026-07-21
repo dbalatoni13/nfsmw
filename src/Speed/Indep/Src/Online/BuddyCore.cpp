@@ -3,6 +3,7 @@
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Online/LobbyCore.hpp"
+#include "Speed/Indep/Src/Online/VoiceCore.hpp"
 
 extern "C" {
 void *NetAlloc(int size);
@@ -29,6 +30,8 @@ void HLBListFlagTempBuddy(HLBApiRefT *api, const char *name, int flags);
 void HLBListAnswerGameInvite(HLBApiRefT *api, const char *name, int answer, int gameId, int flags);
 void HLBApiDisconnect(HLBApiRefT *api);
 void HLBApiDestroy(HLBApiRefT *api);
+void HLBApiPresenceVOIPSend(HLBApiRefT *api, int status);
+void HLBApiUpdate(HLBApiRefT *api);
 void *LobbyApiInfoPtr(LobbyApiRefT *api, int selector);
 char *TagFieldFind(const char *record, const char *name);
 int TagFieldGetNumber(const char *field, int defaultValue);
@@ -36,6 +39,7 @@ int TagFieldGetString(const char *field, char *buffer, int bufferSize, const cha
 }
 
 extern int gVOIP_InviteState;
+extern int gBuddyListHasChanged;
 
 static char BuddyProductString[9] = "NFS-2006";
 char productString[32];
@@ -193,5 +197,31 @@ void BuddyCore::disconnect() {
         }
         m_lobbyChalRefT = nullptr;
         bMemSet(savedNames, 0, sizeof(savedNames));
+    }
+}
+
+void BuddyCore::doprocessing() {
+    if (HLBud) {
+        if (m_networkCableUnplugged && NetConnStatus('plug', 0, nullptr) != 0) {
+            m_networkCableUnplugged = false;
+        }
+        int voipStatus = 0;
+        if (VoiceCore::mInstance->IsHeadsetConnected()) {
+            voipStatus = 1;
+        }
+        if (m_lastVOIPstate != voipStatus) {
+            HLBApiPresenceVOIPSend(HLBud, voipStatus);
+            m_lastVOIPstate = voipStatus;
+            gBuddyListHasChanged = 1;
+        }
+        if (m_InVoiceChat && !VoiceCore::mInstance->IsConnected(m_buddyVoiceChatChannel)) {
+            m_InVoiceChat = false;
+            if (!FEDatabase->OnlineSettings.inErrorState) {
+                ConnectionCore::Instance().LeaveSession();
+                DisplayVOIPChatEnded();
+                gBuddyListHasChanged = 1;
+            }
+        }
+        HLBApiUpdate(HLBud);
     }
 }

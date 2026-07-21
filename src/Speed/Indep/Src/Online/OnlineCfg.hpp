@@ -87,6 +87,8 @@ struct cOnlineSettings {
     /* 0x07c */ eOnlinePrevPage ePrevPage;
 
   private:
+    friend struct BuddyCore;
+
     /* 0x080 */ OnlineRaceParameters TheOnlineRaceSettings;
     /* 0x08c */ TODO::eOnlineState onlineState;
     /* 0x090 */ TODO::eOnlineState lastState;

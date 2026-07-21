@@ -10,6 +10,7 @@
 
 struct VoipRefT;
 struct ConnectionCore;
+struct BuddyCore;
 struct LobbyGames;
 class NetworkCore;
 
@@ -108,6 +109,7 @@ class VoiceCore {
     static VoiceCore *mInstance;
 
     friend struct ConnectionCore;
+    friend struct BuddyCore;
     friend struct LobbyGames;
     friend class NetworkCore;
 };
