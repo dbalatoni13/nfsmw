@@ -112,6 +112,7 @@ struct BuddyCore {
   public:
     BuddyCore();
     static BuddyCore *instance();
+    int startconnect(const char *name, const char *passwd, BuddyConnectCallback callback, void *context);
     HLBApiRefT *getApiRef() { return HLBud; }
     void disconnect();
     void pause();
