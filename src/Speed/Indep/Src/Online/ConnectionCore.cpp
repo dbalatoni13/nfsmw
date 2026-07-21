@@ -1,11 +1,13 @@
 #include "LobbyCore.hpp"
 
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
+#include "Speed/Indep/Src/Misc/Config.h"
 
 extern "C" {
 ConnApiRefT *ConnApiCreate(const char *sessionName, int gamePort, int maxClients,
                            ConnApiCallbackT *callback, void *userData);
 void ConnApiDestroy(ConnApiRefT *connapi);
+int ConnApiHost(ConnApiRefT *connapi, ConnApiUserInfoT *userInfo, int numClients, int sessionID);
 int ConnApiControl(ConnApiRefT *connapi, int control, int value, int value2, void *pValue);
 }
 
@@ -74,4 +76,22 @@ void ConnectionCore::SetCallback(ConnApiCallbackT *cbfunc, void *context) {
     if (mutexLocked == true) {
         networkMutex.Unlock("ConnectionCore::SetCallback");
     }
+}
+
+void ConnectionCore::HostSession(int sessionID, int connectionType) {
+    ConnApiUserInfoT myUserInfo;
+
+    networkMutex.Lock("ConnectionCore::HostSession");
+    MaybeGoOnline();
+    if (SkipFE) {
+        myUserInfo.uAddr = NetworkCore::MyIPAddress();
+        myUserInfo.uLocalAddr = myUserInfo.uAddr;
+        bMemCpy(&myUserInfo.DirtyAddr, &NetworkCore::MyDirtyAddr(), sizeof(myUserInfo.DirtyAddr));
+        bStrCpy(myUserInfo.strName, FEDatabase->OnlineSettings.GetLobbyPersona());
+    } else {
+        BuildUserInfo(myUserInfo, *LobbyUsers::Instance().GetMyUserRecord());
+    }
+    ConnApiControl(connapi, 'type', connectionType, 0, nullptr);
+    ConnApiHost(connapi, &myUserInfo, 1, sessionID);
+    networkMutex.Unlock("ConnectionCore::HostSession");
 }
