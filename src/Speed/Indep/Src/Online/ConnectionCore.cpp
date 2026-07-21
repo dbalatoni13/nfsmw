@@ -217,3 +217,32 @@ void ConnectionCore::UpdatePlayers(const LobbyApiPlayT &game) {
     }
     networkMutex.Unlock("ConnectionCore::UpdatePlayers");
 }
+
+inline void ConnectionCore::RemovePlayer(char *playerName) {
+    networkMutex.Lock("ConnectionCore::RemovePlayer");
+    ConnApiClientListT *clientList = ConnApiGetClientList(connapi);
+    if (clientList && bStrCmp(playerName, FEDatabase->OnlineSettings.GetLobbyPersona()) != 0) {
+        for (int i = 0; i < clientList->iNumClients; i++) {
+            if (bStrCmp(clientList->Clients[i].UserInfo.strName, playerName) == 0) {
+                VoiceCore::mInstance->RemovePlayer(clientList->Clients[i].UserInfo.strName);
+                ConnApiRemoveClient(connapi, nullptr, i);
+                UpdateNumConnectedPlayers();
+                break;
+            }
+        }
+    }
+    networkMutex.Unlock("ConnectionCore::RemovePlayer");
+}
+
+inline void ConnectionCore::RemovePlayer(int index) {
+    networkMutex.Lock("ConnectionCore::RemovePlayer");
+    ConnApiClientListT *clientList = ConnApiGetClientList(connapi);
+    if (clientList && index >= 0 && index < clientList->iNumClients &&
+        bStrCmp(clientList->Clients[index].UserInfo.strName,
+                FEDatabase->OnlineSettings.GetLobbyPersona()) != 0) {
+        VoiceCore::mInstance->RemovePlayer(clientList->Clients[index].UserInfo.strName);
+        ConnApiRemoveClient(connapi, nullptr, index);
+        UpdateNumConnectedPlayers();
+    }
+    networkMutex.Unlock("ConnectionCore::RemovePlayer");
+}
