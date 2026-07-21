@@ -5,6 +5,7 @@
 extern "C" {
 ConnApiRefT *ConnApiCreate(const char *sessionName, int gamePort, int maxClients,
                            ConnApiCallbackT *callback, void *userData);
+void ConnApiDestroy(ConnApiRefT *connapi);
 int ConnApiControl(ConnApiRefT *connapi, int control, int value, int value2, void *pValue);
 }
 
@@ -46,4 +47,18 @@ void ConnectionCore::Init(int maxNumPlayers, ConnApiCallbackT *cbfunc, void *con
     ConnApiControl(connapi, 'mwid', 100, 0, nullptr);
     ConnApiControl(connapi, 'mout', 16, 0, nullptr);
     networkMutex.Unlock("ConnectionCore::Init");
+}
+
+void ConnectionCore::Reset() {
+    networkMutex.Lock("ConnectionCore::Reset");
+    if (connapi) {
+        ConnApiDestroy(connapi);
+    }
+    connapi = nullptr;
+    connapiCallback = nullptr;
+    callbackContext = nullptr;
+    numConnectedPlayers = 0;
+    isOnline = false;
+    VoiceCore::mInstance->Shutdown();
+    networkMutex.Unlock("ConnectionCore::Reset");
 }

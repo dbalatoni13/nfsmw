@@ -26,6 +26,7 @@ extern int NetworkUseLobbies;
 class VoiceCore {
   public:
     void Startup();
+    void Shutdown();
     void Update();
     bool IsMuted(const char *persona);
     void SetHeadsetPort(int port);
