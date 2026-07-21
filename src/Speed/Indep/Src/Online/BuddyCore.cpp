@@ -232,3 +232,8 @@ void BuddyCore::handledisconnect() {
         HLBApiCancelOp(HLBud);
     }
 }
+
+void BuddyCore::debugoutput(const char *str) {
+    char time_buffer[16];
+    bSPrintf(time_buffer, "%-6d: ", RealLoopCounter);
+}
