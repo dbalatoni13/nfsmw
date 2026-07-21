@@ -379,3 +379,10 @@ void Client::SetState(ClientStateEnum new_state) {
         SendMessage(11, bitstream_data, true);
     }
 }
+
+bool Client::IsConnected() {
+    if (hostConnection) {
+        return hostConnection->GameInfo.eStatus == CONNAPI_STATUS_ACTV;
+    }
+    return false;
+}
