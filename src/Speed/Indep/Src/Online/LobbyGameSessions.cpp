@@ -919,3 +919,39 @@ void LobbyGameSessions::FindSessionsCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, v
 void LobbyGameSessions::SessionUpdateCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData) {
     LobbyCore::Instance().FinishCommand(pMsg, true);
 }
+
+int LobbyGameSessions::SortFunc(void *sortref, int sortcon, void *recptr1, void *recptr2) {
+    bool ascending = (sortcon & LobbyGameSessionsN::SORT_INVALID) != 0;
+    LobbyGameSessionsN::SortField sortField =
+        static_cast<LobbyGameSessionsN::SortField>(sortcon & 0x0fffffff);
+    int rc;
+    switch (sortField) {
+    case LobbyGameSessionsN::SORT_PING: {
+        LobbyGameSessions &lgs = Instance();
+        ExtraSessionDataMap::iterator esd1 =
+            lgs.extraSessionDataMap.find(static_cast<LobbyApiUserSetT *>(recptr1)->iIdent);
+        ExtraSessionDataMap::iterator esd2 =
+            lgs.extraSessionDataMap.find(static_cast<LobbyApiUserSetT *>(recptr2)->iIdent);
+        if (esd1->second.pingToHostInMsec < 0 && esd2->second.pingToHostInMsec >= 0) {
+            rc = 1;
+        } else if (esd1->second.pingToHostInMsec >= 0 && esd2->second.pingToHostInMsec < 0) {
+            rc = -1;
+        } else {
+            rc = esd1->second.pingToHostInMsec - esd2->second.pingToHostInMsec;
+        }
+        break;
+    }
+    case LobbyGameSessionsN::SORT_SESSION_NAME: {
+        char *g1 = bStrChr(static_cast<LobbyApiUserSetT *>(recptr1)->strName, '.');
+        rc = bStrICmp(g1 + 1, bStrChr(static_cast<LobbyApiUserSetT *>(recptr2)->strName, '.') + 1);
+        break;
+    }
+    case LobbyGameSessionsN::SORT_PLAYER_COUNT:
+        rc = static_cast<LobbyApiUserSetT *>(recptr1)->iCount -
+             static_cast<LobbyApiUserSetT *>(recptr2)->iCount;
+        break;
+    default:
+        return 0;
+    }
+    return ascending ? rc : -rc;
+}
