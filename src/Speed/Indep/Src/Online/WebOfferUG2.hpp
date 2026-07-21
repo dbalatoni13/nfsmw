@@ -26,11 +26,72 @@ struct WebOfferCommandT {
     char strParms[4096];
 };
 
-struct WebOfferAlertT;
-struct WebOfferPromoT;
-struct WebOfferCreditT;
-struct WebOfferBusyT;
-struct WebOfferNewsT;
+struct WebOfferColorT {
+    unsigned char uRed;
+    unsigned char uGreen;
+    unsigned char uBlue;
+    unsigned char uAlpha;
+};
+
+struct WebOfferButtonT {
+    char strType[1];
+    char strText[40];
+    WebOfferColorT Color;
+};
+
+struct WebOfferBusyT {
+    char strTitle[64];
+    char strMessage[1024];
+    WebOfferColorT MsgColor;
+    WebOfferButtonT Button[1];
+};
+
+struct WebOfferAlertT {
+    char strTitle[64];
+    char strImage[32];
+    char strMessage[1024];
+    WebOfferColorT MsgColor;
+    WebOfferButtonT Button[4];
+};
+
+struct WebOfferCreditT {
+    char strTitle[64];
+    char strMessage[1024];
+    WebOfferColorT MsgColor;
+    WebOfferButtonT Button[4];
+    char strFirstName[100];
+    char strLastName[100];
+    char strNameOnCard[200];
+    char strAddress[2][100];
+    char strCity[100];
+    char strState[40];
+    char strPostCode[40];
+    char *pCountryList;
+    char strCountry[50];
+    char strEmail[100];
+    char *pCardList;
+    char strCardType[80];
+    char strCardNumber[40];
+    int iExpiryMonth;
+    int iExpiryYear;
+};
+
+struct WebOfferPromoT {
+    char strTitle[64];
+    char strMessage[1024];
+    WebOfferColorT MsgColor;
+    WebOfferButtonT Button[4];
+    char strPromo[200];
+    char strPromoKPopTitle[64];
+};
+
+struct WebOfferNewsT {
+    char strTitle[64];
+    char strImage[32];
+    WebOfferButtonT Button[4];
+    WebOfferColorT NewsColor;
+    char *pNews;
+};
 
 enum EProcessAction {
     eProcessAction_Nothing = 10,

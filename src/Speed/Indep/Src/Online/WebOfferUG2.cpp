@@ -5,6 +5,12 @@ extern "C" void WebOfferDestroy(WebOfferT *webOffer);
 extern "C" void WebOfferSetup(WebOfferT *webOffer, WebOfferSetupT *setup);
 extern "C" void WebOfferExecute(WebOfferT *webOffer, const char *offerURL);
 extern "C" WebOfferCommandT *WebOfferCommand(WebOfferT *webOffer);
+extern "C" void WebOfferGetAlert(WebOfferT *webOffer, WebOfferAlertT *alertData);
+extern "C" void WebOfferGetPromo(WebOfferT *webOffer, WebOfferPromoT *promoData);
+extern "C" void WebOfferGetCredit(WebOfferT *webOffer, WebOfferCreditT *creditData);
+extern "C" void WebOfferGetBusy(WebOfferT *webOffer, WebOfferBusyT *busyData);
+extern "C" void WebOfferHttp(WebOfferT *webOffer);
+extern "C" char *WebOfferGetNews(WebOfferT *webOffer, WebOfferNewsT *newsData);
 
 CWebOffer::CWebOffer()
     : m_pWebOfferAPI(nullptr) //
@@ -77,4 +83,40 @@ void CWebOffer::StartNextCommand() {
     } else {
         _Finished();
     }
+}
+
+void CWebOffer::_StartAlert() {
+    WebOfferAlertT AlertData;
+    WebOfferGetAlert(m_pWebOfferAPI, &AlertData);
+    StartAlert(AlertData);
+    m_bProcessingCommand = true;
+}
+
+void CWebOffer::_StartPromo() {
+    WebOfferPromoT PromoData;
+    WebOfferGetPromo(m_pWebOfferAPI, &PromoData);
+    StartPromo(PromoData);
+    m_bProcessingCommand = true;
+}
+
+void CWebOffer::_StartCredit() {
+    WebOfferCreditT CreditData;
+    WebOfferGetCredit(m_pWebOfferAPI, &CreditData);
+    StartCredit(CreditData);
+    m_bProcessingCommand = true;
+}
+
+void CWebOffer::_StartHTTP() {
+    WebOfferBusyT BusyData;
+    WebOfferGetBusy(m_pWebOfferAPI, &BusyData);
+    StartHTTP(BusyData);
+    WebOfferHttp(m_pWebOfferAPI);
+    m_bProcessingCommand = true;
+}
+
+void CWebOffer::_StartNews() {
+    WebOfferNewsT NewsData;
+    char *pNewsText = WebOfferGetNews(m_pWebOfferAPI, &NewsData);
+    StartNews(pNewsText, NewsData);
+    m_bProcessingCommand = true;
 }
