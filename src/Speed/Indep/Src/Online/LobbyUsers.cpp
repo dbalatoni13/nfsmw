@@ -115,3 +115,13 @@ float PlayerDataT::GetWinPercentage(int mode) {
     }
     return 0.0f;
 }
+
+float PlayerDataT::GetTotalDisconnectPercentage() {
+    uint32 gamesPlayed = GetTotalGamesPlayedAsHost();
+    gamesPlayed += GetTotalGamesPlayedAsClient();
+    float totalDisconnects = static_cast<float>(stats.hostDisconnects + stats.clientDisconnects);
+    if (gamesPlayed != 0) {
+        return (totalDisconnects / static_cast<float>(gamesPlayed)) * 100.0f;
+    }
+    return 0.0f;
+}

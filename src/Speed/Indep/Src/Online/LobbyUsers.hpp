@@ -57,8 +57,24 @@ struct PlayerDataT {
     }
     uint32 GetMonthlyPointTotals(int mode);
     float GetWinPercentage(int mode);
-    float GetClientDisconnectPercentage();
-    float GetHostDisconnectPercentage();
+    float GetClientDisconnectPercentage() {
+        uint32 gamesPlayedAsClient = GetTotalGamesPlayedAsClient();
+        if (gamesPlayedAsClient != 0) {
+            return (static_cast<float>(stats.clientDisconnects) /
+                    static_cast<float>(gamesPlayedAsClient)) *
+                   100.0f;
+        }
+        return 0.0f;
+    }
+    float GetHostDisconnectPercentage() {
+        uint32 gamesPlayedAsHost = GetTotalGamesPlayedAsHost();
+        if (gamesPlayedAsHost != 0) {
+            return (static_cast<float>(stats.hostDisconnects) /
+                    static_cast<float>(gamesPlayedAsHost)) *
+                   100.0f;
+        }
+        return 0.0f;
+    }
     float GetTotalDisconnectPercentage();
     float GetTopSpeedInMPS(int mode);
     float GetFastestDragFinish();
