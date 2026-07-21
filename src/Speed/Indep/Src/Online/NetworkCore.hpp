@@ -60,7 +60,7 @@ class NetworkCore : public PlatformNetworkCore {
     NetworkCore();
     ~NetworkCore() override;
 
-    static NetworkCore &Instance();
+    static NetworkCore &Instance() { return mInstance; }
     bool Init();
     static int StaticInit();
     void Destroy();

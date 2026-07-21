@@ -511,3 +511,15 @@ void LobbyUsers::SetSessionRaceStatusInfo(int lap, int mapx, int mapy) {
         SendAuxiData();
     }
 }
+
+int32 LobbyUsers::SendAuxiData() {
+    if (!auxiData) {
+        return 0;
+    }
+
+    TagFieldSetNumber(auxiData, 128, "V", NetworkCore::Instance().GetNetworkVersionNumber());
+    char buf[132] = "";
+    TagFieldSetString(buf, 128, "TEXT", auxiData);
+    return LobbyCore::Instance().QueueCommand('auxi', buf, LobbyCore::DefaultCB, this, nullptr,
+                                               nullptr, false);
+}
