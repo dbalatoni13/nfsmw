@@ -12,6 +12,9 @@
 
 // total size: 0x14
 struct FECarRecord {
+    unsigned int GetNameHash();
+    bool IsCustomized() { return Customization != 0xff; }
+
     unsigned int Handle;         // offset 0x0, size 0x4
     unsigned int FEKey;          // offset 0x4, size 0x4
     unsigned int VehicleKey;     // offset 0x8, size 0x4
@@ -28,6 +31,7 @@ struct FECustomizationRecord {
     }
 
     void WriteRecordIntoRide(RideInfo *ride) const;
+    bool WriteRecordIntoPhysics(Attrib::Gen::pvehicle &attributes) const;
 
     short InstalledPartIndices[139];             // offset 0x0, size 0x116
     Physics::Upgrades::Package InstalledPhysics; // offset 0x118, size 0x20

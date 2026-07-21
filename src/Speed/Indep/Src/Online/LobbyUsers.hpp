@@ -170,6 +170,8 @@ struct LobbyUsers {
     ~LobbyUsers() {}
     int32 Init();
     void Reset();
+    void MaybeCreateAuxiBuffer();
+    int32 SendAuxiData();
     friend int32 LobbyInit();
     friend void LobbyDisconnect();
 

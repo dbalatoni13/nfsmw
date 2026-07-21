@@ -55,6 +55,7 @@ struct Performance {
 };
 
 void Init();
+bool ComputePerformance(const Attrib::Gen::pvehicle &pvehicle, Performance &perf);
 
 float AerodynamicDownforce(const Attrib::Gen::chassis &chassis, const float speed);
 float EngineInertia(const Attrib::Gen::engine &engine, const bool loaded);

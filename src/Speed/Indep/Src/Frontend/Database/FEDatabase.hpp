@@ -146,16 +146,18 @@ class OptionsSettings {
     PlayerSettings ThePlayerSettings[2];  // offset 0x68, size 0x58
 };
 
+typedef uint16 FESMSHandle;
+
 // total size: 0x4
 struct SMSMessage {
   public:
   private:
-    unsigned char Handle;     // offset 0x0, size 0x1
-    unsigned char Flags;      // offset 0x1, size 0x1
-    unsigned short SortOrder; // offset 0x2, size 0x2
+    FESMSHandle Handle; // offset 0x0, size 0x2
+    uint8 Flags;        // offset 0x2, size 0x1
+    uint8 Pad;          // offset 0x3, size 0x1
 };
 
-// total size: 0x27C
+// total size: 0x218
 class CareerSettings {
   public:
     uint32 GetCurrentCar() {
@@ -170,9 +172,8 @@ class CareerSettings {
     uint8 CurrentBin;            // offset 0x8, size 0x1
     uint32 CurrentCash;          // offset 0xC, size 0x4
     int16 AdaptiveDifficulty;    // offset 0x10, size 0x2
-    SMSMessage SMSMessages[150]; // offset 0x12, size 0x258
-    uint16 SMSSortOrder;         // offset 0x26A, size 0x2
-    char CaseFileName[16];       // offset 0x26C, size 0x10
+    SMSMessage SMSMessages[125]; // offset 0x12, size 0x1F4
+    char CaseFileName[16];       // offset 0x206, size 0x10
 };
 
 // total size: 0x8
@@ -215,8 +216,8 @@ class UserProfile {
     OptionsSettings TheOptionsSettings; // offset 0x24, size 0xC0
     CareerSettings TheCareerSettings;   // offset 0xE4, size 0x27C
   public:
-    JukeboxEntry Playlist[30];                  // offset 0x360, size 0xF0
-    FEPlayerCarDB PlayersCarStable;             // offset 0x450, size 0x8CC8
+    JukeboxEntry *Playlist;                     // offset 0x2FC, size 0x4
+    FEPlayerCarDB PlayersCarStable;             // offset 0x300, size 0x8CC8
     bool CareerModeHasBeenCompletedAtLeastOnce; // offset 0x9118, size 0x1
     HighScoresDatabase HighScores;              // offset 0x911C, size 0xBD8
 };

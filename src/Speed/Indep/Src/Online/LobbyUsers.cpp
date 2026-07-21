@@ -1,7 +1,10 @@
 #include "LobbyUsers.hpp"
+#include "Speed/Indep/Src/Frontend/Database/VehicleDB.hpp"
+#include "Speed/Indep/Src/Physics/PhysicsInfo.hpp"
 
 extern "C" {
 int TagFieldGetStructure(const char *field, void *buffer, int bufferSize, const char *format);
+void TagFieldSetFloat(char *record, int recordLength, const char *name, float value);
 }
 
 LobbyUsers *pLobbyUsersInstance;
@@ -163,4 +166,30 @@ LobbyUsers &LobbyUsers::Instance() {
     static LobbyUsers theLobbyUsers;
     pLobbyUsersInstance = &theLobbyUsers;
     return theLobbyUsers;
+}
+
+void LobbyUsers::UpdateCarName() {
+    lobbyMutex.Lock("LobbyUsers::SetAuxiCarName");
+    uint32 selectedCar = FEDatabase->GetQuickRaceSettings(GRace::kRaceType_NumTypes)->SelectedCar[0];
+    if (mCar != selectedCar) {
+        mCar = selectedCar;
+        MaybeCreateAuxiBuffer();
+        FEPlayerCarDB *stable = &FEDatabase->CurrentUserProfiles[0]->PlayersCarStable;
+        FECarRecord *car = stable->GetCarRecordByHandle(selectedCar);
+        TagFieldSetNumber(auxiData, 128, "CN", car->GetNameHash());
+        Attrib::Key collectionKey = car->VehicleKey;
+        Attrib::Gen::pvehicle pvehicle(collectionKey, 0, nullptr);
+        if (car->IsCustomized()) {
+            FECustomizationRecord *customization =
+                stable->GetCustomizationRecordByHandle(car->Customization);
+            customization->WriteRecordIntoPhysics(pvehicle);
+        }
+        Physics::Info::Performance performance;
+        Physics::Info::ComputePerformance(pvehicle, performance);
+        TagFieldSetFloat(auxiData, 128, "PT", performance.TopSpeed);
+        TagFieldSetFloat(auxiData, 128, "PH", performance.Handling);
+        TagFieldSetFloat(auxiData, 128, "PA", performance.Acceleration);
+        SendAuxiData();
+    }
+    lobbyMutex.Unlock(nullptr);
 }
