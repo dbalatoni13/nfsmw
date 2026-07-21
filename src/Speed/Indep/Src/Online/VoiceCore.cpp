@@ -269,3 +269,11 @@ void VoiceCore::_RemovePlayer(int channel) {
         bMemSet(&channels[channel], 0, sizeof(channel_type));
     }
 }
+
+void VoiceCore::_RemoveAllPlayers() {
+    if (VoipRef) {
+        for (int i = 0; i < 4; i++) {
+            _RemovePlayer(i);
+        }
+    }
+}
