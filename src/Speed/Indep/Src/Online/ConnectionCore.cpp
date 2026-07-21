@@ -10,6 +10,8 @@ void ConnApiDestroy(ConnApiRefT *connapi);
 int ConnApiHost(ConnApiRefT *connapi, ConnApiUserInfoT *userInfo, int numClients, int sessionID);
 int ConnApiConnect(ConnApiRefT *connapi, ConnApiUserInfoT *userInfo, int numClients, int sessionID);
 int ConnApiAddClient(ConnApiRefT *connapi, ConnApiUserInfoT *userInfo);
+ConnApiClientListT *ConnApiGetClientList(ConnApiRefT *connapi);
+int ConnApiRemoveClient(ConnApiRefT *connapi, const char *clientName, int clientIndex);
 int ConnApiControl(ConnApiRefT *connapi, int control, int value, int value2, void *pValue);
 }
 
@@ -161,4 +163,57 @@ void ConnectionCore::AddPlayer(LobbyApiPlayerT &userInfo) {
     networkMutex.Lock("ConnectionCore::AddPlayer");
     AddPlayer_HaveMutex(userInfo);
     networkMutex.Unlock("ConnectionCore::AddPlayer");
+}
+
+void ConnectionCore::UpdatePlayers(const LobbyApiPlayT &game) {
+    bool madeChanges;
+
+    networkMutex.Lock("ConnectionCore::UpdatePlayers");
+    ConnApiClientListT *clientList = ConnApiGetClientList(connapi);
+    if (!clientList) {
+        networkMutex.Unlock("ConnectionCore::UpdatePlayers");
+        return;
+    }
+    if (game.iIdent < 0 || game.iCount == 0) {
+        ResetSession_HaveMutex();
+        networkMutex.Unlock("ConnectionCore::UpdatePlayers");
+        return;
+    }
+
+    madeChanges = false;
+    for (int i = 0; i < clientList->iNumClients; i++) {
+        bool foundPlayer = false;
+        for (int j = 0; j < game.iCount; j++) {
+            if (bStrCmp(clientList->Clients[i].UserInfo.strName, game.aOpponents[j].strPers) == 0) {
+                foundPlayer = true;
+                break;
+            }
+        }
+        if (!foundPlayer) {
+            madeChanges = true;
+            VoiceCore::mInstance->RemovePlayer(clientList->Clients[i].UserInfo.strName);
+            ConnApiRemoveClient(connapi, nullptr, i--);
+            NetConnIdle();
+            clientList = ConnApiGetClientList(connapi);
+        }
+    }
+
+    for (int i = 0; i < game.iCount; i++) {
+        bool addPlayer = true;
+        for (int j = 0; j < clientList->iNumClients; j++) {
+            if (bStrCmp(clientList->Clients[j].UserInfo.strName, game.aOpponents[i].strPers) == 0) {
+                addPlayer = false;
+                break;
+            }
+        }
+        if (addPlayer) {
+            madeChanges = true;
+            AddPlayer_HaveMutex(game.aOpponents[i]);
+        }
+    }
+
+    if (madeChanges == true) {
+        UpdateNumConnectedPlayers();
+    }
+    networkMutex.Unlock("ConnectionCore::UpdatePlayers");
 }

@@ -29,6 +29,7 @@ class VoiceCore {
     void Shutdown();
     void Update();
     bool IsMuted(const char *persona);
+    void RemovePlayer(const char *persona);
     void SetHeadsetPort(int port);
     static VoiceCore *mInstance;
 };

@@ -260,7 +260,7 @@ struct ConnectionCore {
     void AddPlayer(ConnApiUserInfoT &userInfo);
     void AddPlayer(LobbyApiUserT &userInfo);
     void AddPlayer(LobbyApiPlayerT &userInfo);
-    void UpdatePlayers(LobbyApiPlayT &game);
+    void UpdatePlayers(const LobbyApiPlayT &game);
     void RemovePlayer(char *playerName);
     void RemovePlayer(int index);
     int GetNumPlayers();
@@ -275,7 +275,7 @@ struct ConnectionCore {
   private:
     void UpdateNumConnectedPlayers();
     void MaybeGoOnline();
-    void AddPlayer_HaveMutex(LobbyApiPlayerT &userInfo);
+    void AddPlayer_HaveMutex(const LobbyApiPlayerT &userInfo);
     void ResetSession_HaveMutex();
     static void ConnApiCallback(ConnApiRefT *connapi, ConnApiCbInfoT *cbinfo, void *context);
     static void FrontEndCB(ConnApiRefT *connapi, ConnApiCbInfoT *cbinfo, void *context);
