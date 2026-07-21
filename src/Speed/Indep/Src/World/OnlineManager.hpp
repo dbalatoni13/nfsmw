@@ -46,6 +46,9 @@ class OnlineManager {
     void DriverLeft(int driver_number, bool he_quit);
     void ExportPositionData(int driver_number, SmartBitStream &bitstream_data,
                             ePosDataPriorityMask priority_mask);
+    OnlineRacer *GetOnlineRacer(int driver_number);
+    void ImportPositionData(int driver_number, SmartBitStream &bitstream_data, float timestamp,
+                            ePosDataPriorityMask priority_mask);
 
     void EndSimFrame() {}
 

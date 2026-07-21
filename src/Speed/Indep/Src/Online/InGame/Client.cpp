@@ -3,6 +3,7 @@
 #include "Speed/Indep/Src/Online/SmartBitstream.hpp"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
 #include "Speed/Indep/Src/World/OnlineManager.hpp"
+#include "Speed/Indep/Src/World/World.hpp"
 
 uint32 Client::m_tSendCarUpdatesTimer[4];
 float Client::m_sendCarFrequencyHz[4];
@@ -178,4 +179,17 @@ void Client::ProcessCarMessage(SmartBitStream &bitstream_data) {
     uint32 temp = 0;
     bitstream_data.GetBits(temp, 32);
     ProcessPartialCarMessage(RealTimer.GetSeconds(), bitstream_data);
+}
+
+void Client::ProcessPartialCarMessage(float player_timestamp, SmartBitStream &bitstream_data) {
+    if (pCurrentWorld) {
+        int driver_number =
+            bitstream_data.GetQuantizedInt(Online::m_driverNumberQuantizer);
+        ePosDataPriorityMask priority_mask =
+            static_cast<ePosDataPriorityMask>(bitstream_data.GetByte());
+        if (TheOnlineManager.GetOnlineRacer(driver_number)) {
+            TheOnlineManager.ImportPositionData(driver_number, bitstream_data, player_timestamp,
+                                                priority_mask);
+        }
+    }
 }
