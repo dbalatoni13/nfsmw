@@ -490,3 +490,9 @@ void CWebOfferUG2::StartHTTP(const WebOfferBusyT &BusyData) {
         DialogInterface::SetBlurbIsUTF8();
     }
 }
+
+EProcessAction CWebOfferUG2::ProcessHTTP() {
+    EProcessAction Action = m_PendingAction;
+    m_PendingAction = eProcessAction_Nothing;
+    return Action;
+}
