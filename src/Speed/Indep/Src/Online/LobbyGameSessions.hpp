@@ -94,6 +94,8 @@ struct LobbyGameSessions {
     OnlineRaceModeE GetRaceMode(const GameSession *session);
     int GetNumSessions() const;
     GameSession *GetSessionByName(const char *sessionName) const;
+    GameSession *GetSessionByIndex(int32 index) const;
+    GameSessionMember *GetMemberByIndex(int32 index) const;
     void SendUpdateCallback(LobbyGameSessionsN::SessionStatusCode status);
 
   private:
@@ -102,7 +104,8 @@ struct LobbyGameSessions {
     void Suspend();
     void Resume();
     int32 LeaveSession_HaveMutex(CommandCBFunc leaveSessionCB, void *context);
-    GameSessionMember *GetMemberByIndex_HaveMutex(int32 index);
+    GameSession *GetSessionByIndex_HaveMutex(int32 index) const;
+    GameSessionMember *GetMemberByIndex_HaveMutex(int32 index) const;
     bool IsMemberMakingChanges_HaveMutex(int32 index);
     int GetMemberLatency_HaveMutex(int32 index);
     void SetSortField_HaveMutex(LobbyGameSessionsN::SortField sortField, bool ascending);

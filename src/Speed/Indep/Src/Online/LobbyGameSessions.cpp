@@ -492,3 +492,40 @@ GameSession *LobbyGameSessions::GetSessionByName(const char *sessionName) const 
     lobbyMutex.Unlock("LobbyGameSessions::GetSessionByName");
     return session;
 }
+
+GameSession *LobbyGameSessions::GetSessionByIndex(int32 index) const {
+    lobbyMutex.Lock("LobbyGameSessions::GetSessionByIndex");
+    GameSession *rc = GetSessionByIndex_HaveMutex(index);
+    lobbyMutex.Unlock("LobbyGameSessions::GetSessionByIndex");
+    return rc;
+}
+
+GameSession *LobbyGameSessions::GetSessionByIndex_HaveMutex(int32 index) const {
+    return static_cast<GameSession *>(DispListIndex(sessionList, index));
+}
+
+GameSessionMember *LobbyGameSessions::GetMemberByIndex(int32 index) const {
+    lobbyMutex.Lock("LobbyGameSessions::GetMemberByIndex");
+    GameSessionMember *member = GetMemberByIndex_HaveMutex(index);
+    lobbyMutex.Unlock("LobbyGameSessions::GetMemberByIndex");
+    return member;
+}
+
+GameSessionMember *LobbyGameSessions::GetMemberByIndex_HaveMutex(int32 index) const {
+    GameSessionMember *member;
+    if (index == 0) {
+        member = nullptr;
+        for (int i = 0; i < myCurrentSession.iCount; i++) {
+            member = static_cast<GameSessionMember *>(DispListIndex(sessionMembers, i));
+            if (!member || bStrCmp(member->strPers, myCurrentSession.strOwner) == 0) {
+                break;
+            }
+        }
+    } else {
+        member = static_cast<GameSessionMember *>(DispListIndex(sessionMembers, index));
+        if (member && bStrCmp(member->strPers, myCurrentSession.strOwner) == 0) {
+            member = static_cast<GameSessionMember *>(DispListIndex(sessionMembers, 0));
+        }
+    }
+    return member;
+}
