@@ -86,6 +86,7 @@ struct LobbyGameSessions {
     void GetMemberRaceStatus(int32 index, int &lap, int &mapx, int &mapy);
     int8 GetSecsBeforeHostCanStart();
     int32 FindSessions(const FilterGameSessionParamsT &filterParams, CommandCBFunc filterSessionsCB, void *context);
+    bool FoundAllSessions();
     void SetSortField(LobbyGameSessionsN::SortField sortField, bool ascending);
     GameSession *GetMySession() const;
     char *GetSessionDisplayName(const GameSession *session);

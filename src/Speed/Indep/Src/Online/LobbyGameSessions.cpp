@@ -783,3 +783,7 @@ int32 LobbyGameSessions::LeaveSession_HaveMutex(CommandCBFunc leaveSessionCB, vo
     }
     return -1;
 }
+
+bool LobbyGameSessions::FoundAllSessions() {
+    return lastSearchCount == static_cast<uint32>(DispListShown(sessionList));
+}
