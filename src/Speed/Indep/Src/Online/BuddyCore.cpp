@@ -707,3 +707,26 @@ void RichPresence::Init() {
     mBuddyState = HLB_STAT_CHAT;
     UpdatePresence();
 }
+
+RichPresence::RichPresence() {}
+
+RichPresence::~RichPresence() {}
+
+void RichPresence::SetEventHash(uint32 eventHash) {
+    if (mCurrentRichPresence.eventHash != eventHash) {
+        mCurrentRichPresence.eventHash = eventHash;
+        UpdatePresence();
+    }
+}
+
+void RichPresence::SetSession(const char *session) {
+    if (bStrCmp(mCurrentRichPresence.session, session) != 0) {
+        bStrCpy(mCurrentRichPresence.session, session);
+        UpdatePresence();
+    }
+}
+
+void RichPresence::SetBuddyState(HLBStatE buddyState) {
+    mBuddyState = buddyState;
+    UpdatePresence();
+}
