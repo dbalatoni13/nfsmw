@@ -21,3 +21,21 @@ void VoiceCore::PushToTalk::StopPolling() {
         mIsPolling = false;
     }
 }
+
+bool VoiceCore::PushToTalk::IsPressed() {
+    bool ispressed = false;
+    StartPolling();
+    for (int port = 0; port < 2; port++) {
+        while (!mActionQ[port]->IsEmpty()) {
+            ActionRef aRef = mActionQ[port]->GetAction();
+            if (aRef.ID() == 0x34) {
+                mIsPressed[port] = aRef.Data() > 0.5f;
+            }
+            mActionQ[port]->PopAction();
+        }
+        if (mIsPressed[port]) {
+            ispressed = true;
+        }
+    }
+    return ispressed;
+}
