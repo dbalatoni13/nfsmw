@@ -341,3 +341,12 @@ void ConnectionCore::MaybeGoOnline() {
         isOnline = true;
     }
 }
+
+void ConnectionCore::AddPlayer_HaveMutex(const LobbyApiPlayerT &userInfo) {
+    ConnApiUserInfoT realUserInfo;
+
+    BuildUserInfo(realUserInfo, userInfo);
+    if (bStrCmp(realUserInfo.strName, FEDatabase->OnlineSettings.GetLobbyPersona()) != 0) {
+        ConnApiAddClient(connapi, &realUserInfo);
+    }
+}
