@@ -145,6 +145,7 @@ struct LobbyAccount {
     int32 RequestLostUsername(const char *email, CommandCBFunc func, void *context);
     int32 RequestLostPassword(const char *username, CommandCBFunc func, void *context);
     int32 CreatePersona(const char *name, CommandCBFunc func, void *context);
+    void CancelPersonaCreation(const int32 &commandID);
 
   private:
     LobbyAccount() { pendingPersona[0] = '\0'; }

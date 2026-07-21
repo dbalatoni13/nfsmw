@@ -158,3 +158,8 @@ int32 LobbyAccount::CreatePersona(const char *name, CommandCBFunc func, void *co
     lobbyMutex.Unlock("LobbyAccount::CreatePersona");
     return rc;
 }
+
+void LobbyAccount::CancelPersonaCreation(const int32 &commandID) {
+    LobbyCore::Instance().AbortCommand(commandID);
+    pendingPersona[0] = '\0';
+}
