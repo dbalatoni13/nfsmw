@@ -264,8 +264,8 @@ struct ConnectionCore {
     ConnApiClientT *GetPlayer(char *name);
     ConnApiClientT *GetPlayer(int index);
     ConnApiClientT *GetHost();
-    static void BuildUserInfo(ConnApiUserInfoT &dest, LobbyApiUserT &src);
-    static void BuildUserInfo(ConnApiUserInfoT &dest, LobbyApiPlayerT &src);
+    static void BuildUserInfo(ConnApiUserInfoT &dest, const LobbyApiUserT &src);
+    static void BuildUserInfo(ConnApiUserInfoT &dest, const LobbyApiPlayerT &src);
     int GetStatus();
 
   private:

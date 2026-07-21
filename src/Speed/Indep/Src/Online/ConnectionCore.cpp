@@ -8,6 +8,7 @@ ConnApiRefT *ConnApiCreate(const char *sessionName, int gamePort, int maxClients
                            ConnApiCallbackT *callback, void *userData);
 void ConnApiDestroy(ConnApiRefT *connapi);
 int ConnApiHost(ConnApiRefT *connapi, ConnApiUserInfoT *userInfo, int numClients, int sessionID);
+int ConnApiConnect(ConnApiRefT *connapi, ConnApiUserInfoT *userInfo, int numClients, int sessionID);
 int ConnApiControl(ConnApiRefT *connapi, int control, int value, int value2, void *pValue);
 }
 
@@ -94,4 +95,23 @@ void ConnectionCore::HostSession(int sessionID, int connectionType) {
     ConnApiControl(connapi, 'type', connectionType, 0, nullptr);
     ConnApiHost(connapi, &myUserInfo, 1, sessionID);
     networkMutex.Unlock("ConnectionCore::HostSession");
+}
+
+void ConnectionCore::JoinSession(ConnApiUserInfoT &hostInfo, int sessionID, int connectionType) {
+    ConnApiUserInfoT userInfo[2];
+
+    networkMutex.Lock("ConnectionCore::JoinSession");
+    MaybeGoOnline();
+    bMemCpy(userInfo, &hostInfo, sizeof(hostInfo));
+    if (SkipFE) {
+        userInfo[1].uAddr = NetworkCore::MyIPAddress();
+        userInfo[1].uLocalAddr = userInfo[1].uAddr;
+        bMemCpy(&userInfo[1].DirtyAddr, &NetworkCore::MyDirtyAddr(), sizeof(userInfo[1].DirtyAddr));
+        bStrCpy(userInfo[1].strName, FEDatabase->OnlineSettings.GetLobbyPersona());
+    } else {
+        BuildUserInfo(userInfo[1], *LobbyUsers::Instance().GetMyUserRecord());
+    }
+    ConnApiControl(connapi, 'type', connectionType, 0, nullptr);
+    ConnApiConnect(connapi, userInfo, 2, sessionID);
+    networkMutex.Unlock("ConnectionCore::JoinSession");
 }
