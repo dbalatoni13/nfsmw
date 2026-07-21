@@ -342,3 +342,10 @@ bool VoiceCore::_IsConnected(int c) {
     }
     return rc;
 }
+
+bool VoiceCore::_IsHeadsetConnected() {
+    if (!VoipRef) {
+        return false;
+    }
+    return (VoipLocal(VoipRef) >> 6) & 1;
+}
