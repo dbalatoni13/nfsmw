@@ -356,3 +356,5 @@ bool VoiceCore::_IsHeadsetSending() {
     }
     return (VoipLocal(VoipRef) >> 8) & 1;
 }
+
+inline void VoiceCore::_SetSpeakerState(bool enable) {}
