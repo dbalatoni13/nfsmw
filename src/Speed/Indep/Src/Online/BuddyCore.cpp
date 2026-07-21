@@ -450,3 +450,12 @@ void BuddyCore::LobbyChallengeCB(LobbyApiMsgT *pMesg) {
 }
 
 LobbyChalRefT *BuddyCore::GetLobbyChallengeApiRef() { return m_lobbyChalRefT; }
+
+int BuddyCore::GetNextAvailableVOIPSlot() {
+    for (int i = 0; i < 6; i++) {
+        if (!m_voipChallenge[i].isActive) {
+            return i;
+        }
+    }
+    return -1;
+}
