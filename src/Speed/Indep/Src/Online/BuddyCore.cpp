@@ -287,3 +287,8 @@ void BuddyCore::gameinvite(HLBApiRefT *api, HLBBudT *bud, int action, void *cont
     MenuScreen::UpdateStatusIcons(icon, status);
     gBuddyListHasChanged = 1;
 }
+
+BuddyCore *BuddyCore::instance() {
+    static BuddyCore the;
+    return &the;
+}
