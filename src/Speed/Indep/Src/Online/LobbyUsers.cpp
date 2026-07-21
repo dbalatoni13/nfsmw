@@ -363,3 +363,39 @@ bool LobbyUsers::GetPointsFromUserRecord(const char *persona, uint32 &points,
     lobbyMutex.Unlock("LobbyUsers::GetPointsFromUserRecord");
     return false;
 }
+
+bool LobbyUsers::GetDisqualificationsFromUserRecord(const char *persona, uint32 &disqs) {
+    lobbyMutex.Lock("LobbyUsers::GetDisqualificationsFromUserRecord");
+    if (bStrCmp(persona, FEDatabase->OnlineSettings.GetLobbyPersona()) == 0) {
+        if (gotMyStats == true) {
+            disqs = myStats.stats.disqualifications;
+            lobbyMutex.Unlock("LobbyUsers::GetDisqualificationsFromUserRecord");
+            return true;
+        }
+
+        LobbyApiUserT *me = GetMyUserRecord();
+        if (me) {
+            PlayerDataT tmp;
+            tmp.ExtractRecord(*me);
+            disqs = tmp.stats.disqualifications;
+            lobbyMutex.Unlock("LobbyUsers::GetDisqualificationsFromUserRecord");
+            return true;
+        }
+    } else {
+        for (OnlineUsersData *oud = userList.GetHead(); oud != userList.EndOfList();
+             oud = oud->GetNext()) {
+            if (bStrCmp(oud->user.name, persona) == 0) {
+                if (oud->commandID == 0) {
+                    PlayerDataT tmp;
+                    tmp.ExtractRecord(oud->user);
+                    disqs = tmp.stats.disqualifications;
+                    lobbyMutex.Unlock("LobbyUsers::GetDisqualificationsFromUserRecord");
+                    return true;
+                }
+            }
+        }
+    }
+
+    lobbyMutex.Unlock("LobbyUsers::GetDisqualificationsFromUserRecord");
+    return false;
+}
