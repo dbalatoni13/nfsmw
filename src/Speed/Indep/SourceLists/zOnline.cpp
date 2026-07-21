@@ -25,3 +25,5 @@
 #include "Speed/Indep/Src/Online/ConnectionCore.cpp"
 
 #include "Speed/Indep/Src/Online/VoiceCore.cpp"
+
+#include "Speed/Indep/Src/Online/BuddyCore.cpp"
