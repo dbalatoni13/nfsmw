@@ -415,3 +415,10 @@ int32 LobbyUsers::GetMyUserStats(PlayerDataT &userStats, CommandCBFunc func, voi
     lobbyMutex.Unlock("LobbyUsers::GetMyUserStats");
     return rc;
 }
+
+void LobbyUsers::ClearUserStats() {
+    lobbyMutex.Lock("LobbyUsers::ClearUserStats");
+    myStats.Clear();
+    gotMyStats = false;
+    lobbyMutex.Unlock("LobbyUsers::ClearUserStats");
+}

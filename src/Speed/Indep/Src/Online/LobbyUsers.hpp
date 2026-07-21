@@ -175,6 +175,7 @@ struct LobbyUsers {
     bool GetPointsFromUserRecord(const char *persona, uint32 &points, OnlineRaceModeE mode);
     bool GetDisqualificationsFromUserRecord(const char *persona, uint32 &disqs);
     int32 GetMyUserStats(PlayerDataT &userStats, CommandCBFunc func, void *context);
+    void ClearUserStats();
     void ClearUserOnlineRecordCache();
     void ClearUserOnlineRecordCache(const LobbyApiPlayT &game);
     void SetSessionChangeFlag(bool changing);
