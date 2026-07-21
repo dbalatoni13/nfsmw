@@ -84,6 +84,12 @@ struct Client {
     static void ProcessRestartLoad(SmartBitStream &bitstream_data);
     static void ProcessServerStateChangeMessage(SmartBitStream &bitstream_data);
     static void ProcessDataCRCMessage(SmartBitStream &bitstream_data);
+    static void ProcessGetAwayLeaderMessage(SmartBitStream &bitstream_data) {
+        TheOnlineManager.SignalGetAwayLeaderMessage(bitstream_data);
+    }
+    static void ProcessGetAwayLostMessage(SmartBitStream &bitstream_data) {
+        TheOnlineManager.SignalGetAwayLostMessage(bitstream_data);
+    }
     static bool IsConnected();
     static void SimpleSendMessage(uint8 msg_type);
     static void SendMessage(uint8 msg_type, SmartBitStream &bitstream_data, bool isReliable);

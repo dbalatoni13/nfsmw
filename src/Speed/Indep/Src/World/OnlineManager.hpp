@@ -50,6 +50,11 @@ class OnlineManager {
     void ImportPositionData(int driver_number, SmartBitStream &bitstream_data, float timestamp,
                             ePosDataPriorityMask priority_mask);
     void SetServerTime(uint32 time);
+    void SignalScoreMessage(SmartBitStream &bitstream_data);
+    void SignalSyncAnimationMessage(SmartBitStream &bitstream_data);
+    void SignalDataCRCMessage(SmartBitStream &bitstream_data);
+    void SignalGetAwayLeaderMessage(SmartBitStream &bitstream_data);
+    void SignalGetAwayLostMessage(SmartBitStream &bitstream_data);
 
     void EndSimFrame() {}
 

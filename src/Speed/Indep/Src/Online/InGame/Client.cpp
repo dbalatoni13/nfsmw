@@ -201,3 +201,20 @@ void Client::ProcessCarSpamClockSyncMessage(SmartBitStream &bitstream_data) {
     TheOnlineManager.SetServerTime(time);
     ProcessPartialCarMessage(RealTimer.GetSeconds(), bitstream_data);
 }
+
+void Client::ProcessScoreMessage(SmartBitStream &bitstream_data) {
+    TheOnlineManager.SignalScoreMessage(bitstream_data);
+}
+
+void Client::ProcessSyncAnimationMessage(SmartBitStream &bitstream_data) {
+    uint32 temp = 0;
+    bitstream_data.GetBits(temp, 32);
+    if (m_syncAnimationRecvId < temp) {
+        m_syncAnimationRecvId = temp;
+        TheOnlineManager.SignalSyncAnimationMessage(bitstream_data);
+    }
+}
+
+void Client::ProcessDataCRCMessage(SmartBitStream &bitstream_data) {
+    TheOnlineManager.SignalDataCRCMessage(bitstream_data);
+}
