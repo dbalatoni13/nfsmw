@@ -249,7 +249,11 @@ struct ConnectionCore {
     void SetCallback(ConnApiCallbackT *cbfunc, void *context);
     void HostSession(int sessionID, int connectionType);
     void JoinSession(ConnApiUserInfoT &hostInfo, int sessionID, int connectionType);
-    void JoinSession(LobbyApiUserT &hostInfo, int sessionID, int connectionType);
+    void JoinSession(LobbyApiUserT &hostInfo, int sessionID, int connectionType) {
+        ConnApiUserInfoT userInfo[2];
+        BuildUserInfo(userInfo[0], hostInfo);
+        JoinSession(userInfo[0], sessionID, connectionType);
+    }
     void JoinSession(LobbyApiPlayerT &hostInfo, int sessionID, void *strSess, int connectionType);
     bool IsSessionStarted();
     void LeaveSession();
