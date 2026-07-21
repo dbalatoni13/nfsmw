@@ -745,3 +745,17 @@ void LobbyGameSessions::UpdateSessionFlags(uint32 &sessionFlags) {
         sessionFlags |= 0x2000000;
     }
 }
+
+void LobbyGameSessions::SessionWasDeleted() {
+    bMemSet(&myCurrentSession, 0, sizeof(myCurrentSession));
+    myCurrentSession.iIdent = -1;
+    SendUpdateCallback(LobbyGameSessionsN::SESSION_DELETED);
+}
+
+void LobbyGameSessions::SendUpdateCallback(LobbyGameSessionsN::SessionStatusCode code) {
+    if (sessionUpdateCB) {
+        bool includeSession = code != LobbyGameSessionsN::SESSION_DELETED &&
+                              code != LobbyGameSessionsN::SESSION_LIST_CHANGED;
+        sessionUpdateCB(code, includeSession ? &myCurrentSession : nullptr, updateContext);
+    }
+}
