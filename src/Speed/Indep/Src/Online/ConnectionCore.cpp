@@ -12,3 +12,8 @@ ConnectionCore::ConnectionCore() {
 }
 
 ConnectionCore::~ConnectionCore() { Reset(); }
+
+ConnectionCore &ConnectionCore::Instance() {
+    static ConnectionCore theConnectionCore;
+    return theConnectionCore;
+}
