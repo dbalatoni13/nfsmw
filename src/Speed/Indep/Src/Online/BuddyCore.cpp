@@ -12,6 +12,7 @@ void HLBApiSetDebugFunction(HLBApiRefT *api, void *context, void (*callback)(voi
 int HLBApiInitialize(HLBApiRefT *api, const char *serverPort, int product, const char *language);
 int HLBApiConnect(HLBApiRefT *api, const char *server, int port, const char *password, const char *context);
 int HLBBudIsTemporary(HLBBudT *buddy);
+unsigned int HLBBudGetGameInviteFlags(HLBBudT *buddy);
 const char *HLBBudGetName(HLBBudT *buddy);
 void HLBApiCancelOp(HLBApiRefT *api);
 int HLBApiRegisterBuddyChangeCallback(HLBApiRefT *api, void (*callback)(HLBApiRefT *, int, int, void *), void *context);
@@ -25,6 +26,9 @@ void HLBApiResume(HLBApiRefT *api);
 LobbyChalRefT *LobbyChalCreate(LobbyApiRefT *api, const char *persona,
                                void (*callback)(LobbyChalRefT *, LobbyApiMsgT *, void *), void *context, int timeout);
 void HLBListFlagTempBuddy(HLBApiRefT *api, const char *name, int flags);
+void HLBListAnswerGameInvite(HLBApiRefT *api, const char *name, int answer, int gameId, int flags);
+void HLBApiDisconnect(HLBApiRefT *api);
+void HLBApiDestroy(HLBApiRefT *api);
 void *LobbyApiInfoPtr(LobbyApiRefT *api, int selector);
 char *TagFieldFind(const char *record, const char *name);
 int TagFieldGetNumber(const char *field, int defaultValue);
@@ -156,4 +160,38 @@ int BuddyCore::startconnect(const char *name, const char *passwd, BuddyConnectCa
     clearEAMStatusIcons();
     bMemSet(savedNames, 0, sizeof(savedNames));
     return 0;
+}
+
+void BuddyCore::disconnect() {
+    m_paused = false;
+    if (HLBud) {
+        m_InVoiceChat = false;
+        gVOIP_InviteState = 0;
+        clearEAMStatusIcons();
+        int buddycount = getBuddyCount();
+        for (int i = 0; i < buddycount; i++) {
+            HLBBudT *pBud = getBuddyByIndex(i);
+            if (pBud && (HLBBudGetGameInviteFlags(pBud) & 0x400000)) {
+                HLBListAnswerGameInvite(HLBud, HLBBudGetName(pBud), 1, 0, 0);
+            }
+        }
+        handledisconnect();
+        HLBApiRegisterBuddyChangeCallback(HLBud, nullptr, nullptr);
+        HLBApiRegisterConnectCallback(HLBud, nullptr, nullptr);
+        HLBApiRegisterGameInviteCallback(HLBud, nullptr, nullptr);
+        HLBApiDisconnect(HLBud);
+        HLBApiDestroy(HLBud);
+        gVOIP_InviteState = 0;
+        state = disconnected;
+        connectcallback = nullptr;
+        connectcontext = nullptr;
+        HLBud = nullptr;
+        m_InVoiceChat = false;
+        if (m_lobbyChalRefT) {
+            LobbyChalDeclineChallenge(m_lobbyChalRefT, 0);
+            LobbyChalDestroy(m_lobbyChalRefT);
+        }
+        m_lobbyChalRefT = nullptr;
+        bMemSet(savedNames, 0, sizeof(savedNames));
+    }
 }

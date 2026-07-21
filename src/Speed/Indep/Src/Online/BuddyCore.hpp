@@ -115,6 +115,7 @@ struct BuddyCore {
     int startconnect(const char *name, const char *passwd, BuddyConnectCallback callback, void *context);
     HLBApiRefT *getApiRef() { return HLBud; }
     void disconnect();
+    void handledisconnect();
     void pause();
     int resume();
     void initVoiceAndPresence();
