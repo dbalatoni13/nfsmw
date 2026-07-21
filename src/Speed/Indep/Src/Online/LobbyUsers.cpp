@@ -464,3 +464,5 @@ LobbyApiUserT *LobbyUsers::GetMyUserRecord() const {
     return static_cast<LobbyApiUserT *>(
         LobbyApiInfoPtr(LobbyCore::Instance().pLobbyRef, 'self'));
 }
+
+int32 LobbyUsers::Init() { return 0; }
