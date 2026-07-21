@@ -227,3 +227,13 @@ void VoiceCore::SetMuted(int channel, bool mute) {
     VoipMicrophone(VoipRef, mTransmit ? mask : 0);
     VoipSpeaker(VoipRef, mask);
 }
+
+inline bool VoiceCore::IsMicOn() {
+    return VoipRef && (VoipLocal(VoipRef) & 1) != 0;
+}
+
+void VoiceCore::SetMicState(bool enable) {
+    if (VoipRef) {
+        VoipControl(VoipRef, 'micr', enable);
+    }
+}
