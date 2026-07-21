@@ -318,3 +318,14 @@ void VoiceCore::_ToggleMuted(const char *persona) {
         SetMuted(channel, !IsMuted(channel));
     }
 }
+
+bool VoiceCore::_IsSpeaking(int c) {
+    if (!VoipRef) {
+        return false;
+    }
+    bool rc = false;
+    if (channels[c].assigned) {
+        rc = (VoipRemote(VoipRef, c) & 2) != 0;
+    }
+    return rc;
+}
