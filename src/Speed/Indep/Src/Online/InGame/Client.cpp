@@ -547,3 +547,26 @@ void Online::SplitPacket(MessageTypesEnum type, SmartBitStream &bitstream_data,
         splitPackets.AddTail(node);
     }
 }
+
+void Online::JoinPackets(SmartBitStream &joinedPacket, SplitPacketList &splitPackets) {
+    joinedPacket.Clear();
+    SplitPacketNode *node = splitPackets.GetHead();
+    while (node != splitPackets.EndOfList()) {
+        uint8 bytesThisPacket = node->totalBits >> 3;
+        char buf[100] = "";
+        node->data.GetRawDataWithoutSize(buf, bytesThisPacket);
+        joinedPacket.AddRawDataWithoutSize(buf, bytesThisPacket);
+        if (node->chunk == node->totalChunks) {
+            uint8 bitsRemaining =
+                static_cast<uint8>(node->totalBits) - bytesThisPacket * 8;
+            if (bitsRemaining != 0) {
+                uint32 temp = 0;
+                node->data.GetBits(temp, bitsRemaining);
+                joinedPacket.AddBits(temp, bitsRemaining);
+            }
+        }
+        splitPackets.RemoveHead();
+        delete node;
+        node = splitPackets.GetHead();
+    }
+}
