@@ -247,3 +247,18 @@ void Client::ProcessDriverFinishMessage(SmartBitStream &bitstream_data) {
         TheOnlineManager.SignalDriverFinish(reassembledData);
     }
 }
+
+void Client::SendCarDescriptionMessage() {
+    SmartBitStream payload_data;
+    payload_data.AddInt(m_driverNumber);
+    TheOnlineManager.ExportDriverInfo(m_driverNumber, payload_data);
+
+    SplitPacketList splitPackets;
+    Online::SplitPacket(MSG_R_BI_CARDESCRIPTION, payload_data, splitPackets);
+    SplitPacketNode *node;
+    while ((node = splitPackets.GetHead()) != splitPackets.EndOfList()) {
+        SendMessage(1, node->data, true);
+        splitPackets.RemoveHead();
+        delete node;
+    }
+}

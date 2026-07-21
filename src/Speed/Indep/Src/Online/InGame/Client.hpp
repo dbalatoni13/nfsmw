@@ -29,8 +29,14 @@ struct SplitPacketNode : bTNode<SplitPacketNode> {
 
 typedef bTList<SplitPacketNode> SplitPacketList;
 
+enum MessageTypesEnum {
+    MSG_R_BI_CARDESCRIPTION = 1
+};
+
 struct Online {
     static IntQuantizer m_driverNumberQuantizer;
+    static void SplitPacket(MessageTypesEnum type, SmartBitStream &bitstream_data,
+                            SplitPacketList &splitPackets);
     static void JoinPackets(SmartBitStream &joinedPacket, SplitPacketList &splitPackets);
     static bool ReceiveChunk(SmartBitStream &bitstream_data, SplitPacketList &splitPackets);
 };
