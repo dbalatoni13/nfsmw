@@ -163,6 +163,7 @@ struct LobbyUsers {
     static LobbyUsers &Instance();
     void UpdateCarName();
     int32 GetUserOnlineRecord(const char *persona, CommandCBFunc func, void *context);
+    LobbyApiUserT *GetUserRecord(const char *persona);
     void ClearUserOnlineRecordCache();
     void ClearUserOnlineRecordCache(const LobbyApiPlayT &game);
     void SetSessionChangeFlag(bool changing);

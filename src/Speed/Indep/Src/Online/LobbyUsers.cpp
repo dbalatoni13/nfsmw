@@ -267,3 +267,23 @@ void LobbyUsers::ClearUserOnlineRecordCache(const LobbyApiPlayT &game) {
         }
     }
 }
+
+LobbyApiUserT *LobbyUsers::GetUserRecord(const char *persona) {
+    LobbyApiUserT *user = nullptr;
+    lobbyMutex.Lock("LobbyUsers::GetUserRecord");
+    if (bStrCmp(persona, FEDatabase->OnlineSettings.GetLobbyPersona()) == 0) {
+        lobbyMutex.Unlock("LobbyUsers::GetUserRecord");
+        return GetMyUserRecord();
+    }
+
+    for (OnlineUsersData *oud = userList.GetHead(); oud != userList.EndOfList();
+         oud = oud->GetNext()) {
+        if (bStrCmp(oud->user.name, persona) == 0 && oud->commandID == 0) {
+            user = &oud->user;
+            break;
+        }
+    }
+
+    lobbyMutex.Unlock("LobbyUsers::GetUserRecord");
+    return user;
+}
