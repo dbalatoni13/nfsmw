@@ -25,8 +25,10 @@ extern int NetworkUseLobbies;
 // TODO: Replace this with the original owner header when VoiceCore is reached in zOnline order.
 class VoiceCore {
   public:
+    void Startup();
     void Update();
     bool IsMuted(const char *persona);
+    void SetHeadsetPort(int port);
     static VoiceCore *mInstance;
 };
 
