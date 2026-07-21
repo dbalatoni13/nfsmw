@@ -62,3 +62,16 @@ void ConnectionCore::Reset() {
     VoiceCore::mInstance->Shutdown();
     networkMutex.Unlock("ConnectionCore::Reset");
 }
+
+void ConnectionCore::SetCallback(ConnApiCallbackT *cbfunc, void *context) {
+    bool mutexLocked = false;
+    if (connapi) {
+        networkMutex.Lock("ConnectionCore::SetCallback");
+        mutexLocked = true;
+    }
+    connapiCallback = cbfunc;
+    callbackContext = context;
+    if (mutexLocked == true) {
+        networkMutex.Unlock("ConnectionCore::SetCallback");
+    }
+}
