@@ -51,3 +51,5 @@ VoiceCore::VoiceCore() {
     all_muted = false;
     startup_timer.UnSet();
 }
+
+inline VoiceCore::~VoiceCore() {}
