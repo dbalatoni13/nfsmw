@@ -30,6 +30,8 @@ LobbyChalRefT *LobbyChalCreate(LobbyApiRefT *api, const char *persona,
                                void (*callback)(LobbyChalRefT *, LobbyApiMsgT *, void *), void *context, int timeout);
 void HLBListFlagTempBuddy(HLBApiRefT *api, const char *name, int flags);
 void HLBListAnswerGameInvite(HLBApiRefT *api, const char *name, int answer, int gameId, int flags);
+HLBBudT *HLBListGetBuddyByIndex(HLBApiRefT *api, int index);
+HLBBudT *HLBListGetBuddyByName(HLBApiRefT *api, const char *name);
 void HLBApiDisconnect(HLBApiRefT *api);
 void HLBApiDestroy(HLBApiRefT *api);
 void HLBApiPresenceVOIPSend(HLBApiRefT *api, int status);
@@ -292,3 +294,7 @@ BuddyCore *BuddyCore::instance() {
     static BuddyCore the;
     return &the;
 }
+
+HLBBudT *BuddyCore::getBuddyByIndex(int index) { return HLBListGetBuddyByIndex(HLBud, index); }
+
+HLBBudT *BuddyCore::getBuddyByName(const char *name) { return HLBListGetBuddyByName(HLBud, name); }

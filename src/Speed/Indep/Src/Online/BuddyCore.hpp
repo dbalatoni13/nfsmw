@@ -126,6 +126,7 @@ struct BuddyCore {
     void DisplayTimedOutInvite(const char *name);
     int getBuddyCount();
     HLBBudT *getBuddyByIndex(int index);
+    HLBBudT *getBuddyByName(const char *name);
 };
 
 template <void (BuddyCore::*Callback)(int, int)> struct buddy_op_callback {
