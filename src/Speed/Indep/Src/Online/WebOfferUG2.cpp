@@ -477,3 +477,16 @@ void CWebOfferUG2::StartAlert(const WebOfferAlertT &AlertData) {
     }
     PopulateAlertDialog();
 }
+
+void CWebOfferUG2::StartHTTP(const WebOfferBusyT &BusyData) {
+    if (m_Dialog) {
+        DialogInterface::DismissDialog(m_Dialog);
+    }
+    bool bTextWasLabel;
+    char *pMsgText = DecodeString(BusyData.strMessage, &bTextWasLabel);
+    m_Dialog = DialogInterface::ShowOneButton(m_pOwner->GetPackageName(), "", dialog_alert,
+                                               0x1a294dad, 0x0eb0ffe1, pMsgText);
+    if (!bTextWasLabel) {
+        DialogInterface::SetBlurbIsUTF8();
+    }
+}
