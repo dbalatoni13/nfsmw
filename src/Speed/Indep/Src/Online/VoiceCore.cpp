@@ -7,6 +7,7 @@ extern "C" {
 VoipRefT *VoipStartup(int maxPeers);
 void VoipShutdown(VoipRefT *voip);
 void VoipSetLocalUser(VoipRefT *voip, const char *name);
+int VoipControl(VoipRefT *voip, int control, int value);
 }
 
 VoiceCore *VoiceCore::mInstance;
@@ -108,3 +109,17 @@ void VoiceCore::RemovePlayer(const char *name) {
 }
 
 void VoiceCore::RemoveAllPlayers() { _RemoveAllPlayers(); }
+
+void VoiceCore::SetSpeakerVolume(float volume) { _SetSpeakerVolume(volume); }
+
+void VoiceCore::SetPlaybackVolume(float volume) { _SetPlaybackVolume(volume); }
+
+void VoiceCore::SetSpeakerState(bool enable) {}
+
+void VoiceCore::SetHeadsetPort(int port) {
+    if (VoipRef) {
+        VoipControl(VoipRef, 'port', port);
+    }
+}
+
+void VoiceCore::SetMicStatus(bool enable) { SetMicState(enable); }
