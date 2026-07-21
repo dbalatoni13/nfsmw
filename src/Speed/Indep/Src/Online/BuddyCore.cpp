@@ -730,3 +730,37 @@ void RichPresence::SetBuddyState(HLBStatE buddyState) {
     mBuddyState = buddyState;
     UpdatePresence();
 }
+
+void RichPresence::SetIsRacing(bool isRacing) {
+    if (isRacing) {
+        mCurrentRichPresence.isRacing = 1;
+    } else {
+        mCurrentRichPresence.isRacing = 0;
+    }
+    UpdatePresence();
+}
+
+void RichPresence::SetSessionPasswordProtected(bool isPasswordProtected) {
+    if (isPasswordProtected) {
+        mCurrentRichPresence.isSessionPassworded = 1;
+    } else {
+        mCurrentRichPresence.isSessionPassworded = 0;
+    }
+    UpdatePresence();
+}
+
+void RichPresence::SetPassword(const char *password) {
+    if (bStrCmp(mCurrentRichPresence.password, password) != 0) {
+        bStrCpy(mCurrentRichPresence.password, password);
+        UpdatePresence();
+    }
+}
+
+void RichPresence::SetSessionPrivate(bool isPrivate) {
+    if (isPrivate) {
+        mCurrentRichPresence.isSessionPrivate = 1;
+    } else {
+        mCurrentRichPresence.isSessionPrivate = 0;
+    }
+    UpdatePresence();
+}
