@@ -22,7 +22,19 @@ struct PlayerDataT {
         uint32 fastestFinishTime;
         uint32 winPercentage;
 
-        void Clear();
+        void Clear() {
+            winPercentage = 0;
+            fastestFinishTime = 0;
+            totalNOSused = 0;
+            avgNOSused = 0;
+            jumpTime = 0;
+            topSpeed = 0;
+            hostLosses = 0;
+            hostWins = 0;
+            clientLosses = 0;
+            clientWins = 0;
+            points = 0;
+        }
     };
 
     struct Stats {
@@ -101,7 +113,7 @@ struct PlayerDataT {
     void Clear();
 
   private:
-    bool IsFloatEqual(float x, float y, float epsilon);
+    bool IsFloatEqual(float x, float y, float epsilon) { return bAbs(x - y) < epsilon; }
 
   public:
     char persona[16];

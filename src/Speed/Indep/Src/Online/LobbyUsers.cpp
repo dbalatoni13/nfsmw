@@ -135,3 +135,24 @@ uint32 PlayerDataT::GetTotalNOS(int mode) { return stats.raceModeStats[mode].tot
 float PlayerDataT::GetLongestJumpDuration(int mode) {
     return static_cast<float>(stats.raceModeStats[mode].jumpTime) * 0.001f;
 }
+
+void PlayerDataT::Clear() {
+    persona[0] = '\0';
+    lastGameTime = 0;
+    stats.Clear();
+    lastMonthStats.Clear();
+}
+
+void PlayerDataT::Stats::Clear() {
+    topSpeed = 0;
+    hostDisconnects = 0;
+    clientDisconnects = 0;
+    disqualifications = 0;
+    totalNOSusage = 0;
+    fastestDragFinish = 0;
+    longestJumpDuration = 0;
+    longestPowerSlideDistance = 0;
+    for (int mode = 0; mode < 3; mode++) {
+        raceModeStats[mode].Clear();
+    }
+}
