@@ -115,3 +115,18 @@ void ConnectionCore::JoinSession(ConnApiUserInfoT &hostInfo, int sessionID, int 
     ConnApiConnect(connapi, userInfo, 2, sessionID);
     networkMutex.Unlock("ConnectionCore::JoinSession");
 }
+
+void ConnectionCore::JoinSession(LobbyApiPlayerT &hostInfo, int sessionID, void *strSess,
+                                 int connectionType) {
+    ConnApiUserInfoT userInfo[2];
+
+    networkMutex.Lock("ConnectionCore::JoinSession");
+    MaybeGoOnline();
+    BuildUserInfo(userInfo[0], hostInfo);
+    LobbyApiUserT *myUser = LobbyUsers::Instance().GetMyUserRecord();
+    BuildUserInfo(userInfo[1], *myUser);
+    ConnApiControl(connapi, 'type', connectionType, 0, nullptr);
+    ConnApiControl(connapi, 'sess', 0, 0, strSess);
+    ConnApiConnect(connapi, userInfo, 2, sessionID);
+    networkMutex.Unlock("ConnectionCore::JoinSession");
+}
