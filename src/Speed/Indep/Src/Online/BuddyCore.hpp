@@ -16,6 +16,7 @@ struct HLBBudT;
 struct LobbyChalRefT;
 struct LobbyApiMsgT;
 struct BuddyCore;
+struct feDialogScreen;
 
 char *GetLocalizedString(uint32 hash);
 int FEngSNPrintf(char *buffer, int32 bufferSize, const char *format, ...);
@@ -55,6 +56,8 @@ struct DialogInterface {
                                 uint32 button3PressedMessage, uint32 cancelMessage,
                                 eDialogFirstButtons firstButton, const char *format);
     static void SetBlurbIsUTF8();
+    static feDialogScreen *FindDialogBox(int handle);
+    static bool SetButtonText(int ButtonNum, const char *pText, bool bTextIsUTF8);
 };
 
 struct BuddyApiMsgT {

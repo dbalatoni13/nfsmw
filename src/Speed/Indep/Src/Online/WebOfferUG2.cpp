@@ -540,3 +540,28 @@ void CWebOfferUG2::Finished(int ResultCode) {
     Shutdown();
     m_pOwner->NotificationMessage(0xb19ba115, nullptr, ResultCode, 0);
 }
+
+void CWebOfferUG2::PopulateAlertDialog() {
+    if (m_Dialog) {
+        feDialogScreen *pDialog = DialogInterface::FindDialogBox(m_Dialog);
+        if (pDialog) {
+            int NumButtons = 0;
+            char *ButtonTexts[4];
+            bool ButtonTextWasLabel[4];
+            for (int i = 0; i < 4; ++i) {
+                if (m_AlertData.Button[i].strText[0]) {
+                    ButtonTexts[NumButtons] = DecodeString(
+                        m_AlertData.Button[i].strText, &ButtonTextWasLabel[NumButtons]);
+                    ++NumButtons;
+                }
+            }
+            if (NumButtons > 3) {
+                NumButtons = 3;
+            }
+            for (int i = 0; i < NumButtons; ++i) {
+                DialogInterface::SetButtonText(i, ButtonTexts[i], !ButtonTextWasLabel[i]);
+            }
+            m_bAlertDialogPopulated = true;
+        }
+    }
+}
