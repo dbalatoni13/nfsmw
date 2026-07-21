@@ -146,6 +146,7 @@ struct LobbyAccount {
     int32 RequestLostPassword(const char *username, CommandCBFunc func, void *context);
     int32 CreatePersona(const char *name, CommandCBFunc func, void *context);
     void CancelPersonaCreation(const int32 &commandID);
+    int32 DeletePersona(const char *name, CommandCBFunc func, void *context);
 
   private:
     LobbyAccount() { pendingPersona[0] = '\0'; }
@@ -153,6 +154,7 @@ struct LobbyAccount {
     int32 Init();
     void Reset();
     static void CperCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData);
+    static void DperCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData);
     friend int32 LobbyInit();
     friend void LobbyDisconnect();
 

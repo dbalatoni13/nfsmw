@@ -163,3 +163,25 @@ void LobbyAccount::CancelPersonaCreation(const int32 &commandID) {
     LobbyCore::Instance().AbortCommand(commandID);
     pendingPersona[0] = '\0';
 }
+
+int32 LobbyAccount::DeletePersona(const char *name, CommandCBFunc func, void *context) {
+    lobbyMutex.Lock("LobbyAccount::DeletePersona");
+    if (name && name[0] && !pendingPersona[0]) {
+        LobbyLoginNameListT &personas = LobbyLogin::Instance().GetPersonaList();
+        for (int i = 0; i < personas.iNumNames; i++) {
+            if (bStrCmp(name, personas.strNames[i]) == 0) {
+                char buf[64] = "";
+                TagFieldSetString(buf, sizeof(buf), "PERS", name);
+                int32 rc = LobbyCore::Instance().QueueCommand('dper', buf, DperCB, this, func,
+                                                               context, false);
+                if (rc > 0) {
+                    bStrCpy(pendingPersona, personas.strNames[i]);
+                }
+                lobbyMutex.Unlock("LobbyAccount::DeletePersona");
+                return rc;
+            }
+        }
+    }
+    lobbyMutex.Unlock("LobbyAccount::DeletePersona");
+    return -1;
+}
