@@ -520,3 +520,23 @@ EProcessAction CWebOfferUG2::ProcessNews() {
     m_PendingAction = eProcessAction_Nothing;
     return Action;
 }
+
+void CWebOfferUG2::EndAlert() {
+    DialogInterface::DismissDialog(m_Dialog);
+    m_Dialog = 0;
+}
+
+void CWebOfferUG2::EndHTTP() {
+    DialogInterface::DismissDialog(m_Dialog);
+    m_Dialog = 0;
+}
+
+void CWebOfferUG2::EndNews() {
+    m_pOwner->NotificationMessage(0xd09f00d5, nullptr, 0, 0);
+}
+
+void CWebOfferUG2::Finished(int ResultCode) {
+    DismissDialog();
+    Shutdown();
+    m_pOwner->NotificationMessage(0xb19ba115, nullptr, ResultCode, 0);
+}
