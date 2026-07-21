@@ -125,3 +125,7 @@ float PlayerDataT::GetTotalDisconnectPercentage() {
     }
     return 0.0f;
 }
+
+float PlayerDataT::GetTopSpeedInMPS(int mode) {
+    return static_cast<float>(stats.raceModeStats[mode].topSpeed) * 0.001f;
+}
