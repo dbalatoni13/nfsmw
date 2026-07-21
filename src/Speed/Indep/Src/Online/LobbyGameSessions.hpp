@@ -120,6 +120,7 @@ struct LobbyGameSessions {
     static void JoinSessionCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData);
     static void RecreateGameCB(LobbyApiMsgT *pMsg, void *pData);
     static void FindSessionsCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData);
+    static void SessionUpdateCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData);
     static int SortFunc(void *sortref, int sortcon, void *recptr1, void *recptr2);
     static int FilterFunc(void *filtref, int filtcon, void *recptr);
     static void GlobalEventCB(LobbyApiRefT *pRef, LobbyApiMsgT *pMsg, void *pData);

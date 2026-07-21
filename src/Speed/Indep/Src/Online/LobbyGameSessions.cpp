@@ -614,3 +614,37 @@ void LobbyGameSessions::UpdateSessionParams(char *buf, int bufsize) {
                    FEDatabase->OnlineSettings.GetRaceSettings()->NumLaps,
                    FEDatabase->OnlineSettings.MinOnlinePlayers);
 }
+
+int32 LobbyGameSessions::UpdateSessionInfo(bool forceUpdate) {
+    if (myCurrentSession.iIdent != -1) {
+        char newParams[68] = "";
+        UpdateSessionParams(newParams, 64);
+
+        uint32 newCustFlags = myCurrentSession.uCustFlags;
+        UpdateSessionFlags(newCustFlags);
+
+        char newDescription[68] = "";
+        char *machineaddr = LobbyUsers::Instance().GetMyUserRecord()->MachineAddr.strMachineAddr;
+        char *xnaddr = bStrChr(machineaddr, '^');
+        if (!xnaddr) {
+            bStrNCpy(newDescription, machineaddr, 67);
+            newDescription[67] = '\0';
+        } else {
+            bStrNCpy(newDescription, machineaddr, xnaddr - machineaddr);
+            newDescription[xnaddr - machineaddr] = '\0';
+        }
+
+        if (forceUpdate || newCustFlags != myCurrentSession.uCustFlags ||
+            bStrCmp(newParams, myCurrentSession.strParams) != 0 ||
+            bStrCmp(newDescription, myCurrentSession.strDesc) != 0) {
+            char newOptions[512] = "";
+            TagFieldSetString(newOptions, sizeof(newOptions), "NAME", myCurrentSession.strName);
+            TagFieldSetString(newOptions, sizeof(newOptions), "DESC", newDescription);
+            TagFieldSetString(newOptions, sizeof(newOptions), "PARAMS", newParams);
+            TagFieldSetFlags(newOptions, sizeof(newOptions), "CUSTFLAGS", newCustFlags);
+            LobbyCore::Instance().QueueCommand('uadm', newOptions, SessionUpdateCB, this, nullptr, nullptr, false);
+        }
+        LobbyGames::Instance().UpdateGame(nullptr, nullptr);
+    }
+    return 0;
+}
