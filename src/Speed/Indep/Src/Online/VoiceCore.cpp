@@ -5,6 +5,7 @@
 
 extern "C" {
 VoipRefT *VoipStartup(int maxPeers);
+void VoipShutdown(VoipRefT *voip);
 void VoipSetLocalUser(VoipRefT *voip, const char *name);
 }
 
@@ -79,4 +80,14 @@ void VoiceCore::Startup() {
     VoipSetLocalUser(VoipRef, FEDatabase->OnlineSettings.GetLobbyPersona());
     _SetPlaybackVolume(playback_volume_remember);
     SetMicState(false);
+}
+
+void VoiceCore::Shutdown() {
+    if (VoipRef) {
+        headset_state_at_last_shutdown = _IsHeadsetConnected();
+        _RemoveAllPlayers();
+        VoipShutdown(VoipRef);
+        mPTT.StopPolling();
+        VoipRef = nullptr;
+    }
 }
