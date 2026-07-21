@@ -4,6 +4,7 @@ extern "C" WebOfferT *WebOfferCreate(uint32 maxScriptSize);
 extern "C" void WebOfferDestroy(WebOfferT *webOffer);
 extern "C" void WebOfferSetup(WebOfferT *webOffer, WebOfferSetupT *setup);
 extern "C" void WebOfferExecute(WebOfferT *webOffer, const char *offerURL);
+extern "C" WebOfferCommandT *WebOfferCommand(WebOfferT *webOffer);
 
 CWebOffer::CWebOffer()
     : m_pWebOfferAPI(nullptr) //
@@ -41,4 +42,39 @@ bool CWebOffer::Start(SOfferData &OfferData) {
         bStarted = true;
     }
     return bStarted;
+}
+
+void CWebOffer::Tick() {
+    if (m_pWebOfferAPI) {
+        if (m_bProcessingCommand) {
+            ProcessCommand();
+        } else {
+            StartNextCommand();
+        }
+    }
+}
+
+void CWebOffer::StartNextCommand() {
+    m_pCurrentCommand = WebOfferCommand(m_pWebOfferAPI);
+    if (m_pCurrentCommand) {
+        switch (m_pCurrentCommand->iCommand) {
+        case 'alrt':
+            _StartAlert();
+            break;
+        case 'prom':
+            _StartPromo();
+            break;
+        case 'card':
+            _StartCredit();
+            break;
+        case 'http':
+            _StartHTTP();
+            break;
+        case 'news':
+            _StartNews();
+            break;
+        }
+    } else {
+        _Finished();
+    }
 }
