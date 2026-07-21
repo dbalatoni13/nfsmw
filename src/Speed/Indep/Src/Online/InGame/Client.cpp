@@ -104,3 +104,8 @@ void Client::SendCarSpam() {
         }
     }
 }
+
+void Client::StartClientProcessing() {
+    hostConnection = ConnectionCore::Instance().GetPlayer(0);
+    SetState(CLIENTSTATE_CONNECTED);
+}

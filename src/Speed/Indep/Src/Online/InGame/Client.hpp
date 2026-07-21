@@ -63,6 +63,7 @@ struct ByteCounter {
 struct Client {
     static void Init();
     static void Close();
+    static void StartClientProcessing();
 
   private:
     static void ReadIncomingPackets();
