@@ -8,6 +8,7 @@
 #include <types.h>
 
 #include "Speed/Indep/Src/Frontend/MenuScreens/Common/FEMenuScreen.hpp"
+#include "Speed/Indep/Src/Frontend/MenuScreens/Common/feScrollerina.hpp"
 
 struct WebOfferT;
 
@@ -176,6 +177,76 @@ struct SFEngNewsScreenData {
     WebOfferNewsT WebOfferNews;
 };
 
+struct SButtonInit {
+    char *pButtonText;
+};
+
+struct SButtons {
+    uint32 NameHash;
+    uint32 HighlightNameHash;
+    EProcessAction Action;
+};
+
+struct FEngFont;
+
+struct CTextScroller {
+  private:
+    MenuScreen *m_pOwner;
+    FEngFont *m_pFont;
+    FEScrollBar *m_pScrollBar;
+    char m_TextBoxNameTemplate[32];
+    int m_ViewWidth;
+    int m_ViewVisibleLines;
+    int m_NumAddedLines;
+    int16 **m_pLines;
+    char *m_pRawDataBlock;
+    uint32 m_DataBlockSize;
+    uint32 m_DataBlockCurPos;
+    int m_TopLine;
+    uint32 m_ScrollDownMsg;
+    uint32 m_ScrollUpMsg;
+
+  public:
+    CTextScroller();
+    ~CTextScroller();
+    void Initialise(MenuScreen *pOwner, int ViewWidth, int ViewLines, char *pTextDisplayNameTempl,
+                    FEngFont *pFont);
+    void UseScrollBar(FEScrollBar *pScrollBar) { m_pScrollBar = pScrollBar; }
+    void SetText(int16 *pText);
+};
+
+struct CUIWebOfferScreen : MenuScreen {
+  protected:
+    SButtons m_Buttons[2];
+    uint8 m_NumButtons;
+
+  public:
+    CUIWebOfferScreen(ScreenConstructorData *sd)
+        : MenuScreen(sd) //
+        , m_NumButtons(0) {}
+    virtual ~CUIWebOfferScreen() {}
+    void InitialiseButtons();
+    EProcessAction TestButtonMessage(uint32 msg);
+};
+
+struct CUIWebOfferNews : CUIWebOfferScreen {
+  private:
+    MenuScreen *m_pOwner;
+    FEScrollBar m_ScrollBar;
+    CTextScroller m_TextScroller;
+    int m_iLastTopLine;
+
+  public:
+    CUIWebOfferNews(ScreenConstructorData *sd)
+        : CUIWebOfferScreen(sd) //
+        , m_ScrollBar(sd->PackageFilename, "Scrollbar", true, false, false) {}
+    ~CUIWebOfferNews() override;
+    void NotificationMessage(uint32 msg, FEObject *obj, uint32 param1, uint32 param2) override;
+    eMenuSoundTriggers NotifySoundMessage(uint32 msg, eMenuSoundTriggers maybe) override;
+
+    friend MenuScreen *CreateOnlineNews(ScreenConstructorData *sd);
+};
+
 class CWebOfferUG2 : public CWebOffer {
     SFEngNewsScreenData m_NewsData;
     WebOfferAlertT m_AlertData;
@@ -231,5 +302,6 @@ class CUIWebOfferStart : public MenuScreen {
 };
 
 void ConfigureWebOfferForTOS();
+MenuScreen *CreateOnlineNews(ScreenConstructorData *sd);
 
 #endif

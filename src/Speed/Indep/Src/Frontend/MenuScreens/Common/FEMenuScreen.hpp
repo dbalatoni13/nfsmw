@@ -133,6 +133,10 @@ class MenuScreen {
 
     virtual ~MenuScreen();
 
+    virtual void NotificationMessage(u32 Message, FEObject *pObject, u32 Param1, u32 Param2) {}
+
+    virtual eMenuSoundTriggers NotifySoundMessage(u32 msg, eMenuSoundTriggers maybe) { return maybe; }
+
     void BaseNotify(u32 Message, FEObject *pObject, u32 Param1, u32 Param2);
 
     const char *FEngGetEditedString();
@@ -155,7 +159,7 @@ class MenuScreen {
 
     // virtual enum eMenuSoundTriggers NotifySoundMessage(unsigned long msg, enum eMenuSoundTriggers maybe) {}
 
-    const char *GetPackageName() {}
+    const char *GetPackageName() { return PackageFilename; }
 
     // FEPackage *GetPackage() {}
 

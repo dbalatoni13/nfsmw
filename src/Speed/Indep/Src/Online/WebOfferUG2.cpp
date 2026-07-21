@@ -1,7 +1,21 @@
 #include "WebOfferUG2.hpp"
 
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
+#include "Speed/Indep/Src/FEng/FEString.h"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterfaceFEObjects.hpp"
 #include "Speed/Indep/Src/Online/LobbyCore.hpp"
+
+void *operator new(size_t size, const char *file, int line, int allocationParams);
+void *operator new[](size_t size, const char *file, int line, int allocationParams);
+
+FEString *FEngFindString(const char *pkg_name, int name_hash);
+void FEngSetVisible(FEObject *obj);
+void FEngSetButtonState(const char *pkg_name, uint32 button_hash, bool enabled);
+void FEngSetScript(const char *pkg_name, uint32 obj_hash, uint32 script_hash,
+                   bool start_at_beginning);
+void FEngSetCurrentButton(const char *pkg_name, uint32 hash);
+FEngFont *FindFont(uint32 font_hash);
+bool ConvertUTF8ToUCS2(uint16 *ucs2_data, int ucs2_data_len, uint8 *utf8_data);
 
 extern "C" WebOfferT *WebOfferCreate(uint32 maxScriptSize);
 extern "C" void WebOfferDestroy(WebOfferT *webOffer);
@@ -266,4 +280,124 @@ void ConfigureWebOfferForTOS() {
         bSPrintf(CUIWebOfferStart::m_WebOfferScript, pURLScriptFormat, 30, 0x780207ca, pURL, 0,
                  0x9016a670, 0x417b2601, -1);
     }
+}
+
+MenuScreen *CreateOnlineNews(ScreenConstructorData *sd) {
+    CUIWebOfferNews *pScreen = new ("UIOnlineNews", 0) CUIWebOfferNews(sd);
+    SFEngNewsScreenData *pNewsData = reinterpret_cast<SFEngNewsScreenData *>(sd->Arg);
+    int TextSize = 0;
+
+    for (int n = 0; pNewsData->WebOfferNews.strTitle[n]; ++n) {
+        char c = pNewsData->WebOfferNews.strTitle[n];
+        if (static_cast<unsigned int>(c - 'A') < 26) {
+            c |= 0x20;
+        }
+        pNewsData->WebOfferNews.strTitle[n] = c;
+    }
+
+    pScreen->m_pOwner = pNewsData->pParentScreen;
+    pNewsData->pParentScreen->NotificationMessage(0xb19b00b5, nullptr,
+                                                   reinterpret_cast<uint32>(pScreen), 0);
+
+    SButtonInit Buttons[2];
+    SButtonInit *pButtonInit = Buttons;
+    int NumButtons = 0;
+    for (int n = 0; n < 2; ++n) {
+        if (pNewsData->WebOfferNews.Button[n].strText[0]) {
+            pButtonInit->pButtonText = pNewsData->WebOfferNews.Button[n].strText;
+            ++NumButtons;
+            ++pButtonInit;
+        }
+    }
+    pScreen->m_NumButtons = NumButtons;
+
+    char FEngName[32];
+    for (int FEngButtonCount = 1; FEngButtonCount <= 3; ++FEngButtonCount) {
+        bSPrintf(FEngName, "Button%d", FEngButtonCount);
+        FEObject *pFEObject = FEngFindObject(pScreen->GetPackageName(), FEHashUpper(FEngName));
+        FEngSetInvisible(pFEObject);
+        FEngSetButtonState(pScreen->GetPackageName(), pFEObject->GetNameHash(), false);
+        bSPrintf(FEngName, "Button%d_Text", FEngButtonCount);
+        pFEObject = FEngFindObject(pScreen->GetPackageName(), FEHashUpper(FEngName));
+        FEngSetInvisible(pFEObject);
+    }
+
+    if (NumButtons == 1) {
+        pScreen->m_Buttons[0].Action = eProcessAction_Button1;
+        bSPrintf(FEngName, "Button%d", 1);
+        pScreen->m_Buttons[0].NameHash = FEHashUpper(FEngName);
+        FEObject *pFEObject =
+            FEngFindObject(pScreen->GetPackageName(), pScreen->m_Buttons[0].NameHash);
+        FEngSetVisible(pFEObject);
+        FEngSetButtonState(pScreen->GetPackageName(), pScreen->m_Buttons[0].NameHash, true);
+        FEngSetScript(pScreen->GetPackageName(), pScreen->m_Buttons[0].NameHash, 0x249db7b7,
+                      true);
+        bSPrintf(FEngName, "Button%d_Text", 1);
+        FEString *pFEString =
+            FEngFindString(pScreen->GetPackageName(), FEHashUpper(FEngName));
+        pFEObject = FEngFindObject(pScreen->GetPackageName(), FEHashUpper(FEngName));
+        pFEString->SetStringFromUTF8(Buttons[0].pButtonText);
+        FEngSetVisible(pFEObject);
+        FEngSetScript(pScreen->GetPackageName(), FEHashUpper(FEngName), 0x249db7b7, true);
+        FEngSetCurrentButton(pScreen->GetPackageName(), pScreen->m_Buttons[0].NameHash);
+        FEngSetInvisible(pScreen->GetPackageName(), 0x7c64b811);
+    } else if (NumButtons == 2) {
+        for (int i = 0; i < 2; ++i) {
+            pScreen->m_Buttons[i].Action = static_cast<EProcessAction>(i + 1);
+            bSPrintf(FEngName, "Button%d", i + 1);
+            pScreen->m_Buttons[i].NameHash = FEHashUpper(FEngName);
+            FEObject *pFEObject =
+                FEngFindObject(pScreen->GetPackageName(), pScreen->m_Buttons[i].NameHash);
+            FEngSetVisible(pFEObject);
+            FEngSetButtonState(pScreen->GetPackageName(), pScreen->m_Buttons[i].NameHash, true);
+            FEngSetScript(pScreen->GetPackageName(), pScreen->m_Buttons[i].NameHash,
+                          i == 0 ? 0x249db7b7 : 0x7ab5521a, true);
+            bSPrintf(FEngName, "Button%d_Text", i + 1);
+            pFEObject = FEngFindObject(pScreen->GetPackageName(), FEHashUpper(FEngName));
+            FEString *pFEString =
+                FEngFindString(pScreen->GetPackageName(), FEHashUpper(FEngName));
+            pFEString->SetStringFromUTF8(Buttons[i].pButtonText);
+            FEngSetVisible(pFEObject);
+            FEngSetScript(pScreen->GetPackageName(), FEHashUpper(FEngName),
+                          i == 0 ? 0x249db7b7 : 0x7ab5521a, true);
+        }
+        FEngSetCurrentButton(pScreen->GetPackageName(), pScreen->m_Buttons[0].NameHash);
+    }
+
+    FEString *pString =
+        FEngFindString(pScreen->GetPackageName(), FEHashUpper("Header_text_shadow"));
+    pString->SetStringFromUTF8(pNewsData->WebOfferNews.strTitle);
+    pString = FEngFindString(pScreen->GetPackageName(), FEHashUpper("Header_text_inner"));
+    pString->SetStringFromUTF8(pNewsData->WebOfferNews.strTitle);
+    FEngSetScript(pScreen->GetPackageName(), FEHashUpper("Help"), 0x16a259, true);
+    FEngSetScript(pScreen->GetPackageName(), 0x3df39a82, 0x16a259, true);
+    FEngSetScript(pScreen->GetPackageName(), 0xfcd5b255, 0x16a259, true);
+
+    FEString *pFERankModeString =
+        FEngFindString(pScreen->GetPackageName(), FEHashUpper("RankMode_Type"));
+    pFERankModeString->string = const_cast<char *>("");
+    pFERankModeString->SetFlags(pFERankModeString->GetFlags() | 0x400000);
+
+    pString = FEngFindString(pScreen->GetPackageName(), FEHashUpper("Scroll_Text_1"));
+    FEngFont *pFont = FindFont(pString->GetHandle());
+    pScreen->m_TextScroller.Initialise(pScreen, pString->MaxWidth, 11,
+                                       const_cast<char *>("Scroll_Text_%d"), pFont);
+    pScreen->m_TextScroller.UseScrollBar(&pScreen->m_ScrollBar);
+
+    if (pNewsData->pNewsText) {
+        TextSize = bStrLen(pNewsData->pNewsText) + 1;
+    }
+    if (TextSize < 1) {
+        pScreen->m_TextScroller.SetText(nullptr);
+    } else {
+        int16 *pText = new ("UIWebOfferNews(UTF8toUCS)", 0, 0x40) int16[TextSize];
+        ConvertUTF8ToUCS2(reinterpret_cast<uint16 *>(pText), TextSize,
+                          reinterpret_cast<uint8 *>(pNewsData->pNewsText));
+        pScreen->m_TextScroller.SetText(pText);
+        if (pText) {
+            delete[] pText;
+        }
+    }
+
+    return pScreen;
 }

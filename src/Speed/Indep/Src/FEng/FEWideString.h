@@ -5,6 +5,13 @@
 #pragma once
 #endif
 
+#include <types.h>
 
+struct FEWideString {
+    int16 *mpsString;
+    uint32 mulBufferLength;
+
+    FEWideString &operator=(char *string);
+};
 
 #endif

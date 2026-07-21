@@ -28,6 +28,10 @@ enum FEObjType {
 // total size: 0x5C
 class FEObject : public FEMinNode {
   public:
+    unsigned long GetNameHash() const { return NameHash; }
+    unsigned long GetFlags() const { return Flags; }
+    void SetFlags(unsigned long flags) { Flags = flags; }
+    unsigned long GetHandle() const { return Handle; }
   private:
     unsigned long GUID;           // offset 0xC, size 0x4
     unsigned long NameHash;       // offset 0x10, size 0x4
