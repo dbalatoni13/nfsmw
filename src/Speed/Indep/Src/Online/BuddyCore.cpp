@@ -510,3 +510,23 @@ void BuddyCore::CountBuddys() {
         }
     }
 }
+
+int BuddyCore::GetNumRealBuddys() {
+    CountBuddys();
+    return m_realBuddys;
+}
+
+int BuddyCore::GetNumberTempBuddys() {
+    CountBuddys();
+    return m_tempBuddys;
+}
+
+inline int BuddyCore::GetNumBlockedBuddys() {
+    CountBuddys();
+    return m_blockedBuddys;
+}
+
+int BuddyCore::GetNumFriendRequests() {
+    CountBuddys();
+    return m_friendRequestBuddys;
+}
