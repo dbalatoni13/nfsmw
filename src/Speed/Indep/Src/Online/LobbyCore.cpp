@@ -1,4 +1,5 @@
 #include "LobbyCore.hpp"
+#include "LobbyAccount.hpp"
 #include "LobbyGames.hpp"
 #include "LobbyGameSessions.hpp"
 

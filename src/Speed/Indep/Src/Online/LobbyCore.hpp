@@ -88,7 +88,6 @@ typedef void LobbyApiCallbackT(LobbyApiRefT *, LobbyApiMsgT *, void *);
 
 #include "LobbyRanks.hpp"
 #include "LobbyChat.hpp"
-#include "LobbyAccount.hpp"
 
 enum LobbyApiCBTypeE {
     LOBBYAPI_CBTYPE_INVALID = -1,
@@ -220,6 +219,8 @@ struct LobbyUsers {
     friend int32 LobbyInit();
     friend void LobbyDisconnect();
 };
+
+struct LobbyRooms;
 
 struct LobbyAccount {
     static LobbyAccount &Instance();
@@ -358,6 +359,7 @@ class LobbyCore {
     friend struct LobbyChat;
     friend struct LobbyGames;
     friend struct LobbyGameSessions;
+    friend struct LobbyRooms;
     friend struct ConnectionCore;
     friend struct BuddyCore;
 

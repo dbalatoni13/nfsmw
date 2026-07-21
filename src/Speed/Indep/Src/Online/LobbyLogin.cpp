@@ -12,6 +12,8 @@ extern LobbyLoginAlertT LobbyLogin_DefaultAlertTable[];
 
 static OnlineMutex lobbyMutex("Lobby");
 
+#include "LobbyAccount.hpp"
+
 extern "C" {
 LobbyLoginRefT *LobbyLoginCreate(const LobbyApiRefT *lobbyRef, const LobbyLoginAlertT *alertTable);
 void LobbyLoginAbort(LobbyLoginRefT *login, LobbyLoginContextE context);
