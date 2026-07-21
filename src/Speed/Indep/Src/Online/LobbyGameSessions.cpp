@@ -436,19 +436,19 @@ char *LobbyGameSessions::GetSessionDisplayName(const GameSession *session) {
 
 inline eOnlineDisconnectPerc LobbyGameSessions::GetSessionDisconnectPercentage(const GameSession *session) {
     const GameSession *theSession = session ? session : &myCurrentSession;
-    eOnlineDisconnectPerc eDisconnectPercentage = OLS_DISCONNECT_PERC_5;
+    eOnlineDisconnectPerc eDisconnectPercentage = OLS_DISCONNECT_PERC_ANY;
     if (theSession->uCustFlags & 0x2000000) {
-        eDisconnectPercentage = OLS_DISCONNECT_PERC_ANY;
-    } else if (theSession->uCustFlags & 0x1000000) {
         eDisconnectPercentage = OLS_DISCONNECT_PERC_50;
-    } else if (theSession->uCustFlags & 0x800000) {
+    } else if (theSession->uCustFlags & 0x1000000) {
         eDisconnectPercentage = OLS_DISCONNECT_PERC_25;
-    } else if (theSession->uCustFlags & 0x400000) {
+    } else if (theSession->uCustFlags & 0x800000) {
         eDisconnectPercentage = OLS_DISCONNECT_PERC_20;
-    } else if (theSession->uCustFlags & 0x200000) {
+    } else if (theSession->uCustFlags & 0x400000) {
         eDisconnectPercentage = OLS_DISCONNECT_PERC_15;
-    } else if (theSession->uCustFlags & 0x100000) {
+    } else if (theSession->uCustFlags & 0x200000) {
         eDisconnectPercentage = OLS_DISCONNECT_PERC_10;
+    } else if (theSession->uCustFlags & 0x100000) {
+        eDisconnectPercentage = OLS_DISCONNECT_PERC_5;
     }
     return eDisconnectPercentage;
 }
@@ -692,5 +692,56 @@ void LobbyGameSessions::ExtractSessionInfo() {
         if (hostName) {
             LobbyGames::Instance().JoinGame(hostName + 1, nullptr, nullptr, nullptr);
         }
+    }
+}
+
+void LobbyGameSessions::UpdateSessionFlags(uint32 &sessionFlags) {
+    cOnlineSettings *settings = &FEDatabase->OnlineSettings;
+    sessionFlags &= ~0x200;
+    if (settings->RankedGame == 1) {
+        sessionFlags |= 0x200;
+    }
+    sessionFlags &= ~0x400;
+    if (settings->CollisionDetection == 1) {
+        sessionFlags |= 0x400;
+    }
+    sessionFlags &= ~0x2000;
+    if (settings->PerformanceMatching == 1) {
+        sessionFlags |= 0x2000;
+    }
+    sessionFlags &= ~0x800;
+    if (settings->UseNOS == 1) {
+        sessionFlags |= 0x800;
+    }
+    sessionFlags &= ~0x1000;
+    if (settings->GetRaceSettings()->TrackDirection == 1) {
+        sessionFlags |= 0x1000;
+    }
+
+    sessionFlags &= 0x1fffffff;
+    if (settings->RaceMode == GRace::kRaceType_Circuit) {
+        sessionFlags |= 0x80000000;
+    } else if (settings->RaceMode == GRace::kRaceType_P2P) {
+        sessionFlags |= 0x40000000;
+    } else if (settings->RaceMode == GRace::kRaceType_Drag) {
+        sessionFlags |= 0x20000000;
+    }
+    if (settings->IsPrivateRoom == 1) {
+        sessionFlags |= 1;
+    }
+
+    sessionFlags &= 0xfc0fffff;
+    if (settings->DisconnectPerc == OLS_DISCONNECT_PERC_5) {
+        sessionFlags |= 0x100000;
+    } else if (settings->DisconnectPerc == OLS_DISCONNECT_PERC_10) {
+        sessionFlags |= 0x200000;
+    } else if (settings->DisconnectPerc == OLS_DISCONNECT_PERC_15) {
+        sessionFlags |= 0x400000;
+    } else if (settings->DisconnectPerc == OLS_DISCONNECT_PERC_20) {
+        sessionFlags |= 0x800000;
+    } else if (settings->DisconnectPerc == OLS_DISCONNECT_PERC_25) {
+        sessionFlags |= 0x1000000;
+    } else if (settings->DisconnectPerc == OLS_DISCONNECT_PERC_50) {
+        sessionFlags |= 0x2000000;
     }
 }
