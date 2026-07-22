@@ -18,6 +18,7 @@ struct OnlinePlayerMgr {
     static OnlinePlayer *GetOnlinePlayer(int player_num);
     static int GetNumPlayers() { return m_numPlayers; }
     static OnlinePlayer *AddOnlinePlayer(int client_id);
+    static void RemoveOnlinePlayer(int client_id);
     static OnlinePlayer *FindPlayerWithClientId(int client_id);
     static OnlinePlayer *FindPlayerWithDriverNumber(int driver_number);
 };

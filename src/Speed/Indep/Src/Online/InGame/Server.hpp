@@ -53,6 +53,7 @@ struct Server {
     static void SendQuitMessage();
     static void SendWelcomeMessage(int client_id);
     static void SendCarDescriptionMessage(int client_id, int driver_number);
+    static void SendClientLeftMessage(int leaving_client_id, int driver_number, bool he_quit);
     static void HandleClientDeparture(int client_id, bool he_quit);
     static void ProcessCarMessage(SmartBitStream &bitstream_data, int client_id);
     static void ProcessClockSyncMessage(SmartBitStream &bitstream_data, int client_id);

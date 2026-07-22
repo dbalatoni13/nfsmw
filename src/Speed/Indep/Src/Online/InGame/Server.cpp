@@ -284,3 +284,13 @@ void Server::ProcessCarDescriptionMessage(SmartBitStream &bitstream_data, int cl
         }
     }
 }
+
+void Server::HandleClientDeparture(int client_id, bool he_quit) {
+    OnlinePlayer *p_player = OnlinePlayerMgr::FindPlayerWithClientId(client_id);
+    if (p_player) {
+        int driver_number = p_player->GetDriverNumber();
+        OnlinePlayerMgr::RemoveOnlinePlayer(client_id);
+        TheOnlineManager.DriverLeft(driver_number, he_quit);
+        SendClientLeftMessage(client_id, driver_number, he_quit);
+    }
+}
