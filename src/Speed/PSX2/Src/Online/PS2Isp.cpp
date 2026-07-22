@@ -117,11 +117,10 @@ bool PS2Isp::IsStarted() {
 }
 
 bool PS2Isp::IsFinished() {
-    bool rc = true;
-    if (IsStarted()) {
-        rc = PS2IspGetContext(ps2isp) == PS2ISP_CONTEXT_DONE;
+    if (!IsStarted()) {
+        return true;
     }
-    return rc;
+    return PS2IspGetContext(ps2isp) == PS2ISP_CONTEXT_DONE;
 }
 
 bool PS2Isp::DoContextMemcard() {
@@ -173,12 +172,10 @@ PS2IspStatusE PS2Isp::GetStatus() {
 }
 
 int PS2Isp::GetNumNetworkConfigs() {
+    GetContext();
     int numConfigs = TagFieldGetNumber(
         TagFieldFind(PS2IspParams(ps2isp, PS2ISP_CONTEXT_SELECT), "NUMCFG"), 0);
-    if (numConfigs > 4) {
-        numConfigs = 4;
-    }
-    return numConfigs;
+    return numConfigs > 4 ? 4 : numConfigs;
 }
 
 NetConfigRecT *PS2Isp::GetNetworkConfigs() {
@@ -191,10 +188,13 @@ bool PS2Isp::IsAlertSet() {
 }
 
 PS2IspAlertT *PS2Isp::GetAlert(PS2IspContextE context) {
+    PS2IspContextE alertContext;
     if (context == PS2ISP_NUMCONTEXTS) {
-        context = GetContext();
+        alertContext = GetContext();
+    } else {
+        alertContext = context;
     }
-    return PS2IspAlert(ps2isp, context);
+    return PS2IspAlert(ps2isp, alertContext);
 }
 
 PS2IspAlertE PS2Isp::GetAlertEnum(PS2IspContextE context) {
@@ -202,23 +202,25 @@ PS2IspAlertE PS2Isp::GetAlertEnum(PS2IspContextE context) {
 }
 
 void PS2Isp::ClearAlert(PS2IspContextE context) {
+    PS2IspContextE alertContext;
     if (context == PS2ISP_NUMCONTEXTS) {
-        context = GetContext();
+        alertContext = GetContext();
+    } else {
+        alertContext = context;
     }
-    PS2IspClearAlert(ps2isp, context);
+    PS2IspClearAlert(ps2isp, alertContext);
 }
 
 bool PS2Isp::LoadDirtyDnasFile() {
-    bool rc = true;
     if (!dirtyDnasElfBuffer) {
         dirtyDnasElfBuffer = static_cast<unsigned char *>(
             bGetFile("ONLINE\\dirtydnas_eu.elf", &dirtyDnasElfSize, 0x1040));
         if (!dirtyDnasElfBuffer) {
             dirtyDnasElfSize = 0;
-            rc = false;
+            return false;
         }
     }
-    return rc;
+    return true;
 }
 
 bool PS2Isp::LoadDirtyDnasAuthFile() {
