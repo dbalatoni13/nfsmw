@@ -430,3 +430,11 @@ void Server::ProcessStartRaceSyncMessage(SmartBitStream &bitstream_data, int cli
         SendMessageToOneClient(client_id, 15, response_data, false);
     }
 }
+
+void Server::SendClientLoadMessage(int client_id, int driver_num) {
+    TheOnlineManager.SignalRestartLoad(driver_num);
+    SmartBitStream bitstream_data;
+    bitstream_data.AddByte(14);
+    bitstream_data.AddInt(driver_num);
+    SendMessageToAlmostAllClients(client_id, 14, bitstream_data, true);
+}
