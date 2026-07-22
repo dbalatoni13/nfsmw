@@ -294,3 +294,14 @@ void Server::HandleClientDeparture(int client_id, bool he_quit) {
         SendClientLeftMessage(client_id, driver_number, he_quit);
     }
 }
+
+void Server::SendWelcomeMessage(int client_id) {
+    int value = OnlinePlayerMgr::FindPlayerWithClientId(client_id)->GetDriverNumber();
+    SmartBitStream bitstream_data;
+    bitstream_data.AddByte(0);
+    bitstream_data.AddInt(client_id);
+    bitstream_data.AddInt(value);
+    bitstream_data.AddInt(m_driverNumber);
+    TheOnlineManager.ExportRaceParams(m_driverNumber, bitstream_data);
+    SendMessageToOneClient(client_id, 0, bitstream_data, true);
+}
