@@ -51,3 +51,5 @@
 #include "Speed/Indep/Src/Online/InGame/OnlineTimer.cpp"
 
 #include "Speed/Indep/Src/Online/InGame/Server.cpp"
+
+#include "Speed/Indep/Src/Online/InGame/CSCommon.cpp"
