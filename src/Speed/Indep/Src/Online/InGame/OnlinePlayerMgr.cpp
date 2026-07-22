@@ -15,3 +15,19 @@ void OnlinePlayerMgr::Close() {
     }
     m_numPlayers = 0;
 }
+
+OnlinePlayer *OnlinePlayerMgr::AddOnlinePlayer(int client_id) {
+    OnlinePlayer *p_player = nullptr;
+    OnlinePlayer *p_temp_player = m_OnlinePlayer;
+    do {
+        if (p_temp_player->GetClientId() == -1) {
+            p_temp_player->SetClientId(client_id);
+            p_player = p_temp_player;
+            m_numPlayers++;
+            break;
+        }
+        p_temp_player++;
+    } while (reinterpret_cast<int>(p_temp_player) <
+             reinterpret_cast<int>(m_OnlinePlayer + 3));
+    return p_player;
+}
