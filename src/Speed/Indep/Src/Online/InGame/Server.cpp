@@ -532,3 +532,44 @@ void Server::ConnectionCoreCB(ConnApiRefT *connapi, ConnApiCbInfoT *cbinfo, void
         return;
     }
 }
+
+void Server::ShowDiagnostics() {}
+
+char *DescribeMessageType(int msg) {
+    switch (msg) {
+    case 0:
+        return "R_SC_WELCOME";
+    case 1:
+        return "R_BI_CARDESCRIPTION";
+    case 2:
+        return "U_BI_CARSPAM";
+    case 3:
+        return "U_CS_CLOCKSYNC";
+    case 4:
+        return "U_SC_CARSPAMCLOCKSYNC";
+    case 5:
+        return "U_BI_SCORE";
+    case 6:
+        return "U_SC_SYNCANIMATION";
+    case 7:
+        return "R_BI_DRIVERFINISH";
+    case 8:
+        return "R_CS_CLIENTQUIT";
+    case 9:
+        return "R_SC_SERVERQUIT";
+    case 10:
+        return "R_SC_CLIENTLEFT";
+    case 11:
+        return "R_CS_CSTATECHANGE";
+    case 12:
+        return "R_SC_SSTATECHANGE";
+    case 13:
+        return "R_BI_DATACRC";
+    case 14:
+        return "R_SC_RESTARTLOAD";
+    case 15:
+        return "U_BI_STARTRACESYNC";
+    default:
+        return "Unknown";
+    }
+}
