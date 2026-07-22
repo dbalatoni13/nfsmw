@@ -244,3 +244,8 @@ void Server::ProcessScoreMessage(SmartBitStream &bitstream_data, int client_id) 
     TheOnlineManager.SignalScoreMessage(bitstream_data);
     SendMessageToAlmostAllClients(client_id, 5, bitstream_data, false);
 }
+
+void Server::ProcessDataCRCMessage(SmartBitStream &bitstream_data, int client_id) {
+    TheOnlineManager.SignalDataCRCMessage(bitstream_data);
+    SendMessageToAlmostAllClients(client_id, 13, bitstream_data, true);
+}
