@@ -64,3 +64,16 @@ OnlinePlayer *OnlinePlayerMgr::FindPlayerWithClientId(int client_id) {
     }
     return p_player;
 }
+
+OnlinePlayer *OnlinePlayerMgr::FindPlayerWithDriverNumber(int driver_number) {
+    OnlinePlayer *p_player = nullptr;
+    for (int i = 0; i < 3; i++) {
+        OnlinePlayer *p_temp_player = &m_OnlinePlayer[i];
+        if (p_temp_player->GetClientId() != -1 &&
+            p_temp_player->GetDriverNumber() == driver_number) {
+            p_player = p_temp_player;
+            break;
+        }
+    }
+    return p_player;
+}
