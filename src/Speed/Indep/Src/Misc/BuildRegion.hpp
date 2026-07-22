@@ -7,6 +7,7 @@ bool IsAmerica();
 bool IsEurope();
 bool IsPal();
 char *GetSlusCode();
+unsigned char *GetDnasPassPhrase();
 
 inline const char *GetCarBadgingSuffix() {
     if (IsEurope()) {
