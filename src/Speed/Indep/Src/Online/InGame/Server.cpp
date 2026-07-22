@@ -500,3 +500,26 @@ void Server::SetState(ServerStateEnum new_state) {
         SendMessageToAllClients(12, bitstream_data, true);
     }
 }
+
+char *Server::DescribeState(int state) {
+    switch (state) {
+    case SERVERSTATE_INITIAL:
+        return "INITIAL";
+    case SERVERSTATE_WELCOME:
+        return "WELCOME";
+    case SERVERSTATE_WAITJOINS:
+        return "WAITJOINS";
+    case SERVERSTATE_LOADING:
+        return "LOADING";
+    case SERVERSTATE_NIS:
+        return "NIS";
+    case SERVERSTATE_WAITLOADS:
+        return "WAITLOADS";
+    case SERVERSTATE_READY:
+        return "READY";
+    case SERVERSTATE_RACING:
+        return "RACING";
+    default:
+        return "Unknown";
+    }
+}

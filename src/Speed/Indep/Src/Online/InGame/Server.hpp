@@ -33,6 +33,7 @@ struct Server {
     static void Close();
     static void StartServerProcessing();
     static void DisconnectLaggers();
+    static char *DescribeState(int state);
     static void DisconnectPlayer(int driver_number) {
         OnlinePlayer *player = OnlinePlayerMgr::FindPlayerWithDriverNumber(driver_number);
         if (player) {
