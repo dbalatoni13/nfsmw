@@ -29,6 +29,7 @@ struct OnlinePlayer {
     void SetLastClockSyncRealTimeReceived(float value) {
         m_lastClockSyncRealTimeReceived = value;
     }
+    void SetTicker(uint32 ticker) { m_ticker = ticker; }
     void SetClientState(int new_state);
 };
 

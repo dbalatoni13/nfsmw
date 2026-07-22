@@ -399,3 +399,20 @@ void Server::ProcessDriverFinishMessage(SmartBitStream &bitstream_data, int clie
         }
     }
 }
+
+void Server::ProcessClientStateChangeMessage(SmartBitStream &bitstream_data, int client_id) {
+    uint32 temp = 0;
+    bitstream_data.GetBits(temp, 32);
+    uint32 new_state = temp;
+    OnlinePlayer *p_player = OnlinePlayerMgr::FindPlayerWithClientId(client_id);
+    int old_state = p_player->GetClientState();
+    p_player->SetClientState(new_state);
+    if (new_state == CLIENTSTATE_LOADING && old_state != CLIENTSTATE_DESCRIBED) {
+        SendClientLoadMessage(client_id, p_player->GetDriverNumber());
+    }
+    if (new_state == CLIENTSTATE_READY) {
+        uint32 temp = 0;
+        bitstream_data.GetBits(temp, 32);
+        p_player->SetTicker(temp);
+    }
+}
