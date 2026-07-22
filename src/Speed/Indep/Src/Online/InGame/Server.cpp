@@ -249,3 +249,38 @@ void Server::ProcessDataCRCMessage(SmartBitStream &bitstream_data, int client_id
     TheOnlineManager.SignalDataCRCMessage(bitstream_data);
     SendMessageToAlmostAllClients(client_id, 13, bitstream_data, true);
 }
+
+void Server::ProcessCarDescriptionMessage(SmartBitStream &bitstream_data, int client_id) {
+    static SplitPacketList *splitPackets[4];
+    static bool firstTime = true;
+
+    if (firstTime == true) {
+        firstTime = false;
+        bMemSet(splitPackets, 0, sizeof(splitPackets));
+    }
+    if (!splitPackets[client_id]) {
+        splitPackets[client_id] =
+            new ("Server::ProcessCarDescriptionMessage", 0) SplitPacketList;
+    }
+    if (Online::ReceiveChunk(bitstream_data, *splitPackets[client_id]) == true) {
+        SmartBitStream reassembledData;
+        Online::JoinPackets(reassembledData, *splitPackets[client_id]);
+        uint32 temp = 0;
+        reassembledData.GetBits(temp, 32);
+        int driver_number = temp;
+        OnlinePlayerMgr::FindPlayerWithClientId(client_id);
+        TheOnlineManager.ImportDriverInfo(driver_number, reassembledData);
+        delete splitPackets[client_id];
+        splitPackets[client_id] = nullptr;
+
+        SplitPacketList packetsToSend;
+        reassembledData.Rewind();
+        Online::SplitPacket(MSG_R_BI_CARDESCRIPTION, reassembledData, packetsToSend);
+        SplitPacketNode *node;
+        while ((node = packetsToSend.GetHead()) != packetsToSend.EndOfList()) {
+            SendMessageToAlmostAllClients(client_id, 1, node->data, true);
+            packetsToSend.RemoveHead();
+            delete node;
+        }
+    }
+}
