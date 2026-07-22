@@ -368,3 +368,34 @@ void Server::SignalSyncAnimationMessage(SmartBitStream &payload_data) {
                                          payload_data.GetByteLength());
     SendMessageToAllClients(6, bitstream_data, false);
 }
+
+void Server::ProcessDriverFinishMessage(SmartBitStream &bitstream_data, int client_id) {
+    static SplitPacketList *splitPackets[4];
+    static bool firstTime = true;
+
+    if (firstTime == true) {
+        firstTime = false;
+        bMemSet(splitPackets, 0, sizeof(splitPackets));
+    }
+    if (!splitPackets[client_id]) {
+        splitPackets[client_id] =
+            new ("Server::ProcessDriverFinishMessage", 0) SplitPacketList;
+    }
+    if (Online::ReceiveChunk(bitstream_data, *splitPackets[client_id]) == true) {
+        SmartBitStream reassembledData;
+        Online::JoinPackets(reassembledData, *splitPackets[client_id]);
+        TheOnlineManager.SignalDriverFinish(reassembledData);
+        delete splitPackets[client_id];
+        splitPackets[client_id] = nullptr;
+
+        SplitPacketList packetsToSend;
+        reassembledData.Rewind();
+        Online::SplitPacket(MSG_R_BI_DRIVERFINISH, reassembledData, packetsToSend);
+        SplitPacketNode *node;
+        while ((node = packetsToSend.GetHead()) != packetsToSend.EndOfList()) {
+            SendMessageToAlmostAllClients(client_id, 7, node->data, true);
+            packetsToSend.RemoveHead();
+            delete node;
+        }
+    }
+}
