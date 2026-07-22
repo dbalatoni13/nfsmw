@@ -13,7 +13,29 @@
 
 class SmartBitStream;
 struct Client;
-struct OnlineRacer;
+
+enum eOnlineRacerState {
+    OPS_DISCONNECTED = 0,
+    OPS_CONNECTED = 1,
+    OPS_RACING = 2,
+    OPS_FINISHED = 3,
+    OPS_LOST_CONNECTION = 4,
+    OPS_DISCERROR = 5,
+    OPS_QUIT = 6,
+    NUM_OPS_STATES = 7
+};
+
+struct ExtrapolatedCar {
+    bool IsAbleToSee(ExtrapolatedCar &target);
+};
+
+struct OnlineRacer : ExtrapolatedCar {
+    eOnlineRacerState GetState();
+    bool IsConnected() {
+        return GetState() != OPS_LOST_CONNECTION && GetState() != OPS_QUIT &&
+               GetState() != OPS_DISCONNECTED && GetState() != OPS_DISCERROR;
+    }
+};
 
 enum ePosDataPriorityMask {
     PDP_MASK_NONE = 0,
@@ -89,9 +111,7 @@ class OnlineManager {
     }
 
     // TODO
-    eOnlineState GetState() {
-        return OLS_DISCONNECTED;
-    }
+    eOnlineState GetState() { return State; }
 
   protected:
     eOnlineState State;

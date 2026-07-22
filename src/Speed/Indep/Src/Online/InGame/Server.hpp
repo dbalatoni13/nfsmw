@@ -7,6 +7,7 @@
 
 #include <types.h>
 #include "OnlinePlayerMgr.hpp"
+#include "Speed/Indep/Src/World/OnlineManager.hpp"
 
 class SmartBitStream;
 class Timer;
@@ -61,6 +62,10 @@ struct Server {
     static void ProcessDriverFinishMessage(SmartBitStream &bitstream_data, int client_id);
     static void ProcessClientStateChangeMessage(SmartBitStream &bitstream_data, int client_id);
     static void ProcessStartRaceSyncMessage(SmartBitStream &bitstream_data, int client_id);
+    static void SendMessageToOneClient(int client_id, uint8 msg_type,
+                                       SmartBitStream &bitstream_data, bool is_reliable);
+    static void SendCarSpamClockSyncMessage(int client_id, uint32 client_tick,
+                                            ePosDataPriorityMask pos_priority);
     static void ShowDiagnostics();
     static void SignalStartClockSync();
     static void SignalReady();

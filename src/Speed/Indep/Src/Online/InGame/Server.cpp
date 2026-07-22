@@ -199,3 +199,32 @@ void Server::HandleIncomingPacket(int client_id, char *raw_data, int num_bytes, 
         }
     }
 }
+
+void Server::ProcessCarMessage(SmartBitStream &bitstream_data, int client_id) {
+    OnlinePlayer *p_sender = OnlinePlayerMgr::FindPlayerWithClientId(client_id);
+    if (m_state >= SERVERSTATE_READY && TheOnlineManager.GetState() == OLS_RACING && p_sender) {
+        uint32 client_tick = bitstream_data.GetInt();
+        bitstream_data.GetQuantizedInt(Online::m_driverNumberQuantizer);
+        ePosDataPriorityMask pos_priority =
+            static_cast<ePosDataPriorityMask>(bitstream_data.GetByte());
+        int driver_number = p_sender->GetDriverNumber();
+        float player_timestamp = RealTimer.GetSeconds();
+        OnlineRacer *racer = TheOnlineManager.GetOnlineRacer(driver_number);
+        if (racer && racer->IsConnected()) {
+            TheOnlineManager.ImportPositionData(driver_number, bitstream_data,
+                                                player_timestamp, pos_priority);
+            OnlineRacer *sender = TheOnlineManager.GetOnlineRacer(driver_number);
+            for (int player_num = 0; player_num < 3; player_num++) {
+                OnlinePlayer *p_player = OnlinePlayerMgr::GetOnlinePlayer(player_num);
+                if (p_player && p_player->GetClientId() != client_id &&
+                    p_player->GetClientState() > CLIENTSTATE_LOADING) {
+                    OnlineRacer *receiver = TheOnlineManager.GetOnlineRacer(player_num);
+                    if (sender && receiver && receiver->IsAbleToSee(*sender)) {
+                        SendMessageToOneClient(p_player->GetClientId(), 2, bitstream_data, false);
+                    }
+                }
+            }
+            SendCarSpamClockSyncMessage(client_id, client_tick, pos_priority);
+        }
+    }
+}
