@@ -31,3 +31,16 @@ OnlinePlayer *OnlinePlayerMgr::AddOnlinePlayer(int client_id) {
              reinterpret_cast<int>(m_OnlinePlayer + 3));
     return p_player;
 }
+
+void OnlinePlayerMgr::RemoveOnlinePlayer(int client_id) {
+    OnlinePlayer *p_player = m_OnlinePlayer;
+    while (reinterpret_cast<int>(p_player) <
+           reinterpret_cast<int>(m_OnlinePlayer + 3)) {
+        if (p_player->GetClientId() == client_id) {
+            p_player->Reset();
+            m_numPlayers--;
+            break;
+        }
+        p_player++;
+    }
+}
