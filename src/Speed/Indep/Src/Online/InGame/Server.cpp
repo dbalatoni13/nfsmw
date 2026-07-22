@@ -1,5 +1,6 @@
 #include "Server.hpp"
 #include "Client.hpp"
+#include "CSCommon.hpp"
 #include "OnlinePlayerMgr.hpp"
 
 void Server::Init() {
@@ -154,3 +155,47 @@ void Server::DisconnectLaggers() {
 }
 
 void Server::StartServerProcessing() {}
+
+void Server::HandleIncomingPacket(int client_id, char *raw_data, int num_bytes, bool is_reliable) {
+    if (CSCommon::GetDiagnosticLevel() >= DIAGNOSTICLEVEL_EXTREME) {
+        CSCommon::DumpBytes(raw_data, num_bytes);
+    }
+
+    SmartBitStream bitstream_data;
+    bitstream_data.PokeBytes(raw_data, num_bytes);
+    uint32 temp = 0;
+    bitstream_data.GetBits(temp, 8);
+    uint8 message_type = temp;
+
+    if (message_type < 16) {
+        switch (message_type) {
+        case 2:
+            ProcessCarMessage(bitstream_data, client_id);
+            break;
+        case 3:
+            ProcessClockSyncMessage(bitstream_data, client_id);
+            break;
+        case 5:
+            ProcessScoreMessage(bitstream_data, client_id);
+            break;
+        case 1:
+            ProcessCarDescriptionMessage(bitstream_data, client_id);
+            break;
+        case 8:
+            HandleClientDeparture(client_id, true);
+            break;
+        case 7:
+            ProcessDriverFinishMessage(bitstream_data, client_id);
+            break;
+        case 11:
+            ProcessClientStateChangeMessage(bitstream_data, client_id);
+            break;
+        case 13:
+            ProcessDataCRCMessage(bitstream_data, client_id);
+            break;
+        case 15:
+            ProcessStartRaceSyncMessage(bitstream_data, client_id);
+            break;
+        }
+    }
+}

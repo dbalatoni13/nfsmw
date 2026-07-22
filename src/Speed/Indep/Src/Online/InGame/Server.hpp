@@ -53,6 +53,14 @@ struct Server {
     static void SendWelcomeMessage(int client_id);
     static void SendCarDescriptionMessage(int client_id, int driver_number);
     static void HandleClientDeparture(int client_id, bool he_quit);
+    static void ProcessCarMessage(SmartBitStream &bitstream_data, int client_id);
+    static void ProcessClockSyncMessage(SmartBitStream &bitstream_data, int client_id);
+    static void ProcessScoreMessage(SmartBitStream &bitstream_data, int client_id);
+    static void ProcessDataCRCMessage(SmartBitStream &bitstream_data, int client_id);
+    static void ProcessCarDescriptionMessage(SmartBitStream &bitstream_data, int client_id);
+    static void ProcessDriverFinishMessage(SmartBitStream &bitstream_data, int client_id);
+    static void ProcessClientStateChangeMessage(SmartBitStream &bitstream_data, int client_id);
+    static void ProcessStartRaceSyncMessage(SmartBitStream &bitstream_data, int client_id);
     static void ShowDiagnostics();
     static void SignalStartClockSync();
     static void SignalReady();
