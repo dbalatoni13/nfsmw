@@ -312,3 +312,11 @@ void Server::SendQuitMessage() {
     bitstream_data.AddBool(m_bForceClientShutdown);
     SendMessageToAllClients(9, bitstream_data, true);
 }
+
+void Server::SendClientLeftMessage(int leaving_client_id, int driver_number, bool he_quit) {
+    SmartBitStream bitstream_data;
+    bitstream_data.AddByte(10);
+    bitstream_data.AddInt(driver_number);
+    bitstream_data.AddBool(he_quit);
+    SendMessageToAlmostAllClients(leaving_client_id, 10, bitstream_data, true);
+}
