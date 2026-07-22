@@ -52,3 +52,15 @@ OnlinePlayer *OnlinePlayerMgr::GetOnlinePlayer(int index) {
     }
     return p_player;
 }
+
+OnlinePlayer *OnlinePlayerMgr::FindPlayerWithClientId(int client_id) {
+    OnlinePlayer *p_player = nullptr;
+    for (int i = 0; i < 3; i++) {
+        OnlinePlayer *p_temp_player = &m_OnlinePlayer[i];
+        if (p_temp_player->GetClientId() == client_id) {
+            p_player = p_temp_player;
+            break;
+        }
+    }
+    return p_player;
+}
