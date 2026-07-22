@@ -490,3 +490,13 @@ void Server::SendMessageToOneClient(int client_id, uint8 msg_type,
         }
     }
 }
+
+void Server::SetState(ServerStateEnum new_state) {
+    m_state = new_state;
+    if (new_state > SERVERSTATE_INITIAL) {
+        SmartBitStream bitstream_data;
+        bitstream_data.AddByte(12);
+        bitstream_data.AddInt(m_state);
+        SendMessageToAllClients(12, bitstream_data, true);
+    }
+}
