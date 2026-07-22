@@ -453,3 +453,15 @@ void Server::SendCarDescriptionMessage(int to_client_id, int driver_number) {
         delete node;
     }
 }
+
+void Server::SendMessageToAlmostAllClients(int exclude_client_id, uint8 msg_type,
+                                           SmartBitStream &bitstream_data,
+                                           bool is_reliable) {
+    for (int player_num = 0; player_num < 3; player_num++) {
+        OnlinePlayer *p_player = OnlinePlayerMgr::GetOnlinePlayer(player_num);
+        if (p_player && p_player->GetClientId() != exclude_client_id) {
+            SendMessageToOneClient(p_player->GetClientId(), msg_type, bitstream_data,
+                                   is_reliable);
+        }
+    }
+}
