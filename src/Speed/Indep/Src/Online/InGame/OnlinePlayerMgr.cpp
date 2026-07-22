@@ -44,3 +44,11 @@ void OnlinePlayerMgr::RemoveOnlinePlayer(int client_id) {
         p_player++;
     }
 }
+
+OnlinePlayer *OnlinePlayerMgr::GetOnlinePlayer(int index) {
+    OnlinePlayer *p_player = nullptr;
+    if (m_OnlinePlayer[index].GetClientId() != -1) {
+        p_player = &m_OnlinePlayer[index];
+    }
+    return p_player;
+}
