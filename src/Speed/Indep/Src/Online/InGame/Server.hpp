@@ -7,6 +7,7 @@
 
 #include <types.h>
 #include "OnlinePlayerMgr.hpp"
+#include "Speed/Indep/Src/Online/SmartBitstream.hpp"
 #include "Speed/Indep/Src/World/OnlineManager.hpp"
 
 class SmartBitStream;
@@ -77,7 +78,13 @@ struct Server {
     static void SignalReady();
     static void SignalRestart();
     static void SignalDriverFinish(SmartBitStream &payload_data);
-    static void SignalScoreMessage(SmartBitStream &payload_data);
+    static void SignalScoreMessage(SmartBitStream &payload_data) {
+        SmartBitStream bitstream_data;
+        bitstream_data.AddByte(5);
+        bitstream_data.AddRawDataWithoutSize(payload_data.GetBuffer(),
+                                             payload_data.GetByteLength());
+        SendMessageToAllClients(5, bitstream_data, false);
+    }
     static void SignalSyncAnimationMessage(SmartBitStream &payload_data);
     static void SignalDataCRCMessage(SmartBitStream &payload_data);
 
