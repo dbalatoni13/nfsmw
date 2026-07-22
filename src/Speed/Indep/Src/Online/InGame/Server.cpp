@@ -340,3 +340,14 @@ void Server::SignalStartClockSync() { SetState(SERVERSTATE_NIS); }
 void Server::SignalReady() { SetState(SERVERSTATE_WAITLOADS); }
 
 void Server::SignalRestart() { SetState(SERVERSTATE_LOADING); }
+
+void Server::SignalDriverFinish(SmartBitStream &payload_data) {
+    SplitPacketList splitPackets;
+    Online::SplitPacket(MSG_R_BI_DRIVERFINISH, payload_data, splitPackets);
+    SplitPacketNode *node;
+    while ((node = splitPackets.GetHead()) != splitPackets.EndOfList()) {
+        SendMessageToAllClients(7, node->data, true);
+        splitPackets.RemoveHead();
+        delete node;
+    }
+}
