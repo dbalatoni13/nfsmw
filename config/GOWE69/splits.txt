@@ -232,12 +232,14 @@ Speed/Indep/SourceLists/zWorld2.cpp:
 	.bss        start:0x804AA598 end:0x804AAA88
 
 Speed/Indep/SourceLists/zOnline.cpp:
-	.over       start:0x803A41B8 end:0x803A4294
+	.over       start:0x803A41B8 end:0x803A4234
+	.over       start:0x803A4234 end:0x803A4294 rename:.rodata
 	.ctors      start:0x803C8BE0 end:0x803C8BE4
 	.bss        start:0x804AAA88 end:0x804AAA90
 
 Speed/Indep/SourceLists/zFeOverlay.cpp:
 	.over       start:0x803A4294 end:0x803C6A3C
+	.over       start:0x803C6A40 end:0x803C8B58 rename:.rodata
 	.ctors      start:0x803C8BE4 end:0x803C8BE8
 	.data       start:0x804390E4 end:0x804394D0
 	.bss        start:0x804AAA90 end:0x804B4DE8

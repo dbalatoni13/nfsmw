@@ -8,7 +8,7 @@ SECTIONS
 	.comment :{ *(.comment)}
 	.init	0x80003100	 : { *(.init)		} =0
 
-	. =  ALIGN(16);
+	. =  ALIGN(32);
 	.text      :
 	{
 		*(.text)
@@ -18,7 +18,10 @@ SECTIONS
     . =  ALIGN(8);
 	.over      :
 	{
-		*(.over)
+		/* _overlay_start = .; */
+		*zOnline.o(.over .rodata)
+		*zFEOverlay.o(.over .rodata)
+		/* _overlay_end = .; */
 	} =0
 	. =  ALIGN(16);
 	.ctors	  : 
