@@ -8,3 +8,10 @@ void OnlinePlayerMgr::Init() {
         m_OnlinePlayer[i].Reset();
     }
 }
+
+void OnlinePlayerMgr::Close() {
+    for (int i = 0; i < 3; i++) {
+        m_OnlinePlayer[i].Reset();
+    }
+    m_numPlayers = 0;
+}
