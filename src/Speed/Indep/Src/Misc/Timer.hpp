@@ -1,13 +1,29 @@
-#ifndef MISC_TIMER_H
-#define MISC_TIMER_H
+//
+//
+//
+//
+//
+//
+//
+//
+#ifndef TIMER_HPP
+#define TIMER_HPP // Decl: 10
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#define TIMER_SHIFT_VALUE_FLOAT 4000.0f // Decl: 49
+#define TIMER_SHIFT_VALUE_INT 4000      // Decl: 50
+
+#define TIMER_STRING_SIZE 32 // Decl: 53
+
+#define TIMER_PRINT_FLAG_NEGATIVE 1           // Decl: 56
+#define TIMER_PRINT_FLAG_SHOW_PLUS_SIGN 2     // Decl: 57
+#define TIMER_PRINT_FLAG_SHOW_UNUSED_DIGITS 4 // Decl: 58
+#define TIMER_PRINT_FLAG_KEEP_LAST_DIGIT 8    // Decl: 59
+#define TIMER_PRINT_FLAG_DONT_SHOW_MS 16      // Decl: 60
 
 #include "Speed/Indep/Src/Ecstasy/EcstasyE.hpp"
 
 // total size: 0x4
+// Decl: 64
 class Timer {
   public:
     Timer() {
@@ -81,15 +97,15 @@ class Timer {
     }
 
     int IsSet() {
-        return PackedTime != 0 && PackedTime != 0x7fffffff;
+        return static_cast<int>(PackedTime != 0 && PackedTime != 0x7fffffff);
     }
 
     void SetTime(float seconds) {
-        PackedTime = static_cast<int>(seconds * 4000.0f + 0.5f);
+        PackedTime = static_cast<int>(seconds * TIMER_SHIFT_VALUE_FLOAT + 0.5f);
     }
 
     float GetSeconds() {
-        return this->PackedTime / 4000.0f;
+        return this->PackedTime / TIMER_SHIFT_VALUE_FLOAT;
     }
 
     int GetPackedTime() {
