@@ -24,8 +24,8 @@ void PS2IspSetContext(PS2IspT *isp, PS2IspContextE context);
 PS2IspContextE PS2IspGetContext(PS2IspT *isp);
 void PS2IspClearAlert(PS2IspT *isp, PS2IspContextE context);
 PS2IspAlertE PS2IspGetAlertEnum(PS2IspT *isp, PS2IspAlertT *alert);
-int sceSifMInitRpc(int mode);
-int sceSifMExitRpc();
+void sceSifMInitRpc(int mode);
+void sceSifMExitRpc();
 int sceMtapGetConnection(int port);
 void TagFieldSetString(char *record, int recordLength, const char *name,
                        const char *value);
@@ -78,8 +78,8 @@ bool PS2Isp::Start(const PS2IspAlertT *alertTable, PS2IspContextE startContext,
         doingRetryAttempt = false;
     }
 
-    rc = true;
     PS2IspAutomatic(ps2isp, automaticConnect);
+    rc = true;
     if (automaticConnect == true) {
         rc = DoContext(startContext, params);
     } else {
@@ -224,16 +224,19 @@ bool PS2Isp::LoadDirtyDnasFile() {
 }
 
 bool PS2Isp::LoadDirtyDnasAuthFile() {
+    bool rc;
     char authFile[64];
     int fileSize;
-    if (!dirtyDnasAuthBuffer) {
+    if (dirtyDnasAuthBuffer) {
+        rc = true;
+    } else {
         fileSize = 0;
         bSPrintf(authFile, "ONLINE\\%s.dat", BuildRegion::GetSlusCode());
         dirtyDnasAuthBuffer = static_cast<unsigned char *>(
             bGetFile(authFile, &fileSize, 0x1040));
-        return dirtyDnasAuthBuffer != nullptr;
+        rc = dirtyDnasAuthBuffer != nullptr;
     }
-    return true;
+    return rc;
 }
 
 bool PS2Isp::DoContext(PS2IspContextE context, char *params) {
