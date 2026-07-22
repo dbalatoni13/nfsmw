@@ -24,6 +24,11 @@ struct OnlinePlayer {
     int GetDriverNumber() { return m_driverNumber; }
     int GetClientId() { return m_clientId; }
     int GetClientState() { return m_clientState; }
+    float GetLastClockSyncRealTimeReceived() { return m_lastClockSyncRealTimeReceived; }
+    void SetOneWayLatencyMs(int latency_ms) { m_oneWayLatencyMs = latency_ms; }
+    void SetLastClockSyncRealTimeReceived(float value) {
+        m_lastClockSyncRealTimeReceived = value;
+    }
     void SetClientState(int new_state);
 };
 
