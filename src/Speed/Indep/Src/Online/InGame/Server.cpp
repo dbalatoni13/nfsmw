@@ -416,3 +416,17 @@ void Server::ProcessClientStateChangeMessage(SmartBitStream &bitstream_data, int
         p_player->SetTicker(temp);
     }
 }
+
+void Server::ProcessStartRaceSyncMessage(SmartBitStream &bitstream_data, int client_id) {
+    uint32 temp = 0;
+    bitstream_data.GetBits(temp, 32);
+    uint32 value = temp;
+    OnlinePlayerMgr::FindPlayerWithClientId(client_id);
+    if (m_state == SERVERSTATE_READY) {
+        SmartBitStream response_data;
+        response_data.AddByte(15);
+        response_data.AddInt(value);
+        response_data.AddFloat(TheOnlineManager.GetStartRaceTime(bGetTicker()));
+        SendMessageToOneClient(client_id, 15, response_data, false);
+    }
+}
