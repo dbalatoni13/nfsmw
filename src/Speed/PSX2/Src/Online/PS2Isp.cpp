@@ -236,12 +236,14 @@ bool PS2Isp::LoadDirtyDnasAuthFile() {
 }
 
 bool PS2Isp::DoContext(PS2IspContextE context, char *params) {
-    char emptyParams[1] = "";
+    char emptyParams[1];
     if (context != GetContext()) {
         PS2IspSetContext(ps2isp, context);
     }
-    if (!params) {
-        params = emptyParams;
+    char *contextParams = emptyParams;
+    if (params) {
+        contextParams = params;
     }
-    return PS2IspSubmit(ps2isp, context, params) == 0;
+    memcpy(emptyParams, "", sizeof(emptyParams));
+    return PS2IspSubmit(ps2isp, context, contextParams) == 0;
 }
