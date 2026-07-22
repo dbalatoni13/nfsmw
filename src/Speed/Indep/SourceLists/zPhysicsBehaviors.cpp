@@ -8,6 +8,8 @@
 
 #include "Speed/Indep/Src/Physics/Behaviors/RBCop.cpp"
 
+#include "Speed/Indep/Src/Physics/Behaviors/RBRemote.cpp"
+
 #include "Speed/Indep/Src/Physics/Behaviors/Effects.cpp"
 
 #include "Speed/Indep/Src/Physics/Behaviors/DamageVehicle.cpp"
