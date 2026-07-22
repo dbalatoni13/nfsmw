@@ -239,3 +239,8 @@ void Server::ProcessClockSyncMessage(SmartBitStream &bitstream_data, int client_
         p_player->SetOneWayLatencyMs(latency_ms);
     }
 }
+
+void Server::ProcessScoreMessage(SmartBitStream &bitstream_data, int client_id) {
+    TheOnlineManager.SignalScoreMessage(bitstream_data);
+    SendMessageToAlmostAllClients(client_id, 5, bitstream_data, false);
+}
