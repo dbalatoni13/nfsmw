@@ -305,3 +305,10 @@ void Server::SendWelcomeMessage(int client_id) {
     TheOnlineManager.ExportRaceParams(m_driverNumber, bitstream_data);
     SendMessageToOneClient(client_id, 0, bitstream_data, true);
 }
+
+void Server::SendQuitMessage() {
+    SmartBitStream bitstream_data;
+    bitstream_data.AddByte(9);
+    bitstream_data.AddBool(m_bForceClientShutdown);
+    SendMessageToAllClients(9, bitstream_data, true);
+}

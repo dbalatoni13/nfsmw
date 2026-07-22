@@ -68,6 +68,8 @@ struct Server {
     static void SendMessageToAlmostAllClients(int excluded_client_id, uint8 msg_type,
                                               SmartBitStream &bitstream_data,
                                               bool is_reliable);
+    static void SendMessageToAllClients(uint8 msg_type, SmartBitStream &bitstream_data,
+                                        bool is_reliable);
     static void SendCarSpamClockSyncMessage(int client_id, uint32 client_tick,
                                             ePosDataPriorityMask pos_priority);
     static void ShowDiagnostics();
