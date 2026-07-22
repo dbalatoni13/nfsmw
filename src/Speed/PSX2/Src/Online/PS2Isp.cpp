@@ -60,7 +60,7 @@ bool PS2Isp::Start(const PS2IspAlertT *alertTable, PS2IspContextE startContext,
         alertTable = PS2Isp_DefaultAlertTable;
     }
 
-    if (IsStarted()) {
+    if (IsStarted() == true) {
         PS2IspAbort(ps2isp, GetContext());
         doingRetryAttempt = false;
     } else {
@@ -80,7 +80,7 @@ bool PS2Isp::Start(const PS2IspAlertT *alertTable, PS2IspContextE startContext,
 
     rc = true;
     PS2IspAutomatic(ps2isp, automaticConnect);
-    if (automaticConnect) {
+    if (automaticConnect == true) {
         rc = DoContext(startContext, params);
     } else {
         PS2IspSetContext(ps2isp, startContext);
@@ -94,7 +94,7 @@ bool PS2Isp::Start(const PS2IspAlertT *alertTable, PS2IspContextE startContext,
 }
 
 void PS2Isp::Finish() {
-    if (IsStarted()) {
+    if (IsStarted() == true) {
         PS2IspAbort(ps2isp, GetContext());
         PS2IspDestroy(ps2isp);
         ps2isp = nullptr;
@@ -147,7 +147,7 @@ bool PS2Isp::DoContextSelect(int index) {
 
 bool PS2Isp::DoContextDNAS(bool skipDNAS) {
     char params[256] = "";
-    if (skipDNAS) {
+    if (skipDNAS == true) {
         TagFieldSetNumber(params, sizeof(params), "DNASSKIP", 1);
     } else {
         unsigned char *pass = BuildRegion::GetDnasPassPhrase();
@@ -224,7 +224,6 @@ bool PS2Isp::LoadDirtyDnasFile() {
 }
 
 bool PS2Isp::LoadDirtyDnasAuthFile() {
-    bool rc = true;
     char authFile[64];
     int fileSize;
     if (!dirtyDnasAuthBuffer) {
@@ -232,9 +231,9 @@ bool PS2Isp::LoadDirtyDnasAuthFile() {
         bSPrintf(authFile, "ONLINE\\%s.dat", BuildRegion::GetSlusCode());
         dirtyDnasAuthBuffer = static_cast<unsigned char *>(
             bGetFile(authFile, &fileSize, 0x1040));
-        rc = dirtyDnasAuthBuffer != nullptr;
+        return dirtyDnasAuthBuffer != nullptr;
     }
-    return rc;
+    return true;
 }
 
 bool PS2Isp::DoContext(PS2IspContextE context, char *params) {
