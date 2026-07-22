@@ -334,3 +334,9 @@ void Server::SendCarSpamClockSyncMessage(int to_client_id, uint32 client_tick,
         SendMessageToOneClient(to_client_id, 4, bitstream_data, false);
     }
 }
+
+void Server::SignalStartClockSync() { SetState(SERVERSTATE_NIS); }
+
+void Server::SignalReady() { SetState(SERVERSTATE_WAITLOADS); }
+
+void Server::SignalRestart() { SetState(SERVERSTATE_LOADING); }
