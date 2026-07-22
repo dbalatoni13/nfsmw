@@ -2793,6 +2793,10 @@ static const float PartDamage_Intens = 0.0f;
 static const uint32 CullBFace = 1;
 static const uint32 shadowBias = 1;
 
+// TODO
+extern "C" const float lbl_8040AD3C;
+extern "C" const float lbl_8040AD4C;
+
 // UNSOLVED
 bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bMatrix4 *body_matrix, bMatrix4 *tire_matrices,
                            bMatrix4 *brake_matrices, bMatrix4 *spinner_matrices, unsigned int extra_render_flags, int force_light_state,
@@ -2842,7 +2846,7 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
     local_world->v3.x = position.x;
     local_world->v3.y = position.y;
     local_world->v3.z = position.z;
-    local_world->v3.w = 1.0f;
+    local_world->v3.w = lbl_8040AD3C;
 
     unsigned int visibility_state = view->GetVisibleState(&this->AABBMin, &this->AABBMax, local_world);
     if (visibility_state == EVISIBLESTATE_NOT) {
@@ -2854,7 +2858,7 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
     camera_world_position.x = eye->x;
     camera_world_position.y = eye->y;
     camera_world_position.z = eye->z;
-    camera_world_position.w = 1.0f;
+    camera_world_position.w = lbl_8040AD3C;
 
     Player *player1 = Player::GetPlayerByIndex(0);
     int in_front_end = static_cast<int>(IsGameFlowInFrontEnd());
@@ -2866,7 +2870,7 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
     cpy_local_world->v3.x = position.x;
     cpy_local_world->v3.y = position.y;
     cpy_local_world->v3.z = position.z;
-    cpy_local_world->v3.w = 1.0f;
+    cpy_local_world->v3.w = lbl_8040AD3C;
 
     eDynamicLightContext base_light_context;
     elResetLightContext(&base_light_context);
@@ -2889,6 +2893,8 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
             case GARAGETYPE_CAR_LOT:
                 shaper_lights = &ShaperLightsCarLot;
                 break;
+            case GARAGETYPE_NONE:
+            case GARAGETYPE_MAIN_FE:
             default:
                 shaper_lights = &ShaperLightsQRace;
                 break;
@@ -2965,14 +2971,14 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
     if (car_body_lod == CARPART_LOD_A) {
         if (fDistanceToCamera < 4.0f && view->GetID() == EVIEW_FIRST_PLAYER && !INIS::Exists()) {
             camera_eye_in_car_space.z += 0.5f;
-            if (bBoundingBoxIsInside(&this->AABBMin, &this->AABBMax, &camera_eye_in_car_space, 0.0f) != 0) {
+            if (bBoundingBoxIsInside(&this->AABBMin, &this->AABBMax, &camera_eye_in_car_space, lbl_8040AD4C) != 0) {
                 return false;
             }
             camera_eye_in_car_space.z -= 0.5f;
         }
     }
 
-    if (this->mFlashing == true && this->mFlashInterval > 0.0f) {
+    if (this->mFlashing == true && this->mFlashInterval > lbl_8040AD4C) {
         return true;
     }
 
@@ -3032,7 +3038,7 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
         body_render_flags = 0x8000;
     }
 
-    if ((static_cast<unsigned int>(view->GetID() - EVIEW_PLAYER1) <= 1) && WorldTimeElapsed > 0.0f) {
+    if ((static_cast<unsigned int>(view->GetID() - EVIEW_PLAYER1) <= 1) && WorldTimeElapsed > lbl_8040AD4C) {
         if (this->mDamageBehaviour != nullptr) {
             this->mDamageBehaviour->Update(biased_local_world);
         }
@@ -3094,7 +3100,7 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
                                 continue;
                             }
                         } else if (model_part_id <= CARSLOTID_LICENSE_PLATE) {
-                            if (model_part_id >= CARSLOTID_FRONT_WHEEL) {
+                            if (-1 < model_part_id - CARSLOTID_FRONT_WHEEL) {
                                 continue;
                             }
                         }
@@ -3104,71 +3110,95 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
 
                     int draw_part = this->pRideInfo->IsPartEnabled(model_part_id);
 
-                    if (model_part_id == CARSLOTID_DAMAGE_REAR_LEFT_WINDOW || model_part_id == CARSLOTID_DAMAGE_FRONT_LEFT_WINDOW ||
-                        model_part_id == CARSLOTID_DAMAGE_FRONT_RIGHT_WINDOW || model_part_id == CARSLOTID_DAMAGE_REAR_RIGHT_WINDOW ||
-                        model_part_id == CARSLOTID_FRONT_LEFT_WINDOW || model_part_id == CARSLOTID_FRONT_RIGHT_WINDOW ||
-                        model_part_id == CARSLOTID_FRONT_WINDOW || model_part_id == CARSLOTID_REAR_LEFT_WINDOW ||
-                        model_part_id == CARSLOTID_REAR_RIGHT_WINDOW || model_part_id == CARSLOTID_REAR_WINDOW) {
-                        if (!AlphaWritesEnabled) {
-                            goto done_model_part;
-                        }
-                    }
-
-                    if (model_part_id == CARSLOTID_LEFT_SIDE_MIRROR) {
-                        draw_part = 1;
-                    }
-                    if (model_part_id == CARSLOTID_RIGHT_SIDE_MIRROR) {
-                        draw_part = 1;
-                    }
-
-                    if (model_part_id == 0x15 || model_part_id == 0x0e || model_part_id == 0x0d || model_part_id == 0x16) {
-                        if (IsNISCopCar(this->pRideInfo->Type)) {
-                            int door_index = 0;
-                            if (model_part_id == 0x0d) {
-                                door_index = 1;
-                            } else if (model_part_id == 0x0e) {
-                                door_index = 2;
-                            } else if (model_part_id == 0x16) {
-                                door_index = 3;
+                    switch (model_part_id) {
+                        case CARSLOTID_DAMAGE_FRONT_WINDOW:
+                        case CARSLOTID_DAMAGE_REAR_LEFT_WINDOW:
+                        case CARSLOTID_DAMAGE_FRONT_LEFT_WINDOW:
+                        case CARSLOTID_DAMAGE_FRONT_RIGHT_WINDOW:
+                        case CARSLOTID_DAMAGE_REAR_RIGHT_WINDOW:
+                        case CARSLOTID_FRONT_LEFT_WINDOW:
+                        case CARSLOTID_FRONT_RIGHT_WINDOW:
+                        case CARSLOTID_FRONT_WINDOW:
+                        case CARSLOTID_REAR_LEFT_WINDOW:
+                        case CARSLOTID_REAR_RIGHT_WINDOW:
+                        case CARSLOTID_REAR_WINDOW:
+                            if (!AlphaWritesEnabled) {
+                                goto done_model_part;
                             }
+                            break;
+                        default:
+                            break;
+                    }
 
-                            if (NISCopCarDoorOpenAmount[door_index] == 0.0f) {
-                                eMulMatrix(finalmat, &NISCopCarDoorClosedMarkers[door_index], biased_local_world);
-                            } else if (NISCopCarDoorOpenAmount[door_index] == 1.0f) {
-                                eMulMatrix(finalmat, &NISCopCarDoorOpenMarkers[door_index], biased_local_world);
+                    switch (model_part_id) {
+                        case CARSLOTID_HOOD:
+                            if (this->CarbonHood != 0) {
+                                model_light_material = this->LightMaterial_Carbon;
+                            }
+                            break;
+                        case CARSLOTID_HEADLIGHT:
+                            draw_part &= 1;
+                            break;
+                        case CARSLOTID_BRAKELIGHT:
+                            draw_part &= 1;
+                            break;
+                        case CARSLOTID_LEFT_SIDE_MIRROR:
+                        case CARSLOTID_RIGHT_SIDE_MIRROR:
+                            draw_part = 1;
+                            break;
+                        case CARSLOTID_INTERIOR:
+                            draw_part &= 1;
+                            break;
+                        case CARSLOTID_DAMAGE_LEFT_DOOR:
+                        case CARSLOTID_DAMAGE_LEFT_REAR_DOOR:
+                        case CARSLOTID_DAMAGE_RIGHT_DOOR:
+                        case CARSLOTID_DAMAGE_RIGHT_REAR_DOOR:
+                            if (IsNISCopCar(this->pRideInfo->Type)) {
+                                int door_index = 0;
+                                if (model_part_id == CARSLOTID_DAMAGE_RIGHT_DOOR) {
+                                    door_index = 1;
+                                } else if (model_part_id == CARSLOTID_DAMAGE_RIGHT_REAR_DOOR) {
+                                    door_index = 2;
+                                } else if (model_part_id == CARSLOTID_DAMAGE_LEFT_REAR_DOOR) {
+                                    door_index = 3;
+                                }
+
+                                if (NISCopCarDoorOpenAmount[door_index] == lbl_8040AD4C) {
+                                    eMulMatrix(finalmat, &NISCopCarDoorClosedMarkers[door_index], biased_local_world);
+                                } else if (NISCopCarDoorOpenAmount[door_index] == lbl_8040AD3C) {
+                                    eMulMatrix(finalmat, &NISCopCarDoorOpenMarkers[door_index], biased_local_world);
+                                } else {
+                                    bQuaternion open_quaternion(NISCopCarDoorOpenMarkers[door_index]);
+                                    bQuaternion closed_quaternion(NISCopCarDoorClosedMarkers[door_index]);
+                                    bQuaternion blend_quaternion;
+                                    closed_quaternion.Slerp(blend_quaternion, open_quaternion, NISCopCarDoorOpenAmount[door_index]);
+
+                                    bVector4 blend_translation(NISCopCarDoorOpenMarkers[door_index].v3);
+                                    bScale(&blend_translation, &blend_translation, NISCopCarDoorOpenAmount[door_index]);
+                                    bScaleAdd(&blend_translation, &blend_translation, &NISCopCarDoorClosedMarkers[door_index].v3,
+                                              lbl_8040AD3C - NISCopCarDoorOpenAmount[door_index]);
+
+                                    bMatrix4 blend_matrix;
+                                    blend_quaternion.GetMatrix(&blend_matrix);
+                                    blend_matrix.v3 = blend_translation;
+                                    eMulMatrix(finalmat, &blend_matrix, biased_local_world);
+                                }
+                            }
+                            break;
+                        case CARSLOTID_DRIVER:
+                            draw_part &= 1;
+                            if (IsGameFlowInFrontEnd()) {
+                                draw_part = 0;
+                            }
+                            if (IsNISCopCar(this->pRideInfo->Type)) {
+                                draw_part &= NISCopCarDriverVisible;
                             } else {
-                                bQuaternion open_quaternion(NISCopCarDoorOpenMarkers[door_index]);
-                                bQuaternion closed_quaternion(NISCopCarDoorClosedMarkers[door_index]);
-                                bQuaternion blend_quaternion;
-                                closed_quaternion.Slerp(blend_quaternion, open_quaternion, NISCopCarDoorOpenAmount[door_index]);
-
-                                bVector4 blend_translation(NISCopCarDoorOpenMarkers[door_index].v3);
-                                bScale(&blend_translation, &blend_translation, NISCopCarDoorOpenAmount[door_index]);
-                                bScaleAdd(&blend_translation, &blend_translation, &NISCopCarDoorClosedMarkers[door_index].v3,
-                                          1.0f - NISCopCarDoorOpenAmount[door_index]);
-
-                                bMatrix4 blend_matrix;
-                                blend_quaternion.GetMatrix(&blend_matrix);
-                                blend_matrix.v3 = blend_translation;
-                                eMulMatrix(finalmat, &blend_matrix, biased_local_world);
+                                draw_part &= NISRaceDriverVisible;
                             }
-                        }
-                    } else if (model_part_id == 0x3f && this->CarbonHood != 0) {
-                        model_light_material = this->LightMaterial_Carbon;
-                    }
-
-                    if (model_part_id == 0x2b) {
-                        draw_part &= 1;
-                        if (IsGameFlowInFrontEnd()) {
-                            draw_part = 0;
-                        }
-                        if (IsNISCopCar(this->pRideInfo->Type)) {
-                            draw_part &= NISCopCarDriverVisible;
-                        } else {
-                            draw_part &= NISRaceDriverVisible;
-                        }
-                    } else {
-                        draw_part &= 1;
+                            break;
+                        default:
+                            draw_part &= 1;
+                            break;
                     }
 
                     if (draw_part != 0) {
@@ -3312,7 +3342,7 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
         wheel_camber_push_down_rear = camber_amount_rear * 0.03f;
     }
 
-    unsigned short wheel_wobble_angle = bDegToAng(0.0f);
+    unsigned short wheel_wobble_angle = bDegToAng(lbl_8040AD4C);
 
     for (int wheel = 0; wheel < 4; wheel++) {
         int wheel_end = static_cast<int>(wheel > 1);
@@ -3371,7 +3401,7 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
         float extra_rear_tire_offset = this->mAttributes.ExtraRearTireOffset();
         bMatrix4 *extra_tire_local_world = nullptr;
 
-        if (extra_rear_tire_offset != 0.0f) {
+        if (extra_rear_tire_offset != lbl_8040AD4C) {
             extra_tire_local_world = eFrameMallocMatrix(2);
         }
 
@@ -3434,7 +3464,7 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
                     bVector3 wheel_offset;
                     bCopy(&tire_matrix_for_camber, starting_tire_matrix);
                     bCopy(&wheel_offset, reinterpret_cast<bVector3 *>(&tire_matrix_for_camber.v3));
-                    bFill(&tire_matrix_for_camber.v3, 0.0f, 0.0f, 0.0f, 1.0f);
+                    bFill(&tire_matrix_for_camber.v3, lbl_8040AD4C, lbl_8040AD4C, lbl_8040AD4C, lbl_8040AD3C);
                     eRotateX(&tire_matrix_for_camber, &tire_matrix_for_camber, wheel_camber_angle_front);
                     bCopy(reinterpret_cast<bVector3 *>(&tire_matrix_for_camber.v3), &wheel_offset);
                     starting_tire_matrix = &tire_matrix_for_camber;
@@ -3463,7 +3493,7 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
                     bVector3 wheel_offset;
                     bCopy(&tire_matrix_for_camber, starting_tire_matrix);
                     bCopy(&wheel_offset, reinterpret_cast<bVector3 *>(&tire_matrix_for_camber.v3));
-                    bFill(&tire_matrix_for_camber.v3, 0.0f, 0.0f, 0.0f, 1.0f);
+                    bFill(&tire_matrix_for_camber.v3, lbl_8040AD4C, lbl_8040AD4C, lbl_8040AD4C, lbl_8040AD3C);
                     eRotateX(&tire_matrix_for_camber, &tire_matrix_for_camber, -wheel_camber_angle_front);
                     bCopy(reinterpret_cast<bVector3 *>(&tire_matrix_for_camber.v3), &wheel_offset);
                     starting_tire_matrix = &tire_matrix_for_camber;
@@ -3492,7 +3522,7 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
                     bVector3 wheel_offset;
                     bCopy(&tire_matrix_for_camber, starting_tire_matrix);
                     bCopy(&wheel_offset, reinterpret_cast<bVector3 *>(&tire_matrix_for_camber.v3));
-                    bFill(&tire_matrix_for_camber.v3, 0.0f, 0.0f, 0.0f, 1.0f);
+                    bFill(&tire_matrix_for_camber.v3, lbl_8040AD4C, lbl_8040AD4C, lbl_8040AD4C, lbl_8040AD3C);
                     eRotateX(&tire_matrix_for_camber, &tire_matrix_for_camber, -wheel_camber_angle_rear);
                     bCopy(reinterpret_cast<bVector3 *>(&tire_matrix_for_camber.v3), &wheel_offset);
                     starting_tire_matrix = &tire_matrix_for_camber;
@@ -3540,7 +3570,7 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
                     bVector3 wheel_offset;
                     bCopy(&tire_matrix_for_camber, starting_tire_matrix);
                     bCopy(&wheel_offset, reinterpret_cast<bVector3 *>(&tire_matrix_for_camber.v3));
-                    bFill(&tire_matrix_for_camber.v3, 0.0f, 0.0f, 0.0f, 1.0f);
+                    bFill(&tire_matrix_for_camber.v3, lbl_8040AD4C, lbl_8040AD4C, lbl_8040AD4C, lbl_8040AD3C);
                     eRotateX(&tire_matrix_for_camber, &tire_matrix_for_camber, wheel_camber_angle_rear);
                     bCopy(reinterpret_cast<bVector3 *>(&tire_matrix_for_camber.v3), &wheel_offset);
                     starting_tire_matrix = &tire_matrix_for_camber;
@@ -3618,9 +3648,9 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
                 }
 
                 eIdentity(&mirror);
-                mirror.v0.x = BrakeMirrorX;
-                mirror.v1.y = BrakeMirrorY;
-                mirror.v2.z = BrakeMirrorZ;
+                mirror.v0.x = lbl_8040AD3C; // TODO BrakeMirrorX?
+                mirror.v1.y = -1.0f;
+                mirror.v2.z = lbl_8040AD3C;
 
                 if (brakes_visible_front_left) {
                     bMatrix4 *starting_brake_matrix = &brake_matrices[0];
@@ -3630,7 +3660,7 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
                         bVector3 wheel_offset;
                         bCopy(&brake_matrix_for_camber, starting_brake_matrix);
                         bCopy(&wheel_offset, reinterpret_cast<bVector3 *>(&brake_matrix_for_camber.v3));
-                        bFill(&brake_matrix_for_camber.v3, 0.0f, 0.0f, 0.0f, 1.0f);
+                        bFill(&brake_matrix_for_camber.v3, lbl_8040AD4C, lbl_8040AD4C, lbl_8040AD4C, lbl_8040AD3C);
                         eRotateX(&brake_matrix_for_camber, &brake_matrix_for_camber, wheel_camber_angle_front);
                         bCopy(reinterpret_cast<bVector3 *>(&brake_matrix_for_camber.v3), &wheel_offset);
                         starting_brake_matrix = &brake_matrix_for_camber;
@@ -3671,7 +3701,7 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
                         bVector3 wheel_offset;
                         bCopy(&brake_matrix_for_camber, starting_brake_matrix);
                         bCopy(&wheel_offset, reinterpret_cast<bVector3 *>(&brake_matrix_for_camber.v3));
-                        bFill(&brake_matrix_for_camber.v3, 0.0f, 0.0f, 0.0f, 1.0f);
+                        bFill(&brake_matrix_for_camber.v3, lbl_8040AD4C, lbl_8040AD4C, lbl_8040AD4C, lbl_8040AD3C);
                         eRotateX(&brake_matrix_for_camber, &brake_matrix_for_camber, -wheel_camber_angle_front);
                         bCopy(reinterpret_cast<bVector3 *>(&brake_matrix_for_camber.v3), &wheel_offset);
                         starting_brake_matrix = &brake_matrix_for_camber;
@@ -3711,7 +3741,7 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
                         bCopy(&brake_matrix_for_camber, starting_brake_matrix);
                         bVector3 wheel_offset;
                         bCopy(&wheel_offset, reinterpret_cast<bVector3 *>(&brake_matrix_for_camber.v3));
-                        bFill(&brake_matrix_for_camber.v3, 0.0f, 0.0f, 0.0f, 1.0f);
+                        bFill(&brake_matrix_for_camber.v3, lbl_8040AD4C, lbl_8040AD4C, lbl_8040AD4C, lbl_8040AD3C);
                         eRotateX(&brake_matrix_for_camber, &brake_matrix_for_camber, -wheel_camber_angle_rear);
                         bCopy(reinterpret_cast<bVector3 *>(&brake_matrix_for_camber.v3), &wheel_offset);
                         starting_brake_matrix = &brake_matrix_for_camber;
@@ -3751,7 +3781,7 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
                         bVector3 wheel_offset;
                         bCopy(&brake_matrix_for_camber, starting_brake_matrix);
                         bCopy(&wheel_offset, reinterpret_cast<bVector3 *>(&brake_matrix_for_camber.v3));
-                        bFill(&brake_matrix_for_camber.v3, 0.0f, 0.0f, 0.0f, 1.0f);
+                        bFill(&brake_matrix_for_camber.v3, lbl_8040AD4C, lbl_8040AD4C, lbl_8040AD4C, lbl_8040AD3C);
                         eRotateX(&brake_matrix_for_camber, &brake_matrix_for_camber, wheel_camber_angle_rear);
                         bCopy(reinterpret_cast<bVector3 *>(&brake_matrix_for_camber.v3), &wheel_offset);
                         starting_brake_matrix = &brake_matrix_for_camber;
@@ -3791,7 +3821,7 @@ bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bM
 }
 
 int cmpl(const void *a, const void *b) {
-    float v = (*reinterpret_cast<const float *const *>(a))[0] - (*reinterpret_cast<const float *const *>(b))[0];
+    float v = (*reinterpret_cast<float *const *>(a))[0] - (*reinterpret_cast<float *const *>(b))[0];
 
     if (0.0f < v) {
         return 1;
@@ -3800,7 +3830,7 @@ int cmpl(const void *a, const void *b) {
         return -1;
     }
 
-    v = (*reinterpret_cast<const float *const *>(b))[1] - (*reinterpret_cast<const float *const *>(a))[1];
+    v = (*reinterpret_cast<float *const *>(b))[1] - (*reinterpret_cast<float *const *>(a))[1];
 
     if (0.0f < v) {
         return 1;

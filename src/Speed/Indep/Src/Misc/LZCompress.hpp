@@ -1,9 +1,32 @@
-#ifndef MISC_LZCOMPRESS_H
-#define MISC_LZCOMPRESS_H
+//
+//
+//
+//
+//
+//
+//
+//
+#ifndef __LZCOMPRESS_HPP
+#define __LZCOMPRESS_HPP // Decl: 10
 
 #include "types.h"
 
+#define RAWCOMP_ID (('R' << 0) | ('A' << 8) | ('W' << 16) | ('W' << 24)) // Decl: 17
+#define RAWCOMP_VERSION 1                                                // Decl: 18
+
+#define JLZCOMP_ID (('J' << 0) | ('D' << 8) | ('L' << 16) | ('Z' << 24)) // Decl: 20
+#define JLZCOMP_VERSION 2                                                // Decl: 21
+
+#define HUFFCOMP_ID (('H' << 0) | ('U' << 8) | ('F' << 16) | ('F' << 24)) // Decl: 23
+#define HUFFCOMP_VERSION 1                                                // Decl: 24
+
+#define LCZOMP_ID (('C' << 0) | ('O' << 8) | ('M' << 16) | ('P' << 24)) // Decl: 28
+#define LZCOMP_VERSION 1                                                // Decl: 29
+
+#define LZFLAG_COPY 0x0001 // Decl: 32
+
 // total size: 0x10
+// Decl: 41
 class LZHeader {
   public:
     uint32 ID;               // offset 0x0, size 0x4
