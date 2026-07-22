@@ -359,3 +359,12 @@ void Server::SignalDataCRCMessage(SmartBitStream &payload_data) {
                                          payload_data.GetByteLength());
     SendMessageToAllClients(13, bitstream_data, true);
 }
+
+void Server::SignalSyncAnimationMessage(SmartBitStream &payload_data) {
+    SmartBitStream bitstream_data;
+    bitstream_data.AddByte(6);
+    bitstream_data.AddInt(++m_syncAnimationSendId);
+    bitstream_data.AddRawDataWithoutSize(payload_data.GetBuffer(),
+                                         payload_data.GetByteLength());
+    SendMessageToAllClients(6, bitstream_data, false);
+}
