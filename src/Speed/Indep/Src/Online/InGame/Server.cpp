@@ -320,3 +320,17 @@ void Server::SendClientLeftMessage(int leaving_client_id, int driver_number, boo
     bitstream_data.AddBool(he_quit);
     SendMessageToAlmostAllClients(leaving_client_id, 10, bitstream_data, true);
 }
+
+void Server::SendCarSpamClockSyncMessage(int to_client_id, uint32 client_tick,
+                                         ePosDataPriorityMask priority_mask) {
+    if (pCurrentWorld && TheOnlineManager.pRacers[m_driverNumber]) {
+        SmartBitStream bitstream_data;
+        bitstream_data.AddByte(4);
+        bitstream_data.AddInt(client_tick);
+        bitstream_data.AddInt(TheOnlineManager.GetMasterTime());
+        bitstream_data.AddQuantizedInt(m_driverNumber, Online::m_driverNumberQuantizer);
+        bitstream_data.AddByte(static_cast<uint8>(priority_mask));
+        TheOnlineManager.ExportPositionData(m_driverNumber, bitstream_data, priority_mask);
+        SendMessageToOneClient(to_client_id, 4, bitstream_data, false);
+    }
+}

@@ -133,6 +133,7 @@ class OnlineManager {
     float mPosUpdatePing;
 
     friend struct Client;
+    friend struct Server;
 };
 
 extern OnlineManager TheOnlineManager;
