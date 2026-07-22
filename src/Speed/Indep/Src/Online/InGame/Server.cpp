@@ -143,3 +143,12 @@ int Server::FindRandomAvailableDriverNumber() {
     } while (driver_number == m_driverNumber || OnlinePlayerMgr::FindPlayerWithDriverNumber(driver_number));
     return driver_number;
 }
+
+void Server::DisconnectLaggers() {
+    for (int player_num = 0; player_num < 3; player_num++) {
+        OnlinePlayer *p_player = OnlinePlayerMgr::GetOnlinePlayer(player_num);
+        if (p_player && p_player->GetClientState() != CLIENTSTATE_READY) {
+            HandleClientDeparture(p_player->GetClientId(), true);
+        }
+    }
+}

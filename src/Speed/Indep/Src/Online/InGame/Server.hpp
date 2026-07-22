@@ -6,6 +6,7 @@
 #endif
 
 #include <types.h>
+#include "OnlinePlayerMgr.hpp"
 
 class SmartBitStream;
 class Timer;
@@ -29,6 +30,13 @@ struct Server {
   public:
     static void Close();
     static void StartServerProcessing();
+    static void DisconnectLaggers();
+    static void DisconnectPlayer(int driver_number) {
+        OnlinePlayer *player = OnlinePlayerMgr::FindPlayerWithDriverNumber(driver_number);
+        if (player) {
+            HandleClientDeparture(player->GetClientId(), false);
+        }
+    }
 
   private:
     friend struct Online;
@@ -44,6 +52,7 @@ struct Server {
     static void SendQuitMessage();
     static void SendWelcomeMessage(int client_id);
     static void SendCarDescriptionMessage(int client_id, int driver_number);
+    static void HandleClientDeparture(int client_id, bool he_quit);
     static void ShowDiagnostics();
     static void SignalStartClockSync();
     static void SignalReady();

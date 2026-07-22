@@ -22,6 +22,7 @@ struct OnlinePlayer {
     void Reset();
     void SetDriverNumber(int driver_number) { m_driverNumber = driver_number; }
     int GetDriverNumber() { return m_driverNumber; }
+    int GetClientId() { return m_clientId; }
     int GetClientState() { return m_clientState; }
     void SetClientState(int new_state);
 };
