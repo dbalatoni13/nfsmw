@@ -438,3 +438,18 @@ void Server::SendClientLoadMessage(int client_id, int driver_num) {
     bitstream_data.AddInt(driver_num);
     SendMessageToAlmostAllClients(client_id, 14, bitstream_data, true);
 }
+
+void Server::SendCarDescriptionMessage(int to_client_id, int driver_number) {
+    SmartBitStream payload_data;
+    payload_data.AddInt(driver_number);
+    TheOnlineManager.ExportDriverInfo(driver_number, payload_data);
+
+    SplitPacketList splitPackets;
+    Online::SplitPacket(MSG_R_BI_CARDESCRIPTION, payload_data, splitPackets);
+    SplitPacketNode *node;
+    while ((node = splitPackets.GetHead()) != splitPackets.EndOfList()) {
+        SendMessageToOneClient(to_client_id, 1, node->data, true);
+        splitPackets.RemoveHead();
+        delete node;
+    }
+}
