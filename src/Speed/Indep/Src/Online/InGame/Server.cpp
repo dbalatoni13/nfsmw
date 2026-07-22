@@ -476,3 +476,17 @@ void Server::SendMessageToAllClients(uint8 msg_type, SmartBitStream &bitstream_d
         }
     }
 }
+
+void Server::SendMessageToOneClient(int client_id, uint8 msg_type,
+                                    SmartBitStream &bitstream_data, bool is_reliable) {
+    ConnApiClientT *player = ConnectionCore::Instance().GetPlayer(client_id);
+    if (player) {
+        if (player->GameInfo.eStatus == CONNAPI_STATUS_ACTV) {
+            if (NetworkCore::Instance().Send(player->pGameLinkRef, bitstream_data.GetBuffer(),
+                                             bitstream_data.GetByteLength(), is_reliable) != 0 &&
+                CSCommon::GetDiagnosticLevel() >= DIAGNOSTICLEVEL_EXTREME) {
+                CSCommon::DumpBytes(bitstream_data.GetBuffer(), bitstream_data.GetByteLength());
+            }
+        }
+    }
+}

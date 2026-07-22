@@ -72,6 +72,11 @@ struct Server {
                                               bool is_reliable);
     static void SendMessageToAllClients(uint8 msg_type, SmartBitStream &bitstream_data,
                                         bool is_reliable);
+    static void SimpleSendMessageToAllClients(uint8 msg_type) {
+        SmartBitStream bitstream_data;
+        bitstream_data.AddByte(msg_type);
+        SendMessageToAllClients(msg_type, bitstream_data, true);
+    }
     static void SendCarSpamClockSyncMessage(int client_id, uint32 client_tick,
                                             ePosDataPriorityMask pos_priority);
     static void ShowDiagnostics();
