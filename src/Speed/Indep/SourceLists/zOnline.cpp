@@ -46,10 +46,10 @@
 
 #include "Speed/Indep/Src/Online/InGame/OnlinePlayer.hpp"
 
-#include "Speed/Indep/Src/Online/InGame/OnlinePlayerMgr.cpp"
-
-#include "Speed/Indep/Src/Online/InGame/OnlineTimer.cpp"
-
 #include "Speed/Indep/Src/Online/InGame/Server.cpp"
 
 #include "Speed/Indep/Src/Online/InGame/CSCommon.cpp"
+
+#include "Speed/Indep/Src/Online/InGame/OnlinePlayerMgr.cpp"
+
+#include "Speed/Indep/Src/Online/InGame/OnlineTimer.cpp"
