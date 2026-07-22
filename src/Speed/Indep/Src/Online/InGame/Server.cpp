@@ -523,3 +523,12 @@ char *Server::DescribeState(int state) {
         return "Unknown";
     }
 }
+
+void Server::ConnectionCoreCB(ConnApiRefT *connapi, ConnApiCbInfoT *cbinfo, void *context) {
+    if (cbinfo->eType == CONNAPI_CBTYPE_GAMEEVENT &&
+        cbinfo->eNewStatus == CONNAPI_STATUS_DISC) {
+        ConnectionCore::Instance().GetPlayer(cbinfo->iClientId);
+        HandleClientDeparture(cbinfo->iClientId, false);
+        return;
+    }
+}
