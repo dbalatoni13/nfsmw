@@ -324,9 +324,22 @@ if config.platform == Platform.GC_WII:
     ]
 
     cflags_snd = [
-        *cflags_game,
+        *cflags_base_prodg,
+        "-G0",
+        "-ffast-math",
+        "-fcse-follow-jumps",
+        "-fcse-skip-blocks",
+        "-fforce-mem",
+        "-fgcse",
+        "-frerun-cse-after-loop",
+        "-fschedule-insns",
+        "-fschedule-insns2",
+        "-fexpensive-optimizations",
+        "-frerun-loop-opt",
+        "-fmove-all-movables",
         "-x c++",
-        "-fno-force-addr",
+        "-I src/Speed/Indep/Libs/csis/dev/include",
+        "-I src/Speed/Indep/Libs/allocator/1.5.0",
         "-I src/Speed/Indep/Libs/snd/9/include",
     ]
 

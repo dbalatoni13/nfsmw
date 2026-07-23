@@ -898,7 +898,52 @@ int SNDAEMSI_playerupdatebank(AemsDef::PLAYERSTATE *pplayerstate) {
     return 1;
 }
 
+int SNDAEMSI_updateplayer(AemsDef::PLAYERSTATE *pplayerstate) {
+    int outputplaystate = SNDI_clipint32(pplayerstate->playcontrol, 0, 2);
 
+    if (outputplaystate != pplayerstate->settings.prevplaycontrol[0]) {
+        if (outputplaystate == 0) {
+            if (pplayerstate->settings.sampletype >= 0) {
+                SNDAEMSplayerstopfn[pplayerstate->settings.sampletype](pplayerstate);
+                SNDAEMSI_playerresetoutputs(pplayerstate);
+            }
+        } else if (outputplaystate == 1) {
+            if (pplayerstate->settings.sampletype >= 0) {
+                SNDAEMSplayerunpausefn[pplayerstate->settings.sampletype](pplayerstate);
+            } else if ((pplayerstate->settings.prevplaycontrol[0] & ~0xFFFF) != 0x2010000) {
+                int sampleselect = pplayerstate->sampleselect;
+                if (sampleselect >= pplayerstate->settings.psamplegroup->numentries) {
+                    sampleselect = pplayerstate->settings.psamplegroup->numentries - 1;
+                } else if (sampleselect < 0) {
+                    sampleselect = 0;
+                }
+
+                int sampletype = (signed char)pplayerstate->settings.psamplegroup->entry[sampleselect].type;
+                pplayerstate->settings.sampletype = sampletype;
+                pplayerstate->settings.handle = SNDAEMSplayerplayfn[sampletype](pplayerstate, &pplayerstate->settings.psamplegroup->entry[sampleselect]);
+
+                if (pplayerstate->settings.handle.u.shandle < 0) {
+                    SNDAEMSI_playerresetoutputs(pplayerstate);
+                }
+            }
+        } else {
+            if (pplayerstate->settings.sampletype >= 0) {
+                SNDAEMSplayerpausefn[pplayerstate->settings.sampletype](pplayerstate->settings.handle);
+            }
+        }
+
+        pplayerstate->settings.prevplaycontrol[1] = pplayerstate->settings.prevplaycontrol[0];
+        pplayerstate->settings.prevplaycontrol[0] = outputplaystate;
+    }
+    if (outputplaystate == 1 && pplayerstate->settings.sampletype >= 0) {
+        outputplaystate = SNDAEMSplayerupdatefn[pplayerstate->settings.sampletype](pplayerstate);
+    }
+    if (pplayerstate->settings.sampletype & 0x80) {
+        outputplaystate = 0;
+    }
+
+    return outputplaystate;
+}
 
 unsigned int sndaemsfuncs[40] = {
     reinterpret_cast<unsigned int>(SNDAEMSI_UpdateClassDestructor),
