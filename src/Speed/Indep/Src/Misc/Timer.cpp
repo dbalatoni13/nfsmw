@@ -410,7 +410,7 @@ void Timer::GetHoursMinsSeconds(int *hours, int *minutes, int *seconds, int *tho
 }
 
 void Timer::PrintToString(char *string, int flags) {
-    if (IsSet() != 0) {
+    if (IsSet() == 0) {
         ::PrintToString(string, flags, 0, 0, 0, 0);
     } else {
         int hours, minutes, seconds, thousandths_seconds;

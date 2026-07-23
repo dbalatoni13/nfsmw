@@ -1707,4 +1707,6 @@ unsigned int LZDecompress(uint8 *pSrc, uint8 *pDst) {
 #define COMPRESS_IN_PLACE_MAGIC 0x55441122 // Decl: 2476
 
 // STRIPPED
-bool IsCompressInPlaceData(const void *data) {}
+bool IsCompressInPlaceData(const void *data) {
+    return false;
+}
