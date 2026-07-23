@@ -60,9 +60,10 @@ struct JollyRancherResponsePacket {
 };
 
 struct CameraLink {
-    int field_3469;  
+    int linked; // offset 0x0
 };
-extern CameraLink cameralink;
+
+extern CameraLink g_cameralink;
 
 struct JR2Request {
         JollyRancherResponsePacket *response;
@@ -221,8 +222,6 @@ class Camera {
 extern bool gCinematicMomementCamera;
 extern int DisableCommunication;
 extern TrackStreamer TheTrackStreamer;
-// extern void bFunkCallASync(char *serverName, int requestType, void *data, int dataSize);
-// extern int bFunkDoesServerExist(char *serverName);
 
 #endif
 

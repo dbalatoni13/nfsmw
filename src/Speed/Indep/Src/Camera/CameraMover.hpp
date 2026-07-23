@@ -42,8 +42,6 @@ enum CameraMoverTypes {
     CM_SHOWCASE = 18,
 };
 
-// from _GLOBAL_.I._6Camera.StopUpdating in __static_initialization_and_destruction_0
-// TODO GET RID OF THESE
 bVector4 CameraNoiseHandheldAmplitude = bVector4( 0.01,  0.01, 0.03, 0.03);
 bVector4 CameraNoiseHandheldFrequency = bVector4( 0.01,  0.175, 0.153, 0.03);
 
@@ -93,8 +91,6 @@ class CameraAnchor {
     Attrib::Gen::ecar mModelAttributes;            // offset 0xFC, size 0x14
     Attrib::Gen::camerainfo mCameraInfoAttributes; // offset 0x110, size 0x14
 };
-
-// static int DisablePrecullerCounter = 0;
 
 // total size: 0x80
 class CameraMover : public bTNode<CameraMover>, public WCollisionMgr::ICollisionHandler {
@@ -176,8 +172,6 @@ class CameraMover : public bTNode<CameraMover>, public WCollisionMgr::ICollision
 };
 
 extern Timer WorldTimer;
-// extern int WorldTime;
-// extern float WorldTimeSeconds;
 extern Timer RealTimer;
 
 void CameraMoverRestartRace();

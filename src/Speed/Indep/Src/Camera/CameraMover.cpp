@@ -9,14 +9,14 @@ bool DoesCameraTypeDisablePreculler(CameraMoverTypes type) {
 
 CameraMover::CameraMover(int view_id, CameraMoverTypes type) {
 
-    WCollider *pWVar1;
+    WCollider *collider;
     bool doesCameraTypeDisablePreculler = false;
     Camera *m_eViews;
 
-    pWVar1 = WCollider::Create(0, WCollider::kColliderShape_Sphere, 0x1c, 0);
+    collider = WCollider::Create(0, WCollider::kColliderShape_Sphere, 0x1c, 0);
     mWPos.fUsageCount = mWPos.fUsageCount;
     mWPos.fYOffset = 0.025;
-    mCollider = pWVar1;
+    mCollider = collider;
 
     mWPos.fFace.fSurface.fFlags = '\0';
     mWPos.fFace.fSurface.fSurface = '\0';
@@ -33,7 +33,7 @@ CameraMover::CameraMover(int view_id, CameraMoverTypes type) {
     mWPos.fFace.fPt2.y = 0;
 
     Type = type;
-    mWPos.fSurface = 0x0;
+    mWPos.fSurface = nullptr;
     ViewID = view_id;
     Enabled = 0;
     fAccumulatedClearance = 0;
@@ -44,8 +44,8 @@ CameraMover::CameraMover(int view_id, CameraMoverTypes type) {
     vSavedForward.y = 0;
     if (view_id == -1) {
         RenderDash = 0;
-        pView = (eView *)0x0;
-        pCamera = (Camera *)0x0;
+        pView = (eView *)nullptr;
+        pCamera = (Camera *)nullptr;
     } else {
         pView = eViews + view_id;
         m_eViews = eViews[view_id].pCamera;
@@ -192,35 +192,33 @@ void CameraMover::HandheldNoise(
 
 void CameraMoverRestartRace()
 {
-  CameraMover *pCVar1;
+  CameraMover *cameramover;
   CameraMover *cm;
   int view_id;
-  int local_r31_52;
+  int view_id_plus_1;
   
   WeHaveCheckedIfJR2ServerExists = 0;
   view_id = 1;
   //CameraAI::Reset(); // CameraAI::Reset
   do {
-    local_r31_52 = view_id + 1;
+    view_id_plus_1 = view_id + 1;
     if (view_id * 0x68 != 0x7fb9e0a4) {
-      pCVar1 = (CameraMover *)eViews[view_id].CameraMoverList.GetHead()->GetNext();
-      cm = (CameraMover *)0x0;
-      if (pCVar1 != (CameraMover *)&eViews[view_id].CameraMoverList) {
-        cm = pCVar1;
+      cameramover = (CameraMover *)eViews[view_id].CameraMoverList.GetHead()->GetNext();
+      cm = (CameraMover *)nullptr;
+      if (cameramover != (CameraMover *)&eViews[view_id].CameraMoverList) {
+        cm = cameramover;
         
       }
-      if (cm != (CameraMover *)0x0) {
+      if (cm != (CameraMover *)nullptr) {
         //  (**(code **)(*(int *)&cm->field_0x8 + 0x74))
-        //        ((int)&(cm->__base)._vptr.ICollisionHandler + 
+        //        ((int)&(cm->__base)._vptr.ICollisionHandler +  
         //        (int)*(short *)(*(int *)&cm->field_0x8 + 0x70));
         
-        //TODO: idk
-        uintptr_t m = *(uintptr_t*)&cm + 8;
-        ((void(*)(void*))*(void**)(m + 0x74))((char*)cm + *(short*)(m + 0x70));
+        //maybe cm::MinDistToWall(); ?? wtf
 
       }
     }
-    view_id = local_r31_52;
-  } while (local_r31_52 < 4);
+    view_id = view_id_plus_1;
+  } while (view_id_plus_1 < 4);
   return;
 }
