@@ -79,10 +79,6 @@ DrawHeli::DrawHeli(const BehaviorParams &params)
     this->mDistanceToView = 0.0f;
 
     const char *model = GetVehicle()->GetVehicleAttributes().MODEL().GetString();
-    if (model == nullptr) {
-        model = "";
-    }
-
     RenderConn::Pkt_Heli_Open pkt(model, this->GetOwner()->GetWorldID(), this->GetVehicle()->IsSpooled());
     this->mWashTask = this->AddTask(UCrc32("Physics"), 1.0f, 0.0f, Sim::TASK_FRAME_VARIABLE);
     Sim::ProfileTask(this->mWashTask, "HeliWash");

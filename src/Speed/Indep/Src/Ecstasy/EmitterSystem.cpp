@@ -17,7 +17,7 @@
 
 #ifdef EA_PLATFORM_GAMECUBE
 #include "Speed/GameCube/Src/xSparks.h"
-#elif defined(EA_PLATAFORM_PLAYSTATION2)
+#elif defined(EA_PLATFORM_PLAYSTATION2)
 #include "Speed/PSX2/Src/xSparks.h"
 #else
 #include "Speed/Xenon/Src/xSparks.h"
