@@ -59,9 +59,6 @@ struct JollyRancherResponsePacket {
     bMatrix4 CamMatrix;     // offset 0x10
 };
 
-
-extern int DisableCommunication;
-
 struct CameraLink {
     int field_3469;  
 };
@@ -222,7 +219,10 @@ class Camera {
 
 // TODO move?
 extern bool gCinematicMomementCamera;
+extern int DisableCommunication;
 extern TrackStreamer TheTrackStreamer;
+// extern void bFunkCallASync(char *serverName, int requestType, void *data, int dataSize);
+// extern int bFunkDoesServerExist(char *serverName);
 
 #endif
 
