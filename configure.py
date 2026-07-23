@@ -177,7 +177,8 @@ if config.platform == Platform.GC_WII:
     ]
 
     ldscript_path = Path("config") / config.version / "ldscript.ld"
-    config.ldflags = ["-T", str(ldscript_path)]
+    keep_list_path = Path("config") / config.version / "keep.lst"
+    config.ldflags = ["-strip-unused", "-keep", str(keep_list_path), "-report-unused", "-T", str(ldscript_path)]
 
     # Optional numeric ID for decomp.me preset
     # Can be overridden in libraries or objects
