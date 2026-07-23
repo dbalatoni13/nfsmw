@@ -199,7 +199,7 @@ void CameraMoverRestartRace()
   
   WeHaveCheckedIfJR2ServerExists = 0;
   view_id = 1;
-  //CameraAI::Reset(); // CameraAI::Reset
+  //CameraAI::Reset(); // todo
   do {
     view_id_plus_1 = view_id + 1;
     if (view_id * 0x68 != 0x7fb9e0a4) {
