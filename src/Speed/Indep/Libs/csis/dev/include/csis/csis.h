@@ -10,7 +10,7 @@
 // #define CSIS_VERSION_MAJOR 2 // Decl: 57
 // #define CSIS_VERSION_MINOR 9 // Decl: 58
 // #define CSIS_VERSION_PATCH 0 // Decl: 59
-// #define CSIS_MAKE_VERSION(major,minor,patch) (((major) * 10000) | ((minor) * 100) | (patch)) // Decl: 60
+// #define CSIS_MAKE_VERSION(major,minor,patch) (((major) *10000) | ((minor) *100) | (patch)) // Decl: 60
 // #define CSIS_VERSION CSIS_MAKE_VERSION(CSIS_VERSION_MAJOR, CSIS_VERSION_MINOR, CSIS_VERSION_PATCH) // Decl: 61
 #define CSIS_SIZE_T size_t // Decl: 68
 
@@ -123,6 +123,40 @@ typedef struct {
 
 typedef FunctionClient MemberDataClient;
 typedef FunctionClient GlobalVariableClient;
+
+
+
+// total size: 0x1
+class Function {
+public:
+    static Result Call(FunctionHandle *pFunctionHandle, void *pParameters) ;
+
+    static Result CallFast(FunctionHandle *pFunctionHandle, void *pParameters) ;
+
+    static Result Subscribe(FunctionHandle *pFunctionHandle, FunctionClient *pFunctionClient) ;
+
+    static Result SubscribeFast(FunctionHandle *pFunctionHandle, FunctionClient *pFunctionClient) ;
+
+    static Result Unsubscribe(FunctionHandle *pFunctionHandle, FunctionClient *pFunctionClient) ;
+
+    static Result UnsubscribeFast(FunctionHandle *pFunctionHandle, FunctionClient *pFunctionClient) ;
+};
+
+// total size: 0x1
+class GlobalVariable {
+public:
+    static Result Set(GlobalVariableHandle *pHandle, void *pGlobalVariable) ;
+
+    static Result SetFast(GlobalVariableHandle *pHandle, void *pGlobalVariable) ;
+
+    static Result Subscribe(GlobalVariableHandle *pHandle, GlobalVariableClient *pClient) ;
+
+    static Result SubscribeFast(GlobalVariableHandle *pHandle, GlobalVariableClient *pClient) ;
+
+    static Result Unsubscribe(GlobalVariableHandle *pHandle, GlobalVariableClient *pClient) ;
+
+    static Result UnsubscribeFast(GlobalVariableHandle *pHandle, GlobalVariableClient *pClient) ;
+};
 
 class Class;
 

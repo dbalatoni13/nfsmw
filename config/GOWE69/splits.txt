@@ -689,7 +689,7 @@ Packages/vp6/1.0.6/source/decode/cmn/TokenEntropy.c:
 
 Packages/vp6/1.0.6/source/decode/gc/criticalpath.c:
 	.text       start:0x80357928 end:0x8035A830
-	.rodata     start:0x804124FC end:0x80412908
+	.rodata     start:0x804124FC end:0x80412778
 	.data       start:0x80450094 end:0x80450174
 	.sdata      start:0x804FF5B0 end:0x804FF5B8
 
@@ -701,6 +701,7 @@ Speed/Indep/Libs/snd/9/source/library/cmn/s3dlow.c:
 
 Speed/Indep/Libs/snd/9/source/library/cmn/saems.c:
 	.text       start:0x8035AA7C end:0x8035D4A0
+	.rodata     start:0x80412778 end:0x80412908
 	.data       start:0x80450174 end:0x804502C8
 
 Speed/Indep/Libs/snd/9/source/library/cmn/saemsamb.c:

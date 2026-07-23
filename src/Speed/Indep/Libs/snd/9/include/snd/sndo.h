@@ -183,6 +183,8 @@ typedef struct SNDFILTERDEF {
     void (*filterrestore)(void *);                   // offset 0x14, size 0x4
 } SNDFILTERDEF;
 
+int SND3dpos(int shandle, int azimuth, int elevation);
+
 int SND_attrsetdef(SNDSAMPLEATTR *pssa);
 
 int SNDBANK_patchinfo(int bhandle, int patnum, SNDSAMPLEFORMAT *pssf, SNDSAMPLEATTR *pssa, SNDSAMPLEDESC *pssd);

@@ -324,8 +324,22 @@ if config.platform == Platform.GC_WII:
     ]
 
     cflags_snd = [
-        *cflags_game,
+        *cflags_base_prodg,
+        "-G0",
+        "-ffast-math",
+        "-fcse-follow-jumps",
+        "-fcse-skip-blocks",
+        "-fforce-mem",
+        "-fgcse",
+        "-frerun-cse-after-loop",
+        "-fschedule-insns",
+        "-fschedule-insns2",
+        "-fexpensive-optimizations",
+        "-frerun-loop-opt",
+        "-fmove-all-movables",
         "-x c++",
+        "-I src/Speed/Indep/Libs/csis/dev/include",
+        "-I src/Speed/Indep/Libs/allocator/1.5.0",
         "-I src/Speed/Indep/Libs/snd/9/include",
     ]
 
@@ -610,7 +624,7 @@ config.libs = [
             ),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/salloc.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/sbadd.c"),
-            Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/sbpatinf.c"),
+            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/sbpatinf.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/sgetpvol.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/ssballoc.c"),
             Object(
@@ -677,7 +691,7 @@ config.libs = [
             ),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/stagpat.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/stimemul.c"),
-            Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/stimerem.c"),
+            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/stimerem.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/stpparse.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/mix/stretch.c"),
             Object(
@@ -689,7 +703,7 @@ config.libs = [
                 NonMatching,
                 "Speed/Indep/Libs/snd/9/source/library/extern/coda/cmn/coda.cpp",
             ),
-            Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/s3dlow.c"),
+            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/s3dlow.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/gc/saramman.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/satospkr.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/sclcptch.c"),
@@ -783,7 +797,7 @@ config.libs = [
                 NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/sgparse.cpp"
             ),
             Object(
-                NonMatching,
+                Matching,
                 "Speed/Indep/Libs/snd/9/source/library/cmn/SNDI_findprime.c",
             ),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/mix/scrsfl.c"),
