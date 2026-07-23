@@ -12,10 +12,14 @@
 
 // total size: 0x3C
 class WWorldPos {
+    friend class CameraMover;
   public:
     USE_FASTALLOC(WWorldPos);
 
-    WWorldPos(float yOffset) {
+    WWorldPos(){
+    }
+
+    WWorldPos(float yOffset) { // i don't think yOffset has in constructor 
         fYOffset = yOffset;
         fFaceValid = 0;
         fMissCount = 0;
