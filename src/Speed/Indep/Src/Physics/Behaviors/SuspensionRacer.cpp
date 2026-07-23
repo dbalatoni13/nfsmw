@@ -34,7 +34,7 @@ static const int DoYawControl = 1; // TODO use
 #define LOAD_SENSITIVITY_MAX_LOAD 10.0f
 #define NUM_SLIP_ANGLE_TABLES 7
 
-const float ZeroDegreeTable[6] = {0.0f};
+float ZeroDegreeTable[6] = {};
 float TwoDegreeTable[] = {0.0f, 1.2f, 2.3f, 3.0f, 3.0f, 2.8f};
 float FourDegreeTable[] = {0.0f, 1.7f, 3.2f, 4.3f, 5.1f, 5.2f};
 float SixDegreeTable[] = {0.0f, 1.8f, 3.5f, 4.9f, 5.8f, 6.1f};
@@ -351,7 +351,7 @@ class SuspensionRacer : public Chassis, public Sim::Collision::IListener, public
         return this->mTranyInfo.TORQUE_SPLIT() > 0.0f;
     }
     bool IsDriveWheel(unsigned int i) {
-        return (IsRear(i) && this->RearWheelDrive()) || (IsFront(i) && this->FrontWheelDrive());
+        return (Physics::Wheels::IsRear(i) && this->RearWheelDrive()) || (Physics::Wheels::IsFront(i) && this->FrontWheelDrive());
     }
 
     void OnBehaviorChange(const UCrc32 &mechanic) override;
@@ -862,7 +862,7 @@ SuspensionRacer::~SuspensionRacer() {
 void SuspensionRacer::CreateTires() {
     for (int i = 0; i < 4; ++i) {
         delete this->mTires[i];
-        bool is_front = IsFront(i);
+        bool is_front = Physics::Wheels::IsFront(i);
         float diameter = Physics::Info::WheelDiameter(this->mTireInfo, is_front);
         this->mTires[i] = new Tire(diameter * 0.5f, i, this->mTireInfo, this->mBrakeInfo);
     }
@@ -1100,13 +1100,12 @@ static const int SteerInputRemappingDrift = 4;
 static Table SteerInputRemapTables[] = {Table(JoystickInputToSteerRemap1, 21, -1.0f, 1.0f), Table(JoystickInputToSteerRemap2, 21, -1.0f, 1.0f),
                                         Table(JoystickInputToSteerRemap3, 21, -1.0f, 1.0f), Table(JoystickInputToSteerRemapDrift, 21, -1.0f, 1.0f)};
 
-float SteeringRangeCoeffData[] = {1.0f, 1.0f, 1.1f, 1.2f, 1.25f, 1.35f};
-Table SteeringRangeTable = Table(SteeringRangeData, 10, 0.0f, MAX_SPEED);
-Table SteeringWheelRangeTable = Table(SteeringWheelRangeData, 10, 0.0f, MAX_SPEED);
-Table SteeringRangeCoeffTable = Table(SteeringRangeCoeffData, 6, 0.0f, 1.0f);
-Table SteeringSpeedTable = Table(SteeringSpeedData, 10, 0.0f, MAX_SPEED);
-Table SteeringInputSpeedCoeffTable = Table(SteeringInputSpeedData, 6, 0.0f, 10.0f);
-Table SteeringInputCoeffTable = Table(SteeringInputData, 6, 0.0f, 1.0f);
+Table SteeringRangeTable(SteeringRangeData, 10, 0.0f, MAX_SPEED);
+Table SteeringWheelRangeTable(SteeringWheelRangeData, 10, 0.0f, MAX_SPEED);
+Table SteeringRangeCoeffTable(SteeringInputData, 6, 0.0f, 1.0f);
+Table SteeringSpeedTable(SteeringSpeedData, 10, 0.0f, MAX_SPEED);
+Table SteeringInputSpeedCoeffTable(SteeringInputSpeedData, 6, 0.0f, 10.0f);
+Table SteeringInputCoeffTable(SteeringInputData, 6, 0.0f, 1.0f);
 
 static const bool SteeringSpeedLimitAngle = true;    // TODO use
 static const bool SteeringAdvancedLimitAngle = true; // TODO use
@@ -1456,7 +1455,7 @@ float SuspensionRacer::CalcYawControlLimit(float speed) const {
 GraphEntry<float> DriftStabilizerData[] = {{0.0f, 0.0f},        {0.2617994f, 0.1f},  {0.52359879f, 0.45f}, {0.78539819f, 0.85f},
                                            {1.0471976f, 0.95f}, {1.5533431f, 1.15f}, {1.5707964f, 0.0f}};
 float DriftRearFrictionData[] = {1.1f, 0.95f, 0.87f, 0.77f, 0.67f, 0.6f, 0.51f, 0.43f, 0.37f, 0.34f};
-tGraph<float> DriftStabilizerTable(DriftStabilizerData, NUM_SLIP_ANGLE_TABLES);
+tGraph<float> DriftStabilizerTable(DriftStabilizerData, NUM_SLIP_ANGLE_TABLES); // TODO is that macro usage right?
 Table DriftRearFrictionTable(DriftRearFrictionData, 10, 0.0f, 1.0f);
 static const float DriftRotationalStabalizer = 4.0f;
 static const float DriftYawAngularVelCoeff = 0.5f;
@@ -1626,7 +1625,7 @@ void SuspensionRacer::TuneWheelParams(Chassis::State &state) {
         }
 
         // handbrake only applies to the rear wheels
-        if (IsRear(i)) {
+        if (Physics::Wheels::IsRear(i)) {
             float b = ebrake;
             // increase handbrake multiplier when a hard handbrake turn is detected
             if (ebrake > 0.2f && car_yaw > EBrake180Yaw && speedmph < EBrake180Speed) {
@@ -1639,14 +1638,14 @@ void SuspensionRacer::TuneWheelParams(Chassis::State &state) {
 
         float friction_boost = 1.0f;
         // rear wheels get extra boost according to the yaw control
-        if (IsRear(i)) {
+        if (Physics::Wheels::IsRear(i)) {
             float grade = state.GetForwardVector().y;
             float boost = YawFrictionBoost(car_yaw, this->mTires[i]->GetEBrake(), state.speed, suspension_yaw_control_limit, grade) - 1.0f;
             friction_boost = yawcontrol * boost + 1.0f;
         }
 
         // speedbreaker increases front tire friction relative to the absolute steering input
-        if (this->mGameBreaker > 0.0f && IsFront(i)) {
+        if (this->mGameBreaker > 0.0f && Physics::Wheels::IsFront(i)) {
             float over_boost = this->mGameBreaker * UMath::Abs(state.steer_input) * 0.75f + 1.0f;
             lateral_boost = over_boost;
             friction_boost *= over_boost;

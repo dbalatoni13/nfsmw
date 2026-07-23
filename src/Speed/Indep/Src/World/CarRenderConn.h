@@ -7,11 +7,7 @@
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/pvehicle.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/tires.h"
 #include "Speed/Indep/Src/Interfaces/IAttributeable.h"
-#include "Speed/Indep/Src/Physics/PhysicsTypes.h"
-#include "Speed/Indep/Src/World/DamageZones.h"
 #include "Speed/Indep/Src/World/VehicleRenderConn.h"
-#include "Speed/Indep/Src/Render/RenderConn.h"
-#include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "types.h"
 
 typedef BitArray<uint32, 76> PartState;
@@ -111,84 +107,5 @@ class CarRenderConn : public VehicleRenderConn, public IAttributeable {
     int mUsage;                             // offset 0x3DC, size 0x4
     uint32 mFlags;                          // offset 0x3E0, size 0x4
 };
-
-namespace RenderConn {
-class Pkt_Car_Open : public Sim::Packet {
-  public:
-    DECLARE_RENDERPACKET(Pkt_Car_Open, CarRenderConn);
-
-    uint32 mModelHash;                            // offset 0x4, size 0x4
-    WUID mWorldID;                                // offset 0x8, size 0x4
-    CarRenderUsage mUsage;                        // offset 0xC, size 0x4
-    const FECustomizationRecord *mCustomizations; // offset 0x10, size 0x4
-    Attrib::Key mPhysicsKey;                      // offset 0x14, size 0x4
-    bool mSpoolLoad;                              // offset 0x18, size 0x1
-};
-
-class Pkt_Car_Service : public Sim::Packet {
-  public:
-    typedef struct UTL::Std::list<UCrc32, _type_list> PartList;
-
-    Pkt_Car_Service(bool inview, float distancetoview) {
-        this->mFlashing = false;
-
-        bMemSet(this->mCompressions, 0, sizeof(this->mCompressions));
-        bMemSet(this->mSteering, 0, sizeof(this->mSteering));
-        bMemSet(this->mWheelSpeed, 0, sizeof(this->mWheelSpeed));
-        bMemSet(this->mTireSkid, 0, sizeof(this->mTireSkid));
-        bMemSet(this->mTireSlip, 0, sizeof(this->mTireSlip));
-
-        this->mGroundState = 0;
-        this->mLights = 0;
-        this->mBrokenLights = 0;
-        this->mInView = inview;
-        this->mDistanceToView = distancetoview;
-        this->mNos = false;
-        this->mEngineBlown = false;
-        this->mGear = G_NEUTRAL;
-        this->mEnginePower = 0.0f;
-        this->mShift = SHIFT_STATUS_NORMAL;
-        this->mExtraBodyRoll = 0.0f;
-        this->mHealth = 1.0f;
-        this->mBlowOuts = 0;
-        this->mExtraBodyPitch = 0.0f;
-        this->mEngineSpeed = 0.0f;
-        this->mAnimatedCarPitch = 0.0f;
-        this->mAnimatedCarRoll = 0.0f;
-        this->mAnimatedCarShake = 0.0f;
-    }
-
-    DECLARE_RENDERPACKET(Pkt_Car_Service, CarRenderConn);
-
-    void HidePart(const UCrc32 &partname);
-
-    float mCompressions[4];       // offset 0x4, size 0x10
-    float mWheelSpeed[4];         // offset 0x14, size 0x10
-    float mTireSkid[4];           // offset 0x24, size 0x10
-    float mTireSlip[4];           // offset 0x34, size 0x10
-    float mSteering[2];           // offset 0x44, size 0x8
-    int mGroundState;             // offset 0x4C, size 0x4
-    DamageZone::Info mDamageInfo; // offset 0x50, size 0x4
-    PartState mPartState;         // offset 0x54, size 0xC
-    unsigned int mLights;         // offset 0x60, size 0x4
-    unsigned int mBrokenLights;   // offset 0x64, size 0x4
-    bool mInView;                 // offset 0x68, size 0x4
-    float mDistanceToView;        // offset 0x6C, size 0x4
-    bool mFlashing;               // offset 0x70, size 0x4
-    bool mNos;                    // offset 0x74, size 0x4
-    bool mEngineBlown;            // offset 0x78, size 0x4
-    ShiftStatus mShift;           // offset 0x7C, size 0x4
-    GearID mGear;                 // offset 0x80, size 0x4
-    float mEnginePower;           // offset 0x84, size 0x4
-    float mEngineSpeed;           // offset 0x88, size 0x4
-    float mExtraBodyRoll;         // offset 0x8C, size 0x4
-    float mExtraBodyPitch;        // offset 0x90, size 0x4
-    int mBlowOuts;                // offset 0x94, size 0x4
-    float mHealth;                // offset 0x98, size 0x4
-    float mAnimatedCarPitch;      // offset 0x9C, size 0x4
-    float mAnimatedCarRoll;       // offset 0xA0, size 0x4
-    float mAnimatedCarShake;      // offset 0xA4, size 0x4
-};
-} // namespace RenderConn
 
 #endif

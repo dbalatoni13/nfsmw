@@ -19,7 +19,6 @@ class Wheel {
     }
 
     Wheel(unsigned int flags);
-    ~Wheel();
 
     void UpdateTime(float dT);
     void Reset();

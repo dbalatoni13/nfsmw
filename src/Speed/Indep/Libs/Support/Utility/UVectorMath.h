@@ -1,19 +1,156 @@
-#ifndef SUPPORT_UTILITY_UVECTOR_MATH_H
-#define SUPPORT_UTILITY_UVECTOR_MATH_H
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
-#include "Speed/Indep/Libs/Support/Utility/UTypes.h"
+#ifndef __VU0MATH_H
+#define __VU0MATH_H 1
 
 #include "UTypes.h"
-
 #include <cmath>
 
-typedef struct UMath::Vector2 COORD2;
-typedef struct UMath::Vector3 COORD3;
-typedef struct UMath::Vector4 COORD4;
-typedef struct UMath::Matrix4 MATRIX4;
-typedef struct UMath::Matrix3 MATRIX3;
-typedef struct UMath::Vector4 RQUAT;
+#define ABS(x) ((x) < 0 ? -(x) : (x))
 
+//
+
+typedef UMath::Vector2 COORD2; // Decl: Carbon: 51
+typedef UMath::Vector3 COORD3;
+typedef UMath::Vector4 COORD4;
+typedef UMath::Matrix4 MATRIX4;
+typedef UMath::Matrix3 MATRIX3;
+typedef UMath::Vector4 RQUAT; // Decl: Carbon: 56
+// TODO
+// typedef Quaternion RQUAT; // Decl: Carbon: 56
+
+//
+// static const float INVTWOPI; // Decl: Carbon: 61
+
+// Decl: 109
+inline int REAL2INT(float f) {}
+inline int FLOAT2INT(float f) {
+    return static_cast<int>(f);
+}
+
+inline int FloatAsInt(const float &f) {}
+
+#define XBOX_USE_CPU 0     // Decl: 113
+#define GAMECUBE_USE_CPU 0 // Decl: 114
+
+#define UMATH_VECTOR_ASSERT bFAssert // Decl: 144
+
+#define rABS(x) ((x) < 0 ? -(x) : (x)) // Decl: 150
+
+// Decl: Carbon: 164
+inline float IntAsFloat(const int &i) {
+    return *reinterpret_cast<const float *>(&i);
+}
+
+inline int FloatSignBit(const float &f) {}
+
+inline float FloatAbs(const float &f) {}
+
+static const int kFloatOneAsInt = 0x3F800000;              // Decl: Carbon: 166
+static const float kFloatScaleUp = IntAsFloat(0x00800000); // Decl: Carbon: 167
+static const float kFloatScaleDown = 1.0f / kFloatScaleUp; // Decl: Carbon: 168
+
+// Decl: Carbon: 191
+inline const UMath::Vector3 &Coord4To3(const UMath::Vector4 &c4) {
+    return reinterpret_cast<const UMath::Vector3 &>(c4);
+}
+
+inline UMath::Vector3 &Coord4To3(UMath::Vector4 &c4) {
+    return reinterpret_cast<UMath::Vector3 &>(c4);
+}
+
+inline const UMath::Vector3 *Coord4To3(const UMath::Vector4 *c4) {
+    return reinterpret_cast<const UMath::Vector3 *>(c4);
+}
+// Decl: Carbon: 197
+inline UMath::Vector3 *Coord4To3(UMath::Vector4 *c4) {
+    return reinterpret_cast<UMath::Vector3 *>(c4);
+}
+
+inline UMath::Vector2 Coord2(float x, float y) {
+    UMath::Vector2 c;
+}
+
+inline UMath::Vector3 Coord3(float x, float y, float z) {
+    UMath::Vector3 c;
+}
+
+inline struct UMath::Vector4 Coord4(float x, float y, float z, float w) {
+    UMath::Vector4 c;
+}
+
+inline UMath::Vector4 Coord4(const UMath::Vector3 &c, float w) {
+    UMath::Vector4 res;
+}
+
+inline UMath::Vector4 Coord4Position(const UMath::Vector3 &c) {
+    UMath::Vector4 res;
+}
+
+inline struct UMath::Vector4 Coord4Vector(const UMath::Vector3 &c) {
+    UMath::Vector4 res;
+}
+
+inline struct UMath::Vector4 RQuat(float x, float y, float z, float w) {
+    UMath::Vector4 q;
+}
+
+inline void Coord3AsString(const UMath::Vector3 &c, char *str) {}
+
+inline void Coord4AsString(const UMath::Vector4 &c, char *str) {}
+
+inline float V3LengthSquared(const UMath::Vector4 &p) {}
+
+// Decl: Carbon: 269
+inline float PTDir(const UMath::Vector4 &vert, const UMath::Vector4 &p0, const UMath::Vector4 &p1) {}
+
+inline float PTOrd(const UMath::Vector4 &vert, const UMath::Vector4 &p0, const UMath::Vector4 &p1) {}
+
+#define kZeroCoord3 UMath::Vector3::kZero          // Decl: 292
+#define kZeroCoord4 UMath::Vector4::kIdentity      // Decl: 293
+#define kAllZeroCoord4 UMath::Vector4::kZero       // Decl: 294
+#define kIdentityMatrix4 UMath::Matrix4::kIdentity // Decl: 295
+#define kIdentityMatrix3 UMath::Matrix3::kIdentity // Decl: 296
+
+// Decl: Carbon: 304, GC MW: 304
 // total size: 0x40
 class UTransform {
   public:
@@ -23,21 +160,19 @@ class UTransform {
 
     // UTransform(const UMath::Vector3 &t) {}
 
-    // UTransform(const UMath::Vector4 &q) {}
+    // UTransform(const RQUAT &q) {}
 
     // UTransform(const UMath::Matrix3 &m, const UMath::Vector3 &t) {}
 
-    // UTransform(const UMath::Vector4 &q, const UMath::Vector4 &t) {}
+    // UTransform(const RQUAT &q, const UMath::Vector4 &t) {}
 
     ~UTransform() {}
 
-    // UMath::Vector4 Quaternion() const {}
+    // RQUAT Quaternion() const {}
 
     // void Orientation(UMath::Matrix3 &result) const {}
 
     // const UTransform &operator=(const UTransform &src) {}
-
-    // static const UTransform &Identity() {}
 
     // UMath::Vector4 Apply(const UMath::Vector4 &input) const {}
 
@@ -45,10 +180,86 @@ class UTransform {
 
     // void Apply(unsigned int count, const UMath::Vector4 *input, UMath::Vector4 *output) const {}
 
-    static const UTransform fgIdentityTransform; // size: 0x40, address: 0x80473E24
+    // static const UTransform &Identity() {}
 
     UMath::Matrix4 fTransform; // offset 0x0, size 0x40
+
+  private:
+    static const UTransform fgIdentityTransform; // size: 0x40, address: 0x80473E24
 };
+
+// Decl: Carbon: 346, GC MW: 426
+inline float V3DistanceSquared(const UMath::Vector3 &a, const UMath::Vector3 &b) {
+    float dx = a.x - b.x;
+    float dy = a.y - b.y;
+    float dz = a.z - b.z;
+
+    return dx * dx + dy * dy + dz * dz;
+}
+
+// Decl: Carbon: 357, GC MW: 440
+inline float PTDir(const UMath::Vector3 &vert, const UMath::Vector3 &p0, const UMath::Vector3 &p1) {
+    float x0 = vert.x - p0.x;
+    float z0 = vert.z - p0.z;
+    float x1 = p1.x - p0.x;
+    float z1 = p1.z - p0.z;
+    return x1 * z0 - x0 * z1;
+}
+
+// Decl: Carbon: 391
+inline bool PtInTri(const UMath::Vector4 &pt, const UMath::Vector4 &p0, const UMath::Vector4 &p1, const UMath::Vector4 &p2) {}
+
+// Decl: Carbon: 404
+inline bool PtInQuad(const UMath::Vector4 &pt, const UMath::Vector4 &p0, const UMath::Vector4 &p1, const UMath::Vector4 &p2,
+                     const UMath::Vector4 &p3) {}
+
+inline bool PtInPenta(const UMath::Vector4 &pt, const UMath::Vector4 &p0, const UMath::Vector4 &p1, const UMath::Vector4 &p2,
+                      const UMath::Vector4 &p3, const UMath::Vector4 &p4) {}
+
+static const float MATH_PI = 3.141592653589793f; // Decl: Carbon: 596
+
+#define VU0_BUSY_CHECK() (void)0 // Decl: 589
+
+#define PS2_FLOAT_ONE_AS_INT 0x3f800000       // Decl: 598
+#define PS2_FLOAT_MINUS_ONE_AS_INT 0xbf800000 // Decl: 599
+#define QUAD_ADDRESS_MASK 0xf                 // Decl: 600
+#define LONGWORD_ADDRESS_MASK 0x7             // Decl: 601
+#define WORD_ADDRESS_MASK 0x3                 // Decl: 602
+#define SQR(_a) ((_a) * (_a))                 // Decl: 603
+
+// Decl: 609
+#define CLEAR_COORD3(_a)                                                                                                                             \
+    {                                                                                                                                                \
+        *((int *)&_a.x) = 0;                                                                                                                         \
+        *((int *)&_a.y) = 0;                                                                                                                         \
+        *((int *)&_a.z) = 0;                                                                                                                         \
+    };
+// Decl: 610
+#define CLEAR_COORD4(_a)                                                                                                                             \
+    {                                                                                                                                                \
+        *((int *)&_a.x) = 0;                                                                                                                         \
+        *((int *)&_a.y) = 0;                                                                                                                         \
+        *((int *)&_a.z) = 0;                                                                                                                         \
+        *((int *)&_a.w) = 0;                                                                                                                         \
+    };
+// Decl: 613
+#define SET_MATRIX4_TRANSLATION(_a, _b)                                                                                                              \
+    {                                                                                                                                                \
+        _a.m44[3][0] = _b.x;                                                                                                                         \
+        _a.m44[3][1] = _b.y;                                                                                                                         \
+        _a.m44[3][2] = _b.z;                                                                                                                         \
+        *((int *)&_a.m44[3][3]) = PS2_FLOAT_ONE_AS_INT;                                                                                              \
+    };
+// Decl: 617
+#define SET_MATRIX4PTR_TRANSLATION(_a, _b)                                                                                                           \
+    {                                                                                                                                                \
+        _a->m44[3][0] = _b.x;                                                                                                                        \
+        _a->m44[3][1] = _b.y;                                                                                                                        \
+        _a->m44[3][2] = _b.z;                                                                                                                        \
+        *((int *)&_a->m44[3][3]) = PS2_FLOAT_ONE_AS_INT;                                                                                             \
+    };
+// Decl: 621
+#define GET_MATRIX4_TRANSLATION(_a) reinterpret_cast<const UMath::Vector4 &>(_a.m44[3])
 
 // TODO sort these
 
@@ -63,7 +274,7 @@ void VU0_v3add(const UMath::Vector3 &a, const UMath::Vector3 &b, UMath::Vector3 
 void VU0_v3scale(const UMath::Vector3 &a, const float scaleby, UMath::Vector3 &result);
 void VU0_v3scale(const UMath::Vector3 &a, const UMath::Vector3 &b, UMath::Vector3 &result);
 void VU0_v3scaleadd(const UMath::Vector3 &a, const float scaleby, const UMath::Vector3 &b, UMath::Vector3 &result);
-void VU0_v3addscale(const UMath::Vector3 &a, const UMath::Vector3 &b, const float scaleby /* f1 */, UMath::Vector3 &result);
+void VU0_v3addscale(const UMath::Vector3 &a, const UMath::Vector3 &b, const float scaleby, UMath::Vector3 &result);
 void VU0_v3sub(const UMath::Vector3 &a, const UMath::Vector3 &b, UMath::Vector3 &result);
 float VU0_v3dotprod(const UMath::Vector3 &a, const UMath::Vector3 &b);
 float VU0_v3distancesquare(const UMath::Vector3 &p1, const UMath::Vector3 &p2);
@@ -98,220 +309,74 @@ void VU0_MATRIX4_vect4mult(const UMath::Vector4 *v, const UMath::Matrix4 &m, UMa
 void VU0_MATRIX4setyrot(UMath::Matrix4 &dest, const float yangle);
 void VU0_Matrix4ToEuler(const UMath::Matrix4 &m, UMath::Vector3 &e);
 
-// has to be above VU0_v3dotprod so it doesn't inline
+void VU0_ExtractXAxis3FromQuat(const RQUAT &quat, UMath::Vector3 &result);
+void VU0_ExtractYAxis3FromQuat(const RQUAT &quat, UMath::Vector3 &result);
+void VU0_ExtractZAxis3FromQuat(const RQUAT &quat, UMath::Vector3 &result);
+void VU0_quattom4(const RQUAT &quat, UMath::Matrix4 &result);
+
+void VU0_MATRIX4_mult(const UMath::Matrix4 &m1, const UMath::Matrix4 &m2, UMath::Matrix4 &result);
+
+// Decl: Carbon: 789, GC MW: 868
+inline float VU0_ASin(float x) {
+    return asinf(x) / (float)M_TWOPI;
+}
+
+// Decl: Carbon: 800, GC MW: 878
+inline float VU0_Pow(float x, float e) {
+    return powf(x, e);
+}
+
+// Decl: Carbon: 802, GC MW: 882
 inline void VU0_MATRIX3x4dotprod(const UMath::Vector3 &a, const UMath::Matrix4 &b, UMath::Vector3 &r) {
     r.x = VU0_v3dotprod(a, UMath::Vector4To3(b.v0));
     r.y = VU0_v3dotprod(a, UMath::Vector4To3(b.v1));
     r.z = VU0_v3dotprod(a, UMath::Vector4To3(b.v2));
 }
 
-#ifdef EA_PLATFORM_PLAYSTATION2
-#include "Speed/PSX2/bWare/Src/ee/include/eetypes.h"
-
-inline float VU0_sqrt(const float a) {
-    float result;
-    asm __volatile__("vsqrt Q, vf2x\n"
-                     "vwaitq\n"
-                     "vaddq vf3, vf0, Q\n"
-                     : "=f"(result)
-                     : "o"(a));
-    return result;
-}
-
-inline void VU0_v3add(const UMath::Vector3 &a, const UMath::Vector3 &b, UMath::Vector3 &result) {
-    asm __volatile__("lqc2 vf1, %1\n"
-                     "lqc2 vf2, %2\n"
-                     "lqc2 vf3, %0\n"
-                     "vadd vf3, vf1, vf2\n"
-                     "sqc2 vf3, %0"
-                     : "=o"(result)
-                     : "o"(a), "o"(b));
-}
-
-inline void VU0_v3scale(const UMath::Vector3 &a, const float scaleby, UMath::Vector3 &result) {
-    asm __volatile__("lqc2 vf1, %1\n"
-                     "lqc2 vf3, %0\n"
-                     "qmtc2.ni %2, vf2\n"
-                     "vmulx vf3, vf1, vf2x\n"
-                     "sqc2 vf3, %0"
-                     : "=o"(result)
-                     : "o"(a), "r"(scaleby));
-}
-
-inline void VU0_v3scale(const UMath::Vector3 &a, const UMath::Vector3 &b, UMath::Vector3 &result) {
-    asm __volatile__("lqc2 vf3, %0\n"
-                     "lqc2 vf1, %2\n"
-                     "lqc2 vf2, %1\n"
-                     "vmul vf3, vf1, vf2\n"
-                     "sqc2 vf3, %0"
-                     : "=o"(result)
-                     : "o"(a), "o"(b));
-}
-
-inline void VU0_v3scaleadd(const UMath::Vector3 &a, const float scaleby, const UMath::Vector3 &b, UMath::Vector3 &result) {
-    asm __volatile__("lqc2 vf1, %1\n"
-                     "lqc2 vf2, %3\n"
-                     "lqc2 vf3, %0\n"
-                     "qmtc2.ni %2, vf4\n"
-                     "vmulx vf3, vf1, vf4x\n"
-                     "vadd vf3, vf2, vf3\n"
-                     "sqc2 vf3, %0"
-                     : "=o"(result)
-                     : "o"(a), "r"(scaleby), "o"(b));
-}
-
-// TODO
-inline void VU0_v3sub(const UMath::Vector3 &a, const UMath::Vector3 &b, UMath::Vector3 &result) {
-    asm __volatile__("lqc2 vf1, %1\n"
-                     "lqc2 vf2, %2\n"
-                     "lqc2 vf3, %0\n"
-                     "vsub vf3, vf1, vf2\n"
-                     "sqc2 vf3, %0"
-                     : "=o"(result)
-                     : "o"(a), "o"(b));
-}
-
-inline float VU0_v3dotprod(const UMath::Vector3 &a, const UMath::Vector3 &b) {
-    float result;
-    asm __volatile__("lqc2 vf1, %1\n"
-                     "lqc2 vf2, %2\n"
-                     "vmul vf3, vf1, vf2\n"
-                     "vaddy vf3, vf3, vf3y\n"
-                     "vaddz vf3, vf3, vf3z\n"
-                     "qmfc2.ni %0, vf3"
-                     : "=r"(result)
-                     : "o"(a), "o"(b));
-    return result;
-}
-
-inline float VU0_v3distancesquare(const UMath::Vector3 &p1, const UMath::Vector3 &p2) {
-    u_long128 _t0;
-    float result;
-    asm __volatile__("lui %3, 0x3f80\n"
-                     "lqc2 vf1, %1\n"
-                     "lqc2 vf2, %2\n"
-                     "vsub vf1, vf1, vf2\n"
-                     "qmtc2.ni %3, vf3\n"
-                     "vmul vf2, vf1, vf1\n"
-                     "vmulax ACC, vf1, vf1x\n"
-                     "vmadday ACC, vf3, vf2y\n"
-                     "vmaddz vf2, vf3, vf2z\n"
-                     "qmfc2.ni %0, vf2\n"
-                     : "=r"(result)
-                     : "o"(p1), "o"(p2), "r"(_t0));
-    return result;
-}
-
-inline float VU0_v3distancesquarexz(const UMath::Vector3 &p1, const UMath::Vector3 &p2) {}
-
-// TODO
-inline void VU0_v3crossprod(const UMath::Vector3 &a, const UMath::Vector3 &b, UMath::Vector3 &dest) {
-    asm __volatile__("lqc2 vf1, %1\n"
-                     "lqc2 vf2, %2\n"
-                     "lqc2 vf3, %0\n"
-                     "vopmula ACC, vf1, vf2\n"
-                     "vopmsub vf3, vf2, vf1\n"
-                     "sqc2 vf3, %0"
-                     : "=o"(dest)
-                     : "o"(a), "o"(b));
-}
-
-inline float VU0_v3lengthsquare(const UMath::Vector3 &a) {
-    u_long128 _t0;
-    float result;
-    asm __volatile__("lui %2, 0x3f80\n"
-                     "lqc2 vf1, %1\n"
-                     "vmul vf2, vf1, vf1\n"
-                     "qmtc2.ni %2, vf3\n"
-                     "vmulax ACC, vf1, vf1x\n"
-                     "vmadday ACC, vf3, vf2y\n"
-                     "vmaddz vf2, vf3, vf2z\n"
-                     "qmfc2.ni %0, vf2"
-                     : "=r"(result)
-                     : "o"(a), "r"(_t0));
-    return result;
-}
-
-// inline void VU0_v3unit(const UMath::Vector3 &a, UMath::Vector3 &result) {}
-
-inline void VU0_v4scaleadd(const UMath::Vector4 &a, const float scaleby, const UMath::Vector4 &b, UMath::Vector4 &result) {}
-
-inline void VU0_v4scaleaddxyz(const UMath::Vector4 &a, const float scaleby, const UMath::Vector4 &b, UMath::Vector4 &result) {}
-
-inline float VU0_v4lengthsquare(const UMath::Vector4 &a) {}
-
-inline float VU0_v4lengthsquarexyz(const UMath::Vector4 &a) {}
-
-inline void VU0_v4subxyz(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &result) {}
-
-inline float VU0_v4dotprodxyz(const UMath::Vector4 &a, const UMath::Vector4 &b) {}
-
-inline void VU0_v4scale(const UMath::Vector4 &a, const float scaleby, UMath::Vector4 &result) {
-    asm __volatile__("lqc2 vf1, %1\n"
-                     "qmtc2.ni %2, vf2\n"
-                     "vmulx vf3, vf1, vf2x\n"
-                     "sqc2 vf3, %0"
-                     : "=o"(result)
-                     : "o"(a), "r"(scaleby));
-}
-
-inline void VU0_v4scalexyz(const UMath::Vector4 &a, const float scaleby, UMath::Vector4 &result) {}
-
-inline float VU0_v4distancesquarexyz(const UMath::Vector4 &p1, const UMath::Vector4 &p2) {}
-
-inline void VU0_v4addxyz(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &result) {}
-
-inline void VU0_MATRIX3x4_vect3mult(const UMath::Vector3 &v, const UMath::Matrix4 &m, UMath::Vector3 &result) {
-    asm __volatile__("lqc2 vf1, %1\n"
-                     "lqc2 vf2, 0x0(%2)\n"
-                     "lqc2 vf3, 0x10(%2)\n"
-                     "lqc2 vf4, 0x20(%2)\n"
-                     "lqc2 vf5, %0\n"
-                     "vmulax ACC, vf2, vf1x\n"
-                     "vmadday ACC, vf3, vf1y\n"
-                     "vmaddz vf5, vf4, vf1z\n"
-                     "sqc2 vf5, %0"
-                     : "=o"(result)
-                     : "o"(v), "r"(&m));
-}
-
-inline void VU0_MATRIX4_vect3mult(const UMath::Vector3 &v, const UMath::Matrix4 &m, UMath::Vector3 &result) {
-    asm __volatile__("lqc2 vf1, %1\n"
-                     "lqc2 vf2, 0x0(%2)\n"
-                     "lqc2 vf3, 0x10(%2)\n"
-                     "lqc2 vf4, 0x20(%2)\n"
-                     "lqc2 vf5, 0x30(%2)\n"
-                     "lqc2 vf6, %1\n"
-                     "vmulax ACC, vf2, vf1x\n"
-                     "vmadday ACC, vf3, vf1y\n"
-                     "vmaddaz ACC, vf4, vf1z\n"
-                     "vmaddw vf6, vf5, vf0w\n"
-                     "sqc2 vf6, %0"
-                     : "=o"(result)
-                     : "o"(v), "r"(&m));
-}
-
-// TODO
-inline float VU0_ASin(float x) {
-    return asinf(x) / (float)M_TWOPI;
-}
-
-#else
-
+// Decl: Carbon: 811, GC MW: ~889
 inline float VU0_Sin(float x) {
     return sinf(x);
 }
-
+// Decl: Carbon: 812, GC MW: ~889
 inline float VU0_Cos(float x) {
     return cosf(x);
 }
 
-inline float VU0_ASin(float x) {
-    return asinf(x) / (float)M_TWOPI;
+#define VU0_prefetch(_a) ; // Decl: 961
+
+// Decl: Carbon: 963
+inline int VU0_FloatToInt(const float floatvalue) {}
+
+// these might not use inline asm
+// Decl: Carbon: 968, GC MW: 1048, PS2 MW: 1003
+inline float VU0_floatmin(const float a, const float b) {
+#ifdef EA_PLATFORM_PLAYSTATION2
+    float result;
+    asm __volatile__("min.s %0, %1, %2" : "=f"(result) : "f"(a), "f"(b));
+    return result;
+#else
+    if (a < b)
+        return a;
+    else
+        return b;
+#endif
 }
 
+// Decl: Carbon: 976, GC MW: 1056
+inline float VU0_floatmax(const float a, const float b) {
+#ifdef EA_PLATFORM_PLAYSTATION2
+    float result;
+    asm __volatile__("max.s %0, %1, %2" : "=f"(result) : "f"(a), "f"(b));
+    return result;
+#else
+    if (a > b)
+        return a;
+    else
+        return b;
 #endif
+}
 
+// Decl: Carbon: 1019, GC MW: 1102, PS2 MW: 1014
 inline float VU0_fabs(const float a) {
 #ifdef EA_PLATFORM_PLAYSTATION2
     float result;
@@ -326,441 +391,6 @@ inline float VU0_fabs(const float a) {
 #endif
 }
 
-inline float VU0_Pow(float x, float e) {
-    return powf(x, e);
-}
-
-inline float VU0_floatmin(const float a, const float b) {
-#ifdef EA_PLATFORM_PLAYSTATION2
-    float result;
-    asm __volatile__("min.s %0, %1, %2" : "=f"(result) : "f"(a), "f"(b));
-    return result;
-#else
-    if (a < b)
-        return a;
-    else
-        return b;
-#endif
-}
-
-inline float VU0_floatmax(const float a, const float b) {
-#ifdef EA_PLATFORM_PLAYSTATION2
-    float result;
-    asm __volatile__("max.s %0, %1, %2" : "=f"(result) : "f"(a), "f"(b));
-    return result;
-#else
-    if (a > b)
-        return a;
-    else
-        return b;
-#endif
-}
-
-inline void VU0_v3negate(UMath::Vector3 &result) {
-#ifdef EA_PLATFORM_PLAYSTATION2
-    asm __volatile__("lqc2 vf1, %0\n"
-                     "vsub vf1, vf0, vf1\n"
-                     "sqc2 vf1, %0"
-                     : "=o"(result));
-#else
-    result.x = -result.x;
-    result.y = -result.y;
-    result.z = -result.z;
-#endif
-}
-
-inline void VU0_v3lerp(const UMath::Vector3 &v1, const UMath::Vector3 &v2, const float t, UMath::Vector3 &target) {
-    target.x = v1.x + (v2.x - v1.x) * t;
-    target.y = v1.y + (v2.y - v1.y) * t;
-    target.z = v1.z + (v2.z - v1.z) * t;
-}
-
-inline float VU0_v3distance(const UMath::Vector3 &p1, const UMath::Vector3 &p2) {
-#ifdef EA_PLATFORM_PLAYSTATION2
-    float result;
-    u_long128 _t0;
-    asm __volatile__("lui %3, 0x3f80\n"
-                     "lqc2 vf1, %1\n"
-                     "lqc2 vf2, %2\n"
-                     "vsub vf1, vf1, vf2\n"
-                     "qmtc2.ni %3, vf3\n"
-                     "vmul vf2, vf1, vf1\n"
-                     "vmulax ACC, vf1, vf1x\n"
-                     "vmadday ACC, vf3, vf2y\n"
-                     "vmaddz vf2, vf3, vf2z\n"
-                     "vsqrt Q, vf2x\n"
-                     "vwaitq\n"
-                     "vaddq vf3, vf0, Q\n"
-                     "qmfc2.ni %0, vf3"
-                     : "=r"(result)
-                     : "o"(p1), "o"(p2), "r"(_t0));
-    return result;
-#else
-    UMath::Vector3 temp;
-    VU0_v3sub(p1, p2, temp);
-    return VU0_sqrt(VU0_v3lengthsquare(temp));
-#endif
-}
-
-inline float VU0_v3distancexz(const UMath::Vector3 &p1, const UMath::Vector3 &p2) {
-#ifdef EA_PLATFORM_PLAYSTATION2
-    float result;
-    u_long128 _t0;
-    asm __volatile__("lui %3, 0x3f80\n"
-                     "lqc2 vf1, %2\n"
-                     "lqc2 vf2, %1\n"
-                     "vsub vf1, vf1, vf2\n"
-                     "qmtc2.ni %3, vf3\n"
-                     "vmul vf2, vf1, vf1\n"
-                     "vmulax ACC, vf1, vf1x\n"
-                     "vmaddz vf2, vf3, vf2z\n"
-                     "vsqrt Q, vf2x\n"
-                     "vwaitq\n"
-                     "vaddq vf3, vf0, Q\n"
-                     "qmfc2.ni %0, vf3"
-                     : "=r"(result)
-                     : "o"(p1), "o"(p2), "r"(_t0));
-    return result;
-#else
-    return VU0_sqrt((p2.x - p1.x) * (p2.x - p1.x) + (p2.z - p1.z) * (p2.z - p1.z));
-#endif
-}
-
-// TODO these should go into UVectorMathGC.hpp
-inline void VU0_v3unitcrossprod(const UMath::Vector3 &a, const UMath::Vector3 &b, UMath::Vector3 &dest) {
-#ifdef EA_PLATFORM_PLAYSTATION2
-    u_long128 _t0;
-    asm __volatile__("lui %3, 0x3f80\n"
-                     "lqc2 vf1, %1\n"
-                     "lqc2 vf2, %2\n"
-                     "lqc2 vf3, %0\n"
-                     "vopmula ACC, vf1, vf2\n"
-                     "vopmsub vf3, vf2, vf1\n"
-                     "qmtc2.ni %3, vf5\n"
-                     "vmul vf4, vf3, vf3\n"
-                     "vmulax ACC, vf3, vf3x\n"
-                     "vmadday ACC, vf5, vf4y\n"
-                     "vmaddz vf4, vf5, vf4z\n"
-                     "vrsqrt Q, vf0w, vf4x\n"
-                     "vwaitq\n"
-                     "vmulq vf3, vf3, Q\n"
-                     "sqc2 vf3, %0"
-                     : "=o"(dest)
-                     : "o"(a), "o"(b), "r"(_t0));
-#else
-    VU0_v3crossprod(a, b, dest);
-    VU0_v3unit(dest, dest);
-#endif
-}
-
-inline float VU0_v4distancexyz(const UMath::Vector4 &p1, const UMath::Vector4 &p2) {
-    UMath::Vector4 temp;
-    VU0_v4subxyz(p1, p2, temp);
-    return VU0_sqrt(VU0_v4lengthsquarexyz(temp));
-}
-
-inline void VU0_ExtractXAxis3FromQuat(const UMath::Vector4 &quat, UMath::Vector3 &result) {
-    const float scale = 2.0f;
-    float yy = scale * (quat.y * quat.y);
-    float zz = scale * (quat.z * quat.z);
-    float xy = scale * (quat.x * quat.y);
-    float xz = scale * (quat.x * quat.z);
-    float yw = scale * (quat.y * quat.w);
-    float zw = scale * (quat.z * quat.w);
-
-    result.x = 1.0f - (yy + zz);
-    result.y = xy + zw;
-    result.z = xz - yw;
-}
-
-inline void VU0_ExtractYAxis3FromQuat(const UMath::Vector4 &quat, UMath::Vector3 &result) {
-    const float scale = 2.0f;
-    float xx = scale * (quat.x * quat.x);
-    float zz = scale * (quat.z * quat.z);
-    float xy = scale * (quat.x * quat.y);
-    float xw = scale * (quat.x * quat.w);
-    float yz = scale * (quat.y * quat.z);
-    float zw = scale * (quat.z * quat.w);
-
-    result.x = xy - zw;
-    result.y = 1.0f - (xx + zz);
-    result.z = yz + xw;
-}
-
-inline void VU0_ExtractZAxis3FromQuat(const UMath::Vector4 &quat, UMath::Vector3 &result) {
-    const float scale = 2.0f;
-    float xx = scale * (quat.x * quat.x);
-    float yy = scale * (quat.y * quat.y);
-    float xz = scale * (quat.x * quat.z);
-    float xw = scale * (quat.x * quat.w);
-    float yz = scale * (quat.y * quat.z);
-    float yw = scale * (quat.y * quat.w);
-
-    result.x = xz + yw;
-    result.y = yz - xw;
-    result.z = 1.0f - (xx + yy);
-}
-
-inline void VU0_qmul(const UMath::Vector4 &b, const UMath::Vector4 &a, UMath::Vector4 &dest) {
-    UMath::Vector4 result;
-    result.x = a.y * b.z - a.z * b.y + a.w * b.x + a.x * b.w;
-    result.y = a.z * b.x - a.x * b.z + a.w * b.y + a.y * b.w;
-    result.z = a.x * b.y - a.y * b.x + a.w * b.z + a.z * b.w;
-    result.w = a.w * b.w - a.x * b.x - a.y * b.y - a.z * b.z;
-
-    dest = result;
-}
-
-inline void VU0_quattom4(const UMath::Vector4 &quat, UMath::Matrix4 &result) {
-    const float scale = 2.0f;
-    float xx = quat.x * quat.x * scale;
-    float yy = quat.y * quat.y * scale;
-    float zz = quat.z * quat.z * scale;
-
-    float xy = quat.x * quat.y * scale;
-    float xz = quat.x * quat.z * scale;
-    float xw = quat.x * quat.w * scale;
-
-    float yz = quat.y * quat.z * scale;
-    float yw = quat.y * quat.w * scale;
-    float zw = quat.z * quat.w * scale;
-
-    result[0][0] = 1.0f - (yy + zz);
-    result[0][1] = (xy + zw);
-    result[0][2] = (xz - yw);
-    result[0][3] = 0.0f;
-
-    result[1][0] = (xy - zw);
-    result[1][1] = 1.0f - (xx + zz);
-    result[1][2] = (yz + xw);
-    result[1][3] = 0.0f;
-
-    result[2][0] = (xz + yw);
-    result[2][1] = (yz - xw);
-    result[2][2] = 1.0f - (xx + yy);
-    result[2][3] = 0.0f;
-
-    result[3][0] = 0.0f;
-    result[3][1] = 0.0f;
-    result[3][2] = 0.0f;
-    result[3][3] = 1.0f;
-}
-
-inline void VU0_MATRIX4_transpose(const UMath::Matrix4 &m, UMath::Matrix4 &result) {
-    if (&m == &result) {
-        UMath::Matrix4 temp;
-        int i;
-        int j;
-        for (i = 0; i < 4 * 4; ++i) {
-            temp.GetElements()[i] = m.GetElements()[i];
-        }
-        for (i = 0; i < 4; ++i) {
-            for (j = 0; j < 4; ++j) {
-                result[i][j] = temp[j][i];
-            }
-        }
-    } else {
-        for (int i = 0; i < 4; ++i) {
-            for (int j = 0; j < 4; ++j) {
-                result[i][j] = m[j][i];
-            }
-        }
-    }
-}
-
-inline void VU0_qtranspose(const UMath::Vector4 &a, UMath::Vector4 &result) {
-    result.x = -a.x;
-    result.y = -a.y;
-    result.z = -a.z;
-    result.w = a.w;
-}
-
-inline void VU0_MATRIX4Init(UMath::Matrix4 &dest, const float xx, const float yy, const float zz) {
-    dest[0][0] = xx;
-    dest[1][1] = yy;
-    dest[2][2] = zz;
-    dest[3][3] = 1.0f;
-
-    dest[3][2] = 0.0f;
-    dest[3][1] = 0.0f;
-    dest[3][0] = 0.0f;
-
-    dest[2][3] = 0.0f;
-    dest[2][1] = 0.0f;
-    dest[2][0] = 0.0f;
-
-    dest[1][3] = 0.0f;
-    dest[1][2] = 0.0f;
-    dest[1][0] = 0.0f;
-
-    dest[0][3] = 0.0f;
-    dest[0][2] = 0.0f;
-    dest[0][1] = 0.0f;
-}
-
-inline void VU0_MATRIX4_mult(const UMath::Matrix4 &m1, const UMath::Matrix4 &m2, UMath::Matrix4 &result) {
-    UMath::Matrix4 temp;
-    for (int i = 0; i < 4; ++i) {
-        for (int j = 0; j < 4; ++j) {
-            temp[i][j] = m1[i][0] * m2[0][j] + m1[i][1] * m2[1][j] + m1[i][2] * m2[2][j] + m1[i][3] * m2[3][j];
-        }
-    }
-    result = temp;
-}
-
-inline void VU0_MATRIX4Copy(const UMath::Matrix4 &a, UMath::Matrix4 &b) {
-#ifdef EA_PLATFORM_PLAYSTATION2
-    u_long128 _t0;
-    u_long128 _t1;
-    asm __volatile__("lq %0, 0x0(%2)\n"
-                     "lq %1, 0x10(%2)\n"
-                     "sq %0, %3\n"
-                     "sq %1, %4\n"
-                     "lq %0, 0x20(%2)\n"
-                     "lq %1, 0x30(%2)\n"
-                     "sq %0, %5\n"
-                     "sq %1, %6\n"
-                     :
-                     : "r"(_t0), "r"(_t1), "r"(&a), "o"(b.v0), "o"(b.v1), "o"(b.v2), "o"(b.v3));
-#else
-    b = a;
-#endif
-}
-
-// TODO
-inline void VU0_v4Copy(const UMath::Vector4 &a, UMath::Vector4 &b) {
-#ifdef EA_PLATFORM_PLAYSTATION2
-        // u_long128 _t0;
-        // u_long128 _t1;
-        // asm __volatile__("lq %0, 0x0(%2)\n"
-        //                  "lq %1, 0x10(%2)\n"
-        //                  "sq %0, %3\n"
-        //                  "sq %1, %4\n"
-        //                  "lq %0, 0x20(%2)\n"
-        //                  "lq %1, 0x30(%2)\n"
-        //                  "sq %0, %5\n"
-        //                  "sq %1, %6\n"
-        //                  :
-        //                  : "r"(_t0), "r"(_t1), "r"(&a), "o"(b.v0), "o"(b.v1), "o"(b.v2), "o"(b.v3));
-#else
-    b = a;
-        // *reinterpret_cast<int *>(&b.x) = *reinterpret_cast<const int *>(&a.x);
-        // *reinterpret_cast<int *>(&b.y) = *reinterpret_cast<const int *>(&a.y);
-        // *reinterpret_cast<int *>(&b.z) = *reinterpret_cast<const int *>(&a.z);
-        // *reinterpret_cast<int *>(&b.w) = *reinterpret_cast<const int *>(&a.w);
-#endif
-}
-
-inline float VU0_v3length(const struct UMath::Vector3 &a) {
-#ifdef EA_PLATFORM_PLAYSTATION2
-    u_long128 _t0; // TODO uint128 instead of u_long128
-    float result;
-    asm __volatile__("lui %2, 0x3f80\n"
-                     "lqc2 vf1, %1\n"
-                     "vmul vf2, vf1, vf1\n"
-                     "qmtc2.ni %2, vf3\n"
-                     "vmulax ACC, vf1, vf1x\n"
-                     "vmadday ACC, vf3, vf2y\n"
-                     "vmaddz vf2, vf3, vf2z\n"
-                     "vsqrt Q, vf2x\n"
-                     "vwaitq\n"
-                     "vaddq vf3, vf0, Q\n"
-                     "qmfc2.ni %0, vf3"
-                     : "=r"(result)
-                     : "o"(a), "r"(_t0));
-    return result;
-#else
-    return VU0_sqrt(VU0_v3lengthsquare(a));
-#endif
-}
-
-inline float VU0_v3lengthxz(const struct UMath::Vector3 &a) {
-#ifdef EA_PLATFORM_PLAYSTATION2
-    u_long128 _t0;
-    float result;
-    asm __volatile__("lui %2, 0x3f80\n"
-                     "lqc2 vf1, %1\n"
-                     "vmul vf2, vf1, vf1\n"
-                     "qmtc2.ni %2, vf3\n"
-                     "vmulax ACC, vf1, vf1x\n"
-                     "vmaddz vf2, vf3, vf2z\n"
-                     "vsqrt Q, vf2x\n"
-                     "vwaitq\n"
-                     "vaddq vf3, vf0, Q\n"
-                     "qmfc2.ni %0, vf3"
-                     : "=r"(result)
-                     : "o"(a), "r"(_t0));
-    return result;
-#else
-    return VU0_sqrt(a.x * a.x + a.z * a.z);
-#endif
-}
-
-inline float VU0_v4lengthxyz(const UMath::Vector4 &a) {
-    return VU0_sqrt(VU0_v4lengthsquarexyz(a));
-}
-
-inline float VU0_v4length(const UMath::Vector4 &a) {
-    return VU0_sqrt(VU0_v4lengthsquare(a));
-}
-
-inline void VU0_v3unit(const UMath::Vector3 &a, UMath::Vector3 &result) {
-#ifdef EA_PLATFORM_PLAYSTATION2
-    u_long128 _t0;
-    asm __volatile__("lui %2, 0x3f80\n"
-                     "lqc2 vf1, %1\n"
-                     "lqc2 vf2, %0\n"
-                     "vmul vf2, vf1, vf1\n"
-                     "qmtc2.ni %2, vf3\n"
-                     "vmulax ACC, vf1, vf1x\n"
-                     "vmadday ACC, vf3, vf2y\n"
-                     "vmaddz vf2, vf3, vf2z\n"
-                     "vrsqrt Q, vf0w, vf2x\n"
-                     "vwaitq\n"
-                     "vmulq vf2, vf1, Q\n"
-                     "sqc2 vf2, %0"
-                     : "=o"(result)
-                     : "o"(a), "r"(_t0));
-#else
-    float rlen = VU0_rsqrt(VU0_v3lengthsquare(a));
-    VU0_v3scale(a, rlen, result);
-#endif
-}
-
-inline void VU0_v4unit(const UMath::Vector4 &a, UMath::Vector4 &result) {
-    float rlen = VU0_rsqrt(VU0_v4lengthsquare(a));
-    VU0_v4scale(a, rlen, result);
-}
-
-inline void VU0_v4unitxyz(const UMath::Vector4 &a, UMath::Vector4 &result) {
-    float rlen = VU0_rsqrt(VU0_v4lengthsquarexyz(a));
-    VU0_v4scalexyz(a, rlen, result);
-}
-
-inline void VU0_v4negatexyz(UMath::Vector4 &result) {
-    result.x = -result.x;
-    result.y = -result.y;
-    result.z = -result.z;
-}
-
-inline float IntAsFloat(const int &i) {
-    return *reinterpret_cast<const float *>(&i);
-}
-
-inline float V3DistanceSquared(const UMath::Vector3 &a, const UMath::Vector3 &b) {
-    float dx = a.x - b.x;
-    float dy = a.y - b.y;
-    float dz = a.z - b.z;
-
-    return dx * dx + dy * dy + dz * dz;
-}
-
-inline int FLOAT2INT(float f) {
-    return static_cast<int>(f);
-}
-
-// TODO where to put these?
-static const float kFloatScaleUp = IntAsFloat(0x00800000);
-static const float kFloatScaleDown = 1.0f / kFloatScaleUp;
+#define VU0MATH_INLINE inline // Decl: 1044
 
 #endif

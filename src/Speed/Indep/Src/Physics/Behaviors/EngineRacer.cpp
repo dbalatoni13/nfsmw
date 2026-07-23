@@ -16,7 +16,6 @@
 #include "Speed/Indep/Src/Interfaces/Simables/IINput.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IInductable.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISuspension.h"
-#include "Speed/Indep/Src/Interfaces/Simables/ITiptronic.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ITransmission.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #include "Speed/Indep/Src/Misc/Table.hpp"
@@ -25,6 +24,7 @@
 #include "Speed/Indep/Src/Physics/PhysicsObject.h"
 #include "Speed/Indep/Src/Physics/PhysicsTypes.h"
 #include "Speed/Indep/Src/Physics/VehicleBehaviors.h"
+#include "Speed/Indep/Src/Render/RenderConn.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Src/Sim/UTil.h"
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
@@ -784,11 +784,11 @@ float EngineRacer::GetDriveWheelSlippage() const {
     int drivewheels = 0;
     if (this->RearWheelDrive()) {
         drivewheels += 2;
-        retval += this->mSuspension->GetWheelSlip(TIRE_RR) + this->mSuspension->GetWheelSlip(TIRE_RL);
+        retval += this->mSuspension->GetWheelSlip(2) + this->mSuspension->GetWheelSlip(3);
     }
     if (this->FrontWheelDrive()) {
         drivewheels += 2;
-        retval += this->mSuspension->GetWheelSlip(TIRE_FL) + this->mSuspension->GetWheelSlip(TIRE_FR);
+        retval += this->mSuspension->GetWheelSlip(0) + this->mSuspension->GetWheelSlip(1);
     }
 
     return retval / drivewheels;
@@ -1355,7 +1355,7 @@ static const bool bNoEngineBlown = false;
 class EngineDragster : public EngineRacer, public IDragEngine, public IDragTransmission {
   public:
     // Methods
-    static Behavior *Construct(const BehaviorParams &params);
+    static Behavior *Construct(const BehaviorParams &parms);
 
     EngineDragster(const BehaviorParams &bp);
     float CalcPotentialShiftBonus(Rpm rpm, GearID gear, GearID nextgear) const;
@@ -1425,14 +1425,23 @@ class EngineDragster : public EngineRacer, public IDragEngine, public IDragTrans
     ISuspension *mSuspension; // offset 0x1D4, size 0x4
 };
 
+BIND_BEHAVIOR_FACTORY(EngineDragster);
+
 EngineDragster::EngineDragster(const BehaviorParams &bp)
-    : EngineRacer(bp), IDragEngine(bp.fowner), IDragTransmission(bp.fowner), mPotentialBonus(0.0f), mPerfectShiftTime(0.0f), mBoost(0.0f),
-      mOverrev(0.0f), mHeat(0.0f), mSuspension(nullptr) {
+    : EngineRacer(bp),              //
+      IDragEngine(bp.fowner),       //
+      IDragTransmission(bp.fowner), //
+      mPotentialBonus(0.0f),        //
+      mPerfectShiftTime(0.0f),      //
+      mBoost(0.0f),                 //
+      mOverrev(0.0f),               //
+      mHeat(0.0f),                  //
+      mSuspension(nullptr) {
     this->GetOwner()->QueryInterface(&mSuspension);
 }
 
-Behavior *EngineDragster::Construct(const BehaviorParams &params) {
-    return new EngineDragster(params);
+Behavior *EngineDragster::Construct(const BehaviorParams &parms) {
+    return new EngineDragster(parms);
 }
 
 void EngineDragster::Reset() {

@@ -29,6 +29,7 @@ struct simsurface : Instance {
     typedef FXROADNOISE_TRANSITION TypeOf_Aud_RoadNoise_TransOFF;
     typedef FXROADNOISE_TRANSITION TypeOf_Aud_RoadNoise_TransON;
     typedef FXROADNOISE_LOOP TypeOf_Aud_Roadnoise_LOOP;
+    typedef EA::Reflection::UInt32 TypeOf_Aud_Skid_Type;
     typedef EA::Reflection::Float TypeOf_CAMERA_NOISE;
     typedef EA::Reflection::Text TypeOf_CollectionName;
     typedef UMath::Vector4 TypeOf_DEBUG_COLOUR;
@@ -40,7 +41,6 @@ struct simsurface : Instance {
     typedef EA::Reflection::Float TypeOf_LATERAL_GRIP;
     typedef EA::Reflection::Float TypeOf_MATERIAL_STRENGTH;
     typedef EA::Reflection::Float TypeOf_ROLLING_RESISTANCE;
-    typedef EA::Reflection::UInt32 TypeOf_RSNMCHUNK_FERESNAMES;
     typedef RoadNoiseRecord TypeOf_RenderNoise;
     typedef EA::Reflection::Float TypeOf_STICK;
     typedef TireEffectRecord TypeOf_TireDriveEffects;
@@ -143,6 +143,18 @@ struct simsurface : Instance {
     }
     bool SET_Aud_Roadnoise_LOOP(const FXROADNOISE_LOOP &input) {
         ATTRIB_CODEGEN_SETVALUE(FXROADNOISE_LOOP, 0x2907c135, input);
+    }
+    bool Aud_Skid_Type(TAttrib<EA::Reflection::UInt32> &result) const {
+        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::UInt32, 0xd377b339);
+    }
+    bool Aud_Skid_Type(EA::Reflection::UInt32 &result) const {
+        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::UInt32, 0xd377b339, result);
+    }
+    const EA::Reflection::UInt32 &Aud_Skid_Type() const {
+        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::UInt32, 0xd377b339);
+    }
+    bool SET_Aud_Skid_Type(const EA::Reflection::UInt32 &input) {
+        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::UInt32, 0xd377b339, input);
     }
     bool CAMERA_NOISE(TAttrib<EA::Reflection::Float> &result) const {
         ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xf0c9e498);
@@ -288,18 +300,6 @@ struct simsurface : Instance {
     bool SET_ROLLING_RESISTANCE(const EA::Reflection::Float &input) {
         ATTRIB_CODEGEN_SETLAYOUT(ROLLING_RESISTANCE, input);
     }
-    bool RSNMCHUNK_FERESNAMES(TAttrib<EA::Reflection::UInt32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::UInt32, 0xd377b339);
-    }
-    bool RSNMCHUNK_FERESNAMES(EA::Reflection::UInt32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::UInt32, 0xd377b339, result);
-    }
-    const EA::Reflection::UInt32 &RSNMCHUNK_FERESNAMES() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::UInt32, 0xd377b339);
-    }
-    bool SET_RSNMCHUNK_FERESNAMES(const EA::Reflection::UInt32 &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::UInt32, 0xd377b339, input);
-    }
     bool RenderNoise(TAttrib<RoadNoiseRecord> &result) const {
         ATTRIB_CODEGEN_GETATTRIB(RoadNoiseRecord, 0x940b79c4);
     }
@@ -439,6 +439,7 @@ namespace simsurface {
 static const Key Aud_RoadNoise_TransOFF = 0xcdf83544;
 static const Key Aud_RoadNoise_TransON = 0xb4c1b2cf;
 static const Key Aud_Roadnoise_LOOP = 0x2907c135;
+static const Key Aud_Skid_Type = 0xd377b339;
 static const Key CAMERA_NOISE = 0xf0c9e498;
 static const Key CollectionName = 0x9ca1c8f9;
 static const Key DEBUG_COLOUR = 0x740d3125;
@@ -450,7 +451,6 @@ static const Key GROUND_FRICTION = 0x3fb1b342;
 static const Key LATERAL_GRIP = 0x5ce7dba8;
 static const Key MATERIAL_STRENGTH = 0x9fca0b40;
 static const Key ROLLING_RESISTANCE = 0x9f2b0192;
-static const Key RSNMCHUNK_FERESNAMES = 0xd377b339;
 static const Key RenderNoise = 0x940b79c4;
 static const Key STICK = 0xd72119b4;
 static const Key TireDriveEffects = 0xfcc3efa6;

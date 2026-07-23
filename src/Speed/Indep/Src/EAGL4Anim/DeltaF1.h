@@ -132,10 +132,10 @@ struct DeltaF1 : public AnimMemoryMap {
         int r = mNumFrames & GetBinLengthModMask();
 
         if (r > 0) {
-            s = reinterpret_cast<unsigned char *>(AlignSize2((intptr_t)s + mNumBones * 2 + (r - 1) * GetFrameDeltaSize()));
+            s = reinterpret_cast<unsigned char *>(AlignSize2(reinterpret_cast<intptr_t>(s) + mNumBones * 2 + (r - 1) * GetFrameDeltaSize()));
         }
         if (mNumBones == 0) {
-            s = reinterpret_cast<unsigned char *>(AlignSize2((intptr_t)s));
+            s = reinterpret_cast<unsigned char *>(AlignSize2(reinterpret_cast<intptr_t>(s)));
         }
 
         return reinterpret_cast<unsigned short *>(s);

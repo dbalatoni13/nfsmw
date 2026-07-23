@@ -1,12 +1,12 @@
 #ifndef ECSTASY_EMITTER_SYSTEM_H
 #define ECSTASY_EMITTER_SYSTEM_H
 
-#include "Speed/Indep/bWare/Inc/bWare.hpp"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
 
 #include "Ecstasy.hpp"
+#include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "Speed/Indep/Libs/Support/Utility/UStandard.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/emitterdata.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/emittergroup.h"
@@ -284,6 +284,10 @@ class Emitter : public bTNode<Emitter> {
         this->mFlags |= AUTO_UPDATE;
     }
 
+    bool IsOneShot() const {
+        return (this->mFlags & ONE_SHOT) != 0;
+    }
+
     EmitterControlState GetControlState() {
         return this->mControl.GetState();
     };
@@ -448,7 +452,7 @@ struct EmitterLibrary {
     void EndianSwap();
 };
 
-// TODO right place?
+// TODO right place? the line numbers show this file, but Carbon shows another
 // total size: 0x30
 class WorldFXTrigger : public bTNode<WorldFXTrigger> {
   public:
@@ -531,6 +535,11 @@ class EmitterSystem {
     void Render(eView *view);
     EmitterDataAttribWrapper *GetEmitterData(const Attrib::Collection *spec);
     EmitterGroupAttribWrapper *GetEmitterGroup(const Attrib::Collection *spec);
+
+    int GetNumParticles() {
+        return this->mTotalNumParticles;
+    }
+
     bool IsCloseEnough(const bVector3 *group_pos, float farclip, int32 frustrum, float cos_angle_fov) const;
     bool IsCloseEnough(const bVector4 *group_pos, float farclip, int32 frustrum, float cos_angle_fov) const;
     bool IsCloseEnough(EmitterGroup *group, int32 frustrum, float cos_angle_fov) const;

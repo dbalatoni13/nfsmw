@@ -15,6 +15,14 @@
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "eMath.hpp"
 
+#ifdef EA_PLATFORM_GAMECUBE
+#include "Speed/GameCube/Src/xSparks.h"
+#elif defined(EA_PLATFORM_PLAYSTATION2)
+#include "Speed/PSX2/Src/xSparks.h"
+#else
+#include "Speed/Xenon/Src/xSparks.h"
+#endif
+
 #include <algorithm>
 
 SlotPool *ParticleSlotPool;
@@ -280,8 +288,7 @@ void CollapseFXSlotPools() {
     }
 }
 
-// TODO move
-bool IsInNIS;
+bool IsInNIS = false;
 
 void EmitterSystem_OnStartNIS() {
     if (!IsInNIS) {
@@ -665,7 +672,7 @@ void EmitterLibrary::EndianSwap() {
 }
 
 uint16 *EmitterLibraryHeader::GetLibraryNumTriggers(int32 i) {
-    EmitterLibrary *plib = reinterpret_cast<EmitterLibrary *>(this + 1);
+    EmitterLibrary *plib = reinterpret_cast<EmitterLibrary *>(&this[1]);
     EmitterLibrary *lib = plib;
     if (i == 0) {
         return &lib->mNumTriggers;
@@ -686,7 +693,7 @@ uint16 *EmitterLibraryHeader::GetLibraryNumTriggers(int32 i) {
 }
 
 WorldFXTrigger *EmitterLibraryHeader::GetLibraryTriggers(int32 i) {
-    EmitterLibrary *plib = reinterpret_cast<EmitterLibrary *>(this + 1);
+    EmitterLibrary *plib = reinterpret_cast<EmitterLibrary *>(&this[1]);
     EmitterLibrary *lib = plib;
     int32 ix = 0;
     while (ix <= i) {
@@ -706,7 +713,7 @@ WorldFXTrigger *EmitterLibraryHeader::GetLibraryTriggers(int32 i) {
 
 // UNSOLVED
 EmitterLibrary *EmitterLibraryHeader::GetLibrary(int32 i) {
-    EmitterLibrary *lib = reinterpret_cast<EmitterLibrary *>(this + 1);
+    EmitterLibrary *lib = reinterpret_cast<EmitterLibrary *>(&this[1]);
     if (i == 0) {
         return lib;
     }
@@ -1696,4 +1703,220 @@ bool Emitter::Update(float dt, float &rollover_time) {
         return false;
     }
     return this->mControl.Update(dt, this, rollover_time);
+}
+
+void Emitter::SpawnParticles(float dt, float intensity) {
+    bool ThisIsNISCondition = IsInNIS;
+
+    if (intensity <= 0.0f) {
+        return;
+    }
+    if (intensity > this->mMaxIntensity) {
+        return;
+    }
+    if (intensity < this->mMinIntensity) {
+        return;
+    }
+
+    uint32 random_seed = this->mRandomSeed;
+
+    float angle_range = this->mDynamicData->GetAttributes().InitialAngleRange() * 182.04445f;
+    float angle = -angle_range * 0.5f;
+    float num_particles = intensity * this->mDynamicData->GetAttributes().NumParticles();
+    float num_particles_variance = this->mDynamicData->GetAttributes().NumParticlesVariance();
+    float motion_inherit = this->mDynamicData->GetAttributes().MotionInherit();
+    float motion_inherit_variance = this->mDynamicData->GetAttributes().MotionInheritVariance();
+    float life = this->mDynamicData->GetAttributes().Life();
+    float life_variance = this->mDynamicData->GetAttributes().LifeVariance();
+    float speed = this->mDynamicData->GetAttributes().Speed();
+    float speed_variance = this->mDynamicData->GetAttributes().SpeedVariance();
+    int random_rotation_dir = this->mDynamicData->GetAttributes().RandomRotationDirection();
+    int spread_as_disc = this->mDynamicData->GetAttributes().SpreadAsDisc();
+    const float on_cycle = this->mDynamicData->GetAttributes().OnCycle();
+    const float on_cycle_variance = this->mDynamicData->GetAttributes().OnCycleVariance();
+    const float off_cycle = this->mDynamicData->GetAttributes().OffCycle();
+    const float off_cycle_variance = this->mDynamicData->GetAttributes().OffCycleVariance();
+    const float spread_angle = this->mDynamicData->GetAttributes().SpreadAngle();
+    const UMath::Vector4 vel_start = this->mDynamicData->GetAttributes().VelocityStart();
+    const UMath::Vector4 vel_delta = this->mDynamicData->GetAttributes().VelocityDelta();
+    const UMath::Vector4 acc_start = this->mDynamicData->GetAttributes().AccelStart();
+    const UMath::Vector4 acc_delta = this->mDynamicData->GetAttributes().AccelDelta();
+    const UMath::Vector4 vol_center = this->mDynamicData->GetAttributes().VolumeCenter();
+    const UMath::Vector4 vol_extent = this->mDynamicData->GetAttributes().VolumeExtent();
+    const bool motion_live = this->mDynamicData->GetAttributes().MotionLive();
+    const float rotation_variance = this->mDynamicData->GetAttributes().RotationVariance();
+    const ParticleAnimationInfo &animinfo = this->mDynamicData->GetAttributes().TextureAnimation();
+    const bMatrix4 *ExtraBasis = this->mDynamicData->GetExtraBasis();
+    const bMatrix4 *ColourBasis = this->mDynamicData->GetColourBasis();
+    bool animted_texture = animinfo.AnimType != ANIMATE_PARTICLE_NONE;
+    unsigned char anim_fps = animinfo.FPS;
+    float anim_fps_f = anim_fps;
+    bool random_start_frame = animinfo.RandomStartFrame;
+    bool eliminate_unnecessary_randomness = this->mDynamicData->GetAttributes().EliminateUnnecessaryRandomness();
+    uint32 uvS;
+    uint32 uvE;
+    bool effectively_one_shot = this->IsOneShot() || (this->GetFlags() & 0x400000);
+    bool has_on_cycle = (on_cycle > 0.0f) || (on_cycle < 0.0f) || (on_cycle_variance > 0.0f) || (on_cycle_variance < 0.0f);
+    bool has_off_cycle = (off_cycle > 0.0f) || (off_cycle < 0.0f) || (off_cycle_variance > 0.0f) || (off_cycle_variance < 0.0f);
+
+    num_particles_variance *= num_particles;
+    life_variance *= life;
+    motion_inherit_variance *= motion_inherit;
+    speed_variance *= speed;
+    float time_delta_to_use = dt;
+    float fnum_to_spawn = num_particles - num_particles_variance;
+    life -= life_variance;
+    motion_inherit -= motion_inherit_variance;
+    speed -= speed_variance;
+
+    if (has_off_cycle ? !has_on_cycle : !has_on_cycle) {
+    } else if (!effectively_one_shot && !has_off_cycle) {
+        has_on_cycle = false;
+    }
+    if (effectively_one_shot && !has_on_cycle) {
+        time_delta_to_use = life;
+    }
+
+    time_delta_to_use *= fnum_to_spawn;
+    fnum_to_spawn = time_delta_to_use;
+    int num_to_spawn_now = static_cast<int>(fnum_to_spawn);
+    if (num_to_spawn_now == 0) {
+        this->mParticleAccumulation += fnum_to_spawn;
+        fnum_to_spawn = this->mParticleAccumulation;
+        dt = 1.0f;
+        if (fnum_to_spawn > dt) {
+            num_to_spawn_now = 1;
+            this->mParticleAccumulation = fnum_to_spawn - dt;
+        }
+    }
+
+    for (int i = 0; i < num_to_spawn_now; i++) {
+        bVector3 pvel(0.0f, 0.0f, 0.0f);
+        bVector3 paccel(0.0f, 0.0f, 0.0f);
+        float pspeed = speed + bRandom(speed_variance, &random_seed);
+        float plife;
+        float fangle;
+        float inherit;
+        unsigned short pangle;
+        unsigned short angle16;
+        unsigned char sm_angle;
+
+        if ((speed > 0.0f) || (speed < 0.0f)) {
+            float vx;
+            float vy;
+            float vz;
+            if (spread_as_disc) {
+                this->GetDiscVelocity(vx, vy, vz, random_seed);
+            } else {
+                this->GetConeVelocity(vx, vy, vz, random_seed);
+            }
+            pvel.x = vx * pspeed;
+            pvel.y = vy * pspeed;
+            pvel.z = vz * pspeed;
+        } else if (eliminate_unnecessary_randomness) {
+            bVector3 rand_delta_v(bRandom(vel_delta.x, &random_seed), bRandom(vel_delta.y, &random_seed), bRandom(vel_delta.z, &random_seed));
+            bVector3 rand_delta_a(bRandom(acc_delta.x, &random_seed), bRandom(acc_delta.y, &random_seed), bRandom(acc_delta.z, &random_seed));
+
+            pvel.x = vel_start.x + rand_delta_v.x;
+            pvel.y = vel_start.y + rand_delta_v.y;
+            pvel.z = vel_start.z + rand_delta_v.z;
+            paccel.x = acc_start.x + rand_delta_a.x;
+            paccel.y = acc_start.y + rand_delta_a.y;
+            paccel.z = acc_start.z + rand_delta_a.z;
+        } else {
+            float rand = bRandom(vel_delta.z, &random_seed);
+            rand = vel_start.z - vel_delta.z + (rand + rand);
+            bScale(&pvel, reinterpret_cast<const bVector3 *>(&this->mLocalWorld.v2), rand);
+
+            rand = bRandom(vel_delta.y, &random_seed);
+            rand = vel_start.y - vel_delta.y + (rand + rand);
+            bVector3 temp;
+            bScale(&temp, reinterpret_cast<const bVector3 *>(&this->mLocalWorld.v1), rand);
+            bAdd(&pvel, &pvel, &temp);
+
+            rand = bRandom(vel_delta.x, &random_seed);
+            rand = vel_start.x - vel_delta.x + (rand + rand);
+            bScale(&temp, reinterpret_cast<const bVector3 *>(&this->mLocalWorld.v0), rand);
+            bAdd(&pvel, &pvel, &temp);
+
+            rand = bRandom(acc_delta.x, &random_seed);
+            paccel.x = acc_start.x - acc_delta.x + (rand + rand);
+            rand = bRandom(acc_delta.y, &random_seed);
+            paccel.y = acc_start.y - acc_delta.y + (rand + rand);
+            rand = bRandom(acc_delta.z, &random_seed);
+            paccel.z = acc_start.z - acc_delta.z + (rand + rand);
+        }
+
+        bVector4 ppos;
+        ppos.x = vol_center.x + (bRandom(vol_extent.x, &random_seed) - vol_extent.x * 0.5f);
+        ppos.y = vol_center.y + (bRandom(vol_extent.y, &random_seed) - vol_extent.y * 0.5f);
+        ppos.z = vol_center.z + (bRandom(vol_extent.z, &random_seed) - vol_extent.z * 0.5f);
+        ppos.w = 1.0f;
+        eMulVector(&ppos, &this->mLocalWorld, &ppos);
+
+        plife = life + bRandom(life_variance, &random_seed);
+        fangle = angle + bRandom(angle_range, &random_seed);
+        if (motion_inherit != 0.0f) {
+            bVector3 vel;
+            inherit = motion_inherit + bRandom(motion_inherit_variance, &random_seed);
+            inherit = bClamp(inherit, 0.0f, 1.0f);
+            if (!motion_live) {
+                bScaleAdd(&pvel, &pvel, &this->mInheritVelocity, inherit);
+            }
+        }
+
+        angle16 = static_cast<int>(fangle) & 0xfffe;
+        pangle = angle16;
+        sm_angle = static_cast<unsigned char>(static_cast<int>(static_cast<float>(angle16) * (1.0f / 256.0f)));
+        if (random_rotation_dir) {
+            pangle = angle16 | (random_seed & 1);
+        }
+        if (plife > 60.0f) {
+            plife = 60.0f;
+        }
+
+        if ((ThisIsNISCondition || gEmitterSystem.GetNumParticles() < 0x400)) {
+            EmitterParticle *particle = gEmitterSystem.GetNewParticle(this);
+            if (particle != nullptr) {
+                this->mNumParticles++;
+                particle->mPosX = ppos.x;
+                particle->mPosY = ppos.y;
+                particle->mPosZ = ppos.z;
+                CompressVector(&pvel, &particle->mVel);
+                CompressVector(&paccel, &particle->mAcc);
+                particle->mInitialAngle = sm_angle;
+                particle->mAngle = pangle;
+                particle->mLife = static_cast<unsigned short>(static_cast<int>(plife * 1024.0f));
+                particle->mRotOffset =
+                    static_cast<unsigned char>(static_cast<int>(bClamp(bRandom(rotation_variance, &random_seed), 0.0f, 1.0f) * 255.0f));
+                this->GetStandardUVs(&uvS, &uvE);
+                if (animted_texture) {
+                    float numframes = animinfo.AnimType * animinfo.AnimType;
+                    float max_frame_index = numframes - 1.0f;
+                    float anim_frame_index = 0.0f;
+                    if (random_start_frame) {
+                        anim_frame_index = bRandom(max_frame_index);
+                    }
+                    particle->mAnimFrame = static_cast<unsigned short>(static_cast<int>((anim_frame_index / max_frame_index) * 65535.0f));
+                    GetAnimatedUVs(animinfo.AnimType, static_cast<int>(anim_frame_index), &uvS, &uvE);
+                }
+                particle->mUVStart = uvS;
+                particle->mUVEnd = uvE;
+                this->GetInitialParticleColorAndSize(ExtraBasis, ColourBasis, particle);
+            }
+        }
+    }
+
+    {
+        int num_xenon_emitters = this->mDynamicData->GetAttributes().Num_XenonEffect();
+        for (int i = 0; i < num_xenon_emitters; i++) {
+            const Attrib::Collection *xEmSpec = this->mDynamicData->GetAttributes().XenonEffect(i).GetCollection();
+            if (xEmSpec != nullptr) {
+                AddXenonEffect(this->mGroup, xEmSpec, reinterpret_cast<const UMath::Matrix4 *>(&this->mLocalWorld),
+                               reinterpret_cast<const UMath::Vector4 *>(&this->mInheritVelocity));
+            }
+        }
+    }
+
+    this->mRandomSeed = random_seed;
 }

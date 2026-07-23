@@ -70,8 +70,13 @@ class EffectLookup {
     }
 
   private:
-    const EffectLinkageRecord *Find(unsigned int surfacekey, const Attrib::Attribute &list) {
-        // TODO
+    const EffectLinkageRecord *Find(unsigned int surfacekey, const Attrib::Attribute &list) const {
+        for (unsigned int i = 0; i < list.GetLength(); i++) {
+            const EffectLinkageRecord &record = list.Get<EffectLinkageRecord>(i);
+            if (record.mSurface.GetCollectionKey() == surfacekey) {
+                return &record;
+            }
+        }
         return nullptr;
     }
 
@@ -266,7 +271,7 @@ void Effects::OnCollision(const COLLISION_INFO &cinfo) {
     if (this->IsPaused()) {
         return;
     }
-    
+
     if (cinfo.type == Sim::Collision::Info::WORLD) {
         this->OnHitWorld(SimSurface(cinfo.objBsurface), cinfo.impulseA, cinfo.position, cinfo.closingVel, cinfo.normal);
 

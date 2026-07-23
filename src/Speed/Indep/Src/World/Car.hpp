@@ -37,6 +37,17 @@ enum ControlMode {
     COP_CONTROL = 5,
 };
 
+enum MovementMode {
+    NO_MOVEMENT = 0,
+    PHYSICS_MOVEMENT = 1,
+    TRAFFIC_MOVEMENT = 2,
+    MELLOW_MOVEMENT = 3,
+    ONLINE_MOVEMENT = 4,
+    BELT_MOVEMENT = 5,
+    NIS_MOVEMENT = 6,
+    NUM_MOVEMENT_MODES = 7,
+};
+
 enum DampeningMode {
     NORMAL_DAMPENING = 0,
     WILDCOLLISION_DAMPENING = 1,

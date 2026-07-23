@@ -1,6 +1,8 @@
 #ifndef VEHICLEFX_H
 #define VEHICLEFX_H
 
+#include "Speed/Indep/Src/Misc/attribuserinclude.h"
+
 namespace VehicleFX {
 
 enum ID {
@@ -28,6 +30,16 @@ enum ID {
     LIGHT_COPS = 28672,
 };
 
+const unsigned int MAX_FX = 32; // TODO why not 22?
+
+struct Maps {
+    ID id;
+    Attrib::StringKey name;
+    uint32 marker;
 };
+
+const Maps *GetMaps();
+
+}; // namespace VehicleFX
 
 #endif

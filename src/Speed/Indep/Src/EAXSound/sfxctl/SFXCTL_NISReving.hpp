@@ -1,13 +1,14 @@
-#ifndef EAXSOUND_SFXCTL_SFXCTL_NISREVING_H
-#define EAXSOUND_SFXCTL_SFXCTL_NISREVING_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+//
+#ifndef SFXCTL_NISREVVING_HPP
+#define SFXCTL_NISREVVING_HPP
 
 #include "Speed/Indep/Src/EAXSound/AudioMemBase.hpp"
 
+#define MAX_NUM_REV_DATA_POINTS 4096                                             // Decl: 8
+#define SIZE_REV_BUFFER (MAX_NUM_REV_DATA_POINTS * (int)sizeof(EngRevDataPoint)) // Decl: 9
+
 // total size: 0xC
+// Decl: 12
 struct EngRevDataPoint {
     float time; // offset 0x0, size 0x4
     int RPM;    // offset 0x4, size 0x4

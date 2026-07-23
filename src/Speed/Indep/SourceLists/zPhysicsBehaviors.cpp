@@ -1,3 +1,5 @@
+#include "Speed/Indep/Src/Physics/Behaviors/BehaviorSpecs.cpp"
+
 #include "Speed/Indep/Src/Physics/Behaviors/RigidBody.cpp"
 
 #include "Speed/Indep/Src/Physics/Behaviors/SimpleRigidBody.cpp"
@@ -38,6 +40,20 @@
 
 #include "Speed/Indep/Src/Physics/Behaviors/EngineSpline.cpp"
 
+#include "Speed/Indep/Src/Physics/Behaviors/SimpleChopper.cpp"
+
 #include "Speed/Indep/Src/Physics/Behaviors/EngineTraffic.cpp"
 
+#include "Speed/Indep/Src/Physics/Behaviors/DrawVehicle.cpp"
+
+#include "Speed/Indep/Src/Physics/Behaviors/DrawHeli.cpp"
+
+#include "Speed/Indep/Src/Physics/Behaviors/DrawCar.cpp"
+
+#include "Speed/Indep/Src/Physics/Behaviors/SoundCar.cpp"
+
+#include "Speed/Indep/Src/Physics/Behaviors/ResetCar.cpp"
+
 #include "Speed/Indep/Src/Physics/Behaviors/SoundHeli.cpp"
+
+#include "Speed/Indep/Src/Physics/Behaviors/SpikeStrip.cpp"

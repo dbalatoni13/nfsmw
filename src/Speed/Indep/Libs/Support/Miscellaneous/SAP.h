@@ -38,6 +38,8 @@ template <typename T> class Grid {
 
             ~Node() {
                 Unlink();
+                mTail = nullptr;
+                mHead = nullptr;
             }
 
             Axis &GetAxis() {

@@ -2,6 +2,7 @@
 #include "Speed/Indep/Src/Generated/Hash.hpp"
 #include "Speed/Indep/Src/Interfaces/Simables/IAudible.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IHelicopter.h"
+#include "Speed/Indep/Src/Physics/Behavior.h"
 #include "Speed/Indep/Src/Physics/VehicleBehaviors.h"
 #include "Speed/Indep/Src/Sim/SimServer.h"
 
@@ -39,9 +40,33 @@ class SoundHeli : public VehicleBehavior, public IAudible {
 
 BIND_BEHAVIOR_FACTORY(SoundHeli);
 
+Behavior *SoundHeli::Construct(const BehaviorParams &params) {
+    return new SoundHeli(params);
+}
+
 SoundHeli::SoundHeli(const BehaviorParams &params) : VehicleBehavior(params, 0), IAudible(params.fowner), mSoundService(nullptr) {
     this->GetOwner()->QueryInterface(&this->mVehicle);
 
     SoundConn::Pkt_Heli_Open pkt(this->GetOwner()->GetAttributes().GetConstCollection(), GetOwner()->GetWorldID());
     this->mSoundService = this->OpenService(UCRC32_EAXSOUND, &pkt);
+}
+
+SoundHeli::~SoundHeli() {
+    if (this->mSoundService != nullptr) {
+        this->CloseService(this->mSoundService);
+    }
+}
+
+void SoundHeli::OnService(SoundConn::Pkt_Car_Service &svc) {}
+
+void SoundHeli::OnBehaviorChange(const UCrc32 &mechanic) {
+    Behavior::OnBehaviorChange(mechanic);
+}
+
+bool SoundHeli::OnService(HSIMSERVICE hCon, Sim::Packet *pkt) {
+    if (hCon == this->mSoundService && !IsPaused()) {
+        this->OnService(*reinterpret_cast<SoundConn::Pkt_Car_Service *>(pkt));
+        return true;
+    }
+    return false;
 }

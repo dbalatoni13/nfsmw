@@ -566,6 +566,18 @@ def merge_carbon_param_type(base_type: str, carbon_type: str) -> str:
 def merge_ps2_param_type(base_type: str, ps2_type: str) -> str:
     if not ps2_type:
         return format_type_name(base_type)
+
+    # PS2 debug information is frequently less precise than the GC DWARF.  In
+    # particular, it drops const qualifiers and namespace qualification.  Use
+    # it as a spelling source only when doing so cannot discard either piece of
+    # information from the canonical GC declaration.
+    base_has_const = "const" in IDENT_RE.findall(base_type)
+    ps2_has_const = "const" in IDENT_RE.findall(ps2_type)
+    if base_has_const != ps2_has_const:
+        return format_type_name(base_type)
+    if type_uses_namespace(base_type) and not type_uses_namespace(ps2_type):
+        return format_type_name(base_type)
+
     if (
         has_pointee_const(base_type)
         and not has_pointee_const(ps2_type)
@@ -835,6 +847,20 @@ def top_function_signature_index(lines: Sequence[str]) -> Optional[int]:
             continue
         return index
     return None
+
+
+def is_top_level_inline_function_line(line: str) -> bool:
+    stripped = line.strip()
+    return (
+        bool(stripped)
+        and not line[0].isspace()
+        and "inline" in stripped
+        and "{" in stripped
+        and "(" in stripped
+        and ")" in stripped
+        and ";" not in stripped
+        and not stripped.startswith("typedef")
+    )
 
 
 def top_function_name_from_code(code: str) -> str:
@@ -1318,9 +1344,25 @@ def parse_functions(text: str) -> List[TopDecl]:
     functions: List[TopDecl] = []
     index = 0
     function_index = 0
+    pending_decl: Optional[str] = None
     while index < len(lines):
         stripped = lines[index].strip()
+        if stripped.startswith("// Decl:"):
+            pending_decl = lines[index].rstrip()
+            index += 1
+            continue
         if not stripped.startswith("// Range:"):
+            if is_top_level_inline_function_line(lines[index]):
+                block, next_index = collect_brace_block(lines, index)
+                if pending_decl is not None:
+                    block = [pending_decl] + block
+                functions.append(extract_top_function_decl(block, function_index))
+                function_index += 1
+                pending_decl = None
+                index = next_index
+                continue
+            if stripped:
+                pending_decl = None
             index += 1
             continue
 
@@ -1332,6 +1374,7 @@ def parse_functions(text: str) -> List[TopDecl]:
             signature_index += 1
 
         if signature_index >= len(lines) or "{" not in lines[signature_index]:
+            pending_decl = None
             index = skip_range_block(lines, index)
             continue
 
@@ -1339,8 +1382,33 @@ def parse_functions(text: str) -> List[TopDecl]:
         full_block = lines[index:signature_index] + block
         functions.append(extract_top_function_decl(full_block, function_index))
         function_index += 1
+        pending_decl = None
         index = next_index
     return functions
+
+
+def is_non_range_inline_top_function(decl: TopDecl) -> bool:
+    signature = top_function_signature_line(decl.lines)
+    return (
+        bool(signature)
+        and is_top_level_inline_function_line(signature)
+        and not any(line.strip().startswith("// Range:") for line in decl.lines)
+    )
+
+
+def dedupe_top_inline_functions(functions: List[TopDecl]) -> List[TopDecl]:
+    result: List[TopDecl] = []
+    seen = set()
+    for decl in functions:
+        if is_non_range_inline_top_function(decl):
+            key = decl.match_key or re.sub(
+                r"\s+", " ", code_part(top_function_signature_line(decl.lines))
+            ).strip()
+            if key in seen:
+                continue
+            seen.add(key)
+        result.append(decl)
+    return result
 
 
 def virtual_declaration_from_gc_item(
@@ -1982,6 +2050,17 @@ def pair_top_decls(base_decls: List[TopDecl], carbon_decls: List[TopDecl]) -> No
 
 
 def pair_top_functions(base_functions: List[TopDecl], carbon_functions: List[TopDecl]) -> None:
+    def unique_location_candidate(candidates: List[TopDecl]) -> List[TopDecl]:
+        located = [
+            candidate
+            for candidate in candidates
+            if candidate.decl_file is not None and candidate.decl_line is not None
+        ]
+        locations = {(candidate.decl_file, candidate.decl_line) for candidate in located}
+        if len(locations) == 1:
+            return [located[0]]
+        return candidates
+
     carbon_by_key: Dict[str, List[TopDecl]] = {}
     carbon_by_name: Dict[str, List[TopDecl]] = {}
     for decl in carbon_functions:
@@ -1993,11 +2072,13 @@ def pair_top_functions(base_functions: List[TopDecl], carbon_functions: List[Top
     previous_order_line = None
     for decl in base_functions:
         candidates = carbon_by_key.get(decl.match_key, []) if decl.match_key else []
+        candidates = unique_location_candidate(candidates)
         if len(candidates) != 1:
             name_candidates = carbon_by_name.get(decl.name, [])
             located_name_candidates = [
                 candidate for candidate in name_candidates if candidate.decl_file is not None
             ]
+            located_name_candidates = unique_location_candidate(located_name_candidates)
             if len(located_name_candidates) == 1:
                 candidates = located_name_candidates
             else:
@@ -2979,11 +3060,13 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
 def main(argv: Optional[Sequence[str]] = None) -> int:
     args = parse_args(argv)
     gc_result = parse_gc_like(read_text(args.gc), "gc")
-    gc_functions = parse_functions(read_text(args.gc_functions))
+    gc_functions = dedupe_top_inline_functions(parse_functions(read_text(args.gc_functions)))
     ps2_result = parse_ps2(read_text(args.ps2))
     ps2_function_index = parse_ps2_functions(read_text(args.ps2_functions))
     carbon_result = parse_gc_like(read_text(args.carbon), "carbon")
-    carbon_functions = parse_functions(read_text(args.carbon_functions))
+    carbon_functions = dedupe_top_inline_functions(
+        parse_functions(read_text(args.carbon_functions))
+    )
     prostreet_classes = load_prostreet_class_index(args.prostreet_classes)
     pair_types(gc_result.types, ps2_result.types, carbon_result.types)
     added_virtual_functions = add_missing_virtual_function_declarations(gc_result.types)

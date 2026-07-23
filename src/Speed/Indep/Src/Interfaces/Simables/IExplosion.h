@@ -1,5 +1,5 @@
-#ifndef INTERFACES_SIMABLES_IEXPLOSION_H
-#define INTERFACES_SIMABLES_IEXPLOSION_H
+#ifndef IEXPLOSION_H
+#define IEXPLOSION_H
 
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Libs/Support/Utility/UListable.h"
@@ -9,10 +9,10 @@ class IExplosion : public UTL::COM::IUnknown, public UTL::Collections::Listable<
   public:
     DECL_INTERFACE(IExplosion);
 
-    virtual const UMath::Vector3 &GetOrigin() const;
-    virtual float GetExpansionSpeed() const;
-    virtual float GetMaximumRadius() const;
-    virtual float GetRadius() const;
+    virtual const UMath::Vector3 &GetOrigin() const = 0;
+    virtual float GetExpansionSpeed() const = 0;
+    virtual float GetMaximumRadius() const = 0;
+    virtual float GetRadius() const = 0;
     // TODO rest, why isn't GetCausality in the dwarf?
 };
 

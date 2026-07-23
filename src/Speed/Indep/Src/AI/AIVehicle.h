@@ -8,6 +8,7 @@
 #include "AIAvoidable.h"
 #include "AIGoal.h"
 #include "AdaptivePIDController.h"
+#include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 #include "Speed/Indep/Libs/Support/Utility/UCrc.h"
 #include "Speed/Indep/Libs/Support/Utility/UTypes.h"
 #include "Speed/Indep/Src/AI/AIAvoidable.h"
@@ -30,10 +31,11 @@
 // total size: 0x754
 class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable, public Debugable {
   public:
+    USE_FASTALLOC(AIVehicle);
+
     static Behavior *Construct(const BehaviorParams &bp);
 
     float GetOverSteerCorrection(float steer);
-    void UpdateRoads();
 
     const UMath::Vector3 &GetAngularVelocity() const {
         return mCollisionBody->GetAngularVelocity();
@@ -57,16 +59,6 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
 
     const UMath::Vector3 &GetUpVector() const;
     const UMath::Vector3 &GetRightVector() const;
-
-    void *operator new(std::size_t size) {
-        return gFastMem.Alloc(size, nullptr);
-    }
-
-    void operator delete(void *mem, std::size_t size) {
-        if (mem) {
-            gFastMem.Free(mem, size, nullptr);
-        }
-    }
 
     // Behavior
     void OnTaskSimulate(float dT) override;
@@ -104,6 +96,9 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
     }
 
     void ResetDriveToNav(eLaneSelection lane_selection) override;
+#ifdef EA_BUILD_A124
+    void ResetDriveToNav(UMath::Vector3 &target) override;
+#endif
     bool ResetVehicleToRoadNav(short segInd, char laneInd, float timeStep) override;
     bool ResetVehicleToRoadNav(WRoadNav *other_nav) override;
     bool ResetVehicleToRoadPos(const UMath::Vector3 &position, const UMath::Vector3 &forwardVector) override;
@@ -310,6 +305,9 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
     bool WorldCollision(const UMath::Vector3 &pos, const UMath::Vector3 &dest);
     bool BarriersInPath(bool reverse);
 
+    // Overrides: IVehicleAI
+    bool GetWorldAvoidanceInfo(float dT, UMath::Vector3 &leftCollNormal, UMath::Vector3 &rightCollNormal) const override;
+
     virtual bool IsTetheredToTarget(UTL::COM::IUnknown *object) {
         return false;
     }
@@ -344,6 +342,8 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
     bool mSteeringBehind;              // offset 0xB0, size 0x1
 
   private:
+    void UpdateRoads();
+
     HSIMTASK mThinkTask;                         // offset 0xB4, size 0x4
     float mLastSpawnTime;                        // offset 0xB8, size 0x4
     bool mCanRespawn;                            // offset 0xBC, size 0x1

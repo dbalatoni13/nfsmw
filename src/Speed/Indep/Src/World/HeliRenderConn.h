@@ -8,7 +8,7 @@ class HeliRenderConn : public VehicleRenderConn {
   public:
     static Sim::Connection *Construct(const Sim::ConnectionData &data);
 
-    HeliRenderConn(const Sim::ConnectionData &data, CarType type, RenderConn::Pkt_Heli_Open *oc);
+    HeliRenderConn(const Sim::ConnectionData &data, CarType ct, RenderConn::Pkt_Heli_Open *oc);
     ~HeliRenderConn() override;
 
     void OnRender(eView *view, int reflection) override;

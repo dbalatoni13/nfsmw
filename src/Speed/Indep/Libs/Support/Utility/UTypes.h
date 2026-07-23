@@ -9,7 +9,7 @@ namespace UMath {
 
 extern float Infinity;
 
-    // total size: 0x8
+// total size: 0x8
 struct Vector2 {
     float x; // offset 0x0, size 0x4
     float y; // offset 0x4, size 0x4
@@ -159,6 +159,7 @@ inline Vector4 Vector4Make(const Vector3 &c, float w) {
     return res;
 }
 
+// TODO move?
 typedef Vector4 Quaternion;
 
 } // namespace UMath

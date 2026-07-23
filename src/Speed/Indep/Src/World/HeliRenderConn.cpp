@@ -17,10 +17,10 @@ Sim::Connection *HeliRenderConn::Construct(const Sim::ConnectionData &data) {
     return new HeliRenderConn(data, ct, oc);
 }
 
-HeliRenderConn::HeliRenderConn(const Sim::ConnectionData &data, CarType type, RenderConn::Pkt_Heli_Open *oc)
-    : VehicleRenderConn(data, type), mLastVisibleFrame(0), //
-      mDistanceToView(0.0f),                               //
-      mShadowScale(1.0f),                                  //
+HeliRenderConn::HeliRenderConn(const Sim::ConnectionData &data, CarType ct, RenderConn::Pkt_Heli_Open *oc)
+    : VehicleRenderConn(data, ct), mLastVisibleFrame(0), //
+      mDistanceToView(0.0f),                             //
+      mShadowScale(1.0f),                                //
       mLastRenderFrame(0) {
     for (int i = 0; i < NUM_ELEMENTS(this->mMatrices); i++) {
         eIdentity(&this->mMatrices[i]);

@@ -28,7 +28,7 @@ jobs:
     - name: Git config
       run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
-    - name: Install dependencies
+    - name: Install PS2 dependencies
       if: ${{ matrix.version == 'SLES-53558-A124' }}
       run: pip install --break-system-packages -r requirements.txt
 
@@ -50,12 +50,31 @@ jobs:
             --binutils "$BINUTILS" --compilers /compilers
         ninja all_source progress build/${{ matrix.version }}/report.json
 
+    # - name: Generate GC Dwarf report
+    #   if: ${{ github.event_name == 'push' && matrix.version == 'GOWE69' }}
+    #   run: |
+    #     pip install --break-system-packages pyelftools
+    #     build/tools/dtk dwarf dump \
+    #         orig/GOWE69/NFSMWRELEASE.ELF \
+    #         -o symbols/mw_dwarfdump.nothpp
+    #     python tools/split_dwarf_info.py \
+    #         symbols/mw_dwarfdump.nothpp \
+    #         symbols/Dwarf
+    #     python tools/generate-dwarf-report.py
+
     # Upload map files
     - name: Upload map
       uses: actions/upload-artifact@v4
       with:
         name: ${{ matrix.version }}_maps
         path: build/${{ matrix.version }}/**/*.MAP
+
+    # - name: Upload GC Dwarf report
+    #   if: ${{ github.event_name == 'push' && matrix.version == 'GOWE69' }}
+    #   uses: actions/upload-artifact@v4
+    #   with:
+    #     name: GC_Dwarf_report
+    #     path: build/GC_Dwarf/report.json
 
     # Upload progress report
     - name: Upload report

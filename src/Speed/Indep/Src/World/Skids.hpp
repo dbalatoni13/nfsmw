@@ -68,7 +68,7 @@ class SkidSet : public bTNode<SkidSet> {
   public:
     friend class SkidMaker;
 
-    USE_SLOTALLOC(SkidSetSlotPool);
+    USE_SLOTALLOC(SkidSetSlotPool); // TODO bMalloc instead of bOMalloc?!
 
     SkidSet(SkidMaker *skid_maker, bVector3 *position, bVector3 *delta_position, int terrain_type, float intensity);
     ~SkidSet();

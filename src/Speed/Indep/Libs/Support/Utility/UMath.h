@@ -1,16 +1,19 @@
-#ifndef SUPPORT_UTILITY_UMATH_H
-#define SUPPORT_UTILITY_UMATH_H
+#ifndef __UMath__
+#define __UMath__
 
 #include <cmath>
-
-#ifdef EA_PLATFORM_XENON
-#include <ppcintrinsics.h>
-#endif
 
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 // #include "UEALibs.hpp"
 #include "UTypes.h"
-#include "UVectorMath.h"
+
+#ifdef EA_PLATFORM_PLAYSTATION2
+#include "UVectorMath.hpp"
+#elif defined(EA_PLATFORM_GAMECUBE) && !GAMECUBE_USE_CPU
+#include "UVectorMathGC.hpp"
+#else
+#include "UVectorMathCPU.hpp"
+#endif
 
 // TODO UEALibs not working???
 extern "C" void MATRIX4_multxrot(const UMath::Matrix4 *m4, float xbangle, UMath::Matrix4 *resultm);
@@ -19,11 +22,11 @@ extern "C" void MATRIX4_multzrot(const UMath::Matrix4 *m4, float zbangle, UMath:
 
 namespace UMath {
 // TODO apply these
-const float PI = 3.141592653589793f; // size: 0x4, Decl: UMath.h:15
-const float OOPI = 1.0f / PI;        // size: 0x4, Decl: UMath.h:16
-const float TWOPI = 2 * PI;          // size: 0x4, Decl: UMath.h:18
-const float OOTWOPI = 1.0f / TWOPI;  // size: 0x4, Decl: UMath.h:19
-const float Epsilon = 0.000001f;     // size: 0x4, Decl: UMath.h:22
+const float PI = MATH_PI;           // size: 0x4, Decl: UMath.h:15
+const float OOPI = 1.0f / PI;       // size: 0x4, Decl: UMath.h:16
+const float TWOPI = 2 * PI;         // size: 0x4, Decl: UMath.h:18
+const float OOTWOPI = 1.0f / TWOPI; // size: 0x4, Decl: UMath.h:19
+const float Epsilon = 0.000001f;    // size: 0x4, Decl: UMath.h:22
 }; // namespace UMath
 
 // TODO are these in the namespace?
@@ -32,6 +35,8 @@ typedef float Radians; // Decl: UMath.h:37
 typedef float Degrees; // Decl: UMath.h:40
 
 typedef float Angle; // Decl: UMath.h:43
+
+// TODO correct order for the functions
 
 namespace UMath {
 
@@ -72,11 +77,7 @@ inline float Distancexz(const Vector3 &a, const Vector3 &b) {
 }
 
 inline float DistanceSquare(const Vector3 &a, const Vector3 &b) {
-#ifdef EA_PLATFORM_XENON
-    return (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y) + (a.z - b.z) * (a.z - b.z);
-#else
     return VU0_v3distancesquare(a, b);
-#endif
 }
 
 inline float DistanceSquarexz(const Vector3 &a, const Vector3 &b) {
@@ -170,6 +171,10 @@ inline void Unit(const Vector3 &a, Vector3 &r) {
     VU0_v3unit(a, r);
 }
 
+inline void Unit(Vector3 &a) {
+    VU0_v3unit(a, a);
+}
+
 inline void Unit(const Vector4 &a, Vector4 &r) {
     VU0_v4unit(a, r);
 }
@@ -191,22 +196,16 @@ inline void MultZRot(const UMath::Matrix4 &m, float a, UMath::Matrix4 &r) {
     MATRIX4_multzrot(&m, a, &r);
 }
 
-#ifdef EA_PLATFORM_XENON
-void QuaternionToMatrix4(const Vector4 &q, Matrix4 &m);
-#else
+#ifdef EA_PLATFORM_GAMECUBE
 inline void QuaternionToMatrix4(const Vector4 &q, Matrix4 &m) {
     VU0_quattom4(q, m);
 }
+#else
+void QuaternionToMatrix4(const Vector4 &q, Matrix4 &m);
 #endif
 
 inline void Add(const Vector3 &a, const Vector3 &b, Vector3 &r) {
-#ifdef EA_PLATFORM_XENON
-    r.x = a.x + b.x;
-    r.y = a.y + b.y;
-    r.z = a.z + b.z;
-#else
     VU0_v3add(a, b, r);
-#endif
 }
 
 inline void Add(const Vector4 &a, const Vector4 &b, Vector4 &r) {
@@ -214,33 +213,15 @@ inline void Add(const Vector4 &a, const Vector4 &b, Vector4 &r) {
 }
 
 inline void Scale(const Vector3 &a, const Vector3 &b, Vector3 &r) {
-#ifdef EA_PLATFORM_XENON
-    r.x = a.x * b.x;
-    r.y = a.y * b.y;
-    r.z = a.z * b.z;
-#else
     VU0_v3scale(a, b, r);
-#endif
 }
 
 inline void Scale(const Vector3 &a, const float s, Vector3 &r) {
-#ifdef EA_PLATFORM_XENON
-    r.x = a.x * s;
-    r.y = a.y * s;
-    r.z = a.z * s;
-#else
     VU0_v3scale(a, s, r);
-#endif
 }
 
 inline void Scale(Vector3 &r, const float s) {
-#ifdef EA_PLATFORM_XENON
-    r.x *= s;
-    r.y *= s;
-    r.z *= s;
-#else
     VU0_v3scale(r, s, r);
-#endif
 }
 
 inline void Scale(const Vector4 &a, const float s, Vector4 &r) {
@@ -258,13 +239,7 @@ inline void Scale(UMath::Matrix4 &r, const UMath::Vector3 &s) {
 }
 
 inline void ScaleAdd(const Vector3 &a, const float s, const Vector3 &b, Vector3 &r) {
-#ifdef EA_PLATFORM_XENON
-    r.x = a.x + b.x * s;
-    r.y = a.y + b.y * s;
-    r.z = a.z + b.z * s;
-#else
     VU0_v3scaleadd(a, s, b, r);
-#endif
 }
 
 inline void ScaleAdd(const Vector4 &a, const float s, const Vector4 &b, Vector4 &r) {
@@ -281,20 +256,11 @@ inline void ScaleAddxyz(const Vector4 &a, const float s, const Vector4 &b, Vecto
 }
 
 inline void AddScale(const Vector3 &a, const Vector3 &b, const float s, Vector3 &r) {
-#ifdef EA_PLATFORM_XENON
-#else
     VU0_v3addscale(a, b, s, r);
-#endif
 }
 
 inline void Sub(const Vector3 &a, const Vector3 &b, Vector3 &r) {
-#ifdef EA_PLATFORM_XENON
-    r.x = a.x - b.x;
-    r.y = a.y - b.y;
-    r.z = a.z - b.z;
-#else
     VU0_v3sub(a, b, r);
-#endif
 }
 
 inline void Subxyz(const Vector4 &a, const Vector4 &b, Vector4 &r) {
@@ -347,15 +313,7 @@ inline void RotateInXZ(const float a, const Vector3 &src, Vector3 &out) {
 }
 
 inline void Rotate(const Vector3 &a, const Matrix4 &m, Vector3 &r) {
-#ifdef EA_PLATFORM_XENON
-    Vector3 temp = a;
-
-    r.x = m.v0.x * temp.x + m.v1.x * temp.y + m.v2.x * temp.z;
-    r.y = m.v0.y * temp.x + m.v1.y * temp.y + m.v2.y * temp.z;
-    r.z = m.v0.z * temp.x + m.v1.z * temp.y + m.v2.z * temp.z;
-#else
     VU0_MATRIX3x4_vect3mult(a, m, r);
-#endif
 }
 
 inline void Rotate(const Vector4 &a, const Matrix4 &m, Vector4 &r) {
@@ -363,11 +321,7 @@ inline void Rotate(const Vector4 &a, const Matrix4 &m, Vector4 &r) {
 }
 
 inline float Dot(const Vector3 &a, const Vector3 &b) {
-#ifdef EA_PLATFORM_XENON
-    return a.x * b.x + a.y * b.y + a.z * b.z;
-#else
     return VU0_v3dotprod(a, b);
-#endif
 }
 
 inline float Dot(const Vector2 &a, Vector2 &b) {
@@ -385,13 +339,7 @@ inline void Scale(const Vector2 &a, const float s, Vector2 &r) {
 }
 
 inline void Dot(const Vector3 &a, const Matrix4 &b, Vector3 &r) {
-#ifdef EA_PLATFORM_XENON
-    r.x = Dot(a, UMath::Vector4To3(b.v0));
-    r.y = Dot(a, UMath::Vector4To3(b.v1));
-    r.z = Dot(a, UMath::Vector4To3(b.v2));
-#else
     VU0_MATRIX3x4dotprod(a, b, r);
-#endif
 }
 
 inline float Dotxyz(const Vector4 &a, const Vector4 &b) {
@@ -399,21 +347,11 @@ inline float Dotxyz(const Vector4 &a, const Vector4 &b) {
 }
 
 inline void Cross(const Vector3 &a, const Vector3 &b, Vector3 &r) {
-#ifdef EA_PLATFORM_XENON
-    r.x = a.y * b.z - a.z * b.y;
-    r.y = a.z * b.x - a.x * b.z;
-    r.z = a.x * b.y - a.y * b.x;
-#else
     VU0_v3crossprod(a, b, r);
-#endif
 }
 
 inline void Crossxyz(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &r) {
-#ifdef EA_PLATFORM_XENON
-        // TODO
-#else
     VU0_v4crossprodxyz(a, b, r);
-#endif
 }
 
 #ifdef EA_PLATFORM_XENON
@@ -454,11 +392,7 @@ inline float Lengthxyz(const Vector4 &a) {
 }
 
 inline float LengthSquare(const Vector3 &a) {
-#ifdef EA_PLATFORM_XENON
-    return a.x * a.x + a.y * a.y + a.z * a.z;
-#else
     return VU0_v3lengthsquare(a);
-#endif
 }
 
 inline float LengthSquare(const Vector4 &a) {
@@ -486,17 +420,13 @@ inline float Atan2r(const float o, const float a) {
 }
 
 inline float Sqrt(const float f) {
-#ifdef EA_PLATFORM_XENON
-    return __fsqrts(f);
-#else
     return VU0_sqrt(f);
-#endif
 }
 
 inline float Normalize(Vector2 &r) {
     float h = r.x * r.x + r.y * r.y;
     float ret = Sqrt(h);
-    float l = ret < 1e-6f ? 1e-6f : ret;
+    float l = ret < Epsilon ? Epsilon : ret;
     float c = 1.0f / l;
     r.x *= c;
     r.y *= c;
@@ -504,11 +434,7 @@ inline float Normalize(Vector2 &r) {
 }
 
 inline float Length(const Vector3 &a) {
-#ifdef EA_PLATFORM_XENON
-    return Sqrt(LengthSquare(a));
-#else
     return VU0_v3length(a);
-#endif
 }
 
 inline void Matrix4ToQuaternion(const Matrix4 &m, Vector4 &q) {

@@ -45,7 +45,7 @@ class Behavior : public Sim::Object, public UTL::COM::Factory<const BehaviorPara
         mProfile = Sim::Profile::Create();
     }
 
-    virtual void Reset();
+    virtual void Reset() = 0;
 
     virtual const int GetPriority() const {
         return mPriority;
@@ -87,8 +87,6 @@ template <typename T> class BehaviorSpecsPtr : public AttributeStructPtr<T> {
     BehaviorSpecsPtr(ISimable *owner, int index) : AttributeStructPtr<T>(0) {
         // TODO
     }
-
-    ~BehaviorSpecsPtr();
 
     Attrib::Key LookupKey(const ISimable *owner, int index) {
         const Attrib::Instance &owneratr = owner->GetAttributes();

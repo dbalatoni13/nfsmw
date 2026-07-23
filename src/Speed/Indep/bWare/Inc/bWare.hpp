@@ -13,7 +13,13 @@
 #include "bTypes.hpp"
 
 // #define PLAT_NEXT_GEN
+
+#if defined(EA_PLATFORM_GAMECUBE) || defined(EA_PLATFORM_XENON)
 #define NATIVE_ENDIAN_BIG
+#else
+#define NATIVE_ENDIAN_LITTLE
+#endif
+
 #define MEMORY_DUMP
 //   #undef  NO_DEBUG_BMEMORY
 //   #define   NULL 0

@@ -1,8 +1,13 @@
+//
+//
+#ifndef EVENTSYS_DATA_H
+#define EVENTSYS_DATA_H
+
 struct QueryDesc {
-    unsigned int mQueryName; // offset 0x0, size 0x4
-    unsigned int mInputName; // offset 0x4, size 0x4
-    unsigned int mIndex; // offset 0x8, size 0x4
-    unsigned int mCount; // offset 0xC, size 0x4
+    unsigned int mQueryName;  // offset 0x0, size 0x4
+    unsigned int mInputName;  // offset 0x4, size 0x4
+    unsigned int mIndex;      // offset 0x8, size 0x4
+    unsigned int mCount;      // offset 0xC, size 0x4
     unsigned int mDataOffset; // offset 0x10, size 0x4
 
     // QueryDesc() {}
@@ -29,3 +34,5 @@ struct QueryDesc {
         return this->mInputName != rhs;
     }
 };
+
+#endif

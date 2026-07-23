@@ -1,5 +1,5 @@
-#ifndef INTERFACES_SIMABLES_ICOLLISIONBODY_H
-#define INTERFACES_SIMABLES_ICOLLISIONBODY_H
+#ifndef ICOLLISIONBODY_H
+#define ICOLLISIONBODY_H
 
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Libs/Support/Utility/UCrc.h"

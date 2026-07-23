@@ -1,5 +1,5 @@
-#ifndef PHYSICS_SMACKABLETRIGGER_H
-#define PHYSICS_SMACKABLETRIGGER_H
+#ifndef SMACKABLE_TRIGGER_H
+#define SMACKABLE_TRIGGER_H
 
 #include "Speed/Indep/Src/Generated/Events/ESpawnSmackable.hpp"
 
@@ -7,7 +7,7 @@ class SmackableTrigger {
   public:
     USE_FASTALLOC(SmackableTrigger);
 
-    SmackableTrigger(HMODEL *hmodel, bool virgin, const UMath::Matrix4 &objectmatrix, const UMath::Vector3 &dim, unsigned int extra_flags);
+    SmackableTrigger(HMODEL hmodel, bool virgin, const UMath::Matrix4 &objectmatrix, const UMath::Vector3 &dim, unsigned int extra_flags);
 
     void Fire();
 

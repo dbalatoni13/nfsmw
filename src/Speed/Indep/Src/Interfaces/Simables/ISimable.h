@@ -1,9 +1,5 @@
-#ifndef INTERFACES_SIMABLES_ISIMABLE_H
-#define INTERFACES_SIMABLES_ISIMABLE_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef ISIMABLE_H
+#define ISIMABLE_H
 
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Libs/Support/Utility/UCollections.h"
@@ -29,7 +25,7 @@ class ISimable : public UTL::COM::IUnknown,
     virtual void Kill() = 0;
     virtual bool Attach(UTL::COM::IUnknown *object) = 0;
     virtual bool Detach(UTL::COM::IUnknown *object) = 0;
-    virtual const UTL::Std::list<IAttachable *, _type_IAttachableList> *GetAttachments() const = 0;
+    virtual const IAttachable::List *GetAttachments() const = 0;
     virtual void AttachEntity(Sim::IEntity *e) = 0;
     virtual void DetachEntity() = 0;
     virtual struct IPlayer *GetPlayer() const = 0;
@@ -61,5 +57,7 @@ class ISimable : public UTL::COM::IUnknown,
     virtual HCAUSE GetCausality() const = 0;
     virtual float GetCausalityTime() const = 0;
 };
+
+#define BIND_PHYSICS_FACTORY(_TYPE_) ISimable::Prototype _##_TYPE_(UCrc32(#_TYPE_), _TYPE_::Construct);
 
 #endif

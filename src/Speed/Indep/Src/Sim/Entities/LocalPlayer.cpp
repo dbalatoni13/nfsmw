@@ -307,7 +307,7 @@ void LocalPlayer::DoFFB() {
 
         float slip = UMath::Abs(isuspension->GetWheelSlip(i));
         float skid = UMath::Abs(isuspension->GetWheelSkid(i));
-        bool front = IsFront(i);
+        bool front = Physics::Wheels::IsFront(i);
         mFFB->UpdateTireSlip(front, surface, slip);
         mFFB->UpdateTireSkid(front, surface, skid);
         mFFB->UpdateRoadNoise(front, surface, ivehicle->GetAbsoluteSpeed());

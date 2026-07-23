@@ -19,7 +19,8 @@ IMPLEMENT_SCRATCHPTR(SimpleRigidBody::Volatile);
 typedef bTList<SimpleRigidBody> SimpleBodyList;
 SimpleBodyList TheSimpleBodies;
 
-SimCollisionMap SimpleRigidBody::mCollisionMap[Sim::MaxSimpleBodies];
+unsigned int SimpleRigidBody::mCount = 0;
+SimCollisionMap SimpleRigidBody::mCollisionMap[Sim::MaxSimpleBodies] = {SimCollisionMap()};
 
 SimpleRigidBody::SimpleRigidBody(const BehaviorParams &bp, const RBSimpleParams &params)
     : Behavior(bp, 0),       //

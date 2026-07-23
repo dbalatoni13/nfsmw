@@ -27,14 +27,19 @@ class Pkt_Car_Open : public Sim::Packet {
 
     DECLARE_SOUNDPACKET(Pkt_Car_Open, CarSoundConn);
 
-    Pkt_Car_Open(const Attrib::Collection *spec, unsigned int worldid, Sound::Context ctx, bool spool_load, HSIMABLE handle) {}
+    Pkt_Car_Open(const Attrib::Collection *spec, WUID worldid, Sound::Context ctx, bool spool_load, HSIMABLE handle)
+        : m_VehicleSpec(spec),    //
+          mWorldID(worldid),      //
+          mCarContext(ctx),       //
+          mSpoolLoad(spool_load), //
+          mHandle(handle) {}
 
   private:
-    Attrib::Collection *m_VehicleSpec; // offset 0x4, size 0x4
-    WUID mWorldID;                     // offset 0x8, size 0x4
-    Sound::Context mCarContext;        // offset 0xC, size 0x4
-    bool mSpoolLoad;                   // offset 0x10, size 0x1
-    HSIMABLE mHandle;                  // offset 0x14, size 0x4
+    const Attrib::Collection *m_VehicleSpec; // offset 0x4, size 0x4
+    WUID mWorldID;                           // offset 0x8, size 0x4
+    Sound::Context mCarContext;              // offset 0xC, size 0x4
+    bool mSpoolLoad;                         // offset 0x10, size 0x1
+    HSIMABLE mHandle;                        // offset 0x14, size 0x4
 };
 
 // total size: 0x108

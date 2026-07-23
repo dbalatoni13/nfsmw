@@ -1,10 +1,16 @@
-#ifndef EAXSOUND_SFXCTL_SFXCTL_3DCARPOS_H
-#define EAXSOUND_SFXCTL_SFXCTL_3DCARPOS_H
+#ifndef SFXCTL_3DCARPOS_HPP
+#define SFXCTL_3DCARPOS_HPP
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#include "SFXCTL_3DObjPos.hpp"
 
+// total size: 0x64
+// Decl: 8
+class SFXCTL_3DCarPos : public SFXCTL_3DObjPos {
+  public:
+    DECLARE_CREATABLE();
 
+    SFXCTL_3DCarPos();
+    ~SFXCTL_3DCarPos() override;
+};
 
 #endif

@@ -61,6 +61,10 @@ template <typename T> ScratchPtr<T>::ScratchPtr() {
     new (*mRef) T();
 }
 
+template <typename T> ScratchPtr<T>::~ScratchPtr() {
+    *mRef = nullptr;
+}
+
 template <typename T> void ScratchPtr<T>::Push(void *workspace) {}
 
 template <typename T> void ScratchPtr<T>::Pop() {}

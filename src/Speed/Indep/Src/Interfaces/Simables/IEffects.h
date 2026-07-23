@@ -1,10 +1,4 @@
-#ifndef INTERFACES_SIMABLES_IEFFECTS_H
-#define INTERFACES_SIMABLES_IEFFECTS_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
-
+#ifndef IEFFECTS_H
+#define IEFFECTS_H
 
 #endif

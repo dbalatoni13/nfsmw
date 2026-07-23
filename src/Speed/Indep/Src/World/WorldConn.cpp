@@ -1,4 +1,5 @@
 #include "Speed/Indep/Src/World/WorldConn.h"
+#include "Speed/Indep/Src/EAXSound/SoundCollision.hpp"
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/Src/Ecstasy/EmitterSystem.h"
 #include "Speed/Indep/Src/Sim/SimServer.h"

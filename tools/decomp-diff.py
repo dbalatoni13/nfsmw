@@ -15,6 +15,7 @@ Usage:
 """
 
 import argparse
+import json
 import os
 import sys
 from typing import Any, Dict, List, Optional, Tuple
@@ -108,6 +109,21 @@ def build_overview(data: Dict[str, Any], args) -> None:
 
     if args.limit is not None:
         rows = rows[: args.limit]
+
+    if args.json:
+        json_keys = (
+            "status",
+            "match_percent",
+            "size",
+            "unmatched_bytes_est",
+            "section",
+            "type",
+            "name",
+            "symbol_name",
+            "side",
+        )
+        print(json.dumps([{key: row.get(key) for key in json_keys} for row in rows]))
+        return
 
     if not rows:
         print("No symbols match the given filters.")
@@ -451,6 +467,11 @@ def main():
             "(default: none; use all to surface relocation diffs)"
         ),
     )
+    parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit overview rows as JSON (not available with --diff)",
+    )
 
     args = parser.parse_args()
 
@@ -462,6 +483,8 @@ def main():
         fail(str(e))
 
     if args.diff:
+        if args.json:
+            parser.error("--json cannot be used with --diff")
         build_diff(data, args.diff, args)
     else:
         build_overview(data, args)

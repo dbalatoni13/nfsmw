@@ -1,10 +1,11 @@
-#ifndef EAXSOUND_OLDSOUNDTEMPLATES_H
-#define EAXSOUND_OLDSOUNDTEMPLATES_H
+//
+//
+//
+#ifndef OLDSOUNDTEMPLATES_HPP
+#define OLDSOUNDTEMPLATES_HPP
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+template <typename T> T smooth(const T curr, const T target, const T deltaUp, const T deltaDown) {}
 
-
+template <typename T> T smooth(const T curr, const T target, const T delta) {}
 
 #endif
