@@ -11,11 +11,6 @@ Sections:
 	.sbss       type:bss align:8
 	.sdata2     type:rodata align:8
 
-prodg_fixes.cpp:
-	.ctors      start:0x803C8B60 end:0x803C8B64 skip
-	.dtors      start:0x803C8C40 end:0x803C8C44 skip
-	.sdata2     start:0x80500C98 end:0x80500CA0 skip
-
 Speed/Indep/SourceLists/zAI.cpp:
 	.text       start:0x800034A0 end:0x80045E3C
 	.ctors      start:0x803C8B64 end:0x803C8B68
@@ -304,6 +299,12 @@ Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSFont.c:
 	.data       start:0x8043AE80 end:0x8043B990
 	.sdata      start:0x804FF3E0 end:0x804FF3E8
 	.sbss       start:0x804FF938 end:0x804FF948
+	.sdata2     start:0x80500828 end:0x80500830
+
+prodg_fixes.cpp:
+	.ctors      start:0x803C8B60 end:0x803C8B64 skip
+	.dtors      start:0x803C8C40 end:0x803C8C44 skip
+	.sdata2     start:0x80500C98 end:0x80500CA0 skip
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSInterrupt.c:
 	.text       start:0x80325B30 end:0x8032639C
@@ -316,6 +317,7 @@ Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSLink.c:
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSMemory.c:
 	.text       start:0x803263B4 end:0x8032668C
+	.data       start:0x8043BA10 end:0x8043BA20
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSMutex.c:
 	.text       start:0x8032668C end:0x803268D8
