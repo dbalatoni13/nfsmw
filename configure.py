@@ -178,7 +178,13 @@ if config.platform == Platform.GC_WII:
 
     ldscript_path = Path("config") / config.version / "ldscript.ld"
     keep_list_path = Path("config") / config.version / "keep.lst"
-    config.ldflags = ["-strip-unused", "-keep", str(keep_list_path), "-report-unused", "-T", str(ldscript_path)]
+    config.ldflags = [
+        "-strip-unused",
+        "-keep",
+        str(keep_list_path),
+        "-T",
+        str(ldscript_path),
+    ]
 
     # Optional numeric ID for decomp.me preset
     # Can be overridden in libraries or objects
@@ -1002,7 +1008,7 @@ if config.platform == Platform.GC_WII:
                 "base",
                 [
                     Object(
-                        NonMatching,
+                        Matching,
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/base/PPCArch.c",
                     ),
                 ],
@@ -1145,19 +1151,19 @@ if config.platform == Platform.GC_WII:
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSFatal.c",
                     ),
                     Object(
-                        NonMatching,
+                        Matching,
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OS.c",
                     ),
                     Object(
-                        NonMatching,
+                        Matching,
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSAlarm.c",
                     ),
                     Object(
-                        NonMatching,
+                        Matching,
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSAlloc.c",
                     ),
                     Object(
-                        NonMatching,
+                        Matching,
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSArena.c",
                     ),
                     Object(
@@ -1165,19 +1171,19 @@ if config.platform == Platform.GC_WII:
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSAudioSystem.c",
                     ),
                     Object(
-                        NonMatching,
+                        Matching,
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSCache.c",
                     ),
                     Object(
-                        NonMatching,
+                        Matching,
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSContext.c",
                     ),
                     Object(
-                        NonMatching,
+                        Matching,
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSError.c",
                     ),
                     Object(
-                        NonMatching,
+                        Matching,
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSExec.c",
                     ),
                     Object(
@@ -1185,11 +1191,11 @@ if config.platform == Platform.GC_WII:
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSFont.c",
                     ),
                     Object(
-                        NonMatching,
+                        Matching,
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSInterrupt.c",
                     ),
                     Object(
-                        NonMatching,
+                        Matching,
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSLink.c",
                     ),
                     Object(
@@ -1197,19 +1203,19 @@ if config.platform == Platform.GC_WII:
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSMemory.c",
                     ),
                     Object(
-                        NonMatching,
+                        Matching,
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSMutex.c",
                     ),
                     Object(
-                        NonMatching,
+                        Matching,
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSReset.c",
                     ),
                     Object(
-                        NonMatching,
+                        Matching,
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSResetSW.c",
                     ),
                     Object(
-                        NonMatching,
+                        Matching,
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSRtc.c",
                     ),
                     Object(
@@ -1217,19 +1223,19 @@ if config.platform == Platform.GC_WII:
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSSync.c",
                     ),
                     Object(
-                        NonMatching,
+                        Matching,
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSThread.c",
                     ),
                     Object(
-                        NonMatching,
+                        Matching,
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSTime.c",
                     ),
                     Object(
-                        NonMatching,
+                        Matching,
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSReboot.c",
                     ),
                     Object(
-                        NonMatching,
+                        Matching,
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/__ppc_eabi_init.c",
                     ),
                 ],
