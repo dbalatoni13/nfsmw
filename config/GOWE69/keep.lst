@@ -34,6 +34,6 @@ fn_80311A28
 fn_80311A50
 gap_01_80311AC8_text
 fn_80311AD8
-fn_80311CAC
-fn_80311CB0
-fn_80311CB4
+__div2u
+__mod2u
+__va_arg

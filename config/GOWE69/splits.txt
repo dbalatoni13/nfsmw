@@ -266,6 +266,9 @@ Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSAlarm.c:
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSAlloc.c:
 	.text       start:0x80322AB4 end:0x80322C9C
+	.data       start:0x8043A330 end:0x8043A6C8
+	.sdata      start:0x804FF3C0 end:0x804FF3C8
+	.sbss       start:0x804FF918 end:0x804FF928
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSArena.c:
 	.text       start:0x80322C9C end:0x80322CE8
@@ -292,6 +295,9 @@ Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSError.c:
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSExec.c:
 	.text       start:0x803242FC end:0x80324C5C
+	.data       start:0x8043AE70 end:0x8043AE80
+	.sdata      start:0x804FF3D8 end:0x804FF3E0
+	.sbss       start:0x804FF930 end:0x804FF938
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSFont.c:
 	.text       start:0x80324C5C end:0x80325B30
@@ -306,6 +312,7 @@ Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSInterrupt.c:
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSLink.c:
 	.text       start:0x8032639C end:0x803263B4
+	.data       start:0x8043B9C0 end:0x8043BA10
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSMemory.c:
 	.text       start:0x803263B4 end:0x8032668C
@@ -314,13 +321,17 @@ Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSMutex.c:
 	.text       start:0x8032668C end:0x803268D8
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSReboot.c:
-	.text       start:0x803268D8 end:0x80326948
+	.text       start:0x803268D8 end:0x8032695C
+	.sbss       start:0x804FF960 end:0x804FF968
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSReset.c:
-	.text       start:0x80326948 end:0x80326DE0
+	.text       start:0x8032695C end:0x80326DE0
+	.data       start:0x8043BA20 end:0x8043BA70
+	.sbss       start:0x804FF968 end:0x804FF978
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSResetSW.c:
 	.text       start:0x80326DE0 end:0x8032718C
+	.sbss       start:0x804FF978 end:0x804FF998
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSRtc.c:
 	.text       start:0x8032718C end:0x80327F54
@@ -331,8 +342,9 @@ Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSSync.c:
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSThread.c:
 	.text       start:0x80327FD8 end:0x80329328
+	.data       start:0x8043BA70 end:0x8043C280
 	.bss        start:0x804BA158 end:0x804BAB50
-	.sdata      start:0x804FF3E8 end:0x804FF3EC
+	.sdata      start:0x804FF3E8 end:0x804FF3F0
 	.sbss       start:0x804FF998 end:0x804FF9A4
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSTime.c:
