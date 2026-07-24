@@ -239,7 +239,7 @@ if config.platform == Platform.GC_WII:
         "-maxerrors 1",
         "-nosyspath",
         "-RTTI off",
-        "-fp_contract on",
+        "-fp_contract off",
         "-str reuse",
         # "-i include",
         # f"-i build/{config.version}/include",
@@ -1245,7 +1245,7 @@ if config.platform == Platform.GC_WII:
                 "db",
                 [
                     Object(
-                        NonMatching,
+                        Matching,
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/db/db.c",
                     ),
                 ],
