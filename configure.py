@@ -179,7 +179,8 @@ if config.platform == Platform.GC_WII:
     ldscript_path = Path("config") / config.version / "ldscript.ld"
     keep_list_path = Path("config") / config.version / "keep.lst"
     config.ldflags = [
-        "-strip-unused",
+        "-strip-unused-data",
+        "-report-unused",
         "-keep",
         str(keep_list_path),
         "-T",
