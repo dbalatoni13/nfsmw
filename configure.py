@@ -1311,7 +1311,7 @@ if config.platform == Platform.GC_WII:
                         extra_cflags=["-char signed"],
                     ),
                     Object(
-                        NonMatching,
+                        Matching,
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/dvd/dvdFatal.c",
                         extra_cflags=["-char signed"],
                     ),
