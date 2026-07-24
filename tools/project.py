@@ -189,7 +189,7 @@ class ProjectConfig:
             None  # Object name for generating empty RELs
         )
         self.shift_jis = (
-            False  # Convert source files from UTF-8 to Shift JIS automatically
+            True  # Convert source files from UTF-8 to Shift JIS automatically
         )
         self.reconfig_deps: Optional[List[Path]] = (
             None  # Additional re-configuration dependency files
@@ -547,6 +547,7 @@ def generate_build_ninja(
             )
             cargo_rule_written = True
 
+    dtk = ""
     if config.dtk_path is not None and config.dtk_path.is_file():
         dtk = config.dtk_path
     elif config.dtk_path is not None:
@@ -683,7 +684,9 @@ def generate_build_ninja(
 
     n.newline()
 
-    download_tool_inputs = [sjiswrap, wrapper, compilers, binutils, objdiff]
+    download_tool_inputs = [wrapper, compilers, binutils, objdiff]
+    if config.platform == Platform.GC_WII:
+        download_tool_inputs.append(sjiswrap)
     if config.platform != Platform.PS2:
         download_tool_inputs.append(dtk)
     ###
@@ -712,6 +715,22 @@ def generate_build_ninja(
     # MWCC with UTF-8 to Shift JIS wrapper
     mwcc_sjis_cmd = f"{wrapper_cmd}{sjiswrap} {mwcc} $cflags -MMD -c $in -o $basedir"
     mwcc_sjis_implicit: List[Optional[Path]] = [*mwcc_implicit, sjiswrap]
+
+    # MWCC for precompiled headers
+    mwcc_pch_cmd = f"{wrapper_cmd}{mwcc} $cflags -MMD -c $in -o $basedir -precompile $basefilestem.mch"
+    mwcc_pch_implicit: List[Optional[Path]] = [*mwcc_implicit]
+
+    # MWCC for precompiled headers with UTF-8 to Shift JIS wrapper
+    mwcc_pch_sjis_cmd = f"{wrapper_cmd}{sjiswrap} {mwcc} $cflags -MMD -c $in -o $basedir -precompile $basefilestem.mch"
+    mwcc_pch_sjis_implicit: List[Optional[Path]] = [*mwcc_implicit, sjiswrap]
+
+    # MWCC with extab post-processing
+    mwcc_extab_cmd = (
+        f'{CHAIN}{mwcc_cmd} && {dtk} extab clean --padding "$extab_padding" $out $out'
+    )
+    mwcc_extab_implicit: List[Optional[Path]] = [*mwcc_implicit, dtk]
+    mwcc_sjis_extab_cmd = f'{CHAIN}{mwcc_sjis_cmd} && {dtk} extab clean --padding "$extab_padding" $out $out'
+    mwcc_sjis_extab_implicit: List[Optional[Path]] = [*mwcc_sjis_implicit, dtk]
 
     # MSVC
     msvc = compiler_path / "cl.exe"
@@ -817,11 +836,19 @@ def generate_build_ninja(
         transform_dep = config.tools_dir / "transform_dep.py"
         mwcc_cmd += f" && $python {transform_dep} $basefile.d $basefile.d"
         mwcc_sjis_cmd += f" && $python {transform_dep} $basefile.d $basefile.d"
+        mwcc_pch_cmd += f" && $python {transform_dep} $basefile.d $basefile.d"
+        mwcc_pch_sjis_cmd += f" && $python {transform_dep} $basefile.d $basefile.d"
+        mwcc_extab_cmd += f" && $python {transform_dep} $basefile.d $basefile.d"
+        mwcc_sjis_extab_cmd += f" && $python {transform_dep} $basefile.d $basefile.d"
+        ngccc_cmd += f" && $python {transform_dep} $basefile.d $basefile.d"
+        ee_gcc_cmd += f" && $python {transform_dep} $basefile.d $basefile.d"
         mwcc_implicit.append(transform_dep)
         mwcc_sjis_implicit.append(transform_dep)
-        ngccc_cmd += f" && $python {transform_dep} $basefile.d $basefile.d"
+        mwcc_pch_implicit.append(transform_dep)
+        mwcc_pch_sjis_implicit.append(transform_dep)
+        mwcc_extab_implicit.append(transform_dep)
+        mwcc_sjis_extab_implicit.append(transform_dep)
         ngccc_implicit.append(transform_dep)
-        ee_gcc_cmd += f" && $python {transform_dep} $basefile.d $basefile.d"
         ee_gcc_implicit.append(transform_dep)
 
     n.comment("Link ELF file")
@@ -1160,11 +1187,35 @@ def generate_build_ninja(
             cflags_str = make_flags_str(all_cflags)
             used_compiler_versions.add(toolchain_version)
 
+            lib_name = obj.options["lib"]
+            variables = {
+                "toolchain_version": Path(obj.options["toolchain_version"]),
+                "cflags": cflags_str,
+                "basedir": os.path.dirname(obj.src_obj_path),
+                "basefile": obj.src_obj_path.with_suffix(""),
+            }
+
             if config.platform == Platform.GC_WII:
                 # Add ProDG build rule
                 if is_mwcc:
                     build_rule = "mwcc"
                     build_implicit = mwcc_implicit
+
+                    if obj.options["shift_jis"] and obj.options["extab_padding"] is not None:
+                        build_rule = "mwcc_sjis_extab"
+                        build_implicit = mwcc_sjis_extab_implicit
+                        variables["extab_padding"] = "".join(
+                            f"{i:02x}" for i in obj.options["extab_padding"]
+                        )
+                    elif obj.options["shift_jis"]:
+                        build_rule = "mwcc_sjis"
+                        build_implicit = mwcc_sjis_implicit
+                    elif obj.options["extab_padding"] is not None:
+                        build_rule = "mwcc_extab"
+                        build_implicit = mwcc_extab_implicit
+                        variables["extab_padding"] = "".join(
+                            f"{i:02x}" for i in obj.options["extab_padding"]
+                        )
                 else:
                     build_rule = "prodg"
                     build_implicit = ngccc_implicit
@@ -1177,13 +1228,6 @@ def generate_build_ninja(
                 build_rule = "ee-gcc"
                 build_implicit = ee_gcc_implicit
 
-            lib_name = obj.options["lib"]
-            variables = {
-                "toolchain_version": Path(obj.options["toolchain_version"]),
-                "cflags": cflags_str,
-                "basedir": os.path.dirname(obj.src_obj_path),
-                "basefile": obj.src_obj_path.with_suffix(""),
-            }
             n.comment(f"{obj.name}: {lib_name} (linked {obj.completed})")
             n.build(
                 outputs=obj.src_obj_path,
