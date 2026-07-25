@@ -1040,11 +1040,11 @@ if config.platform == Platform.GC_WII:
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ax/AXAlloc.c",
                     ),
                     Object(
-                        NonMatching,
+                        Matching,
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ax/AXAux.c",
                     ),
                     Object(
-                        NonMatching,
+                        Matching,
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ax/AXCL.c",
                     ),
                     Object(
@@ -1052,27 +1052,27 @@ if config.platform == Platform.GC_WII:
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ax/AX.c",
                     ),
                     Object(
-                        NonMatching,
+                        Matching,
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ax/AXOut.c",
                     ),
                     Object(
-                        NonMatching,
+                        Matching,
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ax/AXSPB.c",
                     ),
                     Object(
-                        NonMatching,
+                        Matching,
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ax/AXVPB.c",
                     ),
                     Object(
-                        NonMatching,
+                        Matching,
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ax/AXComp.c",
                     ),
                     Object(
-                        NonMatching,
+                        Matching,
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ax/DSPCode.c",
                     ),
                     Object(
-                        NonMatching,
+                        Matching,
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ax/AXProf.c",
                     ),
                 ],
@@ -1151,11 +1151,15 @@ if config.platform == Platform.GC_WII:
                 "dsp",
                 [
                     Object(
-                        NonMatching,
+                        Matching,
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/dsp/dsp.c",
                     ),
                     Object(
-                        NonMatching,
+                        Matching,
+                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/dsp/dsp_debug.c",
+                    ),
+                    Object(
+                        Matching,
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/dsp/dsp_task.c",
                     ),
                 ],
@@ -1163,10 +1167,6 @@ if config.platform == Platform.GC_WII:
             DolphinLib(
                 "os",
                 [
-                    Object(
-                        NonMatching,
-                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OSFatal.c",
-                    ),
                     Object(
                         Matching,
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/os/OS.c",
@@ -1472,116 +1472,6 @@ if config.platform == Platform.GC_WII:
                     Object(
                         Matching,
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/si/SISteeringAuto.c",
-                    ),
-                ],
-            ),
-            DolphinLib(
-                "ip",
-                [
-                    Object(
-                        NonMatching,
-                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ip/IPSocket.c",
-                    ),
-                    Object(
-                        NonMatching,
-                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ip/IPPPPoE.c",
-                    ),
-                    Object(
-                        NonMatching,
-                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ip/IPPap.c",
-                    ),
-                    Object(
-                        NonMatching,
-                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ip/IPChap.c",
-                    ),
-                    Object(
-                        NonMatching,
-                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ip/IPLcp.c",
-                    ),
-                    Object(
-                        NonMatching,
-                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ip/IP.c",
-                    ),
-                    Object(
-                        NonMatching,
-                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ip/IPIcmp.c",
-                    ),
-                    Object(
-                        NonMatching,
-                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ip/IPRoute.c",
-                    ),
-                    Object(
-                        NonMatching,
-                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ip/IPFrag.c",
-                    ),
-                    Object(
-                        NonMatching,
-                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ip/IPUdp.c",
-                    ),
-                    Object(
-                        NonMatching,
-                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ip/IPEther.c",
-                    ),
-                    Object(
-                        NonMatching,
-                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ip/IFFifo.c",
-                    ),
-                    Object(
-                        NonMatching,
-                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ip/IPTcpTimeWait.c",
-                    ),
-                    Object(
-                        NonMatching,
-                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ip/IPTcp.c",
-                    ),
-                    Object(
-                        NonMatching,
-                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ip/IPTcpOutput.c",
-                    ),
-                    Object(
-                        NonMatching,
-                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ip/IPTcpTimer.c",
-                    ),
-                    Object(
-                        NonMatching,
-                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ip/IPTcpUser.c",
-                    ),
-                    Object(
-                        NonMatching,
-                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ip/IPDns.c",
-                    ),
-                    Object(
-                        NonMatching,
-                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ip/IPDhcp.c",
-                    ),
-                    Object(
-                        NonMatching,
-                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ip/IPZero.c",
-                    ),
-                    Object(
-                        NonMatching,
-                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ip/IPPPP.c",
-                    ),
-                    Object(
-                        NonMatching,
-                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/ip/IPArp.c",
-                    ),
-                ],
-            ),
-            DolphinLib(
-                "net",
-                [
-                    Object(
-                        NonMatching,
-                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/net/eth.c",
-                    ),
-                    Object(
-                        NonMatching,
-                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/net/ethsec.c",
-                    ),
-                    Object(
-                        NonMatching,
-                        "Speed/GameCube/bWare/GameCube/dolphinsdk/src/net/md5.c",
                     ),
                 ],
             ),

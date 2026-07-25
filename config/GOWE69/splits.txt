@@ -1456,13 +1456,13 @@ Speed/Indep/Libs/realcore/6.24.00/source/input/cmn/itimer.cpp:
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/ar/arq.c:
 	.text       start:0x8039D434 end:0x8039D8B8
 	.data       start:0x804528E0 end:0x80452928
-	.sdata      start:0x804FF890 end:0x804FF894
+	.sdata      start:0x804FF890 end:0x804FF898
 	.sbss       start:0x804FFDA0 end:0x804FFDD0
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/ax/AX.c:
 	.text       start:0x8039D8B8 end:0x8039D95C
 	.data       start:0x80452928 end:0x8045296C
-	.sdata      start:0x804FF898 end:0x804FF89C
+	.sdata      start:0x804FF898 end:0x804FF8A0
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/ax/AXAlloc.c:
 	.text       start:0x8039D95C end:0x8039DE24
@@ -1486,12 +1486,12 @@ Speed/GameCube/bWare/GameCube/dolphinsdk/src/ax/AXOut.c:
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/ax/AXSPB.c:
 	.text       start:0x8039F1B8 end:0x8039F680
-	.bss        start:0x804E2800 end:0x804E2840
+	.bss        start:0x804E2800 end:0x804E2838
 	.sbss       start:0x804FFE60 end:0x804FFE88
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/ax/AXVPB.c:
 	.text       start:0x8039F680 end:0x803A067C
-	.data       start:0x80452970 end:0x80452A60
+	.data       start:0x80452970 end:0x80452A48
 	.bss        start:0x804E2840 end:0x804F4040
 	.sbss       start:0x804FFE88 end:0x804FFE98
 	.sdata2     start:0x80500C60 end:0x80500C98
@@ -1506,17 +1506,24 @@ Speed/GameCube/bWare/GameCube/dolphinsdk/src/ax/AXComp.c:
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/ax/DSPCode.c:
 	.data       start:0x804544A0 end:0x804563A0
+	.sdata      start:0x804FF8A0 end:0x804FF8A8
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/ax/AXProf.c:
 	.text       start:0x803A067C end:0x803A06C4
 	.sbss       start:0x804FFE98 end:0x804FFEA8
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/dsp/dsp.c:
-	.text       start:0x803A06C4 end:0x803A09A4
+	.text       start:0x803A06C4 end:0x803A0954
+	.data       start:0x804563A0 end:0x80456420
+	.sdata      start:0x804FF8A8 end:0x804FF8B0
 	.sbss       start:0x804FFEA8 end:0x804FFEB0
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/dsp/dsp_debug.c:
+	.text       start:0x803A0954 end:0x803A09A4
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/dsp/dsp_task.c:
 	.text       start:0x803A09A4 end:0x803A1228
+	.data       start:0x80456420 end:0x80456560
 	.sbss       start:0x804FFEB0 end:0x804FFED8
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/card/CARDFormat.c:
