@@ -8,7 +8,8 @@ static s16 __AXOutBuffer[3][320];
 static s32 __AXOutSBuffer[160];
 static u16 __AXDramImage[8192];
 static DSPTaskInfo __AXDSPTask;
-AXPROFILE __AXLocalProfile;
+u8 __AXLocalProfile[0x30];
+#define __AXLocalProfile (*(AXPROFILE *)__AXLocalProfile)
 
 volatile static u32 __AXOutFrame;
 volatile static u32 __AXAiDmaFrame;
@@ -29,7 +30,7 @@ static void __AXDSPDoneCallback(void* task);
 
 void __AXOutNewFrame(u32 lessDspCycles) {
     u32 cl;
-    AXPROFILE* profile;
+    u8* profile;
     u8* src;
     u8* dest;
     u32 i;
@@ -68,11 +69,11 @@ void __AXOutNewFrame(u32 lessDspCycles) {
 
     __AXLocalProfile.axFrameEnd = OSGetTime();
     __AXLocalProfile.axNumVoices = __AXGetNumVoices();
-    profile = (void*)__AXGetCurrentProfile();
+    profile = (u8*)__AXGetCurrentProfile();
 
     if (profile) {
         i = 56;
-        dest = (u8*)profile;
+        dest = profile;
         src = (u8*)&__AXLocalProfile;
 
         while (i != 0) {

@@ -561,11 +561,6 @@ Speed/GameCube/bWare/GameCube/dolphinsdk/src/gx/GXTransform.c:
 	.text       start:0x8034093C end:0x80340E88
 	.sdata2     start:0x805009F0 end:0x80500A04
 
-prodg_fixes.cpp:
-	.ctors      start:0x803C8B60 end:0x803C8B64 skip
-	.dtors      start:0x803C8C40 end:0x803C8C44 skip
-	.sdata2     start:0x80500C98 end:0x80500CA0 skip
-
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/gx/GXPerf.c:
 	.text       start:0x80340E88 end:0x80341AB4
 	.data       start:0x8044F1F8 end:0x8044F340
@@ -1471,7 +1466,7 @@ Speed/GameCube/bWare/GameCube/dolphinsdk/src/ax/AX.c:
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/ax/AXAlloc.c:
 	.text       start:0x8039D95C end:0x8039DE24
-	.bss        start:0x804DA970 end:0x804DAA80
+	.bss        start:0x804DA970 end:0x804DAA70
 	.sbss       start:0x804FFDD0 end:0x804FFDD8
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/ax/AXAux.c:
@@ -1499,6 +1494,12 @@ Speed/GameCube/bWare/GameCube/dolphinsdk/src/ax/AXVPB.c:
 	.data       start:0x80452970 end:0x80452A60
 	.bss        start:0x804E2840 end:0x804F4040
 	.sbss       start:0x804FFE88 end:0x804FFE98
+	.sdata2     start:0x80500C60 end:0x80500C98
+
+prodg_fixes.cpp:
+	.ctors      start:0x803C8B60 end:0x803C8B64 skip
+	.dtors      start:0x803C8C40 end:0x803C8C44 skip
+	.sdata2     start:0x80500C98 end:0x80500CA0 skip
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/ax/AXComp.c:
 	.data       start:0x80452A60 end:0x804544A0
@@ -1512,11 +1513,11 @@ Speed/GameCube/bWare/GameCube/dolphinsdk/src/ax/AXProf.c:
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/dsp/dsp.c:
 	.text       start:0x803A06C4 end:0x803A09A4
-	.sbss       start:0x804FFEA8 end:0x804FFEBC
+	.sbss       start:0x804FFEA8 end:0x804FFEB0
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/dsp/dsp_task.c:
 	.text       start:0x803A09A4 end:0x803A1228
-	.sbss       start:0x804FFEBC end:0x804FFED8
+	.sbss       start:0x804FFEB0 end:0x804FFED8
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/card/CARDFormat.c:
 	.text       start:0x803A1228 end:0x803A1A18
