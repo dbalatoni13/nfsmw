@@ -517,6 +517,7 @@ Speed/GameCube/bWare/GameCube/dolphinsdk/src/gx/GXAttr.c:
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/gx/GXMisc.c:
 	.text       start:0x8033CA74 end:0x8033D228
+	.data       start:0x8044EC38 end:0x8044EC90
 	.sbss       start:0x804FFBE0 end:0x804FFBF8
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/gx/GXGeometry.c:
@@ -524,28 +525,32 @@ Speed/GameCube/bWare/GameCube/dolphinsdk/src/gx/GXGeometry.c:
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/gx/GXFrameBuf.c:
 	.text       start:0x8033D548 end:0x8033DFF0
-	.data       start:0x8044ECA0 end:0x8044EE28
+	.data       start:0x8044EC90 end:0x8044EE28
 	.sdata2     start:0x805008E8 end:0x805008F8
-
-prodg_fixes.cpp:
-	.ctors      start:0x803C8B60 end:0x803C8B64 skip
-	.dtors      start:0x803C8C40 end:0x803C8C44 skip
-	.sdata2     start:0x80500C98 end:0x80500CA0 skip
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/gx/GXLight.c:
 	.text       start:0x8033DFF0 end:0x8033E510
+	.data       start:0x8044EE28 end:0x8044EE48
+	.sdata2     start:0x805008F8 end:0x80500940
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/gx/GXTexture.c:
 	.text       start:0x8033E510 end:0x8033F588
+	.data       start:0x8044EE48 end:0x8044F160
+	.sdata      start:0x804FF4F0 end:0x804FF538
+	.sdata2     start:0x80500940 end:0x80500978
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/gx/GXBump.c:
 	.text       start:0x8033F588 end:0x8033FAA8
+	.sdata2     start:0x80500978 end:0x80500990
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/gx/GXTev.c:
 	.text       start:0x8033FAA8 end:0x80340104
+	.data       start:0x8044F160 end:0x8044F1D8
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/gx/GXPixel.c:
 	.text       start:0x80340104 end:0x8034073C
+	.data       start:0x8044F1D8 end:0x8044F1F8
+	.sdata2     start:0x80500990 end:0x805009F0
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/gx/GXDisplayList.c:
 	.text       start:0x8034073C end:0x8034093C
@@ -554,13 +559,22 @@ Speed/GameCube/bWare/GameCube/dolphinsdk/src/gx/GXDisplayList.c:
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/gx/GXTransform.c:
 	.text       start:0x8034093C end:0x80340E88
+	.sdata2     start:0x805009F0 end:0x80500A04
+
+prodg_fixes.cpp:
+	.ctors      start:0x803C8B60 end:0x803C8B64 skip
+	.dtors      start:0x803C8C40 end:0x803C8C44 skip
+	.sdata2     start:0x80500C98 end:0x80500CA0 skip
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/gx/GXPerf.c:
 	.text       start:0x80340E88 end:0x80341AB4
+	.data       start:0x8044F1F8 end:0x8044F340
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/exi/EXIBios.c:
 	.text       start:0x80341AB4 end:0x80343490
+	.data       start:0x8044F340 end:0x8044F450
 	.bss        start:0x804BBD68 end:0x804BBE28
+	.sdata      start:0x804FF538 end:0x804FF570
 	.sbss       start:0x804FFC00 end:0x804FFC08
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/exi/EXIUart.c:
@@ -569,20 +583,21 @@ Speed/GameCube/bWare/GameCube/dolphinsdk/src/exi/EXIUart.c:
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/si/SIBios.c:
 	.text       start:0x80343A48 end:0x803452A8
-	.data       start:0x8044F450 end:0x8044F4B8
+	.data       start:0x8044F450 end:0x8044F568
 	.bss        start:0x804BBE28 end:0x804BC028
-	.sdata      start:0x804FF570 end:0x804FF574
+	.sdata      start:0x804FF570 end:0x804FF588
 	.sbss       start:0x804FFC18 end:0x804FFC28
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/si/SISamplingRate.c:
 	.text       start:0x803452A8 end:0x803453B0
 	.data       start:0x8044F568 end:0x8044F600
-	.sbss       start:0x804FFC28 end:0x804FFC38
+	.sbss       start:0x804FFC28 end:0x804FFC30
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/si/SISteering.c:
 	.text       start:0x803453B0 end:0x80345564
+	.data       start:0x8044F600 end:0x8044F610
 	.bss        start:0x804BC028 end:0x804BC0C8
-	.sbss       start:0x804FFC38 end:0x804FFC40
+	.sbss       start:0x804FFC30 end:0x804FFC40
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/si/SISteeringXfer.c:
 	.text       start:0x80345564 end:0x803457E4
@@ -1419,7 +1434,7 @@ Speed/Indep/Libs/realcore/6.24.00/source/input/gc/gc_device.cpp:
 
 Speed/Indep/Libs/realcore/6.24.00/source/input/gc/gc_interface.cpp:
 	.text       start:0x80399FD8 end:0x8039A3C8
-	.bss        start:0x804DA668 end:0x804FE9CC
+	.bss        start:0x804DA668 end:0x804DA970
 	.sdata      start:0x804FF6C0 end:0x804FF6C8
 
 Speed/Indep/Libs/realcore/6.24.00/source/input/gc/gc_pad.cpp:
@@ -1456,28 +1471,40 @@ Speed/GameCube/bWare/GameCube/dolphinsdk/src/ax/AX.c:
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/ax/AXAlloc.c:
 	.text       start:0x8039D95C end:0x8039DE24
+	.bss        start:0x804DA970 end:0x804DAA80
 	.sbss       start:0x804FFDD0 end:0x804FFDD8
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/ax/AXAux.c:
 	.text       start:0x8039DE24 end:0x8039E2B8
+	.bss        start:0x804DAA80 end:0x804DD780
 	.sbss       start:0x804FFDD8 end:0x804FFE10
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/ax/AXCL.c:
 	.text       start:0x8039E2B8 end:0x8039E9F0
+	.bss        start:0x804DD780 end:0x804DDD80
 	.sbss       start:0x804FFE10 end:0x804FFE28
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/ax/AXOut.c:
 	.text       start:0x8039E9F0 end:0x8039F1B8
+	.bss        start:0x804DDD80 end:0x804E2800
 	.sbss       start:0x804FFE28 end:0x804FFE60
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/ax/AXSPB.c:
 	.text       start:0x8039F1B8 end:0x8039F680
+	.bss        start:0x804E2800 end:0x804E2840
 	.sbss       start:0x804FFE60 end:0x804FFE88
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/ax/AXVPB.c:
 	.text       start:0x8039F680 end:0x803A067C
-	.data       start:0x80452970 end:0x80452A48
+	.data       start:0x80452970 end:0x80452A60
+	.bss        start:0x804E2840 end:0x804F4040
 	.sbss       start:0x804FFE88 end:0x804FFE98
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/ax/AXComp.c:
+	.data       start:0x80452A60 end:0x804544A0
+
+Speed/GameCube/bWare/GameCube/dolphinsdk/src/ax/DSPCode.c:
+	.data       start:0x804544A0 end:0x804563A0
 
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/ax/AXProf.c:
 	.text       start:0x803A067C end:0x803A06C4

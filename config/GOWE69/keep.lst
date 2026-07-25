@@ -826,17 +826,6 @@ gap_07_804B5554_bss
 gap_07_804B9EF9_bss
 gap_07_804BA024_bss
 lbl_804FEDE8
-fstload.o:gap_08_804FF46A_sdata
-fstload.o:gap_07_804BAC57_bss
-dvd.o:gap_09_804FFA2C_sbss
-dvdFatal.o:gap_09_804FFA34_sbss
-dvdlow.o:gap_07_804BACC4_bss
-dvdlow.o:gap_09_804FFA74_sbss
-vi.o:gap_07_804BADCE_bss
-vi.o:gap_07_804BAE46_bss
-vi.o:gap_09_804FFABC_sbss
-vi.o:gap_09_804FFACC_sbss
-vi.o:gap_09_804FFAF4_sbss
 gap_07_804CC8FE_bss
 gap_08_804FF52E_sdata
 gap_08_804FF541_sdata
