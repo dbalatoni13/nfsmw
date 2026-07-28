@@ -16,6 +16,8 @@ import os
 import platform
 import shutil
 import stat
+import subprocess
+import sys
 import urllib.request
 import zipfile
 from typing import Callable, Dict
@@ -162,6 +164,13 @@ def main() -> None:
             req, context=ssl.create_default_context(cafile=certifi.where())
         ) as response:
             download(url, response, output)
+
+    if args.tool == "compilers":
+        patch_toolchain = Path(__file__).with_name("patch-toolchain.py")
+        subprocess.run(
+            [sys.executable, str(patch_toolchain), "--all", str(output)],
+            check=True,
+        )
 
 
 if __name__ == "__main__":
