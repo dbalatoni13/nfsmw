@@ -39,7 +39,12 @@ def measures(total_lines: int, matching_lines: int, total_functions: int, exact:
     }
 
 
-def compare_unit(dc, unit: Dict[str, Any], target_functions, original_by_start) -> Dict[str, Any]:
+def compare_unit(
+    dc,
+    unit: Dict[str, Any],
+    target_unit: Dict[str, Any],
+    original_by_start,
+) -> Dict[str, Any]:
     rebuilt_funcs = []
     base_path = unit.get("base_path")
     if base_path and os.path.isfile(dc.make_abs(base_path)):
@@ -60,7 +65,7 @@ def compare_unit(dc, unit: Dict[str, Any], target_functions, original_by_start) 
     functions: List[Dict[str, Any]] = []
     total_lines = matching_lines = exact = 0
     seen_addresses = set()
-    for target_function in target_functions:
+    for target_function in target_unit["functions"]:
         original_address = int(
             target_function.get("metadata", {}).get("virtual_address", -1)
         )
@@ -104,7 +109,10 @@ def compare_unit(dc, unit: Dict[str, Any], target_functions, original_by_start) 
             }
         )
 
-    metadata = unit.get("metadata", {}).copy()
+    # Use objdiff's report metadata rather than copying its configuration
+    # metadata. The latter contains internal fields such as reverse_fn_order
+    # that are not part of the generated report.
+    metadata = target_unit.get("metadata", {}).copy()
     metadata.pop("complete", None)
     return {
         "name": unit["name"],
@@ -149,7 +157,7 @@ def main() -> None:
             report_unit = compare_unit(
                 dc,
                 unit,
-                target_unit["functions"],
+                target_unit,
                 original_by_start,
             )
         except dc.DwarfCompareError as error:
@@ -167,6 +175,7 @@ def main() -> None:
     report = {
         "measures": measures(total_lines, matching_lines, total_functions, exact),
         "units": units,
+        "version": target_report.get("version", 2),
     }
     report["measures"]["total_units"] = len(units)
 
