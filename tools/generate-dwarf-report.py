@@ -24,19 +24,56 @@ def load_compare_module():
     return module
 
 
-def measures(total_lines: int, matching_lines: int, total_functions: int, exact: int) -> Dict[str, Any]:
-    percent = 100.0 * matching_lines / max(total_lines, 1)
-    function_percent = 100.0 * exact / max(total_functions, 1)
+def measures(
+    total_lines: int,
+    fuzzy_matching_lines: int,
+    perfectly_matching_lines: int,
+    total_functions: int,
+    perfectly_matching_functions: int,
+) -> Dict[str, Any]:
+    fuzzy_percent = 100.0 * fuzzy_matching_lines / max(total_lines, 1)
+    matched_percent = 100.0 * perfectly_matching_lines / max(total_lines, 1)
+    function_percent = (
+        100.0 * perfectly_matching_functions / max(total_functions, 1)
+    )
     return {
-        "fuzzy_match_percent": percent,
+        "fuzzy_match_percent": fuzzy_percent,
         "total_code": str(total_lines),
-        "matched_code": str(matching_lines),
-        "matched_code_percent": percent,
+        "matched_code": str(perfectly_matching_lines),
+        "matched_code_percent": matched_percent,
         "total_functions": total_functions,
-        "matched_functions": exact,
+        "matched_functions": perfectly_matching_functions,
         "matched_functions_percent": function_percent,
         "total_units": 1,
     }
+
+
+def aggregate_measures(units: List[Dict[str, Any]]) -> Dict[str, Any]:
+    total_lines = sum(int(unit["measures"]["total_code"]) for unit in units)
+    fuzzy_matching_lines = sum(
+        round(
+            int(unit["measures"]["total_code"])
+            * unit["measures"]["fuzzy_match_percent"]
+            / 100.0
+        )
+        for unit in units
+    )
+    perfectly_matching_lines = sum(
+        int(unit["measures"]["matched_code"]) for unit in units
+    )
+    total_functions = sum(unit["measures"]["total_functions"] for unit in units)
+    perfectly_matching_functions = sum(
+        unit["measures"]["matched_functions"] for unit in units
+    )
+    result = measures(
+        total_lines,
+        fuzzy_matching_lines,
+        perfectly_matching_lines,
+        total_functions,
+        perfectly_matching_functions,
+    )
+    result["total_units"] = len(units)
+    return result
 
 
 def compare_unit(
@@ -63,7 +100,8 @@ def compare_unit(
     rebuilt_index = dc.build_function_block_index(rebuilt_funcs)
 
     functions: List[Dict[str, Any]] = []
-    total_lines = matching_lines = exact = 0
+    total_lines = fuzzy_matching_lines = perfectly_matching_lines = 0
+    perfectly_matching_functions = 0
     seen_addresses = set()
     for target_function in target_unit["functions"]:
         original_address = int(
@@ -82,7 +120,6 @@ def compare_unit(
             "demangled_name", target_function.get("name", query or original[2])
         )
         function_match = 0
-        is_exact = False
         if query is not None:
             try:
                 rebuilt = dc.choose_function_block(
@@ -94,13 +131,14 @@ def compare_unit(
                     unit["name"], query, original, rebuilt, True, 0, None, False
                 )
                 function_match = min(report["matching_lines"], target_count)
-                is_exact = report["normalized_exact_match"]
             except dc.DwarfCompareError:
                 pass
 
         total_lines += target_count
-        matching_lines += function_match
-        exact += int(is_exact)
+        fuzzy_matching_lines += function_match
+        if function_match == target_count:
+            perfectly_matching_lines += target_count
+            perfectly_matching_functions += 1
         functions.append(
             {
                 "name": display_name,
@@ -116,7 +154,13 @@ def compare_unit(
     metadata.pop("complete", None)
     return {
         "name": unit["name"],
-        "measures": measures(total_lines, matching_lines, len(functions), exact),
+        "measures": measures(
+            total_lines,
+            fuzzy_matching_lines,
+            perfectly_matching_lines,
+            len(functions),
+            perfectly_matching_functions,
+        ),
         "functions": functions,
         "metadata": metadata,
     }
@@ -166,25 +210,40 @@ def main() -> None:
         if report_unit["functions"]:
             units.append(report_unit)
 
-    total_lines = sum(int(unit["measures"]["total_code"]) for unit in units)
-    matching_lines = sum(int(unit["measures"]["matched_code"]) for unit in units)
-    total_functions = sum(unit["measures"]["total_functions"] for unit in units)
-    exact = sum(unit["measures"]["matched_functions"] for unit in units)
     if not units:
         raise RuntimeError("No built translation units with comparable DWARF were found")
+    categories = []
+    for target_category in target_report.get("categories", []):
+        category_id = target_category["id"]
+        category_units = [
+            unit
+            for unit in units
+            if category_id
+            in unit.get("metadata", {}).get("progress_categories", [])
+        ]
+        categories.append(
+            {
+                "id": category_id,
+                "name": target_category["name"],
+                "measures": aggregate_measures(category_units),
+            }
+        )
     report = {
-        "measures": measures(total_lines, matching_lines, total_functions, exact),
+        "measures": aggregate_measures(units),
         "units": units,
         "version": target_report.get("version", 2),
+        "categories": categories,
     }
-    report["measures"]["total_units"] = len(units)
 
     output = os.path.join(ROOT, args.output)
     os.makedirs(os.path.dirname(output), exist_ok=True)
     with open(output, "w", encoding="utf-8") as f:
         json.dump(report, f, separators=(",", ":"))
         f.write("\n")
-    print(f"Wrote {output} ({len(units)} units, {total_functions} functions)")
+    print(
+        f"Wrote {output} "
+        f"({len(units)} units, {report['measures']['total_functions']} functions)"
+    )
 
 
 if __name__ == "__main__":
