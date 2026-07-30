@@ -1,5 +1,6 @@
 #include "Speed/Indep/Src/Camera/Camera.hpp"
 #include "Speed/Indep/Src/Camera/CameraMover.hpp"
+#include <cstddef>
 
 
 // NOISE 
@@ -223,34 +224,31 @@ void Camera::SetCameraMatrix(bMatrix4 *m, float fTime) {
 }
 
 void Camera::CommunicateWithJollyRancher(char *cameraname) {
-
-    char data[0x60];
-    Mtx44 scaledmatrix;
-
-    JollyRancherResponsePacket *local_10;
-    int local_c;
+    char data[96];
+    void *addr;
+    int protocol;
+    bMatrix4 scaledmatrix;
 
     if (DisableCommunication == 0) {
+        addr = &Camera::JollyRancherResponse;
+        protocol = DisableCommunication;   
 
-        local_10 = &Camera::JollyRancherResponse;
-        local_c = DisableCommunication;
+        bMemCpy(data, &addr, 4);
+        bMemCpy(data + 4, &protocol, 4);
 
-        bMemCpy(data, &local_10, 4);
-        bMemCpy(data + 4, &local_c, 4);
-        {
-            PSMTX44Copy((const float (*)[4])this, (float (*)[4]) & scaledmatrix);
-        }
-        scaledmatrix[3][0] *= 100.0f;
-        scaledmatrix[3][1] *= 100.0f;
-        scaledmatrix[3][2] *= 100.0f;
-        scaledmatrix[3][3] = 1.0f;
-        {
-            bMemCpy(data + 8, (void *)(&scaledmatrix), 0x40);
-        }
+        scaledmatrix = *(bMatrix4*)this; 
+
+        bScale(reinterpret_cast<bVector3 *>(&scaledmatrix.v3),
+               reinterpret_cast<const bVector3 *>(&scaledmatrix.v3),
+               100.0f);
+
+        scaledmatrix.v3.w = 1.0f;
+
+        bMemCpy(data + 8, &scaledmatrix, 0x40);
         bStrCpy(data + 0x48, cameraname);
-        bFunkCallASync("JR2Server", 1, data, 0x60); //do nothing
+
+        bFunkCallASync("JR2Server", 1, data, 0x60);
     }
-    return;
 }
 
 unsigned short Camera::FovRelativeAngle(unsigned short a) {
@@ -314,38 +312,11 @@ void Camera::ApplyNoise(bMatrix4 *p_matrix,float time,float intensity){
 }
 
 
-void UpdateCameraMovers(float deltaTime)
+void UpdateCameraMovers(float dT)
 {
-    for (int viewIndex = 0; viewIndex < 22; ++viewIndex) // 22 is NUM_VIEWS
-    {
-        eView& view = eViews[viewIndex];
 
-        bNode* head = eViews[viewIndex].CameraMoverList.GetHead();
-        bNode* first = head->Next;
-
-        if (first != head)
-        {
-            CameraMover* mover = (CameraMover*)first;
-            mover->Update(deltaTime);
-        }
-    }
-
-    if (!WeHaveCheckedIfJR2ServerExists)
-    {
-        JR2ServerExists = bFunkDoesServerExist("JR2Server");
-        WeHaveCheckedIfJR2ServerExists = 1;
-    }
-
-    if (JR2ServerExists && eViews[1].pCamera)
-    {
-        int elapsed = abs(RealTime - LastUpdateTimeJR2);
-
-        if (elapsed > 16)
-        {
-            LastUpdateTimeJR2 = RealTime;
-            eViews[1].pCamera->CommunicateWithJollyRancher("SpeedCam");
-        }
-    }
+    eView *view;
+    bool set_any_positions;
 
     const bool warping =
         GManager::Get().mObj &&
@@ -355,6 +326,37 @@ void UpdateCameraMovers(float deltaTime)
         GRaceStatus::fObj &&
         GRaceStatus::fObj->mScriptWaitingForLoad;
 
+
+    for (int viewIndex = 0; viewIndex < 22; ++viewIndex) // 22 is NUM_VIEWS
+    {
+        view = eGetView(viewIndex, false);
+        bNode* head = eGetView(viewIndex, false)->CameraMoverList.GetHead();
+        bNode* first = head->Next;
+
+        if (first != head)
+        {
+            CameraMover* mover = (CameraMover*)first;
+            mover->Update(dT);
+        }
+    }
+
+    if (!WeHaveCheckedIfJR2ServerExists)
+    {
+        JR2ServerExists = bFunkDoesServerExist("JR2Server");
+        WeHaveCheckedIfJR2ServerExists = 1;
+    }
+
+    if (JR2ServerExists && eGetView(1,false)->pCamera)
+    {
+        int elapsed = abs(RealTime - LastUpdateTimeJR2);
+
+        if (elapsed > 16)
+        {
+            LastUpdateTimeJR2 = RealTime;
+            eGetView(1,false)->pCamera->CommunicateWithJollyRancher("SpeedCam");
+        }
+    }
+
     if (warping || waitingForLoad)
         return;
 
@@ -362,12 +364,12 @@ void UpdateCameraMovers(float deltaTime)
 
     for (int viewIndex = 1; viewIndex < 3; ++viewIndex)
     {
-        eView& view = eViews[viewIndex];
+        eView* view = eGetView(viewIndex, false);
 
-        if (!view.Active)
+        if (!view->Active)
             continue;
 
-        if (view.CameraMoverList.IsEmpty())
+        if (view->CameraMoverList.IsEmpty())
             continue;
 
         if (!streamerCleared)
@@ -376,7 +378,7 @@ void UpdateCameraMovers(float deltaTime)
             streamerCleared = true;
         }
 
-        Camera* camera = view.pCamera;
+        Camera* camera = view->pCamera;
 
         bVector3 position  = camera->CurrentKey.Position;
         bVector3 velocity  = camera->VelocityKey.Position;
@@ -388,8 +390,8 @@ void UpdateCameraMovers(float deltaTime)
             {
                 const Vector3* editorPos = inis->GetStartCameraLocation();
 
-                position.x = editorPos->z;
                 position.y = -editorPos->x;
+                position.x = editorPos->z;
                 position.z = editorPos->y;
             }
 
@@ -400,7 +402,7 @@ void UpdateCameraMovers(float deltaTime)
         const bool rearView = (viewIndex == 2);
 
         const bool freezePrediction =
-            view.CameraMoverList.GetHead()->Next->Prev ==
+            view->CameraMoverList.GetHead()->Next->Prev ==
             reinterpret_cast<bNode*>(1);
 
         TheTrackStreamer.PredictStreamingPosition(
@@ -411,9 +413,3 @@ void UpdateCameraMovers(float deltaTime)
             freezePrediction);
     }
 }
-
-
-
-
-
-
