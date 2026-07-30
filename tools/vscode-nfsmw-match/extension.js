@@ -507,6 +507,8 @@ class MatchCodeLensProvider {
 class DwarfDiffProvider {
   constructor() {
     this.content = new Map();
+    this.changed = new vscode.EventEmitter();
+    this.onDidChange = this.changed.event;
   }
   provideTextDocumentContent(uri) {
     return this.content.get(uri.toString()) || "Comparison diff is no longer available.";
@@ -516,6 +518,9 @@ class DwarfDiffProvider {
     const id = crypto.createHash("sha1").update(`${annotation.unit}\0${itemName}`).digest("hex");
     const uri = vscode.Uri.parse(`nfsmw-dwarf-diff:${id}/${encodeURIComponent(functionLeaf(itemName))}.diff`);
     this.content.set(uri.toString(), annotation.comparisonDiff || annotation.dwarfDiff);
+    // A virtual document with this stable URI may still be cached even after its
+    // editor was closed. Tell VS Code to ask the provider for its latest content.
+    this.changed.fire(uri);
     return uri;
   }
 }
@@ -531,6 +536,7 @@ async function activate(context) {
   context.subscriptions.push(
     vscode.languages.registerCodeLensProvider(selector, lenses),
     vscode.workspace.registerTextDocumentContentProvider("nfsmw-dwarf-diff", diffs),
+    diffs.changed,
     diagnostics,
   );
 

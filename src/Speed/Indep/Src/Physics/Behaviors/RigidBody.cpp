@@ -557,7 +557,7 @@ void RigidBody::DoDrag() {
             UMath::Vector3 vel = data.linearVel;
             UMath::Vector3 area;
             UMath::Scale(this->mDimension, this->mDimension, area);
-            UMath::Scale(area, 4.0f, area);
+            UMath::Scale(area, 4.0f);
             this->ConvertWorldToLocal(vel, false);
 
             Drag drag((UVector3(vel)), UVector3(UMath::Vector4To3(this->mSpecs.DRAG())), UVector3(area), 1.225f);
