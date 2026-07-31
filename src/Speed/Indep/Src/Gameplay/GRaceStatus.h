@@ -293,7 +293,6 @@ class GRaceParameters {
 
 // total size: 0x46AC
 class GRaceStatus : public UTL::COM::Object, public IVehicleCache {
-    friend void UpdateCameraMovers(float dT);
   public:
     enum PlayMode {
         kPlayMode_Roaming = 0,
@@ -471,6 +470,10 @@ class GRaceStatus : public UTL::COM::Object, public IVehicleCache {
 
     static bool IsChallengeRace() {
         return Exists() && Get().GetRaceType() == GRace::kRaceType_Challenge;
+    }
+
+    bool GetIsScriptWaitingForLoading() const {
+        return mScriptWaitingForLoad;
     }
 
     static bool IsDragRace() {

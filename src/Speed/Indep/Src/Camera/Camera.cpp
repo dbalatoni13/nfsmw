@@ -1,167 +1,112 @@
 #include "Speed/Indep/Src/Camera/Camera.hpp"
 #include "Speed/Indep/Src/Camera/CameraMover.hpp"
+#include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
+#include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include <cstddef>
-
-
-// NOISE 
-
-float NoiseBase(int x)
-{
-    unsigned int hash = (x << 13) ^ x;
-    
-    hash = hash * (hash * hash * 0x3D73 + 0xC0AE5) + 0x5208DD0D;
-    
-    hash = (hash & 0x7FFFFFFF) ^ 0x8000;
-
-    float normalized = (float)hash * (1.0f / 1073741824.0f); 
-    
-    return 1.0f - normalized;
-}
-
-float NoiseInterpolated(float x)
-{
-  int left_index;
-  float x_floor;
-  float right_noise;
-  
-  x_floor = (float)(int)x;
-  if (x < x_floor) {
-    x_floor = x_floor - 1.0f;
-  }
-  left_index = (int)x_floor;
-  x_floor = NoiseBase(left_index);
-  right_noise = NoiseBase(left_index + 1);
-  return (x - (float)left_index) * right_noise + (1.0f - (x - (float)left_index)) * x_floor;
-}
-
-float Noise(float x) {
-    float total = 0.0f;
-    float amplitude = 1.0f;
-    float frequency = 1.0f;
-    
-    for (int i = 0; i < 6; ++i) {
-        total += NoiseInterpolated(x * frequency) * amplitude;
-        
-        frequency *= 2.0f; 
-        amplitude *= 0.5f; 
-    }
-    
-    return total;
-}
 
 Camera::Camera() {
     int RealTime;
-    // bMatrix4 m; // 0x4
-    bMatrix4 defaultMatrix; // 0x68
-
+    bMatrix4 defaultMatrix;
 
     RealTime = RealTimeFrames;
     LastUpdateTime = -0x80000000;
     LastDisparateTime = RealTime;
     RenderDash = 0;
 
-    defaultMatrix.v2.z = -1.0;
-    defaultMatrix.v3.z = 1200.0;
-    defaultMatrix.v2.w = 100.0;
+    defaultMatrix.v2.z = -1.0f;
+    defaultMatrix.v3.z = 1200.0f;
+    defaultMatrix.v2.w = 100.0f;
 
-    CurrentKey.TargetDistance = 10.0;
-    CurrentKey.NearZ = 0.5;
+    CurrentKey.TargetDistance = 10.0f;
+    CurrentKey.NearZ = 0.5f;
     bClearVelocity = false;
 
-    
-    defaultMatrix.v1.x = 0.0;
-    defaultMatrix.v2.x = 0.0;
-    defaultMatrix.v3.x = 0.0;
-    defaultMatrix.v0.y = 0.0;
-    defaultMatrix.v1.y = -1.0;
-    defaultMatrix.v2.y = 0.0;
-    defaultMatrix.v3.y = 0.0;
+    defaultMatrix.v1.x = 0.0f;
+    defaultMatrix.v2.x = 0.0f;
+    defaultMatrix.v3.x = 0.0f;
+    defaultMatrix.v0.y = 0.0f;
+    defaultMatrix.v1.y = -1.0f;
+    defaultMatrix.v2.y = 0.0f;
+    defaultMatrix.v3.y = 0.0f;
 
+    defaultMatrix.v0.z = 0.0f;
+    defaultMatrix.v1.z = 0.0f;
+    defaultMatrix.v0.w = 0.0f;
+    defaultMatrix.v1.w = 0.0f;
 
-    defaultMatrix.v0.z = 0.0;
-    defaultMatrix.v1.z = 0.0;
-    defaultMatrix.v0.w = 0.0;
-    defaultMatrix.v1.w = 0.0;
+    CurrentKey.FocalDistance = 0.0f;
+    CurrentKey.DepthOfField = 0.0f;
+    ElapsedTime = 1.0f;
 
-    CurrentKey.FocalDistance = 0.0;
-    CurrentKey.DepthOfField = 0.0;
-    ElapsedTime = 1.0;
+    defaultMatrix.v0.x = 1.0f;
+    defaultMatrix.v3.w = 1.0f;
 
-    defaultMatrix.v0.x = 1.0;
-    defaultMatrix.v3.w = 1.0;
-
-    CurrentKey.FarZ = 10000.0;
+    CurrentKey.FarZ = 10000.0f;
     CurrentKey.FieldOfView = 0x36fb;
 
-
     CurrentKey.NoiseAmplitude2.w = 0.0f;
-    CurrentKey.SimTimeMultiplier = 1.0;
-    CurrentKey.LB_height = 0.0;
-    CurrentKey.NoiseFrequency1.x = 1.0;
-    CurrentKey.NoiseAmplitude1.x = 0.0;
-    CurrentKey.NoiseAmplitude1.y = 0.0;
-    CurrentKey.NoiseAmplitude1.z = 0.0;
-    CurrentKey.NoiseAmplitude1.w = 0.0;
+    CurrentKey.SimTimeMultiplier = 1.0f;
+    CurrentKey.LB_height = 0.0f;
+    CurrentKey.NoiseFrequency1.x = 1.0f;
+    CurrentKey.NoiseAmplitude1.x = 0.0f;
+    CurrentKey.NoiseAmplitude1.y = 0.0f;
+    CurrentKey.NoiseAmplitude1.z = 0.0f;
+    CurrentKey.NoiseAmplitude1.w = 0.0f;
 
-    
-    
-    CurrentKey.NoiseFrequency1.y = 1.0;
-    CurrentKey.NoiseFrequency1.z = 1.0;
-    CurrentKey.NoiseFrequency1.w = 1.0;
-    CurrentKey.NoiseFrequency2.x = 1.0;
-    CurrentKey.NoiseFrequency2.y = 1.0;
-    CurrentKey.NoiseFrequency2.z = 1.0;
-    CurrentKey.NoiseFrequency2.w = 1.0;
+    CurrentKey.NoiseFrequency1.y = 1.0f;
+    CurrentKey.NoiseFrequency1.z = 1.0f;
+    CurrentKey.NoiseFrequency1.w = 1.0f;
+    CurrentKey.NoiseFrequency2.x = 1.0f;
+    CurrentKey.NoiseFrequency2.y = 1.0f;
+    CurrentKey.NoiseFrequency2.z = 1.0f;
+    CurrentKey.NoiseFrequency2.w = 1.0f;
 
+    CurrentKey.NoiseAmplitude2.x = 0.0f;
+    CurrentKey.NoiseAmplitude2.y = 0.0f;
+    CurrentKey.NoiseAmplitude2.z = 0.0f;
 
-
-    CurrentKey.NoiseAmplitude2.x = 0.0;
-    CurrentKey.NoiseAmplitude2.y = 0.0;
-    CurrentKey.NoiseAmplitude2.z = 0.0;
-
-
-
-    SetCameraMatrix(&defaultMatrix, 1.0);
-    SetCameraMatrix(&defaultMatrix, 1.0);
+    SetCameraMatrix(defaultMatrix, 1.0f);
+    SetCameraMatrix(defaultMatrix, 1.0f);
 }
 
-
-void Camera::SetCameraMatrix(bMatrix4 *m, float fTime) {
-    bMatrix4 matrixBuffer;
+void Camera::SetCameraMatrix(const bMatrix4 &m, float fTime) {
+    static int cameralink;
+    struct bMatrix4 t;
 
     if (StopUpdating == 0) {
+        bMatrix4 scaledmatrix;
         bMemCpy(&PreviousKey, this, 0xd4);
         ElapsedTime = fTime;
 
         if (Camera::JollyRancherResponse.UseMatrix == 0 || DisableCommunication != 0) {
-            if (g_cameralink.linked != 0) {
-                g_cameralink.linked = 0;
+            if (cameralink != 0) {
+                cameralink = 0;
             }
-            PSMTX44Copy((const float (*)[4])m, (float (*)[4])this);
+            bMemCpy(this, &m, sizeof(bMatrix4));
         } else {
-            if (g_cameralink.linked == 0) {
-                g_cameralink.linked = 1;
+            if (cameralink == 0) {
+                cameralink = 1;
             }
-            bMemCpy(&matrixBuffer, &Camera::JollyRancherResponse.CamMatrix, 0x40);
-            matrixBuffer.v3.x *= 0.01f;
-            matrixBuffer.v3.y *= 0.01f;
-            matrixBuffer.v3.z *= 0.01f;
-            matrixBuffer.v3.w = 1.0f;
-            PSMTX44Copy((const float (*)[4]) & matrixBuffer, (float (*)[4])this);
+            bMemCpy(&t, const_cast<const bMatrix4 *>(&Camera::JollyRancherResponse.CamMatrix), sizeof(JollyRancherResponse.CamMatrix));
+            t.v3.x *= 0.01f;
+            t.v3.y *= 0.01f;
+            t.v3.z *= 0.01f;
+            t.v3.w = 1.0f;
+            bMemCpy(this, &m, sizeof(bMatrix4));
         }
 
-        bTransposeMatrix(&matrixBuffer, (bMatrix4 *)this);
+        bTransposeMatrix(&t, (bMatrix4 *)this);
 
-        matrixBuffer.v0.w = 0.0f;
-        matrixBuffer.v1.w = 0.0f;
-        matrixBuffer.v2.w = 0.0f;
-        eMulVector(&CurrentKey.Position, &matrixBuffer, (bVector3 *)&CurrentKey.Matrix.v3);
+        t.v0.w = 0.0f;
+        t.v1.w = 0.0f;
+        t.v2.w = 0.0f;
+        eMulVector(&CurrentKey.Position, &t, (bVector3 *)&CurrentKey.Matrix.v3);
 
         CurrentKey.Position.x = -CurrentKey.Position.x;
         CurrentKey.Position.y = -CurrentKey.Position.y;
         CurrentKey.Position.z = -CurrentKey.Position.z;
 
-        bNormalize(&CurrentKey.Direction, (bVector3 *)&matrixBuffer.v2);
+        bNormalize(&CurrentKey.Direction, (bVector3 *)&t.v2);
 
         float targetDist = CurrentKey.TargetDistance;
         CurrentKey.Target.x = CurrentKey.Direction.x * targetDist + CurrentKey.Position.x;
@@ -174,7 +119,7 @@ void Camera::SetCameraMatrix(bMatrix4 *m, float fTime) {
             ElapsedTime = 1.0f;
         }
 
-        if (0.0 < (double)ElapsedTime) {
+        if (ElapsedTime > 0.0f) {
             float invTime = 1.0f / ElapsedTime;
 
             VelocityKey.Position.x = (CurrentKey.Position.x - PreviousKey.Position.x) * invTime;
@@ -197,8 +142,8 @@ void Camera::SetCameraMatrix(bMatrix4 *m, float fTime) {
             VelocityKey.LB_height = (CurrentKey.LB_height - PreviousKey.LB_height) * invTime;
             VelocityKey.SimTimeMultiplier = (CurrentKey.SimTimeMultiplier - PreviousKey.SimTimeMultiplier) * invTime;
 
-            VelocityKey.FieldOfView =
-                (unsigned short)(int)(invTime * (float)((short)(CurrentKey.FieldOfView - PreviousKey.FieldOfView)));
+            VelocityKey.FieldOfView = static_cast<unsigned short>(
+                static_cast<int>(invTime * static_cast<float>(static_cast<short>(CurrentKey.FieldOfView - PreviousKey.FieldOfView))));
 
             VelocityKey.NoiseFrequency1.x = (CurrentKey.NoiseFrequency1.x - PreviousKey.NoiseFrequency1.x) * invTime;
             VelocityKey.NoiseFrequency1.y = (CurrentKey.NoiseFrequency1.y - PreviousKey.NoiseFrequency1.y) * invTime;
@@ -224,175 +169,232 @@ void Camera::SetCameraMatrix(bMatrix4 *m, float fTime) {
 }
 
 void Camera::CommunicateWithJollyRancher(char *cameraname) {
-    char data[96];
-    void *addr;
-    int protocol;
-    bMatrix4 scaledmatrix;
-
     if (DisableCommunication == 0) {
+        char data[96];
+        void *addr;
+        int protocol;
+
         addr = &Camera::JollyRancherResponse;
-        protocol = DisableCommunication;   
+        protocol = DisableCommunication;
 
         bMemCpy(data, &addr, 4);
         bMemCpy(data + 4, &protocol, 4);
 
-        scaledmatrix = *(bMatrix4*)this; 
+        bMatrix4 scaledmatrix = *reinterpret_cast<const bMatrix4 *>(this);
 
-        bScale(reinterpret_cast<bVector3 *>(&scaledmatrix.v3),
-               reinterpret_cast<const bVector3 *>(&scaledmatrix.v3),
-               100.0f);
+        bScale(reinterpret_cast<bVector3 *>(&scaledmatrix.v3), reinterpret_cast<const bVector3 *>(&scaledmatrix.v3), 100.0f);
 
         scaledmatrix.v3.w = 1.0f;
 
         bMemCpy(data + 8, &scaledmatrix, 0x40);
         bStrCpy(data + 0x48, cameraname);
 
-        bFunkCallASync("JR2Server", 1, data, 0x60);
+        bFunkCallASync("JR2Server", 1, data, sizeof(data));
     }
+}
+
+float NoiseBase(int x) {
+    return 1.0f - (float)((((x << 13) ^ x) * (((x << 13) ^ x) * ((x << 13) ^ x) * 15731 + 789221) + 1376312589 & 0x7FFFFFFF) ^ 0x8000) *
+                      (1.0f / 1073741824.0f); // Hugo Elias integer noise hash with modification ( ^ 0x8000 )
+}
+
+float NoiseInterpolated(float x) {
+    int a;
+    float s;
+    float t;
+    float f;
+
+    a = (int)bFloor(x);
+    s = NoiseBase(a);
+    t = NoiseBase(a + 1);
+    f = (x - (float)a);
+
+    return f * t + (1.0f - (x - f) * s);
+}
+
+float Noise(float x) {
+    float total = 0.0f;
+    float frequency = 1.0f;
+    float amplitude = 1.0f;
+
+    for (int i = 0; i < 6; ++i) {
+        total += NoiseInterpolated(x * frequency) * amplitude;
+
+        frequency *= 2.0f;
+        amplitude *= 0.5f;
+    }
+
+    return total;
 }
 
 unsigned short Camera::FovRelativeAngle(unsigned short a) {
-
-    float sin_a = bSin(a);
-    float sin_fov = bSin((unsigned short)(CurrentKey.FieldOfView >> 1));
-    float sin_baseline = bSin((unsigned short)(0x2aaa >> 1));
-
-    return bASin((float)(sin_a * sin_fov) / sin_baseline);
+    float f = (float)(bSin(a) * bSin((unsigned short)(CurrentKey.FieldOfView >> 1)) / bSin((unsigned short)(0x2aaa >> 1)));
+    return f;
 }
 
-void Camera::UpdateAll(float dT){
+void Camera::UpdateAll(float dT) {
     UpdateCameraMovers(dT);
-    //UpdateCameraShakers((float)dT); 
-    // TODO
+    // UpdateCameraShakers(dT);
+    //  TODO
 }
 
-void Camera::ApplyNoise(bMatrix4 *p_matrix,float time,float intensity){
-  int a;
+void Camera::ApplyNoise(bMatrix4 *p_matrix, float time, float intensity) {
+    int a;
 
-  unsigned short angle;
-  float x1;
-  float y1;
-  float z1;
-  float w1;
+    unsigned short angle;
+    float x1;
+    float y1;
+    float z1;
+    float w1;
 
-  float x2;
-  float y2;
-  float z2;
-  float w2;
+    float x2;
+    float y2;
+    float z2;
+    float w2;
 
-  bMatrix4 bmatrix4;
-  long long local_48;
-  
-  x1 = Noise(CurrentKey.NoiseFrequency1.x * time);
-  y1 = Noise(CurrentKey.NoiseFrequency1.y * time);
-  z1 = Noise(CurrentKey.NoiseFrequency1.z * time);
-  w1 = Noise(CurrentKey.NoiseFrequency1.w * time);
+    long long local_48;
 
-  x2 = Noise(CurrentKey.NoiseFrequency2.x * time);
-  y2 = Noise(CurrentKey.NoiseFrequency2.y * time);
-  z2 = Noise(CurrentKey.NoiseFrequency2.z * time);
-  w2 = Noise(CurrentKey.NoiseFrequency2.w * time);
+    x1 = Noise(CurrentKey.NoiseFrequency1.x * time);
+    y1 = Noise(CurrentKey.NoiseFrequency1.y * time);
+    z1 = Noise(CurrentKey.NoiseFrequency1.z * time);
+    w1 = Noise(CurrentKey.NoiseFrequency1.w * time);
 
-  PSMTX44Identity( (float (*)[4])&bmatrix4);
+    x2 = Noise(CurrentKey.NoiseFrequency2.x * time);
+    y2 = Noise(CurrentKey.NoiseFrequency2.y * time);
+    z2 = Noise(CurrentKey.NoiseFrequency2.z * time);
+    w2 = Noise(CurrentKey.NoiseFrequency2.w * time);
 
-  a = (int)((z1 * CurrentKey.NoiseFrequency1.w + z2 * CurrentKey.NoiseFrequency2.w) * intensity * 65536.0);
+    bMatrix4 bmatrix4;
 
-  bmatrix4.v3.x = (x1 * CurrentKey.NoiseAmplitude1.x + x2 * CurrentKey.NoiseAmplitude2.x) * intensity;
-  bmatrix4.v3.y = (y1 * CurrentKey.NoiseAmplitude1.y + y2 * CurrentKey.NoiseAmplitude2.y) * intensity;
+    a = (int)((z1 * CurrentKey.NoiseFrequency1.w + z2 * CurrentKey.NoiseFrequency2.w) * intensity * 65536.0);
 
-  angle = Camera::FovRelativeAngle((unsigned short)(a / 0x168));
-  eRotateX(&bmatrix4,&bmatrix4,angle);
+    bmatrix4.v3.x = (x1 * CurrentKey.NoiseAmplitude1.x + x2 * CurrentKey.NoiseAmplitude2.x) * intensity;
+    bmatrix4.v3.y = (y1 * CurrentKey.NoiseAmplitude1.y + y2 * CurrentKey.NoiseAmplitude2.y) * intensity;
 
-  a = (int)((w1 * CurrentKey.NoiseAmplitude1.w + w2 * CurrentKey.NoiseAmplitude2.w) * intensity * 65536.0);
-  angle = Camera::FovRelativeAngle((unsigned short)(a / 0x168));
-  eRotateY(&bmatrix4,&bmatrix4,angle);
-  
-  eMulMatrix(p_matrix,p_matrix,&bmatrix4);
-  return;
+    angle = Camera::FovRelativeAngle((unsigned short)(a / 0x168));
+    eRotateX(&bmatrix4, &bmatrix4, angle);
+
+    a = (int)((w1 * CurrentKey.NoiseAmplitude1.w + w2 * CurrentKey.NoiseAmplitude2.w) * intensity * 65536.0);
+    angle = Camera::FovRelativeAngle((unsigned short)(a / 0x168));
+    eRotateY(&bmatrix4, &bmatrix4, angle);
+
+    eMulMatrix(p_matrix, p_matrix, &bmatrix4);
+    return;
 }
 
+void UpdateCameraMovers(float dT) {
 
-void UpdateCameraMovers(float dT)
-{
+    for (int view_id = 0; view_id < 22; ++view_id) {
+        eView *view = eGetView(view_id, false);
 
-    eView *view;
-    bool set_any_positions;
+        if (view != nullptr) {
+            CameraMover *m = view->GetCameraMover();
 
-    const bool warping =
-        GManager::Get().mObj &&
-        GManager::mObj->mWarping;
-
-    const bool waitingForLoad =
-        GRaceStatus::fObj &&
-        GRaceStatus::fObj->mScriptWaitingForLoad;
-
-
-    for (int viewIndex = 0; viewIndex < 22; ++viewIndex) // 22 is NUM_VIEWS
-    {
-        view = eGetView(viewIndex, false);
-        bNode* head = eGetView(viewIndex, false)->CameraMoverList.GetHead();
-        bNode* first = head->Next;
-
-        if (first != head)
-        {
-            CameraMover* mover = (CameraMover*)first;
-            mover->Update(dT);
+            if (m != nullptr) {
+                Camera *camera = view->GetCamera();
+                if (camera != nullptr) {
+                    bVector3 *cam_pos = camera->GetPosition();
+                    m->Update(dT);
+                }
+            }
         }
     }
 
-    if (!WeHaveCheckedIfJR2ServerExists)
-    {
+    if (!WeHaveCheckedIfJR2ServerExists) {
         JR2ServerExists = bFunkDoesServerExist("JR2Server");
         WeHaveCheckedIfJR2ServerExists = 1;
     }
 
-    if (JR2ServerExists && eGetView(1,false)->pCamera)
-    {
-        int elapsed = abs(RealTime - LastUpdateTimeJR2);
-
-        if (elapsed > 16)
-        {
+    if (JR2ServerExists) {
+        eView *view = eGetView(1, false);
+        int elapsed = bAbs(RealTime - LastUpdateTimeJR2);
+        if (elapsed > 16) {
             LastUpdateTimeJR2 = RealTime;
-            eGetView(1,false)->pCamera->CommunicateWithJollyRancher("SpeedCam");
+            view->pCamera->CommunicateWithJollyRancher("SpeedCam");
         }
     }
 
-    if (warping || waitingForLoad)
+    if (RemoteCaffeinating != 0 && DisableCommunication == 0) {
+        eView *view = eGetView(1, false);
+        if (view->pCamera != nullptr) {
+            int elapsed = bAbs(RealTime - LastUpdateTimeCaffeine);
+            if (elapsed > 16) {
+                LastUpdateTimeCaffeine = RealTime;
+
+                bVector3 eye;
+                bVector3 look;
+                Vector3 fix_eye;  // LongVector
+                Vector3 fix_look; // LongVector
+
+                bVector3 prev_position(0.0f, 0.0f, 0.0f);
+
+                float scale = 50.0f; // DAT_803d1e90
+                eye = view->pCamera->CurrentKey.Position * scale;
+                look = view->pCamera->CurrentKey.Direction * scale;
+
+                bVector3 diff = eye - prev_position;
+
+                // espSetCameraPositionFix(&fix_eye, &fix_look); // need
+
+                float dist = bDistBetween(&diff, &prev_position);
+                if (dist < 10.0f) {
+                }
+
+                // espCentrePlaneView(...);
+            }
+        }
+    }
+
+    if (GManager::Exists() && GManager::Get().GetIsWarping()) {
         return;
+    }
+    if (GRaceStatus::Exists() && GRaceStatus::Get().GetIsScriptWaitingForLoading()) {
+        return;
+    }
 
     bool streamerCleared = false;
+    for (int viewIndex = 1; viewIndex < 3; ++viewIndex) {
+        eView *view = eGetView(viewIndex, false);
 
-    for (int viewIndex = 1; viewIndex < 3; ++viewIndex)
-    {
-        eView* view = eGetView(viewIndex, false);
-
-        if (!view->Active)
+        if (!view->Active) {
             continue;
+        }
 
-        if (view->CameraMoverList.IsEmpty())
+        CameraMover *cm = view->GetCameraMover();
+        if (cm == nullptr) {
             continue;
+        }
 
-        if (!streamerCleared)
-        {
+        if (!streamerCleared) {
             TheTrackStreamer.ClearStreamingPositions();
             streamerCleared = true;
         }
 
-        Camera* camera = view->pCamera;
+        Camera *camera = view->GetCamera();
 
-        bVector3 position  = camera->CurrentKey.Position;
-        bVector3 velocity  = camera->VelocityKey.Position;
+        bVector3 position = camera->CurrentKey.Position;
+        bVector3 velocity = camera->VelocityKey.Position;
         bVector3 direction = camera->CurrentKey.Direction;
 
-        if (bStreamingPositionFromICE)
-        {
-            if (INIS* inis = UTL::Collections::Singleton<INIS>::Get())
-            {
-                const Vector3* editorPos = inis->GetStartCameraLocation();
+        IPlayer *player = IPlayer::First(PLAYER_LOCAL);
+        if (player != nullptr) {
+            ISimable *simable = player->GetSimable();
+            if (simable != nullptr) {
+                IRigidBody *body = simable->GetRigidBody();
+                if (body) {
+                    bConvertFromBond(position, body->GetPosition());
+                }
+            }
+        }
 
-                position.y = -editorPos->x;
+        if (bStreamingPositionFromICE) {
+            INIS *inis = UTL::Collections::Singleton<INIS>::Get();
+            if (inis != nullptr) {
+                const Vector3 *editorPos = inis->GetStartCameraLocation();
+
                 position.x = editorPos->z;
                 position.z = editorPos->y;
+                position.y = -editorPos->x;
             }
 
             velocity = bVector3(0.0f, 0.0f, 0.0f);
@@ -401,15 +403,8 @@ void UpdateCameraMovers(float dT)
 
         const bool rearView = (viewIndex == 2);
 
-        const bool freezePrediction =
-            view->CameraMoverList.GetHead()->Next->Prev ==
-            reinterpret_cast<bNode*>(1);
+        const bool freezePrediction = (view->CameraMoverList.GetHead()->Next->Prev == reinterpret_cast<bNode *>(1));
 
-        TheTrackStreamer.PredictStreamingPosition(
-            rearView,
-            &position,
-            &velocity,
-            &direction,
-            freezePrediction);
+        TheTrackStreamer.PredictStreamingPosition(rearView, &position, &velocity, &direction, freezePrediction);
     }
 }

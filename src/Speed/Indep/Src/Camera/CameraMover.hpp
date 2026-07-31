@@ -6,6 +6,7 @@
 #endif
 
 #include "./Camera.hpp"
+#include "./CameraAI.hpp"
 #include "CameraInfo.hpp"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/camerainfo.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/ecar.h"
@@ -16,7 +17,6 @@
 #include "Speed/Indep/Src/World/WCollider.h"
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/Src/Ecstasy/eMath.hpp"
-
 
 class eView;
 
@@ -42,13 +42,12 @@ enum CameraMoverTypes {
     CM_SHOWCASE = 18,
 };
 
-bVector4 CameraNoiseHandheldAmplitude = bVector4( 0.01,  0.01, 0.03, 0.03);
-bVector4 CameraNoiseHandheldFrequency = bVector4( 0.01,  0.175, 0.153, 0.03);
+bVector4 CameraNoiseHandheldAmplitude = bVector4(0.01, 0.01, 0.03, 0.03);
+bVector4 CameraNoiseHandheldFrequency = bVector4(0.01, 0.175, 0.153, 0.03);
 
 // total size: 0x124
 class CameraAnchor {
   public:
-
     // CameraAnchor(int modelhash);
 
     bVector3 *GetGeometryPosition() {
@@ -95,13 +94,13 @@ class CameraAnchor {
 // total size: 0x80
 class CameraMover : public bTNode<CameraMover>, public WCollisionMgr::ICollisionHandler {
   public:
-    CameraMover(int view_id,CameraMoverTypes type);
+    CameraMover(int view_id, CameraMoverTypes type);
 
     CameraMoverTypes GetType() {
         return Type;
     }
-    
-    void ComputeBankedUpVector(bVector3 *up,bVector3 *eye,bVector3 *look,bAngle bank);
+
+    void ComputeBankedUpVector(bVector3 *up, bVector3 *eye, bVector3 *look, bAngle bank);
 
     WUID GetAnchorID();
 
@@ -122,9 +121,9 @@ class CameraMover : public bTNode<CameraMover>, public WCollisionMgr::ICollision
     virtual void Update(float dT);
     virtual void Render(eView *view);
 
-    void HandheldNoise(bMatrix4 *world_to_camera,float f_scale,bool useWorldTimer);
+    void HandheldNoise(bMatrix4 *world_to_camera, float f_scale, bool useWorldTimer);
 
-    void ChopperNoise(bMatrix4 *world_to_camera,float f_scale,bool useWorldTimer);
+    void ChopperNoise(bMatrix4 *world_to_camera, float f_scale, bool useWorldTimer);
 
     virtual CameraAnchor *GetAnchor() {}
 
@@ -140,9 +139,7 @@ class CameraMover : public bTNode<CameraMover>, public WCollisionMgr::ICollision
 
     virtual bool RenderCarPOV() {}
 
-    virtual float MinDistToWall() {
-        return 0.7;
-    }
+    virtual float MinDistToWall();
 
     virtual unsigned short GetLookbackAngle() {}
 

@@ -9,24 +9,25 @@
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/Src/Camera/ICE/ICEMath.hpp"
 #include "Speed/Indep/Src/Misc/Timer.hpp"
-#include "Speed/Indep/bWare/Src/bFunkPlat.cpp"
+#include "Speed/Indep/bWare/Inc/bFunk.hpp"
 #include "Speed/Indep/Src/Gameplay/GManager.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
 #include "Speed/Indep/Libs/Support/Utility/UCollections.h"
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/World/TrackStreamer.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
-
-// TODO GET RID OF THESE (from GameFlow.cpp)
-#include "Speed/Indep/Src/Misc/GameFlow.cpp"
-
+#include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
+#include "Speed/Indep/bWare/Inc/Espresso.hpp"
+#include "Speed/Indep/Src/Misc/GameFlow.hpp"
 
 // TODO GET RID OF THESE
-extern int32 RealTime; 
+extern int32 RealTime;
 extern int32 LastUpdateTimeJR2;
-extern int WeHaveCheckedIfJR2ServerExists; 
+extern int WeHaveCheckedIfJR2ServerExists;
 extern int bStreamingPositionFromICE;
 extern int JR2ServerExists;
+extern int LastUpdateTimeCaffeine;
+extern int LastUpdateTimeJR2;
 
 void UpdateCameraMovers(float dT);
 
@@ -51,26 +52,27 @@ struct CameraParams {
     unsigned short DummyAngle;  // offset 0xD0, size 0x2
 };
 
+// total size: 0x50
 struct JollyRancherResponsePacket {
-    int UseMatrix;          // offset 0x0
-    int Pad1;               // offset 0x4
-    int Pad2;               // offset 0x8
-    int Pad3;               // offset 0xC
-    bMatrix4 CamMatrix;     // offset 0x10
+    // Functions
+    inline JollyRancherResponsePacket() {}
+
+    // Members
+    volatile int UseMatrix;             // offset 0x0, size 0x4
+    volatile int Pad1;                  // offset 0x4, size 0x4
+    volatile int Pad2;                  // offset 0x8, size 0x4
+    volatile int Pad3;                  // offset 0xC, size 0x4
+    volatile struct bMatrix4 CamMatrix; // offset 0x10, size 0x40
 };
 
-struct CameraLink {
-    int linked; // offset 0x0
-};
-
-extern CameraLink g_cameralink;
+// static int cameralink;
 
 struct JR2Request {
-        JollyRancherResponsePacket *response;
-        int disableComm;
-        bMatrix4 scaledMatrix;
-        char cameraName[24];
-    } request;
+    JollyRancherResponsePacket *response;
+    int disableComm;
+    bMatrix4 scaledMatrix;
+    char cameraName[24];
+} request;
 
 // total size: 0x290
 class Camera {
@@ -82,6 +84,8 @@ class Camera {
     static JollyRancherResponsePacket JollyRancherResponse;
     static int JR2ServerExists;
 
+    static void UpdateAll(float dT);
+
     bMatrix4 *GetCameraMatrix() {
         return &this->CurrentKey.Matrix;
     }
@@ -91,19 +95,13 @@ class Camera {
     }
 
     Camera();
-    void SetCameraMatrix(bMatrix4 *m,float fTime);
+    void SetCameraMatrix(const bMatrix4 &m, float fTime);
 
     void CommunicateWithJollyRancher(char *cameraname);
 
     unsigned short FovRelativeAngle(unsigned short a);
 
-    void UpdateAll(float dT);
-
-    void ApplyNoise(bMatrix4 *p_matrix,float time,float intensity);
-
-    // void UpdateCameraMovers(float dT); // not a member of Camera, but a global function
-
-    // void UpdateCameraShakers(float dT); // not a member of Camera, but a global function
+    void ApplyNoise(bMatrix4 *p_matrix, float time, float intensity);
 
     // float GetFocalDistance() {}
 
@@ -116,7 +114,6 @@ class Camera {
     bVector3 *GetPosition() {
         return &this->CurrentKey.Position;
     }
-
 
     bVector3 *GetDirection() {
         return &this->CurrentKey.Direction;
@@ -132,8 +129,6 @@ class Camera {
 
         return vec;
     }
-
-    
 
     // bVector3 *GetPreviousPosition() {}
 
@@ -221,6 +216,5 @@ class Camera {
 // TODO move?
 extern bool gCinematicMomementCamera;
 extern int DisableCommunication;
-extern TrackStreamer TheTrackStreamer;
 
 #endif
