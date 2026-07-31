@@ -234,8 +234,7 @@ unsigned short Camera::FovRelativeAngle(unsigned short a) {
 
 void Camera::UpdateAll(float dT) {
     UpdateCameraMovers(dT);
-    // UpdateCameraShakers(dT);
-    //  TODO
+    UpdateCameraShakers(dT);
 }
 
 void Camera::ApplyNoise(bMatrix4 *p_matrix, float time, float intensity) {

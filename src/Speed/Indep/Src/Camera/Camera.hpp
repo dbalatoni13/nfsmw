@@ -19,6 +19,7 @@
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
 #include "Speed/Indep/bWare/Inc/Espresso.hpp"
 #include "Speed/Indep/Src/Misc/GameFlow.hpp"
+#include "Speed/Indep/Src/Misc/Rumble.hpp"
 
 // TODO GET RID OF THESE
 extern int32 RealTime;

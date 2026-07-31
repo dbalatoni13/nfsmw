@@ -1,5 +1,6 @@
 #include "Speed\Indep\Src\Camera\CameraMover.hpp"
-#include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
+#include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
+#include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 bool DoesCameraTypeDisablePreculler(CameraMoverTypes type) {
     if (type == CM_DEBUG_WORLD) {
@@ -35,6 +36,8 @@ CameraMover::CameraMover(int view_id, CameraMoverTypes type) : mWPos(0.025f) {
     }
 }
 
+void CameraMover::Render(eView *view) {}
+
 void CameraMover::Enable() {
     if (Enabled == 0) {
         Enabled = 1;
@@ -46,25 +49,6 @@ void CameraMover::Enable() {
     }
 }
 
-void CameraMover::ComputeBankedUpVector(bVector3 *up, bVector3 *eye, bVector3 *look, bAngle bank) {
-
-    bVector3 diff;
-
-    diff.x = look->x - eye->x;
-    diff.z = look->z - eye->z;
-    diff.y = look->y - eye->y;
-
-    bVector3 axis;
-    bNormalize(&axis, &diff);
-
-    bMatrix4 rotationMatrix;
-    eCreateAxisRotationMatrix(&rotationMatrix, *&axis, bank);
-
-    bVector3 defaultVec = bVector3(0.0, 0.0, 1.0);
-    eMulVector(up, &rotationMatrix, &defaultVec);
-    return;
-}
-
 void CameraMover::Disable() {
     if (Enabled != 0) {
         Enabled = 0;
@@ -73,18 +57,42 @@ void CameraMover::Disable() {
     }
     return;
 }
+void CameraMover::ChopperNoise(bMatrix4 *world_to_camera, float f_scale, bool useWorldTimer) {
 
-CameraMover::~CameraMover() {
-    WCollider::Destroy(mCollider);
+    if (f_scale > 0.0) {
+        const UTL::Collections::ListableSet<IVehicle, 10, eVehicleList, 10>::List &vehicles =
+            UTL::Collections::ListableSet<IVehicle, 10, eVehicleList, 10>::GetList(VEHICLE_ALL);
+        for (IVehicle *const *iter = vehicles.begin(); iter != vehicles.end(); iter++) {
+            IVehicle *vehicle = *iter;
+            if (vehicle->IsActive()) {
+                continue;
+            }
+            if (vehicle->GetVehicleClass() != VehicleClass::CHOPPER) {
+                continue;
+            }
+            const UMath::Vector3 &pos = vehicle->GetPosition();
 
-    if (DoesCameraTypeDisablePreculler(Type)) {
-        DisablePrecullerCounter--;
+            bVector3 bpos; // r1+0x8
+
+            eSwizzleWorldVector(pos, bpos);
+
+            bVector3 *dir = pCamera->GetPosition();
+            float distance = 0.0f;
+            bVector4 p = bVector4();
+
+            if (true) {
+
+                float intensity;      // f0
+                bVector4 v_frequency; // r1+0x28
+                bVector4 v_magnitude; // r1+0x38
+                float time;           // f1
+
+                bScale(&v_frequency, &v_magnitude, intensity);
+
+                pCamera->SetNoiseAmplitude1(&p);
+            }
+        }
     }
-    Disable();
-}
-
-void CameraMover::Update(float dT) {
-    return;
 }
 
 void CameraMover::HandheldNoise(bMatrix4 *world_to_camera, float f_scale, bool useWorldTimer) {
@@ -145,6 +153,38 @@ void CameraMover::HandheldNoise(bMatrix4 *world_to_camera, float f_scale, bool u
     int packedTime = useWorldTimer ? WorldTimer.GetPackedTime() : RealTimer.GetPackedTime();
 
     pCamera->ApplyNoise(world_to_camera, (float)packedTime * 0.00025f, 1.0f);
+}
+
+void CameraMover::ComputeBankedUpVector(bVector3 *up, bVector3 *eye, bVector3 *look, bAngle bank) {
+
+    bVector3 diff;
+
+    diff.x = look->x - eye->x;
+    diff.z = look->z - eye->z;
+    diff.y = look->y - eye->y;
+
+    bVector3 axis;
+    bNormalize(&axis, &diff);
+
+    bMatrix4 rotationMatrix;
+    eCreateAxisRotationMatrix(&rotationMatrix, *&axis, bank);
+
+    bVector3 defaultVec = bVector3(0.0, 0.0, 1.0);
+    eMulVector(up, &rotationMatrix, &defaultVec);
+    return;
+}
+
+CameraMover::~CameraMover() {
+    WCollider::Destroy(mCollider);
+
+    if (DoesCameraTypeDisablePreculler(Type)) {
+        DisablePrecullerCounter--;
+    }
+    Disable();
+}
+
+void CameraMover::Update(float dT) {
+    return;
 }
 
 float CameraMover::MinDistToWall() {

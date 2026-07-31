@@ -17,6 +17,11 @@
 #include "Speed/Indep/Src/World/WCollider.h"
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/Src/Ecstasy/eMath.hpp"
+#include "Speed/Indep/Libs/Support/Utility/UListable.h"
+#include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
+#include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
+#include "Speed/Indep/bWare/Inc/bMath.hpp"
+#include "Speed/Indep/Src/Physics/PVehicle.h"
 
 class eView;
 
