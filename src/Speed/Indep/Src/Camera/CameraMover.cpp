@@ -36,6 +36,19 @@ CameraMover::CameraMover(int view_id, CameraMoverTypes type) : mWPos(0.025f) {
     }
 }
 
+CameraMover::~CameraMover() {
+    WCollider::Destroy(mCollider);
+
+    if (DoesCameraTypeDisablePreculler(Type)) {
+        DisablePrecullerCounter--;
+    }
+    Disable();
+}
+
+void CameraMover::Update(float dT) {
+    return;
+}
+
 void CameraMover::Render(eView *view) {}
 
 void CameraMover::Enable() {
@@ -178,19 +191,6 @@ void CameraMover::ComputeBankedUpVector(bVector3 *up, bVector3 *eye, bVector3 *l
     return;
 }
 
-CameraMover::~CameraMover() {
-    WCollider::Destroy(mCollider);
-
-    if (DoesCameraTypeDisablePreculler(Type)) {
-        DisablePrecullerCounter--;
-    }
-    Disable();
-}
-
-void CameraMover::Update(float dT) {
-    return;
-}
-
 float CameraMover::MinDistToWall() {
     return 0.7;
 }
@@ -206,5 +206,133 @@ void CameraMoverRestartRace() {
         if (cm != nullptr) {
             cm->ResetState();
         }
+    }
+}
+
+void UpdateCameraMovers(float dT) {
+
+    for (int view_id = 0; view_id < 22; ++view_id) {
+        eView *view = eGetView(view_id, false);
+
+        if (view != nullptr) {
+            CameraMover *m = view->GetCameraMover();
+
+            if (m != nullptr) {
+                Camera *camera = view->GetCamera();
+                if (camera != nullptr) {
+                    bVector3 *cam_pos = camera->GetPosition();
+                    m->Update(dT);
+                }
+            }
+        }
+    }
+
+    if (!WeHaveCheckedIfJR2ServerExists) {
+        JR2ServerExists = bFunkDoesServerExist("JR2Server");
+        WeHaveCheckedIfJR2ServerExists = 1;
+    }
+
+    if (JR2ServerExists) {
+        eView *view = eGetView(1, false);
+        int elapsed = bAbs(RealTime - LastUpdateTimeJR2);
+        if (elapsed > 16) {
+            LastUpdateTimeJR2 = RealTime;
+            view->pCamera->CommunicateWithJollyRancher("SpeedCam");
+        }
+    }
+
+    if (RemoteCaffeinating != 0 && DisableCommunication == 0) {
+        eView *view = eGetView(1, false);
+        if (view->pCamera != nullptr) {
+            int elapsed = bAbs(RealTime - LastUpdateTimeCaffeine);
+            if (elapsed > 16) {
+                LastUpdateTimeCaffeine = RealTime;
+
+                bVector3 eye;
+                bVector3 look;
+                Vector3 fix_eye;  // LongVector
+                Vector3 fix_look; // LongVector
+
+                bVector3 prev_position(0.0f, 0.0f, 0.0f);
+
+                float scale = 50.0f; // DAT_803d1e90
+                eye = view->pCamera->CurrentKey.Position * scale;
+                look = view->pCamera->CurrentKey.Direction * scale;
+
+                bVector3 diff = eye - prev_position;
+
+                // espSetCameraPositionFix(&fix_eye, &fix_look); // need
+
+                float dist = bDistBetween(&diff, &prev_position);
+                if (dist < 10.0f) {
+                }
+
+                // espCentrePlaneView();
+                // todo
+            }
+        }
+    }
+
+    if (GManager::Exists() && GManager::Get().GetIsWarping()) {
+        return;
+    }
+    if (GRaceStatus::Exists() && GRaceStatus::Get().GetIsScriptWaitingForLoading()) {
+        return;
+    }
+
+    bool streamerCleared = false;
+    for (int viewIndex = 1; viewIndex < 3; ++viewIndex) {
+        eView *view = eGetView(viewIndex, false);
+
+        if (!view->Active) {
+            continue;
+        }
+
+        CameraMover *cm = view->GetCameraMover();
+        if (cm == nullptr) {
+            continue;
+        }
+
+        if (!streamerCleared) {
+            TheTrackStreamer.ClearStreamingPositions();
+            streamerCleared = true;
+        }
+
+        Camera *camera = view->GetCamera();
+
+        bVector3 position = camera->CurrentKey.Position;
+        bVector3 velocity = camera->VelocityKey.Position;
+        bVector3 direction = camera->CurrentKey.Direction;
+
+        IPlayer *player = IPlayer::First(PLAYER_LOCAL);
+        if (player != nullptr) {
+            ISimable *simable = player->GetSimable();
+            if (simable != nullptr) {
+                IRigidBody *body = simable->GetRigidBody();
+                if (body) {
+                    bConvertFromBond(position, body->GetPosition());
+                }
+            }
+        }
+
+        if (bStreamingPositionFromICE) {
+            INIS *inis = UTL::Collections::Singleton<INIS>::Get();
+            if (inis != nullptr) {
+                const Vector3 *editorPos = inis->GetStartCameraLocation();
+
+                position.x = editorPos->z;
+                position.z = editorPos->y;
+                position.y = -editorPos->x;
+            }
+
+            velocity = bVector3(0.0f, 0.0f, 0.0f);
+            direction = bVector3(0.0f, 0.0f, 0.0f);
+        }
+
+        const bool rearView = (viewIndex == 2);
+
+        const bool freezePrediction = (view->CameraMoverList.GetHead()->Next->Prev == reinterpret_cast<bNode *>(1));
+
+        TheTrackStreamer.PredictStreamingPosition(rearView, &position, &velocity, &direction, freezePrediction);
     }
 }
