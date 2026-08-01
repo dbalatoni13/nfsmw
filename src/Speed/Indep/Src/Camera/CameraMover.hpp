@@ -47,8 +47,14 @@ enum CameraMoverTypes {
     CM_SHOWCASE = 18,
 };
 
-bVector4 CameraNoiseHandheldAmplitude = bVector4(0.01, 0.01, 0.03, 0.03);
-bVector4 CameraNoiseHandheldFrequency = bVector4(0.01, 0.175, 0.153, 0.03);
+static const bVector4 CameraNoiseHandheldAmplitude = bVector4(0.01, 0.01, 0.03, 0.03);
+static const bVector4 CameraNoiseHandheldFrequency = bVector4(0.01, 0.175, 0.153, 0.03);
+static const bVector4 CameraNoiseChopperFrequency = bVector4(3.141, 2.971, 0.84234, 0.92345); // size: 0x10, address: 0x8045AB58
+static const bVector4 CameraNoiseChopperAmplitude = bVector4(0.01, 0.05, 1.1, 2.7);           // size: 0x10, address: 0x8045AB68
+static const bVector4 CameraNoiseSpeedFrequency;                                              // size: 0x10, address: 0x8045AB78
+static const bVector4 CameraNoiseSpeedAmplitude;                                              // size: 0x10, address: 0x8045AB88
+static const bVector4 CameraNoiseTerrainFrequency;                                            // size: 0x10, address: 0x8045AB98
+static const bVector4 CameraNoiseTerrainAmplitude;                                            // size: 0x10, address: 0x8045ABA8
 
 // total size: 0x124
 class CameraAnchor {

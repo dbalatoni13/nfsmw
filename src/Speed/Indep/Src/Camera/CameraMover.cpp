@@ -72,25 +72,29 @@ void CameraMover::ChopperNoise(bMatrix4 *world_to_camera, float f_scale, bool us
             }
             const UMath::Vector3 &pos = vehicle->GetPosition();
 
-            bVector3 bpos; // r1+0x8
+            bVector3 bpos;
 
             eSwizzleWorldVector(pos, bpos);
 
-            bVector3 *dir = pCamera->GetPosition();
-            float distance = 0.0f;
-            bVector4 p = bVector4();
+            bVector3 dir;
 
-            if (true) {
+            bSub(&dir, &bpos, &pCamera->CurrentKey.Position);
 
-                float intensity;      // f0
-                bVector4 v_frequency; // r1+0x28
-                bVector4 v_magnitude; // r1+0x38
-                float time;           // f1
+            float distance = bLength(&dir);
 
-                bScale(&v_frequency, &v_magnitude, intensity);
+            float intensity = f_scale * (1.0f - distance * 0.025f);
 
-                pCamera->SetNoiseAmplitude1(&p);
+            bVector4 v_frequency = CameraNoiseChopperFrequency;
+            bVector4 v_magnitude;
+            bScale(&v_magnitude, &CameraNoiseChopperAmplitude, intensity);
+
+            if (distance < 40.0f) {
+
+                pCamera->SetNoiseFrequency1(&v_frequency);
+                pCamera->SetNoiseAmplitude1(&v_magnitude);
             }
+            float time = useWorldTimer ? WorldTimer.GetSeconds() : RealTimer.GetSeconds();
+            pCamera->ApplyNoise(world_to_camera, time * 0.00025, 1.0);
         }
     }
 }
