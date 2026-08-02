@@ -286,8 +286,8 @@ void UpdateCameraMovers(float dT) {
     }
 
     bool streamerCleared = false;
-    for (int viewIndex = 1; viewIndex < 3; ++viewIndex) {
-        eView *view = eGetView(viewIndex, false);
+    for (int view_id = 1; view_id < 3; ++view_id) {
+        eView *view = eGetView(view_id, false);
 
         if (!view->Active) {
             continue;
@@ -334,7 +334,7 @@ void UpdateCameraMovers(float dT) {
             direction = bVector3(0.0f, 0.0f, 0.0f);
         }
 
-        const bool rearView = (viewIndex == 2);
+        const bool rearView = (view_id == 2);
 
         const bool freezePrediction = (view->CameraMoverList.GetHead()->Next->Prev == reinterpret_cast<bNode *>(1));
 
