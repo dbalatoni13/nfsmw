@@ -8,68 +8,40 @@
 #include <cstddef>
 
 Camera::Camera() {
-    int RealTime;
-    bMatrix4 defaultMatrix;
 
-    RealTime = RealTimeFrames;
-    LastUpdateTime = -0x80000000;
-    LastDisparateTime = RealTime;
+    LastDisparateTime = RealTimeFrames;
+    LastUpdateTime = -2147483648;
     RenderDash = 0;
-
-    defaultMatrix.v2.z = -1.0f;
-    defaultMatrix.v3.z = 1200.0f;
-    defaultMatrix.v2.w = 100.0f;
-
-    CurrentKey.TargetDistance = 10.0f;
-    CurrentKey.NearZ = 0.5f;
     bClearVelocity = false;
-
-    defaultMatrix.v1.x = 0.0f;
-    defaultMatrix.v2.x = 0.0f;
-    defaultMatrix.v3.x = 0.0f;
-    defaultMatrix.v0.y = 0.0f;
-    defaultMatrix.v1.y = -1.0f;
-    defaultMatrix.v2.y = 0.0f;
-    defaultMatrix.v3.y = 0.0f;
-
-    defaultMatrix.v0.z = 0.0f;
-    defaultMatrix.v1.z = 0.0f;
-    defaultMatrix.v0.w = 0.0f;
-    defaultMatrix.v1.w = 0.0f;
-
-    CurrentKey.FocalDistance = 0.0f;
-    CurrentKey.DepthOfField = 0.0f;
     ElapsedTime = 1.0f;
 
-    defaultMatrix.v0.x = 1.0f;
-    defaultMatrix.v3.w = 1.0f;
+    bMatrix4 m;
 
+    m.v0 = bVector4(1.0f, 0.0f, 0.0f, 0.0f);
+    m.v1 = bVector4(0.0f, -1.0f, 0.0f, 0.0f);
+    m.v2 = bVector4(0.0f, 0.0f, -1.0f, 100.0f);
+    m.v3 = bVector4(0.0f, 0.0f, 1200.0f, 1.0f);
+
+    CurrentKey.Position = bVector3(0.0f, 0.0f, 0.0f);
+    CurrentKey.Direction = bVector3(0.0f, 0.0f, 0.0f);
+    CurrentKey.Target = bVector3(0.0f, 0.0f, 0.0f);
+
+    CurrentKey.TargetDistance = 10.0f;
+    CurrentKey.FocalDistance = 0.0f;
+    CurrentKey.DepthOfField = 0.0f;
+    CurrentKey.NearZ = 0.5f;
     CurrentKey.FarZ = 10000.0f;
-    CurrentKey.FieldOfView = 0x36fb;
-
-    CurrentKey.NoiseAmplitude2.w = 0.0f;
-    CurrentKey.SimTimeMultiplier = 1.0f;
+    CurrentKey.FieldOfView = 0x36FB;
     CurrentKey.LB_height = 0.0f;
-    CurrentKey.NoiseFrequency1.x = 1.0f;
-    CurrentKey.NoiseAmplitude1.x = 0.0f;
-    CurrentKey.NoiseAmplitude1.y = 0.0f;
-    CurrentKey.NoiseAmplitude1.z = 0.0f;
-    CurrentKey.NoiseAmplitude1.w = 0.0f;
+    CurrentKey.SimTimeMultiplier = 1.0f;
 
-    CurrentKey.NoiseFrequency1.y = 1.0f;
-    CurrentKey.NoiseFrequency1.z = 1.0f;
-    CurrentKey.NoiseFrequency1.w = 1.0f;
-    CurrentKey.NoiseFrequency2.x = 1.0f;
-    CurrentKey.NoiseFrequency2.y = 1.0f;
-    CurrentKey.NoiseFrequency2.z = 1.0f;
-    CurrentKey.NoiseFrequency2.w = 1.0f;
+    CurrentKey.NoiseFrequency1 = bVector4(1.0f, 1.0f, 1.0f, 1.0f);
+    CurrentKey.NoiseAmplitude1 = bVector4(0.0f, 0.0f, 0.0f, 0.0f);
+    CurrentKey.NoiseFrequency2 = bVector4(1.0f, 1.0f, 1.0f, 1.0f);
+    CurrentKey.NoiseAmplitude2 = bVector4(0.0f, 0.0f, 0.0f, 0.0f);
 
-    CurrentKey.NoiseAmplitude2.x = 0.0f;
-    CurrentKey.NoiseAmplitude2.y = 0.0f;
-    CurrentKey.NoiseAmplitude2.z = 0.0f;
-
-    SetCameraMatrix(defaultMatrix, 1.0f);
-    SetCameraMatrix(defaultMatrix, 1.0f);
+    SetCameraMatrix(m, 1.0f);
+    SetCameraMatrix(m, 1.0f);
 }
 
 void Camera::SetCameraMatrix(const bMatrix4 &m, float fTime) {

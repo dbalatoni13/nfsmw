@@ -9,8 +9,8 @@ bool DoesCameraTypeDisablePreculler(CameraMoverTypes type) {
     return type == CM_TRACK_CAR;
 }
 
-CameraMover::CameraMover(int view_id, CameraMoverTypes type) : mWPos(0.025f) {
-    mCollider = WCollider::Create(0, WCollider::kColliderShape_Sphere, 0x1c, 0);
+CameraMover::CameraMover(int view_id, CameraMoverTypes type)
+    : mCollider(WCollider::Create(0, WCollider::kColliderShape_Sphere, 0x1c, 0)), mWPos(0.025f) {
     Type = type;
     ViewID = view_id;
     Enabled = 0;
@@ -40,7 +40,7 @@ CameraMover::~CameraMover() {
     WCollider::Destroy(mCollider);
 
     if (DoesCameraTypeDisablePreculler(Type)) {
-        DisablePrecullerCounter--;
+        EnablePreculler();
     }
     Disable();
 }
@@ -209,6 +209,13 @@ void CameraMoverRestartRace() {
     }
 }
 
+struct LongVector {
+    // Members
+    int x; // offset 0x0, size 0x4
+    int y; // offset 0x4, size 0x4
+    int z; // offset 0x8, size 0x4
+};
+
 void UpdateCameraMovers(float dT) {
 
     for (int view_id = 0; view_id < 22; ++view_id) {
@@ -243,33 +250,31 @@ void UpdateCameraMovers(float dT) {
 
     if (RemoteCaffeinating != 0 && DisableCommunication == 0) {
         eView *view = eGetView(1, false);
-        if (view->pCamera != nullptr) {
-            int elapsed = bAbs(RealTime - LastUpdateTimeCaffeine);
-            if (elapsed > 16) {
-                LastUpdateTimeCaffeine = RealTime;
+        if (view->pCamera != nullptr && bAbs(RealTime - LastUpdateTimeCaffeine) > 16) {
 
-                bVector3 eye;
-                bVector3 look;
-                Vector3 fix_eye;  // LongVector
-                Vector3 fix_look; // LongVector
+            LastUpdateTimeCaffeine = RealTime;
 
-                bVector3 prev_position(0.0f, 0.0f, 0.0f);
+            bVector3 eye;
+            bVector3 look;
+            LongVector fix_eye;  // LongVector
+            LongVector fix_look; // LongVector
 
-                float scale = 50.0f; // DAT_803d1e90
-                eye = view->pCamera->CurrentKey.Position * scale;
-                look = view->pCamera->CurrentKey.Direction * scale;
+            bVector3 prev_position(0.0f, 0.0f, 0.0f);
 
-                bVector3 diff = eye - prev_position;
+            float scale = 50.0f; // DAT_803d1e90
+            eye = view->pCamera->CurrentKey.Position * scale;
+            look = view->pCamera->CurrentKey.Direction * scale;
 
-                // espSetCameraPositionFix(&fix_eye, &fix_look); // need
+            bVector3 diff = eye - prev_position;
 
-                float dist = bDistBetween(&diff, &prev_position);
-                if (dist < 10.0f) {
-                }
+            // espSetCameraPositionFix(&fix_eye, &fix_look); // need
 
-                // espCentrePlaneView();
-                // todo
+            float dist = bDistBetween(&diff, &prev_position);
+            if (dist < 10.0f) {
             }
+
+            // espCentrePlaneView();
+            // todo
         }
     }
 
