@@ -53,6 +53,55 @@ typedef void PLAYERSETOPTSFN(SNDPLAYOPTS *, int);
 
 } // namespace AemsDef
 
+void SNDAEMSI_bankpitchmult(int handle, int value);
+void SNDAEMSI_banktimemult(int handle, int value);
+void SNDAEMSI_bankvol(int handle, int value);
+void SNDAEMSI_bankazimuth(int handle, int value);
+void SNDAEMSI_bankinputstub(int handle, int value);
+void SNDAEMSI_bankfxwet0(int handle, int value);
+void SNDAEMSI_banklowpass(int handle, int value);
+void SNDAEMSI_bankhighpass(int handle, int value);
+void SNDAEMSI_bankdrylevel(int handle, int value);
+
+void SNDAEMSI_optpitchmult(SNDPLAYOPTS *psndplayopts, int value);
+void SNDAEMSI_opttimemult(SNDPLAYOPTS *psndplayopts, int value);
+void SNDAEMSI_optvol(SNDPLAYOPTS *psndplayopts, int value);
+void SNDAEMSI_optazimuth(SNDPLAYOPTS *psndplayopts, int value);
+void SNDAEMSI_optstub(SNDPLAYOPTS *psndplayopts, int value);
+void SNDAEMSI_optfxwet0(SNDPLAYOPTS *psndplayopts, int value);
+void SNDAEMSI_optlowpass(SNDPLAYOPTS *psndplayopts, int value);
+void SNDAEMSI_opthighpass(SNDPLAYOPTS *psndplayopts, int value);
+void SNDAEMSI_optdrylevel(SNDPLAYOPTS *psndplayopts, int value);
+
+AemsDef::PLAYERHANDLE SNDAEMSI_playerplaybank(AemsDef::PLAYERSTATE *pplayerstate, AemsDef::SAMPLEENTRY *psampleentry);
+
+void SNDAEMSI_playerstopbank(AemsDef::PLAYERSTATE *pplayerstate);
+
+void SNDAEMSI_playerpausebank(AemsDef::PLAYERHANDLE pplayerstate);
+
+void SNDAEMSI_playerunpausebank(AemsDef::PLAYERSTATE *pplayerstate);
+
+int SNDAEMSI_playerupdatebank(AemsDef::PLAYERSTATE *pplayerstate);
+
+int SNDAEMSI_createmodulebankhandle();
+
+void SNDAEMSI_resolvemodulebank(
+    AemsDef::ModuleBank *pModuleBank,
+    AemsDef::FUNCFIXUPHEADER *pfuncfixupheader,
+    char *streamfilename,
+    int streamfileoffset
+);
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+int SNDAEMS_removemodulebank(int mbhandle);
+
+#ifdef __cplusplus
+}
+#endif
+
 extern AemsDef::SNDAEMS sndaems;
 extern AemsDef::PLAYERSETOPTSFN *SNDAEMSoptfn[12];
 

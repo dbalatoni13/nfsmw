@@ -923,7 +923,7 @@ if config.platform == Platform.GC_WII:
                 "host": False,
                 "progress_category": "libs",  # str | List[str]
                 "objects": [
-                    Object(NonMatching, "LibSN/crt0.s"),
+                    Object(Matching, "LibSN/crt0.s"),
                     Object(NonMatching, "LibSN/cvtll.c"),
                     Object(NonMatching, "LibSN/debug.c"),
                     Object(NonMatching, "LibSN/dummy.c"),

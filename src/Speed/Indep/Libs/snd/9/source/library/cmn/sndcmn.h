@@ -316,6 +316,8 @@ typedef struct SNDLINKLIST {
     int items;          // offset 0x8, size 0x4
 } SNDLINKLIST;
 
+void SNDAEMSI_timerupdate(void *pClientData);
+
 namespace Snd {
 
 // total size: 0x10
@@ -327,7 +329,9 @@ typedef struct VariableTimerClient {
 } VariableTimerClient;
 
 extern float gVariableTimerPeriod;
+extern CListDStack gVariableTimerList;
 extern float gMasterVol;
+extern const signed char gChannelToVoiceIndexLut[6][6];
 
 // total size: 0x1
 // Decl: 1268
@@ -339,12 +343,19 @@ struct Util {
     static float Az65536To360(unsigned short azimuth) {}
 
     static void FastVol(struct CHANPUB *pVoice) {
-        pVoice->finalvol = pVoice->programmedVol * Snd::gMasterVol;
+        pVoice->finalvol = pVoice->programmedVol * gMasterVol;
     }
 
-    static void AddVariableTimerClient(VariableTimerClient *pClient) {}
+    static void AddVariableTimerClient(VariableTimerClient *pClient) {
+        pClient->pClientFunc = SNDAEMSI_timerupdate;
+        gVariableTimerList.Push(&pClient->ln);
+    }
 
-    static void RemoveVariableTimerClient(VariableTimerClient *pClient) {}
+    static void RemoveVariableTimerClient(VariableTimerClient *pClient) {
+        gVariableTimerList.Remove(&pClient->ln);
+    }
+
+    static void *MemCpy(void *pDst, const void *pSrc, unsigned int bytes);
 };
 
 // total size: 0x28
@@ -384,6 +395,14 @@ typedef struct StreamSourceChannelState {
     float vol;                   // offset 0x8, size 0x4
     Fader fader;                 // offset 0xC, size 0x18
 } StreamSourceChannelState;
+
+static inline void StreamVolSetState(StreamSourceChannelState *pSourceChannelState, float vol) {
+    pSourceChannelState->vol = vol;
+    if (pSourceChannelState->fader.incrementPerUpdate != 0.0f) {
+        Util::RemoveVariableTimerClient(&pSourceChannelState->fader.variableTimerClient);
+        pSourceChannelState->fader.incrementPerUpdate = 0.0f;
+    }
+}
 
 }; // namespace Snd
 
@@ -507,6 +526,7 @@ void SNDI_patchtohdr(void *pbank, TAGGEDPATCH *ptp, SNDSAMPLEFORMAT *pssf, SNDSA
 
 // smemman.c
 void SNDMEMI_free(void *paddr);
+void *SNDMEMI_allocz(int size);
 
 // sbvalid.c
 int SNDBANKI_valid(int bhandle);
@@ -531,6 +551,9 @@ void SNDPLATFORM_lowpass(int voice, int cutofffreq);
 void SNDPLATFORM_highpass(int voice, int cutofffreq);
 int SNDPLATFORM_getcurframe(int voice);
 
+// ssine.c
+int iSNDsin(int angle);
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -546,6 +569,18 @@ int SNDpitchmult(int shandle, int pitchmult);
 
 // svol.c
 int SNDvol(int shandle, int vol);
+
+// sbadd.c
+int SNDbankadd(int *pbhandle, void *pbank);
+
+// sbremove.c
+int SNDbankremove(int bhandle);
+
+// sbhdrcpy.c
+int SNDbankheadercopy(void *pmem, int bhandle);
+
+// sbhdrsze.c
+int SNDbankheadersize(int bhandle);
 
 #ifdef __cplusplus
 }
