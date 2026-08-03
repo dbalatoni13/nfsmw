@@ -139,7 +139,7 @@ struct ExtrapolatedCar : Debugable {
     State mBlended;
     Attrib::Key mCarType;
     CopMap *mCops;
-    UMath::Vector3 mLastPosition;
+    ALIGN_16 UMath::Vector3 mLastPosition;
     State *mLast;
     int mHead;
     int mTail;
@@ -158,13 +158,13 @@ struct OnlineRacer : ExtrapolatedCar {
     ~OnlineRacer();
 
     int8 GetDriverNumber() const { return DriverNumber; }
-    eOnlineRacerState GetState() const { return State; }
+    eOnlineRacerState GetState() { return State; }
     int8 GetPlayerID() const { return PlayerID; }
     void SetPlayerID(int8 player_id) { PlayerID = player_id; }
     char *GetPersona() { return Persona; }
     int GetRaceScore() const { return RaceScore; }
     void SetRaceScore(int score);
-    bool IsConnected() const {
+    bool IsConnected() {
         return GetState() != OPS_LOST_CONNECTION && GetState() != OPS_QUIT &&
                GetState() != OPS_DISCONNECTED && GetState() != OPS_DISCERROR;
     }
@@ -230,7 +230,7 @@ class OnlineManager {
     void StartSimFrame();
     void InitQuantizers();
     void EndSimFrame();
-    eOnlineState GetState() const { return State; }
+    eOnlineState GetState() { return State; }
     bool IsOnlineRace();
     bool IsOnline();
     bool IsServer();
