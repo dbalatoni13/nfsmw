@@ -1,7 +1,24 @@
 #include "OnlineManager.hpp"
 
 #include "Speed/Indep/Libs/Support/Utility/UVectorMath.h"
+#include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
+
+ExtrapolatedCar::ExtrapolatedCar(Attrib::Key cartype) {
+    mCarType = cartype;
+    mCops = nullptr;
+    mMutex = static_cast<NetworkMutex *>(gFastMem.Alloc(1, nullptr));
+    mLast = mStateArray;
+    mActive = true;
+    mUpdateTime = 0;
+    mTail = 0;
+    mHead = 0;
+    mCollisionTime = 0.0f;
+    mRepositionCount = 0;
+    mHasHeadset = false;
+    mPaused = false;
+    mUseDriverAI = false;
+}
 
 ExtrapolatedCar::State::State() {
     mGear = 1;
