@@ -1,6 +1,7 @@
 #ifndef CAMERA_CAMERAMOVER_H
 #define CAMERA_CAMERAMOVER_H
 
+#include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
@@ -59,7 +60,9 @@ static const bVector4 CameraNoiseTerrainAmplitude;                              
 // total size: 0x124
 class CameraAnchor {
   public:
-    // CameraAnchor(int modelhash);
+    float GetVelocityMagnitude() {
+        return UMath::Sqrt(mVelocity.x * mVelocity.x + mVelocity.y * mVelocity.y + mVelocity.z * mVelocity.z);
+    }
 
     bVector3 *GetGeometryPosition() {
         return &mGeomPos;
@@ -132,9 +135,10 @@ class CameraMover : public bTNode<CameraMover>, public WCollisionMgr::ICollision
     virtual void Update(float dT);
     virtual void Render(eView *view);
 
-    void HandheldNoise(bMatrix4 *world_to_camera, float f_scale, bool useWorldTimer);
-
     void ChopperNoise(bMatrix4 *world_to_camera, float f_scale, bool useWorldTimer);
+    void HandheldNoise(bMatrix4 *world_to_camera, float f_scale, bool useWorldTimer);
+    void TerrainVelocityNoise(bMatrix4 *world_to_camera /* r26 */, CameraAnchor *p_car /* r30 */, float f_speed_scale /* f31 */,
+                              float f_terrain_scale /* f28 */);
 
     virtual CameraAnchor *GetAnchor() {}
 
