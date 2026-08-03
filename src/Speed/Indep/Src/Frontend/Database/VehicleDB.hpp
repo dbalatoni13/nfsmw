@@ -26,6 +26,8 @@ struct FECarRecord {
 
 // total size: 0x198
 struct FECustomizationRecord {
+    FECustomizationRecord();
+
     bool IsPreset() const {
         return this->Preset != 0;
     }

@@ -3,6 +3,7 @@
 #include "Speed/Indep/Libs/Support/Utility/UVectorMath.h"
 #include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
+#include "Speed/Indep/Src/Misc/Config.h"
 
 ExtrapolatedCar::ExtrapolatedCar(Attrib::Key cartype) {
     mCarType = cartype;
@@ -73,6 +74,37 @@ bool ExtrapolatedCar::IsAbleToSee(ExtrapolatedCar &target) {
 
     fVar1 = mBlended.SquaredDistanceTo(target.mBlended);
     return fVar1 < 40000.0f;
+}
+
+OnlineRacer::OnlineRacer(int8 driver_number, bool is_server, const char *persona)
+    : ExtrapolatedCar(0)
+    , CarCustomization()
+    , FinishedRaceStats() {
+    DriverNumber = driver_number;
+    bIsServer = is_server;
+    DisconnectTime.SetTime(0.0f);
+    RaceScore = 0;
+    State = OPS_DISCONNECTED;
+    bShouldRestart = false;
+    PhysicsDataCRC = 0;
+    BadnessReason = 0;
+    SyncScoreMsgID = 0;
+    BadnessCountdown.SetTime(0.0f);
+    GraceCountdown.SetTime(0.0f);
+    PlayerID = -1;
+    Reputation = 100;
+    LastSpamRealTime = -1.0f;
+    EndRaceCountdown = -1.0f;
+    ClearCheatInfo();
+    DisconnectTime.SetTime(0.0f);
+    bMemSet(&FinishedRaceStats, 0, 0xc0);
+    if (SkipFE) {
+        SetPersona("SkipFE");
+    } else if (persona) {
+        SetPersona(persona);
+    } else {
+        bMemSet(Persona, 0, 0x10);
+    }
 }
 
 void OnlineRacer::SetPersona(const char *persona) {
