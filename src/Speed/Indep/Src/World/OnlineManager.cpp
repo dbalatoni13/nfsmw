@@ -1,5 +1,11 @@
 #include "OnlineManager.hpp"
 
+namespace Online {
+bool IsInitialized();
+}
+
+extern int OnlineIsServer;
+
 OnlineManager TheOnlineManager;
 
 OnlineManager::OnlineManager()
@@ -68,3 +74,19 @@ void OnlineManager::PrintQuantizersUsageReport() {
 void OnlineManager::PrintCheatTallies(bool) {}
 
 OnlineManager::~OnlineManager() {}
+
+bool OnlineManager::IsOnlineRace() {
+    bool online_race = false;
+    if (bOnlineRace || Online::IsInitialized()) {
+        online_race = true;
+    }
+    return online_race;
+}
+
+bool OnlineManager::IsServer() {
+    return OnlineIsServer != 0;
+}
+
+bool OnlineManager::RaceStartAborted() {
+    return GetNumConnectedRacers() == 0;
+}
