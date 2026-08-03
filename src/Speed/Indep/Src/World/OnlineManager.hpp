@@ -161,6 +161,7 @@ struct ExtrapolatedCar::CopMap : public UTL::Std::map<HSIMABLE, ExtrapolatedCar 
 struct OnlineRacer : ExtrapolatedCar {
     OnlineRacer(int8 driver_number, bool is_server, const char *persona);
     ~OnlineRacer();
+    static void operator delete(void *mem);
 
     int8 GetDriverNumber() const { return DriverNumber; }
     eOnlineRacerState GetState() { return State; }

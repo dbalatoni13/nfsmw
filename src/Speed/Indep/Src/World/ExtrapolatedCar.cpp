@@ -39,6 +39,8 @@ ExtrapolatedCar::~ExtrapolatedCar() {
     }
 }
 
+OnlineRacer::~OnlineRacer() {}
+
 ExtrapolatedCar::State::State() {
     mGear = 1;
     mBlendRate = -1.0f;
