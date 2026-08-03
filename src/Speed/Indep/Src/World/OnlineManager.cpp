@@ -2,6 +2,32 @@
 
 OnlineManager TheOnlineManager;
 
+OnlineManager::OnlineManager()
+    : RestartingRace(false) //
+    , RestartRequested(false) {
+    State = OLS_DISCONNECTED;
+    bMemSet(PersonaMap, 0, sizeof(PersonaMap));
+    InitQuantizers();
+
+    pLocalRacer = nullptr;
+    NumRacers = 0;
+    bOnlineRace = false;
+    mMasterTime = 0;
+    mServerTime = 0;
+    CountdownSyncAnims.UnSet();
+    CountdownSendDataCRC.UnSet();
+    LastSyncedWTTimeStamp.UnSet();
+    LastAntiCheatWorldTimer.UnSet();
+    LastAntiCheatRealTimer.UnSet();
+    TimeRaceFinished.UnSet();
+    RaceTimeup = false;
+
+    for (int i = 3; i >= 0; --i) {
+        pRacers[i] = nullptr;
+    }
+    ClearAnimWorldObjects();
+}
+
 void OnlineManager::InitQuantizers() {
     float min_value;
     float max_value;
