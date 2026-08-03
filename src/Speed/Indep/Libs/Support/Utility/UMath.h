@@ -131,9 +131,13 @@ inline void ExtractYAxis(const Vector4 &q, Vector3 &r) {
     VU0_ExtractYAxis3FromQuat(q, r);
 }
 
+#ifdef EA_PLATFORM_PLAYSTATION2
+void ExtractZAxis(const Vector4 &q, Vector3 &r);
+#else
 inline void ExtractZAxis(const Vector4 &q, Vector3 &r) {
     VU0_ExtractZAxis3FromQuat(q, r);
 }
+#endif
 
 inline void RotateTranslate(const Vector3 &a, const Matrix4 &m, Vector3 &r) {
     VU0_MATRIX4_vect3mult(a, m, r);

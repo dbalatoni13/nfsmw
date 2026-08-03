@@ -4,6 +4,8 @@
 #include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/Src/Misc/Config.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
+#include "Speed/Indep/Src/World/WCollisionMgr.h"
 
 ExtrapolatedCar::ExtrapolatedCar(Attrib::Key cartype) {
     mCarType = cartype;
@@ -60,6 +62,20 @@ float ExtrapolatedCar::State::SquaredDistanceTo(State &target) const {
 }
 
 bool ExtrapolatedCar::State::IsBlending() const { return mBlend > 0.0f; }
+
+bool ExtrapolatedCar::State::IsValidPosition() {
+    WCollisionMgr collision_mgr(0, 3);
+    float elevation;
+
+    return collision_mgr.GetWorldHeightAtPointRigorous(mPosition, elevation, nullptr);
+}
+
+void ExtrapolatedCar::State::SetOnGround(IVehicle *vehicle) {
+    UMath::Vector3 forwardvector;
+
+    UMath::ExtractZAxis(mRotation, forwardvector);
+    vehicle->SetVehicleOnGround(mPosition, forwardvector);
+}
 
 void ExtrapolatedCar::ExtractExtrapolatedPosition(UMath::Vector3 &position) const {
     position = mBlended.mPosition;
@@ -118,10 +134,11 @@ void OnlineRacer::SetRaceScore(int score) {
 }
 
 bool OnlineRacer::IsFinishedRacing() {
-    if (IsConnected() && State != OPS_FINISHED) {
-        return TheOnlineManager.GetState() > OLS_RACING && State < OPS_RACING;
+    if (State == OPS_LOST_CONNECTION || State == OPS_QUIT ||
+        State == OPS_DISCONNECTED || State == OPS_DISCERROR || State == OPS_FINISHED) {
+        return true;
     }
-    return true;
+    return TheOnlineManager.GetState() > OLS_RACING && State < OPS_RACING;
 }
 
 void OnlineRacer::ChangeState(eOnlineRacerState new_state) {

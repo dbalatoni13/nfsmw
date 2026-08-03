@@ -100,7 +100,7 @@ struct ExtrapolatedCar : Debugable {
         bool IsBlending() const;
         void Export(ISimable *simable) const;
         void SetOnGround(IVehicle *vehicle);
-        bool IsValidPosition() const;
+        bool IsValidPosition();
         float SquaredDistanceTo(State &target) const;
         float GetTime() const;
         UMath::Vector3 &GetPosition();
@@ -165,8 +165,12 @@ struct OnlineRacer : ExtrapolatedCar {
     int GetRaceScore() const { return RaceScore; }
     void SetRaceScore(int score);
     bool IsConnected() {
-        return GetState() != OPS_LOST_CONNECTION && GetState() != OPS_QUIT &&
-               GetState() != OPS_DISCONNECTED && GetState() != OPS_DISCERROR;
+        bool connected = false;
+        if (GetState() != OPS_LOST_CONNECTION && GetState() != OPS_QUIT &&
+            GetState() != OPS_DISCONNECTED) {
+            connected = GetState() != OPS_DISCERROR;
+        }
+        return connected;
     }
     bool IsServer() const { return bIsServer; }
     bool IsFinishedRacing();
