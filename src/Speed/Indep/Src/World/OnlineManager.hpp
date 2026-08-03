@@ -11,8 +11,22 @@
 
 #include <types.h>
 
+#include "Speed/Indep/Libs/Support/Utility/UTypes.h"
+#include "Speed/Indep/Src/Debug/Debugable.h"
+#include "Speed/Indep/Src/Frontend/Database/RaceDB.hpp"
+#include "Speed/Indep/Src/Frontend/Database/VehicleDB.hpp"
+#include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
+#include "Speed/Indep/Src/Misc/Timer.hpp"
+#include "Speed/Indep/Src/Online/FloatQuantizer.hpp"
+#include "Speed/Indep/Src/Online/IntQuantizer.hpp"
+#include "Speed/Indep/Src/Online/NetworkMutex.hpp"
+#include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
+
 class SmartBitStream;
 struct Client;
+struct WorldObject;
+struct CopMap;
+class IVehicle;
 
 enum eOnlineRacerState {
     OPS_DISCONNECTED = 0,
@@ -25,16 +39,11 @@ enum eOnlineRacerState {
     NUM_OPS_STATES = 7
 };
 
-struct ExtrapolatedCar {
-    bool IsAbleToSee(ExtrapolatedCar &target);
-};
-
-struct OnlineRacer : ExtrapolatedCar {
-    eOnlineRacerState GetState();
-    bool IsConnected() {
-        return GetState() != OPS_LOST_CONNECTION && GetState() != OPS_QUIT &&
-               GetState() != OPS_DISCONNECTED && GetState() != OPS_DISCERROR;
-    }
+enum eOnlineRaceEndReason {
+    OEND_RACE_FINISHED = 0,
+    OEND_NO_PLAYERS = 1,
+    OEND_DISCONNECTED = 2,
+    OEND_REJECTED = 3
 };
 
 enum ePosDataPriorityMask {
@@ -58,13 +67,175 @@ enum eOnlineState {
     NUM_OLS_STATES = 7,
 };
 
+struct ExtrapolatedCar : Debugable {
+    struct ALIGN_16 State {
+      private:
+        UMath::Vector3 mPosition;
+        float mSteering;
+        UMath::Vector3 mLinearVelocity;
+        float mGas;
+        UMath::Vector3 mLinearAcceleration;
+        float mBrake;
+        UMath::Vector4 mRotation;
+        UMath::Vector4 mAngularVelocity;
+        UMath::Vector4 mAngularAcceleration;
+        float mHandBrake;
+        float mBlendRate;
+        float mBlend;
+        float mTime;
+        bool mInFlight;
+        bool mNOS;
+        uint8 mGear;
+        uint8 mPriority;
+
+      public:
+        friend struct ExtrapolatedCar;
+        State();
+        void Import(ISimable *simable, float simtime);
+        void Export(SmartBitStream &data, ePosDataPriorityMask priority_mask,
+                    uint8 repositioncount);
+        uint8 Import(float time, SmartBitStream &data, ePosDataPriorityMask priority_mask);
+        void Extrapolate(float simtime);
+        bool Blend(State &blended, float t);
+        bool IsBlending() const;
+        void Export(ISimable *simable) const;
+        void SetOnGround(IVehicle *vehicle);
+        bool IsValidPosition() const;
+        float SquaredDistanceTo(State &target) const;
+        float GetTime() const;
+        UMath::Vector3 &GetPosition();
+        void ExtractDirection(UMath::Vector3 &direction) const;
+        ISimable *SpawnVehicle(Attrib::Key cartype);
+        bool HasPriority() const;
+    };
+
+    ExtrapolatedCar(Attrib::Key cartype);
+    ~ExtrapolatedCar();
+
+    bool IsStateListEmpty() const;
+    void ExportSimable(ISimable *simable);
+    void SaveToStream(SmartBitStream &data, ePosDataPriorityMask priority_mask);
+    void ExportStream(SmartBitStream &data, ePosDataPriorityMask priority_mask);
+    void ImportStream(SmartBitStream &data, ePosDataPriorityMask priority_mask);
+    void ImportSimable(ISimable *simable, float t, float simtime);
+    bool WantsDriverAI() const;
+    void ExtractExtrapolatedPosition(UMath::Vector3 &position) const;
+    void ExtractExtrapolatedDirection(UMath::Vector3 &direction) const;
+    void Reset(ISimable *simable);
+    float GetLastTime() const;
+    float GetLatency() const;
+    float GetPercentReceived() const;
+    void IncreaseRepositionCount();
+    void Pause();
+    void UnPause();
+    ISimable *SpawnVehicle();
+    bool HasHeadset() const;
+    bool IsAbleToSee(ExtrapolatedCar &target);
+    Attrib::Key &GetCarType();
+
+  private:
+    State mStateArray[32];
+    State mSaved;
+    State mBlended;
+    Attrib::Key mCarType;
+    CopMap *mCops;
+    UMath::Vector3 mLastPosition;
+    State *mLast;
+    int mHead;
+    int mTail;
+    NetworkMutex *mMutex;
+    float mCollisionTime;
+    uint32 mUpdateTime;
+    bool mActive;
+    uint8 mRepositionCount;
+    bool mHasHeadset;
+    bool mPaused;
+    bool mUseDriverAI;
+};
+
+struct OnlineRacer : ExtrapolatedCar {
+    OnlineRacer(int8 driver_number, bool is_server, const char *persona);
+    ~OnlineRacer();
+
+    int8 GetDriverNumber() const { return DriverNumber; }
+    eOnlineRacerState GetState() const { return State; }
+    int8 GetPlayerID() const { return PlayerID; }
+    void SetPlayerID(int8 player_id) { PlayerID = player_id; }
+    char *GetPersona() { return Persona; }
+    int GetRaceScore() const { return RaceScore; }
+    void SetRaceScore(int score);
+    bool IsConnected() const {
+        return GetState() != OPS_LOST_CONNECTION && GetState() != OPS_QUIT &&
+               GetState() != OPS_DISCONNECTED && GetState() != OPS_DISCERROR;
+    }
+    bool IsServer() const { return bIsServer; }
+    bool IsFinishedRacing();
+    bool IsSameSideOfRestart();
+    float GetBadnessCountdown(int *r_reason);
+    float GetEndRaceCountdown();
+    FinishedRaceStatsEntry *GetFinishedRaceStats() { return &FinishedRaceStats; }
+    uint16 GetCheatTally();
+    uint8 GetCheatScore();
+    bool IsCheating();
+
+    void SetLastSpamRealTime(float time) { LastSpamRealTime = time; }
+    float GetLastSpamRealTime() const { return LastSpamRealTime; }
+    void ChangeState(eOnlineRacerState new_state);
+    void SetPersona(const char *persona);
+    void UpdateLocal(float t);
+    void Finish(int nRank, bool bBlinkBlinkPoof, int raceFinishReason);
+    void SignalFinish(SmartBitStream &data);
+    void UpdateEndRaceStats();
+    void DriverDisconnect(eOnlineRacerState new_state, int finish_reason);
+    void SetDisconnectTime(float time) { DisconnectTime.SetTime(time); }
+    float GetDisconnectTime() { return DisconnectTime.GetSeconds(); }
+    void ClearCheatInfo();
+    void DetectedCheat(int reason) { BadnessReason = reason; }
+    uint32 GetDataCRC(bool recalc);
+
+  protected:
+    Attrib::Key CarTypeKey;
+    bool IsCustomCar;
+    FECustomizationRecord CarCustomization;
+    eOnlineRacerState State;
+    int8 DriverNumber;
+    int8 PlayerID;
+    uint32 Reputation;
+    int RaceScore;
+    bool bIsServer;
+    bool bShouldRestart;
+    char Persona[16];
+    FinishedRaceStatsEntry FinishedRaceStats;
+    uint32 PhysicsDataCRC;
+    uint16 CheatTally[16];
+    float LastSpamRealTime;
+    uint32 SyncScoreMsgID;
+    Timer GraceCountdown;
+    Timer BadnessCountdown;
+    Timer DisconnectTime;
+    int BadnessReason;
+    float EndRaceCountdown;
+};
+
 class OnlineManager {
   public:
+    OnlineManager();
+    ~OnlineManager();
+    void Initialize(int argc, char **argv);
+    void InitForRace();
+    void UninitForRace();
+    void Disconnect(bool force);
+    void Update(bool receive);
+    float SyncWorldTimestep(float timestep);
     void StartSimFrame();
     void InitQuantizers();
-    void Disconnect(bool force);
-    void Update(bool networkThread);
+    void EndSimFrame();
+    eOnlineState GetState() const { return State; }
+    bool IsOnlineRace();
+    bool IsOnline();
+    bool IsServer();
     uint32 GetMasterTime();
+    uint32 GetServerTime() const { return mServerTime; }
     void DriverLeft(int driver_number, bool he_quit);
     void ExportPositionData(int driver_number, SmartBitStream &bitstream_data,
                             ePosDataPriorityMask priority_mask);
@@ -90,29 +261,43 @@ class OnlineManager {
     void RequestRestart();
     void SignalLoad();
 
-    void EndSimFrame() {}
-
-    void Initialize(int argc, char **argv) {}
-
-    bool IsOnlineRace() {
-#ifndef ONLINE_ENABLED
-        return false;
-#else
-        // TODO
-        return false;
-#endif
-    }
-
-    void EndOnlineRace(bool bForced) {
-        // TODO
-    }
-
-    void TrackLoaded() {
-        // TODO
-    }
-
-    // TODO
-    eOnlineState GetState() { return State; }
+    void PrintQuantizersUsageReport();
+    void PrintCheatTallies(bool to_screen);
+    void StartLobby();
+    void StartOnlineRace();
+    void EndOnlineRace(bool bForced);
+    void TrackLoaded();
+    void ReadyStartLine();
+    int AreAllPlayersFinishedRacing();
+    void NotifyDiscEjected();
+    bool FinishDriver(int driver_number, int nRank, bool bBlinkBlinkPoof,
+                      int raceFinishReason);
+    void SendSyncAnimations();
+    void InitAntiCheating(int num_players);
+    bool HasAnyoneCheated();
+    int GetGetAwayLeaderDriverNumber();
+    Timer GetGetAwayFinishTime(int driver_num);
+    Timer GetGetAwayLeaderTime(int driver_num);
+    bool GetGetAwayRaceTimedOut();
+    void SetPlayerIDs(const char (*personas)[16]);
+    void SetGameSeed(unsigned int seed) { GameSeed = seed; }
+    unsigned int GetGameSeed() const { return GameSeed; }
+    int GetDrift();
+    bool RaceStartTimeSet();
+    void SetPostCountdownStartRaceTime(float time);
+    void SetRestartingRace(bool r);
+    Timer GetRaceRestartTimer();
+    void RestartLastRace();
+    void RejectRestartRequest();
+    bool IsRestartRequested();
+    bool CanRestartRace();
+    bool RaceStartAborted();
+    bool IsAntiCheatingEnabled();
+    eOnlineRaceEndReason GetRaceEndReason();
+    void SetRaceEndDisconnect();
+    void SetRaceTimeup();
+    bool IsRaceTimeup();
+    void UpdateOutgoing();
 
   protected:
     eOnlineState State;
@@ -131,6 +316,91 @@ class OnlineManager {
     float mPostCountdownStartRaceTime;
     float mStartRacePing;
     float mPosUpdatePing;
+
+    WorldObject *pAnimWorldObjects[8];
+    uint8 NumWorldObjects;
+    Timer CountdownSyncAnims;
+    Timer CountdownSendDataCRC;
+    Timer LastSyncedWTTimeStamp;
+    Timer TimeRaceFinished;
+    Timer TimeTrackLoaded;
+    char PersonaMap[4][16];
+    unsigned int GameSeed;
+    eOnlineRaceEndReason RaceEndReason;
+    Timer LastAntiCheatWorldTimer;
+    Timer LastAntiCheatRealTimer;
+    uint32 SavedLocalPhysicsCRC;
+    int8 GetAwayLeaderDriverNumber;
+    Timer GetAwayLeaderCheckTimer;
+    Timer GetAwayFinishTime[4];
+    Timer GetAwayLeaderTime[4];
+    Timer LastGetAwayLeaderChangeTime;
+    Timer RaceRestartTimer;
+    bool GetAwayRaceTimedOut;
+    bool FrameRateIsTooLow;
+    Timer TimeupStartTime;
+    float TimeupLength;
+    bool RaceTimeup;
+    bool RestartingRace;
+    bool RestartRequested;
+    int32 m_ticker;
+
+  public:
+    IntQuantizer QuantCarSlotID;
+    IntQuantizer QuantCarType;
+    IntQuantizer QuantCarPartIndex;
+    IntQuantizer QuantInt2Bit;
+    IntQuantizer QuantInt3Bit;
+    IntQuantizer QuantInt4Bit;
+    FloatQuantizer QuantFloatTime;
+    FloatQuantizer QuantFloatSimTime;
+    FloatQuantizer PositionQuantizerX;
+    FloatQuantizer PositionQuantizerY;
+    FloatQuantizer PositionQuantizerZ;
+    FloatQuantizer VelocityQuantizer;
+    FloatQuantizer MatrixQuantizer;
+    FloatQuantizer AngleQuantizer;
+    FloatQuantizer AccelerationQuantizer;
+    FloatQuantizer AVelocityQuantizer;
+    FloatQuantizer ControlQuantizer;
+
+  protected:
+    void SetPosUpdatePing(float ping);
+    uint32 PackRideInfo(RideInfo &ride, SmartBitStream &data, bool pack_parts);
+    uint32 UnpackRideInfo(RideInfo &ride, SmartBitStream &data, int skin_number);
+    void SetupRaceParams();
+    void SetupLocalDriver(int driver_num);
+    void ChangeState(eOnlineState new_state);
+    void MapRacers2PlayerIDs();
+    void StartRace();
+    void CreateOnlineRacer(int driver_num, SmartBitStream *pdata, bool is_server,
+                           const char *persona);
+    void PurgeDisconnectedRacers();
+    int GetNumConnectedRacers();
+    OnlineRacer *GetServerRacer();
+    bool IsRaceOver();
+    void FinalizeCheatDetection();
+    void CalculateFinishOrder();
+    void SendEndOfRaceResults();
+    void ClearAnimWorldObjects();
+    void BuildAnimWorldObjects();
+    void SyncRunningAnimations(float delta_t, bool resetfirst);
+    void SendLocalPlayerDataCRC();
+    void CheckWorldTimerHacking();
+    void CheckGetAwayLeaderChange();
+    void SetupStartingPositions();
+    void SetupRestartRace();
+    void FinishGetAwayRace();
+    void SelfDisconnect();
+    Timer &GetTimeupStartTime();
+    float GetTimeupLength();
+    void UpdateIncoming();
+
+  public:
+    OnlineRacer *GetOnlineRacer(const char *racerName);
+    OnlineRacer *GetLocalRacer() { return pLocalRacer; }
+    bool IsValidRacer(int driver_number);
+    int GetNumRacers();
 
     friend struct Client;
     friend struct Server;
