@@ -3,6 +3,40 @@
 #include "Speed/Indep/Libs/Support/Utility/UVectorMath.h"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 
+ExtrapolatedCar::State::State() {
+    mGear = 1;
+    mBlendRate = -1.0f;
+    mPosition.x = 0.0f;
+    mPosition.y = 0.0f;
+    mPosition.z = 0.0f;
+    mSteering = 0.0f;
+    mLinearVelocity.x = 0.0f;
+    mLinearVelocity.y = 0.0f;
+    mLinearVelocity.z = 0.0f;
+    mGas = 0.0f;
+    mLinearAcceleration.x = 0.0f;
+    mLinearAcceleration.y = 0.0f;
+    mLinearAcceleration.z = 0.0f;
+    mBrake = 0.0f;
+    mRotation.x = 0.0f;
+    mRotation.y = 0.0f;
+    mRotation.z = 0.0f;
+    mRotation.w = 1.0f;
+    mAngularVelocity.x = 0.0f;
+    mAngularVelocity.y = 0.0f;
+    mAngularVelocity.z = 0.0f;
+    mAngularVelocity.w = 1.0f;
+    mAngularAcceleration.x = 0.0f;
+    mAngularAcceleration.y = 0.0f;
+    mAngularAcceleration.z = 0.0f;
+    mAngularAcceleration.w = 1.0f;
+    mBlend = 1.0f;
+    mHandBrake = 0.0f;
+    mTime = 0.0f;
+    mInFlight = false;
+    mNOS = false;
+}
+
 float ExtrapolatedCar::State::SquaredDistanceTo(State &target) const {
     return VU0_v3distancesquare(mPosition, target.mPosition);
 }
