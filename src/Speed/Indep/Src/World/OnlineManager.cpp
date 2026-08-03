@@ -52,3 +52,19 @@ void OnlineManager::InitQuantizers() {
     QuantInt4Bit.Init("QuantInt4Bit", 0, 0xf);
     QuantFloatTime.Init("QuantFloatTime", min_value, 14400.0f, 0x18);
 }
+
+void OnlineManager::PrintQuantizersUsageReport() {
+    PositionQuantizerX.PrintUsageReport();
+    PositionQuantizerY.PrintUsageReport();
+    PositionQuantizerZ.PrintUsageReport();
+    VelocityQuantizer.PrintUsageReport();
+    AccelerationQuantizer.PrintUsageReport();
+    AngleQuantizer.PrintUsageReport();
+    AVelocityQuantizer.PrintUsageReport();
+    MatrixQuantizer.PrintUsageReport();
+    ControlQuantizer.PrintUsageReport();
+}
+
+void OnlineManager::PrintCheatTallies(bool) {}
+
+OnlineManager::~OnlineManager() {}
