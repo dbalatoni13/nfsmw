@@ -1,10 +1,27 @@
 #include "OnlineManager.hpp"
+#include "Speed/Indep/Src/Main/Scheduler.h"
+#include "Speed/Indep/Src/Misc/Config.h"
+#include "Speed/Indep/Src/Online/OnlineCfg.hpp"
+#include "Speed/Indep/Src/Online/VoiceCore.hpp"
+#include "Speed/Indep/bWare/Inc/Strings.hpp"
 
 namespace Online {
 bool IsInitialized();
+void Close();
 }
 
 extern int OnlineIsServer;
+extern int OnlineEnabled;
+extern int bSuperBenderConnected;
+extern int NetworkUseLobbies;
+
+int SuperBenderGetCommandLineArgc();
+char **SuperBenderGetCommandLineArgv();
+
+struct ConnectionCore {
+    static ConnectionCore &Instance();
+    void LeaveSession();
+};
 
 OnlineManager TheOnlineManager;
 
@@ -89,4 +106,61 @@ bool OnlineManager::IsServer() {
 
 bool OnlineManager::RaceStartAborted() {
     return GetNumConnectedRacers() == 0;
+}
+
+void OnlineManager::ChangeState(eOnlineState new_state) {
+    eOnlineState old_state = State;
+    if (new_state != old_state) {
+        State = new_state;
+        if (new_state == OLS_RACING || old_state == OLS_RACING) {
+            float seconds = TheOnlineManager.GetMasterTime() * 0.001f;
+            float temp = seconds * 4000.0f + 0.5f;
+            Timer time(static_cast<int>(temp));
+            Scheduler::Get().Synchronize(time);
+        }
+    }
+}
+
+void OnlineManager::Initialize(int argc, char **argv) {
+    if (bSuperBenderConnected) {
+        argc = SuperBenderGetCommandLineArgc();
+        argv = SuperBenderGetCommandLineArgv();
+    }
+
+    char *filename = nullptr;
+    for (int i = 1; i < argc; ++i) {
+        int len = bStrLen(argv[i]);
+        if (len > 4 && bStrICmp(argv[i] + len - 4, ".cfg") == 0) {
+            filename = argv[i];
+        }
+    }
+
+    OnlineCfg::ReadConfigFile(filename);
+    VoiceCore::Construct();
+    if (SkipFE == 0) {
+        OnlineEnabled = 1;
+    }
+}
+
+void OnlineManager::Disconnect(bool force_disconnect) {
+    if (Online::IsInitialized()) {
+        Online::Close();
+    }
+
+    int driver_number = 0;
+    ConnectionCore::Instance().LeaveSession();
+    bOnlineRace = false;
+
+    for (OnlineRacer **racer = pRacers; driver_number < 4; ++driver_number, ++racer) {
+        if (*racer) {
+            GetOnlineRacer(driver_number)->ChangeState(OPS_DISCONNECTED);
+        }
+    }
+
+    if (State == OLS_RACE_DATA_SYNC && NetworkUseLobbies != 0 && !force_disconnect) {
+        ChangeState(OLS_LOBBY_IN_LOBBY);
+    } else {
+        ChangeState(OLS_DISCONNECTED);
+    }
+    PurgeDisconnectedRacers();
 }
