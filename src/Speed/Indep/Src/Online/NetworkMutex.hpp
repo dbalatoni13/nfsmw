@@ -10,6 +10,7 @@
 class NetworkMutex {
   public:
     NetworkMutex() {}
+    static void operator delete(void *mem, size_t size);
     void Create() {}
     void Lock() {}
     void Unlock() {}

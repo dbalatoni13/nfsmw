@@ -5,6 +5,7 @@
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/Src/Misc/Config.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
+#include "Speed/Indep/Src/Physics/PVehicle.h"
 #include "Speed/Indep/Src/World/WCollisionMgr.h"
 
 ExtrapolatedCar::ExtrapolatedCar(Attrib::Key cartype) {
@@ -21,6 +22,21 @@ ExtrapolatedCar::ExtrapolatedCar(Attrib::Key cartype) {
     mHasHeadset = false;
     mPaused = false;
     mUseDriverAI = false;
+}
+
+ExtrapolatedCar::~ExtrapolatedCar() {
+    delete mMutex;
+    if (mCops) {
+        CopMap::iterator iter = mCops->begin();
+        while (iter != mCops->end()) {
+            if (iter->second) {
+                delete iter->second;
+            }
+            ++iter;
+        }
+        mCops->clear();
+        delete mCops;
+    }
 }
 
 ExtrapolatedCar::State::State() {
@@ -75,6 +91,19 @@ void ExtrapolatedCar::State::SetOnGround(IVehicle *vehicle) {
 
     UMath::ExtractZAxis(mRotation, forwardvector);
     vehicle->SetVehicleOnGround(mPosition, forwardvector);
+}
+
+ISimable *ExtrapolatedCar::State::SpawnVehicle(Attrib::Key cartype) {
+    UMath::Vector3 forwardvector;
+
+    if (cartype == 0) {
+        cartype = Attrib::StringToKey(SkipFEPlayer2Car);
+    }
+    UMath::ExtractZAxis(mRotation, forwardvector);
+    UCrc32 name("PVehicle");
+    VehicleParams params(nullptr, DRIVER_REMOTE, cartype, forwardvector, mPosition,
+                         VPF_SNAP_TO_GROUND, nullptr, nullptr);
+    return ISimable::CreateInstance(name, params);
 }
 
 void ExtrapolatedCar::ExtractExtrapolatedPosition(UMath::Vector3 &position) const {

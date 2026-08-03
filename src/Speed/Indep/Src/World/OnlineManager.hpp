@@ -25,7 +25,6 @@
 class SmartBitStream;
 struct Client;
 struct WorldObject;
-struct CopMap;
 class IVehicle;
 
 enum eOnlineRacerState {
@@ -134,6 +133,7 @@ struct ExtrapolatedCar : Debugable {
     Attrib::Key &GetCarType();
 
   private:
+    struct CopMap;
     State mStateArray[32];
     State mSaved;
     State mBlended;
@@ -151,6 +151,11 @@ struct ExtrapolatedCar : Debugable {
     bool mHasHeadset;
     bool mPaused;
     bool mUseDriverAI;
+};
+
+struct ExtrapolatedCar::CopMap : public UTL::Std::map<HSIMABLE, ExtrapolatedCar *, _type_map> {
+    ~CopMap();
+    static void operator delete(void *mem, size_t size);
 };
 
 struct OnlineRacer : ExtrapolatedCar {

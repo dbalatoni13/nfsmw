@@ -19,6 +19,7 @@ extern bool ShutJosieUp;
 extern int IsMemcardEnabled;
 extern int IsAutoSaveEnabled;
 extern int SkipFE;
+extern const char *SkipFEPlayer2Car;
 extern int SkipFESplitScreen;
 extern int SkipFETrackNumber;
 extern int SkipFENumPlayerCars;

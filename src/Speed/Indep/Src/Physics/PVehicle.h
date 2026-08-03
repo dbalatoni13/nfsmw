@@ -10,6 +10,14 @@
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #include "Speed/Indep/Src/Sim/SimTypes.h"
 
+enum eVehicleParamFlags {
+    VPF_SPOOL_RESOURCES = 1,
+    VPF_SNAP_TO_GROUND = 2,
+    VPF_REMOVE_NOS = 4,
+    VPF_COMPUTE_PERFORMANCE = 8,
+    VPF_FORCE_NOS = 16
+};
+
 // total size: 0x30
 struct VehicleParams : public Sim::Param {
     DriverClass carClass;                       // offset 0x10, size 0x4
