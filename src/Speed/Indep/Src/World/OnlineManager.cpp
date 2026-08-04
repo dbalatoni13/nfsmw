@@ -267,9 +267,8 @@ int OnlineManager::GetNumConnectedRacers() {
 
     for (int driver_number = 0; driver_number < 4; ++driver_number, ++racer) {
         if (*racer && GetOnlineRacer(driver_number) != pLocalRacer) {
-            if (GetOnlineRacer(driver_number)->IsConnected()) {
-                ++num_connected;
-            }
+            int connected = GetOnlineRacer(driver_number)->IsConnected();
+            num_connected += connected;
         }
     }
     return num_connected;
@@ -570,8 +569,8 @@ void OnlineManager::PurgeDisconnectedRacers() {
 }
 
 void OnlineManager::SignalDriverFinish(SmartBitStream &data) {
+    volatile uint8 drivernum;
     uint32 v = 0;
-    uint8 drivernum;
     data.GetBits(v, 8);
     drivernum = v;
     if (pRacers[drivernum]) {
@@ -611,10 +610,10 @@ int OnlineManager::AreAllPlayersFinishedRacing() {
             return 1;
         }
 
-    int time_finished = TimeRaceFinished.GetPackedTime();
-    int finished = 0;
-    if (TimeRaceFinished.IsSet() &&
-        static_cast<float>(WorldTimer.GetPackedTime() - time_finished) * 0.00025f > 3.0f) {
+        int time_finished = TimeRaceFinished.GetPackedTime();
+        int finished = 0;
+        if (TimeRaceFinished.IsSet() &&
+            static_cast<float>(WorldTimer.GetPackedTime() - time_finished) * 0.00025f > 3.0f) {
             finished = 1;
         }
         return finished;
