@@ -524,6 +524,16 @@ void OnlineManager::ImportPositionData(int driver_number, SmartBitStream &data, 
     }
 }
 
+void OnlineManager::ExportPositionData(int driver_number, SmartBitStream &data,
+                                       ePosDataPriorityMask priority_mask) {
+    if (pRacers[driver_number]) {
+        OnlineRacer *racer = GetOnlineRacer(driver_number);
+        if (pCurrentWorld) {
+            racer->ExportStream(data, priority_mask);
+        }
+    }
+}
+
 OnlineRacer *OnlineManager::GetServerRacer() {
     int driver_number = 0;
     OnlineRacer **racer = pRacers;
