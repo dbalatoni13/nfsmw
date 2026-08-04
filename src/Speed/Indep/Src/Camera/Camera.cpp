@@ -56,7 +56,6 @@ void Camera::SetCameraMatrix(const bMatrix4 &m, float fTime) {
             if (cameralink != 0) {
                 cameralink = 0;
             }
-            //*reinterpret_cast<bMatrix4 *>(this) = m;
 
         } else {
 

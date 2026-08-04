@@ -94,14 +94,13 @@ void CameraMover::ChopperNoise(bMatrix4 *world_to_camera, float f_scale, bool us
             bVector3 dir;
 
             bSub(&dir, &bpos, pCamera->GetPosition());
-            // anon block
 
             float distance = bLength(&dir);
 
             if (distance < 40.0f) {
                 float intensity = f_scale * (1.0f - distance * 0.025f);
 
-                bVector4 v_frequency; // = CameraNoiseChopperFrequency
+                bVector4 v_frequency;
                 bVector4 v_magnitude;
                 bScale(&v_magnitude, &CameraNoiseChopperAmplitude, intensity);
                 bScale(&v_frequency, &CameraNoiseChopperFrequency, intensity);
@@ -224,12 +223,12 @@ void UpdateCameraMovers(float dT) {
 
             bVector3 eye;
             bVector3 look;
-            LongVector fix_eye;  // LongVector
-            LongVector fix_look; // LongVector
+            LongVector fix_eye;
+            LongVector fix_look;
 
             bVector3 prev_position(0.0f, 0.0f, 0.0f);
 
-            float scale = 50.0f; // DAT_803d1e90
+            float scale = 50.0f;
             eye = view->pCamera->CurrentKey.Position * scale;
             look = view->pCamera->CurrentKey.Direction * scale;
 
