@@ -20,6 +20,7 @@ void SignalStartClockSync();
 void SignalReady();
 void ReadIncomingPackets();
 void SendUpdates();
+void SignalSyncAnimationMessage(SmartBitStream &payload_data);
 }
 
 extern int OnlineIsServer;
@@ -39,6 +40,14 @@ class RaceStarter {
   public:
     static void SetupOnlineRace();
 };
+
+void SmartBitStream::AddQuantizedInt(int value, IntQuantizer &iq) {
+    AddBits(iq.Pack(value), iq.GetNumBits());
+}
+
+void SmartBitStream::AddQuantizedFloat(float value, FloatQuantizer &qf) {
+    AddBits(qf.Pack(value), qf.GetNumBits());
+}
 
 struct ConnectionCore {
     static ConnectionCore &Instance();
@@ -470,6 +479,45 @@ int OnlineManager::AreAllPlayersFinishedRacing() {
         return finished;
     }
     return State == OLS_DISCONNECTED;
+}
+
+void OnlineManager::SignalDataCRCMessage(SmartBitStream &data) {
+    char driver_number;
+    uint32 expected_crc;
+    {
+        uint32 temp = 0;
+        data.GetBits(temp, 8);
+        driver_number = static_cast<char>(temp);
+    }
+    {
+        uint32 temp = 0;
+        data.GetBits(temp, 32);
+        expected_crc = temp;
+    }
+
+    if (pRacers[driver_number]) {
+        OnlineRacer *racer = GetOnlineRacer(static_cast<int>(driver_number));
+        uint32 actual_crc = racer->GetDataCRC(false);
+        bool anti_cheating = false;
+        if (FEDatabase->OnlineSettings.RankedGame || SkipFE) {
+            anti_cheating = FrameRateIsTooLow == false;
+        }
+        if (anti_cheating && expected_crc != actual_crc && IsAntiCheatingEnabled() &&
+            racer->CheatTally[5] < 0xfe01) {
+            ++racer->CheatTally[5];
+        }
+    }
+}
+
+void OnlineManager::SendSyncAnimations() {
+    if (NumWorldObjects) {
+        SmartBitStream data;
+        data.AddByte(NumWorldObjects);
+        data.AddQuantizedFloat(WorldTimer.GetSeconds(), QuantFloatTime);
+        if (Online::IsInitialized()) {
+            Online::SignalSyncAnimationMessage(data);
+        }
+    }
 }
 
 bool OnlineManager::HasAnyoneCheated() {
