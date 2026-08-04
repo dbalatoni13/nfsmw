@@ -26,6 +26,7 @@ extern int OnlineIsServer;
 extern int OnlineEnabled;
 extern int bSuperBenderConnected;
 extern int NetworkUseLobbies;
+extern void *pCurrentRace;
 
 int SuperBenderGetCommandLineArgc();
 char **SuperBenderGetCommandLineArgv();
@@ -435,6 +436,22 @@ void OnlineManager::SignalScoreMessage(SmartBitStream &) {}
 void OnlineManager::SignalRestartLoad(int driver_num) {
     if (pRacers[driver_num]) {
         GetOnlineRacer(driver_num)->ChangeState(OPS_CONNECTED);
+    }
+}
+
+void OnlineManager::NotifyDiscEjected() {
+    if (pLocalRacer && pCurrentRace) {
+        pLocalRacer->DriverDisconnect(OPS_DISCERROR, 0xc);
+        int driver_number = 0;
+        do {
+            OnlineRacer *racer = GetOnlineRacer(driver_number);
+            if (racer && racer != pLocalRacer) {
+                racer->DriverDisconnect(OPS_DISCONNECTED, 0xc);
+            }
+            ++driver_number;
+        } while (driver_number < 4);
+        EndOnlineRace(false);
+        Online::Close();
     }
 }
 
