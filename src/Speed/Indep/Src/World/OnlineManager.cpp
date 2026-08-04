@@ -497,6 +497,24 @@ void OnlineManager::ExportDriverInfo(int driver_number, SmartBitStream &data) {
     }
 }
 
+void OnlineManager::MapRacers2PlayerIDs() {
+    int playerID = 0;
+    do {
+        if (PersonaMap[playerID][0] != '\0') {
+            int driver_num = 0;
+            do {
+                OnlineRacer *racer = GetOnlineRacer(driver_num);
+                if (racer && bStrICmp(PersonaMap[playerID], racer->GetPersona()) == 0) {
+                    racer->SetPlayerID(playerID);
+                }
+                ++driver_num;
+            } while (driver_num < 4);
+        }
+        ++playerID;
+    } while (playerID < 4);
+    bMemSet(PersonaMap, 0, 0x40);
+}
+
 OnlineRacer *OnlineManager::GetServerRacer() {
     int driver_number = 0;
     OnlineRacer **racer = pRacers;
