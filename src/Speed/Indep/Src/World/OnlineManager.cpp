@@ -448,6 +448,25 @@ void OnlineManager::ImportRaceParams(int local_driver_number, int server_driver_
     data.GetBits(temp, 8);
 }
 
+void OnlineManager::ImportDriverInfo(int driver_number, SmartBitStream &data) {
+    char persona[16];
+    OnlineRacer *racer;
+    uint32 v;
+
+    data.GetTerminatedString(persona, 0x10);
+    CreateOnlineRacer(driver_number, nullptr, false, persona);
+    racer = GetOnlineRacer(driver_number);
+    data.GetRawData(reinterpret_cast<char *>(&racer->CarTypeKey), 4);
+    v = 0;
+    data.GetBits(v, 1);
+    racer->IsCustomCar = v != 0;
+    if (racer->IsCustomCar) {
+        data.GetRawData(reinterpret_cast<char *>(&racer->CarCustomization), 0x198);
+    }
+
+    Attrib::Gen::pvehicle vehicle(racer->CarTypeKey, 0, nullptr);
+}
+
 OnlineRacer *OnlineManager::GetServerRacer() {
     int driver_number = 0;
     OnlineRacer **racer = pRacers;
