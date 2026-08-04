@@ -515,6 +515,15 @@ void OnlineManager::MapRacers2PlayerIDs() {
     bMemSet(PersonaMap, 0, 0x40);
 }
 
+void OnlineManager::ImportPositionData(int driver_number, SmartBitStream &data, float timestamp,
+                                       ePosDataPriorityMask priority_mask) {
+    if (pRacers[driver_number]) {
+        if (data.GetByteLengthRemaining() > 1) {
+            GetOnlineRacer(driver_number)->ImportStream(data, priority_mask);
+        }
+    }
+}
+
 OnlineRacer *OnlineManager::GetServerRacer() {
     int driver_number = 0;
     OnlineRacer **racer = pRacers;

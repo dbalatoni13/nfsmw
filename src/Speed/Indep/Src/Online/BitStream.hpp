@@ -26,7 +26,7 @@ class BitStream {
                                      static_cast<float>(BIT_DEPTH)));
     }
     int GetByteLengthRemaining() const {
-        return static_cast<int>(bCeil(static_cast<float>(GetBitLengthRemaining()) /
+        return static_cast<int>(bCeil(static_cast<float>(m_bitWritePosition - m_bitReadPosition) /
                                      static_cast<float>(BIT_DEPTH)));
     }
     int GetBitLengthRemaining() const { return m_bitWritePosition - m_bitReadPosition; }
