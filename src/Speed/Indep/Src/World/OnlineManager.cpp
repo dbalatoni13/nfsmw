@@ -7,6 +7,7 @@
 #include "Speed/Indep/Src/Online/OnlineCfg.hpp"
 #include "Speed/Indep/Src/Online/SmartBitstream.hpp"
 #include "Speed/Indep/Src/Online/VoiceCore.hpp"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/World/World.hpp"
 #include "Speed/Indep/Src/World/RaceParameters.hpp"
 #include "Speed/Indep/bWare/Inc/bDebug.hpp"
@@ -22,6 +23,7 @@ void ReadIncomingPackets();
 void SendUpdates();
 void SignalSyncAnimationMessage(SmartBitStream &payload_data);
 void SignalDataCRCMessage(SmartBitStream &payload_data);
+void ShowDiagnostics();
 }
 
 extern int OnlineIsServer;
@@ -52,15 +54,23 @@ void SmartBitStream::AddQuantizedFloat(float value, FloatQuantizer &qf) {
     AddBits(qf.Pack(value), qf.GetNumBits());
 }
 
+struct ConnApiClientT;
+
 struct ConnectionCore {
     static ConnectionCore &Instance();
     void LeaveSession();
+    void *GetPlayer(int index);
+};
+
+struct CUIOnlineDisconnect {
+    static bool mIsHostInGameDisconnect;
 };
 
 class NetworkCore {
   public:
     static NetworkCore &Instance() { return mInstance; }
     static void DoNetworkProcessing();
+    bool IsOnline();
     uint32 GetTime();
 
   private:
@@ -139,6 +149,73 @@ void OnlineManager::PrintQuantizersUsageReport() {
 void OnlineManager::PrintCheatTallies(bool) {}
 
 OnlineManager::~OnlineManager() {}
+
+void OnlineManager::Update(bool receive) {
+    Online::ShowDiagnostics();
+
+    uint32 time = NetworkCore::Instance().GetTime();
+    uint32 elapsed = time - mLastUpdateTime;
+    if (elapsed < 0x65) {
+        mLastUpdateTime = time;
+    } else {
+        GetMasterTime();
+        mLastUpdateTime = time;
+    }
+
+    bool host_disconnected = false;
+    if (IsOnlineRace() && State != OLS_RACE_END && !IsServer() &&
+        !CUIOnlineDisconnect::mIsHostInGameDisconnect) {
+        void *host = ConnectionCore::Instance().GetPlayer(0);
+        if (!host || *reinterpret_cast<uint32 *>(reinterpret_cast<char *>(host) + 0x88) != 3) {
+            host_disconnected = true;
+        }
+    }
+
+    if (host_disconnected && TheGameFlowManager.IsInGame()) {
+        CUIOnlineDisconnect::mIsHostInGameDisconnect = true;
+        cFEng::Get()->QueuePackagePush("UI_OL_Disconnect_BG.fng", 0, 0, false);
+    }
+
+    eOnlineState state = State;
+    if (state == OLS_RACING) {
+        if (!IsServer()) {
+            uint32 master = GetMasterTime();
+            uint32 server = GetServerTime();
+            int delta = server - master;
+            if (delta < 0x65) {
+                if (delta < 4) {
+                    if (delta < -1) {
+                        ++mMasterTime;
+                    } else {
+                        mMasterTime -= delta;
+                    }
+                } else {
+                    mMasterTime -= 3;
+                }
+            } else {
+                mMasterTime += master - server;
+            }
+        }
+    }
+
+    if (state > OLS_RACE_END) {
+        if (receive) {
+            UpdateIncoming();
+        }
+        return;
+    }
+
+    switch (state) {
+    case OLS_LOBBY_IN_LOBBY:
+        if (NetworkUseLobbies == 0 && SkipFE && NetworkCore::Instance().IsOnline()) {
+            FEDatabase->OnlineSettings.RankedGame = false;
+            StartOnlineRace();
+        }
+        break;
+    default:
+        break;
+    }
+}
 
 bool OnlineManager::IsOnlineRace() {
     bool online_race = false;
