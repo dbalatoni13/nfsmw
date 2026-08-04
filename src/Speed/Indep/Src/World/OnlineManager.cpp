@@ -432,6 +432,12 @@ void OnlineManager::SignalSyncAnimationMessage(SmartBitStream &) {}
 
 void OnlineManager::SignalScoreMessage(SmartBitStream &) {}
 
+void OnlineManager::SignalRestartLoad(int driver_num) {
+    if (pRacers[driver_num]) {
+        GetOnlineRacer(driver_num)->ChangeState(OPS_CONNECTED);
+    }
+}
+
 void OnlineManager::UpdateIncoming() {
     if (Online::IsInitialized()) {
         Online::ReadIncomingPackets();
