@@ -384,11 +384,10 @@ void OnlineManager::SetupLocalDriver(int driver_num) {
 void OnlineManager::CreateOnlineRacer(int driver_num, SmartBitStream *pdata, bool is_server,
                                       const char *persona) {
     PurgeDisconnectedRacers();
-    OnlineRacer **racer_slot = pRacers + driver_num;
-    if (*racer_slot == nullptr) {
+    if (pRacers[driver_num] == nullptr) {
         OnlineRacer *racer = new ("OnlineRacer", 0, 8)
             OnlineRacer(static_cast<int8>(driver_num), is_server, persona);
-        *racer_slot = racer;
+        pRacers[driver_num] = racer;
         racer->ChangeState(OPS_CONNECTED);
         ++NumRacers;
     } else {
