@@ -29,6 +29,9 @@ extern int NetworkUseLobbies;
 int SuperBenderGetCommandLineArgc();
 char **SuperBenderGetCommandLineArgv();
 uint32 fptoui(float value);
+inline void *operator new(size_t size, const char *name, int line, int allocation_params) {
+    return bMalloc(size, name, line, allocation_params);
+}
 
 class RaceStarter {
   public:
@@ -350,6 +353,68 @@ void OnlineManager::SetupStartingPositions() {}
 void OnlineManager::SetupRaceParams() {
     RaceStarter::SetupOnlineRace();
     g_tweakDriftPhysics = 0;
+}
+
+void OnlineManager::SetupLocalDriver(int driver_num) {
+    OnlineRacer **racer;
+    if (driver_num != 0) {
+        racer = &pRacers[driver_num];
+        *racer = pRacers[0];
+        pRacers[0] = nullptr;
+    } else {
+        racer = pRacers;
+    }
+    pLocalRacer = *racer;
+    pLocalRacer->DriverNumber = driver_num;
+}
+
+void OnlineManager::CreateOnlineRacer(int driver_num, SmartBitStream *pdata, bool is_server,
+                                      const char *persona) {
+    PurgeDisconnectedRacers();
+    OnlineRacer **racer_slot = pRacers + driver_num;
+    if (*racer_slot == nullptr) {
+        OnlineRacer *racer = new ("OnlineRacer", 0, 8)
+            OnlineRacer(static_cast<int8>(driver_num), is_server, persona);
+        *racer_slot = racer;
+        racer->ChangeState(OPS_CONNECTED);
+        ++NumRacers;
+    } else {
+        if (GetOnlineRacer(driver_num)->IsServer()) {
+            GetOnlineRacer(driver_num)->SetPersona(persona);
+            return;
+        }
+    }
+}
+
+OnlineRacer *OnlineManager::GetServerRacer() {
+    int driver_number = 0;
+    OnlineRacer **racer = pRacers;
+    do {
+        if (*racer && GetOnlineRacer(driver_number)->IsServer()) {
+            return GetOnlineRacer(driver_number);
+        }
+        ++driver_number;
+        ++racer;
+    } while (driver_number < 4);
+    return nullptr;
+}
+
+void OnlineManager::PurgeDisconnectedRacers() {
+    if (pLocalRacer && !pLocalRacer->IsConnected()) {
+        pLocalRacer = nullptr;
+    }
+
+    int driver_number = 0;
+    OnlineRacer **racer = pRacers;
+    do {
+        if (*racer && !GetOnlineRacer(driver_number)->IsConnected()) {
+            delete *racer;
+            *racer = nullptr;
+            --NumRacers;
+        }
+        ++driver_number;
+        ++racer;
+    } while (driver_number < 4);
 }
 
 void OnlineManager::UpdateIncoming() {
