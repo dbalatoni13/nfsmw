@@ -412,6 +412,42 @@ void OnlineManager::ExportRaceParams(int server_driver_number, SmartBitStream &d
     data.AddByte(0);
 }
 
+void OnlineManager::ImportRaceParams(int local_driver_number, int server_driver_number,
+                                     SmartBitStream &data) {
+    cFrontendDatabase *database = FEDatabase;
+    cOnlineSettings *settings;
+    OnlineRaceParameters *race_settings;
+    GRace::Type race_mode;
+    uint32 collision_detection;
+    uint32 track_direction;
+    uint32 num_laps;
+    uint32 cop_density;
+    uint32 temp;
+
+    race_mode = GRace::kRaceType_P2P;
+    data.GetBits(reinterpret_cast<uint32 &>(race_mode), 8);
+    settings = &database->OnlineSettings;
+    race_settings = settings->GetRaceSettings();
+    settings->RaceMode = static_cast<GRace::Type>(static_cast<uint8>(race_mode));
+    collision_detection = 0;
+    data.GetBits(collision_detection, 1);
+    settings->CollisionDetection = collision_detection == 1;
+    track_direction = 0;
+    data.GetBits(track_direction, 8);
+    race_settings->TrackDirection = track_direction;
+    num_laps = 0;
+    data.GetBits(num_laps, 16);
+    race_settings->NumLaps = num_laps;
+    cop_density = 0;
+    data.GetBits(cop_density, 8);
+    race_settings->CopDensity = static_cast<uint8>(cop_density);
+    SetupRaceParams();
+    SetupLocalDriver(local_driver_number);
+    CreateOnlineRacer(server_driver_number, nullptr, true, nullptr);
+    temp = 0;
+    data.GetBits(temp, 8);
+}
+
 OnlineRacer *OnlineManager::GetServerRacer() {
     int driver_number = 0;
     OnlineRacer **racer = pRacers;
