@@ -113,9 +113,8 @@ void OnlineManager::ChangeState(eOnlineState new_state) {
     if (new_state != old_state) {
         State = new_state;
         if (new_state == OLS_RACING || old_state == OLS_RACING) {
-            float seconds = TheOnlineManager.GetMasterTime() * 0.001f;
-            float temp = seconds * 4000.0f + 0.5f;
-            Timer time(static_cast<int>(temp));
+            float temp = TheOnlineManager.GetMasterTime() * 0.001f;
+            Timer time(static_cast<int>(temp * 4000.0f + 0.5f));
             Scheduler::Get().Synchronize(time);
         }
     }
@@ -163,4 +162,48 @@ void OnlineManager::Disconnect(bool force_disconnect) {
         ChangeState(OLS_DISCONNECTED);
     }
     PurgeDisconnectedRacers();
+}
+
+int OnlineManager::GetNumConnectedRacers() {
+    int num_connected = 0;
+    OnlineRacer **racer = pRacers;
+
+    for (int driver_number = 0; driver_number < 4; ++driver_number, ++racer) {
+        if (*racer && GetOnlineRacer(driver_number) != pLocalRacer) {
+            if (GetOnlineRacer(driver_number)->IsConnected()) {
+                ++num_connected;
+            }
+        }
+    }
+    return num_connected;
+}
+
+int OnlineManager::GetNumRacers() {
+    int num_racers = 0;
+    OnlineRacer **racer = pRacers;
+    int i = 3;
+    do {
+        if (*racer) {
+            ++num_racers;
+        }
+        ++racer;
+        --i;
+    } while (i >= 0);
+    return num_racers;
+}
+
+OnlineRacer *OnlineManager::GetOnlineRacer(int driver_number) {
+    return pRacers[driver_number];
+}
+
+OnlineRacer *OnlineManager::GetOnlineRacer(const char *racer_name) {
+    int driver_number = 0;
+    OnlineRacer **racer = pRacers;
+
+    for (; driver_number < 4; ++driver_number, ++racer) {
+        if (*racer && bStrCmp((*racer)->GetPersona(), racer_name) == 0) {
+            return *racer;
+        }
+    }
+    return nullptr;
 }

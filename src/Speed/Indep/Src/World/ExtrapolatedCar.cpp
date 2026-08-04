@@ -112,8 +112,13 @@ void ExtrapolatedCar::ExtractExtrapolatedPosition(UMath::Vector3 &position) cons
     position = mBlended.mPosition;
 }
 
+void ExtrapolatedCar::State::ExtractDirection(UMath::Vector3 &direction) const {
+    UMath::ExtractZAxis(mRotation, direction);
+}
+
 void ExtrapolatedCar::ExtractExtrapolatedDirection(UMath::Vector3 &direction) const {
-    mBlended.ExtractDirection(direction);
+    ExtrapolatedCar::State *blended = const_cast<ExtrapolatedCar::State *>(&mBlended);
+    blended->ExtractDirection(direction);
 }
 
 bool ExtrapolatedCar::IsAbleToSee(ExtrapolatedCar &target) {
