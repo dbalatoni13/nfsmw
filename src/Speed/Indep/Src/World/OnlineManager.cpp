@@ -21,6 +21,7 @@ void SignalReady();
 void ReadIncomingPackets();
 void SendUpdates();
 void SignalSyncAnimationMessage(SmartBitStream &payload_data);
+void SignalDataCRCMessage(SmartBitStream &payload_data);
 }
 
 extern int OnlineIsServer;
@@ -29,6 +30,7 @@ extern int bSuperBenderConnected;
 extern int NetworkUseLobbies;
 extern void *pCurrentRace;
 extern const char *SkipFEPlayerCar;
+extern int ONLINE_CHEAT_NOSEND_CRC;
 
 int SuperBenderGetCommandLineArgc();
 char **SuperBenderGetCommandLineArgv();
@@ -618,6 +620,29 @@ int OnlineManager::AreAllPlayersFinishedRacing() {
         return finished;
     }
     return State == OLS_DISCONNECTED;
+}
+
+void OnlineManager::SendLocalPlayerDataCRC() {
+    if (pLocalRacer && ONLINE_CHEAT_NOSEND_CRC == 0) {
+        SmartBitStream data;
+        data.AddByte(pLocalRacer->GetDriverNumber());
+        data.AddInt(pLocalRacer->GetDataCRC(true));
+        if (Online::IsInitialized()) {
+            Online::SignalDataCRCMessage(data);
+        }
+
+        OnlineManager &manager = TheOnlineManager;
+        bool anti_cheating = false;
+        if (FEDatabase->OnlineSettings.RankedGame || SkipFE) {
+            anti_cheating = manager.FrameRateIsTooLow == false;
+        }
+        if (anti_cheating && pLocalRacer->GetDataCRC(false) != SavedLocalPhysicsCRC) {
+            OnlineRacer *racer = pLocalRacer;
+            if (manager.IsAntiCheatingEnabled() && racer->CheatTally[5] < 0xfe01) {
+                ++racer->CheatTally[5];
+            }
+        }
+    }
 }
 
 void OnlineManager::SignalDataCRCMessage(SmartBitStream &data) {
