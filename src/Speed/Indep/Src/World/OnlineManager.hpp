@@ -245,7 +245,7 @@ class OnlineManager {
     bool IsOnline();
     bool IsServer();
     uint32 GetMasterTime();
-    uint32 GetServerTime() const { return mServerTime; }
+    uint32 GetServerTime();
     void DriverLeft(int driver_number, bool he_quit);
     void ExportPositionData(int driver_number, SmartBitStream &bitstream_data,
                             ePosDataPriorityMask priority_mask);

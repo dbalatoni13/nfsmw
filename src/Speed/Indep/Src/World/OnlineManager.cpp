@@ -3,6 +3,7 @@
 #include "Speed/Indep/Src/Misc/Config.h"
 #include "Speed/Indep/Src/Online/OnlineCfg.hpp"
 #include "Speed/Indep/Src/Online/VoiceCore.hpp"
+#include "Speed/Indep/bWare/Inc/bDebug.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 
 namespace Online {
@@ -17,10 +18,21 @@ extern int NetworkUseLobbies;
 
 int SuperBenderGetCommandLineArgc();
 char **SuperBenderGetCommandLineArgv();
+uint32 fptoui(float value);
 
 struct ConnectionCore {
     static ConnectionCore &Instance();
     void LeaveSession();
+};
+
+class NetworkCore {
+  public:
+    static NetworkCore &Instance() { return mInstance; }
+    static void DoNetworkProcessing();
+    uint32 GetTime();
+
+  private:
+    static NetworkCore mInstance;
 };
 
 OnlineManager TheOnlineManager;
@@ -206,4 +218,43 @@ OnlineRacer *OnlineManager::GetOnlineRacer(const char *racer_name) {
         }
     }
     return nullptr;
+}
+
+uint32 OnlineManager::GetMasterTime() {
+    return NetworkCore::Instance().GetTime() - mMasterTime;
+}
+
+void OnlineManager::SetServerTime(uint32 time) {
+    mServerTime = time - NetworkCore::Instance().GetTime();
+}
+
+uint32 OnlineManager::GetServerTime() {
+    return mServerTime + NetworkCore::Instance().GetTime();
+}
+
+float OnlineManager::GetStartRaceTime(uint32 from_tick) {
+    if (mStartRaceIsSet) {
+        return mStartRaceTime - bGetTickerDifference(mStartRaceTick, from_tick) * 0.001f;
+    }
+    return 2.0f;
+}
+
+void OnlineManager::StartSimFrame() {
+    NetworkCore::DoNetworkProcessing();
+}
+
+void OnlineManager::SetStartRaceTime(uint32 from_tick, float time, float ping) {
+    if (!mStartRaceIsSet || ping < mStartRacePing) {
+        RestartingRace = false;
+        RestartRequested = false;
+        mStartRaceTime = time;
+        mStartRaceTick = from_tick;
+        mStartRacePing = ping;
+
+        uint32 master_time = GetMasterTime();
+        uint32 time_milliseconds = fptoui(time * 1000.0f);
+        mMasterTime += master_time + time_milliseconds;
+        SetServerTime(GetMasterTime());
+        mStartRaceIsSet = true;
+    }
 }
