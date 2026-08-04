@@ -2,15 +2,21 @@
 #include "Speed/Indep/Src/Main/Scheduler.h"
 #include "Speed/Indep/Src/Misc/Config.h"
 #include "Speed/Indep/Src/Misc/GameFlow.hpp"
+#include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
+#include "Speed/Indep/Src/Animation/AnimPlayer.hpp"
 #include "Speed/Indep/Src/Online/OnlineCfg.hpp"
 #include "Speed/Indep/Src/Online/VoiceCore.hpp"
+#include "Speed/Indep/Src/World/World.hpp"
+#include "Speed/Indep/Src/World/RaceParameters.hpp"
 #include "Speed/Indep/bWare/Inc/bDebug.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 
 namespace Online {
 bool IsInitialized();
 void Close();
+void Init();
 void SignalStartClockSync();
+void SignalReady();
 }
 
 extern int OnlineIsServer;
@@ -182,6 +188,55 @@ void OnlineManager::Disconnect(bool force_disconnect) {
     PurgeDisconnectedRacers();
 }
 
+void OnlineManager::StartOnlineRace() {
+    if (NetworkUseLobbies != 0 && State != OLS_LOBBY_IN_LOBBY) {
+        return;
+    }
+
+    ChangeState(OLS_LOBBY_IN_LOBBY);
+    CreateOnlineRacer(0, nullptr, IsServer(), FEDatabase->OnlineSettings.GetLobbyPersona());
+    if (SkipFE == 0) {
+        if (IsServer()) {
+            SetupRaceParams();
+        }
+    }
+
+    mStartRaceIsSet = false;
+    mStartRaceTime = 0.0f;
+    mStartRaceTick = bGetTicker();
+    mMasterTime += GetMasterTime();
+    uint32 master_time = GetMasterTime();
+    SetServerTime(master_time);
+    mLastUpdateTime = NetworkCore::Instance().GetTime();
+    TimeupStartTime.UnSet();
+    Online::Init();
+    bOnlineRace = true;
+    ChangeState(OLS_RACE_DATA_SYNC);
+}
+
+void OnlineManager::SetupRestartRace() {
+    TheRaceParameters.RaceType = RACE_TYPE_SINGLE_RACE;
+
+    int driver_number = 0;
+    OnlineRacer **racer = pRacers;
+    do {
+        OnlineRacer *oracer = GetOnlineRacer(driver_number);
+        ++driver_number;
+        if (*racer && oracer != pLocalRacer) {
+            if (!oracer->bShouldRestart) {
+                TheRaceParameters.RemoveDriverInfo(oracer->GetDriverNumber());
+                delete *racer;
+                *racer = nullptr;
+                --NumRacers;
+            } else {
+                oracer->bShouldRestart = false;
+                oracer->SetRaceScore(0);
+            }
+        }
+        ++racer;
+    } while (driver_number < 4);
+}
+
 int OnlineManager::GetNumConnectedRacers() {
     int num_connected = 0;
     OnlineRacer **racer = pRacers;
@@ -305,6 +360,30 @@ void OnlineManager::TrackLoaded() {
         if (Online::IsInitialized()) {
             Online::SignalStartClockSync();
             SetupStartingPositions();
+        }
+    }
+}
+
+bool OnlineManager::IsAntiCheatingEnabled() {
+    bool enabled = false;
+    if (FEDatabase->OnlineSettings.RankedGame || SkipFE) {
+        enabled = FrameRateIsTooLow == false;
+    }
+    return enabled;
+}
+
+void OnlineManager::ReadyStartLine() {
+    if (State == OLS_RACE_LOAD_TRACK) {
+        m_ticker = bGetTicker();
+        ChangeState(OLS_RACE_START_LINE);
+        TheAnimPlayer.PauseAll();
+        if (pCurrentWorld) {
+            pCurrentWorld->BeginOnlinePause();
+            OnlineTimer::ServerTimer = WorldTimer;
+            BuildAnimWorldObjects();
+        }
+        if (Online::IsInitialized()) {
+            Online::SignalReady();
         }
     }
 }

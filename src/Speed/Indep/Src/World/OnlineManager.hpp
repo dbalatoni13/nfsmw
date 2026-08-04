@@ -159,6 +159,8 @@ struct ExtrapolatedCar::CopMap : public UTL::Std::map<HSIMABLE, ExtrapolatedCar 
 };
 
 struct OnlineRacer : ExtrapolatedCar {
+    friend class OnlineManager;
+
     OnlineRacer(int8 driver_number, bool is_server, const char *persona);
     ~OnlineRacer();
     static void operator delete(void *mem);
@@ -409,7 +411,9 @@ class OnlineManager {
   public:
     OnlineRacer *GetOnlineRacer(const char *racerName);
     OnlineRacer *GetLocalRacer() { return pLocalRacer; }
-    bool IsValidRacer(int driver_number);
+    bool IsValidRacer(int driver_number) {
+        return pRacers[driver_number] != nullptr;
+    }
     int GetNumRacers();
 
     friend struct Client;
