@@ -364,6 +364,21 @@ void OnlineManager::TrackLoaded() {
     }
 }
 
+void OnlineManager::ClearAnimWorldObjects() {
+    NumWorldObjects = 0;
+    int i = 7;
+    WorldObject **object = pAnimWorldObjects + 7;
+    do {
+        *object = nullptr;
+        --i;
+        --object;
+    } while (i > -1);
+}
+
+void OnlineManager::BuildAnimWorldObjects() {
+    ClearAnimWorldObjects();
+}
+
 bool OnlineManager::IsAntiCheatingEnabled() {
     bool enabled = false;
     if (FEDatabase->OnlineSettings.RankedGame || SkipFE) {
