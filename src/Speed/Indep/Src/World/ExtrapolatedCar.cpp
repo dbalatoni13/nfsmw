@@ -185,6 +185,15 @@ void OnlineRacer::ChangeState(eOnlineRacerState new_state) {
     }
 }
 
+void OnlineRacer::DriverDisconnect(eOnlineRacerState new_state, int finish_reason) {
+    if (IsConnected()) {
+        ChangeState(new_state);
+        FinishedRaceStats.FinishReason = finish_reason;
+    } else {
+        FinishedRaceStats.FinishReason = finish_reason;
+    }
+}
+
 void OnlineRacer::ClearCheatInfo() {
     int i;
     for (i = 15; i > -1; i--) {
