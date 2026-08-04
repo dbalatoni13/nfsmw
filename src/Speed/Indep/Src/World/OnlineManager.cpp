@@ -5,6 +5,7 @@
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Animation/AnimPlayer.hpp"
 #include "Speed/Indep/Src/Online/OnlineCfg.hpp"
+#include "Speed/Indep/Src/Online/SmartBitstream.hpp"
 #include "Speed/Indep/Src/Online/VoiceCore.hpp"
 #include "Speed/Indep/Src/World/World.hpp"
 #include "Speed/Indep/Src/World/RaceParameters.hpp"
@@ -416,6 +417,20 @@ void OnlineManager::PurgeDisconnectedRacers() {
         ++racer;
     } while (driver_number < 4);
 }
+
+void OnlineManager::SignalDriverFinish(SmartBitStream &data) {
+    uint32 v = 0;
+    uint8 drivernum;
+    data.GetBits(v, 8);
+    drivernum = v;
+    if (pRacers[drivernum]) {
+        GetOnlineRacer(drivernum)->SignalFinish(data);
+    }
+}
+
+void OnlineManager::SignalSyncAnimationMessage(SmartBitStream &) {}
+
+void OnlineManager::SignalScoreMessage(SmartBitStream &) {}
 
 void OnlineManager::UpdateIncoming() {
     if (Online::IsInitialized()) {
