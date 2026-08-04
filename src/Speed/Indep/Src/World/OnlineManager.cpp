@@ -455,6 +455,36 @@ void OnlineManager::NotifyDiscEjected() {
     }
 }
 
+int OnlineManager::AreAllPlayersFinishedRacing() {
+    if (State == OLS_RACE_END) {
+        if (pLocalRacer->IsConnected() || pLocalRacer->GetState() == OPS_QUIT) {
+            return 1;
+        }
+
+    int time_finished = TimeRaceFinished.GetPackedTime();
+    int finished = 0;
+    if (TimeRaceFinished.IsSet() &&
+        static_cast<float>(WorldTimer.GetPackedTime() - time_finished) * 0.00025f > 3.0f) {
+            finished = 1;
+        }
+        return finished;
+    }
+    return State == OLS_DISCONNECTED;
+}
+
+bool OnlineManager::HasAnyoneCheated() {
+    bool has_cheated = false;
+    int driver_number = 0;
+    OnlineRacer **racer = pRacers;
+    for (; driver_number < 4; ++racer, ++driver_number) {
+        if (*racer && GetOnlineRacer(driver_number)->GetCheatScore()) {
+            has_cheated = true;
+            break;
+        }
+    }
+    return has_cheated;
+}
+
 void OnlineManager::UpdateIncoming() {
     if (Online::IsInitialized()) {
         Online::ReadIncomingPackets();
