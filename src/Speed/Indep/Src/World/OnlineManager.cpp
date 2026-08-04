@@ -397,6 +397,21 @@ void OnlineManager::CreateOnlineRacer(int driver_num, SmartBitStream *pdata, boo
     }
 }
 
+void OnlineManager::ExportRaceParams(int server_driver_number, SmartBitStream &data) {
+    if (!pLocalRacer) {
+        SetupLocalDriver(server_driver_number);
+    }
+
+    cOnlineSettings *settings = &FEDatabase->OnlineSettings;
+    OnlineRaceParameters *race_settings = settings->GetRaceSettings();
+    data.AddByte(settings->RaceMode);
+    data.AddBool(settings->CollisionDetection);
+    data.AddByte(race_settings->TrackDirection);
+    data.AddShort(race_settings->NumLaps);
+    data.AddByte(race_settings->CopDensity);
+    data.AddByte(0);
+}
+
 OnlineRacer *OnlineManager::GetServerRacer() {
     int driver_number = 0;
     OnlineRacer **racer = pRacers;
