@@ -176,7 +176,10 @@ struct OnlineRacer : ExtrapolatedCar {
         bool connected = false;
         if (GetState() != OPS_LOST_CONNECTION && GetState() != OPS_QUIT &&
             GetState() != OPS_DISCONNECTED) {
-            connected = GetState() != OPS_DISCERROR;
+            connected = true;
+            if (GetState() == OPS_DISCERROR) {
+                connected = false;
+            }
         }
         return connected;
     }
