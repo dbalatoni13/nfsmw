@@ -4,6 +4,8 @@
 #include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/Src/Misc/Config.h"
+#include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
+#include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #include "Speed/Indep/Src/Physics/PVehicle.h"
 #include "Speed/Indep/Src/World/WCollisionMgr.h"
@@ -208,3 +210,24 @@ uint32 OnlineRacer::GetDataCRC(bool recalc) { return PhysicsDataCRC; }
 float OnlineRacer::GetEndRaceCountdown() { return EndRaceCountdown; }
 
 void OnlineRacer::UpdateEndRaceStats() {}
+
+void OnlineRacer::UpdateLocal(float t) {
+    if (GRaceStatus::Exists()) {
+        BadnessReason = 0;
+        EndRaceCountdown = -1.0f;
+        IPlayer *p = IPlayer::First(PLAYER_LOCAL);
+        GRacerInfo *localRacerInfo = GRaceStatus::Get().GetRacerInfo(p->GetSimable());
+
+        if (!TheOnlineManager.AreAllPlayersFinishedRacing() &&
+            TheOnlineManager.TimeupStartTime.IsSet()) {
+            EndRaceCountdown = TheOnlineManager.TimeupLength -
+                static_cast<float>(WorldTimer.GetPackedTime() -
+                                   TheOnlineManager.TimeupStartTime.GetPackedTime()) * 0.00025f;
+            if (EndRaceCountdown <= 0.0f && !localRacerInfo->mFinishedRacing) {
+                TheOnlineManager.RaceTimeup = true;
+                GRaceStatus::Get().SkipToEndOfRaceForRacer(
+                    IPlayer::First(PLAYER_LOCAL)->GetSimable(), localRacerInfo->mIndex, 3600.0f);
+            }
+        }
+    }
+}

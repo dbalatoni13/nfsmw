@@ -231,6 +231,8 @@ struct OnlineRacer : ExtrapolatedCar {
 
 class OnlineManager {
   public:
+    friend struct OnlineRacer;
+
     OnlineManager();
     ~OnlineManager();
     void Initialize(int argc, char **argv);
