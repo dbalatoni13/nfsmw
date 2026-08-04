@@ -1,6 +1,7 @@
 #include "OnlineManager.hpp"
 #include "Speed/Indep/Src/Main/Scheduler.h"
 #include "Speed/Indep/Src/Misc/Config.h"
+#include "Speed/Indep/Src/Misc/GameFlow.hpp"
 #include "Speed/Indep/Src/Online/OnlineCfg.hpp"
 #include "Speed/Indep/Src/Online/VoiceCore.hpp"
 #include "Speed/Indep/bWare/Inc/bDebug.hpp"
@@ -9,6 +10,7 @@
 namespace Online {
 bool IsInitialized();
 void Close();
+void SignalStartClockSync();
 }
 
 extern int OnlineIsServer;
@@ -33,6 +35,10 @@ class NetworkCore {
 
   private:
     static NetworkCore mInstance;
+};
+
+struct OnlineTimer {
+    static Timer ServerTimer;
 };
 
 OnlineManager TheOnlineManager;
@@ -256,5 +262,49 @@ void OnlineManager::SetStartRaceTime(uint32 from_tick, float time, float ping) {
         mMasterTime += master_time + time_milliseconds;
         SetServerTime(GetMasterTime());
         mStartRaceIsSet = true;
+    }
+}
+
+void OnlineManager::RequestRestart() {}
+
+bool OnlineManager::GetRestartingRace() {
+    return RestartingRace;
+}
+
+void OnlineManager::StartLobby() {
+    if (State == OLS_DISCONNECTED) {
+        ChangeState(OLS_LOBBY_IN_LOBBY);
+    }
+}
+
+void OnlineManager::SetupStartingPositions() {}
+
+void OnlineManager::SignalLoad() {
+    if (NetworkUseLobbies != 0) {
+        MapRacers2PlayerIDs();
+    }
+    ChangeState(OLS_RACE_LOAD_TRACK);
+    if (TheGameFlowManager.IsInFrontend()) {
+        TheGameFlowManager.UnloadFrontend();
+        return;
+    }
+    TheGameFlowManager.LoadTrack();
+}
+
+void OnlineManager::TrackLoaded() {
+    if (State == OLS_RACE_LOAD_TRACK) {
+        CountdownSyncAnims.UnSet();
+        CountdownSendDataCRC.UnSet();
+        LastSyncedWTTimeStamp.UnSet();
+        LastAntiCheatRealTimer.UnSet();
+        LastAntiCheatWorldTimer.UnSet();
+        TimeRaceFinished.UnSet();
+        FrameRateIsTooLow = false;
+        OnlineTimer::ServerTimer = WorldTimer;
+        TimeTrackLoaded = RealTimer;
+        if (Online::IsInitialized()) {
+            Online::SignalStartClockSync();
+            SetupStartingPositions();
+        }
     }
 }
