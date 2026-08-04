@@ -56,11 +56,12 @@ void Camera::SetCameraMatrix(const bMatrix4 &m, float fTime) {
             if (cameralink != 0) {
                 cameralink = 0;
             }
-            *reinterpret_cast<bMatrix4 *>(this) = m;
+            //*reinterpret_cast<bMatrix4 *>(this) = m;
 
         } else {
 
-            bMemCpy(reinterpret_cast<bMatrix4 *>(&scaledmatrix), const_cast<const bMatrix4 *>(&Camera::JollyRancherResponse.CamMatrix), 0x40);
+            bMemCpy(reinterpret_cast<bMatrix4 *>(&scaledmatrix), const_cast<const bMatrix4 *>(&Camera::JollyRancherResponse.CamMatrix),
+                    sizeof(bMatrix4));
             bScale(reinterpret_cast<bVector3 *>(&scaledmatrix.v3), reinterpret_cast<const bVector3 *>(&scaledmatrix.v3), 0.01f);
 
             scaledmatrix.v3.w = 1.0f;
@@ -198,10 +199,8 @@ unsigned short Camera::FovRelativeAngle(unsigned short a) {
 void Camera::ApplyNoise(bMatrix4 *p_matrix, float time, float intensity) {
 
     bVector4 v(CurrentKey.NoiseFrequency1);
-    bVector4 v1;
-    bVector4 v2;
-    bVector4 v_noise;
 
+    bVector4 v1;
     bScale(&v1, &v, time);
 
     v1.x = Noise(v1.x);
@@ -211,8 +210,8 @@ void Camera::ApplyNoise(bMatrix4 *p_matrix, float time, float intensity) {
 
     bScale(&v1, &v1, (bVector4 *)&CurrentKey.NoiseAmplitude1);
 
-    v = CurrentKey.NoiseFrequency2;
-    bScale(&v2, &v, time);
+    bVector4 v2;
+    bScale(&v2, &CurrentKey.NoiseFrequency2, time);
 
     v2.x = Noise(v2.x);
     v2.y = Noise(v2.y);
@@ -221,7 +220,7 @@ void Camera::ApplyNoise(bMatrix4 *p_matrix, float time, float intensity) {
 
     bScale(&v2, &v2, (bVector4 *)&CurrentKey.NoiseAmplitude2);
 
-    v_noise = v1 + v2;
+    bVector4 v_noise = v1 + v2;
 
     bScale(&v_noise, &v_noise, intensity);
 

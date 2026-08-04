@@ -68,20 +68,13 @@ struct JollyRancherResponsePacket {
 
 static unsigned short aBaselineFovNoise = 0x2aaa; // from __static_initialization_and_destruction_0
 
-struct JR2Request {
-    JollyRancherResponsePacket *response;
-    int disableComm;
-    bMatrix4 scaledMatrix;
-    char cameraName[24];
-} request;
-
 // total size: 0x290
 class Camera {
     friend class CameraMover;
     friend void UpdateCameraMovers(float dT);
 
   public:
-    static bool StopUpdating;
+    static int StopUpdating;
     static JollyRancherResponsePacket JollyRancherResponse;
     static int JR2ServerExists;
 
@@ -153,7 +146,11 @@ class Camera {
 
     void ClearVelocity() {}
 
-    void SetRenderDash(int r) {}
+    void SetRenderDash(int r) {
+        if (!StopUpdating) {
+            RenderDash = r;
+        }
+    }
 
     void SetTargetDistance(float f) {}
 
@@ -171,11 +168,15 @@ class Camera {
 
     void SetNoiseAmplitude2(float x, float y, float z, float w) {}
 
-    void SetNoiseFrequency1(bVector4 *p) {}
+    void SetNoiseFrequency1(bVector4 *p) {
+        this->CurrentKey.NoiseFrequency1 = *p;
+    }
 
     void SetNoiseFrequency2(bVector4 *p) {}
 
-    void SetNoiseAmplitude1(bVector4 *p) {}
+    void SetNoiseAmplitude1(bVector4 *p) {
+        this->CurrentKey.NoiseAmplitude1 = *p;
+    }
 
     void SetNoiseAmplitude2(bVector4 *p) {}
 
@@ -187,7 +188,9 @@ class Camera {
 
     void SetNoiseAmplitude2(float *p) {}
 
-    void SetNearZ(float near_z) {}
+    void SetNearZ(float near_z) {
+        CurrentKey.NearZ = near_z;
+    }
 
     void SetFarZ(float far_z) {
         CurrentKey.FarZ = far_z;
