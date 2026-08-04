@@ -622,6 +622,32 @@ int OnlineManager::AreAllPlayersFinishedRacing() {
     return State == OLS_DISCONNECTED;
 }
 
+void OnlineManager::CheckWorldTimerHacking() {
+    OnlineManager &manager = TheOnlineManager;
+    bool anti_cheating = false;
+    if (FEDatabase->OnlineSettings.RankedGame || SkipFE) {
+        anti_cheating = manager.FrameRateIsTooLow == false;
+    }
+    if (anti_cheating) {
+        int last_real = LastAntiCheatRealTimer.GetPackedTime();
+        if (LastAntiCheatRealTimer.IsSet()) {
+            float result =
+                static_cast<float>(WorldTimer.GetPackedTime() - LastAntiCheatWorldTimer.GetPackedTime()) *
+                    0.00025f -
+                static_cast<float>(RealTimer.GetPackedTime() - last_real) * 0.00025f;
+            result = bAbs(result);
+            if (result > 0.5f) {
+                OnlineRacer *server = GetServerRacer();
+                if (server && manager.IsAntiCheatingEnabled() && server->CheatTally[1] < 0xfe01) {
+                    ++server->CheatTally[1];
+                }
+            }
+        }
+        LastAntiCheatRealTimer = RealTimer;
+        LastAntiCheatWorldTimer = WorldTimer;
+    }
+}
+
 void OnlineManager::SendLocalPlayerDataCRC() {
     if (pLocalRacer && ONLINE_CHEAT_NOSEND_CRC == 0) {
         SmartBitStream data;
