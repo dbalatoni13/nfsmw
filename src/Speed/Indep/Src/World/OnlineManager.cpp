@@ -17,6 +17,8 @@ void Close();
 void Init();
 void SignalStartClockSync();
 void SignalReady();
+void ReadIncomingPackets();
+void SendUpdates();
 }
 
 extern int OnlineIsServer;
@@ -27,6 +29,11 @@ extern int NetworkUseLobbies;
 int SuperBenderGetCommandLineArgc();
 char **SuperBenderGetCommandLineArgv();
 uint32 fptoui(float value);
+
+class RaceStarter {
+  public:
+    static void SetupOnlineRace();
+};
 
 struct ConnectionCore {
     static ConnectionCore &Instance();
@@ -322,6 +329,12 @@ void OnlineManager::SetStartRaceTime(uint32 from_tick, float time, float ping) {
 
 void OnlineManager::RequestRestart() {}
 
+void OnlineManager::SetPlayerIDs(const char (*personas)[16]) {
+    bMemCpy(PersonaMap, personas, 0x40);
+    RestartingRace = false;
+    RestartRequested = false;
+}
+
 bool OnlineManager::GetRestartingRace() {
     return RestartingRace;
 }
@@ -333,6 +346,23 @@ void OnlineManager::StartLobby() {
 }
 
 void OnlineManager::SetupStartingPositions() {}
+
+void OnlineManager::SetupRaceParams() {
+    RaceStarter::SetupOnlineRace();
+    g_tweakDriftPhysics = 0;
+}
+
+void OnlineManager::UpdateIncoming() {
+    if (Online::IsInitialized()) {
+        Online::ReadIncomingPackets();
+    }
+}
+
+void OnlineManager::UpdateOutgoing() {
+    if (Online::IsInitialized()) {
+        Online::SendUpdates();
+    }
+}
 
 void OnlineManager::SignalLoad() {
     if (NetworkUseLobbies != 0) {
