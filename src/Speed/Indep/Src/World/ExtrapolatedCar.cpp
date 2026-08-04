@@ -7,8 +7,14 @@
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
+#include "Speed/Indep/Src/Online/SmartBitstream.hpp"
 #include "Speed/Indep/Src/Physics/PVehicle.h"
 #include "Speed/Indep/Src/World/WCollisionMgr.h"
+
+namespace Online {
+    bool IsInitialized();
+    void SignalDriverFinish(SmartBitStream &payload_data);
+}
 
 ExtrapolatedCar::ExtrapolatedCar(Attrib::Key cartype) {
     mCarType = cartype;
@@ -119,8 +125,7 @@ void ExtrapolatedCar::State::ExtractDirection(UMath::Vector3 &direction) const {
 }
 
 void ExtrapolatedCar::ExtractExtrapolatedDirection(UMath::Vector3 &direction) const {
-    ExtrapolatedCar::State *blended = const_cast<ExtrapolatedCar::State *>(&mBlended);
-    blended->ExtractDirection(direction);
+    mBlended.ExtractDirection(direction);
 }
 
 bool ExtrapolatedCar::IsAbleToSee(ExtrapolatedCar &target) {
@@ -210,6 +215,25 @@ uint32 OnlineRacer::GetDataCRC(bool recalc) { return PhysicsDataCRC; }
 float OnlineRacer::GetEndRaceCountdown() { return EndRaceCountdown; }
 
 void OnlineRacer::UpdateEndRaceStats() {}
+
+void OnlineRacer::Finish(int nRank, bool bBlinkBlinkPoof, int raceFinishReason) {
+    SmartBitStream data;
+    data.AddByte(DriverNumber);
+    data.AddByte(static_cast<uint8>(nRank));
+    uint8 value = 0;
+    if (bBlinkBlinkPoof || raceFinishReason == 0xb) {
+        value = 1;
+    }
+    data.AddByte(value);
+    data.AddByte(static_cast<uint8>(raceFinishReason));
+    data.AddRawData(reinterpret_cast<const char *>(CheatTally), 0x20);
+    UpdateEndRaceStats();
+    data.AddRawData(reinterpret_cast<const char *>(&FinishedRaceStats), 0xc0);
+    if (Online::IsInitialized()) {
+        Online::SignalDriverFinish(data);
+    }
+    ChangeState(OPS_FINISHED);
+}
 
 void OnlineRacer::UpdateLocal(float t) {
     if (GRaceStatus::Exists()) {
