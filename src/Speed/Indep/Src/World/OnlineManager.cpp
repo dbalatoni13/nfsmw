@@ -534,6 +534,8 @@ void OnlineManager::ExportPositionData(int driver_number, SmartBitStream &data,
     }
 }
 
+void OnlineManager::CheckGetAwayLeaderChange() {}
+
 OnlineRacer *OnlineManager::GetServerRacer() {
     int driver_number = 0;
     OnlineRacer **racer = pRacers;
