@@ -28,6 +28,7 @@ extern int OnlineEnabled;
 extern int bSuperBenderConnected;
 extern int NetworkUseLobbies;
 extern void *pCurrentRace;
+extern const char *SkipFEPlayerCar;
 
 int SuperBenderGetCommandLineArgc();
 char **SuperBenderGetCommandLineArgv();
@@ -465,6 +466,35 @@ void OnlineManager::ImportDriverInfo(int driver_number, SmartBitStream &data) {
     }
 
     Attrib::Gen::pvehicle vehicle(racer->CarTypeKey, 0, nullptr);
+}
+
+void OnlineManager::ExportDriverInfo(int driver_number, SmartBitStream &data) {
+    OnlineRacer *racer = GetOnlineRacer(driver_number);
+    char *carType;
+
+    data.AddTerminatedString(racer->Persona);
+    racer->IsCustomCar = false;
+    carType = const_cast<char *>(SkipFEPlayerCar);
+    if (SkipFE == 0 || carType == nullptr || *carType == '\0') {
+        RaceSettings *race_settings =
+            FEDatabase->GetQuickRaceSettings(GRace::kRaceType_NumTypes);
+        FEPlayerCarDB *stable = &FEDatabase->CurrentUserProfiles[0]->PlayersCarStable;
+        FECarRecord *record = stable->GetCarRecordByHandle(race_settings->SelectedCar[0]);
+        carType = record->GetDebugName();
+        FECustomizationRecord *customization =
+            stable->GetCustomizationRecordByHandle(record->Customization);
+        if (customization) {
+            racer->IsCustomCar = true;
+            racer->CarCustomization = *customization;
+        }
+    }
+
+    racer->CarTypeKey = Attrib::StringToKey(carType);
+    data.AddRawData(reinterpret_cast<char *>(&racer->CarTypeKey), 4);
+    data.AddBool(racer->IsCustomCar);
+    if (racer->IsCustomCar) {
+        data.AddRawData(reinterpret_cast<char *>(&racer->CarCustomization), 0x198);
+    }
 }
 
 OnlineRacer *OnlineManager::GetServerRacer() {

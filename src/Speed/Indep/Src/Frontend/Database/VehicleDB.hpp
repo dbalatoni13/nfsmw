@@ -13,6 +13,7 @@
 // total size: 0x14
 struct FECarRecord {
     unsigned int GetNameHash();
+    char *GetDebugName();
     bool IsCustomized() { return Customization != 0xff; }
 
     unsigned int Handle;         // offset 0x0, size 0x4
