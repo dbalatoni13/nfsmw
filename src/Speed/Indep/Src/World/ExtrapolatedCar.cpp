@@ -16,6 +16,7 @@ namespace Online {
     void SignalDriverFinish(SmartBitStream &payload_data);
 }
 
+
 ExtrapolatedCar::ExtrapolatedCar(Attrib::Key cartype) {
     mCarType = cartype;
     mCops = nullptr;
@@ -231,6 +232,41 @@ void OnlineRacer::Finish(int nRank, bool bBlinkBlinkPoof, int raceFinishReason) 
     data.AddRawData(reinterpret_cast<const char *>(&FinishedRaceStats), 0xc0);
     if (Online::IsInitialized()) {
         Online::SignalDriverFinish(data);
+    }
+    ChangeState(OPS_FINISHED);
+}
+
+void OnlineRacer::SignalFinish(SmartBitStream &data) {
+    volatile uint8 rank;
+    volatile uint8 blinkPoof;
+    volatile uint8 finishReason;
+    uint16 remote_cheat_tally[16];
+
+    {
+        uint32 v = 0;
+        data.GetBits(v, 8);
+        rank = v;
+    }
+    {
+        uint32 v = 0;
+        data.GetBits(v, 8);
+        blinkPoof = v;
+    }
+    {
+        uint32 v = 0;
+        data.GetBits(v, 8);
+        finishReason = v;
+    }
+    data.GetRawData(reinterpret_cast<char *>(remote_cheat_tally), 0x20);
+    data.GetRawData(reinterpret_cast<char *>(&FinishedRaceStats), 0xc0);
+
+    uint16 *cheat_tally = CheatTally;
+    uint16 *buffer = remote_cheat_tally;
+    int i;
+    for (i = 15; i >= 0; --i) {
+        *cheat_tally = *cheat_tally > *buffer ? *cheat_tally : *buffer;
+        ++cheat_tally;
+        ++buffer;
     }
     ChangeState(OPS_FINISHED);
 }
