@@ -137,20 +137,20 @@ void CameraMover::HandheldNoise(bMatrix4 *world_to_camera, float f_scale, bool u
 
 void CameraMover::ComputeBankedUpVector(bVector3 *up, bVector3 *eye, bVector3 *look, bAngle bank) {
 
-    bVector3 diff;
+    bVector3 new_up;
 
-    diff.x = look->x - eye->x;
-    diff.z = look->z - eye->z;
-    diff.y = look->y - eye->y;
+    new_up.x = look->x - eye->x;
+    new_up.z = look->z - eye->z;
+    new_up.y = look->y - eye->y;
 
     bVector3 axis;
-    bNormalize(&axis, &diff);
+    bNormalize(&axis, &new_up);
 
-    bMatrix4 rotationMatrix;
-    eCreateAxisRotationMatrix(&rotationMatrix, *&axis, bank);
+    bMatrix4 axis_rotation;
+    eCreateAxisRotationMatrix(&axis_rotation, *&axis, bank);
 
     bVector3 defaultVec = bVector3(0.0, 0.0, 1.0);
-    eMulVector(up, &rotationMatrix, &defaultVec);
+    eMulVector(up, &axis_rotation, &defaultVec);
     return;
 }
 
