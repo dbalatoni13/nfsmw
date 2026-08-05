@@ -384,6 +384,47 @@ void ExtrapolatedCar::State::Extrapolate(float simtime) {
     }
 }
 
+bool ExtrapolatedCar::State::Blend(State &blended, float t) {
+    float s;
+
+    if (mBlendRate < 0.0f) {
+        mBlendRate = 1.0f / kMinBlendTime;
+    }
+    mBlend = t * mBlendRate + mBlend;
+
+    if (mBlend < 1.0f) {
+        s = 1.0f - mBlend * mBlend * (3.0f - (mBlend + mBlend));
+
+        UMath::Sub(blended.mPosition, mPosition, blended.mPosition);
+        UMath::ScaleAdd(blended.mPosition, s, mPosition, blended.mPosition);
+        UMath::Sub(blended.mLinearVelocity, mLinearVelocity, blended.mLinearVelocity);
+        UMath::ScaleAdd(blended.mLinearVelocity, s, mLinearVelocity, blended.mLinearVelocity);
+#ifdef EA_PLATFORM_PLAYSTATION2
+        UMath::Slerp(mRotation, blended.mRotation, s, blended.mRotation);
+#endif
+        blended.mAngularVelocity.x -= mAngularVelocity.x;
+        blended.mAngularVelocity.y -= mAngularVelocity.y;
+        blended.mAngularVelocity.z -= mAngularVelocity.z;
+        blended.mAngularVelocity.w -= mAngularVelocity.w;
+        blended.mAngularVelocity.x = blended.mAngularVelocity.x * s + mAngularVelocity.x;
+        blended.mAngularVelocity.y = blended.mAngularVelocity.y * s + mAngularVelocity.y;
+        blended.mAngularVelocity.z = blended.mAngularVelocity.z * s + mAngularVelocity.z;
+        blended.mAngularVelocity.w = blended.mAngularVelocity.w * s + mAngularVelocity.w;
+
+        blended.mSteering = (blended.mSteering - mSteering) * s + mSteering;
+        blended.mGas = (blended.mGas - mGas) * s + mGas;
+        blended.mBrake = (blended.mBrake - mBrake) * s + mBrake;
+        blended.mHandBrake = (blended.mHandBrake - mHandBrake) * s + mHandBrake;
+        blended.mGear = mGear;
+        *reinterpret_cast<uint32 *>(&blended.mNOS) =
+            *reinterpret_cast<const uint32 *>(&mNOS);
+        return false;
+    }
+
+    blended = *this;
+    return true;
+}
+
 uint8 ExtrapolatedCar::State::Import(float time, SmartBitStream &data,
                                      ePosDataPriorityMask priority_mask) {
     UMath::Matrix4 matrix;

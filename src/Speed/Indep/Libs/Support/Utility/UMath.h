@@ -191,6 +191,7 @@ void QuaternionToMatrix4(const Vector4 &q, Matrix4 &m);
 #elif EA_PLATFORM_PLAYSTATION2
 void QuaternionToMatrix4(const Vector4 &q, Matrix4 &m);
 void QuaternionToEuler(const Vector4 &q, Vector3 &e);
+void Slerp(const Vector4 &a, const Vector4 &b, float t, Vector4 &r);
 #else
 inline void QuaternionToMatrix4(const Vector4 &q, Matrix4 &m) {
     VU0_quattom4(q, m);
