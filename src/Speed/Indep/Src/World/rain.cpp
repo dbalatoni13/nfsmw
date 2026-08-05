@@ -693,7 +693,7 @@ void Rain::Update() {
     eCreateRotationZ(&matmat, matAng);
     bCopy(&matmat.v3, &MyCarPos, 1.0f);
     this->local2world = matmat;
-    CarCross = bCross(this->OldCarDirection, MyCarDir);
+    bCross(&CarCross, &this->OldCarDirection, &MyCarDir);
 
     FloatAngle = static_cast<float>(oldangle[this->MyView->ID != EVIEW_FIRST_PLAYER] - matAng);
     oldangle[this->MyView->ID != EVIEW_FIRST_PLAYER] = matAng;
