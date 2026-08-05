@@ -416,9 +416,9 @@ void Rain::SeedCurtainXZ(RainPointsDef *rainpoints) {
     float distY = bRandom(10.0f);
     bVector3 Along;
     bSub(&Along, &this->RainCurtainPos[1], &this->RainCurtainPos[0]);
-    bNormalize(&Along, &Along, distX);
+    bNormalize(&Along, &Along);
     bScaleAdd(&rainpoints->NormalizedPoint[this->NewSwapBuffer],
-              &this->RainCurtainPos[0], &Along, 1.0f);
+              &this->RainCurtainPos[0], &Along, distX);
     bScaleAdd(&rainpoints->NormalizedPoint[this->NewSwapBuffer],
               &rainpoints->NormalizedPoint[this->NewSwapBuffer], &this->outvex, distY);
     rainpoints->NormalizedPoint[this->NewSwapBuffer].z -= distZ;
@@ -431,9 +431,9 @@ void Rain::SeedCurtainX(RainPointsDef *rainpoints) {
     float distY = bRandom(10.0f);
     bVector3 Along;
     bSub(&Along, &this->RainCurtainPos[1], &this->RainCurtainPos[0]);
-    bNormalize(&Along, &Along, distX);
+    bNormalize(&Along, &Along);
     bScaleAdd(&rainpoints->NormalizedPoint[this->NewSwapBuffer],
-              &this->RainCurtainPos[0], &Along, 1.0f);
+              &this->RainCurtainPos[0], &Along, distX);
     bScaleAdd(&rainpoints->NormalizedPoint[this->NewSwapBuffer],
               &rainpoints->NormalizedPoint[this->NewSwapBuffer], &this->outvex, distY);
     bCopy(&rainpoints->NormalizedPoint[this->OldSwapBuffer], &rainpoints->NormalizedPoint[this->NewSwapBuffer]);
