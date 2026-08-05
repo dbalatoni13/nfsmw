@@ -10,6 +10,7 @@
 
 extern uint32 numCopsActive;
 extern float TUNHEIGHT;
+extern float WorldTimeElapsed;
 
 uint32 precipDEBUG = 0;
 float precipPERCENT = 1.0f;
@@ -576,8 +577,56 @@ float SpeedMod = 0.0001f;
 float DropShapeSpeedChange = 0.0025f;
 int OverRide = 0;
 
-// STRIPPED
-void OnScreenRain::Update(eView *view) {}
+void OnScreenRain::Update(eView *view) {
+    float time = WorldTimeElapsed;
+    bVector3 camera_world_velocity;
+    bCopy(&camera_world_velocity, view->pCamera->GetVelocityPosition());
+    float camera_speed = bLengthPS2(&camera_world_velocity) * SpeedMod;
+
+    if (view->Precipitation->NoRain == 0) {
+        if (static_cast<int>(eGetCurrentViewMode()) < 3) {
+            this->NumOnScreen = view->Precipitation->GetRainIntensity() != 0.0f ? 20 : 0;
+        } else {
+            this->NumOnScreen = view->Precipitation->GetRainIntensity() != 0.0f ? 10 : 0;
+        }
+    } else {
+        this->NumOnScreen = 0;
+    }
+
+    int num_on_screen = this->NumOnScreen;
+    for (int i = 0; i < num_on_screen; ++i) {
+        OnScreenRainPointsDef *point = &this->Points[i];
+        if (OverRide == 0) {
+            point->timer -= time;
+        }
+
+        if (point->timer <= 0.0f) {
+            point->timer = point->Maxtimer;
+            point->x = bRandom(1.0f);
+            point->y = bRandom(1.0f);
+        } else {
+            point->y += point->DripSpeed * time * DripSpeed;
+            if (point->y > 1.0f || point->x < 0.0f) {
+                point->timer = 0.0f;
+            } else if (point->x > 1.0f) {
+                point->timer = 0.0f;
+            } else {
+                bVector3 sv(point->x - 0.5f, point->y - 0.1f, 0.0f);
+                bNormalizeScalePS2(&sv, &sv, camera_speed);
+                point->x += sv.x;
+            }
+
+            if (DropShapeSpeedChange < camera_speed) {
+                int shape = point->DripShape + 1;
+                int next_shape = point->DripShape + 4;
+                if (shape > -1) {
+                    next_shape = shape;
+                }
+                point->DripShape = shape + (next_shape >> 2) * -4;
+            }
+        }
+    }
+}
 
 void OnScreenRain::GetData(int index, float *x, float *y, float *decay, float *size, int *dripShape) {
     *x = this->Points[index].x;

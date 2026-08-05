@@ -547,6 +547,31 @@ inline void bSeedCurtainXPS2(bVector3 *dest, bVector3 *along, const bVector3 *p0
 #endif
 }
 
+inline void bNormalizeScalePS2(bVector3 *dest, const bVector3 *v, float scale) {
+#ifdef EA_PLATFORM_PLAYSTATION2
+    asm("lqc2 vf3, %1\n"
+        "vmul.xyz vf2, vf3, vf3\n"
+        "vaddy.x vf1, vf2, vf2y\n"
+        "vaddz.x vf1, vf1, vf2z\n"
+        "vrsqrt Q, vf0w, vf1x\n"
+        "qmtc2.ni %2, vf2\n"
+        "vwaitq\n"
+        "vaddq.x vf1, vf0, Q\n"
+        "vnop\n"
+        "vnop\n"
+        "vmulx.xyz vf3, vf3, vf1x\n"
+        "sqc2 vf3, %0\n"
+        "lqc2 vf1, %0\n"
+        "vmulx.xyz vf1, vf1, vf2x\n"
+        "sqc2 vf1, %0"
+        : "=o"(*dest)
+        : "o"(*v), "r"(scale));
+#else
+    bNormalize(dest, v);
+    bScale(dest, dest, scale);
+#endif
+}
+
 inline bVector3 bSub(const bVector3 &v1, const bVector3 &v2) {
     bVector3 dest;
     bSub(&dest, &v1, &v2);
@@ -606,6 +631,32 @@ inline float bDot(const bVector3 *v1, const bVector3 *v2) {
 
 inline float bLength(const bVector3 *v) {
     return bSqrt(bDot(v, v));
+}
+
+inline float bLengthPS2(const bVector3 *v) {
+#ifdef EA_PLATFORM_PLAYSTATION2
+    uint32 bits;
+    asm("lqc2 vf2, %1\n"
+        "vmul.xyz vf2, vf2, vf2\n"
+        "vaddy.x vf1, vf2, vf2y\n"
+        "vaddz.x vf1, vf1, vf2z\n"
+        "vsqrt Q, vf1x\n"
+        "vwaitq\n"
+        "vaddq.x vf1, vf0, Q\n"
+        "vnop\n"
+        "vnop\n"
+        "qmfc2.ni %0, vf1"
+        : "=r"(bits)
+        : "o"(*v));
+    union {
+        uint32 bits;
+        float value;
+    } result;
+    result.bits = bits;
+    return result.value;
+#else
+    return bLength(v);
+#endif
 }
 
 inline float bLength(const bVector3 *v1, const bVector3 *v2) {
