@@ -5,6 +5,7 @@
 #include "Speed/Indep/Src/Ecstasy/Texture.hpp"
 #include "Speed/Indep/Src/World/WeatherMan.hpp"
 #include "Speed/Indep/Src/World/TrackPath.hpp"
+#include "Speed/Indep/Src/World/ScreenEffects.hpp"
 #include "Speed/Indep/Src/Camera/CameraMover.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/Src/Misc/GameFlow.hpp"
@@ -13,6 +14,8 @@ extern uint32 numCopsActive;
 extern float TUNHEIGHT;
 extern float WorldTimeElapsed;
 extern int TweakerPauseWorld;
+extern int PrecipitationEnable;
+extern float BaseDampness;
 extern void fInvertMatrix(bMatrix4 *d, bMatrix4 *s);
 int GetXYviewCar(eView *view, float *x, float *y);
 
@@ -1063,7 +1066,149 @@ float FOGbias = 0.0f;
 
 static const int WatchRain = 0;
 
-void Rain::UpdateAndRender() {}
+void Rain::UpdateAndRender() {
+    float time = WorldTimeElapsed;
+
+    if (TheGameFlowManager.GetState() != GAMEFLOW_STATE_RACING) {
+        return;
+    }
+
+    if (TheGameFlowManager.IsPaused()) {
+        ScreenEffectDef SE_def;
+        SE_def.r = static_cast<float>(this->fogR);
+        SE_def.g = static_cast<float>(this->fogG);
+        SE_def.b = static_cast<float>(this->fogB);
+        SE_def.a = 128.0f;
+        SE_def.intensity = this->CloudIntensity;
+        SE_def.UpdateFnc = nullptr;
+        this->MyView->ScreenEffects->AddScreenEffect(SE_TINT, &SE_def, 1, SEC_FRAME);
+        this->Render();
+        return;
+    }
+
+    this->OSrain.Update(this->MyView);
+    windAng += time * wspeed;
+    if (windAng > 360.0f) {
+        windAng = 0.0f;
+    }
+
+    if (PrecipitationEnable == 0) {
+        this->inOverpass = 0;
+        this->inTunnel = 0;
+        uint32 inTunnel = static_cast<uint32>(AmIinATunnelSlow(this->MyView, 1));
+        this->inTunnel = static_cast<int>(inTunnel);
+        if ((inTunnel & 2) != 0) {
+            this->inTunnel = 0;
+            this->inOverpass = 1;
+        }
+        if (this->inTunnel != 0) {
+            this->inTunnel = 1;
+        }
+        this->RoadDampness = 0.0f;
+        this->intensity = 0.0f;
+        return;
+    }
+
+    if (precipDEBUG == 0) {
+        if (TheGameFlowManager.GetState() != GAMEFLOW_STATE_RACING) {
+            this->DesiredRoadDampness = 1.0f;
+            return;
+        }
+        float desiredRoadDampness = BaseDampness;
+        if (this->intensity == 0.0f) {
+            desiredRoadDampness = 0.0f;
+        }
+        this->DesiredRoadDampness = desiredRoadDampness;
+    } else {
+        this->RoadDampness = BaseDampness;
+    }
+
+    float roadDampness = this->RoadDampness;
+    float roadDampnessDelta = this->DesiredRoadDampness - roadDampness;
+    if (roadDampness < this->DesiredRoadDampness) {
+        this->RoadDampness = roadDampness + roadDampnessDelta * 0.005f;
+    } else {
+        roadDampness += roadDampnessDelta * 0.01f;
+        this->RoadDampness = roadDampness;
+        if (roadDampness < 0.05f) {
+            this->RoadDampness = 0.0f;
+        }
+    }
+
+    if (RainAccessor.IsValid() && CloudAccessor.IsValid()) {
+        float x = 0.0f;
+        float y = 0.0f;
+        GetXYviewCar(this->MyView, &x, &y);
+        this->DesiredIntensity = GetDesiredRainIntensity(x, y);
+        float desiredCloudyness = this->DesiredIntensity;
+        if (desiredCloudyness <= 0.0f) {
+            desiredCloudyness = GetDesiredCloudyness(x, y);
+        }
+        this->DesiredCloudyness = desiredCloudyness;
+        if (static_cast<int>(eGetCurrentViewMode()) > 2) {
+            this->DesiredIntensity *= 0.125f;
+        }
+    }
+
+    if (time == 0.0f) {
+        time = 0.001f;
+    }
+
+    this->intensity +=
+        (this->DesiredIntensity - this->intensity) / ((1.0f / time) * twkRainRateOfChange);
+    if (this->DesiredIntensity == 0.0f && this->intensity < 0.01f) {
+        this->intensity = 0.0f;
+    }
+    if (this->intensity > 1.0f) {
+        this->intensity = 1.0f;
+    }
+
+    this->CloudIntensity +=
+        (this->DesiredCloudyness - this->CloudIntensity) / ((1.0f / time) * twkCloudsRateOfChange);
+    if (this->DesiredCloudyness == 0.0f && this->CloudIntensity < twkCloudsMinAmount + 0.01f) {
+        this->CloudIntensity = twkCloudsMinAmount;
+    }
+    if (this->CloudIntensity > 1.0f) {
+        this->CloudIntensity = 1.0f;
+    }
+
+    this->SetRainIntensity(this->intensity);
+    this->percentPrecip[RAIN] = 1.0f;
+    this->Update();
+    this->Render();
+
+    int inTunnel = AmIinATunnel(this->MyView, 1);
+    if (inTunnel == 0) {
+        this->IsValidRainCurtainPos = CT_INACTIVE;
+        return;
+    }
+
+    if (this->IsValidRainCurtainPos != CT_ACTIVE) {
+        if (this->IsValidRainCurtainPos < CT_TURNON) {
+            if (this->IsValidRainCurtainPos == CT_INACTIVE) {
+                this->IsValidRainCurtainPos = CT_TURNON;
+                RainPointsDef *rainpoints = this->CurtainRainPoints;
+                this->FindCurtains();
+                this->FindCurtain();
+                int i = MAXCURTAINRAINPOINTS - 1;
+                do {
+                    this->SeedCurtainXZ(rainpoints);
+                    --i;
+                    ++rainpoints;
+                } while (i > -1);
+            }
+        } else if (this->IsValidRainCurtainPos != CT_TURNON) {
+            if (this->IsValidRainCurtainPos == CT_OVERIDE) {
+                this->IsValidRainCurtainPos = CT_ACTIVE;
+            }
+        } else {
+            this->IsValidRainCurtainPos = CT_ACTIVE;
+        }
+    }
+
+    this->FindCurtain();
+    this->UpdateAndRenderCurtain();
+}
 
 ParameterAccessorBlendByDistance FogAccessor[2] = {"Normal Fog", "Normal Fog"};
 ParameterAccessorBlendByDistance RainFogAccessor[2] = {"Rain Fog", "Rain Fog"};
