@@ -6,6 +6,8 @@
 #include "Speed/Indep/Src/World/WeatherMan.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 
+extern uint32 numCopsActive;
+
 uint32 precipDEBUG = 0;
 float precipPERCENT = 1.0f;
 
@@ -275,8 +277,28 @@ static const int TimeTestRain = 3;
 static const float TimeTestFactor = 1.4f;
 static const float DistanceTestFactor = 50.0f;
 
-// STRIPPED
-float GetDesiredRainIntensity(float x, float y) {}
+float IsRainingAt(float x, float y);
+
+float GetDesiredRainIntensity(float x, float y) {
+    float rolly;
+
+    if (numCopsActive < 3) {
+        if (rainOverrideIntensity > 0.0f) {
+            return rainOverrideIntensity;
+        }
+        if (Chance100 != 0) {
+            return ChancePercent;
+        }
+        if (rainOverrideIntensity >= 0.0f &&
+            (rolly = IsRainingAt(x, y), RainAccessor.IsValid())) {
+            RainAccessor.CaptureData(x, y);
+            if (rolly <= RainAccessor.GetDataFloat(1)) {
+                return RainAccessor.GetDataFloat(0);
+            }
+        }
+    }
+    return 0.0f;
+}
 
 static const uint32 CloudsPlease = 0;
 static const uint32 NoCloudsPlease = 0;

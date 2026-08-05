@@ -219,7 +219,9 @@ class ParameterAccessor : public bTNode<ParameterAccessor> {
 
     virtual int GetDataInt(int field_index);
 
-    // int IsValid() {}
+    int IsValid() {
+        return this->Layer != nullptr;
+    }
 
     unsigned int GetAutoAttachLayerNamehash() {
         return this->AutoAttachLayerNamehash;
