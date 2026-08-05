@@ -36,7 +36,11 @@ class BitStream {
 
   private:
     static int MAX_BITS;
+
+  public:
     static int BIT_DEPTH;
+
+  private:
 
     /* 0x000 */ unsigned char m_buffer[1024];
     /* 0x400 */ int m_bitWritePosition;

@@ -32,6 +32,8 @@ class PlatformNetworkCore {
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/World/World.hpp"
 #include "Speed/Indep/Src/World/RaceParameters.hpp"
+#include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
+#include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/bWare/Inc/bDebug.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/SpeedScript.hpp"
@@ -64,6 +66,25 @@ extern int ONLINE_CHEATSCORE_THRESHOLD;
 extern "C" char *TagFieldFind(const char *record, const char *name);
 extern "C" int TagFieldGetString(const char *field, char *buffer, int bufferSize,
                                   const char *defaultValue);
+
+struct IOnlinePlayer : UTL::COM::IUnknown {
+  protected:
+    IOnlinePlayer();
+
+  public:
+    static HINTERFACE _IHandle() {
+        return (HINTERFACE)_IHandle;
+    }
+
+    virtual void SetOnlineRacer();
+    virtual OnlineRacer *GetOnlineRacer();
+    virtual void Reposition();
+};
+
+struct Base64 {
+    static unsigned long Encode(const void *source, unsigned long source_buflen, void *dest,
+                                unsigned long dest_buflen, bool terminate);
+};
 
 int SuperBenderGetCommandLineArgc();
 char **SuperBenderGetCommandLineArgv();
@@ -345,6 +366,101 @@ void OnlineManager::InitAntiCheating(int num_players) {
                 }
             }
         }
+    }
+}
+
+void OnlineManager::SendEndOfRaceResults() {
+    GRace::Type ugmMode;
+    int8 race_mode;
+    ugmMode = FEDatabase->OnlineSettings.RaceMode;
+    race_mode = -1;
+    if (ugmMode == GRace::kRaceType_Circuit) {
+        race_mode = 0;
+    } else if (ugmMode == GRace::kRaceType_P2P) {
+        race_mode = 1;
+    } else if (ugmMode == GRace::kRaceType_Drag) {
+        race_mode = 2;
+    }
+
+    SmartBitStream data;
+    data.AddByte(3);
+    data.AddByte(GetNumRacers());
+    data.AddByte(race_mode);
+    data.AddByte(pLocalRacer->PlayerID);
+    data.AddShort(static_cast<short>(TheRaceParameters.TrackNumber));
+    data.AddByte(TheRaceParameters.TrackDirection);
+    data.AddByte(TheRaceParameters.NumLapsInRace);
+
+    const IPlayer::List &players = IPlayer::GetList(PLAYER_ALL);
+    for (IPlayer::List::const_iterator iter = players.begin(); iter != players.end(); ++iter) {
+        IPlayer *player = *iter;
+        IOnlinePlayer *online_player = nullptr;
+        if (!player->QueryInterface(&online_player)) {
+            break;
+        }
+
+        OnlineRacer *racer = online_player->GetOnlineRacer();
+        GRacerInfo *racerInfo = GRaceStatus::Get().GetRacerInfo(player->GetSimable());
+        FinishedRaceStatsEntry local_frs;
+        FinishedRaceStatsEntry &frs = racer->FinishedRaceStats;
+
+        data.AddByte(racer->PlayerID);
+        data.AddByte(static_cast<uint8>(racerInfo->mRanking));
+        data.AddByte(static_cast<uint8>(frs.FinishReason));
+        data.AddByte(0);
+        data.AddFloat(static_cast<float>(racerInfo->mLapsCompleted));
+        data.AddFloat(racerInfo->mRaceTimer.GetTime());
+        if (racerInfo->mLapsCompleted != 0) {
+            data.AddFloat(GRaceStatus::Get().GetBestLapTime(racerInfo->mIndex));
+        } else {
+            data.AddFloat(0.0f);
+        }
+        data.AddFloat(racerInfo->CalcAverageSpeed());
+        data.AddFloat(racerInfo->mTopSpeed);
+        data.AddFloat(racerInfo->mZeroToSixtyTime);
+        data.AddFloat(racerInfo->mQuarterMileTime);
+        data.AddFloat(frs.QuarterMileSpeed);
+        data.AddFloat(frs.LongestJump);
+        data.AddFloat(0.0f);
+        data.AddFloat(racerInfo->mPoundsNOSUsed);
+
+        uint8 lostconnection;
+        if (racer->State == OPS_DISCERROR) {
+            lostconnection = 3;
+        } else if (racer->State < OPS_QUIT) {
+            lostconnection = 0;
+            if (racer->State == OPS_LOST_CONNECTION) {
+                lostconnection = 1;
+            }
+        } else {
+            lostconnection = 0;
+            if (racer->State == OPS_QUIT) {
+                lostconnection = 2;
+            }
+        }
+        data.AddByte(lostconnection);
+
+        uint16 cheat_bitmask = 0;
+        for (int i = 0; i < 16; ++i) {
+            if (racer->CheatTally[i] != 0) {
+                cheat_bitmask |= static_cast<uint16>(1 << i);
+            }
+        }
+        data.AddShort(static_cast<short>(cheat_bitmask));
+        for (int i = 15; i >= 0; --i) {
+            if (racer->CheatTally[15 - i] != 0) {
+                data.AddShort(static_cast<short>(racer->CheatTally[15 - i]));
+            }
+        }
+    }
+
+    float byte_length = bCeil(static_cast<float>(data.GetBitLength()) /
+                              static_cast<float>(BitStream::BIT_DEPTH));
+    char b64encoded[1024];
+    if (NetworkUseLobbies != 0) {
+        Base64::Encode(&data, static_cast<unsigned long>(static_cast<int>(byte_length)), b64encoded,
+                       0x400, true);
+        LobbyCore::Instance().SaveRaceResults(b64encoded);
     }
 }
 

@@ -22,6 +22,7 @@
 struct GRacerInfo {
   public:
     friend struct OnlineRacer;
+    friend class OnlineManager;
 
     GCharacter *GetGameCharacter() const {
         return mGameCharacter;
@@ -42,6 +43,8 @@ struct GRacerInfo {
     float GetRaceTime() const {
         return mRaceTimer.GetTime();
     }
+
+    float CalcAverageSpeed() const;
 
   private:
     HSIMABLE mhSimable;              // offset 0x0, size 0x4
