@@ -559,10 +559,10 @@ inline bVector3 bAdd(const bVector3 &v1, const bVector3 &v2) {
 
 inline bVector3 *bSub(bVector3 *dest, const bVector3 *v1, const bVector3 *v2) {
 #ifdef EA_PLATFORM_PLAYSTATION2
-    asm("lqc2 vf1, %2\n"
-        "lqc2 vf2, %1\n"
-        "vsub vf2, vf2, vf1\n"
-        "sqc2 vf2, %0"
+    asm("lqc2 vf2, %2\n"
+        "lqc2 vf1, %1\n"
+        "vsub vf1, vf1, vf2\n"
+        "sqc2 vf1, %0"
         : "=o"(*dest)
         : "o"(*v1), "o"(*v2));
 #else
