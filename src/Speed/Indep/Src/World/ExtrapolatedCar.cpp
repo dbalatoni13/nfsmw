@@ -28,6 +28,15 @@ extern float kBlendMult;
 extern float kMaxBlendTime;
 extern int kSpamPhysics;
 
+static HSIMABLE__ *ExtrapolatedCar_kHandles[16];
+static const unsigned int ExtrapolatedCar_CopTypes[8] = {
+    0x82d1a1a3, 0x565398cc, 0xb25e4606, 0xf61dece9,
+    0xe22ff3b2, 0xac9e142e, 0x8866eba4, 0x38299bbb};
+
+extern "C" uint32 func_00422F70() {
+    return TheOnlineManager.GetMasterTime();
+}
+
 
 ExtrapolatedCar::ExtrapolatedCar(Attrib::Key cartype) {
     mCarType = cartype;
@@ -349,6 +358,37 @@ void ExtrapolatedCar::State::Export(ISimable *simable) const {
         UMath::QuaternionToEuler(irb->GetOrientation(), position);
     }
 #endif
+}
+
+void ExtrapolatedCar::ExportStream(SmartBitStream &data,
+                                   ePosDataPriorityMask priority_mask) {
+    mLast = mStateArray + mHead;
+    mLast->Export(data, priority_mask, mRepositionCount);
+    data.AddBool(mHasHeadset);
+    mSaved = *mLast;
+    mUpdateTime = func_00422F70();
+
+    if (mCops) {
+        CopMap::iterator iter = mCops->begin();
+        while (iter != mCops->end()) {
+            int i;
+            int type;
+            i = 0;
+            for (; i < 0xf && iter->first != ExtrapolatedCar_kHandles[i]; ++i) {}
+
+            if (i != 0x10) {
+                data.AddQuantizedInt(i, TheOnlineManager.QuantInt4Bit);
+                type = 0;
+                if (iter->second->GetCarType() != ExtrapolatedCar_CopTypes[0]) {
+                    while (++type < 7 &&
+                           iter->second->GetCarType() != ExtrapolatedCar_CopTypes[type]) {}
+                }
+                data.AddQuantizedInt(type, TheOnlineManager.QuantInt3Bit);
+                iter->second->ExportStream(data, priority_mask);
+            }
+            ++iter;
+        }
+    }
 }
 
 void ExtrapolatedCar::State::Extrapolate(float simtime) {

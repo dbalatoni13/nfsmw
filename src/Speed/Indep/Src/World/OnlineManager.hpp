@@ -130,7 +130,7 @@ struct ExtrapolatedCar : Debugable {
     ISimable *SpawnVehicle();
     bool HasHeadset() const;
     bool IsAbleToSee(ExtrapolatedCar &target);
-    Attrib::Key &GetCarType();
+    Attrib::Key &GetCarType() { return mCarType; }
 
   private:
     struct CopMap;
