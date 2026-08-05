@@ -1261,23 +1261,27 @@ void Rain::UpdateAndRender() {
     }
 
     CurtainStatus status = this->IsValidRainCurtainPos;
-    if (status == CT_INACTIVE) {
-        this->IsValidRainCurtainPos = CT_TURNON;
-        RainPointsDef *rainpoints = this->CurtainRainPoints;
-        this->FindCurtains();
+    if (status == CT_ACTIVE) {
         this->FindCurtain();
-        int i = MAXCURTAINRAINPOINTS - 1;
-        do {
-            this->SeedCurtainXZ(rainpoints);
-            --i;
-            ++rainpoints;
-        } while (i > -1);
-    } else if (status == CT_TURNON) {
-        this->IsValidRainCurtainPos = CT_ACTIVE;
-        this->FindCurtain();
-    } else if (status == CT_OVERIDE) {
-        this->IsValidRainCurtainPos = CT_ACTIVE;
+    } else if (status < CT_TURNON) {
+        if (status == CT_INACTIVE) {
+            this->IsValidRainCurtainPos = CT_TURNON;
+            RainPointsDef *rainpoints = this->CurtainRainPoints;
+            this->FindCurtains();
+            this->FindCurtain();
+            int i = MAXCURTAINRAINPOINTS - 1;
+            do {
+                this->SeedCurtainXZ(rainpoints);
+                --i;
+                ++rainpoints;
+            } while (i > -1);
+        }
+    } else if (status != CT_TURNON) {
+        if (status == CT_OVERIDE) {
+            this->IsValidRainCurtainPos = CT_ACTIVE;
+        }
     } else {
+        this->IsValidRainCurtainPos = CT_ACTIVE;
         this->FindCurtain();
     }
 
