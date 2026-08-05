@@ -9,6 +9,7 @@
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 
 extern uint32 numCopsActive;
+extern float TUNHEIGHT;
 
 uint32 precipDEBUG = 0;
 float precipPERCENT = 1.0f;
@@ -367,8 +368,23 @@ void Rain::FindCurtains() {
 // STRIPPED
 void Rain::FindCurtain() {}
 
-// STRIPPED
-void Rain::SeedCurtainXZ(RainPointsDef *rainpoints) {}
+void Rain::SeedCurtainXZ(RainPointsDef *rainpoints) {
+    float distX = bRandom(this->CurtainLength);
+    float distZ = bRandom(TUNHEIGHT);
+    float f = bRandom(10.0f);
+    bVector3 Along;
+
+    bSeedCurtainXPS2(&rainpoints->NormalizedPoint[this->NewSwapBuffer],
+                     &Along,
+                     &this->RainCurtainPos[0],
+                     &this->RainCurtainPos[1],
+                     &this->outvex,
+                     distX,
+                     f);
+    rainpoints->NormalizedPoint[this->NewSwapBuffer].z -= distZ;
+    bCopy(&rainpoints->NormalizedPoint[this->OldSwapBuffer],
+          &rainpoints->NormalizedPoint[this->NewSwapBuffer]);
+}
 
 void Rain::SeedCurtainX(RainPointsDef *rainpoints) {
     float distX = bRandom(this->CurtainLength);
