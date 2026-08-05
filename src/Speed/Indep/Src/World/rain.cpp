@@ -395,8 +395,9 @@ void Rain::FindCurtain() {
             bVector3 Position;
             bCopy(&Position, cameraAnchor->GetGeometryPosition());
 
-            bVector2 Pos2D((this->ent0.x + this->ent1.x) * 0.5f - Position.x,
-                           (this->ent0.y + this->ent1.y) * 0.5f - Position.y);
+            bVector2 ent;
+            ent = this->ent0 + this->ent1;
+            bVector2 Pos2D(ent.x * 0.5f - Position.x, ent.y * 0.5f - Position.y);
             bNormalize(&Pos2D, &Pos2D);
 
             if (Pos2D.x * CameraDirection.x + Pos2D.y * CameraDirection.y > 0.0f) {
