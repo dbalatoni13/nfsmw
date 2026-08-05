@@ -532,8 +532,15 @@ int OverRide = 0;
 // STRIPPED
 void OnScreenRain::Update(eView *view) {}
 
-// STRIPPED
-void OnScreenRain::GetData(int index, float *x, float *y, float *decay, float *size, int *dripShape) {}
+void OnScreenRain::GetData(int index, float *x, float *y, float *decay, float *size, int *dripShape) {
+    *x = this->Points[index].x;
+    *y = this->Points[index].y;
+    *decay = this->Points[index].timer / this->Points[index].Maxtimer;
+    *size = this->Points[index].Size;
+    if (dripShape != nullptr) {
+        *dripShape = this->Points[index].DripShape;
+    }
+}
 
 float RAINbias = 0.0f;
 float SNOWbias = 0.0f;
