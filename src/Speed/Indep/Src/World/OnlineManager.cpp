@@ -27,6 +27,7 @@ class PlatformNetworkCore {
 #include "Speed/Indep/Src/Online/LobbyGameSessions.hpp"
 #include "Speed/Indep/Src/Online/SmartBitstream.hpp"
 #include "Speed/Indep/Src/Online/VoiceCore.hpp"
+#include "Speed/Indep/Src/Generated/Messages/MNotifyOnlineRaceOver.h"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/World/World.hpp"
 #include "Speed/Indep/Src/World/RaceParameters.hpp"
@@ -42,7 +43,8 @@ void SignalReady();
 void ReadIncomingPackets();
 void SendUpdates();
 void SignalSyncAnimationMessage(SmartBitStream &payload_data);
-void SignalDataCRCMessage(SmartBitStream &payload_data);
+    void SignalDataCRCMessage(SmartBitStream &payload_data);
+    void SignalRestart();
 void ShowDiagnostics();
 }
 
@@ -358,6 +360,83 @@ void OnlineManager::SetupRestartRace() {
         }
         ++racer;
     } while (driver_number < 4);
+}
+
+void OnlineManager::EndOnlineRace(bool bForced) {
+    MNotifyOnlineRaceOver(false).Post(UCrc32(0x20d60dbf));
+
+    if (pCurrentWorld) {
+        pCurrentWorld->EndOnlinePause();
+    }
+
+    if (State == OLS_RACING || State == OLS_RACE_LOAD_TRACK || State == OLS_RACE_START_LINE) {
+        if (bForced) {
+            if (pLocalRacer) {
+                pLocalRacer->DriverDisconnect(OPS_QUIT, 0xc);
+            }
+            for (int i = 0; i < 4; ++i) {
+                if (pRacers[i] && GetOnlineRacer(i) != pLocalRacer) {
+                    OnlineRacer *racer = GetOnlineRacer(i);
+                    if (!racer->IsFinishedRacing()) {
+                        GetOnlineRacer(i)->DriverDisconnect(OPS_DISCONNECTED, 0xc);
+                    }
+                }
+            }
+        }
+
+        for (int i = 0; i < 4; ++i) {
+            if (pRacers[i]) {
+                OnlineRacer *racer = GetOnlineRacer(i);
+                bool connected = racer->IsConnected();
+                racer->bShouldRestart = connected;
+            }
+        }
+
+        if (IsServer()) {
+            int num_disc_at_current_time = 0;
+            int index = -1;
+            for (int i = 0; i < 4; ++i) {
+                if (pRacers[i]) {
+                    OnlineRacer *racer = GetOnlineRacer(i);
+                    if (racer && racer != pLocalRacer &&
+                        bAbs(racer->DisconnectTime.GetSeconds() - WorldTimer.GetSeconds()) <= 0.3f) {
+                        ++num_disc_at_current_time;
+                        if (num_disc_at_current_time > 1) {
+                            racer->ChangeState(OPS_DISCONNECTED);
+                            if (index > -1) {
+                                GetOnlineRacer(index)->ChangeState(OPS_DISCONNECTED);
+                                index = -1;
+                            }
+                        } else {
+                            index = i;
+                        }
+                    }
+                }
+            }
+            if (num_disc_at_current_time > 1) {
+                pLocalRacer->ChangeState(OPS_LOST_CONNECTION);
+            }
+        }
+
+        CalculateFinishOrder();
+        SendEndOfRaceResults();
+        ClearAnimWorldObjects();
+        PrintCheatTallies(false);
+        PrintQuantizersUsageReport();
+    }
+
+    if (bForced || State == OLS_RACE_END) {
+        if (GetRestartingRace()) {
+            bRandom(2, &GameSeed);
+            SetupRestartRace();
+            ChangeState(OLS_RACE_LOAD_TRACK);
+            Online::SignalRestart();
+        } else {
+            Disconnect(false);
+        }
+    } else {
+        ChangeState(OLS_RACE_END);
+    }
 }
 
 int OnlineManager::GetNumConnectedRacers() {
