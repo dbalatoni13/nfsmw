@@ -913,6 +913,84 @@ bool OnlineManager::FinishDriver(int driver_number, int nRank, bool bBlinkBlinkP
     return finished;
 }
 
+void OnlineManager::CalculateFinishOrder() {
+    int num_racers = 0;
+    OnlineRacer *racers[4];
+    for (int i = 0; i < 4; ++i) {
+        if (pRacers[i]) {
+            racers[num_racers++] = GetOnlineRacer(i);
+        }
+    }
+
+    bool swap;
+    RaceParameters &race_parameters = TheRaceParameters;
+    while (true) {
+        int j = 0;
+        swap = false;
+        if (num_racers - 1 > 0) {
+            do {
+                OnlineRacer *racer[2];
+                int sort_score[2];
+                FinishedRaceStatsEntry *frs[2];
+
+                racer[0] = racers[j];
+                racer[1] = racers[j + 1];
+                bMemSet(sort_score, 0, 8);
+                frs[1] = racer[1]->GetFinishedRaceStats();
+                frs[0] = racer[0]->GetFinishedRaceStats();
+
+                for (int i = 0; i < 2; ++i) {
+                    if (frs[i]->FinishReason == 0xc) {
+                        sort_score[i] += 2;
+                    } else if (frs[i]->FinishReason != 1) {
+                        sort_score[i] += 1;
+                    }
+                }
+
+                if (sort_score[0] == sort_score[1]) {
+                    int behind_index = -1;
+                    if (!race_parameters.IsDriftRace()) {
+                        if (sort_score[0] == 0) {
+                            if (frs[0]->RaceTime.GetPackedTime() !=
+                                frs[1]->RaceTime.GetPackedTime()) {
+                                if (frs[0]->RaceTime.GetPackedTime() <
+                                    frs[1]->RaceTime.GetPackedTime()) {
+                                    behind_index = 1;
+                                } else {
+                                    behind_index = 0;
+                                }
+                            }
+                        } else if (frs[0]->NumLapsCompletedExact !=
+                                   frs[1]->NumLapsCompletedExact) {
+                            behind_index = frs[1]->NumLapsCompletedExact <
+                                            frs[0]->NumLapsCompletedExact ?
+                                        1 : 0;
+                        }
+                    }
+                    if (behind_index > -1) {
+                        ++sort_score[behind_index];
+                    }
+                }
+
+                if (sort_score[1] < sort_score[0]) {
+                    racers[j] = racer[1];
+                    swap = true;
+                    racers[j + 1] = racer[0];
+                }
+                ++j;
+            } while (j < num_racers - 1);
+        }
+        if (!swap) {
+            break;
+        }
+    }
+
+    for (int i = 0; i < num_racers; ++i) {
+        OnlineRacer *racer = racers[i];
+        racer->FinishedRaceStats.FinishPosition = i + 1;
+    }
+}
+
 int OnlineManager::AreAllPlayersFinishedRacing() {
     if (State == OLS_RACE_END) {
         if (pLocalRacer->IsConnected() || pLocalRacer->GetState() == OPS_QUIT) {
