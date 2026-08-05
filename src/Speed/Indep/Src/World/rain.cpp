@@ -367,7 +367,7 @@ void Rain::FindCurtains() {
         bVector3 EntryPosition;
 
         bCopy(&EntryPosition, this->MyView->pCamera->GetPosition());
-        EntryPosition -= *this->MyView->pCamera->GetDirection() * 8.0f;
+        EntryPosition -= *this->MyView->pCamera->GetDirection() * 4.0f;
         bVector2 twoDentry(EntryPosition.x, EntryPosition.y);
 
         static_cast<TrackPathZone *>(this->the_zone)->GetSegmentNextTo(&twoDentry, &this->ent0, &this->ent1);
