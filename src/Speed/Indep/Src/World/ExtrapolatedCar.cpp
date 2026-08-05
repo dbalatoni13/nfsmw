@@ -606,7 +606,13 @@ void OnlineRacer::ChangeState(eOnlineRacerState new_state) {
 }
 
 void OnlineRacer::DriverDisconnect(eOnlineRacerState new_state, int finish_reason) {
-    if (IsConnected()) {
+    bool connected = false;
+    if (State == OPS_LOST_CONNECTION || State == OPS_QUIT || State == OPS_DISCONNECTED) {
+    } else {
+        connected = State != OPS_DISCERROR;
+    }
+
+    if (connected) {
         ChangeState(new_state);
         FinishedRaceStats.FinishReason = finish_reason;
     } else {
