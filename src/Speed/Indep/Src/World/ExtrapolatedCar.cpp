@@ -16,6 +16,7 @@
 #include "Speed/Indep/Src/Online/SmartBitstream.hpp"
 #include "Speed/Indep/Src/Physics/Dynamics/Inertia.h"
 #include "Speed/Indep/Src/Physics/PVehicle.h"
+#include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Src/World/WCollisionMgr.h"
 
 namespace Online {
@@ -26,6 +27,7 @@ namespace Online {
 extern float kMinBlendTime;
 extern float kBlendMult;
 extern float kMaxBlendTime;
+extern float kMaxLatency;
 extern int kSpamPhysics;
 
 static HSIMABLE__ *ExtrapolatedCar_kHandles[16];
@@ -68,6 +70,8 @@ ExtrapolatedCar::~ExtrapolatedCar() {
         delete mCops;
     }
 }
+
+ExtrapolatedCar::CopMap::~CopMap() {}
 
 OnlineRacer::~OnlineRacer() {}
 
@@ -392,6 +396,61 @@ void ExtrapolatedCar::ExportStream(SmartBitStream &data,
             }
             ++iter;
         }
+    }
+}
+
+void ExtrapolatedCar::ImportStream(SmartBitStream &data,
+                                   ePosDataPriorityMask priority_mask) {
+    uint8 repositioncount;
+
+    if (Sim::GetState() != Sim::STATE_ACTIVE) {
+        return;
+    }
+
+    if (mLast->IsBlending()) {
+        int c = mHead;
+        int n = Next(c);
+        if (n == mTail) {
+            return;
+        }
+        mHead = n;
+        mLast = mStateArray + c;
+    }
+
+    *mLast = mSaved;
+
+    {
+        float t = data.GetQuantizedFloat(TheOnlineManager.QuantFloatSimTime);
+        mLast->Extrapolate(t);
+        repositioncount = mLast->Import(t, data, priority_mask);
+    }
+
+    data.GetBool(mHasHeadset);
+    if (repositioncount != mRepositionCount ||
+        Sim::GetTime() - mLast->GetTime() > kMaxLatency) {
+        mLast->Blend(mSaved, kMaxBlendTime);
+        mRepositionCount = repositioncount;
+    }
+
+    mSaved = *mLast;
+    mUpdateTime = func_00422F70();
+
+    if (data.GetByteLengthRemaining() > 1) {
+        if (!mCops) {
+            mCops = new CopMap;
+        }
+
+        HSIMABLE handle = reinterpret_cast<HSIMABLE>(
+            data.GetQuantizedInt(TheOnlineManager.QuantInt4Bit));
+        Attrib::Key cartype = ExtrapolatedCar_CopTypes[
+            data.GetQuantizedInt(TheOnlineManager.QuantInt3Bit)];
+        std::pair<CopMap::iterator, bool> result;
+        result = mCops->insert(CopMap::value_type(
+            handle, static_cast<ExtrapolatedCar *>(nullptr)));
+        if (result.second) {
+            result.first->second = new ExtrapolatedCar(cartype);
+        }
+        result.first->second->ImportStream(data, priority_mask);
     }
 }
 

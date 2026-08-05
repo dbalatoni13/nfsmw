@@ -101,7 +101,7 @@ struct ExtrapolatedCar : Debugable {
         void SetOnGround(IVehicle *vehicle);
         bool IsValidPosition();
         float SquaredDistanceTo(State &target) const;
-        float GetTime() const;
+        float GetTime() const { return mTime; }
         UMath::Vector3 &GetPosition();
         void ExtractDirection(UMath::Vector3 &direction) const;
         ISimable *SpawnVehicle(Attrib::Key cartype);
@@ -151,11 +151,16 @@ struct ExtrapolatedCar : Debugable {
     bool mHasHeadset;
     bool mPaused;
     bool mUseDriverAI;
+
+    static int Next(int c) {
+        int n = c + 1 > 31 ? 0 : c + 1;
+        return n;
+    }
 };
 
 struct ExtrapolatedCar::CopMap : public UTL::Std::map<HSIMABLE, ExtrapolatedCar *, _type_map> {
+    USE_FASTALLOC(CopMap)
     ~CopMap();
-    static void operator delete(void *mem, size_t size);
 };
 
 struct OnlineRacer : ExtrapolatedCar {
