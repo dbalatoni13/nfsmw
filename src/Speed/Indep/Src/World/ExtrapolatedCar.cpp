@@ -8,6 +8,7 @@
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ICollisionBody.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IINput.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISuspension.h"
@@ -29,6 +30,7 @@ extern float kBlendMult;
 extern float kMaxBlendTime;
 extern float kMaxLatency;
 extern int kSpamPhysics;
+extern int kUseDriverAI;
 
 static HSIMABLE__ *ExtrapolatedCar_kHandles[16];
 static const unsigned int ExtrapolatedCar_CopTypes[8] = {
@@ -455,6 +457,154 @@ void ExtrapolatedCar::ImportStream(SmartBitStream &data,
             result.first->second = new ExtrapolatedCar(cartype);
         }
         result.first->second->ImportStream(data, priority_mask);
+    }
+}
+
+void ExtrapolatedCar::ImportSimable(ISimable *simable, float t, float simtime) {
+    int n;
+
+    if (!simable) {
+        return;
+    }
+
+    if (mCollisionTime == 0.0f) {
+        ICollisionBody *collision_body;
+        if (simable->QueryInterface(&collision_body) && collision_body->HasHadCollision()) {
+            mCollisionTime = simtime;
+        }
+    }
+
+    n = mTail;
+    State &state = mStateArray[n];
+    bool colliding = false;
+    if (!mPaused && mCollisionTime > 0.0f) {
+        if ((state.mPriority & 4) == 0 || state.mTime <= mCollisionTime) {
+            colliding = true;
+        }
+    }
+
+    if (colliding) {
+        state.Import(simable, mCollisionTime);
+    } else {
+        state.Extrapolate(simtime);
+        mCollisionTime = 0.0f;
+    }
+
+    mBlended = state;
+
+    n = Next(n);
+    while (n != mHead) {
+        state = mStateArray[n];
+        if (state.mTime <= mCollisionTime) {
+            mTail = n;
+        } else {
+            state.Extrapolate(simtime);
+            if (state.Blend(mBlended, t)) {
+                mTail = n;
+            }
+        }
+        n = Next(n);
+    }
+
+    bool needReset = false;
+    IVehicle *vehicle;
+    if (!simable->QueryInterface(&vehicle)) {
+        vehicle = nullptr;
+    }
+    if (!vehicle) {
+        goto import_cops;
+    }
+
+    if (Sim::GetTime() - mSaved.GetTime() < kMaxLatency) {
+        if (vehicle->GetPhysicsMode() == PHYSICS_MODE_SIMULATED) {
+            if (vehicle->IsOffWorld()) {
+                mActive = false;
+            }
+        } else {
+            mActive = true;
+        }
+    } else {
+        mHasHeadset = false;
+        mActive = false;
+    }
+
+    if (kUseDriverAI != mUseDriverAI) {
+        IHumanAI *human_ai;
+        if (simable->QueryInterface(&human_ai)) {
+            human_ai->SetAiControl(kUseDriverAI);
+        }
+        mUseDriverAI = kUseDriverAI;
+        needReset = kUseDriverAI == 0;
+    }
+
+    if (!mActive) {
+        if (vehicle->GetPhysicsMode() == PHYSICS_MODE_SIMULATED) {
+            if (kSpamPhysics) {
+                simable->QueryInterface(&vehicle);
+            }
+            vehicle->SetPhysicsMode(PHYSICS_MODE_EMULATED);
+            needReset = false;
+        }
+    } else if (vehicle->GetPhysicsMode() == PHYSICS_MODE_EMULATED) {
+        if (mBlended.IsValidPosition()) {
+            vehicle->SetPhysicsMode(PHYSICS_MODE_SIMULATED);
+            needReset = true;
+        } else if (mPaused) {
+            needReset = true;
+        }
+    } else if (mPaused) {
+        needReset = true;
+    }
+
+    if (needReset) {
+        mBlended.SetOnGround(vehicle);
+    }
+    if (!mUseDriverAI) {
+        mBlended.Export(simable);
+    }
+
+import_cops:
+    if (!mCops) {
+        return;
+    }
+
+    CopMap::iterator copiter = mCops->begin();
+    while (copiter != mCops->end()) {
+        CopMap::iterator nextiter = copiter;
+        ++nextiter;
+
+        n = static_cast<int>(reinterpret_cast<uintptr_t>(copiter->first));
+        ISimable *cop_simable = nullptr;
+        if (!ExtrapolatedCar_kHandles[n]) {
+            cop_simable = copiter->second->mLast->SpawnVehicle(copiter->second->mCarType);
+            if (cop_simable) {
+                if (kSpamPhysics) {
+                    cop_simable->QueryInterface(&vehicle);
+                }
+                ExtrapolatedCar_kHandles[n] = cop_simable->GetInstanceHandle();
+            }
+        } else {
+            cop_simable = ISimable::FindInstance(ExtrapolatedCar_kHandles[n]);
+            if (!cop_simable) {
+                cop_simable = copiter->second->mLast->SpawnVehicle(copiter->second->mCarType);
+                ExtrapolatedCar_kHandles[n] = cop_simable->GetInstanceHandle();
+            }
+        }
+
+        if (cop_simable) {
+            copiter->second->ImportSimable(cop_simable, t, simtime);
+            if (copiter->second->mSaved.GetTime() < mSaved.GetTime()) {
+                if (kSpamPhysics) {
+                    cop_simable->QueryInterface(&vehicle);
+                }
+                cop_simable->Kill();
+                ExtrapolatedCar_kHandles[n] = nullptr;
+                delete copiter->second;
+                mCops->erase(copiter);
+            }
+        }
+
+        copiter = nextiter;
     }
 }
 

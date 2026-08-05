@@ -115,7 +115,7 @@ struct ExtrapolatedCar : Debugable {
         UMath::Vector3 &GetPosition();
         void ExtractDirection(UMath::Vector3 &direction) const;
         ISimable *SpawnVehicle(Attrib::Key cartype);
-        bool HasPriority() const;
+        bool HasPriority() const { return (mPriority & 4) != 0; }
     };
 
     ExtrapolatedCar(Attrib::Key cartype);
@@ -160,7 +160,7 @@ struct ExtrapolatedCar : Debugable {
     uint8 mRepositionCount;
     bool mHasHeadset;
     bool mPaused;
-    bool mUseDriverAI;
+    int mUseDriverAI;
 
     static int Next(int c) {
         int n = c + 1 > 31 ? 0 : c + 1;
