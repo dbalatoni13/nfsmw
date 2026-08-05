@@ -336,7 +336,7 @@ void Rain::AttachRainCurtain(float x0, float y0, float z0, float x1, float y1, f
     this->RainCurtainPos[3].y = y3;
     this->RainCurtainPos[3].z = z3;
 
-    this->CurtainLength = bLength(&this->RainCurtainPos[1], &this->RainCurtainPos[0]);
+    bLength(&this->CurtainLength, &this->RainCurtainPos[1], &this->RainCurtainPos[0]);
 #endif
 }
 
