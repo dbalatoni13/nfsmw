@@ -388,8 +388,8 @@ void Rain::FindCurtain() {
     if (cameraMover != nullptr) {
         CameraAnchor *cameraAnchor = cameraMover->GetAnchor();
         if (cameraAnchor != nullptr) {
-            bVector2 CameraDirection(this->MyView->pCamera->GetDirection()->x,
-                                     this->MyView->pCamera->GetDirection()->y);
+            Camera *view_camera = this->MyView->pCamera;
+            bVector2 CameraDirection(view_camera->GetDirection()->x, view_camera->GetDirection()->y);
             bNormalize(&CameraDirection, &CameraDirection);
 
             bVector3 Position;
@@ -885,7 +885,7 @@ void Rain::Wind(float time) {
         float y = 0.0f;
         GetXYviewCar(this->MyView, &x, &y);
         WindAccessor[idIndex].CaptureData(x, y, 50.0f);
-        float Power = WindAccessor[idIndex].GetDataFloat(0);
+        WindAccessor[idIndex].GetDataFloat(0);
         float Angle = WindAccessor[idIndex].GetDataFloat(1);
         bAngle angle = bDegToAng(Angle);
         this->PrevailingWindSpeed.x = bSin(angle);
@@ -1144,11 +1144,11 @@ float FOGbias = 0.0f;
 static const int WatchRain = 0;
 
 void Rain::UpdateAndRender() {
-    float time = WorldTimeElapsed;
-
     if (TheGameFlowManager.GetState() != GAMEFLOW_STATE_RACING) {
         return;
     }
+
+    float time = WorldTimeElapsed;
 
     if (TheGameFlowManager.IsPaused()) {
         ScreenEffectDef SE_def;
