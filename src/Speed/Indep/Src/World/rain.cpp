@@ -320,22 +320,23 @@ float IsCloudyAt(float x, float y) {}
 
 void Rain::AttachRainCurtain(float x0, float y0, float z0, float x1, float y1, float z1, float x2, float y2, float z2, float x3, float y3, float z3) {
 #ifndef DISABLE_RAIN
-    this->RainCurtainPos[0].y = y0;
-    this->RainCurtainPos[1].y = y1;
-    this->RainCurtainPos[2].y = y2;
-    this->RainCurtainPos[3].y = y3;
-
     this->RainCurtainPos[0].x = x0;
-    this->RainCurtainPos[1].x = x1;
-    this->RainCurtainPos[2].x = x2;
-    this->RainCurtainPos[3].x = x3;
-
+    this->RainCurtainPos[0].y = y0;
     this->RainCurtainPos[0].z = z0;
+
+    this->RainCurtainPos[1].x = x1;
+    this->RainCurtainPos[1].y = y1;
     this->RainCurtainPos[1].z = z1;
+
+    this->RainCurtainPos[2].x = x2;
+    this->RainCurtainPos[2].y = y2;
     this->RainCurtainPos[2].z = z2;
+
+    this->RainCurtainPos[3].x = x3;
+    this->RainCurtainPos[3].y = y3;
     this->RainCurtainPos[3].z = z3;
 
-    // this->CurtainLength = bLength(this->RainCurtainPos[1] - this->RainCurtainPos[0]);
+    this->CurtainLength = bLength(&this->RainCurtainPos[1], &this->RainCurtainPos[0]);
 #endif
 }
 

@@ -549,6 +549,32 @@ inline float bLength(const bVector3 *v) {
     return bSqrt(bDot(v, v));
 }
 
+inline float bLength(const bVector3 *v1, const bVector3 *v2) {
+#ifdef EA_PLATFORM_PLAYSTATION2
+    float result;
+    asm("lqc2 vf2, %2\n"
+        "lqc2 vf1, %1\n"
+        "vsub vf1, vf1, vf2\n"
+        "vmul vf1, vf1, vf1\n"
+        "vaddy vf2, vf1, vf1y\n"
+        "vaddz vf2, vf2, vf1z\n"
+        "vsqrt Q, vf2x\n"
+        "vwaitq\n"
+        "vaddq vf2, vf0, Q\n"
+        "vnop\n"
+        "vnop\n"
+        "qmfc2.ni %0, vf2"
+        : "=r"(result)
+        : "o"(*v1), "o"(*v2));
+    return result;
+#else
+    float x = v1->x - v2->x;
+    float y = v1->y - v2->y;
+    float z = v1->z - v2->z;
+    return bSqrt(x * x + y * y + z * z);
+#endif
+}
+
 inline bVector3 *bScale(bVector3 *dest, const bVector3 *v1, const bVector3 *v2) {
     float x;
     float y;
