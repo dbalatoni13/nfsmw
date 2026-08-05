@@ -18,6 +18,11 @@ class SmartBitStream : public BitStream {
         GetBits(temp, iq.GetNumBits());
         return iq.UnPack(temp);
     }
+    float GetQuantizedFloat(FloatQuantizer &qf) {
+        uint32 temp = 0;
+        GetBits(temp, qf.GetNumBits());
+        return qf.UnPack(temp);
+    }
     void AddBool(bool value) { AddBits(value, 1); }
     void GetBool(bool &value) {
         uint32 temp = 0;

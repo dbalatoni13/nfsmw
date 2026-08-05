@@ -1,6 +1,7 @@
 #include "OnlineManager.hpp"
 
 #include "Speed/Indep/Libs/Support/Utility/UVectorMath.h"
+#include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/Src/Misc/Config.h"
@@ -122,6 +123,118 @@ void ExtrapolatedCar::ExtractExtrapolatedPosition(UMath::Vector3 &position) cons
 
 void ExtrapolatedCar::State::ExtractDirection(UMath::Vector3 &direction) const {
     UMath::ExtractZAxis(mRotation, direction);
+}
+
+uint8 ExtrapolatedCar::State::Import(float time, SmartBitStream &data,
+                                     ePosDataPriorityMask priority_mask) {
+    UMath::Matrix4 matrix;
+    float AccError;
+    float VelError;
+    int repositioncount;
+
+    mPriority = static_cast<uint8>(priority_mask);
+    mTime = time;
+    repositioncount = data.GetQuantizedInt(TheOnlineManager.QuantInt2Bit);
+    mInFlight = data.GetBool();
+
+    if ((priority_mask & PDP_MASK_CRITICAL) != PDP_MASK_NONE) {
+        mAngularAcceleration = UMath::Vector4::kZero;
+
+        AccError = TheOnlineManager.AccelerationQuantizer.GetMaxError();
+        AccError += AccError;
+        if (!mInFlight || (priority_mask & PDP_MASK_INFLIGHT) != PDP_MASK_NONE) {
+            mAngularAcceleration.y =
+                data.GetQuantizedFloat(TheOnlineManager.AccelerationQuantizer);
+            if (bAbs(mAngularAcceleration.y) < AccError) {
+                mAngularAcceleration.y = 0.0f;
+            }
+        } else {
+            mLinearAcceleration.z = 0.0f;
+        }
+
+        mLinearAcceleration.x = 0.0f;
+        mLinearAcceleration.y = 0.0f;
+        mLinearAcceleration.z = 0.0f;
+        mLinearAcceleration.x =
+            data.GetQuantizedFloat(TheOnlineManager.AccelerationQuantizer);
+        if (bAbs(mLinearAcceleration.x) < AccError) {
+            mLinearAcceleration.x = 0.0f;
+        }
+        mLinearAcceleration.y =
+            data.GetQuantizedFloat(TheOnlineManager.AccelerationQuantizer);
+        if (bAbs(mLinearAcceleration.y) < AccError) {
+            mLinearAcceleration.y = 0.0f;
+        }
+        mLinearAcceleration.z =
+            data.GetQuantizedFloat(TheOnlineManager.AccelerationQuantizer);
+        if (bAbs(mLinearAcceleration.z) < AccError) {
+            mLinearAcceleration.z = 0.0f;
+        }
+    }
+
+    if ((priority_mask & PDP_MASK_NORMAL) != PDP_MASK_NONE) {
+        mAngularVelocity = UMath::Vector4::kZero;
+
+        if (mInFlight || (priority_mask & PDP_MASK_INFLIGHT) != PDP_MASK_NONE) {
+            mAngularVelocity.x =
+                data.GetQuantizedFloat(TheOnlineManager.AVelocityQuantizer);
+            mAngularVelocity.z =
+                data.GetQuantizedFloat(TheOnlineManager.AVelocityQuantizer);
+        }
+
+        mAngularVelocity.y = data.GetQuantizedFloat(TheOnlineManager.AVelocityQuantizer);
+        VelError = TheOnlineManager.AVelocityQuantizer.GetMaxError();
+        VelError += VelError;
+        if (bAbs(mAngularVelocity.y) < VelError) {
+            mAngularVelocity.y = 0.0f;
+        }
+
+        VelError = TheOnlineManager.VelocityQuantizer.GetMaxError();
+        VelError += VelError;
+        mLinearVelocity.x = data.GetQuantizedFloat(TheOnlineManager.VelocityQuantizer);
+        if (bAbs(mLinearVelocity.x) < VelError) {
+            mLinearVelocity.x = 0.0f;
+        }
+        mLinearVelocity.y = data.GetQuantizedFloat(TheOnlineManager.VelocityQuantizer);
+        if (bAbs(mLinearVelocity.y) < VelError) {
+            mLinearVelocity.y = 0.0f;
+        }
+        mLinearVelocity.z = data.GetQuantizedFloat(TheOnlineManager.VelocityQuantizer);
+        if (bAbs(mLinearVelocity.z) < VelError) {
+            mLinearVelocity.z = 0.0f;
+        }
+    }
+
+    if ((priority_mask & PDP_MASK_LOW) != PDP_MASK_NONE) {
+        if (!mInFlight && (priority_mask & PDP_MASK_INFLIGHT) == PDP_MASK_NONE) {
+            float f = data.GetQuantizedFloat(TheOnlineManager.AngleQuantizer);
+            float a = floorf((f - 0.25f) + 0.5f);
+            UMath::SetYRot(matrix, (f - 0.25f) - a);
+            UMath::Matrix4ToQuaternion(matrix, mRotation);
+        } else {
+            mRotation.x = data.GetQuantizedFloat(TheOnlineManager.MatrixQuantizer);
+            mRotation.y = data.GetQuantizedFloat(TheOnlineManager.MatrixQuantizer);
+            mRotation.z = data.GetQuantizedFloat(TheOnlineManager.MatrixQuantizer);
+            mRotation.w = data.GetQuantizedFloat(TheOnlineManager.MatrixQuantizer);
+        }
+
+        mPosition.x = data.GetQuantizedFloat(TheOnlineManager.PositionQuantizerX);
+        mPosition.y = data.GetQuantizedFloat(TheOnlineManager.PositionQuantizerY);
+        mPosition.z = data.GetQuantizedFloat(TheOnlineManager.PositionQuantizerZ);
+    }
+
+    if ((priority_mask & (PDP_MASK_NORMAL | PDP_MASK_CRITICAL)) != PDP_MASK_NONE) {
+        mSteering = data.GetQuantizedFloat(TheOnlineManager.MatrixQuantizer);
+        mHandBrake = data.GetQuantizedFloat(TheOnlineManager.ControlQuantizer);
+        mGas = data.GetQuantizedFloat(TheOnlineManager.ControlQuantizer);
+        mBrake = data.GetQuantizedFloat(TheOnlineManager.ControlQuantizer);
+        mGear = static_cast<uint8>(data.GetQuantizedInt(TheOnlineManager.QuantInt3Bit));
+        mNOS = data.GetBool();
+    }
+
+    mBlend = 0.0f;
+    mBlendRate = -1.0f;
+    return static_cast<uint8>(repositioncount);
 }
 
 void ExtrapolatedCar::ExtractExtrapolatedDirection(UMath::Vector3 &direction) const {
