@@ -259,7 +259,7 @@ void OnlineManager::Update(bool receive) {
 
     case OLS_LOBBY_IN_LOBBY:
         if (NetworkUseLobbies == 0 && SkipFE &&
-            static_cast<PlatformNetworkCore &>(NetworkCore::Instance()).IsOnline()) {
+            static_cast<PlatformNetworkCore &>(NetworkCore::Instance()).IsOnline() == true) {
             FEDatabase->OnlineSettings.RankedGame = false;
             StartOnlineRace();
         }
