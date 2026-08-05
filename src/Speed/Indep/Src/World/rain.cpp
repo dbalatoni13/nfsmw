@@ -365,8 +365,38 @@ void Rain::FindCurtains() {
     }
 }
 
-// STRIPPED
-void Rain::FindCurtain() {}
+void Rain::FindCurtain() {
+    CameraMover *cameraMover = this->MyView->GetCameraMover();
+    if (cameraMover != nullptr) {
+        CameraAnchor *cameraAnchor = cameraMover->GetAnchor();
+        if (cameraAnchor != nullptr) {
+            bVector2 CameraDirection(this->MyView->pCamera->GetDirection()->x,
+                                     this->MyView->pCamera->GetDirection()->y);
+            bNormalize(&CameraDirection, &CameraDirection);
+
+            bVector3 Position;
+            bCopy(&Position, cameraAnchor->GetGeometryPosition());
+
+            bVector2 Pos2D((this->ent0.x + this->ent1.x) * 0.5f - Position.x,
+                           (this->ent0.y + this->ent1.y) * 0.5f - Position.y);
+            bNormalize(&Pos2D, &Pos2D);
+
+            if (Pos2D.x * CameraDirection.x + Pos2D.y * CameraDirection.y > 0.0f) {
+                this->MyView->Precipitation->AttachRainCurtain(
+                    this->ent0.x, this->ent0.y, Position.z + TUNHEIGHT,
+                    this->ent1.x, this->ent1.y, Position.z + TUNHEIGHT,
+                    this->ent0.x, this->ent0.y, Position.z,
+                    this->ent0.x, this->ent0.y, Position.z);
+            } else {
+                this->MyView->Precipitation->AttachRainCurtain(
+                    this->ext0.x, this->ext0.y, Position.z + TUNHEIGHT,
+                    this->ext1.x, this->ext1.y, Position.z + TUNHEIGHT,
+                    this->ext0.x, this->ext0.y, Position.z,
+                    this->ext0.x, this->ext0.y, Position.z);
+            }
+        }
+    }
+}
 
 void Rain::SeedCurtainXZ(RainPointsDef *rainpoints) {
     float distX = bRandom(this->CurtainLength);
