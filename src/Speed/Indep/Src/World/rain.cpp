@@ -604,7 +604,8 @@ void Rain::SetRainIntensity(float percent) {
 
 // STRIPPED
 void Rain::Change(RainType type, float percent) {
-    uint32 *desired_num = DesiredNumOfType + type;
+    uint32 *desired_base = this->DesiredNumOfType;
+    uint32 *desired_num = desired_base + type;
     *desired_num = fptoui(percent * static_cast<float>(DesiredActive));
     Percentages[type] = percent;
 }
