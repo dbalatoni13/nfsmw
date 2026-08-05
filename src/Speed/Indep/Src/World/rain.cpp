@@ -4,6 +4,8 @@
 #include "Speed/Indep/Src/World/ParameterMaps.hpp"
 #include "Speed/Indep/Src/Ecstasy/Texture.hpp"
 #include "Speed/Indep/Src/World/WeatherMan.hpp"
+#include "Speed/Indep/Src/World/TrackPath.hpp"
+#include "Speed/Indep/Src/Camera/CameraMover.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 
 extern uint32 numCopsActive;
@@ -340,8 +342,34 @@ void Rain::AttachRainCurtain(float x0, float y0, float z0, float x1, float y1, f
 #endif
 }
 
-// STRIPPED
-void Rain::FindCurtains() {}
+void Rain::FindCurtains() {
+    CameraMover *cameraMover = this->MyView->GetCameraMover();
+    if (cameraMover != nullptr && cameraMover->RenderCarPOV()) {
+        bVector3 EntryPosition;
+        bVector2 twoDentry;
+        bVector2 diff;
+        bVector2 direction;
+        bVector2 entrancePt;
+        bVector2 exitPt;
+
+        bCopy(&EntryPosition, this->MyView->pCamera->GetPosition());
+        bSubScaled(&EntryPosition, &EntryPosition, this->MyView->pCamera->GetDirection(), 8.0f);
+        twoDentry.x = EntryPosition.x;
+        twoDentry.y = EntryPosition.y;
+
+        static_cast<TrackPathZone *>(this->the_zone)->GetSegmentNextTo(&twoDentry, &this->ent0, &this->ent1);
+
+        diff.x = this->ent0.x - this->ent1.x;
+        diff.y = this->ent0.y - this->ent1.y;
+        direction.x = diff.y;
+        direction.y = -diff.x;
+        bNormalize(&direction, &direction);
+
+        entrancePt.x = (static_cast<TrackPathZone *>(this->the_zone)->BBoxMin.x + static_cast<TrackPathZone *>(this->the_zone)->BBoxMax.x) * 0.5f;
+        entrancePt.y = (static_cast<TrackPathZone *>(this->the_zone)->BBoxMin.y + static_cast<TrackPathZone *>(this->the_zone)->BBoxMax.y) * 0.5f;
+        static_cast<TrackPathZone *>(this->the_zone)->GetOpposite(&this->ent0, &this->ent1, &this->ext0, &this->ext1);
+    }
+}
 
 // STRIPPED
 void Rain::FindCurtain() {}

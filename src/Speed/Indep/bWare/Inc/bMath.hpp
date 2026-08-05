@@ -488,6 +488,26 @@ inline bVector3 *bSub(bVector3 *dest, const bVector3 *v1, const bVector3 *v2) {
     return dest;
 }
 
+inline bVector3 *bSubScaled(bVector3 *dest, const bVector3 *v1, const bVector3 *v2, float scale) {
+#ifdef EA_PLATFORM_PLAYSTATION2
+    asm("qmtc2.ni %3, vf3\n"
+        "lqc2 vf2, %1\n"
+        "lqc2 vf1, %2\n"
+        "vmulx vf1, vf1, vf3x\n"
+        "vsub vf2, vf2, vf1\n"
+        "sqc2 vf2, %0"
+        : "=o"(*dest)
+        : "o"(*v1), "o"(*v2), "r"(scale)
+        : "memory");
+#else
+    float x = v1->x - v2->x * scale;
+    float y = v1->y - v2->y * scale;
+    float z = v1->z - v2->z * scale;
+    bFill(dest, x, y, z);
+#endif
+    return dest;
+}
+
 inline bVector3 bSub(const bVector3 &v1, const bVector3 &v2) {
     bVector3 dest;
     bSub(&dest, &v1, &v2);
