@@ -45,6 +45,14 @@ class CameraAnchor {
         return &mGeomPos;
     }
 
+    bMatrix4 *GetGeometryOrientation() {
+        return &mGeomRot;
+    }
+
+    bVector3 *GetForwardVector() {
+        return reinterpret_cast<bVector3 *>(&mGeomRot.v0);
+    }
+
     unsigned int GetWorldID() const {
         return mWorldID;
     }
@@ -89,6 +97,10 @@ class CameraMover : public bTNode<CameraMover>, public WCollisionMgr::ICollision
 
     CameraMoverTypes GetType() {
         return Type;
+    }
+
+    bool IsDriveCamera() {
+        return this->GetType() == CM_DRIVE_CUBIC;
     }
 
     WUID GetAnchorID();

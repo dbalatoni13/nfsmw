@@ -7,10 +7,13 @@
 #include "Speed/Indep/Src/World/TrackPath.hpp"
 #include "Speed/Indep/Src/Camera/CameraMover.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
+#include "Speed/Indep/Src/Misc/GameFlow.hpp"
 
 extern uint32 numCopsActive;
 extern float TUNHEIGHT;
 extern float WorldTimeElapsed;
+extern int TweakerPauseWorld;
+extern void fInvertMatrix(bMatrix4 *d, bMatrix4 *s);
 int GetXYviewCar(eView *view, float *x, float *y);
 
 uint32 precipDEBUG = 0;
@@ -558,8 +561,269 @@ int32 ONEpNoRainConnexion = 0;
 float cameraMod = 1.0f;
 static const float lookbackoffset = 10.0f;
 
-// STRIPPED
-void Rain::Update() {}
+void Rain::Update() {
+    float timeMod;
+    float tempMod;
+    bVector3 MyCarPos;
+    bVector3 MyCarDir;
+    Camera *view_camera;
+    bVector3 *CameraPosition;
+    bVector3 *CameraVelocity;
+    CameraMover *cameraMover;
+    CameraAnchor *cameraAnchor;
+    float curElev;
+    TrackPathZone *zone;
+    bVector3 Ahead;
+    bAngle matAng;
+    bMatrix4 matmat;
+    bVector3 CarCross;
+    static bAngle oldangle[2];
+    float FloatAngle;
+    uint32 tb;
+    int total;
+    uint32 diff;
+    uint32 steadyPrecip;
+
+    if (TheGameFlowManager.GetState() != GAMEFLOW_STATE_RACING) {
+        return;
+    }
+
+    if (TweakerPauseWorld != 0) {
+        return;
+    }
+
+    timeMod = WorldTimeElapsed * 30.0f;
+    if (timeMod > 1.0f) {
+        timeMod = 1.0f;
+    }
+    tempMod = 1.0f - timeMod;
+
+    view_camera = this->MyView->GetCamera();
+    CameraPosition = view_camera->GetPosition();
+    CameraVelocity = view_camera->GetVelocityPosition();
+    cameraMover = this->MyView->GetCameraMover();
+    cameraAnchor = cameraMover->GetAnchor();
+
+    timeMod = 1.0f - tempMod * tempMod * tempMod;
+
+    if (cameraMover == nullptr) {
+        return;
+    }
+
+    if (cameraAnchor == nullptr) {
+        this->local2world = *view_camera->GetCameraMatrix();
+        this->local2world.v3.w = 1.0f;
+        this->local2world.v3.x = 0.0f;
+        this->local2world.v3.y = 0.0f;
+        this->local2world.v3.z = 0.0f;
+        MyCarDir = *view_camera->GetDirection();
+        MyCarPos = *CameraPosition + MyCarDir * cameraMod;
+    } else {
+        this->local2world = *cameraAnchor->GetGeometryOrientation();
+        MyCarPos = *cameraAnchor->GetGeometryPosition();
+        MyCarDir = *cameraAnchor->GetForwardVector();
+        if (cameraMover->GetLookbackAngle() != 0) {
+            MyCarPos -= MyCarDir * lookbackoffset;
+        }
+    }
+
+    this->twoDpos.x = MyCarPos.x;
+    this->twoDpos.y = CameraPosition->y;
+    this->inTunnel = 0;
+    this->inOverpass = 0;
+    curElev = 9999.0f;
+
+    zone = TheTrackPathManager.FindZone(&this->twoDpos, TRACK_PATH_ZONE_TUNNEL, nullptr);
+    if (zone != nullptr && MyCarPos.z < zone->GetElevation()) {
+        this->the_zone = zone;
+        this->inTunnel = 1;
+        curElev = zone->GetElevation();
+    }
+
+    zone = TheTrackPathManager.FindZone(&this->twoDpos, TRACK_PATH_ZONE_OVERPASS, nullptr);
+    if (zone != nullptr && MyCarPos.z < zone->GetElevation() && zone->GetElevation() < curElev) {
+        this->the_zone = zone;
+        this->inOverpass = 1;
+        curElev = zone->GetElevation();
+    }
+
+    zone = TheTrackPathManager.FindZone(&this->twoDpos, TRACK_PATH_ZONE_OVERPASS_SMALL, nullptr);
+    if (zone != nullptr && MyCarPos.z < zone->GetElevation() && zone->GetElevation() < curElev) {
+        this->the_zone = zone;
+        this->inOverpass = 1;
+        curElev = zone->GetElevation();
+    }
+
+    zone = TheTrackPathManager.FindZone(&this->twoDpos, TRACK_PATH_ZONE_GARAGE, nullptr);
+    if (zone != nullptr && MyCarPos.z < zone->GetElevation() && zone->GetElevation() < curElev) {
+        this->the_zone = zone;
+        this->inOverpass = 1;
+    }
+
+    fInvertMatrix(&this->world2localrot, &this->local2world);
+    this->Wind(WorldTimeElapsed);
+    this->Change(RAIN, rainPercent);
+
+    if (cameraMover->IsDriveCamera()) {
+        eMulVector(&this->CamVelLOCAL, &this->world2localrot, CameraVelocity);
+        this->CamVelLOCAL *= driveFactor;
+        this->CamVelLOCAL.y = 0.0f;
+        this->LenModifier = bLength(&this->CamVelLOCAL);
+        if (this->LenModifier > 1.0f) {
+            this->LenModifier = 1.0f;
+            bNormalize(&this->CamVelLOCAL, &this->CamVelLOCAL);
+        } else {
+            bFill(&this->CamVelLOCAL, 0.0f, 0.0f, 0.0f);
+        }
+    } else {
+        bFill(&this->CamVelLOCAL, 0.0f, 0.0f, 0.0f);
+    }
+
+    if (precipDEBUG != 0) {
+        this->Debug();
+    }
+
+    bNormalize(&MyCarDir, &MyCarDir);
+    bFill(&Ahead, 1.0f, 0.0f, 0.0f);
+    matAng = bACos(bDot(MyCarDir, Ahead));
+    if (MyCarDir.y < 0.0f) {
+        matAng = -0x44c - matAng;
+    }
+
+    eCreateRotationZ(&matmat, matAng);
+    bCopy(&matmat.v3, &MyCarPos, 1.0f);
+    this->local2world = matmat;
+    CarCross = bCross(this->OldCarDirection, MyCarDir);
+
+    FloatAngle = static_cast<float>(oldangle[this->MyView->ID != EVIEW_FIRST_PLAYER] - matAng);
+    oldangle[this->MyView->ID != EVIEW_FIRST_PLAYER] = matAng;
+    if (FloatAngle >= 32768.0f) {
+        FloatAngle -= 65536.0f;
+    }
+    if (FloatAngle > FloatClamp) {
+        FloatAngle = FloatClamp;
+    }
+    if (FloatAngle < -FloatClamp) {
+        FloatAngle = -FloatClamp;
+    }
+
+    this->aabbMin.x = precipAheadX - precipBoundX * 0.5f;
+    this->aabbMin.y = precipAheadY - precipBoundY * 0.5f;
+    this->aabbMax.x = precipAheadX + precipBoundX * 0.5f;
+    this->aabbMax.y = precipAheadY + precipBoundY * 0.5f;
+
+    tb = this->OldSwapBuffer;
+    this->OldSwapBuffer = this->NewSwapBuffer;
+    this->NewSwapBuffer = tb;
+
+    total = 0;
+    for (int j = 0; j < 2; ++j) {
+        total += this->DesiredNumOfType[j];
+    }
+    diff = 400 - total;
+    if (diff != 0) {
+        if (diff <= this->DesiredNumOfType[0]) {
+            this->DesiredNumOfType[0] -= diff;
+        } else {
+            for (int j = 1; j < 2; ++j) {
+                if (diff <= this->DesiredNumOfType[j]) {
+                    this->DesiredNumOfType[j] -= diff;
+                    break;
+                }
+            }
+        }
+    }
+
+    steadyPrecip = 1;
+    if (this->NumOfType[0] == this->DesiredNumOfType[0]) {
+        for (int j = 1; j < 2; ++j) {
+            if (this->NumOfType[j] != this->DesiredNumOfType[j]) {
+                steadyPrecip = 0;
+                break;
+            }
+        }
+    } else {
+        steadyPrecip = 0;
+    }
+
+    this->NoRain = 0;
+    if (this->inOverpass != 0 || this->inTunnel != 0) {
+        this->NoRain = 1;
+    }
+    this->NoRainAhead = this->NoRain;
+    if (this->MyView->ID == EVIEW_FIRST_PLAYER) {
+        ONEpNoRainConnexion = this->NoRain;
+    }
+
+    if (this->NumRainPoints > 0) {
+        for (int32 i = 0; i < this->NumRainPoints; ++i) {
+            RainType rType = static_cast<RainType>(this->RainPointsInf[i].type);
+            RainSubType rSubType = static_cast<RainSubType>(this->RainPointsInf[i].subType);
+
+            if (this->RainPointsInf[i].status == CT_INACTIVE) {
+                bVector3 *RpointN = &this->RainPoints[i].NormalizedPoint[this->NewSwapBuffer];
+                bVector3 *RpointNold = &this->RainPoints[i].NormalizedPoint[this->OldSwapBuffer];
+                RpointN->y += RpointN->x * RainAngMult * FloatAngle;
+                RpointNold->y += RpointNold->x * RainAngMult * FloatAngle;
+                *RpointN = this->CamVelLOCAL + *RpointNold +
+                           (this->Velocities[rType][i % 10] + this->windSpeed * this->precipWindEffect[rType][rSubType]) * timeMod;
+
+                if (RpointN->z < 0.0f) {
+                    this->RainPointsInf[i].status = CT_ACTIVE;
+                } else if (RpointN->x > this->aabbMax.x) {
+                    RpointN->x -= precipBoundX;
+                    RpointNold->x -= precipBoundX;
+                } else if (RpointN->x < this->aabbMin.x) {
+                    RpointN->x += precipBoundX;
+                    RpointNold->x += precipBoundX;
+                } else if (RpointN->y > this->aabbMax.y) {
+                    RpointN->y -= precipBoundY;
+                    RpointNold->y -= precipBoundY;
+                } else if (RpointN->y < this->aabbMin.y) {
+                    RpointN->y += precipBoundY;
+                    RpointNold->y += precipBoundY;
+                }
+            } else {
+                if (this->RainPointsInf[i].status > CT_TURNON) {
+                    continue;
+                }
+
+                if (steadyPrecip == 0) {
+                    for (int j = 0; j < 2; ++j) {
+                        if (rType != j && this->NumOfType[j] < this->DesiredNumOfType[j]) {
+                            this->NumOfType[rType]--;
+                            rType = static_cast<RainType>(j);
+                            this->RainPointsInf[i].type = rType;
+                            this->NumOfType[rType]++;
+                        }
+                    }
+                }
+
+                if (this->RainPointsInf[i].type != INACTIVE) {
+                    if (this->RainPointsInf[i].status == CT_ACTIVE) {
+                        this->RainPoints[i].NormalizedPoint[this->NewSwapBuffer].z += precipBoundZ;
+                        this->RainPoints[i].NormalizedPoint[this->OldSwapBuffer].z += precipBoundZ;
+                    }
+                    this->RainPointsInf[i].status = CT_INACTIVE;
+                    continue;
+                }
+
+                if (this->RainPointsInf[i].status == CT_ACTIVE) {
+                    this->RainPoints[i].NormalizedPoint[this->NewSwapBuffer].z = precipAheadZ + bRandom(precipBoundZ);
+                    this->RainPointsInf[i].status = CT_TURNON;
+                    continue;
+                }
+
+                if (this->NoRain != 0 && this->RainPoints[i].NormalizedPoint[this->NewSwapBuffer].x <= RainAheadCut) {
+                    this->NumOfType[rType]--;
+                    this->RainPointsInf[i].type = INACTIVE;
+                    this->NumOfType[INACTIVE]++;
+                    this->RainPointsInf[i].status = CT_TURNON;
+                }
+            }
+        }
+    }
+}
 
 int windAngType = 4;
 float windAng = 0.0f;
@@ -616,7 +880,7 @@ void Rain::Wind(float time) {
         this->PrevailingWindSpeed.z = 0.0f;
     }
 
-    bScale(&this->PrevailingWindSpeed, &this->PrevailingWindSpeed, PrevailingMult);
+    this->PrevailingWindSpeed *= PrevailingMult;
     eMulVector(&this->PrevailingWindSpeed, &this->world2localrot, &this->PrevailingWindSpeed);
 
     if (windState == CHANGE) {
@@ -626,7 +890,7 @@ void Rain::Wind(float time) {
         this->DesiredwindSpeed.x = (bRandom(0.05f) - 0.025f) * maxWindEffect;
         this->DesiredwindSpeed.z = 0.0f;
         this->DesiredwindSpeed.y = (bRandom(0.05f) - 0.025f) * maxWindEffect;
-        bAdd(&this->DesiredwindSpeed, &this->DesiredwindSpeed, &this->PrevailingWindSpeed);
+        this->DesiredwindSpeed += this->PrevailingWindSpeed;
     } else if (windState < CHANGING) {
         if (windState == STEADY) {
             this->windTime += time;
