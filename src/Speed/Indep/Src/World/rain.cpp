@@ -435,11 +435,34 @@ void Rain::SeedCurtainX(RainPointsDef *rainpoints) {
 static const int showCurtain = 0;
 static const float curtainWidthMod = 2.0f;
 
+static float zspeed = 0.0f;
+
 // STRIPPED
 void Rain::UpdateAndRenderCurtain() {}
 
-// STRIPPED
-void Rain::Debug() {}
+void Rain::Debug() {
+    snowPercent = 1.0f - rainPercent;
+    this->precipWindEffect[RAIN][1] = RAINwindEffect * 0.5f;
+    this->precipRadius[RAIN] = bVector3(RAINRadiusX, RAINRadiusY, RAINRadiusZ);
+    this->precipWindEffect[RAIN][0] = RAINwindEffect;
+    this->precipSpeedRange[RAIN] = bVector3(RAINX, RAINY, RAINZ);
+
+    if (zspeed != RAINZconstant) {
+        for (int i = 0; i < 2; ++i) {
+            for (int j = 0; j < 10; ++j) {
+                this->Velocities[i][j].x = bRandom(this->precipSpeedRange[i].x) -
+                                           this->precipSpeedRange[i].x * 0.5f;
+                this->Velocities[i][j].y = bRandom(this->precipSpeedRange[i].y) -
+                                           this->precipSpeedRange[i].y * 0.5f;
+                this->Velocities[i][j].z = -bRandom(this->precipSpeedRange[i].z) - this->precipZconstant[i];
+                this->Velocities[i][j].pad = -99999.9f;
+            }
+        }
+        zspeed = RAINZconstant;
+    }
+
+    this->Change(RAIN, rainPercent * (1.0f - fogPercent));
+}
 
 static const int windON = 1;
 static const int freezing = 0;
