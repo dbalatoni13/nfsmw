@@ -949,21 +949,33 @@ void OnlineManager::StartRace() {
     TheAnimPlayer.UnPauseAll();
     RaceEndReason = OEND_RACE_FINISHED;
 
-    int driver_number = 0;
-    OnlineRacer **racer = pRacers;
+    const int lost_connection = OPS_LOST_CONNECTION;
+    const int quit = OPS_QUIT;
+    const int racer_count = 4;
+    int i = 0;
     do {
-        if (*racer) {
-            OnlineRacer *online_racer = GetOnlineRacer(driver_number);
-            bool connected = online_racer->IsConnected();
+        if (pRacers[i]) {
+            OnlineRacer *online_racer = GetOnlineRacer(i);
+            eOnlineRacerState state = online_racer->State;
+            bool connected = false;
+            if (state != lost_connection) {
+                if (state != quit) {
+                    if (state != OPS_DISCONNECTED) {
+                        connected = true;
+                        if (state == OPS_DISCERROR) {
+                            connected = false;
+                        }
+                    }
+                }
+            }
             if (connected) {
-                GetOnlineRacer(driver_number)->ChangeState(OPS_RACING);
+                GetOnlineRacer(i)->ChangeState(OPS_RACING);
             }
         }
-        ++driver_number;
-        ++racer;
-    } while (driver_number < 4);
+        ++i;
+    } while (i < racer_count);
 
     mPostCountdownStartRaceTime = 0.0f;
     mStartTime = mMasterTime;
-    return ChangeState(OLS_RACING);
+    ChangeState(OLS_RACING);
 }
