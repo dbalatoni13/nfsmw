@@ -287,8 +287,11 @@ float GetDesiredCloudyness(float x, float y) {}
 // STRIPPED
 float WorldWeatherTime() {}
 
-// STRIPPED
-float IsRainingAt(float x, float y) {}
+float IsRainingAt(float x, float y) {
+    float result = bCos(static_cast<bAngle>(
+        static_cast<int>((x * 0.02f + WorldTimeSeconds) * 65536.0f) / 360));
+    return 1.0f - bAbs(result);
+}
 
 // STRIPPED
 float IsCloudyAt(float x, float y) {}
