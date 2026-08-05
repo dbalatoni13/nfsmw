@@ -1018,7 +1018,7 @@ void OnlineRacer::SignalFinish(SmartBitStream &data) {
     uint16 *buffer = remote_cheat_tally;
     int i;
     for (i = 15; i >= 0; --i) {
-        *cheat_tally = *cheat_tally > *buffer ? *cheat_tally : *buffer;
+        *cheat_tally = bMax(*cheat_tally, *buffer);
         ++cheat_tally;
         ++buffer;
     }
