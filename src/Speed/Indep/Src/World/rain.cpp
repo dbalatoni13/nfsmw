@@ -623,7 +623,7 @@ void Rain::Update() {
         MyCarPos = *cameraAnchor->GetGeometryPosition();
         MyCarDir = *cameraAnchor->GetForwardVector();
         if (cameraMover->GetLookbackAngle() != 0) {
-            MyCarPos -= MyCarDir * lookbackoffset;
+            bScaleAdd(&MyCarPos, &MyCarPos, &MyCarDir, -lookbackoffset);
         }
     }
 
