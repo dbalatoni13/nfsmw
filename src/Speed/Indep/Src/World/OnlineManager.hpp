@@ -55,6 +55,16 @@ enum ePosDataPriorityMask {
     PDP_MASK_ALL = 47
 };
 
+enum ePosDataPriority {
+    PDP_UNSPECIFIED = -1,
+    PDP_CRITICAL = 0,
+    PDP_NORMAL = 1,
+    PDP_LOW = 2,
+    PDP_AESTHETIC = 3,
+    NUM_POSDATA_PRIORITIES = 4,
+    PDP_INFLIGHT = 5
+};
+
 enum eOnlineState {
     OLS_DISCONNECTED = 0,
     OLS_LOBBY_IN_LOBBY = 1,

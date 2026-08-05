@@ -25,6 +25,7 @@ class PlatformNetworkCore {
 };
 
 #include "Speed/Indep/Src/Online/LobbyGameSessions.hpp"
+#include "Speed/Indep/Src/Online/InGame/Client.hpp"
 #include "Speed/Indep/Src/Online/SmartBitstream.hpp"
 #include "Speed/Indep/Src/Online/VoiceCore.hpp"
 #include "Speed/Indep/Src/Generated/Messages/MNotifyOnlineRaceOver.h"
@@ -33,6 +34,7 @@ class PlatformNetworkCore {
 #include "Speed/Indep/Src/World/RaceParameters.hpp"
 #include "Speed/Indep/bWare/Inc/bDebug.hpp"
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
+#include "Speed/Indep/bWare/Inc/SpeedScript.hpp"
 
 namespace Online {
 bool IsInitialized();
@@ -57,6 +59,11 @@ extern void FEOnlineDisconnectMsg(OnlineRacer *racer);
 extern const char *SkipFEPlayerCar;
 extern int ONLINE_CHEAT_NOSEND_CRC;
 extern int ONLINE_CHEAT_IGNORE_TIMEUP;
+extern float MinCheatFreq[16];
+extern int ONLINE_CHEATSCORE_THRESHOLD;
+extern "C" char *TagFieldFind(const char *record, const char *name);
+extern "C" int TagFieldGetString(const char *field, char *buffer, int bufferSize,
+                                  const char *defaultValue);
 
 int SuperBenderGetCommandLineArgc();
 char **SuperBenderGetCommandLineArgv();
@@ -288,6 +295,56 @@ void OnlineManager::Initialize(int argc, char **argv) {
     VoiceCore::Construct();
     if (SkipFE == 0) {
         OnlineEnabled = 1;
+    }
+}
+
+void OnlineManager::InitAntiCheating(int num_players) {
+    if (NetworkUseLobbies != 0) {
+        char *server_config = LobbyCore::Instance().GetServerConfig();
+        if (server_config) {
+            char buff1[128];
+            char buff2[255];
+
+            TagFieldGetString(TagFieldFind(server_config, "RESPONSE_GRAPH"), buff1, 0x80, "");
+            bSPrintf(buff2, "%s: %s", "GRAPH", buff1);
+            SpeedScript parse("GRAPH_SCRIPT", buff2, 0);
+            if (parse.GetNextCommand()) {
+                int i = 0;
+                float *frequency = MinCheatFreq;
+                while (i < 16) {
+                    bool has_argument = parse.IsAnotherArgument();
+                    if (!has_argument) {
+                        break;
+                    }
+                    ++i;
+                    *frequency = parse.GetNextArgumentFloat();
+                    ++frequency;
+                }
+            }
+
+            TagFieldGetString(TagFieldFind(server_config, "MIN_CHEAT_THRESHOLD"), buff1,
+                              0x80, "51");
+            ONLINE_CHEATSCORE_THRESHOLD = bStrToLong(buff1);
+            bSPrintf(buff2, "RESPONSE_REMAP%d", num_players);
+            TagFieldGetString(TagFieldFind(server_config, buff2), buff1, 0x80, "");
+            if (bStrLen(buff1) > 0) {
+                bSPrintf(buff2, "%s: %s", "REMAP", buff1);
+                SpeedScript parse("REMAP_SCRIPT", buff2, 0);
+                if (parse.GetNextCommand()) {
+                    int i = 0;
+                    float *frequency = Client::m_sendCarFrequencyHz;
+                    while (i < 4) {
+                        bool has_argument = parse.IsAnotherArgument();
+                        if (!has_argument) {
+                            break;
+                        }
+                        ++i;
+                        *frequency = static_cast<float>(parse.GetNextArgumentInt());
+                        ++frequency;
+                    }
+                }
+            }
+        }
     }
 }
 

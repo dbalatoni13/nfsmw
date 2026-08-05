@@ -93,6 +93,7 @@ struct ByteCounter {
 };
 
 struct Client {
+    friend class OnlineManager;
     static void Init();
     static void Close();
     static void StartClientProcessing();
