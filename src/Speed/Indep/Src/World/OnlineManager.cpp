@@ -168,34 +168,52 @@ void OnlineManager::Update(bool receive) {
     bool host_disconnected = false;
     if (IsOnlineRace() && State != OLS_RACE_END && !IsServer() &&
         !CUIOnlineDisconnect::mIsHostInGameDisconnect) {
-        void *host = ConnectionCore::Instance().GetPlayer(0);
-        if (!host || *reinterpret_cast<uint32 *>(reinterpret_cast<char *>(host) + 0x88) != 3) {
+        ConnApiClientT *host = ConnectionCore::Instance().GetPlayer(0);
+        if (!host) {
             host_disconnected = true;
+        } else {
+            host = ConnectionCore::Instance().GetPlayer(0);
+            if (host->GameInfo.eStatus != CONNAPI_STATUS_ACTV) {
+                host_disconnected = true;
+            }
         }
     }
 
-    if (host_disconnected && TheGameFlowManager.IsInGame()) {
-        CUIOnlineDisconnect::mIsHostInGameDisconnect = true;
-        cFEng::Get()->QueuePackagePush("UI_OL_Disconnect_BG.fng", 0, 0, false);
+    eOnlineState state;
+    if (host_disconnected) {
+        if (TheGameFlowManager.GetState() != GAMEFLOW_STATE_RACING) {
+            state = State;
+        } else {
+            CUIOnlineDisconnect::mIsHostInGameDisconnect = true;
+            cFEng::Get()->QueuePackagePush("UI_OL_Disconnect_BG.fng", 0, 0, false);
+            state = State;
+        }
+    } else {
+        state = State;
     }
 
-    eOnlineState state = State;
     if (state == OLS_RACING) {
-        if (!IsServer()) {
+        if (IsServer()) {
+            state = State;
+        } else {
             uint32 master = GetMasterTime();
             uint32 server = GetServerTime();
             int delta = server - master;
             if (delta < 0x65) {
                 if (delta < 4) {
                     if (delta < -1) {
+                        state = State;
                         ++mMasterTime;
                     } else {
+                        state = State;
                         mMasterTime -= delta;
                     }
                 } else {
+                    state = State;
                     mMasterTime -= 3;
                 }
             } else {
+                state = State;
                 mMasterTime += master - server;
             }
         }
