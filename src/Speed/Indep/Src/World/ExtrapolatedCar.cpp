@@ -372,15 +372,19 @@ void ExtrapolatedCar::ExportStream(SmartBitStream &data,
         CopMap::iterator iter = mCops->begin();
         while (iter != mCops->end()) {
             int i;
-            int type;
+            Attrib::Key type;
             i = 0;
-            for (; i < 0xf && iter->first != ExtrapolatedCar_kHandles[i]; ++i) {}
+            for (; i < 0xf; ++i) {
+                if (iter->first == ExtrapolatedCar_kHandles[i]) {
+                    break;
+                }
+            }
 
             if (i != 0x10) {
                 data.AddQuantizedInt(i, TheOnlineManager.QuantInt4Bit);
                 type = 0;
                 if (iter->second->GetCarType() != ExtrapolatedCar_CopTypes[0]) {
-                    while (++type < 7 &&
+                    while (static_cast<int>(++type) < 7 &&
                            iter->second->GetCarType() != ExtrapolatedCar_CopTypes[type]) {}
                 }
                 data.AddQuantizedInt(type, TheOnlineManager.QuantInt3Bit);
