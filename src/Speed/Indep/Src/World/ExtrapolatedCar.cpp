@@ -194,6 +194,81 @@ void ExtrapolatedCar::State::Import(const ISimable *simable, float simtime) {
     mBlendRate = 1.0f / kMinBlendTime;
 }
 
+void ExtrapolatedCar::State::Export(SmartBitStream &data,
+                                    ePosDataPriorityMask priority_mask,
+                                    uint8 repositioncount) {
+    UMath::Matrix4 matrix;
+
+    mPriority = static_cast<uint8>(priority_mask);
+    data.AddQuantizedFloat(mTime, TheOnlineManager.QuantFloatSimTime);
+    data.AddQuantizedInt(repositioncount, TheOnlineManager.QuantInt2Bit);
+    data.AddBool(mInFlight);
+
+    if ((priority_mask & PDP_MASK_CRITICAL) != PDP_MASK_NONE) {
+        if (!mInFlight || (priority_mask & PDP_MASK_INFLIGHT) != PDP_MASK_NONE) {
+            data.AddQuantizedFloat(mAngularAcceleration.y,
+                                   TheOnlineManager.AccelerationQuantizer);
+        }
+        data.AddQuantizedFloat(
+            UMath::Clamp(mLinearAcceleration.x,
+                         TheOnlineManager.AccelerationQuantizer.GetMinValue(),
+                         TheOnlineManager.AccelerationQuantizer.GetMaxValue()),
+            TheOnlineManager.AccelerationQuantizer);
+        data.AddQuantizedFloat(
+            UMath::Clamp(mLinearAcceleration.y,
+                         TheOnlineManager.AccelerationQuantizer.GetMinValue(),
+                         TheOnlineManager.AccelerationQuantizer.GetMaxValue()),
+            TheOnlineManager.AccelerationQuantizer);
+        data.AddQuantizedFloat(
+            UMath::Clamp(mLinearAcceleration.z,
+                         TheOnlineManager.AccelerationQuantizer.GetMinValue(),
+                         TheOnlineManager.AccelerationQuantizer.GetMaxValue()),
+            TheOnlineManager.AccelerationQuantizer);
+    }
+
+    if ((priority_mask & PDP_MASK_NORMAL) != PDP_MASK_NONE) {
+        if (mInFlight) {
+            data.AddQuantizedFloat(mAngularVelocity.x,
+                                   TheOnlineManager.AVelocityQuantizer);
+            data.AddQuantizedFloat(mAngularVelocity.z,
+                                   TheOnlineManager.AVelocityQuantizer);
+        }
+        data.AddQuantizedFloat(mAngularVelocity.y,
+                               TheOnlineManager.AVelocityQuantizer);
+        data.AddQuantizedFloat(mLinearVelocity.x,
+                               TheOnlineManager.VelocityQuantizer);
+        data.AddQuantizedFloat(mLinearVelocity.y,
+                               TheOnlineManager.VelocityQuantizer);
+        data.AddQuantizedFloat(mLinearVelocity.z,
+                               TheOnlineManager.VelocityQuantizer);
+    }
+
+    if ((priority_mask & PDP_MASK_LOW) != PDP_MASK_NONE) {
+        if (!mInFlight && (priority_mask & PDP_MASK_INFLIGHT) == PDP_MASK_NONE) {
+            UMath::QuaternionToMatrix4(mRotation, matrix);
+            data.AddQuantizedFloat(VU0_Atan2(matrix.v2.z, -matrix.v2.x),
+                                   TheOnlineManager.AngleQuantizer);
+        } else {
+            data.AddQuantizedFloat(mRotation.x, TheOnlineManager.MatrixQuantizer);
+            data.AddQuantizedFloat(mRotation.y, TheOnlineManager.MatrixQuantizer);
+            data.AddQuantizedFloat(mRotation.z, TheOnlineManager.MatrixQuantizer);
+            data.AddQuantizedFloat(mRotation.w, TheOnlineManager.MatrixQuantizer);
+        }
+        data.AddQuantizedFloat(mPosition.x, TheOnlineManager.PositionQuantizerX);
+        data.AddQuantizedFloat(mPosition.y, TheOnlineManager.PositionQuantizerY);
+        data.AddQuantizedFloat(mPosition.z, TheOnlineManager.PositionQuantizerZ);
+    }
+
+    if ((priority_mask & (PDP_MASK_NORMAL | PDP_MASK_CRITICAL)) != PDP_MASK_NONE) {
+        data.AddQuantizedFloat(mSteering, TheOnlineManager.MatrixQuantizer);
+        data.AddQuantizedFloat(mHandBrake, TheOnlineManager.ControlQuantizer);
+        data.AddQuantizedFloat(mGas, TheOnlineManager.ControlQuantizer);
+        data.AddQuantizedFloat(mBrake, TheOnlineManager.ControlQuantizer);
+        data.AddQuantizedInt(mGear, TheOnlineManager.QuantInt3Bit);
+        data.AddBool(mNOS);
+    }
+}
+
 uint8 ExtrapolatedCar::State::Import(float time, SmartBitStream &data,
                                      ePosDataPriorityMask priority_mask) {
     UMath::Matrix4 matrix;
