@@ -13,6 +13,7 @@ struct ConnectionCore;
 struct BuddyCore;
 struct LobbyGames;
 class NetworkCore;
+struct ExtrapolatedCar;
 
 struct channel_type {
     bool assigned;
@@ -112,6 +113,7 @@ class VoiceCore {
     friend struct BuddyCore;
     friend struct LobbyGames;
     friend class NetworkCore;
+    friend struct ExtrapolatedCar;
 };
 
 #endif

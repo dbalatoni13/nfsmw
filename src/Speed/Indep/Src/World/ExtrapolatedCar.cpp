@@ -15,6 +15,7 @@
 #include "Speed/Indep/Src/Interfaces/Simables/ITransmission.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #include "Speed/Indep/Src/Online/SmartBitstream.hpp"
+#include "Speed/Indep/Src/Online/VoiceCore.hpp"
 #include "Speed/Indep/Src/Physics/Dynamics/Inertia.h"
 #include "Speed/Indep/Src/Physics/PVehicle.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
@@ -457,6 +458,84 @@ void ExtrapolatedCar::ImportStream(SmartBitStream &data,
             result.first->second = new ExtrapolatedCar(cartype);
         }
         result.first->second->ImportStream(data, priority_mask);
+    }
+}
+
+void ExtrapolatedCar::ExportSimable(ISimable *simable) {
+    State *state;
+    float simtime;
+
+    if (!simable) {
+        return;
+    }
+
+    state = mStateArray + mHead;
+    simtime = Sim::GetTime();
+    state->Import(simable, simtime);
+    mHasHeadset = VoiceCore::mInstance->IsHeadsetConnected();
+
+    if (!simable->IsPlayer()) {
+        return;
+    }
+
+    if (mCops) {
+        CopMap::iterator nextiter = mCops->begin();
+        CopMap::iterator copiter;
+        while (nextiter != mCops->end()) {
+            copiter = nextiter;
+            ++nextiter;
+
+            if (!ISimable::FindInstance(copiter->first)) {
+                HSIMABLE handle = copiter->first;
+                HSIMABLE__ **handleiter = ExtrapolatedCar_kHandles;
+                while (handleiter < ExtrapolatedCar_kHandles + 0xf) {
+                    if (handle == *handleiter) {
+                        if (!kSpamPhysics) {
+                            *handleiter = nullptr;
+                        } else {
+                            Attrib::Gen::pvehicle vehicle(copiter->second->GetCarType(), 0, nullptr);
+                            *handleiter = nullptr;
+                        }
+                    }
+                    ++handleiter;
+                }
+
+                delete copiter->second;
+                mCops->erase(copiter);
+            }
+        }
+    }
+
+    for (IVehicle::List::const_iterator vehicleiter = IVehicle::GetList(VEHICLE_AICOPS).begin();
+         vehicleiter != IVehicle::GetList(VEHICLE_AICOPS).end(); ++vehicleiter) {
+        IVehicle *vehicle = *vehicleiter;
+        if (vehicle->IsActive() && !vehicle->IsAnimating() && !vehicle->IsDestroyed()) {
+            if (!mCops) {
+                mCops = new CopMap;
+            }
+
+            ISimable *copsimable = vehicle->GetSimable();
+            HSIMABLE handle = copsimable->GetInstanceHandle();
+            std::pair<CopMap::iterator, bool> result;
+            result = mCops->insert(CopMap::value_type(
+                handle, static_cast<ExtrapolatedCar *>(nullptr)));
+            if (result.second) {
+                if (!ExtrapolatedCar_kHandles[0]) {
+                    ExtrapolatedCar_kHandles[0] = handle;
+                } else {
+                    HSIMABLE__ **handleiter = ExtrapolatedCar_kHandles + 1;
+                    while (handleiter < ExtrapolatedCar_kHandles + 0xf) {
+                        if (!*handleiter) {
+                            *handleiter = handle;
+                            break;
+                        }
+                        ++handleiter;
+                    }
+                }
+                result.first->second = new ExtrapolatedCar(vehicle->GetVehicleKey());
+            }
+            result.first->second->ExportSimable(copsimable);
+        }
     }
 }
 
