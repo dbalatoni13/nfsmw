@@ -617,7 +617,7 @@ void Rain::Update() {
         this->local2world.v3.y = 0.0f;
         this->local2world.v3.z = 0.0f;
         MyCarDir = *view_camera->GetDirection();
-        MyCarPos = *CameraPosition + MyCarDir * cameraMod;
+        bScaleAdd(&MyCarPos, CameraPosition, &MyCarDir, cameraMod);
     } else {
         this->local2world = *cameraAnchor->GetGeometryOrientation();
         MyCarPos = *cameraAnchor->GetGeometryPosition();
