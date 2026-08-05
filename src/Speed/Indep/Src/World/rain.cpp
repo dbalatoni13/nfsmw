@@ -592,11 +592,11 @@ void Rain::Update() {
         return;
     }
 
-    timeMod = WorldTimeElapsed * 30.0f;
-    if (timeMod > 1.0f) {
-        timeMod = 1.0f;
+    tempMod = WorldTimeElapsed * 30.0f;
+    if (tempMod > 1.0f) {
+        tempMod = 1.0f;
     }
-    tempMod = 1.0f - timeMod;
+    tempMod = 1.0f - tempMod;
 
     view_camera = this->MyView->GetCamera();
     CameraPosition = view_camera->GetPosition();
