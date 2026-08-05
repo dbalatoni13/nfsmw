@@ -988,20 +988,16 @@ void Rain::Render() {
     bVector3 CamDirWORLD;
     bVector3 CamPosWORLD;
     bVector3 *CameraDirection;
-    bVector3 *CameraPosition;
     bMatrix4 *local_world;
     Camera *view_camera;
     uint32 NumRainPointsLocal;
-    uint32 *NumOfTypes;
     int j;
 
     if (this->renderCount != 0) {
         bIdentity(&Rmat);
         view_camera = this->MyView->pCamera;
-        CameraDirection = view_camera->GetDirection();
-        CameraPosition = view_camera->GetPosition();
-        CamDirWORLD = *CameraDirection;
-        CamPosWORLD = *CameraPosition;
+        CamDirWORLD = *view_camera->GetDirection();
+        CamPosWORLD = *view_camera->GetPosition();
         CameraDirection = &CamDirWORLD;
         eMulVector(&CamDirWORLD, &this->world2localrot, CameraDirection);
 
@@ -1010,9 +1006,8 @@ void Rain::Render() {
             *local_world = this->local2world;
 
             NumRainPointsLocal = this->NumRainPoints;
-            NumOfTypes = this->NumOfType;
             for (j = 0; j < NUMTYPES - 1; ++j) {
-                uint32 NumOfTypeLocal = NumOfTypes[j];
+                uint32 NumOfTypeLocal = this->NumOfType[j];
                 if (NumOfTypeLocal != 0) {
                     if (NumRainPointsLocal == 0) {
                         continue;
