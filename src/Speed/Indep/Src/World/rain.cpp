@@ -597,14 +597,13 @@ void Rain::Update() {
         tempMod = 1.0f;
     }
     tempMod = 1.0f - tempMod;
+    timeMod = 1.0f - tempMod * tempMod * tempMod;
 
+    cameraMover = this->MyView->GetCameraMover();
     view_camera = this->MyView->GetCamera();
     CameraPosition = view_camera->GetPosition();
     CameraVelocity = view_camera->GetVelocityPosition();
-    cameraMover = this->MyView->GetCameraMover();
     cameraAnchor = cameraMover->GetAnchor();
-
-    timeMod = 1.0f - tempMod * tempMod * tempMod;
 
     if (cameraMover == nullptr) {
         return;
@@ -627,7 +626,7 @@ void Rain::Update() {
         }
     }
 
-    this->twoDpos.x = MyCarPos.x;
+    this->twoDpos.x = CameraPosition->x;
     this->twoDpos.y = CameraPosition->y;
     this->inTunnel = 0;
     this->inOverpass = 0;
@@ -746,6 +745,8 @@ void Rain::Update() {
         steadyPrecip = 0;
     }
 
+    this->twoDpos.x = MyCarPos.x;
+    this->twoDpos.y = MyCarPos.y;
     this->NoRain = 0;
     if (this->inOverpass != 0 || this->inTunnel != 0) {
         this->NoRain = 1;
