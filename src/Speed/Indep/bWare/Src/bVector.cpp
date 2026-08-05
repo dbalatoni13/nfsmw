@@ -150,6 +150,7 @@ int bEqual(const bVector3 *v1, const bVector3 *v2, float epsilon) {}
 // STRIPPED
 int bEqual(const bVector4 *v1, const bVector4 *v2, float epsilon) {}
 
+#ifndef EA_PLATFORM_PLAYSTATION2
 bVector3 *bCross(bVector3 *dest, const bVector3 *v1, const bVector3 *v2) {
     float x = v1->y * v2->z - v1->z * v2->y;
     float y = v1->z * v2->x - v1->x * v2->z;
@@ -159,6 +160,7 @@ bVector3 *bCross(bVector3 *dest, const bVector3 *v1, const bVector3 *v2) {
     dest->z = z;
     return dest;
 }
+#endif
 
 void bInitializeBoundingBox(bVector2 *bbox_min, bVector2 *bbox_max) {
     bbox_min->x = 3.4028235e+38f;

@@ -444,8 +444,69 @@ static const float curtainWidthMod = 2.0f;
 
 static float zspeed = 0.0f;
 
-// STRIPPED
-void Rain::UpdateAndRenderCurtain() {}
+void Rain::UpdateAndRenderCurtain() {
+    int numCurtainPoints;
+    bVector3 downV;
+    bVector3 acrossV;
+    bVector3 *CameraDirection;
+    ePoly *PRECIPpolyPoint;
+    bVector3 CamVelloc;
+    bMatrix4 l2w(this->local2world);
+    bVector2 outvex2;
+    bVector2 cp;
+
+    CameraDirection = this->MyView->pCamera->GetDirection();
+    PRECIPpolyPoint = &this->PRECIPpoly[0];
+    numCurtainPoints = static_cast<int>(this->intensity * 200.0f);
+
+    l2w.v3.x = 0.0f;
+    l2w.v3.y = 0.0f;
+    l2w.v3.z = 0.0f;
+    l2w.v3.w = 1.0f;
+    eMulVector(&CamVelloc, &l2w, &this->CamVelLOCAL);
+
+    cp.x = (this->RainCurtainPos[0].x + this->RainCurtainPos[1].x) * 0.5f -
+           (static_cast<TrackPathZone *>(this->the_zone)->BBoxMin.x +
+            static_cast<TrackPathZone *>(this->the_zone)->BBoxMax.x) *
+               0.5f;
+    cp.y = (this->RainCurtainPos[0].y + this->RainCurtainPos[1].y) * 0.5f -
+           (static_cast<TrackPathZone *>(this->the_zone)->BBoxMin.y +
+            static_cast<TrackPathZone *>(this->the_zone)->BBoxMax.y) *
+               0.5f;
+    outvex2 = cp;
+    bNormalize(&outvex2, &outvex2);
+    this->outvex = bVector3(outvex2.x, outvex2.y, 0.0f);
+
+    for (int i = 0; i < numCurtainPoints; ++i) {
+        bVector3 *RpointN = &this->CurtainRainPoints[i].NormalizedPoint[this->NewSwapBuffer];
+        bVector3 *RpointNold = &this->CurtainRainPoints[i].NormalizedPoint[this->OldSwapBuffer];
+
+        bScale(&acrossV, &this->windSpeed, this->precipWindEffect[RAIN][1]);
+        bAdd(&downV, &this->Velocities[RAIN][i % 10], &acrossV);
+        bAdd(RpointN, RpointNold, &CamVelloc);
+        bAdd(RpointN, RpointN, &downV);
+
+        if (RpointN->z < this->RainCurtainPos[3].z || this->RainCurtainPos[0].z < RpointN->z) {
+            this->SeedCurtainX(&this->CurtainRainPoints[i]);
+        } else {
+            bSub(&downV, RpointNold, RpointN);
+            bNormalize(&downV, &downV);
+            bCross(&acrossV, CameraDirection, &downV);
+            acrossV *= this->precipRadius[RAIN].x * 2.0f;
+            downV *= this->precipRadius[RAIN].y + this->LenModifier;
+
+            bAdd(&PRECIPpolyPoint->Vertices[0], &acrossV, &downV);
+            bSub(&PRECIPpolyPoint->Vertices[0], RpointN, &PRECIPpolyPoint->Vertices[0]);
+            bSub(&PRECIPpolyPoint->Vertices[1], &acrossV, &downV);
+            bAdd(&PRECIPpolyPoint->Vertices[1], RpointN, &PRECIPpolyPoint->Vertices[1]);
+            bSub(&PRECIPpolyPoint->Vertices[3], &downV, &acrossV);
+            bAdd(&PRECIPpolyPoint->Vertices[3], RpointN, &PRECIPpolyPoint->Vertices[3]);
+            bAdd(&PRECIPpolyPoint->Vertices[2], &downV, &acrossV);
+            bAdd(&PRECIPpolyPoint->Vertices[2], RpointN, &PRECIPpolyPoint->Vertices[2]);
+            this->MyView->Render(PRECIPpolyPoint, this->texture_info[RAIN], &eMathIdentityMatrix, 0, 0.5f);
+        }
+    }
+}
 
 void Rain::Debug() {
     float radiusZ = RAINRadiusZ;

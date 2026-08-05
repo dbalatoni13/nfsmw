@@ -415,17 +415,17 @@ struct ALIGN_16 bVector3 {
 
 #ifdef EA_PLATFORM_PLAYSTATION2
 inline bVector3 *bNormalize(bVector3 *dest, const bVector3 *v) {
-    asm("lqc2 vf2, %1\n"
-        "vmul vf4, vf2, vf2\n"
-        "vaddy vf1, vf4, vf4y\n"
-        "vaddz vf1, vf4, vf4z\n"
+    asm("lqc2 vf3, %1\n"
+        "vmul vf2, vf3, vf3\n"
+        "vaddy vf1, vf2, vf2y\n"
+        "vaddz vf1, vf2, vf2z\n"
         "vrsqrt Q, vf0w, vf1x\n"
         "vwaitq\n"
         "vaddq vf1, vf0, Q\n"
         "vnop\n"
         "vnop\n"
-        "vmulx vf2, vf2, vf1x\n"
-        "sqc2 vf2, %0"
+        "vmulx vf3, vf3, vf1x\n"
+        "sqc2 vf3, %0"
         : "=o"(*dest)
         : "o"(*v));
     return dest;
@@ -466,7 +466,20 @@ bVector3 *bNormalize(bVector3 *dest, const bVector3 *v);
 bVector3 *bNormalize(bVector3 *dest, const bVector3 *v, float length);
 bVector3 *bScaleAdd(bVector3 *dest, const bVector3 *v1, const bVector3 *v2, float scale);
 #endif
+#ifdef EA_PLATFORM_PLAYSTATION2
+inline bVector3 *bCross(bVector3 *dest, const bVector3 *v1, const bVector3 *v2) {
+    asm("lqc2 vf1, %2\n"
+        "lqc2 vf2, %1\n"
+        "vopmula ACC, vf2, vf1\n"
+        "vopmsub vf2, vf1, vf2\n"
+        "sqc2 vf2, %0"
+        : "=o"(*dest)
+        : "o"(*v1), "o"(*v2));
+    return dest;
+}
+#else
 bVector3 *bCross(bVector3 *dest, const bVector3 *v1, const bVector3 *v2);
+#endif
 
 inline bVector3 *bFill(bVector3 *dest, float x, float y, float z) {
     dest->x = x;
@@ -546,10 +559,10 @@ inline bVector3 bAdd(const bVector3 &v1, const bVector3 &v2) {
 
 inline bVector3 *bSub(bVector3 *dest, const bVector3 *v1, const bVector3 *v2) {
 #ifdef EA_PLATFORM_PLAYSTATION2
-    asm("lqc2 vf2, %2\n"
-        "lqc2 vf1, %1\n"
-        "vsub vf1, vf1, vf2\n"
-        "sqc2 vf1, %0"
+    asm("lqc2 vf1, %2\n"
+        "lqc2 vf2, %1\n"
+        "vsub vf2, vf2, vf1\n"
+        "sqc2 vf2, %0"
         : "=o"(*dest)
         : "o"(*v1), "o"(*v2));
 #else
