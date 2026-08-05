@@ -56,6 +56,7 @@ extern void *pCurrentRace;
 extern void FEOnlineDisconnectMsg(OnlineRacer *racer);
 extern const char *SkipFEPlayerCar;
 extern int ONLINE_CHEAT_NOSEND_CRC;
+extern int ONLINE_CHEAT_IGNORE_TIMEUP;
 
 int SuperBenderGetCommandLineArgc();
 char **SuperBenderGetCommandLineArgv();
@@ -872,6 +873,44 @@ void OnlineManager::NotifyDiscEjected() {
         EndOnlineRace(false);
         Online::Close();
     }
+}
+
+bool OnlineManager::FinishDriver(int driver_number, int nRank, bool bBlinkBlinkPoof,
+                                 int raceFinishReason) {
+    GRacerInfo &racerInfo = GRaceStatus::Get().GetRacerInfo(driver_number);
+    OnlineRacer *racer = GetOnlineRacer(racerInfo.GetName());
+    bool finished = racer->IsFinishedRacing();
+
+    if (!finished && racer == pLocalRacer) {
+        OnlineManager &manager = TheOnlineManager;
+        bool anti_cheating = false;
+        if (FEDatabase->OnlineSettings.RankedGame || SkipFE) {
+            anti_cheating = manager.FrameRateIsTooLow == false;
+        }
+        if (anti_cheating && raceFinishReason == 1 &&
+            (TheRaceParameters.IsDriftRace() || TheRaceParameters.bDragRaceFlag)) {
+        }
+
+        if (raceFinishReason != 0xb || ONLINE_CHEAT_IGNORE_TIMEUP == 0) {
+            racer->Finish(nRank, bBlinkBlinkPoof, raceFinishReason);
+            finished = true;
+
+            if (raceFinishReason == 0xb && racer->CheatTally[2] != 0) {
+                for (int i = 0; i < 4; ++i) {
+                    OnlineRacer *other_racer = GetOnlineRacer(i);
+                    if (other_racer && other_racer != racer) {
+                        other_racer->DriverDisconnect(OPS_DISCONNECTED, 0xc);
+                    }
+                }
+            }
+        }
+    }
+
+    if (raceFinishReason == 1 && nRank == 1 && !TimeupStartTime.IsSet()) {
+        TimeupStartTime.SetTime(mPostCountdownStartRaceTime + racerInfo.GetRaceTime());
+        TimeupLength = 30.0f;
+    }
+    return finished;
 }
 
 int OnlineManager::AreAllPlayersFinishedRacing() {

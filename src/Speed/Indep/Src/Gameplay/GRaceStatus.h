@@ -27,12 +27,20 @@ struct GRacerInfo {
         return mGameCharacter;
     }
 
+    const char *GetName() const {
+        return mName;
+    }
+
     float GetPctRaceComplete() const {
         return mPctRaceComplete;
     }
 
     int GetLapsCompleted() const {
         return mLapsCompleted;
+    }
+
+    float GetRaceTime() const {
+        return mRaceTimer.GetTime();
     }
 
   private:
