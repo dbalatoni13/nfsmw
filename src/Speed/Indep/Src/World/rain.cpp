@@ -883,9 +883,9 @@ void Rain::Wind(float time) {
         float y = 0.0f;
         GetXYviewCar(this->MyView, &x, &y);
         WindAccessor[idIndex].CaptureData(x, y, 50.0f);
-        WindAccessor[idIndex].GetDataFloat(0);
-        float angleValue = WindAccessor[idIndex].GetDataFloat(1);
-        bAngle angle = bDegToAng(angleValue);
+        float Power = WindAccessor[idIndex].GetDataFloat(0);
+        float Angle = WindAccessor[idIndex].GetDataFloat(1);
+        bAngle angle = bDegToAng(Angle);
         this->PrevailingWindSpeed.x = bSin(angle);
         this->PrevailingWindSpeed.y = bCos(angle);
         this->PrevailingWindSpeed.z = 0.0f;
@@ -910,8 +910,7 @@ void Rain::Wind(float time) {
             }
         }
     } else if (windState == CHANGING) {
-        bVector3 delta;
-        bSub(&delta, &this->DesiredwindSpeed, &this->windSpeed);
+        bVector3 delta = this->DesiredwindSpeed - this->windSpeed;
         changetime += time;
         this->windSpeed.x += delta.x * time;
         this->windSpeed.y += delta.y * time;
