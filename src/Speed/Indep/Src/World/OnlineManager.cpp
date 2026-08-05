@@ -26,6 +26,7 @@ class PlatformNetworkCore {
 
 #include "Speed/Indep/Src/Online/LobbyGameSessions.hpp"
 #include "Speed/Indep/Src/Online/InGame/Client.hpp"
+#include "Speed/Indep/Src/Online/InGame/Server.hpp"
 #include "Speed/Indep/Src/Online/SmartBitstream.hpp"
 #include "Speed/Indep/Src/Online/VoiceCore.hpp"
 #include "Speed/Indep/Src/Generated/Messages/MNotifyOnlineRaceOver.h"
@@ -61,6 +62,9 @@ extern void FEOnlineDisconnectMsg(OnlineRacer *racer);
 extern const char *SkipFEPlayerCar;
 extern int ONLINE_CHEAT_NOSEND_CRC;
 extern int ONLINE_CHEAT_IGNORE_TIMEUP;
+extern int ONLINE_CHEAT_FALSESTART;
+extern int ONLINE_SCREENPRINT_CHEAT_REPORT;
+extern int DoScreenPrintf;
 extern float MinCheatFreq[16];
 extern int ONLINE_CHEATSCORE_THRESHOLD;
 extern "C" char *TagFieldFind(const char *record, const char *name);
@@ -211,22 +215,15 @@ void OnlineManager::Update(bool receive) {
         }
     }
 
-    eOnlineState state;
     if (host_disconnected) {
-        if (TheGameFlowManager.GetState() != GAMEFLOW_STATE_RACING) {
-            state = State;
-        } else {
+        if (TheGameFlowManager.GetState() == GAMEFLOW_STATE_RACING) {
             CUIOnlineDisconnect::mIsHostInGameDisconnect = true;
             cFEng::Get()->QueuePackagePush("UI_OL_Disconnect_BG.fng", 0, 0, false);
-            state = State;
         }
-    } else {
-        state = State;
     }
 
-    if (state == OLS_RACING) {
+    if (State == OLS_RACING) {
         if (IsServer()) {
-            state = State;
         } else {
             uint32 master = GetMasterTime();
             uint32 server = GetServerTime();
@@ -234,39 +231,176 @@ void OnlineManager::Update(bool receive) {
             if (delta < 0x65) {
                 if (delta < 4) {
                     if (delta < -1) {
-                        state = State;
                         ++mMasterTime;
                     } else {
-                        state = State;
                         mMasterTime -= delta;
                     }
                 } else {
-                    state = State;
                     mMasterTime -= 3;
                 }
             } else {
-                state = State;
                 mMasterTime += master - server;
             }
         }
     }
 
-    if (state > OLS_RACE_END) {
+    if (State > OLS_RACE_END) {
         if (receive) {
             UpdateIncoming();
         }
         return;
     }
 
-    switch (state) {
+    switch (State) {
+    case OLS_DISCONNECTED:
+    case OLS_RACE_DATA_SYNC:
+    case OLS_RACE_LOAD_TRACK:
+        break;
+
     case OLS_LOBBY_IN_LOBBY:
-        if (NetworkUseLobbies == 0 && SkipFE && NetworkCore::Instance().IsOnline()) {
+        if (NetworkUseLobbies == 0 && SkipFE &&
+            static_cast<PlatformNetworkCore &>(NetworkCore::Instance()).IsOnline()) {
             FEDatabase->OnlineSettings.RankedGame = false;
             StartOnlineRace();
         }
         break;
+
+    case OLS_RACE_START_LINE:
+        if (!IsServer()) {
+            uint32 ticker = bGetTicker();
+            if (bGetTickerDifference(m_ticker, ticker) > 125.0f) {
+                Client::SendStartRaceSyncMessage();
+                m_ticker = ticker;
+            }
+        }
+
+        if (TimeTrackLoaded.IsSet() && !mStartRaceIsSet && !RaceStartAborted()) {
+            if (IsServer()) {
+                if (static_cast<float>(RealTimer.GetPackedTime() -
+                                       TimeTrackLoaded.GetPackedTime()) * 0.00025f >
+                    120.0f) {
+                    Server::DisconnectLaggers();
+                    TimeTrackLoaded.UnSet();
+                }
+            } else if (static_cast<float>(RealTimer.GetPackedTime() -
+                                          TimeTrackLoaded.GetPackedTime()) * 0.00025f >
+                       140.0f) {
+                Online::Close();
+                TimeTrackLoaded.UnSet();
+            }
+        }
+
+        if (ONLINE_CHEAT_FALSESTART == 0 &&
+            GetStartRaceTime(bGetTicker()) <= 0.0f && !RaceStartAborted()) {
+            StartRace();
+        }
+        break;
+
+    case OLS_RACING: {
+        if (TheGameFlowManager.GetState() != GAMEFLOW_STATE_RACING) {
+            break;
+        }
+
+        if (GetNumConnectedRacers() == 0 && !pLocalRacer->IsFinishedRacing()) {
+            pLocalRacer->DriverDisconnect(OPS_DISCONNECTED, 0xc);
+        }
+
+        bool all_finished = true;
+        bool all_disconnected = true;
+        const IPlayer::List &players = IPlayer::GetList(PLAYER_ALL);
+        for (IPlayer::List::const_iterator iter = players.begin(); iter != players.end();
+             ++iter) {
+            IPlayer *player = *iter;
+            IOnlinePlayer *online_player = nullptr;
+            if (!player->QueryInterface(&online_player)) {
+                continue;
+            }
+
+            OnlineRacer *racer = online_player->GetOnlineRacer();
+            GRacerInfo *racer_info = GRaceStatus::Get().GetRacerInfo(player->GetSimable());
+            if (racer_info->mFinishedRacing || racer->IsFinishedRacing()) {
+                if (racer->IsConnected()) {
+                    all_disconnected = false;
+                }
+            } else {
+                all_finished = false;
+                break;
+            }
+        }
+
+        if (all_finished) {
+            if (all_disconnected && RaceEndReason == OEND_RACE_FINISHED) {
+                RaceEndReason = OEND_NO_PLAYERS;
+            }
+            EndOnlineRace(false);
+            if (all_disconnected && !CUIOnlineDisconnect::mIsHostInGameDisconnect) {
+                CUIOnlineDisconnect::mIsHostInGameDisconnect = true;
+                cFEng::Get()->QueuePackagePush("UI_OL_Disconnect_BG.fng", 0, 0, false);
+            }
+        } else {
+            if (IsServer()) {
+                if (!CountdownSyncAnims.CountDown(RealTimeElapsed)) {
+                    SendSyncAnimations();
+                    CountdownSyncAnims = Timer(1.0f);
+                }
+            }
+            if (!CountdownSendDataCRC.CountDown(RealTimeElapsed)) {
+                SendLocalPlayerDataCRC();
+                CountdownSendDataCRC = Timer(5.0f);
+            }
+
+            if (static_cast<float>(RealTimer.GetPackedTime() -
+                                   LastAntiCheatRealTimer.GetPackedTime()) * 0.00025f >
+                2.0f) {
+                CheckWorldTimerHacking();
+                LastAntiCheatRealTimer = RealTimer;
+            }
+
+            if (IsServer() && TheRaceParameters.RaceType != RACE_TYPE_GET_AWAY) {
+                CheckGetAwayLeaderChange();
+            }
+        }
+
+        if (pLocalRacer->IsConnected()) {
+            pLocalRacer->UpdateLocal(WorldTimeElapsed);
+        }
+
+        if ((FEDatabase->OnlineSettings.RankedGame || SkipFE) && !FrameRateIsTooLow &&
+            pLocalRacer->GetEndRaceCountdown() < -3.0f) {
+            for (int i = 0; i < 4; ++i) {
+                OnlineRacer *racer = GetOnlineRacer(i);
+                if (racer && !racer->IsFinishedRacing()) {
+                    if (IsAntiCheatingEnabled() && racer->CheatTally[5] < 0xfe00) {
+                        ++racer->CheatTally[5];
+                    }
+                    if (racer != pLocalRacer && ONLINE_CHEAT_IGNORE_TIMEUP == 0) {
+                        racer->DriverDisconnect(OPS_FINISHED, 0xb);
+                    }
+                }
+            }
+        }
+
+        if (ONLINE_SCREENPRINT_CHEAT_REPORT && HasAnyoneCheated()) {
+            DoScreenPrintf = 1;
+            PrintCheatTallies(true);
+        }
+        break;
+    }
+
+    case OLS_RACE_END:
+        if (!TimeRaceFinished.IsSet()) {
+            RaceTimeup = false;
+            TimeRaceFinished = WorldTimer;
+        }
+        PrintCheatTallies(true);
+        break;
+
     default:
         break;
+    }
+
+    if (receive) {
+        UpdateIncoming();
     }
 }
 

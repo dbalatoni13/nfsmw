@@ -188,6 +188,20 @@ void AdvanceWorldTime() {
     }
 }
 
+int Timer::CountDown(float seconds) {
+    if (IsSet()) {
+        float temp = seconds * 4000.0f;
+        int result = static_cast<int>(temp);
+        result = PackedTime - result;
+        PackedTime = result;
+        if (result < 0) {
+            PackedTime = 0;
+            result = 0;
+        }
+    }
+    return IsSet();
+}
+
 float GetDebugRealTime() {
     float frame_counter_seconds = VideoFramesToSeconds(FrameCounter);
     if (LastFrameCounterTick != 0) {

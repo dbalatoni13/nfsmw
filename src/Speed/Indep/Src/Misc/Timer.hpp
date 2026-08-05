@@ -100,6 +100,8 @@ class Timer {
         this->PackedTime = packed_time;
     }
 
+    int CountDown(float seconds);
+
     void GetHoursMinsSeconds(int *hours, int *minutes, int *seconds, int *thousandths_seconds);
     void PrintToString(char *string, int flags);
 
