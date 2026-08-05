@@ -361,14 +361,28 @@ void OnlineManager::SetupRestartRace() {
 
 int OnlineManager::GetNumConnectedRacers() {
     int num_connected = 0;
+    int driver_number = 0;
     OnlineRacer **racer = pRacers;
-
-    for (int driver_number = 0; driver_number < 4; ++driver_number, ++racer) {
+    do {
         if (*racer && GetOnlineRacer(driver_number) != pLocalRacer) {
-            int connected = GetOnlineRacer(driver_number)->IsConnected();
+            OnlineRacer *online_racer = GetOnlineRacer(driver_number);
+            int connected = 0;
+            eOnlineRacerState state = online_racer->State;
+            if (state != OPS_LOST_CONNECTION) {
+                if (state == OPS_QUIT) {
+                    ++driver_number;
+                    ++racer;
+                    continue;
+                }
+                if (state != OPS_DISCONNECTED) {
+                    connected = state != OPS_DISCERROR;
+                }
+            }
             num_connected += connected;
         }
-    }
+        ++driver_number;
+        ++racer;
+    } while (driver_number <= 3);
     return num_connected;
 }
 
