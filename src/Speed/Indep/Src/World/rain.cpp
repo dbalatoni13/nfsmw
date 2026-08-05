@@ -451,7 +451,11 @@ void Rain::UpdateAndRenderCurtain() {
     bVector3 *CameraDirection;
     ePoly *PRECIPpolyPoint;
     bVector3 CamVelloc;
-    bMatrix4 l2w(this->local2world);
+    bMatrix4 l2w;
+    l2w.v0 = this->local2world.v0;
+    l2w.v1 = this->local2world.v1;
+    l2w.v2 = this->local2world.v2;
+    l2w.v3 = this->local2world.v3;
     bVector2 outvex2;
     bVector2 cp;
 
