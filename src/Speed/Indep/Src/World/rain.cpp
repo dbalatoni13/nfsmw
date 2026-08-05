@@ -647,7 +647,8 @@ OnScreenRain::OnScreenRain() {
         this->Points[i].Size = bRandom(1.0f);
 
         int shape = i + 3;
-        if (i > -1) {
+        int minimumShape = -1;
+        if (minimumShape < i) {
             shape = i;
         }
         this->Points[i].DripShape = i + (shape >> 2) * -4;
