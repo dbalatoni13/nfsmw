@@ -346,27 +346,20 @@ void Rain::FindCurtains() {
     CameraMover *cameraMover = this->MyView->GetCameraMover();
     if (cameraMover != nullptr && cameraMover->RenderCarPOV()) {
         bVector3 EntryPosition;
-        bVector2 twoDentry;
-        bVector2 diff;
-        bVector2 direction;
-        bVector2 entrancePt;
-        bVector2 exitPt;
 
         bCopy(&EntryPosition, this->MyView->pCamera->GetPosition());
         bSubScaled(&EntryPosition, &EntryPosition, this->MyView->pCamera->GetDirection(), 8.0f);
-        twoDentry.x = EntryPosition.x;
-        twoDentry.y = EntryPosition.y;
+        bVector2 twoDentry(EntryPosition.x, EntryPosition.y);
 
         static_cast<TrackPathZone *>(this->the_zone)->GetSegmentNextTo(&twoDentry, &this->ent0, &this->ent1);
 
-        diff.x = this->ent0.x - this->ent1.x;
-        diff.y = this->ent0.y - this->ent1.y;
-        direction.x = diff.y;
-        direction.y = -diff.x;
+        bVector2 diff = this->ent0 - this->ent1;
+        bVector2 direction(diff.y, -diff.x);
         bNormalize(&direction, &direction);
 
-        entrancePt.x = (static_cast<TrackPathZone *>(this->the_zone)->BBoxMin.x + static_cast<TrackPathZone *>(this->the_zone)->BBoxMax.x) * 0.5f;
-        entrancePt.y = (static_cast<TrackPathZone *>(this->the_zone)->BBoxMin.y + static_cast<TrackPathZone *>(this->the_zone)->BBoxMax.y) * 0.5f;
+        bVector2 entrancePt((static_cast<TrackPathZone *>(this->the_zone)->BBoxMin.x + static_cast<TrackPathZone *>(this->the_zone)->BBoxMax.x) * 0.5f,
+                            (static_cast<TrackPathZone *>(this->the_zone)->BBoxMin.y + static_cast<TrackPathZone *>(this->the_zone)->BBoxMax.y) * 0.5f);
+        bVector2 exitPt;
         static_cast<TrackPathZone *>(this->the_zone)->GetOpposite(&this->ent0, &this->ent1, &this->ext0, &this->ext1);
     }
 }
