@@ -726,14 +726,17 @@ void Rain::Update() {
     }
     diff = 400 - total;
     if (diff != 0) {
-        if (diff <= this->DesiredNumOfType[0]) {
-            this->DesiredNumOfType[0] -= diff;
-        } else {
-            for (int j = 1; j < 2; ++j) {
-                if (diff <= this->DesiredNumOfType[j]) {
-                    this->DesiredNumOfType[j] -= diff;
-                    break;
-                }
+        for (int j = 0; j < 2; ++j) {
+            if (diff <= this->DesiredNumOfType[j]) {
+                this->DesiredNumOfType[j] -= diff;
+                break;
+            }
+        }
+    } else {
+        for (int j = 0; j < 2; ++j) {
+            if (total >= this->DesiredNumOfType[j]) {
+                this->DesiredNumOfType[j] += diff;
+                break;
             }
         }
     }
