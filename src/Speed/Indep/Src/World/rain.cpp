@@ -766,15 +766,13 @@ void Rain::Update() {
             if (this->RainPointsInf[i].status == CT_INACTIVE) {
                 bVector3 *RpointN = &this->RainPoints[i].NormalizedPoint[this->NewSwapBuffer];
                 bVector3 *RpointNold = &this->RainPoints[i].NormalizedPoint[this->OldSwapBuffer];
-                bVector3 windVelocity;
                 bVector3 velocity;
                 RpointN->y += RpointN->x * RainAngMult * FloatAngle;
                 RpointNold->y += RpointNold->x * RainAngMult * FloatAngle;
-                bScale(&windVelocity, &this->windSpeed, this->precipWindEffect[rType][rSubType]);
-                bAdd(&velocity, &this->Velocities[rType][i % 10], &windVelocity);
-                bScale(&velocity, &velocity, timeMod);
+                bScale(&velocity, &this->windSpeed, this->precipWindEffect[rType][rSubType]);
+                bAdd(&velocity, &this->Velocities[rType][i % 10], &velocity);
                 bAdd(RpointN, &this->CamVelLOCAL, RpointNold);
-                bAdd(RpointN, RpointN, &velocity);
+                bScaleAdd(RpointN, RpointN, &velocity, timeMod);
 
                 if (RpointN->z < 0.0f) {
                     this->RainPointsInf[i].status = CT_ACTIVE;
