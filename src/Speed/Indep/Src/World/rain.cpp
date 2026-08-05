@@ -802,9 +802,8 @@ void Rain::Update() {
                     for (int j = 0; j < 2; ++j) {
                         if (rType != j && this->NumOfType[j] < this->DesiredNumOfType[j]) {
                             this->NumOfType[rType]--;
-                            rType = static_cast<RainType>(j);
-                            this->RainPointsInf[i].type = rType;
-                            this->NumOfType[rType]++;
+                            this->RainPointsInf[i].type = static_cast<RainType>(j);
+                            this->NumOfType[j]++;
                         }
                     }
                 }
