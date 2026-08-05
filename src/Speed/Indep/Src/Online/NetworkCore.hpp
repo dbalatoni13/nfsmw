@@ -67,6 +67,7 @@ class NetworkCore : public PlatformNetworkCore {
     int Send(NetGameLinkRefT *pLinkRef, char *data, int numBytes, bool isReliable);
     bool Recv(NetGameLinkRefT *pLinkRef, NetGamePacketT &sGamePacketInbound, bool &reliable);
     void Flush(NetGameLinkRefT *const *pLinkRef, int numEntries);
+    static void DoNetworkProcessing();
 
     static uint32 MyIPAddress();
     static char *MyIPAddressText();
@@ -81,7 +82,6 @@ class NetworkCore : public PlatformNetworkCore {
 
   private:
     static void NetworkTimerFunc();
-    static void DoNetworkProcessing();
     static int NetworkThreadFunc(void *param);
     static int TestThreadStarvation();
 

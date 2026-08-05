@@ -5,6 +5,26 @@
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Animation/AnimPlayer.hpp"
 #include "Speed/Indep/Src/Online/OnlineCfg.hpp"
+
+class PlatformNetworkCore {
+  public:
+    PlatformNetworkCore();
+    virtual ~PlatformNetworkCore();
+
+    bool IsOnline();
+    void ExecNetGui();
+
+  protected:
+    bool Init();
+    void Destroy();
+
+  private:
+    void LoadIRXs();
+    void PrepareForExec();
+    char *FilenameFromSlus();
+};
+
+#include "Speed/Indep/Src/Online/LobbyGameSessions.hpp"
 #include "Speed/Indep/Src/Online/SmartBitstream.hpp"
 #include "Speed/Indep/Src/Online/VoiceCore.hpp"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
@@ -54,28 +74,11 @@ void SmartBitStream::AddQuantizedFloat(float value, FloatQuantizer &qf) {
     AddBits(qf.Pack(value), qf.GetNumBits());
 }
 
-struct ConnApiClientT;
-
-struct ConnectionCore {
-    static ConnectionCore &Instance();
-    void LeaveSession();
-    void *GetPlayer(int index);
-};
-
 struct CUIOnlineDisconnect {
     static bool mIsHostInGameDisconnect;
 };
 
-class NetworkCore {
-  public:
-    static NetworkCore &Instance() { return mInstance; }
-    static void DoNetworkProcessing();
-    bool IsOnline();
-    uint32 GetTime();
-
-  private:
-    static NetworkCore mInstance;
-};
+extern "C" int *NetGameLinkStatus(NetGameLinkRefT *pLinkRef);
 
 struct OnlineTimer {
     static Timer ServerTimer;
@@ -402,6 +405,37 @@ float OnlineManager::GetStartRaceTime(uint32 from_tick) {
 
 void OnlineManager::StartSimFrame() {
     NetworkCore::DoNetworkProcessing();
+}
+
+void OnlineManager::EndSimFrame() {
+    uint32 time = NetworkCore::Instance().GetTime();
+    if (time - mLastUpdateTime >= 0x65) {
+        if (!bHasStalled) {
+            GetMasterTime();
+        }
+        bHasStalled = true;
+    } else {
+        bHasStalled = false;
+    }
+
+    if (IsServer()) {
+        LobbyGameSessions::Instance().SetSessionLatency(0);
+    } else {
+        ConnApiClientT *player = ConnectionCore::Instance().GetPlayer(0);
+        if (!player) {
+            LobbyGameSessions::Instance().SetSessionLatency(-1);
+        } else {
+            player = ConnectionCore::Instance().GetPlayer(0);
+            if (player->GameInfo.eStatus != CONNAPI_STATUS_ACTV) {
+                LobbyGameSessions::Instance().SetSessionLatency(-1);
+            } else {
+                LobbyGameSessions *sessions = &LobbyGameSessions::Instance();
+                player = ConnectionCore::Instance().GetPlayer(0);
+                int *status = NetGameLinkStatus(player->pGameLinkRef);
+                sessions->SetSessionLatency(status[3]);
+            }
+        }
+    }
 }
 
 void OnlineManager::SetStartRaceTime(uint32 from_tick, float time, float ping) {
