@@ -452,6 +452,20 @@ inline bVector3 *bScale(bVector3 *dest, const bVector3 *v, float scale) {
     return dest;
 }
 
+inline bVector3 *bScalePS2(bVector3 *dest, const bVector3 *v, float scale) {
+#ifdef EA_PLATFORM_PLAYSTATION2
+    asm("lqc2 vf1, %1\n"
+        "qmtc2.ni %2, vf2\n"
+        "vmulx.xyzw vf1, vf1, vf2x\n"
+        "sqc2 vf1, %0"
+        : "=o"(*dest)
+        : "o"(*v), "r"(scale));
+#else
+    bScale(dest, v, scale);
+#endif
+    return dest;
+}
+
 inline bVector3 bScale(const bVector3 &v, float scale) {
     bVector3 dest;
     bScale(&dest, &v, scale);
@@ -470,6 +484,20 @@ inline bVector3 *bAdd(bVector3 *dest, const bVector3 *v1, const bVector3 *v2) {
     return dest;
 }
 
+inline bVector3 *bAddPS2(bVector3 *dest, const bVector3 *v1, const bVector3 *v2) {
+#ifdef EA_PLATFORM_PLAYSTATION2
+    asm("lqc2 vf2, %2\n"
+        "lqc2 vf1, %1\n"
+        "vadd vf1, vf1, vf2\n"
+        "sqc2 vf1, %0"
+        : "=o"(*dest)
+        : "o"(*v1), "o"(*v2));
+#else
+    bAdd(dest, v1, v2);
+#endif
+    return dest;
+}
+
 inline bVector3 bAdd(const bVector3 &v1, const bVector3 &v2) {
     bVector3 dest;
     bAdd(&dest, &v1, &v2);
@@ -485,6 +513,20 @@ inline bVector3 *bSub(bVector3 *dest, const bVector3 *v1, const bVector3 *v2) {
     float z2 = v2->z;
 
     bFill(dest, x1 - x2, y1 - y2, z1 - z2);
+    return dest;
+}
+
+inline bVector3 *bSubPS2(bVector3 *dest, const bVector3 *v1, const bVector3 *v2) {
+#ifdef EA_PLATFORM_PLAYSTATION2
+    asm("lqc2 vf2, %2\n"
+        "lqc2 vf1, %1\n"
+        "vsub vf1, vf1, vf2\n"
+        "sqc2 vf1, %0"
+        : "=o"(*dest)
+        : "o"(*v1), "o"(*v2));
+#else
+    bSub(dest, v1, v2);
+#endif
     return dest;
 }
 

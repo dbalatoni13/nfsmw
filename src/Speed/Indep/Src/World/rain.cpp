@@ -11,6 +11,7 @@
 extern uint32 numCopsActive;
 extern float TUNHEIGHT;
 extern float WorldTimeElapsed;
+int GetXYviewCar(eView *view, float *x, float *y);
 
 uint32 precipDEBUG = 0;
 float precipPERCENT = 1.0f;
@@ -526,11 +527,53 @@ ParameterAccessorBlendByDistance WindAccessor[2] = {"Wind", "Wind"};
 
 float PrevailingMult = 0.01f;
 
-// STRIPPED
 void Rain::Wind(float time) {
     static ChangingStatus windState = CHANGE;
     static float changetime = 0.0f;
-    int idIndex;
+    int idIndex = this->MyView->ID + EVIEW_NONE;
+
+    if (WindAccessor[idIndex].IsValid()) {
+        float x = 0.0f;
+        float y = 0.0f;
+        GetXYviewCar(this->MyView, &x, &y);
+        WindAccessor[idIndex].CaptureData(x, y, 50.0f);
+        WindAccessor[idIndex].GetDataFloat(0);
+        float angleValue = WindAccessor[idIndex].GetDataFloat(1);
+        bAngle angle = bDegToAng(angleValue);
+        this->PrevailingWindSpeed.x = bSin(angle);
+        this->PrevailingWindSpeed.y = bCos(angle);
+        this->PrevailingWindSpeed.z = 0.0f;
+    }
+
+    bScalePS2(&this->PrevailingWindSpeed, &this->PrevailingWindSpeed, PrevailingMult);
+    eMulVector(&this->PrevailingWindSpeed, &this->world2localrot, &this->PrevailingWindSpeed);
+
+    if (windState == CHANGE) {
+        this->windTime = 0.0f;
+        windState = CHANGING;
+        this->DesiredWindTime = bRandom(5.0f) + 1.0f;
+        this->DesiredwindSpeed.x = (bRandom(0.05f) - 0.025f) * maxWindEffect;
+        this->DesiredwindSpeed.z = 0.0f;
+        this->DesiredwindSpeed.y = (bRandom(0.05f) - 0.025f) * maxWindEffect;
+        bAddPS2(&this->DesiredwindSpeed, &this->DesiredwindSpeed, &this->PrevailingWindSpeed);
+    } else if (windState < CHANGING) {
+        if (windState == STEADY) {
+            this->windTime += time;
+            if (this->DesiredWindTime <= this->windTime) {
+                windState = CHANGE;
+            }
+        }
+    } else if (windState == CHANGING) {
+        bVector3 delta;
+        bSubPS2(&delta, &this->DesiredwindSpeed, &this->windSpeed);
+        changetime += time;
+        this->windSpeed.x += delta.x * time;
+        this->windSpeed.y += delta.y * time;
+        if (changetime >= 1.0f) {
+            changetime = 0.0f;
+            windState = STEADY;
+        }
+    }
 }
 
 // STRIPPED
