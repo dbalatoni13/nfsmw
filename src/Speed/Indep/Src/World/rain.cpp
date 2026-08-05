@@ -968,7 +968,85 @@ float py2 = 1.0f;
 float px3 = -1.0f;
 float py3 = 1.0f;
 
-void Rain::Render() {}
+void Rain::Render() {
+    if (PrecipitationEnable == 0 || precipRENDER == 0 || TheGameFlowManager.GetState() != GAMEFLOW_STATE_RACING) {
+        return;
+    }
+
+    bMatrix4 Rmat;
+    bVector3 CamDirWORLD;
+    bVector3 CamPosWORLD;
+    bVector3 *CameraDirection;
+    bVector3 *CameraPosition;
+    bMatrix4 *local_world;
+    Camera *view_camera;
+    uint32 NumRainPointsLocal;
+    uint32 *NumOfTypes;
+    int j;
+
+    if (this->renderCount != 0) {
+        bIdentity(&Rmat);
+        view_camera = this->MyView->pCamera;
+        CameraDirection = view_camera->GetDirection();
+        CameraPosition = view_camera->GetPosition();
+        CamDirWORLD = *CameraDirection;
+        CamPosWORLD = *CameraPosition;
+        CameraDirection = &CamDirWORLD;
+        eMulVector(&CamDirWORLD, &this->world2localrot, CameraDirection);
+
+        local_world = eFrameMallocMatrix(1);
+        if (local_world != nullptr) {
+            *local_world = this->local2world;
+
+            NumRainPointsLocal = this->NumRainPoints;
+            NumOfTypes = this->NumOfType;
+            for (j = 0; j < NUMTYPES - 1; ++j) {
+                uint32 NumOfTypeLocal = NumOfTypes[j];
+                if (NumOfTypeLocal != 0) {
+                    if (NumRainPointsLocal == 0) {
+                        continue;
+                    }
+
+                    uint32 i;
+                    for (i = 0; i < NumRainPointsLocal; ++i) {
+                        RainType rType = static_cast<RainType>(this->RainPointsInf[i].type);
+                        if (rType == j && this->RainPointsInf[i].status == 0) {
+                            bVector3 downV;
+                            bVector3 acrossV;
+                            bSub(&downV, &this->RainPoints[i].NormalizedPoint[this->OldSwapBuffer],
+                                 &this->RainPoints[i].NormalizedPoint[this->NewSwapBuffer]);
+                            bNormalize(&downV, &downV);
+                            bCross(&acrossV, CameraDirection, &downV);
+                            acrossV *= this->precipRadius[j].x;
+                            downV *= this->precipRadius[j].y + this->LenModifier;
+
+                            bAdd(&this->PRECIPpoly[0].Vertices[0], &acrossV, &downV);
+                            bSub(&this->PRECIPpoly[0].Vertices[0],
+                                 &this->RainPoints[i].NormalizedPoint[this->NewSwapBuffer],
+                                 &this->PRECIPpoly[0].Vertices[0]);
+                            bSub(&this->PRECIPpoly[0].Vertices[1], &acrossV, &downV);
+                            bAdd(&this->PRECIPpoly[0].Vertices[1],
+                                 &this->RainPoints[i].NormalizedPoint[this->NewSwapBuffer],
+                                 &this->PRECIPpoly[0].Vertices[1]);
+                            bSub(&this->PRECIPpoly[0].Vertices[3], &downV, &acrossV);
+                            bAdd(&this->PRECIPpoly[0].Vertices[3],
+                                 &this->RainPoints[i].NormalizedPoint[this->NewSwapBuffer],
+                                 &this->PRECIPpoly[0].Vertices[3]);
+                            bAdd(&this->PRECIPpoly[0].Vertices[2], &downV, &acrossV);
+                            bAdd(&this->PRECIPpoly[0].Vertices[2],
+                                 &this->RainPoints[i].NormalizedPoint[this->NewSwapBuffer],
+                                 &this->PRECIPpoly[0].Vertices[2]);
+
+                            this->MyView->Render(&this->PRECIPpoly[0], this->texture_info[j], local_world, 0, 2.0f);
+                        }
+                    }
+                }
+            }
+                }
+            }
+        }
+    }
+}
 
 OnScreenRain::OnScreenRain() {
     this->NumOnScreen = 0;
