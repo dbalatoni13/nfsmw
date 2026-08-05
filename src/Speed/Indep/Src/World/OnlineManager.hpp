@@ -90,7 +90,7 @@ struct ExtrapolatedCar : Debugable {
       public:
         friend struct ExtrapolatedCar;
         State();
-        void Import(ISimable *simable, float simtime);
+        void Import(const ISimable *simable, float simtime);
         void Export(SmartBitStream &data, ePosDataPriorityMask priority_mask,
                     uint8 repositioncount);
         uint8 Import(float time, SmartBitStream &data, ePosDataPriorityMask priority_mask);

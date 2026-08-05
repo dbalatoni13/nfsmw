@@ -159,9 +159,13 @@ inline void Mult(const Vector4 &a, const Vector4 &b, Vector4 &r) {
 }
 #endif
 
+#if EA_PLATFORM_PLAYSTATION2
+void Mult(const Matrix4 &a, const Matrix4 &b, Matrix4 &r);
+#else
 inline void Mult(const Matrix4 &a, const Matrix4 &b, Matrix4 &r) {
     VU0_MATRIX4_mult(a, b, r);
 }
+#endif
 
 inline void Unit(const Vector3 &a, Vector3 &r) {
     VU0_v3unit(a, r);

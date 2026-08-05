@@ -7,8 +7,14 @@
 #include "Speed/Indep/Src/Misc/Config.h"
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
+#include "Speed/Indep/Src/Interfaces/Simables/ICollisionBody.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IINput.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
+#include "Speed/Indep/Src/Interfaces/Simables/ISuspension.h"
+#include "Speed/Indep/Src/Interfaces/Simables/ITransmission.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #include "Speed/Indep/Src/Online/SmartBitstream.hpp"
+#include "Speed/Indep/Src/Physics/Dynamics/Inertia.h"
 #include "Speed/Indep/Src/Physics/PVehicle.h"
 #include "Speed/Indep/Src/World/WCollisionMgr.h"
 
@@ -16,6 +22,8 @@ namespace Online {
     bool IsInitialized();
     void SignalDriverFinish(SmartBitStream &payload_data);
 }
+
+extern float kMinBlendTime;
 
 
 ExtrapolatedCar::ExtrapolatedCar(Attrib::Key cartype) {
@@ -123,6 +131,67 @@ void ExtrapolatedCar::ExtractExtrapolatedPosition(UMath::Vector3 &position) cons
 
 void ExtrapolatedCar::State::ExtractDirection(UMath::Vector3 &direction) const {
     UMath::ExtractZAxis(mRotation, direction);
+}
+
+void ExtrapolatedCar::State::Import(const ISimable *simable, float simtime) {
+    const IRigidBody *irb;
+    const IInput *input;
+    const ITransmission *transmission;
+    const ISuspension *suspension;
+    const ICollisionBody *collision_body;
+    Dynamics::Inertia::Tensor inertiaTensor;
+    UMath::Matrix4 inverseWorldTensor;
+    UMath::Vector3 angularAcceleration;
+    GearID a;
+    GearID amax;
+
+    if (simable->QueryInterface(&input)) {
+        const InputControls &controls = input->GetControls();
+        mSteering = controls.fSteering;
+        mNOS = controls.fNOS;
+        mGas = controls.fGas;
+        mBrake = controls.fBrake;
+        mHandBrake = controls.fHandBrake;
+    }
+
+    if (!simable->QueryInterface(&transmission)) {
+        mInFlight = false;
+    } else {
+        a = transmission->GetGear();
+        amax = G_SIXTH;
+        mGear = static_cast<uint8>(UMath::Clamp(a, G_REVERSE, amax));
+        mInFlight = false;
+    }
+
+    if (simable->QueryInterface(&suspension)) {
+        if (suspension->GetNumWheels() == 0 ||
+            suspension->GetNumWheelsOnGround() < suspension->GetNumWheels()) {
+            mInFlight = true;
+        }
+    }
+
+    irb = simable->GetRigidBody();
+    mPosition = irb->GetPosition();
+    mLinearVelocity = irb->GetLinearVelocity();
+    mRotation = irb->GetOrientation();
+    UMath::Vector4To3(mAngularVelocity) = irb->GetAngularVelocity();
+
+    if (simable->QueryInterface(&collision_body)) {
+        if (UMath::LengthSquare(mLinearVelocity) > 1.0f) {
+            UMath::Scale(collision_body->GetForce(), irb->GetOOMass(), mLinearAcceleration);
+        } else {
+            UMath::Clear(mLinearAcceleration);
+        }
+
+        inertiaTensor = collision_body->GetInertiaTensor();
+        inertiaTensor.GetInverseWorldTensor(collision_body->GetMatrix4(), inverseWorldTensor);
+        VU0_MATRIX3x4_vect3mult(collision_body->GetTorque(), inverseWorldTensor, angularAcceleration);
+        UMath::Vector4To3(mAngularAcceleration) = angularAcceleration;
+    }
+
+    mTime = simtime;
+    mBlend = 1.0f;
+    mBlendRate = 1.0f / kMinBlendTime;
 }
 
 uint8 ExtrapolatedCar::State::Import(float time, SmartBitStream &data,
