@@ -294,13 +294,18 @@ float GetDesiredRainIntensity(float x, float y) {
         if (Chance100 != 0) {
             return ChancePercent;
         }
-        if (rainOverrideIntensity >= 0.0f &&
-            (rolly = IsRainingAt(x, y), RainAccessor.IsValid())) {
-            RainAccessor.CaptureData(x, y);
-            if (rolly <= RainAccessor.GetDataFloat(1)) {
-                return RainAccessor.GetDataFloat(0);
-            }
+        if (rainOverrideIntensity < 0.0f) {
+            return 0.0f;
         }
+        rolly = IsRainingAt(x, y);
+        if (!RainAccessor.IsValid()) {
+            return 0.0f;
+        }
+        RainAccessor.CaptureData(x, y);
+        if (rolly > RainAccessor.GetDataFloat(1)) {
+            return 0.0f;
+        }
+        return RainAccessor.GetDataFloat(0);
     }
     return 0.0f;
 }
