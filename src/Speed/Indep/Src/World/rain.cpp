@@ -370,8 +370,20 @@ void Rain::FindCurtain() {}
 // STRIPPED
 void Rain::SeedCurtainXZ(RainPointsDef *rainpoints) {}
 
-// STRIPPED
-void Rain::SeedCurtainX(RainPointsDef *rainpoints) {}
+void Rain::SeedCurtainX(RainPointsDef *rainpoints) {
+    float distX = bRandom(this->CurtainLength);
+    float f = bRandom(10.0f);
+    bVector3 Along;
+
+    bSeedCurtainXPS2(&rainpoints->NormalizedPoint[this->NewSwapBuffer],
+                     &rainpoints->NormalizedPoint[this->OldSwapBuffer],
+                     &Along,
+                     &this->RainCurtainPos[0],
+                     &this->RainCurtainPos[1],
+                     &this->outvex,
+                     distX,
+                     f);
+}
 
 static const int showCurtain = 0;
 static const float curtainWidthMod = 2.0f;

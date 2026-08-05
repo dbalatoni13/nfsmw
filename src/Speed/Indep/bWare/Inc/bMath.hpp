@@ -508,6 +508,49 @@ inline bVector3 *bSubScaled(bVector3 *dest, const bVector3 *v1, const bVector3 *
     return dest;
 }
 
+inline void bSeedCurtainXPS2(bVector3 *dest, bVector3 *old_dest, bVector3 *along, const bVector3 *p0, const bVector3 *p1,
+                             const bVector3 *outvex, float distance, float offset) {
+#ifdef EA_PLATFORM_PLAYSTATION2
+    asm("lqc2 vf2, %3\n"
+        "lqc2 vf1, %4\n"
+        "vsub vf1, vf1, vf2\n"
+        "sqc2 vf1, %2\n"
+        "lqc2 vf2, %2\n"
+        "vmul vf4, vf2, vf2\n"
+        "lqc2 vf3, %3\n"
+        "vaddy vf1, vf4, vf4y\n"
+        "lqc2 vf5, %5\n"
+        "vaddz vf1, vf1, vf4z\n"
+        "vrsqrt Q, vf0w, vf1x\n"
+        "qmtc2.ni %6, vf4\n"
+        "vwaitq\n"
+        "vaddq vf1, vf0, Q\n"
+        "vnop\n"
+        "vnop\n"
+        "vmulx vf5, vf5, vf4x\n"
+        "vmulx vf2, vf2, vf1x\n"
+        "sqc2 vf2, %2\n"
+        "lqc2 vf1, %2\n"
+        "qmtc2.ni %7, vf2\n"
+        "vmulx vf1, vf1, vf2x\n"
+        "vadd vf3, vf3, vf1\n"
+        "vadd vf3, vf3, vf5\n"
+        "sqc2 vf3, %0\n"
+        "lqc2 vf1, %0\n"
+        "sqc2 vf1, %1"
+        : "=o"(*dest), "=o"(*old_dest), "=o"(*along)
+        : "o"(*p0), "o"(*p1), "o"(*outvex), "r"(distance), "r"(offset)
+        : "memory");
+#else
+    bSub(along, p1, p0);
+    bNormalize(along, along);
+    bScale(along, along, distance);
+    bScaleAdd(dest, p0, along, 1.0f);
+    bScaleAdd(dest, dest, outvex, offset);
+    bCopy(old_dest, dest);
+#endif
+}
+
 inline bVector3 bSub(const bVector3 &v1, const bVector3 &v2) {
     bVector3 dest;
     bSub(&dest, &v1, &v2);
