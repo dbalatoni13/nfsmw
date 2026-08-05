@@ -47,6 +47,7 @@ bVector2 *bNormalize(bVector2 *dest, const bVector2 *v, float length) {
     return dest;
 }
 
+#ifndef EA_PLATFORM_PLAYSTATION2
 bVector3 *bNormalize(bVector3 *dest, const bVector3 *v) {
     float len = bLength(v);
 
@@ -84,6 +85,7 @@ bVector3 *bNormalize(bVector3 *dest, const bVector3 *v, float length) {
     }
     return dest;
 }
+#endif
 
 bVector4 *bNormalize(bVector4 *dest, const bVector4 *v) {
     float len = bLength(v);
@@ -111,6 +113,7 @@ bVector2 *bScaleAdd(bVector2 *dest, const bVector2 *v1, const bVector2 *v2, floa
     return dest;
 }
 
+#ifndef EA_PLATFORM_PLAYSTATION2
 bVector3 *bScaleAdd(bVector3 *dest, const bVector3 *v1, const bVector3 *v2, float scale) {
     float x = v2->x * scale + v1->x;
     float y = v2->y * scale + v1->y;
@@ -120,6 +123,7 @@ bVector3 *bScaleAdd(bVector3 *dest, const bVector3 *v1, const bVector3 *v2, floa
     dest->z = z;
     return dest;
 }
+#endif
 
 bVector4 *bScaleAdd(bVector4 *dest, const bVector4 *v1, const bVector4 *v2, float scale) {
     float x = v2->x * scale + v1->x;

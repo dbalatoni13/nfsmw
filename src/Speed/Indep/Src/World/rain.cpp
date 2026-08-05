@@ -361,7 +361,7 @@ void Rain::FindCurtains() {
         bVector3 EntryPosition;
 
         bCopy(&EntryPosition, this->MyView->pCamera->GetPosition());
-        bSubScaled(&EntryPosition, &EntryPosition, this->MyView->pCamera->GetDirection(), 8.0f);
+        EntryPosition -= *this->MyView->pCamera->GetDirection() * 8.0f;
         bVector2 twoDentry(EntryPosition.x, EntryPosition.y);
 
         static_cast<TrackPathZone *>(this->the_zone)->GetSegmentNextTo(&twoDentry, &this->ent0, &this->ent1);
@@ -413,16 +413,14 @@ void Rain::FindCurtain() {
 void Rain::SeedCurtainXZ(RainPointsDef *rainpoints) {
     float distX = bRandom(this->CurtainLength);
     float distZ = bRandom(TUNHEIGHT);
-    float f = bRandom(10.0f);
+    float distY = bRandom(10.0f);
     bVector3 Along;
-
-    bSeedCurtainXPS2(&rainpoints->NormalizedPoint[this->NewSwapBuffer],
-                     &Along,
-                     &this->RainCurtainPos[0],
-                     &this->RainCurtainPos[1],
-                     &this->outvex,
-                     distX,
-                     f);
+    bSub(&Along, &this->RainCurtainPos[1], &this->RainCurtainPos[0]);
+    bNormalize(&Along, &Along, distX);
+    bScaleAdd(&rainpoints->NormalizedPoint[this->NewSwapBuffer],
+              &this->RainCurtainPos[0], &Along, 1.0f);
+    bScaleAdd(&rainpoints->NormalizedPoint[this->NewSwapBuffer],
+              &rainpoints->NormalizedPoint[this->NewSwapBuffer], &this->outvex, distY);
     rainpoints->NormalizedPoint[this->NewSwapBuffer].z -= distZ;
     bCopy(&rainpoints->NormalizedPoint[this->OldSwapBuffer],
           &rainpoints->NormalizedPoint[this->NewSwapBuffer]);
@@ -430,16 +428,14 @@ void Rain::SeedCurtainXZ(RainPointsDef *rainpoints) {
 
 void Rain::SeedCurtainX(RainPointsDef *rainpoints) {
     float distX = bRandom(this->CurtainLength);
-    float f = bRandom(10.0f);
+    float distY = bRandom(10.0f);
     bVector3 Along;
-
-    bSeedCurtainXPS2(&rainpoints->NormalizedPoint[this->NewSwapBuffer],
-                     &Along,
-                     &this->RainCurtainPos[0],
-                     &this->RainCurtainPos[1],
-                     &this->outvex,
-                     distX,
-                     f);
+    bSub(&Along, &this->RainCurtainPos[1], &this->RainCurtainPos[0]);
+    bNormalize(&Along, &Along, distX);
+    bScaleAdd(&rainpoints->NormalizedPoint[this->NewSwapBuffer],
+              &this->RainCurtainPos[0], &Along, 1.0f);
+    bScaleAdd(&rainpoints->NormalizedPoint[this->NewSwapBuffer],
+              &rainpoints->NormalizedPoint[this->NewSwapBuffer], &this->outvex, distY);
     bCopy(&rainpoints->NormalizedPoint[this->OldSwapBuffer], &rainpoints->NormalizedPoint[this->NewSwapBuffer]);
 }
 
@@ -555,7 +551,7 @@ void Rain::Wind(float time) {
         this->PrevailingWindSpeed.z = 0.0f;
     }
 
-    bScalePS2(&this->PrevailingWindSpeed, &this->PrevailingWindSpeed, PrevailingMult);
+    bScale(&this->PrevailingWindSpeed, &this->PrevailingWindSpeed, PrevailingMult);
     eMulVector(&this->PrevailingWindSpeed, &this->world2localrot, &this->PrevailingWindSpeed);
 
     if (windState == CHANGE) {
@@ -565,7 +561,7 @@ void Rain::Wind(float time) {
         this->DesiredwindSpeed.x = (bRandom(0.05f) - 0.025f) * maxWindEffect;
         this->DesiredwindSpeed.z = 0.0f;
         this->DesiredwindSpeed.y = (bRandom(0.05f) - 0.025f) * maxWindEffect;
-        bAddPS2(&this->DesiredwindSpeed, &this->DesiredwindSpeed, &this->PrevailingWindSpeed);
+        bAdd(&this->DesiredwindSpeed, &this->DesiredwindSpeed, &this->PrevailingWindSpeed);
     } else if (windState < CHANGING) {
         if (windState == STEADY) {
             this->windTime += time;
@@ -575,7 +571,7 @@ void Rain::Wind(float time) {
         }
     } else if (windState == CHANGING) {
         bVector3 delta;
-        bSubPS2(&delta, &this->DesiredwindSpeed, &this->windSpeed);
+        bSub(&delta, &this->DesiredwindSpeed, &this->windSpeed);
         changetime += time;
         this->windSpeed.x += delta.x * time;
         this->windSpeed.y += delta.y * time;
@@ -665,7 +661,7 @@ void OnScreenRain::Update(eView *view) {
     float time = WorldTimeElapsed;
     bVector3 camera_world_velocity;
     bCopy(&camera_world_velocity, view->pCamera->GetVelocityPosition());
-    float camera_speed = bLengthPS2(&camera_world_velocity) * SpeedMod;
+    float camera_speed = bLength(&camera_world_velocity) * SpeedMod;
 
     if (view->Precipitation->NoRain == 0) {
         if (static_cast<int>(eGetCurrentViewMode()) < 3) {
@@ -696,7 +692,8 @@ void OnScreenRain::Update(eView *view) {
                 point->timer = 0.0f;
             } else {
                 bVector3 sv(point->x - 0.5f, point->y - 0.1f, 0.0f);
-                bNormalizeScalePS2(&sv, &sv, camera_speed);
+                bNormalize(&sv, &sv);
+                sv *= camera_speed;
                 point->x += sv.x;
             }
 
