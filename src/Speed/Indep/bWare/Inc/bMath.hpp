@@ -504,6 +504,10 @@ inline bVector3 *bCopy(bVector3 *dest, const bVector3 *v) {
     return dest;
 }
 
+inline bVector3::bVector3(const bVector3 &v) {
+    bCopy(this, &v);
+}
+
 inline bVector3 *bScale(bVector3 *dest, const bVector3 *v, float scale) {
 #ifdef EA_PLATFORM_PLAYSTATION2
     asm("lqc2 vf1, %1\n"
@@ -786,10 +790,6 @@ inline bVector3 bNormalize(const bVector3 &v) {
 
 inline bVector3 bNormalize(const bVector3 &v, float length) {
     bVector3 dest;
-}
-
-inline bVector3::bVector3(const bVector3 &v) {
-    bCopy(this, &v);
 }
 
 inline bVector3 bMin(const bVector3 &v1, const bVector3 &v2) {

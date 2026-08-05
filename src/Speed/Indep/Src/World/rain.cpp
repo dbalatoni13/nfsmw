@@ -464,6 +464,7 @@ void Rain::UpdateAndRenderCurtain() {
     l2w.v3 = this->local2world.v3;
     bVector2 outvex2;
     bVector2 cp;
+    int i;
 
     CameraDirection = this->MyView->pCamera->GetDirection();
     PRECIPpolyPoint = &this->PRECIPpoly[0];
@@ -487,7 +488,7 @@ void Rain::UpdateAndRenderCurtain() {
     bNormalize(&outvex2, &outvex2);
     this->outvex = bVector3(outvex2.x, outvex2.y, 0.0f);
 
-    for (int i = 0; i < numCurtainPoints; ++i) {
+    for (i = 0; i < numCurtainPoints; ++i) {
         bVector3 *RpointN = &this->CurtainRainPoints[i].NormalizedPoint[this->NewSwapBuffer];
         bVector3 *RpointNold = &this->CurtainRainPoints[i].NormalizedPoint[this->OldSwapBuffer];
 
@@ -1019,7 +1020,6 @@ void Rain::Render() {
                             bCross(&acrossV, CameraDirection, &downV);
                             acrossV *= this->precipRadius[j].x;
                             downV *= this->precipRadius[j].y + this->LenModifier;
-
                             bAdd(&this->PRECIPpoly[0].Vertices[0], &acrossV, &downV);
                             bSub(&this->PRECIPpoly[0].Vertices[0],
                                  &this->RainPoints[i].NormalizedPoint[this->NewSwapBuffer],
@@ -1040,8 +1040,6 @@ void Rain::Render() {
                             this->MyView->Render(&this->PRECIPpoly[0], this->texture_info[j], local_world, 0, 2.0f);
                         }
                     }
-                }
-            }
                 }
             }
         }
