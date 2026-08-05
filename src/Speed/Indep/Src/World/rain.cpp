@@ -408,8 +408,21 @@ float precipBoundD = 10.0f;
 // STRIPPED
 void Rain::Seed(RainPointsDef *rainpoints, bVector3 *CameraPosition, bVector3 *CameraDirection) {}
 
-// STRIPPED
-void Rain::SetRainIntensity(float percent) {}
+void Rain::SetRainIntensity(float percent) {
+    if (precipDEBUG != 0) {
+        intensity = precipPERCENT;
+    } else {
+        intensity = percent;
+    }
+
+    DesiredNumOfType[1] = fptoui((1.0f - intensity) * 400.0f);
+    DesiredActive = 400 - DesiredNumOfType[1];
+    float sumPercent = 0.0f;
+    for (int j = 0; j < 1; ++j) {
+        sumPercent += Percentages[j];
+    }
+    Percentages[1] = 1.0f - sumPercent;
+}
 
 // STRIPPED
 void Rain::Change(RainType type, float percent) {}
