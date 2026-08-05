@@ -494,8 +494,8 @@ void Rain::UpdateAndRenderCurtain() {
 
         bScale(&acrossV, &this->windSpeed, this->precipWindEffect[RAIN][1]);
         bAdd(&downV, &this->Velocities[RAIN][i % 10], &acrossV);
-        bAdd(RpointN, RpointNold, &CamVelloc);
-        bAdd(RpointN, RpointN, &downV);
+        *RpointN = *RpointNold + CamVelloc;
+        *RpointN += downV;
 
         if (RpointN->z < this->RainCurtainPos[3].z || this->RainCurtainPos[0].z < RpointN->z) {
             this->SeedCurtainX(&this->CurtainRainPoints[i]);
