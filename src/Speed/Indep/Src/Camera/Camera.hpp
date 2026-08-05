@@ -160,13 +160,33 @@ class Camera {
 
     void SetFieldOfView(unsigned short fov) {}
 
-    void SetNoiseFrequency1(float x, float y, float z, float w) {}
+    void SetNoiseFrequency1(float x, float y, float z, float w) {
+        CurrentKey.NoiseFrequency1.x = x;
+        CurrentKey.NoiseFrequency1.y = x;
+        CurrentKey.NoiseFrequency1.z = x;
+        CurrentKey.NoiseFrequency1.w = x;
+    }
 
-    void SetNoiseFrequency2(float x, float y, float z, float w) {}
+    void SetNoiseFrequency2(float x, float y, float z, float w) {
+        CurrentKey.NoiseFrequency2.x = x;
+        CurrentKey.NoiseFrequency2.y = x;
+        CurrentKey.NoiseFrequency2.z = x;
+        CurrentKey.NoiseFrequency2.w = x;
+    }
 
-    void SetNoiseAmplitude1(float x, float y, float z, float w) {}
+    void SetNoiseAmplitude1(float x, float y, float z, float w) {
+        CurrentKey.NoiseAmplitude1.x = x;
+        CurrentKey.NoiseAmplitude1.y = x;
+        CurrentKey.NoiseAmplitude1.z = x;
+        CurrentKey.NoiseAmplitude1.w = x;
+    }
 
-    void SetNoiseAmplitude2(float x, float y, float z, float w) {}
+    void SetNoiseAmplitude2(float x, float y, float z, float w) {
+        CurrentKey.NoiseAmplitude2.x = x;
+        CurrentKey.NoiseAmplitude2.y = x;
+        CurrentKey.NoiseAmplitude2.z = x;
+        CurrentKey.NoiseAmplitude2.w = x;
+    }
 
     void SetNoiseFrequency1(bVector4 *p) {
         this->CurrentKey.NoiseFrequency1 = *p;
@@ -180,13 +200,21 @@ class Camera {
 
     void SetNoiseAmplitude2(bVector4 *p) {}
 
-    void SetNoiseFrequency1(float *p) {}
+    void SetNoiseFrequency1(float *p) {
+        SetNoiseFrequency1(*p, *p, *p, *p);
+    }
 
-    void SetNoiseFrequency2(float *p) {}
+    void SetNoiseFrequency2(float *p) {
+        SetNoiseFrequency2(*p, *p, *p, *p);
+    }
 
-    void SetNoiseAmplitude1(float *p) {}
+    void SetNoiseAmplitude1(float *p) {
+        SetNoiseAmplitude1(*p, *p, *p, *p);
+    }
 
-    void SetNoiseAmplitude2(float *p) {}
+    void SetNoiseAmplitude2(float *p) {
+        SetNoiseAmplitude1(*p, *p, *p, *p);
+    }
 
     void SetNearZ(float near_z) {
         CurrentKey.NearZ = near_z;

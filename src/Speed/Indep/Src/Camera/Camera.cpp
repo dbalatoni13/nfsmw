@@ -7,42 +7,89 @@
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include <cstddef>
 
-Camera::Camera() {
-
-    LastDisparateTime = RealTimeFrames;
-    LastUpdateTime = -2147483648;
-    RenderDash = 0;
-    bClearVelocity = false;
+Camera::Camera() : LastDisparateTime(RealTimeFrames) {
     ElapsedTime = 1.0f;
 
+    SetNoiseAmplitude1(0.0f, 0.0f, 0.0f, 0.0f);
+    SetNoiseFrequency1(1.0f, 1.0f, 1.0f, 1.0f);
+    SetNoiseFrequency2(1.0f, 1.0f, 1.0f, 1.0f);
+    SetNoiseAmplitude2(0.0f, 0.0f, 0.0f, 0.0f);
+
+    RenderDash = 0;
+
+    bClearVelocity = false;
+    LastUpdateTime = 0x80000000;
+    SetFieldOfView(0x36FB);
     bMatrix4 m;
 
-    m.v0 = bVector4(1.0f, 0.0f, 0.0f, 0.0f);
-    m.v1 = bVector4(0.0f, -1.0f, 0.0f, 0.0f);
-    m.v2 = bVector4(0.0f, 0.0f, -1.0f, 100.0f);
     m.v3 = bVector4(0.0f, 0.0f, 1200.0f, 1.0f);
+    m.v2 = bVector4(0.0f, 0.0f, -1.0f, 100.0f);
+
+    m.v1 = bVector4(0.0f, -1.0f, 0.0f, 0.0f);
+    m.v0 = bVector4(1.0f, 0.0f, 0.0f, 0.0f);
 
     CurrentKey.Position = bVector3(0.0f, 0.0f, 0.0f);
     CurrentKey.Direction = bVector3(0.0f, 0.0f, 0.0f);
     CurrentKey.Target = bVector3(0.0f, 0.0f, 0.0f);
 
-    CurrentKey.TargetDistance = 10.0f;
-    CurrentKey.FocalDistance = 0.0f;
-    CurrentKey.DepthOfField = 0.0f;
-    CurrentKey.NearZ = 0.5f;
-    CurrentKey.FarZ = 10000.0f;
-    CurrentKey.FieldOfView = 0x36FB;
-    CurrentKey.LB_height = 0.0f;
-    CurrentKey.SimTimeMultiplier = 1.0f;
+    SetFocalDistance(0.0f);
+    SetDepthOfField(0.0f);
+    SetTargetDistance(10.0f);
+    SetNearZ(0.5f);
 
-    CurrentKey.NoiseFrequency1 = bVector4(1.0f, 1.0f, 1.0f, 1.0f);
-    CurrentKey.NoiseAmplitude1 = bVector4(0.0f, 0.0f, 0.0f, 0.0f);
-    CurrentKey.NoiseFrequency2 = bVector4(1.0f, 1.0f, 1.0f, 1.0f);
-    CurrentKey.NoiseAmplitude2 = bVector4(0.0f, 0.0f, 0.0f, 0.0f);
+    SetFarZ(10000.0f);
+
+    CurrentKey.LB_height = 0.0f;
+
+    SetSimTimeMultiplier(1.0f);
 
     SetCameraMatrix(m, 1.0f);
     SetCameraMatrix(m, 1.0f);
 }
+
+// Camera::Camera() {
+
+//     LastDisparateTime = RealTimeFrames;
+//     LastUpdateTime = 0x80000000;
+//     RenderDash = 0;
+//     bClearVelocity = false;
+//     ElapsedTime = 1.0f;
+
+//     bMatrix4 m;
+
+//     m.v0 = bVector4(1.0f, 0.0f, 0.0f, 0.0f);
+//     m.v1 = bVector4(0.0f, -1.0f, 0.0f, 0.0f);
+//     m.v2 = bVector4(0.0f, 0.0f, -1.0f, 100.0f);
+//     m.v3 = bVector4(0.0f, 0.0f, 1200.0f, 1.0f);
+
+//     CurrentKey.Position = bVector3(0.0f, 0.0f, 0.0f);
+//     CurrentKey.Direction = bVector3(0.0f, 0.0f, 0.0f);
+//     CurrentKey.Target = bVector3(0.0f, 0.0f, 0.0f);
+
+//     CurrentKey.TargetDistance = 10.0f;
+//     CurrentKey.FocalDistance = 0.0f;
+//     CurrentKey.DepthOfField = 0.0f;
+//     CurrentKey.NearZ = 0.5f;
+//     CurrentKey.FarZ = 10000.0f;
+//     CurrentKey.FieldOfView = 0x36FB;
+//     CurrentKey.LB_height = 0.0f;
+//     CurrentKey.SimTimeMultiplier = 1.0f;
+
+//     // CurrentKey.NoiseFrequency1 = bVector4(1.0f, 1.0f, 1.0f, 1.0f);
+//     // CurrentKey.NoiseAmplitude1 = bVector4(0.0f, 0.0f, 0.0f, 0.0f);
+//     // CurrentKey.NoiseFrequency2 = bVector4(1.0f, 1.0f, 1.0f, 1.0f);
+//     // CurrentKey.NoiseAmplitude2 = bVector4(0.0f, 0.0f, 0.0f, 0.0f);
+
+//     SetNoiseFrequency1(1.0f, 1.0f, 1.0f, 1.0f);
+//     SetNoiseAmplitude1(0.0f, 0.0f, 0.0f, 0.0f);
+
+//     SetNoiseFrequency2(1.0f, 1.0f, 1.0f, 1.0f);
+
+//     SetNoiseAmplitude2(0.0f, 0.0f, 0.0f, 0.0f);
+
+//     SetCameraMatrix(m, 1.0f);
+//     SetCameraMatrix(m, 1.0f);
+// }
 
 void Camera::SetCameraMatrix(const bMatrix4 &m, float fTime) {
     static int cameralink;
