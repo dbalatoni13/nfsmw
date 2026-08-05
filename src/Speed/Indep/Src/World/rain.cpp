@@ -592,12 +592,13 @@ void Rain::Update() {
         return;
     }
 
-    tempMod = WorldTimeElapsed * 30.0f;
-    if (tempMod > 1.0f) {
-        tempMod = 1.0f;
+    timeMod = WorldTimeElapsed * 30.0f;
+    if (timeMod > 1.0f) {
+        timeMod = 1.0f;
     }
-    tempMod = 1.0f - tempMod;
-    timeMod = 1.0f - tempMod * tempMod * tempMod;
+    timeMod = 1.0f - timeMod;
+    tempMod = timeMod * timeMod;
+    timeMod = 1.0f - tempMod * timeMod;
 
     cameraMover = this->MyView->GetCameraMover();
     view_camera = this->MyView->GetCamera();
@@ -757,7 +758,8 @@ void Rain::Update() {
     }
 
     if (this->NumRainPoints > 0) {
-        for (int32 i = 0; i < this->NumRainPoints; ++i) {
+        int32 i = 0;
+        do {
             RainType rType = static_cast<RainType>(this->RainPointsInf[i].type);
             RainSubType rSubType = static_cast<RainSubType>(this->RainPointsInf[i].subType);
 
@@ -822,7 +824,8 @@ void Rain::Update() {
                     this->RainPointsInf[i].status = CT_TURNON;
                 }
             }
-        }
+            ++i;
+        } while (i < this->NumRainPoints);
     }
 }
 
