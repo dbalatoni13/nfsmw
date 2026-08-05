@@ -190,6 +190,7 @@ inline void MultYRot(const Matrix4 &m, float a, Matrix4 &r) {
 void QuaternionToMatrix4(const Vector4 &q, Matrix4 &m);
 #elif EA_PLATFORM_PLAYSTATION2
 void QuaternionToMatrix4(const Vector4 &q, Matrix4 &m);
+void QuaternionToEuler(const Vector4 &q, Vector3 &e);
 #else
 inline void QuaternionToMatrix4(const Vector4 &q, Matrix4 &m) {
     VU0_quattom4(q, m);

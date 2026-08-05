@@ -24,6 +24,7 @@ namespace Online {
 }
 
 extern float kMinBlendTime;
+extern int kSpamPhysics;
 
 
 ExtrapolatedCar::ExtrapolatedCar(Attrib::Key cartype) {
@@ -267,6 +268,85 @@ void ExtrapolatedCar::State::Export(SmartBitStream &data,
         data.AddQuantizedInt(mGear, TheOnlineManager.QuantInt3Bit);
         data.AddBool(mNOS);
     }
+}
+
+void ExtrapolatedCar::State::Export(ISimable *simable) const {
+    IRigidBody *irb;
+    IVehicle *vehicle;
+    ISuspension *suspension;
+    IInput *input;
+    ITransmission *transmission;
+    bool stillinflight;
+    UMath::Vector3 position;
+    UMath::Vector3 velocity;
+    UMath::Matrix4 matrix;
+    UMath::Vector3 angularVelocity;
+
+    stillinflight = false;
+    irb = simable->GetRigidBody();
+    if (!simable->QueryInterface(&vehicle) ||
+        vehicle->GetPhysicsMode() == PHYSICS_MODE_EMULATED ||
+        !simable->QueryInterface(&suspension) ||
+        suspension->GetNumWheelsOnGround() == 0) {
+        stillinflight = true;
+    }
+
+    if (mInFlight && stillinflight) {
+        irb->SetPosition(mPosition);
+        irb->SetOrientation(mRotation);
+        irb->SetLinearVelocity(mLinearVelocity);
+        irb->SetAngularVelocity(UMath::Vector4To3(mAngularVelocity));
+    } else {
+        position = mPosition;
+        velocity = mLinearVelocity;
+
+        if (vehicle) {
+            float d;
+            d = position.y - irb->GetPosition().y;
+            if ((d > -10.0f) && (d < 10.0f)) {
+                position.y = irb->GetPosition().y;
+                velocity.y = irb->GetLinearVelocity().y;
+            }
+        }
+
+        if (UMath::Abs(position.x - irb->GetPosition().x) >
+            TheOnlineManager.PositionQuantizerX.GetMaxError()) {
+            if (UMath::Abs(position.z - irb->GetPosition().z) >
+                TheOnlineManager.PositionQuantizerZ.GetMaxError()) {
+                irb->SetPosition(position);
+            }
+        }
+        irb->SetLinearVelocity(velocity);
+
+        UMath::QuaternionToMatrix4(mRotation, matrix);
+        float result = VU0_Atan2(matrix.v2.z, -matrix.v2.x);
+        irb->GetMatrix4(matrix);
+        UMath::MultYRot(matrix, result - VU0_Atan2(matrix.v2.z, -matrix.v2.x), matrix);
+        irb->SetOrientation(matrix);
+
+        angularVelocity.x = irb->GetAngularVelocity().x;
+        angularVelocity.y = mAngularVelocity.y;
+        angularVelocity.z = irb->GetAngularVelocity().z;
+        irb->SetAngularVelocity(angularVelocity);
+    }
+
+    if (simable->QueryInterface(&input)) {
+        input->SetControlSteering(mSteering);
+        input->SetControlGas(mGas);
+        input->SetControlBrake(mBrake);
+        input->SetControlHandBrake(mHandBrake);
+        input->SetControlNOS(mNOS);
+    }
+
+    if (simable->QueryInterface(&transmission)) {
+        transmission->Shift(static_cast<GearID>(mGear));
+    }
+
+#ifdef EA_PLATFORM_PLAYSTATION2
+    if (kSpamPhysics) {
+        UMath::QuaternionToEuler(irb->GetOrientation(), position);
+    }
+#endif
 }
 
 uint8 ExtrapolatedCar::State::Import(float time, SmartBitStream &data,
