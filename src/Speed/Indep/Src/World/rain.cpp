@@ -376,13 +376,13 @@ void Rain::SeedCurtainX(RainPointsDef *rainpoints) {
     bVector3 Along;
 
     bSeedCurtainXPS2(&rainpoints->NormalizedPoint[this->NewSwapBuffer],
-                     &rainpoints->NormalizedPoint[this->OldSwapBuffer],
                      &Along,
                      &this->RainCurtainPos[0],
                      &this->RainCurtainPos[1],
                      &this->outvex,
                      distX,
                      f);
+    bCopy(&rainpoints->NormalizedPoint[this->OldSwapBuffer], &rainpoints->NormalizedPoint[this->NewSwapBuffer]);
 }
 
 static const int showCurtain = 0;
