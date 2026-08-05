@@ -83,7 +83,9 @@ class Timer {
     }
 
     void SetTime(float seconds) {
-        PackedTime = static_cast<int>(seconds * 4000.0f + 0.5f);
+        float temp = seconds * 4000.0f + 0.5f;
+        int result = static_cast<int>(temp);
+        PackedTime = result;
     }
 
     float GetSeconds() {
