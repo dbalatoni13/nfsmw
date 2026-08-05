@@ -143,9 +143,8 @@ ISimable *ExtrapolatedCar::State::SpawnVehicle(Attrib::Key cartype) {
         cartype = Attrib::StringToKey(SkipFEPlayer2Car);
     }
     UMath::ExtractZAxis(mRotation, forwardvector);
-    UCrc32 name("PVehicle");
     return ISimable::CreateInstance(
-        name, VehicleParams(nullptr, DRIVER_REMOTE, cartype, forwardvector, mPosition, VPF_SNAP_TO_GROUND, nullptr, nullptr));
+        "PVehicle", VehicleParams(nullptr, DRIVER_REMOTE, cartype, forwardvector, mPosition, VPF_SNAP_TO_GROUND, nullptr, nullptr));
 }
 
 void ExtrapolatedCar::ExtractExtrapolatedPosition(UMath::Vector3 &position) const {
