@@ -521,8 +521,25 @@ float py3 = 1.0f;
 
 void Rain::Render() {}
 
-// STRIPPED
-OnScreenRain::OnScreenRain() {}
+OnScreenRain::OnScreenRain() {
+    this->NumOnScreen = 0;
+    int i = 0;
+    do {
+        this->Points[i].x = 0.0f;
+        this->Points[i].y = 0.0f;
+        this->Points[i].timer = 0.0f;
+        this->Points[i].Maxtimer = bRandom(5.0f) + 0.3f;
+        this->Points[i].DripSpeed = static_cast<float>(bRandom(0.1f) + 0.02);
+        this->Points[i].Size = bRandom(1.0f);
+
+        int shape = i + 3;
+        if (i > -1) {
+            shape = i;
+        }
+        this->Points[i].DripShape = i + (shape >> 2) * -4;
+        ++i;
+    } while (i < MAX_OS_RAINPOINTS);
+}
 
 float DripSpeed = 0.2f;
 float SpeedMod = 0.0001f;
