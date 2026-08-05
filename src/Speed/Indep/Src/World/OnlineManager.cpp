@@ -51,6 +51,7 @@ extern int OnlineEnabled;
 extern int bSuperBenderConnected;
 extern int NetworkUseLobbies;
 extern void *pCurrentRace;
+extern void FEOnlineDisconnectMsg(OnlineRacer *racer);
 extern const char *SkipFEPlayerCar;
 extern int ONLINE_CHEAT_NOSEND_CRC;
 
@@ -522,6 +523,54 @@ void OnlineManager::SetupLocalDriver(int driver_num) {
     }
     pLocalRacer = *racer;
     pLocalRacer->DriverNumber = driver_num;
+}
+
+void OnlineManager::DriverLeft(int driver_number, bool he_quit) {
+    if (pRacers[driver_number]) {
+        OnlineRacer *racer = GetOnlineRacer(driver_number);
+        racer->DisconnectTime.SetTime(WorldTimer.GetSeconds());
+
+        if (State == OLS_RACE_DATA_SYNC) {
+            racer->ChangeState(OPS_DISCONNECTED);
+            TheRaceParameters.RemoveDriverInfo(racer->DriverNumber);
+            if (racer->IsServer()) {
+                for (int i = 0; i < 4; ++i) {
+                    if (pRacers[i] && GetOnlineRacer(i) != racer) {
+                        OnlineRacer *other = GetOnlineRacer(i);
+                        other->ChangeState(OPS_DISCONNECTED);
+                        other = GetOnlineRacer(i);
+                        TheRaceParameters.RemoveDriverInfo(other->DriverNumber);
+                    }
+                }
+            }
+        } else if (!pCurrentRace) {
+            eOnlineRacerState state = he_quit ? OPS_QUIT : OPS_LOST_CONNECTION;
+            racer->ChangeState(state);
+            if (racer->IsServer()) {
+                for (int i = 0; i < 4; ++i) {
+                    if (pRacers[i] && GetOnlineRacer(i) != racer) {
+                        GetOnlineRacer(i)->ChangeState(OPS_DISCONNECTED);
+                    }
+                }
+            }
+        } else {
+            FEOnlineDisconnectMsg(racer);
+            if (State == OLS_RACE_END) {
+                racer->DriverDisconnect(OPS_DISCONNECTED, 0xc);
+            } else {
+                eOnlineRacerState state = he_quit ? OPS_QUIT : OPS_LOST_CONNECTION;
+                racer->DriverDisconnect(state, 0xc);
+            }
+
+            if (racer->IsServer()) {
+                for (int i = 0; i < 4; ++i) {
+                    if (pRacers[i] && GetOnlineRacer(i) != racer) {
+                        GetOnlineRacer(i)->DriverDisconnect(OPS_DISCONNECTED, 0xc);
+                    }
+                }
+            }
+        }
+    }
 }
 
 void OnlineManager::CreateOnlineRacer(int driver_num, SmartBitStream *pdata, bool is_server,
