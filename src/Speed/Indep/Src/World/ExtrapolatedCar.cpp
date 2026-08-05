@@ -24,6 +24,8 @@ namespace Online {
 }
 
 extern float kMinBlendTime;
+extern float kBlendMult;
+extern float kMaxBlendTime;
 extern int kSpamPhysics;
 
 
@@ -347,6 +349,39 @@ void ExtrapolatedCar::State::Export(ISimable *simable) const {
         UMath::QuaternionToEuler(irb->GetOrientation(), position);
     }
 #endif
+}
+
+void ExtrapolatedCar::State::Extrapolate(float simtime) {
+    float amin;
+    float amax;
+    UMath::Vector4 temp;
+    UMath::Matrix4 matrix;
+
+    if (mBlendRate < 0.0f) {
+        amin = UMath::Min(kBlendMult * (simtime - mTime), kMaxBlendTime);
+        amax = UMath::Max(kMinBlendTime, amin);
+        mBlendRate = 1.0f / amax;
+    }
+
+    if (mTime != simtime) {
+        do {
+            float dt = UMath::Clamp(simtime - mTime, -0.016666668f, 0.016666668f);
+
+            UMath::ScaleAdd(mLinearAcceleration, dt, mLinearVelocity, mLinearVelocity);
+            UMath::ScaleAdd(mLinearVelocity, dt, mPosition, mPosition);
+            if (!mInFlight) {
+                UMath::ScaleAdd(mAngularAcceleration, dt, mAngularVelocity, mAngularVelocity);
+            }
+            UMath::Mult(mAngularVelocity, mRotation, temp);
+            UMath::ScaleAdd(temp, dt * 0.5f, mRotation, mRotation);
+            UMath::Normalize(mRotation);
+
+            UMath::SetYRot(matrix, mAngularVelocity.y * dt * UMath::OOTWOPI);
+            UMath::Rotate(mLinearAcceleration, matrix, mLinearAcceleration);
+
+            mTime += dt;
+        } while (mTime != simtime);
+    }
 }
 
 uint8 ExtrapolatedCar::State::Import(float time, SmartBitStream &data,
