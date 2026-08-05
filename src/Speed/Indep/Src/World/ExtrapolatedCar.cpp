@@ -75,6 +75,10 @@ ExtrapolatedCar::CopMap::~CopMap() {}
 
 OnlineRacer::~OnlineRacer() {}
 
+void OnlineRacer::operator delete(void *ptr) {
+    bFree(ptr);
+}
+
 ExtrapolatedCar::State::State() {
     mGear = 1;
     mBlendRate = -1.0f;
