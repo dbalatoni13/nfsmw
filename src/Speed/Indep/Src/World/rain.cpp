@@ -441,11 +441,17 @@ static float zspeed = 0.0f;
 void Rain::UpdateAndRenderCurtain() {}
 
 void Rain::Debug() {
+    float radiusZ = RAINRadiusZ;
+    float radiusY = RAINRadiusY;
+    float radiusX = RAINRadiusX;
+    float windEffect = RAINwindEffect;
+
     snowPercent = 1.0f - rainPercent;
-    this->precipWindEffect[RAIN][1] = RAINwindEffect * 0.5f;
-    this->precipRadius[RAIN] = bVector3(RAINRadiusX, RAINRadiusY, RAINRadiusZ);
-    this->precipWindEffect[RAIN][0] = RAINwindEffect;
+    this->precipWindEffect[RAIN][1] = windEffect * 0.5f;
+    this->precipRadius[RAIN] = bVector3(radiusX, radiusY, radiusZ);
+    this->precipWindEffect[RAIN][0] = windEffect;
     this->precipSpeedRange[RAIN] = bVector3(RAINX, RAINY, RAINZ);
+    this->precipZconstant[RAIN] = RAINZconstant;
 
     if (zspeed != RAINZconstant) {
         for (int i = 0; i < 2; ++i) {
