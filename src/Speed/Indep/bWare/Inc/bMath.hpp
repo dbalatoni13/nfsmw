@@ -506,8 +506,8 @@ inline bVector3 *bCopy(bVector3 *dest, const bVector3 *v) {
 
 inline bVector3 *bScale(bVector3 *dest, const bVector3 *v, float scale) {
 #ifdef EA_PLATFORM_PLAYSTATION2
-    asm("qmtc2.ni %2, vf2\n"
-        "lqc2 vf1, %1\n"
+    asm("lqc2 vf1, %1\n"
+        "qmtc2.ni %2, vf2\n"
         "vmulx.xyzw vf1, vf1, vf2x\n"
         "sqc2 vf1, %0"
         : "=o"(*dest)
