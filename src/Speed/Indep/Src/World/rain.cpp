@@ -224,15 +224,20 @@ void Rain::Init(RainType type, float percent) {
         this->DesiredNumOfType[j] = 0;
     }
 
+    float radiusZ = RAINRadiusZ;
+    float radiusY = RAINRadiusY;
+    float radiusX = RAINRadiusX;
+    float windEffect = RAINwindEffect;
+
     this->NewSwapBuffer = 0;
     this->OldSwapBuffer = 1;
     this->NumOfType[type] = this->NumRainPoints;
-    this->precipWindEffect[RAIN][1] = RAINwindEffect * 0.5f;
     this->precipWindEffect[INACTIVE][0] = 1.0f;
     this->precipWindEffect[INACTIVE][1] = 1.0f;
-    this->precipRadius[RAIN] = bVector3(RAINRadiusX, RAINRadiusY, RAINRadiusZ);
+    this->precipWindEffect[RAIN][1] = windEffect * 0.5f;
+    this->precipRadius[RAIN] = bVector3(radiusX, radiusY, radiusZ);
     this->precipSpeedRange[RAIN] = bVector3(RAINX, RAINY, RAINZ);
-    this->precipWindEffect[RAIN][0] = RAINwindEffect;
+    this->precipWindEffect[RAIN][0] = windEffect;
     this->precipZconstant[RAIN] = RAINZconstant;
     this->windType[RAIN] = VECTOR_WIND;
     this->windTime = 0.0f;
