@@ -184,15 +184,18 @@ public:
     ICommands();
     virtual ~ICommands();
     virtual void AutoRegister();
-    virtual char *GetNamespaceName() const;
+    virtual char *GetNamespaceName();
     static void SendMethod(int type, const ICommands *obj, const char *methodName, int argSize,
                            const void *method);
 
     template <class C, class R>
     static void SendMethod(int type, const ICommands *obj, const char *methodName, int argSize,
-                           R (C::*method)(VarArgs &)) {
-        R (ICommands::*m)(VarArgs &) = static_cast<R (ICommands::*)(VarArgs &)>(method);
-        SendMethod(type, obj, methodName, argSize, static_cast<const void *>(&m));
+                           R (C::* const method)(VarArgs &)) {
+        R (ICommands::*n)(VarArgs &);
+        R (ICommands::*m)(VarArgs &);
+        m = static_cast<R (ICommands::*)(VarArgs &)>(method);
+        n = m;
+        SendMethod(type, obj, methodName, argSize, static_cast<const void *>(&n));
     }
 };
 
