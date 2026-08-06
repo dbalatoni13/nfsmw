@@ -32,12 +32,6 @@ public:
     virtual float GetSecondsBeforeRaceStart();
 };
 
-class IExtension {
-public:
-    static IExtension *sCurrentExtension;
-    virtual ~IExtension() {}
-};
-
 class ICommands {
 public:
     virtual ~ICommands() {}
@@ -46,6 +40,54 @@ public:
 struct ProtoAriesRefT;
 
 namespace Juice {
+
+struct tJuicePad;
+
+class IExtension {
+public:
+    static IExtension *sCurrentExtension;
+    ~IExtension() {}
+    virtual char *GetTitleName();
+    virtual char *GetBuildName();
+    virtual char *GetChangeList();
+    virtual char *GetConsoleTarget();
+    virtual char *GetXboxPath();
+    virtual char *GetXboxExeName();
+    virtual char *GetServerIP();
+    virtual char *GetConsoleName();
+    virtual int GetServerPort();
+    virtual int GetReadyToReset();
+    virtual void FileSyncUpdate();
+    virtual void GamePadToJuicePad(void *gameInput, tJuicePad *juiceInput);
+    virtual void JuicePadToGamePad(tJuicePad *juiceInput, void *gameInput);
+    virtual int HasFileLoaded(const void *fileHandle);
+    virtual char *GetBuildDate();
+    virtual unsigned int GetInitializationTimeOut();
+    virtual unsigned int GetHeartBeatTimeOut();
+    virtual char *GetBackupServerIP();
+    virtual int GetBackupServerPort();
+    virtual int NetworkInitRetries();
+    virtual int InitialConnectionRetries();
+    virtual int WaitBetweenInitialConnectionRretries();
+    virtual int WaitBetweenNetworkInitRetries();
+    virtual void ThreadYield();
+    virtual char *GetScreenName();
+    virtual char *GetPopupName();
+    virtual char *GetPopupCheck();
+    virtual char *GetCursorPos();
+    virtual float GetGameTime();
+    virtual int IsOkToConnect();
+    virtual void InstantiateScriptExt();
+    virtual void ResetGamePad();
+    virtual int HangTimeoutLength();
+    virtual void UpdatePad();
+    virtual void JuiceScreenshot();
+    virtual int NumberOfRepeatedReplayEntries();
+    virtual int GetJuiceThreadPriority();
+    virtual int GetJuiceUpdateProcessor();
+    virtual void PauseGame();
+    virtual void UnPauseGame();
+};
 
 class INetwork {
 public:
@@ -65,8 +107,6 @@ public:
     virtual char *GetMac();
     virtual char *GetLocalIpAddress();
 };
-
-struct tJuicePad;
 
 class JuicePad {
 public:
@@ -111,6 +151,8 @@ struct GameHook {
     void DisableJuice();
     void Initialize();
     void InitTrapHandler();
+    void GameEvent(const char *world, const char *event, char *outcome, float fps,
+                   int fpsAsInt, char *zoneName, char *imageName, char *playerPosition);
     int GetFrame() {
         return mFrame;
     }
@@ -356,6 +398,7 @@ public:
     static char *GetFormationStr(const FormationType &formation);
     static char *GetCurrentRaceType();
     static char *GetCurrentZoneName();
+    static void JuiceLowFrameRateLog(const float &fps);
     char *GetScreenName();
     char *GetCursorPos();
     void UpdatePad(void *input);

@@ -5,6 +5,8 @@
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/AI/aireflectedtypes.h"
+#include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
+#include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
 #include "Speed/Indep/Src/World/TrackStreamer.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/bWare/Inc/bMemory.hpp"
@@ -23,6 +25,10 @@ extern int bStrCmp(const char *a, const char *b);
 extern void LoadNetworkIRXModulesPart2();
 extern bool bIsDebuggerConnected();
 extern void WriteJoylogFileHeader();
+extern float PreviousGpuFrameRate;
+extern float fpsTolerateValue;
+extern int logCountDownMax;
+extern int countDown;
 
 bool JuicePutStringFunction(int terminal_channel, const char *s) {
     Juice::GameHook *gameHook =
@@ -43,6 +49,20 @@ void InitJuice() {
     reinterpret_cast<Juice::GameHook *(*)()>(Juice::GameHook::Instance)()->Initialize();
     reinterpret_cast<Juice::GameHook *(*)()>(Juice::GameHook::Instance)()->InitTrapHandler();
     WriteJoylogFileHeader();
+}
+
+int DoPolyCount() {
+    int total = GetPolyCount(POLY_COUNT_MAIN_CAR);
+    total += GetPolyCount(POLY_COUNT_REFLECTION_CAR);
+    total += GetPolyCount(POLY_COUNT_RVM_CAR);
+    total += GetPolyCount(POLY_COUNT_ENVMAP_SCENERY);
+    total += GetPolyCount(POLY_COUNT_MAIN_SCENERY);
+    total += GetPolyCount(POLY_COUNT_REFLECTION_SCENERY);
+    total += GetPolyCount(POLY_COUNT_RVM_SCENERY);
+    total += GetPolyCount(POLY_COUNT_MAIN_WORLDMODEL);
+    total += GetPolyCount(POLY_COUNT_REFLECTION_WORLDMODEL);
+    total += GetPolyCount(POLY_COUNT_RVM_WORLDMODEL);
+    return total;
 }
 
 namespace Juice {
@@ -250,19 +270,8 @@ void MWExtension::UpdatePad(void *input) {
     tJuicePad *juicePad = JuicePad::Instance()->GetMasterPad();
     JuicePad::Instance()->UpdateJuicePad();
 
-    short offset = *reinterpret_cast<short *>(
-        *reinterpret_cast<char **>(IExtension::sCurrentExtension) + 0x68);
-    void (**updateJuice)(char *, tJuicePad *, void *) =
-        reinterpret_cast<void (**)(char *, tJuicePad *, void *)>(
-            *reinterpret_cast<char **>(IExtension::sCurrentExtension) + 0x6c);
-    (*updateJuice)(reinterpret_cast<char *>(IExtension::sCurrentExtension) + offset, juicePad, input);
-
-    offset = *reinterpret_cast<short *>(
-        *reinterpret_cast<char **>(IExtension::sCurrentExtension) + 0x60);
-    void (**updateGame)(char *, void *, tJuicePad *) =
-        reinterpret_cast<void (**)(char *, void *, tJuicePad *)>(
-            *reinterpret_cast<char **>(IExtension::sCurrentExtension) + 0x64);
-    (*updateGame)(reinterpret_cast<char *>(IExtension::sCurrentExtension) + offset, input, juicePad);
+    IExtension::sCurrentExtension->JuicePadToGamePad(juicePad, input);
+    IExtension::sCurrentExtension->GamePadToJuicePad(input, juicePad);
 
     static int oldFrame;
     if (PadConfigManager::Instance()->IsFENavCapturing() &&
@@ -404,6 +413,58 @@ char *MWExtension::GetCurrentRaceType() {
 
 char *MWExtension::GetCurrentZoneName() {
     return TheTrackStreamer.GetCurrentZoneName();
+}
+
+void MWExtension::JuiceLowFrameRateLog(const float &fps) {
+    if (fps < fpsTolerateValue) {
+        char *zoneName = TheTrackStreamer.GetCurrentZoneName();
+        char *tempImgName = GetImageName();
+        char *tempPlayerPos = GetPlayerPosition();
+        int rigidBodyCount = IRigidBody::GetList().size();
+        char outcomeString[32];
+
+        if (countDown == logCountDownMax) {
+            bSPrintf(outcomeString, "INST_%.0f", fps);
+            bReleasePrintf("FRAME RATE: (%s) %s", zoneName, outcomeString);
+            reinterpret_cast<GameHook *(*)()>(GameHook::Instance)()->GameEvent(
+                "WORLD", "FPS", outcomeString, fps, static_cast<int>(fps), zoneName, tempImgName, tempPlayerPos);
+
+            int polyCount = DoPolyCount();
+            if (polyCount != 0) {
+                bSPrintf(outcomeString, "INS_%.0f {G_%.0f - S_%d - P_%d}", fps, PreviousGpuFrameRate,
+                        rigidBodyCount, polyCount);
+            } else {
+                bSPrintf(outcomeString, "INS_%.0f {G_%.0f - S_%d", fps, PreviousGpuFrameRate,
+                        rigidBodyCount);
+            }
+            reinterpret_cast<GameHook *(*)()>(GameHook::Instance)()->GameEvent(
+                "WORLD", "FPS_D", outcomeString, fps, rigidBodyCount, zoneName, tempImgName, tempPlayerPos);
+        }
+
+        if (countDown <= 0) {
+            countDown = logCountDownMax - 1;
+            bSPrintf(outcomeString, "SUST_%.0f", fpsTolerateValue);
+            bReleasePrintf("FRAME RATE: (%s) %s for %d frames", zoneName, outcomeString, logCountDownMax);
+            reinterpret_cast<GameHook *(*)()>(GameHook::Instance)()->GameEvent(
+                "WORLD", "FPS", outcomeString, fpsTolerateValue, static_cast<int>(fpsTolerateValue),
+                zoneName, tempImgName, tempPlayerPos);
+
+            int polyCount = DoPolyCount();
+            if (polyCount != 0) {
+                bSPrintf(outcomeString, "SUS_%.0f {G_%.0f - S_%d - P_%d}", fps, PreviousGpuFrameRate,
+                        rigidBodyCount, polyCount);
+            } else {
+                bSPrintf(outcomeString, "SUS_%.0f {G_%.0f - S_%d", fps, PreviousGpuFrameRate,
+                        rigidBodyCount);
+            }
+            reinterpret_cast<GameHook *(*)()>(GameHook::Instance)()->GameEvent(
+                "WORLD", "FPS_D", outcomeString, fps, rigidBodyCount, zoneName, tempImgName, tempPlayerPos);
+        } else {
+            countDown--;
+        }
+    } else {
+        countDown = logCountDownMax;
+    }
 }
 
 void MWExtension::JuiceScreenshot(char *fileName) {

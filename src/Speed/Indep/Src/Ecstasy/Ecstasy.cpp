@@ -231,20 +231,6 @@ bool eIsWidescreen() {
     return false;
 } // Unlocks fullscreen on GameCube for free?
 
-enum polyCountEnum {
-    NUM_POLY_COUNT_TYPES = 10,
-    POLY_COUNT_RVM_WORLDMODEL = 9,
-    POLY_COUNT_REFLECTION_WORLDMODEL = 8,
-    POLY_COUNT_MAIN_WORLDMODEL = 7,
-    POLY_COUNT_RVM_SCENERY = 6,
-    POLY_COUNT_REFLECTION_SCENERY = 5,
-    POLY_COUNT_MAIN_SCENERY = 4,
-    POLY_COUNT_ENVMAP_SCENERY = 3,
-    POLY_COUNT_RVM_CAR = 2,
-    POLY_COUNT_REFLECTION_CAR = 1,
-    POLY_COUNT_MAIN_CAR = 0,
-};
-
 // STRIPPED
 void AddPolyCount(polyCountEnum type /* r3 */, struct eModel *model /* r4 */) {}
 void ClearPolyCounts() {}

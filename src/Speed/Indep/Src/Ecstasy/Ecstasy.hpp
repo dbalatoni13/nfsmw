@@ -11,6 +11,22 @@
 
 extern SlotPool *eModelSlotPool;
 
+enum polyCountEnum {
+    NUM_POLY_COUNT_TYPES = 10,
+    POLY_COUNT_RVM_WORLDMODEL = 9,
+    POLY_COUNT_REFLECTION_WORLDMODEL = 8,
+    POLY_COUNT_MAIN_WORLDMODEL = 7,
+    POLY_COUNT_RVM_SCENERY = 6,
+    POLY_COUNT_REFLECTION_SCENERY = 5,
+    POLY_COUNT_MAIN_SCENERY = 4,
+    POLY_COUNT_ENVMAP_SCENERY = 3,
+    POLY_COUNT_RVM_CAR = 2,
+    POLY_COUNT_REFLECTION_CAR = 1,
+    POLY_COUNT_MAIN_CAR = 0,
+};
+
+int GetPolyCount(polyCountEnum type);
+
 // total size: 0x18
 class eModel : public bTNode<eModel> {
     uint32 NameHash;                                           // offset 0x8, size 0x4
