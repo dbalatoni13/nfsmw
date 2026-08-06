@@ -5,9 +5,11 @@
 #include "Speed/Indep/Src/Misc/GameFlow.hpp"
 #include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
+#include "Speed/Indep/Src/Interfaces/IFengHud.h"
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/ICopMgr.h"
+#include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
 
 extern int DoScreenPrintf;
 extern int UnlockAllThings;
@@ -15,6 +17,7 @@ extern int ForcePursuitNeverEnd;
 extern bool Tweak_InfiniteRaceBreaker;
 extern float fpsTolerateValue;
 extern int logCountDownMax;
+extern int ForcePursuitHeatLevel;
 extern void Game_ChallengeCompleted();
 extern void Game_AwardPlayerBounty(int amount);
 extern int Game_GetPlayerBounty();
@@ -189,6 +192,50 @@ int MWCommands::ScreenLoaded(Scripting::VarArgs &params) {
     }
     return 1;
 not_loaded:
+    return 0;
+}
+
+int MWCommands::InDriveMode(Scripting::VarArgs &params) {
+    IPlayer *player = IPlayer::First(PLAYER_LOCAL);
+    if (player == nullptr) {
+        return 0;
+    }
+    if (IPlayer::First(PLAYER_LOCAL)->GetHud() == nullptr) {
+        return 0;
+    }
+    ICountdown *countdown;
+    IPlayer::First(PLAYER_LOCAL)->GetHud()->QueryInterface(&countdown);
+    if (Sim::GetState() == Sim::STATE_ACTIVE) {
+        if (cFEng::Get()->FindPackageWithControl() == nullptr && !INIS::Exists()) {
+            int result = 1;
+            bool active = countdown->IsActive();
+            if (active) {
+                result = 0;
+            }
+            return result;
+        }
+    }
+    return 0;
+}
+
+int MWCommands::SetHeat(Scripting::VarArgs &params) {
+    int heat;
+    if (params.GetNumberOfRemainingArgs() <= 0) {
+        goto default_heat;
+    }
+    params.GetInt(heat);
+    goto set_heat;
+default_heat:
+    heat = 4;
+set_heat:
+    ForcePursuitHeatLevel = heat;
+    IPlayer *player = IPlayer::First(PLAYER_LOCAL);
+    IPerpetrator *perp;
+    player->GetSimable()->QueryInterface(&perp);
+    if (perp != nullptr) {
+        perp->SetHeat(static_cast<float>(heat));
+        return 1;
+    }
     return 0;
 }
 

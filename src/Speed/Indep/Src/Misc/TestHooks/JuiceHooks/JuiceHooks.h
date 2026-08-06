@@ -6,6 +6,7 @@
 #endif
 
 #include <types.h>
+#include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 
 class IPlayer;
 enum FormationType;
@@ -14,6 +15,19 @@ struct MoviePlayer {
     char *GetMovieFilename();
 };
 extern MoviePlayer *gMoviePlayer;
+
+class ICountdown : public UTL::COM::IUnknown {
+public:
+    static HINTERFACE _IHandle() {
+        return (HINTERFACE)_IHandle;
+    }
+
+    ICountdown(UTL::COM::Object *owner) : UTL::COM::IUnknown(owner, _IHandle()) {}
+    virtual ~ICountdown() {}
+    virtual void BeginCountdown();
+    virtual bool IsActive();
+    virtual float GetSecondsBeforeRaceStart();
+};
 
 class IExtension {
 public:
@@ -65,6 +79,8 @@ public:
     char *GetTrackID(Scripting::VarArgs &params);
     int IsPursuit(Scripting::VarArgs &params);
     int InFrontEnd(Scripting::VarArgs &params);
+    int InDriveMode(Scripting::VarArgs &params);
+    int SetHeat(Scripting::VarArgs &params);
     char *DisplayFMVfilename(Scripting::VarArgs &params);
     int SetFrameRateThreshold(Scripting::VarArgs &params);
     int ScreenLoaded(Scripting::VarArgs &params);
