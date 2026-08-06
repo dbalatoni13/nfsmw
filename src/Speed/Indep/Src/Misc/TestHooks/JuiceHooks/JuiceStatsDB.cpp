@@ -71,57 +71,57 @@ void JuiceStatsDB::SubmitStats(JuiceRaceType raceType) {
             break;
         }
 
-        cameraTime = mTimeInCameraMode;
-        raceTime = mTimeInRaceType;
-        Juice::GameHook::Instance()->LogText(
-            "[STAT LOGGED] - COP_STATS, TRAFFIC_STATS, HEAT_STATS AND CAMERA_");
-
-        heatTime = mTimeAtHeatLevel;
-        Juice::GameHook::Instance()->LogStat(
-            4, raceTypeString, "COP_CARS_SPAWNED", mPerRaceStatsDB[0]);
-        Juice::GameHook::Instance()->LogStat(
-            4, raceTypeString, "COP_CARS_UNSPAWNED", mPerRaceStatsDB[1]);
-        Juice::GameHook::Instance()->LogStat(
-            4, raceTypeString, "TRAFFIC_SPAWNED", mPerRaceStatsDB[4]);
-        Juice::GameHook::Instance()->LogStat(
-            4, raceTypeString, "TRAFFIC_UNSPAWNED", mPerRaceStatsDB[5]);
-        Juice::GameHook::Instance()->LogStat(
-            4, raceTypeString, "COP_CHOPPERS_SPAWNED", mPerRaceStatsDB[2]);
-        Juice::GameHook::Instance()->LogStat(
-            4, raceTypeString, "COP_CHOPPERS_UNSPAWNED", mPerRaceStatsDB[3]);
-        Juice::GameHook::Instance()->LogStat(
-            4, raceTypeString, "MAX_HEAT", mPerRaceStatsDB[7]);
-
         {
-            int heatIndex = 0;
+            int counter = 0;
+            cameraTime = mTimeInCameraMode;
+            raceTime = mTimeInRaceType;
+            Juice::GameHook::Instance()->LogText(
+                "[STAT LOGGED] - COP_STATS, TRAFFIC_STATS, HEAT_STATS AND CAMERA_");
+
+            heatTime = mTimeAtHeatLevel;
+            Juice::GameHook::Instance()->LogStat(
+                4, raceTypeString, "COP_CARS_SPAWNED", mPerRaceStatsDB[0]);
+            Juice::GameHook::Instance()->LogStat(
+                4, raceTypeString, "COP_CARS_UNSPAWNED", mPerRaceStatsDB[1]);
+            Juice::GameHook::Instance()->LogStat(
+                4, raceTypeString, "TRAFFIC_SPAWNED", mPerRaceStatsDB[4]);
+            Juice::GameHook::Instance()->LogStat(
+                4, raceTypeString, "TRAFFIC_UNSPAWNED", mPerRaceStatsDB[5]);
+            Juice::GameHook::Instance()->LogStat(
+                4, raceTypeString, "COP_CHOPPERS_SPAWNED", mPerRaceStatsDB[2]);
+            Juice::GameHook::Instance()->LogStat(
+                4, raceTypeString, "COP_CHOPPERS_UNSPAWNED", mPerRaceStatsDB[3]);
+            Juice::GameHook::Instance()->LogStat(
+                4, raceTypeString, "MAX_HEAT", mPerRaceStatsDB[7]);
+
             do {
                 if (*heatTime > 0.0f) {
                     Juice::GameHook::Instance()->LogText(
                         "[EVENT LOGGED] - HEAT_LEVEL_TIME\n");
                     Juice::GameHook::Instance()->GameEvent(
-                        "HEAT_LEVEL_TIME", raceTypeString, "", heatIndex, *heatTime, "", "", "");
+                        "HEAT_LEVEL_TIME", raceTypeString, "", counter, *heatTime, "", "", "");
                 }
-                heatIndex++;
+                counter++;
                 heatTime++;
-            } while (heatIndex < 11);
+            } while (counter < 11);
         }
 
         {
-            int cameraIndex = 0;
+            int counter = 0;
             do {
                 if (*cameraTime > 0.0f) {
                     Juice::GameHook::Instance()->LogText(
                         "[EVENT LOGGED] - CAMERA_MODE_TIME\n");
                     Juice::GameHook::Instance()->GameEvent(
-                        "CAMERA_MODE_TIME", raceTypeString, "", cameraIndex, *cameraTime, "", "", "");
+                        "CAMERA_MODE_TIME", raceTypeString, "", counter, *cameraTime, "", "", "");
                 }
-                cameraIndex++;
+                counter++;
                 cameraTime++;
-            } while (cameraIndex < 6);
+            } while (counter < 6);
         }
 
         {
-            int raceIndex = 5;
+            int counter = 5;
             do {
                 if (*raceTime > 0.0f) {
                     Juice::GameHook::Instance()->LogText(
@@ -129,9 +129,9 @@ void JuiceStatsDB::SubmitStats(JuiceRaceType raceType) {
                     Juice::GameHook::Instance()->GameEvent(
                         "RACE_TYPE_TIME", raceTypeString, "", 0, *raceTime, "", "", "");
                 }
-                raceIndex--;
+                counter--;
                 raceTime++;
-            } while (raceIndex > -1);
+            } while (counter > -1);
         }
         ResetPerRaceStats();
     }
