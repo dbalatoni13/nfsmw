@@ -66,8 +66,8 @@ MWCommands::MWCommands() {
     Scripting::ICommands::SendMethod(0, this, "InfRaceBreaker", 8,
                                       &MWCommands::InfRaceBreaker);
     Scripting::ICommands::SendMethod(0, this, "IsSplitScreen", 8, &MWCommands::IsSplitScreen);
-    Scripting::ICommands::SendMethod(0, this, "IsPursuit", 8, &MWCommands::IsPursuit);
     Scripting::ICommands::SendMethod(0, this, "ScatterCops", 8, &MWCommands::ScatterCops);
+    Scripting::ICommands::SendMethod(0, this, "IsPursuit", 8, &MWCommands::IsPursuit);
     Scripting::ICommands::SendMethod(2, this, "DisplayFMVfilename", 8,
                                       &MWCommands::DisplayFMVfilename);
     Scripting::ICommands::SendMethod(0, this, "AwardBounty", 8, &MWCommands::AwardBounty);
