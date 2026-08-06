@@ -24,6 +24,13 @@ extern void LoadNetworkIRXModulesPart2();
 extern bool bIsDebuggerConnected();
 extern void WriteJoylogFileHeader();
 
+bool JuicePutStringFunction(int terminal_channel, const char *s) {
+    Juice::GameHook *gameHook =
+        reinterpret_cast<Juice::GameHook *(*)(int, const char *)>(Juice::GameHook::Instance)(terminal_channel, s);
+    gameHook->LogText(s);
+    return true;
+}
+
 void InitJuice() {
     LoadNetworkIRXModulesPart2();
     bool debuggerConnected = bIsDebuggerConnected();
