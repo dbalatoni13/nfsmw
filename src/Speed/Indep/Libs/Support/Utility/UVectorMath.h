@@ -235,6 +235,11 @@ inline float VU0_v3lengthsquare(const UMath::Vector3 &a) {
     return result;
 }
 
+inline void VU0_v4crossprodxyz(const UMath::Vector4 &a, const UMath::Vector4 &b,
+                               UMath::Vector4 &dest) {
+    VU0_v3crossprod(UMath::Vector4To3(a), UMath::Vector4To3(b), UMath::Vector4To3(dest));
+}
+
 // inline void VU0_v3unit(const UMath::Vector3 &a, UMath::Vector3 &result) {}
 
 inline void VU0_v4scaleadd(const UMath::Vector4 &a, const float scaleby, const UMath::Vector4 &b, UMath::Vector4 &result) {}
