@@ -77,10 +77,9 @@ int JuiceDirtyNet::Disconnect() {
 }
 
 int JuiceDirtyNet::PeekHdr(char *data) {
-    char *localData = data;
     int kind = 0;
     int code = 0;
-    int result = ProtoAriesPeek(mAries, &kind, &code, &localData);
+    int result = ProtoAriesPeek(mAries, &kind, &code, &data);
     return result == 0 ? 1 : result;
 }
 
