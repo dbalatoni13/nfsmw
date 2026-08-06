@@ -64,6 +64,12 @@ public:
 
 namespace Juice {
 
+class JuicePad {
+public:
+    static JuicePad *Instance();
+    void SetButton(float value, int button);
+};
+
 class JuiceDirtyNet : public INetwork {
 private:
     static JuiceDirtyNet *mInstance;
