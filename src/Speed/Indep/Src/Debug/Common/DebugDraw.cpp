@@ -399,25 +399,26 @@ void DebugDraw::Sphere(const UMath::Vector3 &basePt, float radius, unsigned int 
 void DebugDraw::Circle(const UMath::Matrix4 &mat, float radius, unsigned int c,
                        short int lifeSpan, int texture) {
     if (fEnabled) {
-        UMath::Vector4 pts[12];
+        const int kNumFacets = 12;
+        UMath::Vector4 pts[kNumFacets];
         COORD2 txtOrigin = {0.5f, 0.5f};
-        UMath::Vector2 txtXY[12];
+        UMath::Vector2 txtXY[kNumFacets];
         float txtRadius = 0.5f;
         float angle = 0.0f;
-        UMath::Vector4 tpts[12];
+        UMath::Vector4 tpts[kNumFacets];
         UMath::Vector4 cp;
 
-        for (int i = 0; i < 12; ++i) {
+        for (int i = 0; i < kNumFacets; ++i) {
             txtXY[i].x = UMath::Cosa(angle) * txtRadius + txtRadius;
             txtXY[i].y = UMath::Sina(angle) * txtRadius + txtRadius;
             pts[i].x = radius * UMath::Cosa(angle);
             pts[i].y = 0.0f;
             pts[i].z = radius * UMath::Sina(angle);
             pts[i].w = 1.0f;
-            angle += 1.0f / 12.0f;
+            angle += 1.0f / kNumFacets;
         }
 
-        UMath::RotateTranslate(12, tpts, mat, pts);
+        UMath::RotateTranslate(kNumFacets, tpts, mat, pts);
 
         cp.x = 0.0f;
         cp.y = 0.0f;
@@ -425,11 +426,12 @@ void DebugDraw::Circle(const UMath::Matrix4 &mat, float radius, unsigned int c,
         cp.w = 1.0f;
         UMath::RotateTranslate(cp, mat, cp);
 
-        for (int i = 0; i < 11; ++i) {
+        for (int i = 0; i < kNumFacets - 1; ++i) {
             Triangle(&cp, &tpts[i], &tpts[i + 1], &txtOrigin, &txtXY[i],
                      &txtXY[i + 1], c, lifeSpan, texture);
         }
-        Triangle(&cp, &tpts[11], &tpts[0], &txtOrigin, &txtXY[11], &txtXY[0],
+        Triangle(&cp, &tpts[kNumFacets - 1], &tpts[0], &txtOrigin,
+                 &txtXY[kNumFacets - 1], &txtXY[0],
                  c, lifeSpan, texture);
     }
 }
