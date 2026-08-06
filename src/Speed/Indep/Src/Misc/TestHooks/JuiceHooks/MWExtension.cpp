@@ -16,9 +16,27 @@
 extern int BuildVersionChangelistNumber;
 extern int ForceJuiceConnect;
 extern char *ForceJuiceConnectIP;
+extern int gJuiceEnabled;
 extern int GetJoylogChannelRepeatCount(int channel);
 extern int ASYNCFILE_getstatus(int handle);
 extern int bStrCmp(const char *a, const char *b);
+extern void LoadNetworkIRXModulesPart2();
+extern bool bIsDebuggerConnected();
+extern void WriteJoylogFileHeader();
+
+void InitJuice() {
+    LoadNetworkIRXModulesPart2();
+    bool debuggerConnected = bIsDebuggerConnected();
+    if (debuggerConnected && ForceJuiceConnect == 0) {
+        return;
+    }
+    gJuiceEnabled = 1;
+    Juice::MWExtension::Instance();
+    Juice::JuiceDirtyNet::Instance();
+    reinterpret_cast<Juice::GameHook *(*)()>(Juice::GameHook::Instance)()->Initialize();
+    reinterpret_cast<Juice::GameHook *(*)()>(Juice::GameHook::Instance)()->InitTrapHandler();
+    WriteJoylogFileHeader();
+}
 
 namespace Juice {
 
@@ -390,7 +408,8 @@ char *MWExtension::GetCurrentZoneName() {
 }
 
 void MWExtension::JuiceScreenshot(char *fileName) {
-    GameHook::Instance(this, fileName)->LogText("[MW SS] - Calling Juice screenshot");
+    reinterpret_cast<GameHook *(*)(void *, char *)>(GameHook::Instance)(this, fileName)
+        ->LogText("[MW SS] - Calling Juice screenshot");
 }
 
 }

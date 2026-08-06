@@ -47,6 +47,7 @@ struct ProtoAriesRefT;
 
 class INetwork {
 public:
+    virtual ~INetwork();
     INetwork();
     virtual int Connect();
     virtual int IsConnected();
@@ -103,11 +104,13 @@ public:
 };
 
 struct GameHook {
-    static GameHook *(*Instance)(void *, char *);
+    static GameHook *(*Instance)();
     int mEnabled;
     int mFrame;
     void LogText(const char *text);
     void DisableJuice();
+    void Initialize();
+    void InitTrapHandler();
     int GetFrame() {
         return mFrame;
     }
