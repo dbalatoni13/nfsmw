@@ -50,35 +50,35 @@ void JuiceStatsDB::ResetCareerData() {
 }
 
 void JuiceStatsDB::SubmitCareerData(const char *profileName) {
-    if (mShouldDumpCareerData && profileName != nullptr) {
-        float *pursuitTime = mCareerFloatDataDB[0] + 2;
+    float *pursuitTime;
+    if (mShouldDumpCareerData && (pursuitTime = mCareerFloatDataDB[0] + 2, profileName != nullptr)) {
         int *pursuitLength = mCareerIntDataDB[0] + 2;
         int *cashEarned = mCareerIntDataDB[0] + 1;
-        int *repEarned = mCareerIntDataDB[0];
+        int (*repEarned)[3] = mCareerIntDataDB;
         int offset = 0;
         float zero = 0.0f;
         do {
-            reinterpret_cast<Juice::GameHook *(*)()>(Juice::GameHook::Instance)()->LogText(
+            Juice::GameHook::Instance()->LogText(
                 "[EVENT LOGGED] - CAREER_TRACKING\n");
-            if (*repEarned != 0) {
-                reinterpret_cast<Juice::GameHook *(*)()>(Juice::GameHook::Instance)()->GameEvent(
-                    "CAREER_TRACKING", "REP_EARNED", "", 0.0f,
-                    *repEarned, const_cast<char *>(profileName), "", "");
+            if ((*repEarned)[0] != 0) {
+                Juice::GameHook::Instance()->GameEvent(
+                    "CAREER_TRACKING", "REP_EARNED", "", (*repEarned)[0], 0.0f,
+                    const_cast<char *>(profileName), "", "");
             }
             if (*cashEarned != 0) {
-                reinterpret_cast<Juice::GameHook *(*)()>(Juice::GameHook::Instance)()->GameEvent(
-                    "CAREER_TRACKING", "CASH_EARNED", "", 0.0f,
-                    *cashEarned, const_cast<char *>(profileName), "", "");
+                Juice::GameHook::Instance()->GameEvent(
+                    "CAREER_TRACKING", "CASH_EARNED", "", *cashEarned, 0.0f,
+                    const_cast<char *>(profileName), "", "");
             }
             if (static_cast<float>(*pursuitLength) != zero) {
-                reinterpret_cast<Juice::GameHook *(*)()>(Juice::GameHook::Instance)()->GameEvent(
+                Juice::GameHook::Instance()->GameEvent(
                     "CAREER_TRACKING", "PURSUIT_LENGTH", "",
-                    *reinterpret_cast<float *>(reinterpret_cast<char *>(pursuitTime) + offset),
-                    0, const_cast<char *>(profileName), "", "");
+                    0, *reinterpret_cast<float *>(reinterpret_cast<char *>(pursuitTime) + offset),
+                    const_cast<char *>(profileName), "", "");
             }
             pursuitLength += 3;
             cashEarned += 3;
-            repEarned += 3;
+            repEarned++;
             offset += 0xc;
         } while (pursuitLength < reinterpret_cast<int *>(pursuitTime));
         ResetCareerData();

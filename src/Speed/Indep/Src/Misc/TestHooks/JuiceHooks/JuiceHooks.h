@@ -151,8 +151,9 @@ struct GameHook {
     void DisableJuice();
     void Initialize();
     void InitTrapHandler();
-    void GameEvent(const char *world, const char *event, char *outcome, float fps,
-                   int fpsAsInt, char *zoneName, char *imageName, char *playerPosition);
+    void GameEvent(char *world, char *event, char *outcome, int fpsAsInt, float fps,
+                   char *zoneName, char *imageName, char *playerPosition);
+    void LogStat(int stat, char *statType, char *raceType, int value);
     int GetFrame() {
         return mFrame;
     }

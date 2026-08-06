@@ -427,7 +427,7 @@ void MWExtension::JuiceLowFrameRateLog(const float &fps) {
             bSPrintf(outcomeString, "INST_%.0f", fps);
             bReleasePrintf("FRAME RATE: (%s) %s", zoneName, outcomeString);
             reinterpret_cast<GameHook *(*)()>(GameHook::Instance)()->GameEvent(
-                "WORLD", "FPS", outcomeString, fps, static_cast<int>(fps), zoneName, tempImgName, tempPlayerPos);
+                "WORLD", "FPS", outcomeString, static_cast<int>(fps), fps, zoneName, tempImgName, tempPlayerPos);
 
             int polyCount = DoPolyCount();
             if (polyCount != 0) {
@@ -438,7 +438,7 @@ void MWExtension::JuiceLowFrameRateLog(const float &fps) {
                         rigidBodyCount);
             }
             reinterpret_cast<GameHook *(*)()>(GameHook::Instance)()->GameEvent(
-                "WORLD", "FPS_D", outcomeString, fps, rigidBodyCount, zoneName, tempImgName, tempPlayerPos);
+                "WORLD", "FPS_D", outcomeString, rigidBodyCount, fps, zoneName, tempImgName, tempPlayerPos);
         }
 
         if (countDown <= 0) {
@@ -446,7 +446,7 @@ void MWExtension::JuiceLowFrameRateLog(const float &fps) {
             bSPrintf(outcomeString, "SUST_%.0f", fpsTolerateValue);
             bReleasePrintf("FRAME RATE: (%s) %s for %d frames", zoneName, outcomeString, logCountDownMax);
             reinterpret_cast<GameHook *(*)()>(GameHook::Instance)()->GameEvent(
-                "WORLD", "FPS", outcomeString, fpsTolerateValue, static_cast<int>(fpsTolerateValue),
+                "WORLD", "FPS", outcomeString, static_cast<int>(fpsTolerateValue), fpsTolerateValue,
                 zoneName, tempImgName, tempPlayerPos);
 
             int polyCount = DoPolyCount();
@@ -458,7 +458,7 @@ void MWExtension::JuiceLowFrameRateLog(const float &fps) {
                         rigidBodyCount);
             }
             reinterpret_cast<GameHook *(*)()>(GameHook::Instance)()->GameEvent(
-                "WORLD", "FPS_D", outcomeString, fps, rigidBodyCount, zoneName, tempImgName, tempPlayerPos);
+                "WORLD", "FPS_D", outcomeString, rigidBodyCount, fps, zoneName, tempImgName, tempPlayerPos);
         } else {
             countDown--;
         }
