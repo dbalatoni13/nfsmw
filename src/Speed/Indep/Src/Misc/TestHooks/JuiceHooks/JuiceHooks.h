@@ -42,12 +42,15 @@ public:
     virtual ~ICommands() {}
 };
 
+struct ProtoAriesRefT;
+
 class INetwork {
 public:
+    INetwork();
     virtual int Connect();
     virtual int IsConnected();
     virtual int Recv();
-    virtual int PeekHdr();
+    virtual int PeekHdr(char *buffer);
     virtual int Send();
     virtual int IsEnabled();
     virtual int Initialize();
@@ -64,9 +67,12 @@ namespace Juice {
 class JuiceDirtyNet : public INetwork {
 private:
     static JuiceDirtyNet *mInstance;
+    ProtoAriesRefT *mAries;
 
 public:
     static JuiceDirtyNet *Instance();
+    JuiceDirtyNet();
+    virtual ~JuiceDirtyNet();
     virtual int Connect(const char *ip, int port);
     virtual int IsConnected();
     virtual int Recv(char *buffer, int *size, int flags);
@@ -85,6 +91,8 @@ public:
 struct GameHook {
     static GameHook *(*Instance)(void *, char *);
     void LogText(const char *text);
+    unsigned int GetCurrentSystemTime();
+    int GetTimeElapsed(unsigned int *startTime);
 };
 
 namespace Scripting {
