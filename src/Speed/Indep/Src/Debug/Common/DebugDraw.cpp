@@ -48,12 +48,11 @@ void DebugDraw::CacheCameraInfo() {
 }
 
 void DebugDraw::DrawAll() {
-    eView *view;
     bMatrix4 *matrix;
+    eView *view = eGetView(EVIEW_PLAYER1, false);
     static int lastSimFrame;
     int simDecayFrames;
 
-    view = eGetView(EVIEW_PLAYER1, false);
     if (!view) {
         return;
     }
@@ -102,6 +101,7 @@ void DebugDraw::DrawAll() {
                     unsigned int colour0 = pColour[0];
                     unsigned int colour1;
 
+                    iNumVertsLeft -= 2;
                     verts[0].u = 0.5f;
                     verts[0].v = 0.5f;
                     iCurVert += 2;
@@ -119,7 +119,6 @@ void DebugDraw::DrawAll() {
                     verts[1].u = 0.5f;
                     verts[1].v = 0.5f;
 
-                    iNumVertsLeft -= 2;
                     eDrawKLine(verts, 1);
                 } while (iNumVertsLeft > 2);
             }
@@ -132,7 +131,7 @@ void DebugDraw::DrawAll() {
 
         iCurVert = 0;
         iNumVertsLeft = this->fNumTriPrims;
-        simDecayFrames = static_cast<short int>(eGetFrameCounter()) - static_cast<short int>(lastSimFrame);
+        simDecayFrames = eGetFrameCounter() - lastSimFrame;
         lastSimFrame = eGetFrameCounter();
         for (; iCurVert < iNumVertsLeft; iCurVert++) {
             if (this->fTriPrimList[iCurVert].fTimeType == 1) {
