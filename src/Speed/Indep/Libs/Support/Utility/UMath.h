@@ -147,6 +147,12 @@ inline void RotateTranslate(const Vector4 &a, const Matrix4 &m, Vector4 &r) {
     VU0_MATRIX4_vect4mult(a, m, r);
 }
 
+inline void RotateTranslate(int count, Vector4 *r, const Matrix4 &m, const Vector4 *v) {
+    for (int i = 0; i < count; ++i) {
+        RotateTranslate(v[i], m, r[i]);
+    }
+}
+
 inline void Init(Matrix4 &m, const float xx, const float yy, const float zz) {
     VU0_MATRIX4Init(m, xx, yy, zz);
 }

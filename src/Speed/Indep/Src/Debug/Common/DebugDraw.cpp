@@ -293,6 +293,44 @@ void DebugDraw::Sphere(const UMath::Vector3 &basePt, float radius, unsigned int 
     }
 }
 
+void DebugDraw::Circle(const UMath::Matrix4 &mat, float radius, unsigned int c,
+                       short int lifeSpan, int texture) {
+    if (fEnabled) {
+        UMath::Vector4 pts[12];
+        COORD2 txtOrigin = {0.5f, 0.5f};
+        UMath::Vector2 txtXY[12];
+        float txtRadius = 1.0f / 12.0f;
+        float angle = 0.0f;
+        UMath::Vector4 tpts[12];
+        UMath::Vector4 cp;
+
+        for (int i = 0; i < 12; ++i) {
+            txtXY[i].x = UMath::Cosa(angle) * 0.5f + 0.5f;
+            txtXY[i].y = UMath::Sina(angle) * 0.5f + 0.5f;
+            pts[i].x = radius * UMath::Cosa(angle);
+            pts[i].y = 0.0f;
+            pts[i].z = radius * UMath::Sina(angle);
+            pts[i].w = 1.0f;
+            angle += txtRadius;
+        }
+
+        UMath::RotateTranslate(12, tpts, mat, pts);
+
+        cp.x = 0.0f;
+        cp.y = 0.0f;
+        cp.z = 0.0f;
+        cp.w = 1.0f;
+        UMath::RotateTranslate(cp, mat, cp);
+
+        for (int i = 0; i < 11; ++i) {
+            Triangle(&cp, &tpts[i], &tpts[i + 1], &txtOrigin, &txtXY[i],
+                     &txtXY[i + 1], c, lifeSpan, texture);
+        }
+        Triangle(&cp, &tpts[11], &tpts[0], &txtOrigin, &txtXY[11], &txtXY[0],
+                 c, lifeSpan, texture);
+    }
+}
+
 void DebugDraw::Cylinder(const UMath::Matrix4 &mat, float radius, float height,
                          unsigned int c, short int lifeSpan, bool bShadow, int texture) {
     if (fEnabled) {

@@ -87,6 +87,10 @@ struct DebugDraw {
                  const UMath::Vector4 &pt1, unsigned int c, short int lifeSpan);
     void LineSeg(const UMath::Vector3 &pt0, const UMath::Vector3 &pt1,
                  unsigned int c, short int lifeSpan);
+    void Triangle(const UMath::Vector4 *pt0, const UMath::Vector4 *pt1,
+                  const UMath::Vector4 *pt2, const COORD2 *uv0,
+                  const COORD2 *uv1, const COORD2 *uv2, unsigned int c,
+                  short int lifeSpan, int texture);
     void Sphere(const UMath::Matrix4 &mat, float radius, unsigned int c,
                 short int lifeSpan, bool bShadow, int texture);
     void Sphere(const UMath::Vector3 &basePt, float radius, unsigned int c,
