@@ -2,8 +2,8 @@
 #include "Speed/PSX2/Src/Online/PS2Isp.hpp"
 
 extern "C" void NetConnStartup(const char *params);
-extern "C" long NetConnQuery(const char *name, NetConfigRecT *configs, int count);
-extern "C" long NetConnConnect(NetConfigRecT *configs, int flags);
+extern "C" int NetConnQuery(const char *name, NetConfigRecT *configs, int count);
+extern "C" int NetConnConnect(NetConfigRecT *configs, int flags);
 extern "C" int printf(const char *format, ...);
 extern char *NetConnMAC();
 extern ProtoAriesRefT *ProtoAriesCreate(int memSize);
@@ -44,21 +44,21 @@ int JuiceDirtyNet::Initialize() {
     int connected = 1;
     NetConnStartup("-nosecure");
     printf("Loading network configuration");
-    long count = NetConnQuery("mc0:", configs, 4);
-    if (count == 0) {
+    int cnt = NetConnQuery("mc0:", configs, 4);
+    if (cnt == 0) {
         printf("\nNo network configurations found on mc0\n");
-    } else if (count > -1) {
+    } else if (cnt < 0) {
+        printf("\nError occured loading network configurations\n");
+    } else {
         printf("\nConfiguration Loaded Starting Juice\n");
-        count = NetConnConnect(configs, 0);
-        printf("\nNetConnConnect returned: %d\n", count);
-        if (count > -1) {
+        int error = NetConnConnect(configs, 0);
+        printf("\nNetConnConnect returned: %d\n", error);
+        if (error > -1) {
             goto done;
         }
-    } else {
-        printf("\nError occured loading network configurations\n");
     }
     connected = 0;
-    reinterpret_cast<GameHook *(*)()>(GameHook::Instance)()->DisableJuice();
+    GameHook::Instance()->DisableJuice();
 done:
     return connected;
 }
