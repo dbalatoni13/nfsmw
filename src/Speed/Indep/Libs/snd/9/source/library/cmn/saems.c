@@ -906,7 +906,7 @@ int SNDAEMSI_updateplayer(AemsDef::PLAYERSTATE *pplayerstate) {
         } else if (outputplaystate == 1) {
             if (pplayerstate->settings.sampletype >= 0) {
                 SNDAEMSplayerunpausefn[pplayerstate->settings.sampletype](pplayerstate);
-            } else if ((pplayerstate->settings.prevplaycontrol[0] & ~0xFFFF) != 0x2010000) {
+            } else if ((((unsigned int *)pplayerstate->settings.prevplaycontrol)[0] & ~0xFFFF) != 0x2010000) {
                 int sampleselect = pplayerstate->sampleselect;
                 if (sampleselect >= pplayerstate->settings.psamplegroup->numentries) {
                     sampleselect = pplayerstate->settings.psamplegroup->numentries - 1;
@@ -1206,7 +1206,7 @@ void SNDAEMSI_restore() {
     while (!sndaems.modulebank.IsEmpty()) {
         AemsDef::ModuleBank *pModuleBank;
         int nodeoffset = -10;
-        pModuleBank = reinterpret_cast<AemsDef::ModuleBank *>(&sndaems.modulebank.GetHead()[-10]);
+        pModuleBank = reinterpret_cast<AemsDef::ModuleBank *>(&sndaems.modulebank.GetHead()[nodeoffset]);
         SNDAEMS_removemodulebank(pModuleBank->modulebankhandle);
     }
 
@@ -1369,7 +1369,7 @@ void SNDAEMSI_resolvemodulebank(
         unsigned short *addr_lo = addr_hi + 2;
         unsigned int comp_func = (*addr_hi << 16) | *addr_lo;
         unsigned short *pfuncentry = reinterpret_cast<unsigned short *>(
-            (comp_func << 2) + reinterpret_cast<char *>(sndaemsfuncs)
+            &sndaemsfuncs[comp_func]
         );
         *addr_hi = pfuncentry[0];
         *addr_lo = pfuncentry[1];
@@ -1438,10 +1438,8 @@ void SNDAEMSI_resolvemodulebank(
     }
 
     if (streamfilename != NULL && streamfilename[0] != 0) {
-        int len = strlen(streamfilename);
-        char *pstr = reinterpret_cast<char *>(SNDMEMI_allocz(len + 1));
-        pModuleBank->streamfilepath = pstr;
-        strcpy(pstr, streamfilename);
+        pModuleBank->streamfilepath = reinterpret_cast<char *>(SNDMEMI_allocz(strlen(streamfilename) + 1));
+        strcpy(pModuleBank->streamfilepath, streamfilename);
         pModuleBank->streamfileoffset = streamfileoffset;
     } else {
         pModuleBank->streamfilepath = NULL;
