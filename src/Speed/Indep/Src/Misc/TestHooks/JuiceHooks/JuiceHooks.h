@@ -73,6 +73,9 @@ public:
     void SetButton(float value, int button);
     int IsButtonPressed(int button);
     int DidInputHappen();
+    tJuicePad *GetMasterPad();
+    void UpdateJuicePad();
+    void ResetButtons();
 };
 
 class JuiceDirtyNet : public INetwork {
@@ -101,10 +104,21 @@ public:
 
 struct GameHook {
     static GameHook *(*Instance)(void *, char *);
+    int mEnabled;
+    int mFrame;
     void LogText(const char *text);
     void DisableJuice();
+    int GetFrame() {
+        return mFrame;
+    }
     unsigned int GetCurrentSystemTime();
     int GetTimeElapsed(unsigned int *startTime);
+};
+
+struct PadConfigManager {
+    static PadConfigManager *Instance();
+    bool IsFENavCapturing();
+    void CaptureKeyAndState(int buttonMask);
 };
 
 namespace Scripting {

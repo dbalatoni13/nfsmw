@@ -220,6 +220,39 @@ void MWExtension::JuicePadToGamePad(tJuicePad *juiceInput, void *gameInput) {
     }
 }
 
+void MWExtension::UpdatePad(void *input) {
+    MWJuicePad::Instance()->ReleaseSegmentPresses();
+    tJuicePad *juicePad = JuicePad::Instance()->GetMasterPad();
+    JuicePad::Instance()->UpdateJuicePad();
+
+    short offset = *reinterpret_cast<short *>(
+        *reinterpret_cast<char **>(IExtension::sCurrentExtension) + 0x68);
+    void (**updateJuice)(char *, tJuicePad *, void *) =
+        reinterpret_cast<void (**)(char *, tJuicePad *, void *)>(
+            *reinterpret_cast<char **>(IExtension::sCurrentExtension) + 0x6c);
+    (*updateJuice)(reinterpret_cast<char *>(IExtension::sCurrentExtension) + offset, juicePad, input);
+
+    offset = *reinterpret_cast<short *>(
+        *reinterpret_cast<char **>(IExtension::sCurrentExtension) + 0x60);
+    void (**updateGame)(char *, void *, tJuicePad *) =
+        reinterpret_cast<void (**)(char *, void *, tJuicePad *)>(
+            *reinterpret_cast<char **>(IExtension::sCurrentExtension) + 0x64);
+    (*updateGame)(reinterpret_cast<char *>(IExtension::sCurrentExtension) + offset, input, juicePad);
+
+    static int oldFrame;
+    if (PadConfigManager::Instance()->IsFENavCapturing() &&
+        JuicePad::Instance()->DidInputHappen() == 1) {
+        int currentFrame = reinterpret_cast<GameHook *(*)()>(GameHook::Instance)()->GetFrame();
+        int frameDelta = currentFrame - oldFrame;
+        if (*reinterpret_cast<int *>(juicePad) != 0 && frameDelta > 0xe) {
+            oldFrame = currentFrame;
+            PadConfigManager::Instance()->CaptureKeyAndState(*reinterpret_cast<int *>(juicePad));
+        }
+    }
+    JuicePad::Instance()->UpdateJuicePad();
+    JuicePad::Instance()->ResetButtons();
+}
+
 int MWExtension::NumberOfRepeatedReplayEntries(int channel) {
     return GetJoylogChannelRepeatCount(channel);
 }
