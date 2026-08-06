@@ -188,10 +188,10 @@ public:
     static void SendMethod(int type, const ICommands *obj, const char *methodName, int argSize,
                            const void *method);
 
-    template <class T>
+    template <class C, class R>
     static void SendMethod(int type, const ICommands *obj, const char *methodName, int argSize,
-                           T method) {
-        T m = method;
+                           R (C::*method)(VarArgs &)) {
+        R (ICommands::*m)(VarArgs &) = static_cast<R (ICommands::*)(VarArgs &)>(method);
         SendMethod(type, obj, methodName, argSize, static_cast<const void *>(&m));
     }
 };
