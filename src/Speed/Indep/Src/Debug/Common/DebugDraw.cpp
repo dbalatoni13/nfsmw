@@ -293,6 +293,42 @@ void DebugDraw::Sphere(const UMath::Vector3 &basePt, float radius, unsigned int 
     }
 }
 
+void DebugDraw::Cylinder(const UMath::Matrix4 &mat, float radius, float height,
+                         unsigned int c, short int lifeSpan, bool bShadow, int texture) {
+    if (fEnabled) {
+        CylinderSection(mat, radius, radius, height, c, lifeSpan, texture);
+        Circle(mat, radius, c, lifeSpan, texture);
+
+        UMath::Matrix4 matTop;
+        matTop = mat;
+        matTop.v3.y += height;
+        Circle(matTop, radius, c, lifeSpan, texture);
+
+        if (bShadow == true) {
+            UMath::Vector4 trans1;
+            UMath::Vector4 trans2;
+
+            trans1 = mat.v3;
+            trans1.w = 1.0f;
+            trans2 = trans1;
+            trans2.w = 1.0f;
+            bool hit;
+            {
+                WCollisionMgr collisionMgr(0, 3);
+                hit = collisionMgr.GetWorldHeightAtPoint(UMath::Vector4To3(trans1), trans2.y, nullptr);
+            }
+            if (hit) {
+                UTransform t(UMath::Matrix3::kIdentity, UMath::Vector4To3(trans2));
+
+                Box(t.fTransform, 1.0f, 0.01f, 1.0f, 0x1f888888, 1, false, -1, true);
+                UMath::Subxyz(trans2, trans1, trans2);
+                trans2.w = 1.0f;
+                Vector(trans1, trans2, 1.0f, 0x1f888888, 1, -1);
+            }
+        }
+    }
+}
+
 void DebugDraw::Cylinder(const UMath::Vector3 &basePt, float radius, float height,
                          unsigned int c, short int lifeSpan, bool bShadow, int texture) {
     if (fEnabled) {

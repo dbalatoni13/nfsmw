@@ -97,6 +97,8 @@ struct DebugDraw {
                   unsigned int c, short int lifeSpan, bool bShadow, int texture);
     void CylinderSection(const UMath::Matrix4 &mat, float radTop, float radBot,
                          float height, unsigned int c, short int lifeSpan, int texture);
+    void Circle(const UMath::Matrix4 &mat, float radius, unsigned int c,
+                short int lifeSpan, int texture);
     void Box(const UMath::Matrix4 &mat, float width, float height, float depth,
              unsigned int c, short int lifeSpan, bool bShadow, int texture, bool frombase);
     void Vector(const UMath::Vector3 &pt, const UMath::Vector3 &vec, float scale,
