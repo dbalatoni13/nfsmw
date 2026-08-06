@@ -11,6 +11,22 @@ void *operator new(size_t size) {
 #endif
 }
 
+void *operator new(size_t size, const char *file, int line) {
+    return bMalloc(size, file, line, 0);
+}
+
+void *operator new[](size_t size, const char *file, int line) {
+    return bMalloc(size, file, line, 0);
+}
+
+void *operator new(size_t size, const char *file, int line, int allocationParams) {
+    return bMalloc(size, file, line, allocationParams);
+}
+
+void *operator new[](size_t size, const char *file, int line, int allocationParams) {
+    return bMalloc(size, file, line, allocationParams);
+}
+
 void *operator new[](size_t size) {
 #ifdef MILESTONE_OPT
     // TODO
