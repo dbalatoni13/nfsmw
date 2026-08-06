@@ -154,6 +154,7 @@ struct GameHook {
     void GameEvent(char *world, char *event, char *outcome, int fpsAsInt, float fps,
                    char *zoneName, char *imageName, char *playerPosition);
     void LogStat(int stat, char *statType, char *raceType, int value);
+    void AssetHit(char *assetName, char *assetValue);
     int GetFrame() {
         return mFrame;
     }
