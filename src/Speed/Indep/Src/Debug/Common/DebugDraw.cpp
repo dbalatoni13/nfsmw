@@ -6,7 +6,9 @@ extern int sDebugDrawMaxPrims;
 extern int sDebugDrawMaxLinePrims;
 
 namespace UMemory {
-void Free(void *ptr);
+void Free(void *ptr) {
+    bFree(ptr);
+}
 }
 
 DebugDraw *DebugDraw::fgDbgDraw;
