@@ -351,6 +351,45 @@ void DebugDraw::Quad(const UMath::Vector4 *pt0, const UMath::Vector4 *pt1,
     Triangle(pt2, pt3, pt0, &uv2, &uv3, &uv0, c, lifeSpan, texture);
 }
 
+void DebugDraw::Box(const UMath::Vector4 *tpts, unsigned int c, short int lifeSpan,
+                    bool bShadow, int texture) {
+    if (fEnabled) {
+        Quad(&tpts[0], &tpts[1], &tpts[2], &tpts[3], c, lifeSpan, texture);
+        Quad(&tpts[4], &tpts[5], &tpts[6], &tpts[7], c, lifeSpan, texture);
+        Quad(&tpts[0], &tpts[4], &tpts[7], &tpts[3], c, lifeSpan, texture);
+        Quad(&tpts[1], &tpts[5], &tpts[4], &tpts[0], c, lifeSpan, texture);
+        Quad(&tpts[2], &tpts[6], &tpts[5], &tpts[1], c, lifeSpan, texture);
+        Quad(&tpts[3], &tpts[7], &tpts[6], &tpts[2], c, lifeSpan, texture);
+
+        if (bShadow) {
+            UMath::Vector4 trans1;
+            UMath::Vector4 trans2;
+
+            trans1.y = tpts[0].y;
+            trans1.x = (tpts[0].x + tpts[2].x) * 0.5f;
+            trans1.z = (tpts[0].z + tpts[2].z) * 0.5f;
+            trans1.w = 1.0f;
+            trans2.y = trans1.y;
+            trans2.x = trans1.x;
+            trans2.w = 1.0f;
+            trans2.z = trans1.z;
+            bool hit;
+            {
+                WCollisionMgr collisionMgr(0, 3);
+                hit = collisionMgr.GetWorldHeightAtPoint(UMath::Vector4To3(trans1), trans2.y, nullptr);
+            }
+            if (hit) {
+                UTransform t(UMath::Matrix3::kIdentity, UMath::Vector4To3(trans2));
+
+                Box(t.fTransform, 1.0f, 0.01f, 1.0f, 0x1f888888, 1, false, -1, true);
+                UMath::Subxyz(trans2, trans1, trans2);
+                trans2.w = 1.0f;
+                Vector(trans1, trans2, 1.0f, 0x1f888888, 1, -1);
+            }
+        }
+    }
+}
+
 void DebugDraw::CylinderSection(const UMath::Matrix4 &mat, float radiusTop, float radiusBot,
                                 float height, unsigned int c, short int lifeSpan, int texture) {
     const int kMaxNumFacets = 12;
@@ -396,6 +435,40 @@ void DebugDraw::CylinderSection(const UMath::Matrix4 &mat, float radiusTop, floa
         }
         Quad(&topTpts[numFacets - 1], &topTpts[0], &botTpts[0], &botTpts[numFacets - 1],
              c, lifeSpan, texture);
+    }
+}
+
+void DebugDraw::Box(const UMath::Matrix4 &mat, float width, float height, float depth,
+                    unsigned int c, short int lifeSpan, bool bShadow, int texture, bool frombase) {
+    if (fEnabled) {
+        UMath::Vector4 tpts[8];
+        UMath::Vector4 pts[8];
+        const float halfWidth = width * 0.5f;
+        const float halfHeight = height * 0.5f;
+        const float halfDepth = depth * 0.5f;
+
+        if (frombase) {
+            pts[0] = UMath::Vector4Make(-halfWidth, 0.0f, -halfDepth, 1.0f);
+            pts[1] = UMath::Vector4Make(-halfWidth, 0.0f, halfDepth, 1.0f);
+            pts[2] = UMath::Vector4Make(halfWidth, 0.0f, halfDepth, 1.0f);
+            pts[3] = UMath::Vector4Make(halfWidth, 0.0f, -halfDepth, 1.0f);
+            pts[4] = UMath::Vector4Make(-halfWidth, height, -halfDepth, 1.0f);
+            pts[5] = UMath::Vector4Make(-halfWidth, height, halfDepth, 1.0f);
+            pts[6] = UMath::Vector4Make(halfWidth, height, halfDepth, 1.0f);
+            pts[7] = UMath::Vector4Make(halfWidth, height, -halfDepth, 1.0f);
+        } else {
+            pts[0] = UMath::Vector4Make(-halfWidth, -halfHeight, -halfDepth, 1.0f);
+            pts[1] = UMath::Vector4Make(-halfWidth, -halfHeight, halfDepth, 1.0f);
+            pts[2] = UMath::Vector4Make(halfWidth, -halfHeight, halfDepth, 1.0f);
+            pts[3] = UMath::Vector4Make(halfWidth, -halfHeight, -halfDepth, 1.0f);
+            pts[4] = UMath::Vector4Make(-halfWidth, halfHeight, -halfDepth, 1.0f);
+            pts[5] = UMath::Vector4Make(-halfWidth, halfHeight, halfDepth, 1.0f);
+            pts[6] = UMath::Vector4Make(halfWidth, halfHeight, halfDepth, 1.0f);
+            pts[7] = UMath::Vector4Make(halfWidth, halfHeight, -halfDepth, 1.0f);
+        }
+
+        UMath::RotateTranslate(8, tpts, mat, pts);
+        Box(tpts, c, lifeSpan, bShadow, texture);
     }
 }
 
