@@ -333,27 +333,19 @@ char *MWExtension::GetPlayerPosition() {
 }
 
 char *MWExtension::GetPlayerPosition(IPlayer *player) {
-    char *destString;
-    UMath::Vector3 vecCoords;
-    static char nullCoords[128];
-    static char playerCoords[128];
-    if (player == nullptr) {
-        goto no_player;
+    if (player != nullptr) {
+        static char coords[128];
+        UMath::Vector3 vecCoords = player->GetPosition();
+        bSPrintf(coords, "%f;%f;%f", vecCoords.z, -vecCoords.x, vecCoords.y);
+        return coords;
     }
-    {
-        vecCoords = player->GetPosition();
-        destString = playerCoords;
-        goto format;
+    if (IPlayer::First(PLAYER_LOCAL) != nullptr) {
+        static char coords[128];
+        UMath::Vector3 vecCoords = IPlayer::First(PLAYER_LOCAL)->GetPosition();
+        bSPrintf(coords, "%f;%f;%f", vecCoords.z, -vecCoords.x, vecCoords.y);
+        return coords;
     }
-no_player:
-    if (IPlayer::First(PLAYER_LOCAL) == nullptr) {
-        return "0.0;0.0;0.0";
-    }
-    vecCoords = IPlayer::First(PLAYER_LOCAL)->GetPosition();
-    destString = nullCoords;
-format:
-    bSPrintf(destString, "%f;%f;%f", vecCoords.z, -vecCoords.x, vecCoords.y);
-    return destString;
+    return "0.0;0.0;0.0";
 }
 
 char *MWExtension::GetFormationStr(const FormationType &formation) {
