@@ -5,6 +5,10 @@ extern float Tweak_drawRange;
 extern int sDebugDrawMaxPrims;
 extern int sDebugDrawMaxLinePrims;
 
+namespace UMemory {
+void Free(void *ptr);
+}
+
 DebugDraw *DebugDraw::fgDbgDraw;
 
 inline bVector3 Coord4ToSwizzledbVec(const COORD4 *c) {
@@ -120,6 +124,32 @@ void DebugDraw::AllocLists() {
         vertList = static_cast<UMath::Vector4 *>(bMalloc(i * 0x20, "DebugDraw LinVerts", 0, 0));
         fLinVertList = vertList;
     }
+}
+
+void DebugDraw::DeAllocLists() {
+    DrawPrimLin *ptr;
+
+    if (!fTextureInfo) {
+        fEnabled = false;
+    } else {
+        if (!fTriPrimList) {
+            ptr = fLinPrimList;
+        } else {
+            delete[] fTriPrimList;
+            ptr = fLinPrimList;
+        }
+        if (ptr) {
+            delete[] ptr;
+        }
+        UMemory::Free(fTriColourList);
+        UMemory::Free(fTriVertList);
+        UMemory::Free(fLinColourList);
+        UMemory::Free(fLinVertList);
+        fEnabled = false;
+    }
+    fNumTriPrims = 0;
+    fNumLinPrims = 0;
+    fTextureInfo = nullptr;
 }
 
 bool DebugDraw::InView(const UMath::Vector3 &pt, float radius) {

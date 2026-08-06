@@ -82,6 +82,7 @@ struct DebugDraw {
     float GetDrawRange();
     short int GetTimeType();
     void AllocLists();
+    void DeAllocLists();
     void LineSeg(const UMath::Matrix4 &mat, const UMath::Vector4 &pt0,
                  const UMath::Vector4 &pt1, unsigned int c, short int lifeSpan);
     void LineSeg(const UMath::Vector3 &pt0, const UMath::Vector3 &pt1,
