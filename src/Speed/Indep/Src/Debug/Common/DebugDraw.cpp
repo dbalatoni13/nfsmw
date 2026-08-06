@@ -566,21 +566,21 @@ void DebugDraw::Vector(const UMath::Vector4 &pt, const UMath::Vector4 &vec, floa
 }
 
 void DebugDraw::DrawAll() {
-    bMatrix4 *matrix;
     eView *view = eGetView(EVIEW_PLAYER1, false);
+    bMatrix4 *pL2W;
     static int lastSimFrame;
     int simDecayFrames;
 
     if (!view) {
         return;
     }
-    matrix = static_cast<bMatrix4 *>(eFrameMalloc(sizeof(bMatrix4)));
-    if (!matrix) {
+    pL2W = static_cast<bMatrix4 *>(eFrameMalloc(sizeof(bMatrix4)));
+    if (!pL2W) {
         return;
     }
 
-    bIdentity(matrix);
-    view->BiasMatrixForZSorting(matrix, 0.96f);
+    bIdentity(pL2W);
+    view->BiasMatrixForZSorting(pL2W, 0.96f);
 
     {
         if (this->fNumTriPrims > 0) {
@@ -590,12 +590,31 @@ void DebugDraw::DrawAll() {
 
             iCurVert = 0;
             iNumVertsLeft = this->fNumTriPrims * 3;
-            for (; iNumVertsLeft > 0; iNumVertsLeft -= 3, iCurVert += 3) {
-                poly.Vertices[0] = Coord4ToSwizzledbVec(&this->fTriVertList[iCurVert]);
-                poly.Vertices[1] = Coord4ToSwizzledbVec(&this->fTriVertList[iCurVert + 1]);
-                poly.Vertices[2] = Coord4ToSwizzledbVec(&this->fTriVertList[iCurVert + 2]);
+            if (iNumVertsLeft > 0) {
+                UMath::Vector4 *pVertex = this->fTriVertList;
+                while (true) {
+                    pVertex += iCurVert;
+                    iNumVertsLeft -= 3;
+                    iCurVert += 3;
+                    poly.Vertices[0] = Coord4ToSwizzledbVec(pVertex);
+                    poly.Vertices[1] = Coord4ToSwizzledbVec(pVertex + 1);
+                    poly.Vertices[2] = Coord4ToSwizzledbVec(pVertex + 2);
+                    unsigned int colour = this->fTriColourList[iCurVert];
+                    reinterpret_cast<unsigned int *>(poly.Colours)[3] =
+                        colour;
+                    reinterpret_cast<unsigned int *>(poly.Colours)[2] =
+                        colour;
+                    reinterpret_cast<unsigned int *>(poly.Colours)[1] =
+                        colour;
+                    reinterpret_cast<unsigned int *>(poly.Colours)[0] =
+                        colour;
 
-                view->Render(&poly, this->fTextureInfo, matrix, 0, 0.0f);
+                    view->Render(&poly, this->fTextureInfo, pL2W, 0, 0.0f);
+                    if (iNumVertsLeft < 1) {
+                        break;
+                    }
+                    pVertex = this->fTriVertList;
+                }
             }
         }
     }
