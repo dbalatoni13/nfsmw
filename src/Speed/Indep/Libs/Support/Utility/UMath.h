@@ -95,6 +95,18 @@ inline void Clear(Vector3 &r) {
 #endif
 }
 
+inline void Clear(Vector4 &r) {
+#ifdef EA_PLATFORM_PLAYSTATION2
+    u_long128 zero = 0;
+    *reinterpret_cast<u_long128 *>(&r) = zero;
+#else
+    r.x = 0.0f;
+    r.y = 0.0f;
+    r.z = 0.0f;
+    r.w = 0.0f;
+#endif
+}
+
 inline void Copy(const Matrix4 &a, Matrix4 &r) {
     VU0_MATRIX4Copy(a, r);
 }
@@ -412,6 +424,23 @@ inline void Crossxyz(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Ve
         // TODO
 #else
     VU0_v4crossprodxyz(a, b, r);
+#endif
+}
+
+inline void UnitCrossxyz(const Vector4 &a, const Vector4 &b, Vector4 &r) {
+#ifdef EA_PLATFORM_PLAYSTATION2
+    VU0_v4unitcrossprodxyz(a, b, r);
+#else
+    r.x = a.y * b.z - a.z * b.y;
+    r.y = a.z * b.x - a.x * b.z;
+    r.z = a.x * b.y - a.y * b.x;
+    r.w = 0.0f;
+    float length = static_cast<float>(sqrt(r.x * r.x + r.y * r.y + r.z * r.z));
+    if (length != 0.0f) {
+        r.x /= length;
+        r.y /= length;
+        r.z /= length;
+    }
 #endif
 }
 

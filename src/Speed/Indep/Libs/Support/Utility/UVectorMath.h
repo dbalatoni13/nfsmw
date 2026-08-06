@@ -239,13 +239,18 @@ inline float VU0_v3lengthsquare(const UMath::Vector3 &a) {
 
 inline void VU0_v4scaleadd(const UMath::Vector4 &a, const float scaleby, const UMath::Vector4 &b, UMath::Vector4 &result) {}
 
-inline void VU0_v4scaleaddxyz(const UMath::Vector4 &a, const float scaleby, const UMath::Vector4 &b, UMath::Vector4 &result) {}
+inline void VU0_v4scaleaddxyz(const UMath::Vector4 &a, const float scaleby, const UMath::Vector4 &b, UMath::Vector4 &result) {
+    VU0_v3scaleadd(UMath::Vector4To3(a), scaleby, UMath::Vector4To3(b),
+                   UMath::Vector4To3(result));
+}
 
 inline float VU0_v4lengthsquare(const UMath::Vector4 &a) {}
 
 inline float VU0_v4lengthsquarexyz(const UMath::Vector4 &a) {}
 
-inline void VU0_v4subxyz(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &result) {}
+inline void VU0_v4subxyz(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &result) {
+    VU0_v3sub(UMath::Vector4To3(a), UMath::Vector4To3(b), UMath::Vector4To3(result));
+}
 
 inline float VU0_v4dotprodxyz(const UMath::Vector4 &a, const UMath::Vector4 &b) {}
 
@@ -694,7 +699,13 @@ inline float VU0_v3lengthxz(const struct UMath::Vector3 &a) {
 }
 
 inline float VU0_v4lengthxyz(const UMath::Vector4 &a) {
-    return VU0_sqrt(VU0_v4lengthsquarexyz(a));
+    return VU0_v3length(UMath::Vector4To3(a));
+}
+
+inline void VU0_v4unitcrossprodxyz(const UMath::Vector4 &a, const UMath::Vector4 &b,
+                                   UMath::Vector4 &dest) {
+    VU0_v3unitcrossprod(UMath::Vector4To3(a), UMath::Vector4To3(b),
+                        UMath::Vector4To3(dest));
 }
 
 inline float VU0_v4length(const UMath::Vector4 &a) {

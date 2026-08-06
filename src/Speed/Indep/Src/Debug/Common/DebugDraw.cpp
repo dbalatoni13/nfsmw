@@ -234,6 +234,35 @@ void DebugDraw::Line(const UMath::Matrix4 &mat, const UMath::Vector3 &pt1,
     }
 }
 
+void DebugDraw::Line(const UMath::Matrix4 &mat, const UMath::Vector4 &pt1,
+                     const UMath::Vector4 &pt2, float scale, unsigned int c,
+                     short int lifeSpan) {
+    if (fEnabled) {
+        const UMath::Vector4 inVec = Get().GetCameraFwdVec();
+        UMath::Vector4 widthVec;
+        UMath::Vector4 vec;
+        UMath::Vector4 pts[4];
+
+        UMath::Clear(vec);
+        UMath::Subxyz(pt2, pt1, vec);
+        float length = UMath::Lengthxyz(vec);
+        if (length < 0.0001f) {
+            Quad(pt1, scale, c, lifeSpan, -1);
+        } else {
+            UMath::UnitCrossxyz(inVec, vec, widthVec);
+            UMath::ScaleAddxyz(widthVec, -scale, pt1, pts[0]);
+            pts[0].w = 1.0f;
+            UMath::ScaleAddxyz(widthVec, scale, pt1, pts[1]);
+            pts[1].w = 1.0f;
+            UMath::ScaleAddxyz(widthVec, scale, pt2, pts[2]);
+            pts[2].w = 1.0f;
+            UMath::ScaleAddxyz(widthVec, -scale, pt2, pts[3]);
+            pts[3].w = 1.0f;
+            Quad(mat, pts, pts + 1, pts + 2, pts + 3, c, lifeSpan, -1);
+        }
+    }
+}
+
 void DebugDraw::LineSeg(const UMath::Matrix4 &mat, const UMath::Vector4 &pt0,
                         const UMath::Vector4 &pt1, unsigned int c,
                         short int lifeSpan) {
