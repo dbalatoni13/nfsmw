@@ -91,6 +91,10 @@ struct DebugDraw {
                   const UMath::Vector4 *pt2, const COORD2 *uv0,
                   const COORD2 *uv1, const COORD2 *uv2, unsigned int c,
                   short int lifeSpan, int texture);
+    void Triangle(const UMath::Matrix4 &pmat, const UMath::Vector4 *pt0,
+                  const UMath::Vector4 *pt1, const UMath::Vector4 *pt2,
+                  const COORD2 *uv0, const COORD2 *uv1, const COORD2 *uv2,
+                  unsigned int c, int lifeSpan, int texture);
     void Quad(const UMath::Vector4 &pt, float size, unsigned int c,
               short int lifeSpan, int texture);
     void Quad(const UMath::Vector4 *pt0, const UMath::Vector4 *pt1,

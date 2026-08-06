@@ -353,11 +353,19 @@ void DebugDraw::Quad(const UMath::Vector4 *pt0, const UMath::Vector4 *pt1,
     Triangle(pt2, pt3, pt0, &uv2, &uv3, &uv0, c, lifeSpan, texture);
 }
 
+void DebugDraw::Triangle(const UMath::Vector4 *pt0, const UMath::Vector4 *pt1,
+                         const UMath::Vector4 *pt2, const COORD2 *uv0,
+                         const COORD2 *uv1, const COORD2 *uv2, unsigned int c,
+                         short int lifeSpan, int texture) {
+    Triangle(UMath::Matrix4::kIdentity, pt0, pt1, pt2, uv0, uv1, uv2, c,
+             static_cast<int>(lifeSpan), texture);
+}
+
 void DebugDraw::Quad(const UMath::Vector4 &pt, float size, unsigned int c,
                      short int lifeSpan, int texture) {
     if (fEnabled) {
-        UMath::Vector4 inVec;
-        UMath::Vector4 upVec;
+        const UMath::Vector4 inVec = Get().GetCameraFwdVec();
+        const UMath::Vector4 upVec = Get().GetCameraUpVec();
         UMath::Vector4 rightVec;
         UMath::Vector4 centerPos;
         UMath::Vector4 pt04;
@@ -368,45 +376,35 @@ void DebugDraw::Quad(const UMath::Vector4 &pt, float size, unsigned int c,
         COORD2 uv1;
         COORD2 uv2;
         COORD2 uv3;
-        float s;
-
-        inVec = Get().GetCameraFwdVec();
-        upVec = Get().GetCameraUpVec();
         bCross(reinterpret_cast<bVector3 *>(&rightVec),
                reinterpret_cast<const bVector3 *>(&upVec),
                reinterpret_cast<const bVector3 *>(&inVec));
         centerPos = pt;
 
-        s = size;
         bScaleAdd(reinterpret_cast<bVector3 *>(&pt04),
                   reinterpret_cast<const bVector3 *>(&centerPos),
-                  reinterpret_cast<const bVector3 *>(&upVec), s);
-        s = -size;
+                  reinterpret_cast<const bVector3 *>(&upVec), size);
         bScaleAdd(reinterpret_cast<bVector3 *>(&pt04),
                   reinterpret_cast<const bVector3 *>(&pt04),
-                  reinterpret_cast<const bVector3 *>(&rightVec), s);
-        s = size;
+                  reinterpret_cast<const bVector3 *>(&rightVec), -size);
         bScaleAdd(reinterpret_cast<bVector3 *>(&pt14),
                   reinterpret_cast<const bVector3 *>(&centerPos),
                   reinterpret_cast<const bVector3 *>(&upVec), size);
         bScaleAdd(reinterpret_cast<bVector3 *>(&pt14),
                   reinterpret_cast<const bVector3 *>(&pt14),
-                  reinterpret_cast<const bVector3 *>(&rightVec), s);
-        s = -size;
+                  reinterpret_cast<const bVector3 *>(&rightVec), size);
         bScaleAdd(reinterpret_cast<bVector3 *>(&pt24),
                   reinterpret_cast<const bVector3 *>(&centerPos),
-                  reinterpret_cast<const bVector3 *>(&upVec), s);
-        s = size;
+                  reinterpret_cast<const bVector3 *>(&upVec), -size);
         bScaleAdd(reinterpret_cast<bVector3 *>(&pt24),
                   reinterpret_cast<const bVector3 *>(&pt24),
-                  reinterpret_cast<const bVector3 *>(&rightVec), s);
-        s = -size;
+                  reinterpret_cast<const bVector3 *>(&rightVec), size);
         bScaleAdd(reinterpret_cast<bVector3 *>(&pt34),
                   reinterpret_cast<const bVector3 *>(&centerPos),
-                  reinterpret_cast<const bVector3 *>(&upVec), s);
+                  reinterpret_cast<const bVector3 *>(&upVec), -size);
         bScaleAdd(reinterpret_cast<bVector3 *>(&pt34),
                   reinterpret_cast<const bVector3 *>(&pt34),
-                  reinterpret_cast<const bVector3 *>(&rightVec), s);
+                  reinterpret_cast<const bVector3 *>(&rightVec), -size);
 
         uv0.x = 0.0f;
         uv0.y = 1.0f;
