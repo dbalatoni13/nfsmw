@@ -428,6 +428,54 @@ void DebugDraw::Triangle(const UMath::Matrix4 &mat, const UMath::Vector3 *pt0,
     }
 }
 
+void DebugDraw::Triangle(const UMath::Matrix4 &mat, const UMath::Vector4 *pt0,
+                         const UMath::Vector4 *pt1, const UMath::Vector4 *pt2,
+                         unsigned int c, short int lifeSpan, int texture) {
+    if (fEnabled) {
+        COORD2 uv0;
+        COORD2 uv1;
+        COORD2 uv2;
+        memset(&uv0, 0, sizeof(uv0));
+        memset(&uv1, 0, sizeof(uv1));
+        memset(&uv2, 0, sizeof(uv2));
+
+        int i = fNumTriPrims;
+        if (i < sDebugDrawMaxPrims) {
+            UMath::Vector4 tpt0;
+            UMath::Vector4 tpt1;
+            UMath::Vector4 tpt2;
+            VU0_MATRIX4_vect3mult(UMath::Vector4To3(*pt0), mat,
+                                  UMath::Vector4To3(tpt0));
+            VU0_MATRIX4_vect3mult(UMath::Vector4To3(*pt1), mat,
+                                  UMath::Vector4To3(tpt1));
+            VU0_MATRIX4_vect3mult(UMath::Vector4To3(*pt2), mat,
+                                  UMath::Vector4To3(tpt2));
+
+            DrawPrimTri *pDVar4 = fTriPrimList;
+            UMath::Vector4 *pVVar7 = fTriVertList + i * 3;
+            unsigned int *puVar8 = fTriColourList + i * 3;
+            pDVar4[i].fLifeSpan = lifeSpan;
+            pVVar7->x = tpt0.x;
+            *puVar8 = c;
+            pVVar7->y = tpt0.y;
+            puVar8[2] = c;
+            pVVar7->z = tpt0.z;
+            puVar8[1] = c;
+            pVVar7->w = tpt0.w;
+            pVVar7[1].x = tpt1.x;
+            pVVar7[1].y = tpt1.y;
+            pVVar7[1].z = tpt1.z;
+            pVVar7[1].w = tpt1.w;
+            pVVar7[2].x = tpt2.x;
+            pVVar7[2].y = tpt2.y;
+            pVVar7[2].z = tpt2.z;
+            pVVar7[2].w = tpt2.w;
+            pDVar4[i].fTimeType = fgDbgDraw->GetTimeType();
+            fNumTriPrims = i + 1;
+        }
+    }
+}
+
 void DebugDraw::Quad(const UMath::Matrix4 &mat, const UMath::Vector4 *pt0,
                      const UMath::Vector4 *pt1, const UMath::Vector4 *pt2,
                      const UMath::Vector4 *pt3, unsigned int c,
