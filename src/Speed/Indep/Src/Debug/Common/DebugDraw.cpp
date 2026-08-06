@@ -444,14 +444,10 @@ void DebugDraw::Quad(const UMath::Vector4 *pt0, const UMath::Vector4 *pt1,
     COORD2 uv2;
     COORD2 uv3;
 
-    uv0.x = 0.0f;
-    uv0.y = 1.0f;
-    uv1.x = 1.0f;
-    uv1.y = 1.0f;
-    uv2.x = 1.0f;
-    uv2.y = 0.0f;
-    uv3.x = 0.0f;
-    uv3.y = 0.0f;
+    uv0 = D_005425F0;
+    uv1 = D_005425F8;
+    uv2 = D_005425E8;
+    memset(&uv3, 0, sizeof(uv3));
     Triangle(pt0, pt1, pt2, &uv0, &uv1, &uv2, c, lifeSpan, texture);
     Triangle(pt2, pt3, pt0, &uv2, &uv3, &uv0, c, lifeSpan, texture);
 }
