@@ -161,6 +161,65 @@ void MWExtension::GamePadToJuicePad(void *gameInput, tJuicePad *juiceInput) {
     MWJuicePad::Instance()->PollInput();
 }
 
+void MWExtension::JuicePadToGamePad(tJuicePad *juiceInput, void *gameInput) {
+    if (mHasExecutedRPC == 1) {
+        MWJuicePad::Instance()->ReleaseAllButtons(JUICE_NORMAL);
+        mHasExecutedRPC = 0;
+    }
+    if (JuicePad::Instance()->DidInputHappen() == 1) {
+        mHasExecutedRPC = 1;
+        if (JuicePad::Instance()->IsButtonPressed(1) != 0) {
+            MWJuicePad::Instance()->PressButton(0, JUICE_UP);
+        }
+        if (JuicePad::Instance()->IsButtonPressed(2) != 0) {
+            MWJuicePad::Instance()->PressButton(0, JUICE_DOWN);
+        }
+        if (JuicePad::Instance()->IsButtonPressed(3) != 0) {
+            MWJuicePad::Instance()->PressButton(0, JUICE_LEFT);
+        }
+        if (JuicePad::Instance()->IsButtonPressed(4) != 0) {
+            MWJuicePad::Instance()->PressButton(0, JUICE_RIGHT);
+        }
+        if (JuicePad::Instance()->IsButtonPressed(5) != 0) {
+            MWJuicePad::Instance()->PressButton(0, JUICE_ACCEPT);
+        }
+        if (JuicePad::Instance()->IsButtonPressed(6) != 0) {
+            MWJuicePad::Instance()->PressButton(0, JUICE_CANCEL);
+        }
+        if (JuicePad::Instance()->IsButtonPressed(8) != 0) {
+            MWJuicePad::Instance()->PressButton(0, JUICE_Y);
+        }
+        if (JuicePad::Instance()->IsButtonPressed(7) != 0) {
+            MWJuicePad::Instance()->PressButton(0, JUICE_X);
+        }
+        if (JuicePad::Instance()->IsButtonPressed(9) != 0) {
+            MWJuicePad::Instance()->PressButton(0, JUICE_L1);
+        }
+        if (JuicePad::Instance()->IsButtonPressed(10) != 0) {
+            MWJuicePad::Instance()->PressButton(0, JUICE_WHITE);
+        }
+        if (JuicePad::Instance()->IsButtonPressed(11) != 0) {
+            MWJuicePad::Instance()->PressButton(0, JUICE_LSTICKBUTTON);
+        }
+        if (JuicePad::Instance()->IsButtonPressed(12) != 0) {
+            MWJuicePad::Instance()->PressButton(0, JUICE_R1);
+        }
+        if (JuicePad::Instance()->IsButtonPressed(13) != 0) {
+            MWJuicePad::Instance()->PressButton(0, JUICE_BLACK);
+        }
+        if (JuicePad::Instance()->IsButtonPressed(14) != 0) {
+            MWJuicePad::Instance()->PressButton(0, JUICE_RSTICKBUTTON);
+        }
+        if (JuicePad::Instance()->IsButtonPressed(15) != 0) {
+            MWJuicePad::Instance()->PressButton(0, JUICE_START);
+        }
+        if (JuicePad::Instance()->IsButtonPressed(16) != 0) {
+            MWJuicePad::Instance()->PressButton(0, JUICE_BACK);
+            return;
+        }
+    }
+}
+
 int MWExtension::NumberOfRepeatedReplayEntries(int channel) {
     return GetJoylogChannelRepeatCount(channel);
 }

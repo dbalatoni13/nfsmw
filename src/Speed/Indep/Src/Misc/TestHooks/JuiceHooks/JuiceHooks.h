@@ -71,6 +71,8 @@ class JuicePad {
 public:
     static JuicePad *Instance();
     void SetButton(float value, int button);
+    int IsButtonPressed(int button);
+    int DidInputHappen();
 };
 
 class JuiceDirtyNet : public INetwork {
@@ -335,6 +337,7 @@ public:
     void UpdatePad(void *input);
     void ResetGamePad();
     void GamePadToJuicePad(void *gameInput, tJuicePad *juiceInput);
+    void JuicePadToGamePad(tJuicePad *juiceInput, void *gameInput);
     void JuiceScreenshot(char *fileName);
     static char *GetJuiceBuildName();
     int HangTimeoutLength();
