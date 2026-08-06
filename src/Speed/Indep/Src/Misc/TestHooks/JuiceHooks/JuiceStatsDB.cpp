@@ -299,18 +299,22 @@ void JuiceStatsDB::SubmitCareerData(const char *profileName) {
 }
 
 void JuiceStatsDB::ResetPerRaceStats() {
-    for (int index = 0; index < 10; index++) {
-        mPerRaceStatsDB[index] = 0;
-        mFrameOfLastInc[index] = 0;
+    int counter = 0;
+    for (; counter < 10; counter++) {
+        mPerRaceStatsDB[counter] = 0;
+        mFrameOfLastInc[counter] = 0;
     }
-    for (int index = 0; index < 11; index++) {
-        mTimeAtHeatLevel[index] = 0.0f;
+    counter = 0;
+    for (; counter < 11; counter++) {
+        mTimeAtHeatLevel[counter] = 0.0f;
     }
-    for (int index = 0; index < 6; index++) {
-        mTimeInCameraMode[index] = 0.0f;
+    counter = 0;
+    for (; counter < 6; counter++) {
+        mTimeInCameraMode[counter] = 0.0f;
     }
-    for (int index = 0; index < 6; index++) {
-        mTimeInRaceType[index] = 0.0f;
+    counter = 0;
+    for (; counter < 6; counter++) {
+        mTimeInRaceType[counter] = 0.0f;
     }
     mShouldDumpStats = false;
 }
