@@ -630,9 +630,12 @@ inline bVector3 &bVector3::operator-=(const bVector3 &v) {
 }
 
 inline bVector3 *bNeg(bVector3 *dest, const bVector3 *v) {
-    float x;
-    float y;
-    float z;
+    float x = v->x;
+    float y = v->y;
+    float z = v->z;
+
+    bFill(dest, -x, -y, -z);
+    return dest;
 }
 
 inline float bDot(const bVector3 *v1, const bVector3 *v2) {

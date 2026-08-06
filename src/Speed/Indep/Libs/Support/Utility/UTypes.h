@@ -43,7 +43,7 @@ struct Vector3 {
     }
 };
 
-struct ALIGN_16 Vector4 {
+struct Vector4 {
     // total size: 0x10
     float x; // offset 0x0, size 0x4
     float y; // offset 0x4, size 0x4
@@ -152,6 +152,24 @@ inline Vector4 Vector4Make(float x, float y, float z, float w) {
 
 // TODO PS2
 inline Vector4 Vector4Make(const Vector3 &c, float w) {
+    Vector4 res;
+    res.x = c.x;
+    res.y = c.y;
+    res.z = c.z;
+    res.w = w;
+    return res;
+}
+
+inline Vector4 Vector4Make(float w, const Vector3 &c) {
+    Vector4 res;
+    res.x = c.x;
+    res.y = c.y;
+    res.z = c.z;
+    res.w = w;
+    return res;
+}
+
+inline Vector4 Vector4Make(float w, const bVector3 &c) {
     Vector4 res;
     res.x = c.x;
     res.y = c.y;
