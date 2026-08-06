@@ -402,19 +402,19 @@ void DebugDraw::Circle(const UMath::Matrix4 &mat, float radius, unsigned int c,
         UMath::Vector4 pts[12];
         COORD2 txtOrigin = {0.5f, 0.5f};
         UMath::Vector2 txtXY[12];
-        float txtRadius = 1.0f / 12.0f;
+        float txtRadius = 0.5f;
         float angle = 0.0f;
         UMath::Vector4 tpts[12];
         UMath::Vector4 cp;
 
         for (int i = 0; i < 12; ++i) {
-            txtXY[i].x = UMath::Cosa(angle) * 0.5f + 0.5f;
-            txtXY[i].y = UMath::Sina(angle) * 0.5f + 0.5f;
+            txtXY[i].x = UMath::Cosa(angle) * txtRadius + txtRadius;
+            txtXY[i].y = UMath::Sina(angle) * txtRadius + txtRadius;
             pts[i].x = radius * UMath::Cosa(angle);
             pts[i].y = 0.0f;
             pts[i].z = radius * UMath::Sina(angle);
             pts[i].w = 1.0f;
-            angle += txtRadius;
+            angle += 1.0f / 12.0f;
         }
 
         UMath::RotateTranslate(12, tpts, mat, pts);
