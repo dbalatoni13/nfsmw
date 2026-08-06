@@ -12,7 +12,43 @@ public:
     virtual ~IExtension() {}
 };
 
+class ICommands {
+public:
+    virtual ~ICommands() {}
+};
+
 namespace Juice {
+
+namespace Scripting {
+
+struct VarArgs {
+    int mNextType;
+    int mNumberOfArgs;
+
+    int GetInt();
+    float GetFloat();
+    char *GetString();
+};
+
+}
+
+class MWCommands : public ICommands {
+private:
+    static unsigned int mFEngScreenLoading;
+
+public:
+    static void LoadingNewFEngPackage(unsigned int newPkg);
+    int TurnDebugTextOn(Scripting::VarArgs &params);
+    int TurnDebugTextOff(Scripting::VarArgs &params);
+    int IsInFreeRoam(Scripting::VarArgs &params);
+    int UnlockAllThings(Scripting::VarArgs &params);
+    int InfRaceBreaker(Scripting::VarArgs &params);
+    int IsSplitScreen(Scripting::VarArgs &params);
+    int TurnPursuitOn(Scripting::VarArgs &params);
+    int TurnPursuitOff(Scripting::VarArgs &params);
+    int TurnPursuitForeverOn(Scripting::VarArgs &params);
+    int TurnPursuitForeverOff(Scripting::VarArgs &params);
+};
 
 class MWExtension : public IExtension {
 public:
