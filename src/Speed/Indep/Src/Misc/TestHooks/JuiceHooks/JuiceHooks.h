@@ -7,6 +7,9 @@
 
 #include <types.h>
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
+#include "Speed/Indep/Src/Input/Action.h"
+#include "Speed/Indep/Src/Input/ActionQueue.h"
+#include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 
 class IPlayer;
 enum FormationType;
@@ -92,6 +95,129 @@ public:
     int TurnPursuitForeverOn(Scripting::VarArgs &params);
     int TurnPursuitForeverOff(Scripting::VarArgs &params);
 };
+
+}
+
+enum MWJuicePadButtonType {
+    JUICE_UP = 0,
+    JUICE_DOWN,
+    JUICE_LEFT,
+    JUICE_RIGHT,
+    JUICE_ACCEPT,
+    JUICE_CANCEL,
+    JUICE_Y,
+    JUICE_X,
+    JUICE_L1,
+    JUICE_R1,
+    JUICE_WHITE,
+    JUICE_BLACK,
+    JUICE_LSTICKBUTTON,
+    JUICE_RSTICKBUTTON,
+    JUICE_START,
+    JUICE_BACK,
+    JUICE_R3,
+    JUICE_L3,
+    JUICE_LEFTANALOG_LEFT,
+    JUICE_LEFTANALOG_RIGHT,
+    JUICE_LEFTANALOG_UP,
+    JUICE_LEFTANALOG_DOWN,
+    JUICE_RIGHTANALOG_LEFT,
+    JUICE_RIGHTANALOG_RIGHT,
+    JUICE_RIGHTANALOG_UP,
+    JUICE_RIGHTANALOG_DOWN,
+    JUICE_MAX_BUTTON
+};
+
+enum MWJPadReleaseType {
+    JUICE_NORMAL = 0,
+    JUICE_FORCED
+};
+
+struct MWJuicePadState {
+    bool buttonState[26];
+};
+
+struct MWJuicePad {
+private:
+    static MWJuicePad *mInstance;
+    MWJuicePadState mPadState[2];
+    MWJuicePadState mTrackSegments[2];
+    bool mIsInBE;
+    bool mButtonPressedLastFrame;
+    ActionID FEActionMapping[26];
+    ActionID BEActionMapping[26];
+    ActionQueue *mInputQueue;
+    bool mIsLastFrame;
+    bool mResetSegmentPresses;
+
+public:
+    static MWJuicePad *Instance();
+    void Initialize();
+    void PressButton(int port, MWJuicePadButtonType buttonType);
+    void ReleaseAllButtons(MWJPadReleaseType type);
+    void PollInput();
+    void SetIsLastFrame(bool val);
+    bool IsLastJoyFrame();
+    void TrackButtonPress(int actionId, float data, int port);
+    void ResetGamePad();
+    void ReleaseSegmentPresses();
+
+protected:
+    MWJuicePad();
+};
+
+enum JuicePerRaceStatType {
+    JUICE_COP_CAR_SPAWN = 0,
+    JUICE_COP_CAR_UNSPAWN,
+    JUICE_COP_CHOPPER_SPAWN,
+    JUICE_COP_CHOPPER_UNSPAWN,
+    JUICE_TRAFFIC_SPAWN,
+    JUICE_TRAFFIC_UNSPAWN,
+    JUICE_CURRENT_HEAT,
+    JUICE_MAX_HEAT,
+    JUICE_CURRENT_CAMERA,
+    JUICE_CURRENT_RACE,
+    JUICE_MAX_PER_RACE_STAT
+};
+
+enum JuiceRaceType {
+    JUICE_FREE_ROAM = 0,
+    JUICE_CIRCUIT,
+    JUICE_P2P,
+    JUICE_OTHERRACE
+};
+
+enum CareerDataType {
+    JUICE_REP_EARNED = 0,
+    JUICE_CASH_EARNED,
+    JUICE_PURSUIT_LENGTH,
+    JUICE_MAX_CAREER_DATA
+};
+
+struct JuiceStatsDB {
+private:
+    static JuiceStatsDB *mInstance;
+    int mPerRaceStatsDB[10];
+    int mFrameOfLastInc[10];
+    bool mShouldDumpStats;
+    int mCareerIntDataDB[15][3];
+    float mCareerFloatDataDB[15][3];
+    bool mShouldDumpCareerData;
+    float mTimeAtHeatLevel[11];
+    float mTimeInCameraMode[6];
+    float mTimeInRaceType[6];
+    unsigned int mCurrentTicker;
+    OptionsSettings mCurrentOptions;
+
+public:
+    static JuiceStatsDB *Instance();
+    JuiceStatsDB();
+    void ResetPerRaceStats();
+    void SetHeat(int heat);
+    void SetCamera(int camID);
+};
+
+namespace Juice {
 
 class MWExtension : public IExtension {
 private:
