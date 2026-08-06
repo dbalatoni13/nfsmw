@@ -87,6 +87,12 @@ struct DebugDraw {
                  const UMath::Vector4 &pt1, unsigned int c, short int lifeSpan);
     void LineSeg(const UMath::Vector3 &pt0, const UMath::Vector3 &pt1,
                  unsigned int c, short int lifeSpan);
+    void Line(const UMath::Matrix4 &mat, const UMath::Vector4 &pt1,
+              const UMath::Vector4 &pt2, float scale, unsigned int c,
+              short int lifeSpan);
+    void Line(const UMath::Matrix4 &mat, const UMath::Vector3 &pt1,
+              const UMath::Vector3 &pt2, float scale, unsigned int c,
+              short int lifeSpan);
     void Triangle(const UMath::Vector4 *pt0, const UMath::Vector4 *pt1,
                   const UMath::Vector4 *pt2, const COORD2 *uv0,
                   const COORD2 *uv1, const COORD2 *uv2, unsigned int c,

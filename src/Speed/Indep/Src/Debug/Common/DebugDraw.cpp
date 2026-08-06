@@ -224,6 +224,16 @@ void DebugDraw::LineSeg(const UMath::Vector3 &pt0, const UMath::Vector3 &pt1,
     LineSeg(UMath::Matrix4::kIdentity, pt14, pt24, c, lifeSpan);
 }
 
+void DebugDraw::Line(const UMath::Matrix4 &mat, const UMath::Vector3 &pt1,
+                     const UMath::Vector3 &pt2, float scale, unsigned int c,
+                     short int lifeSpan) {
+    if (fEnabled) {
+        UMath::Vector4 pt14 = UMath::Vector4Make(1.0f, pt1);
+        UMath::Vector4 pt24 = UMath::Vector4Make(1.0f, pt2);
+        Line(mat, pt14, pt24, scale, c, lifeSpan);
+    }
+}
+
 void DebugDraw::Sphere(const UMath::Matrix4 &mat, float radius, unsigned int c,
                        short int lifeSpan, bool bShadow, int texture) {
     if (!fEnabled) {
