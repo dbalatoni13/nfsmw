@@ -19,6 +19,24 @@ MWJuicePad::MWJuicePad() {
     mResetSegmentPresses = false;
 }
 
+void MWJuicePad::PressButton(int port, MWJuicePadButtonType buttonType) {
+    mButtonPressedLastFrame = true;
+    mPadState[port].buttonState[buttonType] = true;
+    if (cFEng::Get()->FindPackageWithControl() != nullptr) {
+        SimulateFEButton(port, FEActionMapping[buttonType], 1.0f);
+        return;
+    }
+    if (gMoviePlayer != nullptr) {
+        SimulateFEButton(port, FEActionMapping[buttonType], 1.0f);
+        return;
+    }
+    ActionID buttonID = BEActionMapping[buttonType];
+    if (INIS::Exists() && buttonType == JUICE_ACCEPT) {
+        buttonID = HUDACTION_SKIPNIS;
+    }
+    SimulateBEButton(port, buttonID, 1.0f);
+}
+
 void MWJuicePad::ResetGamePad() {
     mResetSegmentPresses = true;
 }
@@ -206,4 +224,20 @@ void MWJuicePad::ResetTrackedPresses() {
             mTrackSegments[port].buttonState[button] = false;
         }
     }
+}
+
+void MWJuicePad::TrackButtonPress(int actionId, float data, int port) {
+    if (cFEng::Get()->FindPackageWithControl() != nullptr) {
+        if (mIsInBE) {
+            ResetTrackedPresses();
+            mIsInBE = false;
+        }
+        TrackFEPresses(actionId, data, port);
+        return;
+    }
+    if (!mIsInBE) {
+        ResetTrackedPresses();
+        mIsInBE = true;
+    }
+    TrackBEPresses(actionId, data, port);
 }
