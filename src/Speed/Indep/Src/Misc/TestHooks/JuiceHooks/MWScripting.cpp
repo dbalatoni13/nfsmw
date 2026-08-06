@@ -87,7 +87,7 @@ MWCommands *MWCommands::Instance() {
     return &mwc;
 }
 
-char *MWCommands::GetNamespaceName() {
+char *MWCommands::GetNamespaceName() const {
     return "NFSMW";
 }
 

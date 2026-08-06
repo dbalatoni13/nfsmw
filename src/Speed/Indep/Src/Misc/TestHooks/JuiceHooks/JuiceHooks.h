@@ -180,7 +180,7 @@ public:
     ICommands();
     virtual ~ICommands();
     virtual void AutoRegister();
-    virtual char *GetNamespaceName();
+    virtual char *GetNamespaceName() const;
     static void SendMethod(int type, const ICommands *obj, const char *methodName, int argSize,
                            const void *method);
 
@@ -201,7 +201,7 @@ private:
 public:
     static MWCommands *Instance();
     MWCommands();
-    virtual char *GetNamespaceName();
+    virtual char *GetNamespaceName() const;
     static void LoadingNewFEngPackage(unsigned int newPkg);
     int TurnDebugTextOn(Scripting::VarArgs &params);
     int TurnDebugTextOff(Scripting::VarArgs &params);
