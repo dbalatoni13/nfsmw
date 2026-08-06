@@ -10,6 +10,7 @@
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/ICopMgr.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
+#include "Speed/Indep/bWare/Inc/bMath.hpp"
 
 extern int DoScreenPrintf;
 extern int UnlockAllThings;
@@ -18,6 +19,7 @@ extern bool Tweak_InfiniteRaceBreaker;
 extern float fpsTolerateValue;
 extern int logCountDownMax;
 extern int ForcePursuitHeatLevel;
+extern void JumpToNewPos(bVector3 *jumpPosition);
 extern void Game_ChallengeCompleted();
 extern void Game_AwardPlayerBounty(int amount);
 extern int Game_GetPlayerBounty();
@@ -254,6 +256,23 @@ have_place:
         return 1;
     }
     return 0;
+}
+
+int MWCommands::TeleportToCoords(Scripting::VarArgs &params) {
+    bVector3 teleportPos;
+    if (!GRaceStatus::Exists() || GRaceStatus::Get().GetPlayMode() != GRaceStatus::kPlayMode_Roaming) {
+        return 0;
+    }
+    int tempTeleportPos = 0;
+    for (int index = 0; index < 3; index++) {
+        if (params.GetNumberOfRemainingArgs() < 1) {
+            return 0;
+        }
+        params.GetInt(tempTeleportPos);
+        reinterpret_cast<float *>(&teleportPos)[index] = static_cast<float>(tempTeleportPos);
+    }
+    JumpToNewPos(&teleportPos);
+    return 1;
 }
 
 int MWCommands::TurnPursuitForeverOn(Scripting::VarArgs &params) {
