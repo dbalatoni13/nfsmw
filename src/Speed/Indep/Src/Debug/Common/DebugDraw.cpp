@@ -939,14 +939,12 @@ void DebugDraw::DrawAll() {
             iCurVert = 0;
             iNumVertsLeft = this->fNumTriPrims * 3;
             if (iNumVertsLeft > 0) {
-                UMath::Vector4 *pVertex = this->fTriVertList;
                 while (true) {
-                    pVertex += iCurVert;
+                    poly.Vertices[0] = Coord4ToSwizzledbVec(this->fTriVertList + iCurVert);
+                    poly.Vertices[1] = Coord4ToSwizzledbVec(this->fTriVertList + iCurVert + 1);
+                    poly.Vertices[2] = Coord4ToSwizzledbVec(this->fTriVertList + iCurVert + 2);
                     iNumVertsLeft -= 3;
                     iCurVert += 3;
-                    poly.Vertices[0] = Coord4ToSwizzledbVec(pVertex);
-                    poly.Vertices[1] = Coord4ToSwizzledbVec(pVertex + 1);
-                    poly.Vertices[2] = Coord4ToSwizzledbVec(pVertex + 2);
                     unsigned int colour = this->fTriColourList[iCurVert];
                     reinterpret_cast<unsigned int *>(poly.Colours)[3] =
                         colour;
@@ -961,7 +959,6 @@ void DebugDraw::DrawAll() {
                     if (iNumVertsLeft < 1) {
                         break;
                     }
-                    pVertex = this->fTriVertList;
                 }
             }
         }
@@ -979,26 +976,24 @@ void DebugDraw::DrawAll() {
             iCurVert = 0;
             if (iNumVertsLeft > 2) {
                 do {
-                    UMath::Vector4 *pVertex = &this->fLinVertList[iCurVert];
-                    unsigned int *pColour = &this->fLinColourList[iCurVert];
-                    unsigned int colour0 = pColour[0];
-                    unsigned int colour1;
-
                     iNumVertsLeft -= 2;
                     verts[0].u = 0.5f;
                     verts[0].v = 0.5f;
                     iCurVert += 2;
-                    colour1 = pColour[0];
-                    verts[0].y = -pVertex->x;
-                    verts[0].x = pVertex->z;
-                    verts[0].z = pVertex->y;
-                    verts[0].colour = (colour0 & 0xff) << 16 | colour0 & 0xff000000 |
-                                      (colour0 & 0xff0000) >> 16 | colour0 & 0xff00;
-                    verts[1].y = -pVertex[1].x;
-                    verts[1].x = pVertex[1].z;
-                    verts[1].z = pVertex[1].y;
-                    verts[1].colour = (colour1 & 0xff) << 16 | colour1 & 0xff000000 |
-                                      (colour1 & 0xff0000) >> 16 | colour1 & 0xff00;
+                    verts[0].y = -this->fLinVertList[iCurVert - 2].x;
+                    verts[0].x = this->fLinVertList[iCurVert - 2].z;
+                    verts[0].z = this->fLinVertList[iCurVert - 2].y;
+                    verts[0].colour = (this->fLinColourList[iCurVert - 2] & 0xff) << 16 |
+                                      this->fLinColourList[iCurVert - 2] & 0xff000000 |
+                                      (this->fLinColourList[iCurVert - 2] & 0xff0000) >> 16 |
+                                      this->fLinColourList[iCurVert - 2] & 0xff00;
+                    verts[1].y = -this->fLinVertList[iCurVert - 1].x;
+                    verts[1].x = this->fLinVertList[iCurVert - 1].z;
+                    verts[1].z = this->fLinVertList[iCurVert - 1].y;
+                    verts[1].colour = (this->fLinColourList[iCurVert - 2] & 0xff) << 16 |
+                                      this->fLinColourList[iCurVert - 2] & 0xff000000 |
+                                      (this->fLinColourList[iCurVert - 2] & 0xff0000) >> 16 |
+                                      this->fLinColourList[iCurVert - 2] & 0xff00;
                     verts[1].u = 0.5f;
                     verts[1].v = 0.5f;
 
