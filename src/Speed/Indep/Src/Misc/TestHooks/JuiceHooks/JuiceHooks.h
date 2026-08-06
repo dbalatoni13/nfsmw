@@ -81,6 +81,7 @@ public:
     int InFrontEnd(Scripting::VarArgs &params);
     int InDriveMode(Scripting::VarArgs &params);
     int SetHeat(Scripting::VarArgs &params);
+    int FinishRaceInPlace(Scripting::VarArgs &params);
     char *DisplayFMVfilename(Scripting::VarArgs &params);
     int SetFrameRateThreshold(Scripting::VarArgs &params);
     int ScreenLoaded(Scripting::VarArgs &params);

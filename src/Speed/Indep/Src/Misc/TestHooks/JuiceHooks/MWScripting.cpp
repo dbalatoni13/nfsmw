@@ -239,6 +239,23 @@ set_heat:
     return 0;
 }
 
+int MWCommands::FinishRaceInPlace(Scripting::VarArgs &params) {
+    int place;
+    if (params.GetNumberOfRemainingArgs() <= 0) {
+        goto default_place;
+    }
+    params.GetInt(place);
+    goto have_place;
+default_place:
+    place = 1;
+have_place:
+    if (place > 0) {
+        GRaceStatus::Get().SkipToEndOfRaceInPlace(place, 2.0f);
+        return 1;
+    }
+    return 0;
+}
+
 int MWCommands::TurnPursuitForeverOn(Scripting::VarArgs &params) {
     ::ForcePursuitNeverEnd = 1;
     return 1;
