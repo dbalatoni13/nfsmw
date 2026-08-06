@@ -112,6 +112,10 @@ float DebugDraw::GetDrawRange() {
     return Tweak_drawRange;
 }
 
+short int DebugDraw::GetTimeType() {
+    return fTimeType;
+}
+
 void DebugDraw::DrawAll() {
     bMatrix4 *matrix;
     eView *view = eGetView(EVIEW_PLAYER1, false);

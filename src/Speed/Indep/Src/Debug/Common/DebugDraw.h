@@ -80,6 +80,7 @@ struct DebugDraw {
     bool OutOfRange(const UMath::Vector3 &pt, float radius);
     bool OutOfRange(const UMath::Vector4 &pt, float radius);
     float GetDrawRange();
+    short int GetTimeType();
     void DrawAll();
     void CacheCameraInfo();
 };
