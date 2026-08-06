@@ -331,6 +331,74 @@ void DebugDraw::Circle(const UMath::Matrix4 &mat, float radius, unsigned int c,
     }
 }
 
+void DebugDraw::Quad(const UMath::Vector4 *pt0, const UMath::Vector4 *pt1,
+                     const UMath::Vector4 *pt2, const UMath::Vector4 *pt3,
+                     unsigned int c, short int lifeSpan, int texture) {
+    COORD2 uv0;
+    COORD2 uv1;
+    COORD2 uv2;
+    COORD2 uv3;
+
+    uv0.x = 0.0f;
+    uv0.y = 1.0f;
+    uv1.x = 1.0f;
+    uv1.y = 1.0f;
+    uv2.x = 1.0f;
+    uv2.y = 0.0f;
+    uv3.x = 0.0f;
+    uv3.y = 0.0f;
+    Triangle(pt0, pt1, pt2, &uv0, &uv1, &uv2, c, lifeSpan, texture);
+    Triangle(pt2, pt3, pt0, &uv2, &uv3, &uv0, c, lifeSpan, texture);
+}
+
+void DebugDraw::CylinderSection(const UMath::Matrix4 &mat, float radiusTop, float radiusBot,
+                                float height, unsigned int c, short int lifeSpan, int texture) {
+    const int kMaxNumFacets = 12;
+    const int kMinNumFacets = 4;
+    int numFacets;
+    UMath::Vector4 pts[12];
+    UMath::Vector4 topTpts[12];
+    UMath::Vector4 botTpts[12];
+
+    if (fEnabled) {
+        float angle = 0.0f;
+        numFacets = static_cast<int>(static_cast<float>(std::log(radiusTop + radiusBot)) * 5.0f + 6.0f);
+        numFacets = UMath::Min(numFacets, kMaxNumFacets);
+        numFacets = UMath::Max(numFacets, kMinNumFacets);
+
+        if (numFacets > 0) {
+            const float numFacetsFloat = static_cast<float>(numFacets);
+            for (int i = 0; i < numFacets; ++i) {
+                pts[i].x = radiusBot * UMath::Cosa(angle);
+                pts[i].y = 0.0f;
+                pts[i].z = radiusBot * UMath::Sina(angle);
+                pts[i].w = 1.0f;
+                angle += 1.0f / numFacetsFloat;
+            }
+        }
+        UMath::RotateTranslate(numFacets, botTpts, mat, pts);
+
+        angle = 0.0f;
+        if (numFacets > 0) {
+            const float numFacetsFloat = static_cast<float>(numFacets);
+            for (int i = 0; i < numFacets; ++i) {
+                pts[i].x = radiusTop * UMath::Cosa(angle);
+                pts[i].y = height;
+                pts[i].z = radiusTop * UMath::Sina(angle);
+                pts[i].w = 1.0f;
+                angle += 1.0f / numFacetsFloat;
+            }
+        }
+        UMath::RotateTranslate(numFacets, topTpts, mat, pts);
+
+        for (int i = 0; i < numFacets - 1; ++i) {
+            Quad(&topTpts[i], &topTpts[i + 1], &botTpts[i + 1], &botTpts[i], c, lifeSpan, texture);
+        }
+        Quad(&topTpts[numFacets - 1], &topTpts[0], &botTpts[0], &botTpts[numFacets - 1],
+             c, lifeSpan, texture);
+    }
+}
+
 void DebugDraw::Cylinder(const UMath::Matrix4 &mat, float radius, float height,
                          unsigned int c, short int lifeSpan, bool bShadow, int texture) {
     if (fEnabled) {
