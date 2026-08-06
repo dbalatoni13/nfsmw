@@ -91,6 +91,10 @@ struct DebugDraw {
                 short int lifeSpan, bool bShadow, int texture);
     void Sphere(const UMath::Vector3 &basePt, float radius, unsigned int c,
                 short int lifeSpan, bool bShadow, int texture);
+    void Cylinder(const UMath::Matrix4 &mat, float radius, float height,
+                  unsigned int c, short int lifeSpan, bool bShadow, int texture);
+    void Cylinder(const UMath::Vector3 &basePt, float radius, float height,
+                  unsigned int c, short int lifeSpan, bool bShadow, int texture);
     void CylinderSection(const UMath::Matrix4 &mat, float radTop, float radBot,
                          float height, unsigned int c, short int lifeSpan, int texture);
     void Box(const UMath::Matrix4 &mat, float width, float height, float depth,

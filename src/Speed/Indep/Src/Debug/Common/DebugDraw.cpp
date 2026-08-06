@@ -293,6 +293,20 @@ void DebugDraw::Sphere(const UMath::Vector3 &basePt, float radius, unsigned int 
     }
 }
 
+void DebugDraw::Cylinder(const UMath::Vector3 &basePt, float radius, float height,
+                         unsigned int c, short int lifeSpan, bool bShadow, int texture) {
+    if (fEnabled) {
+        UMath::Matrix4 mat;
+        UMath::Vector4 res = UMath::Vector4Make(1.0f, basePt);
+
+        mat.v0 = UMath::Matrix4::kIdentity.v0;
+        mat.v1 = UMath::Matrix4::kIdentity.v1;
+        mat.v2 = UMath::Matrix4::kIdentity.v2;
+        mat.v3 = res;
+        Cylinder(mat, radius, height, c, lifeSpan, bShadow, texture);
+    }
+}
+
 void DebugDraw::DrawAll() {
     bMatrix4 *matrix;
     eView *view = eGetView(EVIEW_PLAYER1, false);
