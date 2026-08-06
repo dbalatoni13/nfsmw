@@ -8,6 +8,7 @@ extern float Tweak_drawRange;
 extern int sDebugDrawMaxPrims;
 extern int sDebugDrawMaxLinePrims;
 
+extern const COORD2 D_005425E0 = {0.5f, 1.0f};
 extern const COORD2 D_005425E8 = {1.0f, 0.0f};
 extern const COORD2 D_005425F0 = {0.0f, 1.0f};
 extern const COORD2 D_005425F8 = {1.0f, 1.0f};
@@ -905,12 +906,9 @@ void DebugDraw::Vector(const UMath::Vector4 &pt, const UMath::Vector4 &vec, floa
         UMath::Subxyz(inVec, widthVec, pts[1]);
         UMath::Addxyz(inVec, widthVec, pts[2]);
 
-        uv0.x = 0.0f;
-        uv0.y = 0.0f;
-        uv1.x = 0.5f;
-        uv1.y = 1.0f;
-        uv2.x = 1.0f;
-        uv2.y = 0.0f;
+        memset(&uv0, 0, sizeof(uv0));
+        uv1 = D_005425E0;
+        uv2 = D_005425E8;
         Triangle(&pts[0], &pts[1], &pts[2], &uv0, &uv1, &uv2, c, lifeSpan, texture);
     }
 }
