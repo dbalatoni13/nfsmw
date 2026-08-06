@@ -276,11 +276,11 @@ void MWExtension::UpdatePad(void *input) {
     static int oldFrame;
     if (PadConfigManager::Instance()->IsFENavCapturing() &&
         JuicePad::Instance()->DidInputHappen() == 1) {
-        int currentFrame = reinterpret_cast<GameHook *(*)()>(GameHook::Instance)()->GetFrame();
+        int currentFrame = GameHook::Instance()->GetFrame();
         int frameDelta = currentFrame - oldFrame;
-        if (*reinterpret_cast<int *>(juicePad) != 0 && frameDelta > 0xe) {
+        if (juicePad->mButtons != 0 && frameDelta > 0xe) {
             oldFrame = currentFrame;
-            PadConfigManager::Instance()->CaptureKeyAndState(*reinterpret_cast<int *>(juicePad));
+            PadConfigManager::Instance()->CaptureKeyAndState(juicePad->mButtons);
         }
     }
     JuicePad::Instance()->UpdateJuicePad();

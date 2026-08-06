@@ -36,7 +36,10 @@ struct ProtoAriesRefT;
 
 namespace Juice {
 
-struct tJuicePad;
+struct tJuicePad {
+    unsigned int mButtons;
+    float mButtonVal[32];
+};
 
 class IExtension {
 public:
