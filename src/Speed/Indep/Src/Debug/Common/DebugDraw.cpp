@@ -640,7 +640,7 @@ void DebugDraw::DrawAll() {
                     verts[0].u = 0.5f;
                     verts[0].v = 0.5f;
                     iCurVert += 2;
-                    colour1 = pColour[1];
+                    colour1 = pColour[0];
                     verts[0].y = -pVertex->x;
                     verts[0].x = pVertex->z;
                     verts[0].z = pVertex->y;
