@@ -83,6 +83,7 @@ public:
     int SetHeat(Scripting::VarArgs &params);
     int FinishRaceInPlace(Scripting::VarArgs &params);
     int TeleportToCoords(Scripting::VarArgs &params);
+    int IsCarStuck(Scripting::VarArgs &params);
     char *DisplayFMVfilename(Scripting::VarArgs &params);
     int SetFrameRateThreshold(Scripting::VarArgs &params);
     int ScreenLoaded(Scripting::VarArgs &params);

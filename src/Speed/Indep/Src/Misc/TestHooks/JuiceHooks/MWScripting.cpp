@@ -20,6 +20,11 @@ extern float fpsTolerateValue;
 extern int logCountDownMax;
 extern int ForcePursuitHeatLevel;
 extern void JumpToNewPos(bVector3 *jumpPosition);
+
+static float last_x;
+static float last_y;
+static float last_z;
+static float last_speed;
 extern void Game_ChallengeCompleted();
 extern void Game_AwardPlayerBounty(int amount);
 extern int Game_GetPlayerBounty();
@@ -273,6 +278,31 @@ int MWCommands::TeleportToCoords(Scripting::VarArgs &params) {
     }
     JumpToNewPos(&teleportPos);
     return 1;
+}
+
+int MWCommands::IsCarStuck(Scripting::VarArgs &params) {
+    int result = 0;
+    IVehicle *pVehicle = IVehicle::First(VEHICLE_PLAYERS);
+    float current_y;
+    float current_x;
+    float current_z;
+    float current_speed;
+    if (pVehicle != nullptr) {
+        const UMath::Vector3 &position = pVehicle->GetPosition();
+        current_x = position.x;
+        current_y = position.y;
+        current_z = position.z;
+        current_speed = pVehicle->GetSpeed();
+        if (5.0f > bAbs(current_x - last_x) && 5.0f > bAbs(current_y - last_y) && 5.0f > bAbs(current_z - last_z) &&
+            current_speed < 1.0f) {
+            result = 1;
+        }
+        last_x = current_x;
+        last_y = current_y;
+        last_z = current_z;
+        last_speed = current_speed;
+    }
+    return result;
 }
 
 int MWCommands::TurnPursuitForeverOn(Scripting::VarArgs &params) {
