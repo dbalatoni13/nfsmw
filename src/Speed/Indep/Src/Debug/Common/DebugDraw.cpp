@@ -1034,11 +1034,8 @@ void DebugDraw::DrawAll() {
             do {
             if (this->fTriPrimList[s].fLifeSpan == 0) {
                 if (s <= endIndex) {
-                    while (this->fTriPrimList[endIndex].fLifeSpan == 0) {
+                    while (s <= endIndex && this->fTriPrimList[endIndex].fLifeSpan == 0) {
                         endIndex--;
-                        if (endIndex < s) {
-                            break;
-                        }
                     }
                 }
                 if (s < endIndex) {
@@ -1087,11 +1084,8 @@ void DebugDraw::DrawAll() {
             do {
             if (this->fLinPrimList[s].fLifeSpan == 0) {
                 if (s <= endIndex) {
-                    while (this->fLinPrimList[endIndex].fLifeSpan == 0) {
+                    while (s <= endIndex && this->fLinPrimList[endIndex].fLifeSpan == 0) {
                         endIndex--;
-                        if (endIndex < s) {
-                            break;
-                        }
                     }
                 }
                 if (s < endIndex) {
