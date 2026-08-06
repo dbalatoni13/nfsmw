@@ -242,7 +242,11 @@ inline void VU0_v4crossprodxyz(const UMath::Vector4 &a, const UMath::Vector4 &b,
 
 // inline void VU0_v3unit(const UMath::Vector3 &a, UMath::Vector3 &result) {}
 
-inline void VU0_v4scaleadd(const UMath::Vector4 &a, const float scaleby, const UMath::Vector4 &b, UMath::Vector4 &result) {}
+inline void VU0_v4scaleadd(const UMath::Vector4 &a, const float scaleby,
+                           const UMath::Vector4 &b, UMath::Vector4 &result) {
+    VU0_v3scaleadd(UMath::Vector4To3(a), scaleby, UMath::Vector4To3(b),
+                   UMath::Vector4To3(result));
+}
 
 inline void VU0_v4scaleaddxyz(const UMath::Vector4 &a, const float scaleby, const UMath::Vector4 &b, UMath::Vector4 &result) {
     VU0_v3scaleadd(UMath::Vector4To3(a), scaleby, UMath::Vector4To3(b),
