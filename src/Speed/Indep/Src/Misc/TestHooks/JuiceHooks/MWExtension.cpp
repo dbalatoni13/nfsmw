@@ -10,6 +10,7 @@
 #include "Speed/Indep/bWare/Inc/bMemory.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "Speed/Indep/Libs/realcore/6.24.00/include/common/realcore/file/driver.h"
+#include "Speed/Indep/Libs/realcore/6.24.00/include/common/realcore/system/threads.h"
 #include "Speed/Indep/Libs/realcore/6.24.00/include/common/realcore/system/systask.h"
 
 extern int BuildVersionChangelistNumber;
@@ -17,13 +18,30 @@ extern int ForceJuiceConnect;
 extern char *ForceJuiceConnectIP;
 extern int GetJoylogChannelRepeatCount(int channel);
 extern int ASYNCFILE_getstatus(int handle);
+extern int bStrCmp(const char *a, const char *b);
 
 namespace Juice {
 
+char MWExtension::mFileName[256];
 char MWExtension::mJuiceBuildName[32];
 
 static char changeList[32];
 static char name[255];
+
+MWExtension *MWExtension::Instance() {
+    static MWExtension mwExt;
+    return &mwExt;
+}
+
+MWExtension::MWExtension()
+    : mHasExecutedRPC(0)
+    , mScreenShotHandle(0) {
+    bMemSet(mFileName, '\0', 0x100);
+}
+
+void MWExtension::ThreadYield(int dur) {
+    THREAD_yield(dur);
+}
 
 char *MWExtension::GetTitleName() {
     return "NFS Most Wanted";
@@ -50,6 +68,10 @@ int MWExtension::GetServerPort() {
 int MWExtension::GetReadyToReset() {
     g_pEAXSound->RestoreDriver();
     return 0;
+}
+
+int MWExtension::IsOkToConnect() {
+    return bStrCmp(JuiceDirtyNet::Instance()->GetLocalIpAddress(), "0.0.0.0") != 0;
 }
 
 void MWExtension::FileSyncUpdate() {

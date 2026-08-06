@@ -42,7 +42,45 @@ public:
     virtual ~ICommands() {}
 };
 
+class INetwork {
+public:
+    virtual int Connect();
+    virtual int IsConnected();
+    virtual int Recv();
+    virtual int PeekHdr();
+    virtual int Send();
+    virtual int IsEnabled();
+    virtual int Initialize();
+    virtual int Disconnect();
+    virtual void MaintainConn();
+    virtual void TearDown();
+    virtual void FreeEverything();
+    virtual char *GetMac();
+    virtual char *GetLocalIpAddress();
+};
+
 namespace Juice {
+
+class JuiceDirtyNet : public INetwork {
+private:
+    static JuiceDirtyNet *mInstance;
+
+public:
+    static JuiceDirtyNet *Instance();
+    virtual int Connect(const char *ip, int port);
+    virtual int IsConnected();
+    virtual int Recv(char *buffer, int *size, int flags);
+    virtual int PeekHdr(char *buffer);
+    virtual int Send(int channel, int size, char *buffer);
+    virtual int IsEnabled();
+    virtual int Initialize();
+    virtual int Disconnect();
+    virtual void MaintainConn();
+    virtual void TearDown();
+    virtual void FreeEverything();
+    virtual char *GetMac();
+    virtual char *GetLocalIpAddress();
+};
 
 struct GameHook {
     static GameHook *(*Instance)(void *, char *);
@@ -229,9 +267,15 @@ namespace Juice {
 
 class MWExtension : public IExtension {
 private:
+    int mHasExecutedRPC;
+    int mScreenShotHandle;
+    static char mFileName[256];
     static char mJuiceBuildName[32];
 
 public:
+    static MWExtension *Instance();
+    MWExtension();
+    void ThreadYield(int dur);
     char *GetTitleName();
     char *GetBuildDate();
     char *GetChangeList();
