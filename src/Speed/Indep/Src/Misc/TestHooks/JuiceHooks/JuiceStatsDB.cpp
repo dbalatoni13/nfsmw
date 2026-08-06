@@ -1,4 +1,6 @@
 #include "Speed/Indep/Src/Misc/TestHooks/JuiceHooks/JuiceHooks.h"
+#include "Speed/Indep/Src/Misc/GameFlow.hpp"
+#include "Speed/Indep/bWare/Inc/bDebug.hpp"
 
 extern unsigned int eFrameCounter;
 
@@ -112,6 +114,23 @@ increment:
     }
     mPerRaceStatsDB[statType]++;
     mFrameOfLastInc[statType] = eFrameCounter;
+}
+
+void JuiceStatsDB::UpdateTimers() {
+    float elapsed = bGetTickerDifference(mCurrentTicker);
+    if (elapsed > 500.0f) {
+        elapsed = bGetTickerDifference(mCurrentTicker);
+        bool racing = TheGameFlowManager.GetState() == GAMEFLOW_STATE_RACING;
+        mTimeAtHeatLevel[mPerRaceStatsDB[JUICE_CURRENT_HEAT]] += elapsed * 0.001f;
+        if (racing) {
+            elapsed = bGetTickerDifference(mCurrentTicker);
+            unsigned int start_ticks = mCurrentTicker;
+            mTimeInCameraMode[mPerRaceStatsDB[JUICE_CURRENT_CAMERA]] += elapsed * 0.001f;
+            elapsed = bGetTickerDifference(start_ticks);
+            mTimeInRaceType[mPerRaceStatsDB[JUICE_CURRENT_RACE]] += elapsed * 0.001f;
+        }
+        mCurrentTicker = bGetTicker();
+    }
 }
 
 void JuiceStatsDB::SetHeat(int heat) {

@@ -275,6 +275,7 @@ public:
     JuiceStatsDB();
     void ResetPerRaceStats();
     void IncrementPerRaceStat(JuicePerRaceStatType statType);
+    void UpdateTimers();
     void ResetCareerData();
     void SetHeat(int heat);
     void SetCamera(int camID);

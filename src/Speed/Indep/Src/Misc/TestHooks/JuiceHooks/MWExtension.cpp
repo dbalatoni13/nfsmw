@@ -153,6 +153,10 @@ int MWExtension::GetJuiceUpdateProcessor() {
     return 0;
 }
 
+void MWExtension::ResetGamePad() {
+    MWJuicePad::Instance()->ResetGamePad();
+}
+
 int MWExtension::NumberOfRepeatedReplayEntries(int channel) {
     return GetJoylogChannelRepeatCount(channel);
 }
