@@ -143,6 +143,8 @@ private:
     static unsigned int mFEngScreenLoading;
 
 public:
+    static MWCommands *Instance();
+    MWCommands();
     char *GetNamespaceName() const;
     static void LoadingNewFEngPackage(unsigned int newPkg);
     int TurnDebugTextOn(Scripting::VarArgs &params);
