@@ -20,6 +20,8 @@ extern float fpsTolerateValue;
 extern int logCountDownMax;
 extern int ForcePursuitHeatLevel;
 extern void JumpToNewPos(bVector3 *jumpPosition);
+extern float Tweak_TuningAero;
+extern int Tweak_UseTweakerTunings;
 
 static float last_x;
 static float last_y;
@@ -342,6 +344,54 @@ int MWCommands::TurnPursuitOff(Scripting::VarArgs &params) {
             ICopMgr::mDisableCops = 1;
         }
         return 1;
+    }
+    return -1;
+}
+
+int MWCommands::SpeedBoost(Scripting::VarArgs &params) {
+    float gSpeed = 350.0f;
+    params.GetFloat(gSpeed);
+    IPlayer *player = IPlayer::First(PLAYER_LOCAL);
+    if (player != nullptr) {
+        IVehicle *vehicle;
+        if (player->GetSimable()->QueryInterface(&vehicle)) {
+            vehicle->SetSpeed(gSpeed * 0.447027266f);
+            Tweak_TuningAero = 1.0f;
+            Tweak_UseTweakerTunings = 1;
+            return 1;
+        } else {
+            return -1;
+        }
+    }
+    return -1;
+}
+
+int MWCommands::TurnAutoPilotOn(Scripting::VarArgs &params) {
+    IPlayer *player = IPlayer::First(PLAYER_LOCAL);
+    if (player != nullptr) {
+        ISimable *simable = player->GetSimable();
+        if (simable != nullptr) {
+            IHumanAI *humanAI;
+            if (simable->QueryInterface(&humanAI)) {
+                humanAI->SetAiControl(true);
+                return 1;
+            }
+        }
+    }
+    return -1;
+}
+
+int MWCommands::TurnAutoPilotOff(Scripting::VarArgs &params) {
+    IPlayer *player = IPlayer::First(PLAYER_LOCAL);
+    if (player != nullptr) {
+        ISimable *simable = player->GetSimable();
+        if (simable != nullptr) {
+            IHumanAI *humanAI;
+            if (simable->QueryInterface(&humanAI)) {
+                humanAI->SetAiControl(false);
+                return 0;
+            }
+        }
     }
     return -1;
 }

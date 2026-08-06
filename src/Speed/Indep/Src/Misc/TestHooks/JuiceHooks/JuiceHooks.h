@@ -172,6 +172,10 @@ public:
     int TurnPursuitOff(Scripting::VarArgs &params);
     int TurnPursuitForeverOn(Scripting::VarArgs &params);
     int TurnPursuitForeverOff(Scripting::VarArgs &params);
+    int SpeedBoost(Scripting::VarArgs &params);
+    int TurnAutoPilotOn(Scripting::VarArgs &params);
+    int TurnAutoPilotOff(Scripting::VarArgs &params);
+    int ScatterCops(Scripting::VarArgs &params);
 };
 
 }
