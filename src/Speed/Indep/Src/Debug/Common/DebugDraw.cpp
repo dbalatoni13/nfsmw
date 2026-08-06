@@ -1,5 +1,6 @@
 #include "Speed/Indep/Src/Debug/Common/DebugDraw.h"
 #include "Speed/Indep/Src/Camera/Camera.hpp"
+#include "Speed/Indep/Src/World/WCollisionMgr.h"
 
 extern float Tweak_drawRange;
 extern int sDebugDrawMaxPrims;
@@ -217,6 +218,81 @@ void DebugDraw::LineSeg(const UMath::Vector3 &pt0, const UMath::Vector3 &pt1,
     LineSeg(UMath::Matrix4::kIdentity, pt14, pt24, c, lifeSpan);
 }
 
+void DebugDraw::Sphere(const UMath::Matrix4 &mat, float radius, unsigned int c,
+                       short int lifeSpan, bool bShadow, int texture) {
+    if (!fEnabled) {
+        return;
+    }
+    if (OutOfRange(mat.v3, radius)) {
+        return;
+    }
+
+    {
+        const int kMaxNumFacets = 12;
+        const int kMinNumFacets = 2;
+        int numFacets;
+        UMath::Matrix4 tmpMat;
+
+        numFacets = static_cast<int>(static_cast<float>(std::log(radius)) + 9.0f);
+        tmpMat = mat;
+        tmpMat.v3.y -= radius;
+        numFacets = UMath::Min(numFacets, kMaxNumFacets);
+        numFacets = UMath::Max(numFacets, kMinNumFacets);
+        const float angleStep = 0.5f / numFacets;
+        float angle = 0.0f;
+        for (int i = numFacets; i > 0; --i) {
+            float localRadTop;
+            float localRadBot;
+            float sectionHeight;
+
+            localRadTop = radius * UMath::Cosa(angle - 0.25 + angleStep);
+            localRadBot = radius * UMath::Cosa(angle - 0.25);
+            sectionHeight = UMath::Abs(radius * (UMath::Sina(angle - 0.25) -
+                                                 UMath::Sina(angle - 0.25 + angleStep)));
+            CylinderSection(tmpMat, localRadTop, localRadBot, sectionHeight, c, lifeSpan, texture);
+            angle += angleStep;
+            tmpMat.v3.y += sectionHeight;
+        }
+
+        if (bShadow == true) {
+            UMath::Vector4 trans1;
+            UMath::Vector4 trans2;
+
+            trans1 = mat.v3;
+            trans1.w = 1.0f;
+            trans2 = trans1;
+            trans2.w = 1.0f;
+            bool hit;
+            {
+                WCollisionMgr collisionMgr(0, 3);
+                hit = collisionMgr.GetWorldHeightAtPoint(UMath::Vector4To3(trans1), trans2.y, nullptr);
+            }
+            if (hit) {
+                UTransform t(UMath::Matrix3::kIdentity, UMath::Vector4To3(trans2));
+
+                Box(t.fTransform, 1.0f, 0.01f, 1.0f, 0x1f888888, 1, false, -1, true);
+                UMath::Subxyz(trans2, trans1, trans2);
+                trans2.w = 1.0f;
+                Vector(trans1, trans2, 1.0f, 0x1f888888, 1, -1);
+            }
+        }
+    }
+}
+
+void DebugDraw::Sphere(const UMath::Vector3 &basePt, float radius, unsigned int c,
+                       short int lifeSpan, bool bShadow, int texture) {
+    if (fEnabled) {
+        UMath::Matrix4 mat;
+        UMath::Vector4 res = UMath::Vector4Make(1.0f, basePt);
+
+        mat.v0 = UMath::Matrix4::kIdentity.v0;
+        mat.v1 = UMath::Matrix4::kIdentity.v1;
+        mat.v2 = UMath::Matrix4::kIdentity.v2;
+        mat.v3 = res;
+        Sphere(mat, radius, c, lifeSpan, bShadow, texture);
+    }
+}
+
 void DebugDraw::DrawAll() {
     bMatrix4 *matrix;
     eView *view = eGetView(EVIEW_PLAYER1, false);
@@ -242,13 +318,11 @@ void DebugDraw::DrawAll() {
 
             iCurVert = 0;
             iNumVertsLeft = this->fNumTriPrims * 3;
-            while (iNumVertsLeft > 0) {
+            for (; iNumVertsLeft > 0; iNumVertsLeft -= 3, iCurVert += 3) {
                 poly.Vertices[0] = Coord4ToSwizzledbVec(&this->fTriVertList[iCurVert]);
                 poly.Vertices[1] = Coord4ToSwizzledbVec(&this->fTriVertList[iCurVert + 1]);
                 poly.Vertices[2] = Coord4ToSwizzledbVec(&this->fTriVertList[iCurVert + 2]);
 
-                iNumVertsLeft -= 3;
-                iCurVert += 3;
                 view->Render(&poly, this->fTextureInfo, matrix, 0, 0.0f);
             }
         }

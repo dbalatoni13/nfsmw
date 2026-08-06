@@ -14,6 +14,8 @@ typedef struct UMath::Matrix4 MATRIX4;
 typedef struct UMath::Matrix3 MATRIX3;
 typedef struct UMath::Vector4 RQUAT;
 
+void BuildRotTrans(UMath::Matrix4 &quatTrans, const UMath::Matrix3 &orientation, const UMath::Vector3 &t);
+
 // total size: 0x40
 class UTransform {
   public:
@@ -25,7 +27,9 @@ class UTransform {
 
     // UTransform(const UMath::Vector4 &q) {}
 
-    // UTransform(const UMath::Matrix3 &m, const UMath::Vector3 &t) {}
+    UTransform(const UMath::Matrix3 &m, const UMath::Vector3 &t) {
+        BuildRotTrans(fTransform, m, t);
+    }
 
     // UTransform(const UMath::Vector4 &q, const UMath::Vector4 &t) {}
 

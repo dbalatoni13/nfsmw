@@ -31,11 +31,11 @@ typedef float Angle; // Decl: UMath.h:43
 namespace UMath {
 
 inline float Sina(const Angle a) {
-    return VU0_Sin(a * TWOPI);
+    return VU0_Sin(a);
 }
 
 inline float Cosa(const Angle a) {
-    return VU0_Cos(a * TWOPI);
+    return VU0_Cos(a);
 }
 
 inline float Sinr(const float r) {

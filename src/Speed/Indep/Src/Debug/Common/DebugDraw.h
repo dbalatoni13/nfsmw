@@ -87,6 +87,16 @@ struct DebugDraw {
                  const UMath::Vector4 &pt1, unsigned int c, short int lifeSpan);
     void LineSeg(const UMath::Vector3 &pt0, const UMath::Vector3 &pt1,
                  unsigned int c, short int lifeSpan);
+    void Sphere(const UMath::Matrix4 &mat, float radius, unsigned int c,
+                short int lifeSpan, bool bShadow, int texture);
+    void Sphere(const UMath::Vector3 &basePt, float radius, unsigned int c,
+                short int lifeSpan, bool bShadow, int texture);
+    void CylinderSection(const UMath::Matrix4 &mat, float radTop, float radBot,
+                         float height, unsigned int c, short int lifeSpan, int texture);
+    void Box(const UMath::Matrix4 &mat, float width, float height, float depth,
+             unsigned int c, short int lifeSpan, bool bShadow, int texture, bool frombase);
+    void Vector(const UMath::Vector4 &base, const UMath::Vector4 &vec, float scale,
+                unsigned int c, short int lifeSpan, int texture);
     void DrawAll();
     void CacheCameraInfo();
 };
