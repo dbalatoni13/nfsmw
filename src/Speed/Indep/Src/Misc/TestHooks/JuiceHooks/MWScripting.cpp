@@ -32,10 +32,10 @@ int MWCommands::UnlockAllThings(Scripting::VarArgs &params) {
 }
 
 int MWCommands::IsInFreeRoam(Scripting::VarArgs &params) {
-    if (IsGameFlowInGame()) {
-        return static_cast<int>(GRaceStatus::Get().GetPlayMode() == GRaceStatus::kPlayMode_Roaming);
+    if (!IsGameFlowInGame()) {
+        return -1;
     }
-    return -1;
+    return static_cast<int>(GRaceStatus::Get().GetPlayMode() == GRaceStatus::kPlayMode_Roaming);
 }
 
 int MWCommands::InfRaceBreaker(Scripting::VarArgs &params) {

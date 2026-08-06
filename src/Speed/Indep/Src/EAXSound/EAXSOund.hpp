@@ -117,6 +117,7 @@ class EAXSound : public AudioMemBase {
     void NISFinished();
 
     void PlayUISoundFX(eMenuSoundTriggers etriggertype);
+    void RestoreDriver();
 
   private:
     int ncompiletest;                            // offset 0x4, size 0x4

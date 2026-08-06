@@ -60,6 +60,10 @@ RegionLoader TheRegionLoader;
 TrackLoader TheTrackLoader;
 
 GameFlowManager TheGameFlowManager;
+
+bool IsGameFlowInGame() {
+    return TheGameFlowManager.IsInGame();
+}
 static Timer last_any_joy;
 
 // Forward declarations

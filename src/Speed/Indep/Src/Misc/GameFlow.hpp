@@ -77,9 +77,7 @@ inline bool IsGameFlowInFrontEnd() {
     return TheGameFlowManager.IsInFrontend();
 }
 
-inline bool IsGameFlowInGame() {
-    return TheGameFlowManager.IsInGame();
-}
+bool IsGameFlowInGame();
 
 inline void ResetCapturedLoadingTimes() {}
 

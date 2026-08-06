@@ -51,9 +51,16 @@ public:
 };
 
 class MWExtension : public IExtension {
+private:
+    static char mJuiceBuildName[32];
+
 public:
     char *GetTitleName();
     char *GetBuildDate();
+    char *GetChangeList();
+    char *GetConsoleName();
+    int HasFileLoaded(const void *fileHandle);
+    int NumberOfRepeatedReplayEntries(int channel);
     int GetReadyToReset();
     void FileSyncUpdate();
     char *GetServerIP();
