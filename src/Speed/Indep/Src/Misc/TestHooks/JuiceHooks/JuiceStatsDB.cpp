@@ -51,82 +51,88 @@ void JuiceStatsDB::ResetCareerData() {
 }
 
 void JuiceStatsDB::SubmitStats(JuiceRaceType raceType) {
+    char raceTypeString[64];
     float *cameraTime;
     float *raceTime;
     float *heatTime;
-    int heatIndex;
-    int cameraIndex;
-    int raceIndex;
-    char raceTypeString[64];
     if (mShouldDumpStats) {
-        if (raceType == JUICE_CIRCUIT) {
+        switch (raceType) {
+        case JUICE_CIRCUIT:
             bStrCpy(raceTypeString, "CIRCUIT");
-        } else if (raceType < JUICE_CIRCUIT) {
-            if (raceType == JUICE_FREE_ROAM) {
-                bStrCpy(raceTypeString, "FREE_ROAM");
-            }
-        } else if (raceType == JUICE_P2P) {
+            break;
+        case JUICE_FREE_ROAM:
+            bStrCpy(raceTypeString, "FREE_ROAM");
+            break;
+        case JUICE_P2P:
             bStrCpy(raceTypeString, "P2P");
-        } else if (raceType == JUICE_OTHERRACE) {
+            break;
+        case JUICE_OTHERRACE:
             bStrCpy(raceTypeString, "OTHERRACE");
+            break;
         }
 
         cameraTime = mTimeInCameraMode;
         raceTime = mTimeInRaceType;
-        reinterpret_cast<Juice::GameHook *(*)()>(Juice::GameHook::Instance)()->LogText(
+        Juice::GameHook::Instance()->LogText(
             "[STAT LOGGED] - COP_STATS, TRAFFIC_STATS, HEAT_STATS AND CAMERA_");
 
         heatTime = mTimeAtHeatLevel;
-        reinterpret_cast<Juice::GameHook *(*)()>(Juice::GameHook::Instance)()->LogStat(
+        Juice::GameHook::Instance()->LogStat(
             4, raceTypeString, "COP_CARS_SPAWNED", mPerRaceStatsDB[0]);
-        reinterpret_cast<Juice::GameHook *(*)()>(Juice::GameHook::Instance)()->LogStat(
+        Juice::GameHook::Instance()->LogStat(
             4, raceTypeString, "COP_CARS_UNSPAWNED", mPerRaceStatsDB[1]);
-        reinterpret_cast<Juice::GameHook *(*)()>(Juice::GameHook::Instance)()->LogStat(
+        Juice::GameHook::Instance()->LogStat(
             4, raceTypeString, "TRAFFIC_SPAWNED", mPerRaceStatsDB[4]);
-        reinterpret_cast<Juice::GameHook *(*)()>(Juice::GameHook::Instance)()->LogStat(
+        Juice::GameHook::Instance()->LogStat(
             4, raceTypeString, "TRAFFIC_UNSPAWNED", mPerRaceStatsDB[5]);
-        reinterpret_cast<Juice::GameHook *(*)()>(Juice::GameHook::Instance)()->LogStat(
+        Juice::GameHook::Instance()->LogStat(
             4, raceTypeString, "COP_CHOPPERS_SPAWNED", mPerRaceStatsDB[2]);
-        reinterpret_cast<Juice::GameHook *(*)()>(Juice::GameHook::Instance)()->LogStat(
+        Juice::GameHook::Instance()->LogStat(
             4, raceTypeString, "COP_CHOPPERS_UNSPAWNED", mPerRaceStatsDB[3]);
-        reinterpret_cast<Juice::GameHook *(*)()>(Juice::GameHook::Instance)()->LogStat(
+        Juice::GameHook::Instance()->LogStat(
             4, raceTypeString, "MAX_HEAT", mPerRaceStatsDB[7]);
 
-        heatIndex = 0;
-        do {
-            if (*heatTime > 0.0f) {
-                reinterpret_cast<Juice::GameHook *(*)()>(Juice::GameHook::Instance)()->LogText(
-                    "[EVENT LOGGED] - HEAT_LEVEL_TIME\n");
-                reinterpret_cast<Juice::GameHook *(*)()>(Juice::GameHook::Instance)()->GameEvent(
-                    "HEAT_LEVEL_TIME", raceTypeString, "", heatIndex, *heatTime, nullptr, "", "");
-            }
-            heatIndex++;
-            heatTime++;
-        } while (heatIndex < 11);
+        {
+            int heatIndex = 0;
+            do {
+                if (*heatTime > 0.0f) {
+                    Juice::GameHook::Instance()->LogText(
+                        "[EVENT LOGGED] - HEAT_LEVEL_TIME\n");
+                    Juice::GameHook::Instance()->GameEvent(
+                        "HEAT_LEVEL_TIME", raceTypeString, "", heatIndex, *heatTime, "", "", "");
+                }
+                heatIndex++;
+                heatTime++;
+            } while (heatIndex < 11);
+        }
 
-        cameraIndex = 0;
-        do {
-            if (*cameraTime > 0.0f) {
-                reinterpret_cast<Juice::GameHook *(*)()>(Juice::GameHook::Instance)()->LogText(
-                    "[EVENT LOGGED] - CAMERA_MODE_TIME\n");
-                reinterpret_cast<Juice::GameHook *(*)()>(Juice::GameHook::Instance)()->GameEvent(
-                    "CAMERA_MODE_TIME", raceTypeString, "", cameraIndex, *cameraTime, nullptr, "", "");
-            }
-            cameraIndex++;
-            cameraTime++;
-        } while (cameraIndex < 6);
+        {
+            int cameraIndex = 0;
+            do {
+                if (*cameraTime > 0.0f) {
+                    Juice::GameHook::Instance()->LogText(
+                        "[EVENT LOGGED] - CAMERA_MODE_TIME\n");
+                    Juice::GameHook::Instance()->GameEvent(
+                        "CAMERA_MODE_TIME", raceTypeString, "", cameraIndex, *cameraTime, "", "", "");
+                }
+                cameraIndex++;
+                cameraTime++;
+            } while (cameraIndex < 6);
+        }
 
-        raceIndex = 5;
-        do {
-            if (*raceTime > 0.0f) {
-                reinterpret_cast<Juice::GameHook *(*)()>(Juice::GameHook::Instance)()->LogText(
-                    "[EVENT LOGGED] - RACE_TYPE_TIME\n");
-                reinterpret_cast<Juice::GameHook *(*)()>(Juice::GameHook::Instance)()->GameEvent(
-                    "RACE_TYPE_TIME", raceTypeString, "", 0, *raceTime, nullptr, "", "");
-            }
-            raceIndex--;
-            raceTime++;
-        } while (raceIndex > -1);
+        {
+            int raceIndex = 5;
+            do {
+                if (*raceTime > 0.0f) {
+                    Juice::GameHook::Instance()->LogText(
+                        "[EVENT LOGGED] - RACE_TYPE_TIME\n");
+                    Juice::GameHook::Instance()->GameEvent(
+                        "RACE_TYPE_TIME", raceTypeString, "", 0, *raceTime, "", "", "");
+                }
+                raceIndex--;
+                raceTime++;
+            } while (raceIndex > -1);
+        }
         ResetPerRaceStats();
     }
 }
