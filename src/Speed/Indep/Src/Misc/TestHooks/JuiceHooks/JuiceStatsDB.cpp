@@ -19,6 +19,8 @@ void JuiceStatsDB::ResetPerRaceStats() {
     }
     for (int index = 0; index < 6; index++) {
         mTimeInCameraMode[index] = 0.0f;
+    }
+    for (int index = 0; index < 6; index++) {
         mTimeInRaceType[index] = 0.0f;
     }
     mShouldDumpStats = false;

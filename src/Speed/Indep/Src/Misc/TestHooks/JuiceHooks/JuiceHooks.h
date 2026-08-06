@@ -164,6 +164,11 @@ public:
 
 protected:
     MWJuicePad();
+
+private:
+    void SimulateFEButton(int port, int buttonID, float buttonData);
+    void SimulateBEButton(int port, int buttonID, float buttonData);
+    ActionQueue *GetActionQueue(const char *qName, int port);
 };
 
 enum JuicePerRaceStatType {

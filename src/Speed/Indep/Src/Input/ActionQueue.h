@@ -37,6 +37,7 @@ public:
             return "";
         return mQueueName;
     }
+    const char *GetRawName() const { return mQueueName; }
     bool IsRequired() const { return mRequired; }
     void SetRequired(bool b) { mRequired = b; }
 
