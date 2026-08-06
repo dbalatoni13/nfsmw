@@ -1,11 +1,17 @@
 #include "Speed/Indep/Src/Misc/TestHooks/JuiceHooks/JuiceHooks.h"
+#include "Speed/PSX2/Src/Online/PS2Isp.hpp"
 
+extern "C" void NetConnStartup(const char *params);
+extern "C" long NetConnQuery(const char *name, NetConfigRecT *configs, int count);
+extern "C" long NetConnConnect(NetConfigRecT *configs, int flags);
+extern "C" int printf(const char *format, ...);
 extern char *NetConnMAC();
 extern ProtoAriesRefT *ProtoAriesCreate(int memSize);
 extern long SocketInTextGetAddr(const char *host);
 extern int ProtoAriesConnect(ProtoAriesRefT *ref, int flags, long address, int port);
 extern int ProtoAriesPeek(ProtoAriesRefT *ref, int *kind, int *code, char **data);
 extern int ProtoAriesRecv(ProtoAriesRefT *ref, int *kind, int *channel, char *buf, int size);
+extern int ProtoAriesSend(ProtoAriesRefT *ref, int length, int channel, char *buf, int size);
 extern long ProtoAriesStatus(void *ref, int selector);
 extern int ProtoAriesUnconnect(void *ref);
 extern void ProtoAriesDestroy(void *ref);
@@ -16,6 +22,7 @@ extern char *SocketInAddrGetText(long address);
 
 namespace Juice {
 
+IExtension *IExtension::sCurrentExtension;
 JuiceDirtyNet *JuiceDirtyNet::mInstance;
 
 JuiceDirtyNet *JuiceDirtyNet::Instance() {
@@ -30,6 +37,30 @@ JuiceDirtyNet::~JuiceDirtyNet() {}
 int JuiceDirtyNet::Connect(const char *host, int port) {
     mAries = ProtoAriesCreate(0x1000);
     return ProtoAriesConnect(mAries, 0, SocketInTextGetAddr(host), port);
+}
+
+int JuiceDirtyNet::Initialize() {
+    NetConfigRecT configs[4];
+    int connected = 1;
+    NetConnStartup("-nosecure");
+    printf("Loading network configuration");
+    long count = NetConnQuery("mc0:", configs, 4);
+    if (count == 0) {
+        printf("\nNo network configurations found on mc0\n");
+    } else if (count > -1) {
+        printf("\nConfiguration Loaded Starting Juice\n");
+        count = NetConnConnect(configs, 0);
+        printf("\nNetConnConnect returned: %d\n", count);
+        if (count > -1) {
+            goto done;
+        }
+    } else {
+        printf("\nError occured loading network configurations\n");
+    }
+    connected = 0;
+    reinterpret_cast<GameHook *(*)()>(GameHook::Instance)()->DisableJuice();
+done:
+    return connected;
 }
 
 char *JuiceDirtyNet::GetMac() {
@@ -56,6 +87,29 @@ int JuiceDirtyNet::PeekHdr(char *data) {
 int JuiceDirtyNet::Recv(char *buf, int *channel, int size) {
     int dummyKind = 0;
     return ProtoAriesRecv(mAries, &dummyKind, channel, buf, size);
+}
+
+int JuiceDirtyNet::Send(int length, int channel, char *sendBuffer) {
+    int ret_val;
+    unsigned int timeDiff = 0;
+    unsigned int startTime =
+        reinterpret_cast<GameHook *(*)()>(GameHook::Instance)()->GetCurrentSystemTime();
+    do {
+        NetConnIdle();
+        ret_val = ProtoAriesSend(mAries, length, channel, sendBuffer, length);
+        if (ret_val < 0) {
+            NetConnIdle();
+            char *vtable = *reinterpret_cast<char **>(IExtension::sCurrentExtension);
+            short offset = *reinterpret_cast<short *>(vtable + 0xc0);
+            void (**notify)(char *, int) = reinterpret_cast<void (**)(char *, int)>(vtable + 0xc4);
+            (*notify)(
+                reinterpret_cast<char *>(IExtension::sCurrentExtension) + offset, 5);
+            NetConnIdle();
+        }
+        NetConnIdle();
+        timeDiff += reinterpret_cast<GameHook *(*)()>(GameHook::Instance)()->GetTimeElapsed(&startTime);
+    } while (ret_val < 0 || timeDiff > 3000);
+    return ret_val;
 }
 
 void JuiceDirtyNet::TearDown() {

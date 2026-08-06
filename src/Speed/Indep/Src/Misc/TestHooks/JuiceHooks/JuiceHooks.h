@@ -34,6 +34,7 @@ public:
 
 class IExtension {
 public:
+    static IExtension *sCurrentExtension;
     virtual ~IExtension() {}
 };
 
@@ -83,7 +84,7 @@ public:
     virtual int IsConnected();
     virtual int Recv(char *buffer, int *size, int flags);
     virtual int PeekHdr(char *buffer);
-    virtual int Send(int channel, int size, char *buffer);
+    virtual int Send(int length, int channel, char *buffer);
     virtual int IsEnabled();
     virtual int Initialize();
     virtual int Disconnect();
