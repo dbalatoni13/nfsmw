@@ -116,6 +116,13 @@ short int DebugDraw::GetTimeType() {
     return fTimeType;
 }
 
+void DebugDraw::LineSeg(const UMath::Vector3 &pt0, const UMath::Vector3 &pt1,
+                        unsigned int c, short int lifeSpan) {
+    UMath::Vector4 pt14 = UMath::Vector4Make(1.0f, pt0);
+    UMath::Vector4 pt24 = UMath::Vector4Make(1.0f, pt1);
+    LineSeg(UMath::Matrix4::kIdentity, pt14, pt24, c, lifeSpan);
+}
+
 void DebugDraw::DrawAll() {
     bMatrix4 *matrix;
     eView *view = eGetView(EVIEW_PLAYER1, false);

@@ -81,6 +81,10 @@ struct DebugDraw {
     bool OutOfRange(const UMath::Vector4 &pt, float radius);
     float GetDrawRange();
     short int GetTimeType();
+    void LineSeg(const UMath::Matrix4 &mat, const UMath::Vector4 &pt0,
+                 const UMath::Vector4 &pt1, unsigned int c, short int lifeSpan);
+    void LineSeg(const UMath::Vector3 &pt0, const UMath::Vector3 &pt1,
+                 unsigned int c, short int lifeSpan);
     void DrawAll();
     void CacheCameraInfo();
 };
