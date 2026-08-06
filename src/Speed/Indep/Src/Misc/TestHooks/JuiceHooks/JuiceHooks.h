@@ -44,6 +44,7 @@ struct tJuicePad {
 class IExtension {
 public:
     static IExtension *sCurrentExtension;
+    IExtension();
     ~IExtension() {}
     virtual char *GetTitleName();
     virtual char *GetBuildName();
