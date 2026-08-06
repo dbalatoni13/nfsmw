@@ -2,6 +2,8 @@
 #include "Speed/Indep/Src/Camera/Camera.hpp"
 
 extern float Tweak_drawRange;
+extern int sDebugDrawMaxPrims;
+extern int sDebugDrawMaxLinePrims;
 
 DebugDraw *DebugDraw::fgDbgDraw;
 
@@ -58,6 +60,66 @@ DebugDraw::DebugDraw() {
     fNumTriPrims = 0;
     fNumLinPrims = 0;
     fTextureInfo = nullptr;
+}
+
+void DebugDraw::AllocLists() {
+    unsigned int nameHash;
+    TextureInfo *textureInfo;
+    DrawPrimTri *triPrimList;
+    unsigned int *colourList;
+    UMath::Vector4 *vertList;
+    DrawPrimLin *linPrimList;
+    DrawPrimTri *triPrim;
+    DrawPrimLin *linPrim;
+    int i;
+
+    if (!fTextureInfo) {
+        nameHash = bStringHash("GREYMAP");
+        textureInfo = GetTextureInfo(nameHash, 1, 0);
+        i = sDebugDrawMaxPrims;
+        fTextureInfo = textureInfo;
+
+        triPrimList = new ("DrawPrimTri[]", 0) DrawPrimTri[i];
+        triPrim = triPrimList;
+        i = sDebugDrawMaxPrims - 1;
+        if (sDebugDrawMaxPrims != 0) {
+            do {
+                triPrim->fLifeSpan = 0;
+                i--;
+                triPrim->fTimeType = 0;
+                triPrim++;
+            } while (i != -1);
+        }
+
+        i = sDebugDrawMaxPrims;
+        fTriPrimList = triPrimList;
+        colourList = static_cast<unsigned int *>(bMalloc(i * 0xc, "DebugDraw TriCols", 0, 0));
+        i = sDebugDrawMaxPrims;
+        fTriColourList = colourList;
+        vertList = static_cast<UMath::Vector4 *>(bMalloc(i * 0x30, "DebugDraw TriVerts", 0, 0));
+        i = sDebugDrawMaxLinePrims;
+        fTriVertList = vertList;
+
+        linPrimList = new ("DrawPrimLin[]", 0) DrawPrimLin[i];
+        linPrim = linPrimList;
+        i = sDebugDrawMaxLinePrims - 1;
+        if (sDebugDrawMaxLinePrims != 0) {
+            do {
+                linPrim->fLifeSpan = 0;
+                i--;
+                linPrim->fTimeType = 0;
+                linPrim++;
+            } while (i != -1);
+        }
+
+        i = sDebugDrawMaxLinePrims;
+        fLinPrimList = linPrimList;
+        colourList = static_cast<unsigned int *>(bMalloc(i * 0x8, "DebugDraw LinCols", 0, 0));
+        i = sDebugDrawMaxLinePrims;
+        fLinColourList = colourList;
+        vertList = static_cast<UMath::Vector4 *>(bMalloc(i * 0x20, "DebugDraw LinVerts", 0, 0));
+        fLinVertList = vertList;
+    }
 }
 
 bool DebugDraw::InView(const UMath::Vector3 &pt, float radius) {
