@@ -7,6 +7,9 @@
 
 // total size: 0x14
 class GSpeedTrap {
+  public:
+    void DebugForceComplete();
+
   private:
     unsigned short mFlags;         // offset 0x0, size 0x2
     unsigned short mBinNumber;     // offset 0x2, size 0x2

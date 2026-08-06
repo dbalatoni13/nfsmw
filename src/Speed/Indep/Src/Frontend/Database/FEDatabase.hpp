@@ -164,6 +164,10 @@ class CareerSettings {
         return CurrentCar;
     }
 
+    uint32 GetCurrentBin() {
+        return CurrentBin;
+    }
+
     void TryAwardDemoMarker();
 
   private:

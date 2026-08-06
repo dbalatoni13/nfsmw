@@ -1,12 +1,22 @@
 #include "Speed/Indep/Src/Misc/TestHooks/JuiceHooks/JuiceHooks.h"
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
+#include "Speed/Indep/Src/Gameplay/GManager.h"
+#include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Misc/GameFlow.hpp"
+#include "Speed/Indep/Src/Sim/Simulation.h"
+#include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
 
 extern int DoScreenPrintf;
 extern int UnlockAllThings;
 extern int ForcePursuitNeverEnd;
 extern bool Tweak_InfiniteRaceBreaker;
+extern float fpsTolerateValue;
+extern int logCountDownMax;
+extern void Game_ChallengeCompleted();
+extern void Game_AwardPlayerBounty(int amount);
+extern int Game_GetPlayerBounty();
 
 namespace Juice {
 
@@ -48,6 +58,137 @@ int MWCommands::InfRaceBreaker(Scripting::VarArgs &params) {
 
 int MWCommands::IsSplitScreen(Scripting::VarArgs &params) {
     return static_cast<int>(IPlayer::Last(PLAYER_LOCAL) != nullptr);
+}
+
+int MWCommands::PassChallenge(Scripting::VarArgs &params) {
+    CareerSettings *career = FEDatabase->CurrentUserProfiles[0]->GetCareer();
+    if (career == nullptr) {
+        return -1;
+    }
+    GMilestone *binMilestone = GManager::Get().GetFirstMilestone(true, career->GetCurrentBin());
+    if (binMilestone == nullptr) {
+        goto no_milestone;
+    }
+    binMilestone->DebugForceComplete();
+    Game_ChallengeCompleted();
+    return 1;
+no_milestone:
+    return 0;
+}
+
+int MWCommands::PassSpeedtrap(Scripting::VarArgs &params) {
+    CareerSettings *career = FEDatabase->CurrentUserProfiles[0]->GetCareer();
+    if (career == nullptr) {
+        return -1;
+    }
+    GSpeedTrap *binSpeedTrap = GManager::Get().GetFirstSpeedTrap(true, career->GetCurrentBin());
+    if (binSpeedTrap == nullptr) {
+        goto no_speed_trap;
+    }
+    binSpeedTrap->DebugForceComplete();
+    Game_ChallengeCompleted();
+    return 1;
+no_speed_trap:
+    return 0;
+}
+
+int MWCommands::AwardBounty(Scripting::VarArgs &params) {
+    IPlayer *player = IPlayer::First(PLAYER_LOCAL);
+    if (player == nullptr) {
+        return -1;
+    }
+    int tempInt;
+    params.GetInt(tempInt);
+    if (tempInt == 0) {
+        tempInt = 1000;
+    }
+    Game_AwardPlayerBounty(tempInt);
+    return 1;
+}
+
+int MWCommands::GetBountyValue(Scripting::VarArgs &params) {
+    if (IPlayer::First(PLAYER_LOCAL) == nullptr) {
+        return -1;
+    }
+    return Game_GetPlayerBounty();
+}
+
+int MWCommands::IsPursuit(Scripting::VarArgs &params) {
+    IPlayer *player = IPlayer::First(PLAYER_LOCAL);
+    if (player == nullptr) {
+        return -1;
+    }
+    ISimable *isimable = player->GetSimable();
+    if (isimable == nullptr) {
+        return -1;
+    }
+    IVehicle *ivehicle;
+    if (!isimable->QueryInterface(&ivehicle)) {
+        return -1;
+    }
+    IVehicleAI *ivehicleai = ivehicle->GetAIVehiclePtr();
+    if (ivehicleai == nullptr) {
+        return -1;
+    }
+    return static_cast<int>(ivehicleai->GetPursuit() != nullptr);
+}
+
+char *MWCommands::GetTrackID(Scripting::VarArgs &params) {
+    if (!GRaceStatus::Exists()) {
+        goto no_track;
+    }
+    {
+        GRaceParameters *raceParams = GRaceStatus::Get().GetRaceParameters();
+        if (raceParams == nullptr) {
+            goto no_track;
+        }
+        return const_cast<char *>(raceParams->GetEventID());
+    }
+no_track:
+    return "";
+}
+
+int MWCommands::InFrontEnd(Scripting::VarArgs &params) {
+    if (Sim::GetState() != Sim::STATE_NONE) {
+        if (!cFEng::Get()->IsPackagePushed("Loading.fng")) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+char *MWCommands::DisplayFMVfilename(Scripting::VarArgs &params) {
+    if (gMoviePlayer == nullptr) {
+        goto no_movie;
+    }
+    return gMoviePlayer->GetMovieFilename();
+no_movie:
+    return "";
+}
+
+int MWCommands::SetFrameRateThreshold(Scripting::VarArgs &params) {
+    int tempInt = 0;
+    if (params.GetNumberOfRemainingArgs() < 2) {
+        return 0;
+    }
+    params.GetInt(tempInt);
+    fpsTolerateValue = static_cast<float>(tempInt);
+    params.GetInt(logCountDownMax);
+    return 1;
+}
+
+int MWCommands::ScreenLoaded(Scripting::VarArgs &params) {
+    FEPackage *package = cFEng::Get()->FindPackageWithControl();
+    if (package == nullptr) {
+        goto not_loaded;
+    }
+    package = cFEng::Get()->FindPackageWithControl();
+    if (*reinterpret_cast<unsigned int *>(reinterpret_cast<char *>(package) + 0x10) != mFEngScreenLoading) {
+        goto not_loaded;
+    }
+    return 1;
+not_loaded:
+    return 0;
 }
 
 int MWCommands::TurnPursuitForeverOn(Scripting::VarArgs &params) {

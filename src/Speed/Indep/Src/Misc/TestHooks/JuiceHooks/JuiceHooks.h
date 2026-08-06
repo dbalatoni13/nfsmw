@@ -10,6 +10,10 @@
 class IPlayer;
 enum FormationType;
 struct FEPackage;
+struct MoviePlayer {
+    char *GetMovieFilename();
+};
+extern MoviePlayer *gMoviePlayer;
 
 class IExtension {
 public:
@@ -34,9 +38,10 @@ struct VarArgs {
     int mNextType;
     int mNumberOfArgs;
 
-    int GetInt();
-    float GetFloat();
-    char *GetString();
+    int GetNumberOfRemainingArgs();
+    int GetInt(int &result);
+    float GetFloat(float &result);
+    char *GetString(char *&result);
 };
 
 }
@@ -53,6 +58,16 @@ public:
     int UnlockAllThings(Scripting::VarArgs &params);
     int InfRaceBreaker(Scripting::VarArgs &params);
     int IsSplitScreen(Scripting::VarArgs &params);
+    int PassChallenge(Scripting::VarArgs &params);
+    int PassSpeedtrap(Scripting::VarArgs &params);
+    int AwardBounty(Scripting::VarArgs &params);
+    int GetBountyValue(Scripting::VarArgs &params);
+    char *GetTrackID(Scripting::VarArgs &params);
+    int IsPursuit(Scripting::VarArgs &params);
+    int InFrontEnd(Scripting::VarArgs &params);
+    char *DisplayFMVfilename(Scripting::VarArgs &params);
+    int SetFrameRateThreshold(Scripting::VarArgs &params);
+    int ScreenLoaded(Scripting::VarArgs &params);
     int TurnPursuitOn(Scripting::VarArgs &params);
     int TurnPursuitOff(Scripting::VarArgs &params);
     int TurnPursuitForeverOn(Scripting::VarArgs &params);

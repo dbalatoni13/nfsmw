@@ -14,6 +14,9 @@ struct MilestoneTypeInfo {
 
 // total size: 0x14
 class GMilestone {
+  public:
+    void DebugForceComplete();
+
   private:
     unsigned int mTypeKey;      // offset 0x0, size 0x4
     unsigned int mChallengeKey; // offset 0x4, size 0x4
