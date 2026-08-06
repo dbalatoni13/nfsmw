@@ -8,6 +8,7 @@
 #include "Speed/Indep/Src/Interfaces/IFengHud.h"
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/ICopMgr.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
@@ -364,6 +365,39 @@ int MWCommands::SpeedBoost(Scripting::VarArgs &params) {
         }
     }
     return -1;
+}
+
+int MWCommands::ScatterCops(Scripting::VarArgs &params) {
+    if (TheGameFlowManager.GetState() != GAMEFLOW_STATE_RACING) {
+        return -1;
+    }
+
+    IRigidBody *playerIRB = IPlayer::First(PLAYER_LOCAL)->GetSimable()->GetRigidBody();
+    static float gScatterForce;
+    static float gScatterJump;
+    static float gScatterRoll;
+
+    IVehicle::List &cops = const_cast<IVehicle::List &>(IVehicle::GetList(VEHICLE_AICOPS));
+    for (IVehicle::List::iterator iter = cops.begin(); iter != cops.end(); ++iter) {
+        IVehicle *vehicle = *iter;
+        ISimable *simable = vehicle->GetSimable();
+        IRigidBody *rigidBody = simable->GetRigidBody();
+        const UMath::Vector3 &playerPosition = playerIRB->GetPosition();
+        UMath::Vector3 toCop;
+        UMath::Vector3 linearVel;
+        UMath::Vector3 angularVel;
+
+        UMath::Sub(rigidBody->GetPosition(), playerPosition, toCop);
+        UMath::Normalize(toCop);
+        UMath::Scale(toCop, gScatterForce, linearVel);
+        linearVel.y += gScatterJump;
+        angularVel.x = Sim::GetRandom()._SimRandom_FloatRange(gScatterRoll);
+        angularVel.y = Sim::GetRandom()._SimRandom_FloatRange(gScatterRoll);
+        angularVel.z = Sim::GetRandom()._SimRandom_FloatRange(gScatterRoll);
+        rigidBody->SetLinearVelocity(linearVel);
+        rigidBody->SetAngularVelocity(angularVel);
+    }
+    return 1;
 }
 
 int MWCommands::TurnAutoPilotOn(Scripting::VarArgs &params) {
