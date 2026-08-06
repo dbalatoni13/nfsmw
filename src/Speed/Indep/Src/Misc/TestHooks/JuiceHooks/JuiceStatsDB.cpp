@@ -52,9 +52,6 @@ void JuiceStatsDB::ResetCareerData() {
 
 void JuiceStatsDB::SubmitStats(JuiceRaceType raceType) {
     char raceTypeString[64];
-    float *cameraTime;
-    float *raceTime;
-    float *heatTime;
     if (mShouldDumpStats) {
         switch (raceType) {
         case JUICE_CIRCUIT:
@@ -73,12 +70,9 @@ void JuiceStatsDB::SubmitStats(JuiceRaceType raceType) {
 
         {
             int counter = 0;
-            cameraTime = mTimeInCameraMode;
-            raceTime = mTimeInRaceType;
             Juice::GameHook::Instance()->LogText(
                 "[STAT LOGGED] - COP_STATS, TRAFFIC_STATS, HEAT_STATS AND CAMERA_");
 
-            heatTime = mTimeAtHeatLevel;
             Juice::GameHook::Instance()->LogStat(
                 4, raceTypeString, "COP_CARS_SPAWNED", mPerRaceStatsDB[0]);
             Juice::GameHook::Instance()->LogStat(
@@ -95,42 +89,42 @@ void JuiceStatsDB::SubmitStats(JuiceRaceType raceType) {
                 4, raceTypeString, "MAX_HEAT", mPerRaceStatsDB[7]);
 
             do {
-                if (*heatTime > 0.0f) {
+                if (mTimeAtHeatLevel[counter] > 0.0f) {
                     Juice::GameHook::Instance()->LogText(
                         "[EVENT LOGGED] - HEAT_LEVEL_TIME\n");
                     Juice::GameHook::Instance()->GameEvent(
-                        "HEAT_LEVEL_TIME", raceTypeString, "", counter, *heatTime, "", "", "");
+                        "HEAT_LEVEL_TIME", raceTypeString, "", counter,
+                        mTimeAtHeatLevel[counter], "", "", "");
                 }
                 counter++;
-                heatTime++;
             } while (counter < 11);
         }
 
         {
             int counter = 0;
             do {
-                if (*cameraTime > 0.0f) {
+                if (mTimeInCameraMode[counter] > 0.0f) {
                     Juice::GameHook::Instance()->LogText(
                         "[EVENT LOGGED] - CAMERA_MODE_TIME\n");
                     Juice::GameHook::Instance()->GameEvent(
-                        "CAMERA_MODE_TIME", raceTypeString, "", counter, *cameraTime, "", "", "");
+                        "CAMERA_MODE_TIME", raceTypeString, "", counter,
+                        mTimeInCameraMode[counter], "", "", "");
                 }
                 counter++;
-                cameraTime++;
             } while (counter < 6);
         }
 
         {
             int counter = 5;
             do {
-                if (*raceTime > 0.0f) {
+                if (mTimeInRaceType[counter] > 0.0f) {
                     Juice::GameHook::Instance()->LogText(
                         "[EVENT LOGGED] - RACE_TYPE_TIME\n");
                     Juice::GameHook::Instance()->GameEvent(
-                        "RACE_TYPE_TIME", raceTypeString, "", 0, *raceTime, "", "", "");
+                        "RACE_TYPE_TIME", raceTypeString, "", 0,
+                        mTimeInRaceType[counter], "", "", "");
                 }
                 counter--;
-                raceTime++;
             } while (counter > -1);
         }
         ResetPerRaceStats();
