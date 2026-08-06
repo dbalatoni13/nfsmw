@@ -174,8 +174,10 @@ no_track:
 }
 
 int MWCommands::InFrontEnd(Scripting::VarArgs &params) {
+    bool bVar1;
     if (Sim::GetState() != Sim::STATE_NONE) {
-        if (!cFEng::Get()->IsPackagePushed("Loading.fng")) {
+        bVar1 = cFEng::Get()->IsPackagePushed("Loading.fng");
+        if (!bVar1) {
             return 0;
         }
     }
@@ -307,7 +309,7 @@ int MWCommands::IsCarStuck(Scripting::VarArgs &params) {
         current_y = position.y;
         current_z = position.z;
         current_speed = pVehicle->GetSpeed();
-        if (5.0f > bAbs(current_x - last_x) && 5.0f > bAbs(current_y - last_y) && 5.0f > bAbs(current_z - last_z) &&
+        if (bAbs(current_x - last_x) < 5.0f && bAbs(current_y - last_y) < 5.0f && bAbs(current_z - last_z) < 5.0f &&
             current_speed < 1.0f) {
             result = 1;
         }

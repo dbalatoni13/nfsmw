@@ -45,9 +45,11 @@ public:
 
 struct ProtoAriesRefT;
 
+namespace Juice {
+
 class INetwork {
 public:
-    virtual ~INetwork();
+    ~INetwork();
     INetwork();
     virtual int Connect();
     virtual int IsConnected();
@@ -63,8 +65,6 @@ public:
     virtual char *GetMac();
     virtual char *GetLocalIpAddress();
 };
-
-namespace Juice {
 
 struct tJuicePad;
 
