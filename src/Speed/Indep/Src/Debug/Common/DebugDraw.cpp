@@ -538,6 +538,33 @@ void DebugDraw::Vector(const UMath::Vector3 &pt, const UMath::Vector3 &vec, floa
     Vector(pt4, vector4, scale, c, lifeSpan, texture);
 }
 
+void DebugDraw::Vector(const UMath::Vector4 &pt, const UMath::Vector4 &vec, float scale,
+                       unsigned int c, short int lifeSpan, int texture) {
+    if (fEnabled) {
+        UMath::Vector4 pts[3];
+        UMath::Vector4 inVec;
+        UMath::Vector4 widthVec;
+        COORD2 uv0;
+        COORD2 uv1;
+        COORD2 uv2;
+
+        UMath::Crossxyz(Get().GetCameraFwdVec(), vec, widthVec);
+        UMath::Scale(widthVec, scale * 0.05f, widthVec);
+        UMath::ScaleAdd(vec, scale, pt, inVec);
+        UMath::Subxyz(inVec, widthVec, pts[1]);
+        UMath::Addxyz(inVec, widthVec, pts[2]);
+        pts[0] = pt;
+
+        uv0.x = 0.0f;
+        uv0.y = 0.0f;
+        uv1.x = 0.5f;
+        uv1.y = 1.0f;
+        uv2.x = 1.0f;
+        uv2.y = 0.0f;
+        Triangle(&pts[0], &pts[1], &pts[2], &uv0, &uv1, &uv2, c, lifeSpan, texture);
+    }
+}
+
 void DebugDraw::DrawAll() {
     bMatrix4 *matrix;
     eView *view = eGetView(EVIEW_PLAYER1, false);
