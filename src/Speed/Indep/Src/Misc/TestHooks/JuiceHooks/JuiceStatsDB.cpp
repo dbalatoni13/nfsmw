@@ -1,5 +1,7 @@
 #include "Speed/Indep/Src/Misc/TestHooks/JuiceHooks/JuiceHooks.h"
 
+extern unsigned int eFrameCounter;
+
 JuiceStatsDB *JuiceStatsDB::mInstance;
 
 JuiceStatsDB *JuiceStatsDB::Instance() {
@@ -60,6 +62,56 @@ void JuiceStatsDB::ResetPerRaceStats() {
         mTimeInRaceType[index] = 0.0f;
     }
     mShouldDumpStats = false;
+}
+
+void JuiceStatsDB::IncrementPerRaceStat(JuicePerRaceStatType statType) {
+    if (statType == JUICE_COP_CHOPPER_UNSPAWN) {
+        goto chopper;
+    }
+    if (statType < JUICE_TRAFFIC_SPAWN) {
+        if (statType == JUICE_COP_CAR_UNSPAWN) {
+            goto car;
+        }
+    } else if (statType == JUICE_TRAFFIC_UNSPAWN) {
+        goto traffic;
+    }
+    goto increment;
+
+car:
+    if (mPerRaceStatsDB[0] == 0) {
+        return;
+    }
+    if (mFrameOfLastInc[0] == eFrameCounter) {
+        mPerRaceStatsDB[0]--;
+        return;
+    }
+    goto increment;
+
+chopper:
+    if (mPerRaceStatsDB[2] == 0) {
+        return;
+    }
+    if (mFrameOfLastInc[2] == eFrameCounter) {
+        mPerRaceStatsDB[2]--;
+        return;
+    }
+    goto increment;
+
+traffic:
+    if (mPerRaceStatsDB[4] == 0) {
+        return;
+    }
+    if (mFrameOfLastInc[4] == eFrameCounter) {
+        mPerRaceStatsDB[4]--;
+        return;
+    }
+
+increment:
+    if (!mShouldDumpStats) {
+        mShouldDumpStats = true;
+    }
+    mPerRaceStatsDB[statType]++;
+    mFrameOfLastInc[statType] = eFrameCounter;
 }
 
 void JuiceStatsDB::SetHeat(int heat) {

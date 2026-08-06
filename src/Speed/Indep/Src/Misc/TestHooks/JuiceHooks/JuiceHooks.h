@@ -97,6 +97,7 @@ public:
 struct GameHook {
     static GameHook *(*Instance)(void *, char *);
     void LogText(const char *text);
+    void DisableJuice();
     unsigned int GetCurrentSystemTime();
     int GetTimeElapsed(unsigned int *startTime);
 };
@@ -273,6 +274,7 @@ public:
     static JuiceStatsDB *Instance();
     JuiceStatsDB();
     void ResetPerRaceStats();
+    void IncrementPerRaceStat(JuicePerRaceStatType statType);
     void ResetCareerData();
     void SetHeat(int heat);
     void SetCamera(int camID);
