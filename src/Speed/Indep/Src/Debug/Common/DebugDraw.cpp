@@ -104,6 +104,10 @@ bool DebugDraw::OutOfRange(const UMath::Vector3 &pt, float radius) {
     return outOfRange;
 }
 
+bool DebugDraw::OutOfRange(const UMath::Vector4 &pt, float radius) {
+    return OutOfRange(UMath::Vector4To3(pt), radius);
+}
+
 float DebugDraw::GetDrawRange() {
     return Tweak_drawRange;
 }

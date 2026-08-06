@@ -78,6 +78,7 @@ struct DebugDraw {
 
     bool InView(const UMath::Vector3 &pt, float radius);
     bool OutOfRange(const UMath::Vector3 &pt, float radius);
+    bool OutOfRange(const UMath::Vector4 &pt, float radius);
     float GetDrawRange();
     void DrawAll();
     void CacheCameraInfo();
