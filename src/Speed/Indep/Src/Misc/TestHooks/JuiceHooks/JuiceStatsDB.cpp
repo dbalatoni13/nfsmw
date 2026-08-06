@@ -180,52 +180,47 @@ void JuiceStatsDB::CompareOptions(OptionsSettings *compare) {
         bSPrintf(tempStr, "FE Scale - %f", compare->TheVideoSettings.FEScale);
         reinterpret_cast<Juice::GameHook *(*)()>(Juice::GameHook::Instance)()->AssetHit("OPTIONS", tempStr);
     }
-    if (*reinterpret_cast<int *>(&compare->TheGameplaySettings.Damage) !=
-        *reinterpret_cast<int *>(&mCurrentOptions.TheGameplaySettings.Damage)) {
-        bSPrintf(tempStr, "Damage - %d", *reinterpret_cast<int *>(&compare->TheGameplaySettings.Damage));
+    if (compare->TheGameplaySettings.Damage != mCurrentOptions.TheGameplaySettings.Damage) {
+        bSPrintf(tempStr, "Damage - %d", compare->TheGameplaySettings.Damage);
         reinterpret_cast<Juice::GameHook *(*)()>(Juice::GameHook::Instance)()->AssetHit("OPTIONS", tempStr);
     }
     if (compare->TheGameplaySettings.HighlightCam != mCurrentOptions.TheGameplaySettings.HighlightCam) {
         bSPrintf(tempStr, "Highlight Camera - %f", compare->TheGameplaySettings.HighlightCam);
         reinterpret_cast<Juice::GameHook *(*)()>(Juice::GameHook::Instance)()->AssetHit("OPTIONS", tempStr);
     }
-    if (*reinterpret_cast<int *>(&compare->TheGameplaySettings.JumpCam) !=
-        *reinterpret_cast<int *>(&mCurrentOptions.TheGameplaySettings.JumpCam)) {
-        bSPrintf(tempStr, "Jump Camera - %d", *reinterpret_cast<int *>(&compare->TheGameplaySettings.JumpCam));
+    if (compare->TheGameplaySettings.JumpCam != mCurrentOptions.TheGameplaySettings.JumpCam) {
+        bSPrintf(tempStr, "Jump Camera - %d", compare->TheGameplaySettings.JumpCam);
         reinterpret_cast<Juice::GameHook *(*)()>(Juice::GameHook::Instance)()->AssetHit("OPTIONS", tempStr);
     }
-    if (*reinterpret_cast<int *>(&compare->TheGameplaySettings.RearviewOn) !=
-        *reinterpret_cast<int *>(&mCurrentOptions.TheGameplaySettings.RearviewOn)) {
-        bSPrintf(tempStr, "Rear View - %d", *reinterpret_cast<int *>(&compare->TheGameplaySettings.RearviewOn));
+    if (compare->TheGameplaySettings.RearviewOn != mCurrentOptions.TheGameplaySettings.RearviewOn) {
+        bSPrintf(tempStr, "Rear View - %d", compare->TheGameplaySettings.RearviewOn);
         reinterpret_cast<Juice::GameHook *(*)()>(Juice::GameHook::Instance)()->AssetHit("OPTIONS", tempStr);
     }
-    if (*reinterpret_cast<int *>(&compare->ThePlayerSettings[0].LapInfoOn) !=
-        *reinterpret_cast<int *>(&mCurrentOptions.ThePlayerSettings[0].LapInfoOn)) {
-        bSPrintf(tempStr, "Lap Info - %d", *reinterpret_cast<int *>(&compare->ThePlayerSettings[0].LapInfoOn));
+    if (compare->ThePlayerSettings[0].LapInfoOn != mCurrentOptions.ThePlayerSettings[0].LapInfoOn) {
+        bSPrintf(tempStr, "Lap Info - %d", compare->ThePlayerSettings[0].LapInfoOn);
         reinterpret_cast<Juice::GameHook *(*)()>(Juice::GameHook::Instance)()->AssetHit("OPTIONS", tempStr);
     }
 
     ePlayerSettingsCameras camera = compare->ThePlayerSettings[0].CurCam;
     if (camera != mCurrentOptions.ThePlayerSettings[0].CurCam) {
-        char *cameraName;
         switch (camera) {
         case PSC_BUMPER:
-            cameraName = "Bumper";
+            bStrCpy(cameraString, "Bumper");
             break;
         case PSC_HOOD:
-            cameraName = "Hood";
+            bStrCpy(cameraString, "Hood");
             break;
         case PSC_CLOSE:
-            cameraName = "Close";
+            bStrCpy(cameraString, "Close");
             break;
         case PSC_FAR:
-            cameraName = "Far";
+            bStrCpy(cameraString, "Far");
             break;
         case PSC_SUPER_FAR:
-            cameraName = "Super Far";
+            bStrCpy(cameraString, "Super Far");
             break;
         case PSC_DRIFT:
-            cameraName = "Drift";
+            bStrCpy(cameraString, "Drift");
             break;
         case PSC_PURSUIT:
             bStrCpy(cameraString, "Pursuit");
@@ -233,43 +228,36 @@ void JuiceStatsDB::CompareOptions(OptionsSettings *compare) {
         default:
             goto camera_string_ready;
         }
-        bStrCpy(cameraString, cameraName);
 camera_string_ready:
         bSPrintf(tempStr, "Current Camera - %s", cameraString);
         reinterpret_cast<Juice::GameHook *(*)()>(Juice::GameHook::Instance)()->AssetHit("OPTIONS", tempStr);
     }
-    if (*reinterpret_cast<int *>(&compare->ThePlayerSettings[0].GaugesOn) !=
-        *reinterpret_cast<int *>(&mCurrentOptions.ThePlayerSettings[0].GaugesOn)) {
-        bSPrintf(tempStr, "Gauges - %d", *reinterpret_cast<int *>(&compare->ThePlayerSettings[0].GaugesOn));
+    if (compare->ThePlayerSettings[0].GaugesOn != mCurrentOptions.ThePlayerSettings[0].GaugesOn) {
+        bSPrintf(tempStr, "Gauges - %d", compare->ThePlayerSettings[0].GaugesOn);
         reinterpret_cast<Juice::GameHook *(*)()>(Juice::GameHook::Instance)()->AssetHit("OPTIONS", tempStr);
     }
     if (compare->ThePlayerSettings[0].Config != mCurrentOptions.ThePlayerSettings[0].Config) {
         bSPrintf(tempStr, "Controller Config - %d", compare->ThePlayerSettings[0].Config + 1);
         reinterpret_cast<Juice::GameHook *(*)()>(Juice::GameHook::Instance)()->AssetHit("OPTIONS", tempStr);
     }
-    if (*reinterpret_cast<int *>(&compare->ThePlayerSettings[0].LapInfoOn) !=
-        *reinterpret_cast<int *>(&mCurrentOptions.ThePlayerSettings[0].LapInfoOn)) {
-        bSPrintf(tempStr, "Lap Info - %d", *reinterpret_cast<int *>(&compare->ThePlayerSettings[0].LapInfoOn));
+    if (compare->ThePlayerSettings[0].LapInfoOn != mCurrentOptions.ThePlayerSettings[0].LapInfoOn) {
+        bSPrintf(tempStr, "Lap Info - %d", compare->ThePlayerSettings[0].LapInfoOn);
         reinterpret_cast<Juice::GameHook *(*)()>(Juice::GameHook::Instance)()->AssetHit("OPTIONS", tempStr);
     }
-    if (*reinterpret_cast<int *>(&compare->ThePlayerSettings[0].LeaderboardOn) !=
-        *reinterpret_cast<int *>(&mCurrentOptions.ThePlayerSettings[0].LeaderboardOn)) {
-        bSPrintf(tempStr, "Leaderboard - %d", *reinterpret_cast<int *>(&compare->ThePlayerSettings[0].LeaderboardOn));
+    if (compare->ThePlayerSettings[0].LeaderboardOn != mCurrentOptions.ThePlayerSettings[0].LeaderboardOn) {
+        bSPrintf(tempStr, "Leaderboard - %d", compare->ThePlayerSettings[0].LeaderboardOn);
         reinterpret_cast<Juice::GameHook *(*)()>(Juice::GameHook::Instance)()->AssetHit("OPTIONS", tempStr);
     }
-    if (*reinterpret_cast<int *>(&compare->ThePlayerSettings[0].PositionOn) !=
-        *reinterpret_cast<int *>(&mCurrentOptions.ThePlayerSettings[0].PositionOn)) {
-        bSPrintf(tempStr, "Position - %d", *reinterpret_cast<int *>(&compare->ThePlayerSettings[0].PositionOn));
+    if (compare->ThePlayerSettings[0].PositionOn != mCurrentOptions.ThePlayerSettings[0].PositionOn) {
+        bSPrintf(tempStr, "Position - %d", compare->ThePlayerSettings[0].PositionOn);
         reinterpret_cast<Juice::GameHook *(*)()>(Juice::GameHook::Instance)()->AssetHit("OPTIONS", tempStr);
     }
-    if (*reinterpret_cast<int *>(&compare->ThePlayerSettings[0].Rumble) !=
-        *reinterpret_cast<int *>(&mCurrentOptions.ThePlayerSettings[0].Rumble)) {
-        bSPrintf(tempStr, "Rumble - %d", *reinterpret_cast<int *>(&compare->ThePlayerSettings[0].Rumble));
+    if (compare->ThePlayerSettings[0].Rumble != mCurrentOptions.ThePlayerSettings[0].Rumble) {
+        bSPrintf(tempStr, "Rumble - %d", compare->ThePlayerSettings[0].Rumble);
         reinterpret_cast<Juice::GameHook *(*)()>(Juice::GameHook::Instance)()->AssetHit("OPTIONS", tempStr);
     }
-    if (*reinterpret_cast<int *>(&compare->ThePlayerSettings[0].ScoreOn) !=
-        *reinterpret_cast<int *>(&mCurrentOptions.ThePlayerSettings[0].ScoreOn)) {
-        bSPrintf(tempStr, "Score - %d", *reinterpret_cast<int *>(&compare->ThePlayerSettings[0].ScoreOn));
+    if (compare->ThePlayerSettings[0].ScoreOn != mCurrentOptions.ThePlayerSettings[0].ScoreOn) {
+        bSPrintf(tempStr, "Score - %d", compare->ThePlayerSettings[0].ScoreOn);
         reinterpret_cast<Juice::GameHook *(*)()>(Juice::GameHook::Instance)()->AssetHit("OPTIONS", tempStr);
     }
 }
