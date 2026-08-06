@@ -880,17 +880,8 @@ void DebugDraw::Cylinder(const UMath::Vector3 &basePt, float radius, float heigh
 
 void DebugDraw::Vector(const UMath::Vector3 &pt, const UMath::Vector3 &vec, float scale,
                        unsigned int c, short int lifeSpan, int texture) {
-    UMath::Vector4 pt4;
-    UMath::Vector4 vector4;
-
-    pt4.x = pt.x;
-    pt4.y = pt.y;
-    vector4.x = vec.x;
-    vector4.y = vec.y;
-    pt4.z = pt.z;
-    pt4.w = 1.0f;
-    vector4.w = 1.0f;
-    vector4.z = vec.z;
+    UMath::Vector4 pt4 = UMath::Vector4Make(pt, 1.0f);
+    UMath::Vector4 vector4 = UMath::Vector4Make(vec, 1.0f);
     Vector(pt4, vector4, scale, c, lifeSpan, texture);
 }
 
