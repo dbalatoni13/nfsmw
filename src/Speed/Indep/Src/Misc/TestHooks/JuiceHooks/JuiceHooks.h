@@ -344,6 +344,9 @@ private:
 public:
     static JuiceStatsDB *Instance();
     JuiceStatsDB();
+    void SubmitStats(JuiceRaceType raceType);
+    void SubmitCareerData(const char *profileName);
+    void CompareOptions(OptionsSettings *compare);
     void ResetPerRaceStats();
     void IncrementPerRaceStat(JuicePerRaceStatType statType);
     void UpdateTimers();
