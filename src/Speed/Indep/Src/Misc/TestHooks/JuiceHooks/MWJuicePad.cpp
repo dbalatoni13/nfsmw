@@ -227,9 +227,8 @@ bool MWJuicePad::IsLastJoyFrame() {
 }
 
 ActionQueue *MWJuicePad::GetActionQueue(const char *qName, int port) {
-    const ActionQueue::List *actionQueues = &ActionQueue::GetList();
-    ActionQueue::List::const_iterator iter = actionQueues->begin();
-    while (iter != actionQueues->end()) {
+    ActionQueue::List::const_iterator iter = ActionQueue::GetList().begin();
+    while (iter != ActionQueue::GetList().end()) {
         ActionQueue *queue = *iter;
         if (bStrCmp(queue->GetRawName(), qName) == 0 && queue->GetPort() == port) {
             return queue;
