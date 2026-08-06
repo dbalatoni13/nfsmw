@@ -36,14 +36,58 @@ namespace Juice {
 
 unsigned int MWCommands::mFEngScreenLoading;
 
-MWCommands::MWCommands() {}
+MWCommands::MWCommands() {
+    Scripting::ICommands::SendMethod(0, this, "TurnDebugTextOn", 8,
+                                      &MWCommands::TurnDebugTextOn);
+    Scripting::ICommands::SendMethod(0, this, "TurnDebugTextOff", 8,
+                                      &MWCommands::TurnDebugTextOff);
+    Scripting::ICommands::SendMethod(0, this, "InFrontEnd", 8, &MWCommands::InFrontEnd);
+    Scripting::ICommands::SendMethod(0, this, "ScreenLoaded", 8, &MWCommands::ScreenLoaded);
+    Scripting::ICommands::SendMethod(0, this, "TeleportToCoords", 8,
+                                      &MWCommands::TeleportToCoords);
+    Scripting::ICommands::SendMethod(0, this, "FinishRaceInPlace", 8,
+                                      &MWCommands::FinishRaceInPlace);
+    Scripting::ICommands::SendMethod(0, this, "InDriveMode", 8, &MWCommands::InDriveMode);
+    Scripting::ICommands::SendMethod(0, this, "IsCarStuck", 8, &MWCommands::IsCarStuck);
+    Scripting::ICommands::SendMethod(0, this, "TurnAutoPilotOn", 8,
+                                      &MWCommands::TurnAutoPilotOn);
+    Scripting::ICommands::SendMethod(0, this, "TurnAutoPilotOff", 8,
+                                      &MWCommands::TurnAutoPilotOff);
+    Scripting::ICommands::SendMethod(0, this, "TurnPursuitOn", 8, &MWCommands::TurnPursuitOn);
+    Scripting::ICommands::SendMethod(0, this, "TurnPursuitOff", 8, &MWCommands::TurnPursuitOff);
+    Scripting::ICommands::SendMethod(0, this, "TurnPursuitForeverOn", 8,
+                                      &MWCommands::TurnPursuitForeverOn);
+    Scripting::ICommands::SendMethod(0, this, "TurnPursuitForeverOff", 8,
+                                      &MWCommands::TurnPursuitForeverOff);
+    Scripting::ICommands::SendMethod(0, this, "SpeedBoost", 8, &MWCommands::SpeedBoost);
+    Scripting::ICommands::SendMethod(0, this, "SetHeat", 8, &MWCommands::SetHeat);
+    Scripting::ICommands::SendMethod(0, this, "SetFrameRateThreshold", 8,
+                                      &MWCommands::SetFrameRateThreshold);
+    Scripting::ICommands::SendMethod(0, this, "InfRaceBreaker", 8,
+                                      &MWCommands::InfRaceBreaker);
+    Scripting::ICommands::SendMethod(0, this, "IsSplitScreen", 8, &MWCommands::IsSplitScreen);
+    Scripting::ICommands::SendMethod(0, this, "IsPursuit", 8, &MWCommands::IsPursuit);
+    Scripting::ICommands::SendMethod(0, this, "ScatterCops", 8, &MWCommands::ScatterCops);
+    Scripting::ICommands::SendMethod(2, this, "DisplayFMVfilename", 8,
+                                      &MWCommands::DisplayFMVfilename);
+    Scripting::ICommands::SendMethod(0, this, "AwardBounty", 8, &MWCommands::AwardBounty);
+    Scripting::ICommands::SendMethod(0, this, "GetBountyValue", 8,
+                                      &MWCommands::GetBountyValue);
+    Scripting::ICommands::SendMethod(0, this, "UnlockAllThings", 8,
+                                      &MWCommands::UnlockAllThings);
+    Scripting::ICommands::SendMethod(0, this, "IsInFreeRoam", 8, &MWCommands::IsInFreeRoam);
+    Scripting::ICommands::SendMethod(0, this, "PassChallenge", 8, &MWCommands::PassChallenge);
+    Scripting::ICommands::SendMethod(0, this, "PassSpeedtrap", 8, &MWCommands::PassSpeedtrap);
+    Scripting::ICommands::SendMethod(2, this, "GetTrackID", 8, &MWCommands::GetTrackID);
+    MWJuicePad::Instance()->Initialize();
+}
 
 MWCommands *MWCommands::Instance() {
     static MWCommands mwc;
     return &mwc;
 }
 
-char *MWCommands::GetNamespaceName() const {
+char *MWCommands::GetNamespaceName() {
     return "NFSMW";
 }
 

@@ -32,11 +32,6 @@ public:
     virtual float GetSecondsBeforeRaceStart();
 };
 
-class ICommands {
-public:
-    virtual ~ICommands() {}
-};
-
 struct ProtoAriesRefT;
 
 namespace Juice {
@@ -180,16 +175,33 @@ struct VarArgs {
     char *GetString(char *&result);
 };
 
+class ICommands {
+public:
+    ICommands();
+    virtual ~ICommands();
+    virtual void AutoRegister();
+    virtual char *GetNamespaceName();
+    static void SendMethod(int type, const ICommands *obj, const char *methodName, int argSize,
+                           const void *method);
+
+    template <class T>
+    static void SendMethod(int type, const ICommands *obj, const char *methodName, int argSize,
+                           T method) {
+        T m = method;
+        SendMethod(type, obj, methodName, argSize, static_cast<const void *>(&m));
+    }
+};
+
 }
 
-class MWCommands : public ICommands {
+class MWCommands : public Scripting::ICommands {
 private:
     static unsigned int mFEngScreenLoading;
 
 public:
     static MWCommands *Instance();
     MWCommands();
-    char *GetNamespaceName() const;
+    virtual char *GetNamespaceName();
     static void LoadingNewFEngPackage(unsigned int newPkg);
     int TurnDebugTextOn(Scripting::VarArgs &params);
     int TurnDebugTextOff(Scripting::VarArgs &params);
