@@ -1,6 +1,8 @@
 #include "Speed/Indep/Src/Debug/Common/DebugDraw.h"
 #include "Speed/Indep/Src/Camera/Camera.hpp"
 
+DebugDraw *DebugDraw::fgDbgDraw;
+
 inline bVector3 Coord4ToSwizzledbVec(const COORD4 *c) {
     bVector3 vec;
     bVector3 temp;
@@ -45,6 +47,44 @@ void DebugDraw::CacheCameraInfo() {
         bNeg(&upV3, &upV3);
         this->fCachedCameraUpVec = UMath::Vector4Make(1.0f, upV3);
     }
+}
+
+DebugDraw::DebugDraw() {
+    fZTest = true;
+    fCheckDrawOverlap = true;
+    fEnabled = false;
+    fNumTriPrims = 0;
+    fNumLinPrims = 0;
+    fTextureInfo = nullptr;
+}
+
+bool DebugDraw::InView(const UMath::Vector3 &pt, float radius) {
+    UMath::Vector3 camPos;
+    UMath::Vector3 camVec;
+    UMath::Vector3 objVec;
+
+    camPos = UMath::Vector4To3(Get().GetCameraPos());
+    camVec = UMath::Vector4To3(Get().GetCameraFwdVec());
+    UMath::Sub(pt, camPos, objVec);
+
+    if (radius > UMath::Length(objVec)) {
+        return true;
+    }
+
+    {
+        const float threshold = 0.707f;
+        float dot;
+
+        if (UMath::Abs(camVec.y) < threshold) {
+            camVec.y = objVec.y = 0.0f;
+            dot = UMath::Dot(objVec, camVec);
+            if (dot < 0.0f) {
+                return false;
+            }
+        }
+    }
+
+    return true;
 }
 
 void DebugDraw::DrawAll() {

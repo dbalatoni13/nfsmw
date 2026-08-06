@@ -6,6 +6,7 @@
 #endif
 
 #include "Speed/Indep/Libs/Support/Utility/UVectorMath.h"
+#include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 
 struct ePolyVertex {
@@ -50,6 +51,28 @@ struct DebugDraw {
     UMath::Vector4 fCachedCameraFwdVec;
 
   public:
+    DebugDraw();
+
+    static DebugDraw &Get() {
+        if (!fgDbgDraw) {
+            fgDbgDraw = new ("DebugDraw", 0) DebugDraw;
+        }
+        return *fgDbgDraw;
+    }
+
+    const UMath::Vector4 &GetCameraPos() {
+        return fCachedCameraPos;
+    }
+
+    const UMath::Vector4 &GetCameraFwdVec() {
+        return fCachedCameraFwdVec;
+    }
+
+    const UMath::Vector4 &GetCameraUpVec() {
+        return fCachedCameraUpVec;
+    }
+
+    bool InView(const UMath::Vector3 &pt, float radius);
     void DrawAll();
     void CacheCameraInfo();
 };
