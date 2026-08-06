@@ -8,6 +8,10 @@ extern float Tweak_drawRange;
 extern int sDebugDrawMaxPrims;
 extern int sDebugDrawMaxLinePrims;
 
+extern const COORD2 D_005425E8 = {1.0f, 0.0f};
+extern const COORD2 D_005425F0 = {0.0f, 1.0f};
+extern const COORD2 D_005425F8 = {1.0f, 1.0f};
+
 namespace UMemory {
 void Free(void *ptr) {
     bFree(ptr);
@@ -361,6 +365,19 @@ void DebugDraw::Triangle(const UMath::Vector4 *pt0, const UMath::Vector4 *pt1,
              static_cast<int>(lifeSpan), texture);
 }
 
+void DebugDraw::Quad(const UMath::Matrix4 &mat, const UMath::Vector4 *pt0,
+                     const UMath::Vector4 *pt1, const UMath::Vector4 *pt2,
+                     const UMath::Vector4 *pt3, unsigned int c,
+                     short int lifeSpan, int texture) {
+    COORD2 uv0 = D_005425F0;
+    COORD2 uv1 = D_005425F8;
+    COORD2 uv2 = D_005425E8;
+    COORD2 uv3;
+    memset(&uv3, 0, sizeof(uv3));
+    Triangle(mat, pt0, pt1, pt2, &uv0, &uv1, &uv2, c, lifeSpan, texture);
+    Triangle(mat, pt2, pt3, pt0, &uv2, &uv3, &uv0, c, lifeSpan, texture);
+}
+
 void DebugDraw::Quad(const UMath::Vector4 &pt, float size, unsigned int c,
                      short int lifeSpan, int texture) {
     if (fEnabled) {
@@ -510,31 +527,97 @@ void DebugDraw::Box(const UMath::Matrix4 &mat, float width, float height, float 
     if (fEnabled) {
         UMath::Vector4 tpts[8];
         UMath::Vector4 pts[8];
-        const float halfWidth = width * 0.5f;
-        const float halfHeight = height * 0.5f;
-        const float halfDepth = depth * 0.5f;
 
         if (frombase) {
-            pts[0] = UMath::Vector4Make(-halfWidth, 0.0f, -halfDepth, 1.0f);
-            pts[1] = UMath::Vector4Make(-halfWidth, 0.0f, halfDepth, 1.0f);
-            pts[2] = UMath::Vector4Make(halfWidth, 0.0f, halfDepth, 1.0f);
-            pts[3] = UMath::Vector4Make(halfWidth, 0.0f, -halfDepth, 1.0f);
-            pts[4] = UMath::Vector4Make(-halfWidth, height, -halfDepth, 1.0f);
-            pts[5] = UMath::Vector4Make(-halfWidth, height, halfDepth, 1.0f);
-            pts[6] = UMath::Vector4Make(halfWidth, height, halfDepth, 1.0f);
-            pts[7] = UMath::Vector4Make(halfWidth, height, -halfDepth, 1.0f);
+            memset(&pts[0], 0, sizeof(pts[0]));
+            pts[0].x = -width * 0.5f;
+            pts[0].z = -depth * 0.5f;
+            pts[0].w = 1.0f;
+            memset(&pts[1], 0, sizeof(pts[1]));
+            pts[1].x = -width * 0.5f;
+            pts[1].z = depth * 0.5f;
+            pts[1].w = 1.0f;
+            memset(&pts[2], 0, sizeof(pts[2]));
+            pts[2].x = width * 0.5f;
+            pts[2].z = depth * 0.5f;
+            pts[2].w = 1.0f;
+            memset(&pts[3], 0, sizeof(pts[3]));
+            pts[3].x = width * 0.5f;
+            pts[3].z = -depth * 0.5f;
+            pts[3].w = 1.0f;
+            memset(&pts[4], 0, sizeof(pts[4]));
+            pts[4].x = -width * 0.5f;
+            pts[4].y = height;
+            pts[4].z = -depth * 0.5f;
+            pts[4].w = 1.0f;
+            memset(&pts[5], 0, sizeof(pts[5]));
+            pts[5].x = -width * 0.5f;
+            pts[5].y = height;
+            pts[5].z = depth * 0.5f;
+            pts[5].w = 1.0f;
+            memset(&pts[6], 0, sizeof(pts[6]));
+            pts[6].x = width * 0.5f;
+            pts[6].y = height;
+            pts[6].z = depth * 0.5f;
+            pts[6].w = 1.0f;
+            memset(&pts[7], 0, sizeof(pts[7]));
+            pts[7].x = width * 0.5f;
+            pts[7].y = height;
+            pts[7].z = -depth * 0.5f;
+            pts[7].w = 1.0f;
         } else {
-            pts[0] = UMath::Vector4Make(-halfWidth, -halfHeight, -halfDepth, 1.0f);
-            pts[1] = UMath::Vector4Make(-halfWidth, -halfHeight, halfDepth, 1.0f);
-            pts[2] = UMath::Vector4Make(halfWidth, -halfHeight, halfDepth, 1.0f);
-            pts[3] = UMath::Vector4Make(halfWidth, -halfHeight, -halfDepth, 1.0f);
-            pts[4] = UMath::Vector4Make(-halfWidth, halfHeight, -halfDepth, 1.0f);
-            pts[5] = UMath::Vector4Make(-halfWidth, halfHeight, halfDepth, 1.0f);
-            pts[6] = UMath::Vector4Make(halfWidth, halfHeight, halfDepth, 1.0f);
-            pts[7] = UMath::Vector4Make(halfWidth, halfHeight, -halfDepth, 1.0f);
+            memset(&pts[0], 0, sizeof(pts[0]));
+            pts[0].x = -width * 0.5f;
+            pts[0].y = -height * 0.5f;
+            pts[0].z = -depth * 0.5f;
+            pts[0].w = 1.0f;
+            memset(&pts[1], 0, sizeof(pts[1]));
+            pts[1].x = -width * 0.5f;
+            pts[1].y = -height * 0.5f;
+            pts[1].z = depth * 0.5f;
+            pts[1].w = 1.0f;
+            memset(&pts[2], 0, sizeof(pts[2]));
+            pts[2].x = width * 0.5f;
+            pts[2].y = -height * 0.5f;
+            pts[2].z = depth * 0.5f;
+            pts[2].w = 1.0f;
+            memset(&pts[3], 0, sizeof(pts[3]));
+            pts[3].x = width * 0.5f;
+            pts[3].y = -height * 0.5f;
+            pts[3].z = -depth * 0.5f;
+            pts[3].w = 1.0f;
+            memset(&pts[4], 0, sizeof(pts[4]));
+            pts[4].x = -width * 0.5f;
+            pts[4].y = height * 0.5f;
+            pts[4].z = -depth * 0.5f;
+            pts[4].w = 1.0f;
+            memset(&pts[5], 0, sizeof(pts[5]));
+            pts[5].x = -width * 0.5f;
+            pts[5].y = height * 0.5f;
+            pts[5].z = depth * 0.5f;
+            pts[5].w = 1.0f;
+            memset(&pts[6], 0, sizeof(pts[6]));
+            pts[6].x = width * 0.5f;
+            pts[6].y = height * 0.5f;
+            pts[6].z = depth * 0.5f;
+            pts[6].w = 1.0f;
+            memset(&pts[7], 0, sizeof(pts[7]));
+            pts[7].x = width * 0.5f;
+            pts[7].y = height * 0.5f;
+            pts[7].z = -depth * 0.5f;
+            pts[7].w = 1.0f;
         }
 
-        UMath::RotateTranslate(8, tpts, mat, pts);
+        UMath::Vector4 *result = tpts;
+        int count = 8;
+        const UMath::Vector4 *v = pts;
+        do {
+            VU0_MATRIX4_vect3mult(UMath::Vector4To3(*v), mat,
+                                  UMath::Vector4To3(*result));
+            ++v;
+            ++result;
+            --count;
+        } while (count != 0);
         Box(tpts, c, lifeSpan, bShadow, texture);
     }
 }
