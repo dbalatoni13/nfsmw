@@ -215,20 +215,25 @@ char *MWExtension::GetPlayerPosition() {
 }
 
 char *MWExtension::GetPlayerPosition(IPlayer *player) {
-    UMath::Vector3 vecCoords;
     char *destString;
+    UMath::Vector3 vecCoords;
+    static char nullCoords[128];
+    static char playerCoords[128];
     if (player == nullptr) {
-        if (IPlayer::First(PLAYER_LOCAL) == nullptr) {
-            return "0.0;0.0;0.0";
-        }
-        vecCoords = IPlayer::First(PLAYER_LOCAL)->GetPosition();
-        static char coords[128];
-        destString = coords;
-    } else {
-        vecCoords = player->GetPosition();
-        static char coords[128];
-        destString = coords;
+        goto no_player;
     }
+    {
+        vecCoords = player->GetPosition();
+        destString = playerCoords;
+        goto format;
+    }
+no_player:
+    if (IPlayer::First(PLAYER_LOCAL) == nullptr) {
+        return "0.0;0.0;0.0";
+    }
+    vecCoords = IPlayer::First(PLAYER_LOCAL)->GetPosition();
+    destString = nullCoords;
+format:
     bSPrintf(destString, "%f;%f;%f", vecCoords.z, -vecCoords.x, vecCoords.y);
     return destString;
 }

@@ -259,6 +259,7 @@ public:
     static JuiceStatsDB *Instance();
     JuiceStatsDB();
     void ResetPerRaceStats();
+    void ResetCareerData();
     void SetHeat(int heat);
     void SetCamera(int camID);
 };

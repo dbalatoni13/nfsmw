@@ -9,6 +9,42 @@ JuiceStatsDB *JuiceStatsDB::Instance() {
     return mInstance;
 }
 
+JuiceStatsDB::JuiceStatsDB() {
+    int index = 1;
+    mCurrentOptions.TheVideoSettings.Default();
+    mCurrentOptions.TheGameplaySettings.Default();
+    mCurrentOptions.TheAudioSettings.Default();
+    PlayerSettings *playerSettings = mCurrentOptions.ThePlayerSettings;
+    do {
+        index--;
+        playerSettings->Default();
+        playerSettings++;
+    } while (index != -1);
+    mCurrentOptions.Default();
+    ResetPerRaceStats();
+    ResetCareerData();
+}
+
+void JuiceStatsDB::ResetCareerData() {
+    int row = 0;
+    int *intBase = mCareerIntDataDB[0];
+    float *floatBase = mCareerFloatDataDB[0];
+    do {
+        int column = 2;
+        float *floatData = reinterpret_cast<float *>(row * 0xc + reinterpret_cast<char *>(floatBase));
+        int *intData = reinterpret_cast<int *>(row * 0xc + reinterpret_cast<char *>(intBase));
+        do {
+            *intData = 0;
+            column--;
+            *floatData = 0.0f;
+            intData++;
+            floatData++;
+        } while (column >= 0);
+        row++;
+    } while (row < 0xf);
+    mShouldDumpCareerData = false;
+}
+
 void JuiceStatsDB::ResetPerRaceStats() {
     for (int index = 0; index < 10; index++) {
         mPerRaceStatsDB[index] = 0;
