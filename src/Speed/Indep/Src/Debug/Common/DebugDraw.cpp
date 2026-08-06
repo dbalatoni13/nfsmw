@@ -267,6 +267,31 @@ void DebugDraw::LineSeg(const UMath::Matrix4 &mat, const UMath::Vector4 &pt0,
     }
 }
 
+void DebugDraw::Cone(const UMath::Matrix4 &mat, float height, float radius,
+                     unsigned int c, short int lifeSpan) {
+    int numsteps = 20;
+    int i = 0;
+    do {
+        float angle;
+        float nextangle;
+        UMath::Vector3 p0;
+        UMath::Vector3 p1;
+        UMath::Vector3 p2;
+
+        angle = static_cast<float>(i) / static_cast<float>(numsteps);
+        i++;
+        nextangle = static_cast<float>(i) / static_cast<float>(numsteps);
+        memset(&p0, 0, 0xc);
+        p1.x = UMath::Sina(angle) * radius;
+        p1.y = -UMath::Cosa(angle) * radius;
+        p1.z = height;
+        p2.x = UMath::Sina(nextangle) * radius;
+        p2.y = -UMath::Cosa(nextangle) * radius;
+        p2.z = height;
+        Triangle(mat, &p0, &p1, &p2, c, lifeSpan, -1);
+    } while (i < numsteps);
+}
+
 void DebugDraw::Sphere(const UMath::Matrix4 &mat, float radius, unsigned int c,
                        short int lifeSpan, bool bShadow, int texture) {
     if (!fEnabled) {

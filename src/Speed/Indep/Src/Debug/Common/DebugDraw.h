@@ -116,6 +116,8 @@ struct DebugDraw {
               const UMath::Vector4 *pt1, const UMath::Vector4 *pt2,
               const UMath::Vector4 *pt3, unsigned int c, short int lifeSpan,
               int texture);
+    void Cone(const UMath::Matrix4 &mat, float height, float radius,
+              unsigned int c, short int lifeSpan);
     void Sphere(const UMath::Matrix4 &mat, float radius, unsigned int c,
                 short int lifeSpan, bool bShadow, int texture);
     void Sphere(const UMath::Vector3 &basePt, float radius, unsigned int c,
