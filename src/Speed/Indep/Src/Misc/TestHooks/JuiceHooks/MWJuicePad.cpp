@@ -107,34 +107,27 @@ void MWJuicePad::PressButton(int port, MWJuicePadButtonType buttonType) {
 void MWJuicePad::ReleaseAllButtons(MWJPadReleaseType type) {
     if (mButtonPressedLastFrame || type == JUICE_FORCED) {
         mButtonPressedLastFrame = false;
-        int port = 0;
+        int portIndex = 0;
+        int buttonIndex;
         do {
-            int nextPort = port + 1;
-            MWJuicePadState *state = mPadState + port;
-            ActionID *action = BEActionMapping;
-            int button = 0x19;
-            do {
-                if (state->buttonState[0] == true) {
-                    state->buttonState[0] = false;
-                    goto simulate;
-                } else if (type == JUICE_FORCED) {
-                    state->buttonState[0] = false;
-                    goto simulate;
+            int nextPort = portIndex + 1;
+            int actionIndex = 0;
+            buttonIndex = 0x19;
+            bool *buttonState = mPadState[portIndex].buttonState;
+            for (; buttonIndex >= 0; buttonIndex--) {
+                if (*buttonState == true || type == JUICE_FORCED) {
+                    *buttonState = false;
+                    if (cFEng::Get()->FindPackageWithControl() != nullptr) {
+                        SimulateFEButton(portIndex, BEActionMapping[actionIndex - 0x1a], 0.0f);
+                    } else {
+                        SimulateBEButton(portIndex, BEActionMapping[actionIndex], 0.0f);
+                    }
                 }
-                goto advance;
-            simulate:
-                if (cFEng::Get()->FindPackageWithControl() != nullptr) {
-                    SimulateFEButton(port, action[-0x1a], 0.0f);
-                } else {
-                    SimulateBEButton(port, *action, 0.0f);
-                }
-            advance:
-                action++;
-                button--;
-                state = reinterpret_cast<MWJuicePadState *>(state->buttonState + 4);
-            } while (button >= 0);
-            port = nextPort;
-        } while (port < 2);
+                actionIndex++;
+                buttonState++;
+            }
+            portIndex = nextPort;
+        } while (portIndex < 2);
     }
 }
 
