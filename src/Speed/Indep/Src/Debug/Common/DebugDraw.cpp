@@ -1,6 +1,8 @@
 #include "Speed/Indep/Src/Debug/Common/DebugDraw.h"
 #include "Speed/Indep/Src/Camera/Camera.hpp"
 
+extern float Tweak_drawRange;
+
 DebugDraw *DebugDraw::fgDbgDraw;
 
 inline bVector3 Coord4ToSwizzledbVec(const COORD4 *c) {
@@ -75,8 +77,8 @@ bool DebugDraw::InView(const UMath::Vector3 &pt, float radius) {
         const float threshold = 0.707f;
         float dot;
 
-        if (UMath::Abs(camVec.y) < threshold) {
-            camVec.y = objVec.y = 0.0f;
+        if (threshold > UMath::Abs(camVec.y)) {
+            objVec.y = camVec.y = 0.0f;
             dot = UMath::Dot(objVec, camVec);
             if (dot < 0.0f) {
                 return false;
@@ -85,6 +87,25 @@ bool DebugDraw::InView(const UMath::Vector3 &pt, float radius) {
     }
 
     return true;
+}
+
+bool DebugDraw::OutOfRange(const UMath::Vector3 &pt, float radius) {
+    UMath::Vector3 pos;
+    UMath::Vector3 diff;
+    float distSq;
+    float range;
+    bool outOfRange;
+
+    pos = UMath::Vector4To3(Get().GetCameraPos());
+    UMath::Sub(pos, pt, diff);
+    distSq = diff.x * diff.x + diff.z * diff.z;
+    range = Tweak_drawRange + radius;
+    outOfRange = range * range < distSq;
+    return outOfRange;
+}
+
+float DebugDraw::GetDrawRange() {
+    return Tweak_drawRange;
 }
 
 void DebugDraw::DrawAll() {

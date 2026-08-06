@@ -53,10 +53,14 @@ struct DebugDraw {
   public:
     DebugDraw();
 
-    static DebugDraw &Get() {
+    static void Init() {
         if (!fgDbgDraw) {
             fgDbgDraw = new ("DebugDraw", 0) DebugDraw;
         }
+    }
+
+    static DebugDraw &Get() {
+        Init();
         return *fgDbgDraw;
     }
 
@@ -73,6 +77,8 @@ struct DebugDraw {
     }
 
     bool InView(const UMath::Vector3 &pt, float radius);
+    bool OutOfRange(const UMath::Vector3 &pt, float radius);
+    float GetDrawRange();
     void DrawAll();
     void CacheCameraInfo();
 };
