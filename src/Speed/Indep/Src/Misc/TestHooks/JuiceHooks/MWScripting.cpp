@@ -33,6 +33,10 @@ namespace Juice {
 
 unsigned int MWCommands::mFEngScreenLoading;
 
+char *MWCommands::GetNamespaceName() const {
+    return "NFSMW";
+}
+
 void MWCommands::LoadingNewFEngPackage(unsigned int newPkg) {
     mFEngScreenLoading = newPkg;
 }
