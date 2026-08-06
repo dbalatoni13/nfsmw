@@ -234,6 +234,39 @@ void DebugDraw::Line(const UMath::Matrix4 &mat, const UMath::Vector3 &pt1,
     }
 }
 
+void DebugDraw::LineSeg(const UMath::Matrix4 &mat, const UMath::Vector4 &pt0,
+                        const UMath::Vector4 &pt1, unsigned int c,
+                        short int lifeSpan) {
+    if (fEnabled) {
+        int i = fNumLinPrims;
+        if (i < sDebugDrawMaxLinePrims) {
+            UMath::Vector4 tpt0;
+            UMath::Vector4 tpt1;
+            VU0_MATRIX4_vect3mult(UMath::Vector4To3(pt0), mat,
+                                  UMath::Vector4To3(tpt0));
+            VU0_MATRIX4_vect3mult(UMath::Vector4To3(pt1), mat,
+                                  UMath::Vector4To3(tpt1));
+
+            UMath::Vector4 *pVVar6 = fLinVertList + i * 2;
+            unsigned int *puVar2 = fLinColourList;
+            DrawPrimLin *pDVar3 = fLinPrimList;
+            pVVar6->x = tpt0.x;
+            puVar2[i * 2] = c;
+            pVVar6->y = tpt0.y;
+            pVVar6->z = tpt0.z;
+            pDVar3[i].fLifeSpan = lifeSpan;
+            puVar2[i * 2 + 1] = c;
+            pVVar6->w = tpt0.w;
+            pVVar6[1].x = tpt1.x;
+            pVVar6[1].y = tpt1.y;
+            pVVar6[1].z = tpt1.z;
+            pVVar6[1].w = tpt1.w;
+            pDVar3[i].fTimeType = fgDbgDraw->GetTimeType();
+            fNumLinPrims = i + 1;
+        }
+    }
+}
+
 void DebugDraw::Sphere(const UMath::Matrix4 &mat, float radius, unsigned int c,
                        short int lifeSpan, bool bShadow, int texture) {
     if (!fEnabled) {
