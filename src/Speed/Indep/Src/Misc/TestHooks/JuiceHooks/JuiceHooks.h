@@ -169,6 +169,9 @@ private:
     void SimulateFEButton(int port, int buttonID, float buttonData);
     void SimulateBEButton(int port, int buttonID, float buttonData);
     ActionQueue *GetActionQueue(const char *qName, int port);
+    void TrackFEPresses(int actionID, float data, int port);
+    void TrackBEPresses(int actionID, float data, int port);
+    void ResetTrackedPresses();
 };
 
 enum JuicePerRaceStatType {
