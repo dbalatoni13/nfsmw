@@ -65,6 +65,8 @@ public:
 
 namespace Juice {
 
+struct tJuicePad;
+
 class JuicePad {
 public:
     static JuicePad *Instance();
@@ -332,6 +334,7 @@ public:
     char *GetCursorPos();
     void UpdatePad(void *input);
     void ResetGamePad();
+    void GamePadToJuicePad(void *gameInput, tJuicePad *juiceInput);
     void JuiceScreenshot(char *fileName);
     static char *GetJuiceBuildName();
     int HangTimeoutLength();

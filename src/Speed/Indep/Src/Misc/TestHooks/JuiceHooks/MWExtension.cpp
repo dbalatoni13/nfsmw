@@ -157,6 +157,10 @@ void MWExtension::ResetGamePad() {
     MWJuicePad::Instance()->ResetGamePad();
 }
 
+void MWExtension::GamePadToJuicePad(void *gameInput, tJuicePad *juiceInput) {
+    MWJuicePad::Instance()->PollInput();
+}
+
 int MWExtension::NumberOfRepeatedReplayEntries(int channel) {
     return GetJoylogChannelRepeatCount(channel);
 }
