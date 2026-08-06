@@ -944,8 +944,8 @@ void DebugDraw::DrawAll() {
                     poly.Vertices[1] = Coord4ToSwizzledbVec(this->fTriVertList + iCurVert + 1);
                     poly.Vertices[2] = Coord4ToSwizzledbVec(this->fTriVertList + iCurVert + 2);
                     iNumVertsLeft -= 3;
-                    iCurVert += 3;
                     unsigned int colour = this->fTriColourList[iCurVert];
+                    iCurVert += 3;
                     reinterpret_cast<unsigned int *>(poly.Colours)[3] =
                         colour;
                     reinterpret_cast<unsigned int *>(poly.Colours)[2] =
