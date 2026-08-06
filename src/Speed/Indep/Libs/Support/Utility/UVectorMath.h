@@ -276,7 +276,10 @@ inline void VU0_v4scalexyz(const UMath::Vector4 &a, const float scaleby, UMath::
 
 inline float VU0_v4distancesquarexyz(const UMath::Vector4 &p1, const UMath::Vector4 &p2) {}
 
-inline void VU0_v4addxyz(const UMath::Vector4 &a, const UMath::Vector4 &b, UMath::Vector4 &result) {}
+inline void VU0_v4addxyz(const UMath::Vector4 &a, const UMath::Vector4 &b,
+                         UMath::Vector4 &result) {
+    VU0_v3add(UMath::Vector4To3(a), UMath::Vector4To3(b), UMath::Vector4To3(result));
+}
 
 inline void VU0_MATRIX3x4_vect3mult(const UMath::Vector3 &v, const UMath::Matrix4 &m, UMath::Vector3 &result) {
     asm __volatile__("lqc2 vf1, %1\n"
