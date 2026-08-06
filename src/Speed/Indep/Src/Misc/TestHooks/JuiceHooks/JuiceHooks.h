@@ -7,6 +7,10 @@
 
 #include <types.h>
 
+class IPlayer;
+enum FormationType;
+struct FEPackage;
+
 class IExtension {
 public:
     virtual ~IExtension() {}
@@ -18,6 +22,11 @@ public:
 };
 
 namespace Juice {
+
+struct GameHook {
+    static GameHook *(*Instance)(void *, char *);
+    void LogText(const char *text);
+};
 
 namespace Scripting {
 
@@ -83,6 +92,16 @@ public:
     char *GetPopupCheck();
     int GetJuiceUpdateProcessor();
     static char *GetImageName();
+    static char *GetPlayerPosition();
+    static char *GetPlayerPosition(IPlayer *player);
+    static char *GetFormationStr(const FormationType &formation);
+    static char *GetCurrentRaceType();
+    static char *GetCurrentZoneName();
+    char *GetScreenName();
+    char *GetCursorPos();
+    void UpdatePad(void *input);
+    void ResetGamePad();
+    void JuiceScreenshot(char *fileName);
     static char *GetJuiceBuildName();
     int HangTimeoutLength();
     char *GetBuildName();

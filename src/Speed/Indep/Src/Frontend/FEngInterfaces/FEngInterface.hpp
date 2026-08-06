@@ -6,6 +6,7 @@
 #endif
 
 struct FEObject;
+struct FEPackage;
 
 class cFEng {
   public:
@@ -18,6 +19,7 @@ class cFEng {
     void ServiceFengOnly();
     void QueuePackageSwitch(const char *name, int param2, unsigned int param3, bool param4);
     void QueuePackagePush(const char *name, int param2, unsigned int param3, bool param4);
+    FEPackage *FindPackageWithControl();
 
     static cFEng *Get() {
         return mInstance;

@@ -320,6 +320,10 @@ class TrackStreamer {
         return PermFileLoading;
     }
 
+    char *GetCurrentZoneName() {
+        return reinterpret_cast<char *>(this) + 0x190;
+    }
+
   private:
     void ClearCurrentZones();
     bool DetermineCurrentZones(int16 *current_zones);
