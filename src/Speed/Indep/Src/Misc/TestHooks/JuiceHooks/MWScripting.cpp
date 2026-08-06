@@ -7,6 +7,7 @@
 #include "Speed/Indep/Src/Frontend/FEngInterfaces/FEngInterface.hpp"
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
+#include "Speed/Indep/Src/Interfaces/SimActivities/ICopMgr.h"
 
 extern int DoScreenPrintf;
 extern int UnlockAllThings;
@@ -199,6 +200,26 @@ int MWCommands::TurnPursuitForeverOn(Scripting::VarArgs &params) {
 int MWCommands::TurnPursuitForeverOff(Scripting::VarArgs &params) {
     ::ForcePursuitNeverEnd = 0;
     return 1;
+}
+
+int MWCommands::TurnPursuitOn(Scripting::VarArgs &params) {
+    if (ICopMgr::Exists() && TheGameFlowManager.IsInGame()) {
+        if (ICopMgr::mDisableCops) {
+            ICopMgr::mDisableCops = 0;
+        }
+        return 1;
+    }
+    return -1;
+}
+
+int MWCommands::TurnPursuitOff(Scripting::VarArgs &params) {
+    if (ICopMgr::Exists() && TheGameFlowManager.IsInGame()) {
+        if (ICopMgr::mDisableCops == 0) {
+            ICopMgr::mDisableCops = 1;
+        }
+        return 1;
+    }
+    return -1;
 }
 
 }
