@@ -2,6 +2,8 @@
 #include "Speed/Indep/Src/Camera/Camera.hpp"
 #include "Speed/Indep/Src/World/WCollisionMgr.h"
 
+#include <string.h>
+
 extern float Tweak_drawRange;
 extern int sDebugDrawMaxPrims;
 extern int sDebugDrawMaxLinePrims;
@@ -349,6 +351,73 @@ void DebugDraw::Quad(const UMath::Vector4 *pt0, const UMath::Vector4 *pt1,
     uv3.y = 0.0f;
     Triangle(pt0, pt1, pt2, &uv0, &uv1, &uv2, c, lifeSpan, texture);
     Triangle(pt2, pt3, pt0, &uv2, &uv3, &uv0, c, lifeSpan, texture);
+}
+
+void DebugDraw::Quad(const UMath::Vector4 &pt, float size, unsigned int c,
+                     short int lifeSpan, int texture) {
+    if (fEnabled) {
+        UMath::Vector4 inVec;
+        UMath::Vector4 upVec;
+        UMath::Vector4 rightVec;
+        UMath::Vector4 centerPos;
+        UMath::Vector4 pt04;
+        UMath::Vector4 pt14;
+        UMath::Vector4 pt24;
+        UMath::Vector4 pt34;
+        COORD2 uv0;
+        COORD2 uv1;
+        COORD2 uv2;
+        COORD2 uv3;
+        float s;
+
+        inVec = Get().GetCameraFwdVec();
+        upVec = Get().GetCameraUpVec();
+        bCross(reinterpret_cast<bVector3 *>(&rightVec),
+               reinterpret_cast<const bVector3 *>(&upVec),
+               reinterpret_cast<const bVector3 *>(&inVec));
+        centerPos = pt;
+
+        s = size;
+        bScaleAdd(reinterpret_cast<bVector3 *>(&pt04),
+                  reinterpret_cast<const bVector3 *>(&centerPos),
+                  reinterpret_cast<const bVector3 *>(&upVec), s);
+        s = -size;
+        bScaleAdd(reinterpret_cast<bVector3 *>(&pt04),
+                  reinterpret_cast<const bVector3 *>(&pt04),
+                  reinterpret_cast<const bVector3 *>(&rightVec), s);
+        s = size;
+        bScaleAdd(reinterpret_cast<bVector3 *>(&pt14),
+                  reinterpret_cast<const bVector3 *>(&centerPos),
+                  reinterpret_cast<const bVector3 *>(&upVec), size);
+        bScaleAdd(reinterpret_cast<bVector3 *>(&pt14),
+                  reinterpret_cast<const bVector3 *>(&pt14),
+                  reinterpret_cast<const bVector3 *>(&rightVec), s);
+        s = -size;
+        bScaleAdd(reinterpret_cast<bVector3 *>(&pt24),
+                  reinterpret_cast<const bVector3 *>(&centerPos),
+                  reinterpret_cast<const bVector3 *>(&upVec), s);
+        s = size;
+        bScaleAdd(reinterpret_cast<bVector3 *>(&pt24),
+                  reinterpret_cast<const bVector3 *>(&pt24),
+                  reinterpret_cast<const bVector3 *>(&rightVec), s);
+        s = -size;
+        bScaleAdd(reinterpret_cast<bVector3 *>(&pt34),
+                  reinterpret_cast<const bVector3 *>(&centerPos),
+                  reinterpret_cast<const bVector3 *>(&upVec), s);
+        bScaleAdd(reinterpret_cast<bVector3 *>(&pt34),
+                  reinterpret_cast<const bVector3 *>(&pt34),
+                  reinterpret_cast<const bVector3 *>(&rightVec), s);
+
+        uv0.x = 0.0f;
+        uv0.y = 1.0f;
+        uv1.x = 1.0f;
+        uv1.y = 1.0f;
+        uv2.x = 1.0f;
+        uv2.y = 0.0f;
+        memset(&uv3, 0, sizeof(uv3));
+        Triangle(&pt04, &pt14, &pt24, &uv0, &uv1, &uv2, c, lifeSpan, texture);
+        Triangle(&pt24, &pt34, &pt04, &uv2, &uv3, &uv0, c, lifeSpan, texture);
+    }
 }
 
 void DebugDraw::Box(const UMath::Vector4 *tpts, unsigned int c, short int lifeSpan,
