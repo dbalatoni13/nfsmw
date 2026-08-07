@@ -20,6 +20,7 @@ void Free(void *ptr) {
 }
 
 DebugDraw *DebugDraw::fgDbgDraw;
+int D_005E0E1C;
 
 inline bVector3 Coord4ToSwizzledbVec(const COORD4 *c) {
     bVector3 vec;
@@ -912,7 +913,6 @@ void DebugDraw::Vector(const UMath::Vector4 &pt, const UMath::Vector4 &vec, floa
 void DebugDraw::DrawAll() {
     eView *view = eGetView(EVIEW_PLAYER1, false);
     bMatrix4 *pL2W;
-    static int lastSimFrame;
     int simDecayFrames;
 
     if (!view) {
@@ -936,9 +936,10 @@ void DebugDraw::DrawAll() {
             iNumVertsLeft = this->fNumTriPrims * 3;
             if (iNumVertsLeft > 0) {
                 while (true) {
-                    poly.Vertices[0] = Coord4ToSwizzledbVec(this->fTriVertList + iCurVert);
-                    poly.Vertices[1] = Coord4ToSwizzledbVec(this->fTriVertList + iCurVert + 1);
-                    poly.Vertices[2] = Coord4ToSwizzledbVec(this->fTriVertList + iCurVert + 2);
+                    UMath::Vector4 *pTriVerts = this->fTriVertList + iCurVert;
+                    poly.Vertices[0] = Coord4ToSwizzledbVec(pTriVerts);
+                    poly.Vertices[1] = Coord4ToSwizzledbVec(pTriVerts + 1);
+                    poly.Vertices[2] = Coord4ToSwizzledbVec(pTriVerts + 2);
                     iNumVertsLeft -= 3;
                     unsigned int colour = this->fTriColourList[iCurVert];
                     iCurVert += 3;
@@ -976,20 +977,22 @@ void DebugDraw::DrawAll() {
                     verts[0].u = 0.5f;
                     verts[0].v = 0.5f;
                     iCurVert += 2;
-                    verts[0].y = -this->fLinVertList[iCurVert - 2].x;
-                    verts[0].x = this->fLinVertList[iCurVert - 2].z;
-                    verts[0].z = this->fLinVertList[iCurVert - 2].y;
-                    verts[0].colour = (this->fLinColourList[iCurVert - 2] & 0xff) << 16 |
-                                      this->fLinColourList[iCurVert - 2] & 0xff000000 |
-                                      (this->fLinColourList[iCurVert - 2] & 0xff0000) >> 16 |
-                                      this->fLinColourList[iCurVert - 2] & 0xff00;
-                    verts[1].y = -this->fLinVertList[iCurVert - 1].x;
-                    verts[1].x = this->fLinVertList[iCurVert - 1].z;
-                    verts[1].z = this->fLinVertList[iCurVert - 1].y;
-                    verts[1].colour = (this->fLinColourList[iCurVert - 2] & 0xff) << 16 |
-                                      this->fLinColourList[iCurVert - 2] & 0xff000000 |
-                                      (this->fLinColourList[iCurVert - 2] & 0xff0000) >> 16 |
-                                      this->fLinColourList[iCurVert - 2] & 0xff00;
+                    UMath::Vector4 *pLinVerts = this->fLinVertList + iCurVert - 2;
+                    unsigned int *pLinColours = this->fLinColourList + iCurVert - 2;
+                    verts[0].y = -pLinVerts[0].x;
+                    verts[0].x = pLinVerts[0].z;
+                    verts[0].z = pLinVerts[0].y;
+                    verts[0].colour = (pLinColours[0] & 0xff) << 16 |
+                                      pLinColours[0] & 0xff000000 |
+                                      (pLinColours[0] & 0xff0000) >> 16 |
+                                      pLinColours[0] & 0xff00;
+                    verts[1].y = -pLinVerts[1].x;
+                    verts[1].x = pLinVerts[1].z;
+                    verts[1].z = pLinVerts[1].y;
+                    verts[1].colour = (pLinColours[0] & 0xff) << 16 |
+                                      pLinColours[0] & 0xff000000 |
+                                      (pLinColours[0] & 0xff0000) >> 16 |
+                                      pLinColours[0] & 0xff00;
                     verts[1].u = 0.5f;
                     verts[1].v = 0.5f;
 
@@ -1005,8 +1008,8 @@ void DebugDraw::DrawAll() {
 
         iCurVert = 0;
         iNumVertsLeft = this->fNumTriPrims;
-        simDecayFrames = eGetFrameCounter() - lastSimFrame;
-        lastSimFrame = eGetFrameCounter();
+        simDecayFrames = eGetFrameCounter() - D_005E0E1C;
+        D_005E0E1C = eGetFrameCounter();
         for (; iCurVert < iNumVertsLeft; iCurVert++) {
             if (this->fTriPrimList[iCurVert].fTimeType == 1) {
                 if (this->fTriPrimList[iCurVert].fLifeSpan > 0) {
