@@ -911,9 +911,12 @@ void DebugDraw::Vector(const UMath::Vector4 &pt, const UMath::Vector4 &vec, floa
                      UMath::Vector4To3(widthVec));
         pts[0] = pt;
         pts[0].w = 1.0f;
-        UMath::ScaleAddxyz(vec, scale, pt, inVec);
-        UMath::Subxyz(inVec, widthVec, pts[1]);
-        UMath::Addxyz(inVec, widthVec, pts[2]);
+        UMath::ScaleAddxyz(vec, scale, pt, pts[1]);
+        UMath::Subxyz(pts[1], widthVec, pts[1]);
+        pts[1].w = 1.0f;
+        UMath::ScaleAddxyz(vec, scale, pt, pts[2]);
+        UMath::Addxyz(pts[2], widthVec, pts[2]);
+        pts[2].w = 1.0f;
 
         memset(&uv0, 0, sizeof(uv0));
         uv1 = D_005425E0;
