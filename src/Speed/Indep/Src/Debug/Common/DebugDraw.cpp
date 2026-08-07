@@ -846,7 +846,10 @@ void DebugDraw::Cylinder(const UMath::Matrix4 &mat, float radius, float height,
         Circle(mat, radius, c, lifeSpan, texture);
 
         UMath::Matrix4 matTop;
-        matTop = mat;
+        matTop.v0 = mat.v0;
+        matTop.v1 = mat.v1;
+        matTop.v2 = mat.v2;
+        matTop.v3 = mat.v3;
         matTop.v3.y += height;
         Circle(matTop, radius, c, lifeSpan, texture);
 
