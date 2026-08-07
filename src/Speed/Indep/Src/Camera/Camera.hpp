@@ -7,6 +7,30 @@
 
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
+#include "Speed/Indep/Src/Camera/ICE/ICEMath.hpp"
+#include "Speed/Indep/Src/Misc/Timer.hpp"
+#include "Speed/Indep/bWare/Inc/bFunk.hpp"
+#include "Speed/Indep/Src/Gameplay/GManager.h"
+#include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
+#include "Speed/Indep/Libs/Support/Utility/UCollections.h"
+#include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
+#include "Speed/Indep/Src/World/TrackStreamer.hpp"
+#include "Speed/Indep/bWare/Inc/bList.hpp"
+#include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
+#include "Speed/Indep/bWare/Inc/Espresso.hpp"
+#include "Speed/Indep/Src/Misc/GameFlow.hpp"
+#include "Speed/Indep/Src/Misc/Rumble.hpp"
+
+// TODO GET RID OF THESE
+extern int32 RealTime;
+extern int32 LastUpdateTimeJR2;
+extern int WeHaveCheckedIfJR2ServerExists;
+extern int bStreamingPositionFromICE;
+extern int JR2ServerExists;
+extern int LastUpdateTimeCaffeine;
+extern int LastUpdateTimeJR2;
+
+void UpdateCameraMovers(float dT);
 
 struct CameraParams {
     // total size: 0xD4
@@ -29,9 +53,31 @@ struct CameraParams {
     unsigned short DummyAngle;  // offset 0xD0, size 0x2
 };
 
+// total size: 0x50
+struct JollyRancherResponsePacket {
+    // Functions
+    inline JollyRancherResponsePacket() {}
+
+    // Members
+    volatile int UseMatrix;             // offset 0x0, size 0x4
+    volatile int Pad1;                  // offset 0x4, size 0x4
+    volatile int Pad2;                  // offset 0x8, size 0x4
+    volatile int Pad3;                  // offset 0xC, size 0x4
+    volatile struct bMatrix4 CamMatrix; // offset 0x10, size 0x40
+};
+
+static unsigned short aBaselineFovNoise = 0x2aaa; // from __static_initialization_and_destruction_0
+
 // total size: 0x290
 class Camera {
+    friend class CameraMover;
+    friend void UpdateCameraMovers(float dT);
+
   public:
+    static int StopUpdating;
+    static JollyRancherResponsePacket JollyRancherResponse;
+    static int JR2ServerExists;
+
     static void UpdateAll(float dT);
 
     bMatrix4 *GetCameraMatrix() {
@@ -41,6 +87,15 @@ class Camera {
     int GetRenderDash() {
         return this->RenderDash;
     }
+
+    Camera();
+    void SetCameraMatrix(const bMatrix4 &m, float fTime);
+
+    void CommunicateWithJollyRancher(char *cameraname);
+
+    unsigned short FovRelativeAngle(unsigned short a);
+
+    void ApplyNoise(bMatrix4 *p_matrix, float time, float intensity);
 
     // float GetFocalDistance() {}
 
@@ -91,7 +146,11 @@ class Camera {
 
     void ClearVelocity() {}
 
-    void SetRenderDash(int r) {}
+    void SetRenderDash(int r) {
+        if (!StopUpdating) {
+            RenderDash = r;
+        }
+    }
 
     void SetTargetDistance(float f) {}
 
@@ -109,11 +168,15 @@ class Camera {
 
     void SetNoiseAmplitude2(float x, float y, float z, float w) {}
 
-    void SetNoiseFrequency1(bVector4 *p) {}
+    void SetNoiseFrequency1(bVector4 *p) {
+        this->CurrentKey.NoiseFrequency1 = *p;
+    }
 
     void SetNoiseFrequency2(bVector4 *p) {}
 
-    void SetNoiseAmplitude1(bVector4 *p) {}
+    void SetNoiseAmplitude1(bVector4 *p) {
+        this->CurrentKey.NoiseAmplitude1 = *p;
+    }
 
     void SetNoiseAmplitude2(bVector4 *p) {}
 
@@ -125,9 +188,13 @@ class Camera {
 
     void SetNoiseAmplitude2(float *p) {}
 
-    void SetNearZ(float near_z) {}
+    void SetNearZ(float near_z) {
+        CurrentKey.NearZ = near_z;
+    }
 
-    void SetFarZ(float far_z) {}
+    void SetFarZ(float far_z) {
+        CurrentKey.FarZ = far_z;
+    }
 
     // float GetNearZ() {}
 
@@ -154,5 +221,6 @@ class Camera {
 
 // TODO move?
 extern bool gCinematicMomementCamera;
+extern int DisableCommunication;
 
 #endif

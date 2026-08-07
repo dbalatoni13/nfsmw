@@ -39,6 +39,7 @@ typedef UTL::Std::list<unsigned int, _type_ID_AttribKeyList> AttribKeyList;
 // total size: 0x308
 class GManager : public UTL::COM::Object, public IVehicleCache {
   public:
+    friend void UpdateCameraMovers(float dT);
     // total size: 0x8
     struct HashEntry {
         unsigned int mKey32;         // offset 0x0, size 0x4

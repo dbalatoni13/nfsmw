@@ -1,11 +1,13 @@
 #ifndef CAMERA_CAMERAMOVER_H
 #define CAMERA_CAMERAMOVER_H
 
+#include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
 
 #include "./Camera.hpp"
+#include "./CameraAI.hpp"
 #include "CameraInfo.hpp"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/camerainfo.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/ecar.h"
@@ -13,6 +15,14 @@
 #include "Speed/Indep/Src/World/WCollisionMgr.h"
 #include "Speed/Indep/Src/World/WWorldPos.h"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
+#include "Speed/Indep/Src/World/WCollider.h"
+#include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
+#include "Speed/Indep/Src/Ecstasy/eMath.hpp"
+#include "Speed/Indep/Libs/Support/Utility/UListable.h"
+#include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
+#include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
+#include "Speed/Indep/bWare/Inc/bMath.hpp"
+#include "Speed/Indep/Src/Physics/PVehicle.h"
 
 class eView;
 
@@ -38,9 +48,22 @@ enum CameraMoverTypes {
     CM_SHOWCASE = 18,
 };
 
+static const bVector4 CameraNoiseHandheldAmplitude = bVector4(0.01, 0.01, 0.03, 0.03);
+static const bVector4 CameraNoiseHandheldFrequency = bVector4(0.01, 0.175, 0.153, 0.03);
+static const bVector4 CameraNoiseChopperFrequency = bVector4(3.141, 2.971, 0.84234, 0.92345); // size: 0x10, address: 0x8045AB58
+static const bVector4 CameraNoiseChopperAmplitude = bVector4(0.01, 0.05, 1.1, 2.7);           // size: 0x10, address: 0x8045AB68
+static const bVector4 CameraNoiseSpeedFrequency;                                              // size: 0x10, address: 0x8045AB78
+static const bVector4 CameraNoiseSpeedAmplitude;                                              // size: 0x10, address: 0x8045AB88
+static const bVector4 CameraNoiseTerrainFrequency;                                            // size: 0x10, address: 0x8045AB98
+static const bVector4 CameraNoiseTerrainAmplitude;                                            // size: 0x10, address: 0x8045ABA8
+
 // total size: 0x124
 class CameraAnchor {
   public:
+    float GetVelocityMagnitude() {
+        return UMath::Sqrt(mVelocity.x * mVelocity.x + mVelocity.y * mVelocity.y + mVelocity.z * mVelocity.z);
+    }
+
     bVector3 *GetGeometryPosition() {
         return &mGeomPos;
     }
@@ -85,11 +108,13 @@ class CameraAnchor {
 // total size: 0x80
 class CameraMover : public bTNode<CameraMover>, public WCollisionMgr::ICollisionHandler {
   public:
-    CameraMover();
+    CameraMover(int view_id, CameraMoverTypes type);
 
     CameraMoverTypes GetType() {
         return Type;
     }
+
+    void ComputeBankedUpVector(bVector3 *up, bVector3 *eye, bVector3 *look, bAngle bank);
 
     WUID GetAnchorID();
 
@@ -110,6 +135,11 @@ class CameraMover : public bTNode<CameraMover>, public WCollisionMgr::ICollision
     virtual void Update(float dT);
     virtual void Render(eView *view);
 
+    void ChopperNoise(bMatrix4 *world_to_camera, float f_scale, bool useWorldTimer);
+    void HandheldNoise(bMatrix4 *world_to_camera, float f_scale, bool useWorldTimer);
+    void TerrainVelocityNoise(bMatrix4 *world_to_camera /* r26 */, CameraAnchor *p_car /* r30 */, float f_speed_scale /* f31 */,
+                              float f_terrain_scale /* f28 */);
+
     virtual CameraAnchor *GetAnchor() {}
 
     virtual void SetLookBack(bool b) {}
@@ -124,7 +154,7 @@ class CameraMover : public bTNode<CameraMover>, public WCollisionMgr::ICollision
 
     virtual bool RenderCarPOV() {}
 
-    virtual float MinDistToWall() {}
+    virtual float MinDistToWall();
 
     virtual unsigned short GetLookbackAngle() {}
 
@@ -152,6 +182,9 @@ class CameraMover : public bTNode<CameraMover>, public WCollisionMgr::ICollision
     float fSavedAdjust;          // offset 0x6C, size 0x4
     bVector3 vSavedForward;      // offset 0x70, size 0x10
 };
+
+extern Timer WorldTimer;
+extern Timer RealTimer;
 
 void CameraMoverRestartRace();
 
