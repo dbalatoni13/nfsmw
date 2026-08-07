@@ -171,7 +171,9 @@ bool DebugDraw::InView(const UMath::Vector3 &pt, float radius) {
     camVec = UMath::Vector4To3(Get().GetCameraFwdVec());
     UMath::Sub(pt, camPos, objVec);
 
-    if (radius > UMath::Length(objVec)) {
+    float objDist = UMath::Length(objVec);
+
+    if (radius > objDist) {
         return true;
     }
 
