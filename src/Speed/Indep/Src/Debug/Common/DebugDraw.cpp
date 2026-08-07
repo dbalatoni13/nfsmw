@@ -62,7 +62,7 @@ void DebugDraw::CacheCameraInfo() {
         bVector3 upV3;
 
         eUnSwizzleWorldVector(cUp, upV3);
-        bNeg(&upV3, &upV3);
+        UMath::Negate(*reinterpret_cast<UMath::Vector3 *>(&upV3));
         this->fCachedCameraUpVec = UMath::Vector4Make(1.0f, upV3);
     }
 }
