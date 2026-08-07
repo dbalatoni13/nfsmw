@@ -345,7 +345,10 @@ void DebugDraw::Sphere(const UMath::Matrix4 &mat, float radius, unsigned int c,
         UMath::Matrix4 tmpMat;
 
         numFacets = static_cast<int>(static_cast<float>(std::log(radius)) + 9.0f);
-        tmpMat = mat;
+        tmpMat.v0 = mat.v0;
+        tmpMat.v1 = mat.v1;
+        tmpMat.v2 = mat.v2;
+        tmpMat.v3 = mat.v3;
         tmpMat.v3.y -= radius;
         numFacets = UMath::Min(numFacets, kMaxNumFacets);
         numFacets = UMath::Max(numFacets, kMinNumFacets);
