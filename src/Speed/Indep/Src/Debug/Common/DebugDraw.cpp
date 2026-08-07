@@ -909,12 +909,13 @@ void DebugDraw::Vector(const UMath::Vector4 &pt, const UMath::Vector4 &vec, floa
 
         inVec = Get().GetCameraFwdVec();
         UMath::Crossxyz(inVec, vec, widthVec);
-        UMath::Scale(widthVec, scale * 0.05f, widthVec);
+        VU0_v3scale(UMath::Vector4To3(widthVec), scale * 0.05f,
+                     UMath::Vector4To3(widthVec));
         pts[0].x = pt.x;
         pts[0].y = pt.y;
         pts[0].z = pt.z;
         pts[0].w = 1.0f;
-        UMath::ScaleAdd(vec, scale, pt, inVec);
+        UMath::ScaleAddxyz(vec, scale, pt, inVec);
         UMath::Subxyz(inVec, widthVec, pts[1]);
         UMath::Addxyz(inVec, widthVec, pts[2]);
 
