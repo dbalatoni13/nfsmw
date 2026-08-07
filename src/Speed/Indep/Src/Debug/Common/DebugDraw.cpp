@@ -351,18 +351,22 @@ void DebugDraw::Sphere(const UMath::Matrix4 &mat, float radius, unsigned int c,
         numFacets = UMath::Max(numFacets, kMinNumFacets);
         const float angleStep = 0.5f / numFacets;
         float angle = 0.0f;
-        for (int i = numFacets; i > 0; --i) {
-            float localRadTop;
-            float localRadBot;
-            float sectionHeight;
+        if (numFacets > 0) {
+            int i = numFacets;
+            do {
+                float localRadTop;
+                float localRadBot;
+                float sectionHeight;
 
-            localRadTop = radius * UMath::Cosa(angle - 0.25 + angleStep);
-            localRadBot = radius * UMath::Cosa(angle - 0.25);
-            sectionHeight = UMath::Abs(radius * (UMath::Sina(angle - 0.25) -
-                                                 UMath::Sina(angle - 0.25 + angleStep)));
-            CylinderSection(tmpMat, localRadTop, localRadBot, sectionHeight, c, lifeSpan, texture);
-            angle += angleStep;
-            tmpMat.v3.y += sectionHeight;
+                localRadTop = radius * UMath::Cosa(angle - 0.25 + angleStep);
+                localRadBot = radius * UMath::Cosa(angle - 0.25);
+                sectionHeight = UMath::Abs(radius * (UMath::Sina(angle - 0.25) -
+                                                     UMath::Sina(angle - 0.25 + angleStep)));
+                CylinderSection(tmpMat, localRadTop, localRadBot, sectionHeight, c, lifeSpan, texture);
+                angle += angleStep;
+                --i;
+                tmpMat.v3.y += sectionHeight;
+            } while (i != 0);
         }
 
         if (bShadow == true) {
