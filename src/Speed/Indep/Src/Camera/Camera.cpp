@@ -5,6 +5,7 @@
 #include "Speed/Indep/Src/Misc/attribuserinclude.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
+#include "Speed/Indep/Src/Ecstasy/eMath.hpp"
 #include <cstddef>
 
 Camera::Camera() : LastDisparateTime(RealTimeFrames) {
@@ -49,92 +50,96 @@ Camera::Camera() : LastDisparateTime(RealTimeFrames) {
 
 void Camera::SetCameraMatrix(const bMatrix4 &m, float fTime) {
     static int cameralink;
+
+    if (StopUpdating)
+        return;
+
+    bMemCpy(&PreviousKey, &CurrentKey, sizeof(CameraParams));
+    ElapsedTime = fTime;
+
+    if (Camera::JollyRancherResponse.UseMatrix != 0 && DisableCommunication == 0) {
+        bMatrix4 scaledmatrix;
+        if (cameralink == 0) {
+            cameralink = 1;
+        }
+
+        bMemCpy(reinterpret_cast<bMatrix4 *>(&scaledmatrix), const_cast<const bMatrix4 *>(&Camera::JollyRancherResponse.CamMatrix), sizeof(bMatrix4));
+        bScale(reinterpret_cast<bVector3 *>(&scaledmatrix.v3), reinterpret_cast<const bVector3 *>(&scaledmatrix.v3), 0.01f);
+
+        scaledmatrix.v3.w = 1.0f;
+
+        CurrentKey.Matrix = scaledmatrix;
+
+    } else {
+
+        if (cameralink != 0) {
+            cameralink = 0;
+        }
+
+        CurrentKey.Matrix = m;
+    }
     bMatrix4 t;
 
-    if (!StopUpdating) {
-        bMatrix4 scaledmatrix;
-        bMemCpy(&PreviousKey, &CurrentKey, sizeof(CameraParams));
-        ElapsedTime = fTime;
-        if (Camera::JollyRancherResponse.UseMatrix != 0 && DisableCommunication == 0) {
-            if (cameralink == 0) {
-                cameralink = 1;
-            }
+    eTransposeMatrix(&t, &CurrentKey.Matrix);
 
-            bMemCpy(reinterpret_cast<bMatrix4 *>(&scaledmatrix), const_cast<const bMatrix4 *>(&Camera::JollyRancherResponse.CamMatrix),
-                    sizeof(bMatrix4));
-            bScale(reinterpret_cast<bVector3 *>(&scaledmatrix.v3), reinterpret_cast<const bVector3 *>(&scaledmatrix.v3), 0.01f);
+    t.v0.w = 0.0f;
+    t.v1.w = 0.0f;
+    t.v2.w = 0.0f;
 
-            scaledmatrix.v3.w = 1.0f;
+    eMulVector(&CurrentKey.Position, &t, reinterpret_cast<bVector3 *>(&CurrentKey.Matrix.v3));
 
-            *reinterpret_cast<bMatrix4 *>(this) = scaledmatrix;
+    bNeg(&CurrentKey.Position, &CurrentKey.Position);
 
-        } else {
+    bNormalize(&CurrentKey.Direction, reinterpret_cast<bVector3 *>(&t.v2));
+    bScale(&CurrentKey.Target, &CurrentKey.Direction, CurrentKey.TargetDistance);
+    CurrentKey.Target += CurrentKey.Position;
+    // CurrentKey.Target.x = CurrentKey.Direction.x * CurrentKey.TargetDistance + CurrentKey.Position.x;
+    // CurrentKey.Target.y = CurrentKey.Direction.y * CurrentKey.TargetDistance + CurrentKey.Position.y;
+    // CurrentKey.Target.z = CurrentKey.Direction.z * CurrentKey.TargetDistance + CurrentKey.Position.z;
 
-            if (cameralink != 0) {
-                cameralink = 0;
-            }
+    if (bClearVelocity) {
+        bClearVelocity = false;
+        bMemCpy(&PreviousKey, this, sizeof(PreviousKey));
+        this->ElapsedTime = 1.0f;
+    }
 
-            CurrentKey.Matrix = m;
-        }
+    if (this->ElapsedTime > 0.0f) {
+        float fTimeRecip = 1.0f / this->ElapsedTime;
 
-        bTransposeMatrix(&t, &CurrentKey.Matrix);
+        VelocityKey.Position = CurrentKey.Position - PreviousKey.Position;
+        VelocityKey.Position *= fTimeRecip;
 
-        t.v0.w = 0.0f;
-        t.v1.w = 0.0f;
-        t.v2.w = 0.0f;
+        VelocityKey.Direction = CurrentKey.Direction - PreviousKey.Direction;
+        VelocityKey.Direction *= fTimeRecip;
 
-        eMulVector(&CurrentKey.Position, &t, reinterpret_cast<bVector3 *>(&CurrentKey.Matrix.v3));
+        VelocityKey.Target = CurrentKey.Target - PreviousKey.Target;
+        VelocityKey.Target *= fTimeRecip;
 
-        bNeg(&CurrentKey.Position, &CurrentKey.Position);
+        VelocityKey.TargetDistance = (CurrentKey.TargetDistance - PreviousKey.TargetDistance) * fTimeRecip;
+        VelocityKey.FocalDistance = (CurrentKey.FocalDistance - PreviousKey.FocalDistance) * fTimeRecip;
+        VelocityKey.DepthOfField = (CurrentKey.DepthOfField - PreviousKey.DepthOfField) * fTimeRecip;
+        VelocityKey.NearZ = (CurrentKey.NearZ - PreviousKey.NearZ) * fTimeRecip;
+        VelocityKey.FarZ = (CurrentKey.FarZ - PreviousKey.FarZ) * fTimeRecip;
+        VelocityKey.LB_height = (CurrentKey.LB_height - PreviousKey.LB_height) * fTimeRecip;
+        VelocityKey.SimTimeMultiplier = (CurrentKey.SimTimeMultiplier - PreviousKey.SimTimeMultiplier) * fTimeRecip;
 
-        bNormalize(&CurrentKey.Direction, reinterpret_cast<bVector3 *>(&t.v2));
+        VelocityKey.FieldOfView = static_cast<unsigned short>(fTimeRecip * static_cast<float>(CurrentKey.FieldOfView - PreviousKey.FieldOfView));
 
-        float dist = CurrentKey.TargetDistance;
+        VelocityKey.NoiseFrequency1 =
+            static_cast<const CameraParams &>(CurrentKey).NoiseFrequency1 - static_cast<const CameraParams &>(PreviousKey).NoiseFrequency1;
+        VelocityKey.NoiseFrequency1 *= fTimeRecip;
 
-        CurrentKey.Target.x = CurrentKey.Direction.x * dist + CurrentKey.Position.x;
-        CurrentKey.Target.y = CurrentKey.Direction.y * dist + CurrentKey.Position.y;
-        CurrentKey.Target.z = CurrentKey.Direction.z * dist + CurrentKey.Position.z;
+        VelocityKey.NoiseFrequency2 =
+            static_cast<const CameraParams &>(CurrentKey).NoiseFrequency2 - static_cast<const CameraParams &>(PreviousKey).NoiseFrequency2;
+        VelocityKey.NoiseFrequency2 *= fTimeRecip;
 
-        if (bClearVelocity) {
-            bClearVelocity = false;
-            bMemCpy(&PreviousKey, this, sizeof(PreviousKey));
-            this->ElapsedTime = 1.0f;
-        }
+        VelocityKey.NoiseAmplitude1 =
+            static_cast<const CameraParams &>(CurrentKey).NoiseAmplitude1 - static_cast<const CameraParams &>(PreviousKey).NoiseAmplitude1;
+        VelocityKey.NoiseAmplitude1 *= fTimeRecip;
 
-        if (this->ElapsedTime > 0.0f) {
-            float fTimeRecip = 1.0f / this->ElapsedTime;
-
-            VelocityKey.Position = CurrentKey.Position - PreviousKey.Position;
-            VelocityKey.Position *= fTimeRecip;
-
-            VelocityKey.Direction = CurrentKey.Direction - PreviousKey.Direction;
-            VelocityKey.Direction *= fTimeRecip;
-
-            VelocityKey.Target = CurrentKey.Target - PreviousKey.Target;
-            VelocityKey.Target *= fTimeRecip;
-
-            VelocityKey.TargetDistance = (CurrentKey.TargetDistance - PreviousKey.TargetDistance) * fTimeRecip;
-            VelocityKey.FocalDistance = (CurrentKey.FocalDistance - PreviousKey.FocalDistance) * fTimeRecip;
-            VelocityKey.DepthOfField = (CurrentKey.DepthOfField - PreviousKey.DepthOfField) * fTimeRecip;
-            VelocityKey.NearZ = (CurrentKey.NearZ - PreviousKey.NearZ) * fTimeRecip;
-            VelocityKey.FarZ = (CurrentKey.FarZ - PreviousKey.FarZ) * fTimeRecip;
-            VelocityKey.LB_height = (CurrentKey.LB_height - PreviousKey.LB_height) * fTimeRecip;
-            VelocityKey.SimTimeMultiplier = (CurrentKey.SimTimeMultiplier - PreviousKey.SimTimeMultiplier) * fTimeRecip;
-
-            VelocityKey.FieldOfView = static_cast<unsigned short>(fTimeRecip * static_cast<float>(CurrentKey.FieldOfView - PreviousKey.FieldOfView));
-
-            VelocityKey.NoiseFrequency1 = CurrentKey.NoiseFrequency1 - PreviousKey.NoiseFrequency1;
-            VelocityKey.NoiseFrequency1 *= fTimeRecip;
-
-            VelocityKey.NoiseFrequency2 = CurrentKey.NoiseFrequency2 - PreviousKey.NoiseFrequency2;
-            VelocityKey.NoiseFrequency2 *= fTimeRecip;
-
-            VelocityKey.NoiseAmplitude1 = CurrentKey.NoiseAmplitude1 - PreviousKey.NoiseAmplitude1;
-            VelocityKey.NoiseAmplitude1 *= fTimeRecip;
-
-            VelocityKey.NoiseAmplitude2 = CurrentKey.NoiseAmplitude2 - PreviousKey.NoiseAmplitude2;
-            VelocityKey.NoiseAmplitude2 *= fTimeRecip;
-        }
+        VelocityKey.NoiseAmplitude2 =
+            static_cast<const CameraParams &>(CurrentKey).NoiseAmplitude2 - static_cast<const CameraParams &>(PreviousKey).NoiseAmplitude2;
+        VelocityKey.NoiseAmplitude2 *= fTimeRecip;
     }
 }
 
