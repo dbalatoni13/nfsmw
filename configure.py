@@ -628,7 +628,7 @@ config.libs = [
         "progress_category": "libs",  # str | List[str]
         "objects": [
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/saems.c"),
-            Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/saemsamb.c"),
+            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/saemsamb.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/saemsstr.c"),
             Object(
                 NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/saemstimupdt.c"
