@@ -911,9 +911,7 @@ void DebugDraw::Vector(const UMath::Vector4 &pt, const UMath::Vector4 &vec, floa
         UMath::Crossxyz(inVec, vec, widthVec);
         VU0_v3scale(UMath::Vector4To3(widthVec), scale * 0.05f,
                      UMath::Vector4To3(widthVec));
-        pts[0].x = pt.x;
-        pts[0].y = pt.y;
-        pts[0].z = pt.z;
+        pts[0] = pt;
         pts[0].w = 1.0f;
         UMath::ScaleAddxyz(vec, scale, pt, inVec);
         UMath::Subxyz(inVec, widthVec, pts[1]);
