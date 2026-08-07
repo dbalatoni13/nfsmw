@@ -347,7 +347,6 @@ struct Util {
     }
 
     static void AddVariableTimerClient(VariableTimerClient *pClient) {
-        pClient->pClientFunc = SNDAEMSI_timerupdate;
         gVariableTimerList.Push(&pClient->ln);
     }
 

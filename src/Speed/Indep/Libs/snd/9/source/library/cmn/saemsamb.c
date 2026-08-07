@@ -34,9 +34,8 @@ int SNDAEMS_addmodulebank(void *pBank, char *streamFileName, int streamFileNameO
         }
     }
     if (pModuleBank->midibankoffset != 0) {
-        midiret = SNDbankadd(&pModuleBank->midibhandle, &pModuleBank->id[pModuleBank->midibankoffset]);
-        if (midiret < 0) {
-            errorcode = midiret;
+        errorcode = midiret = SNDbankadd(&pModuleBank->midibhandle, &pModuleBank->id[pModuleBank->midibankoffset]);
+        if (errorcode < 0) {
             goto abort;
         }
     }

@@ -4,6 +4,9 @@
 #include "sndcmn.h"
 #include "Speed/Indep/Libs/snd/9/extern/aemsdef.h"
 #include "saemsi.h"
+#include <cstddef>
+#include <types.h>
+#undef override
 #include <cstring>
 
 void SNDAEMSI_bankpitchmult(int handle, int value);
@@ -915,8 +918,10 @@ int SNDAEMSI_updateplayer(AemsDef::PLAYERSTATE *pplayerstate) {
                 }
 
                 int sampletype = (signed char)pplayerstate->settings.psamplegroup->entry[sampleselect].type;
-                pplayerstate->settings.sampletype = sampletype;
-                pplayerstate->settings.handle = SNDAEMSplayerplayfn[sampletype](pplayerstate, &pplayerstate->settings.psamplegroup->entry[sampleselect]);
+                pplayerstate->settings.sampletype = pplayerstate->settings.psamplegroup->entry[sampleselect].type;
+                pplayerstate->settings.handle = SNDAEMSplayerplayfn[(signed char)pplayerstate->settings.sampletype](
+                    pplayerstate, &pplayerstate->settings.psamplegroup->entry[sampleselect]
+                );
 
                 if (pplayerstate->settings.handle.u.shandle < 0) {
                     SNDAEMSI_playerresetoutputs(pplayerstate);
@@ -931,12 +936,16 @@ int SNDAEMSI_updateplayer(AemsDef::PLAYERSTATE *pplayerstate) {
         pplayerstate->settings.prevplaycontrol[1] = pplayerstate->settings.prevplaycontrol[0];
         pplayerstate->settings.prevplaycontrol[0] = outputplaystate;
     }
-    if (outputplaystate == 1 && pplayerstate->settings.sampletype >= 0) {
-        outputplaystate = SNDAEMSplayerupdatefn[pplayerstate->settings.sampletype](pplayerstate);
-    }
-    if (pplayerstate->settings.sampletype & 0x80) {
-        outputplaystate = 0;
-    }
+    if (outputplaystate == 1 && pplayerstate->settings.sampletype < 0) {
+            outputplaystate = 0;
+        } else {
+            if (outputplaystate == 1) {
+                outputplaystate = SNDAEMSplayerupdatefn[pplayerstate->settings.sampletype](pplayerstate);
+            }
+            if (pplayerstate->settings.sampletype & 0x80) {
+                outputplaystate = 0;
+            }
+        }
 
     return outputplaystate;
 }
@@ -1054,47 +1063,47 @@ int UpdateFunction(AemsDef::FunctionState *pFunctionState) {
     return ret;
 }
 
-unsigned int sndaemsfuncs[40] = {
-    reinterpret_cast<unsigned int>(SNDAEMSI_UpdateClassDestructor),
-    reinterpret_cast<unsigned int>(SNDAEMSI_UpdateClassData),
-    reinterpret_cast<unsigned int>(SNDAEMSI_UpdateGlobalVariable),
-    reinterpret_cast<unsigned int>(SNDAEMSI_updatecreate),
-    reinterpret_cast<unsigned int>(SNDAEMSI_updatedestroy),
-    reinterpret_cast<unsigned int>(UpdateCallFunction),
-    reinterpret_cast<unsigned int>(SNDAEMSI_updatecounter),
-    reinterpret_cast<unsigned int>(SNDAEMSI_updaterandom),
-    reinterpret_cast<unsigned int>(SNDAEMSI_updaterandomshuffle),
-    reinterpret_cast<unsigned int>(SNDAEMSI_updaterandomweighted),
-    reinterpret_cast<unsigned int>(SNDAEMSI_updaterangetrig),
-    reinterpret_cast<unsigned int>(SNDAEMSI_updatedelaytrig),
-    reinterpret_cast<unsigned int>(SNDAEMSI_updatestategen),
-    reinterpret_cast<unsigned int>(SNDAEMSI_updatemerge),
-    reinterpret_cast<unsigned int>(SNDAEMSI_updateenvelope),
-    reinterpret_cast<unsigned int>(SNDAEMSI_updatetable),
-    reinterpret_cast<unsigned int>(SNDAEMSI_updatedelayline),
-    reinterpret_cast<unsigned int>(SNDAEMSI_updatemux),
-    reinterpret_cast<unsigned int>(SNDAEMSI_updatedemux),
-    reinterpret_cast<unsigned int>(SNDAEMSI_updatemin),
-    reinterpret_cast<unsigned int>(SNDAEMSI_updatemax),
-    reinterpret_cast<unsigned int>(SNDAEMSI_updatescale),
-    reinterpret_cast<unsigned int>(SNDAEMSI_updateadd),
-    reinterpret_cast<unsigned int>(SNDAEMSI_updatesubtract),
-    reinterpret_cast<unsigned int>(SNDAEMSI_updatemultiply),
-    reinterpret_cast<unsigned int>(SNDAEMSI_updatedivide),
-    reinterpret_cast<unsigned int>(SNDAEMSI_updatemodulo),
-    reinterpret_cast<unsigned int>(SNDAEMSI_updateplayer),
-    reinterpret_cast<unsigned int>(SNDAEMSI_updateoscillator),
-    reinterpret_cast<unsigned int>(SNDAEMSI_updateramp),
-    reinterpret_cast<unsigned int>(SNDAEMSI_updateaddmax),
-    reinterpret_cast<unsigned int>(SNDAEMSI_updatesubtractmin),
-    reinterpret_cast<unsigned int>(SNDAEMSI_updatemultiplymax),
-    reinterpret_cast<unsigned int>(SNDAEMSI_updatemin2),
-    reinterpret_cast<unsigned int>(SNDAEMSI_updatemax2),
-    reinterpret_cast<unsigned int>(SNDAEMSI_updatescale2),
-    reinterpret_cast<unsigned int>(SNDAEMSI_updateadd2),
-    reinterpret_cast<unsigned int>(UpdateFunction),
-    reinterpret_cast<unsigned int>(UpdateControlClass),
-    reinterpret_cast<unsigned int>(UpdateSetGlobalVariable),
+uintptr_t sndaemsfuncs[40] = {
+    reinterpret_cast<uintptr_t>(SNDAEMSI_UpdateClassDestructor),
+    reinterpret_cast<uintptr_t>(SNDAEMSI_UpdateClassData),
+    reinterpret_cast<uintptr_t>(SNDAEMSI_UpdateGlobalVariable),
+    reinterpret_cast<uintptr_t>(SNDAEMSI_updatecreate),
+    reinterpret_cast<uintptr_t>(SNDAEMSI_updatedestroy),
+    reinterpret_cast<uintptr_t>(UpdateCallFunction),
+    reinterpret_cast<uintptr_t>(SNDAEMSI_updatecounter),
+    reinterpret_cast<uintptr_t>(SNDAEMSI_updaterandom),
+    reinterpret_cast<uintptr_t>(SNDAEMSI_updaterandomshuffle),
+    reinterpret_cast<uintptr_t>(SNDAEMSI_updaterandomweighted),
+    reinterpret_cast<uintptr_t>(SNDAEMSI_updaterangetrig),
+    reinterpret_cast<uintptr_t>(SNDAEMSI_updatedelaytrig),
+    reinterpret_cast<uintptr_t>(SNDAEMSI_updatestategen),
+    reinterpret_cast<uintptr_t>(SNDAEMSI_updatemerge),
+    reinterpret_cast<uintptr_t>(SNDAEMSI_updateenvelope),
+    reinterpret_cast<uintptr_t>(SNDAEMSI_updatetable),
+    reinterpret_cast<uintptr_t>(SNDAEMSI_updatedelayline),
+    reinterpret_cast<uintptr_t>(SNDAEMSI_updatemux),
+    reinterpret_cast<uintptr_t>(SNDAEMSI_updatedemux),
+    reinterpret_cast<uintptr_t>(SNDAEMSI_updatemin),
+    reinterpret_cast<uintptr_t>(SNDAEMSI_updatemax),
+    reinterpret_cast<uintptr_t>(SNDAEMSI_updatescale),
+    reinterpret_cast<uintptr_t>(SNDAEMSI_updateadd),
+    reinterpret_cast<uintptr_t>(SNDAEMSI_updatesubtract),
+    reinterpret_cast<uintptr_t>(SNDAEMSI_updatemultiply),
+    reinterpret_cast<uintptr_t>(SNDAEMSI_updatedivide),
+    reinterpret_cast<uintptr_t>(SNDAEMSI_updatemodulo),
+    reinterpret_cast<uintptr_t>(SNDAEMSI_updateplayer),
+    reinterpret_cast<uintptr_t>(SNDAEMSI_updateoscillator),
+    reinterpret_cast<uintptr_t>(SNDAEMSI_updateramp),
+    reinterpret_cast<uintptr_t>(SNDAEMSI_updateaddmax),
+    reinterpret_cast<uintptr_t>(SNDAEMSI_updatesubtractmin),
+    reinterpret_cast<uintptr_t>(SNDAEMSI_updatemultiplymax),
+    reinterpret_cast<uintptr_t>(SNDAEMSI_updatemin2),
+    reinterpret_cast<uintptr_t>(SNDAEMSI_updatemax2),
+    reinterpret_cast<uintptr_t>(SNDAEMSI_updatescale2),
+    reinterpret_cast<uintptr_t>(SNDAEMSI_updateadd2),
+    reinterpret_cast<uintptr_t>(UpdateFunction),
+    reinterpret_cast<uintptr_t>(UpdateControlClass),
+    reinterpret_cast<uintptr_t>(UpdateSetGlobalVariable),
 };
 
 void SNDAEMSI_SetGlobalVariable(Csis::Parameter *pParameter, void *pClientData) {
@@ -1290,7 +1299,7 @@ int SNDAEMSI_stopmodulebanks() {
     char *pLink = reinterpret_cast<char *>(sndaems.modulebank.GetHead());
     AemsDef::ModuleBank *pModuleBank;
     while (pLink != NULL) {
-        pModuleBank = reinterpret_cast<AemsDef::ModuleBank *>(pLink - 0x50);
+        pModuleBank = reinterpret_cast<AemsDef::ModuleBank *>(pLink - offsetof(AemsDef::ModuleBank, ln));
         AemsDef::Module *pModule = reinterpret_cast<AemsDef::Module *>(
             &pModuleBank->id[pModuleBank->moduleoffset]
         );
@@ -1360,7 +1369,7 @@ void SNDAEMSI_resolvemodulebank(
     firstbank = sndaems.modulebank.IsEmpty();
     sndaems.modulebank.Push(&pModuleBank->ln);
 
-    int funcfixupdelta = reinterpret_cast<char *>(pfuncfixupheader) - reinterpret_cast<char *>(pModuleBank);
+    intptr_t funcfixupdelta = reinterpret_cast<char *>(pfuncfixupheader) - reinterpret_cast<char *>(pModuleBank);
 
     for (i = 0; i < pfuncfixupheader->numfixups; i++) {
         unsigned short *addr_hi = reinterpret_cast<unsigned short *>(
@@ -1417,7 +1426,7 @@ void SNDAEMSI_resolvemodulebank(
 
     pModule = reinterpret_cast<AemsDef::Module *>(&pModuleBank->id[pModuleBank->moduleoffset]);
     for (i = 0; i < pModuleBank->nummodules; i++) {
-        *reinterpret_cast<int *>(&pModule->pcode) += reinterpret_cast<int>(pModuleBank);
+        *reinterpret_cast<int *>(&pModule->pcode) = reinterpret_cast<int>(pModuleBank) + *reinterpret_cast<int *>(&pModule->pcode);
         pModule->constructorClient.pClientFunc = SNDAEMSI_CreateModuleInstance;
         pModule->pdata = reinterpret_cast<char *>(pModuleBank) + reinterpret_cast<int>(pModule->pdata);
         pModule->constructorClient.pClientData = pModule;
@@ -1446,6 +1455,7 @@ void SNDAEMSI_resolvemodulebank(
     }
 
     if (firstbank) {
+        sndaems.variabletimerclient.pClientFunc = SNDAEMSI_timerupdate;
         Snd::Util::AddVariableTimerClient(&sndaems.variabletimerclient);
     }
 
