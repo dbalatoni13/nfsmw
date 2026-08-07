@@ -12,6 +12,7 @@ extern const COORD2 D_005425E0 = {0.5f, 1.0f};
 extern const COORD2 D_005425E8 = {1.0f, 0.0f};
 extern const COORD2 D_005425F0 = {0.0f, 1.0f};
 extern const COORD2 D_005425F8 = {1.0f, 1.0f};
+extern const COORD2 D_00542600 = {0.5f, 0.5f};
 
 namespace UMemory {
 void Free(void *ptr) {
@@ -399,7 +400,7 @@ void DebugDraw::Circle(const UMath::Matrix4 &mat, float radius, unsigned int c,
     if (fEnabled) {
         const int kNumFacets = 12;
         UMath::Vector4 pts[kNumFacets];
-        COORD2 txtOrigin = {0.5f, 0.5f};
+        COORD2 txtOrigin = D_00542600;
         UMath::Vector2 txtXY[kNumFacets];
         float txtRadius = 0.5f;
         float angle = 0.0f;
