@@ -708,26 +708,24 @@ void DebugDraw::CylinderSection(const UMath::Matrix4 &mat, float radiusTop, floa
         numFacets = UMath::Max(numFacets, kMinNumFacets);
 
         if (numFacets > 0) {
-            const float numFacetsFloat = static_cast<float>(numFacets);
             for (int i = 0; i < numFacets; ++i) {
                 pts[i].x = radiusBot * UMath::Cosa(angle);
                 pts[i].y = 0.0f;
                 pts[i].z = radiusBot * UMath::Sina(angle);
                 pts[i].w = 1.0f;
-                angle += 1.0f / numFacetsFloat;
+                angle += 1.0f / static_cast<float>(numFacets);
             }
         }
         UMath::RotateTranslate(numFacets, botTpts, mat, pts);
 
         angle = 0.0f;
         if (numFacets > 0) {
-            const float numFacetsFloat = static_cast<float>(numFacets);
             for (int i = 0; i < numFacets; ++i) {
                 pts[i].x = radiusTop * UMath::Cosa(angle);
                 pts[i].y = height;
                 pts[i].z = radiusTop * UMath::Sina(angle);
                 pts[i].w = 1.0f;
-                angle += 1.0f / numFacetsFloat;
+                angle += 1.0f / static_cast<float>(numFacets);
             }
         }
         UMath::RotateTranslate(numFacets, topTpts, mat, pts);
