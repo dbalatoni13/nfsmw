@@ -275,8 +275,7 @@ void DebugDraw::LineSeg(const UMath::Matrix4 &mat, const UMath::Vector4 &pt0,
                         const UMath::Vector4 &pt1, unsigned int c,
                         short int lifeSpan) {
     if (fEnabled) {
-        int i = fNumLinPrims;
-        if (i < sDebugDrawMaxLinePrims) {
+        if (fNumLinPrims < sDebugDrawMaxLinePrims) {
             UMath::Vector4 tpt0;
             UMath::Vector4 tpt1;
             VU0_MATRIX4_vect3mult(UMath::Vector4To3(pt0), mat,
@@ -284,22 +283,22 @@ void DebugDraw::LineSeg(const UMath::Matrix4 &mat, const UMath::Vector4 &pt0,
             VU0_MATRIX4_vect3mult(UMath::Vector4To3(pt1), mat,
                                   UMath::Vector4To3(tpt1));
 
-            UMath::Vector4 *pVVar6 = fLinVertList + i * 2;
-            unsigned int *puVar2 = fLinColourList + i * 2;
-            DrawPrimLin *pDVar3 = fLinPrimList + i;
-            pVVar6->x = tpt0.x;
-            puVar2[0] = c;
-            pVVar6->y = tpt0.y;
-            pVVar6->z = tpt0.z;
-            pDVar3->fLifeSpan = lifeSpan;
-            puVar2[1] = c;
-            pVVar6->w = tpt0.w;
-            pVVar6[1].x = tpt1.x;
-            pVVar6[1].y = tpt1.y;
-            pVVar6[1].z = tpt1.z;
-            pVVar6[1].w = tpt1.w;
-            pDVar3->fTimeType = fgDbgDraw->GetTimeType();
-            fNumLinPrims = i + 1;
+            UMath::Vector4 *pVertices = fLinVertList + fNumLinPrims * 2;
+            unsigned int *pColours = fLinColourList + fNumLinPrims * 2;
+            DrawPrimLin *pDrawPrim = fLinPrimList + fNumLinPrims;
+            pVertices->x = tpt0.x;
+            pColours[0] = c;
+            pVertices->y = tpt0.y;
+            pVertices->z = tpt0.z;
+            pDrawPrim->fLifeSpan = lifeSpan;
+            pColours[1] = c;
+            pVertices->w = tpt0.w;
+            pVertices[1].x = tpt1.x;
+            pVertices[1].y = tpt1.y;
+            pVertices[1].z = tpt1.z;
+            pVertices[1].w = tpt1.w;
+            pDrawPrim->fTimeType = fgDbgDraw->GetTimeType();
+            fNumLinPrims++;
         }
     }
 }
