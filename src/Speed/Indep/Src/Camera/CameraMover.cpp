@@ -5,6 +5,24 @@
 // booo
 static const float fMinDistToWall = 0.7f; // size: 0x4
 
+void CameraMoverRestartRace() {
+
+    WeHaveCheckedIfJR2ServerExists = 0;
+    CameraAI::Reset();
+
+    for (int view_id = 1; view_id < 4; ++view_id) {
+        eView *view = eGetView(view_id, false);
+
+        if (view != nullptr) {
+            CameraMover *cm = view->GetCameraMover();
+
+            if (cm != nullptr) {
+                cm->ResetState();
+            }
+        }
+    }
+}
+
 bool DoesCameraTypeDisablePreculler(CameraMoverTypes type) {
     if (type == CM_DEBUG_WORLD) {
         return true;
@@ -158,24 +176,6 @@ void CameraMover::ComputeBankedUpVector(bVector3 *up, bVector3 *eye, bVector3 *l
 
 float CameraMover::MinDistToWall() {
     return fMinDistToWall;
-}
-
-void CameraMoverRestartRace() {
-
-    WeHaveCheckedIfJR2ServerExists = 0;
-    CameraAI::Reset();
-
-    for (int view_id = 1; view_id < 4; ++view_id) {
-        eView *view = eGetView(view_id, false);
-
-        if (view != nullptr) {
-            CameraMover *cm = view->GetCameraMover();
-
-            if (cm != nullptr) {
-                cm->ResetState();
-            }
-        }
-    }
 }
 
 // need
