@@ -767,6 +767,18 @@ struct ADD2STATE {
     int inputb; // offset 0x4, size 0x4
 };
 
+// total size: 0x8
+struct FUNCFIXUPHEADER {
+    int numfixups; // offset 0x0, size 0x4
+    unsigned int fixup[1]; // offset 0x4, size 0x4
+};
+
+// total size: 0x8
+struct STATICDATAFIXUPHEADER {
+    int numfixups; // offset 0x0, size 0x4
+    unsigned int fixup[1]; // offset 0x4, size 0x4
+};
+
 // total size: 0x1C
 // 1860
 struct FunctionSettings {
@@ -791,7 +803,7 @@ struct FunctionState {
 // total size: 0x1C
 struct GlobalVariableSettings {
     Csis::GlobalVariableHandle globalVariableHandle; // offset 0x0, size 0x8
-    Csis::FunctionClient client; // offset 0x8, size 0x10
+    Csis::GlobalVariableClient client; // offset 0x8, size 0x10
     int globalValue; // offset 0x18, size 0x4
 };
 // total size: 0x1C
@@ -801,7 +813,7 @@ struct GlobalVariableState {
 
 // total size: 0x14
 struct ClassDataSettings {
-    Csis::FunctionClient client; // offset 0x0, size 0x10
+    Csis::MemberDataClient client; // offset 0x0, size 0x10
     unsigned char numOutputs; // offset 0x10, size 0x1
     char pad[3]; // offset 0x11, size 0x3
 };
