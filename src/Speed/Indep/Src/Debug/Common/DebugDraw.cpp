@@ -7,6 +7,15 @@
 extern float Tweak_drawRange;
 extern int sDebugDrawMaxPrims;
 extern int sDebugDrawMaxLinePrims;
+extern const char D_00542530[16] = {'D', 'e', 'b', 'u', 'g', 'D', 'r', 'a', 'w', '\0'};
+extern const char D_00542540[24] = {'A', 't', 't', 'r', 'i', 'b', ':', ':', 'G', 'e', 'n', ':', ':', 's', 'i', 'm', 's', 'u', 'r', 'f', 'a', 'c', 'e', '\0'};
+extern const char D_00542558[8] = {'G', 'R', 'E', 'Y', 'M', 'A', 'P', '\0'};
+extern const char D_00542560[14] = {'D', 'r', 'a', 'w', 'P', 'r', 'i', 'm', 'T', 'r', 'i', '[', ']', '\0'};
+extern const char D_00542570[18] = {'D', 'e', 'b', 'u', 'g', 'D', 'r', 'a', 'w', ' ', 'T', 'r', 'i', 'C', 'o', 'l', 's', '\0'};
+extern const char D_00542588[19] = {'D', 'e', 'b', 'u', 'g', 'D', 'r', 'a', 'w', ' ', 'T', 'r', 'i', 'V', 'e', 'r', 't', 's', '\0'};
+extern const char D_005425A0[14] = {'D', 'r', 'a', 'w', 'P', 'r', 'i', 'm', 'L', 'i', 'n', '[', ']', '\0'};
+extern const char D_005425B0[18] = {'D', 'e', 'b', 'u', 'g', 'D', 'r', 'a', 'w', ' ', 'L', 'i', 'n', 'C', 'o', 'l', 's', '\0'};
+extern const char D_005425C8[19] = {'D', 'e', 'b', 'u', 'g', 'D', 'r', 'a', 'w', ' ', 'L', 'i', 'n', 'V', 'e', 'r', 't', 's', '\0'};
 
 extern const COORD2 D_005425E0 = {0.5f, 1.0f};
 extern const COORD2 D_005425E8 = {1.0f, 0.0f};
@@ -90,11 +99,11 @@ void DebugDraw::AllocLists() {
     int i;
 
     if (!fTextureInfo) {
-        nameHash = bStringHash("GREYMAP");
+        nameHash = bStringHash(D_00542558);
         textureInfo = GetTextureInfo(nameHash, 1, 0);
         fTextureInfo = textureInfo;
 
-        triPrimList = new ("DrawPrimTri[]", 0) DrawPrimTri[sDebugDrawMaxPrims];
+        triPrimList = new (D_00542560, 0) DrawPrimTri[sDebugDrawMaxPrims];
         triPrim = triPrimList;
         i = sDebugDrawMaxPrims - 1;
         if (sDebugDrawMaxPrims != 0) {
@@ -107,12 +116,12 @@ void DebugDraw::AllocLists() {
         }
 
         fTriPrimList = triPrimList;
-        colourList = static_cast<unsigned int *>(bMalloc(sDebugDrawMaxPrims * 0xc, "DebugDraw TriCols", 0, 0));
+        colourList = static_cast<unsigned int *>(bMalloc(sDebugDrawMaxPrims * 0xc, D_00542570, 0, 0));
         fTriColourList = colourList;
-        vertList = static_cast<UMath::Vector4 *>(bMalloc(sDebugDrawMaxPrims * 0x30, "DebugDraw TriVerts", 0, 0));
+        vertList = static_cast<UMath::Vector4 *>(bMalloc(sDebugDrawMaxPrims * 0x30, D_00542588, 0, 0));
         fTriVertList = vertList;
 
-        linPrimList = new ("DrawPrimLin[]", 0) DrawPrimLin[sDebugDrawMaxLinePrims];
+        linPrimList = new (D_005425A0, 0) DrawPrimLin[sDebugDrawMaxLinePrims];
         linPrim = linPrimList;
         i = sDebugDrawMaxLinePrims - 1;
         if (sDebugDrawMaxLinePrims != 0) {
@@ -125,9 +134,9 @@ void DebugDraw::AllocLists() {
         }
 
         fLinPrimList = linPrimList;
-        colourList = static_cast<unsigned int *>(bMalloc(sDebugDrawMaxLinePrims * 0x8, "DebugDraw LinCols", 0, 0));
+        colourList = static_cast<unsigned int *>(bMalloc(sDebugDrawMaxLinePrims * 0x8, D_005425B0, 0, 0));
         fLinColourList = colourList;
-        vertList = static_cast<UMath::Vector4 *>(bMalloc(sDebugDrawMaxLinePrims * 0x20, "DebugDraw LinVerts", 0, 0));
+        vertList = static_cast<UMath::Vector4 *>(bMalloc(sDebugDrawMaxLinePrims * 0x20, D_005425C8, 0, 0));
         fLinVertList = vertList;
     }
 }

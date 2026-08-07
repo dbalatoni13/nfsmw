@@ -9,6 +9,8 @@
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 
+extern const char D_00542530[];
+
 struct ePolyVertex {
     float x;
     float y;
@@ -55,7 +57,7 @@ struct DebugDraw {
 
     static void Init() {
         if (!fgDbgDraw) {
-            fgDbgDraw = new ("DebugDraw", 0) DebugDraw;
+            fgDbgDraw = new (D_00542530, 0) DebugDraw;
         }
     }
 
