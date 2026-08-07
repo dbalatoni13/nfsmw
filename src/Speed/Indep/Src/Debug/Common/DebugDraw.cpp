@@ -488,10 +488,10 @@ void DebugDraw::Triangle(const UMath::Matrix4 &pmat, const UMath::Vector4 *pt0,
             VU0_MATRIX4_vect3mult(UMath::Vector4To3(*pt2), mat,
                                   UMath::Vector4To3(tpt2));
 
-            DrawPrimTri *pDVar4 = fTriPrimList;
+            DrawPrimTri *pDVar4 = fTriPrimList + i;
             UMath::Vector4 *pVVar7 = fTriVertList + i * 3;
             unsigned int *puVar8 = fTriColourList + i * 3;
-            pDVar4[i].fLifeSpan = lifeSpan;
+            pDVar4->fLifeSpan = lifeSpan;
             pVVar7->x = tpt0.x;
             *puVar8 = c;
             pVVar7->y = tpt0.y;
@@ -507,7 +507,7 @@ void DebugDraw::Triangle(const UMath::Matrix4 &pmat, const UMath::Vector4 *pt0,
             pVVar7[2].y = tpt2.y;
             pVVar7[2].z = tpt2.z;
             pVVar7[2].w = tpt2.w;
-            pDVar4[i].fTimeType = fgDbgDraw->GetTimeType();
+            pDVar4->fTimeType = fgDbgDraw->GetTimeType();
             fNumTriPrims = i + 1;
         }
     }
