@@ -421,8 +421,8 @@ void DebugDraw::Circle(const UMath::Matrix4 &mat, float radius, unsigned int c,
         UMath::Vector4 cp;
 
         for (int i = 0; i < kNumFacets; ++i) {
-            txtXY[i].x = UMath::Cosa(angle) * txtRadius + txtRadius;
-            txtXY[i].y = UMath::Sina(angle) * txtRadius + txtRadius;
+            txtXY[i].x = static_cast<float>(static_cast<double>(txtRadius * UMath::Cosa(angle)) + txtRadius);
+            txtXY[i].y = static_cast<float>(static_cast<double>(txtRadius * UMath::Sina(angle)) + txtRadius);
             pts[i].x = radius * UMath::Cosa(angle);
             pts[i].y = 0.0f;
             pts[i].z = radius * UMath::Sina(angle);
