@@ -553,9 +553,16 @@ int SNDPLATFORM_getcurframe(int voice);
 // ssine.c
 int iSNDsin(int angle);
 
+// ssysserv.c
+void iSNDserveraddclient(void (* pfunc)(void));
+void iSNDserverremoveclient(void (* pfunc)(void));
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+// filesys_c
+int FILESYS_opstatus(int ophandle);
 
 // sbplay.c
 int SNDBANK_play(int bhandle, int patnum, SNDPLAYOPTS *pspo);
@@ -580,6 +587,12 @@ int SNDbankheadercopy(void *pmem, int bhandle);
 
 // sbhdrsze.c
 int SNDbankheadersize(int bhandle);
+
+// sbasync.c
+int SNDBANK_asyncload(char *filename, int fileoffset, void *pmem, int memsize, void *(* mallocfn)(int));
+int SNDBANK_asyncdone();
+int SNDBANK_asyncloadmem(int *pbhandle, void *pbank);
+int SNDBANK_asyncloadmemdone();
 
 #ifdef __cplusplus
 }

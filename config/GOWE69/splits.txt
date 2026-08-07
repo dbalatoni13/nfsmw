@@ -776,16 +776,21 @@ Speed/Indep/Libs/snd/9/source/library/cmn/saemsamb.c:
 	.ctors      start:0x803C8BF0 end:0x803C8BF4
 	.bss        start:0x804BE5FC end:0x804BE634
 
-Speed/Indep/Libs/snd/9/source/library/cmn/saemsstr.c:
-	.text       start:0x8035D6BC end:0x8035DFE4
-	.data       start:0x804502C8 end:0x804502D0
-	.bss        start:0x804BE634 end:0x804BE690
+Speed/Indep/Libs/snd/9/source/library/cmn/saemsmbf.c:
+	.text       start:0x8035D6BC end:0x8035DCA4
+	.data       start:0x804502C8 end:0x804502CC
+	.bss        start:0x804BE634 end:0x804BE670
+
+Speed/Indep/Libs/snd/9/source/library/cmn/saemsmbm.c:
+	.text       start:0x8035DCA4 end:0x8035DFE4
+	.bss        start:0x804BE670 end:0x804BE690
 
 Speed/Indep/Libs/snd/9/source/library/cmn/saemstimupdt.c:
 	.text       start:0x8035DFE4 end:0x8035E05C
 
 Speed/Indep/Libs/snd/9/source/library/cmn/salloc.c:
 	.text       start:0x8035E05C end:0x8035E650
+	.data       start:0x804502CC end:0x804502D0
 	.bss        start:0x804BE690 end:0x804BE69C
 
 Speed/Indep/Libs/snd/9/source/library/cmn/sattrdef.c:

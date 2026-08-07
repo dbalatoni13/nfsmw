@@ -937,15 +937,15 @@ int SNDAEMSI_updateplayer(AemsDef::PLAYERSTATE *pplayerstate) {
         pplayerstate->settings.prevplaycontrol[0] = outputplaystate;
     }
     if (outputplaystate == 1 && pplayerstate->settings.sampletype < 0) {
-            outputplaystate = 0;
-        } else {
-            if (outputplaystate == 1) {
-                outputplaystate = SNDAEMSplayerupdatefn[pplayerstate->settings.sampletype](pplayerstate);
-            }
-            if (pplayerstate->settings.sampletype & 0x80) {
-                outputplaystate = 0;
-            }
+        outputplaystate = 0;
+    } else {
+        if (outputplaystate == 1) {
+            outputplaystate = SNDAEMSplayerupdatefn[pplayerstate->settings.sampletype](pplayerstate);
         }
+        if (pplayerstate->settings.sampletype & 0x80) {
+            outputplaystate = 0;
+        }
+    }
 
     return outputplaystate;
 }
