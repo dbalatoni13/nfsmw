@@ -2,6 +2,9 @@
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
+// booo
+static const float fMinDistToWall = 0.7f; // size: 0x4
+
 bool DoesCameraTypeDisablePreculler(CameraMoverTypes type) {
     if (type == CM_DEBUG_WORLD) {
         return true;
@@ -154,7 +157,7 @@ void CameraMover::ComputeBankedUpVector(bVector3 *up, bVector3 *eye, bVector3 *l
 }
 
 float CameraMover::MinDistToWall() {
-    return 0.7;
+    return fMinDistToWall;
 }
 
 void CameraMoverRestartRace() {
@@ -229,9 +232,9 @@ void UpdateCameraMovers(float dT) {
             bVector3 prev_position(0.0f, 0.0f, 0.0f);
 
             float scale = 50.0f;
-            eye = view->pCamera->CurrentKey.Position * scale;
-            look = view->pCamera->CurrentKey.Direction * scale;
 
+            bScale(&look, view->pCamera->GetPosition(), scale);
+            bScale(&look, view->pCamera->GetDirection(), scale);
             bVector3 diff = eye - prev_position;
 
             // espSetCameraPositionFix(&fix_eye, &fix_look); // need
@@ -272,9 +275,9 @@ void UpdateCameraMovers(float dT) {
 
         Camera *camera = view->GetCamera();
 
-        bVector3 position = camera->CurrentKey.Position;
-        bVector3 velocity = camera->VelocityKey.Position;
-        bVector3 direction = camera->CurrentKey.Direction;
+        bVector3 position = *camera->GetPosition();
+        bVector3 velocity = *camera->GetVelocityPosition();
+        bVector3 direction = *camera->GetDirection();
 
         IPlayer *player = IPlayer::First(PLAYER_LOCAL);
         if (player != nullptr) {

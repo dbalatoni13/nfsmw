@@ -70,8 +70,6 @@ static unsigned short aBaselineFovNoise = 0x2aaa; // from __static_initializatio
 
 // total size: 0x290
 class Camera {
-    friend class CameraMover;
-    friend void UpdateCameraMovers(float dT);
 
   public:
     static int StopUpdating;
