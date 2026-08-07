@@ -973,31 +973,37 @@ void DebugDraw::DrawAll() {
             iNumVertsLeft <<= 1;
             iCurVert = 0;
             if (iNumVertsLeft > 2) {
+                UMath::Vector4 *pLinVerts = this->fLinVertList;
+                unsigned int *pLinColours = this->fLinColourList;
                 do {
+                    pLinVerts += iCurVert;
+                    pLinColours += iCurVert;
+                    unsigned int colour0 = pLinColours[0];
                     iNumVertsLeft -= 2;
                     verts[0].u = 0.5f;
                     verts[0].v = 0.5f;
                     iCurVert += 2;
-                    UMath::Vector4 *pLinVerts = this->fLinVertList + iCurVert - 2;
-                    unsigned int *pLinColours = this->fLinColourList + iCurVert - 2;
+                    unsigned int colour1 = pLinColours[0];
                     verts[0].y = -pLinVerts[0].x;
                     verts[0].x = pLinVerts[0].z;
                     verts[0].z = pLinVerts[0].y;
-                    verts[0].colour = (pLinColours[0] & 0xff) << 16 |
-                                      pLinColours[0] & 0xff000000 |
-                                      (pLinColours[0] & 0xff0000) >> 16 |
-                                      pLinColours[0] & 0xff00;
+                    verts[0].colour = (colour0 & 0xff) << 16 |
+                                      colour0 & 0xff000000 |
+                                      (colour0 & 0xff0000) >> 16 |
+                                      colour0 & 0xff00;
                     verts[1].y = -pLinVerts[1].x;
                     verts[1].x = pLinVerts[1].z;
                     verts[1].z = pLinVerts[1].y;
-                    verts[1].colour = (pLinColours[0] & 0xff) << 16 |
-                                      pLinColours[0] & 0xff000000 |
-                                      (pLinColours[0] & 0xff0000) >> 16 |
-                                      pLinColours[0] & 0xff00;
+                    verts[1].colour = (colour1 & 0xff) << 16 |
+                                      colour1 & 0xff000000 |
+                                      (colour1 & 0xff0000) >> 16 |
+                                      colour1 & 0xff00;
                     verts[1].u = 0.5f;
                     verts[1].v = 0.5f;
 
                     eDrawKLine(verts, 1);
+                    pLinVerts = this->fLinVertList;
+                    pLinColours = this->fLinColourList;
                 } while (iNumVertsLeft > 2);
             }
         }
