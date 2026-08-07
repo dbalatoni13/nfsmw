@@ -342,6 +342,7 @@ if config.platform == Platform.GC_WII:
         "-fno-strength-reduce",
         "-fno-strict-aliasing",
         "-ffast-math",
+        "-mps-float",
         "-x c++",
         "-I src/Speed/Indep/Libs/csis/dev/include",
         "-I src/Speed/Indep/Libs/allocator/1.5.0",

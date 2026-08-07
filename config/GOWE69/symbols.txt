@@ -16646,7 +16646,6 @@ gcc2_compiled. = .text:0x8035DCA4; // type:label scope:local
 SNDAEMSI_almbmservice__Fv = .text:0x8035DCA4; // type:function size:0x20C scope:global
 SNDAEMS_asyncloadmodulebankmem = .text:0x8035DEB0; // type:function size:0x120 scope:global
 SNDAEMS_asyncloadmodulebankmemdone = .text:0x8035DFD0; // type:function size:0x14 scope:global
-gcc2_compiled. = .text:0x8035DFE4; // type:label scope:local
 SNDAEMSI_timerupdate__FPv = .text:0x8035DFE4; // type:function size:0x78 scope:global
 gcc2_compiled. = .text:0x8035E05C; // type:label scope:local
 SNDVOICEI_isreserved__Fii = .text:0x8035E05C; // type:function size:0x40 scope:global
