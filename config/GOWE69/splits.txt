@@ -239,11 +239,6 @@ Speed/Indep/SourceLists/zFeOverlay.cpp:
 	.data       start:0x804390E4 end:0x804394D0
 	.bss        start:0x804AAA90 end:0x804B4DE8
 
-asd2:
-	.text       start:0x8030EB08 end:0x8031F4C0
-	.ctors      start:0x803C8BE8 end:0x803C8C1C
-	.dtors      start:0x803C8C44 end:0x803C8C5C
-
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/base/PPCArch.c:
 	.text       start:0x8031F4C0 end:0x8031F5D8
 
@@ -777,7 +772,8 @@ Speed/Indep/Libs/snd/9/source/library/cmn/saems.c:
 	.data       start:0x80450174 end:0x804502C8
 
 Speed/Indep/Libs/snd/9/source/library/cmn/saemsamb.c:
-	.text       start:0x8035D4A0 end:0x8035D690
+	.text       start:0x8035D4A0 end:0x8035D6BC
+	.ctors      start:0x803C8BF0 end:0x803C8BF4
 	.bss        start:0x804BE5FC end:0x804BE634
 
 Speed/Indep/Libs/snd/9/source/library/cmn/saemsstr.c:
@@ -1361,6 +1357,11 @@ Packages/realmemcard/3.04.01-layer2/source/lib/gc/gc_interface.cpp:
 	.bss        start:0x804D8E24 end:0x804D95E8
 	.sdata      start:0x804FF68C end:0x804FF6A8
 	.sbss       start:0x804FFD58 end:0x804FFD5C
+
+asd2:
+	.text       start:0x80391518 end:0x80391570
+	.ctors      start:0x803C8BF4 end:0x803C8C1C
+	.dtors      start:0x803C8C44 end:0x803C8C5C
 
 Packages/realmemcard/3.04.01-layer2/source/lib/gc/public.cpp:
 	.text       start:0x80391570 end:0x80392910
