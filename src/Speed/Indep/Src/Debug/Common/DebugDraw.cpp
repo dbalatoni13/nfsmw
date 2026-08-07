@@ -903,7 +903,8 @@ void DebugDraw::Vector(const UMath::Vector4 &pt, const UMath::Vector4 &vec, floa
         COORD2 uv1;
         COORD2 uv2;
 
-        UMath::Crossxyz(Get().GetCameraFwdVec(), vec, widthVec);
+        inVec = Get().GetCameraFwdVec();
+        UMath::Crossxyz(inVec, vec, widthVec);
         UMath::Scale(widthVec, scale * 0.05f, widthVec);
         pts[0].x = pt.x;
         pts[0].y = pt.y;
