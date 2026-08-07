@@ -90,10 +90,9 @@ void DebugDraw::AllocLists() {
     if (!fTextureInfo) {
         nameHash = bStringHash("GREYMAP");
         textureInfo = GetTextureInfo(nameHash, 1, 0);
-        i = sDebugDrawMaxPrims;
         fTextureInfo = textureInfo;
 
-        triPrimList = new ("DrawPrimTri[]", 0) DrawPrimTri[i];
+        triPrimList = new ("DrawPrimTri[]", 0) DrawPrimTri[sDebugDrawMaxPrims];
         triPrim = triPrimList;
         i = sDebugDrawMaxPrims - 1;
         if (sDebugDrawMaxPrims != 0) {
@@ -105,16 +104,13 @@ void DebugDraw::AllocLists() {
             } while (i != -1);
         }
 
-        i = sDebugDrawMaxPrims;
         fTriPrimList = triPrimList;
-        colourList = static_cast<unsigned int *>(bMalloc(i * 0xc, "DebugDraw TriCols", 0, 0));
-        i = sDebugDrawMaxPrims;
+        colourList = static_cast<unsigned int *>(bMalloc(sDebugDrawMaxPrims * 0xc, "DebugDraw TriCols", 0, 0));
         fTriColourList = colourList;
-        vertList = static_cast<UMath::Vector4 *>(bMalloc(i * 0x30, "DebugDraw TriVerts", 0, 0));
-        i = sDebugDrawMaxLinePrims;
+        vertList = static_cast<UMath::Vector4 *>(bMalloc(sDebugDrawMaxPrims * 0x30, "DebugDraw TriVerts", 0, 0));
         fTriVertList = vertList;
 
-        linPrimList = new ("DrawPrimLin[]", 0) DrawPrimLin[i];
+        linPrimList = new ("DrawPrimLin[]", 0) DrawPrimLin[sDebugDrawMaxLinePrims];
         linPrim = linPrimList;
         i = sDebugDrawMaxLinePrims - 1;
         if (sDebugDrawMaxLinePrims != 0) {
@@ -126,12 +122,10 @@ void DebugDraw::AllocLists() {
             } while (i != -1);
         }
 
-        i = sDebugDrawMaxLinePrims;
         fLinPrimList = linPrimList;
-        colourList = static_cast<unsigned int *>(bMalloc(i * 0x8, "DebugDraw LinCols", 0, 0));
-        i = sDebugDrawMaxLinePrims;
+        colourList = static_cast<unsigned int *>(bMalloc(sDebugDrawMaxLinePrims * 0x8, "DebugDraw LinCols", 0, 0));
         fLinColourList = colourList;
-        vertList = static_cast<UMath::Vector4 *>(bMalloc(i * 0x20, "DebugDraw LinVerts", 0, 0));
+        vertList = static_cast<UMath::Vector4 *>(bMalloc(sDebugDrawMaxLinePrims * 0x20, "DebugDraw LinVerts", 0, 0));
         fLinVertList = vertList;
     }
 }
