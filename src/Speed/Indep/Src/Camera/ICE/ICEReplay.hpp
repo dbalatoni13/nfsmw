@@ -11,15 +11,13 @@ namespace ICEReplay {
 static int nRecentlyUsedIndex;
 static ICETrack RecentlyUsedTracks[3];
 
-void ClearRecentlyUsed(void)
-
-{
+void ClearRecentlyUsed(void) {
 
     ICEReplay::nRecentlyUsedIndex = 0;
 
     for (int i = 0; i < 3; i++) {
 
-        ICEReplay::RecentlyUsedTracks[i].Next = nullptr; // nullptr?
+        ICEReplay::RecentlyUsedTracks[i].Next = nullptr;
     }
     return;
 }

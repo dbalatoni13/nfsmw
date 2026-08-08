@@ -130,7 +130,7 @@ void CameraMover::ChopperNoise(bMatrix4 *world_to_camera, float f_scale, bool us
                 pCamera->SetNoiseFrequency1(&v_frequency);
                 pCamera->SetNoiseAmplitude1(&v_magnitude);
 
-                float time = 0.00025f * (useWorldTimer ? WorldTimer.GetSeconds() : RealTimer.GetSeconds());
+                float time = 0.00025f * (useWorldTimer ? WorldTimer.GetSeconds() : RealTimer.GetSeconds()); // GetSeconds() generate fmuls...
                 pCamera->ApplyNoise(world_to_camera, time, 1.0f);
             }
         }
@@ -156,8 +156,7 @@ void CameraMover::HandheldNoise(bMatrix4 *world_to_camera, float f_scale, bool u
     }
 }
 
-void CameraMover::ComputeBankedUpVector(bVector3 *up, bVector3 *eye, bVector3 *look, bAngle bank // r7 -> r27
-) {
+void CameraMover::ComputeBankedUpVector(bVector3 *up, bVector3 *eye, bVector3 *look, bAngle bank) {
     bMatrix4 axis_rotation;
     bVector3 axis;
 

@@ -39,15 +39,5 @@ ICEManager::ICEManager() {
     this->bSmoothExit = false;
 }
 
-// float ICEManager::GetTimerSeconds() {
-//     // // Range: 0x8007D648 -> 0x8007D648
-//     // inline float Timer::GetSeconds() {}
-
-//     // // Range: 0x8007D654 -> 0x8007D654
-//     // inline float Timer::GetSeconds() {}
-
-//     return bUseRealTime ? WorldTimer.GetSeconds() : RealTimer.GetSeconds();
-// }
-
 // TODO move this?
 struct ICEManager TheICEManager; // size: 0x80
