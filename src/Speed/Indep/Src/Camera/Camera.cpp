@@ -8,121 +8,51 @@
 #include "Speed/Indep/Src/Ecstasy/eMath.hpp"
 #include <cstddef>
 
-Camera::Camera() {
-    // LastDisparateTime = RealTimeFrames;
+Camera::Camera() : LastDisparateTime(RealTimeFrames), LastUpdateTime(-0x80000000), ElapsedTime(1.0f), RenderDash(0), bClearVelocity(false) {
     bMatrix4 m;
-    this->LastUpdateTime = -0x80000000;
-    this->LastDisparateTime = RealTimeFrames;
 
-    m.v2.z = -1.0f;
-    m.v3.z = 1200.0f;
-    m.v2.w = 100.0f;
-
+    m.v0.x = 1.0f;
     m.v1.x = 0.0f;
     m.v2.x = 0.0f;
     m.v3.x = 0.0f;
+
     m.v0.y = 0.0f;
     m.v1.y = -1.0f;
     m.v2.y = 0.0f;
     m.v3.y = 0.0f;
+
     m.v0.z = 0.0f;
     m.v1.z = 0.0f;
+    m.v2.z = -1.0f;
+    m.v3.z = 1200.0f;
+
     m.v0.w = 0.0f;
     m.v1.w = 0.0f;
-
-    (this->CurrentKey).FocalDistance = 0.0f;
-
-    (this->CurrentKey).DepthOfField = 0.0f;
-    (this->CurrentKey).NearZ = 0.5f;
-    (this->CurrentKey).FarZ = 10000.0f;
-
-    this->ElapsedTime = 1.0f;
-
-    m.v0.x = 1.0f;
+    m.v2.w = 100.0f;
     m.v3.w = 1.0f;
 
-    (this->CurrentKey).TargetDistance = 10.0f;
+    SetFocalDistance(0.0f);
+    SetTargetDistance(10.0f);
+    SetDepthOfField(0.0f);
 
-    (this->CurrentKey).FieldOfView = 0x36fb;
+    SetNearZ(0.5f);
+    SetFarZ(10000.0f);
 
-    (this->CurrentKey).LB_height = 0.0f;
+    SetFieldOfView(0x36FB);
+    CurrentKey.LB_height = 0.0f;
 
-    (this->CurrentKey).NoiseAmplitude1.x = 0.0f;
+    SetSimTimeMultiplier(1.0f);
 
-    (this->CurrentKey).NoiseAmplitude1.y = 0.0f;
+    SetNoiseFrequency1(&bVector4(1.0f, 1.0f, 1.0f, 1.0f));
+    SetNoiseFrequency2(&bVector4(1.0f, 1.0f, 1.0f, 1.0f));
 
-    (this->CurrentKey).NoiseAmplitude1.z = 0.0f;
+    SetNoiseAmplitude1(&bVector4(0.0f, 0.0f, 0.0f, 0.0f));
 
-    (this->CurrentKey).NoiseAmplitude1.w = 0.0f;
-
-    this->RenderDash = 0;
-    this->bClearVelocity = false;
-    // local_28 = 0;
-    // local_24 = 0;
-    // local_20 = 0;
-    // local_1c = 0;
-    (this->CurrentKey).SimTimeMultiplier = 1.0f;
-
-    (this->CurrentKey).NoiseAmplitude2.x = 0.0f;
-
-    (this->CurrentKey).NoiseAmplitude2.y = 0.0f;
-
-    (this->CurrentKey).NoiseAmplitude2.z = 0.0f;
-
-    (this->CurrentKey).NoiseAmplitude2.w = 0.0f;
-
-    (this->CurrentKey).NoiseFrequency1.x = 1.0f;
-
-    (this->CurrentKey).NoiseFrequency1.y = 1.0f;
-
-    (this->CurrentKey).NoiseFrequency1.z = 1.0f;
-
-    (this->CurrentKey).NoiseFrequency1.w = 1.0f;
-    SetNoiseFrequency2(1.0f, 1.0f, 1.0f, 1.0f);
-    // bMatrix4 m;
-    // m.v0 = bVector4(1.0f, 0.0f, 0.0f, 0.0f);
-    // // // m.v1 = bVector4(0.0f, -1.0f, 0.0f, 0.0f);
-    // // // m.v2 = bVector4(0.0f, 0.0f, -1.0f, 100.0f);
-    // // // m.v3 = bVector4(0.0f, 0.0f, 1200.0f, 1.0f);
+    SetNoiseAmplitude2(&bVector4(0.0f, 0.0f, 0.0f, 0.0f));
 
     SetCameraMatrix(m, 1.0f);
     SetCameraMatrix(m, 1.0f);
 }
-
-// // Camera::Camera() : LastDisparateTime(RealTimeFrames) {
-// //     // LastDisparateTime = RealTimeFrames;
-// //     LastUpdateTime = 0x80000000;
-
-// //     // RenderDash = 0;
-// //     // SetTargetDistance(10.0f);
-// //     // SetNearZ(0.5f);
-// //     // SetFarZ(10000.0f);
-// //     // bClearVelocity = false;
-// //     bMatrix4 m;
-// //     m.v0 = bVector4(1.0f, 0.0f, 0.0f, 0.0f);
-// //     // // m.v1 = bVector4(0.0f, -1.0f, 0.0f, 0.0f);
-// //     // // m.v2 = bVector4(0.0f, 0.0f, -1.0f, 100.0f);
-// //     // // m.v3 = bVector4(0.0f, 0.0f, 1200.0f, 1.0f);
-
-// //     // SetFocalDistance(0.0f);
-// //     // SetDepthOfField(0.0f);
-// //     // ElapsedTime = 1.0f;
-
-// //     // SetFieldOfView(0x36FB);
-// //     // CurrentKey.LB_height = 0.0f;
-// //     // CurrentKey.Position = bVector3(0.0f, 0.0f, 0.0f);
-// //     // CurrentKey.Direction = bVector3(0.0f, 0.0f, 0.0f);
-// //     // CurrentKey.Target = bVector3(0.0f, 0.0f, 0.0f);
-
-// //     // SetNoiseAmplitude1(0.0f, 0.0f, 0.0f, 0.0f);
-// //     // SetSimTimeMultiplier(1.0f);
-// //     // SetNoiseFrequency1(1.0f, 1.0f, 1.0f, 1.0f);
-// //     // SetNoiseFrequency2(1.0f, 1.0f, 1.0f, 1.0f);
-// //     // SetNoiseAmplitude2(0.0f, 0.0f, 0.0f, 0.0f);
-
-// //     SetCameraMatrix(m, 1.0f);
-// //     SetCameraMatrix(m, 1.0f);
-// // }
 
 Camera::~Camera() {}
 
@@ -245,8 +175,8 @@ void Camera::CommunicateWithJollyRancher(char *cameraname) {
 }
 
 float NoiseBase(int x) {
-    return 1.0f - (float)((((x << 13) ^ x) * (((x << 13) ^ x) * ((x << 13) ^ x) * 15731 + 789221) + 1376312589 & 0x7FFFFFFF) ^ 0x8000) *
-                      (1.0f / 1073741824.0f); // Hugo Elias integer noise hash with modification ( ^ 0x8000 )
+    return 1.0f - (float)((((x << 13) ^ x) * (((x << 13) ^ x) * ((x << 13) ^ x) * 15731 + 789221) + 1376312589 & 0x7FFFFFFF)) *
+                      (1.0f / 1073741824.0f); // Hugo Elias integer noise hash
 }
 
 float NoiseInterpolated(float x) {
@@ -269,7 +199,7 @@ float Noise(float x) {
     float amplitude = 1.0f;
 
     for (int i = 0; i < 6; ++i) {
-        total += NoiseInterpolated(x * frequency) * amplitude;
+        total += amplitude * NoiseInterpolated(x * frequency);
 
         frequency *= 2.0f;
         amplitude *= 0.5f;

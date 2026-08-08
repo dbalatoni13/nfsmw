@@ -8,7 +8,7 @@
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/Src/Camera/ICE/ICEMath.hpp"
-#include "Speed/Indep/Src/Misc/Timer.hpp"
+
 #include "Speed/Indep/bWare/Inc/bFunk.hpp"
 #include "Speed/Indep/Src/Gameplay/GManager.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
@@ -20,6 +20,9 @@
 #include "Speed/Indep/bWare/Inc/Espresso.hpp"
 #include "Speed/Indep/Src/Misc/GameFlow.hpp"
 #include "Speed/Indep/Src/Misc/Rumble.hpp"
+
+#include "Speed/Indep/Src/Camera/ICE/ICEManager.hpp"
+#include "Speed/Indep/Src/Camera/ICE/ICEReplay.hpp"
 
 // TODO GET RID OF THESE
 extern int32 RealTime;
@@ -154,55 +157,65 @@ class Camera {
         }
     }
 
-    void SetTargetDistance(float f) {}
+    void SetTargetDistance(float f) {
+        CurrentKey.TargetDistance = f;
+    }
 
-    void SetFocalDistance(float f) {}
+    void SetFocalDistance(float f) {
+        CurrentKey.FocalDistance = f;
+    }
 
-    void SetDepthOfField(float f) {}
+    void SetDepthOfField(float f) {
+        CurrentKey.DepthOfField = f;
+    }
 
     void SetFieldOfView(unsigned short fov) {
         CurrentKey.FieldOfView = fov;
     }
 
-    void SetNoiseFrequency1(float x, float y, float z, float w) {
+    inline void SetNoiseFrequency1(float x, float y, float z, float w) {
         CurrentKey.NoiseFrequency1.x = x;
-        CurrentKey.NoiseFrequency1.y = x;
-        CurrentKey.NoiseFrequency1.z = x;
-        CurrentKey.NoiseFrequency1.w = x;
+        CurrentKey.NoiseFrequency1.y = y;
+        CurrentKey.NoiseFrequency1.z = z;
+        CurrentKey.NoiseFrequency1.w = w;
     }
 
-    void SetNoiseFrequency2(float x, float y, float z, float w) {
+    inline void SetNoiseFrequency2(float x, float y, float z, float w) {
         CurrentKey.NoiseFrequency2.x = x;
-        CurrentKey.NoiseFrequency2.y = x;
-        CurrentKey.NoiseFrequency2.z = x;
-        CurrentKey.NoiseFrequency2.w = x;
+        CurrentKey.NoiseFrequency2.y = y;
+        CurrentKey.NoiseFrequency2.z = z;
+        CurrentKey.NoiseFrequency2.w = w;
     }
 
-    void SetNoiseAmplitude1(float x, float y, float z, float w) {
+    inline void SetNoiseAmplitude1(float x, float y, float z, float w) {
         CurrentKey.NoiseAmplitude1.x = x;
-        CurrentKey.NoiseAmplitude1.y = x;
-        CurrentKey.NoiseAmplitude1.z = x;
-        CurrentKey.NoiseAmplitude1.w = x;
+        CurrentKey.NoiseAmplitude1.y = y;
+        CurrentKey.NoiseAmplitude1.z = z;
+        CurrentKey.NoiseAmplitude1.w = w;
     }
 
-    void SetNoiseAmplitude2(float x, float y, float z, float w) {
+    inline void SetNoiseAmplitude2(float x, float y, float z, float w) {
         CurrentKey.NoiseAmplitude2.x = x;
-        CurrentKey.NoiseAmplitude2.y = x;
-        CurrentKey.NoiseAmplitude2.z = x;
-        CurrentKey.NoiseAmplitude2.w = x;
+        CurrentKey.NoiseAmplitude2.y = y;
+        CurrentKey.NoiseAmplitude2.z = z;
+        CurrentKey.NoiseAmplitude2.w = w;
     }
 
     void SetNoiseFrequency1(bVector4 *p) {
         this->CurrentKey.NoiseFrequency1 = *p;
     }
 
-    void SetNoiseFrequency2(bVector4 *p) {}
+    void SetNoiseFrequency2(bVector4 *p) {
+        this->CurrentKey.NoiseFrequency2 = *p;
+    }
 
     void SetNoiseAmplitude1(bVector4 *p) {
         this->CurrentKey.NoiseAmplitude1 = *p;
     }
 
-    void SetNoiseAmplitude2(bVector4 *p) {}
+    void SetNoiseAmplitude2(bVector4 *p) {
+        this->CurrentKey.NoiseAmplitude2 = *p;
+    }
 
     void SetNoiseFrequency1(float *p) {
         SetNoiseFrequency1(*p, *p, *p, *p);
@@ -236,7 +249,9 @@ class Camera {
 
     // float GetLetterBox() {}
 
-    void SetSimTimeMultiplier(float multiplier) {}
+    void SetSimTimeMultiplier(float multiplier) {
+        CurrentKey.SimTimeMultiplier = multiplier;
+    }
 
     // float GetSimTimeMultiplier() {}
 

@@ -1,4 +1,5 @@
 #include "Speed\Indep\Src\Camera\CameraMover.hpp"
+#include "ICE/ICEManager.hpp"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
@@ -123,13 +124,13 @@ void CameraMover::ChopperNoise(bMatrix4 *world_to_camera, float f_scale, bool us
 
                 bVector4 v_frequency;
                 bVector4 v_magnitude;
+                bScale(&v_frequency, &CameraNoiseChopperFrequency, 1.0f);
                 bScale(&v_magnitude, &CameraNoiseChopperAmplitude, intensity);
-                bScale(&v_frequency, &CameraNoiseChopperFrequency, intensity);
 
                 pCamera->SetNoiseFrequency1(&v_frequency);
                 pCamera->SetNoiseAmplitude1(&v_magnitude);
 
-                float time = useWorldTimer ? WorldTimer.GetSeconds() * 0.00025f : RealTimer.GetSeconds() * 0.00025f;
+                float time = 0.00025f * (useWorldTimer ? WorldTimer.GetSeconds() : RealTimer.GetSeconds());
                 pCamera->ApplyNoise(world_to_camera, time, 1.0f);
             }
         }
@@ -142,49 +143,38 @@ void CameraMover::HandheldNoise(bMatrix4 *world_to_camera, float f_scale, bool u
 
         bVector4 v_frequency;
         bVector4 v_magnitude;
-
+        bScale(&v_frequency, &CameraNoiseHandheldFrequency, 1.0f);
         bScale(&v_magnitude, &CameraNoiseHandheldAmplitude, f_scale);
-        bScale(&v_frequency, &CameraNoiseHandheldFrequency, f_scale);
 
         pCamera->SetNoiseFrequency1(&v_frequency);
         pCamera->SetNoiseAmplitude1(&v_magnitude);
 
-        float time = useWorldTimer ? WorldTimer.GetSeconds() * 0.00025f : RealTimer.GetSeconds() * 0.00025f;
+        float time = 0.00025f * (useWorldTimer ? WorldTimer.GetSeconds()
+                                               : RealTimer.GetSeconds()); //  / TIMER_SHIFT_VALUE_FLOAT in GetSeconds() generate fmuls...
 
         pCamera->ApplyNoise(world_to_camera, time, 1.0f);
     }
 }
 
-void CameraMover::ComputeBankedUpVector(bVector3 *up, bVector3 *eye, bVector3 *look, bAngle bank) {
-
-    bVector3 new_up;
-
-    new_up.x = look->x - eye->x;
-    new_up.z = look->z - eye->z;
-    new_up.y = look->y - eye->y;
-
-    bVector3 axis;
-    bNormalize(&axis, &new_up);
-
+void CameraMover::ComputeBankedUpVector(bVector3 *up, bVector3 *eye, bVector3 *look, bAngle bank // r7 -> r27
+) {
     bMatrix4 axis_rotation;
-    eCreateAxisRotationMatrix(&axis_rotation, *&axis, bank);
+    bVector3 axis;
 
-    bVector3 defaultVec = bVector3(0.0, 0.0, 1.0);
-    eMulVector(up, &axis_rotation, &defaultVec);
-    return;
+    bSub(&axis, look, eye);
+
+    bNormalize(&axis, &axis);
+
+    eCreateAxisRotationMatrix(&axis_rotation, axis, bank);
+
+    bVector3 new_up(0.0f, 0.0f, 1.0f);
+
+    eMulVector(up, &axis_rotation, &new_up);
 }
 
 float CameraMover::MinDistToWall() {
     return fMinDistToWall;
 }
-
-// need
-struct LongVector {
-    // Members
-    int x; // offset 0x0, size 0x4
-    int y; // offset 0x4, size 0x4
-    int z; // offset 0x8, size 0x4
-};
 
 void UpdateCameraMovers(float dT) {
 
@@ -244,7 +234,7 @@ void UpdateCameraMovers(float dT) {
             }
 
             // espCentrePlaneView();
-            // todo
+            // todo espresso
         }
     }
 

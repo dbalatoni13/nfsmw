@@ -23,6 +23,8 @@
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/Src/Physics/PVehicle.h"
+#include "Speed/Indep/bWare/Inc/Espresso.hpp"
+#include "Speed/Indep/Src/Camera/ICE/ICEManager.hpp"
 
 class eView;
 
@@ -48,14 +50,14 @@ enum CameraMoverTypes {
     CM_SHOWCASE = 18,
 };
 
-static const bVector4 CameraNoiseHandheldAmplitude = bVector4(0.01, 0.01, 0.03, 0.03);
-static const bVector4 CameraNoiseHandheldFrequency = bVector4(0.01, 0.175, 0.153, 0.03);
-static const bVector4 CameraNoiseChopperFrequency = bVector4(3.141, 2.971, 0.84234, 0.92345); // size: 0x10, address: 0x8045AB58
-static const bVector4 CameraNoiseChopperAmplitude = bVector4(0.01, 0.05, 1.1, 2.7);           // size: 0x10, address: 0x8045AB68
-static const bVector4 CameraNoiseSpeedFrequency;                                              // size: 0x10, address: 0x8045AB78
-static const bVector4 CameraNoiseSpeedAmplitude;                                              // size: 0x10, address: 0x8045AB88
-static const bVector4 CameraNoiseTerrainFrequency;                                            // size: 0x10, address: 0x8045AB98
-static const bVector4 CameraNoiseTerrainAmplitude;                                            // size: 0x10, address: 0x8045ABA8
+static const bVector4 CameraNoiseHandheldAmplitude(0.01f, 0.01f, 0.03f, 0.03f);
+static const bVector4 CameraNoiseHandheldFrequency(0.01f, 0.175f, 0.153f, 0.03f);
+static const bVector4 CameraNoiseChopperFrequency(3.141f, 2.971f, 0.84234f, 0.92345f); // size: 0x10, address: 0x8045AB58
+static const bVector4 CameraNoiseChopperAmplitude(0.01f, 0.05f, 1.1, 2.7f);            // size: 0x10, address: 0x8045AB68
+static const bVector4 CameraNoiseSpeedFrequency;                                       // size: 0x10, address: 0x8045AB78
+static const bVector4 CameraNoiseSpeedAmplitude;                                       // size: 0x10, address: 0x8045AB88
+static const bVector4 CameraNoiseTerrainFrequency;                                     // size: 0x10, address: 0x8045AB98
+static const bVector4 CameraNoiseTerrainAmplitude;                                     // size: 0x10, address: 0x8045ABA8
 
 // total size: 0x124
 class CameraAnchor {
@@ -114,7 +116,7 @@ class CameraMover : public bTNode<CameraMover>, public WCollisionMgr::ICollision
         return Type;
     }
 
-    void ComputeBankedUpVector(bVector3 *up, bVector3 *eye, bVector3 *look, bAngle bank);
+    static void ComputeBankedUpVector(bVector3 *up, bVector3 *eye, bVector3 *look, bAngle bank);
 
     WUID GetAnchorID();
 
@@ -182,9 +184,6 @@ class CameraMover : public bTNode<CameraMover>, public WCollisionMgr::ICollision
     float fSavedAdjust;          // offset 0x6C, size 0x4
     bVector3 vSavedForward;      // offset 0x70, size 0x10
 };
-
-extern Timer WorldTimer;
-extern Timer RealTimer;
 
 void CameraMoverRestartRace();
 
