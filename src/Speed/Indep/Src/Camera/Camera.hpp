@@ -24,9 +24,10 @@
 // TODO GET RID OF THESE
 extern int32 RealTime;
 extern int32 LastUpdateTimeJR2;
-extern int WeHaveCheckedIfJR2ServerExists;
+// static int cameralink;
 extern int bStreamingPositionFromICE;
 extern int JR2ServerExists;
+extern int WeHaveCheckedIfJR2ServerExists;
 extern int LastUpdateTimeCaffeine;
 extern int LastUpdateTimeJR2;
 
@@ -87,6 +88,9 @@ class Camera {
     }
 
     Camera();
+
+    ~Camera();
+
     void SetCameraMatrix(const bMatrix4 &m, float fTime);
 
     void CommunicateWithJollyRancher(char *cameraname);
@@ -156,7 +160,9 @@ class Camera {
 
     void SetDepthOfField(float f) {}
 
-    void SetFieldOfView(unsigned short fov) {}
+    void SetFieldOfView(unsigned short fov) {
+        CurrentKey.FieldOfView = fov;
+    }
 
     void SetNoiseFrequency1(float x, float y, float z, float w) {
         CurrentKey.NoiseFrequency1.x = x;
