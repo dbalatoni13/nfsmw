@@ -98,15 +98,9 @@ void CARSFX_PreColWoosh::UpdateParams(float t) {
             int sizeperblock;
             STICH_WHOOSH_TYPE base;
             GetWooshBlockSizeParams(DRIVE_BY_PRE_COL, base, numblocks, sizeperblock);
-            {
-                static int LastRandom = 0;
 
-                StitchID = LastRandom - (LastRandom / sizeperblock) * sizeperblock;
-                LastRandom = StitchID + 1;
-            }
-
-            SND_Stich *stitchdata = &g_pEAXSound->GetStichPlayer()->GetStich(
-                STICH_TYPE_WOOSH, base + static_cast<int>(fVelInensity / 128.0f * static_cast<float>(numblocks)) * sizeperblock + StitchID);
+            GEN_RND_OFFSET(StitchID, fVelInensity, base, numblocks, sizeperblock);
+            SND_Stich *stitchdata = &g_pEAXSound->GetStichPlayer()->GetStich(STICH_TYPE_WOOSH, StitchID);
 
             SND_Params sndparams;
             sndparams.ID = 0;

@@ -1,10 +1,20 @@
-#ifndef EAXSOUND_STATES_STATE_MAIN_H
-#define EAXSOUND_STATES_STATE_MAIN_H
+#ifndef STATE_MAIN_HPP
+#define STATE_MAIN_HPP
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#include "Speed/Indep/Src/EAXSound/States/STATE_Base.hpp"
 
+// total size: 0x48
+// Decl: 11
+class CSTATE_Main : public CSTATE_Base {
+  public:
+    DECLARE_STATETYPE();
 
+    CSTATE_Main();
+    ~CSTATE_Main() override;
+
+    // Overrides: CSTATE_Base
+    void Attach(void *pAttachment) override;
+    bool Detach() override;
+};
 
 #endif

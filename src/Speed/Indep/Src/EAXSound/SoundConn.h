@@ -1,10 +1,11 @@
 #ifndef SOUND_CONN_H
 #define SOUND_CONN_H
 
+#include "Speed/Indep/Src/EAXSound/EAXCarState.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSoundTypes.h"
 #include "Speed/Indep/Src/Sim/SimConn.h"
+#include "Speed/Indep/Src/World/WorldConn.h"
 #include "Speed/Indep/Src/World/WorldTypes.h"
-#include "Speed/Indep/Tools/AttribSys/Runtime/Common/AttribPrivate.h"
 
 #define SOUND_SERVICE UCrc32(UCRC32_EAXSOUND)
 #define DECLARE_SOUNDPACKET(_PKT_, _HANDLER_)                                                                                                        \
@@ -16,7 +17,46 @@
     DECLARE_SIMPACKET(_PKT_, #_PKT_)
 
 struct HeliSoundConn;
-struct CarSoundConn;
+
+// Decl: 28
+class CarSoundConn : public Sim::Connection, public UTL::Collections::Listable<CarSoundConn, 10> {
+  public:
+    static Connection *Construct(const struct ConnectionData &data);
+
+    // Overrides: Connection
+    ~CarSoundConn() override;
+
+    virtual void OnReceive(Sim::Packet *pkt) {} // Decl: 35
+
+    // Overrides: Connection
+    void OnClose() override {} // Decl: 37
+
+    // Overrides: Connection
+    Sim::ConnStatus OnStatusCheck() override;
+
+    void UpdateState(float dT);
+
+    // Decl: 43
+    EAX_CarState *GetState() {
+        return this->mState;
+    }
+    WUID GetWorldID() const {} // Decl: 44
+
+    // Decl: 46
+    static void SetAssetsLoaded(CarSoundConn *conn) {
+        if (conn->mConnected && conn->mState != nullptr) {
+            conn->mState->mAssetsLoaded = true;
+        }
+    }
+
+    CarSoundConn(const struct ConnectionData &data);
+
+    bool mConnected; // offset 0x14, size 0x1, Decl: 52
+
+  private:
+    EAX_CarState *mState;         // offset 0x18, size 0x4, Decl: 56
+    WorldConn::Reference mTarget; // offset 0x1C, size 0x10, Decl: 57
+};
 
 namespace SoundConn {
 

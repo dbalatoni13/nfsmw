@@ -205,6 +205,8 @@ zEAXSound.o:gap_07_8045B30C_bss
 zEAXSound.o:gap_07_8045DDC8_bss
 zEAXSound.o:gap_07_8045DDF4_bss
 zEAXSound2.o:lbl_803D9050
+zEAXSound2.o:lbl_803DA360
+zEAXSound2.o:lbl_803DA370
 zEAXSound2.o:lbl_803DD658
 zEAXSound2.o:lbl_80417E7C
 zEAXSound2.o:lbl_80417F74

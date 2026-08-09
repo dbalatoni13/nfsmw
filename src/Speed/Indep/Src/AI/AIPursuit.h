@@ -26,21 +26,6 @@ class PursuitFormation {
 
         ~TargetOffset() {}
 
-        TargetOffset &operator=(const TargetOffset &_ctor_arg) {
-            mOffset = _ctor_arg.mOffset;
-            mInPositionOffset = _ctor_arg.mInPositionOffset;
-            mMinTargets = _ctor_arg.mMinTargets;
-            mInPositionGoal = _ctor_arg.mInPositionGoal;
-
-            return *this;
-        }
-
-        TargetOffset(const TargetOffset &_ctor_arg)
-            : mOffset(_ctor_arg.mOffset),                     //
-              mInPositionOffset(_ctor_arg.mInPositionOffset), //
-              mMinTargets(_ctor_arg.mMinTargets),             //
-              mInPositionGoal(_ctor_arg.mInPositionGoal) {}
-
         UMath::Vector3 mOffset;           // offset 0x0, size 0xC
         UMath::Vector3 mInPositionOffset; // offset 0xC, size 0xC
         int mMinTargets;                  // offset 0x18, size 0x4
@@ -282,11 +267,6 @@ class AIPursuit : public Sim::Activity, public IPursuit, public Debugable {
               InPositionOffset(ipo), //
               Goal(g) {}
 
-        FormationTarget(const FormationTarget &_ctor_arg)
-            : Offset(_ctor_arg.Offset),                     //
-              InPositionOffset(_ctor_arg.InPositionOffset), //
-              Goal(_ctor_arg.Goal) {}
-
         UMath::Vector3 Offset;           // offset 0x0, size 0xC
         UMath::Vector3 InPositionOffset; // offset 0xC, size 0xC
         UCrc32 Goal;                     // offset 0x18, size 0x4
@@ -296,10 +276,6 @@ class AIPursuit : public Sim::Activity, public IPursuit, public Debugable {
         CopContingent(UCrc32 t)
             : mType(t), //
               mCount(1) {}
-
-        CopContingent(const CopContingent &_ctor_arg)
-            : mType(_ctor_arg.mType), //
-              mCount(_ctor_arg.mCount) {}
 
         UCrc32 mType;        // offset 0x0, size 0x4
         unsigned int mCount; // offset 0x4, size 0x4

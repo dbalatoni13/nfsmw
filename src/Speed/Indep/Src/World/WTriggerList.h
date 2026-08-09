@@ -1,9 +1,14 @@
-#ifndef WORLD_WTRIGGERLIST_H
-#define WORLD_WTRIGGERLIST_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+//
+//
+//
+//
+//
+//
+//
+//
+//
+#ifndef _WTriggerList_H_
+#define _WTriggerList_H_ // Decl: 11
 
 #include "Speed/Indep/Libs/Support/Utility/UStandard.h"
 

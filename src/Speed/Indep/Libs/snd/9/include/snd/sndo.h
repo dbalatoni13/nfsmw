@@ -209,9 +209,11 @@ int SNDPKTPLAY_submit(int packetinstancehandle, SNDPACKET *psp);
 int SNDPKTPLAY_destroy(int packetinstancehandle);
 
 int SNDSTRM_getprogvol(int sndstreamhandle);
+int SNDSTRM_lowpass(int sndstreamhandle, int lowpasscutoff);
 
 void SNDSYS_entercritical();
 void SNDSYS_leavecritical();
+void SNDSYS_service();
 
 int SNDtimeremaining(int shandle);
 

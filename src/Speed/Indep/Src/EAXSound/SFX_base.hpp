@@ -7,6 +7,7 @@
 class SFX_Base : public SndBase {
   public:
     SFX_Base() {}
+    ~SFX_Base() {}
 };
 
 #endif
