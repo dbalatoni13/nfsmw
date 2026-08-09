@@ -30,6 +30,26 @@ struct eRenderTarget {
         return CopyFilterID;
     }
 
+    void SetID(int id) {
+        ID = static_cast<TARGET_ID>(id);
+    }
+
+    void SetName(const char *name) {
+        Name = name;
+    }
+
+    void SetActive(int active) {
+        Active = active;
+    }
+
+    void SetCopyFilterID(FILTER_ID filter_index) {
+        CopyFilterID = filter_index;
+    }
+
+    void SetBackgroundColour(GXColor clr) {
+        BackgroundColour = clr;
+    }
+
     TextureInfo *GetTextureInfo();
 };
 

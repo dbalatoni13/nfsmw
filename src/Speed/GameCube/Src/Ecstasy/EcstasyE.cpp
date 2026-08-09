@@ -647,6 +647,272 @@ void CreateViewMatricies(eView *view, float force_near_z, float force_far_z, flo
     }
 }
 
+extern cSphereMap SphereMap;
+extern cSpecularMap SpecularMap;
+extern cQuarterSizeMap QSizeScratchPad;
+
+const char *EnvmapTargetNames[7] = {"TARGET_ENVMAP0F", "TARGET_ENVMAP0R", "TARGET_ENVMAP0B", "TARGET_ENVMAP0L", "TARGET_ENVMAP0U", "TARGET_ENVMAP0D", "TARGET_ENVMAP0_FULL"};
+
+// NON_MATCHING: 81.7% - redundant background_color stores get CSE'd, one GPR pseudo shift
+void SetScreenBuffers() {
+    bMatrix4 *identity = eGetIdentityMatrix();
+    int frame_width = ScreenWidth;
+    int frame_height = ScreenHeight;
+    _GXColor background_color = {0, 0, 0, 0xFF};
+
+    {
+        eRenderTarget *rc = eGetRenderTarget(TARGET_FLAYER);
+
+        rc->SetID(TARGET_FLAYER);
+        rc->SetName("TARGET_FLAYER");
+        rc->SetActive(1);
+        rc->SetCopyFilterID(static_cast<FILTER_ID>(1));
+        background_color.r = 0;
+        background_color.a = 0xFF;
+        background_color.g = 0;
+        background_color.b = 0;
+        rc->SetBackgroundColour(background_color);
+        rc->ScissorW = frame_width;
+        rc->ScissorH = frame_height;
+        rc->FrameWidth = frame_width;
+        rc->FrameHeight = frame_height;
+        rc->FrameAddress = 0;
+        rc->ClearBackground = 1;
+        rc->ScissorX = 0;
+        rc->ScissorY = 0;
+    }
+
+    {
+        eRenderTarget *rc = eGetRenderTarget(TARGET_PLAYER1);
+
+        rc->SetID(TARGET_PLAYER1);
+        rc->SetName("TARGET_PLAYER1");
+        rc->SetActive(1);
+        rc->SetCopyFilterID(static_cast<FILTER_ID>(1));
+        background_color.r = 0;
+        background_color.a = 0xFF;
+        background_color.g = 0;
+        background_color.b = 0;
+        rc->SetBackgroundColour(background_color);
+        rc->ScissorW = frame_width;
+        rc->ScissorH = frame_height;
+        rc->FrameWidth = frame_width;
+        rc->FrameHeight = frame_height;
+        rc->FrameAddress = 0;
+        rc->ClearBackground = 1;
+        rc->ScissorX = 0;
+        rc->ScissorY = 0;
+    }
+
+    frame_height /= 2;
+
+    {
+        eRenderTarget *rc = eGetRenderTarget(TARGET_PLAYER2);
+
+        rc->SetID(TARGET_PLAYER2);
+        rc->SetName("TARGET_PLAYER2");
+        rc->SetActive(0);
+        rc->SetCopyFilterID(static_cast<FILTER_ID>(1));
+        background_color.r = 0;
+        background_color.a = 0xFF;
+        background_color.g = 0;
+        background_color.b = 0;
+        rc->SetBackgroundColour(background_color);
+        rc->FrameWidth = frame_width;
+        rc->FrameHeight = frame_height;
+        rc->ScissorY = frame_height;
+        rc->ScissorW = frame_width;
+        rc->ScissorH = frame_height;
+        rc->FrameAddress = 0;
+        rc->ClearBackground = 1;
+        rc->ScissorX = 0;
+    }
+
+    {
+        eRenderTarget *rc = eGetRenderTarget(TARGET_PLAYER1_RVM);
+
+        rc->SetID(TARGET_PLAYER1_RVM);
+        rc->SetName("TARGET_PLAYER1_RVM");
+        rc->SetActive(0);
+        rc->SetCopyFilterID(static_cast<FILTER_ID>(1));
+        background_color.r = 0;
+        background_color.a = 0xFF;
+        background_color.g = 0;
+        background_color.b = 0;
+        rc->ClearBackground = 1;
+        rc->SetBackgroundColour(background_color);
+        rc->ScissorX = SphereMap.cubeBuffer[0].xOrigin;
+        rc->ScissorY = SphereMap.cubeBuffer[0].yOrigin;
+        rc->ScissorW = SphereMap.cubeBuffer[0].width;
+        rc->ScissorH = SphereMap.cubeBuffer[0].height;
+        rc->FrameWidth = SphereMap.cubeBuffer[0].width;
+        rc->FrameHeight = SphereMap.cubeBuffer[0].height;
+        rc->FrameAddress = reinterpret_cast<int>(SphereMap.cubeBuffer[0].pCaptureTexture);
+    }
+
+    {
+        eRenderTarget *rc = eGetRenderTarget(TARGET_PLAYER1_SPECULAR);
+
+        rc->SetID(TARGET_PLAYER1_SPECULAR);
+        rc->SetName("TARGET_PLAYER1_SPECULAR");
+        rc->SetActive(1);
+        rc->SetCopyFilterID(static_cast<FILTER_ID>(5));
+        background_color.r = 0;
+        background_color.g = 0;
+        background_color.b = 0;
+        background_color.a = 0;
+        rc->ClearBackground = 1;
+        rc->SetBackgroundColour(background_color);
+        rc->ScissorX = SpecularMap.specBuffer[0].xOrigin;
+        rc->ScissorY = SpecularMap.specBuffer[0].yOrigin;
+        rc->ScissorW = SpecularMap.specBuffer[0].width;
+        rc->ScissorH = SpecularMap.specBuffer[0].height;
+        rc->FrameWidth = SpecularMap.specBuffer[0].width;
+        rc->FrameHeight = SpecularMap.specBuffer[0].height;
+        rc->FrameAddress = reinterpret_cast<int>(SpecularMap.specBuffer[0].pCaptureTexture);
+    }
+
+    {
+        eRenderTarget *rc = eGetRenderTarget(TARGET_PLAYER2_SPECULAR);
+
+        rc->SetID(TARGET_PLAYER2_SPECULAR);
+        rc->SetName("TARGET_PLAYER2_SPECULAR");
+        rc->SetActive(0);
+        rc->SetCopyFilterID(static_cast<FILTER_ID>(1));
+        background_color.r = 0;
+        background_color.g = 0;
+        background_color.b = 0;
+        background_color.a = 0;
+        rc->ClearBackground = 1;
+        rc->SetBackgroundColour(background_color);
+        rc->ScissorX = SpecularMap.specBuffer[1].xOrigin;
+        rc->ScissorY = SpecularMap.specBuffer[1].yOrigin;
+        rc->ScissorW = SpecularMap.specBuffer[1].width;
+        rc->ScissorH = SpecularMap.specBuffer[1].height;
+        rc->FrameWidth = SpecularMap.specBuffer[1].width;
+        rc->FrameHeight = SpecularMap.specBuffer[1].height;
+        rc->FrameAddress = reinterpret_cast<int>(SpecularMap.specBuffer[1].pCaptureTexture);
+    }
+
+    {
+        eRenderTarget *rc = eGetRenderTarget(TARGET_QUADRANT_TOP_LEFT);
+
+        rc->SetID(TARGET_QUADRANT_TOP_LEFT);
+        rc->SetName("TARGET_QUADRANT_TOP_LEFT");
+        rc->SetActive(0);
+        rc->SetCopyFilterID(static_cast<FILTER_ID>(0));
+        background_color.r = 0;
+        background_color.g = 0;
+        background_color.b = 0;
+        background_color.a = 0;
+        rc->ClearBackground = 1;
+        rc->SetBackgroundColour(background_color);
+        rc->ScissorX = 0;
+        rc->ScissorY = 0;
+        rc->ScissorW = QSizeScratchPad.quarterSizeBuffer.width;
+        rc->ScissorH = QSizeScratchPad.quarterSizeBuffer.height;
+        rc->FrameWidth = QSizeScratchPad.quarterSizeBuffer.width;
+        rc->FrameHeight = QSizeScratchPad.quarterSizeBuffer.height;
+        rc->FrameAddress = reinterpret_cast<int>(QSizeScratchPad.quarterSizeBuffer.pCaptureTexture);
+    }
+
+    {
+        eRenderTarget *rc = eGetRenderTarget(TARGET_QUADRANT_TOP_RIGHT);
+
+        rc->SetID(TARGET_QUADRANT_TOP_RIGHT);
+        rc->SetName("TARGET_QUADRANT_TOP_RIGHT");
+        rc->SetActive(0);
+        rc->SetCopyFilterID(static_cast<FILTER_ID>(0));
+        background_color.r = 0;
+        background_color.g = 0;
+        background_color.b = 0;
+        background_color.a = 0;
+        rc->ClearBackground = 1;
+        rc->SetBackgroundColour(background_color);
+        rc->ScissorX = 0x140;
+        rc->ScissorY = 0;
+        rc->ScissorW = QSizeScratchPad.quarterSizeBuffer.width;
+        rc->ScissorH = QSizeScratchPad.quarterSizeBuffer.height;
+        rc->FrameWidth = QSizeScratchPad.quarterSizeBuffer.width;
+        rc->FrameHeight = QSizeScratchPad.quarterSizeBuffer.height;
+        rc->FrameAddress = reinterpret_cast<int>(QSizeScratchPad.quarterSizeBuffer.pCaptureTexture);
+    }
+
+    {
+        eRenderTarget *rc = eGetRenderTarget(TARGET_QUADRANT_BOTTOM_LEFT);
+
+        rc->SetID(TARGET_QUADRANT_BOTTOM_LEFT);
+        rc->SetName("TARGET_QUADRANT_BOTTOM_LEFT");
+        rc->SetActive(0);
+        rc->SetCopyFilterID(static_cast<FILTER_ID>(0));
+        background_color.r = 0;
+        background_color.g = 0;
+        background_color.b = 0;
+        background_color.a = 0;
+        rc->ClearBackground = 1;
+        rc->SetBackgroundColour(background_color);
+        rc->ScissorX = 0;
+        rc->ScissorY = 0xF0;
+        rc->ScissorW = QSizeScratchPad.quarterSizeBuffer.width;
+        rc->ScissorH = QSizeScratchPad.quarterSizeBuffer.height;
+        rc->FrameWidth = QSizeScratchPad.quarterSizeBuffer.width;
+        rc->FrameHeight = QSizeScratchPad.quarterSizeBuffer.height;
+        rc->FrameAddress = reinterpret_cast<int>(QSizeScratchPad.quarterSizeBuffer.pCaptureTexture);
+    }
+
+    {
+        eRenderTarget *rc = eGetRenderTarget(TARGET_QUADRANT_BOTTOM_RIGHT);
+
+        rc->SetID(TARGET_QUADRANT_BOTTOM_RIGHT);
+        rc->SetName("TARGET_QUADRANT_BOTTOM_RIGHT");
+        rc->SetActive(0);
+        rc->SetCopyFilterID(static_cast<FILTER_ID>(0));
+        background_color.r = 0;
+        background_color.g = 0;
+        background_color.b = 0;
+        background_color.a = 0;
+        rc->ClearBackground = 1;
+        rc->SetBackgroundColour(background_color);
+        rc->ScissorX = 0x140;
+        rc->ScissorY = 0xF0;
+        rc->ScissorW = QSizeScratchPad.quarterSizeBuffer.width;
+        rc->ScissorH = QSizeScratchPad.quarterSizeBuffer.height;
+        rc->FrameWidth = QSizeScratchPad.quarterSizeBuffer.width;
+        rc->FrameHeight = QSizeScratchPad.quarterSizeBuffer.height;
+        rc->FrameAddress = reinterpret_cast<int>(QSizeScratchPad.quarterSizeBuffer.pCaptureTexture);
+    }
+
+    for (int i = 0; i < 6; i++) {
+        eRenderTarget *rc = eGetRenderTarget(i + 10);
+
+        rc->SetID(i + 10);
+        rc->SetName(EnvmapTargetNames[i]);
+        rc->SetActive(1);
+        rc->SetCopyFilterID(static_cast<FILTER_ID>(3));
+        background_color.r = 0;
+        background_color.g = 0;
+        background_color.b = 0;
+        background_color.a = 0;
+        rc->ClearBackground = 1;
+        rc->SetBackgroundColour(background_color);
+        rc->ScissorX = SphereMap.cubeBuffer[i].xOrigin + 1;
+        rc->ScissorY = SphereMap.cubeBuffer[i].yOrigin + 1;
+        rc->ScissorW = SphereMap.cubeBuffer[i].width - 2;
+        rc->ScissorH = SphereMap.cubeBuffer[i].height - 2;
+        rc->FrameWidth = SphereMap.cubeBuffer[i].width;
+        rc->FrameHeight = SphereMap.cubeBuffer[i].height;
+        rc->FrameAddress = reinterpret_cast<int>(SphereMap.cubeBuffer[i].pCaptureTexture);
+    }
+
+    for (int i = 0; i < 17; i++) {
+        eRenderTarget *rc = eGetRenderTarget(i);
+
+        rc->WorldClip = identity;
+        rc->WorldView = identity;
+        rc->ViewScreen = identity;
+    }
+}
+
 // int epSetAllStripsVisibleState(eSolid *param1, int param2) {
 //   param1->GetNext();
 //   return 0;
