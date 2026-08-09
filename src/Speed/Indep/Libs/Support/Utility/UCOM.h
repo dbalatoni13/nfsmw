@@ -61,7 +61,7 @@ class ALIGN_16 IUnknown {
     template <typename T> bool QueryInterface(T **out) {
         HINTERFACE handle = T::_IHandle();
 
-        *out = (T *)_mCOMObject->_mInterfaces.Find(handle);
+        *out = static_cast<T *>(_mCOMObject->_mInterfaces.Find(handle));
         return *out != nullptr;
     }
 
@@ -69,7 +69,7 @@ class ALIGN_16 IUnknown {
     template <typename T> bool QueryInterface(const T **out) const {
         HINTERFACE handle = T::_IHandle();
 
-        *out = (T *)_mCOMObject->_mInterfaces.Find(handle);
+        *out = static_cast<T *>(_mCOMObject->_mInterfaces.Find(handle));
         return *out != nullptr;
     }
 

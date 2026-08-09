@@ -81,8 +81,6 @@ int PrintSkyRender = 0;
 static const int VISUALIZE_WHICH_SKY = 0;
 
 int SkyInitModel(eModel *model, bMatrix4 *local_world, unsigned int scenery_name_hash) {
-    SceneryInstance *scenery_instance;
-
     if (model->GetNameHash() != 0) {
         return 1;
     }
@@ -90,11 +88,11 @@ int SkyInitModel(eModel *model, bMatrix4 *local_world, unsigned int scenery_name
     if (eFindSolid(scenery_name_hash) == nullptr) {
         return 0;
     }
-
+    
     model->Init(scenery_name_hash);
     eIdentity(local_world);
-
-    scenery_instance = FindSceneryInstance(scenery_name_hash);
+    
+    SceneryInstance *scenery_instance = FindSceneryInstance(scenery_name_hash);
     if (scenery_instance != nullptr) {
         scenery_instance->GetMatrix(local_world);
 

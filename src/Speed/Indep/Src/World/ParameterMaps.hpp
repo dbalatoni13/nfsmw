@@ -231,8 +231,6 @@ class ParameterAccessor : public bTNode<ParameterAccessor> {
 
   protected:
     virtual void SetUpForNewLayer();
-    // TODO
-    // ParameterAccessor(const ParameterAccessor &_ctor_arg) {}
 
     ParameterMapLayer *Layer;       // offset 0x8, size 0x4
     uint32 AutoAttachLayerNamehash; // offset 0xC, size 0x4

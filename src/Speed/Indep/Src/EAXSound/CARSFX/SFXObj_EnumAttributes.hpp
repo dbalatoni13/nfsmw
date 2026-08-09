@@ -25,10 +25,6 @@ enum eDRIVE_BY_TYPE {
 struct CollisionStream {
     Attrib::RefSpec StreamMoment;    // offset 0x0, size 0xC
     EA::Reflection::UInt8 Threshold; // offset 0xC, size 0x1
-
-    CollisionStream &operator=(const CollisionStream &_ctor_arg) {}
-
-    CollisionStream(const CollisionStream &_ctor_arg) {}
 };
 
 // total size: 0x8
@@ -45,10 +41,6 @@ struct StitchCollisionVol {
 struct UpgradeSpecs {
     Attrib::RefSpec Item;        // offset 0x0, size 0xC
     EA::Reflection::UInt8 Level; // offset 0xC, size 0x1
-
-    UpgradeSpecs &operator=(const UpgradeSpecs &_ctor_arg) {}
-
-    UpgradeSpecs(const UpgradeSpecs &_ctor_arg) {}
 };
 
 enum eCURVETYPE {

@@ -12,9 +12,10 @@
 #include "Speed/Indep/Src/EAXSound/EAXSoundEnums.hpp"
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_Enums.hpp"
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_EnumAttributes.hpp"
-#include "Speed/Indep/Src/EAXSound/snd_gen/copspeech.hpp"
-#include "Speed/Indep/Src/EAXSound/snd_gen/NISAudio.hpp"
-#include "Speed/Indep/Src/EAXSound/snd_gen/STITCH_COL.h"
+#include "Speed/Indep/Src/EAXSound/SND_GEN/copspeech.hpp"
+#include "Speed/Indep/Src/EAXSound/SND_GEN/NISAudio.hpp"
+#include "Speed/Indep/Src/EAXSound/SND_GEN/P2temp.h"
+#include "Speed/Indep/Src/EAXSound/SND_GEN/STITCH_COL.h"
 #include "Speed/Indep/Src/Gameplay/GReflected.h"
 #include "Speed/Indep/Src/Sim/SimSurfaceTypes.h"
 
@@ -30,8 +31,6 @@ struct ControllerDataRecord {
     InputUpdateType mUpdateType; // offset 0x10, size 0x4
     float mLowerDZ;              // offset 0x14, size 0x4
     float mUpperDZ;              // offset 0x18, size 0x4
-
-    ControllerDataRecord &operator=(const ControllerDataRecord &_ctor_arg) {}
 };
 
 // total size: 0x20
@@ -40,9 +39,6 @@ struct EffectLinkageRecord {
     Attrib::RefSpec mEffect;  // offset 0xC, size 0xC
     float mMinSpeed;          // offset 0x18, size 0x4
     float mMaxSpeed;          // offset 0x1C, size 0x4
-
-    EffectLinkageRecord &operator=(const EffectLinkageRecord &_ctor_arg) {}
-    EffectLinkageRecord(const EffectLinkageRecord &_ctor_arg) {}
 
     void mSurfaceClean() {}
 
@@ -108,10 +104,6 @@ struct TrafficPatternRecord {
     EA::Reflection::Float Rate;          // offset 0xC, size 0x4
     EA::Reflection::UInt32 MaxInstances; // offset 0x10, size 0x4
     EA::Reflection::UInt32 Percent;      // offset 0x14, size 0x4
-
-    // TrafficPatternRecord &operator=(const TrafficPatternRecord &_ctor_arg) {}
-
-    // TrafficPatternRecord(const TrafficPatternRecord &_ctor_arg) {}
 };
 
 // total size: 0x8
@@ -126,10 +118,6 @@ struct TireEffectRecord {
     Attrib::RefSpec mEmitter;        // offset 0x0, size 0xC
     EA::Reflection::Float mMinSpeed; // offset 0xC, size 0x4
     EA::Reflection::Float mMaxSpeed; // offset 0x10, size 0x4
-
-    TireEffectRecord &operator=(const TireEffectRecord &_ctor_arg) {}
-
-    TireEffectRecord(const TireEffectRecord &_ctor_arg) {}
 };
 
 // total size: 0x8

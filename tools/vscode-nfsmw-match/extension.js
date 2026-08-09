@@ -466,7 +466,12 @@ class MatchCodeLensProvider {
     this.changed.fire();
   }
 
+  clear(uri) {
+    if (this.values.delete(uri.toString())) this.changed.fire();
+  }
+
   provideCodeLenses(document) {
+    if (document.isDirty) return [];
     const annotations = this.values.get(document.uri.toString()) || [];
     const lenses = [];
     for (const annotation of annotations) {
@@ -531,6 +536,7 @@ async function activate(context) {
   const cache = new AnnotationCache(context);
   const diagnostics = vscode.languages.createDiagnosticCollection("nfsmw-match");
   const runningRefreshes = new Map();
+  const lastResults = new Map();
   let lastDiffViewColumn;
   const selector = [{ language: "c", scheme: "file" }, { language: "cpp", scheme: "file" }];
   context.subscriptions.push(
@@ -540,7 +546,8 @@ async function activate(context) {
     diagnostics,
   );
 
-  async function applyResult(document, result) {
+  async function applyResult(document, result, expectedVersion = document.version) {
+    lastResults.set(document.uri.toString(), result);
     const functionItems = result.annotations.filter((item) => item.kind !== "type");
     const typeItems = result.annotations.filter((item) => item.kind === "type");
     const locations = await locateFunctionOccurrences(document, functionItems.map((item) => item.function));
@@ -553,6 +560,7 @@ async function activate(context) {
         .filter((item) => typeLocations.get(item.type))
         .map((item) => ({ ...item, range: typeLocations.get(item.type) })),
     ];
+    if (document.isDirty || document.version !== expectedVersion) return 0;
     lenses.set(document.uri, annotations);
     const errors = [];
     for (const annotation of annotations) {
@@ -718,7 +726,9 @@ async function activate(context) {
               : "No struct/class definitions were found in this PS2 file.");
           }
           const result = { unit, platform, candidateKey: cacheKey, annotations };
+          if (signal.aborted) throw new vscode.CancellationError();
           await cache.write(repo, document.uri.fsPath, result);
+          if (signal.aborted) throw new vscode.CancellationError();
           const count = await applyResult(document, result);
           if (force) vscode.window.showInformationMessage(`Updated ${count} PS2 match annotations.`);
           return;
@@ -784,7 +794,9 @@ async function activate(context) {
           };
         });
         const result = { unit, platform, candidateKey: cacheKey, annotations };
+        if (signal.aborted) throw new vscode.CancellationError();
         await cache.write(repo, document.uri.fsPath, result);
+        if (signal.aborted) throw new vscode.CancellationError();
         const count = await applyResult(document, result);
         if (force) vscode.window.showInformationMessage(`Updated ${count} function match annotations.`);
       },
@@ -859,6 +871,21 @@ async function activate(context) {
     }),
     vscode.workspace.onDidOpenTextDocument((document) => {
       if (document.languageId === "c" || document.languageId === "cpp") refresh(document, false).catch(() => {});
+    }),
+    vscode.workspace.onDidChangeTextDocument((event) => {
+      const document = event.document;
+      if (document.languageId !== "c" && document.languageId !== "cpp") return;
+
+      // CodeLens ranges are tied to the old document layout. Remove them while
+      // the file is dirty so VS Code does not re-layout the editor on every keypress.
+      lenses.clear(document.uri);
+      diagnostics.delete(document.uri);
+      runningRefreshes.get(document.uri.toString())?.abort();
+    }),
+    vscode.workspace.onDidSaveTextDocument((document) => {
+      if (document.languageId !== "c" && document.languageId !== "cpp") return;
+      const result = lastResults.get(document.uri.toString());
+      if (result) applyResult(document, result).catch(() => {});
     }),
   );
 

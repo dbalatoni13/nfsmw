@@ -46,16 +46,21 @@ class CSTATEMGR_Base : public AudioMemBase {
     static bPList<CSTATE_Base::StateInfo> m_STATEClassList;
 
   protected:
+    friend void CSTATE_Base::NewSFXObj(int ecarsfx);
+    friend SFXCTL *CSTATE_Base::NewSFXCtrl(int esfxctl);
+
     CSTATE_Base *CreateState(int StateInstType, int _SFXFlags);
     SFX_Base *CreateSFX(int Instance, int SFXObjID);
     SFXCTL *CreateSFXCTL(int Instance, int SFXCtrlID);
+    void Start();
+    void Stop();
 
-    float m_CurTime;                  // offset 0x4, size 0x4, Decl: 83
-    float m_DeltaTime;                // offset 0x8, size 0x4
-    enum eMAINMAPSTATES m_eStateType; // offset 0xC, size 0x4
-    CSTATE_Base *m_pHeadStateObj;     // offset 0x10, size 0x4
-    int m_CurNumStates;               // offset 0x14, size 0x4
-    bool bIsInitialized;              // offset 0x18, size 0x1
+    float m_CurTime;              // offset 0x4, size 0x4, Decl: 83
+    float m_DeltaTime;            // offset 0x8, size 0x4
+    eMAINMAPSTATES m_eStateType;  // offset 0xC, size 0x4
+    CSTATE_Base *m_pHeadStateObj; // offset 0x10, size 0x4
+    int m_CurNumStates;           // offset 0x14, size 0x4
+    bool bIsInitialized;          // offset 0x18, size 0x1
 };
 
 #endif

@@ -6,6 +6,7 @@
 #define MAX_NUM_STAGES 6 // Decl: 6
 
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
+#include "Speed/Indep/Src/EAXSound/EAXCarState.hpp"
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_EnumAttributes.hpp"
 
 // total size: 0x8C
@@ -23,22 +24,30 @@ class cPathLine {
 
     void Reset();
 
-    float GetValue() {}
-    int iGetValue() {}
+    float GetValue() {
+        return this->CurValue;
+    }
+    int iGetValue() {
+        return static_cast<int>(this->CurValue);
+    }
     void Update(float delta_time);
     void Update(float delta_time, float _new_Finish);
 
-    bool IsFinished() {}
-    int GetStageNumber() {}
+    bool IsFinished() {
+        return this->bComplete;
+    }
+    int GetStageNumber() {
+        return this->cur_stage;
+    }
 
   private:
     float ElapsedTime; // offset 0x0, size 0x4
 
-    float Length[6];          // offset 0x4, size 0x18
-    float Start[6];           // offset 0x1C, size 0x18
-    float Finish[6];          // offset 0x34, size 0x18
-    bool IsLinked[6];         // offset 0x4C, size 0x6
-    eCURVETYPE CurveTypes[6]; // offset 0x64, size 0x18
+    float Length[MAX_NUM_STAGES];          // offset 0x4, size 0x18
+    float Start[MAX_NUM_STAGES];           // offset 0x1C, size 0x18
+    float Finish[MAX_NUM_STAGES];          // offset 0x34, size 0x18
+    bool IsLinked[MAX_NUM_STAGES];         // offset 0x4C, size 0x6
+    eCURVETYPE CurveTypes[MAX_NUM_STAGES]; // offset 0x64, size 0x18
 
     int num_stages; // offset 0x7C, size 0x4
     int cur_stage;  // offset 0x80, size 0x4
@@ -66,7 +75,9 @@ class cInterpLine {
     void Update(float delta_time);
     void Update(float delta_time, float _new_Finish);
 
-    bool IsFinished() {}
+    bool IsFinished() {
+        return bComplete;
+    }
 
   private:
     float ElapsedTime;     // offset 0x0, size 0x4
@@ -200,23 +211,22 @@ class Slope {
     ~Slope();
 
     float GetValue();
-
     float GetValue(float input);
-
     float GetInputScale(float input);
-
     void Update(float input);
-
     void Regenerate();
 
     void Initialize(float _Min, float _Max, float _Start, float _Finish);
 
-    float Min;             // offset 0x0, size 0x4
-    float Max;             // offset 0x4, size 0x4
-    float Start;           // offset 0x8, size 0x4
-    float Finish;          // offset 0xC, size 0x4
-    float LastInput;       // offset 0x10, size 0x4
-    float LastOutput;      // offset 0x14, size 0x4
+    float Min; // offset 0x0, size 0x4
+    float Max; // offset 0x4, size 0x4
+
+    float Start;  // offset 0x8, size 0x4
+    float Finish; // offset 0xC, size 0x4
+
+    float LastInput;  // offset 0x10, size 0x4
+    float LastOutput; // offset 0x14, size 0x4
+
     bool bNeedsRegenerate; // offset 0x18, size 0x1
 };
 
@@ -229,5 +239,11 @@ class Slope {
     bvector3->x = vector4.z;                                                                                                                         \
     bvector3->y = -vector4.x;                                                                                                                        \
     bvector3->z = vector4.y;
+
+EAX_CarState *GetClosestCopCarToCamera();
+EAX_CarState *GetClosestPlayerCar(const bVector3 *vPosition);
+EAX_CarState *GetClosestPlayerCar(const bVector3 *vPosition, bool CameraRelative, int &CarID);
+class EAXCar *GetPlayerCarInRadius(bVector3 &objectpos, float distance);
+bool IsCarInRadius(EAX_CarState *pCar, const bVector3 *vPos, float fRadius);
 
 #endif

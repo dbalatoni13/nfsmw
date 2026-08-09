@@ -13,7 +13,6 @@
 class CARSFX_Rain : public CARSFX {
   public:
     DECLARE_CREATABLE();
-
     CARSFX_Rain();
     ~CARSFX_Rain() override;
 

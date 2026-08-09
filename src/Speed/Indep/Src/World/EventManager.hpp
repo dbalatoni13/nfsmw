@@ -127,5 +127,6 @@ typedef void (*EVENT_HANDLER_FUNC)(emEvent *);
 
 void emEventManagerInit();
 void emProcessAllEvents();
+emEvent **emTriggerEventsInSection(bVector3 *position, int section_number);
 
 #endif

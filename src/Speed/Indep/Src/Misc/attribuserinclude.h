@@ -26,6 +26,13 @@ class StringKey {
           mHash32(src.mHash32), //
           mString(src.mString) {}
 
+    const StringKey &operator=(const StringKey &rhs) {
+        mHash64 = rhs.mHash64;
+        mHash32 = rhs.mHash32;
+        mString = rhs.mString;
+        return *this;
+    }
+
     const char *GetString() const {
         return (this->mString != nullptr) ? this->mString : "";
     }
@@ -51,6 +58,10 @@ class StringKey {
 
     bool operator==(const StringKey &rhs) const {
         return this->mHash64 == rhs.mHash64;
+    }
+
+    bool operator!=(const StringKey &rhs) const {
+        return this->mHash64 != rhs.mHash64;
     }
 
     operator uint64_t() const {

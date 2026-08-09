@@ -74,10 +74,10 @@ class cSampleWarpper : public UTL::Collections::ListableSet<cSampleWarpper, 25, 
     static bool SortSamplePriority(SND_SampleRef *FirstSample, SND_SampleRef *SecondSample);
 
   private:
-    const SND_SampleRef *SampleRefData;        // offset 0x8, size 0x4
-    AEMS_StichCollision *AEMS_ActiveSampleCol; // offset 0xC, size 0x4
-    AEMS_StichWoosh *AEMS_ActiveSampleWsh;     // offset 0x10, size 0x4
-    AEMS_StichStatic *AEMS_ActiveSampleStatic; // offset 0x14, size 0x4
+    const SND_SampleRef *SampleRefData;              // offset 0x8, size 0x4
+    Csis::AEMS_StichCollision *AEMS_ActiveSampleCol; // offset 0xC, size 0x4
+    Csis::AEMS_StichWoosh *AEMS_ActiveSampleWsh;     // offset 0x10, size 0x4
+    Csis::AEMS_StichStatic *AEMS_ActiveSampleStatic; // offset 0x14, size 0x4
 
     int m_nLocalVolume; // offset 0x18, size 0x4
     int m_nLocalPitch;  // offset 0x1C, size 0x4

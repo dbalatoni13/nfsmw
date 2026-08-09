@@ -13,6 +13,7 @@
 #define STATE_MASK(StateID) ((0x00FF0000 & StateID) >> 16)          // Decl: 21
 #define STATE_MASKALLOCTYPE(StateID) ((StateID & 0x0F000000) >> 24) // Decl: 22
 #define STATEINST_TYPE_MASK(StateID) (0x0000FFFF & StateID)         // Decl: 23
+
 // Decl: 26
 #define DECLARE_STATETYPE()                                                                                                                          \
   protected:                                                                                                                                         \
@@ -72,6 +73,13 @@ class CSTATE_Base : public AudioMemBase {
         const char *stateName;               // offset 0x4, size 0x4
         StateInfo *baseStateInfo;            // offset 0x8, size 0x4
         CSTATE_Base *(*createState)(uint32); // offset 0xc, size 0x4
+
+        CSTATE_Base *CreateState(uint32 allocator) {
+            if (this->createState == nullptr) {
+                return nullptr;
+            }
+            return this->createState(STATE_MASKALLOCTYPE(this->StateID));
+        }
     };
 
     CSTATE_Base();
@@ -85,8 +93,24 @@ class CSTATE_Base : public AudioMemBase {
     virtual bool Detach();
     virtual void Destroy();
 
+    SndBase *GetSFXObject(int SFXId);
+    SndBase *GetSFXCTLObject(int SFXId);
+
     void SafeConnectOrphanObjects();
     void DisconnectMixMap();
+
+  protected:
+    static CSTATE_Base::StateInfo s_StateInfo;
+
+  public:
+    virtual CSTATE_Base::StateInfo *GetStateInfo() const;
+    virtual const char *GetStateName() const;
+    static CSTATE_Base::StateInfo *GetStaticStateInfo() {
+        return &s_StateInfo;
+    }
+    static CSTATE_Base *CreateState(uint32 allocator);
+
+    void ForceCreateSFXCtrls(int iSFXCtrls);
 
     EAX_CarState *GetPhysCar() {
         return this->m_pCar;
@@ -100,25 +124,15 @@ class CSTATE_Base : public AudioMemBase {
         return this->t_DeltaTime;
     }
 
-  protected:
-    static CSTATE_Base::StateInfo s_StateInfo;
-
   public:
-    virtual CSTATE_Base::StateInfo *GetStateInfo() const;
-    virtual const char *GetStateName() const;
-    static CSTATE_Base::StateInfo *GetStaticStateInfo() {
-        return &s_StateInfo;
-    }
-    static CSTATE_Base *CreateState(uint32 allocator);
-
     bool IsDataLoaded(void);
 
     bool IsAttached() {
-        return bIsAttached;
+        return this->bIsAttached;
     }
 
     bool IsAttachedToThis(void *testattachment) {
-        return testattachment == m_pAttachment;
+        return testattachment == this->m_pAttachment;
     }
 
     // void *operator new(size_t s) {
@@ -135,10 +149,10 @@ class CSTATE_Base : public AudioMemBase {
     void *m_pAttachment;           // offset 0x1C, size 0x4
 
   protected:
-    void NewSFXObj(int ecarsfx);
-    SFXCTL *NewSFXCtrl(int esfxctl);
-    void CreateSFXObjs();
     void CreateSFXCtrls();
+    void CreateSFXObjs();
+    SFXCTL *NewSFXCtrl(int esfxctl);
+    void NewSFXObj(int ecarsfx);
     SFXCTL *HasCtrlBeenAdded(int esfxctrl);
     void SortSFXCtl();
 

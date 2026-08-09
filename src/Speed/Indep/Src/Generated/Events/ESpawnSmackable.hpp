@@ -17,7 +17,7 @@ class ESpawnSmackable : public Event {
         bool fVirginSpawn;           // offset: 0x24, size 0x1
     };
 
-    // enum { kEventID = 0 };
+    enum { kEventID = 0xEB626F77 };
 
     ESpawnSmackable(UMath::Vector3 pPosition, HMODEL pScenery, UMath::Vector4 pOrientation, bool pVirginSpawn, WTrigger *pTrigger,
                     unsigned int phSimable);

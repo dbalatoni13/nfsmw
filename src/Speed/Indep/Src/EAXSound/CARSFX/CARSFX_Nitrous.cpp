@@ -1,6 +1,7 @@
 #include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX_Nitrous.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
+#include "Speed/Indep/Src/Misc/Config.h"
 
 DEFINE_CREATABLE(0x20050, CARSFX_Nitrous, SndBase);
 
@@ -48,10 +49,6 @@ void CARSFX_Nitrous::InitSFX() {
     this->Enable();
     int nTurboID;
 }
-
-#ifdef CLANGD_DAMNIT
-extern int IsSoundEnabled; // Decl: zEAXSound2.cpp: 19
-#endif
 
 int CARSFX_Nitrous::Play(int type, int Vol, int Azimuth) {
     if (!this->IsEnabled() || IsSoundEnabled != 1) {
