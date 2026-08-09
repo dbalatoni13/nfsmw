@@ -23,6 +23,8 @@
 
 #include "Speed/GameCube/Src/Ecstasy/eMathE.cpp"
 
+#include "Speed/GameCube/Src/Ecstasy/eMatrixE.cpp"
+
 #include "Speed/GameCube/Src/Ecstasy/eStrip.cpp"
 
 #include "Speed/GameCube/Src/Ecstasy/eSolidPlat.cpp"

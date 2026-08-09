@@ -410,7 +410,7 @@ struct ALIGN_16 bVector3 {
 
     float &operator[](int index) {}
 
-    bVector3 operator-() {}
+    bVector3 operator-() const;
 };
 
 bVector3 *bNormalize(bVector3 *dest, const bVector3 *v);
@@ -536,9 +536,12 @@ inline bVector3 &bVector3::operator-=(const bVector3 &v) {
 }
 
 inline bVector3 *bNeg(bVector3 *dest, const bVector3 *v) {
-    float x;
-    float y;
-    float z;
+    float x = v->x;
+    float y = v->y;
+    float z = v->z;
+
+    bFill(dest, -x, -y, -z);
+    return dest;
 }
 
 inline float bDot(const bVector3 *v1, const bVector3 *v2) {
@@ -561,6 +564,13 @@ inline bVector3 *bMax(bVector3 *dest, const bVector3 *v1, const bVector3 *v2) {}
 
 inline bVector3 bNeg(const bVector3 &v) {
     bVector3 dest;
+
+    bNeg(&dest, &v);
+    return dest;
+}
+
+inline bVector3 bVector3::operator-() const {
+    return bNeg(*this);
 }
 
 inline bVector3 bCross(const bVector3 &v1, const bVector3 &v2) {

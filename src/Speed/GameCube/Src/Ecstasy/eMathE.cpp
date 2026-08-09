@@ -1,3 +1,4 @@
+#include "Speed/GameCube/Src/Ecstasy/eMatrixE.hpp"
 #include "Speed/Indep/Src/Ecstasy/eMath.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
@@ -13,6 +14,14 @@ void eMathInit(void) {
     bMatrix4 *zero = eGetZeroMatrix();
     MTX44Identity(*reinterpret_cast<Mtx44 *>(identity));
     bMemSet(zero, 0, sizeof(*zero));
+}
+
+inline float eRecip(float x) {
+    float val = x;
+    float recip;
+
+    asm("fres %0, %1" : "=f"(recip) : "f"(val));
+    return recip;
 }
 
 void eCopyMatrix(bMatrix4 *dest, bMatrix4 *src) {
@@ -91,6 +100,120 @@ void eMulVector(bVector3 *vm, const bMatrix4 *m, const bVector3 *v) {
             "ps_madds1 0, 0, 11, 12\n"
             "psq_st 0, 8(3), 1, 0");
     }
+}
+
+void eProject(float x, float y, float z, float (*mtx)[4], float *pm, float *vp, float *sx, float *sy, float *sz) {
+    Vec local;
+    Vec eye;
+
+    local.x = x;
+    local.y = y;
+    local.z = z;
+    MTXMultVec(mtx, &local, &eye);
+
+    if (eye.z == 0.0f) {
+        *sy = 0.0f;
+        *sx = 0.0f;
+        *sz = -2.0f;
+        return;
+    }
+
+    float oneOverW = eRecip(-eye.z);
+    float clipX = eye.x * pm[1] + eye.z * pm[2];
+    float clipY = -(eye.y * pm[3] + eye.z * pm[4]);
+    float clipZ = eye.z * pm[5] + pm[6];
+    float halfVP2 = vp[2] * 0.5f;
+    float halfVP3 = vp[3] * 0.5f;
+
+    *sx = vp[0] + halfVP2 + halfVP2 * clipX * oneOverW;
+    *sy = vp[1] + halfVP3 + halfVP3 * clipY * oneOverW;
+    *sz = (vp[5] - vp[4]) * clipZ * oneOverW + vp[5];
+}
+
+void eRotTransPers(bVector3 *dest, const bVector3 *src, bMatrix4 *wv, bMatrix4 *vs, float xOrig, float yOrig, float width, float height, float zNear,
+                   float zFar) {
+    float eproj[7] = {0.0f, vs->v0.x, vs->v0.z, vs->v1.y, vs->v1.z, vs->v2.z, vs->v2.w};
+    float eviewport[6] = {xOrig, yOrig, width, height, zNear, zFar};
+    float mhW2V[3][4];
+
+    eConvertToGX34(mhW2V, *wv);
+    eProject(src->x, src->y, src->z, mhW2V, eproj, eviewport, &dest->x, &dest->y, &dest->z);
+}
+
+void eCreateAxisRotationMatrix(bMatrix4 *dest, bVector3 &axis, bAngle angle) {
+    float c = bCos(angle);
+    float s = bSin(angle);
+    float t = 1.0f - c;
+    float x = axis.x;
+    float y = axis.y;
+    float z = axis.z;
+    float tx = t * x;
+    float ty = t * y;
+
+    dest->v0.x = tx * x + c;
+    dest->v0.y = tx * y - s * z;
+    dest->v0.z = tx * z + s * y;
+    dest->v0.w = 0.0f;
+    dest->v1.x = tx * y + s * z;
+    dest->v1.y = ty * y + c;
+    dest->v1.z = ty * z - x * s;
+    dest->v1.w = 0.0f;
+    dest->v2.x = tx * z - s * y;
+    dest->v2.y = ty * z + x * s;
+    dest->v2.z = t * z * z + c;
+    dest->v2.w = 0.0f;
+    dest->v3.x = 0.0f;
+    dest->v3.y = 0.0f;
+    dest->v3.z = 0.0f;
+    dest->v3.w = 1.0f;
+}
+
+void eCreateLookAtMatrix(bMatrix4 *mat, bVector3 &eye, bVector3 &center, bVector3 &up) {
+    bVector3 c = center - eye;
+    bNormalize(&c, &c);
+    bVector3 b = -up;
+    bVector3 a;
+    bMatrix4 tl;
+
+    bCross(&a, &b, &c);
+    bCross(&b, &c, &a);
+    bNormalize(&a, &a);
+    bNormalize(&b, &b);
+
+    mat->v0.x = a.x;
+    mat->v0.y = b.x;
+    mat->v0.z = c.x;
+    mat->v0.w = 0.0f;
+    mat->v1.x = a.y;
+    mat->v1.y = b.y;
+    mat->v1.z = c.y;
+    mat->v1.w = 0.0f;
+    mat->v2.x = a.z;
+    mat->v2.y = b.z;
+    mat->v2.z = c.z;
+    mat->v2.w = 0.0f;
+    mat->v3.x = 0.0f;
+    mat->v3.y = 0.0f;
+    mat->v3.z = 0.0f;
+    mat->v3.w = 1.0f;
+
+    tl.v0.x = 1.0f;
+    tl.v0.y = 0.0f;
+    tl.v0.z = 0.0f;
+    tl.v0.w = 0.0f;
+    tl.v1.x = 0.0f;
+    tl.v1.y = 1.0f;
+    tl.v1.z = 0.0f;
+    tl.v1.w = 0.0f;
+    tl.v2.x = 0.0f;
+    tl.v2.y = 0.0f;
+    tl.v2.z = 1.0f;
+    tl.v2.w = 0.0f;
+    tl.v3.x = -eye.x;
+    tl.v3.y = -eye.y;
+    tl.v3.z = -eye.z;
+    tl.v3.w = 1.0f;
+    eMulMatrix(mat, &tl, mat);
 }
 
 float eSin(float a) {
