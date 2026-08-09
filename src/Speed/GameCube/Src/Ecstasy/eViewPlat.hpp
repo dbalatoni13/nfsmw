@@ -40,6 +40,24 @@ struct eViewPlatInfo {
     void SetLightPerspectiveProjection(Mtx44 *projection) {
         LightPerspectiveProjection = projection;
     }
+
+    void CalculateViewMatricies(eView *view, float force_near_z, float force_far_z, float force_screen_far_z);
 };
+
+inline bMatrix4 *eViewPlatInfo::GetWorldViewMatrix() {
+    return &WorldViewMatrix;
+}
+
+inline bMatrix4 *eViewPlatInfo::GetViewScreenMatrix() {
+    return &ViewScreenMatrix;
+}
+
+inline bMatrix4 *eViewPlatInfo::GetWorldClipMatrix() {
+    return &WorldClipMatrix;
+}
+
+inline bMatrix4 *eViewPlatInfo::GetWorldScreenMatrix() {
+    return &WorldScreenMatrix;
+}
 
 #endif

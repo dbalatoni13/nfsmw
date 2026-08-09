@@ -207,6 +207,10 @@ class eView : public eViewPlatInterface {
         this->RenderTargetTable[index] = target;
     }
 
+    eRenderTarget *GetRenderTarget() const {
+        return RenderTargetTable[0];
+    }
+
     void SetRenderTarget0(eRenderTarget *target) {
         this->SetRenderTarget(target, 0);
     }
