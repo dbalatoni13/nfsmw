@@ -11,7 +11,6 @@
 class CARSFX_PreColWoosh : public CARSFX {
   public:
     DECLARE_CREATABLE();
-
     CARSFX_PreColWoosh();
     ~CARSFX_PreColWoosh() override;
 

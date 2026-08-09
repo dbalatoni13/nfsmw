@@ -1,5 +1,5 @@
-#ifndef ENGINES_AEMS2_NG_H
-#define ENGINES_AEMS2_NG_H
+#ifndef ENGINES_AEMS2_H
+#define ENGINES_AEMS2_H
 
 #include <csis/csis.h>
 
@@ -429,6 +429,326 @@ class CAR {
     CARStruct mData; // offset 0x4, size 0x68
 };
 
+class CAR_SWTN {
+  public:
+    void SetId(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0xF) {
+            x = 0xF;
+        }
+        this->mData.id = x;
+    }
+
+    int GetId() {
+        return this->mData.id;
+    }
+
+    void SetCar_class(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 100) {
+            x = 100;
+        }
+        this->mData.car_class = x;
+    }
+
+    int GetCar_class() {
+        return this->mData.car_class;
+    }
+
+    void SetRPM(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 10000) {
+            x = 10000;
+        }
+        this->mData.rPM = x;
+    }
+
+    int GetRPM() {
+        return this->mData.rPM;
+    }
+
+    void SetVOL(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x8013) {
+            x = 0x8013;
+        }
+        this->mData.vOL = x;
+    }
+
+    int GetVOL() {
+        return this->mData.vOL;
+    }
+
+    void SetCOMMON_PARAMETERS_AZIMUTH(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x10000) {
+            x = 0x10000;
+        }
+        this->mData.cOMMON_PARAMETERS_AZIMUTH = x;
+    }
+
+    int GetCOMMON_PARAMETERS_AZIMUTH() {
+        return this->mData.cOMMON_PARAMETERS_AZIMUTH;
+    }
+
+    void SetCOMMON_PARAMETERS_PITCH_OFFSET(int x) {
+        if (x < -0x3FFF) {
+            x = -0x3FFF;
+        } else if (x > 0x3FFF) {
+            x = 0x3FFF;
+        }
+        this->mData.cOMMON_PARAMETERS_PITCH_OFFSET = x;
+    }
+
+    int GetCOMMON_PARAMETERS_PITCH_OFFSET() {
+        return this->mData.cOMMON_PARAMETERS_PITCH_OFFSET;
+    }
+
+    void SetCOMMON_PARAMETERS_ROTATION(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x400) {
+            x = 0x400;
+        }
+        this->mData.cOMMON_PARAMETERS_ROTATION = x;
+    }
+
+    int GetCOMMON_PARAMETERS_ROTATION() {
+        return this->mData.cOMMON_PARAMETERS_ROTATION;
+    }
+
+    int GetRefCount() {
+        int refCount = 0;
+
+        if (this->mpClass != nullptr) {
+            this->mpClass->GetRefCount(&refCount);
+        }
+
+        return refCount;
+    }
+
+    void *operator new(size_t size) {
+        return System::Alloc(size);
+    }
+
+    void operator delete(void *ptr) {
+        System::Free(ptr);
+    }
+
+    CAR_SWTN(int id, int car_class, int rPM, int vOL, int cOMMON_PARAMETERS_AZIMUTH, int cOMMON_PARAMETERS_PITCH_OFFSET,
+             int cOMMON_PARAMETERS_ROTATION) {
+        this->SetId(id);
+        this->SetCar_class(car_class);
+        this->SetRPM(rPM);
+        this->SetVOL(vOL);
+        this->SetCOMMON_PARAMETERS_AZIMUTH(cOMMON_PARAMETERS_AZIMUTH);
+        this->SetCOMMON_PARAMETERS_PITCH_OFFSET(cOMMON_PARAMETERS_PITCH_OFFSET);
+        this->SetCOMMON_PARAMETERS_ROTATION(cOMMON_PARAMETERS_ROTATION);
+
+        Result result = Class::CreateInstance(&gCAR_SWTNHandle, &this->mData, &this->mpClass);
+        if (result < RESULT_OK) {
+            gCAR_SWTNHandle.Set(&CAR_SWTNId);
+            Class::CreateInstance(&gCAR_SWTNHandle, &this->mData, &this->mpClass);
+        }
+    }
+
+    ~CAR_SWTN() {
+        if (this->mpClass != nullptr) {
+            this->mpClass->Release();
+        }
+    }
+
+    void CommitMemberData() {
+        if (this->mpClass != nullptr) {
+            this->mpClass->SetMemberData(&this->mData);
+        }
+    }
+
+  private:
+    Class *mpClass;
+    CAR_SWTNStruct mData;
+};
+
+// total size: 0x28
+// Decl: 4471
+class CAR_WHINE {
+  public:
+    void SetCar_class(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 100) {
+            x = 100;
+        }
+        this->mData.car_class = x;
+    }
+
+    int GetCar_class() {
+        return this->mData.car_class;
+    }
+
+    void SetRPM(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 10000) {
+            x = 10000;
+        }
+        this->mData.rPM = x;
+    }
+
+    int GetRPM() {
+        return this->mData.rPM;
+    }
+
+    void SetVOL(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x8013) {
+            x = 0x8013;
+        }
+        this->mData.vOL = x;
+    }
+
+    int GetVOL() {
+        return this->mData.vOL;
+    }
+
+    void SetCOMMON_PARAMETERS_AZIMUTH(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x10000) {
+            x = 0x10000;
+        }
+        this->mData.cOMMON_PARAMETERS_AZIMUTH = x;
+    }
+
+    int GetCOMMON_PARAMETERS_AZIMUTH() {
+        return this->mData.cOMMON_PARAMETERS_AZIMUTH;
+    }
+
+    void SetCOMMON_PARAMETERS_PITCH_OFFSET(int x) {
+        if (x < -0x3FFF) {
+            x = -0x3FFF;
+        } else if (x > 0x3FFF) {
+            x = 0x3FFF;
+        }
+        this->mData.cOMMON_PARAMETERS_PITCH_OFFSET = x;
+    }
+
+    int GetCOMMON_PARAMETERS_PITCH_OFFSET() {
+        return this->mData.cOMMON_PARAMETERS_PITCH_OFFSET;
+    }
+
+    void SetCOMMON_PARAMETERS_ROTATION(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x400) {
+            x = 0x400;
+        }
+        this->mData.cOMMON_PARAMETERS_ROTATION = x;
+    }
+
+    int GetCOMMON_PARAMETERS_ROTATION() {
+        return this->mData.cOMMON_PARAMETERS_ROTATION;
+    }
+
+    void SetREVERB_AND_FILTERS_LoPass(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 25000) {
+            x = 25000;
+        }
+        this->mData.rEVERB_AND_FILTERS_LoPass = x;
+    }
+
+    int GetREVERB_AND_FILTERS_LoPass() {
+        return this->mData.rEVERB_AND_FILTERS_LoPass;
+    }
+
+    void SetREVERB_AND_FILTERS_Wet(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x7FFF) {
+            x = 0x7FFF;
+        }
+        this->mData.rEVERB_AND_FILTERS_Wet = x;
+    }
+
+    int GetREVERB_AND_FILTERS_Wet() {
+        return this->mData.rEVERB_AND_FILTERS_Wet;
+    }
+
+    void SetREVERB_AND_FILTERS_Dry(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x7FFF) {
+            x = 0x7FFF;
+        }
+        this->mData.rEVERB_AND_FILTERS_Dry = x;
+    }
+
+    int GetREVERB_AND_FILTERS_Dry() {
+        return this->mData.rEVERB_AND_FILTERS_Dry;
+    }
+
+    int GetRefCount() {
+        int refCount = 0;
+
+        if (this->mpClass != nullptr) {
+            this->mpClass->GetRefCount(&refCount);
+        }
+
+        return refCount;
+    }
+
+    void *operator new(size_t size) {
+        return System::Alloc(size);
+    }
+
+    void operator delete(void *ptr) {
+        System::Free(ptr);
+    }
+
+    CAR_WHINE(int car_class, int rPM, int vOL, int cOMMON_PARAMETERS_AZIMUTH, int cOMMON_PARAMETERS_PITCH_OFFSET, int cOMMON_PARAMETERS_ROTATION,
+              int rEVERB_AND_FILTERS_LoPass, int rEVERB_AND_FILTERS_Wet, int rEVERB_AND_FILTERS_Dry) {
+        this->SetCar_class(car_class);
+        this->SetRPM(rPM);
+        this->SetVOL(vOL);
+        this->SetCOMMON_PARAMETERS_AZIMUTH(cOMMON_PARAMETERS_AZIMUTH);
+        this->SetCOMMON_PARAMETERS_PITCH_OFFSET(cOMMON_PARAMETERS_PITCH_OFFSET);
+        this->SetCOMMON_PARAMETERS_ROTATION(cOMMON_PARAMETERS_ROTATION);
+        this->SetREVERB_AND_FILTERS_LoPass(rEVERB_AND_FILTERS_LoPass);
+        this->SetREVERB_AND_FILTERS_Wet(rEVERB_AND_FILTERS_Wet);
+        this->SetREVERB_AND_FILTERS_Dry(rEVERB_AND_FILTERS_Dry);
+
+        Result result = Class::CreateInstance(&gCAR_WHINEHandle, &this->mData, &this->mpClass);
+        if (result < RESULT_OK) {
+            gCAR_WHINEHandle.Set(&CAR_WHINEId);
+            Class::CreateInstance(&gCAR_WHINEHandle, &this->mData, &this->mpClass);
+        }
+    }
+
+    ~CAR_WHINE() {
+        if (this->mpClass != nullptr) {
+            this->mpClass->Release();
+        }
+    }
+
+    void CommitMemberData() {
+        if (this->mpClass != nullptr) {
+            this->mpClass->SetMemberData(&this->mData);
+        }
+    }
+
+  private:
+    Class *mpClass;
+    CAR_WHINEStruct mData;
+};
+
 // total size: 0x28
 // Decl: 4685
 class CAR_TRANNY {
@@ -567,8 +887,263 @@ class CAR_TRANNY {
     CAR_TRANNY();
     CAR_TRANNY &operator=(const CAR_TRANNY &);
 
-    Csis::Class *mpClass;   // offset 0x0, size 0x4
+    Class *mpClass;         // offset 0x0, size 0x4
     CAR_TRANNYStruct mData; // offset 0x4, size 0x24
+};
+
+// total size: 0x30
+// Decl: 4899
+class CAR_Sputter {
+  public:
+    void SetCar_class(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 100) {
+            x = 100;
+        }
+        this->mData.car_class = x;
+    }
+
+    int GetCar_class() {
+        return this->mData.car_class;
+    }
+
+    void SetCar_id(int x) {
+        this->mData.car_id = x;
+    }
+
+    int GetCar_id() {
+        return this->mData.car_id;
+    }
+
+    void SetRPM(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 10000) {
+            x = 10000;
+        }
+        this->mData.rPM = x;
+    }
+
+    int GetRPM() {
+        return this->mData.rPM;
+    }
+
+    void SetVOL(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 32787) {
+            x = 32787;
+        }
+        this->mData.vOL = x;
+    }
+
+    int GetVOL() {
+        return this->mData.vOL;
+    }
+
+    void SetCOMMON_PARAMETERS_AZIMUTH(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x10000) {
+            x = 0x10000;
+        }
+        this->mData.cOMMON_PARAMETERS_AZIMUTH = x;
+    }
+
+    int GetCOMMON_PARAMETERS_AZIMUTH() {
+        return this->mData.cOMMON_PARAMETERS_AZIMUTH;
+    }
+
+    void SetCOMMON_PARAMETERS_PITCH_OFFSET(int x) {
+        if (x < -0x3FFF) {
+            x = -0x3FFF;
+        } else if (x > 0x3FFF) {
+            x = 0x3FFF;
+        }
+        this->mData.cOMMON_PARAMETERS_PITCH_OFFSET = x;
+    }
+
+    int GetCOMMON_PARAMETERS_PITCH_OFFSET() {
+        return this->mData.cOMMON_PARAMETERS_PITCH_OFFSET;
+    }
+
+    void SetCOMMON_PARAMETERS_ROTATION(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x400) {
+            x = 0x400;
+        }
+        this->mData.cOMMON_PARAMETERS_ROTATION = x;
+    }
+
+    int GetCOMMON_PARAMETERS_ROTATION() {
+        return this->mData.cOMMON_PARAMETERS_ROTATION;
+    }
+
+    void SetTORQUE(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x400) {
+            x = 0x400;
+        }
+        this->mData.tORQUE = x;
+    }
+
+    int GetTORQUE() {
+        return this->mData.tORQUE;
+    }
+
+    void SetForce_Trigger(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 1) {
+            x = 1;
+        }
+        this->mData.force_Trigger = x;
+    }
+
+    int GetForce_Trigger() {
+        return this->mData.force_Trigger;
+    }
+
+    void SetAccel_true(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 1) {
+            x = 1;
+        }
+        this->mData.accel_true = x;
+    }
+
+    int GetAccel_true() {
+        return this->mData.accel_true;
+    }
+
+    void SetShifting_true(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 1) {
+            x = 1;
+        }
+        this->mData.shifting_true = x;
+    }
+
+    int GetShifting_true() {
+        return this->mData.shifting_true;
+    }
+
+    int GetRefCount() {
+        int refCount = 0;
+
+        if (this->mpClass != nullptr) {
+            this->mpClass->GetRefCount(&refCount);
+        }
+
+        return refCount;
+    }
+
+    void *operator new(size_t size) {
+        return System::Alloc(size);
+    }
+
+    void operator delete(void *ptr) {
+        System::Free(ptr);
+    }
+
+    CAR_Sputter(int car_class, int car_id, int rPM, int vOL, int cOMMON_PARAMETERS_AZIMUTH, int cOMMON_PARAMETERS_PITCH_OFFSET,
+                int cOMMON_PARAMETERS_ROTATION, int tORQUE, int force_Trigger, int accel_true, int shifting_true) {
+        this->SetCar_class(car_class);
+        this->SetCar_id(car_id);
+        this->SetRPM(rPM);
+        this->SetVOL(vOL);
+        this->SetCOMMON_PARAMETERS_AZIMUTH(cOMMON_PARAMETERS_AZIMUTH);
+        this->SetCOMMON_PARAMETERS_PITCH_OFFSET(cOMMON_PARAMETERS_PITCH_OFFSET);
+        this->SetCOMMON_PARAMETERS_ROTATION(cOMMON_PARAMETERS_ROTATION);
+        this->SetTORQUE(tORQUE);
+        this->SetForce_Trigger(force_Trigger);
+        this->SetAccel_true(accel_true);
+        this->SetShifting_true(shifting_true);
+
+        Result result = Class::CreateInstance(&gCAR_SputterHandle, &this->mData, &this->mpClass);
+        if (result < RESULT_OK) {
+            gCAR_SputterHandle.Set(&CAR_SputterId);
+            Class::CreateInstance(&gCAR_SputterHandle, &this->mData, &this->mpClass);
+        }
+    }
+
+    ~CAR_Sputter() {
+        if (this->mpClass != nullptr) {
+            this->mpClass->Release();
+        }
+    }
+
+    void CommitMemberData() {
+        if (this->mpClass != nullptr) {
+            this->mpClass->SetMemberData(&this->mData);
+        }
+    }
+
+  private:
+    CAR_Sputter();
+    CAR_Sputter &operator=(const CAR_Sputter &);
+
+    Class *mpClass;
+    CAR_SputterStruct mData;
+};
+
+// total size: 0x10
+// Decl: 5141
+class CAR_SputOutput {
+  public:
+    void SetVolume(int x) {} // Decl: 5143
+
+    int GetVolume() {} // Decl: 5154
+
+    void SetCar_class(int x) {} // Decl: 5159
+
+    int GetCar_class() {} // Decl: 5170
+
+    void SetCar_id(int x) {} // Decl: 5175
+
+    int GetCar_id() {} // Decl: 5180
+
+    int GetRefCount() {
+        int refCount = 0;
+        if (this->mpClass != nullptr) {
+            this->mpClass->GetRefCount(&refCount);
+        }
+
+        return refCount;
+    }
+
+    void *operator new(size_t size) {
+        return System::Alloc(size);
+    }
+
+    void operator delete(void *ptr) {
+        System::Free(ptr);
+    }
+
+    CAR_SputOutput(int volume, int car_class, int car_id) {} // Decl: 5205
+
+    // Decl: 5225
+    ~CAR_SputOutput() {
+        if (this->mpClass != nullptr) {
+            this->mpClass->Release();
+        }
+    }
+
+    // Decl: 5231
+    void CommitMemberData() {
+        if (mpClass != nullptr) {
+            this->mpClass->SetMemberData(&this->mData);
+        }
+    }
+
+  private:
+    Class *mpClass;             // offset 0x0, size 0x4, Decl: 5238
+    CAR_SputOutputStruct mData; // offset 0x4, size 0xC, Decl: 5239
 };
 
 }; // namespace Csis

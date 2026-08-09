@@ -17,7 +17,17 @@
 
 class EAX_CarState : public UTL::Collections::Listable<EAX_CarState, 10> {
   public:
-    static EAX_CarState *Find(WUID objectid) {}
+    static EAX_CarState *Find(WUID objectid) {
+        for (List::const_iterator iter = GetList().begin(); iter != GetList().end(); ++iter) {
+            EAX_CarState *state = *iter;
+
+            if (state->mWorldID == objectid) {
+                return state;
+            }
+        }
+
+        return nullptr;
+    }
 
     EAX_CarState(const Attrib::Collection *atr, Sound::Context context, WUID wuid, HSIMABLE handle)
         : mVel0(0.0f, 0.0f, 0.0f),         //
@@ -62,7 +72,9 @@ class EAX_CarState : public UTL::Collections::Listable<EAX_CarState, 10> {
         return this;
     }
 
-    float GetMaxTurboTorque() {}
+    float GetMaxTurboTorque() {
+        return 0.25f;
+    }
 
     float GetMaxEngineTorque() {
         return this->mMaxTorque;

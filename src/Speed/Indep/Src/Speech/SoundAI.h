@@ -4,6 +4,10 @@
 #include "EAXAirSupport.h"
 #include "Speed/Indep/Src/EAXSound/EAXSoundTypes.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/speechtune.h"
+#include "Speed/Indep/Src/Generated/Messages/MGamePlayMoment.h"
+#include "Speed/Indep/Src/Generated/Messages/MMiscSound.h"
+#include "Speed/Indep/Src/Generated/Messages/MPerpBusted.h"
+#include "Speed/Indep/Src/Generated/Messages/MRestartRace.h"
 #include "Speed/Indep/Src/Generated/Messages/MUnspawnCop.h"
 #include "Speed/Indep/Src/Interfaces/IListener.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
@@ -18,6 +22,7 @@ DECLARE_CONTAINER_TYPE(IVehiclePtrs);
 namespace Speech {
 
 // total size: 0x8
+// Decl: 59
 struct copPair {
     inline bool operator<(const struct copPair &from) const {}
 
@@ -38,12 +43,11 @@ class copList : public UTL::Std::vector<EAXCop *, _type_copList>, public AudioMe
 
 DECLARE_CONTAINER_TYPE(voiceIDs);
 
-struct voiceIDs : public UTL::Std::vector<int, _type_voiceIDs> {};
+class voiceIDs : public UTL::Std::vector<int, _type_voiceIDs> {};
 
 // total size: 0x70
+// Decl: 86
 struct VoiceUsage {
-    VoiceUsage() {}
-
     voiceIDs voices;          // offset 0x0, size 0x10
     voiceIDs cs_Rhino;        // offset 0x10, size 0x10
     voiceIDs cs_SuperPursuit; // offset 0x20, size 0x10
@@ -53,31 +57,24 @@ struct VoiceUsage {
     voiceIDs cs_Alpine;       // offset 0x60, size 0x10
 };
 
+// total size: 0xC
+// Decl: 108
+struct BlowByRecord {
+    void Reset() {} // Decl: 109
+
+    void Set(float dist, float vel) {} // Decl: 116
+
+    float distance;  // offset 0x0, size 0x4, Decl: 123
+    float speed;     // offset 0x4, size 0x4, Decl: 124
+    Timer timestamp; // offset 0x8, size 0x4, Decl: 125
+};
+
 }; // namespace Speech
 
 // total size: 0x260
+// Decl: 133
 class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public UTL::Collections::Singleton<SoundAI> {
   public:
-    // total size: 0x8
-    struct CarHeading {
-        // Members
-        unsigned int direction; // offset 0x0, size 0x4
-        RoadNames roadID;       // offset 0x4, size 0x4
-    };
-    enum PursuitState {
-        kActive = 0,
-        kSearching = 1,
-        kInactive = 2,
-        kOtherTarget = 3,
-    };
-    enum QuadrantState {
-        kInitial = 0,
-        kForming = 1,
-        kFiction1 = 2,
-        kFiction2 = 3,
-        kExpired = 4,
-        kReset = 5,
-    };
     enum CarCustomFlags {
         VINYLS = 1,
         PAINT = 2,
@@ -85,17 +82,25 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
         DECALS = 8,
     };
     // total size: 0x8
+    // Decl: 159
     struct CarCustomizations {
-        // Members
-        // Type_car_color color; // offset 0x0, size 0x4
-        unsigned int flags; // offset 0x4, size 0x4
+        Csis::Type_car_color color; // offset 0x0, size 0x4
+        unsigned int flags;         // offset 0x4, size 0x4
     };
     // total size: 0x8
+    // Decl: 165
     struct HeatCutoffs {
         // Members
         float value;                // offset 0x0, size 0x4
         Type_heat_level heat_level; // offset 0x4, size 0x4
     };
+    // total size: 0x8
+    // Decl: 173
+    struct CarHeading {
+        unsigned int direction; // offset 0x0, size 0x4
+        RoadNames roadID;       // offset 0x4, size 0x4
+    };
+    // Decl: 178
     enum MachineState {
         kPursuitFlow = 1,
         kStrategyFlow = 2,
@@ -109,10 +114,19 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
         kTerminal = 999,
         kCullCheck = 0,
     };
+    // Decl: 193
     enum BailoutType {
         kOutrunBail = 0,
         kForcedBail = 1,
     };
+    // Decl: 199
+    enum PursuitState {
+        kActive = 0,
+        kSearching = 1,
+        kInactive = 2,
+        kOtherTarget = 3,
+    };
+    // Decl: 207
     enum VehicleImpactType {
         kCopREperp = 0,
         kPerpRECop = 1,
@@ -123,6 +137,15 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
         kCopSSPerp = 6,
         kPerpSSCop = 7,
         kUnknown = 8,
+    };
+    // Decl: 236
+    enum QuadrantState {
+        kInitial = 0,
+        kForming = 1,
+        kFiction1 = 2,
+        kFiction2 = 3,
+        kExpired = 4,
+        kReset = 5,
     };
     enum SoundAIFlags {
         RB_ENABLED = 1,
@@ -145,66 +168,10 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
 
     SoundAI();
     ~SoundAI() override;
+    Sim::IActivity *Construct(Sim::Param params);
 
-    void MessagePerpBusted(const struct MPerpBusted &message);
-    void MessageAIPerpBusted(const struct MPerpBusted &message);
-    void MessageInfraction(const struct MMiscSound &message);
-    void MessageRestart(const struct MRestartRace &message);
-    void MessageUnspawnCop(const MUnspawnCop &message);
-    void MessageTireBlown(const struct MGamePlayMoment &message);
     void OnVehicleAdded(IVehicle *ivehicle);
     void OnVehicleRemoved(IVehicle *ivehicle);
-    EAXCop *GetCopInRB();
-    EAXCop *GetRandomActiveCop(int type, bool reqLOS);
-    EAXCop *GetRandomCop(int type);
-    Sim::IActivity *Construct(Sim::Param params);
-    IRoadBlock *GetRoadblock();
-    bool IsMusicActive();
-    void DealWithDeadAir();
-    void UpdateStateMachines();
-    void AttemptReattachPursuit();
-    void SyncPursuit();
-    void TerminatePursuit(BailoutType type);
-    void ResetPursuit(bool including_music);
-    void ShuffleActors();
-    bool IsHeadingValid();
-    void SyncPlayers();
-    void Force911State();
-    void SyncCarsToActors();
-    void SyncFormations();
-    EAXCop *FindFurthestCop(bool includeHeli);
-    EAXCop *FindClosestCop(bool enforceLOS, bool includeHeli);
-    void RemoveCop(HSIMABLE seeya);
-    void AddNewHeli(IVehicle *heli);
-    EAXCop *SpawnCop();
-    int GetBattalionFromRoadID(int roadID);
-    int GetBattalionFromKey(unsigned int theKey);
-    void AddNewCop(IVehicle *newcop);
-    bool MakeLeader(EAXCop *newprim);
-    // int GetCallsign(Type_speaker_battalion battalion);
-    // void RandomizeCallsign(struct voiceIDs &cs, Type_speaker_call_sign_id start, Type_speaker_call_sign_id finish);
-    int GetVoice(int type);
-    EAXCop *GetCop(int speaker);
-    void RandomBailoutDeny(EAXCop *wimp);
-    unsigned int CalcPlayerDirection(bool force_set);
-    void ForceGlobalVoiceChange();
-    unsigned char GetCustomized(IVehicle *vehicle, CarCustomizations &custrec);
-    bool IsHighIntensity();
-    const float GetTimeLastNailedCop();
-
-    // Virtual overrides
-    // IListener
-    void OnCollision(const COLLISION_INFO &cinfo) override;
-
-    //  IAttachable
-    void OnAttached(IAttachable *pOther) override;
-    void OnDetached(IAttachable *pOther) override;
-
-    // ITaskable
-    bool OnTask(HSIMTASK htask, float dT) override;
-
-    // IActivity
-    void Release() override;
 
     // void EnableObservations() {}
 
@@ -220,130 +187,313 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
 
     // void Disable() {}
 
-    // const struct copMap &GetActors() {}
+    // IActivity
+    void Release() override;
 
-    // EAXCop *GetLeader() {}
+    // ITaskable
+    bool OnTask(HSIMTASK htask, float dT) override;
+
+    const Speech::copMap &GetActors() {
+        return this->mActors;
+    }
+
+    EAXCop *GetLeader() {
+        return this->mLeader;
+    }
 
     EAXAirSupport *GetHeli() {
         return mHeli;
     }
 
-    // struct EAXDispatch *GetDispatch() {}
+    struct EAXDispatch *GetDispatch() {
+        return this->mDispatch;
+    }
 
-    // struct IPursuit *GetPursuit() {}
+    IPursuit *GetPursuit() {
+        return this->mPursuit;
+    }
 
-    // enum PursuitState GetPursuitState() {}
+    PursuitState GetPursuitState() {
+        return mPursuitState;
+    }
 
-    // const int GetHeat() {}
+    bool IsMusicActive();
 
-    // EAXCop *GetLatestCop() {}
+    const int GetHeat() {
+        return this->mPlayerHeat;
+    }
 
-    // const struct copList &GetCopsInFormation() {}
+    EAXCop *GetLatestCop() {
+        return this->mLatestCop;
+    }
 
-    // const float GetPursuitDistance() {}
+    const Speech::copList &GetCopsInFormation() {
+        return this->mCopsInFormation;
+    }
 
-    // const float GetPlayerSpeed() {}
+    const float GetPursuitDistance() {
+        return this->mPursuitDist;
+    }
 
-    // const struct Vector3 &GetPlayerPos() {}
+    EAXCop *FindClosestCop(bool enforceLOS, bool includeHeli);
+    EAXCop *FindFurthestCop(bool includeHeli);
 
-    // const int NumCopsWithLOS() {}
+    const float GetPlayerSpeed() {
+        return this->mPlayerSpeed;
+    }
 
-    // const int NumTrafficHits() {}
+    const UMath::Vector3 &GetPlayerPos() {
+        return this->mPlayerPos;
+    }
 
-    // const signed char NumRoadBlocks() {}
+    const int NumCopsWithLOS() {
+        return this->mLOSCount;
+    }
 
-    // const int NumPursuits() {}
+    const int NumTrafficHits() {
+        return this->mTrafficHits911;
+    }
 
-    // const struct pvehicle &GetPlayerSpecs() {}
+    const signed char NumRoadBlocks() {
+        return this->mNumRoadBlocks;
+    }
 
-    // const struct speechtune &GetTune() {}
+    const int NumPursuits() {
+        return this->mPursuitCount;
+    }
+
+    const Attrib::Gen::pvehicle &GetPlayerSpecs() {
+        return this->mPVehicle;
+    }
+
+    const Attrib::Gen::speechtune &GetTune() {
+        return this->mTune;
+    }
 
     const Attrib::Gen::pursuitlevels &GetPursuitSpecs() {
-        return mPursuitLevel;
+        return this->mPursuitLevel;
     }
 
     // const int GetHavoc() {}
 
-    // enum SpeechObservations GetLastObservation() {}
+    // SpeechObservations GetLastObservation() {
+    //     if (mObserver != nullptr) {
+    //         return mObserver->GetLastEvent();
+    //     }
+    //     return Speech::None;
+    // }
 
-    // const int GetFocus() {}
+    const int GetFocus() {
+        return this->mFocus;
+    }
 
-    // void SetFocus(enum MachineState s) {}
+    void SetFocus(MachineState s) {
+        this->mFocus = s;
+    }
 
-    // struct Observer *GetObserver() {}
+    IRoadBlock *GetRoadblock();
 
-    // struct RoadblockFlow *GetRBFlow() {}
+    // Observer *GetObserver() {}
 
-    // enum RoadNames GetAIRacerRoadID(int n) {}
+    // RoadblockFlow *GetRBFlow() {
+    //     return this->mRoadblockFlow;
+    // }
+
+    unsigned int CalcPlayerDirection(bool force_set);
+
+    // RoadNames GetAIRacerRoadID(int n) {}
 
     // unsigned int GetAIRacerDirection(int n) {}
 
     // unsigned int GetLastKnownAIDirection() {}
 
-    // enum RoadNames GetLastKnownAIRoad() {}
+    // RoadNames GetLastKnownAIRoad() {}
 
-    // enum RoadNames GetPlayerRoadID(int n) {}
+    RoadNames GetPlayerRoadID(int n) {
+        return this->mPlayerCurrent[n].roadID;
+    }
 
-    // unsigned int GetPlayerDirection(int n) {}
+    unsigned int GetPlayerDirection(int n) {
+        return this->mPlayerCurrent[n].direction;
+    }
 
-    // unsigned int GetLastKnownDirection() {}
+    unsigned int GetLastKnownDirection() {
+        return this->mLastKnown.direction;
+    }
 
-    // enum RoadNames GetLastKnownRoad() {}
+    RoadNames GetLastKnownRoad() {
+        return this->mLastKnown.roadID;
+    }
 
-    // const float GetPursuitDuration() {}
+    bool IsHeadingValid();
 
-    // const float GetPlayerStopTime() {}
+    const float GetPursuitDuration() {
+        return this->mPursuitDuration;
+    }
 
-    // const float GetPerpLostTime() {}
+    const float GetPlayerStopTime() {
+        return (WorldTimer - this->mT_reallylowspeed).GetSeconds();
+    }
 
-    // const float GetTimeLastCrashed() {}
+    const float GetPerpLostTime() {
+        return (WorldTimer - this->mT_noLOS).GetSeconds();
+    }
 
-    // const float GetTimeSinceLastChase() {}
+    const float GetTimeLastCrashed() {
+        return (WorldTimer - this->mT_lastCrashed).GetSeconds();
+    }
 
-    // const float GetTimeInView() {}
+    const float GetTimeLastNailedCop();
 
-    // struct BlowByRecord &GetRecentBlowby() {}
+    const float GetTimeSinceLastChase() {
+        return this->mTimeSinceLastChase;
+    }
 
-    // struct SlotPool *GetActorPool() {}
-
-    // void MakeCopsImmune() {}
-
-    // void ClearImmunity() {}
+    const float GetTimeInView() {
+        return (WorldTimer - this->mT_LOS).GetSeconds();
+    }
 
     // const unsigned char GetRacerCount() {}
 
-    // bool RoadblocksEnabled() {}
+    void RandomBailoutDeny(EAXCop *wimp);
 
-    // bool HeliRoadblocksEnabled() {}
+    bool RoadblocksEnabled() {
+        return (this->mFlags & RB_ENABLED) != 0;
+    }
 
-    // bool SpikesEnabled() {}
+    bool HeliRoadblocksEnabled() {
+        return (this->mFlags & HELIRB_ENABLED) != 0;
+    }
 
-    // bool AreCopsAhead() {}
+    bool SpikesEnabled() {
+        return (this->mFlags & SPIKES_ENABLED) != 0;
+    }
 
-    // bool Is911Active() {}
+    bool AreCopsAhead() {
+        return (this->mFlags & COPS_ARE_AHEAD) != 0;
+    }
 
-    // bool AreRacersNearby() {}
+    bool Is911Active() {
+        return (this->mFlags & DISP911_ACTIVE) != 0;
+    }
 
-    // int GetLastInfraction() {}
+    bool AreRacersNearby() {
+        return (this->mFlags & RACERS_PROXIMAL) != 0;
+    }
 
-    // int GetNumCopsInWave() {}
+    int GetLastInfraction() {
+        return this->mInfraction;
+    }
 
-    // unsigned int GetPlayerOffroadID() {}
+    int GetNumCopsInWave() {
+        return this->mNumCopsInWave;
+    }
 
-    // unsigned int GetPlayerCarColor() {}
+    unsigned int GetPlayerOffroadID() {
+        if (mPlayerCarCustom == nullptr) {
+            return 0;
+        }
+        return mPlayerCarCustom->color;
+    }
 
-    // unsigned int GetPlayerCustom() {}
+    unsigned int GetPlayerCarColor() {}
 
-    // const unsigned char GetNumCopsInView() {}
+    unsigned int GetPlayerCustom() {
+        if (mPlayerCarCustom == nullptr) {
+            return 0;
+        }
+        return mPlayerCarCustom->flags;
+    }
 
-    // int GetNumActiveCopCars() {}
+    const unsigned char GetNumCopsInView() {
+        return this->mCopsInView;
+    }
+
+    int GetNumActiveCopCars() {
+        return this->mNumActiveCopCars;
+    }
+
+  protected:
+    //  IAttachable
+    void OnAttached(IAttachable *pOther) override;
+    void OnDetached(IAttachable *pOther) override;
+
+    // IListener
+    void OnCollision(const COLLISION_INFO &cinfo) override;
+
+  public:
+    void AddNewCop(IVehicle *newcop);
+    void AddNewHeli(IVehicle *heli);
+    void RemoveCop(HSIMABLE seeya);
+
+    void SyncCarsToActors();
+    void SyncFormations();
+    void SyncPursuit();
+    void SyncPlayers();
+
+    EAXCop *GetCop(int speaker);
+    EAXCop *GetRandomCop(int type);
+    EAXCop *GetRandomActiveCop(int type, bool reqLOS);
+
+    void UpdateStateMachines();
+    void DealWithDeadAir();
+
+    void ShuffleActors();
+    bool MakeLeader(EAXCop *newprim);
+    void TerminatePursuit(BailoutType type);
+    void ResetPursuit(bool including_music);
+
+    Speech::BlowByRecord &GetRecentBlowby() {
+        return this->mRecentBlowby;
+    }
+
+    EAXCop *SpawnCop();
+
+    SlotPool *GetActorPool() {
+        return this->mActorPool;
+    }
+
+    void MakeCopsImmune() {
+        this->mFlags |= COPS_IMMUNE;
+    }
+
+    void ClearImmunity() {
+        this->mFlags &= ~COPS_IMMUNE;
+    }
+
+    bool IsHighIntensity();
 
     static const HeatCutoffs heat_cutoffs[4]; // size: 0x20, address: 0x80407A80
-    static int mRefCount;                     // size: 0x4, address: 0x80435E9C
 
   private:
-    HSIMTASK mMainUpdate;                     // offset 0x54, size 0x4
-    HSIMTASK mProcessObservations;            // offset 0x58, size 0x4
+    int GetVoice(int type);
+    void RandomizeCallsign(Speech::voiceIDs &cs, Csis::Type_speaker_call_sign_id start, Csis::Type_speaker_call_sign_id finish);
+    int GetCallsign(Csis::Type_speaker_battalion battalion);
+    int GetBattalionFromRoadID(int roadID);
+    int GetBattalionFromKey(unsigned int theKey);
+
+    void ForceGlobalVoiceChange();
+    unsigned char GetCustomized(IVehicle *vehicle, CarCustomizations &custrec);
+
+    void AttemptReattachPursuit();
+
+    void MessagePerpBusted(const MPerpBusted &message);
+    void MessageAIPerpBusted(const MPerpBusted &message);
+    void MessageInfraction(const MMiscSound &message);
+    void MessageRestart(const MRestartRace &message);
+    void MessageUnspawnCop(const MUnspawnCop &message);
+    void MessageTireBlown(const MGamePlayMoment &message);
+
+    // TODO these two have unknown visibility
+    EAXCop *GetCopInRB();
+    void Force911State();
+
+  private:
+    HSIMTASK mMainUpdate;          // offset 0x54, size 0x4
+    HSIMTASK mProcessObservations; // offset 0x58, size 0x4
+
+    static int mRefCount; // size: 0x4, address: 0x80435E9C
+
     unsigned int mFlags;                      // offset 0x5C, size 0x4
     Speech::copMap mActors;                   // offset 0x60, size 0x10
     Speech::VoiceUsage mUsage;                // offset 0x70, size 0x70
@@ -383,35 +533,35 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
     CarHeading mAILastKnown;                  // offset 0x1D4, size 0x8
     PursuitState mPursuitState;               // offset 0x1DC, size 0x4
     QuadrantState mQuadrantState;             // offset 0x1E0, size 0x4
-    // BlowByRecord mRecentBlowby;               // offset 0x1E4, size 0xC
-    int mInfraction;                        // offset 0x1F0, size 0x4
-    int mNumCopsInWave;                     // offset 0x1F4, size 0x4
-    int mNumActiveCopCars;                  // offset 0x1F8, size 0x4
-    int mPlayerOffroadID;                   // offset 0x1FC, size 0x4
-    unsigned char mCopsInView;              // offset 0x200, size 0x1
-    struct PursuitFlow *mPursuitFlow;       // offset 0x204, size 0x4
-    struct StrategyFlow *mStrategyFlow;     // offset 0x208, size 0x4
-    struct Observer *mObserver;             // offset 0x20C, size 0x4
-    struct RoadblockFlow *mRoadblockFlow;   // offset 0x210, size 0x4
-    struct MusicFlow *mMusicFlow;           // offset 0x214, size 0x4
-    Timer mT_outofFormation;                // offset 0x218, size 0x4
-    Timer mT_reallylowspeed;                // offset 0x21C, size 0x4
-    Timer mT_noLOS;                         // offset 0x220, size 0x4
-    Timer mT_LOS;                           // offset 0x224, size 0x4
-    Timer mT_lastCrashed;                   // offset 0x228, size 0x4
-    Timer mT_lastCopNailed;                 // offset 0x22C, size 0x4
-    Timer mT_pursuitStart;                  // offset 0x230, size 0x4
-    Timer mT_sinceLastPursuit;              // offset 0x234, size 0x4
-    CarCustomizations *mPlayerCarCustom;    // offset 0x238, size 0x4
-    CarCustomizations *mAICarCustom;        // offset 0x23C, size 0x4
-    SlotPool *mActorPool;                   // offset 0x240, size 0x4
-    Hermes::HHANDLER mMsgPerpBusted;        // offset 0x244, size 0x4
-    Hermes::HHANDLER mMsgAIPerpBusted;      // offset 0x248, size 0x4
-    Hermes::HHANDLER mMsgForcePursuitStart; // offset 0x24C, size 0x4
-    Hermes::HHANDLER mMsgRestartRace;       // offset 0x250, size 0x4
-    Hermes::HHANDLER mMsgInfraction;        // offset 0x254, size 0x4
-    Hermes::HHANDLER mMsgUnspawnCop;        // offset 0x258, size 0x4
-    Hermes::HHANDLER mMsgTireBlown;         // offset 0x25C, size 0x4
+    Speech::BlowByRecord mRecentBlowby;       // offset 0x1E4, size 0xC
+    int mInfraction;                          // offset 0x1F0, size 0x4
+    int mNumCopsInWave;                       // offset 0x1F4, size 0x4
+    int mNumActiveCopCars;                    // offset 0x1F8, size 0x4
+    int mPlayerOffroadID;                     // offset 0x1FC, size 0x4
+    unsigned char mCopsInView;                // offset 0x200, size 0x1
+    struct PursuitFlow *mPursuitFlow;         // offset 0x204, size 0x4
+    struct StrategyFlow *mStrategyFlow;       // offset 0x208, size 0x4
+    struct Observer *mObserver;               // offset 0x20C, size 0x4
+    struct RoadblockFlow *mRoadblockFlow;     // offset 0x210, size 0x4
+    struct MusicFlow *mMusicFlow;             // offset 0x214, size 0x4
+    Timer mT_outofFormation;                  // offset 0x218, size 0x4
+    Timer mT_reallylowspeed;                  // offset 0x21C, size 0x4
+    Timer mT_noLOS;                           // offset 0x220, size 0x4
+    Timer mT_LOS;                             // offset 0x224, size 0x4
+    Timer mT_lastCrashed;                     // offset 0x228, size 0x4
+    Timer mT_lastCopNailed;                   // offset 0x22C, size 0x4
+    Timer mT_pursuitStart;                    // offset 0x230, size 0x4
+    Timer mT_sinceLastPursuit;                // offset 0x234, size 0x4
+    CarCustomizations *mPlayerCarCustom;      // offset 0x238, size 0x4
+    CarCustomizations *mAICarCustom;          // offset 0x23C, size 0x4
+    SlotPool *mActorPool;                     // offset 0x240, size 0x4
+    Hermes::HHANDLER mMsgPerpBusted;          // offset 0x244, size 0x4
+    Hermes::HHANDLER mMsgAIPerpBusted;        // offset 0x248, size 0x4
+    Hermes::HHANDLER mMsgForcePursuitStart;   // offset 0x24C, size 0x4
+    Hermes::HHANDLER mMsgRestartRace;         // offset 0x250, size 0x4
+    Hermes::HHANDLER mMsgInfraction;          // offset 0x254, size 0x4
+    Hermes::HHANDLER mMsgUnspawnCop;          // offset 0x258, size 0x4
+    Hermes::HHANDLER mMsgTireBlown;           // offset 0x25C, size 0x4
 };
 
 #endif

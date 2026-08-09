@@ -5,18 +5,6 @@
 
 // total size: 0x38
 struct RBComplexParams : public Sim::Param {
-    RBComplexParams(const RBComplexParams &_ctor_arg)
-        : Sim::Param(_ctor_arg), finitPos(_ctor_arg.finitPos), finitVel(_ctor_arg.finitVel), finitAngVel(_ctor_arg.finitAngVel),
-          finitMat(_ctor_arg.finitMat), finitMass(_ctor_arg.finitMass), finitMoment(_ctor_arg.finitMoment), fdimension(_ctor_arg.fdimension),
-          factive(_ctor_arg.factive), fgeoms(_ctor_arg.fgeoms), fCollisionMask(_ctor_arg.fCollisionMask) {}
-
-    RBComplexParams(const UMath::Vector3 &initPos, const UMath::Vector3 &initVel, const UMath::Vector3 &initAngVel, const UMath::Matrix4 &initMat,
-                    float initMass, const UMath::Vector3 &initMoment, const UMath::Vector3 &dimension, const CollisionGeometry::Bounds *geoms,
-                    bool active, unsigned int collision_mask)
-        : Sim::Param(TypeName(), static_cast<RBComplexParams *>(nullptr)), finitPos(initPos), finitVel(initVel), finitAngVel(initAngVel),
-          finitMat(initMat), finitMass(initMass), finitMoment(initMoment), fdimension(dimension), factive(active), fgeoms(geoms),
-          fCollisionMask(collision_mask) {}
-
     static UCrc32 TypeName() {
         static UCrc32 value = "RBComplexParams";
         return value;
@@ -36,15 +24,6 @@ struct RBComplexParams : public Sim::Param {
 
 // total size: 0x28
 struct RBSimpleParams : public Sim::Param {
-    RBSimpleParams(const RBSimpleParams &_ctor_arg)
-        : Sim::Param(_ctor_arg), finitPos(_ctor_arg.finitPos), finitVel(_ctor_arg.finitVel), finitAngVel(_ctor_arg.finitAngVel),
-          finitMat(_ctor_arg.finitMat), finitRadius(_ctor_arg.finitRadius), finitMass(_ctor_arg.finitMass) {}
-
-    RBSimpleParams(const UMath::Vector3 &initPos, const UMath::Vector3 &initVel, const UMath::Vector3 &initAngVel, const UMath::Matrix4 &initMat,
-                   float initRadius, float initMass)
-        : Sim::Param(TypeName(), static_cast<RBSimpleParams *>(nullptr)), finitPos(initPos), finitVel(initVel), finitAngVel(initAngVel),
-          finitMat(initMat), finitRadius(initRadius), finitMass(initMass) {}
-
     static UCrc32 TypeName() {
         static UCrc32 value = "RBSimpleParams";
         return value;
@@ -60,8 +39,6 @@ struct RBSimpleParams : public Sim::Param {
 
 // total size: 0x10
 struct SuspensionParams : public Sim::Param {
-    SuspensionParams(const SuspensionParams &_ctor_arg) : Sim::Param(_ctor_arg) {}
-
     // TODO
     SuspensionParams() : Sim::Param(TypeName(), static_cast<SuspensionParams *>(nullptr)) {}
 
@@ -74,7 +51,6 @@ struct SuspensionParams : public Sim::Param {
 
 // total size: 0x10
 struct EngineParams : public Sim::Param {
-    EngineParams(const EngineParams &_ctor_arg) : Sim::Param(_ctor_arg) {}
     EngineParams() : Sim::Param(TypeName(), static_cast<EngineParams *>(nullptr)) {}
 
     static UCrc32 TypeName() {
@@ -85,8 +61,6 @@ struct EngineParams : public Sim::Param {
 
 // total size: 0x10
 struct DamageParams : public Sim::Param {
-    DamageParams(const DamageParams &_ctor_arg) : Sim::Param(_ctor_arg) {}
-
     DamageParams() : Sim::Param(TypeName(), static_cast<DamageParams *>(nullptr)) {}
 
     static UCrc32 TypeName() {

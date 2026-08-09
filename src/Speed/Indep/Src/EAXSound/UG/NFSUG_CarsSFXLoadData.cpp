@@ -1,7 +1,11 @@
+#include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
+#include "Speed/Indep/Src/EAXSound/SFX_Common.hpp"
 #include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX_Engine.hpp"
 #include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX_Nitrous.hpp"
+#include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX_Shifting.hpp"
 #include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX_Skids.hpp"
-#include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
+#include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX_SparkChatter.hpp"
+#include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX_Turbo.hpp"
 
 void CARSFX_Nitrous::SetupLoadData() {
     // TODO switch?
@@ -17,6 +21,32 @@ void CARSFX_Nitrous::SetupLoadData() {
     }
 
     this->LoadAsset(g_pEAXSound->GetAttributes().AEMS_NOSBanks(nbankindex), SNDPATH_NOS, SDT_AEMS_ASYNCSPUMEM, eBANK_SLOT_NONE, true);
+}
+
+void CARSFX_Shift::SetupLoadData() {
+    if (EAXCar::g_ShiftInfo != nullptr) {
+        this->LoadAsset(EAXCar::g_ShiftInfo->BankName(), SNDPATH_SHIFT, SDT_AEMS_ASYNCSPUMEM, eBANK_SLOT_NONE, true);
+    } else {
+        this->LoadAsset(this->m_pEAXCar->GetShiftInfo().BankName(), SNDPATH_SHIFT, SDT_AEMS_ASYNCSPUMEM, eBANK_SLOT_NONE, true);
+    }
+
+    if (this->m_pEAXCar->GetEngineAttributes().Num_SweetBank() > 0) {
+        for (unsigned int i = 0; i < this->m_pEAXCar->GetEngineAttributes().Num_SweetBank(); i++) {
+            this->LoadAsset(this->m_pEAXCar->GetEngineAttributes().SweetBank(i), SNDPATH_ENGINE, SDT_AEMS_ASYNCSPUMEM, eBANK_SLOT_NONE, true);
+        }
+    }
+}
+
+void CARSFX_SparkChatter::SetupLoadData() {
+    LoadAsset(this->m_pEAXCar->GetEngineAttributes().SweetBank(0), SNDPATH_ENGINE, SDT_AEMS_ASYNCSPUMEM, eBANK_SLOT_NONE, true);
+}
+
+void CARSFX_Turbo::SetupLoadData() {
+    if (EAXCar::g_TurboInfo != nullptr) {
+        LoadAsset(EAXCar::g_TurboInfo->BankName(), SNDPATH_TURBO, SDT_AEMS_ASYNCSPUMEM, eBANK_SLOT_NONE, true);
+    } else {
+        LoadAsset(this->m_pEAXCar->GetTurboInfo().BankName(), SNDPATH_TURBO, SDT_AEMS_ASYNCSPUMEM, eBANK_SLOT_NONE, true);
+    }
 }
 
 void CARSFX_Skids::SetupLoadData() {
@@ -50,4 +80,12 @@ void CARSFX_DualGinsuEng::SetupLoadData() {
     this->LoadAsset(this->m_pEAXCar->GetEngineAttributes().BankName_mainRAM(), SNDPATH_ENGINE, SDT_AEMS_AUDIOMEM, eBANK_SLOT_NONE, true);
     this->LoadAsset(this->m_pEAXCar->GetEngineAttributes().Filename_GinsuAccel(), SNDPATH_ENGINE, SDT_GENERIC_DATA, eBANK_SLOT_NONE, true);
     this->LoadAsset(this->m_pEAXCar->GetEngineAttributes().Filename_GinsuDecel(), SNDPATH_ENGINE, SDT_GENERIC_DATA, eBANK_SLOT_NONE, true);
+}
+
+void SFX_Common::SetupLoadData() {
+    this->LoadAsset(g_pEAXSound->GetAttributes().AEMS_FEBanks(1), SNDPATH_GLOBAL, SDT_AEMS_ASYNCSPUMEM, eBANK_SLOT_NONE, true);
+
+    if (g_pEAXSound->GetSndGameMode() == SND_FRONTEND) {
+        this->LoadAsset(g_pEAXSound->GetAttributes().AEMS_FEBanks(0), SNDPATH_FE, SDT_AEMS_ASYNCSPUMEM, eBANK_SLOT_NONE, true);
+    }
 }

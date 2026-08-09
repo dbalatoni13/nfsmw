@@ -13,7 +13,6 @@
 class CARSFX_Nitrous : public CARSFX {
   public:
     DECLARE_CREATABLE();
-
     CARSFX_Nitrous();
     ~CARSFX_Nitrous() override;
 

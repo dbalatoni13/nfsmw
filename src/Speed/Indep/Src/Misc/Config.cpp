@@ -14,7 +14,7 @@ const char *SkipFEPlayer2Car = "911turbo";
 float SkipFEPlayerPerformance = 0.0f;
 const char *SkipFEOpponentPresetRide = "";
 int SkipFESplitScreen = 0;
-const char *SkipFEPlayerModelOverride = 0;
+const char *SkipFEPlayerModelOverride = nullptr;
 int SkipFENumPlayerCars = 1;
 int SkipFENumAICars = 0;
 int SkipFENumLaps = 2;
@@ -41,7 +41,7 @@ int IsSoundEnabled = 1;
 int IsAudioStreamingEnabled = 1;
 int IsSpeechEnabled = 1;
 int IsNISAudioEnabled = 1;
-bool ShutJosieUp = 0;
+bool ShutJosieUp = false;
 int IsMemcardEnabled = 1;
 int IsAutoSaveEnabled = 1;
 

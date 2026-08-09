@@ -1,7 +1,7 @@
 #ifndef COLLISIONSTATE_HPP
 #define COLLISIONSTATE_HPP
 
-#include "Speed/Indep/Src/EAXSound/SndBase.hpp"
+#include "Speed/Indep/Src/EAXSound/SoundCollision.hpp"
 
 // total size: 0x48
 // Decl: 11

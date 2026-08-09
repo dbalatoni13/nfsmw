@@ -16,12 +16,14 @@ struct EngRevDataPoint {
 };
 
 // total size: 0x8
+// Decl: 35
 struct EngRevDataSet {
     int NumPoints;               // offset 0x0, size 0x4
     EngRevDataPoint *DataPoints; // offset 0x4, size 0x4
 };
 
 // total size: 0x98
+// Decl: 48
 class NIS_RevManager : public AudioMemBase {
   public:
     void OpenNISRevData(unsigned int anim_id);
