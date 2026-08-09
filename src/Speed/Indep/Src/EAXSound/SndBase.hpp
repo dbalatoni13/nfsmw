@@ -35,12 +35,17 @@ class SndBase : public AudioMemBase {
   public:
     // total size: 0x10
     struct TypeInfo {
-        int ObjectID;                           // offset 0x0, size 0x4
-        char *typeName;                         // offset 0x4, size 0x4
-        TypeInfo *baseTypeInfo;                 // offset 0x8, size 0x4
-        SndBase *(*createObject)(unsigned int); // offset 0xC, size 0x4
+        int ObjectID;                     // offset 0x0, size 0x4
+        char *typeName;                   // offset 0x4, size 0x4
+        TypeInfo *baseTypeInfo;           // offset 0x8, size 0x4
+        SndBase *(*createObject)(uint32); // offset 0xC, size 0x4
 
-        SndBase *CreateObject(unsigned int allocator) {}
+        SndBase *CreateObject(uint32 allocator) {
+            if (this->createObject == nullptr) {
+                return nullptr;
+            }
+            return this->createObject(MASK_ALLOCTYPE(this->ObjectID));
+        }
     };
 
     SndBase();
@@ -53,9 +58,24 @@ class SndBase : public AudioMemBase {
         return MASK_OBJIDX(GetTypeInfo()->ObjectID);
     }
 
+    void SetObjectID(int id) {
+        this->objectID = id;
+    }
+
+    int GetInstanceID() {
+        return this->objectID & 0xF;
+    }
+
     int GetGroupID() {
         return MASK_GRPID(this->objectID);
     }
+
+    int GetSFX_ID() {
+        return (this->objectID >> 4) & 0x7F;
+    }
+
+    bool IsOfExactType(const TypeInfo *typeInfo) const;
+    bool IsOfType(const TypeInfo *typeInfo) const;
 
     virtual int GetController(int Index) {
         return -1;
@@ -76,6 +96,14 @@ class SndBase : public AudioMemBase {
     virtual void Destroy() {}
     virtual void UpdateParams(float t) {}
     virtual void ProcessUpdate() {}
+
+    void TurnOffMixer() {
+        if (this->m_pInputBlock != nullptr) {
+            int *pctl = this->m_pInputBlock;
+            pctl[15] = 0;
+        }
+    }
+
     virtual void Detach() {}
     virtual void UpdateMixerOutputs() {}
 
@@ -99,7 +127,31 @@ class SndBase : public AudioMemBase {
         return m_pOutPutBlock[index];
     }
 
+    int *GetOutputBlockPtr() {
+        return m_pOutPutBlock;
+    }
+
+    void SetOutputsPtr(int *ptr) {
+        this->m_pOutPutBlock = ptr;
+    }
+
+    void SetInputsPtr(int *ptr) {
+        this->m_pInputBlock = ptr;
+        if (ptr != nullptr) {
+            int *pctl = ptr;
+            pctl[15] = 1;
+        }
+    }
+
+    int *GetInputBlockPtr() {
+        return m_pInputBlock;
+    } // Decl: 254
+
     int GetDMixOutput(int idx, DMX_PRESET_TYPE etype);
+
+    void SetStateBase(CSTATE_Base *_StateBase) {
+        this->m_pStateBase = _StateBase;
+    }
 
     CSTATE_Base *GetStateBase() {
         return this->m_pStateBase;

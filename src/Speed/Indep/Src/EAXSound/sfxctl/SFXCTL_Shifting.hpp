@@ -62,9 +62,13 @@ class SFXCTL_Shifting : public SFXCTL {
     void BeginDownShift();
     void UpdateGearShiftState(float t);
     void CleanUpShiftFX();
-    bool IsUpshifting() {} // Decl: 62
+    bool IsUpshifting() {
+        return this->eShiftState == SHFT_UP_DISENGAGE || this->eShiftState == SHFT_UP_ENGAGING || this->eShiftState == SHFT_UP_LFO;
+    } // Decl: 62
 
-    bool IsDownShifting() {} // Decl: 67
+    bool IsDownShifting() {
+        return this->eShiftState >= SHFT_DOWN_DISENGAGE && this->eShiftState <= SHFT_DOWN_ENGAGING_REATTACH;
+    } // Decl: 67
 
     Gear GetCurGear();
     Gear GetLastGear();

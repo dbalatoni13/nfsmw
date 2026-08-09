@@ -44,7 +44,7 @@ typedef struct {
 
 // Decl: 161
 typedef union {
-    int iVal;   // offset 0x0, size 0x4
+    int iVal;   // offset 0x0, size 0x4 // TODO they also store pointers in this
     float fVal; // offset 0x0, size 0x4
 } Parameter;
 
@@ -124,38 +124,36 @@ typedef struct {
 typedef FunctionClient MemberDataClient;
 typedef FunctionClient GlobalVariableClient;
 
-
-
 // total size: 0x1
 class Function {
-public:
-    static Result Call(FunctionHandle *pFunctionHandle, void *pParameters) ;
+  public:
+    static Result Call(FunctionHandle *pFunctionHandle, void *pParameters);
 
-    static Result CallFast(FunctionHandle *pFunctionHandle, void *pParameters) ;
+    static Result CallFast(FunctionHandle *pFunctionHandle, void *pParameters);
 
-    static Result Subscribe(FunctionHandle *pFunctionHandle, FunctionClient *pFunctionClient) ;
+    static Result Subscribe(FunctionHandle *pFunctionHandle, FunctionClient *pFunctionClient);
 
-    static Result SubscribeFast(FunctionHandle *pFunctionHandle, FunctionClient *pFunctionClient) ;
+    static Result SubscribeFast(FunctionHandle *pFunctionHandle, FunctionClient *pFunctionClient);
 
-    static Result Unsubscribe(FunctionHandle *pFunctionHandle, FunctionClient *pFunctionClient) ;
+    static Result Unsubscribe(FunctionHandle *pFunctionHandle, FunctionClient *pFunctionClient);
 
-    static Result UnsubscribeFast(FunctionHandle *pFunctionHandle, FunctionClient *pFunctionClient) ;
+    static Result UnsubscribeFast(FunctionHandle *pFunctionHandle, FunctionClient *pFunctionClient);
 };
 
 // total size: 0x1
 class GlobalVariable {
-public:
-    static Result Set(GlobalVariableHandle *pHandle, void *pGlobalVariable) ;
+  public:
+    static Result Set(GlobalVariableHandle *pHandle, void *pGlobalVariable);
 
-    static Result SetFast(GlobalVariableHandle *pHandle, void *pGlobalVariable) ;
+    static Result SetFast(GlobalVariableHandle *pHandle, void *pGlobalVariable);
 
-    static Result Subscribe(GlobalVariableHandle *pHandle, GlobalVariableClient *pClient) ;
+    static Result Subscribe(GlobalVariableHandle *pHandle, GlobalVariableClient *pClient);
 
-    static Result SubscribeFast(GlobalVariableHandle *pHandle, GlobalVariableClient *pClient) ;
+    static Result SubscribeFast(GlobalVariableHandle *pHandle, GlobalVariableClient *pClient);
 
-    static Result Unsubscribe(GlobalVariableHandle *pHandle, GlobalVariableClient *pClient) ;
+    static Result Unsubscribe(GlobalVariableHandle *pHandle, GlobalVariableClient *pClient);
 
-    static Result UnsubscribeFast(GlobalVariableHandle *pHandle, GlobalVariableClient *pClient) ;
+    static Result UnsubscribeFast(GlobalVariableHandle *pHandle, GlobalVariableClient *pClient);
 };
 
 class Class;

@@ -87,16 +87,12 @@ def generate_header_for_event(event: dict) -> str:
 
     includes = detect_includes(static_fields, extra_fields)
 
-    guard = f"EVENTS_{name.upper()}_H"
+    guard = f"__{name.upper()}__"
     out = []
 
     # Guard + pragma
     out.append(f"#ifndef {guard}")
     out.append(f"#define {guard}")
-    out.append("")
-    out.append("#ifdef EA_PRAGMA_ONCE_SUPPORTED")
-    out.append("#pragma once")
-    out.append("#endif")
     out.append("")
 
     for inc in includes:
@@ -122,7 +118,7 @@ def generate_header_for_event(event: dict) -> str:
 
     # EventID comment
     if "ID" in event:
-        out.append(f"    // enum {{ kEventID = {event['ID']} }};")
+        out.append(f"    enum {{ kEventID = {event['ID']} }};")
         out.append("")
 
     # Constructor parameters for BOTH static + extra fields

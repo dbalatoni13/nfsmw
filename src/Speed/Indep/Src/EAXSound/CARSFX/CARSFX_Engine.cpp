@@ -324,7 +324,6 @@ void CARSFX_GinsuEngine::StartupGinsu() {
     this->GinsuInitialized = true;
 }
 
-stSndDataLoadParams g_SndAssetList[MAX_SIZE_SNDASSETLIST]; // size: 0x1380, Decl: 953
 char *GetGinsuData(const char *filename) {
     int index = gAEMSMgr.IsAssetInList(Attrib::StringKey(filename));
     if (index == -1) {

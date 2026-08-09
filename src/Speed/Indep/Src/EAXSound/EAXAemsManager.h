@@ -122,7 +122,21 @@ class SndAssetQueue : public UTL::Std::list<stSndAssetQueue, _type_SndAssetQueue
 
     void DeleteRefToAsset(Attrib::StringKey FileName) {}
 
-    void DeleteRefToAsset(SndBase *pSfxObj) {} // Decl: 120
+    // Decl: 120
+    void DeleteRefToAsset(SndBase *pSfxObj) {
+    RestartLoop:
+        SndAssetQueue::iterator i = begin();
+        while (i != end()) {
+            stSndAssetQueue currequst(*i);
+
+            if (currequst.pThis == pSfxObj) {
+                remove(currequst);
+                goto RestartLoop;
+            } else {
+                i++;
+            }
+        }
+    }
 };
 
 // total size: 0x130
@@ -212,6 +226,7 @@ class EAXAemsManager : public AudioMemBase {
 extern int m_RequiredSlots[4];      // size: 0x10, address: 0x804FE700, Decl: 205
 extern const int m_SlotSizes[2][4]; // size: 0x20, address: 0x803D6B78, Decl: 206
 
-extern EAXAemsManager gAEMSMgr; // size: 0x0, Decl: 248
+extern EAXAemsManager gAEMSMgr;                                   // size: 0x0, Decl: 248
+extern stSndDataLoadParams g_SndAssetList[MAX_SIZE_SNDASSETLIST]; // size: 0x1380, Decl: 953
 
 #endif

@@ -15,7 +15,6 @@
 class SFXObj_Collision : public CARSFX {
   public:
     DECLARE_CREATABLE();
-
     SFXObj_Collision();
     ~SFXObj_Collision() override;
 

@@ -355,7 +355,7 @@ class FX_NITROUS {
         return System::Alloc(size);
     }
 
-    static void operator delete(void *ptr) {
+    void operator delete(void *ptr) {
         System::Free(ptr);
     }
 
@@ -586,6 +586,11 @@ class FX_SHIFTING_01 {
     }
 
     void SetPitch(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x1FFF) {
+            x = 0x1FFF;
+        }
         this->mData.pitch = x;
     }
 
@@ -607,6 +612,11 @@ class FX_SHIFTING_01 {
     }
 
     void SetType(FXSHIFTING01TypeType x) {
+        if (x < FXSHIFTING01TYPETYPE_SHIFT) {
+            x = FXSHIFTING01TYPETYPE_SHIFT;
+        } else if (x > FXSHIFTING01TYPETYPE_ATTACK_) {
+            x = FXSHIFTING01TYPETYPE_ATTACK_;
+        }
         this->mData.type = x;
     }
 
@@ -637,11 +647,11 @@ class FX_SHIFTING_01 {
         return refCount;
     }
 
-    static void *operator new(size_t size) {
+    void *operator new(size_t size) {
         return System::Alloc(size);
     }
 
-    static void operator delete(void *ptr) {
+    void operator delete(void *ptr) {
         System::Free(ptr);
     }
 
@@ -868,9 +878,7 @@ class FX_Helicopter {
     }
 
     FX_Helicopter(int hELI_ID, int hELI_Pitch_Offset, int hELI_Stop, int hELI_Volume, int hELI_Azmuth, int hELI_Speed, int hELI_Distance,
-                  int hELI_LowPass, int hELI_HiPass, int hELI_FX_Dry, int hELI_FX_Wet, int hELI_Rotation)
-        : mpClass(nullptr) {
-
+                  int hELI_LowPass, int hELI_HiPass, int hELI_FX_Dry, int hELI_FX_Wet, int hELI_Rotation) {
         this->SetHELI_ID(hELI_ID);
         this->SetHELI_Pitch_Offset(hELI_Pitch_Offset);
         this->SetHELI_Stop(hELI_Stop);
@@ -1389,6 +1397,11 @@ class FX_Camera {
     }
 
     void SetWidth(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x7FFF) {
+            x = 0x7FFF;
+        }
         this->mData.width = x;
     }
 
@@ -1397,6 +1410,11 @@ class FX_Camera {
     }
 
     void SetPitch_Offset(int x) {
+        if (x < -0x3FFF) {
+            x = -0x3FFF;
+        } else if (x > 0x3FFF) {
+            x = 0x3FFF;
+        }
         this->mData.pitch_Offset = x;
     }
 
@@ -1405,6 +1423,11 @@ class FX_Camera {
     }
 
     void SetCam_beep(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 1) {
+            x = 1;
+        }
         this->mData.cam_beep = x;
     }
 
@@ -1426,6 +1449,11 @@ class FX_Camera {
     }
 
     void SetCam_whine(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 1) {
+            x = 1;
+        }
         this->mData.cam_whine = x;
     }
 
@@ -1502,6 +1530,11 @@ class FX_Camera {
 class FX_UVES {
   public:
     void SetID(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 2) {
+            x = 2;
+        }
         this->mData.iD = x;
     }
 
@@ -1523,6 +1556,11 @@ class FX_UVES {
     }
 
     void SetWidth(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x7FFF) {
+            x = 0x7FFF;
+        }
         this->mData.width = x;
     }
 
@@ -1531,6 +1569,11 @@ class FX_UVES {
     }
 
     void SetPitch_Offset(int x) {
+        if (x < -0x3FFF) {
+            x = -0x3FFF;
+        } else if (x > 0x3FFF) {
+            x = 0x3FFF;
+        }
         this->mData.pitch_Offset = x;
     }
 
@@ -1539,6 +1582,11 @@ class FX_UVES {
     }
 
     void SetIntensity(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 0x410) {
+            x = 0x410;
+        }
         this->mData.intensity = x;
     }
 
@@ -1547,6 +1595,11 @@ class FX_UVES {
     }
 
     void SetStop(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 1) {
+            x = 1;
+        }
         this->mData.stop = x;
     }
 
@@ -1595,13 +1648,13 @@ class FX_UVES {
 
     void CommitMemberData() {
         if (this->mpClass != nullptr) {
-            this->mpClass->SetMemberData(&mData);
+            this->mpClass->SetMemberData(&this->mData);
         }
     }
 
   private:
-    Class *mpClass;      // offset 0x0, size 0x4
-    FX_UVESStruct mData; // offset 0x4, size 0x18
+    Class *mpClass;
+    FX_UVESStruct mData;
 };
 
 // Decl: 2306

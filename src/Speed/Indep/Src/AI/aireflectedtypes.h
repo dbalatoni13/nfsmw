@@ -65,14 +65,10 @@ struct CopCountRecord {
     Attrib::StringKey CopType; // offset 0x0, size 0x10
     unsigned int Count;        // offset 0x10, size 0x4
     unsigned int Chance;       // offset 0x14, size 0x4
-
-    CopCountRecord &operator=(const CopCountRecord &_ctor_arg) {}
 };
 
 // total size: 0x10
 struct AICollisionReactionRecord {
-    // AICollisionReactionRecord &operator=(const AICollisionReactionRecord &_ctor_arg) {}
-
     uint32 Goal;              // offset 0x0, size 0x4
     Attrib::RefSpec Reaction; // offset 0x4, size 0xC
 };

@@ -60,32 +60,44 @@ enum eGINSU_ENG_TYPE {
         ID = Base + (int)(IMPACT_INTENS_DISTRIBUTION[IntensityDistOffset] * (float)NumBlocks) * SizePerBlock + LastRandom++;                         \
     }
 
-#define NUM_CAR_VS_CAR_FRONT 4
-#define SIZE_CAR_VS_CAR_FRONT 4
-#define NUM_CAR_2_CAR_SIDE 4
-#define SIZE_CAR_2_CAR_SIDE 4
-#define NUM_CAR_WALL_FRONT 4
-#define SIZE_CAR_WALL_FRONT 4
-#define NUM_CAR_WALL_SIDE 4
-#define SIZE_CAR_WALL_SIDE 4
-#define NUM_CAR_BOTM 4
-#define SIZE_CAR_BOTM 4
-#define NUM_CAR_ROLL 4
-#define SIZE_CAR_ROLL 2
-#define NUM_SMAKABLE_VS_CAR 2
-#define SIZE_SMAKABLE_VS_CAR 3
-#define NUM_SMAKABLE_VS_WRLD 3
-#define SIZE_SMAKABLE_VS_WRLD 3
-#define NUM_BRIDGE_BLOCKS 3
-#define SIZE_PER_BRIDGE_BLOCK 3
-#define NUM_POST_BLOCKS 3
-#define SIZE_PER_POST_BLOCK 6
-#define NUM_TREE_BLOCKS 3
-#define SIZE_PER_TREE_BLOCK 6
-#define NUM_TUNNEL_BLOCKS 3
-#define SIZE_PER_TUNNEL_BLOCK 3
-#define NUM_TUNNEL_OUT_BLOCKS 2
-#define SIZE_PER_TUNNEL_OUT_BLOCK 3
+#define NUM_CAR_VS_CAR_FRONT 4  // Decl: 333
+#define SIZE_CAR_VS_CAR_FRONT 4 // Decl: 334
+
+#define NUM_CAR_2_CAR_SIDE 4  // Decl: 336
+#define SIZE_CAR_2_CAR_SIDE 4 // Decl: 337
+
+#define NUM_CAR_WALL_FRONT 4  // Decl: 339
+#define SIZE_CAR_WALL_FRONT 4 // Decl: 340
+
+#define NUM_CAR_WALL_SIDE 4  // Decl: 343
+#define SIZE_CAR_WALL_SIDE 4 // Decl: 344
+
+#define NUM_CAR_BOTM 4  // Decl: 346
+#define SIZE_CAR_BOTM 4 // Decl: 347
+
+#define NUM_CAR_ROLL 4  // Decl: 350
+#define SIZE_CAR_ROLL 2 // Decl: 351
+
+#define NUM_SMAKABLE_VS_CAR 2  // Decl: 353
+#define SIZE_SMAKABLE_VS_CAR 3 // Decl: 354
+
+#define NUM_SMAKABLE_VS_WRLD 3  // Decl: 357
+#define SIZE_SMAKABLE_VS_WRLD 3 // Decl: 358
+
+#define NUM_BRIDGE_BLOCKS 3     // Decl: 360
+#define SIZE_PER_BRIDGE_BLOCK 3 // Decl: 361
+
+#define NUM_POST_BLOCKS 3     // Decl: 363
+#define SIZE_PER_POST_BLOCK 6 // Decl: 364
+
+#define NUM_TREE_BLOCKS 3     // Decl: 366
+#define SIZE_PER_TREE_BLOCK 6 // Decl: 367
+
+#define NUM_TUNNEL_BLOCKS 3     // Decl: 370
+#define SIZE_PER_TUNNEL_BLOCK 3 // Decl: 371
+
+#define NUM_TUNNEL_OUT_BLOCKS 2     // Decl: 373
+#define SIZE_PER_TUNNEL_OUT_BLOCK 3 // Decl: 374
 
 enum FXROADNOISE_LOOP {
     FXROADNOISE_LOOP_NONE = -1,
@@ -147,6 +159,9 @@ enum SpeechModuleIndex {
     COPSPEECH_MODULE = 1,
     NUM_SPEECH_MODULES = 2,
 };
+
+// TODO huh, is this really here? the dwarf is weird
+extern int GameFlowSndState[15];
 
 enum eSongPlayability {
     ePLAY_OFF = 0,

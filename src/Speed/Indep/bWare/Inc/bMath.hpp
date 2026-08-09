@@ -16,9 +16,11 @@
 #error Choose a platform
 #endif
 
-typedef int32 bFix;
-typedef unsigned short bAngle;
-typedef short bSignedAngle;
+static const float PI = M_PI; // Decl: 60
+
+typedef int32 bFix;            // Decl: 71
+typedef unsigned short bAngle; // Decl: 143
+typedef short bSignedAngle;    // Decl: 144
 
 struct bPolar {
     float r;
@@ -197,7 +199,7 @@ inline bAngle bDegToAng(float degrees) {
 }
 
 inline bAngle bRadToAng(float radians) {
-    return static_cast<int>(radians * (65536.0f / (static_cast<float>(M_TWOPI))));
+    return static_cast<int>(radians * (65536.0f / (2 * PI)));
 }
 
 inline float bAngToRad(bAngle angle) {
@@ -205,7 +207,7 @@ inline float bAngToRad(bAngle angle) {
 }
 
 inline float bDegToRad(float degrees) {
-    return degrees * 0.017453294f;
+    return degrees * (2 * PI / 360.0f);
 }
 
 inline float bAngToDeg(bAngle angle) {
@@ -270,10 +272,6 @@ struct bVector2 {
     bVector2 &operator=(const bVector2 &v);
 
     // bVector2(const bVector2 &v) {} // compiler generated
-
-    // bVector2 operator+() {} // not present in dwarf
-
-    // float &operator[](int index) {} // not present in dwarf
 };
 
 bVector2 *bNormalize(bVector2 *dest, const bVector2 *v);
@@ -322,6 +320,22 @@ inline bVector2 bVector2::operator-(const bVector2 &v) const {
     float _x = x1 - x2;
     float _y = y1 - y2;
     return bVector2(_x, _y);
+}
+
+inline bVector2 *bSub(bVector2 *dest, const bVector2 *v1, const bVector2 *v2) {
+    float x1 = v1->x;
+    float y1 = v1->y;
+    float x2 = v2->x;
+    float y2 = v2->y;
+
+    bFill(dest, x1 - x2, y1 - y2);
+    return dest;
+}
+
+inline bVector2 bSub(const bVector2 &v1, const bVector2 &v2) {
+    bVector2 dest;
+    bSub(&dest, &v1, &v2);
+    return dest;
 }
 
 inline bVector2 *bScale(bVector2 *dest, const bVector2 *v, float scale) {
@@ -599,6 +613,9 @@ inline bVector3 bScale(const bVector3 &v1, const bVector3 &v2) {
 
 inline bVector3 bScaleAdd(const bVector3 &v1, const bVector3 &v2, float scale) {
     bVector3 dest;
+
+    bScaleAdd(&dest, &v1, &v2, scale);
+    return dest;
 }
 
 inline bVector3 bNormalize(const bVector3 &v) {

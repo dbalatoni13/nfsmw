@@ -11,9 +11,7 @@
 class SFXCTL_3DLeftWheelPos : public SFXCTL_3DObjPos {
   public:
     DECLARE_CREATABLE();
-
     SFXCTL_3DLeftWheelPos() {}
-
     ~SFXCTL_3DLeftWheelPos() override {}
 };
 
@@ -21,9 +19,7 @@ class SFXCTL_3DLeftWheelPos : public SFXCTL_3DObjPos {
 class SFXCTL_3DRightWheelPos : public SFXCTL_3DObjPos {
   public:
     DECLARE_CREATABLE();
-
     SFXCTL_3DRightWheelPos() {}
-
     ~SFXCTL_3DRightWheelPos() override {}
 };
 
@@ -31,7 +27,6 @@ class SFXCTL_3DRightWheelPos : public SFXCTL_3DObjPos {
 class CARSFX_Skids : public CARSFX {
   public:
     DECLARE_CREATABLE();
-
     CARSFX_Skids();
     ~CARSFX_Skids() override;
 
@@ -59,7 +54,6 @@ class CARSFX_Skids : public CARSFX {
 class CARSFX_TrafficSkids : public CARSFX_Skids {
   public:
     DECLARE_CREATABLE();
-
     CARSFX_TrafficSkids();
     ~CARSFX_TrafficSkids() override;
 

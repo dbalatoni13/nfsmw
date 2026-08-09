@@ -37,12 +37,10 @@ enum eSFXMessageType {
 // total size: 0x114
 // Decl: 71
 class EAXCar : public CSTATE_Base {
+  public:
     DECLARE_STATETYPE();
 
-  public:
     EAXCar();
-
-    // Overrides: AudioMemBase
     ~EAXCar() override;
 
     // Overrides: CSTATE_Base
