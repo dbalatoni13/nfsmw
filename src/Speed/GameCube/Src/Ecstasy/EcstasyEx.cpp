@@ -976,6 +976,29 @@ void eSetFogConstantColour() {
 }
 
 // end
+void eSetFogEnableState(int state) {
+    FogEnableState = state;
+}
+
+void eSetFogBrightnessConstant(float brightness) {
+    FogCurrentBrightness = brightness;
+}
+
+// NON_MATCHING: 89% - tmp gets coalesced into f1 instead of staying in f0
+float gain(float val, float g) {
+    float num;
+    float den = 1.0f / g - 2.0f;
+    float tmp = den * (1.0f - (val + val));
+
+    if (val < 0.5f) {
+        den = tmp + 1.0f;
+    } else {
+        den = tmp - 1.0f;
+    }
+    num = tmp - val;
+    return num / den;
+}
+
 void epCalculateLocalDirectionalPOS16(unsigned int *colour_table0 /* r29 */, unsigned int *colour_table1 /* r22 */, int num_colour_entries /* r5 */,
                                       unsigned short *position_table_16 /* r30 */, int *normal_table /* r23 */, unsigned char *index_buffer /* r31 */,
                                       int vertex_description /* r7 */, int num_indicies /* r28 */, struct eLightMaterial *light_material /* r11 */,

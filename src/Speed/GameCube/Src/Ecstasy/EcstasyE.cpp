@@ -1034,3 +1034,13 @@ void eDEMOInitCaption(long font_type, long width, long height) {
     GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR_NULL);
     GXSetBlendMode(GX_BM_BLEND, GX_BL_ONE, GX_BL_ZERO, GX_LO_CLEAR);
 }
+
+int ForceFERenderStates = 0;
+
+void eViewPlatInterface::FEBeginBatchRender(int numPolys) {
+    ForceFERenderStates = 1;
+}
+
+void eViewPlatInterface::FEEndBatchRender() {
+    ForceFERenderStates = 0;
+}

@@ -30,6 +30,8 @@
 #include "Speed/GameCube/Src/Ecstasy/eSolidPlat.cpp"
 
 #include "Speed/GameCube/Src/Ecstasy/eViewPlat.cpp"
+
+#include "Speed/Indep/Src/Generated/TexturePacks/TexEnumGen_ParticleTextures.cpp"
 #endif
 
 #include "Speed/Indep/Src/Ecstasy/EmitterSystem.cpp"
