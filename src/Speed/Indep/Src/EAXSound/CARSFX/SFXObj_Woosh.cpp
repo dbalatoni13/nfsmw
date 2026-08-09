@@ -104,70 +104,49 @@ void SFXObj_Woosh::InitSFX() {
     this->SndBase::InitSFX();
     this->m_p3DPos->AssignPositionVector(&this->m_pDriveByState->m_DriveByInfo.vLocation);
     this->m_p3DPos->AssignVelocityVector(nullptr);
-    float fVelInensity =
-        bClamp(bClamp(g_WooshVol_vs_Vel.GetValue(this->m_pDriveByState->m_DriveByInfo.ClosingVelocity), 0.0f, 0.99f) * 127.0f, 0.0f, 127.0f);
+
+    float fVelRatio = bClamp(g_WooshVol_vs_Vel.GetValue(this->m_pDriveByState->m_DriveByInfo.ClosingVelocity), 0.0f, 0.99f);
+    float fVelInensity = bClamp(fVelRatio * 127.0f, 0.0f, 127.0f);
     if (g_pEAXSound->GetSndGameMode() == SND_PURSUITBREAKER) {
         fVelInensity = 60.0f;
     }
 
+    int StitchID;
     int numblocks;
     int sizeperblock;
     STICH_WHOOSH_TYPE base;
     GetWooshBlockSizeParams(this->m_pDriveByState->m_DriveByInfo.eDriveByType, base, numblocks, sizeperblock);
     switch (this->m_pDriveByState->m_DriveByInfo.eDriveByType) {
         case DRIVE_BY_TUNNEL_IN:
-        case DRIVE_BY_OVERPASS_IN: {
-            static int LastRandom = 0;
-
-            LastRandom = (LastRandom - (LastRandom / sizeperblock) * sizeperblock) + 1;
-        }
+        case DRIVE_BY_OVERPASS_IN:
+            GEN_RND_OFFSET(StitchID, fVelInensity, base, numblocks, sizeperblock);
+            // fallthrough
         case DRIVE_BY_TUNNEL_OUT:
-        case DRIVE_BY_OVERPASS_OUT: {
-            static int LastRandom = 0;
-
-            LastRandom = (LastRandom - (LastRandom / sizeperblock) * sizeperblock) + 1;
-        }
-        case DRIVE_BY_LAMPPOST: {
-            static int LastRandom = 0;
-
-            LastRandom = (LastRandom - (LastRandom / sizeperblock) * sizeperblock) + 1;
-        } // fallthrough
-        case DRIVE_BY_AI_CAR: {
-            static int LastRandom = 0;
-
-            LastRandom = (LastRandom - (LastRandom / sizeperblock) * sizeperblock) + 1;
-        }
-        case DRIVE_BY_SMOKABLE: {
-            static int LastRandom = 0;
-
-            LastRandom = (LastRandom - (LastRandom / sizeperblock) * sizeperblock) + 1;
-        }
-        case DRIVE_BY_TRAFFIC: {
-            static int LastRandom = 0;
-
-            LastRandom = (LastRandom - (LastRandom / sizeperblock) * sizeperblock) + 1;
-        } // fallthrough
+        case DRIVE_BY_OVERPASS_OUT:
+            GEN_RND_OFFSET(StitchID, fVelInensity, base, numblocks, sizeperblock);
+            // fallthrough
+        case DRIVE_BY_LAMPPOST:
+            GEN_RND_OFFSET(StitchID, fVelInensity, base, numblocks, sizeperblock);
+            // fallthrough
+        case DRIVE_BY_AI_CAR:
+            GEN_RND_OFFSET(StitchID, fVelInensity, base, numblocks, sizeperblock);
+            // fallthrough
+        case DRIVE_BY_SMOKABLE:
+            GEN_RND_OFFSET(StitchID, fVelInensity, base, numblocks, sizeperblock);
+            // fallthrough
+        case DRIVE_BY_TRAFFIC:
+            GEN_RND_OFFSET(StitchID, fVelInensity, base, numblocks, sizeperblock);
+            // fallthrough
         case DRIVE_BY_CAMERA_BY:
             this->SetDMIX_Input(13, 0x7FFF);
-            {
-                static int LastRandom = 0;
-
-                LastRandom = (LastRandom - (LastRandom / sizeperblock) * sizeperblock) + 1;
-            }
+            GEN_RND_OFFSET(StitchID, fVelInensity, base, numblocks, sizeperblock);
+            // fallthrough
         case DRIVE_BY_UNKNOWN:
         default:
             break;
     }
 
-    float fVelRatio = static_cast<float>(numblocks) / 128.0f;
-    int StitchID = static_cast<int>(fVelInensity * fVelRatio);
-    {
-        static int LastRandom = 0;
-
-        StitchID = base + StitchID * sizeperblock + (LastRandom - (LastRandom / sizeperblock) * sizeperblock);
-        LastRandom = (LastRandom - (LastRandom / sizeperblock) * sizeperblock) + 1;
-    }
-
+    GEN_RND_OFFSET(StitchID, fVelInensity, base, numblocks, sizeperblock);
     this->m_pStitchData = &g_pEAXSound->GetStichPlayer()->GetStich(STICH_TYPE_WOOSH, StitchID);
     this->m_SndParams.Az = 0;
     this->m_SndParams.Pitch = 0;

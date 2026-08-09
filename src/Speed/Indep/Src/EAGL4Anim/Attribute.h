@@ -78,13 +78,6 @@ class AttributeMetaData {
 
     ~AttributeMetaData() {}
 
-    AttributeMetaData(const AttributeMetaData &_ctor_arg)
-        : mName(_ctor_arg.mName), //
-          mPad(_ctor_arg.mPad),   //
-          mType(_ctor_arg.mType), //
-          mSize(_ctor_arg.mSize), //
-          mId(_ctor_arg.mId) {}
-
   private:
     const char *mName;        // offset 0x0, size 0x4
     short unsigned int mPad;  // offset 0x4, size 0x2

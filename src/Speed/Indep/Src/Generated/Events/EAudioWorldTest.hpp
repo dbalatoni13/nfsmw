@@ -13,7 +13,7 @@ class EAudioWorldTest : public Event {
     // total size: 0x4
     struct StaticData : public Event::StaticData {};
 
-    // enum { kEventID = 0 };
+    enum { kEventID = 0xF2D10992 };
 
     EAudioWorldTest();
 

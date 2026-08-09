@@ -1,6 +1,7 @@
 #ifndef NIS_H
 #define NIS_H
 
+#include "csis/csis.h"
 namespace Csis {
 
 enum Type_NIS_Scene_Start {
@@ -49,12 +50,39 @@ enum Type_NIS_Track {
     Type_NIS_Track_Track15 = 524288,
 };
 
+// Decl: 41
+enum Type_NIS_Scene_End {
+    Type_NIS_Scene_End_Arrest_M01 = 1,
+    Type_NIS_Scene_End_Arrest_M04 = 2,
+    Type_NIS_Scene_End_Arrest_M06 = 4,
+    Type_NIS_Scene_End_Arrest_M14 = 8,
+    Type_NIS_Scene_End_Arrest_M16 = 16,
+    Type_NIS_Scene_End_Arrest_M19 = 32,
+    Type_NIS_Scene_End_Arrest_M23 = 64,
+    Type_NIS_Scene_End_Arrest_F02 = 128,
+    Type_NIS_Scene_End_Arrest_F06 = 256,
+    Type_NIS_Scene_End_Arrest_F07 = 512,
+    Type_NIS_Scene_End_Arrest_F14 = 1024,
+    Type_NIS_Scene_End_Arrest_F23 = 2048,
+    Type_NIS_Scene_End_E3 = 4096,
+    Type_NIS_Scene_End_opm = 8192,
+    Type_NIS_Scene_End_Arrest_F18 = 16384,
+    Type_NIS_Scene_End_Arrest_M07 = 32768,
+    Type_NIS_Scene_End_generic = 65536,
+    Type_NIS_Scene_End_end01 = 131072,
+    Type_NIS_Scene_End_end02 = 262144,
+    Type_NIS_Scene_End_end03 = 524288,
+    Type_NIS_Scene_End_end04 = 1048576,
+};
+
+// Decl: 69
 enum Type_NIS_Section {
     Type_NIS_Section_Complete = 1,
     Type_NIS_Section_Start = 2,
     Type_NIS_Section_End = 4,
 };
 
+// Decl: 96
 enum Type_SoundFX_Type {
     Type_SoundFX_Type_Pursbreaker = 1,
     Type_SoundFX_Type_Crash = 2,
@@ -66,6 +94,7 @@ enum Type_SoundFX_Type {
     Type_SoundFX_Type_game = 128,
 };
 
+// Decl: 110
 enum Type_SoundFX_Param {
     Type_SoundFX_Param_distant = 1,
     Type_SoundFX_Param_sweetener = 2,
@@ -122,30 +151,105 @@ enum Type_NIS_Blacklist {
     Type_NIS_Blacklist_generic = 262144,
 };
 
-enum Type_NIS_Scene_End {
-    Type_NIS_Scene_End_Arrest_M01 = 1,
-    Type_NIS_Scene_End_Arrest_M04 = 2,
-    Type_NIS_Scene_End_Arrest_M06 = 4,
-    Type_NIS_Scene_End_Arrest_M14 = 8,
-    Type_NIS_Scene_End_Arrest_M16 = 16,
-    Type_NIS_Scene_End_Arrest_M19 = 32,
-    Type_NIS_Scene_End_Arrest_M23 = 64,
-    Type_NIS_Scene_End_Arrest_F02 = 128,
-    Type_NIS_Scene_End_Arrest_F06 = 256,
-    Type_NIS_Scene_End_Arrest_F07 = 512,
-    Type_NIS_Scene_End_Arrest_F14 = 1024,
-    Type_NIS_Scene_End_Arrest_F23 = 2048,
-    Type_NIS_Scene_End_E3 = 4096,
-    Type_NIS_Scene_End_opm = 8192,
-    Type_NIS_Scene_End_Arrest_F18 = 16384,
-    Type_NIS_Scene_End_Arrest_M07 = 32768,
-    Type_NIS_Scene_End_generic = 65536,
-    Type_NIS_Scene_End_end01 = 131072,
-    Type_NIS_Scene_End_end02 = 262144,
-    Type_NIS_Scene_End_end03 = 524288,
-    Type_NIS_Scene_End_end04 = 1048576,
+extern InterfaceId NIS_Select_StartId;         // size: 0x8, address: 0x80418930
+extern FunctionHandle gNIS_Select_StartHandle; // size: 0x8, address: 0x8045E8CC
+
+// total size: 0xC
+struct NIS_Select_StartStruct {
+    Type_NIS_Scene_Start NIS_Scene_Start; // offset 0x0, size 0x4
+    Type_NIS_Track NIS_Track;             // offset 0x4, size 0x4
+    Type_NIS_Section NIS_Section;         // offset 0x8, size 0x4
 };
 
-}; // namespace CSIS
+extern InterfaceId SoundFX_SelectId;         // size: 0x8, address: 0x80418938
+extern FunctionHandle gSoundFX_SelectHandle; // size: 0x8, address: 0x8045E8D4
+
+// total size: 0x8
+// Decl: 196
+struct SoundFX_SelectStruct {
+    Type_SoundFX_Type SoundFX_Type;   // offset 0x0, size 0x4
+    Type_SoundFX_Param SoundFX_Param; // offset 0x4, size 0x4
+};
+
+extern InterfaceId NIS_Select_BlacklistId;         // size: 0x8, address: 0x80418940
+extern FunctionHandle gNIS_Select_BlacklistHandle; // size: 0x8, address: 0x8045E8DC
+
+// total size: 0xC
+struct NIS_Select_BlacklistStruct {
+    Type_NIS_Track NIS_Track;         // offset 0x0, size 0x4
+    Type_NIS_Section NIS_Section;     // offset 0x4, size 0x4
+    Type_NIS_Blacklist NIS_Blacklist; // offset 0x8, size 0x4
+};
+
+extern InterfaceId NIS_Select_EndId;         // size: 0x8, address: 0x80418948
+extern FunctionHandle gNIS_Select_EndHandle; // size: 0x8, address: 0x8045E8E4
+
+// total size: 0xC
+struct NIS_Select_EndStruct {
+    Type_NIS_Scene_End NIS_Scene_End; // offset 0x0, size 0x4
+    Type_NIS_Track NIS_Track;         // offset 0x4, size 0x4
+    Type_NIS_Section NIS_Section;     // offset 0x8, size 0x4
+};
+
+inline Result NIS_Select_Start(Type_NIS_Scene_Start NIS_Scene_Start, Type_NIS_Track NIS_Track, Type_NIS_Section NIS_Section) {
+    NIS_Select_StartStruct data;
+    data.NIS_Scene_Start = NIS_Scene_Start;
+    data.NIS_Track = NIS_Track;
+    data.NIS_Section = NIS_Section;
+
+    Result result = Function::Call(&gNIS_Select_StartHandle, &data);
+    if (result < RESULT_OK) {
+        gNIS_Select_StartHandle.Set(&NIS_Select_StartId);
+        Function::Call(&gNIS_Select_StartHandle, &data);
+    }
+
+    return result;
+}
+
+inline Result SoundFX_Select(Type_SoundFX_Type SoundFX_Type, Type_SoundFX_Param SoundFX_Param) {
+    SoundFX_SelectStruct data;
+    data.SoundFX_Type = SoundFX_Type;
+    data.SoundFX_Param = SoundFX_Param;
+
+    Result result = Function::Call(&gSoundFX_SelectHandle, &data);
+    if (result < RESULT_OK) {
+        gSoundFX_SelectHandle.Set(&SoundFX_SelectId);
+        Function::Call(&gSoundFX_SelectHandle, &data);
+    }
+
+    return result;
+}
+
+inline Result NIS_Select_Blacklist(Type_NIS_Track NIS_Track, Type_NIS_Section NIS_Section, Type_NIS_Blacklist NIS_Blacklist) {
+    NIS_Select_BlacklistStruct data;
+    data.NIS_Track = NIS_Track;
+    data.NIS_Section = NIS_Section;
+    data.NIS_Blacklist = NIS_Blacklist;
+
+    Result result = Function::Call(&gNIS_Select_BlacklistHandle, &data);
+    if (result < RESULT_OK) {
+        gNIS_Select_BlacklistHandle.Set(&NIS_Select_BlacklistId);
+        Function::Call(&gNIS_Select_BlacklistHandle, &data);
+    }
+
+    return result;
+}
+
+inline Result NIS_Select_End(Type_NIS_Scene_End NIS_Scene_End, Type_NIS_Track NIS_Track, Type_NIS_Section NIS_Section) {
+    NIS_Select_EndStruct data;
+    data.NIS_Scene_End = NIS_Scene_End;
+    data.NIS_Track = NIS_Track;
+    data.NIS_Section = NIS_Section;
+
+    Result result = Function::Call(&gNIS_Select_EndHandle, &data);
+    if (result < RESULT_OK) {
+        gNIS_Select_EndHandle.Set(&NIS_Select_EndId);
+        Function::Call(&gNIS_Select_EndHandle, &data);
+    }
+
+    return result;
+}
+
+}; // namespace Csis
 
 #endif

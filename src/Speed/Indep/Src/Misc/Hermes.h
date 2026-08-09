@@ -68,7 +68,7 @@ struct _h_HHANDLER__ {
     int unused; // offset 0x0, size 0x4
 };
 
-typedef _h_HHANDLER__ *HHANDLER;
+typedef _h_HHANDLER__ *HHANDLER; // TODO move out of this namespace
 
 // total size: 0x24
 class Handler {

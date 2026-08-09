@@ -98,13 +98,18 @@ class RefCountList : public UTL::Std::vector<EAX_CarState *, _type_RefCountList>
 // total size: 0x20
 // Decl: 233
 struct stAssetDescription {
-    stAssetDescription(const stAssetDescription &_ctor_arg) {}
+    // Decl: 234
+    stAssetDescription() {
+        Clear();
+    }
 
-    stAssetDescription &operator=(const stAssetDescription &_ctor_arg) {}
-
-    stAssetDescription() {} // Decl: 234
-
-    void Clear() {} // Decl: 239
+    // TODO
+    // Decl: 239
+    void Clear() {
+        this->eDataType = SDT_NONE;
+        this->FileName = "";
+        this->DataPath = SNDPATH_ROUTE;
+    }
 
     eSNDDATATYPE eDataType;     // offset 0x0, size 0x4, Decl: 252
     Attrib::StringKey FileName; // offset 0x8, size 0x10, Decl: 253
@@ -115,11 +120,16 @@ struct stAssetDescription {
 // total size: 0x28
 // Decl: 261
 struct stSndAssetQueue {
-    stSndAssetQueue(const stSndAssetQueue &_ctor_arg) {}
+    stSndAssetQueue() : pThis(nullptr), pCar(nullptr) {} // Decl: 262
 
-    stSndAssetQueue() {} // Decl: 262
+    // Decl: 268
+    bool operator==(const stSndAssetQueue &cmp) const {
+        if (this->pThis != cmp.pThis) {
+            return false;
+        }
 
-    bool operator==(const stSndAssetQueue &cmp) const {} // Decl: 268
+        return !(this->Asset.FileName != cmp.Asset.FileName);
+    }
 
     stAssetDescription Asset; // offset 0x0, size 0x20, Decl: 279
     SndBase *pThis;           // offset 0x20, size 0x4, Decl: 280

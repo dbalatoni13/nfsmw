@@ -71,7 +71,9 @@ struct RaceParameters {
     Timer GetTimeTrialTime() {}
     bool IsTimeTrial() {}
     bool IsCareerEventRace() {}
-    bool IsDragRace() {}
+    bool IsDragRace() {
+        return this->bDragRaceFlag || (g_tweakIsDragRace != 0);
+    }
     inline bool IsDriftRace() {
         return this->bDriftRaceFlag || (g_tweakIsDriftRace != 0);
     }

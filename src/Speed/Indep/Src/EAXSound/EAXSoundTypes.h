@@ -8,6 +8,7 @@ extern void *NullPointer;
 
 namespace Sound {
 
+// Decl: 85
 enum Context {
     CONTEXT_PLAYER = 0,
     CONTEXT_AIRACER = 1,
@@ -19,6 +20,7 @@ enum Context {
     CONTEXT_MAX = 7,
 };
 
+// Decl: 98
 enum SirenState {
     SIREN_OFF = -1,
     SIREN_WAIL = 0,
@@ -27,6 +29,7 @@ enum SirenState {
     SIREN_DIE = 3,
 };
 
+// Decl: 108
 enum WheelConfig {
     EAX4WD_FL = 0,
     EAX4WD_FR = 1,
@@ -34,6 +37,7 @@ enum WheelConfig {
     EAX4WD_RL = 3,
 };
 
+// Decl: 116
 enum ControlSource {
     CONTROL_NONE = 0,
     CONTROL_HUMAN = 1,
@@ -43,6 +47,7 @@ enum ControlSource {
 };
 
 // total size: 0x44
+// Decl: 126
 struct Wheel {
     Wheel() {}
 
@@ -62,6 +67,7 @@ struct Wheel {
 };
 
 // total size: 0x1C
+// Decl: 157
 struct Engine {
     Engine() {}
 
@@ -77,12 +83,26 @@ struct Engine {
 };
 
 // total size: 0x8
+// Decl: 184
 struct Driveline {
     Driveline() {}
 
     int mGearShiftFlag; // offset 0x0, size 0x4
     Gear mGear;         // offset 0x4, size 0x4
 };
+
+// total size: 0x14
+// Decl: unknown
+struct stSongInfo {
+    char *SongName; // offset 0x0, size 0x4
+    char *Artist;   // offset 0x4, size 0x4
+    char *Album;    // offset 0x8, size 0x4
+    char *DefPlay;  // offset 0xC, size 0x4
+    int PathEvent;  // offset 0x10, size 0x4
+};
+
+// total size: 0x10
+class SongInfoList : public std::vector<stSongInfo *> {};
 
 }; // namespace Sound
 

@@ -134,6 +134,7 @@ class World {
     uint32 PotentialDriveTargetID;  // offset 0xE4, size 0x4
 };
 
+extern int g_tweakIsDragRace;  // TODO move?
 extern int g_tweakIsDriftRace; // TODO move?
 
 void World_Service();

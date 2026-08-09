@@ -330,6 +330,8 @@ if config.platform == Platform.GC_WII:
         "-I src/Speed/Indep/Libs/csis/dev/include",
         "-I src/Packages/eathread/1.1.0/include",
         "-I src/Speed/Indep/Libs/snd/9/include",
+        "-I src/Speed/Indep/Libs/spch/dev/include",
+        "-I src/Speed/Indep/Libs/path/5.01.04/include",
     ]
 
     cflags_snd = [
@@ -433,6 +435,8 @@ elif config.platform == Platform.X360:
         "/I src/Speed/Indep/Libs/csis/dev/include",
         "/I src/Packages/eathread/1.1.0/include",
         "/I src/Speed/Indep/Libs/snd/9/include",
+        "/I src/Speed/Indep/Libs/spch/dev/include",
+        "/I src/Speed/Indep/Libs/path/5.01.04/include",
     ]
 
     cflags_snd = [
@@ -520,6 +524,8 @@ elif config.platform == Platform.PS2:
         "-I src/Speed/Indep/Libs/csis/dev/include",
         "-I src/Packages/eathread/1.1.0/include",
         "-I src/Speed/Indep/Libs/snd/9/include",
+        "-I src/Speed/Indep/Libs/spch/dev/include",
+        "-I src/Speed/Indep/Libs/path/5.01.04/include",
     ]
 
     cflags_snd = [
@@ -1344,7 +1350,7 @@ if config.platform == Platform.GC_WII:
                         Matching,
                         "Speed/GameCube/bWare/GameCube/dolphinsdk/src/demo/DEMOPad.c",
                     ),
-                ]
+                ],
             ),
             DolphinLib(
                 "pad",

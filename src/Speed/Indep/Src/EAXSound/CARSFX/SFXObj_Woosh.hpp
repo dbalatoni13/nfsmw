@@ -3,6 +3,7 @@
 #define SFXObj_Woosh_HPP
 
 #include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX.hpp"
+#include "Speed/Indep/Src/EAXSound/SND_GEN/STITCH_WSH.h"
 #include "Speed/Indep/Src/EAXSound/States/STATE_DriveBy.hpp"
 #include "Speed/Indep/Src/EAXSound/STICH_Playback.h"
 #include "Speed/Indep/Src/EAXSound/STICH_Struct.h"
@@ -14,7 +15,6 @@
 class SFXObj_Woosh : public CARSFX {
   public:
     DECLARE_CREATABLE();
-
     SFXObj_Woosh();
     ~SFXObj_Woosh() override;
 
@@ -42,9 +42,10 @@ class SFXObj_Woosh : public CARSFX {
 class SFXCTL_3DWooshPos : public SFXCTL_3DObjPos {
   public:
     DECLARE_CREATABLE();
-
     SFXCTL_3DWooshPos() {}           // Decl: 42
     ~SFXCTL_3DWooshPos() override {} // Decl: 43
 };
+
+void GetWooshBlockSizeParams(eDRIVE_BY_TYPE type, STICH_WHOOSH_TYPE &base, int &numblocks, int &sizeperblock);
 
 #endif
