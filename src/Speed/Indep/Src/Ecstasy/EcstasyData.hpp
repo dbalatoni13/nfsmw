@@ -247,6 +247,20 @@ class eLoadedSolidStats {
     uint32 TotalDamageBytes;         // offset 0x10, size 0x4
 };
 
+// total size: 0x10
+struct eStripEntry {
+    unsigned int DataOffset;            // offset 0x0, size 0x4
+    unsigned short DataSize;            // offset 0x4, size 0x2
+    unsigned short Flags;               // offset 0x6, size 0x2
+    unsigned char NumVerts;             // offset 0x8, size 0x1
+    unsigned char PolyGroupNumber;      // offset 0x9, size 0x1
+    char TextureNumber;                 // offset 0xA, size 0x1
+    char LightMaterialIndex;            // offset 0xB, size 0x1
+    unsigned char VertexDescription;    // offset 0xC, size 0x1
+    unsigned char VertexFormat;         // offset 0xD, size 0x1
+    unsigned short DataDisplayListSize; // offset 0xE, size 0x2
+};
+
 class eSolidPlatInfo {
     // total size: 0x24
   public:
@@ -267,6 +281,8 @@ class eSolidPlatInfo {
 #endif
     struct eStripEntry *StripEntryTable; // offset 0x1C, size 0x4
     uint8 *StripDataStart;               // offset 0x20, size 0x4
+
+    void FixStripEntryTable(struct eSolid *solid, uint8 *strip_entry_data, uint8 *previous_strip_entry_data);
 };
 
 #endif

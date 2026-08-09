@@ -83,12 +83,17 @@ class eSolidPlatInterface {
     eSolidPlatInfo *PlatInfo; // offset 0x0, size 0x4
 
   public:
+    int LoaderPlatChunks(bChunk *chunk);
     int UnloaderPlatChunks(bChunk *chunk);
     int FixPlatInfo();
     int UnFixPlatInfo();
 
     eSolidPlatInfo *GetPlatInfo() {
         return this->PlatInfo;
+    }
+
+    void SetPlatInfo(eSolidPlatInfo *info) {
+        this->PlatInfo = info;
     }
 
   protected:
