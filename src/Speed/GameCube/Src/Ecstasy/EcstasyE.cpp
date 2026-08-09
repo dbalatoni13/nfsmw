@@ -298,6 +298,229 @@ EVIEWMODE eGetCurrentViewMode() {
     return CurrentViewMode;
 }
 
+EVIEWMODE RenderingViewMode = EVIEWMODE_NONE;
+EVIEWMODE TweakerViewMode = EVIEWMODE_NONE;
+
+// NON_MATCHING: 69.7% - GetCameraMover inline folds differently here than in eUpdateViewMode
+void MaybeChangeViewMode() {
+    eView *viewp1;
+    eView *viewp2;
+    eView *viewr1;
+    eRenderTarget *targetp1;
+    eRenderTarget *targetp2;
+    eRenderTarget *targetr1;
+    eView *viewspcp1;
+    eView *viewspcp2;
+    eRenderTarget *targetspcp1;
+    eRenderTarget *targetspcp2;
+    int screen_width;
+    int screen_height;
+
+    if (TweakerViewMode != EVIEWMODE_NONE) {
+        if (RenderingViewMode != TweakerViewMode) {
+            RenderingViewMode = TweakerViewMode;
+        }
+    } else {
+        if (RenderingViewMode != CurrentViewMode) {
+            RenderingViewMode = CurrentViewMode;
+        }
+    }
+
+    viewp1 = eGetView(1, false);
+    viewp2 = eGetView(2, false);
+    viewr1 = eGetView(3, false);
+    targetp1 = viewp1->GetRenderTarget0();
+    targetp2 = viewp2->GetRenderTarget0();
+    targetr1 = viewr1->GetRenderTarget0();
+    viewspcp1 = eGetView(6, false);
+    viewspcp2 = eGetView(7, false);
+    targetspcp1 = viewspcp1->GetRenderTarget0();
+    targetspcp2 = viewspcp2->GetRenderTarget0();
+    screen_width = ScreenWidth;
+    screen_height = ScreenHeight;
+
+    if (CurrentViewMode == EVIEWMODE_ONE) {
+        CameraMover *moverp1 = viewp1->GetCameraMover();
+
+        if (moverp1 && viewr1->GetCameraMover() && !moverp1->OutsidePOV()) {
+            CurrentViewMode = EVIEWMODE_ONE_RVM;
+        }
+    } else if (CurrentViewMode == EVIEWMODE_ONE_RVM) {
+        CameraMover *moverr1 = viewr1->GetCameraMover();
+
+        if (moverr1 && viewp1->GetCameraMover() && viewp1->GetCameraMover()->OutsidePOV()) {
+            CurrentViewMode = EVIEWMODE_ONE;
+        }
+    }
+
+    switch (RenderingViewMode) {
+        case EVIEWMODE_TWOH:
+            targetp1->ScissorX = 0;
+            targetp1->ScissorY = 0;
+            targetp1->ScissorW = screen_width;
+            targetp1->ScissorH = screen_height / 2;
+            targetp1->FrameWidth = screen_width;
+            targetp1->FrameHeight = screen_height / 2;
+            targetp2->FrameWidth = screen_width;
+            targetp2->FrameHeight = screen_height / 2;
+            targetp2->ScissorX = 0;
+            targetp2->ScissorY = screen_height / 2;
+            targetp2->ScissorW = screen_width;
+            targetp2->ScissorH = screen_height / 2;
+            targetr1->ScissorX = 0;
+            targetr1->ScissorY = 0;
+            targetr1->ScissorW = 0;
+            targetr1->ScissorH = 0;
+            targetp1->SetActive(1);
+            viewp1->SetActive(1);
+            targetp2->SetActive(1);
+            viewp2->SetActive(1);
+            targetr1->SetActive(0);
+            viewr1->SetActive(0);
+            targetspcp1->SetActive(1);
+            viewspcp1->SetActive(1);
+            targetspcp2->SetActive(1);
+            viewspcp2->SetActive(1);
+
+            for (int i = 8; i <= 11; i++) {
+                eView *viewquad = eGetView(i, false);
+                eRenderTarget *targetquad = viewquad->GetRenderTarget0();
+
+                viewquad->SetActive(1);
+                targetquad->SetActive(1);
+            }
+            break;
+        case EVIEWMODE_TWOV:
+            targetp1->ScissorX = 0;
+            targetp1->ScissorY = 0;
+            targetp1->ScissorW = screen_width / 2;
+            targetp1->ScissorH = screen_height;
+            targetp2->ScissorW = screen_width / 2;
+            targetp2->ScissorH = screen_height;
+            targetp2->ScissorX = screen_width / 2;
+            targetp2->ScissorY = 0;
+            targetr1->ScissorX = 0;
+            targetr1->ScissorY = 0;
+            targetr1->ScissorW = 0;
+            targetr1->ScissorH = 0;
+            targetp1->SetActive(1);
+            viewp1->SetActive(1);
+            targetp2->SetActive(1);
+            viewp2->SetActive(1);
+            targetr1->SetActive(0);
+            viewr1->SetActive(0);
+
+            for (int i = 8; i <= 11; i++) {
+                eView *viewquad = eGetView(i, false);
+                eRenderTarget *targetquad = viewquad->GetRenderTarget0();
+
+                viewquad->SetActive(1);
+                targetquad->SetActive(0);
+            }
+            break;
+        case EVIEWMODE_ONE_RVM:
+            targetp1->FrameWidth = screen_width;
+            targetp1->FrameHeight = screen_height;
+            targetp1->ScissorX = 0;
+            targetp1->ScissorY = 0;
+            targetp1->ScissorW = screen_width;
+            targetp1->ScissorH = screen_height;
+            targetp2->ScissorX = 0;
+            targetp2->ScissorY = 0;
+            targetp2->ScissorW = 0;
+            targetp2->ScissorH = 0;
+            targetp2->FrameWidth = 0;
+            targetp2->FrameHeight = 0;
+            targetr1->FrameHeight = 0x40;
+            targetr1->ScissorX = 0;
+            targetr1->ScissorY = 0;
+            targetr1->ScissorW = 0x40;
+            targetr1->ScissorH = 0x40;
+            targetr1->FrameWidth = 0x40;
+            targetp1->SetActive(1);
+            viewp1->SetActive(1);
+            targetp2->SetActive(0);
+            viewp2->SetActive(0);
+            targetr1->SetActive(1);
+            viewr1->SetActive(1);
+
+            for (int i = 8; i <= 11; i++) {
+                eView *viewquad = eGetView(i, false);
+                eRenderTarget *targetquad = viewquad->GetRenderTarget0();
+
+                viewquad->SetActive(1);
+                targetquad->SetActive(1);
+            }
+            break;
+        case EVIEWMODE_ONE:
+            targetp1->FrameWidth = screen_width;
+            targetp1->FrameHeight = screen_height;
+            targetp1->ScissorX = 0;
+            targetp1->ScissorY = 0;
+            targetp1->ScissorW = screen_width;
+            targetp1->ScissorH = screen_height;
+            targetp2->ScissorX = 0;
+            targetp2->ScissorY = 0;
+            targetp2->ScissorW = 0;
+            targetp2->ScissorH = 0;
+            targetp2->FrameWidth = 0;
+            targetp2->FrameHeight = 0;
+            targetr1->ScissorX = 0;
+            targetr1->ScissorY = 0;
+            targetr1->ScissorW = 0;
+            targetr1->ScissorH = 0;
+            targetp1->SetActive(1);
+            viewp1->SetActive(1);
+            targetp2->SetActive(0);
+            viewp2->SetActive(0);
+            targetr1->SetActive(0);
+            viewr1->SetActive(0);
+
+            for (int i = 8; i <= 11; i++) {
+                eView *viewquad = eGetView(i, false);
+                eRenderTarget *targetquad = viewquad->GetRenderTarget0();
+
+                viewquad->SetActive(1);
+                targetquad->SetActive(1);
+            }
+            break;
+        case EVIEWMODE_NONE:
+            targetp1->FrameWidth = screen_width;
+            targetp1->FrameHeight = screen_height;
+            targetp1->ScissorX = 0;
+            targetp1->ScissorY = 0;
+            targetp1->ScissorW = screen_width;
+            targetp1->ScissorH = screen_height;
+            targetp2->ScissorX = 0;
+            targetp2->ScissorY = 0;
+            targetp2->ScissorW = 0;
+            targetp2->ScissorH = 0;
+            targetp2->FrameWidth = 0;
+            targetp2->FrameHeight = 0;
+            targetr1->ScissorX = 0;
+            targetr1->ScissorY = 0;
+            targetr1->ScissorW = 0;
+            targetr1->ScissorH = 0;
+            targetp1->SetActive(1);
+            viewp1->SetActive(1);
+            targetp2->SetActive(0);
+            viewp2->SetActive(0);
+            targetr1->SetActive(0);
+            viewr1->SetActive(0);
+            targetspcp2->SetActive(0);
+            viewspcp2->SetActive(0);
+
+            for (int i = 8; i <= 11; i++) {
+                eView *viewquad = eGetView(i, false);
+                eRenderTarget *targetquad = viewquad->GetRenderTarget0();
+
+                viewquad->SetActive(1);
+                targetquad->SetActive(0);
+            }
+            break;
+    }
+}
+
 // void eUpdateViewMode(void) {
 //   int iVar1;
 //   int iVar2;
