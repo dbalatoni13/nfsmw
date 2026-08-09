@@ -58,6 +58,49 @@ bool eEndStrip(eView *view) {
     //   inline void GXEnd() {}
 }
 
+static unsigned int rgbatoargb(unsigned char *c) {
+    unsigned char r;
+    unsigned char g;
+    unsigned char b;
+    unsigned char a;
+
+    a = c[3] >> 1;
+    b = c[2] >> 1;
+    g = c[1] >> 1;
+    r = c[0] << 1;
+    return (a << 24) | (b << 16) | (g << 8) | r;
+}
+
+void eAddColour(unsigned int colour) {
+    e_current_strip->m_StripVerts[e_current_strip_col].col = rgbatoargb(reinterpret_cast<unsigned char *>(&colour));
+    e_current_strip_col++;
+}
+
+void eAddUV(float u, float v) {
+    e_current_strip->m_StripVerts[e_current_strip_uv].u = u;
+    e_current_strip->m_StripVerts[e_current_strip_uv].v = v;
+    e_current_strip_uv++;
+}
+
+void eAddVertex(const bVector3 &v) {
+    e_current_strip->m_StripVerts[e_current_strip_vert].x = v.x;
+    e_current_strip->m_StripVerts[e_current_strip_vert].y = v.y;
+    e_current_strip->m_StripVerts[e_current_strip_vert].z = v.z;
+    e_current_strip_vert++;
+}
+
+void exAddColour(unsigned int colour) {
+    eAddColour(colour);
+}
+
+void exAddUV(float u, float v) {
+    eAddUV(u, v);
+}
+
+void exAddVertex(const bVector3 &v) {
+    eAddVertex(v);
+}
+
 bool exBeginStrip(TextureInfo *tex, int a, bMatrix4 *mat) {
     return eBeginStrip(tex, a, mat);
 }
