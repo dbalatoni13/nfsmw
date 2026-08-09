@@ -23,6 +23,76 @@ void eMulMatrix(bMatrix4 *ab, bMatrix4 *a, bMatrix4 *b) {
     MTX44Concat(*reinterpret_cast<Mtx44 *>(a), *reinterpret_cast<Mtx44 *>(b), *reinterpret_cast<Mtx44 *>(ab));
 }
 
+void eMulVector(bVector4 *vm, const bMatrix4 *m, const bVector4 *v) {
+    {
+        register double FP0, FP1, FP2, FP3, FP4, FP5, FP6, FP7, FP8, FP9, FP10, FP11;
+
+        asm("psq_l 10, 0(5), 0, 0\n"
+            "psq_l 0, 0(4), 0, 0\n"
+            "ps_muls0 0, 0, 10\n"
+            "addi 9, 4, 0x10\n"
+            "psq_l 12, 0(9), 0, 0\n"
+            "ps_madds1 12, 12, 10, 0\n"
+            "addi 5, 5, 8\n"
+            "psq_l 11, 0(5), 0, 0\n"
+            "addi 9, 4, 0x20\n"
+            "psq_l 13, 0(9), 0, 0\n"
+            "ps_madds0 13, 13, 11, 12\n"
+            "addi 9, 4, 0x30\n"
+            "psq_l 0, 0(9), 0, 0\n"
+            "ps_madds1 0, 0, 11, 13\n"
+            "psq_st 0, 0(3), 0, 0\n"
+            "addi 9, 4, 8\n"
+            "psq_l 0, 0(9), 0, 0\n"
+            "ps_muls0 0, 0, 10\n"
+            "addi 9, 4, 0x18\n"
+            "psq_l 13, 0(9), 0, 0\n"
+            "ps_madds1 13, 13, 10, 0\n"
+            "addi 9, 4, 0x28\n"
+            "psq_l 12, 0(9), 0, 0\n"
+            "ps_madds0 12, 12, 11, 13\n"
+            "addi 4, 4, 0x38\n"
+            "psq_l 0, 0(4), 0, 0\n"
+            "ps_madds1 0, 0, 11, 12\n"
+            "psq_st 0, 8(3), 0, 0");
+    }
+}
+
+void eMulVector(bVector3 *vm, const bMatrix4 *m, const bVector3 *v) {
+    {
+        register double FP0, FP1, FP2, FP3, FP4, FP5, FP6, FP7, FP8, FP9, FP10, FP11;
+
+        asm("psq_l 10, 0(5), 0, 0\n"
+            "psq_l 0, 0(4), 0, 0\n"
+            "ps_muls0 0, 0, 10\n"
+            "addi 9, 4, 0x10\n"
+            "psq_l 12, 0(9), 0, 0\n"
+            "ps_madds1 12, 12, 10, 0\n"
+            "addi 5, 5, 8\n"
+            "psq_l 11, 0(5), 1, 0\n"
+            "addi 9, 4, 0x20\n"
+            "psq_l 13, 0(9), 0, 0\n"
+            "ps_madds0 13, 13, 11, 12\n"
+            "addi 9, 4, 0x30\n"
+            "psq_l 0, 0(9), 0, 0\n"
+            "ps_madds1 0, 0, 11, 13\n"
+            "psq_st 0, 0(3), 0, 0\n"
+            "addi 9, 4, 8\n"
+            "psq_l 0, 0(9), 0, 0\n"
+            "ps_muls0 0, 0, 10\n"
+            "addi 9, 4, 0x18\n"
+            "psq_l 13, 0(9), 0, 0\n"
+            "ps_madds1 13, 13, 10, 0\n"
+            "addi 9, 4, 0x28\n"
+            "psq_l 12, 0(9), 0, 0\n"
+            "ps_madds0 12, 12, 11, 13\n"
+            "addi 4, 4, 0x38\n"
+            "psq_l 0, 0(4), 0, 0\n"
+            "ps_madds1 0, 0, 11, 12\n"
+            "psq_st 0, 8(3), 1, 0");
+    }
+}
+
 float eSin(float a) {
     const float twopi = 6.2831855f;
     float flip_sign;
