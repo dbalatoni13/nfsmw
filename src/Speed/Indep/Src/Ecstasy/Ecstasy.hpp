@@ -211,6 +211,10 @@ class eView : public eViewPlatInterface {
         return RenderTargetTable[0];
     }
 
+    eRenderTarget *GetRenderTarget0() {
+        return GetRenderTarget();
+    }
+
     void SetRenderTarget0(eRenderTarget *target) {
         this->SetRenderTarget(target, 0);
     }

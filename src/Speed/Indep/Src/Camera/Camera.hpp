@@ -46,7 +46,9 @@ class Camera {
 
     // float GetDepthOfField() {}
 
-    // unsigned short GetFieldOfView() {}
+    unsigned short GetFieldOfView() {
+        return this->CurrentKey.FieldOfView;
+    }
 
     // bMatrix4 *GetWorldToCameraMatrix() {}
 
@@ -129,9 +131,13 @@ class Camera {
 
     void SetFarZ(float far_z) {}
 
-    // float GetNearZ() {}
+    float GetNearZ() {
+        return this->CurrentKey.NearZ;
+    }
 
-    // float GetFarZ() {}
+    float GetFarZ() {
+        return this->CurrentKey.FarZ;
+    }
 
     void SetLetterBox(float LB_h) {}
 

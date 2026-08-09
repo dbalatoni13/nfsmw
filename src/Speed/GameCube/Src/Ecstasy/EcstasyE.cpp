@@ -175,6 +175,7 @@ cReflectMap ReflectMap;
 cQuarterSizeMap QuarterSizeMap;
 float PALefbxfbFOVscl = 1.0f; // size: 0x4, address: 0x8041ABFC
 float PALefbxfbAspect = 1.0f; // size: 0x4, address: 0x8041AC00
+float Global3DAspectRatio = 0.8f;
 static vu16 __sync_token;
 
 bool IsRainDisabled() {
@@ -515,6 +516,135 @@ float CalculateH(unsigned short alpha) {
         return 256.0f / tan;
     }
     return 10.0f;
+}
+
+// NON_MATCHING: 95.4% - camera/render_target get r30/r28 swapped, fovscl double-store folded
+void CreateViewMatricies(eView *view, float force_near_z, float force_far_z, float force_screen_far_z) {
+    Camera *camera;
+    eRenderTarget *render_target = view->GetRenderTarget0();
+    eViewPlatInfo *plat_view = view->GetPlatInfo();
+    float aspectscale;
+    float nearz;
+    float farz;
+    float h;
+    bMatrix4 mV2ST;
+
+    camera = view->GetCamera();
+    if (!camera) {
+        bIdentity(view->GetPlatInfo()->GetWorldViewMatrix());
+        bIdentity(view->GetPlatInfo()->GetViewScreenMatrix());
+        return;
+    }
+
+    if (IsPal50Mode) {
+        aspectscale = 0.86f;
+    } else {
+        aspectscale = 0.8f;
+    }
+
+    if (view->ID == EVIEW_PLAYER1 || view->ID == EVIEW_PLAYER2 || view->ID == EVIEW_PLAYER1_SPECULAR || view->ID == EVIEW_PLAYER2_SPECULAR) {
+        aspectscale = Global3DAspectRatio;
+    }
+
+    nearz = camera->GetNearZ();
+    farz = camera->GetFarZ();
+    if (force_near_z != 0.0f) {
+        nearz = force_near_z;
+    }
+    if (force_far_z != 0.0f) {
+        farz = force_far_z;
+    }
+    view->NearZ = nearz;
+    view->FarZ = farz;
+    h = CalculateH(camera->GetFieldOfView());
+    view->H = h;
+
+    switch (view->ID) {
+        case EVIEW_PLAYER1_RVM:
+        case EVIEW_PLAYER1_SPECULAR:
+        case EVIEW_PLAYER2_SPECULAR:
+        case EVIEW_ENVMAP0F:
+        case EVIEW_ENVMAP0R:
+        case EVIEW_ENVMAP0B:
+        case EVIEW_ENVMAP0L:
+        case EVIEW_ENVMAP0U:
+        case EVIEW_ENVMAP0D:
+            plat_view->fovscl = 1.0f;
+            plat_view->aspect = (float)ScreenWidth * aspectscale / (float)ScreenHeight;
+            break;
+        default:
+            plat_view->fovscl = (float)render_target->FrameHeight / (float)eGetScreenHeight();
+            plat_view->fovscl *= PALefbxfbFOVscl;
+            plat_view->aspect = (float)render_target->FrameWidth * aspectscale / (float)render_target->FrameHeight * PALefbxfbAspect;
+            break;
+    }
+
+    view->FovDegrees = bAngToDeg(camera->GetFieldOfView()) * plat_view->fovscl;
+    view->ViewDirection = *camera->GetDirection();
+    MTXPerspective(*reinterpret_cast<Mtx44 *>(view->GetPlatInfo()->GetViewScreenMatrix()), view->FovDegrees, plat_view->aspect, view->NearZ,
+                   view->FarZ);
+
+    eCopyMatrix(view->GetPlatInfo()->GetWorldViewMatrix(), camera->GetCameraMatrix());
+    *reinterpret_cast<unsigned int *>(&view->GetPlatInfo()->WorldViewMatrix.v0.y) ^= 0x80000000;
+    *reinterpret_cast<unsigned int *>(&view->GetPlatInfo()->WorldViewMatrix.v1.y) ^= 0x80000000;
+    *reinterpret_cast<unsigned int *>(&view->GetPlatInfo()->WorldViewMatrix.v2.y) ^= 0x80000000;
+    *reinterpret_cast<unsigned int *>(&view->GetPlatInfo()->WorldViewMatrix.v3.y) ^= 0x80000000;
+    *reinterpret_cast<unsigned int *>(&view->GetPlatInfo()->WorldViewMatrix.v0.z) ^= 0x80000000;
+    *reinterpret_cast<unsigned int *>(&view->GetPlatInfo()->WorldViewMatrix.v1.z) ^= 0x80000000;
+    *reinterpret_cast<unsigned int *>(&view->GetPlatInfo()->WorldViewMatrix.v2.z) ^= 0x80000000;
+    *reinterpret_cast<unsigned int *>(&view->GetPlatInfo()->WorldViewMatrix.v3.z) ^= 0x80000000;
+    bTransposeMatrix(&mV2ST, view->GetPlatInfo()->GetViewScreenMatrix());
+    eMulMatrix(&view->GetPlatInfo()->WorldClipMatrix, &view->GetPlatInfo()->WorldViewMatrix, &mV2ST);
+
+    for (int i = 0; i < 6; i++) {
+        switch (i) {
+            case 0:
+                view->GetPlatInfo()->ClippingPlanes[0].x = view->GetPlatInfo()->WorldClipMatrix.v0.w + view->GetPlatInfo()->WorldClipMatrix.v0.x;
+                view->GetPlatInfo()->ClippingPlanes[0].y = view->GetPlatInfo()->WorldClipMatrix.v1.w + view->GetPlatInfo()->WorldClipMatrix.v1.x;
+                view->GetPlatInfo()->ClippingPlanes[0].z = view->GetPlatInfo()->WorldClipMatrix.v2.w + view->GetPlatInfo()->WorldClipMatrix.v2.x;
+                view->GetPlatInfo()->ClippingPlanes[0].w = view->GetPlatInfo()->WorldClipMatrix.v3.w + view->GetPlatInfo()->WorldClipMatrix.v3.x;
+                break;
+            case 1:
+                view->GetPlatInfo()->ClippingPlanes[1].x = view->GetPlatInfo()->WorldClipMatrix.v0.w - view->GetPlatInfo()->WorldClipMatrix.v0.x;
+                view->GetPlatInfo()->ClippingPlanes[1].y = view->GetPlatInfo()->WorldClipMatrix.v1.w - view->GetPlatInfo()->WorldClipMatrix.v1.x;
+                view->GetPlatInfo()->ClippingPlanes[1].z = view->GetPlatInfo()->WorldClipMatrix.v2.w - view->GetPlatInfo()->WorldClipMatrix.v2.x;
+                view->GetPlatInfo()->ClippingPlanes[1].w = view->GetPlatInfo()->WorldClipMatrix.v3.w - view->GetPlatInfo()->WorldClipMatrix.v3.x;
+                break;
+            case 2:
+                view->GetPlatInfo()->ClippingPlanes[2].x = view->GetPlatInfo()->WorldClipMatrix.v0.w - view->GetPlatInfo()->WorldClipMatrix.v0.y;
+                view->GetPlatInfo()->ClippingPlanes[2].y = view->GetPlatInfo()->WorldClipMatrix.v1.w - view->GetPlatInfo()->WorldClipMatrix.v1.y;
+                view->GetPlatInfo()->ClippingPlanes[2].z = view->GetPlatInfo()->WorldClipMatrix.v2.w - view->GetPlatInfo()->WorldClipMatrix.v2.y;
+                view->GetPlatInfo()->ClippingPlanes[2].w = view->GetPlatInfo()->WorldClipMatrix.v3.w - view->GetPlatInfo()->WorldClipMatrix.v3.y;
+                break;
+            default:
+                view->GetPlatInfo()->ClippingPlanes[i].x = view->GetPlatInfo()->WorldClipMatrix.v0.w + view->GetPlatInfo()->WorldClipMatrix.v0.y;
+                view->GetPlatInfo()->ClippingPlanes[i].y = view->GetPlatInfo()->WorldClipMatrix.v1.w + view->GetPlatInfo()->WorldClipMatrix.v1.y;
+                view->GetPlatInfo()->ClippingPlanes[i].z = view->GetPlatInfo()->WorldClipMatrix.v2.w + view->GetPlatInfo()->WorldClipMatrix.v2.y;
+                view->GetPlatInfo()->ClippingPlanes[i].w = view->GetPlatInfo()->WorldClipMatrix.v3.w + view->GetPlatInfo()->WorldClipMatrix.v3.y;
+                break;
+            case 4:
+                view->GetPlatInfo()->ClippingPlanes[4].x = -view->GetPlatInfo()->WorldClipMatrix.v0.z;
+                view->GetPlatInfo()->ClippingPlanes[4].y = -view->GetPlatInfo()->WorldClipMatrix.v1.z;
+                view->GetPlatInfo()->ClippingPlanes[4].z = -view->GetPlatInfo()->WorldClipMatrix.v2.z;
+                view->GetPlatInfo()->ClippingPlanes[4].w = -view->GetPlatInfo()->WorldClipMatrix.v3.z;
+                break;
+            case 5:
+                view->GetPlatInfo()->ClippingPlanes[5].x = view->GetPlatInfo()->WorldClipMatrix.v0.w + view->GetPlatInfo()->WorldClipMatrix.v0.z;
+                view->GetPlatInfo()->ClippingPlanes[5].y = view->GetPlatInfo()->WorldClipMatrix.v1.w + view->GetPlatInfo()->WorldClipMatrix.v1.z;
+                view->GetPlatInfo()->ClippingPlanes[5].z = view->GetPlatInfo()->WorldClipMatrix.v2.w + view->GetPlatInfo()->WorldClipMatrix.v2.z;
+                view->GetPlatInfo()->ClippingPlanes[5].w = view->GetPlatInfo()->WorldClipMatrix.v3.w + view->GetPlatInfo()->WorldClipMatrix.v3.z;
+                break;
+        }
+
+        {
+            float len = bLength(reinterpret_cast<bVector3 *>(&view->GetPlatInfo()->ClippingPlanes[i]));
+
+            view->GetPlatInfo()->ClippingPlanes[i].x /= len;
+            view->GetPlatInfo()->ClippingPlanes[i].y /= len;
+            view->GetPlatInfo()->ClippingPlanes[i].z /= len;
+            view->GetPlatInfo()->ClippingPlanes[i].w /= len;
+        }
+    }
 }
 
 // int epSetAllStripsVisibleState(eSolid *param1, int param2) {
