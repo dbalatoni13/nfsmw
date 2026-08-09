@@ -1,12 +1,13 @@
 #include "Speed/Indep/Src/Camera/Camera.hpp"
 #include "Speed/Indep/Src/Camera/CameraMover.hpp"
-#include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
-#include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
-#include "Speed/Indep/Src/Misc/attribuserinclude.h"
+
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
-#include "Speed/Indep/Src/Ecstasy/eMath.hpp"
-#include <cstddef>
+
+#include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
+
+#include "Speed/Indep/Src/Camera/ICE/ICEManager.hpp"
+#include "Speed/Indep/Src/Camera/ICE/ICEReplay.hpp"
 
 Camera::Camera() : LastDisparateTime(RealTimeFrames), LastUpdateTime(-0x80000000), ElapsedTime(1.0f), RenderDash(0), bClearVelocity(false) {
     bMatrix4 m;
@@ -53,8 +54,6 @@ Camera::Camera() : LastDisparateTime(RealTimeFrames), LastUpdateTime(-0x80000000
     SetCameraMatrix(m, 1.0f);
     SetCameraMatrix(m, 1.0f);
 }
-
-Camera::~Camera() {}
 
 void Camera::SetCameraMatrix(const bMatrix4 &m, float fTime) {
     static int cameralink;
@@ -185,12 +184,12 @@ float NoiseInterpolated(float x) {
     float t;
     float f;
 
-    a = (int)bFloor(x);
+    a = bFloor(x);
     s = NoiseBase(a);
     t = NoiseBase(a + 1);
-    f = (x - (float)a);
+    f = (x - a);
 
-    return f * t + (1.0f - (x - f) * s);
+    return f * t + (1.0f - f) * s;
 }
 
 float Noise(float x) {
@@ -214,31 +213,21 @@ unsigned short Camera::FovRelativeAngle(unsigned short a) {
 }
 
 void Camera::ApplyNoise(bMatrix4 *p_matrix, float time, float intensity) {
-
     bVector4 v(CurrentKey.NoiseFrequency1);
+    bScale(&v, &v, time);
 
-    bVector4 v1;
-    bScale(&v1, &v, time);
+    bVector4 v1(Noise(v.x), Noise(v.y), Noise(v.z), Noise(v.w));
 
-    v1.x = Noise(v1.x);
-    v1.y = Noise(v1.y);
-    v1.z = Noise(v1.z);
-    v1.w = Noise(v1.w);
+    bScale(&v1, &v1, &CurrentKey.NoiseAmplitude1);
 
-    bScale(&v1, &v1, (bVector4 *)&CurrentKey.NoiseAmplitude1);
+    v = CurrentKey.NoiseFrequency2;
+    bScale(&v, &v, time);
 
-    bVector4 v2;
-    bScale(&v2, &CurrentKey.NoiseFrequency2, time);
+    bVector4 v2(Noise(v.x), Noise(v.y), Noise(v.z), Noise(v.w));
 
-    v2.x = Noise(v2.x);
-    v2.y = Noise(v2.y);
-    v2.z = Noise(v2.z);
-    v2.w = Noise(v2.w);
+    bScale(&v2, &v2, &CurrentKey.NoiseAmplitude2);
 
-    bScale(&v2, &v2, (bVector4 *)&CurrentKey.NoiseAmplitude2);
-
-    bVector4 v_noise = v1 + v2;
-
+    bVector4 v_noise = static_cast<const bVector4 &>(v1) + v2; // dwarf require operator+() const
     bScale(&v_noise, &v_noise, intensity);
 
     bMatrix4 m;
@@ -252,7 +241,6 @@ void Camera::ApplyNoise(bMatrix4 *p_matrix, float time, float intensity) {
     eRotateY(&m, &m, Camera::FovRelativeAngle(bDegToAng(v_noise.w)));
 
     eMulMatrix(p_matrix, p_matrix, &m);
-
     return;
 }
 

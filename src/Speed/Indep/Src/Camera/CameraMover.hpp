@@ -2,6 +2,7 @@
 #define CAMERA_CAMERAMOVER_H
 
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
+#include "Speed/Indep/Src/Camera/Camera.hpp"
 #ifdef EA_PRAGMA_ONCE_SUPPORTED
 #pragma once
 #endif
@@ -186,5 +187,6 @@ class CameraMover : public bTNode<CameraMover>, public WCollisionMgr::ICollision
 };
 
 void CameraMoverRestartRace();
+void UpdateCameraMovers(float dT);
 
 #endif

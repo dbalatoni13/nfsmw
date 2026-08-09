@@ -7,22 +7,16 @@
 
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
-#include "Speed/Indep/Src/Camera/ICE/ICEMath.hpp"
-
 #include "Speed/Indep/bWare/Inc/bFunk.hpp"
 #include "Speed/Indep/Src/Gameplay/GManager.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
-#include "Speed/Indep/Libs/Support/Utility/UCollections.h"
-#include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
+
 #include "Speed/Indep/Src/World/TrackStreamer.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
-#include "Speed/Indep/bWare/Inc/Espresso.hpp"
+
 #include "Speed/Indep/Src/Misc/GameFlow.hpp"
 #include "Speed/Indep/Src/Misc/Rumble.hpp"
-
-#include "Speed/Indep/Src/Camera/ICE/ICEManager.hpp"
-#include "Speed/Indep/Src/Camera/ICE/ICEReplay.hpp"
 
 // TODO GET RID OF THESE
 extern int32 RealTime;
@@ -33,8 +27,6 @@ extern int JR2ServerExists;
 extern int WeHaveCheckedIfJR2ServerExists;
 extern int LastUpdateTimeCaffeine;
 extern int LastUpdateTimeJR2;
-
-void UpdateCameraMovers(float dT);
 
 struct CameraParams {
     // total size: 0xD4
@@ -98,15 +90,25 @@ class Camera {
 
     void CommunicateWithJollyRancher(char *cameraname);
 
+    void ProjectNormalized(bVector3 *pIn, bVector2 *pOut);
+
+    void UpdateSeeulatorTool();
+
     unsigned short FovRelativeAngle(unsigned short a);
 
     void ApplyNoise(bMatrix4 *p_matrix, float time, float intensity);
 
-    // float GetFocalDistance() {}
+    float GetFocalDistance() {
+        return CurrentKey.FocalDistance;
+    }
 
-    // float GetDepthOfField() {}
+    float GetDepthOfField() {
+        return CurrentKey.DepthOfField;
+    }
 
-    // unsigned short GetFieldOfView() {}
+    unsigned short GetFieldOfView() {
+        return CurrentKey.FieldOfView;
+    }
 
     // bMatrix4 *GetWorldToCameraMatrix() {}
 
@@ -241,9 +243,13 @@ class Camera {
         CurrentKey.FarZ = far_z;
     }
 
-    // float GetNearZ() {}
+    float GetNearZ() {
+        return CurrentKey.NearZ;
+    }
 
-    // float GetFarZ() {}
+    float GetFarZ() {
+        return CurrentKey.FarZ;
+    }
 
     void SetLetterBox(float LB_h) {}
 

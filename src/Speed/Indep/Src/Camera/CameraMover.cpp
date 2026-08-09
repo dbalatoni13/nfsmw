@@ -96,12 +96,12 @@ void CameraMover::Disable() {
 
 void CameraMover::ChopperNoise(bMatrix4 *world_to_camera, float f_scale, bool useWorldTimer) {
 
-    if (f_scale > 0.0) {
+    if (f_scale > 0.0f) {
         const UTL::Collections::ListableSet<IVehicle, 10, eVehicleList, 10>::List &vehicles =
-            UTL::Collections::ListableSet<IVehicle, 10, eVehicleList, 10>::GetList(VEHICLE_ALL);
+            UTL::Collections::ListableSet<IVehicle, 10, eVehicleList, 10>::GetList(VEHICLE_AICOPS);
         for (IVehicle *const *iter = vehicles.begin(); iter != vehicles.end(); iter++) {
             IVehicle *vehicle = *iter;
-            if (vehicle->IsActive()) {
+            if (!vehicle->IsActive()) {
                 continue;
             }
             if (vehicle->GetVehicleClass() != VehicleClass::CHOPPER) {
@@ -116,7 +116,7 @@ void CameraMover::ChopperNoise(bMatrix4 *world_to_camera, float f_scale, bool us
             bVector3 dir;
 
             bSub(&dir, &bpos, pCamera->GetPosition());
-
+            dir.z = 0.0f;
             float distance = bLength(&dir);
 
             if (distance < 40.0f) {
