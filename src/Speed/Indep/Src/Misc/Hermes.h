@@ -94,8 +94,8 @@ class Handler {
     static HHANDLER Create(Class *that, void (Class::*handler)(const MessageT &), UCrc32 port, unsigned int id) {
         Handler h;
         MemberHandler<MessageT, Class, V> *pmemberhandler = reinterpret_cast<MemberHandler<MessageT, Class, V> *>(&h);
-        pmemberhandler->Handler = handler;
         pmemberhandler->that = that;
+        pmemberhandler->Handler = handler;
 
         h.CallFn = pmemberhandler->Call;
         h.mKind = MessageT::_GetKind();
