@@ -36,7 +36,11 @@ SFXObj_Pathfinder::SFXObj_Pathfinder() : CARSFX() {
     this->m_pSFXCTL_Pathfinder = nullptr;
     this->m_PFParms[0].pmapfile = nullptr;
     this->m_PFParms[1].pmapfile = nullptr;
+#ifdef EA_BUILD_A124
+    this->m_Flags = 0;
+#else
     this->m_Flags = 0x40;
+#endif
 }
 
 int SFXObj_Pathfinder::GetController(int Index) {
