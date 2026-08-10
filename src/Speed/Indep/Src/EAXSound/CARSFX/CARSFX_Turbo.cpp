@@ -34,7 +34,21 @@ CARSFX_Turbo::CARSFX_Turbo() : CARSFX(), m_BlowoffRampDown(), m_SpoolDuck(), m_f
 }
 
 CARSFX_Turbo::~CARSFX_Turbo() {
+#ifdef EA_BUILD_A124
+    if (this->m_pTurboBlowoffControl != nullptr) {
+        delete this->m_pTurboBlowoffControl;
+        this->m_pTurboBlowoffControl = nullptr;
+        gnMemLeakTurboBLOWOFFCountTest--;
+    }
+
+    if (this->m_pTurboSplControl != nullptr) {
+        delete this->m_pTurboSplControl;
+        this->m_pTurboSplControl = nullptr;
+        gnMemLeakTurboSPOOLCountTest--;
+    }
+#else
     this->Destroy();
+#endif
 }
 
 int CARSFX_Turbo::GetController(int Index) {
@@ -103,6 +117,17 @@ void CARSFX_Turbo::Detach() {
 }
 
 void CARSFX_Turbo::Destroy() {
+#ifdef EA_BUILD_A124
+    if (this->m_pTurboSplControl != nullptr) {
+        delete this->m_pTurboSplControl;
+        this->m_pTurboSplControl = nullptr;
+    }
+
+    if (this->m_pTurboBlowoffControl != nullptr) {
+        delete this->m_pTurboBlowoffControl;
+        this->m_pTurboBlowoffControl = nullptr;
+    }
+#else
     if (this->m_pTurboBlowoffControl != nullptr) {
         delete this->m_pTurboBlowoffControl;
         this->m_pTurboBlowoffControl = nullptr;
@@ -114,6 +139,7 @@ void CARSFX_Turbo::Destroy() {
         this->m_pTurboSplControl = nullptr;
         gnMemLeakTurboSPOOLCountTest--;
     }
+#endif
 }
 
 void CARSFX_Turbo::UpdateParams(float t) {
