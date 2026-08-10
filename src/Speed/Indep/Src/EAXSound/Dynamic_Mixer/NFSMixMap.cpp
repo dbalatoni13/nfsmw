@@ -1299,7 +1299,7 @@ void NFSMixMap::UpdateSubChannels() {
             }
 
             int nUp = (pSChD_S->pMapParams->UpperLowerSwing >> 16) & 0x7FFF;
-            int nDwn = pSChD_S->pMapParams->UpperLowerSwing | 0xFFFF0000;
+            int nDwn = (pSChD_S->pMapParams->UpperLowerSwing & 0x0000FFFF) | 0xFFFF0000;
 
             if (pSChD_U->Output > nUp) {
                 pSChD_U->Output = nUp;
