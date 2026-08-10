@@ -130,7 +130,11 @@ void CARSFX_Siren::ProcessUpdate() {
 
 Sound::SirenState CARSFX_Siren::UpdateSirenState(float t) {
     this->tSirenState = this->tSirenState - t;
-    if (this->tSirenState < 0.0f || this->GetPhysCar()->GetSirenState() == Sound::SIREN_SCREAM) {
+    if (this->tSirenState < 0.0f
+#ifndef EA_BUILD_A124
+        || this->GetPhysCar()->GetSirenState() == Sound::SIREN_SCREAM
+#endif
+    ) {
         this->tSirenState = g_pEAXSound->Random(3.0f);
         return this->GetPhysCar()->GetSirenState();
     }
