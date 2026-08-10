@@ -31,6 +31,14 @@ bool SFXObj_Reverb::bUnavailable = true;       // Decl: 92
 SFXObj_Reverb::ReverbStructure SFXObj_Reverb::m_EchoAllocs[4]; // Decl: 94
 
 SFXObj_Reverb::SFXObj_Reverb() : CARSFX() {
+#ifdef EA_BUILD_A124
+    if (this->m_EchoBuffer == nullptr) {
+        this->m_EchoBuffer = gAudioMemoryManager.AllocateMemory(0xA000, "ReverbBuffer", false);
+        this->m_UnusedBuffer = this->m_EchoBuffer;
+        this->bUnavailable = false;
+    }
+#endif
+
     for (int n = 0; n < NUM_ELEMENTS(this->m_pFXEditPatch); n++) {
         this->m_pFXEditPatch[n] = nullptr;
     }
