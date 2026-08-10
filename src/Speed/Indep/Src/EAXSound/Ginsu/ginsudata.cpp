@@ -166,23 +166,21 @@ int GinsuSynthData::FrequencyToSample(float freq) const {
     float seg;
     int i;
     float a;
-    int samp;
 
     if (this->mSegCount < 1) {
-        samp = 0;
-    } else if (freq <= this->mMinFrequency) {
-        samp = this->mFreqPos[0];
-    } else if (freq >= this->mMaxFrequency) {
-        samp = this->mFreqPos[this->mSegCount];
-    } else {
-        seg = static_cast<float>(this->mSegCount) * (freq - this->mMinFrequency) / (this->mMaxFrequency - this->mMinFrequency);
-        i = IntFloor(seg);
-        a = seg - static_cast<float>(i);
-        samp = IntRound(static_cast<float>(this->mFreqPos[i]) + a * static_cast<float>(this->mFreqPos[i + 1] - this->mFreqPos[i]));
-        return samp;
+        return 0;
+    }
+    if (freq <= this->mMinFrequency) {
+        return this->mFreqPos[0];
+    }
+    if (freq >= this->mMaxFrequency) {
+        return this->mFreqPos[this->mSegCount];
     }
 
-    return samp;
+    seg = static_cast<float>(this->mSegCount) * (freq - this->mMinFrequency) / (this->mMaxFrequency - this->mMinFrequency);
+    i = IntFloor(seg);
+    a = seg - static_cast<float>(i);
+    return IntRound(static_cast<float>(this->mFreqPos[i]) + a * static_cast<float>(this->mFreqPos[i + 1] - this->mFreqPos[i]));
 }
 
 // UNSOLVED
