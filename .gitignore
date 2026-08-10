@@ -52,9 +52,5 @@ undefined_syms_auto.txt
 
 *.vsix
 
-<<<<<<< HEAD
 # NGCCC temp files
-=======
-# ninja temp files
->>>>>>> 59841b5 (solve saems! and sattrdef)
 *.TMP
