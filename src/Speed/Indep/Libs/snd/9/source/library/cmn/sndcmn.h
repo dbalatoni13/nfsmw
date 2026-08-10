@@ -591,6 +591,9 @@ int SNDAEMS_asyncloadmodulebankmemdone();
 // sattrdef.c
 int SND_attrsetdef(SNDSAMPLEATTR *pssa);
 
+// sbadd.c
+int SNDbankadd(int *pbhandle, void *pbank);
+
 // filesys_c
 int FILESYS_opstatus(int ophandle);
 

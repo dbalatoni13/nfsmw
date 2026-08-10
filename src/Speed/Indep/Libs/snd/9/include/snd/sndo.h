@@ -195,6 +195,8 @@ int SNDAEMS_asyncloadmodulebankmemdone();
 
 int SND_attrsetdef(SNDSAMPLEATTR *pssa);
 
+int SNDbankadd(int *pbhandle, void *pbank);
+
 int SNDBANK_patchinfo(int bhandle, int patnum, SNDSAMPLEFORMAT *pssf, SNDSAMPLEATTR *pssa, SNDSAMPLEDESC *pssd);
 
 int SNDCTRL_drylevel(int shandle, int level);

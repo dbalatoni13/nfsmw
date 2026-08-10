@@ -19,10 +19,6 @@ void SNDBANKI_userdatacallback(SNDIPATCHHEADER *pph, int shandle, int type) {
     }
 }
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 int SNDbankadd(int *pbhandle, void *pbank) {
     int firstoffset;
     int xfersize;
@@ -88,7 +84,3 @@ int SNDbankadd(int *pbhandle, void *pbank) {
         return 8;
     }
 }
-
-#ifdef __cplusplus
-}
-#endif
