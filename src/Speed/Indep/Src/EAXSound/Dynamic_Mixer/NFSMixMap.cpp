@@ -672,7 +672,7 @@ stCurveDataProc *NFSMixMap::GetCurveDataPtr(stMixCtlParams *pparams) {
         return nullptr;
     }
 
-    int ncurve = (pparams->nINPUTID >> 24) & 0xF;
+    int ncurve = (static_cast<unsigned int>(pparams->nINPUTID) >> 24) & 0xF;
     int noffset = 0;
     for (int m = 0; m < ncurve; m++) {
         noffset += this->m_CurveProcsTotal[m][0];
