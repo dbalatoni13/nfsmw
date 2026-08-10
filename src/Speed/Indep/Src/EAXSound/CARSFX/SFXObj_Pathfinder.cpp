@@ -425,7 +425,11 @@ void SFXObj_PFEATrax::Destroy() {
 }
 
 // UNSOLVED, let's wait for the merge of zFE
+#ifdef EA_BUILD_A124
+void InitializeEATrax() {
+#else
 void InitializeEATrax(bool breset) {
+#endif
     // TODO
     // SFXObj_PFEATrax::m_EATrax[0].PBMode = FEDatabase->GetAudioSettings()->PlayState;
     SFXObj_PFEATrax::m_EATrax[0].TraxMask = 0;
@@ -461,13 +465,21 @@ void InitializeEATrax(bool breset) {
     }
     SFXObj_PFEATrax::m_EATrax[0].PlayBits = SFXObj_PFEATrax::m_EATrax[0].TraxMask;
     SFXObj_PFEATrax::m_EATrax[1].PlayBits = SFXObj_PFEATrax::m_EATrax[1].TraxMask;
+#ifdef EA_BUILD_A124
+    {
+#else
     if (breset) {
+#endif
         SFXObj_PFEATrax::m_EATrax[1].LastPlaylistSong = -1;
         SFXObj_PFEATrax::m_EATrax[0].LastPlaylistSong = -1;
     }
 }
 
 void SFXObj_PFEATrax::MessageInitSongsList(const MControlPathfinder &message) {
+#ifdef EA_BUILD_A124
+    PATH_stop(this->m_PFParms[m_ActiveProject].PATH_TRACK);
+    InitializeEATrax();
+#else
     unsigned int utype = message.GetPathEvent();
     if (utype == static_cast<unsigned int>(-1)) {
         PATH_stop(this->m_PFParms[m_ActiveProject].PATH_TRACK);
@@ -475,6 +487,7 @@ void SFXObj_PFEATrax::MessageInitSongsList(const MControlPathfinder &message) {
     } else {
         InitializeEATrax(false);
     }
+#endif
 }
 
 bool SFXObj_PFEATrax::TestToPursuit() {
