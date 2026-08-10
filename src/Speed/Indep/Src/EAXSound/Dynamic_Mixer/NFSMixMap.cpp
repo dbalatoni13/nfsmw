@@ -1643,7 +1643,11 @@ void NFSMixMap::UpdateATREvent(stEvtMixCtlProc *pProc) {
         return;
     }
 
+#ifdef EA_BUILD_A124
+    float nratio = (32767.0f - static_cast<float>(pProc->pData_U->qoutput)) / 32768.0f;
+#else
     float nratio = (32767.0f - static_cast<float>(pProc->pData_U->qoutput)) / 32767.0f;
+#endif
 
     pProc->pData_U->output = static_cast<int>(nratio * static_cast<float>(nSwing));
     return;
