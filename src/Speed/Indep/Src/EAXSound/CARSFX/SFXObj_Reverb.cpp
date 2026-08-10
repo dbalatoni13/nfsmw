@@ -99,10 +99,14 @@ void SFXObj_Reverb::InitSFX() {
 }
 
 void SFXObj_Reverb::UpdateParams(float t) {
-    if (IsEnabled() && m_pTunnelCtl->m_IsLeadCar && g_pEAXSound->GetSndGameMode() != SND_FRONTEND && g_pEAXSound->GetSndGameMode() != SND_CARSHOW) {
-        int ndmixverb = this->GetDMixOutput(0, DMX_VOL);
-        this->m_pTunnelCtl->m_AEMSWetVol = ndmixverb * m_pTunnelCtl->m_AEMSWetVol >> 15;
-        this->m_pTunnelCtl->m_GinsuWetVol = ndmixverb * m_pTunnelCtl->m_GinsuWetVol >> 15;
+    if (IsEnabled()) {
+        if (m_pTunnelCtl->m_IsLeadCar) {
+            if (g_pEAXSound->GetSndGameMode() != SND_FRONTEND && g_pEAXSound->GetSndGameMode() != SND_CARSHOW) {
+                int ndmixverb = this->GetDMixOutput(0, DMX_VOL);
+                this->m_pTunnelCtl->m_AEMSWetVol = ndmixverb * m_pTunnelCtl->m_AEMSWetVol >> 15;
+                this->m_pTunnelCtl->m_GinsuWetVol = ndmixverb * m_pTunnelCtl->m_GinsuWetVol >> 15;
+            }
+        }
     }
 }
 
