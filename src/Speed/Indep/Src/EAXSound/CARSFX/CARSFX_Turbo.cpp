@@ -22,11 +22,11 @@ static const float gfxturbomaxtorque = 0.25f; // size: 0x4, Decl: 45
 DEFINE_CREATABLE(0x20040, CARSFX_Turbo, SndBase);
 
 CARSFX_Turbo::CARSFX_Turbo() : CARSFX(), m_BlowoffRampDown(), m_SpoolDuck(), m_fDeltaTurbo(3) {
-    this->tLastBlowoffTime = 0.0f;
     this->m_pTurboBlowoffControl = nullptr;
     this->m_pTurboSplControl = nullptr;
     this->bStopBlowoff = false;
     this->bReachedPeak = false;
+    this->tLastBlowoffTime = 0.0f;
     this->m_pShiftingCtl = nullptr;
     this->m_pEngineCtl = nullptr;
     this->eTurboState = SFXTURBO_NONE;
