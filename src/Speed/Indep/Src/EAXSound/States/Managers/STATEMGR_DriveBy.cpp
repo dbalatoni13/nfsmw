@@ -92,7 +92,11 @@ void TestSmackableForWoosh(IModel *model, int carid) {
             return;
         }
 
+#ifndef EA_BUILD_A124
         bytype = DRIVE_BY_CAMERA_BY;
+#else
+        bytype = DRIVE_BY_BRIDGE;
+#endif
     }
 
 CreateWoosh:

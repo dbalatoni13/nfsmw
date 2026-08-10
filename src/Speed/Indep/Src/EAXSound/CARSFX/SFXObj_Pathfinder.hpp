@@ -145,15 +145,19 @@ class SFXObj_PFEATrax : public SFXObj_Pathfinder {
     void NotifyChyron();
 
     bool m_bSkipUpdate;               // offset 0x120, size 0x1, Decl: 166
+#ifndef EA_BUILD_A124
     bool m_bClearSkipUpdate;          // offset 0x124, size 0x1, Decl: 167
     bool m_bPathFAILED;               // offset 0x128, size 0x1, Decl: 168
+#endif
     int m_nAmbientZone;               // offset 0x12C, size 0x4, Decl: 173
     int m_AmbZoneVol;                 // offset 0x130, size 0x4, Decl: 174
     int m_PrevAmbientZone;            // offset 0x134, size 0x4, Decl: 175
     uint32 m_CurPathEvent;            // offset 0x138, size 0x4, Decl: 183
     uint32 m_PrevPathEvent;           // offset 0x13C, size 0x4, Decl: 184
+#ifndef EA_BUILD_A124
     unsigned int m_FEPreviewEvent;    // offset 0x140, size 0x4, Decl: 185
     int m_FEPreviewIndex;             // offset 0x144, size 0x4, Decl: 186
+#endif
     int8 m_CurIntensity;              // offset 0x148, size 0x1, Decl: 189
     int8 m_PrevIntensity;             // offset 0x149, size 0x1, Decl: 190
     static stEATraxParms m_EATrax[2]; // size: 0x30, address: 0x8045E5BC
@@ -166,7 +170,9 @@ class SFXObj_PFEATrax : public SFXObj_Pathfinder {
     void MessagePartUpdate(const MControlPathfinder &message);
     void MessagePerpBusted(const MPerpBusted &message);
     void MessageInteractiveDone(const MControlPathfinder &message);
+#ifndef EA_BUILD_A124
     void MessageSwapInteractive(const MControlPathfinder &message);
+#endif
 
     ePATHFINDER_PROJ m_ActiveProject;          // offset 0x14C, size 0x4, Decl: 201
     ePATHFINDER_PROJ m_PrevActiveProject;      // offset 0x150, size 0x4, Decl: 202
@@ -187,7 +193,9 @@ class SFXObj_PFEATrax : public SFXObj_Pathfinder {
     Hermes::HHANDLER mMsgNotifyPartUpdate;     // offset 0x18C, size 0x4, Decl: 240
     Hermes::HHANDLER mMsgPerpBusted;           // offset 0x190, size 0x4
     Hermes::HHANDLER mMsgInteractiveDone;      // offset 0x194, size 0x4, Decl: 243
+#ifndef EA_BUILD_A124
     Hermes::HHANDLER mMsgSwapInteractive;      // offset 0x198, size 0x4
+#endif
 };
 
 #endif

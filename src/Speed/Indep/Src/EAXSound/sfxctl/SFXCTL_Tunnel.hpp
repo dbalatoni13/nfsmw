@@ -71,6 +71,24 @@ class SFXCTL_Tunnel : public SFXCTL {
 
     bool m_IsLeadCar; // offset 0xA4, size 0x1, Decl: 119
 
+#ifdef EA_BUILD_A124
+    static eREVERBFX m_ReverbType;
+    static float m_ReverbOffset;
+    static eREVERBFX m_TargetType;
+    static float m_CurWetGinsu;
+    static float m_CurDryGinsu;
+    static float m_CurWetAems;
+    static float m_CurDryAems;
+    static float m_CurWetGinsuTarget;
+    static float m_CurWetAemsTarget;
+    static float m_CurDryGinsuTarget;
+    static float m_CurDryAemsTarget;
+    static int m_GinsuWetVol;
+    static int m_GinsuDryVol;
+    static int m_AEMSWetVol;
+    static int m_AEMSDryVol;
+    static bool bToggleOffset;
+#else
     eREVERBFX m_ReverbType; // offset 0xA8, size 0x4, Decl: 123
     float m_ReverbOffset;   // offset 0xAC, size 0x4, Decl: 124
     eREVERBFX m_TargetType; // offset 0xB0, size 0x4, Decl: 125
@@ -91,6 +109,7 @@ class SFXCTL_Tunnel : public SFXCTL {
     int m_AEMSDryVol;  // offset 0xE0, size 0x4, Decl: 143
 
     bool bToggleOffset; // offset 0xE4, size 0x1, Decl: 145
+#endif
 };
 
 #endif

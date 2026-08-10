@@ -47,11 +47,15 @@ class SFXCTL_Engine : public SFXCTL {
     Average Trq;                     // offset 0x48, size 0x28, Decl: 53
     Average Rpm;                     // offset 0x70, size 0x28, Decl: 54
     Average VisRpmAvg;               // offset 0x98, size 0x28, Decl: 55
+#ifndef EA_BUILD_A124
     float tMergeWithPhysicsOffStart; // offset 0xC0, size 0x4, Decl: 56
     bool bPreRace;                   // offset 0xC4, size 0x1, Decl: 57
+#endif
     int m_iEngineVol;                // offset 0xC8, size 0x4, Decl: 68
     bool bIsRedlining;               // offset 0xCC, size 0x1, Decl: 70
+#ifndef EA_BUILD_A124
     bool bWasRedlining;              // offset 0xD0, size 0x1, Decl: 71
+#endif
     cInterpLine RedLineSampFactor;   // offset 0xD4, size 0x1C, Decl: 72
     cInterpLine RedLineEngFactor;    // offset 0xF0, size 0x1C, Decl: 73
     bool bRedliningBounce;           // offset 0x10C, size 0x1, Decl: 74
@@ -111,7 +115,9 @@ class SFXCTL_Engine : public SFXCTL {
     bool bPlayCompression;                  // offset 0x14C, size 0x1, Decl: 125
     cPathLine m_ComppressionRPM;            // offset 0x150, size 0x8C, Decl: 126
     Hermes::HHANDLER mmsgMVehicleDestroyed; // offset 0x1DC, size 0x4, Decl: 129
+#ifndef EA_BUILD_A124
     Hermes::HHANDLER mmsgMCoundown;         // offset 0x1E0, size 0x4, Decl: 132
+#endif
 };
 
 #endif

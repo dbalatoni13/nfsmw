@@ -11,9 +11,13 @@ int SND11MemoryPoolNum;   // size: 0x4, address: 0xFFFFFFFF, Decl: 148
 
 AudioMemoryManager::AudioMemoryManager()
     : m_pMemoryPoolMem(nullptr), //
+#ifndef EA_BUILD_A124
       m_pSnd11PoolMem(nullptr),  //
+#endif
       m_memoryPoolSize(0),       //
+#ifndef EA_BUILD_A124
       m_Snd11MemPoolSize(0),     //
+#endif
       m_numMemoryAllocations(0) {}
 
 void AudioMemoryManager::InitMemoryPool(eAUDMEMPOOLTYPE etype, int size) {

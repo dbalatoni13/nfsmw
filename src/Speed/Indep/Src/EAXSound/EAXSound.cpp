@@ -23,7 +23,9 @@ EAXSound::EAXSound() {
     this->mLocalAttr = nullptr;
     this->m_pEAXSND8Wrapper = nullptr;
     this->m_bAudioIsPaused = false;
+#ifndef EA_BUILD_A124
     this->m_X360_UI_Override = false;
+#endif
     this->m_eSndGameMode = SND_MODE_NONE;
     this->m_prevSndGameMode = SND_MODE_NONE;
     this->m_pStreamManager = nullptr;
@@ -43,7 +45,9 @@ EAXSound::EAXSound() {
     this->m_pNFSMixMaster = nullptr;
     this->bPlayCameraSnapShot = false;
     this->mmsgMRestartRace = nullptr;
+#ifndef EA_BUILD_A124
     this->m_bPause_MainFNG = false;
+#endif
     this->mEventID = 0;
     this->mData.fEventID = EAudioWorldTest::kEventID;
     int nloop = 0;

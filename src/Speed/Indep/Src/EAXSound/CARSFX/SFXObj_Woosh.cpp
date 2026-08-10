@@ -33,11 +33,13 @@ void GetWooshBlockSizeParams(eDRIVE_BY_TYPE type, STICH_WHOOSH_TYPE &base, int &
             sizeperblock = 6;
             return;
 
+#ifndef EA_BUILD_A124
         case DRIVE_BY_CAMERA_BY:
             base = WHSH_Post_Fast_01;
             numblocks = 1;
             sizeperblock = 6;
             return;
+#endif
 
         case DRIVE_BY_SMOKABLE:
             base = WHSH_Smack_Med_01;
@@ -137,10 +139,12 @@ void SFXObj_Woosh::InitSFX() {
         case DRIVE_BY_TRAFFIC:
             GEN_RND_OFFSET(StitchID, fVelInensity, base, numblocks, sizeperblock);
             // fallthrough
+#ifndef EA_BUILD_A124
         case DRIVE_BY_CAMERA_BY:
             this->SetDMIX_Input(13, 0x7FFF);
             GEN_RND_OFFSET(StitchID, fVelInensity, base, numblocks, sizeperblock);
             // fallthrough
+#endif
         case DRIVE_BY_UNKNOWN:
         default:
             break;
@@ -204,9 +208,11 @@ void SFXObj_Woosh::ProcessUpdate() {
             case DRIVE_BY_LAMPPOST:
                 slottouse = eVOL_WOOSH_LAMPPOST;
                 break;
+#ifndef EA_BUILD_A124
             case DRIVE_BY_CAMERA_BY:
                 slottouse = eVOL_WOOSH_CAMERA_BY;
                 break;
+#endif
             case DRIVE_BY_TREE:
             default:
                 slottouse = eVOL_WOOSH_TREE;

@@ -85,9 +85,13 @@ SFXObj_PFEATrax::SFXObj_PFEATrax()
       mMsgPerpBusted(Hermes::Handler::Create<MPerpBusted, SFXObj_PFEATrax, SFXObj_PFEATrax>(this, &SFXObj_PFEATrax::MessagePerpBusted,
                                                                                             UCrc32(UCRC32_Gameplay), 0)), //
       mMsgInteractiveDone(Hermes::Handler::Create<MControlPathfinder, SFXObj_PFEATrax, SFXObj_PFEATrax>(
-          this, &SFXObj_PFEATrax::MessageInteractiveDone, UCrc32("InteractiveDone"), 0)), //
+          this, &SFXObj_PFEATrax::MessageInteractiveDone, UCrc32("InteractiveDone"), 0))
+#ifndef EA_BUILD_A124
+      , //
       mMsgSwapInteractive(Hermes::Handler::Create<MControlPathfinder, SFXObj_PFEATrax, SFXObj_PFEATrax>(
-          this, &SFXObj_PFEATrax::MessageSwapInteractive, UCrc32("Swap"), 0)) {
+          this, &SFXObj_PFEATrax::MessageSwapInteractive, UCrc32("Swap"), 0))
+#endif
+      {
     this->m_EATraxState = EATRAX_OFF;
     this->m_CurPathEvent = 0;
     this->m_PrevPathEvent = static_cast<unsigned int>(-1);
@@ -102,11 +106,15 @@ SFXObj_PFEATrax::SFXObj_PFEATrax()
     this->m_InteractiveProj = static_cast<eINTERACTIVE_PROJ_ID>((bRandom(4) + 1) & PF_INTERACTIVE_03);
     this->m_Flags = 0x40;
     this->m_bSkipUpdate = false;
+#ifndef EA_BUILD_A124
     this->m_bClearSkipUpdate = false;
+#endif
     this->mT_ambienceStart = Timer(0);
+#ifndef EA_BUILD_A124
     this->m_bPathFAILED = false;
     this->m_FEPreviewEvent = 0;
     this->m_FEPreviewIndex = -1;
+#endif
 }
 
 SFXObj_PFEATrax::~SFXObj_PFEATrax() {
@@ -131,9 +139,11 @@ SFXObj_PFEATrax::~SFXObj_PFEATrax() {
     if (this->mMsgInteractiveDone != nullptr) {
         Hermes::Handler::Destroy(this->mMsgInteractiveDone);
     }
+#ifndef EA_BUILD_A124
     if (this->mMsgSwapInteractive != nullptr) {
         Hermes::Handler::Destroy(this->mMsgSwapInteractive);
     }
+#endif
 
     this->Destroy();
 }
@@ -143,7 +153,9 @@ void SFXObj_PFEATrax::RestartRace() {
         PATH_stop(this->m_PFParms[this->m_ActiveProject].PATH_TRACK);
         PATH_clearallevents(PATH_ALL_PROJECTS);
         this->m_MusicType = eMUSIC_TYPE_LICENCED;
+#ifndef EA_BUILD_A124
         this->m_bPathFAILED = false;
+#endif
     }
 
     this->mT_ambienceStart = Timer(0);
@@ -153,7 +165,9 @@ void SFXObj_PFEATrax::SendPathEvent() {
     // TODO magic
     if (this->m_EATraxState != EATRAX_UNINIT && (this->m_Flags & 4) != 0) {
         if (this->m_CurPathEvent != this->m_PrevPathEvent && (this->m_Flags & 0x800) == 0) {
+#ifndef EA_BUILD_A124
             this->m_bPathFAILED = false;
+#endif
             this->m_PrevPathEvent = this->m_CurPathEvent;
 
             int status = PATH_event(this->m_PFParms[this->m_ActiveProject].PATH_TRACK, this->m_CurPathEvent);
@@ -180,7 +194,9 @@ void SFXObj_PFEATrax::SendPathEvent() {
                 case PATHERR_GENERAL:
                 default:
                     this->m_PrevPathEvent = 0;
+#ifndef EA_BUILD_A124
                     this->m_bPathFAILED = true;
+#endif
                     return;
             }
 
@@ -297,7 +313,9 @@ void SFXObj_PFEATrax::StartLicensedMusic(unsigned int PathEvent) {
         }
         if (this->m_CurPathEvent != this->m_PrevPathEvent) {
             this->m_bSkipUpdate = true;
+#ifndef EA_BUILD_A124
             this->m_bClearSkipUpdate = false;
+#endif
         }
     }
 }
@@ -326,7 +344,9 @@ void SFXObj_PFEATrax::StartAmbience(unsigned int PathEvent) {
     this->m_PFParms[0].queue_next = 1;
     this->m_CurPathEvent = PathEvent;
     this->m_bSkipUpdate = true;
+#ifndef EA_BUILD_A124
     this->m_bClearSkipUpdate = false;
+#endif
 
     EAXS_StreamChannel *pch = g_pEAXSound->GetStreamManager()->GetStreamChannel(1);
     if (pch != nullptr) {
@@ -713,7 +733,9 @@ void SFXObj_PFEATrax::MessageStartPathfinder(const MControlPathfinder &message) 
         this->m_PrevPathEvent = event;
         this->StartLicensedMusic(event);
         this->m_bSkipUpdate = true;
+#ifndef EA_BUILD_A124
         this->m_bClearSkipUpdate = false;
+#endif
     }
 }
 
@@ -788,7 +810,9 @@ void SFXObj_PFEATrax::MessageSendPathControl(const MControlPathfinder &message) 
 
 void SFXObj_PFEATrax::MessagePartUpdate(const MControlPathfinder &message) {
     this->m_CurPart = message.GetPartID();
+#ifndef EA_BUILD_A124
     this->m_bClearSkipUpdate = true;
+#endif
     if (this->m_CurPart > 8) {
         return;
     }
@@ -808,8 +832,10 @@ void SFXObj_PFEATrax::MessageInteractiveDone(const MControlPathfinder &message) 
     this->mT_ambienceStart = WorldTimer;
 }
 
+#ifndef EA_BUILD_A124
 void SFXObj_PFEATrax::MessageSwapInteractive(const MControlPathfinder &message) {
     this->m_CurPathEvent = PFXMAP[m_InteractiveProj][PF_EVT_INITSWAP][0];
     this->m_PrevPathEvent = 0;
     this->m_PFParms[m_ActiveProject].queue_next = 1;
 }
+#endif

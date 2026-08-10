@@ -49,7 +49,9 @@ class EAX_CarState : public UTL::Collections::Listable<EAX_CarState, 10> {
 
         mContext = context;
         mSimUpdating = true;
+#ifndef EA_BUILD_A124
         mHandle = handle;
+#endif
         mTrailerID = 0;
         mNISCarID = -1;
         mAssetsLoaded = false;
@@ -327,7 +329,9 @@ class EAX_CarState : public UTL::Collections::Listable<EAX_CarState, 10> {
     bool mSimUpdating;                    // offset 0x214, size 0x1, Decl: 284
     bool mAssetsLoaded;                   // offset 0x218, size 0x1, Decl: 285
     const WUID mWorldID;                  // offset 0x21C, size 0x4, Decl: 286
+#ifndef EA_BUILD_A124
     HSIMABLE mHandle;                     // offset 0x220, size 0x4, Decl: 287
+#endif
     WUID mTrailerID;                      // offset 0x224, size 0x4, Decl: 289
     float mOversteer;                     // offset 0x228, size 0x4, Decl: 290
     float mUndersteer;                    // offset 0x22C, size 0x4, Decl: 291

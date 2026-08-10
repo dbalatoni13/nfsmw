@@ -16,8 +16,12 @@ enum eDRIVE_BY_TYPE {
     DRIVE_BY_TRAFFIC = 9,
     DRIVE_BY_BRIDGE = 10,
     DRIVE_BY_PRE_COL = 11,
+#ifndef EA_BUILD_A124
     DRIVE_BY_CAMERA_BY = 12,
     MAX_DRIVE_BY_TYPES = 13,
+#else
+    MAX_DRIVE_BY_TYPES = 12,
+#endif
 };
 
 // total size: 0x10

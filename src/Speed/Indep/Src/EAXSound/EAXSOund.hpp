@@ -219,7 +219,9 @@ class EAXSound : public AudioMemBase {
 
     int m_nDebugStreamState;            // offset 0x30, size 0x4, Decl: 331
     AudioSettings *m_pCurAudioSettings; // offset 0x34, size 0x4
+#ifndef EA_BUILD_A124
     bool m_bPause_MainFNG;              // offset 0x38, size 0x1, Decl: 333
+#endif
 
   private:
     void *m_pMemoryPoolMem;     // offset 0x3C, size 0x4, Decl: 339
@@ -232,7 +234,9 @@ class EAXSound : public AudioMemBase {
     int m_startingLoopVolume; // offset 0x50, size 0x4, Decl: 348
 
     bool m_bAudioIsPaused;   // offset 0x54, size 0x1, Decl: 350
+#ifndef EA_BUILD_A124
     bool m_X360_UI_Override; // offset 0x58, size 0x1
+#endif
 
     char *m_pcsCsisName;                 // offset 0x5C, size 0x4, Decl: 359
     Sound::stSongInfo *m_pNewSongInfoSt; // offset 0x60, size 0x4

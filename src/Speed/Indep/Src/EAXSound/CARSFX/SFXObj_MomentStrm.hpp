@@ -54,7 +54,9 @@ class SFXObj_MomentStrm : public CARSFX {
         Attrib::Key key;     // offset 0x10, size 0x4, Decl: 69
     };
 
+
     typedef UTL::FixedVector<SFXObj_MomentStrm::stMomentDecription, 64, 16> MomentList;
+
 
     MomentList mMomentPositonsList; // offset 0x30, size 0x510, Decl: 74
 
@@ -72,8 +74,10 @@ class SFXObj_MomentStrm : public CARSFX {
     stMomentDecription *mHeldMoment; // offset 0x580, size 0x4, Decl: 89
     bool UseUserPos;                 // offset 0x584, size 0x1, Decl: 90
 
+#ifndef EA_BUILD_A124
     unsigned int mCarsID; // offset 0x588, size 0x4, Decl: 93
     bool mbUseTRafficsID; // offset 0x58C, size 0x1, Decl: 94
+#endif
 };
 
 // total size: 0x64

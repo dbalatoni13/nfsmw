@@ -37,9 +37,13 @@ class AudioMemoryManager {
 
   private:
     void *m_pMemoryPoolMem;     // offset 0x0, size 0x4
+#ifndef EA_BUILD_A124
     void *m_pSnd11PoolMem;      // offset 0x4, size 0x4
+#endif
     int m_memoryPoolSize;       // offset 0x8, size 0x4
+#ifndef EA_BUILD_A124
     int m_Snd11MemPoolSize;     // offset 0xC, size 0x4
+#endif
     int m_numMemoryAllocations; // offset 0x10, size 0x4
 };
 

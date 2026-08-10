@@ -13,10 +13,14 @@ DEFINE_CREATABLE(0x200d0, CARSFX_BottomOut, SndBase);
 
 CARSFX_BottomOut::CARSFX_BottomOut() : CARSFX() {
     this->m_pBottomOut = nullptr;
+#ifdef EA_BUILD_A124
+    this->m_pStichLandJump = nullptr;
+#else
     for (int n = 0; n < NUM_ELEMENTS(this->m_pStichLandJump); n++) {
         this->m_pStichLandJump[n] = nullptr;
         this->m_Intesity[n] = 0.0f;
     }
+#endif
     this->m_pJumpCamCrash = nullptr;
     this->FrontWheelsTouched = true;
     this->RearWheelsTouched = true;
@@ -36,10 +40,15 @@ void CARSFX_BottomOut::InitSFX() {
 void CARSFX_BottomOut::Destroy() {
     SndBase::Destroy();
 
+#ifdef EA_BUILD_A124
+    delete this->m_pStichLandJump;
+    this->m_pStichLandJump = nullptr;
+#else
     for (int n = 0; n < NUM_ELEMENTS(this->m_pStichLandJump); n++) {
         delete this->m_pStichLandJump[n];
         this->m_pStichLandJump[n] = nullptr;
     }
+#endif
 
     delete this->m_pBottomOut;
     this->m_pBottomOut = nullptr;
@@ -49,6 +58,12 @@ void CARSFX_BottomOut::Destroy() {
 }
 
 void CARSFX_BottomOut::LandJumpPlay(float Intensity, bool HardLanding) {
+#ifdef EA_BUILD_A124
+    if (this->m_pStichLandJump != nullptr) {
+        delete this->m_pStichLandJump;
+        this->m_pStichLandJump = nullptr;
+    }
+#else
     int Index = -1;
 
     for (int n = 0; n < 3; n++) {
@@ -60,21 +75,37 @@ void CARSFX_BottomOut::LandJumpPlay(float Intensity, bool HardLanding) {
     if (Index == -1) {
         return;
     }
+#endif
 
     float fIntensity = bClamp(Intensity, 0.0f, 127.0f);
     int sampleOffset;
+#ifdef EA_BUILD_A124
+    if (HardLanding) {
+        GEN_RND_OFFSET(sampleOffset, fIntensity, 89, 1, 4);
+    } else {
+        GEN_RND_OFFSET(sampleOffset, fIntensity, 93, 4, 4);
+    }
+#else
     if (HardLanding) {
         GEN_RND_OFFSET(sampleOffset, fIntensity, 93, 1, 4);
     } else {
         GEN_RND_OFFSET(sampleOffset, fIntensity, 81, 4, 4);
     }
+#endif
 
     SND_Stich &StichData = g_pEAXSound->GetStichPlayer()->GetStich(STICH_TYPE_COLLISION, sampleOffset);
+#ifdef EA_BUILD_A124
+    this->m_pStichLandJump = new cStichWrapper(StichData);
+    this->m_pStichLandJump->Play(0, 0, 0);
+#else
     this->m_pStichLandJump[Index] = new cStichWrapper(StichData);
     this->m_pStichLandJump[Index]->Play(0, 0, 0);
     this->m_Intesity[Index] = Intensity;
+#endif
     this->SetDMIX_Input(1, 0x7FFF);
+#ifndef EA_BUILD_A124
     this->SetDMIX_Input(3, static_cast<int>(Intensity) << 8);
+#endif
 }
 
 void CARSFX_BottomOut::BottomOutPlay(unsigned int Intensity) {
@@ -93,10 +124,15 @@ void CARSFX_BottomOut::BottomOutPlay(unsigned int Intensity) {
 }
 
 void CARSFX_BottomOut::Detach() {
+#ifdef EA_BUILD_A124
+    delete this->m_pStichLandJump;
+    this->m_pStichLandJump = nullptr;
+#else
     for (int n = 0; n < NUM_ELEMENTS(this->m_pStichLandJump); n++) {
         delete this->m_pStichLandJump[n];
         this->m_pStichLandJump[n] = nullptr;
     }
+#endif
 
     delete this->m_pBottomOut;
     this->m_pBottomOut = nullptr;
@@ -284,6 +320,23 @@ void CARSFX_BottomOut::ProcessUpdate() {
         }
     }
 
+#ifdef EA_BUILD_A124
+    if (this->m_pStichLandJump != nullptr) {
+        SND_Params TmpParams;
+        TmpParams.ID = 0;
+        TmpParams.Az = this->GetDMixOutput(0, DMX_AZIM);
+        TmpParams.Mag = 0;
+        TmpParams.RVerb = 0;
+        TmpParams.Vol = this->GetDMixOutput(1, DMX_VOL);
+        TmpParams.Pitch = 0x1000;
+        this->m_pStichLandJump->Update(&TmpParams);
+
+        if (!this->m_pStichLandJump->IsPlaying() || g_EAXIsPaused()) {
+            delete this->m_pStichLandJump;
+            this->m_pStichLandJump = nullptr;
+        }
+    }
+#else
     for (int n = 0; n < NUM_ELEMENTS(this->m_pStichLandJump); n++) {
         if (this->m_pStichLandJump[n] != nullptr) {
             SND_Params TmpParams;
@@ -306,4 +359,5 @@ void CARSFX_BottomOut::ProcessUpdate() {
             }
         }
     }
+#endif
 }

@@ -57,8 +57,10 @@ SFXObj_MomentStrm::SFXObj_MomentStrm()
     this->mHeldMoment = nullptr;
     this->bHoldStream = false;
     g_MomentStream = this;
+#ifndef EA_BUILD_A124
     this->mCarsID = 0;
     this->mbUseTRafficsID = false;
+#endif
 }
 
 SFXObj_MomentStrm::~SFXObj_MomentStrm() {
@@ -189,7 +191,9 @@ void SFXObj_MomentStrm::CommitStreamReq(UMath::Vector4 pos4, unsigned int collec
     Speech::SED_NISSFX *nismgr = static_cast<Speech::SED_NISSFX *>(Speech::Manager::GetSpeechModule(0));
 
     this->m_CurMoment = collectionkey;
+#ifndef EA_BUILD_A124
     this->mCarsID = 0;
+#endif
     this->fPosition.x = pos4.z;
     this->fPosition.y = -pos4.x;
     this->fPosition.z = pos4.y;
@@ -245,11 +249,13 @@ void SFXObj_MomentStrm::ReceiveMoment(const MGamePlayMoment &message) {
     } else if (this->ShouldStreamPlay(collectionkey, false, 0.0f)) {
         this->CommitStreamReq(message.GetPosition(), collectionkey);
 
+#ifndef EA_BUILD_A124
         if (collectionkey == Attrib::Hash::aud_moment_strm::key_car2car || collectionkey == Attrib::Hash::aud_moment_strm::key_collision) {
             this->mCarsID = message.GethSimable();
         } else {
             this->mCarsID = 0;
         }
+#endif
 
         this->bHoldStream = false;
         this->mHeldMoment = nullptr;
@@ -258,6 +264,7 @@ void SFXObj_MomentStrm::ReceiveMoment(const MGamePlayMoment &message) {
 
 void SFXObj_MomentStrm::CBPlayMomentStream() {
     if (!bHoldStream) {
+#ifndef EA_BUILD_A124
         if (g_MomentStream != nullptr) {
             Attrib::Gen::aud_moment_strm momentstrm(g_MomentStream->m_CurMoment, 0, nullptr);
 
@@ -265,6 +272,7 @@ void SFXObj_MomentStrm::CBPlayMomentStream() {
                 g_MomentStream->SetDMIX_Input(5, 0x7FFF);
             }
         }
+#endif
 
         bool bresult = Speech::Manager::GetSpeechModule(0)->PlayStream(2);
         Speech::Manager::GetSpeechModule(0)->UnPause();
@@ -289,6 +297,7 @@ void SFXObj_MomentStrm::UpdateParams(float t) {
         this->fPosition = *SndCamera::GetWorldCarPos3(0);
     }
 
+#ifndef EA_BUILD_A124
     if (this->mCarsID != 0) {
         EAX_CarState *pcar = EAX_CarState::Find(this->mCarsID);
 
@@ -296,6 +305,7 @@ void SFXObj_MomentStrm::UpdateParams(float t) {
             this->fPosition = *pcar->GetPosition();
         }
     }
+#endif
 
     Speech::SED_NISSFX *nismgr = static_cast<Speech::SED_NISSFX *>(Speech::Manager::GetSpeechModule(0));
 
@@ -317,16 +327,22 @@ void SFXObj_MomentStrm::UpdateParams(float t) {
                 nismgr->GetStreamChannel()->PurgeStream();
                 this->m_CurMoment = 0;
                 this->mHeldMoment = nullptr;
+#ifndef EA_BUILD_A124
                 this->mCarsID = 0;
+#endif
             }
         }
 
         if (nismgr->GetStreamType() == STRM_SFX_MOMENT && !nismgr->GetStreamChannel()->IsPlaying()) {
             this->m_CurMoment = 0;
+#ifndef EA_BUILD_A124
             this->mCarsID = 0;
+#endif
         } else if (nismgr->GetStreamType() != STRM_SFX_MOMENT) {
             this->m_CurMoment = 0;
+#ifndef EA_BUILD_A124
             this->mCarsID = 0;
+#endif
         }
 
         if (!this->UseUserPos) {
@@ -357,8 +373,10 @@ void SFXObj_MomentStrm::UpdateParams(float t) {
 }
 
 void SFXObj_MomentStrm::ProcessUpdate() {
+#ifndef EA_BUILD_A124
     SndBase::ProcessUpdate();
     SetDMIX_Input(5, 0);
+#endif
 }
 
 void SFXObj_MomentStrm::ReceivePursuitBreaker(const MPursuitBreaker &message) {
