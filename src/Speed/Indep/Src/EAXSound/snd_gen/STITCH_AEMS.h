@@ -8,12 +8,12 @@
 
 namespace Csis {
 
-InterfaceId AEMS_StichCollisionId;      // size: 0x8, Decl: 16
-ClassHandle gAEMS_StichCollisionHandle; // size: 0x8, Decl: 17
+extern InterfaceId AEMS_StichCollisionId;      // size: 0x8, Decl: 16
+extern ClassHandle gAEMS_StichCollisionHandle; // size: 0x8, Decl: 17
 
 // total size: 0x28
 // Decl: 19
-struct AEMS_StichCollisionStruct {
+typedef struct {
     int type;          // offset 0x0, size 0x4
     int iD;            // offset 0x4, size 0x4
     int vol;           // offset 0x8, size 0x4
@@ -24,14 +24,14 @@ struct AEMS_StichCollisionStruct {
     int filter_WetFX;  // offset 0x1C, size 0x4
     int filter_LoPass; // offset 0x20, size 0x4
     int filter_HiPass; // offset 0x24, size 0x4
-};
+} AEMS_StichCollisionStruct;
 
-InterfaceId AEMS_StichWooshId; // size: 0x8, Decl: 44
-ClassHandle gAEMS_StichWooshHandle;
+extern InterfaceId AEMS_StichWooshId; // size: 0x8, Decl: 44
+extern ClassHandle gAEMS_StichWooshHandle;
 
 // total size: 0x28
 // Decl: 47
-struct AEMS_StichWooshStruct {
+typedef struct {
     int type;          // offset 0x0, size 0x4
     int iD;            // offset 0x4, size 0x4
     int vol;           // offset 0x8, size 0x4
@@ -42,14 +42,14 @@ struct AEMS_StichWooshStruct {
     int filter_WetFX;  // offset 0x1C, size 0x4
     int filter_LoPass; // offset 0x20, size 0x4
     int filter_HiPass; // offset 0x24, size 0x4
-};
+} AEMS_StichWooshStruct;
 
-InterfaceId AEMS_StichStaticId;      // size: 0x8
-ClassHandle gAEMS_StichStaticHandle; // size: 0x8
+extern InterfaceId AEMS_StichStaticId;      // size: 0x8
+extern ClassHandle gAEMS_StichStaticHandle; // size: 0x8
 
 // total size: 0x28
 // Decl: 75
-struct AEMS_StichStaticStruct {
+typedef struct {
     int type;          // offset 0x0, size 0x4
     int iD;            // offset 0x4, size 0x4
     int vol;           // offset 0x8, size 0x4
@@ -60,7 +60,7 @@ struct AEMS_StichStaticStruct {
     int filter_WetFX;  // offset 0x1C, size 0x4
     int filter_LoPass; // offset 0x20, size 0x4
     int filter_HiPass; // offset 0x24, size 0x4
-};
+} AEMS_StichStaticStruct;
 
 // total size: 0x2C
 // Decl: 116
@@ -231,7 +231,7 @@ class AEMS_StichCollision {
     AEMS_StichCollision();
     AEMS_StichCollision &operator=(const AEMS_StichCollision &);
 
-    Class *mpClass;                   // offset 0x0, size 0x4, Decl: 338
+    Class *mpClass;                  // offset 0x0, size 0x4, Decl: 338
     AEMS_StichCollisionStruct mData; // offset 0x4, size 0x28, Decl: 339
 };
 
@@ -404,7 +404,7 @@ class AEMS_StichWoosh {
     AEMS_StichWoosh();
     AEMS_StichWoosh &operator=(const AEMS_StichWoosh &);
 
-    Class *mpClass;               // offset 0x0, size 0x4
+    Class *mpClass;              // offset 0x0, size 0x4
     AEMS_StichWooshStruct mData; // offset 0x4, size 0x28
 };
 
@@ -577,7 +577,7 @@ class AEMS_StichStatic {
     AEMS_StichStatic();
     AEMS_StichStatic &operator=(const AEMS_StichStatic &);
 
-    Class *mpClass;                // offset 0x0, size 0x4
+    Class *mpClass;               // offset 0x0, size 0x4
     AEMS_StichStaticStruct mData; // offset 0x4, size 0x28
 };
 

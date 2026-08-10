@@ -3,7 +3,7 @@
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_AccelTrans.hpp"
 #include "Speed/Indep/Src/Misc/Config.h"
 
-struct Slope ShiftingAttackVolSlope; // size: 0x1C, address: 0x8045E314, Decl: 25
+Slope ShiftingAttackVolSlope(26000.0f, 32767.0f, 4000.0f, 7000.0f); // size: 0x1C, address: 0x8045E314, Decl: 25
 
 static const int SHIFT_ATTACK_ENGAGE_ID = 0;    // size: 0x4, Decl: 31
 static const int SHIFT_ATTACK_DISENGAGE_ID = 0; // size: 0x4, Decl: 32
@@ -12,7 +12,7 @@ static const float VOL_SHIFT_MAX_RPM_FOR_SCALE = 8000.0f; // size: 0x4, Decl: 35
 static const float VOL_SHIFT_MIN_RPM_FOR_SCALE = 1500.0f; // size: 0x4, Decl: 36
 static const float VOL_SHIFT_MIN_SCALE = 0.1f;            // size: 0x4, Decl: 37
 
-float SHIFTING_ATTACK_MIXER_VOL; // size: 0x4, address: 0xFFFFFFFF, Decl: 39
+float SHIFTING_ATTACK_MIXER_VOL = 30.0f; // size: 0x4, address: 0xFFFFFFFF, Decl: 39
 
 DEFINE_CREATABLE(0x20030, CARSFX_Shift, SndBase);
 

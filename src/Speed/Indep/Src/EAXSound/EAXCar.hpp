@@ -55,7 +55,10 @@ class EAXCar : public CSTATE_Base {
 
     virtual void StartHonkHorn() {} // Decl: 91
     virtual void StopHonkHorn() {}  // Decl: 92
-    virtual bool IsHonking() {}     // Decl: 93
+    // Decl: 93
+    virtual bool IsHonking() {
+        return false;
+    }
 
     Attrib::Gen::engineaudio &GetEngineAttributes();
 

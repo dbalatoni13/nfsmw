@@ -9,23 +9,28 @@
 #include "path/path.h"
 #include "snd/sndo.h"
 
-int DEBUG_PATHFINDER;              // size: 0x4, Decl: 45
-int DEBUG_STREAMS;                 // size: 0x4, address: 0xFFFFFFFF, Decl: 46
-ParameterAccessor AmbientAccessor; // size: 0x1C, address: 0x8045E5A0, Decl: 47
+// int DEBUG_PATHFINDER = 0;          // size: 0x4, Decl: 45
+int DEBUG_STREAMS = 0;                         // size: 0x4, address: 0xFFFFFFFF, Decl: 46
+ParameterAccessor AmbientAccessor("Ambience"); // size: 0x1C, address: 0x8045E5A0, Decl: 47
 
 static const int OVER_RIDE_INTERACTIVE = 0; // size: 0x4, Decl: 50
 static const int INTERACTIVE_PROJECT = 0;   // size: 0x4, Decl: 51
 extern int MUSICFLOW_DISPLAY;               // size: 0x4, Decl: 52 // I hate that this is actually here....
-int PURSUIT_TO_LIC_DELAY;                   // size: 0x4, address: 0x804182A8, Decl: 53
-unsigned int SoundRandomSeed;               // size: 0x4, Decl: 54
+int PURSUIT_TO_LIC_DELAY = 40;              // size: 0x4, address: 0x804182A8, Decl: 53
+extern unsigned int SoundRandomSeed;        // size: 0x4, Decl: 54
 
-int DEBUG_SFXOBJ_INIT; // size: 0x4, address: 0xFFFFFFFF, Decl: 60
+int DEBUG_SFXOBJ_INIT = 0; // size: 0x4, address: 0xFFFFFFFF, Decl: 60
 
 DEFINE_CREATABLE(0x1010000, SFXObj_Pathfinder, SndBase);
 
-uint32 SPECIAL_EVENTS[2]; // size: 0x8, address: 0xFFFFFFFF, Decl: 65
+// size: 0x8, address: 0xFFFFFFFF, Decl: 65
+uint32 SPECIAL_EVENTS[2] = {0x17B768A, 0};
 
-uint32 AmbientCrossMap[14]; // size: 0x38, address: 0x804182C0, Decl: 108
+// size: 0x38, address: 0x804182C0, Decl: 108
+uint32 AmbientCrossMap[14] = {
+    0x011BBC15, 0x01E40616, 0x01919B1B, 0x01C505B7, 0x0134209F, 0x012F7671, 0x0127205F,
+    0x01B2D374, 0x019509F2, 0x0146EDA3, 0x0196E300, 0x017690D2, 0x01E6FF17, 0x01E45B3F,
+};
 
 SFXObj_Pathfinder::SFXObj_Pathfinder() : CARSFX() {
     this->m_pSFXCTL_Pathfinder = nullptr;
@@ -52,9 +57,12 @@ static const int DebugTransitionLicToInt = 0; // size: 0x4, Decl: 211
 static const int DebugTransitionIntToLic = 0; // size: 0x4, Decl: 212
 static const int X360OverrideUserTunes = 0;   // size: 0x4, Decl: 213
 
-int DBGPRNT_EATRAX; // size: 0x4, address: 0xFFFFFFFF, Decl: 215
+int DBGPRNT_EATRAX = 0; // size: 0x4, address: 0xFFFFFFFF, Decl: 215
 
-DEFINE_CREATABLE(0x1010010, SFXObj_PFEATrax, SndBase);
+// size: 0x30, Decl: 217
+stEATraxParms SFXObj_PFEATrax::m_EATrax[2];
+
+DEFINE_CREATABLE(0x1010010, SFXObj_PFEATrax, SFXObj_Pathfinder);
 
 SFXObj_PFEATrax::SFXObj_PFEATrax()
     : SFXObj_Pathfinder(),   //

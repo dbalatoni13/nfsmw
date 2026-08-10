@@ -4,7 +4,7 @@
 #include "Speed/Indep/Src/EAXSound/Stream/SpeechManager.hpp"
 #include "Speed/Indep/Src/World/ParameterMaps.hpp"
 
-ParameterAccessor SPAMAccessorSpeech;
+ParameterAccessor SPAMAccessorSpeech("Speech");
 
 DEFINE_CREATABLE(0x10, SFXObj_Speech, SndBase);
 
@@ -71,4 +71,4 @@ void SFXObj_Speech::UpdateParams(float t) {
     }
 }
 
-DEFINE_CREATABLE(0x30, SFXCTL_3DVoiceActorPos, SndBase);
+DEFINE_CREATABLE(0x30, SFXCTL_3DVoiceActorPos, SFXCTL_3DObjPos);

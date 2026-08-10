@@ -93,7 +93,7 @@ void SFXObj_TruckFX::Detach() {
     Destroy();
 }
 
-DEFINE_CREATABLE(0xc00e0, CARSFX_TruckWoosh, SndBase);
+DEFINE_CREATABLE(0xc00e0, CARSFX_TruckWoosh, CARSFX_TrafficWoosh);
 
 CARSFX_TruckWoosh::CARSFX_TruckWoosh()
     : CARSFX_TrafficWoosh(), //
@@ -160,4 +160,4 @@ eDRIVE_BY_TYPE CARSFX_TruckWoosh::GetWooshSample() {
     return DRIVE_BY_AI_CAR;
 }
 
-DEFINE_CREATABLE(0xc00f0, SFXCTL_3DTrailerPos, SndBase);
+DEFINE_CREATABLE(0xc00f0, SFXCTL_3DTrailerPos, SFXCTL_3DCarPos);

@@ -2,7 +2,7 @@
 #include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_AICar.hpp"
 #include "Speed/Indep/Src/Misc/Profiler.hpp"
 
-bool DEBUG_AI_CAR_CONNECTIONS; // size: 0x1, address: 0x80417F34, Decl: 16
+bool DEBUG_AI_CAR_CONNECTIONS = false; // size: 0x1, address: 0x80417F34, Decl: 16
 
 CSTATEMGR_AICar::CSTATEMGR_AICar() {
     this->m_CarContext = Sound::CONTEXT_AIRACER;
@@ -39,5 +39,7 @@ void CSTATEMGR_AICar::EnterWorld(eSndGameMode esgm) {
 
     CSTATEMGR_Base::EnterWorld(esgm);
 }
+
+bool CSTATEMGR_AICar::bUsingGinsu = false; // Decl: 118
 
 // TODO function here after FE is merged

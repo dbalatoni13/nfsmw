@@ -6,9 +6,9 @@ static const int SPEW_CURB_ON_INFO = 0;          // size: 0x4, Decl: 35
 
 static const int VOL_SCALE_FOR_INCAR_ROADNOISE = 8000; // size: 0x4, Decl: 39
 
-Slope RoadNoiseTransitionVolSlope; // size: 0x1C, address: 0x8045E330, Decl: 41
+Slope RoadNoiseTransitionVolSlope(20000.0f, 32767.0f, 12.0f, 60.0f); // size: 0x1C, address: 0x8045E330, Decl: 41
 
-Slope RoadNoiseTransitionPitchSlope; // size: 0x1C, address: 0x8045E34C, Decl: 47
+Slope RoadNoiseTransitionPitchSlope(3600.0f, 4400.0f, 12.0f, 60.0f); // size: 0x1C, address: 0x8045E34C, Decl: 47
 
 // size: 0x28, address: 0x8045E368, Decl: 54
 bVector2 RoadNoiseVolumeCurve[5] = {
@@ -20,7 +20,7 @@ Graph RoadNoiseVolGraph(RoadNoiseVolumeCurve, 5); // size: 0x8, address: 0x8045E
 static const float RoadNoiseMinPitch = 1500.0f; // size: 0x4, Decl: 66
 static const float RoadNoiseMaxPitch = 4500.0f; // size: 0x4, Decl: 67
 
-Slope RoadNoiseSpeedToPitch; // size: 0x1C, address: 0x8045E398, Decl: 69
+Slope RoadNoiseSpeedToPitch(1500.0f, 4500.0f, 0.0f, 100.0f); // size: 0x1C, address: 0x8045E398, Decl: 69
 
 static const float gfTireNoiseVolumeScale = 0.047f; // size: 0x4, Decl: 74
 static const float gfTireNoisePitchScale = 0.0065f; // size: 0x4, Decl: 75

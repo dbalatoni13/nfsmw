@@ -17,7 +17,11 @@ struct EngineMappingPair {
 
     // Decl: 37
     bool operator==(const EngineMappingPair &cmp) const {
-        return this->Start == cmp.Start && this->Finish == cmp.Finish;
+        if (cmp.Finish != this->Finish) {
+            return false;
+        }
+
+        return cmp.Start == this->Start;
     }
 
     Attrib::Key Start;  // offset 0x0, size 0x4, Decl: 47
@@ -51,7 +55,9 @@ class CSTATEMGR_CarState : public CSTATEMGR_Base {
 
     // Decl: 74
     struct EngToCarStruct {
-        EngToCarStruct() {} // Decl: 75
+        EngToCarStruct()
+            : EngineKey(0),    //
+              pCar(nullptr) {} // Decl: 75
 
         Attrib::Key EngineKey; // offset 0x0, size 0x4, Decl: 82
         EAX_CarState *pCar;    // offset 0x4, size 0x4, Decl: 83

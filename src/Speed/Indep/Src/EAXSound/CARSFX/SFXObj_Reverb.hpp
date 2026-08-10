@@ -38,9 +38,16 @@ class SFXObj_Reverb : public CARSFX {
 
     // Decl: 51
     struct ReverbStructure {
-        ReverbStructure() {} // Decl: 52
+        // Decl: 52
+        ReverbStructure() {
+            this->Clear();
+        }
 
-        void Clear() {} // Decl: 57
+        // Decl: 57
+        void Clear() {
+            this->Alloc = nullptr;
+            this->Size = 0;
+        }
 
         void *Alloc; // offset 0x0, size 0x4, Decl: 63
         int Size;    // offset 0x4, size 0x4, Decl: 64

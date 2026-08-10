@@ -26,7 +26,13 @@ enum eINTERACTIVE_PROJ_ID {
 // total size: 0x18
 // Decl: 49
 struct stEATraxParms {
-    stEATraxParms() {} // Decl: 50
+    stEATraxParms()
+        : TraxMask(0),          //
+          PlayBits(0xFFFFFFFF), //
+          NumEnabledSongs(0),   //
+          LastPlaylistSong(-1), //
+          PlayTrackIndex(-1),   //
+          PBMode(-1) {}         // Decl: 50
 
     unsigned int TraxMask;        // offset 0x0, size 0x4, Decl: 59
     unsigned int PlayBits;        // offset 0x4, size 0x4, Decl: 60

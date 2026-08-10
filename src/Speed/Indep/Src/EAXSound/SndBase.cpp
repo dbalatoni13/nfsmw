@@ -6,6 +6,9 @@
 
 SndBase::TypeInfo SndBase::s_TypeInfo = {(int)0xFFFFFFFF, "SndBase", nullptr, nullptr};
 
+float SndBase::m_fDeltaTime = 0.0f;   // Decl: 18
+float SndBase::m_fRunningTime = 0.0f; //  Decl: 19
+
 SndBase::TypeInfo *SndBase::GetTypeInfo() const {
     return &s_TypeInfo;
 }
