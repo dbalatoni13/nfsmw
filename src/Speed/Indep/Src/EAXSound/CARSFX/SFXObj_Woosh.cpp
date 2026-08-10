@@ -179,10 +179,12 @@ void SFXObj_Woosh::ProcessUpdate() {
 
     SndBase::ProcessUpdate();
 
-    this->SetDMIX_Input(11, 0);
-    this->SetDMIX_Input(13, 0);
+    this->SetDMIX_Input(TRIG_WOOSH_EVENT, 0);
+#ifndef EA_BUILD_A124
+    this->SetDMIX_Input(TRIG_WOOSH_CAMERA_BY, 0);
+#endif
     if (this->m_pDriveByState->IsAttached() && (this->m_pWooshStich != nullptr)) {
-        Pitch = this->GetDMixOutput(14, DMX_PITCH);
+        Pitch = this->GetDMixOutput(ePCH_WOOSH_PITCH, DMX_PITCH);
         switch (this->m_pDriveByState->m_DriveByInfo.eDriveByType) {
             case DRIVE_BY_AI_CAR:
                 slottouse = eVOL_WOOSH_AICAR;
@@ -222,7 +224,7 @@ void SFXObj_Woosh::ProcessUpdate() {
         this->m_SndParams.Az = this->GetDMixOutput(0, DMX_AZIM);
         this->m_SndParams.Vol = this->GetDMixOutput(slottouse, DMX_VOL);
         this->m_SndParams.Pitch = Pitch;
-        this->m_SndParams.RVerb = this->GetDMixOutput(15, DMX_VOL);
+        this->m_SndParams.RVerb = this->GetDMixOutput(eVRB_WOOSH_VERB, DMX_VOL);
         this->m_pWooshStich->Update(&this->m_SndParams);
     }
 }
