@@ -31,11 +31,11 @@ int PRINT_AI_ENGINE_INFO;                 // Decl: 71
 static const int SPEW_AI_ENGINE_INFO = 0; // Decl: 72
 
 CARSFX_EngineBase::CARSFX_EngineBase() {
-    this->PitchMultipli = 0.0f;
     this->m_pcsisCarCtrl = nullptr;
     this->m_pTranny = nullptr;
     this->m_pEngineCtl = nullptr;
     this->m_p3DCarPosCtl = nullptr;
+    this->PitchMultipli = 0.0f;
     this->SPU_or_EE = 0;
 }
 
