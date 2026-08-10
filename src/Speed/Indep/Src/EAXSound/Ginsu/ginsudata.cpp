@@ -187,21 +187,20 @@ int GinsuSynthData::FrequencyToSample(float freq) const {
 int GinsuSynthData::CycleToSample(float cycle) const {
     int i;
     float a;
-    int samp;
 
     if (this->mCycleCount < 1) {
-        samp = 0;
-    } else if (cycle <= 0.0f) {
-        samp = this->mCyclePos[0];
-    } else if (cycle >= static_cast<float>(this->mCycleCount)) {
-        samp = this->mCyclePos[this->mCycleCount];
-    } else {
-        i = IntFloor(cycle);
-        a = cycle - static_cast<float>(i);
-        return IntRound(static_cast<float>(this->mCyclePos[i]) + a * static_cast<float>(this->mCyclePos[i + 1] - this->mCyclePos[i]));
+        return 0;
+    }
+    if (cycle <= 0.0f) {
+        return this->mCyclePos[0];
+    }
+    if (cycle >= static_cast<float>(this->mCycleCount)) {
+        return this->mCyclePos[this->mCycleCount];
     }
 
-    return samp;
+    i = IntFloor(cycle);
+    a = cycle - static_cast<float>(i);
+    return IntRound(static_cast<float>(this->mCyclePos[i]) + a * static_cast<float>(this->mCyclePos[i + 1] - this->mCyclePos[i]));
 }
 
 float GinsuSynthData::CyclePeriod(float cycle) const {
