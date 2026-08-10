@@ -226,7 +226,9 @@ int CARSFX_Turbo::PlayBlowoff(int _ID, int Vol, int PSI, int Azimuth, int rotati
         g_pEAXSound->SetCsisName("SND: Turbo");
         this->m_pTurboBlowoffControl = new Csis::FX_TURBO_01(this->BlowoffID, 0, static_cast<int>(this->SpoolPercent * 1024.0f), 0, rotation,
                                                              static_cast<int>(this->GetPhysRPM()));
+#ifndef EA_BUILD_A124
         gnMemLeakTurboBLOWOFFCountTest++;
+#endif
 
         this->m_refCount = static_cast<unsigned short>(this->m_pTurboBlowoffControl != nullptr ? this->m_pTurboBlowoffControl->GetRefCount() : 0);
         this->tLastBlowoffTime = this->m_pEAXCar->GetCurTime();
