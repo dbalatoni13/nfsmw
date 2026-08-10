@@ -98,10 +98,16 @@ void CARSFX_Rain::UpdateParams(float t) {
     eView *view = eGetView(1, false);
     if (view != nullptr) {
         this->m_fPrevWeatherIntensity = this->m_fWeatherIntensity;
+#ifdef EA_BUILD_A124
+        this->m_fWeatherIntensity = view->Precipitation->GetRainIntensity();
+#else
         this->m_fWeatherIntensity = (view->Precipitation != nullptr) ? view->Precipitation->GetRainIntensity() : 0.0f;
+#endif
+#ifndef EA_BUILD_A124
     } else {
         this->m_fPrevWeatherIntensity = 0.0f;
         this->m_fWeatherIntensity = 0.0f;
+#endif
     }
 
     if (0.01f < this->m_fWeatherIntensity) {
