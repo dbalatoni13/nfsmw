@@ -324,9 +324,10 @@ void CARSFX_BottomOut::ProcessUpdate() {
     if (this->m_pStichLandJump != nullptr) {
         SND_Params TmpParams;
         TmpParams.ID = 0;
-        TmpParams.Az = this->GetDMixOutput(0, DMX_AZIM);
+        TmpParams.Az = 0;
         TmpParams.Mag = 0;
         TmpParams.RVerb = 0;
+        TmpParams.Az = this->GetDMixOutput(0, DMX_AZIM);
         TmpParams.Vol = this->GetDMixOutput(1, DMX_VOL);
         TmpParams.Pitch = 0x1000;
         this->m_pStichLandJump->Update(&TmpParams);
