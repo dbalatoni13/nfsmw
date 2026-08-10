@@ -84,7 +84,13 @@ void CARSFX_WindNoise::InitSFX() {
     if (IsSoundEnabled != 0) {
         SndBase::InitSFX();
         this->IsInitialized = true;
+#ifdef EA_BUILD_A124
+        uint32 ticker;
+        asm volatile("mfc0 %0, $9" : "=r"(ticker));
+        this->m_nLastTickUpdate = ticker;
+#else
         this->m_nLastTickUpdate = bGetTicker();
+#endif
         this->m_bIsInSpacialTranslation = false;
         g_pEAXSound->SetCsisName(this);
         this->m_pCsisWind = new Csis::FX_WIND(0x1000, 0, 0, 0, 0, 0, 0, 0, 0, 25000, 0, 0x7FFF, 0, 0xF);
