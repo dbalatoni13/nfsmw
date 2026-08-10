@@ -185,6 +185,14 @@ typedef struct SNDFILTERDEF {
 
 int SND3dpos(int shandle, int azimuth, int elevation);
 
+int SNDAEMS_addmodulebank(void *pBank, char *streamFileName, int streamFileNameOffset, void *(* mallocCb)(void *, int, int));
+
+int SNDAEMS_asyncloadmodulebank(char *moduleBankFileName, int moduleBankFileOffset, char *streamFileName, int streamFileOffset, void *pMem, int memSize, void *(* mallocCb)(int));
+int SNDAEMS_asyncloadmodulebankdone();
+
+int SNDAEMS_asyncloadmodulebankmem(void *pModuleBank, char *streamFileName, int streamFileOffset, void *(* mallocCb)(int));
+int SNDAEMS_asyncloadmodulebankmemdone();
+
 int SND_attrsetdef(SNDSAMPLEATTR *pssa);
 
 int SNDBANK_patchinfo(int bhandle, int patnum, SNDSAMPLEFORMAT *pssf, SNDSAMPLEATTR *pssa, SNDSAMPLEDESC *pssd);

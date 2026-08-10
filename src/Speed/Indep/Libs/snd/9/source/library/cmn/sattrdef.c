@@ -1,10 +1,6 @@
 #include "snd/sndo.h"
 #include <cstddef>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 int SND_attrsetdef(SNDSAMPLEATTR *pssa) {
     pssa->priority = 0;
     pssa->detune = 0;
@@ -28,7 +24,3 @@ int SND_attrsetdef(SNDSAMPLEATTR *pssa) {
 
     return 0;
 }
-
-#ifdef __cplusplus
-}
-#endif

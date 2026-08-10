@@ -66,11 +66,6 @@ void SNDAEMSI_almbmservice() {
     SNDSYS_leavecritical();
 }
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-
 int SNDAEMS_asyncloadmodulebankmem(void *pModuleBank, char *streamFileName, int streamFileOffset, void *(* mallocCb)(int)) {
     sndaems.asyncloading = true;
     SNDAEMSalmbmpmodulebank = (char *)pModuleBank;
@@ -108,7 +103,3 @@ int SNDAEMS_asyncloadmodulebankmem(void *pModuleBank, char *streamFileName, int 
 int SNDAEMS_asyncloadmodulebankmemdone() {
     return (int)(sndaems.asyncloading == false);
 }
-
-#ifdef __cplusplus
-}
-#endif

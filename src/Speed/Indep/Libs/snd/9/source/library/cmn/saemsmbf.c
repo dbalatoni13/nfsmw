@@ -145,10 +145,6 @@ void SNDAEMSI_almbservice() {
 
 }
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 int SNDAEMS_asyncloadmodulebank(char *moduleBankFileName, int moduleBankFileOffset, char *streamFileName, int streamFileOffset, void *pMem, int memSize, void *(* mallocCb)(int)) {
     sndaems.asyncloading = true;
     SNDAEMSalmbploadbuf = (char *)pMem;
@@ -197,7 +193,3 @@ int SNDAEMS_asyncloadmodulebankdone() {
     }
     return 0;
 }
-
-#ifdef __cplusplus
-}
-#endif

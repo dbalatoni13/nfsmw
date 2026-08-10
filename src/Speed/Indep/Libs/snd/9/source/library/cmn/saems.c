@@ -1222,10 +1222,6 @@ void SNDAEMSI_restore() {
     SNDSYS_leavecritical();
 }
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 int SNDAEMS_removemodulebank(int mbhandle) {
     if (sndaems.logremovemodulebank != NULL) {
         sndaems.logremovemodulebank();
@@ -1288,10 +1284,6 @@ int SNDAEMS_removemodulebank(int mbhandle) {
     SNDSYS_leavecritical();
     return -8;
 }
-
-#ifdef __cplusplus
-}
-#endif
 
 int SNDAEMSI_stopmodulebanks() {
     SNDSYS_entercritical();

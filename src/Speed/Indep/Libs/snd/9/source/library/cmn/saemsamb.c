@@ -5,10 +5,6 @@
 
 AemsDef::SNDAEMS sndaems;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 int SNDAEMS_addmodulebank(void *pBank, char *streamFileName, int streamFileNameOffset, void *(* mallocCb)(void *, int, int)) {
     AemsDef::ModuleBank *pModuleBank;
     void *pusermem;
@@ -97,7 +93,3 @@ abort:
 
     return errorcode;
 }
-
-#ifdef __cplusplus
-}
-#endif

@@ -574,6 +574,23 @@ int SNDI_parsetimbre(void **pptp, SNDIPATCHHEADER *pph);
 extern "C" {
 #endif
 
+// s3dlow.c
+int SND3dpos(STREAMHANDLE shandle, int azimuth, int elevation);
+
+// saemsamb.c
+int SNDAEMS_addmodulebank(void *pBank, char *streamFileName, int streamFileNameOffset, void *(* mallocCb)(void *, int, int));
+
+// saemsmbf.c
+int SNDAEMS_asyncloadmodulebank(char *moduleBankFileName, int moduleBankFileOffset, char *streamFileName, int streamFileOffset, void *pMem, int memSize, void *(* mallocCb)(int));
+int SNDAEMS_asyncloadmodulebankdone();
+
+// saemsmbm.c
+int SNDAEMS_asyncloadmodulebankmem(void *pModuleBank, char *streamFileName, int streamFileOffset, void *(* mallocCb)(int));
+int SNDAEMS_asyncloadmodulebankmemdone();
+
+// sattrdef.c
+int SND_attrsetdef(SNDSAMPLEATTR *pssa);
+
 // filesys_c
 int FILESYS_opstatus(int ophandle);
 
