@@ -384,11 +384,22 @@ void SFXObj_NISStream::UpdateParams(float t) {
 void SFXObj_NISStream::PlayNISStream() {
     m_bNISButtonThroughReady = false;
     m_bNISAudioStreamReady = true;
+#ifdef EA_BUILD_A124
+    m_mslengthofstream = 0;
+    m_mstimeelapsed = 0;
+#else
     m_mstimeelapsed = 0;
     m_mslengthofstream = 0;
+#endif
 
     EAXS_StreamChannel *pch = Speech::Manager::GetSpeechModule(0)->GetStreamChannel();
     m_mslengthofstream = pch->GetTimeRemaining();
+
+#ifdef EA_BUILD_A124
+    if (m_bIsButtonThrough) {
+        Speech::Manager::GetSpeechModule(0)->PlayStream(2);
+    }
+#endif
 }
 
 void SFXObj_NISStream::Destroy() {}
