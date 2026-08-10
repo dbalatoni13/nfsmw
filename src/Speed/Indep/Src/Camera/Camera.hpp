@@ -7,6 +7,26 @@
 
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
+#include "Speed/Indep/bWare/Inc/bFunk.hpp"
+#include "Speed/Indep/Src/Gameplay/GManager.h"
+#include "Speed/Indep/Src/Interfaces/SimActivities/INIS.h"
+
+#include "Speed/Indep/Src/World/TrackStreamer.hpp"
+#include "Speed/Indep/bWare/Inc/bList.hpp"
+#include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
+
+#include "Speed/Indep/Src/Misc/GameFlow.hpp"
+#include "Speed/Indep/Src/Misc/Rumble.hpp"
+
+// TODO GET RID OF THESE
+extern int32 RealTime;
+extern int32 LastUpdateTimeJR2;
+// static int cameralink;
+extern int bStreamingPositionFromICE;
+extern int JR2ServerExists;
+extern int WeHaveCheckedIfJR2ServerExists;
+extern int LastUpdateTimeCaffeine;
+extern int LastUpdateTimeJR2;
 
 struct CameraParams {
     // total size: 0xD4
@@ -29,9 +49,29 @@ struct CameraParams {
     unsigned short DummyAngle;  // offset 0xD0, size 0x2
 };
 
+// total size: 0x50
+struct JollyRancherResponsePacket {
+    // Functions
+    inline JollyRancherResponsePacket() {}
+
+    // Members
+    volatile int UseMatrix;             // offset 0x0, size 0x4
+    volatile int Pad1;                  // offset 0x4, size 0x4
+    volatile int Pad2;                  // offset 0x8, size 0x4
+    volatile int Pad3;                  // offset 0xC, size 0x4
+    volatile struct bMatrix4 CamMatrix; // offset 0x10, size 0x40
+};
+
+static unsigned short aBaselineFovNoise = 0x2aaa; // from __static_initialization_and_destruction_0
+
 // total size: 0x290
 class Camera {
+
   public:
+    static int StopUpdating;
+    static JollyRancherResponsePacket JollyRancherResponse;
+    static int JR2ServerExists;
+
     static void UpdateAll(float dT);
 
     bMatrix4 *GetCameraMatrix() {
@@ -42,11 +82,33 @@ class Camera {
         return this->RenderDash;
     }
 
-    // float GetFocalDistance() {}
+    Camera();
 
-    // float GetDepthOfField() {}
+    ~Camera();
 
-    // unsigned short GetFieldOfView() {}
+    void SetCameraMatrix(const bMatrix4 &m, float fTime);
+
+    void CommunicateWithJollyRancher(char *cameraname);
+
+    void ProjectNormalized(bVector3 *pIn, bVector2 *pOut);
+
+    void UpdateSeeulatorTool();
+
+    unsigned short FovRelativeAngle(unsigned short a);
+
+    void ApplyNoise(bMatrix4 *p_matrix, float time, float intensity);
+
+    float GetFocalDistance() {
+        return CurrentKey.FocalDistance;
+    }
+
+    float GetDepthOfField() {
+        return CurrentKey.DepthOfField;
+    }
+
+    unsigned short GetFieldOfView() {
+        return CurrentKey.FieldOfView;
+    }
 
     // bMatrix4 *GetWorldToCameraMatrix() {}
 
@@ -93,53 +155,111 @@ class Camera {
 
     void ClearVelocity() {}
 
-    void SetRenderDash(int r) {}
+    void SetRenderDash(int r) {
+        if (!StopUpdating) {
+            RenderDash = r;
+        }
+    }
 
-    void SetTargetDistance(float f) {}
+    void SetTargetDistance(float f) {
+        CurrentKey.TargetDistance = f;
+    }
 
-    void SetFocalDistance(float f) {}
+    void SetFocalDistance(float f) {
+        CurrentKey.FocalDistance = f;
+    }
 
-    void SetDepthOfField(float f) {}
+    void SetDepthOfField(float f) {
+        CurrentKey.DepthOfField = f;
+    }
 
-    void SetFieldOfView(unsigned short fov) {}
+    void SetFieldOfView(unsigned short fov) {
+        CurrentKey.FieldOfView = fov;
+    }
 
-    void SetNoiseFrequency1(float x, float y, float z, float w) {}
+    inline void SetNoiseFrequency1(float x, float y, float z, float w) {
+        CurrentKey.NoiseFrequency1.x = x;
+        CurrentKey.NoiseFrequency1.y = y;
+        CurrentKey.NoiseFrequency1.z = z;
+        CurrentKey.NoiseFrequency1.w = w;
+    }
 
-    void SetNoiseFrequency2(float x, float y, float z, float w) {}
+    inline void SetNoiseFrequency2(float x, float y, float z, float w) {
+        CurrentKey.NoiseFrequency2.x = x;
+        CurrentKey.NoiseFrequency2.y = y;
+        CurrentKey.NoiseFrequency2.z = z;
+        CurrentKey.NoiseFrequency2.w = w;
+    }
 
-    void SetNoiseAmplitude1(float x, float y, float z, float w) {}
+    inline void SetNoiseAmplitude1(float x, float y, float z, float w) {
+        CurrentKey.NoiseAmplitude1.x = x;
+        CurrentKey.NoiseAmplitude1.y = y;
+        CurrentKey.NoiseAmplitude1.z = z;
+        CurrentKey.NoiseAmplitude1.w = w;
+    }
 
-    void SetNoiseAmplitude2(float x, float y, float z, float w) {}
+    inline void SetNoiseAmplitude2(float x, float y, float z, float w) {
+        CurrentKey.NoiseAmplitude2.x = x;
+        CurrentKey.NoiseAmplitude2.y = y;
+        CurrentKey.NoiseAmplitude2.z = z;
+        CurrentKey.NoiseAmplitude2.w = w;
+    }
 
-    void SetNoiseFrequency1(bVector4 *p) {}
+    void SetNoiseFrequency1(bVector4 *p) {
+        this->CurrentKey.NoiseFrequency1 = *p;
+    }
 
-    void SetNoiseFrequency2(bVector4 *p) {}
+    void SetNoiseFrequency2(bVector4 *p) {
+        this->CurrentKey.NoiseFrequency2 = *p;
+    }
 
-    void SetNoiseAmplitude1(bVector4 *p) {}
+    void SetNoiseAmplitude1(bVector4 *p) {
+        this->CurrentKey.NoiseAmplitude1 = *p;
+    }
 
-    void SetNoiseAmplitude2(bVector4 *p) {}
+    void SetNoiseAmplitude2(bVector4 *p) {
+        this->CurrentKey.NoiseAmplitude2 = *p;
+    }
 
-    void SetNoiseFrequency1(float *p) {}
+    void SetNoiseFrequency1(float *p) {
+        SetNoiseFrequency1(*p, *p, *p, *p);
+    }
 
-    void SetNoiseFrequency2(float *p) {}
+    void SetNoiseFrequency2(float *p) {
+        SetNoiseFrequency2(*p, *p, *p, *p);
+    }
 
-    void SetNoiseAmplitude1(float *p) {}
+    void SetNoiseAmplitude1(float *p) {
+        SetNoiseAmplitude1(*p, *p, *p, *p);
+    }
 
-    void SetNoiseAmplitude2(float *p) {}
+    void SetNoiseAmplitude2(float *p) {
+        SetNoiseAmplitude1(*p, *p, *p, *p);
+    }
 
-    void SetNearZ(float near_z) {}
+    void SetNearZ(float near_z) {
+        CurrentKey.NearZ = near_z;
+    }
 
-    void SetFarZ(float far_z) {}
+    void SetFarZ(float far_z) {
+        CurrentKey.FarZ = far_z;
+    }
 
-    // float GetNearZ() {}
+    float GetNearZ() {
+        return CurrentKey.NearZ;
+    }
 
-    // float GetFarZ() {}
+    float GetFarZ() {
+        return CurrentKey.FarZ;
+    }
 
     void SetLetterBox(float LB_h) {}
 
     // float GetLetterBox() {}
 
-    void SetSimTimeMultiplier(float multiplier) {}
+    void SetSimTimeMultiplier(float multiplier) {
+        CurrentKey.SimTimeMultiplier = multiplier;
+    }
 
     // float GetSimTimeMultiplier() {}
 
@@ -156,5 +276,6 @@ class Camera {
 
 // TODO move?
 extern bool gCinematicMomementCamera;
+extern int DisableCommunication;
 
 #endif

@@ -7,6 +7,7 @@
 
 #include "Speed/Indep/Src/Camera/ICE/ICEData.hpp"
 #include "Speed/Indep/bWare/Inc/bList.hpp"
+#include "Speed/Indep/Src/Misc/Timer.hpp"
 
 class ICEGroup {
   private:
@@ -55,10 +56,19 @@ class ICEShakeTrack : public bTNode<ICEShakeTrack> {
 // total size: 0x80
 class ICEManager {
   public:
+    ICEManager();
+
     void Init();
+
     void Resolve();
+
     ICEData *GetCameraData(uint32 scene_hash, int camTrack);
+
     int GetNumSceneCameraTrack(uint32 scene_hash);
+
+    float GetTimerSeconds() {
+        return bUseRealTime ? WorldTimer.GetSeconds() : RealTimer.GetSeconds();
+    }
 
     bool IsEditorOn() {
         // TODO maybe negated?

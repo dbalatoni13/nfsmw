@@ -11,6 +11,12 @@ struct FloatVector {
     float z; // offset 0x8, size 0x4
 };
 
+struct LongVector {
+    float x; // offset 0x0, size 0x4
+    float y; // offset 0x4, size 0x4
+    float z; // offset 0x8, size 0x4
+};
+
 // TODO from debug build
 inline void espEmptyLayer(const char *layername) {}
 
@@ -35,6 +41,12 @@ inline void espCreateUserMesh(unsigned int hobj, int num_faces) {}
 inline void espSetUserMeshFace(unsigned int hobj, int face_num, FloatVector *vertices) {}
 
 inline void espLinkObject(unsigned int hobj, unsigned int linked_hobj) {}
+
+inline void espGetCameraPositionFix(struct LongVector *eye, struct LongVector *target) {}
+
+inline void espSetCameraPositionFix(const struct LongVector *eye, const struct LongVector *target) {}
+
+inline void espCentrePlaneView(const struct FloatVector *pos) {}
 
 // TODO where is this?
 static const int RemoteCaffeinating = 0;
