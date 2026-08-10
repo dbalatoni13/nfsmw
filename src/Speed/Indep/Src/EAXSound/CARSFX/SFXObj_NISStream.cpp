@@ -341,9 +341,14 @@ void SFXObj_NISStream::NISActivityDone() {
 void SFXObj_NISStream::StartNIS() {
     this->m_bNISAnimationReady = true;
     if (this->m_bNISAudioStreamReady) {
+#ifdef EA_BUILD_A124
+        Speech::Manager::GetSpeechModule(0)->PlayStream(2);
+        SNDSYS_service();
+#else
         bool bresult = Speech::Manager::GetSpeechModule(0)->PlayStream(2);
         SNDSYS_service();
         this->m_bNISAudioStreamReady = false;
+#endif
     }
 }
 
