@@ -112,6 +112,22 @@ SFX_Base *CSTATEMGR_Base::CreateSFX(int Instance, int SFXObjID) {
                         FoundTypeInfo = CurTypeInfo;
                     }
 
+#ifdef EA_BUILD_A124
+                    if (MASK_GRPID(FoundTypeInfo->ObjectID) != this->m_eStateType) {
+                        FoundTypeInfo = CurTypeInfo;
+                    } else {
+                        SndBase::TypeInfo *BaseClassInfo = CurTypeInfo->baseTypeInfo;
+
+                        while (BaseClassInfo != nullptr) {
+                            if (BaseClassInfo == FoundTypeInfo) {
+                                FoundTypeInfo = CurTypeInfo;
+                                break;
+                            }
+
+                            BaseClassInfo = BaseClassInfo->baseTypeInfo;
+                        }
+                    }
+#else
                     if (MASK_GRPID(FoundTypeInfo->ObjectID) == this->m_eStateType) {
                         SndBase::TypeInfo *BaseClassInfo = CurTypeInfo->baseTypeInfo;
 
@@ -126,6 +142,7 @@ SFX_Base *CSTATEMGR_Base::CreateSFX(int Instance, int SFXObjID) {
                     } else {
                         FoundTypeInfo = CurTypeInfo;
                     }
+#endif
                 }
             }
         }
@@ -162,6 +179,22 @@ SFXCTL *CSTATEMGR_Base::CreateSFXCTL(int Instance, int SFXCtrlID) {
                         FoundTypeInfo = CurTypeInfo;
                     }
 
+#ifdef EA_BUILD_A124
+                    if (MASK_GRPID(FoundTypeInfo->ObjectID) != this->m_eStateType) {
+                        FoundTypeInfo = CurTypeInfo;
+                    } else {
+                        SndBase::TypeInfo *BaseClassInfo = CurTypeInfo->baseTypeInfo;
+
+                        while (BaseClassInfo != nullptr) {
+                            if (BaseClassInfo == FoundTypeInfo) {
+                                FoundTypeInfo = CurTypeInfo;
+                                break;
+                            }
+
+                            BaseClassInfo = BaseClassInfo->baseTypeInfo;
+                        }
+                    }
+#else
                     if (MASK_GRPID(FoundTypeInfo->ObjectID) == this->m_eStateType) {
                         SndBase::TypeInfo *BaseClassInfo = CurTypeInfo->baseTypeInfo;
 
@@ -176,6 +209,7 @@ SFXCTL *CSTATEMGR_Base::CreateSFXCTL(int Instance, int SFXCtrlID) {
                     } else {
                         FoundTypeInfo = CurTypeInfo;
                     }
+#endif
                 }
             }
         }
