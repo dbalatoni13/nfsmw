@@ -20,7 +20,11 @@ CARSFX_Rain::~CARSFX_Rain() {
 }
 
 int CARSFX_Rain::GetController(int Index) {
+#ifdef EA_BUILD_A124
+    return Index == 0 ? 6 : -1;
+#else
     return Index != 0 ? -1 : 6;
+#endif
 }
 
 void CARSFX_Rain::AttachController(SFXCTL *psfxctl) {

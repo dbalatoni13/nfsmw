@@ -121,7 +121,11 @@ void SFXObj_MomentStrm::InitSFX() {
 }
 
 int SFXObj_MomentStrm::GetController(int Index) {
+#ifdef EA_BUILD_A124
+    return Index == 0 ? 2 : -1;
+#else
     return Index != 0 ? -1 : 2;
+#endif
 }
 
 void SFXObj_MomentStrm::AttachController(SFXCTL *psfxctl) {
