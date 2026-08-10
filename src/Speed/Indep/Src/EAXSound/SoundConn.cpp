@@ -24,7 +24,7 @@ CarSoundConn::CarSoundConn(const Sim::ConnectionData &data)
     , mTarget(0) {
     SoundConn::Pkt_Car_Open *oc = static_cast<SoundConn::Pkt_Car_Open *>(data.pkt);
     Attrib::Instance att(oc->m_VehicleSpec, 0, nullptr);
-    mTarget.Set(oc->mWorldID);
+    this->mTarget.Set(oc->mWorldID);
 
     const void *modelData = att.GetAttributePointer(0x9047C9E0, 0);
     if (!modelData) {
@@ -37,8 +37,8 @@ CarSoundConn::CarSoundConn(const Sim::ConnectionData &data)
     }
     CarPartDB.GetCarType(bStringHash(modelName));
 
-    mState = static_cast<EAX_CarState *>(::operator new[](0x248));
-    new (mState) EAX_CarState(att.GetConstCollection(), oc->mCarContext, oc->mWorldID, oc->mHandle);
+    this->mState = static_cast<EAX_CarState *>(::operator new[](0x248));
+    new (this->mState) EAX_CarState(att.GetConstCollection(), oc->mCarContext, oc->mWorldID, oc->mHandle);
 
     if (!oc->mSpoolLoad) {
         new ECommitAudioAssets();
@@ -125,19 +125,19 @@ UTL::COM::Factory<Sim::ConnectionData const &, Sim::Connection, UCrc32>::Prototy
     "HeliSoundConn", HeliSoundConn::Construct);
 
 CarSoundConn::~CarSoundConn() {
-    mTarget.Set(0);
+    this->mTarget.Set(0);
     if (g_pEAXSound) {
-        g_pEAXSound->DestroyEAXCar(mState);
+        g_pEAXSound->DestroyEAXCar(this->mState);
     }
-    if (mState) {
-        mState->~EAX_CarState();
-        ::operator delete(mState);
+    if (this->mState) {
+        this->mState->~EAX_CarState();
+        ::operator delete(this->mState);
     }
-    mState = nullptr;
+    this->mState = nullptr;
 }
 
 Sim::ConnStatus CarSoundConn::OnStatusCheck() {
-    if (mConnected && mState && mState->mAssetsLoaded) {
+    if (this->mConnected && this->mState && this->mState->mAssetsLoaded) {
         return Sim::CONNSTATUS_READY;
     }
     return Sim::CONNSTATUS_CONNECTING;
@@ -147,81 +147,81 @@ void CarSoundConn::UpdateState(float dT) {
     if (!g_pEAXSound) {
         return;
     }
-    if (!mTarget.IsValid()) {
+    if (!this->mTarget.IsValid()) {
         return;
     }
-    if (!mConnected) {
+    if (!this->mConnected) {
         return;
     }
-    if (!mState) {
+    if (!this->mState) {
         return;
     }
-    if (!mState->mAssetsLoaded) {
-        return;
-    }
-
-    SoundConn::Pkt_Car_Service data(mState->mVisualRPM);
-    mState->mMatrix = *mTarget.GetMatrix();
-
-    if (!Service(&data)) {
-        mState->mSimUpdating = false;
-        mState->mAccel = bVector3(0.0f, 0.0f, 0.0f);
-        mState->mVel1 = bVector3(0.0f, 0.0f, 0.0f);
-        mState->mVel0 = bVector3(0.0f, 0.0f, 0.0f);
-        mState->mFWSpeed = 0.0f;
-        mState->mWheel[0].Reset();
-        mState->mWheel[1].Reset();
-        mState->mWheel[2].Reset();
-        mState->mWheel[3].Reset();
-        mState->mEngine.Reset();
+    if (!this->mState->mAssetsLoaded) {
         return;
     }
 
-    mState->mSimUpdating = true;
-    mState->mVel1 = mState->mVel0;
-    mState->mVel0 = *mTarget.GetVelocity();
-    bSub(&mState->mAccel, &mState->mVel0, &mState->mVel1);
-    bScale(&mState->mAccel, &mState->mAccel, 1.0f / dT);
+    SoundConn::Pkt_Car_Service data(this->mState->mVisualRPM);
+    this->mState->mMatrix = *this->mTarget.GetMatrix();
 
-    mState->mEngine.mRPMPct = data.mRPMPercent;
-    mState->mEngine.mNOSFlag = data.mNOSFlag;
-    mState->mEngine.mNOS = data.mNOSCapacity;
-    mState->mEngine.mThrottle = data.mThrottlePercent;
-    mState->mEngine.mBlownFlag = data.mEngineBlown;
-    mState->mBrake = data.mBrakePercent;
-    mState->mEBrake = data.mEBrakePercent;
-    mState->mSteering = bRadToAng(data.mSteering);
-    mState->mSirenState = data.mSirenState;
-    mState->mHotPursuit = data.mHotPursuit;
-    mState->mOversteer = data.mOversteer;
-    mState->mUndersteer = data.mUndersteer;
-    mState->mSlipAngle = -data.mSlipAngle;
-    mState->mHealth = data.mHealth;
+    if (!this->Service(&data)) {
+        this->mState->mSimUpdating = false;
+        this->mState->mAccel = bVector3(0.0f, 0.0f, 0.0f);
+        this->mState->mVel1 = bVector3(0.0f, 0.0f, 0.0f);
+        this->mState->mVel0 = bVector3(0.0f, 0.0f, 0.0f);
+        this->mState->mFWSpeed = 0.0f;
+        this->mState->mWheel[0].Reset();
+        this->mState->mWheel[1].Reset();
+        this->mState->mWheel[2].Reset();
+        this->mState->mWheel[3].Reset();
+        this->mState->mEngine.Reset();
+        return;
+    }
 
-    mState->mFWSpeed = bLength(mTarget.GetVelocity());
+    this->mState->mSimUpdating = true;
+    this->mState->mVel1 = this->mState->mVel0;
+    this->mState->mVel0 = *this->mTarget.GetVelocity();
+    bSub(&this->mState->mAccel, &this->mState->mVel0, &this->mState->mVel1);
+    bScale(&this->mState->mAccel, &this->mState->mAccel, 1.0f / dT);
 
-    mState->mTrailerID = data.mTrailer;
-    mState->mTimeSinceSeen = data.mTimeSinceSeen;
-    mState->mDesiredSpeed = data.mDesiredSpeed;
-    mState->mControlSource = static_cast<Sound::ControlSource>(data.mControlSource);
+    this->mState->mEngine.mRPMPct = data.mRPMPercent;
+    this->mState->mEngine.mNOSFlag = data.mNOSFlag;
+    this->mState->mEngine.mNOS = data.mNOSCapacity;
+    this->mState->mEngine.mThrottle = data.mThrottlePercent;
+    this->mState->mEngine.mBlownFlag = data.mEngineBlown;
+    this->mState->mBrake = data.mBrakePercent;
+    this->mState->mEBrake = data.mEBrakePercent;
+    this->mState->mSteering = bRadToAng(data.mSteering);
+    this->mState->mSirenState = data.mSirenState;
+    this->mState->mHotPursuit = data.mHotPursuit;
+    this->mState->mOversteer = data.mOversteer;
+    this->mState->mUndersteer = data.mUndersteer;
+    this->mState->mSlipAngle = -data.mSlipAngle;
+    this->mState->mHealth = data.mHealth;
+
+    this->mState->mFWSpeed = bLength(this->mTarget.GetVelocity());
+
+    this->mState->mTrailerID = data.mTrailer;
+    this->mState->mTimeSinceSeen = data.mTimeSinceSeen;
+    this->mState->mDesiredSpeed = data.mDesiredSpeed;
+    this->mState->mControlSource = static_cast<Sound::ControlSource>(data.mControlSource);
 
     for (int i = 0; i < 4; ++i) {
-        mState->mWheel[i].mWheelOnGround = data.mWheelOnGround[i] ? 1 : 0;
-        mState->mWheel[i].mWheelSlip = data.mWheelSlip[i];
-        mState->mWheel[i].mPercentFsFkTransfer = 1.0f - data.mTractionPct[i];
-        mState->mWheel[i].mPrevTerrainType = mState->mWheel[i].mTerrainType;
-        mState->mWheel[i].mTerrainType = data.mWheelTerrain[i];
-        mState->mWheel[i].mLoad = data.mWheelLoad[i];
-        mState->mWheel[i].mPrevBlownState = mState->mWheel[i].mBlownState;
-        mState->mWheel[i].mBlownState = data.mBlownTires[i];
-        mState->mWheel[i].mWheelForceZ = data.mWheelZforce[i];
+        this->mState->mWheel[i].mWheelOnGround = data.mWheelOnGround[i] ? 1 : 0;
+        this->mState->mWheel[i].mWheelSlip = data.mWheelSlip[i];
+        this->mState->mWheel[i].mPercentFsFkTransfer = 1.0f - data.mTractionPct[i];
+        this->mState->mWheel[i].mPrevTerrainType = this->mState->mWheel[i].mTerrainType;
+        this->mState->mWheel[i].mTerrainType = data.mWheelTerrain[i];
+        this->mState->mWheel[i].mLoad = data.mWheelLoad[i];
+        this->mState->mWheel[i].mPrevBlownState = this->mState->mWheel[i].mBlownState;
+        this->mState->mWheel[i].mBlownState = data.mBlownTires[i];
+        this->mState->mWheel[i].mWheelForceZ = data.mWheelZforce[i];
     }
 
-    if (mState->mDriveline.mGear != data.mGear) {
-        mState->mDriveline.mGear = static_cast<Sound::Gear>(data.mGear);
-        mState->mDriveline.mGearShiftFlag = 1;
+    if (this->mState->mDriveline.mGear != data.mGear) {
+        this->mState->mDriveline.mGear = static_cast<Sound::Gear>(data.mGear);
+        this->mState->mDriveline.mGearShiftFlag = 1;
     } else {
-        mState->mDriveline.mGearShiftFlag = 0;
+        this->mState->mDriveline.mGearShiftFlag = 0;
     }
 }
 
@@ -235,7 +235,7 @@ HeliSoundConn::HeliSoundConn(const Sim::ConnectionData &data)
     , mTarget(0) {
     SoundConn::Pkt_Heli_Open *oc = static_cast<SoundConn::Pkt_Heli_Open *>(data.pkt);
     Attrib::Instance att(oc->m_VehicleSpec, 0, nullptr);
-    mTarget.Set(oc->mWorldID);
+    this->mTarget.Set(oc->mWorldID);
 
     const void *modelData = att.GetAttributePointer(0x9047C9E0, 0);
     if (!modelData) {
@@ -249,19 +249,19 @@ HeliSoundConn::HeliSoundConn(const Sim::ConnectionData &data)
     unsigned int namehash = bStringHash(modelName);
     (void)namehash;
 
-    mState = new (__FILE__, __LINE__) EAX_HeliState(att.GetConstCollection(), oc->mWorldID);
-    g_pEAXSound->SpawnHelicopter(mState);
-    mState->mSimUpdating = false;
+    this->mState = new (__FILE__, __LINE__) EAX_HeliState(att.GetConstCollection(), oc->mWorldID);
+    g_pEAXSound->SpawnHelicopter(this->mState);
+    this->mState->mSimUpdating = false;
 }
 
 HeliSoundConn::~HeliSoundConn() {
-    mTarget.Set(0);
+    this->mTarget.Set(0);
     if (g_pEAXSound) {
-        g_pEAXSound->DestroyEAXHeli(mState);
+        g_pEAXSound->DestroyEAXHeli(this->mState);
     }
-    if (mState) {
-        delete mState;
-        mState = nullptr;
+    if (this->mState) {
+        delete this->mState;
+        this->mState = nullptr;
     }
 }
 
@@ -274,7 +274,7 @@ void HeliSoundConn::UpdateState(float dT) {
     }
 
     int validTarget = 1;
-    if (!mTarget.IsValid()) {
+    if (!this->mTarget.IsValid()) {
         validTarget = 0;
     }
 
@@ -286,19 +286,19 @@ void HeliSoundConn::UpdateState(float dT) {
     }
 
     SoundConn::Pkt_Heli_Service data;
-    if (!Service(&data)) {
-        mState->mSimUpdating = false;
+    if (!this->Service(&data)) {
+        this->mState->mSimUpdating = false;
         return;
     }
 
     btestprint = 0;
-    mState->mSimUpdating = true;
-    PSMTX44Copy((Mtx44)mTarget.GetMatrix(), (Mtx44)&mState->mMatrix);
-    mState->mVel1 = mState->mVel0;
-    mState->mVel0 = *mTarget.GetVelocity();
-    bSub(&mState->mAccel, &mState->mVel0, &mState->mVel1);
-    bScale(&mState->mAccel, &mState->mAccel, 1.0f / dT);
-    mState->mFWSpeed = bLength(mTarget.GetVelocity());
+    this->mState->mSimUpdating = true;
+    PSMTX44Copy((Mtx44)this->mTarget.GetMatrix(), (Mtx44)&this->mState->mMatrix);
+    this->mState->mVel1 = this->mState->mVel0;
+    this->mState->mVel0 = *this->mTarget.GetVelocity();
+    bSub(&this->mState->mAccel, &this->mState->mVel0, &this->mState->mVel1);
+    bScale(&this->mState->mAccel, &this->mState->mAccel, 1.0f / dT);
+    this->mState->mFWSpeed = bLength(this->mTarget.GetVelocity());
 }
 
 unsigned int Sim::Packet::Compress(Sim::Packet *) const { return 0; }

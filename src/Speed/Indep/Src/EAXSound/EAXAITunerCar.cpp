@@ -42,7 +42,7 @@ CSTATE_Base *EAXAITunerCar::CreateState(unsigned int allocator) {
 
 EAXAITunerCar::EAXAITunerCar() {
     emAddHandler(ProcessEvent, 0x00040000);
-    mPhysicsChangedGear = false;
+    this->mPhysicsChangedGear = false;
 }
 
 EAXAITunerCar::~EAXAITunerCar() {
@@ -51,7 +51,7 @@ EAXAITunerCar::~EAXAITunerCar() {
 
 int EAXAITunerCar::SFXMessage(eSFXMessageType SFXMessageType, unsigned int param1, unsigned int param2) {
     if (SFXMessageType == SFX_CHANGEGEAR) {
-        mPhysicsChangedGear = true;
+        this->mPhysicsChangedGear = true;
         return 0;
     }
     return EAXCar::SFXMessage(SFXMessageType, param1, param2);
@@ -62,9 +62,9 @@ void EAXAITunerCar::UpdateCarPhysics() {
 }
 
 void EAXAITunerCar::UpdateParams(float t) {
-    if (m_pCar) {
+    if (this->m_pCar) {
         EAXCar::UpdateParams(t);
-        mPhysicsChangedGear = false;
+        this->mPhysicsChangedGear = false;
     }
 }
 
@@ -78,16 +78,16 @@ void EAXAITunerCar::UpdatAIDriveBy(float t) {
 
     (void)t;
 
-    if (!GetPhysCar()) {
+    if (!this->GetPhysCar()) {
         return;
     }
 
-    ClosestPlayer = GetClosestPlayerCar(GetPhysCar()->GetPosition());
-    if (!IsCarInRadius(ClosestPlayer, GetPhysCar()->GetPosition(), 12.0f)) {
+    ClosestPlayer = GetClosestPlayerCar(this->GetPhysCar()->GetPosition());
+    if (!IsCarInRadius(ClosestPlayer, this->GetPhysCar()->GetPosition(), 12.0f)) {
         return;
     }
 
-    vVelDiff = bSub(*GetPhysCar()->GetVelocity(), *ClosestPlayer->GetVelocity());
+    vVelDiff = bSub(*this->GetPhysCar()->GetVelocity(), *ClosestPlayer->GetVelocity());
     fRelativeVel = bLength(vVelDiff);
     if (fRelativeVel < 15.0f) {
         return;
@@ -98,11 +98,11 @@ void EAXAITunerCar::UpdatAIDriveBy(float t) {
     TmpDriveByPackage.ClosingVelocity = fRelativeVel;
     TmpDriveByPackage.pEAXCar = this;
     TmpDriveByPackage.UniqueID = reinterpret_cast<unsigned int>(this);
-    TmpDriveByPackage.vLocation = *GetPhysCar()->GetPosition();
+    TmpDriveByPackage.vLocation = *this->GetPhysCar()->GetPosition();
 
-    if (GetPhysCar()->GetContext() == Sound::CONTEXT_COP) {
+    if (this->GetPhysCar()->GetContext() == Sound::CONTEXT_COP) {
         MGamePlayMoment moment(UMath::Vector4::kZero, UMath::Vector4::kZero, UMath::Vector4::kZero,
-                               GetPhysCar()->mWorldID,
+                               this->GetPhysCar()->mWorldID,
                                0);
         moment.Send(UCrc32("BlewByCop"));
     }
@@ -165,12 +165,12 @@ CSTATE_Base *EAXTruck::CreateState(unsigned int allocator) {
 }
 
 void EAXTruck::UpdateParams(float t) {
-    UpdatAIDriveBy(t);
+    this->UpdatAIDriveBy(t);
     EAXAITunerCar::UpdateParams(t);
 }
 
 void EAXCopCar::UpdateParams(float t) {
-    UpdatAIDriveBy(t);
+    this->UpdatAIDriveBy(t);
     EAXAITunerCar::UpdateParams(t);
 }
 

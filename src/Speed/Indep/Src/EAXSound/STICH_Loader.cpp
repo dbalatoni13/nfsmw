@@ -19,8 +19,8 @@ struct cStitchLoop {
 
 cStitchLoop::cStitchLoop(unsigned int attrib)
     : m_StitchAttribKey(attrib) {
-    m_Stitch[1] = nullptr;
-    m_Stitch[0] = nullptr;
+    this->m_Stitch[1] = nullptr;
+    this->m_Stitch[0] = nullptr;
 
     Attrib::Instance loopdata(Attrib::FindCollection(Attrib::Gen::aud_stitch_loop::ClassKey(), attrib), 0, nullptr);
     cSTICH_PlayBack *playback = g_pEAXSound->GetSTICHPlayback();
@@ -30,56 +30,56 @@ cStitchLoop::cStitchLoop(unsigned int attrib)
         stitchIndex = static_cast<const int *>(Attrib::DefaultDataArea(sizeof(int)));
     }
 
-    m_StichData = &playback->GetStich(STICH_TYPE_COLLISION, *stitchIndex);
+    this->m_StichData = &playback->GetStich(STICH_TYPE_COLLISION, *stitchIndex);
 
     const int *overlap = static_cast<const int *>(loopdata.GetAttributePointer(0xad8c27f5, 0));
     if (!overlap) {
         overlap = static_cast<const int *>(Attrib::DefaultDataArea(sizeof(int)));
     }
 
-    m_tOverlap = static_cast<short>(*overlap);
-    m_tTimeBeforeRepeat = m_tOverlap;
+    this->m_tOverlap = static_cast<short>(*overlap);
+    this->m_tTimeBeforeRepeat = this->m_tOverlap;
 
-    m_Stitch[0] = new cStichWrapper(*m_StichData);
-    m_Stitch[0]->Play(0, 0, 0);
+    this->m_Stitch[0] = new cStichWrapper(*this->m_StichData);
+    this->m_Stitch[0]->Play(0, 0, 0);
 }
 
 cStitchLoop::~cStitchLoop() {
-    if (m_Stitch[0]) {
-        delete m_Stitch[0];
+    if (this->m_Stitch[0]) {
+        delete this->m_Stitch[0];
     }
-    if (m_Stitch[1]) {
-        delete m_Stitch[1];
+    if (this->m_Stitch[1]) {
+        delete this->m_Stitch[1];
     }
 }
 
 void cStitchLoop::Update(const SND_Params *Params, float dt) {
     {
         for (int n = 0; n < 2; n++) {
-            if (m_Stitch[n]) {
-                m_Stitch[n]->Update(Params);
-                if (!m_Stitch[n]->IsPlaying()) {
-                    delete m_Stitch[n];
-                    m_Stitch[n] = nullptr;
+            if (this->m_Stitch[n]) {
+                this->m_Stitch[n]->Update(Params);
+                if (!this->m_Stitch[n]->IsPlaying()) {
+                    delete this->m_Stitch[n];
+                    this->m_Stitch[n] = nullptr;
                 }
             }
         }
     }
 
-    m_tTimeBeforeRepeat = static_cast<short>(static_cast<int>(m_tTimeBeforeRepeat) - static_cast<int>(dt * 1000.0f));
-    if (m_tTimeBeforeRepeat < 0) {
-        m_tTimeBeforeRepeat = m_tOverlap;
+    this->m_tTimeBeforeRepeat = static_cast<short>(static_cast<int>(this->m_tTimeBeforeRepeat) - static_cast<int>(dt * 1000.0f));
+    if (this->m_tTimeBeforeRepeat < 0) {
+        this->m_tTimeBeforeRepeat = this->m_tOverlap;
         int index = -1;
         {
             for (int n = 0; n < 2; n++) {
-                if (!m_Stitch[n]) {
+                if (!this->m_Stitch[n]) {
                     index = n;
                 }
             }
         }
         if (index != -1) {
-            m_Stitch[index] = new cStichWrapper(*m_StichData);
-            m_Stitch[index]->Play(0, 0, 0);
+            this->m_Stitch[index] = new cStichWrapper(*this->m_StichData);
+            this->m_Stitch[index]->Play(0, 0, 0);
         }
     }
 }

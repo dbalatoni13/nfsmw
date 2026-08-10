@@ -99,7 +99,7 @@ struct cSampleWarpper : public cSampleListSet {
     ~cSampleWarpper();
 
     const SND_SampleRef &GetData() {
-        return *SampleRefData;
+        return *this->SampleRefData;
     }
 
     static void *operator new(unsigned int size);
@@ -107,7 +107,7 @@ struct cSampleWarpper : public cSampleListSet {
 
     void Initialize();
     bool IsPlaying() {
-        return m_eIsPlaying != 0;
+        return this->m_eIsPlaying != 0;
     }
     void Update(const SND_Params *params);
     void Play(const SND_Params *params);
@@ -132,10 +132,10 @@ struct cStichWrapper : public AudioMemBase {
     void Play(const SND_Params *params);
     void Update(const SND_Params *params);
     bool IsPlaying() {
-        return bIsPlaying;
+        return this->bIsPlaying;
     }
     const SND_Stich &GetData() {
-        return *StichData;
+        return *this->StichData;
     }
 
     void Destroy();
@@ -154,7 +154,7 @@ struct SampleQueueItem {
     {}
 
     bool operator==(const SampleQueueItem &compareto) const {
-        return pSample == compareto.pSample && pStitch == compareto.pStitch;
+        return this->pSample == compareto.pSample && this->pStitch == compareto.pStitch;
     }
 };
 

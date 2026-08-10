@@ -68,11 +68,11 @@ struct AudioEvent : public UTL::COM::Factory<const AudioEventParams &, AudioEven
     {}
 
     const AudioEventParams &GetParameters() const {
-        return mParams;
+        return this->mParams;
     }
 
     const Attrib::Instance &GetAttributes() const {
-        return mAttributes;
+        return this->mAttributes;
     }
 
     virtual ~AudioEvent() {}
@@ -112,19 +112,19 @@ class CollisionEvent : public AudioEvent {
     void InitAsImpact(const Attrib::Gen::audioimpact &audioFx);
     void Release() override;
 
-    const char *GetCSISEffect() const { return mCSISEffect; }
-    SND_Stich *GetImpactStich() const { return ImpactStich; }
-    bVector3 *GetInitialContactPoint() { return &InitialContactPoint; }
-    bVector3 *GetCurrentContactPoint() { return &CurrentContactPoint; }
-    bVector3 *GetCurrentVelocity() { return &CurrentVelocity; }
-    bool IsDescribed(unsigned int desc) { return (Description & desc) == desc; }
-    float GetAge() { return (WorldTimer - CollisionTime).GetSeconds(); }
-    int GetVolume() { return mVolume; }
-    int GetIntensity() { return Intensity; }
-    int IsStillActive() { return mActive; }
-    unsigned int GetAudioFX() { return mAudioFX; }
-    unsigned int GetActor() { return mActor; }
-    unsigned int GetActee() { return mActee; }
+    const char *GetCSISEffect() const { return this->mCSISEffect; }
+    SND_Stich *GetImpactStich() const { return this->ImpactStich; }
+    bVector3 *GetInitialContactPoint() { return &this->InitialContactPoint; }
+    bVector3 *GetCurrentContactPoint() { return &this->CurrentContactPoint; }
+    bVector3 *GetCurrentVelocity() { return &this->CurrentVelocity; }
+    bool IsDescribed(unsigned int desc) { return (this->Description & desc) == desc; }
+    float GetAge() { return (WorldTimer - this->CollisionTime).GetSeconds(); }
+    int GetVolume() { return this->mVolume; }
+    int GetIntensity() { return this->Intensity; }
+    int IsStillActive() { return this->mActive; }
+    unsigned int GetAudioFX() { return this->mAudioFX; }
+    unsigned int GetActor() { return this->mActor; }
+    unsigned int GetActee() { return this->mActee; }
 };
 
 } // namespace Sound

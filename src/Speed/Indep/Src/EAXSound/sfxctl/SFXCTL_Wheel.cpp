@@ -32,27 +32,27 @@ SFXCTL_Wheel::SFXCTL_Wheel()
     , RightSideTerrain(static_cast<const Attrib::Collection *>(nullptr), 0, nullptr) //
     , PrevLeftSideTerrain(static_cast<const Attrib::Collection *>(nullptr), 0, nullptr) //
     , PrevRightSideTerrain(static_cast<const Attrib::Collection *>(nullptr), 0, nullptr) {
-    RightSideTouchingGround = true;
-    LeftSideTouchingGround = true;
+    this->RightSideTouchingGround = true;
+    this->LeftSideTouchingGround = true;
 
     {
         Attrib::Gen::simsurface terrain(static_cast<const Attrib::Collection *>(nullptr), 0, nullptr);
-        LeftSideTerrain.Attrib::Gen::simsurface::operator=(static_cast<const Attrib::Instance &>(terrain));
+        this->LeftSideTerrain.Attrib::Gen::simsurface::operator=(static_cast<const Attrib::Instance &>(terrain));
     }
 
     {
         Attrib::Gen::simsurface terrain(static_cast<const Attrib::Collection *>(nullptr), 0, nullptr);
-        RightSideTerrain.Attrib::Gen::simsurface::operator=(static_cast<const Attrib::Instance &>(terrain));
+        this->RightSideTerrain.Attrib::Gen::simsurface::operator=(static_cast<const Attrib::Instance &>(terrain));
     }
 
     {
         Attrib::Gen::simsurface terrain(static_cast<const Attrib::Collection *>(nullptr), 0, nullptr);
-        PrevLeftSideTerrain.Attrib::Gen::simsurface::operator=(static_cast<const Attrib::Instance &>(terrain));
+        this->PrevLeftSideTerrain.Attrib::Gen::simsurface::operator=(static_cast<const Attrib::Instance &>(terrain));
     }
 
     {
         Attrib::Gen::simsurface terrain(static_cast<const Attrib::Collection *>(nullptr), 0, nullptr);
-        PrevRightSideTerrain.Attrib::Gen::simsurface::operator=(static_cast<const Attrib::Instance &>(terrain));
+        this->PrevRightSideTerrain.Attrib::Gen::simsurface::operator=(static_cast<const Attrib::Instance &>(terrain));
     }
 }
 
@@ -60,7 +60,7 @@ SFXCTL_Wheel::~SFXCTL_Wheel() {}
 
 void SFXCTL_Wheel::UpdateParams(float t) {
     SFXCTL::UpdateParams(t);
-    UpdateTireParams();
+    this->UpdateTireParams();
 }
 
 void SFXCTL_Wheel::InitSFX() {
@@ -68,84 +68,84 @@ void SFXCTL_Wheel::InitSFX() {
 
     {
         Attrib::Gen::simsurface terrain(static_cast<const Attrib::Collection *>(nullptr), 0, nullptr);
-        LeftSideTerrain.Attrib::Gen::simsurface::operator=(static_cast<const Attrib::Instance &>(terrain));
+        this->LeftSideTerrain.Attrib::Gen::simsurface::operator=(static_cast<const Attrib::Instance &>(terrain));
     }
 
     {
         Attrib::Gen::simsurface terrain(static_cast<const Attrib::Collection *>(nullptr), 0, nullptr);
-        RightSideTerrain.Attrib::Gen::simsurface::operator=(static_cast<const Attrib::Instance &>(terrain));
+        this->RightSideTerrain.Attrib::Gen::simsurface::operator=(static_cast<const Attrib::Instance &>(terrain));
     }
 
     {
         Attrib::Gen::simsurface terrain(static_cast<const Attrib::Collection *>(nullptr), 0, nullptr);
-        PrevLeftSideTerrain.Attrib::Gen::simsurface::operator=(static_cast<const Attrib::Instance &>(terrain));
+        this->PrevLeftSideTerrain.Attrib::Gen::simsurface::operator=(static_cast<const Attrib::Instance &>(terrain));
     }
 
     {
         Attrib::Gen::simsurface terrain(static_cast<const Attrib::Collection *>(nullptr), 0, nullptr);
-        PrevRightSideTerrain.Attrib::Gen::simsurface::operator=(static_cast<const Attrib::Instance &>(terrain));
+        this->PrevRightSideTerrain.Attrib::Gen::simsurface::operator=(static_cast<const Attrib::Instance &>(terrain));
     }
 }
 
 void SFXCTL_Wheel::GenerateWheelPosition() {
     const bVector3 *pv3CarPos;
 
-    if (GetPhysCar()->GetContext() == Sound::kRaceContext_Count) {
+    if (this->GetPhysCar()->GetContext() == Sound::kRaceContext_Count) {
         return;
     }
 
-    pv3CarPos = GetPhysCar()->GetPosition();
-    bVector3 pv3LeftDir = bScale(*GetPhysCar()->GetLeftVector(), gfTireOffsetDist);
-    bVector3 FwdOffsetVec = bScale(*GetPhysCar()->GetForwardVector(), gfTireFwdOffsetDist);
-    v3NewPosRight = bSub(*pv3CarPos, pv3LeftDir);
-    v3NewPosRight += FwdOffsetVec;
-    v3NewPosLeft = bAdd(*pv3CarPos, pv3LeftDir);
-    v3NewPosLeft += FwdOffsetVec;
+    pv3CarPos = this->GetPhysCar()->GetPosition();
+    bVector3 pv3LeftDir = bScale(*this->GetPhysCar()->GetLeftVector(), gfTireOffsetDist);
+    bVector3 FwdOffsetVec = bScale(*this->GetPhysCar()->GetForwardVector(), gfTireFwdOffsetDist);
+    this->v3NewPosRight = bSub(*pv3CarPos, pv3LeftDir);
+    this->v3NewPosRight += FwdOffsetVec;
+    this->v3NewPosLeft = bAdd(*pv3CarPos, pv3LeftDir);
+    this->v3NewPosLeft += FwdOffsetVec;
 }
 
 void SFXCTL_Wheel::UpdateTireParams() {
-    GenerateWheelPosition();
-    GenerateTerrainTypes();
+    this->GenerateWheelPosition();
+    this->GenerateTerrainTypes();
 
-    LeftSideTouchingGround = true;
-    if (!GetPhysCar()->IsWheelTouchingGround(0) && !GetPhysCar()->IsWheelTouchingGround(3)) {
-        LeftSideTouchingGround = false;
+    this->LeftSideTouchingGround = true;
+    if (!this->GetPhysCar()->IsWheelTouchingGround(0) && !this->GetPhysCar()->IsWheelTouchingGround(3)) {
+        this->LeftSideTouchingGround = false;
     }
 
-    RightSideTouchingGround = true;
-    if (!GetPhysCar()->IsWheelTouchingGround(1) && !GetPhysCar()->IsWheelTouchingGround(2)) {
-        RightSideTouchingGround = false;
+    this->RightSideTouchingGround = true;
+    if (!this->GetPhysCar()->IsWheelTouchingGround(1) && !this->GetPhysCar()->IsWheelTouchingGround(2)) {
+        this->RightSideTouchingGround = false;
     }
 
     {
         float totalwheelload;
         int nloop;
 
-        m_bvTotalLeftWheelSlip.y = 0.0f;
-        m_bvTotalRightWheelSlip.x = 0.0f;
-        m_bvTotalLeftWheelSlip.x = 0.0f;
-        m_bvTotalRightWheelSlip.y = 0.0f;
+        this->m_bvTotalLeftWheelSlip.y = 0.0f;
+        this->m_bvTotalRightWheelSlip.x = 0.0f;
+        this->m_bvTotalLeftWheelSlip.x = 0.0f;
+        this->m_bvTotalRightWheelSlip.y = 0.0f;
         totalwheelload = 0.0f;
         bVector2 wheelslip[4];
         for (nloop = 0; nloop <= 3; nloop++) {
-            m_fWheelTractionMag[nloop] = bAbs(GetPhysCar()->GetWheelTractionUsage(nloop));
-            wheelslip[nloop] = GetPhysCar()->GetWheelSlip(nloop);
-            m_fLoad[nloop] = g_WheelLoadSlope.GetValue(GetPhysCar()->GetWheelLoad(nloop));
+            this->m_fWheelTractionMag[nloop] = bAbs(this->GetPhysCar()->GetWheelTractionUsage(nloop));
+            wheelslip[nloop] = this->GetPhysCar()->GetWheelSlip(nloop);
+            this->m_fLoad[nloop] = g_WheelLoadSlope.GetValue(this->GetPhysCar()->GetWheelLoad(nloop));
 
             if (static_cast<unsigned int>(nloop - 1) < 2U) {
-                if (GetPhysCar()->IsWheelTouchingGround(nloop)) {
-                    bAdd(&m_bvTotalRightWheelSlip, &m_bvTotalRightWheelSlip, &wheelslip[nloop]);
+                if (this->GetPhysCar()->IsWheelTouchingGround(nloop)) {
+                    bAdd(&this->m_bvTotalRightWheelSlip, &this->m_bvTotalRightWheelSlip, &wheelslip[nloop]);
                 }
-            } else if (GetPhysCar()->IsWheelTouchingGround(nloop)) {
-                bAdd(&m_bvTotalLeftWheelSlip, &m_bvTotalLeftWheelSlip, &wheelslip[nloop]);
+            } else if (this->GetPhysCar()->IsWheelTouchingGround(nloop)) {
+                bAdd(&this->m_bvTotalLeftWheelSlip, &this->m_bvTotalLeftWheelSlip, &wheelslip[nloop]);
             }
 
-            m_NormWheelSlip[nloop].x =
+            this->m_NormWheelSlip[nloop].x =
                 bClamp(wheelslip[nloop].x * gWheelSlipSensitivity[0], -1023.0f, 1023.0f);
-            m_NormWheelSlip[nloop].y =
+            this->m_NormWheelSlip[nloop].y =
                 bClamp(wheelslip[nloop].y * gWheelSlipSensitivity[1], -1023.0f, 1023.0f);
 
-            if (PRINT_SKID_FX_DEBUG != 0 && GetPhysCar()->IsLocalPlayerCar()) {
+            if (PRINT_SKID_FX_DEBUG != 0 && this->GetPhysCar()->IsLocalPlayerCar()) {
                 int x;
                 int y;
 
@@ -171,9 +171,9 @@ void SFXCTL_Wheel::UpdateTireParams() {
                     break;
                 }
 
-                DebugPrintSkidBar(x, y, "X", (static_cast<int>(m_NormWheelSlip[nloop].x) + 0x3ff) / 2);
-                DebugPrintSkidBar(x, y + 0x14, "Y", (static_cast<int>(m_NormWheelSlip[nloop].y) + 0x3ff) / 2);
-                DebugPrintSkidBar(x, y + 0x28, "LD", static_cast<int>(m_fLoad[nloop]));
+                DebugPrintSkidBar(x, y, "X", (static_cast<int>(this->m_NormWheelSlip[nloop].x) + 0x3ff) / 2);
+                DebugPrintSkidBar(x, y + 0x14, "Y", (static_cast<int>(this->m_NormWheelSlip[nloop].y) + 0x3ff) / 2);
+                DebugPrintSkidBar(x, y + 0x28, "LD", static_cast<int>(this->m_fLoad[nloop]));
             }
         }
     }
@@ -182,42 +182,42 @@ void SFXCTL_Wheel::UpdateTireParams() {
 bVector3 *SFXCTL_Wheel::GetWheelPos(int wheelID, int numtires) {
     switch (numtires) {
     case 1:
-        return GetPhysCar()->GetPosition();
+        return this->GetPhysCar()->GetPosition();
     case 2:
         if (wheelID == 0) {
-            return &v3NewPosLeft;
+            return &this->v3NewPosLeft;
         }
-        return &v3NewPosRight;
+        return &this->v3NewPosRight;
     case 3:
     default:
-        return GetPhysCar()->GetPosition();
+        return this->GetPhysCar()->GetPosition();
     }
-    return GetPhysCar()->GetPosition();
+    return this->GetPhysCar()->GetPosition();
 }
 
 void SFXCTL_Wheel::GenerateTerrainTypes() {
-    Attrib::Gen::simsurface FLTerrainType(GetPhysCar()->GetWheelTerrain(0));
-    Attrib::Gen::simsurface FRTerrainType(GetPhysCar()->GetWheelTerrain(1));
-    Attrib::Gen::simsurface RRTerrainType(GetPhysCar()->GetWheelTerrain(2));
-    Attrib::Gen::simsurface RLTerrainType(GetPhysCar()->GetWheelTerrain(3));
-    Attrib::Gen::simsurface CurRight(FRTerrainType.GetCollection() != RRTerrainType.GetCollection() ? RightSideTerrain : FRTerrainType);
-    Attrib::Gen::simsurface CurLeft(FLTerrainType.GetCollection() != RLTerrainType.GetCollection() ? LeftSideTerrain : FLTerrainType);
+    Attrib::Gen::simsurface FLTerrainType(this->GetPhysCar()->GetWheelTerrain(0));
+    Attrib::Gen::simsurface FRTerrainType(this->GetPhysCar()->GetWheelTerrain(1));
+    Attrib::Gen::simsurface RRTerrainType(this->GetPhysCar()->GetWheelTerrain(2));
+    Attrib::Gen::simsurface RLTerrainType(this->GetPhysCar()->GetWheelTerrain(3));
+    Attrib::Gen::simsurface CurRight(FRTerrainType.GetCollection() != RRTerrainType.GetCollection() ? this->RightSideTerrain : FRTerrainType);
+    Attrib::Gen::simsurface CurLeft(FLTerrainType.GetCollection() != RLTerrainType.GetCollection() ? this->LeftSideTerrain : FLTerrainType);
 
-    PrevRightSideTerrain.Attrib::Gen::simsurface::operator=(static_cast<const Attrib::Instance &>(RightSideTerrain));
-    PrevLeftSideTerrain.Attrib::Gen::simsurface::operator=(static_cast<const Attrib::Instance &>(LeftSideTerrain));
+    this->PrevRightSideTerrain.Attrib::Gen::simsurface::operator=(static_cast<const Attrib::Instance &>(this->RightSideTerrain));
+    this->PrevLeftSideTerrain.Attrib::Gen::simsurface::operator=(static_cast<const Attrib::Instance &>(this->LeftSideTerrain));
 
-    if (GetPhysCar()->TireState(1) == TIRE_DAMAGE_BLOWN || GetPhysCar()->TireState(2) == TIRE_DAMAGE_BLOWN) {
+    if (this->GetPhysCar()->TireState(1) == TIRE_DAMAGE_BLOWN || this->GetPhysCar()->TireState(2) == TIRE_DAMAGE_BLOWN) {
         Attrib::Gen::simsurface blown(0x8EE645B3, 0, nullptr);
-        RightSideTerrain.Attrib::Gen::simsurface::operator=(static_cast<const Attrib::Instance &>(blown));
+        this->RightSideTerrain.Attrib::Gen::simsurface::operator=(static_cast<const Attrib::Instance &>(blown));
     } else {
-        RightSideTerrain.Attrib::Gen::simsurface::operator=(static_cast<const Attrib::Instance &>(CurRight));
+        this->RightSideTerrain.Attrib::Gen::simsurface::operator=(static_cast<const Attrib::Instance &>(CurRight));
     }
 
-    if (GetPhysCar()->TireState(0) == TIRE_DAMAGE_BLOWN || GetPhysCar()->TireState(3) == TIRE_DAMAGE_BLOWN) {
+    if (this->GetPhysCar()->TireState(0) == TIRE_DAMAGE_BLOWN || this->GetPhysCar()->TireState(3) == TIRE_DAMAGE_BLOWN) {
         Attrib::Gen::simsurface blown(0x8EE645B3, 0, nullptr);
-        LeftSideTerrain.Attrib::Gen::simsurface::operator=(static_cast<const Attrib::Instance &>(blown));
+        this->LeftSideTerrain.Attrib::Gen::simsurface::operator=(static_cast<const Attrib::Instance &>(blown));
     } else {
-        LeftSideTerrain.Attrib::Gen::simsurface::operator=(static_cast<const Attrib::Instance &>(CurLeft));
+        this->LeftSideTerrain.Attrib::Gen::simsurface::operator=(static_cast<const Attrib::Instance &>(CurLeft));
     }
 }
 

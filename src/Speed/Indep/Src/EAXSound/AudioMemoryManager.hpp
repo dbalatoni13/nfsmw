@@ -19,10 +19,10 @@ class AudioMemoryManager {
     char *AllocateMemoryChar(int, const char *, bool);
     void FreeMemory(void *);
 
-    void *GetMemPoolMem() const { return m_pMemoryPoolMem; }
-    void *GetMemoryPoolStart() { return m_pMemoryPoolMem; }
-    int GetMemoryPoolSize() { return m_memoryPoolSize; }
-    int GetMemoryPoolSize() const { return m_memoryPoolSize; }
+    void *GetMemPoolMem() const { return this->m_pMemoryPoolMem; }
+    void *GetMemoryPoolStart() { return this->m_pMemoryPoolMem; }
+    int GetMemoryPoolSize() { return this->m_memoryPoolSize; }
+    int GetMemoryPoolSize() const { return this->m_memoryPoolSize; }
 
   private:
     void *m_pMemoryPoolMem;     // offset 0x0, size 0x4

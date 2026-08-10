@@ -335,24 +335,24 @@ void *NIS_RevManager::operator new(unsigned int size, const char *debug_name) {
 
 void SFXCTL_Physics::MsgRevOff(const MAIEngineRev &message) {
     (void)message;
-    eCurNisRevingState = NIS_OFF;
-    pRevData = nullptr;
+    this->eCurNisRevingState = NIS_OFF;
+    this->pRevData = nullptr;
 }
 
 
 NIS_RevManager::NIS_RevManager() {
     g_pNISRevMgr = this;
-    pRevData = nullptr;
-    pBuffer = nullptr;
-    RecordingCount = 0;
-    IsInitialized = false;
+    this->pRevData = nullptr;
+    this->pBuffer = nullptr;
+    this->RecordingCount = 0;
+    this->IsInitialized = false;
 }
 
 NIS_RevManager::~NIS_RevManager() {
     g_pNISRevMgr = nullptr;
-    delete pRevData;
-    delete pBuffer;
-    RecordingCount = 0;
+    delete this->pRevData;
+    delete this->pBuffer;
+    this->RecordingCount = 0;
 }
 
 void NIS_RevManager::OpenNISRevData(unsigned int anim_id) {
@@ -360,7 +360,7 @@ void NIS_RevManager::OpenNISRevData(unsigned int anim_id) {
     char *AnimName;
     char EngineRevBin[50];
 
-    IsInitialized = false;
+    this->IsInitialized = false;
     index = GetCsisEventIndex(anim_id);
     if (index != -1) {
         AnimName = reinterpret_cast<char **>(uNIS_STRINGHASHMAP + 8)[index * 3];
@@ -374,20 +374,20 @@ void NIS_RevManager::OpenNISRevData(unsigned int anim_id) {
             nfilesize = bFileSize(EngineRevBin);
             file = bOpen(EngineRevBin, 1, 1);
             if (file) {
-                if (pRevData) {
-                    ::operator delete(pRevData);
-                    pRevData = nullptr;
+                if (this->pRevData) {
+                    ::operator delete(this->pRevData);
+                    this->pRevData = nullptr;
                 }
 
-                pRevData = static_cast<int *>(bMalloc(nfilesize, EngineRevBin, 0, 0x1040));
-                bRead(file, pRevData, nfilesize);
+                this->pRevData = static_cast<int *>(bMalloc(nfilesize, EngineRevBin, 0, 0x1040));
+                bRead(file, this->pRevData, nfilesize);
                 bClose(file);
 
                 {
                     int *ptmpSTart;
                     int nloopsize;
 
-                    ptmpSTart = pRevData;
+                    ptmpSTart = this->pRevData;
                     nloopsize = nfilesize;
                     if (nfilesize < 0) {
                         nloopsize += 3;
@@ -401,20 +401,20 @@ void NIS_RevManager::OpenNISRevData(unsigned int anim_id) {
                 }
 
                 {
-                    pTemp = pRevData;
+                    pTemp = this->pRevData;
                     for (int n = 0; n < 16; ++n) {
-                        m_EngineDataSet[n].NumPoints = *pTemp++;
-                        if (m_EngineDataSet[n].NumPoints != 0) {
-                            m_EngineDataSet[n].DataPoints = reinterpret_cast<EngRevDataPoint *>(pTemp);
-                            pTemp += m_EngineDataSet[n].NumPoints * 3;
+                        this->m_EngineDataSet[n].NumPoints = *pTemp++;
+                        if (this->m_EngineDataSet[n].NumPoints != 0) {
+                            this->m_EngineDataSet[n].DataPoints = reinterpret_cast<EngRevDataPoint *>(pTemp);
+                            pTemp += this->m_EngineDataSet[n].NumPoints * 3;
                         }
                     }
                 }
 
-                IsInitialized = true;
+                this->IsInitialized = true;
             }
         } else {
-            IsInitialized = false;
+            this->IsInitialized = false;
         }
     }
 }
@@ -422,15 +422,15 @@ void NIS_RevManager::OpenNISRevData(unsigned int anim_id) {
 void NIS_RevManager::StartNISReving() {}
 
 void NIS_RevManager::Start321Reving() {
-    CloseNIS();
+    this->CloseNIS();
     MAIEngineRev(0, 0, nullptr, 0).Send(UCrc32("QRev"));
 }
 
 void NIS_RevManager::CloseNIS() {
-    bFree(pRevData);
-    pRevData = nullptr;
+    bFree(this->pRevData);
+    this->pRevData = nullptr;
     MAIEngineRev(0, 0, nullptr, 0).Send(UCrc32("RevOFF"));
-    IsInitialized = false;
+    this->IsInitialized = false;
 }
 
 void NIS_RevManager::Update(float t) {

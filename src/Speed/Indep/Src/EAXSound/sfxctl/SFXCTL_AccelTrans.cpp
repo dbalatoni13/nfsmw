@@ -24,17 +24,17 @@ SFXCTL_AccelTrans::~SFXCTL_AccelTrans() {}
 
 void SFXCTL_AccelTrans::SetupSFX(CSTATE_Base *_StateBase) {
     SndBase::SetupSFX(_StateBase);
-    m_UGL = static_cast<eAemsUpgradeLevel>(m_pEAXCar->GetEngineUpgradeLevel());
-    m_pAccelTransDataSet = &m_pEAXCar->GetAccelInfo();
+    this->m_UGL = static_cast<eAemsUpgradeLevel>(this->m_pEAXCar->GetEngineUpgradeLevel());
+    this->m_pAccelTransDataSet = &this->m_pEAXCar->GetAccelInfo();
 }
 
 void SFXCTL_AccelTrans::InitSFX() {
     SFXCTL::InitSFX();
-    eAccelTransFxState = FX_ACCEL_STATE_NONE;
-    t_LastAccelTrans = 0.0f;
-    IsAccelerating = false;
-    OldIsAccelerating = false;
-    PlayEngOffSweet = false;
+    this->eAccelTransFxState = FX_ACCEL_STATE_NONE;
+    this->t_LastAccelTrans = 0.0f;
+    this->IsAccelerating = false;
+    this->OldIsAccelerating = false;
+    this->PlayEngOffSweet = false;
 }
 
 int SFXCTL_AccelTrans::GetController(int Index) {
@@ -59,10 +59,10 @@ ReturnNegOne:
 void SFXCTL_AccelTrans::AttachController(SFXCTL *psfxctl) {
     switch (psfxctl->GetObjectIndex()) {
     case 4:
-        m_pEngineCtl = static_cast<SFXCTL_Engine *>(psfxctl);
+        this->m_pEngineCtl = static_cast<SFXCTL_Engine *>(psfxctl);
         break;
     case 2:
-        m_pShiftCtl = static_cast<SFXCTL_Shifting *>(psfxctl);
+        this->m_pShiftCtl = static_cast<SFXCTL_Shifting *>(psfxctl);
         break;
     }
 }
@@ -72,55 +72,55 @@ void SFXCTL_AccelTrans::UpdateParams(float t) {
     bool wasAccelerating;
 
     SFXCTL::UpdateParams(t);
-    if (m_pStateBase->m_eStateType == eMM_AIRACECAR) {
+    if (this->m_pStateBase->m_eStateType == eMM_AIRACECAR) {
         return;
     }
 
-    wasAccelerating = IsAccelerating;
-    PlayEngOffSweet = false;
-    OldIsAccelerating = wasAccelerating;
-    IsAccelerating = m_pEAXCar->bIsAccelerating;
+    wasAccelerating = this->IsAccelerating;
+    this->PlayEngOffSweet = false;
+    this->OldIsAccelerating = wasAccelerating;
+    this->IsAccelerating = this->m_pEAXCar->bIsAccelerating;
 
-    if (IsAccelerating) {
+    if (this->IsAccelerating) {
         if (!wasAccelerating) {
-            bVar1 = ShouldBeginAccelTrans_Idle();
+            bVar1 = this->ShouldBeginAccelTrans_Idle();
             if (bVar1) {
-                BeginAccelTrans_Idle();
+                this->BeginAccelTrans_Idle();
             } else {
-                bVar1 = ShouldBeginAccelTrans();
+                bVar1 = this->ShouldBeginAccelTrans();
                 if (bVar1) {
-                    BeginAccelTrans();
+                    this->BeginAccelTrans();
                 }
             }
         }
 
-        if (IsAccelerating) {
+        if (this->IsAccelerating) {
             goto end;
         }
     }
 
-    if (OldIsAccelerating &&
-        (bVar1 = ShouldPlayEngOffSweet(), bVar1)) {
-        m_pShiftCtl->m_bNeed_DeccelSnd = true;
+    if (this->OldIsAccelerating &&
+        (bVar1 = this->ShouldPlayEngOffSweet(), bVar1)) {
+        this->m_pShiftCtl->m_bNeed_DeccelSnd = true;
     }
 
 end:
-    UpdateState(t);
+    this->UpdateState(t);
 }
 
 void SFXCTL_AccelTrans::UpdateRPM(float t) {
-    switch (eAccelTransFxState) {
+    switch (this->eAccelTransFxState) {
     case FX_ACCEL_STATE_IDLE_REVING:
-        m_InterpEngRPM.Update(t);
+        this->m_InterpEngRPM.Update(t);
         return;
 
     case FX_ACCEL_STATE_ATTACK:
     case FX_ACCEL_STATE_IDLE_ENGAGING:
-        m_InterpEngRPM.Update(t, GetPhysRPM());
+        this->m_InterpEngRPM.Update(t, this->GetPhysRPM());
         return;
 
     case FX_ACCEL_STATE_INTERRUPT:
-        m_InterpEngRPM.Update(t, GetPhysRPM());
+        this->m_InterpEngRPM.Update(t, this->GetPhysRPM());
         return;
 
     default:
@@ -129,58 +129,58 @@ void SFXCTL_AccelTrans::UpdateRPM(float t) {
 }
 
 void SFXCTL_AccelTrans::UpdateTRQ(float t) {
-    if (eAccelTransFxState > FX_ACCEL_STATE_NONE && eAccelTransFxState < 5) {
-        m_InterpEngTorque.Update(t, GetPhysTRQ());
-        if (m_InterpEngTorque.IsFinished()) {
-            m_InterpEngTorque.Initialize(GetPhysTRQ(), GetPhysTRQ(), 0, LINEAR);
+    if (this->eAccelTransFxState > FX_ACCEL_STATE_NONE && this->eAccelTransFxState < 5) {
+        this->m_InterpEngTorque.Update(t, this->GetPhysTRQ());
+        if (this->m_InterpEngTorque.IsFinished()) {
+            this->m_InterpEngTorque.Initialize(this->GetPhysTRQ(), this->GetPhysTRQ(), 0, LINEAR);
         }
     }
 }
 
 void SFXCTL_AccelTrans::UpdateState(float t) {
-    m_InterpEngVol.Update(t);
-    UpdateRPM(t);
-    UpdateTRQ(t);
-    if (eAccelTransFxState != FX_ACCEL_STATE_NONE) {
-        if (!m_pEAXCar->IsAccelerating() && eAccelTransFxState != FX_ACCEL_STATE_INTERRUPT) {
-            m_InterpEngRPM.Initialize(
-                m_pEngineCtl->GetEngRPM(), GetPhysRPM(), m_pAccelTransDataSet->AccelFromIdle_INTERUPT_T(), EQ_PWR_SQ
+    this->m_InterpEngVol.Update(t);
+    this->UpdateRPM(t);
+    this->UpdateTRQ(t);
+    if (this->eAccelTransFxState != FX_ACCEL_STATE_NONE) {
+        if (!this->m_pEAXCar->IsAccelerating() && this->eAccelTransFxState != FX_ACCEL_STATE_INTERRUPT) {
+            this->m_InterpEngRPM.Initialize(
+                this->m_pEngineCtl->GetEngRPM(), this->GetPhysRPM(), this->m_pAccelTransDataSet->AccelFromIdle_INTERUPT_T(), EQ_PWR_SQ
             );
-            eAccelTransFxState = FX_ACCEL_STATE_INTERRUPT;
-            m_InterpEngVol.Initialize(m_InterpEngVol.GetValue(), 0.0f, m_pAccelTransDataSet->AccelFromIdle_INTERUPT_T(), LINEAR);
+            this->eAccelTransFxState = FX_ACCEL_STATE_INTERRUPT;
+            this->m_InterpEngVol.Initialize(this->m_InterpEngVol.GetValue(), 0.0f, this->m_pAccelTransDataSet->AccelFromIdle_INTERUPT_T(), LINEAR);
         }
-        if (!m_pEAXCar->IsAccelerating() && eAccelTransFxState != FX_ACCEL_STATE_INTERRUPT) {
-            eAccelTransFxState = FX_ACCEL_STATE_INTERRUPT;
-            m_InterpEngRPM.Initialize(m_pEngineCtl->GetEngRPM(), GetPhysRPM(), 100, LINEAR);
-            m_InterpEngVol.Initialize(m_InterpEngVol.GetValue(), 0.0f, 100, LINEAR);
+        if (!this->m_pEAXCar->IsAccelerating() && this->eAccelTransFxState != FX_ACCEL_STATE_INTERRUPT) {
+            this->eAccelTransFxState = FX_ACCEL_STATE_INTERRUPT;
+            this->m_InterpEngRPM.Initialize(this->m_pEngineCtl->GetEngRPM(), this->GetPhysRPM(), 100, LINEAR);
+            this->m_InterpEngVol.Initialize(this->m_InterpEngVol.GetValue(), 0.0f, 100, LINEAR);
         }
-        switch (eAccelTransFxState) {
+        switch (this->eAccelTransFxState) {
         case FX_ACCEL_STATE_NONE:
             break;
 
         case FX_ACCEL_STATE_IDLE_REVING:
-            if (m_InterpEngRPM.IsFinished()) {
-                eAccelTransFxState = FX_ACCEL_STATE_IDLE_ENGAGING;
-                m_InterpEngRPM.Initialize(m_InterpEngRPM.GetValue(), GetPhysRPM(), m_pAccelTransDataSet->AccelFromIdle_RESUME_T(), LINEAR);
-                m_InterpEngVol.Initialize(m_InterpEngVol.GetValue(), 0.0f, m_pAccelTransDataSet->AccelFromIdle_RESUME_T(), LINEAR);
+            if (this->m_InterpEngRPM.IsFinished()) {
+                this->eAccelTransFxState = FX_ACCEL_STATE_IDLE_ENGAGING;
+                this->m_InterpEngRPM.Initialize(this->m_InterpEngRPM.GetValue(), this->GetPhysRPM(), this->m_pAccelTransDataSet->AccelFromIdle_RESUME_T(), LINEAR);
+                this->m_InterpEngVol.Initialize(this->m_InterpEngVol.GetValue(), 0.0f, this->m_pAccelTransDataSet->AccelFromIdle_RESUME_T(), LINEAR);
             }
             break;
 
         case FX_ACCEL_STATE_IDLE_ENGAGING:
-            if (m_InterpEngRPM.IsFinished()) {
-                eAccelTransFxState = FX_ACCEL_STATE_NONE;
+            if (this->m_InterpEngRPM.IsFinished()) {
+                this->eAccelTransFxState = FX_ACCEL_STATE_NONE;
             }
             break;
 
         case FX_ACCEL_STATE_INTERRUPT:
-            if (m_InterpEngRPM.IsFinished()) {
-                eAccelTransFxState = FX_ACCEL_STATE_NONE;
+            if (this->m_InterpEngRPM.IsFinished()) {
+                this->eAccelTransFxState = FX_ACCEL_STATE_NONE;
             }
             break;
 
         case FX_ACCEL_STATE_ATTACK:
-            if (m_InterpEngRPM.IsFinished()) {
-                eAccelTransFxState = FX_ACCEL_STATE_NONE;
+            if (this->m_InterpEngRPM.IsFinished()) {
+                this->eAccelTransFxState = FX_ACCEL_STATE_NONE;
             }
             break;
 
@@ -191,34 +191,34 @@ void SFXCTL_AccelTrans::UpdateState(float t) {
 }
 
 void SFXCTL_AccelTrans::BeginAccelTrans() {
-    m_InterpEngRPM.Initialize(GetPhysRPM() + 1000.0f, GetPhysRPM(), 500, EQ_PWR_SQ);
-    eAccelTransFxState = FX_ACCEL_STATE_ATTACK;
-    m_InterpEngVol.Initialize(0.8f, 0.0f, 200, LINEAR);
-    m_pShiftCtl->m_bNeed_AccelSnd = true;
-    m_InterpEngTorque.Initialize(100.0f, 100.0f, 10, LINEAR);
-    t_LastAccelTrans = SndBase::m_fRunningTime;
+    this->m_InterpEngRPM.Initialize(this->GetPhysRPM() + 1000.0f, this->GetPhysRPM(), 500, EQ_PWR_SQ);
+    this->eAccelTransFxState = FX_ACCEL_STATE_ATTACK;
+    this->m_InterpEngVol.Initialize(0.8f, 0.0f, 200, LINEAR);
+    this->m_pShiftCtl->m_bNeed_AccelSnd = true;
+    this->m_InterpEngTorque.Initialize(100.0f, 100.0f, 10, LINEAR);
+    this->t_LastAccelTrans = SndBase::m_fRunningTime;
 }
 
 void SFXCTL_AccelTrans::BeginAccelTrans_Idle() {
-    eAccelTransFxState = FX_ACCEL_STATE_IDLE_REVING;
-    t_LastAccelTrans = SndBase::m_fRunningTime;
-    m_InterpEngRPM.Initialize(GetPhysRPM(), GetPhysRPM() + m_pAccelTransDataSet->AccelFromIdle_PEAK_RPM(),
-                              m_pAccelTransDataSet->AccelFromIdle_PEAK_T(), LINEAR);
-    m_InterpEngVol.Initialize(0.0f, m_pAccelTransDataSet->AccelFromIdle_PEAK_VOL(),
-                              m_pAccelTransDataSet->AccelFromIdle_PEAK_T(), LINEAR);
-    m_InterpEngTorque.Initialize(GetPhysTRQ(), GetPhysTRQ(), 10, LINEAR);
+    this->eAccelTransFxState = FX_ACCEL_STATE_IDLE_REVING;
+    this->t_LastAccelTrans = SndBase::m_fRunningTime;
+    this->m_InterpEngRPM.Initialize(this->GetPhysRPM(), this->GetPhysRPM() + this->m_pAccelTransDataSet->AccelFromIdle_PEAK_RPM(),
+                              this->m_pAccelTransDataSet->AccelFromIdle_PEAK_T(), LINEAR);
+    this->m_InterpEngVol.Initialize(0.0f, this->m_pAccelTransDataSet->AccelFromIdle_PEAK_VOL(),
+                              this->m_pAccelTransDataSet->AccelFromIdle_PEAK_T(), LINEAR);
+    this->m_InterpEngTorque.Initialize(this->GetPhysTRQ(), this->GetPhysTRQ(), 10, LINEAR);
 }
 
 bool SFXCTL_AccelTrans::ShouldBeginAccelTrans_Idle() {
-    if (m_pEAXCar->GetVelocityMagnitudeMPH() <= 15.0f &&
-        30.0f <= m_pEAXCar->GetThrottle() - m_pEngineCtl->m_pPhysicsCtl->m_OldThrottle &&
-        !m_pEAXCar->GetPhysicsCTL()->NISRevingEnabled) {
-        if (eAccelTransFxState != FX_ACCEL_STATE_NONE) {
+    if (this->m_pEAXCar->GetVelocityMagnitudeMPH() <= 15.0f &&
+        30.0f <= this->m_pEAXCar->GetThrottle() - this->m_pEngineCtl->m_pPhysicsCtl->m_OldThrottle &&
+        !this->m_pEAXCar->GetPhysicsCTL()->NISRevingEnabled) {
+        if (this->eAccelTransFxState != FX_ACCEL_STATE_NONE) {
             return false;
         }
 
-        if ((!m_pShiftCtl || !m_pShiftCtl->IsActive()) &&
-            m_pEAXCar->GetCurGear() == Sound::FIRST_GEAR && m_pEAXCar->GetPhysRPM() <= 1500.0f) {
+        if ((!this->m_pShiftCtl || !this->m_pShiftCtl->IsActive()) &&
+            this->m_pEAXCar->GetCurGear() == Sound::FIRST_GEAR && this->m_pEAXCar->GetPhysRPM() <= 1500.0f) {
             if (INIS::Get() && INIS::Get()->IsPlaying()) {
                 return false;
             }
@@ -231,35 +231,35 @@ bool SFXCTL_AccelTrans::ShouldBeginAccelTrans_Idle() {
 }
 
 bool SFXCTL_AccelTrans::ShouldBeginAccelTrans() {
-    if (!(30.0f <= m_pEAXCar->GetThrottle() - m_pEngineCtl->m_pPhysicsCtl->m_OldThrottle)) {
+    if (!(30.0f <= this->m_pEAXCar->GetThrottle() - this->m_pEngineCtl->m_pPhysicsCtl->m_OldThrottle)) {
         return false;
     }
-    if (eAccelTransFxState != FX_ACCEL_STATE_NONE) {
+    if (this->eAccelTransFxState != FX_ACCEL_STATE_NONE) {
         return false;
     }
-    if (m_pShiftCtl && m_pShiftCtl->IsActive()) {
+    if (this->m_pShiftCtl && this->m_pShiftCtl->IsActive()) {
         return false;
     }
-    if (GetPhysRPM() < 3000.0f || SndBase::m_fRunningTime - t_LastAccelTrans < 2.0f) {
+    if (this->GetPhysRPM() < 3000.0f || SndBase::m_fRunningTime - this->t_LastAccelTrans < 2.0f) {
         return false;
     }
-    if (!GetPhysCar()->IsAICar() && m_pEAXCar->GetCurGear() < Sound::SECOND_GEAR) {
+    if (!this->GetPhysCar()->IsAICar() && this->m_pEAXCar->GetCurGear() < Sound::SECOND_GEAR) {
         return false;
     }
     return true;
 }
 
 bool SFXCTL_AccelTrans::ShouldPlayEngOffSweet() {
-    if (eAccelTransFxState != FX_ACCEL_STATE_NONE) {
+    if (this->eAccelTransFxState != FX_ACCEL_STATE_NONE) {
         return false;
     }
-    if (m_pShiftCtl && m_pShiftCtl->IsActive()) {
+    if (this->m_pShiftCtl && this->m_pShiftCtl->IsActive()) {
         return false;
     }
-    if (GetPhysRPM() < 6000.0f) {
+    if (this->GetPhysRPM() < 6000.0f) {
         return false;
     }
-    return !(m_pEAXCar->GetCurGear() < Sound::SECOND_GEAR);
+    return !(this->m_pEAXCar->GetCurGear() < Sound::SECOND_GEAR);
 }
 
 void SFXCTL_AccelTrans::Destroy() {}

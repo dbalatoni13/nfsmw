@@ -62,7 +62,7 @@ struct SFXCTL_AccelTrans : public SFXCTL {
     bool ShouldPlayEngOffSweet();
 
     bool IsActive() {
-        return eAccelTransFxState != FX_ACCEL_STATE_NONE;
+        return this->eAccelTransFxState != FX_ACCEL_STATE_NONE;
     }
 };
 

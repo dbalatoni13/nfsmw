@@ -69,8 +69,8 @@ struct cInterpLine {
     void Initialize(float _Start, float _Finish, int _Length, eCURVETYPE _Curve);
     void Update(float dt, float target);
     void Update(float dt);
-    float GetValue() { return CurValue; }
-    bool IsFinished() { return bComplete; }
+    float GetValue() { return this->CurValue; }
+    bool IsFinished() { return this->bComplete; }
 };
 
 struct cPathLine {
@@ -92,9 +92,9 @@ struct cPathLine {
     int AddStage(float len, float finish, int numstages, eCURVETYPE curve);
     int AddLinkedStage(float _Finish, int _Length, eCURVETYPE _Curve);
     void Update(float dt);
-    int iGetValue() { return static_cast<int>(CurValue); }
-    float GetValue() { return CurValue; }
-    bool IsFinished() { return bComplete; }
+    int iGetValue() { return static_cast<int>(this->CurValue); }
+    float GetValue() { return this->CurValue; }
+    bool IsFinished() { return this->bComplete; }
 };
 
 struct Slope {

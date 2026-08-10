@@ -16,7 +16,7 @@ namespace Speech {
 // total size: 0x8
 struct copPair {
     bool operator<(const copPair &rhs) const {
-        return hsimable < rhs.hsimable;
+        return this->hsimable < rhs.hsimable;
     }
 
     HSIMABLE hsimable; // offset 0x0, size 0x4
@@ -28,7 +28,7 @@ DECLARE_CONTAINER_TYPE(copMap);
 class copMap : public UTL::Std::vector<copPair, _type_copMap> {
   public:
     copMap(int size) {
-        reserve(size);
+        this->reserve(size);
     }
     void Add(HSIMABLE__ *hsimable, EAXCop *cop);
     EAXCop *Remove(HSIMABLE__ *hsimable);

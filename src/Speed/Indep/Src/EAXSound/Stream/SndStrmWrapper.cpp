@@ -2,8 +2,8 @@
 #include "Speed/Indep/Src/EAXSound/AudioMemoryManager.hpp"
 
 SndStrmWrapper::SndStrmWrapper() {
-    m_handle = -1;
-    m_StreamID = 0;
+    this->m_handle = -1;
+    this->m_StreamID = 0;
 }
 
 int SndStrmWrapper::Create(const int maxChunks, const int maxRequests, const int buffersize) {
@@ -14,36 +14,36 @@ int SndStrmWrapper::Create(const int maxChunks, const int maxRequests, const int
     STRMopts.fxlevel0 = 0;
 
     overhead = SNDSTRM_overhead(maxRequests, maxChunks);
-    m_RealStreamBuffer = reinterpret_cast<int>(m_buffer) + overhead;
+    this->m_RealStreamBuffer = reinterpret_cast<int>(this->m_buffer) + overhead;
     overhead += buffersize;
-    m_BufferSize = overhead;
-    m_buffer = gAudioMemoryManager.AllocateMemoryChar(overhead, "AUD:Stream buffer", false);
-    return CreateStream(maxChunks, maxRequests, m_buffer, buffersize, &STRMopts);
+    this->m_BufferSize = overhead;
+    this->m_buffer = gAudioMemoryManager.AllocateMemoryChar(overhead, "AUD:Stream buffer", false);
+    return this->CreateStream(maxChunks, maxRequests, this->m_buffer, buffersize, &STRMopts);
 }
 
 int SndStrmWrapper::CreateStream(const int maxChunks, const int maxRequests, char *pmem, const int buffersize,
                                  void *pplayopts) {
-    m_buffer = pmem;
-    m_handle = SNDSTRM_create(static_cast<SNDPLAYOPTS *>(pplayopts), maxRequests, maxChunks, pmem, buffersize);
-    m_BufferSize = buffersize;
+    this->m_buffer = pmem;
+    this->m_handle = SNDSTRM_create(static_cast<SNDPLAYOPTS *>(pplayopts), maxRequests, maxChunks, pmem, buffersize);
+    this->m_BufferSize = buffersize;
 
-    if (m_handle >= 0) {
-        m_vol = 0;
+    if (this->m_handle >= 0) {
+        this->m_vol = 0;
         SNDSYS_entercritical();
-        SNDSTRM_autovol(m_handle, 0, 0);
+        SNDSTRM_autovol(this->m_handle, 0, 0);
         SNDSYS_leavecritical();
     } else {
-        gAudioMemoryManager.FreeMemory(m_buffer);
+        gAudioMemoryManager.FreeMemory(this->m_buffer);
     }
 
-    return m_handle;
+    return this->m_handle;
 }
 
 bool SndStrmWrapper::IsPlaying() {
     SNDREQUESTSTATUS srs;
     SNDSTREAMSTATUS sss;
     SNDSYS_entercritical();
-    SNDSTRM_status(m_handle, &sss);
+    SNDSTRM_status(this->m_handle, &sss);
     int reqHandle = sss.currentrequest;
     if (reqHandle < 0) {
         SNDSYS_leavecritical();
@@ -60,16 +60,16 @@ bool SndStrmWrapper::IsPlaying() {
 int SndStrmWrapper::GetCurrentTime() {
     SNDSTREAMSTATUS sss;
     SNDREQUESTSTATUS srs;
-    GetStatus(&sss);
-    GetRequestStatus(sss.currentrequest, &srs);
+    this->GetStatus(&sss);
+    this->GetRequestStatus(sss.currentrequest, &srs);
     return srs.currenttime;
 }
 
 int SndStrmWrapper::GetTimeRemaining() {
     SNDSTREAMSTATUS sss;
     SNDREQUESTSTATUS srs;
-    GetStatus(&sss);
-    GetRequestStatus(sss.currentrequest, &srs);
+    this->GetStatus(&sss);
+    this->GetRequestStatus(sss.currentrequest, &srs);
     return srs.timetoend;
 }
 
@@ -78,7 +78,7 @@ bool SndStrmWrapper::AlmostDone() {
     int timeremaining;
     SNDSTREAMSTATUS sss;
     SNDREQUESTSTATUS srs;
-    GetStatus(&sss);
+    this->GetStatus(&sss);
     itemsinq = sss.outstandingrequests;
     if (itemsinq == 0) {
         return true;
@@ -104,7 +104,7 @@ bool SndStrmWrapper::AlmostDone() {
 }
 
 int SndStrmWrapper::Stop() {
-    if (SNDSTRM_purge(m_handle) < 0) {
+    if (SNDSTRM_purge(this->m_handle) < 0) {
         return -3;
     }
     return 0;
@@ -112,14 +112,14 @@ int SndStrmWrapper::Stop() {
 
 int SndStrmWrapper::AddToStream(const char *filename, long offset, int holdtime) {
     int request;
-    if ((request = SNDSTRM_queuefile(m_handle, holdtime, filename, offset)) == 0) {
+    if ((request = SNDSTRM_queuefile(this->m_handle, holdtime, filename, offset)) == 0) {
         return request;
     }
     return request;
 }
 
 int SndStrmWrapper::AddToStream(int holdtime, void *paddr, int length, int offset) {
-    int request = SNDSTRM_queuemem(m_handle, holdtime, paddr, offset << 7);
+    int request = SNDSTRM_queuemem(this->m_handle, holdtime, paddr, offset << 7);
     return request;
 }
 
@@ -129,13 +129,13 @@ int SndStrmWrapper::ModifyHold(int sndrequesthandle, int holdtime) {
 
 int SndStrmWrapper::SetVol(int vol, bool bramp) {
     if (bramp == true) {
-        return RampVol(vol, 0xFA);
+        return this->RampVol(vol, 0xFA);
     }
 
     int result;
-    m_vol = vol;
+    this->m_vol = vol;
     SNDSYS_entercritical();
-    result = SNDSTRM_setvol(m_handle, -1, static_cast<float>(m_vol) * 0.007874016f);
+    result = SNDSTRM_setvol(this->m_handle, -1, static_cast<float>(this->m_vol) * 0.007874016f);
     SNDSYS_leavecritical();
     return result;
 }
@@ -143,7 +143,7 @@ int SndStrmWrapper::SetVol(int vol, bool bramp) {
 int SndStrmWrapper::SetAz(int Azimuth) {
     int result;
     SNDSYS_entercritical();
-    result = SNDSTRM_setazimuth(m_handle, -1, static_cast<float>(Azimuth) * 0.005493248f);
+    result = SNDSTRM_setazimuth(this->m_handle, -1, static_cast<float>(Azimuth) * 0.005493248f);
     SNDSYS_leavecritical();
     return result;
 }
@@ -159,9 +159,9 @@ int SndStrmWrapper::RampVol(int vol, int time) {
         return -5;
     }
 
-    m_vol = vol;
+    this->m_vol = vol;
     SNDSYS_entercritical();
-    int result = SNDSTRM_autovol(m_handle, time, (m_vol * 0x7F) / 100);
+    int result = SNDSTRM_autovol(this->m_handle, time, (this->m_vol * 0x7F) / 100);
     SNDSYS_leavecritical();
     if (result < 0) {
         return -3;
@@ -171,14 +171,14 @@ int SndStrmWrapper::RampVol(int vol, int time) {
 
 int SndStrmWrapper::SetLowPass(int lowpass) {
     SNDSYS_entercritical();
-    int ret = SNDSTRM_lowpass(m_handle, lowpass);
+    int ret = SNDSTRM_lowpass(this->m_handle, lowpass);
     SNDSYS_leavecritical();
     return ret;
 }
 
 int SndStrmWrapper::GetStatus(SNDSTREAMSTATUS *sss) {
     SNDSYS_entercritical();
-    int ret = SNDSTRM_status(m_handle, sss);
+    int ret = SNDSTRM_status(this->m_handle, sss);
     SNDSYS_leavecritical();
     return ret;
 }
@@ -192,7 +192,7 @@ int SndStrmWrapper::GetRequestStatus(int sndrequesthandle, SNDREQUESTSTATUS *psr
 
 int SndStrmWrapper::GetTimeBuffered() {
     SNDSTREAMSTATUS sss;
-    if (GetStatus(&sss) >= 0) {
+    if (this->GetStatus(&sss) >= 0) {
         return sss.timebuffered;
     }
     return 0;
@@ -200,38 +200,38 @@ int SndStrmWrapper::GetTimeBuffered() {
 
 void SndStrmWrapper::Pause() {
     SNDSYS_entercritical();
-    SNDSTRM_pitchmult(m_handle, 0);
+    SNDSTRM_pitchmult(this->m_handle, 0);
     SNDSYS_leavecritical();
 }
 
 void SndStrmWrapper::Resume() {
     SNDSYS_entercritical();
-    SNDSTRM_pitchmult(m_handle, 0x1000);
+    SNDSTRM_pitchmult(this->m_handle, 0x1000);
     SNDSYS_leavecritical();
 }
 
 SndStrmWrapper::~SndStrmWrapper() {
-    if (m_handle >= 0) {
-        DestroyStream();
-        if (m_buffer) {
-            gAudioMemoryManager.FreeMemory(m_buffer);
+    if (this->m_handle >= 0) {
+        this->DestroyStream();
+        if (this->m_buffer) {
+            gAudioMemoryManager.FreeMemory(this->m_buffer);
         }
     }
 }
 
 void SndStrmWrapper::DestroyStream() {
-    if (m_handle >= 0) {
-        Stop();
+    if (this->m_handle >= 0) {
+        this->Stop();
         unsigned int time = bGetTicker() + 0x14;
         while (time > bGetTicker()) {
             bSyncTaskRun();
         }
-        SNDSTRM_destroy(m_handle);
+        SNDSTRM_destroy(this->m_handle);
     }
 }
 
 int SndStrmWrapper::PurgeStream() {
-    if (SNDSTRM_purge(m_handle) < 0) {
+    if (SNDSTRM_purge(this->m_handle) < 0) {
         return -3;
     }
     return 0;

@@ -27,7 +27,7 @@ class CarSoundConn : public Sim::Connection, public UTL::Collections::Listable<C
     void OnClose() override { delete this; }
     Sim::ConnStatus OnStatusCheck() override;
     void UpdateState(float dT);
-    EAX_CarState *GetState() { return mState; }
+    EAX_CarState *GetState() { return this->mState; }
     static Sim::Connection *Construct(const Sim::ConnectionData &data);
     static void SetAssetsLoaded(CarSoundConn *conn) {
         if (conn->mConnected && conn->mState) {
@@ -142,36 +142,36 @@ class Pkt_Car_Service : public Sim::Packet {
         , mTimeSinceSeen(0.0f) //
         , mDesiredSpeed(0.0f) //
         , mControlSource(Sound::CONTROL_NONE) {
-        mTractionPct[3] = 1.0f;
-        mTractionPct[2] = 1.0f;
-        mTractionPct[1] = 1.0f;
-        mTractionPct[0] = 1.0f;
+        this->mTractionPct[3] = 1.0f;
+        this->mTractionPct[2] = 1.0f;
+        this->mTractionPct[1] = 1.0f;
+        this->mTractionPct[0] = 1.0f;
 
-        mBlownTires[3] = 0;
-        mBlownTires[2] = 0;
-        mBlownTires[1] = 0;
-        mBlownTires[0] = 0;
+        this->mBlownTires[3] = 0;
+        this->mBlownTires[2] = 0;
+        this->mBlownTires[1] = 0;
+        this->mBlownTires[0] = 0;
 
         bVector2 zeroWheelSlip(0.0f, 0.0f);
-        mWheelSlip[0] = zeroWheelSlip;
-        mWheelSlip[1] = zeroWheelSlip;
-        mWheelSlip[2] = zeroWheelSlip;
-        mWheelSlip[3] = zeroWheelSlip;
+        this->mWheelSlip[0] = zeroWheelSlip;
+        this->mWheelSlip[1] = zeroWheelSlip;
+        this->mWheelSlip[2] = zeroWheelSlip;
+        this->mWheelSlip[3] = zeroWheelSlip;
 
-        mWheelLoad[0] = 0.0f;
-        mWheelLoad[1] = 0.0f;
-        mWheelLoad[2] = 0.0f;
-        mWheelLoad[3] = 0.0f;
+        this->mWheelLoad[0] = 0.0f;
+        this->mWheelLoad[1] = 0.0f;
+        this->mWheelLoad[2] = 0.0f;
+        this->mWheelLoad[3] = 0.0f;
 
-        mWheelZforce[0] = 0.0f;
-        mWheelZforce[1] = 0.0f;
-        mWheelZforce[2] = 0.0f;
-        mWheelZforce[3] = 0.0f;
+        this->mWheelZforce[0] = 0.0f;
+        this->mWheelZforce[1] = 0.0f;
+        this->mWheelZforce[2] = 0.0f;
+        this->mWheelZforce[3] = 0.0f;
 
-        mWheelOnGround[3] = false;
-        mWheelOnGround[2] = false;
-        mWheelOnGround[1] = false;
-        mWheelOnGround[0] = false;
+        this->mWheelOnGround[3] = false;
+        this->mWheelOnGround[2] = false;
+        this->mWheelOnGround[1] = false;
+        this->mWheelOnGround[0] = false;
     }
     ~Pkt_Car_Service() override;
     UCrc32 ConnectionClass() override;

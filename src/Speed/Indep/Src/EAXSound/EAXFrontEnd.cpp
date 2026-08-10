@@ -17,49 +17,49 @@ EAXFrontEnd::EAXFrontEnd() {
 
     for (Index = 0; Index < NUM_CAR_INDEXS; Index++) {
         for (i = 0; i < NUM_DRIVE_ON_STATES; i++) {
-            m_pDriveOnOffSampleHandle[Index][i] = nullptr;
-            DriveOnFadeOut[Index][i].Initialize(1.0f, 1.0f, 100, LINEAR);
-            IsEnding[Index][i] = false;
+            this->m_pDriveOnOffSampleHandle[Index][i] = nullptr;
+            this->DriveOnFadeOut[Index][i].Initialize(1.0f, 1.0f, 100, LINEAR);
+            this->IsEnding[Index][i] = false;
         }
-        DriveONCarState[Index] = DRIVE_ON_NONE;
+        this->DriveONCarState[Index] = DRIVE_ON_NONE;
     }
 
-    m_pSFXOBJ_FEHUD = nullptr;
+    this->m_pSFXOBJ_FEHUD = nullptr;
 
     {
         for (int k = 0; k < 4; k++) {
-            m_hydraulicsControls[k] = nullptr;
-            m_hydraulicsBounce[k] = nullptr;
+            this->m_hydraulicsControls[k] = nullptr;
+            this->m_hydraulicsBounce[k] = nullptr;
         }
     }
 
-    m_pPlayRapSheet = nullptr;
+    this->m_pPlayRapSheet = nullptr;
 }
 
 EAXFrontEnd::~EAXFrontEnd() {
     for (int k = 0; k < 4; k++) {
-        delete m_hydraulicsControls[k];
-        m_hydraulicsBounce[k] = nullptr;
-        delete m_hydraulicsControls[k];
-        m_hydraulicsControls[k] = nullptr;
+        delete this->m_hydraulicsControls[k];
+        this->m_hydraulicsBounce[k] = nullptr;
+        delete this->m_hydraulicsControls[k];
+        this->m_hydraulicsControls[k] = nullptr;
     }
 
-    delete m_pPlayRapSheet;
-    m_pPlayRapSheet = nullptr;
+    delete this->m_pPlayRapSheet;
+    this->m_pPlayRapSheet = nullptr;
 }
 
 void EAXFrontEnd::AttachSFXOBJ(SFX_Base *psfx, eSFXOBJ_MAIN_TYPES sfxtype) {
     if (sfxtype != SFXOBJ_FEHUD) {
         return;
     }
-    m_pSFXOBJ_FEHUD = psfx;
+    this->m_pSFXOBJ_FEHUD = psfx;
 }
 
 void EAXFrontEnd::Initialize() {}
 
 void EAXFrontEnd::Stop(eMenuSoundTriggers etrigger) {
-    if (IsSoundEnabled != 0 && m_pPlayRapSheet && m_pPlayRapSheet->GetId() == etrigger) {
-        delete m_pPlayRapSheet;
+    if (IsSoundEnabled != 0 && this->m_pPlayRapSheet && this->m_pPlayRapSheet->GetId() == etrigger) {
+        delete this->m_pPlayRapSheet;
     }
 }
 
@@ -72,30 +72,30 @@ int EAXFrontEnd::Play(eMenuSoundTriggers etrigger) {
     }
 
     nvol = 0;
-    if (!m_pSFXOBJ_FEHUD) {
+    if (!this->m_pSFXOBJ_FEHUD) {
         return nvol;
     }
 
     int adjusted;
     int pitch;
 
-    nvol = m_pSFXOBJ_FEHUD->GetDMixOutput(2, DMX_VOL);
-    g_pEAXSound->SetCsisName(m_pSFXOBJ_FEHUD);
+    nvol = this->m_pSFXOBJ_FEHUD->GetDMixOutput(2, DMX_VOL);
+    g_pEAXSound->SetCsisName(this->m_pSFXOBJ_FEHUD);
 
     testID = static_cast<int>(etrigger);
     adjusted = testID + 23;
     if (static_cast<unsigned int>(testID - 80) < 16 && adjusted != 0x6E && adjusted != 0x6F) {
         pitch = 0x1000;
 
-        delete m_pPlayRapSheet;
-        m_pPlayRapSheet = new PlayFrontEndSample_RS(testID, nvol, pitch, 0);
+        delete this->m_pPlayRapSheet;
+        this->m_pPlayRapSheet = new PlayFrontEndSample_RS(testID, nvol, pitch, 0);
     } else {
         int getref;
 
-        m_pPlayFrontEndSampleHandle = new PlayFrontEndSample(testID, nvol, 0x1000, 0);
-        getref = m_pPlayFrontEndSampleHandle->GetRefCount();
-        delete m_pPlayFrontEndSampleHandle;
-        m_pPlayFrontEndSampleHandle = nullptr;
+        this->m_pPlayFrontEndSampleHandle = new PlayFrontEndSample(testID, nvol, 0x1000, 0);
+        getref = this->m_pPlayFrontEndSampleHandle->GetRefCount();
+        delete this->m_pPlayFrontEndSampleHandle;
+        this->m_pPlayFrontEndSampleHandle = nullptr;
     }
 
     nvol = 0;
@@ -104,22 +104,22 @@ int EAXFrontEnd::Play(eMenuSoundTriggers etrigger) {
 }
 
 int EAXFrontEnd::Play(void *peventst) {
-    if (IsSoundEnabled != 0 && m_pSFXOBJ_FEHUD) {
-        if (!m_pSFXOBJ_FEHUD->GetOutputBlockPtr()) {
+    if (IsSoundEnabled != 0 && this->m_pSFXOBJ_FEHUD) {
+        if (!this->m_pSFXOBJ_FEHUD->GetOutputBlockPtr()) {
             return 0;
         }
 
         if (peventst) {
             PlayFrontEndSampleSt *pst = static_cast<PlayFrontEndSampleSt *>(peventst);
             int Vol = pst->volume;
-            int nvol = Vol * m_pSFXOBJ_FEHUD->GetDMixOutput(2, DMX_VOL) >> 15;
+            int nvol = Vol * this->m_pSFXOBJ_FEHUD->GetDMixOutput(2, DMX_VOL) >> 15;
 
-            g_pEAXSound->SetCsisName(m_pSFXOBJ_FEHUD);
-            m_pPlayFrontEndSampleHandle = new PlayFrontEndSample(pst->id, nvol, pst->pitch, pst->azimuth);
-            if (m_pPlayFrontEndSampleHandle) {
-                delete m_pPlayFrontEndSampleHandle;
+            g_pEAXSound->SetCsisName(this->m_pSFXOBJ_FEHUD);
+            this->m_pPlayFrontEndSampleHandle = new PlayFrontEndSample(pst->id, nvol, pst->pitch, pst->azimuth);
+            if (this->m_pPlayFrontEndSampleHandle) {
+                delete this->m_pPlayFrontEndSampleHandle;
             }
-            m_pPlayFrontEndSampleHandle = nullptr;
+            this->m_pPlayFrontEndSampleHandle = nullptr;
         }
     }
 
@@ -127,7 +127,7 @@ int EAXFrontEnd::Play(void *peventst) {
 }
 
 void EAXFrontEnd::Update(void *peventst) {
-    UpdateDriveOn();
+    this->UpdateDriveOn();
 }
 
 void *EAXFrontEnd::GetEventPointer(int neventindex) {
@@ -141,15 +141,15 @@ void EAXFrontEnd::SetFEDrivingCarState(bVector3 *, bVector3 *, Camera *, int) {}
 void EAXFrontEnd::DestroyAllDriveOnSnds() {}
 
 EAXCommon::EAXCommon() {
-    mMsgMiscSound =
+    this->mMsgMiscSound =
         Hermes::Handler::Create<MMiscSound, EAXCommon, EAXCommon>(this, &EAXCommon::MsgPlayMiscSound, "Snd", 0);
-    m_pSFXOBJ_FEHUD = nullptr;
-    m_pRadar = nullptr;
+    this->m_pSFXOBJ_FEHUD = nullptr;
+    this->m_pRadar = nullptr;
 }
 
 EAXCommon::~EAXCommon() {
-    if (mMsgMiscSound) {
-        Hermes::Handler::Destroy(mMsgMiscSound);
+    if (this->mMsgMiscSound) {
+        Hermes::Handler::Destroy(this->mMsgMiscSound);
     }
 }
 
@@ -157,17 +157,17 @@ void EAXCommon::AttachSFXOBJ(SFX_Base *psfx, eSFXOBJ_MAIN_TYPES sfxtype) {
     if (sfxtype != SFXOBJ_FEHUD) {
         return;
     }
-    m_pSFXOBJ_FEHUD = psfx;
+    this->m_pSFXOBJ_FEHUD = psfx;
 }
 
 void EAXCommon::MsgPlayMiscSound(const MMiscSound &msg) {
     if (msg.GetSoundID() == 0) {
-        if (m_pRadar) {
-            delete m_pRadar;
+        if (this->m_pRadar) {
+            delete this->m_pRadar;
         }
 
         g_pEAXSound->SetCsisName("FE Radar");
-        m_pRadar = new FX_Radar(0, m_pSFXOBJ_FEHUD->GetDMixOutput(3, DMX_VOL), 0, 0, 0);
+        this->m_pRadar = new FX_Radar(0, this->m_pSFXOBJ_FEHUD->GetDMixOutput(3, DMX_VOL), 0, 0, 0);
     }
 }
 
@@ -181,7 +181,7 @@ int EAXCommon::Play(eMenuSoundTriggers etrigger) {
     if (!IsSoundEnabled) return -1;
     if (Debug_Common_FE_OFF) return -1;
 
-    SndBase *snd = m_pSFXOBJ_FEHUD;
+    SndBase *snd = this->m_pSFXOBJ_FEHUD;
     if (!snd) return -1;
     if (!snd->GetOutputBlockPtr()) return 0;
 
@@ -200,31 +200,31 @@ int EAXCommon::Play(eMenuSoundTriggers etrigger) {
     }
 
     g_pEAXSound->SetCsisName(snd);
-    m_pPlayCommonSampleHandle = new PlayCommonSample(static_cast<int>(etrigger), nvol, 0x1000, 0);
-    if (m_pPlayCommonSampleHandle) {
-        delete m_pPlayCommonSampleHandle;
+    this->m_pPlayCommonSampleHandle = new PlayCommonSample(static_cast<int>(etrigger), nvol, 0x1000, 0);
+    if (this->m_pPlayCommonSampleHandle) {
+        delete this->m_pPlayCommonSampleHandle;
     }
-    m_pPlayCommonSampleHandle = nullptr;
+    this->m_pPlayCommonSampleHandle = nullptr;
     return 0;
 }
 
 int EAXCommon::Play(void *peventst) {
-    if (IsSoundEnabled != 0 && m_pSFXOBJ_FEHUD) {
-        if (!m_pSFXOBJ_FEHUD->GetOutputBlockPtr()) {
+    if (IsSoundEnabled != 0 && this->m_pSFXOBJ_FEHUD) {
+        if (!this->m_pSFXOBJ_FEHUD->GetOutputBlockPtr()) {
             return 0;
         }
 
         if (peventst) {
             PlayCommonSampleSt *pst = static_cast<PlayCommonSampleSt *>(peventst);
             int Vol = pst->volume;
-            int nvol = Vol * m_pSFXOBJ_FEHUD->GetDMixOutput(1, DMX_VOL) >> 15;
+            int nvol = Vol * this->m_pSFXOBJ_FEHUD->GetDMixOutput(1, DMX_VOL) >> 15;
 
-            g_pEAXSound->SetCsisName(m_pSFXOBJ_FEHUD);
-            m_pPlayCommonSampleHandle = new PlayCommonSample(pst->id, nvol, pst->pitch, pst->azimuth);
-            if (m_pPlayCommonSampleHandle) {
-                delete m_pPlayCommonSampleHandle;
+            g_pEAXSound->SetCsisName(this->m_pSFXOBJ_FEHUD);
+            this->m_pPlayCommonSampleHandle = new PlayCommonSample(pst->id, nvol, pst->pitch, pst->azimuth);
+            if (this->m_pPlayCommonSampleHandle) {
+                delete this->m_pPlayCommonSampleHandle;
             }
-            m_pPlayCommonSampleHandle = nullptr;
+            this->m_pPlayCommonSampleHandle = nullptr;
         }
     }
 
@@ -234,17 +234,17 @@ int EAXCommon::Play(void *peventst) {
 void EAXCommon::Update(void *peventst) {
     (void)peventst;
 
-    if (m_pRadar) {
-        int refCount = m_pRadar->GetRefCount();
+    if (this->m_pRadar) {
+        int refCount = this->m_pRadar->GetRefCount();
 
         if (refCount < 2) {
-            delete m_pRadar;
-            m_pRadar = nullptr;
+            delete this->m_pRadar;
+            this->m_pRadar = nullptr;
         }
     }
 
-    if (m_pSFXOBJ_FEHUD) {
-        m_pSFXOBJ_FEHUD->SetDMIX_Input(4, 0);
+    if (this->m_pSFXOBJ_FEHUD) {
+        this->m_pSFXOBJ_FEHUD->SetDMIX_Input(4, 0);
     }
 }
 

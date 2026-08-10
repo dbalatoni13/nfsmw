@@ -52,8 +52,8 @@ SFXCTL_Pathfinder::SFXCTL_Pathfinder()
     : m_projrefcnt(0) {
     g_pSFXCTL_Pathfinder = nullptr;
     for (int i = 0; i <= 3; i++) {
-        if (m_PFStrmImp[i]) {
-            m_PFStrmImp[i] = nullptr;
+        if (this->m_PFStrmImp[i]) {
+            this->m_PFStrmImp[i] = nullptr;
         }
     }
 }
@@ -61,11 +61,11 @@ SFXCTL_Pathfinder::SFXCTL_Pathfinder()
 SFXCTL_Pathfinder::~SFXCTL_Pathfinder() {
     for (int n = 0; n <= 3; ++n) {
         if (m_pPFParms[n]) {
-            DestroyTrack(m_pPFParms[n]);
+            this->DestroyTrack(m_pPFParms[n]);
             m_pPFParms[n] = nullptr;
             for (int i = 0; i <= 3; ++i) {
-                if (m_PFStrmImp[i]) {
-                    m_PFStrmImp[i] = nullptr;
+                if (this->m_PFStrmImp[i]) {
+                    this->m_PFStrmImp[i] = nullptr;
                 }
             }
         }
@@ -190,19 +190,19 @@ int SFXCTL_Pathfinder::InitPFParms(stPFParms *pstparms, int pathid, int trackid)
     unsigned int voice = pathproj | 0x10000000u;
     unsigned int track = voice | (1u << trackid);
 
-    m_pPFParms[m_projrefcnt] = pstparms;
-    m_pPFParms[m_projrefcnt]->projnum = m_projrefcnt;
-    m_pPFParms[m_projrefcnt]->PATH_PROJECT = pathproj;
-    m_pPFParms[m_projrefcnt]->PATH_VOICE = voice;
-    m_pPFParms[m_projrefcnt]->PATH_TRACK = track;
+    m_pPFParms[this->m_projrefcnt] = pstparms;
+    m_pPFParms[this->m_projrefcnt]->projnum = this->m_projrefcnt;
+    m_pPFParms[this->m_projrefcnt]->PATH_PROJECT = pathproj;
+    m_pPFParms[this->m_projrefcnt]->PATH_VOICE = voice;
+    m_pPFParms[this->m_projrefcnt]->PATH_TRACK = track;
 
-    error = PATH_addmapfile(m_pPFParms[m_projrefcnt]->pmapfile);
+    error = PATH_addmapfile(m_pPFParms[this->m_projrefcnt]->pmapfile);
     if (error >= 0) {
-        m_pPFParms[m_projrefcnt]->bdataloaded = true;
-        g_pSFXCTL_Pathfinder->CreateTrack(m_projrefcnt);
+        m_pPFParms[this->m_projrefcnt]->bdataloaded = true;
+        g_pSFXCTL_Pathfinder->CreateTrack(this->m_projrefcnt);
     }
-    inst = m_projrefcnt;
-    m_projrefcnt = inst + 1;
+    inst = this->m_projrefcnt;
+    this->m_projrefcnt = inst + 1;
     return inst;
 }
 
@@ -217,16 +217,16 @@ void SFXCTL_Pathfinder::CreateTrack(int index) {
         if (result < 0) {
             return;
         }
-        m_PFStrmImp[index] = PATH_createstreamimp(m_pPFParms[index]->PATH_TRACK, 3, 2500.0f);
+        this->m_PFStrmImp[index] = PATH_createstreamimp(m_pPFParms[index]->PATH_TRACK, 3, 2500.0f);
         if (index == 0) {
-            AttachStreamInstance(m_pPFParms[0]);
+            this->AttachStreamInstance(m_pPFParms[0]);
         }
     }
 }
 
 int SFXCTL_Pathfinder::GetHandle(int index) {
-    if (m_PFStrmImp[index]) {
-        return m_PFStrmImp[index]->GetHandle();
+    if (this->m_PFStrmImp[index]) {
+        return this->m_PFStrmImp[index]->GetHandle();
     }
     return -1;
 }
@@ -261,16 +261,16 @@ void SFXCTL_Pathfinder::DestroyTrack(stPFParms *pstPFParms) {
     if (pstPFParms->bAttached) {
         if (m_pPFParms[pstPFParms->projnum]) {
             PATH_stop(pstPFParms->PATH_TRACK);
-            DetachStreamInstance(pstPFParms);
+            this->DetachStreamInstance(pstPFParms);
             PATH_destroy(pstPFParms->PATH_TRACK);
             m_pPFParms[pstPFParms->projnum] = nullptr;
-            m_projrefcnt -= 1;
+            this->m_projrefcnt -= 1;
         }
     } else {
         if (m_pPFParms[pstPFParms->projnum]) {
             PATH_destroy(pstPFParms->PATH_TRACK);
             m_pPFParms[pstPFParms->projnum] = nullptr;
-            m_projrefcnt -= 1;
+            this->m_projrefcnt -= 1;
         }
     }
 
@@ -285,13 +285,13 @@ void SFXCTL_Pathfinder::DestroyTrack(stPFParms *pstPFParms) {
         PATH_shutdown();
         SNDSYS_leavecritical();
         for (i = 0; i < 4; ++i) {
-            if (m_PFStrmImp[i]) {
-                m_PFStrmImp[i] = nullptr;
+            if (this->m_PFStrmImp[i]) {
+                this->m_PFStrmImp[i] = nullptr;
             }
         }
     }
 
-    if (m_projrefcnt < 0) {
-        m_projrefcnt = 0;
+    if (this->m_projrefcnt < 0) {
+        this->m_projrefcnt = 0;
     }
 }

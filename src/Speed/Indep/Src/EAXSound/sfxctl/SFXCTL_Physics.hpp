@@ -82,8 +82,8 @@ struct SFXCTL_Physics : public SFXCTL {
     void MsgRevOff(const MAIEngineRev &message);
     void UpdateNIS(float t, float dt);
 
-    float GetPhysRPM() { return PhysicsRPM; }
-    virtual float GetPhysTRQ() { return PhysicsTRQ; }
+    float GetPhysRPM() { return this->PhysicsRPM; }
+    virtual float GetPhysTRQ() { return this->PhysicsTRQ; }
 };
 
 struct SndAIStateManager;
@@ -126,7 +126,7 @@ struct SFXCTL_AIPhysics : public SFXCTL_Physics {
     void UpdateGear();
     void Destroy() override;
     void UpdateMixerOutputs() override {}
-    SndAIStateManager *GetAIStateManager() { return &AIStateManager; }
+    SndAIStateManager *GetAIStateManager() { return &this->AIStateManager; }
 };
 
 struct SFXCTL_TruckPhysics : public SFXCTL_AIPhysics {

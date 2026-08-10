@@ -49,57 +49,57 @@ void SFXCTL_MasterVol::UpdateParams(float t) {
         float fvol = static_cast<float>(nmastervol) * 3.051851e-05f;
         int nvol;
 
-        SetDMIX_Input(0, static_cast<int>((1.0f - g_pEAXSound->GetCurrentAudioSettings()->MasterVol *
+        this->SetDMIX_Input(0, static_cast<int>((1.0f - g_pEAXSound->GetCurrentAudioSettings()->MasterVol *
                                                    g_pEAXSound->GetCurrentAudioSettings()->FEMusicVol * fvol) *
                                           32767.0f));
-        SetDMIX_Input(1, static_cast<int>((1.0f - g_pEAXSound->GetCurrentAudioSettings()->MasterVol *
+        this->SetDMIX_Input(1, static_cast<int>((1.0f - g_pEAXSound->GetCurrentAudioSettings()->MasterVol *
                                                    g_pEAXSound->GetCurrentAudioSettings()->IGMusicVol * fvol) *
                                           32767.0f));
-        SetDMIX_Input(2, static_cast<int>((1.0f - g_pEAXSound->GetCurrentAudioSettings()->MasterVol *
+        this->SetDMIX_Input(2, static_cast<int>((1.0f - g_pEAXSound->GetCurrentAudioSettings()->MasterVol *
                                                    g_pEAXSound->GetCurrentAudioSettings()->SpeechVol * fvol) *
                                           32767.0f));
-        SetDMIX_Input(3, static_cast<int>((1.0f - g_pEAXSound->GetCurrentAudioSettings()->MasterVol *
+        this->SetDMIX_Input(3, static_cast<int>((1.0f - g_pEAXSound->GetCurrentAudioSettings()->MasterVol *
                                                    g_pEAXSound->GetCurrentAudioSettings()->SoundEffectsVol * fvol) *
                                           32767.0f));
-        SetDMIX_Input(4, static_cast<int>((1.0f - g_pEAXSound->GetCurrentAudioSettings()->MasterVol *
+        this->SetDMIX_Input(4, static_cast<int>((1.0f - g_pEAXSound->GetCurrentAudioSettings()->MasterVol *
                                                    g_pEAXSound->GetCurrentAudioSettings()->CarVol * fvol) *
                                           32767.0f));
         nvol = static_cast<int>((1.0f - g_pEAXSound->GetCurrentAudioSettings()->MasterVol *
                                           g_pEAXSound->GetCurrentAudioSettings()->CarVol * fvol) *
                                 32767.0f);
-        SetDMIX_Input(5, nvol);
+        this->SetDMIX_Input(5, nvol);
     }
 
     if (g_pEAXSound->GetSndGameMode() == SND_FRONTEND) {
         if (g_EAXIsPaused()) {
-            SetDMIX_Input(6, 0x7fff);
+            this->SetDMIX_Input(6, 0x7fff);
         } else {
-            SetDMIX_Input(6, 0);
+            this->SetDMIX_Input(6, 0);
         }
     } else {
         int nvol = g_EAXIsPaused();
         if (nvol != 0) {
-            SetDMIX_Input(6, 0x7fff);
+            this->SetDMIX_Input(6, 0x7fff);
         } else {
-            SetDMIX_Input(6, nvol);
+            this->SetDMIX_Input(6, nvol);
         }
     }
 
     if (gMoviePlayer && gMoviePlayer->GetStatus() == 5) {
-        SetDMIX_Input(7, 0x7fff);
+        this->SetDMIX_Input(7, 0x7fff);
     } else {
-        SetDMIX_Input(7, 0);
+        this->SetDMIX_Input(7, 0);
     }
 
     if (g_pEAXSound->GetSndGameMode() == SND_PURSUITBREAKER) {
-        SetDMIX_Input(8, 0x7fff);
+        this->SetDMIX_Input(8, 0x7fff);
         if (g_pEAXSound->GetPrevSndGameMode() != SND_PURSUITBREAKER) {
             UCrc32 port("PursuitBreaker");
             MPursuitBreaker message(true);
             message.Post(port);
         }
     } else {
-        SetDMIX_Input(8, 0);
+        this->SetDMIX_Input(8, 0);
         if (g_pEAXSound->GetPrevSndGameMode() == SND_PURSUITBREAKER) {
             UCrc32 port("PursuitBreaker");
             MPursuitBreaker message(false);
@@ -108,11 +108,11 @@ void SFXCTL_MasterVol::UpdateParams(float t) {
     }
 
     if (SndCamera::GetCurCamState(0) == DMIX_NFS_JUMP_CAM) {
-        SetDMIX_Input(9, 0x7fff);
+        this->SetDMIX_Input(9, 0x7fff);
     } else {
-        SetDMIX_Input(9, 0);
+        this->SetDMIX_Input(9, 0);
     }
-    SetDMIX_Input(10, static_cast<int>(RadarDetector::mStaticRange * 32767.0f));
+    this->SetDMIX_Input(10, static_cast<int>(RadarDetector::mStaticRange * 32767.0f));
 }
 
 SndBase::TypeInfo *SFXCTL_GameState::GetTypeInfo() const { return &s_TypeInfo; }
@@ -129,9 +129,9 @@ SndBase *SFXCTL_GameState::CreateObject(unsigned int allocator) {
 void SFXCTL_GameState::UpdateMixerOutputs() {
     for (int i = 0; i <= 13; i++) {
         if (g_ActiveSFXStates & (1 << i)) {
-            SetDMIX_Input(i, 0x7fff);
+            this->SetDMIX_Input(i, 0x7fff);
         } else {
-            SetDMIX_Input(i, 0);
+            this->SetDMIX_Input(i, 0);
         }
     }
 }

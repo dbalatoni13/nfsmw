@@ -31,11 +31,11 @@ CSTATE_Base *EAXTunerCar::CreateState(unsigned int allocator) {
 EAXTunerCar::EAXTunerCar()
     : EAXCar() //
 {
-    bFirstUpdate = true;
-    TrunkBounceInstensity = 0.0f;
-    BottomOutPlay = false;
-    TrunkBouncePlay = false;
-    PlayBackFire = false;
+    this->bFirstUpdate = true;
+    this->TrunkBounceInstensity = 0.0f;
+    this->BottomOutPlay = false;
+    this->TrunkBouncePlay = false;
+    this->PlayBackFire = false;
 }
 
 EAXTunerCar::~EAXTunerCar() {}
@@ -53,12 +53,12 @@ int EAXTunerCar::SFXMessage(eSFXMessageType SFXMessageType, unsigned int param1,
     case SFX_NITROUS:
         break;
     case SFX_BOTTOMOUT:
-        BottomOutPlay = true;
-        BottomOutIntensity = param1 >> 8;
+        this->BottomOutPlay = true;
+        this->BottomOutIntensity = param1 >> 8;
         break;
     case SFX_TRUNKBOUNCE:
-        TrunkBouncePlay = true;
-        *reinterpret_cast<int *>(&TrunkBounceInstensity) = param1;
+        this->TrunkBouncePlay = true;
+        *reinterpret_cast<int *>(&this->TrunkBounceInstensity) = param1;
         break;
     case SFX_CHANGEGEAR:
         return 0;
@@ -71,9 +71,9 @@ int EAXTunerCar::SFXMessage(eSFXMessageType SFXMessageType, unsigned int param1,
 void DebugPrintSkidBar(int Horz, int Vert, char *Str, int Value) {}
 
 int EAXTunerCar::UpdateRotation() {
-    m_Rotation = 0;
-    m_Rotation = bClamp(m_Rotation, 0, 0x400);
-    return m_Rotation;
+    this->m_Rotation = 0;
+    this->m_Rotation = bClamp(this->m_Rotation, 0, 0x400);
+    return this->m_Rotation;
 }
 
 void EAXTunerCar::UpdatePov() {
@@ -82,29 +82,29 @@ void EAXTunerCar::UpdatePov() {
     if (cm) {
         CameraAnchor *anchor = cm->GetAnchor();
 
-        m_IsDriveCamera = cm->IsDriveCamera();
+        this->m_IsDriveCamera = cm->IsDriveCamera();
 
         if (anchor) {
-            m_PovType = static_cast<int>(anchor->GetPOVType());
+            this->m_PovType = static_cast<int>(anchor->GetPOVType());
         } else {
-            m_PovType = 7;
+            this->m_PovType = 7;
         }
     } else {
-        m_IsDriveCamera = 0;
+        this->m_IsDriveCamera = 0;
     }
 }
 
 void EAXTunerCar::FirstUpdate(float t) {
-    bFirstUpdate = false;
+    this->bFirstUpdate = false;
 }
 
 void EAXTunerCar::UpdateParams(float t) {
     EAXCar::UpdateParams(t);
-    if (m_pCar != 0) {
-        if (bFirstUpdate) {
-            FirstUpdate(t);
+    if (this->m_pCar != 0) {
+        if (this->bFirstUpdate) {
+            this->FirstUpdate(t);
         }
-        UpdatePov();
-        UpdateRotation();
+        this->UpdatePov();
+        this->UpdateRotation();
     }
 }

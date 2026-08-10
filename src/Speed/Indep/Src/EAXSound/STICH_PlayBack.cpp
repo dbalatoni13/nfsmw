@@ -495,15 +495,15 @@ int cSTICH_PlayBack::Prune(STICH_TYPE type, int priority, int num_to_clear) {
 }
 
 bool cSTICH_PlayBack::AddStich(STICH_TYPE StichType, SND_Stich &NewStichData) {
-    StichList[StichType].AddTail(&NewStichData);
+    this->StichList[StichType].AddTail(&NewStichData);
     return true;
 }
 
 SND_Stich &cSTICH_PlayBack::GetStich(STICH_TYPE StichType, int Index) {
-    return *static_cast<SND_Stich *>(GetStichList(StichType).GetNode(Index)->GetpObject());
+    return *static_cast<SND_Stich *>(this->GetStichList(StichType).GetNode(Index)->GetpObject());
 }
 
-inline bPList<SND_Stich> &cSTICH_PlayBack::GetStichList(STICH_TYPE StichType) { return StichList[StichType]; }
+inline bPList<SND_Stich> &cSTICH_PlayBack::GetStichList(STICH_TYPE StichType) { return this->StichList[StichType]; }
 
 void cSTICH_PlayBack::Update(float t) {
     for (int n = 0; n < MAX_NUM_STICH_TYPE; n++) {
@@ -518,8 +518,8 @@ void cSTICH_PlayBack::Update(float t) {
 void cSTICH_PlayBack::DestroyAllStichs(void) {
     for (int i = 0; i < MAX_NUM_STICH_TYPE; i++) {
         GetQueueList(static_cast<STICH_TYPE>(i)).clear();
-        while (!StichList[i].IsEmpty()) {
-            StichList[i].RemoveHead();
+        while (!this->StichList[i].IsEmpty()) {
+            this->StichList[i].RemoveHead();
         }
     }
 }
@@ -527,14 +527,14 @@ void cSTICH_PlayBack::DestroyAllStichs(void) {
 cStichWrapper::cStichWrapper(const SND_Stich &NewStichData)
     : SndParams() //
 {
-    StichData = const_cast<SND_Stich *>(&NewStichData);
+    this->StichData = const_cast<SND_Stich *>(&NewStichData);
     for (int i = 0; i < 18; i++) {
-        ActiveSamplesRefs[i] = nullptr;
+        this->ActiveSamplesRefs[i] = nullptr;
     }
 }
 
 cStichWrapper::~cStichWrapper() {
-    Destroy();
+    this->Destroy();
 }
 
 void *cStichWrapper::operator new(unsigned int obj_size) {
@@ -548,36 +548,36 @@ void cStichWrapper::operator delete(void *ptr) {
 }
 
 void cStichWrapper::Play(int Vol, int Pitch, int Azimuth) {
-    SndParams.Vol = Vol;
-    SndParams.Az = Azimuth;
-    SndParams.Pitch = Pitch;
-    Play(&SndParams);
+    this->SndParams.Vol = Vol;
+    this->SndParams.Az = Azimuth;
+    this->SndParams.Pitch = Pitch;
+    this->Play(&this->SndParams);
 }
 
 void cStichWrapper::Play(const SND_Params *Params) {
-    STICH_TYPE stitch_type = static_cast<STICH_TYPE>(GetData().eStichType);
+    STICH_TYPE stitch_type = static_cast<STICH_TYPE>(this->GetData().eStichType);
 
     if (Params) {
         int StitchSpecificVol;
-        SndParams = *Params;
-        StitchSpecificVol = SndParams.Vol * 0x7FFF >> 0xF;
-        SndParams.Vol = StitchSpecificVol;
+        this->SndParams = *Params;
+        StitchSpecificVol = this->SndParams.Vol * 0x7FFF >> 0xF;
+        this->SndParams.Vol = StitchSpecificVol;
     }
 
-    for (int i = 0; i < static_cast<int>(GetData().Num_SampleRefs); i++) {
-        ActiveSamplesRefs[i] = new cSampleWarpper(GetData().pSampleRefList[i]);
+    for (int i = 0; i < static_cast<int>(this->GetData().Num_SampleRefs); i++) {
+        this->ActiveSamplesRefs[i] = new cSampleWarpper(this->GetData().pSampleRefList[i]);
 
-        if (ActiveSamplesRefs[i]) {
-            ActiveSamplesRefs[i]->Initialize();
+        if (this->ActiveSamplesRefs[i]) {
+            this->ActiveSamplesRefs[i]->Initialize();
 
             SampleQueueItem samplereq;
-            samplereq.pSample = ActiveSamplesRefs[i];
+            samplereq.pSample = this->ActiveSamplesRefs[i];
             samplereq.pStitch = this;
             cSTICH_PlayBack::QueueSampleRequest(samplereq);
         }
     }
 
-    bIsPlaying = true;
+    this->bIsPlaying = true;
 
     int num_to_prune = cSTICH_PlayBack::GetQueueList(stitch_type).size() + cSampleListSet::GetList(stitch_type).size() - 25;
     if (num_to_prune > 0) {
@@ -598,26 +598,26 @@ void cStichWrapper::Play(const SND_Params *Params) {
 }
 
 void cStichWrapper::Update(const SND_Params *Params) {
-    if (!bIsPlaying) {
+    if (!this->bIsPlaying) {
         return;
     }
 
     if (Params) {
-        SndParams = *Params;
+        this->SndParams = *Params;
     }
 
-    bIsPlaying = false;
+    this->bIsPlaying = false;
     for (int i = 0; ; i++) {
-        if (i >= static_cast<int>(GetData().Num_SampleRefs)) break;
-        if (ActiveSamplesRefs[i]) {
+        if (i >= static_cast<int>(this->GetData().Num_SampleRefs)) break;
+        if (this->ActiveSamplesRefs[i]) {
             bool playing = true;
-            ActiveSamplesRefs[i]->Update(&SndParams);
-            playing = ActiveSamplesRefs[i]->IsPlaying();
+            this->ActiveSamplesRefs[i]->Update(&this->SndParams);
+            playing = this->ActiveSamplesRefs[i]->IsPlaying();
             if (!playing) {
-                delete ActiveSamplesRefs[i];
-                ActiveSamplesRefs[i] = nullptr;
+                delete this->ActiveSamplesRefs[i];
+                this->ActiveSamplesRefs[i] = nullptr;
             } else {
-                bIsPlaying = true;
+                this->bIsPlaying = true;
             }
         }
     }
@@ -625,34 +625,34 @@ void cStichWrapper::Update(const SND_Params *Params) {
 
 void cStichWrapper::Destroy() {
     for (int i = 0; i < 18; i++) {
-        if (ActiveSamplesRefs[i]) {
-            if (ActiveSamplesRefs[i]->m_eIsPlaying == eSTITCH_PLAY_STATUS_QUEUED) {
+        if (this->ActiveSamplesRefs[i]) {
+            if (this->ActiveSamplesRefs[i]->m_eIsPlaying == eSTITCH_PLAY_STATUS_QUEUED) {
                 SampleQueueItem sampleitem;
-                sampleitem.pSample = ActiveSamplesRefs[i];
+                sampleitem.pSample = this->ActiveSamplesRefs[i];
                 sampleitem.pStitch = this;
                 cSTICH_PlayBack::RemoveFromList(sampleitem);
             }
 
-            if (ActiveSamplesRefs[i]) {
-                delete ActiveSamplesRefs[i];
+            if (this->ActiveSamplesRefs[i]) {
+                delete this->ActiveSamplesRefs[i];
             }
-            ActiveSamplesRefs[i] = nullptr;
+            this->ActiveSamplesRefs[i] = nullptr;
         }
     }
 
-    bIsPlaying = false;
+    this->bIsPlaying = false;
 }
 
 cSampleWarpper::cSampleWarpper(SND_SampleRef &NewRef) {
-    SampleRefData = &NewRef;
-    m_eIsPlaying = eSTITCH_PLAY_STATUS_OFF;
-    AEMS_ActiveSampleWsh = nullptr;
-    AEMS_ActiveSampleCol = nullptr;
-    AEMS_ActiveSampleStatic = nullptr;
+    this->SampleRefData = &NewRef;
+    this->m_eIsPlaying = eSTITCH_PLAY_STATUS_OFF;
+    this->AEMS_ActiveSampleWsh = nullptr;
+    this->AEMS_ActiveSampleCol = nullptr;
+    this->AEMS_ActiveSampleStatic = nullptr;
 }
 
 cSampleWarpper::~cSampleWarpper() {
-    Destroy();
+    this->Destroy();
 }
 
 void *cSampleWarpper::operator new(unsigned int obj_size) {
@@ -669,78 +669,78 @@ void cSampleWarpper::operator delete(void *ptr) {
 }
 
 void cSampleWarpper::Destroy() {
-    if (AEMS_ActiveSampleWsh) {
-        delete AEMS_ActiveSampleWsh;
+    if (this->AEMS_ActiveSampleWsh) {
+        delete this->AEMS_ActiveSampleWsh;
     }
-    AEMS_ActiveSampleWsh = nullptr;
+    this->AEMS_ActiveSampleWsh = nullptr;
 
-    if (AEMS_ActiveSampleCol) {
-        delete AEMS_ActiveSampleCol;
+    if (this->AEMS_ActiveSampleCol) {
+        delete this->AEMS_ActiveSampleCol;
     }
-    AEMS_ActiveSampleCol = nullptr;
+    this->AEMS_ActiveSampleCol = nullptr;
 
-    if (AEMS_ActiveSampleStatic) {
-        delete AEMS_ActiveSampleStatic;
+    if (this->AEMS_ActiveSampleStatic) {
+        delete this->AEMS_ActiveSampleStatic;
     }
-    AEMS_ActiveSampleStatic = nullptr;
+    this->AEMS_ActiveSampleStatic = nullptr;
 
-    if (m_eIsPlaying == eSTITCH_PLAY_STATUS_PLAYING) {
-        RemoveFromSampleList(this, static_cast<STICH_TYPE>(SampleRefData->eStichType));
+    if (this->m_eIsPlaying == eSTITCH_PLAY_STATUS_PLAYING) {
+        RemoveFromSampleList(this, static_cast<STICH_TYPE>(this->SampleRefData->eStichType));
     }
 
-    m_eIsPlaying = eSTITCH_PLAY_STATUS_OFF;
+    this->m_eIsPlaying = eSTITCH_PLAY_STATUS_OFF;
 }
 
 void cSampleWarpper::Initialize() {
-    m_eIsPlaying = eSTITCH_PLAY_STATUS_QUEUED;
+    this->m_eIsPlaying = eSTITCH_PLAY_STATUS_QUEUED;
 }
 
 void cSampleWarpper::Update(const SND_Params *Params) {
     int TempVol;
     int TempPitch;
 
-    TempVol = m_nLocalVolume * Params->Vol >> 0xF;
-    TempPitch = m_nLocalPitch;
+    TempVol = this->m_nLocalVolume * Params->Vol >> 0xF;
+    TempPitch = this->m_nLocalPitch;
 
-    if (AEMS_ActiveSampleWsh) {
-        AEMS_ActiveSampleWsh->SetAz(
-            (static_cast<unsigned short>(GetData().Az) + 0x10000 + Params->Az) % 0x10000);
-        AEMS_ActiveSampleWsh->SetVol(TempVol);
-        AEMS_ActiveSampleWsh->SetPitch(TempPitch);
-        AEMS_ActiveSampleWsh->SetFilter_WetFX(Params->RVerb);
-        AEMS_ActiveSampleWsh->CommitMemberData();
-        if (AEMS_ActiveSampleWsh->GetRefCount() < 2) {
-            Destroy();
+    if (this->AEMS_ActiveSampleWsh) {
+        this->AEMS_ActiveSampleWsh->SetAz(
+            (static_cast<unsigned short>(this->GetData().Az) + 0x10000 + Params->Az) % 0x10000);
+        this->AEMS_ActiveSampleWsh->SetVol(TempVol);
+        this->AEMS_ActiveSampleWsh->SetPitch(TempPitch);
+        this->AEMS_ActiveSampleWsh->SetFilter_WetFX(Params->RVerb);
+        this->AEMS_ActiveSampleWsh->CommitMemberData();
+        if (this->AEMS_ActiveSampleWsh->GetRefCount() < 2) {
+            this->Destroy();
         }
     }
 
-    if (AEMS_ActiveSampleCol) {
-        AEMS_ActiveSampleCol->SetAz(
-            (static_cast<unsigned short>(GetData().Az) + 0x10000 + Params->Az) % 0x10000);
-        AEMS_ActiveSampleCol->SetVol(TempVol);
-        AEMS_ActiveSampleCol->SetPitch(TempPitch);
-        AEMS_ActiveSampleCol->SetFilter_WetFX(Params->RVerb);
-        AEMS_ActiveSampleCol->CommitMemberData();
-        if (AEMS_ActiveSampleCol->GetRefCount() < 2) {
-            Destroy();
+    if (this->AEMS_ActiveSampleCol) {
+        this->AEMS_ActiveSampleCol->SetAz(
+            (static_cast<unsigned short>(this->GetData().Az) + 0x10000 + Params->Az) % 0x10000);
+        this->AEMS_ActiveSampleCol->SetVol(TempVol);
+        this->AEMS_ActiveSampleCol->SetPitch(TempPitch);
+        this->AEMS_ActiveSampleCol->SetFilter_WetFX(Params->RVerb);
+        this->AEMS_ActiveSampleCol->CommitMemberData();
+        if (this->AEMS_ActiveSampleCol->GetRefCount() < 2) {
+            this->Destroy();
         }
     }
 
-    if (AEMS_ActiveSampleStatic) {
-        AEMS_ActiveSampleStatic->SetAz(
-            (static_cast<unsigned short>(GetData().Az) + 0x10000 + Params->Az) % 0x10000);
-        AEMS_ActiveSampleStatic->SetVol(TempVol);
-        AEMS_ActiveSampleStatic->SetPitch(TempPitch);
-        AEMS_ActiveSampleStatic->SetFilter_WetFX(Params->RVerb);
-        AEMS_ActiveSampleStatic->CommitMemberData();
-        if (AEMS_ActiveSampleStatic->GetRefCount() < 2) {
-            Destroy();
+    if (this->AEMS_ActiveSampleStatic) {
+        this->AEMS_ActiveSampleStatic->SetAz(
+            (static_cast<unsigned short>(this->GetData().Az) + 0x10000 + Params->Az) % 0x10000);
+        this->AEMS_ActiveSampleStatic->SetVol(TempVol);
+        this->AEMS_ActiveSampleStatic->SetPitch(TempPitch);
+        this->AEMS_ActiveSampleStatic->SetFilter_WetFX(Params->RVerb);
+        this->AEMS_ActiveSampleStatic->CommitMemberData();
+        if (this->AEMS_ActiveSampleStatic->GetRefCount() < 2) {
+            this->Destroy();
         }
     }
 }
 
 void cSampleWarpper::Play(const SND_Params *Params) {
-    if (AEMS_ActiveSampleCol || AEMS_ActiveSampleWsh || AEMS_ActiveSampleStatic) {
+    if (this->AEMS_ActiveSampleCol || this->AEMS_ActiveSampleWsh || this->AEMS_ActiveSampleStatic) {
         return;
     }
 
@@ -750,70 +750,70 @@ void cSampleWarpper::Play(const SND_Params *Params) {
     float PitchScale;
     int RefCount;
 
-    AddToList(static_cast<STICH_TYPE>(GetData().eStichType));
+    this->AddToList(static_cast<STICH_TYPE>(this->GetData().eStichType));
 
-    if (GetData().RND_Vol != 0) {
-        m_nLocalVolume = static_cast<int>(GetData().Volume - g_pEAXSound->Random(bAbs(GetData().RND_Vol)));
+    if (this->GetData().RND_Vol != 0) {
+        this->m_nLocalVolume = static_cast<int>(this->GetData().Volume - g_pEAXSound->Random(bAbs(this->GetData().RND_Vol)));
     } else {
-        m_nLocalVolume = GetData().Volume;
+        this->m_nLocalVolume = this->GetData().Volume;
     }
 
-    TempVol = m_nLocalVolume * Params->Vol >> 0xF;
-    if (GetData().RND_Pitch != 0) {
-        m_nLocalPitch = static_cast<int>(GetData().Pitch - g_pEAXSound->Random(bAbs(GetData().RND_Pitch)));
+    TempVol = this->m_nLocalVolume * Params->Vol >> 0xF;
+    if (this->GetData().RND_Pitch != 0) {
+        this->m_nLocalPitch = static_cast<int>(this->GetData().Pitch - g_pEAXSound->Random(bAbs(this->GetData().RND_Pitch)));
     } else {
-        m_nLocalPitch = GetData().Pitch;
+        this->m_nLocalPitch = this->GetData().Pitch;
     }
 
     PitchScale = static_cast<float>(0x1000 - Params->Pitch) * (1.0f / 4096.0f);
-    TempPitch = static_cast<int>(static_cast<float>(m_nLocalPitch) * PitchScale);
+    TempPitch = static_cast<int>(static_cast<float>(this->m_nLocalPitch) * PitchScale);
     TempAz = Params->Az;
-    m_eIsPlaying = eSTITCH_PLAY_STATUS_OFF;
+    this->m_eIsPlaying = eSTITCH_PLAY_STATUS_OFF;
 
-    if (GetData().eStichType == STICH_TYPE_COLLISION) {
-        g_pEAXSound->SetCsisName(GetStichTypeName(static_cast<STICH_TYPE>(GetData().eStichType)));
-        AEMS_ActiveSampleCol = new AEMS_StichCollision(
-            GetData().eStichType, GetData().SampleIndex, TempVol, TempPitch,
-            (TempAz + static_cast<unsigned short>(GetData().Az) + 0x10000) % 0x10000, GetData().Offset, 0x7FFF,
+    if (this->GetData().eStichType == STICH_TYPE_COLLISION) {
+        g_pEAXSound->SetCsisName(GetStichTypeName(static_cast<STICH_TYPE>(this->GetData().eStichType)));
+        this->AEMS_ActiveSampleCol = new AEMS_StichCollision(
+            this->GetData().eStichType, this->GetData().SampleIndex, TempVol, TempPitch,
+            (TempAz + static_cast<unsigned short>(this->GetData().Az) + 0x10000) % 0x10000, this->GetData().Offset, 0x7FFF,
             Params->RVerb, 25000, 0);
-        if (AEMS_ActiveSampleCol != nullptr) {
-            RefCount = AEMS_ActiveSampleCol->GetRefCount();
+        if (this->AEMS_ActiveSampleCol != nullptr) {
+            RefCount = this->AEMS_ActiveSampleCol->GetRefCount();
             if (RefCount < 3) {
-                m_eIsPlaying = eSTITCH_PLAY_STATUS_OFF;
+                this->m_eIsPlaying = eSTITCH_PLAY_STATUS_OFF;
             } else {
-                m_eIsPlaying = eSTITCH_PLAY_STATUS_PLAYING;
+                this->m_eIsPlaying = eSTITCH_PLAY_STATUS_PLAYING;
             }
         }
     }
 
-    if (GetData().eStichType == STICH_TYPE_WOOSH) {
-        g_pEAXSound->SetCsisName(GetStichTypeName(static_cast<STICH_TYPE>(GetData().eStichType)));
-        AEMS_ActiveSampleWsh = new AEMS_StichWoosh(
-            GetData().eStichType, GetData().SampleIndex, TempVol, TempPitch,
-            (TempAz + static_cast<unsigned short>(GetData().Az) + 0x10000) % 0x10000, GetData().Offset, 0x7FFF,
+    if (this->GetData().eStichType == STICH_TYPE_WOOSH) {
+        g_pEAXSound->SetCsisName(GetStichTypeName(static_cast<STICH_TYPE>(this->GetData().eStichType)));
+        this->AEMS_ActiveSampleWsh = new AEMS_StichWoosh(
+            this->GetData().eStichType, this->GetData().SampleIndex, TempVol, TempPitch,
+            (TempAz + static_cast<unsigned short>(this->GetData().Az) + 0x10000) % 0x10000, this->GetData().Offset, 0x7FFF,
             Params->RVerb, 25000, 0);
-        if (AEMS_ActiveSampleWsh != nullptr) {
-            RefCount = AEMS_ActiveSampleWsh->GetRefCount();
+        if (this->AEMS_ActiveSampleWsh != nullptr) {
+            RefCount = this->AEMS_ActiveSampleWsh->GetRefCount();
             if (RefCount < 3) {
-                m_eIsPlaying = eSTITCH_PLAY_STATUS_OFF;
+                this->m_eIsPlaying = eSTITCH_PLAY_STATUS_OFF;
             } else {
-                m_eIsPlaying = eSTITCH_PLAY_STATUS_PLAYING;
+                this->m_eIsPlaying = eSTITCH_PLAY_STATUS_PLAYING;
             }
         }
     }
 
-    if (GetData().eStichType == STICH_TYPE_STATIC) {
-        g_pEAXSound->SetCsisName(GetStichTypeName(static_cast<STICH_TYPE>(GetData().eStichType)));
-        AEMS_ActiveSampleStatic = new AEMS_StichStatic(
-            GetData().eStichType, GetData().SampleIndex, TempVol, TempPitch,
-            (TempAz + static_cast<unsigned short>(GetData().Az) + 0x10000) % 0x10000, GetData().Offset, 0x7FFF,
+    if (this->GetData().eStichType == STICH_TYPE_STATIC) {
+        g_pEAXSound->SetCsisName(GetStichTypeName(static_cast<STICH_TYPE>(this->GetData().eStichType)));
+        this->AEMS_ActiveSampleStatic = new AEMS_StichStatic(
+            this->GetData().eStichType, this->GetData().SampleIndex, TempVol, TempPitch,
+            (TempAz + static_cast<unsigned short>(this->GetData().Az) + 0x10000) % 0x10000, this->GetData().Offset, 0x7FFF,
             Params->RVerb, 25000, 0);
-        if (AEMS_ActiveSampleStatic != nullptr) {
-            RefCount = AEMS_ActiveSampleStatic->GetRefCount();
+        if (this->AEMS_ActiveSampleStatic != nullptr) {
+            RefCount = this->AEMS_ActiveSampleStatic->GetRefCount();
             if (RefCount < 3) {
-                m_eIsPlaying = eSTITCH_PLAY_STATUS_OFF;
+                this->m_eIsPlaying = eSTITCH_PLAY_STATUS_OFF;
             } else {
-                m_eIsPlaying = eSTITCH_PLAY_STATUS_PLAYING;
+                this->m_eIsPlaying = eSTITCH_PLAY_STATUS_PLAYING;
             }
         }
     }

@@ -26,8 +26,8 @@ void copMap::Add(HSIMABLE__ *hsimable, EAXCop *cop) {
     copPair p;
     p.hsimable = hsimable;
     p.cop = cop;
-    iterator iter = std::upper_bound(begin(), end(), p);
-    insert(iter, p);
+    iterator iter = std::upper_bound(this->begin(), this->end(), p);
+    this->insert(iter, p);
 }
 
 EAXCop *copMap::Remove(HSIMABLE__ *hsimable) {
@@ -36,10 +36,10 @@ EAXCop *copMap::Remove(HSIMABLE__ *hsimable) {
     p.hsimable = hsimable;
     p.cop = nullptr;
 
-    iterator iter = std::lower_bound(begin(), end(), p);
-    if (iter != end() && iter->hsimable == hsimable) {
+    iterator iter = std::lower_bound(this->begin(), this->end(), p);
+    if (iter != this->end() && iter->hsimable == hsimable) {
         result = iter->cop;
-        erase(iter);
+        this->erase(iter);
     }
 
     return result;
@@ -47,13 +47,13 @@ EAXCop *copMap::Remove(HSIMABLE__ *hsimable) {
 
 void copMap::ModifyHandle(HSIMABLE__ *hsimable, HSIMABLE__ *newhandle) {
     iterator iter;
-    for (iter = begin(); iter != end(); ++iter) {
+    for (iter = this->begin(); iter != this->end(); ++iter) {
         if (iter->hsimable == hsimable) {
             iter->hsimable = newhandle;
             break;
         }
     }
-    std::sort(begin(), end());
+    std::sort(this->begin(), this->end());
 }
 
 EAXCop *copMap::Find(HSIMABLE__ *hsimable) const {
@@ -61,8 +61,8 @@ EAXCop *copMap::Find(HSIMABLE__ *hsimable) const {
     p.hsimable = hsimable;
     p.cop = nullptr;
 
-    const_iterator iter = std::lower_bound(begin(), end(), p);
-    if (iter != end() && iter->hsimable == hsimable) {
+    const_iterator iter = std::lower_bound(this->begin(), this->end(), p);
+    if (iter != this->end() && iter->hsimable == hsimable) {
         return iter->cop;
     }
 
@@ -73,11 +73,11 @@ void SpeechHashIDMap::Add(unsigned int hash, SPCHType_1_EventID id) {
     SpeechEventPair pair;
     pair.hash = hash;
     pair.id = id;
-    insert(std::upper_bound(begin(), end(), pair), pair);
+    insert(std::upper_bound(this->begin(), this->end(), pair), pair);
 }
 
 SPCHType_1_EventID SpeechHashIDMap::GetID(unsigned int hash) {
-    for (const_iterator i = begin(); i != end(); ++i) {
+    for (const_iterator i = this->begin(); i != this->end(); ++i) {
         const SpeechEventPair &p = *i;
         if (p.hash == hash) {
             return p.id;
@@ -92,8 +92,8 @@ unsigned int SpeechHashIDMap::GetHash(SPCHType_1_EventID id) {
     p.hash = 0;
     p.id = id;
 
-    const_iterator iter = std::lower_bound(begin(), end(), p);
-    if (iter != end() && iter->id == id) {
+    const_iterator iter = std::lower_bound(this->begin(), this->end(), p);
+    if (iter != this->end() && iter->id == id) {
         return iter->hash;
     }
 
@@ -108,13 +108,13 @@ void EventHistory::Init() {
         Attrib::Gen::speech event_collection(eventkey, 0, nullptr);
         p.id = event_collection.SpeechID();
         {
-            iterator iter = std::upper_bound(begin(), end(), p);
+            iterator iter = std::upper_bound(this->begin(), this->end(), p);
             insert(iter, p);
         }
         eventkey = speechevents->GetNextCollection(eventkey);
     }
 
-    Reset();
+    this->Reset();
 }
 
 History *EventHistory::Find(SPCHType_1_EventID id) {
@@ -124,8 +124,8 @@ History *EventHistory::Find(SPCHType_1_EventID id) {
     pair.history.count = 0;
     pair.history.speakers = 0;
 
-    iterator it = std::lower_bound(begin(), end(), pair);
-    if (it != end() && it->id == id) {
+    iterator it = std::lower_bound(this->begin(), this->end(), pair);
+    if (it != this->end() && it->id == id) {
         return &it->history;
     }
 
@@ -133,7 +133,7 @@ History *EventHistory::Find(SPCHType_1_EventID id) {
 }
 
 int EventHistory::GetCount(SPCHType_1_EventID id) {
-    History *hist = Find(id);
+    History *hist = this->Find(id);
     if (hist == nullptr) {
         return -1;
     }
@@ -142,7 +142,7 @@ int EventHistory::GetCount(SPCHType_1_EventID id) {
 }
 
 Timer EventHistory::GetTime(SPCHType_1_EventID id) {
-    History *hist = Find(id);
+    History *hist = this->Find(id);
     if (hist != nullptr) {
         return hist->time;
     }
@@ -151,7 +151,7 @@ Timer EventHistory::GetTime(SPCHType_1_EventID id) {
 }
 
 History *EventHistory::Touch(SPCHType_1_EventID id, unsigned short speaker) {
-    History *hist = Find(id);
+    History *hist = this->Find(id);
     if (hist == nullptr) {
         return nullptr;
     }
@@ -161,7 +161,7 @@ History *EventHistory::Touch(SPCHType_1_EventID id, unsigned short speaker) {
 }
 
 void EventHistory::Reset() {
-    for (iterator i = begin(); i != end(); ++i) {
+    for (iterator i = this->begin(); i != this->end(); ++i) {
         History &hist = i->history;
         hist.count = 0;
         hist.time = Timer(0);
@@ -207,21 +207,21 @@ ScheduledSpeechEvent::ScheduledSpeechEvent()
     Manager::m_frameindex = static_cast<short>(Manager::m_frameindex + 1);
 
     for (short i = 0; i < 7; i = static_cast<short>(i + 1)) {
-        assoc_samples[i] = nullptr;
+        this->assoc_samples[i] = nullptr;
     }
 }
 
 ScheduledSpeechEvent::~ScheduledSpeechEvent() {
     for (short i = 0; i < 7; ++i) {
-        SpeechSampleData *stitch = assoc_samples[i];
+        SpeechSampleData *stitch = this->assoc_samples[i];
         if (stitch != nullptr && stitch->lock == true) {
             stitch->Unlock();
         }
-        assoc_samples[i] = nullptr;
+        this->assoc_samples[i] = nullptr;
     }
 
-    assoc_samples_prep = 0;
-    curndx = 0;
+    this->assoc_samples_prep = 0;
+    this->curndx = 0;
     SampleReqList &requests = Manager::GetSampleRequests();
     if (requests.size() != 0) {
         for (SPCHSampleRequest *i = requests.begin(); i != requests.end();) {
@@ -264,12 +264,12 @@ bool ScheduledSpeechEvent::sort_nested_priority(const ScheduledSpeechEvent *lhs,
 void ScheduledSpeechEvent::AddSample(SpeechSampleData *sample, unsigned char specific_index) {
     sample->Lock();
     if (specific_index != 0xFF) {
-        assoc_samples[specific_index] = sample;
+        this->assoc_samples[specific_index] = sample;
         return;
     }
 
-    assoc_samples[curndx] = sample;
-    curndx = static_cast<unsigned char>(curndx + 1);
+    this->assoc_samples[this->curndx] = sample;
+    this->curndx = static_cast<unsigned char>(this->curndx + 1);
 }
 
 void *ScheduledSpeechEvent::GetData(unsigned int *datasize) {
@@ -281,8 +281,8 @@ void *ScheduledSpeechEvent::GetData(unsigned int *datasize) {
 }
 
 unsigned char ScheduledSpeechEvent::ReserveSample() {
-    unsigned char requested_index = curndx;
-    curndx++;
+    unsigned char requested_index = this->curndx;
+    this->curndx++;
     return requested_index;
 }
 

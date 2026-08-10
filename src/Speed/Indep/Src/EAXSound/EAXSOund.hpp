@@ -200,26 +200,26 @@ class EAXSound : public AudioMemBase {
 
     static CSTATEMGR_Base *GetStateMgr(eMAINMAPSTATES estate) { return m_pStateMgr[estate]; }
     static SndBase *GetSndBase_Object(int nID);
-    cSTICH_PlayBack *GetStichPlayer() { return m_pSTICH_Playback; }
-    cSTICH_PlayBack *GetSTICHPlayback() const { return m_pSTICH_Playback; }
-    EAXFrontEnd *GetFrontEnd() { return m_pFESnd; }
-    AudioSettings *GetCurAudioSettings() { return m_pCurAudioSettings; }
-    AudioSettings *GetCurrentAudioSettings() const { return m_pCurAudioSettings; }
-    Attrib::Gen::audiosystem &GetAttributes() { return *mAttributes; }
-    Attrib::Gen::audiosystem &GetLocalAttr() { return *mLocalAttr; }
-    eSndGameMode GetSndGameMode() { return m_eSndGameMode; }
-    eSndGameMode GetSndGameMode() const { return m_eSndGameMode; }
-    eSndGameMode GetPrevSndGameMode() const { return m_prevSndGameMode; }
+    cSTICH_PlayBack *GetStichPlayer() { return this->m_pSTICH_Playback; }
+    cSTICH_PlayBack *GetSTICHPlayback() const { return this->m_pSTICH_Playback; }
+    EAXFrontEnd *GetFrontEnd() { return this->m_pFESnd; }
+    AudioSettings *GetCurAudioSettings() { return this->m_pCurAudioSettings; }
+    AudioSettings *GetCurrentAudioSettings() const { return this->m_pCurAudioSettings; }
+    Attrib::Gen::audiosystem &GetAttributes() { return *this->mAttributes; }
+    Attrib::Gen::audiosystem &GetLocalAttr() { return *this->mLocalAttr; }
+    eSndGameMode GetSndGameMode() { return this->m_eSndGameMode; }
+    eSndGameMode GetSndGameMode() const { return this->m_eSndGameMode; }
+    eSndGameMode GetPrevSndGameMode() const { return this->m_prevSndGameMode; }
     void SetSndGameMode(eSndGameMode eGameMode) {
-        m_prevSndGameMode = m_eSndGameMode;
-        m_eSndGameMode = eGameMode;
+        this->m_prevSndGameMode = this->m_eSndGameMode;
+        this->m_eSndGameMode = eGameMode;
     }
-    e3DPlayerMix GetPlayerMixMode() { return m_ePlayerMixMode; }
-    eSndGameMode GetSoundGameMode() const { return m_eSndGameMode; }
-    bool IsPauseMainFNG() const { return m_bPause_MainFNG; }
-    void SetPauseMainFNG(bool pauseMainFNG) { m_bPause_MainFNG = pauseMainFNG; }
-    EAXS_StreamManager *GetStreamManager() { return m_pStreamManager; }
-    EAXS_StreamManager *GetStreamManager() const { return m_pStreamManager; }
+    e3DPlayerMix GetPlayerMixMode() { return this->m_ePlayerMixMode; }
+    eSndGameMode GetSoundGameMode() const { return this->m_eSndGameMode; }
+    bool IsPauseMainFNG() const { return this->m_bPause_MainFNG; }
+    void SetPauseMainFNG(bool pauseMainFNG) { this->m_bPause_MainFNG = pauseMainFNG; }
+    EAXS_StreamManager *GetStreamManager() { return this->m_pStreamManager; }
+    EAXS_StreamManager *GetStreamManager() const { return this->m_pStreamManager; }
 
     static CSTATEMGR_Base *m_pStateMgr[13];
 

@@ -106,11 +106,11 @@ struct SFXCTL_Shifting : public SFXCTL {
     void PostShiftFX_Init();
 
     bool IsActive() {
-        return eShiftState != SHFT_NONE;
+        return this->eShiftState != SHFT_NONE;
     }
 
     bool IsDownShifting() {
-        return static_cast<unsigned int>(eShiftState - SHFT_DOWN_DISENGAGE) < 4u;
+        return static_cast<unsigned int>(this->eShiftState - SHFT_DOWN_DISENGAGE) < 4u;
     }
 };
 

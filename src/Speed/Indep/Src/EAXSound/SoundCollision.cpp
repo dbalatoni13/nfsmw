@@ -20,10 +20,10 @@ extern EAXSound *g_pEAXSound;
 namespace Sound {
 
 void AudioEvent::Update(const bVector3 &p, const bVector3 &n, const bVector3 &v, float mag) {
-    mParams.position = p;
-    mParams.normal = n;
-    mParams.velocity = v;
-    mParams.magnitude = mag;
+    this->mParams.position = p;
+    this->mParams.normal = n;
+    this->mParams.velocity = v;
+    this->mParams.magnitude = mag;
 }
 
 float DistanceToView(const bVector3 *position) {
@@ -112,33 +112,33 @@ CollisionEvent::CollisionEvent(const AudioEventParams &aep, bool impact)
     , mCSISEffect(nullptr) //
     , mActor(mParams.object) //
     , mActee(mParams.other_object) {
-    mActive = false;
-    if (mActor != 0) {
-        mTarget.Set(mActor);
+    this->mActive = false;
+    if (this->mActor != 0) {
+        this->mTarget.Set(this->mActor);
     }
 
-    if (mTarget.IsValid()) {
-        if (mAttributes.IsValid()) {
-            unsigned int numDescriptions = GetAttributes()->Num_DESCRIPTION();
+    if (this->mTarget.IsValid()) {
+        if (this->mAttributes.IsValid()) {
+            unsigned int numDescriptions = this->GetAttributes()->Num_DESCRIPTION();
 
             for (unsigned int d = 0; d < numDescriptions; d++) {
-                Description |= GetCollisionDescription(GetAttributes()->DESCRIPTION(d));
+                this->Description |= GetCollisionDescription(this->GetAttributes()->DESCRIPTION(d));
             }
 
-            if (IsPrimaryTarget(mActor) || IsPrimaryTarget(mActee)) {
-                Description |= 1;
+            if (IsPrimaryTarget(this->mActor) || IsPrimaryTarget(this->mActee)) {
+                this->Description |= 1;
             }
 
-            float magnitude = UMath::Clamp(GetParameters().magnitude, 0.0f, 1.0f);
-            Intensity = static_cast<int>(magnitude * 10.0f);
+            float magnitude = UMath::Clamp(this->GetParameters().magnitude, 0.0f, 1.0f);
+            this->Intensity = static_cast<int>(magnitude * 10.0f);
 
-            if (((Description & 6) != 6) || Intensity > 9) {
+            if (((this->Description & 6) != 6) || this->Intensity > 9) {
                 if (impact) {
-                    Attrib::Gen::audioimpact attributes(GetAttributes());
-                    InitAsImpact(attributes);
+                    Attrib::Gen::audioimpact attributes(this->GetAttributes());
+                    this->InitAsImpact(attributes);
                 } else {
-                    Attrib::Gen::audioscrape attributes(GetAttributes());
-                    InitAsScrape(attributes);
+                    Attrib::Gen::audioscrape attributes(this->GetAttributes());
+                    this->InitAsScrape(attributes);
                 }
             }
         }
@@ -146,11 +146,11 @@ CollisionEvent::CollisionEvent(const AudioEventParams &aep, bool impact)
 }
 
 CollisionEvent::~CollisionEvent() {
-    mTarget.Set(0);
+    this->mTarget.Set(0);
 }
 
 void CollisionEvent::SetOwner(CSTATE_Base *owner) {
-    Owner = owner;
+    this->Owner = owner;
 }
 
 void CollisionEvent::Pause(bool pause) {
@@ -226,14 +226,14 @@ AudioEvent *CollisionEvent::Play(const AudioEventParams &aep) {
 void CollisionEvent::Update(const bVector3 &position, const bVector3 &normal, const bVector3 &velocity, float dt) {
     float magnitude;
 
-    mParams.position = position;
-    mParams.normal = normal;
-    mParams.velocity = velocity;
-    mParams.magnitude = dt;
+    this->mParams.position = position;
+    this->mParams.normal = normal;
+    this->mParams.velocity = velocity;
+    this->mParams.magnitude = dt;
     magnitude = UMath::Clamp(dt, 0.0f, 1.0f);
-    Intensity = static_cast<int>(magnitude * 1023.0f);
-    CurrentContactPoint = position;
-    CollisionTime = WorldTimer;
+    this->Intensity = static_cast<int>(magnitude * 1023.0f);
+    this->CurrentContactPoint = position;
+    this->CollisionTime = WorldTimer;
 }
 
 void CollisionEvent::InitAsScrape(const Attrib::Gen::audioscrape &audioFx) {
@@ -245,9 +245,9 @@ void CollisionEvent::InitAsScrape(const Attrib::Gen::audioscrape &audioFx) {
             effectString = "";
         }
 
-        mActive = true;
-        mCSISEffect = effectString;
-        Description |= 0x200;
+        this->mActive = true;
+        this->mCSISEffect = effectString;
+        this->Description |= 0x200;
     }
 }
 
@@ -256,7 +256,7 @@ void CollisionEvent::InitAsImpact(const Attrib::Gen::audioimpact &audioFx) {
     int num_levels;
     float magnitude;
 
-    mAudioFX = audioFx.GetCollection();
+    this->mAudioFX = audioFx.GetCollection();
     levels[0] = static_cast<int>(audioFx.Num_STITCH_LEVEL_0());
     levels[1] = static_cast<int>(audioFx.Num_STITCH_LEVEL_1());
     levels[2] = static_cast<int>(audioFx.Num_STITCH_LEVEL_2());
@@ -279,7 +279,7 @@ void CollisionEvent::InitAsImpact(const Attrib::Gen::audioimpact &audioFx) {
         }
     }
 
-    magnitude = UMath::Clamp(GetParameters().magnitude, 0.0f, 1.0f);
+    magnitude = UMath::Clamp(this->GetParameters().magnitude, 0.0f, 1.0f);
 
     if (num_levels == 0) {
         return;
@@ -304,38 +304,38 @@ void CollisionEvent::InitAsImpact(const Attrib::Gen::audioimpact &audioFx) {
             switch (selected_level) {
                 default:
                     stich_id = audioFx.STITCH_LEVEL_0(index);
-                    mVolume = static_cast<int>(audioFx.Volumes().Vol1);
+                    this->mVolume = static_cast<int>(audioFx.Volumes().Vol1);
                     break;
 
                 case 1:
                     stich_id = audioFx.STITCH_LEVEL_1(index);
-                    mVolume = static_cast<int>(audioFx.Volumes().Vol2);
+                    this->mVolume = static_cast<int>(audioFx.Volumes().Vol2);
                     break;
 
                 case 2:
                     stich_id = audioFx.STITCH_LEVEL_2(index);
-                    mVolume = static_cast<int>(audioFx.Volumes().Vol3);
+                    this->mVolume = static_cast<int>(audioFx.Volumes().Vol3);
                     break;
 
                 case 3:
                     stich_id = audioFx.STITCH_LEVEL_3(index);
-                    mVolume = static_cast<int>(audioFx.Volumes().Vol4);
+                    this->mVolume = static_cast<int>(audioFx.Volumes().Vol4);
                     break;
             }
-            ImpactStich = &g_pEAXSound->GetStichPlayer()->GetStich(STICH_TYPE_COLLISION, stich_id);
+            this->ImpactStich = &g_pEAXSound->GetStichPlayer()->GetStich(STICH_TYPE_COLLISION, stich_id);
         }
     }
 }
 
 void CollisionEvent::Release() {
-    mActive = false;
+    this->mActive = false;
 
-    if (Owner) {
-        Owner->Detach();
+    if (this->Owner) {
+        this->Owner->Detach();
     }
 
-    mRefCount = mRefCount - 1;
-    if (mRefCount == 0 && this) {
+    this->mRefCount = this->mRefCount - 1;
+    if (this->mRefCount == 0 && this) {
         delete this;
     }
 }

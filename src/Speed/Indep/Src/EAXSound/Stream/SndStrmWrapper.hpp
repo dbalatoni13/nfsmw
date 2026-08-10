@@ -88,8 +88,8 @@ struct SndStrmWrapper {
     int PurgeStream();
     void DestroyStream();
 
-    int GetStrmHandle() { return m_handle; }
-    char *GetBuffer() { return m_buffer; }
+    int GetStrmHandle() { return this->m_handle; }
+    char *GetBuffer() { return this->m_buffer; }
 
   private:
     int m_RealStreamBuffer;       // offset 0x4, size 0x4

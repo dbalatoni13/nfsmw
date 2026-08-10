@@ -30,13 +30,13 @@ EAXTrafficCar::EAXTrafficCar() : CSTATE_Base() {}
 EAXTrafficCar::~EAXTrafficCar() {}
 
 void EAXTrafficCar::Attach(void *pAttachment) {
-    IsLargeTrafficCar = false;
-    m_pCar = static_cast<EAX_CarState *>(pAttachment);
+    this->IsLargeTrafficCar = false;
+    this->m_pCar = static_cast<EAX_CarState *>(pAttachment);
     CSTATE_Base::Attach(pAttachment);
 }
 
 bool EAXTrafficCar::Detach() {
     CSTATE_Base::Detach();
-    m_pCar = nullptr;
+    this->m_pCar = nullptr;
     return true;
 }

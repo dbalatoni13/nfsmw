@@ -74,17 +74,17 @@ struct SFXCTL_Engine : public SFXCTL {
     virtual void UpdateVolume(float t);
     virtual void UpdateRedlining(float t);
 
-    virtual float GetEngRPM() { return m_fEng_RPM; }
-    virtual float GetSmoothedEngRPM() { return m_fSmoothedEng_RPM; }
-    virtual float GetEngTorque() { return m_fEng_Trq; }
-    virtual float GetSmoothedEngTorque() { return m_fSmoothedEng_Trq; }
+    virtual float GetEngRPM() { return this->m_fEng_RPM; }
+    virtual float GetSmoothedEngRPM() { return this->m_fSmoothedEng_RPM; }
+    virtual float GetEngTorque() { return this->m_fEng_Trq; }
+    virtual float GetSmoothedEngTorque() { return this->m_fSmoothedEng_Trq; }
     virtual void UpdateEngineLFO_FX(float t);
     void SetEngTorque(float _torque) {
-        _torque += m_TRQ_LFO;
-        m_fEng_Trq = _torque;
-        m_fSmoothedEng_Trq = m_fSmoothedEng_Trq * 0.95f + _torque * 0.05f;
+        _torque += this->m_TRQ_LFO;
+        this->m_fEng_Trq = _torque;
+        this->m_fSmoothedEng_Trq = this->m_fSmoothedEng_Trq * 0.95f + _torque * 0.05f;
     }
-    void SetEngRPM(float _RPM) { m_fEng_RPM = _RPM; }
+    void SetEngRPM(float _RPM) { this->m_fEng_RPM = _RPM; }
 
     void MsgCountdownDone(const MCountdownDone &message);
     void UpdateClutchState();

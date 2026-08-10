@@ -35,7 +35,7 @@ struct stAIDriveByInfo {
     unsigned int UniqueID;         // offset 0x1C, size 0x4
 
     stAIDriveByInfo() {
-        vLocation = bVector3(0.0f, 0.0f, 0.0f);
+        this->vLocation = bVector3(0.0f, 0.0f, 0.0f);
     }
 };
 } // namespace AIDriveBy

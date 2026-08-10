@@ -11,10 +11,10 @@ AudioMemoryManager::AudioMemoryManager()
 
 void AudioMemoryManager::InitMemoryPool(eAUDMEMPOOLTYPE etype, int size) {
     if (etype == AUD_MAIN_MEM_POOL) {
-        m_memoryPoolSize = size;
-        m_pMemoryPoolMem = bMalloc(size, "Audio Memory Pool", __LINE__, 0x2000);
+        this->m_memoryPoolSize = size;
+        this->m_pMemoryPoolMem = bMalloc(size, "Audio Memory Pool", __LINE__, 0x2000);
         AudioMemoryPool = bGetFreeMemoryPoolNum();
-        bInitMemoryPool(AudioMemoryPool, m_pMemoryPoolMem, m_memoryPoolSize, "Audio Memory Pool");
+        bInitMemoryPool(AudioMemoryPool, this->m_pMemoryPoolMem, this->m_memoryPoolSize, "Audio Memory Pool");
     }
 }
 
@@ -43,5 +43,5 @@ void AudioMemoryManager::FreeMemory(void *mem) {
 }
 
 char *AudioMemoryManager::AllocateMemoryChar(int size, const char *debug_name, bool FromTop) {
-    return static_cast<char *>(AllocateMemory(size, debug_name, FromTop));
+    return static_cast<char *>(this->AllocateMemory(size, debug_name, FromTop));
 }

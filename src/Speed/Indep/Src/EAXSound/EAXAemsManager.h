@@ -73,16 +73,16 @@ struct stAssetDescription {
     bool bLoadToTop;            // offset 0x1C, size 0x1
 
     void Clear() {
-        eDataType = EAXSND_DT_NONE;
-        FileName = Attrib::StringKey("");
-        DataPath = SNDPATH_ROUTE;
+        this->eDataType = EAXSND_DT_NONE;
+        this->FileName = Attrib::StringKey("");
+        this->DataPath = SNDPATH_ROUTE;
     }
 
     stAssetDescription &operator=(const stAssetDescription &copy) {
-        eDataType = copy.eDataType;
-        FileName = copy.FileName;
-        DataPath = copy.DataPath;
-        bLoadToTop = copy.bLoadToTop;
+        this->eDataType = copy.eDataType;
+        this->FileName = copy.FileName;
+        this->DataPath = copy.DataPath;
+        this->bLoadToTop = copy.bLoadToTop;
         return *this;
     }
 };
@@ -125,61 +125,61 @@ struct stSndDataLoadParams {
     Timer t_load;                        // offset 0x64, size 0x4
 
     stSndDataLoadParams() {
-        AssetDescription.Clear();
-        Clear();
+        this->AssetDescription.Clear();
+        this->Clear();
     }
 
     void Clear() {
-        AssetDescription.Clear();
-        Handle = -1;
-        bResolvedSync = false;
-        MemLocation = TMP_ALLOC_NONE;
-        mBankSlot = nullptr;
-        pmem = nullptr;
-        plocmem = nullptr;
-        nSize = 0;
-        bResolvedAsync = false;
-        resallocs.clear();
-        RefCount.clear();
-        t_req = Timer(0);
-        t_load = Timer(0);
+        this->AssetDescription.Clear();
+        this->Handle = -1;
+        this->bResolvedSync = false;
+        this->MemLocation = TMP_ALLOC_NONE;
+        this->mBankSlot = nullptr;
+        this->pmem = nullptr;
+        this->plocmem = nullptr;
+        this->nSize = 0;
+        this->bResolvedAsync = false;
+        this->resallocs.clear();
+        this->RefCount.clear();
+        this->t_req = Timer(0);
+        this->t_load = Timer(0);
     }
 
     stSndDataLoadParams &operator=(stSndDataLoadParams &copy) {
-        AssetDescription = copy.AssetDescription;
-        MemLocation = copy.MemLocation;
-        mBankSlot = copy.mBankSlot;
-        if (mBankSlot != nullptr && mBankSlot->pAssetParams == &copy) {
-            mBankSlot->pAssetParams = this;
+        this->AssetDescription = copy.AssetDescription;
+        this->MemLocation = copy.MemLocation;
+        this->mBankSlot = copy.mBankSlot;
+        if (this->mBankSlot != nullptr && this->mBankSlot->pAssetParams == &copy) {
+            this->mBankSlot->pAssetParams = this;
         }
 
-        pmem = copy.pmem;
-        plocmem = copy.plocmem;
-        nSize = copy.nSize;
-        Handle = copy.Handle;
-        *static_cast<unsigned int *>(static_cast<void *>(&bResolvedAsync)) =
+        this->pmem = copy.pmem;
+        this->plocmem = copy.plocmem;
+        this->nSize = copy.nSize;
+        this->Handle = copy.Handle;
+        *static_cast<unsigned int *>(static_cast<void *>(&this->bResolvedAsync)) =
             *static_cast<unsigned int *>(static_cast<void *>(&copy.bResolvedAsync));
-        *static_cast<unsigned int *>(static_cast<void *>(&bResolvedSync)) =
+        *static_cast<unsigned int *>(static_cast<void *>(&this->bResolvedSync)) =
             *static_cast<unsigned int *>(static_cast<void *>(&copy.bResolvedSync));
 
-        resallocs.clear();
-        resallocs.reserve(copy.resallocs.size());
+        this->resallocs.clear();
+        this->resallocs.reserve(copy.resallocs.size());
         const unsigned int *i;
         for (i = copy.resallocs.begin(); i != copy.resallocs.end(); ++i) {
-            resallocs.push_back(*i);
+            this->resallocs.push_back(*i);
         }
         copy.resallocs.clear();
 
-        RefCount.clear();
-        RefCount.reserve(copy.RefCount.size());
+        this->RefCount.clear();
+        this->RefCount.reserve(copy.RefCount.size());
         EAX_CarState **j;
         for (j = copy.RefCount.begin(); j != copy.RefCount.end(); ++j) {
-            RefCount.push_back(*j);
+            this->RefCount.push_back(*j);
         }
         copy.RefCount.clear();
 
-        t_req = copy.t_req;
-        t_load = copy.t_load;
+        this->t_req = copy.t_req;
+        this->t_load = copy.t_load;
         return *this;
     }
 };
@@ -192,10 +192,10 @@ struct stSndAssetQueue {
     EAX_CarState *pCar;       // offset 0x24, size 0x4
 
     bool operator==(const stSndAssetQueue &rhs) const {
-        if (pThis != rhs.pThis) {
+        if (this->pThis != rhs.pThis) {
             return false;
         }
-        if (Asset.FileName != rhs.Asset.FileName) {
+        if (this->Asset.FileName != rhs.Asset.FileName) {
             return false;
         }
         return true;

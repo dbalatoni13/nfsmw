@@ -37,36 +37,36 @@ SndBase *SFXCTL_Tunnel::CreateObject(unsigned int allocator) {
 }
 
 SFXCTL_Tunnel::SFXCTL_Tunnel() {
-    m_ReverbType = static_cast<eREVERBFX>(5);
-    m_TargetType = static_cast<eREVERBFX>(5);
-    m_GinsuDryVol = 0x7F;
-    m_CurWetGinsu = 0.0f;
-    m_CurWetAems = 0.0f;
-    m_CurWetGinsuTarget = 0.0f;
-    m_CurWetAemsTarget = 0.0f;
-    m_fIntensity = 0.0f;
-    m_CurReverbZone = -1;
-    vDriveByLoc = bVector3(0.0f, 0.0f, 0.0f);
-    tTimeToWaitBeforeAnotherDriveBy = 0.0f;
-    tTimeToWaitBeforeAnotherExitDriveBy = 0.0f;
-    m_GinsuWetVol = 0;
-    m_AEMSWetVol = 0;
-    m_AEMSDryVol = 0;
-    m_CurDryGinsu = 1.0f;
-    m_CurDryAems = 1.0f;
-    m_CurDryGinsuTarget = 1.0f;
-    m_CurDryAemsTarget = 1.0f;
-    m_PrevReverbZone = 0;
-    bPlayDriveBy = false;
-    pLastZoneWePlayedWooshFor = nullptr;
-    pLastZoneWePlayedExitWooshFor = nullptr;
-    bFadingOut = false;
-    bFadingIn = false;
-    bIsReadyForSwitch = false;
-    ReflRamp.Initialize(0.0f, 0.0f, 1, LINEAR);
-    bToggleOffset = false;
-    m_IsLeadCar = false;
-    m_LastOcclusionTest = g_pEAXSound->Random(1.0f);
+    this->m_ReverbType = static_cast<eREVERBFX>(5);
+    this->m_TargetType = static_cast<eREVERBFX>(5);
+    this->m_GinsuDryVol = 0x7F;
+    this->m_CurWetGinsu = 0.0f;
+    this->m_CurWetAems = 0.0f;
+    this->m_CurWetGinsuTarget = 0.0f;
+    this->m_CurWetAemsTarget = 0.0f;
+    this->m_fIntensity = 0.0f;
+    this->m_CurReverbZone = -1;
+    this->vDriveByLoc = bVector3(0.0f, 0.0f, 0.0f);
+    this->tTimeToWaitBeforeAnotherDriveBy = 0.0f;
+    this->tTimeToWaitBeforeAnotherExitDriveBy = 0.0f;
+    this->m_GinsuWetVol = 0;
+    this->m_AEMSWetVol = 0;
+    this->m_AEMSDryVol = 0;
+    this->m_CurDryGinsu = 1.0f;
+    this->m_CurDryAems = 1.0f;
+    this->m_CurDryGinsuTarget = 1.0f;
+    this->m_CurDryAemsTarget = 1.0f;
+    this->m_PrevReverbZone = 0;
+    this->bPlayDriveBy = false;
+    this->pLastZoneWePlayedWooshFor = nullptr;
+    this->pLastZoneWePlayedExitWooshFor = nullptr;
+    this->bFadingOut = false;
+    this->bFadingIn = false;
+    this->bIsReadyForSwitch = false;
+    this->ReflRamp.Initialize(0.0f, 0.0f, 1, LINEAR);
+    this->bToggleOffset = false;
+    this->m_IsLeadCar = false;
+    this->m_LastOcclusionTest = g_pEAXSound->Random(1.0f);
     TickerTimeStart = bGetTicker();
     TickerTimeAccum = 0;
 }
@@ -79,15 +79,15 @@ void SFXCTL_Tunnel::SetupSFX(CSTATE_Base *_StateBase) {
 
 void SFXCTL_Tunnel::InitSFX() {
     SFXCTL::InitSFX();
-    m_bIsInTunnel = false;
-    m_bWasInTunnel = false;
+    this->m_bIsInTunnel = false;
+    this->m_bWasInTunnel = false;
 
-    if (GetPhysCar()->GetContext() == Sound::kRaceContext_QuickRace && m_pStateBase->m_InstNum == 0) {
-        m_IsLeadCar = true;
+    if (this->GetPhysCar()->GetContext() == Sound::kRaceContext_QuickRace && this->m_pStateBase->m_InstNum == 0) {
+        this->m_IsLeadCar = true;
     } else {
-        m_IsLeadCar = false;
+        this->m_IsLeadCar = false;
     }
-    IsOccluded = false;
+    this->IsOccluded = false;
 }
 
 int SFXCTL_Tunnel::GetController(int Index) { return -1; }
@@ -96,66 +96,66 @@ void SFXCTL_Tunnel::AttachController(SFXCTL *psfxctl) {}
 
 void SFXCTL_Tunnel::UpdateDriveBySnds(float t) {
     bool InTunnel;
-    eTrackPathZoneType PrevFutureZoneType = FutureZoneType;
+    eTrackPathZoneType PrevFutureZoneType = this->FutureZoneType;
     TrackPathZone *zone;
 
-    bPlayDriveBy = false;
-    bPlayTunnelExit = false;
+    this->bPlayDriveBy = false;
+    this->bPlayTunnelExit = false;
 
-    tTimeToWaitBeforeAnotherDriveBy -= t;
-    if (tTimeToWaitBeforeAnotherDriveBy < 0.0f) {
-        tTimeToWaitBeforeAnotherDriveBy = 0.0f;
+    this->tTimeToWaitBeforeAnotherDriveBy -= t;
+    if (this->tTimeToWaitBeforeAnotherDriveBy < 0.0f) {
+        this->tTimeToWaitBeforeAnotherDriveBy = 0.0f;
     }
-    tTimeToWaitBeforeAnotherExitDriveBy -= t;
-    if (tTimeToWaitBeforeAnotherExitDriveBy < 0.0f) {
-        tTimeToWaitBeforeAnotherExitDriveBy = 0.0f;
+    this->tTimeToWaitBeforeAnotherExitDriveBy -= t;
+    if (this->tTimeToWaitBeforeAnotherExitDriveBy < 0.0f) {
+        this->tTimeToWaitBeforeAnotherExitDriveBy = 0.0f;
     }
 
     (void)PrevFutureZoneType;
-    FutureZoneType = TRACK_PATH_ZONE_RESET;
+    this->FutureZoneType = TRACK_PATH_ZONE_RESET;
 
-    const bVector2 *CurCarPos = m_pEAXCar->GetPhysCar()->GetPosition2D();
+    const bVector2 *CurCarPos = this->m_pEAXCar->GetPhysCar()->GetPosition2D();
     bVector2 UnNormalCurCarDir(
-        m_pEAXCar->GetPhysCar()->GetForwardVector()->x,
-        m_pEAXCar->GetPhysCar()->GetForwardVector()->y);
+        this->m_pEAXCar->GetPhysCar()->GetForwardVector()->x,
+        this->m_pEAXCar->GetPhysCar()->GetForwardVector()->y);
     bVector2 CurCarDir = bNormalize(UnNormalCurCarDir);
-    bVector2 FutureCarDir = bScale(CurCarDir, m_pEAXCar->GetPhysCar()->GetForwardSpeed() * 0.4f);
+    bVector2 FutureCarDir = bScale(CurCarDir, this->m_pEAXCar->GetPhysCar()->GetForwardSpeed() * 0.4f);
     bVector2 FutureCar2dPos = bAdd(*CurCarPos, FutureCarDir);
     bVector3 FutureCarPos(
         FutureCar2dPos.x,
         FutureCar2dPos.y,
-        GetPhysCar()->GetPosition()->z);
+        this->GetPhysCar()->GetPosition()->z);
 
-    FutureZoneType = TRACK_PATH_ZONE_TUNNEL;
-    zone = GetTunnelType(FutureCarPos, TRACK_PATH_ZONE_TUNNEL);
+    this->FutureZoneType = TRACK_PATH_ZONE_TUNNEL;
+    zone = this->GetTunnelType(FutureCarPos, TRACK_PATH_ZONE_TUNNEL);
     if (!zone) {
-        FutureZoneType = TRACK_PATH_ZONE_OVERPASS;
-        zone = GetTunnelType(FutureCarPos, TRACK_PATH_ZONE_OVERPASS);
+        this->FutureZoneType = TRACK_PATH_ZONE_OVERPASS;
+        zone = this->GetTunnelType(FutureCarPos, TRACK_PATH_ZONE_OVERPASS);
         if (!zone) {
-            FutureZoneType = TRACK_PATH_ZONE_OVERPASS_SMALL;
-            zone = GetTunnelType(FutureCarPos, TRACK_PATH_ZONE_OVERPASS_SMALL);
+            this->FutureZoneType = TRACK_PATH_ZONE_OVERPASS_SMALL;
+            zone = this->GetTunnelType(FutureCarPos, TRACK_PATH_ZONE_OVERPASS_SMALL);
             if (!zone) {
-                FutureZoneType = TRACK_PATH_ZONE_RESET;
+                this->FutureZoneType = TRACK_PATH_ZONE_RESET;
             }
         }
     }
 
-    if (!m_bIsInTunnel) {
-        if (FutureZoneType != TRACK_PATH_ZONE_RESET &&
-            ((tTimeToWaitBeforeAnotherDriveBy < 0.01f && pLastZoneWePlayedWooshFor == zone) ||
-             pLastZoneWePlayedWooshFor != zone)) {
-            if (g_WooshVol_vs_Vel.GetValue(m_pEAXCar->GetPhysCar()->GetVelocityMagnitude()) > 0.01f) {
-                bPlayDriveBy = true;
-                tTimeToWaitBeforeAnotherDriveBy = 3.0f;
-                pLastZoneWePlayedWooshFor = zone;
-                vDriveByLoc = bVector3(FutureCarPos.x, FutureCarPos.y, m_pEAXCar->GetPhysCar()->GetPosition()->z + 10.0f);
-                m_fIntensity = g_WooshVol_vs_Vel.GetValue(m_pEAXCar->GetPhysCar()->GetVelocityMagnitude());
+    if (!this->m_bIsInTunnel) {
+        if (this->FutureZoneType != TRACK_PATH_ZONE_RESET &&
+            ((this->tTimeToWaitBeforeAnotherDriveBy < 0.01f && this->pLastZoneWePlayedWooshFor == zone) ||
+             this->pLastZoneWePlayedWooshFor != zone)) {
+            if (g_WooshVol_vs_Vel.GetValue(this->m_pEAXCar->GetPhysCar()->GetVelocityMagnitude()) > 0.01f) {
+                this->bPlayDriveBy = true;
+                this->tTimeToWaitBeforeAnotherDriveBy = 3.0f;
+                this->pLastZoneWePlayedWooshFor = zone;
+                this->vDriveByLoc = bVector3(FutureCarPos.x, FutureCarPos.y, this->m_pEAXCar->GetPhysCar()->GetPosition()->z + 10.0f);
+                this->m_fIntensity = g_WooshVol_vs_Vel.GetValue(this->m_pEAXCar->GetPhysCar()->GetVelocityMagnitude());
                 stDriveByInfo tmpdrivebypackage;
                 tmpdrivebypackage.eDriveByType = DRIVE_BY_TUNNEL_IN;
-                tmpdrivebypackage.pEAXCar = m_pEAXCar;
-                tmpdrivebypackage.ClosingVelocity = GetPhysCar()->GetVelocityMagnitude();
-                tmpdrivebypackage.UniqueID = reinterpret_cast<unsigned int>(pLastZoneWePlayedWooshFor);
-                tmpdrivebypackage.vLocation = vDriveByLoc;
+                tmpdrivebypackage.pEAXCar = this->m_pEAXCar;
+                tmpdrivebypackage.ClosingVelocity = this->GetPhysCar()->GetVelocityMagnitude();
+                tmpdrivebypackage.UniqueID = reinterpret_cast<unsigned int>(this->pLastZoneWePlayedWooshFor);
+                tmpdrivebypackage.vLocation = this->vDriveByLoc;
                 CSTATE_Base *ReturnedObj = EAXSound::GetStateMgr(eMM_DRIVEBY)->GetFreeState(&tmpdrivebypackage);
                 if (ReturnedObj) {
                     ReturnedObj->Attach(&tmpdrivebypackage);
@@ -166,27 +166,27 @@ void SFXCTL_Tunnel::UpdateDriveBySnds(float t) {
             }
         }
 
-        if (!m_bIsInTunnel) {
+        if (!this->m_bIsInTunnel) {
             return;
         }
     }
 
-    if (FutureZoneType == TRACK_PATH_ZONE_RESET &&
-        CurZoneType == TRACK_PATH_ZONE_TUNNEL &&
-        ((tTimeToWaitBeforeAnotherExitDriveBy < 0.01f && pLastZoneWePlayedExitWooshFor == zone) ||
-         pLastZoneWePlayedExitWooshFor != zone)) {
-        if (g_WooshVol_vs_Vel.GetValue(m_pEAXCar->GetPhysCar()->GetVelocityMagnitude()) > 0.01f) {
-            bPlayTunnelExit = true;
-            tTimeToWaitBeforeAnotherExitDriveBy = 3.0f;
-            pLastZoneWePlayedExitWooshFor = zone;
-            vDriveByLoc = bVector3(FutureCarPos.x, FutureCarPos.y, m_pEAXCar->GetPhysCar()->GetPosition()->z + 10.0f);
-            m_fExitIntensity = g_WooshVol_vs_Vel.GetValue(m_pEAXCar->GetPhysCar()->GetVelocityMagnitude());
+    if (this->FutureZoneType == TRACK_PATH_ZONE_RESET &&
+        this->CurZoneType == TRACK_PATH_ZONE_TUNNEL &&
+        ((this->tTimeToWaitBeforeAnotherExitDriveBy < 0.01f && this->pLastZoneWePlayedExitWooshFor == zone) ||
+         this->pLastZoneWePlayedExitWooshFor != zone)) {
+        if (g_WooshVol_vs_Vel.GetValue(this->m_pEAXCar->GetPhysCar()->GetVelocityMagnitude()) > 0.01f) {
+            this->bPlayTunnelExit = true;
+            this->tTimeToWaitBeforeAnotherExitDriveBy = 3.0f;
+            this->pLastZoneWePlayedExitWooshFor = zone;
+            this->vDriveByLoc = bVector3(FutureCarPos.x, FutureCarPos.y, this->m_pEAXCar->GetPhysCar()->GetPosition()->z + 10.0f);
+            this->m_fExitIntensity = g_WooshVol_vs_Vel.GetValue(this->m_pEAXCar->GetPhysCar()->GetVelocityMagnitude());
             stDriveByInfo tmpdrivebypackage;
             tmpdrivebypackage.eDriveByType = DRIVE_BY_TUNNEL_OUT;
-            tmpdrivebypackage.pEAXCar = m_pEAXCar;
-            tmpdrivebypackage.ClosingVelocity = GetPhysCar()->GetVelocityMagnitude();
+            tmpdrivebypackage.pEAXCar = this->m_pEAXCar;
+            tmpdrivebypackage.ClosingVelocity = this->GetPhysCar()->GetVelocityMagnitude();
             tmpdrivebypackage.UniqueID = 0;
-            tmpdrivebypackage.vLocation = vDriveByLoc;
+            tmpdrivebypackage.vLocation = this->vDriveByLoc;
             CSTATE_Base *ReturnedObj = EAXSound::GetStateMgr(eMM_DRIVEBY)->GetFreeState(&tmpdrivebypackage);
             if (ReturnedObj) {
                 ReturnedObj->Attach(&tmpdrivebypackage);
@@ -204,7 +204,7 @@ TrackPathZone *SFXCTL_Tunnel::GetTunnelType(bVector3 &pos, eTrackPathZoneType zo
         if (zone->GetElevation() == 0.0f) {
             return zone;
         }
-        if (zone->GetElevation() >= GetPhysCar()->GetPosition()->z) {
+        if (zone->GetElevation() >= this->GetPhysCar()->GetPosition()->z) {
             return zone;
         }
     }
@@ -218,22 +218,22 @@ void SFXCTL_Tunnel::UpdateParams(float t) {
 
     SFXCTL::UpdateParams(t);
 
-    ninst = GetStateBase()->m_InstNum;
-    nother = static_cast<int>(GetPhysCar()->GetContext());
+    ninst = this->GetStateBase()->m_InstNum;
+    nother = static_cast<int>(this->GetPhysCar()->GetContext());
     peaxcar_a = g_pEAXSound->GetPlayerTunerCar(ninst);
 
-    UpdateIsInTunnel(t);
-    UpdateDriveBySnds(t);
-    UpdateCityVerb(t);
-    UpdateReflectionParams(t);
+    this->UpdateIsInTunnel(t);
+    this->UpdateDriveBySnds(t);
+    this->UpdateCityVerb(t);
+    this->UpdateReflectionParams(t);
 
-    nother = static_cast<int>(GetPhysCar()->GetContext());
+    nother = static_cast<int>(this->GetPhysCar()->GetContext());
     if (nother != kRaceContext_Online) {
         if (nother != kRaceContext_Career) {
             return;
         }
     }
-    UpdateOcclusion(t);
+    this->UpdateOcclusion(t);
 }
 
 void SFXCTL_Tunnel::UpdateIsInTunnel(float t) {
@@ -242,24 +242,24 @@ void SFXCTL_Tunnel::UpdateIsInTunnel(float t) {
     TrackPathZone *zone;
     bool InTunnel;
 
-    CurZoneType = TRACK_PATH_ZONE_TUNNEL;
-    zone = GetTunnelType(*static_cast<bVector3 *>(static_cast<void *>(&m_pStateBase->GetPhysCar()->mMatrix.v3)),
+    this->CurZoneType = TRACK_PATH_ZONE_TUNNEL;
+    zone = this->GetTunnelType(*static_cast<bVector3 *>(static_cast<void *>(&this->m_pStateBase->GetPhysCar()->mMatrix.v3)),
                          TRACK_PATH_ZONE_TUNNEL);
     if (!zone) {
-        CurZoneType = TRACK_PATH_ZONE_OVERPASS;
-        zone = GetTunnelType(*static_cast<bVector3 *>(static_cast<void *>(&m_pStateBase->GetPhysCar()->mMatrix.v3)),
+        this->CurZoneType = TRACK_PATH_ZONE_OVERPASS;
+        zone = this->GetTunnelType(*static_cast<bVector3 *>(static_cast<void *>(&this->m_pStateBase->GetPhysCar()->mMatrix.v3)),
                              TRACK_PATH_ZONE_OVERPASS);
         if (!zone) {
-            CurZoneType = TRACK_PATH_ZONE_OVERPASS_SMALL;
-            zone = GetTunnelType(*static_cast<bVector3 *>(static_cast<void *>(&m_pStateBase->GetPhysCar()->mMatrix.v3)),
+            this->CurZoneType = TRACK_PATH_ZONE_OVERPASS_SMALL;
+            zone = this->GetTunnelType(*static_cast<bVector3 *>(static_cast<void *>(&this->m_pStateBase->GetPhysCar()->mMatrix.v3)),
                                  TRACK_PATH_ZONE_OVERPASS_SMALL);
             if (!zone) {
-                CurZoneType = TRACK_PATH_ZONE_GARAGE;
-                zone = GetTunnelType(*static_cast<bVector3 *>(static_cast<void *>(&m_pStateBase->GetPhysCar()->mMatrix.v3)),
+                this->CurZoneType = TRACK_PATH_ZONE_GARAGE;
+                zone = this->GetTunnelType(*static_cast<bVector3 *>(static_cast<void *>(&this->m_pStateBase->GetPhysCar()->mMatrix.v3)),
                                      TRACK_PATH_ZONE_GARAGE);
                 if (!zone) {
-                    CurZoneType = TRACK_PATH_ZONE_DYNAMIC;
-                    zone = GetTunnelType(*static_cast<bVector3 *>(static_cast<void *>(&m_pStateBase->GetPhysCar()->mMatrix.v3)),
+                    this->CurZoneType = TRACK_PATH_ZONE_DYNAMIC;
+                    zone = this->GetTunnelType(*static_cast<bVector3 *>(static_cast<void *>(&this->m_pStateBase->GetPhysCar()->mMatrix.v3)),
                                          TRACK_PATH_ZONE_DYNAMIC);
                     if (zone) {
                         if (zone->VisitInfo == 1) {
@@ -270,7 +270,7 @@ void SFXCTL_Tunnel::UpdateIsInTunnel(float t) {
                         }
                     }
                     InTunnel = false;
-                    CurZoneType = TRACK_PATH_ZONE_RESET;
+                    this->CurZoneType = TRACK_PATH_ZONE_RESET;
                     goto LAB_UPDATE_END;
                 }
             }
@@ -279,40 +279,40 @@ void SFXCTL_Tunnel::UpdateIsInTunnel(float t) {
 
 LAB_IN_TUNNEL:
     InTunnel = true;
-    if (!m_bIsInTunnel) {
-        m_bIsInTunnel = true;
-        if (static_cast<int>(m_pStateBase->GetPhysCar()->mContext) == 0) {
+    if (!this->m_bIsInTunnel) {
+        this->m_bIsInTunnel = true;
+        if (static_cast<int>(this->m_pStateBase->GetPhysCar()->mContext) == 0) {
             MMiscSound(1).Send(UCrc32("TunnelUpdate"));
 
             eREVERBFX NewVerbType;
-            if (CurZoneType > TRACK_PATH_ZONE_OVERPASS_SMALL) {
+            if (this->CurZoneType > TRACK_PATH_ZONE_OVERPASS_SMALL) {
 LAB_DEFAULT_VERB:
                 NewVerbType = static_cast<eREVERBFX>(3);
             } else {
-                if (CurZoneType >= TRACK_PATH_ZONE_OVERPASS) {
+                if (this->CurZoneType >= TRACK_PATH_ZONE_OVERPASS) {
                     NewVerbType = static_cast<eREVERBFX>(6);
-                } else if (CurZoneType == TRACK_PATH_ZONE_TUNNEL) {
+                } else if (this->CurZoneType == TRACK_PATH_ZONE_TUNNEL) {
                     NewVerbType = static_cast<eREVERBFX>(5);
                 } else {
                     goto LAB_DEFAULT_VERB;
                 }
             }
-            SetCurrentReverbType(NewVerbType, 0);
+            this->SetCurrentReverbType(NewVerbType, 0);
         }
     }
 
 LAB_UPDATE_END:
-    if (!InTunnel && m_bIsInTunnel) {
-        m_bIsInTunnel = false;
-        if (static_cast<int>(m_pStateBase->GetPhysCar()->mContext) == 0) {
+    if (!InTunnel && this->m_bIsInTunnel) {
+        this->m_bIsInTunnel = false;
+        if (static_cast<int>(this->m_pStateBase->GetPhysCar()->mContext) == 0) {
             MMiscSound(0).Send(UCrc32("TunnelUpdate"));
-            EndTunnelVerb();
+            this->EndTunnelVerb();
         }
     }
 
-    m_bWasInTunnel = m_bIsInTunnel;
-    if (static_cast<int>(m_pStateBase->GetPhysCar()->mContext) == 0) {
-        m_PlayerZoneType = CurZoneType;
+    this->m_bWasInTunnel = this->m_bIsInTunnel;
+    if (static_cast<int>(this->m_pStateBase->GetPhysCar()->mContext) == 0) {
+        m_PlayerZoneType = this->CurZoneType;
     }
 }
 
@@ -321,19 +321,19 @@ void SFXCTL_Tunnel::UpdateOcclusion(float t) {
         return;
     }
 
-    m_LastOcclusionTest -= t;
-    if (m_LastOcclusionTest > 0.0f) {
+    this->m_LastOcclusionTest -= t;
+    if (this->m_LastOcclusionTest > 0.0f) {
         return;
     }
 
-    m_LastOcclusionTest = TimeBetweenOcclusionTests;
-    if (m_PlayerZoneType == CurZoneType) {
-        IsOccluded = false;
+    this->m_LastOcclusionTest = TimeBetweenOcclusionTests;
+    if (m_PlayerZoneType == this->CurZoneType) {
+        this->IsOccluded = false;
         return;
     }
 
-    if (m_PlayerZoneType != TRACK_PATH_ZONE_TUNNEL && CurZoneType != TRACK_PATH_ZONE_TUNNEL) {
-        IsOccluded = false;
+    if (m_PlayerZoneType != TRACK_PATH_ZONE_TUNNEL && this->CurZoneType != TRACK_PATH_ZONE_TUNNEL) {
+        this->IsOccluded = false;
         return;
     }
 
@@ -345,9 +345,9 @@ void SFXCTL_Tunnel::UpdateOcclusion(float t) {
         originToBarrier[0].y = SndCamera::GetWorldCarPos3(0)->z;
         originToBarrier[0].z = SndCamera::GetWorldCarPos3(0)->x;
 
-        originToBarrier[1].z = GetPhysCar()->GetPosition()->x;
-        originToBarrier[1].x = -GetPhysCar()->GetPosition()->y;
-        originToBarrier[1].y = GetPhysCar()->GetPosition()->z;
+        originToBarrier[1].z = this->GetPhysCar()->GetPosition()->x;
+        originToBarrier[1].x = -this->GetPhysCar()->GetPosition()->y;
+        originToBarrier[1].y = this->GetPhysCar()->GetPosition()->z;
 
         float fTestDist = UMath::Distancexyz(originToBarrier[0], originToBarrier[1]);
         if (fTestDist > MaxDistanceToOccludeTest) {
@@ -362,47 +362,47 @@ void SFXCTL_Tunnel::UpdateOcclusion(float t) {
         WCollisionMgr::WorldCollisionInfo cInfo;
         if (WCollisionMgr(0, 3).CheckHitWorld(originToBarrier, cInfo, 2)) {
             if (!(UMath::DistanceSquarexyz(originToBarrier[0], cInfo.fCollidePt) >= fTestDist * fTestDist - 9.0f)) {
-                IsOccluded = true;
+                this->IsOccluded = true;
                 return;
             }
         }
 
-        IsOccluded = false;
+        this->IsOccluded = false;
     }
 }
 
 void SFXCTL_Tunnel::UpdateMixerOutputs() {
-    SetDMIX_Input(0, 0);
-    SetDMIX_Input(1, 0);
-    SetDMIX_Input(2, 0);
-    SetDMIX_Input(3, 0);
+    this->SetDMIX_Input(0, 0);
+    this->SetDMIX_Input(1, 0);
+    this->SetDMIX_Input(2, 0);
+    this->SetDMIX_Input(3, 0);
 
-    SetDMIX_Input(4, IsOccluded != 0 ? 0x7FFF : 0);
+    this->SetDMIX_Input(4, this->IsOccluded != 0 ? 0x7FFF : 0);
 
-    if (static_cast<int>(m_pStateBase->GetPhysCar()->mContext) == 0) {
-        SetDMIX_Input(5, m_AEMSDryVol);
-        SetDMIX_Input(6, m_AEMSWetVol);
+    if (static_cast<int>(this->m_pStateBase->GetPhysCar()->mContext) == 0) {
+        this->SetDMIX_Input(5, this->m_AEMSDryVol);
+        this->SetDMIX_Input(6, this->m_AEMSWetVol);
     }
 
-    if (!m_bIsInTunnel) {
+    if (!this->m_bIsInTunnel) {
         return;
     }
 
-    if (CurZoneType < TRACK_PATH_ZONE_STREAMER_PREDICTION) {
-        if (CurZoneType >= TRACK_PATH_ZONE_OVERPASS) {
-            SetDMIX_Input(1, 0x7FFF);
+    if (this->CurZoneType < TRACK_PATH_ZONE_STREAMER_PREDICTION) {
+        if (this->CurZoneType >= TRACK_PATH_ZONE_OVERPASS) {
+            this->SetDMIX_Input(1, 0x7FFF);
         } else {
-            SetDMIX_Input(0, 0x7FFF);
+            this->SetDMIX_Input(0, 0x7FFF);
         }
     } else {
-        if (CurZoneType == TRACK_PATH_ZONE_GARAGE) {
-            SetDMIX_Input(2, 0x7FFF);
+        if (this->CurZoneType == TRACK_PATH_ZONE_GARAGE) {
+            this->SetDMIX_Input(2, 0x7FFF);
         } else {
-            SetDMIX_Input(0, 0x7FFF);
+            this->SetDMIX_Input(0, 0x7FFF);
         }
     }
 
-    SetDMIX_Input(3, 0x7FFF);
+    this->SetDMIX_Input(3, 0x7FFF);
 }
 
 void SFXCTL_Tunnel::UpdateCityVerb(float t) {
@@ -410,61 +410,61 @@ void SFXCTL_Tunnel::UpdateCityVerb(float t) {
 
     int ncurrentoffset = 0;
     int isValid = 1;
-    m_PrevReverbZone = m_CurReverbZone;
+    this->m_PrevReverbZone = this->m_CurReverbZone;
 
     if (!ReverbAccessor.Layer) {
         isValid = 0;
     }
 
     if ((isValid != 0) &&
-        (m_pEAXCar) &&
-        (((GetUniqueID() >> 16) & 0xFF) == 2)) {
-        EAX_CarState *pcar = m_pStateBase->GetPhysCar();
+        (this->m_pEAXCar) &&
+        (((this->GetUniqueID() >> 16) & 0xFF) == 2)) {
+        EAX_CarState *pcar = this->m_pStateBase->GetPhysCar();
         if (pcar) {
             ReverbAccessor.CaptureData(pcar->mMatrix.v3.x, pcar->mMatrix.v3.y);
-            m_CurReverbZone = ReverbAccessor.GetDataInt(0);
+            this->m_CurReverbZone = ReverbAccessor.GetDataInt(0);
             ncurrentoffset = ReverbAccessor.GetDataInt(2);
         }
     }
 
-    if (static_cast<unsigned int>(m_CurReverbZone) > 0xB) {
+    if (static_cast<unsigned int>(this->m_CurReverbZone) > 0xB) {
         int zone;
         if (g_pEAXSound->GetSoundGameMode() == SND_FRONTEND) {
             zone = 0;
         } else {
             zone = 9;
         }
-        m_CurReverbZone = zone;
+        this->m_CurReverbZone = zone;
     }
 
-    eREVERBFX currentverb = static_cast<eREVERBFX>(ReverbZoneCrossMap[m_CurReverbZone]);
+    eREVERBFX currentverb = static_cast<eREVERBFX>(ReverbZoneCrossMap[this->m_CurReverbZone]);
     if (static_cast<int>(currentverb) > 0xB) {
         currentverb = static_cast<eREVERBFX>(9);
     }
 
-    if ((m_CurReverbZone != m_PrevReverbZone) && !m_bIsInTunnel) {
-        SetCurrentReverbType(currentverb, ncurrentoffset);
+    if ((this->m_CurReverbZone != this->m_PrevReverbZone) && !this->m_bIsInTunnel) {
+        this->SetCurrentReverbType(currentverb, ncurrentoffset);
     } else {
-        AdjustReverbOffset(ncurrentoffset);
+        this->AdjustReverbOffset(ncurrentoffset);
     }
 }
 
 void SFXCTL_Tunnel::Destroy() {}
 
 void SFXCTL_Tunnel::EndTunnelVerb() {
-    eREVERBFX currentverb = static_cast<eREVERBFX>(ReverbZoneCrossMap[m_CurReverbZone]);
+    eREVERBFX currentverb = static_cast<eREVERBFX>(ReverbZoneCrossMap[this->m_CurReverbZone]);
     if (static_cast<int>(currentverb) > 0xB) {
         currentverb = static_cast<eREVERBFX>(9);
     }
-    SetCurrentReverbType(currentverb, 0);
+    this->SetCurrentReverbType(currentverb, 0);
 }
 
 void SFXCTL_Tunnel::AdjustReverbOffset(int reverboffset) {
-    if (!bFadingOut && !bFadingIn) {
-        m_ReverbOffset = static_cast<float>(reverboffset);
+    if (!this->bFadingOut && !this->bFadingIn) {
+        this->m_ReverbOffset = static_cast<float>(reverboffset);
 
         int ndBGinsu = -10000;
-        int ginsuWet = g_REVERBFXMODULES[m_ReverbType].GinsuWet + reverboffset;
+        int ginsuWet = g_REVERBFXMODULES[this->m_ReverbType].GinsuWet + reverboffset;
         if (ginsuWet > -10000) {
             ndBGinsu = ginsuWet;
         }
@@ -473,7 +473,7 @@ void SFXCTL_Tunnel::AdjustReverbOffset(int reverboffset) {
         }
 
         int ndBAems = -10000;
-        int aemsWet = g_REVERBFXMODULES[m_ReverbType].AemsWet + reverboffset;
+        int aemsWet = g_REVERBFXMODULES[this->m_ReverbType].AemsWet + reverboffset;
         if (aemsWet > -10000) {
             ndBAems = aemsWet;
         }
@@ -481,85 +481,85 @@ void SFXCTL_Tunnel::AdjustReverbOffset(int reverboffset) {
             ndBAems = 0;
         }
 
-        m_CurWetGinsuTarget = GetFloatFromHundredthsdB__11NFSMixShapei(ndBGinsu);
-        m_CurWetAemsTarget = GetFloatFromHundredthsdB__11NFSMixShapei(ndBAems);
+        this->m_CurWetGinsuTarget = GetFloatFromHundredthsdB__11NFSMixShapei(ndBGinsu);
+        this->m_CurWetAemsTarget = GetFloatFromHundredthsdB__11NFSMixShapei(ndBAems);
     }
 }
 
 void SFXCTL_Tunnel::SetCurrentReverbType(eREVERBFX ereverbtype, int reverboffset) {
-    bFadingOut = true;
-    m_ReverbOffset = static_cast<float>(reverboffset);
-    m_TargetType = ereverbtype;
-    ReflRamp.Initialize(0.0f, 1.0f, g_REVERBFXMODULES[m_ReverbType].FadeOut, LINEAR);
-    m_CurWetGinsuTarget = 0.0f;
-    m_CurDryGinsuTarget = 1.0f;
-    m_CurWetAemsTarget = 0.0f;
-    m_CurDryAemsTarget = 1.0f;
+    this->bFadingOut = true;
+    this->m_ReverbOffset = static_cast<float>(reverboffset);
+    this->m_TargetType = ereverbtype;
+    this->ReflRamp.Initialize(0.0f, 1.0f, g_REVERBFXMODULES[this->m_ReverbType].FadeOut, LINEAR);
+    this->m_CurWetGinsuTarget = 0.0f;
+    this->m_CurDryGinsuTarget = 1.0f;
+    this->m_CurWetAemsTarget = 0.0f;
+    this->m_CurDryAemsTarget = 1.0f;
 }
 
 void SFXCTL_Tunnel::UpdateReflectionParams(float t) {
-    bIsReadyForSwitch = false;
-    ReflRamp.Update(t);
+    this->bIsReadyForSwitch = false;
+    this->ReflRamp.Update(t);
 
-    if (bFadingOut) {
-        if (ReflRamp.IsFinished() &&
-            bIsTunnelRamping == 0) {
-            if (m_IsLeadCar != 0) {
-                bIsReadyForSwitch = true;
+    if (this->bFadingOut) {
+        if (this->ReflRamp.IsFinished() &&
+            this->bIsTunnelRamping == 0) {
+            if (this->m_IsLeadCar != 0) {
+                this->bIsReadyForSwitch = true;
             }
-            bFadingIn = true;
-            m_ReverbType = m_TargetType;
-            bFadingOut = false;
-            ReflRamp.Initialize(0.0f, 1.0f, g_REVERBFXMODULES[m_TargetType].FadeIn, LINEAR);
+            this->bFadingIn = true;
+            this->m_ReverbType = this->m_TargetType;
+            this->bFadingOut = false;
+            this->ReflRamp.Initialize(0.0f, 1.0f, g_REVERBFXMODULES[this->m_TargetType].FadeIn, LINEAR);
 
-            m_CurWetGinsu = m_CurWetGinsuTarget;
-            m_CurDryGinsu = m_CurDryGinsuTarget;
-            m_CurWetAems = m_CurWetAemsTarget;
-            m_CurDryAems = m_CurDryAemsTarget;
+            this->m_CurWetGinsu = this->m_CurWetGinsuTarget;
+            this->m_CurDryGinsu = this->m_CurDryGinsuTarget;
+            this->m_CurWetAems = this->m_CurWetAemsTarget;
+            this->m_CurDryAems = this->m_CurDryAemsTarget;
 
             int nQGinWetTarget = bClamp(
-                g_REVERBFXMODULES[m_ReverbType].GinsuWet + static_cast<int>(m_ReverbOffset), -10000, 0);
+                g_REVERBFXMODULES[this->m_ReverbType].GinsuWet + static_cast<int>(this->m_ReverbOffset), -10000, 0);
             int nQAemsWetTarget = bClamp(
-                g_REVERBFXMODULES[m_ReverbType].AemsWet + static_cast<int>(m_ReverbOffset), -10000, 0);
+                g_REVERBFXMODULES[this->m_ReverbType].AemsWet + static_cast<int>(this->m_ReverbOffset), -10000, 0);
 
-            m_CurWetGinsuTarget = GetFloatFromHundredthsdB__11NFSMixShapei(nQGinWetTarget);
-            m_CurWetAemsTarget = GetFloatFromHundredthsdB__11NFSMixShapei(nQAemsWetTarget);
-            m_CurDryGinsuTarget = GetFloatFromHundredthsdB__11NFSMixShapei(g_REVERBFXMODULES[m_ReverbType].GinsuDry);
-            m_CurDryAemsTarget = GetFloatFromHundredthsdB__11NFSMixShapei(g_REVERBFXMODULES[m_ReverbType].AemsDry);
+            this->m_CurWetGinsuTarget = GetFloatFromHundredthsdB__11NFSMixShapei(nQGinWetTarget);
+            this->m_CurWetAemsTarget = GetFloatFromHundredthsdB__11NFSMixShapei(nQAemsWetTarget);
+            this->m_CurDryGinsuTarget = GetFloatFromHundredthsdB__11NFSMixShapei(g_REVERBFXMODULES[this->m_ReverbType].GinsuDry);
+            this->m_CurDryAemsTarget = GetFloatFromHundredthsdB__11NFSMixShapei(g_REVERBFXMODULES[this->m_ReverbType].AemsDry);
         }
-    } else if (bFadingIn &&
-               ReflRamp.IsFinished()) {
-        bFadingIn = false;
-        m_CurWetGinsu = m_CurWetGinsuTarget;
-        m_CurDryGinsu = m_CurDryGinsuTarget;
-        m_CurWetAems = m_CurWetAemsTarget;
-        m_CurDryAems = m_CurDryAemsTarget;
+    } else if (this->bFadingIn &&
+               this->ReflRamp.IsFinished()) {
+        this->bFadingIn = false;
+        this->m_CurWetGinsu = this->m_CurWetGinsuTarget;
+        this->m_CurDryGinsu = this->m_CurDryGinsuTarget;
+        this->m_CurWetAems = this->m_CurWetAemsTarget;
+        this->m_CurDryAems = this->m_CurDryAemsTarget;
     }
 
-    if (bFadingOut || bFadingIn) {
-        m_GinsuWetVol = static_cast<int>(((m_CurWetGinsuTarget - m_CurWetGinsu) * ReflRamp.GetValue() + m_CurWetGinsu) * 32767.0f);
-        m_GinsuDryVol = static_cast<int>(((m_CurDryGinsuTarget - m_CurDryGinsu) * ReflRamp.GetValue() + m_CurDryGinsu) * 32767.0f);
-        m_AEMSWetVol = static_cast<int>(((m_CurWetAemsTarget - m_CurWetAems) * ReflRamp.GetValue() + m_CurWetAems) * 32767.0f);
-        m_AEMSDryVol = static_cast<int>(((m_CurDryAemsTarget - m_CurDryAems) * ReflRamp.GetValue() + m_CurDryAems) * 32767.0f);
+    if (this->bFadingOut || this->bFadingIn) {
+        this->m_GinsuWetVol = static_cast<int>(((this->m_CurWetGinsuTarget - this->m_CurWetGinsu) * this->ReflRamp.GetValue() + this->m_CurWetGinsu) * 32767.0f);
+        this->m_GinsuDryVol = static_cast<int>(((this->m_CurDryGinsuTarget - this->m_CurDryGinsu) * this->ReflRamp.GetValue() + this->m_CurDryGinsu) * 32767.0f);
+        this->m_AEMSWetVol = static_cast<int>(((this->m_CurWetAemsTarget - this->m_CurWetAems) * this->ReflRamp.GetValue() + this->m_CurWetAems) * 32767.0f);
+        this->m_AEMSDryVol = static_cast<int>(((this->m_CurDryAemsTarget - this->m_CurDryAems) * this->ReflRamp.GetValue() + this->m_CurDryAems) * 32767.0f);
     } else {
-        m_CurWetGinsu = smooth(m_CurWetGinsu, m_CurWetGinsuTarget, 0.25f);
-        m_CurDryGinsu = smooth(m_CurDryGinsu, m_CurDryGinsuTarget, 0.25f);
-        m_CurWetAems = smooth(m_CurWetAems, m_CurWetAemsTarget, 0.25f);
-        m_CurDryAems = smooth(m_CurDryAems, m_CurDryAemsTarget, 0.25f);
+        this->m_CurWetGinsu = smooth(this->m_CurWetGinsu, this->m_CurWetGinsuTarget, 0.25f);
+        this->m_CurDryGinsu = smooth(this->m_CurDryGinsu, this->m_CurDryGinsuTarget, 0.25f);
+        this->m_CurWetAems = smooth(this->m_CurWetAems, this->m_CurWetAemsTarget, 0.25f);
+        this->m_CurDryAems = smooth(this->m_CurDryAems, this->m_CurDryAemsTarget, 0.25f);
 
-        m_GinsuWetVol = static_cast<int>(m_CurWetGinsu * 32767.0f);
-        m_GinsuDryVol = static_cast<int>(m_CurDryGinsu * 32767.0f);
-        m_AEMSWetVol = static_cast<int>(m_CurWetAems * 32767.0f);
-        m_AEMSDryVol = static_cast<int>(m_CurDryAems * 32767.0f);
+        this->m_GinsuWetVol = static_cast<int>(this->m_CurWetGinsu * 32767.0f);
+        this->m_GinsuDryVol = static_cast<int>(this->m_CurDryGinsu * 32767.0f);
+        this->m_AEMSWetVol = static_cast<int>(this->m_CurWetAems * 32767.0f);
+        this->m_AEMSDryVol = static_cast<int>(this->m_CurDryAems * 32767.0f);
     }
 
-    if (bToggleOffset) {
-        m_AEMSWetVol = bClamp(m_AEMSWetVol + 1, 0, 0x7FFF);
-        m_GinsuWetVol = bClamp(m_GinsuWetVol + 1, 0, 0x7FFF);
-        bToggleOffset = false;
+    if (this->bToggleOffset) {
+        this->m_AEMSWetVol = bClamp(this->m_AEMSWetVol + 1, 0, 0x7FFF);
+        this->m_GinsuWetVol = bClamp(this->m_GinsuWetVol + 1, 0, 0x7FFF);
+        this->bToggleOffset = false;
     } else {
-        bToggleOffset = true;
+        this->bToggleOffset = true;
     }
 
-    bIsTunnelRamping = ReflRamp.IsFinished() ^ 1;
+    this->bIsTunnelRamping = this->ReflRamp.IsFinished() ^ 1;
 }

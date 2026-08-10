@@ -19,8 +19,8 @@
 extern Slope RedLineDelayPerGear;
 extern "C" int GetQ15FromHundredthsdB__11NFSMixShapei(int ndB);
 
-inline float SFXCTL::GetPhysRPM() { return m_pEAXCar->GetPhysRPM(); }
-inline float SFXCTL::GetPhysTRQ() { return m_pEAXCar->GetPhysTRQ(); }
+inline float SFXCTL::GetPhysRPM() { return this->m_pEAXCar->GetPhysRPM(); }
+inline float SFXCTL::GetPhysTRQ() { return this->m_pEAXCar->GetPhysTRQ(); }
 
 static const float REDLINE_ENG_FADE[2] = {450.0f, 50.0f};
 static const float REDLINE_REDSAMP_FADE[2] = {50.0f, 120.0f};
@@ -43,40 +43,40 @@ SFXCTL_Engine::SFXCTL_Engine()
       VisRpmAvg(2), //
       m_fSmoothedEng_RPM(0.0f), //
       m_fSmoothedEng_Trq(0.0f) {
-    mmsgMVehicleDestroyed = Hermes::Handler::Create<MNotifyVehicleDestroyed, SFXCTL_Engine, SFXCTL_Engine>(
+    this->mmsgMVehicleDestroyed = Hermes::Handler::Create<MNotifyVehicleDestroyed, SFXCTL_Engine, SFXCTL_Engine>(
         this, &SFXCTL_Engine::MessageVehicleDestroyed, UCrc32(0x20D60DBF), 0);
-    mmsgMCoundown = Hermes::Handler::Create<MCountdownDone, SFXCTL_Engine, SFXCTL_Engine>(
+    this->mmsgMCoundown = Hermes::Handler::Create<MCountdownDone, SFXCTL_Engine, SFXCTL_Engine>(
         this, &SFXCTL_Engine::MsgCountdownDone, UCrc32(0x20D60DBF), 0);
 
-    m_pAccelTransitionCtl = nullptr;
-    m_pShiftCtl = nullptr;
-    m_pPhysicsCtl = nullptr;
-    bClutchStateOn = false;
-    bIsRedlining = false;
-    RedLineEngFactor.Initialize(1.0f, 1.0f, 1, LINEAR);
-    RedLineSampFactor.Initialize(0.0f, 0.0f, 1, LINEAR);
-    bPlayCompression = true;
-    m_ComppressionRPM.Initialize(0.0f, 0.0f, 1);
-    vCarPos = bVector3(0.0f, 0.0f, 0.0f);
-    bWasRedlining = false;
+    this->m_pAccelTransitionCtl = nullptr;
+    this->m_pShiftCtl = nullptr;
+    this->m_pPhysicsCtl = nullptr;
+    this->bClutchStateOn = false;
+    this->bIsRedlining = false;
+    this->RedLineEngFactor.Initialize(1.0f, 1.0f, 1, LINEAR);
+    this->RedLineSampFactor.Initialize(0.0f, 0.0f, 1, LINEAR);
+    this->bPlayCompression = true;
+    this->m_ComppressionRPM.Initialize(0.0f, 0.0f, 1);
+    this->vCarPos = bVector3(0.0f, 0.0f, 0.0f);
+    this->bWasRedlining = false;
 }
 
 SFXCTL_Engine::~SFXCTL_Engine() {
-    if (mmsgMVehicleDestroyed) {
-        Hermes::Handler::Destroy(mmsgMVehicleDestroyed);
+    if (this->mmsgMVehicleDestroyed) {
+        Hermes::Handler::Destroy(this->mmsgMVehicleDestroyed);
     }
-    if (mmsgMCoundown) {
-        Hermes::Handler::Destroy(mmsgMCoundown);
+    if (this->mmsgMCoundown) {
+        Hermes::Handler::Destroy(this->mmsgMCoundown);
     }
 }
 
 void SFXCTL_Engine::MessageVehicleDestroyed(const MNotifyVehicleDestroyed &message) {
     UMath::Vector4 vpos;
 
-    if (GetPhysCar() && GetPhysCar()->mHandle == message.GetRacer() && GetPhysCar()->IsLocalPlayerCar()) {
-        vpos.z = GetPhysCar()->GetPosition()->x;
-        vpos.x = -GetPhysCar()->GetPosition()->y;
-        vpos.y = GetPhysCar()->GetPosition()->z;
+    if (this->GetPhysCar() && this->GetPhysCar()->mHandle == message.GetRacer() && this->GetPhysCar()->IsLocalPlayerCar()) {
+        vpos.z = this->GetPhysCar()->GetPosition()->x;
+        vpos.x = -this->GetPhysCar()->GetPosition()->y;
+        vpos.y = this->GetPhysCar()->GetPosition()->z;
 
         MGamePlayMoment(vpos, UMath::Vector4::kZero, UMath::Vector4::kZero, 0, 0xC565AC30)
             .Send(UCrc32("MomentStrm"));
@@ -84,53 +84,53 @@ void SFXCTL_Engine::MessageVehicleDestroyed(const MNotifyVehicleDestroyed &messa
 }
 
 void SFXCTL_Engine::MsgCountdownDone(const MCountdownDone &message) {
-    tMergeWithPhysicsOffStart = 0.7f;
-    bPreRace = false;
+    this->tMergeWithPhysicsOffStart = 0.7f;
+    this->bPreRace = false;
 }
 
 void SFXCTL_Engine::SetupSFX(CSTATE_Base *_StateBase) {
     SndBase::SetupSFX(_StateBase);
-    m_UGL = static_cast<eAemsUpgradeLevel>(m_pEAXCar->GetEngineUpgradeLevel());
+    this->m_UGL = static_cast<eAemsUpgradeLevel>(this->m_pEAXCar->GetEngineUpgradeLevel());
 }
 
 void SFXCTL_Engine::InitSFX() {
     GRaceParameters *race;
 
     SFXCTL::InitSFX();
-    m_bIsEngineBlown = false;
-    m_Rotation = 0x96;
-    Trq.Flush(0.0f);
-    VisRpmAvg.Flush(0.0f);
-    Rpm.Flush(0.0f);
-    m_DistanceFltr = 24000;
-    m_fPrevRPM = 0.0f;
-    m_VOL_LFO = 0.0f;
-    m_RPM_LFO = 0.0f;
-    m_TRQ_LFO = 0.0f;
-    bClutchStateOn = false;
-    m_aglVOL_LFO = 0;
-    m_aglRPM_LFO = 0;
-    m_aglTRQ_LFO = 0;
-    m_p3DCarPosCtl->AssignPositionVector(&vCarPos);
-    m_p3DCarPosCtl->AssignVelocityVector(GetPhysCar()->GetVelocity());
-    m_p3DCarPosCtl->AssignDirectionVector(GetPhysCar()->GetForwardVector());
+    this->m_bIsEngineBlown = false;
+    this->m_Rotation = 0x96;
+    this->Trq.Flush(0.0f);
+    this->VisRpmAvg.Flush(0.0f);
+    this->Rpm.Flush(0.0f);
+    this->m_DistanceFltr = 24000;
+    this->m_fPrevRPM = 0.0f;
+    this->m_VOL_LFO = 0.0f;
+    this->m_RPM_LFO = 0.0f;
+    this->m_TRQ_LFO = 0.0f;
+    this->bClutchStateOn = false;
+    this->m_aglVOL_LFO = 0;
+    this->m_aglRPM_LFO = 0;
+    this->m_aglTRQ_LFO = 0;
+    this->m_p3DCarPosCtl->AssignPositionVector(&this->vCarPos);
+    this->m_p3DCarPosCtl->AssignVelocityVector(this->GetPhysCar()->GetVelocity());
+    this->m_p3DCarPosCtl->AssignDirectionVector(this->GetPhysCar()->GetForwardVector());
 
-    switch (m_pEAXCar->GetEngineUpgradeLevel()) {
+    switch (this->m_pEAXCar->GetEngineUpgradeLevel()) {
     case AEMS_LEVEL1:
-        SetDMIX_Input(0, 0x2AAA);
+        this->SetDMIX_Input(0, 0x2AAA);
         break;
     case AEMS_LEVEL2:
-        SetDMIX_Input(0, 0x5554);
+        this->SetDMIX_Input(0, 0x5554);
         break;
     case AEMS_LEVEL3:
-        SetDMIX_Input(0, 0x7FFF);
+        this->SetDMIX_Input(0, 0x7FFF);
         break;
     default:
-        SetDMIX_Input(0, 0);
+        this->SetDMIX_Input(0, 0);
         break;
     }
 
-    tMergeWithPhysicsOffStart = 0.0f;
+    this->tMergeWithPhysicsOffStart = 0.0f;
     if (GRaceStatus::Exists()) {
         race = GRaceStatus::Get().GetRaceParameters();
     } else {
@@ -138,11 +138,11 @@ void SFXCTL_Engine::InitSFX() {
     }
 
     if (!race) {
-        bPreRace = false;
+        this->bPreRace = false;
     } else if (race->GetIsRollingStart()) {
-        bPreRace = false;
+        this->bPreRace = false;
     } else {
-        bPreRace = true;
+        this->bPreRace = true;
     }
 }
 
@@ -164,16 +164,16 @@ int SFXCTL_Engine::GetController(int Index) {
 void SFXCTL_Engine::AttachController(SFXCTL *psfxctl) {
     switch (psfxctl->GetObjectIndex()) {
     case 2:
-        m_pShiftCtl = static_cast<SFXCTL_Shifting *>(psfxctl);
+        this->m_pShiftCtl = static_cast<SFXCTL_Shifting *>(psfxctl);
         break;
     case 3:
-        m_pAccelTransitionCtl = static_cast<SFXCTL_AccelTrans *>(psfxctl);
+        this->m_pAccelTransitionCtl = static_cast<SFXCTL_AccelTrans *>(psfxctl);
         break;
     case 0:
-        m_pPhysicsCtl = static_cast<SFXCTL_Physics *>(psfxctl);
+        this->m_pPhysicsCtl = static_cast<SFXCTL_Physics *>(psfxctl);
         break;
     case 7:
-        m_p3DCarPosCtl = static_cast<SFXCTL_3DCarPos *>(psfxctl);
+        this->m_p3DCarPosCtl = static_cast<SFXCTL_3DCarPos *>(psfxctl);
         break;
     }
 }
@@ -185,19 +185,19 @@ void SFXCTL_Engine::UpdateParams(float t) {
     const bVector2 *Cur2dPos;
     bVector3 vOffset;
 
-    SetDMIX_Input(2, static_cast<int>(m_pEAXCar->GetAttributes().Master_Vol()));
-    m_p3DCarPosCtl->AssignDirectionVector(GetPhysCar()->GetForwardVector());
+    this->SetDMIX_Input(2, static_cast<int>(this->m_pEAXCar->GetAttributes().Master_Vol()));
+    this->m_p3DCarPosCtl->AssignDirectionVector(this->GetPhysCar()->GetForwardVector());
 
-    Cur3dPos = GetPhysCar()->GetPosition();
-    Cur2dPos = GetPhysCar()->GetPosition2D();
+    Cur3dPos = this->GetPhysCar()->GetPosition();
+    Cur2dPos = this->GetPhysCar()->GetPosition2D();
     (void)Cur2dPos;
-    vCarPos = *Cur3dPos;
+    this->vCarPos = *Cur3dPos;
     {
-        vOffset = *GetPhysCar()->GetForwardVector();
+        vOffset = *this->GetPhysCar()->GetForwardVector();
         bNormalize(&vOffset, &vOffset);
     }
 
-    if (m_pEAXCar->GetPOV() != 1) {
+    if (this->m_pEAXCar->GetPOV() != 1) {
         bVector3 scaled(vOffset);
         scaled *= 0.2f;
         vOffset = scaled;
@@ -206,26 +206,26 @@ void SFXCTL_Engine::UpdateParams(float t) {
         scaled *= 2.0f;
         vOffset = scaled;
     }
-    vCarPos = bAdd(vCarPos, vOffset);
+    this->vCarPos = bAdd(this->vCarPos, vOffset);
 
-    UpdateClutchState();
-    UpdateEngineLFO_FX(t);
-    UpdateCompression(t);
-    UpdateRPM(t);
-    UpdateTorque(t);
-    UpdateVolume(t);
-    UpdateFilterFX();
-    UpdateRedlining(t);
+    this->UpdateClutchState();
+    this->UpdateEngineLFO_FX(t);
+    this->UpdateCompression(t);
+    this->UpdateRPM(t);
+    this->UpdateTorque(t);
+    this->UpdateVolume(t);
+    this->UpdateFilterFX();
+    this->UpdateRedlining(t);
 
-    GetPhysCar()->SetVisualRPM(m_pEAXCar->GetFinalAudioRPM());
+    this->GetPhysCar()->SetVisualRPM(this->m_pEAXCar->GetFinalAudioRPM());
 
-    if ((GetPhysCar()->IsEngineBlown() || GetPhysCar()->IsEngineSabotaged()) && !m_bIsEngineBlown) {
-        m_bIsEngineBlown = true;
+    if ((this->GetPhysCar()->IsEngineBlown() || this->GetPhysCar()->IsEngineSabotaged()) && !this->m_bIsEngineBlown) {
+        this->m_bIsEngineBlown = true;
         unsigned int key;
-        if (GetPhysCar()->IsEngineBlown()) {
+        if (this->GetPhysCar()->IsEngineBlown()) {
             key = 0xbc2dfa2f;
         }
-        if (GetPhysCar()->IsEngineSabotaged()) {
+        if (this->GetPhysCar()->IsEngineSabotaged()) {
             key = 0xbae41d1b;
         }
         MGamePlayMoment moment(UMath::Vector4::kZero, UMath::Vector4::kZero, UMath::Vector4::kZero, 0, key);
@@ -241,87 +241,87 @@ void SFXCTL_Engine::UpdateFilterFX() {
     int Q15Result;
     int DistanceFilter;
 
-    fdist = static_cast<float>(m_p3DCarPosCtl->GetDMIX_InputValue(1));
+    fdist = static_cast<float>(this->m_p3DCarPosCtl->GetDMIX_InputValue(1));
     DistanceRolloffFilterFActor = ((fdist * 0.01f) - 6.5f) / 44.0f;
     DistanceToUse = bClamp(DistanceRolloffFilterFActor, 0.0f, 1.0f);
     DBResult = NFSMixShape::GetCurveOutput(
         static_cast<NFSMixShape::eMIXTABLEID>(6), static_cast<int>(DistanceToUse * 32766.0f), true);
     Q15Result = GetQ15FromHundredthsdB__11NFSMixShapei(DBResult);
-    m_DistanceFltr = static_cast<int>(static_cast<float>(Q15Result) * 0.7103183f + 725.0f);
+    this->m_DistanceFltr = static_cast<int>(static_cast<float>(Q15Result) * 0.7103183f + 725.0f);
 
     DistanceFilter = 0;
-    if (m_DistanceFltr > 0) {
-        DistanceFilter = m_DistanceFltr;
+    if (this->m_DistanceFltr > 0) {
+        DistanceFilter = this->m_DistanceFltr;
     }
     if (DistanceFilter > 0x7FFF) {
         DistanceFilter = 0x7FFF;
     }
-    m_DistanceFltr = DistanceFilter;
+    this->m_DistanceFltr = DistanceFilter;
 }
 
 void SFXCTL_Engine::UpdateCompression(float t) {
-    SetDMIX_Input(1, 0);
-    m_ComppressionRPM.Update(t);
+    this->SetDMIX_Input(1, 0);
+    this->m_ComppressionRPM.Update(t);
 
-    if (bPlayCompression) {
+    if (this->bPlayCompression) {
         int CompDuration = g_pEAXSound->Random(100) + 0x19;
         float DeltaRPM = g_pEAXSound->Random(100.0f) + 25.0f;
 
-        m_ComppressionRPM.ClearStages();
-        m_ComppressionRPM.AddStage(0.0f, DeltaRPM, CompDuration, EQ_PWR_SQ);
-        m_ComppressionRPM.AddStage(DeltaRPM, 0.0f, CompDuration, EQ_PWR_SQ);
-        bPlayCompression = false;
-        SetDMIX_Input(1, 0x7fff);
+        this->m_ComppressionRPM.ClearStages();
+        this->m_ComppressionRPM.AddStage(0.0f, DeltaRPM, CompDuration, EQ_PWR_SQ);
+        this->m_ComppressionRPM.AddStage(DeltaRPM, 0.0f, CompDuration, EQ_PWR_SQ);
+        this->bPlayCompression = false;
+        this->SetDMIX_Input(1, 0x7fff);
     }
 }
 
 void SFXCTL_Engine::UpdateRedlining(float t) {
-    bWasRedlining = bIsRedlining;
-    if (m_pStateBase->m_eStateType == eMM_AIRACECAR) {
+    this->bWasRedlining = this->bIsRedlining;
+    if (this->m_pStateBase->m_eStateType == eMM_AIRACECAR) {
         return;
     }
 
-    if (!bIsRedlining) {
-        if (!m_pShiftCtl->IsActive() && GetEngRPM() > 9800.0f) {
-            bIsRedlining = true;
-            float TimeScaleValue = RedLineDelayPerGear.GetValue(static_cast<float>(m_pEAXCar->GetCurGear()));
-            RedLineEngFactor.Initialize(
-                RedLineEngFactor.GetValue(),
+    if (!this->bIsRedlining) {
+        if (!this->m_pShiftCtl->IsActive() && this->GetEngRPM() > 9800.0f) {
+            this->bIsRedlining = true;
+            float TimeScaleValue = RedLineDelayPerGear.GetValue(static_cast<float>(this->m_pEAXCar->GetCurGear()));
+            this->RedLineEngFactor.Initialize(
+                this->RedLineEngFactor.GetValue(),
                 0.14999998f,
-                static_cast<int>(REDLINE_ENG_FADE[0] * RedLineEngFactor.GetValue() * TimeScaleValue),
+                static_cast<int>(REDLINE_ENG_FADE[0] * this->RedLineEngFactor.GetValue() * TimeScaleValue),
                 LINEAR);
-            RedLineSampFactor.Initialize(
-                RedLineSampFactor.GetValue(),
+            this->RedLineSampFactor.Initialize(
+                this->RedLineSampFactor.GetValue(),
                 0.85f,
-                static_cast<int>(REDLINE_REDSAMP_FADE[1] * (1.0f - RedLineSampFactor.GetValue()) * TimeScaleValue),
+                static_cast<int>(REDLINE_REDSAMP_FADE[1] * (1.0f - this->RedLineSampFactor.GetValue()) * TimeScaleValue),
                 LINEAR);
-            bRedliningBounce = true;
-            RedlineingVisualOffset = 0.0f;
+            this->bRedliningBounce = true;
+            this->RedlineingVisualOffset = 0.0f;
         }
-    } else if (GetEngRPM() < 9800.0f || m_pShiftCtl->IsActive()) {
-        bIsRedlining = false;
-        RedLineEngFactor.Initialize(
-            RedLineEngFactor.GetValue(),
+    } else if (this->GetEngRPM() < 9800.0f || this->m_pShiftCtl->IsActive()) {
+        this->bIsRedlining = false;
+        this->RedLineEngFactor.Initialize(
+            this->RedLineEngFactor.GetValue(),
             1.0f,
-            static_cast<int>(REDLINE_ENG_FADE[1] * (1.0f - RedLineEngFactor.GetValue())),
+            static_cast<int>(REDLINE_ENG_FADE[1] * (1.0f - this->RedLineEngFactor.GetValue())),
             LINEAR);
-        RedLineSampFactor.Initialize(
-            RedLineSampFactor.GetValue(),
+        this->RedLineSampFactor.Initialize(
+            this->RedLineSampFactor.GetValue(),
             0.0f,
-            static_cast<int>(REDLINE_REDSAMP_FADE[0] * RedLineSampFactor.GetValue()),
+            static_cast<int>(REDLINE_REDSAMP_FADE[0] * this->RedLineSampFactor.GetValue()),
             LINEAR);
     }
 
-    RedLineEngFactor.Update(t);
-    RedLineSampFactor.Update(t);
+    this->RedLineEngFactor.Update(t);
+    this->RedLineSampFactor.Update(t);
 }
 
 void SFXCTL_Engine::UpdateVolume(float t) {
-    m_iEngineVol = 0x7fff;
-    if (m_pShiftCtl->IsActive()) {
-        m_iEngineVol += static_cast<int>(static_cast<float>(m_iEngineVol) * m_pShiftCtl->GetShiftingVOL());
+    this->m_iEngineVol = 0x7fff;
+    if (this->m_pShiftCtl->IsActive()) {
+        this->m_iEngineVol += static_cast<int>(static_cast<float>(this->m_iEngineVol) * this->m_pShiftCtl->GetShiftingVOL());
     }
-    m_iEngineVol += static_cast<int>(m_VOL_LFO);
+    this->m_iEngineVol += static_cast<int>(this->m_VOL_LFO);
 }
 
 void SFXCTL_Engine::UpdateRPM(float t) {
@@ -330,78 +330,78 @@ void SFXCTL_Engine::UpdateRPM(float t) {
     float NormalRPM;
     float PhysicsNewAudioRPM;
 
-    Cur_RPM = m_pShiftCtl && m_pShiftCtl->IsActive()
-                  ? m_pShiftCtl->GetShiftingRPM()
-                  : m_pAccelTransitionCtl && m_pAccelTransitionCtl->IsActive()
-                        ? m_pAccelTransitionCtl->m_InterpEngRPM.GetValue()
-                        : GetPhysRPM();
+    Cur_RPM = this->m_pShiftCtl && this->m_pShiftCtl->IsActive()
+                  ? this->m_pShiftCtl->GetShiftingRPM()
+                  : this->m_pAccelTransitionCtl && this->m_pAccelTransitionCtl->IsActive()
+                        ? this->m_pAccelTransitionCtl->m_InterpEngRPM.GetValue()
+                        : this->GetPhysRPM();
 
-    if (bClutchStateOn && !m_pShiftCtl->IsActive()) {
-        Cur_RPM = smooth(GetEngRPM(), GetPhysRPM(), 999.0f, 60.0f);
+    if (this->bClutchStateOn && !this->m_pShiftCtl->IsActive()) {
+        Cur_RPM = smooth(this->GetEngRPM(), this->GetPhysRPM(), 999.0f, 60.0f);
     }
 
     VisualRPM = Cur_RPM;
-    NormalRPM = VisualRPM + m_RPM_LFO + m_ComppressionRPM.GetValue() + m_RPM_LFO;
-    m_fPrevRPM = m_fEng_RPM;
-    SetEngRPM(NormalRPM);
-    m_fSmoothedEng_RPM = m_fSmoothedEng_RPM * 0.95f + NormalRPM * 0.05f;
+    NormalRPM = VisualRPM + this->m_RPM_LFO + this->m_ComppressionRPM.GetValue() + this->m_RPM_LFO;
+    this->m_fPrevRPM = this->m_fEng_RPM;
+    this->SetEngRPM(NormalRPM);
+    this->m_fSmoothedEng_RPM = this->m_fSmoothedEng_RPM * 0.95f + NormalRPM * 0.05f;
 
-    if (static_cast<unsigned int>(m_pShiftCtl->eShiftState - SHFT_UP_DISENGAGE) < 2u) {
-        VisualRPM = m_pShiftCtl->m_VisualRPM.GetValue();
-    } else if (m_pAccelTransitionCtl->eAccelTransFxState == 1) {
-        VisualRPM = GetPhysRPM();
+    if (static_cast<unsigned int>(this->m_pShiftCtl->eShiftState - SHFT_UP_DISENGAGE) < 2u) {
+        VisualRPM = this->m_pShiftCtl->m_VisualRPM.GetValue();
+    } else if (this->m_pAccelTransitionCtl->eAccelTransFxState == 1) {
+        VisualRPM = this->GetPhysRPM();
     } else {
-        if (bIsRedlining) {
+        if (this->bIsRedlining) {
             float Target = 200.0f;
-            if (bRedliningBounce) {
-                RedlineingVisualOffset = smooth(RedlineingVisualOffset, Target, 50.0f);
-                if (RedlineingVisualOffset == Target) {
-                    bRedliningBounce = false;
+            if (this->bRedliningBounce) {
+                this->RedlineingVisualOffset = smooth(this->RedlineingVisualOffset, Target, 50.0f);
+                if (this->RedlineingVisualOffset == Target) {
+                    this->bRedliningBounce = false;
                 }
             } else {
-                RedlineingVisualOffset = smooth(RedlineingVisualOffset, 0.0f, 50.0f);
-                if (RedlineingVisualOffset == 0.0f) {
-                    bRedliningBounce = true;
+                this->RedlineingVisualOffset = smooth(this->RedlineingVisualOffset, 0.0f, 50.0f);
+                if (this->RedlineingVisualOffset == 0.0f) {
+                    this->bRedliningBounce = true;
                 }
             }
-            VisualRPM = VisualRPM - RedlineingVisualOffset;
+            VisualRPM = VisualRPM - this->RedlineingVisualOffset;
         }
     }
 
-    VisRpmAvg.Record(VisualRPM);
-    VisRpmAvg.Recalculate();
+    this->VisRpmAvg.Record(VisualRPM);
+    this->VisRpmAvg.Recalculate();
 
-    PhysicsNewAudioRPM = (static_cast<const Average &>(VisRpmAvg).GetValue() - 1000.0f) * 0.00011111111f;
-    if (GetPhysCar()->IsLocalPlayerCar()) {
-        if (bPreRace != 0) {
-            PhysicsNewAudioRPM = GetPhysCar()->GetRPMPct();
-        } else if (tMergeWithPhysicsOffStart > 0.0f) {
-            tMergeWithPhysicsOffStart -= t;
-            if (tMergeWithPhysicsOffStart < 0.0f) {
-                tMergeWithPhysicsOffStart = 0.0f;
+    PhysicsNewAudioRPM = (static_cast<const Average &>(this->VisRpmAvg).GetValue() - 1000.0f) * 0.00011111111f;
+    if (this->GetPhysCar()->IsLocalPlayerCar()) {
+        if (this->bPreRace != 0) {
+            PhysicsNewAudioRPM = this->GetPhysCar()->GetRPMPct();
+        } else if (this->tMergeWithPhysicsOffStart > 0.0f) {
+            this->tMergeWithPhysicsOffStart -= t;
+            if (this->tMergeWithPhysicsOffStart < 0.0f) {
+                this->tMergeWithPhysicsOffStart = 0.0f;
             }
-            float PercentInterp = (0.7f - tMergeWithPhysicsOffStart) * 1.4285715f;
-            PhysicsNewAudioRPM = (PhysicsNewAudioRPM - GetPhysCar()->GetRPMPct()) * PercentInterp +
-                                 GetPhysCar()->GetRPMPct();
+            float PercentInterp = (0.7f - this->tMergeWithPhysicsOffStart) * 1.4285715f;
+            PhysicsNewAudioRPM = (PhysicsNewAudioRPM - this->GetPhysCar()->GetRPMPct()) * PercentInterp +
+                                 this->GetPhysCar()->GetRPMPct();
         }
     }
 
-    m_pEAXCar->SetFinalAudioRPM(PhysicsNewAudioRPM);
+    this->m_pEAXCar->SetFinalAudioRPM(PhysicsNewAudioRPM);
 }
 
 void SFXCTL_Engine::UpdateTorque(float t) {
     (void)t;
-    if (m_pShiftCtl && m_pShiftCtl->IsActive()) {
-        Trq.Flush(m_pShiftCtl->GetShiftingTRQ());
-    } else if (m_pAccelTransitionCtl->IsActive()) {
-        Trq.Flush(m_pAccelTransitionCtl->m_InterpEngTorque.GetValue());
+    if (this->m_pShiftCtl && this->m_pShiftCtl->IsActive()) {
+        this->Trq.Flush(this->m_pShiftCtl->GetShiftingTRQ());
+    } else if (this->m_pAccelTransitionCtl->IsActive()) {
+        this->Trq.Flush(this->m_pAccelTransitionCtl->m_InterpEngTorque.GetValue());
     } else {
-        Trq.Record(GetPhysTRQ());
+        this->Trq.Record(this->GetPhysTRQ());
     }
 
-    Trq.Recalculate();
+    this->Trq.Recalculate();
 
-    SetEngTorque(static_cast<const Average &>(Trq).GetValue());
+    this->SetEngTorque(static_cast<const Average &>(this->Trq).GetValue());
 }
 
 void SFXCTL_Engine::UpdateEngineLFO_FX(float t) {
@@ -412,20 +412,20 @@ void SFXCTL_Engine::UpdateEngineLFO_FX(float t) {
     int tmp_RPM_LFO_AMP = 0;
     int tmp_RPM_LFO_FRQ = 0;
 
-    if (m_pShiftCtl && m_pShiftCtl->IsActive()) {
-        tmp_VOL_LFO_AMP = m_pShiftCtl->m_VOL_LFO_AMP;
-        tmp_VOL_LFO_FRQ = m_pShiftCtl->m_VOL_LFO_FRQ;
-        tmp_TRQ_LFO_AMP = m_pShiftCtl->m_TRQ_LFO_AMP;
-        tmp_TRQ_LFO_FRQ = m_pShiftCtl->m_TRQ_LFO_FRQ;
-        tmp_RPM_LFO_AMP = m_pShiftCtl->m_RPM_LFO_AMP;
-        tmp_RPM_LFO_FRQ = m_pShiftCtl->m_RPM_LFO_FRQ;
+    if (this->m_pShiftCtl && this->m_pShiftCtl->IsActive()) {
+        tmp_VOL_LFO_AMP = this->m_pShiftCtl->m_VOL_LFO_AMP;
+        tmp_VOL_LFO_FRQ = this->m_pShiftCtl->m_VOL_LFO_FRQ;
+        tmp_TRQ_LFO_AMP = this->m_pShiftCtl->m_TRQ_LFO_AMP;
+        tmp_TRQ_LFO_FRQ = this->m_pShiftCtl->m_TRQ_LFO_FRQ;
+        tmp_RPM_LFO_AMP = this->m_pShiftCtl->m_RPM_LFO_AMP;
+        tmp_RPM_LFO_FRQ = this->m_pShiftCtl->m_RPM_LFO_FRQ;
     } else {
-        m_aglTRQ_LFO = 0x4097;
-        m_TRQ_LFO = 0.0f;
-        m_VOL_LFO = 0.0f;
-        m_aglVOL_LFO = 0x4097;
-        m_RPM_LFO = 0.0f;
-        m_aglRPM_LFO = 0x4097;
+        this->m_aglTRQ_LFO = 0x4097;
+        this->m_TRQ_LFO = 0.0f;
+        this->m_VOL_LFO = 0.0f;
+        this->m_aglVOL_LFO = 0x4097;
+        this->m_RPM_LFO = 0.0f;
+        this->m_aglRPM_LFO = 0x4097;
     }
 
     if (tmp_RPM_LFO_FRQ < 1) {
@@ -450,37 +450,37 @@ void SFXCTL_Engine::UpdateEngineLFO_FX(float t) {
     }
 
     if (tmp_RPM_LFO_AMP != 0) {
-        unsigned int angle = static_cast<unsigned int>(m_aglRPM_LFO) +
+        unsigned int angle = static_cast<unsigned int>(this->m_aglRPM_LFO) +
                              static_cast<int>((t / (static_cast<float>(tmp_RPM_LFO_FRQ) * 0.001f)) * 65535.0f);
-        m_aglRPM_LFO = static_cast<unsigned short>(angle - ((angle & 0xFFFF) / 0xFFFF) * 65535);
-        m_RPM_LFO = static_cast<float>(tmp_RPM_LFO_AMP) * bSin(m_aglRPM_LFO);
+        this->m_aglRPM_LFO = static_cast<unsigned short>(angle - ((angle & 0xFFFF) / 0xFFFF) * 65535);
+        this->m_RPM_LFO = static_cast<float>(tmp_RPM_LFO_AMP) * bSin(this->m_aglRPM_LFO);
     }
 
     if (tmp_TRQ_LFO_AMP != 0) {
-        unsigned int angle = static_cast<unsigned int>(m_aglTRQ_LFO) +
+        unsigned int angle = static_cast<unsigned int>(this->m_aglTRQ_LFO) +
                              static_cast<int>((t / (static_cast<float>(tmp_TRQ_LFO_FRQ) * 0.001f)) * 65535.0f);
-        m_aglTRQ_LFO = static_cast<unsigned short>(angle - ((angle & 0xFFFF) / 0xFFFF) * 65535);
-        m_TRQ_LFO = static_cast<float>(tmp_TRQ_LFO_AMP) * bSin(m_aglTRQ_LFO);
+        this->m_aglTRQ_LFO = static_cast<unsigned short>(angle - ((angle & 0xFFFF) / 0xFFFF) * 65535);
+        this->m_TRQ_LFO = static_cast<float>(tmp_TRQ_LFO_AMP) * bSin(this->m_aglTRQ_LFO);
     }
 
     if (tmp_VOL_LFO_AMP != 0) {
-        unsigned int angle = static_cast<unsigned int>(m_aglVOL_LFO) +
+        unsigned int angle = static_cast<unsigned int>(this->m_aglVOL_LFO) +
                              static_cast<int>((t / (static_cast<float>(tmp_VOL_LFO_FRQ) * 0.001f)) * 65535.0f);
-        m_aglVOL_LFO = static_cast<unsigned short>(angle - ((angle & 0xFFFF) / 0xFFFF) * 65535);
-        m_VOL_LFO = static_cast<float>(tmp_VOL_LFO_AMP) * bSin(m_aglVOL_LFO);
+        this->m_aglVOL_LFO = static_cast<unsigned short>(angle - ((angle & 0xFFFF) / 0xFFFF) * 65535);
+        this->m_VOL_LFO = static_cast<float>(tmp_VOL_LFO_AMP) * bSin(this->m_aglVOL_LFO);
     }
 }
 
 bool SFXCTL_Engine::ShouldTurnOnClutch() {
-    if (!GetPhysCar()->IsLocalPlayerCar()) {
+    if (!this->GetPhysCar()->IsLocalPlayerCar()) {
         return false;
     }
-    if (m_pAccelTransitionCtl->IsActive()) {
+    if (this->m_pAccelTransitionCtl->IsActive()) {
         return false;
     }
-    return GetEngRPM() <= 2500.0f;
+    return this->GetEngRPM() <= 2500.0f;
 }
 
 void SFXCTL_Engine::UpdateClutchState() {
-    bClutchStateOn = ShouldTurnOnClutch();
+    this->bClutchStateOn = this->ShouldTurnOnClutch();
 }

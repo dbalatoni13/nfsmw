@@ -94,14 +94,14 @@ struct Wheel {
     }
 
     void Reset() {
-        mWheelOnGround = 1;
-        mWheelForceZ = 0.0f;
-        mWheelSlip = bVector2(0.0f, 0.0f);
-        mTerrainType = SimSurface::kNull;
-        mLoad = 0.0f;
-        mPercentFsFkTransfer = 0.0f;
-        mBlownState = 0;
-        mPrevBlownState = 0;
+        this->mWheelOnGround = 1;
+        this->mWheelForceZ = 0.0f;
+        this->mWheelSlip = bVector2(0.0f, 0.0f);
+        this->mTerrainType = SimSurface::kNull;
+        this->mLoad = 0.0f;
+        this->mPercentFsFkTransfer = 0.0f;
+        this->mBlownState = 0;
+        this->mPrevBlownState = 0;
     }
 };
 
@@ -119,13 +119,13 @@ struct Engine {
     }
 
     void Reset() {
-        mBoostFlag = 0;
-        mNOSFlag = 0;
-        mNOS = 0.0f;
-        mRPMPct = 0.0f;
-        mThrottle = 0.0f;
-        mBoost = 0.0f;
-        mBlownFlag = 0;
+        this->mBoostFlag = 0;
+        this->mNOSFlag = 0;
+        this->mNOS = 0.0f;
+        this->mRPMPct = 0.0f;
+        this->mThrottle = 0.0f;
+        this->mBoost = 0.0f;
+        this->mBlownFlag = 0;
     }
 };
 
@@ -180,19 +180,19 @@ struct EAX_CarState : public UTL::Collections::Listable<EAX_CarState, 10> {
     Sound::ControlSource mControlSource; // offset 0x244, size 0x4
 
     bool IsShifting() {
-        return mDriveline.mGearShiftFlag != 0;
+        return this->mDriveline.mGearShiftFlag != 0;
     }
 
     bool GetNitroFlag() {
-        return mEngine.mNOSFlag != 0;
+        return this->mEngine.mNOSFlag != 0;
     }
 
     float GetNosPercentageLeft() {
-        return mEngine.mNOS;
+        return this->mEngine.mNOS;
     }
 
     bool GetNosEmptyFlag() {
-        return mNosEmptyFlag;
+        return this->mNosEmptyFlag;
     }
 
     EAX_CarState *GetState() {
@@ -204,156 +204,156 @@ struct EAX_CarState : public UTL::Collections::Listable<EAX_CarState, 10> {
     }
 
     int GetNISCarID() {
-        return mNISCarID;
+        return this->mNISCarID;
     }
 
     SirenState GetSirenState() {
-        return mSirenState;
+        return this->mSirenState;
     }
 
     void SetNISCarID(int _id) {
-        mNISCarID = _id;
+        this->mNISCarID = _id;
     }
 
     bool IsLocalPlayerCar() {
-        return mContext == Sound::CONTEXT_PLAYER;
+        return this->mContext == Sound::CONTEXT_PLAYER;
     }
 
     bool IsAICar() {
-        return mContext == Sound::CONTEXT_AIRACER;
+        return this->mContext == Sound::CONTEXT_AIRACER;
     }
 
     bool IsCopCar() {
-        return mContext == Sound::CONTEXT_COP;
+        return this->mContext == Sound::CONTEXT_COP;
     }
 
     unsigned short GetSteering() {
-        return mSteering;
+        return this->mSteering;
     }
 
     float GetBrake() {
-        return mBrake;
+        return this->mBrake;
     }
 
     float GetRPMPct() {
-        return mEngine.mRPMPct;
+        return this->mEngine.mRPMPct;
     }
 
     float GetEBrake() {
-        return mEBrake;
+        return this->mEBrake;
     }
 
     Attrib::Gen::engineaudio *GetEngineInfo() {
-        return &mEngineInfo;
+        return &this->mEngineInfo;
     }
 
     Sound::Gear GetGear() {
-        return mDriveline.mGear;
+        return this->mDriveline.mGear;
     }
 
     Sound::Context GetContext() {
-        return mContext;
+        return this->mContext;
     }
 
     bool IsSimUpdating() {
-        return mSimUpdating;
+        return this->mSimUpdating;
     }
 
     Attrib::Gen::pvehicle *GetAttributes() {
-        return &mAttributes;
+        return &this->mAttributes;
     }
 
-    float GetMaxEngineTorque() { return mMaxTorque; }
-    float GetMaxRPM() { return mMaxRPM; }
-    float GetIdleRPM() { return mMinRPM; }
-    float GetRedlineRPM() { return mRedline; }
+    float GetMaxEngineTorque() { return this->mMaxTorque; }
+    float GetMaxRPM() { return this->mMaxRPM; }
+    float GetIdleRPM() { return this->mMinRPM; }
+    float GetRedlineRPM() { return this->mRedline; }
 
     float GetZero60Time() {
         return 4.5f;
     }
 
     float GetWheelTractionUsage(int w) {
-        return mWheel[w].mPercentFsFkTransfer;
+        return this->mWheel[w].mPercentFsFkTransfer;
     }
 
     bVector2 GetWheelSlip(int w) {
-        return bVector2(mWheel[w].mWheelSlip.x, mWheel[w].mWheelSlip.y);
+        return bVector2(this->mWheel[w].mWheelSlip.x, this->mWheel[w].mWheelSlip.y);
     }
 
     float GetWheelLoad(int wheel_ndx) {
-        return mWheel[wheel_ndx].mLoad;
+        return this->mWheel[wheel_ndx].mLoad;
     }
 
     float GetWheelZForce(int w) {
-        return mWheel[w].mWheelForceZ;
+        return this->mWheel[w].mWheelForceZ;
     }
 
     SimSurface GetWheelTerrain(int w) {
-        return mWheel[w].mTerrainType;
+        return this->mWheel[w].mTerrainType;
     }
 
     SimSurface GetPrevWheelTerrain(int w) {
-        return mWheel[w].mPrevTerrainType;
+        return this->mWheel[w].mPrevTerrainType;
     }
 
     eTireDamage TireState(int w) {
-        return static_cast<eTireDamage>(mWheel[w].mBlownState);
+        return static_cast<eTireDamage>(this->mWheel[w].mBlownState);
     }
 
     bool DidTireJustPucture(int w) {
-        return mWheel[w].mBlownState == 1 && mWheel[w].mPrevBlownState != 1;
+        return this->mWheel[w].mBlownState == 1 && this->mWheel[w].mPrevBlownState != 1;
     }
 
     bool DidTireJustBlow(int w) {
-        return mWheel[w].mBlownState == 2 && mWheel[w].mPrevBlownState != 2;
+        return this->mWheel[w].mBlownState == 2 && this->mWheel[w].mPrevBlownState != 2;
     }
 
     bool IsWheelTouchingGround(int w) {
-        return mWheel[w].mWheelOnGround != 0;
+        return this->mWheel[w].mWheelOnGround != 0;
     }
 
     const bVector3 *GetForwardVector() {
-        return static_cast<const bVector3 *>(static_cast<const void *>(&mMatrix.v0));
+        return static_cast<const bVector3 *>(static_cast<const void *>(&this->mMatrix.v0));
     }
 
     const bVector3 *GetLeftVector() {
-        return static_cast<const bVector3 *>(static_cast<const void *>(&mMatrix.v1));
+        return static_cast<const bVector3 *>(static_cast<const void *>(&this->mMatrix.v1));
     }
 
     const bVector3 *GetUpVector() {
-        return static_cast<const bVector3 *>(static_cast<const void *>(&mMatrix.v2));
+        return static_cast<const bVector3 *>(static_cast<const void *>(&this->mMatrix.v2));
     }
 
     bVector3 *GetPosition() {
-        return static_cast<bVector3 *>(static_cast<void *>(&mMatrix.v3));
+        return static_cast<bVector3 *>(static_cast<void *>(&this->mMatrix.v3));
     }
 
     const bVector2 *GetPosition2D() {
-        return static_cast<const bVector2 *>(static_cast<const void *>(GetPosition()));
+        return static_cast<const bVector2 *>(static_cast<const void *>(this->GetPosition()));
     }
 
     float GetForwardSpeed() {
-        return mFWSpeed;
+        return this->mFWSpeed;
     }
 
     float GetThrottle() {
-        return mEngine.mThrottle;
+        return this->mEngine.mThrottle;
     }
 
     const bVector3 *GetVelocity() {
-        return &mVel0;
+        return &this->mVel0;
     }
 
     const bVector2 *GetVelocity2D() {
-        return static_cast<const bVector2 *>(static_cast<const void *>(GetVelocity()));
+        return static_cast<const bVector2 *>(static_cast<const void *>(this->GetVelocity()));
     }
 
     const bVector3 *GetOldVel() {
-        return &mVel1;
+        return &this->mVel1;
     }
 
     float GetVelocityMagnitude() {
-        return bLength(mVel0);
+        return bLength(this->mVel0);
     }
 
     float GetTheoreticalTopSpeed() {
@@ -365,15 +365,15 @@ struct EAX_CarState : public UTL::Collections::Listable<EAX_CarState, 10> {
     }
 
     float GetVelocityMagnitudeMPH() {
-        return MPS2MPH(GetVelocityMagnitude());
+        return MPS2MPH(this->GetVelocityMagnitude());
     }
 
     bool IsEngineBlown() {
-        return mEngine.mBlownFlag == 1;
+        return this->mEngine.mBlownFlag == 1;
     }
 
     bool IsEngineSabotaged() {
-        return mEngine.mBlownFlag == 2;
+        return this->mEngine.mBlownFlag == 2;
     }
 
     static EAX_CarState *Find(unsigned int objectid) {
@@ -395,7 +395,7 @@ struct EAX_CarState : public UTL::Collections::Listable<EAX_CarState, 10> {
     int GetWheelsOnGround() {
         int num = 0;
         for (int i = 0; i < 4; i++) {
-            if (mWheel[i].mWheelOnGround != 0) {
+            if (this->mWheel[i].mWheelOnGround != 0) {
                 num++;
             }
         }
@@ -403,7 +403,7 @@ struct EAX_CarState : public UTL::Collections::Listable<EAX_CarState, 10> {
     }
 
     void SetVisualRPM(float pct) {
-        mVisualRPM = pct;
+        this->mVisualRPM = pct;
     }
 
     ~EAX_CarState() {}

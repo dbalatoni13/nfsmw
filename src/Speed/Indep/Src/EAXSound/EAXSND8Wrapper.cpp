@@ -113,8 +113,8 @@ void SetHeapThreshold(Device device, float threshold);
 } // namespace Snd
 
 EAXSND8Wrapper::EAXSND8Wrapper() {
-    m_pSoundHeap = nullptr;
-    m_pStreamBuff = nullptr;
+    this->m_pSoundHeap = nullptr;
+    this->m_pStreamBuff = nullptr;
     pCsisSlotPools[0] = nullptr;
     nCsisSlotPoolSizes[0] = 0x88;
 }
@@ -134,17 +134,17 @@ bool EAXSND8Wrapper::Initialize() {
         Snd::System::VectorToReal6();
         Snd::System::SetMaxBanks(0x20);
 
-        m_nHeapSize = 0x33000;
-        m_pSoundHeap = gAudioMemoryManager.AllocateMemoryChar(m_nHeapSize, "SND Heap", false);
+        this->m_nHeapSize = 0x33000;
+        this->m_pSoundHeap = gAudioMemoryManager.AllocateMemoryChar(this->m_nHeapSize, "SND Heap", false);
         Snd::System::SetOutputSampleRate(Snd::DEVICE_MAIN, MAIN_SAMPLERATE);
 
-        SetAudioRenderMode(m_eLastAudioMode = m_eCurrentAudioMode = GetDefaultPlatformAudioMode());
+        this->SetAudioRenderMode(this->m_eLastAudioMode = this->m_eCurrentAudioMode = this->GetDefaultPlatformAudioMode());
 
         Snd::System::SetVoices(Snd::DEVICE_MAIN, 8);
         Snd::System::SetOutputSampleRate(Snd::DEVICE_IOP, 32000);
         Snd::System::SetOutputSampleRate(Snd::DEVICE_MAIN, MAIN_SAMPLERATE);
         Snd::System::SetSndInitsAram(true);
-        Snd::Memory::SetHeap(Snd::DEVICE_MAIN, m_pSoundHeap, m_nHeapSize);
+        Snd::Memory::SetHeap(Snd::DEVICE_MAIN, this->m_pSoundHeap, this->m_nHeapSize);
         Snd::Memory::SetHeapThreshold(Snd::DEVICE_MAIN, 1.0f);
         Snd::System::Init(0x90600);
         return true;
@@ -164,8 +164,8 @@ void EAXSND8Wrapper::ReInit() {
     } else {
         AudioSettings *settings = g_pEAXSound->GetCurrentAudioSettings();
         eSndAudioMode mode = static_cast<eSndAudioMode>(settings->AudioMode);
-        m_eCurrentAudioMode = mode;
-        SetSnd8RenderMode(mode);
+        this->m_eCurrentAudioMode = mode;
+        this->SetSnd8RenderMode(mode);
         Snd::System::ReInit();
     }
 }
@@ -173,7 +173,7 @@ void EAXSND8Wrapper::ReInit() {
 void EAXSND8Wrapper::STUPID() {}
 
 void EAXSND8Wrapper::Update() {
-    STUPID();
+    this->STUPID();
 }
 
 eSndAudioMode EAXSND8Wrapper::SetAudioModeFromMemoryCard(eSndAudioMode mode) {
@@ -184,8 +184,8 @@ eSndAudioMode EAXSND8Wrapper::SetAudioModeFromMemoryCard(eSndAudioMode mode) {
         return mode;
     }
 
-    m_eCurrentAudioMode = GetDefaultPlatformAudioMode();
-    switch (m_eCurrentAudioMode) {
+    this->m_eCurrentAudioMode = this->GetDefaultPlatformAudioMode();
+    switch (this->m_eCurrentAudioMode) {
     case AUDIO_MODE_MIN:
         mode = AUDIO_MODE_MIN;
         break;
@@ -195,7 +195,7 @@ eSndAudioMode EAXSND8Wrapper::SetAudioModeFromMemoryCard(eSndAudioMode mode) {
         }
         break;
     default:
-        mode = m_eCurrentAudioMode;
+        mode = this->m_eCurrentAudioMode;
         break;
     }
 
@@ -213,7 +213,7 @@ eSndAudioMode EAXSND8Wrapper::SetAudioModeFromMemoryCard(eSndAudioMode mode) {
         break;
     }
 
-    m_eCurrentAudioMode = mode;
+    this->m_eCurrentAudioMode = mode;
     return mode;
 }
 
@@ -239,9 +239,9 @@ eSndAudioMode EAXSND8Wrapper::SetAudioRenderMode(eSndAudioMode mode) {
         break;
     }
 
-    m_eCurrentAudioMode = mode;
-    SetSnd8RenderMode(mode);
-    return m_eCurrentAudioMode;
+    this->m_eCurrentAudioMode = mode;
+    this->SetSnd8RenderMode(mode);
+    return this->m_eCurrentAudioMode;
 }
 
 eSndAudioMode EAXSND8Wrapper::SetSnd8RenderMode(eSndAudioMode mode) {
@@ -291,7 +291,7 @@ void *CSISCoreAllocator::Alloc(unsigned int size, const char *name, unsigned int
 void *CSISCoreAllocator::Alloc(unsigned int size, const char *name, unsigned int flags, unsigned int alignment, unsigned int offset) {
     (void)alignment;
     (void)offset;
-    return Alloc(size, g_pcsCSISAllocString, 0);
+    return this->Alloc(size, g_pcsCSISAllocString, 0);
 }
 
 void CSISCoreAllocator::Free(void *pBlock, unsigned int size) {
