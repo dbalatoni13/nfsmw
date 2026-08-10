@@ -5,11 +5,7 @@
 
 AemsDef::SNDAEMS sndaems;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-int SNDAEMS_addmodulebank(void *pBank, char *streamFileName, int streamFileNameOffset, void * (* mallocCb)(void *, int, int)) {
+int SNDAEMS_addmodulebank(void *pBank, char *streamFileName, int streamFileNameOffset, void *(* mallocCb)(void *, int, int)) {
     AemsDef::ModuleBank *pModuleBank;
     void *pusermem;
     int residentSize;
@@ -34,10 +30,14 @@ int SNDAEMS_addmodulebank(void *pBank, char *streamFileName, int streamFileNameO
         }
     }
     if (pModuleBank->midibankoffset != 0) {
-        errorcode = midiret = SNDbankadd(&pModuleBank->midibhandle, &pModuleBank->id[pModuleBank->midibankoffset]);
-        if (errorcode < 0) {
+        midiret = SNDbankadd(
+            &pModuleBank->midibhandle,
+            &pModuleBank->id[pModuleBank->midibankoffset]);
+        if (midiret < 0) {
+            errorcode = midiret;
             goto abort;
         }
+        errorcode = midiret;
     }
 
     residentSize = pModuleBank->residentsize;
@@ -47,13 +47,15 @@ int SNDAEMS_addmodulebank(void *pBank, char *streamFileName, int streamFileNameO
         residentSize += pModuleBank->sfxbanksizepadded;
     }
 
-    midiSize = (midiret == 7) ?
-        SNDbankheadersize(pModuleBank->midibhandle) :
-        pModuleBank->midibanksizepadded;
-
+    if (midiret == 7) {
+        midiSize = SNDbankheadersize(pModuleBank->midibhandle);
+    } else {
+        midiSize = pModuleBank->midibanksizepadded;
+    }
     midiDstOffset = residentSize;
 
-    pusermem = mallocCb(pModuleBank, residentSize + midiSize, pModuleBank->totalsize);
+    residentSize += midiSize;
+    pusermem = mallocCb(pModuleBank, residentSize, pModuleBank->totalsize);
     if (pusermem == NULL) {
         errorcode = -6;
         goto abort;
@@ -91,7 +93,3 @@ abort:
 
     return errorcode;
 }
-
-#ifdef __cplusplus
-}
-#endif

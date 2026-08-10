@@ -549,13 +549,50 @@ int SNDPLATFORM_setfxlevel(int voice, int bus);
 void SNDPLATFORM_lowpass(int voice, int cutofffreq);
 void SNDPLATFORM_highpass(int voice, int cutofffreq);
 int SNDPLATFORM_getcurframe(int voice);
+unsigned int SNDPLATFORM_memalloc(int playloc, int size);
+int SNDPLATFORM_download(int playloc, void *psrc, void * pdst, int size);
+int SNDPLATFORM_downloadcomplete(int dlhandle);
+
 
 // ssine.c
 int iSNDsin(int angle);
 
+// ssysserv.c
+void iSNDserveraddclient(void (* pfunc)(void));
+void iSNDserverremoveclient(void (* pfunc)(void));
+
+// sballoc.c
+int SNDBANKI_alloc();
+
+// sresopat.c
+int SNDBANKI_asyncresolvepatch(int playloc, TAGGEDPATCH *ptp, char * pdata, int *pfirstoffset);
+
+// stpparse.c
+int SNDI_parsetimbre(void **pptp, SNDIPATCHHEADER *pph);
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+// s3dlow.c
+int SND3dpos(STREAMHANDLE shandle, int azimuth, int elevation);
+
+// saemsamb.c
+int SNDAEMS_addmodulebank(void *pBank, char *streamFileName, int streamFileNameOffset, void *(* mallocCb)(void *, int, int));
+
+// saemsmbf.c
+int SNDAEMS_asyncloadmodulebank(char *moduleBankFileName, int moduleBankFileOffset, char *streamFileName, int streamFileOffset, void *pMem, int memSize, void *(* mallocCb)(int));
+int SNDAEMS_asyncloadmodulebankdone();
+
+// saemsmbm.c
+int SNDAEMS_asyncloadmodulebankmem(void *pModuleBank, char *streamFileName, int streamFileOffset, void *(* mallocCb)(int));
+int SNDAEMS_asyncloadmodulebankmemdone();
+
+// sattrdef.c
+int SND_attrsetdef(SNDSAMPLEATTR *pssa);
+
+// filesys_c
+int FILESYS_opstatus(int ophandle);
 
 // sbplay.c
 int SNDBANK_play(int bhandle, int patnum, SNDPLAYOPTS *pspo);
@@ -580,6 +617,12 @@ int SNDbankheadercopy(void *pmem, int bhandle);
 
 // sbhdrsze.c
 int SNDbankheadersize(int bhandle);
+
+// sbasync.c
+int SNDBANK_asyncload(char *filename, int fileoffset, void *pmem, int memsize, void *(* mallocfn)(int));
+int SNDBANK_asyncdone();
+int SNDBANK_asyncloadmem(int *pbhandle, void *pbank);
+int SNDBANK_asyncloadmemdone();
 
 #ifdef __cplusplus
 }

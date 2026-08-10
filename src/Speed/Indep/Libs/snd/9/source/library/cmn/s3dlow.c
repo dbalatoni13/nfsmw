@@ -1,9 +1,5 @@
 #include "Speed/Indep/Libs/snd/9/source/library/cmn/sndcmn.h"
 
-#if __cplusplus
-extern "C" {
-#endif
-
 int SND3dpos(STREAMHANDLE shandle, int azimuth, int elevation) {
     elevation = SNDI_clipint32(elevation, -0x4000, 0x3FFF);
 
@@ -27,7 +23,3 @@ int SND3dpos(STREAMHANDLE shandle, int azimuth, int elevation) {
 
     return voice;
 }
-
-#if __cplusplus
-}
-#endif

@@ -51,3 +51,6 @@ undefined_syms_auto.txt
 .splache
 
 *.vsix
+
+# NGCCC temp files
+*.TMP

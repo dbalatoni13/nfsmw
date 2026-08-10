@@ -342,6 +342,7 @@ if config.platform == Platform.GC_WII:
         "-fno-strength-reduce",
         "-fno-strict-aliasing",
         "-ffast-math",
+        "-mps-float",
         "-x c++",
         "-I src/Speed/Indep/Libs/csis/dev/include",
         "-I src/Speed/Indep/Libs/allocator/1.5.0",
@@ -627,13 +628,15 @@ config.libs = [
         "host": False,
         "progress_category": "libs",  # str | List[str]
         "objects": [
-            Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/saems.c"),
-            Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/saemsamb.c"),
-            Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/saemsstr.c"),
+            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/saems.c"),
+            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/saemsamb.c"),
+            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/saemsmbf.c"),
+            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/saemsmbm.c"),
             Object(
                 NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/saemstimupdt.c"
             ),
-            Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/salloc.c"),
+            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/salloc.c"),
+            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/sattrdef.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/sbadd.c"),
             Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/sbpatinf.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/sgetpvol.c"),
@@ -799,7 +802,6 @@ config.libs = [
                 NonMatching,
                 "Speed/Indep/Libs/snd/9/source/library/extern/coda/cmn/mtdecf.cpp",
             ),
-            Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/sattrdef.c"),
             Object(
                 NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/sexithndl.c"
             ),
