@@ -19,7 +19,7 @@ extern ClassHandle gFX_NITROUSHandle; // size: 0x8, Decl: 27
 
 // total size: 0x24
 // Decl: 29
-struct FX_NITROUSStruct {
+typedef struct {
     int nIT_ID;                // offset 0x0, size 0x4
     int nIT_volume;            // offset 0x4, size 0x4
     int nIT_azimuth;           // offset 0x8, size 0x4
@@ -29,14 +29,14 @@ struct FX_NITROUSStruct {
     int filter_Effects_HiPass; // offset 0x18, size 0x4
     int filter_Effects_Dry_FX; // offset 0x1C, size 0x4
     int filter_Effects_Wet_FX; // offset 0x20, size 0x4
-};
+} FX_NITROUSStruct;
 
 extern InterfaceId FX_PURGEId;      // size: 0x8, Decl: 59
 extern ClassHandle gFX_PURGEHandle; // size: 0x8, Decl: 60
 
 // total size: 0x20
 // Decl: 62
-struct FX_PURGEStruct {
+typedef struct {
     int pURGE_volume; // offset 0x0, size 0x4, Decl: 65
 
     int pURGE_azimuth; // offset 0x4, size 0x4, Decl: 68
@@ -52,42 +52,42 @@ struct FX_PURGEStruct {
     int filter_Effects_Dry_FX; // offset 0x18, size 0x4, Decl: 83
 
     int filter_Effects_Wet_FX; // offset 0x1C, size 0x4, Decl: 86
-};
+} FX_PURGEStruct;
 
 extern InterfaceId FX_SHIFTING_01Id;      // size: 0x8, Decl: 89
 extern ClassHandle gFX_SHIFTING_01Handle; // size: 0x8, Decl: 90
 
 // total size: 0x18
 // Decl: 92
-struct FX_SHIFTING_01Struct {
+typedef struct {
     int id;                    // offset 0x0, size 0x4
     int volume;                // offset 0x4, size 0x4
     int pitch;                 // offset 0x8, size 0x4
     int azimuth;               // offset 0xC, size 0x4
     FXSHIFTING01TypeType type; // offset 0x10, size 0x4
     int cAM;                   // offset 0x14, size 0x4
-};
+} FX_SHIFTING_01Struct;
 
 extern InterfaceId FX_HydraulicId;      // size: 0x8, Decl: 129
 extern ClassHandle gFX_HydraulicHandle; // size: 0x8, Decl: 130
 
 // total size: 0x18
 // Decl: 132
-struct FX_HydraulicStruct {
+typedef struct {
     int hYD_ID;           // offset 0x0, size 0x4
     int hYD_PITCH_OFFSET; // offset 0x4, size 0x4
     int hYD_STOP;         // offset 0x8, size 0x4
     int hYD_Up_Down;      // offset 0xC, size 0x4
     int hYD_volume;       // offset 0x10, size 0x4
     int hYD_azimuth;      // offset 0x14, size 0x4
-};
+} FX_HydraulicStruct;
 
 extern InterfaceId FX_HelicopterId;      // size: 0x8, Decl: 153
 extern ClassHandle gFX_HelicopterHandle; // size: 0x8, Decl: 154
 
 // total size: 0x30
 // Decl: 156
-struct FX_HelicopterStruct {
+typedef struct {
     int hELI_ID; // offset 0x0, size 0x4, Decl: 159
 
     int hELI_Pitch_Offset; // offset 0x4, size 0x4, Decl: 162
@@ -111,13 +111,13 @@ struct FX_HelicopterStruct {
     int hELI_FX_Wet; // offset 0x28, size 0x4, Decl: 187
 
     int hELI_Rotation; // offset 0x2C, size 0x4, Decl: 190
-};
+} FX_HelicopterStruct;
 
 extern InterfaceId FX_SKIDId;      // size: 0x8
 extern ClassHandle gFX_SKIDHandle; // size: 0x8
 
 // total size: 0x58
-struct FX_SKIDStruct {
+typedef struct {
     int vOL_Fwd;               // offset 0x0, size 0x4
     int vOL_Side;              // offset 0x4, size 0x4
     int vOL_Back;              // offset 0x8, size 0x4
@@ -140,14 +140,14 @@ struct FX_SKIDStruct {
     int filter_Effects_HiPass; // offset 0x4C, size 0x4
     int filter_Effects_Dry_FX; // offset 0x50, size 0x4
     int filter_Effects_Wet_FX; // offset 0x54, size 0x4
-};
+} FX_SKIDStruct;
 
 extern InterfaceId FX_WeatherId;      // size: 0x8, Decl: 211
 extern ClassHandle gFX_WeatherHandle; // size: 0x8, Decl: 212
 
 // total size: 0x28
 // Decl: 214
-struct FX_WeatherStruct {
+typedef struct {
     int hood_Rain;               // offset 0x0, size 0x4, Decl: 217
     int hood_Rain_Vol_Substract; // offset 0x4, size 0x4, Decl: 219
     int volume;                  // offset 0x8, size 0x4, Decl: 221
@@ -158,14 +158,14 @@ struct FX_WeatherStruct {
     int filter_Effects_HiPass;   // offset 0x1C, size 0x4, Decl: 236
     int filter_Effects_Dry_FX;   // offset 0x20, size 0x4, Decl: 239
     int filter_Effects_Wet_FX;   // offset 0x24, size 0x4, Decl: 242
-};
+} FX_WeatherStruct;
 
 extern InterfaceId FX_CameraId;      // size: 0x8, Decl: 245
 extern ClassHandle gFX_CameraHandle; // size: 0x8, Decl: 246
 
 // total size: 0x20
 // Decl: 248
-struct FX_CameraStruct {
+typedef struct {
     int iD;               // offset 0x0, size 0x4
     int volume;           // offset 0x4, size 0x4
     int width;            // offset 0x8, size 0x4
@@ -174,41 +174,41 @@ struct FX_CameraStruct {
     int cam_beep_Volume;  // offset 0x14, size 0x4
     int cam_whine;        // offset 0x18, size 0x4
     int cam_whine_Volume; // offset 0x1C, size 0x4
-};
+} FX_CameraStruct;
 
 extern InterfaceId FX_UVESId;      // size: 0x8, Decl: 271
 extern ClassHandle gFX_UVESHandle; // size: 0x10, Decl: 272
 
 // total size: 0x18
 // Decl: 274
-struct FX_UVESStruct {
+typedef struct {
     int iD;           // offset 0x0, size 0x4
     int volume;       // offset 0x4, size 0x4
     int width;        // offset 0x8, size 0x4
     int pitch_Offset; // offset 0xC, size 0x4
     int intensity;    // offset 0x10, size 0x4
     int stop;         // offset 0x14, size 0x4
-};
+} FX_UVESStruct;
 
 extern InterfaceId FX_RadarId;      // size: 0x8, Decl: 291
 extern ClassHandle gFX_RadarHandle; // size: 0x8, Decl: 292
 
 // total size: 0x14
 // Decl: 294
-struct FX_RadarStruct {
+typedef struct {
     int iD;           // offset 0x0, size 0x4
     int volume;       // offset 0x4, size 0x4
     int pitch_Offset; // offset 0x8, size 0x4
     int intensity;    // offset 0xC, size 0x4
     int stop;         // offset 0x10, size 0x4
-};
+} FX_RadarStruct;
 
 extern InterfaceId FX_ScrapeId;      // size: 0x8, Decl: 311
 extern ClassHandle gFX_ScrapeHandle; // size: 0x8, Decl: 312
 
 // total size: 0x24
 // Decl: 314
-struct FX_ScrapeStruct {
+typedef struct {
     int volume;                // offset 0x0, size 0x4
     int pitch;                 // offset 0x4, size 0x4
     int azimuth;               // offset 0x8, size 0x4
@@ -218,7 +218,7 @@ struct FX_ScrapeStruct {
     int filter_Effects_HiPass; // offset 0x18, size 0x4
     int filter_Effects_Dry_FX; // offset 0x1C, size 0x4
     int filter_Effects_Wet_FX; // offset 0x20, size 0x4
-};
+} FX_ScrapeStruct;
 
 // total size: 0x28
 // Decl: 387

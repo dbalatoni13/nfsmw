@@ -27,7 +27,7 @@ extern InterfaceId FX_ROADNOISEId;      // size: 0x8, address: 0x80418848, Decl:
 extern ClassHandle gFX_ROADNOISEHandle; // size: 0x8, Decl: 39
 
 // Decl: 41
-struct FX_ROADNOISEStruct {
+typedef struct {
     int id;                    // offset 0x0, size 0x4
     int volume;                // offset 0x4, size 0x4
     int pitch;                 // offset 0x8, size 0x4
@@ -39,13 +39,13 @@ struct FX_ROADNOISEStruct {
     int filter_Effects_HiPass; // offset 0x20, size 0x4
     int filter_Effects_Dry_FX; // offset 0x24, size 0x4
     int filter_Effects_Wet_FX; // offset 0x28, size 0x4
-};
+} FX_ROADNOISEStruct;
 
 extern InterfaceId FX_ROADNOISE_TRANSId;      // size: 0x8, address: 0x80418850, Decl: 76
 extern ClassHandle gFX_ROADNOISE_TRANSHandle; // size: 0x8, Decl: 77
 
 // Decl: 79
-struct FX_ROADNOISE_TRANSStruct {
+typedef struct {
     int id;                        // offset 0x0, size 0x4
     int volume;                    // offset 0x4, size 0x4
     int pitch;                     // offset 0x8, size 0x4
@@ -57,13 +57,13 @@ struct FX_ROADNOISE_TRANSStruct {
     int filter_Effects_HiPass;     // offset 0x20, size 0x4
     int filter_Effects_Dry_FX;     // offset 0x24, size 0x4
     int filter_Effects_Wet_FX;     // offset 0x28, size 0x4
-};
+} FX_ROADNOISE_TRANSStruct;
 
 extern InterfaceId ENV_STATICId;      // size: 0x8, address: 0x80418858, Decl: 114
 extern ClassHandle gENV_STATICHandle; // size: 0x8, Decl: 115
 
 // Decl: 117
-struct ENV_STATICStruct {
+typedef struct {
     int iD;                 // offset 0x0, size 0x4
     int vOLUME;             // offset 0x4, size 0x4
     int pITCH;              // offset 0x8, size 0x4
@@ -73,7 +73,7 @@ struct ENV_STATICStruct {
     int hiPass;             // offset 0x18, size 0x4
     int fX_Dry;             // offset 0x1C, size 0x4
     int fX_Wet;             // offset 0x20, size 0x4
-};
+} ENV_STATICStruct;
 
 extern InterfaceId FX_MAIN_MEMId;      // size: 0x8, address: 0x80418860, Decl: 142
 extern ClassHandle gFX_MAIN_MEMHandle; // size: 0x8, Decl: 143
@@ -83,7 +83,7 @@ extern ClassHandle gFX_WINDHandle; // size: 0x8, Decl: 164
 
 // total size: 0x38
 // Decl: 166
-struct FX_WINDStruct {
+typedef struct {
     int pitch;            // offset 0x0, size 0x4, Decl: 169
     int volume_left;      // offset 0x4, size 0x4, Decl: 172
     int volume_right;     // offset 0x8, size 0x4, Decl: 175
@@ -98,26 +98,26 @@ struct FX_WINDStruct {
     int fX_Dry;           // offset 0x2C, size 0x4, Decl: 202
     int fX_wet;           // offset 0x30, size 0x4, Decl: 205
     int panning_Depth;    // offset 0x34, size 0x4, Decl: 208
-};
+} FX_WINDStruct;
 
 extern InterfaceId FX_WIND_WeatherId;      // size: 0x8, address: 0x80418870, Decl: 211
 extern ClassHandle gFX_WIND_WeatherHandle; // size: 0x8, Decl: 212
 
 // total size: 0x10
 // Decl: 214
-struct FX_WIND_WeatherStruct {
+typedef struct {
     int volume;       // offset 0x0, size 0x4
     int pitch_offset; // offset 0x4, size 0x4
     int width;        // offset 0x8, size 0x4
     int intensity;    // offset 0xC, size 0x4
-};
+} FX_WIND_WeatherStruct;
 
 extern InterfaceId FX_TRAFFICId;      // size: 0x8, address: 0x80418878, Decl: 227
 extern ClassHandle gFX_TRAFFICHandle; // size: 0x8, Decl: 228
 
 // total size: 0x24
 // Decl: 230
-struct FX_TRAFFICStruct {
+typedef struct {
     int id;                    // offset 0x0, size 0x4
     int volume;                // offset 0x4, size 0x4
     int pitch_OFFSET;          // offset 0x8, size 0x4
@@ -127,14 +127,14 @@ struct FX_TRAFFICStruct {
     int filter_Effects_HiPass; // offset 0x18, size 0x4
     int filter_Effects_Dry_FX; // offset 0x1C, size 0x4
     int filter_Effects_Wet_FX; // offset 0x20, size 0x4
-};
+} FX_TRAFFICStruct;
 
 extern InterfaceId FX_TRUCK_FXId;      // size: 0x8, address: 0x80418880, Decl: 260
 extern ClassHandle gFX_TRUCK_FXHandle; // size: 0x8, Decl: 261
 
 // total size: 0x20
 // Decl: 263
-struct FX_TRUCK_FXStruct {
+typedef struct {
     int id;           // offset 0x0, size 0x4
     int volume;       // offset 0x4, size 0x4
     int pitch_OFFSET; // offset 0x8, size 0x4
@@ -143,7 +143,7 @@ struct FX_TRUCK_FXStruct {
     int hiPass;       // offset 0x14, size 0x4
     int fX_Dry;       // offset 0x18, size 0x4
     int fX_Wet;       // offset 0x1C, size 0x4
-};
+} FX_TRUCK_FXStruct;
 
 // total size: 0x30
 // Decl: 311

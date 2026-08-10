@@ -2,7 +2,7 @@
 #include "Speed/Indep/Src/EAXSound/EAXTrafficCar.hpp"
 #include "Speed/Indep/Src/Misc/Profiler.hpp"
 
-bool DEBUG_TRAFFIC_CAR_CONNECTIONS; // size: 0x1, address: 0x80417F30, Decl: 9
+bool DEBUG_TRAFFIC_CAR_CONNECTIONS = false; // size: 0x1, address: 0x80417F30, Decl: 9
 
 CSTATEMGR_TrafficCar::CSTATEMGR_TrafficCar() {
     this->m_CarContext = Sound::CONTEXT_TRAFFIC;

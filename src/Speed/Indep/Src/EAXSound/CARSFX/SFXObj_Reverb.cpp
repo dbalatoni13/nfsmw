@@ -1,9 +1,16 @@
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_Reverb.hpp"
+#include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_Enums.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXAemsManager.h"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/Src/World/ParameterMaps.hpp"
 
-eREVERBFX ReverbZoneCrossMap[12]; // size: 0x30, address: 0x80418214, Decl: 45
+DEFINE_CREATABLE(0x20100, SFXObj_Reverb, SndBase);
+
+// size: 0x30, address: 0x80418214, Decl: 45
+eREVERBFX ReverbZoneCrossMap[12] = {
+    RVRB_CARSHOW_SML,       RVRB_CARSHOW_BASS, RVRB_CARSHOW_BASS_2, RVRB_GARAGE,   RVRB_GARAGE_SML, RVRB_SIMPLE_TUNNEL,
+    RVRB_SIMPLE_TUNNEL_SML, RVRB_HILLS_CLOSE,  RVRB_HILLS,          RVRB_CITYOPEN, RVRB_CITYDENSE,  RVRB_ALLEY,
+};
 
 // size: 0x30, address: 0x80418244, Decl: 61
 char *csfxedit[12] = {
@@ -11,9 +18,7 @@ char *csfxedit[12] = {
     "Simple_Tunnel_Sml.fx", "Hills_Close.fx", "Hills.fx",     "City_Open.fx", "City_Dense.fx", "Alley.fx",
 };
 
-ParameterAccessor ReverbAccessor; // size: 0x1C, address: 0x8045E564, Decl: 25
-
-DEFINE_CREATABLE(0x20100, SFXObj_Reverb, SndBase);
+ParameterAccessor ReverbAccessor("Reverb"); // size: 0x1C, address: 0x8045E564, Decl: 25
 
 Snd::GlobalFxProcessor *SFXObj_Reverb::m_pFXEditModule[2]; // Decl: 79
 
@@ -21,7 +26,7 @@ char *SFXObj_Reverb::m_pFXEditPatch[12]; // Decl: 88
 
 void *SFXObj_Reverb::m_EchoBuffer = nullptr;   // Decl: 90
 void *SFXObj_Reverb::m_UnusedBuffer = nullptr; // Decl: 91
-bool SFXObj_Reverb::bUnavailable = false;      // Decl: 92
+bool SFXObj_Reverb::bUnavailable = true;       // Decl: 92
 
 SFXObj_Reverb::ReverbStructure SFXObj_Reverb::m_EchoAllocs[4]; // Decl: 94
 

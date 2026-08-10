@@ -22,7 +22,7 @@ CSTATEMGR_DriveBy::CSTATEMGR_DriveBy() : CSTATEMGR_Base() {
 
 CSTATEMGR_DriveBy::~CSTATEMGR_DriveBy() {}
 
-float CAMERA_WOOSH_OFFSET; // size: 0x4, address: 0x80417F40, Decl: 44
+float CAMERA_WOOSH_OFFSET = 2.0f; // size: 0x4, address: 0x80417F40, Decl: 44
 
 void TestSmackableForWoosh(IModel *model, int carid) {
     if (!debug_SmackableWooshs_ALL) {

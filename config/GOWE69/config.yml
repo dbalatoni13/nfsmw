@@ -321,6 +321,11 @@ add_relocations:
   target: gAudioMemoryManager
   addend: 0
 
+- source: .text:0x800f2520
+  type: l
+  target: _9SndCamera.m_v3WorldCarPos
+  addend: 0
+
 - source: .text:0x80249960
   type: ha
   target: lbl_803FB614

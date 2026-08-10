@@ -4,7 +4,7 @@
 
 DEFINE_CREATABLE(0x20060, CARSFX_SparkChatter, SndBase);
 
-int SparkChatVol; // size: 0x4, address: 0xFFFFFFFF, Decl: 27
+int SparkChatVol = 32000; // size: 0x4, address: 0xFFFFFFFF, Decl: 27
 
 // UNSOLVED
 CARSFX_SparkChatter::CARSFX_SparkChatter() : CARSFX() {

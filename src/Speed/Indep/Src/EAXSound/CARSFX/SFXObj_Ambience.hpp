@@ -13,7 +13,9 @@ class SFXObj_Ambience : public CARSFX {
     ~SFXObj_Ambience() override;
 
     // Overrides: SndBase
-    int GetController(int Index) override {}                  // Decl: 13
+    int GetController(int Index) override {
+        return -1;
+    } // Decl: 13
     void AttachController(struct SFXCTL *psfxctl) override {} // Decl: 14
     void InitSFX() override;
     void Destroy() override;

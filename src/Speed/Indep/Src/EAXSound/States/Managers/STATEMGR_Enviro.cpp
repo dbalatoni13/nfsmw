@@ -1,7 +1,10 @@
 #include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_Enviro.hpp"
+#include "Speed/Indep/Libs/Support/Utility/UListable.h"
 #include "Speed/Indep/Src/EAXSound/SndCamera.hpp"
 
 STATETYPE_IMPLEMENT(0x60000, CSTATE_WorldObject, CSTATE_Base);
+
+IMPLEMENT_LISTABLE(ISndAttachable);
 
 void CSTATEMGR_Enviro::AddWorldObject(float x, float y, float z, WORLDOBJECT_TYPES type) {
     bVector3 Vec(x, y, z);

@@ -23,7 +23,7 @@ stMomentMapping g_MomentMappings[15] = {
     stMomentMapping(8, Attrib::Hash::aud_moment_strm::key_gazebo_crash),
     stMomentMapping(9, Attrib::Hash::aud_moment_strm::key_fish_sign_crash),
     stMomentMapping(10, Attrib::Hash::aud_moment_strm::key_boat_fall),
-    stMomentMapping(16, Attrib::Hash::aud_moment_strm::key_trailer_park),
+    stMomentMapping(17, Attrib::Hash::aud_moment_strm::key_trailer_park),
     stMomentMapping(19, Attrib::Hash::aud_moment_strm::key_amphitheatre),
     stMomentMapping(20, Attrib::Hash::aud_moment_strm::key_stripmall),
     stMomentMapping(16, Attrib::Hash::aud_moment_strm::key_drive_in),
@@ -32,8 +32,11 @@ stMomentMapping g_MomentMappings[15] = {
 
 DEFINE_CREATABLE(0x60, SFXObj_MomentStrm, SndBase);
 
-int SND_PRINT_STRM_BLOCK; // size: 0x4, address: 0xFFFFFFFF, Decl: 49
-int DEBUG_MOMENT_STRM;    // size: 0x4, address: 0xFFFFFFFF, Decl: 50
+int SND_PRINT_STRM_BLOCK = 0; // size: 0x4, address: 0xFFFFFFFF, Decl: 49
+int DEBUG_MOMENT_STRM = 0;    // size: 0x4, address: 0xFFFFFFFF, Decl: 50
+
+bool SFXObj_MomentStrm::bHoldStream = false;           // size: 0x1, Decl: 52
+float SFXObj_MomentStrm::m_TimeBeforeRetrigger = 0.0f; // size: 0x1, Decl: 53
 
 SFXObj_MomentStrm *g_MomentStream = nullptr; // size: 0x4, address: 0x80418370, Decl: 55
 
@@ -389,4 +392,4 @@ void SFXObj_MomentStrm::ReceivePursuitBreaker(const MPursuitBreaker &message) {
     }
 }
 
-DEFINE_CREATABLE(0x20, SFXCTL_3DMomentPos, SndBase);
+DEFINE_CREATABLE(0x20, SFXCTL_3DMomentPos, SFXCTL_3DObjPos);

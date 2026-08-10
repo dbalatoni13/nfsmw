@@ -1,5 +1,6 @@
 #include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX_WindNoise.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
+#include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_3DObjPos.hpp"
 #include "Speed/Indep/Src/Misc/Config.h"
 
 static const float gfCarWindRadius = 65.0f;            // size: 0x4, Decl: 99
@@ -17,9 +18,9 @@ static const float gfWindMaxDist = 100.0f;             // size: 0x4, Decl: 110
 static const float gfMinWindRadiusScale = 1.01f;       // size: 0x4, Decl: 111
 static const float gfWindIntersectionVelocity = 18.8f; // size: 0x4, Decl: 112
 
-DEFINE_CREATABLE(0x200D0, SFXCTL_3DLeftWindPos, SndBase);
+DEFINE_CREATABLE(0x200D0, SFXCTL_3DLeftWindPos, SFXCTL_3DObjPos);
 
-DEFINE_CREATABLE(0x200E0, SFXCTL_3DRightWindPos, SndBase);
+DEFINE_CREATABLE(0x200E0, SFXCTL_3DRightWindPos, SFXCTL_3DObjPos);
 
 DEFINE_CREATABLE(0x20090, CARSFX_WindNoise, SndBase);
 
@@ -217,7 +218,7 @@ void CARSFX_WindWeather::Destroy() {
 static const int WindWeatherVol = 7000; // size: 0x4, Decl: 855
 
 static const float MaxSpeedAtWhichWindPlays = 70.0f; // size: 0x4, Decl: 860
-Slope WeatherWindVolSlope;                           // size: 0x1C, address: 0x8045E3B4, Decl: 861
+Slope WeatherWindVolSlope(1.0f, 0.25f, 0.0f, 70.0f); // size: 0x1C, address: 0x8045E3B4, Decl: 861
 
 void CARSFX_WindWeather::UpdateParams(float t) {
     SndBase::UpdateParams(t);

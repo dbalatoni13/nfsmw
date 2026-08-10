@@ -12,14 +12,14 @@ extern InterfaceId FX_TURBO_01Id;
 
 // total size: 0x18
 // Decl: 19
-struct FX_TURBO_01Struct {
+typedef struct {
     int id;       // offset 0x0, size 0x4
     int volume;   // offset 0x4, size 0x4
     int pSI;      // offset 0x8, size 0x4
     int azimuth;  // offset 0xC, size 0x4
     int rotation; // offset 0x10, size 0x4
     int rPM;      // offset 0x14, size 0x4
-};
+} FX_TURBO_01Struct;
 
 // total size: 0x1C
 // Decl: 48

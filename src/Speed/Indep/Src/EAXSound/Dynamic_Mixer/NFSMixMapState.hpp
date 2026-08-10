@@ -41,15 +41,29 @@ class NFSMixMapState {
     void InitializeSubChannels();
     void InitializeMasterChannels();
 
-    // int GetNumStateCopies() {}         // Decl: 153
+    int GetNumStateCopies() {
+        return this->m_NumStateCopies;
+    } // Decl: 153
     // int GetNumCurveProcsAdded() {}     // Decl: 154
-    // int GetNumMixCtlsAdded() {}        // Decl: 155
-    // int GetNumEvtMixCtlsAdded() {}     // Decl: 156
-    // int GetNum3DMixCtlsAdded() {}      // Decl: 157
-    // int GetNumSubMixChannelsAdded() {} // Decl: 158
-    // int GetNumMasterChannelsAdded() {} // Decl: 159
+    int GetNumMixCtlsAdded() {
+        return this->m_MixCtlsAdded;
+    } // Decl: 155
+    int GetNumEvtMixCtlsAdded() {
+        return this->m_EvtMixCtlsAdded;
+    } // Decl: 156
+    int GetNum3DMixCtlsAdded() {
+        return this->m_3DMixCtlsAdded;
+    } // Decl: 157
+    int GetNumSubMixChannelsAdded() {
+        return this->m_SubMixChannelsAdded;
+    } // Decl: 158
+    int GetNumMasterChannelsAdded() {
+        return this->m_MasterChannelsAdded;
+    } // Decl: 159
 
-    void SetStateHdr(stMixMapStateHdr *phdr) {} // Decl: 161
+    void SetStateHdr(stMixMapStateHdr *phdr) {
+        this->m_pMMStateHdr = phdr;
+    } // Decl: 161
 
     void SetFirstStateInst(NFSMixMapState *pstate);
 

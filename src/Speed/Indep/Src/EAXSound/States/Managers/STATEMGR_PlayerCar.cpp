@@ -4,6 +4,8 @@
 #include "Speed/Indep/Src/Misc/Profiler.hpp"
 #include "Speed/Indep/Src/Sim/Simulation.h"
 
+bool CSTATEMGR_PlayerCar::IsTruck = false; // Decl: 14
+
 CSTATEMGR_PlayerCar::CSTATEMGR_PlayerCar() {}
 
 CSTATEMGR_PlayerCar::~CSTATEMGR_PlayerCar() {}
@@ -53,7 +55,7 @@ void CSTATEMGR_PlayerCar::UpdateParams(float t) {
     CSTATEMGR_Base::UpdateParams(t);
 }
 
-DEFINE_CREATABLE(0x20080, SFXCTL_3DRearPos, SndBase);
+DEFINE_CREATABLE(0x20080, SFXCTL_3DRearPos, SFXCTL_3DCarPos);
 
 void SFXCTL_3DRearPos::InitSFX() {
     SFXCTL::InitSFX();

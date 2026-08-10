@@ -12,7 +12,7 @@ extern InterfaceId SIRENId;
 extern ClassHandle gSIRENHandle;
 
 // total size: 0x24
-struct SIRENStruct {
+typedef struct {
     int vOL;        // offset 0x0, size 0x4
     int pITCH_OFFS; // offset 0x4, size 0x4
     int pAN;        // offset 0x8, size 0x4
@@ -22,13 +22,13 @@ struct SIRENStruct {
     int hiPass;     // offset 0x18, size 0x4
     int dry_FX;     // offset 0x1C, size 0x4
     int wet_FX;     // offset 0x20, size 0x4
-};
+} SIRENStruct;
 
 extern InterfaceId SIREN_BEDId;
 extern ClassHandle gSIREN_BEDHandle;
 
 // total size: 0x20
-struct SIREN_BEDStruct {
+typedef struct {
     int vOL;        // offset 0x0, size 0x4
     int pITCH_OFFS; // offset 0x4, size 0x4
     int dISTANCE;   // offset 0x8, size 0x4
@@ -37,7 +37,7 @@ struct SIREN_BEDStruct {
     int hiPass;     // offset 0x14, size 0x4
     int dry_FX;     // offset 0x18, size 0x4
     int wet_FX;     // offset 0x1C, size 0x4
-};
+} SIREN_BEDStruct;
 
 // total size: 0x28
 class SIREN {

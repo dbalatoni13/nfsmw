@@ -22,10 +22,14 @@ struct WorldObject : ISndAttachable {
     }
 
     // Overrides: ISndAttachable
-    const bVector3 *GetPosition() override {}
+    const bVector3 *GetPosition() override {
+        return &this->m_3DPosition;
+    }
 
     // Overrides: ISndAttachable
-    int GetType() override {}
+    int GetType() override {
+        return this->Types;
+    }
 };
 
 // total size: 0x48

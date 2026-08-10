@@ -13,7 +13,9 @@ class SFXObj_NISStream : public CARSFX {
     ~SFXObj_NISStream() override;
 
     // Overrides: SndBase
-    int GetController(int Index) override {}           // Decl: 16
+    int GetController(int Index) override {
+        return -1;
+    } // Decl: 16
     void AttachController(SFXCTL *psfxctl) override {} // Decl: 17
     void InitSFX() override;
     void Destroy() override;

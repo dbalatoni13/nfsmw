@@ -33,8 +33,7 @@ class SFXCTL_3DVoiceActorPos : SFXCTL_3DObjPos {
   public:
     DECLARE_CREATABLE();
 
-    SFXCTL_3DVoiceActorPos() {}           // Decl: 34
-    ~SFXCTL_3DVoiceActorPos() override {} // Decl: 34
+    SFXCTL_3DVoiceActorPos() {} // Decl: 34
 };
 
 #endif
