@@ -303,6 +303,12 @@ void CARSFX_Turbo::ResetSpool() {
 extern int g_nArrayCosTable[513];
 
 int CARSFX_Turbo::UpdateSpool(float t) {
+#ifdef EA_BUILD_A124
+    if (this->m_pTurboSplControl == nullptr) {
+        this->PlaySpl(0, 0, 0, 0, 0);
+    }
+#endif
+
     if (!g_EAXIsPaused()) {
         if (this->m_fTurbo > 0.01f) {
             this->SpoolCharge += this->m_fTurbo;
