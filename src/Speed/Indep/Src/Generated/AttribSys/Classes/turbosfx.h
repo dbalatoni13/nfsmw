@@ -10,7 +10,9 @@ struct turbosfx : Instance {
     struct _LayoutStruct {
         Attrib::StringKey BankName;          // offset 0x0, size 0x10
         EA::Reflection::UInt32 Vol_Spool;    // offset 0x10, size 0x4
+#ifndef EA_BUILD_A124
         EA::Reflection::Float ChargeTime;    // offset 0x14, size 0x4
+#endif
         EA::Reflection::UInt32 Vol_Blowoff1; // offset 0x18, size 0x4
         EA::Reflection::UInt32 Vol_Blowoff2; // offset 0x1c, size 0x4
     };
@@ -95,13 +97,25 @@ struct turbosfx : Instance {
         ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x4a985286);
     }
     bool ChargeTime(EA::Reflection::Float &result) const {
+#ifdef EA_BUILD_A124
+        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x4a985286, result);
+#else
         ATTRIB_CODEGEN_CHECKEDGETLAYOUT(ChargeTime, result);
+#endif
     }
     const EA::Reflection::Float &ChargeTime() const {
+#ifdef EA_BUILD_A124
+        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x4a985286);
+#else
         ATTRIB_CODEGEN_GETLAYOUT(ChargeTime);
+#endif
     }
     bool SET_ChargeTime(const EA::Reflection::Float &input) {
+#ifdef EA_BUILD_A124
+        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x4a985286, input);
+#else
         ATTRIB_CODEGEN_SETLAYOUT(ChargeTime, input);
+#endif
     }
     bool Leak_Rate(TAttrib<EA::Reflection::Float> &result) const {
         ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xfdf3bc20);
