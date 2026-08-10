@@ -24,7 +24,9 @@ struct engineaudio : Instance {
         EA::Reflection::UInt32 GINSU_Decel_MinRPM;    // offset 0x60, size 0x4
         EA::Reflection::Float DecelDeltaRPMThreshold; // offset 0x64, size 0x4
         EA::Reflection::Float AEMSMix_S_RPM;          // offset 0x68, size 0x4
+#ifndef EA_BUILD_A124
         EA::Reflection::Float Ginsu_ACL_Neg_L_RPM;    // offset 0x6c, size 0x4
+#endif
         EA::Reflection::Float AEMSMix_L_RPM;          // offset 0x70, size 0x4
         EA::Reflection::UInt32 GINSUAccelVol;         // offset 0x74, size 0x4
         EA::Reflection::Float AccelDeltaRPMThreshold; // offset 0x78, size 0x4
@@ -471,13 +473,25 @@ struct engineaudio : Instance {
         ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x782f433d);
     }
     bool Ginsu_ACL_Neg_L_RPM(EA::Reflection::Float &result) const {
+#ifdef EA_BUILD_A124
+        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x782f433d, result);
+#else
         ATTRIB_CODEGEN_CHECKEDGETLAYOUT(Ginsu_ACL_Neg_L_RPM, result);
+#endif
     }
     const EA::Reflection::Float &Ginsu_ACL_Neg_L_RPM() const {
+#ifdef EA_BUILD_A124
+        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x782f433d);
+#else
         ATTRIB_CODEGEN_GETLAYOUT(Ginsu_ACL_Neg_L_RPM);
+#endif
     }
     bool SET_Ginsu_ACL_Neg_L_RPM(const EA::Reflection::Float &input) {
+#ifdef EA_BUILD_A124
+        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x782f433d, input);
+#else
         ATTRIB_CODEGEN_SETLAYOUT(Ginsu_ACL_Neg_L_RPM, input);
+#endif
     }
     bool Ginsu_ACL_Neg_S_RPM(TAttrib<EA::Reflection::Float> &result) const {
         ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x38afe02e);
