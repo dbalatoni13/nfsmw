@@ -123,6 +123,7 @@ inline void *Alloc(unsigned int bytes, int memtype, const char *name) {
 
 #ifdef MILESTONE_OPT
 void *operator new(size_t size, const char *file, int line);
+void *operator new[](size_t size, const char *file, int line);
 #else
 // TODO move the milestone path into a cpp file?
 inline void *operator new(size_t size, const char *file, int line) {
@@ -136,13 +137,11 @@ inline void *operator new(size_t size, const char *file, int line) {
 }
 #endif
 
+#ifndef MILESTONE_OPT
 inline void *operator new[](size_t size, const char *file, int line) {
-#if MILESTONE_OPT
-    return bWareMalloc(size, file, line, 0);
-#else
     return new char[size];
-#endif
 }
+#endif
 
 inline char *bGetPlatformName() {
 #ifdef EA_PLATFORM_GAMECUBE

@@ -20,6 +20,16 @@ void *operator new[](size_t size) {
 #endif
 }
 
+#ifdef MILESTONE_OPT
+void *operator new(size_t size, const char *file, int line) {
+    return bMalloc(size, file, line, 0);
+}
+
+void *operator new[](size_t size, const char *file, int line) {
+    return bMalloc(size, file, line, 0);
+}
+#endif
+
 void operator delete(void *ptr) {
     bFree(ptr);
 }
