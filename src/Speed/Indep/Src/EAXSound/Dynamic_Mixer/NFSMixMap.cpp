@@ -864,7 +864,7 @@ void NFSMixMap::AllocateInputArrays() {
 
     for (int k = n = 0; k < this->m_CurveProcsAdded; k++) {
         int sfxid = pcdp->nINPUTID & 0xE0FFFFF0;
-        unsigned int ntype = pcdp->nINPUTID & 0xE0000000;
+        unsigned int ntype = sfxid & 0xE0000000;
         bUniqueCurveID = true;
 
         if (static_cast<unsigned int>(ntype == 0x40000000) | static_cast<unsigned int>(ntype == 0x60000000) |
@@ -898,7 +898,7 @@ void NFSMixMap::AllocateInputArrays() {
         int *psc = *reinterpret_cast<int **>(reinterpret_cast<char *>(this->m_pScalePtrArray) + (ns << 2));
         bool buniquescale = true;
         nid = reinterpret_cast<unsigned int>(psc) & 0xE0FFFFF0;
-        unsigned int ntype = reinterpret_cast<unsigned int>(psc) & 0xE0000000;
+        unsigned int ntype = nid & 0xE0000000;
 
         if ((ntype == 0x40000000) || (ntype == 0x60000000) || (ntype == 0x80000000)) {
             for (int m = 0; m < ns; m++) {
