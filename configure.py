@@ -628,7 +628,7 @@ config.libs = [
         "host": False,
         "progress_category": "libs",  # str | List[str]
         "objects": [
-            Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/saems.c"),
+            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/saems.c"),
             Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/saemsamb.c"),
             Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/saemsmbf.c"),
             Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/saemsmbm.c"),
@@ -636,6 +636,7 @@ config.libs = [
                 NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/saemstimupdt.c"
             ),
             Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/salloc.c"),
+            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/sattrdef.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/sbadd.c"),
             Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/sbpatinf.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/sgetpvol.c"),
@@ -801,7 +802,6 @@ config.libs = [
                 NonMatching,
                 "Speed/Indep/Libs/snd/9/source/library/extern/coda/cmn/mtdecf.cpp",
             ),
-            Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/sattrdef.c"),
             Object(
                 NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/sexithndl.c"
             ),

@@ -549,6 +549,10 @@ int SNDPLATFORM_setfxlevel(int voice, int bus);
 void SNDPLATFORM_lowpass(int voice, int cutofffreq);
 void SNDPLATFORM_highpass(int voice, int cutofffreq);
 int SNDPLATFORM_getcurframe(int voice);
+unsigned int SNDPLATFORM_memalloc(int playloc, int size);
+int SNDPLATFORM_download(int playloc, void *psrc, void * pdst, int size);
+int SNDPLATFORM_downloadcomplete(int dlhandle);
+
 
 // ssine.c
 int iSNDsin(int angle);
@@ -556,6 +560,15 @@ int iSNDsin(int angle);
 // ssysserv.c
 void iSNDserveraddclient(void (* pfunc)(void));
 void iSNDserverremoveclient(void (* pfunc)(void));
+
+// sballoc.c
+int SNDBANKI_alloc();
+
+// sresopat.c
+int SNDBANKI_asyncresolvepatch(int playloc, TAGGEDPATCH *ptp, char * pdata, int *pfirstoffset);
+
+// stpparse.c
+int SNDI_parsetimbre(void **pptp, SNDIPATCHHEADER *pph);
 
 #ifdef __cplusplus
 extern "C" {

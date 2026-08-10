@@ -1369,19 +1369,28 @@ void SNDAEMSI_resolvemodulebank(
     firstbank = sndaems.modulebank.IsEmpty();
     sndaems.modulebank.Push(&pModuleBank->ln);
 
-    intptr_t funcfixupdelta = reinterpret_cast<char *>(pfuncfixupheader) - reinterpret_cast<char *>(pModuleBank);
+    int funcfixupdelta = reinterpret_cast<char *>(pfuncfixupheader) - reinterpret_cast<char *>(pModuleBank);
 
-    for (i = 0; i < pfuncfixupheader->numfixups; i++) {
-        unsigned short *addr_hi = reinterpret_cast<unsigned short *>(
-            reinterpret_cast<char *>(pModuleBank) + pfuncfixupheader->fixup[i]
-        );
-        unsigned short *addr_lo = addr_hi + 2;
-        unsigned int comp_func = (*addr_hi << 16) | *addr_lo;
-        unsigned short *pfuncentry = reinterpret_cast<unsigned short *>(
-            &sndaemsfuncs[comp_func]
-        );
-        *addr_hi = pfuncentry[0];
-        *addr_lo = pfuncentry[1];
+    i = 0;
+    if (i < pfuncfixupheader->numfixups) {
+        unsigned short *funcbase = reinterpret_cast<unsigned short *>(sndaemsfuncs);
+        do {
+            unsigned short *addr_hi = reinterpret_cast<unsigned short *>(
+                reinterpret_cast<char *>(pModuleBank) + pfuncfixupheader->fixup[i]
+            );
+            unsigned short *addr_lo = addr_hi + 2;
+            unsigned int comp_func = (*addr_hi << 16) | *addr_lo;
+            // TODO remove these variables
+            unsigned int func_offset = comp_func * sizeof(unsigned int);
+            unsigned short entry_hi = *reinterpret_cast<unsigned short *>(
+                reinterpret_cast<unsigned int>(funcbase) + func_offset
+            );
+            func_offset += reinterpret_cast<unsigned int>(funcbase);
+            *addr_hi = entry_hi;
+            unsigned short *pfuncentry = reinterpret_cast<unsigned short *>(func_offset);
+            *addr_lo = pfuncentry[1];
+            i++;
+        } while (i < pfuncfixupheader->numfixups);
     }
 
     pFakeModuleBankStart = reinterpret_cast<char *>(pModuleBank) + funcfixupdelta - pModuleBank->funcfixupoffset;
