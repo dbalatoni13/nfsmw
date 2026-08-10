@@ -170,13 +170,15 @@ void SFXObj_PFEATrax::RestartRace() {
     if (this->m_MusicType == eMUSIC_TYPE_LICENCED || this->m_MusicType == eMUSIC_TYPE_INTERACTIVE) {
         PATH_stop(this->m_PFParms[this->m_ActiveProject].PATH_TRACK);
         PATH_clearallevents(PATH_ALL_PROJECTS);
-        this->m_MusicType = eMUSIC_TYPE_LICENCED;
 #ifndef EA_BUILD_A124
+        this->m_MusicType = eMUSIC_TYPE_LICENCED;
         this->m_bPathFAILED = false;
 #endif
     }
 
+#ifndef EA_BUILD_A124
     this->mT_ambienceStart = Timer(0);
+#endif
 }
 
 void SFXObj_PFEATrax::SendPathEvent() {
@@ -642,7 +644,11 @@ void SFXObj_PFEATrax::SetupSFX(CSTATE_Base *_StateBase) {
     this->m_PFParms[0].PATH_TRACK = PATH_TRACK(0, 0, 0);
     this->m_PFParms[0].PATH_VOICE = -1;
     this->m_PFParms[0].PATH_TRACKID = -1;
+#ifdef EA_BUILD_A124
+    this->m_PFParms[0].PATH_TRACK_BYTESPERSEC = 0x86E3;
+#else
     this->m_PFParms[0].PATH_TRACK_BYTESPERSEC = 36216;
+#endif
 
     this->m_PFParms[1].bAttached = false;
     this->m_PFParms[1].bdataloaded = false;
