@@ -180,7 +180,7 @@ if config.platform == Platform.GC_WII:
     keep_list_path = Path("config") / config.version / "keep.lst"
     config.ldflags = [
         "-strip-unused-data",
-        "-report-unused",
+        # "-report-unused",
         "-keep",
         str(keep_list_path),
         "-T",
@@ -296,6 +296,7 @@ if config.platform == Platform.GC_WII:
         "-mps-nodf",
         # "-mfast-cast",
         "-G0",
+        "-fno-static-dtors",
         "-ffast-math",
         # "-fno-strength-reduce",
         "-fforce-addr",
