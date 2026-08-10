@@ -52,5 +52,5 @@ undefined_syms_auto.txt
 
 *.vsix
 
-# ninja temp files
+# NGCCC temp files
 *.TMP
