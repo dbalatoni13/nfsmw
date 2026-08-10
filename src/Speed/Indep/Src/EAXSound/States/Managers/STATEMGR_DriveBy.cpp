@@ -209,7 +209,9 @@ void CSTATEMGR_DriveBy::UpdateParams(float t) {
     CSTATEMGR_Base::UpdateParams(t);
 }
 
+#ifndef EA_BUILD_A124
 void CSTATEMGR_DriveBy::UpdateSmackables(float t) {}
+#endif
 
 void CSTATEMGR_DriveBy::EnterWorld(eSndGameMode esgm) {
     int SFXID = 0;

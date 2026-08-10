@@ -562,10 +562,12 @@ stEvtMixCtlSharedData *NFSMixMap::GetNextEvtMixCtlShared(bool bincrement) {
 
 stEvtMixCtlUniqueData *NFSMixMap::GetNextEvtMixCtlUnique(bool bincrement) {
     stEvtMixCtlUniqueData *pAddr = &this->m_pEvtMixCtlData_U[this->m_nAssignedEvtMixCtlUnique];
+#ifndef EA_BUILD_A124
     pAddr->qoutput = 0x7FFF;
     pAddr->output = 0;
     pAddr->reset = 0;
     pAddr->reset_level = -10000;
+#endif
     if (bincrement) {
         this->m_nAssignedEvtMixCtlUnique++;
     }
