@@ -208,12 +208,12 @@ def build_gamecube_layout(manifest: Manifest, cave_base: int) -> tuple[bytes, di
     strings_base = cave_base + 0x200
     string_addrs = {
         "label_fmt": strings_base,
-        "type_fmt": strings_base + len(b"%s%d:\n\0"),
-        "size_fmt": strings_base + len(b"%s%d:\n\0") + len(b"\t.type\t%s%d,@object\n\0"),
+        "type_fmt": strings_base + len(b"$%s%d:\n\0"),
+        "size_fmt": strings_base + len(b"$%s%d:\n\0") + len(b"\t.type\t$%s%d,@object\n\0"),
         "star_fmt": strings_base
-        + len(b"%s%d:\n\0")
-        + len(b"\t.type\t%s%d,@object\n\0")
-        + len(b"\t.size\t%s%d,%d\n\0"),
+        + len(b"$%s%d:\n\0")
+        + len(b"\t.type\t$%s%d,@object\n\0")
+        + len(b"\t.size\t$%s%d,%d\n\0"),
     }
 
     asm = Asm(cave_base)
@@ -300,10 +300,10 @@ def build_gamecube_layout(manifest: Manifest, cave_base: int) -> tuple[bytes, di
     code_and_strings[: len(asm.buf)] = asm.buf
 
     string_payloads = {
-        "label_fmt": b"%s%d:\n\0",
-        "type_fmt": b"\t.type\t%s%d,@object\n\0",
-        "size_fmt": b"\t.size\t%s%d,%d\n\0",
-        "star_fmt": b"*%s%d\0",
+        "label_fmt": b"$%s%d:\n\0",
+        "type_fmt": b"\t.type\t$%s%d,@object\n\0",
+        "size_fmt": b"\t.size\t$%s%d,%d\n\0",
+        "star_fmt": b"*$%s%d\0",
     }
     for name, payload in string_payloads.items():
         start = string_addrs[name] - cave_base
@@ -331,12 +331,12 @@ def build_old_layout(manifest: Manifest, cave_base: int) -> tuple[bytes, dict[st
         "label_fmt": strings_base,
         "type_fmt": strings_base + len(b"%s%s%d:\n\0"),
         "size_fmt": strings_base + len(b"%s%s%d:\n\0") + len(b"\t.type\t%s%s%d,@object\n\0"),
-        "empty": strings_base
+        "dollar": strings_base
         + len(b"%s%s%d:\n\0")
         + len(b"\t.type\t%s%s%d,@object\n\0")
         + len(b"\t.size\t%s%s%d,%d\n\0"),
     }
-    left_addr = string_addrs["empty"] if manifest.plain_label else manifest.label_left
+    left_addr = string_addrs["dollar"] if manifest.plain_label else manifest.label_left
     right_addr = manifest.label_right
 
     asm = Asm(cave_base)
@@ -428,7 +428,7 @@ def build_old_layout(manifest: Manifest, cave_base: int) -> tuple[bytes, dict[st
         "label_fmt": b"%s%s%d:\n\0",
         "type_fmt": b"\t.type\t%s%s%d,@object\n\0",
         "size_fmt": b"\t.size\t%s%s%d,%d\n\0",
-        "empty": b"\0",
+        "dollar": b"$\0",
     }
     for name, payload in string_payloads.items():
         start = string_addrs[name] - cave_base
@@ -697,8 +697,8 @@ def main(argv: list[str]) -> int:
         return 0
 
     if not args.profile or not args.input:
-        print("usage: patch-rodata-stock.py <profile> <input> [output]", file=sys.stderr)
-        print("       patch-rodata-stock.py --list", file=sys.stderr)
+        print("usage: patch-toolchain.py <profile> <input> [output]", file=sys.stderr)
+        print("       patch-toolchain.py --list", file=sys.stderr)
         return 2
 
     try:
