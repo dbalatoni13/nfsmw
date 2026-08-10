@@ -23,8 +23,13 @@ EAXCar::EAXCar()
     this->t_DeltaTime = 0.0f;
     this->m_IsDriveCamera = 0;
     this->m_pPhysicsCTL = nullptr;
+#ifdef EA_BUILD_A124
+    this->m_fAudioRPM = 0.0f;
+    this->m_EngUGL = AEMS_LEVEL2;
+#else
     this->m_EngUGL = AEMS_LEVEL2;
     this->m_fAudioRPM = 0.0f;
+#endif
     this->m_TurboUGL = AEMS_LEVEL0;
     this->m_NOSUGL = AEMS_LEVEL0;
     this->m_TireUGL = AEMS_LEVEL0;
