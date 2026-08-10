@@ -70,7 +70,7 @@
 
 #include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX_Rain.cpp"
 
-#include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX_STRUCTS.cpp"
+#include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX_Structs.cpp"
 
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_Collision.cpp"
 
@@ -106,7 +106,7 @@
 
 #include "Speed/Indep/Src/EAXSound/Data/SND_DopplerParams.cpp"
 
-#include "Speed/Indep/Src/EAXSound/Data/SND_REVERBFXPARAMS.cpp"
+#include "Speed/Indep/Src/EAXSound/Data/SND_ReverbFXParams.cpp"
 
 #include "Speed/Indep/Src/EAXSound/Ginsu/ginsudata.cpp"
 
