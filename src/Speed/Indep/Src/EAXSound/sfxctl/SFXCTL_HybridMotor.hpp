@@ -59,7 +59,9 @@ class SFXCTL_HybridMotor : public SFXCTL {
 
     int m_EngVolRedLine; // offset 0x74, size 0x4, Decl: 59
 
+#ifndef EA_BUILD_A124
     int mPrevDeltaRPM; // offset 0x78, size 0x4, Decl: 61
+#endif
 
     float m_GinsuLPFVal;   // offset 0x7C, size 0x4, Decl: 64
     bool m_bAEMSLPF;       // offset 0x80, size 0x1, Decl: 65
@@ -71,7 +73,9 @@ class SFXCTL_HybridMotor : public SFXCTL {
     float PrevRPM;             // offset 0xB8, size 0x4, Decl: 77
 
     float m_GinsuScaledRPM; // offset 0xBC, size 0x4, Decl: 79
+#ifndef EA_BUILD_A124
     float mPrevPhyDeltaRPM; // offset 0xC0, size 0x4, Decl: 80
+#endif
 
     EngineMix m_EngineMix; // offset 0xC4, size 0x10, Decl: 84
 
