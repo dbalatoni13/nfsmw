@@ -99,11 +99,19 @@ void GenerateNISAnimHashMap() {
 }
 
 int GetCsisEventIndex(unsigned int hashid) {
+#ifdef EA_BUILD_A124
+    for (int n = 0; n < 66; n++) {
+        if (uNIS_STRINGHASHMAP[n][0] == hashid) {
+            return n;
+        }
+    }
+#else
     for (int n = 0; n < NUM_ELEMENTS(uNIS_STRINGHASHMAP); n++) {
         if (uNIS_STRINGHASHMAP[n][2] == hashid) {
             return n;
         }
     }
+#endif
     return -1;
 }
 
