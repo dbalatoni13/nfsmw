@@ -62,7 +62,7 @@ int SNDbankadd(int *pbhandle, void *pbank) {
         firstoffset = 0;
         for (i = 0; i < pb->numpatches; i++) {
             if (pb->patch[i] != NULL) {
-                SNDBANKI_asyncresolvepatch(0x200, (TAGGEDPATCH *)((int)&pb->patch[i] + (int)pb->patch[i]), (char *)pbl->pspuram, &firstoffset);
+                SNDBANKI_asyncresolvepatch(0x200, reinterpret_cast<TAGGEDPATCH *>(((int)&pb->patch[i] + (int)pb->patch[i])), (char *)pbl->pspuram, &firstoffset);
             }
         }
     }
