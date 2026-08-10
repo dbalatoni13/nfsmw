@@ -98,17 +98,31 @@ SFXObj_PFEATrax::SFXObj_PFEATrax()
       {
     this->m_EATraxState = EATRAX_OFF;
     this->m_CurPathEvent = 0;
+#ifndef EA_BUILD_A124
     this->m_PrevPathEvent = static_cast<unsigned int>(-1);
+#endif
     this->m_nAmbientZone = -1;
     this->m_AmbZoneVol = 0;
     this->m_CurIntensity = 0;
     this->m_PrevIntensity = 0;
     this->m_ActiveProject = PF_LICENSED_MUSIC;
     this->m_PrevActiveProject = PF_PROJECTRESET;
+#ifdef EA_BUILD_A124
     this->m_PrevMusicType = eMUSIC_TYPE_SPLASH;
+    this->m_MusicType = this->m_PrevMusicType;
+    this->m_PrevPathEvent = static_cast<unsigned int>(-1);
+#else
+    this->m_PrevMusicType = eMUSIC_TYPE_SPLASH;
+#endif
+#ifndef EA_BUILD_A124
     this->m_MusicType = eMUSIC_TYPE_SPLASH;
+#endif
     this->m_InteractiveProj = static_cast<eINTERACTIVE_PROJ_ID>((bRandom(4) + 1) & PF_INTERACTIVE_03);
+#ifdef EA_BUILD_A124
+    this->m_Flags = 0;
+#else
     this->m_Flags = 0x40;
+#endif
     this->m_bSkipUpdate = false;
 #ifndef EA_BUILD_A124
     this->m_bClearSkipUpdate = false;
