@@ -100,10 +100,16 @@ void CARSFX_Turbo::InitSFX() {
 
         bClamp(0, 0, 5);
 
+#ifndef EA_BUILD_A124
         if (this->m_pTurboSplControl == nullptr) {
             this->PlaySpl(0, 0, 0, 0, 0);
         }
+#endif
 
+#ifdef EA_BUILD_A124
+        this->m_pTurboBlowoffControl = nullptr;
+        this->m_pTurboSplControl = nullptr;
+#endif
         this->bStopBlowoff = false;
         this->bReachedPeak = false;
         this->tLastBlowoffTime = 0.0f;
