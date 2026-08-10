@@ -828,6 +828,9 @@ void SFXObj_PFEATrax::MessageSendPathControl(const MControlPathfinder &message) 
 
 void SFXObj_PFEATrax::MessagePartUpdate(const MControlPathfinder &message) {
     this->m_CurPart = message.GetPartID();
+#ifdef EA_BUILD_A124
+    this->m_bSkipUpdate = false;
+#endif
 #ifndef EA_BUILD_A124
     this->m_bClearSkipUpdate = true;
 #endif
