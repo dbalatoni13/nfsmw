@@ -49,12 +49,22 @@ void CARSFX_Rain::Play() {
 }
 
 void CARSFX_Rain::Stop() {
+#ifdef EA_BUILD_A124
+    Csis::FX_Weather *pCsisRain = this->m_pCsisRain;
+    if (pCsisRain != nullptr) {
+        pCsisRain->SetRain_on_off(1);
+        this->bFadingOut = true;
+        this->m_fTimeLeftToFadeOut = 10.0f;
+        pCsisRain->CommitMemberData();
+    }
+#else
     if (this->m_pCsisRain != nullptr) {
         this->bFadingOut = true;
         this->m_fTimeLeftToFadeOut = 10.0f;
         this->m_pCsisRain->SetRain_on_off(1);
         this->m_pCsisRain->CommitMemberData();
     }
+#endif
 }
 
 void CARSFX_Rain::Destroy() {
