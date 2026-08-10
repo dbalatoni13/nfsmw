@@ -265,7 +265,9 @@ void CARSFX_Turbo::StopBlowOff() {
     if (this->m_pTurboBlowoffControl != nullptr) {
         delete this->m_pTurboBlowoffControl;
         this->m_pTurboBlowoffControl = nullptr;
+#ifndef EA_BUILD_A124
         gnMemLeakTurboBLOWOFFCountTest--;
+#endif
     }
 }
 
