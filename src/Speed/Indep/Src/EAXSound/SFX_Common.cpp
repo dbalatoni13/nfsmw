@@ -121,6 +121,5 @@ void SFX_Common::ProcessUpdate() {
     }
 #endif
 
-    // TODO 64 bit what size is that?
-    bMemSet(this->GetOutputBlockPtr(), 0, 0x14);
+    bMemSet(this->GetOutputBlockPtr(), 0, sizeof(SFX_Common) - sizeof(SFX_Base));
 }
