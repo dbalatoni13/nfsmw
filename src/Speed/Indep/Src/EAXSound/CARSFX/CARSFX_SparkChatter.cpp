@@ -14,8 +14,8 @@ CARSFX_SparkChatter::CARSFX_SparkChatter() : CARSFX() {
 
     this->SparkChatOutputClients.m_pThis = this;
     this->SparkChatOutputClients.CreateClient.pClientData = &this->SparkChatOutputClients;
-    this->SparkChatOutputClients.DestroyClient.pClientData = &this->SparkChatOutputClients;
     this->SparkChatOutputClients.UpdateClient.pClientData = &this->SparkChatOutputClients;
+    this->SparkChatOutputClients.DestroyClient.pClientData = &this->SparkChatOutputClients;
     this->SparkChatOutputClients.CreateClient.pClientFunc = this->SparkChatCreateCallBack;
     this->SparkChatOutputClients.DestroyClient.pClientFunc = this->SparkChatDestroyCallBack;
     this->m_pSweetnersData = nullptr;
