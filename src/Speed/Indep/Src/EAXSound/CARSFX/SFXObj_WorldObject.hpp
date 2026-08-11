@@ -31,9 +31,9 @@ class SFXObj_WorldObject : public CARSFX {
     void Detach() override;
 
     Csis::ENV_STATIC *m_pcsisSFX; // offset 0x28, size 0x4, Decl: 41
-    bVector3 mObjPos;             // offset 0x2C, size 0x10, Decl: 42
+    ALIGNVEC bVector3 mObjPos;    // offset 0x30, size 0x10, Decl: 42
 
-    SFXCTL_3DObjPos *m_p3DObjPos; // offset 0x3C, size 0x4, Decl: 44
+    SFXCTL_3DObjPos *m_p3DObjPos; // offset 0x40, size 0x4, Decl: 44
 };
 
 #endif

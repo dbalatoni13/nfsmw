@@ -9,8 +9,8 @@ ParameterAccessor SPAMAccessorSpeech("Speech");
 DEFINE_CREATABLE(0x10, SFXObj_Speech, SndBase);
 
 SFXObj_Speech::SFXObj_Speech() : CARSFX() {
-    this->m_pActorPos = nullptr;
     this->fPosition = bVector3(0.0f, 0.0f, 0.0f);
+    this->m_pActorPos = nullptr;
     this->bFresh = false;
     this->m_pClosestCar = nullptr;
 }

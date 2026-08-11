@@ -31,7 +31,7 @@ struct stEAX_WindParams {
     int nCrossFadeWeight; // offset 0x4, size 0x4, Decl: 28
 };
 
-// total size: 0x124
+// total size: 0x130
 // Decl: 33
 class CARSFX_WindNoise : public CARSFX {
   public:
@@ -57,20 +57,20 @@ class CARSFX_WindNoise : public CARSFX {
     bool IsInitialized;             // offset 0x28, size 0x1, Decl: 56
     bool m_bIsInSpacialTranslation; // offset 0x2C, size 0x1, Decl: 57
 
-    bVector3 m_v3FinalLeftPos;  // offset 0x30, size 0x10, Decl: 59
-    bVector3 m_v3FinalRightPos; // offset 0x40, size 0x10, Decl: 60
+    ALIGNVEC bVector3 m_v3FinalLeftPos;  // offset 0x30, size 0x10, Decl: 59
+    ALIGNVEC bVector3 m_v3FinalRightPos; // offset 0x40, size 0x10, Decl: 60
 
-    bVector3 m_v3StartLeftPos;  // offset 0x50, size 0x10, Decl: 62
-    bVector3 m_v3StartRightPos; // offset 0x60, size 0x10, Decl: 63
+    ALIGNVEC bVector3 m_v3StartLeftPos;  // offset 0x50, size 0x10, Decl: 62
+    ALIGNVEC bVector3 m_v3StartRightPos; // offset 0x60, size 0x10, Decl: 63
 
-    bVector3 m_v3CurLeftPos;  // offset 0x70, size 0x10, Decl: 65
-    bVector3 m_v3CurRightPos; // offset 0x80, size 0x10, Decl: 66
+    ALIGNVEC bVector3 m_v3CurLeftPos;  // offset 0x70, size 0x10, Decl: 65
+    ALIGNVEC bVector3 m_v3CurRightPos; // offset 0x80, size 0x10, Decl: 66
 
-    bVector3 m_v3CarBaseLeftPos;  // offset 0x90, size 0x10, Decl: 68
-    bVector3 m_v3CarBaseRightPos; // offset 0xA0, size 0x10, Decl: 69
+    ALIGNVEC bVector3 m_v3CarBaseLeftPos;  // offset 0x90, size 0x10, Decl: 68
+    ALIGNVEC bVector3 m_v3CarBaseRightPos; // offset 0xA0, size 0x10, Decl: 69
 
-    bVector3 m_v3LeftDeltaTrans;  // offset 0xB0, size 0x10, Decl: 71
-    bVector3 m_v3RightDeltaTrans; // offset 0xC0, size 0x10, Decl: 72
+    ALIGNVEC bVector3 m_v3LeftDeltaTrans;  // offset 0xB0, size 0x10, Decl: 71
+    ALIGNVEC bVector3 m_v3RightDeltaTrans; // offset 0xC0, size 0x10, Decl: 72
 
     float m_fLeftDistTravel;  // offset 0xD0, size 0x4, Decl: 74
     float m_fRightDistTravel; // offset 0xD4, size 0x4, Decl: 75

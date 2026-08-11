@@ -6,9 +6,9 @@ DEFINE_CREATABLE(0x60000, SFXCTL_3DFountainPos, SFXCTL_3DObjPos);
 DEFINE_CREATABLE(0x60000, SFXObj_WorldObject, SndBase);
 
 SFXObj_WorldObject::SFXObj_WorldObject() : CARSFX() {
+    this->mObjPos = bVector3(0.0f, 0.0f, 0.0f);
     this->m_pcsisSFX = nullptr;
     this->m_p3DObjPos = nullptr;
-    this->mObjPos = bVector3(0.0f, 0.0f, 0.0f);
 }
 
 SFXObj_WorldObject::~SFXObj_WorldObject() {}
