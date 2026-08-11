@@ -11,7 +11,11 @@ CSTATEMGR_PlayerCar::CSTATEMGR_PlayerCar() {}
 CSTATEMGR_PlayerCar::~CSTATEMGR_PlayerCar() {}
 
 void CSTATEMGR_PlayerCar::EnterWorld(eSndGameMode esgm) {
+#ifdef EA_BUILD_A124
+    int SFXIDs = Sim::GetUserMode() == Sim::USER_SPLIT_SCREEN ? 0x53BFA : 0x53BFC;
+#else
     int SFXIDs = 0x53BFA;
+#endif
     bool bIsTruck = false;
     const EAX_CarState::List &carlist = EAX_CarState::GetList();
 
@@ -32,8 +36,8 @@ void CSTATEMGR_PlayerCar::EnterWorld(eSndGameMode esgm) {
     }
 
     if (bIsTruck) {
-        this->IsTruck = true;
         SFXIDs |= 0x80000;
+        this->IsTruck = true;
     } else {
         this->IsTruck = false;
     }
