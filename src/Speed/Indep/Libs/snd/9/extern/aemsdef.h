@@ -840,6 +840,12 @@ struct ClassDestructorState {
     ClassDestructorSettings settings; // offset 0x0, size 0x14
 };
 
+// total size: 0x8
+struct CmnRequestHandle {
+    int handle; // offset 0x0, size 0x4
+    void * requestDetails; // offset 0x4, size 0x4
+};
+
 }
 
 #endif

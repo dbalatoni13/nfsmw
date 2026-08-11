@@ -68,7 +68,7 @@ int SNDVOICEI_alloc(int voicesneeded, int priority, int *phandle, int minvoicera
                 if (SNDVOICEI_isreserved(voice, voicesallocated) != 0) continue;
 
                 pv = &sndgs.chan[voice];
-                if (pv->priority > 0x64) continue;
+                if (pv->priority > 100) continue;
 
                 if (pv->priority < lowestpriority) {
                     lowestpriority = pv->priority;

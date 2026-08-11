@@ -799,7 +799,7 @@ Speed/Indep/Libs/snd/9/source/library/cmn/sattrdef.c:
 Speed/Indep/Libs/snd/9/source/library/cmn/sbadd.c:
 	.text       start:0x8035E6E8 end:0x8035E9CC
 
-Speed/Indep/Libs/snd/9/source/library/cmn/ssballoc.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/sballoc.c:
 	.text       start:0x8035E9CC end:0x8035EA50
 
 Speed/Indep/Libs/snd/9/source/library/cmn/sbasync.c:
