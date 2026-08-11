@@ -54,10 +54,10 @@ class EAX_HeliState : public UTL::Collections::Listable<EAX_HeliState, 10> {
         return this->mSimUpdating;
     } // Decl: 71
 
-    bMatrix4 mMatrix;             // offset 0x4, size 0x40, Decl: 74
-    bVector3 mVel0;               // offset 0x44, size 0x10, Decl: 75
-    bVector3 mVel1;               // offset 0x54, size 0x10, Decl: 76
-    bVector3 mAccel;              // offset 0x64, size 0x10, Decl: 77
+    ALIGNVEC bMatrix4 mMatrix;     // offset 0x4, size 0x40, Decl: 74
+    ALIGNVEC bVector3 mVel0;       // offset 0x44, size 0x10, Decl: 75
+    ALIGNVEC bVector3 mVel1;       // offset 0x54, size 0x10, Decl: 76
+    ALIGNVEC bVector3 mAccel;      // offset 0x64, size 0x10, Decl: 77
     float mFWSpeed;               // offset 0x74, size 0x4, Decl: 78
     MovementMode mMovementMode;   // offset 0x78, size 0x4
     PlayerZones mPlayerZone;      // offset 0x7C, size 0x4, Decl: 82
