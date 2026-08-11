@@ -300,6 +300,8 @@ int SNDSTRM_destroy(int sndstreamhandle);
 void SNDSYS_entercritical();
 void SNDSYS_leavecritical();
 void SNDSYS_service();
+void SNDSYS_remove100hzclient(void (*client)());
+void SNDSYS_add100hzclient(void (*client)());
 
 int SNDtimeremaining(int shandle);
 
