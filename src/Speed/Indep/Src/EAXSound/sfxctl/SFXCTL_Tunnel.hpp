@@ -46,7 +46,7 @@ class SFXCTL_Tunnel : public SFXCTL {
     eTrackPathZoneType CurZoneType;    // offset 0x3C, size 0x4, Decl: 85
     void UpdateDriveBySnds(float t);
     bool bPlayDriveBy;                        // offset 0x40, size 0x1, Decl: 87
-    bVector3 vDriveByLoc;                     // offset 0x44, size 0x10, Decl: 88
+    ALIGNVEC bVector3 vDriveByLoc;             // offset 0x44, size 0x10, Decl: 88
     float m_fIntensity;                       // offset 0x54, size 0x4, Decl: 89
     float tTimeToWaitBeforeAnotherDriveBy;    // offset 0x58, size 0x4, Decl: 90
     TrackPathZone *pLastZoneWePlayedWooshFor; // offset 0x5C, size 0x4, Decl: 91

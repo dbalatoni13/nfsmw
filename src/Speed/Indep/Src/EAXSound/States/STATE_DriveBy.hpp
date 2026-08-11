@@ -9,11 +9,19 @@
 struct stDriveByInfo {
     // Decl: 10
     stDriveByInfo() {
+#ifdef EA_BUILD_A124
+        this->pEAXCar = nullptr;
+        this->UniqueID = 0;
+        this->vLocation = bVector3(0.0f, 0.0f, 0.0f);
+        this->eDriveByType = DRIVE_BY_LAMPPOST;
+        this->ClosingVelocity = 0.0f;
+#else
         this->eDriveByType = DRIVE_BY_LAMPPOST;
         this->pEAXCar = nullptr;
         this->ClosingVelocity = 0.0f;
         this->vLocation = bVector3(0.0f, 0.0f, 0.0f);
         this->UniqueID = 0;
+#endif
     }
 
     eDRIVE_BY_TYPE eDriveByType; // offset 0x0, size 0x4, Decl: 19

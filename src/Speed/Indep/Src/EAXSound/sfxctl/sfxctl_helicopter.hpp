@@ -36,9 +36,9 @@ class SFXCTL_Helicopter : public SFXCTL {
     EAX_HeliState *m_pHeliState;       // offset 0x28, size 0x4, Decl: 34
     SFXCTL_3DHeliPos *m_p3DHeliPosCtl; // offset 0x2C, size 0x4, Decl: 35
 
-    bVector3 vHeliPos; // offset 0x30, size 0x10, Decl: 37
-    bVector3 vHeliFwd; // offset 0x40, size 0x10, Decl: 38
-    bVector3 vHeliVel; // offset 0x50, size 0x10, Decl: 39
+    ALIGNVEC bVector3 vHeliPos; // offset 0x30, size 0x10, Decl: 37
+    ALIGNVEC bVector3 vHeliFwd; // offset 0x40, size 0x10, Decl: 38
+    ALIGNVEC bVector3 vHeliVel; // offset 0x50, size 0x10, Decl: 39
 
     float m_fspeed; // offset 0x60, size 0x4, Decl: 44
     float m_fdist;  // offset 0x64, size 0x4, Decl: 45
