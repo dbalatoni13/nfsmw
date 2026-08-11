@@ -256,11 +256,15 @@ int GinsuSynthesis::StartSynthesis(float startFreq) {
 }
 
 bool GinsuSynthesis::UpdateFrequency(float targetFreq, float latency) {
+#ifdef EA_BUILD_A124
+    int sample = this->mSynthData->FrequencyToSample(targetFreq);
+#else
     int sample = 0;
 
     if (this->mSynthData != nullptr) {
         sample = this->mSynthData->FrequencyToSample(targetFreq);
     }
+#endif
 
     SNDSYS_entercritical();
 
