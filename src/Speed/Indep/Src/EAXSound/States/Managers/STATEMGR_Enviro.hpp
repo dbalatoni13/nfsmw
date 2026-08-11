@@ -11,10 +11,10 @@ enum WORLDOBJECT_TYPES {
     WORLDOBJECT_FOUNTAIN = 4,
 };
 
-// total size: 0x30
+// total size: 0x1C
 struct WorldObject : ISndAttachable {
-    ALIGNVEC bVector3 m_3DPosition; // offset 0x10, size 0x10
-    WORLDOBJECT_TYPES Types;         // offset 0x20, size 0x4
+    ALIGNVEC bVector3 m_3DPosition; // offset 0x8, size 0x10
+    WORLDOBJECT_TYPES Types;         // offset 0x18, size 0x4
 
     WorldObject(const bVector3 &_pos, WORLDOBJECT_TYPES _type) {
         this->m_3DPosition = _pos;
