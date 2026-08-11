@@ -208,8 +208,12 @@ int GinsuSynthesis::StartSynthesis(float startFreq) {
 
     SNDSAMPLEFORMAT ssf;
     ssf.samplerate = static_cast<unsigned short>(this->mSynthData->GetSampleRate());
-    ssf.samplerep = 7;
     ssf.channels = 1;
+#ifdef EA_BUILD_A124
+    ssf.samplerep = 8;
+#else
+    ssf.samplerep = 7;
+#endif
 
     SNDSAMPLEATTR ssa;
     SND_attrsetdef(&ssa);
