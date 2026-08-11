@@ -9,6 +9,10 @@
 #include "path/path.h"
 #include "snd/sndo.h"
 
+#ifdef EA_BUILD_A124
+void ScreenPrintf(int x, int y, float duration, unsigned int color, const char *format, ...);
+#endif
+
 // int DEBUG_PATHFINDER = 0;          // size: 0x4, Decl: 45
 int DEBUG_STREAMS = 0;                         // size: 0x4, address: 0xFFFFFFFF, Decl: 46
 ParameterAccessor AmbientAccessor("Ambience"); // size: 0x1C, address: 0x8045E5A0, Decl: 47
@@ -634,10 +638,83 @@ void SFXObj_PFEATrax::UpdateParams(float t) {
     }
 
     if (MUSICFLOW_DISPLAY != 0) {
+#ifdef EA_BUILD_A124
+        const char *mode;
+        if ((this->m_Flags & 0x800) != 0) {
+            mode = "Xenon usertunes";
+        } else {
+            switch (this->m_MusicType) {
+                case eMUSIC_TYPE_INTERACTIVE:
+                    mode = "Interactive";
+                    break;
+                case eMUSIC_TYPE_LICENCED:
+                    mode = "Licensed";
+                    break;
+                case eMUSIC_TYPE_AMBIENCE:
+                    mode = "Ambience";
+                    break;
+                default:
+                    mode = "Unknown";
+                    break;
+            }
+        }
+        ScreenPrintf(-200, -200, 1.0f, 0xFFFF00FF, "mode:%s", mode);
+
+        const char *track_status;
+        switch (this->m_PFParms[this->m_ActiveProject].track_status) {
+            case 0:
+                track_status = "invalid";
+                break;
+            case 1:
+                track_status = "stopped";
+                break;
+            case 2:
+                track_status = "queueing";
+                break;
+            case 3:
+                track_status = "expecting";
+                break;
+            case 4:
+                track_status = "playing";
+                break;
+            case 5:
+                track_status = "fading";
+                break;
+            case 6:
+                track_status = "paused";
+                break;
+            default:
+                track_status = "????";
+                break;
+        }
+        ScreenPrintf(-200, -185, 1.0f, 0xFFFF00FF, track_status);
+        ScreenPrintf(-200, -170, 1.0f, 0xFFFF00FF, "VOL: %d", this->m_Volume);
+
+        const char *etrax_state;
+        switch (this->m_EATraxState) {
+            case EATRAX_UNINIT:
+                etrax_state = "EATRAX_UNINIT";
+                break;
+            case EATRAX_OFF:
+                etrax_state = "EATRAX_OFF";
+                break;
+            case EATRAX_FE:
+                etrax_state = "EATRAX_FE";
+                break;
+            case EATRAX_IG:
+                etrax_state = "EATRAX_IG";
+                break;
+            default:
+                etrax_state = "???";
+                break;
+        }
+        ScreenPrintf(-200, -155, 1.0f, 0xFFFF00FF, etrax_state);
+#else
         int y = static_cast<int>((WorldTimer - this->mT_ambienceStart).GetSeconds());
         int x = static_cast<int>(this->m_PFParms[this->m_ActiveProject].track_status == 3);
         if (x != 0 && t != 0.0f)
             x = static_cast<int>(x != 0);
+#endif
     }
 
     if (path_playing || user_playing) {
