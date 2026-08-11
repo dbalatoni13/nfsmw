@@ -366,16 +366,20 @@ void SFXObj_PFEATrax::StartAmbience(unsigned int PathEvent) {
     this->m_bSkipUpdate = true;
 #ifndef EA_BUILD_A124
     this->m_bClearSkipUpdate = false;
-#endif
 
     EAXS_StreamChannel *pch = g_pEAXSound->GetStreamManager()->GetStreamChannel(1);
     if (pch != nullptr) {
         pch->SetVol(0, false);
     }
+#endif
 }
 
 void SFXObj_PFEATrax::StartInteractiveMusic(unsigned int PathEvent) {
+#ifdef EA_BUILD_A124
+    if ((this->m_Flags & 0xC) != 4) {
+#else
     if ((this->m_Flags & 0x80C) != 4) {
+#endif
         return;
     }
 
@@ -491,7 +495,11 @@ void SFXObj_PFEATrax::MessageInitSongsList(const MControlPathfinder &message) {
 }
 
 bool SFXObj_PFEATrax::TestToPursuit() {
+#ifdef EA_BUILD_A124
+    if (g_pEAXSound->GetCurAudioSettings()->InteractiveMusicMode == 0 || g_pEAXSound->GetCurMusicVolume() == 0.0f || (m_Flags & 2) != 0) {
+#else
     if (g_pEAXSound->GetCurAudioSettings()->InteractiveMusicMode == 0 || g_pEAXSound->GetCurMusicVolume() == 0.0f || (m_Flags & 0x802) != 0) {
+#endif
         return false;
     }
     bool pursuit_exists = false;
@@ -749,14 +757,20 @@ void SFXObj_PFEATrax::MessageStartPathfinder(const MControlPathfinder &message) 
     }
 
     unsigned int event = message.GetPathEvent();
+#ifndef EA_BUILD_A124
     if (m_MusicType == eMUSIC_TYPE_SPLASH && event == static_cast<unsigned int>(-1)) {
         return;
     }
+#endif
     if (event == 0) {
         this->m_MusicType = GenMusicType();
     } else if (event == static_cast<unsigned int>(-1)) {
+#ifdef EA_BUILD_A124
+        if (this->m_MusicType == eMUSIC_TYPE_LICENCED) {
+#else
         if (0.0f < g_pEAXSound->GetCurMusicVolume() && (this->m_Flags & 0x800) == 0 && g_pEAXSound->GetCurAudioSettings()->EATraxMode != 0 &&
             this->m_EATrax[this->m_EATraxState].TraxMask != 0 && this->m_MusicType == eMUSIC_TYPE_LICENCED && !m_bSkipUpdate) {
+#endif
             PATH_clearallevents(PATH_ALL_PROJECTS);
             PATH_stop(this->m_PFParms[this->m_ActiveProject].PATH_TRACK);
         }
