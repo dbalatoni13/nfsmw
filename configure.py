@@ -632,27 +632,19 @@ config.libs = [
             Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/saemsamb.c"),
             Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/saemsmbf.c"),
             Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/saemsmbm.c"),
-            Object(
-                NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/saemstimupdt.c"
-            ),
+            Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/saemstimupdt.c"),
             Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/salloc.c"),
             Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/sattrdef.c"),
             Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/sbadd.c"),
             Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/sballoc.c"),
             Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/sbasync.c"),
-            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/sbpatinf.c"),
+            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/sbasyncm.c"),
+            Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/sbhdrcpy.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/sgetpvol.c"),
-            Object(
-                NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/ssbhdrcpy.c"
-            ),
-            Object(
-                NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/ssbhdrsze.c"
-            ),
-            Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/ssbplay.c"),
-            Object(
-                NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/ssbremove.c"
-            ),
-            Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/ssbvalid.c"),
+            Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/sbhdrsze.c"),
+            Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/sbplay.c"),
+            Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/sbremove.c"),
+            Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/sbvalid.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/gc/sscalcfx.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/gc/ssdfx.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/gc/sdspmix.c"),
@@ -810,10 +802,8 @@ config.libs = [
             Object(
                 NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/sgparse.cpp"
             ),
-            Object(
-                Matching,
-                "Speed/Indep/Libs/snd/9/source/library/cmn/SNDI_findprime.c",
-            ),
+            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/SNDI_findprime.c"),
+            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/sbpatinf.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/mix/scrsfl.c"),
         ],
     },
