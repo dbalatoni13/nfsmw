@@ -779,9 +779,9 @@ void NFSMixMap::AssignMixCtlDataPtrs(stMixCtlProc *pmixctl, stMixCtlParams *ppar
         pmixctl->psdata = &this->m_pMixCtlData_S[this->m_AssignedMixCtlsShared];
         this->m_AssignedMixCtlsShared++;
     } else {
-        int ncurveid = pparms->nINPUTID & 0x00FF0000;
-        int nOBJIDType = (pparms->nINPUTID >> 16) & 0xE000U;
         int nstateid = pparms->nINPUTID & 0x0F000000U;
+        int nOBJIDType = (pparms->nINPUTID >> 16) & 0xE000U;
+        int ncurveid = pparms->nINPUTID & 0x00FF0000;
         int MIXCTLOBJID = nstateid | ncurveid | nOBJIDType | ctlcount | (this->GetMapType() << 8);
         bool bfound = false;
 
