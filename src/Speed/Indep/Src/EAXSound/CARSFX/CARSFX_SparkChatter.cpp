@@ -150,7 +150,12 @@ void CARSFX_SparkChatter::ProcessUpdate() {
         this->m_pSparkChatterControl->SetTORQUE(static_cast<int>(this->m_pEAXCar->GetPhysTRQ() * 10.24f));
         this->m_pSparkChatterControl->SetVOL(TmpVol);
         this->m_pSparkChatterControl->SetAccel_true(static_cast<int>(this->m_pEAXCar->IsAccelerating()));
+#ifdef EA_BUILD_A124
+        this->m_pSparkChatterControl->SetShifting_true(
+            static_cast<int>(this->m_pShiftingCTL->IsActive() && this->m_pShiftingCTL->eShiftState == SHFT_UP_LFO));
+#else
         this->m_pSparkChatterControl->SetShifting_true(static_cast<int>(this->m_pShiftingCTL->IsActive()));
+#endif
         this->m_pSparkChatterControl->CommitMemberData();
     }
 }
