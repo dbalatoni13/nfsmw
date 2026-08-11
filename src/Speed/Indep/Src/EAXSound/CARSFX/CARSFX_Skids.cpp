@@ -72,7 +72,6 @@ void CARSFX_Skids::InitSFX() {
     delete this->m_pSkidControl;
 
     g_pEAXSound->SetCsisName(this);
-    int numskids;
     this->m_pSkidControl = new Csis::FX_SKID(0, 0, 0, 0, this->SkidType, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 25000, 0, 0x7FFF, 0);
     this->m_pSkidControl->GetRefCount();
     this->Enable();
