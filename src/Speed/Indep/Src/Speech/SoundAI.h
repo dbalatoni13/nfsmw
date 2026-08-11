@@ -54,7 +54,9 @@ struct VoiceUsage {
     voiceIDs cs_City;         // offset 0x30, size 0x10
     voiceIDs cs_Coastal;      // offset 0x40, size 0x10
     voiceIDs cs_Rosewood;     // offset 0x50, size 0x10
+#ifndef EA_BUILD_A124
     voiceIDs cs_Alpine;       // offset 0x60, size 0x10
+#endif
 };
 
 // total size: 0xC
@@ -345,9 +347,13 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
 
     const float GetTimeLastNailedCop();
 
+#ifdef EA_BUILD_A124
+    const float GetTimeSinceLastChase();
+#else
     const float GetTimeSinceLastChase() {
         return this->mTimeSinceLastChase;
     }
+#endif
 
     const float GetTimeInView() {
         return (WorldTimer - this->mT_LOS).GetSeconds();
@@ -523,7 +529,9 @@ class SoundAI : public Sim::Activity, public Sim::Collision::IListener, public U
     char mNumRoadBlocks;                      // offset 0x164, size 0x1
     char mRacerCount;                         // offset 0x165, size 0x1
     float mClosestRacerDist;                  // offset 0x168, size 0x4
+#ifndef EA_BUILD_A124
     float mTimeSinceLastChase;                // offset 0x16C, size 0x4
+#endif
     Attrib::Gen::pvehicle mPVehicle;          // offset 0x170, size 0x14
     Attrib::Gen::speechtune mTune;            // offset 0x184, size 0x14
     Attrib::Gen::pursuitlevels mPursuitLevel; // offset 0x198, size 0x14

@@ -517,7 +517,11 @@ bool SFXObj_PFEATrax::TestToPursuit() {
     bool pursuit_exists = false;
     bool pursuit_active = false;
     SoundAI *ai = SoundAI::Get();
+#ifdef EA_BUILD_A124
+    if ((ai != nullptr) && (ai->GetPursuitState() == SoundAI::kActive)) {
+#else
     if ((ai != nullptr) && (ai->GetPursuitState() == SoundAI::kActive || ai->GetPursuitState() == SoundAI::kSearching)) {
+#endif
         pursuit_active = true;
     }
 
