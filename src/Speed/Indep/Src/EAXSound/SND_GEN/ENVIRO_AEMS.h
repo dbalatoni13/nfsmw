@@ -695,10 +695,17 @@ class ENV_STATIC {
         this->SetPITCH(pITCH);
         this->SetAZIMUTH(aZIMUTH);
         this->SetTYPE(tYPE);
+#ifdef EA_BUILD_A124
+        this->SetFX_Wet(fX_Wet);
+        this->SetLoPass(loPass);
+        this->SetFX_Dry(fX_Dry);
+        this->SetHiPass(hiPass);
+#else
         this->SetLoPass(loPass);
         this->SetHiPass(hiPass);
         this->SetFX_Dry(fX_Dry);
         this->SetFX_Wet(fX_Wet);
+#endif
 
         Result result = Class::CreateInstance(&gENV_STATICHandle, &this->mData, &this->mpClass);
         if (result < RESULT_OK) {
