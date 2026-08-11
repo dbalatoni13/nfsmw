@@ -115,7 +115,11 @@ void CARSFX_BottomOut::BottomOutPlay(unsigned int Intensity) {
 
     float fIntensity = bClamp(Intensity, 0.0f, 127.0f);
     int sampleOffset;
+#ifdef EA_BUILD_A124
+    GEN_RND_OFFSET(sampleOffset, fIntensity, 93, 4, 4);
+#else
     GEN_RND_OFFSET(sampleOffset, fIntensity, 81, 4, 4);
+#endif
 
     SND_Stich &StichData = g_pEAXSound->GetStichPlayer()->GetStich(STICH_TYPE_COLLISION, sampleOffset);
     this->m_pBottomOut = new cStichWrapper(StichData);
