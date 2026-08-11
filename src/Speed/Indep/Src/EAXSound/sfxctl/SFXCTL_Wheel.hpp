@@ -36,8 +36,8 @@ class SFXCTL_Wheel : public SFXCTL {
 
     Attrib::Gen::simsurface PrevLeftSideTerrain;  // offset 0xA0, size 0x14, Decl: 65
     Attrib::Gen::simsurface PrevRightSideTerrain; // offset 0xB4, size 0x14, Decl: 66
-    bVector3 v3NewPosLeft;                        // offset 0xC8, size 0x10
-    bVector3 v3NewPosRight;                       // offset 0xD8, size 0x10
+    ALIGNVEC bVector3 v3NewPosLeft;               // offset 0xC8, size 0x10
+    ALIGNVEC bVector3 v3NewPosRight;              // offset 0xD8, size 0x10
 
     bool LeftSideTouchingGround;  // offset 0xE8, size 0x1, Decl: 81
     bool RightSideTouchingGround; // offset 0xEC, size 0x1, Decl: 82

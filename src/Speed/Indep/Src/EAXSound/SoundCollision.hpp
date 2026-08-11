@@ -45,7 +45,7 @@ class AudioEvent : public UTL::COM::Factory<const AudioEventParams &, AudioEvent
     }
 
   private:
-    AudioEventParams mParams;     // offset 0x4, size 0x48
+    ALIGNVEC AudioEventParams mParams; // offset 0x4, size 0x48
     Attrib::Instance mAttributes; // offset 0x4C, size 0x14
 };
 
@@ -133,11 +133,11 @@ class CollisionEvent : public AudioEvent {
   private:
     Timer CollisionTime; // offset 0x64, size 0x4, Decl: 147
 
-    bVector3 InitialContactPoint; // offset 0x68, size 0x10, Decl: 150
-    bVector3 CurrentContactPoint; // offset 0x78, size 0x10, Decl: 151
-    bVector3 CurrentVelocity;     // offset 0x88, size 0x10, Decl: 152
+    ALIGNVEC bVector3 InitialContactPoint; // offset 0x68, size 0x10, Decl: 150
+    ALIGNVEC bVector3 CurrentContactPoint; // offset 0x78, size 0x10, Decl: 151
+    ALIGNVEC bVector3 CurrentVelocity;     // offset 0x88, size 0x10, Decl: 152
 
-    bVector3 ImpulseNormal; // offset 0x98, size 0x10, Decl: 156
+    ALIGNVEC bVector3 ImpulseNormal; // offset 0x98, size 0x10, Decl: 156
     int mVolume;            // offset 0xA8, size 0x4, Decl: 157
     int Intensity;          // offset 0xAC, size 0x4, Decl: 158
 

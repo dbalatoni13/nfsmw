@@ -43,7 +43,7 @@ class SFXCTL_Engine : public SFXCTL {
     virtual void UpdateVolume(float t);
     virtual void UpdateRedlining(float t);
 
-    bVector3 vCarPos;                // offset 0x38, size 0x10, Decl: 47
+    ALIGNVEC bVector3 vCarPos;       // offset 0x38, size 0x10, Decl: 47
     Average Trq;                     // offset 0x48, size 0x28, Decl: 53
     Average Rpm;                     // offset 0x70, size 0x28, Decl: 54
     Average VisRpmAvg;               // offset 0x98, size 0x28, Decl: 55
