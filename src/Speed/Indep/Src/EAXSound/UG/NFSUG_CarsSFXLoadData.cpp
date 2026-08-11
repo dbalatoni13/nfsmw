@@ -70,8 +70,13 @@ void CARSFX_AEMSEngine::SetupLoadData() {
 }
 
 void CARSFX_SingleGinsuEng::SetupLoadData() {
+#ifdef EA_BUILD_A124
+    this->LoadAsset(this->m_pEAXCar->GetEngineAttributes().BankName_auxRAM(0), SNDPATH_ENGINE, SDT_AEMS_ASYNCSPUMEM, eBANK_SLOT_NONE, true);
+    this->SPU_or_EE = 0;
+#else
     this->LoadAsset(this->m_pEAXCar->GetEngineAttributes().BankName_mainRAM(), SNDPATH_ENGINE, SDT_AEMS_AUDIOMEM, eBANK_SLOT_NONE, true);
     this->SPU_or_EE = 1;
+#endif
     this->LoadAsset(this->m_pEAXCar->GetEngineAttributes().Filename_GinsuAccel(), SNDPATH_ENGINE, SDT_GENERIC_DATA, eBANK_SLOT_NONE, true);
 }
 
