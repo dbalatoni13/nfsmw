@@ -20,12 +20,22 @@ int DBGPRNT_NIS; // size: 0x4, address: 0xFFFFFFFF, Decl: 40
 
 DEFINE_CREATABLE(0x50, SFXObj_NISStream, SndBase);
 
+#ifdef EA_BUILD_A124
+uintptr_t uNIS_STRINGHASHMAP[66][3];
+#else
 uintptr_t uNIS_STRINGHASHMAP[68][3];
+#endif
+
+#ifdef EA_BUILD_A124
+#define NIS_MAP_INDEX(index) ((index) - ((index) > 24) - ((index) > 26))
+#else
+#define NIS_MAP_INDEX(index) (index)
+#endif
 
 #define INIT_NIS_ENTRY(index, scene, name)                                                                                                           \
-    uNIS_STRINGHASHMAP[index][1] = scene;                                                                                                            \
-    uNIS_STRINGHASHMAP[index][2] = reinterpret_cast<uintptr_t>(name);                                                                                \
-    uNIS_STRINGHASHMAP[index][0] = bStringHash(name)
+    uNIS_STRINGHASHMAP[NIS_MAP_INDEX(index)][1] = scene;                                                                                             \
+    uNIS_STRINGHASHMAP[NIS_MAP_INDEX(index)][2] = reinterpret_cast<uintptr_t>(name);                                                                 \
+    uNIS_STRINGHASHMAP[NIS_MAP_INDEX(index)][0] = bStringHash(name)
 
 void GenerateNISAnimHashMap() {
     INIT_NIS_ENTRY(0, Csis::Type_NIS_Scene_Start_generic, "GenericStart");
@@ -52,9 +62,13 @@ void GenerateNISAnimHashMap() {
     INIT_NIS_ENTRY(21, Csis::Type_NIS_Blacklist_Black04, "IntroNisBL04");
     INIT_NIS_ENTRY(22, Csis::Type_NIS_Blacklist_Black05, "IntroNisBL05");
     INIT_NIS_ENTRY(23, Csis::Type_NIS_Blacklist_Black06, "IntroNisBL06");
-    INIT_NIS_ENTRY(24, Csis::Type_NIS_Blacklist_Black06, "IntroNisBL06End");
+#ifndef EA_BUILD_A124
+    INIT_NIS_ENTRY(24, Csis::Type_NIS_Blacklist_Black06end, "IntroNisBL06End");
+#endif
     INIT_NIS_ENTRY(25, Csis::Type_NIS_Blacklist_Black07, "IntroNisBL07");
-    INIT_NIS_ENTRY(26, Csis::Type_NIS_Blacklist_Black07, "IntroNisBL07End");
+#ifndef EA_BUILD_A124
+    INIT_NIS_ENTRY(26, Csis::Type_NIS_Blacklist_Black07end, "IntroNisBL07End");
+#endif
     INIT_NIS_ENTRY(27, Csis::Type_NIS_Blacklist_Black08, "IntroNisBL08");
     INIT_NIS_ENTRY(28, Csis::Type_NIS_Blacklist_Black09, "IntroNisBL09");
     INIT_NIS_ENTRY(29, Csis::Type_NIS_Blacklist_Black10, "IntroNisBL10");
