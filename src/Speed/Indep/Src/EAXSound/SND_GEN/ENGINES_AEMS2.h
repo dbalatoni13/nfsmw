@@ -245,11 +245,19 @@ class CAR {
     }
 
     void SetFX_DRY(int x) {
+#ifdef EA_BUILD_A124
+        if (x < -0x7FFF) {
+            x = -0x7FFF;
+        } else if (x > 0) {
+            x = 0;
+        }
+#else
         if (x < 0) {
             x = 0;
         } else if (x > 32767) {
             x = 32767;
         }
+#endif
         this->mData.fX_DRY = x;
     }
 

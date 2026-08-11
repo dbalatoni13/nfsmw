@@ -2,9 +2,14 @@
 #include "Speed/Indep/Src/EAXSound/EAXAemsManager.h"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/Src/EAXSound/SndBase.hpp"
+#include "Speed/Indep/Src/EAXSound/Dynamic_Mixer/NFSMixShape.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Engine.hpp"
 #include "Speed/Indep/Src/EAXSound/UG/SndDataParams.hpp"
 #include <snd/sndo.h>
+
+#ifdef EA_BUILD_A124
+void ScreenPrintf(int x, int y, const char *format, ...);
+#endif
 
 int DISPLAY_VOLUMES_MIX = 0;                   // Decl: 30
 int SPEW_ENGINE_INFO = 0;                      // Decl: 31
@@ -29,6 +34,17 @@ unsigned int DataToPlayBack[1][4] = {{0, 1, 1, 1}}; // Decl: 56
 
 int PRINT_AI_ENGINE_INFO;                 // Decl: 71
 static const int SPEW_AI_ENGINE_INFO = 0; // Decl: 72
+
+#ifdef EA_BUILD_A124
+static const char *const ENGINE_VOLUME_LABEL = "EngVol\t         = %i";
+static const char *const ENGINE_DMIX_VOLUME_LABEL = "DMX EngVol        = %i";
+static const char *const AEMS_DRY_VOLUME_LABEL = "AemsDryVol        = %i";
+static const char *const AEMS_WET_VOLUME_LABEL = "AemsWetVol        = %i";
+static const char *const DMIX_AEMS_DRY_VOLUME_LABEL = "DMX * AemsDryVol = %i";
+static const char *const DMIX_AEMS_WET_VOLUME_LABEL = "DMX * AemsWetVol = %i";
+static const char *const ACCEL_GINSU_VOLUME_LABEL = "AcGinsuVol  = %i";
+static const char *const DECEL_GINSU_VOLUME_LABEL = "DcGinsuVol  = %i";
+#endif
 
 CARSFX_EngineBase::CARSFX_EngineBase() {
     this->m_pcsisCarCtrl = nullptr;
@@ -362,8 +378,8 @@ void CARSFX_GinsuEngine::SetEngineParams() {
         int TmpVol = (this->m_pHybridEngCtl->m_EngVolAEMS * nDMixOut) >> 15;
         TmpVol = (TmpVol * 0x7FFF) >> 15;
 
-        int nFXDryVol;
-        int nFXWetVol;
+        int nFXDryVol = this->m_pTunnelCtl->m_AEMSDryVol;
+        int nFXWetVol = (this->m_pTunnelCtl->m_AEMSWetVol * nDMixOut) >> 15;
         this->m_pcsisCarCtrl->SetVOL_ENG(TmpVol - 0x7FFF);
         this->m_pcsisCarCtrl->SetVOL_EXH(TmpVol - 0x7FFF);
 
@@ -375,7 +391,28 @@ void CARSFX_GinsuEngine::SetEngineParams() {
         this->m_pcsisCarCtrl->SetTORQUE(static_cast<int>(this->m_pEngineCtl->GetEngTorque() * 10.24f));
         this->m_pcsisCarCtrl->SetCOMMON_PARAMETERS_ROTATION(this->m_pEngineCtl->m_Rotation);
         this->m_pcsisCarCtrl->SetCOMMON_PARAMETERS_AZIMUTH(this->GetDMixOutput(0, DMX_AZIM));
+#ifdef EA_BUILD_A124
+        this->m_pcsisCarCtrl->SetFX_DRY(nFXDryVol - 0x7FFF);
+        this->m_pcsisCarCtrl->SetFX_AMOUNT(nFXWetVol);
+        this->m_pcsisCarCtrl->SetFILTERS_FILTER(
+            bMin(this->GetDMixOutput(5, DMX_FREQ), this->m_pEngineCtl->m_DistanceFltr));
+        this->m_pcsisCarCtrl->SetFILTERS_FILTER_RND(this->m_pHybridEngCtl->m_bAEMSLPF ? 0x2AF8 : 0);
+        this->m_pcsisCarCtrl->SetFILTERS_FILTER_Trig(0);
+#endif
         this->m_pcsisCarCtrl->CommitMemberData();
+
+#ifdef EA_BUILD_A124
+        if (DISPLAY_VOLUMES_MIX && this->GetGroupID() == 2) {
+            ScreenPrintf(50, -155, ENGINE_VOLUME_LABEL, this->m_pHybridEngCtl->m_EngVolAEMS);
+            ScreenPrintf(50, -140, ENGINE_DMIX_VOLUME_LABEL, NFSMixShape::GetdBFromQ15(nDMixOut));
+            ScreenPrintf(50, -125, AEMS_DRY_VOLUME_LABEL, this->m_pTunnelCtl->m_AEMSDryVol);
+            ScreenPrintf(50, -110, AEMS_WET_VOLUME_LABEL, this->m_pTunnelCtl->m_AEMSWetVol);
+            ScreenPrintf(50, -95, DMIX_AEMS_DRY_VOLUME_LABEL, nFXDryVol);
+            ScreenPrintf(50, -80, DMIX_AEMS_WET_VOLUME_LABEL, nFXWetVol);
+            ScreenPrintf(50, -65, ACCEL_GINSU_VOLUME_LABEL, this->m_pHybridEngCtl->m_EngVolAccelGinsu);
+            ScreenPrintf(50, -50, DECEL_GINSU_VOLUME_LABEL, this->m_pHybridEngCtl->m_EngVolDecelGinsu);
+        }
+#endif
     }
 
     if (this->m_pTranny == nullptr) {
