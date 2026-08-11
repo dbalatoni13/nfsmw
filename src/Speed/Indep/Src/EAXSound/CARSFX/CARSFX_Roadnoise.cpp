@@ -317,12 +317,18 @@ eVOL_ROADNOISE CARSFX_RoadNoise::MapLoopToVolume(FXROADNOISE_LOOP ID) {
         case FXROADNOISE_LOOP_NONE:
         case FXROADNOISE_LOOP_ASHPHALT00:
         case FXROADNOISE_LOOP_ASHPHALT01:
+#ifdef EA_BUILD_A124
+        case FXROADNOISE_LOOP_METAL:
+        case FXROADNOISE_LOOP_STITCH_LOOP:
+#endif
         default:
             return eVOL_ROADNOISE_ASHPHALT;
+#ifndef EA_BUILD_A124
         case FXROADNOISE_LOOP_METAL:
             return eVOL_ROADNOISE_METAL;
         case FXROADNOISE_LOOP_STITCH_LOOP:
             return eVOL_ROADNOISE_STITCH_LOOP;
+#endif
     }
 }
 
