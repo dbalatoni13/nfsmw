@@ -144,7 +144,12 @@ GinsuSynthesis::GinsuSynthesis(void *memblock, int size) {
     int overhead = SNDPKTPLAY_overhead(8);
     char *overheadMem;
 
-    this->mMaxPacketSize = (static_cast<unsigned int>(size - overhead) >> 2) & 0x3ffffffe;
+    this->mMaxPacketSize =
+#ifdef EA_BUILD_A124
+        (static_cast<unsigned int>(size - overhead) >> 3) << 1;
+#else
+        (static_cast<unsigned int>(size - overhead) >> 2) & 0x3ffffffe;
+#endif
 
     if (this->mMaxPacketSize > 0x4f) {
         this->mPacketData[0] = static_cast<short *>(memblock);
