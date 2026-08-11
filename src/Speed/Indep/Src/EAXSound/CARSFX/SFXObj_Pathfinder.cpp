@@ -401,6 +401,9 @@ void SFXObj_PFEATrax::StartInteractiveMusic(unsigned int PathEvent) {
 
     this->m_PrevMusicType = this->m_MusicType;
     this->m_MusicType = eMUSIC_TYPE_INTERACTIVE;
+#ifdef EA_BUILD_A124
+    this->mT_ambienceStart = Timer(0);
+#endif
     PATH_clearallevents(PATH_ALL_PROJECTS);
     int status = 1;
     if (SFXCTL_Pathfinder::m_pPFParms[this->m_ActiveProject] != nullptr) {
@@ -411,13 +414,20 @@ void SFXObj_PFEATrax::StartInteractiveMusic(unsigned int PathEvent) {
     }
     this->m_ActiveProject = PF_INTERACTIVE_MUSIC;
     if (this->m_PrevActiveProject != PF_INTERACTIVE_MUSIC) {
-        if (this->m_PrevActiveProject != PF_PROJECTRESET && (SFXCTL_Pathfinder::m_pPFParms[this->m_PrevActiveProject] != nullptr) &&
-            SFXCTL_Pathfinder::m_pPFParms[this->m_PrevActiveProject]->bAttached) {
-            PATH_stop(this->m_PFParms[this->m_PrevActiveProject].PATH_TRACK);
-            this->m_pSFXCTL_Pathfinder->DetachStreamInstance(SFXCTL_Pathfinder::m_pPFParms[this->m_PrevActiveProject]);
+        if (this->m_PrevActiveProject != PF_PROJECTRESET) {
+            if ((SFXCTL_Pathfinder::m_pPFParms[this->m_PrevActiveProject] != nullptr) &&
+                SFXCTL_Pathfinder::m_pPFParms[this->m_PrevActiveProject]->bAttached) {
+                PATH_stop(this->m_PFParms[this->m_PrevActiveProject].PATH_TRACK);
+                this->m_pSFXCTL_Pathfinder->DetachStreamInstance(SFXCTL_Pathfinder::m_pPFParms[this->m_PrevActiveProject]);
+            }
         }
         this->m_pSFXCTL_Pathfinder->AttachStreamInstance(SFXCTL_Pathfinder::m_pPFParms[this->m_ActiveProject]);
         this->m_PrevActiveProject = this->m_ActiveProject;
+#ifdef EA_BUILD_A124
+        this->m_PrevPathEvent = this->m_CurPathEvent;
+        this->m_PFParms[1].queue_next = 1;
+        this->m_CurPathEvent = PathEvent;
+#endif
     }
     MNotifyMusicFlow(PathEvent).Send(UCrc32("Init"));
     this->m_Flags |= 0x100;
