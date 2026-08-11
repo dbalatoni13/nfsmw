@@ -774,125 +774,31 @@ config.libs = [
         "host": False,
         "progress_category": "libs",  # str | List[str]
         "objects": [
-            Object(
-                MatchingFor("GOWE69"),
-                "Speed/Indep/Libs/snd/9/source/library/cmn/saems.c",
-            ),
-            Object(
-                MatchingFor("GOWE69"),
-                "Speed/Indep/Libs/snd/9/source/library/cmn/saemsamb.c",
-            ),
-            Object(
-                MatchingFor("GOWE69"),
-                "Speed/Indep/Libs/snd/9/source/library/cmn/saemsmbf.c",
-            ),
-            Object(
-                MatchingFor("GOWE69"),
-                "Speed/Indep/Libs/snd/9/source/library/cmn/saemsmbm.c",
-            ),
-            Object(
-                NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/saemstimupdt.c"
-            ),
-            Object(
-                MatchingFor("GOWE69"),
-                "Speed/Indep/Libs/snd/9/source/library/cmn/salloc.c",
-            ),
-            Object(
-                MatchingFor("GOWE69"),
-                "Speed/Indep/Libs/snd/9/source/library/cmn/sattrdef.c",
-            ),
-            Object(
-                MatchingFor("GOWE69"),
-                "Speed/Indep/Libs/snd/9/source/library/cmn/sbadd.c",
-            ),
-            Object(
-                MatchingFor("GOWE69"),
-                "Speed/Indep/Libs/snd/9/source/library/cmn/sballoc.c",
-            ),
-            Object(
-                MatchingFor("GOWE69"),
-                "Speed/Indep/Libs/snd/9/source/library/cmn/sbasync.c",
-            ),
-            Object(
-                MatchingFor("GOWE69"),
-                "Speed/Indep/Libs/snd/9/source/library/cmn/sbasyncm.c",
-            ),
-            Object(
-                MatchingFor("GOWE69"),
-                "Speed/Indep/Libs/snd/9/source/library/cmn/sbhdrcpy.c",
-            ),
-            Object(
-                MatchingFor("GOWE69"),
-                "Speed/Indep/Libs/snd/9/source/library/cmn/sbhdrsze.c",
-            ),
-            Object(
-                MatchingFor("GOWE69"),
-                "Speed/Indep/Libs/snd/9/source/library/cmn/sbplay.c",
-            ),
-            Object(
-                MatchingFor("GOWE69"),
-                "Speed/Indep/Libs/snd/9/source/library/cmn/sbremove.c",
-            ),
-            Object(
-                MatchingFor("GOWE69"),
-                "Speed/Indep/Libs/snd/9/source/library/cmn/sbvalid.c",
-            ),
-            Object(
-                MatchingFor("GOWE69"),
-                "Speed/Indep/Libs/snd/9/source/library/cmn/scheckpo.c",
-            ),
-            Object(
-                MatchingFor("GOWE69"),
-                "Speed/Indep/Libs/snd/9/source/library/cmn/sclnt100.c",
-            ),
-            Object(
-                MatchingFor("GOWE69"),
-                "Speed/Indep/Libs/snd/9/source/library/cmn/sctrldry.cpp",
-            ),
-            Object(
-                MatchingFor("GOWE69"),
-                "Speed/Indep/Libs/snd/9/source/library/cmn/sdata.c",
-            ),
-            Object(
-                MatchingFor("GOWE69"),
-                "Speed/Indep/Libs/snd/9/source/library/cmn/sfxlevel.c",
-            ),
-            Object(
-                MatchingFor("GOWE69"),
-                "Speed/Indep/Libs/snd/9/source/library/cmn/slowpass.c",
-            ),
-            Object(
-                MatchingFor("GOWE69"),
-                "Speed/Indep/Libs/snd/9/source/library/cmn/smemcpy.c",
-            ),
-            Object(
-                MatchingFor("GOWE69"),
-                "Speed/Indep/Libs/snd/9/source/library/cmn/smemdis.c",
-            ),
-            Object(
-                MatchingFor("GOWE69"),
-                "Speed/Indep/Libs/snd/9/source/library/cmn/smemlmt.c",
-            ),
-            Object(
-                MatchingFor("GOWE69"),
-                "Speed/Indep/Libs/snd/9/source/library/cmn/smemlu.c",
-            ),
-            Object(
-                MatchingFor("GOWE69"),
-                "Speed/Indep/Libs/snd/9/source/library/cmn/smemman.c",
-            ),
-            Object(
-                MatchingFor("GOWE69"),
-                "Speed/Indep/Libs/snd/9/source/library/cmn/sndfxbus.cpp",
-            ),
-            Object(
-                MatchingFor("GOWE69"),
-                "Speed/Indep/Libs/snd/9/source/library/cmn/spatkey.c",
-            ),
-            Object(
-                MatchingFor("GOWE69"),
-                "Speed/Indep/Libs/snd/9/source/library/cmn/spitch.c",
-            ),
+            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/saems.c"),
+            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/saemsamb.c"),
+            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/saemsmbf.c"),
+            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/saemsmbm.c"),
+            Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/saemstimupdt.c"),
+            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/salloc.c"),
+            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/sattrdef.c"),
+            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/sbadd.c"),
+            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/sballoc.c"),
+            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/sbasync.c"),
+            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/sbasyncm.c"),
+            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/sbhdrcpy.c"),
+            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/sbhdrsze.c"),
+            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/sbplay.c"),
+            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/sbremove.c"),
+            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/sbvalid.c"),
+            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/scheckpo.c"),
+            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/sclnt100.c"),
+            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/sctrldry.cpp"),
+            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/sdata.c"),
+            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/sfxlevel.c"),
+            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/slowpass.c"),
+            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/smemcpy.c"),
+            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/smemdis.c"),
+            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/smemlmt.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/sgetpvol.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/gc/sscalcfx.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/gc/ssdfx.c"),
