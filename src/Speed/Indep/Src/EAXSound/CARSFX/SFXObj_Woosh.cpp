@@ -76,13 +76,24 @@ void GetWooshBlockSizeParams(eDRIVE_BY_TYPE type, STICH_WHOOSH_TYPE &base, int &
 }
 
 SFXObj_Woosh::SFXObj_Woosh() {
+#ifndef EA_BUILD_A124
+    this->m_SndParams.Vol = 0x7FFF;
+    this->m_SndParams.Pitch = 0x1000;
+#endif
     this->m_SndParams.ID = 0;
-    this->m_pDriveByState = nullptr;
-    this->m_pStitchData = nullptr;
-    this->m_pWooshStich = nullptr;
+#ifndef EA_BUILD_A124
     this->m_SndParams.Az = 0;
     this->m_SndParams.Mag = 0;
     this->m_SndParams.RVerb = 0;
+#endif
+    this->m_pDriveByState = nullptr;
+    this->m_pStitchData = nullptr;
+    this->m_pWooshStich = nullptr;
+#ifdef EA_BUILD_A124
+    this->m_SndParams.Az = 0;
+    this->m_SndParams.Mag = 0;
+    this->m_SndParams.RVerb = 0;
+#endif
 }
 
 SFXObj_Woosh::~SFXObj_Woosh() {

@@ -132,11 +132,21 @@ void SFXObj_NISStream::InitSFX() {
     SndBase::InitSFX();
     GenerateNISAnimHashMap();
     m_bNISAnimationReady = false;
+#ifdef EA_BUILD_A124
+    m_bNISButtonThroughAnimationReady = false;
+    m_bNISButtonThroughReady = false;
+#else
     m_bNISButtonThroughReady = false;
     m_bNISButtonThroughAnimationReady = false;
+#endif
     m_bNISAudioStreamReady = false;
+#ifdef EA_BUILD_A124
+    g_pEAXSound->GetSndGameMode();
+    m_bBackupStreamCleared = true;
+#else
     m_bBackupStreamCleared = true;
     g_pEAXSound->GetSndGameMode();
+#endif
     g_pEAXSound->SetSFXBaseObject(this, eMM_MAIN, 5, 0);
 }
 
