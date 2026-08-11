@@ -63,9 +63,18 @@ void CARSFX_AEMSEngine::SetupLoadData() {
         type = eBANK_SLOT_NONE;
         if (GetPhysCar()->IsAICar() || GetPhysCar()->IsCopCar()) {
             type = eBANK_SLOT_AI_AEMS_ENGINE;
+#ifdef EA_BUILD_A124
+            this->SPU_or_EE = 0;
+#endif
         }
+#ifndef EA_BUILD_A124
         this->SPU_or_EE = 1;
+#endif
+#ifdef EA_BUILD_A124
+        this->LoadAsset(m_pEAXCar->GetEngineAttributes().BankName_auxRAM(0), SNDPATH_ENGINE, SDT_AEMS_ASYNCSPUMEM, type, true);
+#else
         this->LoadAsset(m_pEAXCar->GetEngineAttributes().BankName_mainRAM(), SNDPATH_ENGINE, SDT_AEMS_ASYNCSPUMEM, type, true);
+#endif
     }
 }
 

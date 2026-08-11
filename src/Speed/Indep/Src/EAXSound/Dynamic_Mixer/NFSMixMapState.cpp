@@ -231,7 +231,8 @@ void NFSMixMapState::CreateSubMixChannels() {
 void NFSMixMapState::CreateMasterMixChannels() {
     int offset = this->m_pMMStateHdr->OffsetMasterMixData;
 
-    this->m_MasterChannelsAdded = 0;
+    int nUniqueMastersAdded = 0;
+    this->m_MasterChannelsAdded = nUniqueMastersAdded;
 
     if (offset < 0) {
         return;
@@ -242,8 +243,7 @@ void NFSMixMapState::CreateMasterMixChannels() {
     int nUnique = pMixChHdr->NumUniqueSFXOBJs;
     this->m_pChOutArrays = this->m_pNFSMixMap->GetMasterChannelOutputArrayPtr(nUnique);
 
-    int nUniqueMastersAdded = 0;
-    this->m_MasterChannelsAdded = nUniqueMastersAdded;
+    this->m_MasterChannelsAdded = 0;
 
     if (this->m_pMixChHdr->NumMixChannels > 0) {
         this->m_MixStateParams.pMasterMixChProcs = this->m_pNFSMixMap->GetNextMasterMixProc(false);
@@ -283,7 +283,11 @@ void NFSMixMapState::CreateMasterMixChannels() {
                 MixInID |= n;
 
                 pMMSD->MIXCHINID = MixInID;
+#ifdef EA_BUILD_A124
+                pMMSD->NumInputs = (pMasterParms->MIXCHID & 0x00FF0000) >> 16;
+#else
                 pMMSD->NumInputs = *reinterpret_cast<unsigned char *>(reinterpret_cast<char *>(&pMasterParms->MIXCHID) + 1);
+#endif
             }
 
             pMMCP->pMixChData_S = pMMSD;
@@ -317,12 +321,17 @@ void NFSMixMapState::CreateMasterMixChannels() {
             pMMCP->pMixChData_U = pMMUD;
             nid = pMMSD->pMapParams->SFXOBJID;
 
+#ifdef EA_BUILD_A124
+            pMasterParms = reinterpret_cast<stMasterMixChParams *>(reinterpret_cast<char *>(pMasterParms) +
+                                                                   ((static_cast<unsigned int>(pMasterParms->MIXCHID) & 0x00FF0000) >> 14) +
+                                                                   sizeof(stMasterMixChParams));
+#else
             int numin = *reinterpret_cast<unsigned char *>(reinterpret_cast<char *>(&pMasterParms->MIXCHID) + 1);
-
-            this->m_MasterChannelsAdded++;
-
             pMasterParms = reinterpret_cast<stMasterMixChParams *>(reinterpret_cast<char *>(reinterpret_cast<int *>(pMasterParms) + numin) +
                                                                    sizeof(stMasterMixChParams));
+#endif
+
+            this->m_MasterChannelsAdded++;
         }
     }
 }
@@ -430,8 +439,13 @@ void NFSMixMapState::Create3DMixCtls() {
         this->m_MixStateParams.p3DMixCtlProc = this->m_pNFSMixMap->GetNext3DMixCtlProc(false);
 
         for (int n = 0; n < this->m_p3DMixCtlHdr->Num3DMixCtls; n++) {
+#ifdef EA_BUILD_A124
+            st3DMixCtlProc *p3DCP;
+            st3DMixCtlSharedData *p3DSD;
+#else
             st3DMixCtlProc *p3DCP = nullptr;
             st3DMixCtlSharedData *p3DSD;
+#endif
 
             if (this->m_ObjectIndex != 0) {
                 p3DSD = *reinterpret_cast<st3DMixCtlSharedData **>(reinterpret_cast<char *>(this->m_pFirstInstance->m_MixStateParams.p3DMixCtlProc) +
@@ -455,8 +469,13 @@ void NFSMixMapState::Create3DMixCtls() {
             p3DCP->p3DMixCtlData_U->dBRolloff = 0;
             p3DCP->p3DMixCtlData_U->q15Rolloff = 0x7FFF;
             p3DCP->p3DMixCtlData_U->DopplerCents = 0;
+#ifdef EA_BUILD_A124
+            p3DCP->p3DMixCtlData_U->fPrevDeltaDist = 1.0;
+            p3DCP->p3DMixCtlData_U->fPrevDist = 1.0;
+#else
             p3DCP->p3DMixCtlData_U->fPrevDeltaDist = 0.0f;
             p3DCP->p3DMixCtlData_U->fPrevDist = 0.0f;
+#endif
 
             int nID = p3DCP->p3DMixCtlData_S->pMapParams->nINPUTID & 0xFFFF07FF;
             p3DCP->p3DMixCtlData_U->nINPUTID = (this->m_ObjectIndex << 11) | nID;
