@@ -382,6 +382,22 @@ void CSTATEMGR_CarState::DestroyCar(EAX_CarState *eax_car) {
             }
         }
     }
+
+#ifdef EA_BUILD_A124
+    Attrib::Gen::engineaudio engtounload(Attrib::FindCollection(Attrib::Gen::engineaudio::ClassKey(), engkey), 0, nullptr);
+    int index = gAEMSMgr.IsAssetInList(engtounload.BankName_mainRAM());
+    if (index == -1) {
+        const Attrib::StringKey *auxbank = static_cast<const Attrib::StringKey *>(
+            engtounload.GetAttributePointer(Attrib::Hash::engineaudio::BankName_auxRAM));
+        if (auxbank == nullptr) {
+            auxbank = static_cast<const Attrib::StringKey *>(Attrib::DefaultDataArea(sizeof(Attrib::StringKey)));
+        }
+        index = gAEMSMgr.IsAssetInList(*auxbank);
+    }
+    if (index != -1) {
+        gAEMSMgr.UnloadSndData(index);
+    }
+#endif
 }
 
 void CSTATEMGR_CarState::AddMapping(unsigned int key1, unsigned int key2) {
