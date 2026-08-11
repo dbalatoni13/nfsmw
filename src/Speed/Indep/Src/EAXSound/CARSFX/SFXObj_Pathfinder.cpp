@@ -805,6 +805,13 @@ void SFXObj_PFEATrax::MessageStartPathfinder(const MControlPathfinder &message) 
             PATH_stop(this->m_PFParms[this->m_ActiveProject].PATH_TRACK);
         }
     } else {
+#ifdef EA_BUILD_A124
+        PATH_clearallevents(PATH_ALL_PROJECTS);
+        this->m_MusicType = GenMusicType();
+        this->m_CurPathEvent = 0;
+        PATH_stop(this->m_PFParms[this->m_ActiveProject].PATH_TRACK);
+        this->StartLicensedMusic(event);
+#else
         if (this->m_EATrax[0].TraxMask == 0) {
             this->m_EATrax[0].TraxMask = 0x80000000;
         }
@@ -816,6 +823,7 @@ void SFXObj_PFEATrax::MessageStartPathfinder(const MControlPathfinder &message) 
         this->m_bSkipUpdate = true;
 #ifndef EA_BUILD_A124
         this->m_bClearSkipUpdate = false;
+#endif
 #endif
     }
 }

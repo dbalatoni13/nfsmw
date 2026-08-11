@@ -134,6 +134,15 @@ void EAXCar::Attach(void *pAttachment) {
     CSTATE_Base::Attach(pAttachment);
 }
 
+#ifdef EA_BUILD_A124
+const unsigned int GenerateUpgradedEngine(EAX_CarState *pCar) {
+    Attrib::Gen::pvehicle curpvehicle(pCar->mAttributes);
+    int aud_engine_upgrade = UpgradeIntervals(curpvehicle.engine_current(), curpvehicle.engine_upgrades(), curpvehicle.Num_engineaudio());
+
+    Attrib::Gen::engineaudio tempengine(curpvehicle.engineaudio(aud_engine_upgrade), 0, nullptr);
+    return tempengine.GetCollection();
+}
+#else
 const unsigned int GenerateUpgradedEngine(EAX_CarState *pCar, int playerUpgrade) {
     Attrib::Gen::pvehicle curpvehicle(pCar->mAttributes);
     int phys_num_upgrades = curpvehicle.engine_upgrades();
@@ -153,6 +162,7 @@ const unsigned int GenerateUpgradedEngine(EAX_CarState *pCar, int playerUpgrade)
     Attrib::Gen::engineaudio tempengine(curpvehicle.engineaudio(aud_engine_upgrade), 0, nullptr);
     return tempengine.GetCollection();
 }
+#endif
 
 bool EAXCar::Detach() {
     this->m_pCar = nullptr;
