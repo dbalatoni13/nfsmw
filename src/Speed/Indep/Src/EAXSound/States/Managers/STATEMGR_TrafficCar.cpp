@@ -2,6 +2,8 @@
 #include "Speed/Indep/Src/EAXSound/EAXTrafficCar.hpp"
 #include "Speed/Indep/Src/Misc/Profiler.hpp"
 
+void ScreenPrintf(int x, int y, float duration, unsigned int color, const char *format, ...);
+
 bool DEBUG_TRAFFIC_CAR_CONNECTIONS = false; // size: 0x1, address: 0x80417F30, Decl: 9
 
 CSTATEMGR_TrafficCar::CSTATEMGR_TrafficCar() {
@@ -33,6 +35,29 @@ void CSTATEMGR_TrafficCar::UpdateParams(float t) {
 
 // TODO ScreenPrintf
 void CSTATEMGR_TrafficCar::DebugDisplayTrafficConnections() {
+#ifdef EA_BUILD_A124
+    int y = -0xAA;
+    int x = 0xFA;
+    EAXTrafficCar *car = static_cast<EAXTrafficCar *>(this->m_pHeadStateObj);
+
+    if (car != nullptr) {
+        EAX_CarState *physCar = car->GetPhysCar();
+        do {
+        if (physCar != nullptr && physCar->GetAttributes()->IsValid()) {
+            Attrib::Gen::pvehicle vehicle(*physCar->GetAttributes());
+            ScreenPrintf(x, y, 1.0f, 0xFFFF3F3F, "%s", vehicle.CollectionName());
+        } else {
+            ScreenPrintf(x, y, 1.0f, 0x5FFF3F3F, "unatched");
+        }
+
+        y += 0xF;
+        car = static_cast<EAXTrafficCar *>(car->m_pNextState);
+            if (car != nullptr) {
+                physCar = car->GetPhysCar();
+            }
+        } while (car != nullptr);
+    }
+#else
     int y = -0xAA;
     int x = 0xFA;
     EAXTrafficCar *car = static_cast<EAXTrafficCar *>(this->m_pHeadStateObj);
@@ -55,4 +80,5 @@ void CSTATEMGR_TrafficCar::DebugDisplayTrafficConnections() {
 
         car = static_cast<EAXTrafficCar *>(car->m_pNextState);
     }
+#endif
 }
