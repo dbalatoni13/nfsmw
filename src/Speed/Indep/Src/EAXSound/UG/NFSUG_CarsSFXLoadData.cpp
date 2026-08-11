@@ -10,6 +10,17 @@
 void CARSFX_Nitrous::SetupLoadData() {
     // TODO switch?
     eNFSSndNOSClass nbankindex = AEMS_NOS_00;
+#ifdef EA_BUILD_A124
+    if (this->m_UGL == AEMS_LEVEL1) {
+        nbankindex = AEMS_NOS_01;
+    } else if (this->m_UGL >= AEMS_LEVEL2) {
+        if (this->m_UGL == AEMS_LEVEL2) {
+            nbankindex = AEMS_NOS_01;
+        } else if (this->m_UGL == AEMS_LEVEL3) {
+            nbankindex = AEMS_NOS_01;
+        }
+    }
+#else
     if (this->m_UGL != AEMS_LEVEL1) {
         if (this->m_UGL > AEMS_LEVEL1) {
             if (this->m_UGL == AEMS_LEVEL2) {
@@ -19,6 +30,7 @@ void CARSFX_Nitrous::SetupLoadData() {
             }
         }
     }
+#endif
 
     this->LoadAsset(g_pEAXSound->GetAttributes().AEMS_NOSBanks(nbankindex), SNDPATH_NOS, SDT_AEMS_ASYNCSPUMEM, eBANK_SLOT_NONE, true);
 }
@@ -61,13 +73,17 @@ void CARSFX_AEMSEngine::SetupLoadData() {
     if (m_pEAXCar->GetEngineAttributes().BankName_auxRAM(0).GetString() != "") {
         this->SPU_or_EE = 0;
         type = eBANK_SLOT_NONE;
+#ifdef EA_BUILD_A124
+        if (GetPhysCar()->IsAICar()) {
+            type = eBANK_SLOT_AI_AEMS_ENGINE;
+        } else if (GetPhysCar()->IsCopCar()) {
+            type = eBANK_SLOT_AI_AEMS_ENGINE;
+            this->SPU_or_EE = 0;
+        }
+#else
         if (GetPhysCar()->IsAICar() || GetPhysCar()->IsCopCar()) {
             type = eBANK_SLOT_AI_AEMS_ENGINE;
-#ifdef EA_BUILD_A124
-            this->SPU_or_EE = 0;
-#endif
         }
-#ifndef EA_BUILD_A124
         this->SPU_or_EE = 1;
 #endif
 #ifdef EA_BUILD_A124
