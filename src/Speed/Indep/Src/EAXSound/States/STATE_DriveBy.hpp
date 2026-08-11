@@ -19,7 +19,7 @@ struct stDriveByInfo {
     eDRIVE_BY_TYPE eDriveByType; // offset 0x0, size 0x4, Decl: 19
     EAXCar *pEAXCar;             // offset 0x4, size 0x4, Decl: 20
     float ClosingVelocity;       // offset 0x8, size 0x4, Decl: 21
-    bVector3 vLocation;          // offset 0xC, size 0x10, Decl: 22
+    ALIGNVEC bVector3 vLocation; // offset 0xC, size 0x10, Decl: 22
     uintptr_t UniqueID;          // offset 0x1C, size 0x4, Decl: 23
 };
 
