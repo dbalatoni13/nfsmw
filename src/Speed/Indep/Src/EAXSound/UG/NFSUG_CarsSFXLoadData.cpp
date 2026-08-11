@@ -10,17 +10,6 @@
 void CARSFX_Nitrous::SetupLoadData() {
     // TODO switch?
     eNFSSndNOSClass nbankindex = AEMS_NOS_00;
-#ifdef EA_BUILD_A124
-    if (this->m_UGL == AEMS_LEVEL1) {
-        nbankindex = AEMS_NOS_01;
-    } else if (this->m_UGL >= AEMS_LEVEL2) {
-        if (this->m_UGL == AEMS_LEVEL2) {
-            nbankindex = AEMS_NOS_01;
-        } else if (this->m_UGL == AEMS_LEVEL3) {
-            nbankindex = AEMS_NOS_01;
-        }
-    }
-#else
     if (this->m_UGL != AEMS_LEVEL1) {
         if (this->m_UGL > AEMS_LEVEL1) {
             if (this->m_UGL == AEMS_LEVEL2) {
@@ -30,7 +19,6 @@ void CARSFX_Nitrous::SetupLoadData() {
             }
         }
     }
-#endif
 
     this->LoadAsset(g_pEAXSound->GetAttributes().AEMS_NOSBanks(nbankindex), SNDPATH_NOS, SDT_AEMS_ASYNCSPUMEM, eBANK_SLOT_NONE, true);
 }
