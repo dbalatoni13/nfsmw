@@ -84,7 +84,11 @@ void CARSFX_Rain::QueueWeatherStream() {
 
     int nweathertype = 0;
     if (Speech::Manager::GetSpeechModule(0)->DonePlaying() == true) {
+#ifdef EA_BUILD_A124
+        if (this->m_fWeatherIntensity < 0.5) {
+#else
         if (this->m_fWeatherIntensity < 0.5f) {
+#endif
             nweathertype = 1;
             // TODO aud_moment_strm::key_thunder_distant
             MGamePlayMoment(UMath::Vector4::kZero, UMath::Vector4::kZero, UMath::Vector4::kZero, 0, 0x016C4FA1).Send(UCrc32("MomentStrm"));
