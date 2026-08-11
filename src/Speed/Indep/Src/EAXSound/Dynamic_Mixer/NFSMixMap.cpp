@@ -1350,7 +1350,7 @@ void NFSMixMap::MixMasterChannels() {
         int *pPresets = pMChP->pMixChData_S->pPRESETS;
         int masterindex = *pPresets++;
         int NumPresets = masterindex & 0xF;
-        int type = (masterindex >> 24) & 0xF;
+        int type = (static_cast<unsigned int>(masterindex) >> 24) & 0xF;
 
         if ((pMChP->pMixChData_U->pOutputs[0xF] & 1) != 0) {
             for (int np = 0; np < NumPresets; np++, pPresets++) {
