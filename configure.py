@@ -638,9 +638,7 @@ config.libs = [
             Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/saemsamb.c"),
             Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/saemsmbf.c"),
             Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/saemsmbm.c"),
-            Object(
-                NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/saemstimupdt.c"
-            ),
+            Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/saemstimupdt.c"),
             Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/salloc.c"),
             Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/sattrdef.c"),
             Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/sbadd.c"),
