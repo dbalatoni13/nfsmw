@@ -303,12 +303,12 @@ class EAX_CarState : public UTL::Collections::Listable<EAX_CarState, 10> {
     float mMaxRPM;                        // offset 0x8, size 0x4, Decl: 147
     float mMinRPM;                        // offset 0xC, size 0x4, Decl: 149
     float mRedline;                       // offset 0x10, size 0x4, Decl: 151
-    bMatrix4 mMatrix;                     // offset 0x14, size 0x40, Decl: 251
-    bVector3 mVel0;                       // offset 0x54, size 0x10, Decl: 252
+    ALIGNVEC bMatrix4 mMatrix;            // offset 0x14, size 0x40, Decl: 251
+    ALIGNVEC bVector3 mVel0;              // offset 0x54, size 0x10, Decl: 252
     int mRacePos;                         // offset 0x64, size 0x4, Decl: 253
-    bVector3 mVel1;                       // offset 0x68, size 0x10, Decl: 254
+    ALIGNVEC bVector3 mVel1;              // offset 0x68, size 0x10, Decl: 254
     float mBrake;                         // offset 0x78, size 0x4, Decl: 255
-    bVector3 mAccel;                      // offset 0x7C, size 0x10, Decl: 256
+    ALIGNVEC bVector3 mAccel;             // offset 0x7C, size 0x10, Decl: 256
     float mEBrake;                        // offset 0x8C, size 0x4, Decl: 257
     float mFWSpeed;                       // offset 0x90, size 0x4, Decl: 258
     bool mIsShocked;                      // offset 0x94, size 0x1, Decl: 259
