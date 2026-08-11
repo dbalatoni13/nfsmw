@@ -839,15 +839,19 @@ void SFXObj_PFEATrax::MessageSendPathEvent(const MControlPathfinder &message) {
     if (this->m_CurPathEvent != curr_event) {
         this->m_PrevPathEvent = curr_event;
         this->m_PFParms[this->m_ActiveProject].queue_next = 1;
+#ifndef EA_BUILD_A124
         if (this->m_MusicType == eMUSIC_TYPE_AMBIENCE) {
             PATH_pause(this->m_PFParms[this->m_ActiveProject].PATH_TRACK, 0);
         }
+#endif
         this->SendPathEvent();
+#ifndef EA_BUILD_A124
         int nproj;
 
         if (ntmp == PF_EVT_SWAP1 || ntmp == PF_EVT_SWAP2) {
             this->SwapInteractiveProjects();
         }
+#endif
     }
 }
 
