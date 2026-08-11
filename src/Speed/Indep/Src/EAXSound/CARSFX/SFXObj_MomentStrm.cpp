@@ -38,7 +38,9 @@ int DEBUG_MOMENT_STRM = 0;    // size: 0x4, address: 0xFFFFFFFF, Decl: 50
 bool SFXObj_MomentStrm::bHoldStream = false;           // size: 0x1, Decl: 52
 float SFXObj_MomentStrm::m_TimeBeforeRetrigger = 0.0f; // size: 0x1, Decl: 53
 
+#ifndef EA_BUILD_A124
 SFXObj_MomentStrm *g_MomentStream = nullptr; // size: 0x4, address: 0x80418370, Decl: 55
+#endif
 
 SFXObj_MomentStrm::SFXObj_MomentStrm()
     : CARSFX(), //
@@ -56,15 +58,17 @@ SFXObj_MomentStrm::SFXObj_MomentStrm()
     this->UseUserPos = false;
     this->mHeldMoment = nullptr;
     this->bHoldStream = false;
-    g_MomentStream = this;
 #ifndef EA_BUILD_A124
+    g_MomentStream = this;
     this->mCarsID = 0;
     this->mbUseTRafficsID = false;
 #endif
 }
 
 SFXObj_MomentStrm::~SFXObj_MomentStrm() {
+#ifndef EA_BUILD_A124
     g_MomentStream = nullptr;
+#endif
     this->Destroy();
 
     if (this->mMsgReceiveMoment != nullptr) {
