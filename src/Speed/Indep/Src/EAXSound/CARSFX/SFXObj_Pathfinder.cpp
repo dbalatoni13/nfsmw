@@ -358,9 +358,11 @@ void SFXObj_PFEATrax::StartAmbience(unsigned int PathEvent) {
     PATH_clearallevents(PATH_ALL_PROJECTS);
     this->m_ActiveProject = PF_LICENSED_MUSIC;
     if (this->m_PrevActiveProject != PF_LICENSED_MUSIC) {
-        if (this->m_PrevActiveProject != PF_PROJECTRESET && (SFXCTL_Pathfinder::m_pPFParms[this->m_PrevActiveProject] != nullptr) &&
-            SFXCTL_Pathfinder::m_pPFParms[this->m_PrevActiveProject]->bAttached) {
-            m_pSFXCTL_Pathfinder->DetachStreamInstance(SFXCTL_Pathfinder::m_pPFParms[this->m_PrevActiveProject]);
+        if (this->m_PrevActiveProject != PF_PROJECTRESET) {
+            if ((SFXCTL_Pathfinder::m_pPFParms[this->m_PrevActiveProject] != nullptr) &&
+                SFXCTL_Pathfinder::m_pPFParms[this->m_PrevActiveProject]->bAttached) {
+                m_pSFXCTL_Pathfinder->DetachStreamInstance(SFXCTL_Pathfinder::m_pPFParms[this->m_PrevActiveProject]);
+            }
         }
         this->m_pSFXCTL_Pathfinder->AttachStreamInstance(SFXCTL_Pathfinder::m_pPFParms[this->m_ActiveProject]);
         this->m_PrevActiveProject = this->m_ActiveProject;
