@@ -191,6 +191,15 @@ void SFXObj_PFEATrax::SendPathEvent() {
             this->m_PrevPathEvent = this->m_CurPathEvent;
 
             int status = PATH_event(this->m_PFParms[this->m_ActiveProject].PATH_TRACK, this->m_CurPathEvent);
+#ifdef EA_BUILD_A124
+            PATH_volume(this->m_PFParms[this->m_ActiveProject].PATH_TRACK, 0);
+
+            if (status == PATH_OK && this->m_pSFXCTL_Pathfinder != nullptr) {
+                SNDSYS_entercritical();
+                SNDSTRM_lowpass(this->m_pSFXCTL_Pathfinder->GetHandle(this->m_ActiveProject), this->m_FilterFreq);
+                SNDSYS_leavecritical();
+            }
+#else
             switch (status) {
                 case PATH_OK:
                     PATH_volume(this->m_PFParms[this->m_ActiveProject].PATH_TRACK, 0);
@@ -219,11 +228,14 @@ void SFXObj_PFEATrax::SendPathEvent() {
 #endif
                     return;
             }
+#endif
 
             this->m_PFParms[this->m_ActiveProject].queue_next = 0;
+#ifndef EA_BUILD_A124
             if (status == 1) {
                 this->m_PFParms[this->m_ActiveProject].queue_next += 0;
             }
+#endif
 
             // TODO magic
             if (this->m_CurPathEvent == 0x01C53FC7) {
