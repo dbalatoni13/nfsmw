@@ -124,7 +124,7 @@ class EAXCar : public CSTATE_Base {
     float t_DeltaTime; // offset 0x7C, size 0x4, Decl: 138
 
     bool m_bIsInSoundSphere;   // offset 0x80, size 0x1, Decl: 140
-    bVector3 m_v3CurSpherePos; // offset 0x84, size 0x10, Decl: 141
+    ALIGNVEC bVector3 m_v3CurSpherePos; // offset 0x84, size 0x10, Decl: 141
     float m_fSphereRadius;     // offset 0x94, size 0x4, Decl: 142
 
     DriverInfo *m_pDriverInfo; // offset 0x98, size 0x4, Decl: 144
