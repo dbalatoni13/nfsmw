@@ -10,7 +10,7 @@
 #include "Speed/Indep/Src/EAXSound/States/STATE_Collision.hpp"
 #include "Speed/Indep/Src/EAXSound/STICH_Playback.h"
 
-// total size: 0x90
+// total size: 0x8C
 // Decl: 14
 class SFXObj_Collision : public CARSFX {
   public:
@@ -47,9 +47,9 @@ class SFXObj_Collision : public CARSFX {
     bool FirstUpdate; // offset 0x54, size 0x1, Decl: 49
     int InitialAz;    // offset 0x58, size 0x4, Decl: 50
 
-    ALIGNVEC bVector3 vCollisionPos; // offset 0x60, size 0x10, Decl: 52
-    ALIGNVEC bVector3 vScrapePos;    // offset 0x70, size 0x10, Decl: 53
-    ALIGNVEC bVector3 vVelocity;     // offset 0x80, size 0x10, Decl: 54
+    ALIGNVEC bVector3 vCollisionPos; // offset 0x5C, size 0x10, Decl: 52
+    ALIGNVEC bVector3 vScrapePos;    // offset 0x6C, size 0x10, Decl: 53
+    ALIGNVEC bVector3 vVelocity;     // offset 0x7C, size 0x10, Decl: 54
 };
 
 #endif

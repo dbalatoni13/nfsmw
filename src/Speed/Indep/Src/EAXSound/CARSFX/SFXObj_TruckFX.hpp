@@ -50,9 +50,9 @@ class CARSFX_TruckWoosh : public CARSFX_TrafficWoosh {
     eDRIVE_BY_TYPE GetWooshSample() override;
 
     SFXCTL_3DCarPos *m_p3DTrailerPos;  // offset 0x30, size 0x4, Decl: 53
-    ALIGNVEC bVector3 m_vTrailerPos;   // offset 0x40, size 0x10, Decl: 55
-    ALIGNVEC bVector3 m_vTrailerVel;   // offset 0x50, size 0x10, Decl: 56
-    WorldConn::Reference m_TrailerRef; // offset 0x60, size 0x10, Decl: 57
+    ALIGNVEC bVector3 m_vTrailerPos;   // offset 0x34, size 0x10, Decl: 55
+    ALIGNVEC bVector3 m_vTrailerVel;   // offset 0x44, size 0x10, Decl: 56
+    WorldConn::Reference m_TrailerRef; // offset 0x54, size 0x10, Decl: 57
 };
 
 // total size: 0x64

@@ -5,7 +5,7 @@
 #include "Speed/Indep/Src/EAXSound/SndBase.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_3DObjPos.hpp"
 
-// total size: 0x50
+// total size: 0x44
 // Decl: 9
 class SFXObj_Speech : public CARSFX {
   public:
@@ -22,9 +22,9 @@ class SFXObj_Speech : public CARSFX {
     void AttachController(SFXCTL *psfxctl) override;
 
     SFXCTL_3DObjPos *m_pActorPos; // offset 0x28, size 0x4, Decl: 26
-    ALIGNVEC bVector3 fPosition;  // offset 0x30, size 0x10, Decl: 27
+    ALIGNVEC bVector3 fPosition;  // offset 0x2C, size 0x10, Decl: 27
     bool bFresh;                  // offset 0x40, size 0x1, Decl: 28
-    EAX_CarState *m_pClosestCar;  // offset 0x44, size 0x4, Decl: 29
+    EAX_CarState *m_pClosestCar;  // offset 0x40, size 0x4, Decl: 29
 };
 
 // total size: 0x64

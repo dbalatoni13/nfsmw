@@ -31,7 +31,7 @@ struct stEAX_WindParams {
     int nCrossFadeWeight; // offset 0x4, size 0x4, Decl: 28
 };
 
-// total size: 0x130
+// total size: 0x124
 // Decl: 33
 class CARSFX_WindNoise : public CARSFX {
   public:

@@ -65,18 +65,18 @@ class SFXObj_MomentStrm : public CARSFX {
     bool m_IsPositioned;                // offset 0x548, size 0x1, Decl: 80
     static float m_TimeBeforeRetrigger; // size: 0x4, address: 0x8041836C
 
-    ALIGNVEC bVector3 fPosition; // offset 0x550, size 0x10, Decl: 83
-    ALIGNVEC bVector3 fVector;   // offset 0x560, size 0x10, Decl: 84
-    ALIGNVEC bVector3 fVelocity; // offset 0x570, size 0x10, Decl: 85
+    ALIGNVEC bVector3 fPosition; // offset 0x54C, size 0x10, Decl: 83
+    ALIGNVEC bVector3 fVector;   // offset 0x55C, size 0x10, Decl: 84
+    ALIGNVEC bVector3 fVelocity; // offset 0x56C, size 0x10, Decl: 85
 
-    Attrib::Key m_CurMoment;         // offset 0x580, size 0x4, Decl: 87
+    Attrib::Key m_CurMoment;         // offset 0x57C, size 0x4, Decl: 87
     static bool bHoldStream;         // size: 0x1, address: 0x80418368
-    stMomentDecription *mHeldMoment; // offset 0x584, size 0x4, Decl: 89
-    bool UseUserPos;                 // offset 0x588, size 0x1, Decl: 90
+    stMomentDecription *mHeldMoment; // offset 0x580, size 0x4, Decl: 89
+    bool UseUserPos;                 // offset 0x584, size 0x1, Decl: 90
 
 #ifndef EA_BUILD_A124
-    unsigned int mCarsID; // offset 0x58C, size 0x4, Decl: 93
-    bool mbUseTRafficsID; // offset 0x590, size 0x1, Decl: 94
+    unsigned int mCarsID; // offset 0x588, size 0x4, Decl: 93
+    bool mbUseTRafficsID; // offset 0x58C, size 0x1, Decl: 94
 #endif
 };
 
