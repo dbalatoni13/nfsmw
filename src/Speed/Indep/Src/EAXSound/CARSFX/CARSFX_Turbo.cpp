@@ -216,30 +216,32 @@ void CARSFX_Turbo::ProcessUpdate() {
 }
 
 int CARSFX_Turbo::PlayBlowoff(int _ID, int Vol, int PSI, int Azimuth, int rotation) {
-    if (this->IsEnabled() && IsSoundEnabled == 1 && this->m_pTurboBlowoffControl == nullptr) {
-        this->BlowoffID = 1;
+    if (!this->IsEnabled() || IsSoundEnabled != 1 || this->m_pTurboBlowoffControl != nullptr) {
+        return 0;
+    }
 
-        if (this->SpoolPercent > 0.75f) {
-            this->BlowoffID = g_pEAXSound->Random(2) + 2;
-        }
+    this->BlowoffID = 1;
 
-        if (this->BlowoffID == 1) {
-            this->BlowoffVol = static_cast<int>(this->m_pTurboData->Vol_Blowoff1() * this->SpoolPercent);
-        } else {
-            this->BlowoffVol = static_cast<int>(this->m_pTurboData->Vol_Blowoff2() * this->SpoolPercent);
-        }
+    if (this->SpoolPercent > 0.75f) {
+        this->BlowoffID = g_pEAXSound->Random(2) + 2;
+    }
 
-        g_pEAXSound->SetCsisName("SND: Turbo");
-        this->m_pTurboBlowoffControl = new Csis::FX_TURBO_01(this->BlowoffID, 0, static_cast<int>(this->SpoolPercent * 1024.0f), 0, rotation,
-                                                             static_cast<int>(this->GetPhysRPM()));
+    if (this->BlowoffID == 1) {
+        this->BlowoffVol = static_cast<int>(this->m_pTurboData->Vol_Blowoff1() * this->SpoolPercent);
+    } else {
+        this->BlowoffVol = static_cast<int>(this->m_pTurboData->Vol_Blowoff2() * this->SpoolPercent);
+    }
+
+    g_pEAXSound->SetCsisName("SND: Turbo");
+    this->m_pTurboBlowoffControl = new Csis::FX_TURBO_01(this->BlowoffID, 0, static_cast<int>(this->SpoolPercent * 1024.0f), 0, rotation,
+                                                         static_cast<int>(this->GetPhysRPM()));
 #ifndef EA_BUILD_A124
-        gnMemLeakTurboBLOWOFFCountTest++;
+    gnMemLeakTurboBLOWOFFCountTest++;
 #endif
 
-        this->m_refCount = static_cast<unsigned short>(this->m_pTurboBlowoffControl != nullptr ? this->m_pTurboBlowoffControl->GetRefCount() : 0);
-        this->tLastBlowoffTime = this->m_pEAXCar->GetCurTime();
-        this->m_BlowoffRampDown.Initialize(1.0f, 1.0f, 1, LINEAR);
-    }
+    this->m_refCount = static_cast<unsigned short>(this->m_pTurboBlowoffControl != nullptr ? this->m_pTurboBlowoffControl->GetRefCount() : 0);
+    this->tLastBlowoffTime = this->m_pEAXCar->GetCurTime();
+    this->m_BlowoffRampDown.Initialize(1.0f, 1.0f, 1, LINEAR);
 
     return 0;
 }
