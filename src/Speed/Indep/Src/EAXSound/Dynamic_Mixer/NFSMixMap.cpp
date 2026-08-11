@@ -29,9 +29,15 @@ void (*NFSMixMap::mMapReadyCB)() = nullptr;
 
 NFSMixMap::NFSMixMap() : AudioMemBase() {
     this->m_pStateProcs = nullptr;
+#ifdef EA_BUILD_A124
+    this->m_fDeltaTimeRatio[0] = 1.0f;
+    this->m_nStateMapCount = 0;
+    this->m_fDeltaTimeRatio[1] = 1.0f;
+#else
     this->m_fDeltaTimeRatio[1] = 0.0f;
     this->m_nStateMapCount = 0;
     this->m_fDeltaTimeRatio[0] = 0.0f;
+#endif
 }
 
 NFSMixMap::~NFSMixMap() {}
