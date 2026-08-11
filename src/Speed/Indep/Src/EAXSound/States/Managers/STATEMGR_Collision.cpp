@@ -72,11 +72,17 @@ CSTATE_Base *CSTATEMGR_Collision::GetFreeState(void *ObjectPtr) {
     CSTATE_Collision *curcollision = static_cast<CSTATE_Collision *>(this->m_pHeadStateObj);
 
     while ((curcollision != nullptr) && pCollision->IsDescribed(2)) {
-        if (curcollision->IsAttached() && curcollision->m_pCollisionEvent->GetAge() <= AgeThresholdForPruningDups &&
-            curcollision->m_pCollisionEvent->IsDescribed(2) && !curcollision->m_pCollisionEvent->IsDescribed(0x200)) {
+        if (curcollision->IsAttached()) {
+            if (AgeThresholdForPruningDups < curcollision->m_pCollisionEvent->GetAge()) {
+                goto ContinueLooping;
+            }
 
-            if ((static_cast<float>(pCollision->GetIntensity()) <= IntensityThresholdForPruning ||
-                 IntensityThresholdForPruning <= static_cast<float>(curcollision->m_pCollisionEvent->GetIntensity()))) {
+            if (curcollision->m_pCollisionEvent->IsDescribed(2) && !curcollision->m_pCollisionEvent->IsDescribed(0x200)) {
+
+                if (IntensityThresholdForPruning < static_cast<float>(pCollision->GetIntensity()) &&
+                    static_cast<float>(curcollision->m_pCollisionEvent->GetIntensity()) < IntensityThresholdForPruning) {
+                    goto ContinueLooping;
+                }
 
                 if ((pCollision->GetActor() == curcollision->m_pCollisionEvent->GetActor() &&
                      pCollision->GetActee() == curcollision->m_pCollisionEvent->GetActee()) ||
