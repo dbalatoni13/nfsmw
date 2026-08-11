@@ -310,29 +310,17 @@ class FX_ROADNOISE {
 
     FX_ROADNOISE(int id, int volume, int pitch, int azimuth, FXROADNOISETypeType type, int secondaryNoise, int speed, int filter_Effects_LoPass,
                  int filter_Effects_HiPass, int filter_Effects_Dry_FX, int filter_Effects_Wet_FX) {
-#ifdef EA_BUILD_A124
-        int dry_FX = filter_Effects_Dry_FX;
-        int loPass = filter_Effects_LoPass;
-#endif
-        this->mData.id = id;
-        this->mData.volume = volume;
-        this->mData.pitch = pitch;
-        this->mData.azimuth = azimuth;
-        this->mData.type = type;
-        this->mData.secondaryNoise = secondaryNoise;
-        this->mData.speed = speed;
-#ifdef EA_BUILD_A124
-        this->mData.filter_Effects_LoPass = loPass;
-#else
-        this->mData.filter_Effects_LoPass = filter_Effects_LoPass;
-#endif
-        this->mData.filter_Effects_HiPass = filter_Effects_HiPass;
-#ifdef EA_BUILD_A124
-        this->mData.filter_Effects_Dry_FX = dry_FX;
-#else
-        this->mData.filter_Effects_Dry_FX = filter_Effects_Dry_FX;
-#endif
-        this->mData.filter_Effects_Wet_FX = filter_Effects_Wet_FX;
+        this->SetId(id);
+        this->SetVolume(volume);
+        this->SetPitch(pitch);
+        this->SetAzimuth(azimuth);
+        this->SetType(type);
+        this->SetSecondaryNoise(secondaryNoise);
+        this->SetSpeed(speed);
+        this->SetFilter_Effects_LoPass(filter_Effects_LoPass);
+        this->SetFilter_Effects_HiPass(filter_Effects_HiPass);
+        this->SetFilter_Effects_Dry_FX(filter_Effects_Dry_FX);
+        this->SetFilter_Effects_Wet_FX(filter_Effects_Wet_FX);
 
         Result result = Class::CreateInstance(&gFX_ROADNOISEHandle, &this->mData, &this->mpClass);
         if (result < RESULT_OK) {
