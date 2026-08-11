@@ -31,7 +31,7 @@ class SFXCTL_3DRearPos : public SFXCTL_3DCarPos {
     void InitSFX() override;
     void UpdateParams(float t) override;
 
-    bVector3 vRearPos; // offset 0x64, size 0x10, Decl: 34
+    ALIGNVEC bVector3 vRearPos; // offset 0x64, size 0x10, Decl: 34
 };
 
 #endif
