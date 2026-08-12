@@ -155,7 +155,6 @@ void SFXObj_NISStream::InitSFX() {
 #endif
     m_bNISAudioStreamReady = false;
 #ifdef EA_BUILD_A124
-    g_pEAXSound->GetSndGameMode();
     m_bBackupStreamCleared = true;
 #else
     m_bBackupStreamCleared = true;

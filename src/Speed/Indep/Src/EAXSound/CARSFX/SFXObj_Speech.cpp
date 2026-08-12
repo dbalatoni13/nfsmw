@@ -59,13 +59,8 @@ void SFXObj_Speech::UpdateParams(float t) {
                 this->fPosition = *closest->GetPosition();
                 this->bFresh = true;
             } else {
-#ifdef EA_BUILD_A124
-                this->fPosition = *SndCamera::GetWorldCarPos3(0);
-                this->m_pClosestCar = nullptr;
-#else
                 this->m_pClosestCar = nullptr;
                 this->fPosition = *SndCamera::GetWorldCarPos3(0);
-#endif
             }
         }
     } else {
