@@ -175,7 +175,9 @@ void SFXObj_NISStream::StopStream() {
 }
 
 bool SFXObj_NISStream::QueueNISStream(unsigned int anim_id, int camera_track_number, bool bbuttonthrough, bool btracktime) {
+#ifndef EA_BUILD_A124
     this->m_bNISAnimationReady = false;
+#endif
     this->m_animid = anim_id;
 
     if (!btracktime) {
@@ -239,6 +241,15 @@ bool SFXObj_NISStream::QueueNISStream(unsigned int anim_id, int camera_track_num
             break;
     }
 
+#ifdef EA_BUILD_A124
+    if (anim_id == uNIS_STRINGHASHMAP[50][0]) {
+        csiscamtrack = Csis::Type_NIS_Track_Exit;
+    }
+    if (anim_id == uNIS_STRINGHASHMAP[14][0]) {
+        csiscamtrack = Csis::Type_NIS_Track_Enter;
+    }
+#endif
+
     bool breturn = false;
     int CSISindex = GetCsisEventIndex(anim_id);
     int id;
@@ -253,13 +264,21 @@ bool SFXObj_NISStream::QueueNISStream(unsigned int anim_id, int camera_track_num
         return breturn;
     }
 
+#ifndef EA_BUILD_A124
     if (CSISindex != 0) {
         csiscamtrack = Csis::Type_NIS_Track_Track00;
     }
+#endif
 
     SFXObj_Pathfinder *ppf = static_cast<SFXObj_Pathfinder *>(g_pEAXSound->GetSFXBase_Object(0x40010010));
 
     if (CSISindex < 18) {
+#ifdef EA_BUILD_A124
+        if (CSISindex == 13) {
+            bbuttonthrough = true;
+            CSISindex = 12;
+        }
+#else
         if (CSISindex == 24) {
             bbuttonthrough = true;
             CSISindex = 23;
@@ -267,12 +286,17 @@ bool SFXObj_NISStream::QueueNISStream(unsigned int anim_id, int camera_track_num
             bbuttonthrough = true;
             CSISindex = 25;
         }
+#endif
 
         g_laststartanimid = anim_id;
         g_bWasLastNISaStart = true;
 
         if (bbuttonthrough == true) {
+#ifdef EA_BUILD_A124
+            SetSoundControlState(true, SNDSTATE_NIS_321, "NIS 321");
+#else
             SetSoundControlState(false, SNDSTATE_NIS_321, "NIS 321");
+#endif
 
             Csis::NIS_Select_Start(static_cast<Csis::Type_NIS_Scene_Start>(uNIS_STRINGHASHMAP[CSISindex][1]), csiscamtrack,
                                    Csis::Type_NIS_Section_End);
@@ -296,12 +320,21 @@ bool SFXObj_NISStream::QueueNISStream(unsigned int anim_id, int camera_track_num
                 ppf->SetNISPlaying(true);
             }
         }
-    } else if (CSISindex < 36) {
+    }
+#ifdef EA_BUILD_A124
+    else if (CSISindex < 34) {
+#else
+    else if (CSISindex < 36) {
+#endif
         g_laststartanimid = anim_id;
         g_bWasLastNISaStart = true;
 
         if (bbuttonthrough == true) {
+#ifdef EA_BUILD_A124
+            SetSoundControlState(true, SNDSTATE_NIS_321, "NIS 321");
+#else
             SetSoundControlState(false, SNDSTATE_NIS_321, "NIS 321");
+#endif
 
             Csis::NIS_Select_Blacklist(csiscamtrack, Csis::Type_NIS_Section_End,
                                        static_cast<Csis::Type_NIS_Blacklist>(uNIS_STRINGHASHMAP[CSISindex][1]));
@@ -328,8 +361,12 @@ bool SFXObj_NISStream::QueueNISStream(unsigned int anim_id, int camera_track_num
     } else {
         g_bWasLastNISaStart = false;
 
+#ifdef EA_BUILD_A124
+        Csis::NIS_Select_End(static_cast<Csis::Type_NIS_Scene_End>(uNIS_STRINGHASHMAP[CSISindex][1]), csiscamtrack, Csis::Type_NIS_Section_Complete);
+#else
         Csis::NIS_Select_End(static_cast<Csis::Type_NIS_Scene_End>(uNIS_STRINGHASHMAP[CSISindex][1]), Csis::Type_NIS_Track_Track00,
                              Csis::Type_NIS_Section_Complete);
+#endif
 
         breturn = Speech::Manager::GetSpeechModule(0)->QueStream(STRM_NIS_BUSTED, &SFXObj_NISStream::PlayNISStream, false);
 
