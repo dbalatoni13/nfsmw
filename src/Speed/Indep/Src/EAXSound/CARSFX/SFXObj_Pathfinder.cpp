@@ -924,11 +924,15 @@ enum ePFENTRIES {
     PF_EVT_ENDWIN = 14,
     PF_EVT_ENDBUSTED = 15,
     PF_EVT_STARTSCREEN = 16,
+#ifndef EA_BUILD_A124
     PF_EVT_START = 17,
     PF_EVT_INITSWAP = 18,
     PF_EVT_SWAP1 = 19,
     PF_EVT_SWAP2 = 20,
     PF_XMAP_MAX = 21,
+#else
+    PF_XMAP_MAX = 17,
+#endif
 };
 
 extern int PFXMAP[4][PF_XMAP_MAX][2];
