@@ -933,8 +933,8 @@ segments:
       linker_section_order: .over
       linker_section: .over
     - start: 0x4b3bd8
-      type: vtables
-      name: .rodata
+      type: .rodata
+      name: Speed/Indep/SourceLists/zOnline.cpp
       linker_section_order: .over
       linker_section: .rodata
     - start: 0x4b3d98
@@ -948,8 +948,8 @@ segments:
       linker_section_order: .over
       linker_section: .over
     - start: 0x4da098
-      type: vtables
-      name: .rodata_1
+      type: .rodata
+      name: Speed/Indep/SourceLists/zFeOverlay.cpp
       linker_section_order: .over
       linker_section: .rodata
     - [0x4daea8, pad]
