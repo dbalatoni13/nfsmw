@@ -8,25 +8,26 @@
 #include "Speed/Indep/Src/EAXSound/CARSFX/CARSFX_Turbo.hpp"
 
 void CARSFX_Nitrous::SetupLoadData() {
-    // TODO switch?
     eNFSSndNOSClass nbankindex = AEMS_NOS_00;
-    if (this->m_UGL == AEMS_LEVEL1) {
-        goto load;
+    switch (this->m_UGL) {
+    case AEMS_LEVEL1:
+        break;
+    default:
+        if (this->m_UGL < AEMS_LEVEL2) {
+            break;
+        }
+        switch (this->m_UGL) {
+        case AEMS_LEVEL2:
+            nbankindex = AEMS_NOS_01;
+            break;
+        case AEMS_LEVEL3:
+            nbankindex = AEMS_NOS_01;
+            break;
+        default:
+            break;
+        }
+        break;
     }
-    if (this->m_UGL < AEMS_LEVEL2) {
-        goto load;
-    }
-    if (this->m_UGL == AEMS_LEVEL2) {
-        goto bank1;
-    }
-    if (this->m_UGL == AEMS_LEVEL3) {
-        goto bank1;
-    } else {
-        goto load;
-    }
-bank1:
-    nbankindex = AEMS_NOS_01;
-load:
 
     this->LoadAsset(g_pEAXSound->GetAttributes().AEMS_NOSBanks(nbankindex), SNDPATH_NOS, SDT_AEMS_ASYNCSPUMEM, eBANK_SLOT_NONE, true);
 }
