@@ -153,15 +153,10 @@ void CARSFX_AEMSEngine::AttachController(SFXCTL *psfxctl) {
     }
 }
 
-// TODO remove fake vars
 void CARSFX_AEMSEngine::SetEngineParams() {
-    float FAKE = (this->m_pEngineCtl->GetEngRPM() - 1000.0f);
-    float FAKE2 = (this->m_pEAXCar->GetAttributes().MaxRPM() - this->m_pEAXCar->GetAttributes().MinRPM()) / 9000.0f;
-    float ScaledRPM = FAKE * FAKE2 + this->m_pEAXCar->GetAttributes().MinRPM();
-
-    if (0) {
-        int testrefcount = this->m_pcsisCarCtrl->GetRefCount();
-    }
+    float rpmOffset = this->m_pEngineCtl->GetEngRPM() - 1000.0f;
+    float rpmScale = (this->m_pEAXCar->GetAttributes().MaxRPM() - this->m_pEAXCar->GetAttributes().MinRPM()) / 9000.0f;
+    float ScaledRPM = rpmOffset * rpmScale + this->m_pEAXCar->GetAttributes().MinRPM();
 
     if (this->m_pcsisCarCtrl != nullptr) {
         int nDMixOut;
