@@ -43,6 +43,8 @@ options:
 
   # Linker script options
   subalign: 8
+  ld_bss_is_noload: True
+  create_bss_pads: False
 
   # TODO gp_value
 
@@ -1171,158 +1173,158 @@ segments:
     - [0x555d48, .sdata, Speed/Indep/Libs/juice/1.5.2a/source/ps2/JuiceScripting.cpp]
     - [0x555e48, .sdata, Speed/Indep/Libs/juice/1.5.2a/source/ps2/JuiceSystemManager.cpp]
     - [0x555e88, .sdata, Speed/Indep/Libs/juice/1.5.2a/source/ps2/JuiceThreadManager.cpp]
-    - [0x555f00, .sbss, Speed/Indep/Libs/dirtysock/source/library/ps2/final/rpc-e.c]
-    - [0x555f04, .sbss, Speed/Indep/Libs/dirtysock/source/library/ps2/final/netconnps2.c]
-    - [0x555f10, .sbss, Speed/Indep/Libs/dirtysock/source/library/ps2/final/buddyapi.c]
-    - [0x555f18, .sbss, Speed/Indep/Libs/juice/1.5.2a/source/ps2/Juice.cpp]
-    - [0x555f2c, .sbss, Speed/Indep/Libs/juice/1.5.2a/source/ps2/JuiceCom.cpp]
-    - [0x555f30, .sbss, Speed/Indep/Libs/juice/1.5.2a/source/ps2/JuiceReplayManager.cpp]
+    - {start: 0x555f00, type: .sbss, vram: 0x654f00, name: Speed/Indep/Libs/dirtysock/source/library/ps2/final/rpc-e.c}
+    - {start: 0x555f04, type: .sbss, vram: 0x654f04, name: Speed/Indep/Libs/dirtysock/source/library/ps2/final/netconnps2.c}
+    - {start: 0x555f10, type: .sbss, vram: 0x654f10, name: Speed/Indep/Libs/dirtysock/source/library/ps2/final/buddyapi.c}
+    - {start: 0x555f18, type: .sbss, vram: 0x654f18, name: Speed/Indep/Libs/juice/1.5.2a/source/ps2/Juice.cpp}
+    - {start: 0x555f2c, type: .sbss, vram: 0x654f2c, name: Speed/Indep/Libs/juice/1.5.2a/source/ps2/JuiceCom.cpp}
+    - {start: 0x555f30, type: .sbss, vram: 0x654f30, name: Speed/Indep/Libs/juice/1.5.2a/source/ps2/JuiceReplayManager.cpp}
 
-    - [0x556000, .bss, Speed/Indep/SourceLists/zAI.cpp]
-    - [0x5561a8, .bss, Speed/Indep/SourceLists/zAnim.cpp]
-    - [0x556254, .bss, Speed/Indep/SourceLists/zAttribSys.cpp]
-    - [0x556270, .bss, Speed/Indep/SourceLists/zBWare.cpp]
-    - [0x556430, .bss, Speed/Indep/SourceLists/zCamera.cpp]
-    - [0x55673c, .bss, Speed/Indep/SourceLists/zDebug.cpp]
-    - [0x556748, .bss, Speed/Indep/SourceLists/zDynamics.cpp]
-    - [0x556758, .bss, Speed/Indep/SourceLists/zEagl4Anim.cpp]
-    - [0x556d60, .bss, Speed/Indep/SourceLists/zEAXSound.cpp]
-    - [0x556e68, .bss, Speed/Indep/SourceLists/zEAXSound2.cpp]
-    - [0x556f70, .bss, Speed/Indep/SourceLists/zEcstasy.cpp]
-    - [0x557250, .bss, Speed/Indep/SourceLists/zFe.cpp]
-    - [0x5577e0, .bss, Speed/Indep/SourceLists/zFe2.cpp]
-    - [0x557b30, .bss, Speed/Indep/SourceLists/zFEng.cpp]
-    - [0x557c48, .bss, Speed/Indep/SourceLists/zFoundation.cpp]
-    - [0x557db8, .bss, Speed/Indep/SourceLists/zGameModes.cpp]
-    - [0x557e30, .bss, Speed/Indep/SourceLists/zGameplay.cpp]
-    - [0x557f60, .bss, Speed/Indep/SourceLists/zLua.cpp]
-    - [0x5580c0, .bss, Speed/Indep/SourceLists/zMain.cpp]
-    - [0x55aab0, .bss, Speed/Indep/SourceLists/zMisc.cpp]
-    - [0x55b0e8, .bss, Speed/Indep/SourceLists/zMiscSmall.cpp]
-    - [0x55b0f0, .bss, Speed/Indep/SourceLists/zMission.cpp]
-    - [0x55b100, .bss, Speed/Indep/SourceLists/zPhysics.cpp]
-    - [0x55b540, .bss, Speed/Indep/SourceLists/zPhysicsBehaviors.cpp]
-    - [0x55d200, .bss, Speed/Indep/SourceLists/zPlatform.cpp]
-    - [0x55dab0, .bss, Speed/Indep/SourceLists/zRender.cpp]
-    - [0x55dba8, .bss, Speed/Indep/SourceLists/zSim.cpp]
-    - [0x55e510, .bss, Speed/Indep/SourceLists/zSpeech.cpp]
-    - [0x55e830, .bss, Speed/Indep/SourceLists/zTrack.cpp]
-    - [0x561580, .bss, Speed/Indep/SourceLists/zWorld.cpp]
-    - [0x564070, .bss, Speed/Indep/SourceLists/zWorld2.cpp]
-    - [0x5643e8, .bss, Speed/Indep/SourceLists/zOnline.cpp]
-    - [0x565e28, .bss, Speed/Indep/SourceLists/zFeOverlay.cpp]
+    - {start: 0x556000, type: .bss, vram: 0x655000, name: Speed/Indep/SourceLists/zAI.cpp}
+    - {start: 0x5561a8, type: .bss, vram: 0x6551a8, name: Speed/Indep/SourceLists/zAnim.cpp}
+    - {start: 0x556254, type: .bss, vram: 0x655254, name: Speed/Indep/SourceLists/zAttribSys.cpp}
+    - {start: 0x556270, type: .bss, vram: 0x655270, name: Speed/Indep/SourceLists/zBWare.cpp}
+    - {start: 0x556430, type: .bss, vram: 0x655430, name: Speed/Indep/SourceLists/zCamera.cpp}
+    - {start: 0x55673c, type: .bss, vram: 0x65573c, name: Speed/Indep/SourceLists/zDebug.cpp}
+    - {start: 0x556748, type: .bss, vram: 0x655748, name: Speed/Indep/SourceLists/zDynamics.cpp}
+    - {start: 0x556758, type: .bss, vram: 0x655758, name: Speed/Indep/SourceLists/zEagl4Anim.cpp}
+    - {start: 0x556d60, type: .bss, vram: 0x655d60, name: Speed/Indep/SourceLists/zEAXSound.cpp}
+    - {start: 0x556e68, type: .bss, vram: 0x655e68, name: Speed/Indep/SourceLists/zEAXSound2.cpp}
+    - {start: 0x556f70, type: .bss, vram: 0x655f70, name: Speed/Indep/SourceLists/zEcstasy.cpp}
+    - {start: 0x557250, type: .bss, vram: 0x656250, name: Speed/Indep/SourceLists/zFe.cpp}
+    - {start: 0x5577e0, type: .bss, vram: 0x6567e0, name: Speed/Indep/SourceLists/zFe2.cpp}
+    - {start: 0x557b30, type: .bss, vram: 0x656b30, name: Speed/Indep/SourceLists/zFEng.cpp}
+    - {start: 0x557c48, type: .bss, vram: 0x656c48, name: Speed/Indep/SourceLists/zFoundation.cpp}
+    - {start: 0x557db8, type: .bss, vram: 0x656db8, name: Speed/Indep/SourceLists/zGameModes.cpp}
+    - {start: 0x557e30, type: .bss, vram: 0x656e30, name: Speed/Indep/SourceLists/zGameplay.cpp}
+    - {start: 0x557f60, type: .bss, vram: 0x656f60, name: Speed/Indep/SourceLists/zLua.cpp}
+    - {start: 0x5580c0, type: .bss, vram: 0x6570c0, name: Speed/Indep/SourceLists/zMain.cpp}
+    - {start: 0x55aab0, type: .bss, vram: 0x659ab0, name: Speed/Indep/SourceLists/zMisc.cpp}
+    - {start: 0x55b0e8, type: .bss, vram: 0x65a0e8, name: Speed/Indep/SourceLists/zMiscSmall.cpp}
+    - {start: 0x55b0f0, type: .bss, vram: 0x65a0f0, name: Speed/Indep/SourceLists/zMission.cpp}
+    - {start: 0x55b100, type: .bss, vram: 0x65a100, name: Speed/Indep/SourceLists/zPhysics.cpp}
+    - {start: 0x55b540, type: .bss, vram: 0x65a540, name: Speed/Indep/SourceLists/zPhysicsBehaviors.cpp}
+    - {start: 0x55d200, type: .bss, vram: 0x65c200, name: Speed/Indep/SourceLists/zPlatform.cpp}
+    - {start: 0x55dab0, type: .bss, vram: 0x65cab0, name: Speed/Indep/SourceLists/zRender.cpp}
+    - {start: 0x55dba8, type: .bss, vram: 0x65cba8, name: Speed/Indep/SourceLists/zSim.cpp}
+    - {start: 0x55e510, type: .bss, vram: 0x65d510, name: Speed/Indep/SourceLists/zSpeech.cpp}
+    - {start: 0x55e830, type: .bss, vram: 0x65d830, name: Speed/Indep/SourceLists/zTrack.cpp}
+    - {start: 0x561580, type: .bss, vram: 0x660580, name: Speed/Indep/SourceLists/zWorld.cpp}
+    - {start: 0x564070, type: .bss, vram: 0x663070, name: Speed/Indep/SourceLists/zWorld2.cpp}
+    - {start: 0x5643e8, type: .bss, vram: 0x6633e8, name: Speed/Indep/SourceLists/zOnline.cpp}
+    - {start: 0x565e28, type: .bss, vram: 0x664e28, name: Speed/Indep/SourceLists/zFeOverlay.cpp}
 
-    - [0x566500, .bss, Speed/PSX2/Runtime/crt0.s]
-    - [0x566680, .bss, Speed/Indep/Libs/dirtysock/source/contrib/voip/voip-e.c]
-    - [0x5667d0, .bss, Speed/Indep/Libs/dirtysock/source/contrib/ps2isp/ps2isp.c]
-    - [0x566850, .bss, Speed/Indep/Libs/dirtysock/source/contrib/dirtydnas/dirtydnas.c]
-    - [0x566880, .bss, Speed/Indep/Libs/dirtysock/source/library/ps2/final/dirtynet.c]
-    - [0x5668c0, .bss, Speed/Indep/Libs/dirtysock/source/library/ps2/final/rpc-e.c]
-    - [0x56b6c0, .bss, Speed/Indep/Libs/dirtysock/source/library/ps2/final/netconn.c]
-    - [0x56b750, .bss, Speed/Indep/Libs/dirtysock/source/library/ps2/final/netconnps2.c]
-    - [0x56c750, .bss, Speed/Indep/Libs/dirtysock/source/library/ps2/final/netgamelink-e.c]
-    - [0x56c7a0, .bss, Speed/Indep/Libs/dirtysock/source/library/ps2/final/protoaries-e.c]
-    - [0x56c890, .bss, Speed/Indep/Libs/dirtysock/source/library/ps2/final/protoping-e.c]
-    - [0x56c8a0, .bss, Speed/Indep/Libs/dirtysock/source/library/ps2/final/cryptssc2.c]
-    - [0x56c9a8, .bss, Speed/Indep/Libs/dirtysock/source/library/ps2/final/protohttp-e.c]
-    - [0x56c9d8, .bss, Speed/Indep/Libs/dirtysock/source/library/ps2/final/protoname-e.c]
-    - [0x56ca40, .bss, Speed/PSX2/bware/sce/ee/libmc.c]
-    - [0x56e040, .bss, Speed/PSX2/bware/sce/ee/libmtap.c]
-    - [0x56e1c0, .bss, Speed/PSX2/bware/sce/ee/debug.c]
-    - [0x56e1d0, .bss, Packages/realmemcard/3.04.00-layer2/source/lib/cmn/locale.cpp]
-    - [0x5709d0, .bss, Packages/realmemcard/3.04.00-layer2/source/lib/ps2/ps2_interface.cpp]
-    - [0x5709e8, .bss, Packages/realmemcard/3.04.00-layer2/source/lib/ps2/ps2_public.cpp]
-    - [0x570a68, .bss, Speed/Indep/Libs/juice/1.5.2a/source/ps2/Juice.cpp]
-    - [0x5733a0, .bss, Speed/Indep/Libs/juice/1.5.2a/source/ps2/JuiceCoverage.cpp]
-    - [0x573480, .bss, Speed/Indep/Libs/juice/1.5.2a/source/ps2/JuiceErrorManager.cpp]
-    - [0x5734a0, .bss, Speed/Indep/Libs/juice/1.5.2a/source/ps2/JuiceExceptionPS2.cpp]
-    - [0x5734d0, .bss, Speed/Indep/Libs/juice/1.5.2a/source/ps2/JuiceLogging.cpp]
-    - [0x5734e0, .bss, Speed/Indep/Libs/juice/1.5.2a/source/ps2/JuiceMonitoring.cpp]
-    - [0x5735c0, .bss, Speed/Indep/Libs/juice/1.5.2a/source/ps2/JuiceMonkey.cpp]
-    - [0x573620, .bss, Speed/Indep/Libs/juice/1.5.2a/source/ps2/JuiceOnlinePlayMgr.cpp]
-    - [0x573640, .bss, Speed/Indep/Libs/juice/1.5.2a/source/ps2/JuicePad.cpp]
-    - [0x5736e0, .bss, Speed/Indep/Libs/juice/1.5.2a/source/ps2/JuicePadConfigManager.cpp]
-    - [0x573700, .bss, Speed/Indep/Libs/juice/1.5.2a/source/ps2/JuiceRandom.cpp]
-    - [0x573718, .bss, Speed/Indep/Libs/juice/1.5.2a/source/ps2/JuiceRemoteFileManager.cpp]
-    - [0x573730, .bss, Speed/Indep/Libs/juice/1.5.2a/source/ps2/JuiceReplayManager.cpp]
-    - [0x5737e0, .bss, Speed/Indep/Libs/juice/1.5.2a/source/ps2/JuiceRPCManager.cpp]
-    - [0x5737f0, .bss, Speed/Indep/Libs/juice/1.5.2a/source/ps2/JuiceScreenshotMgr.cpp]
-    - [0x573800, .bss, Speed/Indep/Libs/juice/1.5.2a/source/ps2/JuiceSystemManager.cpp]
-    - [0x573848, .bss, Speed/Indep/Libs/juice/1.5.2a/source/ps2/JuiceThreadManager.cpp]
-    - [0x573870, .bss, Speed/Indep/Libs/juice/1.5.2a/source/ps2/JuiceExceptionPS2.s]
-    - [0x573880, .bss, egami/rcmp/dev/source/decoder/cmn/rcmpbase.cpp]
-    - [0x573898, .bss, egami/rcmp/dev/source/decoder/ps2/rcmp_ps2_sony_codec.cpp]
-    - [0x5744f8, .bss, egami/rcmp/dev/source/decoder/cmn/rcmp_vp6_codec.cpp]
-    - [0x574518, .bss, Packages/vp6/1.0.3/source/decode/cmn/pb_globals.c]
-    - [0x574620, .bss, Packages/vp6/1.0.3/source/decode/cmn/postproc.c]
-    - [0x57498c, .bss, Packages/vp6/1.0.3/source/decode/cmn/quantize.c]
-    - [0x574998, .bss, Packages/vp6/1.0.3/source/decode/cmn/vputil.c]
-    - [0x574d34, .bss, Packages/vp6/1.0.3/source/decode/cmn/deblock.c]
-    - [0x574d48, .bss, Packages/vp6/1.0.3/source/decode/cmn/dering.c]
-    - [0x574e48, .bss, Packages/vp6/1.0.3/source/decode/cmn/loopfilter.c]
-    - [0x574e50, .bss, Speed/Indep/Libs/path/5.01.04/source/cmn/pathreal.cpp]
-    - [0x574e60, .bss, Speed/Indep/Libs/snd/9/source/library/cmn/saemsamb.c]
-    - [0x574e98, .bss, Speed/Indep/Libs/snd/9/source/library/cmn/saemsmbf.c]
-    - [0x574ed4, .bss, Speed/Indep/Libs/snd/9/source/library/cmn/saemsmbm.c]
-    - [0x574ef8, .bss, Speed/Indep/Libs/snd/9/source/library/cmn/salloc.c]
-    - [0x574f08, .bss, Speed/Indep/Libs/snd/9/source/library/cmn/sbasyncm.c]
-    - [0x574f20, .bss, Speed/Indep/Libs/snd/9/source/library/cmn/sdata.c]
-    - [0x575168, .bss, Speed/Indep/Libs/snd/9/source/library/cmn/spktplay.c]
-    - [0x5754f0, .bss, Speed/Indep/Libs/snd/9/source/library/cmn/srandom.c]
-    - [0x575508, .bss, Speed/Indep/Libs/snd/9/source/library/cmn/sserver.c]
-    - [0x575518, .bss, Speed/Indep/Libs/snd/9/source/library/cmn/sst.c]
-    - [0x575598, .bss, Speed/Indep/Libs/snd/9/source/library/cmn/ssys.cpp]
-    - [0x5755e8, .bss, Speed/Indep/Libs/snd/9/source/library/cmn/ssysinit.c]
-    - [0x575608, .bss, Speed/Indep/Libs/snd/9/source/library/mix/sfxrevc.c]
-    - [0x575628, .bss, Speed/Indep/Libs/snd/9/source/library/mix/smixer.c]
-    - [0x575830, .bss, Speed/Indep/Libs/snd/9/source/library/cmn/sdma.c]
-    - [0x575880, .bss, Speed/Indep/Libs/snd/9/source/library/cmn/sdriver.c]
-    - [0x580400, .bss, Speed/Indep/Libs/snd/9/source/library/cmn/dma.cpp]
-    - [0x5804c8, .bss, Speed/Indep/Libs/snd/9/source/library/cmn/satospkr.c]
-    - [0x5804e8, .bss, Speed/Indep/Libs/snd/9/source/library/extern/coda/cmn/coda.cpp]
-    - [0x5804f0, .bss, Speed/Indep/Libs/csis/dev/source/library/cmn/csis.cpp]
-    - [0x580518, .bss, Speed/Indep/Libs/spch/dev/source/library/cmn/spchdata.c]
-    - [0x580728, .bss, Speed/Indep/Libs/spch/dev/source/library/cmn/spchpick.c]
-    - [0x580c28, .bss, Speed/Indep/Libs/spch/dev/source/library/cmn/spchrand.c]
-    - [0x580cc0, .bss, Speed/Indep/Libs/realcore/6.24.00/source/file/ps2/cddvd_device.cpp]
-    - [0x581688, .bss, Speed/Indep/Libs/realcore/6.24.00/source/file/cmn/filesys.cpp]
-    - [0x5816a0, .bss, Speed/Indep/Libs/realcore/6.24.00/source/file/cmn/filesysopts.cpp]
-    - [0x5816b0, .bss, Speed/Indep/Libs/realcore/6.24.00/source/file/cmn/hlafile.cpp]
-    - [0x5816d8, .bss, Speed/Indep/Libs/realcore/6.24.00/source/file/ps2/host0_device.cpp]
-    - [0x5816f0, .bss, Speed/Indep/Libs/realcore/6.24.00/source/system/cmn/systask.cpp]
-    - [0x581830, .bss, Speed/Indep/Libs/realcore/6.24.00/source/debug/cmn/abortmsg.cpp]
-    - [0x582830, .bss, Speed/Indep/Libs/realcore/6.24.00/source/input/ps2/ps2_interface.cpp]
-    - [0x582840, .bss, Speed/PSX2/bware/sce/ee/lib/libezcnf.c]
-    - [0x5829c0, .bss, Speed/PSX2/bware/sce/ee/lib/libezctl.c]
-    - [0x582b40, .bss, Speed/PSX2/bware/sce/ee/lib/libdma.c]
-    - [0x582b80, .bss, Speed/PSX2/bware/sce/ee/lib/libpad.c]
-    - [0x582e40, .bss, Speed/PSX2/bware/sce/ee/lib/thread.c]
-    - [0x583680, .bss, Speed/PSX2/bware/sce/ee/lib/tty.c]
-    - [0x583a40, .bss, Speed/PSX2/bware/sce/ee/lib/kprintf.c]
-    - [0x583ac0, .bss, Speed/PSX2/bware/sce/ee/lib/sifcmd.c]
-    - [0x583dc0, .bss, Speed/PSX2/bware/sce/ee/lib/sifrpc.c]
-    - [0x585600, .bss, Speed/PSX2/bware/sce/ee/lib/filestub.c]
-    - [0x586e40, .bss, Speed/PSX2/bware/sce/ee/lib/iopheap.c]
-    - [0x587000, .bss, Speed/PSX2/bware/sce/ee/lib/eeloadfile.c]
-    - [0x587240, .bss, Speed/PSX2/bware/sce/ee/lib/iopreset.c]
-    - [0x5872c0, .bss, Speed/PSX2/bware/sce/ee/lib/tlbtrap.c]
-    - [0x588500, .bss, Speed/PSX2/bware/sce/ee/lib/timer.c]
-    - [0x58a500, .bss, Speed/PSX2/bware/sce/ee/lib/timeralarm.c]
-    - [0x58a908, .bss, Speed/PSX2/bware/sce/ee/lib/iopnotify.c]
-    - [0x58ab08, .bss, Speed/PSX2/bware/sce/ee/lib/deci2.c]
-    - [0x58ab40, .bss, Speed/PSX2/bware/sce/ee/lib/mpc.c]
-    - [0x58ad40, .bss, Speed/PSX2/bware/sce/ee/lib/cdvd000.c]
-    - [0x58b000, .bss, Speed/PSX2/bware/sce/ee/lib/msifrpc.c]
-    - [0x58b840, .bss, Speed/PSX2/lib/liblgdev.c]
-    - [0x58bc80, .bss, Speed/PSX2/bware/sce/ee/gcc/ee/vfprintf.c]
-    - [0x58bda8, .bss, Speed/PSX2/bware/sce/ee/gcc/ee/vfiprintf.c]
-    - [0x58be28, .bss, Speed/PSX2/bware/sce/ee/gcc/ee/vfwprintf.c]
-    - [0x58bff8, .bss, Speed/PSX2/bware/sce/ee/gcc/__main.c]
-    - [0x58c000, .bss, Speed/PSX2/bware/sce/ee/gcc/dp-bit.c]
-    - [0x58c018, .bss, Speed/PSX2/bware/sce/ee/gcc/fp-bit.c]
-    - [0x58c028, .bss, Speed/PSX2/bware/sce/ee/gcc/_eh.c]
-    - [0x58c048, .bss, Speed/PSX2/bware/sce/ee/gcc/frame.c]
-    - [0x58c050, .bss, Packages/eathread/1.1.0/source/eathread_thread.cpp]
-    - [0x58c550, .bss, rest]
+    - {start: 0x566500, type: .bss, vram: 0x665500, name: Speed/PSX2/Runtime/crt0.s}
+    - {start: 0x566680, type: .bss, vram: 0x665680, name: Speed/Indep/Libs/dirtysock/source/contrib/voip/voip-e.c}
+    - {start: 0x5667d0, type: .bss, vram: 0x6657d0, name: Speed/Indep/Libs/dirtysock/source/contrib/ps2isp/ps2isp.c}
+    - {start: 0x566850, type: .bss, vram: 0x665850, name: Speed/Indep/Libs/dirtysock/source/contrib/dirtydnas/dirtydnas.c}
+    - {start: 0x566880, type: .bss, vram: 0x665880, name: Speed/Indep/Libs/dirtysock/source/library/ps2/final/dirtynet.c}
+    - {start: 0x5668c0, type: .bss, vram: 0x6658c0, name: Speed/Indep/Libs/dirtysock/source/library/ps2/final/rpc-e.c}
+    - {start: 0x56b6c0, type: .bss, vram: 0x66a6c0, name: Speed/Indep/Libs/dirtysock/source/library/ps2/final/netconn.c}
+    - {start: 0x56b750, type: .bss, vram: 0x66a750, name: Speed/Indep/Libs/dirtysock/source/library/ps2/final/netconnps2.c}
+    - {start: 0x56c750, type: .bss, vram: 0x66b750, name: Speed/Indep/Libs/dirtysock/source/library/ps2/final/netgamelink-e.c}
+    - {start: 0x56c7a0, type: .bss, vram: 0x66b7a0, name: Speed/Indep/Libs/dirtysock/source/library/ps2/final/protoaries-e.c}
+    - {start: 0x56c890, type: .bss, vram: 0x66b890, name: Speed/Indep/Libs/dirtysock/source/library/ps2/final/protoping-e.c}
+    - {start: 0x56c8a0, type: .bss, vram: 0x66b8a0, name: Speed/Indep/Libs/dirtysock/source/library/ps2/final/cryptssc2.c}
+    - {start: 0x56c9a8, type: .bss, vram: 0x66b9a8, name: Speed/Indep/Libs/dirtysock/source/library/ps2/final/protohttp-e.c}
+    - {start: 0x56c9d8, type: .bss, vram: 0x66b9d8, name: Speed/Indep/Libs/dirtysock/source/library/ps2/final/protoname-e.c}
+    - {start: 0x56ca40, type: .bss, vram: 0x66ba40, name: Speed/PSX2/bware/sce/ee/libmc.c}
+    - {start: 0x56e040, type: .bss, vram: 0x66d040, name: Speed/PSX2/bware/sce/ee/libmtap.c}
+    - {start: 0x56e1c0, type: .bss, vram: 0x66d1c0, name: Speed/PSX2/bware/sce/ee/debug.c}
+    - {start: 0x56e1d0, type: .bss, vram: 0x66d1d0, name: Packages/realmemcard/3.04.00-layer2/source/lib/cmn/locale.cpp}
+    - {start: 0x5709d0, type: .bss, vram: 0x66f9d0, name: Packages/realmemcard/3.04.00-layer2/source/lib/ps2/ps2_interface.cpp}
+    - {start: 0x5709e8, type: .bss, vram: 0x66f9e8, name: Packages/realmemcard/3.04.00-layer2/source/lib/ps2/ps2_public.cpp}
+    - {start: 0x570a68, type: .bss, vram: 0x66fa68, name: Speed/Indep/Libs/juice/1.5.2a/source/ps2/Juice.cpp}
+    - {start: 0x5733a0, type: .bss, vram: 0x6723a0, name: Speed/Indep/Libs/juice/1.5.2a/source/ps2/JuiceCoverage.cpp}
+    - {start: 0x573480, type: .bss, vram: 0x672480, name: Speed/Indep/Libs/juice/1.5.2a/source/ps2/JuiceErrorManager.cpp}
+    - {start: 0x5734a0, type: .bss, vram: 0x6724a0, name: Speed/Indep/Libs/juice/1.5.2a/source/ps2/JuiceExceptionPS2.cpp}
+    - {start: 0x5734d0, type: .bss, vram: 0x6724d0, name: Speed/Indep/Libs/juice/1.5.2a/source/ps2/JuiceLogging.cpp}
+    - {start: 0x5734e0, type: .bss, vram: 0x6724e0, name: Speed/Indep/Libs/juice/1.5.2a/source/ps2/JuiceMonitoring.cpp}
+    - {start: 0x5735c0, type: .bss, vram: 0x6725c0, name: Speed/Indep/Libs/juice/1.5.2a/source/ps2/JuiceMonkey.cpp}
+    - {start: 0x573620, type: .bss, vram: 0x672620, name: Speed/Indep/Libs/juice/1.5.2a/source/ps2/JuiceOnlinePlayMgr.cpp}
+    - {start: 0x573640, type: .bss, vram: 0x672640, name: Speed/Indep/Libs/juice/1.5.2a/source/ps2/JuicePad.cpp}
+    - {start: 0x5736e0, type: .bss, vram: 0x6726e0, name: Speed/Indep/Libs/juice/1.5.2a/source/ps2/JuicePadConfigManager.cpp}
+    - {start: 0x573700, type: .bss, vram: 0x672700, name: Speed/Indep/Libs/juice/1.5.2a/source/ps2/JuiceRandom.cpp}
+    - {start: 0x573718, type: .bss, vram: 0x672718, name: Speed/Indep/Libs/juice/1.5.2a/source/ps2/JuiceRemoteFileManager.cpp}
+    - {start: 0x573730, type: .bss, vram: 0x672730, name: Speed/Indep/Libs/juice/1.5.2a/source/ps2/JuiceReplayManager.cpp}
+    - {start: 0x5737e0, type: .bss, vram: 0x6727e0, name: Speed/Indep/Libs/juice/1.5.2a/source/ps2/JuiceRPCManager.cpp}
+    - {start: 0x5737f0, type: .bss, vram: 0x6727f0, name: Speed/Indep/Libs/juice/1.5.2a/source/ps2/JuiceScreenshotMgr.cpp}
+    - {start: 0x573800, type: .bss, vram: 0x672800, name: Speed/Indep/Libs/juice/1.5.2a/source/ps2/JuiceSystemManager.cpp}
+    - {start: 0x573848, type: .bss, vram: 0x672848, name: Speed/Indep/Libs/juice/1.5.2a/source/ps2/JuiceThreadManager.cpp}
+    - {start: 0x573870, type: .bss, vram: 0x672870, name: Speed/Indep/Libs/juice/1.5.2a/source/ps2/JuiceExceptionPS2.s}
+    - {start: 0x573880, type: .bss, vram: 0x672880, name: egami/rcmp/dev/source/decoder/cmn/rcmpbase.cpp}
+    - {start: 0x573898, type: .bss, vram: 0x672898, name: egami/rcmp/dev/source/decoder/ps2/rcmp_ps2_sony_codec.cpp}
+    - {start: 0x5744f8, type: .bss, vram: 0x6734f8, name: egami/rcmp/dev/source/decoder/cmn/rcmp_vp6_codec.cpp}
+    - {start: 0x574518, type: .bss, vram: 0x673518, name: Packages/vp6/1.0.3/source/decode/cmn/pb_globals.c}
+    - {start: 0x574620, type: .bss, vram: 0x673620, name: Packages/vp6/1.0.3/source/decode/cmn/postproc.c}
+    - {start: 0x57498c, type: .bss, vram: 0x67398c, name: Packages/vp6/1.0.3/source/decode/cmn/quantize.c}
+    - {start: 0x574998, type: .bss, vram: 0x673998, name: Packages/vp6/1.0.3/source/decode/cmn/vputil.c}
+    - {start: 0x574d34, type: .bss, vram: 0x673d34, name: Packages/vp6/1.0.3/source/decode/cmn/deblock.c}
+    - {start: 0x574d48, type: .bss, vram: 0x673d48, name: Packages/vp6/1.0.3/source/decode/cmn/dering.c}
+    - {start: 0x574e48, type: .bss, vram: 0x673e48, name: Packages/vp6/1.0.3/source/decode/cmn/loopfilter.c}
+    - {start: 0x574e50, type: .bss, vram: 0x673e50, name: Speed/Indep/Libs/path/5.01.04/source/cmn/pathreal.cpp}
+    - {start: 0x574e60, type: .bss, vram: 0x673e60, name: Speed/Indep/Libs/snd/9/source/library/cmn/saemsamb.c}
+    - {start: 0x574e98, type: .bss, vram: 0x673e98, name: Speed/Indep/Libs/snd/9/source/library/cmn/saemsmbf.c}
+    - {start: 0x574ed4, type: .bss, vram: 0x673ed4, name: Speed/Indep/Libs/snd/9/source/library/cmn/saemsmbm.c}
+    - {start: 0x574ef8, type: .bss, vram: 0x673ef8, name: Speed/Indep/Libs/snd/9/source/library/cmn/salloc.c}
+    - {start: 0x574f08, type: .bss, vram: 0x673f08, name: Speed/Indep/Libs/snd/9/source/library/cmn/sbasyncm.c}
+    - {start: 0x574f20, type: .bss, vram: 0x673f20, name: Speed/Indep/Libs/snd/9/source/library/cmn/sdata.c}
+    - {start: 0x575168, type: .bss, vram: 0x674168, name: Speed/Indep/Libs/snd/9/source/library/cmn/spktplay.c}
+    - {start: 0x5754f0, type: .bss, vram: 0x6744f0, name: Speed/Indep/Libs/snd/9/source/library/cmn/srandom.c}
+    - {start: 0x575508, type: .bss, vram: 0x674508, name: Speed/Indep/Libs/snd/9/source/library/cmn/sserver.c}
+    - {start: 0x575518, type: .bss, vram: 0x674518, name: Speed/Indep/Libs/snd/9/source/library/cmn/sst.c}
+    - {start: 0x575598, type: .bss, vram: 0x674598, name: Speed/Indep/Libs/snd/9/source/library/cmn/ssys.cpp}
+    - {start: 0x5755e8, type: .bss, vram: 0x6745e8, name: Speed/Indep/Libs/snd/9/source/library/cmn/ssysinit.c}
+    - {start: 0x575608, type: .bss, vram: 0x674608, name: Speed/Indep/Libs/snd/9/source/library/mix/sfxrevc.c}
+    - {start: 0x575628, type: .bss, vram: 0x674628, name: Speed/Indep/Libs/snd/9/source/library/mix/smixer.c}
+    - {start: 0x575830, type: .bss, vram: 0x674830, name: Speed/Indep/Libs/snd/9/source/library/cmn/sdma.c}
+    - {start: 0x575880, type: .bss, vram: 0x674880, name: Speed/Indep/Libs/snd/9/source/library/cmn/sdriver.c}
+    - {start: 0x580400, type: .bss, vram: 0x67f400, name: Speed/Indep/Libs/snd/9/source/library/cmn/dma.cpp}
+    - {start: 0x5804c8, type: .bss, vram: 0x67f4c8, name: Speed/Indep/Libs/snd/9/source/library/cmn/satospkr.c}
+    - {start: 0x5804e8, type: .bss, vram: 0x67f4e8, name: Speed/Indep/Libs/snd/9/source/library/extern/coda/cmn/coda.cpp}
+    - {start: 0x5804f0, type: .bss, vram: 0x67f4f0, name: Speed/Indep/Libs/csis/dev/source/library/cmn/csis.cpp}
+    - {start: 0x580518, type: .bss, vram: 0x67f518, name: Speed/Indep/Libs/spch/dev/source/library/cmn/spchdata.c}
+    - {start: 0x580728, type: .bss, vram: 0x67f728, name: Speed/Indep/Libs/spch/dev/source/library/cmn/spchpick.c}
+    - {start: 0x580c28, type: .bss, vram: 0x67fc28, name: Speed/Indep/Libs/spch/dev/source/library/cmn/spchrand.c}
+    - {start: 0x580cc0, type: .bss, vram: 0x67fcc0, name: Speed/Indep/Libs/realcore/6.24.00/source/file/ps2/cddvd_device.cpp}
+    - {start: 0x581688, type: .bss, vram: 0x680688, name: Speed/Indep/Libs/realcore/6.24.00/source/file/cmn/filesys.cpp}
+    - {start: 0x5816a0, type: .bss, vram: 0x6806a0, name: Speed/Indep/Libs/realcore/6.24.00/source/file/cmn/filesysopts.cpp}
+    - {start: 0x5816b0, type: .bss, vram: 0x6806b0, name: Speed/Indep/Libs/realcore/6.24.00/source/file/cmn/hlafile.cpp}
+    - {start: 0x5816d8, type: .bss, vram: 0x6806d8, name: Speed/Indep/Libs/realcore/6.24.00/source/file/ps2/host0_device.cpp}
+    - {start: 0x5816f0, type: .bss, vram: 0x6806f0, name: Speed/Indep/Libs/realcore/6.24.00/source/system/cmn/systask.cpp}
+    - {start: 0x581830, type: .bss, vram: 0x680830, name: Speed/Indep/Libs/realcore/6.24.00/source/debug/cmn/abortmsg.cpp}
+    - {start: 0x582830, type: .bss, vram: 0x681830, name: Speed/Indep/Libs/realcore/6.24.00/source/input/ps2/ps2_interface.cpp}
+    - {start: 0x582840, type: .bss, vram: 0x681840, name: Speed/PSX2/bware/sce/ee/lib/libezcnf.c}
+    - {start: 0x5829c0, type: .bss, vram: 0x6819c0, name: Speed/PSX2/bware/sce/ee/lib/libezctl.c}
+    - {start: 0x582b40, type: .bss, vram: 0x681b40, name: Speed/PSX2/bware/sce/ee/lib/libdma.c}
+    - {start: 0x582b80, type: .bss, vram: 0x681b80, name: Speed/PSX2/bware/sce/ee/lib/libpad.c}
+    - {start: 0x582e40, type: .bss, vram: 0x681e40, name: Speed/PSX2/bware/sce/ee/lib/thread.c}
+    - {start: 0x583680, type: .bss, vram: 0x682680, name: Speed/PSX2/bware/sce/ee/lib/tty.c}
+    - {start: 0x583a40, type: .bss, vram: 0x682a40, name: Speed/PSX2/bware/sce/ee/lib/kprintf.c}
+    - {start: 0x583ac0, type: .bss, vram: 0x682ac0, name: Speed/PSX2/bware/sce/ee/lib/sifcmd.c}
+    - {start: 0x583dc0, type: .bss, vram: 0x682dc0, name: Speed/PSX2/bware/sce/ee/lib/sifrpc.c}
+    - {start: 0x585600, type: .bss, vram: 0x684600, name: Speed/PSX2/bware/sce/ee/lib/filestub.c}
+    - {start: 0x586e40, type: .bss, vram: 0x685e40, name: Speed/PSX2/bware/sce/ee/lib/iopheap.c}
+    - {start: 0x587000, type: .bss, vram: 0x686000, name: Speed/PSX2/bware/sce/ee/lib/eeloadfile.c}
+    - {start: 0x587240, type: .bss, vram: 0x686240, name: Speed/PSX2/bware/sce/ee/lib/iopreset.c}
+    - {start: 0x5872c0, type: .bss, vram: 0x6862c0, name: Speed/PSX2/bware/sce/ee/lib/tlbtrap.c}
+    - {start: 0x588500, type: .bss, vram: 0x687500, name: Speed/PSX2/bware/sce/ee/lib/timer.c}
+    - {start: 0x58a500, type: .bss, vram: 0x689500, name: Speed/PSX2/bware/sce/ee/lib/timeralarm.c}
+    - {start: 0x58a908, type: .bss, vram: 0x689908, name: Speed/PSX2/bware/sce/ee/lib/iopnotify.c}
+    - {start: 0x58ab08, type: .bss, vram: 0x689b08, name: Speed/PSX2/bware/sce/ee/lib/deci2.c}
+    - {start: 0x58ab40, type: .bss, vram: 0x689b40, name: Speed/PSX2/bware/sce/ee/lib/mpc.c}
+    - {start: 0x58ad40, type: .bss, vram: 0x689d40, name: Speed/PSX2/bware/sce/ee/lib/cdvd000.c}
+    - {start: 0x58b000, type: .bss, vram: 0x68a000, name: Speed/PSX2/bware/sce/ee/lib/msifrpc.c}
+    - {start: 0x58b840, type: .bss, vram: 0x68a840, name: Speed/PSX2/lib/liblgdev.c}
+    - {start: 0x58bc80, type: .bss, vram: 0x68ac80, name: Speed/PSX2/bware/sce/ee/gcc/ee/vfprintf.c}
+    - {start: 0x58bda8, type: .bss, vram: 0x68ada8, name: Speed/PSX2/bware/sce/ee/gcc/ee/vfiprintf.c}
+    - {start: 0x58be28, type: .bss, vram: 0x68ae28, name: Speed/PSX2/bware/sce/ee/gcc/ee/vfwprintf.c}
+    - {start: 0x58bff8, type: .bss, vram: 0x68aff8, name: Speed/PSX2/bware/sce/ee/gcc/__main.c}
+    - {start: 0x58c000, type: .bss, vram: 0x68b000, name: Speed/PSX2/bware/sce/ee/gcc/dp-bit.c}
+    - {start: 0x58c018, type: .bss, vram: 0x68b018, name: Speed/PSX2/bware/sce/ee/gcc/fp-bit.c}
+    - {start: 0x58c028, type: .bss, vram: 0x68b028, name: Speed/PSX2/bware/sce/ee/gcc/_eh.c}
+    - {start: 0x58c048, type: .bss, vram: 0x68b048, name: Speed/PSX2/bware/sce/ee/gcc/frame.c}
+    - {start: 0x58c050, type: .bss, vram: 0x68b050, name: Packages/eathread/1.1.0/source/eathread_thread.cpp}
+    - {start: 0x58c550, type: .bss, vram: 0x68b550, name: rest}
     
   - [0x68c4db]
