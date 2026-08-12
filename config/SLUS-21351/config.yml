@@ -45,6 +45,8 @@ options:
 
   # Linker script options
   subalign: 8
+  ld_bss_is_noload: True
+  create_bss_pads: False
 
 segments:
   - name: main
@@ -361,7 +363,37 @@ segments:
     - [0x3bf738, asmtu, Packages/eathread/1.1.0/source/eathread_thread.cpp]
     # The VU microcode is kept out of the initial EE analysis.
     - [0x3bf880, pad]
-    - [0x3c3300, .rodata]
+    - [0x3c3300, .rodata, Speed/Indep/SourceLists/zAI.cpp]
+    - [0x3c8650, .rodata, Speed/Indep/SourceLists/zAnim.cpp]
+    - [0x3c9cd0, .rodata, Speed/Indep/SourceLists/zAttribSys.cpp]
+    - [0x3ca250, .rodata, Speed/Indep/SourceLists/zBWare.cpp]
+    - [0x3cad10, .rodata, Speed/Indep/SourceLists/zCamera.cpp]
+    - [0x3cc820, .rodata, Speed/Indep/SourceLists/zDebug.cpp]
+    - [0x3cc990, .rodata, Speed/Indep/SourceLists/zDynamics.cpp]
+    - [0x3cca80, .rodata, Speed/Indep/SourceLists/zEagl4Anim.cpp]
+    - [0x3ce330, .rodata, Speed/Indep/SourceLists/zEAXSound.cpp]
+    - [0x3d1090, .rodata, Speed/Indep/SourceLists/zEAXSound2.cpp]
+    - [0x3d51f0, .rodata, Speed/Indep/SourceLists/zEcstasy.cpp]
+    - [0x3d73a0, .rodata, Speed/Indep/SourceLists/zFe.cpp]
+    - [0x3dc9f0, .rodata, Speed/Indep/SourceLists/zFe2.cpp]
+    - [0x3e39b0, .rodata, Speed/Indep/SourceLists/zFEng.cpp]
+    - [0x3e4540, .rodata, Speed/Indep/SourceLists/zFoundation.cpp]
+    - [0x3e4ed0, .rodata, Speed/Indep/SourceLists/zGameModes.cpp]
+    - [0x3e52a0, .rodata, Speed/Indep/SourceLists/zGameplay.cpp]
+    - [0x3e6550, .rodata, Speed/Indep/SourceLists/zLua.cpp]
+    - [0x3e8d80, .rodata, Speed/Indep/SourceLists/zMain.cpp]
+    - [0x3ee3d0, .rodata, Speed/Indep/SourceLists/zMisc.cpp]
+    - [0x3f0580, .rodata, Speed/Indep/SourceLists/zMiscSmall.cpp]
+    - [0x3f0708, .rodata, Speed/Indep/SourceLists/zMission.cpp]
+    - [0x3f0770, .rodata, Speed/Indep/SourceLists/zPhysics.cpp]
+    - [0x3f4170, .rodata, Speed/Indep/SourceLists/zPhysicsBehaviors.cpp]
+    - [0x3fab20, .rodata, Speed/Indep/SourceLists/zPlatform.cpp]
+    - [0x3fbe30, .rodata, Speed/Indep/SourceLists/zRender.cpp]
+    - [0x3fc2c0, .rodata, Speed/Indep/SourceLists/zSim.cpp]
+    - [0x3fe080, .rodata, Speed/Indep/SourceLists/zSpeech.cpp]
+    - [0x4011e0, .rodata, Speed/Indep/SourceLists/zTrack.cpp]
+    - [0x401ce0, .rodata, Speed/Indep/SourceLists/zWorld.cpp]
+    - [0x4061b0, .rodata, Speed/Indep/SourceLists/zWorld2.cpp]
     - [0x41137a, pad]
     - start: 0x411380
       type: asm
@@ -469,7 +501,82 @@ segments:
     - [0x4ac484, .data, Speed/PSX2/bware/sce/ee/gcc/_eh.c]
     - [0x4acbd4, .data, Packages/eathread/1.1.0/source/eathread.cpp]
     - [0x4acc00, .sbss]
-    - [0x4acc24, .bss]
+    # BSS TU boundaries transferred from SLES and resolved against SLUS
+    # references. Missing SLES-only units remain anonymous between splits.
+    - {start: 0x4acc24, type: .bss, vram: 0x5abc80, name: Speed/Indep/SourceLists/zAI.cpp}
+    - {start: 0x4ace58, type: .bss, vram: 0x5abeb4, name: Speed/Indep/SourceLists/zAnim.cpp}
+    - {start: 0x4ace88, type: .bss, vram: 0x5abee4, name: Speed/Indep/SourceLists/zAttribSys.cpp}
+    - {start: 0x4ace9c, type: .bss, vram: 0x5abef8, name: Speed/Indep/SourceLists/zBWare.cpp}
+    - {start: 0x4ad084, type: .bss, vram: 0x5ac0e0, name: Speed/Indep/SourceLists/zCamera.cpp}
+    - {start: 0x4ad38c, type: .bss, vram: 0x5ac3e8, name: Speed/Indep/SourceLists/zDynamics.cpp}
+    - {start: 0x4ad99c, type: .bss, vram: 0x5ac9f8, name: Speed/Indep/SourceLists/zEagl4Anim.cpp}
+    - {start: 0x4ada44, type: .bss, vram: 0x5acaa0, name: Speed/Indep/SourceLists/zEAXSound.cpp}
+    - {start: 0x4adb1c, type: .bss, vram: 0x5acb78, name: Speed/Indep/SourceLists/zEAXSound2.cpp}
+    - {start: 0x4adc24, type: .bss, vram: 0x5acc80, name: Speed/Indep/SourceLists/zEcstasy.cpp}
+    - {start: 0x4adf24, type: .bss, vram: 0x5acf80, name: Speed/Indep/SourceLists/zFe.cpp}
+    - {start: 0x4ae45c, type: .bss, vram: 0x5ad4b8, name: Speed/Indep/SourceLists/zFe2.cpp}
+    - {start: 0x4ae72c, type: .bss, vram: 0x5ad788, name: Speed/Indep/SourceLists/zFEng.cpp}
+    - {start: 0x4ae954, type: .bss, vram: 0x5ad9b0, name: Speed/Indep/SourceLists/zFoundation.cpp}
+    - {start: 0x4aea24, type: .bss, vram: 0x5ada80, name: Speed/Indep/SourceLists/zGameModes.cpp}
+    - {start: 0x4aea34, type: .bss, vram: 0x5ada90, name: Speed/Indep/SourceLists/zGameplay.cpp}
+    - {start: 0x4aebdc, type: .bss, vram: 0x5adc38, name: Speed/Indep/SourceLists/zLua.cpp}
+    - {start: 0x4aecfc, type: .bss, vram: 0x5add58, name: Speed/Indep/SourceLists/zMain.cpp}
+    - {start: 0x4b18e4, type: .bss, vram: 0x5b0940, name: Speed/Indep/SourceLists/zMisc.cpp}
+    - {start: 0x4b19ec, type: .bss, vram: 0x5b0a48, name: Speed/Indep/SourceLists/zMiscSmall.cpp}
+    - {start: 0x4b19f4, type: .bss, vram: 0x5b0a50, name: Speed/Indep/SourceLists/zMission.cpp}
+    - {start: 0x4b1a24, type: .bss, vram: 0x5b0a80, name: Speed/Indep/SourceLists/zPhysics.cpp}
+    - {start: 0x4b1ea4, type: .bss, vram: 0x5b0f00, name: Speed/Indep/SourceLists/zPhysicsBehaviors.cpp}
+    - {start: 0x4b3b14, type: .bss, vram: 0x5b2b70, name: Speed/Indep/SourceLists/zPlatform.cpp}
+    - {start: 0x4b3d1c, type: .bss, vram: 0x5b2d78, name: Speed/Indep/SourceLists/zSim.cpp}
+    - {start: 0x4b46b4, type: .bss, vram: 0x5b3710, name: Speed/Indep/SourceLists/zSpeech.cpp}
+    - {start: 0x4b4a14, type: .bss, vram: 0x5b3a70, name: Speed/Indep/SourceLists/zTrack.cpp}
+    - {start: 0x4b775c, type: .bss, vram: 0x5b67b8, name: Speed/Indep/SourceLists/zWorld.cpp}
+    - {start: 0x4ba204, type: .bss, vram: 0x5b9260, name: Speed/Indep/SourceLists/zWorld2.cpp}
+    - {start: 0x4ba5bc, type: .bss, vram: 0x5b9618, name: Speed/Indep/SourceLists/zFeOverlay.cpp}
+
+    - {start: 0x4bada4, type: .bss, vram: 0x5b9e00, name: Speed/PSX2/bware/sce/ee/libmc.c}
+    - {start: 0x4bc3b4, type: .bss, vram: 0x5bb410, name: Packages/realmemcard/3.04.00-layer2/source/lib/cmn/locale.cpp}
+    - {start: 0x4bebb4, type: .bss, vram: 0x5bdc10, name: Packages/realmemcard/3.04.00-layer2/source/lib/ps2/ps2_interface.cpp}
+    - {start: 0x4bebcc, type: .bss, vram: 0x5bdc28, name: Packages/realmemcard/3.04.00-layer2/source/lib/ps2/ps2_public.cpp}
+    - {start: 0x4bec4c, type: .bss, vram: 0x5bdca8, name: egami/rcmp/dev/source/decoder/cmn/rcmpbase.cpp}
+    - {start: 0x4bec64, type: .bss, vram: 0x5bdcc0, name: egami/rcmp/dev/source/decoder/ps2/rcmp_ps2_sony_codec.cpp}
+    - {start: 0x4bf8c4, type: .bss, vram: 0x5be920, name: egami/rcmp/dev/source/decoder/cmn/rcmp_vp6_codec.cpp}
+    - {start: 0x4bf8e4, type: .bss, vram: 0x5be940, name: Speed/Indep/Libs/path/5.01.04/source/cmn/pathreal.cpp}
+    - {start: 0x4bf8f4, type: .bss, vram: 0x5be950, name: Speed/Indep/Libs/snd/9/source/library/cmn/saemsmbf.c}
+    - {start: 0x4bf98c, type: .bss, vram: 0x5be9e8, name: Speed/Indep/Libs/snd/9/source/library/cmn/salloc.c}
+    - {start: 0x4bfbfc, type: .bss, vram: 0x5bec58, name: Speed/Indep/Libs/snd/9/source/library/cmn/spktplay.c}
+    - {start: 0x4bffac, type: .bss, vram: 0x5bf008, name: Speed/Indep/Libs/snd/9/source/library/cmn/sst.c}
+    - {start: 0x4c0074, type: .bss, vram: 0x5bf0d0, name: Speed/Indep/Libs/snd/9/source/library/cmn/ssys.cpp}
+    - {start: 0x4c00a4, type: .bss, vram: 0x5bf100, name: Speed/Indep/Libs/snd/9/source/library/mix/sfxrevc.c}
+    - {start: 0x4c00bc, type: .bss, vram: 0x5bf118, name: Speed/Indep/Libs/snd/9/source/library/mix/smixer.c}
+    - {start: 0x4c0384, type: .bss, vram: 0x5bf3e0, name: Speed/Indep/Libs/snd/9/source/library/cmn/sdriver.c}
+    - {start: 0x4caf34, type: .bss, vram: 0x5c9f90, name: Speed/Indep/Libs/snd/9/source/library/cmn/dma.cpp}
+    - {start: 0x4caf6c, type: .bss, vram: 0x5c9fc8, name: Speed/Indep/Libs/snd/9/source/library/cmn/satospkr.c}
+    - {start: 0x4cc05c, type: .bss, vram: 0x5cb0b8, name: Speed/Indep/Libs/csis/dev/source/library/cmn/csis.cpp}
+    - {start: 0x4cc0a4, type: .bss, vram: 0x5cb100, name: Speed/Indep/Libs/realcore/6.24.00/source/file/ps2/cddvd_device.cpp}
+    - {start: 0x4cca6c, type: .bss, vram: 0x5cbac8, name: Speed/Indep/Libs/realcore/6.24.00/source/file/cmn/filesys.cpp}
+    - {start: 0x4cca84, type: .bss, vram: 0x5cbae0, name: Speed/Indep/Libs/realcore/6.24.00/source/file/cmn/filesysopts.cpp}
+    - {start: 0x4cca94, type: .bss, vram: 0x5cbaf0, name: Speed/Indep/Libs/realcore/6.24.00/source/file/cmn/hlafile.cpp}
+    - {start: 0x4ccabc, type: .bss, vram: 0x5cbb18, name: Speed/Indep/Libs/realcore/6.24.00/source/file/ps2/host0_device.cpp}
+    - {start: 0x4cdf24, type: .bss, vram: 0x5ccf80, name: Speed/PSX2/bware/sce/ee/lib/libdma.c}
+    - {start: 0x4cdf64, type: .bss, vram: 0x5ccfc0, name: Speed/PSX2/bware/sce/ee/lib/libpad.c}
+    - {start: 0x4ce624, type: .bss, vram: 0x5cd680, name: Speed/PSX2/bware/sce/ee/lib/thread.c}
+    - {start: 0x4cea34, type: .bss, vram: 0x5cda90, name: Speed/PSX2/bware/sce/ee/lib/kprintf.c}
+    - {start: 0x4ceae4, type: .bss, vram: 0x5cdb40, name: Speed/PSX2/bware/sce/ee/lib/sifcmd.c}
+    - {start: 0x4d05e4, type: .bss, vram: 0x5cf640, name: Speed/PSX2/bware/sce/ee/lib/sifrpc.c}
+    - {start: 0x4d0624, type: .bss, vram: 0x5cf680, name: Speed/PSX2/bware/sce/ee/lib/filestub.c}
+    - {start: 0x4d202c, type: .bss, vram: 0x5d1088, name: Speed/PSX2/bware/sce/ee/lib/eeloadfile.c}
+    - {start: 0x4d2264, type: .bss, vram: 0x5d12c0, name: Speed/PSX2/bware/sce/ee/lib/iopreset.c}
+    - {start: 0x4d5f24, type: .bss, vram: 0x5d4f80, name: Speed/PSX2/bware/sce/ee/lib/mpc.c}
+    - {start: 0x4d613c, type: .bss, vram: 0x5d5198, name: Speed/PSX2/bware/sce/ee/lib/cdvd000.c}
+    - {start: 0x4d63e4, type: .bss, vram: 0x5d5440, name: Speed/PSX2/lib/liblgdev.c}
+    - {start: 0x4d6824, type: .bss, vram: 0x5d5880, name: Speed/PSX2/bware/sce/ee/gcc/ee/vfprintf.c}
+    - {start: 0x4d694c, type: .bss, vram: 0x5d59a8, name: Speed/PSX2/bware/sce/ee/gcc/ee/vfiprintf.c}
+    - {start: 0x4d69cc, type: .bss, vram: 0x5d5a28, name: Speed/PSX2/bware/sce/ee/gcc/ee/vfwprintf.c}
+    - {start: 0x4d6ba4, type: .bss, vram: 0x5d5c00, name: Speed/PSX2/bware/sce/ee/gcc/dp-bit.c}
+    - {start: 0x4d6bcc, type: .bss, vram: 0x5d5c28, name: Speed/PSX2/bware/sce/ee/gcc/_eh.c}
+    - {start: 0x4d6bec, type: .bss, vram: 0x5d5c48, name: Speed/PSX2/bware/sce/ee/gcc/frame.c}
+    - {start: 0x4d70f4, type: .bss, vram: 0x5d6150, name: Packages/eathread/1.1.0/source/eathread_thread.cpp}
 
   # End of the loaded image plus EE BSS, derived from the ELF program header.
   - [0x5d6ecf]
