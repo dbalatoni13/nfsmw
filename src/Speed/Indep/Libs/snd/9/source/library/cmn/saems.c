@@ -1,5 +1,4 @@
 #include "csis/csis.h"
-#include "dolphin/os/OSCache.h"
 #include "snd/sndo.h"
 #include "sndcmn.h"
 #include "Speed/Indep/Libs/snd/9/extern/aemsdef.h"
@@ -8,6 +7,10 @@
 #include <types.h>
 #undef override
 #include <cstring>
+
+#ifdef EA_PLATFORM_GAMECUBE
+#include "dolphin/os/OSCache.h"
+#endif
 
 void SNDAEMSI_bankpitchmult(int handle, int value);
 void SNDAEMSI_banktimemult(int handle, int value);
@@ -1459,7 +1462,9 @@ void SNDAEMSI_resolvemodulebank(
         Snd::Util::AddVariableTimerClient(&sndaems.variabletimerclient);
     }
 
+#ifdef EA_PLATFORM_GAMECUBE
     ICInvalidateRange(pModuleBank, pModuleBank->totalsize);
     DCFlushRange(pModuleBank, pModuleBank->totalsize);
+#endif
     SNDSYS_leavecritical();
 }
