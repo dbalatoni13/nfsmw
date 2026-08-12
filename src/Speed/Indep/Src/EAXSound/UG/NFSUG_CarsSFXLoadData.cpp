@@ -10,15 +10,23 @@
 void CARSFX_Nitrous::SetupLoadData() {
     // TODO switch?
     eNFSSndNOSClass nbankindex = AEMS_NOS_00;
-    if (this->m_UGL != AEMS_LEVEL1) {
-        if (this->m_UGL > AEMS_LEVEL1) {
-            if (this->m_UGL == AEMS_LEVEL2) {
-                nbankindex = AEMS_NOS_01;
-            } else if (this->m_UGL == AEMS_LEVEL3) {
-                nbankindex = AEMS_NOS_01;
-            }
-        }
+    if (this->m_UGL == AEMS_LEVEL1) {
+        goto load;
     }
+    if (this->m_UGL < AEMS_LEVEL2) {
+        goto load;
+    }
+    if (this->m_UGL == AEMS_LEVEL2) {
+        goto bank1;
+    }
+    if (this->m_UGL == AEMS_LEVEL3) {
+        goto bank1;
+    } else {
+        goto load;
+    }
+bank1:
+    nbankindex = AEMS_NOS_01;
+load:
 
     this->LoadAsset(g_pEAXSound->GetAttributes().AEMS_NOSBanks(nbankindex), SNDPATH_NOS, SDT_AEMS_ASYNCSPUMEM, eBANK_SLOT_NONE, true);
 }
