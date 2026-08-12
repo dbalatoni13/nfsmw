@@ -258,9 +258,20 @@ void CARSFX_Turbo::UpdateBlowOff(float t) {
     if (this->m_pTurboBlowoffControl != nullptr) {
         this->m_BlowoffRampDown.Update(t);
 
-        if (this->m_pEAXCar->GetThrottle() > MIN_TORQUE_FOR_BLOWOFF && this->m_BlowoffRampDown.GetValue() == 1.0f &&
-            !this->m_pShiftingCtl->IsActive()) {
-            this->m_BlowoffRampDown.Initialize(1.0f, 0.0f, 150, LINEAR);
+        if (this->m_pEAXCar->GetThrottle() > MIN_TORQUE_FOR_BLOWOFF && this->m_BlowoffRampDown.GetValue() == 1.0f) {
+#ifdef EA_BUILD_A124
+            if (this->m_pShiftingCtl->eShiftState != SHFT_UP_LFO) {
+                if (this->m_pShiftingCtl->eShiftState != SHFT_NONE) {
+#else
+            if (!this->m_pShiftingCtl->IsActive()) {
+#endif
+                this->m_BlowoffRampDown.Initialize(1.0f, 0.0f, 150, LINEAR);
+#ifdef EA_BUILD_A124
+                }
+            }
+#else
+            }
+#endif
         }
 
         if (this->IsBlowOffDone()) {
