@@ -639,7 +639,7 @@ config.libs = [
             Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/sballoc.c"),
             Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/sbasync.c"),
             Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/sbasyncm.c"),
-            Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/sbhdrcpy.c"),
+            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/sbhdrcpy.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/sgetpvol.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/sbhdrsze.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/sbplay.c"),
