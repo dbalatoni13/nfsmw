@@ -15316,15 +15316,15 @@ GetDevice__Q29RealInput6Effect = 0x493378; // type:func
 GetInfo__Q29RealInput6EffectPQ39RealInput6Effect4Info = 0x493380; // type:func
 SetInfo__Q29RealInput6EffectPQ39RealInput6Effect4Info = 0x493388; // type:func
 ///////////////////////////////////////////////////////////////////
-// Speed/PSX2/bware/sce/ee/graph001.c
+// Speed/PSX2/bware/sce/ee/lib/graph001.c
 ///////////////////////////////////////////////////////////////////
 sceGsResetGraph = 0x493770; // type:func
 ///////////////////////////////////////////////////////////////////
-// Speed/PSX2/bware/sce/ee/graph019.c
+// Speed/PSX2/bware/sce/ee/lib/graph019.c
 ///////////////////////////////////////////////////////////////////
 sceGsSyncVCallback = 0x493910; // type:func
 ///////////////////////////////////////////////////////////////////
-// Speed/PSX2/bware/sce/ee/libdma.c
+// Speed/PSX2/bware/sce/ee/lib/libdma.c
 ///////////////////////////////////////////////////////////////////
 sceDmaGetChan = 0x493a88; // type:func
 sceDmaReset = 0x493ab0; // type:func
@@ -15334,7 +15334,7 @@ sceDmaPause = 0x493e30; // type:func
 sceDmaPutEnv = 0x493b90; // type:func
 dch = 0x5a7150; // size:0x28
 ///////////////////////////////////////////////////////////////////
-// Speed/PSX2/bware/sce/ee/libpad.c
+// Speed/PSX2/bware/sce/ee/lib/libpad.c
 ///////////////////////////////////////////////////////////////////
 scePadEnd = 0x494380; // type:func
 scePadSetActDirect = 0x494cc0; // type:func
@@ -15351,7 +15351,7 @@ scePadInfoPressMode = 0x494fc0; // type:func
 scePadEnterPressMode = 0x495020; // type:func
 scePadRead = 0x494700; // type:func
 ///////////////////////////////////////////////////////////////////
-// Speed/PSX2/bware/sce/ee/klib.c
+// Speed/PSX2/bware/sce/ee/lib/klib.c
 ///////////////////////////////////////////////////////////////////
 GetMemorySize = 0x495980; // type:func
 RemoveIntcHandler = 0x495220; // type:func
@@ -15415,14 +15415,14 @@ sceSifSetReg = 0x495920; // type:func
 sceSifGetReg = 0x495930; // type:func
 Deci2Call = 0x495950; // type:func
 ///////////////////////////////////////////////////////////////////
-// Speed/PSX2/bware/sce/ee/cache.c
+// Speed/PSX2/bware/sce/ee/lib/cache.c
 ///////////////////////////////////////////////////////////////////
 SyncDCache = 0x495a48; // type:func
 InvalidDCache = 0x495b78; // type:func
 _sceSDC = 0x4959a0; // type:func
 _sceIDC = 0x495ad0; // type:func
 ///////////////////////////////////////////////////////////////////
-// Speed/PSX2/bware/sce/ee/intr.c
+// Speed/PSX2/bware/sce/ee/lib/intr.c
 ///////////////////////////////////////////////////////////////////
 DisableIntc = 0x495c00; // type:func
 EnableIntc = 0x495c68; // type:func
@@ -15431,17 +15431,17 @@ iEnableIntc = 0x495da0; // type:func
 DisableDmac = 0x495cd0; // type:func
 EnableDmac = 0x495d38; // type:func
 ///////////////////////////////////////////////////////////////////
-// Speed/PSX2/bware/sce/ee/thread.c
+// Speed/PSX2/bware/sce/ee/lib/thread.c
 ///////////////////////////////////////////////////////////////////
 DelayThread = 0x496030; // type:func
 iWakeupThread = 0x495f90; // type:func
 ///////////////////////////////////////////////////////////////////
-// Speed/PSX2/bware/sce/ee/kprintf.c
+// Speed/PSX2/bware/sce/ee/lib/kprintf.c
 ///////////////////////////////////////////////////////////////////
 kprintf = 0x496a40; // type:func
 _printf = 0x496448; // type:func
 ///////////////////////////////////////////////////////////////////
-// Speed/PSX2/bware/sce/ee/sifcmd.c
+// Speed/PSX2/bware/sce/ee/lib/sifcmd.c
 ///////////////////////////////////////////////////////////////////
 sceSifExitCmd = 0x496db0; // type:func
 sceSifSendCmd = 0x497000; // type:func
@@ -15453,13 +15453,13 @@ sceSifAddCmdHandler = 0x496e00; // type:func
 sceSifGetSreg = 0x496b08; // type:func
 sceSifRemoveCmdHandler = 0x496e78; // type:func
 ///////////////////////////////////////////////////////////////////
-// Speed/PSX2/bware/sce/ee/sifrpc.c
+// Speed/PSX2/bware/sce/ee/lib/sifrpc.c
 ///////////////////////////////////////////////////////////////////
 sceSifBindRpc = 0x4978b8; // type:func
 sceSifCallRpc = 0x497a88; // type:func
 sceSifCheckStatRpc = 0x497c80; // type:func
 ///////////////////////////////////////////////////////////////////
-// Speed/PSX2/bware/sce/ee/filestub.c
+// Speed/PSX2/bware/sce/ee/lib/filestub.c
 ///////////////////////////////////////////////////////////////////
 sceFsReset = 0x498560; // type:func
 sceOpen = 0x498598; // type:func
@@ -15470,23 +15470,23 @@ sceWrite = 0x498e38; // type:func
 sceRemove = 0x4992b0; // type:func
 sceFsInit = 0x4982c8; // type:func
 ///////////////////////////////////////////////////////////////////
-// Speed/PSX2/bware/sce/ee/eeloadfile.c
+// Speed/PSX2/bware/sce/ee/lib/eeloadfile.c
 ///////////////////////////////////////////////////////////////////
 sceSifSearchModuleByName = 0x499b00; // type:func
 sceSifLoadModule = 0x499df0; // type:func
 sceSifLoadModuleBuffer = 0x499ba0; // type:func
 ///////////////////////////////////////////////////////////////////
-// Speed/PSX2/bware/sce/ee/iopreset.c
+// Speed/PSX2/bware/sce/ee/lib/iopreset.c
 ///////////////////////////////////////////////////////////////////
 sceSifSyncIop = 0x499f90; // type:func
 sceSifResetIop = 0x499e38; // type:func
 ///////////////////////////////////////////////////////////////////
-// Speed/PSX2/bware/sce/ee/tlbfunc.c
+// Speed/PSX2/bware/sce/ee/lib/tlbfunc.c
 ///////////////////////////////////////////////////////////////////
 InitTLBFunctions = 0x49c168; // type:func
 InitTLB = 0x49c240; // type:func
 ///////////////////////////////////////////////////////////////////
-// Speed/PSX2/bware/sce/ee/mpeg.c
+// Speed/PSX2/bware/sce/ee/lib/mpeg.c
 ///////////////////////////////////////////////////////////////////
 sceMpegDelete = 0x49c8a0; // type:func
 sceMpegAddBs = 0x49c8a8; // type:func
@@ -15503,7 +15503,7 @@ _dispatchMpegCallback = 0x49ca40; // type:func
 _dispatchMpegCbNodata = 0x49cab8; // type:func
 _alalcFree = 0x49cb30; // type:func
 ///////////////////////////////////////////////////////////////////
-// Speed/PSX2/bware/sce/ee/init.c
+// Speed/PSX2/bware/sce/ee/lib/init.c
 ///////////////////////////////////////////////////////////////////
 _Error = 0x49d2b0; // type:func
 _clearOnce = 0x49d140; // type:func
@@ -15516,7 +15516,7 @@ _initSeq = 0x49d550; // type:func
 _sequenceExtension = 0x49d9b8; // type:func
 _sequenceDisplayExtension = 0x49dae8; // type:func
 ///////////////////////////////////////////////////////////////////
-// Speed/PSX2/bware/sce/ee/mpc.c
+// Speed/PSX2/bware/sce/ee/lib/mpc.c
 ///////////////////////////////////////////////////////////////////
 _nextHeader = 0x4a1610; // type:func
 _updateRefImage = 0x4a2020; // type:func
@@ -15573,16 +15573,16 @@ _cpr8 = 0x4a2378; // type:func
 _isDirty = 0x5a8980; // size:0x28
 _showCount = 0x5a89a8; // size:0x40
 ///////////////////////////////////////////////////////////////////
-// Speed/PSX2/bware/sce/ee/csc.c
+// Speed/PSX2/bware/sce/ee/lib/csc.c
 ///////////////////////////////////////////////////////////////////
 _csc_storeRefImage = 0x4a3170; // type:func
 ///////////////////////////////////////////////////////////////////
-// Speed/PSX2/bware/sce/ee/libipu.c
+// Speed/PSX2/bware/sce/ee/lib/libipu.c
 ///////////////////////////////////////////////////////////////////
 sceIpuSync = 0x4a3720; // type:func
 sceIpuRestartDMA = 0x4a35d0; // type:func
 ///////////////////////////////////////////////////////////////////
-// Speed/PSX2/bware/sce/ee/cdvd000.c
+// Speed/PSX2/bware/sce/ee/lib/cdvd000.c
 ///////////////////////////////////////////////////////////////////
 sceCdInit = 0x4a4258; // type:func
 sceCdNcmdDiskReady = 0x4a3f40; // type:func
