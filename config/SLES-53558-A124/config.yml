@@ -662,10 +662,8 @@ segments:
     - [0x4357a0, asmtu, Packages/eathread/1.1.0/source/eathread_semaphore.cpp]
     - [0x435b00, asmtu, Packages/eathread/1.1.0/source/eathread.cpp]
     - [0x435c20, asmtu, Packages/eathread/1.1.0/source/eathread_thread.cpp]
-    # Map-backed library and runtime text splits
-
-    - [0x435d60, asmtu, Speed/PSX2/Runtime/vu0cap.s]
-    - [0x435d90, asmtu, Speed/PSX2/Runtime/vu1cap.s]
+    # Unrepresented runtime/VU data
+    - [0x435d60, pad]
     - [0x4397b0, asmtu, Speed/Indep/SourceLists/zOnline.cpp]
     - [0x439800, .rodata, Speed/Indep/SourceLists/zAI.cpp]
     - [0x43ED00, .rodata, Speed/Indep/SourceLists/zAnim.cpp]
