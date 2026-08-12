@@ -388,14 +388,22 @@ void SFXObj_MomentStrm::ProcessUpdate() {
 }
 
 void SFXObj_MomentStrm::ReceivePursuitBreaker(const MPursuitBreaker &message) {
+#ifdef EA_BUILD_A124
+    bool IsWorldDataStreaming(unsigned int strmhandle);
+    if (IsWorldDataStreaming(0) == 1) {
+        return;
+    }
+#endif
     int id = 0x40010010; // TODO magic
     SFXObj_PFEATrax *peatrax = static_cast<SFXObj_PFEATrax *>(g_pEAXSound->GetSFXBase_Object(id));
     eMUSIC_TYPE etype = peatrax->GetMusicType();
 
     if (message.GetStartBreaker()) {
+#ifndef EA_BUILD_A124
         bool IsWorldDataStreaming(unsigned int strmhandle);
 
         if (!IsWorldDataStreaming(0)) {
+#endif
             if (etype == eMUSIC_TYPE_INTERACTIVE) {
                 MGamePlayMoment(UMath::Vector4::kZero, UMath::Vector4::kZero, UMath::Vector4::kZero, 0,
                                 Attrib::Hash::aud_moment_strm::key_purs_break_start_music)
@@ -405,7 +413,9 @@ void SFXObj_MomentStrm::ReceivePursuitBreaker(const MPursuitBreaker &message) {
                                 Attrib::Hash::aud_moment_strm::key_purs_break_start_fx)
                     .Send(UCrc32("MomentStrm"));
             }
+#ifndef EA_BUILD_A124
         }
+#endif
 
         MMiscSound(3).Send(UCrc32("Snd"));
     } else {
