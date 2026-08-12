@@ -33,6 +33,7 @@ VERSIONS = [
     "GOWE69",  # 0
     "EUROPEGERMILESTONE",  # 1
     "SLES-53558-A124",  # 2
+    "SLUS-21351", # 3
 ]
 
 parser = argparse.ArgumentParser()
@@ -155,7 +156,7 @@ elif version_num in [1]:
     config.platform = Platform.X360
     config.dtk_tag = "v0.1.2"
     config.binutils_tag = "2.42-1"
-elif version_num in [2]:
+elif version_num in [2, 3]:
     config.platform = Platform.PS2
     config.binutils_tag = "2.45"
 

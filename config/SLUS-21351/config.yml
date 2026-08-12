@@ -1,0 +1,72 @@
+# Splat config for Black Edition USA (PS2)
+# SLUS-21351
+
+name: Need for Speed Most Wanted SLUS-21351 PS2
+sha1: 60289f3f8b643822a302720f9649ddc4ba55034b
+
+options:
+  basename: SLUS_213.51
+  target_path: orig/SLUS-21351/SLUS_213.51
+  elf_path: build/SLUS-21351/SLUS_213.51
+  base_path: ../..
+  platform: ps2
+  compiler: EEGCC
+
+  # Output paths
+  asm_path: build/SLUS-21351/asm
+  src_path: src
+  build_path: build/SLUS-21351/obj
+
+  # Assembly options
+  generate_asm_macros_files: True
+  named_regs_for_c_funcs: False
+  find_file_boundaries: False
+  disasm_unknown: True
+
+  # Rodata options
+  rodata_string_guesser_level: 0
+  suggestion_rodata_section_start: True
+  pair_rodata_to_text: False
+  migrate_rodata_to_functions: True
+
+  # Auto-generated analysis files
+  create_undefined_funcs_auto: True
+  undefined_funcs_auto_path: config/SLUS-21351/undefined_funcs_auto.txt
+  create_undefined_syms_auto: True
+  undefined_syms_auto_path: config/SLUS-21351/undefined_syms_auto.txt
+
+  # Manual symbols; this file can be populated after the first analysis
+  symbol_addrs_path: config/SLUS-21351/symbols.txt
+  ld_script_path: build/SLUS-21351/ldscript.ld
+
+  # PS2 ELF section order
+  section_order: [".text", ".vutext", ".noover", ".rodata", ".gcc_except_table", ".over", ".data", ".lit4", ".sdata", ".sbss", ".bss"]
+  auto_link_sections: [".rodata", ".data", ".lit4", ".sdata", ".sbss", ".bss"]
+
+  # Linker script options
+  subalign: 8
+
+segments:
+  - name: main
+    type: code
+    start: 0x001000
+    vram: 0x100000
+    bss_size: 0x2b250
+    subsegments:
+    - [0x001000, asm]
+    # The VU microcode is kept out of the initial EE analysis.
+    - [0x3bf880, pad]
+    - [0x3c3300, .rodata]
+    - [0x41137a, pad]
+    - start: 0x411380
+      type: asm
+      name: .over
+      linker_section_order: .over
+      linker_section: .over
+    - [0x437718, pad]
+    - [0x437780, .data]
+    - [0x4acc00, .sbss]
+    - [0x4acc24, .bss]
+
+  # End of the loaded image plus EE BSS, derived from the ELF program header.
+  - [0x5d6ecf]
