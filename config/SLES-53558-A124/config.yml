@@ -664,7 +664,7 @@ segments:
     - [0x435c20, asmtu, Packages/eathread/1.1.0/source/eathread_thread.cpp]
     # Unrepresented runtime/VU data
     - [0x435d60, pad]
-    - [0x4397b0, asmtu, Speed/Indep/SourceLists/zOnline.cpp]
+    - [0x4397b0, asmtu, .noover]
     - [0x439800, .rodata, Speed/Indep/SourceLists/zAI.cpp]
     - [0x43ED00, .rodata, Speed/Indep/SourceLists/zAnim.cpp]
     - [0x440540, .rodata, Speed/Indep/SourceLists/zAttribSys.cpp]
@@ -927,13 +927,32 @@ segments:
     - [0x4974c0, .rodata, Packages/eathread/1.1.0/source/eathread_semaphore.cpp]
     - [0x4974d0, .rodata, Packages/eathread/1.1.0/source/eathread_thread.cpp]
     - [0x497500, .gcc_except_table, Speed/PSX2/bware/sce/ee/gcc/exception.c]
-    - [0x497580, asmtu, Speed/Indep/SourceLists/zOnline.cpp]
-    - [0x4b09b0, asmtu, Speed/Indep/SourceLists/zOnline.cpp]
-    - [0x4b50c0, asmtu, Speed/Indep/SourceLists/zFeOverlay.cpp]
-
-    # TODO
-
-    - [0x4d7d50, asmtu, Speed/Indep/SourceLists/zFeOverlay.cpp]
+    - start: 0x497580
+      type: asmtu
+      name: Speed/Indep/SourceLists/zOnline.cpp
+      linker_section_order: .over
+      linker_section: .over
+    - start: 0x4b3bd8
+      type: vtables
+      name: .rodata
+      linker_section_order: .over
+      linker_section: .rodata
+    - start: 0x4b3d98
+      type: asmtu
+      name: .over_1
+      linker_section_order: .over
+      linker_section: .over
+    - start: 0x4b50c0
+      type: asmtu
+      name: Speed/Indep/SourceLists/zFeOverlay.cpp
+      linker_section_order: .over
+      linker_section: .over
+    - start: 0x4da098
+      type: vtables
+      name: .rodata_1
+      linker_section_order: .over
+      linker_section: .rodata
+    - [0x4daea8, pad]
     - [0x4daf00, .data, Speed/Indep/SourceLists/zAI.cpp]
     - [0x4dc3b0, .data, Speed/Indep/SourceLists/zAnim.cpp]
     - [0x4dcad0, .data, Speed/Indep/SourceLists/zAttribSys.cpp]
