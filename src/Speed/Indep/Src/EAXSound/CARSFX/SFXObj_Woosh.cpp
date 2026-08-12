@@ -84,17 +84,17 @@ SFXObj_Woosh::SFXObj_Woosh() {
     this->m_SndParams.Mag = 0;
     this->m_SndParams.RVerb = 0;
 #else
-    SND_Params *sndParams;
-    sndParams = &this->m_SndParams;
-    sndParams->ID = 0;
+    this->m_SndParams.Vol = 0x7FFF;
+    this->m_SndParams.Pitch = 0x1000;
+    this->m_SndParams.ID = 0;
 #endif
     this->m_pDriveByState = nullptr;
     this->m_pStitchData = nullptr;
     this->m_pWooshStich = nullptr;
 #ifdef EA_BUILD_A124
-    sndParams->Az = 0;
-    sndParams->Mag = 0;
-    sndParams->RVerb = 0;
+    this->m_SndParams.RVerb = 0;
+    this->m_SndParams.Az = 0;
+    this->m_SndParams.Mag = 0;
 #endif
 }
 
