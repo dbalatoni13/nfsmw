@@ -7,7 +7,7 @@ class IAttributeable {
   public:
     IAttributeable() {}
 
-    virtual void OnAttributeChange(const Attrib::Collection *collection, Attrib::Key attribkey);
+    virtual void OnAttributeChange(const Attrib::Collection *collection, Attrib::Key attribkey) = 0;
 
     static void Register(IAttributeable *who, Attrib::Key class_key) {}
 

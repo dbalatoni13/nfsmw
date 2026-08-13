@@ -451,7 +451,7 @@ bool SFXObj_PFEATrax::TestToPursuit() {
     if (pursuit_active) {
         m_CurPathEvent = 0;
         // TODO magic
-        StartInteractiveMusic(0x026E7282);
+        this->StartInteractiveMusic(0x026E7282);
         return true;
     }
 
