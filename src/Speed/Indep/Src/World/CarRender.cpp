@@ -2794,8 +2794,13 @@ static const uint32 CullBFace = 1;
 static const uint32 shadowBias = 1;
 
 // TODO
+#ifdef NON_MATCHING
+const float lbl_8040AD3C = 1.0f;
+const float lbl_8040AD4C = 0.0f;
+#else
 extern "C" const float lbl_8040AD3C;
 extern "C" const float lbl_8040AD4C;
+#endif
 
 // UNSOLVED
 bool CarRenderInfo::Render(eView *view, const bVector3 *world_position, const bMatrix4 *body_matrix, bMatrix4 *tire_matrices,

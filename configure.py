@@ -285,6 +285,9 @@ if config.platform == Platform.GC_WII:
         "SN_TARGET_NGC",
     ]
 
+    if config.non_matching:
+        cflags_base_prodg.append("-DNON_MATCHING")
+
     # Debug flags
     if args.debug:
         cflags_base_prodg.append("-DDEBUG=1")

@@ -70,22 +70,22 @@ void EasterEggs::ActivateEasterEgg(int egg) {
     ClearButtons();
     g_pEAXSound->PlayUISoundFX(UISND_COMMON_SELECT);
     if (!was_unlocked) {
-        if (EasterEggsTable[egg].type == EASTER_EGG_CARS) {
+        if (EasterEggsTable[egg].type == EASTER_EGG_UNLOCK_ALL_THINGS) {
             UnlockAllThings = 1;
-        } else if (EasterEggsTable[egg].type == EASTER_EGG_VISUAL_PARTS) {
+        } else if (EasterEggsTable[egg].type == EASTER_EGG_SKIP_DDAY) {
             SkipDDayRaces = 1;
             SkipCareerIntro = 1;
-        } else if (EasterEggsTable[egg].type == EASTER_EGG_PERF_PARTS) {
+        } else if (EasterEggsTable[egg].type == EASTER_EGG_DISABLE_MIKE_MANN_BUILD) {
             MikeMannBuild = 0;
-        } else if (EasterEggsTable[egg].type == EASTER_EGG_DRIFT_PHYSICS) {
+        } else if (EasterEggsTable[egg].type == EASTER_EGG_BURGER_KING) {
             // TODO magic
             cFEng::Get()->QueueGameMessage(0x98257537, nullptr, 0xff);
-        } else if (EasterEggsTable[egg].type == EASTER_EGG_TRACK) {
+        } else if (EasterEggsTable[egg].type == EASTER_EGG_CASTROL) {
             // TODO magic
             cFEng::Get()->QueueGameMessage(0x6521e5c2, nullptr, 0xff);
             FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(0);
             stable->AwardBonusCars();
-        } else if (EasterEggsTable[egg].type == EASTER_EGG_SPECIAL) {
+        } else if (EasterEggsTable[egg].type == EASTER_EGG_DEMO_CHEAT) {
             // TODO magic
             cFEng::Get()->QueueGameMessage(0xa6813b08, nullptr, 0xff);
             FEDatabase->GetCareerSettings()->TryAwardDemoMarker();
