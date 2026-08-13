@@ -643,18 +643,25 @@ config.libs = [
             Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/sbhdrsze.c"),
             Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/sbplay.c"),
             Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/sbremove.c"),
+            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/sbvalid.c"),
+            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/scheckpo.c"),
+            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/sclnt100.c"),
+            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/sctrldry.cpp"),
+            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/sdata.c"),
+            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/sfxlevel.c"),
+            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/slowpass.c"),
+            Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/smemcpy.c"),
+            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/smemdis.c"),
+            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/smemlmt.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/sgetpvol.c"),
-            Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/sbvalid.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/gc/sscalcfx.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/gc/ssdfx.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/gc/sdspmix.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/seffect.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/sevent.cpp"),
-            Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/sfxlevel.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/mix/sfxrevc.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/sgetdata.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/sinitdts.c"),
-            Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/smemcpy.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/smemman.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/mix/smixer.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/gc/snddrv.c"),
@@ -716,9 +723,6 @@ config.libs = [
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/sclcptch.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/sctlfilt.c"),
             Object(
-                NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/sctrldry.cpp"
-            ),
-            Object(
                 NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/sdownmix.cpp"
             ),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/mix/sfamplf.c"),
@@ -749,7 +753,6 @@ config.libs = [
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/slib.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/slinklst.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/mix/slinkmix.c"),
-            Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/slowpass.c"),
             Object(
                 NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/smemhigh.cpp"
             ),

@@ -840,6 +840,7 @@ Speed/Indep/Libs/snd/9/source/library/cmn/sdata.c:
 
 Speed/Indep/Libs/snd/9/source/library/cmn/sfxlevel.c:
 	.text       start:0x8035FDEC end:0x8035FEF0
+	.rodata     start:0x80412850 end:0x80412860
 
 Speed/Indep/Libs/snd/9/source/library/cmn/slowpass.c:
 	.text       start:0x8035FEF0 end:0x8035FF58

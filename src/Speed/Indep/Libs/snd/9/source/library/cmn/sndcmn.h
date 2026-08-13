@@ -556,6 +556,7 @@ void SNDPLATFORM_highpass(int voice, int cutofffreq);
 int SNDPLATFORM_getcurframe(int voice);
 unsigned int SNDPLATFORM_memalloc(int playloc, int size);
 unsigned int SNDPLATFORM_memfree(int playloc, unsigned int addr);
+int SNDPLATFORM_memlimits(int startaddr, int endaddr);
 int SNDPLATFORM_download(int playloc, void *psrc, void *pdst, int size);
 int SNDPLATFORM_downloadcomplete(int dlhandle);
 
@@ -622,6 +623,28 @@ int SNDbankheadercopy(void *pmem, int bhandle);
 
 // sbplay.c
 int SNDBANK_play(int bhandle, int patnum, SNDPLAYOPTS *pspo);
+
+// sbvalid.c
+int SNDbankremove(int bhandle);
+
+// sclnt100.c
+void SNDSYS_add100hzclient(void (*client)(void));
+void SNDSYS_remove100hzclient(void (*client)(void));
+
+// sctrldry.c
+int SNDCTRL_drylevel(int shandle, int level);
+
+// sfxlevel.c
+int SNDfxlevel(int shandle, int bus, int level);
+
+// slowpass.c
+int SNDCTRL_lowpass(int shandle, int lowpasscutoff);
+
+// smemlmt.c
+int SNDmemlimits(int startaddr, int endaddr);
+
+// smemlu.c
+int SNDmemlargestunused(int *paddr);
 
 // filesys_c
 int FILESYS_opstatus(int ophandle);

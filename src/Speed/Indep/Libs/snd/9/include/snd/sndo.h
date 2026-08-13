@@ -210,9 +210,16 @@ int SNDbankheadersize(int bhandle);
 
 int SNDBANK_play(int bhandle, int patnum, SNDPLAYOPTS *pspo);
 
-int SNDBANK_patchinfo(int bhandle, int patnum, SNDSAMPLEFORMAT *pssf, SNDSAMPLEATTR *pssa, SNDSAMPLEDESC *pssd);
+int SNDbankremove(int bhandle);
+
+void SNDSYS_add100hzclient(void (*client)(void));
+void SNDSYS_remove100hzclient(void (*client)(void));
 
 int SNDCTRL_drylevel(int shandle, int level);
+
+int SNDfxlevel(int shandle, int bus, int level);
+
+int SNDBANK_patchinfo(int bhandle, int patnum, SNDSAMPLEFORMAT *pssf, SNDSAMPLEATTR *pssa, SNDSAMPLEDESC *pssd);
 
 int SNDCTRL_getprogvol(int shandle);
 
@@ -237,8 +244,6 @@ int SNDSTRM_lowpass(int sndstreamhandle, int lowpasscutoff);
 void SNDSYS_entercritical();
 void SNDSYS_leavecritical();
 void SNDSYS_service();
-void SNDSYS_remove100hzclient(void (*client)());
-void SNDSYS_add100hzclient(void (*client)());
 
 int SNDtimeremaining(int shandle);
 
