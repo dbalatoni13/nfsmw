@@ -516,6 +516,9 @@ SNDSTREAMCHANNEL *SNDSTRMI_getstreamptr(int sndstreamhandle);
 // salloc.c
 int SNDVOICEI_get(int handle);
 
+// sbadd.c
+void SNDBANKI_userdatacallback(SNDIPATCHHEADER *pph, int shandle, int type);
+
 // sballoc.c
 TAGGEDPATCH *SNDBANKI_getppatch(BANKVER5 *pb, int patnum);
 
@@ -552,6 +555,7 @@ void SNDPLATFORM_lowpass(int voice, int cutofffreq);
 void SNDPLATFORM_highpass(int voice, int cutofffreq);
 int SNDPLATFORM_getcurframe(int voice);
 unsigned int SNDPLATFORM_memalloc(int playloc, int size);
+unsigned int SNDPLATFORM_memfree(int playloc, unsigned int addr);
 int SNDPLATFORM_download(int playloc, void *psrc, void *pdst, int size);
 int SNDPLATFORM_downloadcomplete(int dlhandle);
 
@@ -570,6 +574,12 @@ int SNDBANKI_asyncresolvepatch(int playloc, TAGGEDPATCH *ptp, char *pdata, int *
 
 // stpparse.c
 int SNDI_parsetimbre(void **pptp, SNDIPATCHHEADER *pph);
+
+// scheckpo.c
+void SNDI_checkplayopts(SNDPLAYOPTS *pspo);
+
+// stagpat.c
+int SNDBANKI_playpatch(void *psampledata, TAGGEDPATCH *ptp, int bhandle, int patnum, struct SNDPLAYOPTS *pspo);
 
 #ifdef __cplusplus
 extern "C" {
@@ -604,14 +614,17 @@ int SNDBANK_asyncdone();
 int SNDBANK_asyncloadmem(int *pbhandle, void *pbank);
 int SNDBANK_asyncloadmemdone();
 
+// sbhdrsze.c
+int SNDbankheadersize(int bhandle);
+
 // sbhdrcpy.c
 int SNDbankheadercopy(void *pmem, int bhandle);
 
-// filesys_c
-int FILESYS_opstatus(int ophandle);
-
 // sbplay.c
 int SNDBANK_play(int bhandle, int patnum, SNDPLAYOPTS *pspo);
+
+// filesys_c
+int FILESYS_opstatus(int ophandle);
 
 // sstop.c
 int SNDstop(int shandle);
@@ -627,12 +640,6 @@ int SNDbankadd(int *pbhandle, void *pbank);
 
 // sbremove.c
 int SNDbankremove(int bhandle);
-
-// sbhdrcpy.c
-int SNDbankheadercopy(void *pmem, int bhandle);
-
-// sbhdrsze.c
-int SNDbankheadersize(int bhandle);
 
 #ifdef __cplusplus
 }

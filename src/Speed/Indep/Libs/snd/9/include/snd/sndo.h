@@ -206,6 +206,10 @@ int SNDBANK_asyncloadmemdone();
 
 int SNDbankheadercopy(void *pmem, int bhandle);
 
+int SNDbankheadersize(int bhandle);
+
+int SNDBANK_play(int bhandle, int patnum, SNDPLAYOPTS *pspo);
+
 int SNDBANK_patchinfo(int bhandle, int patnum, SNDSAMPLEFORMAT *pssf, SNDSAMPLEATTR *pssa, SNDSAMPLEDESC *pssd);
 
 int SNDCTRL_drylevel(int shandle, int level);
