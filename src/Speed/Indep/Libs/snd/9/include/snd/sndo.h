@@ -268,6 +268,8 @@ int SNDmemlimits(int startaddr, int endaddr);
 
 int SNDmemlargestunused(int *paddr);
 
+int SNDfxlevel(int shandle, int bus, int level);
+
 int SNDpitchmult(int shandle, int pitchmult);
 
 int SNDfxlevel(int shandle, int bus, int level);
