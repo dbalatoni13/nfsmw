@@ -225,6 +225,10 @@ int SNDCTRL_getprogvol(int shandle);
 
 int SNDCTRL_lowpass(int shandle, int lowpasscutoff);
 
+int SNDmemlimits(int startaddr, int endaddr);
+
+int SNDmemlargestunused(int *paddr);
+
 int SNDfxlevel(int shandle, int bus, int level);
 
 int SNDpitchmult(int shandle, int pitchmult);

@@ -557,6 +557,7 @@ int SNDPLATFORM_getcurframe(int voice);
 unsigned int SNDPLATFORM_memalloc(int playloc, int size);
 unsigned int SNDPLATFORM_memfree(int playloc, unsigned int addr);
 int SNDPLATFORM_memlimits(int startaddr, int endaddr);
+int SNDPLATFORM_memlargestunused(int *paddr);
 int SNDPLATFORM_download(int playloc, void *psrc, void *pdst, int size);
 int SNDPLATFORM_downloadcomplete(int dlhandle);
 
