@@ -650,7 +650,7 @@ config.libs = [
             Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/sdata.c"),
             Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/sfxlevel.c"),
             Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/slowpass.c"),
-            Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/smemcpy.c"),
+            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/smemcpy.c"),
             Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/smemdis.c"),
             Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/smemlmt.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/sgetpvol.c"),
