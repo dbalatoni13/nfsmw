@@ -1403,7 +1403,13 @@ int TrackStreamer::DoHoleFilling(int largest_free) {
         }
     } else {
         int best_amount_moved = 0x7FFFFFFF;
-        for (int filler_method = 1; filler_method < 6; filler_method++) {
+        for (int filler_method = 1; filler_method <
+#ifdef EA_BUILD_A124
+             5
+#else
+             6
+#endif
+             ; filler_method++) {
             int amount_moved;
             int num_hole_movements = BuildHoleMovements(hole_movement_table, 0x80, filler_method, largest_free, &amount_moved, best_amount_moved);
             if (num_hole_movements > 0 && amount_moved < best_amount_moved) {
