@@ -92,6 +92,13 @@ eViewPlatInfo *eViewPlatInterface::GimmeMyViewPlatInfo(int view_id) {
     return &ViewPlatInfoTable[view_id];
 }
 
+void eViewPlatInterface::GetScreenPosition(bVector3 *screen_position, const bVector3 *world_position) {
+    eViewPlatInfo *plat_info = GetPlatInfo();
+
+    eRotTransPers(screen_position, world_position, &plat_info->WorldViewMatrix, &plat_info->ViewScreenMatrix, 0.0f, 0.0f, 640.0f, 480.0f, 0.0f,
+                  1.0f);
+}
+
 void eSubmitMesh(eStripEntry *mesh, unsigned short entries, eView *view, eSolid *solid, uint32 flags, TextureInfo *texture_info,
                  bMatrix4 *local_world, eLightContext *light_context, eLightMaterial *light_material, bMatrix4 *blending_matrices,
                  eDataRenderDynamic *drd) {
