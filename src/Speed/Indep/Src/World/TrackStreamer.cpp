@@ -306,7 +306,9 @@ void *TSMemoryPool::Malloc(int size, const char *debug_name, bool best_fit, bool
         if (debug_name) {
             bStrNCpy(packet.DebugText, debug_name, sizeof(packet.DebugText) - 1);
         }
-        int extra_len = bStrLen(packet.DebugText) + 0x15;
+        int extra_len = sizeof(packet.DebugText) - 1;
+        extra_len -= bStrLen(packet.DebugText);
+        extra_len = sizeof(packet) - extra_len;
         bFunkCallASync("CODEINE", 0x1c, &packet, extra_len);
     }
 
