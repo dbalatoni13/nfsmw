@@ -1893,9 +1893,9 @@ void *TrackStreamer::AllocateUserMemory(int size, const char *debug_name, int of
 }
 
 void TrackStreamer::FreeUserMemory(void *mem) {
-    int free_before = pMemoryPool->GetAmountFree();
+    pMemoryPool->GetAmountFree();
     bFree(mem);
-    int size = pMemoryPool->GetAmountFree();
+    pMemoryPool->GetAmountFree();
 }
 
 bool TrackStreamer::IsUserMemory(void *mem) {
