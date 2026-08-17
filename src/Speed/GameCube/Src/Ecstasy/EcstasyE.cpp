@@ -33,7 +33,7 @@ void eWaitUntilRenderingDone();
 void InitSlotPoolsEx();
 void eSetScissor(int xOrig, int yOrig, int wd, int ht);
 void eSetCopyFilter(FILTER_ID filter_index, bool enable);
-void eSetBackgroundColor(_GXColor clr);
+void eSetBackgroundColor(GXColor clr);
 void __InitRenderMode();
 void __InitMem();
 void __InitGX();
@@ -301,7 +301,7 @@ EVIEWMODE eGetCurrentViewMode() {
 EVIEWMODE RenderingViewMode = EVIEWMODE_NONE;
 EVIEWMODE TweakerViewMode = EVIEWMODE_NONE;
 
-// NON_MATCHING: 69.7% - GetCameraMover inline folds differently here than in eUpdateViewMode
+// UNSOLVED, GetCameraMover inline folds differently here than in eUpdateViewMode
 void MaybeChangeViewMode() {
     eView *viewp1;
     eView *viewp2;
@@ -431,12 +431,12 @@ void MaybeChangeViewMode() {
             targetp2->ScissorH = 0;
             targetp2->FrameWidth = 0;
             targetp2->FrameHeight = 0;
-            targetr1->FrameHeight = 0x40;
+            targetr1->FrameHeight = 64;
             targetr1->ScissorX = 0;
             targetr1->ScissorY = 0;
-            targetr1->ScissorW = 0x40;
-            targetr1->ScissorH = 0x40;
-            targetr1->FrameWidth = 0x40;
+            targetr1->ScissorW = 64;
+            targetr1->ScissorH = 64;
+            targetr1->FrameWidth = 64;
             targetp1->SetActive(1);
             viewp1->SetActive(1);
             targetp2->SetActive(0);
@@ -741,7 +741,7 @@ float CalculateH(unsigned short alpha) {
     return 10.0f;
 }
 
-// NON_MATCHING: 95.4% - camera/render_target get r30/r28 swapped, fovscl double-store folded
+// UNSOLVED, camera/render_target get r30/r28 swapped, fovscl double-store folded
 void CreateViewMatricies(eView *view, float force_near_z, float force_far_z, float force_screen_far_z) {
     Camera *camera;
     eRenderTarget *render_target = view->GetRenderTarget0();
@@ -808,10 +808,12 @@ void CreateViewMatricies(eView *view, float force_near_z, float force_far_z, flo
                    view->FarZ);
 
     eCopyMatrix(view->GetPlatInfo()->GetWorldViewMatrix(), camera->GetCameraMatrix());
+    // TODO this is weird
     *reinterpret_cast<unsigned int *>(&view->GetPlatInfo()->WorldViewMatrix.v0.y) ^= 0x80000000;
     *reinterpret_cast<unsigned int *>(&view->GetPlatInfo()->WorldViewMatrix.v1.y) ^= 0x80000000;
     *reinterpret_cast<unsigned int *>(&view->GetPlatInfo()->WorldViewMatrix.v2.y) ^= 0x80000000;
     *reinterpret_cast<unsigned int *>(&view->GetPlatInfo()->WorldViewMatrix.v3.y) ^= 0x80000000;
+
     *reinterpret_cast<unsigned int *>(&view->GetPlatInfo()->WorldViewMatrix.v0.z) ^= 0x80000000;
     *reinterpret_cast<unsigned int *>(&view->GetPlatInfo()->WorldViewMatrix.v1.z) ^= 0x80000000;
     *reinterpret_cast<unsigned int *>(&view->GetPlatInfo()->WorldViewMatrix.v2.z) ^= 0x80000000;
@@ -874,14 +876,15 @@ extern cSphereMap SphereMap;
 extern cSpecularMap SpecularMap;
 extern cQuarterSizeMap QSizeScratchPad;
 
-const char *EnvmapTargetNames[7] = {"TARGET_ENVMAP0F", "TARGET_ENVMAP0R", "TARGET_ENVMAP0B", "TARGET_ENVMAP0L", "TARGET_ENVMAP0U", "TARGET_ENVMAP0D", "TARGET_ENVMAP0_FULL"};
+const char *EnvmapTargetNames[7] = {"TARGET_ENVMAP0F", "TARGET_ENVMAP0R", "TARGET_ENVMAP0B",    "TARGET_ENVMAP0L",
+                                    "TARGET_ENVMAP0U", "TARGET_ENVMAP0D", "TARGET_ENVMAP0_FULL"};
 
 // NON_MATCHING: 81.7% - redundant background_color stores get CSE'd, one GPR pseudo shift
 void SetScreenBuffers() {
     bMatrix4 *identity = eGetIdentityMatrix();
     int frame_width = ScreenWidth;
     int frame_height = ScreenHeight;
-    _GXColor background_color = {0, 0, 0, 0xFF};
+    GXColor background_color = {0, 0, 0, 0xFF};
 
     {
         eRenderTarget *rc = eGetRenderTarget(TARGET_FLAYER);
@@ -889,7 +892,7 @@ void SetScreenBuffers() {
         rc->SetID(TARGET_FLAYER);
         rc->SetName("TARGET_FLAYER");
         rc->SetActive(1);
-        rc->SetCopyFilterID(static_cast<FILTER_ID>(1));
+        rc->SetCopyFilterID(FILTER_DEFAULT);
         background_color.r = 0;
         background_color.a = 0xFF;
         background_color.g = 0;
@@ -911,7 +914,7 @@ void SetScreenBuffers() {
         rc->SetID(TARGET_PLAYER1);
         rc->SetName("TARGET_PLAYER1");
         rc->SetActive(1);
-        rc->SetCopyFilterID(static_cast<FILTER_ID>(1));
+        rc->SetCopyFilterID(FILTER_DEFAULT);
         background_color.r = 0;
         background_color.a = 0xFF;
         background_color.g = 0;
@@ -935,7 +938,7 @@ void SetScreenBuffers() {
         rc->SetID(TARGET_PLAYER2);
         rc->SetName("TARGET_PLAYER2");
         rc->SetActive(0);
-        rc->SetCopyFilterID(static_cast<FILTER_ID>(1));
+        rc->SetCopyFilterID(FILTER_DEFAULT);
         background_color.r = 0;
         background_color.a = 0xFF;
         background_color.g = 0;
@@ -957,7 +960,7 @@ void SetScreenBuffers() {
         rc->SetID(TARGET_PLAYER1_RVM);
         rc->SetName("TARGET_PLAYER1_RVM");
         rc->SetActive(0);
-        rc->SetCopyFilterID(static_cast<FILTER_ID>(1));
+        rc->SetCopyFilterID(FILTER_DEFAULT);
         background_color.r = 0;
         background_color.a = 0xFF;
         background_color.g = 0;
@@ -970,7 +973,7 @@ void SetScreenBuffers() {
         rc->ScissorH = SphereMap.cubeBuffer[0].height;
         rc->FrameWidth = SphereMap.cubeBuffer[0].width;
         rc->FrameHeight = SphereMap.cubeBuffer[0].height;
-        rc->FrameAddress = reinterpret_cast<int>(SphereMap.cubeBuffer[0].pCaptureTexture);
+        rc->FrameAddress = reinterpret_cast<intptr_t>(SphereMap.cubeBuffer[0].pCaptureTexture);
     }
 
     {
@@ -979,7 +982,7 @@ void SetScreenBuffers() {
         rc->SetID(TARGET_PLAYER1_SPECULAR);
         rc->SetName("TARGET_PLAYER1_SPECULAR");
         rc->SetActive(1);
-        rc->SetCopyFilterID(static_cast<FILTER_ID>(5));
+        rc->SetCopyFilterID(FILTER_REFLECTION);
         background_color.r = 0;
         background_color.g = 0;
         background_color.b = 0;
@@ -992,7 +995,7 @@ void SetScreenBuffers() {
         rc->ScissorH = SpecularMap.specBuffer[0].height;
         rc->FrameWidth = SpecularMap.specBuffer[0].width;
         rc->FrameHeight = SpecularMap.specBuffer[0].height;
-        rc->FrameAddress = reinterpret_cast<int>(SpecularMap.specBuffer[0].pCaptureTexture);
+        rc->FrameAddress = reinterpret_cast<intptr_t>(SpecularMap.specBuffer[0].pCaptureTexture);
     }
 
     {
@@ -1001,7 +1004,7 @@ void SetScreenBuffers() {
         rc->SetID(TARGET_PLAYER2_SPECULAR);
         rc->SetName("TARGET_PLAYER2_SPECULAR");
         rc->SetActive(0);
-        rc->SetCopyFilterID(static_cast<FILTER_ID>(1));
+        rc->SetCopyFilterID(FILTER_DEFAULT);
         background_color.r = 0;
         background_color.g = 0;
         background_color.b = 0;
@@ -1014,7 +1017,7 @@ void SetScreenBuffers() {
         rc->ScissorH = SpecularMap.specBuffer[1].height;
         rc->FrameWidth = SpecularMap.specBuffer[1].width;
         rc->FrameHeight = SpecularMap.specBuffer[1].height;
-        rc->FrameAddress = reinterpret_cast<int>(SpecularMap.specBuffer[1].pCaptureTexture);
+        rc->FrameAddress = reinterpret_cast<intptr_t>(SpecularMap.specBuffer[1].pCaptureTexture);
     }
 
     {
@@ -1023,7 +1026,7 @@ void SetScreenBuffers() {
         rc->SetID(TARGET_QUADRANT_TOP_LEFT);
         rc->SetName("TARGET_QUADRANT_TOP_LEFT");
         rc->SetActive(0);
-        rc->SetCopyFilterID(static_cast<FILTER_ID>(0));
+        rc->SetCopyFilterID(FILTER_OFF);
         background_color.r = 0;
         background_color.g = 0;
         background_color.b = 0;
@@ -1036,7 +1039,7 @@ void SetScreenBuffers() {
         rc->ScissorH = QSizeScratchPad.quarterSizeBuffer.height;
         rc->FrameWidth = QSizeScratchPad.quarterSizeBuffer.width;
         rc->FrameHeight = QSizeScratchPad.quarterSizeBuffer.height;
-        rc->FrameAddress = reinterpret_cast<int>(QSizeScratchPad.quarterSizeBuffer.pCaptureTexture);
+        rc->FrameAddress = reinterpret_cast<intptr_t>(QSizeScratchPad.quarterSizeBuffer.pCaptureTexture);
     }
 
     {
@@ -1045,7 +1048,7 @@ void SetScreenBuffers() {
         rc->SetID(TARGET_QUADRANT_TOP_RIGHT);
         rc->SetName("TARGET_QUADRANT_TOP_RIGHT");
         rc->SetActive(0);
-        rc->SetCopyFilterID(static_cast<FILTER_ID>(0));
+        rc->SetCopyFilterID(FILTER_OFF);
         background_color.r = 0;
         background_color.g = 0;
         background_color.b = 0;
@@ -1058,7 +1061,7 @@ void SetScreenBuffers() {
         rc->ScissorH = QSizeScratchPad.quarterSizeBuffer.height;
         rc->FrameWidth = QSizeScratchPad.quarterSizeBuffer.width;
         rc->FrameHeight = QSizeScratchPad.quarterSizeBuffer.height;
-        rc->FrameAddress = reinterpret_cast<int>(QSizeScratchPad.quarterSizeBuffer.pCaptureTexture);
+        rc->FrameAddress = reinterpret_cast<intptr_t>(QSizeScratchPad.quarterSizeBuffer.pCaptureTexture);
     }
 
     {
@@ -1067,7 +1070,7 @@ void SetScreenBuffers() {
         rc->SetID(TARGET_QUADRANT_BOTTOM_LEFT);
         rc->SetName("TARGET_QUADRANT_BOTTOM_LEFT");
         rc->SetActive(0);
-        rc->SetCopyFilterID(static_cast<FILTER_ID>(0));
+        rc->SetCopyFilterID(FILTER_OFF);
         background_color.r = 0;
         background_color.g = 0;
         background_color.b = 0;
@@ -1080,7 +1083,7 @@ void SetScreenBuffers() {
         rc->ScissorH = QSizeScratchPad.quarterSizeBuffer.height;
         rc->FrameWidth = QSizeScratchPad.quarterSizeBuffer.width;
         rc->FrameHeight = QSizeScratchPad.quarterSizeBuffer.height;
-        rc->FrameAddress = reinterpret_cast<int>(QSizeScratchPad.quarterSizeBuffer.pCaptureTexture);
+        rc->FrameAddress = reinterpret_cast<intptr_t>(QSizeScratchPad.quarterSizeBuffer.pCaptureTexture);
     }
 
     {
@@ -1089,7 +1092,7 @@ void SetScreenBuffers() {
         rc->SetID(TARGET_QUADRANT_BOTTOM_RIGHT);
         rc->SetName("TARGET_QUADRANT_BOTTOM_RIGHT");
         rc->SetActive(0);
-        rc->SetCopyFilterID(static_cast<FILTER_ID>(0));
+        rc->SetCopyFilterID(FILTER_OFF);
         background_color.r = 0;
         background_color.g = 0;
         background_color.b = 0;
@@ -1102,7 +1105,7 @@ void SetScreenBuffers() {
         rc->ScissorH = QSizeScratchPad.quarterSizeBuffer.height;
         rc->FrameWidth = QSizeScratchPad.quarterSizeBuffer.width;
         rc->FrameHeight = QSizeScratchPad.quarterSizeBuffer.height;
-        rc->FrameAddress = reinterpret_cast<int>(QSizeScratchPad.quarterSizeBuffer.pCaptureTexture);
+        rc->FrameAddress = reinterpret_cast<intptr_t>(QSizeScratchPad.quarterSizeBuffer.pCaptureTexture);
     }
 
     for (int i = 0; i < 6; i++) {
@@ -1111,7 +1114,7 @@ void SetScreenBuffers() {
         rc->SetID(i + 10);
         rc->SetName(EnvmapTargetNames[i]);
         rc->SetActive(1);
-        rc->SetCopyFilterID(static_cast<FILTER_ID>(3));
+        rc->SetCopyFilterID(FILTER_CUBE_FACES);
         background_color.r = 0;
         background_color.g = 0;
         background_color.b = 0;
@@ -1124,7 +1127,7 @@ void SetScreenBuffers() {
         rc->ScissorH = SphereMap.cubeBuffer[i].height - 2;
         rc->FrameWidth = SphereMap.cubeBuffer[i].width;
         rc->FrameHeight = SphereMap.cubeBuffer[i].height;
-        rc->FrameAddress = reinterpret_cast<int>(SphereMap.cubeBuffer[i].pCaptureTexture);
+        rc->FrameAddress = reinterpret_cast<intptr_t>(SphereMap.cubeBuffer[i].pCaptureTexture);
     }
 
     for (int i = 0; i < 17; i++) {
@@ -1365,7 +1368,7 @@ void eDLSaveContext(Bool bEnabled) {
     }
 }
 
-void eSetBackgroundColor(_GXColor clr) {
+void eSetBackgroundColor(GXColor clr) {
     GXSetCopyClear(clr, 0x00FFFFFF);
 }
 
@@ -1451,9 +1454,9 @@ void eExStartup(void) {
     eInitContrastSurface();
     eInitHorizonFogDisplayList();
 
-    PSMTXScale(g_m1, 0.5f, -0.5f, 0.0f);
-    PSMTXTrans(g_m0, 0.5f, 0.5f, 1.0f);
-    PSMTXConcat(g_m0, g_m1, g_ScreenPositionMatrix);
+    MTXScale(g_m1, 0.5f, -0.5f, 0.0f);
+    MTXTrans(g_m0, 0.5f, 0.5f, 1.0f);
+    MTXConcat(g_m0, g_m1, g_ScreenPositionMatrix);
 
     eDEMOInitROMFont();
 

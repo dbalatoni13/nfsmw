@@ -9,25 +9,26 @@ void CreateViewMatricies(eView *view, float force_near_z, float force_far_z, flo
 
 eViewPlatInfo ViewPlatInfoTable[NUM_EVIEWS];
 
+// TODO
 int GetPlaneState(const bVector4 *plane, const bVector3 *point) {
     float dot;
 
-    {
-        register double FP0, FP1, FP2, FP3, FP4, FP5, FP6, FP7, FP8, FP9, FP10, FP11;
+    double FP0, FP1, FP2, FP3, FP4, FP5, FP6, FP7, FP8, FP9, FP10, FP11;
 
-        asm("psq_l 0, 0(3), 0, 0\n"
-            "addi 3, 3, 8\n"
-            "psq_l 12, 0(3), 0, 0\n"
-            "psq_l 11, 0(4), 0, 0\n"
-            "addi 4, 4, 8\n"
-            "psq_l 13, 0(4), 1, 1\n"
-            "ps_mul 12, 12, 13\n"
-            "ps_mul 0, 0, 11\n"
-            "ps_add 0, 0, 12\n"
-            "ps_merge11 13, 0, 13\n"
-            "ps_add 0, 0, 13\n"
-            "psq_st 0, %0, 0, 0" : "=m"(dot));
-    }
+    asm("psq_l 0, 0(3), 0, 0\n"
+        "addi 3, 3, 8\n"
+        "psq_l 12, 0(3), 0, 0\n"
+        "psq_l 11, 0(4), 0, 0\n"
+        "addi 4, 4, 8\n"
+        "psq_l 13, 0(4), 1, 1\n"
+        "ps_mul 12, 12, 13\n"
+        "ps_mul 0, 0, 11\n"
+        "ps_add 0, 0, 12\n"
+        "ps_merge11 13, 0, 13\n"
+        "ps_add 0, 0, 13\n"
+        "psq_st 0, %0, 0, 0"
+        : "=m"(dot));
+
     return dot > 0.0f;
 }
 
@@ -39,7 +40,7 @@ void TransformBound(bMatrix4 *mat, bVector3 *min, bVector3 *max) {
     float *jmat;
 
     {
-        double *src_xy = reinterpret_cast<double *>(&mat->v3.x);
+        double *src_xy = reinterpret_cast<double *>(&mat->v3);
 
         asm("psq_l 0, 0(%0), 0, 0" : : "b"(src_xy));
         asm("psq_st 0, 8(1), 0, 0");
@@ -96,7 +97,7 @@ void TransformBound(bMatrix4 *mat, bVector3 *min, bVector3 *max) {
     asm("psq_st 0, 8(%0), 1, 0" : : "b"(max));
 }
 
-// NON_MATCHING: 99.3% - register allocation shifted by one (r5->r6 etc.) in the plane loop
+// UNSOLVED, register allocation shifted by one (r5->r6 etc.) in the plane loop
 eVisibleState eViewPlatInterface::GetVisibleStateSB(const bVector3 *aabb_min, const bVector3 *aabb_max, bMatrix4 *local_world) {
     if (!aabb_min || !aabb_max) {
         return EVISIBLESTATE_NOT;
@@ -118,32 +119,36 @@ eVisibleState eViewPlatInterface::GetVisibleStateSB(const bVector3 *aabb_min, co
         for (int clip_plane = 1; clip_plane <= 6; clip_plane++) {
             bVector4 *plane = &plat_info->ClippingPlanes[clip_plane - 1];
             float np;
-            register double FP0, FP1, FP2, FP3, FP4, FP5, FP6, FP7, FP8;
+            double FP0, FP1, FP2, FP3, FP4, FP5, FP6, FP7, FP8;
             float mp;
 
             asm volatile("psq_l 11, 0(%1), 0, 0\n"
-                "psq_l 13, 0(%2), 1, 0\n"
-                "psq_l 12, 0(%3), 0, 0\n"
-                "addi 11, %3, 8\n"
-                "psq_l 0, 0(11), 1, 0\n"
-                "ps_abs 12, 12\n"
-                "ps_abs 0, 0\n"
-                "ps_mul 11, 11, 12\n"
-                "ps_mul 13, 13, 0\n"
-                "ps_add 13, 11, 13\n"
-                "ps_merge11 11, 13, 11\n"
-                "ps_add 13, 13, 11\n"
-                "psq_st 13, %0, 0, 0" : "=m"(np) : "b"(&diag.x), "b"(&diag.z), "b"(plane));
+                         "psq_l 13, 0(%2), 1, 0\n"
+                         "psq_l 12, 0(%3), 0, 0\n"
+                         "addi 11, %3, 8\n"
+                         "psq_l 0, 0(11), 1, 0\n"
+                         "ps_abs 12, 12\n"
+                         "ps_abs 0, 0\n"
+                         "ps_mul 11, 11, 12\n"
+                         "ps_mul 13, 13, 0\n"
+                         "ps_add 13, 11, 13\n"
+                         "ps_merge11 11, 13, 11\n"
+                         "ps_add 13, 13, 11\n"
+                         "psq_st 13, %0, 0, 0"
+                         : "=m"(np)
+                         : "b"(&diag.x), "b"(&diag.z), "b"(plane));
             asm volatile("psq_l 0, 0(%1), 0, 0\n"
-                "psq_l 12, 0(%2), 1, 1\n"
-                "psq_l 11, 0(%3), 0, 0\n"
-                "psq_l 13, 0(11), 0, 0\n"
-                "ps_mul 13, 12, 13\n"
-                "ps_mul 0, 0, 11\n"
-                "ps_add 0, 0, 13\n"
-                "ps_merge11 12, 0, 12\n"
-                "ps_add 0, 0, 12\n"
-                "psq_st 0, %0, 0, 0" : "=m"(mp) : "b"(&centre.x), "b"(&centre.z), "b"(plane));
+                         "psq_l 12, 0(%2), 1, 1\n"
+                         "psq_l 11, 0(%3), 0, 0\n"
+                         "psq_l 13, 0(11), 0, 0\n"
+                         "ps_mul 13, 12, 13\n"
+                         "ps_mul 0, 0, 11\n"
+                         "ps_add 0, 0, 13\n"
+                         "ps_merge11 12, 0, 12\n"
+                         "ps_add 0, 0, 12\n"
+                         "psq_st 0, %0, 0, 0"
+                         : "=m"(mp)
+                         : "b"(&centre.x), "b"(&centre.z), "b"(plane));
 
             if (mp + np < 0.0f) {
                 return EVISIBLESTATE_NOT;

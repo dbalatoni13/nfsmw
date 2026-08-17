@@ -8,7 +8,7 @@
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "dolphin/gx.h"
 
-void eConvertToGX34(float (&mGX)[3][4], bMatrix4 &mBW);
-float (*eLoadPosMtxImm(bMatrix4 &mL2V, _GXPosNrmMtx stage))[3][4];
+void eConvertToGX34(Mtx &mGX, bMatrix4 &mBW);
+Mtx *eLoadPosMtxImm(bMatrix4 &mL2V, _GXPosNrmMtx stage);
 
 #endif

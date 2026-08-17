@@ -1,4 +1,5 @@
 #include "Speed/GameCube/Src/Ecstasy/eMatrixE.hpp"
+#include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Src/Ecstasy/eMath.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
@@ -32,77 +33,84 @@ void eMulMatrix(bMatrix4 *ab, bMatrix4 *a, bMatrix4 *b) {
     MTX44Concat(*reinterpret_cast<Mtx44 *>(a), *reinterpret_cast<Mtx44 *>(b), *reinterpret_cast<Mtx44 *>(ab));
 }
 
+// TODO the variables might be unused in these two
 void eMulVector(bVector4 *vm, const bMatrix4 *m, const bVector4 *v) {
     {
-        register double FP0, FP1, FP2, FP3, FP4, FP5, FP6, FP7, FP8, FP9, FP10, FP11;
+        double FP0, FP1, FP2, FP3, FP4, FP5, FP6, FP7, FP8, FP9, FP10, FP11;
 
-        asm("psq_l 10, 0(5), 0, 0\n"
-            "psq_l 0, 0(4), 0, 0\n"
-            "ps_muls0 0, 0, 10\n"
-            "addi 9, 4, 0x10\n"
-            "psq_l 12, 0(9), 0, 0\n"
-            "ps_madds1 12, 12, 10, 0\n"
-            "addi 5, 5, 8\n"
-            "psq_l 11, 0(5), 0, 0\n"
-            "addi 9, 4, 0x20\n"
-            "psq_l 13, 0(9), 0, 0\n"
-            "ps_madds0 13, 13, 11, 12\n"
-            "addi 9, 4, 0x30\n"
-            "psq_l 0, 0(9), 0, 0\n"
-            "ps_madds1 0, 0, 11, 13\n"
-            "psq_st 0, 0(3), 0, 0\n"
-            "addi 9, 4, 8\n"
-            "psq_l 0, 0(9), 0, 0\n"
-            "ps_muls0 0, 0, 10\n"
-            "addi 9, 4, 0x18\n"
-            "psq_l 13, 0(9), 0, 0\n"
-            "ps_madds1 13, 13, 10, 0\n"
-            "addi 9, 4, 0x28\n"
-            "psq_l 12, 0(9), 0, 0\n"
-            "ps_madds0 12, 12, 11, 13\n"
-            "addi 4, 4, 0x38\n"
-            "psq_l 0, 0(4), 0, 0\n"
-            "ps_madds1 0, 0, 11, 12\n"
-            "psq_st 0, 8(3), 0, 0");
+        asm volatile("psq_l %0, 0(%6), 0, 0\n"
+                     "psq_l %4, 0(%5), 0, 0\n"
+                     "ps_muls0 %4, %4, %0\n"
+                     "addi 9, %5, 0x10\n"
+                     "psq_l %2, 0(9), 0, 0\n"
+                     "ps_madds1 %2, %2, %0, %4\n"
+                     "addi %6, %6, 8\n"
+                     "psq_l %1, 0(%6), 0, 0\n"
+                     "addi 9, %5, 0x20\n"
+                     "psq_l %3, 0(9), 0, 0\n"
+                     "ps_madds0 %3, %3, %1, %2\n"
+                     "addi 9, %5, 0x30\n"
+                     "psq_l %4, 0(9), 0, 0\n"
+                     "ps_madds1 %4, %4, %1, %3\n"
+                     "psq_st %4, 0(%7), 0, 0\n"
+                     "addi 9, %5, 8\n"
+                     "psq_l %4, 0(9), 0, 0\n"
+                     "ps_muls0 %4, %4, %0\n"
+                     "addi 9, %5, 0x18\n"
+                     "psq_l %3, 0(9), 0, 0\n"
+                     "ps_madds1 %3, %3, %0, %4\n"
+                     "addi 9, %5, 0x28\n"
+                     "psq_l %2, 0(9), 0, 0\n"
+                     "ps_madds0 %2, %2, %1, %3\n"
+                     "addi %5, %5, 0x38\n"
+                     "psq_l %4, 0(%5), 0, 0\n"
+                     "ps_madds1 %4, %4, %1, %2\n"
+                     "psq_st %4, 8(%7), 0, 0"
+                     : "=&f"(FP0), "=&f"(FP1), "=&f"(FP2), "=&f"(FP3), "=&f"(FP4)
+                     : "b"(m), "b"(v), "b"(vm)
+                     : "r9", "memory");
     }
 }
 
 void eMulVector(bVector3 *vm, const bMatrix4 *m, const bVector3 *v) {
     {
-        register double FP0, FP1, FP2, FP3, FP4, FP5, FP6, FP7, FP8, FP9, FP10, FP11;
+        double FP0, FP1, FP2, FP3, FP4, FP5, FP6, FP7, FP8, FP9, FP10, FP11;
 
-        asm("psq_l 10, 0(5), 0, 0\n"
-            "psq_l 0, 0(4), 0, 0\n"
-            "ps_muls0 0, 0, 10\n"
-            "addi 9, 4, 0x10\n"
-            "psq_l 12, 0(9), 0, 0\n"
-            "ps_madds1 12, 12, 10, 0\n"
-            "addi 5, 5, 8\n"
-            "psq_l 11, 0(5), 1, 0\n"
-            "addi 9, 4, 0x20\n"
-            "psq_l 13, 0(9), 0, 0\n"
-            "ps_madds0 13, 13, 11, 12\n"
-            "addi 9, 4, 0x30\n"
-            "psq_l 0, 0(9), 0, 0\n"
-            "ps_madds1 0, 0, 11, 13\n"
-            "psq_st 0, 0(3), 0, 0\n"
-            "addi 9, 4, 8\n"
-            "psq_l 0, 0(9), 0, 0\n"
-            "ps_muls0 0, 0, 10\n"
-            "addi 9, 4, 0x18\n"
-            "psq_l 13, 0(9), 0, 0\n"
-            "ps_madds1 13, 13, 10, 0\n"
-            "addi 9, 4, 0x28\n"
-            "psq_l 12, 0(9), 0, 0\n"
-            "ps_madds0 12, 12, 11, 13\n"
-            "addi 4, 4, 0x38\n"
-            "psq_l 0, 0(4), 0, 0\n"
-            "ps_madds1 0, 0, 11, 12\n"
-            "psq_st 0, 8(3), 1, 0");
+        asm volatile("psq_l %0, 0(%6), 0, 0\n"
+                     "psq_l %4, 0(%5), 0, 0\n"
+                     "ps_muls0 %4, %4, %0\n"
+                     "addi 9, %5, 0x10\n"
+                     "psq_l %2, 0(9), 0, 0\n"
+                     "ps_madds1 %2, %2, %0, %4\n"
+                     "addi 5, 5, 8\n"
+                     "psq_l %1, 0(5), 1, 0\n"
+                     "addi 9, %5, 0x20\n"
+                     "psq_l %3, 0(9), 0, 0\n"
+                     "ps_madds0 %3, %3, %1, %2\n"
+                     "addi 9, %5, 0x30\n"
+                     "psq_l %4, 0(9), 0, 0\n"
+                     "ps_madds1 %4, %4, %1, %3\n"
+                     "psq_st %4, 0(%7), 0, 0\n"
+                     "addi 9, %5, 8\n"
+                     "psq_l %4, 0(9), 0, 0\n"
+                     "ps_muls0 %4, %4, %0\n"
+                     "addi 9, %5, 0x18\n"
+                     "psq_l %3, 0(9), 0, 0\n"
+                     "ps_madds1 %3, %3, %0, %4\n"
+                     "addi 9, %5, 0x28\n"
+                     "psq_l %2, 0(9), 0, 0\n"
+                     "ps_madds0 %2, %2, %1, %3\n"
+                     "addi 4, 4, 0x38\n"
+                     "psq_l %4, 0(4), 0, 0\n"
+                     "ps_madds1 %4, %4, %1, %2\n"
+                     "psq_st %4, 8(%7), 1, 0"
+                     : "=&f"(FP0), "=&f"(FP1), "=&f"(FP2), "=&f"(FP3), "=&f"(FP4)
+                     : "r"(m), "r"(v), "r"(vm)
+                     : "r9", "memory");
     }
 }
 
-void eProject(float x, float y, float z, float (*mtx)[4], float *pm, float *vp, float *sx, float *sy, float *sz) {
+void eProject(float x, float y, float z, Mtx mtx, float *pm, float *vp, float *sx, float *sy, float *sz) {
     Vec local;
     Vec eye;
 
@@ -217,10 +225,10 @@ void eCreateLookAtMatrix(bMatrix4 *mat, bVector3 &eye, bVector3 &center, bVector
 }
 
 float eSin(float a) {
-    const float twopi = 6.2831855f;
+    const float twopi = UMath::PI * 2;
     float flip_sign;
-    const float pi = 3.1415927f;
-    const float piover2 = 1.5707964f;
+    const float pi = UMath::PI;
+    const float piover2 = pi / 2.0f;
     float result;
 
     while (a > twopi) {
