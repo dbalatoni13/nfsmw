@@ -124,11 +124,11 @@ void ScreenEffectDB::AddPaletteEffect(ScreenEffectPaletteDef *palette) {
 
 void InitScreenEFX() {
 #ifdef EA_BUILD_A124
-    SE_PaletteFile[EFX_UNIQUE].SE_Def[0].intensity = 0.5f;
+    SE_PaletteFile[EFX_UNIQUE].SE_type[0] = SE_VISUAL_SIG;
     SE_PaletteFile[EFX_UNIQUE].NumEffects = 1;
     SE_PaletteFile[EFX_UNIQUE].SE_Controller[0] = SEC_FUNCTION;
     SE_PaletteFile[EFX_UNIQUE].SE_Def[0].UpdateFnc = Unique;
-    SE_PaletteFile[EFX_UNIQUE].SE_type[0] = SE_VISUAL_SIG;
+    SE_PaletteFile[EFX_UNIQUE].SE_Def[0].intensity = 0.5f;
 #endif
 }
 
