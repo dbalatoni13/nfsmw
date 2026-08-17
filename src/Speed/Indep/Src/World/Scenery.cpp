@@ -903,8 +903,13 @@ void ScenerySectionHeader::TreeCull(SceneryCullInfo *scenery_cull_info) {
 int GrandSceneryCullInfo::WhatSectionsShouldWeDraw(short *sections_to_draw, int max_sections_to_draw, SceneryCullInfo *scenery_cull_info) {
     DrivableScenerySection *drivable_scenery_section;
     int iViewID = scenery_cull_info->pView->GetID();
+#ifdef EA_BUILD_A124
+    if (iViewID == 17 || iViewID == 18) {
+        int iViewPlayer = iViewID - 16;
+#else
     if (iViewID == EVIEW_SHADOWMAP1 || iViewID == EVIEW_SHADOWMAP2) {
         int iViewPlayer = iViewID - 12;
+#endif
         drivable_scenery_section = TheVisibleSectionManager.FindDrivableSection(
             reinterpret_cast<const bVector2 *>(eGetView(iViewPlayer, false)->GetCamera()->GetPosition()));
     } else {
