@@ -456,7 +456,6 @@ int LoaderScenery(bChunk *chunk) {
 
     // TODO magic
     if (chunk->GetID() == BCHUNK_SCENERY_LIGHT_CONTEXTS) {
-        int numSceneryLightContexts;
         bChunk *last_chunk = chunk->GetLastChunk();
         for (chunk = chunk->GetFirstChunk(); chunk < last_chunk; chunk = chunk->GetNext()) {
             if (chunk->GetID() == 0x34116) {
