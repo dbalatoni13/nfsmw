@@ -59,7 +59,9 @@ struct TrackStreamingSection {
     eTrackStreamingFileType FileType; // offset 0x10, size 0x4
     int32 FileOffset;                 // offset 0x14, size 0x4
     int32 Size;                       // offset 0x18, size 0x4
+#ifndef EA_BUILD_A124
     int32 CompressedSize;             // offset 0x1C, size 0x4
+#endif
     int32 PermSize;                   // offset 0x20, size 0x4
     int32 SectionPriority;            // offset 0x24, size 0x4
     bVector2 Centre;                  // offset 0x28, size 0x8
@@ -301,7 +303,11 @@ class TrackStreamer {
     void ForceSectionToUnload(int section_number);
 
     bool IsFarLoadingInProgress() {
+#ifdef EA_BUILD_A124
+        return false;
+#else
         return CurrentZoneFarLoad && IsLoadingInProgress();
+#endif
     }
 
     void DisableZoneSwitching() {
@@ -317,7 +323,11 @@ class TrackStreamer {
     }
 
     bool IsPermFileLoading() {
+#ifdef EA_BUILD_A124
+        return false;
+#else
         return PermFileLoading;
+#endif
     }
 
   private:
@@ -351,17 +361,21 @@ class TrackStreamer {
     int NumSectionsMoved;                                 // offset 0x2C, size 0x4
     char StreamFilenames[2][64];                          // offset 0x30, size 0x80
     bool SplitScreen;                                     // offset 0xB0, size 0x1
+#ifndef EA_BUILD_A124
     bool PermFileLoading;                                 // offset 0xB4, size 0x1
     const char *PermFilename;                             // offset 0xB8, size 0x4
     bChunk *PermFileChunks;                               // offset 0xBC, size 0x4
     int PermFileSize;                                     // offset 0xC0, size 0x4
+#endif
     StreamingPositionEntry StreamingPositionEntries[2];   // offset 0xC4, size 0xD0
     eLoadingPhase LoadingPhase;                           // offset 0x194, size 0x4
     float LoadingBacklog;                                 // offset 0x198, size 0x4
     bool CurrentZoneAllocatedButIncomplete;               // offset 0x19C, size 0x1
     bool CurrentZoneOutOfMemory;                          // offset 0x1A0, size 0x1
     bool CurrentZoneNonReplayLoad;                        // offset 0x1A4, size 0x1
+#ifndef EA_BUILD_A124
     bool CurrentZoneFarLoad;                              // offset 0x1A8, size 0x1
+#endif
     char CurrentZoneName[8];                              // offset 0x1AC, size 0x8
     float StartLoadingTime;                               // offset 0x1B4, size 0x4
     int MemorySafetyMargin;                               // offset 0x1B8, size 0x4

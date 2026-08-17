@@ -56,18 +56,24 @@ int TrackPathManager::Loader(bChunk *chunk) {
 
                 for (TrackPathZone *zone = pZones; zone < GetLastZone(); zone = zone->GetMemoryImageNext()) {
                     bPlatEndianSwap(reinterpret_cast<int32 *>(&zone->Type));
+#ifndef EA_BUILD_A124
                     bPlatEndianSwap(&zone->Position);
                     bPlatEndianSwap(&zone->Direction);
+#endif
                     bPlatEndianSwap(&zone->Elevation);
                     bPlatEndianSwap(&zone->VisitInfo);
                     bPlatEndianSwap(&zone->NumPoints);
                     bPlatEndianSwap(&zone->MemoryImageSize);
+#ifndef EA_BUILD_A124
                     bPlatEndianSwap(&zone->BBoxMin);
                     bPlatEndianSwap(&zone->BBoxMax);
+#endif
 
                     int n;
                     for (n = 0; n < zone->NumPoints; n++) {
+#ifndef EA_BUILD_A124
                         bPlatEndianSwap(&zone->Points[n]);
+#endif
                     }
                     for (n = 0; n < 4; n++) {
                         bPlatEndianSwap(&zone->Data[n]);
@@ -84,7 +90,9 @@ int TrackPathManager::Loader(bChunk *chunk) {
         pBarriers = reinterpret_cast<TrackPathBarrier *>(chunk->GetData());
         NumBarriers = chunk->GetSize() / sizeof(*pBarriers);
         for (int i = 0; i < NumBarriers; i++) {
+#ifndef EA_BUILD_A124
             pBarriers[i].EndianSwap();
+#endif
         }
         return 1;
     }
