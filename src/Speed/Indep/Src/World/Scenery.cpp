@@ -396,7 +396,16 @@ int LoaderScenery(bChunk *chunk) {
                 for (int detail_level = 0; detail_level < 4; detail_level++) {
                     unsigned int name_hash = scenery_info->NameHash[detail_level];
                     // TODO magic
+#ifdef EA_BUILD_A124
+                    switch (name_hash) {
+                    case 0:
+                    case 0xBE43EDBB:
+                    case 0x90F70174:
+                        break;
+                    default: {
+#else
                     if (name_hash != 0 && name_hash != 0xBE43EDBB && name_hash != 0x90F70174) {
+#endif
                         eModel *model = nullptr;
                         for (int i = 0; i < detail_level; i++) {
                             if ((scenery_info->pModel[i] != nullptr) && scenery_info->pModel[i]->GetNameHash() == name_hash) {
@@ -412,7 +421,13 @@ int LoaderScenery(bChunk *chunk) {
                             }
                         }
                         scenery_info->pModel[detail_level] = model;
+#ifdef EA_BUILD_A124
+                        break;
+#endif
                     }
+#ifdef EA_BUILD_A124
+                    }
+#endif
                 }
 
                 if ((scenery_info->pModel[2] == nullptr) && (scenery_info->pModel[1] != nullptr)) {
