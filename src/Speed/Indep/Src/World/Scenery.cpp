@@ -88,7 +88,11 @@ bChunkLoader bChunkLoaderOverrideInfos(BCHUNK_SCENERY_OVERRIDE_INFOS, LoaderScen
 bChunkLoader bChunkLoaderSceneryHeirarchy(BCHUNK_MODEL_HIERARCHY_TREE, LoaderScenery, UnloaderScenery);
 bChunkLoader bChunkLoaderSceneryLighting(BCHUNK_SCENERY_LIGHT_CONTEXTS, LoaderScenery, UnloaderScenery);
 
+#ifdef EA_BUILD_A124
+static const float EnablePrecullingSpeed = MPH2MPS(40.0f) - 0.000110626220703125f;
+#else
 static const float EnablePrecullingSpeed = MPH2MPS(40.0f);
+#endif
 
 SceneryDetailLevel ForceAllSceneryDetailLevels = SCENERY_DETAIL_NONE;
 void (*ModelConnectionCallback)(ScenerySectionHeader *, int, eModel *) = nullptr;
