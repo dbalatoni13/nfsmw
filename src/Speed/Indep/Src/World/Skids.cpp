@@ -309,7 +309,19 @@ void SkidMaker::MakeNoSkid() {
 
 void InitSkids(int max_skids) {
     if (SkidSetSlotPool == nullptr) {
-        SkidSetSlotPool = bNewSlotPool(0xF0, max_skids, "SkidSetSlotPool", GetVirtualMemoryAllocParams());
+        SkidSetSlotPool = bNewSlotPool(
+#ifdef EA_BUILD_A124
+            0x110,
+#else
+            0xF0,
+#endif
+            max_skids, "SkidSetSlotPool",
+#ifdef EA_BUILD_A124
+            0
+#else
+            GetVirtualMemoryAllocParams()
+#endif
+        );
         SkidSetSlotPool->ClearFlag(SLOTPOOL_FLAG_OVERFLOW_IF_FULL);
     }
 

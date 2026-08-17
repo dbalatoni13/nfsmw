@@ -9,7 +9,13 @@ bTList<Clan> ClanList;
 
 void InitClans() {
     if (ClanSlotPool == nullptr) {
-        ClanSlotPool = bNewSlotPool(0x48, 40, "ClanSlotPool", 0);
+        ClanSlotPool = bNewSlotPool(
+#ifdef EA_BUILD_A124
+            0x50,
+#else
+            0x48,
+#endif
+            40, "ClanSlotPool", 0);
     }
 }
 
