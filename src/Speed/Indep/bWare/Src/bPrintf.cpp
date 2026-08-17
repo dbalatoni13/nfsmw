@@ -327,15 +327,16 @@ int _bOutput(bOutputInfo *output_info, const char *fmt, va_list argList) {
                         radix = 10;
 
                     GENERIC_INT: {
-                        char *p;
+                        char *p = &cvtbuf[62];
                         unsigned long long number;
                         long long tempNumber;
                         char digit;
                         int size;
                         int digit_count;
-                        volatile int group_flag;
+                        int group_flag;
 
                         if (flags & FL_SHORT) {
+                            size = 16;
                             if (flags & FL_SIGNED) {
                                 tempNumber = static_cast<short>(va_arg(argList, int));
                             } else {
@@ -381,7 +382,6 @@ int _bOutput(bOutputInfo *output_info, const char *fmt, va_list argList) {
                             prefixSz = 0;
                         }
 
-                        p = cvtbuf + 63;
                         digit_count = 0;
                         group_flag = 0;
 
@@ -391,27 +391,24 @@ int _bOutput(bOutputInfo *output_info, const char *fmt, va_list argList) {
                             }
                         }
 
-                        {
-                            char *cvtbuf_base = cvtbuf;
-                            while (precision-- > 0 || number != 0) {
-                                if (group_flag != 0) {
-                                    digit_count++;
-                                    if (digit_count > g_locale.group_len) {
-                                        *p = g_locale.group_char;
-                                        p--;
-                                        digit_count = 1;
-                                    }
+                        while (precision-- > 0 || number != 0) {
+                            if (group_flag != 0) {
+                                digit_count++;
+                                if (digit_count > g_locale.group_len) {
+                                    *p = g_locale.group_char;
+                                    p--;
+                                    digit_count = 1;
                                 }
-                                digit = static_cast<char>((number % radix) + '0');
-                                number = number / radix;
-                                if (digit > '9') {
-                                    digit = static_cast<char>(digit + hexAdd);
-                                }
-                                *p = digit;
-                                p--;
                             }
-                            size = static_cast<int>(cvtbuf_base - (p - 63));
+                            digit = static_cast<char>((number % radix) + '0');
+                            number = number / radix;
+                            if (digit > '9') {
+                                digit = static_cast<char>(digit + hexAdd);
+                            }
+                            *p = digit;
+                            p--;
                         }
+                        size = static_cast<int>(&cvtbuf[63] - p);
 
                         stringLength = size - 1;
                         if (flags & FL_FORCEOCTAL) {
@@ -799,7 +796,7 @@ int _bOutput(bOutputInfo *output_info, const char *fmt, va_list argList) {
                         stringLength = bStrLen(tempBuffer);
                         fmt++;
                         _stuff_str(output_info, tempBuffer, stringLength, &outLen);
-                        break;
+                        goto OUTPUT;
                     }
 
                     case 's': {
@@ -838,7 +835,7 @@ int _bOutput(bOutputInfo *output_info, const char *fmt, va_list argList) {
                     default:
                         break;
                 }
-                break;
+            }
 
             OUTPUT:
                 if (flags & FL_NOOUTPUT) {
@@ -863,37 +860,30 @@ int _bOutput(bOutputInfo *output_info, const char *fmt, va_list argList) {
                     padding = 0;
                 }
 
-                if (padding > 0 && !(flags & (FL_LEFT | FL_LEADZERO))) {
-                    while (padding != 0) {
+                if (padding != 0 && !(flags & (FL_LEFT | FL_LEADZERO))) {
+                    while (padding-- != 0) {
                         _stuff_char(output_info, ' ', &outLen);
-                        padding--;
                     }
                 }
 
-                if (prefixSz > 0) {
+                if (prefixSz != 0) {
                     _stuff_str(output_info, prefix, prefixSz, &outLen);
                 }
 
                 if (padding > 0 && !(flags & FL_LEFT)) {
-                    while (padding != 0) {
+                    while (padding-- != 0) {
                         _stuff_char(output_info, '0', &outLen);
-                        padding--;
                     }
                 }
 
                 _stuff_str(output_info, stringOut, stringLength, &outLen);
 
                 if (padding > 0) {
-                    padding--;
-                    if (padding != 0) {
-                        do {
-                            _stuff_char(output_info, ' ', &outLen);
-                            padding--;
-                        } while (padding != 0);
+                    while (padding-- != 0) {
+                        _stuff_char(output_info, ' ', &outLen);
                     }
                 }
                 break;
-            }
         }
 
         ch = *fmt++;
