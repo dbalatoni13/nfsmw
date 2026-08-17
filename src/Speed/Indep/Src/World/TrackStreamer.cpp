@@ -20,6 +20,16 @@
 
 #include <algorithm>
 
+#ifdef EA_BUILD_A124
+namespace Juice {
+class GameHook {
+  public:
+    static GameHook *(*Instance)();
+    void AssetHit(const char *, const char *);
+};
+} // namespace Juice
+#endif
+
 // TODO move
 extern BOOL bMemoryTracing;
 extern int SeeulatorToolActive;
@@ -2109,6 +2119,10 @@ void TrackStreamer::SwitchZones(short *current_zones) {
             bSPrintf(CurrentZoneName, "%s - %s", CurrentZoneName, GetScenerySectionName(zone_number));
         }
     }
+
+#ifdef EA_BUILD_A124
+    Juice::GameHook::Instance()->AssetHit("DRIVEN_SECTIONS", CurrentZoneName);
+#endif
 
     int num_sections_unactivated = 0;
     DetermineStreamingSections();
