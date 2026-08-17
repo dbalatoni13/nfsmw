@@ -506,7 +506,9 @@ int TrackStreamer::Loader(bChunk *chunk) {
 #endif
             bPlatEndianSwap(&section->PermSize);
             bPlatEndianSwap(&section->SectionPriority);
+#ifndef EA_BUILD_A124
             bPlatEndianSwap(&section->Centre);
+#endif
             bPlatEndianSwap(&section->Radius);
             bPlatEndianSwap(&section->Checksum);
         }
@@ -549,8 +551,10 @@ int TrackStreamer::Loader(bChunk *chunk) {
         pBarriers = reinterpret_cast<TrackStreamingBarrier *>(chunk->GetData());
         NumBarriers = chunk->GetSize() / sizeof(TrackStreamingBarrier);
         for (int n = 0; n < NumBarriers; n++) {
+#ifndef EA_BUILD_A124
             TrackStreamingBarrier *barrier = &pBarriers[n];
             barrier->EndianSwap();
+#endif
         }
         return 1;
     } else {
