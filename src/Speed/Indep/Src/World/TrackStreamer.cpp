@@ -204,18 +204,18 @@ TSMemoryPool::TSMemoryPool(intptr_t address, int size, const char *debug_name, i
     }
 
     MemoryPoolOverrideInfo *override_info = &OverrideInfo;
-    bMemSet(&OverrideInfo, 0, sizeof(OverrideInfo));
+    bMemSet(override_info, 0, sizeof(*override_info));
 #ifndef EA_BUILD_A124
-    OverrideInfo.Name = DebugName;
+    override_info->Name = DebugName;
 #endif
-    OverrideInfo.Pool = this;
-    OverrideInfo.Address = address;
-    OverrideInfo.Size = size;
-    OverrideInfo.Malloc = OverrideMalloc;
-    OverrideInfo.Free = OverrideFree;
-    OverrideInfo.GetAmountFree = OverrideGetAmountFree;
-    OverrideInfo.GetLargestFreeBlock = OverrideGetLargestFreeBlock;
-    bSetMemoryPoolOverrideInfo(PoolNum, &OverrideInfo);
+    override_info->Pool = this;
+    override_info->Address = address;
+    override_info->Size = size;
+    override_info->Malloc = OverrideMalloc;
+    override_info->Free = OverrideFree;
+    override_info->GetAmountFree = OverrideGetAmountFree;
+    override_info->GetLargestFreeBlock = OverrideGetLargestFreeBlock;
+    bSetMemoryPoolOverrideInfo(PoolNum, override_info);
 }
 
 TSMemoryNode *TSMemoryPool::GetNewNode(intptr_t address, int size, bool allocated, const char *debug_name) {
