@@ -44,13 +44,13 @@ bool WWorldMath::IntersectCircle(float x1, float y1, float x2, float y2, float c
         return true;
     }
 
-    x1 -= cx;
-    x2 -= cx;
-    x2 -= x1;
-
     y1 -= cy;
     y2 -= cy;
     y2 -= y1;
+
+    x1 -= cx;
+    x2 -= cx;
+    x2 -= x1;
     float a = pow2(x2) + pow2(y2);
 
     if (a == 0.0f) {

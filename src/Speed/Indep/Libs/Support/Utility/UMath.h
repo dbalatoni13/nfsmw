@@ -541,7 +541,6 @@ inline float Limit(const float a, const float l) {
 
 } // namespace UMath
 
-// En el original esta en el ambito global, no en UMath.
 void BuildRotate(UMath::Matrix4 &m, float r, float x, float y, float z);
 
 #ifndef EA_BUILD_A124
