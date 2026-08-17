@@ -27,6 +27,9 @@ extern int debugflash;
 extern TrackPathZone *zoneB[2];
 
 void InitScreenEFX();
+#ifdef EA_BUILD_A124
+void Unique(ScreenEffectType type, ScreenEffectDB *seDB);
+#endif
 
 ScreenEffectDB::ScreenEffectDB() {
     SE_time = 0.0f;
@@ -114,7 +117,15 @@ void ScreenEffectDB::AddPaletteEffect(ScreenEffectPaletteDef *palette) {
     }
 }
 
-void InitScreenEFX() {}
+void InitScreenEFX() {
+#ifdef EA_BUILD_A124
+    SE_PaletteFile[EFX_UNIQUE].SE_Def[0].intensity = 0.5f;
+    SE_PaletteFile[EFX_UNIQUE].NumEffects = 1;
+    SE_PaletteFile[EFX_UNIQUE].SE_Controller[0] = SEC_FUNCTION;
+    SE_PaletteFile[EFX_UNIQUE].SE_Def[0].UpdateFnc = Unique;
+    SE_PaletteFile[EFX_UNIQUE].SE_type[0] = SE_VISUAL_SIG;
+#endif
+}
 
 ParameterAccessorBlendByDistance TintSunRiseAccessor[2] = {"Screen Tint SunRise", "Screen Tint SunRise"};
 ParameterAccessorBlendByDistance TintMiddayAccessor[2] = {"Screen Tint Midday", "Screen Tint Midday"};
