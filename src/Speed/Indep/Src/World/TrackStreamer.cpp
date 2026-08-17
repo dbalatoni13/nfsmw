@@ -896,21 +896,23 @@ void TrackStreamer::UnloadSection(TrackStreamingSection *section) {
         UnactivateSection(section);
     }
 
-    if (section->Status == TrackStreamingSection::LOADED) {
-        if (WillUnloadBlock(section)) {
-            DisableWaitForFrameBufferSwap();
-            eWaitUntilRenderingDone();
-            EnableWaitForFrameBufferSwap();
-            LastWaitUntilRenderingDoneFrameCount = eGetFrameCounter();
-        }
-
-        section->UnactivatedFrameCount = 0;
-        bFree(section->pMemory);
-        section->pMemory = nullptr;
-        section->Status = TrackStreamingSection::UNLOADED;
-        section->LoadedTime = 0;
-        NumSectionsLoaded--;
+    if (section->Status != TrackStreamingSection::LOADED) {
+        return;
     }
+
+    if (WillUnloadBlock(section)) {
+        DisableWaitForFrameBufferSwap();
+        eWaitUntilRenderingDone();
+        EnableWaitForFrameBufferSwap();
+        LastWaitUntilRenderingDoneFrameCount = eGetFrameCounter();
+    }
+
+    section->UnactivatedFrameCount = 0;
+    bFree(section->pMemory);
+    section->pMemory = nullptr;
+    section->Status = TrackStreamingSection::UNLOADED;
+    section->LoadedTime = 0;
+    NumSectionsLoaded--;
 }
 
 bool TrackStreamer::NeedsGameStateActivation(TrackStreamingSection *section) {
