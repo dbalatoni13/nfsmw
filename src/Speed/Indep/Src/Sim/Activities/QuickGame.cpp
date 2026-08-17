@@ -194,7 +194,7 @@ void QuickGame::HandleSkipFEOptions() {
                 race->SetCopsEnabled(false);
             }
             FEDatabase->RaceMode = race->GetRaceType();
-            GRaceDatabase::Get().SetStartupRace(race, kRaceContext_QuickRace);
+            GRaceDatabase::Get().SetStartupRace(race, GRace::kRaceContext_QuickRace);
             GRaceDatabase::Get().FreeCustomRace(race);
         }
     }
