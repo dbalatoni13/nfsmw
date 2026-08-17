@@ -299,6 +299,8 @@ if config.platform == Platform.GC_WII:
         "-mps-nodf",
         # "-mfast-cast",
         "-G0",
+        # "-mstrict-align",
+        # "-mno-bit-align",
         "-fno-static-dtors",
         "-ffast-math",
         # "-fno-strength-reduce",

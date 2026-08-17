@@ -556,6 +556,8 @@ void MemoryPool::TraceNewPool() {
     if (this->pDebugName != nullptr) {
         bStrNCpy(packet.Name, this->pDebugName, sizeof(packet.Name) - 1);
     }
+    // TODO probably macro instead of ifdefs here
+    // TODO apply macro for "25"
 #ifdef EA_PLATFORM_GAMECUBE
     bFunkGameCube("CODEINE", 25, &packet, sizeof(packet));
 #else

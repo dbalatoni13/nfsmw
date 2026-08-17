@@ -553,6 +553,7 @@ void cSphereMap::Init(int face_front, int face_right, int face_back, int face_le
     this->cubeBuffer[4].Init(0, 0, face_up, face_up, 5, 1);
     this->cubeBuffer[5].Init(0, 0, face_down, face_down, 5, 1);
 
+    // TODO
     this->cubeTex[0] = (GXTexObj *)this->cubeBuffer[1].pCaptureTexture->GetPlatInfo()->ImageInfos.obj.dummy;
     this->cubeTex[1] = (GXTexObj *)this->cubeBuffer[0].pCaptureTexture->GetPlatInfo()->ImageInfos.obj.dummy;
     this->cubeTex[2] = (GXTexObj *)this->cubeBuffer[3].pCaptureTexture->GetPlatInfo()->ImageInfos.obj.dummy;
