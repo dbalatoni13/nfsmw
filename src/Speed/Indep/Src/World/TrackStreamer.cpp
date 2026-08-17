@@ -310,10 +310,6 @@ void *TSMemoryPool::Malloc(int size, const char *debug_name, bool best_fit, bool
         bFunkCallASync("CODEINE", 0x1c, &packet, extra_len);
     }
 
-    for (int n = 0; n < 0; n++) {
-        unsigned char *p;
-    }
-
     Updated = true;
     AllocationNumber++;
     return reinterpret_cast<void *>(address);
