@@ -279,8 +279,6 @@ int LoaderScenery(bChunk *chunk) {
         ScenerySectionHeader *section_header = nullptr;
         bChunk *first_chunk = chunk->GetFirstChunk();
         bChunk *last_chunk = chunk->GetLastChunk();
-        int num_emodels;
-        int num_new_emodels;
 
         for (bChunk *chunk = first_chunk; chunk != last_chunk; chunk = chunk->GetNext()) {
             if (chunk->GetID() == BCHUNK_SCENERY_SECTION_HEADER) {
@@ -391,7 +389,6 @@ int LoaderScenery(bChunk *chunk) {
         if (!AreChunksBeingMoved()) {
             for (int n = 0; n < section_header->NumSceneryInfo; n++) {
                 SceneryInfo *scenery_info = &section_header->pSceneryInfo[n];
-                eModel *lowest_detail_model;
                 for (int detail_level = 0; detail_level < 4; detail_level++) {
                     unsigned int name_hash = scenery_info->NameHash[detail_level];
                     // TODO magic
@@ -931,7 +928,6 @@ int GrandSceneryCullInfo::WhatSectionsShouldWeDraw(short *sections_to_draw, int 
     } else {
         for (int section_number = MakeScenerySectionNumber('Z', 0); section_number < MakeScenerySectionNumber('Z', 100); section_number++) {
             if ((GetScenerySectionHeader(section_number) != nullptr) && num_sections_to_draw < max_sections_to_draw) {
-                ScenerySectionHeader *section_header; // ?
                 sections_to_draw[num_sections_to_draw] = static_cast<short>(section_number);
                 num_sections_to_draw++;
             }
@@ -940,7 +936,6 @@ int GrandSceneryCullInfo::WhatSectionsShouldWeDraw(short *sections_to_draw, int 
         for (int i = 0; i < drivable_scenery_section->GetNumVisibleSections(); i++) {
             int section_number = drivable_scenery_section->GetVisibleSection(i);
             if (section_number >= 0 && (GetScenerySectionHeader(section_number) != nullptr) && num_sections_to_draw < max_sections_to_draw) {
-                ScenerySectionHeader *section_header; // ?
                 sections_to_draw[num_sections_to_draw] = static_cast<short>(section_number);
                 num_sections_to_draw++;
             }
