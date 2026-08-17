@@ -18,7 +18,9 @@ int LoaderTrackPositionMarkers(bChunk *chunk) {
             TrackPositionMarker *marker = &marker_table[n];
             bPlatEndianSwap(&marker->NameHash);
             bPlatEndianSwap(&marker->Param);
+#ifndef EA_BUILD_A124
             bPlatEndianSwap(&marker->Position);
+#endif
             bPlatEndianSwap(&marker->Angle);
             bPlatEndianSwap(&marker->TrackNumber);
             TrackPositionMarkerList.AddTail(marker);

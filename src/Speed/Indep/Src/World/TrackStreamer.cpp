@@ -629,6 +629,9 @@ void TrackStreamer::InitMemoryPool(int size) {
     MemoryPoolSize = size;
     pMemoryPoolMem = bMalloc(size, "Track Streaming Buffer", 0, 0x2000);
     pMemoryPool = new ("TSMemoryPool", 0) TSMemoryPool(reinterpret_cast<intptr_t>(pMemoryPoolMem), MemoryPoolSize, "Track Streaming", 7);
+#ifdef EA_BUILD_A124
+    EmptyCaffeineLayers();
+#endif
 }
 
 int TrackStreamer::GetMemoryPoolSize() {
@@ -1864,10 +1867,22 @@ bool TrackStreamer::HandleMemoryAllocation() {
 
 void *TrackStreamer::AllocateUserMemory(int size, const char *debug_name, int offset) {
     if (size > bLargestMalloc(7)) {
-        void *mem = bMalloc(size, debug_name, 0, (offset & 0x1FFC) << 17 | 0x2000);
+        void *mem = bMalloc(size, debug_name, 0,
+#ifdef EA_BUILD_A124
+            ((offset >> 2) & 0x7FF) << 19 | 0x2000
+#else
+            (offset & 0x1FFC) << 17 | 0x2000
+#endif
+        );
         return mem;
     } else {
-        void *mem = bMalloc(size, debug_name, 0, (offset & 0x1FFC) << 17 | 0x2047);
+        void *mem = bMalloc(size, debug_name, 0,
+#ifdef EA_BUILD_A124
+            ((offset >> 2) & 0x7FF) << 19 | 0x2047
+#else
+            (offset & 0x1FFC) << 17 | 0x2047
+#endif
+        );
         return mem;
     }
 }
@@ -1987,6 +2002,9 @@ void TrackStreamer::ServiceNonGameState() {
     ProfileNode profile_node("TODO", 0);
     float start_time = GetDebugRealTime();
     HandleLoading();
+#ifdef EA_BUILD_A124
+    CheckLoadingBar();
+#endif
     float time = GetDebugRealTime();
 }
 
