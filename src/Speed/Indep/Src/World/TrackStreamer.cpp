@@ -2355,15 +2355,22 @@ void TrackStreamer::CalculateLoadingBacklog() {
     float loading_backlog = 0.0f;
     for (int i = 0; i < NumCurrentStreamingSections; i++) {
         TrackStreamingSection *section = CurrentStreamingSections[i];
-        // TODO
+#ifdef EA_BUILD_A124
+        if (section->CurrentlyVisible && section->Status != TrackStreamingSection::LOADED &&
+            section->Status != TrackStreamingSection::ACTIVATED) {
+#else
         if (section->CurrentlyVisible && (section->Status - TrackStreamingSection::LOADED > 1U)) {
-            // TODO get rid of temp
+#endif
             int rounded_size = section->Size;
             if (rounded_size < 0) {
                 rounded_size += 0x3ff;
             }
 
+#ifdef EA_BUILD_A124
+            float time = static_cast<float>(rounded_size >> 10) * 0.0004f + 0.2f;
+#else
             float time = static_cast<float>(rounded_size >> 10) * 0.0004f + 0.15f;
+#endif
             if (section->BaseLoadingPriority == 1) {
                 time *= 0.4f;
             }
