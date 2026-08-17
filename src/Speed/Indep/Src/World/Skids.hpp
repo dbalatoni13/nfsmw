@@ -68,7 +68,7 @@ class SkidSet : public bTNode<SkidSet> {
   public:
     friend class SkidMaker;
 
-    // Como USE_SLOTALLOC pero con bMalloc: el original asigna con bMalloc aqui.
+    // Like USE_SLOTALLOC but with bMalloc: the original allocates with bMalloc here.
     void *operator new(size_t size) {
         return bMalloc(SkidSetSlotPool);
     }

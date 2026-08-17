@@ -7,10 +7,10 @@
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
-// 0x1FF8 / sizeof(eViewPlatInfo) = 22 entradas, segun symbols.txt
+// 0x1FF8 / sizeof(eViewPlatInfo) = 22 entries, per symbols.txt
 eViewPlatInfo ViewPlatInfoTable[22];
 
-// El original emite stw, no stb: es int aunque el DWARF lo anote como bool.
+// The original emits stw, not stb: this is an int even though DWARF records it as a bool.
 int ForceFERenderStates;
 
 SlotPool *eTextureBucketSlotPool;
@@ -77,7 +77,7 @@ struct eTextureBucket : public bTNode<eTextureBucket> {
     bTList<eDataRender> DataRenderList; // offset 0xC, size 0x8
 };
 
-// 0x80 bytes: dos filas de ocho listas, la segunda en +0x40
+// 0x80 bytes: two rows of eight lists, the second one at +0x40
 bTList<eTextureBucket> g_TextureBucketList[2][8];
 
 void eViewPlatInterface::FEBeginBatchRender(int numPolys) {
