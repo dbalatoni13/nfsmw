@@ -94,6 +94,13 @@ class VisibleSectionBoundary : public bTNode<VisibleSectionBoundary> {
     }
 
     void EndianSwap() {
+#ifdef EA_BUILD_A124
+        bPlatEndianSwap(&NumPoints);
+        uint8 num_points = *reinterpret_cast<uint8 *>(&NumPoints);
+        for (int i = 0; i < static_cast<int8>(num_points); i++) {
+        }
+        bPlatEndianSwap(&SectionNumber);
+#else
         bPlatEndianSwap(&SectionNumber);
         bPlatEndianSwap(&NumPoints);
         bPlatEndianSwap(&BBoxMin);
@@ -101,6 +108,7 @@ class VisibleSectionBoundary : public bTNode<VisibleSectionBoundary> {
         for (int i = 0; i < NumPoints; i++) {
             bPlatEndianSwap(&Points[i]);
         }
+#endif
     }
 
     int GetSectionNumber() {
