@@ -132,7 +132,7 @@ class LoadingTips {
     }
 
     static void SetDoneLoading(bool done) {
-        mDoneShowingLoadingTips = done;
+        mDoneLoading = done;
     }
 
   private:
