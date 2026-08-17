@@ -25,6 +25,11 @@ extern float GlareFallon;
 extern float TUNHEIGHT;
 extern int debugflash;
 extern TrackPathZone *zoneB[2];
+#ifdef EA_BUILD_A124
+extern float DarkFalloff;
+extern float DarkFallon;
+extern int tunnelDark;
+#endif
 
 void InitScreenEFX();
 #ifdef EA_BUILD_A124
@@ -168,6 +173,62 @@ unsigned int QueryFlushAccumulationBuffer() {
     return AccumulationBufferNeedsFlush;
 }
 void DoTinting(eView *view) {
+#ifdef EA_BUILD_A124
+    ScreenEffectDef SE_def;
+    float intense = view->Precipitation->GetCloudIntensity();
+
+    if (0.0f < intense) {
+        unsigned int r;
+        unsigned int g;
+        unsigned int b;
+        view->Precipitation->GetPrecipFogColour(&r, &g, &b);
+        SE_def.r = static_cast<float>(r);
+        SE_def.g = static_cast<float>(g);
+        SE_def.b = static_cast<float>(b);
+        SE_def.a = 128.0f;
+        SE_def.UpdateFnc = nullptr;
+        SE_def.intensity = intense;
+        view->ScreenEffects->AddScreenEffect(SE_TINT, &SE_def, 1, SEC_FRAME);
+    } else if (AmIinATunnel(view, 0) != 0) {
+        SE_def.data[0] = 0.0f;
+        SE_def.data[1] = 0.0f;
+
+        if (view->ScreenEffects->GetDATA(SE_TINT, 0) == 0.0f) {
+            SE_def.data[0] = 1.0f;
+            SE_def.data[1] = 0.01f;
+        }
+        if (view->ScreenEffects->GetDATA(SE_TINT, 0) == 1.0f) {
+            if (view->ScreenEffects->GetDATA(SE_TINT, 1) < 1.0f) {
+                SE_def.data[0] = view->ScreenEffects->GetDATA(SE_TINT, 0);
+                SE_def.data[1] = view->ScreenEffects->GetDATA(SE_TINT, 1) + DarkFallon;
+            } else {
+                SE_def.data[0] = 2.0f;
+                SE_def.data[1] = 1.0f;
+            }
+        }
+        if (view->ScreenEffects->GetDATA(SE_TINT, 0) == 2.0f) {
+            SE_def.data[0] = view->ScreenEffects->GetDATA(SE_TINT, 0);
+            if (0.0f < view->ScreenEffects->GetDATA(SE_TINT, 1)) {
+                SE_def.data[0] = view->ScreenEffects->GetDATA(SE_TINT, 0);
+                SE_def.data[1] = view->ScreenEffects->GetDATA(SE_TINT, 1) - DarkFalloff;
+            } else {
+                SE_def.data[0] = 2.0f;
+                SE_def.data[1] = 0.0f;
+            }
+        }
+
+        SE_def.r = static_cast<float>(tunnelDark);
+        SE_def.g = SE_def.r;
+        SE_def.b = SE_def.r;
+        SE_def.a = 128.0f;
+        SE_def.intensity = SE_def.data[1];
+        SE_def.UpdateFnc = nullptr;
+        view->ScreenEffects->AddScreenEffect(SE_TINT, &SE_def, 1, SEC_FRAME);
+    } else {
+        view->ScreenEffects->SetDATA(SE_TINT, 0.0f, 0);
+        return;
+    }
+#else
     ScreenEffectDef SE_def;
     unsigned int r;
     unsigned int g;
@@ -196,6 +257,7 @@ void DoTinting(eView *view) {
         SE_def.b = static_cast<float>(b);
         view->ScreenEffects->AddScreenEffect(SE_TINT, &SE_def, 1, SEC_FRAME);
     }
+#endif
 }
 
 // UNSOLVED, functionally matching, just regswaps: https://decomp.me/scratch/Ar2tQ
