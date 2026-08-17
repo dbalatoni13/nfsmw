@@ -84,7 +84,7 @@ void CAnimSceneData::InitHeaderData(void *data, int size) {
 void CAnimSceneData::AddEntityData(void *data, int size) {
     CAnimEntityFactory::EndianSwapEntityData(data, size);
 
-    CAnimEntityData *aed = new CAnimEntityData(*reinterpret_cast<unsigned int *>(data), data, size);
+    CAnimEntityData *aed = BNEW CAnimEntityData(*reinterpret_cast<unsigned int *>(data), data, size);
     mAnimEntityDataList.AddTail(aed);
 }
 
@@ -92,7 +92,7 @@ void CAnimSceneData::AddEntityData(void *data, int size) {
 void CAnimSceneData::RemoveAllEntityData() {}
 
 CAnimSceneData *CreateAnimSceneData(bChunk *nested_chunk, bChunk *sub_chunk) {
-    CAnimSceneData *anim_scene_data = new CAnimSceneData(nested_chunk);
+    CAnimSceneData *anim_scene_data = BNEW CAnimSceneData(nested_chunk);
 
     if (anim_scene_data) {
         anim_scene_data->InitHeaderData(sub_chunk + 1, sub_chunk->Size);
@@ -463,7 +463,7 @@ void CAnimScene::AddProperty(eAnimProperty property_id, bool enabled) {
     CAnimProperty *anim_property = FindProperty(property_id);
 
     if (!anim_property) {
-        CAnimProperty *anim_property = new CAnimProperty(property_id, enabled);
+        CAnimProperty *anim_property = BNEW CAnimProperty(property_id, enabled);
         mAnimPropertyList.AddTail(anim_property);
     }
 }
