@@ -130,7 +130,7 @@ void DebugWorld::HandleSaveHotPosition() {
 }
 
 void DebugWorld::HandleJumpToHotPosition() {
-    if (SaveHotPosition) {
+    if (JumpToHotPosition) {
         IVehicle *iplayer = IVehicle::First(VEHICLE_PLAYERS);
         if (iplayer == nullptr)
             return;

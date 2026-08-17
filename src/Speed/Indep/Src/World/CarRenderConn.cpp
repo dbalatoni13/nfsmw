@@ -1194,11 +1194,11 @@ void CarRenderConn::Hide(bool b) {
 
             VehicleRenderConn::Effect *effect;
             for (effect = this->mEngineEffects.GetHead(); effect != this->mEngineEffects.EndOfList(); effect = effect->GetNext()) {
-                StopEffect(effect);
+                effect->Stop();
             }
 
             for (effect = this->mPipeEffects.GetHead(); effect != this->mPipeEffects.EndOfList(); effect = effect->GetNext()) {
-                StopEffect(effect);
+                effect->Stop();
             }
         }
     }

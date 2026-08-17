@@ -13,7 +13,7 @@
 #include "Speed/Indep/Src/World/WeatherMan.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
-static unsigned int AccumulationBufferNeedsFlush = 0;
+static unsigned int FACflush = 0;
 ScreenEffectPaletteDef SE_PaletteFile[EFX_NUMBER];
 
 // TODO move these
@@ -143,15 +143,15 @@ void UpdateAllScreenEFX() {
 }
 
 void FlushAccumulationBuffer() {
-    AccumulationBufferNeedsFlush = 1;
+    FACflush = 1;
 }
 
 void AccumulationBufferFlushed() {
-    AccumulationBufferNeedsFlush = 0;
+    FACflush = 0;
 }
 
 unsigned int QueryFlushAccumulationBuffer() {
-    return AccumulationBufferNeedsFlush;
+    return FACflush;
 }
 void DoTinting(eView *view) {
     ScreenEffectDef SE_def;

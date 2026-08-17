@@ -1079,10 +1079,10 @@ int CompositeWheel(RideInfo *ride_info, unsigned int dest_namehash, unsigned int
     }
 
     if (do_32bit_composite != 0) {
-        return CompositeWheel8(dest_texture, src_texture, src_mask, wheel_colour);
+        return CompositeWheel32(dest_texture, src_texture, src_mask, wheel_colour);
     }
 
-    return CompositeWheel32(dest_texture, src_texture, src_mask, wheel_colour);
+    return CompositeWheel8(dest_texture, src_texture, src_mask, wheel_colour);
 }
 
 int CompositeRim(RideInfo *ride_info) {
