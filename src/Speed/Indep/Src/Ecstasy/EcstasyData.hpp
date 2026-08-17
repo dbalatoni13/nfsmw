@@ -223,6 +223,8 @@ class eViewPlatInterface {
     }
 
     static eViewPlatInfo *GimmeMyViewPlatInfo(int view_id);
+    static void FEBeginBatchRender(int numPolys);
+    static void FEEndBatchRender();
     eVisibleState GetVisibleStateGB(const bVector3 *aabb_min, const bVector3 *aabb_max, bMatrix4 *local_world);
     eVisibleState GetVisibleStateSB(const bVector3 *aabb_min, const bVector3 *aabb_max, bMatrix4 *local_world);
     void GetScreenPosition(bVector3 *screen_position, const bVector3 *world_position);
