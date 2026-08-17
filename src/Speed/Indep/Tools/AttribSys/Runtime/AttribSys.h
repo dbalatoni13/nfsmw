@@ -159,7 +159,12 @@ class TypeDesc {
 class TypeDescPtrVec : public std::vector<const TypeDesc *> {};
 
 // total size: 0x10
-class TypeTable : public std::set<TypeDesc> {};
+class TypeTable : public std::set<TypeDesc> {
+  public:
+    void operator delete(void *ptr, std::size_t bytes) {
+        Free(ptr, bytes, "Attrib::TypeTable");
+    }
+};
 
 // total size: 0x8
 class CollectionList : public std::list<const Collection *> {};
