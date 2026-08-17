@@ -40,8 +40,10 @@ void TrackPathManager::Clear() {
     MostCachedZones = 0;
     pBarriers = nullptr;
     NumBarriers = 0;
+#ifndef EA_BUILD_A124
     zoneB[0] = nullptr;
     zoneB[1] = nullptr;
+#endif
 }
 
 int TrackPathManager::Loader(bChunk *chunk) {
