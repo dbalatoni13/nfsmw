@@ -7,11 +7,9 @@
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
-// 0x1FF8 / sizeof(eViewPlatInfo) = 22 entries, per symbols.txt
 eViewPlatInfo ViewPlatInfoTable[22];
 
-// The original emits stw, not stb: this is an int even though DWARF records it as a bool.
-int ForceFERenderStates;
+bool ForceFERenderStates;
 
 SlotPool *eTextureBucketSlotPool;
 SlotPool *eDataRenderSlotPool;
@@ -21,7 +19,7 @@ int g_NumTextureBuckets;
 struct eDataRenderDynamic {
     uint32 *colourtable0; // offset 0x0, size 0x4
     uint32 *colourtable1; // offset 0x4, size 0x4
-    float (*trm)[4][3];   // offset 0x8, size 0x4
+    Mtx *trm;             // offset 0x8, size 0x4
 };
 
 // total size: 0x38
@@ -77,8 +75,7 @@ struct eTextureBucket : public bTNode<eTextureBucket> {
     bTList<eDataRender> DataRenderList; // offset 0xC, size 0x8
 };
 
-// 0x80 bytes: two rows of eight lists, the second one at +0x40
-bTList<eTextureBucket> g_TextureBucketList[2][8];
+bTList<eTextureBucket> g_TextureBucketList[16];
 
 void eViewPlatInterface::FEBeginBatchRender(int numPolys) {
     ForceFERenderStates = 1;
@@ -109,9 +106,9 @@ void eSubmitMesh(eStripEntry *mesh, unsigned short entries, eView *view, eSolid 
 
         plat_info->pActiveBucket = bucket;
         if (texture_info->ApplyAlphaSorting) {
-            g_TextureBucketList[1][texture_info->RenderingOrder].AddTail(bucket);
+            g_TextureBucketList[texture_info->RenderingOrder + 8].AddTail(bucket);
         } else {
-            g_TextureBucketList[0][texture_info->RenderingOrder].AddTail(bucket);
+            g_TextureBucketList[texture_info->RenderingOrder].AddTail(bucket);
         }
         g_NumTextureBuckets++;
     }
