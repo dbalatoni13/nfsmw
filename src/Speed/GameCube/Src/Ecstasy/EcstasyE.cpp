@@ -32,7 +32,7 @@ void eInitSunPat();
 void eWaitUntilRenderingDone();
 void InitSlotPoolsEx();
 void eSetScissor(int xOrig, int yOrig, int wd, int ht);
-void eSetCopyFilter(FILTER_ID filter_index, bool enable);
+void eSetCopyFilter(FILTER_ID filter_index, int enable);
 void eSetBackgroundColor(_GXColor clr);
 void __InitRenderMode();
 void __InitMem();
@@ -446,7 +446,7 @@ int eGetScreenWidth() {
 }
 
 int eGetScreenHeight() {
-    return ScreenWidth;
+    return ScreenHeight;
 }
 
 void eSetScreenDisplayOffsets(int offset_x, int offset_y) {}
@@ -776,7 +776,7 @@ void eSetScissor(int xOrig, int yOrig, int wd, int ht) {
     }
 }
 
-void eSetCopyFilter(FILTER_ID filter_index, bool enable) {
+void eSetCopyFilter(FILTER_ID filter_index, int enable) {
     GXSetCopyFilter(_rmode->aa, _rmode->sample_pattern, GX_TRUE, CopyFilter[filter_index]);
 }
 
