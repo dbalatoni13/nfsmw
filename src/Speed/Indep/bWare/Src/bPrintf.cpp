@@ -190,7 +190,7 @@ int _bOutput(bOutputInfo *output_info, const char *fmt, va_list argList) {
 
     ch = *fmt++;
 
-    while (ch != '\0') {
+    while (ch != '\0' && outLen >= 0) {
         int ci = ch - 0x20;
         int charType;
         if (static_cast<unsigned char>(ci) <= 0x5A) {
@@ -789,9 +789,11 @@ int _bOutput(bOutputInfo *output_info, const char *fmt, va_list argList) {
 
                     VECT_OUTPUT:
                         flags |= FL_NOOUTPUT;
-                        stringLength = bStrLen(tempBuffer);
-                        fmt++;
-                        _stuff_str(output_info, tempBuffer, stringLength, &outLen);
+                        {
+                            int vectLen = bStrLen(tempBuffer);
+                            fmt++;
+                            _stuff_str(output_info, tempBuffer, vectLen, &outLen);
+                        }
                         goto OUTPUT;
                     }
 
@@ -883,9 +885,6 @@ int _bOutput(bOutputInfo *output_info, const char *fmt, va_list argList) {
         }
 
         ch = *fmt++;
-        if (outLen < 0) {
-            break;
-        }
     }
 
     if (output_info->StdOut) {
