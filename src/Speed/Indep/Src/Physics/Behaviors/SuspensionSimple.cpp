@@ -979,7 +979,7 @@ void SuspensionSimple::DoWheelForces(State &state) {
             ++wheelsOnGround;
 
             // TODO DWARF in this whole block
-            const float diff = newCompression - oldCompression;
+            const float diff = newCompression - wheel.GetCompression();
             float rise = diff / dT;
 
             if (UMath::Epsilon < shock_valving[axle] && shock_digression[axle] < 1.0f) {
@@ -995,7 +995,7 @@ void SuspensionSimple::DoWheelForces(State &state) {
             float spring = springForce * (newCompression * progression[axle] + 1.0f);
             float damp = rise > 0.0f ? rise * shock_specs[axle] : rise * shock_ext_specs[axle];
 
-            if (damp > this->mSuspensionInfo.SHOCK_BLOWOUT() * (mass * 9.81f)) {
+            if (damp > this->mSuspensionInfo.SHOCK_BLOWOUT() * 9.81f * mass) {
                 damp = 0.0f;
             }
 
@@ -1007,10 +1007,7 @@ void SuspensionSimple::DoWheelForces(State &state) {
             float zspeed = UMath::Dot(pointVelocity, forwardNormal);
             float traction_force = wheel.UpdateLoaded(xspeed, zspeed, state.local_vel.z, load, state.time, steerdrag_reduction);
 
-            float max_traction = xspeed / dT;
-            max_traction *= 0.25f;
-            max_traction *= mass;
-            max_traction = UMath::Abs(max_traction);
+            float max_traction = UMath::Abs(xspeed / dT * (0.25f * mass));
 
             UMath::Vector3 lateralForce;
             UMath::Scale(lateralNormal, UMath::Clamp(traction_force, -max_traction, max_traction), lateralForce);

@@ -569,10 +569,10 @@ void SuspensionTraffic::DoWheelForces(State &state) {
     sway_stiffness[3] = -sway_stiffness[2];
 
     UMath::Vector4 steering_normals[4];
-    steering_normals[0] = UMath::Vector4Make(steerL, 0.0f);
-    steering_normals[1] = UMath::Vector4Make(steerR, 0.0f);
-    steering_normals[2] = UMath::Vector4Make(vFwd, 0.0f);
-    steering_normals[3] = UMath::Vector4Make(vFwd, 0.0f);
+    steering_normals[0] = UMath::Vector4Make(steerL, 1.0f);
+    steering_normals[1] = UMath::Vector4Make(steerR, 1.0f);
+    steering_normals[2] = UMath::Vector4Make(vFwd, 1.0f);
+    steering_normals[3] = UMath::Vector4Make(vFwd, 1.0f);
 
     bool resolve = false;
 
@@ -617,7 +617,7 @@ void SuspensionTraffic::DoWheelForces(State &state) {
 
             springForce = spring * (newCompression * progression[axle] + 1.0f);
 
-            if (damp > this->mSuspensionInfo.SHOCK_BLOWOUT() * (mass * 9.81f)) {
+            if (damp > this->mSuspensionInfo.SHOCK_BLOWOUT() * 9.81f * mass) {
                 damp = 0.0f;
             }
 
