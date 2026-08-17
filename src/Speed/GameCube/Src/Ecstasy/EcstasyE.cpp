@@ -104,7 +104,7 @@ VIDEO_MODE eCurrentVideoMode;
 int ScreenWidth;
 int ScreenHeight;
 Mtx g_ScreenPositionMatrix;
-SlotPool *ActiveTextureSlotPool;
+SlotPool *eAnimTextureSlotPool;
 
 Bool bEURGB60 = false;                                              // size: 0x1
 int _firstFrame;                                                    // size: 0x4
@@ -214,8 +214,8 @@ int eSetDisplaySystem(int video_mode) {
 }
 
 void InitSlotPools(void) {
-    ActiveTextureSlotPool = bNewSlotPool(8, 256, "ActiveTextureSlotPool", 0);
-    ActiveTextureSlotPool->ClearFlag(SLOTPOOL_FLAG_ZERO_ALLOCATED_MEMORY);
+    eAnimTextureSlotPool = bNewSlotPool(8, 256, "ActiveTextureSlotPool", 0);
+    eAnimTextureSlotPool->ClearFlag(SLOTPOOL_FLAG_ZERO_ALLOCATED_MEMORY);
     InitSlotPoolsEx();
 }
 
