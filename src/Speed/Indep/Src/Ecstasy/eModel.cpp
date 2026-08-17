@@ -130,7 +130,7 @@ void eModel::ConnectSolid(eSolid *new_solid) {
     if (new_solid) {
         new_solid->ModelList.AddTail(this);
     } else {
-        UnattachedModelList.AddTail(new_solid);
+        UnattachedModelList.AddTail(this);
     }
     this->Solid = new_solid;
 }
