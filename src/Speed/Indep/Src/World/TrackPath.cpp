@@ -71,12 +71,14 @@ int TrackPathManager::Loader(bChunk *chunk) {
                     bPlatEndianSwap(&zone->BBoxMax);
 #endif
 
-                    int n;
-                    for (n = 0; n < zone->NumPoints; n++) {
+                    int n = 0;
+                    while (n < zone->NumPoints) {
 #ifndef EA_BUILD_A124
                         bPlatEndianSwap(&zone->Points[n]);
 #endif
+                        n++;
                     }
+                    n = 0;
                     for (n = 0; n < 4; n++) {
                         bPlatEndianSwap(&zone->Data[n]);
                     }
