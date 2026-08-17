@@ -812,14 +812,14 @@ int bFPrintf(bFile *f, const char *fmt, ...) {
     if (!f) {
         va_list arg_list;
         va_start(arg_list, fmt);
-        int len = bVPrintf(fmt, &arg_list);
+        int len = bVPrintf(fmt, arg_list);
         va_end(arg_list);
         return len;
     }
     char *buffer = new ("bFPrintf", 0) char[0x2000];
     va_list arg_list;
     va_start(arg_list, fmt);
-    int len = bVSPrintf(buffer, fmt, &arg_list);
+    int len = bVSPrintf(buffer, fmt, arg_list);
     va_end(arg_list);
     bWrite(f, buffer, len);
     delete[] buffer;

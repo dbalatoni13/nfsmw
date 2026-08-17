@@ -61,7 +61,7 @@ SpeedScript::~SpeedScript() {
 void SpeedScript::Error(const char *format, ...) {
     va_list args;
     va_start(args, format);
-    bVSPrintf(this->ErrorText, format, &args);
+    bVSPrintf(this->ErrorText, format, args);
     if (this->ErrorFunction) {
         this->ErrorFunction(this->ErrorText);
     }
