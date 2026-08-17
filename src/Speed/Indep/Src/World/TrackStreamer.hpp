@@ -232,8 +232,12 @@ class TrackStreamer {
 
     void SetStreamingPosition(int position_number, const bVector2 *position);
 
+#ifdef EA_BUILD_A124
+    void PredictStreamingPosition(int position_number, const bVector3 *position, const bVector3 *velocity, const bVector3 *direction);
+#else
     void PredictStreamingPosition(int position_number, const bVector3 *position, const bVector3 *velocity, const bVector3 *direction,
                                   bool following_car);
+#endif
 
     short GetPredictedZone(StreamingPositionEntry *position_entry);
 

@@ -1485,8 +1485,12 @@ void TrackStreamer::SetStreamingPosition(int position_number, const bVector3 *po
     }
 }
 
+#ifdef EA_BUILD_A124
+void TrackStreamer::PredictStreamingPosition(int position_number, const bVector3 *position, const bVector3 *velocity, const bVector3 *direction) {
+#else
 void TrackStreamer::PredictStreamingPosition(int position_number, const bVector3 *position, const bVector3 *velocity, const bVector3 *direction,
                                              bool following_car) {
+#endif
     StreamingPositionEntry *position_entry = &StreamingPositionEntries[position_number];
     position_entry->Position.x = position->x;
     position_entry->Position.y = position->y;
