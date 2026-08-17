@@ -1898,11 +1898,15 @@ bool TrackStreamer::MakeSpaceInPool(int size, bool force_unloading) {
 }
 
 void TrackStreamer::MakeSpaceInPool(int size, void (*callback)(intptr_t), intptr_t param) {
+#ifdef EA_BUILD_A124
+    if (!IsLoadingInProgress()) {
+#else
     if (LoadingPhase == LOADING_IDLE) {
         IsLoadingInProgress();
     }
 
     if (!IsLoadingInProgress()) {
+#endif
         MakeSpaceInPool(size, true);
         callback(param);
     } else {
@@ -1919,9 +1923,11 @@ void TrackStreamer::ReadyToMakeSpaceInPool() {
 
     void (*callback)(intptr_t) = MakeSpaceInPoolCallback;
     intptr_t param = MakeSpaceInPoolCallbackParam;
+#ifndef EA_BUILD_A124
     MakeSpaceInPoolCallback = nullptr;
     MakeSpaceInPoolCallbackParam = 0;
     MakeSpaceInPoolSize = 0;
+#endif
     callback(param);
 }
 
