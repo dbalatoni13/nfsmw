@@ -287,7 +287,7 @@ void AIVehicleRacecar::Update(float dT) {
         DisableSimplePhysics();
     }
 
-    AIVehicle::Update(dT);
+    AIPerpVehicle::Update(dT);
     UpdateSpawnTimer(dT);
     UpdateReverseOverride(dT);
     UpdateTargeting();
