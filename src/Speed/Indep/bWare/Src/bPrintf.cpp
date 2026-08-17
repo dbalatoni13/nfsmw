@@ -538,17 +538,15 @@ int _bOutput(bOutputInfo *output_info, const char *fmt, va_list argList) {
                             }
 
                             if (d >= 1.0) {
-                                int initialDigitPos = digit_pos;
-
                                 do {
                                     if (group_flag) {
                                         int groupLen = static_cast<int>(static_cast<signed char>(g_locale.group_len));
                                         int mod = (digit_pos / groupLen) * groupLen;
-                                        if (digit_pos == mod && digit_pos != initialDigitPos) {
+                                        if (digit_pos == mod && digit_pos != count + 1) {
                                             *p++ = g_locale.group_char;
                                         }
+                                        digit_pos--;
                                     }
-                                    digit_pos--;
 
                                     int digitInt = static_cast<int>(number / d);
                                     digit = static_cast<char>(digitInt);
@@ -584,13 +582,12 @@ int _bOutput(bOutputInfo *output_info, const char *fmt, va_list argList) {
                             if (number * 10.0 >= 0.5) {
                                 {
                                     char *q = p - 1;
-                                    char c = *q;
                                     while (true) {
-                                        if (c == '9') {
+                                        if (*q == '9') {
                                             *q = '0';
-                                        } else if (c != decimalChr) {
-                                            if (!group_flag || c != g_locale.group_char) {
-                                                *q = static_cast<char>(c + 1);
+                                        } else if (*q != decimalChr) {
+                                            if (!group_flag || *q != g_locale.group_char) {
+                                                *q = static_cast<char>(*q + 1);
                                                 if (q < stringOut) {
                                                     stringOut--;
                                                 }
@@ -598,7 +595,6 @@ int _bOutput(bOutputInfo *output_info, const char *fmt, va_list argList) {
                                             }
                                         }
                                         q--;
-                                        c = *q;
                                     }
                                 }
                             }
@@ -659,7 +655,7 @@ int _bOutput(bOutputInfo *output_info, const char *fmt, va_list argList) {
                             precision = 2;
                         }
 
-                        if (lowerVal != 0 || precision > 0) {
+                        if (lowerVal != 0 || precision != 0) {
                             p -= (precision - 1);
                             int fracSize = precision + 1;
 
