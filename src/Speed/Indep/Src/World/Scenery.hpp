@@ -306,7 +306,7 @@ struct SceneryGroup : public bTNode<SceneryGroup> {
 
     int GetMemoryImageSize() {
         // TODO magic
-        int size = (NumObjects * sizeof(*OverrideInfoNumbers) + 0x17U) & ~3;
+        int size = (NumObjects * static_cast<int>(sizeof(*OverrideInfoNumbers)) + 0x17) & -4;
         return size;
     }
 
