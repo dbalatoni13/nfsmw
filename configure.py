@@ -463,6 +463,7 @@ elif config.platform == Platform.PS2:
     cflags_base_prodg = [
         "-O2",
         "-g2",
+        "-Wa,-L",  # Keep compiler-generated $LC* local object symbols
         # "-Wall",
         "-Wno-ctor-dtor-privacy",  # because of AttribSys for example
         "-I src/Speed/Indep/Libs/Support/stlps2",
@@ -637,7 +638,9 @@ config.libs = [
             Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/saemsamb.c"),
             Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/saemsmbf.c"),
             Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/saemsmbm.c"),
-            Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/saemstimupdt.c"),
+            Object(
+                NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/saemstimupdt.c"
+            ),
             Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/salloc.c"),
             Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/sattrdef.c"),
             Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/sbadd.c"),
@@ -810,7 +813,9 @@ config.libs = [
             Object(
                 NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/sgparse.cpp"
             ),
-            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/SNDI_findprime.c"),
+            Object(
+                Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/SNDI_findprime.c"
+            ),
             Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/sbpatinf.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/mix/scrsfl.c"),
         ],
