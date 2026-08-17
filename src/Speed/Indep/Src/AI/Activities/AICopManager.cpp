@@ -1341,7 +1341,7 @@ void AICopManager::PursuitIsEvaded(IPursuit *ipursuit) {
         GManager::Get().TrackValue("pursuits_in_a_row", mPursuitsInARow);
         GManager::Get().TrackValue("pursuit_evasion_time", ipursuit->GetPursuitDuration());
         GManager::Get().NotifyPursuitEnded(true);
-        AdjustStableHeat_EvadePursuit(0);
+        AdjustStableImpound_EvadePursuit(0);
         if (GRaceStatus::Exists() && GRaceStatus::Get().GetPlayMode() == GRaceStatus::kPlayMode_Roaming) {
             if (SoundAI::Get() && SoundAI::Get()->IsMusicActive()) {
                 MControlPathfinder(false, 14, 0, 0).Send("Event");
@@ -1359,7 +1359,7 @@ void AICopManager::PursuitIsEvaded(IPursuit *ipursuit) {
                 int plrIndex = iplayer->GetSettingsIndex();
                 if (plrIndex < 2U) {
                     IPerpetrator *perp;
-                    AdjustStableImpound_EvadePursuit(plrIndex);
+                    AdjustStableHeat_EvadePursuit(plrIndex);
                     simable->QueryInterface(&perp);
                 }
             }
