@@ -155,7 +155,7 @@ bool GetNumCarEffectMarkerHashes(CarEffectPosition fx_pos, int &count_out) {
 }
 
 const unsigned int *GetCarEffectMarkerHashes(CarEffectPosition fx_pos) {
-    return reinterpret_cast<const unsigned int *>(&FXMarkerNameHashMappings[fx_pos].marker_count);
+    return FXMarkerNameHashMappings[fx_pos].position_marker_hashes;
 }
 
 struct CarPartCullingPlaneInfo {
