@@ -13,7 +13,7 @@
 // Decl: 12
 struct stMomentMapping {
     stMomentMapping(int _MarkerType, Attrib::Key _MomentType)
-        : MarkerType(_MarkerType),   //
+        : MarkerType(_MarkerType), //
           MomentType(_MomentType) {} // Decl: 14
 
     int MarkerType;         // offset 0x0, size 0x4, Decl: 20

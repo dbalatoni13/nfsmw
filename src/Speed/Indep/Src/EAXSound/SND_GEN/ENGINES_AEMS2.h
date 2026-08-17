@@ -5,6 +5,14 @@
 
 namespace Csis {
 
+extern InterfaceId Sputter_MessageId;         // Decl: 16
+extern FunctionHandle gSputter_MessageHandle; // Decl: 17
+
+// total size: 0x4
+typedef struct {
+    int sputter_Volume; // offset 0x0, size 0x4
+} Sputter_MessageStruct;
+
 extern InterfaceId CARId;      // size: 0x8, address: 0x80418818, Decl: 29
 extern ClassHandle gCARHandle; // size: 0x8, address: 0x8045E7B4, Decl: 30
 

@@ -9,6 +9,13 @@
 #include "Speed/Indep/Src/Misc/Profiler.hpp"
 #include "Speed/Indep/Src/Sim/Simulation.h"
 
+CSTATEMGR_CarState::MappingList CSTATEMGR_CarState::FinalMapping;           // size: 0x0, Decl: 14
+CSTATEMGR_CarState::EngineList CSTATEMGR_CarState::FinalEngines;            // size: 0x0, Decl: 15
+CSTATEMGR_CarState::EngineList CSTATEMGR_CarState::FinalCopV8Engines;       // size: 0x0, Decl: 16
+CSTATEMGR_CarState::EngToCarMapList CSTATEMGR_CarState::EngineToCarMapping; // size: 0x0, Decl: 18
+
+bool CSTATEMGR_CarState::CopsCanBeInGame = true; // Decl: 20
+
 CSTATEMGR_CarState::CSTATEMGR_CarState() {
     this->m_fConnectDistance = 135.0f;
     this->m_CarContext = Sound::CONTEXT_AIRACER;
@@ -95,9 +102,9 @@ void CSTATEMGR_CarState::ResetCarBanks() {
 }
 
 static const int DEBUG_PRINT_CAR_BANK_RESOLVE = 0; // size: 0x4, Decl: 263
-int DEBUG_CAR_BANK_TEST_CASE;                      // size: 0x4, address: 0x80417F58, Decl: 264
+int DEBUG_CAR_BANK_TEST_CASE = -1;                 // size: 0x4, address: 0x80417F58, Decl: 264
 
-bool ForcePrintResolveInfo; // size: 0x1, address: 0x80417F5C, Decl: 283
+bool ForcePrintResolveInfo = false; // size: 0x1, address: 0x80417F5C, Decl: 283
 
 // UNSOLVED
 void CSTATEMGR_CarState::ResolveCarBanks() {
@@ -109,7 +116,7 @@ void CSTATEMGR_CarState::ResolveCarBanks() {
     EnginesThatCanUpgradeToV8.clear();
     EnginesThatAreV8.clear();
 
-    bool CopsCanBeInGame = !FEDatabase->IsSplitScreenMode(); // TODO
+    bool CopsCanBeInGame = !FEDatabase->IsSplitScreenMode(); // TODO this is actually !IsQuickRaceMode()
     ForcePrintResolveInfo = false;
 
     if (DEBUG_CAR_BANK_TEST_CASE == -1) {

@@ -5,7 +5,7 @@ float DOT_PROD_FOR_HEAVY_LEAN = 0.8f;                         // size: 0x4, addr
 static const float MIN_HANGTIME_FOR_LANDJUMP_SND = 0.12f;     // size: 0x4, Decl: 5
 static const float MIN_HANGTIME_FOR_HARD_LANDJUMP_SND = 0.7f; // size: 0x4, Decl: 6
 
-Slope JumpLandingIntensity; // size: 0x1C, address: 0x8045E548, Decl: 10
+Slope JumpLandingIntensity(0.0f, 1.0f, 0.0f, 0.65f); // size: 0x1C, address: 0x8045E548, Decl: 10
 
 int JumpLandingVolumes[4] = {13000, 15000, 24000, 0x7FFF}; // size: 0x10, address: 0x804181D8, Decl: 16
 

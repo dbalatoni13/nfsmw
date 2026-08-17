@@ -78,7 +78,7 @@ void CARSFX_TrafficEngine::InitEngine() {
     }
 }
 
-bVector3 v3NULL; // size: 0x10, address: 0x8045E538, Decl: 130
+bVector3 v3NULL(0.0f, 0.0f, 0.0f); // size: 0x10, address: 0x8045E538, Decl: 130
 void CARSFX_TrafficEngine::Detach() {
     delete this->m_pcsisTranfficEng;
     this->m_pcsisTranfficEng = nullptr;
@@ -128,11 +128,11 @@ void CARSFX_TrafficEngine::ProcessUpdate() {
     this->refCnt = this->m_pcsisTranfficEng->GetRefCount();
 }
 
-DEFINE_CREATABLE(0x50000, SFXCTL_3DTrafficPos, SndBase);
+DEFINE_CREATABLE(0x50000, SFXCTL_3DTrafficPos, SFXCTL_3DObjPos);
 
 DEFINE_CREATABLE(0x50020, CARSFX_TrafficHorn, SndBase);
 
-DEFINE_CREATABLE(0xc0140, CARSFX_TruckHorn, SndBase);
+DEFINE_CREATABLE(0xc0140, CARSFX_TruckHorn, CARSFX_TrafficHorn);
 
 CARSFX_TrafficHorn::CARSFX_TrafficHorn() : CARSFX() {
     static int HonkingCarCnt = 0;

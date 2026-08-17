@@ -156,10 +156,10 @@ void CARSFX_Skids::ProcessUpdate() {
     this->m_pSkidControl->CommitMemberData();
 }
 
-DEFINE_CREATABLE(0x200b0, SFXCTL_3DRightWheelPos, SndBase);
-DEFINE_CREATABLE(0x200c0, SFXCTL_3DLeftWheelPos, SndBase);
+DEFINE_CREATABLE(0x200b0, SFXCTL_3DRightWheelPos, SFXCTL_3DObjPos);
+DEFINE_CREATABLE(0x200c0, SFXCTL_3DLeftWheelPos, SFXCTL_3DObjPos);
 
-DEFINE_CREATABLE(0x50030, CARSFX_TrafficSkids, SndBase);
+DEFINE_CREATABLE(0x50030, CARSFX_TrafficSkids, CARSFX_Skids);
 
 CARSFX_TrafficSkids::CARSFX_TrafficSkids() {}
 

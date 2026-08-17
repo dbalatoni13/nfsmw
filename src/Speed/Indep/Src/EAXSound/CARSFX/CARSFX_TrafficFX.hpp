@@ -39,8 +39,7 @@ class CARSFX_TrafficEngine : CARSFX {
 class SFXCTL_3DTrafficPos : SFXCTL_3DCarPos {
   public:
     DECLARE_CREATABLE();
-    SFXCTL_3DTrafficPos() {}           // Decl: 51
-    ~SFXCTL_3DTrafficPos() override {} // Decl: 51
+    SFXCTL_3DTrafficPos() {} // Decl: 51
 };
 
 // total size: 0x74
@@ -97,11 +96,12 @@ class CARSFX_TrafficHorn : public CARSFX {
 class CARSFX_TruckHorn : public CARSFX_TrafficHorn {
   public:
     DECLARE_CREATABLE();
-    CARSFX_TruckHorn() {}           // Decl: 117
-    ~CARSFX_TruckHorn() override {} // Decl: 117
+    CARSFX_TruckHorn() {} // Decl: 117
 
     // Overrides: SndBase
-    int GetController(int Index) override {} // Decl: 120
+    int GetController(int Index) override {
+        return -1;
+    } // Decl: 120
 };
 
 // total size: 0x30

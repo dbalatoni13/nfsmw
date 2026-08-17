@@ -685,6 +685,10 @@ struct ALIGN_16 bVector4 {
         return reinterpret_cast<const float *>(this)[index];
     }
 
+    inline struct bVector4 operator+(const struct bVector4 &v) const;
+
+    inline struct bVector4 operator-(const struct bVector4 &v) const;
+
     bVector4 operator+(const bVector4 &v);
 
     bVector4 operator-() {
@@ -805,10 +809,17 @@ inline bVector4 *bScale(bVector4 *dest, const bVector4 *v, float scale) {
 }
 
 inline bVector4 *bScale(bVector4 *dest, const bVector4 *v1, const bVector4 *v2) {
-    float x;
-    float y;
-    float z;
-    float w;
+    float x = v1->x;
+    float y = v1->y;
+    float z = v1->z;
+    float w = v1->w;
+
+    dest->x = x * v2->x;
+    dest->y = y * v2->y;
+    dest->z = z * v2->z;
+    dest->w = w * v2->w;
+
+    return dest;
 }
 
 inline bVector4 *bMin(bVector4 *dest, const bVector4 *v1, const bVector4 *v2) {}
@@ -911,6 +922,46 @@ inline bVector4 &bVector4::operator*=(float scale) {
 }
 
 inline bVector4 bVector4::operator-(const bVector4 &v) {
+    bVector4 *pv = const_cast<bVector4 *>(&v);
+    float x1 = this->x;
+    float y1 = this->y;
+    float z1 = this->z;
+    float w1 = this->w;
+
+    float x2 = pv->x;
+    float y2 = pv->y;
+    float z2 = pv->z;
+    float w2 = pv->w;
+
+    float _x = x1 - x2;
+    float _y = y1 - y2;
+    float _z = z1 - z2;
+    float _w = w1 - w2;
+
+    return bVector4(_x, _y, _z, _w);
+}
+
+inline bVector4 bVector4::operator+(const bVector4 &v) const {
+    bVector4 *pv = const_cast<bVector4 *>(&v);
+    float x1 = this->x;
+    float y1 = this->y;
+    float z1 = this->z;
+    float w1 = this->w;
+
+    float x2 = pv->x;
+    float y2 = pv->y;
+    float z2 = pv->z;
+    float w2 = pv->w;
+
+    float _x = x1 + x2;
+    float _y = y1 + y2;
+    float _z = z1 + z2;
+    float _w = w1 + w2;
+
+    return bVector4(_x, _y, _z, _w);
+}
+
+inline bVector4 bVector4::operator-(const bVector4 &v) const {
     bVector4 *pv = const_cast<bVector4 *>(&v);
     float x1 = this->x;
     float y1 = this->y;

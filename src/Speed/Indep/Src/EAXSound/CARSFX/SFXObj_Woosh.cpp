@@ -236,4 +236,4 @@ void SFXObj_Woosh::Destroy() {
     this->m_pWooshStich = nullptr;
 }
 
-DEFINE_CREATABLE(0x80000, SFXCTL_3DWooshPos, SndBase);
+DEFINE_CREATABLE(0x80000, SFXCTL_3DWooshPos, SFXCTL_3DObjPos);

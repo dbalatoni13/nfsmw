@@ -60,7 +60,9 @@ class NFSMixMap : public AudioMemBase {
     NFSMixMap *GetMasterMixMap();
     NFSMixMap *GetSecondaryMap();
 
-    // int GetMapType() {} // Decl: 97
+    int GetMapType() {
+        return this->m_MapType;
+    } // Decl: 97
 
     virtual void InitMixMap(int *pmixmap, NFSMixMap *pMasterMixMap);
 
@@ -94,15 +96,20 @@ class NFSMixMap : public AudioMemBase {
     int *GetNextInputBlock(bool bincrement);
     int GetMapStateCopies(int nstate);
 
-    // NFSMixMapState *GetStateProc(int nID) {} // Decl: 145
+    NFSMixMapState *GetStateProc(int nID) {
+        return this->m_pStateProcs[nID];
+    } // Decl: 145
 
-    // int *GetMixMapPointer() {} // Decl: 152
+    int *GetMixMapPointer() {
+        return this->m_pMixMap;
+    } // Decl: 152
 
     void ConnectMixMap();
 
     int *GetObjectPtr(int sfxid, bool busedB, bool bHACKINIT);
 
-    static void AssignSFXCallbacks(int *(*getptrcb)(), void (*setsfxoutcb)(), bool (*setsfxincb)(), int (*getstaterefcnt)(), void (*mapreadycb)());
+    static void AssignSFXCallbacks(int *(*getptrcb)(int), void (*setsfxoutcb)(int, int *), bool (*setsfxincb)(int, int *), int (*getstaterefcnt)(int),
+                                   void (*mapreadycb)());
 
     bool SETSFXID(int id, int *ptr);
 

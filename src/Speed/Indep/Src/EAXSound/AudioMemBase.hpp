@@ -14,7 +14,7 @@
 
 #include "Speed/Indep/Src/EAXSound/AudioMemoryManager.hpp"
 
-struct AudioMemBase {
+class AudioMemBase {
   public:
     virtual ~AudioMemBase() {}
 
@@ -28,6 +28,14 @@ struct AudioMemBase {
 
     void operator delete(void *pMem) {
         gAudioMemoryManager.FreeMemory(pMem);
+    }
+
+    void *AllocateMemory(int size, const char *debug_name) {
+        return gAudioMemoryManager.AllocateMemory(size, debug_name, false);
+    }
+
+    void FreeMemory(void *mem) {
+        gAudioMemoryManager.FreeMemory(mem);
     }
 };
 

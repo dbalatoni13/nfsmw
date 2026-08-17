@@ -11,10 +11,6 @@ class CSTATE_Main : public CSTATE_Base {
 
     CSTATE_Main();
     ~CSTATE_Main() override;
-
-    // Overrides: CSTATE_Base
-    void Attach(void *pAttachment) override;
-    bool Detach() override;
 };
 
 #endif

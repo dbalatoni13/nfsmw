@@ -1,7 +1,7 @@
 #include "Speed/Indep/Src/EAXSound/CARSFX/SFXObj_WorldObject.hpp"
 #include "Speed/Indep/Src/EAXSound/States/Managers/STATEMGR_Enviro.hpp"
 
-DEFINE_CREATABLE(0x60000, SFXCTL_3DFountainPos, SndBase);
+DEFINE_CREATABLE(0x60000, SFXCTL_3DFountainPos, SFXCTL_3DObjPos);
 
 DEFINE_CREATABLE(0x60000, SFXObj_WorldObject, SndBase);
 

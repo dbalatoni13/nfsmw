@@ -151,45 +151,45 @@ enum Type_NIS_Blacklist {
     Type_NIS_Blacklist_generic = 262144,
 };
 
-extern InterfaceId NIS_Select_StartId;         // size: 0x8, address: 0x80418930
-extern FunctionHandle gNIS_Select_StartHandle; // size: 0x8, address: 0x8045E8CC
+extern InterfaceId NIS_Select_StartId;
+extern FunctionHandle gNIS_Select_StartHandle;
 
 // total size: 0xC
-struct NIS_Select_StartStruct {
+typedef struct {
     Type_NIS_Scene_Start NIS_Scene_Start; // offset 0x0, size 0x4
     Type_NIS_Track NIS_Track;             // offset 0x4, size 0x4
     Type_NIS_Section NIS_Section;         // offset 0x8, size 0x4
-};
+} NIS_Select_StartStruct;
 
-extern InterfaceId SoundFX_SelectId;         // size: 0x8, address: 0x80418938
-extern FunctionHandle gSoundFX_SelectHandle; // size: 0x8, address: 0x8045E8D4
+extern InterfaceId SoundFX_SelectId;
+extern FunctionHandle gSoundFX_SelectHandle;
 
 // total size: 0x8
 // Decl: 196
-struct SoundFX_SelectStruct {
+typedef struct {
     Type_SoundFX_Type SoundFX_Type;   // offset 0x0, size 0x4
     Type_SoundFX_Param SoundFX_Param; // offset 0x4, size 0x4
-};
+} SoundFX_SelectStruct;
 
-extern InterfaceId NIS_Select_BlacklistId;         // size: 0x8, address: 0x80418940
-extern FunctionHandle gNIS_Select_BlacklistHandle; // size: 0x8, address: 0x8045E8DC
+extern InterfaceId NIS_Select_BlacklistId;
+extern FunctionHandle gNIS_Select_BlacklistHandle;
 
 // total size: 0xC
-struct NIS_Select_BlacklistStruct {
+typedef struct {
     Type_NIS_Track NIS_Track;         // offset 0x0, size 0x4
     Type_NIS_Section NIS_Section;     // offset 0x4, size 0x4
     Type_NIS_Blacklist NIS_Blacklist; // offset 0x8, size 0x4
-};
+} NIS_Select_BlacklistStruct;
 
-extern InterfaceId NIS_Select_EndId;         // size: 0x8, address: 0x80418948
-extern FunctionHandle gNIS_Select_EndHandle; // size: 0x8, address: 0x8045E8E4
+extern InterfaceId NIS_Select_EndId;
+extern FunctionHandle gNIS_Select_EndHandle;
 
 // total size: 0xC
-struct NIS_Select_EndStruct {
+typedef struct {
     Type_NIS_Scene_End NIS_Scene_End; // offset 0x0, size 0x4
     Type_NIS_Track NIS_Track;         // offset 0x4, size 0x4
     Type_NIS_Section NIS_Section;     // offset 0x8, size 0x4
-};
+} NIS_Select_EndStruct;
 
 inline Result NIS_Select_Start(Type_NIS_Scene_Start NIS_Scene_Start, Type_NIS_Track NIS_Track, Type_NIS_Section NIS_Section) {
     NIS_Select_StartStruct data;

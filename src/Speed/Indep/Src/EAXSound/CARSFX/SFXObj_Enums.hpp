@@ -4,6 +4,22 @@
 
 #define MAX_NUM_SFXOBJS_PER_STATE 32
 
+// TODO Location not confirmed
+enum eMMTYPE {
+    MMTYPE_MAIN = 0,
+    MMTYPE_SECONDARY = 1,
+    MMTYPE_DYNAMIC = 2,
+    MMTYPE_SECONDARYDYNAMIC = 3,
+};
+
+// TODO location not confirmed (there are reflection typedefs to this)
+enum eRACETYPE {
+    eRACE_CIRCUIT = 0,
+    eRACE_DRAG = 1,
+    eRACE_TWOCIRC = 2,
+    eRACE_TWODRG = 3,
+};
+
 enum eMAINMAPSTATES {
     eMM_MAIN = 0,
     eMM_MUSIC = 1,

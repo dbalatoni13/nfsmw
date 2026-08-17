@@ -71,6 +71,7 @@ class tShaker {
     float fFrequency;      // offset 0x1C, size 0x4
 };
 
+void UpdateCameraShakers(float dT);
 void ResetCameraShakers();
 
 #endif

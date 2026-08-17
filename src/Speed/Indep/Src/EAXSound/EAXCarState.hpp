@@ -155,7 +155,9 @@ class EAX_CarState : public UTL::Collections::Listable<EAX_CarState, 10> {
     }
     bool IsHotPursuit() {}
     bool IsShocked() {}
-    float GetHeath() {}
+    float GetHeath() {
+        return this->mHealth;
+    }
 
     Gear GetGear() {
         return this->mDriveline.mGear;

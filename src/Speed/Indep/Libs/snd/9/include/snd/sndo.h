@@ -185,11 +185,41 @@ typedef struct SNDFILTERDEF {
 
 int SND3dpos(int shandle, int azimuth, int elevation);
 
+int SNDAEMS_addmodulebank(void *pBank, char *streamFileName, int streamFileNameOffset, void *(*mallocCb)(void *, int, int));
+
+int SNDAEMS_asyncloadmodulebank(char *moduleBankFileName, int moduleBankFileOffset, char *streamFileName, int streamFileOffset, void *pMem,
+                                int memSize, void *(*mallocCb)(int));
+int SNDAEMS_asyncloadmodulebankdone();
+
+int SNDAEMS_asyncloadmodulebankmem(void *pModuleBank, char *streamFileName, int streamFileOffset, void *(*mallocCb)(int));
+int SNDAEMS_asyncloadmodulebankmemdone();
+
 int SND_attrsetdef(SNDSAMPLEATTR *pssa);
 
-int SNDBANK_patchinfo(int bhandle, int patnum, SNDSAMPLEFORMAT *pssf, SNDSAMPLEATTR *pssa, SNDSAMPLEDESC *pssd);
+int SNDbankadd(int *pbhandle, void *pbank);
+
+int SNDBANK_asyncload(char *filename, int fileoffset, void *pmem, int memsize, void *(*mallocfn)(int));
+int SNDBANK_asyncdone();
+
+int SNDBANK_asyncloadmem(int *pbhandle, void *pbank);
+int SNDBANK_asyncloadmemdone();
+
+int SNDbankheadercopy(void *pmem, int bhandle);
+
+int SNDbankheadersize(int bhandle);
+
+int SNDBANK_play(int bhandle, int patnum, SNDPLAYOPTS *pspo);
+
+int SNDbankremove(int bhandle);
+
+void SNDSYS_add100hzclient(void (*client)(void));
+void SNDSYS_remove100hzclient(void (*client)(void));
 
 int SNDCTRL_drylevel(int shandle, int level);
+
+int SNDfxlevel(int shandle, int bus, int level);
+
+int SNDBANK_patchinfo(int bhandle, int patnum, SNDSAMPLEFORMAT *pssf, SNDSAMPLEATTR *pssa, SNDSAMPLEDESC *pssd);
 
 int SNDCTRL_getprogvol(int shandle);
 

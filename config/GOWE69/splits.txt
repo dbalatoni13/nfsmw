@@ -239,11 +239,6 @@ Speed/Indep/SourceLists/zFeOverlay.cpp:
 	.data       start:0x804390E4 end:0x804394D0
 	.bss        start:0x804AAA90 end:0x804B4DE8
 
-asd2:
-	.text       start:0x8030EB08 end:0x8031F4C0
-	.ctors      start:0x803C8BE8 end:0x803C8C1C
-	.dtors      start:0x803C8C44 end:0x803C8C5C
-
 Speed/GameCube/bWare/GameCube/dolphinsdk/src/base/PPCArch.c:
 	.text       start:0x8031F4C0 end:0x8031F5D8
 
@@ -777,19 +772,25 @@ Speed/Indep/Libs/snd/9/source/library/cmn/saems.c:
 	.data       start:0x80450174 end:0x804502C8
 
 Speed/Indep/Libs/snd/9/source/library/cmn/saemsamb.c:
-	.text       start:0x8035D4A0 end:0x8035D690
+	.text       start:0x8035D4A0 end:0x8035D6BC
+	.ctors      start:0x803C8BF0 end:0x803C8BF4
 	.bss        start:0x804BE5FC end:0x804BE634
 
-Speed/Indep/Libs/snd/9/source/library/cmn/saemsstr.c:
-	.text       start:0x8035D6BC end:0x8035DFE4
-	.data       start:0x804502C8 end:0x804502D0
-	.bss        start:0x804BE634 end:0x804BE690
+Speed/Indep/Libs/snd/9/source/library/cmn/saemsmbf.c:
+	.text       start:0x8035D6BC end:0x8035DCA4
+	.data       start:0x804502C8 end:0x804502CC
+	.bss        start:0x804BE634 end:0x804BE670
+
+Speed/Indep/Libs/snd/9/source/library/cmn/saemsmbm.c:
+	.text       start:0x8035DCA4 end:0x8035DFE4
+	.bss        start:0x804BE670 end:0x804BE690
 
 Speed/Indep/Libs/snd/9/source/library/cmn/saemstimupdt.c:
 	.text       start:0x8035DFE4 end:0x8035E05C
 
 Speed/Indep/Libs/snd/9/source/library/cmn/salloc.c:
 	.text       start:0x8035E05C end:0x8035E650
+	.data       start:0x804502CC end:0x804502D0
 	.bss        start:0x804BE690 end:0x804BE69C
 
 Speed/Indep/Libs/snd/9/source/library/cmn/sattrdef.c:
@@ -798,7 +799,7 @@ Speed/Indep/Libs/snd/9/source/library/cmn/sattrdef.c:
 Speed/Indep/Libs/snd/9/source/library/cmn/sbadd.c:
 	.text       start:0x8035E6E8 end:0x8035E9CC
 
-Speed/Indep/Libs/snd/9/source/library/cmn/ssballoc.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/sballoc.c:
 	.text       start:0x8035E9CC end:0x8035EA50
 
 Speed/Indep/Libs/snd/9/source/library/cmn/sbasync.c:
@@ -809,19 +810,19 @@ Speed/Indep/Libs/snd/9/source/library/cmn/sbasyncm.c:
 	.text       start:0x8035F650 end:0x8035F8E8
 	.bss        start:0x804BE69C end:0x804BE6B0
 
-Speed/Indep/Libs/snd/9/source/library/cmn/ssbhdrcpy.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/sbhdrcpy.c:
 	.text       start:0x8035F8E8 end:0x8035F95C
 
-Speed/Indep/Libs/snd/9/source/library/cmn/ssbhdrsze.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/sbhdrsze.c:
 	.text       start:0x8035F95C end:0x8035F974
 
-Speed/Indep/Libs/snd/9/source/library/cmn/ssbplay.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/sbplay.c:
 	.text       start:0x8035F974 end:0x8035FA0C
 
-Speed/Indep/Libs/snd/9/source/library/cmn/ssbremove.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/sbremove.c:
 	.text       start:0x8035FA0C end:0x8035FBA0
 
-Speed/Indep/Libs/snd/9/source/library/cmn/ssbvalid.c:
+Speed/Indep/Libs/snd/9/source/library/cmn/sbvalid.c:
 	.text       start:0x8035FBA0 end:0x8035FBFC
 
 Speed/Indep/Libs/snd/9/source/library/cmn/scheckpo.c:
@@ -839,6 +840,7 @@ Speed/Indep/Libs/snd/9/source/library/cmn/sdata.c:
 
 Speed/Indep/Libs/snd/9/source/library/cmn/sfxlevel.c:
 	.text       start:0x8035FDEC end:0x8035FEF0
+	.rodata     start:0x80412850 end:0x80412860
 
 Speed/Indep/Libs/snd/9/source/library/cmn/slowpass.c:
 	.text       start:0x8035FEF0 end:0x8035FF58
@@ -1361,6 +1363,11 @@ Packages/realmemcard/3.04.01-layer2/source/lib/gc/gc_interface.cpp:
 	.bss        start:0x804D8E24 end:0x804D95E8
 	.sdata      start:0x804FF68C end:0x804FF6A8
 	.sbss       start:0x804FFD58 end:0x804FFD5C
+
+asd2:
+	.text       start:0x80391518 end:0x80391570
+	.ctors      start:0x803C8BF4 end:0x803C8C1C
+	.dtors      start:0x803C8C44 end:0x803C8C5C
 
 Packages/realmemcard/3.04.01-layer2/source/lib/gc/public.cpp:
 	.text       start:0x80391570 end:0x80392910
