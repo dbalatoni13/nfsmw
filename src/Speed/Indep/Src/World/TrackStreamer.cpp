@@ -2073,6 +2073,7 @@ void TrackStreamer::SwitchZones(short *current_zones) {
         if (position_entry->CurrentZone != zone_number) {
             PlotLoadingMarker(position_entry);
 
+#ifndef EA_BUILD_A124
             VisibleSectionBoundary *boundary1 = TheVisibleSectionManager.FindBoundary(position_entry->CurrentZone);
             VisibleSectionBoundary *boundary2 = TheVisibleSectionManager.FindBoundary(zone_number);
             float best_distance = 10000.0f;
@@ -2083,7 +2084,6 @@ void TrackStreamer::SwitchZones(short *current_zones) {
                 }
             }
 
-#ifndef EA_BUILD_A124
             if (0.1f < best_distance) {
                 CurrentZoneFarLoad = true;
             }
