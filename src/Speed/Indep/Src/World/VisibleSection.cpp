@@ -286,7 +286,11 @@ float VisibleSectionBoundary::GetDistanceOutside(const bVector2 *point, float ma
         while (point_number < NumPoints) {
             int next = point_number + 1; // TODO get rid of the temporary
             bVector2 *point1 = GetPoint(point_number);
+#ifdef EA_BUILD_A124
+            bVector2 *point2 = GetPoint(next % NumPoints);
+#else
             bVector2 *point2 = GetPoint(next - (next / NumPoints) * NumPoints);
+#endif
             float distance = bDistToLine(point, point1, point2);
             if (distance < closest_distance) {
                 closest_distance = distance;
