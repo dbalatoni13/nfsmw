@@ -2579,8 +2579,11 @@ void TrackStreamer::UnloadEverything() {
 
     for (int n = 0; n < NumTrackStreamingSections; n++) {
         TrackStreamingSection *section = &pTrackStreamingSections[n];
-        // TODO
+#ifdef EA_BUILD_A124
+        if (section->Status - TrackStreamingSection::LOADED < 2U) {
+#else
         if (section->Status >= TrackStreamingSection::LOADED && section->Status <= TrackStreamingSection::ACTIVATED) {
+#endif
             UnloadSection(section);
         }
     }
