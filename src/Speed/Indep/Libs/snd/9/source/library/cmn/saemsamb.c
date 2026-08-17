@@ -5,7 +5,7 @@
 
 AemsDef::SNDAEMS sndaems;
 
-int SNDAEMS_addmodulebank(void *pBank, char *streamFileName, int streamFileNameOffset, void *(* mallocCb)(void *, int, int)) {
+int SNDAEMS_addmodulebank(void *pBank, char *streamFileName, int streamFileNameOffset, void *(*mallocCb)(void *, int, int)) {
     AemsDef::ModuleBank *pModuleBank;
     void *pusermem;
     int residentSize;
@@ -30,9 +30,7 @@ int SNDAEMS_addmodulebank(void *pBank, char *streamFileName, int streamFileNameO
         }
     }
     if (pModuleBank->midibankoffset != 0) {
-        midiret = SNDbankadd(
-            &pModuleBank->midibhandle,
-            &pModuleBank->id[pModuleBank->midibankoffset]);
+        midiret = SNDbankadd(&pModuleBank->midibhandle, &pModuleBank->id[pModuleBank->midibankoffset]);
         if (midiret < 0) {
             errorcode = midiret;
             goto abort;
@@ -74,12 +72,9 @@ int SNDAEMS_addmodulebank(void *pBank, char *streamFileName, int streamFileNameO
         }
     }
 
-    SNDAEMSI_resolvemodulebank(
-        pModuleBank,
-        reinterpret_cast<AemsDef::FUNCFIXUPHEADER *>(&reinterpret_cast<char *>(pBank)[pModuleBank->funcfixupoffset]),
-        streamFileName,
-        streamFileNameOffset
-    );
+    SNDAEMSI_resolvemodulebank(pModuleBank,
+                               reinterpret_cast<AemsDef::FUNCFIXUPHEADER *>(&reinterpret_cast<char *>(pBank)[pModuleBank->funcfixupoffset]),
+                               streamFileName, streamFileNameOffset);
 
     return pModuleBank->modulebankhandle;
 

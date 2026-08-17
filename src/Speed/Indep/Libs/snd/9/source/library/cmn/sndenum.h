@@ -1,3 +1,6 @@
+#ifndef SND_CMN_ENUM_H
+#define SND_CMN_ENUM_H
+
 // TODO: Where does this stuff go??
 
 enum Channel {
@@ -89,3 +92,5 @@ enum FoldDownTarget {
     FOLDDOWNTARGET_5POINT1 = 3,
     FOLDDOWNTARGET_MAX = 4,
 };
+
+#endif
