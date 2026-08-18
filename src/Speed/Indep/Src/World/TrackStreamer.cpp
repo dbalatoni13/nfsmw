@@ -2563,7 +2563,6 @@ int TrackStreamer::GetSectionToActivate(int activation_delay) {
 
 void TrackStreamer::HandleSectionActivation() {
     ProfileNode profile_node("TODO", 0);
-    int activation_delay;
     short section_to_activate = static_cast<short>(GetSectionToActivate(0));
     if (section_to_activate != 0) {
         TrackStreamingSection *section = FindSection(section_to_activate);
