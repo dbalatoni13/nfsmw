@@ -2341,14 +2341,24 @@ void TrackStreamer::CalculateLoadingBacklog() {
     for (int i = 0; i < NumCurrentStreamingSections; i++) {
         TrackStreamingSection *section = CurrentStreamingSections[i];
         // TODO
+#ifdef EA_BUILD_A124
+        if (section->CurrentlyVisible) {
+            if (section->Status != TrackStreamingSection::LOADED &&
+                section->Status != TrackStreamingSection::ACTIVATED) {
+#else
         if (section->CurrentlyVisible && (section->Status - TrackStreamingSection::LOADED > 1U)) {
+#endif
             // TODO get rid of temp
             int rounded_size = section->Size;
             if (rounded_size < 0) {
                 rounded_size += 0x3ff;
             }
 
+#ifdef EA_BUILD_A124
+            float time = static_cast<float>(rounded_size >> 10) * 0.0004f + 0.2f;
+#else
             float time = static_cast<float>(rounded_size >> 10) * 0.0004f + 0.15f;
+#endif
             if (section->BaseLoadingPriority == 1) {
                 time *= 0.4f;
             }
@@ -2356,6 +2366,9 @@ void TrackStreamer::CalculateLoadingBacklog() {
                 time *= 0.2f;
             }
             loading_backlog += time;
+#ifdef EA_BUILD_A124
+            }
+#endif
         }
     }
 
