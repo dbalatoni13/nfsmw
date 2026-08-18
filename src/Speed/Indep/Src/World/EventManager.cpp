@@ -98,8 +98,13 @@ int LoaderEventManager(bChunk *bchunk) {
         }
     }
 
+#ifdef EA_BUILD_A124
+    if (trigger_pack != nullptr) {
+        trigger_pack->EndianSwapped = 1;
+#else
     trigger_pack->EndianSwapped = 1;
     if (trigger_pack != nullptr) {
+#endif
         if (trigger_pack->NumEventTriggers != 0 && (trigger_pack->EventTree != nullptr) && (trigger_pack->EventTriggerArray != nullptr)) {
             EventTriggerPackList.AddTail(trigger_pack);
         } else {
