@@ -409,7 +409,6 @@ int LoaderScenery(bChunk *chunk) {
         if (!AreChunksBeingMoved()) {
             for (int n = 0; n < section_header->NumSceneryInfo; n++) {
                 SceneryInfo *scenery_info = &section_header->pSceneryInfo[n];
-                eModel *lowest_detail_model;
                 for (int detail_level = 0; detail_level < 4; detail_level++) {
                     unsigned int name_hash = scenery_info->NameHash[detail_level];
                     // TODO magic
