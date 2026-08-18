@@ -1103,9 +1103,11 @@ void GrandSceneryCullInfo::StuffScenery(eView *view, int stuff_flags) {
     if (stuff_flags & 0x800) {
         exclude_flags |= 0x400000;
     }
+#ifndef EA_BUILD_A124
     if (stuff_flags & 0x1000) {
         exclusive_flags = 0x1000000;
     }
+#endif
 
     for (int n = 0; n < NumCullInfos; n++) {
         SceneryCullInfo *scenery_cull_info = &SceneryCullInfos[n];
@@ -1129,9 +1131,15 @@ void GrandSceneryCullInfo::StuffScenery(eView *view, int stuff_flags) {
             if (info->SceneryInst->ExcludeFlags & 0x1000000) {
                 flags |= 0x100000;
             }
+#ifdef EA_BUILD_A124
+            if (info->SceneryInst->ExcludeFlags & 0x100) {
+                flags |= 0x20000;
+            }
+#else
             if (info->SceneryInst->ExcludeFlags & 0x100) {
                 flags |= 0x1020000;
             }
+#endif
             if (info->SceneryInst->ExcludeFlags & 0x400000) {
                 flags |= 0x40000;
             }
@@ -1154,14 +1162,30 @@ void GrandSceneryCullInfo::StuffScenery(eView *view, int stuff_flags) {
                 if ((info->SceneryInst->ExcludeFlags & 0x200000) != 0) {
                     flags |= 0x10000;
                 }
+#ifndef EA_BUILD_A124
                 if ((info->SceneryInst->ExcludeFlags & 0x40000000) != 0) {
                     flags |= 0x10000;
                 }
+#endif
             }
             if (vis_state == EVISIBLESTATE_FULL) {
                 flags |= 4;
             }
 
+#ifdef EA_BUILD_A124
+            bool B = false;
+            if (exclusive_flags != 0) {
+                if (flags & exclusive_flags) {
+                    B = true;
+                }
+            }
+
+            bool C = false;
+            if (exclude_flags != 0) {
+                C = (flags & exclude_flags) == 0;
+            }
+            if ((exclusive_flags == 0 && exclude_flags == 0) || B || C) {
+#else
             bool A = false;
             if (exclusive_flags == 0) {
                 A = exclude_flags == 0;
@@ -1179,6 +1203,7 @@ void GrandSceneryCullInfo::StuffScenery(eView *view, int stuff_flags) {
                 C = (flags & exclude_flags) == 0;
             }
             if (A || B || C) {
+#endif
                 if (info->pMatrix == nullptr) {
                     bMatrix4 *local_world = eGetIdentityMatrix();
                     view->Render(pDebugModel, local_world, nullptr, flags, nullptr);
