@@ -262,6 +262,8 @@ class DatabaseLoadData {
 // total size: 0x4C
 class DatabasePrivate : public Database {
   public:
+    USE_ATTRIB_ALLOC(Attrib::DatabasePrivate);
+
     static void QueueForDelete(const Collection *obj, std::list<const Collection *> &bag) {
         obj->IsReferenced();
         if (std::find(bag.begin(), bag.end(), obj) == bag.end()) {
@@ -300,14 +302,6 @@ class DatabasePrivate : public Database {
             bag.pop_front();
             iter = bag.begin();
         }
-    }
-
-    void *operator new(std::size_t bytes) {
-        return Alloc(bytes, "Attrib::DatabasePrivate");
-    }
-
-    void operator delete(void *ptr, std::size_t bytes) {
-        Free(ptr, bytes, "Attrib::DatabasePrivate");
     }
 
     DatabasePrivate(const DatabaseLoadData &loadData) : Database(*this), mClasses(loadData.mNumClasses) {

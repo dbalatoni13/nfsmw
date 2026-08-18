@@ -218,7 +218,6 @@ void QueuedFileBundle::ReadCallback(int error_status) {
     }
 }
 
-// UNSOLVED and a GetStatus call is missing in the dwarf
 void CheckQueuedFileCallbacks() {
     bServiceFileSystem();
     if (QueuedFileNumReadsInProgress) {
@@ -226,87 +225,98 @@ void CheckQueuedFileCallbacks() {
         QueuedFileStatus status = q->GetStatus();
         if (QueuedFileJoylogEnabled) {
             if (Joylog::IsReplaying()) {
-                ProfileNode profile_node("TODO", 0);
                 status = static_cast<QueuedFileStatus>(Joylog::GetData(4, JOYLOG_CHANNEL_QUEUEDFILE_STATUS));
                 if (status != QREADING) {
+                    ProfileNode profile_node("TODO", 0);
                     while (q->GetStatus() == QREADING) {
                         bThreadYield(8);
                         bServiceFileSystem();
                     }
+                    q->GetStatus();
                 }
             } else {
                 Joylog::AddData(status, 4, JOYLOG_CHANNEL_QUEUEDFILE_STATUS);
             }
         }
         if (status == QDONE) {
-            q->Remove();
+            ReadingQueuedFileList.Remove(q);
             QueuedFileNumReadsInProgress--;
             if (q->IsFinishedAllReading()) {
                 ProfileNode profile_node("TODO", 0);
                 q->CallDoneCallback(0);
-                delete q;
             } else {
                 q->SetStatus(QWAITING);
                 WaitingQueuedFileList.AddTail(q);
+                return;
             }
-        } else if (status == QERROR) {
-            q->Remove();
-            QueuedFileNumReadsInProgress--;
-            q->CallDoneCallback(1);
-            delete q;
+        } else {
+            if (status == QERROR) {
+                ReadingQueuedFileList.Remove(q);
+                QueuedFileNumReadsInProgress--;
+                q->CallDoneCallback(1);
+            } else {
+                // hack
+                do {
+                } while (false);
+                return;
+            }
         }
+        delete q;
+        q = nullptr;
     }
 }
 
 void StartQueuedFileReading() {
     while (true) {
-        // TODO this condition somehow has to go outside, or inside the while
         if ((QueuedFileNumReadsInProgress - QueuedFile::GetNumFilesDecompressing() > 2) || WaitingQueuedFileList.IsEmpty()) {
             return;
-        }
-        WaitingQueuedFileList.Sort(&QueuedFile::SortByPriority);
-        if (QueuedFileNumReadsInProgress > 0) {
+        } else {
+            WaitingQueuedFileList.Sort(&QueuedFile::SortByPriority);
+            {
+                QueuedFile *q = WaitingQueuedFileList.GetHead();
+                if (QueuedFileNumReadsInProgress > 0) {
+                    if (bStrCmp(q->GetFilename(), LastQueuedFilename) != 0) {
+                        return;
+                    }
+                }
+            }
+            if (EnableQueuedFileBundle) {
+                QueuedFileBundle *q_bundle = new QueuedFileBundle();
+
+                for (QueuedFile *q = WaitingQueuedFileList.GetHead(); q != WaitingQueuedFileList.EndOfList(); q = q->GetNext()) {
+                    if (!q_bundle->TestAddQueuedFile(q)) {
+                        break;
+                    }
+                }
+                if (q_bundle->NumQueuedFiles <= 1) {
+                    if (q_bundle) {
+                        if (q_bundle->ReadBuffer) {
+                            bFree(q_bundle->ReadBuffer);
+                        }
+                        delete q_bundle;
+                    }
+                } else {
+                    q_bundle->BeginRead();
+                    for (int n = 0; n < q_bundle->NumQueuedFiles; n++) {
+                        WaitingQueuedFileList.Remove(q_bundle->QueuedFiles[n]);
+                    }
+                }
+            }
             QueuedFile *q = WaitingQueuedFileList.GetHead();
-            if (bStrCmp(q->GetFilename(), LastQueuedFilename) != 0) {
+            if (q->GetPriority() < QueuedFileMinPriority) {
+                if (QueuedFileNumReadsInProgress == 0) {
+                    if (QueuedFileMinPriorityTimeoutCounter++ > 10) {
+                        QueuedFileMinPriority = 0;
+                    }
+                }
                 return;
             }
-        }
-        if (EnableQueuedFileBundle) {
-            QueuedFileBundle *q_bundle = new QueuedFileBundle();
-
-            for (QueuedFile *q = WaitingQueuedFileList.GetHead(); q != WaitingQueuedFileList.EndOfList(); q = q->GetNext()) {
-                if (!q_bundle->TestAddQueuedFile(q)) {
-                    break;
-                }
-            }
-            if (q_bundle->NumQueuedFiles <= 1) {
-                if (q_bundle) {
-                    if (q_bundle->ReadBuffer) {
-                        bFree(q_bundle->ReadBuffer);
-                    }
-                    delete q_bundle;
-                }
-            } else {
-                q_bundle->BeginRead();
-                for (int n = 0; n < q_bundle->NumQueuedFiles; n++) {
-                    WaitingQueuedFileList.Remove(q_bundle->QueuedFiles[n]);
-                }
-            }
-        }
-        QueuedFile *q = WaitingQueuedFileList.GetHead();
-        if (q->GetPriority() < QueuedFileMinPriority) {
-            break;
-        }
-        QueuedFileMinPriorityTimeoutCounter = 0;
-        bSafeStrCpy(LastQueuedFilename, q->GetFilename(), sizeof(LastQueuedFilename));
-        q->BeginRead();
-        WaitingQueuedFileList.Remove(q);
-        ReadingQueuedFileList.AddTail(q);
-        QueuedFileNumReadsInProgress++;
-    }
-    if (QueuedFileNumReadsInProgress == 0) {
-        if (QueuedFileMinPriorityTimeoutCounter++ > 10) {
-            QueuedFileMinPriority = 0;
+            QueuedFileMinPriorityTimeoutCounter = 0;
+            bSafeStrCpy(LastQueuedFilename, q->GetFilename(), sizeof(LastQueuedFilename));
+            q->BeginRead();
+            WaitingQueuedFileList.Remove(q);
+            ReadingQueuedFileList.AddTail(q);
+            QueuedFileNumReadsInProgress++;
         }
     }
 }

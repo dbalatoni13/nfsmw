@@ -348,7 +348,7 @@ void RegionLoader::BeginLoading() {
     TrackInfo::SetLoadedTrackInfo(TheRaceParameters.TrackNumber);
     SetLeakDetector();
     CheckForHolesInMemory();
-    InGameMemoryFile = LoadMemoryFile("InGame.mem");
+    InGameMemoryFile = LoadMemoryFile("Global\\InGameMemoryFile.bin");
     CodeOverlayLoadingGame();
     WWorld::Init();
     bool two_player = CalculateSimMode() == Sim::USER_SPLIT_SCREEN;
@@ -693,8 +693,8 @@ void BeginWorldLoad() {
     EstablishRemoteCaffeineConnection();
     TheTrackLoader.InitTopologyAndSceneryGroups();
     SunTrackLoader();
-    WeHaveCheckedIfJR2ServerExists = false;
-    if (TheRaceParameters.AIDemoMode == 0 && TheRaceParameters.ReplayDemoMode == 0) {
+    WeHaveCheckedIfJR2ServerExists = 0;
+    if (!TheRaceParameters.AIDemoMode && !TheRaceParameters.ReplayDemoMode) {
         ActivateAnyRenderEggs();
     }
     if (TheOnlineManager.IsOnlineRace()) {

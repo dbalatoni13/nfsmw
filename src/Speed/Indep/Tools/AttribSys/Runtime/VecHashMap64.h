@@ -214,48 +214,63 @@ template <typename KeyType, typename T, typename Policy, bool Unk2, std::size_t 
         return true;
     }
 
-    // TODO might this be faulty?
     std::size_t UpdateSearchLength(std::size_t targetIndex, std::size_t freeIndex) {
-        if (targetIndex == freeIndex && mTable[targetIndex].MaxSearch() == 0) {
-            targetIndex = Policy::WrapIndex(targetIndex + mTableSize - mWorstCollision, mTableSize, 0);
-            std::size_t distance = mWorstCollision;
-            while (mTable[targetIndex].MaxSearch() < distance && distance > 0) {
-                targetIndex = Policy::WrapIndex(targetIndex + 1, mTableSize, 0);
-                distance--;
-            }
-            if (distance == 0) {
-                return static_cast<std::size_t>(-1);
+        if (targetIndex == freeIndex) {
+            if (this->mTable[targetIndex].MaxSearch() != 0) {
+                targetIndex = freeIndex;
+            } else {
+                targetIndex = Policy::WrapIndex(targetIndex + this->mTableSize - this->mWorstCollision, this->mTableSize, 0);
+
+                std::size_t distance = this->mWorstCollision;
+
+                while (this->mTable[targetIndex].MaxSearch() < distance && distance > 0) {
+                    targetIndex = Policy::WrapIndex(targetIndex + 1, this->mTableSize, 0);
+                    distance--;
+                }
+
+                if (distance == 0) {
+                    return static_cast<std::size_t>(-1);
+                }
             }
         }
 
-        std::size_t maxSearch = mTable[targetIndex].MaxSearch();
-        std::size_t worstIndex = Policy::WrapIndex(targetIndex + maxSearch, mTableSize, 0);
-        if (mTable[worstIndex].IsValid()) {
-            Policy::KeyIndex(mTable[worstIndex].Key(), mTableSize, 0);
+        std::size_t maxSearch = this->mTable[targetIndex].MaxSearch();
+        std::size_t worstIndex = Policy::WrapIndex(targetIndex + maxSearch, this->mTableSize, 0);
+
+        if (this->mTable[worstIndex].IsValid()) {
+            Policy::KeyIndex(this->mTable[worstIndex].Key(), this->mTableSize, 0);
         }
 
-        if (freeIndex != worstIndex && mTable[freeIndex].IsValid()) {
-            mTable[freeIndex].Move(mTable[worstIndex]);
+        if (this->mTable[freeIndex].IsValid()) {
         }
-        if (mTable[worstIndex].IsValid()) {
+
+        if (freeIndex != worstIndex) {
+            this->mTable[freeIndex].Move(this->mTable[worstIndex]);
+        }
+
+        if (this->mTable[worstIndex].IsValid()) {
         }
 
         std::size_t newMaxSearch = 0;
+
         for (std::size_t searchLen = 1; searchLen < maxSearch; searchLen++) {
-            std::size_t index = Policy::WrapIndex(targetIndex + searchLen, mTableSize, 0);
-            if (Policy::KeyIndex(mTable[index].Key(), mTableSize, 0) == targetIndex) {
+            std::size_t index = Policy::WrapIndex(targetIndex + searchLen, this->mTableSize, 0);
+
+            if (Policy::KeyIndex(this->mTable[index].Key(), this->mTableSize, 0) == targetIndex) {
                 newMaxSearch = searchLen;
             }
         }
 
-        mTable[targetIndex].ResetSearchLength(newMaxSearch);
+        this->mTable[targetIndex].ResetSearchLength(newMaxSearch);
 
-        if (maxSearch == mWorstCollision && mTable[freeIndex].MaxSearch() < maxSearch && newMaxSearch < maxSearch) {
-            mWorstCollision = 0;
-            std::size_t prevWorst; // unused
-            for (std::size_t i = 0; i < mTableSize && mWorstCollision < maxSearch; i++) {
-                if (mTable[i].MaxSearch() > mWorstCollision) {
-                    prevWorst = mWorstCollision = mTable[i].MaxSearch();
+        if (maxSearch == this->mWorstCollision && this->mTable[freeIndex].MaxSearch() < maxSearch && newMaxSearch < maxSearch) {
+            this->mWorstCollision = 0;
+
+            std::size_t prevWorst;
+
+            for (std::size_t i = 0; i < this->mTableSize && this->mWorstCollision < maxSearch; i++) {
+                if (this->mTable[i].MaxSearch() > this->mWorstCollision) {
+                    prevWorst = this->mWorstCollision = this->mTable[i].MaxSearch();
                 }
             }
         }

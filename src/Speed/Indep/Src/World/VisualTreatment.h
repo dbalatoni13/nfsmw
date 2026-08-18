@@ -22,6 +22,7 @@ class IVisualTreatment {
     static IVisualTreatment *Get();
 
     void SetState(eVisualLookState state) {
+        this->Reset();
         this->State = state;
     }
 

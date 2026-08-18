@@ -44,14 +44,14 @@ class VaultGarbageCollector : public Attrib::IGarbageCollector {
 static FileGarbageCollector gFileCollector;
 static VaultGarbageCollector gVaultCollector;
 
-// UNSOLVED
-Attrib::Vault *AddVault(const char *filename, void *data, size_t bytes) {
+Attrib::Vault *AddVault(const char *filename, void *data, unsigned int bytes) {
     Attrib::AssetID headerID = Attrib::StringToAssetID(filename);
-    // TODO it stores this extra to sp8
-    VaultMap::iterator result = gVaults.find(headerID);
+
+    VaultMap::const_iterator result = gVaults.find(headerID);
     if (result != gVaults.end()) {
         return (*result).second;
     }
+
     Attrib::AssetID assetID = Attrib::StringToAssetID(filename);
     FileMap::iterator fileIter = gFiles.insert(FileMap::value_type(assetID, FileRecord(data, bytes))).first;
     (*fileIter).second.mRefCount++;
@@ -70,15 +70,15 @@ Attrib::Vault *AddVault(const char *filename, void *data, size_t bytes) {
             } else {
                 FileMap::iterator depIter = gFiles.find(depID);
                 if (depIter != gFiles.end()) {
-                    // TODO there should be only one AddRef
-                    vault->AddRef();
+                    (*depIter).second.mRefCount++;
                     vault->ResolveDependency(i, (*depIter).second.mData, (*depIter).second.mBytes, &gFileCollector);
                 } else {
-                    vault->ResolveDependency(i, nullptr, 0, nullptr);
+                    vault->ResolveDependency(i, 0, 0, 0);
                 }
             }
         }
     }
+
     vault->Initialize();
     gVaults.insert(VaultMap::value_type(headerID, vault));
     return vault;

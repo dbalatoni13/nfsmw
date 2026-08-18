@@ -241,34 +241,30 @@ void DisculatorDriver::Close(intptr_t h) {
     }
 }
 
-// UNSOLVED and wrong variable names
 uint32_t DisculatorDriver::Read(EAFileHandle h, void *buf, unsigned int bufsize, RealFile::DeviceDriver *ddParent, EAFileHandle ddFileHandle) {
     OpenDisculatorFile *odf = reinterpret_cast<OpenDisculatorFile *>(h);
     if (bufsize > odf->size - odf->seekPos) {
         bufsize = static_cast<unsigned int>(odf->size - odf->seekPos);
     }
-    int new_start_sector = odf->totalSectorOffset + static_cast<int>(odf->seekPos >> 11);
-    // TODO does that make sense?
-    int new_end_sector = odf->totalSectorOffset;
-    int delta_sector = bAbs(new_start_sector - CurrentSector);
 
-    CurrentSector = new_end_sector + static_cast<int>((odf->seekPos + bufsize) >> 11);
-    TotalDeltaSector += delta_sector;
+    int new_start_sector = odf->totalSectorOffset + static_cast<int>(odf->seekPos >> 11);
+    int new_end_sector = odf->totalSectorOffset + static_cast<int>((odf->seekPos + bufsize) >> 11);
+    int delta_sector = bAbs(new_start_sector - this->CurrentSector);
+
+    this->CurrentSector = new_end_sector;
+    this->TotalDeltaSector += delta_sector;
 
     if (PrintCDSeeking) {
-        // TODO using Undercover
+        // TODO using undercover
         float time;
         static float last_time;
         float delta_time;
         static bool first_time;
     }
-    // TODO using Undercover
+    // TODO using undercover
     gFileStats.AddStatEntry(odf->filename, new_start_sector, bufsize, nullptr);
 
-    unsigned int sectorBase = static_cast<unsigned int>(odf->localSectorOffset) * 0x800;
-    // seek parent
-    ddParent->Seek(ddFileHandle, static_cast<unsigned long long>(static_cast<int>(sectorBase >> 21 | sectorBase << 11)) + odf->seekPos, 0, nullptr,
-                   0);
+    ddParent->Seek(ddFileHandle, odf->seekPos + static_cast<unsigned long long>(odf->localSectorOffset << 11), 0, nullptr, 0);
     int nread = ddParent->Read(ddFileHandle, buf, bufsize, nullptr, 0);
     odf->seekPos += nread;
     return nread;
@@ -296,10 +292,9 @@ uint64_t DisculatorDriver::QueryLocation(EAFileHandle h) {
     return odf->seekPos;
 }
 
-// UNSOLVED, scheduling issue of GiantDataFileHandle
 bool DisculatorDriver::LoadGiantFiles(const char *giant_dir_filename, const char *giant_data_filename_base) {
     if (bFileExists(giant_dir_filename)) {
-        bFile *f = bOpen(giant_dir_filename, BOPEN_MODE_READONLY, true);
+        bFile *f = bOpen(giant_dir_filename, BOPEN_MODE_READONLY, 1);
         int size = bFileSize(f);
         int num_entries = size / sizeof(bFileDirectoryEntry);
 
@@ -311,10 +306,11 @@ bool DisculatorDriver::LoadGiantFiles(const char *giant_dir_filename, const char
             bThreadYield(8);
         }
 
-        pDirectoryEntryTable = dir;
-        NumDirectoryEntries = num_entries;
-        for (int n = 0; n < NumDirectoryEntries; n++) {
-            bFileDirectoryEntry *dir = &pDirectoryEntryTable[n];
+        this->pDirectoryEntryTable = dir;
+        this->NumDirectoryEntries = num_entries;
+
+        for (int n = 0; n < this->NumDirectoryEntries; n++) {
+            bFileDirectoryEntry *dir = &this->pDirectoryEntryTable[n];
             bPlatEndianSwap(&dir->Hash);
             bPlatEndianSwap(&dir->FileNumber);
             bPlatEndianSwap(&dir->LocalSectorOffset);
@@ -325,19 +321,19 @@ bool DisculatorDriver::LoadGiantFiles(const char *giant_dir_filename, const char
 
         int file_number;
         for (file_number = 0; file_number < 30; file_number++) {
-            bSPrintf(GiantDataFileName[file_number], "%s%d.BIN", giant_data_filename_base, file_number);
-            GiantDataFileHandle[file_number] = -1;
+            bSPrintf(this->GiantDataFileName[file_number], "%s%d.BIN", giant_data_filename_base, file_number);
+            *(this->GiantDataFileHandle + file_number) = -1;
         }
 
         for (file_number = 0; file_number < 30; file_number++) {
-            if (FILESYS_existssync(GiantDataFileName[file_number], 100)) {
-                GiantDataFileHandle[file_number] = FILESYS_opensync(GiantDataFileName[file_number], 1, 100);
+            if (FILESYS_existssync(this->GiantDataFileName[file_number], 100)) {
+                this->GiantDataFileHandle[file_number] = FILESYS_opensync(this->GiantDataFileName[file_number], 1, 100);
             } else {
                 break;
             }
         }
-        bClose(f);
 
+        bClose(f);
         return true;
     } else {
         return false;

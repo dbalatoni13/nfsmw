@@ -1,26 +1,7 @@
 #ifndef MISC_ATTRIB_ASSET_H
 #define MISC_ATTRIB_ASSET_H
 
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
-
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribLoadAndGo.h"
-
-// TODO is this right to be here?
-
-namespace Attrib {
-
-typedef HashInt AssetID;
-typedef HashInt ExportID;
-typedef HashInt TypeID;
-
-class IGarbageCollector {
-  public:
-    virtual void ReleaseData(AssetID id, void *data, size_t bytes) = 0;
-};
-
-}; // namespace Attrib
 
 class VaultMap : public std::map<unsigned int, Attrib::Vault *> {
   public:
