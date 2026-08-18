@@ -130,6 +130,13 @@ class TypeDesc {
         return mHandler;
     }
 
+    TypeDesc(const TypeDesc &src)
+        : mType(src.mType),   //
+          mName(src.mName),   //
+          mSize(src.mSize),   //
+          mIndex(src.mIndex), //
+          mHandler(src.mHandler) {}
+
     bool operator<(const TypeDesc &rhs) const {
         return mType < rhs.mType;
     }
@@ -143,14 +150,13 @@ class TypeDesc {
 };
 
 // total size: 0x10
-class TypeDescPtrVec : public std::vector<const TypeDesc *> {};
+class TypeDescPtrVec : public std::vector<const TypeDesc *> {
+    USE_ATTRIB_ALLOC(Attrib::TypeDescPtrVec);
+};
 
 // total size: 0x10
 class TypeTable : public std::set<TypeDesc> {
-  public:
-    void operator delete(void *ptr, std::size_t bytes) {
-        Free(ptr, bytes, "Attrib::TypeTable");
-    }
+    USE_ATTRIB_ALLOC(Attrib::TypeTable);
 };
 
 // total size: 0x8
@@ -183,10 +189,6 @@ class Database {
         return *sThis;
     }
 
-    void operator delete(void *ptr, std::size_t bytes) {
-        Free(ptr, bytes, "Attrib::Database");
-    }
-
     bool IsInitialized() {
         return sThis != nullptr;
     }
@@ -195,6 +197,7 @@ class Database {
     friend class DatabaseExportPolicy;
 
   private:
+    USE_ATTRIB_ALLOC(Attrib::Database);
     Database(DatabasePrivate &privates);
     virtual ~Database();
 
@@ -911,6 +914,7 @@ class Class {
 // total size: 0xC
 class RefSpec {
   public:
+    USE_ATTRIB_ALLOC(Attrib::RefSpec);
     RefSpec(const RefSpec &src);
     void SetCollection(const Collection *collectionPtr);
     const Class *GetClass() const;
@@ -924,10 +928,6 @@ class RefSpec {
         return *this;
     }
     void Clean() const;
-
-    void operator delete(void *ptr, std::size_t bytes) {
-        Free(ptr, bytes, "RefSpec");
-    }
 
     RefSpec() : mClassKey(0), mCollectionKey(0), mCollectionPtr(nullptr) {}
 
@@ -959,32 +959,33 @@ class Blob {
     const void *mData; // offset 0x4, size 0x4
 };
 
-const Key key_default = 0xeec2271a;
-const Key h64_default = 0xeec2271a;
+const Key key_default = 0xeec2271a; // Decl: 859
+const Key h64_default = 0xeec2271a; // Decl: 860
 
 }; // namespace Attrib
 
 namespace EA {
 namespace Reflection {
 
-typedef int64_t Int64;
-typedef int32_t Int32;
-typedef int16_t Int16;
-typedef int8_t Int8;
-typedef uint64_t UInt64;
-typedef uint32_t UInt32;
-typedef uint16_t UInt16;
-typedef uint8_t UInt8;
-typedef char Char;
-typedef bool Bool;
-typedef float Float;
-typedef double Double;
-typedef const char *Text;
+typedef int64_t Int64;    // Decl: 868
+typedef int32_t Int32;    // Decl: 869
+typedef int16_t Int16;    // Decl: 870
+typedef int8_t Int8;      // Decl: 871
+typedef uint64_t UInt64;  // Decl: 872
+typedef uint32_t UInt32;  // Decl: 873
+typedef uint16_t UInt16;  // Decl: 874
+typedef uint8_t UInt8;    // Decl: 875
+typedef char Char;        // Decl: 876
+typedef bool Bool;        // Decl: 877
+typedef float Float;      // Decl: 878
+typedef double Double;    // Decl: 879
+typedef const char *Text; // Decl: 880
 typedef void *Reference;
 
 } // namespace Reflection
 } // namespace EA
 
+// Decl: 901
 #define ATTRIB_CODEGEN_GETATTRIB(TYPE, KEY)                                                                                                          \
     result = TAttrib<TYPE>(this->Get(KEY));                                                                                                          \
     return (result.IsValid())

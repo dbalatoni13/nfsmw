@@ -3,10 +3,7 @@
 
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribLoadAndGo.h"
 
-class VaultMap : public std::map<unsigned int, Attrib::Vault *> {
-  public:
-    VaultMap();
-};
+class VaultMap : public std::map<unsigned int, Attrib::Vault *> {};
 
 class FileRecord {
   public:
@@ -21,10 +18,7 @@ class FileRecord {
     size_t mBytes;          // offset 0x8, size 0x4
 };
 
-class FileMap : public std::map<Attrib::AssetID, FileRecord> {
-  public:
-    FileMap();
-};
+class FileMap : public std::map<Attrib::AssetID, FileRecord> {};
 
 bool AddDepFile(const char *filename, void *data, size_t bytes);
 bool RemoveDepFile(const char *filename);

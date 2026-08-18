@@ -188,13 +188,18 @@ int JoylogBuffer::GetEntry(JoylogBufferEntry *entry, uint8 *pbuf) {
     return entry->DataSize + 1;
 }
 
-// UNSOLVED
 void JoylogBuffer::PrintNearbyJoylogEntries(int error_pos) {
     int pos = this->BufferStartPosition;
     const int range = 40;
-    while (pos < this->TopPosition && (pos < this->CurrentPosition + range) && (this->CurrentLoadPosition == 0 || pos < this->CurrentLoadPosition)) {
+    while (pos < this->TopPosition && pos < this->CurrentPosition + range) {
+        if (this->CurrentLoadPosition != 0 && pos >= this->CurrentLoadPosition) {
+            break;
+        }
         JoylogBufferEntry buffer_entry;
-        int new_pos = GetEntry(&buffer_entry, pos);
+        int new_pos = this->GetEntry(&buffer_entry, pos);
+        {
+            const char *current_string = (pos <= this->CurrentPosition && this->CurrentPosition < new_pos) ? "***" : "   ";
+        }
         pos = new_pos;
     }
 }

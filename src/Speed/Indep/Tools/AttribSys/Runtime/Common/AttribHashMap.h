@@ -190,34 +190,43 @@ class HashMap {
         return result;
     }
 
-    // UNSOLVED
-    unsigned int CountSearchCacheLines(Key key, unsigned int lineSize) {
+    unsigned int CountSearchCacheLines(Key key, unsigned int lineSize) const {
         unsigned int result = 0;
-        if (mNumEntries == 0 || key == 0) {
+
+        if (this->mNumEntries == 0 || key == 0) {
             return result;
         }
 
         unsigned int prevline = 0;
-        Node *table = mTable;
-        unsigned int actualIndex = HashMapTablePolicy::KeyIndex(key, mTableSize, mKeyShift);
+        Node *table = this->mTable;
+        unsigned int actualIndex = HashMapTablePolicy::KeyIndex(key, this->mTableSize, this->mKeyShift);
         unsigned int searchLen = 0;
         unsigned int maxSearchLen = table[actualIndex].MaxSearch();
         unsigned int currline = (uintptr_t)&table[actualIndex] >> (lineSize & 0x3f); // TODO huh?
 
         if (currline != 0) {
-            result = 1; // commenting this out improves the score
+            result = 1;
             prevline = currline;
         }
-        for (; searchLen < maxSearchLen; searchLen++) {
-            if (table[actualIndex].GetKey() == key) {
-                return result;
+
+        for (;;) {
+            if (searchLen >= maxSearchLen) {
+                break;
             }
-            actualIndex = HashMapTablePolicy::WrapIndex(actualIndex + 1, mTableSize, mKeyShift);
-            currline = (uintptr_t)&table[actualIndex] >> (lineSize & 0x3f);
+
+            if (table[actualIndex].GetKey() == key) {
+                break;
+            }
+
+            actualIndex = HashMapTablePolicy::WrapIndex(actualIndex + 1, this->mTableSize, this->mKeyShift);
+            currline = (uintptr_t)&this->mTable[actualIndex] >> (lineSize & 0x3f);
+
             if (currline != prevline) {
                 prevline = currline;
                 result++;
             }
+
+            searchLen++;
         }
 
         return result;
