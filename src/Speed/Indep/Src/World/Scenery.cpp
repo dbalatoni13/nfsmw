@@ -279,17 +279,17 @@ int LoaderScenery(bChunk *chunk) {
         ScenerySectionHeader *section_header = nullptr;
         bChunk *first_chunk = chunk->GetFirstChunk();
         bChunk *last_chunk = chunk->GetLastChunk();
-        int num_emodels;
-        int num_new_emodels;
 
         for (bChunk *chunk = first_chunk; chunk != last_chunk; chunk = chunk->GetNext()) {
             if (chunk->GetID() == BCHUNK_SCENERY_SECTION_HEADER) {
                 section_header = reinterpret_cast<ScenerySectionHeader *>(chunk->GetAlignedData(16));
                 if (!section_header->ChunksLoaded) {
+#ifndef EA_BUILD_A124
                     bPlatEndianSwap(&section_header->SectionNumber);
                     bPlatEndianSwap(&section_header->NumPolygonsInMemory);
                     bPlatEndianSwap(&section_header->NumPolygonsInWorld);
                     bPlatEndianSwap(&section_header->ViewsVisibleThisFrame);
+#endif
                 }
 
                 VisibleSectionUserInfo *user_info = TheVisibleSectionManager.AllocateUserInfo(section_header->SectionNumber);
@@ -305,12 +305,18 @@ int LoaderScenery(bChunk *chunk) {
                 section_header->NumSceneryInfo = chunk->GetSize() / sizeof(SceneryInfo);
                 if (!section_header->ChunksLoaded) {
                     for (int i = 0; i < section_header->NumSceneryInfo; i++) {
+#ifndef EA_BUILD_A124
                         bPlatEndianSwap(&section_header->pSceneryInfo[i].mHeirarchyNameHash);
+#endif
                         for (int j = 0; j < 4; j++) {
+#ifndef EA_BUILD_A124
                             bPlatEndianSwap(&section_header->pSceneryInfo[i].NameHash[j]);
+#endif
                         }
+#ifndef EA_BUILD_A124
                         bPlatEndianSwap(&section_header->pSceneryInfo[i].Radius);
                         bPlatEndianSwap(&section_header->pSceneryInfo[i].MeshChecksum);
+#endif
                     }
                 }
 
@@ -326,15 +332,22 @@ int LoaderScenery(bChunk *chunk) {
                 if (!section_header->ChunksLoaded) {
                     for (int i = 0; i < section_header->NumSceneryInstances; i++) {
                         SceneryInstance *scenery_instance = &section_header->pSceneryInstance[i];
+#ifndef EA_BUILD_A124
                         bPlatEndianSwap(&scenery_instance->SceneryInfoNumber);
                         bPlatEndianSwap(&scenery_instance->ExcludeFlags);
+#endif
                         int j;
                         for (j = 0; j < 3; j++) {
+#ifndef EA_BUILD_A124
                             bPlatEndianSwap(&scenery_instance->Position[j]);
+#endif
                         }
                         for (j = 0; j < 9; j++) {
+#ifndef EA_BUILD_A124
                             bPlatEndianSwap(&scenery_instance->Rotation[j]);
+#endif
                         }
+#ifndef EA_BUILD_A124
                         bPlatEndianSwap(&scenery_instance->BBoxMin[0]);
                         bPlatEndianSwap(&scenery_instance->BBoxMin[1]);
                         bPlatEndianSwap(&scenery_instance->BBoxMin[2]);
@@ -343,6 +356,7 @@ int LoaderScenery(bChunk *chunk) {
                         bPlatEndianSwap(&scenery_instance->BBoxMax[2]);
                         bPlatEndianSwap(&scenery_instance->PrecullerInfoIndex);
                         bPlatEndianSwap(&scenery_instance->LightingContextNumber);
+#endif
                     }
                 }
             } else if (chunk->GetID() == BCHUNK_SCENERY_TREE_NODES) {
@@ -350,6 +364,7 @@ int LoaderScenery(bChunk *chunk) {
                 section_header->NumSceneryTreeNodes = chunk->GetSize() / sizeof(SceneryTreeNode);
                 if (!section_header->ChunksLoaded) {
                     for (int i = 0; i < section_header->NumSceneryTreeNodes; i++) {
+#ifndef EA_BUILD_A124
                         bPlatEndianSwap(&section_header->SceneryTreeNodeTable[i].NumChildren);
                         bPlatEndianSwap(&section_header->SceneryTreeNodeTable[i].BBoxMin[0]);
                         bPlatEndianSwap(&section_header->SceneryTreeNodeTable[i].BBoxMin[1]);
@@ -357,9 +372,12 @@ int LoaderScenery(bChunk *chunk) {
                         bPlatEndianSwap(&section_header->SceneryTreeNodeTable[i].BBoxMax[0]);
                         bPlatEndianSwap(&section_header->SceneryTreeNodeTable[i].BBoxMax[1]);
                         bPlatEndianSwap(&section_header->SceneryTreeNodeTable[i].BBoxMax[2]);
+#endif
 
                         for (int j = 0; j < 5; j++) {
+#ifndef EA_BUILD_A124
                             bPlatEndianSwap(&section_header->SceneryTreeNodeTable[i].ChildCodes[j]);
+#endif
                         }
                     }
                 }
@@ -435,18 +453,22 @@ int LoaderScenery(bChunk *chunk) {
         bChunk *last_chunk = chunk->GetLastChunk();
         for (chunk = chunk->GetFirstChunk(); chunk < last_chunk; chunk = chunk->GetNext()) {
             ModelHeirarchy *mH = reinterpret_cast<ModelHeirarchy *>(chunk->GetData());
+#ifndef EA_BUILD_A124
             bPlatEndianSwap(&mH->mNameHash);
             bPlatEndianSwap(&mH->mNumNodes);
             bPlatEndianSwap(&mH->mFlags);
+#endif
 
             ModelHeirarchy::Node *node = mH->GetNodes();
             for (unsigned int i = 0; i < mH->mNumNodes; i++) {
+#ifndef EA_BUILD_A124
                 bPlatEndianSwap(&node[i].mNodeName);
                 bPlatEndianSwap(&node[i].mFlags);
                 bPlatEndianSwap(&node[i].mModelHash);
                 bPlatEndianSwap(&node[i].mParent);
                 bPlatEndianSwap(&node[i].mNumChildren);
                 bPlatEndianSwap(&node[i].mChildIndex);
+#endif
             }
 
             HeirarchyMap[mH->mNameHash] = mH;

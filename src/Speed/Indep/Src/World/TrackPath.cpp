@@ -55,6 +55,7 @@ int TrackPathManager::Loader(bChunk *chunk) {
                 NumZones = 0;
 
                 for (TrackPathZone *zone = pZones; zone < GetLastZone(); zone = zone->GetMemoryImageNext()) {
+#ifndef EA_BUILD_A124
                     bPlatEndianSwap(reinterpret_cast<int32 *>(&zone->Type));
                     bPlatEndianSwap(&zone->Position);
                     bPlatEndianSwap(&zone->Direction);
@@ -64,13 +65,18 @@ int TrackPathManager::Loader(bChunk *chunk) {
                     bPlatEndianSwap(&zone->MemoryImageSize);
                     bPlatEndianSwap(&zone->BBoxMin);
                     bPlatEndianSwap(&zone->BBoxMax);
+#endif
 
                     int n;
                     for (n = 0; n < zone->NumPoints; n++) {
+#ifndef EA_BUILD_A124
                         bPlatEndianSwap(&zone->Points[n]);
+#endif
                     }
                     for (n = 0; n < 4; n++) {
+#ifndef EA_BUILD_A124
                         bPlatEndianSwap(&zone->Data[n]);
+#endif
                     }
                     NumZones++;
                 }

@@ -16,11 +16,13 @@ int LoaderTrackPositionMarkers(bChunk *chunk) {
 
         for (int n = 0; n < num_markers; n++) {
             TrackPositionMarker *marker = &marker_table[n];
+#ifndef EA_BUILD_A124
             bPlatEndianSwap(&marker->NameHash);
             bPlatEndianSwap(&marker->Param);
             bPlatEndianSwap(&marker->Position);
             bPlatEndianSwap(&marker->Angle);
             bPlatEndianSwap(&marker->TrackNumber);
+#endif
             TrackPositionMarkerList.AddTail(marker);
         }
 

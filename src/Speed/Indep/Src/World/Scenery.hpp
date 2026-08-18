@@ -259,9 +259,11 @@ class ScenerySectionHeader : public bTNode<ScenerySectionHeader> {
 // total size: 0x6
 struct SceneryOverrideInfo {
     void EndianSwap() {
+#ifndef EA_BUILD_A124
         bPlatEndianSwap(&SectionNumber);
         bPlatEndianSwap(&InstanceNumber);
         bPlatEndianSwap(&ExcludeFlags);
+#endif
     }
 
     static int GetHashIndex(short section_number) {
@@ -292,8 +294,10 @@ SceneryOverrideInfo *GetSceneryOverrideInfo(int override_info_number);
 // total size: 0x4
 struct SceneryOverrideInfoHookup {
     void EndianSwap() {
+#ifndef EA_BUILD_A124
         bPlatEndianSwap(&OverrideInfoNumber);
         bPlatEndianSwap(&InstanceNumber);
+#endif
     }
 
     uint16 OverrideInfoNumber; // offset 0x0, size 0x2
@@ -321,11 +325,15 @@ struct SceneryGroup : public bTNode<SceneryGroup> {
     }
 
     void EndianSwap() {
+#ifndef EA_BUILD_A124
         bPlatEndianSwap(&NameHash);
         bPlatEndianSwap(&GroupNumber);
         bPlatEndianSwap(&NumObjects);
+#endif
         for (int n = 0; n < NumObjects; n++) {
+#ifndef EA_BUILD_A124
             bPlatEndianSwap(&OverrideInfoNumbers[n]);
+#endif
         }
     }
 

@@ -30,6 +30,7 @@ int TrackInfo::LoaderTrackInfo(bChunk *chunk) {
 
         for (int n = 0; n < static_cast<int>(NumTrackInfo); n++) {
             TrackInfo *info = &TrackInfoTable[n];
+#ifndef EA_BUILD_A124
             bPlatEndianSwap(&info->LocationNumber);
             // TODO we have to make sure that enums are 4 bytes long on every platform
             bPlatEndianSwap(reinterpret_cast<int32 *>(&info->LocationName));
@@ -52,29 +53,40 @@ int TrackInfo::LoaderTrackInfo(bChunk *chunk) {
             bPlatEndianSwap(&info->NumSecondsBeforeShortcutsAllowed);
             bPlatEndianSwap(&info->nDriftSecondsMin);
             bPlatEndianSwap(&info->nDriftSecondsMax);
+#endif
 
             for (i = 0; i < 2; i++) {
                 for (j = 0; j < 4; j++) {
+#ifndef EA_BUILD_A124
                     bPlatEndianSwap(&info->OverrideStartingRouteForAI[i][j]);
+#endif
                 }
             }
 
             for (i = 0; i < 4; i++) {
                 for (j = 0; j < 2; j++) {
+#ifndef EA_BUILD_A124
                     bPlatEndianSwap(&info->MaxTrafficCars[i][j]);
+#endif
                 }
             }
 
             for (i = 0; i < 2; i++) {
+#ifndef EA_BUILD_A124
                 bPlatEndianSwap(&info->TrafficAllowedNearStartLine[i]);
+#endif
             }
 
             for (i = 0; i < 2; i++) {
+#ifndef EA_BUILD_A124
                 bPlatEndianSwap(&info->TrafficMinInitialDistanceBetweenCars[i]);
+#endif
             }
 
             for (i = 0; i < 2; i++) {
+#ifndef EA_BUILD_A124
                 bPlatEndianSwap(&info->TrafficMinInitialDistanceFromStartLine[i]);
+#endif
             }
         }
 
