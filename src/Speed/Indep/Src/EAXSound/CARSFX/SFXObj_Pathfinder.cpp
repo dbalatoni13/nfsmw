@@ -281,6 +281,25 @@ void SFXObj_PFEATrax::StartLicensedMusic(unsigned int PathEvent) {
         }
     }
     eSndGameMode esgm = g_pEAXSound->GetSndGameMode();
+#ifdef EA_BUILD_A124
+    bool mode_allowed = false;
+    if (esgm == SND_FRONTEND) {
+        goto licensed_mode_allowed;
+    }
+    if (esgm == SND_FREEROAM) {
+        mode_allowed = true;
+    } else if (esgm == SND_FRONTEND || (this->m_Flags & 1) == 0 || esgm == SND_CHALLENGERACE || (this->m_Flags & 0x200) != 0) {
+        if (esgm == SND_CHALLENGERACE && g_pEAXSound->GetCurAudioSettings()->InteractiveMusicMode == 0) {
+            goto licensed_mode_allowed;
+        }
+    } else {
+        mode_allowed = true;
+    }
+    if (!mode_allowed) {
+        return;
+    }
+licensed_mode_allowed:
+#else
     switch (esgm) {
         case SND_FRONTEND:
         case SND_FREEROAM:
@@ -300,6 +319,7 @@ void SFXObj_PFEATrax::StartLicensedMusic(unsigned int PathEvent) {
             }
             break;
     }
+#endif
 
     this->m_PrevMusicType = this->m_MusicType;
     this->m_MusicType = eMUSIC_TYPE_LICENCED;
