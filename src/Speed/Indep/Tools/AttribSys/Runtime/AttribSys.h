@@ -34,32 +34,17 @@ inline unsigned int RotateNTo32(unsigned long long v, unsigned int amount) {
     return (v << amount) | (v >> (64 - amount));
 }
 
-// TODO maybe the name is always passed here and it gets omitted in Alloc/Free? Depends on whether doing this leaves the string in .rodata
-#ifdef MILESTONE_OPT
 #define USE_ATTRIB_ALLOC(name)                                                                                                                       \
     void *operator new(size_t bytes) {                                                                                                               \
-        return (Attrib::Alloc(bytes, name));                                                                                                         \
+        return (Attrib::Alloc(bytes, #name));                                                                                                        \
     };                                                                                                                                               \
     void operator delete(void *ptr, size_t bytes) {                                                                                                  \
-        Attrib::Free(ptr, bytes, name);                                                                                                              \
+        Attrib::Free(ptr, bytes, #name);                                                                                                             \
     }                                                                                                                                                \
     void *operator new(size_t, void *ptr) {                                                                                                          \
         return (ptr);                                                                                                                                \
     }                                                                                                                                                \
     void operator delete(void *, void *) {}
-#else
-#define USE_ATTRIB_ALLOC(name)                                                                                                                       \
-    void *operator new(size_t bytes) {                                                                                                               \
-        return (Attrib::Alloc(bytes, NULL));                                                                                                         \
-    };                                                                                                                                               \
-    void operator delete(void *ptr, size_t bytes) {                                                                                                  \
-        Attrib::Free(ptr, bytes, NULL);                                                                                                              \
-    }                                                                                                                                                \
-    void *operator new(size_t, void *ptr) {                                                                                                          \
-        return (ptr);                                                                                                                                \
-    }                                                                                                                                                \
-    void operator delete(void *, void *) {}
-#endif
 
 #define ATTRIB_TYPE_ASSERT(TYPE, ATTRIB)
 #define ATTRIB_CLASS_ASSERT(KEY1, KEY2, CKEY)
@@ -120,6 +105,8 @@ class TypeDesc {
     static ITypeHandler *Lookup(Type t);
     static Type NameToType(const char *name);
 
+    USE_ATTRIB_ALLOC(Attrib::TypeDesc);
+
     TypeDesc() : mType(0), mName(""), mSize(0), mIndex(0), mHandler(nullptr) {}
 
     TypeDesc(unsigned int t) : mType(t), mName(nullptr), mSize(0), mIndex(0), mHandler(Lookup(t)) {}
@@ -167,10 +154,14 @@ class TypeTable : public std::set<TypeDesc> {
 };
 
 // total size: 0x8
-class CollectionList : public std::list<const Collection *> {};
+class CollectionList : public std::list<const Collection *> {
+    USE_ATTRIB_ALLOC(Attrib::CollectionList);
+};
 
 // total size: 0x8
-class ClassList : public std::list<const Class *> {};
+class ClassList : public std::list<const Class *> {
+    USE_ATTRIB_ALLOC(Attrib::ClassList);
+};
 
 // total size: 0x8
 class Database {

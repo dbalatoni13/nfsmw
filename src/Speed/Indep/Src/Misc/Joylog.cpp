@@ -389,23 +389,31 @@ bool JoylogPutStringFunction(int terminal_channel, const char *s) {
     return 0;
 }
 
-// UNSOLVED
 void DumpJoylogPrint() {
-    bool last_line_missing_linefeed;
+    bool last_line_missing_linefeed = false;
     Joylog::LoadReadAheadBuffer();
     int len = 0;
     char string[512];
+
     while (Joylog::ReadAheadFromChannel(string + len, 1, JOYLOG_CHANNEL_PRINTF) != 0) {
         if (len == 510) {
             len = 511;
             string[len] = 0;
         }
+
         if (string[len] != 0) {
             len++;
         } else {
+            last_line_missing_linefeed = len > 0 && string[len - 1] != '\n';
+            bPrintf("%s", string);
             len = 0;
         }
     }
+
+    if (last_line_missing_linefeed) {
+        bPrintf("\n");
+    }
+
     Joylog::FreeReadAheadBuffer();
 }
 

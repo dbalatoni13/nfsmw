@@ -24,6 +24,7 @@
 //   #undef  NO_DEBUG_BMEMORY
 //   #define   NULL 0
 #define MUL 0
+// TODO
 #define bPrintf (1) ? ((void)0) : bNullPrintf
 #define bMilestonePutString bReleasePutString
 #define bMilestonePrintf bReleasePrintf
@@ -212,6 +213,10 @@ inline void bPlatEndianSwap(UCrc32 *c) {
     bPlatEndianSwap(&val);
     *c = UCrc32(val);
 }
+
+inline void bNullPrintf(const char *format, ...) {}
+
+inline void bNullPrintf(char terminal_channel, const char *format, ...) {}
 
 inline bool bIsDigit(char c) {
     return c >= '0' && c <= '9';

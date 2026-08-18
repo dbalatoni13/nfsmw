@@ -5,14 +5,24 @@
 #pragma once
 #endif
 
-#include "Speed/Indep/Src/Misc/AttribAsset.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 
 namespace Attrib {
 
+typedef HashInt AssetID; // Decl: 23
+typedef HashInt ExportID;
+typedef HashInt TypeID;
+
+// Decl: 34
+class IGarbageCollector {
+  public:
+    virtual void ReleaseData(AssetID id, void *data, size_t bytes) = 0;
+};
+
 AssetID StringToAssetID(const char *assetName);
 Key StringToTypeID(const char *typeName);
 
+// Decl: 46
 class IExportPolicy {
   public:
     virtual void Initialize(Vault &v, const Type &type, const unsigned int &id, const char *name, void *data, std::size_t bytes);
@@ -22,6 +32,7 @@ class IExportPolicy {
 };
 
 // total size: 0xC
+// Decl: 94
 class ExportManager {
   public:
     // total size: 0x8

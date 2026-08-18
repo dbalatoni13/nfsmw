@@ -426,6 +426,7 @@ zMain.o:gap_06_8041D804_data
 zMain.o:gap_06_8041DFA0_data
 zMain.o:gap_06_8041E4E8_data
 zMisc.o:lbl_803F6489
+zMisc.o:lbl_803F5094
 zMisc.o:lbl_8041E604
 zMisc.o:lbl_8041EA40
 zMisc.o:lbl_8041EA8C

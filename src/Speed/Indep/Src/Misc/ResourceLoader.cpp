@@ -524,23 +524,15 @@ int ServiceResourceLoading() {
 
     while (NumDelayedResourceCallbacks != 0) {
         ProfileNode profile_node("TODO", 0);
-#ifdef EA_PLATFORM_PLAYSTATION2
         DelayedResourceCallback drc = DelayedResourceCallbacks[0];
-#else
-        void (*pCallback)(void *) = DelayedResourceCallbacks[0].pCallback;
-        void *callbackParam = DelayedResourceCallbacks[0].Param;
-#endif
+
         if (NumDelayedResourceCallbacks > 1) {
             bOverlappedMemCpy(&DelayedResourceCallbacks[0], &DelayedResourceCallbacks[1],
                               NumDelayedResourceCallbacks * sizeof(DelayedResourceCallback));
         }
-        NumDelayedResourceCallbacks--;
-#ifdef EA_PLATFORM_PLAYSTATION2
-        drc.pCallback(drc.Param);
-#else
-        pCallback(callbackParam);
-#endif
+        (NumDelayedResourceCallbacks--, drc.pCallback)(drc.Param);
     }
+
     ServiceQueuedFiles();
     if (NumResourcesBeingLoaded != 0) {
         for (ResourceFile *resource_file = ResourceFileList.GetHead(); resource_file != ResourceFileList.EndOfList();
@@ -555,7 +547,7 @@ int ServiceResourceLoading() {
             }
         }
     }
-    return false;
+    return 0;
 }
 
 int IsResourceLoadingComplete() {
@@ -644,46 +636,54 @@ VMFile *GetVMFile() {
     return nullptr;
 }
 
-// UNSOLVED regswap
 void MoveFileIntoVirtualMemoryThenLoadChunks(intptr_t param, int err) {
     VMFile *vm_file = reinterpret_cast<VMFile *>(param);
     if (!vm_file->mInit) {
         return;
     }
+
     void *old_memory = vm_file->mMainMemAddr;
     int vm_file_size = vm_file->mSize;
     unsigned int sizeofchunks = vm_file_size;
-    if (vm_file->mCompressed != 0) {
+
+    if (vm_file->mCompressed) {
         LZHeader *header = reinterpret_cast<LZHeader *>(old_memory);
         bPlatEndianSwap(&header->ID);
         bPlatEndianSwap(&header->Flags);
         bPlatEndianSwap(&header->UncompressedSize);
         bPlatEndianSwap(&header->CompressedSize);
+
         if (LZValidHeader(header)) {
             sizeofchunks = header->UncompressedSize;
-            uint8 *compressed_data = static_cast<uint8_t *>(old_memory);
+            uint8 *compressed_data = reinterpret_cast<uint8 *>(header);
             old_memory = nullptr;
+
             if (sizeofchunks != 0) {
                 int allocation_params = GetVirtualMemoryAllocParams();
                 void *realloc = bMalloc(sizeofchunks, "TODO2", 0, allocation_params);
+                LZDecompress(compressed_data, static_cast<uint8 *>(realloc));
                 old_memory = realloc;
-                LZDecompress(compressed_data, static_cast<uint8 *>(old_memory));
             }
+
             bFree(compressed_data);
         }
     }
+
     void *new_mem = bMalloc(sizeofchunks, "TODO", 0, GetVirtualMemoryAllocParams());
     bMemCpy(new_mem, old_memory, sizeofchunks);
     vm_file->mVirtMemAddr = new_mem;
+
     if (vm_file->mUsedTrackPool) {
         TheTrackStreamer.FreeUserMemory(old_memory);
     } else {
         bFree(old_memory);
     }
+
     if (new_mem) {
         EndianSwapChunkHeadersRecursive(static_cast<bChunk *>(new_mem), sizeofchunks);
     }
-    LoadChunks((bChunk *)new_mem, sizeofchunks, vm_file->mFilename);
+
+    LoadChunks(static_cast<bChunk *>(new_mem), sizeofchunks, vm_file->mFilename);
     vm_file->mSizeOfChunks = sizeofchunks;
 }
 
