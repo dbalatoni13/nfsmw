@@ -904,15 +904,9 @@ void ScenerySectionHeader::TreeCull(SceneryCullInfo *scenery_cull_info) {
                 if (child_code >= 0) {
                     DrawAScenery(child_code, scenery_cull_info, visibility_state);
                 } else {
-                    // TODO, DebugBreak() stuff
-                    {
-                        int scenery_instance_number = -child_code;
-                    }
-                    {
-                        child_code = -child_code;
-                        SceneryTreeNode *child_node = &SceneryTreeNodeTable[child_code];
-                        *pnode = child_node;
-                    }
+                    child_code = -child_code;
+                    SceneryTreeNode *child_node = &SceneryTreeNodeTable[child_code];
+                    *pnode = child_node;
                     *pvisibility_state = visibility_state;
                     pnode++;
                     pvisibility_state++;
