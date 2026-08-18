@@ -1104,9 +1104,17 @@ TrackStreamingSection *TrackStreamer::ChooseSectionToJettison() {
 
         if (discard_priority != 0) {
             // TODO weird
+#ifdef EA_BUILD_A124
+            unsigned int status_bonus = 0;
+            if (section->Status != TrackStreamingSection::LOADED) {
+                status_bonus = section->Status != TrackStreamingSection::ACTIVATED;
+            }
+            discard_priority += status_bonus;
+#else
             if (static_cast<unsigned int>(section->Status - TrackStreamingSection::LOADED) > 1) {
                 discard_priority++;
             }
+#endif
         }
         if (discard_priority > best_discard_priority) {
             best_section = section;
