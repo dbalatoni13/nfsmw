@@ -447,12 +447,12 @@ void SFXObj_PFEATrax::StartInteractiveMusic(unsigned int PathEvent) {
         }
         this->m_pSFXCTL_Pathfinder->AttachStreamInstance(SFXCTL_Pathfinder::m_pPFParms[this->m_ActiveProject]);
         this->m_PrevActiveProject = this->m_ActiveProject;
-#ifdef EA_BUILD_A124
-        this->m_PrevPathEvent = this->m_CurPathEvent;
-        this->m_PFParms[1].queue_next = 1;
-        this->m_CurPathEvent = PathEvent;
-#endif
     }
+#ifdef EA_BUILD_A124
+    this->m_PrevPathEvent = this->m_CurPathEvent;
+    this->m_PFParms[1].queue_next = 1;
+    this->m_CurPathEvent = PathEvent;
+#endif
     MNotifyMusicFlow(PathEvent).Send(UCrc32("Init"));
     this->m_Flags |= 0x100;
 }
