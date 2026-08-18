@@ -1955,9 +1955,11 @@ void TrackStreamer::ReadyToMakeSpaceInPool() {
 
     void (*callback)(intptr_t) = MakeSpaceInPoolCallback;
     intptr_t param = MakeSpaceInPoolCallbackParam;
+#ifndef EA_BUILD_A124
     MakeSpaceInPoolCallback = nullptr;
     MakeSpaceInPoolCallbackParam = 0;
     MakeSpaceInPoolSize = 0;
+#endif
     callback(param);
 }
 
