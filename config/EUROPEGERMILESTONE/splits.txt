@@ -15,25 +15,141 @@ Sections:
 	.idata      type:data align:65536
 
 Speed/Indep/SourceLists/zAI.cpp:
-	.pdata      start:0x820B9600 end:0x820BBB70
-	.text       start:0x820F0000 end:0x8214A870
+	.pdata      start:0x820B9600 end:0x820BB970
+	.text       start:0x820F0000 end:0x82145850
+
+Speed/Indep/SourceLists/zAnim.cpp:
+	.pdata      start:0x820BB970 end:0x820BC128
+	.text       start:0x82145850 end:0x82155A18
 
 Speed/Indep/SourceLists/zAttribSys.cpp:
-	.pdata      start:0x820BC1F8 end:0x820BC608
-	.text       start:0x82157CE8 end:0x82160EE8
+	.pdata      start:0x820BC128 end:0x820BC7E0
+	.text       start:0x82155A18 end:0x82165618
+
+Speed/Indep/SourceLists/zBWare.cpp:
+	.pdata      start:0x820BC7E0 end:0x820BCC18
+	.text       start:0x82165618 end:0x82171330
+
+Speed/Indep/SourceLists/zFoundation.cpp:
+	.pdata      start:0x820BCC18 end:0x820BCC40
+	.pdata      start:0x820C7DB0 end:0x820C7DB8
+	.pdata      start:0x820C8120 end:0x820C8200
+	.text       start:0x82171330 end:0x82172158
+	.text       start:0x82337550 end:0x8233772C
+	.text       start:0x823410F8 end:0x823433DC
+
+Speed/Indep/SourceLists/zCamera.cpp:
+	.pdata      start:0x820BCC40 end:0x820BD3C8
+	.pdata      start:0x820BD448 end:0x820BD588
+	.text       start:0x82172158 end:0x82188680
+	.text       start:0x8218A678 end:0x821900D8
+
+Speed/Indep/SourceLists/zDebug.cpp:
+	.pdata      start:0x820BD3C8 end:0x820BD448
+	.text       start:0x82188680 end:0x8218A678
+
+Speed/Indep/SourceLists/zDynamics.cpp:
+	.pdata      start:0x820BD9E8 end:0x820BE9B8
+	.text       start:0x8219C1C8 end:0x821CDB38
+
+Speed/Indep/SourceLists/zEAXSound.cpp:
+	.pdata      start:0x820BE9B8 end:0x820BFF70
+	.text       start:0x821CDB38 end:0x82200118
+
+Speed/Indep/SourceLists/zEAXSound2.cpp:
+	.pdata      start:0x820BFF70 end:0x820C1368
+	.text       start:0x82200118 end:0x82230408
+
+Speed/Indep/SourceLists/zEcstasy.cpp:
+	.pdata      start:0x820C1368 end:0x820C1A40
+	.pdata      start:0x820D12D0 end:0x820D1478
+	.text       start:0x82230408 end:0x8224604C
+	.text       start:0x82470310 end:0x824755A4
+
+Speed/Indep/SourceLists/zFe.cpp:
+	.pdata      start:0x820C3128 end:0x820C3300
+	.pdata      start:0x820C3E28 end:0x820C4150
+	.pdata      start:0x820D7ED0 end:0x820D7F28
+	.text       start:0x82274388 end:0x822770BC
+	.text       start:0x82299038 end:0x8229F208
+	.text       start:0x82593860 end:0x82594D64
+
+Speed/Indep/SourceLists/zFEng.cpp:
+	.pdata      start:0x820C3DA0 end:0x820C3DB0
+	.pdata      start:0x820C6638 end:0x820C69D8
+	.pdata      start:0x820C6A08 end:0x820C6A68
+	.pdata      start:0x820C76F0 end:0x820C77D0
+	.text       start:0x82298098 end:0x82298910
+	.text       start:0x822FECC8 end:0x82307878
+	.text       start:0x82308398 end:0x823091D8
+	.text       start:0x82326350 end:0x823297D8
+
+Speed/Indep/SourceLists/zFe2.cpp:
+	.pdata      start:0x820C70F0 end:0x820C76F0
+	.pdata      start:0x820C77E8 end:0x820C7C98
+	.text       start:0x82318778 end:0x82326350
+	.text       start:0x82329988 end:0x8233484C
+	.text       start:0x82596060 end:0x825960A8
+
+Speed/Indep/SourceLists/zGameplay.cpp:
+	.pdata      start:0x820C8818 end:0x820C8820
+	.pdata      start:0x820C8BD0 end:0x820C9AB0
+	.text       start:0x82350718 end:0x82350794
+	.text       start:0x82353338 end:0x82371680
+
+Speed/Indep/SourceLists/zOnline.cpp:
+	.pdata      start:0x820C69D8 end:0x820C69E0
+	.pdata      start:0x820D7140 end:0x820D7148
+	.text       start:0x82307878 end:0x823079A4
+	.text       start:0x82578348 end:0x825783C0
+
+Speed/Indep/SourceLists/zLua.cpp:
+	.pdata      start:0x820CAB20 end:0x820CB0E8
+	.text       start:0x82395150 end:0x823A0828
+
+Speed/Indep/SourceLists/zMain.cpp:
+	.pdata      start:0x820CC828 end:0x820CC830
+	.pdata      start:0x820CC9B0 end:0x820CC9E0
+	.text       start:0x823C8C60 end:0x823C8D00
+	.text       start:0x823CA948 end:0x823CA9AC
+	.text       start:0x823CBBE0 end:0x823CC00C
 
 Speed/Indep/SourceLists/zMisc.cpp:
 	.pdata      start:0x820CD1C8 end:0x820CE290
 	.text       start:0x823DAE48 end:0x82403E78
 
-Speed/Indep/SourceLists/zLua.cpp:
-	.pdata      start:0x820CAB20 end:0x820CAE20
-	.text       start:0x82395150 end:0x823A0828
+Speed/Indep/SourceLists/zPhysics.cpp:
+	.pdata      start:0x820CE520 end:0x820CFC78
+	.text       start:0x82406370 end:0x82435280
 
 Speed/Indep/SourceLists/zPhysicsBehaviors.cpp:
-	.pdata      start:0x820CFC78 end:0x820D06A8
-	.text       start:0x82435280 end:0x82453C70
+	.pdata      start:0x820CFC78 end:0x820D12D0
+	.text       start:0x82435280 end:0x82470310
+
+Speed/Indep/SourceLists/zRender.cpp:
+	.pdata      start:0x820D15F8 end:0x820D1610
+	.pdata      start:0x820D1D38 end:0x820D1E08
+	.text       start:0x82478520 end:0x824799D8
+	.text       start:0x82490860 end:0x82493490
+
+Speed/Indep/SourceLists/zPlatform.cpp:
+	.pdata      start:0x820D1E08 end:0x820D1E38
+	.pdata      start:0x820DAAC8 end:0x820DAAD8
+	.text       start:0x82493490 end:0x82493A2C
+	.text       start:0x82619800 end:0x826198D8
 
 Speed/Indep/SourceLists/zSim.cpp:
-	.pdata      start:0x820D21C0 end:0x820D2D08
-	.text       start:0x8249A6C0 end:0x824B4D38
+	.pdata      start:0x820D21C0 end:0x820D2E90
+	.text       start:0x8249A6C0 end:0x824B65DC
+
+Speed/Indep/SourceLists/zWorld.cpp:
+	.pdata      start:0x820D4B48 end:0x820D5DB0
+	.text       start:0x82504D90 end:0x825432B0
+
+Speed/Indep/SourceLists/zWorld2.cpp:
+	.pdata      start:0x820D5DB0 end:0x820D6E58
+	.text       start:0x825432B0 end:0x825720BC
+
+Speed/Indep/SourceLists/zTrack.cpp:
+	.pdata      start:0x820DA178 end:0x820DA2E0
+	.text       start:0x82600720 end:0x82604BDC
