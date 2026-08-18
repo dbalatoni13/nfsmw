@@ -319,6 +319,7 @@ int CARSFX_Turbo::UpdateSpool(float t) {
 #ifdef EA_BUILD_A124
     if (this->m_pTurboSplControl == nullptr) {
         this->PlaySpl(0, 0, 0, 0, 0);
+        return 0;
     }
 #endif
 
