@@ -139,7 +139,7 @@ class TSMemoryPool {
     }
 
     static void OverrideFree(void *pool, void *ptr) {
-        static_cast<TSMemoryPool *>(pool)->Free(reinterpret_cast<void *>(reinterpret_cast<uintptr_t>(ptr) & ~static_cast<uintptr_t>(0x7F)));
+        static_cast<TSMemoryPool *>(pool)->Free(reinterpret_cast<void *>(reinterpret_cast<intptr_t>(ptr) & -0x80));
     }
 
     static int OverrideGetAmountFree(void *pool) {
