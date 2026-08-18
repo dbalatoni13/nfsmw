@@ -1879,7 +1879,6 @@ bool TrackStreamer::HandleMemoryAllocation() {
 
         if (LoadingPhase == LOADING_REGULAR_SECTIONS) {
             for (int i = 0; i < NumCurrentStreamingSections; i++) {
-                TrackStreamingSection *section;
             }
         }
     }
