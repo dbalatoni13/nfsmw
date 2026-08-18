@@ -21,27 +21,19 @@ class DeviceDriver {
 
     virtual void Restore() {}
 
-    virtual EAFileHandle Open(const char *name, int oflags, int *pParentFileHandle) {
-        return 0;
-    }
+    virtual EAFileHandle Open(const char *name, int oflags, int *pParentFileHandle) = 0;
 
-    virtual void Close(EAFileHandle h) {}
+    virtual void Close(EAFileHandle h) = 0;
 
-    virtual uint32_t Read(EAFileHandle h, void *buf, unsigned int bufsize, DeviceDriver *ddParent, EAFileHandle ddFileHandle) {
-        return 0;
-    }
+    virtual uint32_t Read(EAFileHandle h, void *buf, unsigned int bufsize, DeviceDriver *ddParent, EAFileHandle ddFileHandle) = 0;
 
     virtual uint32 Write(EAFileHandle h, const void *buf, unsigned int bufsize, DeviceDriver *ddParent, EAFileHandle ddFileHandle) {
         return 0;
     }
 
-    virtual uint64_t Seek(EAFileHandle h, uint64_t offset, int whence, DeviceDriver *ddParent, EAFileHandle ddFileHandle) {
-        return 0;
-    }
+    virtual uint64_t Seek(EAFileHandle h, uint64_t offset, int whence, DeviceDriver *ddParent, EAFileHandle ddFileHandle) = 0;
 
-    virtual uint64_t Getsize(EAFileHandle h) {
-        return 0;
-    }
+    virtual uint64_t Getsize(EAFileHandle h) = 0;
 
     virtual uint64_t QueryLocation(EAFileHandle h) {
         return 0;
