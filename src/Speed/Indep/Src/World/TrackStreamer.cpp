@@ -203,7 +203,6 @@ TSMemoryPool::TSMemoryPool(intptr_t address, int size, const char *debug_name, i
         bFunkCallASync("CODEINE", 0x1b, &packet, sizeof(packet));
     }
 
-    MemoryPoolOverrideInfo *override_info = &OverrideInfo;
     bMemSet(&OverrideInfo, 0, sizeof(OverrideInfo));
 #ifndef EA_BUILD_A124
     OverrideInfo.Name = DebugName;
