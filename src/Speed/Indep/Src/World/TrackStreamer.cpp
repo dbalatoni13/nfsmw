@@ -1912,6 +1912,9 @@ void TrackStreamer::FreeUserMemory(void *mem) {
     pMemoryPool->GetAmountFree();
     bFree(mem);
     pMemoryPool->GetAmountFree();
+#ifdef EA_BUILD_A124
+    asm volatile("");
+#endif
 }
 
 #ifndef EA_BUILD_A124
