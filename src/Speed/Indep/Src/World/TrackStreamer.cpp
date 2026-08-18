@@ -2563,7 +2563,7 @@ void TrackStreamer::HandleSectionActivation() {
     short section_to_activate = static_cast<short>(GetSectionToActivate(0));
     if (section_to_activate != 0) {
         TrackStreamingSection *section = FindSection(section_to_activate);
-        if (section->Status != TrackStreamingSection::ACTIVATED) {
+        if (section->Status ^ TrackStreamingSection::ACTIVATED) {
             if (section->Status != TrackStreamingSection::LOADED) {
                 if (!section->CurrentlyVisible) {
                     return;
@@ -2572,8 +2572,9 @@ void TrackStreamer::HandleSectionActivation() {
                 do {
                     HandleLoading();
                     ServiceResourceLoading();
-                } while (section->Status != TrackStreamingSection::LOADED);
+                } while (section->Status ^ TrackStreamingSection::LOADED);
             }
+
             ActivateSection(section);
         }
     }
