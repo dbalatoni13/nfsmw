@@ -200,7 +200,14 @@ void SFXObj_PFEATrax::SendPathEvent() {
 
             if (status == PATH_OK && this->m_pSFXCTL_Pathfinder != nullptr) {
                 SNDSYS_entercritical();
-                SNDSTRM_lowpass(this->m_pSFXCTL_Pathfinder->GetHandle(this->m_ActiveProject), this->m_FilterFreq);
+                SNDSTRM_lowpass(this->m_pSFXCTL_Pathfinder->GetHandle(
+#ifdef EA_BUILD_A124
+                    0
+#else
+                    this->m_ActiveProject
+#endif
+                    ),
+                    this->m_FilterFreq);
                 SNDSYS_leavecritical();
             }
 #else
