@@ -286,7 +286,7 @@ class DisculatorDriver : public RealFile::DeviceDriver {
     void Close(EAFileHandle h) override;
     uint32_t Read(EAFileHandle h, void *buf, unsigned int bufsize, RealFile::DeviceDriver *ddParent, EAFileHandle ddFileHandle) override;
     uint32_t Write(EAFileHandle h, const void *buf, unsigned int bufsize, RealFile::DeviceDriver *ddParent, EAFileHandle ddFileHandle) override;
-    uint64_t Seek(EAFileHandle h, unsigned long long offset, int whence, RealFile::DeviceDriver *ddParent, EAFileHandle ddFileHandle) override;
+    uint64_t Seek(EAFileHandle h, uint64_t offset, int whence, RealFile::DeviceDriver *ddParent, EAFileHandle ddFileHandle) override;
     uint64_t Getsize(EAFileHandle h) override;
     uint64_t QueryLocation(EAFileHandle h) override;
     bool Remove(const char *name) override {
@@ -405,7 +405,7 @@ uint32_t DisculatorDriver::Read(EAFileHandle h, void *buf, unsigned int bufsize,
     // TODO using undercover
     gFileStats.AddStatEntry(odf->filename, new_start_sector, bufsize, nullptr);
 
-    ddParent->Seek(ddFileHandle, odf->seekPos + static_cast<unsigned long long>(odf->localSectorOffset << 11), 0, nullptr, 0);
+    ddParent->Seek(ddFileHandle, odf->seekPos + static_cast<uint64_t>(odf->localSectorOffset << 11), 0, nullptr, 0);
     int nread = ddParent->Read(ddFileHandle, buf, bufsize, nullptr, 0);
     odf->seekPos += nread;
     return nread;
@@ -415,7 +415,7 @@ uint32_t DisculatorDriver::Write(EAFileHandle h, const void *buf, unsigned int b
     return 0;
 }
 
-uint64_t DisculatorDriver::Seek(EAFileHandle h, unsigned long long offset, int whence, RealFile::DeviceDriver *ddParent, EAFileHandle ddFileHandle) {
+uint64_t DisculatorDriver::Seek(EAFileHandle h, uint64_t offset, int whence, RealFile::DeviceDriver *ddParent, EAFileHandle ddFileHandle) {
     OpenDisculatorFile *odf = reinterpret_cast<OpenDisculatorFile *>(h);
     if (offset <= odf->size) {
         odf->seekPos = offset;
