@@ -157,549 +157,192 @@ struct emitterdata : Instance {
         Instance::operator=(rhs);
         return *this;
     }
-    bool AccelDelta(TAttrib<UMath::Vector4> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(UMath::Vector4, 0x81167023);
-    }
-    bool AccelDelta(UMath::Vector4 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(AccelDelta, result);
-    }
-    const UMath::Vector4 &AccelDelta() const {
-        ATTRIB_CODEGEN_GETLAYOUT(AccelDelta);
-    }
-    bool SET_AccelDelta(const UMath::Vector4 &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(AccelDelta, input);
-    }
-    bool AccelStart(TAttrib<UMath::Vector4> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(UMath::Vector4, 0x81222c15);
-    }
-    bool AccelStart(UMath::Vector4 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(AccelStart, result);
-    }
-    const UMath::Vector4 &AccelStart() const {
-        ATTRIB_CODEGEN_GETLAYOUT(AccelStart);
-    }
-    bool SET_AccelStart(const UMath::Vector4 &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(AccelStart, input);
-    }
-    bool AlphaToKillAt(TAttrib<EA::Reflection::Int8> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int8, 0x9ec0561b);
-    }
-    bool AlphaToKillAt(EA::Reflection::Int8 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(AlphaToKillAt, result);
-    }
-    const EA::Reflection::Int8 &AlphaToKillAt() const {
-        ATTRIB_CODEGEN_GETLAYOUT(AlphaToKillAt);
-    }
-    bool SET_AlphaToKillAt(const EA::Reflection::Int8 &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(AlphaToKillAt, input);
-    }
-    bool AxisConstraint(TAttrib<EffectParticleConstraint> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EffectParticleConstraint, 0x78d7facd);
-    }
-    bool AxisConstraint(EffectParticleConstraint &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(AxisConstraint, result);
-    }
-    const EffectParticleConstraint &AxisConstraint() const {
-        ATTRIB_CODEGEN_GETLAYOUT(AxisConstraint);
-    }
-    bool SET_AxisConstraint(const EffectParticleConstraint &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(AxisConstraint, input);
-    }
-    bool CollectionName(TAttrib<EA::Reflection::Text> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0x9ca1c8f9);
-    }
-    bool CollectionName(EA::Reflection::Text &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(CollectionName, result);
-    }
-    const EA::Reflection::Text &CollectionName() const {
-        ATTRIB_CODEGEN_GETLAYOUT(CollectionName);
-    }
-    bool SET_CollectionName(const EA::Reflection::Text &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(CollectionName, input);
-    }
-    bool Color1(TAttrib<EA::Reflection::UInt32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::UInt32, 0xccf41b18);
-    }
-    bool Color1(EA::Reflection::UInt32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(Color1, result);
-    }
-    const EA::Reflection::UInt32 &Color1() const {
-        ATTRIB_CODEGEN_GETLAYOUT(Color1);
-    }
-    bool SET_Color1(const EA::Reflection::UInt32 &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(Color1, input);
-    }
-    bool Color2(TAttrib<EA::Reflection::UInt32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::UInt32, 0x4a282af1);
-    }
-    bool Color2(EA::Reflection::UInt32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(Color2, result);
-    }
-    const EA::Reflection::UInt32 &Color2() const {
-        ATTRIB_CODEGEN_GETLAYOUT(Color2);
-    }
-    bool SET_Color2(const EA::Reflection::UInt32 &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(Color2, input);
-    }
-    bool Color3(TAttrib<EA::Reflection::UInt32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::UInt32, 0xc103b771);
-    }
-    bool Color3(EA::Reflection::UInt32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(Color3, result);
-    }
-    const EA::Reflection::UInt32 &Color3() const {
-        ATTRIB_CODEGEN_GETLAYOUT(Color3);
-    }
-    bool SET_Color3(const EA::Reflection::UInt32 &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(Color3, input);
-    }
-    bool Color4(TAttrib<EA::Reflection::UInt32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::UInt32, 0x78f32c40);
-    }
-    bool Color4(EA::Reflection::UInt32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(Color4, result);
-    }
-    const EA::Reflection::UInt32 &Color4() const {
-        ATTRIB_CODEGEN_GETLAYOUT(Color4);
-    }
-    bool SET_Color4(const EA::Reflection::UInt32 &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(Color4, input);
-    }
-    bool Drag(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x4e58fa4e);
-    }
-    bool Drag(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(Drag, result);
-    }
-    const EA::Reflection::Float &Drag() const {
-        ATTRIB_CODEGEN_GETLAYOUT(Drag);
-    }
-    bool SET_Drag(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(Drag, input);
-    }
-    bool EliminateUnnecessaryRandomness(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x859043b2);
-    }
-    bool EliminateUnnecessaryRandomness(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(EliminateUnnecessaryRandomness, result);
-    }
-    const EA::Reflection::Bool &EliminateUnnecessaryRandomness() const {
-        ATTRIB_CODEGEN_GETLAYOUT(EliminateUnnecessaryRandomness);
-    }
-    bool SET_EliminateUnnecessaryRandomness(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(EliminateUnnecessaryRandomness, input);
-    }
-    bool FarClip(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x66052349);
-    }
-    bool FarClip(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(FarClip, result);
-    }
-    const EA::Reflection::Float &FarClip() const {
-        ATTRIB_CODEGEN_GETLAYOUT(FarClip);
-    }
-    bool SET_FarClip(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(FarClip, input);
-    }
-    bool Gravity(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xac5b265e);
-    }
-    bool Gravity(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(Gravity, result);
-    }
-    const EA::Reflection::Float &Gravity() const {
-        ATTRIB_CODEGEN_GETLAYOUT(Gravity);
-    }
-    bool SET_Gravity(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(Gravity, input);
-    }
-    bool InitialAngleRange(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x284a8c2c);
-    }
-    bool InitialAngleRange(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(InitialAngleRange, result);
-    }
-    const EA::Reflection::Float &InitialAngleRange() const {
-        ATTRIB_CODEGEN_GETLAYOUT(InitialAngleRange);
-    }
-    bool SET_InitialAngleRange(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(InitialAngleRange, input);
-    }
-    bool IsOneShot(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0xb2659b2a);
-    }
-    bool IsOneShot(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(IsOneShot, result);
-    }
-    const EA::Reflection::Bool &IsOneShot() const {
-        ATTRIB_CODEGEN_GETLAYOUT(IsOneShot);
-    }
-    bool SET_IsOneShot(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(IsOneShot, input);
-    }
-    bool KeyPositions(TAttrib<UMath::Vector4> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(UMath::Vector4, 0x62fe3594);
-    }
-    bool KeyPositions(UMath::Vector4 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(KeyPositions, result);
-    }
-    const UMath::Vector4 &KeyPositions() const {
-        ATTRIB_CODEGEN_GETLAYOUT(KeyPositions);
-    }
-    bool SET_KeyPositions(const UMath::Vector4 &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(KeyPositions, input);
-    }
-    bool Life(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x81625b35);
-    }
-    bool Life(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(Life, result);
-    }
-    const EA::Reflection::Float &Life() const {
-        ATTRIB_CODEGEN_GETLAYOUT(Life);
-    }
-    bool SET_Life(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(Life, input);
-    }
-    bool LifeVariance(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xefb4bb64);
-    }
-    bool LifeVariance(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(LifeVariance, result);
-    }
-    const EA::Reflection::Float &LifeVariance() const {
-        ATTRIB_CODEGEN_GETLAYOUT(LifeVariance);
-    }
-    bool SET_LifeVariance(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(LifeVariance, input);
-    }
-    bool MotionInherit(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x6bcbfc06);
-    }
-    bool MotionInherit(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(MotionInherit, result);
-    }
-    const EA::Reflection::Float &MotionInherit() const {
-        ATTRIB_CODEGEN_GETLAYOUT(MotionInherit);
-    }
-    bool SET_MotionInherit(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(MotionInherit, input);
-    }
-    bool MotionInheritVariance(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xd34a0b9d);
-    }
-    bool MotionInheritVariance(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(MotionInheritVariance, result);
-    }
-    const EA::Reflection::Float &MotionInheritVariance() const {
-        ATTRIB_CODEGEN_GETLAYOUT(MotionInheritVariance);
-    }
-    bool SET_MotionInheritVariance(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(MotionInheritVariance, input);
-    }
-    bool MotionLive(TAttrib<EA::Reflection::Int32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x4d69ef9e);
-    }
-    bool MotionLive(EA::Reflection::Int32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(MotionLive, result);
-    }
-    const EA::Reflection::Int32 &MotionLive() const {
-        ATTRIB_CODEGEN_GETLAYOUT(MotionLive);
-    }
-    bool SET_MotionLive(const EA::Reflection::Int32 &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(MotionLive, input);
-    }
-    bool NoKillAtAlpha(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x27a9a451);
-    }
-    bool NoKillAtAlpha(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(NoKillAtAlpha, result);
-    }
-    const EA::Reflection::Bool &NoKillAtAlpha() const {
-        ATTRIB_CODEGEN_GETLAYOUT(NoKillAtAlpha);
-    }
-    bool SET_NoKillAtAlpha(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(NoKillAtAlpha, input);
-    }
-    bool NumParticles(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xdc943cc9);
-    }
-    bool NumParticles(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(NumParticles, result);
-    }
-    const EA::Reflection::Float &NumParticles() const {
-        ATTRIB_CODEGEN_GETLAYOUT(NumParticles);
-    }
-    bool SET_NumParticles(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(NumParticles, input);
-    }
-    bool NumParticlesVariance(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xd8165518);
-    }
-    bool NumParticlesVariance(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(NumParticlesVariance, result);
-    }
-    const EA::Reflection::Float &NumParticlesVariance() const {
-        ATTRIB_CODEGEN_GETLAYOUT(NumParticlesVariance);
-    }
-    bool SET_NumParticlesVariance(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(NumParticlesVariance, input);
-    }
-    bool OffCycle(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xb619ecb2);
-    }
-    bool OffCycle(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(OffCycle, result);
-    }
-    const EA::Reflection::Float &OffCycle() const {
-        ATTRIB_CODEGEN_GETLAYOUT(OffCycle);
-    }
-    bool SET_OffCycle(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(OffCycle, input);
-    }
-    bool OffCycleVariance(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x8510a6ef);
-    }
-    bool OffCycleVariance(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(OffCycleVariance, result);
-    }
-    const EA::Reflection::Float &OffCycleVariance() const {
-        ATTRIB_CODEGEN_GETLAYOUT(OffCycleVariance);
-    }
-    bool SET_OffCycleVariance(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(OffCycleVariance, input);
-    }
-    bool OnCycle(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xeb86a538);
-    }
-    bool OnCycle(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(OnCycle, result);
-    }
-    const EA::Reflection::Float &OnCycle() const {
-        ATTRIB_CODEGEN_GETLAYOUT(OnCycle);
-    }
-    bool SET_OnCycle(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(OnCycle, input);
-    }
-    bool OnCycleVariance(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x3b53b68c);
-    }
-    bool OnCycleVariance(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(OnCycleVariance, result);
-    }
-    const EA::Reflection::Float &OnCycleVariance() const {
-        ATTRIB_CODEGEN_GETLAYOUT(OnCycleVariance);
-    }
-    bool SET_OnCycleVariance(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(OnCycleVariance, input);
-    }
-    bool RandomRotationDirection(TAttrib<EA::Reflection::Int32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x0be45b47);
-    }
-    bool RandomRotationDirection(EA::Reflection::Int32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(RandomRotationDirection, result);
-    }
-    const EA::Reflection::Int32 &RandomRotationDirection() const {
-        ATTRIB_CODEGEN_GETLAYOUT(RandomRotationDirection);
-    }
-    bool SET_RandomRotationDirection(const EA::Reflection::Int32 &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(RandomRotationDirection, input);
-    }
-    bool RelativeAngle(TAttrib<UMath::Vector4> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(UMath::Vector4, 0xcd0d867f);
-    }
-    bool RelativeAngle(UMath::Vector4 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(RelativeAngle, result);
-    }
-    const UMath::Vector4 &RelativeAngle() const {
-        ATTRIB_CODEGEN_GETLAYOUT(RelativeAngle);
-    }
-    bool SET_RelativeAngle(const UMath::Vector4 &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(RelativeAngle, input);
-    }
-    bool RotationVariance(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x31af20d6);
-    }
-    bool RotationVariance(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(RotationVariance, result);
-    }
-    const EA::Reflection::Float &RotationVariance() const {
-        ATTRIB_CODEGEN_GETLAYOUT(RotationVariance);
-    }
-    bool SET_RotationVariance(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(RotationVariance, input);
-    }
-    bool Size(TAttrib<UMath::Vector4> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(UMath::Vector4, 0xc10c3e15);
-    }
-    bool Size(UMath::Vector4 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(Size, result);
-    }
-    const UMath::Vector4 &Size() const {
-        ATTRIB_CODEGEN_GETLAYOUT(Size);
-    }
-    bool SET_Size(const UMath::Vector4 &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(Size, input);
-    }
-    bool Speed(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x41862fe6);
-    }
-    bool Speed(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(Speed, result);
-    }
-    const EA::Reflection::Float &Speed() const {
-        ATTRIB_CODEGEN_GETLAYOUT(Speed);
-    }
-    bool SET_Speed(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(Speed, input);
-    }
-    bool SpeedVariance(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x58fcb1c3);
-    }
-    bool SpeedVariance(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(SpeedVariance, result);
-    }
-    const EA::Reflection::Float &SpeedVariance() const {
-        ATTRIB_CODEGEN_GETLAYOUT(SpeedVariance);
-    }
-    bool SET_SpeedVariance(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(SpeedVariance, input);
-    }
-    bool SpreadAngle(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xcac30ff2);
-    }
-    bool SpreadAngle(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(SpreadAngle, result);
-    }
-    const EA::Reflection::Float &SpreadAngle() const {
-        ATTRIB_CODEGEN_GETLAYOUT(SpreadAngle);
-    }
-    bool SET_SpreadAngle(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(SpreadAngle, input);
-    }
-    bool SpreadAsDisc(TAttrib<EA::Reflection::Int32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x0836f5cc);
-    }
-    bool SpreadAsDisc(EA::Reflection::Int32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(SpreadAsDisc, result);
-    }
-    const EA::Reflection::Int32 &SpreadAsDisc() const {
-        ATTRIB_CODEGEN_GETLAYOUT(SpreadAsDisc);
-    }
-    bool SET_SpreadAsDisc(const EA::Reflection::Int32 &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(SpreadAsDisc, input);
-    }
-    bool StartDelay(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xee67ad35);
-    }
-    bool StartDelay(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(StartDelay, result);
-    }
-    const EA::Reflection::Float &StartDelay() const {
-        ATTRIB_CODEGEN_GETLAYOUT(StartDelay);
-    }
-    bool SET_StartDelay(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(StartDelay, input);
-    }
-    bool StartDelayRandomVariance(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x6e088259);
-    }
-    bool StartDelayRandomVariance(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(StartDelayRandomVariance, result);
-    }
-    const EA::Reflection::Bool &StartDelayRandomVariance() const {
-        ATTRIB_CODEGEN_GETLAYOUT(StartDelayRandomVariance);
-    }
-    bool SET_StartDelayRandomVariance(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(StartDelayRandomVariance, input);
-    }
-    bool Texture(TAttrib<ParticleTextureRecord> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(ParticleTextureRecord, 0x6f3afee5);
-    }
-    bool Texture(ParticleTextureRecord &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(Texture, result);
-    }
-    const ParticleTextureRecord &Texture() const {
-        ATTRIB_CODEGEN_GETLAYOUT(Texture);
-    }
-    bool SET_Texture(const ParticleTextureRecord &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(Texture, input);
-    }
-    bool TextureAnimation(TAttrib<ParticleAnimationInfo> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(ParticleAnimationInfo, 0x92709587);
-    }
-    bool TextureAnimation(ParticleAnimationInfo &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(TextureAnimation, result);
-    }
-    const ParticleAnimationInfo &TextureAnimation() const {
-        ATTRIB_CODEGEN_GETLAYOUT(TextureAnimation);
-    }
-    bool SET_TextureAnimation(const ParticleAnimationInfo &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(TextureAnimation, input);
-    }
-    bool VelocityDelta(TAttrib<UMath::Vector4> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(UMath::Vector4, 0x4bfe9062);
-    }
-    bool VelocityDelta(UMath::Vector4 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(VelocityDelta, result);
-    }
-    const UMath::Vector4 &VelocityDelta() const {
-        ATTRIB_CODEGEN_GETLAYOUT(VelocityDelta);
-    }
-    bool SET_VelocityDelta(const UMath::Vector4 &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(VelocityDelta, input);
-    }
-    bool VelocityStart(TAttrib<UMath::Vector4> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(UMath::Vector4, 0x1b6c6ce2);
-    }
-    bool VelocityStart(UMath::Vector4 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(VelocityStart, result);
-    }
-    const UMath::Vector4 &VelocityStart() const {
-        ATTRIB_CODEGEN_GETLAYOUT(VelocityStart);
-    }
-    bool SET_VelocityStart(const UMath::Vector4 &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(VelocityStart, input);
-    }
-    bool VolumeCenter(TAttrib<UMath::Vector4> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(UMath::Vector4, 0x1bd3f18c);
-    }
-    bool VolumeCenter(UMath::Vector4 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(VolumeCenter, result);
-    }
-    const UMath::Vector4 &VolumeCenter() const {
-        ATTRIB_CODEGEN_GETLAYOUT(VolumeCenter);
-    }
-    bool SET_VolumeCenter(const UMath::Vector4 &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(VolumeCenter, input);
-    }
-    bool VolumeExtent(TAttrib<UMath::Vector4> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(UMath::Vector4, 0x0aaf558c);
-    }
-    bool VolumeExtent(UMath::Vector4 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(VolumeExtent, result);
-    }
-    const UMath::Vector4 &VolumeExtent() const {
-        ATTRIB_CODEGEN_GETLAYOUT(VolumeExtent);
-    }
-    bool SET_VolumeExtent(const UMath::Vector4 &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(VolumeExtent, input);
-    }
-    bool XenonEffect(TAttrib<RefSpec> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(RefSpec, 0xfe40e637);
-    }
-    bool XenonEffect(RefSpec &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(RefSpec, 0xfe40e637, result, index);
-    }
-    const RefSpec &XenonEffect(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(RefSpec, 0xfe40e637, index);
-    }
-    unsigned int Num_XenonEffect() const {
-        ATTRIB_CODEGEN_GETLENGTH(0xfe40e637);
-    }
-    bool SET_XenonEffect(const RefSpec &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(RefSpec, 0xfe40e637, input, index);
-    }
+    bool AccelDelta(UMath::Vector4 &result) const;
+    const UMath::Vector4 &AccelDelta() const;
+    bool SET_AccelDelta(const UMath::Vector4 &input);
+
+    bool AccelStart(UMath::Vector4 &result) const;
+    const UMath::Vector4 &AccelStart() const;
+    bool SET_AccelStart(const UMath::Vector4 &input);
+
+    bool AlphaToKillAt(EA::Reflection::Int8 &result) const;
+    const EA::Reflection::Int8 &AlphaToKillAt() const;
+    bool SET_AlphaToKillAt(const EA::Reflection::Int8 &input);
+
+    bool AxisConstraint(EffectParticleConstraint &result) const;
+    const EffectParticleConstraint &AxisConstraint() const;
+    bool SET_AxisConstraint(const EffectParticleConstraint &input);
+
+    bool CollectionName(TAttrib<EA::Reflection::Text> &result) const;
+    bool CollectionName(EA::Reflection::Text &result) const;
+    const EA::Reflection::Text &CollectionName() const;
+    bool SET_CollectionName(const EA::Reflection::Text &input);
+
+    bool Color1(EA::Reflection::UInt32 &result) const;
+    const EA::Reflection::UInt32 &Color1() const;
+    bool SET_Color1(const EA::Reflection::UInt32 &input);
+
+    bool Color2(EA::Reflection::UInt32 &result) const;
+    const EA::Reflection::UInt32 &Color2() const;
+    bool SET_Color2(const EA::Reflection::UInt32 &input);
+
+    bool Color3(EA::Reflection::UInt32 &result) const;
+    const EA::Reflection::UInt32 &Color3() const;
+    bool SET_Color3(const EA::Reflection::UInt32 &input);
+
+    bool Color4(EA::Reflection::UInt32 &result) const;
+    const EA::Reflection::UInt32 &Color4() const;
+    bool SET_Color4(const EA::Reflection::UInt32 &input);
+
+    bool Drag(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &Drag() const;
+    bool SET_Drag(const EA::Reflection::Float &input);
+
+    bool EliminateUnnecessaryRandomness(TAttrib<EA::Reflection::Bool> &result) const;
+    bool EliminateUnnecessaryRandomness(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &EliminateUnnecessaryRandomness() const;
+    bool SET_EliminateUnnecessaryRandomness(const EA::Reflection::Bool &input);
+
+    bool FarClip(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &FarClip() const;
+    bool SET_FarClip(const EA::Reflection::Float &input);
+
+    bool Gravity(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &Gravity() const;
+    bool SET_Gravity(const EA::Reflection::Float &input);
+
+    bool InitialAngleRange(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &InitialAngleRange() const;
+    bool SET_InitialAngleRange(const EA::Reflection::Float &input);
+
+    bool IsOneShot(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &IsOneShot() const;
+    bool SET_IsOneShot(const EA::Reflection::Bool &input);
+
+    bool KeyPositions(UMath::Vector4 &result) const;
+    const UMath::Vector4 &KeyPositions() const;
+    bool SET_KeyPositions(const UMath::Vector4 &input);
+
+    bool Life(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &Life() const;
+    bool SET_Life(const EA::Reflection::Float &input);
+
+    bool LifeVariance(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &LifeVariance() const;
+    bool SET_LifeVariance(const EA::Reflection::Float &input);
+
+    bool MotionInherit(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &MotionInherit() const;
+    bool SET_MotionInherit(const EA::Reflection::Float &input);
+
+    bool MotionInheritVariance(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &MotionInheritVariance() const;
+    bool SET_MotionInheritVariance(const EA::Reflection::Float &input);
+
+    bool MotionLive(EA::Reflection::Int32 &result) const;
+    const EA::Reflection::Int32 &MotionLive() const;
+    bool SET_MotionLive(const EA::Reflection::Int32 &input);
+
+    bool NoKillAtAlpha(TAttrib<EA::Reflection::Bool> &result) const;
+    bool NoKillAtAlpha(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &NoKillAtAlpha() const;
+    bool SET_NoKillAtAlpha(const EA::Reflection::Bool &input);
+
+    bool NumParticles(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &NumParticles() const;
+    bool SET_NumParticles(const EA::Reflection::Float &input);
+
+    bool NumParticlesVariance(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &NumParticlesVariance() const;
+    bool SET_NumParticlesVariance(const EA::Reflection::Float &input);
+
+    bool OffCycle(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &OffCycle() const;
+    bool SET_OffCycle(const EA::Reflection::Float &input);
+
+    bool OffCycleVariance(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &OffCycleVariance() const;
+    bool SET_OffCycleVariance(const EA::Reflection::Float &input);
+
+    bool OnCycle(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &OnCycle() const;
+    bool SET_OnCycle(const EA::Reflection::Float &input);
+
+    bool OnCycleVariance(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &OnCycleVariance() const;
+    bool SET_OnCycleVariance(const EA::Reflection::Float &input);
+
+    bool RandomRotationDirection(EA::Reflection::Int32 &result) const;
+    const EA::Reflection::Int32 &RandomRotationDirection() const;
+    bool SET_RandomRotationDirection(const EA::Reflection::Int32 &input);
+
+    bool RelativeAngle(UMath::Vector4 &result) const;
+    const UMath::Vector4 &RelativeAngle() const;
+    bool SET_RelativeAngle(const UMath::Vector4 &input);
+
+    bool RotationVariance(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &RotationVariance() const;
+    bool SET_RotationVariance(const EA::Reflection::Float &input);
+
+    bool Size(UMath::Vector4 &result) const;
+    const UMath::Vector4 &Size() const;
+    bool SET_Size(const UMath::Vector4 &input);
+
+    bool Speed(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &Speed() const;
+    bool SET_Speed(const EA::Reflection::Float &input);
+
+    bool SpeedVariance(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &SpeedVariance() const;
+    bool SET_SpeedVariance(const EA::Reflection::Float &input);
+
+    bool SpreadAngle(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &SpreadAngle() const;
+    bool SET_SpreadAngle(const EA::Reflection::Float &input);
+
+    bool SpreadAsDisc(EA::Reflection::Int32 &result) const;
+    const EA::Reflection::Int32 &SpreadAsDisc() const;
+    bool SET_SpreadAsDisc(const EA::Reflection::Int32 &input);
+
+    bool StartDelay(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &StartDelay() const;
+    bool SET_StartDelay(const EA::Reflection::Float &input);
+
+    bool StartDelayRandomVariance(TAttrib<EA::Reflection::Bool> &result) const;
+    bool StartDelayRandomVariance(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &StartDelayRandomVariance() const;
+    bool SET_StartDelayRandomVariance(const EA::Reflection::Bool &input);
+
+    bool Texture(TAttrib<ParticleTextureRecord> &result) const;
+    bool Texture(ParticleTextureRecord &result) const;
+    const ParticleTextureRecord &Texture() const;
+    bool SET_Texture(const ParticleTextureRecord &input);
+
+    bool TextureAnimation(ParticleAnimationInfo &result) const;
+    const ParticleAnimationInfo &TextureAnimation() const;
+    bool SET_TextureAnimation(const ParticleAnimationInfo &input);
+
+    bool VelocityDelta(UMath::Vector4 &result) const;
+    const UMath::Vector4 &VelocityDelta() const;
+    bool SET_VelocityDelta(const UMath::Vector4 &input);
+
+    bool VelocityStart(UMath::Vector4 &result) const;
+    const UMath::Vector4 &VelocityStart() const;
+    bool SET_VelocityStart(const UMath::Vector4 &input);
+
+    bool VolumeCenter(UMath::Vector4 &result) const;
+    const UMath::Vector4 &VolumeCenter() const;
+    bool SET_VolumeCenter(const UMath::Vector4 &input);
+
+    bool VolumeExtent(UMath::Vector4 &result) const;
+    const UMath::Vector4 &VolumeExtent() const;
+    bool SET_VolumeExtent(const UMath::Vector4 &input);
+
+    bool XenonEffect(TAttrib<RefSpec> &result) const;
+    bool XenonEffect(RefSpec &result, unsigned int index) const;
+    const RefSpec &XenonEffect(unsigned int index) const;
+    unsigned int Num_XenonEffect() const;
+    bool SET_XenonEffect(const RefSpec &input, unsigned int index);
 
   private:
     unsigned int GetLayoutSize() {
@@ -770,6 +413,521 @@ static const Key XenonEffect = 0xfe40e637;
 
 inline Key Gen::emitterdata::ClassKey() {
     return ClassName::emitterdata;
+}
+
+inline const UMath::Vector4 &Gen::emitterdata::AccelDelta() const {
+    ATTRIB_CODEGEN_GETLAYOUT(AccelDelta);
+}
+inline bool Gen::emitterdata::AccelDelta(UMath::Vector4 &result) const {
+    result = AccelDelta();
+    return true;
+}
+inline bool Gen::emitterdata::SET_AccelDelta(const UMath::Vector4 &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(AccelDelta, input);
+}
+
+inline const UMath::Vector4 &Gen::emitterdata::AccelStart() const {
+    ATTRIB_CODEGEN_GETLAYOUT(AccelStart);
+}
+inline bool Gen::emitterdata::AccelStart(UMath::Vector4 &result) const {
+    result = AccelStart();
+    return true;
+}
+inline bool Gen::emitterdata::SET_AccelStart(const UMath::Vector4 &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(AccelStart, input);
+}
+
+inline const EA::Reflection::Int8 &Gen::emitterdata::AlphaToKillAt() const {
+    ATTRIB_CODEGEN_GETLAYOUT(AlphaToKillAt);
+}
+inline bool Gen::emitterdata::AlphaToKillAt(EA::Reflection::Int8 &result) const {
+    result = AlphaToKillAt();
+    return true;
+}
+inline bool Gen::emitterdata::SET_AlphaToKillAt(const EA::Reflection::Int8 &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(AlphaToKillAt, input);
+}
+
+inline const EffectParticleConstraint &Gen::emitterdata::AxisConstraint() const {
+    ATTRIB_CODEGEN_GETLAYOUT(AxisConstraint);
+}
+inline bool Gen::emitterdata::AxisConstraint(EffectParticleConstraint &result) const {
+    result = AxisConstraint();
+    return true;
+}
+inline bool Gen::emitterdata::SET_AxisConstraint(const EffectParticleConstraint &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(AxisConstraint, input);
+}
+
+inline bool Gen::emitterdata::CollectionName(TAttrib<EA::Reflection::Text> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0x9ca1c8f9);
+}
+inline const EA::Reflection::Text &Gen::emitterdata::CollectionName() const {
+    ATTRIB_CODEGEN_GETLAYOUT(CollectionName);
+}
+inline bool Gen::emitterdata::CollectionName(EA::Reflection::Text &result) const {
+    result = CollectionName();
+    return true;
+}
+inline bool Gen::emitterdata::SET_CollectionName(const EA::Reflection::Text &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(CollectionName, input);
+}
+
+inline const EA::Reflection::UInt32 &Gen::emitterdata::Color1() const {
+    ATTRIB_CODEGEN_GETLAYOUT(Color1);
+}
+inline bool Gen::emitterdata::Color1(EA::Reflection::UInt32 &result) const {
+    result = Color1();
+    return true;
+}
+inline bool Gen::emitterdata::SET_Color1(const EA::Reflection::UInt32 &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(Color1, input);
+}
+
+inline const EA::Reflection::UInt32 &Gen::emitterdata::Color2() const {
+    ATTRIB_CODEGEN_GETLAYOUT(Color2);
+}
+inline bool Gen::emitterdata::Color2(EA::Reflection::UInt32 &result) const {
+    result = Color2();
+    return true;
+}
+inline bool Gen::emitterdata::SET_Color2(const EA::Reflection::UInt32 &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(Color2, input);
+}
+
+inline const EA::Reflection::UInt32 &Gen::emitterdata::Color3() const {
+    ATTRIB_CODEGEN_GETLAYOUT(Color3);
+}
+inline bool Gen::emitterdata::Color3(EA::Reflection::UInt32 &result) const {
+    result = Color3();
+    return true;
+}
+inline bool Gen::emitterdata::SET_Color3(const EA::Reflection::UInt32 &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(Color3, input);
+}
+
+inline const EA::Reflection::UInt32 &Gen::emitterdata::Color4() const {
+    ATTRIB_CODEGEN_GETLAYOUT(Color4);
+}
+inline bool Gen::emitterdata::Color4(EA::Reflection::UInt32 &result) const {
+    result = Color4();
+    return true;
+}
+inline bool Gen::emitterdata::SET_Color4(const EA::Reflection::UInt32 &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(Color4, input);
+}
+
+inline const EA::Reflection::Float &Gen::emitterdata::Drag() const {
+    ATTRIB_CODEGEN_GETLAYOUT(Drag);
+}
+inline bool Gen::emitterdata::Drag(EA::Reflection::Float &result) const {
+    result = Drag();
+    return true;
+}
+inline bool Gen::emitterdata::SET_Drag(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(Drag, input);
+}
+
+inline bool Gen::emitterdata::EliminateUnnecessaryRandomness(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x859043b2);
+}
+inline const EA::Reflection::Bool &Gen::emitterdata::EliminateUnnecessaryRandomness() const {
+    ATTRIB_CODEGEN_GETLAYOUT(EliminateUnnecessaryRandomness);
+}
+inline bool Gen::emitterdata::EliminateUnnecessaryRandomness(EA::Reflection::Bool &result) const {
+    result = EliminateUnnecessaryRandomness();
+    return true;
+}
+inline bool Gen::emitterdata::SET_EliminateUnnecessaryRandomness(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(EliminateUnnecessaryRandomness, input);
+}
+
+inline const EA::Reflection::Float &Gen::emitterdata::FarClip() const {
+    ATTRIB_CODEGEN_GETLAYOUT(FarClip);
+}
+inline bool Gen::emitterdata::FarClip(EA::Reflection::Float &result) const {
+    result = FarClip();
+    return true;
+}
+inline bool Gen::emitterdata::SET_FarClip(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(FarClip, input);
+}
+
+inline const EA::Reflection::Float &Gen::emitterdata::Gravity() const {
+    ATTRIB_CODEGEN_GETLAYOUT(Gravity);
+}
+inline bool Gen::emitterdata::Gravity(EA::Reflection::Float &result) const {
+    result = Gravity();
+    return true;
+}
+inline bool Gen::emitterdata::SET_Gravity(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(Gravity, input);
+}
+
+inline const EA::Reflection::Float &Gen::emitterdata::InitialAngleRange() const {
+    ATTRIB_CODEGEN_GETLAYOUT(InitialAngleRange);
+}
+inline bool Gen::emitterdata::InitialAngleRange(EA::Reflection::Float &result) const {
+    result = InitialAngleRange();
+    return true;
+}
+inline bool Gen::emitterdata::SET_InitialAngleRange(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(InitialAngleRange, input);
+}
+
+inline const EA::Reflection::Bool &Gen::emitterdata::IsOneShot() const {
+    ATTRIB_CODEGEN_GETLAYOUT(IsOneShot);
+}
+inline bool Gen::emitterdata::IsOneShot(EA::Reflection::Bool &result) const {
+    result = IsOneShot();
+    return true;
+}
+inline bool Gen::emitterdata::SET_IsOneShot(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(IsOneShot, input);
+}
+
+inline const UMath::Vector4 &Gen::emitterdata::KeyPositions() const {
+    ATTRIB_CODEGEN_GETLAYOUT(KeyPositions);
+}
+inline bool Gen::emitterdata::KeyPositions(UMath::Vector4 &result) const {
+    result = KeyPositions();
+    return true;
+}
+inline bool Gen::emitterdata::SET_KeyPositions(const UMath::Vector4 &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(KeyPositions, input);
+}
+
+inline const EA::Reflection::Float &Gen::emitterdata::Life() const {
+    ATTRIB_CODEGEN_GETLAYOUT(Life);
+}
+inline bool Gen::emitterdata::Life(EA::Reflection::Float &result) const {
+    result = Life();
+    return true;
+}
+inline bool Gen::emitterdata::SET_Life(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(Life, input);
+}
+
+inline const EA::Reflection::Float &Gen::emitterdata::LifeVariance() const {
+    ATTRIB_CODEGEN_GETLAYOUT(LifeVariance);
+}
+inline bool Gen::emitterdata::LifeVariance(EA::Reflection::Float &result) const {
+    result = LifeVariance();
+    return true;
+}
+inline bool Gen::emitterdata::SET_LifeVariance(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(LifeVariance, input);
+}
+
+inline const EA::Reflection::Float &Gen::emitterdata::MotionInherit() const {
+    ATTRIB_CODEGEN_GETLAYOUT(MotionInherit);
+}
+inline bool Gen::emitterdata::MotionInherit(EA::Reflection::Float &result) const {
+    result = MotionInherit();
+    return true;
+}
+inline bool Gen::emitterdata::SET_MotionInherit(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(MotionInherit, input);
+}
+
+inline const EA::Reflection::Float &Gen::emitterdata::MotionInheritVariance() const {
+    ATTRIB_CODEGEN_GETLAYOUT(MotionInheritVariance);
+}
+inline bool Gen::emitterdata::MotionInheritVariance(EA::Reflection::Float &result) const {
+    result = MotionInheritVariance();
+    return true;
+}
+inline bool Gen::emitterdata::SET_MotionInheritVariance(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(MotionInheritVariance, input);
+}
+
+inline const EA::Reflection::Int32 &Gen::emitterdata::MotionLive() const {
+    ATTRIB_CODEGEN_GETLAYOUT(MotionLive);
+}
+inline bool Gen::emitterdata::MotionLive(EA::Reflection::Int32 &result) const {
+    result = MotionLive();
+    return true;
+}
+inline bool Gen::emitterdata::SET_MotionLive(const EA::Reflection::Int32 &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(MotionLive, input);
+}
+
+inline bool Gen::emitterdata::NoKillAtAlpha(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x27a9a451);
+}
+inline const EA::Reflection::Bool &Gen::emitterdata::NoKillAtAlpha() const {
+    ATTRIB_CODEGEN_GETLAYOUT(NoKillAtAlpha);
+}
+inline bool Gen::emitterdata::NoKillAtAlpha(EA::Reflection::Bool &result) const {
+    result = NoKillAtAlpha();
+    return true;
+}
+inline bool Gen::emitterdata::SET_NoKillAtAlpha(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(NoKillAtAlpha, input);
+}
+
+inline const EA::Reflection::Float &Gen::emitterdata::NumParticles() const {
+    ATTRIB_CODEGEN_GETLAYOUT(NumParticles);
+}
+inline bool Gen::emitterdata::NumParticles(EA::Reflection::Float &result) const {
+    result = NumParticles();
+    return true;
+}
+inline bool Gen::emitterdata::SET_NumParticles(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(NumParticles, input);
+}
+
+inline const EA::Reflection::Float &Gen::emitterdata::NumParticlesVariance() const {
+    ATTRIB_CODEGEN_GETLAYOUT(NumParticlesVariance);
+}
+inline bool Gen::emitterdata::NumParticlesVariance(EA::Reflection::Float &result) const {
+    result = NumParticlesVariance();
+    return true;
+}
+inline bool Gen::emitterdata::SET_NumParticlesVariance(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(NumParticlesVariance, input);
+}
+
+inline const EA::Reflection::Float &Gen::emitterdata::OffCycle() const {
+    ATTRIB_CODEGEN_GETLAYOUT(OffCycle);
+}
+inline bool Gen::emitterdata::OffCycle(EA::Reflection::Float &result) const {
+    result = OffCycle();
+    return true;
+}
+inline bool Gen::emitterdata::SET_OffCycle(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(OffCycle, input);
+}
+
+inline const EA::Reflection::Float &Gen::emitterdata::OffCycleVariance() const {
+    ATTRIB_CODEGEN_GETLAYOUT(OffCycleVariance);
+}
+inline bool Gen::emitterdata::OffCycleVariance(EA::Reflection::Float &result) const {
+    result = OffCycleVariance();
+    return true;
+}
+inline bool Gen::emitterdata::SET_OffCycleVariance(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(OffCycleVariance, input);
+}
+
+inline const EA::Reflection::Float &Gen::emitterdata::OnCycle() const {
+    ATTRIB_CODEGEN_GETLAYOUT(OnCycle);
+}
+inline bool Gen::emitterdata::OnCycle(EA::Reflection::Float &result) const {
+    result = OnCycle();
+    return true;
+}
+inline bool Gen::emitterdata::SET_OnCycle(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(OnCycle, input);
+}
+
+inline const EA::Reflection::Float &Gen::emitterdata::OnCycleVariance() const {
+    ATTRIB_CODEGEN_GETLAYOUT(OnCycleVariance);
+}
+inline bool Gen::emitterdata::OnCycleVariance(EA::Reflection::Float &result) const {
+    result = OnCycleVariance();
+    return true;
+}
+inline bool Gen::emitterdata::SET_OnCycleVariance(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(OnCycleVariance, input);
+}
+
+inline const EA::Reflection::Int32 &Gen::emitterdata::RandomRotationDirection() const {
+    ATTRIB_CODEGEN_GETLAYOUT(RandomRotationDirection);
+}
+inline bool Gen::emitterdata::RandomRotationDirection(EA::Reflection::Int32 &result) const {
+    result = RandomRotationDirection();
+    return true;
+}
+inline bool Gen::emitterdata::SET_RandomRotationDirection(const EA::Reflection::Int32 &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(RandomRotationDirection, input);
+}
+
+inline const UMath::Vector4 &Gen::emitterdata::RelativeAngle() const {
+    ATTRIB_CODEGEN_GETLAYOUT(RelativeAngle);
+}
+inline bool Gen::emitterdata::RelativeAngle(UMath::Vector4 &result) const {
+    result = RelativeAngle();
+    return true;
+}
+inline bool Gen::emitterdata::SET_RelativeAngle(const UMath::Vector4 &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(RelativeAngle, input);
+}
+
+inline const EA::Reflection::Float &Gen::emitterdata::RotationVariance() const {
+    ATTRIB_CODEGEN_GETLAYOUT(RotationVariance);
+}
+inline bool Gen::emitterdata::RotationVariance(EA::Reflection::Float &result) const {
+    result = RotationVariance();
+    return true;
+}
+inline bool Gen::emitterdata::SET_RotationVariance(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(RotationVariance, input);
+}
+
+inline const UMath::Vector4 &Gen::emitterdata::Size() const {
+    ATTRIB_CODEGEN_GETLAYOUT(Size);
+}
+inline bool Gen::emitterdata::Size(UMath::Vector4 &result) const {
+    result = Size();
+    return true;
+}
+inline bool Gen::emitterdata::SET_Size(const UMath::Vector4 &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(Size, input);
+}
+
+inline const EA::Reflection::Float &Gen::emitterdata::Speed() const {
+    ATTRIB_CODEGEN_GETLAYOUT(Speed);
+}
+inline bool Gen::emitterdata::Speed(EA::Reflection::Float &result) const {
+    result = Speed();
+    return true;
+}
+inline bool Gen::emitterdata::SET_Speed(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(Speed, input);
+}
+
+inline const EA::Reflection::Float &Gen::emitterdata::SpeedVariance() const {
+    ATTRIB_CODEGEN_GETLAYOUT(SpeedVariance);
+}
+inline bool Gen::emitterdata::SpeedVariance(EA::Reflection::Float &result) const {
+    result = SpeedVariance();
+    return true;
+}
+inline bool Gen::emitterdata::SET_SpeedVariance(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(SpeedVariance, input);
+}
+
+inline const EA::Reflection::Float &Gen::emitterdata::SpreadAngle() const {
+    ATTRIB_CODEGEN_GETLAYOUT(SpreadAngle);
+}
+inline bool Gen::emitterdata::SpreadAngle(EA::Reflection::Float &result) const {
+    result = SpreadAngle();
+    return true;
+}
+inline bool Gen::emitterdata::SET_SpreadAngle(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(SpreadAngle, input);
+}
+
+inline const EA::Reflection::Int32 &Gen::emitterdata::SpreadAsDisc() const {
+    ATTRIB_CODEGEN_GETLAYOUT(SpreadAsDisc);
+}
+inline bool Gen::emitterdata::SpreadAsDisc(EA::Reflection::Int32 &result) const {
+    result = SpreadAsDisc();
+    return true;
+}
+inline bool Gen::emitterdata::SET_SpreadAsDisc(const EA::Reflection::Int32 &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(SpreadAsDisc, input);
+}
+
+inline const EA::Reflection::Float &Gen::emitterdata::StartDelay() const {
+    ATTRIB_CODEGEN_GETLAYOUT(StartDelay);
+}
+inline bool Gen::emitterdata::StartDelay(EA::Reflection::Float &result) const {
+    result = StartDelay();
+    return true;
+}
+inline bool Gen::emitterdata::SET_StartDelay(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(StartDelay, input);
+}
+
+inline bool Gen::emitterdata::StartDelayRandomVariance(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x6e088259);
+}
+inline const EA::Reflection::Bool &Gen::emitterdata::StartDelayRandomVariance() const {
+    ATTRIB_CODEGEN_GETLAYOUT(StartDelayRandomVariance);
+}
+inline bool Gen::emitterdata::StartDelayRandomVariance(EA::Reflection::Bool &result) const {
+    result = StartDelayRandomVariance();
+    return true;
+}
+inline bool Gen::emitterdata::SET_StartDelayRandomVariance(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(StartDelayRandomVariance, input);
+}
+
+inline bool Gen::emitterdata::Texture(TAttrib<ParticleTextureRecord> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(ParticleTextureRecord, 0x6f3afee5);
+}
+inline const ParticleTextureRecord &Gen::emitterdata::Texture() const {
+    ATTRIB_CODEGEN_GETLAYOUT(Texture);
+}
+inline bool Gen::emitterdata::Texture(ParticleTextureRecord &result) const {
+    result = Texture();
+    return true;
+}
+inline bool Gen::emitterdata::SET_Texture(const ParticleTextureRecord &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(Texture, input);
+}
+
+inline const ParticleAnimationInfo &Gen::emitterdata::TextureAnimation() const {
+    ATTRIB_CODEGEN_GETLAYOUT(TextureAnimation);
+}
+inline bool Gen::emitterdata::TextureAnimation(ParticleAnimationInfo &result) const {
+    result = TextureAnimation();
+    return true;
+}
+inline bool Gen::emitterdata::SET_TextureAnimation(const ParticleAnimationInfo &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(TextureAnimation, input);
+}
+
+inline const UMath::Vector4 &Gen::emitterdata::VelocityDelta() const {
+    ATTRIB_CODEGEN_GETLAYOUT(VelocityDelta);
+}
+inline bool Gen::emitterdata::VelocityDelta(UMath::Vector4 &result) const {
+    result = VelocityDelta();
+    return true;
+}
+inline bool Gen::emitterdata::SET_VelocityDelta(const UMath::Vector4 &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(VelocityDelta, input);
+}
+
+inline const UMath::Vector4 &Gen::emitterdata::VelocityStart() const {
+    ATTRIB_CODEGEN_GETLAYOUT(VelocityStart);
+}
+inline bool Gen::emitterdata::VelocityStart(UMath::Vector4 &result) const {
+    result = VelocityStart();
+    return true;
+}
+inline bool Gen::emitterdata::SET_VelocityStart(const UMath::Vector4 &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(VelocityStart, input);
+}
+
+inline const UMath::Vector4 &Gen::emitterdata::VolumeCenter() const {
+    ATTRIB_CODEGEN_GETLAYOUT(VolumeCenter);
+}
+inline bool Gen::emitterdata::VolumeCenter(UMath::Vector4 &result) const {
+    result = VolumeCenter();
+    return true;
+}
+inline bool Gen::emitterdata::SET_VolumeCenter(const UMath::Vector4 &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(VolumeCenter, input);
+}
+
+inline const UMath::Vector4 &Gen::emitterdata::VolumeExtent() const {
+    ATTRIB_CODEGEN_GETLAYOUT(VolumeExtent);
+}
+inline bool Gen::emitterdata::VolumeExtent(UMath::Vector4 &result) const {
+    result = VolumeExtent();
+    return true;
+}
+inline bool Gen::emitterdata::SET_VolumeExtent(const UMath::Vector4 &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(VolumeExtent, input);
+}
+
+inline bool Gen::emitterdata::XenonEffect(TAttrib<RefSpec> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(RefSpec, 0xfe40e637);
+}
+inline const RefSpec &Gen::emitterdata::XenonEffect(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(RefSpec, 0xfe40e637, index);
+}
+inline bool Gen::emitterdata::XenonEffect(RefSpec &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(RefSpec, 0xfe40e637, result, index);
+}
+inline unsigned int Gen::emitterdata::Num_XenonEffect() const {
+    ATTRIB_CODEGEN_GETLENGTH(0xfe40e637);
+}
+inline bool Gen::emitterdata::SET_XenonEffect(const RefSpec &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(RefSpec, 0xfe40e637, input, index);
 }
 
 }; // namespace Attrib

@@ -70,18 +70,10 @@ struct infractions : Instance {
         Instance::operator=(rhs);
         return *this;
     }
-    bool amount(TAttrib<EA::Reflection::UInt32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::UInt32, 0x912a2eb5);
-    }
-    bool amount(EA::Reflection::UInt32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(amount, result);
-    }
-    const EA::Reflection::UInt32 &amount() const {
-        ATTRIB_CODEGEN_GETLAYOUT(amount);
-    }
-    bool SET_amount(const EA::Reflection::UInt32 &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(amount, input);
-    }
+    bool amount(TAttrib<EA::Reflection::UInt32> &result) const;
+    bool amount(EA::Reflection::UInt32 &result) const;
+    const EA::Reflection::UInt32 &amount() const;
+    bool SET_amount(const EA::Reflection::UInt32 &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -108,6 +100,20 @@ static const Key amount = 0x912a2eb5;
 
 inline Key Gen::infractions::ClassKey() {
     return ClassName::infractions;
+}
+
+inline bool Gen::infractions::amount(TAttrib<EA::Reflection::UInt32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::UInt32, 0x912a2eb5);
+}
+inline const EA::Reflection::UInt32 &Gen::infractions::amount() const {
+    ATTRIB_CODEGEN_GETLAYOUT(amount);
+}
+inline bool Gen::infractions::amount(EA::Reflection::UInt32 &result) const {
+    result = amount();
+    return true;
+}
+inline bool Gen::infractions::SET_amount(const EA::Reflection::UInt32 &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(amount, input);
 }
 
 }; // namespace Attrib

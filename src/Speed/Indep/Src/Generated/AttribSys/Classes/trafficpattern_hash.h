@@ -37,4 +37,3 @@ static const Key h64_industrial = 0xba7dd686;
 }; // namespace Attrib
 
 #endif
-

@@ -57,30 +57,15 @@ struct aud_stitch_loop : Instance {
         Instance::operator=(rhs);
         return *this;
     }
-    bool overlap(TAttrib<EA::Reflection::Int32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0xad8c27f5);
-    }
-    bool overlap(EA::Reflection::Int32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0xad8c27f5, result);
-    }
-    const EA::Reflection::Int32 &overlap() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0xad8c27f5);
-    }
-    bool SET_overlap(const EA::Reflection::Int32 &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0xad8c27f5, input);
-    }
-    bool stitch(TAttrib<STICH_COLLISION_TYPE> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(STICH_COLLISION_TYPE, 0x1553cd23);
-    }
-    bool stitch(STICH_COLLISION_TYPE &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(STICH_COLLISION_TYPE, 0x1553cd23, result);
-    }
-    const STICH_COLLISION_TYPE &stitch() const {
-        ATTRIB_CODEGEN_GETVALUE(STICH_COLLISION_TYPE, 0x1553cd23);
-    }
-    bool SET_stitch(const STICH_COLLISION_TYPE &input) {
-        ATTRIB_CODEGEN_SETVALUE(STICH_COLLISION_TYPE, 0x1553cd23, input);
-    }
+    bool overlap(TAttrib<EA::Reflection::Int32> &result) const;
+    bool overlap(EA::Reflection::Int32 &result) const;
+    const EA::Reflection::Int32 &overlap() const;
+    bool SET_overlap(const EA::Reflection::Int32 &input);
+
+    bool stitch(TAttrib<STICH_COLLISION_TYPE> &result) const;
+    bool stitch(STICH_COLLISION_TYPE &result) const;
+    const STICH_COLLISION_TYPE &stitch() const;
+    bool SET_stitch(const STICH_COLLISION_TYPE &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -108,6 +93,32 @@ static const Key stitch = 0x1553cd23;
 
 inline Key Gen::aud_stitch_loop::ClassKey() {
     return ClassName::aud_stitch_loop;
+}
+
+inline bool Gen::aud_stitch_loop::overlap(TAttrib<EA::Reflection::Int32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0xad8c27f5);
+}
+inline const EA::Reflection::Int32 &Gen::aud_stitch_loop::overlap() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0xad8c27f5);
+}
+inline bool Gen::aud_stitch_loop::overlap(EA::Reflection::Int32 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0xad8c27f5, result);
+}
+inline bool Gen::aud_stitch_loop::SET_overlap(const EA::Reflection::Int32 &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0xad8c27f5, input);
+}
+
+inline bool Gen::aud_stitch_loop::stitch(TAttrib<STICH_COLLISION_TYPE> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(STICH_COLLISION_TYPE, 0x1553cd23);
+}
+inline const STICH_COLLISION_TYPE &Gen::aud_stitch_loop::stitch() const {
+    ATTRIB_CODEGEN_GETVALUE(STICH_COLLISION_TYPE, 0x1553cd23);
+}
+inline bool Gen::aud_stitch_loop::stitch(STICH_COLLISION_TYPE &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(STICH_COLLISION_TYPE, 0x1553cd23, result);
+}
+inline bool Gen::aud_stitch_loop::SET_stitch(const STICH_COLLISION_TYPE &input) {
+    ATTRIB_CODEGEN_SETVALUE(STICH_COLLISION_TYPE, 0x1553cd23, input);
 }
 
 }; // namespace Attrib

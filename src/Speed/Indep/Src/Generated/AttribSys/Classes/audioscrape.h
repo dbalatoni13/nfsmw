@@ -57,33 +57,16 @@ struct audioscrape : Instance {
         Instance::operator=(rhs);
         return *this;
     }
-    bool CSIS_EFFECT(TAttrib<Attrib::StringKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(Attrib::StringKey, 0xbec30f42);
-    }
-    bool CSIS_EFFECT(Attrib::StringKey &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(Attrib::StringKey, 0xbec30f42, result);
-    }
-    const Attrib::StringKey &CSIS_EFFECT() const {
-        ATTRIB_CODEGEN_GETVALUE(Attrib::StringKey, 0xbec30f42);
-    }
-    bool SET_CSIS_EFFECT(const Attrib::StringKey &input) {
-        ATTRIB_CODEGEN_SETVALUE(Attrib::StringKey, 0xbec30f42, input);
-    }
-    bool DESCRIPTION(TAttrib<Attrib::StringKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(Attrib::StringKey, 0x09925106);
-    }
-    bool DESCRIPTION(Attrib::StringKey &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(Attrib::StringKey, 0x09925106, result, index);
-    }
-    const Attrib::StringKey &DESCRIPTION(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(Attrib::StringKey, 0x09925106, index);
-    }
-    unsigned int Num_DESCRIPTION() const {
-        ATTRIB_CODEGEN_GETLENGTH(0x09925106);
-    }
-    bool SET_DESCRIPTION(const Attrib::StringKey &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(Attrib::StringKey, 0x09925106, input, index);
-    }
+    bool CSIS_EFFECT(TAttrib<Attrib::StringKey> &result) const;
+    bool CSIS_EFFECT(Attrib::StringKey &result) const;
+    const Attrib::StringKey &CSIS_EFFECT() const;
+    bool SET_CSIS_EFFECT(const Attrib::StringKey &input);
+
+    bool DESCRIPTION(TAttrib<Attrib::StringKey> &result) const;
+    bool DESCRIPTION(Attrib::StringKey &result, unsigned int index) const;
+    const Attrib::StringKey &DESCRIPTION(unsigned int index) const;
+    unsigned int Num_DESCRIPTION() const;
+    bool SET_DESCRIPTION(const Attrib::StringKey &input, unsigned int index);
 
   private:
     unsigned int GetLayoutSize() {
@@ -111,6 +94,35 @@ static const Key DESCRIPTION = 0x09925106;
 
 inline Key Gen::audioscrape::ClassKey() {
     return ClassName::audioscrape;
+}
+
+inline bool Gen::audioscrape::CSIS_EFFECT(TAttrib<Attrib::StringKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(Attrib::StringKey, 0xbec30f42);
+}
+inline const Attrib::StringKey &Gen::audioscrape::CSIS_EFFECT() const {
+    ATTRIB_CODEGEN_GETVALUE(Attrib::StringKey, 0xbec30f42);
+}
+inline bool Gen::audioscrape::CSIS_EFFECT(Attrib::StringKey &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(Attrib::StringKey, 0xbec30f42, result);
+}
+inline bool Gen::audioscrape::SET_CSIS_EFFECT(const Attrib::StringKey &input) {
+    ATTRIB_CODEGEN_SETVALUE(Attrib::StringKey, 0xbec30f42, input);
+}
+
+inline bool Gen::audioscrape::DESCRIPTION(TAttrib<Attrib::StringKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(Attrib::StringKey, 0x09925106);
+}
+inline const Attrib::StringKey &Gen::audioscrape::DESCRIPTION(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(Attrib::StringKey, 0x09925106, index);
+}
+inline bool Gen::audioscrape::DESCRIPTION(Attrib::StringKey &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(Attrib::StringKey, 0x09925106, result, index);
+}
+inline unsigned int Gen::audioscrape::Num_DESCRIPTION() const {
+    ATTRIB_CODEGEN_GETLENGTH(0x09925106);
+}
+inline bool Gen::audioscrape::SET_DESCRIPTION(const Attrib::StringKey &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(Attrib::StringKey, 0x09925106, input, index);
 }
 
 }; // namespace Attrib

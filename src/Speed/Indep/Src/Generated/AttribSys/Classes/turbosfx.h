@@ -79,78 +79,35 @@ struct turbosfx : Instance {
         Instance::operator=(rhs);
         return *this;
     }
-    bool BankName(TAttrib<Attrib::StringKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(Attrib::StringKey, 0xbf49a7d9);
-    }
-    bool BankName(Attrib::StringKey &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(BankName, result);
-    }
-    const Attrib::StringKey &BankName() const {
-        ATTRIB_CODEGEN_GETLAYOUT(BankName);
-    }
-    bool SET_BankName(const Attrib::StringKey &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(BankName, input);
-    }
-    bool ChargeTime(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x4a985286);
-    }
-    bool ChargeTime(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(ChargeTime, result);
-    }
-    const EA::Reflection::Float &ChargeTime() const {
-        ATTRIB_CODEGEN_GETLAYOUT(ChargeTime);
-    }
-    bool SET_ChargeTime(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(ChargeTime, input);
-    }
-    bool Leak_Rate(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xfdf3bc20);
-    }
-    bool Leak_Rate(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xfdf3bc20, result);
-    }
-    const EA::Reflection::Float &Leak_Rate() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0xfdf3bc20);
-    }
-    bool SET_Leak_Rate(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xfdf3bc20, input);
-    }
-    bool Vol_Blowoff1(TAttrib<EA::Reflection::UInt32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::UInt32, 0x0b08309d);
-    }
-    bool Vol_Blowoff1(EA::Reflection::UInt32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(Vol_Blowoff1, result);
-    }
-    const EA::Reflection::UInt32 &Vol_Blowoff1() const {
-        ATTRIB_CODEGEN_GETLAYOUT(Vol_Blowoff1);
-    }
-    bool SET_Vol_Blowoff1(const EA::Reflection::UInt32 &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(Vol_Blowoff1, input);
-    }
-    bool Vol_Blowoff2(TAttrib<EA::Reflection::UInt32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::UInt32, 0xe5f75d11);
-    }
-    bool Vol_Blowoff2(EA::Reflection::UInt32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(Vol_Blowoff2, result);
-    }
-    const EA::Reflection::UInt32 &Vol_Blowoff2() const {
-        ATTRIB_CODEGEN_GETLAYOUT(Vol_Blowoff2);
-    }
-    bool SET_Vol_Blowoff2(const EA::Reflection::UInt32 &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(Vol_Blowoff2, input);
-    }
-    bool Vol_Spool(TAttrib<EA::Reflection::UInt32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::UInt32, 0x67af0e6b);
-    }
-    bool Vol_Spool(EA::Reflection::UInt32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(Vol_Spool, result);
-    }
-    const EA::Reflection::UInt32 &Vol_Spool() const {
-        ATTRIB_CODEGEN_GETLAYOUT(Vol_Spool);
-    }
-    bool SET_Vol_Spool(const EA::Reflection::UInt32 &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(Vol_Spool, input);
-    }
+    bool BankName(TAttrib<Attrib::StringKey> &result) const;
+    bool BankName(Attrib::StringKey &result) const;
+    const Attrib::StringKey &BankName() const;
+    bool SET_BankName(const Attrib::StringKey &input);
+
+    bool ChargeTime(TAttrib<EA::Reflection::Float> &result) const;
+    bool ChargeTime(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &ChargeTime() const;
+    bool SET_ChargeTime(const EA::Reflection::Float &input);
+
+    bool Leak_Rate(TAttrib<EA::Reflection::Float> &result) const;
+    bool Leak_Rate(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &Leak_Rate() const;
+    bool SET_Leak_Rate(const EA::Reflection::Float &input);
+
+    bool Vol_Blowoff1(TAttrib<EA::Reflection::UInt32> &result) const;
+    bool Vol_Blowoff1(EA::Reflection::UInt32 &result) const;
+    const EA::Reflection::UInt32 &Vol_Blowoff1() const;
+    bool SET_Vol_Blowoff1(const EA::Reflection::UInt32 &input);
+
+    bool Vol_Blowoff2(TAttrib<EA::Reflection::UInt32> &result) const;
+    bool Vol_Blowoff2(EA::Reflection::UInt32 &result) const;
+    const EA::Reflection::UInt32 &Vol_Blowoff2() const;
+    bool SET_Vol_Blowoff2(const EA::Reflection::UInt32 &input);
+
+    bool Vol_Spool(TAttrib<EA::Reflection::UInt32> &result) const;
+    bool Vol_Spool(EA::Reflection::UInt32 &result) const;
+    const EA::Reflection::UInt32 &Vol_Spool() const;
+    bool SET_Vol_Spool(const EA::Reflection::UInt32 &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -182,6 +139,89 @@ static const Key Vol_Spool = 0x67af0e6b;
 
 inline Key Gen::turbosfx::ClassKey() {
     return ClassName::turbosfx;
+}
+
+inline bool Gen::turbosfx::BankName(TAttrib<Attrib::StringKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(Attrib::StringKey, 0xbf49a7d9);
+}
+inline const Attrib::StringKey &Gen::turbosfx::BankName() const {
+    ATTRIB_CODEGEN_GETLAYOUT(BankName);
+}
+inline bool Gen::turbosfx::BankName(Attrib::StringKey &result) const {
+    result = BankName();
+    return true;
+}
+inline bool Gen::turbosfx::SET_BankName(const Attrib::StringKey &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(BankName, input);
+}
+
+inline bool Gen::turbosfx::ChargeTime(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x4a985286);
+}
+inline const EA::Reflection::Float &Gen::turbosfx::ChargeTime() const {
+    ATTRIB_CODEGEN_GETLAYOUT(ChargeTime);
+}
+inline bool Gen::turbosfx::ChargeTime(EA::Reflection::Float &result) const {
+    result = ChargeTime();
+    return true;
+}
+inline bool Gen::turbosfx::SET_ChargeTime(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(ChargeTime, input);
+}
+
+inline bool Gen::turbosfx::Leak_Rate(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xfdf3bc20);
+}
+inline const EA::Reflection::Float &Gen::turbosfx::Leak_Rate() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0xfdf3bc20);
+}
+inline bool Gen::turbosfx::Leak_Rate(EA::Reflection::Float &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xfdf3bc20, result);
+}
+inline bool Gen::turbosfx::SET_Leak_Rate(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xfdf3bc20, input);
+}
+
+inline bool Gen::turbosfx::Vol_Blowoff1(TAttrib<EA::Reflection::UInt32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::UInt32, 0x0b08309d);
+}
+inline const EA::Reflection::UInt32 &Gen::turbosfx::Vol_Blowoff1() const {
+    ATTRIB_CODEGEN_GETLAYOUT(Vol_Blowoff1);
+}
+inline bool Gen::turbosfx::Vol_Blowoff1(EA::Reflection::UInt32 &result) const {
+    result = Vol_Blowoff1();
+    return true;
+}
+inline bool Gen::turbosfx::SET_Vol_Blowoff1(const EA::Reflection::UInt32 &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(Vol_Blowoff1, input);
+}
+
+inline bool Gen::turbosfx::Vol_Blowoff2(TAttrib<EA::Reflection::UInt32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::UInt32, 0xe5f75d11);
+}
+inline const EA::Reflection::UInt32 &Gen::turbosfx::Vol_Blowoff2() const {
+    ATTRIB_CODEGEN_GETLAYOUT(Vol_Blowoff2);
+}
+inline bool Gen::turbosfx::Vol_Blowoff2(EA::Reflection::UInt32 &result) const {
+    result = Vol_Blowoff2();
+    return true;
+}
+inline bool Gen::turbosfx::SET_Vol_Blowoff2(const EA::Reflection::UInt32 &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(Vol_Blowoff2, input);
+}
+
+inline bool Gen::turbosfx::Vol_Spool(TAttrib<EA::Reflection::UInt32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::UInt32, 0x67af0e6b);
+}
+inline const EA::Reflection::UInt32 &Gen::turbosfx::Vol_Spool() const {
+    ATTRIB_CODEGEN_GETLAYOUT(Vol_Spool);
+}
+inline bool Gen::turbosfx::Vol_Spool(EA::Reflection::UInt32 &result) const {
+    result = Vol_Spool();
+    return true;
+}
+inline bool Gen::turbosfx::SET_Vol_Spool(const EA::Reflection::UInt32 &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(Vol_Spool, input);
 }
 
 }; // namespace Attrib

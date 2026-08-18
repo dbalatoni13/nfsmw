@@ -103,348 +103,147 @@ struct speech : Instance {
         Instance::operator=(rhs);
         return *this;
     }
-    bool BackTime(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x8e319c7c);
-    }
-    bool BackTime(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(BackTime, result);
-    }
-    const EA::Reflection::Float &BackTime() const {
-        ATTRIB_CODEGEN_GETLAYOUT(BackTime);
-    }
-    bool SET_BackTime(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(BackTime, input);
-    }
-    bool Clarity(TAttrib<EA::Reflection::UInt8> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::UInt8, 0xfe3254ea);
-    }
-    bool Clarity(EA::Reflection::UInt8 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::UInt8, 0xfe3254ea, result);
-    }
-    const EA::Reflection::UInt8 &Clarity() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::UInt8, 0xfe3254ea);
-    }
-    bool SET_Clarity(const EA::Reflection::UInt8 &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::UInt8, 0xfe3254ea, input);
-    }
-    bool CollectionName(TAttrib<EA::Reflection::Text> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0x9ca1c8f9);
-    }
-    bool CollectionName(EA::Reflection::Text &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(CollectionName, result);
-    }
-    const EA::Reflection::Text &CollectionName() const {
-        ATTRIB_CODEGEN_GETLAYOUT(CollectionName);
-    }
-    bool SET_CollectionName(const EA::Reflection::Text &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(CollectionName, input);
-    }
-    bool CullingRange(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xbbfc6532);
-    }
-    bool CullingRange(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(CullingRange, result);
-    }
-    const EA::Reflection::Float &CullingRange() const {
-        ATTRIB_CODEGEN_GETLAYOUT(CullingRange);
-    }
-    bool SET_CullingRange(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(CullingRange, input);
-    }
-    bool DeadAir(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x793293dd);
-    }
-    bool DeadAir(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x793293dd, result);
-    }
-    const EA::Reflection::Float &DeadAir() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x793293dd);
-    }
-    bool SET_DeadAir(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x793293dd, input);
-    }
-    bool DepFollow(TAttrib<RefSpec> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(RefSpec, 0xc8c5d475);
-    }
-    bool DepFollow(RefSpec &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(RefSpec, 0xc8c5d475, result, index);
-    }
-    const RefSpec &DepFollow(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(RefSpec, 0xc8c5d475, index);
-    }
-    unsigned int Num_DepFollow() const {
-        ATTRIB_CODEGEN_GETLENGTH(0xc8c5d475);
-    }
-    bool SET_DepFollow(const RefSpec &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(RefSpec, 0xc8c5d475, input, index);
-    }
-    bool DoNotDropout(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0xa684e35a);
-    }
-    bool DoNotDropout(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(DoNotDropout, result);
-    }
-    const EA::Reflection::Bool &DoNotDropout() const {
-        ATTRIB_CODEGEN_GETLAYOUT(DoNotDropout);
-    }
-    bool SET_DoNotDropout(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(DoNotDropout, input);
-    }
-    bool EnforceDeadAir(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xdb3bd2f3);
-    }
-    bool EnforceDeadAir(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xdb3bd2f3, result);
-    }
-    const EA::Reflection::Float &EnforceDeadAir() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0xdb3bd2f3);
-    }
-    bool SET_EnforceDeadAir(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xdb3bd2f3, input);
-    }
-    bool InitDelay(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xffbdad32);
-    }
-    bool InitDelay(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xffbdad32, result);
-    }
-    const EA::Reflection::Float &InitDelay() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0xffbdad32);
-    }
-    bool SET_InitDelay(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xffbdad32, input);
-    }
-    bool Interruptable(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x87930ed2);
-    }
-    bool Interruptable(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x87930ed2, result);
-    }
-    const EA::Reflection::Bool &Interruptable() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x87930ed2);
-    }
-    bool SET_Interruptable(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x87930ed2, input);
-    }
-    bool Interval(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x13593bf1);
-    }
-    bool Interval(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(Interval, result);
-    }
-    const EA::Reflection::Float &Interval() const {
-        ATTRIB_CODEGEN_GETLAYOUT(Interval);
-    }
-    bool SET_Interval(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(Interval, input);
-    }
-    bool MaxHeat(TAttrib<EA::Reflection::Int8> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int8, 0x77f20778);
-    }
-    bool MaxHeat(EA::Reflection::Int8 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int8, 0x77f20778, result);
-    }
-    const EA::Reflection::Int8 &MaxHeat() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int8, 0x77f20778);
-    }
-    bool SET_MaxHeat(const EA::Reflection::Int8 &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int8, 0x77f20778, input);
-    }
-    bool MaxPlayback(TAttrib<EA::Reflection::Int32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x7e18c2f8);
-    }
-    bool MaxPlayback(EA::Reflection::Int32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x7e18c2f8, result);
-    }
-    const EA::Reflection::Int32 &MaxPlayback() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0x7e18c2f8);
-    }
-    bool SET_MaxPlayback(const EA::Reflection::Int32 &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x7e18c2f8, input);
-    }
-    bool MaxPlayerSpeed(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xb9befde0);
-    }
-    bool MaxPlayerSpeed(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xb9befde0, result);
-    }
-    const EA::Reflection::Float &MaxPlayerSpeed() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0xb9befde0);
-    }
-    bool SET_MaxPlayerSpeed(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xb9befde0, input);
-    }
-    bool MinHeat(TAttrib<EA::Reflection::Int8> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int8, 0x69603485);
-    }
-    bool MinHeat(EA::Reflection::Int8 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int8, 0x69603485, result);
-    }
-    const EA::Reflection::Int8 &MinHeat() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int8, 0x69603485);
-    }
-    bool SET_MinHeat(const EA::Reflection::Int8 &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int8, 0x69603485, input);
-    }
-    bool MinPlayerSpeed(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x0994e624);
-    }
-    bool MinPlayerSpeed(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x0994e624, result);
-    }
-    const EA::Reflection::Float &MinPlayerSpeed() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x0994e624);
-    }
-    bool SET_MinPlayerSpeed(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x0994e624, input);
-    }
-    bool OnScreenOnly(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x4b331604);
-    }
-    bool OnScreenOnly(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x4b331604, result);
-    }
-    const EA::Reflection::Bool &OnScreenOnly() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x4b331604);
-    }
-    bool SET_OnScreenOnly(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x4b331604, input);
-    }
-    bool Pan(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x4d663bfc);
-    }
-    bool Pan(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x4d663bfc, result);
-    }
-    const EA::Reflection::Bool &Pan() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x4d663bfc);
-    }
-    bool SET_Pan(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x4d663bfc, input);
-    }
-    bool RadioChirp(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x2976b959);
-    }
-    bool RadioChirp(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x2976b959, result);
-    }
-    const EA::Reflection::Bool &RadioChirp() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x2976b959);
-    }
-    bool SET_RadioChirp(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x2976b959, input);
-    }
-    bool RecallList(TAttrib<RefSpec> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(RefSpec, 0x4710d6d5);
-    }
-    bool RecallList(RefSpec &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(RefSpec, 0x4710d6d5, result, index);
-    }
-    const RefSpec &RecallList(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(RefSpec, 0x4710d6d5, index);
-    }
-    unsigned int Num_RecallList() const {
-        ATTRIB_CODEGEN_GETLENGTH(0x4710d6d5);
-    }
-    bool SET_RecallList(const RefSpec &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(RefSpec, 0x4710d6d5, input, index);
-    }
-    bool RedundancyCheckIsGlobal(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x3db0e0e9);
-    }
-    bool RedundancyCheckIsGlobal(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x3db0e0e9, result);
-    }
-    const EA::Reflection::Bool &RedundancyCheckIsGlobal() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x3db0e0e9);
-    }
-    bool SET_RedundancyCheckIsGlobal(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x3db0e0e9, input);
-    }
-    bool SpeechID(TAttrib<SPCHType_1_EventID> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(SPCHType_1_EventID, 0xb059f232);
-    }
-    bool SpeechID(SPCHType_1_EventID &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(SpeechID, result);
-    }
-    const SPCHType_1_EventID &SpeechID() const {
-        ATTRIB_CODEGEN_GETLAYOUT(SpeechID);
-    }
-    bool SET_SpeechID(const SPCHType_1_EventID &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(SpeechID, input);
-    }
-    bool cache_OnCreate(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0xb6f42d73);
-    }
-    bool cache_OnCreate(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0xb6f42d73, result);
-    }
-    const EA::Reflection::Bool &cache_OnCreate() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0xb6f42d73);
-    }
-    bool SET_cache_OnCreate(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0xb6f42d73, input);
-    }
-    bool cache_SysInit(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x8b5d5c9b);
-    }
-    bool cache_SysInit(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x8b5d5c9b, result);
-    }
-    const EA::Reflection::Bool &cache_SysInit() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x8b5d5c9b);
-    }
-    bool SET_cache_SysInit(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x8b5d5c9b, input);
-    }
-    bool expiry(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x4d8a523d);
-    }
-    bool expiry(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(expiry, result);
-    }
-    const EA::Reflection::Float &expiry() const {
-        ATTRIB_CODEGEN_GETLAYOUT(expiry);
-    }
-    bool SET_expiry(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(expiry, input);
-    }
-    bool interrupt(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0xaecbb4ad);
-    }
-    bool interrupt(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0xaecbb4ad, result);
-    }
-    const EA::Reflection::Bool &interrupt() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0xaecbb4ad);
-    }
-    bool SET_interrupt(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0xaecbb4ad, input);
-    }
-    bool priority(TAttrib<EA::Reflection::Int16> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int16, 0xa96fce56);
-    }
-    bool priority(EA::Reflection::Int16 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(priority, result);
-    }
-    const EA::Reflection::Int16 &priority() const {
-        ATTRIB_CODEGEN_GETLAYOUT(priority);
-    }
-    bool SET_priority(const EA::Reflection::Int16 &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(priority, input);
-    }
-    bool reqLOS(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0xe0241fc1);
-    }
-    bool reqLOS(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0xe0241fc1, result);
-    }
-    const EA::Reflection::Bool &reqLOS() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0xe0241fc1);
-    }
-    bool SET_reqLOS(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0xe0241fc1, input);
-    }
+    bool BackTime(TAttrib<EA::Reflection::Float> &result) const;
+    bool BackTime(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &BackTime() const;
+    bool SET_BackTime(const EA::Reflection::Float &input);
+
+    bool Clarity(TAttrib<EA::Reflection::UInt8> &result) const;
+    bool Clarity(EA::Reflection::UInt8 &result) const;
+    const EA::Reflection::UInt8 &Clarity() const;
+    bool SET_Clarity(const EA::Reflection::UInt8 &input);
+
+    bool CollectionName(TAttrib<EA::Reflection::Text> &result) const;
+    bool CollectionName(EA::Reflection::Text &result) const;
+    const EA::Reflection::Text &CollectionName() const;
+    bool SET_CollectionName(const EA::Reflection::Text &input);
+
+    bool CullingRange(TAttrib<EA::Reflection::Float> &result) const;
+    bool CullingRange(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &CullingRange() const;
+    bool SET_CullingRange(const EA::Reflection::Float &input);
+
+    bool DeadAir(TAttrib<EA::Reflection::Float> &result) const;
+    bool DeadAir(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &DeadAir() const;
+    bool SET_DeadAir(const EA::Reflection::Float &input);
+
+    bool DepFollow(TAttrib<RefSpec> &result) const;
+    bool DepFollow(RefSpec &result, unsigned int index) const;
+    const RefSpec &DepFollow(unsigned int index) const;
+    unsigned int Num_DepFollow() const;
+    bool SET_DepFollow(const RefSpec &input, unsigned int index);
+
+    bool DoNotDropout(TAttrib<EA::Reflection::Bool> &result) const;
+    bool DoNotDropout(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &DoNotDropout() const;
+    bool SET_DoNotDropout(const EA::Reflection::Bool &input);
+
+    bool EnforceDeadAir(TAttrib<EA::Reflection::Float> &result) const;
+    bool EnforceDeadAir(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &EnforceDeadAir() const;
+    bool SET_EnforceDeadAir(const EA::Reflection::Float &input);
+
+    bool InitDelay(TAttrib<EA::Reflection::Float> &result) const;
+    bool InitDelay(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &InitDelay() const;
+    bool SET_InitDelay(const EA::Reflection::Float &input);
+
+    bool Interruptable(TAttrib<EA::Reflection::Bool> &result) const;
+    bool Interruptable(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &Interruptable() const;
+    bool SET_Interruptable(const EA::Reflection::Bool &input);
+
+    bool Interval(TAttrib<EA::Reflection::Float> &result) const;
+    bool Interval(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &Interval() const;
+    bool SET_Interval(const EA::Reflection::Float &input);
+
+    bool MaxHeat(TAttrib<EA::Reflection::Int8> &result) const;
+    bool MaxHeat(EA::Reflection::Int8 &result) const;
+    const EA::Reflection::Int8 &MaxHeat() const;
+    bool SET_MaxHeat(const EA::Reflection::Int8 &input);
+
+    bool MaxPlayback(TAttrib<EA::Reflection::Int32> &result) const;
+    bool MaxPlayback(EA::Reflection::Int32 &result) const;
+    const EA::Reflection::Int32 &MaxPlayback() const;
+    bool SET_MaxPlayback(const EA::Reflection::Int32 &input);
+
+    bool MaxPlayerSpeed(TAttrib<EA::Reflection::Float> &result) const;
+    bool MaxPlayerSpeed(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &MaxPlayerSpeed() const;
+    bool SET_MaxPlayerSpeed(const EA::Reflection::Float &input);
+
+    bool MinHeat(TAttrib<EA::Reflection::Int8> &result) const;
+    bool MinHeat(EA::Reflection::Int8 &result) const;
+    const EA::Reflection::Int8 &MinHeat() const;
+    bool SET_MinHeat(const EA::Reflection::Int8 &input);
+
+    bool MinPlayerSpeed(TAttrib<EA::Reflection::Float> &result) const;
+    bool MinPlayerSpeed(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &MinPlayerSpeed() const;
+    bool SET_MinPlayerSpeed(const EA::Reflection::Float &input);
+
+    bool OnScreenOnly(TAttrib<EA::Reflection::Bool> &result) const;
+    bool OnScreenOnly(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &OnScreenOnly() const;
+    bool SET_OnScreenOnly(const EA::Reflection::Bool &input);
+
+    bool Pan(TAttrib<EA::Reflection::Bool> &result) const;
+    bool Pan(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &Pan() const;
+    bool SET_Pan(const EA::Reflection::Bool &input);
+
+    bool RadioChirp(TAttrib<EA::Reflection::Bool> &result) const;
+    bool RadioChirp(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &RadioChirp() const;
+    bool SET_RadioChirp(const EA::Reflection::Bool &input);
+
+    bool RecallList(TAttrib<RefSpec> &result) const;
+    bool RecallList(RefSpec &result, unsigned int index) const;
+    const RefSpec &RecallList(unsigned int index) const;
+    unsigned int Num_RecallList() const;
+    bool SET_RecallList(const RefSpec &input, unsigned int index);
+
+    bool RedundancyCheckIsGlobal(TAttrib<EA::Reflection::Bool> &result) const;
+    bool RedundancyCheckIsGlobal(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &RedundancyCheckIsGlobal() const;
+    bool SET_RedundancyCheckIsGlobal(const EA::Reflection::Bool &input);
+
+    bool SpeechID(TAttrib<SPCHType_1_EventID> &result) const;
+    bool SpeechID(SPCHType_1_EventID &result) const;
+    const SPCHType_1_EventID &SpeechID() const;
+    bool SET_SpeechID(const SPCHType_1_EventID &input);
+
+    bool cache_OnCreate(TAttrib<EA::Reflection::Bool> &result) const;
+    bool cache_OnCreate(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &cache_OnCreate() const;
+    bool SET_cache_OnCreate(const EA::Reflection::Bool &input);
+
+    bool cache_SysInit(TAttrib<EA::Reflection::Bool> &result) const;
+    bool cache_SysInit(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &cache_SysInit() const;
+    bool SET_cache_SysInit(const EA::Reflection::Bool &input);
+
+    bool expiry(TAttrib<EA::Reflection::Float> &result) const;
+    bool expiry(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &expiry() const;
+    bool SET_expiry(const EA::Reflection::Float &input);
+
+    bool interrupt(TAttrib<EA::Reflection::Bool> &result) const;
+    bool interrupt(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &interrupt() const;
+    bool SET_interrupt(const EA::Reflection::Bool &input);
+
+    bool priority(TAttrib<EA::Reflection::Int16> &result) const;
+    bool priority(EA::Reflection::Int16 &result) const;
+    const EA::Reflection::Int16 &priority() const;
+    bool SET_priority(const EA::Reflection::Int16 &input);
+
+    bool reqLOS(TAttrib<EA::Reflection::Bool> &result) const;
+    bool reqLOS(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &reqLOS() const;
+    bool SET_reqLOS(const EA::Reflection::Bool &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -498,6 +297,384 @@ static const Key reqLOS = 0xe0241fc1;
 
 inline Key Gen::speech::ClassKey() {
     return ClassName::speech;
+}
+
+inline bool Gen::speech::BackTime(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x8e319c7c);
+}
+inline const EA::Reflection::Float &Gen::speech::BackTime() const {
+    ATTRIB_CODEGEN_GETLAYOUT(BackTime);
+}
+inline bool Gen::speech::BackTime(EA::Reflection::Float &result) const {
+    result = BackTime();
+    return true;
+}
+inline bool Gen::speech::SET_BackTime(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(BackTime, input);
+}
+
+inline bool Gen::speech::Clarity(TAttrib<EA::Reflection::UInt8> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::UInt8, 0xfe3254ea);
+}
+inline const EA::Reflection::UInt8 &Gen::speech::Clarity() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::UInt8, 0xfe3254ea);
+}
+inline bool Gen::speech::Clarity(EA::Reflection::UInt8 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::UInt8, 0xfe3254ea, result);
+}
+inline bool Gen::speech::SET_Clarity(const EA::Reflection::UInt8 &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::UInt8, 0xfe3254ea, input);
+}
+
+inline bool Gen::speech::CollectionName(TAttrib<EA::Reflection::Text> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0x9ca1c8f9);
+}
+inline const EA::Reflection::Text &Gen::speech::CollectionName() const {
+    ATTRIB_CODEGEN_GETLAYOUT(CollectionName);
+}
+inline bool Gen::speech::CollectionName(EA::Reflection::Text &result) const {
+    result = CollectionName();
+    return true;
+}
+inline bool Gen::speech::SET_CollectionName(const EA::Reflection::Text &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(CollectionName, input);
+}
+
+inline bool Gen::speech::CullingRange(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xbbfc6532);
+}
+inline const EA::Reflection::Float &Gen::speech::CullingRange() const {
+    ATTRIB_CODEGEN_GETLAYOUT(CullingRange);
+}
+inline bool Gen::speech::CullingRange(EA::Reflection::Float &result) const {
+    result = CullingRange();
+    return true;
+}
+inline bool Gen::speech::SET_CullingRange(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(CullingRange, input);
+}
+
+inline bool Gen::speech::DeadAir(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x793293dd);
+}
+inline const EA::Reflection::Float &Gen::speech::DeadAir() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x793293dd);
+}
+inline bool Gen::speech::DeadAir(EA::Reflection::Float &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x793293dd, result);
+}
+inline bool Gen::speech::SET_DeadAir(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x793293dd, input);
+}
+
+inline bool Gen::speech::DepFollow(TAttrib<RefSpec> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(RefSpec, 0xc8c5d475);
+}
+inline const RefSpec &Gen::speech::DepFollow(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(RefSpec, 0xc8c5d475, index);
+}
+inline bool Gen::speech::DepFollow(RefSpec &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(RefSpec, 0xc8c5d475, result, index);
+}
+inline unsigned int Gen::speech::Num_DepFollow() const {
+    ATTRIB_CODEGEN_GETLENGTH(0xc8c5d475);
+}
+inline bool Gen::speech::SET_DepFollow(const RefSpec &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(RefSpec, 0xc8c5d475, input, index);
+}
+
+inline bool Gen::speech::DoNotDropout(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0xa684e35a);
+}
+inline const EA::Reflection::Bool &Gen::speech::DoNotDropout() const {
+    ATTRIB_CODEGEN_GETLAYOUT(DoNotDropout);
+}
+inline bool Gen::speech::DoNotDropout(EA::Reflection::Bool &result) const {
+    result = DoNotDropout();
+    return true;
+}
+inline bool Gen::speech::SET_DoNotDropout(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(DoNotDropout, input);
+}
+
+inline bool Gen::speech::EnforceDeadAir(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xdb3bd2f3);
+}
+inline const EA::Reflection::Float &Gen::speech::EnforceDeadAir() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0xdb3bd2f3);
+}
+inline bool Gen::speech::EnforceDeadAir(EA::Reflection::Float &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xdb3bd2f3, result);
+}
+inline bool Gen::speech::SET_EnforceDeadAir(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xdb3bd2f3, input);
+}
+
+inline bool Gen::speech::InitDelay(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xffbdad32);
+}
+inline const EA::Reflection::Float &Gen::speech::InitDelay() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0xffbdad32);
+}
+inline bool Gen::speech::InitDelay(EA::Reflection::Float &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xffbdad32, result);
+}
+inline bool Gen::speech::SET_InitDelay(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xffbdad32, input);
+}
+
+inline bool Gen::speech::Interruptable(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x87930ed2);
+}
+inline const EA::Reflection::Bool &Gen::speech::Interruptable() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x87930ed2);
+}
+inline bool Gen::speech::Interruptable(EA::Reflection::Bool &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x87930ed2, result);
+}
+inline bool Gen::speech::SET_Interruptable(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x87930ed2, input);
+}
+
+inline bool Gen::speech::Interval(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x13593bf1);
+}
+inline const EA::Reflection::Float &Gen::speech::Interval() const {
+    ATTRIB_CODEGEN_GETLAYOUT(Interval);
+}
+inline bool Gen::speech::Interval(EA::Reflection::Float &result) const {
+    result = Interval();
+    return true;
+}
+inline bool Gen::speech::SET_Interval(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(Interval, input);
+}
+
+inline bool Gen::speech::MaxHeat(TAttrib<EA::Reflection::Int8> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int8, 0x77f20778);
+}
+inline const EA::Reflection::Int8 &Gen::speech::MaxHeat() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int8, 0x77f20778);
+}
+inline bool Gen::speech::MaxHeat(EA::Reflection::Int8 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int8, 0x77f20778, result);
+}
+inline bool Gen::speech::SET_MaxHeat(const EA::Reflection::Int8 &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int8, 0x77f20778, input);
+}
+
+inline bool Gen::speech::MaxPlayback(TAttrib<EA::Reflection::Int32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x7e18c2f8);
+}
+inline const EA::Reflection::Int32 &Gen::speech::MaxPlayback() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0x7e18c2f8);
+}
+inline bool Gen::speech::MaxPlayback(EA::Reflection::Int32 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x7e18c2f8, result);
+}
+inline bool Gen::speech::SET_MaxPlayback(const EA::Reflection::Int32 &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x7e18c2f8, input);
+}
+
+inline bool Gen::speech::MaxPlayerSpeed(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xb9befde0);
+}
+inline const EA::Reflection::Float &Gen::speech::MaxPlayerSpeed() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0xb9befde0);
+}
+inline bool Gen::speech::MaxPlayerSpeed(EA::Reflection::Float &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xb9befde0, result);
+}
+inline bool Gen::speech::SET_MaxPlayerSpeed(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xb9befde0, input);
+}
+
+inline bool Gen::speech::MinHeat(TAttrib<EA::Reflection::Int8> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int8, 0x69603485);
+}
+inline const EA::Reflection::Int8 &Gen::speech::MinHeat() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int8, 0x69603485);
+}
+inline bool Gen::speech::MinHeat(EA::Reflection::Int8 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int8, 0x69603485, result);
+}
+inline bool Gen::speech::SET_MinHeat(const EA::Reflection::Int8 &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int8, 0x69603485, input);
+}
+
+inline bool Gen::speech::MinPlayerSpeed(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x0994e624);
+}
+inline const EA::Reflection::Float &Gen::speech::MinPlayerSpeed() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x0994e624);
+}
+inline bool Gen::speech::MinPlayerSpeed(EA::Reflection::Float &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x0994e624, result);
+}
+inline bool Gen::speech::SET_MinPlayerSpeed(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x0994e624, input);
+}
+
+inline bool Gen::speech::OnScreenOnly(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x4b331604);
+}
+inline const EA::Reflection::Bool &Gen::speech::OnScreenOnly() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x4b331604);
+}
+inline bool Gen::speech::OnScreenOnly(EA::Reflection::Bool &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x4b331604, result);
+}
+inline bool Gen::speech::SET_OnScreenOnly(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x4b331604, input);
+}
+
+inline bool Gen::speech::Pan(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x4d663bfc);
+}
+inline const EA::Reflection::Bool &Gen::speech::Pan() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x4d663bfc);
+}
+inline bool Gen::speech::Pan(EA::Reflection::Bool &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x4d663bfc, result);
+}
+inline bool Gen::speech::SET_Pan(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x4d663bfc, input);
+}
+
+inline bool Gen::speech::RadioChirp(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x2976b959);
+}
+inline const EA::Reflection::Bool &Gen::speech::RadioChirp() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x2976b959);
+}
+inline bool Gen::speech::RadioChirp(EA::Reflection::Bool &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x2976b959, result);
+}
+inline bool Gen::speech::SET_RadioChirp(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x2976b959, input);
+}
+
+inline bool Gen::speech::RecallList(TAttrib<RefSpec> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(RefSpec, 0x4710d6d5);
+}
+inline const RefSpec &Gen::speech::RecallList(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(RefSpec, 0x4710d6d5, index);
+}
+inline bool Gen::speech::RecallList(RefSpec &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(RefSpec, 0x4710d6d5, result, index);
+}
+inline unsigned int Gen::speech::Num_RecallList() const {
+    ATTRIB_CODEGEN_GETLENGTH(0x4710d6d5);
+}
+inline bool Gen::speech::SET_RecallList(const RefSpec &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(RefSpec, 0x4710d6d5, input, index);
+}
+
+inline bool Gen::speech::RedundancyCheckIsGlobal(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x3db0e0e9);
+}
+inline const EA::Reflection::Bool &Gen::speech::RedundancyCheckIsGlobal() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x3db0e0e9);
+}
+inline bool Gen::speech::RedundancyCheckIsGlobal(EA::Reflection::Bool &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x3db0e0e9, result);
+}
+inline bool Gen::speech::SET_RedundancyCheckIsGlobal(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x3db0e0e9, input);
+}
+
+inline bool Gen::speech::SpeechID(TAttrib<SPCHType_1_EventID> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(SPCHType_1_EventID, 0xb059f232);
+}
+inline const SPCHType_1_EventID &Gen::speech::SpeechID() const {
+    ATTRIB_CODEGEN_GETLAYOUT(SpeechID);
+}
+inline bool Gen::speech::SpeechID(SPCHType_1_EventID &result) const {
+    result = SpeechID();
+    return true;
+}
+inline bool Gen::speech::SET_SpeechID(const SPCHType_1_EventID &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(SpeechID, input);
+}
+
+inline bool Gen::speech::cache_OnCreate(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0xb6f42d73);
+}
+inline const EA::Reflection::Bool &Gen::speech::cache_OnCreate() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0xb6f42d73);
+}
+inline bool Gen::speech::cache_OnCreate(EA::Reflection::Bool &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0xb6f42d73, result);
+}
+inline bool Gen::speech::SET_cache_OnCreate(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0xb6f42d73, input);
+}
+
+inline bool Gen::speech::cache_SysInit(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x8b5d5c9b);
+}
+inline const EA::Reflection::Bool &Gen::speech::cache_SysInit() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x8b5d5c9b);
+}
+inline bool Gen::speech::cache_SysInit(EA::Reflection::Bool &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x8b5d5c9b, result);
+}
+inline bool Gen::speech::SET_cache_SysInit(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x8b5d5c9b, input);
+}
+
+inline bool Gen::speech::expiry(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x4d8a523d);
+}
+inline const EA::Reflection::Float &Gen::speech::expiry() const {
+    ATTRIB_CODEGEN_GETLAYOUT(expiry);
+}
+inline bool Gen::speech::expiry(EA::Reflection::Float &result) const {
+    result = expiry();
+    return true;
+}
+inline bool Gen::speech::SET_expiry(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(expiry, input);
+}
+
+inline bool Gen::speech::interrupt(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0xaecbb4ad);
+}
+inline const EA::Reflection::Bool &Gen::speech::interrupt() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0xaecbb4ad);
+}
+inline bool Gen::speech::interrupt(EA::Reflection::Bool &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0xaecbb4ad, result);
+}
+inline bool Gen::speech::SET_interrupt(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0xaecbb4ad, input);
+}
+
+inline bool Gen::speech::priority(TAttrib<EA::Reflection::Int16> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int16, 0xa96fce56);
+}
+inline const EA::Reflection::Int16 &Gen::speech::priority() const {
+    ATTRIB_CODEGEN_GETLAYOUT(priority);
+}
+inline bool Gen::speech::priority(EA::Reflection::Int16 &result) const {
+    result = priority();
+    return true;
+}
+inline bool Gen::speech::SET_priority(const EA::Reflection::Int16 &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(priority, input);
+}
+
+inline bool Gen::speech::reqLOS(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0xe0241fc1);
+}
+inline const EA::Reflection::Bool &Gen::speech::reqLOS() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0xe0241fc1);
+}
+inline bool Gen::speech::reqLOS(EA::Reflection::Bool &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0xe0241fc1, result);
+}
+inline bool Gen::speech::SET_reqLOS(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0xe0241fc1, input);
 }
 
 }; // namespace Attrib

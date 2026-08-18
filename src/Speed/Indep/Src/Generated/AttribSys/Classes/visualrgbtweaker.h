@@ -58,42 +58,20 @@ struct visualrgbtweaker : Instance {
         Instance::operator=(rhs);
         return *this;
     }
-    bool blue(TAttrib<UMath::Matrix4> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(UMath::Matrix4, 0x1c641189);
-    }
-    bool blue(UMath::Matrix4 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(UMath::Matrix4, 0x1c641189, result);
-    }
-    const UMath::Matrix4 &blue() const {
-        ATTRIB_CODEGEN_GETVALUE(UMath::Matrix4, 0x1c641189);
-    }
-    bool SET_blue(const UMath::Matrix4 &input) {
-        ATTRIB_CODEGEN_SETVALUE(UMath::Matrix4, 0x1c641189, input);
-    }
-    bool green(TAttrib<UMath::Matrix4> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(UMath::Matrix4, 0x3ffd271c);
-    }
-    bool green(UMath::Matrix4 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(UMath::Matrix4, 0x3ffd271c, result);
-    }
-    const UMath::Matrix4 &green() const {
-        ATTRIB_CODEGEN_GETVALUE(UMath::Matrix4, 0x3ffd271c);
-    }
-    bool SET_green(const UMath::Matrix4 &input) {
-        ATTRIB_CODEGEN_SETVALUE(UMath::Matrix4, 0x3ffd271c, input);
-    }
-    bool red(TAttrib<UMath::Matrix4> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(UMath::Matrix4, 0x5cd90211);
-    }
-    bool red(UMath::Matrix4 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(UMath::Matrix4, 0x5cd90211, result);
-    }
-    const UMath::Matrix4 &red() const {
-        ATTRIB_CODEGEN_GETVALUE(UMath::Matrix4, 0x5cd90211);
-    }
-    bool SET_red(const UMath::Matrix4 &input) {
-        ATTRIB_CODEGEN_SETVALUE(UMath::Matrix4, 0x5cd90211, input);
-    }
+    bool blue(TAttrib<UMath::Matrix4> &result) const;
+    bool blue(UMath::Matrix4 &result) const;
+    const UMath::Matrix4 &blue() const;
+    bool SET_blue(const UMath::Matrix4 &input);
+
+    bool green(TAttrib<UMath::Matrix4> &result) const;
+    bool green(UMath::Matrix4 &result) const;
+    const UMath::Matrix4 &green() const;
+    bool SET_green(const UMath::Matrix4 &input);
+
+    bool red(TAttrib<UMath::Matrix4> &result) const;
+    bool red(UMath::Matrix4 &result) const;
+    const UMath::Matrix4 &red() const;
+    bool SET_red(const UMath::Matrix4 &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -122,6 +100,45 @@ static const Key red = 0x5cd90211;
 
 inline Key Gen::visualrgbtweaker::ClassKey() {
     return ClassName::visualrgbtweaker;
+}
+
+inline bool Gen::visualrgbtweaker::blue(TAttrib<UMath::Matrix4> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(UMath::Matrix4, 0x1c641189);
+}
+inline const UMath::Matrix4 &Gen::visualrgbtweaker::blue() const {
+    ATTRIB_CODEGEN_GETVALUE(UMath::Matrix4, 0x1c641189);
+}
+inline bool Gen::visualrgbtweaker::blue(UMath::Matrix4 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(UMath::Matrix4, 0x1c641189, result);
+}
+inline bool Gen::visualrgbtweaker::SET_blue(const UMath::Matrix4 &input) {
+    ATTRIB_CODEGEN_SETVALUE(UMath::Matrix4, 0x1c641189, input);
+}
+
+inline bool Gen::visualrgbtweaker::green(TAttrib<UMath::Matrix4> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(UMath::Matrix4, 0x3ffd271c);
+}
+inline const UMath::Matrix4 &Gen::visualrgbtweaker::green() const {
+    ATTRIB_CODEGEN_GETVALUE(UMath::Matrix4, 0x3ffd271c);
+}
+inline bool Gen::visualrgbtweaker::green(UMath::Matrix4 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(UMath::Matrix4, 0x3ffd271c, result);
+}
+inline bool Gen::visualrgbtweaker::SET_green(const UMath::Matrix4 &input) {
+    ATTRIB_CODEGEN_SETVALUE(UMath::Matrix4, 0x3ffd271c, input);
+}
+
+inline bool Gen::visualrgbtweaker::red(TAttrib<UMath::Matrix4> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(UMath::Matrix4, 0x5cd90211);
+}
+inline const UMath::Matrix4 &Gen::visualrgbtweaker::red() const {
+    ATTRIB_CODEGEN_GETVALUE(UMath::Matrix4, 0x5cd90211);
+}
+inline bool Gen::visualrgbtweaker::red(UMath::Matrix4 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(UMath::Matrix4, 0x5cd90211, result);
+}
+inline bool Gen::visualrgbtweaker::SET_red(const UMath::Matrix4 &input) {
+    ATTRIB_CODEGEN_SETVALUE(UMath::Matrix4, 0x5cd90211, input);
 }
 
 }; // namespace Attrib

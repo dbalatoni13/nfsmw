@@ -106,234 +106,100 @@ struct fuelcell_emitter : Instance {
         Instance::operator=(rhs);
         return *this;
     }
-    bool Colour1(TAttrib<UMath::Vector4> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(UMath::Vector4, 0x54c99f82);
-    }
-    bool Colour1(UMath::Vector4 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(Colour1, result);
-    }
-    const UMath::Vector4 &Colour1() const {
-        ATTRIB_CODEGEN_GETLAYOUT(Colour1);
-    }
-    bool SET_Colour1(const UMath::Vector4 &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(Colour1, input);
-    }
-    bool GravityDelta(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x0802dd99);
-    }
-    bool GravityDelta(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(GravityDelta, result);
-    }
-    const EA::Reflection::Float &GravityDelta() const {
-        ATTRIB_CODEGEN_GETLAYOUT(GravityDelta);
-    }
-    bool SET_GravityDelta(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(GravityDelta, input);
-    }
-    bool GravityStart(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xe652e2b6);
-    }
-    bool GravityStart(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(GravityStart, result);
-    }
-    const EA::Reflection::Float &GravityStart() const {
-        ATTRIB_CODEGEN_GETLAYOUT(GravityStart);
-    }
-    bool SET_GravityStart(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(GravityStart, input);
-    }
-    bool HeightStart(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x4c141ed7);
-    }
-    bool HeightStart(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(HeightStart, result);
-    }
-    const EA::Reflection::Float &HeightStart() const {
-        ATTRIB_CODEGEN_GETLAYOUT(HeightStart);
-    }
-    bool SET_HeightStart(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(HeightStart, input);
-    }
-    bool LengthDelta(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xa6762035);
-    }
-    bool LengthDelta(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(LengthDelta, result);
-    }
-    const EA::Reflection::Float &LengthDelta() const {
-        ATTRIB_CODEGEN_GETLAYOUT(LengthDelta);
-    }
-    bool SET_LengthDelta(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(LengthDelta, input);
-    }
-    bool LengthStart(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x6bbc13ee);
-    }
-    bool LengthStart(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(LengthStart, result);
-    }
-    const EA::Reflection::Float &LengthStart() const {
-        ATTRIB_CODEGEN_GETLAYOUT(LengthStart);
-    }
-    bool SET_LengthStart(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(LengthStart, input);
-    }
-    bool Life(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x81625b35);
-    }
-    bool Life(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(Life, result);
-    }
-    const EA::Reflection::Float &Life() const {
-        ATTRIB_CODEGEN_GETLAYOUT(Life);
-    }
-    bool SET_Life(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(Life, input);
-    }
-    bool LifeVariance(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xefb4bb64);
-    }
-    bool LifeVariance(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(LifeVariance, result);
-    }
-    const EA::Reflection::Float &LifeVariance() const {
-        ATTRIB_CODEGEN_GETLAYOUT(LifeVariance);
-    }
-    bool SET_LifeVariance(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(LifeVariance, input);
-    }
-    bool NumParticles(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xdc943cc9);
-    }
-    bool NumParticles(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(NumParticles, result);
-    }
-    const EA::Reflection::Float &NumParticles() const {
-        ATTRIB_CODEGEN_GETLAYOUT(NumParticles);
-    }
-    bool SET_NumParticles(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(NumParticles, input);
-    }
-    bool NumParticlesVariance(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xd8165518);
-    }
-    bool NumParticlesVariance(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(NumParticlesVariance, result);
-    }
-    const EA::Reflection::Float &NumParticlesVariance() const {
-        ATTRIB_CODEGEN_GETLAYOUT(NumParticlesVariance);
-    }
-    bool SET_NumParticlesVariance(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(NumParticlesVariance, input);
-    }
-    bool Spin(TAttrib<EA::Reflection::Int16> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int16, 0xe643b999);
-    }
-    bool Spin(EA::Reflection::Int16 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(Spin, result);
-    }
-    const EA::Reflection::Int16 &Spin() const {
-        ATTRIB_CODEGEN_GETLAYOUT(Spin);
-    }
-    bool SET_Spin(const EA::Reflection::Int16 &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(Spin, input);
-    }
-    bool VelocityDelta(TAttrib<UMath::Vector4> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(UMath::Vector4, 0x4bfe9062);
-    }
-    bool VelocityDelta(UMath::Vector4 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(VelocityDelta, result);
-    }
-    const UMath::Vector4 &VelocityDelta() const {
-        ATTRIB_CODEGEN_GETLAYOUT(VelocityDelta);
-    }
-    bool SET_VelocityDelta(const UMath::Vector4 &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(VelocityDelta, input);
-    }
-    bool VelocityInherit(TAttrib<UMath::Vector4> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(UMath::Vector4, 0x028d34e5);
-    }
-    bool VelocityInherit(UMath::Vector4 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(VelocityInherit, result);
-    }
-    const UMath::Vector4 &VelocityInherit() const {
-        ATTRIB_CODEGEN_GETLAYOUT(VelocityInherit);
-    }
-    bool SET_VelocityInherit(const UMath::Vector4 &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(VelocityInherit, input);
-    }
-    bool VelocityStart(TAttrib<UMath::Vector4> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(UMath::Vector4, 0x1b6c6ce2);
-    }
-    bool VelocityStart(UMath::Vector4 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(VelocityStart, result);
-    }
-    const UMath::Vector4 &VelocityStart() const {
-        ATTRIB_CODEGEN_GETLAYOUT(VelocityStart);
-    }
-    bool SET_VelocityStart(const UMath::Vector4 &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(VelocityStart, input);
-    }
-    bool VolumeCenter(TAttrib<UMath::Vector4> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(UMath::Vector4, 0x1bd3f18c);
-    }
-    bool VolumeCenter(UMath::Vector4 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(VolumeCenter, result);
-    }
-    const UMath::Vector4 &VolumeCenter() const {
-        ATTRIB_CODEGEN_GETLAYOUT(VolumeCenter);
-    }
-    bool SET_VolumeCenter(const UMath::Vector4 &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(VolumeCenter, input);
-    }
-    bool VolumeExtent(TAttrib<UMath::Vector4> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(UMath::Vector4, 0x0aaf558c);
-    }
-    bool VolumeExtent(UMath::Vector4 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(VolumeExtent, result);
-    }
-    const UMath::Vector4 &VolumeExtent() const {
-        ATTRIB_CODEGEN_GETLAYOUT(VolumeExtent);
-    }
-    bool SET_VolumeExtent(const UMath::Vector4 &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(VolumeExtent, input);
-    }
-    bool emitteruv(TAttrib<RefSpec> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(RefSpec, 0xe4983a7d);
-    }
-    bool emitteruv(RefSpec &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(emitteruv, result);
-    }
-    const RefSpec &emitteruv() const {
-        ATTRIB_CODEGEN_GETLAYOUT(emitteruv);
-    }
-    bool SET_emitteruv(const RefSpec &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(emitteruv, input);
-    }
-    bool zContrail(TAttrib<EA::Reflection::Int8> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int8, 0x77f88e8c);
-    }
-    bool zContrail(EA::Reflection::Int8 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(zContrail, result);
-    }
-    const EA::Reflection::Int8 &zContrail() const {
-        ATTRIB_CODEGEN_GETLAYOUT(zContrail);
-    }
-    bool SET_zContrail(const EA::Reflection::Int8 &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(zContrail, input);
-    }
-    bool zSprite(TAttrib<EA::Reflection::Int8> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int8, 0xd8782943);
-    }
-    bool zSprite(EA::Reflection::Int8 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(zSprite, result);
-    }
-    const EA::Reflection::Int8 &zSprite() const {
-        ATTRIB_CODEGEN_GETLAYOUT(zSprite);
-    }
-    bool SET_zSprite(const EA::Reflection::Int8 &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(zSprite, input);
-    }
+    bool Colour1(TAttrib<UMath::Vector4> &result) const;
+    bool Colour1(UMath::Vector4 &result) const;
+    const UMath::Vector4 &Colour1() const;
+    bool SET_Colour1(const UMath::Vector4 &input);
+
+    bool GravityDelta(TAttrib<EA::Reflection::Float> &result) const;
+    bool GravityDelta(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &GravityDelta() const;
+    bool SET_GravityDelta(const EA::Reflection::Float &input);
+
+    bool GravityStart(TAttrib<EA::Reflection::Float> &result) const;
+    bool GravityStart(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &GravityStart() const;
+    bool SET_GravityStart(const EA::Reflection::Float &input);
+
+    bool HeightStart(TAttrib<EA::Reflection::Float> &result) const;
+    bool HeightStart(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &HeightStart() const;
+    bool SET_HeightStart(const EA::Reflection::Float &input);
+
+    bool LengthDelta(TAttrib<EA::Reflection::Float> &result) const;
+    bool LengthDelta(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &LengthDelta() const;
+    bool SET_LengthDelta(const EA::Reflection::Float &input);
+
+    bool LengthStart(TAttrib<EA::Reflection::Float> &result) const;
+    bool LengthStart(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &LengthStart() const;
+    bool SET_LengthStart(const EA::Reflection::Float &input);
+
+    bool Life(TAttrib<EA::Reflection::Float> &result) const;
+    bool Life(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &Life() const;
+    bool SET_Life(const EA::Reflection::Float &input);
+
+    bool LifeVariance(TAttrib<EA::Reflection::Float> &result) const;
+    bool LifeVariance(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &LifeVariance() const;
+    bool SET_LifeVariance(const EA::Reflection::Float &input);
+
+    bool NumParticles(TAttrib<EA::Reflection::Float> &result) const;
+    bool NumParticles(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &NumParticles() const;
+    bool SET_NumParticles(const EA::Reflection::Float &input);
+
+    bool NumParticlesVariance(TAttrib<EA::Reflection::Float> &result) const;
+    bool NumParticlesVariance(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &NumParticlesVariance() const;
+    bool SET_NumParticlesVariance(const EA::Reflection::Float &input);
+
+    bool Spin(TAttrib<EA::Reflection::Int16> &result) const;
+    bool Spin(EA::Reflection::Int16 &result) const;
+    const EA::Reflection::Int16 &Spin() const;
+    bool SET_Spin(const EA::Reflection::Int16 &input);
+
+    bool VelocityDelta(TAttrib<UMath::Vector4> &result) const;
+    bool VelocityDelta(UMath::Vector4 &result) const;
+    const UMath::Vector4 &VelocityDelta() const;
+    bool SET_VelocityDelta(const UMath::Vector4 &input);
+
+    bool VelocityInherit(TAttrib<UMath::Vector4> &result) const;
+    bool VelocityInherit(UMath::Vector4 &result) const;
+    const UMath::Vector4 &VelocityInherit() const;
+    bool SET_VelocityInherit(const UMath::Vector4 &input);
+
+    bool VelocityStart(TAttrib<UMath::Vector4> &result) const;
+    bool VelocityStart(UMath::Vector4 &result) const;
+    const UMath::Vector4 &VelocityStart() const;
+    bool SET_VelocityStart(const UMath::Vector4 &input);
+
+    bool VolumeCenter(TAttrib<UMath::Vector4> &result) const;
+    bool VolumeCenter(UMath::Vector4 &result) const;
+    const UMath::Vector4 &VolumeCenter() const;
+    bool SET_VolumeCenter(const UMath::Vector4 &input);
+
+    bool VolumeExtent(TAttrib<UMath::Vector4> &result) const;
+    bool VolumeExtent(UMath::Vector4 &result) const;
+    const UMath::Vector4 &VolumeExtent() const;
+    bool SET_VolumeExtent(const UMath::Vector4 &input);
+
+    bool emitteruv(TAttrib<RefSpec> &result) const;
+    bool emitteruv(RefSpec &result) const;
+    const RefSpec &emitteruv() const;
+    bool SET_emitteruv(const RefSpec &input);
+
+    bool zContrail(TAttrib<EA::Reflection::Int8> &result) const;
+    bool zContrail(EA::Reflection::Int8 &result) const;
+    const EA::Reflection::Int8 &zContrail() const;
+    bool SET_zContrail(const EA::Reflection::Int8 &input);
+
+    bool zSprite(TAttrib<EA::Reflection::Int8> &result) const;
+    bool zSprite(EA::Reflection::Int8 &result) const;
+    const EA::Reflection::Int8 &zSprite() const;
+    bool SET_zSprite(const EA::Reflection::Int8 &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -378,6 +244,272 @@ static const Key zSprite = 0xd8782943;
 
 inline Key Gen::fuelcell_emitter::ClassKey() {
     return ClassName::fuelcell_emitter;
+}
+
+inline bool Gen::fuelcell_emitter::Colour1(TAttrib<UMath::Vector4> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(UMath::Vector4, 0x54c99f82);
+}
+inline const UMath::Vector4 &Gen::fuelcell_emitter::Colour1() const {
+    ATTRIB_CODEGEN_GETLAYOUT(Colour1);
+}
+inline bool Gen::fuelcell_emitter::Colour1(UMath::Vector4 &result) const {
+    result = Colour1();
+    return true;
+}
+inline bool Gen::fuelcell_emitter::SET_Colour1(const UMath::Vector4 &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(Colour1, input);
+}
+
+inline bool Gen::fuelcell_emitter::GravityDelta(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x0802dd99);
+}
+inline const EA::Reflection::Float &Gen::fuelcell_emitter::GravityDelta() const {
+    ATTRIB_CODEGEN_GETLAYOUT(GravityDelta);
+}
+inline bool Gen::fuelcell_emitter::GravityDelta(EA::Reflection::Float &result) const {
+    result = GravityDelta();
+    return true;
+}
+inline bool Gen::fuelcell_emitter::SET_GravityDelta(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(GravityDelta, input);
+}
+
+inline bool Gen::fuelcell_emitter::GravityStart(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xe652e2b6);
+}
+inline const EA::Reflection::Float &Gen::fuelcell_emitter::GravityStart() const {
+    ATTRIB_CODEGEN_GETLAYOUT(GravityStart);
+}
+inline bool Gen::fuelcell_emitter::GravityStart(EA::Reflection::Float &result) const {
+    result = GravityStart();
+    return true;
+}
+inline bool Gen::fuelcell_emitter::SET_GravityStart(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(GravityStart, input);
+}
+
+inline bool Gen::fuelcell_emitter::HeightStart(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x4c141ed7);
+}
+inline const EA::Reflection::Float &Gen::fuelcell_emitter::HeightStart() const {
+    ATTRIB_CODEGEN_GETLAYOUT(HeightStart);
+}
+inline bool Gen::fuelcell_emitter::HeightStart(EA::Reflection::Float &result) const {
+    result = HeightStart();
+    return true;
+}
+inline bool Gen::fuelcell_emitter::SET_HeightStart(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(HeightStart, input);
+}
+
+inline bool Gen::fuelcell_emitter::LengthDelta(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xa6762035);
+}
+inline const EA::Reflection::Float &Gen::fuelcell_emitter::LengthDelta() const {
+    ATTRIB_CODEGEN_GETLAYOUT(LengthDelta);
+}
+inline bool Gen::fuelcell_emitter::LengthDelta(EA::Reflection::Float &result) const {
+    result = LengthDelta();
+    return true;
+}
+inline bool Gen::fuelcell_emitter::SET_LengthDelta(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(LengthDelta, input);
+}
+
+inline bool Gen::fuelcell_emitter::LengthStart(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x6bbc13ee);
+}
+inline const EA::Reflection::Float &Gen::fuelcell_emitter::LengthStart() const {
+    ATTRIB_CODEGEN_GETLAYOUT(LengthStart);
+}
+inline bool Gen::fuelcell_emitter::LengthStart(EA::Reflection::Float &result) const {
+    result = LengthStart();
+    return true;
+}
+inline bool Gen::fuelcell_emitter::SET_LengthStart(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(LengthStart, input);
+}
+
+inline bool Gen::fuelcell_emitter::Life(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x81625b35);
+}
+inline const EA::Reflection::Float &Gen::fuelcell_emitter::Life() const {
+    ATTRIB_CODEGEN_GETLAYOUT(Life);
+}
+inline bool Gen::fuelcell_emitter::Life(EA::Reflection::Float &result) const {
+    result = Life();
+    return true;
+}
+inline bool Gen::fuelcell_emitter::SET_Life(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(Life, input);
+}
+
+inline bool Gen::fuelcell_emitter::LifeVariance(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xefb4bb64);
+}
+inline const EA::Reflection::Float &Gen::fuelcell_emitter::LifeVariance() const {
+    ATTRIB_CODEGEN_GETLAYOUT(LifeVariance);
+}
+inline bool Gen::fuelcell_emitter::LifeVariance(EA::Reflection::Float &result) const {
+    result = LifeVariance();
+    return true;
+}
+inline bool Gen::fuelcell_emitter::SET_LifeVariance(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(LifeVariance, input);
+}
+
+inline bool Gen::fuelcell_emitter::NumParticles(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xdc943cc9);
+}
+inline const EA::Reflection::Float &Gen::fuelcell_emitter::NumParticles() const {
+    ATTRIB_CODEGEN_GETLAYOUT(NumParticles);
+}
+inline bool Gen::fuelcell_emitter::NumParticles(EA::Reflection::Float &result) const {
+    result = NumParticles();
+    return true;
+}
+inline bool Gen::fuelcell_emitter::SET_NumParticles(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(NumParticles, input);
+}
+
+inline bool Gen::fuelcell_emitter::NumParticlesVariance(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xd8165518);
+}
+inline const EA::Reflection::Float &Gen::fuelcell_emitter::NumParticlesVariance() const {
+    ATTRIB_CODEGEN_GETLAYOUT(NumParticlesVariance);
+}
+inline bool Gen::fuelcell_emitter::NumParticlesVariance(EA::Reflection::Float &result) const {
+    result = NumParticlesVariance();
+    return true;
+}
+inline bool Gen::fuelcell_emitter::SET_NumParticlesVariance(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(NumParticlesVariance, input);
+}
+
+inline bool Gen::fuelcell_emitter::Spin(TAttrib<EA::Reflection::Int16> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int16, 0xe643b999);
+}
+inline const EA::Reflection::Int16 &Gen::fuelcell_emitter::Spin() const {
+    ATTRIB_CODEGEN_GETLAYOUT(Spin);
+}
+inline bool Gen::fuelcell_emitter::Spin(EA::Reflection::Int16 &result) const {
+    result = Spin();
+    return true;
+}
+inline bool Gen::fuelcell_emitter::SET_Spin(const EA::Reflection::Int16 &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(Spin, input);
+}
+
+inline bool Gen::fuelcell_emitter::VelocityDelta(TAttrib<UMath::Vector4> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(UMath::Vector4, 0x4bfe9062);
+}
+inline const UMath::Vector4 &Gen::fuelcell_emitter::VelocityDelta() const {
+    ATTRIB_CODEGEN_GETLAYOUT(VelocityDelta);
+}
+inline bool Gen::fuelcell_emitter::VelocityDelta(UMath::Vector4 &result) const {
+    result = VelocityDelta();
+    return true;
+}
+inline bool Gen::fuelcell_emitter::SET_VelocityDelta(const UMath::Vector4 &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(VelocityDelta, input);
+}
+
+inline bool Gen::fuelcell_emitter::VelocityInherit(TAttrib<UMath::Vector4> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(UMath::Vector4, 0x028d34e5);
+}
+inline const UMath::Vector4 &Gen::fuelcell_emitter::VelocityInherit() const {
+    ATTRIB_CODEGEN_GETLAYOUT(VelocityInherit);
+}
+inline bool Gen::fuelcell_emitter::VelocityInherit(UMath::Vector4 &result) const {
+    result = VelocityInherit();
+    return true;
+}
+inline bool Gen::fuelcell_emitter::SET_VelocityInherit(const UMath::Vector4 &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(VelocityInherit, input);
+}
+
+inline bool Gen::fuelcell_emitter::VelocityStart(TAttrib<UMath::Vector4> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(UMath::Vector4, 0x1b6c6ce2);
+}
+inline const UMath::Vector4 &Gen::fuelcell_emitter::VelocityStart() const {
+    ATTRIB_CODEGEN_GETLAYOUT(VelocityStart);
+}
+inline bool Gen::fuelcell_emitter::VelocityStart(UMath::Vector4 &result) const {
+    result = VelocityStart();
+    return true;
+}
+inline bool Gen::fuelcell_emitter::SET_VelocityStart(const UMath::Vector4 &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(VelocityStart, input);
+}
+
+inline bool Gen::fuelcell_emitter::VolumeCenter(TAttrib<UMath::Vector4> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(UMath::Vector4, 0x1bd3f18c);
+}
+inline const UMath::Vector4 &Gen::fuelcell_emitter::VolumeCenter() const {
+    ATTRIB_CODEGEN_GETLAYOUT(VolumeCenter);
+}
+inline bool Gen::fuelcell_emitter::VolumeCenter(UMath::Vector4 &result) const {
+    result = VolumeCenter();
+    return true;
+}
+inline bool Gen::fuelcell_emitter::SET_VolumeCenter(const UMath::Vector4 &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(VolumeCenter, input);
+}
+
+inline bool Gen::fuelcell_emitter::VolumeExtent(TAttrib<UMath::Vector4> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(UMath::Vector4, 0x0aaf558c);
+}
+inline const UMath::Vector4 &Gen::fuelcell_emitter::VolumeExtent() const {
+    ATTRIB_CODEGEN_GETLAYOUT(VolumeExtent);
+}
+inline bool Gen::fuelcell_emitter::VolumeExtent(UMath::Vector4 &result) const {
+    result = VolumeExtent();
+    return true;
+}
+inline bool Gen::fuelcell_emitter::SET_VolumeExtent(const UMath::Vector4 &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(VolumeExtent, input);
+}
+
+inline bool Gen::fuelcell_emitter::emitteruv(TAttrib<RefSpec> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(RefSpec, 0xe4983a7d);
+}
+inline const RefSpec &Gen::fuelcell_emitter::emitteruv() const {
+    ATTRIB_CODEGEN_GETLAYOUT(emitteruv);
+}
+inline bool Gen::fuelcell_emitter::emitteruv(RefSpec &result) const {
+    result = emitteruv();
+    return true;
+}
+inline bool Gen::fuelcell_emitter::SET_emitteruv(const RefSpec &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(emitteruv, input);
+}
+
+inline bool Gen::fuelcell_emitter::zContrail(TAttrib<EA::Reflection::Int8> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int8, 0x77f88e8c);
+}
+inline const EA::Reflection::Int8 &Gen::fuelcell_emitter::zContrail() const {
+    ATTRIB_CODEGEN_GETLAYOUT(zContrail);
+}
+inline bool Gen::fuelcell_emitter::zContrail(EA::Reflection::Int8 &result) const {
+    result = zContrail();
+    return true;
+}
+inline bool Gen::fuelcell_emitter::SET_zContrail(const EA::Reflection::Int8 &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(zContrail, input);
+}
+
+inline bool Gen::fuelcell_emitter::zSprite(TAttrib<EA::Reflection::Int8> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int8, 0xd8782943);
+}
+inline const EA::Reflection::Int8 &Gen::fuelcell_emitter::zSprite() const {
+    ATTRIB_CODEGEN_GETLAYOUT(zSprite);
+}
+inline bool Gen::fuelcell_emitter::zSprite(EA::Reflection::Int8 &result) const {
+    result = zSprite();
+    return true;
+}
+inline bool Gen::fuelcell_emitter::SET_zSprite(const EA::Reflection::Int8 &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(zSprite, input);
 }
 
 }; // namespace Attrib

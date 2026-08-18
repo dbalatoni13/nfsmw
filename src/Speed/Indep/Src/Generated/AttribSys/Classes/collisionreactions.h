@@ -76,54 +76,25 @@ struct collisionreactions : Instance {
         Instance::operator=(rhs);
         return *this;
     }
-    bool FRONTSIDE_REACTION(TAttrib<CollisionReactionRecord> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(CollisionReactionRecord, 0x9a403ade);
-    }
-    bool FRONTSIDE_REACTION(CollisionReactionRecord &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(FRONTSIDE_REACTION, result);
-    }
-    const CollisionReactionRecord &FRONTSIDE_REACTION() const {
-        ATTRIB_CODEGEN_GETLAYOUT(FRONTSIDE_REACTION);
-    }
-    bool SET_FRONTSIDE_REACTION(const CollisionReactionRecord &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(FRONTSIDE_REACTION, input);
-    }
-    bool FRONT_REACTION(TAttrib<CollisionReactionRecord> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(CollisionReactionRecord, 0x9186cdb9);
-    }
-    bool FRONT_REACTION(CollisionReactionRecord &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(FRONT_REACTION, result);
-    }
-    const CollisionReactionRecord &FRONT_REACTION() const {
-        ATTRIB_CODEGEN_GETLAYOUT(FRONT_REACTION);
-    }
-    bool SET_FRONT_REACTION(const CollisionReactionRecord &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(FRONT_REACTION, input);
-    }
-    bool REARSIDE_REACTION(TAttrib<CollisionReactionRecord> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(CollisionReactionRecord, 0x5a6693d7);
-    }
-    bool REARSIDE_REACTION(CollisionReactionRecord &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(REARSIDE_REACTION, result);
-    }
-    const CollisionReactionRecord &REARSIDE_REACTION() const {
-        ATTRIB_CODEGEN_GETLAYOUT(REARSIDE_REACTION);
-    }
-    bool SET_REARSIDE_REACTION(const CollisionReactionRecord &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(REARSIDE_REACTION, input);
-    }
-    bool REAR_REACTION(TAttrib<CollisionReactionRecord> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(CollisionReactionRecord, 0x035705d5);
-    }
-    bool REAR_REACTION(CollisionReactionRecord &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(REAR_REACTION, result);
-    }
-    const CollisionReactionRecord &REAR_REACTION() const {
-        ATTRIB_CODEGEN_GETLAYOUT(REAR_REACTION);
-    }
-    bool SET_REAR_REACTION(const CollisionReactionRecord &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(REAR_REACTION, input);
-    }
+    bool FRONTSIDE_REACTION(TAttrib<CollisionReactionRecord> &result) const;
+    bool FRONTSIDE_REACTION(CollisionReactionRecord &result) const;
+    const CollisionReactionRecord &FRONTSIDE_REACTION() const;
+    bool SET_FRONTSIDE_REACTION(const CollisionReactionRecord &input);
+
+    bool FRONT_REACTION(TAttrib<CollisionReactionRecord> &result) const;
+    bool FRONT_REACTION(CollisionReactionRecord &result) const;
+    const CollisionReactionRecord &FRONT_REACTION() const;
+    bool SET_FRONT_REACTION(const CollisionReactionRecord &input);
+
+    bool REARSIDE_REACTION(TAttrib<CollisionReactionRecord> &result) const;
+    bool REARSIDE_REACTION(CollisionReactionRecord &result) const;
+    const CollisionReactionRecord &REARSIDE_REACTION() const;
+    bool SET_REARSIDE_REACTION(const CollisionReactionRecord &input);
+
+    bool REAR_REACTION(TAttrib<CollisionReactionRecord> &result) const;
+    bool REAR_REACTION(CollisionReactionRecord &result) const;
+    const CollisionReactionRecord &REAR_REACTION() const;
+    bool SET_REAR_REACTION(const CollisionReactionRecord &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -153,6 +124,62 @@ static const Key REAR_REACTION = 0x035705d5;
 
 inline Key Gen::collisionreactions::ClassKey() {
     return ClassName::collisionreactions;
+}
+
+inline bool Gen::collisionreactions::FRONTSIDE_REACTION(TAttrib<CollisionReactionRecord> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(CollisionReactionRecord, 0x9a403ade);
+}
+inline const CollisionReactionRecord &Gen::collisionreactions::FRONTSIDE_REACTION() const {
+    ATTRIB_CODEGEN_GETLAYOUT(FRONTSIDE_REACTION);
+}
+inline bool Gen::collisionreactions::FRONTSIDE_REACTION(CollisionReactionRecord &result) const {
+    result = FRONTSIDE_REACTION();
+    return true;
+}
+inline bool Gen::collisionreactions::SET_FRONTSIDE_REACTION(const CollisionReactionRecord &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(FRONTSIDE_REACTION, input);
+}
+
+inline bool Gen::collisionreactions::FRONT_REACTION(TAttrib<CollisionReactionRecord> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(CollisionReactionRecord, 0x9186cdb9);
+}
+inline const CollisionReactionRecord &Gen::collisionreactions::FRONT_REACTION() const {
+    ATTRIB_CODEGEN_GETLAYOUT(FRONT_REACTION);
+}
+inline bool Gen::collisionreactions::FRONT_REACTION(CollisionReactionRecord &result) const {
+    result = FRONT_REACTION();
+    return true;
+}
+inline bool Gen::collisionreactions::SET_FRONT_REACTION(const CollisionReactionRecord &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(FRONT_REACTION, input);
+}
+
+inline bool Gen::collisionreactions::REARSIDE_REACTION(TAttrib<CollisionReactionRecord> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(CollisionReactionRecord, 0x5a6693d7);
+}
+inline const CollisionReactionRecord &Gen::collisionreactions::REARSIDE_REACTION() const {
+    ATTRIB_CODEGEN_GETLAYOUT(REARSIDE_REACTION);
+}
+inline bool Gen::collisionreactions::REARSIDE_REACTION(CollisionReactionRecord &result) const {
+    result = REARSIDE_REACTION();
+    return true;
+}
+inline bool Gen::collisionreactions::SET_REARSIDE_REACTION(const CollisionReactionRecord &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(REARSIDE_REACTION, input);
+}
+
+inline bool Gen::collisionreactions::REAR_REACTION(TAttrib<CollisionReactionRecord> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(CollisionReactionRecord, 0x035705d5);
+}
+inline const CollisionReactionRecord &Gen::collisionreactions::REAR_REACTION() const {
+    ATTRIB_CODEGEN_GETLAYOUT(REAR_REACTION);
+}
+inline bool Gen::collisionreactions::REAR_REACTION(CollisionReactionRecord &result) const {
+    result = REAR_REACTION();
+    return true;
+}
+inline bool Gen::collisionreactions::SET_REAR_REACTION(const CollisionReactionRecord &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(REAR_REACTION, input);
 }
 
 }; // namespace Attrib

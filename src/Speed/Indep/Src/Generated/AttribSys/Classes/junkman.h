@@ -62,111 +62,47 @@ struct junkman : Instance {
         Instance::operator=(rhs);
         return *this;
     }
-    bool brakes_package(TAttrib<JunkmanMod> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(JunkmanMod, 0x56c63b6f);
-    }
-    bool brakes_package(JunkmanMod &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(JunkmanMod, 0x56c63b6f, result, index);
-    }
-    const JunkmanMod &brakes_package(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(JunkmanMod, 0x56c63b6f, index);
-    }
-    unsigned int Num_brakes_package() const {
-        ATTRIB_CODEGEN_GETLENGTH(0x56c63b6f);
-    }
-    bool SET_brakes_package(const JunkmanMod &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(JunkmanMod, 0x56c63b6f, input, index);
-    }
-    bool chassis_package(TAttrib<JunkmanMod> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(JunkmanMod, 0xb6495c9e);
-    }
-    bool chassis_package(JunkmanMod &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(JunkmanMod, 0xb6495c9e, result, index);
-    }
-    const JunkmanMod &chassis_package(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(JunkmanMod, 0xb6495c9e, index);
-    }
-    unsigned int Num_chassis_package() const {
-        ATTRIB_CODEGEN_GETLENGTH(0xb6495c9e);
-    }
-    bool SET_chassis_package(const JunkmanMod &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(JunkmanMod, 0xb6495c9e, input, index);
-    }
-    bool engine_package(TAttrib<JunkmanMod> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(JunkmanMod, 0x9206efd2);
-    }
-    bool engine_package(JunkmanMod &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(JunkmanMod, 0x9206efd2, result, index);
-    }
-    const JunkmanMod &engine_package(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(JunkmanMod, 0x9206efd2, index);
-    }
-    unsigned int Num_engine_package() const {
-        ATTRIB_CODEGEN_GETLENGTH(0x9206efd2);
-    }
-    bool SET_engine_package(const JunkmanMod &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(JunkmanMod, 0x9206efd2, input, index);
-    }
-    bool induction_package(TAttrib<JunkmanMod> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(JunkmanMod, 0x7546359e);
-    }
-    bool induction_package(JunkmanMod &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(JunkmanMod, 0x7546359e, result, index);
-    }
-    const JunkmanMod &induction_package(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(JunkmanMod, 0x7546359e, index);
-    }
-    unsigned int Num_induction_package() const {
-        ATTRIB_CODEGEN_GETLENGTH(0x7546359e);
-    }
-    bool SET_induction_package(const JunkmanMod &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(JunkmanMod, 0x7546359e, input, index);
-    }
-    bool nos_package(TAttrib<JunkmanMod> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(JunkmanMod, 0x452d2634);
-    }
-    bool nos_package(JunkmanMod &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(JunkmanMod, 0x452d2634, result, index);
-    }
-    const JunkmanMod &nos_package(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(JunkmanMod, 0x452d2634, index);
-    }
-    unsigned int Num_nos_package() const {
-        ATTRIB_CODEGEN_GETLENGTH(0x452d2634);
-    }
-    bool SET_nos_package(const JunkmanMod &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(JunkmanMod, 0x452d2634, input, index);
-    }
-    bool tires_package(TAttrib<JunkmanMod> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(JunkmanMod, 0xc5860f58);
-    }
-    bool tires_package(JunkmanMod &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(JunkmanMod, 0xc5860f58, result, index);
-    }
-    const JunkmanMod &tires_package(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(JunkmanMod, 0xc5860f58, index);
-    }
-    unsigned int Num_tires_package() const {
-        ATTRIB_CODEGEN_GETLENGTH(0xc5860f58);
-    }
-    bool SET_tires_package(const JunkmanMod &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(JunkmanMod, 0xc5860f58, input, index);
-    }
-    bool transmission_package(TAttrib<JunkmanMod> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(JunkmanMod, 0x25ae629a);
-    }
-    bool transmission_package(JunkmanMod &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(JunkmanMod, 0x25ae629a, result, index);
-    }
-    const JunkmanMod &transmission_package(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(JunkmanMod, 0x25ae629a, index);
-    }
-    unsigned int Num_transmission_package() const {
-        ATTRIB_CODEGEN_GETLENGTH(0x25ae629a);
-    }
-    bool SET_transmission_package(const JunkmanMod &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(JunkmanMod, 0x25ae629a, input, index);
-    }
+    bool brakes_package(TAttrib<JunkmanMod> &result) const;
+    bool brakes_package(JunkmanMod &result, unsigned int index) const;
+    const JunkmanMod &brakes_package(unsigned int index) const;
+    unsigned int Num_brakes_package() const;
+    bool SET_brakes_package(const JunkmanMod &input, unsigned int index);
+
+    bool chassis_package(TAttrib<JunkmanMod> &result) const;
+    bool chassis_package(JunkmanMod &result, unsigned int index) const;
+    const JunkmanMod &chassis_package(unsigned int index) const;
+    unsigned int Num_chassis_package() const;
+    bool SET_chassis_package(const JunkmanMod &input, unsigned int index);
+
+    bool engine_package(TAttrib<JunkmanMod> &result) const;
+    bool engine_package(JunkmanMod &result, unsigned int index) const;
+    const JunkmanMod &engine_package(unsigned int index) const;
+    unsigned int Num_engine_package() const;
+    bool SET_engine_package(const JunkmanMod &input, unsigned int index);
+
+    bool induction_package(TAttrib<JunkmanMod> &result) const;
+    bool induction_package(JunkmanMod &result, unsigned int index) const;
+    const JunkmanMod &induction_package(unsigned int index) const;
+    unsigned int Num_induction_package() const;
+    bool SET_induction_package(const JunkmanMod &input, unsigned int index);
+
+    bool nos_package(TAttrib<JunkmanMod> &result) const;
+    bool nos_package(JunkmanMod &result, unsigned int index) const;
+    const JunkmanMod &nos_package(unsigned int index) const;
+    unsigned int Num_nos_package() const;
+    bool SET_nos_package(const JunkmanMod &input, unsigned int index);
+
+    bool tires_package(TAttrib<JunkmanMod> &result) const;
+    bool tires_package(JunkmanMod &result, unsigned int index) const;
+    const JunkmanMod &tires_package(unsigned int index) const;
+    unsigned int Num_tires_package() const;
+    bool SET_tires_package(const JunkmanMod &input, unsigned int index);
+
+    bool transmission_package(TAttrib<JunkmanMod> &result) const;
+    bool transmission_package(JunkmanMod &result, unsigned int index) const;
+    const JunkmanMod &transmission_package(unsigned int index) const;
+    unsigned int Num_transmission_package() const;
+    bool SET_transmission_package(const JunkmanMod &input, unsigned int index);
 
   private:
     unsigned int GetLayoutSize() {
@@ -199,6 +135,118 @@ static const Key transmission_package = 0x25ae629a;
 
 inline Key Gen::junkman::ClassKey() {
     return ClassName::junkman;
+}
+
+inline bool Gen::junkman::brakes_package(TAttrib<JunkmanMod> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(JunkmanMod, 0x56c63b6f);
+}
+inline const JunkmanMod &Gen::junkman::brakes_package(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(JunkmanMod, 0x56c63b6f, index);
+}
+inline bool Gen::junkman::brakes_package(JunkmanMod &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(JunkmanMod, 0x56c63b6f, result, index);
+}
+inline unsigned int Gen::junkman::Num_brakes_package() const {
+    ATTRIB_CODEGEN_GETLENGTH(0x56c63b6f);
+}
+inline bool Gen::junkman::SET_brakes_package(const JunkmanMod &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(JunkmanMod, 0x56c63b6f, input, index);
+}
+
+inline bool Gen::junkman::chassis_package(TAttrib<JunkmanMod> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(JunkmanMod, 0xb6495c9e);
+}
+inline const JunkmanMod &Gen::junkman::chassis_package(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(JunkmanMod, 0xb6495c9e, index);
+}
+inline bool Gen::junkman::chassis_package(JunkmanMod &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(JunkmanMod, 0xb6495c9e, result, index);
+}
+inline unsigned int Gen::junkman::Num_chassis_package() const {
+    ATTRIB_CODEGEN_GETLENGTH(0xb6495c9e);
+}
+inline bool Gen::junkman::SET_chassis_package(const JunkmanMod &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(JunkmanMod, 0xb6495c9e, input, index);
+}
+
+inline bool Gen::junkman::engine_package(TAttrib<JunkmanMod> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(JunkmanMod, 0x9206efd2);
+}
+inline const JunkmanMod &Gen::junkman::engine_package(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(JunkmanMod, 0x9206efd2, index);
+}
+inline bool Gen::junkman::engine_package(JunkmanMod &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(JunkmanMod, 0x9206efd2, result, index);
+}
+inline unsigned int Gen::junkman::Num_engine_package() const {
+    ATTRIB_CODEGEN_GETLENGTH(0x9206efd2);
+}
+inline bool Gen::junkman::SET_engine_package(const JunkmanMod &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(JunkmanMod, 0x9206efd2, input, index);
+}
+
+inline bool Gen::junkman::induction_package(TAttrib<JunkmanMod> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(JunkmanMod, 0x7546359e);
+}
+inline const JunkmanMod &Gen::junkman::induction_package(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(JunkmanMod, 0x7546359e, index);
+}
+inline bool Gen::junkman::induction_package(JunkmanMod &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(JunkmanMod, 0x7546359e, result, index);
+}
+inline unsigned int Gen::junkman::Num_induction_package() const {
+    ATTRIB_CODEGEN_GETLENGTH(0x7546359e);
+}
+inline bool Gen::junkman::SET_induction_package(const JunkmanMod &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(JunkmanMod, 0x7546359e, input, index);
+}
+
+inline bool Gen::junkman::nos_package(TAttrib<JunkmanMod> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(JunkmanMod, 0x452d2634);
+}
+inline const JunkmanMod &Gen::junkman::nos_package(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(JunkmanMod, 0x452d2634, index);
+}
+inline bool Gen::junkman::nos_package(JunkmanMod &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(JunkmanMod, 0x452d2634, result, index);
+}
+inline unsigned int Gen::junkman::Num_nos_package() const {
+    ATTRIB_CODEGEN_GETLENGTH(0x452d2634);
+}
+inline bool Gen::junkman::SET_nos_package(const JunkmanMod &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(JunkmanMod, 0x452d2634, input, index);
+}
+
+inline bool Gen::junkman::tires_package(TAttrib<JunkmanMod> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(JunkmanMod, 0xc5860f58);
+}
+inline const JunkmanMod &Gen::junkman::tires_package(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(JunkmanMod, 0xc5860f58, index);
+}
+inline bool Gen::junkman::tires_package(JunkmanMod &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(JunkmanMod, 0xc5860f58, result, index);
+}
+inline unsigned int Gen::junkman::Num_tires_package() const {
+    ATTRIB_CODEGEN_GETLENGTH(0xc5860f58);
+}
+inline bool Gen::junkman::SET_tires_package(const JunkmanMod &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(JunkmanMod, 0xc5860f58, input, index);
+}
+
+inline bool Gen::junkman::transmission_package(TAttrib<JunkmanMod> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(JunkmanMod, 0x25ae629a);
+}
+inline const JunkmanMod &Gen::junkman::transmission_package(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(JunkmanMod, 0x25ae629a, index);
+}
+inline bool Gen::junkman::transmission_package(JunkmanMod &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(JunkmanMod, 0x25ae629a, result, index);
+}
+inline unsigned int Gen::junkman::Num_transmission_package() const {
+    ATTRIB_CODEGEN_GETLENGTH(0x25ae629a);
+}
+inline bool Gen::junkman::SET_transmission_package(const JunkmanMod &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(JunkmanMod, 0x25ae629a, input, index);
 }
 
 }; // namespace Attrib

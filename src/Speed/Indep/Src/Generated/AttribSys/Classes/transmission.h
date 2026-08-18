@@ -89,123 +89,53 @@ struct transmission : Instance {
         Instance::operator=(rhs);
         return *this;
     }
-    bool CLUTCH_SLIP(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xcf5dd4e9);
-    }
-    bool CLUTCH_SLIP(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(CLUTCH_SLIP, result);
-    }
-    const EA::Reflection::Float &CLUTCH_SLIP() const {
-        ATTRIB_CODEGEN_GETLAYOUT(CLUTCH_SLIP);
-    }
-    bool SET_CLUTCH_SLIP(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(CLUTCH_SLIP, input);
-    }
-    bool DIFFERENTIAL(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x30b5e627);
-    }
-    bool DIFFERENTIAL(EA::Reflection::Float &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUTINDEXED(DIFFERENTIAL, result, index);
-    }
-    const EA::Reflection::Float &DIFFERENTIAL(unsigned int index) const {
-        ATTRIB_CODEGEN_GETLAYOUTINDEXED(EA::Reflection::Float, DIFFERENTIAL, index);
-    }
-    unsigned int Num_DIFFERENTIAL() const {
-        ATTRIB_CODEGEN_GETLAYOUTLENGTH(DIFFERENTIAL);
-    }
-    bool SET_DIFFERENTIAL(const EA::Reflection::Float &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETLAYOUTINDEXED(DIFFERENTIAL, input, index);
-    }
-    bool FINAL_GEAR(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xddb32b64);
-    }
-    bool FINAL_GEAR(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(FINAL_GEAR, result);
-    }
-    const EA::Reflection::Float &FINAL_GEAR() const {
-        ATTRIB_CODEGEN_GETLAYOUT(FINAL_GEAR);
-    }
-    bool SET_FINAL_GEAR(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(FINAL_GEAR, input);
-    }
-    bool GEAR_EFFICIENCY(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x5250eb92);
-    }
-    bool GEAR_EFFICIENCY(EA::Reflection::Float &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUTINDEXED(GEAR_EFFICIENCY, result, index);
-    }
-    const EA::Reflection::Float &GEAR_EFFICIENCY(unsigned int index) const {
-        ATTRIB_CODEGEN_GETLAYOUTINDEXED(EA::Reflection::Float, GEAR_EFFICIENCY, index);
-    }
-    unsigned int Num_GEAR_EFFICIENCY() const {
-        ATTRIB_CODEGEN_GETLAYOUTLENGTH(GEAR_EFFICIENCY);
-    }
-    bool SET_GEAR_EFFICIENCY(const EA::Reflection::Float &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETLAYOUTINDEXED(GEAR_EFFICIENCY, input, index);
-    }
-    bool GEAR_RATIO(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x17144a84);
-    }
-    bool GEAR_RATIO(EA::Reflection::Float &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUTINDEXED(GEAR_RATIO, result, index);
-    }
-    const EA::Reflection::Float &GEAR_RATIO(unsigned int index) const {
-        ATTRIB_CODEGEN_GETLAYOUTINDEXED(EA::Reflection::Float, GEAR_RATIO, index);
-    }
-    unsigned int Num_GEAR_RATIO() const {
-        ATTRIB_CODEGEN_GETLAYOUTLENGTH(GEAR_RATIO);
-    }
-    bool SET_GEAR_RATIO(const EA::Reflection::Float &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETLAYOUTINDEXED(GEAR_RATIO, input, index);
-    }
-    bool OPTIMAL_SHIFT(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x8dc16371);
-    }
-    bool OPTIMAL_SHIFT(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(OPTIMAL_SHIFT, result);
-    }
-    const EA::Reflection::Float &OPTIMAL_SHIFT() const {
-        ATTRIB_CODEGEN_GETLAYOUT(OPTIMAL_SHIFT);
-    }
-    bool SET_OPTIMAL_SHIFT(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(OPTIMAL_SHIFT, input);
-    }
-    bool SHIFT_SPEED(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xdd806309);
-    }
-    bool SHIFT_SPEED(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(SHIFT_SPEED, result);
-    }
-    const EA::Reflection::Float &SHIFT_SPEED() const {
-        ATTRIB_CODEGEN_GETLAYOUT(SHIFT_SPEED);
-    }
-    bool SET_SHIFT_SPEED(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(SHIFT_SPEED, input);
-    }
-    bool TORQUE_CONVERTER(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x53c717ec);
-    }
-    bool TORQUE_CONVERTER(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(TORQUE_CONVERTER, result);
-    }
-    const EA::Reflection::Float &TORQUE_CONVERTER() const {
-        ATTRIB_CODEGEN_GETLAYOUT(TORQUE_CONVERTER);
-    }
-    bool SET_TORQUE_CONVERTER(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(TORQUE_CONVERTER, input);
-    }
-    bool TORQUE_SPLIT(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x7381ee38);
-    }
-    bool TORQUE_SPLIT(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(TORQUE_SPLIT, result);
-    }
-    const EA::Reflection::Float &TORQUE_SPLIT() const {
-        ATTRIB_CODEGEN_GETLAYOUT(TORQUE_SPLIT);
-    }
-    bool SET_TORQUE_SPLIT(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(TORQUE_SPLIT, input);
-    }
+    bool CLUTCH_SLIP(TAttrib<EA::Reflection::Float> &result) const;
+    bool CLUTCH_SLIP(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &CLUTCH_SLIP() const;
+    bool SET_CLUTCH_SLIP(const EA::Reflection::Float &input);
+
+    bool DIFFERENTIAL(TAttrib<EA::Reflection::Float> &result) const;
+    bool DIFFERENTIAL(EA::Reflection::Float &result, unsigned int index) const;
+    const EA::Reflection::Float &DIFFERENTIAL(unsigned int index) const;
+    unsigned int Num_DIFFERENTIAL() const;
+    bool SET_DIFFERENTIAL(const EA::Reflection::Float &input, unsigned int index);
+
+    bool FINAL_GEAR(TAttrib<EA::Reflection::Float> &result) const;
+    bool FINAL_GEAR(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &FINAL_GEAR() const;
+    bool SET_FINAL_GEAR(const EA::Reflection::Float &input);
+
+    bool GEAR_EFFICIENCY(TAttrib<EA::Reflection::Float> &result) const;
+    bool GEAR_EFFICIENCY(EA::Reflection::Float &result, unsigned int index) const;
+    const EA::Reflection::Float &GEAR_EFFICIENCY(unsigned int index) const;
+    unsigned int Num_GEAR_EFFICIENCY() const;
+    bool SET_GEAR_EFFICIENCY(const EA::Reflection::Float &input, unsigned int index);
+
+    bool GEAR_RATIO(TAttrib<EA::Reflection::Float> &result) const;
+    bool GEAR_RATIO(EA::Reflection::Float &result, unsigned int index) const;
+    const EA::Reflection::Float &GEAR_RATIO(unsigned int index) const;
+    unsigned int Num_GEAR_RATIO() const;
+    bool SET_GEAR_RATIO(const EA::Reflection::Float &input, unsigned int index);
+
+    bool OPTIMAL_SHIFT(TAttrib<EA::Reflection::Float> &result) const;
+    bool OPTIMAL_SHIFT(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &OPTIMAL_SHIFT() const;
+    bool SET_OPTIMAL_SHIFT(const EA::Reflection::Float &input);
+
+    bool SHIFT_SPEED(TAttrib<EA::Reflection::Float> &result) const;
+    bool SHIFT_SPEED(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &SHIFT_SPEED() const;
+    bool SET_SHIFT_SPEED(const EA::Reflection::Float &input);
+
+    bool TORQUE_CONVERTER(TAttrib<EA::Reflection::Float> &result) const;
+    bool TORQUE_CONVERTER(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &TORQUE_CONVERTER() const;
+    bool SET_TORQUE_CONVERTER(const EA::Reflection::Float &input);
+
+    bool TORQUE_SPLIT(TAttrib<EA::Reflection::Float> &result) const;
+    bool TORQUE_SPLIT(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &TORQUE_SPLIT() const;
+    bool SET_TORQUE_SPLIT(const EA::Reflection::Float &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -240,6 +170,138 @@ static const Key TORQUE_SPLIT = 0x7381ee38;
 
 inline Key Gen::transmission::ClassKey() {
     return ClassName::transmission;
+}
+
+inline bool Gen::transmission::CLUTCH_SLIP(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xcf5dd4e9);
+}
+inline const EA::Reflection::Float &Gen::transmission::CLUTCH_SLIP() const {
+    ATTRIB_CODEGEN_GETLAYOUT(CLUTCH_SLIP);
+}
+inline bool Gen::transmission::CLUTCH_SLIP(EA::Reflection::Float &result) const {
+    result = CLUTCH_SLIP();
+    return true;
+}
+inline bool Gen::transmission::SET_CLUTCH_SLIP(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(CLUTCH_SLIP, input);
+}
+
+inline bool Gen::transmission::DIFFERENTIAL(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x30b5e627);
+}
+inline const EA::Reflection::Float &Gen::transmission::DIFFERENTIAL(unsigned int index) const {
+    ATTRIB_CODEGEN_GETLAYOUTINDEXED(EA::Reflection::Float, DIFFERENTIAL, index);
+}
+inline bool Gen::transmission::DIFFERENTIAL(EA::Reflection::Float &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETLAYOUTINDEXED(DIFFERENTIAL, result, index);
+}
+inline unsigned int Gen::transmission::Num_DIFFERENTIAL() const {
+    ATTRIB_CODEGEN_GETLAYOUTLENGTH(DIFFERENTIAL);
+}
+inline bool Gen::transmission::SET_DIFFERENTIAL(const EA::Reflection::Float &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETLAYOUTINDEXED(DIFFERENTIAL, input, index);
+}
+
+inline bool Gen::transmission::FINAL_GEAR(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xddb32b64);
+}
+inline const EA::Reflection::Float &Gen::transmission::FINAL_GEAR() const {
+    ATTRIB_CODEGEN_GETLAYOUT(FINAL_GEAR);
+}
+inline bool Gen::transmission::FINAL_GEAR(EA::Reflection::Float &result) const {
+    result = FINAL_GEAR();
+    return true;
+}
+inline bool Gen::transmission::SET_FINAL_GEAR(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(FINAL_GEAR, input);
+}
+
+inline bool Gen::transmission::GEAR_EFFICIENCY(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x5250eb92);
+}
+inline const EA::Reflection::Float &Gen::transmission::GEAR_EFFICIENCY(unsigned int index) const {
+    ATTRIB_CODEGEN_GETLAYOUTINDEXED(EA::Reflection::Float, GEAR_EFFICIENCY, index);
+}
+inline bool Gen::transmission::GEAR_EFFICIENCY(EA::Reflection::Float &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETLAYOUTINDEXED(GEAR_EFFICIENCY, result, index);
+}
+inline unsigned int Gen::transmission::Num_GEAR_EFFICIENCY() const {
+    ATTRIB_CODEGEN_GETLAYOUTLENGTH(GEAR_EFFICIENCY);
+}
+inline bool Gen::transmission::SET_GEAR_EFFICIENCY(const EA::Reflection::Float &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETLAYOUTINDEXED(GEAR_EFFICIENCY, input, index);
+}
+
+inline bool Gen::transmission::GEAR_RATIO(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x17144a84);
+}
+inline const EA::Reflection::Float &Gen::transmission::GEAR_RATIO(unsigned int index) const {
+    ATTRIB_CODEGEN_GETLAYOUTINDEXED(EA::Reflection::Float, GEAR_RATIO, index);
+}
+inline bool Gen::transmission::GEAR_RATIO(EA::Reflection::Float &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETLAYOUTINDEXED(GEAR_RATIO, result, index);
+}
+inline unsigned int Gen::transmission::Num_GEAR_RATIO() const {
+    ATTRIB_CODEGEN_GETLAYOUTLENGTH(GEAR_RATIO);
+}
+inline bool Gen::transmission::SET_GEAR_RATIO(const EA::Reflection::Float &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETLAYOUTINDEXED(GEAR_RATIO, input, index);
+}
+
+inline bool Gen::transmission::OPTIMAL_SHIFT(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x8dc16371);
+}
+inline const EA::Reflection::Float &Gen::transmission::OPTIMAL_SHIFT() const {
+    ATTRIB_CODEGEN_GETLAYOUT(OPTIMAL_SHIFT);
+}
+inline bool Gen::transmission::OPTIMAL_SHIFT(EA::Reflection::Float &result) const {
+    result = OPTIMAL_SHIFT();
+    return true;
+}
+inline bool Gen::transmission::SET_OPTIMAL_SHIFT(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(OPTIMAL_SHIFT, input);
+}
+
+inline bool Gen::transmission::SHIFT_SPEED(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xdd806309);
+}
+inline const EA::Reflection::Float &Gen::transmission::SHIFT_SPEED() const {
+    ATTRIB_CODEGEN_GETLAYOUT(SHIFT_SPEED);
+}
+inline bool Gen::transmission::SHIFT_SPEED(EA::Reflection::Float &result) const {
+    result = SHIFT_SPEED();
+    return true;
+}
+inline bool Gen::transmission::SET_SHIFT_SPEED(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(SHIFT_SPEED, input);
+}
+
+inline bool Gen::transmission::TORQUE_CONVERTER(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x53c717ec);
+}
+inline const EA::Reflection::Float &Gen::transmission::TORQUE_CONVERTER() const {
+    ATTRIB_CODEGEN_GETLAYOUT(TORQUE_CONVERTER);
+}
+inline bool Gen::transmission::TORQUE_CONVERTER(EA::Reflection::Float &result) const {
+    result = TORQUE_CONVERTER();
+    return true;
+}
+inline bool Gen::transmission::SET_TORQUE_CONVERTER(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(TORQUE_CONVERTER, input);
+}
+
+inline bool Gen::transmission::TORQUE_SPLIT(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x7381ee38);
+}
+inline const EA::Reflection::Float &Gen::transmission::TORQUE_SPLIT() const {
+    ATTRIB_CODEGEN_GETLAYOUT(TORQUE_SPLIT);
+}
+inline bool Gen::transmission::TORQUE_SPLIT(EA::Reflection::Float &result) const {
+    result = TORQUE_SPLIT();
+    return true;
+}
+inline bool Gen::transmission::SET_TORQUE_SPLIT(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(TORQUE_SPLIT, input);
 }
 
 }; // namespace Attrib

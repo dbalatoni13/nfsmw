@@ -58,42 +58,20 @@ struct lightshaders : Instance {
         Instance::operator=(rhs);
         return *this;
     }
-    bool name(TAttrib<Attrib::StringKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(Attrib::StringKey, 0xba41a46a);
-    }
-    bool name(Attrib::StringKey &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(Attrib::StringKey, 0xba41a46a, result);
-    }
-    const Attrib::StringKey &name() const {
-        ATTRIB_CODEGEN_GETVALUE(Attrib::StringKey, 0xba41a46a);
-    }
-    bool SET_name(const Attrib::StringKey &input) {
-        ATTRIB_CODEGEN_SETVALUE(Attrib::StringKey, 0xba41a46a, input);
-    }
-    bool shadername(TAttrib<Attrib::StringKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(Attrib::StringKey, 0x39004977);
-    }
-    bool shadername(Attrib::StringKey &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(Attrib::StringKey, 0x39004977, result);
-    }
-    const Attrib::StringKey &shadername() const {
-        ATTRIB_CODEGEN_GETVALUE(Attrib::StringKey, 0x39004977);
-    }
-    bool SET_shadername(const Attrib::StringKey &input) {
-        ATTRIB_CODEGEN_SETVALUE(Attrib::StringKey, 0x39004977, input);
-    }
-    bool useVertexColour(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x2de05384);
-    }
-    bool useVertexColour(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x2de05384, result);
-    }
-    const EA::Reflection::Bool &useVertexColour() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x2de05384);
-    }
-    bool SET_useVertexColour(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x2de05384, input);
-    }
+    bool name(TAttrib<Attrib::StringKey> &result) const;
+    bool name(Attrib::StringKey &result) const;
+    const Attrib::StringKey &name() const;
+    bool SET_name(const Attrib::StringKey &input);
+
+    bool shadername(TAttrib<Attrib::StringKey> &result) const;
+    bool shadername(Attrib::StringKey &result) const;
+    const Attrib::StringKey &shadername() const;
+    bool SET_shadername(const Attrib::StringKey &input);
+
+    bool useVertexColour(TAttrib<EA::Reflection::Bool> &result) const;
+    bool useVertexColour(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &useVertexColour() const;
+    bool SET_useVertexColour(const EA::Reflection::Bool &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -122,6 +100,45 @@ static const Key useVertexColour = 0x2de05384;
 
 inline Key Gen::lightshaders::ClassKey() {
     return ClassName::lightshaders;
+}
+
+inline bool Gen::lightshaders::name(TAttrib<Attrib::StringKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(Attrib::StringKey, 0xba41a46a);
+}
+inline const Attrib::StringKey &Gen::lightshaders::name() const {
+    ATTRIB_CODEGEN_GETVALUE(Attrib::StringKey, 0xba41a46a);
+}
+inline bool Gen::lightshaders::name(Attrib::StringKey &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(Attrib::StringKey, 0xba41a46a, result);
+}
+inline bool Gen::lightshaders::SET_name(const Attrib::StringKey &input) {
+    ATTRIB_CODEGEN_SETVALUE(Attrib::StringKey, 0xba41a46a, input);
+}
+
+inline bool Gen::lightshaders::shadername(TAttrib<Attrib::StringKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(Attrib::StringKey, 0x39004977);
+}
+inline const Attrib::StringKey &Gen::lightshaders::shadername() const {
+    ATTRIB_CODEGEN_GETVALUE(Attrib::StringKey, 0x39004977);
+}
+inline bool Gen::lightshaders::shadername(Attrib::StringKey &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(Attrib::StringKey, 0x39004977, result);
+}
+inline bool Gen::lightshaders::SET_shadername(const Attrib::StringKey &input) {
+    ATTRIB_CODEGEN_SETVALUE(Attrib::StringKey, 0x39004977, input);
+}
+
+inline bool Gen::lightshaders::useVertexColour(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x2de05384);
+}
+inline const EA::Reflection::Bool &Gen::lightshaders::useVertexColour() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x2de05384);
+}
+inline bool Gen::lightshaders::useVertexColour(EA::Reflection::Bool &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x2de05384, result);
+}
+inline bool Gen::lightshaders::SET_useVertexColour(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x2de05384, input);
 }
 
 }; // namespace Attrib

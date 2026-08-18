@@ -77,66 +77,30 @@ struct acceltrans : Instance {
         Instance::operator=(rhs);
         return *this;
     }
-    bool AccelFromIdle_INTERUPT_T(TAttrib<EA::Reflection::UInt32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::UInt32, 0x49fb8ce5);
-    }
-    bool AccelFromIdle_INTERUPT_T(EA::Reflection::UInt32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::UInt32, 0x49fb8ce5, result);
-    }
-    const EA::Reflection::UInt32 &AccelFromIdle_INTERUPT_T() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::UInt32, 0x49fb8ce5);
-    }
-    bool SET_AccelFromIdle_INTERUPT_T(const EA::Reflection::UInt32 &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::UInt32, 0x49fb8ce5, input);
-    }
-    bool AccelFromIdle_PEAK_RPM(TAttrib<EA::Reflection::UInt32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::UInt32, 0x07b946f1);
-    }
-    bool AccelFromIdle_PEAK_RPM(EA::Reflection::UInt32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(AccelFromIdle_PEAK_RPM, result);
-    }
-    const EA::Reflection::UInt32 &AccelFromIdle_PEAK_RPM() const {
-        ATTRIB_CODEGEN_GETLAYOUT(AccelFromIdle_PEAK_RPM);
-    }
-    bool SET_AccelFromIdle_PEAK_RPM(const EA::Reflection::UInt32 &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(AccelFromIdle_PEAK_RPM, input);
-    }
-    bool AccelFromIdle_PEAK_T(TAttrib<EA::Reflection::UInt32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::UInt32, 0xbd153261);
-    }
-    bool AccelFromIdle_PEAK_T(EA::Reflection::UInt32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(AccelFromIdle_PEAK_T, result);
-    }
-    const EA::Reflection::UInt32 &AccelFromIdle_PEAK_T() const {
-        ATTRIB_CODEGEN_GETLAYOUT(AccelFromIdle_PEAK_T);
-    }
-    bool SET_AccelFromIdle_PEAK_T(const EA::Reflection::UInt32 &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(AccelFromIdle_PEAK_T, input);
-    }
-    bool AccelFromIdle_PEAK_VOL(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x922b60d7);
-    }
-    bool AccelFromIdle_PEAK_VOL(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(AccelFromIdle_PEAK_VOL, result);
-    }
-    const EA::Reflection::Float &AccelFromIdle_PEAK_VOL() const {
-        ATTRIB_CODEGEN_GETLAYOUT(AccelFromIdle_PEAK_VOL);
-    }
-    bool SET_AccelFromIdle_PEAK_VOL(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(AccelFromIdle_PEAK_VOL, input);
-    }
-    bool AccelFromIdle_RESUME_T(TAttrib<EA::Reflection::UInt32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::UInt32, 0x44bccb6e);
-    }
-    bool AccelFromIdle_RESUME_T(EA::Reflection::UInt32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(AccelFromIdle_RESUME_T, result);
-    }
-    const EA::Reflection::UInt32 &AccelFromIdle_RESUME_T() const {
-        ATTRIB_CODEGEN_GETLAYOUT(AccelFromIdle_RESUME_T);
-    }
-    bool SET_AccelFromIdle_RESUME_T(const EA::Reflection::UInt32 &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(AccelFromIdle_RESUME_T, input);
-    }
+    bool AccelFromIdle_INTERUPT_T(TAttrib<EA::Reflection::UInt32> &result) const;
+    bool AccelFromIdle_INTERUPT_T(EA::Reflection::UInt32 &result) const;
+    const EA::Reflection::UInt32 &AccelFromIdle_INTERUPT_T() const;
+    bool SET_AccelFromIdle_INTERUPT_T(const EA::Reflection::UInt32 &input);
+
+    bool AccelFromIdle_PEAK_RPM(TAttrib<EA::Reflection::UInt32> &result) const;
+    bool AccelFromIdle_PEAK_RPM(EA::Reflection::UInt32 &result) const;
+    const EA::Reflection::UInt32 &AccelFromIdle_PEAK_RPM() const;
+    bool SET_AccelFromIdle_PEAK_RPM(const EA::Reflection::UInt32 &input);
+
+    bool AccelFromIdle_PEAK_T(TAttrib<EA::Reflection::UInt32> &result) const;
+    bool AccelFromIdle_PEAK_T(EA::Reflection::UInt32 &result) const;
+    const EA::Reflection::UInt32 &AccelFromIdle_PEAK_T() const;
+    bool SET_AccelFromIdle_PEAK_T(const EA::Reflection::UInt32 &input);
+
+    bool AccelFromIdle_PEAK_VOL(TAttrib<EA::Reflection::Float> &result) const;
+    bool AccelFromIdle_PEAK_VOL(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &AccelFromIdle_PEAK_VOL() const;
+    bool SET_AccelFromIdle_PEAK_VOL(const EA::Reflection::Float &input);
+
+    bool AccelFromIdle_RESUME_T(TAttrib<EA::Reflection::UInt32> &result) const;
+    bool AccelFromIdle_RESUME_T(EA::Reflection::UInt32 &result) const;
+    const EA::Reflection::UInt32 &AccelFromIdle_RESUME_T() const;
+    bool SET_AccelFromIdle_RESUME_T(const EA::Reflection::UInt32 &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -167,6 +131,75 @@ static const Key AccelFromIdle_RESUME_T = 0x44bccb6e;
 
 inline Key Gen::acceltrans::ClassKey() {
     return ClassName::acceltrans;
+}
+
+inline bool Gen::acceltrans::AccelFromIdle_INTERUPT_T(TAttrib<EA::Reflection::UInt32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::UInt32, 0x49fb8ce5);
+}
+inline const EA::Reflection::UInt32 &Gen::acceltrans::AccelFromIdle_INTERUPT_T() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::UInt32, 0x49fb8ce5);
+}
+inline bool Gen::acceltrans::AccelFromIdle_INTERUPT_T(EA::Reflection::UInt32 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::UInt32, 0x49fb8ce5, result);
+}
+inline bool Gen::acceltrans::SET_AccelFromIdle_INTERUPT_T(const EA::Reflection::UInt32 &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::UInt32, 0x49fb8ce5, input);
+}
+
+inline bool Gen::acceltrans::AccelFromIdle_PEAK_RPM(TAttrib<EA::Reflection::UInt32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::UInt32, 0x07b946f1);
+}
+inline const EA::Reflection::UInt32 &Gen::acceltrans::AccelFromIdle_PEAK_RPM() const {
+    ATTRIB_CODEGEN_GETLAYOUT(AccelFromIdle_PEAK_RPM);
+}
+inline bool Gen::acceltrans::AccelFromIdle_PEAK_RPM(EA::Reflection::UInt32 &result) const {
+    result = AccelFromIdle_PEAK_RPM();
+    return true;
+}
+inline bool Gen::acceltrans::SET_AccelFromIdle_PEAK_RPM(const EA::Reflection::UInt32 &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(AccelFromIdle_PEAK_RPM, input);
+}
+
+inline bool Gen::acceltrans::AccelFromIdle_PEAK_T(TAttrib<EA::Reflection::UInt32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::UInt32, 0xbd153261);
+}
+inline const EA::Reflection::UInt32 &Gen::acceltrans::AccelFromIdle_PEAK_T() const {
+    ATTRIB_CODEGEN_GETLAYOUT(AccelFromIdle_PEAK_T);
+}
+inline bool Gen::acceltrans::AccelFromIdle_PEAK_T(EA::Reflection::UInt32 &result) const {
+    result = AccelFromIdle_PEAK_T();
+    return true;
+}
+inline bool Gen::acceltrans::SET_AccelFromIdle_PEAK_T(const EA::Reflection::UInt32 &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(AccelFromIdle_PEAK_T, input);
+}
+
+inline bool Gen::acceltrans::AccelFromIdle_PEAK_VOL(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x922b60d7);
+}
+inline const EA::Reflection::Float &Gen::acceltrans::AccelFromIdle_PEAK_VOL() const {
+    ATTRIB_CODEGEN_GETLAYOUT(AccelFromIdle_PEAK_VOL);
+}
+inline bool Gen::acceltrans::AccelFromIdle_PEAK_VOL(EA::Reflection::Float &result) const {
+    result = AccelFromIdle_PEAK_VOL();
+    return true;
+}
+inline bool Gen::acceltrans::SET_AccelFromIdle_PEAK_VOL(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(AccelFromIdle_PEAK_VOL, input);
+}
+
+inline bool Gen::acceltrans::AccelFromIdle_RESUME_T(TAttrib<EA::Reflection::UInt32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::UInt32, 0x44bccb6e);
+}
+inline const EA::Reflection::UInt32 &Gen::acceltrans::AccelFromIdle_RESUME_T() const {
+    ATTRIB_CODEGEN_GETLAYOUT(AccelFromIdle_RESUME_T);
+}
+inline bool Gen::acceltrans::AccelFromIdle_RESUME_T(EA::Reflection::UInt32 &result) const {
+    result = AccelFromIdle_RESUME_T();
+    return true;
+}
+inline bool Gen::acceltrans::SET_AccelFromIdle_RESUME_T(const EA::Reflection::UInt32 &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(AccelFromIdle_RESUME_T, input);
 }
 
 }; // namespace Attrib

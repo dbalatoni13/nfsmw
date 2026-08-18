@@ -84,102 +84,45 @@ struct light_flares_cg : Instance {
         Instance::operator=(rhs);
         return *this;
     }
-    bool MaxSize(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xf7649e63);
-    }
-    bool MaxSize(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(MaxSize, result);
-    }
-    const EA::Reflection::Float &MaxSize() const {
-        ATTRIB_CODEGEN_GETLAYOUT(MaxSize);
-    }
-    bool SET_MaxSize(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(MaxSize, input);
-    }
-    bool Maxscale(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x07c20250);
-    }
-    bool Maxscale(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(Maxscale, result);
-    }
-    const EA::Reflection::Float &Maxscale() const {
-        ATTRIB_CODEGEN_GETLAYOUT(Maxscale);
-    }
-    bool SET_Maxscale(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(Maxscale, input);
-    }
-    bool MinScale(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x0fa46807);
-    }
-    bool MinScale(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(MinScale, result);
-    }
-    const EA::Reflection::Float &MinScale() const {
-        ATTRIB_CODEGEN_GETLAYOUT(MinScale);
-    }
-    bool SET_MinScale(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(MinScale, input);
-    }
-    bool MinSize(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x1a0b5461);
-    }
-    bool MinSize(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(MinSize, result);
-    }
-    const EA::Reflection::Float &MinSize() const {
-        ATTRIB_CODEGEN_GETLAYOUT(MinSize);
-    }
-    bool SET_MinSize(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(MinSize, input);
-    }
-    bool Power(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x96e40580);
-    }
-    bool Power(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(Power, result);
-    }
-    const EA::Reflection::Float &Power() const {
-        ATTRIB_CODEGEN_GETLAYOUT(Power);
-    }
-    bool SET_Power(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(Power, input);
-    }
-    bool ZBias(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xa02742a6);
-    }
-    bool ZBias(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(ZBias, result);
-    }
-    const EA::Reflection::Float &ZBias() const {
-        ATTRIB_CODEGEN_GETLAYOUT(ZBias);
-    }
-    bool SET_ZBias(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(ZBias, input);
-    }
-    bool colour(TAttrib<UMath::Vector4> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(UMath::Vector4, 0x05b98b2c);
-    }
-    bool colour(UMath::Vector4 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(colour, result);
-    }
-    const UMath::Vector4 &colour() const {
-        ATTRIB_CODEGEN_GETLAYOUT(colour);
-    }
-    bool SET_colour(const UMath::Vector4 &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(colour, input);
-    }
-    bool flare_texture(TAttrib<EA::Reflection::UInt32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::UInt32, 0xf093aacf);
-    }
-    bool flare_texture(EA::Reflection::UInt32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(flare_texture, result);
-    }
-    const EA::Reflection::UInt32 &flare_texture() const {
-        ATTRIB_CODEGEN_GETLAYOUT(flare_texture);
-    }
-    bool SET_flare_texture(const EA::Reflection::UInt32 &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(flare_texture, input);
-    }
+    bool MaxSize(TAttrib<EA::Reflection::Float> &result) const;
+    bool MaxSize(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &MaxSize() const;
+    bool SET_MaxSize(const EA::Reflection::Float &input);
+
+    bool Maxscale(TAttrib<EA::Reflection::Float> &result) const;
+    bool Maxscale(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &Maxscale() const;
+    bool SET_Maxscale(const EA::Reflection::Float &input);
+
+    bool MinScale(TAttrib<EA::Reflection::Float> &result) const;
+    bool MinScale(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &MinScale() const;
+    bool SET_MinScale(const EA::Reflection::Float &input);
+
+    bool MinSize(TAttrib<EA::Reflection::Float> &result) const;
+    bool MinSize(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &MinSize() const;
+    bool SET_MinSize(const EA::Reflection::Float &input);
+
+    bool Power(TAttrib<EA::Reflection::Float> &result) const;
+    bool Power(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &Power() const;
+    bool SET_Power(const EA::Reflection::Float &input);
+
+    bool ZBias(TAttrib<EA::Reflection::Float> &result) const;
+    bool ZBias(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &ZBias() const;
+    bool SET_ZBias(const EA::Reflection::Float &input);
+
+    bool colour(TAttrib<UMath::Vector4> &result) const;
+    bool colour(UMath::Vector4 &result) const;
+    const UMath::Vector4 &colour() const;
+    bool SET_colour(const UMath::Vector4 &input);
+
+    bool flare_texture(TAttrib<EA::Reflection::UInt32> &result) const;
+    bool flare_texture(EA::Reflection::UInt32 &result) const;
+    const EA::Reflection::UInt32 &flare_texture() const;
+    bool SET_flare_texture(const EA::Reflection::UInt32 &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -213,6 +156,118 @@ static const Key flare_texture = 0xf093aacf;
 
 inline Key Gen::light_flares_cg::ClassKey() {
     return ClassName::light_flares_cg;
+}
+
+inline bool Gen::light_flares_cg::MaxSize(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xf7649e63);
+}
+inline const EA::Reflection::Float &Gen::light_flares_cg::MaxSize() const {
+    ATTRIB_CODEGEN_GETLAYOUT(MaxSize);
+}
+inline bool Gen::light_flares_cg::MaxSize(EA::Reflection::Float &result) const {
+    result = MaxSize();
+    return true;
+}
+inline bool Gen::light_flares_cg::SET_MaxSize(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(MaxSize, input);
+}
+
+inline bool Gen::light_flares_cg::Maxscale(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x07c20250);
+}
+inline const EA::Reflection::Float &Gen::light_flares_cg::Maxscale() const {
+    ATTRIB_CODEGEN_GETLAYOUT(Maxscale);
+}
+inline bool Gen::light_flares_cg::Maxscale(EA::Reflection::Float &result) const {
+    result = Maxscale();
+    return true;
+}
+inline bool Gen::light_flares_cg::SET_Maxscale(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(Maxscale, input);
+}
+
+inline bool Gen::light_flares_cg::MinScale(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x0fa46807);
+}
+inline const EA::Reflection::Float &Gen::light_flares_cg::MinScale() const {
+    ATTRIB_CODEGEN_GETLAYOUT(MinScale);
+}
+inline bool Gen::light_flares_cg::MinScale(EA::Reflection::Float &result) const {
+    result = MinScale();
+    return true;
+}
+inline bool Gen::light_flares_cg::SET_MinScale(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(MinScale, input);
+}
+
+inline bool Gen::light_flares_cg::MinSize(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x1a0b5461);
+}
+inline const EA::Reflection::Float &Gen::light_flares_cg::MinSize() const {
+    ATTRIB_CODEGEN_GETLAYOUT(MinSize);
+}
+inline bool Gen::light_flares_cg::MinSize(EA::Reflection::Float &result) const {
+    result = MinSize();
+    return true;
+}
+inline bool Gen::light_flares_cg::SET_MinSize(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(MinSize, input);
+}
+
+inline bool Gen::light_flares_cg::Power(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x96e40580);
+}
+inline const EA::Reflection::Float &Gen::light_flares_cg::Power() const {
+    ATTRIB_CODEGEN_GETLAYOUT(Power);
+}
+inline bool Gen::light_flares_cg::Power(EA::Reflection::Float &result) const {
+    result = Power();
+    return true;
+}
+inline bool Gen::light_flares_cg::SET_Power(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(Power, input);
+}
+
+inline bool Gen::light_flares_cg::ZBias(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xa02742a6);
+}
+inline const EA::Reflection::Float &Gen::light_flares_cg::ZBias() const {
+    ATTRIB_CODEGEN_GETLAYOUT(ZBias);
+}
+inline bool Gen::light_flares_cg::ZBias(EA::Reflection::Float &result) const {
+    result = ZBias();
+    return true;
+}
+inline bool Gen::light_flares_cg::SET_ZBias(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(ZBias, input);
+}
+
+inline bool Gen::light_flares_cg::colour(TAttrib<UMath::Vector4> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(UMath::Vector4, 0x05b98b2c);
+}
+inline const UMath::Vector4 &Gen::light_flares_cg::colour() const {
+    ATTRIB_CODEGEN_GETLAYOUT(colour);
+}
+inline bool Gen::light_flares_cg::colour(UMath::Vector4 &result) const {
+    result = colour();
+    return true;
+}
+inline bool Gen::light_flares_cg::SET_colour(const UMath::Vector4 &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(colour, input);
+}
+
+inline bool Gen::light_flares_cg::flare_texture(TAttrib<EA::Reflection::UInt32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::UInt32, 0xf093aacf);
+}
+inline const EA::Reflection::UInt32 &Gen::light_flares_cg::flare_texture() const {
+    ATTRIB_CODEGEN_GETLAYOUT(flare_texture);
+}
+inline bool Gen::light_flares_cg::flare_texture(EA::Reflection::UInt32 &result) const {
+    result = flare_texture();
+    return true;
+}
+inline bool Gen::light_flares_cg::SET_flare_texture(const EA::Reflection::UInt32 &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(flare_texture, input);
 }
 
 }; // namespace Attrib

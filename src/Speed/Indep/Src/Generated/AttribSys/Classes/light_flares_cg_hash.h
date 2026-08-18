@@ -61,4 +61,3 @@ static const Key h64_traffic_light_red = 0x20fc956e;
 }; // namespace Attrib
 
 #endif
-

@@ -7,11 +7,7 @@
 
 namespace Attrib {
 namespace Hash {
-namespace visuallook {
-
-
-
-}; // namespace visuallook
+namespace visuallook {}; // namespace visuallook
 }; // namespace Hash
 }; // namespace Attrib
 

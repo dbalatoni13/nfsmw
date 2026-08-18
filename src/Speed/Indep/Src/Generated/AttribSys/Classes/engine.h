@@ -84,99 +84,43 @@ struct engine : Instance {
         Instance::operator=(rhs);
         return *this;
     }
-    bool ENGINE_BRAKING(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x82c55940);
-    }
-    bool ENGINE_BRAKING(EA::Reflection::Float &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUTINDEXED(ENGINE_BRAKING, result, index);
-    }
-    const EA::Reflection::Float &ENGINE_BRAKING(unsigned int index) const {
-        ATTRIB_CODEGEN_GETLAYOUTINDEXED(EA::Reflection::Float, ENGINE_BRAKING, index);
-    }
-    unsigned int Num_ENGINE_BRAKING() const {
-        ATTRIB_CODEGEN_GETLAYOUTLENGTH(ENGINE_BRAKING);
-    }
-    bool SET_ENGINE_BRAKING(const EA::Reflection::Float &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETLAYOUTINDEXED(ENGINE_BRAKING, input, index);
-    }
-    bool FLYWHEEL_MASS(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xccbb0245);
-    }
-    bool FLYWHEEL_MASS(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(FLYWHEEL_MASS, result);
-    }
-    const EA::Reflection::Float &FLYWHEEL_MASS() const {
-        ATTRIB_CODEGEN_GETLAYOUT(FLYWHEEL_MASS);
-    }
-    bool SET_FLYWHEEL_MASS(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(FLYWHEEL_MASS, input);
-    }
-    bool IDLE(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x9319476a);
-    }
-    bool IDLE(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(IDLE, result);
-    }
-    const EA::Reflection::Float &IDLE() const {
-        ATTRIB_CODEGEN_GETLAYOUT(IDLE);
-    }
-    bool SET_IDLE(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(IDLE, input);
-    }
-    bool MAX_RPM(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xc5561812);
-    }
-    bool MAX_RPM(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(MAX_RPM, result);
-    }
-    const EA::Reflection::Float &MAX_RPM() const {
-        ATTRIB_CODEGEN_GETLAYOUT(MAX_RPM);
-    }
-    bool SET_MAX_RPM(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(MAX_RPM, input);
-    }
-    bool RED_LINE(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xe00b01bf);
-    }
-    bool RED_LINE(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(RED_LINE, result);
-    }
-    const EA::Reflection::Float &RED_LINE() const {
-        ATTRIB_CODEGEN_GETLAYOUT(RED_LINE);
-    }
-    bool SET_RED_LINE(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(RED_LINE, input);
-    }
-    bool SPEED_LIMITER(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xa2d9ecb4);
-    }
-    bool SPEED_LIMITER(EA::Reflection::Float &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUTINDEXED(SPEED_LIMITER, result, index);
-    }
-    const EA::Reflection::Float &SPEED_LIMITER(unsigned int index) const {
-        ATTRIB_CODEGEN_GETLAYOUTINDEXED(EA::Reflection::Float, SPEED_LIMITER, index);
-    }
-    unsigned int Num_SPEED_LIMITER() const {
-        ATTRIB_CODEGEN_GETLAYOUTLENGTH(SPEED_LIMITER);
-    }
-    bool SET_SPEED_LIMITER(const EA::Reflection::Float &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETLAYOUTINDEXED(SPEED_LIMITER, input, index);
-    }
-    bool TORQUE(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xafcd67bc);
-    }
-    bool TORQUE(EA::Reflection::Float &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUTINDEXED(TORQUE, result, index);
-    }
-    const EA::Reflection::Float &TORQUE(unsigned int index) const {
-        ATTRIB_CODEGEN_GETLAYOUTINDEXED(EA::Reflection::Float, TORQUE, index);
-    }
-    unsigned int Num_TORQUE() const {
-        ATTRIB_CODEGEN_GETLAYOUTLENGTH(TORQUE);
-    }
-    bool SET_TORQUE(const EA::Reflection::Float &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETLAYOUTINDEXED(TORQUE, input, index);
-    }
+    bool ENGINE_BRAKING(TAttrib<EA::Reflection::Float> &result) const;
+    bool ENGINE_BRAKING(EA::Reflection::Float &result, unsigned int index) const;
+    const EA::Reflection::Float &ENGINE_BRAKING(unsigned int index) const;
+    unsigned int Num_ENGINE_BRAKING() const;
+    bool SET_ENGINE_BRAKING(const EA::Reflection::Float &input, unsigned int index);
+
+    bool FLYWHEEL_MASS(TAttrib<EA::Reflection::Float> &result) const;
+    bool FLYWHEEL_MASS(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &FLYWHEEL_MASS() const;
+    bool SET_FLYWHEEL_MASS(const EA::Reflection::Float &input);
+
+    bool IDLE(TAttrib<EA::Reflection::Float> &result) const;
+    bool IDLE(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &IDLE() const;
+    bool SET_IDLE(const EA::Reflection::Float &input);
+
+    bool MAX_RPM(TAttrib<EA::Reflection::Float> &result) const;
+    bool MAX_RPM(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &MAX_RPM() const;
+    bool SET_MAX_RPM(const EA::Reflection::Float &input);
+
+    bool RED_LINE(TAttrib<EA::Reflection::Float> &result) const;
+    bool RED_LINE(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &RED_LINE() const;
+    bool SET_RED_LINE(const EA::Reflection::Float &input);
+
+    bool SPEED_LIMITER(TAttrib<EA::Reflection::Float> &result) const;
+    bool SPEED_LIMITER(EA::Reflection::Float &result, unsigned int index) const;
+    const EA::Reflection::Float &SPEED_LIMITER(unsigned int index) const;
+    unsigned int Num_SPEED_LIMITER() const;
+    bool SET_SPEED_LIMITER(const EA::Reflection::Float &input, unsigned int index);
+
+    bool TORQUE(TAttrib<EA::Reflection::Float> &result) const;
+    bool TORQUE(EA::Reflection::Float &result, unsigned int index) const;
+    const EA::Reflection::Float &TORQUE(unsigned int index) const;
+    unsigned int Num_TORQUE() const;
+    bool SET_TORQUE(const EA::Reflection::Float &input, unsigned int index);
 
   private:
     unsigned int GetLayoutSize() {
@@ -209,6 +153,110 @@ static const Key TORQUE = 0xafcd67bc;
 
 inline Key Gen::engine::ClassKey() {
     return ClassName::engine;
+}
+
+inline bool Gen::engine::ENGINE_BRAKING(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x82c55940);
+}
+inline const EA::Reflection::Float &Gen::engine::ENGINE_BRAKING(unsigned int index) const {
+    ATTRIB_CODEGEN_GETLAYOUTINDEXED(EA::Reflection::Float, ENGINE_BRAKING, index);
+}
+inline bool Gen::engine::ENGINE_BRAKING(EA::Reflection::Float &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETLAYOUTINDEXED(ENGINE_BRAKING, result, index);
+}
+inline unsigned int Gen::engine::Num_ENGINE_BRAKING() const {
+    ATTRIB_CODEGEN_GETLAYOUTLENGTH(ENGINE_BRAKING);
+}
+inline bool Gen::engine::SET_ENGINE_BRAKING(const EA::Reflection::Float &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETLAYOUTINDEXED(ENGINE_BRAKING, input, index);
+}
+
+inline bool Gen::engine::FLYWHEEL_MASS(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xccbb0245);
+}
+inline const EA::Reflection::Float &Gen::engine::FLYWHEEL_MASS() const {
+    ATTRIB_CODEGEN_GETLAYOUT(FLYWHEEL_MASS);
+}
+inline bool Gen::engine::FLYWHEEL_MASS(EA::Reflection::Float &result) const {
+    result = FLYWHEEL_MASS();
+    return true;
+}
+inline bool Gen::engine::SET_FLYWHEEL_MASS(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(FLYWHEEL_MASS, input);
+}
+
+inline bool Gen::engine::IDLE(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x9319476a);
+}
+inline const EA::Reflection::Float &Gen::engine::IDLE() const {
+    ATTRIB_CODEGEN_GETLAYOUT(IDLE);
+}
+inline bool Gen::engine::IDLE(EA::Reflection::Float &result) const {
+    result = IDLE();
+    return true;
+}
+inline bool Gen::engine::SET_IDLE(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(IDLE, input);
+}
+
+inline bool Gen::engine::MAX_RPM(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xc5561812);
+}
+inline const EA::Reflection::Float &Gen::engine::MAX_RPM() const {
+    ATTRIB_CODEGEN_GETLAYOUT(MAX_RPM);
+}
+inline bool Gen::engine::MAX_RPM(EA::Reflection::Float &result) const {
+    result = MAX_RPM();
+    return true;
+}
+inline bool Gen::engine::SET_MAX_RPM(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(MAX_RPM, input);
+}
+
+inline bool Gen::engine::RED_LINE(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xe00b01bf);
+}
+inline const EA::Reflection::Float &Gen::engine::RED_LINE() const {
+    ATTRIB_CODEGEN_GETLAYOUT(RED_LINE);
+}
+inline bool Gen::engine::RED_LINE(EA::Reflection::Float &result) const {
+    result = RED_LINE();
+    return true;
+}
+inline bool Gen::engine::SET_RED_LINE(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(RED_LINE, input);
+}
+
+inline bool Gen::engine::SPEED_LIMITER(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xa2d9ecb4);
+}
+inline const EA::Reflection::Float &Gen::engine::SPEED_LIMITER(unsigned int index) const {
+    ATTRIB_CODEGEN_GETLAYOUTINDEXED(EA::Reflection::Float, SPEED_LIMITER, index);
+}
+inline bool Gen::engine::SPEED_LIMITER(EA::Reflection::Float &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETLAYOUTINDEXED(SPEED_LIMITER, result, index);
+}
+inline unsigned int Gen::engine::Num_SPEED_LIMITER() const {
+    ATTRIB_CODEGEN_GETLAYOUTLENGTH(SPEED_LIMITER);
+}
+inline bool Gen::engine::SET_SPEED_LIMITER(const EA::Reflection::Float &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETLAYOUTINDEXED(SPEED_LIMITER, input, index);
+}
+
+inline bool Gen::engine::TORQUE(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xafcd67bc);
+}
+inline const EA::Reflection::Float &Gen::engine::TORQUE(unsigned int index) const {
+    ATTRIB_CODEGEN_GETLAYOUTINDEXED(EA::Reflection::Float, TORQUE, index);
+}
+inline bool Gen::engine::TORQUE(EA::Reflection::Float &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETLAYOUTINDEXED(TORQUE, result, index);
+}
+inline unsigned int Gen::engine::Num_TORQUE() const {
+    ATTRIB_CODEGEN_GETLAYOUTLENGTH(TORQUE);
+}
+inline bool Gen::engine::SET_TORQUE(const EA::Reflection::Float &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETLAYOUTINDEXED(TORQUE, input, index);
 }
 
 }; // namespace Attrib

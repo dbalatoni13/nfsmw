@@ -149,858 +149,355 @@ struct pvehicle : Instance {
         Instance::operator=(rhs);
         return *this;
     }
-    bool BEHAVIOR_MECHANIC_AUDIO(TAttrib<Attrib::StringKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(Attrib::StringKey, 0xfb0b5be9);
-    }
-    bool BEHAVIOR_MECHANIC_AUDIO(Attrib::StringKey &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(Attrib::StringKey, 0xfb0b5be9, result);
-    }
-    const Attrib::StringKey &BEHAVIOR_MECHANIC_AUDIO() const {
-        ATTRIB_CODEGEN_GETVALUE(Attrib::StringKey, 0xfb0b5be9);
-    }
-    bool SET_BEHAVIOR_MECHANIC_AUDIO(const Attrib::StringKey &input) {
-        ATTRIB_CODEGEN_SETVALUE(Attrib::StringKey, 0xfb0b5be9, input);
-    }
-    bool BEHAVIOR_MECHANIC_DAMAGE(TAttrib<Attrib::StringKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(Attrib::StringKey, 0x858ed6e3);
-    }
-    bool BEHAVIOR_MECHANIC_DAMAGE(Attrib::StringKey &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(Attrib::StringKey, 0x858ed6e3, result);
-    }
-    const Attrib::StringKey &BEHAVIOR_MECHANIC_DAMAGE() const {
-        ATTRIB_CODEGEN_GETVALUE(Attrib::StringKey, 0x858ed6e3);
-    }
-    bool SET_BEHAVIOR_MECHANIC_DAMAGE(const Attrib::StringKey &input) {
-        ATTRIB_CODEGEN_SETVALUE(Attrib::StringKey, 0x858ed6e3, input);
-    }
-    bool BEHAVIOR_MECHANIC_DRAW(TAttrib<Attrib::StringKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(Attrib::StringKey, 0xb230ade1);
-    }
-    bool BEHAVIOR_MECHANIC_DRAW(Attrib::StringKey &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(Attrib::StringKey, 0xb230ade1, result);
-    }
-    const Attrib::StringKey &BEHAVIOR_MECHANIC_DRAW() const {
-        ATTRIB_CODEGEN_GETVALUE(Attrib::StringKey, 0xb230ade1);
-    }
-    bool SET_BEHAVIOR_MECHANIC_DRAW(const Attrib::StringKey &input) {
-        ATTRIB_CODEGEN_SETVALUE(Attrib::StringKey, 0xb230ade1, input);
-    }
-    bool BEHAVIOR_MECHANIC_EFFECTS(TAttrib<Attrib::StringKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(Attrib::StringKey, 0x59c2beb1);
-    }
-    bool BEHAVIOR_MECHANIC_EFFECTS(Attrib::StringKey &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(Attrib::StringKey, 0x59c2beb1, result);
-    }
-    const Attrib::StringKey &BEHAVIOR_MECHANIC_EFFECTS() const {
-        ATTRIB_CODEGEN_GETVALUE(Attrib::StringKey, 0x59c2beb1);
-    }
-    bool SET_BEHAVIOR_MECHANIC_EFFECTS(const Attrib::StringKey &input) {
-        ATTRIB_CODEGEN_SETVALUE(Attrib::StringKey, 0x59c2beb1, input);
-    }
-    bool BEHAVIOR_MECHANIC_ENGINE(TAttrib<Attrib::StringKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(Attrib::StringKey, 0xa3e13328);
-    }
-    bool BEHAVIOR_MECHANIC_ENGINE(Attrib::StringKey &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(Attrib::StringKey, 0xa3e13328, result);
-    }
-    const Attrib::StringKey &BEHAVIOR_MECHANIC_ENGINE() const {
-        ATTRIB_CODEGEN_GETVALUE(Attrib::StringKey, 0xa3e13328);
-    }
-    bool SET_BEHAVIOR_MECHANIC_ENGINE(const Attrib::StringKey &input) {
-        ATTRIB_CODEGEN_SETVALUE(Attrib::StringKey, 0xa3e13328, input);
-    }
-    bool BEHAVIOR_MECHANIC_INPUT(TAttrib<Attrib::StringKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(Attrib::StringKey, 0xc3fa0cc4);
-    }
-    bool BEHAVIOR_MECHANIC_INPUT(Attrib::StringKey &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(Attrib::StringKey, 0xc3fa0cc4, result);
-    }
-    const Attrib::StringKey &BEHAVIOR_MECHANIC_INPUT() const {
-        ATTRIB_CODEGEN_GETVALUE(Attrib::StringKey, 0xc3fa0cc4);
-    }
-    bool SET_BEHAVIOR_MECHANIC_INPUT(const Attrib::StringKey &input) {
-        ATTRIB_CODEGEN_SETVALUE(Attrib::StringKey, 0xc3fa0cc4, input);
-    }
-    bool BEHAVIOR_MECHANIC_RESET(TAttrib<Attrib::StringKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(Attrib::StringKey, 0x8013456f);
-    }
-    bool BEHAVIOR_MECHANIC_RESET(Attrib::StringKey &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(Attrib::StringKey, 0x8013456f, result);
-    }
-    const Attrib::StringKey &BEHAVIOR_MECHANIC_RESET() const {
-        ATTRIB_CODEGEN_GETVALUE(Attrib::StringKey, 0x8013456f);
-    }
-    bool SET_BEHAVIOR_MECHANIC_RESET(const Attrib::StringKey &input) {
-        ATTRIB_CODEGEN_SETVALUE(Attrib::StringKey, 0x8013456f, input);
-    }
-    bool BEHAVIOR_MECHANIC_RIGIDBODY(TAttrib<Attrib::StringKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(Attrib::StringKey, 0x8ba55001);
-    }
-    bool BEHAVIOR_MECHANIC_RIGIDBODY(Attrib::StringKey &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(Attrib::StringKey, 0x8ba55001, result);
-    }
-    const Attrib::StringKey &BEHAVIOR_MECHANIC_RIGIDBODY() const {
-        ATTRIB_CODEGEN_GETVALUE(Attrib::StringKey, 0x8ba55001);
-    }
-    bool SET_BEHAVIOR_MECHANIC_RIGIDBODY(const Attrib::StringKey &input) {
-        ATTRIB_CODEGEN_SETVALUE(Attrib::StringKey, 0x8ba55001, input);
-    }
-    bool BEHAVIOR_MECHANIC_SUSPENSION(TAttrib<Attrib::StringKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(Attrib::StringKey, 0x511abd7b);
-    }
-    bool BEHAVIOR_MECHANIC_SUSPENSION(Attrib::StringKey &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(Attrib::StringKey, 0x511abd7b, result);
-    }
-    const Attrib::StringKey &BEHAVIOR_MECHANIC_SUSPENSION() const {
-        ATTRIB_CODEGEN_GETVALUE(Attrib::StringKey, 0x511abd7b);
-    }
-    bool SET_BEHAVIOR_MECHANIC_SUSPENSION(const Attrib::StringKey &input) {
-        ATTRIB_CODEGEN_SETVALUE(Attrib::StringKey, 0x511abd7b, input);
-    }
-    bool BEHAVIOR_ORDER(TAttrib<Attrib::StringKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(Attrib::StringKey, 0x104e9d16);
-    }
-    bool BEHAVIOR_ORDER(Attrib::StringKey &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(Attrib::StringKey, 0x104e9d16, result, index);
-    }
-    const Attrib::StringKey &BEHAVIOR_ORDER(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(Attrib::StringKey, 0x104e9d16, index);
-    }
-    unsigned int Num_BEHAVIOR_ORDER() const {
-        ATTRIB_CODEGEN_GETLENGTH(0x104e9d16);
-    }
-    bool SET_BEHAVIOR_ORDER(const Attrib::StringKey &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(Attrib::StringKey, 0x104e9d16, input, index);
-    }
-    bool CLASS(TAttrib<Attrib::StringKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(Attrib::StringKey, 0x0ef6ddf2);
-    }
-    bool CLASS(Attrib::StringKey &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(Attrib::StringKey, 0x0ef6ddf2, result);
-    }
-    const Attrib::StringKey &CLASS() const {
-        ATTRIB_CODEGEN_GETVALUE(Attrib::StringKey, 0x0ef6ddf2);
-    }
-    bool SET_CLASS(const Attrib::StringKey &input) {
-        ATTRIB_CODEGEN_SETVALUE(Attrib::StringKey, 0x0ef6ddf2, input);
-    }
-    bool CollectionName(TAttrib<EA::Reflection::Text> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0x9ca1c8f9);
-    }
-    bool CollectionName(EA::Reflection::Text &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(CollectionName, result);
-    }
-    const EA::Reflection::Text &CollectionName() const {
-        ATTRIB_CODEGEN_GETLAYOUT(CollectionName);
-    }
-    bool SET_CollectionName(const EA::Reflection::Text &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(CollectionName, input);
-    }
-    bool DefaultPresetRide(TAttrib<EA::Reflection::Text> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0xaa27e71c);
-    }
-    bool DefaultPresetRide(EA::Reflection::Text &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(DefaultPresetRide, result);
-    }
-    const EA::Reflection::Text &DefaultPresetRide() const {
-        ATTRIB_CODEGEN_GETLAYOUT(DefaultPresetRide);
-    }
-    bool SET_DefaultPresetRide(const EA::Reflection::Text &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(DefaultPresetRide, input);
-    }
-    bool EventSequencer(TAttrib<Attrib::StringKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(Attrib::StringKey, 0x5aab860f);
-    }
-    bool EventSequencer(Attrib::StringKey &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(Attrib::StringKey, 0x5aab860f, result);
-    }
-    const Attrib::StringKey &EventSequencer() const {
-        ATTRIB_CODEGEN_GETVALUE(Attrib::StringKey, 0x5aab860f);
-    }
-    bool SET_EventSequencer(const Attrib::StringKey &input) {
-        ATTRIB_CODEGEN_SETVALUE(Attrib::StringKey, 0x5aab860f, input);
-    }
-    bool HandlingRating(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xaacbe2e7);
-    }
-    bool HandlingRating(EA::Reflection::Float &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(EA::Reflection::Float, 0xaacbe2e7, result, index);
-    }
-    const EA::Reflection::Float &HandlingRating(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(EA::Reflection::Float, 0xaacbe2e7, index);
-    }
-    unsigned int Num_HandlingRating() const {
-        ATTRIB_CODEGEN_GETLENGTH(0xaacbe2e7);
-    }
-    bool SET_HandlingRating(const EA::Reflection::Float &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(EA::Reflection::Float, 0xaacbe2e7, input, index);
-    }
-    bool HornType(TAttrib<EA::Reflection::UInt8> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::UInt8, 0xa481f8ff);
-    }
-    bool HornType(EA::Reflection::UInt8 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(HornType, result);
-    }
-    const EA::Reflection::UInt8 &HornType() const {
-        ATTRIB_CODEGEN_GETLAYOUT(HornType);
-    }
-    bool SET_HornType(const EA::Reflection::UInt8 &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(HornType, input);
-    }
-    bool MASS(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x4a56503d);
-    }
-    bool MASS(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(MASS, result);
-    }
-    const EA::Reflection::Float &MASS() const {
-        ATTRIB_CODEGEN_GETLAYOUT(MASS);
-    }
-    bool SET_MASS(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(MASS, input);
-    }
-    bool MODEL(TAttrib<Attrib::StringKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(Attrib::StringKey, 0x9047c9e0);
-    }
-    bool MODEL(Attrib::StringKey &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(MODEL, result);
-    }
-    const Attrib::StringKey &MODEL() const {
-        ATTRIB_CODEGEN_GETLAYOUT(MODEL);
-    }
-    bool SET_MODEL(const Attrib::StringKey &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(MODEL, input);
-    }
-    bool OnBottomOut(TAttrib<EffectLinkageRecord> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EffectLinkageRecord, 0x31047ebc);
-    }
-    bool OnBottomOut(EffectLinkageRecord &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(EffectLinkageRecord, 0x31047ebc, result, index);
-    }
-    const EffectLinkageRecord &OnBottomOut(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(EffectLinkageRecord, 0x31047ebc, index);
-    }
-    unsigned int Num_OnBottomOut() const {
-        ATTRIB_CODEGEN_GETLENGTH(0x31047ebc);
-    }
-    bool SET_OnBottomOut(const EffectLinkageRecord &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(EffectLinkageRecord, 0x31047ebc, input, index);
-    }
-    bool OnBottomScrape(TAttrib<EffectLinkageRecord> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EffectLinkageRecord, 0xfc03ad6a);
-    }
-    bool OnBottomScrape(EffectLinkageRecord &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(EffectLinkageRecord, 0xfc03ad6a, result, index);
-    }
-    const EffectLinkageRecord &OnBottomScrape(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(EffectLinkageRecord, 0xfc03ad6a, index);
-    }
-    unsigned int Num_OnBottomScrape() const {
-        ATTRIB_CODEGEN_GETLENGTH(0xfc03ad6a);
-    }
-    bool SET_OnBottomScrape(const EffectLinkageRecord &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(EffectLinkageRecord, 0xfc03ad6a, input, index);
-    }
-    bool OnHitGround(TAttrib<EffectLinkageRecord> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EffectLinkageRecord, 0xd9c6cdfd);
-    }
-    bool OnHitGround(EffectLinkageRecord &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(EffectLinkageRecord, 0xd9c6cdfd, result, index);
-    }
-    const EffectLinkageRecord &OnHitGround(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(EffectLinkageRecord, 0xd9c6cdfd, index);
-    }
-    unsigned int Num_OnHitGround() const {
-        ATTRIB_CODEGEN_GETLENGTH(0xd9c6cdfd);
-    }
-    bool SET_OnHitGround(const EffectLinkageRecord &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(EffectLinkageRecord, 0xd9c6cdfd, input, index);
-    }
-    bool OnHitObject(TAttrib<EffectLinkageRecord> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EffectLinkageRecord, 0x18915735);
-    }
-    bool OnHitObject(EffectLinkageRecord &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(EffectLinkageRecord, 0x18915735, result, index);
-    }
-    const EffectLinkageRecord &OnHitObject(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(EffectLinkageRecord, 0x18915735, index);
-    }
-    unsigned int Num_OnHitObject() const {
-        ATTRIB_CODEGEN_GETLENGTH(0x18915735);
-    }
-    bool SET_OnHitObject(const EffectLinkageRecord &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(EffectLinkageRecord, 0x18915735, input, index);
-    }
-    bool OnHitWorld(TAttrib<EffectLinkageRecord> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EffectLinkageRecord, 0xe3167336);
-    }
-    bool OnHitWorld(EffectLinkageRecord &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(EffectLinkageRecord, 0xe3167336, result, index);
-    }
-    const EffectLinkageRecord &OnHitWorld(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(EffectLinkageRecord, 0xe3167336, index);
-    }
-    unsigned int Num_OnHitWorld() const {
-        ATTRIB_CODEGEN_GETLENGTH(0xe3167336);
-    }
-    bool SET_OnHitWorld(const EffectLinkageRecord &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(EffectLinkageRecord, 0xe3167336, input, index);
-    }
-    bool OnScrapeGround(TAttrib<EffectLinkageRecord> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EffectLinkageRecord, 0xdb823931);
-    }
-    bool OnScrapeGround(EffectLinkageRecord &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(EffectLinkageRecord, 0xdb823931, result, index);
-    }
-    const EffectLinkageRecord &OnScrapeGround(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(EffectLinkageRecord, 0xdb823931, index);
-    }
-    unsigned int Num_OnScrapeGround() const {
-        ATTRIB_CODEGEN_GETLENGTH(0xdb823931);
-    }
-    bool SET_OnScrapeGround(const EffectLinkageRecord &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(EffectLinkageRecord, 0xdb823931, input, index);
-    }
-    bool OnScrapeObject(TAttrib<EffectLinkageRecord> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EffectLinkageRecord, 0xdacb1c11);
-    }
-    bool OnScrapeObject(EffectLinkageRecord &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(EffectLinkageRecord, 0xdacb1c11, result, index);
-    }
-    const EffectLinkageRecord &OnScrapeObject(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(EffectLinkageRecord, 0xdacb1c11, index);
-    }
-    unsigned int Num_OnScrapeObject() const {
-        ATTRIB_CODEGEN_GETLENGTH(0xdacb1c11);
-    }
-    bool SET_OnScrapeObject(const EffectLinkageRecord &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(EffectLinkageRecord, 0xdacb1c11, input, index);
-    }
-    bool OnScrapeWorld(TAttrib<EffectLinkageRecord> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EffectLinkageRecord, 0x7100960c);
-    }
-    bool OnScrapeWorld(EffectLinkageRecord &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(EffectLinkageRecord, 0x7100960c, result, index);
-    }
-    const EffectLinkageRecord &OnScrapeWorld(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(EffectLinkageRecord, 0x7100960c, index);
-    }
-    unsigned int Num_OnScrapeWorld() const {
-        ATTRIB_CODEGEN_GETLENGTH(0x7100960c);
-    }
-    bool SET_OnScrapeWorld(const EffectLinkageRecord &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(EffectLinkageRecord, 0x7100960c, input, index);
-    }
-    bool OnTireBlow(TAttrib<RefSpec> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(RefSpec, 0xd42e792f);
-    }
-    bool OnTireBlow(RefSpec &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(RefSpec, 0xd42e792f, result);
-    }
-    const RefSpec &OnTireBlow() const {
-        ATTRIB_CODEGEN_GETVALUE(RefSpec, 0xd42e792f);
-    }
-    bool SET_OnTireBlow(const RefSpec &input) {
-        ATTRIB_CODEGEN_SETVALUE(RefSpec, 0xd42e792f, input);
-    }
-    bool PlayerUsable(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0xf099b6ac);
-    }
-    bool PlayerUsable(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0xf099b6ac, result);
-    }
-    const EA::Reflection::Bool &PlayerUsable() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0xf099b6ac);
-    }
-    bool SET_PlayerUsable(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0xf099b6ac, input);
-    }
-    bool RandomOpponent(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x6df0abfe);
-    }
-    bool RandomOpponent(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x6df0abfe, result);
-    }
-    const EA::Reflection::Bool &RandomOpponent() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x6df0abfe);
-    }
-    bool SET_RandomOpponent(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x6df0abfe, input);
-    }
-    bool ShiftSND(TAttrib<UpgradeSpecs> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(UpgradeSpecs, 0x8ae8bee0);
-    }
-    bool ShiftSND(UpgradeSpecs &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(UpgradeSpecs, 0x8ae8bee0, result, index);
-    }
-    const UpgradeSpecs &ShiftSND(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(UpgradeSpecs, 0x8ae8bee0, index);
-    }
-    unsigned int Num_ShiftSND() const {
-        ATTRIB_CODEGEN_GETLENGTH(0x8ae8bee0);
-    }
-    bool SET_ShiftSND(const UpgradeSpecs &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(UpgradeSpecs, 0x8ae8bee0, input, index);
-    }
-    bool TENSOR_SCALE(TAttrib<UMath::Vector4> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(UMath::Vector4, 0x868dffdd);
-    }
-    bool TENSOR_SCALE(UMath::Vector4 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(TENSOR_SCALE, result);
-    }
-    const UMath::Vector4 &TENSOR_SCALE() const {
-        ATTRIB_CODEGEN_GETLAYOUT(TENSOR_SCALE);
-    }
-    bool SET_TENSOR_SCALE(const UMath::Vector4 &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(TENSOR_SCALE, input);
-    }
-    bool TrafficEngType(TAttrib<EA::Reflection::UInt8> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::UInt8, 0x09af94ed);
-    }
-    bool TrafficEngType(EA::Reflection::UInt8 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(TrafficEngType, result);
-    }
-    const EA::Reflection::UInt8 &TrafficEngType() const {
-        ATTRIB_CODEGEN_GETLAYOUT(TrafficEngType);
-    }
-    bool SET_TrafficEngType(const EA::Reflection::UInt8 &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(TrafficEngType, input);
-    }
-    bool Trailer(TAttrib<RefSpec> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(RefSpec, 0x9a5537fe);
-    }
-    bool Trailer(RefSpec &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(RefSpec, 0x9a5537fe, result);
-    }
-    const RefSpec &Trailer() const {
-        ATTRIB_CODEGEN_GETVALUE(RefSpec, 0x9a5537fe);
-    }
-    bool SET_Trailer(const RefSpec &input) {
-        ATTRIB_CODEGEN_SETVALUE(RefSpec, 0x9a5537fe, input);
-    }
-    bool TruckSndFX(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0xeacb7696);
-    }
-    bool TruckSndFX(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0xeacb7696, result);
-    }
-    const EA::Reflection::Bool &TruckSndFX() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0xeacb7696);
-    }
-    bool SET_TruckSndFX(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0xeacb7696, input);
-    }
-    bool TurboSND(TAttrib<UpgradeSpecs> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(UpgradeSpecs, 0x0e9bfb66);
-    }
-    bool TurboSND(UpgradeSpecs &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(UpgradeSpecs, 0x0e9bfb66, result, index);
-    }
-    const UpgradeSpecs &TurboSND(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(UpgradeSpecs, 0x0e9bfb66, index);
-    }
-    unsigned int Num_TurboSND() const {
-        ATTRIB_CODEGEN_GETLENGTH(0x0e9bfb66);
-    }
-    bool SET_TurboSND(const UpgradeSpecs &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(UpgradeSpecs, 0x0e9bfb66, input, index);
-    }
-    bool VerbalType(TAttrib<Csis::Type_car_type> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(Csis::Type_car_type, 0x368a544c);
-    }
-    bool VerbalType(Csis::Type_car_type &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(VerbalType, result);
-    }
-    const Csis::Type_car_type &VerbalType() const {
-        ATTRIB_CODEGEN_GETLAYOUT(VerbalType);
-    }
-    bool SET_VerbalType(const Csis::Type_car_type &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(VerbalType, input);
-    }
-    bool WooshType(TAttrib<eDRIVE_BY_TYPE> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(eDRIVE_BY_TYPE, 0x7e744600);
-    }
-    bool WooshType(eDRIVE_BY_TYPE &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(eDRIVE_BY_TYPE, 0x7e744600, result);
-    }
-    const eDRIVE_BY_TYPE &WooshType() const {
-        ATTRIB_CODEGEN_GETVALUE(eDRIVE_BY_TYPE, 0x7e744600);
-    }
-    bool SET_WooshType(const eDRIVE_BY_TYPE &input) {
-        ATTRIB_CODEGEN_SETVALUE(eDRIVE_BY_TYPE, 0x7e744600, input);
-    }
-    bool aivehicle(TAttrib<RefSpec> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(RefSpec, 0x22515733);
-    }
-    bool aivehicle(RefSpec &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(RefSpec, 0x22515733, result);
-    }
-    const RefSpec &aivehicle() const {
-        ATTRIB_CODEGEN_GETVALUE(RefSpec, 0x22515733);
-    }
-    bool SET_aivehicle(const RefSpec &input) {
-        ATTRIB_CODEGEN_SETVALUE(RefSpec, 0x22515733, input);
-    }
-    bool brakes(TAttrib<RefSpec> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(RefSpec, 0x36350867);
-    }
-    bool brakes(RefSpec &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(RefSpec, 0x36350867, result, index);
-    }
-    const RefSpec &brakes(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(RefSpec, 0x36350867, index);
-    }
-    unsigned int Num_brakes() const {
-        ATTRIB_CODEGEN_GETLENGTH(0x36350867);
-    }
-    bool SET_brakes(const RefSpec &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(RefSpec, 0x36350867, input, index);
-    }
-    bool brakes_current(TAttrib<EA::Reflection::Int32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x552c3d22);
-    }
-    bool brakes_current(EA::Reflection::Int32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x552c3d22, result);
-    }
-    const EA::Reflection::Int32 &brakes_current() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0x552c3d22);
-    }
-    bool SET_brakes_current(const EA::Reflection::Int32 &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x552c3d22, input);
-    }
-    bool brakes_upgrades(TAttrib<EA::Reflection::Int32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x4e168120);
-    }
-    bool brakes_upgrades(EA::Reflection::Int32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(brakes_upgrades, result);
-    }
-    const EA::Reflection::Int32 &brakes_upgrades() const {
-        ATTRIB_CODEGEN_GETLAYOUT(brakes_upgrades);
-    }
-    bool SET_brakes_upgrades(const EA::Reflection::Int32 &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(brakes_upgrades, input);
-    }
-    bool chassis(TAttrib<RefSpec> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(RefSpec, 0xafa210f0);
-    }
-    bool chassis(RefSpec &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(RefSpec, 0xafa210f0, result, index);
-    }
-    const RefSpec &chassis(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(RefSpec, 0xafa210f0, index);
-    }
-    unsigned int Num_chassis() const {
-        ATTRIB_CODEGEN_GETLENGTH(0xafa210f0);
-    }
-    bool SET_chassis(const RefSpec &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(RefSpec, 0xafa210f0, input, index);
-    }
-    bool chassis_current(TAttrib<EA::Reflection::Int32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x7845f9bc);
-    }
-    bool chassis_current(EA::Reflection::Int32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x7845f9bc, result);
-    }
-    const EA::Reflection::Int32 &chassis_current() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0x7845f9bc);
-    }
-    bool SET_chassis_current(const EA::Reflection::Int32 &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x7845f9bc, input);
-    }
-    bool chassis_upgrades(TAttrib<EA::Reflection::Int32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0xf62a062d);
-    }
-    bool chassis_upgrades(EA::Reflection::Int32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(chassis_upgrades, result);
-    }
-    const EA::Reflection::Int32 &chassis_upgrades() const {
-        ATTRIB_CODEGEN_GETLAYOUT(chassis_upgrades);
-    }
-    bool SET_chassis_upgrades(const EA::Reflection::Int32 &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(chassis_upgrades, input);
-    }
-    bool chopperspecs(TAttrib<RefSpec> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(RefSpec, 0x5d898ee7);
-    }
-    bool chopperspecs(RefSpec &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(RefSpec, 0x5d898ee7, result);
-    }
-    const RefSpec &chopperspecs() const {
-        ATTRIB_CODEGEN_GETVALUE(RefSpec, 0x5d898ee7);
-    }
-    bool SET_chopperspecs(const RefSpec &input) {
-        ATTRIB_CODEGEN_SETVALUE(RefSpec, 0x5d898ee7, input);
-    }
-    bool damagespecs(TAttrib<RefSpec> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(RefSpec, 0xc1f0b434);
-    }
-    bool damagespecs(RefSpec &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(RefSpec, 0xc1f0b434, result);
-    }
-    const RefSpec &damagespecs() const {
-        ATTRIB_CODEGEN_GETVALUE(RefSpec, 0xc1f0b434);
-    }
-    bool SET_damagespecs(const RefSpec &input) {
-        ATTRIB_CODEGEN_SETVALUE(RefSpec, 0xc1f0b434, input);
-    }
-    bool engine(TAttrib<RefSpec> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(RefSpec, 0xf1f5fbc7);
-    }
-    bool engine(RefSpec &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(RefSpec, 0xf1f5fbc7, result, index);
-    }
-    const RefSpec &engine(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(RefSpec, 0xf1f5fbc7, index);
-    }
-    unsigned int Num_engine() const {
-        ATTRIB_CODEGEN_GETLENGTH(0xf1f5fbc7);
-    }
-    bool SET_engine(const RefSpec &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(RefSpec, 0xf1f5fbc7, input, index);
-    }
-    bool engine_current(TAttrib<EA::Reflection::Int32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0xb12ccb69);
-    }
-    bool engine_current(EA::Reflection::Int32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0xb12ccb69, result);
-    }
-    const EA::Reflection::Int32 &engine_current() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0xb12ccb69);
-    }
-    bool SET_engine_current(const EA::Reflection::Int32 &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0xb12ccb69, input);
-    }
-    bool engine_upgrades(TAttrib<EA::Reflection::Int32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x7708db25);
-    }
-    bool engine_upgrades(EA::Reflection::Int32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(engine_upgrades, result);
-    }
-    const EA::Reflection::Int32 &engine_upgrades() const {
-        ATTRIB_CODEGEN_GETLAYOUT(engine_upgrades);
-    }
-    bool SET_engine_upgrades(const EA::Reflection::Int32 &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(engine_upgrades, input);
-    }
-    bool engineaudio(TAttrib<RefSpec> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(RefSpec, 0x50eab0e6);
-    }
-    bool engineaudio(RefSpec &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(RefSpec, 0x50eab0e6, result, index);
-    }
-    const RefSpec &engineaudio(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(RefSpec, 0x50eab0e6, index);
-    }
-    unsigned int Num_engineaudio() const {
-        ATTRIB_CODEGEN_GETLENGTH(0x50eab0e6);
-    }
-    bool SET_engineaudio(const RefSpec &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(RefSpec, 0x50eab0e6, input, index);
-    }
-    bool frontend(TAttrib<RefSpec> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(RefSpec, 0x85885722);
-    }
-    bool frontend(RefSpec &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(RefSpec, 0x85885722, result);
-    }
-    const RefSpec &frontend() const {
-        ATTRIB_CODEGEN_GETVALUE(RefSpec, 0x85885722);
-    }
-    bool SET_frontend(const RefSpec &input) {
-        ATTRIB_CODEGEN_SETVALUE(RefSpec, 0x85885722, input);
-    }
-    bool induction(TAttrib<RefSpec> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(RefSpec, 0xc92a0142);
-    }
-    bool induction(RefSpec &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(RefSpec, 0xc92a0142, result, index);
-    }
-    const RefSpec &induction(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(RefSpec, 0xc92a0142, index);
-    }
-    unsigned int Num_induction() const {
-        ATTRIB_CODEGEN_GETLENGTH(0xc92a0142);
-    }
-    bool SET_induction(const RefSpec &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(RefSpec, 0xc92a0142, input, index);
-    }
-    bool induction_current(TAttrib<EA::Reflection::Int32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x7f440672);
-    }
-    bool induction_current(EA::Reflection::Int32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x7f440672, result);
-    }
-    const EA::Reflection::Int32 &induction_current() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0x7f440672);
-    }
-    bool SET_induction_current(const EA::Reflection::Int32 &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x7f440672, input);
-    }
-    bool induction_upgrades(TAttrib<EA::Reflection::Int32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x7202e66e);
-    }
-    bool induction_upgrades(EA::Reflection::Int32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(induction_upgrades, result);
-    }
-    const EA::Reflection::Int32 &induction_upgrades() const {
-        ATTRIB_CODEGEN_GETLAYOUT(induction_upgrades);
-    }
-    bool SET_induction_upgrades(const EA::Reflection::Int32 &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(induction_upgrades, input);
-    }
-    bool junkman(TAttrib<RefSpec> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(RefSpec, 0x171737e9);
-    }
-    bool junkman(RefSpec &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(RefSpec, 0x171737e9, result);
-    }
-    const RefSpec &junkman() const {
-        ATTRIB_CODEGEN_GETVALUE(RefSpec, 0x171737e9);
-    }
-    bool SET_junkman(const RefSpec &input) {
-        ATTRIB_CODEGEN_SETVALUE(RefSpec, 0x171737e9, input);
-    }
-    bool junkman_current(TAttrib<EA::Reflection::Int32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0xcdc136e8);
-    }
-    bool junkman_current(EA::Reflection::Int32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0xcdc136e8, result);
-    }
-    const EA::Reflection::Int32 &junkman_current() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0xcdc136e8);
-    }
-    bool SET_junkman_current(const EA::Reflection::Int32 &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0xcdc136e8, input);
-    }
-    bool nos(TAttrib<RefSpec> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(RefSpec, 0xb1669f64);
-    }
-    bool nos(RefSpec &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(RefSpec, 0xb1669f64, result, index);
-    }
-    const RefSpec &nos(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(RefSpec, 0xb1669f64, index);
-    }
-    unsigned int Num_nos() const {
-        ATTRIB_CODEGEN_GETLENGTH(0xb1669f64);
-    }
-    bool SET_nos(const RefSpec &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(RefSpec, 0xb1669f64, input, index);
-    }
-    bool nos_current(TAttrib<EA::Reflection::Int32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x8f37beae);
-    }
-    bool nos_current(EA::Reflection::Int32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x8f37beae, result);
-    }
-    const EA::Reflection::Int32 &nos_current() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0x8f37beae);
-    }
-    bool SET_nos_current(const EA::Reflection::Int32 &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x8f37beae, input);
-    }
-    bool nos_upgrades(TAttrib<EA::Reflection::Int32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x9dc66e81);
-    }
-    bool nos_upgrades(EA::Reflection::Int32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(nos_upgrades, result);
-    }
-    const EA::Reflection::Int32 &nos_upgrades() const {
-        ATTRIB_CODEGEN_GETLAYOUT(nos_upgrades);
-    }
-    bool SET_nos_upgrades(const EA::Reflection::Int32 &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(nos_upgrades, input);
-    }
-    bool rigidbodyspecs(TAttrib<RefSpec> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(RefSpec, 0x7c90bb38);
-    }
-    bool rigidbodyspecs(RefSpec &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(RefSpec, 0x7c90bb38, result);
-    }
-    const RefSpec &rigidbodyspecs() const {
-        ATTRIB_CODEGEN_GETVALUE(RefSpec, 0x7c90bb38);
-    }
-    bool SET_rigidbodyspecs(const RefSpec &input) {
-        ATTRIB_CODEGEN_SETVALUE(RefSpec, 0x7c90bb38, input);
-    }
-    bool tires(TAttrib<RefSpec> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(RefSpec, 0xbd38d1ca);
-    }
-    bool tires(RefSpec &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(RefSpec, 0xbd38d1ca, result, index);
-    }
-    const RefSpec &tires(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(RefSpec, 0xbd38d1ca, index);
-    }
-    unsigned int Num_tires() const {
-        ATTRIB_CODEGEN_GETLENGTH(0xbd38d1ca);
-    }
-    bool SET_tires(const RefSpec &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(RefSpec, 0xbd38d1ca, input, index);
-    }
-    bool tires_current(TAttrib<EA::Reflection::Int32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x34e73f83);
-    }
-    bool tires_current(EA::Reflection::Int32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x34e73f83, result);
-    }
-    const EA::Reflection::Int32 &tires_current() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0x34e73f83);
-    }
-    bool SET_tires_current(const EA::Reflection::Int32 &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x34e73f83, input);
-    }
-    bool tires_upgrades(TAttrib<EA::Reflection::Int32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x75b0f76b);
-    }
-    bool tires_upgrades(EA::Reflection::Int32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(tires_upgrades, result);
-    }
-    const EA::Reflection::Int32 &tires_upgrades() const {
-        ATTRIB_CODEGEN_GETLAYOUT(tires_upgrades);
-    }
-    bool SET_tires_upgrades(const EA::Reflection::Int32 &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(tires_upgrades, input);
-    }
-    bool transmission(TAttrib<RefSpec> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(RefSpec, 0x07a7a3e5);
-    }
-    bool transmission(RefSpec &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(RefSpec, 0x07a7a3e5, result, index);
-    }
-    const RefSpec &transmission(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(RefSpec, 0x07a7a3e5, index);
-    }
-    unsigned int Num_transmission() const {
-        ATTRIB_CODEGEN_GETLENGTH(0x07a7a3e5);
-    }
-    bool SET_transmission(const RefSpec &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(RefSpec, 0x07a7a3e5, input, index);
-    }
-    bool transmission_current(TAttrib<EA::Reflection::Int32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x170d5554);
-    }
-    bool transmission_current(EA::Reflection::Int32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x170d5554, result);
-    }
-    const EA::Reflection::Int32 &transmission_current() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0x170d5554);
-    }
-    bool SET_transmission_current(const EA::Reflection::Int32 &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x170d5554, input);
-    }
-    bool transmission_upgrades(TAttrib<EA::Reflection::Int32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x860e4531);
-    }
-    bool transmission_upgrades(EA::Reflection::Int32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(transmission_upgrades, result);
-    }
-    const EA::Reflection::Int32 &transmission_upgrades() const {
-        ATTRIB_CODEGEN_GETLAYOUT(transmission_upgrades);
-    }
-    bool SET_transmission_upgrades(const EA::Reflection::Int32 &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(transmission_upgrades, input);
-    }
+    bool BEHAVIOR_MECHANIC_AUDIO(TAttrib<Attrib::StringKey> &result) const;
+    bool BEHAVIOR_MECHANIC_AUDIO(Attrib::StringKey &result) const;
+    const Attrib::StringKey &BEHAVIOR_MECHANIC_AUDIO() const;
+    bool SET_BEHAVIOR_MECHANIC_AUDIO(const Attrib::StringKey &input);
+
+    bool BEHAVIOR_MECHANIC_DAMAGE(TAttrib<Attrib::StringKey> &result) const;
+    bool BEHAVIOR_MECHANIC_DAMAGE(Attrib::StringKey &result) const;
+    const Attrib::StringKey &BEHAVIOR_MECHANIC_DAMAGE() const;
+    bool SET_BEHAVIOR_MECHANIC_DAMAGE(const Attrib::StringKey &input);
+
+    bool BEHAVIOR_MECHANIC_DRAW(TAttrib<Attrib::StringKey> &result) const;
+    bool BEHAVIOR_MECHANIC_DRAW(Attrib::StringKey &result) const;
+    const Attrib::StringKey &BEHAVIOR_MECHANIC_DRAW() const;
+    bool SET_BEHAVIOR_MECHANIC_DRAW(const Attrib::StringKey &input);
+
+    bool BEHAVIOR_MECHANIC_EFFECTS(TAttrib<Attrib::StringKey> &result) const;
+    bool BEHAVIOR_MECHANIC_EFFECTS(Attrib::StringKey &result) const;
+    const Attrib::StringKey &BEHAVIOR_MECHANIC_EFFECTS() const;
+    bool SET_BEHAVIOR_MECHANIC_EFFECTS(const Attrib::StringKey &input);
+
+    bool BEHAVIOR_MECHANIC_ENGINE(TAttrib<Attrib::StringKey> &result) const;
+    bool BEHAVIOR_MECHANIC_ENGINE(Attrib::StringKey &result) const;
+    const Attrib::StringKey &BEHAVIOR_MECHANIC_ENGINE() const;
+    bool SET_BEHAVIOR_MECHANIC_ENGINE(const Attrib::StringKey &input);
+
+    bool BEHAVIOR_MECHANIC_INPUT(TAttrib<Attrib::StringKey> &result) const;
+    bool BEHAVIOR_MECHANIC_INPUT(Attrib::StringKey &result) const;
+    const Attrib::StringKey &BEHAVIOR_MECHANIC_INPUT() const;
+    bool SET_BEHAVIOR_MECHANIC_INPUT(const Attrib::StringKey &input);
+
+    bool BEHAVIOR_MECHANIC_RESET(TAttrib<Attrib::StringKey> &result) const;
+    bool BEHAVIOR_MECHANIC_RESET(Attrib::StringKey &result) const;
+    const Attrib::StringKey &BEHAVIOR_MECHANIC_RESET() const;
+    bool SET_BEHAVIOR_MECHANIC_RESET(const Attrib::StringKey &input);
+
+    bool BEHAVIOR_MECHANIC_RIGIDBODY(TAttrib<Attrib::StringKey> &result) const;
+    bool BEHAVIOR_MECHANIC_RIGIDBODY(Attrib::StringKey &result) const;
+    const Attrib::StringKey &BEHAVIOR_MECHANIC_RIGIDBODY() const;
+    bool SET_BEHAVIOR_MECHANIC_RIGIDBODY(const Attrib::StringKey &input);
+
+    bool BEHAVIOR_MECHANIC_SUSPENSION(TAttrib<Attrib::StringKey> &result) const;
+    bool BEHAVIOR_MECHANIC_SUSPENSION(Attrib::StringKey &result) const;
+    const Attrib::StringKey &BEHAVIOR_MECHANIC_SUSPENSION() const;
+    bool SET_BEHAVIOR_MECHANIC_SUSPENSION(const Attrib::StringKey &input);
+
+    bool BEHAVIOR_ORDER(TAttrib<Attrib::StringKey> &result) const;
+    bool BEHAVIOR_ORDER(Attrib::StringKey &result, unsigned int index) const;
+    const Attrib::StringKey &BEHAVIOR_ORDER(unsigned int index) const;
+    unsigned int Num_BEHAVIOR_ORDER() const;
+    bool SET_BEHAVIOR_ORDER(const Attrib::StringKey &input, unsigned int index);
+
+    bool CLASS(TAttrib<Attrib::StringKey> &result) const;
+    bool CLASS(Attrib::StringKey &result) const;
+    const Attrib::StringKey &CLASS() const;
+    bool SET_CLASS(const Attrib::StringKey &input);
+
+    bool CollectionName(TAttrib<EA::Reflection::Text> &result) const;
+    bool CollectionName(EA::Reflection::Text &result) const;
+    const EA::Reflection::Text &CollectionName() const;
+    bool SET_CollectionName(const EA::Reflection::Text &input);
+
+    bool DefaultPresetRide(TAttrib<EA::Reflection::Text> &result) const;
+    bool DefaultPresetRide(EA::Reflection::Text &result) const;
+    const EA::Reflection::Text &DefaultPresetRide() const;
+    bool SET_DefaultPresetRide(const EA::Reflection::Text &input);
+
+    bool EventSequencer(TAttrib<Attrib::StringKey> &result) const;
+    bool EventSequencer(Attrib::StringKey &result) const;
+    const Attrib::StringKey &EventSequencer() const;
+    bool SET_EventSequencer(const Attrib::StringKey &input);
+
+    bool HandlingRating(TAttrib<EA::Reflection::Float> &result) const;
+    bool HandlingRating(EA::Reflection::Float &result, unsigned int index) const;
+    const EA::Reflection::Float &HandlingRating(unsigned int index) const;
+    unsigned int Num_HandlingRating() const;
+    bool SET_HandlingRating(const EA::Reflection::Float &input, unsigned int index);
+
+    bool HornType(TAttrib<EA::Reflection::UInt8> &result) const;
+    bool HornType(EA::Reflection::UInt8 &result) const;
+    const EA::Reflection::UInt8 &HornType() const;
+    bool SET_HornType(const EA::Reflection::UInt8 &input);
+
+    bool MASS(TAttrib<EA::Reflection::Float> &result) const;
+    bool MASS(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &MASS() const;
+    bool SET_MASS(const EA::Reflection::Float &input);
+
+    bool MODEL(TAttrib<Attrib::StringKey> &result) const;
+    bool MODEL(Attrib::StringKey &result) const;
+    const Attrib::StringKey &MODEL() const;
+    bool SET_MODEL(const Attrib::StringKey &input);
+
+    bool OnBottomOut(TAttrib<EffectLinkageRecord> &result) const;
+    bool OnBottomOut(EffectLinkageRecord &result, unsigned int index) const;
+    const EffectLinkageRecord &OnBottomOut(unsigned int index) const;
+    unsigned int Num_OnBottomOut() const;
+    bool SET_OnBottomOut(const EffectLinkageRecord &input, unsigned int index);
+
+    bool OnBottomScrape(TAttrib<EffectLinkageRecord> &result) const;
+    bool OnBottomScrape(EffectLinkageRecord &result, unsigned int index) const;
+    const EffectLinkageRecord &OnBottomScrape(unsigned int index) const;
+    unsigned int Num_OnBottomScrape() const;
+    bool SET_OnBottomScrape(const EffectLinkageRecord &input, unsigned int index);
+
+    bool OnHitGround(TAttrib<EffectLinkageRecord> &result) const;
+    bool OnHitGround(EffectLinkageRecord &result, unsigned int index) const;
+    const EffectLinkageRecord &OnHitGround(unsigned int index) const;
+    unsigned int Num_OnHitGround() const;
+    bool SET_OnHitGround(const EffectLinkageRecord &input, unsigned int index);
+
+    bool OnHitObject(TAttrib<EffectLinkageRecord> &result) const;
+    bool OnHitObject(EffectLinkageRecord &result, unsigned int index) const;
+    const EffectLinkageRecord &OnHitObject(unsigned int index) const;
+    unsigned int Num_OnHitObject() const;
+    bool SET_OnHitObject(const EffectLinkageRecord &input, unsigned int index);
+
+    bool OnHitWorld(TAttrib<EffectLinkageRecord> &result) const;
+    bool OnHitWorld(EffectLinkageRecord &result, unsigned int index) const;
+    const EffectLinkageRecord &OnHitWorld(unsigned int index) const;
+    unsigned int Num_OnHitWorld() const;
+    bool SET_OnHitWorld(const EffectLinkageRecord &input, unsigned int index);
+
+    bool OnScrapeGround(TAttrib<EffectLinkageRecord> &result) const;
+    bool OnScrapeGround(EffectLinkageRecord &result, unsigned int index) const;
+    const EffectLinkageRecord &OnScrapeGround(unsigned int index) const;
+    unsigned int Num_OnScrapeGround() const;
+    bool SET_OnScrapeGround(const EffectLinkageRecord &input, unsigned int index);
+
+    bool OnScrapeObject(TAttrib<EffectLinkageRecord> &result) const;
+    bool OnScrapeObject(EffectLinkageRecord &result, unsigned int index) const;
+    const EffectLinkageRecord &OnScrapeObject(unsigned int index) const;
+    unsigned int Num_OnScrapeObject() const;
+    bool SET_OnScrapeObject(const EffectLinkageRecord &input, unsigned int index);
+
+    bool OnScrapeWorld(TAttrib<EffectLinkageRecord> &result) const;
+    bool OnScrapeWorld(EffectLinkageRecord &result, unsigned int index) const;
+    const EffectLinkageRecord &OnScrapeWorld(unsigned int index) const;
+    unsigned int Num_OnScrapeWorld() const;
+    bool SET_OnScrapeWorld(const EffectLinkageRecord &input, unsigned int index);
+
+    bool OnTireBlow(TAttrib<RefSpec> &result) const;
+    bool OnTireBlow(RefSpec &result) const;
+    const RefSpec &OnTireBlow() const;
+    bool SET_OnTireBlow(const RefSpec &input);
+
+    bool PlayerUsable(TAttrib<EA::Reflection::Bool> &result) const;
+    bool PlayerUsable(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &PlayerUsable() const;
+    bool SET_PlayerUsable(const EA::Reflection::Bool &input);
+
+    bool RandomOpponent(TAttrib<EA::Reflection::Bool> &result) const;
+    bool RandomOpponent(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &RandomOpponent() const;
+    bool SET_RandomOpponent(const EA::Reflection::Bool &input);
+
+    bool ShiftSND(TAttrib<UpgradeSpecs> &result) const;
+    bool ShiftSND(UpgradeSpecs &result, unsigned int index) const;
+    const UpgradeSpecs &ShiftSND(unsigned int index) const;
+    unsigned int Num_ShiftSND() const;
+    bool SET_ShiftSND(const UpgradeSpecs &input, unsigned int index);
+
+    bool TENSOR_SCALE(TAttrib<UMath::Vector4> &result) const;
+    bool TENSOR_SCALE(UMath::Vector4 &result) const;
+    const UMath::Vector4 &TENSOR_SCALE() const;
+    bool SET_TENSOR_SCALE(const UMath::Vector4 &input);
+
+    bool TrafficEngType(TAttrib<EA::Reflection::UInt8> &result) const;
+    bool TrafficEngType(EA::Reflection::UInt8 &result) const;
+    const EA::Reflection::UInt8 &TrafficEngType() const;
+    bool SET_TrafficEngType(const EA::Reflection::UInt8 &input);
+
+    bool Trailer(TAttrib<RefSpec> &result) const;
+    bool Trailer(RefSpec &result) const;
+    const RefSpec &Trailer() const;
+    bool SET_Trailer(const RefSpec &input);
+
+    bool TruckSndFX(TAttrib<EA::Reflection::Bool> &result) const;
+    bool TruckSndFX(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &TruckSndFX() const;
+    bool SET_TruckSndFX(const EA::Reflection::Bool &input);
+
+    bool TurboSND(TAttrib<UpgradeSpecs> &result) const;
+    bool TurboSND(UpgradeSpecs &result, unsigned int index) const;
+    const UpgradeSpecs &TurboSND(unsigned int index) const;
+    unsigned int Num_TurboSND() const;
+    bool SET_TurboSND(const UpgradeSpecs &input, unsigned int index);
+
+    bool VerbalType(TAttrib<Csis::Type_car_type> &result) const;
+    bool VerbalType(Csis::Type_car_type &result) const;
+    const Csis::Type_car_type &VerbalType() const;
+    bool SET_VerbalType(const Csis::Type_car_type &input);
+
+    bool WooshType(TAttrib<eDRIVE_BY_TYPE> &result) const;
+    bool WooshType(eDRIVE_BY_TYPE &result) const;
+    const eDRIVE_BY_TYPE &WooshType() const;
+    bool SET_WooshType(const eDRIVE_BY_TYPE &input);
+
+    bool aivehicle(TAttrib<RefSpec> &result) const;
+    bool aivehicle(RefSpec &result) const;
+    const RefSpec &aivehicle() const;
+    bool SET_aivehicle(const RefSpec &input);
+
+    bool brakes(TAttrib<RefSpec> &result) const;
+    bool brakes(RefSpec &result, unsigned int index) const;
+    const RefSpec &brakes(unsigned int index) const;
+    unsigned int Num_brakes() const;
+    bool SET_brakes(const RefSpec &input, unsigned int index);
+
+    bool brakes_current(TAttrib<EA::Reflection::Int32> &result) const;
+    bool brakes_current(EA::Reflection::Int32 &result) const;
+    const EA::Reflection::Int32 &brakes_current() const;
+    bool SET_brakes_current(const EA::Reflection::Int32 &input);
+
+    bool brakes_upgrades(TAttrib<EA::Reflection::Int32> &result) const;
+    bool brakes_upgrades(EA::Reflection::Int32 &result) const;
+    const EA::Reflection::Int32 &brakes_upgrades() const;
+    bool SET_brakes_upgrades(const EA::Reflection::Int32 &input);
+
+    bool chassis(TAttrib<RefSpec> &result) const;
+    bool chassis(RefSpec &result, unsigned int index) const;
+    const RefSpec &chassis(unsigned int index) const;
+    unsigned int Num_chassis() const;
+    bool SET_chassis(const RefSpec &input, unsigned int index);
+
+    bool chassis_current(TAttrib<EA::Reflection::Int32> &result) const;
+    bool chassis_current(EA::Reflection::Int32 &result) const;
+    const EA::Reflection::Int32 &chassis_current() const;
+    bool SET_chassis_current(const EA::Reflection::Int32 &input);
+
+    bool chassis_upgrades(TAttrib<EA::Reflection::Int32> &result) const;
+    bool chassis_upgrades(EA::Reflection::Int32 &result) const;
+    const EA::Reflection::Int32 &chassis_upgrades() const;
+    bool SET_chassis_upgrades(const EA::Reflection::Int32 &input);
+
+    bool chopperspecs(TAttrib<RefSpec> &result) const;
+    bool chopperspecs(RefSpec &result) const;
+    const RefSpec &chopperspecs() const;
+    bool SET_chopperspecs(const RefSpec &input);
+
+    bool damagespecs(TAttrib<RefSpec> &result) const;
+    bool damagespecs(RefSpec &result) const;
+    const RefSpec &damagespecs() const;
+    bool SET_damagespecs(const RefSpec &input);
+
+    bool engine(TAttrib<RefSpec> &result) const;
+    bool engine(RefSpec &result, unsigned int index) const;
+    const RefSpec &engine(unsigned int index) const;
+    unsigned int Num_engine() const;
+    bool SET_engine(const RefSpec &input, unsigned int index);
+
+    bool engine_current(TAttrib<EA::Reflection::Int32> &result) const;
+    bool engine_current(EA::Reflection::Int32 &result) const;
+    const EA::Reflection::Int32 &engine_current() const;
+    bool SET_engine_current(const EA::Reflection::Int32 &input);
+
+    bool engine_upgrades(TAttrib<EA::Reflection::Int32> &result) const;
+    bool engine_upgrades(EA::Reflection::Int32 &result) const;
+    const EA::Reflection::Int32 &engine_upgrades() const;
+    bool SET_engine_upgrades(const EA::Reflection::Int32 &input);
+
+    bool engineaudio(TAttrib<RefSpec> &result) const;
+    bool engineaudio(RefSpec &result, unsigned int index) const;
+    const RefSpec &engineaudio(unsigned int index) const;
+    unsigned int Num_engineaudio() const;
+    bool SET_engineaudio(const RefSpec &input, unsigned int index);
+
+    bool frontend(TAttrib<RefSpec> &result) const;
+    bool frontend(RefSpec &result) const;
+    const RefSpec &frontend() const;
+    bool SET_frontend(const RefSpec &input);
+
+    bool induction(TAttrib<RefSpec> &result) const;
+    bool induction(RefSpec &result, unsigned int index) const;
+    const RefSpec &induction(unsigned int index) const;
+    unsigned int Num_induction() const;
+    bool SET_induction(const RefSpec &input, unsigned int index);
+
+    bool induction_current(TAttrib<EA::Reflection::Int32> &result) const;
+    bool induction_current(EA::Reflection::Int32 &result) const;
+    const EA::Reflection::Int32 &induction_current() const;
+    bool SET_induction_current(const EA::Reflection::Int32 &input);
+
+    bool induction_upgrades(TAttrib<EA::Reflection::Int32> &result) const;
+    bool induction_upgrades(EA::Reflection::Int32 &result) const;
+    const EA::Reflection::Int32 &induction_upgrades() const;
+    bool SET_induction_upgrades(const EA::Reflection::Int32 &input);
+
+    bool junkman(TAttrib<RefSpec> &result) const;
+    bool junkman(RefSpec &result) const;
+    const RefSpec &junkman() const;
+    bool SET_junkman(const RefSpec &input);
+
+    bool junkman_current(TAttrib<EA::Reflection::Int32> &result) const;
+    bool junkman_current(EA::Reflection::Int32 &result) const;
+    const EA::Reflection::Int32 &junkman_current() const;
+    bool SET_junkman_current(const EA::Reflection::Int32 &input);
+
+    bool nos(TAttrib<RefSpec> &result) const;
+    bool nos(RefSpec &result, unsigned int index) const;
+    const RefSpec &nos(unsigned int index) const;
+    unsigned int Num_nos() const;
+    bool SET_nos(const RefSpec &input, unsigned int index);
+
+    bool nos_current(TAttrib<EA::Reflection::Int32> &result) const;
+    bool nos_current(EA::Reflection::Int32 &result) const;
+    const EA::Reflection::Int32 &nos_current() const;
+    bool SET_nos_current(const EA::Reflection::Int32 &input);
+
+    bool nos_upgrades(TAttrib<EA::Reflection::Int32> &result) const;
+    bool nos_upgrades(EA::Reflection::Int32 &result) const;
+    const EA::Reflection::Int32 &nos_upgrades() const;
+    bool SET_nos_upgrades(const EA::Reflection::Int32 &input);
+
+    bool rigidbodyspecs(TAttrib<RefSpec> &result) const;
+    bool rigidbodyspecs(RefSpec &result) const;
+    const RefSpec &rigidbodyspecs() const;
+    bool SET_rigidbodyspecs(const RefSpec &input);
+
+    bool tires(TAttrib<RefSpec> &result) const;
+    bool tires(RefSpec &result, unsigned int index) const;
+    const RefSpec &tires(unsigned int index) const;
+    unsigned int Num_tires() const;
+    bool SET_tires(const RefSpec &input, unsigned int index);
+
+    bool tires_current(TAttrib<EA::Reflection::Int32> &result) const;
+    bool tires_current(EA::Reflection::Int32 &result) const;
+    const EA::Reflection::Int32 &tires_current() const;
+    bool SET_tires_current(const EA::Reflection::Int32 &input);
+
+    bool tires_upgrades(TAttrib<EA::Reflection::Int32> &result) const;
+    bool tires_upgrades(EA::Reflection::Int32 &result) const;
+    const EA::Reflection::Int32 &tires_upgrades() const;
+    bool SET_tires_upgrades(const EA::Reflection::Int32 &input);
+
+    bool transmission(TAttrib<RefSpec> &result) const;
+    bool transmission(RefSpec &result, unsigned int index) const;
+    const RefSpec &transmission(unsigned int index) const;
+    unsigned int Num_transmission() const;
+    bool SET_transmission(const RefSpec &input, unsigned int index);
+
+    bool transmission_current(TAttrib<EA::Reflection::Int32> &result) const;
+    bool transmission_current(EA::Reflection::Int32 &result) const;
+    const EA::Reflection::Int32 &transmission_current() const;
+    bool SET_transmission_current(const EA::Reflection::Int32 &input);
+
+    bool transmission_upgrades(TAttrib<EA::Reflection::Int32> &result) const;
+    bool transmission_upgrades(EA::Reflection::Int32 &result) const;
+    const EA::Reflection::Int32 &transmission_upgrades() const;
+    bool SET_transmission_upgrades(const EA::Reflection::Int32 &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -1092,6 +589,939 @@ static const Key transmission_upgrades = 0x860e4531;
 
 inline Key Gen::pvehicle::ClassKey() {
     return ClassName::pvehicle;
+}
+
+inline bool Gen::pvehicle::BEHAVIOR_MECHANIC_AUDIO(TAttrib<Attrib::StringKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(Attrib::StringKey, 0xfb0b5be9);
+}
+inline const Attrib::StringKey &Gen::pvehicle::BEHAVIOR_MECHANIC_AUDIO() const {
+    ATTRIB_CODEGEN_GETVALUE(Attrib::StringKey, 0xfb0b5be9);
+}
+inline bool Gen::pvehicle::BEHAVIOR_MECHANIC_AUDIO(Attrib::StringKey &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(Attrib::StringKey, 0xfb0b5be9, result);
+}
+inline bool Gen::pvehicle::SET_BEHAVIOR_MECHANIC_AUDIO(const Attrib::StringKey &input) {
+    ATTRIB_CODEGEN_SETVALUE(Attrib::StringKey, 0xfb0b5be9, input);
+}
+
+inline bool Gen::pvehicle::BEHAVIOR_MECHANIC_DAMAGE(TAttrib<Attrib::StringKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(Attrib::StringKey, 0x858ed6e3);
+}
+inline const Attrib::StringKey &Gen::pvehicle::BEHAVIOR_MECHANIC_DAMAGE() const {
+    ATTRIB_CODEGEN_GETVALUE(Attrib::StringKey, 0x858ed6e3);
+}
+inline bool Gen::pvehicle::BEHAVIOR_MECHANIC_DAMAGE(Attrib::StringKey &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(Attrib::StringKey, 0x858ed6e3, result);
+}
+inline bool Gen::pvehicle::SET_BEHAVIOR_MECHANIC_DAMAGE(const Attrib::StringKey &input) {
+    ATTRIB_CODEGEN_SETVALUE(Attrib::StringKey, 0x858ed6e3, input);
+}
+
+inline bool Gen::pvehicle::BEHAVIOR_MECHANIC_DRAW(TAttrib<Attrib::StringKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(Attrib::StringKey, 0xb230ade1);
+}
+inline const Attrib::StringKey &Gen::pvehicle::BEHAVIOR_MECHANIC_DRAW() const {
+    ATTRIB_CODEGEN_GETVALUE(Attrib::StringKey, 0xb230ade1);
+}
+inline bool Gen::pvehicle::BEHAVIOR_MECHANIC_DRAW(Attrib::StringKey &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(Attrib::StringKey, 0xb230ade1, result);
+}
+inline bool Gen::pvehicle::SET_BEHAVIOR_MECHANIC_DRAW(const Attrib::StringKey &input) {
+    ATTRIB_CODEGEN_SETVALUE(Attrib::StringKey, 0xb230ade1, input);
+}
+
+inline bool Gen::pvehicle::BEHAVIOR_MECHANIC_EFFECTS(TAttrib<Attrib::StringKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(Attrib::StringKey, 0x59c2beb1);
+}
+inline const Attrib::StringKey &Gen::pvehicle::BEHAVIOR_MECHANIC_EFFECTS() const {
+    ATTRIB_CODEGEN_GETVALUE(Attrib::StringKey, 0x59c2beb1);
+}
+inline bool Gen::pvehicle::BEHAVIOR_MECHANIC_EFFECTS(Attrib::StringKey &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(Attrib::StringKey, 0x59c2beb1, result);
+}
+inline bool Gen::pvehicle::SET_BEHAVIOR_MECHANIC_EFFECTS(const Attrib::StringKey &input) {
+    ATTRIB_CODEGEN_SETVALUE(Attrib::StringKey, 0x59c2beb1, input);
+}
+
+inline bool Gen::pvehicle::BEHAVIOR_MECHANIC_ENGINE(TAttrib<Attrib::StringKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(Attrib::StringKey, 0xa3e13328);
+}
+inline const Attrib::StringKey &Gen::pvehicle::BEHAVIOR_MECHANIC_ENGINE() const {
+    ATTRIB_CODEGEN_GETVALUE(Attrib::StringKey, 0xa3e13328);
+}
+inline bool Gen::pvehicle::BEHAVIOR_MECHANIC_ENGINE(Attrib::StringKey &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(Attrib::StringKey, 0xa3e13328, result);
+}
+inline bool Gen::pvehicle::SET_BEHAVIOR_MECHANIC_ENGINE(const Attrib::StringKey &input) {
+    ATTRIB_CODEGEN_SETVALUE(Attrib::StringKey, 0xa3e13328, input);
+}
+
+inline bool Gen::pvehicle::BEHAVIOR_MECHANIC_INPUT(TAttrib<Attrib::StringKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(Attrib::StringKey, 0xc3fa0cc4);
+}
+inline const Attrib::StringKey &Gen::pvehicle::BEHAVIOR_MECHANIC_INPUT() const {
+    ATTRIB_CODEGEN_GETVALUE(Attrib::StringKey, 0xc3fa0cc4);
+}
+inline bool Gen::pvehicle::BEHAVIOR_MECHANIC_INPUT(Attrib::StringKey &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(Attrib::StringKey, 0xc3fa0cc4, result);
+}
+inline bool Gen::pvehicle::SET_BEHAVIOR_MECHANIC_INPUT(const Attrib::StringKey &input) {
+    ATTRIB_CODEGEN_SETVALUE(Attrib::StringKey, 0xc3fa0cc4, input);
+}
+
+inline bool Gen::pvehicle::BEHAVIOR_MECHANIC_RESET(TAttrib<Attrib::StringKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(Attrib::StringKey, 0x8013456f);
+}
+inline const Attrib::StringKey &Gen::pvehicle::BEHAVIOR_MECHANIC_RESET() const {
+    ATTRIB_CODEGEN_GETVALUE(Attrib::StringKey, 0x8013456f);
+}
+inline bool Gen::pvehicle::BEHAVIOR_MECHANIC_RESET(Attrib::StringKey &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(Attrib::StringKey, 0x8013456f, result);
+}
+inline bool Gen::pvehicle::SET_BEHAVIOR_MECHANIC_RESET(const Attrib::StringKey &input) {
+    ATTRIB_CODEGEN_SETVALUE(Attrib::StringKey, 0x8013456f, input);
+}
+
+inline bool Gen::pvehicle::BEHAVIOR_MECHANIC_RIGIDBODY(TAttrib<Attrib::StringKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(Attrib::StringKey, 0x8ba55001);
+}
+inline const Attrib::StringKey &Gen::pvehicle::BEHAVIOR_MECHANIC_RIGIDBODY() const {
+    ATTRIB_CODEGEN_GETVALUE(Attrib::StringKey, 0x8ba55001);
+}
+inline bool Gen::pvehicle::BEHAVIOR_MECHANIC_RIGIDBODY(Attrib::StringKey &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(Attrib::StringKey, 0x8ba55001, result);
+}
+inline bool Gen::pvehicle::SET_BEHAVIOR_MECHANIC_RIGIDBODY(const Attrib::StringKey &input) {
+    ATTRIB_CODEGEN_SETVALUE(Attrib::StringKey, 0x8ba55001, input);
+}
+
+inline bool Gen::pvehicle::BEHAVIOR_MECHANIC_SUSPENSION(TAttrib<Attrib::StringKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(Attrib::StringKey, 0x511abd7b);
+}
+inline const Attrib::StringKey &Gen::pvehicle::BEHAVIOR_MECHANIC_SUSPENSION() const {
+    ATTRIB_CODEGEN_GETVALUE(Attrib::StringKey, 0x511abd7b);
+}
+inline bool Gen::pvehicle::BEHAVIOR_MECHANIC_SUSPENSION(Attrib::StringKey &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(Attrib::StringKey, 0x511abd7b, result);
+}
+inline bool Gen::pvehicle::SET_BEHAVIOR_MECHANIC_SUSPENSION(const Attrib::StringKey &input) {
+    ATTRIB_CODEGEN_SETVALUE(Attrib::StringKey, 0x511abd7b, input);
+}
+
+inline bool Gen::pvehicle::BEHAVIOR_ORDER(TAttrib<Attrib::StringKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(Attrib::StringKey, 0x104e9d16);
+}
+inline const Attrib::StringKey &Gen::pvehicle::BEHAVIOR_ORDER(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(Attrib::StringKey, 0x104e9d16, index);
+}
+inline bool Gen::pvehicle::BEHAVIOR_ORDER(Attrib::StringKey &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(Attrib::StringKey, 0x104e9d16, result, index);
+}
+inline unsigned int Gen::pvehicle::Num_BEHAVIOR_ORDER() const {
+    ATTRIB_CODEGEN_GETLENGTH(0x104e9d16);
+}
+inline bool Gen::pvehicle::SET_BEHAVIOR_ORDER(const Attrib::StringKey &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(Attrib::StringKey, 0x104e9d16, input, index);
+}
+
+inline bool Gen::pvehicle::CLASS(TAttrib<Attrib::StringKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(Attrib::StringKey, 0x0ef6ddf2);
+}
+inline const Attrib::StringKey &Gen::pvehicle::CLASS() const {
+    ATTRIB_CODEGEN_GETVALUE(Attrib::StringKey, 0x0ef6ddf2);
+}
+inline bool Gen::pvehicle::CLASS(Attrib::StringKey &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(Attrib::StringKey, 0x0ef6ddf2, result);
+}
+inline bool Gen::pvehicle::SET_CLASS(const Attrib::StringKey &input) {
+    ATTRIB_CODEGEN_SETVALUE(Attrib::StringKey, 0x0ef6ddf2, input);
+}
+
+inline bool Gen::pvehicle::CollectionName(TAttrib<EA::Reflection::Text> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0x9ca1c8f9);
+}
+inline const EA::Reflection::Text &Gen::pvehicle::CollectionName() const {
+    ATTRIB_CODEGEN_GETLAYOUT(CollectionName);
+}
+inline bool Gen::pvehicle::CollectionName(EA::Reflection::Text &result) const {
+    result = CollectionName();
+    return true;
+}
+inline bool Gen::pvehicle::SET_CollectionName(const EA::Reflection::Text &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(CollectionName, input);
+}
+
+inline bool Gen::pvehicle::DefaultPresetRide(TAttrib<EA::Reflection::Text> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0xaa27e71c);
+}
+inline const EA::Reflection::Text &Gen::pvehicle::DefaultPresetRide() const {
+    ATTRIB_CODEGEN_GETLAYOUT(DefaultPresetRide);
+}
+inline bool Gen::pvehicle::DefaultPresetRide(EA::Reflection::Text &result) const {
+    result = DefaultPresetRide();
+    return true;
+}
+inline bool Gen::pvehicle::SET_DefaultPresetRide(const EA::Reflection::Text &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(DefaultPresetRide, input);
+}
+
+inline bool Gen::pvehicle::EventSequencer(TAttrib<Attrib::StringKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(Attrib::StringKey, 0x5aab860f);
+}
+inline const Attrib::StringKey &Gen::pvehicle::EventSequencer() const {
+    ATTRIB_CODEGEN_GETVALUE(Attrib::StringKey, 0x5aab860f);
+}
+inline bool Gen::pvehicle::EventSequencer(Attrib::StringKey &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(Attrib::StringKey, 0x5aab860f, result);
+}
+inline bool Gen::pvehicle::SET_EventSequencer(const Attrib::StringKey &input) {
+    ATTRIB_CODEGEN_SETVALUE(Attrib::StringKey, 0x5aab860f, input);
+}
+
+inline bool Gen::pvehicle::HandlingRating(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xaacbe2e7);
+}
+inline const EA::Reflection::Float &Gen::pvehicle::HandlingRating(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(EA::Reflection::Float, 0xaacbe2e7, index);
+}
+inline bool Gen::pvehicle::HandlingRating(EA::Reflection::Float &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(EA::Reflection::Float, 0xaacbe2e7, result, index);
+}
+inline unsigned int Gen::pvehicle::Num_HandlingRating() const {
+    ATTRIB_CODEGEN_GETLENGTH(0xaacbe2e7);
+}
+inline bool Gen::pvehicle::SET_HandlingRating(const EA::Reflection::Float &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(EA::Reflection::Float, 0xaacbe2e7, input, index);
+}
+
+inline bool Gen::pvehicle::HornType(TAttrib<EA::Reflection::UInt8> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::UInt8, 0xa481f8ff);
+}
+inline const EA::Reflection::UInt8 &Gen::pvehicle::HornType() const {
+    ATTRIB_CODEGEN_GETLAYOUT(HornType);
+}
+inline bool Gen::pvehicle::HornType(EA::Reflection::UInt8 &result) const {
+    result = HornType();
+    return true;
+}
+inline bool Gen::pvehicle::SET_HornType(const EA::Reflection::UInt8 &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(HornType, input);
+}
+
+inline bool Gen::pvehicle::MASS(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x4a56503d);
+}
+inline const EA::Reflection::Float &Gen::pvehicle::MASS() const {
+    ATTRIB_CODEGEN_GETLAYOUT(MASS);
+}
+inline bool Gen::pvehicle::MASS(EA::Reflection::Float &result) const {
+    result = MASS();
+    return true;
+}
+inline bool Gen::pvehicle::SET_MASS(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(MASS, input);
+}
+
+inline bool Gen::pvehicle::MODEL(TAttrib<Attrib::StringKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(Attrib::StringKey, 0x9047c9e0);
+}
+inline const Attrib::StringKey &Gen::pvehicle::MODEL() const {
+    ATTRIB_CODEGEN_GETLAYOUT(MODEL);
+}
+inline bool Gen::pvehicle::MODEL(Attrib::StringKey &result) const {
+    result = MODEL();
+    return true;
+}
+inline bool Gen::pvehicle::SET_MODEL(const Attrib::StringKey &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(MODEL, input);
+}
+
+inline bool Gen::pvehicle::OnBottomOut(TAttrib<EffectLinkageRecord> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EffectLinkageRecord, 0x31047ebc);
+}
+inline const EffectLinkageRecord &Gen::pvehicle::OnBottomOut(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(EffectLinkageRecord, 0x31047ebc, index);
+}
+inline bool Gen::pvehicle::OnBottomOut(EffectLinkageRecord &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(EffectLinkageRecord, 0x31047ebc, result, index);
+}
+inline unsigned int Gen::pvehicle::Num_OnBottomOut() const {
+    ATTRIB_CODEGEN_GETLENGTH(0x31047ebc);
+}
+inline bool Gen::pvehicle::SET_OnBottomOut(const EffectLinkageRecord &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(EffectLinkageRecord, 0x31047ebc, input, index);
+}
+
+inline bool Gen::pvehicle::OnBottomScrape(TAttrib<EffectLinkageRecord> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EffectLinkageRecord, 0xfc03ad6a);
+}
+inline const EffectLinkageRecord &Gen::pvehicle::OnBottomScrape(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(EffectLinkageRecord, 0xfc03ad6a, index);
+}
+inline bool Gen::pvehicle::OnBottomScrape(EffectLinkageRecord &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(EffectLinkageRecord, 0xfc03ad6a, result, index);
+}
+inline unsigned int Gen::pvehicle::Num_OnBottomScrape() const {
+    ATTRIB_CODEGEN_GETLENGTH(0xfc03ad6a);
+}
+inline bool Gen::pvehicle::SET_OnBottomScrape(const EffectLinkageRecord &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(EffectLinkageRecord, 0xfc03ad6a, input, index);
+}
+
+inline bool Gen::pvehicle::OnHitGround(TAttrib<EffectLinkageRecord> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EffectLinkageRecord, 0xd9c6cdfd);
+}
+inline const EffectLinkageRecord &Gen::pvehicle::OnHitGround(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(EffectLinkageRecord, 0xd9c6cdfd, index);
+}
+inline bool Gen::pvehicle::OnHitGround(EffectLinkageRecord &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(EffectLinkageRecord, 0xd9c6cdfd, result, index);
+}
+inline unsigned int Gen::pvehicle::Num_OnHitGround() const {
+    ATTRIB_CODEGEN_GETLENGTH(0xd9c6cdfd);
+}
+inline bool Gen::pvehicle::SET_OnHitGround(const EffectLinkageRecord &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(EffectLinkageRecord, 0xd9c6cdfd, input, index);
+}
+
+inline bool Gen::pvehicle::OnHitObject(TAttrib<EffectLinkageRecord> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EffectLinkageRecord, 0x18915735);
+}
+inline const EffectLinkageRecord &Gen::pvehicle::OnHitObject(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(EffectLinkageRecord, 0x18915735, index);
+}
+inline bool Gen::pvehicle::OnHitObject(EffectLinkageRecord &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(EffectLinkageRecord, 0x18915735, result, index);
+}
+inline unsigned int Gen::pvehicle::Num_OnHitObject() const {
+    ATTRIB_CODEGEN_GETLENGTH(0x18915735);
+}
+inline bool Gen::pvehicle::SET_OnHitObject(const EffectLinkageRecord &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(EffectLinkageRecord, 0x18915735, input, index);
+}
+
+inline bool Gen::pvehicle::OnHitWorld(TAttrib<EffectLinkageRecord> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EffectLinkageRecord, 0xe3167336);
+}
+inline const EffectLinkageRecord &Gen::pvehicle::OnHitWorld(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(EffectLinkageRecord, 0xe3167336, index);
+}
+inline bool Gen::pvehicle::OnHitWorld(EffectLinkageRecord &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(EffectLinkageRecord, 0xe3167336, result, index);
+}
+inline unsigned int Gen::pvehicle::Num_OnHitWorld() const {
+    ATTRIB_CODEGEN_GETLENGTH(0xe3167336);
+}
+inline bool Gen::pvehicle::SET_OnHitWorld(const EffectLinkageRecord &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(EffectLinkageRecord, 0xe3167336, input, index);
+}
+
+inline bool Gen::pvehicle::OnScrapeGround(TAttrib<EffectLinkageRecord> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EffectLinkageRecord, 0xdb823931);
+}
+inline const EffectLinkageRecord &Gen::pvehicle::OnScrapeGround(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(EffectLinkageRecord, 0xdb823931, index);
+}
+inline bool Gen::pvehicle::OnScrapeGround(EffectLinkageRecord &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(EffectLinkageRecord, 0xdb823931, result, index);
+}
+inline unsigned int Gen::pvehicle::Num_OnScrapeGround() const {
+    ATTRIB_CODEGEN_GETLENGTH(0xdb823931);
+}
+inline bool Gen::pvehicle::SET_OnScrapeGround(const EffectLinkageRecord &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(EffectLinkageRecord, 0xdb823931, input, index);
+}
+
+inline bool Gen::pvehicle::OnScrapeObject(TAttrib<EffectLinkageRecord> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EffectLinkageRecord, 0xdacb1c11);
+}
+inline const EffectLinkageRecord &Gen::pvehicle::OnScrapeObject(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(EffectLinkageRecord, 0xdacb1c11, index);
+}
+inline bool Gen::pvehicle::OnScrapeObject(EffectLinkageRecord &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(EffectLinkageRecord, 0xdacb1c11, result, index);
+}
+inline unsigned int Gen::pvehicle::Num_OnScrapeObject() const {
+    ATTRIB_CODEGEN_GETLENGTH(0xdacb1c11);
+}
+inline bool Gen::pvehicle::SET_OnScrapeObject(const EffectLinkageRecord &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(EffectLinkageRecord, 0xdacb1c11, input, index);
+}
+
+inline bool Gen::pvehicle::OnScrapeWorld(TAttrib<EffectLinkageRecord> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EffectLinkageRecord, 0x7100960c);
+}
+inline const EffectLinkageRecord &Gen::pvehicle::OnScrapeWorld(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(EffectLinkageRecord, 0x7100960c, index);
+}
+inline bool Gen::pvehicle::OnScrapeWorld(EffectLinkageRecord &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(EffectLinkageRecord, 0x7100960c, result, index);
+}
+inline unsigned int Gen::pvehicle::Num_OnScrapeWorld() const {
+    ATTRIB_CODEGEN_GETLENGTH(0x7100960c);
+}
+inline bool Gen::pvehicle::SET_OnScrapeWorld(const EffectLinkageRecord &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(EffectLinkageRecord, 0x7100960c, input, index);
+}
+
+inline bool Gen::pvehicle::OnTireBlow(TAttrib<RefSpec> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(RefSpec, 0xd42e792f);
+}
+inline const RefSpec &Gen::pvehicle::OnTireBlow() const {
+    ATTRIB_CODEGEN_GETVALUE(RefSpec, 0xd42e792f);
+}
+inline bool Gen::pvehicle::OnTireBlow(RefSpec &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(RefSpec, 0xd42e792f, result);
+}
+inline bool Gen::pvehicle::SET_OnTireBlow(const RefSpec &input) {
+    ATTRIB_CODEGEN_SETVALUE(RefSpec, 0xd42e792f, input);
+}
+
+inline bool Gen::pvehicle::PlayerUsable(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0xf099b6ac);
+}
+inline const EA::Reflection::Bool &Gen::pvehicle::PlayerUsable() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0xf099b6ac);
+}
+inline bool Gen::pvehicle::PlayerUsable(EA::Reflection::Bool &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0xf099b6ac, result);
+}
+inline bool Gen::pvehicle::SET_PlayerUsable(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0xf099b6ac, input);
+}
+
+inline bool Gen::pvehicle::RandomOpponent(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x6df0abfe);
+}
+inline const EA::Reflection::Bool &Gen::pvehicle::RandomOpponent() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x6df0abfe);
+}
+inline bool Gen::pvehicle::RandomOpponent(EA::Reflection::Bool &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x6df0abfe, result);
+}
+inline bool Gen::pvehicle::SET_RandomOpponent(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x6df0abfe, input);
+}
+
+inline bool Gen::pvehicle::ShiftSND(TAttrib<UpgradeSpecs> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(UpgradeSpecs, 0x8ae8bee0);
+}
+inline const UpgradeSpecs &Gen::pvehicle::ShiftSND(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(UpgradeSpecs, 0x8ae8bee0, index);
+}
+inline bool Gen::pvehicle::ShiftSND(UpgradeSpecs &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(UpgradeSpecs, 0x8ae8bee0, result, index);
+}
+inline unsigned int Gen::pvehicle::Num_ShiftSND() const {
+    ATTRIB_CODEGEN_GETLENGTH(0x8ae8bee0);
+}
+inline bool Gen::pvehicle::SET_ShiftSND(const UpgradeSpecs &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(UpgradeSpecs, 0x8ae8bee0, input, index);
+}
+
+inline bool Gen::pvehicle::TENSOR_SCALE(TAttrib<UMath::Vector4> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(UMath::Vector4, 0x868dffdd);
+}
+inline const UMath::Vector4 &Gen::pvehicle::TENSOR_SCALE() const {
+    ATTRIB_CODEGEN_GETLAYOUT(TENSOR_SCALE);
+}
+inline bool Gen::pvehicle::TENSOR_SCALE(UMath::Vector4 &result) const {
+    result = TENSOR_SCALE();
+    return true;
+}
+inline bool Gen::pvehicle::SET_TENSOR_SCALE(const UMath::Vector4 &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(TENSOR_SCALE, input);
+}
+
+inline bool Gen::pvehicle::TrafficEngType(TAttrib<EA::Reflection::UInt8> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::UInt8, 0x09af94ed);
+}
+inline const EA::Reflection::UInt8 &Gen::pvehicle::TrafficEngType() const {
+    ATTRIB_CODEGEN_GETLAYOUT(TrafficEngType);
+}
+inline bool Gen::pvehicle::TrafficEngType(EA::Reflection::UInt8 &result) const {
+    result = TrafficEngType();
+    return true;
+}
+inline bool Gen::pvehicle::SET_TrafficEngType(const EA::Reflection::UInt8 &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(TrafficEngType, input);
+}
+
+inline bool Gen::pvehicle::Trailer(TAttrib<RefSpec> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(RefSpec, 0x9a5537fe);
+}
+inline const RefSpec &Gen::pvehicle::Trailer() const {
+    ATTRIB_CODEGEN_GETVALUE(RefSpec, 0x9a5537fe);
+}
+inline bool Gen::pvehicle::Trailer(RefSpec &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(RefSpec, 0x9a5537fe, result);
+}
+inline bool Gen::pvehicle::SET_Trailer(const RefSpec &input) {
+    ATTRIB_CODEGEN_SETVALUE(RefSpec, 0x9a5537fe, input);
+}
+
+inline bool Gen::pvehicle::TruckSndFX(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0xeacb7696);
+}
+inline const EA::Reflection::Bool &Gen::pvehicle::TruckSndFX() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0xeacb7696);
+}
+inline bool Gen::pvehicle::TruckSndFX(EA::Reflection::Bool &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0xeacb7696, result);
+}
+inline bool Gen::pvehicle::SET_TruckSndFX(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0xeacb7696, input);
+}
+
+inline bool Gen::pvehicle::TurboSND(TAttrib<UpgradeSpecs> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(UpgradeSpecs, 0x0e9bfb66);
+}
+inline const UpgradeSpecs &Gen::pvehicle::TurboSND(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(UpgradeSpecs, 0x0e9bfb66, index);
+}
+inline bool Gen::pvehicle::TurboSND(UpgradeSpecs &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(UpgradeSpecs, 0x0e9bfb66, result, index);
+}
+inline unsigned int Gen::pvehicle::Num_TurboSND() const {
+    ATTRIB_CODEGEN_GETLENGTH(0x0e9bfb66);
+}
+inline bool Gen::pvehicle::SET_TurboSND(const UpgradeSpecs &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(UpgradeSpecs, 0x0e9bfb66, input, index);
+}
+
+inline bool Gen::pvehicle::VerbalType(TAttrib<Csis::Type_car_type> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(Csis::Type_car_type, 0x368a544c);
+}
+inline const Csis::Type_car_type &Gen::pvehicle::VerbalType() const {
+    ATTRIB_CODEGEN_GETLAYOUT(VerbalType);
+}
+inline bool Gen::pvehicle::VerbalType(Csis::Type_car_type &result) const {
+    result = VerbalType();
+    return true;
+}
+inline bool Gen::pvehicle::SET_VerbalType(const Csis::Type_car_type &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(VerbalType, input);
+}
+
+inline bool Gen::pvehicle::WooshType(TAttrib<eDRIVE_BY_TYPE> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(eDRIVE_BY_TYPE, 0x7e744600);
+}
+inline const eDRIVE_BY_TYPE &Gen::pvehicle::WooshType() const {
+    ATTRIB_CODEGEN_GETVALUE(eDRIVE_BY_TYPE, 0x7e744600);
+}
+inline bool Gen::pvehicle::WooshType(eDRIVE_BY_TYPE &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(eDRIVE_BY_TYPE, 0x7e744600, result);
+}
+inline bool Gen::pvehicle::SET_WooshType(const eDRIVE_BY_TYPE &input) {
+    ATTRIB_CODEGEN_SETVALUE(eDRIVE_BY_TYPE, 0x7e744600, input);
+}
+
+inline bool Gen::pvehicle::aivehicle(TAttrib<RefSpec> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(RefSpec, 0x22515733);
+}
+inline const RefSpec &Gen::pvehicle::aivehicle() const {
+    ATTRIB_CODEGEN_GETVALUE(RefSpec, 0x22515733);
+}
+inline bool Gen::pvehicle::aivehicle(RefSpec &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(RefSpec, 0x22515733, result);
+}
+inline bool Gen::pvehicle::SET_aivehicle(const RefSpec &input) {
+    ATTRIB_CODEGEN_SETVALUE(RefSpec, 0x22515733, input);
+}
+
+inline bool Gen::pvehicle::brakes(TAttrib<RefSpec> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(RefSpec, 0x36350867);
+}
+inline const RefSpec &Gen::pvehicle::brakes(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(RefSpec, 0x36350867, index);
+}
+inline bool Gen::pvehicle::brakes(RefSpec &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(RefSpec, 0x36350867, result, index);
+}
+inline unsigned int Gen::pvehicle::Num_brakes() const {
+    ATTRIB_CODEGEN_GETLENGTH(0x36350867);
+}
+inline bool Gen::pvehicle::SET_brakes(const RefSpec &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(RefSpec, 0x36350867, input, index);
+}
+
+inline bool Gen::pvehicle::brakes_current(TAttrib<EA::Reflection::Int32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x552c3d22);
+}
+inline const EA::Reflection::Int32 &Gen::pvehicle::brakes_current() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0x552c3d22);
+}
+inline bool Gen::pvehicle::brakes_current(EA::Reflection::Int32 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x552c3d22, result);
+}
+inline bool Gen::pvehicle::SET_brakes_current(const EA::Reflection::Int32 &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x552c3d22, input);
+}
+
+inline bool Gen::pvehicle::brakes_upgrades(TAttrib<EA::Reflection::Int32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x4e168120);
+}
+inline const EA::Reflection::Int32 &Gen::pvehicle::brakes_upgrades() const {
+    ATTRIB_CODEGEN_GETLAYOUT(brakes_upgrades);
+}
+inline bool Gen::pvehicle::brakes_upgrades(EA::Reflection::Int32 &result) const {
+    result = brakes_upgrades();
+    return true;
+}
+inline bool Gen::pvehicle::SET_brakes_upgrades(const EA::Reflection::Int32 &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(brakes_upgrades, input);
+}
+
+inline bool Gen::pvehicle::chassis(TAttrib<RefSpec> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(RefSpec, 0xafa210f0);
+}
+inline const RefSpec &Gen::pvehicle::chassis(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(RefSpec, 0xafa210f0, index);
+}
+inline bool Gen::pvehicle::chassis(RefSpec &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(RefSpec, 0xafa210f0, result, index);
+}
+inline unsigned int Gen::pvehicle::Num_chassis() const {
+    ATTRIB_CODEGEN_GETLENGTH(0xafa210f0);
+}
+inline bool Gen::pvehicle::SET_chassis(const RefSpec &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(RefSpec, 0xafa210f0, input, index);
+}
+
+inline bool Gen::pvehicle::chassis_current(TAttrib<EA::Reflection::Int32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x7845f9bc);
+}
+inline const EA::Reflection::Int32 &Gen::pvehicle::chassis_current() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0x7845f9bc);
+}
+inline bool Gen::pvehicle::chassis_current(EA::Reflection::Int32 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x7845f9bc, result);
+}
+inline bool Gen::pvehicle::SET_chassis_current(const EA::Reflection::Int32 &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x7845f9bc, input);
+}
+
+inline bool Gen::pvehicle::chassis_upgrades(TAttrib<EA::Reflection::Int32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0xf62a062d);
+}
+inline const EA::Reflection::Int32 &Gen::pvehicle::chassis_upgrades() const {
+    ATTRIB_CODEGEN_GETLAYOUT(chassis_upgrades);
+}
+inline bool Gen::pvehicle::chassis_upgrades(EA::Reflection::Int32 &result) const {
+    result = chassis_upgrades();
+    return true;
+}
+inline bool Gen::pvehicle::SET_chassis_upgrades(const EA::Reflection::Int32 &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(chassis_upgrades, input);
+}
+
+inline bool Gen::pvehicle::chopperspecs(TAttrib<RefSpec> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(RefSpec, 0x5d898ee7);
+}
+inline const RefSpec &Gen::pvehicle::chopperspecs() const {
+    ATTRIB_CODEGEN_GETVALUE(RefSpec, 0x5d898ee7);
+}
+inline bool Gen::pvehicle::chopperspecs(RefSpec &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(RefSpec, 0x5d898ee7, result);
+}
+inline bool Gen::pvehicle::SET_chopperspecs(const RefSpec &input) {
+    ATTRIB_CODEGEN_SETVALUE(RefSpec, 0x5d898ee7, input);
+}
+
+inline bool Gen::pvehicle::damagespecs(TAttrib<RefSpec> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(RefSpec, 0xc1f0b434);
+}
+inline const RefSpec &Gen::pvehicle::damagespecs() const {
+    ATTRIB_CODEGEN_GETVALUE(RefSpec, 0xc1f0b434);
+}
+inline bool Gen::pvehicle::damagespecs(RefSpec &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(RefSpec, 0xc1f0b434, result);
+}
+inline bool Gen::pvehicle::SET_damagespecs(const RefSpec &input) {
+    ATTRIB_CODEGEN_SETVALUE(RefSpec, 0xc1f0b434, input);
+}
+
+inline bool Gen::pvehicle::engine(TAttrib<RefSpec> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(RefSpec, 0xf1f5fbc7);
+}
+inline const RefSpec &Gen::pvehicle::engine(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(RefSpec, 0xf1f5fbc7, index);
+}
+inline bool Gen::pvehicle::engine(RefSpec &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(RefSpec, 0xf1f5fbc7, result, index);
+}
+inline unsigned int Gen::pvehicle::Num_engine() const {
+    ATTRIB_CODEGEN_GETLENGTH(0xf1f5fbc7);
+}
+inline bool Gen::pvehicle::SET_engine(const RefSpec &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(RefSpec, 0xf1f5fbc7, input, index);
+}
+
+inline bool Gen::pvehicle::engine_current(TAttrib<EA::Reflection::Int32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0xb12ccb69);
+}
+inline const EA::Reflection::Int32 &Gen::pvehicle::engine_current() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0xb12ccb69);
+}
+inline bool Gen::pvehicle::engine_current(EA::Reflection::Int32 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0xb12ccb69, result);
+}
+inline bool Gen::pvehicle::SET_engine_current(const EA::Reflection::Int32 &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0xb12ccb69, input);
+}
+
+inline bool Gen::pvehicle::engine_upgrades(TAttrib<EA::Reflection::Int32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x7708db25);
+}
+inline const EA::Reflection::Int32 &Gen::pvehicle::engine_upgrades() const {
+    ATTRIB_CODEGEN_GETLAYOUT(engine_upgrades);
+}
+inline bool Gen::pvehicle::engine_upgrades(EA::Reflection::Int32 &result) const {
+    result = engine_upgrades();
+    return true;
+}
+inline bool Gen::pvehicle::SET_engine_upgrades(const EA::Reflection::Int32 &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(engine_upgrades, input);
+}
+
+inline bool Gen::pvehicle::engineaudio(TAttrib<RefSpec> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(RefSpec, 0x50eab0e6);
+}
+inline const RefSpec &Gen::pvehicle::engineaudio(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(RefSpec, 0x50eab0e6, index);
+}
+inline bool Gen::pvehicle::engineaudio(RefSpec &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(RefSpec, 0x50eab0e6, result, index);
+}
+inline unsigned int Gen::pvehicle::Num_engineaudio() const {
+    ATTRIB_CODEGEN_GETLENGTH(0x50eab0e6);
+}
+inline bool Gen::pvehicle::SET_engineaudio(const RefSpec &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(RefSpec, 0x50eab0e6, input, index);
+}
+
+inline bool Gen::pvehicle::frontend(TAttrib<RefSpec> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(RefSpec, 0x85885722);
+}
+inline const RefSpec &Gen::pvehicle::frontend() const {
+    ATTRIB_CODEGEN_GETVALUE(RefSpec, 0x85885722);
+}
+inline bool Gen::pvehicle::frontend(RefSpec &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(RefSpec, 0x85885722, result);
+}
+inline bool Gen::pvehicle::SET_frontend(const RefSpec &input) {
+    ATTRIB_CODEGEN_SETVALUE(RefSpec, 0x85885722, input);
+}
+
+inline bool Gen::pvehicle::induction(TAttrib<RefSpec> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(RefSpec, 0xc92a0142);
+}
+inline const RefSpec &Gen::pvehicle::induction(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(RefSpec, 0xc92a0142, index);
+}
+inline bool Gen::pvehicle::induction(RefSpec &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(RefSpec, 0xc92a0142, result, index);
+}
+inline unsigned int Gen::pvehicle::Num_induction() const {
+    ATTRIB_CODEGEN_GETLENGTH(0xc92a0142);
+}
+inline bool Gen::pvehicle::SET_induction(const RefSpec &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(RefSpec, 0xc92a0142, input, index);
+}
+
+inline bool Gen::pvehicle::induction_current(TAttrib<EA::Reflection::Int32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x7f440672);
+}
+inline const EA::Reflection::Int32 &Gen::pvehicle::induction_current() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0x7f440672);
+}
+inline bool Gen::pvehicle::induction_current(EA::Reflection::Int32 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x7f440672, result);
+}
+inline bool Gen::pvehicle::SET_induction_current(const EA::Reflection::Int32 &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x7f440672, input);
+}
+
+inline bool Gen::pvehicle::induction_upgrades(TAttrib<EA::Reflection::Int32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x7202e66e);
+}
+inline const EA::Reflection::Int32 &Gen::pvehicle::induction_upgrades() const {
+    ATTRIB_CODEGEN_GETLAYOUT(induction_upgrades);
+}
+inline bool Gen::pvehicle::induction_upgrades(EA::Reflection::Int32 &result) const {
+    result = induction_upgrades();
+    return true;
+}
+inline bool Gen::pvehicle::SET_induction_upgrades(const EA::Reflection::Int32 &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(induction_upgrades, input);
+}
+
+inline bool Gen::pvehicle::junkman(TAttrib<RefSpec> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(RefSpec, 0x171737e9);
+}
+inline const RefSpec &Gen::pvehicle::junkman() const {
+    ATTRIB_CODEGEN_GETVALUE(RefSpec, 0x171737e9);
+}
+inline bool Gen::pvehicle::junkman(RefSpec &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(RefSpec, 0x171737e9, result);
+}
+inline bool Gen::pvehicle::SET_junkman(const RefSpec &input) {
+    ATTRIB_CODEGEN_SETVALUE(RefSpec, 0x171737e9, input);
+}
+
+inline bool Gen::pvehicle::junkman_current(TAttrib<EA::Reflection::Int32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0xcdc136e8);
+}
+inline const EA::Reflection::Int32 &Gen::pvehicle::junkman_current() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0xcdc136e8);
+}
+inline bool Gen::pvehicle::junkman_current(EA::Reflection::Int32 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0xcdc136e8, result);
+}
+inline bool Gen::pvehicle::SET_junkman_current(const EA::Reflection::Int32 &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0xcdc136e8, input);
+}
+
+inline bool Gen::pvehicle::nos(TAttrib<RefSpec> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(RefSpec, 0xb1669f64);
+}
+inline const RefSpec &Gen::pvehicle::nos(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(RefSpec, 0xb1669f64, index);
+}
+inline bool Gen::pvehicle::nos(RefSpec &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(RefSpec, 0xb1669f64, result, index);
+}
+inline unsigned int Gen::pvehicle::Num_nos() const {
+    ATTRIB_CODEGEN_GETLENGTH(0xb1669f64);
+}
+inline bool Gen::pvehicle::SET_nos(const RefSpec &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(RefSpec, 0xb1669f64, input, index);
+}
+
+inline bool Gen::pvehicle::nos_current(TAttrib<EA::Reflection::Int32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x8f37beae);
+}
+inline const EA::Reflection::Int32 &Gen::pvehicle::nos_current() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0x8f37beae);
+}
+inline bool Gen::pvehicle::nos_current(EA::Reflection::Int32 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x8f37beae, result);
+}
+inline bool Gen::pvehicle::SET_nos_current(const EA::Reflection::Int32 &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x8f37beae, input);
+}
+
+inline bool Gen::pvehicle::nos_upgrades(TAttrib<EA::Reflection::Int32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x9dc66e81);
+}
+inline const EA::Reflection::Int32 &Gen::pvehicle::nos_upgrades() const {
+    ATTRIB_CODEGEN_GETLAYOUT(nos_upgrades);
+}
+inline bool Gen::pvehicle::nos_upgrades(EA::Reflection::Int32 &result) const {
+    result = nos_upgrades();
+    return true;
+}
+inline bool Gen::pvehicle::SET_nos_upgrades(const EA::Reflection::Int32 &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(nos_upgrades, input);
+}
+
+inline bool Gen::pvehicle::rigidbodyspecs(TAttrib<RefSpec> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(RefSpec, 0x7c90bb38);
+}
+inline const RefSpec &Gen::pvehicle::rigidbodyspecs() const {
+    ATTRIB_CODEGEN_GETVALUE(RefSpec, 0x7c90bb38);
+}
+inline bool Gen::pvehicle::rigidbodyspecs(RefSpec &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(RefSpec, 0x7c90bb38, result);
+}
+inline bool Gen::pvehicle::SET_rigidbodyspecs(const RefSpec &input) {
+    ATTRIB_CODEGEN_SETVALUE(RefSpec, 0x7c90bb38, input);
+}
+
+inline bool Gen::pvehicle::tires(TAttrib<RefSpec> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(RefSpec, 0xbd38d1ca);
+}
+inline const RefSpec &Gen::pvehicle::tires(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(RefSpec, 0xbd38d1ca, index);
+}
+inline bool Gen::pvehicle::tires(RefSpec &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(RefSpec, 0xbd38d1ca, result, index);
+}
+inline unsigned int Gen::pvehicle::Num_tires() const {
+    ATTRIB_CODEGEN_GETLENGTH(0xbd38d1ca);
+}
+inline bool Gen::pvehicle::SET_tires(const RefSpec &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(RefSpec, 0xbd38d1ca, input, index);
+}
+
+inline bool Gen::pvehicle::tires_current(TAttrib<EA::Reflection::Int32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x34e73f83);
+}
+inline const EA::Reflection::Int32 &Gen::pvehicle::tires_current() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0x34e73f83);
+}
+inline bool Gen::pvehicle::tires_current(EA::Reflection::Int32 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x34e73f83, result);
+}
+inline bool Gen::pvehicle::SET_tires_current(const EA::Reflection::Int32 &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x34e73f83, input);
+}
+
+inline bool Gen::pvehicle::tires_upgrades(TAttrib<EA::Reflection::Int32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x75b0f76b);
+}
+inline const EA::Reflection::Int32 &Gen::pvehicle::tires_upgrades() const {
+    ATTRIB_CODEGEN_GETLAYOUT(tires_upgrades);
+}
+inline bool Gen::pvehicle::tires_upgrades(EA::Reflection::Int32 &result) const {
+    result = tires_upgrades();
+    return true;
+}
+inline bool Gen::pvehicle::SET_tires_upgrades(const EA::Reflection::Int32 &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(tires_upgrades, input);
+}
+
+inline bool Gen::pvehicle::transmission(TAttrib<RefSpec> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(RefSpec, 0x07a7a3e5);
+}
+inline const RefSpec &Gen::pvehicle::transmission(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(RefSpec, 0x07a7a3e5, index);
+}
+inline bool Gen::pvehicle::transmission(RefSpec &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(RefSpec, 0x07a7a3e5, result, index);
+}
+inline unsigned int Gen::pvehicle::Num_transmission() const {
+    ATTRIB_CODEGEN_GETLENGTH(0x07a7a3e5);
+}
+inline bool Gen::pvehicle::SET_transmission(const RefSpec &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(RefSpec, 0x07a7a3e5, input, index);
+}
+
+inline bool Gen::pvehicle::transmission_current(TAttrib<EA::Reflection::Int32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x170d5554);
+}
+inline const EA::Reflection::Int32 &Gen::pvehicle::transmission_current() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0x170d5554);
+}
+inline bool Gen::pvehicle::transmission_current(EA::Reflection::Int32 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x170d5554, result);
+}
+inline bool Gen::pvehicle::SET_transmission_current(const EA::Reflection::Int32 &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x170d5554, input);
+}
+
+inline bool Gen::pvehicle::transmission_upgrades(TAttrib<EA::Reflection::Int32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x860e4531);
+}
+inline const EA::Reflection::Int32 &Gen::pvehicle::transmission_upgrades() const {
+    ATTRIB_CODEGEN_GETLAYOUT(transmission_upgrades);
+}
+inline bool Gen::pvehicle::transmission_upgrades(EA::Reflection::Int32 &result) const {
+    result = transmission_upgrades();
+    return true;
+}
+inline bool Gen::pvehicle::SET_transmission_upgrades(const EA::Reflection::Int32 &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(transmission_upgrades, input);
 }
 
 }; // namespace Attrib

@@ -74,54 +74,25 @@ struct milestonetypes : Instance {
         Instance::operator=(rhs);
         return *this;
     }
-    bool CollectionName(TAttrib<EA::Reflection::Text> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0x9ca1c8f9);
-    }
-    bool CollectionName(EA::Reflection::Text &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(CollectionName, result);
-    }
-    const EA::Reflection::Text &CollectionName() const {
-        ATTRIB_CODEGEN_GETLAYOUT(CollectionName);
-    }
-    bool SET_CollectionName(const EA::Reflection::Text &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(CollectionName, input);
-    }
-    bool LocalizationTag(TAttrib<EA::Reflection::Int32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0xdb89ab5c);
-    }
-    bool LocalizationTag(EA::Reflection::Int32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0xdb89ab5c, result);
-    }
-    const EA::Reflection::Int32 &LocalizationTag() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0xdb89ab5c);
-    }
-    bool SET_LocalizationTag(const EA::Reflection::Int32 &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0xdb89ab5c, input);
-    }
-    bool MilestoneType(TAttrib<EA::Reflection::Int32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x16df392a);
-    }
-    bool MilestoneType(EA::Reflection::Int32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(MilestoneType, result);
-    }
-    const EA::Reflection::Int32 &MilestoneType() const {
-        ATTRIB_CODEGEN_GETLAYOUT(MilestoneType);
-    }
-    bool SET_MilestoneType(const EA::Reflection::Int32 &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(MilestoneType, input);
-    }
-    bool ResetWhenPursuitStarts(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0xab4a196f);
-    }
-    bool ResetWhenPursuitStarts(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0xab4a196f, result);
-    }
-    const EA::Reflection::Bool &ResetWhenPursuitStarts() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0xab4a196f);
-    }
-    bool SET_ResetWhenPursuitStarts(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0xab4a196f, input);
-    }
+    bool CollectionName(TAttrib<EA::Reflection::Text> &result) const;
+    bool CollectionName(EA::Reflection::Text &result) const;
+    const EA::Reflection::Text &CollectionName() const;
+    bool SET_CollectionName(const EA::Reflection::Text &input);
+
+    bool LocalizationTag(TAttrib<EA::Reflection::Int32> &result) const;
+    bool LocalizationTag(EA::Reflection::Int32 &result) const;
+    const EA::Reflection::Int32 &LocalizationTag() const;
+    bool SET_LocalizationTag(const EA::Reflection::Int32 &input);
+
+    bool MilestoneType(TAttrib<EA::Reflection::Int32> &result) const;
+    bool MilestoneType(EA::Reflection::Int32 &result) const;
+    const EA::Reflection::Int32 &MilestoneType() const;
+    bool SET_MilestoneType(const EA::Reflection::Int32 &input);
+
+    bool ResetWhenPursuitStarts(TAttrib<EA::Reflection::Bool> &result) const;
+    bool ResetWhenPursuitStarts(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &ResetWhenPursuitStarts() const;
+    bool SET_ResetWhenPursuitStarts(const EA::Reflection::Bool &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -151,6 +122,60 @@ static const Key ResetWhenPursuitStarts = 0xab4a196f;
 
 inline Key Gen::milestonetypes::ClassKey() {
     return ClassName::milestonetypes;
+}
+
+inline bool Gen::milestonetypes::CollectionName(TAttrib<EA::Reflection::Text> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0x9ca1c8f9);
+}
+inline const EA::Reflection::Text &Gen::milestonetypes::CollectionName() const {
+    ATTRIB_CODEGEN_GETLAYOUT(CollectionName);
+}
+inline bool Gen::milestonetypes::CollectionName(EA::Reflection::Text &result) const {
+    result = CollectionName();
+    return true;
+}
+inline bool Gen::milestonetypes::SET_CollectionName(const EA::Reflection::Text &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(CollectionName, input);
+}
+
+inline bool Gen::milestonetypes::LocalizationTag(TAttrib<EA::Reflection::Int32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0xdb89ab5c);
+}
+inline const EA::Reflection::Int32 &Gen::milestonetypes::LocalizationTag() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0xdb89ab5c);
+}
+inline bool Gen::milestonetypes::LocalizationTag(EA::Reflection::Int32 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0xdb89ab5c, result);
+}
+inline bool Gen::milestonetypes::SET_LocalizationTag(const EA::Reflection::Int32 &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0xdb89ab5c, input);
+}
+
+inline bool Gen::milestonetypes::MilestoneType(TAttrib<EA::Reflection::Int32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x16df392a);
+}
+inline const EA::Reflection::Int32 &Gen::milestonetypes::MilestoneType() const {
+    ATTRIB_CODEGEN_GETLAYOUT(MilestoneType);
+}
+inline bool Gen::milestonetypes::MilestoneType(EA::Reflection::Int32 &result) const {
+    result = MilestoneType();
+    return true;
+}
+inline bool Gen::milestonetypes::SET_MilestoneType(const EA::Reflection::Int32 &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(MilestoneType, input);
+}
+
+inline bool Gen::milestonetypes::ResetWhenPursuitStarts(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0xab4a196f);
+}
+inline const EA::Reflection::Bool &Gen::milestonetypes::ResetWhenPursuitStarts() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0xab4a196f);
+}
+inline bool Gen::milestonetypes::ResetWhenPursuitStarts(EA::Reflection::Bool &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0xab4a196f, result);
+}
+inline bool Gen::milestonetypes::SET_ResetWhenPursuitStarts(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0xab4a196f, input);
 }
 
 }; // namespace Attrib
