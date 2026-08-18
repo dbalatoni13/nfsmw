@@ -1909,15 +1909,9 @@ void *TrackStreamer::AllocateUserMemory(int size, const char *debug_name, int of
 }
 
 void TrackStreamer::FreeUserMemory(void *mem) {
-    int free_before;
-    int size;
-
     pMemoryPool->GetAmountFree();
     bFree(mem);
     pMemoryPool->GetAmountFree();
-#ifdef EA_BUILD_A124
-    asm volatile("");
-#endif
 }
 
 #ifndef EA_BUILD_A124
