@@ -47,7 +47,7 @@ void CSTATEMGR_TrafficCar::DebugDisplayTrafficConnections() {
             Attrib::Gen::pvehicle vehicle(*physCar->GetAttributes());
             ScreenPrintf(x, y, 1.0f, 0xFFFF3F3F, "%s", vehicle.CollectionName());
         } else {
-            ScreenPrintf(x, y, 1.0f, 0x5FFF3F3F, "unatched");
+            ScreenPrintf(x, y, 1.0f, 0x5FFF3F3F, "unattached");
         }
 
         y += 0xF;
