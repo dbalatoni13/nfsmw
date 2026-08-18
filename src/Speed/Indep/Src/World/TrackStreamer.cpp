@@ -29,6 +29,16 @@ extern int ForceHoleFillerMethod;
 extern int ShowSectionBoarder;
 void NotifySkyLoader();
 
+#ifdef EA_BUILD_A124
+namespace Juice {
+class GameHook {
+  public:
+    static GameHook *(*Instance)();
+    static void AssetHit(const char *, const char *);
+};
+}
+#endif
+
 int TrackStreamerRemoteCaffeinating = 0;
 
 int LoaderTrackStreamer(bChunk *chunk);
@@ -2121,6 +2131,10 @@ void TrackStreamer::SwitchZones(short *current_zones) {
             bSPrintf(CurrentZoneName, "%s - %s", CurrentZoneName, GetScenerySectionName(zone_number));
         }
     }
+
+#ifdef EA_BUILD_A124
+    Juice::GameHook::AssetHit(reinterpret_cast<const char *>(Juice::GameHook::Instance()), "DRIVEN_SECTIONS");
+#endif
 
     int num_sections_unactivated = 0;
     DetermineStreamingSections();
