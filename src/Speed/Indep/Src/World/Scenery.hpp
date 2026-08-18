@@ -306,7 +306,7 @@ struct SceneryGroup : public bTNode<SceneryGroup> {
 
     int GetMemoryImageSize() {
         // TODO magic
-        int size = (NumObjects * static_cast<int>(sizeof(*OverrideInfoNumbers)) + 0x17) & -4;
+        int size = (NumObjects * sizeof(*OverrideInfoNumbers) + 0x17U) & ~3;
         return size;
     }
 
@@ -352,11 +352,7 @@ struct SceneryGroup : public bTNode<SceneryGroup> {
     void DisableRendering() {
         for (int n = 0; n < GetNumObjects(); n++) {
             SceneryOverrideInfo *override_info = GetOverrideInfo(n);
-#ifdef EA_BUILD_A124
-            override_info->SetExcludeFlags(0xFFEF, 0x10);
-#else
             override_info->SetExcludeFlags(0xFFFF, 0x10);
-#endif
         }
     }
 

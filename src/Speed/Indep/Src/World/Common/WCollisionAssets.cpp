@@ -91,7 +91,6 @@ void WCollisionAssets::Init(const UGroup *mapGroup, const UData *triggerUData) {
     WTriggerManager::Init();
     WGrid::Init(mapGroup);
 
-#ifndef EA_BUILD_A124
     for (unsigned int num = GetNumTrackOBBs() - 1; num != -1; --num) {
         TrackOBB *tobb = GetTrackOBB(num);
         UMath::Matrix4 mat = *reinterpret_cast<const UMath::Matrix4 *>(&tobb->Matrix);
@@ -104,7 +103,6 @@ void WCollisionAssets::Init(const UGroup *mapGroup, const UData *triggerUData) {
         dim.z = bAbs(dim.z);
         WCollisionObject *obj = Get().CreateObject(dim, mat, false);
     }
-#endif
 }
 
 void WCollisionAssets::Shutdown() {

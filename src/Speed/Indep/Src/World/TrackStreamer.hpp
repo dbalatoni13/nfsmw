@@ -59,9 +59,7 @@ struct TrackStreamingSection {
     eTrackStreamingFileType FileType; // offset 0x10, size 0x4
     int32 FileOffset;                 // offset 0x14, size 0x4
     int32 Size;                       // offset 0x18, size 0x4
-#ifndef EA_BUILD_A124
     int32 CompressedSize;             // offset 0x1C, size 0x4
-#endif
     int32 PermSize;                   // offset 0x20, size 0x4
     int32 SectionPriority;            // offset 0x24, size 0x4
     bVector2 Centre;                  // offset 0x28, size 0x8
@@ -129,21 +127,12 @@ struct HoleMovement;
 
 enum HoleFillerMethod {
     HOLE_FILLER_METHOD_LINEAR_BOTTOM_ALL_THE_WAY = 0,
-#ifdef EA_BUILD_A124
-    HOLE_FILLER_METHOD_LINEAR_BOTTOM = 1,
-    HOLE_FILLER_METHOD_LINEAR_TOP = 2,
-    HOLE_FILLER_METHOD_BIGGEST_FIRST_BOTTOM = 3,
-    HOLE_FILLER_METHOD_BIGGEST_FIRST_TOP = 4,
-    HOLE_FILLER_METHOD_SUPER_SCOOPER = HOLE_FILLER_METHOD_LINEAR_BOTTOM_ALL_THE_WAY,
-    NUM_HOLE_FILLER_METHODS = 5,
-#else
     HOLE_FILLER_METHOD_SUPER_SCOOPER = 1,
     HOLE_FILLER_METHOD_LINEAR_BOTTOM = 2,
     HOLE_FILLER_METHOD_LINEAR_TOP = 3,
     HOLE_FILLER_METHOD_BIGGEST_FIRST_BOTTOM = 4,
     HOLE_FILLER_METHOD_BIGGEST_FIRST_TOP = 5,
     NUM_HOLE_FILLER_METHODS = 6,
-#endif
 };
 
 class TSMemoryPool;
@@ -232,12 +221,8 @@ class TrackStreamer {
 
     void SetStreamingPosition(int position_number, const bVector2 *position);
 
-#ifdef EA_BUILD_A124
-    void PredictStreamingPosition(int position_number, const bVector3 *position, const bVector3 *velocity, const bVector3 *direction);
-#else
     void PredictStreamingPosition(int position_number, const bVector3 *position, const bVector3 *velocity, const bVector3 *direction,
                                   bool following_car);
-#endif
 
     short GetPredictedZone(StreamingPositionEntry *position_entry);
 
@@ -259,9 +244,7 @@ class TrackStreamer {
 
     void FreeUserMemory(void *mem);
 
-#ifndef EA_BUILD_A124
     bool IsUserMemory(void *mem);
-#endif
 
     bool MakeSpaceInPool(int size, bool force_unloading);
 
@@ -318,11 +301,7 @@ class TrackStreamer {
     void ForceSectionToUnload(int section_number);
 
     bool IsFarLoadingInProgress() {
-#ifdef EA_BUILD_A124
-        return false;
-#else
         return CurrentZoneFarLoad && IsLoadingInProgress();
-#endif
     }
 
     void DisableZoneSwitching() {
@@ -338,11 +317,7 @@ class TrackStreamer {
     }
 
     bool IsPermFileLoading() {
-#ifdef EA_BUILD_A124
-        return false;
-#else
         return PermFileLoading;
-#endif
     }
 
   private:
@@ -376,21 +351,17 @@ class TrackStreamer {
     int NumSectionsMoved;                                 // offset 0x2C, size 0x4
     char StreamFilenames[2][64];                          // offset 0x30, size 0x80
     bool SplitScreen;                                     // offset 0xB0, size 0x1
-#ifndef EA_BUILD_A124
     bool PermFileLoading;                                 // offset 0xB4, size 0x1
     const char *PermFilename;                             // offset 0xB8, size 0x4
     bChunk *PermFileChunks;                               // offset 0xBC, size 0x4
     int PermFileSize;                                     // offset 0xC0, size 0x4
-#endif
     StreamingPositionEntry StreamingPositionEntries[2];   // offset 0xC4, size 0xD0
     eLoadingPhase LoadingPhase;                           // offset 0x194, size 0x4
     float LoadingBacklog;                                 // offset 0x198, size 0x4
     bool CurrentZoneAllocatedButIncomplete;               // offset 0x19C, size 0x1
     bool CurrentZoneOutOfMemory;                          // offset 0x1A0, size 0x1
     bool CurrentZoneNonReplayLoad;                        // offset 0x1A4, size 0x1
-#ifndef EA_BUILD_A124
     bool CurrentZoneFarLoad;                              // offset 0x1A8, size 0x1
-#endif
     char CurrentZoneName[8];                              // offset 0x1AC, size 0x8
     float StartLoadingTime;                               // offset 0x1B4, size 0x4
     int MemorySafetyMargin;                               // offset 0x1B8, size 0x4

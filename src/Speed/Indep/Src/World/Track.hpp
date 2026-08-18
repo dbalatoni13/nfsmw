@@ -15,7 +15,6 @@ class TopologyCoordinate : public bTNode<TopologyCoordinate> {
     float GetElevation(const bVector3 *position, TerrainType *type, bVector3 *normal, bool *point_valid);
 };
 
-#ifndef EA_BUILD_A124
 // total size: 0x60
 class TrackOBB {
   public:
@@ -30,14 +29,11 @@ class TrackOBB {
     bMatrix4 Matrix;           // offset 0x10, size 0x40
     bVector3 Dims;             // offset 0x50, size 0x10
 };
-#endif
 
 void EstablishRemoteCaffeineConnection();
-#ifndef EA_BUILD_A124
 int GetNumTrackOBBs();
 TrackOBB *GetTrackOBB(int index);
 int LoaderTrackOBB(bChunk *chunk);
 int UnloaderTrackOBB(bChunk *chunk);
-#endif
 
 #endif

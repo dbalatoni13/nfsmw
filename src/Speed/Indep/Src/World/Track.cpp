@@ -5,7 +5,6 @@
 #include "Speed/Indep/Src/Misc/SpeedChunks.hpp"
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
 
-#ifndef EA_BUILD_A124
 int NumTrackOBBs = 0;
 TrackOBB *TrackOBBTable = nullptr;
 bChunkLoader bChunkLoaderTrackOBB(BCHUNK_TRACK_OBJECT_BOUNDS, LoaderTrackOBB, UnloaderTrackOBB);
@@ -42,7 +41,6 @@ int UnloaderTrackOBB(bChunk *chunk) {
     TrackOBBTable = nullptr;
     return 1;
 }
-#endif
 
 void EstablishRemoteCaffeineConnection() {}
 

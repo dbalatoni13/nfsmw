@@ -42,9 +42,7 @@ int TrackInfo::LoaderTrackInfo(bChunk *chunk) {
             bPlatEndianSwap(&info->ScoreToBeatReverse_DriftOnly);
             bPlatEndianSwap(&info->SunInfoNameHash);
             bPlatEndianSwap(&info->UsageFlags);
-#ifndef EA_BUILD_A124
             bPlatEndianSwap(&info->TrackMapCalibrationUpperLeft);
-#endif
             bPlatEndianSwap(&info->TrackMapCalibrationMapWidthMetres);
             bPlatEndianSwap(&info->TrackMapCalibrationRotation);
             bPlatEndianSwap(&info->TrackMapStartLineAngle);

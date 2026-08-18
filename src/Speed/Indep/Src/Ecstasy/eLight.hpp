@@ -240,19 +240,15 @@ class eShaperLightRig {
 class eSceneryLightContext : public eLightContext {
   public:
     void EndianSwap() {
-#ifndef EA_BUILD_A124
         bPlatEndianSwap(&Type);
         bPlatEndianSwap(&NumLights);
         bPlatEndianSwap(&LightingContextNumber);
-#endif
 
         for (uint32 i = 0; i < NumLights; i++) {
-#ifndef EA_BUILD_A124
             bPlatEndianSwap(&LocalLights[i].v0);
             bPlatEndianSwap(&LocalLights[i].v1);
             bPlatEndianSwap(&LocalLights[i].v2);
             bPlatEndianSwap(&LocalLights[i].v3);
-#endif
         }
     }
 
