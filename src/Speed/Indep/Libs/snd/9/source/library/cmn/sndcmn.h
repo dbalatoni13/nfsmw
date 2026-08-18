@@ -659,11 +659,8 @@ int SNDpitchmult(int shandle, int pitchmult);
 // svol.c
 int SNDvol(int shandle, int vol);
 
-// sbadd.c
-int SNDbankadd(int *pbhandle, void *pbank);
-
-// sbremove.c
-int SNDbankremove(int bhandle);
+// smemhigh.cpp
+int SNDMEM_gethighwater();
 
 #ifdef __cplusplus
 }
