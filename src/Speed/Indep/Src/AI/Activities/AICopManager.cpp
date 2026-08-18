@@ -1359,7 +1359,7 @@ void AICopManager::PursuitIsEvaded(IPursuit *ipursuit) {
                 int plrIndex = iplayer->GetSettingsIndex();
                 if (plrIndex < 2U) {
                     IPerpetrator *perp;
-                    AdjustStableImpound_EvadePursuit(plrIndex);
+                    AdjustStableHeat_EvadePursuit(plrIndex);
                     simable->QueryInterface(&perp);
                 }
             }

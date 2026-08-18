@@ -125,7 +125,7 @@ void AnimLoader_LoadResourceFile(const char *filename) {
     ResourceFile *res_file = CreateResourceFile(filename, RESOURCE_FILE_NIS, 0, 0, file_size);
     res_file->AssignMemory(gAnimLoader_MovingPointer, 0, filename);
     res_file->BeginLoading(reinterpret_cast<void (*)(void *)>(AnimLoader_Callback), nullptr);
-    CAnimResourceFileProxy *proxy = new CAnimResourceFileProxy(res_file, gAnimLoader_MovingPointer, gAnimLoader_UsingMemoryPool);
+    CAnimResourceFileProxy *proxy = BNEW CAnimResourceFileProxy(res_file, gAnimLoader_MovingPointer, gAnimLoader_UsingMemoryPool);
     gAnimLoader_ResourceFileList.AddTail(proxy);
     AnimLoader_IncrementAndAlignUp(reinterpret_cast<int &>(gAnimLoader_MovingPointer), file_size);
 }
@@ -288,7 +288,7 @@ void CAnimPlayer::DeleteAnimInstance(AnimHandle anim_handle) {
 }
 
 int CAnimPlayer::CreateAnimScene(CAnimSceneData *anim_scene_data, int camera_track_number, int anim_candidate_type, int anim_candidate_index) {
-    CAnimScene *anim_scene = new CAnimScene(anim_scene_data, camera_track_number, anim_candidate_type, anim_candidate_index);
+    CAnimScene *anim_scene = BNEW CAnimScene(anim_scene_data, camera_track_number, anim_candidate_type, anim_candidate_index);
     if (anim_scene->Init()) {
         mInstancedAnimSceneList.AddTail(anim_scene);
         return anim_scene->GetHandle();
@@ -486,7 +486,7 @@ void CAnimPlayer::InitWorldAnimScene() {
     if (!DisableWorldAnimations && !AnimCfg_DisableWorldAnimations) {
         int numEntries = TheWorldAnimInstanceDirectory.GetNumInstanceEntries();
         if (!mWorldAnimScene && numEntries > 0) {
-            mWorldAnimScene = new CAnimWorldScene();
+            mWorldAnimScene = BNEW CAnimWorldScene();
         }
     }
 }

@@ -4,6 +4,7 @@
 #include "Config.h"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/Src/EAXSound/SoundConn.h"
+#include "Speed/Indep/Src/EAXSound/SoundPause.h"
 #include "Speed/Indep/Src/Animation/AnimPlayer.hpp"
 #include "Speed/Indep/Src/Interfaces/IFengHud.h"
 #include "Speed/Indep/Src/Misc/BuildRegion.hpp"
@@ -103,8 +104,8 @@ void MiniMainLoop();
 void eWaitUntilRenderingDone();
 void CloseAllGarageDoors();
 void DisableAllSceneryGroups();
-void SoundPause(bool, int);
-void SetSoundControlState(bool, int, const char *);
+void SoundPause(bool, eSNDPAUSE_REASON);
+void SetSoundControlState(bool, eSNDCTLSTATE, const char *);
 void ServiceSpaceNodes();
 void CloseSound();
 void CloseWorldModels();
@@ -132,7 +133,7 @@ class LoadingTips {
     }
 
     static void SetDoneLoading(bool done) {
-        mDoneShowingLoadingTips = done;
+        mDoneLoading = done;
     }
 
   private:
@@ -546,8 +547,8 @@ void TrackLoader::FinishedLoading() {
 
 void TrackLoader::Unload() {
     TheGameFlowManager.SetState(GAMEFLOW_STATE_UNLOADING_TRACK);
-    SoundPause(false, 8);
-    SetSoundControlState(false, 0, "TrackLoader::Unload");
+    SoundPause(false, eSNDPAUSE_QUITTOFE);
+    SetSoundControlState(false, SNDSTATE_OFF, "TrackLoader::Unload");
     cFEng::Get()->QueuePackagePop(0);
     cFEng::Get()->ServiceFengOnly();
     DeactivateMemorySponge();

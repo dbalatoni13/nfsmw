@@ -360,7 +360,16 @@ class TextureAnimPack : public bTNode<TextureAnimPack> {
                     int32 num_anim_entries);
     ~TextureAnimPack();
 
-    USE_SLOTALLOC(TexturePackSlotPool);
+    // Like USE_SLOTALLOC but with bMalloc: the original allocates with bMalloc here.
+    void *operator new(size_t size) {
+        return bMalloc(TexturePackSlotPool);
+    }
+    void *operator new(size_t size, const char *name) {
+        return bOMalloc(TexturePackSlotPool);
+    }
+    void operator delete(void *ptr) {
+        bFree(TexturePackSlotPool, ptr);
+    }
 
     void InitAnims();
     void EndianSwap() {}

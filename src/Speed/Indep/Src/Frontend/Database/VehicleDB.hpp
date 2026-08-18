@@ -189,5 +189,6 @@ class FEPlayerCarDB {
 };
 
 void AdjustStableImpound_EvadePursuit(int playerNum);
+void AdjustStableHeat_EvadePursuit(int playerNum);
 
 #endif

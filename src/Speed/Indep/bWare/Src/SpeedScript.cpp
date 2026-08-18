@@ -50,18 +50,18 @@ void SpeedScript::InitFromFile(const char *filename) {
 SpeedScript::~SpeedScript() {
     for (int file_num = 0; file_num < this->NumFiles; file_num++) {
         if (this->FileTable[file_num].ArgBuf) {
-            delete this->FileTable[file_num].ArgBuf;
+            delete[] this->FileTable[file_num].ArgBuf;
         }
     }
     if (this->EntryTable) {
-        delete this->EntryTable;
+        delete[] this->EntryTable;
     }
 }
 
 void SpeedScript::Error(const char *format, ...) {
     va_list args;
     va_start(args, format);
-    bVSPrintf(this->ErrorText, format, &args);
+    bVSPrintf(this->ErrorText, format, args);
     if (this->ErrorFunction) {
         this->ErrorFunction(this->ErrorText);
     }
@@ -89,7 +89,7 @@ void SpeedScript::ResizeEntryTable(int new_size) {
     if (this->EntryTable) {
         bMemCpy(new_table, this->EntryTable, this->NumEntries * sizeof(SpeedScriptEntry));
         if (this->EntryTable) {
-            delete this->EntryTable;
+            delete[] this->EntryTable;
         }
     }
     this->EntryTable = new_table;

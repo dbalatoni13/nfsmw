@@ -474,11 +474,11 @@ void VisibleSectionManager::ActivateOverlay(VisibleSectionOverlay *overlay, Visi
             bool did_something = false;
             if (entry->AddRemove != 0) {
                 if (!section->IsSectionVisible(entry->SectionNumber)) {
-                    section->RemoveVisibleSection(entry->SectionNumber);
+                    section->AddVisibleSection(entry->SectionNumber);
                     did_something = true;
                 }
             } else if (section->IsSectionVisible(entry->SectionNumber)) {
-                section->AddVisibleSection(entry->SectionNumber);
+                section->RemoveVisibleSection(entry->SectionNumber);
                 did_something = true;
             }
 

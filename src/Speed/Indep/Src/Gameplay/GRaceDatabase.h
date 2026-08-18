@@ -6,6 +6,7 @@
 #endif
 
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/gameplay.h"
+#include "Speed/Indep/Src/Gameplay/GRace.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribHash.h"
 
 enum Context {
@@ -119,7 +120,7 @@ class GRaceDatabase {
     static void Init();
 
     GRaceCustom *GetStartupRace();
-    void SetStartupRace(GRaceCustom *custom, Context context);
+    void SetStartupRace(GRaceCustom *custom, GRace::Context context);
     void FreeCustomRace(GRaceCustom *custom);
     GRaceParameters *GetRaceFromHash(unsigned int hash);
     GRaceCustom *AllocCustomRace(GRaceParameters *parms);

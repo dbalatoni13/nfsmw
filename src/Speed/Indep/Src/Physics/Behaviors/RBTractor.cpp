@@ -134,7 +134,7 @@ void RBTractor::SetHitch(bool hitched) {
 }
 
 void RBTractor::ModifyCollision(const RigidBody &other, const Dynamics::Collision::Plane &plane, Dynamics::Collision::Moment &myMoment) {
-    RigidBody::ModifyCollision(other, plane, myMoment);
+    RBVehicle::ModifyCollision(other, plane, myMoment);
 
     if (other.IsImmobile()) {
         myMoment.MakeImmobile(false, 0.0f);
@@ -172,7 +172,7 @@ bool RBTractor::CanCollideWith(const RigidBody &other) const {
             return false;
         }
     }
-    return RigidBody::CanCollideWith(other);
+    return RBVehicle::CanCollideWith(other);
 }
 
 void RBTractor::UpdateTrailer(float dT) {
@@ -326,7 +326,7 @@ Behavior *RBTrailer::Construct(const struct BehaviorParams &params) {
 }
 
 void RBTrailer::ModifyCollision(const RigidBody &other, const Dynamics::Collision::Plane &plane, Dynamics::Collision::Moment &myMoment) {
-    RigidBody::ModifyCollision(other, plane, myMoment);
+    RBVehicle::ModifyCollision(other, plane, myMoment);
     if (other.IsImmobile()) {
         myMoment.MakeImmobile(false, 0.0f);
     }

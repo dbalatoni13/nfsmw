@@ -32,7 +32,7 @@ void eInitSunPat();
 void eWaitUntilRenderingDone();
 void InitSlotPoolsEx();
 void eSetScissor(int xOrig, int yOrig, int wd, int ht);
-void eSetCopyFilter(FILTER_ID filter_index, bool enable);
+void eSetCopyFilter(FILTER_ID filter_index, int enable);
 void eSetBackgroundColor(_GXColor clr);
 void __InitRenderMode();
 void __InitMem();
@@ -104,7 +104,7 @@ VIDEO_MODE eCurrentVideoMode;
 int ScreenWidth;
 int ScreenHeight;
 Mtx g_ScreenPositionMatrix;
-SlotPool *ActiveTextureSlotPool;
+SlotPool *eAnimTextureSlotPool;
 
 Bool bEURGB60 = false;                                              // size: 0x1
 int _firstFrame;                                                    // size: 0x4
@@ -214,8 +214,8 @@ int eSetDisplaySystem(int video_mode) {
 }
 
 void InitSlotPools(void) {
-    ActiveTextureSlotPool = bNewSlotPool(8, 256, "ActiveTextureSlotPool", 0);
-    ActiveTextureSlotPool->ClearFlag(SLOTPOOL_FLAG_ZERO_ALLOCATED_MEMORY);
+    eAnimTextureSlotPool = bNewSlotPool(8, 256, "ActiveTextureSlotPool", 0);
+    eAnimTextureSlotPool->ClearFlag(SLOTPOOL_FLAG_ZERO_ALLOCATED_MEMORY);
     InitSlotPoolsEx();
 }
 
@@ -446,7 +446,7 @@ int eGetScreenWidth() {
 }
 
 int eGetScreenHeight() {
-    return ScreenWidth;
+    return ScreenHeight;
 }
 
 void eSetScreenDisplayOffsets(int offset_x, int offset_y) {}
@@ -776,7 +776,7 @@ void eSetScissor(int xOrig, int yOrig, int wd, int ht) {
     }
 }
 
-void eSetCopyFilter(FILTER_ID filter_index, bool enable) {
+void eSetCopyFilter(FILTER_ID filter_index, int enable) {
     GXSetCopyFilter(_rmode->aa, _rmode->sample_pattern, GX_TRUE, CopyFilter[filter_index]);
 }
 

@@ -412,8 +412,8 @@ TextureInfo *TexturePack::GetTexture(uint32 name_hash) {
 }
 
 TextureInfo *eCreateTextureInfo() {
-    TextureInfo *texture_info = new TextureInfo();
-    TextureInfoPlatInfo *plat_info = new TextureInfoPlatInfo();
+    TextureInfo *texture_info = BNEW TextureInfo();
+    TextureInfoPlatInfo *plat_info = BNEW TextureInfoPlatInfo();
     texture_info->SetPlatInfo(plat_info);
     return texture_info;
 }

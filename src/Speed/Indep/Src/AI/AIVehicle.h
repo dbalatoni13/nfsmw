@@ -384,7 +384,7 @@ class AIVehicleEmpty : public AIVehicle {
 
     // Overrides: AIVehicle
     void Update(float dT) override {
-        AIVehicle::UpdateReverseOverride(dT);
+        AIVehicle::Update(dT);
     }
 
     // Overrides: AIVehicle

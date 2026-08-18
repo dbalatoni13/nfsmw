@@ -64,7 +64,7 @@ void AIVehicleHelicopter::SetDestinationVelocity(const UMath::Vector3 &v) {
 }
 
 void AIVehicleHelicopter::Update(float dT) {
-    AIVehicle::Update(dT);
+    AIVehiclePursuit::Update(dT);
     GetTarget()->Aquire(IPlayer::First(PLAYER_LOCAL)->GetSimable());
     UpdateSpawnTimer(dT);
     UpdateTargeting();

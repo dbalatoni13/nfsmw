@@ -31,9 +31,9 @@ RBCop::RBCop(const BehaviorParams &bp, const RBComplexParams &params) : RBVehicl
 RBCop::~RBCop() {}
 
 void RBCop::ModifyCollision(const RigidBody &other, const Dynamics::Collision::Plane &plane, Dynamics::Collision::Moment &myMoment) {
-    RigidBody::ModifyCollision(other, plane, myMoment);
+    RBVehicle::ModifyCollision(other, plane, myMoment);
 }
 
 void RBCop::ModifyCollision(const SimSurface &other, const Dynamics::Collision::Plane &plane, Dynamics::Collision::Moment &myMoment) {
-    RigidBody::ModifyCollision(other, plane, myMoment);
+    RBVehicle::ModifyCollision(other, plane, myMoment);
 }

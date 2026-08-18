@@ -64,8 +64,6 @@ inline float ASinr(const float x) {
 #endif
 }
 
-void BuildRotate(Matrix4 &m, float r, float x, float y, float z);
-
 float Ceil(const float x);
 
 inline float Distance(const Vector3 &a, const Vector3 &b) {
@@ -542,6 +540,8 @@ inline float Limit(const float a, const float l) {
 }
 
 } // namespace UMath
+
+void BuildRotate(UMath::Matrix4 &m, float r, float x, float y, float z);
 
 #ifndef EA_BUILD_A124
 // TODO inline

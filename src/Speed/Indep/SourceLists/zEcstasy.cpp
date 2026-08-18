@@ -26,6 +26,8 @@
 #include "Speed/GameCube/Src/Ecstasy/eStrip.cpp"
 
 #include "Speed/GameCube/Src/Ecstasy/eSolidPlat.cpp"
+
+#include "Speed/GameCube/Src/Ecstasy/eViewPlat.cpp"
 #endif
 
 #include "Speed/Indep/Src/Ecstasy/EmitterSystem.cpp"

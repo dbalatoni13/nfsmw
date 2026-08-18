@@ -252,7 +252,7 @@ AIGoalPit::AIGoalPit(ISimable *isimable) : AIGoal(isimable) {
 class AIGoalPullOver : public AIGoal {
   public:
     static AIGoal *Construct(ISimable *isimable) {
-        return new AIGoalPullOver(isimable);
+        return new AIGoalRam(isimable);
     }
 
     AIGoalPullOver(ISimable *isimable);

@@ -7,7 +7,7 @@
 namespace Sim {
 
 Attachments::~Attachments() {
-    mList.clear();
+    DetachAll();
 }
 
 bool Attachments::Attach(UTL::COM::IUnknown *object) {
