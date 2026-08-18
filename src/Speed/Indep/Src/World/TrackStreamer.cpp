@@ -68,7 +68,11 @@ class TSMemoryNode : public bTNode<TSMemoryNode> {
     intptr_t Address;   // offset 0x8, size 0x4
     int32 Size;         // offset 0xC, size 0x4
     bool Allocated;     // offset 0x10, size 0x1
+#ifndef EA_BUILD_A124
     char DebugName[32]; // offset 0x14, size 0x20
+#else
+    char DebugName[16];
+#endif
 };
 
 // total size: 0x2754
@@ -399,23 +403,41 @@ TSMemoryNode *TSMemoryPool::GetNextNode(bool start_from_top, TSMemoryNode *node)
 }
 
 TSMemoryNode *TSMemoryPool::GetNextFreeNode(bool start_from_top, TSMemoryNode *node) {
+#ifdef EA_BUILD_A124
+    do {
+        node = GetNextNode(start_from_top, node);
+        if (node == nullptr) {
+            return nullptr;
+        }
+    } while (node->IsAllocated());
+    return node;
+#else
     TSMemoryNode *next_node = node;
     while (next_node = GetNextNode(start_from_top, next_node), next_node) {
         if (next_node->IsFree()) {
             return next_node;
         }
     }
-    // return nullptr; // TODO put behind SANE_CODE macro
+#endif
 }
 
 TSMemoryNode *TSMemoryPool::GetNextAllocatedNode(bool start_from_top, TSMemoryNode *node) {
+#ifdef EA_BUILD_A124
+    do {
+        node = GetNextNode(start_from_top, node);
+        if (node == nullptr) {
+            return nullptr;
+        }
+    } while (node->IsFree());
+    return node;
+#else
     TSMemoryNode *next_node = node;
     while (next_node = GetNextNode(start_from_top, next_node), next_node) {
         if (next_node->IsAllocated()) {
             return next_node;
         }
     }
-    // return nullptr; // TODO put behind SANE_CODE macro
+#endif
 }
 
 unsigned int TSMemoryPool::GetPoolChecksum() {
@@ -918,11 +940,12 @@ void TrackStreamer::UnloadSection(TrackStreamingSection *section) {
 }
 
 bool TrackStreamer::NeedsGameStateActivation(TrackStreamingSection *section) {
-    return false;
-
+#ifdef EA_BUILD_A124
     if (IsRegularScenerySection(section->SectionNumber) && IsLODScenerySectionNumber(section->SectionNumber)) {
         return true;
     }
+#endif
+    return false;
 }
 
 void TrackStreamer::SectionLoadedCallback(intptr_t param, int error_status) {
