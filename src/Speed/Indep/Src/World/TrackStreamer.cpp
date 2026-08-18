@@ -658,6 +658,9 @@ void TrackStreamer::InitMemoryPool(int size) {
     MemoryPoolSize = size;
     pMemoryPoolMem = bMalloc(size, "Track Streaming Buffer", 0, 0x2000);
     pMemoryPool = new ("TSMemoryPool", 0) TSMemoryPool(reinterpret_cast<intptr_t>(pMemoryPoolMem), MemoryPoolSize, "Track Streaming", 7);
+#ifdef EA_BUILD_A124
+    EmptyCaffeineLayers();
+#endif
 }
 
 int TrackStreamer::GetMemoryPoolSize() {
@@ -1894,9 +1897,9 @@ void *TrackStreamer::AllocateUserMemory(int size, const char *debug_name, int of
 }
 
 void TrackStreamer::FreeUserMemory(void *mem) {
-    int free_before = pMemoryPool->GetAmountFree();
+    pMemoryPool->GetAmountFree();
     bFree(mem);
-    int size = pMemoryPool->GetAmountFree();
+    pMemoryPool->GetAmountFree();
 }
 
 bool TrackStreamer::IsUserMemory(void *mem) {
@@ -1919,11 +1922,15 @@ bool TrackStreamer::MakeSpaceInPool(int size, bool force_unloading) {
 }
 
 void TrackStreamer::MakeSpaceInPool(int size, void (*callback)(intptr_t), intptr_t param) {
+#ifdef EA_BUILD_A124
+    if (!IsLoadingInProgress()) {
+#else
     if (LoadingPhase == LOADING_IDLE) {
         IsLoadingInProgress();
     }
 
     if (!IsLoadingInProgress()) {
+#endif
         MakeSpaceInPool(size, true);
         callback(param);
     } else {
