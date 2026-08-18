@@ -870,6 +870,9 @@ void SFXObj_PFEATrax::MessageStartPathfinder(const MControlPathfinder &message) 
     }
 #endif
     if (event == 0) {
+#ifdef EA_BUILD_A124
+        PATH_clearallevents(PATH_ALL_PROJECTS);
+#endif
         this->m_MusicType = GenMusicType();
     } else if (event == static_cast<unsigned int>(-1)) {
 #ifdef EA_BUILD_A124
@@ -884,8 +887,9 @@ void SFXObj_PFEATrax::MessageStartPathfinder(const MControlPathfinder &message) 
     } else {
 #ifdef EA_BUILD_A124
         PATH_clearallevents(PATH_ALL_PROJECTS);
-        this->m_MusicType = GenMusicType();
+        eMUSIC_TYPE music_type = GenMusicType();
         this->m_CurPathEvent = 0;
+        this->m_MusicType = music_type;
         PATH_stop(this->m_PFParms[this->m_ActiveProject].PATH_TRACK);
         this->StartLicensedMusic(event);
 #else
