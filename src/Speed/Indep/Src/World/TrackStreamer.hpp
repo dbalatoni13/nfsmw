@@ -259,7 +259,9 @@ class TrackStreamer {
 
     void FreeUserMemory(void *mem);
 
+#ifndef EA_BUILD_A124
     bool IsUserMemory(void *mem);
+#endif
 
     bool MakeSpaceInPool(int size, bool force_unloading);
 

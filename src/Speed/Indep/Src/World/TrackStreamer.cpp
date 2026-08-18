@@ -1914,10 +1914,12 @@ void TrackStreamer::FreeUserMemory(void *mem) {
     pMemoryPool->GetAmountFree();
 }
 
+#ifndef EA_BUILD_A124
 bool TrackStreamer::IsUserMemory(void *mem) {
     int pos = static_cast<char *>(mem) - static_cast<char *>(pMemoryPoolMem);
     return pMemoryPoolMem && pos >= 0 && pos < MemoryPoolSize;
 }
+#endif
 
 bool TrackStreamer::MakeSpaceInPool(int size, bool force_unloading) {
     WaitForCurrentLoadingToComplete();
