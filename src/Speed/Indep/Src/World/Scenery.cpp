@@ -397,8 +397,8 @@ int LoaderScenery(bChunk *chunk) {
                     unsigned int name_hash = scenery_info->NameHash[detail_level];
                     // TODO magic
 #ifdef EA_BUILD_A124
-                    switch (name_hash) {
-                    case 0:
+                    if (name_hash != 0) {
+                        switch (name_hash) {
                     case 0xBE43EDBB:
                     case 0x90F70174:
                         break;
@@ -426,6 +426,7 @@ int LoaderScenery(bChunk *chunk) {
 #endif
                     }
 #ifdef EA_BUILD_A124
+                        }
                     }
 #endif
                 }
