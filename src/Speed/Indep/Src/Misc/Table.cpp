@@ -180,15 +180,16 @@ AverageWindow::~AverageWindow() {
 }
 
 void AverageWindow::Reset(float fValue) {
-    for (int i = 0; i < nSlots; i++) {
-        pData[i] = fValue;
-        pTimeData[i] = 0.0f;
+    for (int i = 0; i < this->nSlots; i++) {
+        this->pData[i] = fValue;
+        this->pTimeData[i] = 0.0f;
     }
-    nCurrentSlot = 0;
-    fAverage = 0.0f;
-    iOldestValue = 0;
-    nSamples = 0;
-    fTotal = fValue * static_cast<int>(nSlots);
+
+    this->fTotal = fValue * static_cast<int>(this->nSlots);
+    this->fAverage = 0.0f;
+    this->nSamples = 0;
+    this->iOldestValue = 0;
+    this->nCurrentSlot = 0;
 }
 
 void AverageWindow::Record(const float fValue, const float fTimeNow) {

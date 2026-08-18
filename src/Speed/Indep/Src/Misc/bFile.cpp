@@ -14,8 +14,7 @@
 
 SlotPool *bFileSlotPool = nullptr;
 bTList<MemoryFile> MemoryFileList;
-bTList<CachedRealFileHandle> CachedRealFileHandle::HandleList;
-int CachedRealFileHandle::NumInstances = 0;
+
 static const int bFileSlowReadCount = 0;
 static const int DetectBusyLoopInServiceFileSystem = 0;
 
@@ -99,6 +98,30 @@ MemoryFileEntry *FindMemoryFileEntry(const char *filename) {
     return nullptr;
 }
 
+// total size: 0x24
+// Decl: 633
+class bFileCallbackEntry : public bTNode<bFileCallbackEntry> {
+  public:
+    USE_SLOTALLOC(bFileSlotPool);
+
+    bFileCallbackEntry(bFile *file, void *buf, int position, int num_bytes, void (*callback)(void *), void *callback_param)
+        : File(file),                    //
+          Callback(callback),            //
+          FileHandleToClose(0),          //
+          Position(position),            //
+          CallbackParam(callback_param), //
+          Buf(buf),                      //
+          NumBytes(num_bytes) {}
+
+    bFile *File;                    // offset 0x8, size 0x4
+    void *Buf;                      // offset 0xC, size 0x4
+    int Position;                   // offset 0x10, size 0x4
+    int NumBytes;                   // offset 0x14, size 0x4
+    void (*Callback)(void *);       // offset 0x18, size 0x4
+    void *CallbackParam;            // offset 0x1C, size 0x4
+    EAFileHandle FileHandleToClose; // offset 0x20, size 0x4
+};
+
 void AsyncCloseFileCallback(int fop, int status, void *userdata) {
     int result = FILESYS_completeop(fop);
 }
@@ -107,6 +130,56 @@ void AsyncCloseFile(int file_handle) {
     int fop = FILESYS_close(file_handle, 100, nullptr);
     FILESYS_callbackop(fop, AsyncCloseFileCallback);
 }
+
+// total size: 0x18
+// Decl: 725
+class CachedRealFileHandle : public bTNode<CachedRealFileHandle> {
+  public:
+    CachedRealFileHandle(const char *filename, int file_handle, int file_size) {
+        NumInstances++;
+        NumReferences = 0;
+        FileHandle = file_handle;
+        FileSize = file_size;
+        Filename = bAllocateSharedString(filename);
+    }
+
+    ~CachedRealFileHandle() {}
+
+    USE_SLOTALLOC(bFileSlotPool);
+
+    int GetFileHandle() {
+        return FileHandle;
+    }
+
+    int GetFileSize() {
+        return FileSize;
+    }
+
+    void AddReference() {
+        NumReferences++;
+    }
+
+    void RemoveReference() {
+        NumReferences--;
+    }
+
+    static CachedRealFileHandle *FindHandle(const char *filename);
+    static CachedRealFileHandle *AddHandle(const char *filename, int file_handle, int file_size);
+    static bool RemoveUnusedHandle();
+    static void FlushUnusedHandle(const char *filename);
+    static void FlushUnusedHandles(bool print_warning);
+
+    static int NumInstances;
+    static bTList<CachedRealFileHandle> HandleList;
+
+    int NumReferences;    // offset 0x8, size 0x4
+    int FileHandle;       // offset 0xC, size 0x4
+    int FileSize;         // offset 0x10, size 0x4
+    const char *Filename; // offset 0x14, size 0x4
+};
+
+bTList<CachedRealFileHandle> CachedRealFileHandle::HandleList;
+int CachedRealFileHandle::NumInstances = 0;
 
 CachedRealFileHandle *CachedRealFileHandle::FindHandle(const char *filename) {
     for (CachedRealFileHandle *c = HandleList.GetHead(); c != HandleList.EndOfList(); c = c->GetNext()) {
@@ -184,13 +257,13 @@ struct OpenDisculatorFile {
 
     USE_SLOTALLOC(OpenDisculatorFileSlotPool);
 
-    const char *filename;       // offset 0x0, size 0x4
-    int nameHash;               // offset 0x4, size 0x4
-    int giantFileNum;           // offset 0x8, size 0x4
-    int localSectorOffset;      // offset 0xC, size 0x4
-    int totalSectorOffset;      // offset 0x10, size 0x4
-    unsigned long long size;    // offset 0x18, size 0x8
-    unsigned long long seekPos; // offset 0x20, size 0x8
+    const char *filename;    // offset 0x0, size 0x4
+    int32 nameHash;          // offset 0x4, size 0x4
+    int32 giantFileNum;      // offset 0x8, size 0x4
+    int32 localSectorOffset; // offset 0xC, size 0x4
+    int32 totalSectorOffset; // offset 0x10, size 0x4
+    uint64 size;             // offset 0x18, size 0x8
+    uint64 seekPos;          // offset 0x20, size 0x8
 };
 
 // total size: 0x81C
@@ -206,7 +279,6 @@ class DisculatorDriver : public RealFile::DeviceDriver {
         return GiantDataFileName[file_number];
     }
 
-    ~DisculatorDriver() override;
     static DisculatorDriver *Create(const char *dir_filename, const char *data_filename);
     bool Init() override;
     void Restore() override;
@@ -217,8 +289,12 @@ class DisculatorDriver : public RealFile::DeviceDriver {
     uint64_t Seek(EAFileHandle h, unsigned long long offset, int whence, RealFile::DeviceDriver *ddParent, EAFileHandle ddFileHandle) override;
     uint64_t Getsize(EAFileHandle h) override;
     uint64_t QueryLocation(EAFileHandle h) override;
-    bool Remove(const char *name) override;
-    uint64_t Getspace() override;
+    bool Remove(const char *name) override {
+        return false;
+    }
+    uint64_t Getspace() override {
+        return 0;
+    }
 
     bool LoadGiantFiles(const char *giant_dir_filename, const char *giant_data_filename_base);
     bFileDirectoryEntry *FindDirectoryEntry(const char *filename);
@@ -449,6 +525,70 @@ bFileDirectoryEntry *DisculatorDriver::FindDirectoryEntry(const char *filename) 
     bFileDirectoryEntry *best_directory_entry = &pDirectoryEntryTable[best_found_position];
     return best_directory_entry;
 }
+
+// total size: 0x38
+// Decl: 1568
+class bFile : public bTNode<bFile> {
+  public:
+    bFile(const char *filename, bFileOpenMode open_mode);
+    ~bFile();
+
+    void *operator new(size_t size) {
+        return bOMalloc(bFileSlotPool);
+    }
+
+    void operator delete(void *ptr) {
+        bFree(bFileSlotPool, ptr);
+    }
+
+    bool IsOpen() {
+        return FileSize >= 0;
+    }
+
+    int GetNumPendingCallbacks() {
+        return NumPendingCallbacks;
+    }
+
+    void SetCloseAfterCallbacks() {
+        CloseAfterCallbacks = true;
+    }
+
+    int GetFileSize() {
+        return FileSize;
+    }
+
+    static int GetTotalNumPendingCallbacks() {
+        return TotalNumPendingCallbacks;
+    }
+
+    void OpenLowLevel();
+    void MaybeAddCachedHandle();
+    void Seek(int position, int mode);
+    void ReadAsync(void *buf, int num_bytes, void (*callback)(void *), void *callback_param);
+    void FlushWriteBuffer();
+    void Write(const void *buf, int num_bytes);
+
+    static void CallbackFunctionOpen(int fop, int status, void *userdata);
+    static void CallbackFunctionRead(int fop, int status, void *userdata);
+    static void HandleCompletedCallbacks();
+
+  private:
+    bFileOpenMode OpenMode;                                  // offset 0x8, size 0x4
+    int FileSize;                                            // offset 0xC, size 0x4
+    int Position;                                            // offset 0x10, size 0x4
+    EAFileHandle FileHandle;                                 // offset 0x14, size 0x4
+    CachedRealFileHandle *pCachedRealFileHandle;             // offset 0x18, size 0x4
+    int CloseAfterCallbacks;                                 // offset 0x1C, size 0x4
+    int NumPendingCallbacks;                                 // offset 0x20, size 0x4
+    const char *Filename;                                    // offset 0x24, size 0x4
+    static int TotalNumPendingCallbacks;                     // size: 0x4, address: 0x8041EA98
+    static bTList<bFileCallbackEntry> PendingCallbackList;   // size: 0x8, address: 0x8048001C
+    static bTList<bFileCallbackEntry> CompletedCallbackList; // size: 0x8, address: 0x80480024
+    int WriteBufferPos;                                      // offset 0x28, size 0x4
+    int WriteBufferNumBytes;                                 // offset 0x2C, size 0x4
+    int WriteBufferSize;                                     // offset 0x30, size 0x4
+    uint8 *WriteBuffer;                                      // offset 0x34, size 0x4
+};
 
 int bFileNumInstances = 0;
 int bFile::TotalNumPendingCallbacks = 0;

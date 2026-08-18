@@ -51,7 +51,6 @@ void System::Init() {
     mObj = new ("TODO", __LINE__) System();
 }
 
-// UNSOLVED
 uint64_t System::CreateKey(UCrc32 port, UCrc32 messageID) {
     uint64_t x = messageID.GetValue();
     uint64_t y = port.GetValue();
@@ -63,8 +62,8 @@ uint64_t System::CreateKey(UCrc32 port, UCrc32 messageID) {
     y = (y | y << 4) & 0xf0f0f0f0f0f0f0fULL;
     x = (x | x << 2) & 0x3333333333333333ULL;
     y = (y | y << 2) & 0x3333333333333333ULL;
-    x = (x | x << 1) & 0x5555555555555555ULL;
     y = (y | y << 1) & 0x5555555555555555ULL;
+    x = (x | x << 1) & 0x5555555555555555ULL;
     uint64_t result = y | (x << 1);
 
     return result;
