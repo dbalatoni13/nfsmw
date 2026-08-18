@@ -418,7 +418,7 @@ TSMemoryNode *TSMemoryPool::GetNextFreeNode(bool start_from_top, TSMemoryNode *n
         if (node == nullptr) {
             return nullptr;
         }
-    } while (node->IsAllocated());
+    } while (!node->IsFree());
     return node;
 #else
     TSMemoryNode *next_node = node;
@@ -437,7 +437,7 @@ TSMemoryNode *TSMemoryPool::GetNextAllocatedNode(bool start_from_top, TSMemoryNo
         if (node == nullptr) {
             return nullptr;
         }
-    } while (node->IsFree());
+    } while (!node->IsAllocated());
     return node;
 #else
     TSMemoryNode *next_node = node;
