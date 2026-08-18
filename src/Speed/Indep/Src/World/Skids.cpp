@@ -309,7 +309,11 @@ void SkidMaker::MakeNoSkid() {
 
 void InitSkids(int max_skids) {
     if (SkidSetSlotPool == nullptr) {
-        SkidSetSlotPool = bNewSlotPool(0xF0, max_skids, "SkidSetSlotPool", GetVirtualMemoryAllocParams());
+#ifdef EA_BUILD_A124
+        SkidSetSlotPool = bNewSlotPool(sizeof(SkidSet), max_skids, "SkidSetSlotPool", 0);
+#else
+        SkidSetSlotPool = bNewSlotPool(sizeof(SkidSet), max_skids, "SkidSetSlotPool", GetVirtualMemoryAllocParams());
+#endif
         SkidSetSlotPool->ClearFlag(SLOTPOOL_FLAG_OVERFLOW_IF_FULL);
     }
 
@@ -320,12 +324,14 @@ void InitSkids(int max_skids) {
 
     PlotSkidsInCaffeine = 0;
     PlotSkidPointsInCaffeine = 0;
+#ifndef EA_BUILD_A124
     if (RemoteCaffeinating) {
         PlotSkidsInCaffeine = static_cast<int>(espGetLayerState("Skids") != 0);
         if (espGetLayerState("SkidPoints")) {
             PlotSkidPointsInCaffeine = 1;
         }
     }
+#endif
 }
 
 void CloseSkids() {

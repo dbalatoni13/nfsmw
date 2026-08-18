@@ -570,11 +570,7 @@ int TrackStreamer::Loader(bChunk *chunk) {
 #endif
         return 1;
     } else {
-#ifdef EA_BUILD_A124
-        return 1;
-#else
         return 0;
-#endif
     }
 }
 
