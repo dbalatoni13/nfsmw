@@ -138,6 +138,9 @@ void UpdateAllScreenEFX() {
                 debugflash = 0;
                 eGetView(i, false)->ScreenEffects->AddPaletteEffect(EFX_CAMERA_FLASH);
             }
+#ifdef EA_BUILD_A124
+            eGetView(i, false)->ScreenEffects->AddPaletteEffect(EFX_UNIQUE);
+#endif
         }
     }
 }
