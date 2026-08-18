@@ -2009,6 +2009,9 @@ void TrackStreamer::ServiceNonGameState() {
     ProfileNode profile_node("TODO", 0);
     float start_time = GetDebugRealTime();
     HandleLoading();
+#ifdef EA_BUILD_A124
+    CheckLoadingBar();
+#endif
     float time = GetDebugRealTime();
 }
 
