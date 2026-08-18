@@ -80,90 +80,40 @@ struct visuallookeffect : Instance {
         Instance::operator=(rhs);
         return *this;
     }
-    bool _testvalue(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x4ef07d5d);
-    }
-    bool _testvalue(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(_testvalue, result);
-    }
-    const EA::Reflection::Float &_testvalue() const {
-        ATTRIB_CODEGEN_GETLAYOUT(_testvalue);
-    }
-    bool SET__testvalue(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(_testvalue, input);
-    }
-    bool graph(TAttrib<UMath::Matrix4> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(UMath::Matrix4, 0x523266f4);
-    }
-    bool graph(UMath::Matrix4 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(graph, result);
-    }
-    const UMath::Matrix4 &graph() const {
-        ATTRIB_CODEGEN_GETLAYOUT(graph);
-    }
-    bool SET_graph(const UMath::Matrix4 &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(graph, input);
-    }
-    bool heattrigger(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x1c65e7d4);
-    }
-    bool heattrigger(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(heattrigger, result);
-    }
-    const EA::Reflection::Float &heattrigger() const {
-        ATTRIB_CODEGEN_GETLAYOUT(heattrigger);
-    }
-    bool SET_heattrigger(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(heattrigger, input);
-    }
-    bool length(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xf6b8b5ed);
-    }
-    bool length(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(length, result);
-    }
-    const EA::Reflection::Float &length() const {
-        ATTRIB_CODEGEN_GETLAYOUT(length);
-    }
-    bool SET_length(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(length, input);
-    }
-    bool magnitude(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xceb0a9b0);
-    }
-    bool magnitude(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(magnitude, result);
-    }
-    const EA::Reflection::Float &magnitude() const {
-        ATTRIB_CODEGEN_GETLAYOUT(magnitude);
-    }
-    bool SET_magnitude(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(magnitude, input);
-    }
-    bool radialblur_scale(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xd0b003f4);
-    }
-    bool radialblur_scale(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xd0b003f4, result);
-    }
-    const EA::Reflection::Float &radialblur_scale() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0xd0b003f4);
-    }
-    bool SET_radialblur_scale(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xd0b003f4, input);
-    }
-    bool radialblur_uvoffset(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x8bc39288);
-    }
-    bool radialblur_uvoffset(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x8bc39288, result);
-    }
-    const EA::Reflection::Float &radialblur_uvoffset() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x8bc39288);
-    }
-    bool SET_radialblur_uvoffset(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x8bc39288, input);
-    }
+    bool _testvalue(TAttrib<EA::Reflection::Float> &result) const;
+    bool _testvalue(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &_testvalue() const;
+    bool SET__testvalue(const EA::Reflection::Float &input);
+
+    bool graph(TAttrib<UMath::Matrix4> &result) const;
+    bool graph(UMath::Matrix4 &result) const;
+    const UMath::Matrix4 &graph() const;
+    bool SET_graph(const UMath::Matrix4 &input);
+
+    bool heattrigger(TAttrib<EA::Reflection::Float> &result) const;
+    bool heattrigger(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &heattrigger() const;
+    bool SET_heattrigger(const EA::Reflection::Float &input);
+
+    bool length(TAttrib<EA::Reflection::Float> &result) const;
+    bool length(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &length() const;
+    bool SET_length(const EA::Reflection::Float &input);
+
+    bool magnitude(TAttrib<EA::Reflection::Float> &result) const;
+    bool magnitude(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &magnitude() const;
+    bool SET_magnitude(const EA::Reflection::Float &input);
+
+    bool radialblur_scale(TAttrib<EA::Reflection::Float> &result) const;
+    bool radialblur_scale(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &radialblur_scale() const;
+    bool SET_radialblur_scale(const EA::Reflection::Float &input);
+
+    bool radialblur_uvoffset(TAttrib<EA::Reflection::Float> &result) const;
+    bool radialblur_uvoffset(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &radialblur_uvoffset() const;
+    bool SET_radialblur_uvoffset(const EA::Reflection::Float &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -196,6 +146,102 @@ static const Key radialblur_uvoffset = 0x8bc39288;
 
 inline Key Gen::visuallookeffect::ClassKey() {
     return ClassName::visuallookeffect;
+}
+
+inline bool Gen::visuallookeffect::_testvalue(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x4ef07d5d);
+}
+inline const EA::Reflection::Float &Gen::visuallookeffect::_testvalue() const {
+    ATTRIB_CODEGEN_GETLAYOUT(_testvalue);
+}
+inline bool Gen::visuallookeffect::_testvalue(EA::Reflection::Float &result) const {
+    result = _testvalue();
+    return true;
+}
+inline bool Gen::visuallookeffect::SET__testvalue(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(_testvalue, input);
+}
+
+inline bool Gen::visuallookeffect::graph(TAttrib<UMath::Matrix4> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(UMath::Matrix4, 0x523266f4);
+}
+inline const UMath::Matrix4 &Gen::visuallookeffect::graph() const {
+    ATTRIB_CODEGEN_GETLAYOUT(graph);
+}
+inline bool Gen::visuallookeffect::graph(UMath::Matrix4 &result) const {
+    result = graph();
+    return true;
+}
+inline bool Gen::visuallookeffect::SET_graph(const UMath::Matrix4 &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(graph, input);
+}
+
+inline bool Gen::visuallookeffect::heattrigger(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x1c65e7d4);
+}
+inline const EA::Reflection::Float &Gen::visuallookeffect::heattrigger() const {
+    ATTRIB_CODEGEN_GETLAYOUT(heattrigger);
+}
+inline bool Gen::visuallookeffect::heattrigger(EA::Reflection::Float &result) const {
+    result = heattrigger();
+    return true;
+}
+inline bool Gen::visuallookeffect::SET_heattrigger(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(heattrigger, input);
+}
+
+inline bool Gen::visuallookeffect::length(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xf6b8b5ed);
+}
+inline const EA::Reflection::Float &Gen::visuallookeffect::length() const {
+    ATTRIB_CODEGEN_GETLAYOUT(length);
+}
+inline bool Gen::visuallookeffect::length(EA::Reflection::Float &result) const {
+    result = length();
+    return true;
+}
+inline bool Gen::visuallookeffect::SET_length(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(length, input);
+}
+
+inline bool Gen::visuallookeffect::magnitude(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xceb0a9b0);
+}
+inline const EA::Reflection::Float &Gen::visuallookeffect::magnitude() const {
+    ATTRIB_CODEGEN_GETLAYOUT(magnitude);
+}
+inline bool Gen::visuallookeffect::magnitude(EA::Reflection::Float &result) const {
+    result = magnitude();
+    return true;
+}
+inline bool Gen::visuallookeffect::SET_magnitude(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(magnitude, input);
+}
+
+inline bool Gen::visuallookeffect::radialblur_scale(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xd0b003f4);
+}
+inline const EA::Reflection::Float &Gen::visuallookeffect::radialblur_scale() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0xd0b003f4);
+}
+inline bool Gen::visuallookeffect::radialblur_scale(EA::Reflection::Float &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xd0b003f4, result);
+}
+inline bool Gen::visuallookeffect::SET_radialblur_scale(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xd0b003f4, input);
+}
+
+inline bool Gen::visuallookeffect::radialblur_uvoffset(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x8bc39288);
+}
+inline const EA::Reflection::Float &Gen::visuallookeffect::radialblur_uvoffset() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x8bc39288);
+}
+inline bool Gen::visuallookeffect::radialblur_uvoffset(EA::Reflection::Float &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x8bc39288, result);
+}
+inline bool Gen::visuallookeffect::SET_radialblur_uvoffset(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x8bc39288, input);
 }
 
 }; // namespace Attrib

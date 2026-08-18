@@ -78,78 +78,35 @@ struct aud_moment_strm : Instance {
         Instance::operator=(rhs);
         return *this;
     }
-    bool CanInterupt(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0xb34fc11d);
-    }
-    bool CanInterupt(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0xb34fc11d, result);
-    }
-    const EA::Reflection::Bool &CanInterupt() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0xb34fc11d);
-    }
-    bool SET_CanInterupt(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0xb34fc11d, input);
-    }
-    bool IsPositioned(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0xc4e7f7c2);
-    }
-    bool IsPositioned(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0xc4e7f7c2, result);
-    }
-    const EA::Reflection::Bool &IsPositioned() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0xc4e7f7c2);
-    }
-    bool SET_IsPositioned(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0xc4e7f7c2, input);
-    }
-    bool VolSlot(TAttrib<eVOL_MOMENT> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(eVOL_MOMENT, 0x1dfda17f);
-    }
-    bool VolSlot(eVOL_MOMENT &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(VolSlot, result);
-    }
-    const eVOL_MOMENT &VolSlot() const {
-        ATTRIB_CODEGEN_GETLAYOUT(VolSlot);
-    }
-    bool SET_VolSlot(const eVOL_MOMENT &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(VolSlot, input);
-    }
-    bool param(TAttrib<Csis::Type_SoundFX_Param> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(Csis::Type_SoundFX_Param, 0xe54fb484);
-    }
-    bool param(Csis::Type_SoundFX_Param &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(param, result);
-    }
-    const Csis::Type_SoundFX_Param &param() const {
-        ATTRIB_CODEGEN_GETLAYOUT(param);
-    }
-    bool SET_param(const Csis::Type_SoundFX_Param &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(param, input);
-    }
-    bool stream(TAttrib<Csis::Type_SoundFX_Type> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(Csis::Type_SoundFX_Type, 0xd248a446);
-    }
-    bool stream(Csis::Type_SoundFX_Type &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(stream, result);
-    }
-    const Csis::Type_SoundFX_Type &stream() const {
-        ATTRIB_CODEGEN_GETLAYOUT(stream);
-    }
-    bool SET_stream(const Csis::Type_SoundFX_Type &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(stream, input);
-    }
-    bool strmpriority(TAttrib<EA::Reflection::Int8> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int8, 0xdbe77715);
-    }
-    bool strmpriority(EA::Reflection::Int8 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(strmpriority, result);
-    }
-    const EA::Reflection::Int8 &strmpriority() const {
-        ATTRIB_CODEGEN_GETLAYOUT(strmpriority);
-    }
-    bool SET_strmpriority(const EA::Reflection::Int8 &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(strmpriority, input);
-    }
+    bool CanInterupt(TAttrib<EA::Reflection::Bool> &result) const;
+    bool CanInterupt(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &CanInterupt() const;
+    bool SET_CanInterupt(const EA::Reflection::Bool &input);
+
+    bool IsPositioned(TAttrib<EA::Reflection::Bool> &result) const;
+    bool IsPositioned(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &IsPositioned() const;
+    bool SET_IsPositioned(const EA::Reflection::Bool &input);
+
+    bool VolSlot(TAttrib<eVOL_MOMENT> &result) const;
+    bool VolSlot(eVOL_MOMENT &result) const;
+    const eVOL_MOMENT &VolSlot() const;
+    bool SET_VolSlot(const eVOL_MOMENT &input);
+
+    bool param(TAttrib<Csis::Type_SoundFX_Param> &result) const;
+    bool param(Csis::Type_SoundFX_Param &result) const;
+    const Csis::Type_SoundFX_Param &param() const;
+    bool SET_param(const Csis::Type_SoundFX_Param &input);
+
+    bool stream(TAttrib<Csis::Type_SoundFX_Type> &result) const;
+    bool stream(Csis::Type_SoundFX_Type &result) const;
+    const Csis::Type_SoundFX_Type &stream() const;
+    bool SET_stream(const Csis::Type_SoundFX_Type &input);
+
+    bool strmpriority(TAttrib<EA::Reflection::Int8> &result) const;
+    bool strmpriority(EA::Reflection::Int8 &result) const;
+    const EA::Reflection::Int8 &strmpriority() const;
+    bool SET_strmpriority(const EA::Reflection::Int8 &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -181,6 +138,88 @@ static const Key strmpriority = 0xdbe77715;
 
 inline Key Gen::aud_moment_strm::ClassKey() {
     return ClassName::aud_moment_strm;
+}
+
+inline bool Gen::aud_moment_strm::CanInterupt(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0xb34fc11d);
+}
+inline const EA::Reflection::Bool &Gen::aud_moment_strm::CanInterupt() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0xb34fc11d);
+}
+inline bool Gen::aud_moment_strm::CanInterupt(EA::Reflection::Bool &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0xb34fc11d, result);
+}
+inline bool Gen::aud_moment_strm::SET_CanInterupt(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0xb34fc11d, input);
+}
+
+inline bool Gen::aud_moment_strm::IsPositioned(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0xc4e7f7c2);
+}
+inline const EA::Reflection::Bool &Gen::aud_moment_strm::IsPositioned() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0xc4e7f7c2);
+}
+inline bool Gen::aud_moment_strm::IsPositioned(EA::Reflection::Bool &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0xc4e7f7c2, result);
+}
+inline bool Gen::aud_moment_strm::SET_IsPositioned(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0xc4e7f7c2, input);
+}
+
+inline bool Gen::aud_moment_strm::VolSlot(TAttrib<eVOL_MOMENT> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(eVOL_MOMENT, 0x1dfda17f);
+}
+inline const eVOL_MOMENT &Gen::aud_moment_strm::VolSlot() const {
+    ATTRIB_CODEGEN_GETLAYOUT(VolSlot);
+}
+inline bool Gen::aud_moment_strm::VolSlot(eVOL_MOMENT &result) const {
+    result = VolSlot();
+    return true;
+}
+inline bool Gen::aud_moment_strm::SET_VolSlot(const eVOL_MOMENT &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(VolSlot, input);
+}
+
+inline bool Gen::aud_moment_strm::param(TAttrib<Csis::Type_SoundFX_Param> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(Csis::Type_SoundFX_Param, 0xe54fb484);
+}
+inline const Csis::Type_SoundFX_Param &Gen::aud_moment_strm::param() const {
+    ATTRIB_CODEGEN_GETLAYOUT(param);
+}
+inline bool Gen::aud_moment_strm::param(Csis::Type_SoundFX_Param &result) const {
+    result = param();
+    return true;
+}
+inline bool Gen::aud_moment_strm::SET_param(const Csis::Type_SoundFX_Param &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(param, input);
+}
+
+inline bool Gen::aud_moment_strm::stream(TAttrib<Csis::Type_SoundFX_Type> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(Csis::Type_SoundFX_Type, 0xd248a446);
+}
+inline const Csis::Type_SoundFX_Type &Gen::aud_moment_strm::stream() const {
+    ATTRIB_CODEGEN_GETLAYOUT(stream);
+}
+inline bool Gen::aud_moment_strm::stream(Csis::Type_SoundFX_Type &result) const {
+    result = stream();
+    return true;
+}
+inline bool Gen::aud_moment_strm::SET_stream(const Csis::Type_SoundFX_Type &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(stream, input);
+}
+
+inline bool Gen::aud_moment_strm::strmpriority(TAttrib<EA::Reflection::Int8> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int8, 0xdbe77715);
+}
+inline const EA::Reflection::Int8 &Gen::aud_moment_strm::strmpriority() const {
+    ATTRIB_CODEGEN_GETLAYOUT(strmpriority);
+}
+inline bool Gen::aud_moment_strm::strmpriority(EA::Reflection::Int8 &result) const {
+    result = strmpriority();
+    return true;
+}
+inline bool Gen::aud_moment_strm::SET_strmpriority(const EA::Reflection::Int8 &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(strmpriority, input);
 }
 
 }; // namespace Attrib

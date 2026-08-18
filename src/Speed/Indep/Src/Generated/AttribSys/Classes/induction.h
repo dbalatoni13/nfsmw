@@ -82,90 +82,40 @@ struct induction : Instance {
         Instance::operator=(rhs);
         return *this;
     }
-    bool HIGH_BOOST(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x7168ef58);
-    }
-    bool HIGH_BOOST(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(HIGH_BOOST, result);
-    }
-    const EA::Reflection::Float &HIGH_BOOST() const {
-        ATTRIB_CODEGEN_GETLAYOUT(HIGH_BOOST);
-    }
-    bool SET_HIGH_BOOST(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(HIGH_BOOST, input);
-    }
-    bool LOW_BOOST(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x7a3181c0);
-    }
-    bool LOW_BOOST(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(LOW_BOOST, result);
-    }
-    const EA::Reflection::Float &LOW_BOOST() const {
-        ATTRIB_CODEGEN_GETLAYOUT(LOW_BOOST);
-    }
-    bool SET_LOW_BOOST(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(LOW_BOOST, input);
-    }
-    bool PSI(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xba0a7d04);
-    }
-    bool PSI(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(PSI, result);
-    }
-    const EA::Reflection::Float &PSI() const {
-        ATTRIB_CODEGEN_GETLAYOUT(PSI);
-    }
-    bool SET_PSI(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(PSI, input);
-    }
-    bool SPOOL(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xcf11af87);
-    }
-    bool SPOOL(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(SPOOL, result);
-    }
-    const EA::Reflection::Float &SPOOL() const {
-        ATTRIB_CODEGEN_GETLAYOUT(SPOOL);
-    }
-    bool SET_SPOOL(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(SPOOL, input);
-    }
-    bool SPOOL_TIME_DOWN(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x1f158097);
-    }
-    bool SPOOL_TIME_DOWN(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(SPOOL_TIME_DOWN, result);
-    }
-    const EA::Reflection::Float &SPOOL_TIME_DOWN() const {
-        ATTRIB_CODEGEN_GETLAYOUT(SPOOL_TIME_DOWN);
-    }
-    bool SET_SPOOL_TIME_DOWN(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(SPOOL_TIME_DOWN, input);
-    }
-    bool SPOOL_TIME_UP(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xac1c0d2f);
-    }
-    bool SPOOL_TIME_UP(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(SPOOL_TIME_UP, result);
-    }
-    const EA::Reflection::Float &SPOOL_TIME_UP() const {
-        ATTRIB_CODEGEN_GETLAYOUT(SPOOL_TIME_UP);
-    }
-    bool SET_SPOOL_TIME_UP(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(SPOOL_TIME_UP, input);
-    }
-    bool VACUUM(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xee2c326f);
-    }
-    bool VACUUM(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(VACUUM, result);
-    }
-    const EA::Reflection::Float &VACUUM() const {
-        ATTRIB_CODEGEN_GETLAYOUT(VACUUM);
-    }
-    bool SET_VACUUM(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(VACUUM, input);
-    }
+    bool HIGH_BOOST(TAttrib<EA::Reflection::Float> &result) const;
+    bool HIGH_BOOST(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &HIGH_BOOST() const;
+    bool SET_HIGH_BOOST(const EA::Reflection::Float &input);
+
+    bool LOW_BOOST(TAttrib<EA::Reflection::Float> &result) const;
+    bool LOW_BOOST(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &LOW_BOOST() const;
+    bool SET_LOW_BOOST(const EA::Reflection::Float &input);
+
+    bool PSI(TAttrib<EA::Reflection::Float> &result) const;
+    bool PSI(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &PSI() const;
+    bool SET_PSI(const EA::Reflection::Float &input);
+
+    bool SPOOL(TAttrib<EA::Reflection::Float> &result) const;
+    bool SPOOL(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &SPOOL() const;
+    bool SET_SPOOL(const EA::Reflection::Float &input);
+
+    bool SPOOL_TIME_DOWN(TAttrib<EA::Reflection::Float> &result) const;
+    bool SPOOL_TIME_DOWN(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &SPOOL_TIME_DOWN() const;
+    bool SET_SPOOL_TIME_DOWN(const EA::Reflection::Float &input);
+
+    bool SPOOL_TIME_UP(TAttrib<EA::Reflection::Float> &result) const;
+    bool SPOOL_TIME_UP(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &SPOOL_TIME_UP() const;
+    bool SET_SPOOL_TIME_UP(const EA::Reflection::Float &input);
+
+    bool VACUUM(TAttrib<EA::Reflection::Float> &result) const;
+    bool VACUUM(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &VACUUM() const;
+    bool SET_VACUUM(const EA::Reflection::Float &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -198,6 +148,104 @@ static const Key VACUUM = 0xee2c326f;
 
 inline Key Gen::induction::ClassKey() {
     return ClassName::induction;
+}
+
+inline bool Gen::induction::HIGH_BOOST(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x7168ef58);
+}
+inline const EA::Reflection::Float &Gen::induction::HIGH_BOOST() const {
+    ATTRIB_CODEGEN_GETLAYOUT(HIGH_BOOST);
+}
+inline bool Gen::induction::HIGH_BOOST(EA::Reflection::Float &result) const {
+    result = HIGH_BOOST();
+    return true;
+}
+inline bool Gen::induction::SET_HIGH_BOOST(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(HIGH_BOOST, input);
+}
+
+inline bool Gen::induction::LOW_BOOST(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x7a3181c0);
+}
+inline const EA::Reflection::Float &Gen::induction::LOW_BOOST() const {
+    ATTRIB_CODEGEN_GETLAYOUT(LOW_BOOST);
+}
+inline bool Gen::induction::LOW_BOOST(EA::Reflection::Float &result) const {
+    result = LOW_BOOST();
+    return true;
+}
+inline bool Gen::induction::SET_LOW_BOOST(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(LOW_BOOST, input);
+}
+
+inline bool Gen::induction::PSI(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xba0a7d04);
+}
+inline const EA::Reflection::Float &Gen::induction::PSI() const {
+    ATTRIB_CODEGEN_GETLAYOUT(PSI);
+}
+inline bool Gen::induction::PSI(EA::Reflection::Float &result) const {
+    result = PSI();
+    return true;
+}
+inline bool Gen::induction::SET_PSI(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(PSI, input);
+}
+
+inline bool Gen::induction::SPOOL(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xcf11af87);
+}
+inline const EA::Reflection::Float &Gen::induction::SPOOL() const {
+    ATTRIB_CODEGEN_GETLAYOUT(SPOOL);
+}
+inline bool Gen::induction::SPOOL(EA::Reflection::Float &result) const {
+    result = SPOOL();
+    return true;
+}
+inline bool Gen::induction::SET_SPOOL(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(SPOOL, input);
+}
+
+inline bool Gen::induction::SPOOL_TIME_DOWN(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x1f158097);
+}
+inline const EA::Reflection::Float &Gen::induction::SPOOL_TIME_DOWN() const {
+    ATTRIB_CODEGEN_GETLAYOUT(SPOOL_TIME_DOWN);
+}
+inline bool Gen::induction::SPOOL_TIME_DOWN(EA::Reflection::Float &result) const {
+    result = SPOOL_TIME_DOWN();
+    return true;
+}
+inline bool Gen::induction::SET_SPOOL_TIME_DOWN(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(SPOOL_TIME_DOWN, input);
+}
+
+inline bool Gen::induction::SPOOL_TIME_UP(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xac1c0d2f);
+}
+inline const EA::Reflection::Float &Gen::induction::SPOOL_TIME_UP() const {
+    ATTRIB_CODEGEN_GETLAYOUT(SPOOL_TIME_UP);
+}
+inline bool Gen::induction::SPOOL_TIME_UP(EA::Reflection::Float &result) const {
+    result = SPOOL_TIME_UP();
+    return true;
+}
+inline bool Gen::induction::SET_SPOOL_TIME_UP(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(SPOOL_TIME_UP, input);
+}
+
+inline bool Gen::induction::VACUUM(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xee2c326f);
+}
+inline const EA::Reflection::Float &Gen::induction::VACUUM() const {
+    ATTRIB_CODEGEN_GETLAYOUT(VACUUM);
+}
+inline bool Gen::induction::VACUUM(EA::Reflection::Float &result) const {
+    result = VACUUM();
+    return true;
+}
+inline bool Gen::induction::SET_VACUUM(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(VACUUM, input);
 }
 
 }; // namespace Attrib

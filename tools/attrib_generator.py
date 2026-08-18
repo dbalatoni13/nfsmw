@@ -43,7 +43,7 @@ def get_layout_struct_field(field):
         out += f" // offset {hex(offset)}, size {hex(8)}\n"
 
     type_name = type_replacement.get(type_name_raw, type_name_raw)
-    
+
     real_offset = offset
     if is_array:
         # 8 is the size of "Private"
@@ -63,63 +63,116 @@ def get_layout_struct_field(field):
     return out
 
 
-def get_layout_getters(field, key):
+def get_field_func_declarations(field, key):
     out = ""
     field_name = field["Name"]
     raw_type_name = field["TypeName"]
     type_name = type_replacement.get(raw_type_name, raw_type_name)
     is_layout = "InLayout" in field["Flags"]
     is_array = "Array" in field["Flags"]
+    is_searchable = "IsNotSearchable" not in field["Flags"]
 
-    out += f"""bool {field_name}(TAttrib<{type_name}> &result) const {{
-    ATTRIB_CODEGEN_GETATTRIB({type_name}, {key});
-}}
-"""
+    if is_searchable:
+        out += f"""bool {field_name}(TAttrib<{type_name}> &result) const;\n"""
 
     # Checked get
     if is_layout:
         if is_array:
-            out += f"""bool {field_name}({type_name} &result, unsigned int index) const {{
-    ATTRIB_CODEGEN_CHECKEDGETLAYOUTINDEXED({field_name}, result, index);
-    }}
-"""
+            out += f"""bool {field_name}({type_name} &result, unsigned int index) const;\n"""
         else:
-            out += f"""bool {field_name}({type_name} &result) const {{
-    ATTRIB_CODEGEN_CHECKEDGETLAYOUT({field_name}, result);
-}}
-"""
+            out += f"""bool {field_name}({type_name} &result) const;\n"""
     else:
         if is_array:
-            out += f"""bool {field_name}({type_name} &result, unsigned int index) const {{
-    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED({type_name}, {key}, result, index);
-}}
-"""
+            out += f"""bool {field_name}({type_name} &result, unsigned int index) const;\n"""
         else:
-            out += f"""bool {field_name}({type_name} &result) const {{
-    ATTRIB_CODEGEN_CHECKEDGETVALUE({type_name}, {key}, result);
-}}
-"""
+            out += f"""bool {field_name}({type_name} &result) const;\n"""
+    
     # Normal get
     if is_layout:
         if is_array:
-            out += f"""const {type_name} &{field_name}(unsigned int index) const {{
+            out += f"""const {type_name} &{field_name}(unsigned int index) const;\n"""
+        else:
+            out += f"""const {type_name} &{field_name}() const;\n"""
+    else:
+        out += f"""const {type_name} &{field_name}({"unsigned int index" if is_array else ""}) const;\n"""
+
+    # Num
+    if is_array:
+        out += f"""unsigned int Num_{field_name}() const;\n"""
+
+    # Setters
+    if is_array:
+        # TODO
+        out += f"""bool SET_{field_name}(const {type_name} &input, unsigned int index);\n"""
+    else:
+        pass
+        out += f"""bool SET_{field_name}(const {type_name} &input);\n"""
+    out += "\n"
+
+    return out
+
+
+def get_field_func_definitions(clazz, field, key):
+    out = ""
+    field_name = field["Name"]
+    raw_type_name = field["TypeName"]
+    type_name = type_replacement.get(raw_type_name, raw_type_name)
+    is_layout = "InLayout" in field["Flags"]
+    is_array = "Array" in field["Flags"]
+    is_searchable = "IsNotSearchable" not in field["Flags"]
+
+    if is_searchable:
+        out += f"""inline bool Gen::{clazz}::{field_name}(TAttrib<{type_name}> &result) const {{
+    ATTRIB_CODEGEN_GETATTRIB({type_name}, {key});
+}}
+"""
+        
+    # Normal get
+    if is_layout:
+        if is_array:
+            out += f"""inline const {type_name} &Gen::{clazz}::{field_name}(unsigned int index) const {{
     ATTRIB_CODEGEN_GETLAYOUTINDEXED({type_name}, {field_name}, index);
 }}
 """
         else:
-            out += f"""const {type_name} &{field_name}() const {{
+            out += f"""inline const {type_name} &Gen::{clazz}::{field_name}() const {{
     ATTRIB_CODEGEN_GETLAYOUT({field_name});
 }}
 """
     else:
-        out += f"""const {type_name} &{field_name}({"unsigned int index" if is_array else ""}) const {{
+        out += f"""inline const {type_name} &Gen::{clazz}::{field_name}({"unsigned int index" if is_array else ""}) const {{
     {f"ATTRIB_CODEGEN_GETVALUEINDEXED({type_name}, {key}, index)" if is_array else f"ATTRIB_CODEGEN_GETVALUE({type_name}, {key})"};
 }}      
 """
 
+    # Checked get, the order is different here than at declaration-site
+    if is_layout:
+        if is_array:
+            out += f"""inline bool Gen::{clazz}::{field_name}({type_name} &result, unsigned int index) const {{
+    ATTRIB_CODEGEN_CHECKEDGETLAYOUTINDEXED({field_name}, result, index);
+    }}
+"""
+        else:
+            out += f"""inline bool Gen::{clazz}::{field_name}({type_name} &result) const {{
+    result = {field_name}();
+    return true;
+}}
+"""
+    else:
+        if is_array:
+            out += f"""inline bool Gen::{clazz}::{field_name}({type_name} &result, unsigned int index) const {{
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED({type_name}, {key}, result, index);
+}}
+"""
+        else:
+            out += f"""inline bool Gen::{clazz}::{field_name}({type_name} &result) const {{
+    ATTRIB_CODEGEN_CHECKEDGETVALUE({type_name}, {key}, result);
+}}
+"""
+
     # Num
     if is_array:
-        out += f"""unsigned int Num_{field_name}() const {{
+        out += f"""inline unsigned int Gen::{clazz}::Num_{field_name}() const {{
     {f"ATTRIB_CODEGEN_GETLAYOUTLENGTH({field_name})" if is_layout else f"ATTRIB_CODEGEN_GETLENGTH({key})"};
 }}
 """
@@ -127,16 +180,16 @@ def get_layout_getters(field, key):
     # Setters
     if is_array:
         # TODO
-        out += f"""bool SET_{field_name}(const {type_name} &input, unsigned int index) {{
+        out += f"""inline bool Gen::{clazz}::SET_{field_name}(const {type_name} &input, unsigned int index) {{
     {f"ATTRIB_CODEGEN_SETLAYOUTINDEXED({field_name}, input, index)" if is_layout else f"ATTRIB_CODEGEN_SETVALUEINDEXED({type_name}, {key}, input, index)"};
 }}
 """
     else:
-        pass
-        out += f"""bool SET_{field_name}(const {type_name} &input) {{
+        out += f"""inline bool Gen::{clazz}::SET_{field_name}(const {type_name} &input) {{
     {f"ATTRIB_CODEGEN_SETLAYOUT({field_name}, input)" if is_layout else f"ATTRIB_CODEGEN_SETVALUE({type_name}, {key}, input)"};
 }}
 """
+    out += "\n"
 
     return out
 
@@ -245,7 +298,7 @@ const {name} &operator=(const Instance &rhs) {{
             for field in sorted_fields:
                 try:
                     key = strToKey[field["Name"]]
-                    out += get_layout_getters(field, key)
+                    out += get_field_func_declarations(field, key)
                 except KeyError:
                     print(
                         f"Couldn't find key for field {field['Name']} in class {name}"
@@ -284,7 +337,18 @@ inline Key Gen::{name}::ClassKey() {{
     return ClassName::{name};
 }}
 
-}}; // namespace Attrib
+"""
+
+            for field in sorted_fields:
+                try:
+                    key = strToKey[field["Name"]]
+                    out += get_field_func_definitions(name, field, key)
+                except KeyError:
+                    print(
+                        f"Couldn't find key for field {field['Name']} in class {name}"
+                    )
+
+            out += """}; // namespace Attrib
 
 #endif
 """

@@ -59,66 +59,29 @@ struct pursuitescalation : Instance {
         Instance::operator=(rhs);
         return *this;
     }
-    bool heattable(TAttrib<RefSpec> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(RefSpec, 0xd4b0cc11);
-    }
-    bool heattable(RefSpec &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(RefSpec, 0xd4b0cc11, result, index);
-    }
-    const RefSpec &heattable(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(RefSpec, 0xd4b0cc11, index);
-    }
-    unsigned int Num_heattable() const {
-        ATTRIB_CODEGEN_GETLENGTH(0xd4b0cc11);
-    }
-    bool SET_heattable(const RefSpec &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(RefSpec, 0xd4b0cc11, input, index);
-    }
-    bool racetable(TAttrib<RefSpec> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(RefSpec, 0x2283ecaf);
-    }
-    bool racetable(RefSpec &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(RefSpec, 0x2283ecaf, result, index);
-    }
-    const RefSpec &racetable(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(RefSpec, 0x2283ecaf, index);
-    }
-    unsigned int Num_racetable() const {
-        ATTRIB_CODEGEN_GETLENGTH(0x2283ecaf);
-    }
-    bool SET_racetable(const RefSpec &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(RefSpec, 0x2283ecaf, input, index);
-    }
-    bool supportracetable(TAttrib<RefSpec> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(RefSpec, 0xe5332008);
-    }
-    bool supportracetable(RefSpec &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(RefSpec, 0xe5332008, result, index);
-    }
-    const RefSpec &supportracetable(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(RefSpec, 0xe5332008, index);
-    }
-    unsigned int Num_supportracetable() const {
-        ATTRIB_CODEGEN_GETLENGTH(0xe5332008);
-    }
-    bool SET_supportracetable(const RefSpec &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(RefSpec, 0xe5332008, input, index);
-    }
-    bool supporttable(TAttrib<RefSpec> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(RefSpec, 0xf3918f68);
-    }
-    bool supporttable(RefSpec &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(RefSpec, 0xf3918f68, result, index);
-    }
-    const RefSpec &supporttable(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(RefSpec, 0xf3918f68, index);
-    }
-    unsigned int Num_supporttable() const {
-        ATTRIB_CODEGEN_GETLENGTH(0xf3918f68);
-    }
-    bool SET_supporttable(const RefSpec &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(RefSpec, 0xf3918f68, input, index);
-    }
+    bool heattable(TAttrib<RefSpec> &result) const;
+    bool heattable(RefSpec &result, unsigned int index) const;
+    const RefSpec &heattable(unsigned int index) const;
+    unsigned int Num_heattable() const;
+    bool SET_heattable(const RefSpec &input, unsigned int index);
+
+    bool racetable(TAttrib<RefSpec> &result) const;
+    bool racetable(RefSpec &result, unsigned int index) const;
+    const RefSpec &racetable(unsigned int index) const;
+    unsigned int Num_racetable() const;
+    bool SET_racetable(const RefSpec &input, unsigned int index);
+
+    bool supportracetable(TAttrib<RefSpec> &result) const;
+    bool supportracetable(RefSpec &result, unsigned int index) const;
+    const RefSpec &supportracetable(unsigned int index) const;
+    unsigned int Num_supportracetable() const;
+    bool SET_supportracetable(const RefSpec &input, unsigned int index);
+
+    bool supporttable(TAttrib<RefSpec> &result) const;
+    bool supporttable(RefSpec &result, unsigned int index) const;
+    const RefSpec &supporttable(unsigned int index) const;
+    unsigned int Num_supporttable() const;
+    bool SET_supporttable(const RefSpec &input, unsigned int index);
 
   private:
     unsigned int GetLayoutSize() {
@@ -148,6 +111,70 @@ static const Key supporttable = 0xf3918f68;
 
 inline Key Gen::pursuitescalation::ClassKey() {
     return ClassName::pursuitescalation;
+}
+
+inline bool Gen::pursuitescalation::heattable(TAttrib<RefSpec> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(RefSpec, 0xd4b0cc11);
+}
+inline const RefSpec &Gen::pursuitescalation::heattable(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(RefSpec, 0xd4b0cc11, index);
+}
+inline bool Gen::pursuitescalation::heattable(RefSpec &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(RefSpec, 0xd4b0cc11, result, index);
+}
+inline unsigned int Gen::pursuitescalation::Num_heattable() const {
+    ATTRIB_CODEGEN_GETLENGTH(0xd4b0cc11);
+}
+inline bool Gen::pursuitescalation::SET_heattable(const RefSpec &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(RefSpec, 0xd4b0cc11, input, index);
+}
+
+inline bool Gen::pursuitescalation::racetable(TAttrib<RefSpec> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(RefSpec, 0x2283ecaf);
+}
+inline const RefSpec &Gen::pursuitescalation::racetable(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(RefSpec, 0x2283ecaf, index);
+}
+inline bool Gen::pursuitescalation::racetable(RefSpec &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(RefSpec, 0x2283ecaf, result, index);
+}
+inline unsigned int Gen::pursuitescalation::Num_racetable() const {
+    ATTRIB_CODEGEN_GETLENGTH(0x2283ecaf);
+}
+inline bool Gen::pursuitescalation::SET_racetable(const RefSpec &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(RefSpec, 0x2283ecaf, input, index);
+}
+
+inline bool Gen::pursuitescalation::supportracetable(TAttrib<RefSpec> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(RefSpec, 0xe5332008);
+}
+inline const RefSpec &Gen::pursuitescalation::supportracetable(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(RefSpec, 0xe5332008, index);
+}
+inline bool Gen::pursuitescalation::supportracetable(RefSpec &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(RefSpec, 0xe5332008, result, index);
+}
+inline unsigned int Gen::pursuitescalation::Num_supportracetable() const {
+    ATTRIB_CODEGEN_GETLENGTH(0xe5332008);
+}
+inline bool Gen::pursuitescalation::SET_supportracetable(const RefSpec &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(RefSpec, 0xe5332008, input, index);
+}
+
+inline bool Gen::pursuitescalation::supporttable(TAttrib<RefSpec> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(RefSpec, 0xf3918f68);
+}
+inline const RefSpec &Gen::pursuitescalation::supporttable(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(RefSpec, 0xf3918f68, index);
+}
+inline bool Gen::pursuitescalation::supporttable(RefSpec &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(RefSpec, 0xf3918f68, result, index);
+}
+inline unsigned int Gen::pursuitescalation::Num_supporttable() const {
+    ATTRIB_CODEGEN_GETLENGTH(0xf3918f68);
+}
+inline bool Gen::pursuitescalation::SET_supporttable(const RefSpec &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(RefSpec, 0xf3918f68, input, index);
 }
 
 }; // namespace Attrib

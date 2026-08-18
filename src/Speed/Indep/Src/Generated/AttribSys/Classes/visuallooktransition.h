@@ -62,90 +62,40 @@ struct visuallooktransition : Instance {
         Instance::operator=(rhs);
         return *this;
     }
-    bool _testvalue(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x4ef07d5d);
-    }
-    bool _testvalue(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x4ef07d5d, result);
-    }
-    const EA::Reflection::Float &_testvalue() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x4ef07d5d);
-    }
-    bool SET__testvalue(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x4ef07d5d, input);
-    }
-    bool normal(TAttrib<UMath::Matrix4> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(UMath::Matrix4, 0x0eb3d357);
-    }
-    bool normal(UMath::Matrix4 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(UMath::Matrix4, 0x0eb3d357, result);
-    }
-    const UMath::Matrix4 &normal() const {
-        ATTRIB_CODEGEN_GETVALUE(UMath::Matrix4, 0x0eb3d357);
-    }
-    bool SET_normal(const UMath::Matrix4 &input) {
-        ATTRIB_CODEGEN_SETVALUE(UMath::Matrix4, 0x0eb3d357, input);
-    }
-    bool uves(TAttrib<UMath::Matrix4> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(UMath::Matrix4, 0x681bef75);
-    }
-    bool uves(UMath::Matrix4 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(UMath::Matrix4, 0x681bef75, result);
-    }
-    const UMath::Matrix4 &uves() const {
-        ATTRIB_CODEGEN_GETVALUE(UMath::Matrix4, 0x681bef75);
-    }
-    bool SET_uves(const UMath::Matrix4 &input) {
-        ATTRIB_CODEGEN_SETVALUE(UMath::Matrix4, 0x681bef75, input);
-    }
-    bool uves_extreme(TAttrib<UMath::Matrix4> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(UMath::Matrix4, 0x0e629621);
-    }
-    bool uves_extreme(UMath::Matrix4 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(UMath::Matrix4, 0x0e629621, result);
-    }
-    const UMath::Matrix4 &uves_extreme() const {
-        ATTRIB_CODEGEN_GETVALUE(UMath::Matrix4, 0x0e629621);
-    }
-    bool SET_uves_extreme(const UMath::Matrix4 &input) {
-        ATTRIB_CODEGEN_SETVALUE(UMath::Matrix4, 0x0e629621, input);
-    }
-    bool uves_pulse(TAttrib<UMath::Matrix4> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(UMath::Matrix4, 0x334f1e4d);
-    }
-    bool uves_pulse(UMath::Matrix4 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(UMath::Matrix4, 0x334f1e4d, result);
-    }
-    const UMath::Matrix4 &uves_pulse() const {
-        ATTRIB_CODEGEN_GETVALUE(UMath::Matrix4, 0x334f1e4d);
-    }
-    bool SET_uves_pulse(const UMath::Matrix4 &input) {
-        ATTRIB_CODEGEN_SETVALUE(UMath::Matrix4, 0x334f1e4d, input);
-    }
-    bool uves_pulse_length(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x0b82d479);
-    }
-    bool uves_pulse_length(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x0b82d479, result);
-    }
-    const EA::Reflection::Float &uves_pulse_length() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x0b82d479);
-    }
-    bool SET_uves_pulse_length(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x0b82d479, input);
-    }
-    bool uves_pulse_trigger(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x53769b6c);
-    }
-    bool uves_pulse_trigger(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x53769b6c, result);
-    }
-    const EA::Reflection::Float &uves_pulse_trigger() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x53769b6c);
-    }
-    bool SET_uves_pulse_trigger(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x53769b6c, input);
-    }
+    bool _testvalue(TAttrib<EA::Reflection::Float> &result) const;
+    bool _testvalue(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &_testvalue() const;
+    bool SET__testvalue(const EA::Reflection::Float &input);
+
+    bool normal(TAttrib<UMath::Matrix4> &result) const;
+    bool normal(UMath::Matrix4 &result) const;
+    const UMath::Matrix4 &normal() const;
+    bool SET_normal(const UMath::Matrix4 &input);
+
+    bool uves(TAttrib<UMath::Matrix4> &result) const;
+    bool uves(UMath::Matrix4 &result) const;
+    const UMath::Matrix4 &uves() const;
+    bool SET_uves(const UMath::Matrix4 &input);
+
+    bool uves_extreme(TAttrib<UMath::Matrix4> &result) const;
+    bool uves_extreme(UMath::Matrix4 &result) const;
+    const UMath::Matrix4 &uves_extreme() const;
+    bool SET_uves_extreme(const UMath::Matrix4 &input);
+
+    bool uves_pulse(TAttrib<UMath::Matrix4> &result) const;
+    bool uves_pulse(UMath::Matrix4 &result) const;
+    const UMath::Matrix4 &uves_pulse() const;
+    bool SET_uves_pulse(const UMath::Matrix4 &input);
+
+    bool uves_pulse_length(TAttrib<EA::Reflection::Float> &result) const;
+    bool uves_pulse_length(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &uves_pulse_length() const;
+    bool SET_uves_pulse_length(const EA::Reflection::Float &input);
+
+    bool uves_pulse_trigger(TAttrib<EA::Reflection::Float> &result) const;
+    bool uves_pulse_trigger(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &uves_pulse_trigger() const;
+    bool SET_uves_pulse_trigger(const EA::Reflection::Float &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -178,6 +128,97 @@ static const Key uves_pulse_trigger = 0x53769b6c;
 
 inline Key Gen::visuallooktransition::ClassKey() {
     return ClassName::visuallooktransition;
+}
+
+inline bool Gen::visuallooktransition::_testvalue(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x4ef07d5d);
+}
+inline const EA::Reflection::Float &Gen::visuallooktransition::_testvalue() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x4ef07d5d);
+}
+inline bool Gen::visuallooktransition::_testvalue(EA::Reflection::Float &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x4ef07d5d, result);
+}
+inline bool Gen::visuallooktransition::SET__testvalue(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x4ef07d5d, input);
+}
+
+inline bool Gen::visuallooktransition::normal(TAttrib<UMath::Matrix4> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(UMath::Matrix4, 0x0eb3d357);
+}
+inline const UMath::Matrix4 &Gen::visuallooktransition::normal() const {
+    ATTRIB_CODEGEN_GETVALUE(UMath::Matrix4, 0x0eb3d357);
+}
+inline bool Gen::visuallooktransition::normal(UMath::Matrix4 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(UMath::Matrix4, 0x0eb3d357, result);
+}
+inline bool Gen::visuallooktransition::SET_normal(const UMath::Matrix4 &input) {
+    ATTRIB_CODEGEN_SETVALUE(UMath::Matrix4, 0x0eb3d357, input);
+}
+
+inline bool Gen::visuallooktransition::uves(TAttrib<UMath::Matrix4> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(UMath::Matrix4, 0x681bef75);
+}
+inline const UMath::Matrix4 &Gen::visuallooktransition::uves() const {
+    ATTRIB_CODEGEN_GETVALUE(UMath::Matrix4, 0x681bef75);
+}
+inline bool Gen::visuallooktransition::uves(UMath::Matrix4 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(UMath::Matrix4, 0x681bef75, result);
+}
+inline bool Gen::visuallooktransition::SET_uves(const UMath::Matrix4 &input) {
+    ATTRIB_CODEGEN_SETVALUE(UMath::Matrix4, 0x681bef75, input);
+}
+
+inline bool Gen::visuallooktransition::uves_extreme(TAttrib<UMath::Matrix4> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(UMath::Matrix4, 0x0e629621);
+}
+inline const UMath::Matrix4 &Gen::visuallooktransition::uves_extreme() const {
+    ATTRIB_CODEGEN_GETVALUE(UMath::Matrix4, 0x0e629621);
+}
+inline bool Gen::visuallooktransition::uves_extreme(UMath::Matrix4 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(UMath::Matrix4, 0x0e629621, result);
+}
+inline bool Gen::visuallooktransition::SET_uves_extreme(const UMath::Matrix4 &input) {
+    ATTRIB_CODEGEN_SETVALUE(UMath::Matrix4, 0x0e629621, input);
+}
+
+inline bool Gen::visuallooktransition::uves_pulse(TAttrib<UMath::Matrix4> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(UMath::Matrix4, 0x334f1e4d);
+}
+inline const UMath::Matrix4 &Gen::visuallooktransition::uves_pulse() const {
+    ATTRIB_CODEGEN_GETVALUE(UMath::Matrix4, 0x334f1e4d);
+}
+inline bool Gen::visuallooktransition::uves_pulse(UMath::Matrix4 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(UMath::Matrix4, 0x334f1e4d, result);
+}
+inline bool Gen::visuallooktransition::SET_uves_pulse(const UMath::Matrix4 &input) {
+    ATTRIB_CODEGEN_SETVALUE(UMath::Matrix4, 0x334f1e4d, input);
+}
+
+inline bool Gen::visuallooktransition::uves_pulse_length(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x0b82d479);
+}
+inline const EA::Reflection::Float &Gen::visuallooktransition::uves_pulse_length() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x0b82d479);
+}
+inline bool Gen::visuallooktransition::uves_pulse_length(EA::Reflection::Float &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x0b82d479, result);
+}
+inline bool Gen::visuallooktransition::SET_uves_pulse_length(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x0b82d479, input);
+}
+
+inline bool Gen::visuallooktransition::uves_pulse_trigger(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x53769b6c);
+}
+inline const EA::Reflection::Float &Gen::visuallooktransition::uves_pulse_trigger() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x53769b6c);
+}
+inline bool Gen::visuallooktransition::uves_pulse_trigger(EA::Reflection::Float &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x53769b6c, result);
+}
+inline bool Gen::visuallooktransition::SET_uves_pulse_trigger(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x53769b6c, input);
 }
 
 }; // namespace Attrib

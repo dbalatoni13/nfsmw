@@ -72,51 +72,23 @@ struct system : Instance {
         Instance::operator=(rhs);
         return *this;
     }
-    bool SimControls(TAttrib<Attrib::StringKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(Attrib::StringKey, 0xd474e60a);
-    }
-    bool SimControls(Attrib::StringKey &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(Attrib::StringKey, 0xd474e60a, result, index);
-    }
-    const Attrib::StringKey &SimControls(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(Attrib::StringKey, 0xd474e60a, index);
-    }
-    unsigned int Num_SimControls() const {
-        ATTRIB_CODEGEN_GETLENGTH(0xd474e60a);
-    }
-    bool SET_SimControls(const Attrib::StringKey &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(Attrib::StringKey, 0xd474e60a, input, index);
-    }
-    bool SimSubSystems(TAttrib<Attrib::StringKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(Attrib::StringKey, 0x0dfc2418);
-    }
-    bool SimSubSystems(Attrib::StringKey &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(Attrib::StringKey, 0x0dfc2418, result, index);
-    }
-    const Attrib::StringKey &SimSubSystems(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(Attrib::StringKey, 0x0dfc2418, index);
-    }
-    unsigned int Num_SimSubSystems() const {
-        ATTRIB_CODEGEN_GETLENGTH(0x0dfc2418);
-    }
-    bool SET_SimSubSystems(const Attrib::StringKey &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(Attrib::StringKey, 0x0dfc2418, input, index);
-    }
-    bool SimTasks(TAttrib<Attrib::StringKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(Attrib::StringKey, 0xa1786a84);
-    }
-    bool SimTasks(Attrib::StringKey &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUTINDEXED(SimTasks, result, index);
-    }
-    const Attrib::StringKey &SimTasks(unsigned int index) const {
-        ATTRIB_CODEGEN_GETLAYOUTINDEXED(Attrib::StringKey, SimTasks, index);
-    }
-    unsigned int Num_SimTasks() const {
-        ATTRIB_CODEGEN_GETLAYOUTLENGTH(SimTasks);
-    }
-    bool SET_SimTasks(const Attrib::StringKey &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETLAYOUTINDEXED(SimTasks, input, index);
-    }
+    bool SimControls(TAttrib<Attrib::StringKey> &result) const;
+    bool SimControls(Attrib::StringKey &result, unsigned int index) const;
+    const Attrib::StringKey &SimControls(unsigned int index) const;
+    unsigned int Num_SimControls() const;
+    bool SET_SimControls(const Attrib::StringKey &input, unsigned int index);
+
+    bool SimSubSystems(TAttrib<Attrib::StringKey> &result) const;
+    bool SimSubSystems(Attrib::StringKey &result, unsigned int index) const;
+    const Attrib::StringKey &SimSubSystems(unsigned int index) const;
+    unsigned int Num_SimSubSystems() const;
+    bool SET_SimSubSystems(const Attrib::StringKey &input, unsigned int index);
+
+    bool SimTasks(TAttrib<Attrib::StringKey> &result) const;
+    bool SimTasks(Attrib::StringKey &result, unsigned int index) const;
+    const Attrib::StringKey &SimTasks(unsigned int index) const;
+    unsigned int Num_SimTasks() const;
+    bool SET_SimTasks(const Attrib::StringKey &input, unsigned int index);
 
   private:
     unsigned int GetLayoutSize() {
@@ -145,6 +117,54 @@ static const Key SimTasks = 0xa1786a84;
 
 inline Key Gen::system::ClassKey() {
     return ClassName::system;
+}
+
+inline bool Gen::system::SimControls(TAttrib<Attrib::StringKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(Attrib::StringKey, 0xd474e60a);
+}
+inline const Attrib::StringKey &Gen::system::SimControls(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(Attrib::StringKey, 0xd474e60a, index);
+}
+inline bool Gen::system::SimControls(Attrib::StringKey &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(Attrib::StringKey, 0xd474e60a, result, index);
+}
+inline unsigned int Gen::system::Num_SimControls() const {
+    ATTRIB_CODEGEN_GETLENGTH(0xd474e60a);
+}
+inline bool Gen::system::SET_SimControls(const Attrib::StringKey &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(Attrib::StringKey, 0xd474e60a, input, index);
+}
+
+inline bool Gen::system::SimSubSystems(TAttrib<Attrib::StringKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(Attrib::StringKey, 0x0dfc2418);
+}
+inline const Attrib::StringKey &Gen::system::SimSubSystems(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(Attrib::StringKey, 0x0dfc2418, index);
+}
+inline bool Gen::system::SimSubSystems(Attrib::StringKey &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(Attrib::StringKey, 0x0dfc2418, result, index);
+}
+inline unsigned int Gen::system::Num_SimSubSystems() const {
+    ATTRIB_CODEGEN_GETLENGTH(0x0dfc2418);
+}
+inline bool Gen::system::SET_SimSubSystems(const Attrib::StringKey &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(Attrib::StringKey, 0x0dfc2418, input, index);
+}
+
+inline bool Gen::system::SimTasks(TAttrib<Attrib::StringKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(Attrib::StringKey, 0xa1786a84);
+}
+inline const Attrib::StringKey &Gen::system::SimTasks(unsigned int index) const {
+    ATTRIB_CODEGEN_GETLAYOUTINDEXED(Attrib::StringKey, SimTasks, index);
+}
+inline bool Gen::system::SimTasks(Attrib::StringKey &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETLAYOUTINDEXED(SimTasks, result, index);
+}
+inline unsigned int Gen::system::Num_SimTasks() const {
+    ATTRIB_CODEGEN_GETLAYOUTLENGTH(SimTasks);
+}
+inline bool Gen::system::SET_SimTasks(const Attrib::StringKey &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETLAYOUTINDEXED(SimTasks, input, index);
 }
 
 }; // namespace Attrib

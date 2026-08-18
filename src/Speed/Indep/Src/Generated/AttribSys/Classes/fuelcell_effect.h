@@ -71,33 +71,16 @@ struct fuelcell_effect : Instance {
         Instance::operator=(rhs);
         return *this;
     }
-    bool NGEmitter(TAttrib<RefSpec> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(RefSpec, 0xb0d98a89);
-    }
-    bool NGEmitter(RefSpec &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(RefSpec, 0xb0d98a89, result, index);
-    }
-    const RefSpec &NGEmitter(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(RefSpec, 0xb0d98a89, index);
-    }
-    unsigned int Num_NGEmitter() const {
-        ATTRIB_CODEGEN_GETLENGTH(0xb0d98a89);
-    }
-    bool SET_NGEmitter(const RefSpec &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(RefSpec, 0xb0d98a89, input, index);
-    }
-    bool doTest(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0xaee3be58);
-    }
-    bool doTest(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(doTest, result);
-    }
-    const EA::Reflection::Bool &doTest() const {
-        ATTRIB_CODEGEN_GETLAYOUT(doTest);
-    }
-    bool SET_doTest(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(doTest, input);
-    }
+    bool NGEmitter(TAttrib<RefSpec> &result) const;
+    bool NGEmitter(RefSpec &result, unsigned int index) const;
+    const RefSpec &NGEmitter(unsigned int index) const;
+    unsigned int Num_NGEmitter() const;
+    bool SET_NGEmitter(const RefSpec &input, unsigned int index);
+
+    bool doTest(TAttrib<EA::Reflection::Bool> &result) const;
+    bool doTest(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &doTest() const;
+    bool SET_doTest(const EA::Reflection::Bool &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -125,6 +108,36 @@ static const Key doTest = 0xaee3be58;
 
 inline Key Gen::fuelcell_effect::ClassKey() {
     return ClassName::fuelcell_effect;
+}
+
+inline bool Gen::fuelcell_effect::NGEmitter(TAttrib<RefSpec> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(RefSpec, 0xb0d98a89);
+}
+inline const RefSpec &Gen::fuelcell_effect::NGEmitter(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(RefSpec, 0xb0d98a89, index);
+}
+inline bool Gen::fuelcell_effect::NGEmitter(RefSpec &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(RefSpec, 0xb0d98a89, result, index);
+}
+inline unsigned int Gen::fuelcell_effect::Num_NGEmitter() const {
+    ATTRIB_CODEGEN_GETLENGTH(0xb0d98a89);
+}
+inline bool Gen::fuelcell_effect::SET_NGEmitter(const RefSpec &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(RefSpec, 0xb0d98a89, input, index);
+}
+
+inline bool Gen::fuelcell_effect::doTest(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0xaee3be58);
+}
+inline const EA::Reflection::Bool &Gen::fuelcell_effect::doTest() const {
+    ATTRIB_CODEGEN_GETLAYOUT(doTest);
+}
+inline bool Gen::fuelcell_effect::doTest(EA::Reflection::Bool &result) const {
+    result = doTest();
+    return true;
+}
+inline bool Gen::fuelcell_effect::SET_doTest(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(doTest, input);
 }
 
 }; // namespace Attrib

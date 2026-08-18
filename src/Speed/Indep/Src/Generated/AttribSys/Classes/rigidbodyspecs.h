@@ -117,291 +117,123 @@ struct rigidbodyspecs : Instance {
         Instance::operator=(rhs);
         return *this;
     }
-    bool BASE_MATERIAL(TAttrib<Attrib::StringKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(Attrib::StringKey, 0x4164f5f9);
-    }
-    bool BASE_MATERIAL(Attrib::StringKey &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(BASE_MATERIAL, result);
-    }
-    const Attrib::StringKey &BASE_MATERIAL() const {
-        ATTRIB_CODEGEN_GETLAYOUT(BASE_MATERIAL);
-    }
-    bool SET_BASE_MATERIAL(const Attrib::StringKey &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(BASE_MATERIAL, input);
-    }
-    bool CG(TAttrib<UMath::Vector4> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(UMath::Vector4, 0x91eb5d15);
-    }
-    bool CG(UMath::Vector4 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(CG, result);
-    }
-    const UMath::Vector4 &CG() const {
-        ATTRIB_CODEGEN_GETLAYOUT(CG);
-    }
-    bool SET_CG(const UMath::Vector4 &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(CG, input);
-    }
-    bool COLLISION_BOX_PAD(TAttrib<UMath::Vector4> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(UMath::Vector4, 0x897ccf01);
-    }
-    bool COLLISION_BOX_PAD(UMath::Vector4 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(COLLISION_BOX_PAD, result);
-    }
-    const UMath::Vector4 &COLLISION_BOX_PAD() const {
-        ATTRIB_CODEGEN_GETLAYOUT(COLLISION_BOX_PAD);
-    }
-    bool SET_COLLISION_BOX_PAD(const UMath::Vector4 &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(COLLISION_BOX_PAD, input);
-    }
-    bool DEFAULT_COL_BOX(TAttrib<Attrib::StringKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(Attrib::StringKey, 0x52a236e0);
-    }
-    bool DEFAULT_COL_BOX(Attrib::StringKey &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(DEFAULT_COL_BOX, result);
-    }
-    const Attrib::StringKey &DEFAULT_COL_BOX() const {
-        ATTRIB_CODEGEN_GETLAYOUT(DEFAULT_COL_BOX);
-    }
-    bool SET_DEFAULT_COL_BOX(const Attrib::StringKey &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(DEFAULT_COL_BOX, input);
-    }
-    bool DRAG(TAttrib<UMath::Vector4> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(UMath::Vector4, 0xf9f0f071);
-    }
-    bool DRAG(UMath::Vector4 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(DRAG, result);
-    }
-    const UMath::Vector4 &DRAG() const {
-        ATTRIB_CODEGEN_GETLAYOUT(DRAG);
-    }
-    bool SET_DRAG(const UMath::Vector4 &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(DRAG, input);
-    }
-    bool DRAG_ANGULAR(TAttrib<UMath::Vector4> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(UMath::Vector4, 0x1ad92dda);
-    }
-    bool DRAG_ANGULAR(UMath::Vector4 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(DRAG_ANGULAR, result);
-    }
-    const UMath::Vector4 &DRAG_ANGULAR() const {
-        ATTRIB_CODEGEN_GETLAYOUT(DRAG_ANGULAR);
-    }
-    bool SET_DRAG_ANGULAR(const UMath::Vector4 &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(DRAG_ANGULAR, input);
-    }
-    bool GRAVITY(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x07a7e841);
-    }
-    bool GRAVITY(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(GRAVITY, result);
-    }
-    const EA::Reflection::Float &GRAVITY() const {
-        ATTRIB_CODEGEN_GETLAYOUT(GRAVITY);
-    }
-    bool SET_GRAVITY(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(GRAVITY, input);
-    }
-    bool GROUND_ELASTICITY(TAttrib<UMath::Vector4> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(UMath::Vector4, 0x97ed84dd);
-    }
-    bool GROUND_ELASTICITY(UMath::Vector4 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(GROUND_ELASTICITY, result);
-    }
-    const UMath::Vector4 &GROUND_ELASTICITY() const {
-        ATTRIB_CODEGEN_GETLAYOUT(GROUND_ELASTICITY);
-    }
-    bool SET_GROUND_ELASTICITY(const UMath::Vector4 &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(GROUND_ELASTICITY, input);
-    }
-    bool GROUND_FRICTION(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x3fb1b342);
-    }
-    bool GROUND_FRICTION(EA::Reflection::Float &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUTINDEXED(GROUND_FRICTION, result, index);
-    }
-    const EA::Reflection::Float &GROUND_FRICTION(unsigned int index) const {
-        ATTRIB_CODEGEN_GETLAYOUTINDEXED(EA::Reflection::Float, GROUND_FRICTION, index);
-    }
-    unsigned int Num_GROUND_FRICTION() const {
-        ATTRIB_CODEGEN_GETLAYOUTLENGTH(GROUND_FRICTION);
-    }
-    bool SET_GROUND_FRICTION(const EA::Reflection::Float &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETLAYOUTINDEXED(GROUND_FRICTION, input, index);
-    }
-    bool GROUND_MOMENT_SCALE(TAttrib<UMath::Vector4> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(UMath::Vector4, 0xb7dff090);
-    }
-    bool GROUND_MOMENT_SCALE(UMath::Vector4 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(GROUND_MOMENT_SCALE, result);
-    }
-    const UMath::Vector4 &GROUND_MOMENT_SCALE() const {
-        ATTRIB_CODEGEN_GETLAYOUT(GROUND_MOMENT_SCALE);
-    }
-    bool SET_GROUND_MOMENT_SCALE(const UMath::Vector4 &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(GROUND_MOMENT_SCALE, input);
-    }
-    bool IMMOBILE_OBJECT_COLLISIONS(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x4793843b);
-    }
-    bool IMMOBILE_OBJECT_COLLISIONS(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(IMMOBILE_OBJECT_COLLISIONS, result);
-    }
-    const EA::Reflection::Bool &IMMOBILE_OBJECT_COLLISIONS() const {
-        ATTRIB_CODEGEN_GETLAYOUT(IMMOBILE_OBJECT_COLLISIONS);
-    }
-    bool SET_IMMOBILE_OBJECT_COLLISIONS(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(IMMOBILE_OBJECT_COLLISIONS, input);
-    }
-    bool INSTANCE_COLLISIONS_3D(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x22c5d3f9);
-    }
-    bool INSTANCE_COLLISIONS_3D(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(INSTANCE_COLLISIONS_3D, result);
-    }
-    const EA::Reflection::Bool &INSTANCE_COLLISIONS_3D() const {
-        ATTRIB_CODEGEN_GETLAYOUT(INSTANCE_COLLISIONS_3D);
-    }
-    bool SET_INSTANCE_COLLISIONS_3D(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(INSTANCE_COLLISIONS_3D, input);
-    }
-    bool NATURAL_ANGULAR_DAMPING(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xae9322de);
-    }
-    bool NATURAL_ANGULAR_DAMPING(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(NATURAL_ANGULAR_DAMPING, result);
-    }
-    const EA::Reflection::Float &NATURAL_ANGULAR_DAMPING() const {
-        ATTRIB_CODEGEN_GETLAYOUT(NATURAL_ANGULAR_DAMPING);
-    }
-    bool SET_NATURAL_ANGULAR_DAMPING(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(NATURAL_ANGULAR_DAMPING, input);
-    }
-    bool NO_GROUND_COLLISIONS(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x43a505ee);
-    }
-    bool NO_GROUND_COLLISIONS(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(NO_GROUND_COLLISIONS, result);
-    }
-    const EA::Reflection::Bool &NO_GROUND_COLLISIONS() const {
-        ATTRIB_CODEGEN_GETLAYOUT(NO_GROUND_COLLISIONS);
-    }
-    bool SET_NO_GROUND_COLLISIONS(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(NO_GROUND_COLLISIONS, input);
-    }
-    bool NO_OBJ_COLLISIONS(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x45b11648);
-    }
-    bool NO_OBJ_COLLISIONS(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(NO_OBJ_COLLISIONS, result);
-    }
-    const EA::Reflection::Bool &NO_OBJ_COLLISIONS() const {
-        ATTRIB_CODEGEN_GETLAYOUT(NO_OBJ_COLLISIONS);
-    }
-    bool SET_NO_OBJ_COLLISIONS(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(NO_OBJ_COLLISIONS, input);
-    }
-    bool NO_WORLD_COLLISIONS(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x1b5ea2c7);
-    }
-    bool NO_WORLD_COLLISIONS(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(NO_WORLD_COLLISIONS, result);
-    }
-    const EA::Reflection::Bool &NO_WORLD_COLLISIONS() const {
-        ATTRIB_CODEGEN_GETLAYOUT(NO_WORLD_COLLISIONS);
-    }
-    bool SET_NO_WORLD_COLLISIONS(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(NO_WORLD_COLLISIONS, input);
-    }
-    bool OBJ_ELASTICITY(TAttrib<UMath::Vector4> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(UMath::Vector4, 0x99b357bb);
-    }
-    bool OBJ_ELASTICITY(UMath::Vector4 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(OBJ_ELASTICITY, result);
-    }
-    const UMath::Vector4 &OBJ_ELASTICITY() const {
-        ATTRIB_CODEGEN_GETLAYOUT(OBJ_ELASTICITY);
-    }
-    bool SET_OBJ_ELASTICITY(const UMath::Vector4 &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(OBJ_ELASTICITY, input);
-    }
-    bool OBJ_FRICTION(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xe1a55d9b);
-    }
-    bool OBJ_FRICTION(EA::Reflection::Float &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUTINDEXED(OBJ_FRICTION, result, index);
-    }
-    const EA::Reflection::Float &OBJ_FRICTION(unsigned int index) const {
-        ATTRIB_CODEGEN_GETLAYOUTINDEXED(EA::Reflection::Float, OBJ_FRICTION, index);
-    }
-    unsigned int Num_OBJ_FRICTION() const {
-        ATTRIB_CODEGEN_GETLAYOUTLENGTH(OBJ_FRICTION);
-    }
-    bool SET_OBJ_FRICTION(const EA::Reflection::Float &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETLAYOUTINDEXED(OBJ_FRICTION, input, index);
-    }
-    bool OBJ_MOMENT_SCALE(TAttrib<UMath::Vector4> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(UMath::Vector4, 0xd4167df9);
-    }
-    bool OBJ_MOMENT_SCALE(UMath::Vector4 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(OBJ_MOMENT_SCALE, result);
-    }
-    const UMath::Vector4 &OBJ_MOMENT_SCALE() const {
-        ATTRIB_CODEGEN_GETLAYOUT(OBJ_MOMENT_SCALE);
-    }
-    bool SET_OBJ_MOMENT_SCALE(const UMath::Vector4 &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(OBJ_MOMENT_SCALE, input);
-    }
-    bool SLEEP_VELOCITY(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x9f4709c6);
-    }
-    bool SLEEP_VELOCITY(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(SLEEP_VELOCITY, result);
-    }
-    const EA::Reflection::Float &SLEEP_VELOCITY() const {
-        ATTRIB_CODEGEN_GETLAYOUT(SLEEP_VELOCITY);
-    }
-    bool SET_SLEEP_VELOCITY(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(SLEEP_VELOCITY, input);
-    }
-    bool WALL_ELASTICITY(TAttrib<UMath::Vector4> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(UMath::Vector4, 0xbe3faeb0);
-    }
-    bool WALL_ELASTICITY(UMath::Vector4 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(WALL_ELASTICITY, result);
-    }
-    const UMath::Vector4 &WALL_ELASTICITY() const {
-        ATTRIB_CODEGEN_GETLAYOUT(WALL_ELASTICITY);
-    }
-    bool SET_WALL_ELASTICITY(const UMath::Vector4 &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(WALL_ELASTICITY, input);
-    }
-    bool WALL_FRICTION(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x519c53b1);
-    }
-    bool WALL_FRICTION(EA::Reflection::Float &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUTINDEXED(WALL_FRICTION, result, index);
-    }
-    const EA::Reflection::Float &WALL_FRICTION(unsigned int index) const {
-        ATTRIB_CODEGEN_GETLAYOUTINDEXED(EA::Reflection::Float, WALL_FRICTION, index);
-    }
-    unsigned int Num_WALL_FRICTION() const {
-        ATTRIB_CODEGEN_GETLAYOUTLENGTH(WALL_FRICTION);
-    }
-    bool SET_WALL_FRICTION(const EA::Reflection::Float &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETLAYOUTINDEXED(WALL_FRICTION, input, index);
-    }
-    bool WORLD_MOMENT_SCALE(TAttrib<UMath::Vector4> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(UMath::Vector4, 0x048fa05d);
-    }
-    bool WORLD_MOMENT_SCALE(UMath::Vector4 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(WORLD_MOMENT_SCALE, result);
-    }
-    const UMath::Vector4 &WORLD_MOMENT_SCALE() const {
-        ATTRIB_CODEGEN_GETLAYOUT(WORLD_MOMENT_SCALE);
-    }
-    bool SET_WORLD_MOMENT_SCALE(const UMath::Vector4 &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(WORLD_MOMENT_SCALE, input);
-    }
+    bool BASE_MATERIAL(TAttrib<Attrib::StringKey> &result) const;
+    bool BASE_MATERIAL(Attrib::StringKey &result) const;
+    const Attrib::StringKey &BASE_MATERIAL() const;
+    bool SET_BASE_MATERIAL(const Attrib::StringKey &input);
+
+    bool CG(TAttrib<UMath::Vector4> &result) const;
+    bool CG(UMath::Vector4 &result) const;
+    const UMath::Vector4 &CG() const;
+    bool SET_CG(const UMath::Vector4 &input);
+
+    bool COLLISION_BOX_PAD(TAttrib<UMath::Vector4> &result) const;
+    bool COLLISION_BOX_PAD(UMath::Vector4 &result) const;
+    const UMath::Vector4 &COLLISION_BOX_PAD() const;
+    bool SET_COLLISION_BOX_PAD(const UMath::Vector4 &input);
+
+    bool DEFAULT_COL_BOX(TAttrib<Attrib::StringKey> &result) const;
+    bool DEFAULT_COL_BOX(Attrib::StringKey &result) const;
+    const Attrib::StringKey &DEFAULT_COL_BOX() const;
+    bool SET_DEFAULT_COL_BOX(const Attrib::StringKey &input);
+
+    bool DRAG(TAttrib<UMath::Vector4> &result) const;
+    bool DRAG(UMath::Vector4 &result) const;
+    const UMath::Vector4 &DRAG() const;
+    bool SET_DRAG(const UMath::Vector4 &input);
+
+    bool DRAG_ANGULAR(TAttrib<UMath::Vector4> &result) const;
+    bool DRAG_ANGULAR(UMath::Vector4 &result) const;
+    const UMath::Vector4 &DRAG_ANGULAR() const;
+    bool SET_DRAG_ANGULAR(const UMath::Vector4 &input);
+
+    bool GRAVITY(TAttrib<EA::Reflection::Float> &result) const;
+    bool GRAVITY(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &GRAVITY() const;
+    bool SET_GRAVITY(const EA::Reflection::Float &input);
+
+    bool GROUND_ELASTICITY(TAttrib<UMath::Vector4> &result) const;
+    bool GROUND_ELASTICITY(UMath::Vector4 &result) const;
+    const UMath::Vector4 &GROUND_ELASTICITY() const;
+    bool SET_GROUND_ELASTICITY(const UMath::Vector4 &input);
+
+    bool GROUND_FRICTION(TAttrib<EA::Reflection::Float> &result) const;
+    bool GROUND_FRICTION(EA::Reflection::Float &result, unsigned int index) const;
+    const EA::Reflection::Float &GROUND_FRICTION(unsigned int index) const;
+    unsigned int Num_GROUND_FRICTION() const;
+    bool SET_GROUND_FRICTION(const EA::Reflection::Float &input, unsigned int index);
+
+    bool GROUND_MOMENT_SCALE(TAttrib<UMath::Vector4> &result) const;
+    bool GROUND_MOMENT_SCALE(UMath::Vector4 &result) const;
+    const UMath::Vector4 &GROUND_MOMENT_SCALE() const;
+    bool SET_GROUND_MOMENT_SCALE(const UMath::Vector4 &input);
+
+    bool IMMOBILE_OBJECT_COLLISIONS(TAttrib<EA::Reflection::Bool> &result) const;
+    bool IMMOBILE_OBJECT_COLLISIONS(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &IMMOBILE_OBJECT_COLLISIONS() const;
+    bool SET_IMMOBILE_OBJECT_COLLISIONS(const EA::Reflection::Bool &input);
+
+    bool INSTANCE_COLLISIONS_3D(TAttrib<EA::Reflection::Bool> &result) const;
+    bool INSTANCE_COLLISIONS_3D(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &INSTANCE_COLLISIONS_3D() const;
+    bool SET_INSTANCE_COLLISIONS_3D(const EA::Reflection::Bool &input);
+
+    bool NATURAL_ANGULAR_DAMPING(TAttrib<EA::Reflection::Float> &result) const;
+    bool NATURAL_ANGULAR_DAMPING(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &NATURAL_ANGULAR_DAMPING() const;
+    bool SET_NATURAL_ANGULAR_DAMPING(const EA::Reflection::Float &input);
+
+    bool NO_GROUND_COLLISIONS(TAttrib<EA::Reflection::Bool> &result) const;
+    bool NO_GROUND_COLLISIONS(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &NO_GROUND_COLLISIONS() const;
+    bool SET_NO_GROUND_COLLISIONS(const EA::Reflection::Bool &input);
+
+    bool NO_OBJ_COLLISIONS(TAttrib<EA::Reflection::Bool> &result) const;
+    bool NO_OBJ_COLLISIONS(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &NO_OBJ_COLLISIONS() const;
+    bool SET_NO_OBJ_COLLISIONS(const EA::Reflection::Bool &input);
+
+    bool NO_WORLD_COLLISIONS(TAttrib<EA::Reflection::Bool> &result) const;
+    bool NO_WORLD_COLLISIONS(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &NO_WORLD_COLLISIONS() const;
+    bool SET_NO_WORLD_COLLISIONS(const EA::Reflection::Bool &input);
+
+    bool OBJ_ELASTICITY(TAttrib<UMath::Vector4> &result) const;
+    bool OBJ_ELASTICITY(UMath::Vector4 &result) const;
+    const UMath::Vector4 &OBJ_ELASTICITY() const;
+    bool SET_OBJ_ELASTICITY(const UMath::Vector4 &input);
+
+    bool OBJ_FRICTION(TAttrib<EA::Reflection::Float> &result) const;
+    bool OBJ_FRICTION(EA::Reflection::Float &result, unsigned int index) const;
+    const EA::Reflection::Float &OBJ_FRICTION(unsigned int index) const;
+    unsigned int Num_OBJ_FRICTION() const;
+    bool SET_OBJ_FRICTION(const EA::Reflection::Float &input, unsigned int index);
+
+    bool OBJ_MOMENT_SCALE(TAttrib<UMath::Vector4> &result) const;
+    bool OBJ_MOMENT_SCALE(UMath::Vector4 &result) const;
+    const UMath::Vector4 &OBJ_MOMENT_SCALE() const;
+    bool SET_OBJ_MOMENT_SCALE(const UMath::Vector4 &input);
+
+    bool SLEEP_VELOCITY(TAttrib<EA::Reflection::Float> &result) const;
+    bool SLEEP_VELOCITY(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &SLEEP_VELOCITY() const;
+    bool SET_SLEEP_VELOCITY(const EA::Reflection::Float &input);
+
+    bool WALL_ELASTICITY(TAttrib<UMath::Vector4> &result) const;
+    bool WALL_ELASTICITY(UMath::Vector4 &result) const;
+    const UMath::Vector4 &WALL_ELASTICITY() const;
+    bool SET_WALL_ELASTICITY(const UMath::Vector4 &input);
+
+    bool WALL_FRICTION(TAttrib<EA::Reflection::Float> &result) const;
+    bool WALL_FRICTION(EA::Reflection::Float &result, unsigned int index) const;
+    const EA::Reflection::Float &WALL_FRICTION(unsigned int index) const;
+    unsigned int Num_WALL_FRICTION() const;
+    bool SET_WALL_FRICTION(const EA::Reflection::Float &input, unsigned int index);
+
+    bool WORLD_MOMENT_SCALE(TAttrib<UMath::Vector4> &result) const;
+    bool WORLD_MOMENT_SCALE(UMath::Vector4 &result) const;
+    const UMath::Vector4 &WORLD_MOMENT_SCALE() const;
+    bool SET_WORLD_MOMENT_SCALE(const UMath::Vector4 &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -450,6 +282,334 @@ static const Key WORLD_MOMENT_SCALE = 0x048fa05d;
 
 inline Key Gen::rigidbodyspecs::ClassKey() {
     return ClassName::rigidbodyspecs;
+}
+
+inline bool Gen::rigidbodyspecs::BASE_MATERIAL(TAttrib<Attrib::StringKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(Attrib::StringKey, 0x4164f5f9);
+}
+inline const Attrib::StringKey &Gen::rigidbodyspecs::BASE_MATERIAL() const {
+    ATTRIB_CODEGEN_GETLAYOUT(BASE_MATERIAL);
+}
+inline bool Gen::rigidbodyspecs::BASE_MATERIAL(Attrib::StringKey &result) const {
+    result = BASE_MATERIAL();
+    return true;
+}
+inline bool Gen::rigidbodyspecs::SET_BASE_MATERIAL(const Attrib::StringKey &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(BASE_MATERIAL, input);
+}
+
+inline bool Gen::rigidbodyspecs::CG(TAttrib<UMath::Vector4> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(UMath::Vector4, 0x91eb5d15);
+}
+inline const UMath::Vector4 &Gen::rigidbodyspecs::CG() const {
+    ATTRIB_CODEGEN_GETLAYOUT(CG);
+}
+inline bool Gen::rigidbodyspecs::CG(UMath::Vector4 &result) const {
+    result = CG();
+    return true;
+}
+inline bool Gen::rigidbodyspecs::SET_CG(const UMath::Vector4 &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(CG, input);
+}
+
+inline bool Gen::rigidbodyspecs::COLLISION_BOX_PAD(TAttrib<UMath::Vector4> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(UMath::Vector4, 0x897ccf01);
+}
+inline const UMath::Vector4 &Gen::rigidbodyspecs::COLLISION_BOX_PAD() const {
+    ATTRIB_CODEGEN_GETLAYOUT(COLLISION_BOX_PAD);
+}
+inline bool Gen::rigidbodyspecs::COLLISION_BOX_PAD(UMath::Vector4 &result) const {
+    result = COLLISION_BOX_PAD();
+    return true;
+}
+inline bool Gen::rigidbodyspecs::SET_COLLISION_BOX_PAD(const UMath::Vector4 &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(COLLISION_BOX_PAD, input);
+}
+
+inline bool Gen::rigidbodyspecs::DEFAULT_COL_BOX(TAttrib<Attrib::StringKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(Attrib::StringKey, 0x52a236e0);
+}
+inline const Attrib::StringKey &Gen::rigidbodyspecs::DEFAULT_COL_BOX() const {
+    ATTRIB_CODEGEN_GETLAYOUT(DEFAULT_COL_BOX);
+}
+inline bool Gen::rigidbodyspecs::DEFAULT_COL_BOX(Attrib::StringKey &result) const {
+    result = DEFAULT_COL_BOX();
+    return true;
+}
+inline bool Gen::rigidbodyspecs::SET_DEFAULT_COL_BOX(const Attrib::StringKey &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(DEFAULT_COL_BOX, input);
+}
+
+inline bool Gen::rigidbodyspecs::DRAG(TAttrib<UMath::Vector4> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(UMath::Vector4, 0xf9f0f071);
+}
+inline const UMath::Vector4 &Gen::rigidbodyspecs::DRAG() const {
+    ATTRIB_CODEGEN_GETLAYOUT(DRAG);
+}
+inline bool Gen::rigidbodyspecs::DRAG(UMath::Vector4 &result) const {
+    result = DRAG();
+    return true;
+}
+inline bool Gen::rigidbodyspecs::SET_DRAG(const UMath::Vector4 &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(DRAG, input);
+}
+
+inline bool Gen::rigidbodyspecs::DRAG_ANGULAR(TAttrib<UMath::Vector4> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(UMath::Vector4, 0x1ad92dda);
+}
+inline const UMath::Vector4 &Gen::rigidbodyspecs::DRAG_ANGULAR() const {
+    ATTRIB_CODEGEN_GETLAYOUT(DRAG_ANGULAR);
+}
+inline bool Gen::rigidbodyspecs::DRAG_ANGULAR(UMath::Vector4 &result) const {
+    result = DRAG_ANGULAR();
+    return true;
+}
+inline bool Gen::rigidbodyspecs::SET_DRAG_ANGULAR(const UMath::Vector4 &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(DRAG_ANGULAR, input);
+}
+
+inline bool Gen::rigidbodyspecs::GRAVITY(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x07a7e841);
+}
+inline const EA::Reflection::Float &Gen::rigidbodyspecs::GRAVITY() const {
+    ATTRIB_CODEGEN_GETLAYOUT(GRAVITY);
+}
+inline bool Gen::rigidbodyspecs::GRAVITY(EA::Reflection::Float &result) const {
+    result = GRAVITY();
+    return true;
+}
+inline bool Gen::rigidbodyspecs::SET_GRAVITY(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(GRAVITY, input);
+}
+
+inline bool Gen::rigidbodyspecs::GROUND_ELASTICITY(TAttrib<UMath::Vector4> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(UMath::Vector4, 0x97ed84dd);
+}
+inline const UMath::Vector4 &Gen::rigidbodyspecs::GROUND_ELASTICITY() const {
+    ATTRIB_CODEGEN_GETLAYOUT(GROUND_ELASTICITY);
+}
+inline bool Gen::rigidbodyspecs::GROUND_ELASTICITY(UMath::Vector4 &result) const {
+    result = GROUND_ELASTICITY();
+    return true;
+}
+inline bool Gen::rigidbodyspecs::SET_GROUND_ELASTICITY(const UMath::Vector4 &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(GROUND_ELASTICITY, input);
+}
+
+inline bool Gen::rigidbodyspecs::GROUND_FRICTION(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x3fb1b342);
+}
+inline const EA::Reflection::Float &Gen::rigidbodyspecs::GROUND_FRICTION(unsigned int index) const {
+    ATTRIB_CODEGEN_GETLAYOUTINDEXED(EA::Reflection::Float, GROUND_FRICTION, index);
+}
+inline bool Gen::rigidbodyspecs::GROUND_FRICTION(EA::Reflection::Float &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETLAYOUTINDEXED(GROUND_FRICTION, result, index);
+}
+inline unsigned int Gen::rigidbodyspecs::Num_GROUND_FRICTION() const {
+    ATTRIB_CODEGEN_GETLAYOUTLENGTH(GROUND_FRICTION);
+}
+inline bool Gen::rigidbodyspecs::SET_GROUND_FRICTION(const EA::Reflection::Float &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETLAYOUTINDEXED(GROUND_FRICTION, input, index);
+}
+
+inline bool Gen::rigidbodyspecs::GROUND_MOMENT_SCALE(TAttrib<UMath::Vector4> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(UMath::Vector4, 0xb7dff090);
+}
+inline const UMath::Vector4 &Gen::rigidbodyspecs::GROUND_MOMENT_SCALE() const {
+    ATTRIB_CODEGEN_GETLAYOUT(GROUND_MOMENT_SCALE);
+}
+inline bool Gen::rigidbodyspecs::GROUND_MOMENT_SCALE(UMath::Vector4 &result) const {
+    result = GROUND_MOMENT_SCALE();
+    return true;
+}
+inline bool Gen::rigidbodyspecs::SET_GROUND_MOMENT_SCALE(const UMath::Vector4 &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(GROUND_MOMENT_SCALE, input);
+}
+
+inline bool Gen::rigidbodyspecs::IMMOBILE_OBJECT_COLLISIONS(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x4793843b);
+}
+inline const EA::Reflection::Bool &Gen::rigidbodyspecs::IMMOBILE_OBJECT_COLLISIONS() const {
+    ATTRIB_CODEGEN_GETLAYOUT(IMMOBILE_OBJECT_COLLISIONS);
+}
+inline bool Gen::rigidbodyspecs::IMMOBILE_OBJECT_COLLISIONS(EA::Reflection::Bool &result) const {
+    result = IMMOBILE_OBJECT_COLLISIONS();
+    return true;
+}
+inline bool Gen::rigidbodyspecs::SET_IMMOBILE_OBJECT_COLLISIONS(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(IMMOBILE_OBJECT_COLLISIONS, input);
+}
+
+inline bool Gen::rigidbodyspecs::INSTANCE_COLLISIONS_3D(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x22c5d3f9);
+}
+inline const EA::Reflection::Bool &Gen::rigidbodyspecs::INSTANCE_COLLISIONS_3D() const {
+    ATTRIB_CODEGEN_GETLAYOUT(INSTANCE_COLLISIONS_3D);
+}
+inline bool Gen::rigidbodyspecs::INSTANCE_COLLISIONS_3D(EA::Reflection::Bool &result) const {
+    result = INSTANCE_COLLISIONS_3D();
+    return true;
+}
+inline bool Gen::rigidbodyspecs::SET_INSTANCE_COLLISIONS_3D(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(INSTANCE_COLLISIONS_3D, input);
+}
+
+inline bool Gen::rigidbodyspecs::NATURAL_ANGULAR_DAMPING(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xae9322de);
+}
+inline const EA::Reflection::Float &Gen::rigidbodyspecs::NATURAL_ANGULAR_DAMPING() const {
+    ATTRIB_CODEGEN_GETLAYOUT(NATURAL_ANGULAR_DAMPING);
+}
+inline bool Gen::rigidbodyspecs::NATURAL_ANGULAR_DAMPING(EA::Reflection::Float &result) const {
+    result = NATURAL_ANGULAR_DAMPING();
+    return true;
+}
+inline bool Gen::rigidbodyspecs::SET_NATURAL_ANGULAR_DAMPING(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(NATURAL_ANGULAR_DAMPING, input);
+}
+
+inline bool Gen::rigidbodyspecs::NO_GROUND_COLLISIONS(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x43a505ee);
+}
+inline const EA::Reflection::Bool &Gen::rigidbodyspecs::NO_GROUND_COLLISIONS() const {
+    ATTRIB_CODEGEN_GETLAYOUT(NO_GROUND_COLLISIONS);
+}
+inline bool Gen::rigidbodyspecs::NO_GROUND_COLLISIONS(EA::Reflection::Bool &result) const {
+    result = NO_GROUND_COLLISIONS();
+    return true;
+}
+inline bool Gen::rigidbodyspecs::SET_NO_GROUND_COLLISIONS(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(NO_GROUND_COLLISIONS, input);
+}
+
+inline bool Gen::rigidbodyspecs::NO_OBJ_COLLISIONS(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x45b11648);
+}
+inline const EA::Reflection::Bool &Gen::rigidbodyspecs::NO_OBJ_COLLISIONS() const {
+    ATTRIB_CODEGEN_GETLAYOUT(NO_OBJ_COLLISIONS);
+}
+inline bool Gen::rigidbodyspecs::NO_OBJ_COLLISIONS(EA::Reflection::Bool &result) const {
+    result = NO_OBJ_COLLISIONS();
+    return true;
+}
+inline bool Gen::rigidbodyspecs::SET_NO_OBJ_COLLISIONS(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(NO_OBJ_COLLISIONS, input);
+}
+
+inline bool Gen::rigidbodyspecs::NO_WORLD_COLLISIONS(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x1b5ea2c7);
+}
+inline const EA::Reflection::Bool &Gen::rigidbodyspecs::NO_WORLD_COLLISIONS() const {
+    ATTRIB_CODEGEN_GETLAYOUT(NO_WORLD_COLLISIONS);
+}
+inline bool Gen::rigidbodyspecs::NO_WORLD_COLLISIONS(EA::Reflection::Bool &result) const {
+    result = NO_WORLD_COLLISIONS();
+    return true;
+}
+inline bool Gen::rigidbodyspecs::SET_NO_WORLD_COLLISIONS(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(NO_WORLD_COLLISIONS, input);
+}
+
+inline bool Gen::rigidbodyspecs::OBJ_ELASTICITY(TAttrib<UMath::Vector4> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(UMath::Vector4, 0x99b357bb);
+}
+inline const UMath::Vector4 &Gen::rigidbodyspecs::OBJ_ELASTICITY() const {
+    ATTRIB_CODEGEN_GETLAYOUT(OBJ_ELASTICITY);
+}
+inline bool Gen::rigidbodyspecs::OBJ_ELASTICITY(UMath::Vector4 &result) const {
+    result = OBJ_ELASTICITY();
+    return true;
+}
+inline bool Gen::rigidbodyspecs::SET_OBJ_ELASTICITY(const UMath::Vector4 &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(OBJ_ELASTICITY, input);
+}
+
+inline bool Gen::rigidbodyspecs::OBJ_FRICTION(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xe1a55d9b);
+}
+inline const EA::Reflection::Float &Gen::rigidbodyspecs::OBJ_FRICTION(unsigned int index) const {
+    ATTRIB_CODEGEN_GETLAYOUTINDEXED(EA::Reflection::Float, OBJ_FRICTION, index);
+}
+inline bool Gen::rigidbodyspecs::OBJ_FRICTION(EA::Reflection::Float &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETLAYOUTINDEXED(OBJ_FRICTION, result, index);
+}
+inline unsigned int Gen::rigidbodyspecs::Num_OBJ_FRICTION() const {
+    ATTRIB_CODEGEN_GETLAYOUTLENGTH(OBJ_FRICTION);
+}
+inline bool Gen::rigidbodyspecs::SET_OBJ_FRICTION(const EA::Reflection::Float &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETLAYOUTINDEXED(OBJ_FRICTION, input, index);
+}
+
+inline bool Gen::rigidbodyspecs::OBJ_MOMENT_SCALE(TAttrib<UMath::Vector4> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(UMath::Vector4, 0xd4167df9);
+}
+inline const UMath::Vector4 &Gen::rigidbodyspecs::OBJ_MOMENT_SCALE() const {
+    ATTRIB_CODEGEN_GETLAYOUT(OBJ_MOMENT_SCALE);
+}
+inline bool Gen::rigidbodyspecs::OBJ_MOMENT_SCALE(UMath::Vector4 &result) const {
+    result = OBJ_MOMENT_SCALE();
+    return true;
+}
+inline bool Gen::rigidbodyspecs::SET_OBJ_MOMENT_SCALE(const UMath::Vector4 &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(OBJ_MOMENT_SCALE, input);
+}
+
+inline bool Gen::rigidbodyspecs::SLEEP_VELOCITY(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x9f4709c6);
+}
+inline const EA::Reflection::Float &Gen::rigidbodyspecs::SLEEP_VELOCITY() const {
+    ATTRIB_CODEGEN_GETLAYOUT(SLEEP_VELOCITY);
+}
+inline bool Gen::rigidbodyspecs::SLEEP_VELOCITY(EA::Reflection::Float &result) const {
+    result = SLEEP_VELOCITY();
+    return true;
+}
+inline bool Gen::rigidbodyspecs::SET_SLEEP_VELOCITY(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(SLEEP_VELOCITY, input);
+}
+
+inline bool Gen::rigidbodyspecs::WALL_ELASTICITY(TAttrib<UMath::Vector4> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(UMath::Vector4, 0xbe3faeb0);
+}
+inline const UMath::Vector4 &Gen::rigidbodyspecs::WALL_ELASTICITY() const {
+    ATTRIB_CODEGEN_GETLAYOUT(WALL_ELASTICITY);
+}
+inline bool Gen::rigidbodyspecs::WALL_ELASTICITY(UMath::Vector4 &result) const {
+    result = WALL_ELASTICITY();
+    return true;
+}
+inline bool Gen::rigidbodyspecs::SET_WALL_ELASTICITY(const UMath::Vector4 &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(WALL_ELASTICITY, input);
+}
+
+inline bool Gen::rigidbodyspecs::WALL_FRICTION(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x519c53b1);
+}
+inline const EA::Reflection::Float &Gen::rigidbodyspecs::WALL_FRICTION(unsigned int index) const {
+    ATTRIB_CODEGEN_GETLAYOUTINDEXED(EA::Reflection::Float, WALL_FRICTION, index);
+}
+inline bool Gen::rigidbodyspecs::WALL_FRICTION(EA::Reflection::Float &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETLAYOUTINDEXED(WALL_FRICTION, result, index);
+}
+inline unsigned int Gen::rigidbodyspecs::Num_WALL_FRICTION() const {
+    ATTRIB_CODEGEN_GETLAYOUTLENGTH(WALL_FRICTION);
+}
+inline bool Gen::rigidbodyspecs::SET_WALL_FRICTION(const EA::Reflection::Float &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETLAYOUTINDEXED(WALL_FRICTION, input, index);
+}
+
+inline bool Gen::rigidbodyspecs::WORLD_MOMENT_SCALE(TAttrib<UMath::Vector4> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(UMath::Vector4, 0x048fa05d);
+}
+inline const UMath::Vector4 &Gen::rigidbodyspecs::WORLD_MOMENT_SCALE() const {
+    ATTRIB_CODEGEN_GETLAYOUT(WORLD_MOMENT_SCALE);
+}
+inline bool Gen::rigidbodyspecs::WORLD_MOMENT_SCALE(UMath::Vector4 &result) const {
+    result = WORLD_MOMENT_SCALE();
+    return true;
+}
+inline bool Gen::rigidbodyspecs::SET_WORLD_MOMENT_SCALE(const UMath::Vector4 &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(WORLD_MOMENT_SCALE, input);
 }
 
 }; // namespace Attrib

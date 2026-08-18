@@ -1006,11 +1006,6 @@ typedef void *Reference;
     } else                                                                                                                                           \
         return (false)
 
-// TODO I made this up
-#define ATTRIB_CODEGEN_CHECKEDGETLAYOUT(FIELD, RESULT)                                                                                               \
-    RESULT = static_cast<_LayoutStruct *>(this->GetLayoutPointer())->FIELD;                                                                          \
-    return (true)
-
 #define ATTRIB_CODEGEN_GETLAYOUT(FIELD) return (static_cast<_LayoutStruct *>(this->GetLayoutPointer())->FIELD)
 #define ATTRIB_CODEGEN_GETSTATIC(FIELD) return (gStatics.FIELD)
 

@@ -78,60 +78,27 @@ struct emittergroup : Instance {
         Instance::operator=(rhs);
         return *this;
     }
-    bool CollectionName(TAttrib<EA::Reflection::Text> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0x9ca1c8f9);
-    }
-    bool CollectionName(EA::Reflection::Text &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(CollectionName, result);
-    }
-    const EA::Reflection::Text &CollectionName() const {
-        ATTRIB_CODEGEN_GETLAYOUT(CollectionName);
-    }
-    bool SET_CollectionName(const EA::Reflection::Text &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(CollectionName, input);
-    }
-    bool Emitters(TAttrib<RefSpec> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(RefSpec, 0x1c943636);
-    }
-    bool Emitters(RefSpec &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUTINDEXED(Emitters, result, index);
-    }
-    const RefSpec &Emitters(unsigned int index) const {
-        ATTRIB_CODEGEN_GETLAYOUTINDEXED(RefSpec, Emitters, index);
-    }
-    unsigned int Num_Emitters() const {
-        ATTRIB_CODEGEN_GETLAYOUTLENGTH(Emitters);
-    }
-    bool SET_Emitters(const RefSpec &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETLAYOUTINDEXED(Emitters, input, index);
-    }
-    bool FarClip(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x66052349);
-    }
-    bool FarClip(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(FarClip, result);
-    }
-    const EA::Reflection::Float &FarClip() const {
-        ATTRIB_CODEGEN_GETLAYOUT(FarClip);
-    }
-    bool SET_FarClip(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(FarClip, input);
-    }
-    bool IntensityRanges(TAttrib<UMath::Vector2> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(UMath::Vector2, 0x6d261bde);
-    }
-    bool IntensityRanges(UMath::Vector2 &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUTINDEXED(IntensityRanges, result, index);
-    }
-    const UMath::Vector2 &IntensityRanges(unsigned int index) const {
-        ATTRIB_CODEGEN_GETLAYOUTINDEXED(UMath::Vector2, IntensityRanges, index);
-    }
-    unsigned int Num_IntensityRanges() const {
-        ATTRIB_CODEGEN_GETLAYOUTLENGTH(IntensityRanges);
-    }
-    bool SET_IntensityRanges(const UMath::Vector2 &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETLAYOUTINDEXED(IntensityRanges, input, index);
-    }
+    bool CollectionName(TAttrib<EA::Reflection::Text> &result) const;
+    bool CollectionName(EA::Reflection::Text &result) const;
+    const EA::Reflection::Text &CollectionName() const;
+    bool SET_CollectionName(const EA::Reflection::Text &input);
+
+    bool Emitters(TAttrib<RefSpec> &result) const;
+    bool Emitters(RefSpec &result, unsigned int index) const;
+    const RefSpec &Emitters(unsigned int index) const;
+    unsigned int Num_Emitters() const;
+    bool SET_Emitters(const RefSpec &input, unsigned int index);
+
+    bool FarClip(TAttrib<EA::Reflection::Float> &result) const;
+    bool FarClip(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &FarClip() const;
+    bool SET_FarClip(const EA::Reflection::Float &input);
+
+    bool IntensityRanges(TAttrib<UMath::Vector2> &result) const;
+    bool IntensityRanges(UMath::Vector2 &result, unsigned int index) const;
+    const UMath::Vector2 &IntensityRanges(unsigned int index) const;
+    unsigned int Num_IntensityRanges() const;
+    bool SET_IntensityRanges(const UMath::Vector2 &input, unsigned int index);
 
   private:
     unsigned int GetLayoutSize() {
@@ -161,6 +128,66 @@ static const Key IntensityRanges = 0x6d261bde;
 
 inline Key Gen::emittergroup::ClassKey() {
     return ClassName::emittergroup;
+}
+
+inline bool Gen::emittergroup::CollectionName(TAttrib<EA::Reflection::Text> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0x9ca1c8f9);
+}
+inline const EA::Reflection::Text &Gen::emittergroup::CollectionName() const {
+    ATTRIB_CODEGEN_GETLAYOUT(CollectionName);
+}
+inline bool Gen::emittergroup::CollectionName(EA::Reflection::Text &result) const {
+    result = CollectionName();
+    return true;
+}
+inline bool Gen::emittergroup::SET_CollectionName(const EA::Reflection::Text &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(CollectionName, input);
+}
+
+inline bool Gen::emittergroup::Emitters(TAttrib<RefSpec> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(RefSpec, 0x1c943636);
+}
+inline const RefSpec &Gen::emittergroup::Emitters(unsigned int index) const {
+    ATTRIB_CODEGEN_GETLAYOUTINDEXED(RefSpec, Emitters, index);
+}
+inline bool Gen::emittergroup::Emitters(RefSpec &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETLAYOUTINDEXED(Emitters, result, index);
+}
+inline unsigned int Gen::emittergroup::Num_Emitters() const {
+    ATTRIB_CODEGEN_GETLAYOUTLENGTH(Emitters);
+}
+inline bool Gen::emittergroup::SET_Emitters(const RefSpec &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETLAYOUTINDEXED(Emitters, input, index);
+}
+
+inline bool Gen::emittergroup::FarClip(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x66052349);
+}
+inline const EA::Reflection::Float &Gen::emittergroup::FarClip() const {
+    ATTRIB_CODEGEN_GETLAYOUT(FarClip);
+}
+inline bool Gen::emittergroup::FarClip(EA::Reflection::Float &result) const {
+    result = FarClip();
+    return true;
+}
+inline bool Gen::emittergroup::SET_FarClip(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(FarClip, input);
+}
+
+inline bool Gen::emittergroup::IntensityRanges(TAttrib<UMath::Vector2> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(UMath::Vector2, 0x6d261bde);
+}
+inline const UMath::Vector2 &Gen::emittergroup::IntensityRanges(unsigned int index) const {
+    ATTRIB_CODEGEN_GETLAYOUTINDEXED(UMath::Vector2, IntensityRanges, index);
+}
+inline bool Gen::emittergroup::IntensityRanges(UMath::Vector2 &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETLAYOUTINDEXED(IntensityRanges, result, index);
+}
+inline unsigned int Gen::emittergroup::Num_IntensityRanges() const {
+    ATTRIB_CODEGEN_GETLAYOUTLENGTH(IntensityRanges);
+}
+inline bool Gen::emittergroup::SET_IntensityRanges(const UMath::Vector2 &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETLAYOUTINDEXED(IntensityRanges, input, index);
 }
 
 }; // namespace Attrib

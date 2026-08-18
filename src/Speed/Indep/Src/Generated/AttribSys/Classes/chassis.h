@@ -2,30 +2,27 @@
 #define _attrib_gen_chassis_h
 
 #include "Speed/Indep/Src/Misc/MWAttribUserTypes.h"
-#include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 
 namespace Attrib {
 namespace Gen {
 
 struct chassis : Instance {
     struct _LayoutStruct {
-        AxlePair SHOCK_DIGRESSION;           // offset 0x0, size 0x8
-        AxlePair SPRING_PROGRESSION;         // offset 0x8, size 0x8
-        AxlePair TRAVEL;                     // offset 0x10, size 0x8
-        AxlePair RIDE_HEIGHT;                // offset 0x18, size 0x8
-        AxlePair TRACK_WIDTH;                // offset 0x20, size 0x8
-        AxlePair SHOCK_EXT_STIFFNESS;        // offset 0x28, size 0x8
-        AxlePair SHOCK_STIFFNESS;            // offset 0x30, size 0x8
-        AxlePair SPRING_STIFFNESS;           // offset 0x38, size 0x8
-        AxlePair SHOCK_VALVING;              // offset 0x40, size 0x8
-        AxlePair SWAYBAR_STIFFNESS;          // offset 0x48, size 0x8
-        EA::Reflection::Float ROLL_CENTER;   // offset 0x50, size 0x4
-        EA::Reflection::Float WHEEL_BASE;    // offset 0x54, size 0x4
-        EA::Reflection::Float SHOCK_BLOWOUT; // offset 0x58, size 0x4
-        EA::Reflection::Float AERO_CG;       // offset 0x5c, size 0x4
-#ifndef EA_BUILD_A124
-        EA::Reflection::Float RENDER_MOTION; // offset 0x60, size 0x4
-#endif
+        AxlePair SHOCK_DIGRESSION;               // offset 0x0, size 0x8
+        AxlePair SPRING_PROGRESSION;             // offset 0x8, size 0x8
+        AxlePair TRAVEL;                         // offset 0x10, size 0x8
+        AxlePair RIDE_HEIGHT;                    // offset 0x18, size 0x8
+        AxlePair TRACK_WIDTH;                    // offset 0x20, size 0x8
+        AxlePair SHOCK_EXT_STIFFNESS;            // offset 0x28, size 0x8
+        AxlePair SHOCK_STIFFNESS;                // offset 0x30, size 0x8
+        AxlePair SPRING_STIFFNESS;               // offset 0x38, size 0x8
+        AxlePair SHOCK_VALVING;                  // offset 0x40, size 0x8
+        AxlePair SWAYBAR_STIFFNESS;              // offset 0x48, size 0x8
+        EA::Reflection::Float ROLL_CENTER;       // offset 0x50, size 0x4
+        EA::Reflection::Float WHEEL_BASE;        // offset 0x54, size 0x4
+        EA::Reflection::Float SHOCK_BLOWOUT;     // offset 0x58, size 0x4
+        EA::Reflection::Float AERO_CG;           // offset 0x5c, size 0x4
+        EA::Reflection::Float RENDER_MOTION;     // offset 0x60, size 0x4
         EA::Reflection::Float FRONT_AXLE;        // offset 0x64, size 0x4
         EA::Reflection::Float AERO_COEFFICIENT;  // offset 0x68, size 0x4
         EA::Reflection::Float FRONT_WEIGHT_BIAS; // offset 0x6c, size 0x4
@@ -109,246 +106,100 @@ struct chassis : Instance {
         Instance::operator=(rhs);
         return *this;
     }
-    bool AERO_CG(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xa073de78);
-    }
-    bool AERO_CG(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(AERO_CG, result);
-    }
-    const EA::Reflection::Float &AERO_CG() const {
-        ATTRIB_CODEGEN_GETLAYOUT(AERO_CG);
-    }
-    bool SET_AERO_CG(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(AERO_CG, input);
-    }
-    bool AERO_COEFFICIENT(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xc29b0f17);
-    }
-    bool AERO_COEFFICIENT(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(AERO_COEFFICIENT, result);
-    }
-    const EA::Reflection::Float &AERO_COEFFICIENT() const {
-        ATTRIB_CODEGEN_GETLAYOUT(AERO_COEFFICIENT);
-    }
-    bool SET_AERO_COEFFICIENT(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(AERO_COEFFICIENT, input);
-    }
-    bool DRAG_COEFFICIENT(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x3c860745);
-    }
-    bool DRAG_COEFFICIENT(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(DRAG_COEFFICIENT, result);
-    }
-    const EA::Reflection::Float &DRAG_COEFFICIENT() const {
-        ATTRIB_CODEGEN_GETLAYOUT(DRAG_COEFFICIENT);
-    }
-    bool SET_DRAG_COEFFICIENT(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(DRAG_COEFFICIENT, input);
-    }
-    bool FRONT_AXLE(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xd8cbcc48);
-    }
-    bool FRONT_AXLE(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(FRONT_AXLE, result);
-    }
-    const EA::Reflection::Float &FRONT_AXLE() const {
-        ATTRIB_CODEGEN_GETLAYOUT(FRONT_AXLE);
-    }
-    bool SET_FRONT_AXLE(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(FRONT_AXLE, input);
-    }
-    bool FRONT_WEIGHT_BIAS(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xe56dee24);
-    }
-    bool FRONT_WEIGHT_BIAS(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(FRONT_WEIGHT_BIAS, result);
-    }
-    const EA::Reflection::Float &FRONT_WEIGHT_BIAS() const {
-        ATTRIB_CODEGEN_GETLAYOUT(FRONT_WEIGHT_BIAS);
-    }
-    bool SET_FRONT_WEIGHT_BIAS(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(FRONT_WEIGHT_BIAS, input);
-    }
-    bool RENDER_MOTION(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xb3d3e7d5);
-    }
-    bool RENDER_MOTION(EA::Reflection::Float &result) const {
-#ifdef EA_BUILD_A124
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xb3d3e7d5, result);
-#else
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(RENDER_MOTION, result);
-#endif
-    }
-    const EA::Reflection::Float &RENDER_MOTION() const {
-#ifdef EA_BUILD_A124
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0xb3d3e7d5);
-#else
-        ATTRIB_CODEGEN_GETLAYOUT(RENDER_MOTION);
-#endif
-    }
-    bool SET_RENDER_MOTION(const EA::Reflection::Float &input) {
-#ifdef EA_BUILD_A124
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xb3d3e7d5, input);
-#else
-        ATTRIB_CODEGEN_SETLAYOUT(RENDER_MOTION, input);
-#endif
-    }
-    bool RIDE_HEIGHT(TAttrib<AxlePair> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(AxlePair, 0x46c189b0);
-    }
-    bool RIDE_HEIGHT(AxlePair &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(RIDE_HEIGHT, result);
-    }
-    const AxlePair &RIDE_HEIGHT() const {
-        ATTRIB_CODEGEN_GETLAYOUT(RIDE_HEIGHT);
-    }
-    bool SET_RIDE_HEIGHT(const AxlePair &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(RIDE_HEIGHT, input);
-    }
-    bool ROLL_CENTER(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x6702cff9);
-    }
-    bool ROLL_CENTER(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(ROLL_CENTER, result);
-    }
-    const EA::Reflection::Float &ROLL_CENTER() const {
-        ATTRIB_CODEGEN_GETLAYOUT(ROLL_CENTER);
-    }
-    bool SET_ROLL_CENTER(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(ROLL_CENTER, input);
-    }
-    bool SHOCK_BLOWOUT(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x54536d38);
-    }
-    bool SHOCK_BLOWOUT(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(SHOCK_BLOWOUT, result);
-    }
-    const EA::Reflection::Float &SHOCK_BLOWOUT() const {
-        ATTRIB_CODEGEN_GETLAYOUT(SHOCK_BLOWOUT);
-    }
-    bool SET_SHOCK_BLOWOUT(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(SHOCK_BLOWOUT, input);
-    }
-    bool SHOCK_DIGRESSION(TAttrib<AxlePair> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(AxlePair, 0xaa13ae7b);
-    }
-    bool SHOCK_DIGRESSION(AxlePair &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(SHOCK_DIGRESSION, result);
-    }
-    const AxlePair &SHOCK_DIGRESSION() const {
-        ATTRIB_CODEGEN_GETLAYOUT(SHOCK_DIGRESSION);
-    }
-    bool SET_SHOCK_DIGRESSION(const AxlePair &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(SHOCK_DIGRESSION, input);
-    }
-    bool SHOCK_EXT_STIFFNESS(TAttrib<AxlePair> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(AxlePair, 0x54680830);
-    }
-    bool SHOCK_EXT_STIFFNESS(AxlePair &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(SHOCK_EXT_STIFFNESS, result);
-    }
-    const AxlePair &SHOCK_EXT_STIFFNESS() const {
-        ATTRIB_CODEGEN_GETLAYOUT(SHOCK_EXT_STIFFNESS);
-    }
-    bool SET_SHOCK_EXT_STIFFNESS(const AxlePair &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(SHOCK_EXT_STIFFNESS, input);
-    }
-    bool SHOCK_STIFFNESS(TAttrib<AxlePair> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(AxlePair, 0x4bc16211);
-    }
-    bool SHOCK_STIFFNESS(AxlePair &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(SHOCK_STIFFNESS, result);
-    }
-    const AxlePair &SHOCK_STIFFNESS() const {
-        ATTRIB_CODEGEN_GETLAYOUT(SHOCK_STIFFNESS);
-    }
-    bool SET_SHOCK_STIFFNESS(const AxlePair &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(SHOCK_STIFFNESS, input);
-    }
-    bool SHOCK_VALVING(TAttrib<AxlePair> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(AxlePair, 0x42c42b3f);
-    }
-    bool SHOCK_VALVING(AxlePair &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(SHOCK_VALVING, result);
-    }
-    const AxlePair &SHOCK_VALVING() const {
-        ATTRIB_CODEGEN_GETLAYOUT(SHOCK_VALVING);
-    }
-    bool SET_SHOCK_VALVING(const AxlePair &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(SHOCK_VALVING, input);
-    }
-    bool SPRING_PROGRESSION(TAttrib<AxlePair> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(AxlePair, 0xa0b49fc2);
-    }
-    bool SPRING_PROGRESSION(AxlePair &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(SPRING_PROGRESSION, result);
-    }
-    const AxlePair &SPRING_PROGRESSION() const {
-        ATTRIB_CODEGEN_GETLAYOUT(SPRING_PROGRESSION);
-    }
-    bool SET_SPRING_PROGRESSION(const AxlePair &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(SPRING_PROGRESSION, input);
-    }
-    bool SPRING_STIFFNESS(TAttrib<AxlePair> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(AxlePair, 0x802e05df);
-    }
-    bool SPRING_STIFFNESS(AxlePair &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(SPRING_STIFFNESS, result);
-    }
-    const AxlePair &SPRING_STIFFNESS() const {
-        ATTRIB_CODEGEN_GETLAYOUT(SPRING_STIFFNESS);
-    }
-    bool SET_SPRING_STIFFNESS(const AxlePair &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(SPRING_STIFFNESS, input);
-    }
-    bool SWAYBAR_STIFFNESS(TAttrib<AxlePair> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(AxlePair, 0x61ca75f2);
-    }
-    bool SWAYBAR_STIFFNESS(AxlePair &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(SWAYBAR_STIFFNESS, result);
-    }
-    const AxlePair &SWAYBAR_STIFFNESS() const {
-        ATTRIB_CODEGEN_GETLAYOUT(SWAYBAR_STIFFNESS);
-    }
-    bool SET_SWAYBAR_STIFFNESS(const AxlePair &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(SWAYBAR_STIFFNESS, input);
-    }
-    bool TRACK_WIDTH(TAttrib<AxlePair> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(AxlePair, 0xa738aedf);
-    }
-    bool TRACK_WIDTH(AxlePair &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(TRACK_WIDTH, result);
-    }
-    const AxlePair &TRACK_WIDTH() const {
-        ATTRIB_CODEGEN_GETLAYOUT(TRACK_WIDTH);
-    }
-    bool SET_TRACK_WIDTH(const AxlePair &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(TRACK_WIDTH, input);
-    }
-    bool TRAVEL(TAttrib<AxlePair> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(AxlePair, 0x7e01b96d);
-    }
-    bool TRAVEL(AxlePair &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(TRAVEL, result);
-    }
-    const AxlePair &TRAVEL() const {
-        ATTRIB_CODEGEN_GETLAYOUT(TRAVEL);
-    }
-    bool SET_TRAVEL(const AxlePair &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(TRAVEL, input);
-    }
-    bool WHEEL_BASE(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x2d1375a1);
-    }
-    bool WHEEL_BASE(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(WHEEL_BASE, result);
-    }
-    const EA::Reflection::Float &WHEEL_BASE() const {
-        ATTRIB_CODEGEN_GETLAYOUT(WHEEL_BASE);
-    }
-    bool SET_WHEEL_BASE(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(WHEEL_BASE, input);
-    }
+    bool AERO_CG(TAttrib<EA::Reflection::Float> &result) const;
+    bool AERO_CG(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &AERO_CG() const;
+    bool SET_AERO_CG(const EA::Reflection::Float &input);
+
+    bool AERO_COEFFICIENT(TAttrib<EA::Reflection::Float> &result) const;
+    bool AERO_COEFFICIENT(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &AERO_COEFFICIENT() const;
+    bool SET_AERO_COEFFICIENT(const EA::Reflection::Float &input);
+
+    bool DRAG_COEFFICIENT(TAttrib<EA::Reflection::Float> &result) const;
+    bool DRAG_COEFFICIENT(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &DRAG_COEFFICIENT() const;
+    bool SET_DRAG_COEFFICIENT(const EA::Reflection::Float &input);
+
+    bool FRONT_AXLE(TAttrib<EA::Reflection::Float> &result) const;
+    bool FRONT_AXLE(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &FRONT_AXLE() const;
+    bool SET_FRONT_AXLE(const EA::Reflection::Float &input);
+
+    bool FRONT_WEIGHT_BIAS(TAttrib<EA::Reflection::Float> &result) const;
+    bool FRONT_WEIGHT_BIAS(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &FRONT_WEIGHT_BIAS() const;
+    bool SET_FRONT_WEIGHT_BIAS(const EA::Reflection::Float &input);
+
+    bool RENDER_MOTION(TAttrib<EA::Reflection::Float> &result) const;
+    bool RENDER_MOTION(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &RENDER_MOTION() const;
+    bool SET_RENDER_MOTION(const EA::Reflection::Float &input);
+
+    bool RIDE_HEIGHT(TAttrib<AxlePair> &result) const;
+    bool RIDE_HEIGHT(AxlePair &result) const;
+    const AxlePair &RIDE_HEIGHT() const;
+    bool SET_RIDE_HEIGHT(const AxlePair &input);
+
+    bool ROLL_CENTER(TAttrib<EA::Reflection::Float> &result) const;
+    bool ROLL_CENTER(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &ROLL_CENTER() const;
+    bool SET_ROLL_CENTER(const EA::Reflection::Float &input);
+
+    bool SHOCK_BLOWOUT(TAttrib<EA::Reflection::Float> &result) const;
+    bool SHOCK_BLOWOUT(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &SHOCK_BLOWOUT() const;
+    bool SET_SHOCK_BLOWOUT(const EA::Reflection::Float &input);
+
+    bool SHOCK_DIGRESSION(TAttrib<AxlePair> &result) const;
+    bool SHOCK_DIGRESSION(AxlePair &result) const;
+    const AxlePair &SHOCK_DIGRESSION() const;
+    bool SET_SHOCK_DIGRESSION(const AxlePair &input);
+
+    bool SHOCK_EXT_STIFFNESS(TAttrib<AxlePair> &result) const;
+    bool SHOCK_EXT_STIFFNESS(AxlePair &result) const;
+    const AxlePair &SHOCK_EXT_STIFFNESS() const;
+    bool SET_SHOCK_EXT_STIFFNESS(const AxlePair &input);
+
+    bool SHOCK_STIFFNESS(TAttrib<AxlePair> &result) const;
+    bool SHOCK_STIFFNESS(AxlePair &result) const;
+    const AxlePair &SHOCK_STIFFNESS() const;
+    bool SET_SHOCK_STIFFNESS(const AxlePair &input);
+
+    bool SHOCK_VALVING(TAttrib<AxlePair> &result) const;
+    bool SHOCK_VALVING(AxlePair &result) const;
+    const AxlePair &SHOCK_VALVING() const;
+    bool SET_SHOCK_VALVING(const AxlePair &input);
+
+    bool SPRING_PROGRESSION(TAttrib<AxlePair> &result) const;
+    bool SPRING_PROGRESSION(AxlePair &result) const;
+    const AxlePair &SPRING_PROGRESSION() const;
+    bool SET_SPRING_PROGRESSION(const AxlePair &input);
+
+    bool SPRING_STIFFNESS(TAttrib<AxlePair> &result) const;
+    bool SPRING_STIFFNESS(AxlePair &result) const;
+    const AxlePair &SPRING_STIFFNESS() const;
+    bool SET_SPRING_STIFFNESS(const AxlePair &input);
+
+    bool SWAYBAR_STIFFNESS(TAttrib<AxlePair> &result) const;
+    bool SWAYBAR_STIFFNESS(AxlePair &result) const;
+    const AxlePair &SWAYBAR_STIFFNESS() const;
+    bool SET_SWAYBAR_STIFFNESS(const AxlePair &input);
+
+    bool TRACK_WIDTH(TAttrib<AxlePair> &result) const;
+    bool TRACK_WIDTH(AxlePair &result) const;
+    const AxlePair &TRACK_WIDTH() const;
+    bool SET_TRACK_WIDTH(const AxlePair &input);
+
+    bool TRAVEL(TAttrib<AxlePair> &result) const;
+    bool TRAVEL(AxlePair &result) const;
+    const AxlePair &TRAVEL() const;
+    bool SET_TRAVEL(const AxlePair &input);
+
+    bool WHEEL_BASE(TAttrib<EA::Reflection::Float> &result) const;
+    bool WHEEL_BASE(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &WHEEL_BASE() const;
+    bool SET_WHEEL_BASE(const EA::Reflection::Float &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -393,6 +244,272 @@ static const Key WHEEL_BASE = 0x2d1375a1;
 
 inline Key Gen::chassis::ClassKey() {
     return ClassName::chassis;
+}
+
+inline bool Gen::chassis::AERO_CG(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xa073de78);
+}
+inline const EA::Reflection::Float &Gen::chassis::AERO_CG() const {
+    ATTRIB_CODEGEN_GETLAYOUT(AERO_CG);
+}
+inline bool Gen::chassis::AERO_CG(EA::Reflection::Float &result) const {
+    result = AERO_CG();
+    return true;
+}
+inline bool Gen::chassis::SET_AERO_CG(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(AERO_CG, input);
+}
+
+inline bool Gen::chassis::AERO_COEFFICIENT(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xc29b0f17);
+}
+inline const EA::Reflection::Float &Gen::chassis::AERO_COEFFICIENT() const {
+    ATTRIB_CODEGEN_GETLAYOUT(AERO_COEFFICIENT);
+}
+inline bool Gen::chassis::AERO_COEFFICIENT(EA::Reflection::Float &result) const {
+    result = AERO_COEFFICIENT();
+    return true;
+}
+inline bool Gen::chassis::SET_AERO_COEFFICIENT(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(AERO_COEFFICIENT, input);
+}
+
+inline bool Gen::chassis::DRAG_COEFFICIENT(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x3c860745);
+}
+inline const EA::Reflection::Float &Gen::chassis::DRAG_COEFFICIENT() const {
+    ATTRIB_CODEGEN_GETLAYOUT(DRAG_COEFFICIENT);
+}
+inline bool Gen::chassis::DRAG_COEFFICIENT(EA::Reflection::Float &result) const {
+    result = DRAG_COEFFICIENT();
+    return true;
+}
+inline bool Gen::chassis::SET_DRAG_COEFFICIENT(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(DRAG_COEFFICIENT, input);
+}
+
+inline bool Gen::chassis::FRONT_AXLE(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xd8cbcc48);
+}
+inline const EA::Reflection::Float &Gen::chassis::FRONT_AXLE() const {
+    ATTRIB_CODEGEN_GETLAYOUT(FRONT_AXLE);
+}
+inline bool Gen::chassis::FRONT_AXLE(EA::Reflection::Float &result) const {
+    result = FRONT_AXLE();
+    return true;
+}
+inline bool Gen::chassis::SET_FRONT_AXLE(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(FRONT_AXLE, input);
+}
+
+inline bool Gen::chassis::FRONT_WEIGHT_BIAS(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xe56dee24);
+}
+inline const EA::Reflection::Float &Gen::chassis::FRONT_WEIGHT_BIAS() const {
+    ATTRIB_CODEGEN_GETLAYOUT(FRONT_WEIGHT_BIAS);
+}
+inline bool Gen::chassis::FRONT_WEIGHT_BIAS(EA::Reflection::Float &result) const {
+    result = FRONT_WEIGHT_BIAS();
+    return true;
+}
+inline bool Gen::chassis::SET_FRONT_WEIGHT_BIAS(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(FRONT_WEIGHT_BIAS, input);
+}
+
+inline bool Gen::chassis::RENDER_MOTION(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xb3d3e7d5);
+}
+inline const EA::Reflection::Float &Gen::chassis::RENDER_MOTION() const {
+    ATTRIB_CODEGEN_GETLAYOUT(RENDER_MOTION);
+}
+inline bool Gen::chassis::RENDER_MOTION(EA::Reflection::Float &result) const {
+    result = RENDER_MOTION();
+    return true;
+}
+inline bool Gen::chassis::SET_RENDER_MOTION(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(RENDER_MOTION, input);
+}
+
+inline bool Gen::chassis::RIDE_HEIGHT(TAttrib<AxlePair> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(AxlePair, 0x46c189b0);
+}
+inline const AxlePair &Gen::chassis::RIDE_HEIGHT() const {
+    ATTRIB_CODEGEN_GETLAYOUT(RIDE_HEIGHT);
+}
+inline bool Gen::chassis::RIDE_HEIGHT(AxlePair &result) const {
+    result = RIDE_HEIGHT();
+    return true;
+}
+inline bool Gen::chassis::SET_RIDE_HEIGHT(const AxlePair &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(RIDE_HEIGHT, input);
+}
+
+inline bool Gen::chassis::ROLL_CENTER(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x6702cff9);
+}
+inline const EA::Reflection::Float &Gen::chassis::ROLL_CENTER() const {
+    ATTRIB_CODEGEN_GETLAYOUT(ROLL_CENTER);
+}
+inline bool Gen::chassis::ROLL_CENTER(EA::Reflection::Float &result) const {
+    result = ROLL_CENTER();
+    return true;
+}
+inline bool Gen::chassis::SET_ROLL_CENTER(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(ROLL_CENTER, input);
+}
+
+inline bool Gen::chassis::SHOCK_BLOWOUT(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x54536d38);
+}
+inline const EA::Reflection::Float &Gen::chassis::SHOCK_BLOWOUT() const {
+    ATTRIB_CODEGEN_GETLAYOUT(SHOCK_BLOWOUT);
+}
+inline bool Gen::chassis::SHOCK_BLOWOUT(EA::Reflection::Float &result) const {
+    result = SHOCK_BLOWOUT();
+    return true;
+}
+inline bool Gen::chassis::SET_SHOCK_BLOWOUT(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(SHOCK_BLOWOUT, input);
+}
+
+inline bool Gen::chassis::SHOCK_DIGRESSION(TAttrib<AxlePair> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(AxlePair, 0xaa13ae7b);
+}
+inline const AxlePair &Gen::chassis::SHOCK_DIGRESSION() const {
+    ATTRIB_CODEGEN_GETLAYOUT(SHOCK_DIGRESSION);
+}
+inline bool Gen::chassis::SHOCK_DIGRESSION(AxlePair &result) const {
+    result = SHOCK_DIGRESSION();
+    return true;
+}
+inline bool Gen::chassis::SET_SHOCK_DIGRESSION(const AxlePair &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(SHOCK_DIGRESSION, input);
+}
+
+inline bool Gen::chassis::SHOCK_EXT_STIFFNESS(TAttrib<AxlePair> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(AxlePair, 0x54680830);
+}
+inline const AxlePair &Gen::chassis::SHOCK_EXT_STIFFNESS() const {
+    ATTRIB_CODEGEN_GETLAYOUT(SHOCK_EXT_STIFFNESS);
+}
+inline bool Gen::chassis::SHOCK_EXT_STIFFNESS(AxlePair &result) const {
+    result = SHOCK_EXT_STIFFNESS();
+    return true;
+}
+inline bool Gen::chassis::SET_SHOCK_EXT_STIFFNESS(const AxlePair &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(SHOCK_EXT_STIFFNESS, input);
+}
+
+inline bool Gen::chassis::SHOCK_STIFFNESS(TAttrib<AxlePair> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(AxlePair, 0x4bc16211);
+}
+inline const AxlePair &Gen::chassis::SHOCK_STIFFNESS() const {
+    ATTRIB_CODEGEN_GETLAYOUT(SHOCK_STIFFNESS);
+}
+inline bool Gen::chassis::SHOCK_STIFFNESS(AxlePair &result) const {
+    result = SHOCK_STIFFNESS();
+    return true;
+}
+inline bool Gen::chassis::SET_SHOCK_STIFFNESS(const AxlePair &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(SHOCK_STIFFNESS, input);
+}
+
+inline bool Gen::chassis::SHOCK_VALVING(TAttrib<AxlePair> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(AxlePair, 0x42c42b3f);
+}
+inline const AxlePair &Gen::chassis::SHOCK_VALVING() const {
+    ATTRIB_CODEGEN_GETLAYOUT(SHOCK_VALVING);
+}
+inline bool Gen::chassis::SHOCK_VALVING(AxlePair &result) const {
+    result = SHOCK_VALVING();
+    return true;
+}
+inline bool Gen::chassis::SET_SHOCK_VALVING(const AxlePair &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(SHOCK_VALVING, input);
+}
+
+inline bool Gen::chassis::SPRING_PROGRESSION(TAttrib<AxlePair> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(AxlePair, 0xa0b49fc2);
+}
+inline const AxlePair &Gen::chassis::SPRING_PROGRESSION() const {
+    ATTRIB_CODEGEN_GETLAYOUT(SPRING_PROGRESSION);
+}
+inline bool Gen::chassis::SPRING_PROGRESSION(AxlePair &result) const {
+    result = SPRING_PROGRESSION();
+    return true;
+}
+inline bool Gen::chassis::SET_SPRING_PROGRESSION(const AxlePair &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(SPRING_PROGRESSION, input);
+}
+
+inline bool Gen::chassis::SPRING_STIFFNESS(TAttrib<AxlePair> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(AxlePair, 0x802e05df);
+}
+inline const AxlePair &Gen::chassis::SPRING_STIFFNESS() const {
+    ATTRIB_CODEGEN_GETLAYOUT(SPRING_STIFFNESS);
+}
+inline bool Gen::chassis::SPRING_STIFFNESS(AxlePair &result) const {
+    result = SPRING_STIFFNESS();
+    return true;
+}
+inline bool Gen::chassis::SET_SPRING_STIFFNESS(const AxlePair &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(SPRING_STIFFNESS, input);
+}
+
+inline bool Gen::chassis::SWAYBAR_STIFFNESS(TAttrib<AxlePair> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(AxlePair, 0x61ca75f2);
+}
+inline const AxlePair &Gen::chassis::SWAYBAR_STIFFNESS() const {
+    ATTRIB_CODEGEN_GETLAYOUT(SWAYBAR_STIFFNESS);
+}
+inline bool Gen::chassis::SWAYBAR_STIFFNESS(AxlePair &result) const {
+    result = SWAYBAR_STIFFNESS();
+    return true;
+}
+inline bool Gen::chassis::SET_SWAYBAR_STIFFNESS(const AxlePair &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(SWAYBAR_STIFFNESS, input);
+}
+
+inline bool Gen::chassis::TRACK_WIDTH(TAttrib<AxlePair> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(AxlePair, 0xa738aedf);
+}
+inline const AxlePair &Gen::chassis::TRACK_WIDTH() const {
+    ATTRIB_CODEGEN_GETLAYOUT(TRACK_WIDTH);
+}
+inline bool Gen::chassis::TRACK_WIDTH(AxlePair &result) const {
+    result = TRACK_WIDTH();
+    return true;
+}
+inline bool Gen::chassis::SET_TRACK_WIDTH(const AxlePair &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(TRACK_WIDTH, input);
+}
+
+inline bool Gen::chassis::TRAVEL(TAttrib<AxlePair> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(AxlePair, 0x7e01b96d);
+}
+inline const AxlePair &Gen::chassis::TRAVEL() const {
+    ATTRIB_CODEGEN_GETLAYOUT(TRAVEL);
+}
+inline bool Gen::chassis::TRAVEL(AxlePair &result) const {
+    result = TRAVEL();
+    return true;
+}
+inline bool Gen::chassis::SET_TRAVEL(const AxlePair &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(TRAVEL, input);
+}
+
+inline bool Gen::chassis::WHEEL_BASE(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x2d1375a1);
+}
+inline const EA::Reflection::Float &Gen::chassis::WHEEL_BASE() const {
+    ATTRIB_CODEGEN_GETLAYOUT(WHEEL_BASE);
+}
+inline bool Gen::chassis::WHEEL_BASE(EA::Reflection::Float &result) const {
+    result = WHEEL_BASE();
+    return true;
+}
+inline bool Gen::chassis::SET_WHEEL_BASE(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(WHEEL_BASE, input);
 }
 
 }; // namespace Attrib

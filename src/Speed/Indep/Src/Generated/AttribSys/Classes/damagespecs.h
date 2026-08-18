@@ -100,198 +100,85 @@ struct damagespecs : Instance {
         Instance::operator=(rhs);
         return *this;
     }
-    bool DZ_BOTTOM(TAttrib<DamageScaleRecord> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(DamageScaleRecord, 0xadd2023d);
-    }
-    bool DZ_BOTTOM(DamageScaleRecord &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(DZ_BOTTOM, result);
-    }
-    const DamageScaleRecord &DZ_BOTTOM() const {
-        ATTRIB_CODEGEN_GETLAYOUT(DZ_BOTTOM);
-    }
-    bool SET_DZ_BOTTOM(const DamageScaleRecord &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(DZ_BOTTOM, input);
-    }
-    bool DZ_FRONT(TAttrib<DamageScaleRecord> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(DamageScaleRecord, 0x1e21c772);
-    }
-    bool DZ_FRONT(DamageScaleRecord &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(DZ_FRONT, result);
-    }
-    const DamageScaleRecord &DZ_FRONT() const {
-        ATTRIB_CODEGEN_GETLAYOUT(DZ_FRONT);
-    }
-    bool SET_DZ_FRONT(const DamageScaleRecord &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(DZ_FRONT, input);
-    }
-    bool DZ_LEFT(TAttrib<DamageScaleRecord> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(DamageScaleRecord, 0x698e7c31);
-    }
-    bool DZ_LEFT(DamageScaleRecord &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(DZ_LEFT, result);
-    }
-    const DamageScaleRecord &DZ_LEFT() const {
-        ATTRIB_CODEGEN_GETLAYOUT(DZ_LEFT);
-    }
-    bool SET_DZ_LEFT(const DamageScaleRecord &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(DZ_LEFT, input);
-    }
-    bool DZ_LFRONT(TAttrib<DamageScaleRecord> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(DamageScaleRecord, 0xa6f71a1c);
-    }
-    bool DZ_LFRONT(DamageScaleRecord &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(DZ_LFRONT, result);
-    }
-    const DamageScaleRecord &DZ_LFRONT() const {
-        ATTRIB_CODEGEN_GETLAYOUT(DZ_LFRONT);
-    }
-    bool SET_DZ_LFRONT(const DamageScaleRecord &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(DZ_LFRONT, input);
-    }
-    bool DZ_LREAR(TAttrib<DamageScaleRecord> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(DamageScaleRecord, 0xb631bf4e);
-    }
-    bool DZ_LREAR(DamageScaleRecord &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(DZ_LREAR, result);
-    }
-    const DamageScaleRecord &DZ_LREAR() const {
-        ATTRIB_CODEGEN_GETLAYOUT(DZ_LREAR);
-    }
-    bool SET_DZ_LREAR(const DamageScaleRecord &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(DZ_LREAR, input);
-    }
-    bool DZ_REAR(TAttrib<DamageScaleRecord> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(DamageScaleRecord, 0xe1707b8a);
-    }
-    bool DZ_REAR(DamageScaleRecord &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(DZ_REAR, result);
-    }
-    const DamageScaleRecord &DZ_REAR() const {
-        ATTRIB_CODEGEN_GETLAYOUT(DZ_REAR);
-    }
-    bool SET_DZ_REAR(const DamageScaleRecord &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(DZ_REAR, input);
-    }
-    bool DZ_RFRONT(TAttrib<DamageScaleRecord> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(DamageScaleRecord, 0x0380056f);
-    }
-    bool DZ_RFRONT(DamageScaleRecord &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(DZ_RFRONT, result);
-    }
-    const DamageScaleRecord &DZ_RFRONT() const {
-        ATTRIB_CODEGEN_GETLAYOUT(DZ_RFRONT);
-    }
-    bool SET_DZ_RFRONT(const DamageScaleRecord &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(DZ_RFRONT, input);
-    }
-    bool DZ_RIGHT(TAttrib<DamageScaleRecord> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(DamageScaleRecord, 0xf700fe17);
-    }
-    bool DZ_RIGHT(DamageScaleRecord &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(DZ_RIGHT, result);
-    }
-    const DamageScaleRecord &DZ_RIGHT() const {
-        ATTRIB_CODEGEN_GETLAYOUT(DZ_RIGHT);
-    }
-    bool SET_DZ_RIGHT(const DamageScaleRecord &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(DZ_RIGHT, input);
-    }
-    bool DZ_RREAR(TAttrib<DamageScaleRecord> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(DamageScaleRecord, 0xcc3f0ac3);
-    }
-    bool DZ_RREAR(DamageScaleRecord &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(DZ_RREAR, result);
-    }
-    const DamageScaleRecord &DZ_RREAR() const {
-        ATTRIB_CODEGEN_GETLAYOUT(DZ_RREAR);
-    }
-    bool SET_DZ_RREAR(const DamageScaleRecord &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(DZ_RREAR, input);
-    }
-    bool DZ_TOP(TAttrib<DamageScaleRecord> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(DamageScaleRecord, 0xc4ce6d74);
-    }
-    bool DZ_TOP(DamageScaleRecord &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(DZ_TOP, result);
-    }
-    const DamageScaleRecord &DZ_TOP() const {
-        ATTRIB_CODEGEN_GETLAYOUT(DZ_TOP);
-    }
-    bool SET_DZ_TOP(const DamageScaleRecord &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(DZ_TOP, input);
-    }
-    bool FORCE(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x3698b384);
-    }
-    bool FORCE(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(FORCE, result);
-    }
-    const EA::Reflection::Float &FORCE() const {
-        ATTRIB_CODEGEN_GETLAYOUT(FORCE);
-    }
-    bool SET_FORCE(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(FORCE, input);
-    }
-    bool HIT_POINTS(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x97f059b7);
-    }
-    bool HIT_POINTS(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(HIT_POINTS, result);
-    }
-    const EA::Reflection::Float &HIT_POINTS() const {
-        ATTRIB_CODEGEN_GETLAYOUT(HIT_POINTS);
-    }
-    bool SET_HIT_POINTS(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(HIT_POINTS, input);
-    }
-    bool HP_THRESHOLD(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x499cb7bd);
-    }
-    bool HP_THRESHOLD(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(HP_THRESHOLD, result);
-    }
-    const EA::Reflection::Float &HP_THRESHOLD() const {
-        ATTRIB_CODEGEN_GETLAYOUT(HP_THRESHOLD);
-    }
-    bool SET_HP_THRESHOLD(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(HP_THRESHOLD, input);
-    }
-    bool SHOCK_FORCE(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x907930df);
-    }
-    bool SHOCK_FORCE(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(SHOCK_FORCE, result);
-    }
-    const EA::Reflection::Float &SHOCK_FORCE() const {
-        ATTRIB_CODEGEN_GETLAYOUT(SHOCK_FORCE);
-    }
-    bool SET_SHOCK_FORCE(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(SHOCK_FORCE, input);
-    }
-    bool SHOCK_TIME(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x78059ff8);
-    }
-    bool SHOCK_TIME(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(SHOCK_TIME, result);
-    }
-    const EA::Reflection::Float &SHOCK_TIME() const {
-        ATTRIB_CODEGEN_GETLAYOUT(SHOCK_TIME);
-    }
-    bool SET_SHOCK_TIME(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(SHOCK_TIME, input);
-    }
-    bool SUPPRESS_DIST(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xc802a18d);
-    }
-    bool SUPPRESS_DIST(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(SUPPRESS_DIST, result);
-    }
-    const EA::Reflection::Float &SUPPRESS_DIST() const {
-        ATTRIB_CODEGEN_GETLAYOUT(SUPPRESS_DIST);
-    }
-    bool SET_SUPPRESS_DIST(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(SUPPRESS_DIST, input);
-    }
+    bool DZ_BOTTOM(TAttrib<DamageScaleRecord> &result) const;
+    bool DZ_BOTTOM(DamageScaleRecord &result) const;
+    const DamageScaleRecord &DZ_BOTTOM() const;
+    bool SET_DZ_BOTTOM(const DamageScaleRecord &input);
+
+    bool DZ_FRONT(TAttrib<DamageScaleRecord> &result) const;
+    bool DZ_FRONT(DamageScaleRecord &result) const;
+    const DamageScaleRecord &DZ_FRONT() const;
+    bool SET_DZ_FRONT(const DamageScaleRecord &input);
+
+    bool DZ_LEFT(TAttrib<DamageScaleRecord> &result) const;
+    bool DZ_LEFT(DamageScaleRecord &result) const;
+    const DamageScaleRecord &DZ_LEFT() const;
+    bool SET_DZ_LEFT(const DamageScaleRecord &input);
+
+    bool DZ_LFRONT(TAttrib<DamageScaleRecord> &result) const;
+    bool DZ_LFRONT(DamageScaleRecord &result) const;
+    const DamageScaleRecord &DZ_LFRONT() const;
+    bool SET_DZ_LFRONT(const DamageScaleRecord &input);
+
+    bool DZ_LREAR(TAttrib<DamageScaleRecord> &result) const;
+    bool DZ_LREAR(DamageScaleRecord &result) const;
+    const DamageScaleRecord &DZ_LREAR() const;
+    bool SET_DZ_LREAR(const DamageScaleRecord &input);
+
+    bool DZ_REAR(TAttrib<DamageScaleRecord> &result) const;
+    bool DZ_REAR(DamageScaleRecord &result) const;
+    const DamageScaleRecord &DZ_REAR() const;
+    bool SET_DZ_REAR(const DamageScaleRecord &input);
+
+    bool DZ_RFRONT(TAttrib<DamageScaleRecord> &result) const;
+    bool DZ_RFRONT(DamageScaleRecord &result) const;
+    const DamageScaleRecord &DZ_RFRONT() const;
+    bool SET_DZ_RFRONT(const DamageScaleRecord &input);
+
+    bool DZ_RIGHT(TAttrib<DamageScaleRecord> &result) const;
+    bool DZ_RIGHT(DamageScaleRecord &result) const;
+    const DamageScaleRecord &DZ_RIGHT() const;
+    bool SET_DZ_RIGHT(const DamageScaleRecord &input);
+
+    bool DZ_RREAR(TAttrib<DamageScaleRecord> &result) const;
+    bool DZ_RREAR(DamageScaleRecord &result) const;
+    const DamageScaleRecord &DZ_RREAR() const;
+    bool SET_DZ_RREAR(const DamageScaleRecord &input);
+
+    bool DZ_TOP(TAttrib<DamageScaleRecord> &result) const;
+    bool DZ_TOP(DamageScaleRecord &result) const;
+    const DamageScaleRecord &DZ_TOP() const;
+    bool SET_DZ_TOP(const DamageScaleRecord &input);
+
+    bool FORCE(TAttrib<EA::Reflection::Float> &result) const;
+    bool FORCE(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &FORCE() const;
+    bool SET_FORCE(const EA::Reflection::Float &input);
+
+    bool HIT_POINTS(TAttrib<EA::Reflection::Float> &result) const;
+    bool HIT_POINTS(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &HIT_POINTS() const;
+    bool SET_HIT_POINTS(const EA::Reflection::Float &input);
+
+    bool HP_THRESHOLD(TAttrib<EA::Reflection::Float> &result) const;
+    bool HP_THRESHOLD(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &HP_THRESHOLD() const;
+    bool SET_HP_THRESHOLD(const EA::Reflection::Float &input);
+
+    bool SHOCK_FORCE(TAttrib<EA::Reflection::Float> &result) const;
+    bool SHOCK_FORCE(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &SHOCK_FORCE() const;
+    bool SET_SHOCK_FORCE(const EA::Reflection::Float &input);
+
+    bool SHOCK_TIME(TAttrib<EA::Reflection::Float> &result) const;
+    bool SHOCK_TIME(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &SHOCK_TIME() const;
+    bool SET_SHOCK_TIME(const EA::Reflection::Float &input);
+
+    bool SUPPRESS_DIST(TAttrib<EA::Reflection::Float> &result) const;
+    bool SUPPRESS_DIST(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &SUPPRESS_DIST() const;
+    bool SET_SUPPRESS_DIST(const EA::Reflection::Float &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -333,6 +220,230 @@ static const Key SUPPRESS_DIST = 0xc802a18d;
 
 inline Key Gen::damagespecs::ClassKey() {
     return ClassName::damagespecs;
+}
+
+inline bool Gen::damagespecs::DZ_BOTTOM(TAttrib<DamageScaleRecord> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(DamageScaleRecord, 0xadd2023d);
+}
+inline const DamageScaleRecord &Gen::damagespecs::DZ_BOTTOM() const {
+    ATTRIB_CODEGEN_GETLAYOUT(DZ_BOTTOM);
+}
+inline bool Gen::damagespecs::DZ_BOTTOM(DamageScaleRecord &result) const {
+    result = DZ_BOTTOM();
+    return true;
+}
+inline bool Gen::damagespecs::SET_DZ_BOTTOM(const DamageScaleRecord &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(DZ_BOTTOM, input);
+}
+
+inline bool Gen::damagespecs::DZ_FRONT(TAttrib<DamageScaleRecord> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(DamageScaleRecord, 0x1e21c772);
+}
+inline const DamageScaleRecord &Gen::damagespecs::DZ_FRONT() const {
+    ATTRIB_CODEGEN_GETLAYOUT(DZ_FRONT);
+}
+inline bool Gen::damagespecs::DZ_FRONT(DamageScaleRecord &result) const {
+    result = DZ_FRONT();
+    return true;
+}
+inline bool Gen::damagespecs::SET_DZ_FRONT(const DamageScaleRecord &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(DZ_FRONT, input);
+}
+
+inline bool Gen::damagespecs::DZ_LEFT(TAttrib<DamageScaleRecord> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(DamageScaleRecord, 0x698e7c31);
+}
+inline const DamageScaleRecord &Gen::damagespecs::DZ_LEFT() const {
+    ATTRIB_CODEGEN_GETLAYOUT(DZ_LEFT);
+}
+inline bool Gen::damagespecs::DZ_LEFT(DamageScaleRecord &result) const {
+    result = DZ_LEFT();
+    return true;
+}
+inline bool Gen::damagespecs::SET_DZ_LEFT(const DamageScaleRecord &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(DZ_LEFT, input);
+}
+
+inline bool Gen::damagespecs::DZ_LFRONT(TAttrib<DamageScaleRecord> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(DamageScaleRecord, 0xa6f71a1c);
+}
+inline const DamageScaleRecord &Gen::damagespecs::DZ_LFRONT() const {
+    ATTRIB_CODEGEN_GETLAYOUT(DZ_LFRONT);
+}
+inline bool Gen::damagespecs::DZ_LFRONT(DamageScaleRecord &result) const {
+    result = DZ_LFRONT();
+    return true;
+}
+inline bool Gen::damagespecs::SET_DZ_LFRONT(const DamageScaleRecord &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(DZ_LFRONT, input);
+}
+
+inline bool Gen::damagespecs::DZ_LREAR(TAttrib<DamageScaleRecord> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(DamageScaleRecord, 0xb631bf4e);
+}
+inline const DamageScaleRecord &Gen::damagespecs::DZ_LREAR() const {
+    ATTRIB_CODEGEN_GETLAYOUT(DZ_LREAR);
+}
+inline bool Gen::damagespecs::DZ_LREAR(DamageScaleRecord &result) const {
+    result = DZ_LREAR();
+    return true;
+}
+inline bool Gen::damagespecs::SET_DZ_LREAR(const DamageScaleRecord &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(DZ_LREAR, input);
+}
+
+inline bool Gen::damagespecs::DZ_REAR(TAttrib<DamageScaleRecord> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(DamageScaleRecord, 0xe1707b8a);
+}
+inline const DamageScaleRecord &Gen::damagespecs::DZ_REAR() const {
+    ATTRIB_CODEGEN_GETLAYOUT(DZ_REAR);
+}
+inline bool Gen::damagespecs::DZ_REAR(DamageScaleRecord &result) const {
+    result = DZ_REAR();
+    return true;
+}
+inline bool Gen::damagespecs::SET_DZ_REAR(const DamageScaleRecord &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(DZ_REAR, input);
+}
+
+inline bool Gen::damagespecs::DZ_RFRONT(TAttrib<DamageScaleRecord> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(DamageScaleRecord, 0x0380056f);
+}
+inline const DamageScaleRecord &Gen::damagespecs::DZ_RFRONT() const {
+    ATTRIB_CODEGEN_GETLAYOUT(DZ_RFRONT);
+}
+inline bool Gen::damagespecs::DZ_RFRONT(DamageScaleRecord &result) const {
+    result = DZ_RFRONT();
+    return true;
+}
+inline bool Gen::damagespecs::SET_DZ_RFRONT(const DamageScaleRecord &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(DZ_RFRONT, input);
+}
+
+inline bool Gen::damagespecs::DZ_RIGHT(TAttrib<DamageScaleRecord> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(DamageScaleRecord, 0xf700fe17);
+}
+inline const DamageScaleRecord &Gen::damagespecs::DZ_RIGHT() const {
+    ATTRIB_CODEGEN_GETLAYOUT(DZ_RIGHT);
+}
+inline bool Gen::damagespecs::DZ_RIGHT(DamageScaleRecord &result) const {
+    result = DZ_RIGHT();
+    return true;
+}
+inline bool Gen::damagespecs::SET_DZ_RIGHT(const DamageScaleRecord &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(DZ_RIGHT, input);
+}
+
+inline bool Gen::damagespecs::DZ_RREAR(TAttrib<DamageScaleRecord> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(DamageScaleRecord, 0xcc3f0ac3);
+}
+inline const DamageScaleRecord &Gen::damagespecs::DZ_RREAR() const {
+    ATTRIB_CODEGEN_GETLAYOUT(DZ_RREAR);
+}
+inline bool Gen::damagespecs::DZ_RREAR(DamageScaleRecord &result) const {
+    result = DZ_RREAR();
+    return true;
+}
+inline bool Gen::damagespecs::SET_DZ_RREAR(const DamageScaleRecord &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(DZ_RREAR, input);
+}
+
+inline bool Gen::damagespecs::DZ_TOP(TAttrib<DamageScaleRecord> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(DamageScaleRecord, 0xc4ce6d74);
+}
+inline const DamageScaleRecord &Gen::damagespecs::DZ_TOP() const {
+    ATTRIB_CODEGEN_GETLAYOUT(DZ_TOP);
+}
+inline bool Gen::damagespecs::DZ_TOP(DamageScaleRecord &result) const {
+    result = DZ_TOP();
+    return true;
+}
+inline bool Gen::damagespecs::SET_DZ_TOP(const DamageScaleRecord &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(DZ_TOP, input);
+}
+
+inline bool Gen::damagespecs::FORCE(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x3698b384);
+}
+inline const EA::Reflection::Float &Gen::damagespecs::FORCE() const {
+    ATTRIB_CODEGEN_GETLAYOUT(FORCE);
+}
+inline bool Gen::damagespecs::FORCE(EA::Reflection::Float &result) const {
+    result = FORCE();
+    return true;
+}
+inline bool Gen::damagespecs::SET_FORCE(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(FORCE, input);
+}
+
+inline bool Gen::damagespecs::HIT_POINTS(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x97f059b7);
+}
+inline const EA::Reflection::Float &Gen::damagespecs::HIT_POINTS() const {
+    ATTRIB_CODEGEN_GETLAYOUT(HIT_POINTS);
+}
+inline bool Gen::damagespecs::HIT_POINTS(EA::Reflection::Float &result) const {
+    result = HIT_POINTS();
+    return true;
+}
+inline bool Gen::damagespecs::SET_HIT_POINTS(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(HIT_POINTS, input);
+}
+
+inline bool Gen::damagespecs::HP_THRESHOLD(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x499cb7bd);
+}
+inline const EA::Reflection::Float &Gen::damagespecs::HP_THRESHOLD() const {
+    ATTRIB_CODEGEN_GETLAYOUT(HP_THRESHOLD);
+}
+inline bool Gen::damagespecs::HP_THRESHOLD(EA::Reflection::Float &result) const {
+    result = HP_THRESHOLD();
+    return true;
+}
+inline bool Gen::damagespecs::SET_HP_THRESHOLD(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(HP_THRESHOLD, input);
+}
+
+inline bool Gen::damagespecs::SHOCK_FORCE(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x907930df);
+}
+inline const EA::Reflection::Float &Gen::damagespecs::SHOCK_FORCE() const {
+    ATTRIB_CODEGEN_GETLAYOUT(SHOCK_FORCE);
+}
+inline bool Gen::damagespecs::SHOCK_FORCE(EA::Reflection::Float &result) const {
+    result = SHOCK_FORCE();
+    return true;
+}
+inline bool Gen::damagespecs::SET_SHOCK_FORCE(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(SHOCK_FORCE, input);
+}
+
+inline bool Gen::damagespecs::SHOCK_TIME(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x78059ff8);
+}
+inline const EA::Reflection::Float &Gen::damagespecs::SHOCK_TIME() const {
+    ATTRIB_CODEGEN_GETLAYOUT(SHOCK_TIME);
+}
+inline bool Gen::damagespecs::SHOCK_TIME(EA::Reflection::Float &result) const {
+    result = SHOCK_TIME();
+    return true;
+}
+inline bool Gen::damagespecs::SET_SHOCK_TIME(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(SHOCK_TIME, input);
+}
+
+inline bool Gen::damagespecs::SUPPRESS_DIST(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xc802a18d);
+}
+inline const EA::Reflection::Float &Gen::damagespecs::SUPPRESS_DIST() const {
+    ATTRIB_CODEGEN_GETLAYOUT(SUPPRESS_DIST);
+}
+inline bool Gen::damagespecs::SUPPRESS_DIST(EA::Reflection::Float &result) const {
+    result = SUPPRESS_DIST();
+    return true;
+}
+inline bool Gen::damagespecs::SET_SUPPRESS_DIST(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(SUPPRESS_DIST, input);
 }
 
 }; // namespace Attrib

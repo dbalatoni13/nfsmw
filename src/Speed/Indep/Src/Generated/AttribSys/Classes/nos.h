@@ -83,102 +83,45 @@ struct nos : Instance {
         Instance::operator=(rhs);
         return *this;
     }
-    bool FLOW_RATE(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x3f3b1976);
-    }
-    bool FLOW_RATE(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(FLOW_RATE, result);
-    }
-    const EA::Reflection::Float &FLOW_RATE() const {
-        ATTRIB_CODEGEN_GETLAYOUT(FLOW_RATE);
-    }
-    bool SET_FLOW_RATE(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(FLOW_RATE, input);
-    }
-    bool NOS_CAPACITY(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xaa032196);
-    }
-    bool NOS_CAPACITY(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(NOS_CAPACITY, result);
-    }
-    const EA::Reflection::Float &NOS_CAPACITY() const {
-        ATTRIB_CODEGEN_GETLAYOUT(NOS_CAPACITY);
-    }
-    bool SET_NOS_CAPACITY(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(NOS_CAPACITY, input);
-    }
-    bool NOS_DISENGAGE(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xac733de3);
-    }
-    bool NOS_DISENGAGE(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(NOS_DISENGAGE, result);
-    }
-    const EA::Reflection::Float &NOS_DISENGAGE() const {
-        ATTRIB_CODEGEN_GETLAYOUT(NOS_DISENGAGE);
-    }
-    bool SET_NOS_DISENGAGE(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(NOS_DISENGAGE, input);
-    }
-    bool RECHARGE_MAX(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x12a14452);
-    }
-    bool RECHARGE_MAX(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(RECHARGE_MAX, result);
-    }
-    const EA::Reflection::Float &RECHARGE_MAX() const {
-        ATTRIB_CODEGEN_GETLAYOUT(RECHARGE_MAX);
-    }
-    bool SET_RECHARGE_MAX(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(RECHARGE_MAX, input);
-    }
-    bool RECHARGE_MAX_SPEED(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x5799043b);
-    }
-    bool RECHARGE_MAX_SPEED(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(RECHARGE_MAX_SPEED, result);
-    }
-    const EA::Reflection::Float &RECHARGE_MAX_SPEED() const {
-        ATTRIB_CODEGEN_GETLAYOUT(RECHARGE_MAX_SPEED);
-    }
-    bool SET_RECHARGE_MAX_SPEED(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(RECHARGE_MAX_SPEED, input);
-    }
-    bool RECHARGE_MIN(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x0a03c0eb);
-    }
-    bool RECHARGE_MIN(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(RECHARGE_MIN, result);
-    }
-    const EA::Reflection::Float &RECHARGE_MIN() const {
-        ATTRIB_CODEGEN_GETLAYOUT(RECHARGE_MIN);
-    }
-    bool SET_RECHARGE_MIN(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(RECHARGE_MIN, input);
-    }
-    bool RECHARGE_MIN_SPEED(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x97a0d2df);
-    }
-    bool RECHARGE_MIN_SPEED(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(RECHARGE_MIN_SPEED, result);
-    }
-    const EA::Reflection::Float &RECHARGE_MIN_SPEED() const {
-        ATTRIB_CODEGEN_GETLAYOUT(RECHARGE_MIN_SPEED);
-    }
-    bool SET_RECHARGE_MIN_SPEED(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(RECHARGE_MIN_SPEED, input);
-    }
-    bool TORQUE_BOOST(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x8de27c3c);
-    }
-    bool TORQUE_BOOST(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(TORQUE_BOOST, result);
-    }
-    const EA::Reflection::Float &TORQUE_BOOST() const {
-        ATTRIB_CODEGEN_GETLAYOUT(TORQUE_BOOST);
-    }
-    bool SET_TORQUE_BOOST(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(TORQUE_BOOST, input);
-    }
+    bool FLOW_RATE(TAttrib<EA::Reflection::Float> &result) const;
+    bool FLOW_RATE(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &FLOW_RATE() const;
+    bool SET_FLOW_RATE(const EA::Reflection::Float &input);
+
+    bool NOS_CAPACITY(TAttrib<EA::Reflection::Float> &result) const;
+    bool NOS_CAPACITY(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &NOS_CAPACITY() const;
+    bool SET_NOS_CAPACITY(const EA::Reflection::Float &input);
+
+    bool NOS_DISENGAGE(TAttrib<EA::Reflection::Float> &result) const;
+    bool NOS_DISENGAGE(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &NOS_DISENGAGE() const;
+    bool SET_NOS_DISENGAGE(const EA::Reflection::Float &input);
+
+    bool RECHARGE_MAX(TAttrib<EA::Reflection::Float> &result) const;
+    bool RECHARGE_MAX(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &RECHARGE_MAX() const;
+    bool SET_RECHARGE_MAX(const EA::Reflection::Float &input);
+
+    bool RECHARGE_MAX_SPEED(TAttrib<EA::Reflection::Float> &result) const;
+    bool RECHARGE_MAX_SPEED(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &RECHARGE_MAX_SPEED() const;
+    bool SET_RECHARGE_MAX_SPEED(const EA::Reflection::Float &input);
+
+    bool RECHARGE_MIN(TAttrib<EA::Reflection::Float> &result) const;
+    bool RECHARGE_MIN(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &RECHARGE_MIN() const;
+    bool SET_RECHARGE_MIN(const EA::Reflection::Float &input);
+
+    bool RECHARGE_MIN_SPEED(TAttrib<EA::Reflection::Float> &result) const;
+    bool RECHARGE_MIN_SPEED(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &RECHARGE_MIN_SPEED() const;
+    bool SET_RECHARGE_MIN_SPEED(const EA::Reflection::Float &input);
+
+    bool TORQUE_BOOST(TAttrib<EA::Reflection::Float> &result) const;
+    bool TORQUE_BOOST(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &TORQUE_BOOST() const;
+    bool SET_TORQUE_BOOST(const EA::Reflection::Float &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -212,6 +155,118 @@ static const Key TORQUE_BOOST = 0x8de27c3c;
 
 inline Key Gen::nos::ClassKey() {
     return ClassName::nos;
+}
+
+inline bool Gen::nos::FLOW_RATE(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x3f3b1976);
+}
+inline const EA::Reflection::Float &Gen::nos::FLOW_RATE() const {
+    ATTRIB_CODEGEN_GETLAYOUT(FLOW_RATE);
+}
+inline bool Gen::nos::FLOW_RATE(EA::Reflection::Float &result) const {
+    result = FLOW_RATE();
+    return true;
+}
+inline bool Gen::nos::SET_FLOW_RATE(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(FLOW_RATE, input);
+}
+
+inline bool Gen::nos::NOS_CAPACITY(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xaa032196);
+}
+inline const EA::Reflection::Float &Gen::nos::NOS_CAPACITY() const {
+    ATTRIB_CODEGEN_GETLAYOUT(NOS_CAPACITY);
+}
+inline bool Gen::nos::NOS_CAPACITY(EA::Reflection::Float &result) const {
+    result = NOS_CAPACITY();
+    return true;
+}
+inline bool Gen::nos::SET_NOS_CAPACITY(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(NOS_CAPACITY, input);
+}
+
+inline bool Gen::nos::NOS_DISENGAGE(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xac733de3);
+}
+inline const EA::Reflection::Float &Gen::nos::NOS_DISENGAGE() const {
+    ATTRIB_CODEGEN_GETLAYOUT(NOS_DISENGAGE);
+}
+inline bool Gen::nos::NOS_DISENGAGE(EA::Reflection::Float &result) const {
+    result = NOS_DISENGAGE();
+    return true;
+}
+inline bool Gen::nos::SET_NOS_DISENGAGE(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(NOS_DISENGAGE, input);
+}
+
+inline bool Gen::nos::RECHARGE_MAX(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x12a14452);
+}
+inline const EA::Reflection::Float &Gen::nos::RECHARGE_MAX() const {
+    ATTRIB_CODEGEN_GETLAYOUT(RECHARGE_MAX);
+}
+inline bool Gen::nos::RECHARGE_MAX(EA::Reflection::Float &result) const {
+    result = RECHARGE_MAX();
+    return true;
+}
+inline bool Gen::nos::SET_RECHARGE_MAX(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(RECHARGE_MAX, input);
+}
+
+inline bool Gen::nos::RECHARGE_MAX_SPEED(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x5799043b);
+}
+inline const EA::Reflection::Float &Gen::nos::RECHARGE_MAX_SPEED() const {
+    ATTRIB_CODEGEN_GETLAYOUT(RECHARGE_MAX_SPEED);
+}
+inline bool Gen::nos::RECHARGE_MAX_SPEED(EA::Reflection::Float &result) const {
+    result = RECHARGE_MAX_SPEED();
+    return true;
+}
+inline bool Gen::nos::SET_RECHARGE_MAX_SPEED(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(RECHARGE_MAX_SPEED, input);
+}
+
+inline bool Gen::nos::RECHARGE_MIN(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x0a03c0eb);
+}
+inline const EA::Reflection::Float &Gen::nos::RECHARGE_MIN() const {
+    ATTRIB_CODEGEN_GETLAYOUT(RECHARGE_MIN);
+}
+inline bool Gen::nos::RECHARGE_MIN(EA::Reflection::Float &result) const {
+    result = RECHARGE_MIN();
+    return true;
+}
+inline bool Gen::nos::SET_RECHARGE_MIN(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(RECHARGE_MIN, input);
+}
+
+inline bool Gen::nos::RECHARGE_MIN_SPEED(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x97a0d2df);
+}
+inline const EA::Reflection::Float &Gen::nos::RECHARGE_MIN_SPEED() const {
+    ATTRIB_CODEGEN_GETLAYOUT(RECHARGE_MIN_SPEED);
+}
+inline bool Gen::nos::RECHARGE_MIN_SPEED(EA::Reflection::Float &result) const {
+    result = RECHARGE_MIN_SPEED();
+    return true;
+}
+inline bool Gen::nos::SET_RECHARGE_MIN_SPEED(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(RECHARGE_MIN_SPEED, input);
+}
+
+inline bool Gen::nos::TORQUE_BOOST(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x8de27c3c);
+}
+inline const EA::Reflection::Float &Gen::nos::TORQUE_BOOST() const {
+    ATTRIB_CODEGEN_GETLAYOUT(TORQUE_BOOST);
+}
+inline bool Gen::nos::TORQUE_BOOST(EA::Reflection::Float &result) const {
+    result = TORQUE_BOOST();
+    return true;
+}
+inline bool Gen::nos::SET_TORQUE_BOOST(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(TORQUE_BOOST, input);
 }
 
 }; // namespace Attrib

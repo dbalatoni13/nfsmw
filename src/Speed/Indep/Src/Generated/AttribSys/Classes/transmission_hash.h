@@ -244,4 +244,3 @@ static const Key h64_wrx_demo = 0x7fb883af;
 }; // namespace Attrib
 
 #endif
-

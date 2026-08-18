@@ -7,11 +7,7 @@
 
 namespace Attrib {
 namespace Hash {
-namespace timeofdaylighting {
-
-
-
-}; // namespace timeofdaylighting
+namespace timeofdaylighting {}; // namespace timeofdaylighting
 }; // namespace Hash
 }; // namespace Attrib
 

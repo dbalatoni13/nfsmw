@@ -59,66 +59,30 @@ struct ocean : Instance {
         Instance::operator=(rhs);
         return *this;
     }
-    bool layer1_specular_colour(TAttrib<UMath::Vector4> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(UMath::Vector4, 0xd9e53379);
-    }
-    bool layer1_specular_colour(UMath::Vector4 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(UMath::Vector4, 0xd9e53379, result);
-    }
-    const UMath::Vector4 &layer1_specular_colour() const {
-        ATTRIB_CODEGEN_GETVALUE(UMath::Vector4, 0xd9e53379);
-    }
-    bool SET_layer1_specular_colour(const UMath::Vector4 &input) {
-        ATTRIB_CODEGEN_SETVALUE(UMath::Vector4, 0xd9e53379, input);
-    }
-    bool layer1_tile_xy(TAttrib<UMath::Vector2> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(UMath::Vector2, 0x270e8256);
-    }
-    bool layer1_tile_xy(UMath::Vector2 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(UMath::Vector2, 0x270e8256, result);
-    }
-    const UMath::Vector2 &layer1_tile_xy() const {
-        ATTRIB_CODEGEN_GETVALUE(UMath::Vector2, 0x270e8256);
-    }
-    bool SET_layer1_tile_xy(const UMath::Vector2 &input) {
-        ATTRIB_CODEGEN_SETVALUE(UMath::Vector2, 0x270e8256, input);
-    }
-    bool layer2_specular_colour(TAttrib<UMath::Vector4> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(UMath::Vector4, 0x19be3d84);
-    }
-    bool layer2_specular_colour(UMath::Vector4 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(UMath::Vector4, 0x19be3d84, result);
-    }
-    const UMath::Vector4 &layer2_specular_colour() const {
-        ATTRIB_CODEGEN_GETVALUE(UMath::Vector4, 0x19be3d84);
-    }
-    bool SET_layer2_specular_colour(const UMath::Vector4 &input) {
-        ATTRIB_CODEGEN_SETVALUE(UMath::Vector4, 0x19be3d84, input);
-    }
-    bool layer2_tile_xy(TAttrib<UMath::Vector2> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(UMath::Vector2, 0x8813b330);
-    }
-    bool layer2_tile_xy(UMath::Vector2 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(UMath::Vector2, 0x8813b330, result);
-    }
-    const UMath::Vector2 &layer2_tile_xy() const {
-        ATTRIB_CODEGEN_GETVALUE(UMath::Vector2, 0x8813b330);
-    }
-    bool SET_layer2_tile_xy(const UMath::Vector2 &input) {
-        ATTRIB_CODEGEN_SETVALUE(UMath::Vector2, 0x8813b330, input);
-    }
-    bool reflection_amount(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xe956e716);
-    }
-    bool reflection_amount(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xe956e716, result);
-    }
-    const EA::Reflection::Float &reflection_amount() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0xe956e716);
-    }
-    bool SET_reflection_amount(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xe956e716, input);
-    }
+    bool layer1_specular_colour(TAttrib<UMath::Vector4> &result) const;
+    bool layer1_specular_colour(UMath::Vector4 &result) const;
+    const UMath::Vector4 &layer1_specular_colour() const;
+    bool SET_layer1_specular_colour(const UMath::Vector4 &input);
+
+    bool layer1_tile_xy(TAttrib<UMath::Vector2> &result) const;
+    bool layer1_tile_xy(UMath::Vector2 &result) const;
+    const UMath::Vector2 &layer1_tile_xy() const;
+    bool SET_layer1_tile_xy(const UMath::Vector2 &input);
+
+    bool layer2_specular_colour(TAttrib<UMath::Vector4> &result) const;
+    bool layer2_specular_colour(UMath::Vector4 &result) const;
+    const UMath::Vector4 &layer2_specular_colour() const;
+    bool SET_layer2_specular_colour(const UMath::Vector4 &input);
+
+    bool layer2_tile_xy(TAttrib<UMath::Vector2> &result) const;
+    bool layer2_tile_xy(UMath::Vector2 &result) const;
+    const UMath::Vector2 &layer2_tile_xy() const;
+    bool SET_layer2_tile_xy(const UMath::Vector2 &input);
+
+    bool reflection_amount(TAttrib<EA::Reflection::Float> &result) const;
+    bool reflection_amount(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &reflection_amount() const;
+    bool SET_reflection_amount(const EA::Reflection::Float &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -149,6 +113,71 @@ static const Key reflection_amount = 0xe956e716;
 
 inline Key Gen::ocean::ClassKey() {
     return ClassName::ocean;
+}
+
+inline bool Gen::ocean::layer1_specular_colour(TAttrib<UMath::Vector4> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(UMath::Vector4, 0xd9e53379);
+}
+inline const UMath::Vector4 &Gen::ocean::layer1_specular_colour() const {
+    ATTRIB_CODEGEN_GETVALUE(UMath::Vector4, 0xd9e53379);
+}
+inline bool Gen::ocean::layer1_specular_colour(UMath::Vector4 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(UMath::Vector4, 0xd9e53379, result);
+}
+inline bool Gen::ocean::SET_layer1_specular_colour(const UMath::Vector4 &input) {
+    ATTRIB_CODEGEN_SETVALUE(UMath::Vector4, 0xd9e53379, input);
+}
+
+inline bool Gen::ocean::layer1_tile_xy(TAttrib<UMath::Vector2> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(UMath::Vector2, 0x270e8256);
+}
+inline const UMath::Vector2 &Gen::ocean::layer1_tile_xy() const {
+    ATTRIB_CODEGEN_GETVALUE(UMath::Vector2, 0x270e8256);
+}
+inline bool Gen::ocean::layer1_tile_xy(UMath::Vector2 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(UMath::Vector2, 0x270e8256, result);
+}
+inline bool Gen::ocean::SET_layer1_tile_xy(const UMath::Vector2 &input) {
+    ATTRIB_CODEGEN_SETVALUE(UMath::Vector2, 0x270e8256, input);
+}
+
+inline bool Gen::ocean::layer2_specular_colour(TAttrib<UMath::Vector4> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(UMath::Vector4, 0x19be3d84);
+}
+inline const UMath::Vector4 &Gen::ocean::layer2_specular_colour() const {
+    ATTRIB_CODEGEN_GETVALUE(UMath::Vector4, 0x19be3d84);
+}
+inline bool Gen::ocean::layer2_specular_colour(UMath::Vector4 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(UMath::Vector4, 0x19be3d84, result);
+}
+inline bool Gen::ocean::SET_layer2_specular_colour(const UMath::Vector4 &input) {
+    ATTRIB_CODEGEN_SETVALUE(UMath::Vector4, 0x19be3d84, input);
+}
+
+inline bool Gen::ocean::layer2_tile_xy(TAttrib<UMath::Vector2> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(UMath::Vector2, 0x8813b330);
+}
+inline const UMath::Vector2 &Gen::ocean::layer2_tile_xy() const {
+    ATTRIB_CODEGEN_GETVALUE(UMath::Vector2, 0x8813b330);
+}
+inline bool Gen::ocean::layer2_tile_xy(UMath::Vector2 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(UMath::Vector2, 0x8813b330, result);
+}
+inline bool Gen::ocean::SET_layer2_tile_xy(const UMath::Vector2 &input) {
+    ATTRIB_CODEGEN_SETVALUE(UMath::Vector2, 0x8813b330, input);
+}
+
+inline bool Gen::ocean::reflection_amount(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xe956e716);
+}
+inline const EA::Reflection::Float &Gen::ocean::reflection_amount() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0xe956e716);
+}
+inline bool Gen::ocean::reflection_amount(EA::Reflection::Float &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xe956e716, result);
+}
+inline bool Gen::ocean::SET_reflection_amount(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xe956e716, input);
 }
 
 }; // namespace Attrib

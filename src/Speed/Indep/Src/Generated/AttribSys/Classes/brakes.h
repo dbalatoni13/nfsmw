@@ -73,42 +73,20 @@ struct brakes : Instance {
         Instance::operator=(rhs);
         return *this;
     }
-    bool BRAKES(TAttrib<AxlePair> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(AxlePair, 0x3a377301);
-    }
-    bool BRAKES(AxlePair &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(BRAKES, result);
-    }
-    const AxlePair &BRAKES() const {
-        ATTRIB_CODEGEN_GETLAYOUT(BRAKES);
-    }
-    bool SET_BRAKES(const AxlePair &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(BRAKES, input);
-    }
-    bool BRAKE_LOCK(TAttrib<AxlePair> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(AxlePair, 0xf5bec23d);
-    }
-    bool BRAKE_LOCK(AxlePair &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(BRAKE_LOCK, result);
-    }
-    const AxlePair &BRAKE_LOCK() const {
-        ATTRIB_CODEGEN_GETLAYOUT(BRAKE_LOCK);
-    }
-    bool SET_BRAKE_LOCK(const AxlePair &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(BRAKE_LOCK, input);
-    }
-    bool EBRAKE(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xdc965a0c);
-    }
-    bool EBRAKE(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(EBRAKE, result);
-    }
-    const EA::Reflection::Float &EBRAKE() const {
-        ATTRIB_CODEGEN_GETLAYOUT(EBRAKE);
-    }
-    bool SET_EBRAKE(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(EBRAKE, input);
-    }
+    bool BRAKES(TAttrib<AxlePair> &result) const;
+    bool BRAKES(AxlePair &result) const;
+    const AxlePair &BRAKES() const;
+    bool SET_BRAKES(const AxlePair &input);
+
+    bool BRAKE_LOCK(TAttrib<AxlePair> &result) const;
+    bool BRAKE_LOCK(AxlePair &result) const;
+    const AxlePair &BRAKE_LOCK() const;
+    bool SET_BRAKE_LOCK(const AxlePair &input);
+
+    bool EBRAKE(TAttrib<EA::Reflection::Float> &result) const;
+    bool EBRAKE(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &EBRAKE() const;
+    bool SET_EBRAKE(const EA::Reflection::Float &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -137,6 +115,48 @@ static const Key EBRAKE = 0xdc965a0c;
 
 inline Key Gen::brakes::ClassKey() {
     return ClassName::brakes;
+}
+
+inline bool Gen::brakes::BRAKES(TAttrib<AxlePair> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(AxlePair, 0x3a377301);
+}
+inline const AxlePair &Gen::brakes::BRAKES() const {
+    ATTRIB_CODEGEN_GETLAYOUT(BRAKES);
+}
+inline bool Gen::brakes::BRAKES(AxlePair &result) const {
+    result = BRAKES();
+    return true;
+}
+inline bool Gen::brakes::SET_BRAKES(const AxlePair &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(BRAKES, input);
+}
+
+inline bool Gen::brakes::BRAKE_LOCK(TAttrib<AxlePair> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(AxlePair, 0xf5bec23d);
+}
+inline const AxlePair &Gen::brakes::BRAKE_LOCK() const {
+    ATTRIB_CODEGEN_GETLAYOUT(BRAKE_LOCK);
+}
+inline bool Gen::brakes::BRAKE_LOCK(AxlePair &result) const {
+    result = BRAKE_LOCK();
+    return true;
+}
+inline bool Gen::brakes::SET_BRAKE_LOCK(const AxlePair &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(BRAKE_LOCK, input);
+}
+
+inline bool Gen::brakes::EBRAKE(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xdc965a0c);
+}
+inline const EA::Reflection::Float &Gen::brakes::EBRAKE() const {
+    ATTRIB_CODEGEN_GETLAYOUT(EBRAKE);
+}
+inline bool Gen::brakes::EBRAKE(EA::Reflection::Float &result) const {
+    result = EBRAKE();
+    return true;
+}
+inline bool Gen::brakes::SET_EBRAKE(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(EBRAKE, input);
 }
 
 }; // namespace Attrib

@@ -62,108 +62,46 @@ struct audioimpact : Instance {
         Instance::operator=(rhs);
         return *this;
     }
-    bool DESCRIPTION(TAttrib<Attrib::StringKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(Attrib::StringKey, 0x09925106);
-    }
-    bool DESCRIPTION(Attrib::StringKey &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(Attrib::StringKey, 0x09925106, result, index);
-    }
-    const Attrib::StringKey &DESCRIPTION(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(Attrib::StringKey, 0x09925106, index);
-    }
-    unsigned int Num_DESCRIPTION() const {
-        ATTRIB_CODEGEN_GETLENGTH(0x09925106);
-    }
-    bool SET_DESCRIPTION(const Attrib::StringKey &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(Attrib::StringKey, 0x09925106, input, index);
-    }
-    bool STITCH_LEVEL_0(TAttrib<STICH_COLLISION_TYPE> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(STICH_COLLISION_TYPE, 0xc15856df);
-    }
-    bool STITCH_LEVEL_0(STICH_COLLISION_TYPE &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(STICH_COLLISION_TYPE, 0xc15856df, result, index);
-    }
-    const STICH_COLLISION_TYPE &STITCH_LEVEL_0(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(STICH_COLLISION_TYPE, 0xc15856df, index);
-    }
-    unsigned int Num_STITCH_LEVEL_0() const {
-        ATTRIB_CODEGEN_GETLENGTH(0xc15856df);
-    }
-    bool SET_STITCH_LEVEL_0(const STICH_COLLISION_TYPE &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(STICH_COLLISION_TYPE, 0xc15856df, input, index);
-    }
-    bool STITCH_LEVEL_1(TAttrib<STICH_COLLISION_TYPE> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(STICH_COLLISION_TYPE, 0xdadb5580);
-    }
-    bool STITCH_LEVEL_1(STICH_COLLISION_TYPE &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(STICH_COLLISION_TYPE, 0xdadb5580, result, index);
-    }
-    const STICH_COLLISION_TYPE &STITCH_LEVEL_1(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(STICH_COLLISION_TYPE, 0xdadb5580, index);
-    }
-    unsigned int Num_STITCH_LEVEL_1() const {
-        ATTRIB_CODEGEN_GETLENGTH(0xdadb5580);
-    }
-    bool SET_STITCH_LEVEL_1(const STICH_COLLISION_TYPE &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(STICH_COLLISION_TYPE, 0xdadb5580, input, index);
-    }
-    bool STITCH_LEVEL_2(TAttrib<STICH_COLLISION_TYPE> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(STICH_COLLISION_TYPE, 0xc9218f8c);
-    }
-    bool STITCH_LEVEL_2(STICH_COLLISION_TYPE &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(STICH_COLLISION_TYPE, 0xc9218f8c, result, index);
-    }
-    const STICH_COLLISION_TYPE &STITCH_LEVEL_2(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(STICH_COLLISION_TYPE, 0xc9218f8c, index);
-    }
-    unsigned int Num_STITCH_LEVEL_2() const {
-        ATTRIB_CODEGEN_GETLENGTH(0xc9218f8c);
-    }
-    bool SET_STITCH_LEVEL_2(const STICH_COLLISION_TYPE &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(STICH_COLLISION_TYPE, 0xc9218f8c, input, index);
-    }
-    bool STITCH_LEVEL_3(TAttrib<STICH_COLLISION_TYPE> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(STICH_COLLISION_TYPE, 0xefbca3c9);
-    }
-    bool STITCH_LEVEL_3(STICH_COLLISION_TYPE &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(STICH_COLLISION_TYPE, 0xefbca3c9, result, index);
-    }
-    const STICH_COLLISION_TYPE &STITCH_LEVEL_3(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(STICH_COLLISION_TYPE, 0xefbca3c9, index);
-    }
-    unsigned int Num_STITCH_LEVEL_3() const {
-        ATTRIB_CODEGEN_GETLENGTH(0xefbca3c9);
-    }
-    bool SET_STITCH_LEVEL_3(const STICH_COLLISION_TYPE &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(STICH_COLLISION_TYPE, 0xefbca3c9, input, index);
-    }
-    bool StreamSweetner(TAttrib<CollisionStream> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(CollisionStream, 0xa311c644);
-    }
-    bool StreamSweetner(CollisionStream &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(CollisionStream, 0xa311c644, result, index);
-    }
-    const CollisionStream &StreamSweetner(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(CollisionStream, 0xa311c644, index);
-    }
-    unsigned int Num_StreamSweetner() const {
-        ATTRIB_CODEGEN_GETLENGTH(0xa311c644);
-    }
-    bool SET_StreamSweetner(const CollisionStream &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(CollisionStream, 0xa311c644, input, index);
-    }
-    bool Volumes(TAttrib<StitchCollisionVol> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(StitchCollisionVol, 0xfcc8e754);
-    }
-    bool Volumes(StitchCollisionVol &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(StitchCollisionVol, 0xfcc8e754, result);
-    }
-    const StitchCollisionVol &Volumes() const {
-        ATTRIB_CODEGEN_GETVALUE(StitchCollisionVol, 0xfcc8e754);
-    }
-    bool SET_Volumes(const StitchCollisionVol &input) {
-        ATTRIB_CODEGEN_SETVALUE(StitchCollisionVol, 0xfcc8e754, input);
-    }
+    bool DESCRIPTION(TAttrib<Attrib::StringKey> &result) const;
+    bool DESCRIPTION(Attrib::StringKey &result, unsigned int index) const;
+    const Attrib::StringKey &DESCRIPTION(unsigned int index) const;
+    unsigned int Num_DESCRIPTION() const;
+    bool SET_DESCRIPTION(const Attrib::StringKey &input, unsigned int index);
+
+    bool STITCH_LEVEL_0(TAttrib<STICH_COLLISION_TYPE> &result) const;
+    bool STITCH_LEVEL_0(STICH_COLLISION_TYPE &result, unsigned int index) const;
+    const STICH_COLLISION_TYPE &STITCH_LEVEL_0(unsigned int index) const;
+    unsigned int Num_STITCH_LEVEL_0() const;
+    bool SET_STITCH_LEVEL_0(const STICH_COLLISION_TYPE &input, unsigned int index);
+
+    bool STITCH_LEVEL_1(TAttrib<STICH_COLLISION_TYPE> &result) const;
+    bool STITCH_LEVEL_1(STICH_COLLISION_TYPE &result, unsigned int index) const;
+    const STICH_COLLISION_TYPE &STITCH_LEVEL_1(unsigned int index) const;
+    unsigned int Num_STITCH_LEVEL_1() const;
+    bool SET_STITCH_LEVEL_1(const STICH_COLLISION_TYPE &input, unsigned int index);
+
+    bool STITCH_LEVEL_2(TAttrib<STICH_COLLISION_TYPE> &result) const;
+    bool STITCH_LEVEL_2(STICH_COLLISION_TYPE &result, unsigned int index) const;
+    const STICH_COLLISION_TYPE &STITCH_LEVEL_2(unsigned int index) const;
+    unsigned int Num_STITCH_LEVEL_2() const;
+    bool SET_STITCH_LEVEL_2(const STICH_COLLISION_TYPE &input, unsigned int index);
+
+    bool STITCH_LEVEL_3(TAttrib<STICH_COLLISION_TYPE> &result) const;
+    bool STITCH_LEVEL_3(STICH_COLLISION_TYPE &result, unsigned int index) const;
+    const STICH_COLLISION_TYPE &STITCH_LEVEL_3(unsigned int index) const;
+    unsigned int Num_STITCH_LEVEL_3() const;
+    bool SET_STITCH_LEVEL_3(const STICH_COLLISION_TYPE &input, unsigned int index);
+
+    bool StreamSweetner(TAttrib<CollisionStream> &result) const;
+    bool StreamSweetner(CollisionStream &result, unsigned int index) const;
+    const CollisionStream &StreamSweetner(unsigned int index) const;
+    unsigned int Num_StreamSweetner() const;
+    bool SET_StreamSweetner(const CollisionStream &input, unsigned int index);
+
+    bool Volumes(TAttrib<StitchCollisionVol> &result) const;
+    bool Volumes(StitchCollisionVol &result) const;
+    const StitchCollisionVol &Volumes() const;
+    bool SET_Volumes(const StitchCollisionVol &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -196,6 +134,115 @@ static const Key Volumes = 0xfcc8e754;
 
 inline Key Gen::audioimpact::ClassKey() {
     return ClassName::audioimpact;
+}
+
+inline bool Gen::audioimpact::DESCRIPTION(TAttrib<Attrib::StringKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(Attrib::StringKey, 0x09925106);
+}
+inline const Attrib::StringKey &Gen::audioimpact::DESCRIPTION(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(Attrib::StringKey, 0x09925106, index);
+}
+inline bool Gen::audioimpact::DESCRIPTION(Attrib::StringKey &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(Attrib::StringKey, 0x09925106, result, index);
+}
+inline unsigned int Gen::audioimpact::Num_DESCRIPTION() const {
+    ATTRIB_CODEGEN_GETLENGTH(0x09925106);
+}
+inline bool Gen::audioimpact::SET_DESCRIPTION(const Attrib::StringKey &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(Attrib::StringKey, 0x09925106, input, index);
+}
+
+inline bool Gen::audioimpact::STITCH_LEVEL_0(TAttrib<STICH_COLLISION_TYPE> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(STICH_COLLISION_TYPE, 0xc15856df);
+}
+inline const STICH_COLLISION_TYPE &Gen::audioimpact::STITCH_LEVEL_0(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(STICH_COLLISION_TYPE, 0xc15856df, index);
+}
+inline bool Gen::audioimpact::STITCH_LEVEL_0(STICH_COLLISION_TYPE &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(STICH_COLLISION_TYPE, 0xc15856df, result, index);
+}
+inline unsigned int Gen::audioimpact::Num_STITCH_LEVEL_0() const {
+    ATTRIB_CODEGEN_GETLENGTH(0xc15856df);
+}
+inline bool Gen::audioimpact::SET_STITCH_LEVEL_0(const STICH_COLLISION_TYPE &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(STICH_COLLISION_TYPE, 0xc15856df, input, index);
+}
+
+inline bool Gen::audioimpact::STITCH_LEVEL_1(TAttrib<STICH_COLLISION_TYPE> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(STICH_COLLISION_TYPE, 0xdadb5580);
+}
+inline const STICH_COLLISION_TYPE &Gen::audioimpact::STITCH_LEVEL_1(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(STICH_COLLISION_TYPE, 0xdadb5580, index);
+}
+inline bool Gen::audioimpact::STITCH_LEVEL_1(STICH_COLLISION_TYPE &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(STICH_COLLISION_TYPE, 0xdadb5580, result, index);
+}
+inline unsigned int Gen::audioimpact::Num_STITCH_LEVEL_1() const {
+    ATTRIB_CODEGEN_GETLENGTH(0xdadb5580);
+}
+inline bool Gen::audioimpact::SET_STITCH_LEVEL_1(const STICH_COLLISION_TYPE &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(STICH_COLLISION_TYPE, 0xdadb5580, input, index);
+}
+
+inline bool Gen::audioimpact::STITCH_LEVEL_2(TAttrib<STICH_COLLISION_TYPE> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(STICH_COLLISION_TYPE, 0xc9218f8c);
+}
+inline const STICH_COLLISION_TYPE &Gen::audioimpact::STITCH_LEVEL_2(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(STICH_COLLISION_TYPE, 0xc9218f8c, index);
+}
+inline bool Gen::audioimpact::STITCH_LEVEL_2(STICH_COLLISION_TYPE &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(STICH_COLLISION_TYPE, 0xc9218f8c, result, index);
+}
+inline unsigned int Gen::audioimpact::Num_STITCH_LEVEL_2() const {
+    ATTRIB_CODEGEN_GETLENGTH(0xc9218f8c);
+}
+inline bool Gen::audioimpact::SET_STITCH_LEVEL_2(const STICH_COLLISION_TYPE &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(STICH_COLLISION_TYPE, 0xc9218f8c, input, index);
+}
+
+inline bool Gen::audioimpact::STITCH_LEVEL_3(TAttrib<STICH_COLLISION_TYPE> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(STICH_COLLISION_TYPE, 0xefbca3c9);
+}
+inline const STICH_COLLISION_TYPE &Gen::audioimpact::STITCH_LEVEL_3(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(STICH_COLLISION_TYPE, 0xefbca3c9, index);
+}
+inline bool Gen::audioimpact::STITCH_LEVEL_3(STICH_COLLISION_TYPE &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(STICH_COLLISION_TYPE, 0xefbca3c9, result, index);
+}
+inline unsigned int Gen::audioimpact::Num_STITCH_LEVEL_3() const {
+    ATTRIB_CODEGEN_GETLENGTH(0xefbca3c9);
+}
+inline bool Gen::audioimpact::SET_STITCH_LEVEL_3(const STICH_COLLISION_TYPE &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(STICH_COLLISION_TYPE, 0xefbca3c9, input, index);
+}
+
+inline bool Gen::audioimpact::StreamSweetner(TAttrib<CollisionStream> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(CollisionStream, 0xa311c644);
+}
+inline const CollisionStream &Gen::audioimpact::StreamSweetner(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(CollisionStream, 0xa311c644, index);
+}
+inline bool Gen::audioimpact::StreamSweetner(CollisionStream &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(CollisionStream, 0xa311c644, result, index);
+}
+inline unsigned int Gen::audioimpact::Num_StreamSweetner() const {
+    ATTRIB_CODEGEN_GETLENGTH(0xa311c644);
+}
+inline bool Gen::audioimpact::SET_StreamSweetner(const CollisionStream &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(CollisionStream, 0xa311c644, input, index);
+}
+
+inline bool Gen::audioimpact::Volumes(TAttrib<StitchCollisionVol> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(StitchCollisionVol, 0xfcc8e754);
+}
+inline const StitchCollisionVol &Gen::audioimpact::Volumes() const {
+    ATTRIB_CODEGEN_GETVALUE(StitchCollisionVol, 0xfcc8e754);
+}
+inline bool Gen::audioimpact::Volumes(StitchCollisionVol &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(StitchCollisionVol, 0xfcc8e754, result);
+}
+inline bool Gen::audioimpact::SET_Volumes(const StitchCollisionVol &input) {
+    ATTRIB_CODEGEN_SETVALUE(StitchCollisionVol, 0xfcc8e754, input);
 }
 
 }; // namespace Attrib

@@ -272,4 +272,3 @@ static const Key h64_xecs_solid_wall = 0xc14b9283;
 }; // namespace Attrib
 
 #endif
-

@@ -290,2727 +290,1132 @@ struct gameplay : Instance {
         Instance::operator=(rhs);
         return *this;
     }
-    bool AllowInvisibleSpawn(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0xa1009a23);
-    }
-    bool AllowInvisibleSpawn(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0xa1009a23, result);
-    }
-    const EA::Reflection::Bool &AllowInvisibleSpawn() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0xa1009a23);
-    }
-    bool SET_AllowInvisibleSpawn(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0xa1009a23, input);
-    }
-    bool AutoActivateGPS(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x29b9c312);
-    }
-    bool AutoActivateGPS(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x29b9c312, result);
-    }
-    const EA::Reflection::Bool &AutoActivateGPS() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x29b9c312);
-    }
-    bool SET_AutoActivateGPS(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x29b9c312, input);
-    }
-    bool AutoSpawnTriggerType(TAttrib<EA::Reflection::Text> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0xd5c7e9c3);
-    }
-    bool AutoSpawnTriggerType(EA::Reflection::Text &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0xd5c7e9c3, result);
-    }
-    const EA::Reflection::Text &AutoSpawnTriggerType() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0xd5c7e9c3);
-    }
-    bool SET_AutoSpawnTriggerType(const EA::Reflection::Text &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0xd5c7e9c3, input);
-    }
-    bool AutoStart(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x883c65e3);
-    }
-    bool AutoStart(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x883c65e3, result);
-    }
-    const EA::Reflection::Bool &AutoStart() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x883c65e3);
-    }
-    bool SET_AutoStart(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x883c65e3, input);
-    }
-    bool AvailableOnline(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x39509746);
-    }
-    bool AvailableOnline(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x39509746, result);
-    }
-    const EA::Reflection::Bool &AvailableOnline() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x39509746);
-    }
-    bool SET_AvailableOnline(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x39509746, input);
-    }
-    bool AvailableQR(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0xb39ed8c3);
-    }
-    bool AvailableQR(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0xb39ed8c3, result);
-    }
-    const EA::Reflection::Bool &AvailableQR() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0xb39ed8c3);
-    }
-    bool SET_AvailableQR(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0xb39ed8c3, input);
-    }
-    bool BarrierExemptions(TAttrib<GCollectionKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0xf380286b);
-    }
-    bool BarrierExemptions(GCollectionKey &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(GCollectionKey, 0xf380286b, result, index);
-    }
-    const GCollectionKey &BarrierExemptions(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(GCollectionKey, 0xf380286b, index);
-    }
-    unsigned int Num_BarrierExemptions() const {
-        ATTRIB_CODEGEN_GETLENGTH(0xf380286b);
-    }
-    bool SET_BarrierExemptions(const GCollectionKey &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(GCollectionKey, 0xf380286b, input, index);
-    }
-    bool Barriers(TAttrib<EA::Reflection::Text> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0xe244f26b);
-    }
-    bool Barriers(EA::Reflection::Text &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(EA::Reflection::Text, 0xe244f26b, result, index);
-    }
-    const EA::Reflection::Text &Barriers(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(EA::Reflection::Text, 0xe244f26b, index);
-    }
-    unsigned int Num_Barriers() const {
-        ATTRIB_CODEGEN_GETLENGTH(0xe244f26b);
-    }
-    bool SET_Barriers(const EA::Reflection::Text &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(EA::Reflection::Text, 0xe244f26b, input, index);
-    }
-    bool BaseOpenWorldHeat(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x8f186ac4);
-    }
-    bool BaseOpenWorldHeat(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x8f186ac4, result);
-    }
-    const EA::Reflection::Float &BaseOpenWorldHeat() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x8f186ac4);
-    }
-    bool SET_BaseOpenWorldHeat(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x8f186ac4, input);
-    }
-    bool BaselineUnlocks(TAttrib<GCollectionKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0xbaf89280);
-    }
-    bool BaselineUnlocks(GCollectionKey &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(GCollectionKey, 0xbaf89280, result, index);
-    }
-    const GCollectionKey &BaselineUnlocks(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(GCollectionKey, 0xbaf89280, index);
-    }
-    unsigned int Num_BaselineUnlocks() const {
-        ATTRIB_CODEGEN_GETLENGTH(0xbaf89280);
-    }
-    bool SET_BaselineUnlocks(const GCollectionKey &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(GCollectionKey, 0xbaf89280, input, index);
-    }
-    bool BinIndex(TAttrib<EA::Reflection::Int32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x6ce23062);
-    }
-    bool BinIndex(EA::Reflection::Int32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x6ce23062, result);
-    }
-    const EA::Reflection::Int32 &BinIndex() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0x6ce23062);
-    }
-    bool SET_BinIndex(const EA::Reflection::Int32 &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x6ce23062, input);
-    }
-    bool Boss(TAttrib<GCollectionKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0xa5f39dc7);
-    }
-    bool Boss(GCollectionKey &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0xa5f39dc7, result);
-    }
-    const GCollectionKey &Boss() const {
-        ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0xa5f39dc7);
-    }
-    bool SET_Boss(const GCollectionKey &input) {
-        ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0xa5f39dc7, input);
-    }
-    bool BossRace(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0xff5ee5d6);
-    }
-    bool BossRace(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0xff5ee5d6, result);
-    }
-    const EA::Reflection::Bool &BossRace() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0xff5ee5d6);
-    }
-    bool SET_BossRace(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0xff5ee5d6, input);
-    }
-    bool BossRaces(TAttrib<GCollectionKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0xd5a174aa);
-    }
-    bool BossRaces(GCollectionKey &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(GCollectionKey, 0xd5a174aa, result, index);
-    }
-    const GCollectionKey &BossRaces(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(GCollectionKey, 0xd5a174aa, index);
-    }
-    unsigned int Num_BossRaces() const {
-        ATTRIB_CODEGEN_GETLENGTH(0xd5a174aa);
-    }
-    bool SET_BossRaces(const GCollectionKey &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(GCollectionKey, 0xd5a174aa, input, index);
-    }
-    bool BossReputation(TAttrib<EA::Reflection::Int32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x1d33241a);
-    }
-    bool BossReputation(EA::Reflection::Int32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x1d33241a, result);
-    }
-    const EA::Reflection::Int32 &BossReputation() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0x1d33241a);
-    }
-    bool SET_BossReputation(const EA::Reflection::Int32 &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x1d33241a, input);
-    }
-    bool Bounty(TAttrib<EA::Reflection::Int32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x8e1904c7);
-    }
-    bool Bounty(EA::Reflection::Int32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x8e1904c7, result);
-    }
-    const EA::Reflection::Int32 &Bounty() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0x8e1904c7);
-    }
-    bool SET_Bounty(const EA::Reflection::Int32 &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x8e1904c7, input);
-    }
-    bool BustedLives(TAttrib<EA::Reflection::Int32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x462f2e36);
-    }
-    bool BustedLives(EA::Reflection::Int32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x462f2e36, result);
-    }
-    const EA::Reflection::Int32 &BustedLives() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0x462f2e36);
-    }
-    bool SET_BustedLives(const EA::Reflection::Int32 &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x462f2e36, input);
-    }
-    bool CameraModelMarker(TAttrib<GCollectionKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0x52dc742c);
-    }
-    bool CameraModelMarker(GCollectionKey &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0x52dc742c, result);
-    }
-    const GCollectionKey &CameraModelMarker() const {
-        ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0x52dc742c);
-    }
-    bool SET_CameraModelMarker(const GCollectionKey &input) {
-        ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0x52dc742c, input);
-    }
-    bool CannedPath(TAttrib<GCollectionKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0x9c19e56f);
-    }
-    bool CannedPath(GCollectionKey &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(GCollectionKey, 0x9c19e56f, result, index);
-    }
-    const GCollectionKey &CannedPath(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(GCollectionKey, 0x9c19e56f, index);
-    }
-    unsigned int Num_CannedPath() const {
-        ATTRIB_CODEGEN_GETLENGTH(0x9c19e56f);
-    }
-    bool SET_CannedPath(const GCollectionKey &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(GCollectionKey, 0x9c19e56f, input, index);
-    }
-    bool CarType(TAttrib<EA::Reflection::Text> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0xf833c06f);
-    }
-    bool CarType(EA::Reflection::Text &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0xf833c06f, result);
-    }
-    const EA::Reflection::Text &CarType() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0xf833c06f);
-    }
-    bool SET_CarType(const EA::Reflection::Text &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0xf833c06f, input);
-    }
-    bool CarTypeLowMem(TAttrib<EA::Reflection::Text> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0xfd3cf790);
-    }
-    bool CarTypeLowMem(EA::Reflection::Text &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0xfd3cf790, result);
-    }
-    const EA::Reflection::Text &CarTypeLowMem() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0xfd3cf790);
-    }
-    bool SET_CarTypeLowMem(const EA::Reflection::Text &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0xfd3cf790, input);
-    }
-    bool CashReward(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xab0179f4);
-    }
-    bool CashReward(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xab0179f4, result);
-    }
-    const EA::Reflection::Float &CashReward() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0xab0179f4);
-    }
-    bool SET_CashReward(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xab0179f4, input);
-    }
-    bool CashRewards(TAttrib<GCollectionKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0x0550fbc2);
-    }
-    bool CashRewards(GCollectionKey &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(GCollectionKey, 0x0550fbc2, result, index);
-    }
-    const GCollectionKey &CashRewards(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(GCollectionKey, 0x0550fbc2, index);
-    }
-    unsigned int Num_CashRewards() const {
-        ATTRIB_CODEGEN_GETLENGTH(0x0550fbc2);
-    }
-    bool SET_CashRewards(const GCollectionKey &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(GCollectionKey, 0x0550fbc2, input, index);
-    }
-    bool CashValue(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xd8baa07b);
-    }
-    bool CashValue(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xd8baa07b, result);
-    }
-    const EA::Reflection::Float &CashValue() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0xd8baa07b);
-    }
-    bool SET_CashValue(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xd8baa07b, input);
-    }
-    bool CatchUp(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x10db04e6);
-    }
-    bool CatchUp(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x10db04e6, result);
-    }
-    const EA::Reflection::Bool &CatchUp() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x10db04e6);
-    }
-    bool SET_CatchUp(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x10db04e6, input);
-    }
-    bool CatchUpDerivative(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x515aa4e4);
-    }
-    bool CatchUpDerivative(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x515aa4e4, result);
-    }
-    const EA::Reflection::Float &CatchUpDerivative() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x515aa4e4);
-    }
-    bool SET_CatchUpDerivative(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x515aa4e4, input);
-    }
-    bool CatchUpIntegral(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x4545ab74);
-    }
-    bool CatchUpIntegral(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x4545ab74, result);
-    }
-    const EA::Reflection::Float &CatchUpIntegral() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x4545ab74);
-    }
-    bool SET_CatchUpIntegral(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x4545ab74, input);
-    }
-    bool CatchUpOverride(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x9eb17c1e);
-    }
-    bool CatchUpOverride(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x9eb17c1e, result);
-    }
-    const EA::Reflection::Bool &CatchUpOverride() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x9eb17c1e);
-    }
-    bool SET_CatchUpOverride(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x9eb17c1e, input);
-    }
-    bool CatchUpSkill(TAttrib<EA::Reflection::Text> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0x8069b5a9);
-    }
-    bool CatchUpSkill(EA::Reflection::Text &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0x8069b5a9, result);
-    }
-    const EA::Reflection::Text &CatchUpSkill() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0x8069b5a9);
-    }
-    bool SET_CatchUpSkill(const EA::Reflection::Text &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0x8069b5a9, input);
-    }
-    bool CatchUpSpread(TAttrib<EA::Reflection::Text> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0xa18a07ba);
-    }
-    bool CatchUpSpread(EA::Reflection::Text &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0xa18a07ba, result);
-    }
-    const EA::Reflection::Text &CatchUpSpread() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0xa18a07ba);
-    }
-    bool SET_CatchUpSpread(const EA::Reflection::Text &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0xa18a07ba, input);
-    }
-    bool CellChallengeRace(TAttrib<GCollectionKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0xc686cd34);
-    }
-    bool CellChallengeRace(GCollectionKey &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0xc686cd34, result);
-    }
-    const GCollectionKey &CellChallengeRace() const {
-        ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0xc686cd34);
-    }
-    bool SET_CellChallengeRace(const GCollectionKey &input) {
-        ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0xc686cd34, input);
-    }
-    bool ChallengeSeriesRace(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x1c650104);
-    }
-    bool ChallengeSeriesRace(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x1c650104, result);
-    }
-    const EA::Reflection::Bool &ChallengeSeriesRace() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x1c650104);
-    }
-    bool SET_ChallengeSeriesRace(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x1c650104, input);
-    }
-    bool ChanceOfRain(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x547486ae);
-    }
-    bool ChanceOfRain(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x547486ae, result);
-    }
-    const EA::Reflection::Float &ChanceOfRain() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x547486ae);
-    }
-    bool SET_ChanceOfRain(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x547486ae, input);
-    }
-    bool Checkpoint(TAttrib<GCollectionKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0x34aae3fc);
-    }
-    bool Checkpoint(GCollectionKey &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(GCollectionKey, 0x34aae3fc, result, index);
-    }
-    const GCollectionKey &Checkpoint(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(GCollectionKey, 0x34aae3fc, index);
-    }
-    unsigned int Num_Checkpoint() const {
-        ATTRIB_CODEGEN_GETLENGTH(0x34aae3fc);
-    }
-    bool SET_Checkpoint(const GCollectionKey &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(GCollectionKey, 0x34aae3fc, input, index);
-    }
-    bool CheckpointsVisible(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x2ad67092);
-    }
-    bool CheckpointsVisible(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x2ad67092, result);
-    }
-    const EA::Reflection::Bool &CheckpointsVisible() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x2ad67092);
-    }
-    bool SET_CheckpointsVisible(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x2ad67092, input);
-    }
-    bool Children(TAttrib<GCollectionKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0x916e0e78);
-    }
-    bool Children(GCollectionKey &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(GCollectionKey, 0x916e0e78, result, index);
-    }
-    const GCollectionKey &Children(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(GCollectionKey, 0x916e0e78, index);
-    }
-    unsigned int Num_Children() const {
-        ATTRIB_CODEGEN_GETLENGTH(0x916e0e78);
-    }
-    bool SET_Children(const GCollectionKey &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(GCollectionKey, 0x916e0e78, input, index);
-    }
-    bool CollectionName(TAttrib<EA::Reflection::Text> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0x9ca1c8f9);
-    }
-    bool CollectionName(EA::Reflection::Text &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(CollectionName, result);
-    }
-    const EA::Reflection::Text &CollectionName() const {
-        ATTRIB_CODEGEN_GETLAYOUT(CollectionName);
-    }
-    bool SET_CollectionName(const EA::Reflection::Text &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(CollectionName, input);
-    }
-    bool CollectorsEditionRace(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x637584fe);
-    }
-    bool CollectorsEditionRace(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x637584fe, result);
-    }
-    const EA::Reflection::Bool &CollectorsEditionRace() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x637584fe);
-    }
-    bool SET_CollectorsEditionRace(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x637584fe, input);
-    }
-    bool CopDensity(TAttrib<EA::Reflection::Int32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0xdbc08d32);
-    }
-    bool CopDensity(EA::Reflection::Int32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0xdbc08d32, result);
-    }
-    const EA::Reflection::Int32 &CopDensity() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0xdbc08d32);
-    }
-    bool SET_CopDensity(const EA::Reflection::Int32 &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0xdbc08d32, input);
-    }
-    bool CopSpawnPoints(TAttrib<GCollectionKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0xf124b151);
-    }
-    bool CopSpawnPoints(GCollectionKey &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(GCollectionKey, 0xf124b151, result, index);
-    }
-    const GCollectionKey &CopSpawnPoints(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(GCollectionKey, 0xf124b151, index);
-    }
-    unsigned int Num_CopSpawnPoints() const {
-        ATTRIB_CODEGEN_GETLENGTH(0xf124b151);
-    }
-    bool SET_CopSpawnPoints(const GCollectionKey &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(GCollectionKey, 0xf124b151, input, index);
-    }
-    bool CopSpawnType(TAttrib<EA::Reflection::Text> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0xd686d61e);
-    }
-    bool CopSpawnType(EA::Reflection::Text &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0xd686d61e, result);
-    }
-    const EA::Reflection::Text &CopSpawnType() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0xd686d61e);
-    }
-    bool SET_CopSpawnType(const EA::Reflection::Text &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0xd686d61e, input);
-    }
-    bool CopsInRace(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x3918e889);
-    }
-    bool CopsInRace(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x3918e889, result);
-    }
-    const EA::Reflection::Bool &CopsInRace() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x3918e889);
-    }
-    bool SET_CopsInRace(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x3918e889, input);
-    }
-    bool DDayRace(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x8cb01abf);
-    }
-    bool DDayRace(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x8cb01abf, result);
-    }
-    const EA::Reflection::Bool &DDayRace() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x8cb01abf);
-    }
-    bool SET_DDayRace(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x8cb01abf, input);
-    }
-    bool DebugJumpPoint(TAttrib<GCollectionKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0xa7e9e456);
-    }
-    bool DebugJumpPoint(GCollectionKey &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0xa7e9e456, result);
-    }
-    const GCollectionKey &DebugJumpPoint() const {
-        ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0xa7e9e456);
-    }
-    bool SET_DebugJumpPoint(const GCollectionKey &input) {
-        ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0xa7e9e456, input);
-    }
-    bool DelayTime(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x20259346);
-    }
-    bool DelayTime(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x20259346, result);
-    }
-    const EA::Reflection::Float &DelayTime() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x20259346);
-    }
-    bool SET_DelayTime(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x20259346, input);
-    }
-    bool DifficultyLevel(TAttrib<EA::Reflection::Int32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x88a7e3be);
-    }
-    bool DifficultyLevel(EA::Reflection::Int32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x88a7e3be, result);
-    }
-    const EA::Reflection::Int32 &DifficultyLevel() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0x88a7e3be);
-    }
-    bool SET_DifficultyLevel(const EA::Reflection::Int32 &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x88a7e3be, input);
-    }
-    bool Dimensions(TAttrib<UMath::Vector3> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(UMath::Vector3, 0x6d9e21ad);
-    }
-    bool Dimensions(UMath::Vector3 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(UMath::Vector3, 0x6d9e21ad, result);
-    }
-    const UMath::Vector3 &Dimensions() const {
-        ATTRIB_CODEGEN_GETVALUE(UMath::Vector3, 0x6d9e21ad);
-    }
-    bool SET_Dimensions(const UMath::Vector3 &input) {
-        ATTRIB_CODEGEN_SETVALUE(UMath::Vector3, 0x6d9e21ad, input);
-    }
-    bool Directional(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x6b37e124);
-    }
-    bool Directional(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x6b37e124, result);
-    }
-    const EA::Reflection::Bool &Directional() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x6b37e124);
-    }
-    bool SET_Directional(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x6b37e124, input);
-    }
-    bool DoCountdown(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x3e33da0f);
-    }
-    bool DoCountdown(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x3e33da0f, result);
-    }
-    const EA::Reflection::Bool &DoCountdown() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x3e33da0f);
-    }
-    bool SET_DoCountdown(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x3e33da0f, input);
-    }
-    bool DoPhotofinish(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0xede6017e);
-    }
-    bool DoPhotofinish(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0xede6017e, result);
-    }
-    const EA::Reflection::Bool &DoPhotofinish() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0xede6017e);
-    }
-    bool SET_DoPhotofinish(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0xede6017e, input);
-    }
-    bool EntryActivity(TAttrib<GCollectionKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0xc27dfda8);
-    }
-    bool EntryActivity(GCollectionKey &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0xc27dfda8, result);
-    }
-    const GCollectionKey &EntryActivity() const {
-        ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0xc27dfda8);
-    }
-    bool SET_EntryActivity(const GCollectionKey &input) {
-        ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0xc27dfda8, input);
-    }
-    bool EntryCellCallID(TAttrib<EA::Reflection::Int32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0xe2d26232);
-    }
-    bool EntryCellCallID(EA::Reflection::Int32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0xe2d26232, result);
-    }
-    const EA::Reflection::Int32 &EntryCellCallID() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0xe2d26232);
-    }
-    bool SET_EntryCellCallID(const EA::Reflection::Int32 &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0xe2d26232, input);
-    }
-    bool EventID(TAttrib<EA::Reflection::Text> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0xa78403ec);
-    }
-    bool EventID(EA::Reflection::Text &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0xa78403ec, result);
-    }
-    const EA::Reflection::Text &EventID() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0xa78403ec);
-    }
-    bool SET_EventID(const EA::Reflection::Text &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0xa78403ec, input);
-    }
-    bool EventIconType(TAttrib<EA::Reflection::Text> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0x0f6bcde1);
-    }
-    bool EventIconType(EA::Reflection::Text &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0x0f6bcde1, result);
-    }
-    const EA::Reflection::Text &EventIconType() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0x0f6bcde1);
-    }
-    bool SET_EventIconType(const EA::Reflection::Text &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0x0f6bcde1, input);
-    }
-    bool ExcludedCharacters(TAttrib<GCollectionKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0xa5c5d25b);
-    }
-    bool ExcludedCharacters(GCollectionKey &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(GCollectionKey, 0xa5c5d25b, result, index);
-    }
-    const GCollectionKey &ExcludedCharacters(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(GCollectionKey, 0xa5c5d25b, index);
-    }
-    unsigned int Num_ExcludedCharacters() const {
-        ATTRIB_CODEGEN_GETLENGTH(0xa5c5d25b);
-    }
-    bool SET_ExcludedCharacters(const GCollectionKey &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(GCollectionKey, 0xa5c5d25b, input, index);
-    }
-    bool FilterBlocks(TAttrib<Attrib::Blob> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(Attrib::Blob, 0x56e1436d);
-    }
-    bool FilterBlocks(Attrib::Blob &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(Attrib::Blob, 0x56e1436d, result, index);
-    }
-    const Attrib::Blob &FilterBlocks(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(Attrib::Blob, 0x56e1436d, index);
-    }
-    unsigned int Num_FilterBlocks() const {
-        ATTRIB_CODEGEN_GETLENGTH(0x56e1436d);
-    }
-    bool SET_FilterBlocks(const Attrib::Blob &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(Attrib::Blob, 0x56e1436d, input, index);
-    }
-    bool FilterModePassAll(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x0d038cfa);
-    }
-    bool FilterModePassAll(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x0d038cfa, result);
-    }
-    const EA::Reflection::Bool &FilterModePassAll() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x0d038cfa);
-    }
-    bool SET_FilterModePassAll(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x0d038cfa, input);
-    }
-    bool FinishCamera(TAttrib<EA::Reflection::Text> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0x62dfc259);
-    }
-    bool FinishCamera(EA::Reflection::Text &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0x62dfc259, result);
-    }
-    const EA::Reflection::Text &FinishCamera() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0x62dfc259);
-    }
-    bool SET_FinishCamera(const EA::Reflection::Text &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0x62dfc259, input);
-    }
-    bool FireOnExit(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0xb2ac32c7);
-    }
-    bool FireOnExit(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0xb2ac32c7, result);
-    }
-    const EA::Reflection::Bool &FireOnExit() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0xb2ac32c7);
-    }
-    bool SET_FireOnExit(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0xb2ac32c7, input);
-    }
-    bool FlareSpacing(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x394abbc6);
-    }
-    bool FlareSpacing(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x394abbc6, result);
-    }
-    const EA::Reflection::Float &FlareSpacing() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x394abbc6);
-    }
-    bool SET_FlareSpacing(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x394abbc6, input);
-    }
-    bool ForceHeatLevel(TAttrib<EA::Reflection::Int32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0xe4211f4f);
-    }
-    bool ForceHeatLevel(EA::Reflection::Int32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0xe4211f4f, result);
-    }
-    const EA::Reflection::Int32 &ForceHeatLevel() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0xe4211f4f);
-    }
-    bool SET_ForceHeatLevel(const EA::Reflection::Int32 &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0xe4211f4f, input);
-    }
-    bool ForcePreload(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x9652af0f);
-    }
-    bool ForcePreload(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x9652af0f, result);
-    }
-    const EA::Reflection::Bool &ForcePreload() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x9652af0f);
-    }
-    bool SET_ForcePreload(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x9652af0f, input);
-    }
-    bool ForceStartPosition(TAttrib<GCollectionKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0xfb84be75);
-    }
-    bool ForceStartPosition(GCollectionKey &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0xfb84be75, result);
-    }
-    const GCollectionKey &ForceStartPosition() const {
-        ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0xfb84be75);
-    }
-    bool SET_ForceStartPosition(const GCollectionKey &input) {
-        ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0xfb84be75, input);
-    }
-    bool ForceTrafficDensity(TAttrib<EA::Reflection::Int32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x5e161bba);
-    }
-    bool ForceTrafficDensity(EA::Reflection::Int32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x5e161bba, result);
-    }
-    const EA::Reflection::Int32 &ForceTrafficDensity() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0x5e161bba);
-    }
-    bool SET_ForceTrafficDensity(const EA::Reflection::Int32 &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x5e161bba, input);
-    }
-    bool FreeRoamOnly(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0xaa0135e9);
-    }
-    bool FreeRoamOnly(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0xaa0135e9, result);
-    }
-    const EA::Reflection::Bool &FreeRoamOnly() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0xaa0135e9);
-    }
-    bool SET_FreeRoamOnly(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0xaa0135e9, input);
-    }
-    bool GateActivity(TAttrib<GCollectionKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0xc795b8d4);
-    }
-    bool GateActivity(GCollectionKey &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0xc795b8d4, result);
-    }
-    const GCollectionKey &GateActivity() const {
-        ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0xc795b8d4);
-    }
-    bool SET_GateActivity(const GCollectionKey &input) {
-        ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0xc795b8d4, input);
-    }
-    bool GoalAddPrevBest(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x006ec903);
-    }
-    bool GoalAddPrevBest(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x006ec903, result);
-    }
-    const EA::Reflection::Float &GoalAddPrevBest() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x006ec903);
-    }
-    bool SET_GoalAddPrevBest(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x006ec903, input);
-    }
-    bool GoalEasy(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x8445af47);
-    }
-    bool GoalEasy(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x8445af47, result);
-    }
-    const EA::Reflection::Float &GoalEasy() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x8445af47);
-    }
-    bool SET_GoalEasy(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x8445af47, input);
-    }
-    bool GoalHard(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x3b9bbfc2);
-    }
-    bool GoalHard(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x3b9bbfc2, result);
-    }
-    const EA::Reflection::Float &GoalHard() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x3b9bbfc2);
-    }
-    bool SET_GoalHard(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x3b9bbfc2, input);
-    }
-    bool IconModelBounceAmp(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xd5f4eda2);
-    }
-    bool IconModelBounceAmp(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xd5f4eda2, result);
-    }
-    const EA::Reflection::Float &IconModelBounceAmp() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0xd5f4eda2);
-    }
-    bool SET_IconModelBounceAmp(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xd5f4eda2, input);
-    }
-    bool IconModelBounceRate(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xb4985085);
-    }
-    bool IconModelBounceRate(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xb4985085, result);
-    }
-    const EA::Reflection::Float &IconModelBounceRate() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0xb4985085);
-    }
-    bool SET_IconModelBounceRate(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xb4985085, input);
-    }
-    bool IconModelFloatHeight(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x4037d3c5);
-    }
-    bool IconModelFloatHeight(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x4037d3c5, result);
-    }
-    const EA::Reflection::Float &IconModelFloatHeight() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x4037d3c5);
-    }
-    bool SET_IconModelFloatHeight(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x4037d3c5, input);
-    }
-    bool IconModelName(TAttrib<EA::Reflection::Text> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0xa62cb4f0);
-    }
-    bool IconModelName(EA::Reflection::Text &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0xa62cb4f0, result);
-    }
-    const EA::Reflection::Text &IconModelName() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0xa62cb4f0);
-    }
-    bool SET_IconModelName(const EA::Reflection::Text &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0xa62cb4f0, input);
-    }
-    bool IconModelScale(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0xcd41cd40);
-    }
-    bool IconModelScale(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0xcd41cd40, result);
-    }
-    const EA::Reflection::Bool &IconModelScale() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0xcd41cd40);
-    }
-    bool SET_IconModelScale(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0xcd41cd40, input);
-    }
-    bool IconModelSpinRate(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x697332e8);
-    }
-    bool IconModelSpinRate(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x697332e8, result);
-    }
-    const EA::Reflection::Float &IconModelSpinRate() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x697332e8);
-    }
-    bool SET_IconModelSpinRate(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x697332e8, input);
-    }
-    bool InitialPlayerSpeed(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x3a0e4b19);
-    }
-    bool InitialPlayerSpeed(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x3a0e4b19, result);
-    }
-    const EA::Reflection::Float &InitialPlayerSpeed() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x3a0e4b19);
-    }
-    bool SET_InitialPlayerSpeed(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x3a0e4b19, input);
-    }
-    bool InitialSpeed(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x0a91596d);
-    }
-    bool InitialSpeed(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x0a91596d, result);
-    }
-    const EA::Reflection::Float &InitialSpeed() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x0a91596d);
-    }
-    bool SET_InitialSpeed(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x0a91596d, input);
-    }
-    bool InitiallyUnlocked(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0xea855eaf);
-    }
-    bool InitiallyUnlocked(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0xea855eaf, result);
-    }
-    const EA::Reflection::Bool &InitiallyUnlocked() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0xea855eaf);
-    }
-    bool SET_InitiallyUnlocked(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0xea855eaf, input);
-    }
-    bool InternalRaceIndex(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x0d4c1055);
-    }
-    bool InternalRaceIndex(EA::Reflection::Float &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(EA::Reflection::Float, 0x0d4c1055, result, index);
-    }
-    const EA::Reflection::Float &InternalRaceIndex(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(EA::Reflection::Float, 0x0d4c1055, index);
-    }
-    unsigned int Num_InternalRaceIndex() const {
-        ATTRIB_CODEGEN_GETLENGTH(0x0d4c1055);
-    }
-    bool SET_InternalRaceIndex(const EA::Reflection::Float &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(EA::Reflection::Float, 0x0d4c1055, input, index);
-    }
-    bool IntroCameraTrack(TAttrib<EA::Reflection::Int32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x36bbeee9);
-    }
-    bool IntroCameraTrack(EA::Reflection::Int32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x36bbeee9, result);
-    }
-    const EA::Reflection::Int32 &IntroCameraTrack() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0x36bbeee9);
-    }
-    bool SET_IntroCameraTrack(const EA::Reflection::Int32 &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x36bbeee9, input);
-    }
-    bool IntroMessageID(TAttrib<EA::Reflection::Int32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x5468366d);
-    }
-    bool IntroMessageID(EA::Reflection::Int32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x5468366d, result);
-    }
-    const EA::Reflection::Int32 &IntroMessageID() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0x5468366d);
-    }
-    bool SET_IntroMessageID(const EA::Reflection::Int32 &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x5468366d, input);
-    }
-    bool IntroMovie(TAttrib<EA::Reflection::Text> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0xf572ede8);
-    }
-    bool IntroMovie(EA::Reflection::Text &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0xf572ede8, result);
-    }
-    const EA::Reflection::Text &IntroMovie() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0xf572ede8);
-    }
-    bool SET_IntroMovie(const EA::Reflection::Text &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0xf572ede8, input);
-    }
-    bool IntroNIS(TAttrib<EA::Reflection::Text> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0xdec18d3e);
-    }
-    bool IntroNIS(EA::Reflection::Text &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0xdec18d3e, result);
-    }
-    const EA::Reflection::Text &IntroNIS() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0xdec18d3e);
-    }
-    bool SET_IntroNIS(const EA::Reflection::Text &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0xdec18d3e, input);
-    }
-    bool IsBoss(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x79c5d68d);
-    }
-    bool IsBoss(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x79c5d68d, result);
-    }
-    const EA::Reflection::Bool &IsBoss() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x79c5d68d);
-    }
-    bool SET_IsBoss(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x79c5d68d, input);
-    }
-    bool IsEpicPursuitRace(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x4393f69b);
-    }
-    bool IsEpicPursuitRace(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x4393f69b, result);
-    }
-    const EA::Reflection::Bool &IsEpicPursuitRace() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x4393f69b);
-    }
-    bool SET_IsEpicPursuitRace(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x4393f69b, input);
-    }
-    bool IsLoopingRace(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x6a9a6f5b);
-    }
-    bool IsLoopingRace(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x6a9a6f5b, result);
-    }
-    const EA::Reflection::Bool &IsLoopingRace() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x6a9a6f5b);
-    }
-    bool SET_IsLoopingRace(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x6a9a6f5b, input);
-    }
-    bool IsMarkerRace(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0xf2fe50d7);
-    }
-    bool IsMarkerRace(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0xf2fe50d7, result);
-    }
-    const EA::Reflection::Bool &IsMarkerRace() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0xf2fe50d7);
-    }
-    bool SET_IsMarkerRace(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0xf2fe50d7, input);
-    }
-    bool JumpRaces(TAttrib<GCollectionKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0xb671abb6);
-    }
-    bool JumpRaces(GCollectionKey &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(GCollectionKey, 0xb671abb6, result, index);
-    }
-    const GCollectionKey &JumpRaces(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(GCollectionKey, 0xb671abb6, index);
-    }
-    unsigned int Num_JumpRaces() const {
-        ATTRIB_CODEGEN_GETLENGTH(0xb671abb6);
-    }
-    bool SET_JumpRaces(const GCollectionKey &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(GCollectionKey, 0xb671abb6, input, index);
-    }
-    bool KnockoutTime(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x777ece27);
-    }
-    bool KnockoutTime(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x777ece27, result);
-    }
-    const EA::Reflection::Float &KnockoutTime() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x777ece27);
-    }
-    bool SET_KnockoutTime(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x777ece27, input);
-    }
-    bool KnockoutsPerLap(TAttrib<EA::Reflection::Int32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x181462da);
-    }
-    bool KnockoutsPerLap(EA::Reflection::Int32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x181462da, result);
-    }
-    const EA::Reflection::Int32 &KnockoutsPerLap() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0x181462da);
-    }
-    bool SET_KnockoutsPerLap(const EA::Reflection::Int32 &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x181462da, input);
-    }
-    bool LocalizationTag(TAttrib<EA::Reflection::Int32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0xdb89ab5c);
-    }
-    bool LocalizationTag(EA::Reflection::Int32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0xdb89ab5c, result);
-    }
-    const EA::Reflection::Int32 &LocalizationTag() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0xdb89ab5c);
-    }
-    bool SET_LocalizationTag(const EA::Reflection::Int32 &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0xdb89ab5c, input);
-    }
-    bool MasterCheckpoint(TAttrib<GCollectionKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0x609febe8);
-    }
-    bool MasterCheckpoint(GCollectionKey &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0x609febe8, result);
-    }
-    const GCollectionKey &MasterCheckpoint() const {
-        ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0x609febe8);
-    }
-    bool SET_MasterCheckpoint(const GCollectionKey &input) {
-        ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0x609febe8, input);
-    }
-    bool MaxCarRep(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xe10fb7a3);
-    }
-    bool MaxCarRep(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xe10fb7a3, result);
-    }
-    const EA::Reflection::Float &MaxCarRep() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0xe10fb7a3);
-    }
-    bool SET_MaxCarRep(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xe10fb7a3, input);
-    }
-    bool MaxHeatLevel(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xf5a03629);
-    }
-    bool MaxHeatLevel(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xf5a03629, result);
-    }
-    const EA::Reflection::Float &MaxHeatLevel() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0xf5a03629);
-    }
-    bool SET_MaxHeatLevel(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xf5a03629, input);
-    }
-    bool MaxOpenWorldHeat(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xe8c24416);
-    }
-    bool MaxOpenWorldHeat(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xe8c24416, result);
-    }
-    const EA::Reflection::Float &MaxOpenWorldHeat() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0xe8c24416);
-    }
-    bool SET_MaxOpenWorldHeat(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xe8c24416, input);
-    }
-    bool MaxPursuitRep(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xa07ae814);
-    }
-    bool MaxPursuitRep(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xa07ae814, result);
-    }
-    const EA::Reflection::Float &MaxPursuitRep() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0xa07ae814);
-    }
-    bool SET_MaxPursuitRep(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xa07ae814, input);
-    }
-    bool MedalBonusBronze(TAttrib<EA::Reflection::Int32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x3bb31211);
-    }
-    bool MedalBonusBronze(EA::Reflection::Int32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x3bb31211, result);
-    }
-    const EA::Reflection::Int32 &MedalBonusBronze() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0x3bb31211);
-    }
-    bool SET_MedalBonusBronze(const EA::Reflection::Int32 &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x3bb31211, input);
-    }
-    bool MedalBonusGold(TAttrib<EA::Reflection::Int32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0xf5e43987);
-    }
-    bool MedalBonusGold(EA::Reflection::Int32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0xf5e43987, result);
-    }
-    const EA::Reflection::Int32 &MedalBonusGold() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0xf5e43987);
-    }
-    bool SET_MedalBonusGold(const EA::Reflection::Int32 &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0xf5e43987, input);
-    }
-    bool MedalBonusSilver(TAttrib<EA::Reflection::Int32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x767b00a9);
-    }
-    bool MedalBonusSilver(EA::Reflection::Int32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x767b00a9, result);
-    }
-    const EA::Reflection::Int32 &MedalBonusSilver() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0x767b00a9);
-    }
-    bool SET_MedalBonusSilver(const EA::Reflection::Int32 &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x767b00a9, input);
-    }
-    bool MilestoneBiggerIsBetter(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x0896d043);
-    }
-    bool MilestoneBiggerIsBetter(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x0896d043, result);
-    }
-    const EA::Reflection::Bool &MilestoneBiggerIsBetter() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x0896d043);
-    }
-    bool SET_MilestoneBiggerIsBetter(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x0896d043, input);
-    }
-    bool MilestoneChallenge(TAttrib<GCollectionKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0xbcd98737);
-    }
-    bool MilestoneChallenge(GCollectionKey &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0xbcd98737, result);
-    }
-    const GCollectionKey &MilestoneChallenge() const {
-        ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0xbcd98737);
-    }
-    bool SET_MilestoneChallenge(const GCollectionKey &input) {
-        ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0xbcd98737, input);
-    }
-    bool MilestoneName(TAttrib<EA::Reflection::Text> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0x704f72e8);
-    }
-    bool MilestoneName(EA::Reflection::Text &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0x704f72e8, result);
-    }
-    const EA::Reflection::Text &MilestoneName() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0x704f72e8);
-    }
-    bool SET_MilestoneName(const EA::Reflection::Text &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0x704f72e8, input);
-    }
-    bool MiniMapItem(TAttrib<GCollectionKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0x051e90ca);
-    }
-    bool MiniMapItem(GCollectionKey &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0x051e90ca, result);
-    }
-    const GCollectionKey &MiniMapItem() const {
-        ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0x051e90ca);
-    }
-    bool SET_MiniMapItem(const GCollectionKey &input) {
-        ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0x051e90ca, input);
-    }
-    bool MinimumAIPerformance(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xb1ece070);
-    }
-    bool MinimumAIPerformance(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xb1ece070, result);
-    }
-    const EA::Reflection::Float &MinimumAIPerformance() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0xb1ece070);
-    }
-    bool SET_MinimumAIPerformance(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xb1ece070, input);
-    }
-    bool NISShell(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x4c17fe41);
-    }
-    bool NISShell(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x4c17fe41, result);
-    }
-    const EA::Reflection::Bool &NISShell() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x4c17fe41);
-    }
-    bool SET_NISShell(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x4c17fe41, input);
-    }
-    bool Name(TAttrib<EA::Reflection::Text> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0x3e225ec1);
-    }
-    bool Name(EA::Reflection::Text &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0x3e225ec1, result);
-    }
-    const EA::Reflection::Text &Name() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0x3e225ec1);
-    }
-    bool SET_Name(const EA::Reflection::Text &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0x3e225ec1, input);
-    }
-    bool NeverInQuickRace(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0xa4e6fcfd);
-    }
-    bool NeverInQuickRace(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0xa4e6fcfd, result);
-    }
-    const EA::Reflection::Bool &NeverInQuickRace() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0xa4e6fcfd);
-    }
-    bool SET_NeverInQuickRace(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0xa4e6fcfd, input);
-    }
-    bool NoPostRaceScreen(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x40f9929f);
-    }
-    bool NoPostRaceScreen(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x40f9929f, result);
-    }
-    const EA::Reflection::Bool &NoPostRaceScreen() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x40f9929f);
-    }
-    bool SET_NoPostRaceScreen(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x40f9929f, input);
-    }
-    bool NumLaps(TAttrib<EA::Reflection::Int32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x0ebdc165);
-    }
-    bool NumLaps(EA::Reflection::Int32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x0ebdc165, result);
-    }
-    const EA::Reflection::Int32 &NumLaps() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0x0ebdc165);
-    }
-    bool SET_NumLaps(const EA::Reflection::Int32 &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x0ebdc165, input);
-    }
-    bool NumRacesRequired(TAttrib<EA::Reflection::Int32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x90a22a3f);
-    }
-    bool NumRacesRequired(EA::Reflection::Int32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x90a22a3f, result);
-    }
-    const EA::Reflection::Int32 &NumRacesRequired() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0x90a22a3f);
-    }
-    bool SET_NumRacesRequired(const EA::Reflection::Int32 &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x90a22a3f, input);
-    }
-    bool OneShot(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0xce4261ac);
-    }
-    bool OneShot(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0xce4261ac, result);
-    }
-    const EA::Reflection::Bool &OneShot() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0xce4261ac);
-    }
-    bool SET_OneShot(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0xce4261ac, input);
-    }
-    bool OpenWorldSpeedTrap(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x1bb16f14);
-    }
-    bool OpenWorldSpeedTrap(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x1bb16f14, result);
-    }
-    const EA::Reflection::Bool &OpenWorldSpeedTrap() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x1bb16f14);
-    }
-    bool SET_OpenWorldSpeedTrap(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x1bb16f14, input);
-    }
-    bool Opponents(TAttrib<GCollectionKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0x5839fa1a);
-    }
-    bool Opponents(GCollectionKey &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(GCollectionKey, 0x5839fa1a, result, index);
-    }
-    const GCollectionKey &Opponents(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(GCollectionKey, 0x5839fa1a, index);
-    }
-    unsigned int Num_Opponents() const {
-        ATTRIB_CODEGEN_GETLENGTH(0x5839fa1a);
-    }
-    bool SET_Opponents(const GCollectionKey &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(GCollectionKey, 0x5839fa1a, input, index);
-    }
-    bool OutroCameraTrack(TAttrib<EA::Reflection::Int32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x7054ff5b);
-    }
-    bool OutroCameraTrack(EA::Reflection::Int32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x7054ff5b, result);
-    }
-    const EA::Reflection::Int32 &OutroCameraTrack() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0x7054ff5b);
-    }
-    bool SET_OutroCameraTrack(const EA::Reflection::Int32 &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x7054ff5b, input);
-    }
-    bool OutroMessageID(TAttrib<EA::Reflection::Int32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0xc36e3532);
-    }
-    bool OutroMessageID(EA::Reflection::Int32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0xc36e3532, result);
-    }
-    const EA::Reflection::Int32 &OutroMessageID() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0xc36e3532);
-    }
-    bool SET_OutroMessageID(const EA::Reflection::Int32 &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0xc36e3532, input);
-    }
-    bool OutroMovie(TAttrib<EA::Reflection::Text> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0xb70268c0);
-    }
-    bool OutroMovie(EA::Reflection::Text &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0xb70268c0, result);
-    }
-    const EA::Reflection::Text &OutroMovie() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0xb70268c0);
-    }
-    bool SET_OutroMovie(const EA::Reflection::Text &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0xb70268c0, input);
-    }
-    bool OutroNIS(TAttrib<EA::Reflection::Text> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0x54932966);
-    }
-    bool OutroNIS(EA::Reflection::Text &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0x54932966, result);
-    }
-    const EA::Reflection::Text &OutroNIS() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0x54932966);
-    }
-    bool SET_OutroNIS(const EA::Reflection::Text &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0x54932966, input);
-    }
-    bool OutroNISMarker(TAttrib<GCollectionKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0x0e265c88);
-    }
-    bool OutroNISMarker(GCollectionKey &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0x0e265c88, result);
-    }
-    const GCollectionKey &OutroNISMarker() const {
-        ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0x0e265c88);
-    }
-    bool SET_OutroNISMarker(const GCollectionKey &input) {
-        ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0x0e265c88, input);
-    }
-    bool OvertimePenaltyPerSec(TAttrib<EA::Reflection::Int32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x26fd42b0);
-    }
-    bool OvertimePenaltyPerSec(EA::Reflection::Int32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x26fd42b0, result);
-    }
-    const EA::Reflection::Int32 &OvertimePenaltyPerSec() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0x26fd42b0);
-    }
-    bool SET_OvertimePenaltyPerSec(const EA::Reflection::Int32 &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x26fd42b0, input);
-    }
-    bool ParticleEffect(TAttrib<EA::Reflection::Text> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0x5ef34802);
-    }
-    bool ParticleEffect(EA::Reflection::Text &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0x5ef34802, result);
-    }
-    const EA::Reflection::Text &ParticleEffect() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0x5ef34802);
-    }
-    bool SET_ParticleEffect(const EA::Reflection::Text &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0x5ef34802, input);
-    }
-    bool Persistent(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0xe4542e9b);
-    }
-    bool Persistent(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0xe4542e9b, result);
-    }
-    const EA::Reflection::Bool &Persistent() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0xe4542e9b);
-    }
-    bool SET_Persistent(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0xe4542e9b, input);
-    }
-    bool PlayerCarPerformance(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xfb42c0b9);
-    }
-    bool PlayerCarPerformance(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xfb42c0b9, result);
-    }
-    const EA::Reflection::Float &PlayerCarPerformance() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0xfb42c0b9);
-    }
-    bool SET_PlayerCarPerformance(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xfb42c0b9, input);
-    }
-    bool PlayerCarType(TAttrib<EA::Reflection::Text> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0xc0eeb909);
-    }
-    bool PlayerCarType(EA::Reflection::Text &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0xc0eeb909, result);
-    }
-    const EA::Reflection::Text &PlayerCarType() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0xc0eeb909);
-    }
-    bool SET_PlayerCarType(const EA::Reflection::Text &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0xc0eeb909, input);
-    }
-    bool Position(TAttrib<UMath::Vector3> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(UMath::Vector3, 0x9f743a0e);
-    }
-    bool Position(UMath::Vector3 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(UMath::Vector3, 0x9f743a0e, result);
-    }
-    const UMath::Vector3 &Position() const {
-        ATTRIB_CODEGEN_GETVALUE(UMath::Vector3, 0x9f743a0e);
-    }
-    bool SET_Position(const UMath::Vector3 &input) {
-        ATTRIB_CODEGEN_SETVALUE(UMath::Vector3, 0x9f743a0e, input);
-    }
-    bool PostRaceActivity(TAttrib<GCollectionKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0x64273c71);
-    }
-    bool PostRaceActivity(GCollectionKey &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0x64273c71, result);
-    }
-    const GCollectionKey &PostRaceActivity() const {
-        ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0x64273c71);
-    }
-    bool SET_PostRaceActivity(const GCollectionKey &input) {
-        ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0x64273c71, input);
-    }
-    bool PostRaceScreenTexture(TAttrib<EA::Reflection::Text> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0x038a3b53);
-    }
-    bool PostRaceScreenTexture(EA::Reflection::Text &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0x038a3b53, result);
-    }
-    const EA::Reflection::Text &PostRaceScreenTexture() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0x038a3b53);
-    }
-    bool SET_PostRaceScreenTexture(const EA::Reflection::Text &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0x038a3b53, input);
-    }
-    bool PresetRide(TAttrib<EA::Reflection::Text> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0x416a8409);
-    }
-    bool PresetRide(EA::Reflection::Text &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0x416a8409, result);
-    }
-    const EA::Reflection::Text &PresetRide() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0x416a8409);
-    }
-    bool SET_PresetRide(const EA::Reflection::Text &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0x416a8409, input);
-    }
-    bool ProgressionLevel(TAttrib<EA::Reflection::Int32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x740e9b4a);
-    }
-    bool ProgressionLevel(EA::Reflection::Int32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x740e9b4a, result);
-    }
-    const EA::Reflection::Int32 &ProgressionLevel() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0x740e9b4a);
-    }
-    bool SET_ProgressionLevel(const EA::Reflection::Int32 &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x740e9b4a, input);
-    }
-    bool PursuitLevel(TAttrib<EA::Reflection::Int32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x0261ae99);
-    }
-    bool PursuitLevel(EA::Reflection::Int32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x0261ae99, result);
-    }
-    const EA::Reflection::Int32 &PursuitLevel() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0x0261ae99);
-    }
-    bool SET_PursuitLevel(const EA::Reflection::Int32 &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x0261ae99, input);
-    }
-    bool PursuitRace(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x2b1f54f6);
-    }
-    bool PursuitRace(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x2b1f54f6, result);
-    }
-    const EA::Reflection::Bool &PursuitRace() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x2b1f54f6);
-    }
-    bool SET_PursuitRace(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x2b1f54f6, input);
-    }
-    bool QuickRaceNIS(TAttrib<EA::Reflection::Text> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0x5987fb25);
-    }
-    bool QuickRaceNIS(EA::Reflection::Text &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0x5987fb25, result);
-    }
-    const EA::Reflection::Text &QuickRaceNIS() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0x5987fb25);
-    }
-    bool SET_QuickRaceNIS(const EA::Reflection::Text &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0x5987fb25, input);
-    }
-    bool QuickRaceUnlocked(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0xc4db4e71);
-    }
-    bool QuickRaceUnlocked(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0xc4db4e71, result);
-    }
-    const EA::Reflection::Bool &QuickRaceUnlocked() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0xc4db4e71);
-    }
-    bool SET_QuickRaceUnlocked(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0xc4db4e71, input);
-    }
-    bool RaceLength(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x7c11c52e);
-    }
-    bool RaceLength(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x7c11c52e, result);
-    }
-    const EA::Reflection::Float &RaceLength() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x7c11c52e);
-    }
-    bool SET_RaceLength(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x7c11c52e, input);
-    }
-    bool RaceList(TAttrib<GCollectionKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0x9f914008);
-    }
-    bool RaceList(GCollectionKey &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(GCollectionKey, 0x9f914008, result, index);
-    }
-    const GCollectionKey &RaceList(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(GCollectionKey, 0x9f914008, index);
-    }
-    unsigned int Num_RaceList() const {
-        ATTRIB_CODEGEN_GETLENGTH(0x9f914008);
-    }
-    bool SET_RaceList(const GCollectionKey &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(GCollectionKey, 0x9f914008, input, index);
-    }
-    bool RaceTriggers(TAttrib<GCollectionKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0x58dc14c0);
-    }
-    bool RaceTriggers(GCollectionKey &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(GCollectionKey, 0x58dc14c0, result, index);
-    }
-    const GCollectionKey &RaceTriggers(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(GCollectionKey, 0x58dc14c0, index);
-    }
-    unsigned int Num_RaceTriggers() const {
-        ATTRIB_CODEGEN_GETLENGTH(0x58dc14c0);
-    }
-    bool SET_RaceTriggers(const GCollectionKey &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(GCollectionKey, 0x58dc14c0, input, index);
-    }
-    bool RacerName(TAttrib<EA::Reflection::Text> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0xbeab64c5);
-    }
-    bool RacerName(EA::Reflection::Text &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0xbeab64c5, result);
-    }
-    const EA::Reflection::Text &RacerName() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0xbeab64c5);
-    }
-    bool SET_RacerName(const EA::Reflection::Text &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0xbeab64c5, input);
-    }
-    bool Radius(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x39bf8002);
-    }
-    bool Radius(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x39bf8002, result);
-    }
-    const EA::Reflection::Float &Radius() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x39bf8002);
-    }
-    bool SET_Radius(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x39bf8002, input);
-    }
-    bool RandomSpawnTriggers(TAttrib<GCollectionKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0xfdfe1c3e);
-    }
-    bool RandomSpawnTriggers(GCollectionKey &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(GCollectionKey, 0xfdfe1c3e, result, index);
-    }
-    const GCollectionKey &RandomSpawnTriggers(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(GCollectionKey, 0xfdfe1c3e, index);
-    }
-    unsigned int Num_RandomSpawnTriggers() const {
-        ATTRIB_CODEGEN_GETLENGTH(0xfdfe1c3e);
-    }
-    bool SET_RandomSpawnTriggers(const GCollectionKey &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(GCollectionKey, 0xfdfe1c3e, input, index);
-    }
-    bool RankPlayersByDistance(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x9e7a18ce);
-    }
-    bool RankPlayersByDistance(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x9e7a18ce, result);
-    }
-    const EA::Reflection::Bool &RankPlayersByDistance() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x9e7a18ce);
-    }
-    bool SET_RankPlayersByDistance(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x9e7a18ce, input);
-    }
-    bool RankPlayersByPoints(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x5ec1880f);
-    }
-    bool RankPlayersByPoints(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x5ec1880f, result);
-    }
-    const EA::Reflection::Bool &RankPlayersByPoints() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x5ec1880f);
-    }
-    bool SET_RankPlayersByPoints(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x5ec1880f, input);
-    }
-    bool Region(TAttrib<EA::Reflection::Text> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0xcb01e454);
-    }
-    bool Region(EA::Reflection::Text &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0xcb01e454, result);
-    }
-    const EA::Reflection::Text &Region() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0xcb01e454);
-    }
-    bool SET_Region(const EA::Reflection::Text &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0xcb01e454, input);
-    }
-    bool Reputation(TAttrib<EA::Reflection::Int32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x477ec5aa);
-    }
-    bool Reputation(EA::Reflection::Int32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x477ec5aa, result);
-    }
-    const EA::Reflection::Int32 &Reputation() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0x477ec5aa);
-    }
-    bool SET_Reputation(const EA::Reflection::Int32 &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x477ec5aa, input);
-    }
-    bool ReputationRequired(TAttrib<EA::Reflection::Int32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0xffd69c94);
-    }
-    bool ReputationRequired(EA::Reflection::Int32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0xffd69c94, result);
-    }
-    const EA::Reflection::Int32 &ReputationRequired() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0xffd69c94);
-    }
-    bool SET_ReputationRequired(const EA::Reflection::Int32 &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0xffd69c94, input);
-    }
-    bool RequiredBounty(TAttrib<EA::Reflection::Int32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0xd3657d92);
-    }
-    bool RequiredBounty(EA::Reflection::Int32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0xd3657d92, result);
-    }
-    const EA::Reflection::Int32 &RequiredBounty() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0xd3657d92);
-    }
-    bool SET_RequiredBounty(const EA::Reflection::Int32 &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0xd3657d92, input);
-    }
-    bool RequiredChallenges(TAttrib<EA::Reflection::Int32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x6dd4b98b);
-    }
-    bool RequiredChallenges(EA::Reflection::Int32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x6dd4b98b, result);
-    }
-    const EA::Reflection::Int32 &RequiredChallenges() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0x6dd4b98b);
-    }
-    bool SET_RequiredChallenges(const EA::Reflection::Int32 &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x6dd4b98b, input);
-    }
-    bool RequiredRacesWon(TAttrib<EA::Reflection::Int32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0xd617fedc);
-    }
-    bool RequiredRacesWon(EA::Reflection::Int32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0xd617fedc, result);
-    }
-    const EA::Reflection::Int32 &RequiredRacesWon() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0xd617fedc);
-    }
-    bool SET_RequiredRacesWon(const EA::Reflection::Int32 &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0xd617fedc, input);
-    }
-    bool ResetTime(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x2c44ff10);
-    }
-    bool ResetTime(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x2c44ff10, result);
-    }
-    const EA::Reflection::Float &ResetTime() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x2c44ff10);
-    }
-    bool SET_ResetTime(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x2c44ff10, input);
-    }
-    bool ResetsPlayer(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x6ccd5819);
-    }
-    bool ResetsPlayer(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x6ccd5819, result);
-    }
-    const EA::Reflection::Bool &ResetsPlayer() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x6ccd5819);
-    }
-    bool SET_ResetsPlayer(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x6ccd5819, input);
-    }
-    bool RespawnMarker(TAttrib<GCollectionKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0x2241f4cd);
-    }
-    bool RespawnMarker(GCollectionKey &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0x2241f4cd, result);
-    }
-    const GCollectionKey &RespawnMarker() const {
-        ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0x2241f4cd);
-    }
-    bool SET_RespawnMarker(const GCollectionKey &input) {
-        ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0x2241f4cd, input);
-    }
-    bool RestartActivity(TAttrib<GCollectionKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0xdc44bd08);
-    }
-    bool RestartActivity(GCollectionKey &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0xdc44bd08, result);
-    }
-    const GCollectionKey &RestartActivity() const {
-        ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0xdc44bd08);
-    }
-    bool SET_RestartActivity(const GCollectionKey &input) {
-        ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0xdc44bd08, input);
-    }
-    bool RewardMarkerType(TAttrib<EA::Reflection::Text> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0x06a077d5);
-    }
-    bool RewardMarkerType(EA::Reflection::Text &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0x06a077d5, result);
-    }
-    const EA::Reflection::Text &RewardMarkerType() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0x06a077d5);
-    }
-    bool SET_RewardMarkerType(const EA::Reflection::Text &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0x06a077d5, input);
-    }
-    bool RewardsForWinner(TAttrib<GCollectionKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0x50104d90);
-    }
-    bool RewardsForWinner(GCollectionKey &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(GCollectionKey, 0x50104d90, result, index);
-    }
-    const GCollectionKey &RewardsForWinner(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(GCollectionKey, 0x50104d90, index);
-    }
-    unsigned int Num_RewardsForWinner() const {
-        ATTRIB_CODEGEN_GETLENGTH(0x50104d90);
-    }
-    bool SET_RewardsForWinner(const GCollectionKey &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(GCollectionKey, 0x50104d90, input, index);
-    }
-    bool RingTime(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xc516e9c2);
-    }
-    bool RingTime(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xc516e9c2, result);
-    }
-    const EA::Reflection::Float &RingTime() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0xc516e9c2);
-    }
-    bool SET_RingTime(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xc516e9c2, input);
-    }
-    bool RivalBestTime(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xf9120d73);
-    }
-    bool RivalBestTime(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xf9120d73, result);
-    }
-    const EA::Reflection::Float &RivalBestTime() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0xf9120d73);
-    }
-    bool SET_RivalBestTime(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xf9120d73, input);
-    }
-    bool RoadList(TAttrib<EA::Reflection::Text> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0x13b11b40);
-    }
-    bool RoadList(EA::Reflection::Text &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(EA::Reflection::Text, 0x13b11b40, result, index);
-    }
-    const EA::Reflection::Text &RoadList(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(EA::Reflection::Text, 0x13b11b40, index);
-    }
-    unsigned int Num_RoadList() const {
-        ATTRIB_CODEGEN_GETLENGTH(0x13b11b40);
-    }
-    bool SET_RoadList(const EA::Reflection::Text &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(EA::Reflection::Text, 0x13b11b40, input, index);
-    }
-    bool RollingStart(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0xb809d19c);
-    }
-    bool RollingStart(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0xb809d19c, result);
-    }
-    const EA::Reflection::Bool &RollingStart() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0xb809d19c);
-    }
-    bool SET_RollingStart(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0xb809d19c, input);
-    }
-    bool Rotation(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x5a6a57c6);
-    }
-    bool Rotation(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x5a6a57c6, result);
-    }
-    const EA::Reflection::Float &Rotation() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x5a6a57c6);
-    }
-    bool SET_Rotation(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x5a6a57c6, input);
-    }
-    bool SMSCellChallenge(TAttrib<EA::Reflection::Int32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x6a4cd2d4);
-    }
-    bool SMSCellChallenge(EA::Reflection::Int32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x6a4cd2d4, result);
-    }
-    const EA::Reflection::Int32 &SMSCellChallenge() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0x6a4cd2d4);
-    }
-    bool SET_SMSCellChallenge(const EA::Reflection::Int32 &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x6a4cd2d4, input);
-    }
-    bool SMSRivalChallenge(TAttrib<EA::Reflection::Int32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0xbb30c804);
-    }
-    bool SMSRivalChallenge(EA::Reflection::Int32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0xbb30c804, result);
-    }
-    const EA::Reflection::Int32 &SMSRivalChallenge() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0xbb30c804);
-    }
-    bool SET_SMSRivalChallenge(const EA::Reflection::Int32 &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0xbb30c804, input);
-    }
-    bool ScaleOpenWorldHeat(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x1823b89e);
-    }
-    bool ScaleOpenWorldHeat(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x1823b89e, result);
-    }
-    const EA::Reflection::Float &ScaleOpenWorldHeat() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x1823b89e);
-    }
-    bool SET_ScaleOpenWorldHeat(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x1823b89e, input);
-    }
-    bool ScriptedCopsInRace(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x0e47fe63);
-    }
-    bool ScriptedCopsInRace(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x0e47fe63, result);
-    }
-    const EA::Reflection::Bool &ScriptedCopsInRace() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x0e47fe63);
-    }
-    bool SET_ScriptedCopsInRace(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x0e47fe63, input);
-    }
-    bool SharedCheckpoints(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x0e34a1f3);
-    }
-    bool SharedCheckpoints(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x0e34a1f3, result);
-    }
-    const EA::Reflection::Bool &SharedCheckpoints() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x0e34a1f3);
-    }
-    bool SET_SharedCheckpoints(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x0e34a1f3, input);
-    }
-    bool ShortcutMaxChance(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x16faba11);
-    }
-    bool ShortcutMaxChance(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x16faba11, result);
-    }
-    const EA::Reflection::Float &ShortcutMaxChance() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x16faba11);
-    }
-    bool SET_ShortcutMaxChance(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x16faba11, input);
-    }
-    bool ShortcutMinChance(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x4efb950a);
-    }
-    bool ShortcutMinChance(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x4efb950a, result);
-    }
-    const EA::Reflection::Float &ShortcutMinChance() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x4efb950a);
-    }
-    bool SET_ShortcutMinChance(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x4efb950a, input);
-    }
-    bool Shortcuts(TAttrib<GCollectionKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0x7b6d296e);
-    }
-    bool Shortcuts(GCollectionKey &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(GCollectionKey, 0x7b6d296e, result, index);
-    }
-    const GCollectionKey &Shortcuts(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(GCollectionKey, 0x7b6d296e, index);
-    }
-    unsigned int Num_Shortcuts() const {
-        ATTRIB_CODEGEN_GETLENGTH(0x7b6d296e);
-    }
-    bool SET_Shortcuts(const GCollectionKey &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(GCollectionKey, 0x7b6d296e, input, index);
-    }
-    bool SkillLevel(TAttrib<EA::Reflection::Int32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x3b798aa2);
-    }
-    bool SkillLevel(EA::Reflection::Int32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x3b798aa2, result);
-    }
-    const EA::Reflection::Int32 &SkillLevel() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0x3b798aa2);
-    }
-    bool SET_SkillLevel(const EA::Reflection::Int32 &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x3b798aa2, input);
-    }
-    bool SpawnPoint(TAttrib<GCollectionKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0xddf411f5);
-    }
-    bool SpawnPoint(GCollectionKey &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0xddf411f5, result);
-    }
-    const GCollectionKey &SpawnPoint() const {
-        ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0xddf411f5);
-    }
-    bool SET_SpawnPoint(const GCollectionKey &input) {
-        ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0xddf411f5, input);
-    }
-    bool SpeedTrapCamera(TAttrib<EA::Reflection::Text> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0xcbd7adf9);
-    }
-    bool SpeedTrapCamera(EA::Reflection::Text &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0xcbd7adf9, result);
-    }
-    const EA::Reflection::Text &SpeedTrapCamera() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0xcbd7adf9);
-    }
-    bool SET_SpeedTrapCamera(const EA::Reflection::Text &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0xcbd7adf9, input);
-    }
-    bool SpeedTrapList(TAttrib<GCollectionKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0x822179d1);
-    }
-    bool SpeedTrapList(GCollectionKey &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(GCollectionKey, 0x822179d1, result, index);
-    }
-    const GCollectionKey &SpeedTrapList(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(GCollectionKey, 0x822179d1, index);
-    }
-    unsigned int Num_SpeedTrapList() const {
-        ATTRIB_CODEGEN_GETLENGTH(0x822179d1);
-    }
-    bool SET_SpeedTrapList(const GCollectionKey &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(GCollectionKey, 0x822179d1, input, index);
-    }
-    bool SpeedTrapTrigger(TAttrib<GCollectionKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0x5f95c3a0);
-    }
-    bool SpeedTrapTrigger(GCollectionKey &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0x5f95c3a0, result);
-    }
-    const GCollectionKey &SpeedTrapTrigger() const {
-        ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0x5f95c3a0);
-    }
-    bool SET_SpeedTrapTrigger(const GCollectionKey &input) {
-        ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0x5f95c3a0, input);
-    }
-    bool SpeedTrapsRequired(TAttrib<GCollectionKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0x6d7e73c9);
-    }
-    bool SpeedTrapsRequired(GCollectionKey &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(GCollectionKey, 0x6d7e73c9, result, index);
-    }
-    const GCollectionKey &SpeedTrapsRequired(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(GCollectionKey, 0x6d7e73c9, index);
-    }
-    unsigned int Num_SpeedTrapsRequired() const {
-        ATTRIB_CODEGEN_GETLENGTH(0x6d7e73c9);
-    }
-    bool SET_SpeedTrapsRequired(const GCollectionKey &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(GCollectionKey, 0x6d7e73c9, input, index);
-    }
-    bool StartPercent(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xe0d01505);
-    }
-    bool StartPercent(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xe0d01505, result);
-    }
-    const EA::Reflection::Float &StartPercent() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0xe0d01505);
-    }
-    bool SET_StartPercent(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xe0d01505, input);
-    }
-    bool StartTime(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x839602ab);
-    }
-    bool StartTime(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x839602ab, result);
-    }
-    const EA::Reflection::Float &StartTime() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x839602ab);
-    }
-    bool SET_StartTime(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x839602ab, input);
-    }
-    bool TOD(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x9dff3c3d);
-    }
-    bool TOD(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x9dff3c3d, result);
-    }
-    const EA::Reflection::Float &TOD() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x9dff3c3d);
-    }
-    bool SET_TOD(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x9dff3c3d, input);
-    }
-    bool TargetActivities(TAttrib<GCollectionKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0x0f37d221);
-    }
-    bool TargetActivities(GCollectionKey &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(GCollectionKey, 0x0f37d221, result, index);
-    }
-    const GCollectionKey &TargetActivities(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(GCollectionKey, 0x0f37d221, index);
-    }
-    unsigned int Num_TargetActivities() const {
-        ATTRIB_CODEGEN_GETLENGTH(0x0f37d221);
-    }
-    bool SET_TargetActivities(const GCollectionKey &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(GCollectionKey, 0x0f37d221, input, index);
-    }
-    bool TargetActivity(TAttrib<GCollectionKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0x277566f3);
-    }
-    bool TargetActivity(GCollectionKey &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0x277566f3, result);
-    }
-    const GCollectionKey &TargetActivity() const {
-        ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0x277566f3);
-    }
-    bool SET_TargetActivity(const GCollectionKey &input) {
-        ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0x277566f3, input);
-    }
-    bool TargetBronze(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x00df8eb4);
-    }
-    bool TargetBronze(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x00df8eb4, result);
-    }
-    const EA::Reflection::Float &TargetBronze() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x00df8eb4);
-    }
-    bool SET_TargetBronze(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x00df8eb4, input);
-    }
-    bool TargetGold(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x728e43ff);
-    }
-    bool TargetGold(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x728e43ff, result);
-    }
-    const EA::Reflection::Float &TargetGold() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x728e43ff);
-    }
-    bool SET_TargetGold(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x728e43ff, input);
-    }
-    bool TargetMarker(TAttrib<GCollectionKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0x8fc356fb);
-    }
-    bool TargetMarker(GCollectionKey &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0x8fc356fb, result);
-    }
-    const GCollectionKey &TargetMarker() const {
-        ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0x8fc356fb);
-    }
-    bool SET_TargetMarker(const GCollectionKey &input) {
-        ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0x8fc356fb, input);
-    }
-    bool TargetSilver(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x51ce16b7);
-    }
-    bool TargetSilver(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x51ce16b7, result);
-    }
-    const EA::Reflection::Float &TargetSilver() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x51ce16b7);
-    }
-    bool SET_TargetSilver(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x51ce16b7, input);
-    }
-    bool Template(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x3e9156ca);
-    }
-    bool Template(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x3e9156ca, result);
-    }
-    const EA::Reflection::Bool &Template() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x3e9156ca);
-    }
-    bool SET_Template(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x3e9156ca, input);
-    }
-    bool ThreshholdSpeed(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xc3710777);
-    }
-    bool ThreshholdSpeed(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xc3710777, result);
-    }
-    const EA::Reflection::Float &ThreshholdSpeed() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0xc3710777);
-    }
-    bool SET_ThreshholdSpeed(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xc3710777, input);
-    }
-    bool ThreshholdValue(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x4e90219d);
-    }
-    bool ThreshholdValue(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x4e90219d, result);
-    }
-    const EA::Reflection::Float &ThreshholdValue() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x4e90219d);
-    }
-    bool SET_ThreshholdValue(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x4e90219d, input);
-    }
-    bool TimeBonus(TAttrib<EA::Reflection::Int32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0xf52cc30e);
-    }
-    bool TimeBonus(EA::Reflection::Int32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0xf52cc30e, result);
-    }
-    const EA::Reflection::Int32 &TimeBonus() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0xf52cc30e);
-    }
-    bool SET_TimeBonus(const EA::Reflection::Int32 &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0xf52cc30e, input);
-    }
-    bool TimeLimit(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x7585f041);
-    }
-    bool TimeLimit(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x7585f041, result);
-    }
-    const EA::Reflection::Float &TimeLimit() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x7585f041);
-    }
-    bool SET_TimeLimit(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x7585f041, input);
-    }
-    bool TokenValue(TAttrib<EA::Reflection::Int32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0xaa10914c);
-    }
-    bool TokenValue(EA::Reflection::Int32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0xaa10914c, result);
-    }
-    const EA::Reflection::Int32 &TokenValue() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0xaa10914c);
-    }
-    bool SET_TokenValue(const EA::Reflection::Int32 &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0xaa10914c, input);
-    }
-    bool TrafficCharacter(TAttrib<GCollectionKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0x797d9654);
-    }
-    bool TrafficCharacter(GCollectionKey &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0x797d9654, result);
-    }
-    const GCollectionKey &TrafficCharacter() const {
-        ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0x797d9654);
-    }
-    bool SET_TrafficCharacter(const GCollectionKey &input) {
-        ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0x797d9654, input);
-    }
-    bool TrafficLevel(TAttrib<EA::Reflection::Int32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0xc64bc341);
-    }
-    bool TrafficLevel(EA::Reflection::Int32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0xc64bc341, result);
-    }
-    const EA::Reflection::Int32 &TrafficLevel() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0xc64bc341);
-    }
-    bool SET_TrafficLevel(const EA::Reflection::Int32 &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0xc64bc341, input);
-    }
-    bool TrafficPattern(TAttrib<EA::Reflection::Text> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0x6319b692);
-    }
-    bool TrafficPattern(EA::Reflection::Text &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0x6319b692, result);
-    }
-    const EA::Reflection::Text &TrafficPattern() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0x6319b692);
-    }
-    bool SET_TrafficPattern(const EA::Reflection::Text &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0x6319b692, input);
-    }
-    bool UnlockRaces(TAttrib<GCollectionKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0xfc8995c8);
-    }
-    bool UnlockRaces(GCollectionKey &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(GCollectionKey, 0xfc8995c8, result, index);
-    }
-    const GCollectionKey &UnlockRaces(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(GCollectionKey, 0xfc8995c8, index);
-    }
-    unsigned int Num_UnlockRaces() const {
-        ATTRIB_CODEGEN_GETLENGTH(0xfc8995c8);
-    }
-    bool SET_UnlockRaces(const GCollectionKey &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(GCollectionKey, 0xfc8995c8, input, index);
-    }
-    bool UpgradeLevel(TAttrib<EA::Reflection::Int32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0xd267facc);
-    }
-    bool UpgradeLevel(EA::Reflection::Int32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0xd267facc, result);
-    }
-    const EA::Reflection::Int32 &UpgradeLevel() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0xd267facc);
-    }
-    bool SET_UpgradeLevel(const EA::Reflection::Int32 &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0xd267facc, input);
-    }
-    bool UpgradePartID(TAttrib<EA::Reflection::Text> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0x3c2fdaab);
-    }
-    bool UpgradePartID(EA::Reflection::Text &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0x3c2fdaab, result);
-    }
-    const EA::Reflection::Text &UpgradePartID() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0x3c2fdaab);
-    }
-    bool SET_UpgradePartID(const EA::Reflection::Text &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0x3c2fdaab, input);
-    }
-    bool UpgradePartName(TAttrib<EA::Reflection::Text> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0xc385f75d);
-    }
-    bool UpgradePartName(EA::Reflection::Text &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0xc385f75d, result);
-    }
-    const EA::Reflection::Text &UpgradePartName() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0xc385f75d);
-    }
-    bool SET_UpgradePartName(const EA::Reflection::Text &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0xc385f75d, input);
-    }
-    bool UpgradeType(TAttrib<EA::Reflection::Text> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0x0e0113fe);
-    }
-    bool UpgradeType(EA::Reflection::Text &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0x0e0113fe, result);
-    }
-    const EA::Reflection::Text &UpgradeType() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0x0e0113fe);
-    }
-    bool SET_UpgradeType(const EA::Reflection::Text &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0x0e0113fe, input);
-    }
-    bool UseWorldHeat(TAttrib<EA::Reflection::Bool> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x45f2ad6c);
-    }
-    bool UseWorldHeat(EA::Reflection::Bool &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x45f2ad6c, result);
-    }
-    const EA::Reflection::Bool &UseWorldHeat() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x45f2ad6c);
-    }
-    bool SET_UseWorldHeat(const EA::Reflection::Bool &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x45f2ad6c, input);
-    }
-    bool Width(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x5816c1fc);
-    }
-    bool Width(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x5816c1fc, result);
-    }
-    const EA::Reflection::Float &Width() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x5816c1fc);
-    }
-    bool SET_Width(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x5816c1fc, input);
-    }
-    bool WorldRaces(TAttrib<GCollectionKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0xa7ef40ef);
-    }
-    bool WorldRaces(GCollectionKey &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(GCollectionKey, 0xa7ef40ef, result, index);
-    }
-    const GCollectionKey &WorldRaces(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(GCollectionKey, 0xa7ef40ef, index);
-    }
-    unsigned int Num_WorldRaces() const {
-        ATTRIB_CODEGEN_GETLENGTH(0xa7ef40ef);
-    }
-    bool SET_WorldRaces(const GCollectionKey &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(GCollectionKey, 0xa7ef40ef, input, index);
-    }
-    bool ZoneList(TAttrib<GCollectionKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0x64893da8);
-    }
-    bool ZoneList(GCollectionKey &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(GCollectionKey, 0x64893da8, result, index);
-    }
-    const GCollectionKey &ZoneList(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(GCollectionKey, 0x64893da8, index);
-    }
-    unsigned int Num_ZoneList() const {
-        ATTRIB_CODEGEN_GETLENGTH(0x64893da8);
-    }
-    bool SET_ZoneList(const GCollectionKey &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(GCollectionKey, 0x64893da8, input, index);
-    }
-    bool ZoneType(TAttrib<EA::Reflection::Text> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0xf3ea3201);
-    }
-    bool ZoneType(EA::Reflection::Text &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0xf3ea3201, result);
-    }
-    const EA::Reflection::Text &ZoneType() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0xf3ea3201);
-    }
-    bool SET_ZoneType(const EA::Reflection::Text &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0xf3ea3201, input);
-    }
-    bool actionscript(TAttrib<GCollectionKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0xe62083d0);
-    }
-    bool actionscript(GCollectionKey &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0xe62083d0, result);
-    }
-    const GCollectionKey &actionscript() const {
-        ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0xe62083d0);
-    }
-    bool SET_actionscript(const GCollectionKey &input) {
-        ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0xe62083d0, input);
-    }
-    bool bytecode(TAttrib<Attrib::Blob> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(Attrib::Blob, 0x9a4a020a);
-    }
-    bool bytecode(Attrib::Blob &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(Attrib::Blob, 0x9a4a020a, result);
-    }
-    const Attrib::Blob &bytecode() const {
-        ATTRIB_CODEGEN_GETVALUE(Attrib::Blob, 0x9a4a020a);
-    }
-    bool SET_bytecode(const Attrib::Blob &input) {
-        ATTRIB_CODEGEN_SETVALUE(Attrib::Blob, 0x9a4a020a, input);
-    }
-    bool disengagetrigger(TAttrib<GCollectionKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0x106285c0);
-    }
-    bool disengagetrigger(GCollectionKey &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0x106285c0, result);
-    }
-    const GCollectionKey &disengagetrigger() const {
-        ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0x106285c0);
-    }
-    bool SET_disengagetrigger(const GCollectionKey &input) {
-        ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0x106285c0, input);
-    }
-    bool distance(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xc5857615);
-    }
-    bool distance(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xc5857615, result);
-    }
-    const EA::Reflection::Float &distance() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0xc5857615);
-    }
-    bool SET_distance(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xc5857615, input);
-    }
-    bool engagetrigger(TAttrib<GCollectionKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0xf05931ab);
-    }
-    bool engagetrigger(GCollectionKey &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0xf05931ab, result);
-    }
-    const GCollectionKey &engagetrigger() const {
-        ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0xf05931ab);
-    }
-    bool SET_engagetrigger(const GCollectionKey &input) {
-        ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0xf05931ab, input);
-    }
-    bool gameplayvault(TAttrib<EA::Reflection::Text> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0x93fd9fda);
-    }
-    bool gameplayvault(EA::Reflection::Text &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0x93fd9fda, result);
-    }
-    const EA::Reflection::Text &gameplayvault() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0x93fd9fda);
-    }
-    bool SET_gameplayvault(const EA::Reflection::Text &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0x93fd9fda, input);
-    }
-    bool handler_owner(TAttrib<GCollectionKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0x857fe432);
-    }
-    bool handler_owner(GCollectionKey &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0x857fe432, result);
-    }
-    const GCollectionKey &handler_owner() const {
-        ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0x857fe432);
-    }
-    bool SET_handler_owner(const GCollectionKey &input) {
-        ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0x857fe432, input);
-    }
-    bool layoutpos(TAttrib<UMath::Vector2> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(UMath::Vector2, 0x4075ec46);
-    }
-    bool layoutpos(UMath::Vector2 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(UMath::Vector2, 0x4075ec46, result);
-    }
-    const UMath::Vector2 &layoutpos() const {
-        ATTRIB_CODEGEN_GETVALUE(UMath::Vector2, 0x4075ec46);
-    }
-    bool SET_layoutpos(const UMath::Vector2 &input) {
-        ATTRIB_CODEGEN_SETVALUE(UMath::Vector2, 0x4075ec46, input);
-    }
-    bool message_id(TAttrib<EA::Reflection::UInt32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::UInt32, 0x9e8910ef);
-    }
-    bool message_id(EA::Reflection::UInt32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(message_id, result);
-    }
-    const EA::Reflection::UInt32 &message_id() const {
-        ATTRIB_CODEGEN_GETLAYOUT(message_id);
-    }
-    bool SET_message_id(const EA::Reflection::UInt32 &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(message_id, input);
-    }
-    bool nitrouslevel(TAttrib<EA::Reflection::Int32> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0xd4797aa8);
-    }
-    bool nitrouslevel(EA::Reflection::Int32 &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0xd4797aa8, result);
-    }
-    const EA::Reflection::Int32 &nitrouslevel() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0xd4797aa8);
-    }
-    bool SET_nitrouslevel(const EA::Reflection::Int32 &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0xd4797aa8, input);
-    }
-    bool parentstate(TAttrib<GCollectionKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0x4acc6d63);
-    }
-    bool parentstate(GCollectionKey &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0x4acc6d63, result);
-    }
-    const GCollectionKey &parentstate() const {
-        ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0x4acc6d63);
-    }
-    bool SET_parentstate(const GCollectionKey &input) {
-        ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0x4acc6d63, input);
-    }
-    bool racefinish(TAttrib<GCollectionKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0xb0a24adc);
-    }
-    bool racefinish(GCollectionKey &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0xb0a24adc, result);
-    }
-    const GCollectionKey &racefinish() const {
-        ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0xb0a24adc);
-    }
-    bool SET_racefinish(const GCollectionKey &input) {
-        ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0xb0a24adc, input);
-    }
-    bool racefinishReverse(TAttrib<GCollectionKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0x7c7cf20f);
-    }
-    bool racefinishReverse(GCollectionKey &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0x7c7cf20f, result);
-    }
-    const GCollectionKey &racefinishReverse() const {
-        ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0x7c7cf20f);
-    }
-    bool SET_racefinishReverse(const GCollectionKey &input) {
-        ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0x7c7cf20f, input);
-    }
-    bool racestart(TAttrib<GCollectionKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0xe43b2ccc);
-    }
-    bool racestart(GCollectionKey &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0xe43b2ccc, result);
-    }
-    const GCollectionKey &racestart() const {
-        ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0xe43b2ccc);
-    }
-    bool SET_racestart(const GCollectionKey &input) {
-        ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0xe43b2ccc, input);
-    }
-    bool racestartReverse(TAttrib<GCollectionKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0xfd945479);
-    }
-    bool racestartReverse(GCollectionKey &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0xfd945479, result);
-    }
-    const GCollectionKey &racestartReverse() const {
-        ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0xfd945479);
-    }
-    bool SET_racestartReverse(const GCollectionKey &input) {
-        ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0xfd945479, input);
-    }
-    bool scriptname(TAttrib<EA::Reflection::Text> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0x7148ae82);
-    }
-    bool scriptname(EA::Reflection::Text &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0x7148ae82, result);
-    }
-    const EA::Reflection::Text &scriptname() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0x7148ae82);
-    }
-    bool SET_scriptname(const EA::Reflection::Text &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0x7148ae82, input);
-    }
-    bool sender(TAttrib<GCollectionKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0xa590a98b);
-    }
-    bool sender(GCollectionKey &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0xa590a98b, result);
-    }
-    const GCollectionKey &sender() const {
-        ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0xa590a98b);
-    }
-    bool SET_sender(const GCollectionKey &input) {
-        ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0xa590a98b, input);
-    }
-    bool stateref(TAttrib<GCollectionKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0x918c796e);
-    }
-    bool stateref(GCollectionKey &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0x918c796e, result);
-    }
-    const GCollectionKey &stateref() const {
-        ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0x918c796e);
-    }
-    bool SET_stateref(const GCollectionKey &input) {
-        ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0x918c796e, input);
-    }
-    bool target(TAttrib<GCollectionKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0x1a7d2859);
-    }
-    bool target(GCollectionKey &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0x1a7d2859, result);
-    }
-    const GCollectionKey &target() const {
-        ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0x1a7d2859);
-    }
-    bool SET_target(const GCollectionKey &input) {
-        ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0x1a7d2859, input);
-    }
-    bool templateref(TAttrib<GCollectionKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0xa0697302);
-    }
-    bool templateref(GCollectionKey &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0xa0697302, result);
-    }
-    const GCollectionKey &templateref() const {
-        ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0xa0697302);
-    }
-    bool SET_templateref(const GCollectionKey &input) {
-        ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0xa0697302, input);
-    }
-    bool transitionlist(TAttrib<GCollectionKey> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0x25621dc5);
-    }
-    bool transitionlist(GCollectionKey &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(GCollectionKey, 0x25621dc5, result, index);
-    }
-    const GCollectionKey &transitionlist(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(GCollectionKey, 0x25621dc5, index);
-    }
-    unsigned int Num_transitionlist() const {
-        ATTRIB_CODEGEN_GETLENGTH(0x25621dc5);
-    }
-    bool SET_transitionlist(const GCollectionKey &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(GCollectionKey, 0x25621dc5, input, index);
-    }
+    bool AllowInvisibleSpawn(TAttrib<EA::Reflection::Bool> &result) const;
+    bool AllowInvisibleSpawn(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &AllowInvisibleSpawn() const;
+    bool SET_AllowInvisibleSpawn(const EA::Reflection::Bool &input);
+
+    bool AutoActivateGPS(TAttrib<EA::Reflection::Bool> &result) const;
+    bool AutoActivateGPS(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &AutoActivateGPS() const;
+    bool SET_AutoActivateGPS(const EA::Reflection::Bool &input);
+
+    bool AutoSpawnTriggerType(TAttrib<EA::Reflection::Text> &result) const;
+    bool AutoSpawnTriggerType(EA::Reflection::Text &result) const;
+    const EA::Reflection::Text &AutoSpawnTriggerType() const;
+    bool SET_AutoSpawnTriggerType(const EA::Reflection::Text &input);
+
+    bool AutoStart(TAttrib<EA::Reflection::Bool> &result) const;
+    bool AutoStart(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &AutoStart() const;
+    bool SET_AutoStart(const EA::Reflection::Bool &input);
+
+    bool AvailableOnline(TAttrib<EA::Reflection::Bool> &result) const;
+    bool AvailableOnline(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &AvailableOnline() const;
+    bool SET_AvailableOnline(const EA::Reflection::Bool &input);
+
+    bool AvailableQR(TAttrib<EA::Reflection::Bool> &result) const;
+    bool AvailableQR(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &AvailableQR() const;
+    bool SET_AvailableQR(const EA::Reflection::Bool &input);
+
+    bool BarrierExemptions(TAttrib<GCollectionKey> &result) const;
+    bool BarrierExemptions(GCollectionKey &result, unsigned int index) const;
+    const GCollectionKey &BarrierExemptions(unsigned int index) const;
+    unsigned int Num_BarrierExemptions() const;
+    bool SET_BarrierExemptions(const GCollectionKey &input, unsigned int index);
+
+    bool Barriers(TAttrib<EA::Reflection::Text> &result) const;
+    bool Barriers(EA::Reflection::Text &result, unsigned int index) const;
+    const EA::Reflection::Text &Barriers(unsigned int index) const;
+    unsigned int Num_Barriers() const;
+    bool SET_Barriers(const EA::Reflection::Text &input, unsigned int index);
+
+    bool BaseOpenWorldHeat(TAttrib<EA::Reflection::Float> &result) const;
+    bool BaseOpenWorldHeat(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &BaseOpenWorldHeat() const;
+    bool SET_BaseOpenWorldHeat(const EA::Reflection::Float &input);
+
+    bool BaselineUnlocks(TAttrib<GCollectionKey> &result) const;
+    bool BaselineUnlocks(GCollectionKey &result, unsigned int index) const;
+    const GCollectionKey &BaselineUnlocks(unsigned int index) const;
+    unsigned int Num_BaselineUnlocks() const;
+    bool SET_BaselineUnlocks(const GCollectionKey &input, unsigned int index);
+
+    bool BinIndex(TAttrib<EA::Reflection::Int32> &result) const;
+    bool BinIndex(EA::Reflection::Int32 &result) const;
+    const EA::Reflection::Int32 &BinIndex() const;
+    bool SET_BinIndex(const EA::Reflection::Int32 &input);
+
+    bool Boss(TAttrib<GCollectionKey> &result) const;
+    bool Boss(GCollectionKey &result) const;
+    const GCollectionKey &Boss() const;
+    bool SET_Boss(const GCollectionKey &input);
+
+    bool BossRace(TAttrib<EA::Reflection::Bool> &result) const;
+    bool BossRace(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &BossRace() const;
+    bool SET_BossRace(const EA::Reflection::Bool &input);
+
+    bool BossRaces(TAttrib<GCollectionKey> &result) const;
+    bool BossRaces(GCollectionKey &result, unsigned int index) const;
+    const GCollectionKey &BossRaces(unsigned int index) const;
+    unsigned int Num_BossRaces() const;
+    bool SET_BossRaces(const GCollectionKey &input, unsigned int index);
+
+    bool BossReputation(TAttrib<EA::Reflection::Int32> &result) const;
+    bool BossReputation(EA::Reflection::Int32 &result) const;
+    const EA::Reflection::Int32 &BossReputation() const;
+    bool SET_BossReputation(const EA::Reflection::Int32 &input);
+
+    bool Bounty(TAttrib<EA::Reflection::Int32> &result) const;
+    bool Bounty(EA::Reflection::Int32 &result) const;
+    const EA::Reflection::Int32 &Bounty() const;
+    bool SET_Bounty(const EA::Reflection::Int32 &input);
+
+    bool BustedLives(TAttrib<EA::Reflection::Int32> &result) const;
+    bool BustedLives(EA::Reflection::Int32 &result) const;
+    const EA::Reflection::Int32 &BustedLives() const;
+    bool SET_BustedLives(const EA::Reflection::Int32 &input);
+
+    bool CameraModelMarker(TAttrib<GCollectionKey> &result) const;
+    bool CameraModelMarker(GCollectionKey &result) const;
+    const GCollectionKey &CameraModelMarker() const;
+    bool SET_CameraModelMarker(const GCollectionKey &input);
+
+    bool CannedPath(TAttrib<GCollectionKey> &result) const;
+    bool CannedPath(GCollectionKey &result, unsigned int index) const;
+    const GCollectionKey &CannedPath(unsigned int index) const;
+    unsigned int Num_CannedPath() const;
+    bool SET_CannedPath(const GCollectionKey &input, unsigned int index);
+
+    bool CarType(TAttrib<EA::Reflection::Text> &result) const;
+    bool CarType(EA::Reflection::Text &result) const;
+    const EA::Reflection::Text &CarType() const;
+    bool SET_CarType(const EA::Reflection::Text &input);
+
+    bool CarTypeLowMem(TAttrib<EA::Reflection::Text> &result) const;
+    bool CarTypeLowMem(EA::Reflection::Text &result) const;
+    const EA::Reflection::Text &CarTypeLowMem() const;
+    bool SET_CarTypeLowMem(const EA::Reflection::Text &input);
+
+    bool CashReward(TAttrib<EA::Reflection::Float> &result) const;
+    bool CashReward(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &CashReward() const;
+    bool SET_CashReward(const EA::Reflection::Float &input);
+
+    bool CashRewards(TAttrib<GCollectionKey> &result) const;
+    bool CashRewards(GCollectionKey &result, unsigned int index) const;
+    const GCollectionKey &CashRewards(unsigned int index) const;
+    unsigned int Num_CashRewards() const;
+    bool SET_CashRewards(const GCollectionKey &input, unsigned int index);
+
+    bool CashValue(TAttrib<EA::Reflection::Float> &result) const;
+    bool CashValue(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &CashValue() const;
+    bool SET_CashValue(const EA::Reflection::Float &input);
+
+    bool CatchUp(TAttrib<EA::Reflection::Bool> &result) const;
+    bool CatchUp(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &CatchUp() const;
+    bool SET_CatchUp(const EA::Reflection::Bool &input);
+
+    bool CatchUpDerivative(TAttrib<EA::Reflection::Float> &result) const;
+    bool CatchUpDerivative(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &CatchUpDerivative() const;
+    bool SET_CatchUpDerivative(const EA::Reflection::Float &input);
+
+    bool CatchUpIntegral(TAttrib<EA::Reflection::Float> &result) const;
+    bool CatchUpIntegral(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &CatchUpIntegral() const;
+    bool SET_CatchUpIntegral(const EA::Reflection::Float &input);
+
+    bool CatchUpOverride(TAttrib<EA::Reflection::Bool> &result) const;
+    bool CatchUpOverride(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &CatchUpOverride() const;
+    bool SET_CatchUpOverride(const EA::Reflection::Bool &input);
+
+    bool CatchUpSkill(TAttrib<EA::Reflection::Text> &result) const;
+    bool CatchUpSkill(EA::Reflection::Text &result) const;
+    const EA::Reflection::Text &CatchUpSkill() const;
+    bool SET_CatchUpSkill(const EA::Reflection::Text &input);
+
+    bool CatchUpSpread(TAttrib<EA::Reflection::Text> &result) const;
+    bool CatchUpSpread(EA::Reflection::Text &result) const;
+    const EA::Reflection::Text &CatchUpSpread() const;
+    bool SET_CatchUpSpread(const EA::Reflection::Text &input);
+
+    bool CellChallengeRace(TAttrib<GCollectionKey> &result) const;
+    bool CellChallengeRace(GCollectionKey &result) const;
+    const GCollectionKey &CellChallengeRace() const;
+    bool SET_CellChallengeRace(const GCollectionKey &input);
+
+    bool ChallengeSeriesRace(TAttrib<EA::Reflection::Bool> &result) const;
+    bool ChallengeSeriesRace(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &ChallengeSeriesRace() const;
+    bool SET_ChallengeSeriesRace(const EA::Reflection::Bool &input);
+
+    bool ChanceOfRain(TAttrib<EA::Reflection::Float> &result) const;
+    bool ChanceOfRain(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &ChanceOfRain() const;
+    bool SET_ChanceOfRain(const EA::Reflection::Float &input);
+
+    bool Checkpoint(TAttrib<GCollectionKey> &result) const;
+    bool Checkpoint(GCollectionKey &result, unsigned int index) const;
+    const GCollectionKey &Checkpoint(unsigned int index) const;
+    unsigned int Num_Checkpoint() const;
+    bool SET_Checkpoint(const GCollectionKey &input, unsigned int index);
+
+    bool CheckpointsVisible(TAttrib<EA::Reflection::Bool> &result) const;
+    bool CheckpointsVisible(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &CheckpointsVisible() const;
+    bool SET_CheckpointsVisible(const EA::Reflection::Bool &input);
+
+    bool Children(TAttrib<GCollectionKey> &result) const;
+    bool Children(GCollectionKey &result, unsigned int index) const;
+    const GCollectionKey &Children(unsigned int index) const;
+    unsigned int Num_Children() const;
+    bool SET_Children(const GCollectionKey &input, unsigned int index);
+
+    bool CollectionName(TAttrib<EA::Reflection::Text> &result) const;
+    bool CollectionName(EA::Reflection::Text &result) const;
+    const EA::Reflection::Text &CollectionName() const;
+    bool SET_CollectionName(const EA::Reflection::Text &input);
+
+    bool CollectorsEditionRace(TAttrib<EA::Reflection::Bool> &result) const;
+    bool CollectorsEditionRace(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &CollectorsEditionRace() const;
+    bool SET_CollectorsEditionRace(const EA::Reflection::Bool &input);
+
+    bool CopDensity(TAttrib<EA::Reflection::Int32> &result) const;
+    bool CopDensity(EA::Reflection::Int32 &result) const;
+    const EA::Reflection::Int32 &CopDensity() const;
+    bool SET_CopDensity(const EA::Reflection::Int32 &input);
+
+    bool CopSpawnPoints(TAttrib<GCollectionKey> &result) const;
+    bool CopSpawnPoints(GCollectionKey &result, unsigned int index) const;
+    const GCollectionKey &CopSpawnPoints(unsigned int index) const;
+    unsigned int Num_CopSpawnPoints() const;
+    bool SET_CopSpawnPoints(const GCollectionKey &input, unsigned int index);
+
+    bool CopSpawnType(TAttrib<EA::Reflection::Text> &result) const;
+    bool CopSpawnType(EA::Reflection::Text &result) const;
+    const EA::Reflection::Text &CopSpawnType() const;
+    bool SET_CopSpawnType(const EA::Reflection::Text &input);
+
+    bool CopsInRace(TAttrib<EA::Reflection::Bool> &result) const;
+    bool CopsInRace(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &CopsInRace() const;
+    bool SET_CopsInRace(const EA::Reflection::Bool &input);
+
+    bool DDayRace(TAttrib<EA::Reflection::Bool> &result) const;
+    bool DDayRace(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &DDayRace() const;
+    bool SET_DDayRace(const EA::Reflection::Bool &input);
+
+    bool DebugJumpPoint(TAttrib<GCollectionKey> &result) const;
+    bool DebugJumpPoint(GCollectionKey &result) const;
+    const GCollectionKey &DebugJumpPoint() const;
+    bool SET_DebugJumpPoint(const GCollectionKey &input);
+
+    bool DelayTime(TAttrib<EA::Reflection::Float> &result) const;
+    bool DelayTime(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &DelayTime() const;
+    bool SET_DelayTime(const EA::Reflection::Float &input);
+
+    bool DifficultyLevel(TAttrib<EA::Reflection::Int32> &result) const;
+    bool DifficultyLevel(EA::Reflection::Int32 &result) const;
+    const EA::Reflection::Int32 &DifficultyLevel() const;
+    bool SET_DifficultyLevel(const EA::Reflection::Int32 &input);
+
+    bool Dimensions(TAttrib<UMath::Vector3> &result) const;
+    bool Dimensions(UMath::Vector3 &result) const;
+    const UMath::Vector3 &Dimensions() const;
+    bool SET_Dimensions(const UMath::Vector3 &input);
+
+    bool Directional(TAttrib<EA::Reflection::Bool> &result) const;
+    bool Directional(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &Directional() const;
+    bool SET_Directional(const EA::Reflection::Bool &input);
+
+    bool DoCountdown(TAttrib<EA::Reflection::Bool> &result) const;
+    bool DoCountdown(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &DoCountdown() const;
+    bool SET_DoCountdown(const EA::Reflection::Bool &input);
+
+    bool DoPhotofinish(TAttrib<EA::Reflection::Bool> &result) const;
+    bool DoPhotofinish(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &DoPhotofinish() const;
+    bool SET_DoPhotofinish(const EA::Reflection::Bool &input);
+
+    bool EntryActivity(TAttrib<GCollectionKey> &result) const;
+    bool EntryActivity(GCollectionKey &result) const;
+    const GCollectionKey &EntryActivity() const;
+    bool SET_EntryActivity(const GCollectionKey &input);
+
+    bool EntryCellCallID(TAttrib<EA::Reflection::Int32> &result) const;
+    bool EntryCellCallID(EA::Reflection::Int32 &result) const;
+    const EA::Reflection::Int32 &EntryCellCallID() const;
+    bool SET_EntryCellCallID(const EA::Reflection::Int32 &input);
+
+    bool EventID(TAttrib<EA::Reflection::Text> &result) const;
+    bool EventID(EA::Reflection::Text &result) const;
+    const EA::Reflection::Text &EventID() const;
+    bool SET_EventID(const EA::Reflection::Text &input);
+
+    bool EventIconType(TAttrib<EA::Reflection::Text> &result) const;
+    bool EventIconType(EA::Reflection::Text &result) const;
+    const EA::Reflection::Text &EventIconType() const;
+    bool SET_EventIconType(const EA::Reflection::Text &input);
+
+    bool ExcludedCharacters(TAttrib<GCollectionKey> &result) const;
+    bool ExcludedCharacters(GCollectionKey &result, unsigned int index) const;
+    const GCollectionKey &ExcludedCharacters(unsigned int index) const;
+    unsigned int Num_ExcludedCharacters() const;
+    bool SET_ExcludedCharacters(const GCollectionKey &input, unsigned int index);
+
+    bool FilterBlocks(TAttrib<Attrib::Blob> &result) const;
+    bool FilterBlocks(Attrib::Blob &result, unsigned int index) const;
+    const Attrib::Blob &FilterBlocks(unsigned int index) const;
+    unsigned int Num_FilterBlocks() const;
+    bool SET_FilterBlocks(const Attrib::Blob &input, unsigned int index);
+
+    bool FilterModePassAll(TAttrib<EA::Reflection::Bool> &result) const;
+    bool FilterModePassAll(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &FilterModePassAll() const;
+    bool SET_FilterModePassAll(const EA::Reflection::Bool &input);
+
+    bool FinishCamera(TAttrib<EA::Reflection::Text> &result) const;
+    bool FinishCamera(EA::Reflection::Text &result) const;
+    const EA::Reflection::Text &FinishCamera() const;
+    bool SET_FinishCamera(const EA::Reflection::Text &input);
+
+    bool FireOnExit(TAttrib<EA::Reflection::Bool> &result) const;
+    bool FireOnExit(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &FireOnExit() const;
+    bool SET_FireOnExit(const EA::Reflection::Bool &input);
+
+    bool FlareSpacing(TAttrib<EA::Reflection::Float> &result) const;
+    bool FlareSpacing(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &FlareSpacing() const;
+    bool SET_FlareSpacing(const EA::Reflection::Float &input);
+
+    bool ForceHeatLevel(TAttrib<EA::Reflection::Int32> &result) const;
+    bool ForceHeatLevel(EA::Reflection::Int32 &result) const;
+    const EA::Reflection::Int32 &ForceHeatLevel() const;
+    bool SET_ForceHeatLevel(const EA::Reflection::Int32 &input);
+
+    bool ForcePreload(TAttrib<EA::Reflection::Bool> &result) const;
+    bool ForcePreload(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &ForcePreload() const;
+    bool SET_ForcePreload(const EA::Reflection::Bool &input);
+
+    bool ForceStartPosition(TAttrib<GCollectionKey> &result) const;
+    bool ForceStartPosition(GCollectionKey &result) const;
+    const GCollectionKey &ForceStartPosition() const;
+    bool SET_ForceStartPosition(const GCollectionKey &input);
+
+    bool ForceTrafficDensity(TAttrib<EA::Reflection::Int32> &result) const;
+    bool ForceTrafficDensity(EA::Reflection::Int32 &result) const;
+    const EA::Reflection::Int32 &ForceTrafficDensity() const;
+    bool SET_ForceTrafficDensity(const EA::Reflection::Int32 &input);
+
+    bool FreeRoamOnly(TAttrib<EA::Reflection::Bool> &result) const;
+    bool FreeRoamOnly(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &FreeRoamOnly() const;
+    bool SET_FreeRoamOnly(const EA::Reflection::Bool &input);
+
+    bool GateActivity(TAttrib<GCollectionKey> &result) const;
+    bool GateActivity(GCollectionKey &result) const;
+    const GCollectionKey &GateActivity() const;
+    bool SET_GateActivity(const GCollectionKey &input);
+
+    bool GoalAddPrevBest(TAttrib<EA::Reflection::Float> &result) const;
+    bool GoalAddPrevBest(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &GoalAddPrevBest() const;
+    bool SET_GoalAddPrevBest(const EA::Reflection::Float &input);
+
+    bool GoalEasy(TAttrib<EA::Reflection::Float> &result) const;
+    bool GoalEasy(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &GoalEasy() const;
+    bool SET_GoalEasy(const EA::Reflection::Float &input);
+
+    bool GoalHard(TAttrib<EA::Reflection::Float> &result) const;
+    bool GoalHard(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &GoalHard() const;
+    bool SET_GoalHard(const EA::Reflection::Float &input);
+
+    bool IconModelBounceAmp(TAttrib<EA::Reflection::Float> &result) const;
+    bool IconModelBounceAmp(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &IconModelBounceAmp() const;
+    bool SET_IconModelBounceAmp(const EA::Reflection::Float &input);
+
+    bool IconModelBounceRate(TAttrib<EA::Reflection::Float> &result) const;
+    bool IconModelBounceRate(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &IconModelBounceRate() const;
+    bool SET_IconModelBounceRate(const EA::Reflection::Float &input);
+
+    bool IconModelFloatHeight(TAttrib<EA::Reflection::Float> &result) const;
+    bool IconModelFloatHeight(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &IconModelFloatHeight() const;
+    bool SET_IconModelFloatHeight(const EA::Reflection::Float &input);
+
+    bool IconModelName(TAttrib<EA::Reflection::Text> &result) const;
+    bool IconModelName(EA::Reflection::Text &result) const;
+    const EA::Reflection::Text &IconModelName() const;
+    bool SET_IconModelName(const EA::Reflection::Text &input);
+
+    bool IconModelScale(TAttrib<EA::Reflection::Bool> &result) const;
+    bool IconModelScale(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &IconModelScale() const;
+    bool SET_IconModelScale(const EA::Reflection::Bool &input);
+
+    bool IconModelSpinRate(TAttrib<EA::Reflection::Float> &result) const;
+    bool IconModelSpinRate(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &IconModelSpinRate() const;
+    bool SET_IconModelSpinRate(const EA::Reflection::Float &input);
+
+    bool InitialPlayerSpeed(TAttrib<EA::Reflection::Float> &result) const;
+    bool InitialPlayerSpeed(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &InitialPlayerSpeed() const;
+    bool SET_InitialPlayerSpeed(const EA::Reflection::Float &input);
+
+    bool InitialSpeed(TAttrib<EA::Reflection::Float> &result) const;
+    bool InitialSpeed(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &InitialSpeed() const;
+    bool SET_InitialSpeed(const EA::Reflection::Float &input);
+
+    bool InitiallyUnlocked(TAttrib<EA::Reflection::Bool> &result) const;
+    bool InitiallyUnlocked(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &InitiallyUnlocked() const;
+    bool SET_InitiallyUnlocked(const EA::Reflection::Bool &input);
+
+    bool InternalRaceIndex(TAttrib<EA::Reflection::Float> &result) const;
+    bool InternalRaceIndex(EA::Reflection::Float &result, unsigned int index) const;
+    const EA::Reflection::Float &InternalRaceIndex(unsigned int index) const;
+    unsigned int Num_InternalRaceIndex() const;
+    bool SET_InternalRaceIndex(const EA::Reflection::Float &input, unsigned int index);
+
+    bool IntroCameraTrack(TAttrib<EA::Reflection::Int32> &result) const;
+    bool IntroCameraTrack(EA::Reflection::Int32 &result) const;
+    const EA::Reflection::Int32 &IntroCameraTrack() const;
+    bool SET_IntroCameraTrack(const EA::Reflection::Int32 &input);
+
+    bool IntroMessageID(TAttrib<EA::Reflection::Int32> &result) const;
+    bool IntroMessageID(EA::Reflection::Int32 &result) const;
+    const EA::Reflection::Int32 &IntroMessageID() const;
+    bool SET_IntroMessageID(const EA::Reflection::Int32 &input);
+
+    bool IntroMovie(TAttrib<EA::Reflection::Text> &result) const;
+    bool IntroMovie(EA::Reflection::Text &result) const;
+    const EA::Reflection::Text &IntroMovie() const;
+    bool SET_IntroMovie(const EA::Reflection::Text &input);
+
+    bool IntroNIS(TAttrib<EA::Reflection::Text> &result) const;
+    bool IntroNIS(EA::Reflection::Text &result) const;
+    const EA::Reflection::Text &IntroNIS() const;
+    bool SET_IntroNIS(const EA::Reflection::Text &input);
+
+    bool IsBoss(TAttrib<EA::Reflection::Bool> &result) const;
+    bool IsBoss(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &IsBoss() const;
+    bool SET_IsBoss(const EA::Reflection::Bool &input);
+
+    bool IsEpicPursuitRace(TAttrib<EA::Reflection::Bool> &result) const;
+    bool IsEpicPursuitRace(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &IsEpicPursuitRace() const;
+    bool SET_IsEpicPursuitRace(const EA::Reflection::Bool &input);
+
+    bool IsLoopingRace(TAttrib<EA::Reflection::Bool> &result) const;
+    bool IsLoopingRace(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &IsLoopingRace() const;
+    bool SET_IsLoopingRace(const EA::Reflection::Bool &input);
+
+    bool IsMarkerRace(TAttrib<EA::Reflection::Bool> &result) const;
+    bool IsMarkerRace(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &IsMarkerRace() const;
+    bool SET_IsMarkerRace(const EA::Reflection::Bool &input);
+
+    bool JumpRaces(TAttrib<GCollectionKey> &result) const;
+    bool JumpRaces(GCollectionKey &result, unsigned int index) const;
+    const GCollectionKey &JumpRaces(unsigned int index) const;
+    unsigned int Num_JumpRaces() const;
+    bool SET_JumpRaces(const GCollectionKey &input, unsigned int index);
+
+    bool KnockoutTime(TAttrib<EA::Reflection::Float> &result) const;
+    bool KnockoutTime(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &KnockoutTime() const;
+    bool SET_KnockoutTime(const EA::Reflection::Float &input);
+
+    bool KnockoutsPerLap(TAttrib<EA::Reflection::Int32> &result) const;
+    bool KnockoutsPerLap(EA::Reflection::Int32 &result) const;
+    const EA::Reflection::Int32 &KnockoutsPerLap() const;
+    bool SET_KnockoutsPerLap(const EA::Reflection::Int32 &input);
+
+    bool LocalizationTag(TAttrib<EA::Reflection::Int32> &result) const;
+    bool LocalizationTag(EA::Reflection::Int32 &result) const;
+    const EA::Reflection::Int32 &LocalizationTag() const;
+    bool SET_LocalizationTag(const EA::Reflection::Int32 &input);
+
+    bool MasterCheckpoint(TAttrib<GCollectionKey> &result) const;
+    bool MasterCheckpoint(GCollectionKey &result) const;
+    const GCollectionKey &MasterCheckpoint() const;
+    bool SET_MasterCheckpoint(const GCollectionKey &input);
+
+    bool MaxCarRep(TAttrib<EA::Reflection::Float> &result) const;
+    bool MaxCarRep(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &MaxCarRep() const;
+    bool SET_MaxCarRep(const EA::Reflection::Float &input);
+
+    bool MaxHeatLevel(TAttrib<EA::Reflection::Float> &result) const;
+    bool MaxHeatLevel(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &MaxHeatLevel() const;
+    bool SET_MaxHeatLevel(const EA::Reflection::Float &input);
+
+    bool MaxOpenWorldHeat(TAttrib<EA::Reflection::Float> &result) const;
+    bool MaxOpenWorldHeat(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &MaxOpenWorldHeat() const;
+    bool SET_MaxOpenWorldHeat(const EA::Reflection::Float &input);
+
+    bool MaxPursuitRep(TAttrib<EA::Reflection::Float> &result) const;
+    bool MaxPursuitRep(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &MaxPursuitRep() const;
+    bool SET_MaxPursuitRep(const EA::Reflection::Float &input);
+
+    bool MedalBonusBronze(TAttrib<EA::Reflection::Int32> &result) const;
+    bool MedalBonusBronze(EA::Reflection::Int32 &result) const;
+    const EA::Reflection::Int32 &MedalBonusBronze() const;
+    bool SET_MedalBonusBronze(const EA::Reflection::Int32 &input);
+
+    bool MedalBonusGold(TAttrib<EA::Reflection::Int32> &result) const;
+    bool MedalBonusGold(EA::Reflection::Int32 &result) const;
+    const EA::Reflection::Int32 &MedalBonusGold() const;
+    bool SET_MedalBonusGold(const EA::Reflection::Int32 &input);
+
+    bool MedalBonusSilver(TAttrib<EA::Reflection::Int32> &result) const;
+    bool MedalBonusSilver(EA::Reflection::Int32 &result) const;
+    const EA::Reflection::Int32 &MedalBonusSilver() const;
+    bool SET_MedalBonusSilver(const EA::Reflection::Int32 &input);
+
+    bool MilestoneBiggerIsBetter(TAttrib<EA::Reflection::Bool> &result) const;
+    bool MilestoneBiggerIsBetter(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &MilestoneBiggerIsBetter() const;
+    bool SET_MilestoneBiggerIsBetter(const EA::Reflection::Bool &input);
+
+    bool MilestoneChallenge(TAttrib<GCollectionKey> &result) const;
+    bool MilestoneChallenge(GCollectionKey &result) const;
+    const GCollectionKey &MilestoneChallenge() const;
+    bool SET_MilestoneChallenge(const GCollectionKey &input);
+
+    bool MilestoneName(TAttrib<EA::Reflection::Text> &result) const;
+    bool MilestoneName(EA::Reflection::Text &result) const;
+    const EA::Reflection::Text &MilestoneName() const;
+    bool SET_MilestoneName(const EA::Reflection::Text &input);
+
+    bool MiniMapItem(TAttrib<GCollectionKey> &result) const;
+    bool MiniMapItem(GCollectionKey &result) const;
+    const GCollectionKey &MiniMapItem() const;
+    bool SET_MiniMapItem(const GCollectionKey &input);
+
+    bool MinimumAIPerformance(TAttrib<EA::Reflection::Float> &result) const;
+    bool MinimumAIPerformance(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &MinimumAIPerformance() const;
+    bool SET_MinimumAIPerformance(const EA::Reflection::Float &input);
+
+    bool NISShell(TAttrib<EA::Reflection::Bool> &result) const;
+    bool NISShell(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &NISShell() const;
+    bool SET_NISShell(const EA::Reflection::Bool &input);
+
+    bool Name(TAttrib<EA::Reflection::Text> &result) const;
+    bool Name(EA::Reflection::Text &result) const;
+    const EA::Reflection::Text &Name() const;
+    bool SET_Name(const EA::Reflection::Text &input);
+
+    bool NeverInQuickRace(TAttrib<EA::Reflection::Bool> &result) const;
+    bool NeverInQuickRace(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &NeverInQuickRace() const;
+    bool SET_NeverInQuickRace(const EA::Reflection::Bool &input);
+
+    bool NoPostRaceScreen(TAttrib<EA::Reflection::Bool> &result) const;
+    bool NoPostRaceScreen(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &NoPostRaceScreen() const;
+    bool SET_NoPostRaceScreen(const EA::Reflection::Bool &input);
+
+    bool NumLaps(TAttrib<EA::Reflection::Int32> &result) const;
+    bool NumLaps(EA::Reflection::Int32 &result) const;
+    const EA::Reflection::Int32 &NumLaps() const;
+    bool SET_NumLaps(const EA::Reflection::Int32 &input);
+
+    bool NumRacesRequired(TAttrib<EA::Reflection::Int32> &result) const;
+    bool NumRacesRequired(EA::Reflection::Int32 &result) const;
+    const EA::Reflection::Int32 &NumRacesRequired() const;
+    bool SET_NumRacesRequired(const EA::Reflection::Int32 &input);
+
+    bool OneShot(TAttrib<EA::Reflection::Bool> &result) const;
+    bool OneShot(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &OneShot() const;
+    bool SET_OneShot(const EA::Reflection::Bool &input);
+
+    bool OpenWorldSpeedTrap(TAttrib<EA::Reflection::Bool> &result) const;
+    bool OpenWorldSpeedTrap(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &OpenWorldSpeedTrap() const;
+    bool SET_OpenWorldSpeedTrap(const EA::Reflection::Bool &input);
+
+    bool Opponents(TAttrib<GCollectionKey> &result) const;
+    bool Opponents(GCollectionKey &result, unsigned int index) const;
+    const GCollectionKey &Opponents(unsigned int index) const;
+    unsigned int Num_Opponents() const;
+    bool SET_Opponents(const GCollectionKey &input, unsigned int index);
+
+    bool OutroCameraTrack(TAttrib<EA::Reflection::Int32> &result) const;
+    bool OutroCameraTrack(EA::Reflection::Int32 &result) const;
+    const EA::Reflection::Int32 &OutroCameraTrack() const;
+    bool SET_OutroCameraTrack(const EA::Reflection::Int32 &input);
+
+    bool OutroMessageID(TAttrib<EA::Reflection::Int32> &result) const;
+    bool OutroMessageID(EA::Reflection::Int32 &result) const;
+    const EA::Reflection::Int32 &OutroMessageID() const;
+    bool SET_OutroMessageID(const EA::Reflection::Int32 &input);
+
+    bool OutroMovie(TAttrib<EA::Reflection::Text> &result) const;
+    bool OutroMovie(EA::Reflection::Text &result) const;
+    const EA::Reflection::Text &OutroMovie() const;
+    bool SET_OutroMovie(const EA::Reflection::Text &input);
+
+    bool OutroNIS(TAttrib<EA::Reflection::Text> &result) const;
+    bool OutroNIS(EA::Reflection::Text &result) const;
+    const EA::Reflection::Text &OutroNIS() const;
+    bool SET_OutroNIS(const EA::Reflection::Text &input);
+
+    bool OutroNISMarker(TAttrib<GCollectionKey> &result) const;
+    bool OutroNISMarker(GCollectionKey &result) const;
+    const GCollectionKey &OutroNISMarker() const;
+    bool SET_OutroNISMarker(const GCollectionKey &input);
+
+    bool OvertimePenaltyPerSec(TAttrib<EA::Reflection::Int32> &result) const;
+    bool OvertimePenaltyPerSec(EA::Reflection::Int32 &result) const;
+    const EA::Reflection::Int32 &OvertimePenaltyPerSec() const;
+    bool SET_OvertimePenaltyPerSec(const EA::Reflection::Int32 &input);
+
+    bool ParticleEffect(TAttrib<EA::Reflection::Text> &result) const;
+    bool ParticleEffect(EA::Reflection::Text &result) const;
+    const EA::Reflection::Text &ParticleEffect() const;
+    bool SET_ParticleEffect(const EA::Reflection::Text &input);
+
+    bool Persistent(TAttrib<EA::Reflection::Bool> &result) const;
+    bool Persistent(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &Persistent() const;
+    bool SET_Persistent(const EA::Reflection::Bool &input);
+
+    bool PlayerCarPerformance(TAttrib<EA::Reflection::Float> &result) const;
+    bool PlayerCarPerformance(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &PlayerCarPerformance() const;
+    bool SET_PlayerCarPerformance(const EA::Reflection::Float &input);
+
+    bool PlayerCarType(TAttrib<EA::Reflection::Text> &result) const;
+    bool PlayerCarType(EA::Reflection::Text &result) const;
+    const EA::Reflection::Text &PlayerCarType() const;
+    bool SET_PlayerCarType(const EA::Reflection::Text &input);
+
+    bool Position(TAttrib<UMath::Vector3> &result) const;
+    bool Position(UMath::Vector3 &result) const;
+    const UMath::Vector3 &Position() const;
+    bool SET_Position(const UMath::Vector3 &input);
+
+    bool PostRaceActivity(TAttrib<GCollectionKey> &result) const;
+    bool PostRaceActivity(GCollectionKey &result) const;
+    const GCollectionKey &PostRaceActivity() const;
+    bool SET_PostRaceActivity(const GCollectionKey &input);
+
+    bool PostRaceScreenTexture(TAttrib<EA::Reflection::Text> &result) const;
+    bool PostRaceScreenTexture(EA::Reflection::Text &result) const;
+    const EA::Reflection::Text &PostRaceScreenTexture() const;
+    bool SET_PostRaceScreenTexture(const EA::Reflection::Text &input);
+
+    bool PresetRide(TAttrib<EA::Reflection::Text> &result) const;
+    bool PresetRide(EA::Reflection::Text &result) const;
+    const EA::Reflection::Text &PresetRide() const;
+    bool SET_PresetRide(const EA::Reflection::Text &input);
+
+    bool ProgressionLevel(TAttrib<EA::Reflection::Int32> &result) const;
+    bool ProgressionLevel(EA::Reflection::Int32 &result) const;
+    const EA::Reflection::Int32 &ProgressionLevel() const;
+    bool SET_ProgressionLevel(const EA::Reflection::Int32 &input);
+
+    bool PursuitLevel(TAttrib<EA::Reflection::Int32> &result) const;
+    bool PursuitLevel(EA::Reflection::Int32 &result) const;
+    const EA::Reflection::Int32 &PursuitLevel() const;
+    bool SET_PursuitLevel(const EA::Reflection::Int32 &input);
+
+    bool PursuitRace(TAttrib<EA::Reflection::Bool> &result) const;
+    bool PursuitRace(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &PursuitRace() const;
+    bool SET_PursuitRace(const EA::Reflection::Bool &input);
+
+    bool QuickRaceNIS(TAttrib<EA::Reflection::Text> &result) const;
+    bool QuickRaceNIS(EA::Reflection::Text &result) const;
+    const EA::Reflection::Text &QuickRaceNIS() const;
+    bool SET_QuickRaceNIS(const EA::Reflection::Text &input);
+
+    bool QuickRaceUnlocked(TAttrib<EA::Reflection::Bool> &result) const;
+    bool QuickRaceUnlocked(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &QuickRaceUnlocked() const;
+    bool SET_QuickRaceUnlocked(const EA::Reflection::Bool &input);
+
+    bool RaceLength(TAttrib<EA::Reflection::Float> &result) const;
+    bool RaceLength(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &RaceLength() const;
+    bool SET_RaceLength(const EA::Reflection::Float &input);
+
+    bool RaceList(TAttrib<GCollectionKey> &result) const;
+    bool RaceList(GCollectionKey &result, unsigned int index) const;
+    const GCollectionKey &RaceList(unsigned int index) const;
+    unsigned int Num_RaceList() const;
+    bool SET_RaceList(const GCollectionKey &input, unsigned int index);
+
+    bool RaceTriggers(TAttrib<GCollectionKey> &result) const;
+    bool RaceTriggers(GCollectionKey &result, unsigned int index) const;
+    const GCollectionKey &RaceTriggers(unsigned int index) const;
+    unsigned int Num_RaceTriggers() const;
+    bool SET_RaceTriggers(const GCollectionKey &input, unsigned int index);
+
+    bool RacerName(TAttrib<EA::Reflection::Text> &result) const;
+    bool RacerName(EA::Reflection::Text &result) const;
+    const EA::Reflection::Text &RacerName() const;
+    bool SET_RacerName(const EA::Reflection::Text &input);
+
+    bool Radius(TAttrib<EA::Reflection::Float> &result) const;
+    bool Radius(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &Radius() const;
+    bool SET_Radius(const EA::Reflection::Float &input);
+
+    bool RandomSpawnTriggers(TAttrib<GCollectionKey> &result) const;
+    bool RandomSpawnTriggers(GCollectionKey &result, unsigned int index) const;
+    const GCollectionKey &RandomSpawnTriggers(unsigned int index) const;
+    unsigned int Num_RandomSpawnTriggers() const;
+    bool SET_RandomSpawnTriggers(const GCollectionKey &input, unsigned int index);
+
+    bool RankPlayersByDistance(TAttrib<EA::Reflection::Bool> &result) const;
+    bool RankPlayersByDistance(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &RankPlayersByDistance() const;
+    bool SET_RankPlayersByDistance(const EA::Reflection::Bool &input);
+
+    bool RankPlayersByPoints(TAttrib<EA::Reflection::Bool> &result) const;
+    bool RankPlayersByPoints(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &RankPlayersByPoints() const;
+    bool SET_RankPlayersByPoints(const EA::Reflection::Bool &input);
+
+    bool Region(TAttrib<EA::Reflection::Text> &result) const;
+    bool Region(EA::Reflection::Text &result) const;
+    const EA::Reflection::Text &Region() const;
+    bool SET_Region(const EA::Reflection::Text &input);
+
+    bool Reputation(TAttrib<EA::Reflection::Int32> &result) const;
+    bool Reputation(EA::Reflection::Int32 &result) const;
+    const EA::Reflection::Int32 &Reputation() const;
+    bool SET_Reputation(const EA::Reflection::Int32 &input);
+
+    bool ReputationRequired(TAttrib<EA::Reflection::Int32> &result) const;
+    bool ReputationRequired(EA::Reflection::Int32 &result) const;
+    const EA::Reflection::Int32 &ReputationRequired() const;
+    bool SET_ReputationRequired(const EA::Reflection::Int32 &input);
+
+    bool RequiredBounty(TAttrib<EA::Reflection::Int32> &result) const;
+    bool RequiredBounty(EA::Reflection::Int32 &result) const;
+    const EA::Reflection::Int32 &RequiredBounty() const;
+    bool SET_RequiredBounty(const EA::Reflection::Int32 &input);
+
+    bool RequiredChallenges(TAttrib<EA::Reflection::Int32> &result) const;
+    bool RequiredChallenges(EA::Reflection::Int32 &result) const;
+    const EA::Reflection::Int32 &RequiredChallenges() const;
+    bool SET_RequiredChallenges(const EA::Reflection::Int32 &input);
+
+    bool RequiredRacesWon(TAttrib<EA::Reflection::Int32> &result) const;
+    bool RequiredRacesWon(EA::Reflection::Int32 &result) const;
+    const EA::Reflection::Int32 &RequiredRacesWon() const;
+    bool SET_RequiredRacesWon(const EA::Reflection::Int32 &input);
+
+    bool ResetTime(TAttrib<EA::Reflection::Float> &result) const;
+    bool ResetTime(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &ResetTime() const;
+    bool SET_ResetTime(const EA::Reflection::Float &input);
+
+    bool ResetsPlayer(TAttrib<EA::Reflection::Bool> &result) const;
+    bool ResetsPlayer(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &ResetsPlayer() const;
+    bool SET_ResetsPlayer(const EA::Reflection::Bool &input);
+
+    bool RespawnMarker(TAttrib<GCollectionKey> &result) const;
+    bool RespawnMarker(GCollectionKey &result) const;
+    const GCollectionKey &RespawnMarker() const;
+    bool SET_RespawnMarker(const GCollectionKey &input);
+
+    bool RestartActivity(TAttrib<GCollectionKey> &result) const;
+    bool RestartActivity(GCollectionKey &result) const;
+    const GCollectionKey &RestartActivity() const;
+    bool SET_RestartActivity(const GCollectionKey &input);
+
+    bool RewardMarkerType(TAttrib<EA::Reflection::Text> &result) const;
+    bool RewardMarkerType(EA::Reflection::Text &result) const;
+    const EA::Reflection::Text &RewardMarkerType() const;
+    bool SET_RewardMarkerType(const EA::Reflection::Text &input);
+
+    bool RewardsForWinner(TAttrib<GCollectionKey> &result) const;
+    bool RewardsForWinner(GCollectionKey &result, unsigned int index) const;
+    const GCollectionKey &RewardsForWinner(unsigned int index) const;
+    unsigned int Num_RewardsForWinner() const;
+    bool SET_RewardsForWinner(const GCollectionKey &input, unsigned int index);
+
+    bool RingTime(TAttrib<EA::Reflection::Float> &result) const;
+    bool RingTime(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &RingTime() const;
+    bool SET_RingTime(const EA::Reflection::Float &input);
+
+    bool RivalBestTime(TAttrib<EA::Reflection::Float> &result) const;
+    bool RivalBestTime(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &RivalBestTime() const;
+    bool SET_RivalBestTime(const EA::Reflection::Float &input);
+
+    bool RoadList(TAttrib<EA::Reflection::Text> &result) const;
+    bool RoadList(EA::Reflection::Text &result, unsigned int index) const;
+    const EA::Reflection::Text &RoadList(unsigned int index) const;
+    unsigned int Num_RoadList() const;
+    bool SET_RoadList(const EA::Reflection::Text &input, unsigned int index);
+
+    bool RollingStart(TAttrib<EA::Reflection::Bool> &result) const;
+    bool RollingStart(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &RollingStart() const;
+    bool SET_RollingStart(const EA::Reflection::Bool &input);
+
+    bool Rotation(TAttrib<EA::Reflection::Float> &result) const;
+    bool Rotation(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &Rotation() const;
+    bool SET_Rotation(const EA::Reflection::Float &input);
+
+    bool SMSCellChallenge(TAttrib<EA::Reflection::Int32> &result) const;
+    bool SMSCellChallenge(EA::Reflection::Int32 &result) const;
+    const EA::Reflection::Int32 &SMSCellChallenge() const;
+    bool SET_SMSCellChallenge(const EA::Reflection::Int32 &input);
+
+    bool SMSRivalChallenge(TAttrib<EA::Reflection::Int32> &result) const;
+    bool SMSRivalChallenge(EA::Reflection::Int32 &result) const;
+    const EA::Reflection::Int32 &SMSRivalChallenge() const;
+    bool SET_SMSRivalChallenge(const EA::Reflection::Int32 &input);
+
+    bool ScaleOpenWorldHeat(TAttrib<EA::Reflection::Float> &result) const;
+    bool ScaleOpenWorldHeat(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &ScaleOpenWorldHeat() const;
+    bool SET_ScaleOpenWorldHeat(const EA::Reflection::Float &input);
+
+    bool ScriptedCopsInRace(TAttrib<EA::Reflection::Bool> &result) const;
+    bool ScriptedCopsInRace(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &ScriptedCopsInRace() const;
+    bool SET_ScriptedCopsInRace(const EA::Reflection::Bool &input);
+
+    bool SharedCheckpoints(TAttrib<EA::Reflection::Bool> &result) const;
+    bool SharedCheckpoints(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &SharedCheckpoints() const;
+    bool SET_SharedCheckpoints(const EA::Reflection::Bool &input);
+
+    bool ShortcutMaxChance(TAttrib<EA::Reflection::Float> &result) const;
+    bool ShortcutMaxChance(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &ShortcutMaxChance() const;
+    bool SET_ShortcutMaxChance(const EA::Reflection::Float &input);
+
+    bool ShortcutMinChance(TAttrib<EA::Reflection::Float> &result) const;
+    bool ShortcutMinChance(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &ShortcutMinChance() const;
+    bool SET_ShortcutMinChance(const EA::Reflection::Float &input);
+
+    bool Shortcuts(TAttrib<GCollectionKey> &result) const;
+    bool Shortcuts(GCollectionKey &result, unsigned int index) const;
+    const GCollectionKey &Shortcuts(unsigned int index) const;
+    unsigned int Num_Shortcuts() const;
+    bool SET_Shortcuts(const GCollectionKey &input, unsigned int index);
+
+    bool SkillLevel(TAttrib<EA::Reflection::Int32> &result) const;
+    bool SkillLevel(EA::Reflection::Int32 &result) const;
+    const EA::Reflection::Int32 &SkillLevel() const;
+    bool SET_SkillLevel(const EA::Reflection::Int32 &input);
+
+    bool SpawnPoint(TAttrib<GCollectionKey> &result) const;
+    bool SpawnPoint(GCollectionKey &result) const;
+    const GCollectionKey &SpawnPoint() const;
+    bool SET_SpawnPoint(const GCollectionKey &input);
+
+    bool SpeedTrapCamera(TAttrib<EA::Reflection::Text> &result) const;
+    bool SpeedTrapCamera(EA::Reflection::Text &result) const;
+    const EA::Reflection::Text &SpeedTrapCamera() const;
+    bool SET_SpeedTrapCamera(const EA::Reflection::Text &input);
+
+    bool SpeedTrapList(TAttrib<GCollectionKey> &result) const;
+    bool SpeedTrapList(GCollectionKey &result, unsigned int index) const;
+    const GCollectionKey &SpeedTrapList(unsigned int index) const;
+    unsigned int Num_SpeedTrapList() const;
+    bool SET_SpeedTrapList(const GCollectionKey &input, unsigned int index);
+
+    bool SpeedTrapTrigger(TAttrib<GCollectionKey> &result) const;
+    bool SpeedTrapTrigger(GCollectionKey &result) const;
+    const GCollectionKey &SpeedTrapTrigger() const;
+    bool SET_SpeedTrapTrigger(const GCollectionKey &input);
+
+    bool SpeedTrapsRequired(TAttrib<GCollectionKey> &result) const;
+    bool SpeedTrapsRequired(GCollectionKey &result, unsigned int index) const;
+    const GCollectionKey &SpeedTrapsRequired(unsigned int index) const;
+    unsigned int Num_SpeedTrapsRequired() const;
+    bool SET_SpeedTrapsRequired(const GCollectionKey &input, unsigned int index);
+
+    bool StartPercent(TAttrib<EA::Reflection::Float> &result) const;
+    bool StartPercent(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &StartPercent() const;
+    bool SET_StartPercent(const EA::Reflection::Float &input);
+
+    bool StartTime(TAttrib<EA::Reflection::Float> &result) const;
+    bool StartTime(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &StartTime() const;
+    bool SET_StartTime(const EA::Reflection::Float &input);
+
+    bool TOD(TAttrib<EA::Reflection::Float> &result) const;
+    bool TOD(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &TOD() const;
+    bool SET_TOD(const EA::Reflection::Float &input);
+
+    bool TargetActivities(TAttrib<GCollectionKey> &result) const;
+    bool TargetActivities(GCollectionKey &result, unsigned int index) const;
+    const GCollectionKey &TargetActivities(unsigned int index) const;
+    unsigned int Num_TargetActivities() const;
+    bool SET_TargetActivities(const GCollectionKey &input, unsigned int index);
+
+    bool TargetActivity(TAttrib<GCollectionKey> &result) const;
+    bool TargetActivity(GCollectionKey &result) const;
+    const GCollectionKey &TargetActivity() const;
+    bool SET_TargetActivity(const GCollectionKey &input);
+
+    bool TargetBronze(TAttrib<EA::Reflection::Float> &result) const;
+    bool TargetBronze(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &TargetBronze() const;
+    bool SET_TargetBronze(const EA::Reflection::Float &input);
+
+    bool TargetGold(TAttrib<EA::Reflection::Float> &result) const;
+    bool TargetGold(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &TargetGold() const;
+    bool SET_TargetGold(const EA::Reflection::Float &input);
+
+    bool TargetMarker(TAttrib<GCollectionKey> &result) const;
+    bool TargetMarker(GCollectionKey &result) const;
+    const GCollectionKey &TargetMarker() const;
+    bool SET_TargetMarker(const GCollectionKey &input);
+
+    bool TargetSilver(TAttrib<EA::Reflection::Float> &result) const;
+    bool TargetSilver(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &TargetSilver() const;
+    bool SET_TargetSilver(const EA::Reflection::Float &input);
+
+    bool Template(TAttrib<EA::Reflection::Bool> &result) const;
+    bool Template(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &Template() const;
+    bool SET_Template(const EA::Reflection::Bool &input);
+
+    bool ThreshholdSpeed(TAttrib<EA::Reflection::Float> &result) const;
+    bool ThreshholdSpeed(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &ThreshholdSpeed() const;
+    bool SET_ThreshholdSpeed(const EA::Reflection::Float &input);
+
+    bool ThreshholdValue(TAttrib<EA::Reflection::Float> &result) const;
+    bool ThreshholdValue(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &ThreshholdValue() const;
+    bool SET_ThreshholdValue(const EA::Reflection::Float &input);
+
+    bool TimeBonus(TAttrib<EA::Reflection::Int32> &result) const;
+    bool TimeBonus(EA::Reflection::Int32 &result) const;
+    const EA::Reflection::Int32 &TimeBonus() const;
+    bool SET_TimeBonus(const EA::Reflection::Int32 &input);
+
+    bool TimeLimit(TAttrib<EA::Reflection::Float> &result) const;
+    bool TimeLimit(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &TimeLimit() const;
+    bool SET_TimeLimit(const EA::Reflection::Float &input);
+
+    bool TokenValue(TAttrib<EA::Reflection::Int32> &result) const;
+    bool TokenValue(EA::Reflection::Int32 &result) const;
+    const EA::Reflection::Int32 &TokenValue() const;
+    bool SET_TokenValue(const EA::Reflection::Int32 &input);
+
+    bool TrafficCharacter(TAttrib<GCollectionKey> &result) const;
+    bool TrafficCharacter(GCollectionKey &result) const;
+    const GCollectionKey &TrafficCharacter() const;
+    bool SET_TrafficCharacter(const GCollectionKey &input);
+
+    bool TrafficLevel(TAttrib<EA::Reflection::Int32> &result) const;
+    bool TrafficLevel(EA::Reflection::Int32 &result) const;
+    const EA::Reflection::Int32 &TrafficLevel() const;
+    bool SET_TrafficLevel(const EA::Reflection::Int32 &input);
+
+    bool TrafficPattern(TAttrib<EA::Reflection::Text> &result) const;
+    bool TrafficPattern(EA::Reflection::Text &result) const;
+    const EA::Reflection::Text &TrafficPattern() const;
+    bool SET_TrafficPattern(const EA::Reflection::Text &input);
+
+    bool UnlockRaces(TAttrib<GCollectionKey> &result) const;
+    bool UnlockRaces(GCollectionKey &result, unsigned int index) const;
+    const GCollectionKey &UnlockRaces(unsigned int index) const;
+    unsigned int Num_UnlockRaces() const;
+    bool SET_UnlockRaces(const GCollectionKey &input, unsigned int index);
+
+    bool UpgradeLevel(TAttrib<EA::Reflection::Int32> &result) const;
+    bool UpgradeLevel(EA::Reflection::Int32 &result) const;
+    const EA::Reflection::Int32 &UpgradeLevel() const;
+    bool SET_UpgradeLevel(const EA::Reflection::Int32 &input);
+
+    bool UpgradePartID(TAttrib<EA::Reflection::Text> &result) const;
+    bool UpgradePartID(EA::Reflection::Text &result) const;
+    const EA::Reflection::Text &UpgradePartID() const;
+    bool SET_UpgradePartID(const EA::Reflection::Text &input);
+
+    bool UpgradePartName(TAttrib<EA::Reflection::Text> &result) const;
+    bool UpgradePartName(EA::Reflection::Text &result) const;
+    const EA::Reflection::Text &UpgradePartName() const;
+    bool SET_UpgradePartName(const EA::Reflection::Text &input);
+
+    bool UpgradeType(TAttrib<EA::Reflection::Text> &result) const;
+    bool UpgradeType(EA::Reflection::Text &result) const;
+    const EA::Reflection::Text &UpgradeType() const;
+    bool SET_UpgradeType(const EA::Reflection::Text &input);
+
+    bool UseWorldHeat(TAttrib<EA::Reflection::Bool> &result) const;
+    bool UseWorldHeat(EA::Reflection::Bool &result) const;
+    const EA::Reflection::Bool &UseWorldHeat() const;
+    bool SET_UseWorldHeat(const EA::Reflection::Bool &input);
+
+    bool Width(TAttrib<EA::Reflection::Float> &result) const;
+    bool Width(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &Width() const;
+    bool SET_Width(const EA::Reflection::Float &input);
+
+    bool WorldRaces(TAttrib<GCollectionKey> &result) const;
+    bool WorldRaces(GCollectionKey &result, unsigned int index) const;
+    const GCollectionKey &WorldRaces(unsigned int index) const;
+    unsigned int Num_WorldRaces() const;
+    bool SET_WorldRaces(const GCollectionKey &input, unsigned int index);
+
+    bool ZoneList(TAttrib<GCollectionKey> &result) const;
+    bool ZoneList(GCollectionKey &result, unsigned int index) const;
+    const GCollectionKey &ZoneList(unsigned int index) const;
+    unsigned int Num_ZoneList() const;
+    bool SET_ZoneList(const GCollectionKey &input, unsigned int index);
+
+    bool ZoneType(TAttrib<EA::Reflection::Text> &result) const;
+    bool ZoneType(EA::Reflection::Text &result) const;
+    const EA::Reflection::Text &ZoneType() const;
+    bool SET_ZoneType(const EA::Reflection::Text &input);
+
+    bool actionscript(TAttrib<GCollectionKey> &result) const;
+    bool actionscript(GCollectionKey &result) const;
+    const GCollectionKey &actionscript() const;
+    bool SET_actionscript(const GCollectionKey &input);
+
+    bool bytecode(TAttrib<Attrib::Blob> &result) const;
+    bool bytecode(Attrib::Blob &result) const;
+    const Attrib::Blob &bytecode() const;
+    bool SET_bytecode(const Attrib::Blob &input);
+
+    bool disengagetrigger(TAttrib<GCollectionKey> &result) const;
+    bool disengagetrigger(GCollectionKey &result) const;
+    const GCollectionKey &disengagetrigger() const;
+    bool SET_disengagetrigger(const GCollectionKey &input);
+
+    bool distance(TAttrib<EA::Reflection::Float> &result) const;
+    bool distance(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &distance() const;
+    bool SET_distance(const EA::Reflection::Float &input);
+
+    bool engagetrigger(TAttrib<GCollectionKey> &result) const;
+    bool engagetrigger(GCollectionKey &result) const;
+    const GCollectionKey &engagetrigger() const;
+    bool SET_engagetrigger(const GCollectionKey &input);
+
+    bool gameplayvault(TAttrib<EA::Reflection::Text> &result) const;
+    bool gameplayvault(EA::Reflection::Text &result) const;
+    const EA::Reflection::Text &gameplayvault() const;
+    bool SET_gameplayvault(const EA::Reflection::Text &input);
+
+    bool handler_owner(TAttrib<GCollectionKey> &result) const;
+    bool handler_owner(GCollectionKey &result) const;
+    const GCollectionKey &handler_owner() const;
+    bool SET_handler_owner(const GCollectionKey &input);
+
+    bool layoutpos(TAttrib<UMath::Vector2> &result) const;
+    bool layoutpos(UMath::Vector2 &result) const;
+    const UMath::Vector2 &layoutpos() const;
+    bool SET_layoutpos(const UMath::Vector2 &input);
+
+    bool message_id(TAttrib<EA::Reflection::UInt32> &result) const;
+    bool message_id(EA::Reflection::UInt32 &result) const;
+    const EA::Reflection::UInt32 &message_id() const;
+    bool SET_message_id(const EA::Reflection::UInt32 &input);
+
+    bool nitrouslevel(TAttrib<EA::Reflection::Int32> &result) const;
+    bool nitrouslevel(EA::Reflection::Int32 &result) const;
+    const EA::Reflection::Int32 &nitrouslevel() const;
+    bool SET_nitrouslevel(const EA::Reflection::Int32 &input);
+
+    bool parentstate(TAttrib<GCollectionKey> &result) const;
+    bool parentstate(GCollectionKey &result) const;
+    const GCollectionKey &parentstate() const;
+    bool SET_parentstate(const GCollectionKey &input);
+
+    bool racefinish(TAttrib<GCollectionKey> &result) const;
+    bool racefinish(GCollectionKey &result) const;
+    const GCollectionKey &racefinish() const;
+    bool SET_racefinish(const GCollectionKey &input);
+
+    bool racefinishReverse(TAttrib<GCollectionKey> &result) const;
+    bool racefinishReverse(GCollectionKey &result) const;
+    const GCollectionKey &racefinishReverse() const;
+    bool SET_racefinishReverse(const GCollectionKey &input);
+
+    bool racestart(TAttrib<GCollectionKey> &result) const;
+    bool racestart(GCollectionKey &result) const;
+    const GCollectionKey &racestart() const;
+    bool SET_racestart(const GCollectionKey &input);
+
+    bool racestartReverse(TAttrib<GCollectionKey> &result) const;
+    bool racestartReverse(GCollectionKey &result) const;
+    const GCollectionKey &racestartReverse() const;
+    bool SET_racestartReverse(const GCollectionKey &input);
+
+    bool scriptname(TAttrib<EA::Reflection::Text> &result) const;
+    bool scriptname(EA::Reflection::Text &result) const;
+    const EA::Reflection::Text &scriptname() const;
+    bool SET_scriptname(const EA::Reflection::Text &input);
+
+    bool sender(TAttrib<GCollectionKey> &result) const;
+    bool sender(GCollectionKey &result) const;
+    const GCollectionKey &sender() const;
+    bool SET_sender(const GCollectionKey &input);
+
+    bool stateref(TAttrib<GCollectionKey> &result) const;
+    bool stateref(GCollectionKey &result) const;
+    const GCollectionKey &stateref() const;
+    bool SET_stateref(const GCollectionKey &input);
+
+    bool target(TAttrib<GCollectionKey> &result) const;
+    bool target(GCollectionKey &result) const;
+    const GCollectionKey &target() const;
+    bool SET_target(const GCollectionKey &input);
+
+    bool templateref(TAttrib<GCollectionKey> &result) const;
+    bool templateref(GCollectionKey &result) const;
+    const GCollectionKey &templateref() const;
+    bool SET_templateref(const GCollectionKey &input);
+
+    bool transitionlist(TAttrib<GCollectionKey> &result) const;
+    bool transitionlist(GCollectionKey &result, unsigned int index) const;
+    const GCollectionKey &transitionlist(unsigned int index) const;
+    unsigned int Num_transitionlist() const;
+    bool SET_transitionlist(const GCollectionKey &input, unsigned int index);
 
   private:
     unsigned int GetLayoutSize() {
@@ -3256,6 +1661,2949 @@ static const Key transitionlist = 0x25621dc5;
 
 inline Key Gen::gameplay::ClassKey() {
     return ClassName::gameplay;
+}
+
+inline bool Gen::gameplay::AllowInvisibleSpawn(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0xa1009a23);
+}
+inline const EA::Reflection::Bool &Gen::gameplay::AllowInvisibleSpawn() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0xa1009a23);
+}
+inline bool Gen::gameplay::AllowInvisibleSpawn(EA::Reflection::Bool &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0xa1009a23, result);
+}
+inline bool Gen::gameplay::SET_AllowInvisibleSpawn(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0xa1009a23, input);
+}
+
+inline bool Gen::gameplay::AutoActivateGPS(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x29b9c312);
+}
+inline const EA::Reflection::Bool &Gen::gameplay::AutoActivateGPS() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x29b9c312);
+}
+inline bool Gen::gameplay::AutoActivateGPS(EA::Reflection::Bool &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x29b9c312, result);
+}
+inline bool Gen::gameplay::SET_AutoActivateGPS(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x29b9c312, input);
+}
+
+inline bool Gen::gameplay::AutoSpawnTriggerType(TAttrib<EA::Reflection::Text> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0xd5c7e9c3);
+}
+inline const EA::Reflection::Text &Gen::gameplay::AutoSpawnTriggerType() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0xd5c7e9c3);
+}
+inline bool Gen::gameplay::AutoSpawnTriggerType(EA::Reflection::Text &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0xd5c7e9c3, result);
+}
+inline bool Gen::gameplay::SET_AutoSpawnTriggerType(const EA::Reflection::Text &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0xd5c7e9c3, input);
+}
+
+inline bool Gen::gameplay::AutoStart(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x883c65e3);
+}
+inline const EA::Reflection::Bool &Gen::gameplay::AutoStart() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x883c65e3);
+}
+inline bool Gen::gameplay::AutoStart(EA::Reflection::Bool &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x883c65e3, result);
+}
+inline bool Gen::gameplay::SET_AutoStart(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x883c65e3, input);
+}
+
+inline bool Gen::gameplay::AvailableOnline(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x39509746);
+}
+inline const EA::Reflection::Bool &Gen::gameplay::AvailableOnline() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x39509746);
+}
+inline bool Gen::gameplay::AvailableOnline(EA::Reflection::Bool &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x39509746, result);
+}
+inline bool Gen::gameplay::SET_AvailableOnline(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x39509746, input);
+}
+
+inline bool Gen::gameplay::AvailableQR(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0xb39ed8c3);
+}
+inline const EA::Reflection::Bool &Gen::gameplay::AvailableQR() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0xb39ed8c3);
+}
+inline bool Gen::gameplay::AvailableQR(EA::Reflection::Bool &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0xb39ed8c3, result);
+}
+inline bool Gen::gameplay::SET_AvailableQR(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0xb39ed8c3, input);
+}
+
+inline bool Gen::gameplay::BarrierExemptions(TAttrib<GCollectionKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0xf380286b);
+}
+inline const GCollectionKey &Gen::gameplay::BarrierExemptions(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(GCollectionKey, 0xf380286b, index);
+}
+inline bool Gen::gameplay::BarrierExemptions(GCollectionKey &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(GCollectionKey, 0xf380286b, result, index);
+}
+inline unsigned int Gen::gameplay::Num_BarrierExemptions() const {
+    ATTRIB_CODEGEN_GETLENGTH(0xf380286b);
+}
+inline bool Gen::gameplay::SET_BarrierExemptions(const GCollectionKey &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(GCollectionKey, 0xf380286b, input, index);
+}
+
+inline bool Gen::gameplay::Barriers(TAttrib<EA::Reflection::Text> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0xe244f26b);
+}
+inline const EA::Reflection::Text &Gen::gameplay::Barriers(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(EA::Reflection::Text, 0xe244f26b, index);
+}
+inline bool Gen::gameplay::Barriers(EA::Reflection::Text &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(EA::Reflection::Text, 0xe244f26b, result, index);
+}
+inline unsigned int Gen::gameplay::Num_Barriers() const {
+    ATTRIB_CODEGEN_GETLENGTH(0xe244f26b);
+}
+inline bool Gen::gameplay::SET_Barriers(const EA::Reflection::Text &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(EA::Reflection::Text, 0xe244f26b, input, index);
+}
+
+inline bool Gen::gameplay::BaseOpenWorldHeat(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x8f186ac4);
+}
+inline const EA::Reflection::Float &Gen::gameplay::BaseOpenWorldHeat() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x8f186ac4);
+}
+inline bool Gen::gameplay::BaseOpenWorldHeat(EA::Reflection::Float &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x8f186ac4, result);
+}
+inline bool Gen::gameplay::SET_BaseOpenWorldHeat(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x8f186ac4, input);
+}
+
+inline bool Gen::gameplay::BaselineUnlocks(TAttrib<GCollectionKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0xbaf89280);
+}
+inline const GCollectionKey &Gen::gameplay::BaselineUnlocks(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(GCollectionKey, 0xbaf89280, index);
+}
+inline bool Gen::gameplay::BaselineUnlocks(GCollectionKey &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(GCollectionKey, 0xbaf89280, result, index);
+}
+inline unsigned int Gen::gameplay::Num_BaselineUnlocks() const {
+    ATTRIB_CODEGEN_GETLENGTH(0xbaf89280);
+}
+inline bool Gen::gameplay::SET_BaselineUnlocks(const GCollectionKey &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(GCollectionKey, 0xbaf89280, input, index);
+}
+
+inline bool Gen::gameplay::BinIndex(TAttrib<EA::Reflection::Int32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x6ce23062);
+}
+inline const EA::Reflection::Int32 &Gen::gameplay::BinIndex() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0x6ce23062);
+}
+inline bool Gen::gameplay::BinIndex(EA::Reflection::Int32 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x6ce23062, result);
+}
+inline bool Gen::gameplay::SET_BinIndex(const EA::Reflection::Int32 &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x6ce23062, input);
+}
+
+inline bool Gen::gameplay::Boss(TAttrib<GCollectionKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0xa5f39dc7);
+}
+inline const GCollectionKey &Gen::gameplay::Boss() const {
+    ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0xa5f39dc7);
+}
+inline bool Gen::gameplay::Boss(GCollectionKey &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0xa5f39dc7, result);
+}
+inline bool Gen::gameplay::SET_Boss(const GCollectionKey &input) {
+    ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0xa5f39dc7, input);
+}
+
+inline bool Gen::gameplay::BossRace(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0xff5ee5d6);
+}
+inline const EA::Reflection::Bool &Gen::gameplay::BossRace() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0xff5ee5d6);
+}
+inline bool Gen::gameplay::BossRace(EA::Reflection::Bool &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0xff5ee5d6, result);
+}
+inline bool Gen::gameplay::SET_BossRace(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0xff5ee5d6, input);
+}
+
+inline bool Gen::gameplay::BossRaces(TAttrib<GCollectionKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0xd5a174aa);
+}
+inline const GCollectionKey &Gen::gameplay::BossRaces(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(GCollectionKey, 0xd5a174aa, index);
+}
+inline bool Gen::gameplay::BossRaces(GCollectionKey &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(GCollectionKey, 0xd5a174aa, result, index);
+}
+inline unsigned int Gen::gameplay::Num_BossRaces() const {
+    ATTRIB_CODEGEN_GETLENGTH(0xd5a174aa);
+}
+inline bool Gen::gameplay::SET_BossRaces(const GCollectionKey &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(GCollectionKey, 0xd5a174aa, input, index);
+}
+
+inline bool Gen::gameplay::BossReputation(TAttrib<EA::Reflection::Int32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x1d33241a);
+}
+inline const EA::Reflection::Int32 &Gen::gameplay::BossReputation() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0x1d33241a);
+}
+inline bool Gen::gameplay::BossReputation(EA::Reflection::Int32 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x1d33241a, result);
+}
+inline bool Gen::gameplay::SET_BossReputation(const EA::Reflection::Int32 &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x1d33241a, input);
+}
+
+inline bool Gen::gameplay::Bounty(TAttrib<EA::Reflection::Int32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x8e1904c7);
+}
+inline const EA::Reflection::Int32 &Gen::gameplay::Bounty() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0x8e1904c7);
+}
+inline bool Gen::gameplay::Bounty(EA::Reflection::Int32 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x8e1904c7, result);
+}
+inline bool Gen::gameplay::SET_Bounty(const EA::Reflection::Int32 &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x8e1904c7, input);
+}
+
+inline bool Gen::gameplay::BustedLives(TAttrib<EA::Reflection::Int32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x462f2e36);
+}
+inline const EA::Reflection::Int32 &Gen::gameplay::BustedLives() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0x462f2e36);
+}
+inline bool Gen::gameplay::BustedLives(EA::Reflection::Int32 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x462f2e36, result);
+}
+inline bool Gen::gameplay::SET_BustedLives(const EA::Reflection::Int32 &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x462f2e36, input);
+}
+
+inline bool Gen::gameplay::CameraModelMarker(TAttrib<GCollectionKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0x52dc742c);
+}
+inline const GCollectionKey &Gen::gameplay::CameraModelMarker() const {
+    ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0x52dc742c);
+}
+inline bool Gen::gameplay::CameraModelMarker(GCollectionKey &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0x52dc742c, result);
+}
+inline bool Gen::gameplay::SET_CameraModelMarker(const GCollectionKey &input) {
+    ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0x52dc742c, input);
+}
+
+inline bool Gen::gameplay::CannedPath(TAttrib<GCollectionKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0x9c19e56f);
+}
+inline const GCollectionKey &Gen::gameplay::CannedPath(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(GCollectionKey, 0x9c19e56f, index);
+}
+inline bool Gen::gameplay::CannedPath(GCollectionKey &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(GCollectionKey, 0x9c19e56f, result, index);
+}
+inline unsigned int Gen::gameplay::Num_CannedPath() const {
+    ATTRIB_CODEGEN_GETLENGTH(0x9c19e56f);
+}
+inline bool Gen::gameplay::SET_CannedPath(const GCollectionKey &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(GCollectionKey, 0x9c19e56f, input, index);
+}
+
+inline bool Gen::gameplay::CarType(TAttrib<EA::Reflection::Text> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0xf833c06f);
+}
+inline const EA::Reflection::Text &Gen::gameplay::CarType() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0xf833c06f);
+}
+inline bool Gen::gameplay::CarType(EA::Reflection::Text &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0xf833c06f, result);
+}
+inline bool Gen::gameplay::SET_CarType(const EA::Reflection::Text &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0xf833c06f, input);
+}
+
+inline bool Gen::gameplay::CarTypeLowMem(TAttrib<EA::Reflection::Text> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0xfd3cf790);
+}
+inline const EA::Reflection::Text &Gen::gameplay::CarTypeLowMem() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0xfd3cf790);
+}
+inline bool Gen::gameplay::CarTypeLowMem(EA::Reflection::Text &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0xfd3cf790, result);
+}
+inline bool Gen::gameplay::SET_CarTypeLowMem(const EA::Reflection::Text &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0xfd3cf790, input);
+}
+
+inline bool Gen::gameplay::CashReward(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xab0179f4);
+}
+inline const EA::Reflection::Float &Gen::gameplay::CashReward() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0xab0179f4);
+}
+inline bool Gen::gameplay::CashReward(EA::Reflection::Float &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xab0179f4, result);
+}
+inline bool Gen::gameplay::SET_CashReward(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xab0179f4, input);
+}
+
+inline bool Gen::gameplay::CashRewards(TAttrib<GCollectionKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0x0550fbc2);
+}
+inline const GCollectionKey &Gen::gameplay::CashRewards(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(GCollectionKey, 0x0550fbc2, index);
+}
+inline bool Gen::gameplay::CashRewards(GCollectionKey &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(GCollectionKey, 0x0550fbc2, result, index);
+}
+inline unsigned int Gen::gameplay::Num_CashRewards() const {
+    ATTRIB_CODEGEN_GETLENGTH(0x0550fbc2);
+}
+inline bool Gen::gameplay::SET_CashRewards(const GCollectionKey &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(GCollectionKey, 0x0550fbc2, input, index);
+}
+
+inline bool Gen::gameplay::CashValue(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xd8baa07b);
+}
+inline const EA::Reflection::Float &Gen::gameplay::CashValue() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0xd8baa07b);
+}
+inline bool Gen::gameplay::CashValue(EA::Reflection::Float &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xd8baa07b, result);
+}
+inline bool Gen::gameplay::SET_CashValue(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xd8baa07b, input);
+}
+
+inline bool Gen::gameplay::CatchUp(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x10db04e6);
+}
+inline const EA::Reflection::Bool &Gen::gameplay::CatchUp() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x10db04e6);
+}
+inline bool Gen::gameplay::CatchUp(EA::Reflection::Bool &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x10db04e6, result);
+}
+inline bool Gen::gameplay::SET_CatchUp(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x10db04e6, input);
+}
+
+inline bool Gen::gameplay::CatchUpDerivative(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x515aa4e4);
+}
+inline const EA::Reflection::Float &Gen::gameplay::CatchUpDerivative() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x515aa4e4);
+}
+inline bool Gen::gameplay::CatchUpDerivative(EA::Reflection::Float &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x515aa4e4, result);
+}
+inline bool Gen::gameplay::SET_CatchUpDerivative(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x515aa4e4, input);
+}
+
+inline bool Gen::gameplay::CatchUpIntegral(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x4545ab74);
+}
+inline const EA::Reflection::Float &Gen::gameplay::CatchUpIntegral() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x4545ab74);
+}
+inline bool Gen::gameplay::CatchUpIntegral(EA::Reflection::Float &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x4545ab74, result);
+}
+inline bool Gen::gameplay::SET_CatchUpIntegral(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x4545ab74, input);
+}
+
+inline bool Gen::gameplay::CatchUpOverride(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x9eb17c1e);
+}
+inline const EA::Reflection::Bool &Gen::gameplay::CatchUpOverride() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x9eb17c1e);
+}
+inline bool Gen::gameplay::CatchUpOverride(EA::Reflection::Bool &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x9eb17c1e, result);
+}
+inline bool Gen::gameplay::SET_CatchUpOverride(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x9eb17c1e, input);
+}
+
+inline bool Gen::gameplay::CatchUpSkill(TAttrib<EA::Reflection::Text> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0x8069b5a9);
+}
+inline const EA::Reflection::Text &Gen::gameplay::CatchUpSkill() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0x8069b5a9);
+}
+inline bool Gen::gameplay::CatchUpSkill(EA::Reflection::Text &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0x8069b5a9, result);
+}
+inline bool Gen::gameplay::SET_CatchUpSkill(const EA::Reflection::Text &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0x8069b5a9, input);
+}
+
+inline bool Gen::gameplay::CatchUpSpread(TAttrib<EA::Reflection::Text> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0xa18a07ba);
+}
+inline const EA::Reflection::Text &Gen::gameplay::CatchUpSpread() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0xa18a07ba);
+}
+inline bool Gen::gameplay::CatchUpSpread(EA::Reflection::Text &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0xa18a07ba, result);
+}
+inline bool Gen::gameplay::SET_CatchUpSpread(const EA::Reflection::Text &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0xa18a07ba, input);
+}
+
+inline bool Gen::gameplay::CellChallengeRace(TAttrib<GCollectionKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0xc686cd34);
+}
+inline const GCollectionKey &Gen::gameplay::CellChallengeRace() const {
+    ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0xc686cd34);
+}
+inline bool Gen::gameplay::CellChallengeRace(GCollectionKey &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0xc686cd34, result);
+}
+inline bool Gen::gameplay::SET_CellChallengeRace(const GCollectionKey &input) {
+    ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0xc686cd34, input);
+}
+
+inline bool Gen::gameplay::ChallengeSeriesRace(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x1c650104);
+}
+inline const EA::Reflection::Bool &Gen::gameplay::ChallengeSeriesRace() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x1c650104);
+}
+inline bool Gen::gameplay::ChallengeSeriesRace(EA::Reflection::Bool &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x1c650104, result);
+}
+inline bool Gen::gameplay::SET_ChallengeSeriesRace(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x1c650104, input);
+}
+
+inline bool Gen::gameplay::ChanceOfRain(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x547486ae);
+}
+inline const EA::Reflection::Float &Gen::gameplay::ChanceOfRain() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x547486ae);
+}
+inline bool Gen::gameplay::ChanceOfRain(EA::Reflection::Float &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x547486ae, result);
+}
+inline bool Gen::gameplay::SET_ChanceOfRain(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x547486ae, input);
+}
+
+inline bool Gen::gameplay::Checkpoint(TAttrib<GCollectionKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0x34aae3fc);
+}
+inline const GCollectionKey &Gen::gameplay::Checkpoint(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(GCollectionKey, 0x34aae3fc, index);
+}
+inline bool Gen::gameplay::Checkpoint(GCollectionKey &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(GCollectionKey, 0x34aae3fc, result, index);
+}
+inline unsigned int Gen::gameplay::Num_Checkpoint() const {
+    ATTRIB_CODEGEN_GETLENGTH(0x34aae3fc);
+}
+inline bool Gen::gameplay::SET_Checkpoint(const GCollectionKey &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(GCollectionKey, 0x34aae3fc, input, index);
+}
+
+inline bool Gen::gameplay::CheckpointsVisible(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x2ad67092);
+}
+inline const EA::Reflection::Bool &Gen::gameplay::CheckpointsVisible() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x2ad67092);
+}
+inline bool Gen::gameplay::CheckpointsVisible(EA::Reflection::Bool &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x2ad67092, result);
+}
+inline bool Gen::gameplay::SET_CheckpointsVisible(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x2ad67092, input);
+}
+
+inline bool Gen::gameplay::Children(TAttrib<GCollectionKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0x916e0e78);
+}
+inline const GCollectionKey &Gen::gameplay::Children(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(GCollectionKey, 0x916e0e78, index);
+}
+inline bool Gen::gameplay::Children(GCollectionKey &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(GCollectionKey, 0x916e0e78, result, index);
+}
+inline unsigned int Gen::gameplay::Num_Children() const {
+    ATTRIB_CODEGEN_GETLENGTH(0x916e0e78);
+}
+inline bool Gen::gameplay::SET_Children(const GCollectionKey &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(GCollectionKey, 0x916e0e78, input, index);
+}
+
+inline bool Gen::gameplay::CollectionName(TAttrib<EA::Reflection::Text> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0x9ca1c8f9);
+}
+inline const EA::Reflection::Text &Gen::gameplay::CollectionName() const {
+    ATTRIB_CODEGEN_GETLAYOUT(CollectionName);
+}
+inline bool Gen::gameplay::CollectionName(EA::Reflection::Text &result) const {
+    result = CollectionName();
+    return true;
+}
+inline bool Gen::gameplay::SET_CollectionName(const EA::Reflection::Text &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(CollectionName, input);
+}
+
+inline bool Gen::gameplay::CollectorsEditionRace(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x637584fe);
+}
+inline const EA::Reflection::Bool &Gen::gameplay::CollectorsEditionRace() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x637584fe);
+}
+inline bool Gen::gameplay::CollectorsEditionRace(EA::Reflection::Bool &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x637584fe, result);
+}
+inline bool Gen::gameplay::SET_CollectorsEditionRace(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x637584fe, input);
+}
+
+inline bool Gen::gameplay::CopDensity(TAttrib<EA::Reflection::Int32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0xdbc08d32);
+}
+inline const EA::Reflection::Int32 &Gen::gameplay::CopDensity() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0xdbc08d32);
+}
+inline bool Gen::gameplay::CopDensity(EA::Reflection::Int32 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0xdbc08d32, result);
+}
+inline bool Gen::gameplay::SET_CopDensity(const EA::Reflection::Int32 &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0xdbc08d32, input);
+}
+
+inline bool Gen::gameplay::CopSpawnPoints(TAttrib<GCollectionKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0xf124b151);
+}
+inline const GCollectionKey &Gen::gameplay::CopSpawnPoints(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(GCollectionKey, 0xf124b151, index);
+}
+inline bool Gen::gameplay::CopSpawnPoints(GCollectionKey &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(GCollectionKey, 0xf124b151, result, index);
+}
+inline unsigned int Gen::gameplay::Num_CopSpawnPoints() const {
+    ATTRIB_CODEGEN_GETLENGTH(0xf124b151);
+}
+inline bool Gen::gameplay::SET_CopSpawnPoints(const GCollectionKey &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(GCollectionKey, 0xf124b151, input, index);
+}
+
+inline bool Gen::gameplay::CopSpawnType(TAttrib<EA::Reflection::Text> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0xd686d61e);
+}
+inline const EA::Reflection::Text &Gen::gameplay::CopSpawnType() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0xd686d61e);
+}
+inline bool Gen::gameplay::CopSpawnType(EA::Reflection::Text &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0xd686d61e, result);
+}
+inline bool Gen::gameplay::SET_CopSpawnType(const EA::Reflection::Text &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0xd686d61e, input);
+}
+
+inline bool Gen::gameplay::CopsInRace(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x3918e889);
+}
+inline const EA::Reflection::Bool &Gen::gameplay::CopsInRace() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x3918e889);
+}
+inline bool Gen::gameplay::CopsInRace(EA::Reflection::Bool &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x3918e889, result);
+}
+inline bool Gen::gameplay::SET_CopsInRace(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x3918e889, input);
+}
+
+inline bool Gen::gameplay::DDayRace(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x8cb01abf);
+}
+inline const EA::Reflection::Bool &Gen::gameplay::DDayRace() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x8cb01abf);
+}
+inline bool Gen::gameplay::DDayRace(EA::Reflection::Bool &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x8cb01abf, result);
+}
+inline bool Gen::gameplay::SET_DDayRace(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x8cb01abf, input);
+}
+
+inline bool Gen::gameplay::DebugJumpPoint(TAttrib<GCollectionKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0xa7e9e456);
+}
+inline const GCollectionKey &Gen::gameplay::DebugJumpPoint() const {
+    ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0xa7e9e456);
+}
+inline bool Gen::gameplay::DebugJumpPoint(GCollectionKey &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0xa7e9e456, result);
+}
+inline bool Gen::gameplay::SET_DebugJumpPoint(const GCollectionKey &input) {
+    ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0xa7e9e456, input);
+}
+
+inline bool Gen::gameplay::DelayTime(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x20259346);
+}
+inline const EA::Reflection::Float &Gen::gameplay::DelayTime() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x20259346);
+}
+inline bool Gen::gameplay::DelayTime(EA::Reflection::Float &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x20259346, result);
+}
+inline bool Gen::gameplay::SET_DelayTime(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x20259346, input);
+}
+
+inline bool Gen::gameplay::DifficultyLevel(TAttrib<EA::Reflection::Int32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x88a7e3be);
+}
+inline const EA::Reflection::Int32 &Gen::gameplay::DifficultyLevel() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0x88a7e3be);
+}
+inline bool Gen::gameplay::DifficultyLevel(EA::Reflection::Int32 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x88a7e3be, result);
+}
+inline bool Gen::gameplay::SET_DifficultyLevel(const EA::Reflection::Int32 &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x88a7e3be, input);
+}
+
+inline bool Gen::gameplay::Dimensions(TAttrib<UMath::Vector3> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(UMath::Vector3, 0x6d9e21ad);
+}
+inline const UMath::Vector3 &Gen::gameplay::Dimensions() const {
+    ATTRIB_CODEGEN_GETVALUE(UMath::Vector3, 0x6d9e21ad);
+}
+inline bool Gen::gameplay::Dimensions(UMath::Vector3 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(UMath::Vector3, 0x6d9e21ad, result);
+}
+inline bool Gen::gameplay::SET_Dimensions(const UMath::Vector3 &input) {
+    ATTRIB_CODEGEN_SETVALUE(UMath::Vector3, 0x6d9e21ad, input);
+}
+
+inline bool Gen::gameplay::Directional(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x6b37e124);
+}
+inline const EA::Reflection::Bool &Gen::gameplay::Directional() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x6b37e124);
+}
+inline bool Gen::gameplay::Directional(EA::Reflection::Bool &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x6b37e124, result);
+}
+inline bool Gen::gameplay::SET_Directional(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x6b37e124, input);
+}
+
+inline bool Gen::gameplay::DoCountdown(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x3e33da0f);
+}
+inline const EA::Reflection::Bool &Gen::gameplay::DoCountdown() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x3e33da0f);
+}
+inline bool Gen::gameplay::DoCountdown(EA::Reflection::Bool &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x3e33da0f, result);
+}
+inline bool Gen::gameplay::SET_DoCountdown(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x3e33da0f, input);
+}
+
+inline bool Gen::gameplay::DoPhotofinish(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0xede6017e);
+}
+inline const EA::Reflection::Bool &Gen::gameplay::DoPhotofinish() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0xede6017e);
+}
+inline bool Gen::gameplay::DoPhotofinish(EA::Reflection::Bool &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0xede6017e, result);
+}
+inline bool Gen::gameplay::SET_DoPhotofinish(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0xede6017e, input);
+}
+
+inline bool Gen::gameplay::EntryActivity(TAttrib<GCollectionKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0xc27dfda8);
+}
+inline const GCollectionKey &Gen::gameplay::EntryActivity() const {
+    ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0xc27dfda8);
+}
+inline bool Gen::gameplay::EntryActivity(GCollectionKey &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0xc27dfda8, result);
+}
+inline bool Gen::gameplay::SET_EntryActivity(const GCollectionKey &input) {
+    ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0xc27dfda8, input);
+}
+
+inline bool Gen::gameplay::EntryCellCallID(TAttrib<EA::Reflection::Int32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0xe2d26232);
+}
+inline const EA::Reflection::Int32 &Gen::gameplay::EntryCellCallID() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0xe2d26232);
+}
+inline bool Gen::gameplay::EntryCellCallID(EA::Reflection::Int32 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0xe2d26232, result);
+}
+inline bool Gen::gameplay::SET_EntryCellCallID(const EA::Reflection::Int32 &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0xe2d26232, input);
+}
+
+inline bool Gen::gameplay::EventID(TAttrib<EA::Reflection::Text> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0xa78403ec);
+}
+inline const EA::Reflection::Text &Gen::gameplay::EventID() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0xa78403ec);
+}
+inline bool Gen::gameplay::EventID(EA::Reflection::Text &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0xa78403ec, result);
+}
+inline bool Gen::gameplay::SET_EventID(const EA::Reflection::Text &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0xa78403ec, input);
+}
+
+inline bool Gen::gameplay::EventIconType(TAttrib<EA::Reflection::Text> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0x0f6bcde1);
+}
+inline const EA::Reflection::Text &Gen::gameplay::EventIconType() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0x0f6bcde1);
+}
+inline bool Gen::gameplay::EventIconType(EA::Reflection::Text &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0x0f6bcde1, result);
+}
+inline bool Gen::gameplay::SET_EventIconType(const EA::Reflection::Text &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0x0f6bcde1, input);
+}
+
+inline bool Gen::gameplay::ExcludedCharacters(TAttrib<GCollectionKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0xa5c5d25b);
+}
+inline const GCollectionKey &Gen::gameplay::ExcludedCharacters(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(GCollectionKey, 0xa5c5d25b, index);
+}
+inline bool Gen::gameplay::ExcludedCharacters(GCollectionKey &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(GCollectionKey, 0xa5c5d25b, result, index);
+}
+inline unsigned int Gen::gameplay::Num_ExcludedCharacters() const {
+    ATTRIB_CODEGEN_GETLENGTH(0xa5c5d25b);
+}
+inline bool Gen::gameplay::SET_ExcludedCharacters(const GCollectionKey &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(GCollectionKey, 0xa5c5d25b, input, index);
+}
+
+inline bool Gen::gameplay::FilterBlocks(TAttrib<Attrib::Blob> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(Attrib::Blob, 0x56e1436d);
+}
+inline const Attrib::Blob &Gen::gameplay::FilterBlocks(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(Attrib::Blob, 0x56e1436d, index);
+}
+inline bool Gen::gameplay::FilterBlocks(Attrib::Blob &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(Attrib::Blob, 0x56e1436d, result, index);
+}
+inline unsigned int Gen::gameplay::Num_FilterBlocks() const {
+    ATTRIB_CODEGEN_GETLENGTH(0x56e1436d);
+}
+inline bool Gen::gameplay::SET_FilterBlocks(const Attrib::Blob &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(Attrib::Blob, 0x56e1436d, input, index);
+}
+
+inline bool Gen::gameplay::FilterModePassAll(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x0d038cfa);
+}
+inline const EA::Reflection::Bool &Gen::gameplay::FilterModePassAll() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x0d038cfa);
+}
+inline bool Gen::gameplay::FilterModePassAll(EA::Reflection::Bool &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x0d038cfa, result);
+}
+inline bool Gen::gameplay::SET_FilterModePassAll(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x0d038cfa, input);
+}
+
+inline bool Gen::gameplay::FinishCamera(TAttrib<EA::Reflection::Text> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0x62dfc259);
+}
+inline const EA::Reflection::Text &Gen::gameplay::FinishCamera() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0x62dfc259);
+}
+inline bool Gen::gameplay::FinishCamera(EA::Reflection::Text &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0x62dfc259, result);
+}
+inline bool Gen::gameplay::SET_FinishCamera(const EA::Reflection::Text &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0x62dfc259, input);
+}
+
+inline bool Gen::gameplay::FireOnExit(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0xb2ac32c7);
+}
+inline const EA::Reflection::Bool &Gen::gameplay::FireOnExit() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0xb2ac32c7);
+}
+inline bool Gen::gameplay::FireOnExit(EA::Reflection::Bool &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0xb2ac32c7, result);
+}
+inline bool Gen::gameplay::SET_FireOnExit(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0xb2ac32c7, input);
+}
+
+inline bool Gen::gameplay::FlareSpacing(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x394abbc6);
+}
+inline const EA::Reflection::Float &Gen::gameplay::FlareSpacing() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x394abbc6);
+}
+inline bool Gen::gameplay::FlareSpacing(EA::Reflection::Float &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x394abbc6, result);
+}
+inline bool Gen::gameplay::SET_FlareSpacing(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x394abbc6, input);
+}
+
+inline bool Gen::gameplay::ForceHeatLevel(TAttrib<EA::Reflection::Int32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0xe4211f4f);
+}
+inline const EA::Reflection::Int32 &Gen::gameplay::ForceHeatLevel() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0xe4211f4f);
+}
+inline bool Gen::gameplay::ForceHeatLevel(EA::Reflection::Int32 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0xe4211f4f, result);
+}
+inline bool Gen::gameplay::SET_ForceHeatLevel(const EA::Reflection::Int32 &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0xe4211f4f, input);
+}
+
+inline bool Gen::gameplay::ForcePreload(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x9652af0f);
+}
+inline const EA::Reflection::Bool &Gen::gameplay::ForcePreload() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x9652af0f);
+}
+inline bool Gen::gameplay::ForcePreload(EA::Reflection::Bool &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x9652af0f, result);
+}
+inline bool Gen::gameplay::SET_ForcePreload(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x9652af0f, input);
+}
+
+inline bool Gen::gameplay::ForceStartPosition(TAttrib<GCollectionKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0xfb84be75);
+}
+inline const GCollectionKey &Gen::gameplay::ForceStartPosition() const {
+    ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0xfb84be75);
+}
+inline bool Gen::gameplay::ForceStartPosition(GCollectionKey &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0xfb84be75, result);
+}
+inline bool Gen::gameplay::SET_ForceStartPosition(const GCollectionKey &input) {
+    ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0xfb84be75, input);
+}
+
+inline bool Gen::gameplay::ForceTrafficDensity(TAttrib<EA::Reflection::Int32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x5e161bba);
+}
+inline const EA::Reflection::Int32 &Gen::gameplay::ForceTrafficDensity() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0x5e161bba);
+}
+inline bool Gen::gameplay::ForceTrafficDensity(EA::Reflection::Int32 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x5e161bba, result);
+}
+inline bool Gen::gameplay::SET_ForceTrafficDensity(const EA::Reflection::Int32 &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x5e161bba, input);
+}
+
+inline bool Gen::gameplay::FreeRoamOnly(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0xaa0135e9);
+}
+inline const EA::Reflection::Bool &Gen::gameplay::FreeRoamOnly() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0xaa0135e9);
+}
+inline bool Gen::gameplay::FreeRoamOnly(EA::Reflection::Bool &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0xaa0135e9, result);
+}
+inline bool Gen::gameplay::SET_FreeRoamOnly(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0xaa0135e9, input);
+}
+
+inline bool Gen::gameplay::GateActivity(TAttrib<GCollectionKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0xc795b8d4);
+}
+inline const GCollectionKey &Gen::gameplay::GateActivity() const {
+    ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0xc795b8d4);
+}
+inline bool Gen::gameplay::GateActivity(GCollectionKey &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0xc795b8d4, result);
+}
+inline bool Gen::gameplay::SET_GateActivity(const GCollectionKey &input) {
+    ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0xc795b8d4, input);
+}
+
+inline bool Gen::gameplay::GoalAddPrevBest(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x006ec903);
+}
+inline const EA::Reflection::Float &Gen::gameplay::GoalAddPrevBest() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x006ec903);
+}
+inline bool Gen::gameplay::GoalAddPrevBest(EA::Reflection::Float &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x006ec903, result);
+}
+inline bool Gen::gameplay::SET_GoalAddPrevBest(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x006ec903, input);
+}
+
+inline bool Gen::gameplay::GoalEasy(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x8445af47);
+}
+inline const EA::Reflection::Float &Gen::gameplay::GoalEasy() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x8445af47);
+}
+inline bool Gen::gameplay::GoalEasy(EA::Reflection::Float &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x8445af47, result);
+}
+inline bool Gen::gameplay::SET_GoalEasy(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x8445af47, input);
+}
+
+inline bool Gen::gameplay::GoalHard(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x3b9bbfc2);
+}
+inline const EA::Reflection::Float &Gen::gameplay::GoalHard() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x3b9bbfc2);
+}
+inline bool Gen::gameplay::GoalHard(EA::Reflection::Float &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x3b9bbfc2, result);
+}
+inline bool Gen::gameplay::SET_GoalHard(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x3b9bbfc2, input);
+}
+
+inline bool Gen::gameplay::IconModelBounceAmp(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xd5f4eda2);
+}
+inline const EA::Reflection::Float &Gen::gameplay::IconModelBounceAmp() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0xd5f4eda2);
+}
+inline bool Gen::gameplay::IconModelBounceAmp(EA::Reflection::Float &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xd5f4eda2, result);
+}
+inline bool Gen::gameplay::SET_IconModelBounceAmp(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xd5f4eda2, input);
+}
+
+inline bool Gen::gameplay::IconModelBounceRate(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xb4985085);
+}
+inline const EA::Reflection::Float &Gen::gameplay::IconModelBounceRate() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0xb4985085);
+}
+inline bool Gen::gameplay::IconModelBounceRate(EA::Reflection::Float &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xb4985085, result);
+}
+inline bool Gen::gameplay::SET_IconModelBounceRate(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xb4985085, input);
+}
+
+inline bool Gen::gameplay::IconModelFloatHeight(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x4037d3c5);
+}
+inline const EA::Reflection::Float &Gen::gameplay::IconModelFloatHeight() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x4037d3c5);
+}
+inline bool Gen::gameplay::IconModelFloatHeight(EA::Reflection::Float &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x4037d3c5, result);
+}
+inline bool Gen::gameplay::SET_IconModelFloatHeight(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x4037d3c5, input);
+}
+
+inline bool Gen::gameplay::IconModelName(TAttrib<EA::Reflection::Text> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0xa62cb4f0);
+}
+inline const EA::Reflection::Text &Gen::gameplay::IconModelName() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0xa62cb4f0);
+}
+inline bool Gen::gameplay::IconModelName(EA::Reflection::Text &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0xa62cb4f0, result);
+}
+inline bool Gen::gameplay::SET_IconModelName(const EA::Reflection::Text &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0xa62cb4f0, input);
+}
+
+inline bool Gen::gameplay::IconModelScale(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0xcd41cd40);
+}
+inline const EA::Reflection::Bool &Gen::gameplay::IconModelScale() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0xcd41cd40);
+}
+inline bool Gen::gameplay::IconModelScale(EA::Reflection::Bool &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0xcd41cd40, result);
+}
+inline bool Gen::gameplay::SET_IconModelScale(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0xcd41cd40, input);
+}
+
+inline bool Gen::gameplay::IconModelSpinRate(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x697332e8);
+}
+inline const EA::Reflection::Float &Gen::gameplay::IconModelSpinRate() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x697332e8);
+}
+inline bool Gen::gameplay::IconModelSpinRate(EA::Reflection::Float &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x697332e8, result);
+}
+inline bool Gen::gameplay::SET_IconModelSpinRate(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x697332e8, input);
+}
+
+inline bool Gen::gameplay::InitialPlayerSpeed(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x3a0e4b19);
+}
+inline const EA::Reflection::Float &Gen::gameplay::InitialPlayerSpeed() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x3a0e4b19);
+}
+inline bool Gen::gameplay::InitialPlayerSpeed(EA::Reflection::Float &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x3a0e4b19, result);
+}
+inline bool Gen::gameplay::SET_InitialPlayerSpeed(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x3a0e4b19, input);
+}
+
+inline bool Gen::gameplay::InitialSpeed(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x0a91596d);
+}
+inline const EA::Reflection::Float &Gen::gameplay::InitialSpeed() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x0a91596d);
+}
+inline bool Gen::gameplay::InitialSpeed(EA::Reflection::Float &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x0a91596d, result);
+}
+inline bool Gen::gameplay::SET_InitialSpeed(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x0a91596d, input);
+}
+
+inline bool Gen::gameplay::InitiallyUnlocked(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0xea855eaf);
+}
+inline const EA::Reflection::Bool &Gen::gameplay::InitiallyUnlocked() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0xea855eaf);
+}
+inline bool Gen::gameplay::InitiallyUnlocked(EA::Reflection::Bool &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0xea855eaf, result);
+}
+inline bool Gen::gameplay::SET_InitiallyUnlocked(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0xea855eaf, input);
+}
+
+inline bool Gen::gameplay::InternalRaceIndex(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x0d4c1055);
+}
+inline const EA::Reflection::Float &Gen::gameplay::InternalRaceIndex(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(EA::Reflection::Float, 0x0d4c1055, index);
+}
+inline bool Gen::gameplay::InternalRaceIndex(EA::Reflection::Float &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(EA::Reflection::Float, 0x0d4c1055, result, index);
+}
+inline unsigned int Gen::gameplay::Num_InternalRaceIndex() const {
+    ATTRIB_CODEGEN_GETLENGTH(0x0d4c1055);
+}
+inline bool Gen::gameplay::SET_InternalRaceIndex(const EA::Reflection::Float &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(EA::Reflection::Float, 0x0d4c1055, input, index);
+}
+
+inline bool Gen::gameplay::IntroCameraTrack(TAttrib<EA::Reflection::Int32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x36bbeee9);
+}
+inline const EA::Reflection::Int32 &Gen::gameplay::IntroCameraTrack() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0x36bbeee9);
+}
+inline bool Gen::gameplay::IntroCameraTrack(EA::Reflection::Int32 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x36bbeee9, result);
+}
+inline bool Gen::gameplay::SET_IntroCameraTrack(const EA::Reflection::Int32 &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x36bbeee9, input);
+}
+
+inline bool Gen::gameplay::IntroMessageID(TAttrib<EA::Reflection::Int32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x5468366d);
+}
+inline const EA::Reflection::Int32 &Gen::gameplay::IntroMessageID() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0x5468366d);
+}
+inline bool Gen::gameplay::IntroMessageID(EA::Reflection::Int32 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x5468366d, result);
+}
+inline bool Gen::gameplay::SET_IntroMessageID(const EA::Reflection::Int32 &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x5468366d, input);
+}
+
+inline bool Gen::gameplay::IntroMovie(TAttrib<EA::Reflection::Text> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0xf572ede8);
+}
+inline const EA::Reflection::Text &Gen::gameplay::IntroMovie() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0xf572ede8);
+}
+inline bool Gen::gameplay::IntroMovie(EA::Reflection::Text &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0xf572ede8, result);
+}
+inline bool Gen::gameplay::SET_IntroMovie(const EA::Reflection::Text &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0xf572ede8, input);
+}
+
+inline bool Gen::gameplay::IntroNIS(TAttrib<EA::Reflection::Text> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0xdec18d3e);
+}
+inline const EA::Reflection::Text &Gen::gameplay::IntroNIS() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0xdec18d3e);
+}
+inline bool Gen::gameplay::IntroNIS(EA::Reflection::Text &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0xdec18d3e, result);
+}
+inline bool Gen::gameplay::SET_IntroNIS(const EA::Reflection::Text &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0xdec18d3e, input);
+}
+
+inline bool Gen::gameplay::IsBoss(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x79c5d68d);
+}
+inline const EA::Reflection::Bool &Gen::gameplay::IsBoss() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x79c5d68d);
+}
+inline bool Gen::gameplay::IsBoss(EA::Reflection::Bool &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x79c5d68d, result);
+}
+inline bool Gen::gameplay::SET_IsBoss(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x79c5d68d, input);
+}
+
+inline bool Gen::gameplay::IsEpicPursuitRace(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x4393f69b);
+}
+inline const EA::Reflection::Bool &Gen::gameplay::IsEpicPursuitRace() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x4393f69b);
+}
+inline bool Gen::gameplay::IsEpicPursuitRace(EA::Reflection::Bool &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x4393f69b, result);
+}
+inline bool Gen::gameplay::SET_IsEpicPursuitRace(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x4393f69b, input);
+}
+
+inline bool Gen::gameplay::IsLoopingRace(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x6a9a6f5b);
+}
+inline const EA::Reflection::Bool &Gen::gameplay::IsLoopingRace() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x6a9a6f5b);
+}
+inline bool Gen::gameplay::IsLoopingRace(EA::Reflection::Bool &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x6a9a6f5b, result);
+}
+inline bool Gen::gameplay::SET_IsLoopingRace(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x6a9a6f5b, input);
+}
+
+inline bool Gen::gameplay::IsMarkerRace(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0xf2fe50d7);
+}
+inline const EA::Reflection::Bool &Gen::gameplay::IsMarkerRace() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0xf2fe50d7);
+}
+inline bool Gen::gameplay::IsMarkerRace(EA::Reflection::Bool &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0xf2fe50d7, result);
+}
+inline bool Gen::gameplay::SET_IsMarkerRace(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0xf2fe50d7, input);
+}
+
+inline bool Gen::gameplay::JumpRaces(TAttrib<GCollectionKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0xb671abb6);
+}
+inline const GCollectionKey &Gen::gameplay::JumpRaces(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(GCollectionKey, 0xb671abb6, index);
+}
+inline bool Gen::gameplay::JumpRaces(GCollectionKey &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(GCollectionKey, 0xb671abb6, result, index);
+}
+inline unsigned int Gen::gameplay::Num_JumpRaces() const {
+    ATTRIB_CODEGEN_GETLENGTH(0xb671abb6);
+}
+inline bool Gen::gameplay::SET_JumpRaces(const GCollectionKey &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(GCollectionKey, 0xb671abb6, input, index);
+}
+
+inline bool Gen::gameplay::KnockoutTime(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x777ece27);
+}
+inline const EA::Reflection::Float &Gen::gameplay::KnockoutTime() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x777ece27);
+}
+inline bool Gen::gameplay::KnockoutTime(EA::Reflection::Float &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x777ece27, result);
+}
+inline bool Gen::gameplay::SET_KnockoutTime(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x777ece27, input);
+}
+
+inline bool Gen::gameplay::KnockoutsPerLap(TAttrib<EA::Reflection::Int32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x181462da);
+}
+inline const EA::Reflection::Int32 &Gen::gameplay::KnockoutsPerLap() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0x181462da);
+}
+inline bool Gen::gameplay::KnockoutsPerLap(EA::Reflection::Int32 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x181462da, result);
+}
+inline bool Gen::gameplay::SET_KnockoutsPerLap(const EA::Reflection::Int32 &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x181462da, input);
+}
+
+inline bool Gen::gameplay::LocalizationTag(TAttrib<EA::Reflection::Int32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0xdb89ab5c);
+}
+inline const EA::Reflection::Int32 &Gen::gameplay::LocalizationTag() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0xdb89ab5c);
+}
+inline bool Gen::gameplay::LocalizationTag(EA::Reflection::Int32 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0xdb89ab5c, result);
+}
+inline bool Gen::gameplay::SET_LocalizationTag(const EA::Reflection::Int32 &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0xdb89ab5c, input);
+}
+
+inline bool Gen::gameplay::MasterCheckpoint(TAttrib<GCollectionKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0x609febe8);
+}
+inline const GCollectionKey &Gen::gameplay::MasterCheckpoint() const {
+    ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0x609febe8);
+}
+inline bool Gen::gameplay::MasterCheckpoint(GCollectionKey &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0x609febe8, result);
+}
+inline bool Gen::gameplay::SET_MasterCheckpoint(const GCollectionKey &input) {
+    ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0x609febe8, input);
+}
+
+inline bool Gen::gameplay::MaxCarRep(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xe10fb7a3);
+}
+inline const EA::Reflection::Float &Gen::gameplay::MaxCarRep() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0xe10fb7a3);
+}
+inline bool Gen::gameplay::MaxCarRep(EA::Reflection::Float &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xe10fb7a3, result);
+}
+inline bool Gen::gameplay::SET_MaxCarRep(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xe10fb7a3, input);
+}
+
+inline bool Gen::gameplay::MaxHeatLevel(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xf5a03629);
+}
+inline const EA::Reflection::Float &Gen::gameplay::MaxHeatLevel() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0xf5a03629);
+}
+inline bool Gen::gameplay::MaxHeatLevel(EA::Reflection::Float &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xf5a03629, result);
+}
+inline bool Gen::gameplay::SET_MaxHeatLevel(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xf5a03629, input);
+}
+
+inline bool Gen::gameplay::MaxOpenWorldHeat(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xe8c24416);
+}
+inline const EA::Reflection::Float &Gen::gameplay::MaxOpenWorldHeat() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0xe8c24416);
+}
+inline bool Gen::gameplay::MaxOpenWorldHeat(EA::Reflection::Float &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xe8c24416, result);
+}
+inline bool Gen::gameplay::SET_MaxOpenWorldHeat(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xe8c24416, input);
+}
+
+inline bool Gen::gameplay::MaxPursuitRep(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xa07ae814);
+}
+inline const EA::Reflection::Float &Gen::gameplay::MaxPursuitRep() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0xa07ae814);
+}
+inline bool Gen::gameplay::MaxPursuitRep(EA::Reflection::Float &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xa07ae814, result);
+}
+inline bool Gen::gameplay::SET_MaxPursuitRep(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xa07ae814, input);
+}
+
+inline bool Gen::gameplay::MedalBonusBronze(TAttrib<EA::Reflection::Int32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x3bb31211);
+}
+inline const EA::Reflection::Int32 &Gen::gameplay::MedalBonusBronze() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0x3bb31211);
+}
+inline bool Gen::gameplay::MedalBonusBronze(EA::Reflection::Int32 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x3bb31211, result);
+}
+inline bool Gen::gameplay::SET_MedalBonusBronze(const EA::Reflection::Int32 &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x3bb31211, input);
+}
+
+inline bool Gen::gameplay::MedalBonusGold(TAttrib<EA::Reflection::Int32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0xf5e43987);
+}
+inline const EA::Reflection::Int32 &Gen::gameplay::MedalBonusGold() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0xf5e43987);
+}
+inline bool Gen::gameplay::MedalBonusGold(EA::Reflection::Int32 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0xf5e43987, result);
+}
+inline bool Gen::gameplay::SET_MedalBonusGold(const EA::Reflection::Int32 &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0xf5e43987, input);
+}
+
+inline bool Gen::gameplay::MedalBonusSilver(TAttrib<EA::Reflection::Int32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x767b00a9);
+}
+inline const EA::Reflection::Int32 &Gen::gameplay::MedalBonusSilver() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0x767b00a9);
+}
+inline bool Gen::gameplay::MedalBonusSilver(EA::Reflection::Int32 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x767b00a9, result);
+}
+inline bool Gen::gameplay::SET_MedalBonusSilver(const EA::Reflection::Int32 &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x767b00a9, input);
+}
+
+inline bool Gen::gameplay::MilestoneBiggerIsBetter(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x0896d043);
+}
+inline const EA::Reflection::Bool &Gen::gameplay::MilestoneBiggerIsBetter() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x0896d043);
+}
+inline bool Gen::gameplay::MilestoneBiggerIsBetter(EA::Reflection::Bool &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x0896d043, result);
+}
+inline bool Gen::gameplay::SET_MilestoneBiggerIsBetter(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x0896d043, input);
+}
+
+inline bool Gen::gameplay::MilestoneChallenge(TAttrib<GCollectionKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0xbcd98737);
+}
+inline const GCollectionKey &Gen::gameplay::MilestoneChallenge() const {
+    ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0xbcd98737);
+}
+inline bool Gen::gameplay::MilestoneChallenge(GCollectionKey &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0xbcd98737, result);
+}
+inline bool Gen::gameplay::SET_MilestoneChallenge(const GCollectionKey &input) {
+    ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0xbcd98737, input);
+}
+
+inline bool Gen::gameplay::MilestoneName(TAttrib<EA::Reflection::Text> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0x704f72e8);
+}
+inline const EA::Reflection::Text &Gen::gameplay::MilestoneName() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0x704f72e8);
+}
+inline bool Gen::gameplay::MilestoneName(EA::Reflection::Text &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0x704f72e8, result);
+}
+inline bool Gen::gameplay::SET_MilestoneName(const EA::Reflection::Text &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0x704f72e8, input);
+}
+
+inline bool Gen::gameplay::MiniMapItem(TAttrib<GCollectionKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0x051e90ca);
+}
+inline const GCollectionKey &Gen::gameplay::MiniMapItem() const {
+    ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0x051e90ca);
+}
+inline bool Gen::gameplay::MiniMapItem(GCollectionKey &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0x051e90ca, result);
+}
+inline bool Gen::gameplay::SET_MiniMapItem(const GCollectionKey &input) {
+    ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0x051e90ca, input);
+}
+
+inline bool Gen::gameplay::MinimumAIPerformance(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xb1ece070);
+}
+inline const EA::Reflection::Float &Gen::gameplay::MinimumAIPerformance() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0xb1ece070);
+}
+inline bool Gen::gameplay::MinimumAIPerformance(EA::Reflection::Float &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xb1ece070, result);
+}
+inline bool Gen::gameplay::SET_MinimumAIPerformance(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xb1ece070, input);
+}
+
+inline bool Gen::gameplay::NISShell(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x4c17fe41);
+}
+inline const EA::Reflection::Bool &Gen::gameplay::NISShell() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x4c17fe41);
+}
+inline bool Gen::gameplay::NISShell(EA::Reflection::Bool &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x4c17fe41, result);
+}
+inline bool Gen::gameplay::SET_NISShell(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x4c17fe41, input);
+}
+
+inline bool Gen::gameplay::Name(TAttrib<EA::Reflection::Text> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0x3e225ec1);
+}
+inline const EA::Reflection::Text &Gen::gameplay::Name() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0x3e225ec1);
+}
+inline bool Gen::gameplay::Name(EA::Reflection::Text &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0x3e225ec1, result);
+}
+inline bool Gen::gameplay::SET_Name(const EA::Reflection::Text &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0x3e225ec1, input);
+}
+
+inline bool Gen::gameplay::NeverInQuickRace(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0xa4e6fcfd);
+}
+inline const EA::Reflection::Bool &Gen::gameplay::NeverInQuickRace() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0xa4e6fcfd);
+}
+inline bool Gen::gameplay::NeverInQuickRace(EA::Reflection::Bool &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0xa4e6fcfd, result);
+}
+inline bool Gen::gameplay::SET_NeverInQuickRace(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0xa4e6fcfd, input);
+}
+
+inline bool Gen::gameplay::NoPostRaceScreen(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x40f9929f);
+}
+inline const EA::Reflection::Bool &Gen::gameplay::NoPostRaceScreen() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x40f9929f);
+}
+inline bool Gen::gameplay::NoPostRaceScreen(EA::Reflection::Bool &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x40f9929f, result);
+}
+inline bool Gen::gameplay::SET_NoPostRaceScreen(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x40f9929f, input);
+}
+
+inline bool Gen::gameplay::NumLaps(TAttrib<EA::Reflection::Int32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x0ebdc165);
+}
+inline const EA::Reflection::Int32 &Gen::gameplay::NumLaps() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0x0ebdc165);
+}
+inline bool Gen::gameplay::NumLaps(EA::Reflection::Int32 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x0ebdc165, result);
+}
+inline bool Gen::gameplay::SET_NumLaps(const EA::Reflection::Int32 &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x0ebdc165, input);
+}
+
+inline bool Gen::gameplay::NumRacesRequired(TAttrib<EA::Reflection::Int32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x90a22a3f);
+}
+inline const EA::Reflection::Int32 &Gen::gameplay::NumRacesRequired() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0x90a22a3f);
+}
+inline bool Gen::gameplay::NumRacesRequired(EA::Reflection::Int32 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x90a22a3f, result);
+}
+inline bool Gen::gameplay::SET_NumRacesRequired(const EA::Reflection::Int32 &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x90a22a3f, input);
+}
+
+inline bool Gen::gameplay::OneShot(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0xce4261ac);
+}
+inline const EA::Reflection::Bool &Gen::gameplay::OneShot() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0xce4261ac);
+}
+inline bool Gen::gameplay::OneShot(EA::Reflection::Bool &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0xce4261ac, result);
+}
+inline bool Gen::gameplay::SET_OneShot(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0xce4261ac, input);
+}
+
+inline bool Gen::gameplay::OpenWorldSpeedTrap(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x1bb16f14);
+}
+inline const EA::Reflection::Bool &Gen::gameplay::OpenWorldSpeedTrap() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x1bb16f14);
+}
+inline bool Gen::gameplay::OpenWorldSpeedTrap(EA::Reflection::Bool &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x1bb16f14, result);
+}
+inline bool Gen::gameplay::SET_OpenWorldSpeedTrap(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x1bb16f14, input);
+}
+
+inline bool Gen::gameplay::Opponents(TAttrib<GCollectionKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0x5839fa1a);
+}
+inline const GCollectionKey &Gen::gameplay::Opponents(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(GCollectionKey, 0x5839fa1a, index);
+}
+inline bool Gen::gameplay::Opponents(GCollectionKey &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(GCollectionKey, 0x5839fa1a, result, index);
+}
+inline unsigned int Gen::gameplay::Num_Opponents() const {
+    ATTRIB_CODEGEN_GETLENGTH(0x5839fa1a);
+}
+inline bool Gen::gameplay::SET_Opponents(const GCollectionKey &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(GCollectionKey, 0x5839fa1a, input, index);
+}
+
+inline bool Gen::gameplay::OutroCameraTrack(TAttrib<EA::Reflection::Int32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x7054ff5b);
+}
+inline const EA::Reflection::Int32 &Gen::gameplay::OutroCameraTrack() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0x7054ff5b);
+}
+inline bool Gen::gameplay::OutroCameraTrack(EA::Reflection::Int32 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x7054ff5b, result);
+}
+inline bool Gen::gameplay::SET_OutroCameraTrack(const EA::Reflection::Int32 &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x7054ff5b, input);
+}
+
+inline bool Gen::gameplay::OutroMessageID(TAttrib<EA::Reflection::Int32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0xc36e3532);
+}
+inline const EA::Reflection::Int32 &Gen::gameplay::OutroMessageID() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0xc36e3532);
+}
+inline bool Gen::gameplay::OutroMessageID(EA::Reflection::Int32 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0xc36e3532, result);
+}
+inline bool Gen::gameplay::SET_OutroMessageID(const EA::Reflection::Int32 &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0xc36e3532, input);
+}
+
+inline bool Gen::gameplay::OutroMovie(TAttrib<EA::Reflection::Text> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0xb70268c0);
+}
+inline const EA::Reflection::Text &Gen::gameplay::OutroMovie() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0xb70268c0);
+}
+inline bool Gen::gameplay::OutroMovie(EA::Reflection::Text &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0xb70268c0, result);
+}
+inline bool Gen::gameplay::SET_OutroMovie(const EA::Reflection::Text &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0xb70268c0, input);
+}
+
+inline bool Gen::gameplay::OutroNIS(TAttrib<EA::Reflection::Text> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0x54932966);
+}
+inline const EA::Reflection::Text &Gen::gameplay::OutroNIS() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0x54932966);
+}
+inline bool Gen::gameplay::OutroNIS(EA::Reflection::Text &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0x54932966, result);
+}
+inline bool Gen::gameplay::SET_OutroNIS(const EA::Reflection::Text &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0x54932966, input);
+}
+
+inline bool Gen::gameplay::OutroNISMarker(TAttrib<GCollectionKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0x0e265c88);
+}
+inline const GCollectionKey &Gen::gameplay::OutroNISMarker() const {
+    ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0x0e265c88);
+}
+inline bool Gen::gameplay::OutroNISMarker(GCollectionKey &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0x0e265c88, result);
+}
+inline bool Gen::gameplay::SET_OutroNISMarker(const GCollectionKey &input) {
+    ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0x0e265c88, input);
+}
+
+inline bool Gen::gameplay::OvertimePenaltyPerSec(TAttrib<EA::Reflection::Int32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x26fd42b0);
+}
+inline const EA::Reflection::Int32 &Gen::gameplay::OvertimePenaltyPerSec() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0x26fd42b0);
+}
+inline bool Gen::gameplay::OvertimePenaltyPerSec(EA::Reflection::Int32 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x26fd42b0, result);
+}
+inline bool Gen::gameplay::SET_OvertimePenaltyPerSec(const EA::Reflection::Int32 &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x26fd42b0, input);
+}
+
+inline bool Gen::gameplay::ParticleEffect(TAttrib<EA::Reflection::Text> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0x5ef34802);
+}
+inline const EA::Reflection::Text &Gen::gameplay::ParticleEffect() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0x5ef34802);
+}
+inline bool Gen::gameplay::ParticleEffect(EA::Reflection::Text &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0x5ef34802, result);
+}
+inline bool Gen::gameplay::SET_ParticleEffect(const EA::Reflection::Text &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0x5ef34802, input);
+}
+
+inline bool Gen::gameplay::Persistent(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0xe4542e9b);
+}
+inline const EA::Reflection::Bool &Gen::gameplay::Persistent() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0xe4542e9b);
+}
+inline bool Gen::gameplay::Persistent(EA::Reflection::Bool &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0xe4542e9b, result);
+}
+inline bool Gen::gameplay::SET_Persistent(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0xe4542e9b, input);
+}
+
+inline bool Gen::gameplay::PlayerCarPerformance(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xfb42c0b9);
+}
+inline const EA::Reflection::Float &Gen::gameplay::PlayerCarPerformance() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0xfb42c0b9);
+}
+inline bool Gen::gameplay::PlayerCarPerformance(EA::Reflection::Float &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xfb42c0b9, result);
+}
+inline bool Gen::gameplay::SET_PlayerCarPerformance(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xfb42c0b9, input);
+}
+
+inline bool Gen::gameplay::PlayerCarType(TAttrib<EA::Reflection::Text> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0xc0eeb909);
+}
+inline const EA::Reflection::Text &Gen::gameplay::PlayerCarType() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0xc0eeb909);
+}
+inline bool Gen::gameplay::PlayerCarType(EA::Reflection::Text &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0xc0eeb909, result);
+}
+inline bool Gen::gameplay::SET_PlayerCarType(const EA::Reflection::Text &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0xc0eeb909, input);
+}
+
+inline bool Gen::gameplay::Position(TAttrib<UMath::Vector3> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(UMath::Vector3, 0x9f743a0e);
+}
+inline const UMath::Vector3 &Gen::gameplay::Position() const {
+    ATTRIB_CODEGEN_GETVALUE(UMath::Vector3, 0x9f743a0e);
+}
+inline bool Gen::gameplay::Position(UMath::Vector3 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(UMath::Vector3, 0x9f743a0e, result);
+}
+inline bool Gen::gameplay::SET_Position(const UMath::Vector3 &input) {
+    ATTRIB_CODEGEN_SETVALUE(UMath::Vector3, 0x9f743a0e, input);
+}
+
+inline bool Gen::gameplay::PostRaceActivity(TAttrib<GCollectionKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0x64273c71);
+}
+inline const GCollectionKey &Gen::gameplay::PostRaceActivity() const {
+    ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0x64273c71);
+}
+inline bool Gen::gameplay::PostRaceActivity(GCollectionKey &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0x64273c71, result);
+}
+inline bool Gen::gameplay::SET_PostRaceActivity(const GCollectionKey &input) {
+    ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0x64273c71, input);
+}
+
+inline bool Gen::gameplay::PostRaceScreenTexture(TAttrib<EA::Reflection::Text> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0x038a3b53);
+}
+inline const EA::Reflection::Text &Gen::gameplay::PostRaceScreenTexture() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0x038a3b53);
+}
+inline bool Gen::gameplay::PostRaceScreenTexture(EA::Reflection::Text &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0x038a3b53, result);
+}
+inline bool Gen::gameplay::SET_PostRaceScreenTexture(const EA::Reflection::Text &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0x038a3b53, input);
+}
+
+inline bool Gen::gameplay::PresetRide(TAttrib<EA::Reflection::Text> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0x416a8409);
+}
+inline const EA::Reflection::Text &Gen::gameplay::PresetRide() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0x416a8409);
+}
+inline bool Gen::gameplay::PresetRide(EA::Reflection::Text &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0x416a8409, result);
+}
+inline bool Gen::gameplay::SET_PresetRide(const EA::Reflection::Text &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0x416a8409, input);
+}
+
+inline bool Gen::gameplay::ProgressionLevel(TAttrib<EA::Reflection::Int32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x740e9b4a);
+}
+inline const EA::Reflection::Int32 &Gen::gameplay::ProgressionLevel() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0x740e9b4a);
+}
+inline bool Gen::gameplay::ProgressionLevel(EA::Reflection::Int32 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x740e9b4a, result);
+}
+inline bool Gen::gameplay::SET_ProgressionLevel(const EA::Reflection::Int32 &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x740e9b4a, input);
+}
+
+inline bool Gen::gameplay::PursuitLevel(TAttrib<EA::Reflection::Int32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x0261ae99);
+}
+inline const EA::Reflection::Int32 &Gen::gameplay::PursuitLevel() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0x0261ae99);
+}
+inline bool Gen::gameplay::PursuitLevel(EA::Reflection::Int32 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x0261ae99, result);
+}
+inline bool Gen::gameplay::SET_PursuitLevel(const EA::Reflection::Int32 &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x0261ae99, input);
+}
+
+inline bool Gen::gameplay::PursuitRace(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x2b1f54f6);
+}
+inline const EA::Reflection::Bool &Gen::gameplay::PursuitRace() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x2b1f54f6);
+}
+inline bool Gen::gameplay::PursuitRace(EA::Reflection::Bool &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x2b1f54f6, result);
+}
+inline bool Gen::gameplay::SET_PursuitRace(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x2b1f54f6, input);
+}
+
+inline bool Gen::gameplay::QuickRaceNIS(TAttrib<EA::Reflection::Text> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0x5987fb25);
+}
+inline const EA::Reflection::Text &Gen::gameplay::QuickRaceNIS() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0x5987fb25);
+}
+inline bool Gen::gameplay::QuickRaceNIS(EA::Reflection::Text &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0x5987fb25, result);
+}
+inline bool Gen::gameplay::SET_QuickRaceNIS(const EA::Reflection::Text &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0x5987fb25, input);
+}
+
+inline bool Gen::gameplay::QuickRaceUnlocked(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0xc4db4e71);
+}
+inline const EA::Reflection::Bool &Gen::gameplay::QuickRaceUnlocked() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0xc4db4e71);
+}
+inline bool Gen::gameplay::QuickRaceUnlocked(EA::Reflection::Bool &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0xc4db4e71, result);
+}
+inline bool Gen::gameplay::SET_QuickRaceUnlocked(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0xc4db4e71, input);
+}
+
+inline bool Gen::gameplay::RaceLength(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x7c11c52e);
+}
+inline const EA::Reflection::Float &Gen::gameplay::RaceLength() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x7c11c52e);
+}
+inline bool Gen::gameplay::RaceLength(EA::Reflection::Float &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x7c11c52e, result);
+}
+inline bool Gen::gameplay::SET_RaceLength(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x7c11c52e, input);
+}
+
+inline bool Gen::gameplay::RaceList(TAttrib<GCollectionKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0x9f914008);
+}
+inline const GCollectionKey &Gen::gameplay::RaceList(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(GCollectionKey, 0x9f914008, index);
+}
+inline bool Gen::gameplay::RaceList(GCollectionKey &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(GCollectionKey, 0x9f914008, result, index);
+}
+inline unsigned int Gen::gameplay::Num_RaceList() const {
+    ATTRIB_CODEGEN_GETLENGTH(0x9f914008);
+}
+inline bool Gen::gameplay::SET_RaceList(const GCollectionKey &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(GCollectionKey, 0x9f914008, input, index);
+}
+
+inline bool Gen::gameplay::RaceTriggers(TAttrib<GCollectionKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0x58dc14c0);
+}
+inline const GCollectionKey &Gen::gameplay::RaceTriggers(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(GCollectionKey, 0x58dc14c0, index);
+}
+inline bool Gen::gameplay::RaceTriggers(GCollectionKey &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(GCollectionKey, 0x58dc14c0, result, index);
+}
+inline unsigned int Gen::gameplay::Num_RaceTriggers() const {
+    ATTRIB_CODEGEN_GETLENGTH(0x58dc14c0);
+}
+inline bool Gen::gameplay::SET_RaceTriggers(const GCollectionKey &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(GCollectionKey, 0x58dc14c0, input, index);
+}
+
+inline bool Gen::gameplay::RacerName(TAttrib<EA::Reflection::Text> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0xbeab64c5);
+}
+inline const EA::Reflection::Text &Gen::gameplay::RacerName() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0xbeab64c5);
+}
+inline bool Gen::gameplay::RacerName(EA::Reflection::Text &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0xbeab64c5, result);
+}
+inline bool Gen::gameplay::SET_RacerName(const EA::Reflection::Text &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0xbeab64c5, input);
+}
+
+inline bool Gen::gameplay::Radius(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x39bf8002);
+}
+inline const EA::Reflection::Float &Gen::gameplay::Radius() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x39bf8002);
+}
+inline bool Gen::gameplay::Radius(EA::Reflection::Float &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x39bf8002, result);
+}
+inline bool Gen::gameplay::SET_Radius(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x39bf8002, input);
+}
+
+inline bool Gen::gameplay::RandomSpawnTriggers(TAttrib<GCollectionKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0xfdfe1c3e);
+}
+inline const GCollectionKey &Gen::gameplay::RandomSpawnTriggers(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(GCollectionKey, 0xfdfe1c3e, index);
+}
+inline bool Gen::gameplay::RandomSpawnTriggers(GCollectionKey &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(GCollectionKey, 0xfdfe1c3e, result, index);
+}
+inline unsigned int Gen::gameplay::Num_RandomSpawnTriggers() const {
+    ATTRIB_CODEGEN_GETLENGTH(0xfdfe1c3e);
+}
+inline bool Gen::gameplay::SET_RandomSpawnTriggers(const GCollectionKey &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(GCollectionKey, 0xfdfe1c3e, input, index);
+}
+
+inline bool Gen::gameplay::RankPlayersByDistance(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x9e7a18ce);
+}
+inline const EA::Reflection::Bool &Gen::gameplay::RankPlayersByDistance() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x9e7a18ce);
+}
+inline bool Gen::gameplay::RankPlayersByDistance(EA::Reflection::Bool &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x9e7a18ce, result);
+}
+inline bool Gen::gameplay::SET_RankPlayersByDistance(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x9e7a18ce, input);
+}
+
+inline bool Gen::gameplay::RankPlayersByPoints(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x5ec1880f);
+}
+inline const EA::Reflection::Bool &Gen::gameplay::RankPlayersByPoints() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x5ec1880f);
+}
+inline bool Gen::gameplay::RankPlayersByPoints(EA::Reflection::Bool &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x5ec1880f, result);
+}
+inline bool Gen::gameplay::SET_RankPlayersByPoints(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x5ec1880f, input);
+}
+
+inline bool Gen::gameplay::Region(TAttrib<EA::Reflection::Text> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0xcb01e454);
+}
+inline const EA::Reflection::Text &Gen::gameplay::Region() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0xcb01e454);
+}
+inline bool Gen::gameplay::Region(EA::Reflection::Text &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0xcb01e454, result);
+}
+inline bool Gen::gameplay::SET_Region(const EA::Reflection::Text &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0xcb01e454, input);
+}
+
+inline bool Gen::gameplay::Reputation(TAttrib<EA::Reflection::Int32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x477ec5aa);
+}
+inline const EA::Reflection::Int32 &Gen::gameplay::Reputation() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0x477ec5aa);
+}
+inline bool Gen::gameplay::Reputation(EA::Reflection::Int32 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x477ec5aa, result);
+}
+inline bool Gen::gameplay::SET_Reputation(const EA::Reflection::Int32 &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x477ec5aa, input);
+}
+
+inline bool Gen::gameplay::ReputationRequired(TAttrib<EA::Reflection::Int32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0xffd69c94);
+}
+inline const EA::Reflection::Int32 &Gen::gameplay::ReputationRequired() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0xffd69c94);
+}
+inline bool Gen::gameplay::ReputationRequired(EA::Reflection::Int32 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0xffd69c94, result);
+}
+inline bool Gen::gameplay::SET_ReputationRequired(const EA::Reflection::Int32 &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0xffd69c94, input);
+}
+
+inline bool Gen::gameplay::RequiredBounty(TAttrib<EA::Reflection::Int32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0xd3657d92);
+}
+inline const EA::Reflection::Int32 &Gen::gameplay::RequiredBounty() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0xd3657d92);
+}
+inline bool Gen::gameplay::RequiredBounty(EA::Reflection::Int32 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0xd3657d92, result);
+}
+inline bool Gen::gameplay::SET_RequiredBounty(const EA::Reflection::Int32 &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0xd3657d92, input);
+}
+
+inline bool Gen::gameplay::RequiredChallenges(TAttrib<EA::Reflection::Int32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x6dd4b98b);
+}
+inline const EA::Reflection::Int32 &Gen::gameplay::RequiredChallenges() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0x6dd4b98b);
+}
+inline bool Gen::gameplay::RequiredChallenges(EA::Reflection::Int32 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x6dd4b98b, result);
+}
+inline bool Gen::gameplay::SET_RequiredChallenges(const EA::Reflection::Int32 &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x6dd4b98b, input);
+}
+
+inline bool Gen::gameplay::RequiredRacesWon(TAttrib<EA::Reflection::Int32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0xd617fedc);
+}
+inline const EA::Reflection::Int32 &Gen::gameplay::RequiredRacesWon() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0xd617fedc);
+}
+inline bool Gen::gameplay::RequiredRacesWon(EA::Reflection::Int32 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0xd617fedc, result);
+}
+inline bool Gen::gameplay::SET_RequiredRacesWon(const EA::Reflection::Int32 &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0xd617fedc, input);
+}
+
+inline bool Gen::gameplay::ResetTime(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x2c44ff10);
+}
+inline const EA::Reflection::Float &Gen::gameplay::ResetTime() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x2c44ff10);
+}
+inline bool Gen::gameplay::ResetTime(EA::Reflection::Float &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x2c44ff10, result);
+}
+inline bool Gen::gameplay::SET_ResetTime(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x2c44ff10, input);
+}
+
+inline bool Gen::gameplay::ResetsPlayer(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x6ccd5819);
+}
+inline const EA::Reflection::Bool &Gen::gameplay::ResetsPlayer() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x6ccd5819);
+}
+inline bool Gen::gameplay::ResetsPlayer(EA::Reflection::Bool &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x6ccd5819, result);
+}
+inline bool Gen::gameplay::SET_ResetsPlayer(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x6ccd5819, input);
+}
+
+inline bool Gen::gameplay::RespawnMarker(TAttrib<GCollectionKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0x2241f4cd);
+}
+inline const GCollectionKey &Gen::gameplay::RespawnMarker() const {
+    ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0x2241f4cd);
+}
+inline bool Gen::gameplay::RespawnMarker(GCollectionKey &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0x2241f4cd, result);
+}
+inline bool Gen::gameplay::SET_RespawnMarker(const GCollectionKey &input) {
+    ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0x2241f4cd, input);
+}
+
+inline bool Gen::gameplay::RestartActivity(TAttrib<GCollectionKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0xdc44bd08);
+}
+inline const GCollectionKey &Gen::gameplay::RestartActivity() const {
+    ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0xdc44bd08);
+}
+inline bool Gen::gameplay::RestartActivity(GCollectionKey &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0xdc44bd08, result);
+}
+inline bool Gen::gameplay::SET_RestartActivity(const GCollectionKey &input) {
+    ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0xdc44bd08, input);
+}
+
+inline bool Gen::gameplay::RewardMarkerType(TAttrib<EA::Reflection::Text> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0x06a077d5);
+}
+inline const EA::Reflection::Text &Gen::gameplay::RewardMarkerType() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0x06a077d5);
+}
+inline bool Gen::gameplay::RewardMarkerType(EA::Reflection::Text &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0x06a077d5, result);
+}
+inline bool Gen::gameplay::SET_RewardMarkerType(const EA::Reflection::Text &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0x06a077d5, input);
+}
+
+inline bool Gen::gameplay::RewardsForWinner(TAttrib<GCollectionKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0x50104d90);
+}
+inline const GCollectionKey &Gen::gameplay::RewardsForWinner(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(GCollectionKey, 0x50104d90, index);
+}
+inline bool Gen::gameplay::RewardsForWinner(GCollectionKey &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(GCollectionKey, 0x50104d90, result, index);
+}
+inline unsigned int Gen::gameplay::Num_RewardsForWinner() const {
+    ATTRIB_CODEGEN_GETLENGTH(0x50104d90);
+}
+inline bool Gen::gameplay::SET_RewardsForWinner(const GCollectionKey &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(GCollectionKey, 0x50104d90, input, index);
+}
+
+inline bool Gen::gameplay::RingTime(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xc516e9c2);
+}
+inline const EA::Reflection::Float &Gen::gameplay::RingTime() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0xc516e9c2);
+}
+inline bool Gen::gameplay::RingTime(EA::Reflection::Float &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xc516e9c2, result);
+}
+inline bool Gen::gameplay::SET_RingTime(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xc516e9c2, input);
+}
+
+inline bool Gen::gameplay::RivalBestTime(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xf9120d73);
+}
+inline const EA::Reflection::Float &Gen::gameplay::RivalBestTime() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0xf9120d73);
+}
+inline bool Gen::gameplay::RivalBestTime(EA::Reflection::Float &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xf9120d73, result);
+}
+inline bool Gen::gameplay::SET_RivalBestTime(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xf9120d73, input);
+}
+
+inline bool Gen::gameplay::RoadList(TAttrib<EA::Reflection::Text> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0x13b11b40);
+}
+inline const EA::Reflection::Text &Gen::gameplay::RoadList(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(EA::Reflection::Text, 0x13b11b40, index);
+}
+inline bool Gen::gameplay::RoadList(EA::Reflection::Text &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(EA::Reflection::Text, 0x13b11b40, result, index);
+}
+inline unsigned int Gen::gameplay::Num_RoadList() const {
+    ATTRIB_CODEGEN_GETLENGTH(0x13b11b40);
+}
+inline bool Gen::gameplay::SET_RoadList(const EA::Reflection::Text &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(EA::Reflection::Text, 0x13b11b40, input, index);
+}
+
+inline bool Gen::gameplay::RollingStart(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0xb809d19c);
+}
+inline const EA::Reflection::Bool &Gen::gameplay::RollingStart() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0xb809d19c);
+}
+inline bool Gen::gameplay::RollingStart(EA::Reflection::Bool &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0xb809d19c, result);
+}
+inline bool Gen::gameplay::SET_RollingStart(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0xb809d19c, input);
+}
+
+inline bool Gen::gameplay::Rotation(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x5a6a57c6);
+}
+inline const EA::Reflection::Float &Gen::gameplay::Rotation() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x5a6a57c6);
+}
+inline bool Gen::gameplay::Rotation(EA::Reflection::Float &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x5a6a57c6, result);
+}
+inline bool Gen::gameplay::SET_Rotation(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x5a6a57c6, input);
+}
+
+inline bool Gen::gameplay::SMSCellChallenge(TAttrib<EA::Reflection::Int32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x6a4cd2d4);
+}
+inline const EA::Reflection::Int32 &Gen::gameplay::SMSCellChallenge() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0x6a4cd2d4);
+}
+inline bool Gen::gameplay::SMSCellChallenge(EA::Reflection::Int32 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x6a4cd2d4, result);
+}
+inline bool Gen::gameplay::SET_SMSCellChallenge(const EA::Reflection::Int32 &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x6a4cd2d4, input);
+}
+
+inline bool Gen::gameplay::SMSRivalChallenge(TAttrib<EA::Reflection::Int32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0xbb30c804);
+}
+inline const EA::Reflection::Int32 &Gen::gameplay::SMSRivalChallenge() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0xbb30c804);
+}
+inline bool Gen::gameplay::SMSRivalChallenge(EA::Reflection::Int32 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0xbb30c804, result);
+}
+inline bool Gen::gameplay::SET_SMSRivalChallenge(const EA::Reflection::Int32 &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0xbb30c804, input);
+}
+
+inline bool Gen::gameplay::ScaleOpenWorldHeat(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x1823b89e);
+}
+inline const EA::Reflection::Float &Gen::gameplay::ScaleOpenWorldHeat() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x1823b89e);
+}
+inline bool Gen::gameplay::ScaleOpenWorldHeat(EA::Reflection::Float &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x1823b89e, result);
+}
+inline bool Gen::gameplay::SET_ScaleOpenWorldHeat(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x1823b89e, input);
+}
+
+inline bool Gen::gameplay::ScriptedCopsInRace(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x0e47fe63);
+}
+inline const EA::Reflection::Bool &Gen::gameplay::ScriptedCopsInRace() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x0e47fe63);
+}
+inline bool Gen::gameplay::ScriptedCopsInRace(EA::Reflection::Bool &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x0e47fe63, result);
+}
+inline bool Gen::gameplay::SET_ScriptedCopsInRace(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x0e47fe63, input);
+}
+
+inline bool Gen::gameplay::SharedCheckpoints(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x0e34a1f3);
+}
+inline const EA::Reflection::Bool &Gen::gameplay::SharedCheckpoints() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x0e34a1f3);
+}
+inline bool Gen::gameplay::SharedCheckpoints(EA::Reflection::Bool &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x0e34a1f3, result);
+}
+inline bool Gen::gameplay::SET_SharedCheckpoints(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x0e34a1f3, input);
+}
+
+inline bool Gen::gameplay::ShortcutMaxChance(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x16faba11);
+}
+inline const EA::Reflection::Float &Gen::gameplay::ShortcutMaxChance() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x16faba11);
+}
+inline bool Gen::gameplay::ShortcutMaxChance(EA::Reflection::Float &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x16faba11, result);
+}
+inline bool Gen::gameplay::SET_ShortcutMaxChance(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x16faba11, input);
+}
+
+inline bool Gen::gameplay::ShortcutMinChance(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x4efb950a);
+}
+inline const EA::Reflection::Float &Gen::gameplay::ShortcutMinChance() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x4efb950a);
+}
+inline bool Gen::gameplay::ShortcutMinChance(EA::Reflection::Float &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x4efb950a, result);
+}
+inline bool Gen::gameplay::SET_ShortcutMinChance(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x4efb950a, input);
+}
+
+inline bool Gen::gameplay::Shortcuts(TAttrib<GCollectionKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0x7b6d296e);
+}
+inline const GCollectionKey &Gen::gameplay::Shortcuts(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(GCollectionKey, 0x7b6d296e, index);
+}
+inline bool Gen::gameplay::Shortcuts(GCollectionKey &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(GCollectionKey, 0x7b6d296e, result, index);
+}
+inline unsigned int Gen::gameplay::Num_Shortcuts() const {
+    ATTRIB_CODEGEN_GETLENGTH(0x7b6d296e);
+}
+inline bool Gen::gameplay::SET_Shortcuts(const GCollectionKey &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(GCollectionKey, 0x7b6d296e, input, index);
+}
+
+inline bool Gen::gameplay::SkillLevel(TAttrib<EA::Reflection::Int32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0x3b798aa2);
+}
+inline const EA::Reflection::Int32 &Gen::gameplay::SkillLevel() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0x3b798aa2);
+}
+inline bool Gen::gameplay::SkillLevel(EA::Reflection::Int32 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0x3b798aa2, result);
+}
+inline bool Gen::gameplay::SET_SkillLevel(const EA::Reflection::Int32 &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0x3b798aa2, input);
+}
+
+inline bool Gen::gameplay::SpawnPoint(TAttrib<GCollectionKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0xddf411f5);
+}
+inline const GCollectionKey &Gen::gameplay::SpawnPoint() const {
+    ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0xddf411f5);
+}
+inline bool Gen::gameplay::SpawnPoint(GCollectionKey &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0xddf411f5, result);
+}
+inline bool Gen::gameplay::SET_SpawnPoint(const GCollectionKey &input) {
+    ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0xddf411f5, input);
+}
+
+inline bool Gen::gameplay::SpeedTrapCamera(TAttrib<EA::Reflection::Text> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0xcbd7adf9);
+}
+inline const EA::Reflection::Text &Gen::gameplay::SpeedTrapCamera() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0xcbd7adf9);
+}
+inline bool Gen::gameplay::SpeedTrapCamera(EA::Reflection::Text &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0xcbd7adf9, result);
+}
+inline bool Gen::gameplay::SET_SpeedTrapCamera(const EA::Reflection::Text &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0xcbd7adf9, input);
+}
+
+inline bool Gen::gameplay::SpeedTrapList(TAttrib<GCollectionKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0x822179d1);
+}
+inline const GCollectionKey &Gen::gameplay::SpeedTrapList(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(GCollectionKey, 0x822179d1, index);
+}
+inline bool Gen::gameplay::SpeedTrapList(GCollectionKey &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(GCollectionKey, 0x822179d1, result, index);
+}
+inline unsigned int Gen::gameplay::Num_SpeedTrapList() const {
+    ATTRIB_CODEGEN_GETLENGTH(0x822179d1);
+}
+inline bool Gen::gameplay::SET_SpeedTrapList(const GCollectionKey &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(GCollectionKey, 0x822179d1, input, index);
+}
+
+inline bool Gen::gameplay::SpeedTrapTrigger(TAttrib<GCollectionKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0x5f95c3a0);
+}
+inline const GCollectionKey &Gen::gameplay::SpeedTrapTrigger() const {
+    ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0x5f95c3a0);
+}
+inline bool Gen::gameplay::SpeedTrapTrigger(GCollectionKey &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0x5f95c3a0, result);
+}
+inline bool Gen::gameplay::SET_SpeedTrapTrigger(const GCollectionKey &input) {
+    ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0x5f95c3a0, input);
+}
+
+inline bool Gen::gameplay::SpeedTrapsRequired(TAttrib<GCollectionKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0x6d7e73c9);
+}
+inline const GCollectionKey &Gen::gameplay::SpeedTrapsRequired(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(GCollectionKey, 0x6d7e73c9, index);
+}
+inline bool Gen::gameplay::SpeedTrapsRequired(GCollectionKey &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(GCollectionKey, 0x6d7e73c9, result, index);
+}
+inline unsigned int Gen::gameplay::Num_SpeedTrapsRequired() const {
+    ATTRIB_CODEGEN_GETLENGTH(0x6d7e73c9);
+}
+inline bool Gen::gameplay::SET_SpeedTrapsRequired(const GCollectionKey &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(GCollectionKey, 0x6d7e73c9, input, index);
+}
+
+inline bool Gen::gameplay::StartPercent(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xe0d01505);
+}
+inline const EA::Reflection::Float &Gen::gameplay::StartPercent() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0xe0d01505);
+}
+inline bool Gen::gameplay::StartPercent(EA::Reflection::Float &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xe0d01505, result);
+}
+inline bool Gen::gameplay::SET_StartPercent(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xe0d01505, input);
+}
+
+inline bool Gen::gameplay::StartTime(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x839602ab);
+}
+inline const EA::Reflection::Float &Gen::gameplay::StartTime() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x839602ab);
+}
+inline bool Gen::gameplay::StartTime(EA::Reflection::Float &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x839602ab, result);
+}
+inline bool Gen::gameplay::SET_StartTime(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x839602ab, input);
+}
+
+inline bool Gen::gameplay::TOD(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x9dff3c3d);
+}
+inline const EA::Reflection::Float &Gen::gameplay::TOD() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x9dff3c3d);
+}
+inline bool Gen::gameplay::TOD(EA::Reflection::Float &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x9dff3c3d, result);
+}
+inline bool Gen::gameplay::SET_TOD(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x9dff3c3d, input);
+}
+
+inline bool Gen::gameplay::TargetActivities(TAttrib<GCollectionKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0x0f37d221);
+}
+inline const GCollectionKey &Gen::gameplay::TargetActivities(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(GCollectionKey, 0x0f37d221, index);
+}
+inline bool Gen::gameplay::TargetActivities(GCollectionKey &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(GCollectionKey, 0x0f37d221, result, index);
+}
+inline unsigned int Gen::gameplay::Num_TargetActivities() const {
+    ATTRIB_CODEGEN_GETLENGTH(0x0f37d221);
+}
+inline bool Gen::gameplay::SET_TargetActivities(const GCollectionKey &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(GCollectionKey, 0x0f37d221, input, index);
+}
+
+inline bool Gen::gameplay::TargetActivity(TAttrib<GCollectionKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0x277566f3);
+}
+inline const GCollectionKey &Gen::gameplay::TargetActivity() const {
+    ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0x277566f3);
+}
+inline bool Gen::gameplay::TargetActivity(GCollectionKey &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0x277566f3, result);
+}
+inline bool Gen::gameplay::SET_TargetActivity(const GCollectionKey &input) {
+    ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0x277566f3, input);
+}
+
+inline bool Gen::gameplay::TargetBronze(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x00df8eb4);
+}
+inline const EA::Reflection::Float &Gen::gameplay::TargetBronze() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x00df8eb4);
+}
+inline bool Gen::gameplay::TargetBronze(EA::Reflection::Float &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x00df8eb4, result);
+}
+inline bool Gen::gameplay::SET_TargetBronze(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x00df8eb4, input);
+}
+
+inline bool Gen::gameplay::TargetGold(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x728e43ff);
+}
+inline const EA::Reflection::Float &Gen::gameplay::TargetGold() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x728e43ff);
+}
+inline bool Gen::gameplay::TargetGold(EA::Reflection::Float &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x728e43ff, result);
+}
+inline bool Gen::gameplay::SET_TargetGold(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x728e43ff, input);
+}
+
+inline bool Gen::gameplay::TargetMarker(TAttrib<GCollectionKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0x8fc356fb);
+}
+inline const GCollectionKey &Gen::gameplay::TargetMarker() const {
+    ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0x8fc356fb);
+}
+inline bool Gen::gameplay::TargetMarker(GCollectionKey &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0x8fc356fb, result);
+}
+inline bool Gen::gameplay::SET_TargetMarker(const GCollectionKey &input) {
+    ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0x8fc356fb, input);
+}
+
+inline bool Gen::gameplay::TargetSilver(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x51ce16b7);
+}
+inline const EA::Reflection::Float &Gen::gameplay::TargetSilver() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x51ce16b7);
+}
+inline bool Gen::gameplay::TargetSilver(EA::Reflection::Float &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x51ce16b7, result);
+}
+inline bool Gen::gameplay::SET_TargetSilver(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x51ce16b7, input);
+}
+
+inline bool Gen::gameplay::Template(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x3e9156ca);
+}
+inline const EA::Reflection::Bool &Gen::gameplay::Template() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x3e9156ca);
+}
+inline bool Gen::gameplay::Template(EA::Reflection::Bool &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x3e9156ca, result);
+}
+inline bool Gen::gameplay::SET_Template(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x3e9156ca, input);
+}
+
+inline bool Gen::gameplay::ThreshholdSpeed(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xc3710777);
+}
+inline const EA::Reflection::Float &Gen::gameplay::ThreshholdSpeed() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0xc3710777);
+}
+inline bool Gen::gameplay::ThreshholdSpeed(EA::Reflection::Float &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xc3710777, result);
+}
+inline bool Gen::gameplay::SET_ThreshholdSpeed(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xc3710777, input);
+}
+
+inline bool Gen::gameplay::ThreshholdValue(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x4e90219d);
+}
+inline const EA::Reflection::Float &Gen::gameplay::ThreshholdValue() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x4e90219d);
+}
+inline bool Gen::gameplay::ThreshholdValue(EA::Reflection::Float &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x4e90219d, result);
+}
+inline bool Gen::gameplay::SET_ThreshholdValue(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x4e90219d, input);
+}
+
+inline bool Gen::gameplay::TimeBonus(TAttrib<EA::Reflection::Int32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0xf52cc30e);
+}
+inline const EA::Reflection::Int32 &Gen::gameplay::TimeBonus() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0xf52cc30e);
+}
+inline bool Gen::gameplay::TimeBonus(EA::Reflection::Int32 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0xf52cc30e, result);
+}
+inline bool Gen::gameplay::SET_TimeBonus(const EA::Reflection::Int32 &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0xf52cc30e, input);
+}
+
+inline bool Gen::gameplay::TimeLimit(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x7585f041);
+}
+inline const EA::Reflection::Float &Gen::gameplay::TimeLimit() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x7585f041);
+}
+inline bool Gen::gameplay::TimeLimit(EA::Reflection::Float &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x7585f041, result);
+}
+inline bool Gen::gameplay::SET_TimeLimit(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x7585f041, input);
+}
+
+inline bool Gen::gameplay::TokenValue(TAttrib<EA::Reflection::Int32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0xaa10914c);
+}
+inline const EA::Reflection::Int32 &Gen::gameplay::TokenValue() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0xaa10914c);
+}
+inline bool Gen::gameplay::TokenValue(EA::Reflection::Int32 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0xaa10914c, result);
+}
+inline bool Gen::gameplay::SET_TokenValue(const EA::Reflection::Int32 &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0xaa10914c, input);
+}
+
+inline bool Gen::gameplay::TrafficCharacter(TAttrib<GCollectionKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0x797d9654);
+}
+inline const GCollectionKey &Gen::gameplay::TrafficCharacter() const {
+    ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0x797d9654);
+}
+inline bool Gen::gameplay::TrafficCharacter(GCollectionKey &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0x797d9654, result);
+}
+inline bool Gen::gameplay::SET_TrafficCharacter(const GCollectionKey &input) {
+    ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0x797d9654, input);
+}
+
+inline bool Gen::gameplay::TrafficLevel(TAttrib<EA::Reflection::Int32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0xc64bc341);
+}
+inline const EA::Reflection::Int32 &Gen::gameplay::TrafficLevel() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0xc64bc341);
+}
+inline bool Gen::gameplay::TrafficLevel(EA::Reflection::Int32 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0xc64bc341, result);
+}
+inline bool Gen::gameplay::SET_TrafficLevel(const EA::Reflection::Int32 &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0xc64bc341, input);
+}
+
+inline bool Gen::gameplay::TrafficPattern(TAttrib<EA::Reflection::Text> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0x6319b692);
+}
+inline const EA::Reflection::Text &Gen::gameplay::TrafficPattern() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0x6319b692);
+}
+inline bool Gen::gameplay::TrafficPattern(EA::Reflection::Text &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0x6319b692, result);
+}
+inline bool Gen::gameplay::SET_TrafficPattern(const EA::Reflection::Text &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0x6319b692, input);
+}
+
+inline bool Gen::gameplay::UnlockRaces(TAttrib<GCollectionKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0xfc8995c8);
+}
+inline const GCollectionKey &Gen::gameplay::UnlockRaces(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(GCollectionKey, 0xfc8995c8, index);
+}
+inline bool Gen::gameplay::UnlockRaces(GCollectionKey &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(GCollectionKey, 0xfc8995c8, result, index);
+}
+inline unsigned int Gen::gameplay::Num_UnlockRaces() const {
+    ATTRIB_CODEGEN_GETLENGTH(0xfc8995c8);
+}
+inline bool Gen::gameplay::SET_UnlockRaces(const GCollectionKey &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(GCollectionKey, 0xfc8995c8, input, index);
+}
+
+inline bool Gen::gameplay::UpgradeLevel(TAttrib<EA::Reflection::Int32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0xd267facc);
+}
+inline const EA::Reflection::Int32 &Gen::gameplay::UpgradeLevel() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0xd267facc);
+}
+inline bool Gen::gameplay::UpgradeLevel(EA::Reflection::Int32 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0xd267facc, result);
+}
+inline bool Gen::gameplay::SET_UpgradeLevel(const EA::Reflection::Int32 &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0xd267facc, input);
+}
+
+inline bool Gen::gameplay::UpgradePartID(TAttrib<EA::Reflection::Text> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0x3c2fdaab);
+}
+inline const EA::Reflection::Text &Gen::gameplay::UpgradePartID() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0x3c2fdaab);
+}
+inline bool Gen::gameplay::UpgradePartID(EA::Reflection::Text &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0x3c2fdaab, result);
+}
+inline bool Gen::gameplay::SET_UpgradePartID(const EA::Reflection::Text &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0x3c2fdaab, input);
+}
+
+inline bool Gen::gameplay::UpgradePartName(TAttrib<EA::Reflection::Text> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0xc385f75d);
+}
+inline const EA::Reflection::Text &Gen::gameplay::UpgradePartName() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0xc385f75d);
+}
+inline bool Gen::gameplay::UpgradePartName(EA::Reflection::Text &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0xc385f75d, result);
+}
+inline bool Gen::gameplay::SET_UpgradePartName(const EA::Reflection::Text &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0xc385f75d, input);
+}
+
+inline bool Gen::gameplay::UpgradeType(TAttrib<EA::Reflection::Text> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0x0e0113fe);
+}
+inline const EA::Reflection::Text &Gen::gameplay::UpgradeType() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0x0e0113fe);
+}
+inline bool Gen::gameplay::UpgradeType(EA::Reflection::Text &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0x0e0113fe, result);
+}
+inline bool Gen::gameplay::SET_UpgradeType(const EA::Reflection::Text &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0x0e0113fe, input);
+}
+
+inline bool Gen::gameplay::UseWorldHeat(TAttrib<EA::Reflection::Bool> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Bool, 0x45f2ad6c);
+}
+inline const EA::Reflection::Bool &Gen::gameplay::UseWorldHeat() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Bool, 0x45f2ad6c);
+}
+inline bool Gen::gameplay::UseWorldHeat(EA::Reflection::Bool &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Bool, 0x45f2ad6c, result);
+}
+inline bool Gen::gameplay::SET_UseWorldHeat(const EA::Reflection::Bool &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Bool, 0x45f2ad6c, input);
+}
+
+inline bool Gen::gameplay::Width(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x5816c1fc);
+}
+inline const EA::Reflection::Float &Gen::gameplay::Width() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x5816c1fc);
+}
+inline bool Gen::gameplay::Width(EA::Reflection::Float &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x5816c1fc, result);
+}
+inline bool Gen::gameplay::SET_Width(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x5816c1fc, input);
+}
+
+inline bool Gen::gameplay::WorldRaces(TAttrib<GCollectionKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0xa7ef40ef);
+}
+inline const GCollectionKey &Gen::gameplay::WorldRaces(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(GCollectionKey, 0xa7ef40ef, index);
+}
+inline bool Gen::gameplay::WorldRaces(GCollectionKey &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(GCollectionKey, 0xa7ef40ef, result, index);
+}
+inline unsigned int Gen::gameplay::Num_WorldRaces() const {
+    ATTRIB_CODEGEN_GETLENGTH(0xa7ef40ef);
+}
+inline bool Gen::gameplay::SET_WorldRaces(const GCollectionKey &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(GCollectionKey, 0xa7ef40ef, input, index);
+}
+
+inline bool Gen::gameplay::ZoneList(TAttrib<GCollectionKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0x64893da8);
+}
+inline const GCollectionKey &Gen::gameplay::ZoneList(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(GCollectionKey, 0x64893da8, index);
+}
+inline bool Gen::gameplay::ZoneList(GCollectionKey &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(GCollectionKey, 0x64893da8, result, index);
+}
+inline unsigned int Gen::gameplay::Num_ZoneList() const {
+    ATTRIB_CODEGEN_GETLENGTH(0x64893da8);
+}
+inline bool Gen::gameplay::SET_ZoneList(const GCollectionKey &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(GCollectionKey, 0x64893da8, input, index);
+}
+
+inline bool Gen::gameplay::ZoneType(TAttrib<EA::Reflection::Text> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0xf3ea3201);
+}
+inline const EA::Reflection::Text &Gen::gameplay::ZoneType() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0xf3ea3201);
+}
+inline bool Gen::gameplay::ZoneType(EA::Reflection::Text &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0xf3ea3201, result);
+}
+inline bool Gen::gameplay::SET_ZoneType(const EA::Reflection::Text &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0xf3ea3201, input);
+}
+
+inline bool Gen::gameplay::actionscript(TAttrib<GCollectionKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0xe62083d0);
+}
+inline const GCollectionKey &Gen::gameplay::actionscript() const {
+    ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0xe62083d0);
+}
+inline bool Gen::gameplay::actionscript(GCollectionKey &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0xe62083d0, result);
+}
+inline bool Gen::gameplay::SET_actionscript(const GCollectionKey &input) {
+    ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0xe62083d0, input);
+}
+
+inline bool Gen::gameplay::bytecode(TAttrib<Attrib::Blob> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(Attrib::Blob, 0x9a4a020a);
+}
+inline const Attrib::Blob &Gen::gameplay::bytecode() const {
+    ATTRIB_CODEGEN_GETVALUE(Attrib::Blob, 0x9a4a020a);
+}
+inline bool Gen::gameplay::bytecode(Attrib::Blob &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(Attrib::Blob, 0x9a4a020a, result);
+}
+inline bool Gen::gameplay::SET_bytecode(const Attrib::Blob &input) {
+    ATTRIB_CODEGEN_SETVALUE(Attrib::Blob, 0x9a4a020a, input);
+}
+
+inline bool Gen::gameplay::disengagetrigger(TAttrib<GCollectionKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0x106285c0);
+}
+inline const GCollectionKey &Gen::gameplay::disengagetrigger() const {
+    ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0x106285c0);
+}
+inline bool Gen::gameplay::disengagetrigger(GCollectionKey &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0x106285c0, result);
+}
+inline bool Gen::gameplay::SET_disengagetrigger(const GCollectionKey &input) {
+    ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0x106285c0, input);
+}
+
+inline bool Gen::gameplay::distance(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xc5857615);
+}
+inline const EA::Reflection::Float &Gen::gameplay::distance() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0xc5857615);
+}
+inline bool Gen::gameplay::distance(EA::Reflection::Float &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xc5857615, result);
+}
+inline bool Gen::gameplay::SET_distance(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xc5857615, input);
+}
+
+inline bool Gen::gameplay::engagetrigger(TAttrib<GCollectionKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0xf05931ab);
+}
+inline const GCollectionKey &Gen::gameplay::engagetrigger() const {
+    ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0xf05931ab);
+}
+inline bool Gen::gameplay::engagetrigger(GCollectionKey &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0xf05931ab, result);
+}
+inline bool Gen::gameplay::SET_engagetrigger(const GCollectionKey &input) {
+    ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0xf05931ab, input);
+}
+
+inline bool Gen::gameplay::gameplayvault(TAttrib<EA::Reflection::Text> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0x93fd9fda);
+}
+inline const EA::Reflection::Text &Gen::gameplay::gameplayvault() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0x93fd9fda);
+}
+inline bool Gen::gameplay::gameplayvault(EA::Reflection::Text &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0x93fd9fda, result);
+}
+inline bool Gen::gameplay::SET_gameplayvault(const EA::Reflection::Text &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0x93fd9fda, input);
+}
+
+inline bool Gen::gameplay::handler_owner(TAttrib<GCollectionKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0x857fe432);
+}
+inline const GCollectionKey &Gen::gameplay::handler_owner() const {
+    ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0x857fe432);
+}
+inline bool Gen::gameplay::handler_owner(GCollectionKey &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0x857fe432, result);
+}
+inline bool Gen::gameplay::SET_handler_owner(const GCollectionKey &input) {
+    ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0x857fe432, input);
+}
+
+inline bool Gen::gameplay::layoutpos(TAttrib<UMath::Vector2> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(UMath::Vector2, 0x4075ec46);
+}
+inline const UMath::Vector2 &Gen::gameplay::layoutpos() const {
+    ATTRIB_CODEGEN_GETVALUE(UMath::Vector2, 0x4075ec46);
+}
+inline bool Gen::gameplay::layoutpos(UMath::Vector2 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(UMath::Vector2, 0x4075ec46, result);
+}
+inline bool Gen::gameplay::SET_layoutpos(const UMath::Vector2 &input) {
+    ATTRIB_CODEGEN_SETVALUE(UMath::Vector2, 0x4075ec46, input);
+}
+
+inline bool Gen::gameplay::message_id(TAttrib<EA::Reflection::UInt32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::UInt32, 0x9e8910ef);
+}
+inline const EA::Reflection::UInt32 &Gen::gameplay::message_id() const {
+    ATTRIB_CODEGEN_GETLAYOUT(message_id);
+}
+inline bool Gen::gameplay::message_id(EA::Reflection::UInt32 &result) const {
+    result = message_id();
+    return true;
+}
+inline bool Gen::gameplay::SET_message_id(const EA::Reflection::UInt32 &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(message_id, input);
+}
+
+inline bool Gen::gameplay::nitrouslevel(TAttrib<EA::Reflection::Int32> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Int32, 0xd4797aa8);
+}
+inline const EA::Reflection::Int32 &Gen::gameplay::nitrouslevel() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Int32, 0xd4797aa8);
+}
+inline bool Gen::gameplay::nitrouslevel(EA::Reflection::Int32 &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Int32, 0xd4797aa8, result);
+}
+inline bool Gen::gameplay::SET_nitrouslevel(const EA::Reflection::Int32 &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Int32, 0xd4797aa8, input);
+}
+
+inline bool Gen::gameplay::parentstate(TAttrib<GCollectionKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0x4acc6d63);
+}
+inline const GCollectionKey &Gen::gameplay::parentstate() const {
+    ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0x4acc6d63);
+}
+inline bool Gen::gameplay::parentstate(GCollectionKey &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0x4acc6d63, result);
+}
+inline bool Gen::gameplay::SET_parentstate(const GCollectionKey &input) {
+    ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0x4acc6d63, input);
+}
+
+inline bool Gen::gameplay::racefinish(TAttrib<GCollectionKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0xb0a24adc);
+}
+inline const GCollectionKey &Gen::gameplay::racefinish() const {
+    ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0xb0a24adc);
+}
+inline bool Gen::gameplay::racefinish(GCollectionKey &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0xb0a24adc, result);
+}
+inline bool Gen::gameplay::SET_racefinish(const GCollectionKey &input) {
+    ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0xb0a24adc, input);
+}
+
+inline bool Gen::gameplay::racefinishReverse(TAttrib<GCollectionKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0x7c7cf20f);
+}
+inline const GCollectionKey &Gen::gameplay::racefinishReverse() const {
+    ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0x7c7cf20f);
+}
+inline bool Gen::gameplay::racefinishReverse(GCollectionKey &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0x7c7cf20f, result);
+}
+inline bool Gen::gameplay::SET_racefinishReverse(const GCollectionKey &input) {
+    ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0x7c7cf20f, input);
+}
+
+inline bool Gen::gameplay::racestart(TAttrib<GCollectionKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0xe43b2ccc);
+}
+inline const GCollectionKey &Gen::gameplay::racestart() const {
+    ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0xe43b2ccc);
+}
+inline bool Gen::gameplay::racestart(GCollectionKey &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0xe43b2ccc, result);
+}
+inline bool Gen::gameplay::SET_racestart(const GCollectionKey &input) {
+    ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0xe43b2ccc, input);
+}
+
+inline bool Gen::gameplay::racestartReverse(TAttrib<GCollectionKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0xfd945479);
+}
+inline const GCollectionKey &Gen::gameplay::racestartReverse() const {
+    ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0xfd945479);
+}
+inline bool Gen::gameplay::racestartReverse(GCollectionKey &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0xfd945479, result);
+}
+inline bool Gen::gameplay::SET_racestartReverse(const GCollectionKey &input) {
+    ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0xfd945479, input);
+}
+
+inline bool Gen::gameplay::scriptname(TAttrib<EA::Reflection::Text> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0x7148ae82);
+}
+inline const EA::Reflection::Text &Gen::gameplay::scriptname() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Text, 0x7148ae82);
+}
+inline bool Gen::gameplay::scriptname(EA::Reflection::Text &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Text, 0x7148ae82, result);
+}
+inline bool Gen::gameplay::SET_scriptname(const EA::Reflection::Text &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Text, 0x7148ae82, input);
+}
+
+inline bool Gen::gameplay::sender(TAttrib<GCollectionKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0xa590a98b);
+}
+inline const GCollectionKey &Gen::gameplay::sender() const {
+    ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0xa590a98b);
+}
+inline bool Gen::gameplay::sender(GCollectionKey &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0xa590a98b, result);
+}
+inline bool Gen::gameplay::SET_sender(const GCollectionKey &input) {
+    ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0xa590a98b, input);
+}
+
+inline bool Gen::gameplay::stateref(TAttrib<GCollectionKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0x918c796e);
+}
+inline const GCollectionKey &Gen::gameplay::stateref() const {
+    ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0x918c796e);
+}
+inline bool Gen::gameplay::stateref(GCollectionKey &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0x918c796e, result);
+}
+inline bool Gen::gameplay::SET_stateref(const GCollectionKey &input) {
+    ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0x918c796e, input);
+}
+
+inline bool Gen::gameplay::target(TAttrib<GCollectionKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0x1a7d2859);
+}
+inline const GCollectionKey &Gen::gameplay::target() const {
+    ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0x1a7d2859);
+}
+inline bool Gen::gameplay::target(GCollectionKey &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0x1a7d2859, result);
+}
+inline bool Gen::gameplay::SET_target(const GCollectionKey &input) {
+    ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0x1a7d2859, input);
+}
+
+inline bool Gen::gameplay::templateref(TAttrib<GCollectionKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0xa0697302);
+}
+inline const GCollectionKey &Gen::gameplay::templateref() const {
+    ATTRIB_CODEGEN_GETVALUE(GCollectionKey, 0xa0697302);
+}
+inline bool Gen::gameplay::templateref(GCollectionKey &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(GCollectionKey, 0xa0697302, result);
+}
+inline bool Gen::gameplay::SET_templateref(const GCollectionKey &input) {
+    ATTRIB_CODEGEN_SETVALUE(GCollectionKey, 0xa0697302, input);
+}
+
+inline bool Gen::gameplay::transitionlist(TAttrib<GCollectionKey> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(GCollectionKey, 0x25621dc5);
+}
+inline const GCollectionKey &Gen::gameplay::transitionlist(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(GCollectionKey, 0x25621dc5, index);
+}
+inline bool Gen::gameplay::transitionlist(GCollectionKey &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(GCollectionKey, 0x25621dc5, result, index);
+}
+inline unsigned int Gen::gameplay::Num_transitionlist() const {
+    ATTRIB_CODEGEN_GETLENGTH(0x25621dc5);
+}
+inline bool Gen::gameplay::SET_transitionlist(const GCollectionKey &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(GCollectionKey, 0x25621dc5, input, index);
 }
 
 }; // namespace Attrib

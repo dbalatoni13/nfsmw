@@ -74,69 +74,31 @@ struct trafficpattern : Instance {
         Instance::operator=(rhs);
         return *this;
     }
-    bool CollectionName(TAttrib<EA::Reflection::Text> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0x9ca1c8f9);
-    }
-    bool CollectionName(EA::Reflection::Text &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(CollectionName, result);
-    }
-    const EA::Reflection::Text &CollectionName() const {
-        ATTRIB_CODEGEN_GETLAYOUT(CollectionName);
-    }
-    bool SET_CollectionName(const EA::Reflection::Text &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(CollectionName, input);
-    }
-    bool SpawnTime(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xbf2fdb5c);
-    }
-    bool SpawnTime(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xbf2fdb5c, result);
-    }
-    const EA::Reflection::Float &SpawnTime() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0xbf2fdb5c);
-    }
-    bool SET_SpawnTime(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xbf2fdb5c, input);
-    }
-    bool SpeedHighway(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x9e404e33);
-    }
-    bool SpeedHighway(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x9e404e33, result);
-    }
-    const EA::Reflection::Float &SpeedHighway() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x9e404e33);
-    }
-    bool SET_SpeedHighway(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x9e404e33, input);
-    }
-    bool SpeedStreet(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x7c44962f);
-    }
-    bool SpeedStreet(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x7c44962f, result);
-    }
-    const EA::Reflection::Float &SpeedStreet() const {
-        ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x7c44962f);
-    }
-    bool SET_SpeedStreet(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x7c44962f, input);
-    }
-    bool Vehicles(TAttrib<TrafficPatternRecord> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(TrafficPatternRecord, 0x94e3c795);
-    }
-    bool Vehicles(TrafficPatternRecord &result, unsigned int index) const {
-        ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(TrafficPatternRecord, 0x94e3c795, result, index);
-    }
-    const TrafficPatternRecord &Vehicles(unsigned int index) const {
-        ATTRIB_CODEGEN_GETVALUEINDEXED(TrafficPatternRecord, 0x94e3c795, index);
-    }
-    unsigned int Num_Vehicles() const {
-        ATTRIB_CODEGEN_GETLENGTH(0x94e3c795);
-    }
-    bool SET_Vehicles(const TrafficPatternRecord &input, unsigned int index) {
-        ATTRIB_CODEGEN_SETVALUEINDEXED(TrafficPatternRecord, 0x94e3c795, input, index);
-    }
+    bool CollectionName(TAttrib<EA::Reflection::Text> &result) const;
+    bool CollectionName(EA::Reflection::Text &result) const;
+    const EA::Reflection::Text &CollectionName() const;
+    bool SET_CollectionName(const EA::Reflection::Text &input);
+
+    bool SpawnTime(TAttrib<EA::Reflection::Float> &result) const;
+    bool SpawnTime(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &SpawnTime() const;
+    bool SET_SpawnTime(const EA::Reflection::Float &input);
+
+    bool SpeedHighway(TAttrib<EA::Reflection::Float> &result) const;
+    bool SpeedHighway(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &SpeedHighway() const;
+    bool SET_SpeedHighway(const EA::Reflection::Float &input);
+
+    bool SpeedStreet(TAttrib<EA::Reflection::Float> &result) const;
+    bool SpeedStreet(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &SpeedStreet() const;
+    bool SET_SpeedStreet(const EA::Reflection::Float &input);
+
+    bool Vehicles(TAttrib<TrafficPatternRecord> &result) const;
+    bool Vehicles(TrafficPatternRecord &result, unsigned int index) const;
+    const TrafficPatternRecord &Vehicles(unsigned int index) const;
+    unsigned int Num_Vehicles() const;
+    bool SET_Vehicles(const TrafficPatternRecord &input, unsigned int index);
 
   private:
     unsigned int GetLayoutSize() {
@@ -167,6 +129,75 @@ static const Key Vehicles = 0x94e3c795;
 
 inline Key Gen::trafficpattern::ClassKey() {
     return ClassName::trafficpattern;
+}
+
+inline bool Gen::trafficpattern::CollectionName(TAttrib<EA::Reflection::Text> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Text, 0x9ca1c8f9);
+}
+inline const EA::Reflection::Text &Gen::trafficpattern::CollectionName() const {
+    ATTRIB_CODEGEN_GETLAYOUT(CollectionName);
+}
+inline bool Gen::trafficpattern::CollectionName(EA::Reflection::Text &result) const {
+    result = CollectionName();
+    return true;
+}
+inline bool Gen::trafficpattern::SET_CollectionName(const EA::Reflection::Text &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(CollectionName, input);
+}
+
+inline bool Gen::trafficpattern::SpawnTime(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xbf2fdb5c);
+}
+inline const EA::Reflection::Float &Gen::trafficpattern::SpawnTime() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0xbf2fdb5c);
+}
+inline bool Gen::trafficpattern::SpawnTime(EA::Reflection::Float &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0xbf2fdb5c, result);
+}
+inline bool Gen::trafficpattern::SET_SpawnTime(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0xbf2fdb5c, input);
+}
+
+inline bool Gen::trafficpattern::SpeedHighway(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x9e404e33);
+}
+inline const EA::Reflection::Float &Gen::trafficpattern::SpeedHighway() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x9e404e33);
+}
+inline bool Gen::trafficpattern::SpeedHighway(EA::Reflection::Float &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x9e404e33, result);
+}
+inline bool Gen::trafficpattern::SET_SpeedHighway(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x9e404e33, input);
+}
+
+inline bool Gen::trafficpattern::SpeedStreet(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x7c44962f);
+}
+inline const EA::Reflection::Float &Gen::trafficpattern::SpeedStreet() const {
+    ATTRIB_CODEGEN_GETVALUE(EA::Reflection::Float, 0x7c44962f);
+}
+inline bool Gen::trafficpattern::SpeedStreet(EA::Reflection::Float &result) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUE(EA::Reflection::Float, 0x7c44962f, result);
+}
+inline bool Gen::trafficpattern::SET_SpeedStreet(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETVALUE(EA::Reflection::Float, 0x7c44962f, input);
+}
+
+inline bool Gen::trafficpattern::Vehicles(TAttrib<TrafficPatternRecord> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(TrafficPatternRecord, 0x94e3c795);
+}
+inline const TrafficPatternRecord &Gen::trafficpattern::Vehicles(unsigned int index) const {
+    ATTRIB_CODEGEN_GETVALUEINDEXED(TrafficPatternRecord, 0x94e3c795, index);
+}
+inline bool Gen::trafficpattern::Vehicles(TrafficPatternRecord &result, unsigned int index) const {
+    ATTRIB_CODEGEN_CHECKEDGETVALUEINDEXED(TrafficPatternRecord, 0x94e3c795, result, index);
+}
+inline unsigned int Gen::trafficpattern::Num_Vehicles() const {
+    ATTRIB_CODEGEN_GETLENGTH(0x94e3c795);
+}
+inline bool Gen::trafficpattern::SET_Vehicles(const TrafficPatternRecord &input, unsigned int index) {
+    ATTRIB_CODEGEN_SETVALUEINDEXED(TrafficPatternRecord, 0x94e3c795, input, index);
 }
 
 }; // namespace Attrib

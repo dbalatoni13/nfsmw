@@ -76,54 +76,25 @@ struct emitteruv : Instance {
         Instance::operator=(rhs);
         return *this;
     }
-    bool EndU(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x841d0551);
-    }
-    bool EndU(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(EndU, result);
-    }
-    const EA::Reflection::Float &EndU() const {
-        ATTRIB_CODEGEN_GETLAYOUT(EndU);
-    }
-    bool SET_EndU(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(EndU, input);
-    }
-    bool EndV(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x0d28675b);
-    }
-    bool EndV(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(EndV, result);
-    }
-    const EA::Reflection::Float &EndV() const {
-        ATTRIB_CODEGEN_GETLAYOUT(EndV);
-    }
-    bool SET_EndV(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(EndV, input);
-    }
-    bool StartU(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x98b1da40);
-    }
-    bool StartU(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(StartU, result);
-    }
-    const EA::Reflection::Float &StartU() const {
-        ATTRIB_CODEGEN_GETLAYOUT(StartU);
-    }
-    bool SET_StartU(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(StartU, input);
-    }
-    bool StartV(TAttrib<EA::Reflection::Float> &result) const {
-        ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xb1ebd0d4);
-    }
-    bool StartV(EA::Reflection::Float &result) const {
-        ATTRIB_CODEGEN_CHECKEDGETLAYOUT(StartV, result);
-    }
-    const EA::Reflection::Float &StartV() const {
-        ATTRIB_CODEGEN_GETLAYOUT(StartV);
-    }
-    bool SET_StartV(const EA::Reflection::Float &input) {
-        ATTRIB_CODEGEN_SETLAYOUT(StartV, input);
-    }
+    bool EndU(TAttrib<EA::Reflection::Float> &result) const;
+    bool EndU(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &EndU() const;
+    bool SET_EndU(const EA::Reflection::Float &input);
+
+    bool EndV(TAttrib<EA::Reflection::Float> &result) const;
+    bool EndV(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &EndV() const;
+    bool SET_EndV(const EA::Reflection::Float &input);
+
+    bool StartU(TAttrib<EA::Reflection::Float> &result) const;
+    bool StartU(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &StartU() const;
+    bool SET_StartU(const EA::Reflection::Float &input);
+
+    bool StartV(TAttrib<EA::Reflection::Float> &result) const;
+    bool StartV(EA::Reflection::Float &result) const;
+    const EA::Reflection::Float &StartV() const;
+    bool SET_StartV(const EA::Reflection::Float &input);
 
   private:
     unsigned int GetLayoutSize() {
@@ -153,6 +124,62 @@ static const Key StartV = 0xb1ebd0d4;
 
 inline Key Gen::emitteruv::ClassKey() {
     return ClassName::emitteruv;
+}
+
+inline bool Gen::emitteruv::EndU(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x841d0551);
+}
+inline const EA::Reflection::Float &Gen::emitteruv::EndU() const {
+    ATTRIB_CODEGEN_GETLAYOUT(EndU);
+}
+inline bool Gen::emitteruv::EndU(EA::Reflection::Float &result) const {
+    result = EndU();
+    return true;
+}
+inline bool Gen::emitteruv::SET_EndU(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(EndU, input);
+}
+
+inline bool Gen::emitteruv::EndV(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x0d28675b);
+}
+inline const EA::Reflection::Float &Gen::emitteruv::EndV() const {
+    ATTRIB_CODEGEN_GETLAYOUT(EndV);
+}
+inline bool Gen::emitteruv::EndV(EA::Reflection::Float &result) const {
+    result = EndV();
+    return true;
+}
+inline bool Gen::emitteruv::SET_EndV(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(EndV, input);
+}
+
+inline bool Gen::emitteruv::StartU(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0x98b1da40);
+}
+inline const EA::Reflection::Float &Gen::emitteruv::StartU() const {
+    ATTRIB_CODEGEN_GETLAYOUT(StartU);
+}
+inline bool Gen::emitteruv::StartU(EA::Reflection::Float &result) const {
+    result = StartU();
+    return true;
+}
+inline bool Gen::emitteruv::SET_StartU(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(StartU, input);
+}
+
+inline bool Gen::emitteruv::StartV(TAttrib<EA::Reflection::Float> &result) const {
+    ATTRIB_CODEGEN_GETATTRIB(EA::Reflection::Float, 0xb1ebd0d4);
+}
+inline const EA::Reflection::Float &Gen::emitteruv::StartV() const {
+    ATTRIB_CODEGEN_GETLAYOUT(StartV);
+}
+inline bool Gen::emitteruv::StartV(EA::Reflection::Float &result) const {
+    result = StartV();
+    return true;
+}
+inline bool Gen::emitteruv::SET_StartV(const EA::Reflection::Float &input) {
+    ATTRIB_CODEGEN_SETLAYOUT(StartV, input);
 }
 
 }; // namespace Attrib
