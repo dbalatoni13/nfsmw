@@ -645,8 +645,8 @@ void TrackStreamer::ClearCurrentZones() {
 #ifndef EA_BUILD_A124
     CurrentZoneFarLoad = true;
 #endif
-    StartLoadingTime = 0.0f;
     CurrentZoneName[0] = 0;
+    StartLoadingTime = 0.0f;
     MemorySafetyMargin = 0;
     AmountJettisoned = 0;
     NumJettisonedSections = 0;
