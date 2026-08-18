@@ -2586,7 +2586,8 @@ void TrackStreamer::UnloadEverything() {
     for (int n = 0; n < NumTrackStreamingSections; n++) {
         TrackStreamingSection *section = &pTrackStreamingSections[n];
         // TODO
-        if (section->Status >= TrackStreamingSection::LOADED && section->Status <= TrackStreamingSection::ACTIVATED) {
+        if (static_cast<unsigned int>(section->Status - TrackStreamingSection::LOADED) <=
+            static_cast<unsigned int>(TrackStreamingSection::ACTIVATED - TrackStreamingSection::LOADED)) {
             UnloadSection(section);
         }
     }
