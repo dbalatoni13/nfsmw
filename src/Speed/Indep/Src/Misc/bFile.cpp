@@ -169,6 +169,71 @@ void bFileFlushCacheFile(const char *filename) {
     CachedRealFileHandle::FlushUnusedHandle(filename);
 }
 
+// total size: 0x28
+struct OpenDisculatorFile {
+    OpenDisculatorFile(bFileDirectoryEntry &dirEntry, const char *_filename)
+        : nameHash(dirEntry.Hash),                       //
+          giantFileNum(dirEntry.FileNumber),             //
+          localSectorOffset(dirEntry.LocalSectorOffset), //
+          totalSectorOffset(dirEntry.TotalSectorOffset), //
+          seekPos(0),                                    //
+          size(dirEntry.Size),                           //
+          filename(_filename) {}
+
+    ~OpenDisculatorFile() {}
+
+    USE_SLOTALLOC(OpenDisculatorFileSlotPool);
+
+    const char *filename;       // offset 0x0, size 0x4
+    int nameHash;               // offset 0x4, size 0x4
+    int giantFileNum;           // offset 0x8, size 0x4
+    int localSectorOffset;      // offset 0xC, size 0x4
+    int totalSectorOffset;      // offset 0x10, size 0x4
+    unsigned long long size;    // offset 0x18, size 0x8
+    unsigned long long seekPos; // offset 0x20, size 0x8
+};
+
+// total size: 0x81C
+class DisculatorDriver : public RealFile::DeviceDriver {
+  public:
+    DisculatorDriver() : DeviceDriver("discu:") {}
+
+    static DisculatorDriver *Get() {
+        return sDisculatorDriver;
+    }
+
+    char *GetGiantDataFileName(int file_number) {
+        return GiantDataFileName[file_number];
+    }
+
+    ~DisculatorDriver() override;
+    static DisculatorDriver *Create(const char *dir_filename, const char *data_filename);
+    bool Init() override;
+    void Restore() override;
+    EAFileHandle Open(const char *name, int oflags, int *pParentFileHandle) override;
+    void Close(EAFileHandle h) override;
+    uint32_t Read(EAFileHandle h, void *buf, unsigned int bufsize, RealFile::DeviceDriver *ddParent, EAFileHandle ddFileHandle) override;
+    uint32_t Write(EAFileHandle h, const void *buf, unsigned int bufsize, RealFile::DeviceDriver *ddParent, EAFileHandle ddFileHandle) override;
+    uint64_t Seek(EAFileHandle h, unsigned long long offset, int whence, RealFile::DeviceDriver *ddParent, EAFileHandle ddFileHandle) override;
+    uint64_t Getsize(EAFileHandle h) override;
+    uint64_t QueryLocation(EAFileHandle h) override;
+    bool Remove(const char *name) override;
+    uint64_t Getspace() override;
+
+    bool LoadGiantFiles(const char *giant_dir_filename, const char *giant_data_filename_base);
+    bFileDirectoryEntry *FindDirectoryEntry(const char *filename);
+
+  private:
+    static DisculatorDriver *sDisculatorDriver;
+
+    bFileDirectoryEntry *pDirectoryEntryTable; // offset 0x14, size 0x4
+    int NumDirectoryEntries;                   // offset 0x18, size 0x4
+    char GiantDataFileName[30][64];            // offset 0x1C, size 0x780
+    int GiantDataFileHandle[30];               // offset 0x79C, size 0x78
+    int CurrentSector;                         // offset 0x814, size 0x4
+    int TotalDeltaSector;                      // offset 0x818, size 0x4
+};
+
 SlotPool *OpenDisculatorFileSlotPool = nullptr;
 static const int PrintCDSeeking = ENABLE_IN_DEBUG;
 DisculatorDriver *DisculatorDriver::sDisculatorDriver = nullptr;
