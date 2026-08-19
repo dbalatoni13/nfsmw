@@ -4,6 +4,8 @@
 //
 //
 //
+#include "Speed/Indep/Libs/snd/9/source/library/cmn/sndenum.h"
+#include "csis/csis.h"
 #ifndef SNDO_H
 #define SNDO_H 1 // Decl: 8
 
@@ -81,6 +83,45 @@
 #define SNDCALL // Decl: 143
 
 // TODO remove and use SNDCALL per function
+#ifdef __cplusplus
+
+namespace Snd {
+
+// total size: 0x1
+class GlobalFxProcessor {
+public:
+    static Csis::Result GetMaxBuses(int *pBuses);
+
+    static Csis::Result SetMaxBuses(int buses);
+
+    static Csis::Result CreateInstance(Snd::Device device, int bus, GlobalFxProcessor **ppGlobalFxProcessor);
+
+    Csis::Result Release();
+
+    Csis::Result UpdatePreset(ExtendedFxPreset *pExtendedFxPreset);
+
+    Csis::Result SetCustom(void *pFxDefinition);
+
+    Csis::Result Reset();
+
+    Csis::Result SetOutputLevel(float level);
+
+private:
+    GlobalFxProcessor();
+
+    ~GlobalFxProcessor();
+
+public:
+    Csis::Result SetPreset(ExtendedFxPreset *pExtendedFxPreset);
+
+    Csis::Result SetPreset(FxPreset fxPreset);
+};
+
+
+}
+
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
