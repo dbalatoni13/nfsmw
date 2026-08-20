@@ -802,6 +802,8 @@ config.libs = [
             Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/smemlu.c"),
             Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/smemman.c"),
             Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/sndfxbus.cpp"),
+            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/spatkey.c"),
+            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/spitch.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/sgetpvol.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/gc/sscalcfx.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/gc/ssdfx.c"),
