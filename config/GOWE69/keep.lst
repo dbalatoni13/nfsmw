@@ -57,6 +57,8 @@ __AXVPB
 timerthread.o:TimerThreadStack
 sdownmix.o:_3Snd.gAzimuthSpacingsLut
 sfxrevc.o:tablecopyto
+sndfxbus.o:LC9
+sndfxbus.o:LC10
 zAI.o:pad_05_803C8C60_rodata
 zAI.o:lbl_804152C0
 zAI.o:lbl_804152DC

@@ -510,6 +510,14 @@ static inline int SNDI_clipint32(int val, int minval, int maxval) {
     return val;
 }
 
+static inline float SNDI_clipf(float val, float minval, float maxval) {
+    if (val < minval)
+        return minval;
+    if (val > maxval)
+        return maxval;
+    return val;
+}
+
 // sst.c
 SNDSTREAMCHANNEL *SNDSTRMI_getstreamptr(int sndstreamhandle);
 
