@@ -1256,6 +1256,99 @@ Speed/Indep/Libs/csis/dev/source/library/cmn/csis.cpp:
 	.data       start:0x80451E88 end:0x80451EA8
 	.bss        start:0x804CC6D0 end:0x804CC6EC
 
+Speed/Indep/Libs/spch/dev/source/library/cmn/spchdata.c:
+	.data       start:0x80451ED0 end:0x80451F00
+	.bss        start:0x804CC6F8 end:0x804CC900
+
+Speed/Indep/Libs/path/5.01.04/source/cmn/pathcontrol.cpp:
+	.text       start:0x80374530 end:0x803748D4
+	.sdata      start:0x804FF5F8 end:0x804FF600
+
+Speed/Indep/Libs/path/5.01.04/source/cmn/pathevent.cpp:
+	.text       start:0x803748D4 end:0x803752AC
+
+Speed/Indep/Libs/path/5.01.04/source/cmn/pathinit.cpp:
+	.text       start:0x803752AC end:0x80375BC8
+
+Speed/Indep/Libs/path/5.01.04/source/cmn/pathreal.cpp:
+	.text       start:0x80375BC8 end:0x80375DB8
+	.ctors      start:0x803C8C00 end:0x803C8C04
+
+Speed/Indep/Libs/path/5.01.04/source/cmn/pathreal6.cpp:
+	.text       start:0x80375DB8 end:0x8037614C
+
+Speed/Indep/Libs/path/5.01.04/source/cmn/pathserv.cpp:
+	.text       start:0x8037614C end:0x803767F0
+
+Speed/Indep/Libs/path/5.01.04/source/cmn/pathsnd.cpp:
+	.text       start:0x803767F0 end:0x803788F4
+
+Speed/Indep/Libs/path/5.01.04/source/cmn/pathtrack.cpp:
+	.text       start:0x803788F4 end:0x8037929C
+
+Speed/Indep/Libs/path/5.01.04/source/cmn/pathvol.cpp:
+	.text       start:0x8037929C end:0x8037A2B8
+
+Speed/Indep/Libs/path/5.01.04/source/cmn/author.cpp:
+	.text       start:0x8037A2B8 end:0x8037A2B8
+
+Speed/Indep/Libs/path/5.01.04/source/cmn/pathaction.cpp:
+	.text       start:0x8037A2B8 end:0x8037B840
+
+Speed/Indep/Libs/path/5.01.04/source/cmn/pathbank.cpp:
+	.text       start:0x8037B840 end:0x8037C0AC
+
+Speed/Indep/Libs/path/5.01.04/source/cmn/pathdebug.cpp:
+	.text       start:0x8037C0AC end:0x8037C0F8
+
+Speed/Indep/Libs/path/5.01.04/source/cmn/pathnode.cpp:
+	.text       start:0x8037C0F8 end:0x8037D164
+
+Speed/Indep/Libs/path/5.01.04/source/cmn/pathrand.cpp:
+	.text       start:0x8037D164 end:0x8037D26C
+
+Speed/Indep/Libs/spch/dev/source/library/cmn/spchbank.c:
+	.text       start:0x8037D26C end:0x8037D988
+
+Speed/Indep/Libs/spch/dev/source/library/cmn/spchevnt.c:
+	.text       start:0x8037D988 end:0x8037E814
+	.data       start:0x80451F00 end:0x80451F08
+
+Speed/Indep/Libs/spch/dev/source/library/cmn/spchinit.c:
+	.text       start:0x8037E814 end:0x8037EAC0
+
+Speed/Indep/Libs/spch/dev/source/library/cmn/spchpick.c:
+	.text       start:0x8037EAC0 end:0x8038095C
+	.data       start:0x80451F08 end:0x80451F28
+	.bss        start:0x804CC900 end:0x804CCE00
+
+Speed/Indep/Libs/spch/dev/source/library/cmn/spchrand.c:
+	.text       start:0x8038095C end:0x80380D30
+	.data       start:0x80451F28 end:0x80451F44
+	.bss        start:0x804CCE00 end:0x804CCE80
+
+Speed/Indep/Libs/spch/dev/source/library/cmn/spchrslv.c:
+	.text       start:0x80380D30 end:0x80380F14
+
+Speed/Indep/Libs/spch/dev/source/library/cmn/spchrule.c:
+	.text       start:0x80380F14 end:0x803813F0
+
+Speed/Indep/Libs/spch/dev/source/library/cmn/spchsamp.c:
+	.text       start:0x803813F0 end:0x803814A8
+
+Speed/Indep/Libs/spch/dev/source/library/cmn/sptick.c:
+	.text       start:0x803814A8 end:0x803814E0
+
+Speed/Indep/Libs/spch/dev/source/library/cmn/sputil.c:
+	.text       start:0x803814E0 end:0x803814EC
+
+Speed/Indep/Libs/spch/dev/source/library/cmn/spchcsis.cpp:
+	.text       start:0x803814EC end:0x80381654
+
+Speed/Indep/Libs/spch/dev/source/library/cmn/author.cpp:
+	.text       start:0x80381654 end:0x80381654
+	.data       start:0x80451F44 end:0x80451F84
+
 Speed/Indep/Libs/realcore/6.24.00/source/file/cmn/filesys_c.cpp:
 	.text       start:0x80381654 end:0x80381874
 
@@ -1377,7 +1470,7 @@ Packages/realmemcard/3.04.01-layer2/source/lib/gc/gc_interface.cpp:
 
 asd2:
 	.text       start:0x80391518 end:0x80391570
-	.ctors      start:0x803C8C00 end:0x803C8C1C
+	.ctors      start:0x803C8C04 end:0x803C8C1C
 	.dtors      start:0x803C8C44 end:0x803C8C5C
 
 Packages/realmemcard/3.04.01-layer2/source/lib/gc/public.cpp:

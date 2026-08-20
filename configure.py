@@ -831,6 +831,136 @@ config.libs = [
         ],
     },
     {
+        "lib": "path",
+        "toolchain_version": config.linker_version,
+        "cflags": cflags_game,
+        "host": False,
+        "progress_category": "libs",
+        "objects": [
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/path/5.01.04/source/cmn/pathcontrol.cpp",
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/path/5.01.04/source/cmn/pathevent.cpp",
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/path/5.01.04/source/cmn/pathinit.cpp",
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/path/5.01.04/source/cmn/pathreal.cpp",
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/path/5.01.04/source/cmn/pathreal6.cpp",
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/path/5.01.04/source/cmn/pathserv.cpp",
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/path/5.01.04/source/cmn/pathsnd.cpp",
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/path/5.01.04/source/cmn/pathtrack.cpp",
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/path/5.01.04/source/cmn/pathvol.cpp",
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/path/5.01.04/source/cmn/author.cpp",
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/path/5.01.04/source/cmn/pathaction.cpp",
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/path/5.01.04/source/cmn/pathbank.cpp",
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/path/5.01.04/source/cmn/pathdebug.cpp",
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/path/5.01.04/source/cmn/pathnode.cpp",
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/path/5.01.04/source/cmn/pathrand.cpp",
+            ),
+        ],
+    },
+    {
+        "lib": "spch",
+        "toolchain_version": config.linker_version,
+        "cflags": cflags_game,
+        "host": False,
+        "progress_category": "libs",
+        "objects": [
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/spch/dev/source/library/cmn/spchbank.c",
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/spch/dev/source/library/cmn/spchdata.c",
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/spch/dev/source/library/cmn/spchevnt.c",
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/spch/dev/source/library/cmn/spchinit.c",
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/spch/dev/source/library/cmn/spchpick.c",
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/spch/dev/source/library/cmn/spchrand.c",
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/spch/dev/source/library/cmn/spchrslv.c",
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/spch/dev/source/library/cmn/spchrule.c",
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/spch/dev/source/library/cmn/spchsamp.c",
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/spch/dev/source/library/cmn/sptick.c",
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/spch/dev/source/library/cmn/sputil.c",
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/spch/dev/source/library/cmn/spchcsis.cpp",
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/spch/dev/source/library/cmn/author.cpp",
+            ),
+        ],
+    },
+    {
         "lib": "realcore",
         "toolchain_version": config.linker_version,
         "cflags": cflags_game,
