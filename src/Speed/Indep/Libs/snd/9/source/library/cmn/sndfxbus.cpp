@@ -82,16 +82,17 @@ Csis::Result GlobalFxProcessor::SetOutputLevel(float level) {
     int i;
     GlobalFxProcessorData *mp = reinterpret_cast<GlobalFxProcessorData *>(this);
 
-    for (i = 0; i < 6; i++) {
-        if (level > 1.0f) {
-            mp->fxBusOutputLevel[i] = 1.0f;
-        } else if (level < 0.0f) {
-            mp->fxBusOutputLevel[i] = 0.0f;
-        } else {
-            mp->fxBusOutputLevel[i] = level;
-        }
+    if (level > 1.0f) {
+        level = 1.0f;
+    } else if (level < 0.0f) {
+        level = 0.0f;
     }
 
+    for (i = 0; i < 6; i++) {
+        mp->fxBusOutputLevel[i] = level;
+    }
+
+    return Csis::RESULT_OK;
 }
 
 }
