@@ -34,6 +34,7 @@
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 #include "TrackInfo.hpp"
 #include "TrackPath.hpp"
+#include <string.h>
 
 // TODO the stripped functions here are leftovers from HP2
 
@@ -188,41 +189,41 @@ void World_DEBUGStartLocation(UMath::Vector3 &startLoc, UMath::Vector3 &initialV
     const char *regionName = TrackInfo::GetLoadedTrackInfo()->RegionName;
     float rotInitialVec = 0.0f;
 
-    if (strcasecmp(regionName, "L2RA") == 0) {
+    if (stricmp(regionName, "L2RA") == 0) {
         startLoc.x = -2510.0f;
         startLoc.y = 151.0f;
         startLoc.z = 1767.0f;
         rotInitialVec = 0.15f;
-    } else if (strcasecmp(regionName, "L2RB") == 0) {
+    } else if (stricmp(regionName, "L2RB") == 0) {
         startLoc.x = 0.0f;
         startLoc.y = 21.0f;
         startLoc.z = 0.0f;
-    } else if (strcasecmp(regionName, "L2RC") == 0) {
+    } else if (stricmp(regionName, "L2RC") == 0) {
         startLoc.x = 0.0f;
         startLoc.y = 21.0f;
         startLoc.z = 0.0f;
-    } else if (strcasecmp(regionName, "L2RD") == 0) {
+    } else if (stricmp(regionName, "L2RD") == 0) {
         startLoc.x = 16.0f;
         startLoc.y = 457.0f;
         startLoc.z = 43.0f;
         rotInitialVec = 0.63f;
-    } else if (strcasecmp(regionName, "L2RE") == 0) {
+    } else if (stricmp(regionName, "L2RE") == 0) {
         startLoc.x = 16.0f;
         startLoc.y = 457.0f;
         startLoc.z = 43.0f;
-    } else if (strcasecmp(regionName, "L2RG") == 0) {
+    } else if (stricmp(regionName, "L2RG") == 0) {
         startLoc.x = 2036.0f;
         startLoc.y = 70.0f;
         startLoc.z = -2010.0f;
-    } else if (strcasecmp(regionName, "L4RA") == 0) {
+    } else if (stricmp(regionName, "L4RA") == 0) {
         startLoc.x = 30.0f;
         startLoc.y = 20.0f;
         startLoc.z = 40.0f;
-    } else if (strcasecmp(regionName, "L5RD") == 0) {
+    } else if (stricmp(regionName, "L5RD") == 0) {
         startLoc.x = -20.0f;
         startLoc.y = 2.0f;
         startLoc.z = 100.0f;
-    } else if (strcasecmp(regionName, "L2RX") == 0) {
+    } else if (stricmp(regionName, "L2RX") == 0) {
         startLoc.x = -2510.0f;
         startLoc.y = 151.0f;
         startLoc.z = 1773.0f;

@@ -141,7 +141,11 @@ void SFXObj_Reverb::Destroy() {
 static const int DEBUG_REVERB_BUFFER = 0; // size: 0x4, Decl: 367
 
 // STRIPPED
-void *SFXObj_Reverb::AllocReverbBuffer(char *name, int size) {}
+void *SFXObj_Reverb::AllocReverbBuffer(char *name, int size) {
+    return nullptr;
+}
 
 // STRIPPED
-bool SFXObj_Reverb::FreeReverbBuffer(void *ptr) {}
+bool SFXObj_Reverb::FreeReverbBuffer(void *ptr) {
+    return false;
+}

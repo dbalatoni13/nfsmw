@@ -625,7 +625,9 @@ void NFSMixMapState::InitializeMasterChannels() {
 }
 
 // STRIPPED
-NFSMixMap *NFSMixMapState::GetConnectMap(int nID) {}
+NFSMixMap *NFSMixMapState::GetConnectMap(int nID) {
+    return nullptr;
+}
 
 // STRIPPED
 void NFSMixMapState::UpdateState(float t) {}
@@ -634,7 +636,9 @@ void NFSMixMapState::UpdateState(float t) {}
 void NFSMixMapState::ProcessMixMap(float t) {}
 
 // STRIPPED
-NFSMixMapState *NFSMixMapState::GetMixMapProcAddress() {}
+NFSMixMapState *NFSMixMapState::GetMixMapProcAddress() {
+    return nullptr;
+}
 
 NFSMixMapState *NFSMixMapState::GetMixMapProc(int refcnt) {
     NFSMixMapState *pstate = &this->m_pFirstInstance[refcnt];

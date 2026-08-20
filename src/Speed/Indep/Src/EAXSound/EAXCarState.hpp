@@ -215,7 +215,9 @@ class EAX_CarState : public UTL::Collections::Listable<EAX_CarState, 10> {
     float GetVelocityMagnitudeMPH() {
         return MPS2MPH(this->GetVelocityMagnitude());
     }
-    float GetYaw() {}
+    float GetYaw() {
+        return 0.0f;
+    }
     const bMatrix4 *GetBodyMatrix() {
         return &this->mMatrix;
     }

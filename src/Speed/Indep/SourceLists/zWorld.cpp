@@ -1,3 +1,5 @@
+#pragma warning(disable: 4716)
+
 #include "Speed/Indep/Src/World/World.cpp"
 
 #include "Speed/Indep/Src/World/Player.cpp"

@@ -1205,10 +1205,14 @@ void NFSMixMap::InitMainMapStates() {
 void NFSMixMap::AddMapState(eMAINMAPSTATES estate, int numdups) {}
 
 // STRIPPED
-NFSMixMap *NFSMixMap::GetMasterMixMap() {}
+NFSMixMap *NFSMixMap::GetMasterMixMap() {
+    return nullptr;
+}
 
 // STRIPPED
-NFSMixMap *NFSMixMap::GetSecondaryMap() {}
+NFSMixMap *NFSMixMap::GetSecondaryMap() {
+    return nullptr;
+}
 
 float F_DT_FRAME_LOCK = 0.0333667f; // size: 0x4, address: 0x80418A28, Decl: 2611
 
