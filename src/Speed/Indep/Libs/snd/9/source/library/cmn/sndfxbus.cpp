@@ -78,6 +78,8 @@ Csis::Result GlobalFxProcessor::Reset() {
     return Csis::RESULT_OK;
 }
 
+// TODO: This match feels kinda bad. Are we really keeping rodata from a
+//      stripped function?
 Csis::Result GlobalFxProcessor::SetOutputLevel(float level) {
     int i;
     GlobalFxProcessorData *mp = reinterpret_cast<GlobalFxProcessorData *>(this);

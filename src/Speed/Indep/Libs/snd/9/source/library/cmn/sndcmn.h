@@ -168,6 +168,25 @@ typedef struct CHANPUB {
 } CHANPUB;
 
 // total size: 0x8
+struct SNDIPACKETCALLBACK {
+    unsigned short type; // offset 0x0, size 0x2
+    unsigned short chan; // offset 0x2, size 0x2
+
+    union {
+        unsigned int frames; // offset 0x0, size 0x4
+        void *psamples; // offset 0x0, size 0x4
+    } u; // offset 0x4, size 0x4
+};
+
+// total size: 0x384
+struct SNDPACKETSTATE {
+    // Members
+    int callbackindex; // offset 0x0, size 0x4
+    SNDIPACKETCALLBACK spcb[96]; // offset 0x4, size 0x300
+    SNDPACKETCHAN *ppc[32]; // offset 0x304, size 0x80
+};
+
+// total size: 0x8
 typedef struct SNDMEMREC {
     unsigned int addr; // offset 0x0, size 0x4
     int size;          // offset 0x4, size 0x4
@@ -590,6 +609,9 @@ void SNDI_checkplayopts(SNDPLAYOPTS *pspo);
 
 // stagpat.c
 int SNDBANKI_playpatch(void *psampledata, TAGGEDPATCH *ptp, int bhandle, int patnum, struct SNDPLAYOPTS *pspo);
+
+// sclcptch.c
+void iSNDcalcpitch(int chan /* r3 */);
 
 #ifdef __cplusplus
 extern "C" {
