@@ -159,7 +159,7 @@ elif version_num in [2]:
     config.platform = Platform.PS2
     config.binutils_tag = "2.45"
 
-config.objdiff_tag = "v3.7.0"
+config.objdiff_tag = "v3.8.0"
 config.sjiswrap_tag = "v1.2.0"
 config.wibo_tag = "1.1.0"
 
@@ -821,6 +821,16 @@ config.libs = [
         ],
     },
     {
+        "lib": "csis",
+        "toolchain_version": config.linker_version,
+        "cflags": cflags_game,
+        "host": False,
+        "progress_category": "libs",
+        "objects": [
+            Object(NonMatching, "Speed/Indep/Libs/csis/dev/source/library/cmn/csis.cpp"),
+        ],
+    },
+    {
         "lib": "realcore",
         "toolchain_version": config.linker_version,
         "cflags": cflags_game,
@@ -1005,7 +1015,6 @@ if config.platform == Platform.GC_WII:
                     Object(NonMatching, "shptype.cpp"),
                     Object(NonMatching, "swizzlesize.cpp"),
                     Object(NonMatching, "cluttype.cpp"),
-                    Object(NonMatching, "csis/dev/source/library/cmn/csis.cpp"),
                     Object(NonMatching, "dummy.c"),
                     Object(NonMatching, "prodg_fixes.cpp"),
                     Object(NonMatching, "codec/cmn/refsize.cpp"),
