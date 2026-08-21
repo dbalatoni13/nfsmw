@@ -4,8 +4,6 @@
 //
 //
 //
-#include "Speed/Indep/Libs/snd/9/source/library/cmn/sndenum.h"
-#include "csis/csis.h"
 #ifndef SNDO_H
 #define SNDO_H 1 // Decl: 8
 
