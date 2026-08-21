@@ -69,7 +69,7 @@ void PATHI_sortprojects() {
         if (Path::pfstates[p1] != 0) {
             while (p2 < PATH_MAX_PROJECTS) {
                 if (Path::pfstates[p2] != 0 &&
-                    Path::pfstates[p2]->idflags < Path::pfstates[p1]->idflags) {
+                    Path::pfstates[p1]->idflags > Path::pfstates[p2]->idflags) {
                     pfstate1 = *Path::pfstates[p1];
                     *Path::pfstates[p1] = *Path::pfstates[p2];
                     *Path::pfstates[p2] = pfstate1;
