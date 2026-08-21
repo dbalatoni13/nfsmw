@@ -1,4 +1,5 @@
 #include "Speed/Indep/Libs/snd/9/source/library/cmn/sndcmn.h"
+#include "Speed/Indep/Libs/snd/9/source/library/cmn/sndenum.h"
 #include <cstddef>
 
 namespace Snd {
@@ -19,7 +20,7 @@ const signed char gChannelToVoiceIndexLut[6][6] = {
 extern "C" {
 #endif
 
-int SNDSTRM_setvol(int sndStrmHandle, Channel sourceChannel, float volume) {
+int SNDSTRM_setvol(int sndStrmHandle, Snd::Channel sourceChannel, float volume) {
     int i = 0;
     SNDSTREAMCHANNEL *pssc = SNDSTRMI_getstreamptr(sndStrmHandle);
 

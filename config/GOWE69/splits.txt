@@ -862,6 +862,7 @@ Speed/Indep/Libs/snd/9/source/library/cmn/smemman.c:
 
 Speed/Indep/Libs/snd/9/source/library/cmn/sndfxbus.cpp:
 	.text       start:0x80360550 end:0x80360760
+	.rodata     start:0x80412860 end:0x80412870
 
 Speed/Indep/Libs/snd/9/source/library/cmn/spatkey.c:
 	.text       start:0x80360760 end:0x8036080C
