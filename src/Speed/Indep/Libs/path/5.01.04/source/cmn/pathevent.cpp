@@ -15,20 +15,23 @@ int PATHI_addevent(unsigned int projectflags, PATHEVENT *event) {
     result = PATHERR_INV_PARAM;
     action = reinterpret_cast<PATHACTION *>(event + 1);
     indent = 0;
+    projectflags &= 0xff000000;
     for (a = 0; a < event->numactions; a++, action++) {
         if (action->type == 1) {
-            if (action->assess < 4) {
-                if (action->assess > 1) {
-                    action->indent = indent - 1;
+            if (action->assess > 3) {
+                if (static_cast<int>(action->assess) == 4) {
+                    indent--;
+                    action->indent = indent;
                 } else {
                     action->indent = indent;
-                    indent++;
                 }
-            } else if (action->assess == 4) {
-                indent--;
-                action->indent = indent;
             } else {
-                action->indent = indent;
+                if (action->assess < 2) {
+                    action->indent = indent;
+                    indent++;
+                } else {
+                    action->indent = indent - 1;
+                }
             }
         } else {
             action->indent = indent;
@@ -43,10 +46,10 @@ int PATHI_addevent(unsigned int projectflags, PATHEVENT *event) {
                 return PATHERR_TOOMANY;
             }
             result = 0;
-            event->queued = Path::IPathToReal::realimp->GetMilliseconds();
-            event->lastact = event->queued;
-            Path::pfstates[project]->eventqueue[eventindex] = event;
-            Path::pfstates[project]->eventindex = eventindex + 1;
+            event->lastact = Path::IPathToReal::realimp->GetMilliseconds();
+            event->queued = event->lastact;
+            Path::pfstates[project]->eventqueue[eventindex++] = event;
+            Path::pfstates[project]->eventindex = eventindex;
         }
     }
     return result;
@@ -62,6 +65,8 @@ int PATH_event(int tracks, unsigned int eventID) {
     } else {
         result = PATHERR_INV_PARAM;
         copyeventp = 0;
+        projectflags = eventID & 0xf000000;
+        eventID &= 0xffffff;
         {
             unsigned int p;
 
@@ -69,9 +74,8 @@ int PATH_event(int tracks, unsigned int eventID) {
                 if (PATHI_switchproject(static_cast<unsigned char>(p), tracks) != 0) {
                     PATHEVENT *eventp;
 
-                    projectflags = 0x1000000 << Path::pfstate->pmap->projectID;
-                    if ((eventID & 0xf000000 & projectflags) != 0) {
-                        eventp = PATHI_getevent(eventID & 0xffffff, 0xffffffff);
+                    if ((projectflags & (0x1000000 << Path::pfstate->pmap->projectID)) != 0) {
+                        eventp = PATHI_getevent(eventID, 0xffffffff);
                         if (eventp != 0) {
                             if (eventp->beingFiltered == 0) {
                                 if (copyeventp != 0 || (copyeventp = PATHI_copyevent(eventp)) != 0) {
@@ -161,9 +165,10 @@ void PATHI_removeevent(PATHEVENT *event) {
                 for (e = 0; e <= 16; e++) {
                     if (pfs->eventqueue[e] == event) {
                         pfs->eventqueue[e] = 0;
+                        e++;
                         pfs->eventindex--;
                         for (; e < 16; e++) {
-                            pfs->eventqueue[e] = pfs->eventqueue[e + 1];
+                            pfs->eventqueue[e - 1] = pfs->eventqueue[e];
                         }
                     }
                 }
@@ -263,16 +268,16 @@ int PATHI_serviceevent(int eventindex) {
 
     actionstaken = 0;
     event = Path::pfstate->eventqueue[eventindex];
-    if (Path::milliseconds >= event->lastact) {
-        a = event->currentaction;
-        action = reinterpret_cast<PATHACTION *>(event + 1) + a;
-        while (a < event->numactions && (action->done != 0 || PATHI_serviceaction(event, action) != 0)) {
-            actionstaken++;
-            event->currentaction++;
-            event->lastact = Path::milliseconds;
-            action++;
-            a++;
-        }
+    if (event->lastact > Path::milliseconds) {
+        return 0;
+    }
+    a = event->currentaction;
+    action = reinterpret_cast<PATHACTION *>(event + 1) + a;
+    for (; a < event->numactions &&
+           (action->done != 0 || PATHI_serviceaction(event, action) != 0); action++, a++) {
+        actionstaken++;
+        event->currentaction++;
+        event->lastact = Path::milliseconds;
     }
     return actionstaken;
 }
@@ -302,11 +307,11 @@ int PATHI_serviceeventqueue() {
             if (event->priority != 0 && PATHI_eventtakespriority(e) == 0) {
                 eventresult = PATHEVENT_PURGED;
             }
-            if (eventresult == PATHEVENT_PENDING) {
-                actionstaken += PATHI_serviceevent(e);
-            } else {
+            if (eventresult != PATHEVENT_PENDING) {
                 PATHI_releaseevent(e, eventresult);
                 e--;
+            } else {
+                actionstaken += PATHI_serviceevent(e);
             }
         }
     }
@@ -323,7 +328,7 @@ int PATHI_eventtakespriority(int e) {
     event = Path::pfstate->eventqueue[e];
     priority = event->priority;
     bumpsame = priority % 2;
-    if (priority < 0) {
+    if (priority <= 0) {
         priority = -priority;
     }
     for (e++; e < 16; e++) {
@@ -337,15 +342,12 @@ int PATHI_eventtakespriority(int e) {
             if (testpriority < 0) {
                 testpriority = -testpriority;
             }
-            testbumpsame = testpriority % 2;
-            if (event->priority < 1 || priority + bumpsame <= testpriority) {
-                if ((testevent->bumplower != 0 || priority < testpriority) &&
-                    priority < testpriority + testbumpsame) {
-                    return 0;
-                }
-            } else {
+            if (event->priority > 0 && testpriority < priority + bumpsame) {
                 PATHI_releaseevent(e, PATHEVENT_PURGED);
                 e--;
+            } else if ((testevent->priority < 0 || testpriority > priority) &&
+                       priority < testpriority + (testbumpsame = testpriority % 2)) {
+                return 0;
             }
         }
     }

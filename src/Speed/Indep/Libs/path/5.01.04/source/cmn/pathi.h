@@ -398,18 +398,16 @@ inline PATHEVENT *PATHI_getevent(unsigned int eventID, unsigned int eventIDMask)
     PATHEVENT *eventp;
     int eventIndex;
 
-    eventp = 0;
-    for (eventIndex = Path::pfstate->pmap->numevents - 1; eventIndex >= 0; eventIndex--) {
+    eventIndex = Path::pfstate->pmap->numevents - 1;
+    while (eventIndex >= 0) {
         eventp = reinterpret_cast<PATHEVENT *>(reinterpret_cast<char *>(Path::pfstate->pmap) +
                                               reinterpret_cast<unsigned short *>(Path::pfstate->peventoffsets)[eventIndex] * 4);
         if ((eventp->eventID & eventIDMask) == (eventID & eventIDMask)) {
-            break;
+            return eventp;
         }
+        eventIndex--;
     }
-    if (eventIndex < 0) {
-        eventp = 0;
-    }
-    return eventp;
+    return 0;
 }
 
 int PATHI_lock();
