@@ -5,27 +5,27 @@
 
 namespace Path {
 
-PATHFINDERSTATE *pfstates[PATH_MAX_PROJECTS];
-PATHFINDERSTATE *pfstate;
-SongProgressCallback songprogress;
-EventReleaseCallback eventrelease;
-EventActionCallback eventaction;
-unsigned char inited;
-unsigned char paused;
-signed char volscale;
-char bankservice;
-int timercallsinarow;
-int lasttimercb;
-unsigned int milliseconds;
-int debugchannels;
-int autoverify;
-int defaultfxbus;
-PATHMemAllocFunc memalloc;
-PATHMemFreeFunc memfree;
-int timercalls;
-int timertimespent;
-int taskcalls;
-int tasktimespent;
+PATHFINDERSTATE *pfstates[PATH_MAX_PROJECTS] = {0};
+PATHFINDERSTATE *pfstate = 0;
+SongProgressCallback songprogress = 0;
+EventReleaseCallback eventrelease = 0;
+EventActionCallback eventaction = 0;
+unsigned char inited = 0;
+unsigned char paused = 0;
+signed char volscale = 0;
+char bankservice = 0;
+int timercallsinarow = 0;
+int lasttimercb = 0;
+unsigned int milliseconds = 0;
+int debugchannels = 0;
+int autoverify = 0;
+int defaultfxbus = 0;
+PATHMemAllocFunc memalloc = 0;
+PATHMemFreeFunc memfree = 0;
+int timercalls = 0;
+int timertimespent = 0;
+int taskcalls = 0;
+int tasktimespent = 0;
 
 }
 

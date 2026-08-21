@@ -29,13 +29,29 @@ class IPathToReal {
         this->pathlogf = 0;
     }
 
+#ifdef PATH_REAL_EMIT_METHODS
+    virtual ~IPathToReal(); // Decl: 54
+#else
     inline virtual ~IPathToReal() {} // Decl: 54
+#endif
 
+#ifdef PATH_REAL_EMIT_METHODS
+    virtual void SetAbortMessageFunc(PATHAbortMsgFunc f); // Decl: 68
+#else
     inline virtual void SetAbortMessageFunc(PATHAbortMsgFunc f) { this->pathabortmsg = f; } // Decl: 68
+#endif
 
+#ifdef PATH_REAL_EMIT_METHODS
+    virtual void SetDebugPrintFunc(PATHDebugPrintFunc f); // Decl: 84
+#else
     inline virtual void SetDebugPrintFunc(PATHDebugPrintFunc f) { this->pathprintf = f; } // Decl: 84
+#endif
 
+#ifdef PATH_REAL_EMIT_METHODS
+    virtual void SetLogPrintFunc(PATHDebugPrintFunc f); // Decl: 120
+#else
     inline virtual void SetLogPrintFunc(PATHDebugPrintFunc f) { this->pathlogf = f; } // Decl: 120
+#endif
 
     void AbortMessage(char *msg) {} // Decl: 122
 
@@ -57,8 +73,13 @@ class IPathToReal {
 
     virtual int FileSize(const char *filename); // Decl: 259
 
+#ifdef PATH_REAL_EMIT_METHODS
+    virtual void SetSynchMode(SynchMode mode); // Decl: 265
+    virtual SynchMode GetSynchMode(); // Decl: 266
+#else
     inline virtual void SetSynchMode(SynchMode mode) { this->synchmode = mode; } // Decl: 265
     inline virtual SynchMode GetSynchMode() { return this->synchmode; } // Decl: 266
+#endif
 
   private:
     PATHAbortMsgFunc pathabortmsg; // offset 0x0, size 0x4, Decl: 269

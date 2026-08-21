@@ -7,11 +7,14 @@ namespace Path {
 
 // total size: 0x4
 // Decl: 26
-class IPathToSnd {
-  public:
+struct IPathToSnd {
     IPathToSnd() {} // Decl: 31
 
-    virtual ~IPathToSnd() {} // Decl: 32
+#ifdef PATH_SND_EMIT_METHODS
+    virtual ~IPathToSnd(); // Decl: 32
+#else
+    inline virtual ~IPathToSnd() {} // Decl: 32
+#endif
 
     virtual int CreateStreamTrack(IPathTrack **ppPathTrack, int maxRequests, float bufferTime, int byteRate); // Decl: 49
 

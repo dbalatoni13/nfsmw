@@ -52,6 +52,115 @@ typedef struct {
     int (*spchGetTick)();                        // offset 0x8, size 0x4, Decl: 117
 } SPCHType_ExtVecs;
 
+typedef int (*TestSentenceRuleFuncPtr)(EventSpec *, int, int, int);
+typedef void (*SetSentenceRuleFuncPtr)(EventSpec *, int, int, int);
+typedef int (*ReparmFuncPtr)(int, unsigned int *);
+typedef SPCHType_EventRuleResult (*EventRuleFuncPtr)(EventSpec *);
+typedef void *(*MemAllocFuncPtr)(unsigned int);
+typedef void (*MemFreeFuncPtr)(void *);
+typedef int (*AddEventFuncPtr)(int, int, ...);
+typedef unsigned char UInt8;
+typedef unsigned short UInt16;
+typedef unsigned int UInt32;
+
+struct SPCH_Callbacks {
+    int (*request)(SPCHType_SampleRequestData *);
+    TestSentenceRuleFuncPtr testRule;
+    SetSentenceRuleFuncPtr setRule;
+    EventRuleFuncPtr eventRule;
+    ReparmFuncPtr reparm;
+};
+
+extern SPCHType_ExtVecs gExtVecs;
+extern SPCH_Callbacks gCallbacks;
+extern int gSPCH_Initialized;
+extern int gDataRate;
+extern unsigned int gLastTick;
+extern unsigned short gLastSubTick;
+extern MemAllocFuncPtr gMemAlloc;
+extern MemFreeFuncPtr gMemFree;
+void iSPCH_MemFree(void *data);
+
+struct VoxBankInfo;
+extern VoxBankInfo *gVoxBanks;
+extern int gUniqueBankHandle;
+extern int gNumBanks;
+extern int gBankCount;
+extern AddEventFuncPtr gSPCH_AddEvent;
+
+struct VOXBANKHDR {
+    unsigned short type;
+    unsigned short subID;
+    unsigned char parmFlags;
+    unsigned char numSamples;
+    unsigned char sampleRepeat;
+    unsigned char blockSize;
+    unsigned short bankBlocks;
+    unsigned short numSubBanks;
+};
+
+typedef struct VOXBANKHDR VOXBANKHDR;
+
+struct VoxBankInfo {
+    int bankHandle;
+    VOXBANKHDR *voxHdr;
+};
+
+struct VOXINGAME {
+    EventSpec lastEventSpec;
+    int numEventTimes;
+};
+
+struct VoxData;
+struct VoxEvent;
+
+struct EventDatInfo {
+    VoxData *eventDat;
+    unsigned int channel;
+};
+
+extern EventDatInfo gEventDats[8];
+
+struct VoxEventItem {
+    unsigned int entryTime;
+    unsigned short subTicks;
+    unsigned char pending;
+    unsigned char channel;
+    VoxEvent *event;
+    unsigned int *memParms;
+};
+
+struct VoxPendingEvents {
+    int numPending[8];
+    int lastAddedEvent[8];
+    VoxEventItem events[16];
+};
+
+extern VoxPendingEvents gVoxEvents;
+
+struct VoxSentence;
+
+struct PhraseChoice {
+    int bankHandle;
+    short bankIndex;
+    short subBankIndex;
+    unsigned short sampleIndex;
+    unsigned short pad;
+};
+
+struct EventChoice {
+    VoxEvent *event;
+    VoxSentence *sentence;
+    unsigned char sentenceNum;
+    unsigned char validChoice;
+    unsigned char numPhrases;
+    unsigned char pad1;
+    unsigned int *memParms;
+    PhraseChoice phrases[12];
+};
+
+extern VOXINGAME gVoxInGame[8];
+
 // Decl: 123
 #define SPCH_SetVecsToReal(extVecs)                                                                                                                  \
     extVecs->spchAbortMessage = REAL_abortmessage;                                                                                                   \

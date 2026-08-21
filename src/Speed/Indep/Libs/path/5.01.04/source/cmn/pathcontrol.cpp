@@ -2,8 +2,8 @@
 #include "path/IPathToReal.h"
 #include "path/IPathToSnd.h"
 
-Path::IPathToReal *Path::IPathToReal::realimp;
-Path::IPathToSnd *Path::IPathToSnd::sndimp;
+Path::IPathToReal *Path::IPathToReal::realimp = 0;
+Path::IPathToSnd *Path::IPathToSnd::sndimp = 0;
 
 int PATH_control(int tracks, unsigned int controller) {
     int result;
@@ -121,11 +121,11 @@ int PATH_stop(int tracks) {
         p = 0;
         do {
             int t;
-            if (PATHI_switchproject(p & 0xff, tracks) != 0) {
+            if (PATHI_switchproject(p, tracks) != 0) {
                 for (t = 0; t < PATH_MAX_TRACKS; t++) {
                     PATHTRACK *track;
                     track = Path::pfstate->track[t];
-                    if (track == 0 || ((static_cast<unsigned int>(tracks) >> t) & 1) == 0) {
+                    if (track == 0 || !((static_cast<unsigned int>(tracks) >> t) & 1)) {
                         continue;
                     }
                     result = PATHI_stop(track);

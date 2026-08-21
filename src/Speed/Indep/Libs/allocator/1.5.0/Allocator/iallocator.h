@@ -29,26 +29,26 @@ struct TagValuePair {
 
 inline TagValuePair::TagValuePair(unsigned int tag, int value) {
     this->mTag = tag;
-    this->mNext = NULL;
     this->mValue.mInt = value;
+    this->mNext = NULL;
 }
 
 inline TagValuePair::TagValuePair(unsigned int tag, unsigned int value) {
     this->mTag = tag;
-    this->mNext = NULL;
     this->mValue.mSize = value;
+    this->mNext = NULL;
 }
 
 inline TagValuePair::TagValuePair(unsigned int tag, float value) {
     this->mTag = tag;
-    this->mNext = NULL;
     this->mValue.mFloat = value;
+    this->mNext = NULL;
 }
 
 inline TagValuePair::TagValuePair(unsigned int tag, const void *value) {
     this->mTag = tag;
-    this->mNext = NULL;
     this->mValue.mPointer = value;
+    this->mNext = NULL;
 }
 
 namespace Allocator {

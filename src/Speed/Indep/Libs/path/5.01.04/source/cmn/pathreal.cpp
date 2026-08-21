@@ -1,7 +1,9 @@
 #include <Allocator/iallocator.h>
 #include <types.h>
 #include "pathi.h"
+#define PATH_REAL_EMIT_METHODS
 #include "path/PathToReal.h"
+#undef PATH_REAL_EMIT_METHODS
 
 struct PathToIAllocator {
     static void *Alloc(int size);
@@ -12,7 +14,7 @@ struct PathToIAllocator {
 };
 
 EA::Allocator::IAllocator *PathToIAllocator::memimp;
-EA::TagValuePair PathToIAllocator::memimptags(0, 0);
+EA::TagValuePair PathToIAllocator::memimptags(NULLALLOCTVP);
 
 PathToReal::PathToReal() {}
 
@@ -38,4 +40,26 @@ void PATH_setallocator(EA::Allocator::IAllocator *allocator, const EA::TagValueP
     PathToIAllocator::memimptags.mValue = flags.mValue;
     Path::memalloc = PathToIAllocator::Alloc;
     Path::memfree = PathToIAllocator::Free;
+}
+
+Path::IPathToReal::~IPathToReal() {}
+
+void Path::IPathToReal::SetAbortMessageFunc(PATHAbortMsgFunc f) {
+    this->pathabortmsg = f;
+}
+
+void Path::IPathToReal::SetDebugPrintFunc(PATHDebugPrintFunc f) {
+    this->pathprintf = f;
+}
+
+void Path::IPathToReal::SetLogPrintFunc(PATHDebugPrintFunc f) {
+    this->pathlogf = f;
+}
+
+void Path::IPathToReal::SetSynchMode(Path::SynchMode mode) {
+    this->synchmode = mode;
+}
+
+Path::SynchMode Path::IPathToReal::GetSynchMode() {
+    return this->synchmode;
 }

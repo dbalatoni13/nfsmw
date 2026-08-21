@@ -9,8 +9,7 @@ namespace Path {
 
 // total size: 0x4
 // Decl: 22
-class PathToSnd : public IPathToSnd {
-  public:
+struct PathToSnd : public IPathToSnd {
     void *operator new(PATH_SIZE_T size);
     void operator delete(void *ptr);
 
@@ -29,13 +28,13 @@ struct PathTrackSnd : public IPathTrack {
     ~PathTrackSnd() override;
 
     // Overrides: IPathTrack
-    void UpdateStatus() override {} // Decl: 57
+    void UpdateStatus() override { this->mUpdateStatus = 1; } // Decl: 57
     int GetPathStatus(PATHSTATUS *psps) override;
     void StreamCache(char *, int) override {} // Decl: 59
     int ReadyForNewRequest() override;
     int TimeBuffered() override;
     int Pause(int pause) override;
-    int ModifyHold(int) override {} // Decl: 64
+    int ModifyHold(int) override { return -1; } // Decl: 64
     void SetName(const char *inName) override;
     int GetVolume() override;
     int SetVolume(int volume) override;
@@ -56,8 +55,7 @@ struct PathTrackSnd : public IPathTrack {
 
 // total size: 0x114
 // Decl: 86
-class PathTrackSndStream : public PathTrackSnd {
-  public:
+struct PathTrackSndStream : public PathTrackSnd {
     void *operator new(size_t size);
     void operator delete(void *ptr);
 
@@ -90,8 +88,7 @@ class PathTrackSndStream : public PathTrackSnd {
 
 // total size: 0x124
 // Decl: 170
-class PathTrackSndBank : public PathTrackSnd {
-  public:
+struct PathTrackSndBank : public PathTrackSnd {
     void *operator new(PATH_SIZE_T size);
     void operator delete(void *ptr);
 
