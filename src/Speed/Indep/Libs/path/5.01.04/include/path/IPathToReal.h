@@ -29,11 +29,7 @@ class IPathToReal {
         this->pathlogf = 0;
     }
 
-#ifdef PATH_REAL_EMIT_METHODS
-    virtual ~IPathToReal(); // Decl: 54
-#else
     inline virtual ~IPathToReal() {} // Decl: 54
-#endif
 
 #ifdef PATH_REAL_EMIT_METHODS
     virtual void SetAbortMessageFunc(PATHAbortMsgFunc f); // Decl: 68

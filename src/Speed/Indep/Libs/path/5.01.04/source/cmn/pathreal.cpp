@@ -42,8 +42,6 @@ void PATH_setallocator(EA::Allocator::IAllocator *allocator, const EA::TagValueP
     Path::memfree = PathToIAllocator::Free;
 }
 
-Path::IPathToReal::~IPathToReal() {}
-
 void Path::IPathToReal::SetAbortMessageFunc(PATHAbortMsgFunc f) {
     this->pathabortmsg = f;
 }

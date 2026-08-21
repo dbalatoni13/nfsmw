@@ -386,15 +386,12 @@ inline PATHTRACKINFO *PATHI_gettrackinfo(int trackID) {
 }
 
 inline PATHFINDNODE *PATHI_getnode(int nodeIndex) {
-    if (nodeIndex < 0) {
-        return 0;
+    if (nodeIndex >= 0 && nodeIndex <= Path::pfstate->pmap->numnodes) {
+        return reinterpret_cast<PATHFINDNODE *>(
+            reinterpret_cast<char *>(Path::pfstate->pmap) +
+            reinterpret_cast<unsigned short *>(Path::pfstate->pnodeoffsets)[nodeIndex] * 4);
     }
-    if (nodeIndex > Path::pfstate->pmap->numnodes) {
-        return 0;
-    }
-    return reinterpret_cast<PATHFINDNODE *>(
-        reinterpret_cast<char *>(Path::pfstate->pmap) +
-        reinterpret_cast<unsigned short *>(Path::pfstate->pnodeoffsets)[nodeIndex] * 4);
+    return 0;
 }
 
 inline PATHEVENT *PATHI_getevent(unsigned int eventID, unsigned int eventIDMask) {
@@ -404,7 +401,7 @@ inline PATHEVENT *PATHI_getevent(unsigned int eventID, unsigned int eventIDMask)
     eventp = 0;
     for (eventIndex = Path::pfstate->pmap->numevents - 1; eventIndex >= 0; eventIndex--) {
         eventp = reinterpret_cast<PATHEVENT *>(reinterpret_cast<char *>(Path::pfstate->pmap) +
-                                              Path::pfstate->peventoffsets[eventIndex] * 4);
+                                              reinterpret_cast<unsigned short *>(Path::pfstate->peventoffsets)[eventIndex] * 4);
         if ((eventp->eventID & eventIDMask) == (eventID & eventIDMask)) {
             break;
         }

@@ -188,7 +188,7 @@ PATHTRACK *PATHI_gettrackptr(unsigned int trackhandle) {
             if ((idflags & voices) != 0 && (idflags & projects) != 0) {
                 for (t = 0; t < PATH_MAX_TRACKS; t++) {
                     if (((tracks >> t) & 1) != 0) {
-                        return (*(p + Path::pfstates))->track[t];
+                        return Path::pfstates[p]->track[t];
                     }
                 }
             }
@@ -210,9 +210,7 @@ void PATHI_getmastertrack() {
         if (track != 0) {
             trackplaying = 0;
             if (track->paused == 0) {
-                if (track->node >= 0 && track->entryinfo != 0) {
-                    trackplaying = 1;
-                }
+                trackplaying = track->node >= 0 && track->entryinfo != 0;
                 if (trackplaying != 0 && Path::pfstate->masterlatency < track->latency) {
                     Path::pfstate->masterlatency = track->latency;
                     Path::pfstate->mastertrack = t;
@@ -231,11 +229,11 @@ int PATH_numtracks(unsigned int projects) {
         int p;
         p = 0;
         do {
-            if ((projects & (0x01000000 << p)) != 0 && *(p + Path::pfstates) != 0) {
+            if ((projects & (0x01000000 << p)) != 0 && Path::pfstates[p] != 0) {
                 int t;
                 t = 0;
                 do {
-                    if ((*(p + Path::pfstates))->track[t] != 0) {
+                    if (Path::pfstates[p]->track[t] != 0) {
                         numtracks++;
                     }
                 } while (++t < PATH_MAX_TRACKS);
@@ -274,18 +272,31 @@ void PATHI_mainvoice(PATHTRACK *track, int mainvoice) {
 }
 
 void PATHI_statusall(int clear) {
-    for (int p = 0; p < PATH_MAX_PROJECTS; p++) {
-        if (Path::pfstates[p] != 0 && PATHI_switchproject(p, -1) != 0) {
-            for (int t = 0; t < PATH_MAX_TRACKS; t++) {
-                PATHTRACK *track = Path::pfstate->track[t];
+    {
+        int p;
 
-                if (track != 0) {
-                    if (track->trackimp != 0) {
-                        if (clear != 0) {
-                            track->trackimp->UpdateStatus();
-                        }
-                        else {
-                            track->trackimp->CheckStatus();
+        for (p = 0; p < PATH_MAX_PROJECTS; p++) {
+            if (Path::pfstates[p] != 0) {
+                if (PATHI_switchproject(p, -1) != 0) {
+                    {
+                        int t;
+
+                        for (t = 0; t < PATH_MAX_TRACKS; t++) {
+                            {
+                                PATHTRACK *track;
+
+                                track = Path::pfstate->track[t];
+                                if (track != 0) {
+                                    if (track->trackimp != 0) {
+                                        if (clear != 0) {
+                                            track->trackimp->UpdateStatus();
+                                        }
+                                        else {
+                                            track->trackimp->CheckStatus();
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }

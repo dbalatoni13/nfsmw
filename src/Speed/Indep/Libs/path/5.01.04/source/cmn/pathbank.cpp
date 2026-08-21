@@ -80,13 +80,15 @@ int PATHI_loadbank(PATHTRACK *track, int subbanknum) {
 }
 
 int PATHI_subbankready(PATHTRACK *track, int subbanknum) {
-    PATHSUBBANKSTATUS *subbank;
-
-    if (subbanknum < 0 || subbanknum >= track->trackimp->GetMaxSubBanks()) {
+    if (subbanknum < 0 || subbanknum >= track->trackimp->GetNumSubBanks()) {
         return PATHERR_INV_PARAM;
     }
-    subbank = track->trackimp->GetSubBankPtr(subbanknum);
-    if (subbank == 0 || subbank->filedata == 0) {
+
+    PATHSUBBANKSTATUS *subbank = track->trackimp->GetSubBankPtr(subbanknum);
+    if (subbank == 0) {
+        return PATHERR_INV_PARAM;
+    }
+    if (subbank->filedata == 0) {
         return PATHERR_INV_PARAM;
     }
     if (track->loadingfile != 0) {
@@ -97,13 +99,13 @@ int PATHI_subbankready(PATHTRACK *track, int subbanknum) {
         track->freeable = track->trackimp->AddSubBank(subbanknum, subbank->filedata);
         track->loadingfile = 0;
     }
-    if (track->loadingsubbank > -1) {
+    if (track->loadingsubbank >= 0) {
         if (track->trackimp->AddSubBankDone(subbanknum) == 0) {
             return PATHERR_PENDING;
         }
         track->trackimp->DetachSubBankHeader(subbanknum, track->freeable);
-        track->loadingsubbank = -1;
         track->freeable = 0;
+        track->loadingsubbank = -1;
     }
     subbank->subbanknum = subbanknum;
     subbank->ready = 1;
@@ -111,12 +113,7 @@ int PATHI_subbankready(PATHTRACK *track, int subbanknum) {
 }
 
 int PATHI_loadbankdata(PATHTRACK *track, int subbanknum, int subbanksize) {
-    PATHSUBBANKSTATUS *subbank;
-    char newpath[512];
-    int len;
-    int fileop;
-
-    if (subbanknum < 0 || subbanknum >= track->trackimp->GetMaxSubBanks()) {
+    if (subbanknum < 0 || subbanknum >= track->trackimp->GetNumSubBanks()) {
         return PATHERR_INV_PARAM;
     }
     if (track->loadingsubbank >= 0) {
@@ -125,16 +122,25 @@ int PATHI_loadbankdata(PATHTRACK *track, int subbanknum, int subbanksize) {
     if (track->trackimp->GetSubBankPtr(subbanknum) != 0) {
         return PATHERR_ALREADYLOADED;
     }
+
+    PATHSUBBANKSTATUS *subbank;
+
     subbank = track->trackimp->GetAvailSubBankPtr();
+
     if (subbank == 0) {
         return PATHERR_TOOMANY;
     }
+
     subbank->ready = 0;
     subbank->subbanknum = subbanknum;
-    memset(newpath, 0, sizeof(newpath));
+
+    char newpath[512] = "";
+    int len;
+
     len = strlen(track->musicfilename);
     sprintf(newpath, "%.*s%d.mus", len - 4, track->musicfilename, subbanknum);
-    fileop = PATH_UNLIKELY_VALUE;
+
+    int fileop = PATH_UNLIKELY_VALUE;
     subbank->filedata = Path::IPathToReal::realimp->LoadFile(newpath, fileop, subbanksize);
     if (subbank->filedata == 0) {
         return PATHERR_CANTOPEN;

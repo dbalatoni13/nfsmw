@@ -52,9 +52,9 @@ void PATHI_fade(PATHTRACK *track, int fadeto, int fadetime, int fadenum) {
     track->volumefade.fadenum = fadenum;
     track->volumefade.fadestart = Path::milliseconds;
     track->volumefade.fadetime = fadetime;
-    track->volumefade.fadefrom = track->trackimp->GetVolume();
+    track->volumefade.fadefrom = static_cast<short>(static_cast<float>(track->trackimp->GetVolume()));
     track->volumefade.fadeto = static_cast<signed char>(fadeto);
-    track->volume = fadeto;
+    track->volume = static_cast<signed char>(static_cast<float>(fadeto));
 }
 
 void PATHI_customsfxfade(PATHTRACK *track, int fadeto, int fadetime, int fadenum) {

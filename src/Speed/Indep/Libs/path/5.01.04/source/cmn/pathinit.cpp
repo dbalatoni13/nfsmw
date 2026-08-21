@@ -297,10 +297,8 @@ Path::IPathTrack *PATH_gettrackimp(int trackhandle) {
 }
 
 int PATHI_bytesperms(int trackID) {
-    PATHFINDSAMPLE *sample;
-    PATHFINDSAMPLE *endsample = 0;
-    float bytesperms;
-    float byterate = 0.0f;
+    PATHFINDSAMPLE *sample, *endsample = 0;
+    float bytesperms, byterate = 0.0f;
     PATHTRACKINFO *trackinfo;
 
     trackinfo = PATHI_gettrackinfo(trackID);

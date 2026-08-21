@@ -41,19 +41,12 @@ int PATHI_beatinfo(PATHTRACK *track, PATHBEATINFO *beatinfo) {
 }
 
 int PATHI_calcwaitbeat(int every, int note, int offset, PATHBEATINFO *beatinfo) {
-    float scalar;
-    float fevery;
-    float foffset;
-    int timeinbar;
-    int firstsynchtime;
-    int nextsynchtime;
-
-    scalar = static_cast<float>(beatinfo->beats) / static_cast<float>(note);
-    fevery = static_cast<float>(every);
-    foffset = static_cast<float>(offset);
-    timeinbar = beatinfo->barduration - beatinfo->timetonextbar;
-    firstsynchtime = static_cast<int>(scalar * foffset * static_cast<float>(beatinfo->beatduration));
-    nextsynchtime = firstsynchtime;
+    float scalar = static_cast<float>(beatinfo->beats) / static_cast<float>(note);
+    float fevery = static_cast<float>(every);
+    float foffset = static_cast<float>(offset);
+    int timeinbar = beatinfo->barduration - beatinfo->timetonextbar;
+    int firstsynchtime = static_cast<int>(scalar * foffset * static_cast<float>(beatinfo->beatduration));
+    int nextsynchtime = firstsynchtime;
     if (nextsynchtime < timeinbar) {
         do {
             if (nextsynchtime >= static_cast<int>(beatinfo->barduration)) {
@@ -70,21 +63,13 @@ int PATHI_calcwaitbeat(int every, int note, int offset, PATHBEATINFO *beatinfo) 
 
 int PATHI_choosesynchtime(int node, const PATHFINDNODE &entryinfo, const PATHBEATINFO &masterinfo,
                           unsigned int &waitms) {
-    PATHFINDNODE *nodeinfo;
-    PATHFINDSAMPLE oversample;
-    bool forcesynch;
-    float beatlen;
-    int nodebeat;
-    int elapsedtime;
-    int overbeatsleft;
-    int overbeatsdone;
-
     if (static_cast<short>(entryinfo.partID) < 0 || node < 0) {
         return 1;
     }
-    nodeinfo = PATHI_getnode(node);
-    oversample = Path::pfstate->psampleoffsets[nodeinfo->index - 1];
-    beatlen = static_cast<float>(oversample.duration);
+    PATHFINDNODE *nodeinfo = PATHI_getnode(node);
+    PATHFINDSAMPLE oversample = Path::pfstate->psampleoffsets[nodeinfo->index - 1];
+    bool forcesynch;
+    float beatlen = static_cast<float>(oversample.duration);
     if (nodeinfo->beats != 0) {
         beatlen /= static_cast<float>(nodeinfo->beats * nodeinfo->bars);
     }
@@ -92,10 +77,10 @@ int PATHI_choosesynchtime(int node, const PATHFINDNODE &entryinfo, const PATHBEA
     if (forcesynch) {
         beatlen = static_cast<float>(masterinfo.beatduration);
     }
-    elapsedtime = masterinfo.nodeduration - masterinfo.timetonextnode;
-    nodebeat = -1;
-    overbeatsleft = static_cast<int>(static_cast<float>(masterinfo.timetonextnode) / beatlen);
-    overbeatsdone = static_cast<int>(static_cast<float>(elapsedtime) / beatlen);
+    int nodebeat = -1;
+    int elapsedtime = masterinfo.nodeduration - masterinfo.timetonextnode;
+    int overbeatsleft = static_cast<int>(static_cast<float>(masterinfo.timetonextnode) / beatlen);
+    int overbeatsdone = static_cast<int>(static_cast<float>(elapsedtime) / beatlen);
     switch (entryinfo.synch) {
     case 2:
         waitms = masterinfo.timetonextnode % static_cast<int>(overbeatsleft * beatlen);
@@ -122,17 +107,14 @@ int PATHI_timeremaining(PATHTRACK *track) {
     int activerequests;
 
     timeremaining = 0;
-    {
-        int i;
+    for (int i = 0;;) {
+        int requesttime = track->trackimp->TimeRemaining(i);
+        i++;
 
-        for (i = 0;; i++) {
-            int requesttime = track->trackimp->TimeRemaining(i);
-
-            if (requesttime < 0) {
-                break;
-            }
-            timeremaining += requesttime;
+        if (requesttime < 0) {
+            break;
         }
+        timeremaining += requesttime;
     }
     return timeremaining;
 }

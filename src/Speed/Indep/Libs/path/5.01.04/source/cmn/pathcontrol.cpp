@@ -26,11 +26,11 @@ int PATH_control(int tracks, unsigned int controller) {
                 do {
                     PATHTRACK *track;
                     track = Path::pfstate->track[t];
-                    if (track == 0 || ((static_cast<unsigned int>(tracks) >> t) & 1) == 0) {
-                        continue;
+                    if (track != 0 &&
+                        ((((static_cast<unsigned int>(tracks) >> t) ^ 1) & 1) == 0)) {
+                        track->control = controller;
+                        result = PATH_OK;
                     }
-                    track->control = controller;
-                    result = PATH_OK;
                 } while (++t < PATH_MAX_TRACKS);
             }
             p++;
@@ -62,12 +62,12 @@ int PATH_pause(int tracks, unsigned char pause) {
                 for (t = 0; t < PATH_MAX_TRACKS; t++) {
                     PATHTRACK *track;
                     track = Path::pfstate->track[t];
-                    if (track == 0 || ((static_cast<unsigned int>(tracks) >> t) & 1) == 0) {
-                        continue;
+                    if (track != 0 &&
+                        ((((static_cast<unsigned int>(tracks) >> t) ^ 1) & 1) == 0)) {
+                        track->trackimp->Pause(pause);
+                        track->paused = pause;
+                        result = PATH_OK;
                     }
-                    track->trackimp->Pause(pause);
-                    track->paused = pause;
-                    result = PATH_OK;
                 }
             }
             p++;
@@ -125,10 +125,10 @@ int PATH_stop(int tracks) {
                 for (t = 0; t < PATH_MAX_TRACKS; t++) {
                     PATHTRACK *track;
                     track = Path::pfstate->track[t];
-                    if (track == 0 || !((static_cast<unsigned int>(tracks) >> t) & 1)) {
-                        continue;
+                    if (track != 0 &&
+                        ((((static_cast<unsigned int>(tracks) >> t) ^ 1) & 1) == 0)) {
+                        result = PATHI_stop(track);
                     }
-                    result = PATHI_stop(track);
                 }
             }
             p++;

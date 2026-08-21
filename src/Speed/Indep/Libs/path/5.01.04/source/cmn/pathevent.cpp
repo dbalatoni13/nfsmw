@@ -326,7 +326,6 @@ int PATHI_eventtakespriority(int e) {
     if (priority < 0) {
         priority = -priority;
     }
-    takespriority = 1;
     for (e++; e < 16; e++) {
         PATHEVENT *testevent;
 
@@ -342,8 +341,7 @@ int PATHI_eventtakespriority(int e) {
             if (event->priority < 1 || priority + bumpsame <= testpriority) {
                 if ((testevent->bumplower != 0 || priority < testpriority) &&
                     priority < testpriority + testbumpsame) {
-                    takespriority = 0;
-                    break;
+                    return 0;
                 }
             } else {
                 PATHI_releaseevent(e, PATHEVENT_PURGED);
@@ -351,5 +349,5 @@ int PATHI_eventtakespriority(int e) {
             }
         }
     }
-    return takespriority;
+    return 1;
 }

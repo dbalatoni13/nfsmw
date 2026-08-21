@@ -358,6 +358,11 @@ if config.platform == Platform.GC_WII:
         "-I src/Speed/Indep/Libs/snd/9/include",
     ]
 
+    cflags_spch = [
+        *cflags_game,
+        "-x c++",
+    ]
+
     config.extra_clang_flags = [
         "-std=gnu++11",
         "-DSN_TARGET_NGC",
@@ -906,7 +911,7 @@ config.libs = [
     {
         "lib": "spch",
         "toolchain_version": config.linker_version,
-        "cflags": cflags_game,
+        "cflags": cflags_spch,
         "host": False,
         "progress_category": "libs",
         "objects": [
