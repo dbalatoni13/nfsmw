@@ -36,16 +36,18 @@ private:
 public:
     CListDStack() : phead(NULL) {} // Decl: 104
 
-    void Reset() {} // Decl: 106
+    inline void Reset() {
+        this->phead = NULL;
+    } // Decl: 106
 
-    bool IsEmpty() {
+    inline bool IsEmpty() {
         return this->phead == NULL;
     } // Decl: 108
 
-    CListDNode *GetHead() { return phead; } // Decl: 110
+    inline CListDNode *GetHead() { return phead; } // Decl: 110
 
-    void Push(CListDNode *pnode) {
-        pnode->SetNext(phead);
+    inline void Push(CListDNode *pnode) {
+        pnode->SetNext(this->phead);
         pnode->SetPrev(NULL);
         if (this->phead != NULL) {
             this->phead->SetPrev(pnode);
@@ -53,9 +55,18 @@ public:
         this->phead = pnode;
     } // Decl: 112
 
-    CListDNode *Pop() {} // Decl: 129
+    inline CListDNode *Pop() {
+        CListDNode *pnode = this->phead;
+        if (pnode != NULL) {
+            this->phead = pnode->GetNext();
+            if (this->phead != NULL) {
+                this->phead->SetPrev(NULL);
+            }
+        }
+        return pnode;
+    } // Decl: 129
 
-    void Remove(CListDNode *pnode) {
+    inline void Remove(CListDNode *pnode) {
         if (pnode == this->phead) {
             this->phead = pnode->GetNext();
         }

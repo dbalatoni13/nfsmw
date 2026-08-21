@@ -195,6 +195,7 @@ class System {
     static void Free(void *pMem);
 
   private:
+    friend class Class;
     static void *AllocFast(int size);
     static void FreeFast(void *pMem);
     System();
