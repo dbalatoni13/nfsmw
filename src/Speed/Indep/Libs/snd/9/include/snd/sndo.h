@@ -4,10 +4,11 @@
 //
 //
 //
-#include "Speed/Indep/Libs/snd/9/source/library/cmn/sndenum.h"
-#include "csis/csis.h"
 #ifndef SNDO_H
 #define SNDO_H 1 // Decl: 8
+
+#include "Speed/Indep/Libs/snd/9/source/library/cmn/sndenum.h"
+#include "csis/csis.h"
 
 #define SND_PLAYLOC_MAINCPU 4 // Decl: 32
 #define SND_PLAYLOC_DEFAULT 0 // Decl: 33
