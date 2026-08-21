@@ -23,15 +23,19 @@ class IPathToReal {
     static char *abortfilename;  // size: 0x4, address: 0xFFFFFFFF
     static int abortfileline;    // size: 0x4, address: 0xFFFFFFFF
 
-    IPathToReal() {} // Decl: 48
+    inline IPathToReal() {
+        this->pathabortmsg = 0;
+        this->pathprintf = 0;
+        this->pathlogf = 0;
+    }
 
-    virtual ~IPathToReal() {} // Decl: 54
+    inline virtual ~IPathToReal() {} // Decl: 54
 
-    virtual void SetAbortMessageFunc(PATHAbortMsgFunc f) {} // Decl: 68
+    inline virtual void SetAbortMessageFunc(PATHAbortMsgFunc f) { this->pathabortmsg = f; } // Decl: 68
 
-    virtual void SetDebugPrintFunc(PATHDebugPrintFunc f) {} // Decl: 84
+    inline virtual void SetDebugPrintFunc(PATHDebugPrintFunc f) { this->pathprintf = f; } // Decl: 84
 
-    virtual void SetLogPrintFunc(PATHDebugPrintFunc f) {} // Decl: 120
+    inline virtual void SetLogPrintFunc(PATHDebugPrintFunc f) { this->pathlogf = f; } // Decl: 120
 
     void AbortMessage(char *msg) {} // Decl: 122
 
@@ -53,8 +57,8 @@ class IPathToReal {
 
     virtual int FileSize(const char *filename); // Decl: 259
 
-    virtual void SetSynchMode(SynchMode mode) {} // Decl: 265
-    virtual SynchMode GetSynchMode() {}          // Decl: 266
+    inline virtual void SetSynchMode(SynchMode mode) { this->synchmode = mode; } // Decl: 265
+    inline virtual SynchMode GetSynchMode() { return this->synchmode; } // Decl: 266
 
   private:
     PATHAbortMsgFunc pathabortmsg; // offset 0x0, size 0x4, Decl: 269

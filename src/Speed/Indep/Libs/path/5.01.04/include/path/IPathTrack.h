@@ -54,7 +54,7 @@ class IPathTrack {
     IPathTrack();
     virtual ~IPathTrack();
 
-    virtual void SetTrackInfo(PATHTRACKINFO *info) {} // Decl: 80
+    virtual void SetTrackInfo(PATHTRACKINFO *info) { this->mTrackInfo = info; } // Decl: 80
 
     virtual void UpdateStatus(); // Decl: 86
 
@@ -75,13 +75,13 @@ class IPathTrack {
     virtual int Play(int node, unsigned int offset, int, int holdtime,
                      unsigned int duration); // Decl: 114
 
-    virtual int GetVolume() {}         // Decl: 117
+    virtual int GetVolume() { return this->mVolume; } // Decl: 117
     virtual int SetVolume(int volume); // Decl: 118
 
-    virtual int GetDryLevel() {}        // Decl: 121
+    virtual int GetDryLevel() { return this->mDryLevel; } // Decl: 121
     virtual int SetDryLevel(int level); // Decl: 122
 
-    virtual int GetFXSendLevel(int bus) {}          // Decl: 125
+    virtual int GetFXSendLevel(int bus) { return this->mFXSendLevel; } // Decl: 125
     virtual int SetFXSendLevel(int bus, int level); // Decl: 126
 
     virtual int GetPitchMult();              // Decl: 129
@@ -90,12 +90,12 @@ class IPathTrack {
     virtual int GetStretchMult();                // Decl: 133
     virtual int SetStretchMult(int stretchmult); // Decl: 134
 
-    virtual int GetHandle() {}     // Decl: 136
-    virtual void *GetPlayOpts() {} // Decl: 137
+    virtual int GetHandle() { return this->mHandle; } // Decl: 136
+    virtual void *GetPlayOpts() { return this->mPlayOpts; } // Decl: 137
 
     virtual void SetName(const char *inName); // Decl: 139
 
-    virtual void SetFilePath(char *path) {} // Decl: 141
+    virtual void SetFilePath(char *) {} // Decl: 141
 
     virtual void StreamCache(char *pcache, int cachesize); // Decl: 148
 
@@ -103,12 +103,12 @@ class IPathTrack {
 
     virtual int GetNumSubBanks();
     virtual int GetMaxSubBanks();
-    virtual PATHSUBBANKSTATUS *GetSubBankPtr(int subbanknum);
+    virtual PATHSUBBANKSTATUS *GetSubBankPtr(int);
     virtual PATHSUBBANKSTATUS *GetAvailSubBankPtr();
-    virtual int AddSubBank(int subbanknum, void *pbank);
-    virtual int AddSubBankDone(int subbanknum);
-    virtual int DetachSubBankHeader(int subbanknum, int status);
-    virtual int RemoveSubBank(int subbanknum);
+    virtual int AddSubBank(int, void *);
+    virtual int AddSubBankDone(int);
+    virtual int DetachSubBankHeader(int, int);
+    virtual int RemoveSubBank(int);
 
   protected:
     int mHandle;                  // offset 0x0, size 0x4, Decl: 176

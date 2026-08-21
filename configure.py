@@ -149,7 +149,7 @@ config.compilers_tag = "20251015"
 
 if version_num in [0]:
     config.platform = Platform.GC_WII
-    config.dtk_tag = "v1.8.31"
+    config.dtk_tag = "v1.8.32"
     config.binutils_tag = "2.42-1"
 elif version_num in [1]:
     config.platform = Platform.X360
@@ -339,6 +339,10 @@ if config.platform == Platform.GC_WII:
         "-I src/Speed/Indep/Libs/spch/dev/include",
         "-I src/Speed/Indep/Libs/path/5.01.04/include",
     ]
+
+    cflags_path = [*cflags_game]
+    cflags_path[cflags_path.index("-G0")] = "-G8"
+    cflags_path.append("-fstrength-reduce")
 
     cflags_snd = [
         *cflags_base_prodg,
@@ -833,7 +837,7 @@ config.libs = [
     {
         "lib": "path",
         "toolchain_version": config.linker_version,
-        "cflags": cflags_game,
+        "cflags": cflags_path,
         "host": False,
         "progress_category": "libs",
         "objects": [

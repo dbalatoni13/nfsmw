@@ -1256,10 +1256,6 @@ Speed/Indep/Libs/csis/dev/source/library/cmn/csis.cpp:
 	.data       start:0x80451E88 end:0x80451EA8
 	.bss        start:0x804CC6D0 end:0x804CC6EC
 
-Speed/Indep/Libs/spch/dev/source/library/cmn/spchdata.c:
-	.data       start:0x80451ED0 end:0x80451F00
-	.bss        start:0x804CC6F8 end:0x804CC900
-
 Speed/Indep/Libs/path/5.01.04/source/cmn/pathcontrol.cpp:
 	.text       start:0x80374530 end:0x803748D4
 	.sdata      start:0x804FF5F8 end:0x804FF600
@@ -1306,6 +1302,11 @@ Speed/Indep/Libs/path/5.01.04/source/cmn/pathnode.cpp:
 
 Speed/Indep/Libs/path/5.01.04/source/cmn/pathrand.cpp:
 	.text       start:0x8037D164 end:0x8037D26C
+	.data       start:0x80451EB8 end:0x80451ED0
+
+Speed/Indep/Libs/spch/dev/source/library/cmn/spchdata.c:
+	.data       start:0x80451ED0 end:0x80451F00
+	.bss        start:0x804CC6F8 end:0x804CC900
 
 Speed/Indep/Libs/spch/dev/source/library/cmn/spchbank.c:
 	.text       start:0x8037D26C end:0x8037D988
