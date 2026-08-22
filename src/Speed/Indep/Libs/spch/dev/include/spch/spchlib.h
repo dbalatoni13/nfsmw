@@ -53,8 +53,7 @@ inline unsigned char *iSPCH_GetOffset16(unsigned char *basePtr, unsigned short *
 inline unsigned char *iSPCH_GetRuleDataAddr(VoxEvent *event) {
     unsigned int offset;
 
-    offset = event->numSentences;
-    offset *= 2;
+    offset = event->numSentences * 2;
     offset = (offset + 3) & ~3;
     return reinterpret_cast<unsigned char *>(event) + 0xC + offset;
 }

@@ -1422,21 +1422,17 @@ static int iSPCH_SentenceIsContextMatch(VoxEvent *event, VoxSentence *sentence, 
     if ((numContexts = VoxEvent_GetNumContexts(event)) != 0) {
         sentenceContexts = VoxSentence_GetContextFlagsAddr(sentence);
         contextData = iSPCH_GetContextDataAddr(event);
-        i = 0;
-        if (i < numContexts) {
-            do {
-                rule.ruleID = contextData[i * 3];
-                rule.parmIndex = contextData[i * 3 + 1];
-                rule.parmType = static_cast<ParmType>(contextData[i * 3 + 2]);
-                if (sentenceContexts[i] != 0) {
-                    contextParmIndex = rule.parmIndex;
-                    if ((sentenceContexts[i] & inParms[contextParmIndex]) == 0) {
-                        result = 0;
-                        goto abort;
-                    }
+        for (i = 0; i < numContexts; i++) {
+            rule.ruleID = contextData[i * 3];
+            rule.parmIndex = contextData[i * 3 + 1];
+            rule.parmType = static_cast<ParmType>(contextData[i * 3 + 2]);
+            if (sentenceContexts[i] != 0) {
+                contextParmIndex = rule.parmIndex;
+                if ((sentenceContexts[i] & inParms[contextParmIndex]) == 0) {
+                    result = 0;
+                    goto abort;
                 }
-                i++;
-            } while (i < numContexts);
+            }
         }
     }
 abort:
