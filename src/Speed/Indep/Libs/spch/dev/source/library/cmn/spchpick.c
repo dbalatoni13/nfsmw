@@ -264,29 +264,28 @@ abort:
 }
 
 static int iSPCH_GetPhraseBank(VoxPhrase *phrase, unsigned int *parms, PhrasePickInfo *phrasePick) {
-    int bankHandle;
-    int bankIndex;
+    int bankHandle = -1;
+    int bankIndex = -1;
     BankType bankType;
     int parmIndex;
     int success;
-    unsigned short bankID;
+    unsigned short bankID = phrase->bankID;
     unsigned short subBankID;
 
-    parmIndex = phrase->bankIDIndex;
-    phrasePick->bankIndex = -1;
-    phrasePick->subBankIndex = -1;
-    phrasePick->bankHandle = -1;
-    bankIndex = -1;
-    bankHandle = -1;
-    bankID = phrase->bankID;
     bankType = static_cast<BankType>(phrase->bankType);
+    parmIndex = phrase->bankIDIndex;
+    phrasePick->subBankIndex = bankIndex;
+    phrasePick->bankHandle = bankIndex;
+    phrasePick->bankIndex = bankIndex;
     switch (bankType) {
     case kBankType_Single:
         phrasePick->bankIndex = iSPCH_FindBank(bankID, bankHandle);
+        phrasePick->bankHandle = static_cast<short>(bankHandle);
         break;
     case kBankType_Multi:
         subBankID = *reinterpret_cast<unsigned short *>(reinterpret_cast<unsigned char *>(parms) + parmIndex * 4 + 2);
         phrasePick->bankIndex = iSPCH_FindSubBank(bankID, subBankID, bankHandle);
+        phrasePick->bankHandle = bankHandle;
         break;
     case kBankType_Array:
         bankIndex = iSPCH_FindBank(bankID, bankHandle);
@@ -296,11 +295,11 @@ static int iSPCH_GetPhraseBank(VoxPhrase *phrase, unsigned int *parms, PhrasePic
             bankHandle = -1;
         }
         phrasePick->bankIndex = static_cast<short>(bankIndex);
+        phrasePick->bankHandle = bankHandle;
         break;
     default:
         break;
     }
-    phrasePick->bankHandle = bankHandle;
     success = phrasePick->bankHandle >= 0;
     return success;
 }
