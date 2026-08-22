@@ -1,5 +1,16 @@
 #include "spch/spch.h"
 
+extern char spchlibauthor[];
+extern unsigned int gGameNum;
+extern int gFilterSetting[8];
+extern void iSPCH_InitRandom(unsigned int gameSeed);
+extern void iSPCH_InitSentenceChoice();
+extern void SPCH_SetPreLoadTicks(int ticks);
+extern int SPCH_AddEventV(int eventID, int numArgs, ...);
+extern void iSPCH_InitEventDat();
+extern void iSPCH_InitBanks();
+extern void iSPCH_InitEventQueue();
+
 void SPCH_SetMemCallbacks(MemAllocFuncPtr memAlloc, MemFreeFuncPtr memFree) {
     gMemAlloc = memAlloc;
     gMemFree = memFree;
@@ -32,17 +43,19 @@ void iSPCH_InitInGame() {
 }
 
 int SPCH_GetSampleDataRate(int sampleRate, int sampleBits, CompressionType type) {
-    int bytesPerSec;
+    int bytesPerSec = sampleRate * sampleBits;
 
-    bytesPerSec = sampleRate * sampleBits;
     if (bytesPerSec < 0) {
         bytesPerSec += 7;
     }
-    bytesPerSec = bytesPerSec >> 3;
-    if (type == kSPCH_Compression_MicroTalk) {
+    bytesPerSec >>= 3;
+    switch (type) {
+    case kSPCH_Compression_MicroTalk:
         bytesPerSec = bytesPerSec / 10;
-    } else if (type == kSPCH_Compression_XA) {
+        break;
+    case kSPCH_Compression_XA:
         bytesPerSec = bytesPerSec * 2 / 7;
+        break;
     }
     return bytesPerSec;
 }
@@ -81,4 +94,34 @@ void SPCH_InitEventRuleCallback(EventRuleFuncPtr eventRuleTest) {
     gCallbacks.eventRule = eventRuleTest;
 abort:
     ;
+}
+
+int SPCH_Init(int (*sampleRequest)(SPCHType_SampleRequestData *), unsigned int gameSeed, int sampleDataRate) {
+    int i;
+
+    spchlibauthor[0] = 'S';
+    if (gMemAlloc == 0 || gMemFree == 0) {
+        goto abort;
+    }
+    iSPCH_InitCallbacks();
+    gCallbacks.request = sampleRequest;
+    gSPCH_AddEvent = SPCH_AddEventV;
+    gDataRate = sampleDataRate;
+    gGameNum = gameSeed;
+    iSPCH_InitRandom(gameSeed);
+    iSPCH_InitSentenceChoice();
+    SPCH_SetPreLoadTicks(0);
+    i = 0;
+    do {
+        gFilterSetting[i] = 0;
+        i++;
+    } while (i < 8);
+    iSPCH_InitEventDat();
+    iSPCH_InitInGame();
+    iSPCH_InitBanks();
+    iSPCH_InitEventQueue();
+    gSPCH_Initialized = 0x1789A34;
+    return 1;
+abort:
+    return 0;
 }

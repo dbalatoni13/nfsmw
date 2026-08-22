@@ -101,6 +101,33 @@ struct VOXBANKHDR {
 
 typedef struct VOXBANKHDR VOXBANKHDR;
 
+inline unsigned char *BANKHDR_GetValidParmMask(VOXBANKHDR *hdr) {
+    unsigned int offset;
+
+    offset = (hdr->numSamples * ((hdr->parmFlags & 0x7F) + 2) + 0xF) & ~3;
+    return reinterpret_cast<unsigned char *>(hdr) + offset;
+}
+
+inline unsigned char *BANKHDR_GetCycleBitsAddr(VOXBANKHDR *hdr) {
+    unsigned char *addr;
+
+    addr = BANKHDR_GetValidParmMask(hdr);
+    addr += (hdr->parmFlags & 0x7F) * 4;
+    return addr;
+}
+
+inline unsigned char *BANKHDR_GetSampleRepeatAddr(VOXBANKHDR *hdr) {
+    int cycleBytes;
+    unsigned char *addr;
+
+    addr = BANKHDR_GetCycleBitsAddr(hdr);
+    cycleBytes = 0;
+    if ((hdr->parmFlags & 0x80) != 0) {
+        cycleBytes = ((hdr->numSamples + 7) >> 3) + 1;
+    }
+    return addr + cycleBytes;
+}
+
 struct VoxBankInfo {
     int bankHandle;
     VOXBANKHDR *voxHdr;
@@ -111,8 +138,94 @@ struct VOXINGAME {
     int numEventTimes;
 };
 
-struct VoxData;
-struct VoxEvent;
+enum BankType {
+    kBankType_Single = 0,
+    kBankType_Multi = 1,
+    kBankType_Array = 2,
+};
+
+enum RuleStatus {
+    kRuleState_Ignore = 0,
+    kRuleState_IfTrue = 1,
+    kRuleState_IfFalse = 2,
+};
+
+enum ParmType {
+    kParmType_Variable = 0,
+    kParmType_Constant = 1,
+    kParmType_User = 2,
+    kParmType_BankID = 3,
+    kParmType_Context = 4,
+    kParmType_Match = 5,
+};
+
+struct PhraseParmInfo {
+    unsigned int matchValues;
+    unsigned char eventParmIndex;
+    unsigned char ruleIndex;
+    unsigned char matchParmIndex;
+    unsigned char pad;
+};
+
+struct VoxPhrase {
+    unsigned short bankID;
+    unsigned char bankIDIndex;
+    unsigned char bankType;
+    char numFilters;
+    unsigned char pad1;
+    unsigned char pad2;
+    unsigned char pad3;
+};
+
+typedef int MatchParmIO;
+
+struct VoxSentence {
+    unsigned char expWeight;
+    unsigned char frequency;
+    unsigned char bitField;
+    unsigned char numMatchParms;
+    unsigned char numContexts;
+    unsigned char pad0;
+    unsigned char pad1;
+    unsigned char pad2;
+};
+
+struct SRule {
+    int ruleID;
+    int parmIndex;
+    ParmType parmType;
+};
+
+struct VoxEvent {
+    unsigned short ID;
+    unsigned short expiryTime;
+    unsigned short priority;
+    unsigned char numSentences;
+    unsigned char numRules;
+    unsigned char numRowContexts;
+    char frequency;
+    unsigned char flags;
+    char numParms;
+};
+
+struct VoxData {
+    char majorRev;
+    char minorRev;
+    char release;
+    char prerelease;
+    int csisOffset;
+    unsigned char projectID;
+    unsigned char datID;
+    unsigned char bolloRev;
+    unsigned char csisResolved;
+    unsigned short saveIncrement;
+    unsigned short generateID;
+    unsigned short numEvents;
+    unsigned char numGlobalMatchParms;
+    unsigned char pad1;
+    unsigned short eventFilterLength;
+    unsigned short eventFilterPriority;
+};
 
 struct EventDatInfo {
     VoxData *eventDat;
@@ -138,14 +251,34 @@ struct VoxPendingEvents {
 
 extern VoxPendingEvents gVoxEvents;
 
-struct VoxSentence;
-
 struct PhraseChoice {
     int bankHandle;
     short bankIndex;
     short subBankIndex;
     unsigned short sampleIndex;
     unsigned short pad;
+};
+
+struct SPCHType_FollowData {
+    int numEvents;
+    unsigned short *ID;
+};
+
+struct PhrasePickInfo {
+    int bankHandle;
+    short bankIndex;
+    short subBankIndex;
+    unsigned char pickStart;
+    unsigned char numPicks;
+    unsigned char pickedIndex;
+    unsigned char done;
+};
+
+struct SentencePickInfo {
+    PhrasePickInfo phraseInfo[12];
+    unsigned char numPhrases;
+    unsigned char pickIndex;
+    unsigned char validSamples[200];
 };
 
 struct EventChoice {
@@ -166,5 +299,7 @@ extern VOXINGAME gVoxInGame[8];
     extVecs->spchAbortMessage = REAL_abortmessage;                                                                                                   \
     extVecs->spchPrint = printf;                                                                                                                     \
     extVecs->spchGetTick = TIMER_gettick
+
+#include "spch/spchlib.h"
 
 #endif
