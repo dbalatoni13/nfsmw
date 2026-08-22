@@ -161,13 +161,13 @@ int PATH_addmapfile(char *pmap) {
         if (slot < PATH_MAX_PROJECTS &&
             *reinterpret_cast<unsigned int *>(pmap) == 0x50464478 &&
             (*reinterpret_cast<unsigned int *>(pmap + 4) & 0xffff0000) == 0x05010000) {
-            *(slot + Path::pfstates) = static_cast<PATHFINDERSTATE *>(PATHI_memalloc(sizeof(PATHFINDERSTATE)));
-            if (*(slot + Path::pfstates) != 0) {
-                memset(*(slot + Path::pfstates), 0, sizeof(PATHFINDERSTATE));
-                (*(slot + Path::pfstates))->pmap = reinterpret_cast<PATHFINDHEADER *>(pmap);
-                (*(slot + Path::pfstates))->idflags =
+            Path::pfstates[slot] = static_cast<PATHFINDERSTATE *>(PATHI_memalloc(sizeof(PATHFINDERSTATE)));
+            if (Path::pfstates[slot] != 0) {
+                memset(Path::pfstates[slot], 0, sizeof(PATHFINDERSTATE));
+                Path::pfstates[slot]->pmap = reinterpret_cast<PATHFINDHEADER *>(pmap);
+                Path::pfstates[slot]->idflags =
                     (0x10000000 << (voiceID & 0x3f)) | (0x01000000 << (projectID & 0x3f));
-                PATHI_switchproject(slot, (*(slot + Path::pfstates))->idflags);
+                PATHI_switchproject(slot, Path::pfstates[slot]->idflags);
                 e = 0;
                 result = 0;
                 Path::pfstate->pnodeoffsets = reinterpret_cast<short *>(pmap + Path::pfstate->pmap->nodeoffsets);
@@ -180,11 +180,12 @@ int PATH_addmapfile(char *pmap) {
                 Path::pfstate->ptrackinfos = reinterpret_cast<PATHTRACKINFO *>(pmap + Path::pfstate->pmap->trackinfos);
                 Path::pfstate->psampleoffsets =
                     reinterpret_cast<PATHFINDSAMPLE *>(pmap + Path::pfstate->pmap->sampleoffsets);
-                for (e = 0; e < 16; e++) {
+                e = 0;
+                do {
                     Path::pfstate->eventqueue[e] = 0;
-                }
-                Path::pfstate->timerinterval = 10;
+                } while (++e < 16);
                 Path::pfstate->taskinterval = 0x32;
+                Path::pfstate->timerinterval = 10;
                 result = projectID;
             }
         }
@@ -254,30 +255,26 @@ int PATH_setnamedvalue(int projects, char *name, int value) {
         int c;
 
         c = 0;
-        do {
+        for (; c < 16; c++) {
             str[c] = name[c];
             if (str[c] == 0) {
                 break;
             }
             str[c] = str[c] | 0x20;
-            c++;
-            if (c > 15) {
-                break;
-            }
-        } while (1);
+        }
     }
     projects &= PATH_ALL_PROJECTS;
     {
         for (int p = 0; p < PATH_MAX_PROJECTS; p++) {
-            if (*(Path::pfstates + p) != 0 && (*(Path::pfstates + p))->pmap != 0 &&
-                ((*(Path::pfstates + p))->idflags & projects) != 0) {
+            if (Path::pfstates[p] != 0 && Path::pfstates[p]->pmap != 0 &&
+                (Path::pfstates[p]->idflags & projects) != 0) {
                 int v;
 
-                for (v = 0; v < (*(Path::pfstates + p))->pmap->numnamedvars; v++) {
-                    if ((*(Path::pfstates + p))->pnamedvars[v].name[0] != 0 &&
-                        strcmp(str, (*(Path::pfstates + p))->pnamedvars[v].name) == 0) {
+                for (v = 0; v < Path::pfstates[p]->pmap->numnamedvars; v++) {
+                    if (Path::pfstates[p]->pnamedvars[v].name[0] != 0 &&
+                        strcmp(str, Path::pfstates[p]->pnamedvars[v].name) == 0) {
                         result = 0;
-                        (*(Path::pfstates + p))->pnamedvars[v].value = value;
+                        Path::pfstates[p]->pnamedvars[v].value = value;
                     }
                 }
             }
@@ -297,10 +294,14 @@ Path::IPathTrack *PATH_gettrackimp(int trackhandle) {
 }
 
 int PATHI_bytesperms(int trackID) {
-    PATHFINDSAMPLE *sample, *endsample = 0;
-    float bytesperms, byterate = 0.0f;
+    PATHFINDSAMPLE *sample;
+    PATHFINDSAMPLE *endsample;
+    float bytesperms;
+    float byterate;
     PATHTRACKINFO *trackinfo;
 
+    endsample = 0;
+    byterate = 0.0f;
     trackinfo = PATHI_gettrackinfo(trackID);
     if (trackinfo == 0) {
         return 0;

@@ -36,8 +36,8 @@ void PathToIAllocator::Free(void *pmem) {
 void PATH_setallocator(EA::Allocator::IAllocator *allocator, const EA::TagValuePair &flags) {
     PathToIAllocator::memimp = allocator;
     PathToIAllocator::memimptags.mTag = flags.mTag;
-    PathToIAllocator::memimptags.mNext = flags.mNext;
     PathToIAllocator::memimptags.mValue = flags.mValue;
+    PathToIAllocator::memimptags.mNext = flags.mNext;
     Path::memalloc = PathToIAllocator::Alloc;
     Path::memfree = PathToIAllocator::Free;
 }

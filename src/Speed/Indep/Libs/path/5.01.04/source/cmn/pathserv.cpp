@@ -12,20 +12,20 @@ int PATH_milliseconds() {
 }
 
 int PATHI_switchproject(int p, int idflags) {
-    if (p >= 0 && p < PATH_MAX_PROJECTS && Path::pfstates[p] != 0 &&
-        Path::pfstates[p]->pmap != 0) {
-        {
-            int voiceflags;
-            voiceflags = idflags & PATH_ALL_VOICES;
-            if (voiceflags != 0 && (Path::pfstates[p]->idflags & voiceflags) == 0) {
-                return 0;
-            }
-            {
-                int projectflags;
-                projectflags = idflags & PATH_ALL_PROJECTS;
-                if ((Path::pfstates[p]->idflags & projectflags) != 0) {
-                    Path::pfstate = Path::pfstates[p];
-                    return Path::pfstate->idflags;
+    if (p >= 0 && p < PATH_MAX_PROJECTS) {
+        if (Path::pfstates[p] != 0) {
+            if (Path::pfstates[p]->pmap != 0) {
+                {
+                    int voiceflags = idflags & PATH_ALL_VOICES;
+                    if (voiceflags == 0 || (Path::pfstates[p]->idflags & voiceflags) != 0) {
+                        {
+                            int projectflags = idflags & PATH_ALL_PROJECTS;
+                            if ((Path::pfstates[p]->idflags & projectflags) != 0) {
+                                Path::pfstate = Path::pfstates[p];
+                                return Path::pfstate->idflags;
+                            }
+                        }
+                    }
                 }
             }
         }

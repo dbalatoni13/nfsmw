@@ -212,8 +212,8 @@ void PATHI_releaseevent(int e, PATHEVENTRESULT result) {
     minevent = reinterpret_cast<PATHEVENT *>(Path::pfstate->eventheap);
     maxevent = reinterpret_cast<PATHEVENT *>(&Path::pfstate->eventindex);
     event = Path::pfstate->eventqueue[e];
-    copyevent = *event;
     eventsize = sizeof(PATHEVENT) + event->numactions * 12;
+    copyevent = *event;
     tidyheap = event >= minevent && event < maxevent;
     if (tidyheap) {
         movesize = reinterpret_cast<char *>(maxevent) - reinterpret_cast<char *>(event);
@@ -223,7 +223,7 @@ void PATHI_releaseevent(int e, PATHEVENTRESULT result) {
             if (thisevent > event && thisevent < maxevent) {
                 thisevent = reinterpret_cast<PATHEVENT *>(reinterpret_cast<char *>(thisevent) - eventsize);
                 PATHI_moveevent(Path::pfstate->eventqueue[z], thisevent);
-                if (thisevent >= minevent) {
+                if (minevent <= thisevent) {
                     unsigned int thiseventsize;
 
                     thiseventsize = sizeof(PATHEVENT) + thisevent->numactions * 12;
@@ -273,11 +273,17 @@ int PATHI_serviceevent(int eventindex) {
     }
     a = event->currentaction;
     action = reinterpret_cast<PATHACTION *>(event + 1) + a;
-    for (; a < event->numactions &&
-           (action->done != 0 || PATHI_serviceaction(event, action) != 0); action++, a++) {
-        actionstaken++;
-        event->currentaction++;
-        event->lastact = Path::milliseconds;
+    if (a < event->numactions) {
+        do {
+            if (action->done == 0 && PATHI_serviceaction(event, action) == 0) {
+                break;
+            }
+            actionstaken++;
+            event->currentaction++;
+            event->lastact = Path::milliseconds;
+            action++;
+            a++;
+        } while (a < event->numactions);
     }
     return actionstaken;
 }
