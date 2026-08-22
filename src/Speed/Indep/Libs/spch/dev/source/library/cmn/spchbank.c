@@ -268,11 +268,12 @@ unsigned int iSPCH_GetStartSample(unsigned int gameNum, int numSamples, int cycl
 
     partitionSize = numSamples / cycleLength;
     overflowSamples = numSamples - partitionSize * cycleLength;
-    startSample = gameNum;
-    if (startSample <= static_cast<unsigned int>(overflowSamples)) {
-        return partitionSize * startSample + startSample;
+    if (gameNum > static_cast<unsigned int>(overflowSamples)) {
+        startSample = partitionSize * gameNum + overflowSamples;
+    } else {
+        startSample = partitionSize * gameNum + gameNum;
     }
-    return partitionSize * startSample + overflowSamples;
+    return startSample;
 }
 
 int iSPCH_TestSubBankBounds(int bankIndex, unsigned int subBankIndex) {

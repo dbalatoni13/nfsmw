@@ -666,16 +666,20 @@ void iSPCH_ClearSentenceChoiceChannel(unsigned int channel) {
 static void iSPCH_ClearCycleBit(VOXBANKHDR *bank, int sampleIndex) {
     unsigned char *bankBits;
     unsigned char mask;
-    int byteIndex, bit;
+    int byteIndex;
+    int bit;
 
     byteIndex = sampleIndex;
-    if (byteIndex < 0) {
-        byteIndex += 7;
+    if (sampleIndex < 0) {
+        byteIndex = sampleIndex + 7;
+    } else {
+        byteIndex = sampleIndex;
     }
     bankBits = BANKHDR_GetCycleBitsAddr(bank);
     byteIndex >>= 3;
     bit = sampleIndex - byteIndex * 8;
     mask = ~(1 << bit);
+    byteIndex++;
     bankBits[byteIndex] &= mask;
 }
 
