@@ -43,13 +43,16 @@ void iSPCH_InitInGame() {
 }
 
 int SPCH_GetSampleDataRate(int sampleRate, int sampleBits, CompressionType type) {
-    int bytesPerSec = sampleRate * sampleBits;
+    int bytesPerSec;
 
-    if (bytesPerSec < 0) {
-        bytesPerSec += 7;
+    sampleRate *= sampleBits;
+    if (sampleRate < 0) {
+        sampleRate += 7;
     }
-    bytesPerSec >>= 3;
+    bytesPerSec = sampleRate >> 3;
     switch (type) {
+    case kSPCH_Compression_None:
+        break;
     case kSPCH_Compression_MicroTalk:
         bytesPerSec = bytesPerSec / 10;
         break;
