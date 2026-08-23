@@ -179,8 +179,8 @@ unsigned short iSPCH_Rand(int max, int randHandle) {
         do {
             foundAt = iSPCH_FindRandInQueue(result, threshold, randHandle);
             if (foundAt == -1) {
-                done = 1;
                 bestResult = result;
+                done = 1;
             } else if (foundAt > oldest) {
                 oldest = foundAt;
                 bestResult = result;
