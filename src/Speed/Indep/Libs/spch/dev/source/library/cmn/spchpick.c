@@ -3,7 +3,7 @@
 extern int gPreLoadTicks;
 extern int gFilterSetting[8];
 extern int gClearCycle;
-int iSPCH_Rand(int max, int min);
+unsigned short iSPCH_Rand(int max, int randHandle);
 void *iSPCH_MemAlloc(unsigned int numBytes);
 unsigned char *iSPCH_GetSampleParmAddr(VOXBANKHDR *hdr, int sampleIndex);
 int iSPCH_GetSampleSizeData(VOXBANKHDR *hdr, int sampleIndex, unsigned int *sampleOffset, unsigned int *dataBytes);
@@ -1029,7 +1029,6 @@ static void iSPCH_RandomizeSentencePicks(VoxSentence *sentence, SentencePickInfo
     if (i < numPhrases) {
         do {
             phraseInfo = &sentenceInfo->phraseInfo[i];
-            i++;
             picks = reinterpret_cast<char *>(sentenceInfo->validSamples) + phraseInfo->pickStart;
             {
                 int j;
@@ -1047,6 +1046,7 @@ static void iSPCH_RandomizeSentencePicks(VoxSentence *sentence, SentencePickInfo
                     } while (j > 1);
                 }
             }
+            i++;
         } while (i < numPhrases);
     }
 }
