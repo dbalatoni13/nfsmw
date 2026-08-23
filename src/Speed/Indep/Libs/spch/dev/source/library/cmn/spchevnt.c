@@ -137,14 +137,6 @@ int iSPCH_GetDatID(EventSpec *eventSpec, unsigned int *datID) {
     return result;
 }
 
-inline unsigned char *iSPCH_GetGlobalMatchParmAddr(VoxData *evtData) {
-    unsigned int offset;
-
-    offset = evtData->numEvents * 2;
-    offset = (offset + 3) & ~3;
-    return reinterpret_cast<unsigned char *>(evtData) + 0x18 + offset;
-}
-
 int iSPCH_GetGlobalMatchParmsArray(EventSpec *eventSpec, unsigned char **matchParmArray) {
     int result;
     EventDatInfo *datInfo;

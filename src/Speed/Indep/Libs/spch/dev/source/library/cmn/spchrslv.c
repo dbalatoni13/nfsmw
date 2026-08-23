@@ -56,31 +56,16 @@ abort:
     return result;
 }
 
-inline unsigned char *iSPCH_GetGlobalMatchParmAddr(VoxData *evtData) {
-    unsigned int offset;
-
-    offset = ((evtData->numEvents * 2 + 3) & ~3) + 0x18;
-    return reinterpret_cast<unsigned char *>(evtData) + offset;
-}
-
 void SPCH_ClearMatchParmSettings(unsigned long inChannel) {
-    int i;
-    int j;
+    int i, j;
     unsigned char *matchParmArray;
 
-    i = 0;
-    do {
-        j = i + 1;
+    for (i = 0; i < 8; i++) {
         if (gEventDats[i].eventDat != 0 && gEventDats[i].channel == inChannel) {
             matchParmArray = iSPCH_GetGlobalMatchParmAddr(gEventDats[i].eventDat);
-            j = 0;
-            if (j < gEventDats[i].eventDat->numGlobalMatchParms) {
-                do {
-                    matchParmArray[j] = 0xFF;
-                    j++;
-                } while (j < gEventDats[i].eventDat->numGlobalMatchParms);
+            for (j = 0; j < gEventDats[i].eventDat->numGlobalMatchParms; j++) {
+                matchParmArray[j] = 0xFF;
             }
         }
-        i = j;
-    } while (i < 8);
+    }
 }

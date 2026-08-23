@@ -50,6 +50,14 @@ inline unsigned char *iSPCH_GetOffset16(unsigned char *basePtr, unsigned short *
     return basePtr + offsets[index] * 4;
 }
 
+inline unsigned char *iSPCH_GetGlobalMatchParmAddr(VoxData *evtData) {
+    unsigned int offset;
+
+    offset = evtData->numEvents * 2;
+    offset = (offset + 3) & ~3;
+    return reinterpret_cast<unsigned char *>(evtData) + 0x18 + offset;
+}
+
 inline unsigned char *iSPCH_GetRuleDataAddr(VoxEvent *event) {
     unsigned int offset;
 

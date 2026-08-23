@@ -232,7 +232,7 @@ struct EventDatInfo {
     unsigned int channel;
 };
 
-extern EventDatInfo gEventDats[8];
+extern EventDatInfo gEventDats[];
 
 struct VoxEventItem {
     unsigned int entryTime;
