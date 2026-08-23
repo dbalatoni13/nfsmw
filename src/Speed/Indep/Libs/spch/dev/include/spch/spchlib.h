@@ -70,7 +70,7 @@ inline unsigned char *iSPCH_GetSentenceRulesAddr(VoxEvent *event) {
     unsigned char *data;
 
     data = iSPCH_GetRuleDataAddr(event);
-    data = data + ((VoxEvent_GetNumRules(event) * 3 + 3) & ~3);
+    data += (VoxEvent_GetNumRules(event) * 3 + 3) & ~3;
     return data;
 }
 
@@ -78,7 +78,7 @@ inline unsigned char *iSPCH_GetContextDataAddr(VoxEvent *event) {
     unsigned char *data;
 
     data = iSPCH_GetSentenceRulesAddr(event);
-    data = data + ((event->numSentences * ((VoxEvent_GetNumRules(event) + 7) >> 3) * 2 + 3) & ~3);
+    data += (event->numSentences * ((VoxEvent_GetNumRules(event) + 7) >> 3) * 2 + 3) & ~3;
     return data;
 }
 
@@ -134,13 +134,14 @@ inline unsigned char VoxEvent_GetFilterPriorityFlag(VoxEvent *event) {
 }
 
 inline int VoxEvent_GetFollowEventData(VoxEvent *event, SPCHType_FollowData *followData) {
-    int result;
     unsigned char *ptr;
+    int result;
 
     result = 0;
     if (VoxEvent_GetFollowGroupFlag(event) != 0) {
         result = 1;
         ptr = iSPCH_GetContextDataAddr(event);
+        ptr += (VoxEvent_GetNumContexts(event) * 3 + 3) & ~3;
         if (VoxEvent_GetExactParmMatchFlag(event) != 0) {
             ptr += ExactMatch_NumBytes(event->numSentences);
         }

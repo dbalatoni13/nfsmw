@@ -99,12 +99,11 @@ int iSPCH_FindEventDatInfo(EventSpec *eventSpec, EventDatInfo **datInfo) {
     i = 0;
     do {
         if (gEventDats[i].eventDat != 0) {
-            if (gEventDats[i].eventDat->datID == eventSpec->eventDatID) {
-                if (gEventDats[i].eventDat->projectID == eventSpec->projectID) {
-                    *datInfo = &gEventDats[i];
-                    result = 1;
-                    break;
-                }
+            if (gEventDats[i].eventDat->datID == eventSpec->eventDatID &&
+                gEventDats[i].eventDat->projectID == eventSpec->projectID) {
+                *datInfo = &gEventDats[i];
+                result = 1;
+                break;
             }
         }
         i++;

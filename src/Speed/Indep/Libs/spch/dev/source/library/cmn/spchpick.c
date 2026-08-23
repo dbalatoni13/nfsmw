@@ -55,15 +55,16 @@ void SPCH_GetEventDatInfo(char *eventData, int *projID, int *datID) {
     *datID = static_cast<unsigned char>(eventData[9]);
 }
 
-static int iSPCH_TestBit(UInt8 *bitArray, int bitIndex) {
+static int iSPCH_TestBit(unsigned char *bitArray, int bitIndex) {
     UInt8 mask;
     int byteIndex;
     int bit;
     int result;
 
-    byteIndex = bitIndex;
     if (bitIndex < 0) {
-        byteIndex += 7;
+        byteIndex = bitIndex + 7;
+    } else {
+        byteIndex = bitIndex;
     }
     byteIndex >>= 3;
     bit = bitIndex - byteIndex * 8;
@@ -898,56 +899,44 @@ static int iSPCH_TestMatchParms(SentencePickInfo *sentenceInfo, VoxSentence *sen
     result = 1;
     done = 0;
     iSPCH_InitMatchParmIO(sentence);
-    i = 0;
-    do {
+    for (i = 0; i < 12; i++) {
         sentenceInfo->phraseInfo[i].done = 0;
-        i++;
-    } while (i < 12);
+    }
     numPhrases = VoxSentence_GetNumPhrases(sentence);
-    if (done == 0) {
-        do {
-        i = 0;
+    while (done == 0) {
         done = 1;
-        if (i < numPhrases) {
-            do {
-                if (sentenceInfo->phraseInfo[i].done == 0) {
-                    sentenceInfo->phraseInfo[i].done = 1;
-                    bank = gVoxBanks[sentenceInfo->phraseInfo[i].bankIndex].voxHdr;
-                    pickedIndex = sentenceInfo->phraseInfo[i].pickedIndex;
-                    phrase = reinterpret_cast<VoxPhrase *>(iSPCH_GetOffset8(reinterpret_cast<unsigned char *>(sentence), reinterpret_cast<unsigned char *>(sentence) + 8, i));
-                    numFilters = phrase->numFilters;
-                    sampleIndex = sentenceInfo->validSamples[pickedIndex];
-                    sampleParms = iSPCH_GetSampleParmAddr(bank, sampleIndex);
-                    if (sampleParms == 0) {
-                        result = 0;
-                        goto exit;
-                    }
-                    j = 0;
-                    if (j < numFilters) {
-                        do {
-                            matchParmIndex = iSPCH_GetPhraseParmInfo(phrase, j)->matchParmIndex;
-                            if (matchParmIndex != 0xFF && (matchParmIndex & 0x80) != 0) {
-                                matchParmIndex &= 0x7F;
-                                if (iSPCH_GetPhraseParmInfo(phrase, j)->eventParmIndex == 0xFF) {
-                                    if (matchParmIO[matchParmIndex] == 0) {
-                                        sentenceInfo->phraseInfo[i].done = 0;
-                                        done = 0;
-                                    } else if (((matchParmIO[matchParmIndex] >> sampleParms[j]) & 1) == 0) {
-                                        result = 0;
-                                        goto exit;
-                                    }
-                                } else if (iSPCH_GetPhraseParmInfo(phrase, j)->eventParmIndex == 0xFE) {
-                                    matchParmIO[matchParmIndex] = 1 << sampleParms[j];
-                                }
+        for (i = 0; i < numPhrases; i++) {
+            if (sentenceInfo->phraseInfo[i].done == 0) {
+                sentenceInfo->phraseInfo[i].done = 1;
+                bank = gVoxBanks[sentenceInfo->phraseInfo[i].bankIndex].voxHdr;
+                pickedIndex = sentenceInfo->phraseInfo[i].pickedIndex;
+                phrase = reinterpret_cast<VoxPhrase *>(iSPCH_GetOffset8(reinterpret_cast<unsigned char *>(sentence), reinterpret_cast<unsigned char *>(sentence) + 8, i));
+                numFilters = phrase->numFilters;
+                sampleIndex = sentenceInfo->validSamples[pickedIndex];
+                sampleParms = iSPCH_GetSampleParmAddr(bank, sampleIndex);
+                if (sampleParms == 0) {
+                    result = 0;
+                    goto exit;
+                }
+                for (j = 0; j < numFilters; j++) {
+                    matchParmIndex = iSPCH_GetPhraseParmInfo(phrase, j)->matchParmIndex;
+                    if (matchParmIndex != 0xFF && (matchParmIndex & 0x80) != 0) {
+                        matchParmIndex &= 0x7F;
+                        if (iSPCH_GetPhraseParmInfo(phrase, j)->eventParmIndex == 0xFF) {
+                            if (matchParmIO[matchParmIndex] == 0) {
+                                sentenceInfo->phraseInfo[i].done = 0;
+                                done = 0;
+                            } else if (((matchParmIO[matchParmIndex] >> sampleParms[j]) & 1) == 0) {
+                                result = 0;
+                                goto exit;
                             }
-                            j++;
-                        } while (j < numFilters);
+                        } else if (iSPCH_GetPhraseParmInfo(phrase, j)->eventParmIndex == 0xFE) {
+                            matchParmIO[matchParmIndex] = 1 << sampleParms[j];
+                        }
                     }
                 }
-                i++;
-            } while (i < numPhrases);
+            }
         }
-        } while (done == 0);
     }
 exit:
     return result;
@@ -1224,39 +1213,31 @@ static void iSPCH_ConstantRuleSet(EventSpec *eventSpec, VoxEvent *event, VoxSent
 
     if (gCallbacks.setRule != 0) {
         if (iSPCH_FindEventDatInfo(eventSpec, &datInfo) != 0) {
-            i = 0;
             numPhrases = VoxSentence_GetNumPhrases(sentence);
             channel = datInfo->channel;
             datID = datInfo->eventDat->datID;
-            if (i < numPhrases) {
-                do {
-                    phrase = reinterpret_cast<VoxPhrase *>(iSPCH_GetOffset8(reinterpret_cast<unsigned char *>(sentence), reinterpret_cast<unsigned char *>(sentence) + 8, i));
-                    j = 0;
-                    numParms = phrase->numFilters;
-                    if (j < numParms) {
-                        do {
-                            ruleIndex = iSPCH_GetPhraseParmInfo(phrase, j)->ruleIndex;
-                            if (ruleIndex != 0xFF) {
-                                ruleID = iSPCH_GetRuleID(event, ruleIndex);
-                                bankIndex = gEventChoice[channel].phrases[i].bankIndex;
-                                bank = gVoxBanks[bankIndex].voxHdr;
-                                sampleIndex = gEventChoice[channel].phrases[i].sampleIndex;
-                                sampleParms = iSPCH_GetSampleParmAddr(bank, sampleIndex);
-                                if (sampleParms != 0) {
-                                    parmValue = sampleParms[j];
-                                    {
-                                        int flag;
+            for (i = 0; i < numPhrases; i++) {
+                phrase = reinterpret_cast<VoxPhrase *>(iSPCH_GetOffset8(reinterpret_cast<unsigned char *>(sentence), reinterpret_cast<unsigned char *>(sentence) + 8, i));
+                numParms = phrase->numFilters;
+                for (j = 0; j < numParms; j++) {
+                    ruleIndex = iSPCH_GetPhraseParmInfo(phrase, j)->ruleIndex;
+                    if (ruleIndex != 0xFF) {
+                        ruleID = iSPCH_GetRuleID(event, ruleIndex);
+                        bankIndex = gEventChoice[channel].phrases[i].bankIndex;
+                        bank = gVoxBanks[bankIndex].voxHdr;
+                        sampleIndex = gEventChoice[channel].phrases[i].sampleIndex;
+                        sampleParms = iSPCH_GetSampleParmAddr(bank, sampleIndex);
+                        if (sampleParms != 0) {
+                            parmValue = sampleParms[j];
+                            {
+                                int flag;
 
-                                        flag = 1 << parmValue;
-                                        gCallbacks.setRule(eventSpec, ruleID, flag, datID);
-                                    }
-                                }
+                                flag = 1 << parmValue;
+                                gCallbacks.setRule(eventSpec, ruleID, flag, datID);
                             }
-                            j++;
-                        } while (j < numParms);
+                        }
                     }
-                    i++;
-                } while (i < numPhrases);
+                }
             }
         }
     }

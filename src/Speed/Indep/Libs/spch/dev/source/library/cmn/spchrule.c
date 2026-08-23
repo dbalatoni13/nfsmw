@@ -146,41 +146,25 @@ static int iSPCH_SentenceUsesParm(VoxSentence *sentence, int parmIndex) {
     i = 0;
     result = 0;
     numPhrases = VoxSentence_GetNumPhrases(sentence);
-    if (i >= numPhrases) {
-        return result;
-    }
-    phrase = reinterpret_cast<VoxPhrase *>(iSPCH_GetOffset8(reinterpret_cast<unsigned char *>(sentence), reinterpret_cast<unsigned char *>(sentence) + 8, i));
-    bankSelectIndex = phrase->bankIDIndex;
-    if (bankSelectIndex == parmIndex) {
-        return 1;
-    }
-    do {
-        numParms = i + 1;
-        j = 0;
-        if (j < phrase->numFilters) {
-            eventParmIndex = iSPCH_GetPhraseParmInfo(phrase, j)->eventParmIndex;
-            do {
-                if (eventParmIndex == parmIndex) {
-                    result = 1;
-                    break;
-                }
-                j++;
-                if (j >= phrase->numFilters) {
-                    break;
-                }
-                eventParmIndex = iSPCH_GetPhraseParmInfo(phrase, j)->eventParmIndex;
-            } while (1);
-        }
-        i = numParms;
-        if (i >= numPhrases) {
-            return result;
-        }
+    while (i < numPhrases) {
         phrase = reinterpret_cast<VoxPhrase *>(iSPCH_GetOffset8(reinterpret_cast<unsigned char *>(sentence), reinterpret_cast<unsigned char *>(sentence) + 8, i));
         bankSelectIndex = phrase->bankIDIndex;
         if (bankSelectIndex == parmIndex) {
             return 1;
         }
-    } while (1);
+        numParms = i + 1;
+        j = 0;
+        while (j < phrase->numFilters) {
+            eventParmIndex = iSPCH_GetPhraseParmInfo(phrase, j)->eventParmIndex;
+            if (eventParmIndex == parmIndex) {
+                result = 1;
+                break;
+            }
+            j++;
+        }
+        i = numParms;
+    }
+    return result;
 }
 
 static void iSPCH_GetSentenceRuleSettings(VoxEvent *event, int sentenceNum, unsigned int *ioSettings, unsigned int *ioFlags) {
