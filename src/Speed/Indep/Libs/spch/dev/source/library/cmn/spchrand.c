@@ -143,11 +143,12 @@ void iSPCH_InitRandom(unsigned int gameSeed) {
         i++;
     } while (i < 0x20);
     gRandArrayIndex = 0;
-    iSPCH_EACseedrandom(gameSeed * 0x10001);
+    gameSeed += gameSeed << 16;
+    iSPCH_EACseedrandom(gameSeed);
     int warmup;
-    warmup = 0x20 - (gameSeed * 0x10001) % 0x20;
+    warmup = 0x20 - static_cast<int>(gameSeed) % 0x20;
     i = 0;
-    if (warmup > 0) {
+    if (i < warmup) {
         do {
             iSPCH_Rand(10, -1);
             i++;
