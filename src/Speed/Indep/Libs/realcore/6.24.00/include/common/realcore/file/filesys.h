@@ -25,11 +25,16 @@ struct FILESYSOPTS {
     int mErrorRetryCount;
 };
 
-#ifdef __cplusplus
+extern FILESYSOPTS gFileSysOpts;
+extern bool bIsFileSysInitialized;
+
+#if defined(__cplusplus) && !defined(REALCORE_FILESYS_IMPLEMENTATION)
 extern "C" {
 #endif
 
 int FILESYS_completeop(FILEOP ophandle);
+long long FILESYS_completeop64(FILEOP ophandle);
+int FILESYS_opstatus(FILEOP ophandle);
 
 FILEOP FILESYS_open(const char *name, unsigned int modeflags, int priority, void *userdata);
 FILEOP FILESYS_read(int filehandle, int offset, void *buffer, int bytes, int priority, void *userdata);
@@ -39,12 +44,15 @@ int FILESYS_close(int filehandle, int timeout, void *userdata);
 FILEOP FILESYS_size(int filehandle, int priority, void *userdata);
 FILEOP FILESYS_exists(const char *name, int priority, void *userdata);
 
-#ifdef __cplusplus
+#if defined(__cplusplus) && !defined(REALCORE_FILESYS_IMPLEMENTATION)
 }
 #endif
 
 bool FILE_getopts(FILESYSOPTS *pfso);
 bool FILE_setopts(FILESYSOPTS *pfso);
+bool FILE_init(void *buf, int bufsize);
+int FILE_overhead();
+void FILE_restore();
 int FILESYS_opensync(const char *name, unsigned int modeflags, int priority);
 int FILESYS_readsync(int filehandle, int offset, void *buffer, int bytes, int priority);
 int FILESYS_sizesync(int filehandle, int priority);
@@ -54,12 +62,14 @@ int FILESYS_waitop(FILEOP ophandle);
 int FILESYS_size(int filehandle, int priority, void *userdata);
 bool FILESYS_existssync(const char *name, int priority);
 void FILESYS_callbackop(FILEOP ophandle, FILESYS_CALLBACK func);
+void FILESYS_priorityop(FILEOP ophandle, int priority);
 bool FILE_exists(const char *name);
 int FILE_size(const char *name);
 
 namespace RealFile {
 
 bool GetInfoFastByName(const char *name, const unsigned int modeflags, uint64_t &location, uint64_t &size);
+void GetInfoFastByHandle(int filehandle, uint64_t &location, uint64_t &size);
 
 };
 

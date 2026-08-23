@@ -48,7 +48,7 @@ class DeviceDriver {
     }
 
     virtual const char *GetName() {
-        return mDeviceName;
+        return this->mDeviceName;
     }
 
     virtual uint32_t GetOptimalReadSize() {
@@ -59,8 +59,10 @@ class DeviceDriver {
     char mDeviceName[16]; // offset 0x0, size 0x10
 };
 
-void AddDevice(DeviceDriver *device);
+unsigned int AddDevice(DeviceDriver *device);
+void RemoveDevice(unsigned int DevId);
 void AddSearchLocation(const char *location, bool recursive);
+void SetSearchPath(const char *path);
 
 } // namespace RealFile
 

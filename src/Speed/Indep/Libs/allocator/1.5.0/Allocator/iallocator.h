@@ -16,6 +16,7 @@ struct TagValuePair {
     TagValuePair(unsigned int tag, unsigned int value);
     TagValuePair(unsigned int tag, float value);
     TagValuePair(unsigned int tag, const void *value);
+    const TagValuePair &operator+(const TagValuePair &rhs) const;
 
     unsigned int mTag; // offset 0x0, size 0x4
     union {
@@ -49,6 +50,11 @@ inline TagValuePair::TagValuePair(unsigned int tag, const void *value) {
     this->mTag = tag;
     this->mValue.mPointer = value;
     this->mNext = NULL;
+}
+
+inline const TagValuePair &TagValuePair::operator+(const TagValuePair &rhs) const {
+    const_cast<TagValuePair &>(rhs).mNext = this;
+    return rhs;
 }
 
 namespace Allocator {

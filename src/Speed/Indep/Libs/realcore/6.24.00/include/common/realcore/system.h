@@ -30,6 +30,7 @@ bool SIGNAL_create(SIGNAL *hSignal);
 void SIGNAL_set(SIGNAL *hSignal);
 void SIGNAL_wait(SIGNAL *hSignal);
 void SIGNAL_destroy(SIGNAL *hSignal);
+void SYSTEM_addexit(void (*func)());
 
 inline bool MUTEX_create(MUTEX *m) {
     reinterpret_cast<RealSystem::Mutex *>(m)->Create();
