@@ -41,8 +41,8 @@ template <class T> inline T *ListSingle<T>::Pop() {
     T *ls = this->head;
     if (ls != nullptr) {
         if (ls == this->tail) {
-            this->head = nullptr;
             this->tail = nullptr;
+            this->head = nullptr;
         } else {
             this->head = static_cast<T *>(ls->next);
         }

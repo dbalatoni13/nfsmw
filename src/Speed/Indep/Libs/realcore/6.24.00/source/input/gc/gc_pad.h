@@ -13,7 +13,11 @@
 namespace RealInput {
 
 struct GcPad : GcDevice {
-    static void operator delete(void *ptr, unsigned int size) {
+    static inline void *operator new(unsigned int size) {
+        return AllocateMemSize(nullptr, static_cast<int>(size), 0, 0, 0);
+    }
+
+    static inline void operator delete(void *ptr, unsigned int size) {
         FreeMemSize(ptr, static_cast<int>(size));
     }
 

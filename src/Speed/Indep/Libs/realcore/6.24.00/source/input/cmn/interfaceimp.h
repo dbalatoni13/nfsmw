@@ -7,18 +7,32 @@
 
 #include "../../../include/common/realcore/input.h"
 
+#include "device.h"
+
 namespace RealInput {
 
 struct InterfaceImp : Interface {
+    static inline void operator delete(void *ptr, unsigned int size) {
+        FreeMemSize(ptr, static_cast<int>(size));
+    }
+
     InterfaceImp(const ConfigOptions &options);
     virtual ~InterfaceImp();
 
     virtual int AddRef();
     virtual int Release();
     virtual void Update();
-    virtual Device *GetPad();
-    virtual Device *GetMouse();
-    virtual Device *GetKeyboard();
+    virtual Device *GetPad() {
+        return this->mpPad;
+    }
+
+    virtual Device *GetMouse() {
+        return this->mpMouse;
+    }
+
+    virtual Device *GetKeyboard() {
+        return this->mpKeyboard;
+    }
     virtual Event *GetEvent();
 
     bool RegisterDevice(DeviceImp *device);

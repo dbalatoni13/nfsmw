@@ -12,6 +12,10 @@ namespace RealInput {
 struct GcInterface;
 
 struct GcDevice : DeviceImp {
+    static void operator delete(void *ptr, unsigned int size) {
+        FreeMemSize(ptr, static_cast<int>(size));
+    }
+
     GcDevice(Type type, GcInterface *pInterface);
     virtual ~GcDevice();
 

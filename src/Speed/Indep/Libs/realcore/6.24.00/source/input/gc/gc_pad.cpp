@@ -96,10 +96,10 @@ RiResult GcPad::Update() {
 
     ctype = SIProbe(this->mInfo.mPortNum);
     if (ctype == SI_GC_WAVEBIRD || ctype == SI_GC_CONTROLLER) {
-        if (!(PStat.err != PAD_ERR_NO_CONTROLLER && this->mInitialized)) {
+        if (PStat.err == PAD_ERR_NO_CONTROLLER || !this->mInitialized) {
             PStat.err = PAD_ERR_NOT_READY;
             gResetBit |= this->mResetBit;
-            if (ctype == SI_GC_CONTROLLER) {
+            if (ctype != SI_GC_WAVEBIRD && ctype == SI_GC_CONTROLLER) {
                 this->mInfo.mControllerID = 1;
                 this->mCapabilities.mForceFeedback = 1;
             } else {
@@ -115,19 +115,19 @@ RiResult GcPad::Update() {
             }
             this->mCapabilities.mAttached = 1;
         } else {
+            if (PStat.err == PAD_ERR_NONE) {
             int DButtons[64];
             int Analog[64];
             int dvalue;
             const int AnalogDisplace = 32;
             const int NumDButtons = 12;
-            int button = PStat.button;
-
+            dvalue = PStat.button;
             for (i = 0; i < NumDButtons; i++) {
                 if (i == 7) {
-                    button >>= 1;
+                    dvalue >>= 1;
                 }
-                DButtons[i] = (button & 1) != 0 ? 0xff : 0;
-                button >>= 1;
+                DButtons[i] = (dvalue & 1) != 0 ? 0xff : 0;
+                dvalue >>= 1;
             }
 
             Analog[0] = PStat.stickX;
@@ -195,6 +195,7 @@ RiResult GcPad::Update() {
                     event.mObjectIndex = i;
                     pEventQ->AddEvent(&event);
                 }
+            }
             }
         }
     } else {

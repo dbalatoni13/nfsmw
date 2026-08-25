@@ -122,6 +122,10 @@ struct Device {
         return &this->mCapabilities;
     }
 
+    Info *GetInfo() {
+        return &this->mInfo;
+    }
+
     virtual RiResult Acquire() {
         return RI_OK;
     }
@@ -201,10 +205,17 @@ struct GcEffect;
 struct Interface;
 
 void SetAllocator(EA::Allocator::IAllocator *allocator);
+void ReleaseAllocator();
 void *AllocateMemSize(const char *name, int size, int align, int alignoffset, int flag);
 
 struct ConfigOptions {
-    ConfigOptions() {}
+    ConfigOptions()
+        : mAllocator(nullptr)
+        , mpEnumDevicesCallback(nullptr)
+        , mEnumDevicesCallbackUserData(0)
+        , mEventQueueSize(0x20)
+        , mMaxNumEffects(0) {
+    }
 
     EA::Allocator::IAllocator *mAllocator;
     int (*mpEnumDevicesCallback)(Device *, unsigned int, Interface *);

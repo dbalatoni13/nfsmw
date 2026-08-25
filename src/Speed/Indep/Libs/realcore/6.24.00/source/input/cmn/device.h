@@ -10,6 +10,10 @@
 namespace RealInput {
 
 struct DeviceImp : Device {
+    static inline void operator delete(void *ptr, unsigned int size) {
+        FreeMemSize(ptr, static_cast<int>(size));
+    }
+
     DeviceImp(Platform platform, Type type)
         : Device(platform, type) {
     }
