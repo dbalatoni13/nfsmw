@@ -655,9 +655,9 @@ struct OpenOperation : public FILEOPERATION {
             }
             return 0;
         }
-        return this->filehandle != reinterpret_cast<FILESYSHANDLE *>(-1)
-                   ? reinterpret_cast<int>(this->filehandle)
-                   : 0;
+        return this->filehandle == reinterpret_cast<FILESYSHANDLE *>(-1)
+                   ? 0
+                   : reinterpret_cast<int>(this->filehandle);
     }
 };
 

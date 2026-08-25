@@ -27,18 +27,15 @@ unsigned int GcHdFileDeviceDriver::Write(EAFileHandle h, const void *buf, unsign
 
 unsigned long long GcHdFileDeviceDriver::Seek(EAFileHandle h, unsigned long long offset, int whence,
                                               RealFile::DeviceDriver *, EAFileHandle) {
-    int origin;
-
-    origin = 0;
-    switch (whence) {
-    case 1:
+    int origin = 0;
+    if (whence != 1) {
+        if (whence > 1) {
+            if (whence == 2) {
+                origin = 2;
+            }
+        }
+    } else {
         origin = 1;
-        break;
-    case 2:
-        origin = 2;
-        break;
-    default:
-        break;
     }
     return PClseek(h, offset, origin);
 }

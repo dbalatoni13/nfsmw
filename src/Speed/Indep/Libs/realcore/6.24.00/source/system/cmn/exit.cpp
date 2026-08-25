@@ -6,14 +6,15 @@ static void (*exitfunctions[64])();
 
 void SYSTEM_addexit(void (*exitfunc)()) {
     int j;
-    for (j = 0; j < 64; j++) {
+    j = 0;
+    for (; j < 64; j++) {
         if (exitfunctions[j] == exitfunc) {
             return;
         }
     }
     j = 0;
-    if (exitfunctions[j] == nullptr) {
-        exitfunctions[j] = exitfunc;
+    if (*exitfunctions == nullptr) {
+        exitfunctions[0] = exitfunc;
         return;
     }
     do {

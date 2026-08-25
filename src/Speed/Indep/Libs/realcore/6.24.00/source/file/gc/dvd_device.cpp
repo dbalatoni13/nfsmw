@@ -60,7 +60,7 @@ static int AyncDVDRead(DVDFileInfo *FileInfo) {
         gCurRead.CurState = ALIGN_READ;
         gCurRead.ret = DVDReadAsyncPrio(FileInfo, reinterpret_cast<void *>(gCurRead.MemBase),
                                         gCurRead.MEA - gCurRead.MemBase, gCurRead.FileBase,
-                                        AyncDVDCallback, 2);
+                                       AyncDVDCallback, 2);
         return nBytesToKeep;
     }
     if (gCurRead.MemBase < gCurRead.ME) {
@@ -70,7 +70,7 @@ static int AyncDVDRead(DVDFileInfo *FileInfo) {
         }
         gCurRead.CurState = NONALIGN_READ;
         gCurRead.ret += DVDReadAsyncPrio(FileInfo, gCurRead.Data, nBytesToRead, gCurRead.FileBase,
-                                         AyncDVDCallback, 2);
+                                        AyncDVDCallback, 2);
         return nBytesToKeep;
     }
     QEndOp();
@@ -82,7 +82,9 @@ static void StartNonAlignedAyncRead(DVDFileInfo *FileInfo, void *MemPointer, lon
 
     if (Size == 0) {
         QEndOp();
-    } else {
+        return;
+    }
+
     gCurRead.MBS = reinterpret_cast<int>(MemPointer) & ~0x1f;
     gCurRead.MSA = (reinterpret_cast<int>(MemPointer) + 0x1f) & ~0x1f;
     gCurRead.FBS = FileBase & ~0x1f;
@@ -108,8 +110,8 @@ static void StartNonAlignedAyncRead(DVDFileInfo *FileInfo, void *MemPointer, lon
     } else if (gCurRead.SD != 0) {
         gCurRead.CurState = ALIGN_THE_START;
         readSize = (gCurRead.TA + 0x1f) & ~0x1f;
-        gCurRead.ret = DVDReadAsyncPrio(FileInfo, gCurRead.Data, readSize, gCurRead.FBS,
-                                        AyncDVDCallback, 2);
+        gCurRead.ret += DVDReadAsyncPrio(FileInfo, gCurRead.Data, readSize, gCurRead.FBS,
+                                         AyncDVDCallback, 2);
     } else {
         if (MemPointer == reinterpret_cast<void *>(gCurRead.MSA) && gCurRead.MSA < gCurRead.MEA) {
             gCurRead.CurState = ALIGN_READ;
@@ -128,7 +130,6 @@ static void StartNonAlignedAyncRead(DVDFileInfo *FileInfo, void *MemPointer, lon
         gCurRead.CurState = NONALIGN_READ;
         gCurRead.ret += DVDReadAsyncPrio(FileInfo, gCurRead.Data, readSize, FileBase,
                                          AyncDVDCallback, 2);
-    }
     }
 }
 
@@ -199,14 +200,16 @@ EAFileHandle GcDvdFileDeviceDriver::Open(const char *filename, int, int *) {
     int ret;
     int entryNum;
 
-    name = namesrc = newname;
+    name = newname;
     dvd_fh = this->_AllocateDvdFileHandle();
-    for (; *filename != '\0'; name++, filename++) {
+    while (*filename != '\0') {
         if (*filename == '\\') {
             *name = '/';
         } else {
             *name = *filename;
         }
+        filename++;
+        name++;
     }
     *name = '\0';
     namesrc = newname;

@@ -31,10 +31,10 @@ void SYNCTASK_add(void (*taskfunc)(void *, int), int rate, int delay, void *para
         if (systemtasksubs[index].func == taskfunc) {
             entry = index;
         } else if (systemtasksubs[index].func == nullptr && entry == -1) {
-            if (skipcount == 0) {
-                entry = index;
-            } else {
+            if (skipcount != 0) {
                 skipcount--;
+            } else {
+                entry = index;
             }
         }
     }
@@ -72,11 +72,11 @@ void SYNCTASK_run() {
         lastsystemtask = libticks;
         for (i = 0; i < 16; i++) {
             void (*func)(void *, int) = systemtasksubs[i].func;
-            if (func != nullptr && systemtasksubs[i].next <= libticks && systemtasksubs[i].exec == 0) {
+            if (func != nullptr && libticks >= systemtasksubs[i].next && systemtasksubs[i].exec == 0) {
                 systemtasksubs[i].exec = 1;
                 func(systemtasksubs[i].param, libticks - systemtasksubs[i].next);
-                systemtasksubs[i].exec = 0;
                 systemtasksubs[i].next = libticks + systemtasksubs[i].rate;
+                systemtasksubs[i].exec = 0;
             }
         }
     }
