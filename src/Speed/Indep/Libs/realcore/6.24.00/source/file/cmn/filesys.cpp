@@ -349,23 +349,24 @@ static FILEOPERATION *iGetOpFromHandle(FILEDEVICE *device, int ophandle, int *is
         result = device->current;
         if (result != nullptr && result->GetId() == ophandle) {
             *ispending = -1;
-            return result;
-        }
-        result = device->pending.Find(ophandle, false);
-        if (result == nullptr) {
-            result = device->completed.Find(ophandle, false);
         } else {
-            *ispending = 1;
+            result = device->pending.Find(ophandle, false);
+            if (result != nullptr) {
+                *ispending = 1;
+            } else {
+                result = device->completed.Find(ophandle, false);
+            }
         }
     }
     return result;
 }
 
 void FILEOPERATION::AddToQueue() {
-    FILEDEVICE *device = this->GetDevice(this->id);
+    FILEDEVICE *device;
     ListSingleIterator<FILEOPERATION> Itr;
     FILEOPERATION *prev;
     unsigned int newoppriority;
+    device = this->GetDevice(this->id);
     device->mutex.Lock();
     prev = nullptr;
     newoppriority = (static_cast<unsigned int>(this->priority) << 24) |
@@ -705,9 +706,33 @@ struct ReadOperation : public FILEOPERATION {
     }
 
     virtual ~ReadOperation() override {}
-    virtual void Exec(FILEDEVICE *device) override;
+    virtual void Exec(FILEDEVICE *device) override {
+        this->filehandle->pParentFile->offset =
+            device->drv->Seek(this->filehandle->hFile, this->value, 0,
+                               this->filehandle->pParentFile->dev->drv,
+                               this->filehandle->pParentFile->hFile);
+        unsigned int NumBytesToRead = static_cast<unsigned int>(this->amount);
+        unsigned int DeviceOptimalReadSize = device->drv->GetOptimalReadSize();
+        if (DeviceOptimalReadSize != 0) {
+            if (NumBytesToRead > DeviceOptimalReadSize) {
+                NumBytesToRead = DeviceOptimalReadSize;
+            }
+        }
+        unsigned int nread = device->drv->Read(
+            this->filehandle->hFile, this->data, NumBytesToRead,
+            this->filehandle->pParentFile->dev->drv, this->filehandle->pParentFile->hFile);
+        this->amount -= nread;
+        this->value += nread;
+        this->totalbytes += nread;
+        this->data = static_cast<char *>(this->data) + nread;
+        if (this->amount > 0 && nread == NumBytesToRead) {
+            this->AddToQueue();
+        } else {
+            this->status = 1;
+        }
+    }
     virtual long long Complete() override {
-        return this->amount;
+        return this->totalbytes;
     }
 };
 
@@ -733,9 +758,36 @@ struct ReadLargeOperation : public FILEOPERATION {
     }
 
     virtual ~ReadLargeOperation() override {}
-    virtual void Exec(FILEDEVICE *device) override;
+    virtual void Exec(FILEDEVICE *device) override {
+        this->filehandle->pParentFile->offset =
+            device->drv->Seek(this->filehandle->hFile, this->value, 0,
+                               this->filehandle->pParentFile->dev->drv,
+                               this->filehandle->pParentFile->hFile);
+        unsigned int NumBytesToRead = gFileSysOpts.LargeReadSliceSize;
+        if (NumBytesToRead > static_cast<unsigned int>(this->amount)) {
+            NumBytesToRead = static_cast<unsigned int>(this->amount);
+        }
+        unsigned int DeviceOptimalReadSize = device->drv->GetOptimalReadSize();
+        if (DeviceOptimalReadSize != 0) {
+            if (NumBytesToRead > DeviceOptimalReadSize) {
+                NumBytesToRead = DeviceOptimalReadSize;
+            }
+        }
+        unsigned int nread = device->drv->Read(
+            this->filehandle->hFile, this->data, NumBytesToRead,
+            this->filehandle->pParentFile->dev->drv, this->filehandle->pParentFile->hFile);
+        this->amount -= nread;
+        this->value += nread;
+        this->totalbytes += nread;
+        this->data = static_cast<char *>(this->data) + nread;
+        if (this->amount > 0 && nread == NumBytesToRead) {
+            this->AddToQueue();
+        } else {
+            this->status = 1;
+        }
+    }
     virtual long long Complete() override {
-        return this->amount;
+        return this->totalbytes;
     }
 };
 
@@ -759,7 +811,19 @@ struct WriteOperation : public FILEOPERATION {
     }
 
     virtual ~WriteOperation() override {}
-    virtual void Exec(FILEDEVICE *device) override;
+    virtual void Exec(FILEDEVICE *device) override {
+        if (this->value != this->filehandle->pParentFile->offset) {
+            this->filehandle->pParentFile->offset =
+                device->drv->Seek(this->filehandle->hFile, this->value, 0,
+                                   this->filehandle->pParentFile->dev->drv,
+                                   this->filehandle->pParentFile->hFile);
+        }
+        this->amount = device->drv->Write(
+            this->filehandle->hFile, this->data, this->amount,
+            this->filehandle->pParentFile->dev->drv, this->filehandle->pParentFile->hFile);
+        this->filehandle->pParentFile->offset += this->amount;
+        this->status = 1;
+    }
     virtual long long Complete() override {
         return this->amount;
     }

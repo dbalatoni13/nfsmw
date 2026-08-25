@@ -15,10 +15,10 @@ static SYSTEMTASKSUB systemtasksubs[16];
 extern volatile int libticks;
 
 void SYNCTASK_add(void (*taskfunc)(void *, int), int rate, int delay, void *param) {
-    static int reentry;
-    int skipcount = reentry++;
+    int skipcount;
     int index;
     int entry = -1;
+    static int reentry;
 
     if (rate == -1) {
         rate = 0;
@@ -26,6 +26,7 @@ void SYNCTASK_add(void (*taskfunc)(void *, int), int rate, int delay, void *para
         rate = 1;
     }
 
+    skipcount = reentry++;
     for (index = 0; index < 16; index++) {
         if (systemtasksubs[index].func == taskfunc) {
             entry = index;

@@ -4,16 +4,16 @@
 template <class T> inline ListSingle<T>::ListSingle() : head(nullptr), tail(nullptr), nNodes(0) {}
 
 template <class T> inline ListSingle<T>::~ListSingle() {
-    ListNodeS *nextnode = this->head;
-    ListNodeS *node = nextnode;
+    ListNodeS *node = this->head;
+    ListNodeS *nextnode = node;
     while (node != nullptr && node->next != nullptr) {
         nextnode = node->next;
         node->next = nullptr;
         node = nextnode;
     }
-    this->nNodes = 0;
     this->tail = nullptr;
     this->head = nullptr;
+    this->nNodes = 0;
 }
 
 template <class T> inline void ListSingle<T>::Push(T *node) {

@@ -131,9 +131,10 @@ static void loadfilereadcallback(int, int, void *userdata) {
 
 static void loadfilesizecallback(int, int, void *userdata) {
     REQUESTSTRUCTtag *req = static_cast<REQUESTSTRUCTtag *>(userdata);
-    int filesize = static_cast<int>(FILESYS_completeop64(req->fop));
+    int filesize;
     int memtype;
     unsigned int readsize;
+    filesize = static_cast<int>(FILESYS_completeop64(req->fop));
     if (req->cancelflag != 0) {
         req->fop = FILESYS_close(req->fhandle, 99, req);
         if (req->fop != 0) {
@@ -201,7 +202,7 @@ void ASYNCFILE_init(int requests, int memtype) {
         return;
     }
     numrequests = requests;
-    req = static_cast<REQUESTSTRUCTtag *>(gFileSysOpts.allocator->Alloc(
+    request = static_cast<REQUESTSTRUCTtag *>(gFileSysOpts.allocator->Alloc(
         requests * sizeof(REQUESTSTRUCTtag),
         EA::TagValuePair((memtype & 0x100) != 0 ? EA::Allocator::ATT_ALLOC_HIGH
                                                 : EA::Allocator::ATT_NULL,
@@ -213,14 +214,13 @@ void ASYNCFILE_init(int requests, int memtype) {
             EA::TagValuePair(EA::Allocator::ATT_FILE,
                              "d:/packages/realcore/6.24.00/source/file/cmn/hlafile.cpp") +
             EA::TagValuePair(EA::Allocator::ATT_LINE, 498)));
-    freequeue.tail = req + requests - 1;
-    request = req;
-    freequeue.head = req;
+    freequeue.tail = request + requests - 1;
+    freequeue.head = request;
     mutex.Create();
-    for (i = 0, req = request; i < requests; i++, req++) {
-        req->id = i;
-        req->nextreq = req + 1;
-        req->fop = 0;
+    for (i = 0; i < requests; i++) {
+        request[i].id = i;
+        request[i].nextreq = &request[i + 1];
+        request[i].fop = 0;
     }
     request[requests - 1].nextreq = nullptr;
 }
