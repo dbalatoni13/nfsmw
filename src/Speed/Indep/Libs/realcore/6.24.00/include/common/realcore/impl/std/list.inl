@@ -1,7 +1,11 @@
 #ifndef REALCORE_COMMON_IMPL_STD_LIST_INL
 #define REALCORE_COMMON_IMPL_STD_LIST_INL
 
-template <class T> inline ListSingle<T>::ListSingle() : head(nullptr), tail(nullptr), nNodes(0) {}
+template <class T> inline ListSingle<T>::ListSingle() {
+    this->tail = nullptr;
+    this->head = nullptr;
+    this->nNodes = 0;
+}
 
 template <class T> inline ListSingle<T>::~ListSingle() {
     ListNodeS *node = this->head;
@@ -79,8 +83,8 @@ template <class T> inline bool ListSingle<T>::Remove(T *node, T *prev) {
         this->nNodes--;
         foundit = true;
         if (node == this->tail) {
-            this->tail = nullptr;
             this->head = nullptr;
+            this->tail = nullptr;
         } else {
             this->head = static_cast<T *>(node->next);
         }

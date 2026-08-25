@@ -229,14 +229,14 @@ FILEOPERATION::FILEOPERATION(int _priority, void *_userdata, FILEDEVICE *device)
         iStartDevice(device);
     }
     this->priority = _priority;
-    this->userdata = _userdata;
-    this->callback = iDefaultFilesysCallbackFunc;
-    this->filehandle = reinterpret_cast<FILESYSHANDLE *>(-1);
-    this->amount = 0;
-    this->data = nullptr;
     this->cancelled = false;
     this->status = 0;
+    this->filehandle = reinterpret_cast<FILESYSHANDLE *>(-1);
+    this->userdata = _userdata;
+    this->callback = iDefaultFilesysCallbackFunc;
     this->value = 0;
+    this->amount = 0;
+    this->data = nullptr;
     this->id = this->iGetNextOpId(device);
 }
 
@@ -375,7 +375,7 @@ void FILEOPERATION::AddToQueue() {
         unsigned int curpriority;
         curpriority = (static_cast<unsigned int>((*Itr)->priority) << 24) |
                       (static_cast<unsigned int>((*Itr)->id) & 0xffff00);
-        if (curpriority > newoppriority) {
+        if (newoppriority < curpriority) {
             break;
         }
         prev = *Itr;
@@ -393,8 +393,8 @@ static int iDeviceCommandProcessorThreadFunc(void *param) {
     SIGNAL_set(&device->attention);
     while (device->terminate == 0) {
         device->mutex.Lock();
-        op = device->pending.Head();
         device->current = nullptr;
+        op = device->pending.Head();
         if (op != nullptr && op->GetPriority() <= device->minpriority) {
             op = device->pending.Pop();
             device->current = op;
@@ -411,7 +411,7 @@ static int iDeviceCommandProcessorThreadFunc(void *param) {
                 device->completed.Push(op);
                 device->current = nullptr;
                 device->mutex.Unlock();
-                op->GetCallback()(op->GetId(), op->IsCancelled() != true ? op->GetStatus() : -1,
+                op->GetCallback()(op->GetId(), op->IsCancelled() ? -1 : op->GetStatus(),
                                   op->GetUserData());
                 SIGNAL_set(&device->attention);
             }
@@ -430,9 +430,9 @@ bool FILE_init(void *buf, int bufsize) {
     FILEDEVICE *device;
     if (buf == nullptr) {
         bufsize = FILE_overhead();
-        buf = gFileSysOpts.allocator->Alloc(
+        pDeviceMem = gFileSysOpts.allocator->Alloc(
             bufsize, EA::TagValuePair(EA::Allocator::ATT_NAME, "File System"));
-        pDeviceMem = buf;
+        buf = pDeviceMem;
     }
     MEM_clear(buf, bufsize);
     gpFileSysInfo = new (buf) FILESYSINFO;
@@ -814,13 +814,11 @@ struct WriteOperation : public FILEOPERATION {
     virtual void Exec(FILEDEVICE *device) override {
         if (this->value != this->filehandle->pParentFile->offset) {
             this->filehandle->pParentFile->offset =
-                device->drv->Seek(this->filehandle->hFile, this->value, 0,
-                                   this->filehandle->pParentFile->dev->drv,
-                                   this->filehandle->pParentFile->hFile);
+                device->drv->Seek(this->filehandle->hFile, this->value, 0, nullptr, 0);
         }
         this->amount = device->drv->Write(
             this->filehandle->hFile, this->data, this->amount,
-            this->filehandle->pParentFile->dev->drv, this->filehandle->pParentFile->hFile);
+            nullptr, 0);
         this->filehandle->pParentFile->offset += this->amount;
         this->status = 1;
     }
@@ -899,7 +897,7 @@ void GetInfoFastByHandle(int filehandle, unsigned long long &location,
 } // namespace RealFile
 
 FILEDEVICE *FILE_nametodevice(const char *name) {
-    FILEDEVICE *device;
+    FILEDEVICE *device = nullptr;
     char devname[16];
     const char *fn;
     ListSingleIterator<FILEDEVICE> Itr;
@@ -915,11 +913,10 @@ FILEDEVICE *FILE_nametodevice(const char *name) {
     } else {
         return gpFileSysInfo->DeviceMemory;
     }
-    device = nullptr;
     Itr = gpFileSysInfo->AllocatedDevices.Begin();
     while (*Itr != nullptr && device == nullptr) {
         if (strcasecmp((*Itr)->drv->GetName(), devname) == 0) {
-            device = *Itr;
+            return device = *Itr;
         } else {
             Itr++;
         }
@@ -988,8 +985,10 @@ unsigned int AddDevice(DeviceDriver *drv) {
 }
 
 void RemoveDevice(unsigned int DevId) {
-    FILEDEVICE *device = &gpFileSysInfo->DeviceMemory[DevId];
-    bool bFound = gpFileSysInfo->AllocatedDevices.Remove(device, nullptr);
+    FILEDEVICE *device;
+    bool bFound;
+    device = &gpFileSysInfo->DeviceMemory[DevId];
+    bFound = gpFileSysInfo->AllocatedDevices.Remove(device, nullptr);
     if (bFound) {
         if (device->running != 0) {
             device->terminate = 1;

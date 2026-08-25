@@ -21,10 +21,8 @@ static int filesizeatom(int priority, void *userdata) {
     FILEREQUEST *req = static_cast<FILEREQUEST *>(userdata);
     int fhandle = FILESYS_opensync(req->name, 1, priority);
     if (fhandle != 0) {
-        int size;
-        priority--;
-        size = FILESYS_sizesync(fhandle, priority);
-        FILESYS_closesync(fhandle, priority);
+        int size = FILESYS_sizesync(fhandle, priority - 1);
+        FILESYS_closesync(fhandle, priority - 1);
         return size;
     }
     return 0;

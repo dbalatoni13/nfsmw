@@ -82,52 +82,53 @@ static void StartNonAlignedAyncRead(DVDFileInfo *FileInfo, void *MemPointer, lon
 
     if (Size == 0) {
         QEndOp();
-        return;
-    }
-
+    } else {
+    gCurRead.MBS = reinterpret_cast<int>(MemPointer) & ~0x1f;
     gCurRead.MSA = (reinterpret_cast<int>(MemPointer) + 0x1f) & ~0x1f;
     gCurRead.FBS = FileBase & ~0x1f;
     gCurRead.FE = FileBase + Size;
     gCurRead.ME = reinterpret_cast<int>(MemPointer) + Size;
     gCurRead.SD = FileBase - gCurRead.FBS;
-    gCurRead.MEA = gCurRead.ME & ~0x1f;
-    gCurRead.TA = -gCurRead.SD + 0x20;
     gCurRead.FEA = gCurRead.FE & ~0x1f;
+    gCurRead.TA = 0x20 - gCurRead.SD;
+    gCurRead.MEA = gCurRead.ME & ~0x1f;
     gCurRead.FSA = (FileBase + 0x1f) & ~0x1f;
-    gCurRead.MBS = reinterpret_cast<int>(MemPointer) & ~0x1f;
     gCurRead.ret = 0;
     gCurRead.MemBase = reinterpret_cast<int>(MemPointer);
     gCurRead.FileBase = FileBase;
     gCurRead.Size = Size;
 
-    if (Size < 0x20) {
+    if (Size <= 0x1f) {
+        int sizealigned;
+
         gCurRead.CurState = SMALL_FILE;
-        readSize = (gCurRead.FE - gCurRead.FBS + 0x1f) & ~0x1f;
-        DVDReadAsyncPrio(FileInfo, gCurRead.Data, readSize, gCurRead.FBS, AyncDVDCallback, 2);
+        sizealigned = (gCurRead.FE - gCurRead.FBS + 0x1f) & ~0x1f;
+        gCurRead.ret = DVDReadAsyncPrio(FileInfo, gCurRead.Data, sizealigned, gCurRead.FBS,
+                                        AyncDVDCallback, 2);
+    } else if (gCurRead.SD != 0) {
+        gCurRead.CurState = ALIGN_THE_START;
+        readSize = (gCurRead.TA + 0x1f) & ~0x1f;
+        gCurRead.ret = DVDReadAsyncPrio(FileInfo, gCurRead.Data, readSize, gCurRead.FBS,
+                                        AyncDVDCallback, 2);
     } else {
-        if (gCurRead.SD == 0) {
-            if (MemPointer == reinterpret_cast<void *>(gCurRead.MSA) && gCurRead.MSA < gCurRead.MEA) {
-                gCurRead.CurState = ALIGN_READ;
-                readSize = gCurRead.MEA - gCurRead.MSA;
-                DVDReadAsyncPrio(FileInfo, reinterpret_cast<void *>(gCurRead.MSA), readSize, FileBase,
-                                 AyncDVDCallback, 2);
-                return;
-            }
-            if (gCurRead.ME <= reinterpret_cast<int>(MemPointer)) {
-                gCurRead.ret = 0;
-                return;
-            }
-            readSize = (gCurRead.ME - reinterpret_cast<int>(MemPointer) + 0x1f) & ~0x1f;
-            if (readSize > 0x4000) {
-                readSize = 0x4000;
-            }
-            gCurRead.CurState = NONALIGN_READ;
-        } else {
-            gCurRead.CurState = ALIGN_THE_START;
-            readSize = (-gCurRead.SD + 0x3f) & ~0x1f;
+        if (MemPointer == reinterpret_cast<void *>(gCurRead.MSA) && gCurRead.MSA < gCurRead.MEA) {
+            gCurRead.CurState = ALIGN_READ;
+            readSize = gCurRead.MEA - gCurRead.MSA;
+            gCurRead.ret = DVDReadAsyncPrio(FileInfo, reinterpret_cast<void *>(gCurRead.MSA), readSize,
+                                            FileBase, AyncDVDCallback, 2);
+            return;
         }
-        gCurRead.ret = DVDReadAsyncPrio(FileInfo, gCurRead.Data, readSize,
-                                        gCurRead.SD == 0 ? FileBase : gCurRead.FBS, AyncDVDCallback, 2);
+        if (gCurRead.ME <= reinterpret_cast<int>(MemPointer)) {
+            return;
+        }
+        readSize = (gCurRead.ME - reinterpret_cast<int>(MemPointer) + 0x1f) & ~0x1f;
+        if (readSize > 0x4000) {
+            readSize = 0x4000;
+        }
+        gCurRead.CurState = NONALIGN_READ;
+        gCurRead.ret += DVDReadAsyncPrio(FileInfo, gCurRead.Data, readSize, FileBase,
+                                         AyncDVDCallback, 2);
+    }
     }
 }
 
@@ -150,19 +151,20 @@ void GcDvdFileDeviceDriver::_FreeDvdFileHandle(DvdFileHandle *dvd_fh) {
 bool GcDvdFileDeviceDriver::Init() {
     DvdFileHandle *dvd_fh;
 
-    dvd_fh = static_cast<DvdFileHandle *>(gFileSysOpts.allocator->Alloc(
+    this->mFileHandleMemory = static_cast<DvdFileHandle *>(gFileSysOpts.allocator->Alloc(
         gFileSysOpts.MaxOpenFiles * sizeof(DvdFileHandle),
         EA::TagValuePair(EA::Allocator::ATT_NAME, "DVD File Handles") +
         EA::TagValuePair(EA::Allocator::ATT_ALLOC_HIGH, 1)));
-    this->mFileHandleMemory = dvd_fh;
-    MEM_clear(dvd_fh, gFileSysOpts.MaxOpenFiles * sizeof(DvdFileHandle));
+    MEM_clear(this->mFileHandleMemory, gFileSysOpts.MaxOpenFiles * sizeof(DvdFileHandle));
     {
         int iFiles;
 
-        iFiles = 0;
         dvd_fh = this->mFileHandleMemory;
-        for (; iFiles < gFileSysOpts.MaxOpenFiles; iFiles++, dvd_fh++) {
+        iFiles = 0;
+        while (iFiles < gFileSysOpts.MaxOpenFiles) {
             this->mFreeHandleQueue.Push(dvd_fh);
+            iFiles++;
+            dvd_fh++;
         }
     }
     OSInitMessageQueue(&ReadFileThreadMsgQ, ReadFileThreadMsgData, 0x20);
@@ -197,16 +199,14 @@ EAFileHandle GcDvdFileDeviceDriver::Open(const char *filename, int, int *) {
     int ret;
     int entryNum;
 
-    name = newname;
+    name = namesrc = newname;
     dvd_fh = this->_AllocateDvdFileHandle();
-    while (*filename != '\0') {
+    for (; *filename != '\0'; name++, filename++) {
         if (*filename == '\\') {
             *name = '/';
         } else {
             *name = *filename;
         }
-        name++;
-        filename++;
     }
     *name = '\0';
     namesrc = newname;
@@ -231,20 +231,16 @@ unsigned long long GcDvdFileDeviceDriver::Seek(EAFileHandle h, unsigned long lon
     DvdFileHandle *dvd_fh;
 
     dvd_fh = reinterpret_cast<DvdFileHandle *>(h);
-    if (whence != 1) {
-        if (whence < 2) {
-            if (whence != 0) {
-                return offset;
-            } else {
-                dvd_fh->offset = offset;
-            }
-        } else if (whence != 2) {
-            return offset;
-        } else {
-            dvd_fh->offset = this->Getsize(h) - offset;
-        }
-    } else {
+    switch (whence) {
+    case 0:
+        dvd_fh->offset = offset;
+        break;
+    case 1:
         dvd_fh->offset += offset;
+        break;
+    case 2:
+        dvd_fh->offset = this->Getsize(h) - offset;
+        break;
     }
     return offset;
 }

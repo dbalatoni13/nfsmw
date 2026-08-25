@@ -29,12 +29,16 @@ unsigned long long GcHdFileDeviceDriver::Seek(EAFileHandle h, unsigned long long
                                               RealFile::DeviceDriver *, EAFileHandle) {
     int origin;
 
-    if (whence == 1) {
+    origin = 0;
+    switch (whence) {
+    case 1:
         origin = 1;
-    } else if (whence > 1 && whence == 2) {
+        break;
+    case 2:
         origin = 2;
-    } else {
-        origin = 0;
+        break;
+    default:
+        break;
     }
     return PClseek(h, offset, origin);
 }
