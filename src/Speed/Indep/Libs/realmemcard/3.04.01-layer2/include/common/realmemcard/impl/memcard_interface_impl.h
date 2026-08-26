@@ -5,6 +5,8 @@
 #pragma once
 #endif
 
+#include <string.h>
+
 #include "../memcard_interface.h"
 
 namespace Realmc {
@@ -81,6 +83,12 @@ enum CardStatus {
     STATUS_UNKNOWN = -1,
 };
 
+enum SeekFrom {
+    SF_SET = 0,
+    SF_CUR = 1,
+    SF_END = 2,
+};
+
 enum UserMessage {
     UMSG_NONE = 0,
     UMSG_WRITE_COMPLETE = 1,
@@ -113,7 +121,56 @@ struct CardID {
     unsigned short systemData;
 };
 
+enum GCImageFormat {
+    GCIF_RGB5A3 = 0,
+    GCIF_CI8 = 1,
+};
+
+enum GCAnimationImageLoop {
+    GCIL_NONE = 0,
+    GCIL_REPEAT = 1,
+    GCIL_BACK_AND_FORTH = 2,
+};
+
+enum GCAnimationPause {
+    GCIS_NONE = 0,
+    GCIS_12FRAMES = 1,
+    GCIS_8FRAMES = 2,
+    GCIS_4FRAMES = 3,
+};
+
+struct GCIconDataInfo {
+    GCIconDataInfo() {}
+
+    int numIconFrames;
+    char *imageData;
+    GCAnimationPause animationPause[8];
+    GCImageFormat imageFormat;
+    GCAnimationImageLoop animationLoop;
+};
+
+struct GCBannerDataInfo {
+    GCBannerDataInfo() {}
+
+    GCImageFormat imageFormat;
+    char *imageData;
+};
+
 struct FileInfo {
+    FileInfo()
+        : fileName(0)
+        , fileByteSize(0)
+        , gameTitle(0)
+        , comment1(0)
+        , sizeofcomment1(0)
+        , comment2(0)
+        , sizeofcomment2(0)
+        , gcIconDataInfo(0)
+        , gcBannerDataInfo(0)
+        , fileTypeName(0)
+        , fileContentName(0)
+        , usingMultipleSaves(false) {}
+
     const char *fileName;
     int fileByteSize;
     wchar_t *gameTitle;
@@ -121,8 +178,8 @@ struct FileInfo {
     int sizeofcomment1;
     char *comment2;
     int sizeofcomment2;
-    void *gcIconDataInfo;
-    void *gcBannerDataInfo;
+    GCIconDataInfo *gcIconDataInfo;
+    GCBannerDataInfo *gcBannerDataInfo;
     wchar_t *fileTypeName;
     wchar_t *fileContentName;
     bool usingMultipleSaves;
@@ -137,6 +194,10 @@ struct StartGameInfo {
 };
 
 struct OpenFileDescriptor {
+    OpenFileDescriptor() {
+        this->fileNumber = 0;
+    }
+
     int fileNumber;
 };
 
@@ -145,16 +206,18 @@ struct Message {
         struct Trc {
             struct Option {
                 unsigned int mMsgId;
-                const unsigned short *mMsg;
+                const wchar_t *mMsg;
             };
 
             unsigned int mMsgId;
-            const unsigned short *mMsg;
+            const wchar_t *mMsg;
             unsigned int mNumOptions;
             Option mOptions[4];
         };
 
         struct CardInfo {
+            CardInfo() {}
+
             CardID cardID;
             int freeSpace;
             int freeFiles;
@@ -186,9 +249,11 @@ struct Message {
             unsigned int filePosition;
         };
 
-        struct DirectoryInfo {
-            const char *name;
-        };
+            struct DirectoryInfo {
+                const char *name;
+            };
+
+        DetailInfo() {}
 
         Trc trc;
         CardInfo cardInfo;
@@ -199,6 +264,12 @@ struct Message {
         SeekResult seekResult;
         DirectoryInfo directoryInfo;
     };
+
+    Message() {
+        this->mMsg = LMSG_NONE;
+        this->mTaskResult = RESULT_UNKNOWN;
+        this->mCardStatus = STATUS_UNKNOWN;
+    }
 
     LibMessage mMsg;
     TaskResult mTaskResult;
@@ -221,16 +292,16 @@ struct BaseInterface {
     virtual void OpenFile(const CardID &, const FileInfo &, int) = 0;
     virtual void CloseFile(int) = 0;
     virtual void DeleteFile(const CardID &, const char *, const char *) = 0;
-    virtual void Read(int, void *, int) = 0;
-    virtual void Write(int, void *, int) = 0;
-    virtual void Seek(int, int, int) = 0;
-    virtual void Flush(int) = 0;
+    virtual void Read(OpenFileDescriptor *, void *, int) = 0;
+    virtual void Write(OpenFileDescriptor *, void *, int) = 0;
+    virtual void Seek(OpenFileDescriptor *, int, SeekFrom) = 0;
+    virtual void Flush(OpenFileDescriptor *) = 0;
     virtual void SetFileAttribute(const CardID &, const char *, const char *, int) = 0;
     virtual void FindFile(const CardID &, const char *, const char *) = 0;
     virtual const Message *GetMessage(int) = 0;
     virtual void SendMessage(UserMessage, int) = 0;
     virtual bool IsBusy() = 0;
-    virtual const unsigned short *GetCardName(const CardID &) = 0;
+    virtual const wchar_t *GetCardName(const CardID &) = 0;
     virtual unsigned int GetBlockSize(const CardID &) = 0;
     virtual void *GetBlockCalculator() = 0;
 
@@ -239,21 +310,66 @@ struct BaseInterface {
 };
 
 struct Interface : public BaseInterface {
-    virtual void CreateDirectory(const CardID &, const char *) = 0;
-    virtual void DeleteDirectory(const CardID &, const char *) = 0;
-    virtual void *GetSjisInterface() = 0;
-    virtual void Format(const CardID &) = 0;
+    static Interface *CreateInstance(const SystemInterface &iSystem);
+
+    virtual void Mount(const CardID &) = 0;
+    virtual void Unmount(const CardID &) = 0;
+    virtual bool CheckForAutosaveCardRemoval() = 0;
+    virtual void ResetAutosaveCardDetection() = 0;
 
   protected:
     virtual ~Interface() {}
 };
 
 struct GCMessage : public Message {
-    virtual ~GCMessage();
-    void Init();
+    GCMessage() {
+        this->Init();
+    }
+    virtual ~GCMessage() {}
+
+    void Init() {
+        this->Clear();
+    }
+
     void _SetMsgOptions(int options);
     short *_LcGetSlotString(int slotnum);
-    void Clear();
+
+    void Clear() {
+        memset(this, 0, 0x78);
+    }
+
+    void Set(LibMessage msg) {
+        this->Clear();
+        this->mMsg = msg;
+    }
+
+    void LC_msg(int msgId, int options, int nSlot) {
+        this->Set(LMSG_TRC);
+        this->info.trc.mMsgId = msgId;
+        this->info.trc.mMsg = Locale::GetString(msgId, "s", this->_LcGetSlotString(nSlot));
+        this->_SetMsgOptions(options);
+    }
+
+    static int PackMsgOptions(int option1, int option2, int option3, int option4) {
+        return option1 | option2 << 8 | option3 << 16 | option4 << 24;
+    }
+
+    void LC_msg(int msgId, int options, int nSlot, wchar_t *name) {
+        this->Set(LMSG_TRC);
+        this->info.trc.mMsgId = msgId;
+        this->info.trc.mMsg = Locale::GetString(msgId, "ss", this->_LcGetSlotString(nSlot), name);
+        this->_SetMsgOptions(options);
+    }
+};
+
+struct GCInterface : public Interface {
+    static GCMessage mTaskMsg;
+    static volatile GCMessage *mpNewTaskMsg;
+
+    void SetDummyMessage() {
+        mTaskMsg.mMsg = LMSG_NONE;
+        mpNewTaskMsg = &mTaskMsg;
+    }
 };
 
 } // namespace Realmc
@@ -268,6 +384,15 @@ struct FileHeader {
     unsigned int mUserHeaderSignature;
     unsigned int mUserBodySignature;
     unsigned int mFileHeaderSignature;
+
+    void Init(unsigned int userHeaderSize, unsigned int userBodySize, unsigned int fileSize, unsigned int userHeaderSignature, unsigned int userBodySignature) {
+        this->mFileHeaderVersion = 0x4d433032;
+        this->mUserHeaderSize = userHeaderSize;
+        this->mUserBodySize = userBodySize;
+        this->mFileSize = fileSize;
+        this->mUserHeaderSignature = userHeaderSignature;
+        this->mUserBodySignature = userBodySignature;
+    }
 
     void Clear();
 };
@@ -335,10 +460,17 @@ struct McTask {
 };
 
 struct TaskManager {
+    static void *operator new(unsigned int size) {
+        return Realmc::AllocateMemSize(0, size, 0, 0, 0);
+    }
+
+    TaskManager(MemcardInterfaceImpl *, IGameInterface *);
+
     void BootupCheck(const BootupCheckParams *, unsigned int, const char **, wchar_t *);
     void FindEntries(const char *, const TitleInfo *);
     void Load(const char *, char *, char *, const wchar_t *, const wchar_t *, const TitleInfo *);
     void Save(const char *, const char *, const char *, const SaveInfo *, const TitleInfo *);
+    void Delete(const char *, const wchar_t *);
     void Delete(unsigned int, const char **, const wchar_t *);
     void CheckCard(CardId);
     void SetAutosave(AutosaveState, unsigned int, SaveReq **, const char *, CardId);
@@ -410,7 +542,18 @@ struct MemcardInterfaceImpl {
     void TaskManagerDelete(const char *entryName, const wchar_t *contentName);
     void TaskManagerCheckCard(CardId cardId);
     void TaskManagerSetAutosave(AutosaveState state, unsigned int nSaveReqs, SaveReq **saveReqs, const char *entryName, CardId cardId);
+    void SaveCheck(const char *entryName, unsigned int nSaveReqs, SaveReq **saveReqs);
+    void Save(const char *entryName, const char *header, const char *body, const SaveInfo *saveInfo);
+    unsigned int CalcSaveSize(const SaveInfo *saveInfo, const DataFormat dataFormat);
+    void SetAutosave(AutosaveState state, unsigned int nSaveReqs, SaveReq **saveReqs, const char *entryName, CardId cardId);
+    void Delete(const char *entryName, const wchar_t *contentName);
+    void FindEntries(const char *entryNamePattern);
+    void DeleteMultiple(unsigned int nEntryNames, const char **entryNames, const wchar_t *contentName);
+    void FindEntriesAlternate(const char *entryNamePattern, const TitleInfo *titleInfo);
+    void Load(const char *entryName, char *header, char *body, const wchar_t *contentName, const wchar_t *typeName);
+    void LoadAlternate(const char *entryName, char *header, char *body, const wchar_t *contentName, const wchar_t *typeName, const TitleInfo *titleInfo);
     void TaskManagerSetMonitor(MonitorState state);
+    void BootupCheck(const BootupCheckParams *params);
     void _ProcessBootupCheck(const Realmc::Message *message);
     void _ProcessCheckCard(const Realmc::Message *message);
     void _ProcessSave(const Realmc::Message *message);
@@ -422,6 +565,10 @@ struct MemcardInterfaceImpl {
     void _CheckForCardRemoval();
     void _DisableAutosave();
     unsigned int _CalcSignature(const void *data, unsigned int size);
+    void CheckCard(CardId cardId);
+    void SetActiveCard(CardId cardId);
+    void _ReleaseInsufficientSpaceMessage();
+    void _MakeInsufficientSpaceMessage(unsigned int nSaveReqs, SaveReq **saveReqs);
     void _ShowGuidelinesMessage(const Realmc::Message::DetailInfo::Trc *message);
     void _ClearMessage();
     RealmcIface::TaskResult _TranslateTaskResult(Realmc::TaskResult result);
@@ -466,7 +613,7 @@ struct MemcardInterfaceImpl {
     const char **mEntryList;
     unsigned int mNumEntries;
     unsigned int mCurEntry;
-    unsigned short *mInsufficientSpaceMsg;
+    wchar_t *mInsufficientSpaceMsg;
     unsigned int mFilesNeeded;
 };
 

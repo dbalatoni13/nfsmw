@@ -5,7 +5,7 @@
 #pragma once
 #endif
 
-#include "impl/memcard_interface_impl.h"
+#include "gc_driver.h"
 
 namespace Realmc {
 
@@ -16,11 +16,6 @@ class BlockCalculator {
     virtual unsigned int GetResult() = 0;
     virtual void SetFileInfo(const CardID &cardID, const FileInfo &fileInfo) = 0;
     virtual ~BlockCalculator() {}
-};
-
-class GCDriver {
-  public:
-    unsigned int GetFileBlocks(const CardID &cardID, const FileInfo *fileInfo, unsigned int *iplDataSize);
 };
 
 class BlockCalculatorImp : public BlockCalculator {

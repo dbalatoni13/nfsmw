@@ -49,11 +49,12 @@ struct SystemInterface {
 void SetMemAllocator(EA::Allocator::IAllocator *allocator);
 void *AllocateMemSize(const char *pBlockName, int size, int align, int alignmentOffset, int flags);
 void FreeMemSize(void *pBlock, int size);
+extern const char *FILENAME_ALL_FILES;
 
 namespace Locale {
 void SetLocaleGetStrCallback(const char *(*cb)(int));
 int GetWstrLength(const wchar_t *str);
-const unsigned short *GetString(int strID, char *parameterTypes, ...);
+const wchar_t *GetString(int strID, char *parameterTypes, ...);
 }
 
 } // namespace Realmc
@@ -349,11 +350,12 @@ struct TitleInfo {
 struct DirectoryList;
 
 struct IGameInterface {
-    virtual void ShowMessage(const unsigned short *, unsigned int, const unsigned short **) = 0;
+    virtual void ShowMessage(const wchar_t *, unsigned int, const wchar_t **) = 0;
     virtual void ClearMessage() = 0;
     virtual void BootupCheckDone(CardStatus, BootupCheckResults) = 0;
     virtual void SaveCheckDone(TaskResult, CardStatus) = 0;
     virtual void SaveDone(const char *) = 0;
+    virtual TaskStatus LoadReady(const char *, unsigned int, unsigned int, char *&, char *&) = 0;
     virtual DataStatus CheckLoadedData(const char *) = 0;
     virtual void LoadDone(const char *) = 0;
     virtual void DeleteDone(const char *) = 0;
@@ -367,7 +369,6 @@ struct IGameInterface {
     virtual void CardRemoved() = 0;
     virtual void SetAutosaveDone(TaskResult, CardStatus, AutosaveState) = 0;
     virtual void SetMonitorDone(CardStatus, MonitorState) = 0;
-    virtual TaskStatus LoadReady(const char *, unsigned int, unsigned int, char *&, char *&) = 0;
 
   protected:
     virtual ~IGameInterface() {}
@@ -417,7 +418,7 @@ class MemcardInterface {
     void Save(const char *entryName, const char *header, const char *body, const SaveInfo *saveInfo, const TitleInfo *titleInfo);
     void Load(const char *entryName, char *header, char *body, const wchar_t *contentName, const TitleInfo *titleInfo, const wchar_t *typeName);
     void Delete(const char *entryName, const wchar_t *contentName);
-    void DeleteMultiple(unsigned int nEntryNames, const char **entryNames, const unsigned short *contentName);
+    void DeleteMultiple(unsigned int nEntryNames, const char **entryNames, const wchar_t *contentName);
     void FindEntries(const char *entryNamePattern, const TitleInfo *titleInfo);
     void MessageDone(MessageChoices choice);
     void CheckCard(CardId cardId);

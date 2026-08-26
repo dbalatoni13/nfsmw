@@ -91,7 +91,7 @@ void MemcardInterfaceImpl::SetMessage(MessageState state, unsigned int message) 
 }
 
 void MemcardInterfaceImpl::_ShowGuidelinesMessage(const Realmc::Message::DetailInfo::Trc *message) {
-    const unsigned short *options[4];
+    const wchar_t *options[4];
 
     this->mUserChoice = CHOICE_NONE;
     {
