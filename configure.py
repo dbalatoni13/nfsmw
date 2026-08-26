@@ -344,6 +344,11 @@ if config.platform == Platform.GC_WII:
     cflags_path[cflags_path.index("-G0")] = "-G8"
     cflags_path.append("-fstrength-reduce")
 
+    cflags_realcore = [*cflags_game]
+    cflags_realcore[cflags_realcore.index("-O1")] = "-O2"
+    cflags_realcore[cflags_realcore.index("-G0")] = "-G8"
+    cflags_realcore[cflags_realcore.index("-fforce-addr")] = "-fno-force-addr"
+
     cflags_snd = [
         *cflags_base_prodg,
         "-G0",
@@ -972,7 +977,7 @@ config.libs = [
     {
         "lib": "realcore",
         "toolchain_version": config.linker_version,
-        "cflags": cflags_game,
+        "cflags": cflags_realcore,
         "host": False,
         "progress_category": "libs",  # str | List[str]
         "objects": [
@@ -1006,6 +1011,10 @@ config.libs = [
             ),
             Object(
                 NonMatching,
+                "Speed/Indep/Libs/realcore/6.24.00/source/system/gc/inittmr.cpp",
+            ),
+            Object(
+                NonMatching,
                 "Speed/Indep/Libs/realcore/6.24.00/source/system/cmn/systask.cpp",
             ),
             Object(
@@ -1018,18 +1027,18 @@ config.libs = [
             ),
             Object(
                 NonMatching,
-                "Speed/Indep/Libs/realcore/6.24.00/source/system/debug/cmn/printstr.cpp",
+                "Speed/Indep/Libs/realcore/6.24.00/source/debug/cmn/printstr.cpp",
             ),
             Object(
                 NonMatching,
-                "Speed/Indep/Libs/realcore/6.24.00/source/system/debug/cmn/abortmsg.cpp",
+                "Speed/Indep/Libs/realcore/6.24.00/source/debug/cmn/abortmsg.cpp",
             ),
             Object(
                 NonMatching,
                 "Speed/Indep/Libs/realcore/6.24.00/source/std/cmn/memclear.cpp",
             ),
             Object(
-                NonMatching, "Speed/Indep/Libs/realcore/6.24.00/source/std/cmn/exit.cpp"
+                NonMatching, "Speed/Indep/Libs/realcore/6.24.00/source/system/cmn/exit.cpp"
             ),
             Object(
                 NonMatching,
@@ -1037,7 +1046,103 @@ config.libs = [
             ),
             Object(
                 NonMatching,
-                "Speed/Indep/Libs/realcore/6.24.00/source/system/gc/memfill.cpp",
+                "Speed/Indep/Libs/realcore/6.24.00/source/system/cmn/systemvars.cpp",
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/realcore/6.24.00/source/system/cmn/mutex.cpp",
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/realcore/6.24.00/source/system/gc/initvblt.cpp",
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/realcore/6.24.00/source/std/gc/memcopy.cpp",
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/realcore/6.24.00/source/std/gc/memfill.cpp",
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/realcore/6.24.00/source/debug/cmn/debugger.cpp",
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/realcore/6.24.00/source/debug/cmn/printvstr.cpp",
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/realcore/6.24.00/source/debug/gc/printdrv.cpp",
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/realcore/6.24.00/source/file/cmn/filesys_c.cpp",
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/realcore/6.24.00/source/file/cmn/filesys_cc.cpp",
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/realcore/6.24.00/source/file/gc/dvd_device.cpp",
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/realcore/6.24.00/source/file/gc/hd_device.cpp",
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/realcore/6.24.00/source/input/cmn/effect.cpp",
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/realcore/6.24.00/source/input/cmn/effectimp.cpp",
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/realcore/6.24.00/source/input/cmn/event.cpp",
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/realcore/6.24.00/source/input/cmn/eventqueue.cpp",
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/realcore/6.24.00/source/input/cmn/interface.cpp",
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/realcore/6.24.00/source/input/cmn/interfaceimp.cpp",
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/realcore/6.24.00/source/input/cmn/itimer.cpp",
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/realcore/6.24.00/source/input/cmn/memvectors.cpp",
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/realcore/6.24.00/source/input/gc/gc_device.cpp",
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/realcore/6.24.00/source/input/gc/gc_effect.cpp",
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/realcore/6.24.00/source/input/gc/gc_interface.cpp",
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/realcore/6.24.00/source/input/gc/gc_pad.cpp",
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/realcore/6.24.00/source/std/cmn/locale.cpp",
             ),
         ],
     },
@@ -1137,11 +1242,8 @@ if config.platform == Platform.GC_WII:
                     Object(NonMatching, "memvectors.cpp"),
                     Object(NonMatching, "interfaceimp.cpp"),
                     Object(NonMatching, "lib/cmn/locale.cpp"),
-                    Object(NonMatching, "inittmr.cpp"),
-                    Object(NonMatching, "initvblt.cpp"),
                     Object(NonMatching, "mutex2.cpp"),
                     Object(NonMatching, "printn3.cpp"),
-                    Object(NonMatching, "memcopy.cpp"),
                     Object(NonMatching, "fontchar.cpp"),
                     Object(NonMatching, "fontcreate.cpp"),
                     Object(NonMatching, "fontdraw.cpp"),
