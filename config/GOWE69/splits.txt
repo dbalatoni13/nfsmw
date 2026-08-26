@@ -1429,41 +1429,41 @@ Speed/Indep/Libs/realcore/6.24.00/source/system/cmn/timer.cpp:
 Speed/Indep/Libs/realcore/6.24.00/source/system/gc/initvblt.cpp:
 	.text       start:0x80386B40 end:0x80386B9C
 
-Packages/realmemcard/3.04.01-layer2/source/lib/cmn/memcard_interface.cpp:
+Speed/Indep/Libs/realmemcard/3.04.01-layer2/source/lib/cmn/memcard_interface.cpp:
 	.text       start:0x80387D88 end:0x80388450
 	.sdata      start:0x804FF660 end:0x804FF664
 
-Packages/realmemcard/3.04.01-layer2/source/lib/cmn/memcard_interface_impl.cpp:
+Speed/Indep/Libs/realmemcard/3.04.01-layer2/source/lib/cmn/memcard_interface_impl.cpp:
 	.text       start:0x80388450 end:0x80388B04
 
-Packages/realmemcard/3.04.01-layer2/source/lib/cmn/memcard_memvectors.cpp:
+Speed/Indep/Libs/realmemcard/3.04.01-layer2/source/lib/cmn/memcard_memvectors.cpp:
 	.text       start:0x80388B04 end:0x80388BC0
 	.sdata      start:0x804FF664 end:0x804FF670
 
-Packages/realmemcard/3.04.01-layer2/source/lib/cmn/memcard_taskmanager.cpp:
+Speed/Indep/Libs/realmemcard/3.04.01-layer2/source/lib/cmn/memcard_taskmanager.cpp:
 	.text       start:0x80388BC0 end:0x8038A5A0
 
-Packages/realmemcard/3.04.01-layer2/source/lib/gc/gc_memcard_interface_impl.cpp:
+Speed/Indep/Libs/realmemcard/3.04.01-layer2/source/lib/gc/gc_memcard_interface_impl.cpp:
 	.text       start:0x8038A5A0 end:0x8038D088
 	.sdata      start:0x804FF670 end:0x804FF674
 
-Packages/realmemcard/3.04.01-layer2/source/lib/gc/gc_memcard_taskmanager.cpp:
+Speed/Indep/Libs/realmemcard/3.04.01-layer2/source/lib/gc/gc_memcard_taskmanager.cpp:
 	.text       start:0x8038D088 end:0x8038D1B8
 
-Packages/realmemcard/3.04.01-layer2/source/lib/cmn/locale.cpp:
+Speed/Indep/Libs/realmemcard/3.04.01-layer2/source/lib/cmn/locale.cpp:
 	.text       start:0x8038D1B8 end:0x8038D624
 	.bss        start:0x804D6540 end:0x804D8E24
 	.sdata      start:0x804FF674 end:0x804FF67C
 
-Packages/realmemcard/3.04.01-layer2/source/lib/cmn/memcard_utilities.cpp:
+Speed/Indep/Libs/realmemcard/3.04.01-layer2/source/lib/cmn/memcard_utilities.cpp:
 	.text       start:0x8038D624 end:0x8038DA18
 	.data       start:0x804520FC end:0x804524FC
 
-Packages/realmemcard/3.04.01-layer2/source/lib/gc/gc_driver.cpp:
+Speed/Indep/Libs/realmemcard/3.04.01-layer2/source/lib/gc/gc_driver.cpp:
 	.text       start:0x8038DA18 end:0x8038FD10
 	.sdata      start:0x804FF67C end:0x804FF68C
 
-Packages/realmemcard/3.04.01-layer2/source/lib/gc/gc_interface.cpp:
+Speed/Indep/Libs/realmemcard/3.04.01-layer2/source/lib/gc/gc_interface.cpp:
 	.text       start:0x8038FD10 end:0x80391518
 	.bss        start:0x804D8E24 end:0x804D95E8
 	.sdata      start:0x804FF68C end:0x804FF6A8
@@ -1474,28 +1474,28 @@ asd2:
 	.ctors      start:0x803C8C04 end:0x803C8C1C
 	.dtors      start:0x803C8C44 end:0x803C8C5C
 
-Packages/realmemcard/3.04.01-layer2/source/lib/gc/public.cpp:
+Speed/Indep/Libs/realmemcard/3.04.01-layer2/source/lib/gc/public.cpp:
 	.text       start:0x80391570 end:0x80392910
 	.bss        start:0x804D95E8 end:0x804D9668
 
-Packages/realmemcard/3.04.01-layer2/source/lib/gc/tasks.cpp:
+Speed/Indep/Libs/realmemcard/3.04.01-layer2/source/lib/gc/tasks.cpp:
 	.text       start:0x80392910 end:0x80393AB8
 	.sbss       start:0x804FFD5C end:0x804FFD60
 
-Packages/realmemcard/3.04.01-layer2/source/lib/gc/trctasks.cpp:
+Speed/Indep/Libs/realmemcard/3.04.01-layer2/source/lib/gc/trctasks.cpp:
 	.text       start:0x80393AB8 end:0x80398988
 
-Packages/realmemcard/3.04.01-layer2/source/lib/cmn/interfaceimp.cpp:
+Speed/Indep/Libs/realmemcard/3.04.01-layer2/source/lib/cmn/interfaceimp.cpp:
 	.text       start:0x80398988 end:0x80398D08
 	.sdata      start:0x804FF6A8 end:0x804FF6AC
 
-Packages/realmemcard/3.04.01-layer2/source/lib/gc/gc_blockcalculator.cpp:
+Speed/Indep/Libs/realmemcard/3.04.01-layer2/source/lib/gc/gc_blockcalculator.cpp:
 	.text       start:0x80398D08 end:0x80398E40
 
-Speed/Indep/Libs/realcore/6.24.00/source/system/gc/memcopy.cpp:
+Speed/Indep/Libs/realcore/6.24.00/source/std/gc/memcopy.cpp:
 	.text       start:0x80398E40 end:0x80399038
 
-Speed/Indep/Libs/realcore/6.24.00/source/system/gc/memfill.cpp:
+Speed/Indep/Libs/realcore/6.24.00/source/std/gc/memfill.cpp:
 	.text       start:0x80399038 end:0x8039917C
 
 Speed/Indep/Libs/realcore/6.24.00/source/std/cmn/locale.cpp:
@@ -1504,7 +1504,7 @@ Speed/Indep/Libs/realcore/6.24.00/source/std/cmn/locale.cpp:
 Speed/Indep/Libs/realcore/6.24.00/source/std/cmn/memclear.cpp:
 	.text       start:0x80399560 end:0x80399588
 
-Speed/Indep/Libs/realcore/6.24.00/source/system/debug/cmn/abortmsg.cpp:
+Speed/Indep/Libs/realcore/6.24.00/source/debug/cmn/abortmsg.cpp:
 	.text       start:0x80399588 end:0x80399738
 	.bss        start:0x804D9668 end:0x804DA668
 	.sdata      start:0x804FF6AC end:0x804FF6B0
@@ -1515,7 +1515,7 @@ Speed/Indep/Libs/realcore/6.24.00/source/debug/cmn/debugger.cpp:
 Speed/Indep/Libs/realcore/6.24.00/source/debug/cmn/printvstr.cpp:
 	.text       start:0x8039976C end:0x80399800
 
-Speed/Indep/Libs/realcore/6.24.00/source/system/debug/cmn/printstr.cpp:
+Speed/Indep/Libs/realcore/6.24.00/source/debug/cmn/printstr.cpp:
 	.text       start:0x80399800 end:0x8039989C
 	.data       start:0x804524FC end:0x804527FC
 

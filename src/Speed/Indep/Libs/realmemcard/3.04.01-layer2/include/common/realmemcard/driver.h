@@ -71,7 +71,15 @@ struct CmnFileDescriptor : public OpenFileDescriptor {
 
 struct FindInfoStruct {
     FindInfoStruct() {}
-    void Clear() {}
+    void Clear() {
+        this->fileName = nullptr;
+        this->fileSize = 0;
+        this->userDataOffset = 0;
+        this->time = 0;
+        this->fileID = 0;
+        memset(this->gameName, 0, 4);
+        memset(this->company, 0, 2);
+    }
 
     CardID cardID;
     char *fileName;
@@ -86,7 +94,7 @@ struct FindInfoStruct {
 struct GcFileHeader {
     GcFileHeader() {}
     inline void Clear();
-    void Init(unsigned int userDataSize, unsigned int iplDataSize);
+    inline void Init(unsigned int userDataSize, unsigned int iplDataSize);
 
     unsigned int mFileSize;
     unsigned int mUserDataSize;
@@ -109,6 +117,13 @@ inline void Realmc::CmnFileDescriptor::Init(const CardID &cardID, const FileInfo
     this->mFileInfo = fileInfo;
     this->mMode = mode;
     this->mOpen = false;
+}
+
+inline void Realmc::GcFileHeader::Init(unsigned int userDataSize, unsigned int iplDataSize) {
+    this->mFileSize = userDataSize + 0x10 + iplDataSize;
+    this->mUserDataSize = userDataSize;
+    this->mIplDataSize = iplDataSize;
+    this->mIplDataChecksum = 0;
 }
 
 #endif

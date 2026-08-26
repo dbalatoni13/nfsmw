@@ -66,6 +66,10 @@ inline void GcFileHeader::Clear() {
     this->mIplDataChecksum = 0;
 }
 
+inline int GetUserDataOffset(GcFileDescriptor *fd) {
+    return fd->mFileHeader.mIplDataSize + 0x10;
+}
+
 struct GCDriver : public DeviceDriver {
     static inline void *operator new(unsigned int size);
     static inline void operator delete(void *ptr, unsigned int size);
@@ -179,6 +183,7 @@ inline void GcFileDescriptor::Clear() {
 }
 
 inline void GcFileDescriptor::Init(const CardID &cardID, const FileInfo &fileInfo, FileOpenMode mode) {
+    this->Clear();
     this->CmnFileDescriptor::Init(cardID, fileInfo, mode);
 }
 

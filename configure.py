@@ -349,6 +349,10 @@ if config.platform == Platform.GC_WII:
     cflags_realcore[cflags_realcore.index("-G0")] = "-G8"
     cflags_realcore[cflags_realcore.index("-fforce-addr")] = "-fno-force-addr"
 
+    cflags_realmemcard = [*cflags_game, "-fshort-wchar", "-fstrength-reduce"]
+    cflags_realmemcard[cflags_realmemcard.index("-G0")] = "-G8"
+    cflags_realmemcard[cflags_realmemcard.index("-fforce-addr")] = "-fno-force-addr"
+
     cflags_snd = [
         *cflags_base_prodg,
         "-G0",
@@ -1149,25 +1153,69 @@ config.libs = [
     {
         "lib": "realmemcard",
         "toolchain_version": config.linker_version,
-        "cflags": cflags_game,
+        "cflags": cflags_realmemcard,
         "host": False,
         "progress_category": "libs",  # str | List[str]
         "objects": [
             Object(
                 NonMatching,
-                "Packages/realmemcard/3.04.01-layer2/source/lib/gc/gc_interface.cpp",
+                "Speed/Indep/Libs/realmemcard/3.04.01-layer2/source/lib/cmn/memcard_interface.cpp",
             ),
             Object(
                 NonMatching,
-                "Packages/realmemcard/3.04.01-layer2/source/lib/gc/public.cpp",
+                "Speed/Indep/Libs/realmemcard/3.04.01-layer2/source/lib/cmn/memcard_interface_impl.cpp",
             ),
             Object(
                 NonMatching,
-                "Packages/realmemcard/3.04.01-layer2/source/lib/gc/trctasks.cpp",
+                "Speed/Indep/Libs/realmemcard/3.04.01-layer2/source/lib/cmn/memcard_memvectors.cpp",
             ),
             Object(
                 NonMatching,
-                "Packages/realmemcard/3.04.01-layer2/source/lib/gc/tasks.cpp",
+                "Speed/Indep/Libs/realmemcard/3.04.01-layer2/source/lib/cmn/memcard_taskmanager.cpp",
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/realmemcard/3.04.01-layer2/source/lib/gc/gc_memcard_interface_impl.cpp",
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/realmemcard/3.04.01-layer2/source/lib/gc/gc_memcard_taskmanager.cpp",
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/realmemcard/3.04.01-layer2/source/lib/cmn/locale.cpp",
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/realmemcard/3.04.01-layer2/source/lib/cmn/memcard_utilities.cpp",
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/realmemcard/3.04.01-layer2/source/lib/gc/gc_driver.cpp",
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/realmemcard/3.04.01-layer2/source/lib/gc/gc_interface.cpp",
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/realmemcard/3.04.01-layer2/source/lib/gc/public.cpp",
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/realmemcard/3.04.01-layer2/source/lib/gc/tasks.cpp",
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/realmemcard/3.04.01-layer2/source/lib/gc/trctasks.cpp",
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/realmemcard/3.04.01-layer2/source/lib/cmn/interfaceimp.cpp",
+            ),
+            Object(
+                NonMatching,
+                "Speed/Indep/Libs/realmemcard/3.04.01-layer2/source/lib/gc/gc_blockcalculator.cpp",
             ),
         ],
     },
