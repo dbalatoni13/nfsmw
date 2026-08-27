@@ -381,10 +381,10 @@ int Wildcard(char *nam, char *pat) {
         if (*bop == '!' || *bop == '~') {
             *bop = 0;
             bopmatch = 0;
-            if (!Wildcard(nam, pat)) {
-                if (Wildcard(nam, bop + 1)) {
-                    bopmatch = 1;
-                }
+            if (Wildcard(nam, pat)) {
+                bopmatch = 1;
+            } else if (Wildcard(nam, bop + 1)) {
+                bopmatch = 1;
             }
             *bop = '!';
             return bopmatch;

@@ -24,19 +24,21 @@ void _SplitPath(const char *path, char *filename) {
     char *separator;
     unsigned int length;
 
-    strcpy(tempPath, path);
-    separator = nullptr;
-    if ((length = strlen(path)) != 0) {
+    {
         unsigned int pos;
 
-        pos = length;
-        do {
-            if (tempPath[pos] == '\\' || tempPath[pos] == '/') {
-                tempPath[pos] = 0;
-                separator = tempPath + pos;
-            }
-            pos--;
-        } while (separator == nullptr && pos != 0);
+        strcpy(tempPath, path);
+        separator = nullptr;
+        pos = strlen(path);
+        if (pos != 0) {
+            do {
+                if (tempPath[pos] == '\\' || tempPath[pos] == '/') {
+                    tempPath[pos] = 0;
+                    separator = tempPath + pos;
+                }
+                pos--;
+            } while (separator == nullptr && pos != 0);
+        }
     }
     strncpy(filename, separator + 1, 0x1f);
 }

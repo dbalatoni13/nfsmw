@@ -25,7 +25,7 @@ GCDriver::GCDriver(const SystemInterface *iSystem) {
     this->mpWorkArea = this->mAllocator->Alloc(
         0xa000,
         EA::TagValuePair(EA::Allocator::ATT_NAME, "Memcard Work Area") +
-            EA::TagValuePair(EA::Allocator::ATT_ALIGNMENT, 0));
+            EA::TagValuePair(EA::Allocator::ATT_ALIGNMENT, 0x20));
     memset(this->mpWorkArea, 0, 0xa000);
 
     this->mpIOBuffer = static_cast<char *>(this->mAllocator->Alloc(
@@ -516,7 +516,7 @@ int GCDriver::SetHeaderInfo(GcFileDescriptor *fd) {
             fd->mGcCardStat.bannerFormat = (fd->mGcCardStat.bannerFormat & 0xfc) | 1;
         }
     } else {
-        fd->mGcCardStat.bannerFormat = (fd->mGcCardStat.bannerFormat >> 2) << 2;
+        fd->mGcCardStat.bannerFormat &= ~3;
     }
 
     numicon = fd->mFileInfo.gcIconDataInfo->numIconFrames;
@@ -528,7 +528,7 @@ int GCDriver::SetHeaderInfo(GcFileDescriptor *fd) {
     if (fd->mFileInfo.gcIconDataInfo->animationLoop == GCIL_BACK_AND_FORTH) {
         fd->mGcCardStat.bannerFormat |= 4;
     } else if (fd->mFileInfo.gcIconDataInfo->animationLoop == GCIL_REPEAT) {
-        fd->mGcCardStat.bannerFormat &= ~4;
+        fd->mGcCardStat.bannerFormat &= ~(1 << 2);
     }
 
     for (int i = 0; i < numicon; i++) {
@@ -731,28 +731,26 @@ ICardResult GCDriver::VerifyIplDataChecksum(GcFileDescriptor *fd) {
     ICardResult result = CR_CORRUPT;
 
     do {
-        if (bytesLeftToRead <= 0) {
-            break;
-        }
-
-        if (bytesLeftToRead < GCDriver::MEMCARD_SECTOR_SIZE) {
-            readBlockSize = bytesLeftToRead;
-        }
-
-        result = this->ReadFile(fd, nullptr, readBlockSize, nullptr);
-        if (result == CR_SUCCESS) {
-            int readEndPosition = readStartPosition + readBlockSize;
-            bytesLeftToRead -= readBlockSize;
-            if (readStartPosition < readEndPosition) {
-                for (int iByte = readStartPosition; iByte < readEndPosition; iByte++) {
-                    checksum += this->mpIOBuffer[iByte];
-                }
+        if (bytesLeftToRead > 0) {
+            if (bytesLeftToRead < GCDriver::MEMCARD_SECTOR_SIZE) {
+                readBlockSize = bytesLeftToRead;
             }
 
-            readBlockSize = GCDriver::MEMCARD_SECTOR_SIZE;
-            readStartPosition = 0;
-        } else {
-            break;
+            result = this->ReadFile(fd, nullptr, readBlockSize, nullptr);
+            if (result != CR_SUCCESS) {
+                break;
+            } else {
+                int readEndPosition = readStartPosition + readBlockSize;
+                bytesLeftToRead -= readBlockSize;
+                if (readStartPosition < readEndPosition) {
+                    for (int iByte = readStartPosition; iByte < readEndPosition; iByte++) {
+                        checksum += this->mpIOBuffer[iByte];
+                    }
+                }
+
+                readBlockSize = GCDriver::MEMCARD_SECTOR_SIZE;
+                readStartPosition = 0;
+            }
         }
     } while (bytesLeftToRead > 0);
 
