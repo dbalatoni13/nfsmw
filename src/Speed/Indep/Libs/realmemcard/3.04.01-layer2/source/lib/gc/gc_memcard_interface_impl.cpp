@@ -31,8 +31,8 @@ void _SplitPath(const char *path, char *filename) {
 
         pos = length;
         do {
-            if (*(tempPath + pos) == '\\' || *(tempPath + pos) == '/') {
-                *(tempPath + pos) = 0;
+            if (tempPath[pos] == '\\' || tempPath[pos] == '/') {
+                tempPath[pos] = 0;
                 separator = tempPath + pos;
             }
             pos--;
@@ -42,7 +42,7 @@ void _SplitPath(const char *path, char *filename) {
 }
 
 MemcardInterfaceImpl::MemcardInterfaceImpl(Realmc::SystemInterface *iSystem, IGameInterface *iGame, GameInfo *gameInfo)
-    : mISystem(iSystem)
+    : mISystem(*iSystem)
     , mIGame(iGame)
     , mGameInfo(*gameInfo)
     , mActiveCard()
@@ -63,18 +63,19 @@ MemcardInterfaceImpl::MemcardInterfaceImpl(Realmc::SystemInterface *iSystem, IGa
     , mBlockSize(0)
     , mFileInfo()
     , mFilehandle(nullptr)
-    , mUserHeader(nullptr)
-    , mUserBody(nullptr)
-    , mEntryFound(false)
-    , mDataFormat(FORMAT_LAYER2)
-    , mTaskStatus(TASK_CONTINUE)
-    , mBlocksNeeded(0)
-    , mEntryList(nullptr)
-    , mNumEntries(0)
-    , mCurEntry(0)
-    , mInsufficientSpaceMsg(nullptr)
-    , mFilesNeeded(0) {
+    , mFileHeader() {
     this->mFileHeader.Clear();
+    this->mUserHeader = nullptr;
+    this->mUserBody = nullptr;
+    this->mEntryFound = false;
+    this->mDataFormat = FORMAT_LAYER2;
+    this->mTaskStatus = TASK_CONTINUE;
+    this->mBlocksNeeded = 0;
+    this->mEntryList = nullptr;
+    this->mNumEntries = 0;
+    this->mCurEntry = 0;
+    this->mInsufficientSpaceMsg = nullptr;
+    this->mFilesNeeded = 0;
     this->mTaskManager = new TaskManager(this, iGame);
     memset(this->mEntryName, 0, 0x20);
     memset(&this->mFileInfo, 0, 0x30);
@@ -154,13 +155,13 @@ void MemcardInterfaceImpl::SaveCheck(const char *entryName, unsigned int nSaveRe
     this->mFileInfo.sizeofcomment1 = saveInfo->mGcInfo.mComment1Size;
     this->mFileInfo.comment2 = const_cast<char *>(saveInfo->mGcInfo.mComment2);
     this->mFileInfo.sizeofcomment2 = saveInfo->mGcInfo.mComment2Size;
-    this->mFileInfo.gcIconDataInfo = saveInfo->mGcInfo.mIconDataInfo;
-    this->mFileInfo.gcBannerDataInfo = saveInfo->mGcInfo.mBannerDataInfo;
+    this->mFileInfo.gcIconDataInfo = static_cast<Realmc::GCIconDataInfo *>(saveInfo->mGcInfo.mIconDataInfo);
+    this->mFileInfo.gcBannerDataInfo = static_cast<Realmc::GCBannerDataInfo *>(saveInfo->mGcInfo.mBannerDataInfo);
     this->mFileInfo.gameTitle = &this->mGameInfo.mGameTitle[0];
         this->mFileInfo.fileTypeName = const_cast<wchar_t *>(saveInfo->mTypeName);
         this->mFileInfo.fileContentName = const_cast<wchar_t *>(saveInfo->mContentName);
     this->mFileInfo.usingMultipleSaves = nSaveReqs != 1;
-    this->mFileInfo.fileByteSize = (saveInfo->mBodySize + sizeof(FileHeader)) + saveInfo->mHeaderSize;
+    this->mFileInfo.fileByteSize = (saveInfo->mHeaderSize + sizeof(FileHeader)) + saveInfo->mBodySize;
     this->mIMemcard->TrcSaveFile(this->mActiveCard, this->mFileInfo, 0, this->mBlocksNeeded, this->mFilesNeeded);
     this->mActiveTask = TASK_SAVECHECK;
     if (nSaveReqs > 1) {
@@ -182,13 +183,13 @@ void MemcardInterfaceImpl::Save(const char *entryName, const char *header, const
     this->mFileInfo.sizeofcomment1 = saveInfo->mGcInfo.mComment1Size;
     this->mFileInfo.comment2 = const_cast<char *>(saveInfo->mGcInfo.mComment2);
     this->mFileInfo.sizeofcomment2 = saveInfo->mGcInfo.mComment2Size;
-    this->mFileInfo.gcIconDataInfo = saveInfo->mGcInfo.mIconDataInfo;
-    this->mFileInfo.gcBannerDataInfo = saveInfo->mGcInfo.mBannerDataInfo;
+    this->mFileInfo.gcIconDataInfo = static_cast<Realmc::GCIconDataInfo *>(saveInfo->mGcInfo.mIconDataInfo);
+    this->mFileInfo.gcBannerDataInfo = static_cast<Realmc::GCBannerDataInfo *>(saveInfo->mGcInfo.mBannerDataInfo);
     this->mFileInfo.gameTitle = &this->mGameInfo.mGameTitle[0];
     this->mFileInfo.fileTypeName = const_cast<wchar_t *>(saveInfo->mTypeName);
     this->mFileInfo.fileContentName = const_cast<wchar_t *>(saveInfo->mContentName);
     this->mFileInfo.usingMultipleSaves = this->mGameInfo.mMultipleSaveTypesUsed;
-    this->mFileInfo.fileByteSize = (saveInfo->mBodySize + sizeof(FileHeader)) + saveInfo->mHeaderSize;
+    this->mFileInfo.fileByteSize = (saveInfo->mHeaderSize + sizeof(FileHeader)) + saveInfo->mBodySize;
     calculator = static_cast<Realmc::BlockCalculator *>(this->mIMemcard->GetBlockCalculator());
     calculator->Clear();
     calculator->SetFileInfo(this->mActiveCard, this->mFileInfo);
@@ -206,7 +207,7 @@ unsigned int MemcardInterfaceImpl::_CalcSignature(const void *data, unsigned int
     return RealmcUtils::Crc32(data, size);
 }
 
-void FileHeader::Clear() {
+inline void FileHeader::Clear() {
     this->mFileHeaderVersion = 0;
     this->mUserHeaderSize = 0;
     this->mUserBodySize = 0;
@@ -223,13 +224,13 @@ unsigned int MemcardInterfaceImpl::CalcSaveSize(const SaveInfo *saveInfo, const 
 
     memset(&fileInfo, 0, 0x30);
     fileInfo.fileName = &dummy;
-    fileInfo.fileByteSize = saveInfo->mHeaderSize + (saveInfo->mBodySize + 0x1c);
+    fileInfo.fileByteSize = (saveInfo->mHeaderSize + sizeof(FileHeader)) + saveInfo->mBodySize;
     fileInfo.comment1 = const_cast<char *>(saveInfo->mGcInfo.mComment1);
     fileInfo.sizeofcomment1 = saveInfo->mGcInfo.mComment1Size;
     fileInfo.comment2 = const_cast<char *>(saveInfo->mGcInfo.mComment2);
     fileInfo.sizeofcomment2 = saveInfo->mGcInfo.mComment2Size;
-    fileInfo.gcIconDataInfo = saveInfo->mGcInfo.mIconDataInfo;
-    fileInfo.gcBannerDataInfo = saveInfo->mGcInfo.mBannerDataInfo;
+    fileInfo.gcIconDataInfo = static_cast<Realmc::GCIconDataInfo *>(saveInfo->mGcInfo.mIconDataInfo);
+    fileInfo.gcBannerDataInfo = static_cast<Realmc::GCBannerDataInfo *>(saveInfo->mGcInfo.mBannerDataInfo);
     fileInfo.gameTitle = &this->mGameInfo.mGameTitle[0];
     fileInfo.fileTypeName = const_cast<wchar_t *>(saveInfo->mTypeName);
     fileInfo.fileContentName = const_cast<wchar_t *>(saveInfo->mContentName);
@@ -619,18 +620,20 @@ void MemcardInterfaceImpl::_ProcessLoad(const Realmc::Message *message) {
         if (this->mDataFormat == FORMAT_LAYER2) {
             this->mActiveSubtask = SUBTASK_READ_FILE_HEADER;
             this->mIMemcard->Read(this->mFilehandle, &this->mFileHeader, 0x1c);
-        } else if (this->mUserBody == nullptr) {
-            this->mTaskStatus = this->mIGame->LoadReady(this->mEntryName, 0, this->mFileSize, this->mUserHeader, this->mUserBody);
-            if (this->mTaskStatus == TASK_CONTINUE) {
+        } else {
+            if (this->mUserBody == nullptr) {
+                this->mTaskStatus = this->mIGame->LoadReady(this->mEntryName, 0, this->mFileSize, this->mUserHeader, this->mUserBody);
+                if (this->mTaskStatus == TASK_CONTINUE) {
+                    this->mActiveSubtask = SUBTASK_READ_USER_BODY;
+                    this->mIMemcard->Read(this->mFilehandle, this->mUserBody, this->mFileSize);
+                } else {
+                    this->mActiveSubtask = SUBTASK_NONE;
+                    this->mIMemcard->SendMessage(Realmc::UMSG_READ_COMPLETE, 0);
+                }
+            } else {
                 this->mActiveSubtask = SUBTASK_READ_USER_BODY;
                 this->mIMemcard->Read(this->mFilehandle, this->mUserBody, this->mFileSize);
-            } else {
-                this->mActiveSubtask = SUBTASK_NONE;
-                this->mIMemcard->SendMessage(Realmc::UMSG_READ_COMPLETE, 0);
             }
-        } else {
-            this->mActiveSubtask = SUBTASK_READ_USER_BODY;
-            this->mIMemcard->Read(this->mFilehandle, this->mUserBody, this->mFileSize);
         }
         break;
     case Realmc::LMSG_READ_DONE:
@@ -653,13 +656,13 @@ void MemcardInterfaceImpl::_ProcessLoad(const Realmc::Message *message) {
                     this->mIMemcard->SendMessage(Realmc::UMSG_READ_COMPLETE, 0);
                     this->mFilehandle = nullptr;
                 } else if (this->mFileHeader.mUserHeaderSize == 0 || this->mUserHeader == nullptr) {
-                    if (this->mFileHeader.mUserBodySize == 0 || this->mUserBody == nullptr) {
+                    if (this->mFileHeader.mUserBodySize != 0 && this->mUserBody != nullptr) {
+                        this->mActiveSubtask = SUBTASK_READ_USER_BODY;
+                        this->mIMemcard->Seek(this->mFilehandle, this->mFileHeader.mUserHeaderSize, Realmc::SF_CUR);
+                    } else {
                         this->mActiveSubtask = SUBTASK_NONE;
                         this->mIMemcard->SendMessage(Realmc::UMSG_READ_COMPLETE, 0);
                         this->mFilehandle = nullptr;
-                    } else {
-                        this->mActiveSubtask = SUBTASK_READ_USER_BODY;
-                        this->mIMemcard->Seek(this->mFilehandle, this->mFileHeader.mUserHeaderSize, Realmc::SF_CUR);
                     }
                 } else {
                     this->mActiveSubtask = SUBTASK_READ_USER_HEADER;

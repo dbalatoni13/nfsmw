@@ -281,7 +281,7 @@ void Ascii2Unicode(wchar_t *dst, const char *src) {
 
                 if (src[2] != 0) {
                     if (isunicodemarkup) {
-                        while (i <= 3 && *(src + 2 + i) != 0 && isunicodemarkup) {
+                        do {
                             digit = static_cast<unsigned char>(*(src + 2 + i));
                             if (digit >= '0' && digit <= '9') {
                                 digit -= '0';
@@ -289,10 +289,11 @@ void Ascii2Unicode(wchar_t *dst, const char *src) {
                                 digit -= 'a' - 10;
                             } else {
                                 isunicodemarkup = false;
+                                break;
                             }
                             unicode = unicode * 16 + digit;
                             i++;
-                        }
+                        } while (i <= 3 && *(src + 2 + i) != 0 && isunicodemarkup);
                     }
                 }
             }
@@ -325,7 +326,8 @@ unsigned int Crc32(const void *buf, int bufsize) {
     {
         int i;
 
-        for (i = (bufsize -= 4); i > 0; i--) {
+        bufsize -= 4;
+        for (i = 0; i < bufsize; i++) {
             result = (result << 8 | *d++) ^ crctab[result >> 24];
         }
     }

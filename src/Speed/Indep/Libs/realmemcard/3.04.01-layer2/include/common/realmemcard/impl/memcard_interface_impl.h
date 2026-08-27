@@ -186,6 +186,12 @@ struct FileInfo {
 };
 
 struct StartGameInfo {
+    StartGameInfo() {
+        this->totalBlocksNeeded = 0;
+        this->totalFilesNeeded = 0;
+        this->checkAllSlots = false;
+    }
+
     FileInfo fileInfo;
     unsigned int totalBlocksNeeded;
     CardID checkCardID;
@@ -377,6 +383,8 @@ struct GCInterface : public Interface {
 namespace RealmcIface {
 
 struct FileHeader {
+    FileHeader() {}
+
     unsigned int mFileHeaderVersion;
     unsigned int mFileSize;
     unsigned int mUserHeaderSize;

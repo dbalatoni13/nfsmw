@@ -287,23 +287,23 @@ ICardResult GCDriver::OpenFile(const CardID &cardID, const FileInfo *pFileInfo, 
     }
 
     *handle = nullptr;
-    fd->Init(cardID, *pFileInfo, fmode);
-
     ICardResult result;
     int coResult;
     bool convertNGCerror;
-
     result = CR_ERROR;
     coResult = 0;
     convertNGCerror = true;
+    fd->Init(cardID, *pFileInfo, fmode);
 
     if ((fmode & FOM_CREATE) != 0) {
         if (cardID.systemData == 1) {
             coResult = this->NGCSportsBioCreate(fd);
         } else {
-            unsigned int iplDataSize = 0;
-            unsigned int fileBlockSize = this->GetFileBlocks(cardID, pFileInfo, &iplDataSize);
-            fd->mFileHeader.Init(pFileInfo->fileByteSize, iplDataSize);
+            unsigned int iplDataSize;
+            unsigned int fileBlockSize;
+            iplDataSize = 0;
+            fileBlockSize = this->GetFileBlocks(cardID, &fd->mFileInfo, &iplDataSize);
+            fd->mFileHeader.Init(fd->mFileInfo.fileByteSize, iplDataSize);
             result = this->DeleteFile(cardID, pFileInfo);
             if (result != CR_DAMAGED) {
                 unsigned long actualFileSize = fileBlockSize * this->mSectorSize;
@@ -316,19 +316,20 @@ ICardResult GCDriver::OpenFile(const CardID &cardID, const FileInfo *pFileInfo, 
             }
         }
     } else {
-        int fileNum = -1;
-        if (cardID.systemData == 1) {
-            result = this->FindFileNumber(const_cast<char *>(pFileInfo->fileName), &fileNum);
-            if (result == CR_SUCCESS) {
-                coResult = CARDFastOpen(cardID.slot, fileNum, &fd->mGcFileInfo);
-            } else {
-                convertNGCerror = false;
-            }
-        } else {
-            coResult = CARDOpen(cardID.slot, pFileInfo->fileName, &fd->mGcFileInfo);
-        }
-
+        int fileNum;
+        fileNum = -1;
         do {
+            if (cardID.systemData == 1) {
+                result = this->FindFileNumber(const_cast<char *>(pFileInfo->fileName), &fileNum);
+                if (result == CR_SUCCESS) {
+                    coResult = CARDFastOpen(cardID.slot, fileNum, &fd->mGcFileInfo);
+                } else {
+                    convertNGCerror = false;
+                }
+            } else {
+                coResult = CARDOpen(cardID.slot, pFileInfo->fileName, &fd->mGcFileInfo);
+            }
+
             gInterfaceThread->Sleep(1);
         } while (coResult == CARD_RESULT_BUSY);
     }
@@ -344,11 +345,11 @@ ICardResult GCDriver::OpenFile(const CardID &cardID, const FileInfo *pFileInfo, 
     *handle = fd;
 
     if (cardID.systemData == 1) {
-        fd->mErrorCode = result;
-        return result;
+        fd->mWriteSystemData = result;
+        return CR_SUCCESS;
     }
 
-    fd->mErrorCode = 1;
+    fd->mWriteSystemData = true;
     if ((fmode & FOM_CREATE) != 0) {
         if (this->WriteHeaderData(fd) != CR_SUCCESS) {
             result = CR_ERROR;
@@ -416,23 +417,22 @@ ICardResult GCDriver::WriteFile(OpenFileDescriptor *handle, void *pBuffer, int b
     GcFileDescriptor *fd;
     char *pWriteBuffer;
 
-    pWriteBuffer = static_cast<char *>(pBuffer);
     fd = this->ConvertFileHandleToDescriptor(handle);
 
     if (!fd->mWriteSystemData) {
         return this->NGCSportsBioWrite(fd, pBuffer, bufferSize, nBytesWritten);
     }
 
+    pWriteBuffer = static_cast<char *>(pBuffer);
+
     if (nBytesWritten != nullptr) {
-        *nBytesWritten = 0;
+        *nBytesWritten = bufferSize;
     }
 
     while (bufferSize > 0) {
         while (fd->mBufferOffset < this->mSectorSize && bufferSize > 0) {
-            this->mpIOBuffer[fd->mBufferOffset] = *pWriteBuffer;
-            pWriteBuffer++;
+            this->mpIOBuffer[fd->mBufferOffset++] = *pWriteBuffer++;
             bufferSize--;
-            fd->mBufferOffset++;
             fd->mNeedFlush = true;
         }
 
@@ -445,14 +445,13 @@ ICardResult GCDriver::WriteFile(OpenFileDescriptor *handle, void *pBuffer, int b
                 gInterfaceThread->Sleep(1);
             } while (mresult == CARD_RESULT_BUSY);
 
-            result = this->ConvertCardResult(mresult);
-            if (result != CR_SUCCESS) {
+            if ((result = this->ConvertCardResult(mresult)) != CR_SUCCESS) {
                 return result;
             }
 
             fd->mNeedFlush = result;
-            fd->mBufferOffset = result;
             fd->mFileSectorOffset += this->mSectorSize;
+            fd->mBufferOffset = result;
 
             fileSize = this->GetFileBlocks(fd->mCardID, &fd->mFileInfo, nullptr) * this->mSectorSize;
             if (fileSize < static_cast<unsigned int>(fd->mFileSectorOffset)) {
@@ -461,8 +460,9 @@ ICardResult GCDriver::WriteFile(OpenFileDescriptor *handle, void *pBuffer, int b
                     gInterfaceThread->Sleep(1);
                 } while (mresult == CARD_RESULT_BUSY);
 
-                result = this->ConvertCardResult(mresult);
-                if (result != CR_SUCCESS) {
+                if ((result = this->ConvertCardResult(mresult)) == CR_SUCCESS) {
+                    fd->mFileSectorOffset += this->mSectorSize;
+                } else {
                     return result;
                 }
             } else {
@@ -472,6 +472,32 @@ ICardResult GCDriver::WriteFile(OpenFileDescriptor *handle, void *pBuffer, int b
     }
 
     return CR_SUCCESS;
+}
+
+ICardResult GCDriver::FlushWriteBuffer(OpenFileDescriptor *handle) {
+    ICardResult result = CR_SUCCESS;
+    GcFileDescriptor *fd = this->ConvertFileHandleToDescriptor(handle);
+
+    if (fd->mBufferOffset > 0) {
+        if (static_cast<long>(fd->mFileHeader.mFileSize) <= fd->mFileSectorOffset - this->mSectorSize + fd->mBufferOffset) {
+            fd->mBufferOffset = fd->mFileHeader.mFileSize % this->mSectorSize;
+            while (fd->mBufferOffset < this->mSectorSize) {
+                this->mpIOBuffer[fd->mBufferOffset] = 0;
+                fd->mBufferOffset++;
+            }
+        }
+
+        int mresult;
+        do {
+            mresult = CARDWrite(&fd->mGcFileInfo, this->mpIOBuffer, this->mSectorSize, fd->mFileSectorOffset);
+            gInterfaceThread->Sleep(1);
+        } while (mresult == CARD_RESULT_BUSY);
+
+        result = this->ConvertCardResult(mresult);
+    }
+
+    fd->mNeedFlush = false;
+    return result;
 }
 
 int GCDriver::SetHeaderInfo(GcFileDescriptor *fd) {
@@ -490,7 +516,7 @@ int GCDriver::SetHeaderInfo(GcFileDescriptor *fd) {
             fd->mGcCardStat.bannerFormat = (fd->mGcCardStat.bannerFormat & 0xfc) | 1;
         }
     } else {
-        fd->mGcCardStat.bannerFormat = (fd->mGcCardStat.bannerFormat & ~3) | 0;
+        fd->mGcCardStat.bannerFormat = (fd->mGcCardStat.bannerFormat >> 2) << 2;
     }
 
     numicon = fd->mFileInfo.gcIconDataInfo->numIconFrames;
@@ -502,7 +528,7 @@ int GCDriver::SetHeaderInfo(GcFileDescriptor *fd) {
     if (fd->mFileInfo.gcIconDataInfo->animationLoop == GCIL_BACK_AND_FORTH) {
         fd->mGcCardStat.bannerFormat |= 4;
     } else if (fd->mFileInfo.gcIconDataInfo->animationLoop == GCIL_REPEAT) {
-        fd->mGcCardStat.bannerFormat = (fd->mGcCardStat.bannerFormat & ~4) | 0;
+        fd->mGcCardStat.bannerFormat &= ~4;
     }
 
     for (int i = 0; i < numicon; i++) {
@@ -568,7 +594,11 @@ ICardResult GCDriver::ReadFile(OpenFileDescriptor *handle, void *pBuffer, int by
         currentSectorHead = 0;
     }
 
-    while (bytesLeft != 0) {
+    do {
+        if (bytesLeft == 0) {
+            break;
+        }
+
         long readHead;
 
         if (fd->readNextSector) {
@@ -607,10 +637,130 @@ ICardResult GCDriver::ReadFile(OpenFileDescriptor *handle, void *pBuffer, int by
                 break;
             }
         }
-    }
+    } while (bytesLeft != 0);
 
     if (nBytesRead != nullptr) {
         *nBytesRead = bytesToRead - bytesLeft;
+    }
+
+    return result;
+}
+
+ICardResult GCDriver::CloseFile(OpenFileDescriptor *handle) {
+    GcFileDescriptor *fd = this->ConvertFileHandleToDescriptor(handle);
+    ICardResult res;
+
+    if (!fd->mWriteSystemData) {
+        res = this->NGCSportsBioClose(fd);
+    } else {
+        int mresult;
+        if ((fd->mMode & FOM_CREATE) != 0) {
+            this->FlushWriteBuffer(handle);
+            do {
+                mresult = CARDClose(&fd->mGcFileInfo);
+                gInterfaceThread->Sleep(1);
+            } while (mresult == CARD_RESULT_BUSY);
+
+            res = this->ConvertCardResult(mresult);
+            if (res == CR_SUCCESS) {
+                if (this->SetHeaderInfo(fd) == -1) {
+                    res = CR_ERROR;
+                }
+            }
+        } else {
+            do {
+                mresult = CARDClose(&fd->mGcFileInfo);
+                gInterfaceThread->Sleep(1);
+            } while (mresult == CARD_RESULT_BUSY);
+
+            res = this->ConvertCardResult(mresult);
+        }
+    }
+
+    fd->mOpen = false;
+    return res;
+}
+
+void GCDriver::RecordIplDataChecksum(GcFileDescriptor *fd) {
+    const FileInfo *pFileInfo = &fd->mFileInfo;
+    int checksum = 0;
+    int iByte;
+    char *curByte;
+    int dataSize;
+
+    dataSize = pFileInfo->sizeofcomment1;
+    curByte = pFileInfo->comment1;
+    iByte = 0;
+    for (; iByte < dataSize; iByte++) {
+        checksum += *curByte++;
+    }
+
+    dataSize = pFileInfo->sizeofcomment2;
+    curByte = pFileInfo->comment2;
+    iByte = 0;
+    for (; iByte < dataSize; iByte++) {
+        checksum += *curByte++;
+    }
+
+    if (pFileInfo->gcBannerDataInfo != nullptr) {
+        dataSize = this->GetBannerSize(pFileInfo);
+        curByte = pFileInfo->gcBannerDataInfo->imageData;
+        iByte = 0;
+        for (; iByte < dataSize; iByte++) {
+            checksum += *curByte++;
+        }
+    }
+
+    if (pFileInfo->gcIconDataInfo != nullptr) {
+        dataSize = this->GetIconSize(pFileInfo);
+        curByte = pFileInfo->gcIconDataInfo->imageData;
+        iByte = 0;
+        for (; iByte < dataSize; iByte++) {
+            checksum += *curByte++;
+        }
+    }
+
+    fd->mFileHeader.mIplDataChecksum = checksum;
+}
+
+ICardResult GCDriver::VerifyIplDataChecksum(GcFileDescriptor *fd) {
+    int bytesLeftToRead = fd->mFileHeader.mIplDataSize;
+    int readBlockSize = GCDriver::MEMCARD_SECTOR_SIZE - fd->mBufferOffset;
+    int readStartPosition = fd->mBufferOffset;
+    int checksum = 0;
+    ICardResult result = CR_CORRUPT;
+
+    do {
+        if (bytesLeftToRead <= 0) {
+            break;
+        }
+
+        if (bytesLeftToRead < GCDriver::MEMCARD_SECTOR_SIZE) {
+            readBlockSize = bytesLeftToRead;
+        }
+
+        result = this->ReadFile(fd, nullptr, readBlockSize, nullptr);
+        if (result == CR_SUCCESS) {
+            int readEndPosition = readStartPosition + readBlockSize;
+            bytesLeftToRead -= readBlockSize;
+            if (readStartPosition < readEndPosition) {
+                for (int iByte = readStartPosition; iByte < readEndPosition; iByte++) {
+                    checksum += this->mpIOBuffer[iByte];
+                }
+            }
+
+            readBlockSize = GCDriver::MEMCARD_SECTOR_SIZE;
+            readStartPosition = 0;
+        } else {
+            break;
+        }
+    } while (bytesLeftToRead > 0);
+
+    if (result == CR_SUCCESS) {
+        result = CR_CORRUPT;
+        if (checksum == fd->mFileHeader.mIplDataChecksum) {
+            result = CR_SUCCESS;
+        }
     }
 
     return result;
@@ -733,6 +883,39 @@ ICardResult GCDriver::SetAttributes(CardID cardID, char *fileName, FileAttribute
     return result;
 }
 
+ICardResult GCDriver::FindFileNumber(char *fileName, int *fileNum) {
+    *fileNum = -1;
+
+    for (int i = 0; i <= 0x7e; i++) {
+        CARDStat status;
+        int res;
+        ICardResult result;
+
+        do {
+            res = CARDGetStatus(0, i, &status);
+            gInterfaceThread->Sleep(1);
+        } while (res == CARD_RESULT_BUSY);
+
+        result = this->ConvertCardResult(res);
+        switch (result) {
+        case CR_NOFILE:
+            break;
+        case CR_SUCCESS:
+            if (strcmp(status.fileName, fileName) == 0) {
+                *fileNum = i;
+                return CR_SUCCESS;
+            }
+            break;
+        default:
+            return result;
+        case CR_NOPERM:
+            break;
+        }
+    }
+
+    return CR_NOFILE;
+}
+
 ICardResult GCDriver::DeleteFile(const CardID &cardID, const FileInfo *pFileInfo) {
     ICardResult result;
 
@@ -751,6 +934,145 @@ ICardResult GCDriver::DeleteFile(const CardID &cardID, const FileInfo *pFileInfo
     } while (result == CR_BUSY);
 
     return result;
+}
+
+ICardResult GCDriver::NGCSportsBioSeek(GcFileDescriptor *fd, int offset, SeekFrom seekFrom) {
+    switch (seekFrom) {
+    case SF_SET:
+        fd->mFileSectorOffset = offset;
+        break;
+    case SF_CUR:
+        fd->mFileSectorOffset += offset;
+        break;
+    default:
+        break;
+    }
+
+    if (fd->mFileSectorOffset < 0 || fd->mFileSectorOffset >= static_cast<int>(fd->mGcCardStat.length)) {
+        return CR_RANGE_ERROR;
+    }
+    return CR_SUCCESS;
+}
+
+ICardResult GCDriver::NGCSportsBioRead(GcFileDescriptor *fd, void *pBuffer, int bufferSize, int *nBytesRead) {
+    int mresult;
+    ICardResult result;
+
+    do {
+        mresult = CARDRead(&fd->mGcFileInfo, pBuffer, bufferSize, fd->mFileSectorOffset);
+        gInterfaceThread->Sleep(1);
+    } while (mresult == CARD_RESULT_BUSY);
+
+    switch (result = this->ConvertCardResult(mresult)) {
+    case CR_SUCCESS:
+        *nBytesRead = bufferSize;
+        fd->mFileSectorOffset += bufferSize;
+        return result;
+    case CR_RANGE_ERROR:
+        *nBytesRead = 0;
+        result = CR_SUCCESS;
+        break;
+    default:
+        *nBytesRead = bufferSize;
+        result = CR_ERROR;
+        break;
+    }
+
+    return result;
+}
+
+ICardResult GCDriver::NGCSportsBioWrite(GcFileDescriptor *fd, void *pBuffer, int bufferSize, int *nBytesWritten) {
+    int mresult;
+    ICardResult result;
+
+    do {
+        mresult = CARDWrite(&fd->mGcFileInfo, pBuffer, bufferSize, fd->mFileSectorOffset);
+        gInterfaceThread->Sleep(1);
+    } while (mresult == CARD_RESULT_BUSY);
+
+    result = this->ConvertCardResult(mresult);
+    switch (result) {
+    case CR_SUCCESS:
+        *nBytesWritten = bufferSize;
+        fd->mFileSectorOffset += bufferSize;
+        break;
+    case CR_RANGE_ERROR:
+        *nBytesWritten = 0;
+        result = CR_SUCCESS;
+        break;
+    case CR_NOPERM:
+        *nBytesWritten = -1;
+        result = CR_SUCCESS;
+        break;
+    default:
+        *nBytesWritten = 0;
+        break;
+    }
+
+    return result;
+}
+
+ICardResult GCDriver::NGCSportsBioClose(GcFileDescriptor *fd) {
+    int mresult;
+    ICardResult result;
+
+    do {
+        mresult = CARDClose(&fd->mGcFileInfo);
+        gInterfaceThread->Sleep(1);
+    } while (mresult == CARD_RESULT_BUSY);
+
+    result = this->ConvertCardResult(mresult);
+    if (result == CR_SUCCESS) {
+        fd->mOpen = result;
+    }
+
+    return result;
+}
+
+int GCDriver::NGCSportsBioCreate(GcFileDescriptor *fd) {
+    int mresult;
+
+    do {
+        mresult = CARDCreate(fd->mCardID.slot, fd->mFileInfo.fileName, fd->mFileInfo.fileByteSize,
+                             &fd->mGcFileInfo);
+        gInterfaceThread->Sleep(1);
+    } while (mresult == CARD_RESULT_BUSY);
+
+    switch (mresult) {
+    case CARD_RESULT_READY:
+        fd->mWriteSystemData = false;
+        fd->mErrorCode = 0;
+        break;
+    case CARD_RESULT_FATAL_ERROR:
+        fd->mErrorCode = -1;
+        break;
+    case CARD_RESULT_NOCARD:
+        fd->mErrorCode = -2;
+        break;
+    case CARD_RESULT_BUSY:
+        fd->mErrorCode = -3;
+        break;
+    case CARD_RESULT_EXIST:
+        fd->mErrorCode = -4;
+        break;
+    case CARD_RESULT_NOENT:
+        fd->mErrorCode = -5;
+        break;
+    case CARD_RESULT_INSSPACE:
+        fd->mErrorCode = -6;
+        break;
+    case CARD_RESULT_NAMETOOLONG:
+        fd->mErrorCode = -7;
+        break;
+    case CARD_RESULT_IOERROR:
+        fd->mErrorCode = -8;
+        break;
+    default:
+        fd->mErrorCode = -10;
+        break;
+    }
+
+    return mresult;
 }
 
 bool GCDriver::IsOurFile(const char *fileCompanyName, const char *fileGameName) {
