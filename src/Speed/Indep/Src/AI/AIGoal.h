@@ -41,7 +41,7 @@ class AIGoal : public UTL::COM::Factory<ISimable *, AIGoal, UCrc32> {
         if (this->mCurrentAction != nullptr) {
             return this->mCurrentAction->GetActionName();
         } else {
-            return (const char *)nullptr;
+            return UCrc32(static_cast<const char *>(nullptr));
         }
     }
 

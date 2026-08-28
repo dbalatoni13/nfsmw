@@ -4,7 +4,7 @@
 #include "Speed/Indep/Src/Sim/Simulation.h"
 
 AvoidableManager::AvoidableManager(Sim::Param params) : Sim::Activity(0) {
-    this->mSimulateTask = this->AddTask("AvoidableManager", 0.25f, 0.0f, Sim::TASK_FRAME_FIXED);
+    this->mSimulateTask = this->AddTask(UCrc32("AvoidableManager"), 0.25f, 0.0f, Sim::TASK_FRAME_FIXED);
     Sim::ProfileTask(this->mSimulateTask, "AvoidableManager");
 }
 

@@ -36,7 +36,7 @@ Behavior *AIVehicleTraffic::Construct(const BehaviorParams &bp) {
 AIVehicleTraffic::AIVehicleTraffic(const BehaviorParams &bp)
     : AIVehicle(bp, 0.1f, mStagger, Sim::TASK_FRAME_VARIABLE), //
       ITrafficAI(bp.fowner) {
-    this->SetGoal("AIGoalNone");
+    this->SetGoal(UCrc32("AIGoalNone"));
     mStagger += 0.1f;
     if (mStagger >= 1.0f) {
         mStagger = 0.0f;
@@ -55,7 +55,7 @@ void AIVehicleTraffic::Update(float dT) {
 
 void AIVehicleTraffic::StartDriving(float speed) {
     this->ClearGoal();
-    this->SetGoal("AIGoalTraffic");
+    this->SetGoal(UCrc32("AIGoalTraffic"));
 
     IDamageable *idamage;
     if (this->GetOwner()->QueryInterface(&idamage)) {

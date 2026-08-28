@@ -60,7 +60,7 @@ void AIVehiclePursuit::ResetInternals() {
 void AIVehiclePursuit::StartPatrol() {
     this->SetInPursuit(false);
     this->GetTarget()->Clear();
-    this->SetGoal("AIGoalPatrol");
+    this->SetGoal(UCrc32("AIGoalPatrol"));
 }
 
 void AIVehiclePursuit::StartFlee() {
@@ -83,9 +83,9 @@ void AIVehiclePursuit::StartRoadBlock() {
     this->SetInPursuit(true);
     this->GetTarget()->Clear();
     if (GetVehicle()->GetVehicleClass() == VehicleClass::CHOPPER) {
-        this->SetGoal("AIGoalHeliRoadBlock");
+        this->SetGoal(UCrc32("AIGoalHeliRoadBlock"));
     } else {
-        this->SetGoal("AIGoalStaticRoadBlock");
+        this->SetGoal(UCrc32("AIGoalStaticRoadBlock"));
     }
 }
 
@@ -99,9 +99,9 @@ void AIVehiclePursuit::StartPursuit(AITarget *target, ISimable *itargetSimable) 
     this->UpdateTargeting();
     this->SetInPursuit(true);
     if (GetVehicle()->GetVehicleClass() == VehicleClass::CHOPPER) {
-        this->SetGoal("AIGoalHeliPursuit");
+        this->SetGoal(UCrc32("AIGoalHeliPursuit"));
     } else {
-        this->SetGoal("AIGoalPursuit");
+        this->SetGoal(UCrc32("AIGoalPursuit"));
     }
 }
 

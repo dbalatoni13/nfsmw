@@ -67,19 +67,19 @@ BoxInFormation::BoxInFormation(int copcount, struct IPursuit *pursuit) {
     this->getPosition(0, 1.0f, pos);
     this->getPosition(3, fscale, fpos);
     fpos.z = foff;
-    this->AddTargetOffset(pos, 1, "AIGoalRam", fpos);
+    this->AddTargetOffset(pos, 1, UCrc32("AIGoalRam"), fpos);
 
     this->getPosition(1, 1.0f, pos);
     this->getPosition(1, fscale, fpos);
-    this->AddTargetOffset(pos, 2, "AIGoalRam", fpos);
+    this->AddTargetOffset(pos, 2, UCrc32("AIGoalRam"), fpos);
 
     this->getPosition(2, 1.0f, pos);
     this->getPosition(2, fscale, fpos);
-    this->AddTargetOffset(pos, 2, "AIGoalRam", fpos);
+    this->AddTargetOffset(pos, 2, UCrc32("AIGoalRam"), fpos);
 
     this->getPosition(3, 1.0f, pos);
     this->getPosition(3, fscale, fpos);
-    this->AddTargetOffset(pos, 4, "AIGoalRam", fpos);
+    this->AddTargetOffset(pos, 4, UCrc32("AIGoalRam"), fpos);
 
     this->SetMaxCops(4);
     this->SetMinFinisherCops(2);
@@ -133,7 +133,7 @@ RollingBlockFormation::RollingBlockFormation(int numCops, struct IPursuit *pursu
         this->getPosition(i, 1.0f, pos);
         this->getPosition(i, fscale, fpos);
         fpos.z = foff;
-        this->AddTargetOffset(pos, priority[i], "AIGoalRam", fpos);
+        this->AddTargetOffset(pos, priority[i], UCrc32("AIGoalRam"), fpos);
     }
 
     this->SetMaxCops(4);
@@ -228,11 +228,11 @@ PitFormation::PitFormation(int copcount) {
 
     stupid_hack = UMath::Vector3Make(4.0f, 0.0f, -2.7f);
     stupid_hack1 = UMath::Vector3Make(-10.0f, 0.0f, -2.7f);
-    this->AddTargetOffset(stupid_hack, 1, "AIGoalPit", stupid_hack1);
+    this->AddTargetOffset(stupid_hack, 1, UCrc32("AIGoalPit"), stupid_hack1);
 
     stupid_hack = UMath::Vector3Make(-4.0f, 0.0f, -2.7f);
     stupid_hack1 = UMath::Vector3Make(10.0f, 0.0f, -2.7f);
-    this->AddTargetOffset(stupid_hack, 1, "AIGoalPit", stupid_hack1);
+    this->AddTargetOffset(stupid_hack, 1, UCrc32("AIGoalPit"), stupid_hack1);
 
     this->SetMaxCops(1);
     this->SetHasFinisher(true);
@@ -271,7 +271,7 @@ void GroundSupportRequest::Reset() {
             IVehicle *iv = *iter;
             IPursuitAI *ipv;
             if (iv->QueryInterface(&ipv)) {
-                ipv->SetSupportGoal((const char *)nullptr);
+                ipv->SetSupportGoal(UCrc32(static_cast<const char *>(nullptr)));
                 if (iv->IsActive()) {
                     IVehicleAI *ivai;
                     // unchecked
@@ -345,8 +345,8 @@ AIPursuit::AIPursuit(Sim::Param params)
       mEnterSafehouseOnDestruct(false),  //
       mPursuitStatus(PS_INITIAL_CHASE),  //
       mBackupCountdownTimer(0.0f) {
-    this->mSimulateTask = this->AddTask("AIPursuit", 0.25f, 0.0f, Sim::TASK_FRAME_VARIABLE);
-    this->mBustedTimerTask = this->AddTask("AIPursuit", 1.0f, 0.0f, Sim::TASK_FRAME_VARIABLE);
+    this->mSimulateTask = this->AddTask(UCrc32("AIPursuit"), 0.25f, 0.0f, Sim::TASK_FRAME_VARIABLE);
+    this->mBustedTimerTask = this->AddTask(UCrc32("AIPursuit"), 1.0f, 0.0f, Sim::TASK_FRAME_VARIABLE);
     Sim::ProfileTask(this->mSimulateTask, "AIPursuit");
 
     this->mIVehicleList.clear();
@@ -473,7 +473,7 @@ uint32 AIPursuit::CalcTotalCostToState() const {
 }
 
 void AIPursuit::AddVehicleToContingent(IVehicle *ivehicle) {
-    UCrc32 hash = ivehicle->GetVehicleName();
+    UCrc32 hash = UCrc32(ivehicle->GetVehicleName());
     for (ContingentVector::iterator i = this->mCopContingent.begin();; ++i) {
         if (i == this->mCopContingent.end()) {
             this->mCopContingent.push_back(CopContingent(hash));
@@ -530,11 +530,11 @@ void AIPursuit::OnAttached(IAttachable *pOther) {
             }
             this->mTotalCopsInvolved++;
 
-            const UCrc32 crossName = "copcross";
-            const UCrc32 suv = "copsuv";
-            const UCrc32 suvl = "copsuvl";
-            const UCrc32 hench = "copsporthench";
-            const UCrc32 vname = ivehicle->GetVehicleName();
+            const UCrc32 crossName = UCrc32("copcross");
+            const UCrc32 suv = UCrc32("copsuv");
+            const UCrc32 suvl = UCrc32("copsuvl");
+            const UCrc32 hench = UCrc32("copsporthench");
+            const UCrc32 vname = UCrc32(ivehicle->GetVehicleName());
 
             if (vname == suv || vname == suvl || vname == crossName || vname == hench) {
                 this->mNumSupportVehiclesDeployed++;
@@ -586,7 +586,7 @@ void AIPursuit::OnDetached(IAttachable *pOther) {
             }
             this->mTarget->Clear();
         } else if (pOther->QueryInterface(&ivehicle)) {
-            const UCrc32 crossName = "copcross";
+            const UCrc32 crossName = UCrc32("copcross");
             bool isCross = ivehicle->GetVehicleName() == crossName;
 
             if (ivehicle->IsDestroyed()) {
@@ -625,7 +625,7 @@ void AIPursuit::OnDetached(IAttachable *pOther) {
                     ipv->EndPursuit();
                 }
 
-                UCrc32 hash = ivehicle->GetVehicleName();
+                UCrc32 hash = UCrc32(ivehicle->GetVehicleName());
                 for (ContingentVector::iterator i = this->mCopContingent.begin();; i++) {
                     if (i->mType == hash) {
                         i->mCount--;
@@ -756,8 +756,8 @@ void AIPursuit::AssignChopperGoal(IPursuitAI *pursuitChopper) {
     IVehicleAI *via;
     pursuitChopper->QueryInterface(&via);
 
-    if (via->IsCurrentGoal("AIGoalHeliExit") == false) {
-        pursuitChopper->SetInPositionGoal("AIGoalHeliPursuit");
+    if (via->IsCurrentGoal(UCrc32("AIGoalHeliExit")) == false) {
+        pursuitChopper->SetInPositionGoal(UCrc32("AIGoalHeliPursuit"));
         pursuitChopper->SetInFormation(true);
         if (!via->IsCurrentGoal(pursuitChopper->GetInPositionGoal())) {
             pursuitChopper->DoInPositionGoal();
@@ -1040,7 +1040,7 @@ bool AIPursuit::SetupCollapse(const Pursuers &cops, int max_inner, float inner_r
     return true;
 }
 
-static const UCrc32 kPullOverGoal = "AIGoalPullOver";
+static const UCrc32 kPullOverGoal = UCrc32("AIGoalPullOver");
 
 void AIPursuit::AssignCopsInCircle(CopAndAngle *copangles, int num, float radius, const UMath::Vector3 &front, const UMath::Vector3 &side) {
     qsort(copangles, num, sizeof(CopAndAngle), CopAndAngleSortPredicate);

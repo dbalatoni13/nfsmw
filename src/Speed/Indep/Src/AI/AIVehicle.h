@@ -242,7 +242,7 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
         if (this->mCurrentGoal != nullptr) {
             return this->mCurrentGoal->GetActionName();
         } else {
-            return (const char *)nullptr;
+            return UCrc32(static_cast<const char *>(nullptr));
         }
     }
 

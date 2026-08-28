@@ -86,8 +86,8 @@ void AIVehicleHelicopter::UpdateFuel(float dT) {
     this->mHeliFuelTimeRemaining -= dT;
     if (this->mHeliFuelTimeRemaining < 0.0f) {
         this->mHeliFuelTimeRemaining = 0.0f;
-        if (!this->IsCurrentGoal("AIGoalHeliExit")) {
-            this->SetGoal("AIGoalHeliExit");
+        if (!this->IsCurrentGoal(UCrc32("AIGoalHeliExit"))) {
+            this->SetGoal(UCrc32("AIGoalHeliExit"));
         }
     }
 }

@@ -144,7 +144,7 @@ void AIVehiclePid::OnGasBrake(float dT) {
 AIVehicleRacecar::AIVehicleRacecar(const BehaviorParams &bp)
     : AIPerpVehicle(bp), //
       IRacer(bp.fowner) {
-    this->SetGoal("AIGoalRacer");
+    this->SetGoal(UCrc32("AIGoalRacer"));
 }
 
 AIVehicleRacecar::~AIVehicleRacecar() {}
@@ -152,7 +152,7 @@ AIVehicleRacecar::~AIVehicleRacecar() {}
 void AIVehicleRacecar::StartRace(DriverStyle style) {
     this->ClearGoal();
     this->GetVehicle()->SetDriverStyle(style);
-    this->SetGoal("AIGoalRacer");
+    this->SetGoal(UCrc32("AIGoalRacer"));
 
     IInputPlayer *input;
     if (this->GetOwner()->QueryInterface(&input)) {

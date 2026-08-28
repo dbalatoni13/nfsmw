@@ -63,7 +63,7 @@ AIActionJackKnife::AIActionJackKnife(AIActionParams *params, float score) : AIAc
     params->mOwner->QueryInterface(&this->mISuspension);
 
     this->mMsgJackKnife = Hermes::Handler::Create<MJackKnife, AIActionJackKnife, AIActionJackKnife>(
-        this, &AIActionJackKnife::MessageJackKnife, "AIAction", this->mIVehicle->GetSimable()->GetWorldID());
+        this, &AIActionJackKnife::MessageJackKnife, UCrc32("AIAction"), this->mIVehicle->GetSimable()->GetWorldID());
     this->mForceJackKnife = false;
     this->SentAudioMsg = false;
 }
