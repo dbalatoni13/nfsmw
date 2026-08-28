@@ -1743,35 +1743,35 @@ if config.platform == Platform.X360:
         }
     )
 
-# Custom build step for hashing
-config.custom_build_rules = [
-    {
-        "name": "hashgen",
-        "command": f"$python tools/hasher.py $in $out",
-        "description": "HASH $out",
-    }
-]
+# # Custom build step for hashing
+# config.custom_build_rules = [
+#     {
+#         "name": "hashgen",
+#         "command": f"$python tools/hasher.py $in $out",
+#         "description": "HASH $out",
+#     }
+# ]
 
-# Compile steps to automatically generate the headers containing hashes (e.g. BINHASH)
-precompile_steps = []
+# # Compile steps to automatically generate the headers containing hashes (e.g. BINHASH)
+# precompile_steps = []
 
-sourcelist_files: list[Path] = [
-    Path("src") / object.name for object in config.libs[0]["objects"]
-]
+# sourcelist_files: list[Path] = [
+#     Path("src") / object.name for object in config.libs[0]["objects"]
+# ]
 
-for src_path in sourcelist_files:
-    gen_header = Path(
-        str(src_path).replace("SourceLists", "Src/Generated/Hashes/")
-    ).with_suffix(".h")
-    precompile_steps.append(
-        {
-            "rule": "hashgen",
-            "inputs": str(src_path),
-            "outputs": str(gen_header),
-        }
-    )
+# for src_path in sourcelist_files:
+#     gen_header = Path(
+#         str(src_path).replace("SourceLists", "Src/Generated/Hashes/")
+#     ).with_suffix(".h")
+#     precompile_steps.append(
+#         {
+#             "rule": "hashgen",
+#             "inputs": str(src_path),
+#             "outputs": str(gen_header),
+#         }
+#     )
 
-config.custom_build_steps = {"pre-compile": precompile_steps}
+# config.custom_build_steps = {"pre-compile": precompile_steps}
 
 
 # Optional callback to adjust link order. This can be used to add, remove, or reorder objects.
