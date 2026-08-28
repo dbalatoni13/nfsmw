@@ -69,12 +69,18 @@ inline void VU0_v3scale(const UMath::Vector3 &a, const UMath::Vector3 &b, UMath:
     result.z = a.z * b.z;
 }
 
+// Decl: 213
+inline void VU0_v4scale(const UMath::Vector4 &a, const float scaleby, UMath::Vector4 &result) {}
+
 // Decl: 269
 inline void VU0_v3scaleadd(const UMath::Vector3 &a, const float scaleby, const UMath::Vector3 &b, UMath::Vector3 &result) {
     result.x = a.x + b.x * scaleby;
     result.y = a.y + b.y * scaleby;
     result.z = a.z + b.z * scaleby;
 }
+
+// Decl: Carbon: UVectorMathCPU.hpp: 285
+inline void VU0_v4scaleadd(const UMath::Vector4 &a, const float scaleby, const UMath::Vector4 &b, UMath::Vector4 &result) {}
 
 // Decl: Carbon: UVectorMathCPU.hpp: 293, GC MW: UVectorMathGC.hpp: 62, PS2 MW: UVectorMath.hpp: 1223
 inline void VU0_v3negate(UMath::Vector3 &result) {

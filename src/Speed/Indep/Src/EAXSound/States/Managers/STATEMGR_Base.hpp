@@ -37,6 +37,11 @@ class CSTATEMGR_Base : public AudioMemBase {
 
     CSTATE_Base *GetStateObj(int nInstance);
     CSTATE_Base *GetStateObj(void *testattachment);
+
+    int GetStateObjCount() {
+        return this->m_CurNumStates;
+    }
+
     int GetAttachedStateCount(void);
 
     virtual bool IsDataLoaded();

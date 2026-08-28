@@ -62,6 +62,15 @@ typedef struct {
     int filter_HiPass; // offset 0x24, size 0x4
 } AEMS_StichStaticStruct;
 
+// Decl: 100
+inline Result CacheHandlesSTITCH_AEMS() {
+    int result;
+    result = gAEMS_StichCollisionHandle.Set(&AEMS_StichCollisionId);
+    result = gAEMS_StichWooshHandle.Set(&AEMS_StichWooshId);
+    result = gAEMS_StichStaticHandle.Set(&AEMS_StichStaticId);
+    return static_cast<Result>(result);
+}
+
 // total size: 0x2C
 // Decl: 116
 class AEMS_StichCollision {
@@ -80,8 +89,10 @@ class AEMS_StichCollision {
     }
 
     void SetID(int x) {
-        if (x > 0x3FF) {
-            x = 0x3FF;
+        if (x < 0) {
+            x = 0;
+        } else if (x > 1023) {
+            x = 1023;
         }
         this->mData.iD = x;
     }
@@ -130,7 +141,9 @@ class AEMS_StichCollision {
     }
 
     void SetOffset(int x) {
-        if (x > 4000) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 4000) {
             x = 4000;
         }
         this->mData.offset = x;
@@ -141,6 +154,11 @@ class AEMS_StichCollision {
     }
 
     void SetFilter_DryFX(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 32767) {
+            x = 32767;
+        }
         this->mData.filter_DryFX = x;
     }
 
@@ -162,6 +180,11 @@ class AEMS_StichCollision {
     }
 
     void SetFilter_LoPass(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 25000) {
+            x = 25000;
+        }
         this->mData.filter_LoPass = x;
     }
 
@@ -170,6 +193,11 @@ class AEMS_StichCollision {
     }
 
     void SetFilter_HiPass(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 1000) {
+            x = 1000;
+        }
         this->mData.filter_HiPass = x;
     }
 
@@ -253,8 +281,10 @@ class AEMS_StichWoosh {
     }
 
     void SetID(int x) {
-        if (x > 0x3FF) {
-            x = 0x3FF;
+        if (x < 0) {
+            x = 0;
+        } else if (x > 1023) {
+            x = 1023;
         }
         this->mData.iD = x;
     }
@@ -303,7 +333,9 @@ class AEMS_StichWoosh {
     }
 
     void SetOffset(int x) {
-        if (x > 4000) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 4000) {
             x = 4000;
         }
         this->mData.offset = x;
@@ -314,6 +346,11 @@ class AEMS_StichWoosh {
     }
 
     void SetFilter_DryFX(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 32767) {
+            x = 32767;
+        }
         this->mData.filter_DryFX = x;
     }
 
@@ -335,6 +372,11 @@ class AEMS_StichWoosh {
     }
 
     void SetFilter_LoPass(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 25000) {
+            x = 25000;
+        }
         this->mData.filter_LoPass = x;
     }
 
@@ -343,6 +385,11 @@ class AEMS_StichWoosh {
     }
 
     void SetFilter_HiPass(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 1000) {
+            x = 1000;
+        }
         this->mData.filter_HiPass = x;
     }
 
@@ -426,8 +473,10 @@ class AEMS_StichStatic {
     }
 
     void SetID(int x) {
-        if (x > 0x3FF) {
-            x = 0x3FF;
+        if (x < 0) {
+            x = 0;
+        } else if (x > 1023) {
+            x = 1023;
         }
         this->mData.iD = x;
     }
@@ -476,7 +525,9 @@ class AEMS_StichStatic {
     }
 
     void SetOffset(int x) {
-        if (x > 4000) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 4000) {
             x = 4000;
         }
         this->mData.offset = x;
@@ -487,6 +538,11 @@ class AEMS_StichStatic {
     }
 
     void SetFilter_DryFX(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 32767) {
+            x = 32767;
+        }
         this->mData.filter_DryFX = x;
     }
 
@@ -508,6 +564,11 @@ class AEMS_StichStatic {
     }
 
     void SetFilter_LoPass(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 25000) {
+            x = 25000;
+        }
         this->mData.filter_LoPass = x;
     }
 
@@ -516,6 +577,11 @@ class AEMS_StichStatic {
     }
 
     void SetFilter_HiPass(int x) {
+        if (x < 0) {
+            x = 0;
+        } else if (x > 1000) {
+            x = 1000;
+        }
         this->mData.filter_HiPass = x;
     }
 

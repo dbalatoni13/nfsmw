@@ -1,8 +1,9 @@
 #include "./AudioMemoryManager.hpp"
+#include "Speed/Indep/Src/EAXSound/EAXCarState.hpp" // needed for symbol order
 #include "Speed/Indep/bWare/Inc/bMemory.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
-int DEBUG_360MEM; // size: 0x4, address: 0xFFFFFFFF, Decl: 15
+int DEBUG_360MEM = 0; // size: 0x4, address: 0xFFFFFFFF, Decl: 15
 
 AudioMemoryManager gAudioMemoryManager; // Decl: 128
 
@@ -26,20 +27,24 @@ void AudioMemoryManager::InitMemoryPool(eAUDMEMPOOLTYPE etype, int size) {
 }
 
 void *AudioMemoryManager::AllocateMemory(int size, const char *debug_name, bool FromTop) {
+    void *memptr;
+
     if (size <= bLargestMalloc(AudioMemoryPool)) {
         if (!FromTop) {
-            return bMalloc(size, debug_name, 0, AudioMemoryPool & 0xF | 0x1000);
+            memptr = bMalloc(size, debug_name, 0, AudioMemoryPool & 0xF | 0x1000);
         } else {
-            return bMalloc(size, debug_name, 0, AudioMemoryPool & 0xF | 0x1040);
+            memptr = bMalloc(size, debug_name, 0, AudioMemoryPool & 0xF | 0x1040);
         }
     } else {
-        bMemoryPrintAllocationsByAddress(AudioMemoryPool, 0, 2147483647);
+        bMemoryPrintAllocationsByAddress(AudioMemoryPool, 0, 0x7FFFFFFF);
         if (!FromTop) {
-            return bMalloc(size, debug_name, 0, 0x1000);
+            memptr = bMalloc(size, debug_name, 0, 0x1000);
         } else {
-            return bMalloc(size, debug_name, 0, 0x1040);
+            memptr = bMalloc(size, debug_name, 0, 0x1040);
         }
     }
+
+    return memptr;
 }
 
 void AudioMemoryManager::FreeMemory(void *mem) {

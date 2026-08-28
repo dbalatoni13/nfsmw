@@ -74,6 +74,10 @@ class SndBase : public AudioMemBase {
         return (this->objectID >> 4) & 0x7F;
     }
 
+    int GetUniqueID() {
+        return this->objectID;
+    }
+
     bool IsOfExactType(const TypeInfo *typeInfo) const;
     bool IsOfType(const TypeInfo *typeInfo) const;
 
@@ -129,6 +133,10 @@ class SndBase : public AudioMemBase {
 
     int *GetOutputBlockPtr() {
         return m_pOutPutBlock;
+    }
+
+    int *GetOutputPtr(int index) {
+        return &m_pOutPutBlock[index];
     }
 
     void SetOutputsPtr(int *ptr) {

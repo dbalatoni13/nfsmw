@@ -13,6 +13,7 @@
 int DEBUG_STREAMS = 0;                         // size: 0x4, address: 0xFFFFFFFF, Decl: 46
 ParameterAccessor AmbientAccessor("Ambience"); // size: 0x1C, address: 0x8045E5A0, Decl: 47
 
+#define T_INACTIVE_PURSUIT_TIMER 7.0f       // Decl: 49
 static const int OVER_RIDE_INTERACTIVE = 0; // size: 0x4, Decl: 50
 static const int INTERACTIVE_PROJECT = 0;   // size: 0x4, Decl: 51
 extern int MUSICFLOW_DISPLAY;               // size: 0x4, Decl: 52 // I hate that this is actually here....
@@ -31,6 +32,10 @@ uint32 AmbientCrossMap[14] = {
     0x011BBC15, 0x01E40616, 0x01919B1B, 0x01C505B7, 0x0134209F, 0x012F7671, 0x0127205F,
     0x01B2D374, 0x019509F2, 0x0146EDA3, 0x0196E300, 0x017690D2, 0x01E6FF17, 0x01E45B3F,
 };
+
+#define PFSTATE_CASE_RET_STRING(state)                                                                                                               \
+    case PFSTATE_##state:                                                                                                                            \
+        return #state; // Decl: 131
 
 SFXObj_Pathfinder::SFXObj_Pathfinder() : CARSFX() {
     this->m_pSFXCTL_Pathfinder = nullptr;
@@ -743,6 +748,7 @@ enum ePFENTRIES {
     PF_XMAP_MAX = 21,
 };
 
+// TODO move?
 extern int PFXMAP[4][PF_XMAP_MAX][2];
 
 void SFXObj_PFEATrax::MessageSendPathEvent(const MControlPathfinder &message) {

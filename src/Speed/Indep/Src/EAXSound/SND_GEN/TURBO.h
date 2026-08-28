@@ -21,6 +21,13 @@ typedef struct {
     int rPM;      // offset 0x14, size 0x4
 } FX_TURBO_01Struct;
 
+// Decl: 34
+inline Result CacheHandlesTURBO() {
+    int result;
+    result = gFX_TURBO_01Handle.Set(&FX_TURBO_01Id);
+    return static_cast<Result>(result);
+}
+
 // total size: 0x1C
 // Decl: 48
 class FX_TURBO_01 {

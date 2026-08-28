@@ -62,8 +62,6 @@ struct JollyRancherResponsePacket {
     volatile struct bMatrix4 CamMatrix; // offset 0x10, size 0x40
 };
 
-static unsigned short aBaselineFovNoise = 0x2aaa; // from __static_initialization_and_destruction_0
-
 // total size: 0x290
 class Camera {
 

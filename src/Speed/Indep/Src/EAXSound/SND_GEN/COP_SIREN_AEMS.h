@@ -39,7 +39,16 @@ typedef struct {
     int wet_FX;     // offset 0x1C, size 0x4
 } SIREN_BEDStruct;
 
+// DecL: 74
+inline Result CacheHandlesCOP_SIREN_AEMS() {
+    int result;
+    result = gSIRENHandle.Set(&SIRENId);
+    result = gSIREN_BEDHandle.Set(&SIREN_BEDId);
+    return static_cast<Result>(result);
+}
+
 // total size: 0x28
+// Decl: 89
 class SIREN {
   public:
     void SetVOL(int x) {

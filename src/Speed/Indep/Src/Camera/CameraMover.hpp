@@ -51,15 +51,6 @@ enum CameraMoverTypes {
     CM_SHOWCASE = 18,
 };
 
-static const bVector4 CameraNoiseHandheldAmplitude(0.01f, 0.01f, 0.03f, 0.03f);
-static const bVector4 CameraNoiseHandheldFrequency(0.01f, 0.175f, 0.153f, 0.03f);
-static const bVector4 CameraNoiseChopperFrequency(3.141f, 2.971f, 0.84234f, 0.92345f); // size: 0x10, address: 0x8045AB58
-static const bVector4 CameraNoiseChopperAmplitude(0.01f, 0.05f, 1.1, 2.7f);            // size: 0x10, address: 0x8045AB68
-static const bVector4 CameraNoiseSpeedFrequency;                                       // size: 0x10, address: 0x8045AB78
-static const bVector4 CameraNoiseSpeedAmplitude;                                       // size: 0x10, address: 0x8045AB88
-static const bVector4 CameraNoiseTerrainFrequency;                                     // size: 0x10, address: 0x8045AB98
-static const bVector4 CameraNoiseTerrainAmplitude;                                     // size: 0x10, address: 0x8045ABA8
-
 // total size: 0x124
 class CameraAnchor {
   public:
@@ -142,6 +133,10 @@ class CameraMover : public bTNode<CameraMover>, public WCollisionMgr::ICollision
     void HandheldNoise(bMatrix4 *world_to_camera, float f_scale, bool useWorldTimer);
     void TerrainVelocityNoise(bMatrix4 *world_to_camera /* r26 */, CameraAnchor *p_car /* r30 */, float f_speed_scale /* f31 */,
                               float f_terrain_scale /* f28 */);
+
+    bool IsDriveCamera() {
+        return this->Type == CM_DRIVE_CUBIC;
+    }
 
     virtual CameraAnchor *GetAnchor() {}
 

@@ -16,19 +16,40 @@ namespace Speech {
 // total size: 0x30
 // Decl: 31
 struct SpeechSampleData {
-    SpeechSampleData(SPCHType_SampleRequestData *data, bool is_cached) {} // Decl: 32
+    // Decl: 32
+    SpeechSampleData(SPCHType_SampleRequestData *data, bool is_cached)
+        : size(data->numBytes),                                              //
+          ready(false),                                                      //
+          age(0),                                                            //
+          speakerID(data->subID),                                            //
+          eventID(static_cast<SPCHType_1_EventID>(data->eventSpec.eventID)), //
+          HSTRM(-1),                                                         //
+          lock(true),                                                        //
+          cached(is_cached),                                                 //
+          t_req(WorldTimer),                                                 //
+          t_load(0),                                                         //
+          t_play(0),                                                         //
+          dataoffset(0) {}
 
     ~SpeechSampleData() {} // Decl: 48
 
-    void *GetData() {} // Decl: 52
+    // Decl: 52
+    void *GetData() {
+        return reinterpret_cast<void *>(reinterpret_cast<char *>(this) + 0x40);
+    }
 
     static void Destruct(SpeechSampleData *ptr); // Decl: 59
 
     static Speech::SpeechSampleData *Construct(SPCHType_SampleRequestData *data, Attrib::Key key, bool is_cached); // Decl: 60
 
-    void Lock() {} // Decl: 63
-
-    void Unlock() {} // Decl: 64
+    // Decl: 63
+    void Lock() {
+        this->lock = true;
+    }
+    // Decl: 64
+    void Unlock() {
+        this->lock = false;
+    }
 
     unsigned int size;          // offset 0x0, size 0x4, Decl: 66
     bool ready;                 // offset 0x4, size 0x1, Decl: 67
@@ -100,7 +121,10 @@ struct SpeechEventPair {
     Attrib::Key hash;      // offset 0x0, size 0x4, Decl: 189
     SPCHType_1_EventID id; // offset 0x4, size 0x4, Decl: 190
 
-    // bool operator<(const Speech::SpeechEventPair &from) const {} // Decl: 192
+    // Decl: 192
+    bool operator<(const Speech::SpeechEventPair &from) const {
+        return this->id < from.id;
+    }
 };
 
 // total size: 0x2C
@@ -111,6 +135,16 @@ struct SPCHSampleRequest {
     unsigned int offset;             // offset 0x24, size 0x4, Decl: 199
     uint8 sample_index;              // offset 0x28, size 0x1, Decl: 200
     // bool operator<(const Speech::SPCHSampleRequest &from) const {} // Decl: 201
+};
+
+DECLARE_CONTAINER_TYPE(SampleReqList);
+
+// total size: 0x14
+// Decl: 214
+class SampleReqList : public UTL::Std::vector<Speech::SPCHSampleRequest, Speech::_type_SampleReqList>, public AudioMemBase {
+  public:
+    SampleReqList() {}
+    ~SampleReqList() override {}
 };
 
 // total size: 0x58

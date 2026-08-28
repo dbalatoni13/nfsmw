@@ -9,8 +9,9 @@
 // Credit: Brawltendo
 namespace Attrib {
 
+// TODO these should be in the global namespace
 typedef uint32_t HashInt;
-typedef HashInt Key; // TODO might be in the global namespace
+typedef HashInt Key;
 typedef HashInt Type;
 
 // const int kTypeHandlerCount = 7;
@@ -735,6 +736,9 @@ class Instance {
 
     AttributeIterator Iterator() const;
 
+    Gen::GenericAccessor *operator->() {
+        return reinterpret_cast<Gen::GenericAccessor *>(this);
+    }
     const Gen::GenericAccessor *operator->() const {
         return reinterpret_cast<const Gen::GenericAccessor *>(this);
     }

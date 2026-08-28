@@ -10,7 +10,6 @@
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/shiftpattern.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/turbosfx.h"
 #include "Speed/Indep/Src/Physics/CarBasics.hpp"
-#include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Physics.hpp"
 
 // total size: 0x10
 // Decl: 46
@@ -34,12 +33,13 @@ enum eSFXMessageType {
     SFX_NIS_REV = 8,
 };
 
+class SFXCTL_Physics;
+
 // total size: 0x114
 // Decl: 71
 class EAXCar : public CSTATE_Base {
   public:
     DECLARE_STATETYPE();
-
     EAXCar();
     ~EAXCar() override;
 
@@ -66,10 +66,16 @@ class EAXCar : public CSTATE_Base {
 
     Attrib::Gen::engineaudio m_FEEngineAttribs; // offset 0x48, size 0x14, Decl: 98
 
-    void SetPhysicsCTLPtr(SFXCTL_Physics *_m_pPhysicsCTL) {} // Decl: 106
+    // Decl: 106
+    void SetPhysicsCTLPtr(SFXCTL_Physics *_m_pPhysicsCTL) {
+        this->m_pPhysicsCTL = _m_pPhysicsCTL;
+    }
 
-    SFXCTL_Physics *GetPhysicsCTL() {} // Decl: 108
-    SFXCTL_Physics *m_pPhysicsCTL;     // offset 0x5C, size 0x4, Decl: 109
+    // Decl: 108
+    SFXCTL_Physics *GetPhysicsCTL() {
+        return this->m_pPhysicsCTL;
+    }
+    SFXCTL_Physics *m_pPhysicsCTL; // offset 0x5C, size 0x4, Decl: 109
 
     float GetPhysTRQ() {
         return this->PhysTRQ;
@@ -184,5 +190,7 @@ class EAXCar : public CSTATE_Base {
     static Attrib::Gen::shiftpattern *g_ShiftInfo; // size: 0x4, address: 0x80417E2C
     static Attrib::Gen::turbosfx *g_TurboInfo;     // size: 0x4, address: 0x80417E30
 };
+
+const unsigned int GenerateUpgradedEngine(EAX_CarState *pCar, int playerUpgrade);
 
 #endif

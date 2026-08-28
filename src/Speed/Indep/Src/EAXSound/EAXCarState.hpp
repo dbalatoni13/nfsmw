@@ -3,6 +3,7 @@
 
 #include "Speed/Indep/Libs/Support/Utility/UListable.h"
 #include "Speed/Indep/Src/EAXSound/EAXSoundTypes.h"
+#include "Speed/Indep/Src/EAXSound/EAXCar.hpp"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/engineaudio.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/pvehicle.h"
 #include "Speed/Indep/Src/Generated/CarTypes.hpp"
@@ -43,24 +44,56 @@ class EAX_CarState : public UTL::Collections::Listable<EAX_CarState, 10> {
           mHotPursuit(false),              //
           mAttributes(atr, 0, nullptr),    //
           mWorldID(wuid),                  //
-          mEngineInfo(static_cast<const Attrib::Collection *>(nullptr), 0, nullptr) {
-        static int PlayerUpgrade;
-        float max_torque_rpm;
+          mEngineInfo(static_cast<Attrib::Collection *>(nullptr), 0, nullptr) {
+        this->mContext = context;
+        this->mSimUpdating = true;
+        this->mHandle = handle;
+        this->mAssetsLoaded = false;
+        this->mTrailerID = 0;
+        this->mNISCarID = -1;
+        this->mControlSource = Sound::CONTROL_AI;
+        this->mOversteer = 0.0f;
+        this->mUndersteer = 0.0f;
+        this->mSlipAngle = 0.0f;
+        this->mVisualRPM = 0.0f;
+        this->mDesiredSpeed = 0.0f;
+        this->mVel1 = this->mVel0;
 
-        mContext = context;
-        mSimUpdating = true;
-        mHandle = handle;
-        mTrailerID = 0;
-        mNISCarID = -1;
-        mAssetsLoaded = false;
-        mControlSource = Sound::CONTROL_AI;
-        mDesiredSpeed = 0.0f;
-        mVel1 = mVel0;
-        mOversteer = 0.0f;
-        mUndersteer = 0.0f;
-        mSlipAngle = 0.0f;
-        mVisualRPM = 0.0f;
-        // TODO do the rest
+        bIdentity(&this->mMatrix);
+
+        Attrib::Gen::pvehicle vehicleinfo(this->mAttributes);
+        Attrib::Gen::engine engine(vehicleinfo.engine(0), 0, nullptr);
+
+        static int PlayerUpgrade = 0;
+        if (this->mContext == Sound::CONTEXT_PLAYER) {
+            int phys_cur_upgrade = this->mAttributes.engine_current();
+            int phys_num_upgrades = this->mAttributes.engine_upgrades();
+            int base_upgrade = NUM_UPGRADE_LEVELS - phys_num_upgrades;
+            int curupgade_offset = phys_cur_upgrade;
+
+            base_upgrade = bClamp(base_upgrade, 0, NUM_UPGRADE_LEVELS);
+            curupgade_offset = bClamp(curupgade_offset, 0, NUM_UPGRADE_LEVELS);
+            PlayerUpgrade = base_upgrade + curupgade_offset;
+            PlayerUpgrade = bClamp(PlayerUpgrade, 0, NUM_UPGRADE_LEVELS);
+        }
+
+        this->mEngineInfo.ChangeWithDefault(GenerateUpgradedEngine(this, PlayerUpgrade));
+
+        float max_torque_rpm;
+        this->mMaxTorque = Physics::Info::MaxTorque(engine, max_torque_rpm);
+        this->mMaxRPM = engine.MAX_RPM();
+        this->mMinRPM = engine.IDLE();
+        this->mRedline = engine.RED_LINE();
+
+        switch (this->mContext) {
+            case Sound::CONTEXT_TRAFFIC:
+            case Sound::CONTEXT_TRACTOR:
+            case Sound::CONTEXT_TRAILER:
+                this->mAssetsLoaded = true;
+                break;
+            default:
+                break;
+        }
     }
 
     ~EAX_CarState() {}
@@ -80,9 +113,9 @@ class EAX_CarState : public UTL::Collections::Listable<EAX_CarState, 10> {
         return this->mMaxTorque;
     }
 
-    int GetUniqueDriverNumber() {}
+    // int GetUniqueDriverNumber() {}
 
-    float GetOptimalShiftUpRPM(Gear gear) {}
+    // float GetOptimalShiftUpRPM(Gear gear) {}
 
     float GetMaxRPM() {
         return this->mMaxRPM;
@@ -103,9 +136,11 @@ class EAX_CarState : public UTL::Collections::Listable<EAX_CarState, 10> {
     float GetTheoreticalTopSpeed() {
         return 100.0f;
     }
-    float GetShiftDownRPM(Gear Gear) {}
-    float GetShiftUpRPM(Gear Gear) {}
-    CarType GetCarType() {}
+    float GetShiftDownRPM(Gear) {
+        return 3000.0f;
+    }
+    // float GetShiftUpRPM(Gear gear) {}
+    // CarType GetCarType() {}
     float CalculateUndersteerFactor() {
         return this->mUndersteer;
     }
@@ -122,12 +157,12 @@ class EAX_CarState : public UTL::Collections::Listable<EAX_CarState, 10> {
     bool IsCopCar() {
         return this->mContext == Sound::CONTEXT_COP;
     }
-    bool IsOnlineCar() {}
+    // bool IsOnlineCar() {}
     int GetTopGear() {
         return SEVENTH_GEAR;
     }
 
-    int GetRacePosition() {}
+    // int GetRacePosition() {}
     const bVector3 *GetUpVector() {
         return reinterpret_cast<const bVector3 *>(&mMatrix.v2);
     }
@@ -141,7 +176,7 @@ class EAX_CarState : public UTL::Collections::Listable<EAX_CarState, 10> {
         return reinterpret_cast<bVector3 *>(&mMatrix.v3);
     }
     const bVector2 *GetPosition2D() {
-        return reinterpret_cast<const bVector2 *>(GetPosition());
+        return reinterpret_cast<const bVector2 *>(this->GetPosition());
     }
     float GetForwardSpeed() {
         return this->mFWSpeed;
@@ -149,12 +184,12 @@ class EAX_CarState : public UTL::Collections::Listable<EAX_CarState, 10> {
     MovementMode GetMovementMode() {
         return this->mMovementMode;
     }
-    PlayerZones GetZone() {}
+    // PlayerZones GetZone() {}
     Sound::SirenState GetSirenState() {
         return this->mSirenState;
     }
-    bool IsHotPursuit() {}
-    bool IsShocked() {}
+    // bool IsHotPursuit() {}
+    // bool IsShocked() {}
     float GetHeath() {
         return this->mHealth;
     }
@@ -198,7 +233,7 @@ class EAX_CarState : public UTL::Collections::Listable<EAX_CarState, 10> {
     bAngle GetSteering() {
         return this->mSteering;
     }
-    const bVector3 *GetAcceleration() {}
+    // const bVector3 *GetAcceleration() {}
 
     const bVector3 *GetOldVel() {
         return &this->mVel1;
@@ -215,7 +250,9 @@ class EAX_CarState : public UTL::Collections::Listable<EAX_CarState, 10> {
     float GetVelocityMagnitudeMPH() {
         return MPS2MPH(this->GetVelocityMagnitude());
     }
-    float GetYaw() {}
+    float GetYaw() {
+        return 0.5f;
+    }
     const bMatrix4 *GetBodyMatrix() {
         return &this->mMatrix;
     }
@@ -259,7 +296,7 @@ class EAX_CarState : public UTL::Collections::Listable<EAX_CarState, 10> {
     }
 
     bVector2 GetWheelSlip(int w) {
-        return bVector2(this->mWheel[w].mWheelSlip.x, this->mWheel[w].mWheelSlip.y);
+        return this->mWheel[w].mWheelSlip;
     }
     float GetWheelLoad(int wheel_ndx) {
         return this->mWheel[wheel_ndx].mLoad;

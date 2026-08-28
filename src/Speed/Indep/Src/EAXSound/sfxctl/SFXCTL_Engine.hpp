@@ -36,7 +36,7 @@ class SFXCTL_Engine : public SFXCTL {
     SFXCTL_Physics *m_pPhysicsCtl;            // offset 0x30, size 0x4, Decl: 38
     SFXCTL_3DCarPos *m_p3DCarPosCtl;          // offset 0x34, size 0x4, Decl: 39
 
-    bool IsActive() {} // Decl: 43
+    // bool IsActive() {} // Decl: 43
 
     virtual void UpdateRPM(float t);
     virtual void UpdateTorque(float t);
@@ -58,7 +58,9 @@ class SFXCTL_Engine : public SFXCTL {
     float RedlineingVisualOffset;    // offset 0x110, size 0x4, Decl: 75
 
     void SetEngRPM(float _RPM) {
+        this->m_fPrevRPM = this->m_fEng_RPM;
         this->m_fEng_RPM = _RPM;
+        this->m_fSmoothedEng_RPM = this->m_fSmoothedEng_RPM * 0.95f + _RPM * 0.05f;
     } // Decl: 78
     virtual float GetEngRPM() {
         return this->m_fEng_RPM;

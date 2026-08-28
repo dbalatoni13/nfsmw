@@ -201,13 +201,17 @@ class ParameterMapLayer : public bTNode<ParameterMapLayer> {
 
 class ParameterAccessor : public bTNode<ParameterAccessor> {
   public:
-    ParameterAccessor();
+    ParameterAccessor(); // TODO private
 
     ParameterAccessor(const char *layer_name);
 
     virtual ~ParameterAccessor();
 
-    void SetLayer(struct ParameterMapLayer *layer);
+    int IsValid() {
+        return static_cast<int>(this->Layer != nullptr);
+    }
+
+    void SetLayer(ParameterMapLayer *layer);
 
     void ClearLayer();
 
@@ -218,8 +222,6 @@ class ParameterAccessor : public bTNode<ParameterAccessor> {
     virtual float GetDataFloat(int field_index);
 
     virtual int GetDataInt(int field_index);
-
-    // int IsValid() {}
 
     unsigned int GetAutoAttachLayerNamehash() {
         return this->AutoAttachLayerNamehash;

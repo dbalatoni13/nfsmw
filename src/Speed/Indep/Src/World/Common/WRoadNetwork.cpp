@@ -2399,7 +2399,7 @@ void WRoadNav::InitLaneOffset(const UMath::Vector3 &vehicle_pos) {
 
         int num_start_traffic_lanes = start_profile->GetNumTrafficLanes(forward, start_inverted);
         int num_end_traffic_lanes = end_profile->GetNumTrafficLanes(forward, end_inverted);
-        int num_traffic_lanes = bMin(num_start_traffic_lanes, num_end_traffic_lanes);
+        int num_traffic_lanes = bMin(num_end_traffic_lanes, num_start_traffic_lanes);
 
         if (num_traffic_lanes > 0) {
             bool foundClosest = false;

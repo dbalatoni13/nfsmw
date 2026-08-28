@@ -124,6 +124,19 @@ typedef struct {
     int car_id;    // offset 0x8, size 0x4
 } CAR_SputOutputStruct;
 
+// Decl: 640
+inline Result CacheHandlesENGINES_AEMS2() {
+    int result;
+    result = gSputter_MessageHandle.Set(&Sputter_MessageId);
+    result = gCARHandle.Set(&CARId);
+    result = gCAR_SWTNHandle.Set(&CAR_SWTNId);
+    result = gCAR_WHINEHandle.Set(&CAR_WHINEId);
+    result = gCAR_TRANNYHandle.Set(&CAR_TRANNYId);
+    result = gCAR_SputterHandle.Set(&CAR_SputterId);
+    result = gCAR_SputOutputHandle.Set(&CAR_SputOutputId);
+    return static_cast<Result>(result);
+}
+
 // Decl: 691
 class CAR {
   public:

@@ -49,7 +49,7 @@ DECLARE_CONTAINER_TYPE(ResAllocList);
 
 // total size: 0x10
 // Decl: 210
-class ResAllocList : public UTL::Std::vector<unsigned int, _type_ResAllocList> {
+class ResAllocList : public UTL::Std::vector<uintptr_t, _type_ResAllocList> {
   public:
     ResAllocList() {} // Decl: 213
 
@@ -141,11 +141,28 @@ class stSndDataLoadParams;
 // total size: 0x24
 // Decl: 286
 struct stBankSlot {
-    stBankSlot() {} // Decl: 287
+    // Decl: 287
+    stBankSlot() {
+        this->Clear();
+    }
 
-    ~stBankSlot() {} // Decl: 292
+    // Decl: 292
+    ~stBankSlot() {
+        this->Clear();
+    }
 
-    void Clear() {} // Decl: 298
+    // Decl: 298
+    void Clear() {
+        this->BANKmemLocation = 0;
+        this->MAINmemLocation = nullptr;
+        this->pLastAlloc = nullptr;
+        this->Index = 0;
+        this->pAssetParams = nullptr;
+        this->BANKMemSize = 0;
+        this->MAINmemSize = 0;
+        this->Type = eBANK_SLOT_NONE;
+        this->LoadFailed = 0;
+    }
 
     eBANK_SLOT_TYPE Type;              // offset 0x0, size 0x4, Decl: 312
     int BANKmemLocation;               // offset 0x4, size 0x4, Decl: 313
@@ -162,11 +179,64 @@ struct stBankSlot {
 // Decl: 328
 class stSndDataLoadParams {
   public:
-    stSndDataLoadParams() {} // Decl: 330
+    // Decl: 330
+    stSndDataLoadParams() {
+        this->Clear();
+    }
 
-    void Clear() {} // Decl: 335
+    // Decl: 335
+    void Clear() {
+        this->AssetDescription.Clear();
+        this->MemLocation = TMP_ALLOC_NONE;
+        this->mBankSlot = nullptr;
+        this->pmem = nullptr;
+        this->plocmem = nullptr;
+        this->nSize = 0;
+        this->Handle = -1;
+        this->bResolvedAsync = false;
+        this->bResolvedSync = false;
+        this->resallocs.clear();
+        this->RefCount.clear();
+        this->t_req = Timer(0);
+        this->t_load = Timer(0);
+    }
 
-    stSndDataLoadParams &operator=(stSndDataLoadParams &copy) {} // Decl: 361
+    // Decl: 361
+    stSndDataLoadParams &operator=(stSndDataLoadParams &copy) {
+        this->AssetDescription = copy.AssetDescription;
+        this->MemLocation = copy.MemLocation;
+        this->mBankSlot = copy.mBankSlot;
+        if (this->mBankSlot != nullptr && this->mBankSlot->pAssetParams == &copy) {
+            this->mBankSlot->pAssetParams = this;
+        }
+
+        this->pmem = copy.pmem;
+        this->plocmem = copy.plocmem;
+        this->nSize = copy.nSize;
+        this->Handle = copy.Handle;
+        this->bResolvedAsync = copy.bResolvedAsync;
+        this->bResolvedSync = copy.bResolvedSync;
+
+        this->resallocs.clear();
+        this->resallocs.reserve(copy.resallocs.size());
+        const unsigned int *i;
+        for (i = copy.resallocs.begin(); i != copy.resallocs.end(); ++i) {
+            this->resallocs.push_back(*i);
+        }
+        copy.resallocs.clear();
+
+        this->RefCount.clear();
+        this->RefCount.reserve(copy.RefCount.size());
+        EAX_CarState **j;
+        for (j = copy.RefCount.begin(); j != copy.RefCount.end(); ++j) {
+            this->RefCount.push_back(*j);
+        }
+        copy.RefCount.clear();
+
+        this->t_req = copy.t_req;
+        this->t_load = copy.t_load;
+        return *this;
+    }
 
     stAssetDescription AssetDescription; // offset 0x0, size 0x20, Decl: 415
     eTEMPALLOCLOCATION MemLocation;      // offset 0x20, size 0x4, Decl: 416

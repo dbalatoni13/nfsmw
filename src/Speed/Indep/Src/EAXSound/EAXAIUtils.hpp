@@ -33,7 +33,10 @@ class SndAITrigger {
     float fSign;           // offset 0x10, size 0x4, Decl: 35
     Average AvgMonitor;    // offset 0x14, size 0x28, Decl: 44
 
-    bool IsTriggering() {}                 // Decl: 38
+    // Decl: 38
+    bool IsTriggering() {
+        return this->bTrigger;
+    }
     void Update(float UpdateVal, float t); // Decl: 39
 
     void BeginTrigger(); // Decl: 41
@@ -50,13 +53,15 @@ class SFXCTL_Physics;
 
 // total size: 0x194
 // Decl: 58
-struct SndAIStateManager : public AudioMemBase {
+class SndAIStateManager : public AudioMemBase {
+  public:
     SndAIStateManager();
-
-    // Overrides: AudioMemBase
     ~SndAIStateManager() override;
 
-    SND_AI_STATE GetState() {} // Decl: 64
+    // Decl: 64
+    SND_AI_STATE GetState() {
+        return this->CurState;
+    }
 
     void UpdateState(float t);
 
@@ -64,21 +69,22 @@ struct SndAIStateManager : public AudioMemBase {
 
     void Update(float t);
 
-  private:
-    void SwitchState(SND_AI_STATE NewState);
-
-    void GeneratePotentialStates(bool *ArrayList);
-
     SndAITrigger SteeringMonitorLeft;  // offset 0x4, size 0x4C, Decl: 71
     SndAITrigger SteeringMonitorRight; // offset 0x50, size 0x4C, Decl: 72
     SndAITrigger AccelMonitor;         // offset 0x9C, size 0x4C, Decl: 73
     SndAITrigger DeccelMonitor;        // offset 0xE8, size 0x4C, Decl: 74
     SndAITrigger ThrottleMonitor;      // offset 0x134, size 0x4C, Decl: 75
-    SFXCTL_Physics *m_pPhysicsCTL;     // offset 0x180, size 0x4, Decl: 83
-    SND_AI_STATE CurState;             // offset 0x184, size 0x4, Decl: 86
-    SND_AI_STATE PrevState;            // offset 0x188, size 0x4, Decl: 87
-    bool bTransition;                  // offset 0x18C, size 0x1, Decl: 88
-    float m_tLastSwitch;               // offset 0x190, size 0x4, Decl: 89
+
+  private:
+    void SwitchState(SND_AI_STATE NewState);
+
+    void GeneratePotentialStates(bool *ArrayList);
+
+    SFXCTL_Physics *m_pPhysicsCTL; // offset 0x180, size 0x4, Decl: 83
+    SND_AI_STATE CurState;         // offset 0x184, size 0x4, Decl: 86
+    SND_AI_STATE PrevState;        // offset 0x188, size 0x4, Decl: 87
+    bool bTransition;              // offset 0x18C, size 0x1, Decl: 88
+    float m_tLastSwitch;           // offset 0x190, size 0x4, Decl: 89
 };
 
 #endif
