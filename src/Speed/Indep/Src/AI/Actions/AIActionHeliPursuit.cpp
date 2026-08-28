@@ -5,6 +5,7 @@
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/pursuitlevels.h"
 #include "Speed/Indep/Src/Interfaces/IListener.h"
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IHelicopter.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
 #include "Speed/Indep/Src/Sim/Collision.h"
@@ -110,9 +111,9 @@ void AIActionHeliPursuit::OnCollision(const COLLISION_INFO &cinfo) {
         this->mCollisionAbort += 2;
     } else if (cinfo.type == COLLISION_INFO::OBJECT) {
         ISimable *obja = ISimable::FindInstance(cinfo.objA);
-        if (!obja || !obja->IsPlayer()) {
+        if (obja == nullptr || !obja->IsPlayer()) {
             ISimable *objb = ISimable::FindInstance(cinfo.objB);
-            if (objb && objb->IsPlayer()) {
+            if (objb != nullptr && objb->IsPlayer()) {
                 this->mCollisionAbort += 5;
             }
         } else {
@@ -170,12 +171,12 @@ void AIActionHeliPursuit::StraightLinePursuit() {
         float ydif = perp2Me.y;
         perp2Me.y = 0.0f;
         perpUnitVel.y = 0.0f;
-        if (UMath::Dot(perp2Me, perpUnitVel) / heliAheadOfPerpDot > 0.707f && this->mIVehicleAI && SkidHitEnabled && ydif < 13.0f) {
+        if (UMath::Dot(perp2Me, perpUnitVel) / heliAheadOfPerpDot > 0.707f && this->mIVehicleAI != nullptr && SkidHitEnabled && ydif < 13.0f) {
             this->mPursuitMode = kSkid_Hit_Approach;
             this->mSkidKnockTimer = 8.0f;
             this->mSkidHitOffset = UMath::Vector3::kZero;
             SoundAI *copspeech = SoundAI::Get();
-            if (copspeech && copspeech->GetHeli()) {
+            if (copspeech != nullptr && copspeech->GetHeli() != nullptr) {
                 int parm = bRandom(2) != 0 ? 2 : 4;
                 copspeech->GetHeli()->SelfStrategy(parm);
             }
@@ -286,7 +287,7 @@ void AIActionHeliPursuit::SkidHitPursuit() {
                 this->mSkidKnockTimer = 2.0f;
             }
             SoundAI *copspeech = SoundAI::Get();
-            if (copspeech && copspeech->GetHeli()) {
+            if (copspeech != nullptr && copspeech->GetHeli() != nullptr) {
                 copspeech->GetHeli()->IntentToRam();
             }
         }
@@ -326,7 +327,7 @@ void AIActionHeliPursuit::SkidHitPursuit() {
 
 void AIActionHeliPursuit::SetNextPerpSearchDest() {
     IPursuit *ip = this->mIVehicleAI->GetPursuit();
-    if (!ip) {
+    if (ip == nullptr) {
         return;
     }
     const UMath::Vector3 &centre = ip->GetLastKnownLocation();
@@ -335,7 +336,7 @@ void AIActionHeliPursuit::SetNextPerpSearchDest() {
     target->QueryInterface(&iperp);
 
     Attrib::Gen::pursuitlevels *pl = iperp->GetPursuitLevelAttrib();
-    if (!pl) {
+    if (pl == nullptr) {
         return;
     }
     float radius = pl->SearchModeRoadblockRadius();
@@ -380,7 +381,7 @@ void AIActionHeliPursuit::Update(float dT) {
     this->mPlayerPosition = this->mPlayerRigidBody->GetPosition();
     this->mPlayerSpeed = this->mPlayerRigidBody->GetSpeed();
     IPursuit *ip = this->mIVehicleAI->GetPursuit();
-    if (ip && !ip->IsPerpInSight()) {
+    if (ip != nullptr && !ip->IsPerpInSight()) {
         if (this->mPursuitMode != kSearch_Pattern) {
             this->SetNextPerpSearchDest();
             this->mPursuitMode = kSearch_Pattern;

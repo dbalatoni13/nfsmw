@@ -48,7 +48,7 @@ AIVehicleTraffic::~AIVehicleTraffic() {}
 void AIVehicleTraffic::Update(float dT) {
     this->AIVehicle::Update(dT);
     this->UpdateSpawnTimer(dT);
-    if (this->GetGoal()) {
+    if (this->GetGoal() != nullptr) {
         this->GetGoal()->Update(dT);
     }
 }
@@ -79,9 +79,9 @@ void AIVehicleTraffic::StartDriving(float speed) {
     WRoadNav *road_nav = this->GetDriveToNav();
     AITarget *target = this->GetTarget();
 
-    if (target && target->IsValid()) {
+    if (target != nullptr && target->IsValid()) {
         this->SetDriveTarget(target->GetPosition());
-    } else if (road_nav && road_nav->IsValid()) {
+    } else if (road_nav != nullptr && road_nav->IsValid()) {
         this->SetDriveTarget(road_nav->GetPosition());
     } else {
         UMath::Vector3 forward;

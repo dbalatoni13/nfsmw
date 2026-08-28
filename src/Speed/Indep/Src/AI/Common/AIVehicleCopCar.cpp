@@ -45,7 +45,7 @@ void AIVehicleCopCar::Update(float dT) {
     this->UpdateReverseOverride(dT);
     this->UpdateTargeting();
     this->UpdateRoadNavInfo();
-    if (this->GetGoal()) {
+    if (this->GetGoal() != nullptr) {
         this->GetGoal()->Update(dT);
     }
     this->WatchForPerps();
@@ -118,7 +118,7 @@ bool AIVehicleCopCar::CheckForPursuit(IVehicle *itargetVehicle) {
     bool active911 = iperp->Get911CallTime() > 0.0f;
 
     bool alreadypursuit = false;
-    if (ivehicleai && ivehicleai->GetPursuit()) {
+    if (ivehicleai != nullptr && ivehicleai->GetPursuit() != nullptr) {
         alreadypursuit = true;
     }
 

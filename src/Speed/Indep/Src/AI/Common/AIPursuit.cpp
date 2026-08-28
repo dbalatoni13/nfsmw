@@ -14,8 +14,10 @@
 #include "Speed/Indep/Src/Interfaces/ITaskable.h"
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IAI.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IHelicopter.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #include "Speed/Indep/Src/Physics/Common/VehicleSystem.h"
+#include "Speed/Indep/Src/Physics/PVehicle.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
@@ -49,7 +51,7 @@ BoxInFormation::BoxInFormation(int copcount, struct IPursuit *pursuit) {
     if (pursuit->GetTarget()->QueryInterface(&iperp)) {
         pursuitLevelAttrib = iperp->GetPursuitLevelAttrib();
     }
-    if (pursuitLevelAttrib) {
+    if (pursuitLevelAttrib != nullptr) {
         this->tightness = pursuitLevelAttrib->BoxinTightness();
         this->finishertime = pursuitLevelAttrib->BoxinDuration();
     } else {
@@ -112,7 +114,7 @@ RollingBlockFormation::RollingBlockFormation(int numCops, struct IPursuit *pursu
     if (pursuit->GetTarget()->QueryInterface(&iperp)) {
         pursuitLevelAttrib = iperp->GetPursuitLevelAttrib();
     }
-    if (pursuitLevelAttrib) {
+    if (pursuitLevelAttrib != nullptr) {
         this->tightness = pursuitLevelAttrib->RollingBlockTightness();
         this->finishertime = pursuitLevelAttrib->RollingBlockDuration();
     } else {
@@ -256,7 +258,7 @@ HerdFormation::HerdFormation(int copcount) {
 
 void GroundSupportRequest::Reset() {
     bool bAddToContingent = true;
-    if (mSupportRequestStatus == ACTIVE && mHeavySupport && mHeavySupport->HeavyStrategy == HEAVY_ROADBLOCK) {
+    if (mSupportRequestStatus == ACTIVE && mHeavySupport != nullptr && mHeavySupport->HeavyStrategy == HEAVY_ROADBLOCK) {
         bAddToContingent = false;
     }
     mSupportRequestStatus = NOT_ACTIVE;
@@ -275,7 +277,7 @@ void GroundSupportRequest::Reset() {
                     // unchecked
                     ipv->QueryInterface(&ivai);
                     IPursuit *ip = ivai->GetPursuit();
-                    if (ip) {
+                    if (ip != nullptr) {
                         ip->AddVehicleToContingent(iv);
                     }
                 }
@@ -367,7 +369,7 @@ AIPursuit::AIPursuit(Sim::Param params)
 
     // TODO later after we have more Gameplay stuff decomped
     // flipped in ghidra
-    if (GRaceStatus::Get().GetRaceParameters() && GRaceStatus::Get().GetRaceContext() == GRace::kRaceContext_Career) {
+    if (GRaceStatus::Get().GetRaceParameters() != nullptr && GRaceStatus::Get().GetRaceContext() == GRace::kRaceContext_Career) {
         if (GRaceStatus::IsFinalEpicPursuit()) {
             this->mBaseHeat = 6.0f;
             this->mMaximumHeat = 6.0f;
@@ -422,7 +424,7 @@ Sim::IActivity *AIPursuit::Construct(Sim::Param params) {
 Attrib::Gen::pursuitlevels *AIPursuit::GetPursuitLevelAttrib() const {
     Attrib::Gen::pursuitlevels *plevels = nullptr;
     IPerpetrator *perp;
-    if (this->GetTarget()) {
+    if (this->GetTarget() != nullptr) {
         if (this->GetTarget()->QueryInterface(&perp)) {
             plevels = perp->GetPursuitLevelAttrib();
         }
@@ -435,7 +437,7 @@ Attrib::Gen::pursuitlevels *AIPursuit::GetPursuitLevelAttrib() const {
 Attrib::Gen::pursuitsupport *AIPursuit::GetPursuitSupportAttrib() const {
     Attrib::Gen::pursuitsupport *ps = nullptr;
     IPerpetrator *perp;
-    if (this->GetTarget()) {
+    if (this->GetTarget() != nullptr) {
         if (this->GetTarget()->QueryInterface(&perp)) {
             ps = perp->GetPursuitSupportAttrib();
         }
@@ -447,7 +449,7 @@ Attrib::Gen::pursuitsupport *AIPursuit::GetPursuitSupportAttrib() const {
 
 void AIPursuit::LockInPursuitAttribs() {
     Attrib::Gen::pursuitlevels *ps = this->GetPursuitLevelAttrib();
-    if (ps) {
+    if (ps != nullptr) {
         this->mNumCopsRequiredToEvade = ps->FullEngagementCopCount();
         this->mNumCopsToTriggerBackupTime = ps->NumCopsToTriggerBackup();
         this->mCoolDownTimeRequired = ps->evadetimeout();
@@ -509,7 +511,7 @@ void AIPursuit::OnAttached(IAttachable *pOther) {
             this->mIVehicleList.push_back(ivehicle);
 
             Attrib::Gen::pursuitlevels *plevels = this->GetPursuitLevelAttrib();
-            if (plevels) {
+            if (plevels != nullptr) {
                 if (this->mTotalCopsInvolved < 3 && this->mPursuitStatus != PS_COOL_DOWN) {
                     this->mSpawnCopTimer = plevels->TimeBetweenFirstFourSpawn();
                 } else {
@@ -552,7 +554,7 @@ void AIPursuit::OnAttached(IAttachable *pOther) {
             IPerpetrator *iperp;
             if (this->mTarget->QueryInterface(&iperp) && this->mRepPointsPerMinute == 0) {
                 int perpHeat = static_cast<int>(iperp->GetHeat());
-                if (plevels) {
+                if (plevels != nullptr) {
                     this->mRepPointsPerMinute = plevels->RepPointsPerMinute();
                 }
             }
@@ -599,7 +601,7 @@ void AIPursuit::OnDetached(IAttachable *pOther) {
             IAIHelicopter *aih;
             if (ivehicle->QueryInterface(&aih)) {
                 Attrib::Gen::pursuitlevels *plevels = this->GetPursuitLevelAttrib();
-                if (plevels) {
+                if (plevels != nullptr) {
                     this->mSpawnHeliTimer = plevels->TimeBetweenHeliActive();
                 }
             }
@@ -642,7 +644,7 @@ void AIPursuit::IncNumCopsDestroyed(IVehicle *ivehicle) {
         return;
     }
     IVehicleAI *ivai = ivehicle->GetAIVehiclePtr();
-    if (ivai) {
+    if (ivai != nullptr) {
         this->mMostRecentCopDestroyedRepPoints = ivai->GetAttributes().RepPointsForDestroying(this->mCurrentPursuitLevel);
         this->mMostRecentCopDestroyedType = ivehicle->GetVehicleName();
 
@@ -659,7 +661,7 @@ void AIPursuit::IncNumCopsDestroyed(IVehicle *ivehicle) {
         int repForDestruction = this->mMostRecentCopDestroyedRepPoints * multiplier;
 
         Attrib::Gen::pursuitlevels *plevel = this->GetPursuitLevelAttrib();
-        if (plevel) {
+        if (plevel != nullptr) {
             this->mCopDestroyedBonusTimer = plevel->DestroyCopBonusTime();
         }
         IPerpetrator *iperp;
@@ -668,8 +670,8 @@ void AIPursuit::IncNumCopsDestroyed(IVehicle *ivehicle) {
         }
     }
 
-    if (this->mRoadBlock) {
-        if (this->mRoadBlock->IsComprisedOf(ivehicle->GetSimable()->GetOwnerHandle())) {
+    if (this->mRoadBlock != nullptr) {
+        if (this->mRoadBlock->IsComprisedOf(ivehicle->GetSimable()->GetOwnerHandle()) != nullptr) {
             this->mRoadBlock->IncNumCopsDestroyed();
         }
     }
@@ -786,7 +788,7 @@ void AIPursuit::EvenOutOffsets(Vector3List &copRelativePositions, FormationTarge
 
         for (PursuitFormation::TargetOffsetList::const_iterator *i = source_offsets.begin(); i != source_offsets.end(); ++i) {
             // TODO does this .end belong here?
-            if (*i && (bestOffset == source_offsets.end() || (*i)->mMinTargets <= bestPriority)) {
+            if ((*i != nullptr) && (bestOffset == source_offsets.end() || (*i)->mMinTargets <= bestPriority)) {
                 UMath::Vector3 offsetPosition = (*i)->mOffset;
                 float combined_distance = 0.0f;
 
@@ -809,7 +811,7 @@ void AIPursuit::EvenOutOffsets(Vector3List &copRelativePositions, FormationTarge
 
         formationOffsets.push_back(FormationTarget((*bestOffset)->mOffset, (*bestOffset)->mInPositionOffset, (*bestOffset)->mInPositionGoal));
         // TODO how on xenon? it's const..
-        *bestOffset = 0;
+        *bestOffset = nullptr;
     }
 }
 #endif
@@ -892,7 +894,7 @@ void AIPursuit::AssignClosestOffsets(Vector3List &copRelativePositions, Pursuers
         }
 
         this->AssignCopOffset(currentCop, assignCopList, formationOffsets[currentOffset].Offset, formationOffsets[currentOffset].InPositionOffset,
-                        formationOffsets[currentOffset].Goal, information);
+                              formationOffsets[currentOffset].Goal, information);
         copOffsetMaximums[currentCop] = INDEX_ASSIGNED;
         for (int i = 0; i < numRows; ++i) {
             copOffsetDistance[i * numCols + currentOffset] = INDEX_ASSIGNED;
@@ -1070,5 +1072,5 @@ void AIPursuit::AssignCopsInCircle(CopAndAngle *copangles, int num, float radius
 }
 
 bool AIPursuit::IsPlayerPursuit() const {
-    return this->GetTarget() && this->GetTarget()->GetSimable() && this->GetTarget()->GetSimable()->GetPlayer();
+    return this->GetTarget() != nullptr && this->GetTarget()->GetSimable() != nullptr && this->GetTarget()->GetSimable()->GetPlayer() != nullptr;
 }

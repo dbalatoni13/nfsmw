@@ -6,6 +6,7 @@
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #include "Speed/Indep/Src/Misc/Profiler.hpp"
 #include "Speed/Indep/Src/Physics/Common/VehicleSystem.h"
+#include "Speed/Indep/Src/Physics/PVehicle.h"
 #include "Speed/Indep/Src/Physics/PhysicsObject.h"
 
 float AIVehiclePursuit::mStagger = 0.0f;
@@ -17,7 +18,7 @@ AIVehiclePursuit::AIVehiclePursuit(const BehaviorParams &bp)
       mBreaker(false),                                           //
       mChicken(false),                                           //
       mDamagedByPerp(false),                                     //
-      mSirenState(Sound::SIREN_OFF),                                    //
+      mSirenState(Sound::SIREN_OFF),                             //
       mSirenInit(false),                                         //
       mInFormation(false),                                       //
       mInPosition(false),                                        //
@@ -90,9 +91,9 @@ void AIVehiclePursuit::StartRoadBlock() {
 
 void AIVehiclePursuit::StartPursuit(AITarget *target, ISimable *itargetSimable) {
     this->GetVehicle()->GlareOn(VehicleFX::LIGHT_COPS);
-    if (target) {
+    if (target != nullptr) {
         this->GetTarget()->Aquire(target);
-    } else if (itargetSimable) {
+    } else if (itargetSimable != nullptr) {
         this->GetTarget()->Aquire(itargetSimable);
     }
     this->UpdateTargeting();

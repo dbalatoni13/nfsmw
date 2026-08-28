@@ -22,7 +22,7 @@ class AIActionJackKnife : public AIAction {
     // Virtual overrides
     // IUnknown
     ~AIActionJackKnife() override {
-        if (this->mMsgJackKnife) {
+        if (this->mMsgJackKnife != nullptr) {
             Hermes::Handler::Destroy(this->mMsgJackKnife);
         }
     }
@@ -62,8 +62,8 @@ AIActionJackKnife::AIActionJackKnife(AIActionParams *params, float score) : AIAc
     params->mOwner->QueryInterface(&this->mArticulation);
     params->mOwner->QueryInterface(&this->mISuspension);
 
-    this->mMsgJackKnife = Hermes::Handler::Create<MJackKnife, AIActionJackKnife, AIActionJackKnife>(this, &AIActionJackKnife::MessageJackKnife, "AIAction",
-                                                                                              this->mIVehicle->GetSimable()->GetWorldID());
+    this->mMsgJackKnife = Hermes::Handler::Create<MJackKnife, AIActionJackKnife, AIActionJackKnife>(
+        this, &AIActionJackKnife::MessageJackKnife, "AIAction", this->mIVehicle->GetSimable()->GetWorldID());
     this->mForceJackKnife = false;
     this->SentAudioMsg = false;
 }
@@ -80,7 +80,7 @@ void AIActionJackKnife::OnBehaviorChange(const UCrc32 &mechanic) {
 float kActionJackKnifeSpeed = 50.0f;
 
 bool AIActionJackKnife::CanBeAttempted(float dT) {
-    if (!this->mIInput || !this->mIVehicle || !this->mArticulation || !this->mArticulation->GetTrailer()) {
+    if (this->mIInput == nullptr || this->mIVehicle == nullptr || this->mArticulation == nullptr || this->mArticulation->GetTrailer() == nullptr) {
         return false;
     }
     if (this->mForceJackKnife) {
@@ -135,17 +135,17 @@ void AIActionJackKnife::Update(float dT) {
     this->mIInput->SetControlHandBrake(1.0f);
     this->mIInput->SetControlSteering(-1.0f);
 
-    if (!this->mArticulation) {
+    if (this->mArticulation == nullptr) {
         return;
     }
     IVehicle *trailer = this->mArticulation->GetTrailer();
-    if (this->mArticulation->IsHitched() && trailer && this->mIVehicle->GetSpeed() < MPH2MPS(kActionJackKnifeSpeed / 5.0f)) {
+    if (this->mArticulation->IsHitched() && trailer != nullptr && this->mIVehicle->GetSpeed() < MPH2MPS(kActionJackKnifeSpeed / 5.0f)) {
         this->mArticulation->SetHitch(false);
     }
 }
 
 void AIActionJackKnife::MessageJackKnife(const MJackKnife &message) {
-    if (this->mIVehicle && message.GetID() == this->mIVehicle->GetSimable()->GetWorldID()) {
+    if (this->mIVehicle != nullptr && message.GetID() == this->mIVehicle->GetSimable()->GetWorldID()) {
         this->mForceJackKnife = true;
     }
 }

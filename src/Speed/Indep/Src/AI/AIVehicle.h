@@ -231,7 +231,7 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
 
     // IVehicleAI
     bool IsCurrentAction(const UCrc32 &name) override {
-        if (this->mCurrentGoal) {
+        if (this->mCurrentGoal != nullptr) {
             return this->mCurrentGoal->IsCurrentAction(name);
         } else {
             return false;
@@ -239,7 +239,7 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
     }
 
     UCrc32 GetActionName() override {
-        if (this->mCurrentGoal) {
+        if (this->mCurrentGoal != nullptr) {
             return this->mCurrentGoal->GetActionName();
         } else {
             return (const char *)nullptr;

@@ -50,7 +50,7 @@ AIVehiclePid::AIVehiclePid(const BehaviorParams &bp, float update_rate, float st
 
     IVehicle *vehicle = this->GetVehicle();
     bool drag_racing = false;
-    if (vehicle && vehicle->GetDriverStyle() == STYLE_DRAG) {
+    if (vehicle != nullptr && vehicle->GetDriverStyle() == STYLE_DRAG) {
         drag_racing = vehicle->GetDriverClass() == DRIVER_HUMAN;
     }
 
@@ -85,7 +85,7 @@ void AIVehiclePid::OnGasBrake(float dT) {
         return;
     }
     IInput *input = this->GetInput();
-    if (!input) {
+    if (input == nullptr) {
         return;
     }
     input->SetControlGas(0.0f);
@@ -100,7 +100,7 @@ void AIVehiclePid::OnGasBrake(float dT) {
         input->SetControlHandBrake(1.0f);
     } else {
         bool reversing = false;
-        if (this->GetTransmission() && this->GetTransmission()->IsReversing()) {
+        if (this->GetTransmission() != nullptr && this->GetTransmission()->IsReversing()) {
             reversing = true;
         }
         float currentSpeed = this->GetVehicle()->GetSpeed();
@@ -166,7 +166,7 @@ void AIVehicleRacecar::StartRace(DriverStyle style) {
     }
 
     WRoadNav *nav = this->GetDriveToNav();
-    if (nav) {
+    if (nav != nullptr) {
         if (style == STYLE_DRAG) {
             nav->SetLaneType(WRoadNav::kLaneDrag);
         } else {
@@ -203,18 +203,18 @@ void AIVehicleRacecar::QuitRace() {
     }
 
     AITarget *target = this->GetTarget();
-    if (target) {
+    if (target != nullptr) {
         target->Clear();
     }
 
     IRBVehicle *vehiclebody;
     if (this->GetOwner()->QueryInterface(&vehiclebody)) {
         vehiclebody->SetInvulnerability(INVULNERABLE_NONE, 0.0f);
-        vehiclebody->EnableObjectCollisions(1);
+        vehiclebody->EnableObjectCollisions(true);
     }
 
     WRoadNav *nav = this->GetDriveToNav();
-    if (nav) {
+    if (nav != nullptr) {
         nav->SetNavType(WRoadNav::kTypeDirection);
         nav->SetLaneType(WRoadNav::kLaneRacing);
         nav->SetRaceFilter(false);
@@ -237,7 +237,7 @@ void AIVehicleRacecar::PrepareForRace(const RacePreparationInfo &rpi) {
 
     this->SetHeat(UMath::Max(rpi.HeatLevel, 1.0f));
 
-    bool valid_start_position = rpi.Flags & 1;
+    bool valid_start_position = (rpi.Flags & 1) != 0;
     if (valid_start_position) {
         IDamageable *damageable;
         if (this->GetOwner()->QueryInterface(&damageable)) {
@@ -251,7 +251,7 @@ void AIVehicleRacecar::PrepareForRace(const RacePreparationInfo &rpi) {
     }
 
     IPlayer *player = this->GetOwner()->GetPlayer();
-    if (player) {
+    if (player != nullptr) {
         player->ResetGameBreaker(true);
     }
 }
@@ -292,7 +292,7 @@ void AIVehicleRacecar::Update(float dT) {
     this->UpdateReverseOverride(dT);
     this->UpdateTargeting();
 
-    if (this->GetGoal()) {
+    if (this->GetGoal() != nullptr) {
         this->GetGoal()->Update(dT);
     }
 }

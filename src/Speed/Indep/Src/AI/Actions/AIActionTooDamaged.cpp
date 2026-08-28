@@ -52,7 +52,7 @@ AIAction *AIActionTooDamaged::Construct(AIActionParams *params) {
 }
 
 bool AIActionTooDamaged::CanBeAttempted(float dT) {
-    if (this->mIVehicle && this->mIInput) {
+    if (this->mIVehicle != nullptr && this->mIInput != nullptr) {
         return this->mIVehicle->IsDestroyed();
     } else {
         return false;

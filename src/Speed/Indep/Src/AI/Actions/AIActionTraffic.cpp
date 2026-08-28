@@ -6,6 +6,7 @@
 #include "Speed/Indep/Src/Misc/Hermes.h"
 #include "Speed/Indep/Src/Physics/Behavior.h"
 #include "Speed/Indep/Src/Physics/Common/VehicleSystem.h"
+#include "Speed/Indep/Src/Physics/PVehicle.h"
 #include "Speed/Indep/Src/Sim/Collision.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
@@ -97,7 +98,7 @@ AIActionTraffic::AIActionTraffic(AIActionParams *params, float score)
 
 AIActionTraffic::~AIActionTraffic() {
     Sim::Collision::RemoveListener(this);
-    if (this->mSetSpeedHandler) {
+    if (this->mSetSpeedHandler != nullptr) {
         Hermes::Handler::Destroy(this->mSetSpeedHandler);
         this->mSetSpeedHandler = nullptr;
     }
@@ -122,7 +123,7 @@ void AIActionTraffic::OnAccident(HSIMABLE hobject, const UMath::Vector3 &speed, 
     }
     ISimable *object = ISimable::FindInstance(hobject);
     IVehicle *vehicle;
-    if (object && object->QueryInterface(&vehicle) && (vehicle->GetAbsoluteSpeed() >= MPH2MPS(5.0f) || this->mAccident != ACCIDENT_OVER)) {
+    if (object != nullptr && object->QueryInterface(&vehicle) && (vehicle->GetAbsoluteSpeed() >= MPH2MPS(5.0f) || this->mAccident != ACCIDENT_OVER)) {
         switch (vehicle->GetDriverClass()) {
             // TODO
             case DRIVER_HUMAN:
@@ -155,7 +156,7 @@ void AIActionTraffic::OnCollision(const COLLISION_INFO &cinfo) {
 }
 
 bool AIActionTraffic::IsFinished() {
-    if (this->GetAI() && this->GetAI()->GetPursuit()) {
+    if (this->GetAI() != nullptr && this->GetAI()->GetPursuit() != nullptr) {
         if (this->GetAI()->GetPursuit()->IsPerpInSight()) {
             return true;
         }
@@ -164,8 +165,8 @@ bool AIActionTraffic::IsFinished() {
 }
 
 bool AIActionTraffic::CanBeAttempted(float dT) {
-    if (this->mRigidBody && this->GetAI() && this->GetVehicle() && this->mInput) {
-        if (this->GetAI()->GetPursuit()) {
+    if (this->mRigidBody != nullptr && this->GetAI() != nullptr && this->GetVehicle() != nullptr && this->mInput != nullptr) {
+        if (this->GetAI()->GetPursuit() != nullptr) {
             return this->GetAI()->GetPursuit()->IsPerpInSight() == false;
         }
 
@@ -192,7 +193,8 @@ void AIActionTraffic::BeginAction(float dT) {
     this->mAccidentTimer = 0.0f;
     this->mAccident = ACCIDENT_NONE;
     this->UpdateNavPos(30.0f);
-    if (this->GetAI()->GetLastSpawnTime() > 0.0f && this->GetAI() && this->GetAI()->GetPursuit() && !this->GetAI()->GetPursuit()->IsPerpInSight()) {
+    if (this->GetAI()->GetLastSpawnTime() > 0.0f && this->GetAI() != nullptr && this->GetAI()->GetPursuit() != nullptr &&
+        !this->GetAI()->GetPursuit()->IsPerpInSight()) {
         this->mTargetSpeedDefault = MPH2MPS(this->mDefaultPursuitLevelAttrib->SearchModeCityMPH());
         this->mTargetSpeedHighway = MPH2MPS(this->mDefaultPursuitLevelAttrib->SearchModeHwyMPH());
     }
@@ -241,7 +243,7 @@ void AIActionTraffic::Update(float dT) {
                 this->nPullOverState = eNO_PULL_OVER;
                 this->GetAI()->ResetDriveToNav(SELECT_CURRENT_LANE);
             } else {
-                if (this->mInput) {
+                if (this->mInput != nullptr) {
                     this->mInput->SetControlGas(0.0f);
                     this->mInput->SetControlBrake(1.0f);
                     this->mInput->SetControlSteering(0.0f);
@@ -268,7 +270,7 @@ void AIActionTraffic::Update(float dT) {
             this->mAccidentTimer = 0.0f;
             this->mAccident = ACCIDENT_OVER;
         }
-        if (this->mInput) {
+        if (this->mInput != nullptr) {
             this->mInput->SetControlGas(0.0f);
             this->mInput->SetControlBrake(0.0f);
             this->mInput->SetControlHandBrake(0.0f);
@@ -278,7 +280,7 @@ void AIActionTraffic::Update(float dT) {
         }
         do_driving = false;
     } else if (this->mAccident == ACCIDENT_OVER) {
-        if (this->mInput) {
+        if (this->mInput != nullptr) {
             this->mInput->SetControlGas(0.0f);
             this->mInput->SetControlBrake(1.0f);
             if (!this->mIsTractor) {
@@ -296,7 +298,7 @@ void AIActionTraffic::Update(float dT) {
 void AIActionTraffic::OnDebugDraw() {}
 
 void AIActionTraffic::MessageSetSpeed(const MSetTrafficSpeed &message) {
-    if (this->GetVehicle() && message.GetID() == this->GetVehicle()->GetSimable()->GetWorldID()) {
+    if (this->GetVehicle() != nullptr && message.GetID() == this->GetVehicle()->GetSimable()->GetWorldID()) {
         this->mTargetSpeedDefault = MPH2MPS(message.GetSpeedDefault());
         this->mTargetSpeedHighway = MPH2MPS(message.GetSpeedHighway());
         this->mFixedSpeed = message.GetFixSpeed() != 0;

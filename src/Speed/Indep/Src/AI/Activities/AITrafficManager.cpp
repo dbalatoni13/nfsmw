@@ -55,13 +55,13 @@ AITrafficManager::AITrafficManager(Sim::Param params)
     this->mActionQ = new ActionQueue(0, 0x98c7a2f5, "AITrafficManager", false);
     // trafficpattern
     const Attrib::Class *patternclass = Attrib::Database::Get().GetClass(0x20d08342);
-    if (patternclass) {
+    if (patternclass != nullptr) {
         this->mPatternMap.clear();
         this->mPatternMap.reserve(patternclass->GetNumCollections());
         Attrib::Key cKey = patternclass->GetFirstCollection();
 
         while (cKey != 0) {
-            Attrib::Gen::trafficpattern pattern(cKey, 0, NULL);
+            Attrib::Gen::trafficpattern pattern(cKey, 0, nullptr);
             const char *name = pattern.CollectionName();
 
             PatternKey key;
@@ -76,7 +76,7 @@ AITrafficManager::AITrafficManager(Sim::Param params)
 
 AITrafficManager::~AITrafficManager() {
     this->RemoveTask(this->mTask);
-    if (this->mActionQ) {
+    if (this->mActionQ != nullptr) {
         delete this->mActionQ;
         this->mActionQ = nullptr;
     }
@@ -200,9 +200,9 @@ IVehicle *AITrafficManager::GetAvailableTrafficVehicle(Attrib::Key key, bool mak
     }
     UMath::Vector3 initialVec = {0.0f, 0.0f, 1.0f};
     UMath::Vector3 initialPos = {0.0f, 0.0f, 0.0f};
-    VehicleParams params(this, DRIVER_TRAFFIC, key, initialVec, initialPos, 0, nullptr, NULL);
+    VehicleParams params(this, DRIVER_TRAFFIC, key, initialVec, initialPos, 0, nullptr, nullptr);
     ISimable *isimable = ISimable::CreateInstance("PVehicle", params);
-    if (isimable) {
+    if (isimable != nullptr) {
         static_cast<IActivity *>(this)->Attach(isimable);
         IVehicle *ivehicle;
         if (isimable->QueryInterface(&ivehicle)) {
@@ -255,7 +255,7 @@ bool AITrafficManager::SpawnTraffic() {
         itv->StartDriving(MPH2MPS(start_speed) * 0.75f);
     }
 
-    MSetTrafficSpeed ai_msg(this->mPattern.SpeedStreet(), this->mPattern.SpeedHighway(), false);
+    MSetTrafficSpeed ai_msg(this->mPattern.SpeedStreet(), this->mPattern.SpeedHighway(), 0);
     ai_msg.SetID(availableVehicle->GetSimable()->GetWorldID());
     ai_msg.Post("AIAction");
 
@@ -353,11 +353,11 @@ bool AITrafficManager::CheckRace(const WRoadNav &nav) const {
         return true;
     }
     GRaceParameters *params = race.GetRaceParameters();
-    if (!params || !params->HasFinishLine()) {
+    if (params == nullptr || !params->HasFinishLine()) {
         return true;
     }
     const WRoadSegment *seg = nav.GetSegment();
-    if (seg && seg->IsInRace()) {
+    if (seg != nullptr && seg->IsInRace()) {
         return true;
     }
     return false;
@@ -451,7 +451,7 @@ bool AITrafficManager::ChoosePattern() {
         bVector2 point(pattern_center.z, -pattern_center.x);
 
         TrackPathZone *zone = TheTrackPathManager.FindZone(&point, TRACK_PATH_ZONE_TRAFFIC_PATTERN, nullptr);
-        if (zone) {
+        if (zone != nullptr) {
             // TODO
             this->SetTrafficPattern(this->mPatternMap.Find(zone->Data[0]));
         }

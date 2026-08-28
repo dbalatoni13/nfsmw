@@ -11,7 +11,7 @@
 #include "Speed/Indep/Src/World/WRoadNetwork.h"
 
 bool HeliVehicleActive() {
-    if (gHeliVehicle) {
+    if (gHeliVehicle != nullptr) {
         return true;
     } else {
         return false;
@@ -49,9 +49,9 @@ void AIVehicleHelicopter::SetFuelFull() {
     gHeliVehicle = this;
     ISimable *simable = IPlayer::First(PLAYER_LOCAL)->GetSimable();
     IPerpetrator *perp;
-    if (simable && simable->QueryInterface(&perp)) {
+    if (simable != nullptr && simable->QueryInterface(&perp)) {
         Attrib::Gen::pursuitlevels *pursuitLevelAttrib = perp->GetPursuitLevelAttrib();
-        if (pursuitLevelAttrib) {
+        if (pursuitLevelAttrib != nullptr) {
             this->mHeliFuelTimeRemaining = pursuitLevelAttrib->HeliFuelTime();
         }
     }
@@ -69,7 +69,7 @@ void AIVehicleHelicopter::Update(float dT) {
     this->UpdateSpawnTimer(dT);
     this->UpdateTargeting();
     this->UpdateFuel(dT);
-    if (this->GetGoal()) {
+    if (this->GetGoal() != nullptr) {
         this->GetGoal()->Update(dT);
     }
     const UMath::Vector3 &myPosition = this->GetOwner()->GetRigidBody()->GetPosition();

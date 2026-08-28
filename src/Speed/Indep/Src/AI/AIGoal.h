@@ -38,7 +38,7 @@ class AIGoal : public UTL::COM::Factory<ISimable *, AIGoal, UCrc32> {
     // void operator delete(void *mem, size_t size, const char *name) {}
 
     UCrc32 GetActionName() {
-        if (this->mCurrentAction) {
+        if (this->mCurrentAction != nullptr) {
             return this->mCurrentAction->GetActionName();
         } else {
             return (const char *)nullptr;
@@ -46,7 +46,7 @@ class AIGoal : public UTL::COM::Factory<ISimable *, AIGoal, UCrc32> {
     }
 
     bool IsCurrentAction(const UCrc32 name) {
-        if (this->mCurrentAction) {
+        if (this->mCurrentAction != nullptr) {
             return name == this->mCurrentAction->GetActionName();
         } else {
             return false;

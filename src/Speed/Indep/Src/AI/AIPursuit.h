@@ -523,7 +523,7 @@ class AIPursuit : public Sim::Activity, public IPursuit, public Debugable {
 
     // Overrides: IPursuit
     IVehicle *GetNearestCopInRoadblock(float *distance) override {
-        if (distance) {
+        if (distance != nullptr) {
             *distance = this->mDistanceToNearestCopInRoadblock;
         }
         return this->mNearestCopInRoadblock;

@@ -31,7 +31,7 @@ void AIGoal::ChooseAction(float dT) {
     bool currentDone = false;
     float currentScore = 0.0f;
 
-    if (this->mCurrentAction) {
+    if (this->mCurrentAction != nullptr) {
         currentDone = this->mCurrentAction->IsFinished();
         currentScore = this->mCurrentAction->GetScore();
     }
@@ -47,8 +47,8 @@ void AIGoal::ChooseAction(float dT) {
             }
         }
     }
-    if (new_action) {
-        if (this->mCurrentAction) {
+    if (new_action != nullptr) {
+        if (this->mCurrentAction != nullptr) {
             this->mCurrentAction->FinishAction(dT);
         }
         this->mCurrentAction = new_action;
@@ -63,7 +63,7 @@ void AIGoal::Update(float dT) {
         ProfileNode profile_node("TODO2", 0);
         this->ChooseAction(dT);
     }
-    if (this->mCurrentAction) {
+    if (this->mCurrentAction != nullptr) {
         ProfileNode profile_node("TODO3", 0);
         this->mCurrentAction->Update(dT);
     }

@@ -64,5 +64,5 @@ void AIActionStopShort::Update(float dT) {
     this->mIInput->SetControlSteering(0.0f);
     this->mIInput->SetControlSteeringVertical(0.0f);
     this->mIInput->SetControlHandBrake(1.0f);
-    this->mIInput->SetControlNOS(0.0f);
+    this->mIInput->SetControlNOS(false);
 }

@@ -94,7 +94,7 @@ void AITarget::Aquire(const UMath::Vector3 &position, const UMath::Vector3 &dire
 }
 
 void AITarget::Aquire(const AITarget *aitarget) {
-    if (aitarget != this && aitarget && aitarget->IsValid()) {
+    if (aitarget != this && aitarget != nullptr && aitarget->IsValid()) {
         if (aitarget->IsSimable()) {
             this->Aquire(aitarget->GetSimable());
         } else {
@@ -104,10 +104,10 @@ void AITarget::Aquire(const AITarget *aitarget) {
 }
 
 bool AITarget::IsTarget(const AITarget *aitarget) const {
-    if (!aitarget || !aitarget->IsValid() || !this->IsValid()) {
+    if (aitarget == nullptr || !aitarget->IsValid() || !this->IsValid()) {
         return false;
     }
-    if (aitarget->mTargetSimable) {
+    if (aitarget->mTargetSimable != nullptr) {
         return aitarget->mTargetSimable == this->mTargetSimable;
     } else {
         return UMath::Distance(this->mTargetPosition, aitarget->mTargetPosition) < 0.1f;
@@ -115,7 +115,7 @@ bool AITarget::IsTarget(const AITarget *aitarget) const {
 }
 
 float AITarget::GetSpeed() const {
-    if (this->mTargetSimable) {
+    if (this->mTargetSimable != nullptr) {
         return this->mTargetSimable->GetRigidBody()->GetSpeedXZ();
     } else {
         return 0.0f;
@@ -123,7 +123,7 @@ float AITarget::GetSpeed() const {
 }
 
 const UMath::Vector3 &AITarget::GetLinearVelocity() const {
-    if (this->mTargetSimable) {
+    if (this->mTargetSimable != nullptr) {
         return this->mTargetSimable->GetRigidBody()->GetLinearVelocity();
     } else {
         return UMath::Vector3::kZero;
@@ -134,11 +134,11 @@ void AITarget::TrackInternal() {
     if (!this->mValid) {
         return;
     }
-    if (this->mTargetSimable) {
+    if (this->mTargetSimable != nullptr) {
         this->mTargetPosition = this->mTargetSimable->GetPosition();
         this->mTargetSimable->GetRigidBody()->GetForwardVector(this->mTargetDirection);
     }
-    if (this->mOwner) {
+    if (this->mOwner != nullptr) {
         this->mDistTo = UMath::Distance(this->mOwner->GetPosition(), this->mTargetPosition);
         UMath::Sub(this->mTargetPosition, this->mOwner->GetPosition(), this->mDirTo);
         UMath::Unit(this->mDirTo, this->mDirTo);
