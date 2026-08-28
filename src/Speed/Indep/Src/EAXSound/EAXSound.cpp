@@ -280,7 +280,9 @@ EAXSound::EAXSound() {
     this->mLocalAttr = nullptr;
     this->m_pEAXSND8Wrapper = nullptr;
     this->m_bAudioIsPaused = false;
+#ifndef EA_BUILD_A124
     this->m_X360_UI_Override = false;
+#endif
     this->m_eSndGameMode = SND_MODE_NONE;
     this->m_prevSndGameMode = SND_MODE_NONE;
     this->m_pStreamManager = nullptr;
@@ -300,7 +302,9 @@ EAXSound::EAXSound() {
     this->m_pNFSMixMaster = nullptr;
     this->bPlayCameraSnapShot = false;
     this->mmsgMRestartRace = nullptr;
+#ifndef EA_BUILD_A124
     this->m_bPause_MainFNG = false;
+#endif
     this->mEventID = 0;
     this->mData.fEventID = EAudioWorldTest::kEventID;
     int nloop = 0;
@@ -1535,7 +1539,9 @@ void FESoundControl(bool bOn, const char *name) {
             case 1:
             case 2:
             case 11:
+#ifndef EA_BUILD_A124
                 g_pEAXSound->m_bPause_MainFNG = bOn;
+#endif
                 SetSoundControlState(bOn, SNDSTATE_PAUSE, name);
                 break;
 
@@ -1556,9 +1562,11 @@ void FESoundControl(bool bOn, const char *name) {
 
             case 9:
             case 12:
+#ifndef EA_BUILD_A124
                 if (g_pEAXSound->m_bPause_MainFNG) {
                     return;
                 }
+#endif
                 SetSoundControlState(bOn, SNDSTATE_PAUSE, name);
                 break;
 
@@ -1623,11 +1631,16 @@ void FESoundControl(bool bOn, const char *name) {
     }
 }
 
+#ifndef EA_BUILD_A124
 void SetSoundControlState(bool bON, eSNDCTLSTATE esndstate, const char *Reason) {
+#else
+void SetSoundControlState(bool bON, eSNDCTLSTATE esndstate, char *Reason) {
+#endif
     if (!RUN_SOUND_STATE || g_pEAXSound == nullptr || !IsSoundEnabled) {
         return;
     }
 
+#ifndef EA_BUILD_A124
     if (g_pEAXSound->m_bPause_MainFNG) {
         if (!bON) {
             if (esndstate != SNDSTATE_MINILOAD) {
@@ -1639,6 +1652,7 @@ void SetSoundControlState(bool bON, eSNDCTLSTATE esndstate, const char *Reason) 
             }
         }
     }
+#endif
 
     if ((g_ActiveCtlStates & (1 << esndstate)) != 0) {
         if (bON) {
