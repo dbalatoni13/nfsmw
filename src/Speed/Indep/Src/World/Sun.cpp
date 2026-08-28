@@ -5,6 +5,7 @@
 #include "Speed/Indep/Src/Ecstasy/Ecstasy.hpp"
 #include "Speed/Indep/Src/Ecstasy/Texture.hpp"
 #include "Speed/Indep/Src/Ecstasy/eLight.hpp"
+#include "Speed/Indep/Src/Generated/Hash.hpp"
 #include "Speed/Indep/Src/Misc/SpeedChunks.hpp"
 #include "Speed/Indep/bWare/Inc/bChunk.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
@@ -98,11 +99,11 @@ int UnloaderSun(bChunk *chunk) {
 
 void SunTrackLoader(void) {
     SetCurrentSunInfo();
-    SunTextures[0] = GetTextureInfo(BINHASH(SUNCENTER), 1, 0);
-    SunTextures[1] = GetTextureInfo(BINHASH(SUNHALO), 1, 0);
-    SunTextures[2] = GetTextureInfo(BINHASH(SUNMAJORRAYS), 1, 0);
-    SunTextures[3] = GetTextureInfo(BINHASH(SUNMINORRAYS), 1, 0);
-    SunTextures[4] = GetTextureInfo(BINHASH(SUNRING), 1, 0);
+    SunTextures[0] = GetTextureInfo(STRINGHASH_SUNCENTER, 1, 0);
+    SunTextures[1] = GetTextureInfo(STRINGHASH_SUNHALO, 1, 0);
+    SunTextures[2] = GetTextureInfo(STRINGHASH_SUNMAJORRAYS, 1, 0);
+    SunTextures[3] = GetTextureInfo(STRINGHASH_SUNMINORRAYS, 1, 0);
+    SunTextures[4] = GetTextureInfo(STRINGHASH_SUNRING, 1, 0);
 }
 
 void SunTrackUnloader(void) {
