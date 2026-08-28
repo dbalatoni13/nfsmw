@@ -219,7 +219,7 @@ class stSndDataLoadParams {
 
         this->resallocs.clear();
         this->resallocs.reserve(copy.resallocs.size());
-        const unsigned int *i;
+        ResAllocList::const_iterator i;
         for (i = copy.resallocs.begin(); i != copy.resallocs.end(); ++i) {
             this->resallocs.push_back(*i);
         }
@@ -227,7 +227,7 @@ class stSndDataLoadParams {
 
         this->RefCount.clear();
         this->RefCount.reserve(copy.RefCount.size());
-        EAX_CarState **j;
+        RefCountList::iterator j;
         for (j = copy.RefCount.begin(); j != copy.RefCount.end(); ++j) {
             this->RefCount.push_back(*j);
         }
