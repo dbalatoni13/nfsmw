@@ -31,14 +31,6 @@ enum ICardResult {
     CR_OTHERERROR = 16,
 };
 
-enum FileAttribute {
-    FA_NONE = 0,
-    FA_PUBLIC = 4,
-    FA_COPY_PROTECTED = 8,
-    FA_NO_MOVE = 16,
-    FA_COMPANY = 64,
-};
-
 struct GcFileDescriptor : public CmnFileDescriptor {
     GcFileDescriptor() {
         this->mFileHeader.Clear();

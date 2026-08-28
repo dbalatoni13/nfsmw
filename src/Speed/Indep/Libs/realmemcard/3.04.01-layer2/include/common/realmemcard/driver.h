@@ -11,14 +11,6 @@
 
 namespace Realmc {
 
-enum FileOpenMode {
-    FOM_UNKNOWN = 0,
-    FOM_READ = 1,
-    FOM_WRITE = 2,
-    FOM_READ_WRITE = 3,
-    FOM_CREATE = 512,
-};
-
 struct DeviceDriver {
     static inline void *operator new(unsigned int size) {
         return AllocateMemSize(0, size, 0, 0, 0);
@@ -70,7 +62,10 @@ struct CmnFileDescriptor : public OpenFileDescriptor {
 };
 
 struct FindInfoStruct {
-    FindInfoStruct() {}
+    FindInfoStruct()
+        : cardID() {
+        this->Clear();
+    }
     void Clear() {
         this->fileName = nullptr;
         this->fileSize = 0;

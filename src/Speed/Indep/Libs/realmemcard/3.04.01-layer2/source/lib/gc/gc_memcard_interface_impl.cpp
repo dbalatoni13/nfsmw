@@ -164,7 +164,7 @@ void MemcardInterfaceImpl::SaveCheck(const char *entryName, unsigned int nSaveRe
         this->mFileInfo.fileContentName = const_cast<wchar_t *>(saveInfo->mContentName);
     this->mFileInfo.usingMultipleSaves = nSaveReqs != 1;
     this->mFileInfo.fileByteSize = (saveInfo->mHeaderSize + sizeof(FileHeader)) + saveInfo->mBodySize;
-    this->mIMemcard->TrcSaveFile(this->mActiveCard, this->mFileInfo, 0, this->mBlocksNeeded, this->mFilesNeeded);
+    this->mIMemcard->TrcSaveFile(this->mActiveCard, this->mFileInfo, Realmc::SAVETASK_CHECK, this->mBlocksNeeded, this->mFilesNeeded);
     this->mActiveTask = TASK_SAVECHECK;
     if (nSaveReqs > 1) {
         this->_MakeInsufficientSpaceMessage(nSaveReqs, saveReqs);
@@ -201,7 +201,7 @@ void MemcardInterfaceImpl::Save(const char *entryName, const char *header, const
                            this->_CalcSignature(body, saveInfo->mBodySize));
     memset(&this->mFileHeader.mFileHeaderSignature, 0, sizeof(this->mFileHeader.mFileHeaderSignature));
     this->mFileHeader.mFileHeaderSignature = this->_CalcSignature(&this->mFileHeader, 0x18);
-    this->mIMemcard->TrcSaveFile(this->mActiveCard, this->mFileInfo, 1, 0, 0);
+    this->mIMemcard->TrcSaveFile(this->mActiveCard, this->mFileInfo, Realmc::SAVETASK_SAVE, 0, 0);
     this->mActiveTask = TASK_SAVE;
 }
 
@@ -912,7 +912,7 @@ void MemcardInterfaceImpl::FindEntries(const char *entryNamePattern) {
     this->mFileInfo.fileName = Realmc::FILENAME_ALL_FILES;
     this->mEntryInfo.Clear();
     this->mTaskManager->ClearEntries();
-    this->mIMemcard->TrcListFiles(this->mActiveCard, this->mFileInfo, 0);
+    this->mIMemcard->TrcListFiles(this->mActiveCard, this->mFileInfo, Realmc::LISTTASK_ENTRIES);
     this->mActiveTask = TASK_FINDENTRIES;
 }
 
@@ -928,7 +928,7 @@ void MemcardInterfaceImpl::FindEntriesAlternate(const char *entryNamePattern, co
     this->mFileInfo.fileName = Realmc::FILENAME_ALL_FILES;
     this->mEntryInfo.Clear();
     this->mTaskManager->ClearEntries();
-    this->mIMemcard->TrcListFiles(this->mActiveCard, this->mFileInfo, 0);
+    this->mIMemcard->TrcListFiles(this->mActiveCard, this->mFileInfo, Realmc::LISTTASK_ENTRIES);
     this->mActiveTask = TASK_FINDENTRIES;
 }
 
@@ -1038,6 +1038,14 @@ void MemcardInterfaceImpl::_MakeInsufficientSpaceMessage(unsigned int nSaveReqs,
 } // namespace RealmcIface
 
 namespace Realmc {
+
+void GCMessage::Init() {
+    this->Clear();
+}
+
+void GCMessage::Clear() {
+    memset(this, 0, 0x78);
+}
 
 void GCMessage::_SetMsgOptions(int options) {
     int curOption;

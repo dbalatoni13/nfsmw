@@ -23,8 +23,6 @@ void MemcardInterfaceImpl::MessageDone(MessageChoices choice) {
     case CHOICE_OPTION4:
         msg = Realmc::UMSG_OPTION4;
         break;
-    default:
-        break;
     }
 
     this->mIMemcard->SendMessage(msg, 0);
@@ -196,6 +194,8 @@ RealmcIface::CardStatus MemcardInterfaceImpl::_TranslateCardStatus(Realmc::CardS
     case Realmc::STATUS_INACCESSIBLE_CARD:
     case Realmc::STATUS_FAILED:
         cardStatus = STATUS_CARD_ERROR;
+        break;
+    default:
         break;
     }
 
