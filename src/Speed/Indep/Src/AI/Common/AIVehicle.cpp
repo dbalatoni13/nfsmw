@@ -26,6 +26,7 @@
 #include "Speed/Indep/Src/Misc/Profiler.hpp"
 #include "Speed/Indep/Src/Physics/Behavior.h"
 #include "Speed/Indep/Src/Physics/Common/VehicleSystem.h"
+#include "Speed/Indep/Src/Physics/PVehicle.h"
 #include "Speed/Indep/Src/Physics/PhysicsInfo.hpp"
 #include "Speed/Indep/Src/Physics/PhysicsObject.h"
 #include "Speed/Indep/Src/Physics/PhysicsTypes.h"
@@ -84,11 +85,11 @@ AIVehicleHuman::~AIVehicleHuman() {
             prof->GetCareer();
             if ((uintptr_t)prof != 0xffffff1c) {
                 FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(player_num);
-                if (stable) {
+                if (stable != nullptr) {
                     FECarRecord *fe_car = stable->GetCarByIndex(career->GetCurrentCar());
-                    if (fe_car) {
+                    if (fe_car != nullptr) {
                         FECareerRecord *fe_career = stable->GetCareerRecordByHandle(fe_car->CareerHandle);
-                        if (fe_career) {
+                        if (fe_career != nullptr) {
                             fe_career->SetVehicleHeat(Heat);
                         }
                     }
@@ -111,7 +112,7 @@ void AIVehicleHuman::UpdateWrongWay() {
         return;
     }
     WRoadNav *road_nav = this->GetDriveToNav();
-    if (!road_nav) {
+    if (road_nav == nullptr) {
         return;
     }
     UMath::Vector3 drive_dir;
@@ -127,7 +128,7 @@ void AIVehicleHuman::UpdateWrongWay() {
     nav.InitAtPoint(vehicle->GetPosition(), drive_dir, false, 1.0f);
     if (nav.IsValid()) {
         const WRoadSegment *seg = nav.GetSegment();
-        if (seg && seg->IsInRace()) {
+        if (seg != nullptr && seg->IsInRace()) {
             UMath::Vector3 fwd = nav.GetForwardVector();
             if (UMath::Dot(fwd, drive_dir) < 0.0f) {
                 this->mWrongWay = true;
@@ -157,7 +158,7 @@ bool AIVehicleHuman::IsDragSteering() {
         return false;
     }
     IPlayer *player = this->GetOwner()->GetPlayer();
-    if (player && player->InGameBreaker()) {
+    if (player != nullptr && player->InGameBreaker()) {
         return false;
     }
     return this->mWrongWay == false;
@@ -168,7 +169,7 @@ void AIVehicleHuman::ChangeDragLanes(bool left) {
         return;
     }
     WRoadNav *road_nav = this->GetDriveToNav();
-    if (!road_nav) {
+    if (road_nav == nullptr) {
         return;
     }
     road_nav->ChangeDragLanes(left ? -1 : 1);
@@ -286,7 +287,7 @@ void AIVehicleHuman::Update(float dT) {
         road_nav->SetLaneType(WRoadNav::kLaneRacing);
     }
 
-    if (this->GetPursuit() && this->GetPursuit()->IsPerpInSight() && this->GetPursuit()->IsPlayerPursuit()) {
+    if (this->GetPursuit() != nullptr && this->GetPursuit()->IsPerpInSight() && this->GetPursuit()->IsPlayerPursuit()) {
         if (!this->IsOnLegalRoad()) {
             if (this->GetPursuit()->GetMinDistanceToTarget() < 25.0f) {
                 GInfractionManager::Get().ReportDrivingOffRoadWay();
@@ -302,7 +303,7 @@ Behavior *AIVehicle::Construct(const BehaviorParams &bp) {
 AIVehicle::AIVehicle(const BehaviorParams &bp, float update_rate, float stagger, Sim::TaskMode taskmode)
     : VehicleBehavior(bp, 0),                                   //
       IVehicleAI(bp.fowner),                                    //
-      AIAvoidable(this->GetOwner()),                                  //
+      AIAvoidable(this->GetOwner()),                            //
       mDriveSpeed(0.0f),                                        //
       mThinkTask(nullptr),                                      //
       mCurrentGoal(nullptr),                                    //
@@ -391,7 +392,7 @@ AIVehicle::~AIVehicle() {
     delete this->mTarget;
     delete this->mCollNav;
     delete this->mCurrentGoal;
-    if (this->mThinkTask) {
+    if (this->mThinkTask != nullptr) {
         this->RemoveTask(this->mThinkTask);
     }
     delete this->mAttributes;
@@ -437,7 +438,7 @@ float AIVehicle::GetAcceleration(float at) const {
 bool AIVehicle::OnUpdateAvoidable(UMath::Vector3 &pos, float &sweep) {
     if (this->mAvoidableRadius > 0.0f && this->GetVehicle()->IsActive()) {
         IRigidBody *rb = this->GetOwner()->GetRigidBody();
-        if (rb) {
+        if (rb != nullptr) {
             sweep = UMath::Max(this->mAvoidableRadius, 2.0f * rb->GetSpeed());
             pos = rb->GetPosition();
             return true;
@@ -483,7 +484,7 @@ bool AIVehicle::OnTask(HSIMTASK hTask, float dT) {
             this->Update(dT);
         }
         HCAUSE hcause = this->GetOwner()->GetCausality();
-        if (hcause) {
+        if (hcause != nullptr) {
             float start_time = this->GetOwner()->GetCausalityTime();
             if (this->OnClearCausality(start_time)) {
                 this->GetOwner()->SetCausality(nullptr, 0.0f);
@@ -498,11 +499,11 @@ bool AIVehicle::OnTask(HSIMTASK hTask, float dT) {
 
 void AIVehicle::OnOwnerAttached(IAttachable *pOther) {
     IPursuit *ipursuit;
-    if (!this->mPursuit && pOther->QueryInterface(&ipursuit)) {
+    if (this->mPursuit == nullptr && pOther->QueryInterface(&ipursuit)) {
         this->mPursuit = ipursuit;
     }
     IRoadBlock *iroadblock;
-    if (!this->mRoadBlock && pOther->QueryInterface(&iroadblock)) {
+    if (this->mRoadBlock == nullptr && pOther->QueryInterface(&iroadblock)) {
         this->mRoadBlock = iroadblock;
     }
     this->Behavior::OnOwnerAttached(pOther);
@@ -532,14 +533,14 @@ void AIVehicle::OnBehaviorChange(const UCrc32 &mechanic) {
     if (mechanic == BEHAVIOR_MECHANIC_RIGIDBODY) {
         this->GetOwner()->QueryInterface(&this->mCollisionBody);
     }
-    if (this->mCurrentGoal) {
+    if (this->mCurrentGoal != nullptr) {
         this->mCurrentGoal->OnBehaviorChange(mechanic);
     }
     this->Behavior::OnBehaviorChange(mechanic);
 }
 
 void AIVehicle::ClearGoal() {
-    if (this->mCurrentGoal) {
+    if (this->mCurrentGoal != nullptr) {
         delete this->mCurrentGoal;
         this->mCurrentGoal = nullptr;
     }
@@ -554,7 +555,6 @@ void AIVehicle::SetGoal(const UCrc32 &name) {
     this->mGoalName = name;
     this->mCurrentGoal = AIGoal::CreateInstance(name, this->GetOwner());
     DriverClass driverclass = this->GetVehicle()->GetDriverClass();
-    // TODO, this means the first 4
     if (driverclass >= DRIVER_TRAFFIC && driverclass <= DRIVER_RACER) {
         IRBVehicle *ivehiclebody;
         if (this->GetOwner()->QueryInterface(&ivehiclebody)) {
@@ -586,7 +586,8 @@ void AIVehicle::Update(float dT) {
 
     float yaw = UMath::Atan2r(vfwd.x, vfwd.z);
     this->mDampedAngularVel.Integrate(rb->GetAngularVelocity().y, dT);
-    if ((yaw < -1.5707964f && this->mDampedAngle.GetPosition() > 1.5707964f) || (yaw > 1.5707964f && this->mDampedAngle.GetPosition() < -1.5707964f)) {
+    if ((yaw < -1.5707964f && this->mDampedAngle.GetPosition() > 1.5707964f) ||
+        (yaw > 1.5707964f && this->mDampedAngle.GetPosition() < -1.5707964f)) {
         this->mDampedAngle.SetPosition(yaw);
     } else {
         this->mDampedAngle.Integrate(yaw, dT);
@@ -657,7 +658,7 @@ void AIVehicle::UpdateRoadNavInfo() {
 }
 
 void AIVehicle::OnReverse(float dT) {
-    if (!(this->mDriveFlags & 4) || this->GetReverseOverride() || !this->mITransmission) {
+    if (!(this->mDriveFlags & 4) || this->GetReverseOverride() || this->mITransmission == nullptr) {
         return;
     }
     bool wasReversing = this->mITransmission->IsReversing();
@@ -693,7 +694,7 @@ float AIVehicle::GetOverSteerCorrection(float steer) {
 }
 
 void AIVehicle::OnSteering(float dT) {
-    if ((this->mDriveFlags & 1) == 0 || !this->GetInput()) {
+    if ((this->mDriveFlags & 1) == 0 || this->GetInput() == nullptr) {
         return;
     }
 
@@ -728,7 +729,7 @@ void AIVehicle::OnSteering(float dT) {
         float steerCorrection = this->GetOverSteerCorrection(steer);
 
         this->mSteeringBehind = false;
-        if (this->mITransmission && this->mITransmission->IsReversing()) {
+        if (this->mITransmission != nullptr && this->mITransmission->IsReversing()) {
             steer = -steer;
         } else {
             if (UMath::Dot(dirVector, forwardVector) < -0.2f) {
@@ -748,7 +749,7 @@ void AIVehicle::OnSteering(float dT) {
 
 // UNSOLVED
 void AIVehicle::OnGasBrake(float dT) {
-    if ((this->mDriveFlags & 2) == 0 || !this->GetInput()) {
+    if ((this->mDriveFlags & 2) == 0 || this->GetInput() == nullptr) {
         return;
     }
 
@@ -758,12 +759,12 @@ void AIVehicle::OnGasBrake(float dT) {
     this->GetInput()->SetControlHandBrake(0.0f);
     this->GetInput()->SetControlSteeringVertical(0.0f);
 
-    if (this->mITransmission) {
+    if (this->mITransmission != nullptr) {
         if (this->mITransmission->IsReversing()) {
             reversing = true;
         }
 
-        if (this->mITransmission && this->GetVehicle()->GetDriverClass() == DRIVER_TRAFFIC) {
+        if (this->mITransmission != nullptr && this->GetVehicle()->GetDriverClass() == DRIVER_TRAFFIC) {
             bool in_shock = this->GetVehicle()->InShock();
             GearID drive_gear = reversing ? G_REVERSE : G_FIRST;
             bool in_neutral = this->mITransmission->GetGear() == G_NEUTRAL;
@@ -825,7 +826,7 @@ void AIVehicle::OnDriving(float dT) {
 float AIVehicle::GetPathDistanceRemaining() {
     float distance = 0.0f;
     WRoadNav *road_nav = this->GetDriveToNav();
-    if (road_nav) {
+    if (road_nav != nullptr) {
         const UMath::Vector3 &car_position = this->GetSimable()->GetRigidBody()->GetPosition();
         float path_distance_remaining = road_nav->GetPathDistanceRemaining();
 
@@ -860,7 +861,7 @@ void AIVehicle::ClearReverseOverride() {
 }
 
 inline void AIVehicle::SetReverseOverride(float time) {
-    if (this->mITransmission) {
+    if (this->mITransmission != nullptr) {
         this->mReverseOverrideTimer = time;
         if (this->mITransmission->IsReversing()) {
             this->mITransmission->Shift(G_FIRST);
@@ -874,7 +875,7 @@ void AIVehicle::UpdateReverseOverride(float dT) {
     if (this->mReverseOverrideTimer > 0.0f && (this->mReverseOverrideTimer -= dT) <= 0.0f) {
         this->mReverseOverrideTimer = 0.0f;
         this->mSteeringBehind = false;
-        if (this->mITransmission && this->mITransmission->IsReversing()) {
+        if (this->mITransmission != nullptr && this->mITransmission->IsReversing()) {
             this->mITransmission->Shift(G_FIRST);
         }
     }
@@ -909,7 +910,8 @@ WRoadNav *AIVehicle::GetCollNav(const UMath::Vector3 &forwardVector, float predi
         UMath::Matrix4 orientMat = this->GetOrientation();
         UMath::Vector3 predictionresult;
 
-        AI::Math::PredictPosition(predictTime, this->GetPosition(), orientMat, this->GetLinearVelocity(), this->GetAngularVelocity(), predictionresult);
+        AI::Math::PredictPosition(predictTime, this->GetPosition(), orientMat, this->GetLinearVelocity(), this->GetAngularVelocity(),
+                                  predictionresult);
         this->mCollNav->InitAtPoint(predictionresult, forwardVector, false, 0.0f);
     } else {
         this->mCollNav->InitAtPoint(this->mCollisionBody->GetPosition(), forwardVector, false, 0.0f);
@@ -925,14 +927,14 @@ void AIVehicle::SetSpawned() {
         idamage->ResetDamage();
     }
     EventSequencer::IEngine *ievents = this->GetOwner()->GetEventSequencer();
-    if (ievents) {
+    if (ievents != nullptr) {
         ievents->Reset(Sim::GetTime());
     }
     IArticulatedVehicle *iarticulation;
     if (this->GetOwner()->QueryInterface(&iarticulation)) {
         IVehicle *itrailer = iarticulation->GetTrailer();
         IVehicleAI *iai;
-        if (itrailer && itrailer->QueryInterface(&iai)) {
+        if (itrailer != nullptr && itrailer->QueryInterface(&iai)) {
             iai->SetSpawned();
         }
     }
@@ -1057,7 +1059,7 @@ const UMath::Vector3 &AIVehicle::GetSeekAheadPosition() {
             const float kSeekAheadOffset = 0.4f;
             this->mSeekAheadTimer = Sim::GetTime();
             float seekaheadtime = kSeekAheadTime;
-            if (this->mPursuit && this->mPursuit->GetIsAJerk()) {
+            if (this->mPursuit != nullptr && this->mPursuit->GetIsAJerk()) {
                 seekaheadtime *= kSeekAheadOffset;
             }
 
@@ -1154,7 +1156,7 @@ void AIPerpVehicle::SetHeat(float heat) {
     bool useRaceHeatNow = false;
 
     if (GRaceStatus::Exists() && GRaceStatus::Get().GetPlayMode() == GRaceStatus::kPlayMode_Racing &&
-        (!GRaceStatus::Get().GetRaceParameters() || !GRaceStatus::Get().GetRaceParameters()->GetIsPursuitRace())) {
+        (GRaceStatus::Get().GetRaceParameters() == nullptr || !GRaceStatus::Get().GetRaceParameters()->GetIsPursuitRace())) {
         useRaceHeatNow = true;
     }
 
@@ -1169,7 +1171,7 @@ void AIPerpVehicle::SetHeat(float heat) {
         this->mPursuitSupportAttrib = nullptr;
     }
 
-    if (!this->mPursuitLevelAttrib) {
+    if (this->mPursuitLevelAttrib == nullptr) {
         int idx = now - 1;
 
         if (useRaceHeatNow) {
@@ -1204,10 +1206,10 @@ void AIPerpVehicle::AddCostToState(int cost) {
         return;
     }
     IPursuit *ip = this->GetPursuit();
-    if (ip) {
+    if (ip != nullptr) {
         bool challengeRace = false;
         GRaceParameters *parms = GRaceStatus::Get().GetRaceParameters();
-        if (parms) {
+        if (parms != nullptr) {
             challengeRace = parms->GetRaceType() == GRace::kRaceType_Challenge;
         }
         if (GRaceStatus::Get().GetRaceContext() == GRace::kRaceContext_Career || challengeRace) {
@@ -1234,15 +1236,15 @@ void AIPerpVehicle::AddToPendingRepPointsFromCopDestruction(int amount) {
 }
 
 bool AIPerpVehicle::IsRacing() const {
-    if (this->GetRacerInfo() && GRaceStatus::Exists() && GRaceStatus::Get().GetPlayMode() == GRaceStatus::kPlayMode_Racing) {
+    if (this->GetRacerInfo() != nullptr && GRaceStatus::Exists() && GRaceStatus::Get().GetPlayMode() == GRaceStatus::kPlayMode_Racing) {
         AITarget *target = this->GetTarget();
-        return target && target->IsValid();
+        return target != nullptr && target->IsValid();
     }
     return false;
 }
 
 float AIPerpVehicle::GetPercentRaceComplete() const {
-    if (this->pRacerInfo) {
+    if (this->pRacerInfo != nullptr) {
         return this->pRacerInfo->GetPctRaceComplete();
     }
     return 0.0f;
@@ -1255,7 +1257,7 @@ bool AIPerpVehicle::IsBeingPursued() const {
     for (IPursuit::List::const_iterator Pusuit_iter = Pursuits.begin(); Pusuit_iter != Pursuits.end(); ++Pusuit_iter) {
         IPursuit *curpursuit = *Pusuit_iter;
         AITarget *curtarget = curpursuit->GetTarget();
-        if (curtarget) {
+        if (curtarget != nullptr) {
             const ISimable *simobj = curtarget->GetSimable();
             if (simobj == mysimobj) {
                 return true;

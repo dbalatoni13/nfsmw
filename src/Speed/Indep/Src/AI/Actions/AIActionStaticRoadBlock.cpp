@@ -49,10 +49,10 @@ AIAction *AIActionStaticRoadBlock::Construct(AIActionParams *params) {
 }
 
 bool AIActionStaticRoadBlock::CanBeAttempted(float dT) {
-    if (!this->mIVehicle) {
+    if (this->mIVehicle == nullptr) {
         return false;
     }
-    if (!this->mIInput) {
+    if (this->mIInput == nullptr) {
         return false;
     }
     return true;

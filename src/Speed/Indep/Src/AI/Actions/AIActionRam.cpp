@@ -59,7 +59,7 @@ AIActionRam::AIActionRam(AIActionParams *params, float score)
 
     static int brakeLeft = 0;
     brakeLeft++;
-    this->mBrakeLeft = brakeLeft & 1;
+    this->mBrakeLeft = (brakeLeft & 1) != 0;
 }
 
 void AIActionRam::OnBehaviorChange(const UCrc32 &mechanic) {
@@ -89,7 +89,7 @@ bool AIActionRam::ShouldDoIt() {
 }
 
 bool AIActionRam::CanBeAttempted(float dT) {
-    if (this->mIVehicleAI && this->mIPursuitAI && this->mITransmission && this->mIRigidBody) {
+    if (this->mIVehicleAI != nullptr && this->mIPursuitAI != nullptr && this->mITransmission != nullptr && this->mIRigidBody != nullptr) {
         if (this->mIPursuitAI->GetChicken()) {
             return false;
         }
@@ -219,7 +219,7 @@ void AIActionRam::Update(float dT) {
         }
 
         bool isajerk = false;
-        if (this->mIVehicleAI->GetPursuit() && this->mIVehicleAI->GetPursuit()->GetIsAJerk()) {
+        if (this->mIVehicleAI->GetPursuit() != nullptr && this->mIVehicleAI->GetPursuit()->GetIsAJerk()) {
             isajerk = true;
         }
         if (isajerk) {

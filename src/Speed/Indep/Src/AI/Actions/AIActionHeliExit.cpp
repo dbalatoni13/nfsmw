@@ -1,5 +1,6 @@
 #include "Speed/Indep/Src/AI/AIAction.h"
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IHelicopter.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
 
 // total size: 0x48

@@ -28,7 +28,7 @@ class AIAction : public Sim::Object, public UTL::COM::Factory<AIActionParams *, 
         // void *operator new(size_t size) {}
 
         void operator delete(void *mem, size_t size) {
-            if (mem) {
+            if (mem != nullptr) {
                 return gFastMem.Free(mem, size, nullptr);
             }
         }
@@ -48,7 +48,7 @@ class AIAction : public Sim::Object, public UTL::COM::Factory<AIActionParams *, 
     }
 
     void operator delete(void *mem, size_t bytes) {
-        if (mem) {
+        if (mem != nullptr) {
             return gFastMem.Free(mem, bytes, nullptr);
         }
     }

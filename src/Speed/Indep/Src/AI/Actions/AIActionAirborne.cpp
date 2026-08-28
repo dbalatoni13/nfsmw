@@ -58,7 +58,7 @@ void AIActionAirborne::OnBehaviorChange(const UCrc32 &mechanic) {
 }
 
 bool AIActionAirborne::CanBeAttempted(float dT) {
-    if (!this->mISuspension || !this->mIInput || !this->mRBComplex) {
+    if (this->mISuspension == nullptr || this->mIInput == nullptr || this->mRBComplex == nullptr) {
         return false;
     }
     if (this->mRBComplex->IsModeling()) {

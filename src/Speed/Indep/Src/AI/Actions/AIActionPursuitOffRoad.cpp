@@ -6,6 +6,7 @@
 #include "Speed/Indep/Src/Interfaces/Simables/ITransmission.h"
 #include "Speed/Indep/Src/Physics/Behavior.h"
 #include "Speed/Indep/Src/World/WRoadNetwork.h"
+#include "Speed/Indep/Src/World/WCollisionMgr.h"
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 
 // TODO are these two maybe in AIAction.h?
@@ -110,7 +111,7 @@ AIActionPursuitOffRoad::AIActionPursuitOffRoad(AIActionParams *params, float sco
     brakeLeft++;
 
     this->mNOSCountDown = -1.0f;
-    this->mBrakeLeft = brakeLeft & 1;
+    this->mBrakeLeft = (brakeLeft & 1) != 0;
     this->mUserNOSLastTime = false;
 }
 
@@ -135,7 +136,7 @@ bool AIActionPursuitOffRoad::ShouldDoIt() {
     float distancelimit = 60.0f;
 
     IVehicleAI *targetvehicleai;
-    if (target->GetSimable() && target->GetSimable()->QueryInterface(&targetvehicleai)) {
+    if (target->GetSimable() != nullptr && target->GetSimable()->QueryInterface(&targetvehicleai)) {
         distancelimit += UMath::Distance(targetPosition, targetvehicleai->GetCurrentRoad()->GetPosition());
     }
 
@@ -155,7 +156,7 @@ bool AIActionPursuitOffRoad::ShouldDoIt() {
 }
 
 bool AIActionPursuitOffRoad::CanBeAttempted(float dT) {
-    if (this->mIVehicleAI && this->mIPursuitAI && this->mITransmission && this->mIRigidBody) {
+    if (this->mIVehicleAI != nullptr && this->mIPursuitAI != nullptr && this->mITransmission != nullptr && this->mIRigidBody != nullptr) {
         if (this->mIPursuitAI->GetChicken()) {
             return false;
         }
@@ -241,7 +242,7 @@ void AIActionPursuitOffRoad::UpdateAvoidWalls(UMath::Vector3 &avoid) {
     posToDest[1] = UMath::Vector4Make(target, 1.0f);
 
     WCollisionMgr::WorldCollisionInfo cinfo;
-    if (!WCollisionMgr(0, 3).CheckHitWorld(posToDest, cinfo, 2)) {
+    if (WCollisionMgr(0, 3).CheckHitWorld(posToDest, cinfo, 2) == 0) {
         return;
     }
     UMath::Vector3 collidepoint = Vector4To3(cinfo.fCollidePt);

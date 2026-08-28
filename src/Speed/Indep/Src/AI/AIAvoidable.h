@@ -27,7 +27,7 @@ class ALIGN_16 AIAvoidable {
         // void *operator new(unsigned int size) {}
 
         void operator delete(void *mem, size_t size) {
-            if (mem) {
+            if (mem != nullptr) {
                 gFastMem.Free(mem, size, nullptr);
             }
         }

@@ -134,19 +134,19 @@ AIAction *AIActionRace::Construct(AIActionParams *params) {
 }
 
 bool AIActionRace::CanBeAttempted(float dT) {
-    if (!this->mIRigidBody) {
+    if (this->mIRigidBody == nullptr) {
         return false;
     }
-    if (!this->GetAI()) {
+    if (this->GetAI() == nullptr) {
         return false;
     }
-    if (!this->GetVehicle()) {
+    if (this->GetVehicle() == nullptr) {
         return false;
     }
-    if (!this->mIEngine) {
+    if (this->mIEngine == nullptr) {
         return false;
     }
-    if (!this->mIInput) {
+    if (this->mIInput == nullptr) {
         return false;
     }
     WRoadNav test_nav;
@@ -160,7 +160,7 @@ bool AIActionRace::CanBeAttempted(float dT) {
 }
 
 AIActionRace::~AIActionRace() {
-    if (this->mResetTask) {
+    if (this->mResetTask != nullptr) {
         this->RemoveTask(this->mResetTask);
         this->mResetTask = nullptr;
     }
@@ -183,7 +183,7 @@ void AIActionRace::BeginAction(float dT) {
 
     // TODO
     if (!this->bIsFleeMode) {
-        if (this->GetAI()->GetPursuit()) {
+        if (this->GetAI()->GetPursuit() != nullptr) {
             this->bIsPursuitMode = ComparePtr(this->GetAI()->GetTarget()->GetSimable(), this->GetAI()->GetPursuit()->GetTarget()->GetSimable());
         } else {
             this->bIsPursuitMode = false;
@@ -193,7 +193,7 @@ void AIActionRace::BeginAction(float dT) {
     }
 
     // TODO
-    if (this->bIsPursuitMode && ipv) {
+    if (this->bIsPursuitMode && ipv != nullptr) {
         this->bDontSeekAhead = ipv->GetSupportGoal() == "AIGoalHeadOnRam";
     } else {
         this->bDontSeekAhead = false;
@@ -211,7 +211,7 @@ void AIActionRace::BeginAction(float dT) {
         this->GetAI()->GetDriveToNav()->SetRaceFilter(false);
     }
 
-    if (this->mResetTask == 0) {
+    if (this->mResetTask == nullptr) {
         this->mResetTask = this->AddTask("Physics", 0.25f, 1.0f, Sim::TASK_FRAME_FIXED);
         Sim::ProfileTask(this->mResetTask, "AIActionRace");
     }
@@ -219,10 +219,10 @@ void AIActionRace::BeginAction(float dT) {
 
 void AIActionRace::FinishAction(float dT) {
     WRoadNav *road_nav = this->GetAI()->GetDriveToNav();
-    if (road_nav) {
+    if (road_nav != nullptr) {
         road_nav->SetLaneType(WRoadNav::kLaneRacing);
     }
-    if (this->mResetTask) {
+    if (this->mResetTask != nullptr) {
         this->RemoveTask(this->mResetTask);
         this->mResetTask = nullptr;
     }
@@ -285,7 +285,7 @@ struct NosTor {
 struct SpeedTor {
     SpeedTor(IVehicle *vehicle) {
         this->Speed = 0.0f;
-        if (!vehicle) {
+        if (vehicle == nullptr) {
             return;
         }
         IVehicleAI *ai;
@@ -324,12 +324,13 @@ struct PerformaTor {
 };
 
 void AIActionRace::ComputePotentials() {
-    if (GRaceStatus::Exists() && GRaceStatus::Get().GetRaceParameters() && GRaceStatus::Get().GetRaceContext() == GRace::kRaceContext_Career) {
+    if (GRaceStatus::Exists() && GRaceStatus::Get().GetRaceParameters() != nullptr &&
+        GRaceStatus::Get().GetRaceContext() == GRace::kRaceContext_Career) {
         float min_perf = 0.0f;
 
-        if (this->mPerpetrator) {
+        if (this->mPerpetrator != nullptr) {
             GRacerInfo *racer_info = this->mPerpetrator->GetRacerInfo();
-            if (racer_info && racer_info->GetGameCharacter()) {
+            if (racer_info != nullptr && racer_info->GetGameCharacter() != nullptr) {
                 min_perf = racer_info->GetGameCharacter()->MinimumAIPerformance();
             }
         }
@@ -467,7 +468,7 @@ float AIActionRace::GetPotentialSpeed(const float curvature, const float skill, 
             float var_f13 = scalar_offset_to_target > 0.0f ? 100.0f : 200.0f;
             forward_near_speed -= scalar_offset_to_target * 0.01f * KPH2MPS(var_f13);
             float distant_cop_speed = KPH2MPS(this->GetAI()->GetAttributes().MAXIMUM_AI_SPEED());
-            if (this->GetAI()->GetPursuit() && this->GetAI()->GetPursuit()->GetIsAJerk()) {
+            if (this->GetAI()->GetPursuit() != nullptr && this->GetAI()->GetPursuit()->GetIsAJerk()) {
                 distant_cop_speed *= 1.1f;
             }
             float temp_f13 = bClamp(forward_near_speed, KPH2MPS(10.0f), distant_cop_speed);
@@ -505,7 +506,7 @@ float AIActionRace::GetPotentialSpeed(const float curvature, const float skill, 
     if (this->bIsPursuitMode && GRaceStatus::Exists() && GRaceStatus::Get().GetActivelyRacing()) {
         attrib_scale += attrib_scale;
     } else {
-        if (this->GetAI()->GetPursuit() && this->GetAI()->GetPursuit()->GetIsAJerk()) {
+        if (this->GetAI()->GetPursuit() != nullptr && this->GetAI()->GetPursuit()->GetIsAJerk()) {
             attrib_scale *= 1.2f;
         }
     }
@@ -528,7 +529,7 @@ struct AccelTor {
 
     void operator()(const IVehicle *vehicle) {
         const IVehicleAI *ai = vehicle->GetAIVehiclePtr();
-        if (ai) {
+        if (ai != nullptr) {
             AccelTor a(this->Speed, ai);
             this->Accel = UMath::Min(this->Accel, a.Accel);
         }
@@ -548,7 +549,7 @@ float AIActionRace::GetPotentialAcceleration(const float speed, const float skil
     if (this->bIsPursuitMode && GRaceStatus::Exists() && GRaceStatus::Get().GetActivelyRacing()) {
         attrib_scale *= 2.0f;
     } else {
-        if (this->GetAI()->GetPursuit() && this->GetAI()->GetPursuit()->GetIsAJerk()) {
+        if (this->GetAI()->GetPursuit() != nullptr && this->GetAI()->GetPursuit()->GetIsAJerk()) {
             attrib_scale *= 1.5f;
         }
     }
@@ -559,7 +560,7 @@ float AIActionRace::GetPotentialAcceleration(const float speed, const float skil
 
     float catchup_scale = 1.0f;
     float gravity_acc = 0.0f;
-    if (this->mIRigidBody && this->GetVehicle()->GetPhysicsMode() == PHYSICS_MODE_SIMULATED) {
+    if (this->mIRigidBody != nullptr && this->GetVehicle()->GetPhysicsMode() == PHYSICS_MODE_SIMULATED) {
         UMath::Vector3 forward;
         this->mIRigidBody->GetForwardVector(forward);
         const float Gravity = 9.81f;
@@ -567,7 +568,7 @@ float AIActionRace::GetPotentialAcceleration(const float speed, const float skil
         gravity_acc = -Gravity * grade;
     }
 
-    if (this->mCheater) {
+    if (this->mCheater != nullptr) {
         catchup_scale = AiCatchupAcceleration.GetValue(this->mCheater->GetCatchupCheat());
     }
 
@@ -583,7 +584,7 @@ float AIActionRace::GetPotentialNOS(float speed, bool was_on, float skill) const
     if (this->mNosCapability <= 0.0f || this->mUsableNOS <= 0.0f) {
         return 0.0f;
     }
-    if (!this->mIEngine) {
+    if (this->mIEngine == nullptr) {
         return 0.0f;
     }
     float useable_nos = this->mUsableNOS * UMath::Lerp(0.33f, 1.0f, skill);
@@ -605,11 +606,11 @@ Table AiNavLookAheadTable(aAiNavLookAheadData, 2, 0.0f, 100.0f);
 
 void AIActionRace::CheckOffPath(float dT) {
     WRoadNav *road_nav = this->GetAI()->GetDriveToNav();
-    if (!road_nav) {
+    if (road_nav == nullptr) {
         return;
     }
     IRigidBody *rigid_body = this->GetOwner()->GetRigidBody();
-    if (!rigid_body) {
+    if (rigid_body == nullptr) {
         return;
     }
     UMath::Vector3 car_forward_vector;

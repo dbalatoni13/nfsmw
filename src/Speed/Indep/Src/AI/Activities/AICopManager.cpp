@@ -54,7 +54,7 @@
 #include <algorithm>
 #include <cfloat>
 
-int ICopMgr::mDisableCops = false;
+int ICopMgr::mDisableCops = 0;
 
 float AICopManager::mCopMinSpawnDist = 150.0f;
 float AICopManager::mCopMaxSpawnDist = 400.0f;
@@ -92,7 +92,7 @@ AICopManager::AICopManager(Sim::Param params)
     this->MakeDebugable(DBG_AI);
     this->mSpeech = Sim::IActivity::CreateInstance("SoundAI", Sim::Param());
     // TODO is the if check in Attach?
-    if (this->mSpeech) {
+    if (this->mSpeech != nullptr) {
         this->Attach(this->mSpeech);
     }
     this->mMessSetAutoSpawn =
@@ -118,7 +118,7 @@ AICopManager::AICopManager(Sim::Param params)
         this->mMaxActiveCopHelicopters = UMath::Min(this->mMaxCopHelicopters, SkipFEHelicopter);
     }
 
-    ICopMgr::mDisableCops = SkipFE && SkipFEDisableCops;
+    ICopMgr::mDisableCops = static_cast<int>(SkipFE != 0 && SkipFEDisableCops != 0);
 
     this->mActionQ = new ActionQueue(0, 0x98c7a2f5, "AICopManager", false); // TODO magic
     this->mAttributes = nullptr;
@@ -126,27 +126,27 @@ AICopManager::AICopManager(Sim::Param params)
 }
 
 AICopManager::~AICopManager() {
-    if (this->mMessSpawnCop) {
+    if (this->mMessSpawnCop != nullptr) {
         Hermes::Handler::Destroy(this->mMessSpawnCop);
     }
-    if (this->mMessSetAutoSpawn) {
+    if (this->mMessSetAutoSpawn != nullptr) {
         Hermes::Handler::Destroy(this->mMessSetAutoSpawn);
     }
-    if (this->mMessSetCopsEnabled) {
+    if (this->mMessSetCopsEnabled != nullptr) {
         Hermes::Handler::Destroy(this->mMessSetCopsEnabled);
     }
-    if (this->mMessBreakerStopCops) {
+    if (this->mMessBreakerStopCops != nullptr) {
         Hermes::Handler::Destroy(this->mMessBreakerStopCops);
     }
-    if (this->mMessForcePursuitStart) {
+    if (this->mMessForcePursuitStart != nullptr) {
         Hermes::Handler::Destroy(this->mMessForcePursuitStart);
     }
     this->RemoveTask(this->mSimulateTask);
-    if (this->mActionQ) {
+    if (this->mActionQ != nullptr) {
         delete this->mActionQ;
         this->mActionQ = nullptr;
     }
-    if (this->mSpeech) {
+    if (this->mSpeech != nullptr) {
         this->mSpeech->Release();
     }
 }
@@ -199,7 +199,7 @@ void AICopManager::OnAttached(IAttachable *pOther) {
 
     if (pOther->QueryInterface(&ivehicle)) {
         this->mIVehicleList.push_back(ivehicle);
-        if (this->mSpeech) {
+        if (this->mSpeech != nullptr) {
             this->mSpeech->Attach(ivehicle);
         }
     } else {
@@ -226,7 +226,7 @@ void AICopManager::OnDetached(IAttachable *pOther) {
         if (iter != this->mIVehicleList.end()) {
             this->mIVehicleList.erase(iter);
         }
-        if (this->mSpeech) {
+        if (this->mSpeech != nullptr) {
             this->mSpeech->Detach(ivehicle);
         }
     } else {
@@ -263,7 +263,7 @@ IVehicle *AICopManager::GetAvailableCopVehicleByClass(UCrc32 vehicleClass, bool 
     }
     IPerpetrator *perp = nullptr;
     ISimable *simable = IPlayer::First(PLAYER_LOCAL)->GetSimable();
-    if (simable) {
+    if (simable != nullptr) {
         simable->QueryInterface(&perp);
     }
     const char *name = nullptr;
@@ -272,9 +272,9 @@ IVehicle *AICopManager::GetAvailableCopVehicleByClass(UCrc32 vehicleClass, bool 
         if (ivehicle->GetVehicleClass() != vehicleClass || ivehicle->IsActive()) {
             continue;
         }
-        if (!name) {
+        if (name == nullptr) {
             name = ivehicle->GetVehicleName();
-            if (bValidOnesOnly && perp && !IsValidPursuitCarName(name)) {
+            if (bValidOnesOnly && perp != nullptr && !IsValidPursuitCarName(name)) {
                 name = nullptr;
                 continue;
             }
@@ -284,14 +284,14 @@ IVehicle *AICopManager::GetAvailableCopVehicleByClass(UCrc32 vehicleClass, bool 
         }
         return ivehicle;
     }
-    if (!name) {
+    if (name == nullptr) {
         if (vehicleClass == VehicleClass::CHOPPER) {
             name = "copheli";
         } else {
-            if (perp) {
+            if (perp != nullptr) {
                 name = GetRandomValidCopCar();
             }
-            if (!name) {
+            if (name == nullptr) {
                 name = "copmidsize";
             }
         }
@@ -303,7 +303,7 @@ IVehicle *AICopManager::GetAvailableCopVehicleByName(const char *name) {
     if (!this->VehicleSpawningEnabled(false)) {
         return nullptr;
     }
-    if (!name) {
+    if (name == nullptr) {
         return nullptr;
     }
     UCrc32 nameHash = UCrc32(name);
@@ -324,8 +324,8 @@ IVehicle *AICopManager::GetAvailableCopVehicleByName(const char *name) {
     UMath::Vector3 initialVec = {0.0f, 1.0f, 0.0f};
     UMath::Vector3 initialPos = {0.0f, 0.0f, 0.0f};
     ISimable *isimable =
-        ISimable::CreateInstance("PVehicle", VehicleParams(this, DRIVER_COP, Attrib::StringToKey(name), initialVec, initialPos, 0, nullptr, 0));
-    if (isimable) {
+        ISimable::CreateInstance("PVehicle", VehicleParams(this, DRIVER_COP, Attrib::StringToKey(name), initialVec, initialPos, 0, nullptr, nullptr));
+    if (isimable != nullptr) {
         this->Attach(isimable);
         IVehicle *ivehicle;
         if (isimable->QueryInterface(&ivehicle)) {
@@ -366,7 +366,7 @@ IVehicle *AICopManager::GetActiveCopVehicleFromOutOfView(UCrc32 vehicleClass) {
             }
         }
     }
-    if (bestChoice) {
+    if (bestChoice != nullptr) {
         this->RemoveActiveCopVehicle(bestChoice);
         MUnspawnCop(bestChoice->GetSimable()->GetOwnerHandle(), 5).Send("SoundAI");
     }
@@ -377,7 +377,7 @@ IPursuit *AICopManager::GetPursuitActivity(ISimable *itargetSimable) {
     for (Pursuits::const_iterator iter = this->mIPursuitList.begin(); iter != this->mIPursuitList.end(); ++iter) {
         IPursuit *ipursuit = *iter;
         AITarget *pursuitTarget = ipursuit->GetTarget();
-        if (pursuitTarget && UTL::COM::ComparePtr(pursuitTarget->GetSimable(), itargetSimable)) {
+        if (pursuitTarget != nullptr && UTL::COM::ComparePtr(pursuitTarget->GetSimable(), itargetSimable)) {
             return ipursuit;
         }
     }
@@ -405,7 +405,7 @@ static bool DoesSpotOverlapCar(const UMath::Vector3 &checkPos, float radius) {
             continue;
         }
         ISimable *isimable = ivehicle->GetSimable();
-        if (isimable && isimable->GetRigidBody()) {
+        if (isimable != nullptr && isimable->GetRigidBody() != nullptr) {
             float vradius = isimable->GetRigidBody()->GetRadius() + radius + 2.0f;
             float distance = UMath::DistanceSquare(checkPos, isimable->GetRigidBody()->GetPosition());
             if (distance < vradius * vradius) {
@@ -424,11 +424,11 @@ bool AICopManager::TrySpawnCop(const SpawnCopRequest &request) {
 
     IVehicle *availableCopCar = this->GetAvailableCopVehicleByName(vehicleName);
     IPursuitAI *ipv;
-    if (!availableCopCar || !availableCopCar->QueryInterface(&ipv)) {
+    if (availableCopCar == nullptr || !availableCopCar->QueryInterface(&ipv)) {
         return false;
     }
     ISimable *isimable = availableCopCar->GetSimable();
-    if (!isimable || !isimable->GetRigidBody() || DoesSpotOverlapCar(initialPos, isimable->GetRigidBody()->GetRadius())) {
+    if (isimable == nullptr || isimable->GetRigidBody() == nullptr || DoesSpotOverlapCar(initialPos, isimable->GetRigidBody()->GetRadius())) {
         return false;
     }
     initialPos.y += 1.0f;
@@ -476,7 +476,7 @@ void AICopManager::UpdateSpawnRequests() {
 void AICopManager::MessageSetAutoSpawnMode(const MSetCopAutoSpawnMode &message) {}
 
 void AICopManager::MessageSetCopsEnabled(const MSetCopsEnabled &message) {
-    ICopMgr::mDisableCops = message.GetCopsEnabled() == false;
+    ICopMgr::mDisableCops = static_cast<int>(message.GetCopsEnabled() == false);
 }
 
 void AICopManager::MessageForcePursuitStart(const MForcePursuitStart &message) {
@@ -505,7 +505,7 @@ void AICopManager::ApplyBreakerZones() {
         }
         IVehicleAI *iai = ivehicle->GetAIVehiclePtr();
         IPursuitAI *ipv;
-        if (!iai || !ivehicle->QueryInterface(&ipv)) {
+        if (iai == nullptr || !ivehicle->QueryInterface(&ipv)) {
             continue;
         }
         bool in_zone = false;
@@ -533,7 +533,7 @@ void AICopManager::ApplyBreakerZones() {
 
 bool AICopManager::SpawnPatrolCar() {
     IVehicle *availableCopCar = this->GetAvailableCopVehicleByClass(VehicleClass::CAR, true);
-    if (!availableCopCar) {
+    if (availableCopCar == nullptr) {
         return false;
     }
     short segInd = 0;
@@ -556,7 +556,7 @@ bool AICopManager::SpawnPatrolCar() {
 
 bool AICopManager::GetSpawnPositionAheadOfTarget(IPursuit *ip, UMath::Vector3 &pos, UMath::Vector3 &forward, float distAhead) {
     AITarget *pursuitTarget = ip->GetTarget();
-    if (pursuitTarget) {
+    if (pursuitTarget != nullptr) {
         pursuitTarget->GetForwardVector(forward);
         if (distAhead < 0.0f) {
             UMath::Scale(forward, -1.0f);
@@ -610,9 +610,9 @@ bool AICopManager::SpawnPursuitCar(IPursuit *ipursuit) {
     } else {
         distance = 80.0f;
     }
-    if (!availableCopCar) {
+    if (availableCopCar == nullptr) {
         availableCopCar = this->GetActiveCopVehicleFromOutOfView(VehicleClass::CAR);
-        if (!availableCopCar) {
+        if (availableCopCar == nullptr) {
             return false;
         }
     }
@@ -633,7 +633,7 @@ bool AICopManager::SpawnPursuitCar(IPursuit *ipursuit) {
         return true;
     }
     AITarget *pursuitTarget = ipursuit->GetTarget();
-    if (pursuitTarget) {
+    if (pursuitTarget != nullptr) {
         this->SpawnCopCarNow(ipursuit);
     }
 
@@ -657,7 +657,7 @@ bool AICopManager::SpawnPursuitCarByName(IPursuit *ipursuit, const char *name) {
     if (!(nameHash == "copheli")) {
         IVehicle *availableCopCar = this->GetAvailableCopVehicleByName(name);
         bool rv = false;
-        if (availableCopCar) {
+        if (availableCopCar != nullptr) {
             rv = this->SpawnPursuitIVehicle(ipursuit, availableCopCar);
         }
         return rv;
@@ -676,7 +676,7 @@ void AICopManager::SpawnVehicleBehindTarget(IPursuit *ipursuit, IVehicle *availa
 
     availableCopCar->SetVehicleOnGround(position, forwardVector);
     availableCopCar->GetAIVehiclePtr()->SetSpawned();
-    if (ipursuit) {
+    if (ipursuit != nullptr) {
         ipursuit->AddVehicle(availableCopCar);
     } else {
         IPursuitAI *ipv;
@@ -689,7 +689,7 @@ void AICopManager::SpawnVehicleBehindTarget(IPursuit *ipursuit, IVehicle *availa
 
 bool AICopManager::SpawnCopCarNow(IPursuit *ipursuit) {
     IVehicle *availableCopCar = this->GetAvailableCopVehicleByClass(VehicleClass::CAR, false);
-    if (availableCopCar) {
+    if (availableCopCar != nullptr) {
         this->SpawnVehicleBehindTarget(ipursuit, availableCopCar);
         return true;
     }
@@ -701,11 +701,11 @@ bool AICopManager::SpawnPursuitHelicopter(IPursuit *ipursuit) {
         return false;
     }
     IVehicle *availableCopHelicopter = this->GetAvailableCopVehicleByClass(VehicleClass::CHOPPER, false);
-    if (!availableCopHelicopter) {
+    if (availableCopHelicopter == nullptr) {
         return false;
     }
     AITarget *pursuitTarget = ipursuit->GetTarget();
-    if (pursuitTarget) {
+    if (pursuitTarget != nullptr) {
         UMath::Vector3 targetposition = pursuitTarget->GetPosition();
         UMath::Vector3 targetForwardVector;
         pursuitTarget->GetForwardVector(targetForwardVector);
@@ -976,10 +976,10 @@ void AICopManager::RemoveActiveCopVehicle(IVehicle *ivehicle) {
     IVehicleAI *ivehicleAI = ivehicle->GetAIVehiclePtr();
     IPursuit *pursuit = ivehicleAI->GetPursuit();
 
-    if (pursuit) {
+    if (pursuit != nullptr) {
         pursuit->RemoveVehicle(ivehicle);
     } else {
-        if (ivehicle->GetAIVehiclePtr()->GetRoadBlock()) {
+        if (ivehicle->GetAIVehiclePtr()->GetRoadBlock() != nullptr) {
             ivehicle->GetAIVehiclePtr()->GetRoadBlock()->RemoveVehicle(ivehicle);
         }
     }
@@ -996,7 +996,7 @@ void AICopManager::UpdatePatrols() {
     Attrib::Gen::pursuitlevels *pursuitLevelAttrib = GetGlobalPursuitLevelAttrib();
 
     int wantpatrolcars;
-    if (pursuitLevelAttrib) {
+    if (pursuitLevelAttrib != nullptr) {
         wantpatrolcars = pursuitLevelAttrib->NumPatrolCars();
     } else {
         wantpatrolcars = 1;
@@ -1009,7 +1009,7 @@ void AICopManager::UpdatePatrols() {
             wantpatrolcars = 0;
             if (GRaceStatus::Exists()) {
                 GRaceParameters *raceParms = GRaceStatus::Get().GetRaceParameters();
-                if (raceParms && raceParms->GetNumOpponents() > 0) {
+                if (raceParms != nullptr && raceParms->GetNumOpponents() > 0) {
                     wantpatrolcars = 1;
                 }
             }
@@ -1025,7 +1025,7 @@ void AICopManager::UpdatePatrols() {
     for (IVehicle::List::const_iterator iter = this->mIVehicleList.begin(); iter != this->mIVehicleList.end(); ++iter) {
         IVehicle *ivehicle = *iter;
         IVehicleAI *ivehicleAI = ivehicle->GetAIVehiclePtr();
-        if (ivehicleAI && ivehicleAI->GetGoalName() == patrolGoal) {
+        if (ivehicleAI != nullptr && ivehicleAI->GetGoalName() == patrolGoal) {
             currentpatrolcars++;
         }
     }
@@ -1062,7 +1062,7 @@ void AICopManager::UpdatePatrols() {
             }
         } else if (shouldRespawn) {
             IPursuit *ipursuit = ivehicleAI->GetPursuit();
-            if (ipursuit) {
+            if (ipursuit != nullptr) {
                 UMath::Vector3 targetPosition = ipursuit->GetTarget()->GetPosition();
                 UMath::Vector3 targetForward;
                 if (ipursuit->GetTarget()->GetSpeed() > 1.0f) {
@@ -1091,7 +1091,7 @@ void AICopManager::UpdatePatrols() {
             this->RemoveActiveCopVehicle(ivehicle);
             MUnspawnCop(ivehicle->GetSimable()->GetOwnerHandle(), 6).Send("SoundAI");
         } else {
-            if (!offWorld && !ivehicle->IsDestroyed() && !ipursuitVehicle->PursuitRequest()) {
+            if (!offWorld && !ivehicle->IsDestroyed() && ipursuitVehicle->PursuitRequest() == nullptr) {
                 this->mPursuitRequestVehicle = ivehicle;
                 break; // TODO this break is correct but breaks the order
             }
@@ -1136,7 +1136,7 @@ bool AICopManager::GetHeavySupportVehicles(GroundSupportRequest *gsr) {
             vname = "copsuvl";
         }
         IVehicle *ivehicle = this->GetAvailableCopVehicleByName(vname);
-        if (ivehicle) {
+        if (ivehicle != nullptr) {
             gsr->mIVehicleList.push_back(ivehicle);
             IPursuitAI *ipv;
             if (ivehicle->QueryInterface(&ipv)) {
@@ -1170,7 +1170,7 @@ bool AICopManager::StartHeavySupport(IPursuit *ipursuit, GroundSupportRequest *g
             float d2Try = mCopMaxSpawnDist - distAdjust;
             distAdjust += 10.0f;
             if (this->GetSpawnPositionAheadOfTarget(ipursuit, UMath::Vector4To3(spawnPosition[cindex]), UMath::Vector4To3(spawnInitialVec[cindex]),
-                                              d2Try)) {
+                                                    d2Try)) {
                 GotSpawnPositions = true;
                 cindex++;
                 break;
@@ -1234,7 +1234,7 @@ bool AICopManager::GetLeaderSupportVehicles(GroundSupportRequest *gsr) {
 
     for (; index < numVehicles; index++) {
         IVehicle *ivehicle = this->GetAvailableCopVehicleByName(vname[index]);
-        if (ivehicle) {
+        if (ivehicle != nullptr) {
             gsr->mIVehicleList.push_back(ivehicle);
             IPursuitAI *ipv;
             if (ivehicle->QueryInterface(&ipv)) {
@@ -1265,7 +1265,7 @@ bool AICopManager::StartLeaderSupport(IPursuit *ipursuit, GroundSupportRequest *
             float d2Try = -(mCopMinSpawnDist + distAdjust);
             distAdjust += 10.0f;
             if (this->GetSpawnPositionAheadOfTarget(ipursuit, UMath::Vector4To3(spawnPosition[cindex]), UMath::Vector4To3(spawnInitialVec[cindex]),
-                                              d2Try)) {
+                                                    d2Try)) {
                 GotSpawnPositions = true;
                 cindex++;
                 break;
@@ -1308,11 +1308,11 @@ bool AICopManager::StartLeaderSupport(IPursuit *ipursuit, GroundSupportRequest *
 
 void AICopManager::UpdateSupportCops(IPursuit *ipursuit) {
     GroundSupportRequest *gsr = ipursuit->RequestGroundSupport();
-    if (gsr && gsr->mSupportRequestStatus == GroundSupportRequest::PENDING) {
-        if (gsr->mHeavySupport) {
+    if (gsr != nullptr && gsr->mSupportRequestStatus == GroundSupportRequest::PENDING) {
+        if (gsr->mHeavySupport != nullptr) {
             if (this->GetHeavySupportVehicles(gsr) == true) {
                 if (gsr->mHeavySupport->HeavyStrategy == HEAVY_ROADBLOCK) {
-                    if (!ipursuit->GetRoadBlock()) {
+                    if (ipursuit->GetRoadBlock() == nullptr) {
                         if (this->CreateRoadBlock(ipursuit, 4, nullptr, &gsr->mIVehicleList)) {
                             gsr->mSupportRequestStatus = GroundSupportRequest::ACTIVE;
                             gsr->mSupportTimer = gsr->mHeavySupport->Duration;
@@ -1343,19 +1343,19 @@ void AICopManager::PursuitIsEvaded(IPursuit *ipursuit) {
         GManager::Get().NotifyPursuitEnded(true);
         AdjustStableImpound_EvadePursuit(0);
         if (GRaceStatus::Exists() && GRaceStatus::Get().GetPlayMode() == GRaceStatus::kPlayMode_Roaming) {
-            if (SoundAI::Get() && SoundAI::Get()->IsMusicActive()) {
+            if (SoundAI::Get() != nullptr && SoundAI::Get()->IsMusicActive()) {
                 MControlPathfinder(false, 14, 0, 0).Send("Event");
             }
-            new EShowMilestones(ipursuit->GetEnterSafehouseOnDone());
+            new EShowMilestones(static_cast<int>(ipursuit->GetEnterSafehouseOnDone()));
         }
     }
     AITarget *target = ipursuit->GetTarget();
-    if (target) {
+    if (target != nullptr) {
         ISimable *simable = target->GetSimable();
-        if (simable) {
+        if (simable != nullptr) {
             MPerpEscaped(simable->GetOwnerHandle()).Post(0x20D60DBF); // magic
             IPlayer *iplayer = simable->GetPlayer();
-            if (iplayer) {
+            if (iplayer != nullptr) {
                 int plrIndex = iplayer->GetSettingsIndex();
                 if (plrIndex < 2U) {
                     IPerpetrator *perp;
@@ -1368,15 +1368,16 @@ void AICopManager::PursuitIsEvaded(IPursuit *ipursuit) {
 }
 
 void AICopManager::CommitPursuitDetails(IPursuit *ipursuit) {
-    if (GRaceStatus::Exists() && GRaceStatus::Get().GetRaceParameters() && GRaceStatus::Get().GetRaceParameters()->GetIsChallengeSeriesRace()) {
+    if (GRaceStatus::Exists() && GRaceStatus::Get().GetRaceParameters() != nullptr &&
+        GRaceStatus::Get().GetRaceParameters()->GetIsChallengeSeriesRace()) {
         return;
     }
     AITarget *target = ipursuit->GetTarget();
-    if (target) {
+    if (target != nullptr) {
         ISimable *simable = target->GetSimable();
-        if (simable) {
+        if (simable != nullptr) {
             IPlayer *iplayer = simable->GetPlayer();
-            if (iplayer) {
+            if (iplayer != nullptr) {
                 int plrIndex = iplayer->GetSettingsIndex();
                 if (plrIndex < 2U) {
                     UserProfile *prof = FEDatabase->CurrentUserProfiles[plrIndex];
@@ -1385,15 +1386,15 @@ void AICopManager::CommitPursuitDetails(IPursuit *ipursuit) {
                     }
                     CareerSettings *career = prof->GetCareer();
                     FEPlayerCarDB *stable = FEDatabase->GetPlayerCarStable(plrIndex);
-                    if (!stable) {
+                    if (stable == nullptr) {
                         return;
                     }
                     FECarRecord *fe_car = stable->GetCarByIndex(career->GetCurrentCar());
-                    if (!fe_car) {
+                    if (fe_car == nullptr) {
                         return;
                     }
                     FECareerRecord *record = stable->GetCareerRecordByHandle(fe_car->CareerHandle);
-                    if (record) {
+                    if (record != nullptr) {
                         int pursuitBounty;
                         IPerpetrator *perp;
                         if (simable->QueryInterface(&perp)) {
@@ -1423,14 +1424,14 @@ bool AICopManager::IsCopRequestPending() {
     if (!this->VehicleSpawningEnabled(false)) {
         return false;
     }
-    if (!this->mSpawnRequests.empty() || this->mIPursuitWithLatchedRoadblockReq) {
+    if (!this->mSpawnRequests.empty() || this->mIPursuitWithLatchedRoadblockReq != nullptr) {
         return true;
     }
 
     for (Pursuits::const_iterator iter = this->mIPursuitList.begin(); iter != this->mIPursuitList.end(); ++iter) {
         IPursuit *ipursuit = *iter;
         if (!ipursuit->ShouldEnd()) {
-            if (this->mNumActiveCopCars < this->mMaxActiveCopCars && ipursuit->CopRequest()) {
+            if (this->mNumActiveCopCars < this->mMaxActiveCopCars && ipursuit->CopRequest() != nullptr) {
                 return true;
             }
             if (ipursuit->PendingRoadBlockRequest()) {
@@ -1445,7 +1446,7 @@ bool AICopManager::IsCopRequestPending() {
 bool AICopManager::CanPursueRacers() {
     if (GRaceStatus::Exists()) {
         GRaceParameters *raceParms = GRaceStatus::Get().GetRaceParameters();
-        if (raceParms && raceParms->GetNumOpponents() >= 1) {
+        if (raceParms != nullptr && raceParms->GetNumOpponents() >= 1) {
             for (Pursuits::const_iterator iter = this->mIPursuitList.begin(); iter != this->mIPursuitList.end(); ++iter) {
                 IPursuit *ipursuit = *iter;
                 IVehicle *v;
@@ -1492,14 +1493,14 @@ void AICopManager::UpdatePursuits() {
         if (!IsActive || IsDestroyed) {
             bool vehicleRemoved = false;
             IPursuit *pursuit = ivehicle->GetAIVehiclePtr()->GetPursuit();
-            if (pursuit) {
+            if (pursuit != nullptr) {
                 vehicleRemoved = true;
                 pursuit->RemoveVehicle(ivehicle);
             } else {
-                if (ivehicle->GetAIVehiclePtr()->GetRoadBlock()) {
+                if (ivehicle->GetAIVehiclePtr()->GetRoadBlock() != nullptr) {
                     if (IsDestroyed) {
                         IPursuit *ip = ivehicle->GetAIVehiclePtr()->GetRoadBlock()->GetPursuit();
-                        if (ip) {
+                        if (ip != nullptr) {
                             ip->IncNumCopsDestroyed(ivehicle);
                         }
                     }
@@ -1510,7 +1511,7 @@ void AICopManager::UpdatePursuits() {
 
             bool bAllowStatsToAccumulate = false;
             if (!GRaceStatus::Exists() || GRaceStatus::Get().GetPlayMode() != GRaceStatus::kPlayMode_Racing ||
-                (GRaceStatus::Get().GetRaceParameters() && GRaceStatus::Get().GetRaceParameters()->GetIsPursuitRace())) {
+                (GRaceStatus::Get().GetRaceParameters() != nullptr && GRaceStatus::Get().GetRaceParameters()->GetIsPursuitRace())) {
                 bAllowStatsToAccumulate = true;
             }
 
@@ -1528,14 +1529,14 @@ void AICopManager::UpdatePursuits() {
     IPursuitAI *ipursuitVehicle;
     AITarget *pursuitRequestTarget = nullptr;
 
-    if (this->mPursuitRequestVehicle && this->mPursuitRequestVehicle->QueryInterface(&ipursuitVehicle)) {
+    if (this->mPursuitRequestVehicle != nullptr && this->mPursuitRequestVehicle->QueryInterface(&ipursuitVehicle)) {
         pursuitRequestTarget = ipursuitVehicle->PursuitRequest();
     }
 
     bool bStillHaveLatchedRBPursuit = false;
     for (Pursuits::const_iterator iter = this->mIPursuitList.begin(); iter != this->mIPursuitList.end(); ++iter) {
         IPursuit *ipursuit = *iter;
-        if (this->mPursuitRequestVehicle && pursuitRequestTarget && ipursuit->IsTarget(pursuitRequestTarget)) {
+        if (this->mPursuitRequestVehicle != nullptr && pursuitRequestTarget != nullptr && ipursuit->IsTarget(pursuitRequestTarget)) {
             ipursuit->AddVehicle(this->mPursuitRequestVehicle);
             this->mPursuitRequestVehicle = nullptr;
         }
@@ -1553,14 +1554,14 @@ void AICopManager::UpdatePursuits() {
         } else {
             this->UpdateSupportCops(ipursuit);
             if (this->mNumActiveCopCars < this->mMaxActiveCopCars) {
-                if (!this->mIPursuitWithLatchedRoadblockReq) {
+                if (this->mIPursuitWithLatchedRoadblockReq == nullptr) {
                     const char *want_a_cop = ipursuit->CopRequest();
-                    if (want_a_cop) {
+                    if (want_a_cop != nullptr) {
                         this->SpawnPursuitCarByName(ipursuit, want_a_cop);
                     }
                 }
             }
-            if (!this->mIPursuitWithLatchedRoadblockReq) {
+            if (this->mIPursuitWithLatchedRoadblockReq == nullptr) {
                 int road_block_cops = ipursuit->RequestRoadBlock();
                 if (road_block_cops > 0) {
                     this->mNumCopsForLatchedRoadblockReq = road_block_cops;
@@ -1568,11 +1569,11 @@ void AICopManager::UpdatePursuits() {
                 }
             }
 
-            if (this->mIPursuitWithLatchedRoadblockReq == ipursuit && !ipursuit->GetRoadBlock()) {
+            if (this->mIPursuitWithLatchedRoadblockReq == ipursuit && ipursuit->GetRoadBlock() == nullptr) {
                 bStillHaveLatchedRBPursuit = true;
                 if (this->CreateRoadBlock(ipursuit, this->mNumCopsForLatchedRoadblockReq, ivehicle_chopper, nullptr) == true) {
                     MReqRoadBlock(1).Send("Created");
-                    this->mIPursuitWithLatchedRoadblockReq = 0;
+                    this->mIPursuitWithLatchedRoadblockReq = nullptr;
                     this->mNumCopsForLatchedRoadblockReq = 0;
                 } else {
                     MReqRoadBlock(0).Send("Created");
@@ -1582,7 +1583,7 @@ void AICopManager::UpdatePursuits() {
     }
 
     if (!bStillHaveLatchedRBPursuit) {
-        this->mIPursuitWithLatchedRoadblockReq = 0;
+        this->mIPursuitWithLatchedRoadblockReq = nullptr;
         this->mNumCopsForLatchedRoadblockReq = 0;
     }
 
@@ -1612,7 +1613,7 @@ void AICopManager::UpdatePursuits() {
         }
     }
 
-    if (this->mPursuitRequestVehicle) {
+    if (this->mPursuitRequestVehicle != nullptr) {
         Sim::IActivity *ipursuitActivity = Sim::IActivity::CreateInstance("AIPursuit", Sim::Param());
         IPursuit *ipursuit;
         ipursuitActivity->QueryInterface(&ipursuit);
@@ -1640,9 +1641,9 @@ void AICopManager::UpdateRoadBlocks() {
         }
         if (!iroadblock->GetDodged()) {
             IPursuit *ipursuit = iroadblock->GetPursuit();
-            if (ipursuit) {
+            if (ipursuit != nullptr) {
                 AITarget *target = ipursuit->GetTarget();
-                if (target) {
+                if (target != nullptr) {
                     UMath::Vector3 targetPos = target->GetPosition();
                     UMath::Vector3 roadblockPos = iroadblock->GetRoadBlockCentre();
                     UMath::Vector3 roadblockDir = iroadblock->GetRoadBlockDir();
@@ -1659,7 +1660,7 @@ void AICopManager::UpdateRoadBlocks() {
                             float spikeStripsDodged = UMath::Max(0.0f, GManager::Get().GetValue("tire_spikes_dodged"));
                             bool bAllowStatsToAccumulate = false;
                             if (!GRaceStatus::Exists() || GRaceStatus::Get().GetPlayMode() != GRaceStatus::kPlayMode_Racing ||
-                                (GRaceStatus::Get().GetRaceParameters() && GRaceStatus::Get().GetRaceParameters()->GetIsPursuitRace())) {
+                                (GRaceStatus::Get().GetRaceParameters() != nullptr && GRaceStatus::Get().GetRaceParameters()->GetIsPursuitRace())) {
                                 bAllowStatsToAccumulate = true;
                             }
                             if (bAllowStatsToAccumulate) {
@@ -1735,10 +1736,10 @@ void AICopManager::UpdateCopPriorities(int numActiveCopCars) {
         IVehicle *ivehicle = *iter;
         if (ivehicle->IsActive() && lowestPriorityIndex == currentIndex) {
             IPursuit *pursuit = ivehicle->GetAIVehiclePtr()->GetPursuit();
-            if (pursuit) {
+            if (pursuit != nullptr) {
                 pursuit->RemoveVehicle(ivehicle);
             } else {
-                if (ivehicle->GetAIVehiclePtr()->GetRoadBlock()) {
+                if (ivehicle->GetAIVehiclePtr()->GetRoadBlock() != nullptr) {
                     ivehicle->GetAIVehiclePtr()->GetRoadBlock()->RemoveVehicle(ivehicle);
                 }
             }
@@ -1759,7 +1760,7 @@ void AICopManager::UpdateCopPriorities(int numActiveCopCars) {
 
 void AICopManager::PursueAtHeatLevel(int minHeatLevel) {
     IPlayer *player = const_cast<IPlayer *>(*IPlayer::GetList(PLAYER_LOCAL).begin());
-    if (player) {
+    if (player != nullptr) {
         bool alreadyPursued = false;
         IPursuit *playerPursuit = nullptr;
         for (Pursuits::const_iterator iter = this->mIPursuitList.begin(); iter != this->mIPursuitList.end(); ++iter) {
@@ -1775,7 +1776,7 @@ void AICopManager::PursueAtHeatLevel(int minHeatLevel) {
         if (player->GetSimable()->QueryInterface(&perp)) {
             if (perp->GetHeat() < static_cast<float>(minHeatLevel)) {
                 perp->SetHeat(std::max(perp->GetHeat(), static_cast<float>(minHeatLevel)));
-                if (playerPursuit) {
+                if (playerPursuit != nullptr) {
                     playerPursuit->LockInPursuitAttribs();
                 }
             }
@@ -1815,10 +1816,10 @@ void AICopManager::ResetCopsForRestart(bool release) {
         this->mLockoutTimer = 0.0f;
     }
 
-    if (this->mSpeech) {
+    if (this->mSpeech != nullptr) {
         SoundAI *speech = SoundAI::Get();
         if (GRaceStatus::Exists() && GRaceStatus::Get().GetPlayMode() == GRaceStatus::kPlayMode_Roaming ||
-            GRaceDatabase::Exists() && !GRaceDatabase::Get().GetStartupRace()) {
+            GRaceDatabase::Exists() && GRaceDatabase::Get().GetStartupRace() == nullptr) {
             Attrib::Gen::pursuitlevels pl(speech->GetPursuitSpecs());
             if (pl.IsValid()) {
                 this->mLockoutTimer = pl.TimeInactiveFor911();
@@ -1827,7 +1828,7 @@ void AICopManager::ResetCopsForRestart(bool release) {
         speech->ResetPursuit(true);
         Speech::Manager::ClearPlayback();
         Speech::Module *module = Speech::Manager::GetSpeechModule(1);
-        if (module) {
+        if (module != nullptr) {
             module->ReleaseResource();
         }
     }
@@ -1859,7 +1860,7 @@ void AICopManager::ResetCopsForRestart(bool release) {
         IPursuit *ipursuit = *iter;
         this->Detach(ipursuit);
         IAttachable *targetattachable;
-        if (ipursuit->GetTarget() && ipursuit->GetTarget()->GetSimable()) {
+        if (ipursuit->GetTarget() != nullptr && ipursuit->GetTarget()->GetSimable() != nullptr) {
             if (ipursuit->GetTarget()->GetSimable()->QueryInterface(&targetattachable)) {
                 IPerpetrator *iperp;
                 if (ipursuit->GetTarget()->GetSimable()->QueryInterface(&iperp)) {
@@ -1907,8 +1908,8 @@ void AICopManager::ResetCopsForRestart(bool release) {
 void AICopManager::LockoutCops(bool lockout) {
     if (lockout == true) {
         this->mLockoutTimer = 60.0f;
-        if (this->mSpeech && (GRaceStatus::Exists() && GRaceStatus::Get().GetPlayMode() == GRaceStatus::kPlayMode_Roaming ||
-                        GRaceDatabase::Exists() && !GRaceDatabase::Get().GetStartupRace())) {
+        if (this->mSpeech != nullptr && (GRaceStatus::Exists() && GRaceStatus::Get().GetPlayMode() == GRaceStatus::kPlayMode_Roaming ||
+                                         GRaceDatabase::Exists() && GRaceDatabase::Get().GetStartupRace() == nullptr)) {
             SoundAI *speech = SoundAI::Get();
             Attrib::Gen::pursuitlevels pl(speech->GetPursuitSpecs());
             if (pl.IsValid()) {

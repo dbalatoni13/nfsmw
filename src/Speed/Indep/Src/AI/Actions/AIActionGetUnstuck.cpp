@@ -47,7 +47,7 @@ AIAction *AIActionGetUnstuck::Construct(AIActionParams *params) {
 }
 
 bool AIActionGetUnstuck::CanBeAttempted(float dT) {
-    if (!this->GetVehicle() || !this->GetAI() || !this->mIInput || this->GetAI()->GetReverseOverride()) {
+    if (this->GetVehicle() == nullptr || this->GetAI() == nullptr || this->mIInput == nullptr || this->GetAI()->GetReverseOverride()) {
         return false;
     }
     bool stuck = false;
@@ -79,7 +79,7 @@ bool AIActionGetUnstuck::CanBeAttempted(float dT) {
 
 void AIActionGetUnstuck::FinishAction(float dT) {
     WRoadNav *nav = this->GetAI()->GetDriveToNav();
-    if (nav) {
+    if (nav != nullptr) {
         this->GetAI()->ResetDriveToNav(SELECT_VALID_LANE);
     }
 }

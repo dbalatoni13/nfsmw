@@ -9,7 +9,6 @@
 #include "Speed/Indep/Src/Physics/Behavior.h"
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 
-
 // total size: 0x48
 class AIActionHeadOnRam : public AIAction, public Debugable {
   public:
@@ -60,7 +59,7 @@ AIActionHeadOnRam::AIActionHeadOnRam(AIActionParams *params, float score)
 
     static int brakeLeft = 0;
     brakeLeft++;
-    this->mBrakeLeft = brakeLeft & 1;
+    this->mBrakeLeft = (brakeLeft & 1) != 0;
 }
 
 void AIActionHeadOnRam::OnBehaviorChange(const UCrc32 &mechanic) {
@@ -77,7 +76,7 @@ AIAction *AIActionHeadOnRam::Construct(AIActionParams *params) {
 }
 
 bool AIActionHeadOnRam::CanBeAttempted(float dT) {
-    if (this->mIVehicleAI && this->mIPursuitAI && this->mITransmission && this->mIRigidBody) {
+    if (this->mIVehicleAI != nullptr && this->mIPursuitAI != nullptr && this->mITransmission != nullptr && this->mIRigidBody != nullptr) {
         if (!this->mIVehicleAI->GetDrivableToTargetPos()) {
             return false;
         }
