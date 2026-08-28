@@ -29,12 +29,12 @@ AIVehicleHelicopter::AIVehicleHelicopter(const BehaviorParams &bp)
 
     height += 10.0f;
 
-    GetOwner()->QueryInterface(&mISimpleChopper);
-    mStrafeToDest = false;
+    this->GetOwner()->QueryInterface(&this->mISimpleChopper);
+    this->mStrafeToDest = false;
 
-    mLookAtPosition = UMath::Vector3::kZero;
-    mLastPlaceHeliSawPerp = UMath::Vector3::kZero;
-    mDestinationVelocity = UMath::Vector3::kZero;
+    this->mLookAtPosition = UMath::Vector3::kZero;
+    this->mLastPlaceHeliSawPerp = UMath::Vector3::kZero;
+    this->mDestinationVelocity = UMath::Vector3::kZero;
 }
 
 AIVehicleHelicopter::~AIVehicleHelicopter() {
@@ -52,49 +52,49 @@ void AIVehicleHelicopter::SetFuelFull() {
     if (simable && simable->QueryInterface(&perp)) {
         Attrib::Gen::pursuitlevels *pursuitLevelAttrib = perp->GetPursuitLevelAttrib();
         if (pursuitLevelAttrib) {
-            mHeliFuelTimeRemaining = pursuitLevelAttrib->HeliFuelTime();
+            this->mHeliFuelTimeRemaining = pursuitLevelAttrib->HeliFuelTime();
         }
     }
 }
 
 void AIVehicleHelicopter::SetDestinationVelocity(const UMath::Vector3 &v) {
-    mDestinationVelocity = v;
-    UMath::Scale(mDestinationVelocity, 9.0f, mDestinationVelocity);
-    UMath::AddScale(v, mDestinationVelocity, 0.1f, mDestinationVelocity);
+    this->mDestinationVelocity = v;
+    UMath::Scale(this->mDestinationVelocity, 9.0f, this->mDestinationVelocity);
+    UMath::AddScale(v, this->mDestinationVelocity, 0.1f, this->mDestinationVelocity);
 }
 
 void AIVehicleHelicopter::Update(float dT) {
-    AIVehiclePursuit::Update(dT);
-    GetTarget()->Aquire(IPlayer::First(PLAYER_LOCAL)->GetSimable());
-    UpdateSpawnTimer(dT);
-    UpdateTargeting();
-    UpdateFuel(dT);
-    if (GetGoal()) {
-        GetGoal()->Update(dT);
+    this->AIVehiclePursuit::Update(dT);
+    this->GetTarget()->Aquire(IPlayer::First(PLAYER_LOCAL)->GetSimable());
+    this->UpdateSpawnTimer(dT);
+    this->UpdateTargeting();
+    this->UpdateFuel(dT);
+    if (this->GetGoal()) {
+        this->GetGoal()->Update(dT);
     }
-    const UMath::Vector3 &myPosition = GetOwner()->GetRigidBody()->GetPosition();
-    WWorldPos pTopo = GetSimable()->GetWPos();
+    const UMath::Vector3 &myPosition = this->GetOwner()->GetRigidBody()->GetPosition();
+    WWorldPos pTopo = this->GetSimable()->GetWPos();
     float ground = pTopo.HeightAtPoint(myPosition);
     if (ground != 0.0f) {
         bClamp(0.0f, 0.0f, 1.0f); // unused bClamp
         float shadowSize = ground + 5.0f;
-        SetShadowScale(1.0f - (myPosition.y - shadowSize) * 0.025f);
+        this->SetShadowScale(1.0f - (myPosition.y - shadowSize) * 0.025f);
     }
 }
 
 void AIVehicleHelicopter::UpdateFuel(float dT) {
-    mHeliFuelTimeRemaining -= dT;
-    if (mHeliFuelTimeRemaining < 0.0f) {
-        mHeliFuelTimeRemaining = 0.0f;
-        if (!IsCurrentGoal("AIGoalHeliExit")) {
-            SetGoal("AIGoalHeliExit");
+    this->mHeliFuelTimeRemaining -= dT;
+    if (this->mHeliFuelTimeRemaining < 0.0f) {
+        this->mHeliFuelTimeRemaining = 0.0f;
+        if (!this->IsCurrentGoal("AIGoalHeliExit")) {
+            this->SetGoal("AIGoalHeliExit");
         }
     }
 }
 
 bool AIVehicleHelicopter::StartPathToPoint(UMath::Vector3 &point) {
-    ResetDriveToNav(SELECT_CENTER_LANE);
-    WRoadNav *road_nav = GetDriveToNav();
+    this->ResetDriveToNav(SELECT_CENTER_LANE);
+    WRoadNav *road_nav = this->GetDriveToNav();
     bool rv = road_nav->FindPath(&point, nullptr, nullptr);
 
     return rv;
@@ -103,24 +103,24 @@ bool AIVehicleHelicopter::StartPathToPoint(UMath::Vector3 &point) {
 void AIVehicleHelicopter::SteerToNav(WRoadNav *road_nav, float height, float speed, bool bStopAtDest) {
     UMath::Vector3 seekPosition = road_nav->GetPosition();
     seekPosition.y += height;
-    SetDriveTarget(seekPosition);
-    SetLookAtPosition(road_nav->GetPosition());
-    SetDriveSpeed(speed);
+    this->SetDriveTarget(seekPosition);
+    this->SetLookAtPosition(road_nav->GetPosition());
+    this->SetDriveSpeed(speed);
 
     if (bStopAtDest || !road_nav->IsValid()) {
-        SetDestinationVelocity(UMath::Vector3::kZero);
+        this->SetDestinationVelocity(UMath::Vector3::kZero);
     } else {
         UMath::Vector3 navForward = road_nav->GetForwardVector();
         UMath::Unit(navForward, navForward);
 
-        IRigidBody *irigidbody = GetOwner()->GetRigidBody();
+        IRigidBody *irigidbody = this->GetOwner()->GetRigidBody();
         UMath::Vector3 currVel = irigidbody->GetLinearVelocity();
         float navDotVel = UMath::Dot(navForward, currVel);
         if (navDotVel < 0.0f) {
-            SetDestinationVelocity(UMath::Vector3::kZero);
+            this->SetDestinationVelocity(UMath::Vector3::kZero);
         } else {
             UMath::Scale(navForward, navDotVel, currVel);
-            SetDestinationVelocity(currVel);
+            this->SetDestinationVelocity(currVel);
         }
     }
 }
@@ -130,7 +130,7 @@ bool AIVehicleHelicopter::FilterHeliAltitude(UMath::Vector3 &point) {
     bVector2 point2D;
     point2D.x = point.z;
     point2D.y = -point.x;
-    float elevation = mHeliSheetCoord.GetElevation(point2D, nullptr, &bValid);
+    float elevation = this->mHeliSheetCoord.GetElevation(point2D, nullptr, &bValid);
 
     if (bValid) {
         if (point.y < elevation) {
@@ -154,7 +154,7 @@ bool AIVehicleHelicopter::CheckHeliSheet(const UMath::Vector3 &myPosition, const
         return rv;
     }
     UMath::Vector3 adjustedWorkingPosition = myWorkingPosition;
-    FilterHeliAltitude(dest);
+    this->FilterHeliAltitude(dest);
 
     bVector3 normal;
     float elevation;
@@ -164,7 +164,7 @@ bool AIVehicleHelicopter::CheckHeliSheet(const UMath::Vector3 &myPosition, const
     bVector2 point2Dsmooth;
     point2Dsmooth.x = lookAheadDest.z;
     point2Dsmooth.y = -lookAheadDest.x;
-    elevation = mThirdHeliSheetCoord.GetElevation(point2Dsmooth, &normal, &bSmoothingValid);
+    elevation = this->mThirdHeliSheetCoord.GetElevation(point2Dsmooth, &normal, &bSmoothingValid);
 
     if (bSmoothingValid && elevation > lookAheadDest.y) {
         lookAheadDest.y = elevation;
@@ -189,7 +189,7 @@ bool AIVehicleHelicopter::CheckHeliSheet(const UMath::Vector3 &myPosition, const
     bVector2 point2D;
     point2D.x = adjustedWorkingPosition.z;
     point2D.y = -adjustedWorkingPosition.x;
-    elevation = mSecondaryHeliSheetCoord.GetElevation(point2D, &normal, &bAdjustedWorkingFiltered);
+    elevation = this->mSecondaryHeliSheetCoord.GetElevation(point2D, &normal, &bAdjustedWorkingFiltered);
 
     if (bAdjustedWorkingFiltered && elevation > adjustedWorkingPosition.y) {
         adjustedWorkingPosition.y = elevation;
@@ -226,7 +226,7 @@ bool AIVehicleHelicopter::CheckHeliSheet(const UMath::Vector3 &myPosition, const
             UMath::Add(me2adjusted, normal2d, me2adjusted);
         }
 
-        IRigidBody *irigidbody = GetOwner()->GetRigidBody();
+        IRigidBody *irigidbody = this->GetOwner()->GetRigidBody();
         UMath::Scale(me2adjusted, irigidbody->GetSpeed(), me2adjusted);
         irigidbody->SetLinearVelocity(me2adjusted);
     }
@@ -235,7 +235,7 @@ bool AIVehicleHelicopter::CheckHeliSheet(const UMath::Vector3 &myPosition, const
 }
 
 void AIVehicleHelicopter::RestrictPointToRoadNet(UMath::Vector3 &seekPosition) {
-    WRoadNav *roadNav = GetDriveToNav();
+    WRoadNav *roadNav = this->GetDriveToNav();
     roadNav->SetNavType(WRoadNav::kTypeTraffic);
     roadNav->SetLaneType(WRoadNav::kLaneTraffic);
 
@@ -251,7 +251,7 @@ void AIVehicleHelicopter::RestrictPointToRoadNet(UMath::Vector3 &seekPosition) {
 }
 
 void AIVehicleHelicopter::AvoidCamera(UMath::Vector3 &dest) {
-    IRigidBody *irigidbody = GetOwner()->GetRigidBody();
+    IRigidBody *irigidbody = this->GetOwner()->GetRigidBody();
     const UMath::Vector3 &myPosition = irigidbody->GetPosition();
     const UMath::Vector3 &Vlin = irigidbody->GetLinearVelocity();
 
@@ -307,7 +307,7 @@ extern float Min_Chopper_Accel;
 extern float Chopper_Ratio;
 
 void AIVehicleHelicopter::OnDriving(float dT) {
-    IRigidBody *irigidbody = GetOwner()->GetRigidBody();
+    IRigidBody *irigidbody = this->GetOwner()->GetRigidBody();
     const UMath::Vector3 &Vlin = irigidbody->GetLinearVelocity();
     const UMath::Vector3 &myPosition = irigidbody->GetPosition();
 
@@ -321,15 +321,15 @@ void AIVehicleHelicopter::OnDriving(float dT) {
     UMath::Vector3 dest;
     UMath::Vector3 compensationVelocity;
 
-    compensationVelocity = mDestinationVelocity;
+    compensationVelocity = this->mDestinationVelocity;
     compensationVelocity.y = 0.0f;
     UMath::Scale(compensationVelocity, 0.45f, dest);
-    UMath::Add(dest, mDest, dest);
+    UMath::Add(dest, this->mDest, dest);
 
-    AvoidCamera(dest);
+    this->AvoidCamera(dest);
 
     UMath::Vector3 smoothingVel = UMath::Vector3::kZero;
-    CheckHeliSheet(myPosition, lookAheadDest, myWorkingPosition, dest, smoothingVel);
+    this->CheckHeliSheet(myPosition, lookAheadDest, myWorkingPosition, dest, smoothingVel);
 
     UMath::Vector3 moveDirVector;
     UMath::Sub(dest, myWorkingPosition, moveDirVector);
@@ -347,7 +347,7 @@ void AIVehicleHelicopter::OnDriving(float dT) {
 
     float closingSpeed = UMath::Dot(Vdif, unitMoveDir);
     float closingSpeedUnadjusted = UMath::Dot(Vlin, unitMoveDir);
-    mISimpleChopper->MaxDeceleration(false);
+    this->mISimpleChopper->MaxDeceleration(false);
 
     if (closingSpeed > 3.0f) {
         float decelAvailable = rbSpeed * 0.2f + Min_Chopper_Accel;
@@ -360,28 +360,28 @@ void AIVehicleHelicopter::OnDriving(float dT) {
         }
         float D = (closingSpeed * closingSpeed) / (1.55f * decelToBeUsed);
         if (moveLen <= D) {
-            mDriveSpeed *= 0.4f;
-            mISimpleChopper->MaxDeceleration(true);
+            this->mDriveSpeed *= 0.4f;
+            this->mISimpleChopper->MaxDeceleration(true);
         }
     } else {
         if (closingSpeedUnadjusted < -1.0f && moveLen < 15.0f) {
-            mISimpleChopper->MaxDeceleration(true);
+            this->mISimpleChopper->MaxDeceleration(true);
         }
     }
 
     if (bIgnoreHeliSheet) {
-        mISimpleChopper->MaxDeceleration(true);
+        this->mISimpleChopper->MaxDeceleration(true);
     }
 
     if (moveLen > 2.0f) {
-        UMath::Scale(moveDirVector, mDriveSpeed / moveLen, moveDirVector);
+        UMath::Scale(moveDirVector, this->mDriveSpeed / moveLen, moveDirVector);
     }
 
     if (yDelt >= 0.0f) {
         if (yDelt < 7.0f) {
             yDelt *= 5.0f;
-            if (mDestinationVelocity.y > 0.0f) {
-                yDelt += mDestinationVelocity.y * 2.0f;
+            if (this->mDestinationVelocity.y > 0.0f) {
+                yDelt += this->mDestinationVelocity.y * 2.0f;
             }
         } else if (yDelt < 0.0f) {
             goto block_19;
@@ -390,8 +390,8 @@ void AIVehicleHelicopter::OnDriving(float dT) {
     block_19:
         if (yDelt > -5.0f) {
             yDelt *= 3.0f;
-            if (mDestinationVelocity.y < 0.0f) {
-                yDelt += mDestinationVelocity.y;
+            if (this->mDestinationVelocity.y < 0.0f) {
+                yDelt += this->mDestinationVelocity.y;
             }
         }
     }
@@ -399,12 +399,12 @@ void AIVehicleHelicopter::OnDriving(float dT) {
 
     float lenSmooth = UMath::Length(smoothingVel);
     if (lenSmooth > 0.1f) {
-        UMath::Scale(smoothingVel, mDriveSpeed / lenSmooth * 0.3f, smoothingVel);
+        UMath::Scale(smoothingVel, this->mDriveSpeed / lenSmooth * 0.3f, smoothingVel);
         UMath::ScaleAdd(moveDirVector, 0.7f, smoothingVel, moveDirVector);
     }
-    mISimpleChopper->SetDesiredVelocity(moveDirVector);
+    this->mISimpleChopper->SetDesiredVelocity(moveDirVector);
 
     UMath::Vector3 lookVector;
-    UMath::Sub(mLookAtPosition, irigidbody->GetPosition(), lookVector);
-    mISimpleChopper->SetDesiredFacingVector(lookVector);
+    UMath::Sub(this->mLookAtPosition, irigidbody->GetPosition(), lookVector);
+    this->mISimpleChopper->SetDesiredFacingVector(lookVector);
 }

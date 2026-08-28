@@ -40,8 +40,8 @@ template <typename T> class time_delay_filter {
     void add_sample(float sample, time_type dt);
 
     time_delay_filter() {
-        offset = 0.0f;
-        cursor = 0;
+        this->offset = 0.0f;
+        this->cursor = 0;
     }
 
   private:
@@ -98,28 +98,28 @@ class AIActionPursuitOffRoad : public AIAction, public Debugable {
 };
 
 AIActionPursuitOffRoad::AIActionPursuitOffRoad(AIActionParams *params, float score) : AIAction(params, score) {
-    MakeDebugable(DBG_AI);
-    params->mOwner->QueryInterface(&mIVehicleAI);
-    params->mOwner->QueryInterface(&mIPursuitAI);
-    params->mOwner->QueryInterface(&mIVehicle);
-    params->mOwner->QueryInterface(&mITransmission);
-    params->mOwner->QueryInterface(&mIInput);
-    mIRigidBody = params->mOwner->GetRigidBody();
+    this->MakeDebugable(DBG_AI);
+    params->mOwner->QueryInterface(&this->mIVehicleAI);
+    params->mOwner->QueryInterface(&this->mIPursuitAI);
+    params->mOwner->QueryInterface(&this->mIVehicle);
+    params->mOwner->QueryInterface(&this->mITransmission);
+    params->mOwner->QueryInterface(&this->mIInput);
+    this->mIRigidBody = params->mOwner->GetRigidBody();
 
     static int brakeLeft = 0;
     brakeLeft++;
 
-    mNOSCountDown = -1.0f;
-    mBrakeLeft = brakeLeft & 1;
-    mUserNOSLastTime = false;
+    this->mNOSCountDown = -1.0f;
+    this->mBrakeLeft = brakeLeft & 1;
+    this->mUserNOSLastTime = false;
 }
 
 void AIActionPursuitOffRoad::OnBehaviorChange(const UCrc32 &mechanic) {
     if (mechanic == BEHAVIOR_MECHANIC_RIGIDBODY) {
-        GetOwner()->QueryInterface(&mIRigidBody);
+        this->GetOwner()->QueryInterface(&this->mIRigidBody);
     }
     if (mechanic == BEHAVIOR_MECHANIC_ENGINE) {
-        GetOwner()->QueryInterface(&mITransmission);
+        this->GetOwner()->QueryInterface(&this->mITransmission);
     }
 }
 
@@ -128,9 +128,9 @@ AIAction *AIActionPursuitOffRoad::Construct(AIActionParams *params) {
 }
 
 bool AIActionPursuitOffRoad::ShouldDoIt() {
-    AITarget *target = mIVehicleAI->GetTarget();
+    AITarget *target = this->mIVehicleAI->GetTarget();
     UMath::Vector3 targetPosition = target->GetPosition();
-    UMath::Vector3 carPosition = mIRigidBody->GetPosition();
+    UMath::Vector3 carPosition = this->mIRigidBody->GetPosition();
     float distanceToTarget = UMath::Distance(carPosition, targetPosition);
     float distancelimit = 60.0f;
 
@@ -142,24 +142,24 @@ bool AIActionPursuitOffRoad::ShouldDoIt() {
     if (distanceToTarget > distancelimit) {
         return false;
     }
-    if (UMath::Distance(target->GetLinearVelocity(), mIRigidBody->GetLinearVelocity()) > KPH2MPS(140.0f)) {
+    if (UMath::Distance(target->GetLinearVelocity(), this->mIRigidBody->GetLinearVelocity()) > KPH2MPS(140.0f)) {
         return false;
     }
-    if (!mIVehicleAI->GetDrivableToTargetPos()) {
+    if (!this->mIVehicleAI->GetDrivableToTargetPos()) {
         return false;
     }
-    if (!mIVehicleAI->GetDrivableToDriveToNav()) {
+    if (!this->mIVehicleAI->GetDrivableToDriveToNav()) {
         return false;
     }
     return true;
 }
 
 bool AIActionPursuitOffRoad::CanBeAttempted(float dT) {
-    if (mIVehicleAI && mIPursuitAI && mITransmission && mIRigidBody) {
-        if (mIPursuitAI->GetChicken()) {
+    if (this->mIVehicleAI && this->mIPursuitAI && this->mITransmission && this->mIRigidBody) {
+        if (this->mIPursuitAI->GetChicken()) {
             return false;
         }
-        if (!ShouldDoIt()) {
+        if (!this->ShouldDoIt()) {
             return false;
         }
         return true;
@@ -168,35 +168,35 @@ bool AIActionPursuitOffRoad::CanBeAttempted(float dT) {
 }
 
 bool AIActionPursuitOffRoad::IsFinished() {
-    if (mIVehicleAI->GetTarget()->IsValid()) {
-        return ShouldDoIt() == false;
+    if (this->mIVehicleAI->GetTarget()->IsValid()) {
+        return this->ShouldDoIt() == false;
     }
     return true;
 }
 
 void AIActionPursuitOffRoad::BeginAction(float dT) {
-    if (mIVehicleAI->GetLastSpawnTime() <= 0.0f) {
+    if (this->mIVehicleAI->GetLastSpawnTime() <= 0.0f) {
         float maxSpeed = MPH2MPS(60.0f);
-        mIVehicle->SetSpeed(maxSpeed);
+        this->mIVehicle->SetSpeed(maxSpeed);
     }
-    WRoadNav *road_nav = mIVehicleAI->GetDriveToNav();
+    WRoadNav *road_nav = this->mIVehicleAI->GetDriveToNav();
     road_nav->SetNavType(WRoadNav::kTypeDirection);
     road_nav->SetLaneType(WRoadNav::kLaneCop);
     road_nav->SetCookieTrail(true);
     road_nav->ResetCookieTrail();
 
-    mIVehicleAI->ResetDriveToNav(SELECT_CURRENT_LANE);
-    mSpeedDelay.reset(mIVehicleAI->GetTarget()->GetSpeed());
-    mLimiter.init(mIVehicle->GetSpeed());
+    this->mIVehicleAI->ResetDriveToNav(SELECT_CURRENT_LANE);
+    this->mSpeedDelay.reset(this->mIVehicleAI->GetTarget()->GetSpeed());
+    this->mLimiter.init(this->mIVehicle->GetSpeed());
 }
 
 void AIActionPursuitOffRoad::FinishAction(float dT) {}
 
 void AIActionPursuitOffRoad::UpdateRoadAffinity(UMath::Vector3 &affinity) {
-    WRoadNav *drivenav = mIVehicleAI->GetDriveToNav();
+    WRoadNav *drivenav = this->mIVehicleAI->GetDriveToNav();
     const NavCookie &cookie = drivenav->GetCurrentCookie();
-    const UMath::Vector3 &position = mIRigidBody->GetPosition();
-    const UMath::Vector3 &velocity = mIRigidBody->GetLinearVelocity();
+    const UMath::Vector3 &position = this->mIRigidBody->GetPosition();
+    const UMath::Vector3 &velocity = this->mIRigidBody->GetLinearVelocity();
 
     UMath::Vector2 side = UMath::Vector2Make(cookie.Forward.y, -cookie.Forward.x);
     UMath::Vector2 loff = UMath::Vector2Make(position.x - cookie.Left.x, position.z - cookie.Left.y);
@@ -220,14 +220,14 @@ void AIActionPursuitOffRoad::UpdateRoadAffinity(UMath::Vector3 &affinity) {
 }
 
 void AIActionPursuitOffRoad::UpdateSeparation(UMath::Vector3 &separation) {
-    const AvoidableList &avoidList = mIVehicleAI->GetAvoidableList();
-    AISteer::VehicleSeperation(separation, mIVehicle, avoidList, 2.7f, 5.3f);
+    const AvoidableList &avoidList = this->mIVehicleAI->GetAvoidableList();
+    AISteer::VehicleSeperation(separation, this->mIVehicle, avoidList, 2.7f, 5.3f);
 }
 
 void AIActionPursuitOffRoad::UpdateAvoidWalls(UMath::Vector3 &avoid) {
-    UMath::Vector3 velocity = mIRigidBody->GetLinearVelocity();
+    UMath::Vector3 velocity = this->mIRigidBody->GetLinearVelocity();
     float speed = Length(velocity);
-    UMath::Vector3 position = mIRigidBody->GetPosition();
+    UMath::Vector3 position = this->mIRigidBody->GetPosition();
 
     if (speed < 2.0f) {
         return;

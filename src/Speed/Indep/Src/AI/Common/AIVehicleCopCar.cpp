@@ -22,64 +22,64 @@ Behavior *AIVehicleCopCar::Construct(const BehaviorParams &bp) {
 void AIVehicleCopCar::Update(float dT) {
     ProfileNode profile_node("TODO", 0);
 
-    bool have_simple_physics = IsSimplePhysicsActive();
+    bool have_simple_physics = this->IsSimplePhysicsActive();
     bool want_simple_physics;
 
-    if (GetVehicle()->IsOffWorld()) {
+    if (this->GetVehicle()->IsOffWorld()) {
         if (!have_simple_physics) {
-            EnableSimplePhysics();
+            this->EnableSimplePhysics();
         }
     } else if (have_simple_physics) {
         UMath::Vector3 forwardVector;
-        GetSimable()->GetRigidBody()->GetForwardVector(forwardVector);
-        UMath::Vector3 position = GetSimable()->GetRigidBody()->GetPosition();
+        this->GetSimable()->GetRigidBody()->GetForwardVector(forwardVector);
+        UMath::Vector3 position = this->GetSimable()->GetRigidBody()->GetPosition();
         position.y += 1.5f;
-        if (!GetVehicle()->SetVehicleOnGround(position, forwardVector)) {
-            GetVehicle()->SetVehicleOnGround(position, forwardVector);
+        if (!this->GetVehicle()->SetVehicleOnGround(position, forwardVector)) {
+            this->GetVehicle()->SetVehicleOnGround(position, forwardVector);
         }
-        DisableSimplePhysics();
+        this->DisableSimplePhysics();
     }
 
-    AIVehiclePursuit::Update(dT);
-    UpdateSpawnTimer(dT);
-    UpdateReverseOverride(dT);
-    UpdateTargeting();
-    UpdateRoadNavInfo();
-    if (GetGoal()) {
-        GetGoal()->Update(dT);
+    this->AIVehiclePursuit::Update(dT);
+    this->UpdateSpawnTimer(dT);
+    this->UpdateReverseOverride(dT);
+    this->UpdateTargeting();
+    this->UpdateRoadNavInfo();
+    if (this->GetGoal()) {
+        this->GetGoal()->Update(dT);
     }
-    WatchForPerps();
+    this->WatchForPerps();
 }
 
 // UNSOLVED
 bool AIVehicleCopCar::IsTetheredToTarget(UTL::COM::IUnknown *object) {
-    if (!GetTarget()->IsValid()) {
+    if (!this->GetTarget()->IsValid()) {
         return false;
     }
     // TODO
-    if (GetTarget()->IsTarget(object) || !GetInPursuit()) {
+    if (this->GetTarget()->IsTarget(object) || !this->GetInPursuit()) {
         return false;
     }
-    if (GetSimable()->GetRigidBody()->GetSpeedXZ() < MPH2MPS(50.0f)) {
+    if (this->GetSimable()->GetRigidBody()->GetSpeedXZ() < MPH2MPS(50.0f)) {
         return false;
     }
-    if (GetTarget()->GetDistTo() > 50.0f) {
+    if (this->GetTarget()->GetDistTo() > 50.0f) {
         return false;
     }
     UMath::Vector3 forwardVector;
-    GetSimable()->GetRigidBody()->GetForwardVector(forwardVector);
+    this->GetSimable()->GetRigidBody()->GetForwardVector(forwardVector);
 
-    float headingToTarget = UMath::Dot(GetTarget()->GetDirTo(), forwardVector);
+    float headingToTarget = UMath::Dot(this->GetTarget()->GetDirTo(), forwardVector);
     return headingToTarget < -0.2f;
 }
 
 void AIVehicleCopCar::WatchForPerps() {
-    if (GetInPursuit()) {
+    if (this->GetInPursuit()) {
         return;
     }
     for (IVehicle::List::const_iterator iter = IVehicle::GetList(VEHICLE_PLAYERS).begin(); iter != IVehicle::GetList(VEHICLE_PLAYERS).end(); ++iter) {
         IVehicle *itargetVehicle = *iter;
-        if (CheckForPursuit(itargetVehicle)) {
+        if (this->CheckForPursuit(itargetVehicle)) {
             return;
         }
     }
@@ -88,7 +88,7 @@ void AIVehicleCopCar::WatchForPerps() {
              ++iter) {
             IVehicle *itargetVehicle = *iter;
             DriverClass driverclass = itargetVehicle->GetDriverClass();
-            if (driverclass != DRIVER_HUMAN && driverclass != DRIVER_REMOTE && CheckForPursuit(itargetVehicle)) {
+            if (driverclass != DRIVER_HUMAN && driverclass != DRIVER_REMOTE && this->CheckForPursuit(itargetVehicle)) {
                 return;
             }
         }
@@ -101,9 +101,9 @@ bool AIVehicleCopCar::CheckForPursuit(IVehicle *itargetVehicle) {
     if (!itargetVehicle->QueryInterface(&iperp)) {
         return false;
     }
-    AITarget target(GetSimable());
+    AITarget target(this->GetSimable());
     target.Aquire(itargetSimable);
-    if (!CanSeeTarget(&target)) {
+    if (!this->CanSeeTarget(&target)) {
         return false;
     }
 
@@ -127,6 +127,6 @@ bool AIVehicleCopCar::CheckForPursuit(IVehicle *itargetVehicle) {
         return false;
     }
 
-    GetTarget()->Aquire(itargetSimable);
+    this->GetTarget()->Aquire(itargetSimable);
     return true;
 }

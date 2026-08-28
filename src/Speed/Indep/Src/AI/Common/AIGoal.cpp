@@ -4,25 +4,25 @@
 #include "Speed/Indep/Src/Misc/Profiler.hpp"
 
 AIGoal::~AIGoal() {
-    for (AIAction::List::const_iterator iter = mActions.begin(); iter != mActions.end(); ++iter) {
+    for (AIAction::List::const_iterator iter = this->mActions.begin(); iter != this->mActions.end(); ++iter) {
         delete *iter;
     }
-    mActions.clear();
+    this->mActions.clear();
 
-    mCurrentAction = nullptr;
+    this->mCurrentAction = nullptr;
 }
 
 void AIGoal::AddAction(const char *name) {
-    AIActionParams params(mOwner);
+    AIActionParams params(this->mOwner);
     AIAction *action = AIAction::CreateInstance(name, &params);
 
     action->SetActionName(name);
 
-    mActions.push_back(action);
+    this->mActions.push_back(action);
 }
 
 void AIGoal::OnBehaviorChange(const UCrc32 &mechanic) {
-    for (AIAction::List::const_iterator iter = mActions.begin(); iter != mActions.end(); ++iter) {
+    for (AIAction::List::const_iterator iter = this->mActions.begin(); iter != this->mActions.end(); ++iter) {
         (*iter)->OnBehaviorChange(mechanic);
     }
 }
@@ -31,15 +31,15 @@ void AIGoal::ChooseAction(float dT) {
     bool currentDone = false;
     float currentScore = 0.0f;
 
-    if (mCurrentAction) {
-        currentDone = mCurrentAction->IsFinished();
-        currentScore = mCurrentAction->GetScore();
+    if (this->mCurrentAction) {
+        currentDone = this->mCurrentAction->IsFinished();
+        currentScore = this->mCurrentAction->GetScore();
     }
 
     AIAction *new_action = nullptr;
-    for (AIAction::List::const_iterator iter = mActions.begin(); iter != mActions.end(); ++iter) {
+    for (AIAction::List::const_iterator iter = this->mActions.begin(); iter != this->mActions.end(); ++iter) {
         AIAction *action = *iter;
-        if (action != mCurrentAction && action->CanBeAttempted(dT)) {
+        if (action != this->mCurrentAction && action->CanBeAttempted(dT)) {
             if (currentDone || action->GetScore() >= currentScore) {
                 new_action = action;
                 currentDone = false;
@@ -48,10 +48,10 @@ void AIGoal::ChooseAction(float dT) {
         }
     }
     if (new_action) {
-        if (mCurrentAction) {
-            mCurrentAction->FinishAction(dT);
+        if (this->mCurrentAction) {
+            this->mCurrentAction->FinishAction(dT);
         }
-        mCurrentAction = new_action;
+        this->mCurrentAction = new_action;
         new_action->BeginAction(dT);
     }
 }
@@ -61,17 +61,17 @@ void AIGoal::Update(float dT) {
 
     {
         ProfileNode profile_node("TODO2", 0);
-        ChooseAction(dT);
+        this->ChooseAction(dT);
     }
-    if (mCurrentAction) {
+    if (this->mCurrentAction) {
         ProfileNode profile_node("TODO3", 0);
-        mCurrentAction->Update(dT);
+        this->mCurrentAction->Update(dT);
     }
 }
 
 AIGoal::AIGoal(ISimable *isimable) {
-    mOwner = isimable;
-    mCurrentAction = nullptr;
+    this->mOwner = isimable;
+    this->mCurrentAction = nullptr;
 }
 
 // TODO move these to the header?
@@ -91,7 +91,7 @@ class AIGoalNone : public AIGoal {
 UTL::COM::Factory<ISimable *, AIGoal, UCrc32>::Prototype _AIGoalNone("AIGoalNone", AIGoalNone::Construct);
 
 AIGoalNone::AIGoalNone(ISimable *isimable) : AIGoal(isimable) {
-    AddAction("AIActionNone");
+    this->AddAction("AIActionNone");
 }
 
 // total size: 0x18
@@ -109,8 +109,8 @@ class AIGoalTraffic : public AIGoal {
 UTL::COM::Factory<ISimable *, AIGoal, UCrc32>::Prototype _AIGoalTraffic("AIGoalTraffic", AIGoalTraffic::Construct);
 
 AIGoalTraffic::AIGoalTraffic(ISimable *isimable) : AIGoal(isimable) {
-    AddAction("AIActionTraffic");
-    ChooseAction(0.0f);
+    this->AddAction("AIActionTraffic");
+    this->ChooseAction(0.0f);
 }
 
 // total size: 0x18
@@ -128,9 +128,9 @@ class AIGoalPatrol : public AIGoal {
 UTL::COM::Factory<ISimable *, AIGoal, UCrc32>::Prototype _AIGoalPatrol("AIGoalPatrol", AIGoalPatrol::Construct);
 
 AIGoalPatrol::AIGoalPatrol(ISimable *isimable) : AIGoal(isimable) {
-    AddAction("AIActionTraffic");
-    AddAction("AIActionTooDamaged");
-    ChooseAction(0.0f);
+    this->AddAction("AIActionTraffic");
+    this->AddAction("AIActionTooDamaged");
+    this->ChooseAction(0.0f);
 }
 
 // total size: 0x1C
@@ -157,23 +157,23 @@ UTL::COM::Factory<ISimable *, AIGoal, UCrc32>::Prototype _AIGoalPursuit("AIGoalP
 AIGoalPursuit::AIGoalPursuit(ISimable *isimable)
     : AIGoal(isimable), //
       mFwdCG(0.0f) {
-    AddAction("AIActionPursuitOffRoad");
-    AddAction("AIActionRace");
+    this->AddAction("AIActionPursuitOffRoad");
+    this->AddAction("AIActionRace");
 
-    if (!GetOwner()->IsPlayer()) {
-        AddAction("AIActionTraffic");
+    if (!this->GetOwner()->IsPlayer()) {
+        this->AddAction("AIActionTraffic");
     }
 
-    AddAction("AIActionTooDamaged");
-    AddAction("AIActionGetUnstuck");
-    AddAction("AIActionAirborne");
+    this->AddAction("AIActionTooDamaged");
+    this->AddAction("AIActionGetUnstuck");
+    this->AddAction("AIActionAirborne");
 
-    ChooseAction(0.0f);
+    this->ChooseAction(0.0f);
 }
 
 void AIGoalPursuit::Update(float dT) {
     ProfileNode profile_node("TODO", 0);
-    AIGoal::Update(dT);
+    this->AIGoal::Update(dT);
 }
 
 AIGoalPursuit::~AIGoalPursuit() {}
@@ -193,11 +193,11 @@ class AIGoalStopShort : public AIGoal {
 UTL::COM::Factory<ISimable *, AIGoal, UCrc32>::Prototype _AIGoalStopShort("AIGoalStopShort", AIGoalStopShort::Construct);
 
 AIGoalStopShort::AIGoalStopShort(ISimable *isimable) : AIGoal(isimable) {
-    AddAction("AIActionStopShort");
-    AddAction("AIActionTooDamaged");
-    AddAction("AIActionGetUnstuck");
-    AddAction("AIActionAirborne");
-    ChooseAction(0.0f);
+    this->AddAction("AIActionStopShort");
+    this->AddAction("AIActionTooDamaged");
+    this->AddAction("AIActionGetUnstuck");
+    this->AddAction("AIActionAirborne");
+    this->ChooseAction(0.0f);
 }
 
 // total size: 0x18
@@ -215,13 +215,13 @@ class AIGoalRam : public AIGoal {
 UTL::COM::Factory<ISimable *, AIGoal, UCrc32>::Prototype _AIGoalRam("AIGoalRam", AIGoalRam::Construct);
 
 AIGoalRam::AIGoalRam(ISimable *isimable) : AIGoal(isimable) {
-    AddAction("AIActionRam");
-    AddAction("AIActionPursuitOffRoad");
-    AddAction("AIActionRace");
-    AddAction("AIActionTooDamaged");
-    AddAction("AIActionGetUnstuck");
-    AddAction("AIActionAirborne");
-    ChooseAction(0.0f);
+    this->AddAction("AIActionRam");
+    this->AddAction("AIActionPursuitOffRoad");
+    this->AddAction("AIActionRace");
+    this->AddAction("AIActionTooDamaged");
+    this->AddAction("AIActionGetUnstuck");
+    this->AddAction("AIActionAirborne");
+    this->ChooseAction(0.0f);
 }
 
 // total size: 0x18
@@ -239,13 +239,13 @@ class AIGoalPit : public AIGoal {
 UTL::COM::Factory<ISimable *, AIGoal, UCrc32>::Prototype _AIGoalPit("AIGoalPit", AIGoalPit::Construct);
 
 AIGoalPit::AIGoalPit(ISimable *isimable) : AIGoal(isimable) {
-    AddAction("AIActionRam");
-    AddAction("AIActionPursuitOffRoad");
-    AddAction("AIActionRace");
-    AddAction("AIActionTooDamaged");
-    AddAction("AIActionGetUnstuck");
-    AddAction("AIActionAirborne");
-    ChooseAction(0.0f);
+    this->AddAction("AIActionRam");
+    this->AddAction("AIActionPursuitOffRoad");
+    this->AddAction("AIActionRace");
+    this->AddAction("AIActionTooDamaged");
+    this->AddAction("AIActionGetUnstuck");
+    this->AddAction("AIActionAirborne");
+    this->ChooseAction(0.0f);
 }
 
 // total size: 0x18
@@ -285,12 +285,12 @@ AIGoalHeadOnRam::AIGoalHeadOnRam(ISimable *isimable) : AIGoal(isimable) {
         UMath::Vector3 off = UMath::Vector3Make(0.0f, 0.0f, -3.0f);
         ipv->SetInPositionOffset(off);
     }
-    AddAction("AIActionHeadOnRam");
-    AddAction("AIActionRace");
-    AddAction("AIActionTooDamaged");
-    AddAction("AIActionGetUnstuck");
-    AddAction("AIActionAirborne");
-    ChooseAction(0.0f);
+    this->AddAction("AIActionHeadOnRam");
+    this->AddAction("AIActionRace");
+    this->AddAction("AIActionTooDamaged");
+    this->AddAction("AIActionGetUnstuck");
+    this->AddAction("AIActionAirborne");
+    this->ChooseAction(0.0f);
 }
 
 // total size: 0x18
@@ -308,8 +308,8 @@ class AIGoalStaticRoadBlock : public AIGoal {
 UTL::COM::Factory<ISimable *, AIGoal, UCrc32>::Prototype _AIGoalStaticRoadBlock("AIGoalStaticRoadBlock", AIGoalStaticRoadBlock::Construct);
 
 AIGoalStaticRoadBlock::AIGoalStaticRoadBlock(ISimable *isimable) : AIGoal(isimable) {
-    AddAction("AIActionStaticRoadBlock");
-    ChooseAction(0.0f);
+    this->AddAction("AIActionStaticRoadBlock");
+    this->ChooseAction(0.0f);
 }
 
 // total size: 0x18
@@ -327,11 +327,11 @@ class AIGoalFleePursuit : public AIGoal {
 UTL::COM::Factory<ISimable *, AIGoal, UCrc32>::Prototype _AIGoalFleePursuit("AIGoalFleePursuit", AIGoalFleePursuit::Construct);
 
 AIGoalFleePursuit::AIGoalFleePursuit(ISimable *isimable) : AIGoal(isimable) {
-    AddAction("AIActionRace");
-    AddAction("AIActionTooDamaged");
-    AddAction("AIActionGetUnstuck");
-    AddAction("AIActionAirborne");
-    ChooseAction(0.0f);
+    this->AddAction("AIActionRace");
+    this->AddAction("AIActionTooDamaged");
+    this->AddAction("AIActionGetUnstuck");
+    this->AddAction("AIActionAirborne");
+    this->ChooseAction(0.0f);
 }
 
 // total size: 0x18
@@ -349,9 +349,9 @@ class AIGoalHeliPursuit : public AIGoal {
 UTL::COM::Factory<ISimable *, AIGoal, UCrc32>::Prototype _AIGoalHeliPursuit("AIGoalHeliPursuit", AIGoalHeliPursuit::Construct);
 
 AIGoalHeliPursuit::AIGoalHeliPursuit(ISimable *isimable) : AIGoal(isimable) {
-    AddAction("AIActionHeliPursuit");
-    AddAction("AIActionTooDamaged");
-    ChooseAction(0.0f);
+    this->AddAction("AIActionHeliPursuit");
+    this->AddAction("AIActionTooDamaged");
+    this->ChooseAction(0.0f);
 }
 
 // total size: 0x18
@@ -370,20 +370,20 @@ class AIGoalHeliExit : public AIGoal {
 UTL::COM::Factory<ISimable *, AIGoal, UCrc32>::Prototype _AIGoalHeliExit("AIGoalHeliExit", AIGoalHeliExit::Construct);
 
 AIGoalHeliExit::AIGoalHeliExit(ISimable *isimable) : AIGoal(isimable) {
-    AddAction("AIActionHeliExit");
-    AddAction("AIActionTooDamaged");
-    ChooseAction(0.0f);
+    this->AddAction("AIActionHeliExit");
+    this->AddAction("AIActionTooDamaged");
+    this->ChooseAction(0.0f);
 }
 
 void AIGoalHeliExit::Update(float dT) {
-    AIGoal::Update(dT);
-    if (!IsCurrentAction("AIActionHeliExit")) {
+    this->AIGoal::Update(dT);
+    if (!this->IsCurrentAction("AIActionHeliExit")) {
         return;
     }
-    if (mCurrentAction->IsFinished()) {
+    if (this->mCurrentAction->IsFinished()) {
         IVehicleAI *iai;
         // no if check
-        GetOwner()->QueryInterface(&iai);
+        this->GetOwner()->QueryInterface(&iai);
         iai->UnSpawn();
     }
 }
@@ -404,7 +404,7 @@ class AIGoalRacer : public AIGoal {
 UTL::COM::Factory<ISimable *, AIGoal, UCrc32>::Prototype _AIGoalRacer("AIGoalRacer", AIGoalRacer::Construct);
 
 AIGoalRacer::AIGoalRacer(ISimable *isimable) : AIGoal(isimable) {
-    AddAction("AIActionRace");
-    AddAction("AIActionGetUnstuck");
-    ChooseAction(0.0f);
+    this->AddAction("AIActionRace");
+    this->AddAction("AIActionGetUnstuck");
+    this->ChooseAction(0.0f);
 }

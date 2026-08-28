@@ -38,23 +38,23 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
     float GetOverSteerCorrection(float steer);
 
     const UMath::Vector3 &GetAngularVelocity() const {
-        return mCollisionBody->GetAngularVelocity();
+        return this->mCollisionBody->GetAngularVelocity();
     }
 
     const UMath::Vector3 &GetLinearVelocity() const {
-        return mCollisionBody->GetLinearVelocity();
+        return this->mCollisionBody->GetLinearVelocity();
     }
 
     const UMath::Vector3 &GetPosition() const {
-        return mCollisionBody->GetPosition();
+        return this->mCollisionBody->GetPosition();
     }
 
     const UMath::Matrix4 &GetOrientation() const {
-        return mCollisionBody->GetMatrix4();
+        return this->mCollisionBody->GetMatrix4();
     }
 
     const UMath::Vector3 &GetForwardVector() const {
-        return UMath::Vector4To3(GetOrientation().v2);
+        return UMath::Vector4To3(this->GetOrientation().v2);
     }
 
     const UMath::Vector3 &GetUpVector() const;
@@ -65,22 +65,22 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
 
     // IVehicleAI
     ISimable *GetSimable() const override {
-        return Behavior::GetOwner();
+        return this->Behavior::GetOwner();
     }
 
     IVehicle *GetVehicle() const override {
-        return VehicleBehavior::GetVehicle();
+        return this->VehicleBehavior::GetVehicle();
     }
 
     ISuspension *GetSuspension() const {
-        return mISuspension;
+        return this->mISuspension;
     }
 
     virtual void Update(float dT);
 
     // IVehicleAI
     const AvoidableList &GetAvoidableList() override {
-        return GetAvoidableNeighbors();
+        return this->GetAvoidableNeighbors();
     }
 
     // AIAvoidable
@@ -88,7 +88,7 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
 
     // IVehicleAI
     void SetAvoidableRadius(float radius) override {
-        mAvoidableRadius = radius;
+        this->mAvoidableRadius = radius;
     }
 
     const AISplinePath *GetSplinePath() override {
@@ -104,19 +104,19 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
     bool ResetVehicleToRoadPos(const UMath::Vector3 &position, const UMath::Vector3 &forwardVector) override;
 
     WRoadNav *GetDriveToNav() override {
-        return mDriveToNav;
+        return this->mDriveToNav;
     }
 
     bool GetDrivableToDriveToNav() const override {
-        return mDrivableToNav;
+        return this->mDrivableToNav;
     }
 
     float GetDriveSpeed() override {
-        return mDriveSpeed;
+        return this->mDriveSpeed;
     }
 
     void SetDriveSpeed(float driveSpeed) override {
-        mDriveSpeed = driveSpeed;
+        this->mDriveSpeed = driveSpeed;
     }
 
     WRoadNav *GetCollNav(const UMath::Vector3 &forwardVector, float predictTime) override;
@@ -127,37 +127,37 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
     const UMath::Vector3 &GetSeekAheadPosition() override;
 
     const UMath::Vector3 &GetDriveTarget() override {
-        return mDest;
+        return this->mDest;
     }
 
     void SetDriveTarget(const UMath::Vector3 &dest) override {
-        mDest = dest;
+        this->mDest = dest;
     }
 
     float GetLookAhead() override;
 
     unsigned int GetDriveFlags() const override {
-        return mDriveFlags;
+        return this->mDriveFlags;
     }
 
     void ClearDriveFlags() override {
-        mDriveFlags = 0;
+        this->mDriveFlags = 0;
     }
 
     void DoReverse() override {
-        mDriveFlags |= 4;
+        this->mDriveFlags |= 4;
     }
 
     void DoSteering() override {
-        mDriveFlags |= 1;
+        this->mDriveFlags |= 1;
     }
 
     void DoGasBrake() override {
-        mDriveFlags |= 2;
+        this->mDriveFlags |= 2;
     }
 
     void DoDriving(unsigned int flags) override {
-        mDriveFlags = flags;
+        this->mDriveFlags = flags;
     }
 
     float GetPathDistanceRemaining() override;
@@ -165,19 +165,19 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
     void SetReverseOverride(float time) override;
 
     bool GetReverseOverride() override {
-        return mReverseOverrideTimer > 0.0f;
+        return this->mReverseOverrideTimer > 0.0f;
     }
 
     void ClearReverseOverride();
 
     AITarget *GetTarget() const override {
-        return mTarget;
+        return this->mTarget;
     }
 
     // short GetDestSegment() const {}
 
     bool GetDrivableToTargetPos() const override {
-        return mDrivableToTargetPos;
+        return this->mDrivableToTargetPos;
     }
 
     void SetSpawned() override;
@@ -186,27 +186,27 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
 
     // Overrides: IVehicleAI
     float GetLastSpawnTime() override {
-        return mLastSpawnTime;
+        return this->mLastSpawnTime;
     }
 
     // Overrides: IVehicleAI
     const Attrib::Gen::aivehicle &GetAttributes() const override {
-        return *mAttributes;
+        return *this->mAttributes;
     }
 
     // Overrides: IVehicleAI
     float GetTopSpeed() const override {
-        return mTopSpeed;
+        return this->mTopSpeed;
     }
 
     // Overrides: IVehicleAI
     IPursuit *GetPursuit() override {
-        return mPursuit;
+        return this->mPursuit;
     }
 
     // Overrides: IVehicleAI
     IRoadBlock *GetRoadBlock() override {
-        return mRoadBlock;
+        return this->mRoadBlock;
     }
 
     float GetAcceleration(float at) const override;
@@ -216,31 +216,31 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
 
     // Overrides: IVehicleAI
     bool IsCurrentGoal(const UCrc32 &name) override {
-        return name == mGoalName;
+        return name == this->mGoalName;
     }
 
     UCrc32 &GetGoalName() override {
-        return mGoalName;
+        return this->mGoalName;
     }
 
     void SetGoal(const UCrc32 &name);
 
     AIGoal *GetGoal() const {
-        return mCurrentGoal;
+        return this->mCurrentGoal;
     }
 
     // IVehicleAI
     bool IsCurrentAction(const UCrc32 &name) override {
-        if (mCurrentGoal) {
-            return mCurrentGoal->IsCurrentAction(name);
+        if (this->mCurrentGoal) {
+            return this->mCurrentGoal->IsCurrentAction(name);
         } else {
             return false;
         }
     }
 
     UCrc32 GetActionName() override {
-        if (mCurrentGoal) {
-            return mCurrentGoal->GetActionName();
+        if (this->mCurrentGoal) {
+            return this->mCurrentGoal->GetActionName();
         } else {
             return (const char *)nullptr;
         }
@@ -259,11 +259,11 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
     }
 
     EventSequencer::IEngine *GetEngine() const {
-        return mIEngine;
+        return this->mIEngine;
     }
 
     ITransmission *GetTransmission() const {
-        return mITransmission;
+        return this->mITransmission;
     }
 
     // IChassis *GetSuspension() const;
@@ -289,14 +289,14 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
 
     // Behavior
     void Reset() override {
-        ResetDriveToNav(SELECT_CURRENT_LANE);
+        this->ResetDriveToNav(SELECT_CURRENT_LANE);
     }
 
     virtual void ResetInternals();
     void ClearGoal();
 
     void UpdateSpawnTimer(float dT) {
-        mLastSpawnTime += dT;
+        this->mLastSpawnTime += dT;
     }
 
     void UpdateRoadNavInfo();
@@ -324,7 +324,7 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
     void OnBehaviorChange(const UCrc32 &mechanic) override;
 
     IInput *GetInput() const {
-        return mIInput;
+        return this->mIInput;
     }
 
     WRoadNav *mDriveToNav;             // offset 0x70, size 0x4
@@ -384,7 +384,7 @@ class AIVehicleEmpty : public AIVehicle {
 
     // Overrides: AIVehicle
     void Update(float dT) override {
-        AIVehicle::Update(dT);
+        this->AIVehicle::Update(dT);
     }
 
     // Overrides: AIVehicle
@@ -494,62 +494,62 @@ class AIPerpVehicle : public AIVehiclePid, public IPerpetrator, public ICause, p
 
     // Overrides: IPerpetrator
     bool IsHiddenFromCars() const override {
-        return mHiddenFromCars;
+        return this->mHiddenFromCars;
     }
 
     // Overrides: IPerpetrator
     bool IsHiddenFromHelicopters() const override {
-        return mHiddenFromHelicopters;
+        return this->mHiddenFromHelicopters;
     }
 
     // Overrides: IPerpetrator
     int GetPendingRepPointsNormal() const override {
-        return mPendingRepPointsNormal;
+        return this->mPendingRepPointsNormal;
     }
 
     // Overrides: IPerpetrator
     int GetPendingRepPointsFromCopDestruction() const override {
-        return mPendingRepPointsFromCopDestruction;
+        return this->mPendingRepPointsFromCopDestruction;
     }
 
     // Overrides: IPerpetrator
     void ClearPendingRepPoints() override {
-        mPendingRepPointsNormal = 0;
-        mPendingRepPointsFromCopDestruction = 0;
+        this->mPendingRepPointsNormal = 0;
+        this->mPendingRepPointsFromCopDestruction = 0;
     }
 
     // Overrides: IPerpetrator
     Attrib::Gen::pursuitescalation *GetPursuitEscalationAttrib() override {
-        return mPursuitEscalationAttrib;
+        return this->mPursuitEscalationAttrib;
     }
 
     // Overrides: IPerpetrator
     Attrib::Gen::pursuitlevels *GetPursuitLevelAttrib() override {
-        return mPursuitLevelAttrib;
+        return this->mPursuitLevelAttrib;
     }
 
     // Overrides: IPerpetrator
     Attrib::Gen::pursuitsupport *GetPursuitSupportAttrib() override {
-        return mPursuitSupportAttrib;
+        return this->mPursuitSupportAttrib;
     }
 
     // Overrides: IPerpetrator
     GRacerInfo *GetRacerInfo() const override {
-        return pRacerInfo;
+        return this->pRacerInfo;
     }
 
     // Overrides: IPerpetrator
     float GetShortcutSkill() const override {
-        return bClamp(fBaseSkill + fGlueOutput, 0.0f, 1.0f);
+        return bClamp(this->fBaseSkill + this->fGlueOutput, 0.0f, 1.0f);
     }
 
     // Overrides: IPerpetrator
     float Get911CallTime() const override {
-        return m911CallTimer;
+        return this->m911CallTimer;
     }
 
     bool IsOnLegalRoad() {
-        return GetCurrentRoad()->IsOnLegalRoad();
+        return this->GetCurrentRoad()->IsOnLegalRoad();
     }
 
   private:
@@ -634,37 +634,37 @@ class AIVehicleHuman : public AIVehicleRacecar, public IHumanAI {
 
     // Overrides: IHumanAI
     bool IsPlayerSteering() override {
-        if (bAiControl) {
+        if (this->bAiControl) {
             return false;
         } else {
-            return IsDragSteering() == false;
+            return this->IsDragSteering() == false;
         }
     }
 
     // Overrides: IHumanAI
     bool GetAiControl() override {
-        return bAiControl;
+        return this->bAiControl;
     }
 
     // Overrides: IHumanAI
     void SetWorldMoment(const UMath::Vector3 &position, float radius) override {
-        vMomentPosition = position;
-        fMomentRadius = radius;
+        this->vMomentPosition = position;
+        this->fMomentRadius = radius;
     }
 
     // Overrides: IHumanAI
     const UMath::Vector3 &GetWorldMomentPosition() override {
-        return vMomentPosition;
+        return this->vMomentPosition;
     }
 
     // Overrides: IHumanAI
     float GetWorldMomentRadius() override {
-        return fMomentRadius;
+        return this->fMomentRadius;
     }
 
     // Overrides: IHumanAI
     void ClearWorldMoment() override {
-        fMomentRadius = 0.0f;
+        this->fMomentRadius = 0.0f;
     }
 
     // Overrides: IVehicleAI
@@ -674,7 +674,7 @@ class AIVehicleHuman : public AIVehicleRacecar, public IHumanAI {
 
     // Overrides: IHumanAI
     bool IsFacingWrongWay() const override {
-        return mWrongWay;
+        return this->mWrongWay;
     }
 
     // Overrides: ICheater

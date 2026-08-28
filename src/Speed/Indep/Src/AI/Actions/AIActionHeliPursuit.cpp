@@ -92,36 +92,36 @@ AIActionHeliPursuit::AIActionHeliPursuit(AIActionParams *params, float score)
       mPlayerSpeed(0.0f),                      //
       mPursuitMode(kStraight_Line),            //
       mCollisionAbort(0) {
-    MakeDebugable(DBG_AI);
+    this->MakeDebugable(DBG_AI);
 
-    params->mOwner->QueryInterface(&mIVehicleAI);
-    params->mOwner->QueryInterface(&mIPursuitAI);
-    params->mOwner->QueryInterface(&mIVehicle);
+    params->mOwner->QueryInterface(&this->mIVehicleAI);
+    params->mOwner->QueryInterface(&this->mIPursuitAI);
+    params->mOwner->QueryInterface(&this->mIVehicle);
     params->mOwner->QueryInterface(&mIAIHelicopter);
-    mIRigidBody = params->mOwner->GetRigidBody();
-    Sim::Collision::AddListener(this, mIRigidBody, "AIActionHeliPursuit");
+    this->mIRigidBody = params->mOwner->GetRigidBody();
+    Sim::Collision::AddListener(this, this->mIRigidBody, "AIActionHeliPursuit");
 }
 
 void AIActionHeliPursuit::OnCollision(const COLLISION_INFO &cinfo) {
-    if (mSkidKnockTimer <= 0.0f) {
+    if (this->mSkidKnockTimer <= 0.0f) {
         return;
     }
     if (cinfo.type == COLLISION_INFO::GROUND) {
-        mCollisionAbort += 2;
+        this->mCollisionAbort += 2;
     } else if (cinfo.type == COLLISION_INFO::OBJECT) {
         ISimable *obja = ISimable::FindInstance(cinfo.objA);
         if (!obja || !obja->IsPlayer()) {
             ISimable *objb = ISimable::FindInstance(cinfo.objB);
             if (objb && objb->IsPlayer()) {
-                mCollisionAbort += 5;
+                this->mCollisionAbort += 5;
             }
         } else {
-            mCollisionAbort += 5;
+            this->mCollisionAbort += 5;
         }
     }
 
-    if (mCollisionAbort > 20) {
-        mSkidKnockTimer = 0.0f;
+    if (this->mCollisionAbort > 20) {
+        this->mSkidKnockTimer = 0.0f;
     }
 }
 
@@ -130,39 +130,39 @@ AIAction *AIActionHeliPursuit::Construct(AIActionParams *params) {
 }
 
 bool AIActionHeliPursuit::IsFinished() {
-    return mPursuitTime > 10.0f;
+    return this->mPursuitTime > 10.0f;
 }
 
 void AIActionHeliPursuit::FinishAction(float dT) {
-    mPursuitTime = 0.0f;
-    mSkidKnockTimer = 0.0f;
+    this->mPursuitTime = 0.0f;
+    this->mSkidKnockTimer = 0.0f;
 }
 
 void AIActionHeliPursuit::StartPathToPlayerCar() {
     IRigidBody *mPlayerRigidBody = IPlayer::First(PLAYER_LOCAL)->GetSimable()->GetRigidBody();
     UMath::Vector3 seekPosition = mPlayerRigidBody->GetPosition();
     mIAIHelicopter->StartPathToPoint(seekPosition);
-    mBuildingPath = true;
-    mPathTime = mPursuitTime;
+    this->mBuildingPath = true;
+    this->mPathTime = this->mPursuitTime;
 }
 
 void AIActionHeliPursuit::BeginAction(float dT) {
-    StartPathToPlayerCar();
+    this->StartPathToPlayerCar();
 }
 
 void AIActionHeliPursuit::StraightLinePursuit() {
-    UMath::Vector3 myPosition = mIRigidBody->GetPosition();
+    UMath::Vector3 myPosition = this->mIRigidBody->GetPosition();
     UMath::Vector3 seekPosition;
     UMath::Vector3 direction;
     UMath::Vector3 perp2Me;
 
-    UMath::Vector3 perpUnitVel = mPlayerRigidBody->GetLinearVelocity();
+    UMath::Vector3 perpUnitVel = this->mPlayerRigidBody->GetLinearVelocity();
     UMath::Unit(perpUnitVel, perpUnitVel);
-    UMath::Sub(myPosition, mPlayerPosition, perp2Me);
+    UMath::Sub(myPosition, this->mPlayerPosition, perp2Me);
 
     bool SkidHitEnabled = false;
-    if (mIVehicleAI->GetPursuit()->SkidHitEnabled()) {
-        SkidHitEnabled = mSkidKnockTimer < -5.0f;
+    if (this->mIVehicleAI->GetPursuit()->SkidHitEnabled()) {
+        SkidHitEnabled = this->mSkidKnockTimer < -5.0f;
     }
     float heliAheadOfPerpDot = UMath::Length(perp2Me);
     float distToPerp;
@@ -170,10 +170,10 @@ void AIActionHeliPursuit::StraightLinePursuit() {
         float ydif = perp2Me.y;
         perp2Me.y = 0.0f;
         perpUnitVel.y = 0.0f;
-        if (UMath::Dot(perp2Me, perpUnitVel) / heliAheadOfPerpDot > 0.707f && mIVehicleAI && SkidHitEnabled && ydif < 13.0f) {
-            mPursuitMode = kSkid_Hit_Approach;
-            mSkidKnockTimer = 8.0f;
-            mSkidHitOffset = UMath::Vector3::kZero;
+        if (UMath::Dot(perp2Me, perpUnitVel) / heliAheadOfPerpDot > 0.707f && this->mIVehicleAI && SkidHitEnabled && ydif < 13.0f) {
+            this->mPursuitMode = kSkid_Hit_Approach;
+            this->mSkidKnockTimer = 8.0f;
+            this->mSkidHitOffset = UMath::Vector3::kZero;
             SoundAI *copspeech = SoundAI::Get();
             if (copspeech && copspeech->GetHeli()) {
                 int parm = bRandom(2) != 0 ? 2 : 4;
@@ -182,10 +182,10 @@ void AIActionHeliPursuit::StraightLinePursuit() {
         }
     }
 
-    mPlayerRigidBody->GetForwardVector(direction);
+    this->mPlayerRigidBody->GetForwardVector(direction);
     UMath::Unit(direction, direction);
 
-    float leadDist = mPlayerSpeed * 0.4f + 30.0f;
+    float leadDist = this->mPlayerSpeed * 0.4f + 30.0f;
     if (leadDist > 45.0f) {
         leadDist = 45.0f;
     }
@@ -193,11 +193,11 @@ void AIActionHeliPursuit::StraightLinePursuit() {
         leadDist *= 0.75f;
     }
 
-    UMath::ScaleAdd(direction, leadDist, mPlayerPosition, seekPosition);
+    UMath::ScaleAdd(direction, leadDist, this->mPlayerPosition, seekPosition);
 
-    if (mSkidKnockTimer > 0.0f) {
+    if (this->mSkidKnockTimer > 0.0f) {
         seekPosition.y += 2.0f;
-    } else if (heliAheadOfPerpDot > 55.0f || mSkidKnockTimer > -5.0f) {
+    } else if (heliAheadOfPerpDot > 55.0f || this->mSkidKnockTimer > -5.0f) {
         seekPosition.y += 12.0f;
     } else {
         seekPosition.y += 6.0f;
@@ -211,7 +211,7 @@ void AIActionHeliPursuit::StraightLinePursuit() {
     meToSeek.y = 0.0f;
     float distToSeekPos = UMath::Normalize(meToSeek);
 
-    float adjustDriving = UMath::Dot(meToSeek, mPlayerRigidBody->GetLinearVelocity());
+    float adjustDriving = UMath::Dot(meToSeek, this->mPlayerRigidBody->GetLinearVelocity());
     if (adjustDriving < 0.0f) {
         adjustDriving *= 0.5f;
     }
@@ -229,61 +229,61 @@ void AIActionHeliPursuit::StraightLinePursuit() {
         } else {
             desiredClosingSpeed = distToSeekPos;
         }
-        if (distToSeekPos < 5.0f && mPlayerSpeed < 15.0f) {
-            lookAtPosition = &mPlayerPosition;
+        if (distToSeekPos < 5.0f && this->mPlayerSpeed < 15.0f) {
+            lookAtPosition = &this->mPlayerPosition;
         }
     }
     driveSpeed = adjustDriving + desiredClosingSpeed;
-    mIVehicleAI->SetDriveSpeed(driveSpeed);
+    this->mIVehicleAI->SetDriveSpeed(driveSpeed);
 
     mIAIHelicopter->SetDestinationVelocity(mPlayerRigidBody->GetLinearVelocity());
 
     seekPosition.y = chaseHeight;
-    mIVehicleAI->SetDriveTarget(seekPosition);
+    this->mIVehicleAI->SetDriveTarget(seekPosition);
 
     mIAIHelicopter->SetLookAtPosition(*lookAtPosition);
 
-    mIVehicleAI->DoDriving(7);
+    this->mIVehicleAI->DoDriving(7);
 }
 
 void AIActionHeliPursuit::SkidHitPursuit() {
     UMath::Vector3 seekPosition;
-    UMath::Vector3 myPosition = mIRigidBody->GetPosition();
+    UMath::Vector3 myPosition = this->mIRigidBody->GetPosition();
     UMath::Vector3 perp2Me;
-    UMath::Sub(myPosition, mPlayerPosition, perp2Me);
+    UMath::Sub(myPosition, this->mPlayerPosition, perp2Me);
 
     UMath::Vector3 perpForward;
-    mPlayerRigidBody->GetForwardVector(perpForward);
+    this->mPlayerRigidBody->GetForwardVector(perpForward);
 
     UMath::Vector3 perpLinVel;
-    perpLinVel = mPlayerRigidBody->GetLinearVelocity();
+    perpLinVel = this->mPlayerRigidBody->GetLinearVelocity();
 
     UMath::Vector3 perpRightVec;
-    mPlayerRigidBody->GetRightVector(perpRightVec);
+    this->mPlayerRigidBody->GetRightVector(perpRightVec);
 
     float dot = UMath::Dot(perpForward, perp2Me);
     float dist2PerpSQ = UMath::LengthSquare(perp2Me);
     float dotWithRight = UMath::Dot(perp2Me, perpRightVec);
 
-    if (mPursuitMode == kSkid_Hit_Approach) {
+    if (this->mPursuitMode == kSkid_Hit_Approach) {
         float rscale = 6.0f;
         if (dotWithRight < 0.0f) {
             rscale = -6.0f;
         }
-        UMath::Scale(perpRightVec, rscale, mSkidHitOffset);
+        UMath::Scale(perpRightVec, rscale, this->mSkidHitOffset);
         UMath::Vector3 localOffset;
-        UMath::ScaleAdd(perpLinVel, 0.23f, mSkidHitOffset, localOffset);
+        UMath::ScaleAdd(perpLinVel, 0.23f, this->mSkidHitOffset, localOffset);
         localOffset.y += 1.8f;
         if (perp2Me.y < 2.0f) {
             localOffset.y += 3.0f;
         }
-        UMath::Add(localOffset, mPlayerPosition, seekPosition);
+        UMath::Add(localOffset, this->mPlayerPosition, seekPosition);
 
         float dToStrikeStart = UMath::Distancexz(seekPosition, myPosition);
         if (dToStrikeStart < 4.0f && UMath::Abs(dotWithRight) > 1.9f) {
-            mPursuitMode = kSkid_Hit_Strike;
-            if (mSkidKnockTimer < 2.0f) {
-                mSkidKnockTimer = 2.0f;
+            this->mPursuitMode = kSkid_Hit_Strike;
+            if (this->mSkidKnockTimer < 2.0f) {
+                this->mSkidKnockTimer = 2.0f;
             }
             SoundAI *copspeech = SoundAI::Get();
             if (copspeech && copspeech->GetHeli()) {
@@ -293,44 +293,44 @@ void AIActionHeliPursuit::SkidHitPursuit() {
     } else {
         UMath::Vector3 localOffset;
         UMath::Scale(perpLinVel, 0.092f, localOffset);
-        UMath::ScaleAdd(mSkidHitOffset, -0.5f, localOffset, localOffset);
+        UMath::ScaleAdd(this->mSkidHitOffset, -0.5f, localOffset, localOffset);
         localOffset.y += 0.4f;
-        UMath::Add(localOffset, mPlayerPosition, seekPosition);
+        UMath::Add(localOffset, this->mPlayerPosition, seekPosition);
     }
 
     UMath::Vector3 lookPosition;
-    UMath::Add(mPlayerPosition, perpLinVel, lookPosition);
+    UMath::Add(this->mPlayerPosition, perpLinVel, lookPosition);
     mIAIHelicopter->SetLookAtPosition(lookPosition);
-    mIVehicleAI->SetDriveSpeed(6.25f);
+    this->mIVehicleAI->SetDriveSpeed(6.25f);
 
-    UMath::Vector3 destVel = mPlayerRigidBody->GetLinearVelocity();
+    UMath::Vector3 destVel = this->mPlayerRigidBody->GetLinearVelocity();
     mIAIHelicopter->SetDestinationVelocity(destVel);
-    mIVehicleAI->SetDriveTarget(seekPosition);
-    mIVehicleAI->DoDriving(7);
+    this->mIVehicleAI->SetDriveTarget(seekPosition);
+    this->mIVehicleAI->DoDriving(7);
 
     if (dot > 0.0f) {
         if (dist2PerpSQ > 1600.0f) {
-            mSkidKnockTimer = 0.0f;
+            this->mSkidKnockTimer = 0.0f;
         }
-        if (myPosition.y < mPlayerPosition.y) {
-            mSkidKnockTimer = 0.0f;
+        if (myPosition.y < this->mPlayerPosition.y) {
+            this->mSkidKnockTimer = 0.0f;
         }
     } else if (dist2PerpSQ > 144.0f) {
-        mSkidKnockTimer = 0.0f;
+        this->mSkidKnockTimer = 0.0f;
     }
 
-    if (mSkidKnockTimer <= 0.0f) {
-        mPursuitMode = kStraight_Line;
+    if (this->mSkidKnockTimer <= 0.0f) {
+        this->mPursuitMode = kStraight_Line;
     }
 }
 
 void AIActionHeliPursuit::SetNextPerpSearchDest() {
-    IPursuit *ip = mIVehicleAI->GetPursuit();
+    IPursuit *ip = this->mIVehicleAI->GetPursuit();
     if (!ip) {
         return;
     }
     const UMath::Vector3 &centre = ip->GetLastKnownLocation();
-    AITarget *target = mIVehicleAI->GetTarget();
+    AITarget *target = this->mIVehicleAI->GetTarget();
     IPerpetrator *iperp;
     target->QueryInterface(&iperp);
 
@@ -342,68 +342,68 @@ void AIActionHeliPursuit::SetNextPerpSearchDest() {
     float workingRadius = Sim::GetRandom()._SimRandom_FloatRange(radius * 0.7f) + radius * 0.2f;
     UMath::Vector3 baseVector = UMath::Vector3Make(workingRadius, 0.0f, 0.0f);
 
-    mSearchPatternAngle += 0.125f;
-    if (mSearchPatternAngle >= 1.0f) {
-        mSearchPatternAngle -= 1.0f;
+    this->mSearchPatternAngle += 0.125f;
+    if (this->mSearchPatternAngle >= 1.0f) {
+        this->mSearchPatternAngle -= 1.0f;
     }
-    UMath::RotateInXZ(mSearchPatternAngle, baseVector, mSearchDestPoint);
-    UMath::Add(mSearchDestPoint, centre, mSearchDestPoint);
+    UMath::RotateInXZ(this->mSearchPatternAngle, baseVector, this->mSearchDestPoint);
+    UMath::Add(this->mSearchDestPoint, centre, this->mSearchDestPoint);
     mIAIHelicopter->FilterHeliAltitude(mSearchDestPoint);
-    mSearchDestPoint.y += 5.0f;
+    this->mSearchDestPoint.y += 5.0f;
 }
 
 // how can this have a diff??
 void AIActionHeliPursuit::SearchForPerp() {
-    UMath::Vector3 myPosition = mIRigidBody->GetPosition();
-    float dToDest = UMath::Distancexz(mSearchDestPoint, myPosition);
+    UMath::Vector3 myPosition = this->mIRigidBody->GetPosition();
+    float dToDest = UMath::Distancexz(this->mSearchDestPoint, myPosition);
     if (dToDest < 30.0f) {
-        SetNextPerpSearchDest();
+        this->SetNextPerpSearchDest();
     }
-    mIVehicleAI->SetDriveSpeed(70.0f);
-    UMath::Vector3 destVel = mIRigidBody->GetLinearVelocity();
+    this->mIVehicleAI->SetDriveSpeed(70.0f);
+    UMath::Vector3 destVel = this->mIRigidBody->GetLinearVelocity();
     mIAIHelicopter->SetDestinationVelocity(destVel);
-    mIVehicleAI->SetDriveTarget(destVel);
+    this->mIVehicleAI->SetDriveTarget(destVel);
     mIAIHelicopter->SetLookAtPosition(mSearchDestPoint);
-    mIVehicleAI->DoDriving(7); // TODO magic
+    this->mIVehicleAI->DoDriving(7); // TODO magic
 }
 
 bool bIgnoreHeliSheet;
 bool NeverIgnoreHeliSheet;
 
 void AIActionHeliPursuit::Update(float dT) {
-    mPursuitTime += dT;
-    mSkidKnockTimer -= dT;
-    if (mCollisionAbort != 0) {
-        mCollisionAbort--;
+    this->mPursuitTime += dT;
+    this->mSkidKnockTimer -= dT;
+    if (this->mCollisionAbort != 0) {
+        this->mCollisionAbort--;
     }
-    mPlayerRigidBody = IPlayer::First(PLAYER_LOCAL)->GetSimable()->GetRigidBody();
-    mPlayerPosition = mPlayerRigidBody->GetPosition();
-    mPlayerSpeed = mPlayerRigidBody->GetSpeed();
-    IPursuit *ip = mIVehicleAI->GetPursuit();
+    this->mPlayerRigidBody = IPlayer::First(PLAYER_LOCAL)->GetSimable()->GetRigidBody();
+    this->mPlayerPosition = this->mPlayerRigidBody->GetPosition();
+    this->mPlayerSpeed = this->mPlayerRigidBody->GetSpeed();
+    IPursuit *ip = this->mIVehicleAI->GetPursuit();
     if (ip && !ip->IsPerpInSight()) {
-        if (mPursuitMode != kSearch_Pattern) {
-            SetNextPerpSearchDest();
-            mPursuitMode = kSearch_Pattern;
+        if (this->mPursuitMode != kSearch_Pattern) {
+            this->SetNextPerpSearchDest();
+            this->mPursuitMode = kSearch_Pattern;
         }
     } else {
-        if (mPursuitMode == kSearch_Pattern) {
-            mPursuitMode = kStraight_Line;
+        if (this->mPursuitMode == kSearch_Pattern) {
+            this->mPursuitMode = kStraight_Line;
         }
     }
     bIgnoreHeliSheet = false;
-    switch (mPursuitMode) {
+    switch (this->mPursuitMode) {
         case kStraight_Line:
-            StraightLinePursuit();
+            this->StraightLinePursuit();
             break;
         case kSkid_Hit_Approach:
         case kSkid_Hit_Strike:
             if (!NeverIgnoreHeliSheet) {
                 bIgnoreHeliSheet = true;
             }
-            SkidHitPursuit();
+            this->SkidHitPursuit();
             break;
         case kSearch_Pattern:
-            SearchForPerp();
+            this->SearchForPerp();
             break;
     }
 }

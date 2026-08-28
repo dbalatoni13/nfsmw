@@ -62,36 +62,36 @@ class AIAction : public Sim::Object, public UTL::COM::Factory<AIActionParams *, 
     virtual void Update(float dT);
 
     ISimable *GetOwner() const {
-        return mActionParams.mOwner;
+        return this->mActionParams.mOwner;
     }
 
     const AIActionParams &GetActionParams() const {
-        return mActionParams;
+        return this->mActionParams;
     }
 
     const char *GetActionNameString() {
-        return mActionNameString;
+        return this->mActionNameString;
     }
 
     void SetActionName(const char *name) {
-        mActionNameString = name;
-        mActionNameCrc = name;
+        this->mActionNameString = name;
+        this->mActionNameCrc = name;
     }
 
     UCrc32 GetActionName() {
-        return mActionNameCrc;
+        return this->mActionNameCrc;
     }
 
     IVehicle *GetVehicle() const {
-        return mVehicle;
+        return this->mVehicle;
     }
 
     IVehicleAI *GetAI() const {
-        return mAI;
+        return this->mAI;
     }
 
     float GetScore() {
-        return mScore;
+        return this->mScore;
     }
 
   protected:
@@ -115,7 +115,7 @@ class performance_limiter {
     void update(float speed, float maxspeed, float maxaccel, float dt);
 
     float get_speed_limit() {
-        return speed_limit;
+        return this->speed_limit;
     }
 
   private:

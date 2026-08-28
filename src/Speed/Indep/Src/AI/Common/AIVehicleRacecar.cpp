@@ -48,7 +48,7 @@ AIVehiclePid::AIVehiclePid(const BehaviorParams &bp, float update_rate, float st
     this->pSteeringController->SetTuningThreshold(eI_TERM, 0.01f);
     this->pSteeringController->SetTuningThreshold(eD_TERM, 0.01f);
 
-    IVehicle *vehicle = GetVehicle();
+    IVehicle *vehicle = this->GetVehicle();
     bool drag_racing = false;
     if (vehicle && vehicle->GetDriverStyle() == STYLE_DRAG) {
         drag_racing = vehicle->GetDriverClass() == DRIVER_HUMAN;
@@ -67,24 +67,24 @@ AIVehiclePid::AIVehiclePid(const BehaviorParams &bp, float update_rate, float st
 }
 
 AIVehiclePid::~AIVehiclePid() {
-    delete pBodyError;
-    delete pHeadingError;
-    delete pVelocityError;
-    delete pSteeringController;
-    delete pThrottleBrakeController;
+    delete this->pBodyError;
+    delete this->pHeadingError;
+    delete this->pVelocityError;
+    delete this->pSteeringController;
+    delete this->pThrottleBrakeController;
 }
 
 void AIVehiclePid::Reset() {
-    mThrottleBrake = 0.0f;
-    AIVehicle::Reset();
+    this->mThrottleBrake = 0.0f;
+    this->AIVehicle::Reset();
 }
 
 void AIVehiclePid::OnGasBrake(float dT) {
     // TODO magic
-    if (!(GetDriveFlags() & 2)) {
+    if (!(this->GetDriveFlags() & 2)) {
         return;
     }
-    IInput *input = GetInput();
+    IInput *input = this->GetInput();
     if (!input) {
         return;
     }
@@ -93,50 +93,50 @@ void AIVehiclePid::OnGasBrake(float dT) {
     input->SetControlHandBrake(0.0f);
     input->SetControlSteeringVertical(0.0f);
 
-    if (GetVehicle()->IsStaging()) {
-        mThrottleBrake = 0.8f;
-    } else if (!mReversingSpeed && mSteeringBehind) {
-        mThrottleBrake = 1.0f;
+    if (this->GetVehicle()->IsStaging()) {
+        this->mThrottleBrake = 0.8f;
+    } else if (!this->mReversingSpeed && this->mSteeringBehind) {
+        this->mThrottleBrake = 1.0f;
         input->SetControlHandBrake(1.0f);
     } else {
         bool reversing = false;
-        if (GetTransmission() && GetTransmission()->IsReversing()) {
+        if (this->GetTransmission() && this->GetTransmission()->IsReversing()) {
             reversing = true;
         }
-        float currentSpeed = GetVehicle()->GetSpeed();
-        float desiredSpeed = mDriveSpeed;
-        float speed_error = currentSpeed - mDriveSpeed;
+        float currentSpeed = this->GetVehicle()->GetSpeed();
+        float desiredSpeed = this->mDriveSpeed;
+        float speed_error = currentSpeed - this->mDriveSpeed;
 
-        pVelocityError->Record(speed_error, dT, false, false);
+        this->pVelocityError->Record(speed_error, dT, false, false);
 
         if (desiredSpeed < 0.5f) {
-            mThrottleBrake = -1.0f;
+            this->mThrottleBrake = -1.0f;
         } else {
             if (reversing) {
                 if (currentSpeed > 1.0f) {
-                    mThrottleBrake = -1.0f;
+                    this->mThrottleBrake = -1.0f;
                 } else {
-                    mThrottleBrake = 1.0f;
+                    this->mThrottleBrake = 1.0f;
                 }
             } else if (currentSpeed < -1.0f) {
-                mThrottleBrake = -1.0f;
+                this->mThrottleBrake = -1.0f;
                 // one of the branches has lots of code that didn't make it
             } else {
-                float speed_error_integral = bClamp(pVelocityError->GetErrorIntegral(), -5.0f, 5.0f);
-                float speed_error_derivative = bClamp(pVelocityError->GetErrorDerivative(), -10.0f, 10.0f);
+                float speed_error_integral = bClamp(this->pVelocityError->GetErrorIntegral(), -5.0f, 5.0f);
+                float speed_error_derivative = bClamp(this->pVelocityError->GetErrorDerivative(), -10.0f, 10.0f);
 
                 float p = speed_error * -0.4f;
                 float i = speed_error_integral * -0.01f;
                 float d = speed_error_derivative * -0.1f;
 
-                mThrottleBrake += p + i + d;
+                this->mThrottleBrake += p + i + d;
             }
         }
     }
-    mPrevDesiredSpeed = mDriveSpeed;
-    mThrottleBrake = UMath::Clamp(mThrottleBrake, -1.0f, 1.0f);
-    input->SetControlGas(bClamp(mThrottleBrake, 0.0f, 1.0f));
-    input->SetControlBrake(bClamp(-mThrottleBrake, 0.0f, 1.0f));
+    this->mPrevDesiredSpeed = this->mDriveSpeed;
+    this->mThrottleBrake = UMath::Clamp(this->mThrottleBrake, -1.0f, 1.0f);
+    input->SetControlGas(bClamp(this->mThrottleBrake, 0.0f, 1.0f));
+    input->SetControlBrake(bClamp(-this->mThrottleBrake, 0.0f, 1.0f));
 }
 
 // void AIVehiclePid::OnSteering(float dT) {}
@@ -144,28 +144,28 @@ void AIVehiclePid::OnGasBrake(float dT) {
 AIVehicleRacecar::AIVehicleRacecar(const BehaviorParams &bp)
     : AIPerpVehicle(bp), //
       IRacer(bp.fowner) {
-    SetGoal("AIGoalRacer");
+    this->SetGoal("AIGoalRacer");
 }
 
 AIVehicleRacecar::~AIVehicleRacecar() {}
 
 void AIVehicleRacecar::StartRace(DriverStyle style) {
-    ClearGoal();
-    GetVehicle()->SetDriverStyle(style);
-    SetGoal("AIGoalRacer");
+    this->ClearGoal();
+    this->GetVehicle()->SetDriverStyle(style);
+    this->SetGoal("AIGoalRacer");
 
     IInputPlayer *input;
-    if (GetOwner()->QueryInterface(&input)) {
+    if (this->GetOwner()->QueryInterface(&input)) {
         input->BlockInput(false);
     }
 
     IRBVehicle *vehiclebody;
-    if (GetOwner()->QueryInterface(&vehiclebody)) {
+    if (this->GetOwner()->QueryInterface(&vehiclebody)) {
         vehiclebody->SetInvulnerability(INVULNERABLE_NONE, 0.0f);
         vehiclebody->EnableObjectCollisions(true);
     }
 
-    WRoadNav *nav = GetDriveToNav();
+    WRoadNav *nav = this->GetDriveToNav();
     if (nav) {
         if (style == STYLE_DRAG) {
             nav->SetLaneType(WRoadNav::kLaneDrag);
@@ -175,18 +175,18 @@ void AIVehicleRacecar::StartRace(DriverStyle style) {
         nav->SetRaceFilter(true);
         nav->CancelPathFinding();
         nav->SetNavType(WRoadNav::kTypeDirection);
-        ResetDriveToNav(SELECT_VALID_LANE);
+        this->ResetDriveToNav(SELECT_VALID_LANE);
 
         if (nav->IsValid()) {
-            AITarget *target = GetTarget();
+            AITarget *target = this->GetTarget();
             if (target->IsValid()) {
                 nav->FindPath(&target->GetPosition(), &target->GetDirection(), nullptr);
             }
 
             if (style == STYLE_DRAG) {
-                nav->IncNavPosition(30.0f, GetForwardVector(), 0.0f);
+                nav->IncNavPosition(30.0f, this->GetForwardVector(), 0.0f);
             } else {
-                nav->IncNavPosition(60.0f, GetForwardVector(), 0.0f);
+                nav->IncNavPosition(60.0f, this->GetForwardVector(), 0.0f);
             }
 
             nav->UpdateOccludedPosition(false);
@@ -195,62 +195,62 @@ void AIVehicleRacecar::StartRace(DriverStyle style) {
 }
 
 void AIVehicleRacecar::QuitRace() {
-    GetVehicle()->SetDriverStyle(STYLE_RACING);
+    this->GetVehicle()->SetDriverStyle(STYLE_RACING);
 
     IInputPlayer *input;
-    if (GetOwner()->QueryInterface(&input)) {
+    if (this->GetOwner()->QueryInterface(&input)) {
         input->BlockInput(false);
     }
 
-    AITarget *target = GetTarget();
+    AITarget *target = this->GetTarget();
     if (target) {
         target->Clear();
     }
 
     IRBVehicle *vehiclebody;
-    if (GetOwner()->QueryInterface(&vehiclebody)) {
+    if (this->GetOwner()->QueryInterface(&vehiclebody)) {
         vehiclebody->SetInvulnerability(INVULNERABLE_NONE, 0.0f);
         vehiclebody->EnableObjectCollisions(1);
     }
 
-    WRoadNav *nav = GetDriveToNav();
+    WRoadNav *nav = this->GetDriveToNav();
     if (nav) {
         nav->SetNavType(WRoadNav::kTypeDirection);
         nav->SetLaneType(WRoadNav::kLaneRacing);
         nav->SetRaceFilter(false);
         nav->CancelPathFinding();
-        ResetDriveToNav(SELECT_VALID_LANE);
+        this->ResetDriveToNav(SELECT_VALID_LANE);
     }
 }
 
 void AIVehicleRacecar::PrepareForRace(const RacePreparationInfo &rpi) {
-    ClearGoal();
-    ComputeSkill();
+    this->ClearGoal();
+    this->ComputeSkill();
 
-    IVehicle *vehicle = GetVehicle();
+    IVehicle *vehicle = this->GetVehicle();
     vehicle->Activate();
     vehicle->SetVehicleOnGround(rpi.Position, rpi.Direction);
 
-    ClearReverseOverride();
+    this->ClearReverseOverride();
     vehicle->SetSpeed(rpi.Speed);
     vehicle->ForceStopOff(vehicle->GetForceStop());
 
-    SetHeat(UMath::Max(rpi.HeatLevel, 1.0f));
+    this->SetHeat(UMath::Max(rpi.HeatLevel, 1.0f));
 
     bool valid_start_position = rpi.Flags & 1;
     if (valid_start_position) {
         IDamageable *damageable;
-        if (GetOwner()->QueryInterface(&damageable)) {
+        if (this->GetOwner()->QueryInterface(&damageable)) {
             damageable->ResetDamage();
         }
     }
 
     IEngine *engine;
-    if (GetOwner()->QueryInterface(&engine)) {
+    if (this->GetOwner()->QueryInterface(&engine)) {
         engine->ChargeNOS(1.0f);
     }
 
-    IPlayer *player = GetOwner()->GetPlayer();
+    IPlayer *player = this->GetOwner()->GetPlayer();
     if (player) {
         player->ResetGameBreaker(true);
     }
@@ -262,37 +262,37 @@ Behavior *AIVehicleRacecar::Construct(const BehaviorParams &bp) {
 
 // Functionally matching
 bool AIVehicleRacecar::ShouldDoSimplePhysics() const {
-    if (GetVehicle()->IsAnimating())
+    if (this->GetVehicle()->IsAnimating())
         return false;
-    if (GetVehicle()->IsStaging())
+    if (this->GetVehicle()->IsStaging())
         return false;
-    if (GetOwner()->IsPlayer())
+    if (this->GetOwner()->IsPlayer())
         return false;
-    if (GetVehicle()->IsOffWorld())
+    if (this->GetVehicle()->IsOffWorld())
         return true;
 
     return false;
 }
 
 void AIVehicleRacecar::Update(float dT) {
-    ISimable *simable = GetSimable();
-    bool have_simple_physics = IsSimplePhysicsActive();
-    bool want_simple_physics = ShouldDoSimplePhysics();
+    ISimable *simable = this->GetSimable();
+    bool have_simple_physics = this->IsSimplePhysicsActive();
+    bool want_simple_physics = this->ShouldDoSimplePhysics();
 
     if (want_simple_physics) {
         if (!have_simple_physics) {
-            EnableSimplePhysics();
+            this->EnableSimplePhysics();
         }
     } else if (have_simple_physics) {
-        DisableSimplePhysics();
+        this->DisableSimplePhysics();
     }
 
-    AIPerpVehicle::Update(dT);
-    UpdateSpawnTimer(dT);
-    UpdateReverseOverride(dT);
-    UpdateTargeting();
+    this->AIPerpVehicle::Update(dT);
+    this->UpdateSpawnTimer(dT);
+    this->UpdateReverseOverride(dT);
+    this->UpdateTargeting();
 
-    if (GetGoal()) {
-        GetGoal()->Update(dT);
+    if (this->GetGoal()) {
+        this->GetGoal()->Update(dT);
     }
 }

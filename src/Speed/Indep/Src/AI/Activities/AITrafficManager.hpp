@@ -31,7 +31,7 @@ class AITrafficManager : public Sim::Activity, public ITrafficMgr, public IVehic
         Attrib::Key CollectionKey;
 
         bool operator<(const PatternKey &rhs) const {
-            return BHash < rhs.BHash;
+            return this->BHash < rhs.BHash;
         }
     };
 
@@ -40,8 +40,8 @@ class AITrafficManager : public Sim::Activity, public ITrafficMgr, public IVehic
             PatternKey key;
             key.BHash = bhash;
             key.CollectionKey = 0;
-            const_iterator iter = std::lower_bound(begin(), end(), key);
-            if (iter != end() && iter->BHash == bhash) {
+            const_iterator iter = std::lower_bound(this->begin(), this->end(), key);
+            if (iter != this->end() && iter->BHash == bhash) {
                 return iter->CollectionKey;
             }
             return 0;

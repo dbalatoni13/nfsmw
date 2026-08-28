@@ -33,7 +33,7 @@ class AICopManager : public Sim::Activity, public AISpawnManager, public ICopMgr
               InPursuit(inp), //
               InRoadBlock(inr) {
 
-            bStrCpy(VehicleName, vn);
+            bStrCpy(this->VehicleName, vn);
         }
 
         UMath::Vector3 InitialPos; // offset 0x0, size 0xC
@@ -110,7 +110,7 @@ class AICopManager : public Sim::Activity, public AISpawnManager, public ICopMgr
 
     // ICopMgr
     float GetLockoutTimeRemaining() const override {
-        return mLockoutTimer;
+        return this->mLockoutTimer;
     }
 #ifdef EA_BUILD_A124
     bool VehicleSpawningEnabled(bool isdespawn);
