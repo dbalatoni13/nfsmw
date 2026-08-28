@@ -92,16 +92,6 @@ void SNDAEMSI_resolvemodulebank(
     int streamfileoffset
 );
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-int SNDAEMS_removemodulebank(int mbhandle);
-
-#ifdef __cplusplus
-}
-#endif
-
 extern AemsDef::SNDAEMS sndaems;
 extern AemsDef::PLAYERSETOPTSFN *SNDAEMSoptfn[12];
 

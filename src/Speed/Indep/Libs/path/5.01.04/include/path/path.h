@@ -1,6 +1,8 @@
 #ifndef __PATHH__
 #define __PATHH__ // Decl: 2
 
+#include "Allocator/iallocator.h"
+
 #define PATH_H_MAJORREV 5              // Decl: 7
 #define PATH_H_MINORREV 01             // Decl: 8
 #define PATH_H_PATCHREV 04             // Decl: 9
@@ -109,8 +111,14 @@ typedef void (*PATHAbortMsgFunc)(const char *, ...); // Decl: 271
 
 typedef int (*PATHDebugPrintFunc)(const char *, ...); // Decl: 282
 
+namespace Path {
+class IPathTrack;
+};
+
 int PATH_control(int tracks, unsigned int controller);
 int PATH_pause(int tracks, unsigned char pause);
+PATHTRACKPLAYSTATUS PATH_trackstatus(unsigned int trackhandle);
+int PATH_status(int trackhandle, PATHSTATUS *psps);
 int PATH_stop(int tracks);
 
 int PATH_event(int tracks, unsigned int eventID);
@@ -118,11 +126,19 @@ int PATH_clearallevents(int projects);
 
 int PATH_volume(int tracks, signed char scale);
 
-#define PATH_vectortoreal5 ERROR - Must #define USEREALCORE to use this function      // Decl: 319
-#define PATH_vectortoreal5async ERROR - Must #define USEREALCORE to use this function // Decl: 320
-#define PATH_vectortoreal6 ERROR - Must #define USEREALCORE to use this function      // Decl: 321
-#define PATH_vectortoreal6async ERROR - Must #define USEREALCORE to use this function // Decl: 322
+void PATH_vectortosnd();
 
-#define PATH_vectortorwaudiocore ERROR - Must #define USERWAUDIOCORE to use this function // Decl: 346
+int PATH_shutdown();
+int PATH_addmapfile(char *pmap);
+void PATH_callbacks(SongProgressCallback progresscb, EventReleaseCallback eventcb, EventActionCallback actioncb);
+int PATH_destroy(int trackhandle);
+Path::IPathTrack *PATH_gettrackimp(int trackhandle);
+
+void PATH_setallocator(EA::Allocator::IAllocator *allocator, const EA::TagValuePair &flags);
+
+int PATH_createstreamtrack(int trackhandle, char *musfilename, int latency);
+Path::IPathTrack *PATH_createstreamimp(int trackhandle, int maxrequests, float buffertime);
+
+void PATH_vectortoreal6();
 
 #endif

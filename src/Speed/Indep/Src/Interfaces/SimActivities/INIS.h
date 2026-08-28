@@ -11,6 +11,30 @@
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
+enum NIS_CAR_IDS {
+    NIS_PLAYER_CAR1 = 0,
+    NIS_PLAYER_CAR2 = 1,
+    NIS_PLAYER_CAR3 = 2,
+    NIS_PLAYER_CAR4 = 3,
+    NIS_PLAYER_CAR5 = 4,
+    NIS_PLAYER_CAR6 = 5,
+    NIS_PLAYER_CAR7 = 6,
+    NIS_PLAYER_CAR8 = 7,
+    NIS_COP_CAR1 = 8,
+    NIS_COP_CAR2 = 9,
+    NIS_COP_CAR3 = 10,
+    NIS_COP_CAR4 = 11,
+    NIS_COP_CAR5 = 12,
+    NIS_COP_CAR6 = 13,
+    NIS_COP_CAR7 = 14,
+    NIS_COP_CAR8 = 15,
+    NIS_MAX_CARS = 16,
+};
+
+static const int NIS_MAX_RACERS = 30; // size: 0x4, Decl: 171
+static const int NIS_MAX_COPS = 8;    // size: 0x4, Decl: 172
+
+// Decl: 27
 class INIS : public UTL::COM::IUnknown, public UTL::Collections::Singleton<INIS> {
   public:
     DECL_INTERFACE(INIS);

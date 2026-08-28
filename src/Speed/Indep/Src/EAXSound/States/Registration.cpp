@@ -36,6 +36,7 @@
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_AccelTrans.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Collision.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_MasterVol.hpp"
+#include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Physics.hpp"
 
 void RegisterSFX() {
     CSTATEMGR_Base::RegisterSFX(TYPEINFO(CARSFX_SingleGinsuEng));

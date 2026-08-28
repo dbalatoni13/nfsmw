@@ -261,6 +261,10 @@ inline void Sub(const Vector3 &a, const Vector3 &b, Vector3 &r) {
     VU0_v3sub(a, b, r);
 }
 
+inline void Sub(const Vector4 &a, const Vector4 &b, Vector4 &r) {
+    VU0_v4sub(a, b, r);
+}
+
 inline void Subxyz(const Vector4 &a, const Vector4 &b, Vector4 &r) {
     VU0_v4subxyz(a, b, r);
 }

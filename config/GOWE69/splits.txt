@@ -71,14 +71,14 @@ Speed/Indep/SourceLists/zEAXSound.cpp:
 	.text       start:0x800A6128 end:0x800CAF5C
 	.ctors      start:0x803C8B84 end:0x803C8B88
 	.rodata     start:0x803D5E38 end:0x803D9050
-	.data       start:0x80417634 end:0x80417D88
+	.data       start:0x80417634 end:0x80417E2C
 	.bss        start:0x8045B268 end:0x8045DE60
 
 Speed/Indep/SourceLists/zEAXSound2.cpp:
 	.text       start:0x800CAF5C end:0x800F486C
 	.ctors      start:0x803C8B88 end:0x803C8B8C
 	.rodata     start:0x803D9050 end:0x803DD6D8
-	.data       start:0x80417D88 end:0x8041A5A4
+	.data       start:0x80417E2C end:0x8041A5A4
 	.bss        start:0x8045DE60 end:0x8045ECB0
 
 Speed/Indep/SourceLists/zEcstasy.cpp:

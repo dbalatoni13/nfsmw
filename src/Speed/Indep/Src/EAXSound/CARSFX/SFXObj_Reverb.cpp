@@ -4,6 +4,8 @@
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/Src/World/ParameterMaps.hpp"
 
+#define PRINT_REVERB_SWAP // Decl: 23
+
 DEFINE_CREATABLE(0x20100, SFXObj_Reverb, SndBase);
 
 // size: 0x30, address: 0x80418214, Decl: 45

@@ -264,6 +264,9 @@ class TrackStreamer {
 
     bool IsLoadingInProgress();
 
+    bool IsLoadingInProgressNonRepeatable() {
+        return LoadingPhase != LOADING_IDLE;
+    }
     bool AreAllSectionsActivated();
 
     void RefreshLoading();

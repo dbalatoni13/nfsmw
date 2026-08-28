@@ -1,4 +1,5 @@
 #include "Speed\Indep\Src\Camera\CameraMover.hpp"
+#include "CameraNoise.hpp"
 #include "ICE/ICEManager.hpp"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"

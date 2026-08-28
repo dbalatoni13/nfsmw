@@ -121,11 +121,11 @@ class Average : public AverageBase {
     void Reset(float fValue);
     void Flush(float fValue);
 
-    float GetValue() {
+    float GetValue() const {
         return fAverage;
     }
 
-    float GetTotal() {
+    float GetTotal() const {
         return fTotal;
     }
 
@@ -145,6 +145,7 @@ class AverageWindow : public Average {
     AverageWindow(float f_timewindow, float f_frequency);
     ~AverageWindow();
 
+    // TODO out of line
     float GetOldestValue() {
         return pData[iOldestValue];
     }
@@ -153,7 +154,7 @@ class AverageWindow : public Average {
         return pTimeData[iOldestValue];
     }
 
-    void Record(const float fValue, const float fTimeNow);
+    void Record(float fValue, float fTimeNow);
     void Reset(float fValue);
 
     float fTimeWindow;

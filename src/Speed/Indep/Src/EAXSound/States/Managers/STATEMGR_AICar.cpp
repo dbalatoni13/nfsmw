@@ -24,7 +24,7 @@ void CSTATEMGR_AICar::DebugDisplayAIConnections() {}
 
 void CSTATEMGR_AICar::EnterWorld(eSndGameMode esgm) {
     int SFXIDs = 0x91;
-    int numopponents = bMin(4, IVehicle::Count(VEHICLE_AIRACERS) + IVehicle::Count(VEHICLE_REMOTE));
+    int numopponents = bMin(IVehicle::Count(VEHICLE_AIRACERS) + IVehicle::Count(VEHICLE_REMOTE), 4);
     int SFXCTRLS = 0xC0;
 
     if (bUsingGinsu) {

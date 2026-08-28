@@ -23,10 +23,7 @@ enum NIS_ENGINE_REVING_STATE {
 class SFXCTL_Physics : public SFXCTL {
   public:
     DECLARE_CREATABLE();
-
     SFXCTL_Physics();
-
-    // Overrides: AudioMemBase
     ~SFXCTL_Physics() override;
 
     // Overrides: SndBase
@@ -35,19 +32,15 @@ class SFXCTL_Physics : public SFXCTL {
     void SetupSFX(CSTATE_Base *_StateBase) override;
     void InitSFX() override;
 
-    float GetPhysRPM() {} // Decl: 37
+    // Decl: 37
+    float GetPhysRPM() {
+        return this->PhysicsRPM;
+    }
 
-    virtual float GetPhysTRQ() {} // Decl: 45
-
-    bool IsCarAccelerating() {} // Decl: 58
-
-    Gear GetGear() {} // Decl: 67
-
-    void MsgRevEngine(const MAIEngineRev &message);
-
-    void MsgRevOff(const MAIEngineRev &message);
-
-    void UpdateNIS(float TotalTime, float deltaTime);
+    // Decl: 45
+    virtual float GetPhysTRQ() {
+        return this->PhysicsTRQ;
+    }
 
     bool m_bBlownEngineStreamQueued; // offset 0x28, size 0x1, Decl: 35
 
@@ -66,6 +59,10 @@ class SFXCTL_Physics : public SFXCTL {
     Average m_fDeltaDesiredSpeed; // offset 0x54, size 0x28, Decl: 54
     float m_tHoldDecel;           // offset 0x7C, size 0x4, Decl: 55
 
+    // Decl: 58
+    bool IsCarAccelerating() {
+        return this->IsAccelerating;
+    }
     bool IsAccelerating; // offset 0x80, size 0x1, Decl: 59
     float t_Last_Deccel; // offset 0x84, size 0x4, Decl: 60
     float t_Last_Accel;  // offset 0x88, size 0x4, Decl: 61
@@ -73,10 +70,17 @@ class SFXCTL_Physics : public SFXCTL {
     Gear m_CurGear;  // offset 0x8C, size 0x4, Decl: 64
     Gear m_LastGear; // offset 0x90, size 0x4, Decl: 65
 
+    // Decl: 67
+    Gear GetGear() {
+        return this->m_CurGear;
+    }
+
     bMatrix4 *mRPMCurve; // offset 0x94, size 0x4, Decl: 69
 
+    void MsgRevEngine(const MAIEngineRev &message);
     Hermes::HHANDLER mMsgRevEngine; // offset 0x98, size 0x4, Decl: 77
 
+    void MsgRevOff(const MAIEngineRev &message);
     Hermes::HHANDLER mMsgRevOff; // offset 0x9C, size 0x4, Decl: 80
 
     bool PattternPlay;     // offset 0xA0, size 0x1, Decl: 86
@@ -86,6 +90,7 @@ class SFXCTL_Physics : public SFXCTL {
 
     int RevFramesRemaining; // offset 0xB0, size 0x4, Decl: 92
 
+    void UpdateNIS(float TotalTime, float deltaTime);
     bool NISRevingEnabled;                      // offset 0xB4, size 0x1, Decl: 94
     NIS_ENGINE_REVING_STATE eCurNisRevingState; // offset 0xB8, size 0x4, Decl: 95
 
@@ -102,10 +107,7 @@ class SFXCTL_Physics : public SFXCTL {
 class SFXCTL_AIPhysics : public SFXCTL_Physics {
   public:
     DECLARE_CREATABLE();
-
     SFXCTL_AIPhysics();
-
-    // Overrides: AudioMemBase
     ~SFXCTL_AIPhysics() override;
 
     // Overrides: SndBase
@@ -119,8 +121,11 @@ class SFXCTL_AIPhysics : public SFXCTL_Physics {
     void UpdateAccel(float t);
     SFXCTL_Shifting *m_pShiftCtl; // offset 0xD0, size 0x4, Decl: 128
 
-    SndAIStateManager AIStateManager;         // offset 0xD4, size 0x194, Decl: 134
-    SndAIStateManager *GetAIStateManager() {} // Decl: 135
+    SndAIStateManager AIStateManager; // offset 0xD4, size 0x194, Decl: 134
+    // Decl: 135
+    SndAIStateManager *GetAIStateManager() {
+        return &this->AIStateManager;
+    }
 
     bool IsDrifting;  // offset 0x268, size 0x1, Decl: 137
     bool IsCornering; // offset 0x26C, size 0x1, Decl: 138
@@ -149,7 +154,6 @@ class SFXCTL_AIPhysics : public SFXCTL_Physics {
 class SFXCTL_TruckPhysics : public SFXCTL_AIPhysics {
   public:
     DECLARE_CREATABLE();
-
     SFXCTL_TruckPhysics() {} // Decl: 170
 };
 

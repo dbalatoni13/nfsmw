@@ -74,6 +74,7 @@
 #define END_SOURCELIST(_MODULE)
 #define THIS_SCOPE_EXECUTES_ONLY_ONCE()
 
+// TODO get rid of these
 #ifdef DEBUG_OPT
 #define ENABLE_IN_DEBUG true
 #else

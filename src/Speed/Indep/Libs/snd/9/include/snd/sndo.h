@@ -80,45 +80,7 @@
 
 #define SNDCALL // Decl: 143
 
-#ifdef __cplusplus
-
-namespace Snd {
-
-// total size: 0x1
-class GlobalFxProcessor {
-public:
-    static Csis::Result GetMaxBuses(int *pBuses);
-
-    static Csis::Result SetMaxBuses(int buses);
-
-    static Csis::Result CreateInstance(Snd::Device device, int bus, GlobalFxProcessor **ppGlobalFxProcessor);
-
-    Csis::Result Release();
-
-    Csis::Result UpdatePreset(ExtendedFxPreset *pExtendedFxPreset);
-
-    Csis::Result SetCustom(void *pFxDefinition);
-
-    Csis::Result Reset();
-
-    Csis::Result SetOutputLevel(float level);
-
-private:
-    GlobalFxProcessor();
-
-    ~GlobalFxProcessor();
-
-public:
-    Csis::Result SetPreset(ExtendedFxPreset *pExtendedFxPreset);
-
-    Csis::Result SetPreset(FxPreset fxPreset);
-};
-
-
-}
-
-#endif
-
+// TODO remove and use SNDCALL per function
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -196,10 +158,10 @@ typedef struct SNDSAMPLEDESC {
 
 // total size: 0x20
 typedef struct SNDPACKETENTRY {
-    int handle; // offset 0x0, size 0x4
-    int numframes : 31; // offset 0x4, size 0x4
+    int handle;           // offset 0x0, size 0x4
+    int numframes : 31;   // offset 0x4, size 0x4
     int continuation : 1; // offset 0x4, size 0x4
-    void *psamples[6]; // offset 0x8, size 0x18
+    void *psamples[6];    // offset 0x8, size 0x18
 } SNDPACKETENTRY;
 
 // total size: 0x24
@@ -234,28 +196,29 @@ typedef struct SNDFILTERDEF {
 } SNDFILTERDEF;
 
 // total size: 0x9C
+// TODO move this to sndcmn.h
 struct SNDPACKETCHAN {
-    volatile int shandle; // offset 0x0, size 0x4
-    volatile int lastpackethandle; // offset 0x4, size 0x4
-    volatile unsigned int masterReleasePacket; // offset 0x8, size 0x4
-    volatile unsigned int masterCurrentPacket; // offset 0xC, size 0x4
-    volatile unsigned int numPacketsProcessed[6]; // offset 0x10, size 0x18
-    volatile short playpacket[6]; // offset 0x28, size 0xC
-    volatile short outstandingpackets[6]; // offset 0x34, size 0xC
-    volatile short maxpackets; // offset 0x40, size 0x2
-    volatile signed char masterpacketchan; // offset 0x42, size 0x1
-    char pad; // offset 0x43, size 0x1
-    volatile short releasepacket; // offset 0x44, size 0x2
-    volatile short submitpacket; // offset 0x46, size 0x2
-    volatile unsigned int outstandingframes; // offset 0x48, size 0x4
+    volatile int shandle;                            // offset 0x0, size 0x4
+    volatile int lastpackethandle;                   // offset 0x4, size 0x4
+    volatile unsigned int masterReleasePacket;       // offset 0x8, size 0x4
+    volatile unsigned int masterCurrentPacket;       // offset 0xC, size 0x4
+    volatile unsigned int numPacketsProcessed[6];    // offset 0x10, size 0x18
+    volatile short playpacket[6];                    // offset 0x28, size 0xC
+    volatile short outstandingpackets[6];            // offset 0x34, size 0xC
+    volatile short maxpackets;                       // offset 0x40, size 0x2
+    volatile signed char masterpacketchan;           // offset 0x42, size 0x1
+    char pad;                                        // offset 0x43, size 0x1
+    volatile short releasepacket;                    // offset 0x44, size 0x2
+    volatile short submitpacket;                     // offset 0x46, size 0x2
+    volatile unsigned int outstandingframes;         // offset 0x48, size 0x4
     volatile unsigned int outstandingplatformframes; // offset 0x4C, size 0x4
-    void *pplatformmem; // offset 0x50, size 0x4
-    void (*preleasefunc)(void *, void *); // offset 0x54, size 0x4
-    void (*pframesfunc)(int, int, void *); // offset 0x58, size 0x4
-    void *pclientdata; // offset 0x5C, size 0x4
-    SNDSAMPLEFORMAT sampleformat; // offset 0x60, size 0x4
-    void *ptsdata[6]; // offset 0x64, size 0x18
-    SNDPACKETENTRY pe[1]; // offset 0x7C, size 0x20
+    void *pplatformmem;                              // offset 0x50, size 0x4
+    void (*preleasefunc)(void *, void *);            // offset 0x54, size 0x4
+    void (*pframesfunc)(int, int, void *);           // offset 0x58, size 0x4
+    void *pclientdata;                               // offset 0x5C, size 0x4
+    SNDSAMPLEFORMAT sampleformat;                    // offset 0x60, size 0x4
+    void *ptsdata[6];                                // offset 0x64, size 0x18
+    SNDPACKETENTRY pe[1];                            // offset 0x7C, size 0x20
 };
 
 int SND3dpos(int shandle, int azimuth, int elevation);
@@ -268,6 +231,7 @@ int SNDAEMS_asyncloadmodulebankdone();
 
 int SNDAEMS_asyncloadmodulebankmem(void *pModuleBank, char *streamFileName, int streamFileOffset, void *(*mallocCb)(int));
 int SNDAEMS_asyncloadmodulebankmemdone();
+int SNDAEMS_removemodulebank(int mbhandle);
 
 int SND_attrsetdef(SNDSAMPLEATTR *pssa);
 
@@ -317,8 +281,21 @@ int SNDPKTPLAY_stop(int packetinstancehandle);
 int SNDPKTPLAY_submit(int packetinstancehandle, SNDPACKET *psp);
 int SNDPKTPLAY_destroy(int packetinstancehandle);
 
+int SNDSTRM_autovol(int sndStrmHandle, int time, int targetVol);
+int SNDSTRM_create(SNDPLAYOPTS *pspo, int maxrequests, int maxchunks, void *pmem, int memsize);
 int SNDSTRM_getprogvol(int sndstreamhandle);
 int SNDSTRM_lowpass(int sndstreamhandle, int lowpasscutoff);
+int SNDSTRM_modifyhold(int sndrequesthandle, int holdtime);
+int SNDSTRM_overhead(int maxrequests, int maxchunks);
+int SNDSTRM_queuemem(int sndstreamhandle, int holdtime, void *paddr, int offset);
+int SNDSTRM_purge(int sndStrmHandle);
+int SNDSTRM_queuefile(int sndstreamhandle, int holdtime, char *filename, int offset);
+int SNDSTRM_status(int sndstreamhandle, SNDSTREAMSTATUS *psss);
+int SNDSTRM_requeststatus(int sndrequesthandle, SNDREQUESTSTATUS *psrs);
+int SNDSTRM_setazimuth(int sndStrmHandle, Snd::Channel sourceChannel, float azimuth);
+int SNDSTRM_setvol(int sndStrmHandle, Snd::Channel sourceChannel, float volume);
+int SNDSTRM_pitchmult(int sndstreamhandle, int pitchmult);
+int SNDSTRM_destroy(int sndstreamhandle);
 
 void SNDSYS_entercritical();
 void SNDSYS_leavecritical();
@@ -330,6 +307,146 @@ int SNDvol(int shandle, int vol);
 
 #ifdef __cplusplus
 }
+#endif
+
+#ifdef __cplusplus
+
+namespace Snd {
+
+// Decl: 400
+enum Result {
+    RESULT_ERR_INVDATAFORMAT = -11,
+    RESULT_ERR_INVPARAM = -10,
+    RESULT_ERR_DRIVER = -9,
+    RESULT_ERR_UNSUPPORTEDOPT = -8,
+    RESULT_ERR_ALREADYINUSE = -7,
+    RESULT_ERR_GENERAL = -6,
+    RESULT_ERR_INVOPT = -5,
+    RESULT_ERR_NOTINIT = -4,
+    RESULT_ERR_INVPLAYERTYPE = -3,
+    RESULT_ERR_MEMERROR = -2,
+    RESULT_ERR_FILEERROR = -1,
+    RESULT_OK = 0,
+};
+
+// total size: 0x1
+// Decl: 638
+struct System {
+    static Result VectorToReal6();
+
+    static Result VectorToCsisMutex();
+
+    static Result Init(const int headerversion); // Decl: 724
+
+    static Result ReInit();
+
+    static Result Restore(); // Decl: 751
+
+    static bool IsInited(); // Decl: 770
+
+    static Result SetMaxBanks(int banks); // Decl: 790
+
+    static Result GetMaxBanks(int *pbanks); // Decl: 805
+
+    static Result SetMaxStreams(int maxstreams); // Decl: 827
+
+    static Result SetStealEqualPriorityVoices(bool stealequalpriority); // Decl: 853
+
+    static Result SetRandomSeed(unsigned int seed); // Decl: 885
+
+    static Result SetUpdateRate(float rate);
+
+    static Result GetUpdateRate(float *prate);
+
+    static Result CapOutputMode(OutputMode mode, bool *psupported);
+
+    static Result SetOutputMode(OutputMode mode);
+
+    static Result GetOutputMode(OutputMode *pmode);
+
+    static Result GetOutputModeName(OutputMode mode, const char **pmodename);
+
+    static Result CapOutputSampleRate(Device device, int requestedsamplerate, int *pclosestsamplerate);
+
+    static Result SetOutputSampleRate(Device device, int samplerate);
+
+    static Result GetOutputSampleRate(Device device, int *psamplerate);
+
+    static Result CapVoices(Device device, int *pvoices); // Decl: 908
+
+    static Result SetVoices(Device device, int voices); // Decl: 951
+
+    static Result GetVoices(Device device, int *pvoices); // Decl: 970
+
+    static Result SetCompatibilityLevel(CompatibilityMode mode);
+
+    static Result SetResampleQuality(Device device, float quality); // Decl: 1002
+
+    static Result GetResampleQuality(Device device, float *pQuality); // Decl: 1020
+
+    static Result SetSse(bool useSse); // Decl: 1051
+
+    static Result SetDtsQuality(float quality);
+
+    static Result SetRouteMainFxToIop(bool enable);
+
+    static Result SetRouteHardwareFxToIop(bool enable);
+
+    static Result SetSndLoadsIopModules(bool loadIopModules);
+
+    static Result SetIopModulePath(const char *iopModulePath);
+
+    static Result SetSndInitsAram(bool sndInitsAram);
+
+    static Result SetAbortHandler(void (*abortMessage)(const char *));
+};
+
+// total size: 0x1
+struct Memory {
+    static Result SetHeap(Device device, void *pmem, int size);
+
+    static Result GetHeap(Device device, void **ppmem, int *psize);
+
+    static Result SetHeapThreshold(Device device, float threshold);
+
+    static Result GetHeapThreshold(Device device, float *pthreshold);
+
+    static Result SetHeapFastRam(void *pmem, int size);
+};
+
+// total size: 0x1
+// Decl: 1967
+class GlobalFxProcessor {
+  public:
+    static Csis::Result GetMaxBuses(int *pBuses);
+
+    static Csis::Result SetMaxBuses(int buses);
+
+    static Csis::Result CreateInstance(Snd::Device device, int bus, GlobalFxProcessor **ppGlobalFxProcessor);
+
+    Csis::Result Release();
+
+    Csis::Result UpdatePreset(ExtendedFxPreset *pExtendedFxPreset);
+
+    Csis::Result SetCustom(void *pFxDefinition);
+
+    Csis::Result Reset();
+
+    Csis::Result SetOutputLevel(float level);
+
+  private:
+    GlobalFxProcessor();
+
+    ~GlobalFxProcessor();
+
+  public:
+    Csis::Result SetPreset(ExtendedFxPreset *pExtendedFxPreset);
+
+    Csis::Result SetPreset(FxPreset fxPreset);
+};
+
+} // namespace Snd
+
 #endif
 
 #endif

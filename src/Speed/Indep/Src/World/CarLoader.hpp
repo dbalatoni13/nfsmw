@@ -251,7 +251,7 @@ void InitCarLoader();
 void CloseCarLoader();
 int CarInfo_GetMaxCompositingBufferSize();
 
-extern CarLoader TheCarLoader;
+extern CarLoader TheCarLoader; // Decl: 275
 extern int UsePrecompositeVinyls;
 
 #endif

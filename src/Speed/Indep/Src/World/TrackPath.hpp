@@ -5,23 +5,24 @@
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
+// Decl: 28
 enum eTrackPathZoneType {
-    NUM_TRACK_PATH_ZONES = 15,
-    TRACK_PATH_ZONE_PURSUIT_START = 14,
-    TRACK_PACH_ZONE_NO_COP_SPAWN = 13,
-    TRACK_PATH_ZONE_JUMP_CAM = 12,
-    TRACK_PATH_ZONE_NEIGHBOURHOOD = 11,
-    TRACK_PATH_ZONE_DYNAMIC = 10,
-    TRACK_PATH_ZONE_TRAFFIC_PATTERN = 9,
-    TRACK_PATH_ZONE_HIDDEN = 8,
-    TRACK_PATH_ZONE_GARAGE = 7,
-    TRACK_PATH_ZONE_STREAMER_PREDICTION = 6,
-    TRACK_PATH_ZONE_OVERPASS_SMALL = 5,
-    TRACK_PATH_ZONE_OVERPASS = 4,
-    TRACK_PATH_ZONE_TUNNEL = 3,
-    TRACK_PATH_ZONE_GUIDED_RESET = 2,
-    TRACK_PATH_ZONE_RESET_TO_POINT = 1,
     TRACK_PATH_ZONE_RESET = 0,
+    TRACK_PATH_ZONE_RESET_TO_POINT = 1,
+    TRACK_PATH_ZONE_GUIDED_RESET = 2,
+    TRACK_PATH_ZONE_TUNNEL = 3,
+    TRACK_PATH_ZONE_OVERPASS = 4,
+    TRACK_PATH_ZONE_OVERPASS_SMALL = 5,
+    TRACK_PATH_ZONE_STREAMER_PREDICTION = 6,
+    TRACK_PATH_ZONE_GARAGE = 7,
+    TRACK_PATH_ZONE_HIDDEN = 8,
+    TRACK_PATH_ZONE_TRAFFIC_PATTERN = 9,
+    TRACK_PATH_ZONE_DYNAMIC = 10,
+    TRACK_PATH_ZONE_NEIGHBOURHOOD = 11,
+    TRACK_PATH_ZONE_JUMP_CAM = 12,
+    TRACK_PACH_ZONE_NO_COP_SPAWN = 13,
+    TRACK_PATH_ZONE_PURSUIT_START = 14,
+    NUM_TRACK_PATH_ZONES = 15,
 };
 
 bool DoLinesIntersect(const bVector2 &a, const bVector2 &b, const bVector2 &c, const bVector2 &d);
@@ -109,6 +110,10 @@ class TrackPathZone {
 
     void SetVisitInfo(int v) {
         VisitInfo = v;
+    }
+
+    int GetVisitInfo() {
+        return VisitInfo;
     }
 
     int GetMemoryImageSize() {

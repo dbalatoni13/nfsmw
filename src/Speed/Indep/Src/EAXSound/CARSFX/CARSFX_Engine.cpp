@@ -3,6 +3,7 @@
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/Src/EAXSound/SndBase.hpp"
 #include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Engine.hpp"
+#include "Speed/Indep/Src/EAXSound/sfxctl/SFXCTL_Shifting.hpp"
 #include "Speed/Indep/Src/EAXSound/UG/SndDataParams.hpp"
 #include <snd/sndo.h>
 
@@ -456,7 +457,7 @@ void CARSFX_DualGinsuEng::SetGinsuParams() {
         int nDMixOut = this->GetDMixOutput(2, DMX_VOL);
         int TmpVol = (this->m_pHybridEngCtl->m_EngVolAccelGinsu * nDMixOut) >> 15;
         int FAKE = static_cast<int>(this->m_pHybridEngCtl->m_GinsuLPFVal);
-        int LowPassFilter = bMin(this->GetDMixOutput(5, DMX_FREQ), FAKE);
+        int LowPassFilter = bMin(FAKE, this->GetDMixOutput(5, DMX_FREQ));
 
         float freq = this->m_GinsuRPM;
         float fPitchBelowMinFreq = 1.0f;

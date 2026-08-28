@@ -37,6 +37,12 @@ block_relocations:
 - target: .text:0x80134100
 - target: .text:0x80134000
 
+- source: .text:0x800b2c5c
+  end: .text:0x800b2c68
+
+- source: .text:0x800b2de4
+  end: .text:0x800b2dec
+
 - source: .text:0x801fb140
   end: .text:0x801fb14c
 
@@ -106,6 +112,131 @@ block_relocations:
   end: .data:0x8044C320
 
 add_relocations:
+- source: .text:0x800adeb8
+  type: ha
+  target: gAudioMemoryManager
+  addend: 0
+
+- source: .text:0x800ae34c
+  type: ha
+  target: gAudioMemoryManager
+  addend: 0
+
+- source: .text:0x800ae3dc
+  type: ha
+  target: gAudioMemoryManager
+  addend: 0
+
+- source: .text:0x800ae560
+  type: ha
+  target: gAudioMemoryManager
+  addend: 0
+
+- source: .text:0x800ae6d4
+  type: ha
+  target: gAudioMemoryManager
+  addend: 0
+
+- source: .text:0x800b8be4
+  type: ha
+  target: gAudioMemoryManager
+  addend: 0
+
+- source: .text:0x800b9a04
+  type: ha
+  target: gAudioMemoryManager
+  addend: 0
+
+- source: .text:0x800bb348
+  type: ha
+  target: gAudioMemoryManager
+  addend: 0
+
+- source: .text:0x800bd788
+  type: ha
+  target: gAudioMemoryManager
+  addend: 0
+
+- source: .text:0x800be220
+  type: ha
+  target: gAudioMemoryManager
+  addend: 0
+
+- source: .text:0x800bf8b8
+  type: ha
+  target: gAudioMemoryManager
+  addend: 0
+
+- source: .text:0x800c0024
+  type: ha
+  target: $LC2151511324
+  addend: 0
+
+- source: .text:0x800c0c8c
+  type: ha
+  target: $LC2151511528
+  addend: 0
+
+- source: .text:0x800c04b4
+  type: ha
+  target: gAudioMemoryManager
+  addend: 0
+
+- source: .text:0x800c0fbc
+  type: ha
+  target: gAudioMemoryManager
+  addend: 0
+
+- source: .text:0x800c1048
+  type: ha
+  target: gAudioMemoryManager
+  addend: 0
+
+- source: .text:0x800c27cc
+  type: ha
+  target: gAudioMemoryManager
+  addend: 0
+
+- source: .text:0x800c2c70
+  type: ha
+  target: gAudioMemoryManager
+  addend: 0
+
+- source: .text:0x800c2d4c
+  type: ha
+  target: gAudioMemoryManager
+  addend: 0
+
+- source: .text:0x800c2ddc
+  type: ha
+  target: gAudioMemoryManager
+  addend: 0
+
+- source: .text:0x800c2e68
+  type: ha
+  target: gAudioMemoryManager
+  addend: 0
+
+- source: .text:0x800c2f70
+  type: ha
+  target: gAudioMemoryManager
+  addend: 0
+
+- source: .text:0x800c3d54
+  type: ha
+  target: gAudioMemoryManager
+  addend: 0
+
+- source: .text:0x800c47e4
+  type: ha
+  target: gAudioMemoryManager
+  addend: 0
+
+- source: .text:0x800c4870
+  type: ha
+  target: gAudioMemoryManager
+  addend: 0
+
 - source: .text:0x800d5318
   type: ha
   target: gAudioMemoryManager

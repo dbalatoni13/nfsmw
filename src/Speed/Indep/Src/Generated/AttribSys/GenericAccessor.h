@@ -213,6 +213,10 @@ class GenericAccessor : private Instance {
         ATTRIB_CODEGEN_GETVALIDATTRIB(StringKey, 0x09925106, index, val);
     }
 
+    const Attrib::StringKey &DESCRIPTION(unsigned int index) const {
+        ATTRIB_CODEGEN_GETVALUEINDEXED(StringKey, 0x09925106, index);
+    }
+
     unsigned int Num_DESCRIPTION() const {
         ATTRIB_CODEGEN_GETLENGTH(0x09925106);
     }
@@ -379,6 +383,10 @@ class GenericAccessor : private Instance {
 
     bool MODEL(StringKey &val, unsigned int index) const {
         ATTRIB_CODEGEN_GETVALIDATTRIB(StringKey, 0x9047c9e0, index, val);
+    }
+
+    const StringKey &MODEL(unsigned int index) const {
+        ATTRIB_CODEGEN_GETVALUEINDEXED(StringKey, 0x9047c9e0, index);
     }
 
     unsigned int Num_MODEL() const {

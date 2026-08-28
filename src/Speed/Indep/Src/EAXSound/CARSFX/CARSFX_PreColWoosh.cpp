@@ -57,6 +57,9 @@ void CARSFX_PreColWoosh::MsgBarrier(const MAudioReflection &message) {
     }
 }
 
+#define FADEOUT_DURATION 130              // Decl: 75
+#define MAX_DURATION_WITHOUT_IMPACT 0.40f // Decl: 76
+
 void CARSFX_PreColWoosh::MsgBarrierHit(const MAudioReflection &message) {
     if ((this->GetPhysCar() != nullptr) && message.GetPlayerNum() == static_cast<int>(this->GetPhysCar()->mWorldID)) {
         this->BailOnWoosh();

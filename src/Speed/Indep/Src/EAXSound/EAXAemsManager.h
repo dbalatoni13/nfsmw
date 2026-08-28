@@ -20,8 +20,6 @@ class EvtSystems : public UTL::Std::vector<char *, _type_EvtSystems> {
   public:
     EvtSystems() {} // Decl: 35
 
-    ~EvtSystems() {}
-
     // TODO
     void *operator new(size_t size, void *ptr) {}
 
@@ -45,8 +43,6 @@ DECLARE_CONTAINER_TYPE(BankSlotSystem);
 class BankSlotSystem : public UTL::Std::list<stBankSlot, _type_BankSlotSystem> {
   public:
     BankSlotSystem() {} // Decl: 44
-
-    ~BankSlotSystem() {}
 
     // TODO
     void *operator new(size_t size, void *ptr) {}
@@ -75,8 +71,6 @@ class AsyncQueue : public UTL::Std::deque<stSndDataLoadParams *, _type_AsyncQueu
   public:
     AsyncQueue() {}
 
-    ~AsyncQueue() {}
-
     // TODO
     void *operator new(size_t size, void *ptr) {}
 
@@ -101,8 +95,6 @@ class SndAssetQueue : public UTL::Std::list<stSndAssetQueue, _type_SndAssetQueue
   public:
     SndAssetQueue() {} // Decl: 66
 
-    ~SndAssetQueue() {}
-
     // TODO
     void *operator new(size_t size, void *ptr) {}
 
@@ -120,7 +112,41 @@ class SndAssetQueue : public UTL::Std::list<stSndAssetQueue, _type_SndAssetQueue
 
     void PrintContents() {} // Decl: 69
 
-    void DeleteRefToAsset(Attrib::StringKey FileName) {}
+    void DeleteRefToAsset(Attrib::StringKey FileName) {
+        int num_sfx_to_del = 0;
+        SndBase *SfxToDel[32];
+
+        bMemSet(SfxToDel, 0, sizeof(SfxToDel));
+
+    RestartLoop:
+        SndAssetQueue::iterator i = this->begin();
+        while (i != this->end()) {
+            stSndAssetQueue currequst(*i);
+
+            if (currequst.Asset.FileName == FileName) {
+                this->remove(currequst);
+                SfxToDel[num_sfx_to_del++] = currequst.pThis;
+                goto RestartLoop;
+            }
+
+            i++;
+        }
+
+        do {
+        RestartLoop2:
+            i = this->begin();
+            while (i != this->end()) {
+                stSndAssetQueue currequst(*i);
+
+                if (SfxToDel[num_sfx_to_del - 1] == currequst.pThis) {
+                    this->remove(currequst);
+                    goto RestartLoop2;
+                }
+
+                i++;
+            }
+        } while (--num_sfx_to_del > 0);
+    }
 
     // Decl: 120
     void DeleteRefToAsset(SndBase *pSfxObj) {
@@ -172,7 +198,7 @@ class EAXAemsManager : public AudioMemBase {
     static void EvtSysLoadCallback(int32 param, int error_status);
     static void *ResidentAllocCB(void *pbank, int residentsize, int totalsize);
     static void *AsyncResidentAllocCB(int size);
-    static void DataLoadCB(int32 param, int error_status);
+    static void DataLoadCB(intptr_t param, int error_status);
 
     int AddBankListing(stAssetDescription &asset);
     void RemoveBankListing(int Index);
@@ -181,7 +207,10 @@ class EAXAemsManager : public AudioMemBase {
 
     void InitializeSlots(bool bDoPFSlot);
     void DestroySlots(bool bDoPFSlot);
-    static void QueueSlots(eBANK_SLOT_TYPE Type, int NumSlots) {} // Decl: 204
+    // Decl: 204
+    static void QueueSlots(eBANK_SLOT_TYPE Type, int NumSlots) {
+        m_RequiredSlots[Type] += NumSlots;
+    }
     void RegisterSlots(eBANK_SLOT_TYPE Type, int NumSlots, int SizePerSlotSPU, int SizePerSlotMainMem, bool bDoPFSlot);
     stBankSlot *GetSlot(eBANK_SLOT_TYPE);
 
@@ -197,8 +226,8 @@ class EAXAemsManager : public AudioMemBase {
     int m_nCurLoadedBankIndex;              // offset 0x9C, size 0x4, Decl: 191
     int m_nEndOfList;                       // offset 0xA0, size 0x4, Decl: 192
 
-    static const int m_SlotSizes[2][4]; // size: 0x20, address: 0x803D6B78
-    static int m_RequiredSlots[4];      // size: 0x10, address: 0x804FE700
+    static const int m_SlotSizes[eBANK_SLOT_MAX_NUM][2]; // size: 0x20, address: 0x803D6B78
+    static int m_RequiredSlots[eBANK_SLOT_MAX_NUM];      // size: 0x10, address: 0x804FE700
 
     BankSlotSystem mBankSlots;             // offset 0xA4, size 0x8, Decl: 211
     BankSlotSystem mPFBankSlot;            // offset 0xAC, size 0x8
@@ -211,7 +240,7 @@ class EAXAemsManager : public AudioMemBase {
     int m_NumEvtSysLoaded;                 // offset 0x108, size 0x4, Decl: 226
     int mNumEvtSys;                        // offset 0x10C, size 0x4, Decl: 227
     int mAsyncBuffSize;                    // offset 0x110, size 0x4, Decl: 228
-    int m_nCallbackEvtSys;                 // offset 0x114, size 0x4, Decl: 229
+    intptr_t m_nCallbackEvtSys;            // offset 0x114, size 0x4, Decl: 229
     stSndDataLoadParams *m_pCurLoadSDLP;   // offset 0x118, size 0x4, Decl: 230
     stSndDataLoadParams *m_pCurUNLOADSDLP; // offset 0x11C, size 0x4, Decl: 231
     stSndDataLoadParams *m_pAsyncLoadSDLP; // offset 0x120, size 0x4, Decl: 235
@@ -220,13 +249,12 @@ class EAXAemsManager : public AudioMemBase {
     bool m_IsWaitingForFileCB;             // offset 0x12C, size 0x1, Decl: 239
 
   private:
-    void InitiateLoad(); // Decl: 243
+    int InitiateLoad(); // Decl: 243
 };
-
-extern int m_RequiredSlots[4];      // size: 0x10, address: 0x804FE700, Decl: 205
-extern const int m_SlotSizes[2][4]; // size: 0x20, address: 0x803D6B78, Decl: 206
 
 extern EAXAemsManager gAEMSMgr;                                   // size: 0x0, Decl: 248
 extern stSndDataLoadParams g_SndAssetList[MAX_SIZE_SNDASSETLIST]; // size: 0x1380, Decl: 953
+
+extern char *g_DataPaths[13]; // Decl: unknown
 
 #endif

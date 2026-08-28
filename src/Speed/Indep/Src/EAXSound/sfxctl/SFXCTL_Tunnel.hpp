@@ -29,8 +29,14 @@ class SFXCTL_Tunnel : public SFXCTL {
     void SetCurrentReverbType(eREVERBFX ereverbtype, int reverboffset);
     void AdjustReverbOffset(int reverboffset);
 
-    bool IsInTunnel() {}  // Decl: 60
-    bool WasInTunnel() {} // Decl: 61
+    // Decl: 60
+    bool IsInTunnel() {
+        return this->m_bIsInTunnel;
+    }
+    // Decl: 61
+    bool WasInTunnel() {
+        return this->m_bWasInTunnel;
+    }
     void UpdateOcclusion(float t);
     void UpdateIsInTunnel(float t);
     bool m_bIsInTunnel;  // offset 0x28, size 0x1, Decl: 64
@@ -63,7 +69,8 @@ class SFXCTL_Tunnel : public SFXCTL {
     int m_CurReverbZone; // offset 0x78, size 0x4, Decl: 109
 
     cInterpLine ReflRamp; // offset 0x7C, size 0x1C, Decl: 111
-
+    void UpdateReflectionParams(float t);
+    void EndTunnelVerb();
     bool IsReadyForSwitch() {} // Decl: 114
     bool bFadingOut;           // offset 0x98, size 0x1, Decl: 115
     bool bFadingIn;            // offset 0x9C, size 0x1, Decl: 116
