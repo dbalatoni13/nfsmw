@@ -485,8 +485,8 @@ int *World_OneShotEffect(Sim::Packet *pkt) {
         params.other_object = pe->mActee;
         Sound::AudioEvent *audio = Sound::AudioEvent::CreateInstance(params);
         if (audio != nullptr) {
+            audio->Release();
         }
-        audio->Release();
     }
 
     return nullptr;

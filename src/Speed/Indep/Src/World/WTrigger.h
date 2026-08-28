@@ -30,17 +30,19 @@ class WTrigger : public CARP::Trigger {
     }
 
     bool IsEnabled(bool allowSilencables) const {
-        // TODO fFlags
-        unsigned int flags = (static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(this)[0x11]) << 16) |
-                             (static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(this)[0x12]) << 8) |
-                             static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(this)[0x13]);
-        if (flags & 1) {
-            if ((flags & 0x400) && !allowSilencables) {
-                return false;
+        if ((this->fFlags & 1) == 0) {
+            return false;
+        } else {
+            if (this->fFlags & 0x400) {
+                if (allowSilencables) {
+                    return true;
+                } else {
+                    return false;
+                }
+            } else {
+                return true;
             }
-            return true;
         }
-        return false;
     }
 
     bool UpdatePos(const UMath::Vector3 &newPos, uintptr_t triggerInd);
@@ -51,8 +53,7 @@ class WTrigger : public CARP::Trigger {
         m[0][1] = fMatRow0Width.y;
         m[0][2] = fMatRow0Width.z;
         m[0][3] = 0.0f;
-        // TODO fFlags
-        if ((static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(this)[0x12]) << 8) & 0x1000) {
+        if ((this->fFlags & 0x1000) != 0) {
             m[1][0] = fMatRow2Length.y * fMatRow0Width.z - fMatRow2Length.z * fMatRow0Width.y;
             m[1][1] = fMatRow2Length.z * fMatRow0Width.x - fMatRow2Length.x * fMatRow0Width.z;
             m[1][2] = fMatRow2Length.x * fMatRow0Width.y - fMatRow2Length.y * fMatRow0Width.x;

@@ -38,7 +38,6 @@ WTrigger::WTrigger() {
     bMemSet(this, 0, sizeof(WTrigger));
 }
 
-// TODO bitfield access in the whole file
 WTrigger::WTrigger(const UMath::Matrix4 &mat, const UMath::Vector3 &dimensions, CARP::EventList *eventList, unsigned int flags) {
 #ifdef SANE_CODE
     fMatRow0Width = mat[0];
@@ -48,12 +47,12 @@ WTrigger::WTrigger(const UMath::Matrix4 &mat, const UMath::Vector3 &dimensions, 
     *reinterpret_cast<UMath::Matrix4 *>(this) = mat;
 #endif
 
-    reinterpret_cast<unsigned char *>(this)[0x10] = (reinterpret_cast<unsigned char *>(this)[0x10] & 0xF0) | 1;
-    fHeight = dimensions.y + dimensions.y;
-    fEvents = eventList;
-    *reinterpret_cast<unsigned int *>(reinterpret_cast<unsigned char *>(this) + 0x10) =
-        (*reinterpret_cast<unsigned int *>(reinterpret_cast<unsigned char *>(this) + 0x10) & 0xFF000000) | (flags & 0x00FFFFFF);
-    reinterpret_cast<unsigned char *>(this)[0x10] &= 0x0F;
+    this->fShape = 1;
+
+    this->fHeight = dimensions.y + dimensions.y;
+    this->fEvents = eventList;
+    this->fFlags = flags;
+    this->fType = 0;
     fPosRadius.x = mat[3][0];
     fPosRadius.y = mat[3][1];
     fPosRadius.z = mat[3][2];
@@ -66,7 +65,7 @@ WTrigger::WTrigger(const UMath::Matrix4 &mat, const UMath::Vector3 &dimensions, 
 WTrigger::WTrigger(const UMath::Matrix4 &mat, float radius, float height, CARP::EventList *eventList, unsigned int flags) {}
 
 WTrigger::~WTrigger() {
-    if (!((static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(this)[0x12]) << 8) & 0x100) && fEvents) {
+    if ((this->fFlags & 0x100) == 0 && fEvents != nullptr) {
         delete fEvents;
     }
     if (WTriggerManager::Exists()) {
@@ -75,24 +74,20 @@ WTrigger::~WTrigger() {
 }
 
 void WTrigger::FireEvents(HSIMABLE hSimable) {
-    CARP::EventStaticData *event = fEvents->Event();
+    CARP::EventStaticData *event = this->fEvents->Event();
+
     if (fEvents != nullptr) {
         gEventDynamicData.Clear();
         gEventDynamicData.fhSimable = reinterpret_cast<uintptr_t>(hSimable);
-        gEventDynamicData.fPosition = fPosRadius;
+        gEventDynamicData.fPosition = this->fPosRadius;
         gEventDynamicData.fPosition.w = 1.0f;
         gEventDynamicData.fTrigger = this;
         gEventDynamicData.fTriggerStimulus = WTriggerManager::Get().GetCurrentStimulus();
-        EventManager::FireEventList(fEvents, false);
+        EventManager::FireEventList(this->fEvents, false);
     }
-    unsigned int hi = static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(this)[0x11]) << 16;
-    unsigned int mid = static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(this)[0x12]) << 8;
-    unsigned int lo = static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(this)[0x13]);
-    unsigned int flags = lo | (mid | hi);
-    if (flags & 2) {
-        // Disable();
-        *reinterpret_cast<unsigned int *>(reinterpret_cast<unsigned char *>(this) + 0x10) =
-            (*reinterpret_cast<unsigned int *>(reinterpret_cast<unsigned char *>(this) + 0x10) & 0xFF000000u) | (flags & 0x00FFFFFEu);
+
+    if ((this->fFlags & 2) != 0) {
+        this->Disable();
     }
 }
 
@@ -107,22 +102,20 @@ bool WTrigger::TestDirection(const UMath::Vector3 &vec) const {
     return UMath::Dot(UMath::Vector4To3(fMatRow2Length), vec) >= 0.0f;
 }
 
-// UNSOLVED, hacky...
 void WTrigger::UpdateBox(const UMath::Matrix4 &mat, const UMath::Vector3 &dimension) {
-    UMath::Vector4 oldPosRad = fPosRadius;
-    unsigned int b11 = reinterpret_cast<const unsigned char *>(this)[0x11] << 16;
-    unsigned int flags = reinterpret_cast<const unsigned char *>(this)[0x13] | (reinterpret_cast<const unsigned char *>(this)[0x12] << 8 | b11);
-    CARP::EventList *eventList = fEvents;
+    UMath::Vector4 oldPosRad = this->fPosRadius;
+    unsigned int flags = this->fFlags;
+    CARP::EventList *eventList = this->fEvents;
 
 #ifdef SANE_CODE
-    fMatRow0Width = mat[0];
-    fMatRow2Length = mat[2];
-    fPosRadius = mat[3];
+    this->fMatRow0Width = mat[0];
+    this->fMatRow2Length = mat[2];
+    this->fPosRadius = mat[3];
 #else
     *reinterpret_cast<UMath::Matrix4 *>(this) = mat;
 #endif
 
-    reinterpret_cast<unsigned char *>(this)[0x10] = (reinterpret_cast<unsigned char *>(this)[0x10] & 0xF0) | 1;
+    this->fShape = 1;
 
     if (mat.v1.y < 0.999f) {
         flags |= 0x1000;
@@ -130,21 +123,20 @@ void WTrigger::UpdateBox(const UMath::Matrix4 &mat, const UMath::Vector3 &dimens
         flags &= ~0x1000;
     }
 
-    fHeight = dimension.y + dimension.y;
-    fEvents = eventList;
-    *reinterpret_cast<unsigned int *>(reinterpret_cast<unsigned char *>(this) + 0x10) =
-        (*reinterpret_cast<unsigned int *>(reinterpret_cast<unsigned char *>(this) + 0x10) & 0xFF000000) | (flags & 0x00FFFFFF);
-    reinterpret_cast<unsigned char *>(this)[0x10] &= 0x0F;
+    this->fHeight = dimension.y + dimension.y;
+    this->fEvents = eventList;
+    this->fFlags = flags;
+    this->fType = 0;
 
-    fPosRadius.x = mat[3][0];
-    fPosRadius.y = mat[3][1];
-    fPosRadius.z = mat[3][2];
-    fPosRadius.w = UMath::Length(dimension);
+    this->fPosRadius.x = mat[3][0];
+    this->fPosRadius.y = mat[3][1];
+    this->fPosRadius.z = mat[3][2];
+    this->fPosRadius.w = UMath::Length(dimension);
 
-    fMatRow0Width.w = dimension.x + dimension.x;
-    fMatRow2Length.w = dimension.z + dimension.z;
+    this->fMatRow0Width.w = dimension.x + dimension.x;
+    this->fMatRow2Length.w = dimension.z + dimension.z;
 
-    WGridManagedDynamicElem::AddElem(&oldPosRad, &fPosRadius, WGrid_kTrigger, reinterpret_cast<unsigned int>(this));
+    WGridManagedDynamicElem::AddElem(&oldPosRad, &this->fPosRadius, WGrid_kTrigger, reinterpret_cast<uintptr_t>(this));
 }
 
 bool WTrigger::UpdatePos(const UMath::Vector3 &newPos, uintptr_t triggerInd) {
@@ -172,16 +164,13 @@ WTriggerManager::~WTriggerManager() {
 void WTriggerManager::Init() {
     fgTriggerManager = new WTriggerManager();
     Restart();
+
     for (unsigned int i = 0; i < WCollisionAssets::Get().NumTriggers(); i++) {
         WTrigger &trig = WCollisionAssets::Get().Trigger(i);
-        if ((static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(&trig)[0x12]) << 8) & 0x200) {
+
+        if ((trig.fFlags & 0x200) != 0) {
             WTrigger &trig2 = WCollisionAssets::Get().Trigger(i);
-            unsigned int hi = static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(&trig2)[0x11]) << 16;
-            unsigned int mid = static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(&trig2)[0x12]) << 8;
-            unsigned int lo = static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(&trig2)[0x13]);
-            unsigned int flags = lo | (mid | hi);
-            *reinterpret_cast<unsigned int *>(reinterpret_cast<unsigned char *>(&trig2) + 0x10) =
-                (*reinterpret_cast<unsigned int *>(reinterpret_cast<unsigned char *>(&trig2) + 0x10) & 0xFF000000) | (flags & ~0x400);
+            trig2.fFlags &= ~0x400;
         }
     }
 }
@@ -192,7 +181,7 @@ void WTriggerManager::Restart() {
 }
 
 void WTriggerManager::SubmitForFire(WTrigger &trig, HSIMABLE hSimable) {
-    if (reinterpret_cast<const unsigned char *>(&trig)[0x12] >> 7) {
+    if ((trig.fFlags & 0x8000) != 0) {
         ISimable *iSimable = ISimable::FindInstance(hSimable);
         if (iSimable != nullptr) {
             FireOnExitRec rec(trig, hSimable);
@@ -201,11 +190,12 @@ void WTriggerManager::SubmitForFire(WTrigger &trig, HSIMABLE hSimable) {
             trig.FireEvents(hSimable);
         }
     }
-    if ((static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(&trig)[0x11]) << 16 & 0x40000) != 0) {
+
+    if ((trig.fFlags & 0x40000) != 0) {
         trig.FireEvents(hSimable);
     }
-    unsigned int b11 = reinterpret_cast<const unsigned char *>(&trig)[0x11] << 16;
-    if (((reinterpret_cast<const unsigned char *>(&trig)[0x12] << 8 | b11) & 0x48000) == 0) {
+
+    if ((trig.fFlags & 0x48000) == 0) {
         trig.FireEvents(hSimable);
     }
 }
@@ -234,12 +224,7 @@ void WTriggerManager::ProcessRB(IRigidBody *rBody, float dT) {
                 WTrigger &trig = WCollisionAssets::Get().Trigger(ind);
                 if (trig.fIterStamp != fIterCount) {
                     trig.fIterStamp = fIterCount;
-                    if (trig.IsEnabled(fSilencableEnabled) &&
-                        (((static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(&trig)[0x11]) << 16) |
-                          (static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(&trig)[0x12]) << 8) |
-                          static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(&trig)[0x13])) &
-                         activateFlag) != 0 &&
-                        CheckCollideRB(rBody, &trig, dT)) {
+                    if (trig.IsEnabled(fSilencableEnabled) && (trig.fFlags & activateFlag) != 0 && CheckCollideRB(rBody, &trig, dT)) {
                         SubmitForFire(trig, rBody->GetOwner()->GetInstanceHandle());
                     }
                 }
@@ -254,7 +239,8 @@ void WTriggerManager::ProcessSRB(IRigidBody *srBody, float dT) {
     if (activateFlag == 0) {
         return;
     }
-    float radius = UMath::Max(srBody->GetRadius(), 1.5f);
+
+    float radius = UMath::Max(1.5f, srBody->GetRadius());
 
     UTL::FastVector<unsigned int, 16> nodeInds;
     nodeInds.reserve(64);
@@ -267,19 +253,18 @@ void WTriggerManager::ProcessSRB(IRigidBody *srBody, float dT) {
         if (gridNode != nullptr) {
             const unsigned int *indPtr;
             WGridNode::iterator eIter(gridNode, WGrid_kTrigger);
-            while ((indPtr = eIter.GetIndPtr())) {
+
+            while ((indPtr = eIter.GetIndPtr()) != nullptr) {
                 unsigned int ind = *indPtr;
                 WTrigger &trig = WCollisionAssets::Get().Trigger(ind);
-                if (trig.fIterStamp != fIterCount) {
-                    trig.fIterStamp = fIterCount;
-                    if (trig.IsEnabled(fSilencableEnabled) &&
-                        (((static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(&trig)[0x11]) << 16) |
-                          (static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(&trig)[0x12]) << 8) |
-                          static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(&trig)[0x13])) &
-                         activateFlag) != 0) {
-                        if (srBody->GetOwner()->IsOwnedByPlayer() || !(reinterpret_cast<const unsigned char *>(&trig)[0x13] & 0x80)) {
-                            if (CheckCollideSRB(srBody, &trig, dT)) {
-                                SubmitForFire(trig, srBody->GetOwner()->GetInstanceHandle());
+
+                if (trig.fIterStamp != this->fIterCount) {
+                    trig.fIterStamp = this->fIterCount;
+
+                    if (trig.IsEnabled(this->fSilencableEnabled) && (trig.fFlags & activateFlag) != 0) {
+                        if (srBody->GetOwner()->IsOwnedByPlayer() || !(trig.fFlags & 0x80)) {
+                            if (this->CheckCollideSRB(srBody, &trig, dT)) {
+                                this->SubmitForFire(trig, srBody->GetOwner()->GetInstanceHandle());
                             }
                         }
                     }
@@ -303,9 +288,9 @@ bool WTriggerManager::CheckCollideRB(const IRigidBody *rBody, const WTrigger *tr
     UMath::Scale(rBody->GetLinearVelocity(), dT, dP);
     UMath::Add(rBody->GetPosition(), dP, rPos);
 
-    if ((reinterpret_cast<const unsigned char *>(trig)[0x10] & 0xF) == 2) {
+    if (trig->fShape == 2) {
         if (UMath::DistanceSquare(cp, rPos) <= radsSq) {
-            if ((static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(trig)[0x12]) << 8) & 0x800) {
+            if (trig->fFlags & 0x800) {
                 if (!trig->TestDirection(rBody->GetLinearVelocity())) {
                     return false;
                 }
@@ -314,17 +299,17 @@ bool WTriggerManager::CheckCollideRB(const IRigidBody *rBody, const WTrigger *tr
         }
     } else {
         if (UMath::DistanceSquarexz(cp, rPos) <= radsSq) {
-            if ((static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(trig)[0x12]) << 8) & 0x800) {
+            if (trig->fFlags & 0x800) {
                 if (!trig->TestDirection(rBody->GetLinearVelocity())) {
                     return false;
                 }
             }
-            if ((reinterpret_cast<const unsigned char *>(trig)[0x10] & 0xF) == 3) {
+            if (trig->fShape == 3) {
                 if ((rPos.y + rbRadius >= trig->fPosRadius.y - trig->fHeight * 0.5f) &&
                     (rPos.y - rbRadius < trig->fPosRadius.y + trig->fHeight * 0.5f)) {
                     return true;
                 }
-            } else if ((reinterpret_cast<const unsigned char *>(trig)[0x10] & 0xF) == 1) {
+            } else if (trig->fShape == 1) {
                 UMath::Vector3 dim3;
                 UMath::Matrix4 bodyMat;
                 rBody->GetDimension(dim3);
@@ -368,8 +353,8 @@ bool WTriggerManager::CheckCollideSRB(const IRigidBody *srBody, const WTrigger *
     srRadiusPlusVel += trig->fPosRadius.w;
     float radsSq = srRadiusPlusVel * srRadiusPlusVel;
 
-    if ((reinterpret_cast<const unsigned char *>(trig)[0x10] & 0xF) == 1) {
-        if ((static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(trig)[0x12]) << 8) & 0x800) {
+    if (trig->fShape == 1) {
+        if (trig->fFlags & 0x800) {
             if (!trig->TestDirection(srBody->GetLinearVelocity())) {
                 return false;
             }
@@ -396,22 +381,23 @@ bool WTriggerManager::CheckCollideSRB(const IRigidBody *srBody, const WTrigger *
         if (Dynamics::Collision::Geometry::FindIntersection(&trigOBB, &srbOBB, &trigOBB)) {
             return true;
         }
-    } else if ((reinterpret_cast<const unsigned char *>(trig)[0x10] & 0xF) == 2) {
+    } else if (trig->fShape == 2) {
         if (UMath::DistanceSquare(cp, rPos) < radsSq) {
-            if ((static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(trig)[0x12]) << 8) & 0x800) {
+            if ((trig->fFlags & 0x800) != 0) {
                 if (!trig->TestDirection(srBody->GetLinearVelocity())) {
                     return false;
                 }
             }
             return true;
         }
-    } else if ((reinterpret_cast<const unsigned char *>(trig)[0x10] & 0xF) == 3) {
+    } else if (trig->fShape == 3) {
         if (UMath::DistanceSquarexz(cp, rPos) < radsSq) {
-            if ((static_cast<unsigned int>(reinterpret_cast<const unsigned char *>(trig)[0x12]) << 8) & 0x800) {
+            if ((trig->fFlags & 0x800) != 0) {
                 if (!trig->TestDirection(srBody->GetLinearVelocity())) {
                     return false;
                 }
             }
+
             if (rPos.y + srRadius >= trig->fPosRadius.y - trig->fHeight * 0.5f && rPos.y - srRadius < trig->fPosRadius.y + trig->fHeight * 0.5f) {
                 return true;
             } else {

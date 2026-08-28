@@ -138,7 +138,7 @@ struct Expression {
 
     // Members
     unsigned int mNumOpCodes; // offset 0x0, size 0x4
-    unsigned int mNumParams; // offset 0x4, size 0x4
+    unsigned int mNumParams;  // offset 0x4, size 0x4
 };
 
 // total size: 0x10
@@ -244,7 +244,7 @@ struct EventSeqSystem {
 };
 
 struct EventSeqEngine {
-    unsigned int * GetSystemIDs() {}
+    unsigned int *GetSystemIDs() {}
 
     EventSeqSystem **GetSystems() {}
 
@@ -260,7 +260,7 @@ struct EventSeqEngine {
         return reinterpret_cast<const EventSeqSystem *const *>(&this->GetSystemIDs()[this->mNumSystems]);
     }
 
-    const char *mName; // offset 0x0, size 0x4
+    const char *mName;  // offset 0x0, size 0x4
     uint32 mNumSystems; // offset 0x4, size 0x4
 };
 
@@ -306,7 +306,7 @@ struct CollisionObject {
 };
 
 // total size: 0x40
-struct Trigger {
+struct __attribute__((packed)) Trigger {
     bool ValidateMatrix() const;
     void MakeMatrix(UMath::Matrix4 &m, bool addXLate) const;
 
@@ -330,12 +330,8 @@ union ExprValType { // 0x4
 };
 
 unsigned int ResolveTagReferences(const UGroup *g, unsigned int deltaAddress);
-ExprValType ExpressionEvaluator(
-    const Expression *expr,
-    ExprValType (*lookup)(unsigned int, unsigned int, const void *, const ExprValType *),
-    const void *context,
-    const ExprValType *values
-);
+ExprValType ExpressionEvaluator(const Expression *expr, ExprValType (*lookup)(unsigned int, unsigned int, const void *, const ExprValType *),
+                                const void *context, const ExprValType *values);
 
 }; // namespace CARP
 

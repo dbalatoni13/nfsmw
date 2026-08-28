@@ -16,7 +16,13 @@ float ASTAR_METRIC_SCALE = 0.25f;
 // total size: 0x14
 class AStarNode : public bTNode<AStarNode> {
   public:
-    USE_SLOTALLOC(AStarNodeSlotPool);
+    void *operator new(size_t size) {
+        return bMalloc(AStarNodeSlotPool);
+    }
+    void *operator new(size_t size, const char *name) {
+        return bMalloc(AStarNodeSlotPool);
+    }
+    void operator delete(void *ptr);
 
     AStarNode() {}
 
@@ -302,7 +308,6 @@ bool AStarSearch::Admissible(const WRoadSegment *segment, bool forward, WRoadNav
     return true;
 }
 
-// UNSOLVED stack issue
 float AStarSearch::Service(float time_limit_ms) {
     unsigned int start_ticker;
     WRoadNav::EPathType path_type;
@@ -468,15 +473,16 @@ float AStarSearch::Service(float time_limit_ms) {
         Joylog::AddData(num_loops, 32, JOYLOG_CHANNEL_PATHFINDER_TIMEOUT);
     }
     if (Joylog::IsCapturing()) {
-        // TODO
-        Joylog::AddData(reinterpret_cast<int32 &>(elapsed_ms), 32, JOYLOG_CHANNEL_PATHFINDER_TIMEOUT);
+        Joylog::AddData(elapsed_ms, JOYLOG_CHANNEL_PATHFINDER_TIMEOUT);
     } else if (Joylog::IsReplaying()) {
-        // TODO
-        int fake = Joylog::GetData(32, JOYLOG_CHANNEL_PATHFINDER_TIMEOUT);
-        elapsed_ms = reinterpret_cast<float &>(fake);
+        elapsed_ms = Joylog::GetData(JOYLOG_CHANNEL_PATHFINDER_TIMEOUT);
     }
     fSearchTime += elapsed_ms;
     return elapsed_ms;
+}
+
+inline void AStarNode::operator delete(void *ptr) {
+    bFree(AStarNodeSlotPool, ptr);
 }
 
 BIND_ACTIVITY_FACTORY(PathFinder);
