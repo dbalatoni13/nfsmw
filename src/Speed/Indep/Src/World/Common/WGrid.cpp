@@ -115,7 +115,6 @@ void WGrid::FindNodesBox(const UMath::Vector4 *pts, UTL::Vector<unsigned int, 16
     }
 }
 
-// UNSOLVED, pretty wrong https://decomp.me/scratch/6DrZg
 void WGrid::FindNodes(const UMath::Vector4 *seg, UTL::Vector<unsigned int, 16> &nodeIndList) const {
     int iNumNodes;
     static int iMaxNumNodes = 100;
@@ -126,8 +125,6 @@ void WGrid::FindNodes(const UMath::Vector4 *seg, UTL::Vector<unsigned int, 16> &
     int iEndPosX;
     int iEndPosY;
     UMath::Vector2 points[2];
-    bool bStartPosOut;
-    bool bEndPosOut;
 
     points[0].x = seg[0].x;
     points[0].y = seg[0].z;
@@ -137,19 +134,19 @@ void WGrid::FindNodes(const UMath::Vector4 *seg, UTL::Vector<unsigned int, 16> &
     fDirX = points[1].x - points[0].x;
     fDirY = points[1].y - points[0].y;
 
-    iStartPosX = FLOAT2INT(FLOAT2INT(points[0].x - fMin.x) * fInvEdgeSize);
-    iStartPosY = FLOAT2INT(FLOAT2INT(points[0].y - fMin.z) * fInvEdgeSize);
+    iStartPosX = FLOAT2INT(FLOAT2INT(points[0].x - this->fMin.x) * this->fInvEdgeSize);
+    iStartPosY = FLOAT2INT(FLOAT2INT(points[0].y - this->fMin.z) * this->fInvEdgeSize);
 
-    bStartPosOut = false;
-    if (iStartPosX < 0 || iStartPosX >= static_cast<int>(fNumCols) || iStartPosY < 0 || iStartPosY >= static_cast<int>(fNumRows)) {
+    bool bStartPosOut = false;
+    if (iStartPosX < 0 || iStartPosX >= static_cast<int>(this->fNumCols) || iStartPosY < 0 || iStartPosY >= static_cast<int>(this->fNumRows)) {
         bStartPosOut = true;
     }
 
-    iEndPosX = FLOAT2INT(FLOAT2INT(points[1].x - fMin.x) * fInvEdgeSize);
-    iEndPosY = FLOAT2INT(FLOAT2INT(points[1].y - fMin.z) * fInvEdgeSize);
+    iEndPosX = FLOAT2INT(FLOAT2INT(points[1].x - this->fMin.x) * this->fInvEdgeSize);
+    iEndPosY = FLOAT2INT(FLOAT2INT(points[1].y - this->fMin.z) * this->fInvEdgeSize);
 
-    bEndPosOut = false;
-    if (iEndPosX < 0 || iEndPosX >= static_cast<int>(fNumCols) || iEndPosY < 0 || iEndPosY >= static_cast<int>(fNumRows)) {
+    bool bEndPosOut = false;
+    if (iEndPosX < 0 || iEndPosX >= static_cast<int>(this->fNumCols) || iEndPosY < 0 || iEndPosY >= static_cast<int>(this->fNumRows)) {
         bEndPosOut = true;
     }
 
@@ -161,21 +158,23 @@ void WGrid::FindNodes(const UMath::Vector4 *seg, UTL::Vector<unsigned int, 16> &
     }
 
     if (bStartPosOut) {
-        if (!bEndPosOut) {
+        if (bEndPosOut) {
+            return;
+        } else {
             float fBarrierPosX;
             float fBarrierPosY;
             float fRevDirX = -fDirX;
             float fRevDirY = -fDirY;
 
             if (fRevDirX > 0.0f) {
-                fBarrierPosX = static_cast<float>(fNumCols) * fEdgeSize + fMin.x - 0.1f;
+                fBarrierPosX = static_cast<float>(this->fNumCols) * this->fEdgeSize + this->fMin.x - 0.1f;
             } else {
-                fBarrierPosX = fMin.x + 0.1f;
+                fBarrierPosX = this->fMin.x + 0.1f;
             }
             if (fRevDirY > 0.0f) {
-                fBarrierPosY = static_cast<float>(fNumRows) * fEdgeSize + fMin.z - 0.1f;
+                fBarrierPosY = static_cast<float>(this->fNumRows) * this->fEdgeSize + this->fMin.z - 0.1f;
             } else {
-                fBarrierPosY = fMin.z + 0.1f;
+                fBarrierPosY = this->fMin.z + 0.1f;
             }
 
             float fBarrierDistX = (fBarrierPosX - points[1].x) / fRevDirX;
@@ -189,23 +188,23 @@ void WGrid::FindNodes(const UMath::Vector4 *seg, UTL::Vector<unsigned int, 16> &
                 points[0].x = fBarrierDistY * fRevDirX + points[1].x;
             }
 
-            iStartPosX = FLOAT2INT(FLOAT2INT(points[0].x - fMin.x) * fInvEdgeSize);
-            iStartPosY = FLOAT2INT(FLOAT2INT(points[0].y - fMin.z) * fInvEdgeSize);
+            iStartPosX = FLOAT2INT(FLOAT2INT(points[0].x - this->fMin.x) * this->fInvEdgeSize);
+            iStartPosY = FLOAT2INT(FLOAT2INT(points[0].y - this->fMin.z) * this->fInvEdgeSize);
         }
     } else {
         if (bEndPosOut) {
             float fBarrierPosX;
             if (fDirX > 0.0f) {
-                fBarrierPosX = static_cast<float>(fNumCols) * fEdgeSize + fMin.x - 0.1f;
+                fBarrierPosX = static_cast<float>(this->fNumCols) * this->fEdgeSize + this->fMin.x - 0.1f;
             } else {
-                fBarrierPosX = fMin.x + 0.1f;
+                fBarrierPosX = this->fMin.x + 0.1f;
             }
 
             float fBarrierPosY;
             if (fDirY > 0.0f) {
-                fBarrierPosY = static_cast<float>(fNumRows) * fEdgeSize + fMin.z - 0.1f;
+                fBarrierPosY = static_cast<float>(this->fNumRows) * this->fEdgeSize + this->fMin.z - 0.1f;
             } else {
-                fBarrierPosY = fMin.z + 0.1f;
+                fBarrierPosY = this->fMin.z + 0.1f;
             }
 
             float fBarrierDistX = (fBarrierPosX - points[0].x) / fDirX;
@@ -219,32 +218,21 @@ void WGrid::FindNodes(const UMath::Vector4 *seg, UTL::Vector<unsigned int, 16> &
                 points[1].x = fBarrierDistY * fDirX + points[0].x;
             }
 
-            iEndPosX = FLOAT2INT(FLOAT2INT(points[1].x - fMin.x) * fInvEdgeSize);
-            iEndPosY = FLOAT2INT(FLOAT2INT(points[1].y - fMin.z) * fInvEdgeSize);
+            iEndPosX = FLOAT2INT(FLOAT2INT(points[1].x - this->fMin.x) * this->fInvEdgeSize);
+            iEndPosY = FLOAT2INT(FLOAT2INT(points[1].y - this->fMin.z) * this->fInvEdgeSize);
         }
     }
 
-    nodeIndList.push_back(GetNodeInd(iStartPosY, iStartPosX));
+    nodeIndList.push_back(this->GetNodeInd(iStartPosY, iStartPosX));
     iNumNodes = 1;
 
     float fLength = UMath::Sqrt(fDirX * fDirX + fDirY * fDirY);
 
-    // TODO only one push back call here
-    if (fLength <= fEdgeSize) {
-        if (iStartPosX != iEndPosX) {
-            if (iStartPosY == iEndPosY) {
-                nodeIndList.push_back(GetNodeInd(iEndPosY, iEndPosX));
-                return;
-            }
-        } else if (iStartPosY == iEndPosY) {
-            return;
-        } else {
-            nodeIndList.push_back(GetNodeInd(iEndPosY, iEndPosX));
-            return;
+    if (fLength <= this->fEdgeSize && (iStartPosX == iEndPosX || iStartPosY == iEndPosY)) {
+        if (iStartPosX != iEndPosX || iStartPosY != iEndPosY) {
+            nodeIndList.push_back(this->GetNodeInd(iEndPosY, iEndPosX));
         }
-    }
-
-    {
+    } else {
         float fVx = fDirX / fLength;
         float fVy = fDirY / fLength;
 
@@ -277,15 +265,15 @@ void WGrid::FindNodes(const UMath::Vector4 *seg, UTL::Vector<unsigned int, 16> &
         bNorth = fVy >= 0.0f;
 
         if (bEast) {
-            fWallX = ceilf(fCurX * fInvEdgeSize) * fEdgeSize;
+            fWallX = ceilf(fCurX * this->fInvEdgeSize) * this->fEdgeSize;
         } else {
-            fWallX = floorf(fCurX * fInvEdgeSize) * fEdgeSize;
+            fWallX = floorf(fCurX * this->fInvEdgeSize) * this->fEdgeSize;
         }
 
         if (bNorth) {
-            fWallY = ceilf(fCurY * fInvEdgeSize) * fEdgeSize;
+            fWallY = ceilf(fCurY * this->fInvEdgeSize) * this->fEdgeSize;
         } else {
-            fWallY = floorf(fCurY * fInvEdgeSize) * fEdgeSize;
+            fWallY = floorf(fCurY * this->fInvEdgeSize) * this->fEdgeSize;
         }
 
         while (iCurPosX != iEndPosX && iCurPosY != iEndPosY) {
@@ -297,24 +285,24 @@ void WGrid::FindNodes(const UMath::Vector4 *seg, UTL::Vector<unsigned int, 16> &
                 fCurY = fRx * fVy + fCurY;
                 if (bEast) {
                     iCurPosX++;
-                    fWallX += fEdgeSize;
+                    fWallX += this->fEdgeSize;
                 } else {
                     iCurPosX--;
-                    fWallX -= fEdgeSize;
+                    fWallX -= this->fEdgeSize;
                 }
             } else {
                 fCurX = fRy * fVx + fCurX;
                 fCurY = fWallY;
                 if (bNorth) {
                     iCurPosY++;
-                    fWallY += fEdgeSize;
+                    fWallY += this->fEdgeSize;
                 } else {
                     iCurPosY--;
-                    fWallY -= fEdgeSize;
+                    fWallY -= this->fEdgeSize;
                 }
             }
 
-            nodeIndList.push_back(GetNodeInd(iCurPosY, iCurPosX));
+            nodeIndList.push_back(this->GetNodeInd(iCurPosY, iCurPosX));
             iNumNodes++;
 
             if (iNumNodes > iMaxNumNodes) {
@@ -326,28 +314,28 @@ void WGrid::FindNodes(const UMath::Vector4 *seg, UTL::Vector<unsigned int, 16> &
 
         if (iCurPosX != iEndPosX) {
             if (bEast) {
-                do {
-                    iCurPosX++;
-                    if (iCurPosX > iEndPosX) {
+                while (++iCurPosX <= iEndPosX) {
+                    nodeIndList.push_back(this->GetNodeInd(iCurPosY, iCurPosX));
+                    iNumNodes++;
+                    if (iNumNodes > iMaxNumNodes) {
+                        nodeIndList.clear();
+                        WGrid::Get().FindNodes(UMath::Vector4To3(seg[0]), 1.0f, nodeIndList);
                         return;
                     }
-                    nodeIndList.push_back(GetNodeInd(iCurPosY, iCurPosX));
-                    iNumNodes++;
-                } while (iNumNodes <= iMaxNumNodes);
+                }
+                return;
             } else {
-                do {
-                    iCurPosX--;
-                    if (iCurPosX < iEndPosX) {
+                while (--iCurPosX >= iEndPosX) {
+                    nodeIndList.push_back(this->GetNodeInd(iCurPosY, iCurPosX));
+                    iNumNodes++;
+                    if (iNumNodes > iMaxNumNodes) {
+                        nodeIndList.clear();
+                        WGrid::Get().FindNodes(UMath::Vector4To3(seg[0]), 1.0f, nodeIndList);
                         return;
                     }
-                    nodeIndList.push_back(GetNodeInd(iCurPosY, iCurPosX));
-                    iNumNodes++;
-                } while (iNumNodes <= iMaxNumNodes);
+                }
+                return;
             }
-
-            nodeIndList.clear();
-            WGrid::Get().FindNodes(UMath::Vector4To3(seg[0]), 1.0f, nodeIndList);
-            return;
         }
 
         if (iCurPosY == iEndPosY) {
@@ -355,26 +343,25 @@ void WGrid::FindNodes(const UMath::Vector4 *seg, UTL::Vector<unsigned int, 16> &
         }
 
         if (bNorth) {
-            do {
-                iCurPosY++;
-                if (iEndPosY < iCurPosY) {
+            while (++iCurPosY <= iEndPosY) {
+                nodeIndList.push_back(this->GetNodeInd(iCurPosY, iCurPosX));
+                iNumNodes++;
+                if (iNumNodes > iMaxNumNodes) {
+                    nodeIndList.clear();
+                    WGrid::Get().FindNodes(UMath::Vector4To3(seg[0]), 1.0f, nodeIndList);
                     return;
                 }
-                nodeIndList.push_back(GetNodeInd(iCurPosY, iCurPosX));
-                iNumNodes++;
-            } while (iNumNodes <= iMaxNumNodes);
+            }
         } else {
-            do {
-                iCurPosY--;
-                if (iCurPosY < iEndPosY) {
+            while (--iCurPosY >= iEndPosY) {
+                nodeIndList.push_back(this->GetNodeInd(iCurPosY, iCurPosX));
+                iNumNodes++;
+                if (iNumNodes > iMaxNumNodes) {
+                    nodeIndList.clear();
+                    WGrid::Get().FindNodes(UMath::Vector4To3(seg[0]), 1.0f, nodeIndList);
                     return;
                 }
-                nodeIndList.push_back(GetNodeInd(iCurPosY, iCurPosX));
-                iNumNodes++;
-            } while (iNumNodes <= iMaxNumNodes);
+            }
         }
-
-        nodeIndList.clear();
-        WGrid::Get().FindNodes(UMath::Vector4To3(seg[0]), 1.0f, nodeIndList);
     }
 }

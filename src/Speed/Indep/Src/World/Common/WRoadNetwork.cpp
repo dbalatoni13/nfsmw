@@ -64,16 +64,8 @@ void WRoadNetwork::Init() {
     fValidRaceFilter = false;
     fValidTrafficRoads = true;
 
-    fNumRoads = 0;
-    fNumIntersections = 0;
-    fNumSegments = 0;
-    fNumNodes = 0;
-    nTotalMemoryUsage = 0;
-    nIntersectionMemoryUsage = 0;
-    nSegmentMemoryUsage = 0;
-    nProfileMemoryUsage = 0;
-    nNodeMemoryUsage = 0;
-    nRoadMemoryUsage = 0;
+    fNumNodes = fNumSegments = fNumIntersections = fNumRoads = 0;
+    nRoadMemoryUsage = nNodeMemoryUsage = nProfileMemoryUsage = nSegmentMemoryUsage = nIntersectionMemoryUsage = nTotalMemoryUsage = 0;
 
     if (WWorld::Get().GetMapGroup()) {
         const UGroup *networkGroup = WWorld::Get().GetMapGroup()->GroupLocate(MAKE_UDATA_TYPE('RN'), 'gp');
@@ -706,28 +698,27 @@ bool WRoadNav::OnPath() const {
 
 bool bAiRandomTurns = false;
 
-// UNSOLVED https://decomp.me/scratch/Beczf
 // PS: https://decomp.me/scratch/rJkvP
 short WRoadNav::GetNextOffset(const UMath::Vector3 &to, float &nextLaneOffset, char &nodeInd, bool &useOldStartPos) {
     useOldStartPos = true;
     bool end_of_path = false;
-    short newSegInd = GetSegmentInd();
+    short newSegInd = this->GetSegmentInd();
     WRoadNetwork &roadNetwork = WRoadNetwork::Get();
     const WRoadSegment *segment = roadNetwork.GetSegment(newSegInd);
-    const WRoadNode *node = &roadNetwork.fNodes[segment->fNodeIndex[GetNodeInd()]];
+    const WRoadNode *node = &roadNetwork.fNodes[segment->fNodeIndex[this->GetNodeInd()]];
 
-    if (fNavType == kTypePath) {
+    if (this->fNavType == kTypePath) {
         int i;
         bool found = false;
-        if (pPathSegments != nullptr) {
-            for (i = 0; i < nPathSegments; i++) {
-                if (fSegmentInd == pPathSegments[i]) {
+        if (this->pPathSegments != nullptr) {
+            for (i = 0; i < this->nPathSegments; i++) {
+                if (this->fSegmentInd == this->pPathSegments[i]) {
                     break;
                 }
             }
-            if (++i < nPathSegments) {
+            if (++i < this->nPathSegments) {
                 const WRoadNode *new_nodes[2];
-                int new_segment_index = pPathSegments[i];
+                int new_segment_index = this->pPathSegments[i];
                 const WRoadSegment *new_segment = roadNetwork.GetSegment(new_segment_index);
                 roadNetwork.GetSegmentNodes(*new_segment, new_nodes);
 
@@ -746,155 +737,153 @@ short WRoadNav::GetNextOffset(const UMath::Vector3 &to, float &nextLaneOffset, c
             }
         }
         if (!found) {
-            if (fPathType == kPathGPS) {
-                newSegInd = fSegmentInd;
+            if (this->fPathType == kPathGPS) {
+                newSegInd = this->fSegmentInd;
                 return newSegInd;
             }
-            SetNavType(kTypeDirection);
+            this->SetNavType(kTypeDirection);
         }
     }
 
-    if (fNavType == kTypeDirection) {
+    if (this->fNavType == kTypeDirection) {
         UMath::Vector3 toVec = to;
         UMath::Unit(toVec, toVec);
-        const WRoadSegment *checkSegment = GetAttachedDirectionalSegment(node, fSegmentInd);
+        const WRoadSegment *checkSegment = GetAttachedDirectionalSegment(node, this->fSegmentInd);
 
-        if (node->fNumSegments > 1) {
-            if (checkSegment || (segment->fFlags & kRoadSegmentDecision)) { // TODO
-                newSegInd = checkSegment->fIndex;
-                nodeInd = node == &roadNetwork.fNodes[checkSegment->fNodeIndex[0]];
-            } else {
-                unsigned int shortcut_cached = 0;
-                unsigned int shortcut_allowed = 0;
-                unsigned char shortcut_number = GetShortcutNumber();
+        if (node->fNumSegments <= 1 || (!checkSegment && (segment->fFlags & kRoadSegmentDecision))) {
+            nodeInd ^= 1;
+            useOldStartPos = false;
+        } else if (checkSegment) {
+            newSegInd = checkSegment->fIndex;
+            nodeInd = node == &roadNetwork.fNodes[checkSegment->fNodeIndex[0]];
+        } else {
+            unsigned int shortcut_cached = 0;
+            unsigned int shortcut_allowed = 0;
+            unsigned char shortcut_number = this->GetShortcutNumber();
 
-                if (shortcut_number != 0xFF) {
-                    int mask = 1 << shortcut_number;
-                    shortcut_cached |= mask;
-                    shortcut_allowed |= mask;
-                }
+            if (shortcut_number != 0xFF) {
+                int mask = 1 << shortcut_number;
+                shortcut_cached |= mask;
+                shortcut_allowed |= mask;
+            }
 
-                float closest_to_target = 2.0f;
-                float target_dot = bAiRandomTurns ? bRandom(1.0f) : 1.0f;
+            float closest_to_target = 2.0f;
+            float target_dot = bAiRandomTurns ? bRandom(1.0f) : 1.0f;
 
-                for (int i = 0; i < static_cast<int>(node->fNumSegments); i++) {
-                    if (node->fSegmentIndex[i] == fSegmentInd)
-                        continue;
+            for (int i = 0; i < static_cast<int>(node->fNumSegments); i++) {
+                if (node->fSegmentIndex[i] == this->fSegmentInd)
+                    continue;
 
-                    const WRoadSegment *newRoadSegment = roadNetwork.GetSegment(node->fSegmentIndex[i]);
-                    bool respect_full_barriers = RespectFullBarriers();
-                    bool respect_drive_through_barriers = RespectDriveThroughBarriers();
+                const WRoadSegment *newRoadSegment = roadNetwork.GetSegment(node->fSegmentIndex[i]);
+                bool respect_full_barriers = this->RespectFullBarriers();
+                bool respect_drive_through_barriers = this->RespectDriveThroughBarriers();
 
-                    float worst_gap_to_target = 0.0f;
-                    const int kMaxWalkSegments = 19;
-                    const float kMaxWalkDistance = 100.0f;
-                    float distance = kMaxWalkDistance;
-                    const WRoadNode *walkRoadNode = node;
-                    const WRoadSegment *walkRoadSegment = newRoadSegment;
+                float worst_gap_to_target = 0.0f;
+                const int kMaxWalkSegments = 19;
+                const float kMaxWalkDistance = 100.0f;
+                float distance = kMaxWalkDistance;
+                const WRoadNode *walkRoadNode = node;
+                const WRoadSegment *walkRoadSegment = newRoadSegment;
 
-                    for (int w = 0; w <= kMaxWalkSegments; w++) {
-                        if ((respect_full_barriers || respect_drive_through_barriers) &&
-                            walkRoadSegment->CrossesBarrier(respect_drive_through_barriers)) {
-                            walkRoadSegment = nullptr;
-                            break;
-                        }
-
-                        bool walk_segment_forward = (walkRoadNode == &roadNetwork.fNodes[walkRoadSegment->fNodeIndex[0]]);
-
-                        if (bRaceFilter) {
-                            if (!walkRoadSegment->IsInRace()) {
-                                walkRoadSegment = nullptr;
-                                break;
-                            }
-                            if (walkRoadSegment->RaceRouteForward() ^ walk_segment_forward) {
-                                walkRoadSegment = nullptr;
-                                break;
-                            }
-                        }
-
-                        if (bTrafficFilter && !walkRoadSegment->IsTrafficAllowed()) {
-                            walkRoadSegment = nullptr;
-                            break;
-                        }
-
-                        if (bCopFilter && !walkRoadSegment->ShouldCopsConsider()) {
-                            walkRoadSegment = nullptr;
-                            break;
-                        }
-
-                        if (walkRoadSegment->IsShortcut()) {
-                            const WRoad *road = roadNetwork.GetRoad(walkRoadSegment->fRoadID);
-                            if (!MakeShortcutDecision(road->nShortcut, &shortcut_cached, &shortcut_allowed)) {
-                                walkRoadSegment = nullptr;
-                                break;
-                            }
-                        }
-
-                        UMath::Vector3 vec;
-                        roadNetwork.GetSegmentForwardVector(*walkRoadSegment, vec);
-                        if (!walk_segment_forward) {
-                            UMath::Negate(vec);
-                        }
-                        UMath::Unit(vec, vec);
-                        float dot = UMath::Dot(vec, toVec);
-                        float gap_to_target = bAbs(dot - target_dot);
-                        if (gap_to_target > worst_gap_to_target) {
-                            worst_gap_to_target = gap_to_target;
-                        }
-                        if (worst_gap_to_target >= closest_to_target) {
-                            walkRoadSegment = nullptr;
-                            break;
-                        }
-
-                        distance -= walkRoadSegment->GetLength();
-                        if (w > 0 && distance <= 0.0f)
-                            break;
-
-                        const WRoadNode *oppNode = roadNetwork.GetSegmentOppNode(*walkRoadSegment, walkRoadNode);
-                        const WRoadSegment *checkSegment = GetAttachedDirectionalSegment(oppNode, walkRoadSegment->fIndex);
-                        if (checkSegment == nullptr) {
-                            if (w == 0) {
-                                walkRoadSegment = nullptr;
-                            }
-                            break;
-                        }
-                        if (oppNode != &roadNetwork.fNodes[checkSegment->fNodeIndex[0]] && (checkSegment->fFlags & kRoadSegmentOneWay)) {
-                            char towards;
-                            walkRoadSegment = nullptr;
-                            break;
-                        }
-                        if (end_of_path)
-                            break;
-                        walkRoadSegment = checkSegment;
-                        walkRoadNode = oppNode;
+                for (int w = 0; w <= kMaxWalkSegments; w++) {
+                    if ((respect_full_barriers || respect_drive_through_barriers) &&
+                        walkRoadSegment->CrossesBarrier(respect_drive_through_barriers)) {
+                        walkRoadSegment = nullptr;
+                        break;
                     }
 
-                    if (walkRoadSegment && closest_to_target > worst_gap_to_target) {
-                        newSegInd = node->fSegmentIndex[i];
-                        const WRoadSegment *newSegment = roadNetwork.GetSegment(newSegInd);
-                        nodeInd = (node == &roadNetwork.fNodes[newSegment->fNodeIndex[0]]);
-                        closest_to_target = worst_gap_to_target;
+                    bool walk_segment_forward = (walkRoadNode == &roadNetwork.fNodes[walkRoadSegment->fNodeIndex[0]]);
+
+                    if (this->bRaceFilter) {
+                        if (!walkRoadSegment->IsInRace()) {
+                            walkRoadSegment = nullptr;
+                            break;
+                        }
+                        if (walkRoadSegment->RaceRouteForward() ^ walk_segment_forward) {
+                            walkRoadSegment = nullptr;
+                            break;
+                        }
                     }
+
+                    if (this->bTrafficFilter && !walkRoadSegment->IsTrafficAllowed()) {
+                        walkRoadSegment = nullptr;
+                        break;
+                    }
+
+                    if (this->bCopFilter && !walkRoadSegment->ShouldCopsConsider()) {
+                        walkRoadSegment = nullptr;
+                        break;
+                    }
+
+                    if (walkRoadSegment->IsShortcut()) {
+                        const WRoad *road = roadNetwork.GetRoad(walkRoadSegment->fRoadID);
+                        if (!this->MakeShortcutDecision(road->nShortcut, &shortcut_cached, &shortcut_allowed)) {
+                            walkRoadSegment = nullptr;
+                            break;
+                        }
+                    }
+
+                    UMath::Vector3 vec;
+                    roadNetwork.GetSegmentForwardVector(*walkRoadSegment, vec);
+                    if (!walk_segment_forward) {
+                        UMath::Negate(vec);
+                    }
+                    UMath::Unit(vec, vec);
+                    float dot = UMath::Dot(vec, toVec);
+                    float gap_to_target = bAbs(dot - target_dot);
+                    if (gap_to_target > worst_gap_to_target) {
+                        worst_gap_to_target = gap_to_target;
+                    }
+                    if (worst_gap_to_target >= closest_to_target) {
+                        walkRoadSegment = nullptr;
+                        break;
+                    }
+
+                    distance -= walkRoadSegment->GetLength();
+                    if (w > 0 && distance <= 0.0f)
+                        break;
+
+                    const WRoadNode *oppNode = roadNetwork.GetSegmentOppNode(*walkRoadSegment, walkRoadNode);
+                    const WRoadSegment *checkSegment = GetAttachedDirectionalSegment(oppNode, walkRoadSegment->fIndex);
+                    if (checkSegment == nullptr) {
+                        if (w == 0) {
+                            walkRoadSegment = nullptr;
+                        }
+                        break;
+                    }
+                    if (oppNode != &roadNetwork.fNodes[checkSegment->fNodeIndex[0]] && (checkSegment->fFlags & kRoadSegmentOneWay)) {
+                        char towards;
+                        walkRoadSegment = nullptr;
+                        break;
+                    }
+                    if (end_of_path)
+                        break;
+                    walkRoadSegment = checkSegment;
+                    walkRoadNode = oppNode;
                 }
 
-                if (newSegInd == GetSegmentInd()) {
-                    nodeInd ^= 1;
-                    useOldStartPos = false;
+                if (walkRoadSegment && closest_to_target > worst_gap_to_target) {
+                    newSegInd = node->fSegmentIndex[i];
+                    const WRoadSegment *newSegment = roadNetwork.GetSegment(newSegInd);
+                    nodeInd = (node == &roadNetwork.fNodes[newSegment->fNodeIndex[0]]);
+                    closest_to_target = worst_gap_to_target;
                 }
             }
-        } else {
-            nodeInd = nodeInd ^ 1;
-            useOldStartPos = false;
+
+            if (newSegInd == this->GetSegmentInd()) {
+                nodeInd ^= 1;
+                useOldStartPos = false;
+            }
         }
     }
 
     bool drag;
-    GetLaneType();
+    this->GetLaneType();
     const WRoadSegment *new_segment = roadNetwork.GetSegment(0);
     bool do_centre_shift;
     float centre_shift;
 
-    nextLaneOffset = SnapToSelectableLane(fLaneOffset, newSegInd, nodeInd);
+    nextLaneOffset = this->SnapToSelectableLane(this->fLaneOffset, newSegInd, nodeInd);
     return newSegInd;
 }
 
@@ -1062,7 +1051,6 @@ int WRoadProfile::GetNthTrafficLaneFromCurb(int n, bool forward) const {
     return fallback;
 }
 
-// UNSOLVED MW: https://decomp.me/scratch/0PjWL
 // PS: https://decomp.me/scratch/FzlHK
 // A124: https://decomp.me/scratch/pVEP3
 int WRoadNetwork::GetRightMostTrafficEntrance(int node_number, int onto_segment) {
@@ -1098,7 +1086,7 @@ int WRoadNetwork::GetRightMostTrafficEntrance(int node_number, int onto_segment)
                 const WRoadSegment *from_segment = GetSegment(segment_number);
                 const WRoadNode *from_node = GetSegmentOppNode(segment_number, node);
                 int from_which_node = node_number != from_segment->fNodeIndex[1];
-                bool from_inverted = from_segment->IsProfileInverted(from_which_node);
+                bool from_inverted = segment->IsProfileInverted(from_which_node);
                 bool from_forward = from_which_node == 0;
                 const WRoadProfile *from_profile = GetProfile(from_node->fProfileIndex);
 
@@ -1175,7 +1163,6 @@ void WRoadNav::PullOver() {
     UMath::ScaleAdd(nav_right, offset_change, GetPosition(), GetPosition());
 }
 
-// UNSOLVED
 short WRoadNav::GetNextTraffic(const UMath::Vector3 &toVec, float &nextLaneOffset, char &nodeInd, bool &useOldStartPos) {
     WRoadNetwork &roadNetwork = WRoadNetwork::Get();
     int which_node = GetNodeInd();
@@ -1210,8 +1197,8 @@ short WRoadNav::GetNextTraffic(const UMath::Vector3 &toVec, float &nextLaneOffse
         newSegInd = segment->fIndex;
     } else if (checkSegment != nullptr) {
         newSegInd = checkSegment->fIndex;
-        bool new_forward = (node == &roadNetwork.fNodes[checkSegment->fNodeIndex[0]]); // TODO
-        nodeInd = new_forward;
+        nodeInd = (node == &roadNetwork.fNodes[checkSegment->fNodeIndex[0]]);
+        bool new_forward = (nodeInd == 1);
         bool new_inverted = checkSegment->IsProfileInverted(nodeInd);
         const WRoadProfile *new_profile = roadNetwork.GetSegmentProfile(*checkSegment, static_cast<int>(nodeInd));
         newLaneInd = static_cast<char>(new_profile->GetNthTrafficLane(nth_lane, new_forward, new_inverted));

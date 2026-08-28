@@ -29,14 +29,16 @@ inline void NearPtLinePerSegXZ(const UMath::Vector3 &p0, const UMath::Vector3 &p
     UMath::Sub(p1, p0, diffVec);
     diffVec.y = 0.0f;
     float ud = diffVec.x * diffVec.x + diffVec.z * diffVec.z;
-    invDen = 0.0f;
     if (0.0f < ud) {
         invDen = 1.0f / ud;
+    } else {
+        invDen = 0.0f;
     }
 }
 
 inline void NearPtLineXZ(const UMath::Vector3 &pt, const UMath::Vector3 &p0, float den, const UMath::Vector3 &diffVec, UMath::Vector3 &nearPt) {
-    float u = ((pt.x - p0.x) * diffVec.x + (pt.z - p0.z) * diffVec.z) * den;
+    float u = (pt.x - p0.x) * diffVec.x + (pt.z - p0.z) * diffVec.z;
+    u *= den;
     u = UMath::Max(UMath::Min(u, 1.0f), 0.0f);
     nearPt.x = u * diffVec.x + p0.x;
     nearPt.z = u * diffVec.z + p0.z;
@@ -600,40 +602,44 @@ void WCollisionMgr::GetInstanceList(WCollisionInstanceCacheList &instList, const
                               cylinderTest);
 }
 
-// UNSOLVED wmin, wmax, regswaps
 void WCollisionMgr::GetInstanceListGuts(const NodeIndexList &nodeInds, WCollisionInstanceCacheList &instList, const UMath::Vector4 *seg) {
     const WGrid &grid = WGrid::Get();
 
 #ifndef EA_BUILD_A124
-    ++fIterCount;
+    ++this->fIterCount;
 #endif
 
     float invDen;
     UMath::Vector3 npVec;
     NearPtLinePerSegXZ(UMath::Vector4To3(seg[0]), UMath::Vector4To3(seg[1]), invDen, npVec);
-    float minSegY = WWorldMath::wmin(seg[1].y, seg[0].y);
-    float maxSegY = WWorldMath::wmax(seg[1].y, seg[0].y);
+
+    float minSegY = WWorldMath::wmin(seg[0].y, seg[1].y);
+    float maxSegY = WWorldMath::wmax(seg[0].y, seg[1].y);
 
     for (const unsigned int *iter = nodeInds.begin(); iter != nodeInds.end(); ++iter) {
         WGridNode *node = grid.fNodes[*iter];
+
         if (node != nullptr) {
             WGridNode::iterator eIter(node, WGrid_kInstance);
             const unsigned int *instIndPtr;
+
             while ((instIndPtr = eIter.GetIndPtr()) != nullptr) {
                 unsigned int instInd = *instIndPtr;
                 const WCollisionInstance *cInst = WCollisionAssets::Get().Instance(instInd);
 
                 if ((cInst != nullptr) && (cInst->fGroupNumber == 0 || IsSceneryGroupEnabled(cInst->fGroupNumber)) &&
-                    (cInst->fCollisionArticle != nullptr) && this->InstancePassesExclusion(*cInst) && cInst->fIterStamp != fIterCount) {
+                    (cInst->fCollisionArticle != nullptr) && this->InstancePassesExclusion(*cInst) && cInst->fIterStamp != this->fIterCount) {
                     float instRad = cInst->fInvPosRadius.w;
                     float instRadSq = instRad * instRad;
-                    const_cast<WCollisionInstance *>(cInst)->fIterStamp = fIterCount;
+
+                    const_cast<WCollisionInstance *>(cInst)->fIterStamp = this->fIterCount;
 
                     UMath::Vector3 diffVec;
                     UMath::Vector3 nearPt;
                     UMath::Matrix4 invMat;
 
                     cInst->MakeMatrix(invMat, true);
+
 #ifdef EA_BUILD_A124
                     UMath::OrthoInverse(invMat);
 #else
@@ -654,6 +660,7 @@ void WCollisionMgr::GetInstanceListGuts(const NodeIndexList &nodeInds, WCollisio
                         } else {
                             float instTopY = instPos.y + cInst->fHeight;
                             float instBotY = instPos.y - cInst->fHeight;
+
                             if (minSegY < instTopY && maxSegY > instBotY) {
                                 instList.push_back(cInst);
                             }
@@ -807,7 +814,6 @@ bool WCollisionMgr::Collide(Dynamics::Collision::Geometry *geom, const WCollisio
     return hit;
 }
 
-// UNSOLVED for loop and stack issues
 bool WCollisionMgr::Collide(Dynamics::Collision::Geometry *geom, const WCollisionInstanceCacheList *instanceList, ICollisionHandler *results,
                             void *userdata) {
     bool hit = false;
@@ -818,12 +824,12 @@ bool WCollisionMgr::Collide(Dynamics::Collision::Geometry *geom, const WCollisio
                                                      {{-1.0f, 1.0f, 1.0f, 1.0f}, {1.0f, -1.0f, -1.0f, 1.0f}},
                                                      {{1.0f, 1.0f, 1.0f, 1.0f}, {-1.0f, -1.0f, -1.0f, 1.0f}},
                                                      {{1.0f, -1.0f, 1.0f, 1.0f}, {-1.0f, 1.0f, -1.0f, 1.0f}}};
-        unsigned int num2check;
+        unsigned int num2check = 4;
         UMath::Vector4 arms[4][2];
         UMath::Vector4 dim = UMath::Vector4Make(geom->GetDimension(), 1.0f);
         UMath::Vector4 cp = UMath::Vector4Make(geom->GetPosition(), 1.0f);
 
-        for (i = 0; i < 4; i++) {
+        for (i = 0; i < num2check; i++) {
             for (j = 0; j < 2; j++) {
                 UMath::Vector4 tmp;
                 UMath::Vector4 tmp2;
@@ -840,7 +846,7 @@ bool WCollisionMgr::Collide(Dynamics::Collision::Geometry *geom, const WCollisio
         UMath::Vector4 seg[2];
         UMath::Vector4 delta = UMath::Vector4::kIdentity;
 
-        for (i = 0; i < 4; i++) {
+        for (i = 0; i < num2check; i++) {
             UMath::Addxyz(arms[i][0], delta, seg[0]);
             UMath::Addxyz(arms[i][1], delta, seg[1]);
 

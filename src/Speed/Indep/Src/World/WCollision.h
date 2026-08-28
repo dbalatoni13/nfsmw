@@ -92,9 +92,9 @@ struct WCollisionArticle {
     void Resolve();
 
     const Attrib::Collection *GetSurface(unsigned int ind) const {
-        const char *dataStart = reinterpret_cast<const char *>(&this[1]);
         // TODO 64 bit
-        unsigned int ref = reinterpret_cast<const unsigned int *>(dataStart + fStripsSize + fEdgesSize)[ind];
+        const char *dataStart = reinterpret_cast<const char *>(&this[1]) + fStripsSize + fEdgesSize;
+        unsigned int ref = reinterpret_cast<const unsigned int *>(dataStart)[ind];
         return reinterpret_cast<const Attrib::Collection *>(ref);
     }
 

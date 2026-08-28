@@ -29,6 +29,8 @@ typedef unsigned int type_operator_new;
 // TODO use PS2ALIGN16 instead of this
 #define ALIGN_16
 
+#define EA_PACKED __attribute__((packed))
+
 #define ONLINE_SUPPORT (0) // TODO get rid of this
 
 #elif defined(EA_PLATFORM_XENON)
@@ -62,6 +64,8 @@ typedef bool Bool;
 
 #define ALIGN_16 ATTRIBUTE_ALIGN(16)
 
+#define EA_PACKED
+
 #ifndef AT_ADDRESS
 #define AT_ADDRESS(xyz)
 #endif
@@ -94,7 +98,7 @@ typedef int i32;
 typedef unsigned __int16 u16;
 typedef __int16 i16;
 typedef unsigned __int8 u8;
-// typedef signed char i8;
+    // typedef signed char i8;
 
 #define ONLINE_SUPPORT (1)
 
@@ -124,6 +128,8 @@ typedef bool Bool;
 #endif
 
 #define ALIGN_16 ATTRIBUTE_ALIGN(16)
+
+#define EA_PACKED __attribute__((packed))
 
 #ifndef AT_ADDRESS
 #define AT_ADDRESS(xyz)

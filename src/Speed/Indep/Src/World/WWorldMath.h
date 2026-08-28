@@ -15,15 +15,11 @@ inline float pow2(float a) {
 }
 
 inline float wmin(const float &a, const float &b) {
-    if (a < b)
-        return a;
-    return b;
+    return a < b ? a : b;
 }
 
 inline float wmax(const float &a, const float &b) {
-    if (a > b)
-        return a;
-    return b;
+    return a > b ? a : b;
 }
 
 inline bool InCircle(float x, float y, float cx, float cy, float r) {

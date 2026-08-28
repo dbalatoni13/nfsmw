@@ -82,7 +82,6 @@ void WCollider::InvalidateIntersectingColliders(const UMath::Vector4 &posRad) {
     }
 }
 
-// UNSOLVED
 static void CalcNewRegionSizeFromRequested(bool useLastData, const UMath::Vector3 &reqPos, float reqRad, const UMath::Vector3 &oldPos, float oldRad,
                                            const UMath::Vector3 &lastPos, UMath::Vector3 &pos, float &rad) {
     if (!useLastData) {
@@ -104,9 +103,7 @@ static void CalcNewRegionSizeFromRequested(bool useLastData, const UMath::Vector
 
             float moveDist = UMath::Length(moveVec);
             rad = reqRad + moveDist + 0.1f;
-            if (rad > 25.0f) {
-                rad = 25.0f;
-            }
+            rad = rad > 25.0f ? 25.0f : rad;
         }
     }
 }
@@ -337,8 +334,8 @@ void WCollisionInstance::MakeMatrix(UMath::Matrix4 &m, bool addXLate) const {
     m[0][3] = 0.0f;
 
     if (NeedsCrossProduct()) {
-        UMath::Crossxyz(reinterpret_cast<const UMath::Vector4 &>(this->fInvMatRow2Length), reinterpret_cast<const UMath::Vector4 &>(this->fInvMatRow0Width),
-                        m[1]);
+        UMath::Crossxyz(reinterpret_cast<const UMath::Vector4 &>(this->fInvMatRow2Length),
+                        reinterpret_cast<const UMath::Vector4 &>(this->fInvMatRow0Width), m[1]);
         m[1][3] = 0.0f;
     } else {
         m[1][0] = 0.0f;
