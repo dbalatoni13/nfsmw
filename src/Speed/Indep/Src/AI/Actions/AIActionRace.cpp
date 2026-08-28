@@ -212,7 +212,7 @@ void AIActionRace::BeginAction(float dT) {
     }
 
     if (this->mResetTask == nullptr) {
-        this->mResetTask = this->AddTask("Physics", 0.25f, 1.0f, Sim::TASK_FRAME_FIXED);
+        this->mResetTask = this->AddTask(UCrc32("Physics"), 0.25f, 1.0f, Sim::TASK_FRAME_FIXED);
         Sim::ProfileTask(this->mResetTask, "AIActionRace");
     }
 }

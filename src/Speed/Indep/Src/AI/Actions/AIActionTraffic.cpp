@@ -89,7 +89,7 @@ AIActionTraffic::AIActionTraffic(AIActionParams *params, float score)
     this->mTargetSpeedHighway = MPH2MPS(55.0f);
 
     this->mSetSpeedHandler = Hermes::Handler::Create<MSetTrafficSpeed, AIActionTraffic, AIActionTraffic>(
-        this, &AIActionTraffic::MessageSetSpeed, "AIAction", this->GetVehicle()->GetSimable()->GetWorldID());
+        this, &AIActionTraffic::MessageSetSpeed, UCrc32("AIAction"), this->GetVehicle()->GetSimable()->GetWorldID());
 
     // "default"
     this->mDefaultPursuitLevelAttrib = new Attrib::Gen::pursuitlevels(0xeec2271a, 0, nullptr);

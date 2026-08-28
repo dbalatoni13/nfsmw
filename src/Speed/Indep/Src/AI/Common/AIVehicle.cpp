@@ -140,7 +140,7 @@ void AIVehicleHuman::UpdateWrongWay() {
 void AIVehicleHuman::SetAiControl(bool ai_control) {
     if (this->bAiControl != ai_control) {
         this->ClearGoal();
-        this->SetGoal("AIGoalRacer");
+        this->SetGoal(UCrc32("AIGoalRacer"));
         this->bAiControl = ai_control;
         new EEnableAIPhysics(reinterpret_cast<uintptr_t>(this->GetOwner()->GetInstanceHandle()), this->GetVehicle()->GetSpeed(), ai_control ? 1 : 0);
     }
@@ -381,7 +381,7 @@ AIVehicle::AIVehicle(const BehaviorParams &bp, float update_rate, float stagger,
 
     this->MakeDebugable(DBG_AI);
     this->ResetInternals();
-    this->mThinkTask = this->AddTask("AIVehicle", update_rate, stagger, taskmode);
+    this->mThinkTask = this->AddTask(UCrc32("AIVehicle"), update_rate, stagger, taskmode);
     Sim::ProfileTask(this->mThinkTask, "AI Think");
 
     const char *layer_name = GetCaffeineLayerName(this->GetVehicle()->GetDriverClass());
@@ -958,7 +958,7 @@ void AIVehicle::UnSpawn() {
 
     IPursuitAI *ipai;
     if (this->GetOwner()->QueryInterface(&ipai)) {
-        ipai->SetSupportGoal((const char *)nullptr);
+        ipai->SetSupportGoal(UCrc32(static_cast<const char *>(nullptr)));
     }
 }
 
