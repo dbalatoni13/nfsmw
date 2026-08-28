@@ -1,4 +1,5 @@
 #include "Speed/Indep/Src/EAXSound/EAXSND8Wrapper.hpp"
+#include "EAXAudioParams.hpp"
 #include "Speed/Indep/Src/EAXSound/EAXSOund.hpp"
 #include "Speed/Indep/Src/Frontend/Database/FEDatabase.hpp"
 #include "Speed/Indep/Src/Misc/Config.h"
@@ -202,6 +203,8 @@ eSndAudioMode EAXSND8Wrapper::GetDefaultPlatformAudioMode() {
     if (OSGetSoundMode() == 0) {
         mode = AUDIO_MODE_MIN;
     }
+#else
+    eSndAudioMode mode = AUDIO_MODE_MAX;
 #endif
     return mode;
 }
