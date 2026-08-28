@@ -17,8 +17,8 @@ struct IThread {
     virtual int AddRef();
     virtual int Release();
     virtual void SetStackSize(unsigned int size);
-    virtual void Begin(int (*entry)(void *), void *arg);
-    virtual void WaitForEnd();
+    virtual void Begin(int (*entry)(void *));
+    virtual void WaitForEnd(int timeout = 0);
     virtual void Sleep(unsigned int milliseconds);
     virtual void SetPriority(int priority);
 };
@@ -364,11 +364,11 @@ struct IGameInterface {
     virtual void FindEntriesDone(CardStatus) = 0;
     virtual void Retry(CardStatus) = 0;
     virtual void Failed(TaskResult, CardStatus) = 0;
-    virtual void CardChanged(TaskResult, CardStatus) = 0;
     virtual void CardChecked(const CardInfo *) = 0;
-    virtual void CardRemoved() = 0;
     virtual void SetAutosaveDone(TaskResult, CardStatus, AutosaveState) = 0;
+    virtual void CardRemoved() = 0;
     virtual void SetMonitorDone(CardStatus, MonitorState) = 0;
+    virtual void CardChanged(TaskResult, CardStatus) = 0;
 
   protected:
     virtual ~IGameInterface() {}

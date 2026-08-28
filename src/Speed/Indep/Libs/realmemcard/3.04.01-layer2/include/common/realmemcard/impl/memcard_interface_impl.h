@@ -387,9 +387,6 @@ struct MessageTimer {
         , mNumSecondsDefaultDelay(0) {}
 
     void Init(unsigned int nSecondsDefaultDelay) {
-        this->mIsActive = false;
-        this->mNumTicksElapsed = 0;
-        this->mNumTicksToExpire = 0;
         this->mNumSecondsDefaultDelay = nSecondsDefaultDelay;
     }
 
@@ -656,9 +653,7 @@ struct Task {
 
 struct TaskStack {
     TaskStack()
-        : mNumTasks(0) {
-        memset(this->mBuf, 0, sizeof(this->mBuf));
-    }
+        : mNumTasks(0) {}
 
     void Push(Task *task) {
         if (this->mNumTasks <= 15) {
@@ -681,10 +676,9 @@ struct TaskStack {
 struct GcTask : public Task {
     GcTask(TaskID id, TaskManager *parent)
         : Task(id, parent)
-        , mCardID()
-        , mNotifyUser(false)
-        , mTaskResult(RESULT_UNKNOWN)
-        , mCardStatus(STATUS_UNKNOWN) {}
+        , mCardID() {
+        this->Init(false);
+    }
 
     virtual void Init(bool notifyUser) override {
         this->mCardID.slot = 0;
@@ -705,9 +699,9 @@ struct GcTask : public Task {
 struct TaskTrc : public GcTask {
     TaskTrc(TaskID id, TaskManager *parent)
         : GcTask(id, parent)
-        , mFileHandle(nullptr)
-        , mMounted(false)
-        , mFileOpened(false) {}
+        {
+        this->Clear();
+    }
 
     virtual void Clear() {
         this->mFileHandle = nullptr;
@@ -715,13 +709,9 @@ struct TaskTrc : public GcTask {
         this->mFileOpened = false;
     }
 
-    virtual void Init(bool notifyUser) override {
+    virtual void Init(bool nofifyUser) override {
         this->Clear();
-        this->mCardID.slot = 0;
-        this->mNotifyUser = notifyUser;
-        this->mState = TS_START;
-        this->mTaskResult = RESULT_UNKNOWN;
-        this->mCardStatus = STATUS_UNKNOWN;
+        this->GcTask::Init(nofifyUser);
     }
 
     OpenFileDescriptor *mFileHandle;
@@ -734,8 +724,7 @@ struct TaskTrcStartGame : public TaskTrc {
         : TaskTrc(TID_TRC_STARTGAME, parent)
         , mInfo()
         , mFirstCardChecked() {
-        this->mSlotStatus[0] = STATUS_UNKNOWN;
-        this->mSlotStatus[1] = STATUS_UNKNOWN;
+        this->Clear();
     }
 
     virtual void Clear() override {
@@ -841,8 +830,8 @@ struct TaskTrcListFiles : public TaskTrc {
     virtual void Clear() override {
         this->TaskTrc::Clear();
         memset(&this->mFileInfo, 0, sizeof(this->mFileInfo));
+        this->mMounted = false;
         this->mNumFilesFound = 0;
-        this->mListingStarted = false;
     }
 
     void Start(CardID cID, const FileInfo *finfo) {
@@ -867,6 +856,7 @@ struct TaskTrcLoadFile : public TaskTrc {
     virtual void Clear() override {
         this->TaskTrc::Clear();
         memset(&this->mFileInfo, 0, sizeof(this->mFileInfo));
+        this->mFileHandle = nullptr;
         this->mFileFound = false;
     }
 
@@ -912,9 +902,9 @@ struct TaskTrcMount : public TaskTrc {
         , mTrcTaskID(TID_NONE) {}
 
     void Start(CardID cardID, TaskID trcTaskID, bool notifyUser) {
+        this->GcTask::Init(notifyUser);
         this->mCardID = cardID;
         this->mTrcTaskID = trcTaskID;
-        this->GcTask::Init(notifyUser);
     }
 
     TaskID mTrcTaskID;
@@ -926,9 +916,9 @@ struct TaskTrcFormat : public TaskTrc {
         , mTrcTaskID(TID_NONE) {}
 
     void Start(CardID cardID, TaskID trcTaskID, bool notifyUser) {
+        this->GcTask::Init(notifyUser);
         this->mCardID = cardID;
         this->mTrcTaskID = trcTaskID;
-        this->GcTask::Init(notifyUser);
     }
 
     TaskID mTrcTaskID;
@@ -940,11 +930,11 @@ struct TaskShowCardStatusMsg : public TaskTrc {
         , mTrcTaskID(TID_NONE) {}
 
     void Start(CardID cardID, TaskResult result, CardStatus status, TaskID trcTaskID, bool notifyUser) {
+        this->GcTask::Init(notifyUser);
         this->mCardID = cardID;
+        this->mTrcTaskID = trcTaskID;
         this->mTaskResult = result;
         this->mCardStatus = status;
-        this->mTrcTaskID = trcTaskID;
-        this->GcTask::Init(notifyUser);
     }
 
     TaskID mTrcTaskID;
@@ -1209,7 +1199,13 @@ struct GCMessage : public Message {
     }
     virtual ~GCMessage() {}
 
+#ifdef REALMC_GC_MESSAGE_INIT_INLINE
+    inline void Init() {
+        this->Clear();
+    }
+#else
     void Init();
+#endif
 
     void _SetMsgOptions(int options);
     short *_LcGetSlotString(int slotnum);
@@ -1305,16 +1301,16 @@ struct FindResult {
 };
 
 struct GCInterface : public InterfaceImp {
-    static void *operator new(unsigned int size) {
+    static inline void *operator new(unsigned int size) {
         return AllocateMemSize(0, size, 0, 0, 0);
     }
-    static void operator delete(void *ptr, unsigned int size) {
+    static inline void operator delete(void *ptr, unsigned int size) {
         FreeMemSize(ptr, size);
     }
-    static void *operator new(unsigned int, void *ptr) {
+    static inline void *operator new(unsigned int, void *ptr) {
         return ptr;
     }
-    static void operator delete(void *, void *) {}
+    static inline void operator delete(void *, void *) {}
 
     static GCMessage mTaskMsg;
     static volatile GCMessage *mpNewTaskMsg;
@@ -1418,7 +1414,7 @@ struct GCInterface : public InterfaceImp {
     static void UpdateTaskShowCardStatusMessage();
     static void UpdateTaskTrcCheckSpace();
 
-    void SetDummyMessage() {
+    inline void SetDummyMessage() {
         mTaskMsg.mMsg = LMSG_NONE;
         mpNewTaskMsg = &mTaskMsg;
     }
@@ -1427,6 +1423,8 @@ struct GCInterface : public InterfaceImp {
 } // namespace Realmc
 
 namespace RealmcIface {
+
+extern const char *ALL_ENTRIES;
 
 struct FileHeader {
     FileHeader() {}
@@ -1454,11 +1452,56 @@ struct FileHeader {
 struct MemcardInterfaceImpl;
 
 struct FindEntriesInfo {
+    void Clear() {
+        memset(this->mEntryNamePattern, 0, sizeof(this->mEntryNamePattern));
+        this->mTitleInfo.Clear();
+    }
+
+    void Init(const char *entryNamePattern, const TitleInfo *titleInfo) {
+        this->Clear();
+        strncpy(this->mEntryNamePattern, entryNamePattern, sizeof(this->mEntryNamePattern));
+        if (titleInfo != nullptr) {
+            this->mTitleInfo = *titleInfo;
+        }
+    }
+
     char mEntryNamePattern[64];
     TitleInfo mTitleInfo;
 };
 
 struct LoadInfo {
+    static void *operator new[](unsigned int size) {
+        return Realmc::AllocateMemSize(0, size, 0, 4, 0);
+    }
+
+    static void operator delete[](void *ptr, unsigned int size) {
+        Realmc::FreeMemSize(ptr, size);
+    }
+
+    void Clear() {
+        memset(this->mEntryName, 0, sizeof(this->mEntryName));
+        this->mContentName = nullptr;
+        this->mTypeName = nullptr;
+        this->mHeader = nullptr;
+        this->mBody = nullptr;
+        this->mTitleInfo.Clear();
+        this->mTryLoad = false;
+    }
+
+    void Init(const char *entryName, const wchar_t *content, const wchar_t *type,
+              char *header, char *body, const TitleInfo *titleInfo) {
+        this->Clear();
+        strncpy(this->mEntryName, entryName, sizeof(this->mEntryName));
+        this->mContentName = content;
+        this->mTypeName = type;
+        this->mHeader = header;
+        this->mBody = body;
+        if (titleInfo != nullptr) {
+            this->mTitleInfo = *titleInfo;
+        }
+        this->mTryLoad = false;
+    }
+
     char mEntryName[64];
     const wchar_t *mContentName;
     const wchar_t *mTypeName;
@@ -1469,6 +1512,73 @@ struct LoadInfo {
 };
 
 struct McTask {
+    void Clear() {
+        this->mTask = TASK_NONE;
+    }
+
+    void InitBootupCheck(const BootupCheckParams *params) {
+        this->mDetails.mBootupCheck.mBootupParams = params;
+        this->mDetails.mBootupCheck.mCardStatus = STATUS_UNKNOWN;
+        this->mDetails.mBootupCheck.mBootupResults.Clear();
+    }
+
+    void InitLoad(unsigned int nEntries, const char **entryNames,
+                  const wchar_t *content, const wchar_t *type, const TitleInfo *titleInfo) {
+        this->mDetails.mLoad.mNumEntries = nEntries;
+        this->mDetails.mLoad.mCurEntry = 0;
+        this->mDetails.mLoad.mLastEntryFound = 0;
+        this->mDetails.mLoad.mLoadInfos = new LoadInfo[nEntries];
+        for (unsigned int iEntry = 0; iEntry < nEntries; iEntry++) {
+            this->mDetails.mLoad.mLoadInfos[iEntry].Init(entryNames[iEntry], content, type, nullptr, nullptr, titleInfo);
+        }
+    }
+
+    void InitFindEntries(const char *entryNamePattern, const TitleInfo *titleInfo) {
+        this->mDetails.mFindEntries.Init(entryNamePattern, titleInfo);
+    }
+
+    void InitSaveCheck(const char *entryName, const SaveInfo *saveInfo, const TitleInfo *titleInfo) {
+        this->mDetails.mSaveCheck.mEntryName = entryName;
+        this->mDetails.mSaveCheck.mSaveInfo = saveInfo;
+        this->mDetails.mSaveCheck.mTitleInfo = titleInfo;
+    }
+
+    void InitSave(const char *entryName, const char *header, const char *body,
+                  const SaveInfo *saveInfo, const TitleInfo *titleInfo) {
+        this->mDetails.mSave.mEntryName = entryName;
+        this->mDetails.mSave.mHeader = header;
+        this->mDetails.mSave.mBody = body;
+        this->mDetails.mSave.mSaveInfo = saveInfo;
+        this->mDetails.mSave.mTitleInfo = titleInfo;
+    }
+
+    void InitDelete(unsigned int nEntries, const char **entryNames, const wchar_t *contentName) {
+        this->mDetails.mDelete.mNumEntries = nEntries;
+        this->mDetails.mDelete.mContentName = contentName;
+        if (nEntries == 1) {
+            this->mDetails.mDelete.mEntryName = entryNames[0];
+        } else {
+            this->mDetails.mDelete.mEntryNames = entryNames;
+        }
+    }
+
+    void InitCheckCard(CardId cardId) {
+        this->mDetails.mCheckCardId = cardId;
+    }
+
+    void InitSetAutosave(AutosaveState state, unsigned int nSaveReqs, SaveReq **saveReqs,
+                         const char *entryName, CardId cardId) {
+        this->mDetails.mSetAutosave.mState = state;
+        this->mDetails.mSetAutosave.mNumSaveReqs = nSaveReqs;
+        this->mDetails.mSetAutosave.mSaveReqs = saveReqs;
+        this->mDetails.mSetAutosave.mEntryName = entryName;
+        this->mDetails.mSetAutosave.mCardId = cardId;
+    }
+
+    void InitMonitor() {
+        this->mDetails.mMonitorStatus = STATUS_UNKNOWN;
+    }
+
     MemcardTask mTask;
     union {
         FindEntriesInfo mFindEntries;
@@ -1519,6 +1629,10 @@ struct TaskManager {
     }
 
     TaskManager(MemcardInterfaceImpl *, IGameInterface *);
+
+    void _ClearMainTask() {
+        this->mMainTask = TASK_NONE;
+    }
 
     void BootupCheck(const BootupCheckParams *, unsigned int, const char **, wchar_t *);
     void FindEntries(const char *, const TitleInfo *);
@@ -1630,6 +1744,10 @@ struct MemcardInterfaceImpl {
     void ClearTask();
     bool IsResettable() {
         return this->mIsResettable;
+    }
+
+    bool IsActiveTaskNone() {
+        return this->mActiveTask == TASK_NONE;
     }
 
   private:

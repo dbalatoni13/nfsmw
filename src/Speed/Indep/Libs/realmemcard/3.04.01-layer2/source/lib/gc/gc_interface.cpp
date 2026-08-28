@@ -1,3 +1,4 @@
+#define REALMC_GC_MESSAGE_INLINE
 #include <stdio.h>
 #include <string.h>
 
@@ -11,6 +12,18 @@ namespace Realmc {
 
 extern "C" char lbl_804144E0[];
 
+asm(".section .sdata, \"wa\"\n"
+    ".globl _6Realmc.FILENAME_ALL_FILES\n"
+    "_6Realmc.FILENAME_ALL_FILES:\n"
+    ".4byte lbl_804144DC\n"
+    ".previous");
+
+inline unsigned int GCInterface::GetBlockSize(const CardID &cardID) {
+    return GCInterface::mpDriver->GetSectorSize(cardID);
+}
+
+GCDriver *GCInterface::mpDriver = nullptr;
+UserMessage GCInterface::mUserMsg = UMSG_NONE;
 IThread *gInterfaceThread = nullptr;
 IMutex *gInterfaceMutex = nullptr;
 
@@ -18,7 +31,6 @@ MessageTimer GCInterface::mMsgTimer;
 BlockCalculatorImp GCInterface::mBlockCalculator;
 TaskManager GCInterface::mTaskManager;
 FindResult GCInterface::mFindResult;
-GCMessage GCInterface::mTaskMsg;
 TaskTrcStartGame GCInterface::mTaskTrcStartGame(&GCInterface::mTaskManager);
 TaskTrcCardExists GCInterface::mTaskTrcCardExists(&GCInterface::mTaskManager);
 TaskTrcGetCardInfo GCInterface::mTaskTrcGetCardInfo(&GCInterface::mTaskManager);
@@ -43,23 +55,17 @@ TaskTrcMount GCInterface::mTaskTrcMount(&GCInterface::mTaskManager);
 TaskTrcFormat GCInterface::mTaskTrcFormat(&GCInterface::mTaskManager);
 TaskShowCardStatusMsg GCInterface::mTaskShowCardStatusMsg(&GCInterface::mTaskManager);
 TaskTrcCheckSpace GCInterface::mTaskTrcCheckSpace(&GCInterface::mTaskManager);
+GCMessage GCInterface::mTaskMsg;
 
-GCDriver *GCInterface::mpDriver = nullptr;
-UserMessage GCInterface::mUserMsg = UMSG_NONE;
 volatile bool GCInterface::mExitThread = false;
-unsigned short GCInterface::mCardName[48];
 volatile GCMessage *GCInterface::mpNewTaskMsg = nullptr;
 
 Interface *Interface::CreateInstance(const SystemInterface &iSystem) {
-    Interface *interfaceInstance;
-
     SetMemAllocator(iSystem.mAllocator);
-    interfaceInstance = gInterface;
-    if (interfaceInstance == nullptr) {
-        interfaceInstance = new GCInterface(iSystem);
-        gInterface = interfaceInstance;
+    if (gInterface == nullptr) {
+        gInterface = new GCInterface(iSystem);
     } else {
-        interfaceInstance->AddRef();
+        gInterface->AddRef();
     }
     return gInterface;
 }
@@ -67,30 +73,29 @@ Interface *Interface::CreateInstance(const SystemInterface &iSystem) {
 GCInterface::GCInterface(const SystemInterface &iSystem)
     : InterfaceImp(iSystem) {
     memset(GCInterface::mCardName, 0, sizeof(GCInterface::mCardName));
-    GCInterface::mMsgTimer.mNumSecondsDefaultDelay = 3;
+    GCInterface::mMsgTimer.Init(3);
     GCInterface::mpDriver = nullptr;
     GCInterface::mUserMsg = UMSG_NONE;
     GCInterface::mExitThread = false;
-    GCInterface::mTaskMsg.Clear();
+    GCInterface::mTaskMsg.Init();
     memset(&GCInterface::mFindResult, 0, sizeof(GCInterface::mFindResult));
-    GCInterface::mFindResult.msg.Clear();
+    GCInterface::mFindResult.msg.Init();
 
     GCInterface::mpDriver = new GCDriver(&iSystem);
     gInterfaceMutex = this->mMutex->CreateInstance();
     gInterfaceThread = this->mISystem.mThread->CreateInstance();
     gInterfaceThread->SetStackSize(0x1000);
-    gInterfaceThread->Begin(GCInterface::TaskThread, nullptr);
+    gInterfaceThread->Begin(GCInterface::TaskThread);
     gInterfaceThread->SetPriority(-2);
 
-    CardID cardID(0, 0);
-    GCInterface::mBlockCalculator.Init(GCInterface::mpDriver, GCInterface::mpDriver->GetSectorSize(cardID));
+    GCInterface::mBlockCalculator.Init(GCInterface::mpDriver, this->GetBlockSize(CardID(0, 0)));
 }
 
 GCInterface::~GCInterface() {
     gInterfaceMutex->Lock();
     GCInterface::mExitThread = true;
     gInterfaceMutex->Unlock();
-    gInterfaceThread->WaitForEnd();
+    gInterfaceThread->WaitForEnd(0);
     gInterfaceThread->Release();
     gInterfaceMutex->Release();
     if (GCInterface::mpDriver != nullptr) {
@@ -107,7 +112,7 @@ int GCInterface::TaskThread(void *) {
         if (GCInterface::mpNewTaskMsg == nullptr && GCInterface::mTaskManager.GetCurrentTask() != nullptr) {
             gInterfaceMutex->Lock();
             if (GCInterface::mTaskManager.GetCurrentTask() != nullptr) {
-                memset(&GCInterface::mTaskMsg, 0, sizeof(GCInterface::mTaskMsg));
+                GCInterface::mTaskMsg.Clear();
                 GCInterface::mpNewTaskMsg = nullptr;
                 switch (GCInterface::mTaskManager.GetCurrentTask()->GetID()) {
                 case TID_TRC_STARTGAME:
@@ -188,9 +193,9 @@ int GCInterface::TaskThread(void *) {
                 default:
                     break;
                 }
-            }
-            if (GCInterface::mTaskMsg.mMsg != LMSG_NONE) {
-                GCInterface::mpNewTaskMsg = &GCInterface::mTaskMsg;
+                if (GCInterface::mTaskMsg.mMsg != LMSG_NONE) {
+                    GCInterface::mpNewTaskMsg = &GCInterface::mTaskMsg;
+                }
             }
             gInterfaceMutex->Unlock();
         }
@@ -205,7 +210,7 @@ const Message *GCInterface::GetMessage(int elapsedTime) {
     GCInterface::mMsgTimer.AddElapsedTime(elapsedTime);
     pMsg = nullptr;
     static GCMessage sMsg;
-    memset(&sMsg, 0, sizeof(GCMessage));
+    sMsg.Clear();
     if (GCInterface::mpNewTaskMsg != nullptr) {
         gInterfaceMutex->Lock();
         sMsg = *const_cast<GCMessage *>(GCInterface::mpNewTaskMsg);
@@ -225,32 +230,6 @@ void GCInterface::SendMessage(UserMessage msg, int) {
     gInterfaceMutex->Unlock();
 }
 
-bool GCInterface::IsBusy() {
-    return GCInterface::mTaskManager.GetCurrentTask() != nullptr;
-}
-
-unsigned int GCInterface::GetBlockSize(const CardID &cardID) {
-    return GCInterface::mpDriver->GetSectorSize(cardID);
-}
-
-BlockCalculator *GCInterface::GetBlockCalculator() {
-    return &GCInterface::mBlockCalculator;
-}
-
-bool GCInterface::CheckForAutosaveCardRemoval() {
-    bool removed;
-
-    removed = false;
-    if (!GCInterface::mpDriver->IsCardPresent() && GCInterface::mpDriver->WasCardPresent()) {
-        removed = true;
-    }
-    return removed;
-}
-
-void GCInterface::ResetAutosaveCardDetection() {
-    GCInterface::mpDriver->ResetWasCardPresent();
-}
-
 InputOptions GCInterface::ConvertUmsgToOption(UserMessage umsg, int options, TaskID taskID) {
     int numOptions;
     int cOption;
@@ -258,7 +237,7 @@ InputOptions GCInterface::ConvertUmsgToOption(UserMessage umsg, int options, Tas
     char errorMsg[128];
 
     if (taskID != TID_TRC_STARTGAME) {
-        options &= 0x0fffffff;
+        options &= ~IO_MANAGE;
     }
 
     numOptions = 0;
@@ -308,6 +287,28 @@ void GCInterface::ClearTask() {
     gInterfaceMutex->Unlock();
 }
 
+inline bool GCInterface::IsBusy() {
+    return GCInterface::mTaskManager.GetCurrentTask() != nullptr;
+}
+
+inline BlockCalculator *GCInterface::GetBlockCalculator() {
+    return &GCInterface::mBlockCalculator;
+}
+
+inline bool GCInterface::CheckForAutosaveCardRemoval() {
+    bool removed;
+
+    removed = false;
+    if (!GCInterface::mpDriver->IsCardPresent() && GCInterface::mpDriver->WasCardPresent()) {
+        removed = true;
+    }
+    return removed;
+}
+
+inline void GCInterface::ResetAutosaveCardDetection() {
+    GCInterface::mpDriver->ResetWasCardPresent();
+}
+
 inline void TaskManager::StartTask(Task *newTask) {
     this->TrcSingletonAssert(newTask);
     if (this->mCurrentTask != nullptr) {
@@ -329,7 +330,7 @@ inline void TaskManager::EndTask(Task *task) {
 
 inline bool TaskManager::IsPublicTrcTask(Task *task) {
     if (task != nullptr) {
-        switch (task->mID) {
+        switch (task->GetID()) {
         case TID_TRC_STARTGAME:
         case TID_TRC_CARDEXISTS:
         case TID_TRC_GETCARDINFO:
@@ -347,10 +348,8 @@ inline bool TaskManager::IsPublicTrcTask(Task *task) {
 }
 
 inline void TaskManager::TrcSingletonAssert(Task *newTask) {
-    if (newTask != nullptr) {
-        if (newTask->mID < TID_TRC_STARTGAME) {
-            return;
-        }
+    if (this->IsPublicTrcTask(newTask)) {
+        return;
     }
 }
 

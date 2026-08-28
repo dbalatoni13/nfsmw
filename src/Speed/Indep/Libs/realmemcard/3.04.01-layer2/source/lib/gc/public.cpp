@@ -8,8 +8,8 @@ extern "C" char lbl_80414790[];
 void GCInterface::TrcStartGame(const StartGameInfo &info) {
     this->CheckMessageCompatibility();
     this->mMutex->Lock();
-    GCInterface::mTaskTrcStartGame.Start(&info);
-    GCInterface::mTaskTrcStartGame.mParent->StartTask(&GCInterface::mTaskTrcStartGame);
+    mTaskTrcStartGame.Start(&info);
+    mTaskTrcStartGame.mParent->StartTask(&mTaskTrcStartGame);
     this->mMutex->Unlock();
 }
 
@@ -29,20 +29,20 @@ void GCInterface::TrcGetCardInfo(const CardID &cardID) {
 
 void GCInterface::TrcLoadFile(const CardID &cardID, const FileInfo &fileInfo) {
     this->mMutex->Lock();
-    GCInterface::mTaskTrcLoadFile.Start(cardID, &fileInfo);
-    GCInterface::mTaskTrcLoadFile.mParent->StartTask(&GCInterface::mTaskTrcLoadFile);
+    mTaskTrcLoadFile.Start(cardID, &fileInfo);
+    mTaskTrcLoadFile.mParent->StartTask(&mTaskTrcLoadFile);
     this->mMutex->Unlock();
 }
 
 void GCInterface::TrcSaveFile(const CardID &cardID, const FileInfo &fileInfo, SaveTaskType saveTaskType,
                               unsigned int nBlocksNeeded, unsigned int nFilesNeeded) {
     this->mMutex->Lock();
-    GCInterface::mTaskTrcSaveFile.Start(cardID, &fileInfo, saveTaskType, nBlocksNeeded, nFilesNeeded);
-    GCInterface::mTaskTrcSaveFile.mParent->StartTask(&GCInterface::mTaskTrcSaveFile);
+    mTaskTrcSaveFile.Start(cardID, &fileInfo, saveTaskType, nBlocksNeeded, nFilesNeeded);
+    mTaskTrcSaveFile.mParent->StartTask(&mTaskTrcSaveFile);
     this->mMutex->Unlock();
 }
 
-void GCInterface::TrcListFiles(const CardID &cardID, const FileInfo &fileInfo, ListTaskType listTaskType) {
+void GCInterface::TrcListFiles(const CardID &cardID, const FileInfo &fileInfo, ListTaskType) {
     this->mMutex->Lock();
     GCInterface::mTaskTrcListFiles.Start(cardID, &fileInfo);
     GCInterface::mTaskTrcListFiles.mParent->StartTask(&GCInterface::mTaskTrcListFiles);

@@ -103,11 +103,9 @@ void GCInterface::UpdateTaskUnmount() {
 }
 
 void GCInterface::UpdateTaskOpen() {
-    OpenFileDescriptor *handle;
-
     GCInterface::mTaskOpen.mTaskResult = RESULT_FAILED;
     GCInterface::mTaskOpen.mCardStatus = STATUS_UNKNOWN;
-    handle = nullptr;
+    OpenFileDescriptor *handle = nullptr;
     switch (GCInterface::mpDriver->OpenFile(GCInterface::mTaskOpen.mCardID, GCInterface::mTaskOpen.mFileInfo, GCInterface::mTaskOpen.mMode, &handle)) {
     case CR_SUCCESS:
         GCInterface::mTaskOpen.mTaskResult = RESULT_SUCCESS;
@@ -292,11 +290,11 @@ void GCInterface::UpdateTaskDelete() {
     case CR_NOCARD:
         GCInterface::mTaskDelete.mCardStatus = STATUS_NO_CARD;
         break;
-    case CR_NOPERM:
-        GCInterface::mTaskDelete.mCardStatus = STATUS_ACCESS_DENIED;
-        break;
     case CR_DAMAGED:
         GCInterface::mTaskDelete.mCardStatus = STATUS_CARD_DAMAGED;
+        break;
+    case CR_NOPERM:
+        GCInterface::mTaskDelete.mCardStatus = STATUS_ACCESS_DENIED;
         break;
     case CR_NOFILE:
         GCInterface::mTaskDelete.mCardStatus = STATUS_ENTRY_NOT_FOUND;
