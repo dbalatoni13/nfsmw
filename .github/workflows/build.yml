@@ -15,7 +15,7 @@ jobs:
       fail-fast: false
       matrix:
         # Add game versions here
-        version: [GOWE69, EUROPEGERMILESTONE, SLES-53558-A124]
+        version: [GOWE69, EUROPEGERMILESTONE, SLES-53558-A124, SLUS-21351]
 
     steps:
     # Checkout the repository
@@ -29,7 +29,7 @@ jobs:
       run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
     - name: Install PS2 dependencies
-      if: ${{ matrix.version == 'SLES-53558-A124' }}
+      if: ${{ matrix.version == 'SLES-53558-A124' || matrix.version == 'SLUS-21351' }}
       run: pip install --break-system-packages -r requirements.txt
 
     # Copy the original files to the workspace
@@ -40,7 +40,7 @@ jobs:
     - name: Build
       run: |
         # Select binutils path based on version index
-        if [[ "${{ matrix.version }}" == 'SLES-53558-A124' ]]; then
+        if [[ "${{ matrix.version }}" == 'SLES-53558-A124' || "${{ matrix.version }}" == 'SLUS-21351' ]]; then
           BINUTILS="/mips_binutils"
         else
           BINUTILS="/ppc_binutils"

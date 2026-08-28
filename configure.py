@@ -33,6 +33,7 @@ VERSIONS = [
     "GOWE69",  # 0
     "EUROPEGERMILESTONE",  # 1
     "SLES-53558-A124",  # 2
+    "SLUS-21351",  # 3
 ]
 
 parser = argparse.ArgumentParser()
@@ -149,13 +150,13 @@ config.compilers_tag = "20251015"
 
 if version_num in [0]:
     config.platform = Platform.GC_WII
-    config.dtk_tag = "v1.8.31"
+    config.dtk_tag = "v1.8.32"
     config.binutils_tag = "2.42-1"
 elif version_num in [1]:
     config.platform = Platform.X360
     config.dtk_tag = "v0.1.2"
     config.binutils_tag = "2.42-1"
-elif version_num in [2]:
+elif version_num in [2, 3]:
     config.platform = Platform.PS2
     config.binutils_tag = "2.45"
 
@@ -180,7 +181,7 @@ if config.platform == Platform.GC_WII:
     keep_list_path = Path("config") / config.version / "keep.lst"
     config.ldflags = [
         "-strip-unused-data",
-        # "-report-unused",
+        "-report-unused",
         "-keep",
         str(keep_list_path),
         "-T",
@@ -338,6 +339,8 @@ if config.platform == Platform.GC_WII:
         "-I src/Speed/Indep/Libs/snd/9/include",
         "-I src/Speed/Indep/Libs/spch/dev/include",
         "-I src/Speed/Indep/Libs/path/5.01.04/include",
+        "-I src/Speed/Indep/Libs/realcore/6.24.00/include/common",
+        "-I src/Speed/Indep/Libs/endian/0.5.2/include",
     ]
 
     cflags_snd = [
@@ -444,6 +447,8 @@ elif config.platform == Platform.X360:
         "/I src/Speed/Indep/Libs/snd/9/include",
         "/I src/Speed/Indep/Libs/spch/dev/include",
         "/I src/Speed/Indep/Libs/path/5.01.04/include",
+        "/I src/Speed/Indep/Libs/realcore/6.24.00/include/common",
+        "/I src/Speed/Indep/Libs/endian/0.5.2/include",
     ]
 
     cflags_snd = [
@@ -534,11 +539,16 @@ elif config.platform == Platform.PS2:
         "-I src/Speed/Indep/Libs/snd/9/include",
         "-I src/Speed/Indep/Libs/spch/dev/include",
         "-I src/Speed/Indep/Libs/path/5.01.04/include",
+        "-I src/Speed/Indep/Libs/realcore/6.24.00/include/common",
+        "-I src/Speed/Indep/Libs/endian/0.5.2/include",
     ]
 
     cflags_snd = [
         *cflags_game,
         "-x c++",
+        "-I src/Speed/Indep/Libs/csis/dev/include",
+        "-I src/Speed/Indep/Libs/allocator/1.5.0",
+        "-I src/Speed/Indep/Libs/snd/9/include",
     ]
 
     config.extra_clang_flags = [
@@ -634,36 +644,105 @@ config.libs = [
         "host": False,
         "progress_category": "libs",  # str | List[str]
         "objects": [
-            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/saems.c"),
-            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/saemsamb.c"),
-            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/saemsmbf.c"),
-            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/saemsmbm.c"),
-            Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/saemstimupdt.c"),
-            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/salloc.c"),
-            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/sattrdef.c"),
-            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/sbadd.c"),
-            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/sballoc.c"),
-            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/sbasync.c"),
-            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/sbasyncm.c"),
-            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/sbhdrcpy.c"),
-            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/sbhdrsze.c"),
-            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/sbplay.c"),
-            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/sbremove.c"),
-            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/sbvalid.c"),
-            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/scheckpo.c"),
-            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/sclnt100.c"),
-            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/sctrldry.cpp"),
-            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/sdata.c"),
-            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/sfxlevel.c"),
-            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/slowpass.c"),
-            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/smemcpy.c"),
-            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/smemdis.c"),
-            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/smemlmt.c"),
-            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/smemlu.c"),
-            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/smemman.c"),
-            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/sndfxbus.cpp"),
-            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/spatkey.c"),
-            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/spitch.c"),
+            Object(
+                MatchingFor("GOWE69"),
+                "Speed/Indep/Libs/snd/9/source/library/cmn/saems.c",
+            ),
+            Object(
+                MatchingFor("GOWE69"),
+                "Speed/Indep/Libs/snd/9/source/library/cmn/saemsamb.c",
+            ),
+            Object(
+                MatchingFor("GOWE69"),
+                "Speed/Indep/Libs/snd/9/source/library/cmn/saemsmbf.c",
+            ),
+            Object(
+                MatchingFor("GOWE69"),
+                "Speed/Indep/Libs/snd/9/source/library/cmn/saemsmbm.c",
+            ),
+            Object(
+                NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/saemstimupdt.c"
+            ),
+            Object(
+                MatchingFor("GOWE69"),
+                "Speed/Indep/Libs/snd/9/source/library/cmn/salloc.c",
+            ),
+            Object(
+                MatchingFor("GOWE69"),
+                "Speed/Indep/Libs/snd/9/source/library/cmn/sattrdef.c",
+            ),
+            Object(
+                MatchingFor("GOWE69"),
+                "Speed/Indep/Libs/snd/9/source/library/cmn/sbadd.c",
+            ),
+            Object(
+                MatchingFor("GOWE69"),
+                "Speed/Indep/Libs/snd/9/source/library/cmn/sballoc.c",
+            ),
+            Object(
+                MatchingFor("GOWE69"),
+                "Speed/Indep/Libs/snd/9/source/library/cmn/sbasync.c",
+            ),
+            Object(
+                MatchingFor("GOWE69"),
+                "Speed/Indep/Libs/snd/9/source/library/cmn/sbasyncm.c",
+            ),
+            Object(
+                MatchingFor("GOWE69"),
+                "Speed/Indep/Libs/snd/9/source/library/cmn/sbhdrcpy.c",
+            ),
+            Object(
+                MatchingFor("GOWE69"),
+                "Speed/Indep/Libs/snd/9/source/library/cmn/sbhdrsze.c",
+            ),
+            Object(
+                MatchingFor("GOWE69"),
+                "Speed/Indep/Libs/snd/9/source/library/cmn/sbplay.c",
+            ),
+            Object(
+                MatchingFor("GOWE69"),
+                "Speed/Indep/Libs/snd/9/source/library/cmn/sbremove.c",
+            ),
+            Object(
+                MatchingFor("GOWE69"),
+                "Speed/Indep/Libs/snd/9/source/library/cmn/sbvalid.c",
+            ),
+            Object(
+                MatchingFor("GOWE69"),
+                "Speed/Indep/Libs/snd/9/source/library/cmn/scheckpo.c",
+            ),
+            Object(
+                MatchingFor("GOWE69"),
+                "Speed/Indep/Libs/snd/9/source/library/cmn/sclnt100.c",
+            ),
+            Object(
+                MatchingFor("GOWE69"),
+                "Speed/Indep/Libs/snd/9/source/library/cmn/sctrldry.cpp",
+            ),
+            Object(
+                MatchingFor("GOWE69"),
+                "Speed/Indep/Libs/snd/9/source/library/cmn/sdata.c",
+            ),
+            Object(
+                MatchingFor("GOWE69"),
+                "Speed/Indep/Libs/snd/9/source/library/cmn/sfxlevel.c",
+            ),
+            Object(
+                MatchingFor("GOWE69"),
+                "Speed/Indep/Libs/snd/9/source/library/cmn/slowpass.c",
+            ),
+            Object(
+                MatchingFor("GOWE69"),
+                "Speed/Indep/Libs/snd/9/source/library/cmn/smemcpy.c",
+            ),
+            Object(
+                MatchingFor("GOWE69"),
+                "Speed/Indep/Libs/snd/9/source/library/cmn/smemdis.c",
+            ),
+            Object(
+                MatchingFor("GOWE69"),
+                "Speed/Indep/Libs/snd/9/source/library/cmn/smemlmt.c",
+            ),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/sgetpvol.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/gc/sscalcfx.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/gc/ssdfx.c"),
@@ -713,7 +792,10 @@ config.libs = [
             ),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/stagpat.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/stimemul.c"),
-            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/stimerem.c"),
+            Object(
+                MatchingFor("GOWE69"),
+                "Speed/Indep/Libs/snd/9/source/library/cmn/stimerem.c",
+            ),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/stpparse.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/mix/stretch.c"),
             Object(
@@ -725,7 +807,10 @@ config.libs = [
                 NonMatching,
                 "Speed/Indep/Libs/snd/9/source/library/extern/coda/cmn/coda.cpp",
             ),
-            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/s3dlow.c"),
+            Object(
+                MatchingFor("GOWE69"),
+                "Speed/Indep/Libs/snd/9/source/library/cmn/s3dlow.c",
+            ),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/gc/saramman.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/satospkr.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/sclcptch.c"),
@@ -814,9 +899,13 @@ config.libs = [
                 NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/sgparse.cpp"
             ),
             Object(
-                Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/SNDI_findprime.c"
+                MatchingFor("GOWE69"),
+                "Speed/Indep/Libs/snd/9/source/library/cmn/SNDI_findprime.c",
             ),
-            Object(Matching, "Speed/Indep/Libs/snd/9/source/library/cmn/sbpatinf.c"),
+            Object(
+                MatchingFor("GOWE69"),
+                "Speed/Indep/Libs/snd/9/source/library/cmn/sbpatinf.c",
+            ),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/mix/scrsfl.c"),
         ],
     },
@@ -929,7 +1018,7 @@ if config.platform == Platform.GC_WII:
                 "host": False,
                 "progress_category": "libs",  # str | List[str]
                 "objects": [
-                    Object(Matching, "LibSN/crt0.s"),
+                    Object(MatchingFor("GOWE69"), "LibSN/crt0.s"),
                     Object(NonMatching, "LibSN/cvtll.c"),
                     Object(NonMatching, "LibSN/debug.c"),
                     Object(NonMatching, "LibSN/dummy.c"),
