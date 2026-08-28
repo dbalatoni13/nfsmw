@@ -45,11 +45,11 @@ class WCollider : public UTL::Collections::Listable<WCollider, 100> {
     USE_FASTALLOC(WCollider);
 
     WCollisionBarrierList &GetBarrierList() {
-        return fBarrierList;
+        return this->fBarrierList;
     }
 
     const WCollisionBarrierList &GetBarrierList() const {
-        return fBarrierList;
+        return this->fBarrierList;
     }
 
     WCollisionInstanceCacheList &GetInstanceList() {

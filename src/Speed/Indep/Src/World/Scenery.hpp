@@ -31,8 +31,8 @@ struct SceneryBoundingBox {
 #endif
 
     void GetBBox(bVector3 *bbox_min, bVector3 *bbox_max) {
-        bFill(bbox_min, BBoxMin[0], BBoxMin[1], BBoxMin[2]);
-        bFill(bbox_max, BBoxMax[0], BBoxMax[1], BBoxMax[2]);
+        bFill(bbox_min, this->BBoxMin[0], this->BBoxMin[1], this->BBoxMin[2]);
+        bFill(bbox_max, this->BBoxMax[0], this->BBoxMax[1], this->BBoxMax[2]);
     }
 };
 
@@ -41,25 +41,25 @@ class SceneryInstance : public SceneryBoundingBox {
   public:
     void GetRotation(bMatrix4 *matrix) {
         const float rotation_conversion = 1.0f / 8192.0f;
-        float x = static_cast<float>(Rotation[0]) * rotation_conversion;
-        float y = static_cast<float>(Rotation[1]) * rotation_conversion;
-        float z = static_cast<float>(Rotation[2]) * rotation_conversion;
+        float x = static_cast<float>(this->Rotation[0]) * rotation_conversion;
+        float y = static_cast<float>(this->Rotation[1]) * rotation_conversion;
+        float z = static_cast<float>(this->Rotation[2]) * rotation_conversion;
         matrix->v0.x = x;
         matrix->v0.y = y;
         matrix->v0.z = z;
         matrix->v0.w = 0.0f;
 
-        x = static_cast<float>(Rotation[3]) * rotation_conversion;
-        y = static_cast<float>(Rotation[4]) * rotation_conversion;
-        z = static_cast<float>(Rotation[5]) * rotation_conversion;
+        x = static_cast<float>(this->Rotation[3]) * rotation_conversion;
+        y = static_cast<float>(this->Rotation[4]) * rotation_conversion;
+        z = static_cast<float>(this->Rotation[5]) * rotation_conversion;
         matrix->v1.x = x;
         matrix->v1.y = y;
         matrix->v1.z = z;
         matrix->v1.w = 0.0f;
 
-        x = static_cast<float>(Rotation[6]) * rotation_conversion;
-        y = static_cast<float>(Rotation[7]) * rotation_conversion;
-        z = static_cast<float>(Rotation[8]) * rotation_conversion;
+        x = static_cast<float>(this->Rotation[6]) * rotation_conversion;
+        y = static_cast<float>(this->Rotation[7]) * rotation_conversion;
+        z = static_cast<float>(this->Rotation[8]) * rotation_conversion;
         matrix->v2.x = x;
         matrix->v2.y = y;
         matrix->v2.z = z;
@@ -67,34 +67,34 @@ class SceneryInstance : public SceneryBoundingBox {
     }
 
     void GetPosition(bVector4 *position) {
-        *position = *reinterpret_cast<bVector4 *>(Position);
+        *position = *reinterpret_cast<bVector4 *>(this->Position);
         position->w = 1.0f;
     }
 
     bVector3 *GetPosition() {
-        return reinterpret_cast<bVector3 *>(Position);
+        return reinterpret_cast<bVector3 *>(this->Position);
     }
 
     void GetMatrix(bMatrix4 *matrix) {
-        GetRotation(matrix);
-        GetPosition(&matrix->v3);
+        this->GetRotation(matrix);
+        this->GetPosition(&matrix->v3);
         matrix->v3.w = 1.0f;
     }
 
     void SetMatrix(const bMatrix4 *matrix) {
         const float rotation_conversion = 8192.0f;
-        Rotation[0] = static_cast<short>(matrix->v0.x * rotation_conversion);
-        Rotation[1] = static_cast<short>(matrix->v0.y * rotation_conversion);
-        Rotation[2] = static_cast<short>(matrix->v0.z * rotation_conversion);
-        Rotation[3] = static_cast<short>(matrix->v1.x * rotation_conversion);
-        Rotation[4] = static_cast<short>(matrix->v1.y * rotation_conversion);
-        Rotation[5] = static_cast<short>(matrix->v1.z * rotation_conversion);
-        Rotation[6] = static_cast<short>(matrix->v2.x * rotation_conversion);
-        Rotation[7] = static_cast<short>(matrix->v2.y * rotation_conversion);
-        Rotation[8] = static_cast<short>(matrix->v2.z * rotation_conversion);
-        Position[0] = matrix->v3.x;
-        Position[1] = matrix->v3.y;
-        Position[2] = matrix->v3.z;
+        this->Rotation[0] = static_cast<short>(matrix->v0.x * rotation_conversion);
+        this->Rotation[1] = static_cast<short>(matrix->v0.y * rotation_conversion);
+        this->Rotation[2] = static_cast<short>(matrix->v0.z * rotation_conversion);
+        this->Rotation[3] = static_cast<short>(matrix->v1.x * rotation_conversion);
+        this->Rotation[4] = static_cast<short>(matrix->v1.y * rotation_conversion);
+        this->Rotation[5] = static_cast<short>(matrix->v1.z * rotation_conversion);
+        this->Rotation[6] = static_cast<short>(matrix->v2.x * rotation_conversion);
+        this->Rotation[7] = static_cast<short>(matrix->v2.y * rotation_conversion);
+        this->Rotation[8] = static_cast<short>(matrix->v2.z * rotation_conversion);
+        this->Position[0] = matrix->v3.x;
+        this->Position[1] = matrix->v3.y;
+        this->Position[2] = matrix->v3.z;
     }
 
     uint32 ExcludeFlags; // offset 0x18, size 0x4
@@ -180,15 +180,15 @@ struct SceneryInfo {
 class tPrecullerInfo {
   public:
     int IsNotVisible(int preculler_section_number) {
-        return (VisibilityBits[preculler_section_number >> 3] & (1 << (preculler_section_number & 7)));
+        return (this->VisibilityBits[preculler_section_number >> 3] & (1 << (preculler_section_number & 7)));
     }
 
     int IsVisible(int preculler_section_number) {
-        return static_cast<int>(IsNotVisible(preculler_section_number) == 0);
+        return static_cast<int>(this->IsNotVisible(preculler_section_number) == 0);
     }
 
     uint8 *GetBits() {
-        return VisibilityBits;
+        return this->VisibilityBits;
     }
 
     void EndianSwap() {}
@@ -224,11 +224,11 @@ class ScenerySectionHeader : public bTNode<ScenerySectionHeader> {
     void CullNodeRecursive(SceneryTreeNode *node, SceneryCullInfo *scenery_cull_info, uint32 visibility_state);
 
     SceneryInstance *GetSceneryInstance(int scenery_instance_number) {
-        return &pSceneryInstance[scenery_instance_number];
+        return &this->pSceneryInstance[scenery_instance_number];
     }
 
     SceneryInfo *GetSceneryInfo(int scenery_info_number) {
-        return &pSceneryInfo[scenery_info_number];
+        return &this->pSceneryInfo[scenery_info_number];
     }
 
     int GetSectionNumber() {
@@ -236,7 +236,7 @@ class ScenerySectionHeader : public bTNode<ScenerySectionHeader> {
     }
 
     tPrecullerInfo *GetPrecullerInfo(int preculler_info_index) {
-        return &PrecullerInfoTable[preculler_info_index];
+        return &this->PrecullerInfoTable[preculler_info_index];
     }
 
     static float mLodLevelDistance[3]; // size: 0xC, address: 0xFFFFFFFF
@@ -259,9 +259,9 @@ class ScenerySectionHeader : public bTNode<ScenerySectionHeader> {
 // total size: 0x6
 struct SceneryOverrideInfo {
     void EndianSwap() {
-        bPlatEndianSwap(&SectionNumber);
-        bPlatEndianSwap(&InstanceNumber);
-        bPlatEndianSwap(&ExcludeFlags);
+        bPlatEndianSwap(&this->SectionNumber);
+        bPlatEndianSwap(&this->InstanceNumber);
+        bPlatEndianSwap(&this->ExcludeFlags);
     }
 
     static int GetHashIndex(short section_number) {
@@ -269,12 +269,12 @@ struct SceneryOverrideInfo {
     }
 
     int GetHashIndex() {
-        return GetHashIndex(SectionNumber);
+        return GetHashIndex(this->SectionNumber);
     }
 
     void SetExcludeFlags(unsigned short exclude_flag_mask, unsigned short exclude_flag_override) {
-        ExcludeFlags = (ExcludeFlags & exclude_flag_mask) | exclude_flag_override;
-        AssignOverrides();
+        this->ExcludeFlags = (this->ExcludeFlags & exclude_flag_mask) | exclude_flag_override;
+        this->AssignOverrides();
     }
 
     void AssignOverrides();
@@ -292,8 +292,8 @@ SceneryOverrideInfo *GetSceneryOverrideInfo(int override_info_number);
 // total size: 0x4
 struct SceneryOverrideInfoHookup {
     void EndianSwap() {
-        bPlatEndianSwap(&OverrideInfoNumber);
-        bPlatEndianSwap(&InstanceNumber);
+        bPlatEndianSwap(&this->OverrideInfoNumber);
+        bPlatEndianSwap(&this->InstanceNumber);
     }
 
     uint16 OverrideInfoNumber; // offset 0x0, size 0x2
@@ -306,26 +306,26 @@ struct SceneryGroup : public bTNode<SceneryGroup> {
 
     int GetMemoryImageSize() {
         // TODO magic
-        int size = (NumObjects * sizeof(*OverrideInfoNumbers) + 0x17U) & ~3;
+        int size = (this->NumObjects * sizeof(*this->OverrideInfoNumbers) + 0x17U) & ~3;
         return size;
     }
 
     int GetNumObjects() {
-        return NumObjects;
+        return this->NumObjects;
     }
 
     // int GetOverrideInfoNumber(int index) {}
 
     SceneryOverrideInfo *GetOverrideInfo(int index) {
-        return GetSceneryOverrideInfo(OverrideInfoNumbers[index]);
+        return GetSceneryOverrideInfo(this->OverrideInfoNumbers[index]);
     }
 
     void EndianSwap() {
-        bPlatEndianSwap(&NameHash);
-        bPlatEndianSwap(&GroupNumber);
-        bPlatEndianSwap(&NumObjects);
-        for (int n = 0; n < NumObjects; n++) {
-            bPlatEndianSwap(&OverrideInfoNumbers[n]);
+        bPlatEndianSwap(&this->NameHash);
+        bPlatEndianSwap(&this->GroupNumber);
+        bPlatEndianSwap(&this->NumObjects);
+        for (int n = 0; n < this->NumObjects; n++) {
+            bPlatEndianSwap(&this->OverrideInfoNumbers[n]);
         }
     }
 
@@ -336,8 +336,8 @@ struct SceneryGroup : public bTNode<SceneryGroup> {
             exclude_flag_override = 0x400;
         }
 
-        for (int n = 0; n < GetNumObjects(); n++) {
-            GetOverrideInfo(n)->SetExcludeFlags(exclude_flag_mask, exclude_flag_override);
+        for (int n = 0; n < this->GetNumObjects(); n++) {
+            this->GetOverrideInfo(n)->SetExcludeFlags(exclude_flag_mask, exclude_flag_override);
         }
 
         SceneryGroupEnabledTable[this->GroupNumber] = 1;
@@ -350,8 +350,8 @@ struct SceneryGroup : public bTNode<SceneryGroup> {
     }
 
     void DisableRendering() {
-        for (int n = 0; n < GetNumObjects(); n++) {
-            SceneryOverrideInfo *override_info = GetOverrideInfo(n);
+        for (int n = 0; n < this->GetNumObjects(); n++) {
+            SceneryOverrideInfo *override_info = this->GetOverrideInfo(n);
             override_info->SetExcludeFlags(0xFFFF, 0x10);
         }
     }

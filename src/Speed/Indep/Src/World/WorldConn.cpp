@@ -17,10 +17,10 @@ Server::Server() {}
 Server::~Server() {}
 
 Server::Body *Server::LockID(unsigned int id) {
-    BodyMap::iterator iter = mBodies.find(id);
-    if (iter == mBodies.end()) {
+    BodyMap::iterator iter = this->mBodies.find(id);
+    if (iter == this->mBodies.end()) {
         Body *body = new Body();
-        mBodies[id] = body;
+        this->mBodies[id] = body;
         return body;
     }
     iter->second->refcount++;
@@ -28,11 +28,11 @@ Server::Body *Server::LockID(unsigned int id) {
 }
 
 void Server::UnlockID(unsigned int id) {
-    BodyMap::iterator iter = mBodies.find(id);
+    BodyMap::iterator iter = this->mBodies.find(id);
     iter->second->refcount--;
     if (iter->second->refcount == 0) {
         delete iter->second;
-        mBodies.erase(iter);
+        this->mBodies.erase(iter);
     }
 }
 
@@ -40,38 +40,38 @@ Reference::Reference(unsigned int worldid)
     : mWorldID(worldid), //
       mMatrix(nullptr),  //
       mVelocity(nullptr) {
-    Lock();
+    this->Lock();
     world_refcount++;
 }
 
 Reference::~Reference() {
-    Unlock();
+    this->Unlock();
     world_refcount--;
 }
 
 void Reference::Set(unsigned int worldid) {
-    if (worldid != mWorldID) {
-        Unlock();
-        mWorldID = worldid;
+    if (worldid != this->mWorldID) {
+        this->Unlock();
+        this->mWorldID = worldid;
     }
-    Lock();
+    this->Lock();
 }
 
 void Reference::Lock() {
-    if ((mMatrix == nullptr) && mWorldID != 0) {
-        const Server::Body *body = _Server->LockID(mWorldID);
-        mMatrix = &body->matrix;
-        mVelocity = &body->velocity;
-        mAcceleration = &body->acceleration;
+    if ((this->mMatrix == nullptr) && this->mWorldID != 0) {
+        const Server::Body *body = _Server->LockID(this->mWorldID);
+        this->mMatrix = &body->matrix;
+        this->mVelocity = &body->velocity;
+        this->mAcceleration = &body->acceleration;
     }
 }
 
 void Reference::Unlock() {
-    if ((mMatrix != nullptr) && mWorldID != 0) {
-        _Server->UnlockID(mWorldID);
-        mMatrix = nullptr;
-        mVelocity = nullptr;
-        mAcceleration = nullptr;
+    if ((this->mMatrix != nullptr) && this->mWorldID != 0) {
+        _Server->UnlockID(this->mWorldID);
+        this->mMatrix = nullptr;
+        this->mVelocity = nullptr;
+        this->mAcceleration = nullptr;
     }
 }
 
@@ -121,33 +121,33 @@ WorldBodyConn::WorldBodyConn(const Sim::ConnectionData &data)
       mID(0) {
     mList.AddTail(this);
     WorldConn::Pkt_Body_Open *oc = Sim::Packet::Cast<WorldConn::Pkt_Body_Open>(data.pkt);
-    mID = oc->mID;
-    mDest = WorldConn::_Server->LockID(mID);
-    eSwizzleWorldMatrix(reinterpret_cast<bMatrix4 &>(oc->mMatrix), mDest->matrix);
+    this->mID = oc->mID;
+    this->mDest = WorldConn::_Server->LockID(this->mID);
+    eSwizzleWorldMatrix(reinterpret_cast<bMatrix4 &>(oc->mMatrix), this->mDest->matrix);
 }
 
 WorldBodyConn::~WorldBodyConn() {
-    WorldConn::_Server->UnlockID(mID);
+    WorldConn::_Server->UnlockID(this->mID);
     mList.Remove(this);
 }
 
 void WorldBodyConn::Update(float dT) {
     WorldConn::Pkt_Body_Service pkt;
     pkt.mMatrix = UMath::Matrix4::kIdentity;
-    if (!Service(&pkt)) {
-        bFill(&mDest->acceleration, 0.0f, 0.0f, 0.0f);
-        mDest->time = 0.0f;
+    if (!this->Service(&pkt)) {
+        bFill(&this->mDest->acceleration, 0.0f, 0.0f, 0.0f);
+        this->mDest->time = 0.0f;
         return;
     }
-    bVector3 prevvel(mDest->velocity);
-    eSwizzleWorldMatrix(reinterpret_cast<const bMatrix4 &>(pkt.mMatrix), mDest->matrix);
-    eSwizzleWorldVector(reinterpret_cast<const bVector3 &>(pkt.mVelocity), mDest->velocity);
-    if (0.0f < mDest->time) {
-        mDest->acceleration.x = (mDest->velocity.x - prevvel.x) / dT;
-        mDest->acceleration.y = (mDest->velocity.y - prevvel.y) / dT;
-        mDest->acceleration.z = (mDest->velocity.z - prevvel.z) / dT;
+    bVector3 prevvel(this->mDest->velocity);
+    eSwizzleWorldMatrix(reinterpret_cast<const bMatrix4 &>(pkt.mMatrix), this->mDest->matrix);
+    eSwizzleWorldVector(reinterpret_cast<const bVector3 &>(pkt.mVelocity), this->mDest->velocity);
+    if (0.0f < this->mDest->time) {
+        this->mDest->acceleration.x = (this->mDest->velocity.x - prevvel.x) / dT;
+        this->mDest->acceleration.y = (this->mDest->velocity.y - prevvel.y) / dT;
+        this->mDest->acceleration.z = (this->mDest->velocity.z - prevvel.z) / dT;
     }
-    mDest->time = mDest->time + dT;
+    this->mDest->time = this->mDest->time + dT;
 }
 
 void WorldBodyConn::FetchData(float dT) {
@@ -198,7 +198,7 @@ class WorldEffectConn : public Sim::Connection, public bTNode<WorldEffectConn> {
     }
 
     void ResetEmitterGroup() {
-        mEmitters = nullptr;
+        this->mEmitters = nullptr;
     }
 
     void Update(float dT);
@@ -257,25 +257,25 @@ WorldEffectConn::WorldEffectConn(const Sim::ConnectionData &data, const WorldCon
 
     mList.AddTail(this);
 
-    const Attrib::Collection *fxspec = mAttributes.emittergroup().GetCollection();
-    mEmitters = nullptr;
+    const Attrib::Collection *fxspec = this->mAttributes.emittergroup().GetCollection();
+    this->mEmitters = nullptr;
     if (fxspec != nullptr) {
-        mEmitters = gEmitterSystem.CreateEmitterGroup(fxspec, effect_creation_flags | 0x800000);
-        if (mEmitters != nullptr) {
-            mEmitters->SubscribeToDeletion(this, HandleWorldEffectEmitterGroupDelete);
-            mEmitters->Disable();
+        this->mEmitters = gEmitterSystem.CreateEmitterGroup(fxspec, effect_creation_flags | 0x800000);
+        if (this->mEmitters != nullptr) {
+            this->mEmitters->SubscribeToDeletion(this, HandleWorldEffectEmitterGroupDelete);
+            this->mEmitters->Disable();
         }
     }
 }
 
 WorldEffectConn::~WorldEffectConn() {
-    if (mEmitters != nullptr) {
-        mEmitters->UnSubscribe();
-        delete mEmitters;
+    if (this->mEmitters != nullptr) {
+        this->mEmitters->UnSubscribe();
+        delete this->mEmitters;
     }
-    if (mAudioEvent != nullptr) {
-        mAudioEvent->Release();
-        mAudioEvent = nullptr;
+    if (this->mAudioEvent != nullptr) {
+        this->mAudioEvent->Release();
+        this->mAudioEvent = nullptr;
     }
     mList.Remove(this);
 }
@@ -295,45 +295,45 @@ void WorldEffectConn::Update(float dT) {
     pkt.mTracking = false;
     pkt.mMagnitude = UMath::Vector3::kZero;
 
-    if (!Service(&pkt)) {
-        if (!mPaused) {
-            if (mAudioEvent != nullptr) {
-                mAudioEvent->Release();
-                mAudioEvent = nullptr;
+    if (!this->Service(&pkt)) {
+        if (!this->mPaused) {
+            if (this->mAudioEvent != nullptr) {
+                this->mAudioEvent->Release();
+                this->mAudioEvent = nullptr;
             }
-            mPaused = true;
-            if (mEmitters != nullptr) {
-                mEmitters->Disable();
+            this->mPaused = true;
+            if (this->mEmitters != nullptr) {
+                this->mEmitters->Disable();
             }
         }
         return;
     }
-    mPaused = false;
+    this->mPaused = false;
     UMath::Vector3 simnormal = pkt.mMagnitude;
     float intensity = UMath::Normalize(simnormal);
-    float emitter_intensity = SolveEffectQuadratic(intensity, mAttributes.EmitterQuadratic());
-    float audio_intensity = SolveEffectQuadratic(intensity, mAttributes.AudioQuadratic());
+    float emitter_intensity = SolveEffectQuadratic(intensity, this->mAttributes.EmitterQuadratic());
+    float audio_intensity = SolveEffectQuadratic(intensity, this->mAttributes.AudioQuadratic());
     bVector3 velocity(0.0f, 0.0f, 0.0f);
     bVector3 normal;
     bVector3 position;
     eSwizzleWorldVector(reinterpret_cast<const bVector3 &>(pkt.mPosition), position);
     eSwizzleWorldVector(reinterpret_cast<const bVector3 &>(simnormal), normal);
 
-    if (mOwnerRef.GetVelocity() != nullptr) {
-        if (0.0f < mAttributes.InheritVelocity()) {
-            bScale(&velocity, mOwnerRef.GetVelocity(), mAttributes.InheritVelocity());
+    if (this->mOwnerRef.GetVelocity() != nullptr) {
+        if (0.0f < this->mAttributes.InheritVelocity()) {
+            bScale(&velocity, this->mOwnerRef.GetVelocity(), this->mAttributes.InheritVelocity());
         }
     }
-    if (pkt.mTracking && mOwnerRef.IsValid()) {
+    if (pkt.mTracking && this->mOwnerRef.IsValid()) {
         bVector3 world_pos;
         bVector3 world_mag;
-        bMulMatrix(&world_pos, mOwnerRef.GetMatrix(), &position);
-        bRotateVector(&world_mag, mOwnerRef.GetMatrix(), &normal);
+        bMulMatrix(&world_pos, this->mOwnerRef.GetMatrix(), &position);
+        bRotateVector(&world_mag, this->mOwnerRef.GetMatrix(), &normal);
         position = world_pos;
         normal = world_mag;
     }
     float distance = Sound::DistanceToView(&position);
-    if (mEmitters != nullptr) {
+    if (this->mEmitters != nullptr) {
         UQuat quat;
         bMatrix4 matrix;
         bVector3 sim_dir;
@@ -343,39 +343,39 @@ void WorldEffectConn::Update(float dT) {
         UMath::QuaternionToMatrix4(quat, reinterpret_cast<UMath::Matrix4 &>(matrix));
         bCopy(&matrix.v3, &position, 1.0f);
 
-        if (mEmitters != nullptr) {
-            if (0.0f < emitter_intensity && distance < mAttributes.VisualCullDist()) {
-                mEmitters->Enable();
-                mEmitters->SetLocalWorld(&matrix);
-                mEmitters->SetInheritVelocity(&velocity);
-                mEmitters->SetIntensity(emitter_intensity);
-                mEmitters->Update(dT);
+        if (this->mEmitters != nullptr) {
+            if (0.0f < emitter_intensity && distance < this->mAttributes.VisualCullDist()) {
+                this->mEmitters->Enable();
+                this->mEmitters->SetLocalWorld(&matrix);
+                this->mEmitters->SetInheritVelocity(&velocity);
+                this->mEmitters->SetIntensity(emitter_intensity);
+                this->mEmitters->Update(dT);
             } else {
-                mEmitters->Disable();
+                this->mEmitters->Disable();
             }
         }
     }
-    if (mAudioEvent == nullptr) {
-        if (!mSilent && 0.0f < audio_intensity && distance < mAttributes.AudioCullDist()) {
+    if (this->mAudioEvent == nullptr) {
+        if (!this->mSilent && 0.0f < audio_intensity && distance < this->mAttributes.AudioCullDist()) {
             Sound::AudioEventParams params;
             params.position = position;
             params.normal = normal;
             params.velocity = velocity;
             params.magnitude = audio_intensity;
-            params.object = mOwnerRef.GetWorldID();
-            params.attributes = ChooseAudioAttributes(mAttributes, mOwnerRef.GetMatrix(), &normal);
-            params.other_object = mActee;
-            mAudioEvent = Sound::AudioEvent::CreateInstance(params);
-            if (mAudioEvent == nullptr) {
-                mSilent = true;
+            params.object = this->mOwnerRef.GetWorldID();
+            params.attributes = ChooseAudioAttributes(this->mAttributes, this->mOwnerRef.GetMatrix(), &normal);
+            params.other_object = this->mActee;
+            this->mAudioEvent = Sound::AudioEvent::CreateInstance(params);
+            if (this->mAudioEvent == nullptr) {
+                this->mSilent = true;
             }
         }
     } else {
-        if (0.0f < audio_intensity && distance < mAttributes.AudioCullDist()) {
-            mAudioEvent->Update(position, normal, velocity, audio_intensity);
+        if (0.0f < audio_intensity && distance < this->mAttributes.AudioCullDist()) {
+            this->mAudioEvent->Update(position, normal, velocity, audio_intensity);
         } else {
-            mAudioEvent->Release();
-            mAudioEvent = nullptr;
+            this->mAudioEvent->Release();
+            this->mAudioEvent = nullptr;
         }
     }
 }

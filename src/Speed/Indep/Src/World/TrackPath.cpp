@@ -33,13 +33,13 @@ bool DoLinesIntersect(const bVector2 &a, const bVector2 &b, const bVector2 &c, c
 }
 
 void TrackPathManager::Clear() {
-    NumZones = 0;
-    SizeofZones = 0;
-    pZones = nullptr;
-    bMemSet(ZoneInfoTable, 0, sizeof(ZoneInfoTable));
-    MostCachedZones = 0;
-    pBarriers = nullptr;
-    NumBarriers = 0;
+    this->NumZones = 0;
+    this->SizeofZones = 0;
+    this->pZones = nullptr;
+    bMemSet(this->ZoneInfoTable, 0, sizeof(this->ZoneInfoTable));
+    this->MostCachedZones = 0;
+    this->pBarriers = nullptr;
+    this->NumBarriers = 0;
     zoneB[0] = nullptr;
     zoneB[1] = nullptr;
 }
@@ -50,11 +50,11 @@ int TrackPathManager::Loader(bChunk *chunk) {
 
         for (chunk = chunk->GetFirstChunk(); chunk != last_chunk; chunk = chunk->GetNext()) {
             if (chunk->GetID() == BCHUNK_TTRACK_PATH_ZONES) {
-                pZones = reinterpret_cast<TrackPathZone *>(chunk->GetData());
-                SizeofZones = chunk->GetSize();
-                NumZones = 0;
+                this->pZones = reinterpret_cast<TrackPathZone *>(chunk->GetData());
+                this->SizeofZones = chunk->GetSize();
+                this->NumZones = 0;
 
-                for (TrackPathZone *zone = pZones; zone < GetLastZone(); zone = zone->GetMemoryImageNext()) {
+                for (TrackPathZone *zone = this->pZones; zone < this->GetLastZone(); zone = zone->GetMemoryImageNext()) {
                     bPlatEndianSwap(reinterpret_cast<int32 *>(&zone->Type));
                     bPlatEndianSwap(&zone->Position);
                     bPlatEndianSwap(&zone->Direction);
@@ -72,19 +72,19 @@ int TrackPathManager::Loader(bChunk *chunk) {
                     for (n = 0; n < 4; n++) {
                         bPlatEndianSwap(&zone->Data[n]);
                     }
-                    NumZones++;
+                    this->NumZones++;
                 }
             }
         }
-        BuildZoneInfoTable();
+        this->BuildZoneInfoTable();
         return 1;
     }
 
     if (chunk->GetID() == BCHUNK_TTRACK_PATH_BARRIERS) {
-        pBarriers = reinterpret_cast<TrackPathBarrier *>(chunk->GetData());
-        NumBarriers = chunk->GetSize() / sizeof(*pBarriers);
-        for (int i = 0; i < NumBarriers; i++) {
-            pBarriers[i].EndianSwap();
+        this->pBarriers = reinterpret_cast<TrackPathBarrier *>(chunk->GetData());
+        this->NumBarriers = chunk->GetSize() / sizeof(*this->pBarriers);
+        for (int i = 0; i < this->NumBarriers; i++) {
+            this->pBarriers[i].EndianSwap();
         }
         return 1;
     }
@@ -94,14 +94,14 @@ int TrackPathManager::Loader(bChunk *chunk) {
 
 int TrackPathManager::Unloader(bChunk *chunk) {
     if (chunk->GetID() == BCHUNK_TRACK_PATH_MANAGER) {
-        Clear();
+        this->Clear();
         NotifyGameZonesChanged();
         return 1;
     }
 
     if (chunk->GetID() == BCHUNK_TTRACK_PATH_BARRIERS) {
-        pBarriers = nullptr;
-        NumBarriers = 0;
+        this->pBarriers = nullptr;
+        this->NumBarriers = 0;
         return 1;
     }
 
@@ -109,16 +109,16 @@ int TrackPathManager::Unloader(bChunk *chunk) {
 }
 
 void TrackPathManager::DisableAllBarriers() {
-    for (int i = 0; i < NumBarriers; i++) {
-        TrackPathBarrier *barrier = GetBarrier(i);
+    for (int i = 0; i < this->NumBarriers; i++) {
+        TrackPathBarrier *barrier = this->GetBarrier(i);
         barrier->Enabled = 0;
     }
 }
 
 void TrackPathManager::EnableBarriers(const char *group_name) {
     unsigned int group_name_hash = bStringHash(group_name);
-    for (int i = 0; i < NumBarriers; i++) {
-        TrackPathBarrier *barrier = GetBarrier(i);
+    for (int i = 0; i < this->NumBarriers; i++) {
+        TrackPathBarrier *barrier = this->GetBarrier(i);
         if (barrier->HasGroup(group_name_hash)) {
             barrier->Enabled = 1;
 
@@ -131,11 +131,11 @@ void TrackPathManager::EnableBarriers(const char *group_name) {
 void TrackPathManager::BuildZoneInfoTable() {
     int type;
     for (type = 0; type < NUM_TRACK_PATH_ZONES; type++) {
-        ZoneInfo *zone_info = &ZoneInfoTable[type];
+        ZoneInfo *zone_info = &this->ZoneInfoTable[type];
         zone_info->NumZones = 0;
 
         TrackPathZone *zone;
-        for (zone = pZones; zone < GetLastZone(); zone = zone->GetMemoryImageNext()) {
+        for (zone = this->pZones; zone < this->GetLastZone(); zone = zone->GetMemoryImageNext()) {
             if (zone->GetType() == type) {
                 if (zone_info->NumZones == 0) {
                     zone_info->pFirstZone = zone;
@@ -151,7 +151,7 @@ void TrackPathManager::BuildZoneInfoTable() {
 
 // UNSOLVED, regswap
 TrackPathZone *TrackPathManager::FindZone(const bVector2 *position, eTrackPathZoneType zone_type, TrackPathZone *prev_zone) {
-    ZoneInfo *zone_info = &ZoneInfoTable[zone_type];
+    ZoneInfo *zone_info = &this->ZoneInfoTable[zone_type];
     bool cache_valid;
 
     if (position == nullptr) {
@@ -181,7 +181,7 @@ TrackPathZone *TrackPathManager::FindZone(const bVector2 *position, eTrackPathZo
         }
 
         cache_valid = zone_info->NumCachedZones < 9;
-        MostCachedZones = bMax(MostCachedZones, zone_info->NumCachedZones);
+        this->MostCachedZones = bMax(this->MostCachedZones, zone_info->NumCachedZones);
     }
 
     TrackPathZone *found_zone = nullptr;
@@ -221,13 +221,13 @@ TrackPathZone *TrackPathManager::FindZone(const bVector2 *position, eTrackPathZo
 }
 
 void TrackPathManager::ResetZoneVisitInfos() {
-    for (TrackPathZone *zone = pZones; zone < GetLastZone(); zone = zone->GetMemoryImageNext()) {
+    for (TrackPathZone *zone = this->pZones; zone < this->GetLastZone(); zone = zone->GetMemoryImageNext()) {
         zone->SetVisitInfo(0);
     }
 }
 
 bool TrackPathZone::IsPointInside(const bVector2 *point) {
-    return bIsPointInPoly(point, Points, NumPoints);
+    return bIsPointInPoly(point, this->Points, this->NumPoints);
 }
 
 void TrackPathInitRemoteCaffeineConnection() {}
@@ -245,9 +245,9 @@ float TrackPathZone::GetSegmentNextTo(bVector2 *point, bVector2 *s0, bVector2 *s
     float d0 = 99999.0f;
     float len;
 
-    for (int n = 0; n < NumPoints; n++) {
-        bVector2 *p0 = &Points[n % NumPoints];
-        bVector2 *p1 = &Points[(n + 1) % NumPoints];
+    for (int n = 0; n < this->NumPoints; n++) {
+        bVector2 *p0 = &this->Points[n % this->NumPoints];
+        bVector2 *p1 = &this->Points[(n + 1) % this->NumPoints];
         bVector2 r = *p0 - *point;
         bVector2 v(p1->y - p0->y, p0->x - p1->x);
 
@@ -257,9 +257,9 @@ float TrackPathZone::GetSegmentNextTo(bVector2 *point, bVector2 *s0, bVector2 *s
         bVector2 InPoint2 = v * (len * 1.1f) + *point;
         len = bAbs(len);
 
-        if (len < d0 && (IsPointInside(&InPoint) || IsPointInside(&InPoint2))) {
-            Closest0 = n % NumPoints;
-            Closest1 = (n + 1) % NumPoints;
+        if (len < d0 && (this->IsPointInside(&InPoint) || this->IsPointInside(&InPoint2))) {
+            Closest0 = n % this->NumPoints;
+            Closest1 = (n + 1) % this->NumPoints;
             d0 = len;
         }
     }
@@ -268,7 +268,7 @@ float TrackPathZone::GetSegmentNextTo(bVector2 *point, bVector2 *s0, bVector2 *s
         return -1.0f;
     }
 
-    *s0 = Points[Closest0];
-    *s1 = Points[Closest1];
+    *s0 = this->Points[Closest0];
+    *s1 = this->Points[Closest1];
     return d0;
 }

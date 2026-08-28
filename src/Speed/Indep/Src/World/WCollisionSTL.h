@@ -38,29 +38,29 @@ struct WCollisionTriList : public WCollisionVector<WCollisionTriBlock *> {
     WCollisionTriList() : mCurrBlock(nullptr) {}
 
     ~WCollisionTriList() {
-        clear_all();
+        this->clear_all();
     }
 
     void clear_all() {
-        for (iterator i = begin(); i != end(); ++i) {
+        for (iterator i = this->begin(); i != this->end(); ++i) {
             delete *i;
         }
-        clear();
-        mCurrBlock = nullptr;
+        this->clear();
+        this->mCurrBlock = nullptr;
     }
 
     void add_tri(const WCollisionTri &tri) {
-        if (mCurrBlock == nullptr || mCurrBlock->size() == mCurrBlock->capacity()) {
-            mCurrBlock = new WCollisionTriBlock();
-            mCurrBlock->reserve(21);
-            push_back(mCurrBlock);
+        if (this->mCurrBlock == nullptr || this->mCurrBlock->size() == this->mCurrBlock->capacity()) {
+            this->mCurrBlock = new WCollisionTriBlock();
+            this->mCurrBlock->reserve(21);
+            this->push_back(this->mCurrBlock);
         }
-        mCurrBlock->push_back(tri);
+        this->mCurrBlock->push_back(tri);
     }
 
     // TODO doesn't exist on PS2
     void reserve_total() {
-        reserve(8);
+        this->reserve(8);
     }
 
     WCollisionTriBlock *mCurrBlock; // offset 0x10, size 0x4

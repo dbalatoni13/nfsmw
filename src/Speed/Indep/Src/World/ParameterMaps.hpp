@@ -113,10 +113,10 @@ class ParameterMapQuad16 {
     // void SetData(uint16 data) {}
 
     void DoEndianSwap() {
-        bPlatEndianSwap(&Children.Child0);
-        bPlatEndianSwap(&Children.Child1);
-        bPlatEndianSwap(&Children.Child2);
-        bPlatEndianSwap(&Children.Child3);
+        bPlatEndianSwap(&this->Children.Child0);
+        bPlatEndianSwap(&this->Children.Child1);
+        bPlatEndianSwap(&this->Children.Child2);
+        bPlatEndianSwap(&this->Children.Child3);
     }
 
   private:
@@ -162,7 +162,7 @@ class ParameterMapLayer : public bTNode<ParameterMapLayer> {
     int GetDataInt(int field_index, void *parameter_data);
 
     uint32 GetNameHash() {
-        return this->Header != nullptr ? Header->NameHash : 0;
+        return this->Header != nullptr ? this->Header->NameHash : 0;
     }
 
     int GetSizeOfParameterSet() {

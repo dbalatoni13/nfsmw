@@ -221,27 +221,27 @@ class CarPart {
     uint32 GetAppliedAttributeUParam(uint32 namehash, uint32 default_value);
 
     uint32 GetBrandNameHash() {
-        return GetAppliedAttributeUParam(STRINGHASH_BRAND_NAME, 0);
+        return this->GetAppliedAttributeUParam(STRINGHASH_BRAND_NAME, 0);
     }
 
     uint32 GetTextureNameHash() {
-        return GetAppliedAttributeUParam(STRINGHASH_TEXTURE_NAME, 0);
+        return this->GetAppliedAttributeUParam(STRINGHASH_TEXTURE_NAME, 0);
     }
 
     uint32 GetLightMaterialNameHash() {
-        return GetAppliedAttributeUParam(STRINGHASH_LIGHT_MATERIAL_NAME, 0);
+        return this->GetAppliedAttributeUParam(STRINGHASH_LIGHT_MATERIAL_NAME, 0);
     }
 
     int8 GetInnerRadius() {
-        return GetAppliedAttributeIParam(STRINGHASH_INNER_RADIUS, 0);
+        return this->GetAppliedAttributeIParam(STRINGHASH_INNER_RADIUS, 0);
     }
 
     int8 GetOuterRadius() {
-        return GetAppliedAttributeIParam(STRINGHASH_OUTER_RADIUS, 0);
+        return this->GetAppliedAttributeIParam(STRINGHASH_OUTER_RADIUS, 0);
     }
 
     int8 GetSpokeCount() {
-        return static_cast<char>(bAbs(GetAppliedAttributeIParam(STRINGHASH_SPOKE_COUNT, 0)));
+        return static_cast<char>(bAbs(this->GetAppliedAttributeIParam(STRINGHASH_SPOKE_COUNT, 0)));
     }
 
     bool GetMirrored() {}
@@ -253,7 +253,7 @@ class CarPart {
     }
 
     int8 GetPartID() {
-        return PartID;
+        return this->PartID;
     }
 
     int8 GetUpgradeLevel() {
@@ -296,8 +296,8 @@ class CarPartPack : public bTNode<CarPartPack> {
     ~CarPartPack() {}
 
     void InPlaceInit() {
-        Next = this;
-        Prev = this;
+        this->Next = this;
+        this->Prev = this;
     }
 
     void EndianSwap() {
@@ -488,7 +488,7 @@ struct FECarRecord;
 class RideInfo {
   public:
     RideInfo() {
-        Init(CARTYPE_NONE, CarRenderUsage_Player, 0, 0);
+        this->Init(CARTYPE_NONE, CarRenderUsage_Player, 0, 0);
     }
 
     RideInfo(CarType type, int skin_number, int has_dash, int can_be_vertex_damaged) {}

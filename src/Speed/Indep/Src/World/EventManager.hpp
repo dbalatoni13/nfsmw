@@ -35,33 +35,33 @@ enum EVENT_ID {
 class EventTrigger {
   public:
     uint32 GetNameHash() {
-        return NameHash;
+        return this->NameHash;
     }
 
     uint32 GetEventID() {
-        return EventID;
+        return this->EventID;
     }
 
     uint32 GetParameter() {
-        return Parameter;
+        return this->Parameter;
     }
 
     float GetRadius() {
-        return Radius;
+        return this->Radius;
     }
 
     bVector3 *GetPosition() {
-        return reinterpret_cast<bVector3 *>(&PositionX);
+        return reinterpret_cast<bVector3 *>(&this->PositionX);
     }
 
     // void SetName(const char *name) {}
 
     void SetNameHash(uint32 name_hash) {
-        NameHash = name_hash;
+        this->NameHash = name_hash;
     }
 
     void SetEventID(uint32 event_id) {
-        EventID = event_id;
+        this->EventID = event_id;
     }
 
     void SetParameter(uint32 parameter) {
@@ -69,11 +69,11 @@ class EventTrigger {
     }
 
     void SetTrackDirectionMask(int mask) {
-        TrackDirectionMask = mask;
+        this->TrackDirectionMask = mask;
     }
 
     void SetRadius(float radius) {
-        Radius = radius;
+        this->Radius = radius;
     }
 
     // void SetPosition(bVector3 *position) {}

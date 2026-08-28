@@ -13,15 +13,15 @@ WGrid::WGrid(const UMath::Vector4 &min, unsigned int rows, unsigned int cols, fl
       fNumRows(rows),                //
       fNumCols(cols)                 //
 {
-    fNodes = static_cast<WGridNode **>(Alloc(sizeof(WGridNode *) * rows * cols, 0, "WGrid Nodes"));
+    this->fNodes = static_cast<WGridNode **>(Alloc(sizeof(WGridNode *) * rows * cols, 0, "WGrid Nodes"));
     // TODO likely a macro because of the cast?
     for (int i = 0; i < static_cast<int>(rows * cols); i++) {
-        fNodes[i] = nullptr;
+        this->fNodes[i] = nullptr;
     }
 }
 
 WGrid::~WGrid() {
-    bFree(fNodes);
+    bFree(this->fNodes);
 }
 
 void WGrid::Init(const UGroup *mapGroup) {
@@ -75,7 +75,7 @@ void WGrid::FindNodes(const UMath::Vector3 &pt, float radius, UTL::Vector<unsign
     pts[1].x = pt.x + radius;
     pts[1].z = pt.z + radius;
     pts[0].y = 0.0f;
-    FindNodesBox(pts, nodeIndList);
+    this->FindNodesBox(pts, nodeIndList);
 }
 
 void WGrid::FindNodesBox(const UMath::Vector4 *pts, UTL::Vector<unsigned int, 16> &nodeIndList) const {
@@ -84,8 +84,8 @@ void WGrid::FindNodesBox(const UMath::Vector4 *pts, UTL::Vector<unsigned int, 16
     unsigned int colMax;
     unsigned int rowMax;
 
-    GetRowCol(UMath::Vector4To3(pts[0]), rowMin, colMin);
-    GetRowCol(UMath::Vector4To3(pts[1]), rowMax, colMax);
+    this->GetRowCol(UMath::Vector4To3(pts[0]), rowMin, colMin);
+    this->GetRowCol(UMath::Vector4To3(pts[1]), rowMax, colMax);
 
     if (rowMin > rowMax) {
         unsigned int temp = rowMin;
@@ -105,12 +105,12 @@ void WGrid::FindNodesBox(const UMath::Vector4 *pts, UTL::Vector<unsigned int, 16
         colMax = colMin;
     }
 
-    RangeCheckROWCOL(rowMin, colMin);
-    RangeCheckROWCOL(rowMax, colMax);
+    this->RangeCheckROWCOL(rowMin, colMin);
+    this->RangeCheckROWCOL(rowMax, colMax);
 
     for (unsigned int col = colMin; col <= colMax; col++) {
         for (unsigned int row = rowMin; row <= rowMax; row++) {
-            nodeIndList.push_back(GetNodeInd(row, col));
+            nodeIndList.push_back(this->GetNodeInd(row, col));
         }
     }
 }

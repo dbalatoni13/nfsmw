@@ -60,7 +60,7 @@ class CarLoader {
     void ServiceTweakables();
 
     int IsLoadingInProgress() {
-        return LoadingInProgress;
+        return this->LoadingInProgress;
     }
 
     void EnsureHasLoaded(CarLoaderHandle handle);

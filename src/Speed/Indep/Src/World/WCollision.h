@@ -21,7 +21,7 @@ struct WCollisionBarrier;
 class WCollisionStripSphere {
   public:
     unsigned int Offset() const {
-        return static_cast<unsigned int>(fOffset) + 0x10;
+        return static_cast<unsigned int>(this->fOffset) + 0x10;
     }
 
     UMath::Vector3 fPos;    // offset 0x0, size 0xC
@@ -47,19 +47,19 @@ struct WCollisionStrip {
     }
 
     unsigned int NumVerts() const {
-        return *reinterpret_cast<const unsigned short *>(&Verts()[0].surface);
+        return *reinterpret_cast<const unsigned short *>(&this->Verts()[0].surface);
     }
 
     unsigned int NumTris() const {
-        return NumVerts() - 2;
+        return this->NumVerts() - 2;
     }
 
     unsigned int Flags() const {
-        return *reinterpret_cast<const unsigned short *>(&Verts()[1].surface);
+        return *reinterpret_cast<const unsigned short *>(&this->Verts()[1].surface);
     }
 
     inline void MakeFace(unsigned int ind, const UMath::Vector3 &cp, WCollisionTri &retFace) const {
-        const WCollisionPackedVert *v = &Verts()[ind];
+        const WCollisionPackedVert *v = &this->Verts()[ind];
         retFace.fPt0.x = static_cast<float>(v->x) / 128.0f + cp.x;
         retFace.fPt0.y = static_cast<float>(v->y) / 128.0f + cp.y;
         retFace.fPt0.z = static_cast<float>(v->z) / 128.0f + cp.z;
@@ -77,7 +77,7 @@ struct WCollisionStrip {
     }
 
     inline void MakeNextFace(unsigned int ind, const UMath::Vector3 &cp, WCollisionTri &retFace) const {
-        const WCollisionPackedVert *v = Verts() + ind + 2;
+        const WCollisionPackedVert *v = this->Verts() + ind + 2;
         retFace.fPt0 = retFace.fPt1;
         retFace.fPt1 = retFace.fPt2;
         retFace.fPt2.x = static_cast<float>(v->x) * (1.0f / 128.0f) + cp.x;
@@ -93,13 +93,13 @@ struct WCollisionArticle {
 
     const Attrib::Collection *GetSurface(unsigned int ind) const {
         // TODO 64 bit
-        const char *dataStart = reinterpret_cast<const char *>(&this[1]) + fStripsSize + fEdgesSize;
+        const char *dataStart = reinterpret_cast<const char *>(&this[1]) + this->fStripsSize + this->fEdgesSize;
         unsigned int ref = reinterpret_cast<const unsigned int *>(dataStart)[ind];
         return reinterpret_cast<const Attrib::Collection *>(ref);
     }
 
     const WCollisionBarrier *GetBarrier(unsigned int ind) const {
-        const char *dataStart = reinterpret_cast<const char *>(&this[1]) + fStripsSize;
+        const char *dataStart = reinterpret_cast<const char *>(&this[1]) + this->fStripsSize;
         return reinterpret_cast<const WCollisionBarrier *>(dataStart + ind * 0x10); // sizeof(WCollisionBarrier)
     }
 
@@ -132,57 +132,57 @@ struct WCollisionBarrier {
     }
 
     const UMath::Vector4 *GetPts() const {
-        return fPts;
+        return this->fPts;
     }
 
     const UMath::Vector4 *GetPt(int ptInd) const {
-        return &fPts[ptInd];
+        return &this->fPts[ptInd];
     }
 
     const float YBot() const {
-        return fPts[0].y < fPts[1].y ? fPts[0].y : fPts[1].y;
+        return this->fPts[0].y < this->fPts[1].y ? this->fPts[0].y : this->fPts[1].y;
     }
 
     const float YTop() const {
-        return fPts[1].y < fPts[0].y ? fPts[0].y : fPts[1].y;
+        return this->fPts[1].y < this->fPts[0].y ? this->fPts[0].y : this->fPts[1].y;
     }
 
     float GetInvXZLength() const {
-        return fPts[1].w;
+        return this->fPts[1].w;
     }
 
     void GetNormal(UMath::Vector3 &norm) const {
-        float invLen = GetInvXZLength();
-        norm.x = (fPts[1].z - fPts[0].z) * invLen;
+        float invLen = this->GetInvXZLength();
+        norm.x = (this->fPts[1].z - this->fPts[0].z) * invLen;
         norm.y = 0.0f;
-        norm.z = -(fPts[1].x - fPts[0].x) * invLen;
+        norm.z = -(this->fPts[1].x - this->fPts[0].x) * invLen;
     }
 
     void GetCenter(UMath::Vector4 &cp) const {
-        cp.x = (fPts[0].x + fPts[1].x) * 0.5f;
-        cp.y = (fPts[0].y + fPts[1].y) * 0.5f;
-        cp.z = (fPts[0].z + fPts[1].z) * 0.5f;
+        cp.x = (this->fPts[0].x + this->fPts[1].x) * 0.5f;
+        cp.y = (this->fPts[0].y + this->fPts[1].y) * 0.5f;
+        cp.z = (this->fPts[0].z + this->fPts[1].z) * 0.5f;
     }
 
     float GetWidth() const {
-        float rx = fPts[0].x - fPts[1].x;
-        float rz = fPts[0].z - fPts[1].z;
+        float rx = this->fPts[0].x - this->fPts[1].x;
+        float rz = this->fPts[0].z - this->fPts[1].z;
         return UMath::Sqrt(rx * rx + rz * rz);
     }
 
     float GetHeight() const {
-        return UMath::Abs(fPts[0].y - fPts[1].y);
+        return UMath::Abs(this->fPts[0].y - this->fPts[1].y);
     }
 
     float DistSq(const UMath::Vector3 &pt) const {
-        float x1 = fPts[0].x;
-        float z1 = fPts[0].z;
-        float x2 = fPts[1].x;
-        float z2 = fPts[1].z;
+        float x1 = this->fPts[0].x;
+        float z1 = this->fPts[0].z;
+        float x2 = this->fPts[1].x;
+        float z2 = this->fPts[1].z;
         float px = pt.x;
         float pz = pt.z;
         float u = (px - x1) * (x2 - x1) + (pz - z1) * (z2 - z1);
-        float invLen = GetInvXZLength();
+        float invLen = this->GetInvXZLength();
         u *= invLen * invLen;
 
         if (u < 0.0f) {
@@ -230,7 +230,7 @@ struct WCollisionBarrierListEntry {
     }
 
     bool operator<(const WCollisionBarrierListEntry &rhs) const {
-        return fDistanceToSq < rhs.fDistanceToSq;
+        return this->fDistanceToSq < rhs.fDistanceToSq;
     }
 };
 
@@ -242,11 +242,11 @@ struct WCollisionObject : public CARP::CollisionObject {
     };
 
     const WSurface GetWSurface() const {
-        return WSurface(fSurface.fSurface, fSurface.fFlags);
+        return WSurface(this->fSurface.fSurface, this->fSurface.fFlags);
     }
 
     bool IsDynamic() const {
-        return (fFlags & 1) != 0;
+        return (this->fFlags & 1) != 0;
     }
 
     void MakeMatrix(UMath::Matrix4 &m, bool addXLate) const;
@@ -259,17 +259,17 @@ struct WCollisionInstance : public CARP::CollisionInstance {
     const char *GetName() const;
 
     bool NeedsCrossProduct() const {
-        return (fFlags & 3) != 0;
+        return (this->fFlags & 3) != 0;
     }
 
     float CalcSphericalRadius() const;
 
     bool IsYVecNotUp() const {
-        return (fFlags & 1) != 0;
+        return (this->fFlags & 1) != 0;
     }
 
     bool IsDynamic() const {
-        return (fFlags & 2) != 0;
+        return (this->fFlags & 2) != 0;
     }
 };
 

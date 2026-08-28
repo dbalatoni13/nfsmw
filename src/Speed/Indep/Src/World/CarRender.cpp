@@ -227,7 +227,7 @@ class CarPartCuller {
     void RenderPart(eCullableCarParts type, eView *view, const bMatrix4 *local_world, bAngle stang);
 
     bool IsPartVisible(eCullableCarParts type) {
-        return CarPartInfoTable[type].IsVisible;
+        return this->CarPartInfoTable[type].IsVisible;
     }
 
   private:
@@ -360,17 +360,17 @@ class CarEmitterPosition : public bSNode<CarEmitterPosition> {
     USE_SLOTALLOC(CarEmitterPositionSlotPool);
 
     CarEmitterPosition(ePositionMarker *position_marker) {
-        PositionMarker = position_marker;
-        X = position_marker->Matrix.v3.x;
-        Y = position_marker->Matrix.v3.y;
-        Z = position_marker->Matrix.v3.z;
+        this->PositionMarker = position_marker;
+        this->X = position_marker->Matrix.v3.x;
+        this->Y = position_marker->Matrix.v3.y;
+        this->Z = position_marker->Matrix.v3.z;
     }
 
     CarEmitterPosition(float x, float y, float z) {
-        PositionMarker = nullptr;
-        X = x;
-        Y = y;
-        Z = z;
+        this->PositionMarker = nullptr;
+        this->X = x;
+        this->Y = y;
+        this->Z = z;
     }
 
     float X;                         // offset 0x4, size 0x4
@@ -444,7 +444,7 @@ class CarPartModel {
     }
 
     void Clear() {
-        mModel = 0;
+        this->mModel = 0;
     }
 
     int IsHidden() {
@@ -452,11 +452,11 @@ class CarPartModel {
     }
 
     void Hide(int bHide) {
-        mModel = (mModel & ~3) | (bHide ? 1 : 0);
+        this->mModel = (this->mModel & ~3) | (bHide ? 1 : 0);
     }
 
     struct eModel *GetModel() {
-        return reinterpret_cast<eModel *>(mModel & ~0x3);
+        return reinterpret_cast<eModel *>(this->mModel & ~0x3);
     }
 
     void SetModel(struct eModel *model) {
@@ -464,7 +464,7 @@ class CarPartModel {
     }
 
     bool IsLodMissing() const {
-        return (mModel & ~3u) == 0;
+        return (this->mModel & ~3u) == 0;
     }
 
   private:
@@ -1131,10 +1131,10 @@ CarRenderInfo::CarRenderInfo(RideInfo *ride_info)
       mFlashing(false),                    //
       mFlashInterval(0.0f) {
     ProfileNode profile_node("TODO", 0);
-    mWheelWobbleEnabled[0] = false;
-    mWheelWobbleEnabled[1] = false;
-    mWheelWobbleEnabled[2] = false;
-    mWheelWobbleEnabled[3] = false;
+    this->mWheelWobbleEnabled[0] = false;
+    this->mWheelWobbleEnabled[1] = false;
+    this->mWheelWobbleEnabled[2] = false;
+    this->mWheelWobbleEnabled[3] = false;
 
     CarTypeInfo *info = GetCarTypeInfo(ride_info->Type);
     char *car_base_name = info->BaseModelName;
@@ -1545,9 +1545,9 @@ CarRenderInfo::~CarRenderInfo() {
         }
     }
 
-    if (mDamageBehaviour != nullptr) {
-        delete mDamageBehaviour;
-        mDamageBehaviour = nullptr;
+    if (this->mDamageBehaviour != nullptr) {
+        delete this->mDamageBehaviour;
+        this->mDamageBehaviour = nullptr;
     }
 }
 

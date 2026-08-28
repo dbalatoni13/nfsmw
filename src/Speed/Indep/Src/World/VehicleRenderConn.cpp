@@ -19,7 +19,7 @@
 IMPLEMENT_LISTABLE(VehicleRenderConn);
 
 VehicleRenderConn::Effect::Effect(const bMatrix4 *matrix) {
-    mLocalMatrix = *matrix;
+    this->mLocalMatrix = *matrix;
     this->mEmitterGroup = nullptr;
     this->mKey = 0;
 }

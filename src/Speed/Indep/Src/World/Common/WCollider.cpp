@@ -181,7 +181,7 @@ void WCollider::PrepareRegion(unsigned int updateMask) {
 
 #ifndef EA_BUILD_A124
     if (updateMask & 0x10) {
-        WCollisionMgr(fExclusionFlags, 3).GetObjectList(this->fObbList, this->fPosition, this->fRadius);
+        WCollisionMgr(this->fExclusionFlags, 3).GetObjectList(this->fObbList, this->fPosition, this->fRadius);
     }
 #endif
 
@@ -262,7 +262,7 @@ unsigned int WCollider::GetUpdateMask(const UMath::Vector3 &pt, float radius) {
 }
 
 bool WCollider::InRegion(const UMath::Vector3 &pt, float radius) const {
-    float radDiff = fRadius - radius;
+    float radDiff = this->fRadius - radius;
     if (radDiff < 0.0f) {
         return false;
     }
@@ -315,9 +315,9 @@ void WCollisionInstance::CalcPosition(UMath::Vector3 &pos) const {
     pos.x = (-this->fInvPosRadius.x * this->fInvMatRow0Width.x - this->fInvPosRadius.y * this->fInvMatRow0Width.y) -
             this->fInvPosRadius.z * this->fInvMatRow0Width.z;
     pos.z = (-this->fInvPosRadius.x * this->fInvMatRow2Length.x - this->fInvPosRadius.y * this->fInvMatRow2Length.y) -
-            this->fInvPosRadius.z * fInvMatRow2Length.z;
+            this->fInvPosRadius.z * this->fInvMatRow2Length.z;
 
-    if (NeedsCrossProduct()) {
+    if (this->NeedsCrossProduct()) {
         UMath::Vector4 upVec;
         UMath::Crossxyz(reinterpret_cast<const UMath::Vector4 &>(this->fInvMatRow2Length),
                         reinterpret_cast<const UMath::Vector4 &>(this->fInvMatRow0Width), upVec);
@@ -333,7 +333,7 @@ void WCollisionInstance::MakeMatrix(UMath::Matrix4 &m, bool addXLate) const {
     m[0][2] = this->fInvMatRow0Width.z;
     m[0][3] = 0.0f;
 
-    if (NeedsCrossProduct()) {
+    if (this->NeedsCrossProduct()) {
         UMath::Crossxyz(reinterpret_cast<const UMath::Vector4 &>(this->fInvMatRow2Length),
                         reinterpret_cast<const UMath::Vector4 &>(this->fInvMatRow0Width), m[1]);
         m[1][3] = 0.0f;

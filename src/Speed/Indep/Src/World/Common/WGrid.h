@@ -33,50 +33,50 @@ class WGrid {
     bool RangeCheck(const UMath::Vector3 *pts) const;
 
     bool IsValidNode(unsigned short nodeInd) {
-        return nodeInd < fNumRows * fNumCols;
+        return nodeInd < this->fNumRows * this->fNumCols;
     }
 
     void RangeCheckROWCOL(unsigned int &row, unsigned int &col) const {
-        if (col >= fNumCols) {
+        if (col >= this->fNumCols) {
             if (col > 0x7FFFFFFEU) {
                 col = 0;
             } else {
-                col = fNumCols - 1;
+                col = this->fNumCols - 1;
             }
         }
-        if (row >= fNumRows) {
+        if (row >= this->fNumRows) {
             if (row > 0x7FFFFFFEU) {
                 row = 0;
             } else {
-                row = fNumRows - 1;
+                row = this->fNumRows - 1;
             }
         }
     }
 
     unsigned int GetNodeInd(unsigned int row, unsigned int col) const {
-        return row * fNumCols + col;
+        return row * this->fNumCols + col;
     }
 
     void GetRowCol(const UMath::Vector3 &pt, unsigned int &row, unsigned int &col) const {
-        col = FLOAT2INT((pt.x - fMin.x) * fInvEdgeSize);
-        row = FLOAT2INT((pt.z - fMin.z) * fInvEdgeSize);
-        RangeCheckROWCOL(row, col);
+        col = FLOAT2INT((pt.x - this->fMin.x) * this->fInvEdgeSize);
+        row = FLOAT2INT((pt.z - this->fMin.z) * this->fInvEdgeSize);
+        this->RangeCheckROWCOL(row, col);
     }
 
     void GetRowCol(unsigned int ind, unsigned int &row, unsigned int &col) const {
-        row = ind / fNumCols;
-        col = ind - row * fNumCols;
-        RangeCheckROWCOL(row, col);
+        row = ind / this->fNumCols;
+        col = ind - row * this->fNumCols;
+        this->RangeCheckROWCOL(row, col);
     }
 
     WGridNode *GetNode(unsigned int row, unsigned int col) const {
-        return fNodes[GetNodeInd(row, col)];
+        return this->fNodes[this->GetNodeInd(row, col)];
     }
 
     WGridNode *GetNode(unsigned int ind) const {
         unsigned int row, col;
-        GetRowCol(ind, row, col);
-        return GetNode(row, col);
+        this->GetRowCol(ind, row, col);
+        return this->GetNode(row, col);
     }
 
     UMath::Vector4 fMin;   // offset 0x0, size 0x10
