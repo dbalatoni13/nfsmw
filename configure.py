@@ -181,7 +181,7 @@ if config.platform == Platform.GC_WII:
     keep_list_path = Path("config") / config.version / "keep.lst"
     config.ldflags = [
         "-strip-unused-data",
-        "-report-unused",
+        # "-report-unused",
         "-keep",
         str(keep_list_path),
         "-T",
@@ -742,6 +742,26 @@ config.libs = [
             Object(
                 MatchingFor("GOWE69"),
                 "Speed/Indep/Libs/snd/9/source/library/cmn/smemlmt.c",
+            ),
+            Object(
+                MatchingFor("GOWE69"),
+                "Speed/Indep/Libs/snd/9/source/library/cmn/smemlu.c",
+            ),
+            Object(
+                MatchingFor("GOWE69"),
+                "Speed/Indep/Libs/snd/9/source/library/cmn/smemman.c",
+            ),
+            Object(
+                MatchingFor("GOWE69"),
+                "Speed/Indep/Libs/snd/9/source/library/cmn/sndfxbus.cpp",
+            ),
+            Object(
+                MatchingFor("GOWE69"),
+                "Speed/Indep/Libs/snd/9/source/library/cmn/spatkey.c",
+            ),
+            Object(
+                MatchingFor("GOWE69"),
+                "Speed/Indep/Libs/snd/9/source/library/cmn/spitch.c",
             ),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/cmn/sgetpvol.c"),
             Object(NonMatching, "Speed/Indep/Libs/snd/9/source/library/gc/sscalcfx.c"),
