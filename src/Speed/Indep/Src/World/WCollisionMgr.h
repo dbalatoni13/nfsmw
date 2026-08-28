@@ -31,7 +31,7 @@ class WCollisionMgr {
               fCInst(nullptr) {}
 
         bool HitSomething() const {
-            return fType != 0;
+            return this->fType != 0;
         }
     };
 
@@ -65,15 +65,15 @@ class WCollisionMgr {
     bool Collide(Dynamics::Collision::Geometry *geom, const WCollisionInstanceCacheList *instanceList, ICollisionHandler *results, void *userdata);
 
     bool StripPassesExclusion(const WCollisionStrip &strip) const {
-        return (fSurfaceExclusionMask & strip.Flags()) == 0;
+        return (this->fSurfaceExclusionMask & strip.Flags()) == 0;
     }
 
     bool InstancePassesExclusion(const WCollisionInstance &inst) const {
-        return (fSurfaceExclusionMask & inst.fFlags) == 0;
+        return (this->fSurfaceExclusionMask & inst.fFlags) == 0;
     }
 
     bool SurfacePassesExclusion(const WSurface &surface) const {
-        return (fSurfaceExclusionMask & surface.Flags()) == 0;
+        return (this->fSurfaceExclusionMask & surface.Flags()) == 0;
     }
 
     void GetInstanceList(WCollisionInstanceCacheList &instList, const UMath::Vector3 &pt, float radius,

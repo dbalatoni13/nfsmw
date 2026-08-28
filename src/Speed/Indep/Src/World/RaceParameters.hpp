@@ -46,7 +46,7 @@ enum RaceTypes {
 // total size: 0xA0
 struct RaceParameters {
     RaceParameters() {
-        InitWithDefaults();
+        this->InitWithDefaults();
     }
 
     void DoSnapshot(ReplaySnapshot *snapshot);

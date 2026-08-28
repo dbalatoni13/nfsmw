@@ -180,13 +180,13 @@ VehiclePartDamageBehaviour::~VehiclePartDamageBehaviour() {
 }
 
 void VehiclePartDamageBehaviour::Init() {
-    InitAnimationPivot(CARSLOTID_DAMAGE_HOOD, "HOOD");
-    InitAnimationPivot(CARSLOTID_DAMAGE_TRUNK, "TRUNK");
-    InitAnimationPivot(CARSLOTID_DAMAGE_LEFT_DOOR, "LEFT_DOOR");
-    InitAnimationPivot(CARSLOTID_DAMAGE_RIGHT_DOOR, "RIGHT_DOOR");
-    InitAnimationPivot(CARSLOTID_DAMAGE_LEFT_REAR_DOOR, "LEFT_REAR_DOOR");
-    InitAnimationPivot(CARSLOTID_DAMAGE_RIGHT_REAR_DOOR, "RIGHT_REAR_DOOR");
-    InitAnimationPivot(CARSLOTID_DAMAGE_REAR_BUMPER, "REAR_BUMPER");
+    this->InitAnimationPivot(CARSLOTID_DAMAGE_HOOD, "HOOD");
+    this->InitAnimationPivot(CARSLOTID_DAMAGE_TRUNK, "TRUNK");
+    this->InitAnimationPivot(CARSLOTID_DAMAGE_LEFT_DOOR, "LEFT_DOOR");
+    this->InitAnimationPivot(CARSLOTID_DAMAGE_RIGHT_DOOR, "RIGHT_DOOR");
+    this->InitAnimationPivot(CARSLOTID_DAMAGE_LEFT_REAR_DOOR, "LEFT_REAR_DOOR");
+    this->InitAnimationPivot(CARSLOTID_DAMAGE_RIGHT_REAR_DOOR, "RIGHT_REAR_DOOR");
+    this->InitAnimationPivot(CARSLOTID_DAMAGE_REAR_BUMPER, "REAR_BUMPER");
 
     VehicleDamagePart *damagePart = this->mDamagePartList[CARSLOTID_DAMAGE_TRUNK];
     damagePart->SetPivot(1.73f, -0.96f, 0.0f);
@@ -491,7 +491,7 @@ VehiclePartDamageZone::VehiclePartDamageZone(int zoneId, DamageZoneSlotMapDataTy
 }
 
 void VehiclePartDamageZone::Reset() {
-    mDamageLevel = 0;
+    this->mDamageLevel = 0;
 }
 
 int VehiclePartDamageZone::GetSlotNum() const {
@@ -542,9 +542,9 @@ VehicleDamagePart::~VehicleDamagePart() {
 }
 
 void VehicleDamagePart::Reset() {
-    mDamageLevel = 0;
-    mHidden = false;
-    mAnimatable = true;
+    this->mDamageLevel = 0;
+    this->mHidden = false;
+    this->mAnimatable = true;
 }
 
 void InitVehicleDamage() {

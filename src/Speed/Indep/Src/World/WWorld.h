@@ -51,19 +51,19 @@ class WWorld {
     void Close();
 
     const Attrib::Gen::world &GetAttributes() const {
-        return fAttributes;
+        return this->fAttributes;
     }
 
     bool IsValid() {
-        return fRootWorldGroup != nullptr;
+        return this->fRootWorldGroup != nullptr;
     }
 
     const UGroup &GetMapGroup() const {
-        return *fRootWorldGroup;
+        return *this->fRootWorldGroup;
     }
 
     const UGroup *GetMapGroup() {
-        return fRootWorldGroup;
+        return this->fRootWorldGroup;
     }
 
     void GetStartPosition(UMath::Vector3 &position);

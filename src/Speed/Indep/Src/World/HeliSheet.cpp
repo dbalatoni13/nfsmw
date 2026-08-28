@@ -75,7 +75,7 @@ bChunkLoader bChunkLoaderHeliSheet(BCHUNK_SPEED_HELI_SHEET, LoaderHeliSheet, Unl
 
 void HeliPoly::GetVertices(bVector3 *vertices) {
     for (int n = 0; n < NUM_ELEMENTS(this->VertexX); n++) {
-        vertices[n] = GetVertex(n);
+        vertices[n] = this->GetVertex(n);
     }
 }
 

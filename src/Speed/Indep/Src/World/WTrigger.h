@@ -18,15 +18,15 @@ class WTrigger : public CARP::Trigger {
     void FireEvents(HSIMABLE hSimable);
 
     void Enable() {
-        fFlags |= 1;
+        this->fFlags |= 1;
     }
 
     void Disable() {
-        fFlags &= ~1;
+        this->fFlags &= ~1;
     }
 
     bool IsEnabled() const {
-        return (fFlags & 1) != 0;
+        return (this->fFlags & 1) != 0;
     }
 
     bool IsEnabled(bool allowSilencables) const {
@@ -49,31 +49,31 @@ class WTrigger : public CARP::Trigger {
     void UpdateBox(const UMath::Matrix4 &boxMat, const UMath::Vector3 &center);
 
     void MakeMatrix(UMath::Matrix4 &m, bool addXLate, bool frombase) const {
-        m[0][0] = fMatRow0Width.x;
-        m[0][1] = fMatRow0Width.y;
-        m[0][2] = fMatRow0Width.z;
+        m[0][0] = this->fMatRow0Width.x;
+        m[0][1] = this->fMatRow0Width.y;
+        m[0][2] = this->fMatRow0Width.z;
         m[0][3] = 0.0f;
         if ((this->fFlags & 0x1000) != 0) {
-            m[1][0] = fMatRow2Length.y * fMatRow0Width.z - fMatRow2Length.z * fMatRow0Width.y;
-            m[1][1] = fMatRow2Length.z * fMatRow0Width.x - fMatRow2Length.x * fMatRow0Width.z;
-            m[1][2] = fMatRow2Length.x * fMatRow0Width.y - fMatRow2Length.y * fMatRow0Width.x;
+            m[1][0] = this->fMatRow2Length.y * this->fMatRow0Width.z - this->fMatRow2Length.z * this->fMatRow0Width.y;
+            m[1][1] = this->fMatRow2Length.z * this->fMatRow0Width.x - this->fMatRow2Length.x * this->fMatRow0Width.z;
+            m[1][2] = this->fMatRow2Length.x * this->fMatRow0Width.y - this->fMatRow2Length.y * this->fMatRow0Width.x;
         } else {
             m[1][0] = 0.0f;
             m[1][1] = 1.0f;
             m[1][2] = 0.0f;
         }
         m[1][3] = 0.0f;
-        m[2][0] = fMatRow2Length.x;
-        m[2][1] = fMatRow2Length.y;
-        m[2][2] = fMatRow2Length.z;
+        m[2][0] = this->fMatRow2Length.x;
+        m[2][1] = this->fMatRow2Length.y;
+        m[2][2] = this->fMatRow2Length.z;
         m[2][3] = 0.0f;
         if (addXLate) {
-            m[3][0] = fPosRadius.x;
-            m[3][2] = fPosRadius.z;
+            m[3][0] = this->fPosRadius.x;
+            m[3][2] = this->fPosRadius.z;
             if (frombase) {
-                m[3][1] = fPosRadius.y - fHeight * 0.5f;
+                m[3][1] = this->fPosRadius.y - this->fHeight * 0.5f;
             } else {
-                m[3][1] = fPosRadius.y;
+                m[3][1] = this->fPosRadius.y;
             }
         } else {
             m[3][0] = 0.0f;
@@ -120,11 +120,11 @@ class WTriggerManager {
     void Update(float dT);
 
     void EnableSilencables() {
-        fSilencableEnabled = true;
+        this->fSilencableEnabled = true;
     }
 
     void DisableSilencables() {
-        fSilencableEnabled = false;
+        this->fSilencableEnabled = false;
     }
 
     void ClearAllFireOnExit();
@@ -134,7 +134,7 @@ class WTriggerManager {
     void SubmitForFire(WTrigger &trig, HSIMABLE hSimable);
 
     int GetCurrentStimulus() const {
-        return fProcessingStimulus;
+        return this->fProcessingStimulus;
     }
 
     void DeleteRefs(const WTrigger *trig);

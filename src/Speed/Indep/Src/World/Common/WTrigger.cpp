@@ -16,13 +16,13 @@ struct FireOnExitRec {
     FireOnExitRec(WTrigger &trigger, HSIMABLE hSimable) : mTrigger(trigger), mhSimable(hSimable) {}
 
     bool operator==(const FireOnExitRec &rhs) const {
-        return &mTrigger == &rhs.mTrigger && mhSimable == rhs.mhSimable;
+        return &this->mTrigger == &rhs.mTrigger && this->mhSimable == rhs.mhSimable;
     }
 
     bool operator<(const FireOnExitRec &rhs) const {
-        if (mhSimable < rhs.mhSimable)
+        if (this->mhSimable < rhs.mhSimable)
             return true;
-        return &mTrigger < &rhs.mTrigger;
+        return &this->mTrigger < &rhs.mTrigger;
     }
 
     WTrigger &mTrigger; // offset 0x0, size 0x4
@@ -53,20 +53,20 @@ WTrigger::WTrigger(const UMath::Matrix4 &mat, const UMath::Vector3 &dimensions, 
     this->fEvents = eventList;
     this->fFlags = flags;
     this->fType = 0;
-    fPosRadius.x = mat[3][0];
-    fPosRadius.y = mat[3][1];
-    fPosRadius.z = mat[3][2];
-    fPosRadius.w = UMath::Length(dimensions);
-    fMatRow0Width.w = dimensions.x + dimensions.x;
-    fMatRow2Length.w = dimensions.z + dimensions.z;
+    this->fPosRadius.x = mat[3][0];
+    this->fPosRadius.y = mat[3][1];
+    this->fPosRadius.z = mat[3][2];
+    this->fPosRadius.w = UMath::Length(dimensions);
+    this->fMatRow0Width.w = dimensions.x + dimensions.x;
+    this->fMatRow2Length.w = dimensions.z + dimensions.z;
 }
 
 // STRIPPED
 WTrigger::WTrigger(const UMath::Matrix4 &mat, float radius, float height, CARP::EventList *eventList, unsigned int flags) {}
 
 WTrigger::~WTrigger() {
-    if ((this->fFlags & 0x100) == 0 && fEvents != nullptr) {
-        delete fEvents;
+    if ((this->fFlags & 0x100) == 0 && this->fEvents != nullptr) {
+        delete this->fEvents;
     }
     if (WTriggerManager::Exists()) {
         WTriggerManager::Get().DeleteRefs(this);
@@ -76,7 +76,7 @@ WTrigger::~WTrigger() {
 void WTrigger::FireEvents(HSIMABLE hSimable) {
     CARP::EventStaticData *event = this->fEvents->Event();
 
-    if (fEvents != nullptr) {
+    if (this->fEvents != nullptr) {
         gEventDynamicData.Clear();
         gEventDynamicData.fhSimable = reinterpret_cast<uintptr_t>(hSimable);
         gEventDynamicData.fPosition = this->fPosRadius;
@@ -92,14 +92,14 @@ void WTrigger::FireEvents(HSIMABLE hSimable) {
 }
 
 bool WTrigger::HasEvent(unsigned int eventID, const CARP::EventStaticData **foundEvent) const {
-    if (fEvents != nullptr) {
-        return EventManager::ListHasEvent(fEvents, eventID, foundEvent);
+    if (this->fEvents != nullptr) {
+        return EventManager::ListHasEvent(this->fEvents, eventID, foundEvent);
     }
     return false;
 }
 
 bool WTrigger::TestDirection(const UMath::Vector3 &vec) const {
-    return UMath::Dot(UMath::Vector4To3(fMatRow2Length), vec) >= 0.0f;
+    return UMath::Dot(UMath::Vector4To3(this->fMatRow2Length), vec) >= 0.0f;
 }
 
 void WTrigger::UpdateBox(const UMath::Matrix4 &mat, const UMath::Vector3 &dimension) {
@@ -140,11 +140,11 @@ void WTrigger::UpdateBox(const UMath::Matrix4 &mat, const UMath::Vector3 &dimens
 }
 
 bool WTrigger::UpdatePos(const UMath::Vector3 &newPos, uintptr_t triggerInd) {
-    UMath::Vector4 oldPosRad = fPosRadius;
-    fPosRadius.x = newPos.x;
-    fPosRadius.y = newPos.y;
-    fPosRadius.z = newPos.z;
-    WGridManagedDynamicElem::AddElem(&oldPosRad, &fPosRadius, WGrid_kTrigger, triggerInd);
+    UMath::Vector4 oldPosRad = this->fPosRadius;
+    this->fPosRadius.x = newPos.x;
+    this->fPosRadius.y = newPos.y;
+    this->fPosRadius.z = newPos.z;
+    WGridManagedDynamicElem::AddElem(&oldPosRad, &this->fPosRadius, WGrid_kTrigger, triggerInd);
     return true;
 }
 
@@ -154,11 +154,11 @@ WTriggerManager::WTriggerManager()
     : fSilencableEnabled(true), //
       fIterCount(0),            //
       fgFireOnExitList(nullptr) {
-    fgFireOnExitList = new FireOnExitList();
+    this->fgFireOnExitList = new FireOnExitList();
 }
 
 WTriggerManager::~WTriggerManager() {
-    delete fgFireOnExitList;
+    delete this->fgFireOnExitList;
 }
 
 void WTriggerManager::Init() {
@@ -185,7 +185,7 @@ void WTriggerManager::SubmitForFire(WTrigger &trig, HSIMABLE hSimable) {
         ISimable *iSimable = ISimable::FindInstance(hSimable);
         if (iSimable != nullptr) {
             FireOnExitRec rec(trig, hSimable);
-            fgFireOnExitList->insert(rec);
+            this->fgFireOnExitList->insert(rec);
         } else {
             trig.FireEvents(hSimable);
         }
@@ -201,7 +201,7 @@ void WTriggerManager::SubmitForFire(WTrigger &trig, HSIMABLE hSimable) {
 }
 
 void WTriggerManager::ProcessRB(IRigidBody *rBody, float dT) {
-    fIterCount++;
+    this->fIterCount++;
     unsigned int activateFlag = rBody->GetTriggerFlags();
     if (activateFlag == 0) {
         return;
@@ -222,10 +222,10 @@ void WTriggerManager::ProcessRB(IRigidBody *rBody, float dT) {
             while ((indPtr = eIter.GetIndPtr())) {
                 unsigned int ind = *indPtr;
                 WTrigger &trig = WCollisionAssets::Get().Trigger(ind);
-                if (trig.fIterStamp != fIterCount) {
-                    trig.fIterStamp = fIterCount;
-                    if (trig.IsEnabled(fSilencableEnabled) && (trig.fFlags & activateFlag) != 0 && CheckCollideRB(rBody, &trig, dT)) {
-                        SubmitForFire(trig, rBody->GetOwner()->GetInstanceHandle());
+                if (trig.fIterStamp != this->fIterCount) {
+                    trig.fIterStamp = this->fIterCount;
+                    if (trig.IsEnabled(this->fSilencableEnabled) && (trig.fFlags & activateFlag) != 0 && this->CheckCollideRB(rBody, &trig, dT)) {
+                        this->SubmitForFire(trig, rBody->GetOwner()->GetInstanceHandle());
                     }
                 }
             }
@@ -234,7 +234,7 @@ void WTriggerManager::ProcessRB(IRigidBody *rBody, float dT) {
 }
 
 void WTriggerManager::ProcessSRB(IRigidBody *srBody, float dT) {
-    fIterCount++;
+    this->fIterCount++;
     unsigned int activateFlag = srBody->GetTriggerFlags();
     if (activateFlag == 0) {
         return;
@@ -416,7 +416,7 @@ inline float DistanceSquared_XZ(const UMath::Vector3 &a, const UMath::Vector3 &b
 
 void WTriggerManager::GetIntersectingTriggers(const UMath::Vector3 &pt, float radius, WTriggerList *triggerList) const {
     UTL::FastVector<unsigned int, 16> nodeInds;
-    fIterCount++;
+    this->fIterCount++;
     nodeInds.reserve(0x40);
     const WGrid &grid = WGrid::Get();
     grid.FindNodes(pt, radius, nodeInds);
@@ -427,8 +427,8 @@ void WTriggerManager::GetIntersectingTriggers(const UMath::Vector3 &pt, float ra
             while (const unsigned int *indPtr = eIter.GetIndPtr()) {
                 unsigned int ind = *indPtr;
                 WTrigger &trig = WCollisionAssets::Get().Trigger(ind);
-                if (trig.fIterStamp != fIterCount) {
-                    trig.fIterStamp = fIterCount;
+                if (trig.fIterStamp != this->fIterCount) {
+                    trig.fIterStamp = this->fIterCount;
                     if (DistanceSquared_XZ(pt, UMath::Vector4To3(trig.fPosRadius)) < (radius + trig.fPosRadius.w) * (radius + trig.fPosRadius.w)) {
                         triggerList->push_back(&trig);
                     }
@@ -439,15 +439,15 @@ void WTriggerManager::GetIntersectingTriggers(const UMath::Vector3 &pt, float ra
 }
 
 void WTriggerManager::DeleteRefs(const WTrigger *trig) {
-    std::set<FireOnExitRec>::const_iterator iter = fgFireOnExitList->begin();
-    while (iter != fgFireOnExitList->end()) {
+    std::set<FireOnExitRec>::const_iterator iter = this->fgFireOnExitList->begin();
+    while (iter != this->fgFireOnExitList->end()) {
         const FireOnExitRec &rec = *iter;
         if (trig == &rec.mTrigger) {
             std::set<FireOnExitRec>::const_iterator newlocation = iter;
             ++newlocation;
-            fgFireOnExitList->erase(iter);
+            this->fgFireOnExitList->erase(iter);
             iter = newlocation;
-            if (iter == fgFireOnExitList->end()) {
+            if (iter == this->fgFireOnExitList->end()) {
                 return;
             }
         }
@@ -456,25 +456,25 @@ void WTriggerManager::DeleteRefs(const WTrigger *trig) {
 }
 
 void WTriggerManager::ClearAllFireOnExit() {
-    if (fgFireOnExitList != nullptr) {
-        fgFireOnExitList->clear();
+    if (this->fgFireOnExitList != nullptr) {
+        this->fgFireOnExitList->clear();
     }
 }
 
 void WTriggerManager::Update(float dT) {
-    fProcessingStimulus = 1;
+    this->fProcessingStimulus = 1;
     IRigidBody *const *enditer = IRigidBody::GetList().end();
     for (IRigidBody *const *iter = IRigidBody::GetList().begin(); iter != enditer; ++iter) {
         IRigidBody *rigidBody = *iter;
         if (rigidBody->IsSimple()) {
-            ProcessSRB(rigidBody, dT);
+            this->ProcessSRB(rigidBody, dT);
         } else {
-            ProcessRB(rigidBody, dT);
+            this->ProcessRB(rigidBody, dT);
         }
     }
-    fProcessingStimulus = 2;
-    std::set<FireOnExitRec>::const_iterator iter = fgFireOnExitList->begin();
-    while (iter != fgFireOnExitList->end()) {
+    this->fProcessingStimulus = 2;
+    std::set<FireOnExitRec>::const_iterator iter = this->fgFireOnExitList->begin();
+    while (iter != this->fgFireOnExitList->end()) {
         const FireOnExitRec &rec = *iter;
         ISimable *iSimable = ISimable::FindInstance(rec.mhSimable);
         if (iSimable != nullptr) {
@@ -482,9 +482,9 @@ void WTriggerManager::Update(float dT) {
             if (iRigidBody != nullptr) {
                 bool result;
                 if (iRigidBody->IsSimple()) {
-                    result = CheckCollideSRB(iRigidBody, &rec.mTrigger, dT);
+                    result = this->CheckCollideSRB(iRigidBody, &rec.mTrigger, dT);
                 } else {
-                    result = CheckCollideRB(iRigidBody, &rec.mTrigger, dT);
+                    result = this->CheckCollideRB(iRigidBody, &rec.mTrigger, dT);
                 }
                 if (result == true) {
                     ++iter;
@@ -495,9 +495,9 @@ void WTriggerManager::Update(float dT) {
         }
         std::set<FireOnExitRec>::const_iterator newlocation = iter;
         ++newlocation;
-        fgFireOnExitList->erase(iter);
+        this->fgFireOnExitList->erase(iter);
         iter = newlocation;
-        if (iter == fgFireOnExitList->end()) {
+        if (iter == this->fgFireOnExitList->end()) {
             return;
         }
     }

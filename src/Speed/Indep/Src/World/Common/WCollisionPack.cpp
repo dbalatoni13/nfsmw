@@ -32,7 +32,7 @@ void WCollisionPack::Init(bChunk *chunk) {
 
         if (this->mCarpChunkHeader->IsResolved()) {
             deltaRelocationOffset =
-                reinterpret_cast<uintptr_t>(this->mCarpChunkHeader) - reinterpret_cast<uintptr_t>(mCarpChunkHeader->GetLastAddress());
+                reinterpret_cast<uintptr_t>(this->mCarpChunkHeader) - reinterpret_cast<uintptr_t>(this->mCarpChunkHeader->GetLastAddress());
         }
 
         const UGroup *carpGroup;
@@ -44,7 +44,7 @@ void WCollisionPack::Init(bChunk *chunk) {
         }
 
         this->Resolve(carpGroup->GroupLocate(MAKE_UDATA_TYPE('Ar'), 'ti'), 0);
-        this->mCarpChunkHeader->SetLastAddress(mCarpChunkHeader);
+        this->mCarpChunkHeader->SetLastAddress(this->mCarpChunkHeader);
         this->mCarpChunkHeader->SetResolved();
     }
 }
@@ -89,8 +89,8 @@ void WCollisionPack::Resolve(const UGroup *cGroup, unsigned int deltaAddress) {
         this->mObjectNum = 0;
     }
 
-    for (unsigned int i = 0; i < mInstanceNum; ++i) {
-        const WCollisionInstance *cInst = &mInstanceList[i];
+    for (unsigned int i = 0; i < this->mInstanceNum; ++i) {
+        const WCollisionInstance *cInst = &this->mInstanceList[i];
         if (deltaAddress == 0) {
             const UData *articleUData = cGroup->DataLocate('ca  ', cInst->fRenderInstanceInd);
             WCollisionArticle *cArt;

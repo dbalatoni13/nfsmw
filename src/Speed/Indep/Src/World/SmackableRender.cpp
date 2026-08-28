@@ -52,7 +52,7 @@ class SmackableRenderConn : public Sim::Connection, public bTNode<SmackableRende
 };
 
 SmackableRenderConn::SmackableRenderConn(const Sim::ConnectionData &data)
-    : Sim::Connection(data), mModelHash(), mTarget((*reinterpret_cast<unsigned int *>(&mModelHash) = 0, 0)), mModel(nullptr), mLOD(0),
+    : Sim::Connection(data), mModelHash(), mTarget((*reinterpret_cast<unsigned int *>(&this->mModelHash) = 0, 0)), mModel(nullptr), mLOD(0),
       mModelOffset(bVector4(0.0f, 0.0f, 0.0f, 0.0f)) {
     this->mList.AddTail(this);
 

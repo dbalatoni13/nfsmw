@@ -29,12 +29,12 @@ VehicleFragmentConn::VehicleFragmentConn(const Sim::ConnectionData &data)
     TheVehcileFrags.AddTail(this);
 
     RenderConn::Pkt_VehicleFragment_Open *oc = static_cast<RenderConn::Pkt_VehicleFragment_Open *>(data.pkt);
-    mTarget.Set(oc->mWorldID);
-    mVehicleWorldID = oc->mVehicleWorldID;
-    mPartSlot = static_cast<CAR_PART_ID>(GetCarPartIDFromCrc(oc->mPartName));
-    mColName = oc->mColName;
+    this->mTarget.Set(oc->mWorldID);
+    this->mVehicleWorldID = oc->mVehicleWorldID;
+    this->mPartSlot = static_cast<CAR_PART_ID>(GetCarPartIDFromCrc(oc->mPartName));
+    this->mColName = oc->mColName;
 
-    bIdentity(&mModelOffset);
+    bIdentity(&this->mModelOffset);
 }
 
 void VehicleFragmentConn::UpdateModel() {
@@ -130,24 +130,24 @@ VehicleFragmentConn::~VehicleFragmentConn() {
 void VehicleFragmentConn::Update(float dT) {
     bool inview = false;
 
-    if (mModel != nullptr) {
-        if (mModel->GetLastVisibleFrame() >= mModel->GetLastRenderFrame() && mModel->GetLastRenderFrame() != 0) {
+    if (this->mModel != nullptr) {
+        if (this->mModel->GetLastVisibleFrame() >= this->mModel->GetLastRenderFrame() && this->mModel->GetLastRenderFrame() != 0) {
             inview = true;
         }
     }
 
     float disttoview;
-    if (mModel != nullptr) {
-        disttoview = mModel->DistanceToGameView();
+    if (this->mModel != nullptr) {
+        disttoview = this->mModel->DistanceToGameView();
     } else {
         disttoview = 0.0f;
     }
 
     RenderConn::Pkt_VehicleFragment_Service pkt(inview, disttoview);
-    if (Service(&pkt)) {
+    if (this->Service(&pkt)) {
         this->UpdateModel();
-    } else if (mModel != nullptr) {
-        mModel->SetEnabledFlag(false);
+    } else if (this->mModel != nullptr) {
+        this->mModel->SetEnabledFlag(false);
     }
 }
 

@@ -417,11 +417,11 @@ int WCollisionMgr::CheckHitWorld(const UMath::Vector4 *inputSeg, WorldCollisionI
         instList.reserve(0x40);
 
         this->fPrimitiveMask = primMask;
-        GetInstanceList(instList, seg);
+        this->GetInstanceList(instList, seg);
         this->fPrimitiveMask = 3;
 
         if (primMask & 2) {
-            bool hitBarrier = GetBarrierNormal(instList, seg, cInfo);
+            bool hitBarrier = this->GetBarrierNormal(instList, seg, cInfo);
             if (hitBarrier) {
                 hitWorld = 2;
             }
@@ -1012,7 +1012,7 @@ void WCollisionMgr::GetBarrierList(WCollisionBarrierList &barrierList, const WCo
     for (WCollisionInstanceCacheList::const_iterator iIter = instList.begin(); iIter != instList.end(); ++iIter) {
         const WCollisionInstance &cInst = **iIter;
 
-        if (!InstancePassesExclusion(cInst))
+        if (!this->InstancePassesExclusion(cInst))
             continue;
 
         const WCollisionArticle *cArt = cInst.fCollisionArticle;
@@ -1096,24 +1096,24 @@ struct AABB {
     bVector2 mMax;
 
     AABB(const UMath::Vector3 &pt, float radius) {
-        mMin.x = pt.x - radius;
-        mMin.y = pt.z - radius;
-        mMax.x = pt.x + radius;
-        mMax.y = pt.z + radius;
+        this->mMin.x = pt.x - radius;
+        this->mMin.y = pt.z - radius;
+        this->mMax.x = pt.x + radius;
+        this->mMax.y = pt.z + radius;
     }
 
     AABB(const UMath::Vector3 &pt1, const UMath::Vector3 &pt2, const UMath::Vector3 &pt3) {
-        mMin.x = bMin(pt3.x, bMin(pt1.x, pt2.x));
-        mMin.y = bMin(pt3.z, bMin(pt1.z, pt2.z));
-        mMax.x = bMax(pt3.x, bMax(pt1.x, pt2.x));
-        mMax.y = bMax(pt3.z, bMax(pt1.z, pt2.z));
+        this->mMin.x = bMin(pt3.x, bMin(pt1.x, pt2.x));
+        this->mMin.y = bMin(pt3.z, bMin(pt1.z, pt2.z));
+        this->mMax.x = bMax(pt3.x, bMax(pt1.x, pt2.x));
+        this->mMax.y = bMax(pt3.z, bMax(pt1.z, pt2.z));
     }
 
     bool Overlap(const AABB &test) {
-        if ((test.mMin.x > mMax.x) || (test.mMin.y > mMax.y) || (test.mMax.x < mMin.x)) {
+        if ((test.mMin.x > this->mMax.x) || (test.mMin.y > this->mMax.y) || (test.mMax.x < this->mMin.x)) {
             return false;
         } else {
-            return test.mMax.y >= mMin.y;
+            return test.mMax.y >= this->mMin.y;
         }
     }
 };

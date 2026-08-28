@@ -100,7 +100,7 @@ void SpaceNode::Update() {
         bCopy(&this->WorldVelocity, &this->LocalVelocity);
     }
 
-    Dirty = 0;
+    this->Dirty = 0;
 }
 
 // STRIPPED

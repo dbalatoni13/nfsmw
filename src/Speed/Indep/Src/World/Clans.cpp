@@ -77,14 +77,14 @@ void RenderClans(eView *view) {
 }
 
 Clan::Clan(bVector3 *position, uint32 hash) {
-    Position = *position;
-    Hash = hash;
-    bInitializeBoundingBox(&BBoxMin, &BBoxMax, position);
+    this->Position = *position;
+    this->Hash = hash;
+    bInitializeBoundingBox(&this->BBoxMin, &this->BBoxMax, position);
 }
 
 Clan::~Clan() {
-    while (!SkidSetList.IsEmpty()) {
-        bPNode *p = SkidSetList.GetHead();
+    while (!this->SkidSetList.IsEmpty()) {
+        bPNode *p = this->SkidSetList.GetHead();
         SkidSet *skid_set = static_cast<SkidSet *>(p->GetObject());
         DeleteThisSkid(skid_set);
     }

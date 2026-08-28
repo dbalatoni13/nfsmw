@@ -24,9 +24,9 @@ int WWorld::Loader(bChunk *chunk) {
     if (chunk->GetID() != BCHUNK_UPPLE_UWORLD) {
         return 0;
     }
-    fCarpData = chunk->GetAlignedData(16);
-    fCarpDataSize = chunk->GetAlignedSize(16);
-    Open();
+    this->fCarpData = chunk->GetAlignedData(16);
+    this->fCarpDataSize = chunk->GetAlignedSize(16);
+    this->Open();
     return 1;
 }
 
@@ -34,8 +34,8 @@ int WWorld::Unloader(bChunk *chunk) {
     if (chunk->GetID() != BCHUNK_UPPLE_UWORLD) {
         return 0;
     }
-    fCarpData = nullptr;
-    fCarpDataSize = 0;
+    this->fCarpData = nullptr;
+    this->fCarpDataSize = 0;
     return 1;
 }
 
@@ -60,17 +60,17 @@ bool WWorld::Open() {
     sources[1] = nullptr;
     sizes[2] = 0;
     sizes[1] = 0;
-    sources[0] = fCarpData;
-    sizes[0] = fCarpDataSize;
+    sources[0] = this->fCarpData;
+    sizes[0] = this->fCarpDataSize;
     const UGroup *persistentGroup = UGroup::Deserialize(1, reinterpret_cast<const unsigned int *>(sizes), sources, 0);
     CARP::ResolveTagReferences(persistentGroup, 0);
     WCollisionAssets::Init(persistentGroup, nullptr);
-    fRootWorldGroup = persistentGroup;
+    this->fRootWorldGroup = persistentGroup;
 
     {
         unsigned int artCount = persistentGroup->GroupCountType('Arti');
         const struct UData *foundSbUData;
-        const UGroup *article = fRootWorldGroup->GroupLocateFirst('Arti', 0xFFFFFFFF, 0xFFFFFFFF);
+        const UGroup *article = this->fRootWorldGroup->GroupLocateFirst('Arti', 0xFFFFFFFF, 0xFFFFFFFF);
 
         for (unsigned int artInd = 0; artInd < artCount; artInd++) {
             const UData *sbUData = article->DataLocate(MAKE_UDATA_TYPE('SB'), 'ar');
@@ -79,7 +79,7 @@ bool WWorld::Open() {
         }
     }
 
-    return fRootWorldGroup != nullptr;
+    return this->fRootWorldGroup != nullptr;
 }
 
 void WWorld::Close() {

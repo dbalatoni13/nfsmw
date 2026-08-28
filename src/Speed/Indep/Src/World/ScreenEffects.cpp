@@ -29,32 +29,32 @@ extern TrackPathZone *zoneB[2];
 void InitScreenEFX();
 
 ScreenEffectDB::ScreenEffectDB() {
-    SE_time = 0.0f;
+    this->SE_time = 0.0f;
     for (int i = 0; i < SE_NUM_TYPES; i++) {
-        SE_inf[i].active = 0;
-        SE_data[i].r = 0.0f;
-        SE_data[i].g = 0.0f;
-        SE_data[i].b = 0.0f;
-        SE_data[i].a = 0.0f;
+        this->SE_inf[i].active = 0;
+        this->SE_data[i].r = 0.0f;
+        this->SE_data[i].g = 0.0f;
+        this->SE_data[i].b = 0.0f;
+        this->SE_data[i].a = 0.0f;
         for (int j = 0; j < 14; j++) {
-            SE_data[i].data[j] = 0.0f;
+            this->SE_data[i].data[j] = 0.0f;
         }
-        SE_data[i].intensity = 0.0f;
-        SE_data[i].UpdateFnc = nullptr;
-        numType[i] = 0;
+        this->SE_data[i].intensity = 0.0f;
+        this->SE_data[i].UpdateFnc = nullptr;
+        this->numType[i] = 0;
     }
     InitScreenEFX();
 }
 void ScreenEffectDB::Update(float deltatime) {
-    SE_time += deltatime;
+    this->SE_time += deltatime;
 
     for (int i = 0; i < SE_NUM_TYPES; i++) {
-        if (IsActive(static_cast<ScreenEffectType>(i)) == 1) {
-            SE_inf[i].frameNum++;
-            switch (GetController(static_cast<ScreenEffectType>(i))) {
+        if (this->IsActive(static_cast<ScreenEffectType>(i)) == 1) {
+            this->SE_inf[i].frameNum++;
+            switch (this->GetController(static_cast<ScreenEffectType>(i))) {
                 case SEC_FRAME:
                 case SEC_FUNCTION:
-                    RemoveScreenEffect(static_cast<ScreenEffectType>(i));
+                    this->RemoveScreenEffect(static_cast<ScreenEffectType>(i));
                     break;
                 default:
                     break;
@@ -71,46 +71,46 @@ void ScreenEffectDB::AddScreenEffect(ScreenEffectType type, float intensity, flo
     info.g = g;
     info.b = b;
     info.UpdateFnc = nullptr;
-    AddScreenEffect(type, &info, 1, SEC_FRAME);
+    this->AddScreenEffect(type, &info, 1, SEC_FRAME);
 }
 
 void ScreenEffectDB::AddScreenEffect(ScreenEffectType type, ScreenEffectDef *info, unsigned int lock, ScreenEffectControl controller) {
     if (lock != 0) {
         if (info != nullptr) {
-            SE_data[type] = *info;
+            this->SE_data[type] = *info;
         }
-        numType[type] = 1;
+        this->numType[type] = 1;
     } else {
-        numType[type]++;
-        float influence = static_cast<float>(numType[type]) / static_cast<float>(numType[type] + 1);
+        this->numType[type]++;
+        float influence = static_cast<float>(this->numType[type]) / static_cast<float>(this->numType[type] + 1);
         float invFluence = 1.0f - influence;
 
-        SE_data[type].r = influence * SE_data[type].r + invFluence * info->r;
-        SE_data[type].g = influence * SE_data[type].g + invFluence * info->g;
-        SE_data[type].b = influence * SE_data[type].b + invFluence * info->b;
-        SE_data[type].a = influence * SE_data[type].a + invFluence * info->a;
-        SE_data[type].intensity = influence * SE_data[type].intensity + invFluence * info->intensity;
+        this->SE_data[type].r = influence * this->SE_data[type].r + invFluence * info->r;
+        this->SE_data[type].g = influence * this->SE_data[type].g + invFluence * info->g;
+        this->SE_data[type].b = influence * this->SE_data[type].b + invFluence * info->b;
+        this->SE_data[type].a = influence * this->SE_data[type].a + invFluence * info->a;
+        this->SE_data[type].intensity = influence * this->SE_data[type].intensity + invFluence * info->intensity;
     }
 
-    SE_inf[type].active = 1;
-    if (SE_data[type].UpdateFnc != nullptr) {
-        SE_data[type].UpdateFnc(type, this);
+    this->SE_inf[type].active = 1;
+    if (this->SE_data[type].UpdateFnc != nullptr) {
+        this->SE_data[type].UpdateFnc(type, this);
     } else {
-        SetController(type, controller);
+        this->SetController(type, controller);
     }
 
-    if (SE_data[type].intensity < 0.01f) {
-        SE_inf[type].active = 0;
+    if (this->SE_data[type].intensity < 0.01f) {
+        this->SE_inf[type].active = 0;
     }
 }
 
 void ScreenEffectDB::AddPaletteEffect(ScreenEffectPalette palette) {
-    AddPaletteEffect(&SE_PaletteFile[palette]);
+    this->AddPaletteEffect(&SE_PaletteFile[palette]);
 }
 
 void ScreenEffectDB::AddPaletteEffect(ScreenEffectPaletteDef *palette) {
     for (int i = 0; i < palette->NumEffects; i++) {
-        AddScreenEffect(palette->SE_type[i], &palette->SE_Def[i], 1, palette->SE_Controller[i]);
+        this->AddScreenEffect(palette->SE_type[i], &palette->SE_Def[i], 1, palette->SE_Controller[i]);
     }
 }
 

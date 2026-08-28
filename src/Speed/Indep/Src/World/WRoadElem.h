@@ -46,7 +46,7 @@
 // total size: 0x8
 struct WRoad {
     float GetScale() const {
-        unsigned int s = static_cast<unsigned int>(nScale) << 8;
+        unsigned int s = static_cast<unsigned int>(this->nScale) << 8;
         return static_cast<float>(s) * (1.0f / 65536.0f);
     }
 
@@ -81,15 +81,15 @@ struct WRoadNetworkInfo {
 // total size: 0x4
 struct WRoadLane {
     int GetType() const {
-        return GetBits(0, 4);
+        return this->GetBits(0, 4);
     }
 
     float GetWidth() const {
-        return static_cast<float>(GetBitsSigned(4, 14)) * (100.0f / 8191.0f);
+        return static_cast<float>(this->GetBitsSigned(4, 14)) * (100.0f / 8191.0f);
     }
 
     float GetOffset() const {
-        return static_cast<float>(GetBitsSigned(18, 14)) * (100.0f / 8191.0f);
+        return static_cast<float>(this->GetBitsSigned(18, 14)) * (100.0f / 8191.0f);
     }
 
   private:
@@ -104,58 +104,58 @@ struct WRoadLane {
 // total size: 0x40
 struct WRoadProfile {
     int GetMiddleZone(bool inverted) const {
-        return inverted ? (fNumZones - fMiddleZone) : fMiddleZone;
+        return inverted ? (this->fNumZones - this->fMiddleZone) : this->fMiddleZone;
     }
 
     int GetLaneNumber(int lane, bool inverted) const {
-        return inverted ? fNumZones - lane - 1 : lane;
+        return inverted ? this->fNumZones - lane - 1 : lane;
     }
 
     float GetLaneWidth(int lane, bool inverted) const {
-        return mLanes[GetLaneNumber(lane, inverted)].GetWidth();
+        return this->mLanes[this->GetLaneNumber(lane, inverted)].GetWidth();
     }
 
     float GetLaneOffset(int lane, bool inverted) const {
-        return mLanes[GetLaneNumber(lane, inverted)].GetOffset();
+        return this->mLanes[this->GetLaneNumber(lane, inverted)].GetOffset();
     }
 
     int GetLaneType(int lane, bool inverted) const {
-        return mLanes[GetLaneNumber(lane, inverted)].GetType();
+        return this->mLanes[this->GetLaneNumber(lane, inverted)].GetType();
     }
 
     float GetRawLaneOffset(int lane) const {
-        return GetLaneOffset(lane, false);
+        return this->GetLaneOffset(lane, false);
     }
 
     float GetRawLaneWidth(int lane) const {
-        return GetLaneWidth(lane, false);
+        return this->GetLaneWidth(lane, false);
     }
 
     float GetRelativeLaneOffset(int lane, bool inverted) const {
-        int real_middle = GetMiddleZone(inverted);
-        float offset = GetLaneOffset(lane, inverted);
+        int real_middle = this->GetMiddleZone(inverted);
+        float offset = this->GetLaneOffset(lane, inverted);
 
         return lane < real_middle ? -offset : offset;
     }
 
     int GetNumForwardLanes() const {
-        return fNumZones - fMiddleZone;
+        return this->fNumZones - this->fMiddleZone;
     }
 
     int GetNumBackwardLanes() const {
-        return fNumZones - GetNumForwardLanes();
+        return this->fNumZones - this->GetNumForwardLanes();
     }
 
     int GetNthForwardLane(int n) const {
-        int ret = fMiddleZone + n;
-        if (ret >= fNumZones) {
-            ret = fNumZones - 1;
+        int ret = this->fMiddleZone + n;
+        if (ret >= this->fNumZones) {
+            ret = this->fNumZones - 1;
         }
         return ret;
     }
 
     int GetNthBackwardLane(int n) const {
-        int ret = fMiddleZone - 1 - n;
+        int ret = this->fMiddleZone - 1 - n;
         if (ret < 0) {
             ret = 0;
         }
@@ -164,33 +164,33 @@ struct WRoadProfile {
 
     int GetNumTrafficLanes(bool forward) const;
     int GetNumTrafficLanes(bool forward, bool inverted) const {
-        return GetNumTrafficLanes(forward ^ inverted);
+        return this->GetNumTrafficLanes(forward ^ inverted);
     }
 
     int GetNthTrafficLane(int n, bool forward) const;
     int GetNthTrafficLane(int n, bool forward, bool inverted) const {
-        return GetNthTrafficLane(n, forward ^ inverted);
+        return this->GetNthTrafficLane(n, forward ^ inverted);
     }
 
     int GetNthTrafficLaneFromCurb(int n, bool forward) const;
     int GetNthTrafficLaneFromCurb(int n, bool forward, bool inverted) const {
-        return GetNthTrafficLaneFromCurb(n, forward ^ inverted);
+        return this->GetNthTrafficLaneFromCurb(n, forward ^ inverted);
     }
 
     int GetNumLanes(bool forward) const {
-        return forward ? GetNumForwardLanes() : GetNumBackwardLanes();
+        return forward ? this->GetNumForwardLanes() : this->GetNumBackwardLanes();
     }
 
     int GetNthLane(int n, bool forward) const {
-        return forward ? GetNthForwardLane(n) : GetNthBackwardLane(n);
+        return forward ? this->GetNthForwardLane(n) : this->GetNthBackwardLane(n);
     }
 
     int GetNthLane(int n, bool forward, bool inverted) const {
-        return GetNthLane(n, forward ^ inverted);
+        return this->GetNthLane(n, forward ^ inverted);
     }
 
     int GetNumLanes(bool forward, bool inverted) const {
-        return GetNumLanes(forward ^ inverted);
+        return this->GetNumLanes(forward ^ inverted);
     }
 
     unsigned char fNumZones;   // offset 0x0, size 0x1
@@ -221,121 +221,121 @@ static const unsigned short kRoadSegmentInRace = 1 << 15;
 // total size: 0x16
 struct WRoadSegment {
     bool IsDecision() const {
-        return (fFlags & kRoadSegmentDecision) != 0;
+        return (this->fFlags & kRoadSegmentDecision) != 0;
     }
 
     bool IsEntrance() const {
-        return (fFlags & kRoadSegmentEntrance) != 0;
+        return (this->fFlags & kRoadSegmentEntrance) != 0;
     }
 
     bool CopsXorTraffic() const {
-        return (fFlags & kRoadSegmentCopsXorTraffic) != 0;
+        return (this->fFlags & kRoadSegmentCopsXorTraffic) != 0;
     }
 
     bool IsTrafficAllowed() const {
-        return (fFlags & kRoadSegmentNoTraffic) == 0;
+        return (this->fFlags & kRoadSegmentNoTraffic) == 0;
     }
 
     bool ShouldCopsConsider() const {
-        return IsTrafficAllowed() ^ CopsXorTraffic();
+        return this->IsTrafficAllowed() ^ this->CopsXorTraffic();
     }
 
     bool RaceRouteForward() const {
-        return (fFlags & kRoadSegmentRaceRouteForward) != 0;
+        return (this->fFlags & kRoadSegmentRaceRouteForward) != 0;
     }
 
     void SetRaceRouteForward(bool forward) {
         if (forward) {
-            fFlags |= kRoadSegmentRaceRouteForward;
+            this->fFlags |= kRoadSegmentRaceRouteForward;
         } else {
-            fFlags &= ~kRoadSegmentRaceRouteForward;
+            this->fFlags &= ~kRoadSegmentRaceRouteForward;
         }
     }
 
     bool ShouldChopperStayLow() const {
-        return (fFlags & kRoadSegmentChopperStayLow) != 0;
+        return (this->fFlags & kRoadSegmentChopperStayLow) != 0;
     }
 
     bool CrossesBarrier() const {
-        return (fFlags & kRoadSegmentCrossesBarrier) != 0;
+        return (this->fFlags & kRoadSegmentCrossesBarrier) != 0;
     }
 
     bool CrossesDriveThroughBarrier() const {
-        return (fFlags & kRoadSegmentCrossesDriveThroughBarrier) != 0;
+        return (this->fFlags & kRoadSegmentCrossesDriveThroughBarrier) != 0;
     }
 
     bool CrossesBarrier(bool player) const {
-        bool ret = CrossesBarrier();
+        bool ret = this->CrossesBarrier();
         if (player) {
-            ret |= CrossesDriveThroughBarrier();
+            ret |= this->CrossesDriveThroughBarrier();
         }
         return ret;
     }
 
     void SetCrossesBarrier(bool violates) {
         if (violates) {
-            fFlags |= kRoadSegmentCrossesBarrier;
+            this->fFlags |= kRoadSegmentCrossesBarrier;
         } else {
-            fFlags &= ~kRoadSegmentCrossesBarrier;
+            this->fFlags &= ~kRoadSegmentCrossesBarrier;
         }
     }
 
     void SetCrossesDriveThroughBarrier(bool violates) {
         if (violates) {
-            fFlags |= kRoadSegmentCrossesDriveThroughBarrier;
+            this->fFlags |= kRoadSegmentCrossesDriveThroughBarrier;
         } else {
-            fFlags &= ~kRoadSegmentCrossesDriveThroughBarrier;
+            this->fFlags &= ~kRoadSegmentCrossesDriveThroughBarrier;
         }
     }
 
     float GetLength() const {
-        return static_cast<float>(nLength) * (1000.0f / 65535.0f);
+        return static_cast<float>(this->nLength) * (1000.0f / 65535.0f);
     }
 
     void SetLength(float length) {
-        nLength = static_cast<unsigned short>(length);
+        this->nLength = static_cast<unsigned short>(length);
     }
 
     bool IsInRace() const {
-        return (fFlags & kRoadSegmentInRace) != 0;
+        return (this->fFlags & kRoadSegmentInRace) != 0;
     }
 
     void SetInRace(bool in_race) {
         if (in_race) {
-            fFlags |= kRoadSegmentInRace;
+            this->fFlags |= kRoadSegmentInRace;
         } else {
-            fFlags &= ~kRoadSegmentInRace;
+            this->fFlags &= ~kRoadSegmentInRace;
         }
     }
 
     bool IsShortcut() const {
-        return (fFlags & kRoadSegmentShortcut) != 0;
+        return (this->fFlags & kRoadSegmentShortcut) != 0;
     }
 
     void SetShortcut(bool shortcut) {
         if (shortcut) {
-            fFlags |= kRoadSegmentShortcut;
+            this->fFlags |= kRoadSegmentShortcut;
         } else {
-            fFlags &= ~kRoadSegmentShortcut;
+            this->fFlags &= ~kRoadSegmentShortcut;
         }
     }
 
     bool IsOneWay() const {
-        return (fFlags & kRoadSegmentOneWay) != 0;
+        return (this->fFlags & kRoadSegmentOneWay) != 0;
     }
 
     // void SetOneWay(bool one_way) {}
 
     bool IsEndInverted() const {
-        return (fFlags & kRoadSegmentEndInverted) != 0;
+        return (this->fFlags & kRoadSegmentEndInverted) != 0;
     }
 
     bool IsStartInverted() const {
-        return (fFlags & kRoadSegmentStartInverted) != 0;
+        return (this->fFlags & kRoadSegmentStartInverted) != 0;
     }
 
     bool IsProfileInverted(int which_end) const {
-        return which_end == 0 ? IsStartInverted() : IsEndInverted();
+        return which_end == 0 ? this->IsStartInverted() : this->IsEndInverted();
     }
 
     // void SetEndInverted(bool inverted) {}
@@ -345,25 +345,25 @@ struct WRoadSegment {
     // void SetProfileInverted(int which_end, bool inverted) {}
 
     void GetEndControl(UMath::Vector3 &v) const {
-        float scale = static_cast<float>(fEndHandleLength) * (500.0f / (127.0f * 65535.0f));
-        float x = scale * vEndHandle[0];
-        float y = scale * vEndHandle[1];
-        float z = scale * vEndHandle[2];
+        float scale = static_cast<float>(this->fEndHandleLength) * (500.0f / (127.0f * 65535.0f));
+        float x = scale * this->vEndHandle[0];
+        float y = scale * this->vEndHandle[1];
+        float z = scale * this->vEndHandle[2];
         v = UMath::Vector3Make(x, y, z);
     }
 
     void GetStartControl(UMath::Vector3 &v) const {
-        float scale = static_cast<float>(fStartHandleLength) * (500.0f / (127.0f * 65535.0f));
-        float x = scale * vStartHandle[0];
-        float y = scale * vStartHandle[1];
-        float z = scale * vStartHandle[2];
+        float scale = static_cast<float>(this->fStartHandleLength) * (500.0f / (127.0f * 65535.0f));
+        float x = scale * this->vStartHandle[0];
+        float y = scale * this->vStartHandle[1];
+        float z = scale * this->vStartHandle[2];
         v = UMath::Vector3Make(x, y, z);
     }
 
     void GetEndRightVec(UMath::Vector3 &v) const {
         const float scale = -1.0f / 127.0f;
-        float x = vEndHandle[0];
-        float z = vEndHandle[2];
+        float x = this->vEndHandle[0];
+        float z = this->vEndHandle[2];
         v = UMath::Vector3Make(scale * z, 0.0f, -scale * x);
     }
 
@@ -371,8 +371,8 @@ struct WRoadSegment {
 
     void GetStartRightVec(UMath::Vector3 &v) const {
         const float scale = 1.0f / 127.0f;
-        float x = vStartHandle[0];
-        float z = vStartHandle[2];
+        float x = this->vStartHandle[0];
+        float z = this->vStartHandle[2];
         v = UMath::Vector3Make(scale * z, 0.0f, -scale * x);
     }
 
@@ -380,39 +380,39 @@ struct WRoadSegment {
 
     void GetEndForwardVec(UMath::Vector2 &v) const {
         const float scale = -1.0f / 127.0f;
-        float x = vEndHandle[0];
-        float z = vEndHandle[2];
+        float x = this->vEndHandle[0];
+        float z = this->vEndHandle[2];
         v = UMath::Vector2Make(scale * x, scale * z);
     }
 
     void GetStartForwardVec(UMath::Vector2 &v) const {
         const float scale = 1.0f / 127.0f;
-        float x = scale * static_cast<float>(vStartHandle[0]);
-        float z = scale * static_cast<float>(vStartHandle[2]);
+        float x = scale * static_cast<float>(this->vStartHandle[0]);
+        float z = scale * static_cast<float>(this->vStartHandle[2]);
         v = UMath::Vector2Make(x, z);
     }
 
     void GetEndForwardVec(UMath::Vector3 &v) const {
         const float scale = -1.0f / 127.0f;
-        float x = scale * static_cast<float>(vEndHandle[0]);
-        float y = scale * static_cast<float>(vEndHandle[1]);
-        float z = scale * static_cast<float>(vEndHandle[2]);
+        float x = scale * static_cast<float>(this->vEndHandle[0]);
+        float y = scale * static_cast<float>(this->vEndHandle[1]);
+        float z = scale * static_cast<float>(this->vEndHandle[2]);
         v = UMath::Vector3Make(x, y, z);
     }
 
     void GetStartForwardVec(UMath::Vector3 &v) const {
         const float scale = 1.0f / 127.0f;
-        float x = scale * static_cast<float>(vStartHandle[0]);
-        float y = scale * static_cast<float>(vStartHandle[1]);
-        float z = scale * static_cast<float>(vStartHandle[2]);
+        float x = scale * static_cast<float>(this->vStartHandle[0]);
+        float y = scale * static_cast<float>(this->vStartHandle[1]);
+        float z = scale * static_cast<float>(this->vStartHandle[2]);
         v = UMath::Vector3Make(x, y, z);
     }
 
     void GetControl(int which_end, UMath::Vector3 &v) const {
         if (which_end == 0) {
-            GetStartControl(v);
+            this->GetStartControl(v);
         } else {
-            GetEndControl(v);
+            this->GetEndControl(v);
         }
     }
 
@@ -420,25 +420,25 @@ struct WRoadSegment {
 
     void GetRightVec(int which_end, UMath::Vector3 &v) const {
         if (which_end == 0) {
-            GetStartRightVec(v);
+            this->GetStartRightVec(v);
         } else {
-            GetEndRightVec(v);
+            this->GetEndRightVec(v);
         }
     }
 
     void GetForwardVec(int which_end, UMath::Vector3 &v) const {
         if (which_end == 0) {
-            GetStartForwardVec(v);
+            this->GetStartForwardVec(v);
         } else {
-            GetEndForwardVec(v);
+            this->GetEndForwardVec(v);
         }
     }
 
     void GetForwardVec(int which_end, UMath::Vector2 &v) const {
         if (which_end == 0) {
-            GetStartForwardVec(v);
+            this->GetStartForwardVec(v);
         } else {
-            GetEndForwardVec(v);
+            this->GetEndForwardVec(v);
         }
     }
 
@@ -470,8 +470,8 @@ struct WRoadSegment {
 // total size: 0x20
 struct WRoadNode {
     bool IsSegment(unsigned short segment_id) const {
-        for (int i = 0; i < static_cast<int>(fNumSegments); i++) {
-            if (fSegmentIndex[i] == segment_id) {
+        for (int i = 0; i < static_cast<int>(this->fNumSegments); i++) {
+            if (this->fSegmentIndex[i] == segment_id) {
                 return true;
             }
         }

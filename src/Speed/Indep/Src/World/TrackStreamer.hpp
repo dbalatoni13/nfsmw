@@ -28,11 +28,11 @@ struct DiscBundleSectionMember {
 // total size: 0x114
 struct DiscBundleSection {
     int GetMemoryImageSize() {
-        return NumMembers * sizeof(DiscBundleSectionMember) + 0x14;
+        return this->NumMembers * sizeof(DiscBundleSectionMember) + 0x14;
     }
 
     DiscBundleSection *GetMemoryImageNext() {
-        return reinterpret_cast<DiscBundleSection *>(reinterpret_cast<char *>(this) + GetMemoryImageSize());
+        return reinterpret_cast<DiscBundleSection *>(reinterpret_cast<char *>(this) + this->GetMemoryImageSize());
     }
 
     int32 FileOffset;                    // offset 0x0, size 0x4
@@ -112,12 +112,12 @@ struct TrackStreamingInfo {
 // total size: 0x10
 struct TrackStreamingBarrier {
     void EndianSwap() {
-        bPlatEndianSwap(&Points[0]);
-        bPlatEndianSwap(&Points[1]);
+        bPlatEndianSwap(&this->Points[0]);
+        bPlatEndianSwap(&this->Points[1]);
     }
 
     bool Intersects(const bVector2 *pointa, const bVector2 *pointb) {
-        return DoLinesIntersect(Points[0], Points[1], *pointa, *pointb);
+        return DoLinesIntersect(this->Points[0], this->Points[1], *pointa, *pointb);
     }
 
     bVector2 Points[2]; // offset 0x0, size 0x10
@@ -265,7 +265,7 @@ class TrackStreamer {
     bool IsLoadingInProgress();
 
     bool IsLoadingInProgressNonRepeatable() {
-        return LoadingPhase != LOADING_IDLE;
+        return this->LoadingPhase != LOADING_IDLE;
     }
     bool AreAllSectionsActivated();
 
@@ -304,23 +304,23 @@ class TrackStreamer {
     void ForceSectionToUnload(int section_number);
 
     bool IsFarLoadingInProgress() {
-        return CurrentZoneFarLoad && IsLoadingInProgress();
+        return this->CurrentZoneFarLoad && this->IsLoadingInProgress();
     }
 
     void DisableZoneSwitching() {
-        ZoneSwitchingDisabled = true;
+        this->ZoneSwitchingDisabled = true;
     }
 
     void EnableZoneSwitching() {
-        ZoneSwitchingDisabled = false;
+        this->ZoneSwitchingDisabled = false;
     }
 
     int IsSectionVisible(int section_number) {
-        return CurrentVisibleSectionTable.IsSet(section_number);
+        return this->CurrentVisibleSectionTable.IsSet(section_number);
     }
 
     bool IsPermFileLoading() {
-        return PermFileLoading;
+        return this->PermFileLoading;
     }
 
   private:

@@ -141,11 +141,11 @@ class LoadedWheel : public bTNode<LoadedWheel> {
     LoadedWheel(RideInfo *ride_info, bool in_fe);
 
     CARPART_LOD GetMinLodLevel() const {
-        return mMinLodLevel;
+        return this->mMinLodLevel;
     };
 
     CARPART_LOD GetMaxLodLevel() const {
-        return mMaxLodLevel;
+        return this->mMaxLodLevel;
     };
 
     void SetLodLevel(CARPART_LOD min, CARPART_LOD max);
@@ -431,11 +431,11 @@ class LoadedRideInfo : public bTNode<LoadedRideInfo> {
     USE_SLOTALLOC(LoadedRideInfoSlotPool);
 
     RideInfo *GetRideInfo() {
-        return &TheRideInfo;
+        return &this->TheRideInfo;
     };
 
     char *GetName() {
-        return Name;
+        return this->Name;
     };
 
     int NumInstances;           // offset 0x8, size 0x4
@@ -461,9 +461,9 @@ int LoadedRideInfo::sNextID = 1;
 
 LoadedRideInfo::LoadedRideInfo(RideInfo *ride_info, int in_front_end, int is_two_player, int is_player_car)
     : TheRideInfo(*ride_info),                                 //
-      TheLoadedCar(&TheRideInfo, in_front_end, is_two_player), //
-      TheLoadedWheel(&TheRideInfo, in_front_end != 0),         //
-      TheLoadedSkin(&TheRideInfo, in_front_end, is_player_car) {
+      TheLoadedCar(&this->TheRideInfo, in_front_end, is_two_player), //
+      TheLoadedWheel(&this->TheRideInfo, in_front_end != 0),         //
+      TheLoadedSkin(&this->TheRideInfo, in_front_end, is_player_car) {
     this->NumInstances = 0;
     this->LoadState = CARLOADSTATE_QUEUED;
     this->PrintedLoading = 0;
@@ -1570,8 +1570,8 @@ void CarLoader::UnloadOverflowedResources() {
 void CarLoader::UnloadUnallocatedRideInfos(int max_left_unloaded) {
     {
         bool force_unload = false;
-        while (NumLoadedRideInfos - NumAllocatedRideInfos >= max_left_unloaded) {
-            if (!RemoveSomethingFromCarMemoryPool(force_unload)) {
+        while (this->NumLoadedRideInfos - this->NumAllocatedRideInfos >= max_left_unloaded) {
+            if (!this->RemoveSomethingFromCarMemoryPool(force_unload)) {
                 return;
             }
         }
