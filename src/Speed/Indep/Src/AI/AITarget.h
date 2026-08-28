@@ -48,47 +48,47 @@ class AITarget : public bTNode<AITarget> {
     virtual ~AITarget();
 
     ISimable *GetSimable() const {
-        return mTargetSimable;
+        return this->mTargetSimable;
     }
 
     const UMath::Vector3 &GetPosition() const {
-        return mTargetPosition;
+        return this->mTargetPosition;
     }
 
     const UMath::Vector3 &GetDirection() const {
-        return mTargetDirection;
+        return this->mTargetDirection;
     }
 
     void GetForwardVector(UMath::Vector3 &dir) const {
-        dir = mTargetDirection;
+        dir = this->mTargetDirection;
     }
 
     bool IsValid() const {
-        return mValid;
+        return this->mValid;
     }
 
     bool IsSimable() const {
-        return mTargetSimable != nullptr;
+        return this->mTargetSimable != nullptr;
     }
 
     float GetDistTo() const {
-        return mDistTo;
+        return this->mDistTo;
     }
 
     const UMath::Vector3 &GetDirTo() const {
-        return mDirTo;
+        return this->mDirTo;
     }
 
     template <typename T> bool QueryInterface(T **out) {
-        if (mTargetSimable) {
-            return mTargetSimable->QueryInterface(out);
+        if (this->mTargetSimable) {
+            return this->mTargetSimable->QueryInterface(out);
         }
         *out = nullptr;
         return false;
     }
 
     bool IsTarget(const UTL::COM::IUnknown *object) const {
-        return UTL::COM::ComparePtr(mTargetSimable, object);
+        return UTL::COM::ComparePtr(this->mTargetSimable, object);
     }
 
   private:

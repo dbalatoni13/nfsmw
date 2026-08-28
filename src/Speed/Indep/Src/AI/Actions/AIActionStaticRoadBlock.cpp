@@ -34,13 +34,13 @@ class AIActionStaticRoadBlock : public AIAction, public Debugable {
 };
 
 AIActionStaticRoadBlock::AIActionStaticRoadBlock(AIActionParams *params, float score) : AIAction(params, score) {
-    params->mOwner->QueryInterface(&mIVehicle);
-    params->mOwner->QueryInterface(&mIInput);
+    params->mOwner->QueryInterface(&this->mIVehicle);
+    params->mOwner->QueryInterface(&this->mIInput);
 }
 
 void AIActionStaticRoadBlock::OnBehaviorChange(const UCrc32 &mechanic) {
     if (mechanic == BEHAVIOR_MECHANIC_INPUT) {
-        GetOwner()->QueryInterface(&mIInput);
+        this->GetOwner()->QueryInterface(&this->mIInput);
     }
 }
 
@@ -49,10 +49,10 @@ AIAction *AIActionStaticRoadBlock::Construct(AIActionParams *params) {
 }
 
 bool AIActionStaticRoadBlock::CanBeAttempted(float dT) {
-    if (!mIVehicle) {
+    if (!this->mIVehicle) {
         return false;
     }
-    if (!mIInput) {
+    if (!this->mIInput) {
         return false;
     }
     return true;
@@ -63,12 +63,12 @@ void AIActionStaticRoadBlock::BeginAction(float dT) {}
 void AIActionStaticRoadBlock::FinishAction(float dT) {}
 
 void AIActionStaticRoadBlock::Update(float dT) {
-    mIInput->SetControlGas(0.0f);
-    mIInput->SetControlBrake(1.0f);
-    mIInput->SetControlSteering(0.0f);
-    mIInput->SetControlSteeringVertical(0.0f);
-    mIInput->SetControlHandBrake(0.0f);
-    mIInput->SetControlNOS(false);
+    this->mIInput->SetControlGas(0.0f);
+    this->mIInput->SetControlBrake(1.0f);
+    this->mIInput->SetControlSteering(0.0f);
+    this->mIInput->SetControlSteeringVertical(0.0f);
+    this->mIInput->SetControlHandBrake(0.0f);
+    this->mIInput->SetControlNOS(false);
 }
 
 void AIActionStaticRoadBlock::OnDebugDraw() {}

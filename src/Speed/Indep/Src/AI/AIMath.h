@@ -17,21 +17,21 @@ class FloatSpring {
     FloatSpring(float spring_k, float damper_k) : mX(0.0f), mV(0.0f), mC(spring_k), mD(damper_k) {}
 
     float GetPosition() const {
-        return mX;
+        return this->mX;
     }
 
     void SetPosition(float x) {
-        mX = x;
-        mV = 0.0f;
+        this->mX = x;
+        this->mV = 0.0f;
     }
 
     float Integrate(float newvalue, float dT) {
-        float v = mV;
-        float dX = (-v * mD * dT);
-        dX += (newvalue - mX) * mC * dT + v;
+        float v = this->mV;
+        float dX = (-v * this->mD * dT);
+        dX += (newvalue - this->mX) * this->mC * dT + v;
 
-        mV = dX;
-        mX += dX * dT;
+        this->mV = dX;
+        this->mX += dX * dT;
 
         return dX;
     }

@@ -55,61 +55,61 @@ class AIVehicleHelicopter : public AIVehiclePursuit, public IAIHelicopter {
 
     // Overrides: IAIHelicopter
     float GetDesiredHeightOverDest() const override {
-        return mHeight;
+        return this->mHeight;
     }
 
     // Overrides: IAIHelicopter
     void SetDesiredHeightOverDest(const float height) override {
-        mHeight = height;
+        this->mHeight = height;
     }
 
     // Overrides: IAIHelicopter
     void SetLookAtPosition(UMath::Vector3 la) override {
-        mLookAtPosition = la;
+        this->mLookAtPosition = la;
     }
 
     // Overrides: IAIHelicopter
     UMath::Vector3 GetLookAtPosition() const override {
-        return mLookAtPosition;
+        return this->mLookAtPosition;
     }
 
     // Overrides: IAIHelicopter
     bool StrafeToDestIsSet() const override {
-        return mStrafeToDest;
+        return this->mStrafeToDest;
     }
 
     // Overrides: IAIHelicopter
     void SetStrafeToDest(bool strafe) override {
-        mStrafeToDest = strafe;
+        this->mStrafeToDest = strafe;
     }
 
     virtual const HeliSheetCoordinate &GetHeliSheetCoord() const {
-        return mHeliSheetCoord;
+        return this->mHeliSheetCoord;
     }
 
     // Overrides: IAIHelicopter
     float GetFuelTimeRemaining() override {
-        return mHeliFuelTimeRemaining;
+        return this->mHeliFuelTimeRemaining;
     }
 
     // Overrides: IAIHelicopter
     void SetShadowScale(float s) override {
-        mShadowScale = s;
+        this->mShadowScale = s;
     }
 
     // Overrides: IAIHelicopter
     float GetShadowScale() override {
-        return mShadowScale;
+        return this->mShadowScale;
     }
 
     // Overrides: IAIHelicopter
     void SetDustStormIntensity(float d) override {
-        mDustStormIntensity = d;
+        this->mDustStormIntensity = d;
     }
 
     // Overrides: IAIHelicopter
     float GetDustStormIntensity() override {
-        return mDustStormIntensity;
+        return this->mDustStormIntensity;
     }
 
   private:

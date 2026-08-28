@@ -38,16 +38,16 @@ class AIGoal : public UTL::COM::Factory<ISimable *, AIGoal, UCrc32> {
     // void operator delete(void *mem, size_t size, const char *name) {}
 
     UCrc32 GetActionName() {
-        if (mCurrentAction) {
-            return mCurrentAction->GetActionName();
+        if (this->mCurrentAction) {
+            return this->mCurrentAction->GetActionName();
         } else {
             return (const char *)nullptr;
         }
     }
 
     bool IsCurrentAction(const UCrc32 name) {
-        if (mCurrentAction) {
-            return name == mCurrentAction->GetActionName();
+        if (this->mCurrentAction) {
+            return name == this->mCurrentAction->GetActionName();
         } else {
             return false;
         }
@@ -57,13 +57,13 @@ class AIGoal : public UTL::COM::Factory<ISimable *, AIGoal, UCrc32> {
     AIGoal(ISimable *isimable);
 
     ISimable *GetOwner() const {
-        return mOwner;
+        return this->mOwner;
     }
 
     void AddAction(const char *name);
 
     const AIAction::List &GetActions() const {
-        return mActions;
+        return this->mActions;
     }
 
     AIAction *mCurrentAction; // offset 0x4, size 0x4

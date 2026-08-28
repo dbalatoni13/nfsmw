@@ -36,7 +36,7 @@ Behavior *AIVehicleTraffic::Construct(const BehaviorParams &bp) {
 AIVehicleTraffic::AIVehicleTraffic(const BehaviorParams &bp)
     : AIVehicle(bp, 0.1f, mStagger, Sim::TASK_FRAME_VARIABLE), //
       ITrafficAI(bp.fowner) {
-    SetGoal("AIGoalNone");
+    this->SetGoal("AIGoalNone");
     mStagger += 0.1f;
     if (mStagger >= 1.0f) {
         mStagger = 0.0f;
@@ -46,49 +46,49 @@ AIVehicleTraffic::AIVehicleTraffic(const BehaviorParams &bp)
 AIVehicleTraffic::~AIVehicleTraffic() {}
 
 void AIVehicleTraffic::Update(float dT) {
-    AIVehicle::Update(dT);
-    UpdateSpawnTimer(dT);
-    if (GetGoal()) {
-        GetGoal()->Update(dT);
+    this->AIVehicle::Update(dT);
+    this->UpdateSpawnTimer(dT);
+    if (this->GetGoal()) {
+        this->GetGoal()->Update(dT);
     }
 }
 
 void AIVehicleTraffic::StartDriving(float speed) {
-    ClearGoal();
-    SetGoal("AIGoalTraffic");
+    this->ClearGoal();
+    this->SetGoal("AIGoalTraffic");
 
     IDamageable *idamage;
-    if (GetOwner()->QueryInterface(&idamage)) {
+    if (this->GetOwner()->QueryInterface(&idamage)) {
         idamage->ResetDamage();
     }
 
     IInput *input;
-    if (GetOwner()->QueryInterface(&input)) {
+    if (this->GetOwner()->QueryInterface(&input)) {
         input->ClearInput();
     }
 
     IRBVehicle *vehiclebody;
-    if (GetOwner()->QueryInterface(&vehiclebody)) {
+    if (this->GetOwner()->QueryInterface(&vehiclebody)) {
         vehiclebody->SetInvulnerability(INVULNERABLE_NONE, 0.0f);
         vehiclebody->EnableObjectCollisions(true);
     }
 
-    GetVehicle()->SetSpeed(speed);
-    SetDriveSpeed(speed);
+    this->GetVehicle()->SetSpeed(speed);
+    this->SetDriveSpeed(speed);
 
-    WRoadNav *road_nav = GetDriveToNav();
-    AITarget *target = GetTarget();
+    WRoadNav *road_nav = this->GetDriveToNav();
+    AITarget *target = this->GetTarget();
 
     if (target && target->IsValid()) {
-        SetDriveTarget(target->GetPosition());
+        this->SetDriveTarget(target->GetPosition());
     } else if (road_nav && road_nav->IsValid()) {
-        SetDriveTarget(road_nav->GetPosition());
+        this->SetDriveTarget(road_nav->GetPosition());
     } else {
         UMath::Vector3 forward;
-        GetVehicle()->ComputeHeading(&forward);
+        this->GetVehicle()->ComputeHeading(&forward);
         UMath::Scale(forward, 10.0f, forward);
-        SetDriveTarget(forward);
+        this->SetDriveTarget(forward);
     }
 
-    DoDriving(3);
+    this->DoDriving(3);
 }

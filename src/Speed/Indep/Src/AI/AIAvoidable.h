@@ -59,14 +59,14 @@ class ALIGN_16 AIAvoidable {
     virtual bool OnUpdateAvoidable(UMath::Vector3 &pos, float &sweep);
 
     const Neighbors &GetAvoidableNeighbors() {
-        return mNeighbors;
+        return this->mNeighbors;
     }
 
     // void SetAvoidableObject(UTL::COM::IUnknown *pUnk) {}
 
     template <typename T> bool QueryInterface(T **out) {
-        if (mUnk) {
-            return mUnk->QueryInterface(out);
+        if (this->mUnk) {
+            return this->mUnk->QueryInterface(out);
         }
         *out = nullptr;
         return false;

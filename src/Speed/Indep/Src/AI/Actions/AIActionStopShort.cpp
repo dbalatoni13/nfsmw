@@ -37,8 +37,8 @@ AIAction *AIActionStopShort::Construct(AIActionParams *params) {
 AIActionStopShort::AIActionStopShort(AIActionParams *params, float score)
     : AIAction(params, score) //
 {
-    params->mOwner->QueryInterface(&mIInput);
-    params->mOwner->QueryInterface(&mPursuitAI);
+    params->mOwner->QueryInterface(&this->mIInput);
+    params->mOwner->QueryInterface(&this->mPursuitAI);
 }
 
 bool AIActionStopShort::CanBeAttempted(float dT) {
@@ -47,22 +47,22 @@ bool AIActionStopShort::CanBeAttempted(float dT) {
 
 void AIActionStopShort::OnBehaviorChange(const UCrc32 &mechanic) {
     if (mechanic == BEHAVIOR_MECHANIC_INPUT) {
-        GetOwner()->QueryInterface(&mIInput);
+        this->GetOwner()->QueryInterface(&this->mIInput);
     }
     if (mechanic == BEHAVIOR_MECHANIC_AI) {
-        GetOwner()->QueryInterface(&mPursuitAI);
+        this->GetOwner()->QueryInterface(&this->mPursuitAI);
     }
 }
 
 bool AIActionStopShort::IsFinished() {
-    return mPursuitAI->GetBreaker() == false;
+    return this->mPursuitAI->GetBreaker() == false;
 }
 
 void AIActionStopShort::Update(float dT) {
-    mIInput->SetControlGas(0.0f);
-    mIInput->SetControlBrake(1.0f);
-    mIInput->SetControlSteering(0.0f);
-    mIInput->SetControlSteeringVertical(0.0f);
-    mIInput->SetControlHandBrake(1.0f);
-    mIInput->SetControlNOS(0.0f);
+    this->mIInput->SetControlGas(0.0f);
+    this->mIInput->SetControlBrake(1.0f);
+    this->mIInput->SetControlSteering(0.0f);
+    this->mIInput->SetControlSteeringVertical(0.0f);
+    this->mIInput->SetControlHandBrake(1.0f);
+    this->mIInput->SetControlNOS(0.0f);
 }

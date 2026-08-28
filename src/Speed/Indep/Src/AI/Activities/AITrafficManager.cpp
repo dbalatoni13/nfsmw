@@ -44,20 +44,20 @@ AITrafficManager::AITrafficManager(Sim::Param params)
       mNewInstanceTimer(0),   //
       mNav(),                 //
       mPattern((Attrib::Collection *)nullptr, 0, nullptr) {
-    MakeDebugable(DBG_AI);
-    bMemSet(mPatternTimer, 0, sizeof(mPatternTimer));
-    mNewInstanceTimer = 0;
+    this->MakeDebugable(DBG_AI);
+    bMemSet(this->mPatternTimer, 0, sizeof(this->mPatternTimer));
+    this->mNewInstanceTimer = 0;
     // default
-    SetTrafficPattern(0xeec2271a);
-    mVehicles.clear();
-    mTask = AddTask("AITrafficManager", 0.5f, 0.5f, Sim::TASK_FRAME_VARIABLE);
-    Sim::ProfileTask(mTask, "AITrafficManager");
-    mActionQ = new ActionQueue(0, 0x98c7a2f5, "AITrafficManager", false);
+    this->SetTrafficPattern(0xeec2271a);
+    this->mVehicles.clear();
+    this->mTask = this->AddTask("AITrafficManager", 0.5f, 0.5f, Sim::TASK_FRAME_VARIABLE);
+    Sim::ProfileTask(this->mTask, "AITrafficManager");
+    this->mActionQ = new ActionQueue(0, 0x98c7a2f5, "AITrafficManager", false);
     // trafficpattern
     const Attrib::Class *patternclass = Attrib::Database::Get().GetClass(0x20d08342);
     if (patternclass) {
-        mPatternMap.clear();
-        mPatternMap.reserve(patternclass->GetNumCollections());
+        this->mPatternMap.clear();
+        this->mPatternMap.reserve(patternclass->GetNumCollections());
         Attrib::Key cKey = patternclass->GetFirstCollection();
 
         while (cKey != 0) {
@@ -67,7 +67,7 @@ AITrafficManager::AITrafficManager(Sim::Param params)
             PatternKey key;
             key.BHash = bStringHash(name);
             key.CollectionKey = cKey;
-            mPatternMap.insert(std::upper_bound(mPatternMap.begin(), mPatternMap.end(), key), key);
+            this->mPatternMap.insert(std::upper_bound(this->mPatternMap.begin(), this->mPatternMap.end(), key), key);
 
             cKey = patternclass->GetNextCollection(cKey);
         }
@@ -75,10 +75,10 @@ AITrafficManager::AITrafficManager(Sim::Param params)
 }
 
 AITrafficManager::~AITrafficManager() {
-    RemoveTask(mTask);
-    if (mActionQ) {
-        delete mActionQ;
-        mActionQ = nullptr;
+    this->RemoveTask(this->mTask);
+    if (this->mActionQ) {
+        delete this->mActionQ;
+        this->mActionQ = nullptr;
     }
 }
 
@@ -90,7 +90,7 @@ Sim::IActivity *AITrafficManager::Construct(Sim::Param params) {
 }
 
 eVehicleCacheResult AITrafficManager::OnQueryVehicleCache(const IVehicle *removethis, const IVehicleCache *whosasking) const {
-    if (!IsAttached(removethis)) {
+    if (!this->IsAttached(removethis)) {
         return VCR_DONTCARE;
     }
 
@@ -128,20 +128,20 @@ void AITrafficManager::OnRemovedVehicleCache(IVehicle *ivehicle) {}
 void AITrafficManager::OnAttached(IAttachable *pOther) {
     IVehicle *ivehicle;
     if (pOther->QueryInterface(&ivehicle)) {
-        mVehicles.push_back(ivehicle);
+        this->mVehicles.push_back(ivehicle);
     }
-    Sim::Activity::OnAttached(pOther);
+    this->Sim::Activity::OnAttached(pOther);
 }
 
 void AITrafficManager::OnDetached(IAttachable *pOther) {
     IVehicle *ivehicle;
     if (pOther->QueryInterface(&ivehicle)) {
-        TrafficList::iterator iter = std::find(mVehicles.begin(), mVehicles.end(), ivehicle);
-        if (iter != mVehicles.end()) {
-            mVehicles.erase(iter);
+        TrafficList::iterator iter = std::find(this->mVehicles.begin(), this->mVehicles.end(), ivehicle);
+        if (iter != this->mVehicles.end()) {
+            this->mVehicles.erase(iter);
         }
     }
-    Sim::Activity::OnDetached(pOther);
+    this->Sim::Activity::OnDetached(pOther);
 }
 
 struct TypeCounter {
@@ -153,28 +153,28 @@ struct TypeCounter {
     TypeCounter(Attrib::Key key, bool active_only) : Key(key), ActiveOnly(active_only), Count(0) {}
 
     void operator()(IVehicle *vehicle) {
-        if (!ActiveOnly || vehicle->IsActive()) {
-            if (vehicle->GetVehicleAttributes().GetCollection() == Key) {
-                Count++;
+        if (!this->ActiveOnly || vehicle->IsActive()) {
+            if (vehicle->GetVehicleAttributes().GetCollection() == this->Key) {
+                this->Count++;
             }
         }
     }
 };
 
 Attrib::Key AITrafficManager::NextSpawn() {
-    unsigned int num_types = mPattern.Num_Vehicles();
+    unsigned int num_types = this->mPattern.Num_Vehicles();
     if (num_types == 0) {
         return 0;
     }
     unsigned int max_types = UMath::Min(num_types, 10U);
     Attrib::Key key = 0;
-    for (unsigned int i = 0; i < max_types && key == 0; mSpawnIdx++, i++) {
-        mSpawnIdx %= max_types;
-        const TrafficPatternRecord &record = mPattern.Vehicles(mSpawnIdx);
-        if (mPatternTimer[mSpawnIdx] > record.Rate && record.Rate > 0.0f) {
-            TypeCounter t = std::for_each(mVehicles.begin(), mVehicles.end(), TypeCounter(record.Vehicle.GetCollectionKey(), true));
+    for (unsigned int i = 0; i < max_types && key == 0; this->mSpawnIdx++, i++) {
+        this->mSpawnIdx %= max_types;
+        const TrafficPatternRecord &record = this->mPattern.Vehicles(this->mSpawnIdx);
+        if (this->mPatternTimer[this->mSpawnIdx] > record.Rate && record.Rate > 0.0f) {
+            TypeCounter t = std::for_each(this->mVehicles.begin(), this->mVehicles.end(), TypeCounter(record.Vehicle.GetCollectionKey(), true));
             if (t.Count < record.MaxInstances || record.MaxInstances == 0) {
-                unsigned int max_traffic = mVehicles.size() + 10 - IVehicle::Count(VEHICLE_ALL);
+                unsigned int max_traffic = this->mVehicles.size() + 10 - IVehicle::Count(VEHICLE_ALL);
                 if (record.Percent == 0 || t.Count < UMath::Max(1U, max_traffic * record.Percent / 100)) {
                     key = record.Vehicle.GetCollectionKey();
                 }
@@ -189,7 +189,7 @@ IVehicle *AITrafficManager::GetAvailableTrafficVehicle(Attrib::Key key, bool mak
         return nullptr;
     }
 
-    for (TrafficList::const_iterator iter = mVehicles.begin(); iter != mVehicles.end(); ++iter) {
+    for (TrafficList::const_iterator iter = this->mVehicles.begin(); iter != this->mVehicles.end(); ++iter) {
         IVehicle *ivehicle = *iter;
         if ((!ivehicle->IsActive() || ivehicle->IsLoading()) && ivehicle->GetVehicleKey() == key) {
             return ivehicle;
@@ -207,7 +207,7 @@ IVehicle *AITrafficManager::GetAvailableTrafficVehicle(Attrib::Key key, bool mak
         IVehicle *ivehicle;
         if (isimable->QueryInterface(&ivehicle)) {
             ivehicle->GetAIVehiclePtr()->UnSpawn();
-            mNewInstanceTimer = 0.0f;
+            this->mNewInstanceTimer = 0.0f;
             return ivehicle;
         }
     }
@@ -215,24 +215,24 @@ IVehicle *AITrafficManager::GetAvailableTrafficVehicle(Attrib::Key key, bool mak
 }
 
 bool AITrafficManager::SpawnTraffic() {
-    if (!mPattern.IsValid()) {
+    if (!this->mPattern.IsValid()) {
         return false;
     }
 
-    if (!NeedsTraffic()) {
+    if (!this->NeedsTraffic()) {
         return false;
     }
 
-    if (!FindSpawnPoint(mNav)) {
+    if (!this->FindSpawnPoint(this->mNav)) {
         return false;
     }
 
-    Attrib::Key key = NextSpawn();
+    Attrib::Key key = this->NextSpawn();
     if (key == 0) {
         return false;
     }
 
-    IVehicle *availableVehicle = GetAvailableTrafficVehicle(key, mNewInstanceTimer > mPattern.SpawnTime());
+    IVehicle *availableVehicle = this->GetAvailableTrafficVehicle(key, this->mNewInstanceTimer > this->mPattern.SpawnTime());
     if (availableVehicle == nullptr) {
         return false;
     }
@@ -242,7 +242,7 @@ bool AITrafficManager::SpawnTraffic() {
     }
 
     IVehicleAI *ivehicleAI = availableVehicle->GetAIVehiclePtr();
-    if (!ivehicleAI->ResetVehicleToRoadNav(&mNav)) {
+    if (!ivehicleAI->ResetVehicleToRoadNav(&this->mNav)) {
         return false;
     }
 
@@ -251,20 +251,20 @@ bool AITrafficManager::SpawnTraffic() {
 
     ITrafficAI *itv;
     if (availableVehicle->QueryInterface(&itv)) {
-        float start_speed = UMath::Min(mPattern.SpeedStreet(), mPattern.SpeedHighway());
+        float start_speed = UMath::Min(this->mPattern.SpeedStreet(), this->mPattern.SpeedHighway());
         itv->StartDriving(MPH2MPS(start_speed) * 0.75f);
     }
 
-    MSetTrafficSpeed ai_msg(mPattern.SpeedStreet(), mPattern.SpeedHighway(), false);
+    MSetTrafficSpeed ai_msg(this->mPattern.SpeedStreet(), this->mPattern.SpeedHighway(), false);
     ai_msg.SetID(availableVehicle->GetSimable()->GetWorldID());
     ai_msg.Post("AIAction");
 
     Attrib::Key vehicle_key = availableVehicle->GetVehicleKey();
-    unsigned int num_types = mPattern.Num_Vehicles();
+    unsigned int num_types = this->mPattern.Num_Vehicles();
     for (unsigned int i = 0; i < num_types && i < 10; i++) {
-        const TrafficPatternRecord &record = mPattern.Vehicles(i);
+        const TrafficPatternRecord &record = this->mPattern.Vehicles(i);
         if (vehicle_key == record.Vehicle.GetCollectionKey()) {
-            mPatternTimer[i] = 0.0f;
+            this->mPatternTimer[i] = 0.0f;
         }
     }
 
@@ -273,7 +273,7 @@ bool AITrafficManager::SpawnTraffic() {
 
 bool AITrafficManager::NeedsTraffic() const {
     int inactive_count = 0;
-    for (TrafficList::const_iterator iter = mVehicles.begin(); iter != mVehicles.end(); ++iter) {
+    for (TrafficList::const_iterator iter = this->mVehicles.begin(); iter != this->mVehicles.end(); ++iter) {
         IVehicle *ivehicle = *iter;
         if (!ivehicle->IsActive() && !ivehicle->IsLoading()) {
             inactive_count++;
@@ -284,10 +284,10 @@ bool AITrafficManager::NeedsTraffic() const {
 }
 
 void AITrafficManager::UpdateDebug() {
-    while (!mActionQ->IsEmpty()) {
-        ActionRef aRef = mActionQ->GetAction();
+    while (!this->mActionQ->IsEmpty()) {
+        ActionRef aRef = this->mActionQ->GetAction();
         aRef.ID();
-        mActionQ->PopAction();
+        this->mActionQ->PopAction();
     }
 }
 
@@ -301,16 +301,16 @@ static bool RandomSortTC(ITrafficCenter *c0, ITrafficCenter *c1) {
 }
 
 void AITrafficManager::SetTrafficPattern(Attrib::Key pattern_key) {
-    if (pattern_key == mPattern.GetCollection()) {
+    if (pattern_key == this->mPattern.GetCollection()) {
         return;
     }
-    mPattern = Attrib::Gen::trafficpattern(pattern_key, 0, nullptr);
-    bMemSet(mPatternTimer, 0, sizeof(mPatternTimer));
+    this->mPattern = Attrib::Gen::trafficpattern(pattern_key, 0, nullptr);
+    bMemSet(this->mPatternTimer, 0, sizeof(this->mPatternTimer));
 
-    unsigned int num_types = mPattern.Num_Vehicles();
+    unsigned int num_types = this->mPattern.Num_Vehicles();
     for (unsigned int i = 0; i < num_types && i < 10; i++) {
-        const TrafficPatternRecord &record = mPattern.Vehicles(i);
-        mPatternTimer[i] = record.Rate * bRandom(1.0f);
+        const TrafficPatternRecord &record = this->mPattern.Vehicles(i);
+        this->mPatternTimer[i] = record.Rate * bRandom(1.0f);
     }
 }
 
@@ -399,11 +399,11 @@ bool AITrafficManager::FindSpawnPoint(WRoadNav &nav) const {
         }
 
         nav.InitAtPoint(spawnpoint, direction, false, 1.0f);
-        if (!nav.IsValid() || !nav.CanTrafficSpawn() || !CheckRace(nav)) {
+        if (!nav.IsValid() || !nav.CanTrafficSpawn() || !this->CheckRace(nav)) {
             continue;
         }
         UMath::Vector3 nav_point = nav.GetPosition();
-        if (!FindCollisions(nav_point)) {
+        if (!this->FindCollisions(nav_point)) {
             return true;
         }
     }
@@ -412,13 +412,13 @@ bool AITrafficManager::FindSpawnPoint(WRoadNav &nav) const {
 
 // UNSOLVED
 bool AITrafficManager::ChoosePattern() {
-    mOncommingChance = 0.5f;
+    this->mOncommingChance = 0.5f;
 
     // huh
-    if (mPatternMap.size() < 0) {
-        int pattern_idx = mPatternMap.size() - 1;
-        PatternKey &key = mPatternMap[pattern_idx];
-        return mPattern.IsValid();
+    if (this->mPatternMap.size() < 0) {
+        int pattern_idx = this->mPatternMap.size() - 1;
+        PatternKey &key = this->mPatternMap[pattern_idx];
+        return this->mPattern.IsValid();
     }
 
     if (GRaceStatus::Exists()) {
@@ -426,8 +426,8 @@ bool AITrafficManager::ChoosePattern() {
         if (race.GetPlayMode() == GRaceStatus::kPlayMode_Racing) {
             unsigned int race_pattern = race.GetTrafficPattern();
             if (race_pattern != 0) {
-                SetTrafficPattern(race_pattern);
-                return mPattern.IsValid();
+                this->SetTrafficPattern(race_pattern);
+                return this->mPattern.IsValid();
             }
         }
     }
@@ -453,11 +453,11 @@ bool AITrafficManager::ChoosePattern() {
         TrackPathZone *zone = TheTrackPathManager.FindZone(&point, TRACK_PATH_ZONE_TRAFFIC_PATTERN, nullptr);
         if (zone) {
             // TODO
-            SetTrafficPattern(mPatternMap.Find(zone->Data[0]));
+            this->SetTrafficPattern(this->mPatternMap.Find(zone->Data[0]));
         }
     }
 
-    return mPattern.IsValid();
+    return this->mPattern.IsValid();
 }
 
 bool AITrafficManager::ValidateVehicle(IVehicle *ivehicle, float density) const {
@@ -471,28 +471,28 @@ static const float Tweak_TrafficDensitySpawnRates[11] = {0.0f, 0.05f, 0.1f, 0.12
 static Table TrafficDensitySpawnRates(Tweak_TrafficDensitySpawnRates, 11, 0.0f, 1.0f);
 
 void AITrafficManager::Update(float dT) {
-    UpdateDebug();
-    float density = ComputeDensity();
+    this->UpdateDebug();
+    float density = this->ComputeDensity();
 
-    if (density > 0.0f && ChoosePattern()) {
+    if (density > 0.0f && this->ChoosePattern()) {
         float spawn_time = TrafficDensitySpawnRates.GetValue(density);
         for (int i = 0; i < 10u; i++) {
-            mPatternTimer[i] += dT * spawn_time;
+            this->mPatternTimer[i] += dT * spawn_time;
         }
-        mNewInstanceTimer += dT;
-        SpawnTraffic();
+        this->mNewInstanceTimer += dT;
+        this->SpawnTraffic();
     }
 
-    for (TrafficList::const_iterator iter = mVehicles.begin(); iter != mVehicles.end(); ++iter) {
+    for (TrafficList::const_iterator iter = this->mVehicles.begin(); iter != this->mVehicles.end(); ++iter) {
         IVehicle *ivehicle = *iter;
-        if (ivehicle->IsActive() && !ValidateVehicle(ivehicle, density)) {
+        if (ivehicle->IsActive() && !this->ValidateVehicle(ivehicle, density)) {
             ivehicle->GetAIVehiclePtr()->UnSpawn();
         }
     }
 }
 
 void AITrafficManager::FlushAllTraffic(bool release) {
-    for (TrafficList::const_iterator iter = mVehicles.begin(); iter != mVehicles.end(); ++iter) {
+    for (TrafficList::const_iterator iter = this->mVehicles.begin(); iter != this->mVehicles.end(); ++iter) {
         IVehicle *ivehicle = *iter;
         if (release) {
             ISimable *isimable;
@@ -505,22 +505,22 @@ void AITrafficManager::FlushAllTraffic(bool release) {
     }
 
     if (release) {
-        mVehicles.clear();
+        this->mVehicles.clear();
     }
 
-    if (mPattern.IsValid()) {
-        unsigned int num_types = mPattern.Num_Vehicles();
+    if (this->mPattern.IsValid()) {
+        unsigned int num_types = this->mPattern.Num_Vehicles();
         for (unsigned int i = 0; i < num_types && i < 10; i++) {
-            const TrafficPatternRecord &record = mPattern.Vehicles(i);
-            mPatternTimer[i] = record.Rate * bRandom(1.0f);
+            const TrafficPatternRecord &record = this->mPattern.Vehicles(i);
+            this->mPatternTimer[i] = record.Rate * bRandom(1.0f);
         }
     }
 }
 
 bool AITrafficManager::OnTask(HSIMTASK htask, float dT) {
     ProfileNode profile_node("AITrafficManager::OnTask", 0);
-    if (htask == mTask) {
-        Update(dT);
+    if (htask == this->mTask) {
+        this->Update(dT);
         return true;
     }
     return false;

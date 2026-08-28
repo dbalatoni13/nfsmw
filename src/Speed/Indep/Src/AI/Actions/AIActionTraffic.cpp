@@ -76,32 +76,32 @@ AIActionTraffic::AIActionTraffic(AIActionParams *params, float score)
       mNavMatrix(UMath::Matrix4::kIdentity), //
       mAccidentTimer(0.0f),                  //
       mAccident(ACCIDENT_NONE) {
-    MakeDebugable(DBG_AI);
+    this->MakeDebugable(DBG_AI);
 
     mIsTractor = VehicleClass::TRACTOR == GetVehicle()->GetVehicleClass();
-    AddListener(this, GetOwner(), "AIActionTraffic");
+    AddListener(this, this->GetOwner(), "AIActionTraffic");
 
-    mRigidBody = params->mOwner->GetRigidBody();
-    params->mOwner->QueryInterface(&mInput);
+    this->mRigidBody = params->mOwner->GetRigidBody();
+    params->mOwner->QueryInterface(&this->mInput);
 
-    mTargetSpeedDefault = MPH2MPS(35.0f);
-    mTargetSpeedHighway = MPH2MPS(55.0f);
+    this->mTargetSpeedDefault = MPH2MPS(35.0f);
+    this->mTargetSpeedHighway = MPH2MPS(55.0f);
 
-    mSetSpeedHandler = Hermes::Handler::Create<MSetTrafficSpeed, AIActionTraffic, AIActionTraffic>(
-        this, &AIActionTraffic::MessageSetSpeed, "AIAction", GetVehicle()->GetSimable()->GetWorldID());
+    this->mSetSpeedHandler = Hermes::Handler::Create<MSetTrafficSpeed, AIActionTraffic, AIActionTraffic>(
+        this, &AIActionTraffic::MessageSetSpeed, "AIAction", this->GetVehicle()->GetSimable()->GetWorldID());
 
     // "default"
-    mDefaultPursuitLevelAttrib = new Attrib::Gen::pursuitlevels(0xeec2271a, 0, nullptr);
-    nPullOverState = eNO_PULL_OVER;
+    this->mDefaultPursuitLevelAttrib = new Attrib::Gen::pursuitlevels(0xeec2271a, 0, nullptr);
+    this->nPullOverState = eNO_PULL_OVER;
 }
 
 AIActionTraffic::~AIActionTraffic() {
     Sim::Collision::RemoveListener(this);
-    if (mSetSpeedHandler) {
-        Hermes::Handler::Destroy(mSetSpeedHandler);
-        mSetSpeedHandler = nullptr;
+    if (this->mSetSpeedHandler) {
+        Hermes::Handler::Destroy(this->mSetSpeedHandler);
+        this->mSetSpeedHandler = nullptr;
     }
-    delete mDefaultPursuitLevelAttrib;
+    delete this->mDefaultPursuitLevelAttrib;
 }
 
 AIAction *AIActionTraffic::Construct(AIActionParams *params) {
@@ -110,31 +110,31 @@ AIAction *AIActionTraffic::Construct(AIActionParams *params) {
 
 void AIActionTraffic::OnBehaviorChange(const UCrc32 &mechanic) {
     if (mechanic == BEHAVIOR_MECHANIC_RIGIDBODY) {
-        GetOwner()->QueryInterface(&mRigidBody);
+        this->GetOwner()->QueryInterface(&this->mRigidBody);
     } else if (mechanic == BEHAVIOR_MECHANIC_INPUT) {
-        GetOwner()->QueryInterface(&mInput);
+        this->GetOwner()->QueryInterface(&this->mInput);
     }
 }
 
 void AIActionTraffic::OnAccident(HSIMABLE hobject, const UMath::Vector3 &speed, const UMath::Vector3 &position) {
-    if (hobject == GetOwner()->GetInstanceHandle() || Sim::DistanceToCamera(position) > 80.0f) {
+    if (hobject == this->GetOwner()->GetInstanceHandle() || Sim::DistanceToCamera(position) > 80.0f) {
         return;
     }
     ISimable *object = ISimable::FindInstance(hobject);
     IVehicle *vehicle;
-    if (object && object->QueryInterface(&vehicle) && (vehicle->GetAbsoluteSpeed() >= MPH2MPS(5.0f) || mAccident != ACCIDENT_OVER)) {
+    if (object && object->QueryInterface(&vehicle) && (vehicle->GetAbsoluteSpeed() >= MPH2MPS(5.0f) || this->mAccident != ACCIDENT_OVER)) {
         switch (vehicle->GetDriverClass()) {
             // TODO
             case DRIVER_HUMAN:
             case DRIVER_TRAFFIC:
             case DRIVER_COP:
             case DRIVER_RACER:
-                if (mIsTractor) {
-                    mAccident = ACCIDENT_OVER;
-                    mAccidentTimer = 0.0f;
+                if (this->mIsTractor) {
+                    this->mAccident = ACCIDENT_OVER;
+                    this->mAccidentTimer = 0.0f;
                 } else {
-                    mAccident = ACCIDENT_INPROGRESS;
-                    mAccidentTimer = 3.0f;
+                    this->mAccident = ACCIDENT_INPROGRESS;
+                    this->mAccidentTimer = 3.0f;
                 }
                 break;
             case DRIVER_NONE:
@@ -148,15 +148,15 @@ void AIActionTraffic::OnAccident(HSIMABLE hobject, const UMath::Vector3 &speed, 
 }
 
 void AIActionTraffic::OnCollision(const COLLISION_INFO &cinfo) {
-    if (GetVehicle()->GetDriverClass() != DRIVER_COP && cinfo.type == COLLISION_INFO::OBJECT) {
-        OnAccident(cinfo.objA, cinfo.closingVel, cinfo.position);
-        OnAccident(cinfo.objB, cinfo.closingVel, cinfo.position);
+    if (this->GetVehicle()->GetDriverClass() != DRIVER_COP && cinfo.type == COLLISION_INFO::OBJECT) {
+        this->OnAccident(cinfo.objA, cinfo.closingVel, cinfo.position);
+        this->OnAccident(cinfo.objB, cinfo.closingVel, cinfo.position);
     }
 }
 
 bool AIActionTraffic::IsFinished() {
-    if (GetAI() && GetAI()->GetPursuit()) {
-        if (GetAI()->GetPursuit()->IsPerpInSight()) {
+    if (this->GetAI() && this->GetAI()->GetPursuit()) {
+        if (this->GetAI()->GetPursuit()->IsPerpInSight()) {
             return true;
         }
     }
@@ -164,9 +164,9 @@ bool AIActionTraffic::IsFinished() {
 }
 
 bool AIActionTraffic::CanBeAttempted(float dT) {
-    if (mRigidBody && GetAI() && GetVehicle() && mInput) {
-        if (GetAI()->GetPursuit()) {
-            return GetAI()->GetPursuit()->IsPerpInSight() == false;
+    if (this->mRigidBody && this->GetAI() && this->GetVehicle() && this->mInput) {
+        if (this->GetAI()->GetPursuit()) {
+            return this->GetAI()->GetPursuit()->IsPerpInSight() == false;
         }
 
         WRoadNav test_nav;
@@ -174,10 +174,10 @@ bool AIActionTraffic::CanBeAttempted(float dT) {
         const bool force_centre_lane = true;
         UMath::Vector3 forwardVector;
 
-        mRigidBody->GetForwardVector(forwardVector);
+        this->mRigidBody->GetForwardVector(forwardVector);
         test_nav.SetNavType(WRoadNav::kTypeTraffic);
         test_nav.SetLaneType(WRoadNav::kLaneTraffic);
-        test_nav.InitAtPoint(mRigidBody->GetPosition(), forwardVector, force_centre_lane, dir_weight);
+        test_nav.InitAtPoint(this->mRigidBody->GetPosition(), forwardVector, force_centre_lane, dir_weight);
         if (test_nav.IsValid()) {
             return true;
         }
@@ -186,15 +186,15 @@ bool AIActionTraffic::CanBeAttempted(float dT) {
 }
 
 void AIActionTraffic::BeginAction(float dT) {
-    GetAI()->GetDriveToNav()->SetNavType(WRoadNav::kTypeTraffic);
-    GetAI()->GetDriveToNav()->SetLaneType(WRoadNav::kLaneTraffic);
-    GetAI()->ResetDriveToNav(SELECT_VALID_LANE);
-    mAccidentTimer = 0.0f;
-    mAccident = ACCIDENT_NONE;
-    UpdateNavPos(30.0f);
-    if (GetAI()->GetLastSpawnTime() > 0.0f && GetAI() && GetAI()->GetPursuit() && !GetAI()->GetPursuit()->IsPerpInSight()) {
-        mTargetSpeedDefault = MPH2MPS(mDefaultPursuitLevelAttrib->SearchModeCityMPH());
-        mTargetSpeedHighway = MPH2MPS(mDefaultPursuitLevelAttrib->SearchModeHwyMPH());
+    this->GetAI()->GetDriveToNav()->SetNavType(WRoadNav::kTypeTraffic);
+    this->GetAI()->GetDriveToNav()->SetLaneType(WRoadNav::kLaneTraffic);
+    this->GetAI()->ResetDriveToNav(SELECT_VALID_LANE);
+    this->mAccidentTimer = 0.0f;
+    this->mAccident = ACCIDENT_NONE;
+    this->UpdateNavPos(30.0f);
+    if (this->GetAI()->GetLastSpawnTime() > 0.0f && this->GetAI() && this->GetAI()->GetPursuit() && !this->GetAI()->GetPursuit()->IsPerpInSight()) {
+        this->mTargetSpeedDefault = MPH2MPS(this->mDefaultPursuitLevelAttrib->SearchModeCityMPH());
+        this->mTargetSpeedHighway = MPH2MPS(this->mDefaultPursuitLevelAttrib->SearchModeHwyMPH());
     }
 }
 
@@ -205,8 +205,8 @@ bool AIActionTraffic::ShouldPullOver(const UMath::Vector3 &my_position, WRoadNav
 }
 
 void AIActionTraffic::Update(float dT) {
-    WRoadNav *road_nav = GetAI()->GetDriveToNav();
-    IRigidBody *irb = GetOwner()->GetRigidBody();
+    WRoadNav *road_nav = this->GetAI()->GetDriveToNav();
+    IRigidBody *irb = this->GetOwner()->GetRigidBody();
 
     float current_speed = irb->GetSpeed();
     float t = UMath::Ramp(current_speed, 0.0f, 25.0f);
@@ -219,10 +219,10 @@ void AIActionTraffic::Update(float dT) {
 
     bool do_driving = true;
 
-    switch (nPullOverState) {
+    switch (this->nPullOverState) {
         case eNO_PULL_OVER:
-            if (ShouldPullOver(irb->GetPosition(), road_nav)) {
-                nPullOverState = ePULLING_OVER;
+            if (this->ShouldPullOver(irb->GetPosition(), road_nav)) {
+                this->nPullOverState = ePULLING_OVER;
                 road_nav->PullOver();
             }
             break;
@@ -232,73 +232,73 @@ void AIActionTraffic::Update(float dT) {
             UMath::Vector3 nav_to_car = irb->GetPosition() - road_nav->GetPosition();
             UMath::Normalize(nav_to_car);
             if (UMath::Dot(nav_to_car, nav_forward) > (-dT * current_speed) * 0.5f) {
-                nPullOverState = ePULLED_OVER;
+                this->nPullOverState = ePULLED_OVER;
             }
             break;
         }
         case ePULLED_OVER:
-            if (!ShouldPullOver(irb->GetPosition(), road_nav)) {
-                nPullOverState = eNO_PULL_OVER;
-                GetAI()->ResetDriveToNav(SELECT_CURRENT_LANE);
+            if (!this->ShouldPullOver(irb->GetPosition(), road_nav)) {
+                this->nPullOverState = eNO_PULL_OVER;
+                this->GetAI()->ResetDriveToNav(SELECT_CURRENT_LANE);
             } else {
-                if (mInput) {
-                    mInput->SetControlGas(0.0f);
-                    mInput->SetControlBrake(1.0f);
-                    mInput->SetControlSteering(0.0f);
+                if (this->mInput) {
+                    this->mInput->SetControlGas(0.0f);
+                    this->mInput->SetControlBrake(1.0f);
+                    this->mInput->SetControlSteering(0.0f);
                 }
                 do_driving = false;
             }
             break;
     }
 
-    UpdateNavPos(lookAheadDistance);
-    GetAI()->SetAvoidableRadius(lookAheadDistance);
-    float desired_speed = ComputeSpeed(current_speed, dT);
+    this->UpdateNavPos(lookAheadDistance);
+    this->GetAI()->SetAvoidableRadius(lookAheadDistance);
+    float desired_speed = this->ComputeSpeed(current_speed, dT);
 
     if (road_nav->IsValid()) {
-        GetAI()->SetDriveTarget(Vector4To3(mNavMatrix.v3));
-        GetAI()->SetDriveSpeed(desired_speed);
+        this->GetAI()->SetDriveTarget(Vector4To3(this->mNavMatrix.v3));
+        this->GetAI()->SetDriveSpeed(desired_speed);
     } else {
-        GetAI()->SetDriveSpeed(0.0f);
+        this->GetAI()->SetDriveSpeed(0.0f);
     }
 
-    if (mAccident == ACCIDENT_INPROGRESS) {
-        mAccidentTimer = mAccidentTimer - 1.0f;
-        if (mAccidentTimer <= 0.0f) {
-            mAccidentTimer = 0.0f;
-            mAccident = ACCIDENT_OVER;
+    if (this->mAccident == ACCIDENT_INPROGRESS) {
+        this->mAccidentTimer = this->mAccidentTimer - 1.0f;
+        if (this->mAccidentTimer <= 0.0f) {
+            this->mAccidentTimer = 0.0f;
+            this->mAccident = ACCIDENT_OVER;
         }
-        if (mInput) {
-            mInput->SetControlGas(0.0f);
-            mInput->SetControlBrake(0.0f);
-            mInput->SetControlHandBrake(0.0f);
-            if (!mIsTractor) {
-                mInput->SetControlSteering(1.0f);
+        if (this->mInput) {
+            this->mInput->SetControlGas(0.0f);
+            this->mInput->SetControlBrake(0.0f);
+            this->mInput->SetControlHandBrake(0.0f);
+            if (!this->mIsTractor) {
+                this->mInput->SetControlSteering(1.0f);
             }
         }
         do_driving = false;
-    } else if (mAccident == ACCIDENT_OVER) {
-        if (mInput) {
-            mInput->SetControlGas(0.0f);
-            mInput->SetControlBrake(1.0f);
-            if (!mIsTractor) {
-                mInput->SetControlSteering(1.0f);
+    } else if (this->mAccident == ACCIDENT_OVER) {
+        if (this->mInput) {
+            this->mInput->SetControlGas(0.0f);
+            this->mInput->SetControlBrake(1.0f);
+            if (!this->mIsTractor) {
+                this->mInput->SetControlSteering(1.0f);
             }
         }
         do_driving = false;
     }
 
     if (do_driving) {
-        GetAI()->DoDriving(3);
+        this->GetAI()->DoDriving(3);
     }
 }
 
 void AIActionTraffic::OnDebugDraw() {}
 
 void AIActionTraffic::MessageSetSpeed(const MSetTrafficSpeed &message) {
-    if (GetVehicle() && message.GetID() == GetVehicle()->GetSimable()->GetWorldID()) {
-        mTargetSpeedDefault = MPH2MPS(message.GetSpeedDefault());
-        mTargetSpeedHighway = MPH2MPS(message.GetSpeedHighway());
-        mFixedSpeed = message.GetFixSpeed() != 0;
+    if (this->GetVehicle() && message.GetID() == this->GetVehicle()->GetSimable()->GetWorldID()) {
+        this->mTargetSpeedDefault = MPH2MPS(message.GetSpeedDefault());
+        this->mTargetSpeedHighway = MPH2MPS(message.GetSpeedHighway());
+        this->mFixedSpeed = message.GetFixSpeed() != 0;
     }
 }

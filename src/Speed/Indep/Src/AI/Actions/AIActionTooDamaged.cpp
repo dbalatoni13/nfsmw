@@ -35,15 +35,15 @@ class AIActionTooDamaged : public AIAction, public Debugable {
 };
 
 AIActionTooDamaged::AIActionTooDamaged(AIActionParams *params, float score) : AIAction(params, score) {
-    params->mOwner->QueryInterface(&mIVehicle);
-    params->mOwner->QueryInterface(&mIInput);
+    params->mOwner->QueryInterface(&this->mIVehicle);
+    params->mOwner->QueryInterface(&this->mIInput);
 
-    MakeDebugable(DBG_AI);
+    this->MakeDebugable(DBG_AI);
 }
 
 void AIActionTooDamaged::OnBehaviorChange(const UCrc32 &mechanic) {
     if (mechanic == BEHAVIOR_MECHANIC_INPUT) {
-        GetOwner()->QueryInterface(&mIInput);
+        this->GetOwner()->QueryInterface(&this->mIInput);
     }
 }
 
@@ -52,8 +52,8 @@ AIAction *AIActionTooDamaged::Construct(AIActionParams *params) {
 }
 
 bool AIActionTooDamaged::CanBeAttempted(float dT) {
-    if (mIVehicle && mIInput) {
-        return mIVehicle->IsDestroyed();
+    if (this->mIVehicle && this->mIInput) {
+        return this->mIVehicle->IsDestroyed();
     } else {
         return false;
     }
@@ -61,7 +61,7 @@ bool AIActionTooDamaged::CanBeAttempted(float dT) {
 
 void AIActionTooDamaged::BeginAction(float dT) {
     IPursuitAI *iPursuitAI;
-    if (GetOwner()->QueryInterface(&iPursuitAI)) {
+    if (this->GetOwner()->QueryInterface(&iPursuitAI)) {
         return iPursuitAI->EndPursuit();
     }
 }
@@ -69,14 +69,14 @@ void AIActionTooDamaged::BeginAction(float dT) {
 void AIActionTooDamaged::FinishAction(float dT) {}
 
 void AIActionTooDamaged::Update(float dT) {
-    mIInput->SetControlGas(0.0f);
-    mIInput->SetControlBrake(0.0f);
-    mIInput->SetControlSteering(0.0f);
-    mIInput->SetControlSteeringVertical(0.0f);
-    mIInput->SetControlHandBrake(0.0f);
+    this->mIInput->SetControlGas(0.0f);
+    this->mIInput->SetControlBrake(0.0f);
+    this->mIInput->SetControlSteering(0.0f);
+    this->mIInput->SetControlSteeringVertical(0.0f);
+    this->mIInput->SetControlHandBrake(0.0f);
 
-    if (!mIVehicle->InShock() && GetActionParams().mOwner->GetRigidBody()->GetSpeedXZ() >= 2.5f) {
-        mIInput->SetControlBrake(0.25f);
+    if (!this->mIVehicle->InShock() && this->GetActionParams().mOwner->GetRigidBody()->GetSpeedXZ() >= 2.5f) {
+        this->mIInput->SetControlBrake(0.25f);
     }
 }
 

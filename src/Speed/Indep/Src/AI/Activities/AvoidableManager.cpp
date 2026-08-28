@@ -4,12 +4,12 @@
 #include "Speed/Indep/Src/Sim/Simulation.h"
 
 AvoidableManager::AvoidableManager(Sim::Param params) : Sim::Activity(0) {
-    mSimulateTask = AddTask("AvoidableManager", 0.25f, 0.0f, Sim::TASK_FRAME_FIXED);
-    Sim::ProfileTask(mSimulateTask, "AvoidableManager");
+    this->mSimulateTask = this->AddTask("AvoidableManager", 0.25f, 0.0f, Sim::TASK_FRAME_FIXED);
+    Sim::ProfileTask(this->mSimulateTask, "AvoidableManager");
 }
 
 AvoidableManager::~AvoidableManager() {
-    RemoveTask(mSimulateTask);
+    this->RemoveTask(this->mSimulateTask);
 }
 
 Sim::IActivity *AvoidableManager::Construct(Sim::Param params) {
@@ -23,11 +23,11 @@ void AvoidableManager::OnDebugDraw() {
 bool AvoidableManager::OnTask(HSIMTASK htask, float dT) {
     ProfileNode profile_node("TODO", 0);
 
-    if (htask == mSimulateTask) {
+    if (htask == this->mSimulateTask) {
         AIAvoidable::UpdateAllAvoidables(dT);
         return true;
     } else {
-        Sim::Object::OnTask(htask, dT);
+        this->Sim::Object::OnTask(htask, dT);
         return false;
     }
 }

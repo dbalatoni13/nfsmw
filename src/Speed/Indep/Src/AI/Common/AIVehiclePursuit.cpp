@@ -27,115 +27,115 @@ AIVehiclePursuit::AIVehiclePursuit(const BehaviorParams &bp)
     if (mStagger >= 1.0f) {
         mStagger = 0.0f;
     }
-    mVisibiltyTestTimer = 0.0f;
-    mTimeSinceTargetSeen = 99.0f;
-    mSupportGoal = (const char *)nullptr;
-    mT_siren[0] = mT_siren[1] = mT_siren[2] = WorldTimer;
+    this->mVisibiltyTestTimer = 0.0f;
+    this->mTimeSinceTargetSeen = 99.0f;
+    this->mSupportGoal = (const char *)nullptr;
+    this->mT_siren[0] = this->mT_siren[1] = this->mT_siren[2] = WorldTimer;
 }
 
 AIVehiclePursuit::~AIVehiclePursuit() {}
 
 void AIVehiclePursuit::ResetInternals() {
-    AIVehicle::ResetInternals();
-    mInPursuit = false;
-    mBreaker = false;
-    mChicken = false;
-    mDamagedByPerp = false;
-    mInFormation = false;
-    mInPosition = false;
+    this->AIVehicle::ResetInternals();
+    this->mInPursuit = false;
+    this->mBreaker = false;
+    this->mChicken = false;
+    this->mDamagedByPerp = false;
+    this->mInFormation = false;
+    this->mInPosition = false;
 
-    mPursuitOffset = UMath::Vector3::kZero;
+    this->mPursuitOffset = UMath::Vector3::kZero;
 
-    mTimeSinceTargetSeen = 99.0f;
-    mVisibiltyTestTimer = 0.25f;
+    this->mTimeSinceTargetSeen = 99.0f;
+    this->mVisibiltyTestTimer = 0.25f;
 
-    mWithinEngagementRadius = false;
+    this->mWithinEngagementRadius = false;
 
-    mT_siren[0] = mT_siren[1] = mT_siren[2] = WorldTimer;
-    mSirenState = Sound::SIREN_OFF;
-    mSirenInit = false;
+    this->mT_siren[0] = this->mT_siren[1] = this->mT_siren[2] = WorldTimer;
+    this->mSirenState = Sound::SIREN_OFF;
+    this->mSirenInit = false;
 }
 
 void AIVehiclePursuit::StartPatrol() {
-    SetInPursuit(false);
-    GetTarget()->Clear();
-    SetGoal("AIGoalPatrol");
+    this->SetInPursuit(false);
+    this->GetTarget()->Clear();
+    this->SetGoal("AIGoalPatrol");
 }
 
 void AIVehiclePursuit::StartFlee() {
     IVehicle *ivehicle;
-    GetVehicle()->GlareOff(VehicleFX::LIGHT_COPS);
+    this->GetVehicle()->GlareOff(VehicleFX::LIGHT_COPS);
 
     UCrc32 goal("AIGoalFleePursuit");
     if (GetSimable()->QueryInterface(&ivehicle) && ivehicle->GetVehicleClass() == VehicleClass::CHOPPER) {
         goal = "AIGoalHeliExit";
     }
-    if (GetGoalName() != goal) {
-        ClearGoal();
-        SetGoal(goal);
+    if (this->GetGoalName() != goal) {
+        this->ClearGoal();
+        this->SetGoal(goal);
     }
 }
 
 void AIVehiclePursuit::StartRoadBlock() {
     IVehicle *ivehicle;
-    GetVehicle()->GlareOn(VehicleFX::LIGHT_COPS);
-    SetInPursuit(true);
-    GetTarget()->Clear();
+    this->GetVehicle()->GlareOn(VehicleFX::LIGHT_COPS);
+    this->SetInPursuit(true);
+    this->GetTarget()->Clear();
     if (GetVehicle()->GetVehicleClass() == VehicleClass::CHOPPER) {
-        SetGoal("AIGoalHeliRoadBlock");
+        this->SetGoal("AIGoalHeliRoadBlock");
     } else {
-        SetGoal("AIGoalStaticRoadBlock");
+        this->SetGoal("AIGoalStaticRoadBlock");
     }
 }
 
 void AIVehiclePursuit::StartPursuit(AITarget *target, ISimable *itargetSimable) {
-    GetVehicle()->GlareOn(VehicleFX::LIGHT_COPS);
+    this->GetVehicle()->GlareOn(VehicleFX::LIGHT_COPS);
     if (target) {
-        GetTarget()->Aquire(target);
+        this->GetTarget()->Aquire(target);
     } else if (itargetSimable) {
-        GetTarget()->Aquire(itargetSimable);
+        this->GetTarget()->Aquire(itargetSimable);
     }
-    UpdateTargeting();
-    SetInPursuit(true);
+    this->UpdateTargeting();
+    this->SetInPursuit(true);
     if (GetVehicle()->GetVehicleClass() == VehicleClass::CHOPPER) {
-        SetGoal("AIGoalHeliPursuit");
+        this->SetGoal("AIGoalHeliPursuit");
     } else {
-        SetGoal("AIGoalPursuit");
+        this->SetGoal("AIGoalPursuit");
     }
 }
 
 void AIVehiclePursuit::DoInPositionGoal() {
-    SetGoal(mInPositionGoal);
+    this->SetGoal(this->mInPositionGoal);
 }
 
 void AIVehiclePursuit::EndPursuit() {
-    SetInPursuit(false);
-    GetVehicle()->GlareOff(VehicleFX::LIGHT_COPS);
+    this->SetInPursuit(false);
+    this->GetVehicle()->GlareOff(VehicleFX::LIGHT_COPS);
 }
 
 bool AIVehiclePursuit::StartSupportGoal() {
-    if (mSupportGoal != (const char *)nullptr) {
-        SetGoal(mSupportGoal);
+    if (this->mSupportGoal != (const char *)nullptr) {
+        this->SetGoal(this->mSupportGoal);
         return true;
     }
     return false;
 }
 
 void AIVehiclePursuit::SetSupportGoal(UCrc32 sg) {
-    mSupportGoal = sg;
+    this->mSupportGoal = sg;
 }
 
 AITarget *AIVehiclePursuit::GetPursuitTarget() {
-    if (GetTarget()->IsValid()) {
-        return GetTarget();
+    if (this->GetTarget()->IsValid()) {
+        return this->GetTarget();
     } else {
         return nullptr;
     }
 }
 
 AITarget *AIVehiclePursuit::PursuitRequest() {
-    if (!GetInPursuit() && GetTarget()->IsValid()) {
-        return GetTarget();
+    if (!this->GetInPursuit() && this->GetTarget()->IsValid()) {
+        return this->GetTarget();
     } else {
         return nullptr;
     }
@@ -143,21 +143,21 @@ AITarget *AIVehiclePursuit::PursuitRequest() {
 
 void AIVehiclePursuit::Update(float dT) {
     ProfileNode profile_node("TODO", 0);
-    AIVehicle::Update(dT);
-    UpdateSiren(dT); // TODO
+    this->AIVehicle::Update(dT);
+    this->UpdateSiren(dT); // TODO
 
-    if (!mInPursuit || !GetTarget()->IsValid()) {
-        mTimeSinceTargetSeen = 0.25f;
-        mVisibiltyTestTimer = 0.25f;
+    if (!this->mInPursuit || !this->GetTarget()->IsValid()) {
+        this->mTimeSinceTargetSeen = 0.25f;
+        this->mVisibiltyTestTimer = 0.25f;
         return;
     }
 
-    mVisibiltyTestTimer += dT;
-    mTimeSinceTargetSeen += dT;
-    if (mVisibiltyTestTimer >= 0.25f) {
-        mVisibiltyTestTimer -= 0.25f;
-        if (CanSeeTarget(GetTarget())) {
-            mTimeSinceTargetSeen = -0.25f;
+    this->mVisibiltyTestTimer += dT;
+    this->mTimeSinceTargetSeen += dT;
+    if (this->mVisibiltyTestTimer >= 0.25f) {
+        this->mVisibiltyTestTimer -= 0.25f;
+        if (this->CanSeeTarget(this->GetTarget())) {
+            this->mTimeSinceTargetSeen = -0.25f;
         }
     }
 }

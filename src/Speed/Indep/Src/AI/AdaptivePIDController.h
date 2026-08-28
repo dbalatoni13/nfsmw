@@ -54,44 +54,44 @@ class AdaptivePIDControllerBase {
     void ForceCoefficient(ePIDTerm term, float new_coefficient) {}
 
     float GetCoefficient(ePIDTerm term) {
-        return Coefficient[term];
+        return this->Coefficient[term];
     }
 
     float GetClampedTerm(ePIDTerm term) {
-        return bClamp(GetTerm(term), TermClamp[term][0], TermClamp[term][1]);
+        return bClamp(this->GetTerm(term), this->TermClamp[term][0], this->TermClamp[term][1]);
     }
 
     void SetTimeSlice(float timeslice) {
-        TimeSlice = timeslice;
+        this->TimeSlice = timeslice;
     }
 
     void SetCoefficientClamp(ePIDTerm term, float min_value, float max_value) {
-        CoefficientClamp[term][0] = min_value;
-        CoefficientClamp[term][1] = max_value;
+        this->CoefficientClamp[term][0] = min_value;
+        this->CoefficientClamp[term][1] = max_value;
     }
 
     void SetTermClamp(ePIDTerm term, float min_value, float max_value) {
-        TermClamp[term][0] = min_value;
-        TermClamp[term][1] = max_value;
+        this->TermClamp[term][0] = min_value;
+        this->TermClamp[term][1] = max_value;
     }
 
     void SetTuningThreshold(ePIDTerm term, float min_value) {
-        TuningThreshold[term] = min_value;
+        this->TuningThreshold[term] = min_value;
     }
 
     void SetAdaptationGain(ePIDTerm term, float adaptation_gain) {
-        AdaptationGain[term] = adaptation_gain;
+        this->AdaptationGain[term] = adaptation_gain;
     }
 
     void SetAlpha(float alpha) {
-        Alpha = alpha;
+        this->Alpha = alpha;
     }
 
   protected:
     float GetNewCoefficientDerivative(ePIDTerm term, float model_error, float desired_process_value);
 
     float GetSensitivityDerivative(ePIDTerm term) {
-        return GetSensitivityDerivative(pCoefficientDerivative[term]->GetValue());
+        return this->GetSensitivityDerivative(this->pCoefficientDerivative[term]->GetValue());
     }
 
     float GetSensitivityDerivative(float coefficient_derivative);
@@ -150,7 +150,7 @@ class AdaptivePIDControllerComplicated : public AdaptivePIDControllerBase {
 
     // Overrides: AdaptivePIDControllerBase
     float GetTerm(ePIDTerm term) override {
-        return CurrentTermValue[term];
+        return this->CurrentTermValue[term];
     }
 
   private:

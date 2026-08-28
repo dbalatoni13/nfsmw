@@ -51,24 +51,24 @@ class AIActionHeadOnRam : public AIAction, public Debugable {
 AIActionHeadOnRam::AIActionHeadOnRam(AIActionParams *params, float score)
     : AIAction(params, score) //
 {
-    MakeDebugable(DBG_AI);
-    params->mOwner->QueryInterface(&mIVehicleAI);
-    params->mOwner->QueryInterface(&mIPursuitAI);
-    params->mOwner->QueryInterface(&mIVehicle);
-    params->mOwner->QueryInterface(&mITransmission);
-    mIRigidBody = params->mOwner->GetRigidBody();
+    this->MakeDebugable(DBG_AI);
+    params->mOwner->QueryInterface(&this->mIVehicleAI);
+    params->mOwner->QueryInterface(&this->mIPursuitAI);
+    params->mOwner->QueryInterface(&this->mIVehicle);
+    params->mOwner->QueryInterface(&this->mITransmission);
+    this->mIRigidBody = params->mOwner->GetRigidBody();
 
     static int brakeLeft = 0;
     brakeLeft++;
-    mBrakeLeft = brakeLeft & 1;
+    this->mBrakeLeft = brakeLeft & 1;
 }
 
 void AIActionHeadOnRam::OnBehaviorChange(const UCrc32 &mechanic) {
     if (mechanic == BEHAVIOR_MECHANIC_RIGIDBODY) {
-        GetOwner()->QueryInterface(&mIRigidBody);
+        this->GetOwner()->QueryInterface(&this->mIRigidBody);
     }
     if (mechanic == BEHAVIOR_MECHANIC_ENGINE) {
-        GetOwner()->QueryInterface(&mITransmission);
+        this->GetOwner()->QueryInterface(&this->mITransmission);
     }
 }
 
@@ -77,34 +77,34 @@ AIAction *AIActionHeadOnRam::Construct(AIActionParams *params) {
 }
 
 bool AIActionHeadOnRam::CanBeAttempted(float dT) {
-    if (mIVehicleAI && mIPursuitAI && mITransmission && mIRigidBody) {
-        if (!mIVehicleAI->GetDrivableToTargetPos()) {
+    if (this->mIVehicleAI && this->mIPursuitAI && this->mITransmission && this->mIRigidBody) {
+        if (!this->mIVehicleAI->GetDrivableToTargetPos()) {
             return false;
         }
-        if (mIVehicleAI->GetDrivableToDriveToNav()) {
-            return mIPursuitAI->GetChicken() == false;
+        if (this->mIVehicleAI->GetDrivableToDriveToNav()) {
+            return this->mIPursuitAI->GetChicken() == false;
         }
     }
     return false;
 }
 
 bool AIActionHeadOnRam::IsFinished() {
-    return !mIVehicleAI->GetTarget()->IsValid();
+    return !this->mIVehicleAI->GetTarget()->IsValid();
 }
 
 void AIActionHeadOnRam::BeginAction(float dT) {
-    if (mIVehicleAI->GetLastSpawnTime() <= 0.0f) {
+    if (this->mIVehicleAI->GetLastSpawnTime() <= 0.0f) {
         float maxSpeed = MPH2MPS(60.0f);
         UMath::Vector3 seekPosition;
-        GetSeekPosition(seekPosition);
-        mIVehicle->SetSpeed(UMath::Min(maxSpeed, GetDesiredSpeed(seekPosition)));
+        this->GetSeekPosition(seekPosition);
+        this->mIVehicle->SetSpeed(UMath::Min(maxSpeed, this->GetDesiredSpeed(seekPosition)));
     }
 }
 
 void AIActionHeadOnRam::FinishAction(float dT) {}
 
 void AIActionHeadOnRam::GetSeekPosition(UMath::Vector3 &seekPosition) {
-    AITarget *target = mIVehicleAI->GetTarget();
+    AITarget *target = this->mIVehicleAI->GetTarget();
     UMath::Vector3 targetPosition = target->GetPosition();
     UMath::Vector3 targetVelocity = target->GetLinearVelocity();
     UMath::Vector3 targetForward;
@@ -117,7 +117,7 @@ void AIActionHeadOnRam::GetSeekPosition(UMath::Vector3 &seekPosition) {
     UMath::Vector3 targetSide = UMath::Vector3Make(targetForward.z, 0.0f, -targetForward.x);
     UMath::Normalize(targetSide);
 
-    UMath::Vector3 offset = mIPursuitAI->GetInPositionOffset();
+    UMath::Vector3 offset = this->mIPursuitAI->GetInPositionOffset();
     UMath::Scale(targetForward, offset.z, seekPosition);
     UMath::ScaleAdd(targetSide, offset.x, seekPosition, seekPosition);
     UMath::Add(seekPosition, targetPosition, seekPosition);
@@ -125,12 +125,12 @@ void AIActionHeadOnRam::GetSeekPosition(UMath::Vector3 &seekPosition) {
 
 float AIActionHeadOnRam::GetDesiredSpeed(UMath::Vector3 &seekPosition) {
     float desiredSpeed = 0.0f;
-    UMath::Vector3 carPosition = mIRigidBody->GetPosition();
+    UMath::Vector3 carPosition = this->mIRigidBody->GetPosition();
 
     UMath::Vector3 forwardVector;
-    mIRigidBody->GetForwardVector(forwardVector);
+    this->mIRigidBody->GetForwardVector(forwardVector);
 
-    AITarget *target = mIVehicleAI->GetTarget();
+    AITarget *target = this->mIVehicleAI->GetTarget();
     UMath::Vector3 targetForwardVec;
     target->GetForwardVector(targetForwardVec);
 
@@ -150,17 +150,17 @@ void AIActionHeadOnRam::Update(float dT) {
     UMath::Vector3 steer = UMath::Vector3::kZero;
     UMath::Vector3 seek = UMath::Vector3::kZero;
     UMath::Vector3 seekPosition;
-    GetSeekPosition(seekPosition);
+    this->GetSeekPosition(seekPosition);
 
-    AITarget *target = mIVehicleAI->GetTarget();
-    AISteer::Ram(seek, mIRigidBody->GetPosition(), mIRigidBody->GetSpeed(), target->GetPosition(), target->GetLinearVelocity());
+    AITarget *target = this->mIVehicleAI->GetTarget();
+    AISteer::Ram(seek, this->mIRigidBody->GetPosition(), this->mIRigidBody->GetSpeed(), target->GetPosition(), target->GetLinearVelocity());
     UMath::Add(seek, steer, steer);
 
-    mIVehicleAI->SetDriveSpeed(KPH2MPS(100.0f));
+    this->mIVehicleAI->SetDriveSpeed(KPH2MPS(100.0f));
 
-    UMath::Add(mIRigidBody->GetPosition(), steer, steer);
-    mIVehicleAI->SetDriveTarget(steer);
-    mIVehicleAI->DoDriving(7);
+    UMath::Add(this->mIRigidBody->GetPosition(), steer, steer);
+    this->mIVehicleAI->SetDriveTarget(steer);
+    this->mIVehicleAI->DoDriving(7);
 }
 
 void AIActionHeadOnRam::OnDebugDraw() {}
