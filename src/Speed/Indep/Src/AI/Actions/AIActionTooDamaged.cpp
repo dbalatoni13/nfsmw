@@ -48,7 +48,7 @@ void AIActionTooDamaged::OnBehaviorChange(const UCrc32 &mechanic) {
 }
 
 AIAction *AIActionTooDamaged::Construct(AIActionParams *params) {
-    return new AIActionTooDamaged(params, 1.0f);
+    return new AIActionTooDamaged(params, AIACTION_SCORE_HIGH);
 }
 
 bool AIActionTooDamaged::CanBeAttempted(float dT) {

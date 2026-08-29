@@ -75,7 +75,7 @@ void AIActionRam::OnBehaviorChange(const UCrc32 &mechanic) {
 }
 
 AIAction *AIActionRam::Construct(AIActionParams *params) {
-    return new AIActionRam(params, 0.1f);
+    return new AIActionRam(params, AIACTION_SCORE_HIGH);
 }
 
 bool AIActionRam::ShouldDoIt() {

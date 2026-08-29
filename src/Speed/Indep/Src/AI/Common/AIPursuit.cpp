@@ -1,4 +1,5 @@
 #include "Speed/Indep/Src/AI/AIPursuit.h"
+#include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Libs/Support/Utility/UStandard.h"
@@ -26,6 +27,99 @@
 #include <cmath>
 #include <cstdlib>
 
+DECLARE_CONTAINER_TYPE(PursuitFormationTargetOffsetList);
+
+// total size: 0x20
+// Decl: 101
+class PursuitFormation {
+  public:
+    // total size: 0x20
+    // Decl: 106
+    struct TargetOffset {
+        TargetOffset(const UMath::Vector3 &targetOffset, const UMath::Vector3 &inPositionOffset, int minTargets, UCrc32 ipg)
+            : mOffset(targetOffset),               //
+              mInPositionOffset(inPositionOffset), //
+              mMinTargets(minTargets),             //
+              mInPositionGoal(ipg) {}
+
+        ~TargetOffset() {}
+
+        UMath::Vector3 mOffset;           // offset 0x0, size 0xC
+        UMath::Vector3 mInPositionOffset; // offset 0xC, size 0xC
+        int mMinTargets;                  // offset 0x18, size 0x4
+        UCrc32 mInPositionGoal;           // offset 0x1C, size 0x4
+    };
+
+    // total size: 0x10
+    // Decl: 119
+    struct TargetOffsetList : public UTL::Std::vector<PursuitFormation::TargetOffset, _type_PursuitFormationTargetOffsetList> {
+        TargetOffsetList() {}
+
+        ~TargetOffsetList() {}
+
+      private:
+        USE_FASTALLOC(PursuitFormation::TargetOffsetList);
+    };
+
+    USE_FASTALLOC(PursuitFormation);
+
+    PursuitFormation();
+
+    virtual ~PursuitFormation();
+
+    virtual void Update(float dT, IPursuit *pursuit) {}
+
+    virtual float GetFinisherTolerance() {
+        return 1.0f;
+    }
+
+    virtual float GetFinisherTime() {
+        return 2.0f;
+    }
+
+    virtual float GetTimeToFinisher() {
+        return 4.0f;
+    }
+
+    void Reset();
+
+    void SetMaxCops(unsigned int m) {
+        this->mMaxCops = m;
+    }
+
+    unsigned int GetMaxCops() {
+        return this->mMaxCops;
+    }
+
+    void SetMinFinisherCops(unsigned int m) {
+        this->mMinFinisherCops = m;
+    }
+
+    unsigned int GetMinFinisherCops() {
+        return this->mMinFinisherCops;
+    }
+
+    void SetHasFinisher(bool f) {
+        this->mHasFinisher = f;
+    }
+
+    bool GetHasFinisher() {
+        return this->mHasFinisher;
+    }
+
+    void AddTargetOffset(const UMath::Vector3 &targetOffset, int minTargets, UCrc32 ipg, const UMath::Vector3 &inPositionOffset);
+
+    const TargetOffsetList &GetTargetOffsets() {
+        return this->mTargetOffsets;
+    }
+
+  protected:
+    unsigned int mMaxCops;           // offset 0x0, size 0x4
+    unsigned int mMinFinisherCops;   // offset 0x4, size 0x4
+    bool mHasFinisher;               // offset 0x8, size 0x1
+    TargetOffsetList mTargetOffsets; // offset 0xC, size 0x10
+};
+
 PursuitFormation::PursuitFormation()
     : mMinFinisherCops(1), //
       mMaxCops(0),         //
@@ -44,6 +138,27 @@ void PursuitFormation::Reset() {
 void PursuitFormation::AddTargetOffset(const UMath::Vector3 &targetOffset, int minTargets, UCrc32 ipg, const UMath::Vector3 &inPositionOffset) {
     this->mTargetOffsets.push_back(TargetOffset(targetOffset, inPositionOffset, minTargets, ipg));
 }
+
+// total size: 0x28
+// Decl: 202
+class BoxInFormation : public PursuitFormation {
+  public:
+    BoxInFormation(int copcount, IPursuit *pursuit);
+
+    // Overrides: PursuitFormation
+    void Update(float dT, IPursuit *pursuit) override;
+
+    // Overrides: PursuitFormation
+    float GetFinisherTime() override {
+        return this->finishertime;
+    }
+
+  private:
+    void getPosition(int idx, float scale, UMath::Vector3 &pos);
+
+    float tightness;    // offset 0x20, size 0x4
+    float finishertime; // offset 0x24, size 0x4
+};
 
 BoxInFormation::BoxInFormation(int copcount, struct IPursuit *pursuit) {
     IPerpetrator *iperp;
@@ -108,6 +223,29 @@ void BoxInFormation::Update(float dT, IPursuit *pursuit) {
     }
 }
 
+// total size: 0x28
+// Decl: 294
+class RollingBlockFormation : public PursuitFormation {
+  public:
+    RollingBlockFormation(int numCops, IPursuit *pursuit);
+
+    // Overrides: PursuitFormation
+    void Update(float dT, IPursuit *pursuit) override;
+
+    // Overrides: PursuitFormation
+    float GetFinisherTime() override {
+        return this->finishertime;
+    }
+
+  private:
+    void getPosition(int idx, float scale, UMath::Vector3 &pos);
+
+    float tightness;    // offset 0x20, size 0x4
+    float finishertime; // offset 0x24, size 0x4
+
+    static const int num_positions; // size: 0x4, address: 0xFFFFFFFF
+};
+
 RollingBlockFormation::RollingBlockFormation(int numCops, struct IPursuit *pursuit) {
     IPerpetrator *iperp;
     Attrib::Gen::pursuitlevels *pursuitLevelAttrib = nullptr; // r29
@@ -163,6 +301,13 @@ void RollingBlockFormation::Update(float dT, IPursuit *pursuit) {
     }
 }
 
+// total size: 0x20
+// Decl: 381
+class FollowFormation : public PursuitFormation {
+  public:
+    FollowFormation(int copcount);
+};
+
 FollowFormation::FollowFormation(int copcount) {
     UMath::Vector3 stupid_hack;
 
@@ -189,12 +334,10 @@ FollowFormation::FollowFormation(int copcount) {
 }
 
 // total size: 0x20
+// Decl: 420
 class StaggerFollowFormation : public PursuitFormation {
   public:
     StaggerFollowFormation(int copcount);
-
-    // Overrides: PursuitFormation
-    inline ~StaggerFollowFormation() override {}
 };
 
 StaggerFollowFormation::StaggerFollowFormation(int copcount) {
@@ -222,6 +365,23 @@ StaggerFollowFormation::StaggerFollowFormation(int copcount) {
     this->SetHasFinisher(false);
 }
 
+// total size: 0x20
+// Decl: 460
+class PitFormation : public PursuitFormation {
+  public:
+    PitFormation(int copcount);
+
+    // Overrides: PursuitFormation
+    float GetTimeToFinisher() override {
+        return 1.2f;
+    }
+
+    // Overrides: PursuitFormation
+    float GetFinisherTolerance() override {
+        return 0.5f;
+    }
+};
+
 PitFormation::PitFormation(int copcount) {
     UMath::Vector3 stupid_hack;
     UMath::Vector3 stupid_hack1;
@@ -237,6 +397,16 @@ PitFormation::PitFormation(int copcount) {
     this->SetMaxCops(1);
     this->SetHasFinisher(true);
 }
+
+// total size: 0x20
+// Decl: 496
+class HerdFormation : public PursuitFormation {
+  public:
+    HerdFormation(int copcount);
+
+    // Overrides: PursuitFormation
+    void Update(float dT, struct IPursuit *pursuit) override;
+};
 
 HerdFormation::HerdFormation(int copcount) {
     UMath::Vector3 stupid_hack;
@@ -913,6 +1083,19 @@ void AIPursuit::AssignClosestOffsets(Vector3List &copRelativePositions, Pursuers
         }
     } while (--copsToAssignOffsets > 0);
 }
+
+// total size: 0xC
+// Decl: 1663
+struct CopAndAngle {
+    CopAndAngle(IPursuitAI *c, float a, float d)
+        : cop(c),   //
+          angle(a), //
+          distance(d) {}
+
+    IPursuitAI *cop; // offset 0x0, size 0x4
+    float angle;     // offset 0x4, size 0x4
+    float distance;  // offset 0x8, size 0x4
+};
 
 static int CopAndAngleSortPredicate(const void *l, const void *r) {
     if (reinterpret_cast<const CopAndAngle *>(l)->angle <= reinterpret_cast<const CopAndAngle *>(r)->angle) {

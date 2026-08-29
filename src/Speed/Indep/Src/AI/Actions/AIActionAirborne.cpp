@@ -36,7 +36,7 @@ class AIActionAirborne : public AIAction {
 };
 
 AIAction *AIActionAirborne::Construct(AIActionParams *params) {
-    return new AIActionAirborne(params, 0.0f);
+    return new AIActionAirborne(params, AIACTION_SCORE_LOW);
 }
 
 AIActionAirborne::AIActionAirborne(AIActionParams *params, float score) : AIAction(params, score) {

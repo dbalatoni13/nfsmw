@@ -130,7 +130,7 @@ bool AIActionRace::OnTask(HSIMTASK hTask, float dT) {
 }
 
 AIAction *AIActionRace::Construct(AIActionParams *params) {
-    return new AIActionRace(params, 0.0f);
+    return new AIActionRace(params, AIACTION_SCORE_LOW);
 }
 
 bool AIActionRace::CanBeAttempted(float dT) {

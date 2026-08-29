@@ -67,7 +67,7 @@ AIActionHeliExit::AIActionHeliExit(AIActionParams *params, float score)
 }
 
 AIAction *AIActionHeliExit::Construct(AIActionParams *params) {
-    return new AIActionHeliExit(params, 0.0f);
+    return new AIActionHeliExit(params, AIACTION_SCORE_LOW);
 }
 
 float Exit_Height;

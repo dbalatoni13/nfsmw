@@ -127,7 +127,7 @@ void AIActionHeliPursuit::OnCollision(const COLLISION_INFO &cinfo) {
 }
 
 AIAction *AIActionHeliPursuit::Construct(AIActionParams *params) {
-    return new AIActionHeliPursuit(params, 0.0f);
+    return new AIActionHeliPursuit(params, AIACTION_SCORE_LOW);
 }
 
 bool AIActionHeliPursuit::IsFinished() {

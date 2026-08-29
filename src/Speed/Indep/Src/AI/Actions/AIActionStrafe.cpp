@@ -31,7 +31,7 @@ class AIActionStrafe : public AIAction {
 };
 
 AIAction *AIActionStrafe::Construct(AIActionParams *params) {
-    return new AIActionStrafe(params, 0.0f);
+    return new AIActionStrafe(params, AIACTION_SCORE_LOW);
 }
 
 void AIActionStrafe::Update(float dT) {}

@@ -53,7 +53,7 @@ class AIActionJackKnife : public AIAction {
 };
 
 AIAction *AIActionJackKnife::Construct(AIActionParams *params) {
-    return new AIActionJackKnife(params, 1.0f);
+    return new AIActionJackKnife(params, AIACTION_SCORE_HIGH);
 }
 
 AIActionJackKnife::AIActionJackKnife(AIActionParams *params, float score) : AIAction(params, score) {

@@ -13,7 +13,7 @@ AdaptivePIDControllerBase::AdaptivePIDControllerBase(eAdaptationRule adaptation_
         this->CoefficientClamp[i][0] = 0.0f;
         this->CoefficientClamp[i][1] = 1.0f;
 
-        this->TermClamp[i][0] = -99999.0f;
+        this->TermClamp[i][0] = VALUE_NOT_SET;
         this->TermClamp[i][1] = 99999.0f;
 
         this->TuningThreshold[i] = 0.01f;
@@ -36,8 +36,8 @@ void AdaptivePIDControllerBase::UpdateBase(float model_error, float timestep, fl
 
     if (bAbs(term_value) >= this->TuningThreshold[term_to_update]) {
         coefficient_derivative = this->GetNewCoefficientDerivative(term_to_update, model_error, desired_process_value);
-        this->Coefficient[term_to_update] = bClamp(coefficient_derivative * timestep + this->Coefficient[term_to_update], this->CoefficientClamp[term_to_update][0],
-                                             this->CoefficientClamp[term_to_update][1]);
+        this->Coefficient[term_to_update] = bClamp(coefficient_derivative * timestep + this->Coefficient[term_to_update],
+                                                   this->CoefficientClamp[term_to_update][0], this->CoefficientClamp[term_to_update][1]);
     }
 
     float time_now = WorldTimer.GetSeconds();

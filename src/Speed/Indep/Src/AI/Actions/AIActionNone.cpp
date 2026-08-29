@@ -29,5 +29,5 @@ class AIActionNone : public AIAction {
 };
 
 AIAction *AIActionNone::Construct(AIActionParams *params) {
-    return new AIActionNone(params, 0.0f);
+    return new AIActionNone(params, AIACTION_SCORE_LOW);
 }

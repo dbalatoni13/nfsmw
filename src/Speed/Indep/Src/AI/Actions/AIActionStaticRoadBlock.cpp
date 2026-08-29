@@ -45,7 +45,7 @@ void AIActionStaticRoadBlock::OnBehaviorChange(const UCrc32 &mechanic) {
 }
 
 AIAction *AIActionStaticRoadBlock::Construct(AIActionParams *params) {
-    return new AIActionStaticRoadBlock(params, 1.0f);
+    return new AIActionStaticRoadBlock(params, AIACTION_SCORE_HIGH);
 }
 
 bool AIActionStaticRoadBlock::CanBeAttempted(float dT) {
