@@ -13,11 +13,11 @@ void GCInterface::UpdateTaskTrcStartGame() {
     }
     switch (GCInterface::mTaskTrcStartGame.GetState()) {
     case TS_START:
-        GCInterface::mTaskTrcStartGame.SetState(TS_MOUNT, TS_START);
-        GCInterface::mTaskTrcStartGame.mCardStatus = STATUS_UNKNOWN;
         GCInterface::mTaskTrcStartGame.mTaskResult = RESULT_UNKNOWN;
+        GCInterface::mTaskTrcStartGame.mCardStatus = STATUS_UNKNOWN;
         GCInterface::mTaskTrcStartGame.mCardID = GCInterface::mTaskTrcStartGame.mFirstCardChecked;
         GCInterface::mTaskTrcStartGame.mMounted = false;
+        GCInterface::mTaskTrcStartGame.SetState(TS_MOUNT, TS_START);
     case TS_MOUNT:
         switch (GCInterface::mTaskTrcStartGame.GetSubstate()) {
         case TS_START:
@@ -30,6 +30,7 @@ void GCInterface::UpdateTaskTrcStartGame() {
                                               GCInterface::mTaskTrcStartGame.GetID(),
                                               false);
             GCInterface::mTaskTrcMount.mParent->StartTask(&GCInterface::mTaskTrcMount);
+            asm volatile("");
             break;
         case TS_CHECK_MOUNT_RESULT:
             switch (GCInterface::mTaskTrcMount.mTaskResult) {
@@ -63,12 +64,13 @@ void GCInterface::UpdateTaskTrcStartGame() {
     case TS_CHECK_SPACE:
         switch (GCInterface::mTaskTrcStartGame.GetSubstate()) {
         case TS_START:
+            GCInterface::mTaskTrcStartGame.SetSubstate(TS_CHECK_SPACE_RESULT);
             GCInterface::mTaskTrcCheckSpace.Start(GCInterface::mTaskTrcStartGame.mCardID,
                                                    &GCInterface::mTaskTrcStartGame.mInfo.fileInfo,
                                                    GCInterface::mTaskTrcStartGame.GetID(),
                                                    true);
-            GCInterface::mTaskTrcStartGame.SetSubstate(TS_CHECK_SPACE_RESULT);
             GCInterface::mTaskTrcCheckSpace.mParent->StartTask(&GCInterface::mTaskTrcCheckSpace);
+            asm volatile("");
             break;
         case TS_CHECK_SPACE_RESULT:
             GCInterface::mTaskTrcStartGame.mCardStatus = GCInterface::mTaskTrcCheckSpace.mCardStatus;
@@ -116,7 +118,7 @@ void GCInterface::UpdateTaskTrcStartGame() {
                  iSlot <= 1 && !foundGoodCard;
                  ++iSlot) {
                 if (GCInterface::mTaskTrcStartGame.mSlotStatus[iSlot] == STATUS_OK) {
-                    GCInterface::mTaskTrcStartGame.mFirstCardChecked.slot = iSlot;
+                    GCInterface::mTaskTrcStartGame.mCardID.slot = iSlot;
                     foundGoodCard = true;
                     GCInterface::mTaskTrcStartGame.mCardStatus =
                         GCInterface::mTaskTrcStartGame.mSlotStatus[iSlot];
@@ -259,11 +261,11 @@ void GCInterface::UpdateTaskTrcCardExists() {
         GCInterface::mTaskTrcCardExists.mTaskResult = GCInterface::mTaskShowCardStatusMsg.mTaskResult;
         GCInterface::mTaskTrcCardExists.mCardStatus = GCInterface::mTaskShowCardStatusMsg.mCardStatus;
         if (GCInterface::mTaskTrcCardExists.mTaskResult == RESULT_SUCCESS) {
-            GCInterface::mTaskTrcCardExists.SetState(TS_DONE, TS_START);
             GCInterface::mTaskTrcCardExists.mMounted = true;
+            GCInterface::mTaskTrcCardExists.SetState(TS_DONE, TS_START);
         } else if (GCInterface::mTaskTrcCardExists.mTaskResult == RESULT_FAILED) {
-            GCInterface::mTaskTrcMount.mCardStatus = GCInterface::mTaskTrcCardExists.mCardStatus;
             GCInterface::mTaskTrcMount.mTaskResult = RESULT_FAILED;
+            GCInterface::mTaskTrcMount.mCardStatus = GCInterface::mTaskTrcCardExists.mCardStatus;
             GCInterface::mTaskTrcCardExists.SetState(TS_SHOW_CARD_STATUS_MSG, TS_START);
         } else {
             if (GCInterface::mTaskTrcCardExists.mCardStatus == STATUS_NO_CARD) {
@@ -282,15 +284,15 @@ void GCInterface::UpdateTaskTrcCardExists() {
                 GCInterface::mTaskTrcCardExists.mMounted = false;
             }
             GCInterface::mTaskTrcMount.Start(GCInterface::mTaskTrcCardExists.mCardID, GCInterface::mTaskTrcCardExists.GetID(), false);
-            GCInterface::mTaskTrcCardExists.SetSubstate(TS_CHECK_CARD);
             GCInterface::mTaskTrcMount.mParent->StartTask(&GCInterface::mTaskTrcMount);
+            GCInterface::mTaskTrcCardExists.SetSubstate(TS_CHECK_CARD);
             break;
         case TS_CHECK_CARD:
-            if (GCInterface::mTaskTrcMount.mTaskResult == RESULT_SUCCESS) {
-                GCInterface::mTaskTrcCardExists.mTaskResult = RESULT_SUCCESS;
+            if (GCInterface::mTaskTrcMount.mCardStatus == STATUS_OK) {
                 GCInterface::mTaskTrcCardExists.mMounted = true;
+                GCInterface::mTaskTrcCardExists.mCardStatus = STATUS_CARD_CHANGED;
             } else {
-                GCInterface::mTaskTrcCardExists.mTaskResult = GCInterface::mTaskTrcMount.mTaskResult;
+                GCInterface::mTaskTrcCardExists.mCardStatus = GCInterface::mTaskTrcMount.mCardStatus;
             }
             GCInterface::mTaskTrcCardExists.SetState(TS_DONE, TS_START);
             break;
@@ -338,11 +340,11 @@ void GCInterface::UpdateTaskTrcGetCardInfo() {
         GCInterface::mTaskTrcGetCardInfo.mTaskResult = GCInterface::mTaskShowCardStatusMsg.mTaskResult;
         GCInterface::mTaskTrcGetCardInfo.mCardStatus = GCInterface::mTaskShowCardStatusMsg.mCardStatus;
         if (GCInterface::mTaskTrcGetCardInfo.mTaskResult == RESULT_SUCCESS) {
-            GCInterface::mTaskTrcGetCardInfo.SetState(TS_GET_CARD_INFO, TS_START);
             GCInterface::mTaskTrcGetCardInfo.mMounted = true;
+            GCInterface::mTaskTrcGetCardInfo.SetState(TS_GET_CARD_INFO, TS_START);
         } else if (GCInterface::mTaskTrcGetCardInfo.mTaskResult == RESULT_FAILED) {
-            GCInterface::mTaskTrcMount.mCardStatus = GCInterface::mTaskTrcGetCardInfo.mCardStatus;
             GCInterface::mTaskTrcMount.mTaskResult = RESULT_FAILED;
+            GCInterface::mTaskTrcMount.mCardStatus = GCInterface::mTaskTrcGetCardInfo.mCardStatus;
             GCInterface::mTaskTrcGetCardInfo.SetState(TS_SHOW_CARD_STATUS_MSG, TS_START);
         } else {
             if (GCInterface::mTaskTrcGetCardInfo.mCardStatus == STATUS_NO_CARD) {
@@ -354,7 +356,6 @@ void GCInterface::UpdateTaskTrcGetCardInfo() {
         break;
     }
     case TS_GET_CARD_INFO:
-        GCInterface::mTaskTrcGetCardInfo.mCardStatus = STATUS_FAILED;
         if (GCInterface::mpDriver->GetFreeCardSpace(GCInterface::mTaskTrcGetCardInfo.mCardID,
                                                      &GCInterface::mTaskTrcGetCardInfo.mCardInfo.freeSpace,
                                                      &GCInterface::mTaskTrcGetCardInfo.mCardInfo.freeFiles) == CR_SUCCESS) {
@@ -370,15 +371,15 @@ void GCInterface::UpdateTaskTrcGetCardInfo() {
                 GCInterface::mTaskTrcGetCardInfo.mMounted = false;
             }
             GCInterface::mTaskTrcMount.Start(GCInterface::mTaskTrcGetCardInfo.mCardID, GCInterface::mTaskTrcGetCardInfo.GetID(), false);
-            GCInterface::mTaskTrcGetCardInfo.SetSubstate(TS_CHECK_CARD);
             GCInterface::mTaskTrcMount.mParent->StartTask(&GCInterface::mTaskTrcMount);
+            GCInterface::mTaskTrcGetCardInfo.SetSubstate(TS_CHECK_CARD);
             break;
         case TS_CHECK_CARD:
-            if (GCInterface::mTaskTrcMount.mTaskResult == RESULT_SUCCESS) {
-                GCInterface::mTaskTrcGetCardInfo.mTaskResult = RESULT_SUCCESS;
+            if (GCInterface::mTaskTrcMount.mCardStatus == STATUS_OK) {
                 GCInterface::mTaskTrcGetCardInfo.mMounted = true;
+                GCInterface::mTaskTrcGetCardInfo.mCardStatus = STATUS_CARD_CHANGED;
             } else {
-                GCInterface::mTaskTrcGetCardInfo.mTaskResult = GCInterface::mTaskTrcMount.mTaskResult;
+                GCInterface::mTaskTrcGetCardInfo.mCardStatus = GCInterface::mTaskTrcMount.mCardStatus;
             }
             GCInterface::mTaskTrcGetCardInfo.SetState(TS_DONE, TS_START);
             break;
@@ -394,9 +395,7 @@ void GCInterface::UpdateTaskTrcGetCardInfo() {
         GCInterface::mTaskMsg.Set(LMSG_TRC_GETCARDINFO_DONE,
                                    GCInterface::mTaskTrcGetCardInfo.mTaskResult,
                                    GCInterface::mTaskTrcGetCardInfo.mCardStatus);
-        GCInterface::mTaskMsg.info.cardInfo.cardID = GCInterface::mTaskTrcGetCardInfo.mCardInfo.cardID;
-        GCInterface::mTaskMsg.info.cardInfo.freeSpace = GCInterface::mTaskTrcGetCardInfo.mCardInfo.freeSpace;
-        GCInterface::mTaskMsg.info.cardInfo.freeFiles = GCInterface::mTaskTrcGetCardInfo.mCardInfo.freeFiles;
+        GCInterface::mTaskMsg.info.cardInfo = GCInterface::mTaskTrcGetCardInfo.mCardInfo;
         GCInterface::mTaskTrcGetCardInfo.End();
         break;
     default:
@@ -411,10 +410,10 @@ void GCInterface::UpdateTaskTrcLoadFile() {
 
     switch (GCInterface::mTaskTrcLoadFile.GetState()) {
     case TS_START:
-        GCInterface::mTaskTrcLoadFile.SetState(TS_MOUNT, TS_START);
         GCInterface::mTaskTrcLoadFile.mTaskResult = RESULT_UNKNOWN;
         GCInterface::mTaskTrcLoadFile.mCardStatus = STATUS_UNKNOWN;
         GCInterface::mTaskTrcLoadFile.mMounted = false;
+        GCInterface::mTaskTrcLoadFile.SetState(TS_MOUNT, TS_START);
     case TS_MOUNT:
         switch (GCInterface::mTaskTrcLoadFile.GetSubstate()) {
         case TS_START:
@@ -841,47 +840,6 @@ void GCInterface::UpdateTaskTrcLoadFile() {
             break;
         }
         break;
-    case TS_OVERWRITE_ASK_USER:
-        if (GCInterface::CheckCard(GCInterface::mTaskTrcSaveFile.mCardID) == STATUS_NO_CARD) {
-            GCInterface::mTaskTrcSaveFile.SetState(TS_FAILED_CARD_REMOVED_INFORM_USER, TS_START);
-            break;
-        }
-        switch (GCInterface::mTaskTrcSaveFile.GetSubstate()) {
-        case TS_START:
-            GCInterface::mTaskMsg.LC_msg(
-                0x18,
-                GCMessage::PackMsgOptions(IO_CONTINUE | IO_OVERWRITE,
-                                          IO_FORMAT | IO_RETRY | IO_OVERWRITE,
-                                          IO_NONE,
-                                          IO_NONE));
-            GCInterface::mUserMsg = static_cast<UserMessage>(static_cast<int>(
-                GCInterface::mTaskTrcSaveFile.GetSubstate()));
-            GCInterface::mTaskTrcSaveFile.SetSubstate(TS_OVERWRITE_CHECK_USER_REPLY);
-            break;
-        case TS_OVERWRITE_CHECK_USER_REPLY:
-            if (GCInterface::mUserMsg != UMSG_NONE) {
-                switch (GCInterface::ConvertUmsgToOption(
-                    GCInterface::mUserMsg,
-                    IO_NO | IO_YES,
-                    GCInterface::mTaskTrcSaveFile.GetID())) {
-                case IO_NO:
-                    GCInterface::mTaskTrcSaveFile.mTaskResult = RESULT_CANCELLED;
-                    GCInterface::mTaskTrcSaveFile.SetState(TS_DONE, TS_START);
-                    break;
-                case IO_YES:
-                    GCInterface::mTaskTrcSaveFile.mTaskResult = RESULT_SUCCESS;
-                    GCInterface::mTaskTrcSaveFile.mCardStatus = STATUS_OK;
-                    GCInterface::mTaskTrcSaveFile.SetState(TS_DONE, TS_START);
-                    break;
-                default:
-                    break;
-                }
-            }
-            break;
-        default:
-            break;
-        }
-        break;
     case TS_CHECK_REMOUNT:
         switch (GCInterface::mTaskTrcLoadFile.GetSubstate()) {
         case TS_START:
@@ -963,9 +921,9 @@ void GCInterface::UpdateTaskTrcSaveCheck() {
             case RESULT_FAILED:
                 GCInterface::mTaskTrcMount.mCardStatus =
                     GCInterface::mTaskShowCardStatusMsg.mCardStatus;
+                GCInterface::mTaskTrcSaveFile.SetSubstate(TS_SHOW_CARD_STATUS_MSG);
                 GCInterface::mTaskTrcMount.mTaskResult =
                     GCInterface::mTaskShowCardStatusMsg.mTaskResult;
-                GCInterface::mTaskTrcSaveFile.SetSubstate(TS_SHOW_CARD_STATUS_MSG);
                 GCInterface::mTaskTrcSaveFile.mMounted = false;
                 break;
             default:
@@ -973,7 +931,7 @@ void GCInterface::UpdateTaskTrcSaveCheck() {
                     GCInterface::mTaskShowCardStatusMsg.mCardStatus;
                 GCInterface::mTaskTrcSaveFile.mMounted = false;
                 if (GCInterface::mTaskShowCardStatusMsg.mTaskResult == RESULT_CANCELLED) {
-                    GCInterface::mTaskTrcSaveFile.mTaskResult = RESULT_CANCELLED;
+                    GCInterface::mTaskTrcSaveFile.mTaskResult = RESULT_SUCCESS;
                 } else {
                     GCInterface::mTaskTrcSaveFile.mTaskResult =
                         GCInterface::mTaskShowCardStatusMsg.mTaskResult;
@@ -989,6 +947,7 @@ void GCInterface::UpdateTaskTrcSaveCheck() {
     case TS_CHECK_SPACE:
         switch (GCInterface::mTaskTrcSaveFile.GetSubstate()) {
         case TS_START:
+            GCInterface::mTaskTrcSaveFile.SetSubstate(TS_CHECK_SPACE_RESULT);
             GCInterface::mTaskTrcCheckSpace.Start(
                 GCInterface::mTaskTrcSaveFile.mCardID,
                 &GCInterface::mTaskTrcSaveFile.mFileInfo,
@@ -996,7 +955,6 @@ void GCInterface::UpdateTaskTrcSaveCheck() {
                 GCInterface::mTaskTrcSaveFile.mFilesNeeded,
                 GCInterface::mTaskTrcSaveFile.GetID(),
                 false);
-            GCInterface::mTaskTrcSaveFile.SetSubstate(TS_CHECK_SPACE_RESULT);
             GCInterface::mTaskTrcCheckSpace.mParent->StartTask(
                 &GCInterface::mTaskTrcCheckSpace);
             break;
@@ -1113,12 +1071,13 @@ void GCInterface::UpdateTaskTrcSaveCheck() {
                     GCInterface::mUserMsg,
                     IO_NO | IO_YES,
                     GCInterface::mTaskTrcSaveFile.GetID())) {
-                case IO_NO:
-                    GCInterface::mTaskTrcSaveFile.mTaskResult = RESULT_CANCELLED;
-                    GCInterface::mTaskTrcSaveFile.SetState(TS_DONE, TS_START);
-                    break;
                 case IO_YES:
                     GCInterface::mTaskTrcSaveFile.mTaskResult = RESULT_SUCCESS;
+                    GCInterface::mTaskTrcSaveFile.mCardStatus = STATUS_OK;
+                    GCInterface::mTaskTrcSaveFile.SetState(TS_DONE, TS_START);
+                    break;
+                case IO_NO:
+                    GCInterface::mTaskTrcSaveFile.mTaskResult = RESULT_CANCELLED;
                     GCInterface::mTaskTrcSaveFile.mCardStatus = STATUS_OK;
                     GCInterface::mTaskTrcSaveFile.SetState(TS_DONE, TS_START);
                     break;
@@ -2197,6 +2156,7 @@ void GCInterface::UpdateTaskTrcFormat() {
             GCInterface::mTaskTrcFormat.SetState(TS_FAILED_CARD_REMOVED_INFORM_USER, TS_START);
             break;
         default:
+        case CR_NOFILE:
             GCInterface::mTaskTrcFormat.mTaskResult = RESULT_FAILED;
             GCInterface::mTaskTrcFormat.mCardStatus = STATUS_CARD_DAMAGED;
             break;

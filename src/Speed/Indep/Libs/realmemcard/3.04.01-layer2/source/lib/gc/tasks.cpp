@@ -60,7 +60,7 @@ void GCInterface::UpdateTaskMount() {
     case CR_NOCARD:
         GCInterface::mTaskMount.mCardStatus = STATUS_NO_CARD;
         break;
-    case CR_CORRUPT:
+    case CR_INSUFFICIENT_SPACE:
     case CR_ENCODINGERROR:
         GCInterface::mTaskMount.mCardStatus = STATUS_CARD_UNFORMATTED;
         break;
@@ -132,8 +132,8 @@ void GCInterface::UpdateTaskOpen() {
     GCInterface::mTaskOpen.End();
     if (GCInterface::mTaskOpen.mNotifyUser) {
         GCInterface::mTaskMsg.Set(LMSG_OPEN_FILE_DONE, GCInterface::mTaskOpen.mTaskResult, GCInterface::mTaskOpen.mCardStatus);
-        GCInterface::mTaskMsg.info.openResult.fileHandle = handle;
         GCInterface::mTaskMsg.info.openResult.fileName = GCInterface::mTaskOpen.mFileInfo->fileName;
+        GCInterface::mTaskMsg.info.openResult.fileHandle = handle;
     }
 }
 
@@ -191,6 +191,11 @@ void GCInterface::UpdateTaskRead() {
     case CR_RANGE_ERROR:
         GCInterface::mTaskRead.mCardStatus = STATUS_RANGE_ERROR;
         break;
+    case CR_NAMETOOLONG:
+    case CR_ENCODINGERROR:
+    case CR_CANCELLED:
+    case CR_ERROR:
+    case CR_OTHERERROR:
     default:
         GCInterface::mTaskRead.mCardStatus = STATUS_FAILED;
         break;
@@ -230,6 +235,11 @@ void GCInterface::UpdateTaskWrite() {
     case CR_RANGE_ERROR:
         GCInterface::mTaskWrite.mCardStatus = STATUS_RANGE_ERROR;
         break;
+    case CR_NAMETOOLONG:
+    case CR_ENCODINGERROR:
+    case CR_CANCELLED:
+    case CR_ERROR:
+    case CR_OTHERERROR:
     default:
         GCInterface::mTaskWrite.mCardStatus = STATUS_FAILED;
         break;
@@ -299,6 +309,7 @@ void GCInterface::UpdateTaskDelete() {
     case CR_NOFILE:
         GCInterface::mTaskDelete.mCardStatus = STATUS_ENTRY_NOT_FOUND;
         break;
+    case CR_RANGE_ERROR:
     default:
         GCInterface::mTaskDelete.mCardStatus = STATUS_FAILED;
         break;
@@ -393,8 +404,8 @@ FindResult *GCInterface::Find(const CardID &cardID, const char *fileName, bool f
     memset(GCInterface::mFindResult.fileName, 0, sizeof(GCInterface::mFindResult.fileName));
     GCInterface::mFindResult.msg.Set(LMSG_FILE_INFO, RESULT_SUCCESS, STATUS_ENTRY_NOT_FOUND);
 
-    static FindInfoStruct findFileInfo;
-    bool found;
+    static FindInfoStruct findFileInfo asm("findFileInfo.635_804D9648");
+    register bool found asm("r28");
     if (findFirst) {
         findFileInfo.Clear();
         result = GCInterface::mpDriver->FindFirst(cardID, &findFileInfo);
@@ -402,10 +413,7 @@ FindResult *GCInterface::Find(const CardID &cardID, const char *fileName, bool f
         result = GCInterface::mpDriver->FindNext();
     }
     found = false;
-    if (result != CR_SUCCESS) {
-        return &GCInterface::mFindResult;
-    }
-    do {
+    while (result == CR_SUCCESS && !found) {
         if (RealmcUtils::Wildcard(findFileInfo.fileName, const_cast<char *>(fileName))) {
             found = true;
             GCInterface::mFindResult.msg.info.fileInfo.fileSize = findFileInfo.fileSize;
@@ -419,7 +427,7 @@ FindResult *GCInterface::Find(const CardID &cardID, const char *fileName, bool f
         } else {
             result = GCInterface::mpDriver->FindNext();
         }
-    } while (result == CR_SUCCESS && !found);
+    }
     return &GCInterface::mFindResult;
 }
 

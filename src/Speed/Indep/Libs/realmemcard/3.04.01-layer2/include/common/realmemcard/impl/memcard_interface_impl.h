@@ -804,8 +804,8 @@ struct TaskTrcSaveFile : public TaskTrc {
         this->Clear();
         this->TaskTrc::Init(true);
         this->mCardID = cID;
-        this->mFileInfo = *finfo;
         this->mFileFound = false;
+        this->mFileInfo = *finfo;
         this->mFileName = finfo->fileName;
         this->mBlocksNeeded = nBlocksNeeded;
         this->mFilesNeeded = nFilesNeeded;
@@ -956,19 +956,35 @@ struct TaskTrcCheckSpace : public TaskTrc {
         , mFileExists(false) {}
 
     void Start(CardID cardID, FileInfo *fileInfo, TaskID taskID, bool notifyUser) {
+        this->GcTask::Init(notifyUser);
         this->mCardID = cardID;
         this->mFileInfo = *fileInfo;
         this->mTaskID = taskID;
-        this->GcTask::Init(notifyUser);
+        this->mFindResult = nullptr;
+        this->mSectorSize = 0;
+        this->mBlocksFree = 0;
+        this->mBlocksUsed = 0;
+        this->mBlocksNeeded = 0;
+        this->mFilesFree = 0;
+        this->mFilesUsed = 0;
+        this->mFilesNeeded = 0;
+        this->mFileExists = false;
     }
 
     void Start(CardID cardID, FileInfo *fileInfo, unsigned int nBlocksNeeded, unsigned int nFilesNeeded, TaskID taskID, bool notifyUser) {
+        this->GcTask::Init(notifyUser);
         this->mCardID = cardID;
         this->mFileInfo = *fileInfo;
         this->mTaskID = taskID;
-        this->GcTask::Init(notifyUser);
+        this->mFindResult = nullptr;
+        this->mSectorSize = 0;
+        this->mBlocksFree = 0;
+        this->mBlocksUsed = 0;
         this->mBlocksNeeded = nBlocksNeeded;
+        this->mFilesFree = 0;
+        this->mFilesUsed = 0;
         this->mFilesNeeded = nFilesNeeded;
+        this->mFileExists = false;
     }
 
     FileInfo mFileInfo;

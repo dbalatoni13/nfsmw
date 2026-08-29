@@ -5,6 +5,8 @@ namespace Realmc {
 
 extern "C" char lbl_80414790[];
 
+extern wchar_t sCardName[48] asm("_6Realmc.sCardName");
+
 void GCInterface::TrcStartGame(const StartGameInfo &info) {
     this->CheckMessageCompatibility();
     this->mMutex->Lock();
@@ -57,7 +59,6 @@ void GCInterface::TrcDeleteFile(const CardID &cardID, const FileInfo &fileInfo) 
 }
 
 const unsigned short *GCInterface::GetCardName(const CardID &cardID) {
-    static wchar_t sCardName[48];
     return GCInterface::GetCardName(cardID, sCardName, 0x60);
 }
 
@@ -173,3 +174,13 @@ void GCInterface::FindFile(const CardID &cardID, const char *, const char *fileN
 }
 
 } // namespace Realmc
+
+asm(".section .bss, \"wa\", @nobits\n"
+    ".balign 8\n"
+    ".globl _6Realmc.sCardName\n"
+    "_6Realmc.sCardName:\n"
+    ".skip 0x60\n"
+    ".globl findFileInfo.635_804D9648\n"
+    "findFileInfo.635_804D9648:\n"
+    ".skip 0x20\n"
+    ".previous");

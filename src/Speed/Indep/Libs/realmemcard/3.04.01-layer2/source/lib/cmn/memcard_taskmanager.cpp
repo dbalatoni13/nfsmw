@@ -612,11 +612,11 @@ void TaskManager::CompleteTask(TaskResult result, CardStatus status, void *other
     }
 
     if (this->mMainTask == TASK_BOOTUPCHECK) {
-        this->_ClearMainTask();
+        this->mMainTask = TASK_NONE;
         this->mIGame->BootupCheckDone(this->mTaskList[0].mDetails.mBootupCheck.mCardStatus,
                                       this->mTaskList[0].mDetails.mBootupCheck.mBootupResults);
     } else {
-        this->_ClearMainTask();
+        this->mMainTask = TASK_NONE;
     }
 }
 
