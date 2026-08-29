@@ -1,4 +1,5 @@
 #define REALMC_GC_MESSAGE_INLINE
+#pragma implementation "gc_blockcalculator.h"
 #include <stdio.h>
 #include <string.h>
 

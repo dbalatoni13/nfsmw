@@ -386,6 +386,8 @@ struct MessageTimer {
         , mNumTicksToExpire(0)
         , mNumSecondsDefaultDelay(0) {}
 
+    ~MessageTimer() {}
+
     void Init(unsigned int nSecondsDefaultDelay) {
         this->mNumSecondsDefaultDelay = nSecondsDefaultDelay;
     }
@@ -750,7 +752,9 @@ struct TaskTrcStartGame : public TaskTrc {
 
 struct TaskTrcCardExists : public TaskTrc {
     TaskTrcCardExists(TaskManager *parent)
-        : TaskTrc(TID_TRC_CARDEXISTS, parent) {}
+        : TaskTrc(TID_TRC_CARDEXISTS, parent) {
+        this->Clear();
+    }
 
     void Start(const CardID &cID) {
         this->Clear();
@@ -762,7 +766,9 @@ struct TaskTrcCardExists : public TaskTrc {
 struct TaskTrcGetCardInfo : public TaskTrc {
     TaskTrcGetCardInfo(TaskManager *parent)
         : TaskTrc(TID_TRC_GETCARDINFO, parent)
-        , mCardInfo() {}
+        , mCardInfo() {
+        this->Clear();
+    }
 
     virtual void Clear() override {
         this->TaskTrc::Clear();
@@ -783,12 +789,9 @@ struct TaskTrcGetCardInfo : public TaskTrc {
 struct TaskTrcSaveFile : public TaskTrc {
     TaskTrcSaveFile(TaskManager *parent)
         : TaskTrc(TID_TRC_SAVEFILE, parent)
-        , mFileInfo()
-        , mFileHandle(nullptr)
-        , mFileFound(false)
-        , mFileName(nullptr)
-        , mBlocksNeeded(0)
-        , mFilesNeeded(0) {}
+        , mFileInfo() {
+        this->Clear();
+    }
 
     virtual void Clear() override {
         this->TaskTrc::Clear();
@@ -823,9 +826,9 @@ struct TaskTrcSaveFile : public TaskTrc {
 struct TaskTrcListFiles : public TaskTrc {
     TaskTrcListFiles(TaskManager *parent)
         : TaskTrc(TID_TRC_LISTFILES, parent)
-        , mFileInfo()
-        , mNumFilesFound(0)
-        , mListingStarted(false) {}
+        , mFileInfo() {
+        this->Clear();
+    }
 
     virtual void Clear() override {
         this->TaskTrc::Clear();
@@ -850,8 +853,9 @@ struct TaskTrcListFiles : public TaskTrc {
 struct TaskTrcLoadFile : public TaskTrc {
     TaskTrcLoadFile(TaskManager *parent)
         : TaskTrc(TID_TRC_LOADFILE, parent)
-        , mFileInfo()
-        , mFileFound(false) {}
+        , mFileInfo() {
+        this->Clear();
+    }
 
     virtual void Clear() override {
         this->TaskTrc::Clear();
@@ -875,8 +879,9 @@ struct TaskTrcLoadFile : public TaskTrc {
 struct TaskTrcDeleteFile : public TaskTrc {
     TaskTrcDeleteFile(TaskManager *parent)
         : TaskTrc(TID_TRC_DELETEFILE, parent)
-        , mFileInfo()
-        , mFileFound(false) {}
+        , mFileInfo() {
+        this->Clear();
+    }
 
     virtual void Clear() override {
         this->TaskTrc::Clear();
@@ -1253,7 +1258,7 @@ struct GCMessage : public Message {
     void LC_msg(int msgId, int options) {
         this->Set(LMSG_TRC);
         this->info.trc.mMsgId = msgId;
-        this->info.trc.mMsg = Locale::GetString(msgId, "");
+        this->info.trc.mMsg = Locale::GetString(msgId, nullptr);
         this->_SetMsgOptions(options);
     }
 

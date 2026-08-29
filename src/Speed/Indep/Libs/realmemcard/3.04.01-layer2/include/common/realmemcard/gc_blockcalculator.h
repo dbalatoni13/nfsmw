@@ -5,6 +5,8 @@
 #pragma once
 #endif
 
+#pragma interface
+
 #include "gc_driver.h"
 
 namespace Realmc {

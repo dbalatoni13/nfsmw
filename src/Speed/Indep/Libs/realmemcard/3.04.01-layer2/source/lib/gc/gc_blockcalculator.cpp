@@ -1,3 +1,4 @@
+#pragma implementation "gc_blockcalculator.h"
 #include "../../../include/common/realmemcard/gc_blockcalculator.h"
 
 namespace Realmc {
