@@ -31,7 +31,7 @@ class AIActionStopShort : public AIAction {
 };
 
 AIAction *AIActionStopShort::Construct(AIActionParams *params) {
-    return new AIActionStopShort(params, 0.0f);
+    return new AIActionStopShort(params, AIACTION_SCORE_LOW);
 }
 
 AIActionStopShort::AIActionStopShort(AIActionParams *params, float score)

@@ -1,9 +1,5 @@
-#ifndef AI_AIDEBUG_H
-#define AI_AIDEBUG_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+#ifndef AIDEBUG_H
+#define AIDEBUG_H
 
 namespace AI {
 

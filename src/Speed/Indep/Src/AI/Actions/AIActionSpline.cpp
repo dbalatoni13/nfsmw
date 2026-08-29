@@ -29,7 +29,7 @@ class AIActionSpline : public AIAction {
 };
 
 AIAction *AIActionSpline::Construct(AIActionParams *params) {
-    return new AIActionSpline(params, 0.0f);
+    return new AIActionSpline(params, AIACTION_SCORE_LOW);
 }
 
 void AIActionSpline::Update(float dT) {}

@@ -47,9 +47,7 @@ class AIActionHeadOnRam : public AIAction, public Debugable {
     bool mBrakeLeft;               // offset 0x60, size 0x1
 };
 
-AIActionHeadOnRam::AIActionHeadOnRam(AIActionParams *params, float score)
-    : AIAction(params, score) //
-{
+AIActionHeadOnRam::AIActionHeadOnRam(AIActionParams *params, float score) : AIAction(params, score) {
     this->MakeDebugable(DBG_AI);
     params->mOwner->QueryInterface(&this->mIVehicleAI);
     params->mOwner->QueryInterface(&this->mIPursuitAI);
@@ -72,7 +70,7 @@ void AIActionHeadOnRam::OnBehaviorChange(const UCrc32 &mechanic) {
 }
 
 AIAction *AIActionHeadOnRam::Construct(AIActionParams *params) {
-    return new AIActionHeadOnRam(params, 0.1f);
+    return new AIActionHeadOnRam(params, AIACTION_SCORE_HIGH);
 }
 
 bool AIActionHeadOnRam::CanBeAttempted(float dT) {

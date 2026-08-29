@@ -43,7 +43,7 @@ void AIActionGetUnstuck::OnBehaviorChange(const UCrc32 &mechanic) {
 }
 
 AIAction *AIActionGetUnstuck::Construct(AIActionParams *params) {
-    return new AIActionGetUnstuck(params, 1.0f);
+    return new AIActionGetUnstuck(params, AIACTION_SCORE_HIGH);
 }
 
 bool AIActionGetUnstuck::CanBeAttempted(float dT) {

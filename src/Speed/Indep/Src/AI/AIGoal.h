@@ -1,41 +1,32 @@
-#ifndef AI_AIGOAL_H
-#define AI_AIGOAL_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+#include "Speed/Indep/Libs/Support/Utility/FastMem.h"
+#ifndef __AIGOAL_H
+#define __AIGOAL_H 1 // Decl: 13
 
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
 #include "Speed/Indep/Src/AI/AIAction.h"
 #include "Speed/Indep/Src/Interfaces/Simables/ISimable.h"
 
 // total size: 0x18
+// Decl: 27
 class AIGoal : public UTL::COM::Factory<ISimable *, AIGoal, UCrc32> {
   public:
+    USE_FASTALLOC(AIGoal);
+
     virtual ~AIGoal();
     virtual void ChooseAction(float dT);
     virtual void Update(float dT);
     virtual void OnBehaviorChange(const UCrc32 &mechanic);
-
-    // void *operator new(size_t size, void *ptr) {}
-
-    // void operator delete(void *mem, void *ptr) {}
-
-    void *operator new(size_t size) {
-        return gFastMem.Alloc(size, nullptr);
-    }
-
-    void operator delete(void *mem, size_t size) {
-        if (mem) {
-            return gFastMem.Free(mem, size, nullptr);
-        }
-    }
-
-    // void *operator new(size_t size, const char *name) {}
-
-    // void operator delete(void *mem, const char *name) {}
-
-    // void operator delete(void *mem, size_t size, const char *name) {}
 
     UCrc32 GetActionName() {
         if (this->mCurrentAction != nullptr) {
@@ -66,10 +57,13 @@ class AIGoal : public UTL::COM::Factory<ISimable *, AIGoal, UCrc32> {
         return this->mActions;
     }
 
-    AIAction *mCurrentAction; // offset 0x4, size 0x4
+    AIAction *mCurrentAction; // offset 0x4, size 0x4, Decl: 54
   private:
-    AIAction::List mActions; // offset 0x8, size 0x8
-    ISimable *mOwner;        // offset 0x10, size 0x4
+    AIAction::List mActions; // offset 0x8, size 0x8, Decl: 57
+
+    ISimable *mOwner; // offset 0x10, size 0x4, Decl: 59
 };
+
+#define BIND_AIGOAL_FACTORY(_TYPE_) AIGoal::Prototype _##_TYPE_(UCrc32(#_TYPE_), _TYPE_::Construct); // Decl: 65
 
 #endif

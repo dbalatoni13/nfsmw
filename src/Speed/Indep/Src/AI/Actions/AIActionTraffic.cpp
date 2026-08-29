@@ -106,7 +106,7 @@ AIActionTraffic::~AIActionTraffic() {
 }
 
 AIAction *AIActionTraffic::Construct(AIActionParams *params) {
-    return new AIActionTraffic(params, 0.1f);
+    return new AIActionTraffic(params, AIACTION_SCORE_HIGH);
 }
 
 void AIActionTraffic::OnBehaviorChange(const UCrc32 &mechanic) {

@@ -1,9 +1,6 @@
-#ifndef AI_AIMATH_H
-#define AI_AIMATH_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+//
+#ifndef AIMATH_H
+#define AIMATH_H
 
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 
@@ -12,18 +9,10 @@ namespace AI {
 namespace Math {
 
 // total size: 0x10
+// Decl: 10
 class FloatSpring {
   public:
     FloatSpring(float spring_k, float damper_k) : mX(0.0f), mV(0.0f), mC(spring_k), mD(damper_k) {}
-
-    float GetPosition() const {
-        return this->mX;
-    }
-
-    void SetPosition(float x) {
-        this->mX = x;
-        this->mV = 0.0f;
-    }
 
     float Integrate(float newvalue, float dT) {
         float v = this->mV;
@@ -34,6 +23,15 @@ class FloatSpring {
         this->mX += dX * dT;
 
         return dX;
+    }
+
+    float GetPosition() const {
+        return this->mX;
+    }
+
+    void SetPosition(float x) {
+        this->mX = x;
+        this->mV = 0.0f;
     }
 
   private:
@@ -49,6 +47,7 @@ float TimeToImpactXZ(const UMath::Vector3 &pos0, const UMath::Vector3 &vel0, con
 void PredictPosition(float predictTime, const UMath::Vector3 &position, const UMath::Vector3 &vfwd, float yaw, const UMath::Vector3 &linearVelocity,
                      const float angularVelocity, UMath::Vector3 &result);
 
+// Decl: 87
 inline void PredictPosition(float dT, const UMath::Vector3 &position, const UMath::Matrix4 &mat, const UMath::Vector3 &linearVelocity,
                             const UMath::Vector3 &angularVelocity, UMath::Vector3 &result) {
     float yaw = UMath::Atan2r(mat.v2.x, mat.v2.z);
