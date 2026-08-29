@@ -1,57 +1,30 @@
-#ifndef AI_AIVEHICLEPURSUIT_H
-#define AI_AIVEHICLEPURSUIT_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+#ifndef __AIVEHICLEPURSUIT_H
+#define __AIVEHICLEPURSUIT_H 1
 
 #include "Speed/Indep/Src/AI/AIVehicle.h"
 
 // total size: 0x7D0
+// Decl: 27
 class AIVehiclePursuit : public AIVehiclePid, public IPursuitAI {
   public:
-    AIVehiclePursuit(const BehaviorParams &bp);
-
-    // Overrides: IUnknown
-    ~AIVehiclePursuit() override;
-
-    // Overrides: AIVehicle
-    void ResetInternals() override;
-
-    // Overrides: IPursuitAI
-    void StartPatrol() override;
-
-    // Overrides: IPursuitAI
-    void StartFlee() override;
-
-    // Overrides: IPursuitAI
-    void StartRoadBlock() override;
-
-    // Overrides: IPursuitAI
-    void StartPursuit(AITarget *target, ISimable *itargetSimable) override;
-
-    // Overrides: IPursuitAI
-    void DoInPositionGoal() override;
-
-    // Overrides: IPursuitAI
-    void EndPursuit() override;
-
-    // Overrides: IPursuitAI
-    bool StartSupportGoal() override;
-
-    // Overrides: IPursuitAI
-    void SetSupportGoal(UCrc32 sg) override;
-
-    // Overrides: IPursuitAI
-    AITarget *GetPursuitTarget() override;
-
-    // Overrides: IPursuitAI
-    AITarget *PursuitRequest() override;
-
     // Overrides: AIVehicle
     void Update(float dT) override;
 
-    virtual void UpdateSiren(float dT);
+    // Overrides: IPursuitAI
+    void StartPatrol() override;
+    void StartRoadBlock() override;
+    void StartFlee() override;
 
     // Overrides: IPursuitAI
     void SetInPursuit(bool inPursuit) override {
@@ -62,6 +35,14 @@ class AIVehiclePursuit : public AIVehiclePid, public IPursuitAI {
     bool GetInPursuit() override {
         return this->mInPursuit;
     }
+
+    // Overrides: IPursuitAI
+    void StartPursuit(AITarget *target, ISimable *itargetSimable) override;
+    void DoInPositionGoal() override;
+    void EndPursuit() override;
+    AITarget *GetPursuitTarget() override;
+    bool StartSupportGoal() override;
+    AITarget *PursuitRequest() override;
 
     // Overrides: IPursuitAI
     void SetInFormation(bool inFormation) override {
@@ -164,6 +145,9 @@ class AIVehiclePursuit : public AIVehiclePid, public IPursuitAI {
     }
 
     // Overrides: IPursuitAI
+    void SetSupportGoal(UCrc32 sg) override;
+
+    // Overrides: IPursuitAI
     void SetWithinEngagementRadius() override {
         this->mWithinEngagementRadius = true;
     }
@@ -173,9 +157,17 @@ class AIVehiclePursuit : public AIVehiclePid, public IPursuitAI {
         return this->mWithinEngagementRadius;
     }
 
-  private:
-    static float mStagger; // size: 0x4, address: 0x8041540C
+  protected:
+    AIVehiclePursuit(const BehaviorParams &bp);
+    ~AIVehiclePursuit() override;
 
+    // Overrides: AIVehicle
+
+    void ResetInternals() override;
+
+    virtual void UpdateSiren(float dT);
+
+  private:
     bool mInPursuit;                  // offset 0x778, size 0x1
     bool mBreaker;                    // offset 0x77C, size 0x1
     bool mChicken;                    // offset 0x780, size 0x1
@@ -188,10 +180,13 @@ class AIVehiclePursuit : public AIVehiclePid, public IPursuitAI {
     bool mWithinEngagementRadius;     // offset 0x7A4, size 0x1
     UMath::Vector3 mPursuitOffset;    // offset 0x7A8, size 0xC
     UMath::Vector3 mInPositionOffset; // offset 0x7B4, size 0xC
-    UCrc32 mInPositionGoal;           // offset 0x7C0, size 0x4
-    float mTimeSinceTargetSeen;       // offset 0x7C4, size 0x4
-    float mVisibiltyTestTimer;        // offset 0x7C8, size 0x4
-    UCrc32 mSupportGoal;              // offset 0x7CC, size 0x4
+
+    static float mStagger; // size: 0x4, address: 0x8041540C
+
+    UCrc32 mInPositionGoal;     // offset 0x7C0, size 0x4
+    float mTimeSinceTargetSeen; // offset 0x7C4, size 0x4
+    float mVisibiltyTestTimer;  // offset 0x7C8, size 0x4
+    UCrc32 mSupportGoal;        // offset 0x7CC, size 0x4
 };
 
 #endif

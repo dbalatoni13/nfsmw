@@ -55,97 +55,8 @@ class AIPursuit : public Sim::Activity, public IPursuit, public Debugable {
 
     static Sim::IActivity *Construct(Sim::Param params);
 
-    // Overrides: IPursuit
-    Attrib::Gen::pursuitlevels *GetPursuitLevelAttrib() const override;
-
-    Attrib::Gen::pursuitsupport *GetPursuitSupportAttrib() const;
-
-    // Overrides: IPursuit
-    void LockInPursuitAttribs() override;
-
-    // Overrides: IPursuit
-    uint32 CalcTotalCostToState() const override;
-
-    // Overrides: IPursuit
-    void AddVehicleToContingent(IVehicle *ivehicle) override;
-
-    // Overrides: IAttachable
-    void OnAttached(IAttachable *pOther) override;
-
-    // Overrides: IAttachable
-    void OnDetached(IAttachable *pOther) override;
-
-    // Overrides: IPursuit
-    void IncNumCopsDestroyed(IVehicle *ivehicle) override;
-
-    void TrackVehicleCounts();
-
-    // Overrides: IPursuit
-    enum FormationType GetFormationType() const override;
-
-    void InitFormation(int numCops);
-
-    // Overrides: IPursuit
-    void EndCurrentFormation() override;
-
-    void AssignCopOffset(int cop, Pursuers &assignCopList, const UMath::Vector3 &pursuitOffset, const UMath::Vector3 &inPositionOffset,
-                         const UCrc32 &ipg, bool information);
-
-    void AssignChopperGoal(IPursuitAI *pursuitChopper);
-
-    void EvenOutOffsets(Vector3List &copRelativePositions, FormationTargetList &formationOffsets);
-
-    void AssignClosestOffsets(Vector3List &copRelativePositions, Pursuers &assignCopList, FormationTargetList &formationOffsets, bool information);
-
-    bool SetupCollapse(const Pursuers &cops, int max_inner, float inner_radius, float outer_radius);
-
-    void AssignCopsInCircle(CopAndAngle *copangles, int num, float radius, const UMath::Vector3 &front, const UMath::Vector3 &side);
-
-    void UpdateFormation(float dT);
-
-    void UpdateOutOfFormationOffsets();
-
-    // Overrides: IPursuit
-    bool IsPlayerPursuit() const override;
-
-    // Overrides: IPursuit
-    bool ContingentHasActiveCops() const override;
-
     // Overrides: ITaskable
     bool OnTask(HSIMTASK htask, float dT) override;
-
-    // Overrides: IPursuit
-    bool IsHeliInPursuit() const override;
-
-    // Overrides: IPursuit
-    bool ShouldEnd() const override;
-
-    void GetAdjustedCopCounts(CopCountRecord *counts, int &numcounts);
-
-    void RemoveUnwantedVehicles();
-
-    void FleeCopOfType(UCrc32 type, int fleecount);
-
-    // Overrides: IPursuit
-    const char *CopRequest() override;
-
-    // Overrides: IPursuit
-    int RequestRoadBlock() override;
-
-    // Overrides: IPursuit
-    void AddRoadBlock(IRoadBlock *roadblock) override;
-
-    // Overrides: IPursuit
-    void ClearGroundSupportRequest() override;
-
-    // Overrides: IPursuit
-    bool SkidHitEnabled() const override;
-
-    // Overrides: IPursuit
-    GroundSupportRequest *RequestGroundSupport() override;
-
-    // Overrides: IPursuit
-    bool IsSupportVehicle(IVehicle *iv) override;
 
     // Overrides: IPursuit
     bool IsTarget(AITarget *aitarget) const override;
@@ -154,41 +65,37 @@ class AIPursuit : public Sim::Activity, public IPursuit, public Debugable {
     AITarget *GetTarget() const override;
 
     // Overrides: IPursuit
+    int GetNumCops() const override {
+        return this->mIVehicleList.size();
+    }
+
+    // Overrides: IPursuit
+    const char *CopRequest() override;
+
+    // Overrides: IPursuit
     bool IsFinisherActive() const override;
 
     // Overrides: IPursuit
     float TimeToFinisherAttempt() const override;
 
     // Overrides: IPursuit
-    void BailPursuit() override;
-
-    // Overrides: IPursuit
     float TimeUntilBusted() const override;
 
-    bool IsAttemptingRoadBlock() const;
+    // Overrides: IPursuit
+    enum FormationType GetFormationType() const override;
 
     // Overrides: IPursuit
-    void NotifyCopDamaged(IVehicle *ivehicle) override;
-
-    virtual void OnDebugDraw();
+    void EndCurrentFormation() override;
 
     // Overrides: IPursuit
-    void SpikesHit(IVehicleAI *ivai) override;
-
-    // Overrides: IPursuit
-    void EndPursuitEnteringSafehouse() override;
-
-    void UpdateJerk(float dt);
-
-    // Overrides: IPursuit
-    int GetNumCops() const override {
-        return this->mIVehicleList.size();
-    }
+    bool ShouldEnd() const override;
 
     // Overrides: IPursuit
     bool IsPerpBusted() const override {
         return this->mIsPerpBusted;
     }
+
+    virtual void OnDebugDraw();
 
     // Overrides: IPursuit
     bool AddVehicle(IVehicle *vehicle) override {
@@ -201,6 +108,24 @@ class AIPursuit : public Sim::Activity, public IPursuit, public Debugable {
         bool result = this->Detach(vehicle);
         return result;
     }
+
+    // Overrides: IPursuit
+    int RequestRoadBlock() override;
+
+    // Overrides: IPursuit
+    GroundSupportRequest *RequestGroundSupport() override;
+
+    // Overrides: IPursuit
+    bool IsSupportVehicle(IVehicle *iv) override;
+
+    // Overrides: IPursuit
+    bool ContingentHasActiveCops() const override;
+
+    // Overrides: IPursuit
+    void ClearGroundSupportRequest() override;
+
+    // Overrides: IPursuit
+    void AddRoadBlock(IRoadBlock *roadblock) override;
 
     // Overrides: IPursuit
     float GetPursuitDuration() const override {
@@ -267,14 +192,26 @@ class AIPursuit : public Sim::Activity, public IPursuit, public Debugable {
     }
 
     // Overrides: IPursuit
+    bool IsHeliInPursuit() const override;
+
+    // Overrides: IPursuit
+    bool IsPlayerPursuit() const override;
+
+    // Overrides: IPursuit
     int GetNumCopsDestroyed() const override {
         return this->mCopsDestroyed;
     }
 
     // Overrides: IPursuit
+    void IncNumCopsDestroyed(IVehicle *ivehicle) override;
+
+    // Overrides: IPursuit
     int GetNumCopsDamaged() const override {
         return this->mNumCopsDamaged;
     }
+
+    // Overrides: IPursuit
+    void NotifyCopDamaged(IVehicle *ivehicle) override;
 
     // Overrides: IPursuit
     int GetTotalNumCopsInvolved() const override {
@@ -383,6 +320,15 @@ class AIPursuit : public Sim::Activity, public IPursuit, public Debugable {
     }
 
     // Overrides: IPursuit
+    uint32 CalcTotalCostToState() const override;
+
+    // Overrides: IPursuit
+    void AddVehicleToContingent(IVehicle *ivehicle) override;
+
+    // Overrides: IPursuit
+    void BailPursuit() override;
+
+    // Overrides: IPursuit
     ePursuitStatus GetPursuitStatus() const override {
         return this->mPursuitStatus;
     }
@@ -418,6 +364,9 @@ class AIPursuit : public Sim::Activity, public IPursuit, public Debugable {
     }
 
     // Overrides: IPursuit
+    bool SkidHitEnabled() const override;
+
+    // Overrides: IPursuit
     int GetNumCopsInWave() const override {
         return this->mNumCopsRequiredToEvade;
     }
@@ -443,15 +392,68 @@ class AIPursuit : public Sim::Activity, public IPursuit, public Debugable {
     }
 
     // Overrides: IPursuit
-    void SetBustedTimerToZero() override {
-        this->mBustedTimer = 0.0f;
-    }
+    void SpikesHit(IVehicleAI *ivai) override;
+
+    // Overrides: IPursuit
+    void EndPursuitEnteringSafehouse() override;
+
+    // Overrides: IPursuit
+    Attrib::Gen::pursuitlevels *GetPursuitLevelAttrib() const override;
 
     // Overrides: IPursuit
     // Decl: 238
     bool GetEnterSafehouseOnDone() override {
         return this->mEnterSafehouseOnDestruct;
     }
+
+    // Overrides: IPursuit
+    void LockInPursuitAttribs() override;
+
+    // Overrides: IPursuit
+    void SetBustedTimerToZero() override {
+        this->mBustedTimer = 0.0f;
+    }
+
+  protected:
+    // Overrides: IAttachable
+    void OnAttached(IAttachable *pOther) override;
+
+    // Overrides: IAttachable
+    void OnDetached(IAttachable *pOther) override;
+
+  private:
+    void InitFormation(int numCops);
+
+    void AssignCopOffset(int cop, Pursuers &assignCopList, const UMath::Vector3 &pursuitOffset, const UMath::Vector3 &inPositionOffset,
+                         const UCrc32 &ipg, bool information);
+
+    void AssignChopperGoal(IPursuitAI *pursuitChopper);
+
+    void EvenOutOffsets(Vector3List &copRelativePositions, FormationTargetList &formationOffsets);
+
+    void AssignClosestOffsets(Vector3List &copRelativePositions, Pursuers &assignCopList, FormationTargetList &formationOffsets, bool information);
+
+    void UpdateFormation(float dT);
+
+    void UpdateOutOfFormationOffsets();
+
+    bool IsAttemptingRoadBlock() const;
+
+    void TrackVehicleCounts();
+
+    void RemoveUnwantedVehicles();
+
+    void FleeCopOfType(UCrc32 type, int fleecount);
+
+    Attrib::Gen::pursuitsupport *GetPursuitSupportAttrib() const;
+
+    bool SetupCollapse(const Pursuers &cops, int max_inner, float inner_radius, float outer_radius);
+
+    void AssignCopsInCircle(CopAndAngle *copangles, int num, float radius, const UMath::Vector3 &front, const UMath::Vector3 &side);
+
+    void GetAdjustedCopCounts(CopCountRecord *counts, int &numcounts);
+
+    void UpdateJerk(float dt);
 
   private:
     HSIMTASK mSimulateTask;                 // offset 0x5C, size 0x4, Decl: 290

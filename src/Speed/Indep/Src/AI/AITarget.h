@@ -1,9 +1,16 @@
-#ifndef AI_AITARGET_H
-#define AI_AITARGET_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+#ifndef __AITARGET_H
+#define __AITARGET_H 1
 
 #include "Speed/Indep/Libs/Support/Utility/FastMem.h"
 #include "Speed/Indep/Libs/Support/Utility/UCOM.h"
@@ -16,36 +23,39 @@
 #include <types.h>
 
 // total size: 0x40
+// Decl: 42
 class AITarget : public bTNode<AITarget> {
   public:
-    static bool CanAquire(const ISimable *who);
+    USE_FASTALLOC(AITarget);
+
     static void Register(ISimable *who);
     static void UnRegister(ISimable *who);
-    static void Track(const ISimable *who);
     static void TrackAll();
-
-    void *operator new(size_t size) {
-        return gFastMem.Alloc(size, nullptr);
-    }
-
-    void operator delete(void *mem, size_t size) {
-        if (mem) {
-            return gFastMem.Free(mem, size, nullptr);
-        }
-    }
+    static void Track(const ISimable *who);
+    static bool CanAquire(const ISimable *who);
 
     AITarget(ISimable *owner);
-    void Clear();
-    void Aquire(ISimable *target);
-    void Aquire(const UMath::Vector3 &position);
-    void Aquire(const UMath::Vector3 &position, const UMath::Vector3 &direction);
-    void Aquire(const AITarget *aitarget);
-    bool IsTarget(const AITarget *aitarget) const;
-    float GetSpeed() const;
-    const UMath::Vector3 &GetLinearVelocity() const;
-    void TrackInternal();
-
     virtual ~AITarget();
+
+    bool IsValid() const {
+        return this->mValid;
+    }
+
+    void Aquire(const AITarget *aitarget);
+    void Aquire(const UMath::Vector3 &position, const UMath::Vector3 &direction);
+    void Aquire(const UMath::Vector3 &position);
+    void Aquire(ISimable *target);
+    void Clear();
+
+    bool IsTarget(const AITarget *aitarget) const;
+
+    bool IsTarget(const UTL::COM::IUnknown *object) const {
+        return UTL::COM::ComparePtr(this->mTargetSimable, object);
+    }
+
+    bool IsSimable() const {
+        return this->mTargetSimable != nullptr;
+    }
 
     ISimable *GetSimable() const {
         return this->mTargetSimable;
@@ -63,22 +73,19 @@ class AITarget : public bTNode<AITarget> {
         dir = this->mTargetDirection;
     }
 
-    bool IsValid() const {
-        return this->mValid;
-    }
-
-    bool IsSimable() const {
-        return this->mTargetSimable != nullptr;
-    }
-
-    float GetDistTo() const {
-        return this->mDistTo;
-    }
+    float GetSpeed() const;
+    const UMath::Vector3 &GetLinearVelocity() const;
 
     const UMath::Vector3 &GetDirTo() const {
         return this->mDirTo;
     }
 
+    // Decl: 57
+    float GetDistTo() const {
+        return this->mDistTo;
+    }
+
+    // Decl: 60
     template <typename T> bool QueryInterface(T **out) {
         if (this->mTargetSimable) {
             return this->mTargetSimable->QueryInterface(out);
@@ -87,11 +94,9 @@ class AITarget : public bTNode<AITarget> {
         return false;
     }
 
-    bool IsTarget(const UTL::COM::IUnknown *object) const {
-        return UTL::COM::ComparePtr(this->mTargetSimable, object);
-    }
-
   private:
+    void TrackInternal();
+
     ISimable *mOwner;                         // offset 0x8, size 0x4
     ALIGN_16 UMath::Vector3 mTargetPosition;  // offset 0xC, size 0xC
     ISimable *mTargetSimable;                 // offset 0x18, size 0x4

@@ -35,9 +35,13 @@
 #include "Speed/Indep/Src/World/OnlineManager.hpp"
 #include "Speed/Indep/Src/World/WRoadElem.h"
 #include "Speed/Indep/Src/World/WRoadNetwork.h"
+#include "Speed/Indep/Tools/AttribSys/Runtime/AttribSys.h"
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
+
+#define AI_DEFAULT_AVOID_RADIUS 20.f // Decl: 58
+#define AI_STAGGERED 1               // Decl: 59
 
 const char *GetCaffeineLayerName(int driver_class) {
     switch (driver_class) {
@@ -52,11 +56,112 @@ const char *GetCaffeineLayerName(int driver_class) {
     }
 }
 
+class AIVehicleEmpty : public AIVehicle {
+  public:
+    static Behavior *Construct(const BehaviorParams &bp);
+
+    AIVehicleEmpty(const BehaviorParams &bp);
+
+    // Overrides: AIVehicle
+    void Update(float dT) override {
+        this->AIVehicle::Update(dT);
+    }
+
+    // Overrides: AIVehicle
+    void OnDebugDraw() override {}
+};
+
 AIVehicleEmpty::AIVehicleEmpty(const BehaviorParams &bp) : AIVehicle(bp, 1.0f, 0.0f, Sim::TASK_FRAME_VARIABLE) {}
 
 Behavior *AIVehicleEmpty::Construct(const BehaviorParams &bp) {
     return new AIVehicleEmpty(bp);
 }
+
+// total size: 0x80C
+class AIVehicleHuman : public AIVehicleRacecar, public IHumanAI {
+  public:
+    AIVehicleHuman(const BehaviorParams &bp);
+
+    static Behavior *Construct(const BehaviorParams &bp);
+
+    // Overrides: IUnknown
+    ~AIVehicleHuman() override;
+
+    void UpdateWrongWay();
+
+    // Overrides: IHumanAI
+    void SetAiControl(bool ai_control) override;
+
+    bool IsDragRacing();
+
+    bool IsDragSteering();
+
+    // Overrides: IHumanAI
+    void ChangeDragLanes(bool left) override;
+
+    // Overrides: AIVehicle
+    void OnDebugDraw() override;
+
+    // Overrides: AIVehicle
+    void Update(float dT) override;
+
+    // Overrides: IHumanAI
+    // Decl: 149
+    bool IsPlayerSteering() override {
+        if (this->bAiControl) {
+            return false;
+        } else {
+            return this->IsDragSteering() == false;
+        }
+    }
+
+    // Overrides: IHumanAI
+    bool GetAiControl() override {
+        return this->bAiControl;
+    }
+
+    // Overrides: IHumanAI
+    void SetWorldMoment(const UMath::Vector3 &position, float radius) override {
+        this->vMomentPosition = position;
+        this->fMomentRadius = radius;
+    }
+
+    // Overrides: IHumanAI
+    const UMath::Vector3 &GetWorldMomentPosition() override {
+        return this->vMomentPosition;
+    }
+
+    // Overrides: IHumanAI
+    float GetWorldMomentRadius() override {
+        return this->fMomentRadius;
+    }
+
+    // Overrides: IHumanAI
+    void ClearWorldMoment() override {
+        this->fMomentRadius = 0.0f;
+    }
+
+    // Overrides: IVehicleAI
+    float GetSkill() const override {
+        return 1.0f;
+    }
+
+    // Overrides: IHumanAI
+    bool IsFacingWrongWay() const override {
+        return this->mWrongWay;
+    }
+
+    // Overrides: ICheater
+    float GetCatchupCheat() const override {
+        return 0.0f;
+    }
+
+  private:
+    bool bAiControl;                // offset 0x7F4, size 0x1
+    UMath::Vector3 vMomentPosition; // offset 0x7F8, size 0xC
+    float fMomentRadius;            // offset 0x804, size 0x4
+    bool mWrongWay;                 // offset 0x808, size 0x1
+};
 
 AIVehicleHuman::AIVehicleHuman(const BehaviorParams &bp) : AIVehicleRacecar(bp), IHumanAI(bp.fowner) {
     this->MakeDebugable(DBG_AI);
@@ -313,7 +418,7 @@ AIVehicle::AIVehicle(const BehaviorParams &bp, float update_rate, float stagger,
       mGoalName(UCrc32::kNull),                                 //
       mDampedAngularVel(5.6f, 3.0f),                            //
       mDampedAngle(5.6f, 3.0f),                                 //
-      mAvoidableRadius(20.0f),                                  //
+      mAvoidableRadius(AI_DEFAULT_AVOID_RADIUS),                //
       mRoadUpdateTimer(Sim::GetTime() - 100.0f),                //
       mRoadIncrementTimer(Sim::GetTime() - 100.0f),             //
       mSeekAheadTimer(Sim::GetTime() - 100.0f),                 //
@@ -1102,8 +1207,7 @@ AIPerpVehicle::AIPerpVehicle(const BehaviorParams &bp)
     if (mStagger > 1.0f) {
         mStagger = 0.0f;
     }
-    // default
-    this->mPursuitEscalationAttrib = new Attrib::Gen::pursuitescalation(0xeec2271a, 0, nullptr);
+    this->mPursuitEscalationAttrib = new Attrib::Gen::pursuitescalation(Attrib::key_default, 0, nullptr);
     this->mPursuitLevelAttrib = nullptr;
     this->mPursuitSupportAttrib = nullptr;
     this->SetHeat(1.0f);
