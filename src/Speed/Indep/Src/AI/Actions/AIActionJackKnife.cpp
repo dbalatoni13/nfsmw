@@ -1,5 +1,6 @@
 #include "Speed/Indep/Src/AI/AIAction.h"
 #include "Speed/Indep/Src/AI/AIMath.h"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/aud_moment_strm_hash.h"
 #include "Speed/Indep/Src/Generated/Events/EMomentStrm.hpp"
 #include "Speed/Indep/Src/Generated/Messages/MJackKnife.h"
 #include "Speed/Indep/Src/Interfaces/SimEntities/IPlayer.h"
@@ -129,8 +130,8 @@ void AIActionJackKnife::Update(float dT) {
         vpos.x = this->mIVehicle->GetPosition().x;
         vpos.y = this->mIVehicle->GetPosition().y;
         vpos.z = this->mIVehicle->GetPosition().z;
-        // TODO magic
-        new EMomentStrm(vpos, UMath::Vector4::kZero, UMath::Vector4::kZero, 0, nullptr, 0x5202c045);
+        
+        new EMomentStrm(vpos, UMath::Vector4::kZero, UMath::Vector4::kZero, 0, nullptr, Attrib::Hash::aud_moment_strm::key_jacknife);
     }
     this->mIInput->SetControlHandBrake(1.0f);
     this->mIInput->SetControlSteering(-1.0f);

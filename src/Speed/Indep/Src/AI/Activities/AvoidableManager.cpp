@@ -1,7 +1,29 @@
-#include "AvoidableManager.hpp"
 #include "Speed/Indep/Src/AI/AIAvoidable.h"
+#include "Speed/Indep/Src/Debug/Debugable.h"
+#include "Speed/Indep/Src/Interfaces/SimActivities/IActivity.h"
 #include "Speed/Indep/Src/Misc/Profiler.hpp"
+#include "Speed/Indep/Src/Sim/SimActivity.h"
 #include "Speed/Indep/Src/Sim/Simulation.h"
+
+// total size: 0x54
+// Decl: 23
+class AvoidableManager : public Sim::Activity, public Debugable {
+  public:
+    AvoidableManager(Sim::Param params);
+    ~AvoidableManager() override;
+
+    static Sim::IActivity *Construct(Sim::Param params);
+
+    // ITaskable
+    bool OnTask(HSIMTASK htask, float dT) override;
+
+    virtual void OnDebugDraw();
+
+  private:
+    HSIMTASK mSimulateTask; // offset 0x50, size 0x4
+};
+
+BIND_ACTIVITY_FACTORY(AvoidableManager); // Decl: 38
 
 AvoidableManager::AvoidableManager(Sim::Param params) : Sim::Activity(0) {
     this->mSimulateTask = this->AddTask(UCrc32("AvoidableManager"), 0.25f, 0.0f, Sim::TASK_FRAME_FIXED);

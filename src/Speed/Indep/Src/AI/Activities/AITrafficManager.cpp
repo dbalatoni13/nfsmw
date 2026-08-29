@@ -1,9 +1,9 @@
-#include "Speed/Indep/Src/AI/activities/AITrafficManager.hpp"
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Src/AI/AIVehicle.h"
 #include "Speed/Indep/Src/Gameplay/GManager.h"
 #include "Speed/Indep/Src/Gameplay/GRaceStatus.h"
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/trafficpattern.h"
+#include "Speed/Indep/Src/Generated/AttribSys/Classes/controller_hash.h"
 #include "Speed/Indep/Src/Generated/Messages/MSetTrafficSpeed.h"
 #include "Speed/Indep/Src/Input/ActionQueue.h"
 #include "Speed/Indep/Src/Misc/Config.h"
@@ -15,7 +15,6 @@
 #include "Speed/Indep/Src/Interfaces/SimActivities/ITrafficMgr.h"
 #include "Speed/Indep/Src/Interfaces/SimActivities/IVehicleCache.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IVehicle.h"
-#include "Speed/Indep/Src/Main/AttribSupport.h"
 #include "Speed/Indep/Src/Misc/Profiler.hpp"
 #include "Speed/Indep/Src/Misc/Table.hpp"
 #include "Speed/Indep/Src/Physics/PVehicle.h"
@@ -28,10 +27,121 @@
 #include "Speed/Indep/bWare/Inc/Strings.hpp"
 #include "Speed/Indep/bWare/Inc/bWare.hpp"
 
-#include <algorithm>
+static const unsigned int MAX_PATTERN_TYPES = 10; // Decl: 81
 
+// Decl: 169
+static const float Tweak_TrafficOffScreenDistance[11] = {
+    130.0f, 120.0f, 110.0f, 100.0f, 90.0f, 80.0f, 70.0f, 60.0f, 55.0f, 45.0f, 40.0f,
+};
+
+// Decl: 176
+static const float Tweak_TrafficOffScreenTime[11] = {
+    12.0f, 10.0f, 9.0f, 8.0f, 7.0f, 6.5f, 6.0f, 5.5f, 5.0f, 4.5f, 4.0f,
+};
+
+static Table TrafficOffScreenDistance(Tweak_TrafficOffScreenDistance, 11, 0.0f, 1.0f); // Decl: 249
+
+static Table TrafficOffScreenTime(Tweak_TrafficOffScreenTime, 11, 0.0f, 1.0f); // Decl: 256
+
+// total size: 0x8
+// Decl: 428
+struct PartChecker : public IModel::Enumerator {
+    bool Valid; // offset 0x4, size 0x1, Decl: 430
+
+    PartChecker() {} // Decl: 433
+
+    virtual ~PartChecker() {} // Decl: 436
+
+    // Overrides: Enumerator
+    // Decl: 439
+    bool OnModel(IModel *model) override {}
+};
+
+DECLARE_CONTAINER_TYPE(TrafficList);
+DECLARE_CONTAINER_TYPE(AITrafficManager_PatternMap);
+
+// total size: 0x3C4
+// Decl: 453
+class AITrafficManager : public Sim::Activity, public ITrafficMgr, public IVehicleCache, public Debugable {
+  public:
+    struct PatternKey {
+        int BHash;
+        Attrib::Key CollectionKey;
+
+        bool operator<(const PatternKey &rhs) const {
+            return this->BHash < rhs.BHash;
+        }
+    };
+
+    struct PatternMap : public UTL::Std::vector<PatternKey, _type_AITrafficManager_PatternMap> {
+        Attrib::Key Find(int bhash) const {
+            PatternKey key;
+            key.BHash = bhash;
+            key.CollectionKey = 0;
+            const_iterator iter = std::lower_bound(this->begin(), this->end(), key);
+            if (iter != this->end() && iter->BHash == bhash) {
+                return iter->CollectionKey;
+            }
+            return 0;
+        }
+    };
+
+    typedef UTL::Std::list<IVehicle *, _type_TrafficList> TrafficList;
+
+    AITrafficManager(Sim::Param params);
+    ~AITrafficManager() override;
+
+    static Sim::IActivity *Construct(Sim::Param params);
+
+    // ITaskable
+    bool OnTask(HSIMTASK htask, float dT) override;
+
+    // IVehicleCache
+    eVehicleCacheResult OnQueryVehicleCache(const IVehicle *removethis, const IVehicleCache *whosasking) const override;
+    void OnRemovedVehicleCache(IVehicle *ivehicle) override;
+
+    // ITrafficMgr
+    void FlushAllTraffic(bool release) override;
+
+  protected:
+    // IAttachable
+    void OnAttached(IAttachable *pOther) override;
+    void OnDetached(IAttachable *pOther) override;
+
+    virtual void OnDebugDraw();
+
+  private:
+    bool FindSpawnPoint(WRoadNav &nav) const;
+    bool FindCollisions(const UMath::Vector3 &spawnpoint) const;
+    bool ChoosePattern();
+    void SetTrafficPattern(Attrib::Key pattern_key);
+    void Update(float dT);
+    Attrib::Key NextSpawn();
+    IVehicle *GetAvailableTrafficVehicle(Attrib::Key key, bool makenew);
+    bool CheckRace(const WRoadNav &nav) const;
+    bool ValidateVehicle(IVehicle *ivehicle, float density) const;
+    bool SpawnTraffic();
+    bool NeedsTraffic() const;
+    float ComputeDensity() const;
+    void UpdateDebug();
+
+    HSIMTASK mTask;                       // offset 0x68, size 0x4
+    unsigned int mSpawnIdx;               // offset 0x6C, size 0x4
+    float mPatternTimer[10];              // offset 0x70, size 0x28
+    float mNewInstanceTimer;              // offset 0x98, size 0x4
+    TrafficList mVehicles;                // offset 0x9C, size 0x8
+    ActionQueue *mActionQ;                // offset 0xA4, size 0x4
+    eTrafficDensity mDensity;             // offset 0xA8, size 0x4
+    PatternMap mPatternMap;               // offset 0xAC, size 0x10
+    WRoadNav mNav;                        // offset 0xBC, size 0x2F0
+    float mOncommingChance;               // offset 0x3AC, size 0x4
+    Attrib::Gen::trafficpattern mPattern; // offset 0x3B0, size 0x14
+};
+
+// Decl: 554
 BIND_ACTIVITY_FACTORY(AITrafficManager);
 
+// Decl: 563
 AITrafficManager::AITrafficManager(Sim::Param params)
     : Sim::Activity(2),       //
       ITrafficMgr(this),      //
@@ -42,7 +152,7 @@ AITrafficManager::AITrafficManager(Sim::Param params)
       mPatternMap(),          //
       mNewInstanceTimer(0),   //
       mNav(),                 //
-      mPattern((Attrib::Collection *)nullptr, 0, nullptr) {
+      mPattern(static_cast<Attrib::Collection *>(nullptr), 0, nullptr) {
     this->MakeDebugable(DBG_AI);
     bMemSet(this->mPatternTimer, 0, sizeof(this->mPatternTimer));
     this->mNewInstanceTimer = 0;
@@ -50,7 +160,7 @@ AITrafficManager::AITrafficManager(Sim::Param params)
     this->mVehicles.clear();
     this->mTask = this->AddTask(UCrc32("AITrafficManager"), 0.5f, 0.5f, Sim::TASK_FRAME_VARIABLE);
     Sim::ProfileTask(this->mTask, "AITrafficManager");
-    this->mActionQ = new ActionQueue(0, 0x98c7a2f5, "AITrafficManager", false);
+    this->mActionQ = new ActionQueue(0, Attrib::Hash::controller::key_debug, "AITrafficManager", false);
     const Attrib::Class *patternclass = Attrib::Database::Get().GetClass(Attrib::ClassName::trafficpattern);
     if (patternclass != nullptr) {
         this->mPatternMap.clear();
@@ -163,7 +273,7 @@ Attrib::Key AITrafficManager::NextSpawn() {
     if (num_types == 0) {
         return 0;
     }
-    unsigned int max_types = UMath::Min(num_types, 10U);
+    unsigned int max_types = UMath::Min(num_types, 10u);
     Attrib::Key key = 0;
     for (unsigned int i = 0; i < max_types && key == 0; this->mSpawnIdx++, i++) {
         this->mSpawnIdx %= max_types;
@@ -276,8 +386,8 @@ bool AITrafficManager::NeedsTraffic() const {
             inactive_count++;
         }
     }
-    int active_count = IVehicle::Count(VEHICLE_ALL);
-    return (unsigned int)(active_count - inactive_count) < 10;
+    int active_count = IVehicle::Count(VEHICLE_ALL) - inactive_count;
+    return static_cast<unsigned int>(active_count) < 10;
 }
 
 void AITrafficManager::UpdateDebug() {
@@ -461,7 +571,6 @@ bool AITrafficManager::ValidateVehicle(IVehicle *ivehicle, float density) const 
 
 // float AITrafficManager::ComputeDensity() const {}
 
-// TODO move?
 static const float Tweak_TrafficDensitySpawnRates[11] = {0.0f, 0.05f, 0.1f, 0.125f, 0.2f, 0.4f, 0.6f, 1.0f, 3.0f, 5.0f, 8.0f};
 static Table TrafficDensitySpawnRates(Tweak_TrafficDensitySpawnRates, 11, 0.0f, 1.0f);
 

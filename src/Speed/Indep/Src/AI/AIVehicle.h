@@ -1,9 +1,16 @@
-#ifndef AI_AIVEHICLE_H
-#define AI_AIVEHICLE_H
-
-#ifdef EA_PRAGMA_ONCE_SUPPORTED
-#pragma once
-#endif
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+#ifndef __AIVEHICLE_H
+#define __AIVEHICLE_H 1
 
 #include "AIAvoidable.h"
 #include "AIGoal.h"
@@ -29,36 +36,12 @@
 #include "types.h"
 
 // total size: 0x754
+// Decl: 69
 class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable, public Debugable {
   public:
     USE_FASTALLOC(AIVehicle);
 
     static Behavior *Construct(const BehaviorParams &bp);
-
-    float GetOverSteerCorrection(float steer);
-
-    const UMath::Vector3 &GetAngularVelocity() const {
-        return this->mCollisionBody->GetAngularVelocity();
-    }
-
-    const UMath::Vector3 &GetLinearVelocity() const {
-        return this->mCollisionBody->GetLinearVelocity();
-    }
-
-    const UMath::Vector3 &GetPosition() const {
-        return this->mCollisionBody->GetPosition();
-    }
-
-    const UMath::Matrix4 &GetOrientation() const {
-        return this->mCollisionBody->GetMatrix4();
-    }
-
-    const UMath::Vector3 &GetForwardVector() const {
-        return UMath::Vector4To3(this->GetOrientation().v2);
-    }
-
-    const UMath::Vector3 &GetUpVector() const;
-    const UMath::Vector3 &GetRightVector() const;
 
     // Behavior
     void OnTaskSimulate(float dT) override;
@@ -70,10 +53,6 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
 
     IVehicle *GetVehicle() const override {
         return this->VehicleBehavior::GetVehicle();
-    }
-
-    ISuspension *GetSuspension() const {
-        return this->mISuspension;
     }
 
     virtual void Update(float dT);
@@ -119,22 +98,42 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
         this->mDriveSpeed = driveSpeed;
     }
 
-    WRoadNav *GetCollNav(const UMath::Vector3 &forwardVector, float predictTime) override;
-    WRoadNav *GetCurrentRoad() override;
-    WRoadNav *GetFutureRoad() override;
-    const UMath::Vector3 &GetFarFuturePosition() override;
-    const UMath::Vector3 &GetFarFutureDirection() override;
-    const UMath::Vector3 &GetSeekAheadPosition() override;
+    void SetDriveTarget(const UMath::Vector3 &dest) override {
+        this->mDest = dest;
+    }
 
     const UMath::Vector3 &GetDriveTarget() override {
         return this->mDest;
     }
 
-    void SetDriveTarget(const UMath::Vector3 &dest) override {
-        this->mDest = dest;
+    float GetLookAhead() override;
+
+    float GetOverSteerCorrection(float steer);
+
+    // IsUnderSteering
+
+    const UMath::Vector3 &GetAngularVelocity() const {
+        return this->mCollisionBody->GetAngularVelocity();
     }
 
-    float GetLookAhead() override;
+    const UMath::Vector3 &GetLinearVelocity() const {
+        return this->mCollisionBody->GetLinearVelocity();
+    }
+
+    const UMath::Vector3 &GetPosition() const {
+        return this->mCollisionBody->GetPosition();
+    }
+
+    const UMath::Matrix4 &GetOrientation() const {
+        return this->mCollisionBody->GetMatrix4();
+    }
+
+    const UMath::Vector3 &GetForwardVector() const {
+        return UMath::Vector4To3(this->GetOrientation().v2);
+    }
+
+    const UMath::Vector3 &GetUpVector() const;
+    const UMath::Vector3 &GetRightVector() const;
 
     unsigned int GetDriveFlags() const override {
         return this->mDriveFlags;
@@ -160,6 +159,8 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
         this->mDriveFlags = flags;
     }
 
+    void DoNOS() override;
+
     float GetPathDistanceRemaining() override;
 
     void SetReverseOverride(float time) override;
@@ -180,6 +181,8 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
         return this->mDrivableToTargetPos;
     }
 
+    WRoadNav *GetCollNav(const UMath::Vector3 &forwardVector, float predictTime) override;
+
     void SetSpawned() override;
     void UnSpawn() override;
     bool CanRespawn(bool respawnAvailable) override;
@@ -199,6 +202,11 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
         return this->mTopSpeed;
     }
 
+    float GetAcceleration(float at) const override;
+
+    virtual void OnCollision(const COLLISION_INFO &cinfo);
+    virtual void OnDebugDraw();
+
     // Overrides: IVehicleAI
     IPursuit *GetPursuit() override {
         return this->mPursuit;
@@ -209,11 +217,6 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
         return this->mRoadBlock;
     }
 
-    float GetAcceleration(float at) const override;
-
-    virtual void OnCollision(const COLLISION_INFO &cinfo);
-    virtual void OnDebugDraw();
-
     // Overrides: IVehicleAI
     bool IsCurrentGoal(const UCrc32 &name) override {
         return name == this->mGoalName;
@@ -223,11 +226,11 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
         return this->mGoalName;
     }
 
-    void SetGoal(const UCrc32 &name);
-
-    AIGoal *GetGoal() const {
-        return this->mCurrentGoal;
-    }
+    const UMath::Vector3 &GetSeekAheadPosition() override;
+    const UMath::Vector3 &GetFarFuturePosition() override;
+    const UMath::Vector3 &GetFarFutureDirection() override;
+    WRoadNav *GetCurrentRoad() override;
+    WRoadNav *GetFutureRoad() override;
 
     // IVehicleAI
     bool IsCurrentAction(const UCrc32 &name) override {
@@ -258,16 +261,6 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
         return 0.0f;
     }
 
-    EventSequencer::IEngine *GetEngine() const {
-        return this->mIEngine;
-    }
-
-    ITransmission *GetTransmission() const {
-        return this->mITransmission;
-    }
-
-    // IChassis *GetSuspension() const;
-
   protected:
     virtual bool OnClearCausality(float start_time);
     virtual void OnReverse(float dT);
@@ -293,7 +286,14 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
     }
 
     virtual void ResetInternals();
+
+    void SetGoal(const UCrc32 &name);
+
     void ClearGoal();
+
+    AIGoal *GetGoal() const {
+        return this->mCurrentGoal;
+    }
 
     void UpdateSpawnTimer(float dT) {
         this->mLastSpawnTime += dT;
@@ -318,14 +318,25 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
     // IVehicleAI
     void EnableSimplePhysics() override;
     void DisableSimplePhysics() override;
-    void DoNOS() override;
 
-    // Behavior
-    void OnBehaviorChange(const UCrc32 &mechanic) override;
+    ITransmission *GetTransmission() const {
+        return this->mITransmission;
+    }
+
+    ISuspension *GetSuspension() const {
+        return this->mISuspension;
+    }
+
+    EventSequencer::IEngine *GetEngine() const {
+        return this->mIEngine;
+    }
 
     IInput *GetInput() const {
         return this->mIInput;
     }
+
+    // Behavior
+    void OnBehaviorChange(const UCrc32 &mechanic) override;
 
     WRoadNav *mDriveToNav;             // offset 0x70, size 0x4
     ALIGN_16 UMath::Vector3 mDirToNav; // offset 0x74, size 0xC
@@ -376,29 +387,14 @@ class AIVehicle : public VehicleBehavior, public IVehicleAI, public AIAvoidable,
     Mps mTopSpeed;                               // offset 0x750, size 0x4
 };
 
-class AIVehicleEmpty : public AIVehicle {
-  public:
-    static Behavior *Construct(const BehaviorParams &bp);
-
-    AIVehicleEmpty(const BehaviorParams &bp);
-
-    // Overrides: AIVehicle
-    void Update(float dT) override {
-        this->AIVehicle::Update(dT);
-    }
-
-    // Overrides: AIVehicle
-    void OnDebugDraw() override {}
-};
-
+// Decl: 519
 class AIVehiclePid : public AIVehicle {
   public:
     typedef AIVehicle Base;
 
+  protected:
     AIVehiclePid(const BehaviorParams &bp, float update_rate, float stagger, Sim::TaskMode taskmode);
 
-    // Virtual overrides
-    // IUnknown
     ~AIVehiclePid() override;
 
     // Behavior
@@ -418,79 +414,34 @@ class AIVehiclePid : public AIVehicle {
     float mPrevDesiredSpeed;                               // offset 0x76C, size 0x4
 };
 
+// Decl: 565
 class AIPerpVehicle : public AIVehiclePid, public IPerpetrator, public ICause, public ICheater {
   public:
     typedef AIVehiclePid Base;
-
-    AIPerpVehicle(const BehaviorParams &bp);
-    void ComputeSkill();
-
-    // Virtual overrides
-    // IUnknown
-    ~AIPerpVehicle() override;
-
-    // Overrides: IPerpetrator
-    void SetRacerInfo(GRacerInfo *info) override;
 
     // Overrides: AIVehicle
     void Update(float dT) override;
 
     // Overrides: IPerpetrator
-    void Set911CallTime(float time) override;
-
-    // Overrides: Behavior
-    void OnBehaviorChange(const UCrc32 &mechanic) override;
-
-    // Overrides: IPerpetrator
-    bool IsPartiallyHidden(float &HowHidden) const override;
-
-    // Overrides: IPerpetrator
-    void SetCostToState(int cts) override;
-
-    // Overrides: IPerpetrator
-    int GetCostToState() const override;
+    float GetHeat() const override;
 
     // Overrides: IPerpetrator
     void SetHeat(float heat) override;
-
-    // Overrides: IVehicleAI
-    float GetSkill() const override;
-
-    // Overrides: ICheater
-    float GetCatchupCheat() const override;
-
-    // Overrides: IPerpetrator
-    float GetHeat() const override;
 
     // Overrides: IPerpetrator
     void AddCostToState(int cost) override;
 
     // Overrides: IPerpetrator
-    void AddToPendingRepPointsNormal(int amount) override;
+    int GetCostToState() const override;
 
     // Overrides: IPerpetrator
-    void AddToPendingRepPointsFromCopDestruction(int amount) override;
+    void SetCostToState(int cts) override;
 
     // Overrides: IPerpetrator
     bool IsRacing() const override;
 
-    // Overrides: IVehicleAI
-    float GetPercentRaceComplete() const override;
-
     // Overrides: IPerpetrator
     bool IsBeingPursued() const override;
-
-    // Overrides: ICause
-    void OnCausedExplosion(IExplosion *explosion, ISimable *to) override;
-
-    // Overrides: AIVehicle
-    bool OnClearCausality(float start_time) override;
-
-    // Overrides: ICause
-    void OnCausedCollision(const COLLISION_INFO &cinfo, ISimable *from, ISimable *to) override;
-
-    // Overrides: IPerpetrator
-    float GetLastTrafficHitTime() const override;
 
     // Overrides: IPerpetrator
     bool IsHiddenFromCars() const override {
@@ -501,6 +452,15 @@ class AIPerpVehicle : public AIVehiclePid, public IPerpetrator, public ICause, p
     bool IsHiddenFromHelicopters() const override {
         return this->mHiddenFromHelicopters;
     }
+
+    // Overrides: IPerpetrator
+    bool IsPartiallyHidden(float &HowHidden) const override;
+
+    // Overrides: IPerpetrator
+    void AddToPendingRepPointsFromCopDestruction(int amount) override;
+
+    // Overrides: IPerpetrator
+    void AddToPendingRepPointsNormal(int amount) override;
 
     // Overrides: IPerpetrator
     int GetPendingRepPointsNormal() const override {
@@ -518,6 +478,15 @@ class AIPerpVehicle : public AIVehiclePid, public IPerpetrator, public ICause, p
         this->mPendingRepPointsFromCopDestruction = 0;
     }
 
+    // Overrides: Behavior
+    void OnBehaviorChange(const UCrc32 &mechanic) override;
+
+    // Overrides: ICause
+    void OnCausedExplosion(IExplosion *explosion, ISimable *to) override;
+
+    // Overrides: ICause
+    void OnCausedCollision(const COLLISION_INFO &cinfo, ISimable *from, ISimable *to) override;
+
     // Overrides: IPerpetrator
     Attrib::Gen::pursuitescalation *GetPursuitEscalationAttrib() override {
         return this->mPursuitEscalationAttrib;
@@ -533,28 +502,54 @@ class AIPerpVehicle : public AIVehiclePid, public IPerpetrator, public ICause, p
         return this->mPursuitSupportAttrib;
     }
 
+    bool IsOnLegalRoad() {
+        return this->GetCurrentRoad()->IsOnLegalRoad();
+    }
+
+    // Overrides: IPerpetrator
+    void SetRacerInfo(GRacerInfo *info) override;
+
     // Overrides: IPerpetrator
     GRacerInfo *GetRacerInfo() const override {
         return this->pRacerInfo;
     }
+
+    // Overrides: IVehicleAI
+    float GetSkill() const override;
 
     // Overrides: IPerpetrator
     float GetShortcutSkill() const override {
         return bClamp(this->fBaseSkill + this->fGlueOutput, 0.0f, 1.0f);
     }
 
+    // Overrides: IVehicleAI
+    float GetPercentRaceComplete() const override;
+
+    // Overrides: IPerpetrator
+    float GetLastTrafficHitTime() const override;
+
+    // Overrides: IPerpetrator
+    void Set911CallTime(float time) override;
+
     // Overrides: IPerpetrator
     float Get911CallTime() const override {
         return this->m911CallTimer;
     }
 
-    bool IsOnLegalRoad() {
-        return this->GetCurrentRoad()->IsOnLegalRoad();
-    }
+    // Overrides: ICheater
+    float GetCatchupCheat() const override;
+
+  protected:
+    void ComputeSkill();
+
+    // Overrides: AIVehicle
+    bool OnClearCausality(float start_time) override;
+
+    AIPerpVehicle(const BehaviorParams &bp);
+
+    ~AIPerpVehicle() override;
 
   private:
-    static float mStagger; // size: 0x4, address: 0x8041536C
-
     float mHeat;                                              // offset 0x78C, size 0x4
     int mCostToState;                                         // offset 0x790, size 0x4
     int mPendingRepPointsNormal;                              // offset 0x794, size 0x4
@@ -577,116 +572,31 @@ class AIPerpVehicle : public AIVehiclePid, public IPerpetrator, public ICause, p
     float fGlueOutput;                                        // offset 0x7D8, size 0x4
     float LastTrafficHitTime;                                 // offset 0x7DC, size 0x4
     float m911CallTimer;                                      // offset 0x7E0, size 0x4
+
+    static float mStagger; // size: 0x4, address: 0x8041536C
 };
 
 // total size: 0x7EC
+// Decl: 671
 class AIVehicleRacecar : public AIPerpVehicle, public IRacer {
   public:
-    AIVehicleRacecar(const BehaviorParams &bp);
-
-    // Overrides: IUnknown
-    ~AIVehicleRacecar() override;
-
-    // Overrides: IRacer
-    void StartRace(DriverStyle style) override;
-
-    // Overrides: IRacer
-    void QuitRace() override;
+    static Behavior *Construct(const BehaviorParams &bp);
 
     // Overrides: IRacer
     void PrepareForRace(const RacePreparationInfo &rpi) override;
+    void StartRace(DriverStyle style) override;
+    void QuitRace() override;
 
-    static Behavior *Construct(const BehaviorParams &bp);
+  protected:
+    AIVehicleRacecar(const BehaviorParams &bp);
 
-    bool ShouldDoSimplePhysics() const;
-
-    // Overrides: AIVehicle
-    void Update(float dT) override;
-};
-
-// total size: 0x80C
-class AIVehicleHuman : public AIVehicleRacecar, public IHumanAI {
-  public:
-    AIVehicleHuman(const BehaviorParams &bp);
-
-    static Behavior *Construct(const BehaviorParams &bp);
-
-    // Overrides: IUnknown
-    ~AIVehicleHuman() override;
-
-    void UpdateWrongWay();
-
-    // Overrides: IHumanAI
-    void SetAiControl(bool ai_control) override;
-
-    bool IsDragRacing();
-
-    bool IsDragSteering();
-
-    // Overrides: IHumanAI
-    void ChangeDragLanes(bool left) override;
-
-    // Overrides: AIVehicle
-    void OnDebugDraw() override;
+    ~AIVehicleRacecar() override;
 
     // Overrides: AIVehicle
     void Update(float dT) override;
-
-    // Overrides: IHumanAI
-    bool IsPlayerSteering() override {
-        if (this->bAiControl) {
-            return false;
-        } else {
-            return this->IsDragSteering() == false;
-        }
-    }
-
-    // Overrides: IHumanAI
-    bool GetAiControl() override {
-        return this->bAiControl;
-    }
-
-    // Overrides: IHumanAI
-    void SetWorldMoment(const UMath::Vector3 &position, float radius) override {
-        this->vMomentPosition = position;
-        this->fMomentRadius = radius;
-    }
-
-    // Overrides: IHumanAI
-    const UMath::Vector3 &GetWorldMomentPosition() override {
-        return this->vMomentPosition;
-    }
-
-    // Overrides: IHumanAI
-    float GetWorldMomentRadius() override {
-        return this->fMomentRadius;
-    }
-
-    // Overrides: IHumanAI
-    void ClearWorldMoment() override {
-        this->fMomentRadius = 0.0f;
-    }
-
-    // Overrides: IVehicleAI
-    float GetSkill() const override {
-        return 1.0f;
-    }
-
-    // Overrides: IHumanAI
-    bool IsFacingWrongWay() const override {
-        return this->mWrongWay;
-    }
-
-    // Overrides: ICheater
-    float GetCatchupCheat() const override {
-        return 0.0f;
-    }
 
   private:
-    bool bAiControl;                // offset 0x7F4, size 0x1
-    UMath::Vector3 vMomentPosition; // offset 0x7F8, size 0xC
-    float fMomentRadius;            // offset 0x804, size 0x4
-    bool mWrongWay;                 // offset 0x808, size 0x1
+    bool ShouldDoSimplePhysics() const;
 };
 
 #endif

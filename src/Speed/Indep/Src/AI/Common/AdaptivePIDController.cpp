@@ -2,6 +2,9 @@
 #include "Speed/Indep/Src/Misc/Table.hpp"
 #include "Speed/Indep/bWare/Inc/bMath.hpp"
 
+#define MAX_AI_FRAMERATE 45.0f      // Decl: 44
+#define EXPECTED_AI_FRAMERATE 30.0f // Decl: 45
+
 AdaptivePIDControllerBase::AdaptivePIDControllerBase(eAdaptationRule adaptation_rule, float coefficient_derivative_window)
     : ModelErrorDerivative(coefficient_derivative_window, 45.0f) {
     this->AdaptationRule = adaptation_rule;
