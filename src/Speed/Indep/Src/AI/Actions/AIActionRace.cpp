@@ -179,25 +179,13 @@ void AIActionRace::BeginAction(float dT) {
     IPursuitAI *ipv;
     this->GetAI()->QueryInterface(&ipv);
 
-    this->bIsFleeMode = this->GetAI()->GetGoalName() == "AIGoalFleePursuit";
+    this->bIsFleeMode = this->GetAI()->GetGoalName() == UCrc32("AIGoalFleePursuit");
 
-    // TODO
-    if (!this->bIsFleeMode) {
-        if (this->GetAI()->GetPursuit() != nullptr) {
-            this->bIsPursuitMode = ComparePtr(this->GetAI()->GetTarget()->GetSimable(), this->GetAI()->GetPursuit()->GetTarget()->GetSimable());
-        } else {
-            this->bIsPursuitMode = false;
-        }
-    } else {
-        this->bIsPursuitMode = true;
-    }
+    this->bIsPursuitMode =
+        this->bIsFleeMode || (this->GetAI()->GetPursuit() != nullptr &&
+                              ComparePtr(this->GetAI()->GetTarget()->GetSimable(), this->GetAI()->GetPursuit()->GetTarget()->GetSimable()));
 
-    // TODO
-    if (this->bIsPursuitMode && ipv != nullptr) {
-        this->bDontSeekAhead = ipv->GetSupportGoal() == "AIGoalHeadOnRam";
-    } else {
-        this->bDontSeekAhead = false;
-    }
+    this->bDontSeekAhead = this->bIsPursuitMode && ipv != nullptr && ipv->GetSupportGoal() == UCrc32("AIGoalHeadOnRam");
 
     this->ComputePotentials();
 
@@ -212,7 +200,7 @@ void AIActionRace::BeginAction(float dT) {
     }
 
     if (this->mResetTask == nullptr) {
-        this->mResetTask = this->AddTask(UCrc32("Physics"), 0.25f, 1.0f, Sim::TASK_FRAME_FIXED);
+        this->mResetTask = this->AddTask("Physics", 0.25f, 1.0f, Sim::TASK_FRAME_FIXED);
         Sim::ProfileTask(this->mResetTask, "AIActionRace");
     }
 }
@@ -416,8 +404,6 @@ Table AiCatchupAcceleration(AiCatchupAccelerationData, 4, 0.0f, 1.0f);
 float aCorneringScaleData[2] = {0.36f, 0.9f};
 Table AICorneringScaleTable(aCorneringScaleData, 2, 0.0f, 1.0f);
 
-// UNSOLVED nightmare
-// https://decomp.me/scratch/jAGQL
 float AIActionRace::GetPotentialSpeed(const float curvature, const float skill, bool is_drag) const {
     float result = this->mTopSpeed;
     float maxdesired = -1.0f;
@@ -429,6 +415,7 @@ float AIActionRace::GetPotentialSpeed(const float curvature, const float skill, 
             if (this->GetAI()->GetDriveToNav()->HitDeadEnd()) {
                 return 0.0f;
             }
+
             float scale = AICorneringScaleTable.GetValue(skill);
             float start_grip = this->mStartGrip;
             float end_grip = this->mEndGrip;
@@ -437,6 +424,7 @@ float AIActionRace::GetPotentialSpeed(const float curvature, const float skill, 
             result = GetSpeedLimit(curvature, f0, f1, this->mTopSpeed);
         } else {
             WRoadNav *road_nav = this->GetAI()->GetDriveToNav();
+
             UMath::Vector3 myForwardVector;
             this->mIRigidBody->GetForwardVector(myForwardVector);
 
@@ -445,59 +433,68 @@ float AIActionRace::GetPotentialSpeed(const float curvature, const float skill, 
 
             UMath::Vector3 seek_dir;
             AITarget *target = this->GetAI()->GetTarget();
-
             UMath::Sub(this->mLastFindPosition, target->GetPosition(), seek_dir);
             UMath::Normalize(seek_dir);
 
             UMath::Vector3 steerDir;
             UMath::Sub(road_nav->GetPosition(), this->mIRigidBody->GetPosition(), steerDir);
+
             UMath::Vector3 targetSteerDir = steerDir;
             IVehicleAI *targetai;
             if (target->QueryInterface(&targetai)) {
                 UMath::Sub(targetai->GetDriveToNav()->GetPosition(), target->GetPosition(), targetSteerDir);
             }
+
             UMath::Normalize(steerDir);
             UMath::Normalize(targetSteerDir);
-            UMath::Vector3 offset_to_target;
 
+            UMath::Vector3 offset_to_target;
             UMath::Vector3 targetPosition = target->GetPosition();
             UMath::Sub(this->mIRigidBody->GetPosition(), targetPosition, offset_to_target);
 
             float scalar_offset_to_target = UMath::Dot(offset_to_target, seek_dir);
             float forward_near_speed = target->GetSpeed();
-            float var_f13 = scalar_offset_to_target > 0.0f ? 100.0f : 200.0f;
-            forward_near_speed -= scalar_offset_to_target * 0.01f * KPH2MPS(var_f13);
+            forward_near_speed -= ((scalar_offset_to_target > 0.0f ? KPH2MPS(100.0f) : KPH2MPS(200.0f)) * 0.01f) * scalar_offset_to_target;
+
             float distant_cop_speed = KPH2MPS(this->GetAI()->GetAttributes().MAXIMUM_AI_SPEED());
             if (this->GetAI()->GetPursuit() != nullptr && this->GetAI()->GetPursuit()->GetIsAJerk()) {
                 distant_cop_speed *= 1.1f;
             }
-            float temp_f13 = bClamp(forward_near_speed, KPH2MPS(10.0f), distant_cop_speed);
-            float var_f31 =
-                scalar_offset_to_target > 0.0f ? ((scalar_offset_to_target * 0.01f * KPH2MPS(50.0f)) - target->GetSpeed()) : distant_cop_speed;
-            float reverse_near_speed = bClamp(var_f31, KPH2MPS(40.0f), distant_cop_speed);
-            float near_speed =
-                bClamp(UMath::Dot(myForwardVector, seek_dir) + 0.5f, 0.0f, 1.0f) * (temp_f13 - reverse_near_speed) + reverse_near_speed;
+
+            forward_near_speed = bClamp(forward_near_speed, KPH2MPS(10.0f), distant_cop_speed);
+
+            float reverse_near_speed =
+                scalar_offset_to_target > 0.0f ? -target->GetSpeed() + scalar_offset_to_target * (KPH2MPS(50.0f) * 0.01f) : distant_cop_speed;
+            reverse_near_speed = bClamp(reverse_near_speed, KPH2MPS(40.0f), distant_cop_speed);
+
+            float direction_scale = bClamp(UMath::Dot(myForwardVector, seek_dir) + 0.5f, 0.0f, 1.0f);
+            float near_speed = direction_scale * (forward_near_speed - reverse_near_speed) + reverse_near_speed;
 
             UMath::Vector3 side_offset;
             UMath::ScaleAdd(seek_dir, -scalar_offset_to_target, offset_to_target, side_offset);
-            // side_offset_to_target
-            float temp_f1_7 = UMath::Length(side_offset) * 2.5f;
+
+            float side_offset_to_target = UMath::Length(side_offset) * 2.5f;
             if (scalar_offset_to_target > 0.0f) {
                 scalar_offset_to_target *= 0.5f;
             }
-            float temp_f1_8 = UMath::Sqrt((scalar_offset_to_target * scalar_offset_to_target) + (temp_f1_7 * temp_f1_7));
-            temp_f1_8 = 1.0f - (temp_f1_8 - 150.0f) * 0.006666667f;
-            float temp_f1_9 = bClamp(temp_f1_8, 0.0f, 1.0f);
-            float temp_f13_2 = UMath::Dot(steerDir, targetSteerDir);
-            float temp_f31_4 = bClamp(UMath::Abs(temp_f13_2) + 0.2f, 0.0f, 1.0f) * temp_f1_9;
-            float temp_f31_5 = bClamp((temp_f31_4 * near_speed) + (1.0f - temp_f31_4) * distant_cop_speed, 0.0f, distant_cop_speed);
 
-            float f0 = this->mStartGrip;
-            float f1 = (this->mEndGrip - this->mStartGrip) / this->mTopSpeed;
+            float apparent_distance_to_target =
+                UMath::Sqrt((scalar_offset_to_target * scalar_offset_to_target) + (side_offset_to_target * side_offset_to_target));
+
+            float near_scale = bClamp(1.0f - (apparent_distance_to_target - 150.0f) / 150.0f, 0.0f, 1.0f);
+            near_scale *= bClamp(UMath::Abs(UMath::Dot(steerDir, targetSteerDir)) + 0.2f, 0.0f, 1.0f);
+
+            float max_cop_speed = (near_scale * near_speed) + (1.0f - near_scale) * distant_cop_speed;
+            max_cop_speed = bClamp(max_cop_speed, 0.0f, distant_cop_speed);
+
+            const float kZeroSpeedMaxLateralGForce = this->mStartGrip;
+            const float kTopSpeedMaxLateralGForce = this->mEndGrip;
+            float f0 = kZeroSpeedMaxLateralGForce;
+            float f1 = (kTopSpeedMaxLateralGForce - kZeroSpeedMaxLateralGForce) / this->mTopSpeed;
             float speed = !road_nav->HitDeadEnd() ? GetSpeedLimit(curvature, f0, f1, this->mTopSpeed) : 0.0f;
 
-            result = UMath::Min(temp_f31_5, speed);
-            maxdesired = temp_f31_5;
+            result = UMath::Min(max_cop_speed, speed);
+            maxdesired = max_cop_speed;
         }
     }
 
@@ -517,6 +514,7 @@ float AIActionRace::GetPotentialSpeed(const float curvature, const float skill, 
     if (maxdesired > 0.0f) {
         result = bMin(maxdesired, result);
     }
+
     return result;
 }
 
@@ -603,6 +601,10 @@ float AIActionRace::GetPotentialNOS(float speed, bool was_on, float skill) const
 
 float aAiNavLookAheadData[2] = {30.0f, 100.0f};
 Table AiNavLookAheadTable(aAiNavLookAheadData, 2, 0.0f, 100.0f);
+
+// TODO MOVE
+float aAiDragNavLookAheadData[2] = {30.0f, 100.0f};
+Table AiDragNavLookAheadTable(aAiDragNavLookAheadData, 2, 0.0f, 100.0f);
 
 void AIActionRace::CheckOffPath(float dT) {
     WRoadNav *road_nav = this->GetAI()->GetDriveToNav();

@@ -1,7 +1,6 @@
 #include "Speed/Indep/Libs/Support/Utility/UMath.h"
 #include "Speed/Indep/Src/AI/AIAction.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IINput.h"
-#include "Speed/Indep/Src/Physics/Behavior.h"
 
 // total size: 0x48
 struct AIActionGetUnstuck : public AIAction {
@@ -31,6 +30,8 @@ struct AIActionGetUnstuck : public AIAction {
     IInput *mIInput;          // offset 0x58, size 0x4
 };
 
+BIND_AIACTION_FACTORY(AIActionGetUnstuck);
+
 AIActionGetUnstuck::AIActionGetUnstuck(AIActionParams *params, float score) : AIAction(params, score) {
     this->mStuckTimer = 0.0f;
     params->mOwner->QueryInterface(&this->mIInput);
@@ -46,6 +47,11 @@ AIAction *AIActionGetUnstuck::Construct(AIActionParams *params) {
     return new AIActionGetUnstuck(params, AIACTION_SCORE_HIGH);
 }
 
+static const float fGetUnstuckTooLong = 3.0f; // Decl: 57
+
+static const float fGetUnstuckDistance = 3.0f; // Decl: 59
+static const float fGetUnstuckDuration = 2.0f; // Decl: 60
+
 bool AIActionGetUnstuck::CanBeAttempted(float dT) {
     if (this->GetVehicle() == nullptr || this->GetAI() == nullptr || this->mIInput == nullptr || this->GetAI()->GetReverseOverride()) {
         return false;
@@ -58,12 +64,12 @@ bool AIActionGetUnstuck::CanBeAttempted(float dT) {
             this->mStuckTimer = dT;
         } else {
             this->mStuckTimer += dT;
-            if (this->mStuckTimer >= 3.0f) {
+            if (this->mStuckTimer >= fGetUnstuckTooLong) {
                 float dist = UMath::Distance(this->mStuckPos, position);
                 this->mStuckTimer = 0.0f;
-                if (dist < 3.0f) {
+                if (dist < fGetUnstuckDistance) {
                     stuck = true;
-                    this->GetAI()->SetReverseOverride(2.0f);
+                    this->GetAI()->SetReverseOverride(fGetUnstuckDuration);
                     this->mStuckTimer = 0.0f;
                 }
             }

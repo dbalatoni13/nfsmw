@@ -6,6 +6,7 @@
 #include "Speed/Indep/Src/Generated/AttribSys/Classes/controller_hash.h"
 #include "Speed/Indep/Src/Generated/Messages/MSetTrafficSpeed.h"
 #include "Speed/Indep/Src/Input/ActionQueue.h"
+#include "Speed/Indep/Src/Interfaces/Simables/IArticulatedVehicle.h"
 #include "Speed/Indep/Src/Misc/Config.h"
 #include "Speed/Indep/Src/Input/ActionRef.h"
 #include "Speed/Indep/Src/Interfaces/ITaskable.h"
@@ -43,18 +44,27 @@ static Table TrafficOffScreenDistance(Tweak_TrafficOffScreenDistance, 11, 0.0f, 
 
 static Table TrafficOffScreenTime(Tweak_TrafficOffScreenTime, 11, 0.0f, 1.0f); // Decl: 256
 
+static const float Tweak_TrafficDensitySpawnRates[11] = {0.0f, 0.05f, 0.1f, 0.125f, 0.2f, 0.4f, 0.6f, 1.0f, 3.0f, 5.0f, 8.0f};
+static Table TrafficDensitySpawnRates(Tweak_TrafficDensitySpawnRates, 11, 0.0f, 1.0f);
+
 // total size: 0x8
 // Decl: 428
 struct PartChecker : public IModel::Enumerator {
     bool Valid; // offset 0x4, size 0x1, Decl: 430
 
-    PartChecker() {} // Decl: 433
+    PartChecker() : Valid(false) {} // Decl: 433
 
     virtual ~PartChecker() {} // Decl: 436
 
     // Overrides: Enumerator
     // Decl: 439
-    bool OnModel(IModel *model) override {}
+    bool OnModel(IModel *model) override {
+        if (model->InView()) {
+            Valid = true;
+            return false;
+        }
+        return true;
+    }
 };
 
 DECLARE_CONTAINER_TYPE(TrafficList);
@@ -208,26 +218,19 @@ eVehicleCacheResult AITrafficManager::OnQueryVehicleCache(const IVehicle *remove
         if (removethis->IsLoading()) {
             return VCR_WANT;
         }
+    } else if (ComparePtr(whosasking, INIS::Get())) {
+        return VCR_DONTCARE;
+    } else if (ComparePtr(whosasking, ICopMgr::Get())) {
+        if (removethis->IsActive()) {
+            return VCR_WANT;
+        }
+    } else if (GRaceStatus::Exists() && whosasking == &GRaceStatus::Get()) {
+        return VCR_DONTCARE;
+    } else if (GManager::Exists() && whosasking == &GManager::Get()) {
         return VCR_DONTCARE;
     }
 
-    if (ComparePtr(whosasking, INIS::Get())) {
-        return removethis->IsActive() ? VCR_WANT : VCR_DONTCARE;
-    }
-
-    if (ComparePtr(whosasking, ICopMgr::Get())) {
-        return removethis->IsActive() ? VCR_WANT : VCR_DONTCARE;
-    }
-
-    if (GRaceStatus::Exists() && whosasking == &GRaceStatus::Get()) {
-        return VCR_DONTCARE;
-    }
-
-    if (GManager::Exists() && whosasking == &GManager::Get()) {
-        return VCR_DONTCARE;
-    }
-
-    return VCR_WANT;
+    return VCR_DONTCARE;
 }
 
 void AITrafficManager::OnRemovedVehicleCache(IVehicle *ivehicle) {}
@@ -431,21 +434,25 @@ bool AITrafficManager::FindCollisions(const UMath::Vector3 &spawnpoint) const {
         UMath::Matrix4 basis;
         UMath::Vector3 velocity;
         ITrafficCenter *center = *iter;
-        if (center->GetTrafficBasis(basis, velocity)) {
-            float distsq = UMath::DistanceSquarexz(UMath::Vector4To3(basis.v3), spawnpoint);
-            if (distsq < 22500.0f) {
-                return true;
-            }
+        if (!center->GetTrafficBasis(basis, velocity)) {
+            continue;
+        }
+
+        float distsq = UMath::DistanceSquarexz(UMath::Vector4To3(basis.v3), spawnpoint);
+        if (distsq < 22500.0f) {
+            return true;
         }
     }
     const IVehicle::List &vehicles = IVehicle::GetList(VEHICLE_ALL);
     for (IVehicle::List::const_iterator iter = vehicles.begin(); iter != vehicles.end(); iter++) {
         IVehicle *vehicle = *iter;
-        if (vehicle->IsActive()) {
-            float distsq = UMath::DistanceSquarexz(vehicle->GetPosition(), spawnpoint);
-            if (distsq < 400.0f) {
-                return true;
-            }
+        if (!vehicle->IsActive()) {
+            continue;
+        }
+
+        float distsq = UMath::DistanceSquarexz(vehicle->GetPosition(), spawnpoint);
+        if (distsq < 400.0f) {
+            return true;
         }
     }
     return false;
@@ -566,22 +573,84 @@ bool AITrafficManager::ChoosePattern() {
 }
 
 bool AITrafficManager::ValidateVehicle(IVehicle *ivehicle, float density) const {
-    return true;
+    if (ivehicle == nullptr) {
+        return false;
+    }
+
+    bool invalid = ivehicle->IsOffWorld();
+
+    if (!invalid) {
+        float offscreen_time = TrafficOffScreenTime.GetValue(density);
+        float offscreen_dist = TrafficOffScreenDistance.GetValue(density);
+        if (ivehicle->GetOffscreenTime() > offscreen_time) {
+            invalid = Sim::DistanceToCamera(ivehicle->GetPosition()) > offscreen_dist;
+        }
+    }
+
+    if (invalid) {
+        IArticulatedVehicle *iarticulate;
+        if (ivehicle->QueryInterface(&iarticulate)) {
+            IVehicle *trailer = iarticulate->GetTrailer();
+            if (trailer != nullptr) {
+                if (ValidateVehicle(trailer, density)) {
+                    return true;
+                }
+            }
+        }
+    }
+
+    if (invalid) {
+        ISimable *isimable = ivehicle->GetSimable();
+        IModel *imodel = isimable->GetModel();
+        if (imodel != nullptr) {
+            PartChecker pc;
+            if (static_cast<PartChecker *>(imodel->EnumerateChildren(&pc))->Valid) {
+                return true;
+            }
+        }
+    }
+
+    return !invalid;
 }
 
-// float AITrafficManager::ComputeDensity() const {}
+float AITrafficManager::ComputeDensity() const {
+    float result;
 
-static const float Tweak_TrafficDensitySpawnRates[11] = {0.0f, 0.05f, 0.1f, 0.125f, 0.2f, 0.4f, 0.6f, 1.0f, 3.0f, 5.0f, 8.0f};
-static Table TrafficDensitySpawnRates(Tweak_TrafficDensitySpawnRates, 11, 0.0f, 1.0f);
+    if (INIS::Exists() || (ICopMgr::Exists() && ICopMgr::Get()->IsCopRequestPending())) {
+        return 0.0f;
+    }
+
+    if (SkipFE && !SkipFEDisableTraffic) {
+        result = UMath::Clamp(static_cast<float>(SkipFETrafficDensity) * 0.01f, 0.0f, 1.0f);
+    } else {
+        result = 0.0f;
+
+        if (GRaceStatus::Exists()) {
+            GRaceStatus::PlayMode mode = GRaceStatus::Get().GetPlayMode();
+
+            if (mode == GRaceStatus::kPlayMode_Racing) {
+                result = UMath::Clamp(static_cast<float>(GRaceStatus::Get().GetTrafficDensity()) * 0.01f, 0.0f, 1.0f);
+            } else if (mode == GRaceStatus::kPlayMode_Roaming) {
+                result = 1.0f;
+            }
+        }
+
+        if (IPursuit::Count() != 0) {
+            result *= 0.5f;
+        }
+    }
+
+    return result;
+}
 
 void AITrafficManager::Update(float dT) {
     this->UpdateDebug();
     float density = this->ComputeDensity();
 
     if (density > 0.0f && this->ChoosePattern()) {
-        float spawn_time = TrafficDensitySpawnRates.GetValue(density);
+        float spawn_time = dT * TrafficDensitySpawnRates.GetValue(density);
         for (int i = 0; i < 10u; i++) {
-            this->mPatternTimer[i] += dT * spawn_time;
+            this->mPatternTimer[i] += spawn_time;
         }
         this->mNewInstanceTimer += dT;
         this->SpawnTraffic();
@@ -623,6 +692,7 @@ void AITrafficManager::FlushAllTraffic(bool release) {
 
 bool AITrafficManager::OnTask(HSIMTASK htask, float dT) {
     ProfileNode profile_node("AITrafficManager::OnTask", 0);
+    Object::OnTask(htask, dT);
     if (htask == this->mTask) {
         this->Update(dT);
         return true;

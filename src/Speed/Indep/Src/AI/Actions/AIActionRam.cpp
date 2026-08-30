@@ -199,7 +199,7 @@ void AIActionRam::UpdateSeek(UMath::Vector3 &seek, UMath::Vector3 &seekPosition,
 }
 
 void AIActionRam::Update(float dT) {
-    bool ispullover = this->mIVehicleAI->GetGoalName() == "AIGoalPullOver";
+    bool ispullover = this->mIVehicleAI->GetGoalName() == UCrc32("AIGoalPullOver");
 
     UMath::Vector3 seekPosition;
     this->GetSeekPosition(seekPosition, ispullover);
@@ -214,7 +214,7 @@ void AIActionRam::Update(float dT) {
         IPerpetrator *iperp;
         AITarget *target = this->mIVehicleAI->GetTarget();
         if (target->QueryInterface(&iperp)) {
-            const Attrib::Gen::pursuitlevels *pursuitLevelAttrib = iperp->GetPursuitLevelAttrib();
+            Attrib::Gen::pursuitlevels *pursuitLevelAttrib = iperp->GetPursuitLevelAttrib();
             aggression = pursuitLevelAttrib->CollapseAggression();
         }
 
@@ -235,8 +235,7 @@ void AIActionRam::Update(float dT) {
         float steercounterseparation = (-steerdotseparation) / UMath::Length(steer);
 
         if (steercounterseparation > 0.0001f) {
-            float longweight = (KPH2MPS(55.0f) - steercounterseparation) / KPH2MPS(55.0f);
-            longweight = bClamp(longweight, 0.0f, 1.0f);
+            float longweight = bClamp((KPH2MPS(55.0f) - steercounterseparation) / KPH2MPS(55.0f), 0.0f, 1.0f);
             UMath::Vector3 steerlong;
             UMath::Vector3 steerlat;
 
@@ -244,10 +243,10 @@ void AIActionRam::Update(float dT) {
             UMath::Scale(separation, steerdotseparation / separationlength2, steerlong);
             UMath::Sub(steer, steerlong, steerlat);
             UMath::Scale(steerlong, longweight, steer);
-            UMath::Add(steer, steerlat, steer);
+            UMath::Add(steer, steerlat);
         }
 
-        UMath::Add(steer, separation, steer);
+        UMath::Add(steer, separation);
     }
 
     float desired_speed = UMath::Length(steer);
@@ -269,10 +268,11 @@ void AIActionRam::Update(float dT) {
         float max_accel = targetai->GetAcceleration(speed) * accelmult;
 
         this->mLimiter.update(speed, max_speed, max_accel, dT);
-        desired_speed = bMin(desired_speed, this->mLimiter.get_speed_limit());
+        max_speed = this->mLimiter.get_speed_limit();
+        desired_speed = bMin(desired_speed, max_speed);
     }
 
-    float closeenoughspeed = (1.0f - aggression) * KPH2MPS(0.2f) + KPH2MPS(0.5f);
+    float closeenoughspeed = KPH2MPS(0.5f) + (1.0f - aggression) * KPH2MPS(0.2f);
     if (ispullover && UMath::Length(seek) < closeenoughspeed) {
         this->mIInput->SetControlGas(0.0f);
         this->mIInput->SetControlBrake(1.0f);

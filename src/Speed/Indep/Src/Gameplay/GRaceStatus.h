@@ -484,6 +484,10 @@ class GRaceStatus : public UTL::COM::Object, public IVehicleCache {
         return mPlayMode;
     }
 
+    int GetTrafficDensity() const {
+        return mTrafficDensity;
+    }
+
     unsigned int GetTrafficPattern() const {
         return mTrafficPattern;
     }
@@ -501,15 +505,15 @@ class GRaceStatus : public UTL::COM::Object, public IVehicleCache {
     }
 
     float GetBinBaseHeat() const {
-        return mRaceBin->GetBaseOpenWorldHeat();
+        return (mRaceBin != nullptr) ? mRaceBin->GetBaseOpenWorldHeat() : 0.0f;
     }
 
-    float GRaceStatusGetBinMaxHeat() const {
-        return mRaceBin->GetMaxOpenWorldHeat();
+    float GetBinMaxHeat() const {
+        return (mRaceBin != nullptr) ? mRaceBin->GetMaxOpenWorldHeat() : 10.0f;
     }
 
     float GetBinHeatScale() const {
-        return mRaceBin->GetScaleOpenWorldHeat();
+        return (mRaceBin != nullptr) ? mRaceBin->GetScaleOpenWorldHeat() : 1.0f;
     }
 
   private:

@@ -15,6 +15,7 @@ class FloatSpring {
     FloatSpring(float spring_k, float damper_k) : mX(0.0f), mV(0.0f), mC(spring_k), mD(damper_k) {}
 
     float Integrate(float newvalue, float dT) {
+        // TODO these are in the opposite order and assigned wrong
         float v = this->mV;
         float dX = (-v * this->mD * dT);
         dX += (newvalue - this->mX) * this->mC * dT + v;

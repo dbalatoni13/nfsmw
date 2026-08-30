@@ -210,16 +210,15 @@ void BoxInFormation::getPosition(int idx, float scale, UMath::Vector3 &pos) {
     UMath::Scale(base_pos[idx].v, scale, pos);
 }
 
-// Functionally matching
 void BoxInFormation::Update(float dT, IPursuit *pursuit) {
-    float finisher = pursuit->TimeToFinisherAttempt();
-    float ftight = (this->tightness * 0.2f) + 0.2f;
-    float scale = (finisher / this->GetTimeToFinisher() * ftight) + (1.0f - ftight);
+    float finisher = pursuit->TimeToFinisherAttempt() / GetTimeToFinisher();
+    float ftight = (tightness * 0.2f) + 0.2f;
+    float scale = finisher * ftight + (1.0f - ftight);
 
     for (int i = 0; i < 4; i++) {
         UMath::Vector3 pos;
-        this->getPosition(i, scale, pos);
-        this->mTargetOffsets[i].mOffset = pos;
+        getPosition(i, scale, pos);
+        mTargetOffsets[i].mOffset = pos;
     }
 }
 
@@ -288,16 +287,15 @@ void RollingBlockFormation::getPosition(int idx, float scale, UMath::Vector3 &po
     UMath::Scale(base_pos[idx].v, scale, pos);
 }
 
-// Functionally matching
 void RollingBlockFormation::Update(float dT, IPursuit *pursuit) {
-    float finisher = pursuit->TimeToFinisherAttempt();
-    float ftight = this->tightness * 0.4f;
-    float scale = (finisher / this->GetTimeToFinisher() * ftight) + (1.0f - ftight);
+    float finisher = pursuit->TimeToFinisherAttempt() / GetTimeToFinisher();
+    float ftight = tightness * 0.4f;
+    float scale = finisher * ftight + (1.0f - ftight);
 
     for (int i = 0; i < 5; i++) {
         UMath::Vector3 pos;
-        this->getPosition(i, scale, pos);
-        this->mTargetOffsets[i].mOffset = pos;
+        getPosition(i, scale, pos);
+        mTargetOffsets[i].mOffset = pos;
     }
 }
 
@@ -469,11 +467,10 @@ void GroundSupportRequest::Update(float dT) {
 AIPursuit::AIPursuit(Sim::Param params)
     : Sim::Activity(1),                  //
       IPursuit(this),                    //
-      mCoolDownTimeRequired(60.0f),      //
       mTarget(nullptr),                  //
       mFormation(nullptr),               //
       mRoadBlock(nullptr),               //
-      mTimeSinceSetupSpeech(0.0f),       //
+      mTimeSinceSetupSpeech(0),          //
       mBustedTimer(0.0f),                //
       mBustedIncrement(0.0f),            //
       mBustedHUDTime(0.0f),              //
@@ -482,11 +479,13 @@ AIPursuit::AIPursuit(Sim::Param params)
       mMostRecentCopDestroyedType(),     //
       mEvadeLevel(0.0f),                 //
       mCoolDownTimeRemaining(0.0f),      //
+      mCoolDownTimeRequired(60.0f),      //
       mPercentOfContingentEngaged(0.0f), //
       mNumCopsFullyEngaged(0),           //
       mPursuitMeter(0.0f),               //
       mIsPerpInSight(true),              //
       mHiddenZoneTime(0.0f),             //
+      mTimeSinceAnyCopSawPerp(-5.0f),    //
       mRepPointsPerMinute(0),            //
       mTotalCopsInvolved(0),             //
       mCopsDestroyed(0),                 //
@@ -511,10 +510,11 @@ AIPursuit::AIPursuit(Sim::Param params)
       mNumSupportVehiclesActive(0),      //
       mNextRoadblockRequest(false),      //
       mGroundSupportRequest(),           //
-      mTimeSinceAnyCopSawPerp(-5.0f),    //
-      mEnterSafehouseOnDestruct(false),  //
       mPursuitStatus(PS_INITIAL_CHASE),  //
-      mBackupCountdownTimer(0.0f) {
+      mBackupCountdownTimer(0.0f),       //
+      mEnterSafehouseOnDestruct(false) {
+    this->MakeDebugable(DBG_AI);
+
     this->mSimulateTask = this->AddTask(UCrc32("AIPursuit"), 0.25f, 0.0f, Sim::TASK_FRAME_VARIABLE);
     this->mBustedTimerTask = this->AddTask(UCrc32("AIPursuit"), 1.0f, 0.0f, Sim::TASK_FRAME_VARIABLE);
     Sim::ProfileTask(this->mSimulateTask, "AIPursuit");
@@ -525,54 +525,84 @@ AIPursuit::AIPursuit(Sim::Param params)
     this->mNearestCopInRoadblock = nullptr;
     this->mRoadBlockTimer = 0.0f;
     this->mDistanceToNearestCopInRoadblock = 0.0f;
+
     this->mTarget = new AITarget(nullptr);
     this->mTarget->Clear();
 
     this->mInFormationTimer = 0.0f;
-    this->mTotalPursuitTime = 0.0f;
     this->mBreakerTimer = -1.0f;
+    this->mTotalPursuitTime = 0.0f;
     this->mCollapseActive = false;
     this->mFormationAttemptCount = 0;
-
     this->mLastKnownLocation = UMath::Vector3Make(0.0f, 0.0f, 0.0f);
-    this->mCopContingent.reserve(5);
 
-    // TODO later after we have more Gameplay stuff decomped
-    // flipped in ghidra
+    this->mCopContingent.reserve(5);
+    this->mAllowStatsToAccumulate = false;
+
     if (GRaceStatus::Get().GetRaceParameters() != nullptr && GRaceStatus::Get().GetRaceContext() == GRace::kRaceContext_Career) {
         if (GRaceStatus::IsFinalEpicPursuit()) {
-            this->mBaseHeat = 6.0f;
             this->mMaximumHeat = 6.0f;
+            this->mBaseHeat = 6.0f;
         } else {
+            this->mBaseHeat = GRaceStatus::Get().GetBinBaseHeat();
+            this->mMaximumHeat = GRaceStatus::Get().GetBinMaxHeat();
+        }
+    } else if (GRaceStatus::Get().GetRaceContext() == GRace::kRaceContext_QuickRace && !GRaceStatus::IsChallengeRace()) {
+        this->mBaseHeat = 1.0f;
+        this->mMaximumHeat = 5.0f;
+    } else {
+        this->mBaseHeat = GRaceStatus::Get().GetBinBaseHeat();
+        this->mMaximumHeat = GRaceStatus::Get().GetBinMaxHeat();
+        this->mHeatScale = GRaceStatus::Get().GetBinHeatScale();
+
+        bool useWorldHeatForRace = false;
+        if (GRaceStatus::Exists()) {
+            GRaceParameters *raceParms = GRaceStatus::Get().GetRaceParameters();
+            if (raceParms != nullptr) {
+                useWorldHeatForRace = raceParms->GetUseWorldHeatInRace();
+            }
+
+            if (useWorldHeatForRace) {
+                this->mBaseHeat = raceParms->GetForceHeatLevel();
+                this->mMaximumHeat = raceParms->GetMaxRaceHeatLevel();
+                this->mHeatScale = 1.0f;
+            }
         }
 
-    } else {
+        if (!useWorldHeatForRace) {
+            GRaceParameters *raceParms = GRaceStatus::Get().GetRaceParameters();
+            if (raceParms != nullptr && raceParms->GetMaxHeatLevel() < this->mMaximumHeat) {
+                this->mMaximumHeat = raceParms->GetMaxHeatLevel();
+            }
+        }
     }
 
     this->mCurrentPursuitLevel = 0;
-    this->mActiveFormationTime = 0.0f;
     this->mActiveFormation = STAGGER_FOLLOW;
+    this->mActiveFormationTime = 0.0f;
     this->InitFormation(0);
+
     this->mSpawnCopTimer = 0.0f;
-    this->mDoTestForHeliSearch = false;
     this->mSpawnHeliTimer = 10.0f;
+    this->mDoTestForHeliSearch = false;
     this->mForceHeliSpawnNext = false;
     this->mCopDestroyedBonusTimer = 0.0f;
-    this->mMostRecentCopDestroyedRepPoints = 0;
     this->mCopDestroyedBonusMultiplier = 1;
-    this->mSupportCheckTimer = 10.0f;
-    this->mMostRecentCopDestroyedType = (const char *)nullptr;
+    this->mMostRecentCopDestroyedRepPoints = 0;
+    this->mMostRecentCopDestroyedType = nullptr;
     this->mCoolDownMeterDisplayed = false;
     this->mPursuitMeterModeTimer = 0.0f;
+
+    this->mSupportCheckTimer = 10.0f;
     this->mSupportPriorityCheckDone = false;
     this->mGroundSupportRequest.Reset();
 
     this->mJerkLagPosition = UMath::Vector3Make(0.0f, 0.0f, 0.0f);
     this->mJerkLagDistance = 1000.0f;
-
+    this->mJerkLagSpeed = 0.0f;
+    this->mIsAJerk = false;
     this->mNumRBCopsAdded = 0;
     this->mMinDistanceToTarget = 100000.0f;
-    this->mIsAJerk = false;
 }
 
 AIPursuit::~AIPursuit() {
@@ -920,25 +950,24 @@ void AIPursuit::AssignCopOffset(int cop, Pursuers &assignCopList, const UMath::V
 }
 
 void AIPursuit::AssignChopperGoal(IPursuitAI *pursuitChopper) {
-    if (this->IsAttemptingRoadBlock())
+    if (IsAttemptingRoadBlock())
         return;
 
     IVehicleAI *via;
     pursuitChopper->QueryInterface(&via);
 
-    if (via->IsCurrentGoal(UCrc32("AIGoalHeliExit")) == false) {
-        pursuitChopper->SetInPositionGoal(UCrc32("AIGoalHeliPursuit"));
-        pursuitChopper->SetInFormation(true);
-        if (!via->IsCurrentGoal(pursuitChopper->GetInPositionGoal())) {
-            pursuitChopper->DoInPositionGoal();
-        }
+    if (via->IsCurrentGoal("AIGoalHeliExit"))
+        return;
+
+    pursuitChopper->SetInPositionGoal("AIGoalHeliPursuit");
+    pursuitChopper->SetInFormation(true);
+    if (!via->IsCurrentGoal(pursuitChopper->GetInPositionGoal())) {
+        pursuitChopper->DoInPositionGoal();
     }
 }
 
 DECLARE_CONTAINER_TYPE(AIPursuitEvenOutOffsetsSourceOffsets);
 
-// Functionally matching I think
-#ifndef EA_PLATFORM_XENON
 void AIPursuit::EvenOutOffsets(Vector3List &copRelativePositions, FormationTargetList &formationOffsets) {
     typedef UTL::Std::vector<PursuitFormation::TargetOffsetList::const_iterator, _type_AIPursuitEvenOutOffsetsSourceOffsets> SourceVector;
 
@@ -948,7 +977,7 @@ void AIPursuit::EvenOutOffsets(Vector3List &copRelativePositions, FormationTarge
     source_offsets.reserve(offsetList.size());
 
     for (PursuitFormation::TargetOffsetList::const_iterator i = offsetList.begin(); i != offsetList.end(); ++i) {
-        source_offsets.push_back(i);
+        source_offsets.push_back(&*i);
     }
 
     while (copRelativePositions.size() > formationOffsets.size() && formationOffsets.size() < this->mFormation->GetMaxCops()) {
@@ -957,7 +986,6 @@ void AIPursuit::EvenOutOffsets(Vector3List &copRelativePositions, FormationTarge
         PursuitFormation::TargetOffsetList::const_iterator *bestOffset = source_offsets.end();
 
         for (PursuitFormation::TargetOffsetList::const_iterator *i = source_offsets.begin(); i != source_offsets.end(); ++i) {
-            // TODO does this .end belong here?
             if ((*i != nullptr) && (bestOffset == source_offsets.end() || (*i)->mMinTargets <= bestPriority)) {
                 UMath::Vector3 offsetPosition = (*i)->mOffset;
                 float combined_distance = 0.0f;
@@ -975,16 +1003,16 @@ void AIPursuit::EvenOutOffsets(Vector3List &copRelativePositions, FormationTarge
             }
         }
 
-        // TODO
-        if (bestOffset == source_offsets.end())
+        if (bestOffset == source_offsets.end()) {
             break;
+        }
 
         formationOffsets.push_back(FormationTarget((*bestOffset)->mOffset, (*bestOffset)->mInPositionOffset, (*bestOffset)->mInPositionGoal));
-        // TODO how on xenon? it's const..
+#ifndef EA_PLATFORM_XENON
         *bestOffset = nullptr;
+#endif
     }
 }
-#endif
 
 DECLARE_CONTAINER_TYPE(AIPursuitAssignClosestOffsetsDistances);
 DECLARE_CONTAINER_TYPE(AIPursuitAssignClosestOffsetsMaximums);
@@ -1230,24 +1258,21 @@ void AIPursuit::AssignCopsInCircle(CopAndAngle *copangles, int num, float radius
 
     int frontmostCop = 0;
     float smallestAngle = 4.0f;
-    float step;
-
     for (int i = 0; i < num; i++) {
         float a = UMath::Abs(copangles[i].angle);
-
         if (a < smallestAngle) {
-            frontmostCop = i;
             smallestAngle = a;
+            frontmostCop = i;
         }
     }
 
-    // TODO weird
+    float step = 6.283185f / num;
     for (int i = 0; i < num; i++) {
-        float angle = i * (6.283185f / num); // TODO different M_TWOPI constant...
+        float angle = i * step;
         float c = UMath::Cosr(angle);
         float s = UMath::Sinr(angle);
-        unsigned int index = (i + frontmostCop) % num;
 
+        int index = (i + frontmostCop) % num;
         copangles[index].cop->SetInPositionOffset(UMath::Vector3Make(s * radius, 0.0f, c * radius));
         copangles[index].cop->SetInPositionGoal(kPullOverGoal);
         copangles[index].cop->DoInPositionGoal();

@@ -202,6 +202,10 @@ inline void QuaternionToMatrix4(const Vector4 &q, Matrix4 &m) {
 void QuaternionToMatrix4(const Vector4 &q, Matrix4 &m);
 #endif
 
+inline void Add(Vector3 &r, const Vector3 &b) {
+    VU0_v3add(r, b, r);
+}
+
 inline void Add(const Vector3 &a, const Vector3 &b, Vector3 &r) {
     VU0_v3add(a, b, r);
 }

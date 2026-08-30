@@ -51,21 +51,27 @@ void AIVehicleCopCar::Update(float dT) {
     this->WatchForPerps();
 }
 
-// UNSOLVED
 bool AIVehicleCopCar::IsTetheredToTarget(UTL::COM::IUnknown *object) {
     if (!this->GetTarget()->IsValid()) {
         return false;
     }
-    // TODO
-    if (this->GetTarget()->IsTarget(object) || !this->GetInPursuit()) {
+
+    if (this->GetTarget()->IsTarget(object)) {
         return false;
     }
+
+    if (!this->GetInPursuit()) {
+        return false;
+    }
+
     if (this->GetSimable()->GetRigidBody()->GetSpeedXZ() < MPH2MPS(50.0f)) {
         return false;
     }
+
     if (this->GetTarget()->GetDistTo() > 50.0f) {
         return false;
     }
+
     UMath::Vector3 forwardVector;
     this->GetSimable()->GetRigidBody()->GetForwardVector(forwardVector);
 

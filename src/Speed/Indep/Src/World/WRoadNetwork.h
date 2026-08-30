@@ -321,6 +321,10 @@ class WRoadNav {
         return this->bCookieTrail && (this->nRoadOcclusion != 0 || this->nAvoidableOcclusion != 0);
     }
 
+    float GetOccludingTrailSpeed() const {
+        return this->fOccludingTrailSpeed;
+    }
+
     bool IsOccludedFromBehind() const {
         return this->IsOccludedByAvoidable() != 0 && this->bOccludedFromBehind;
     }
@@ -370,6 +374,10 @@ class WRoadNav {
 
     float GetOutOfBounds() {
         return this->mOutOfBounds;
+    }
+
+    const UMath::Vector3 &GetApexPosition() const {
+        return this->fApexPosition;
     }
 
     void DetermineDragLane() {

@@ -50,7 +50,7 @@ class AITarget : public bTNode<AITarget> {
     bool IsTarget(const AITarget *aitarget) const;
 
     bool IsTarget(const UTL::COM::IUnknown *object) const {
-        return UTL::COM::ComparePtr(this->mTargetSimable, object);
+        return this->mTargetSimable != nullptr && UTL::COM::ComparePtr(this->mTargetSimable, object);
     }
 
     bool IsSimable() const {

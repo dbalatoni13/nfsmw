@@ -353,19 +353,21 @@ void AIActionHeliPursuit::SetNextPerpSearchDest() {
     this->mSearchDestPoint.y += 5.0f;
 }
 
-// how can this have a diff??
 void AIActionHeliPursuit::SearchForPerp() {
     UMath::Vector3 myPosition = this->mIRigidBody->GetPosition();
+
     float dToDest = UMath::Distancexz(this->mSearchDestPoint, myPosition);
     if (dToDest < 30.0f) {
         this->SetNextPerpSearchDest();
     }
+
     this->mIVehicleAI->SetDriveSpeed(70.0f);
+
     UMath::Vector3 destVel = this->mIRigidBody->GetLinearVelocity();
-    mIAIHelicopter->SetDestinationVelocity(destVel);
-    this->mIVehicleAI->SetDriveTarget(destVel);
-    mIAIHelicopter->SetLookAtPosition(mSearchDestPoint);
-    this->mIVehicleAI->DoDriving(7); // TODO magic
+    this->mIAIHelicopter->SetDestinationVelocity(destVel);
+    this->mIVehicleAI->SetDriveTarget(this->mSearchDestPoint);
+    this->mIAIHelicopter->SetLookAtPosition(this->mSearchDestPoint);
+    this->mIVehicleAI->DoDriving(7);
 }
 
 bool bIgnoreHeliSheet;
