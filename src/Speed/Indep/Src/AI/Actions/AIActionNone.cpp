@@ -9,8 +9,6 @@ class AIActionNone : public AIAction {
 
     ~AIActionNone() override {}
 
-    // Virtual overrides
-    // AIAction
     bool CanBeAttempted(float dT) override {
         return false;
     }
@@ -27,6 +25,9 @@ class AIActionNone : public AIAction {
 
     void OnBehaviorChange(const UCrc32 &mechanic) override {}
 };
+
+// Decl: 38
+BIND_AIACTION_FACTORY(AIActionNone);
 
 AIAction *AIActionNone::Construct(AIActionParams *params) {
     return new AIActionNone(params, AIACTION_SCORE_LOW);

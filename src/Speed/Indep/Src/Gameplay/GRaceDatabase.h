@@ -9,13 +9,6 @@
 #include "Speed/Indep/Src/Gameplay/GRace.h"
 #include "Speed/Indep/Tools/AttribSys/Runtime/AttribHash.h"
 
-enum Context {
-    kRaceContext_QuickRace = 0,
-    kRaceContext_Online = 1,
-    kRaceContext_Career = 2,
-    kRaceContext_Count = 3,
-};
-
 class GVault;
 class GRaceCustom;
 class GRaceParameters;
@@ -147,7 +140,7 @@ class GRaceDatabase {
     GRaceBin *mBins;                         // offset 0x24, size 0x4
     Attrib::Class *mGameplayClass;           // offset 0x28, size 0x4
     struct GRaceCustom *mStartupRace;        // offset 0x2C, size 0x4
-    Context mStartupRaceContext;             // offset 0x30, size 0x4
+    GRace::Context mStartupRaceContext;      // offset 0x30, size 0x4
     unsigned int mNumInitialUnlocks;         // offset 0x34, size 0x4
     unsigned int *mInitialUnlockHash;        // offset 0x38, size 0x4
     struct GRaceSaveInfo *mRaceScoreInfo;    // offset 0x3C, size 0x4

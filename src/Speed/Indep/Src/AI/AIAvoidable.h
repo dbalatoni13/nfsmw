@@ -16,12 +16,9 @@ class ALIGN_16 AIAvoidable {
   public:
     // total size: 0x6C
     struct Grid : public SAP::Grid<AIAvoidable> {
-        Grid(); // TODO delete
-        // Grid(AIAvoidable &owner, const UMath::Vector3 &position, float radius) : SAP::Grid() {}
-
-        ~Grid() {}
-
         USE_FASTALLOC(AIAvoidable::Grid);
+
+        Grid(AIAvoidable &owner, const UMath::Vector3 &position, float radius) : SAP::Grid<AIAvoidable>(owner, position, radius) {}
     };
 
     AIAvoidable *FindOverlap(UMath::Vector4 *normal) const;
@@ -46,7 +43,6 @@ class ALIGN_16 AIAvoidable {
   protected:
     AIAvoidable(UTL::COM::IUnknown *pUnkPersist);
 
-    // Virtual functions
     virtual ~AIAvoidable();
     virtual bool OnUpdateAvoidable(UMath::Vector3 &pos, float &sweep);
 

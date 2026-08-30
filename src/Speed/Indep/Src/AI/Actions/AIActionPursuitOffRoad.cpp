@@ -9,17 +9,21 @@
 #include "Speed/Indep/Src/World/WCollisionMgr.h"
 #include "Speed/Indep/Tools/Inc/ConversionUtil.hpp"
 
-// TODO are these two maybe in AIAction.h?
 // total size: 0x1
+// Decl: 766 TODO move there
 class speed_delay_traits {
   public:
     typedef float time_type;
     typedef float value_type;
     typedef float value_arg;
 
-    time_type maximum_delay() const {}
+    time_type maximum_delay() const {
+        return 1.0f;
+    }
 
-    value_type lerp(value_type a, value_type b, value_type l) const {}
+    value_type lerp(value_type a, value_type b, value_type l) const {
+        return a + l * (b - a);
+    }
 
     // Static members
     static const size_t sample_count;
@@ -34,8 +38,12 @@ template <typename T> class time_delay_filter {
   public:
     void reset(float init);
 
-    const float &at(unsigned int off) const {}
-    inline float resolution() const {}
+    const float &at(unsigned int off) const {
+        return samples[(cursor - off) & 0xF];
+    }
+    inline float resolution() const {
+        return traits.maximum_delay() / 16;
+    }
 
     float get_sample(time_type delay) const;
     void add_sample(float sample, time_type dt);
@@ -136,8 +144,8 @@ bool AIActionPursuitOffRoad::ShouldDoIt() {
     float distancelimit = 60.0f;
 
     IVehicleAI *targetvehicleai;
-    if (target->GetSimable() != nullptr && target->GetSimable()->QueryInterface(&targetvehicleai)) {
-        distancelimit += UMath::Distance(targetPosition, targetvehicleai->GetCurrentRoad()->GetPosition());
+    if (target->QueryInterface(&targetvehicleai)) {
+        distancelimit = UMath::Distance(targetPosition, targetvehicleai->GetCurrentRoad()->GetPosition()) + distancelimit;
     }
 
     if (distanceToTarget > distancelimit) {
@@ -203,17 +211,24 @@ void AIActionPursuitOffRoad::UpdateRoadAffinity(UMath::Vector3 &affinity) {
     UMath::Vector2 loff = UMath::Vector2Make(position.x - cookie.Left.x, position.z - cookie.Left.y);
     UMath::Vector2 roff = UMath::Vector2Make(position.x - cookie.Right.x, position.z - cookie.Right.y);
 
-    float llen = UMath::Dot(loff, side) + 1.0f;
-    float rlen = -UMath::Dot(roff, side) + 1.0f;
+    float llen = UMath::Dot(loff, side);
+    float rlen = -UMath::Dot(roff, side);
     float sidev = UMath::Dot(UMath::Vector2Make(velocity.x, velocity.z), side);
+    llen += 1.0f;
+    rlen += 1.0f;
 
     float lden = bMax(0.1f, llen);
     float rden = bMax(0.1f, rlen);
     float linvtime = bMax(0.0f, -sidev) / lden;
     float rinvtime = bMax(0.0f, sidev) / rden;
 
-    float lscale = bMin((2.0f * linvtime * linvtime) + 0.5f / (lden * lden), KPH2MPS(100.0f));
-    float rscale = bMin((2.0f * rinvtime * rinvtime) + 0.5f / (rden * rden), KPH2MPS(100.0f));
+    float lscale = 0.5f / (lden * lden);
+    lscale += 2.0f * linvtime * linvtime;
+    lscale = bMin(KPH2MPS(100.0f), lscale);
+
+    float rscale = 0.5f / (rden * rden);
+    rscale += 2.0f * rinvtime * rinvtime;
+    rscale = bMin(KPH2MPS(100.0f), rscale);
 
     UMath::Vector3 side3 = UMath::Vector3Make(side.x, 0.0f, side.y);
     UMath::Scale(side3, lscale, affinity);

@@ -26,6 +26,7 @@ class AvoidableManager : public Sim::Activity, public Debugable {
 BIND_ACTIVITY_FACTORY(AvoidableManager); // Decl: 38
 
 AvoidableManager::AvoidableManager(Sim::Param params) : Sim::Activity(0) {
+    MakeDebugable(DBG_AIAVOIDABLE);
     this->mSimulateTask = this->AddTask(UCrc32("AvoidableManager"), 0.25f, 0.0f, Sim::TASK_FRAME_FIXED);
     Sim::ProfileTask(this->mSimulateTask, "AvoidableManager");
 }
@@ -54,19 +55,19 @@ bool AvoidableManager::OnTask(HSIMTASK htask, float dT) {
     }
 }
 
+AvoidableList AIAvoidable::mAll; //  Decl: 79
 AIAvoidable::AIAvoidable(UTL::COM::IUnknown *pUnkPersist) : mGridNode(nullptr), mUnk(pUnkPersist) {
     mAll.push_back(this);
 }
 
-// what?...
-// AIAvoidable::~AIAvoidable() {
-//     for (Neighbors::const_iterator iter = mNeighbors.begin(); iter != mNeighbors.end(); iter++) {
-//         AIAvoidable *pavoid = *iter;
-//         mNeighbors.erase(std::find(mNeighbors.begin(), mNeighbors.end(), this));
-//     }
-//     mAll.erase(std::find(mAll.begin(), mAll.end(), this));
-//     delete mGridNode;
-// }
+AIAvoidable::~AIAvoidable() {
+    for (Neighbors::const_iterator iter = mNeighbors.begin(); iter != mNeighbors.end(); iter++) {
+        AIAvoidable *pavoid = *iter;
+        pavoid->mNeighbors.erase(std::find(pavoid->mNeighbors.begin(), pavoid->mNeighbors.end(), this));
+    }
+    mAll.erase(std::find(mAll.begin(), mAll.end(), this));
+    delete mGridNode;
+}
 
 void AIAvoidable::OnOverLap(AIAvoidable &a0, AIAvoidable &a1, float dT) {
     a0.mNeighbors.push_back(&a1);
@@ -76,4 +77,38 @@ void AIAvoidable::OnOverLap(AIAvoidable &a0, AIAvoidable &a1, float dT) {
 void AIAvoidable::DrawAll() {}
 
 // later when we have SAP::Grid inlines
-// void AIAvoidable::UpdateAllAvoidables(float dT) {}
+// UNSOLVED, Grid shenanigans
+void AIAvoidable::UpdateAllAvoidables(float dT) {
+    unsigned int overlapx = 0;
+    unsigned int overlapz = 0;
+
+    for (AvoidableList::const_iterator iter = mAll.begin(); iter != mAll.end(); ++iter) {
+        AIAvoidable *pavoid = *iter;
+        UVector3 pos(UMath::Vector3::kZero);
+        float sweep = 0.0f;
+
+        if (pavoid->OnUpdateAvoidable(pos, sweep)) {
+            if (pavoid->mGridNode == nullptr) {
+                pavoid->mGridNode = new Grid(*pavoid, pos, sweep);
+            } else {
+                pavoid->mGridNode->SetPosition(pos, sweep);
+                if (pavoid->mGridNode->GetX().Overlaps()) {
+                    overlapx++;
+                }
+                if (pavoid->mGridNode->GetZ().Overlaps()) {
+                    overlapz++;
+                }
+            }
+        } else {
+            if (pavoid->mGridNode != nullptr) {
+                delete pavoid->mGridNode;
+                pavoid->mGridNode = nullptr;
+            }
+        }
+
+        pavoid->mNeighbors.clear();
+    }
+
+    unsigned int numiters = Grid::Sweep();
+    Grid::Prune(overlapz <= overlapx, OnOverLap, dT);
+}

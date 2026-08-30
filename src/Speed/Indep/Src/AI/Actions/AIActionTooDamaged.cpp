@@ -1,7 +1,6 @@
 #include "Speed/Indep/Src/AI/AIAction.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IINput.h"
 #include "Speed/Indep/Src/Interfaces/Simables/IRigidBody.h"
-#include "Speed/Indep/Src/Physics/Behavior.h"
 
 // total size: 0x48
 class AIActionTooDamaged : public AIAction, public Debugable {
@@ -33,6 +32,8 @@ class AIActionTooDamaged : public AIAction, public Debugable {
     IVehicle *mIVehicle; // offset 0x4C, size 0x4
     IInput *mIInput;     // offset 0x50, size 0x4
 };
+
+BIND_AIACTION_FACTORY(AIActionTooDamaged);
 
 AIActionTooDamaged::AIActionTooDamaged(AIActionParams *params, float score) : AIAction(params, score) {
     params->mOwner->QueryInterface(&this->mIVehicle);

@@ -260,16 +260,14 @@ Behavior *AIVehicleRacecar::Construct(const BehaviorParams &bp) {
     return new AIVehicleRacecar(bp);
 }
 
-// Functionally matching
 bool AIVehicleRacecar::ShouldDoSimplePhysics() const {
-    if (this->GetVehicle()->IsAnimating())
+    if (this->GetVehicle()->IsAnimating() || this->GetVehicle()->IsStaging() || this->GetOwner()->IsPlayer()) {
         return false;
-    if (this->GetVehicle()->IsStaging())
-        return false;
-    if (this->GetOwner()->IsPlayer())
-        return false;
-    if (this->GetVehicle()->IsOffWorld())
+    }
+
+    if (this->GetVehicle()->IsOffWorld()) {
         return true;
+    }
 
     return false;
 }

@@ -454,24 +454,29 @@ AIVehicle::AIVehicle(const BehaviorParams &bp, float update_rate, float stagger,
                 path_type = WRoadNav::kPathCop;
                 cookie_trail = true;
                 break;
-            case DRIVER_TRAFFIC:
-                cookie_trail = true;
-                break;
+
             case DRIVER_HUMAN:
                 path_type = WRoadNav::kPathPlayer;
                 cookie_trail = true;
                 decision_filter = true;
                 break;
+
             case DRIVER_REMOTE:
                 path_type = WRoadNav::kPathPlayer;
                 cookie_trail = true;
                 decision_filter = true;
                 break;
+
             case DRIVER_RACER:
                 path_type = WRoadNav::kPathRacer;
                 cookie_trail = true;
                 decision_filter = true;
                 break;
+
+            case DRIVER_TRAFFIC:
+                cookie_trail = true;
+                break;
+
             default:
                 break;
         }
@@ -691,8 +696,10 @@ void AIVehicle::Update(float dT) {
 
     float yaw = UMath::Atan2r(vfwd.x, vfwd.z);
     this->mDampedAngularVel.Integrate(rb->GetAngularVelocity().y, dT);
-    if ((yaw < -1.5707964f && this->mDampedAngle.GetPosition() > 1.5707964f) ||
-        (yaw > 1.5707964f && this->mDampedAngle.GetPosition() < -1.5707964f)) {
+
+    if (yaw < -1.5707964f && this->mDampedAngle.GetPosition() > 1.5707964f) {
+        this->mDampedAngle.SetPosition(yaw);
+    } else if (yaw > 1.5707964f && this->mDampedAngle.GetPosition() < -1.5707964f) {
         this->mDampedAngle.SetPosition(yaw);
     } else {
         this->mDampedAngle.Integrate(yaw, dT);
@@ -852,7 +859,6 @@ void AIVehicle::OnSteering(float dT) {
     }
 }
 
-// UNSOLVED
 void AIVehicle::OnGasBrake(float dT) {
     if ((this->mDriveFlags & 2) == 0 || this->GetInput() == nullptr) {
         return;
@@ -874,8 +880,7 @@ void AIVehicle::OnGasBrake(float dT) {
             GearID drive_gear = reversing ? G_REVERSE : G_FIRST;
             bool in_neutral = this->mITransmission->GetGear() == G_NEUTRAL;
 
-            // TODO
-            if (in_neutral && !in_shock || in_shock) {
+            if (in_shock ^ in_neutral) {
                 this->mITransmission->Shift(in_shock ? G_NEUTRAL : drive_gear);
             }
 
@@ -894,11 +899,14 @@ void AIVehicle::OnGasBrake(float dT) {
         this->GetInput()->SetControlHandBrake(1.0f);
         return;
     }
+
     this->GetInput()->GetControls();
+
     if (desiredSpeed < 0.5f) {
         this->GetInput()->SetControlBrake(1.0f);
         return;
     }
+
     if (reversing) {
         if (currentSpeed > 1.0f) {
             this->GetInput()->SetControlBrake(1.0f);
@@ -907,6 +915,7 @@ void AIVehicle::OnGasBrake(float dT) {
         }
         return;
     }
+
     if (currentSpeed < -1.0f) {
         this->GetInput()->SetControlBrake(1.0f);
         return;

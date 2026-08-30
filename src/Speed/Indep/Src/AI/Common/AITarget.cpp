@@ -9,7 +9,10 @@ ValidTargetList TheValidTargets;
 bTList<AITarget> TheAITargets;
 
 bool AITarget::CanAquire(const ISimable *who) {
-    return std::find(TheValidTargets.begin(), TheValidTargets.end(), who) != TheValidTargets.end();
+    if (std::find(TheValidTargets.begin(), TheValidTargets.end(), who) == TheValidTargets.end()) {
+        return false;
+    }
+    return true;
 }
 
 void AITarget::Register(ISimable *who) {

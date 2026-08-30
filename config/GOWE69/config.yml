@@ -112,6 +112,16 @@ block_relocations:
   end: .data:0x8044C320
 
 add_relocations:
+- source: .text:0x80019604
+  type: ha
+  target: lbl_803C9C94
+  addend: 0
+
+- source: .text:0x80019608
+  type: ha
+  target: lbl_803C9C98
+  addend: 0
+
 - source: .text:0x800adeb8
   type: ha
   target: gAudioMemoryManager
