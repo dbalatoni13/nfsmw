@@ -565,6 +565,10 @@ elif config.platform == Platform.PS2:
 
 cflags_libc = [*cflags_base_prodg]
 cflags_eathread = [*cflags_game]
+cflags_vp6 = [*cflags_game]
+if config.platform == Platform.GC_WII:
+    cflags_vp6[cflags_vp6.index("-G0")] = "-G8"
+    cflags_vp6.append("-mno-ps-nodf")
 
 Matching = True  # Object matches and should be linked
 NonMatching = False  # Object does not match and should not be linked
@@ -846,6 +850,45 @@ config.libs = [
         "progress_category": "libs",
         "objects": [
             Object(NonMatching, "Speed/Indep/Libs/csis/dev/source/library/cmn/csis.cpp"),
+        ],
+    },
+    {
+        "lib": "vp6",
+        "toolchain_version": config.linker_version,
+        "cflags": cflags_vp6,
+        "host": False,
+        "progress_category": "libs",
+        "objects": [
+            Object(NonMatching, "Speed/Indep/Libs/vp6/1.0.6/source/decode/cmn/allocator.cpp"),
+            Object(NonMatching, "Speed/Indep/Libs/vp6/1.0.6/source/decode/cmn/pb_globals.c"),
+            Object(NonMatching, "Speed/Indep/Libs/vp6/1.0.6/source/decode/cmn/postproc.c"),
+            Object(NonMatching, "Speed/Indep/Libs/vp6/1.0.6/source/decode/cmn/quantize.c"),
+            Object(NonMatching, "Speed/Indep/Libs/vp6/1.0.6/source/decode/cmn/simpledeblocker.c"),
+            Object(NonMatching, "Speed/Indep/Libs/vp6/1.0.6/source/decode/cmn/vfwpbdll_if.c"),
+            Object(NonMatching, "Speed/Indep/Libs/vp6/1.0.6/source/decode/cmn/vputil.c"),
+            Object(NonMatching, "Speed/Indep/Libs/vp6/1.0.6/source/decode/gc/doptsystemdependant.c"),
+            Object(NonMatching, "Speed/Indep/Libs/vp6/1.0.6/source/decode/gc/DSystemDependant.c"),
+            Object(NonMatching, "Speed/Indep/Libs/vp6/1.0.6/source/decode/gc/uoptsystemdependant.c"),
+            Object(NonMatching, "Speed/Indep/Libs/vp6/1.0.6/source/decode/cmn/duck_mem.cpp"),
+            Object(NonMatching, "Speed/Indep/Libs/vp6/1.0.6/source/decode/cmn/boolhuff.c"),
+            Object(NonMatching, "Speed/Indep/Libs/vp6/1.0.6/source/decode/cmn/borders.c"),
+            Object(NonMatching, "Speed/Indep/Libs/vp6/1.0.6/source/decode/cmn/clamp.c"),
+            Object(NonMatching, "Speed/Indep/Libs/vp6/1.0.6/source/decode/cmn/deblock.c"),
+            Object(NonMatching, "Speed/Indep/Libs/vp6/1.0.6/source/decode/cmn/decodembs.c"),
+            Object(NonMatching, "Speed/Indep/Libs/vp6/1.0.6/source/decode/cmn/decodemode.c"),
+            Object(NonMatching, "Speed/Indep/Libs/vp6/1.0.6/source/decode/cmn/decodemv.c"),
+            Object(NonMatching, "Speed/Indep/Libs/vp6/1.0.6/source/decode/cmn/DeInterlace.c"),
+            Object(NonMatching, "Speed/Indep/Libs/vp6/1.0.6/source/decode/cmn/dering.c"),
+            Object(NonMatching, "Speed/Indep/Libs/vp6/1.0.6/source/decode/cmn/DFrameR.c"),
+            Object(NonMatching, "Speed/Indep/Libs/vp6/1.0.6/source/decode/cmn/FrameIni.c"),
+            Object(NonMatching, "Speed/Indep/Libs/vp6/1.0.6/source/decode/cmn/Huffman.c"),
+            Object(NonMatching, "Speed/Indep/Libs/vp6/1.0.6/source/decode/cmn/idctpart.c"),
+            Object(NonMatching, "Speed/Indep/Libs/vp6/1.0.6/source/decode/cmn/loopfilter.c"),
+            Object(NonMatching, "Speed/Indep/Libs/vp6/1.0.6/source/decode/cmn/reconstruct.c"),
+            Object(NonMatching, "Speed/Indep/Libs/vp6/1.0.6/source/decode/cmn/scale.c"),
+            Object(NonMatching, "Speed/Indep/Libs/vp6/1.0.6/source/decode/cmn/TokenEntropy.c"),
+            Object(NonMatching, "Speed/Indep/Libs/vp6/1.0.6/source/decode/gc/criticalpath.c"),
+            Object(NonMatching, "Speed/Indep/Libs/vp6/1.0.6/source/decode/cmn/recon.c"),
         ],
     },
     {

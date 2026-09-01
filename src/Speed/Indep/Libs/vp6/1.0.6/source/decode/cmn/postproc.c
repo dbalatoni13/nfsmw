@@ -55,6 +55,213 @@ typedef struct {
     unsigned int AddNoiseMode;
 } POSTPROC_INSTANCE;
 
+extern unsigned char LimitVal_VP31[0x300];
+extern unsigned int DeringModifierV1[64];
+extern unsigned int *DCQuantScaleV2;
+extern unsigned int *DCQuantScaleUV;
+extern unsigned int *DCQuantScaleV1;
+extern unsigned char *DeblockLimitValuesV2;
+extern unsigned char *LoopFilterLimitValuesV2;
+extern unsigned char DeblockLimitValuesVp4[0x100];
+extern unsigned char DeblockLimitValuesVp5[0x100];
+extern unsigned char DeblockLimitValuesVp6[0x100];
+extern unsigned char LoopFilterLimitValuesVp4[0x100];
+extern unsigned char LoopFilterLimitValuesVp5[0x100];
+extern unsigned char LoopFilterLimitValuesVp6[0x100];
+extern void PostProcMachineSpecificConfig(unsigned int Version);
+extern void *duck_malloc(unsigned int blocksize, int type);
+extern void duck_free(void *block);
+extern void *memset(void *dest, int value, unsigned int size);
+extern void *memcpy(void *dest, const void *source, unsigned int size);
+extern double exp(double x);
+extern double sqrt(double x);
+
+void ChangePostProcConfiguration(POSTPROC_INSTANCE *ppi, CONFIG_TYPE *ConfigurationInit);
+
+POSTPROC_INSTANCE *CreatePostProcInstance(CONFIG_TYPE *ConfigurationInit) {
+    POSTPROC_INSTANCE *ppi = 0;
+    int postproc_size;
+
+    postproc_size = sizeof(POSTPROC_INSTANCE);
+    ppi = (POSTPROC_INSTANCE *)duck_malloc(postproc_size, 0);
+    if (ppi == 0) {
+        return 0;
+    }
+
+    memset(ppi, 0, postproc_size);
+    ChangePostProcConfiguration(ppi, ConfigurationInit);
+    ppi->AddNoiseMode = 1;
+    return ppi;
+}
+
+void DeletePostProcBuffers(POSTPROC_INSTANCE *ppi) {
+    if (ppi->IntermediateBufferAlloc != 0) {
+        duck_free(ppi->IntermediateBufferAlloc);
+    }
+    ppi->IntermediateBufferAlloc = 0;
+    ppi->IntermediateBuffer = 0;
+    if (ppi->FiltBoundingValueAlloc != 0) {
+        duck_free(ppi->FiltBoundingValueAlloc);
+    }
+    ppi->FiltBoundingValueAlloc = 0;
+    ppi->FiltBoundingValue = 0;
+    if (ppi->DeblockBoundingValueAlloc != 0) {
+        duck_free(ppi->DeblockBoundingValueAlloc);
+    }
+    ppi->DeblockBoundingValueAlloc = 0;
+    ppi->DeblockBoundingValue = 0;
+    if (ppi->FragQIndexAlloc != 0) {
+        duck_free(ppi->FragQIndexAlloc);
+    }
+    ppi->FragQIndexAlloc = 0;
+    ppi->FragQIndex = 0;
+    if (ppi->FragmentVariancesAlloc != 0) {
+        duck_free(ppi->FragmentVariancesAlloc);
+    }
+    ppi->FragmentVariancesAlloc = 0;
+    ppi->FragmentVariances = 0;
+    if (ppi->FragDeblockingFlagAlloc != 0) {
+        duck_free(ppi->FragDeblockingFlagAlloc);
+    }
+    ppi->FragDeblockingFlagAlloc = 0;
+    ppi->FragDeblockingFlag = 0;
+}
+
+void DeletePostProcInstance(POSTPROC_INSTANCE **ppi) {
+    if (*ppi != 0) {
+        DeletePostProcBuffers(*ppi);
+    }
+    duck_free(*ppi);
+    *ppi = 0;
+}
+
+int AllocatePostProcBuffers(POSTPROC_INSTANCE *ppi) {
+    DeletePostProcBuffers(ppi);
+
+    ppi->IntermediateBufferAlloc = (unsigned char *)duck_malloc(
+        ppi->YStride * (ppi->Configuration.VideoFrameHeight + 2 * ppi->MVBorder) * 3 / 2 + 0x20,
+        0);
+    if (ppi->IntermediateBufferAlloc == 0) {
+        DeletePostProcBuffers(ppi);
+        return 0;
+    }
+    ppi->IntermediateBuffer = (unsigned char *)(((unsigned int)ppi->IntermediateBufferAlloc + 0x1f) & ~0x1f);
+
+    ppi->FiltBoundingValueAlloc = (int *)duck_malloc(0x820, 0);
+    if (ppi->FiltBoundingValueAlloc == 0) {
+        DeletePostProcBuffers(ppi);
+        return 0;
+    }
+    ppi->FiltBoundingValue = (int *)(((unsigned int)ppi->FiltBoundingValueAlloc + 0x1f) & ~0x1f);
+
+    ppi->DeblockBoundingValueAlloc = (int *)duck_malloc(0x820, 0);
+    if (ppi->DeblockBoundingValueAlloc == 0) {
+        DeletePostProcBuffers(ppi);
+        return 0;
+    }
+    ppi->DeblockBoundingValue = (int *)(((unsigned int)ppi->DeblockBoundingValueAlloc + 0x1f) & ~0x1f);
+
+    ppi->FragQIndexAlloc = (int *)duck_malloc(ppi->UnitFragments * 4 + 0x20, 0);
+    if (ppi->FragQIndexAlloc == 0) {
+        DeletePostProcBuffers(ppi);
+        return 0;
+    }
+    ppi->FragQIndex = (int *)(((unsigned int)ppi->FragQIndexAlloc + 0x1f) & ~0x1f);
+
+    ppi->FragmentVariancesAlloc = (int *)duck_malloc(ppi->UnitFragments * 4 + 0x20, 0);
+    if (ppi->FragmentVariancesAlloc == 0) {
+        DeletePostProcBuffers(ppi);
+        return 0;
+    }
+    ppi->FragmentVariances = (int *)(((unsigned int)ppi->FragmentVariancesAlloc + 0x1f) & ~0x1f);
+
+    ppi->FragDeblockingFlagAlloc = (unsigned char *)duck_malloc(ppi->UnitFragments * 4 + 0x20, 0);
+    if (ppi->FragDeblockingFlagAlloc == 0) {
+        DeletePostProcBuffers(ppi);
+        return 0;
+    }
+    ppi->FragDeblockingFlag = (unsigned char *)(((unsigned int)ppi->FragDeblockingFlagAlloc + 0x1f) & ~0x1f);
+
+    return 1;
+}
+
+void UpdateFragQIndex(POSTPROC_INSTANCE *ppi) {
+    unsigned int i;
+    unsigned int ThisFrameQIndex;
+
+    ThisFrameQIndex = ppi->FrameQIndex;
+    for (i = 0; i < ppi->UnitFragments; i++) {
+        if (ppi->FragInfo[i * ppi->FragInfoElementSize] & ppi->FragInfoCodedMask) {
+            ppi->FragQIndex[i] = ThisFrameQIndex;
+        }
+    }
+}
+
+double gaussian(double sigma, double mu, double x) {
+    return (1.0 / (sigma * sqrt(6.28318530717958647692))) *
+           exp((-(x - mu) * (x - mu)) / ((sigma + sigma) * sigma));
+}
+
+void InitPostProcessing(unsigned int *DCQuantScaleV2p, unsigned int *DCQuantScaleUVp,
+                        unsigned int *DCQuantScaleV1p, unsigned int Version) {
+    int i;
+    int x;
+
+    for (i = 0; i < 0x300; i++) {
+        x = i - 0x100;
+        if (x >= 0) {
+            if (x > 0xff) {
+                x = 0xff;
+            }
+            *(i + LimitVal_VP31) = x;
+        } else {
+            *(i + LimitVal_VP31) = 0;
+        }
+    }
+
+    DCQuantScaleV2 = DCQuantScaleV2p;
+    DCQuantScaleUV = DCQuantScaleUVp;
+    DCQuantScaleV1 = DCQuantScaleV1p;
+
+    for (i = 0; i < 0x100; i += 4) {
+        *(unsigned int *)((unsigned char *)DeringModifierV1 + i) =
+            *(unsigned int *)(i + (unsigned char *)DCQuantScaleV1p);
+    }
+
+    if (Version > 5) {
+        LoopFilterLimitValuesV2 = LoopFilterLimitValuesVp6;
+        DeblockLimitValuesV2 = DeblockLimitValuesVp6;
+    } else if (Version > 4) {
+        LoopFilterLimitValuesV2 = LoopFilterLimitValuesVp5;
+        DeblockLimitValuesV2 = DeblockLimitValuesVp5;
+    } else {
+        LoopFilterLimitValuesV2 = LoopFilterLimitValuesVp4;
+        DeblockLimitValuesV2 = DeblockLimitValuesVp4;
+    }
+
+    PostProcMachineSpecificConfig(Version);
+}
+
+void ChangePostProcConfiguration(POSTPROC_INSTANCE *ppi, CONFIG_TYPE *ConfigurationInit) {
+    memcpy(&ppi->Configuration, ConfigurationInit, sizeof(CONFIG_TYPE));
+    ppi->HFragments = ppi->Configuration.VideoFrameWidth / 8;
+    ppi->VFragments = ppi->Configuration.VideoFrameHeight / 8;
+    ppi->YStride = ppi->Configuration.YStride;
+    ppi->UVStride = ppi->Configuration.UVStride;
+    ppi->YPlaneFragments = ppi->HFragments * ppi->VFragments;
+    ppi->UVPlaneFragments = ppi->YPlaneFragments / 4;
+    ppi->UnitFragments = ppi->YPlaneFragments + 2 * ppi->UVPlaneFragments;
+    ppi->MVBorder = (ppi->YStride - ppi->HFragments * 8) / 2;
+    ppi->ReconYDataOffset = ppi->MVBorder * ppi->YStride + ppi->MVBorder;
+    ppi->ReconUDataOffset =
+        ppi->YStride * (ppi->Configuration.VideoFrameHeight + 2 * ppi->MVBorder) +
+        ppi->UVStride * (ppi->MVBorder / 2) + (ppi->MVBorder / 2);
+    ppi->ReconVDataOffset =
+        ppi->ReconUDataOffset +
+        ppi->UVStride * ((ppi->Configuration.VideoFrameHeight / 2) + ppi->MVBorder) +
+        ppi->UVStride * (ppi->MVBorder / 2) + (ppi->MVBorder / 2);
+}
+
 void SetPPInterlacedMode(POSTPROC_INSTANCE *ppi, int Interlaced) {
     ppi->Configuration.Interlaced = Interlaced;
 }
