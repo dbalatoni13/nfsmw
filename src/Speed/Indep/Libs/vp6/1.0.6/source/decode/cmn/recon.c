@@ -6,7 +6,7 @@ unsigned int Var16Point(unsigned char *DataPtr, int SourceStride) {
 
     DiffPtr = DataPtr;
 
-    for (i = 0; i < 8; i += 2) {
+    for (i = 4; i; i--) {
         XSum += DiffPtr[0];
         XXSum += DiffPtr[0] * DiffPtr[0];
         XSum += DiffPtr[2];
@@ -16,7 +16,7 @@ unsigned int Var16Point(unsigned char *DataPtr, int SourceStride) {
         XSum += DiffPtr[6];
         XXSum += DiffPtr[6] * DiffPtr[6];
 
-        DiffPtr += SourceStride << 1;
+        DiffPtr += SourceStride * 2;
     }
 
     return ((XXSum << 4) - XSum * XSum) >> 8;

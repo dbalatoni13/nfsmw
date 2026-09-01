@@ -78,40 +78,37 @@ int *SetupBoundingValueArray_Generic(POSTPROC_INSTANCE *ppi, int FLimit) {
 
 void FilterHoriz_Generic(POSTPROC_INSTANCE *ppi, unsigned char *PixelPtr, int LineLength, int *BoundingValuePtr) {
     int j;
-    unsigned char *LimitTable;
     int FiltVal;
+    unsigned char *LimitTable;
 
     LimitTable = LimitVal_VP31 + 0x100;
 
-    for (j = 0; j < 8; j++) {
-        FiltVal = PixelPtr[0];
-        FiltVal -= 3 * PixelPtr[1];
-        FiltVal += 3 * PixelPtr[2];
-        FiltVal -= PixelPtr[3];
+    j = 8;
+    do {
+        FiltVal = PixelPtr[0] - 3 * PixelPtr[1] + 3 * PixelPtr[2] - PixelPtr[3];
         FiltVal = (FiltVal + 4) >> 3;
         FiltVal = BoundingValuePtr[FiltVal];
         PixelPtr[1] = LimitTable[PixelPtr[1] + FiltVal];
         PixelPtr[2] = LimitTable[PixelPtr[2] - FiltVal];
         PixelPtr += LineLength;
-    }
+    } while (--j);
 }
 
 void FilterVert_Generic(POSTPROC_INSTANCE *ppi, unsigned char *PixelPtr, int LineLength, int *BoundingValuePtr) {
     int j;
-    unsigned char *LimitTable;
     int FiltVal;
+    unsigned char *LimitTable;
 
     LimitTable = LimitVal_VP31 + 0x100;
 
-    for (j = 0; j < 8; j++) {
-        FiltVal = *(PixelPtr - 2 * LineLength);
-        FiltVal -= 3 * *(PixelPtr - LineLength);
-        FiltVal += 3 * PixelPtr[0];
-        FiltVal -= PixelPtr[LineLength];
+    j = 8;
+    do {
+        FiltVal = *(PixelPtr - 2 * LineLength) - 3 * *(PixelPtr - LineLength) +
+                  3 * PixelPtr[0] - PixelPtr[LineLength];
         FiltVal = (FiltVal + 4) >> 3;
         FiltVal = BoundingValuePtr[FiltVal];
         PixelPtr[-LineLength] = LimitTable[PixelPtr[-LineLength] + FiltVal];
         PixelPtr[0] = LimitTable[PixelPtr[0] - FiltVal];
         PixelPtr++;
-    }
+    } while (--j);
 }

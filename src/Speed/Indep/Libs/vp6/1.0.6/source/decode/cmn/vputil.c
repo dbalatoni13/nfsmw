@@ -125,6 +125,7 @@ void FilterBlock2dFirstPass(unsigned char *SrcPtr, int *OutputPtr,
     int Temp;
 
     for (i = 0; i < OutputHeight; i++) {
+        int *d = OutputPtr;
         for (j = 0; j < OutputWidth; j++) {
             Temp = SrcPtr[-(int)PixelStep] * Filter[0] + SrcPtr[0] * Filter[1] +
                     SrcPtr[PixelStep] * Filter[2] + SrcPtr[PixelStep * 2] * Filter[3];
@@ -134,7 +135,7 @@ void FilterBlock2dFirstPass(unsigned char *SrcPtr, int *OutputPtr,
             } else if (Temp > 0xff) {
                 Temp = 0xff;
             }
-            OutputPtr[j] = Temp;
+            *d++ = Temp;
             SrcPtr++;
         }
         SrcPtr += SrcPixelsPerLine - OutputWidth;
@@ -150,6 +151,7 @@ void FilterBlock2dSecondPass(int *SrcPtr, unsigned short *OutputPtr,
     int Temp;
 
     for (i = 0; i < OutputHeight; i++) {
+        unsigned short *d = OutputPtr;
         for (j = 0; j < OutputWidth; j++) {
             Temp = SrcPtr[-(int)PixelStep] * Filter[0] + SrcPtr[0] * Filter[1] +
                     SrcPtr[PixelStep] * Filter[2] + SrcPtr[PixelStep * 2] * Filter[3];
@@ -159,7 +161,7 @@ void FilterBlock2dSecondPass(int *SrcPtr, unsigned short *OutputPtr,
             } else if (Temp > 0xff) {
                 Temp = 0xff;
             }
-            OutputPtr[j] = Temp;
+            *d++ = Temp;
             SrcPtr++;
         }
         SrcPtr += SrcPixelsPerLine - OutputWidth;
@@ -180,13 +182,11 @@ void FilterBlock2dBil_FirstPass(unsigned char *SrcPtr, int *OutputPtr,
                                 int *Filter) {
     unsigned int i;
     unsigned int j;
-    int *d;
 
     for (i = 0; i < OutputHeight; i++) {
-        d = OutputPtr;
+        int *d = OutputPtr;
         for (j = 0; j < OutputWidth; j++) {
-            int Temp = (SrcPtr[0] * Filter[0] + SrcPtr[PixelStep] * Filter[1] + 0x40) >> 7;
-            *d++ = Temp;
+            *d++ = (SrcPtr[0] * Filter[0] + SrcPtr[PixelStep] * Filter[1] + 0x40) >> 7;
             SrcPtr++;
         }
         SrcPtr += SrcPixelsPerLine - OutputWidth;
@@ -202,8 +202,7 @@ void FilterBlock1dBil_8(unsigned char *SrcPtr, unsigned char *OutputPtr,
 
     for (i = 0; i < OutputHeight; i++) {
         for (j = 0; j < OutputWidth; j++) {
-            int Temp = (SrcPtr[0] * Filter[0] + SrcPtr[PixelStep] * Filter[1] + 0x40) >> 7;
-            OutputPtr[j] = Temp;
+            OutputPtr[j] = (SrcPtr[0] * Filter[0] + SrcPtr[PixelStep] * Filter[1] + 0x40) >> 7;
             SrcPtr++;
         }
         SrcPtr += SrcPixelsPerLine - OutputWidth;

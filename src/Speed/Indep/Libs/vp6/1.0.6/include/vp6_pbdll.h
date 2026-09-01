@@ -53,6 +53,34 @@ struct CONFIG_TYPE {
     unsigned int ExpandedFrameHeight;
 };
 
+typedef struct {
+    short x;
+    short y;
+} MOTION_VECTOR;
+
+typedef enum {
+    CODE_INTER_NO_MV = 0,
+    CODE_INTRA = 1,
+    CODE_INTER_PLUS_MV = 2,
+    CODE_INTER_NEAREST_MV = 3,
+    CODE_INTER_NEAR_MV = 4,
+    CODE_USING_GOLDEN = 5,
+    CODE_GOLDEN_MV = 6,
+    CODE_INTER_FOURMV = 7,
+    CODE_GOLD_NEAREST_MV = 8,
+    CODE_GOLD_NEAR_MV = 9,
+    DO_NOT_CODE = 16
+} CODING_MODE;
+
+typedef enum {
+    TOP_LEFT_Y_BLOCK = 0,
+    TOP_RIGHT_Y_BLOCK = 1,
+    BOTTOM_LEFT_Y_BLOCK = 2,
+    BOTTOM_RIGHT_Y_BLOCK = 3,
+    U_BLOCK = 4,
+    V_BLOCK = 5
+} BLOCK_POSITION;
+
 struct POSTPROC_INSTANCE;
 
 struct _BITREADER {
@@ -68,39 +96,14 @@ struct PB_INSTANCE {
         // Members
         short (* CoeffsAlloc)[64]; // offset 0x0, size 0x4
         short (* Coeffs)[64]; // offset 0x4, size 0x4
-        int Mode; // offset 0x8, size 0x4
-        int BlockMode[6]; // offset 0xC, size 0x18
-        // total size: 0x4
-        struct {
-            // Members
-            short x; // offset 0x0, size 0x2
-            short y; // offset 0x2, size 0x2
-        } Mv[6]; // offset 0x24, size 0x18
-        // total size: 0x4
-        struct {
-            // Members
-            short x; // offset 0x0, size 0x2
-            short y; // offset 0x2, size 0x2
-        } NearestInterMVect; // offset 0x3C, size 0x4
-        // total size: 0x4
-        struct {
-            // Members
-            short x; // offset 0x0, size 0x2
-            short y; // offset 0x2, size 0x2
-        } NearInterMVect; // offset 0x40, size 0x4
+        CODING_MODE Mode; // offset 0x8, size 0x4
+        CODING_MODE BlockMode[6]; // offset 0xC, size 0x18
+        MOTION_VECTOR Mv[6]; // offset 0x24, size 0x18
+        MOTION_VECTOR NearestInterMVect; // offset 0x3C, size 0x4
+        MOTION_VECTOR NearInterMVect; // offset 0x40, size 0x4
         int NearestMvIndex; // offset 0x44, size 0x4
-        // total size: 0x4
-        struct {
-            // Members
-            short x; // offset 0x0, size 0x2
-            short y; // offset 0x2, size 0x2
-        } NearestGoldMVect; // offset 0x48, size 0x4
-        // total size: 0x4
-        struct {
-            // Members
-            short x; // offset 0x0, size 0x2
-            short y; // offset 0x2, size 0x2
-        } NearGoldMVect; // offset 0x4C, size 0x4
+        MOTION_VECTOR NearestGoldMVect; // offset 0x48, size 0x4
+        MOTION_VECTOR NearGoldMVect; // offset 0x4C, size 0x4
         int NearestGMvIndex; // offset 0x50, size 0x4
         unsigned int MBrow; // offset 0x54, size 0x4
         unsigned int MBcol; // offset 0x58, size 0x4
@@ -345,7 +348,7 @@ struct PB_INSTANCE {
     unsigned char DcProbs[22]; // offset 0x3A4, size 0x16
     unsigned char AcProbs[396]; // offset 0x3BA, size 0x18C
     unsigned char DcNodeContexts[5][3][2]; // offset 0x546, size 0x1E
-    unsigned char ZeroRunProbs[14][2]; // offset 0x564, size 0x1C
+    unsigned char ZeroRunProbs[2][14]; // offset 0x564, size 0x1C
     unsigned char MergedScanOrder[64]; // offset 0x580, size 0x40
     unsigned char ModifiedScanOrder[64]; // offset 0x5C0, size 0x40
     unsigned char EobOffsetTable[64]; // offset 0x600, size 0x40
@@ -363,30 +366,20 @@ struct PB_INSTANCE {
     int probInterlaced; // offset 0x6EC, size 0x4
     char * MBInterlaced; // offset 0x6F0, size 0x4
     char * predictionMode; // offset 0x6F4, size 0x4
-    // total size: 0x4
-    struct {
-        // Members
-        short x; // offset 0x0, size 0x2
-        short y; // offset 0x2, size 0x2
-    } * MBMotionVector; // offset 0x6F8, size 0x4
+    MOTION_VECTOR * MBMotionVector; // offset 0x6F8, size 0x4
     char * MBInterlacedAlloc; // offset 0x6FC, size 0x4
     char * predictionModeAlloc; // offset 0x700, size 0x4
-    // total size: 0x4
-    struct {
-        // Members
-        short x; // offset 0x0, size 0x2
-        short y; // offset 0x2, size 0x2
-    } * MBMotionVectorAlloc; // offset 0x704, size 0x4
+    MOTION_VECTOR * MBMotionVectorAlloc; // offset 0x704, size 0x4
     unsigned char MvSignProbs[2]; // offset 0x708, size 0x2
     unsigned char IsMvShortProb[2]; // offset 0x70A, size 0x2
-    unsigned char MvShortProbs[7][2]; // offset 0x70C, size 0xE
+    unsigned char MvShortProbs[2][7]; // offset 0x70C, size 0xE
     unsigned char MvQPelProbs[2]; // offset 0x71A, size 0x2
     unsigned char MvHalfPixelProbs[2]; // offset 0x71C, size 0x2
     unsigned char MvLowBitProbs[2]; // offset 0x71E, size 0x2
-    unsigned char MvSizeProbs[8][2]; // offset 0x720, size 0x10
+    unsigned char MvSizeProbs[2][8]; // offset 0x720, size 0x10
     unsigned char probXmitted[10][2][4]; // offset 0x730, size 0x50
-    unsigned char probModeSame[10][4]; // offset 0x780, size 0x28
-    unsigned char probMode[9][10][4]; // offset 0x7A8, size 0x168
+    unsigned char probModeSame[4][10]; // offset 0x780, size 0x28
+    unsigned char probMode[4][10][9]; // offset 0x7A8, size 0x168
     unsigned int maxTimePerFrame; // offset 0x910, size 0x4
     unsigned int thisDecodeTime; // offset 0x914, size 0x4
     unsigned int avgDecodeTime; // offset 0x918, size 0x4
