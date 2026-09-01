@@ -566,6 +566,8 @@ elif config.platform == Platform.PS2:
 cflags_libc = [*cflags_base_prodg]
 cflags_eathread = [*cflags_game]
 cflags_vp6 = [*cflags_game]
+cflags_vp6[cflags_vp6.index("-O1")] = "-O2"
+cflags_vp6.remove("-fforce-addr")
 if config.platform == Platform.GC_WII:
     cflags_vp6[cflags_vp6.index("-G0")] = "-G8"
     cflags_vp6.append("-mno-ps-nodf")

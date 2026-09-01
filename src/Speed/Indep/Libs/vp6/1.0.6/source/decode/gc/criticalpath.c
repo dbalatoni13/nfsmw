@@ -47,17 +47,6 @@ static int BilinearFilters[16] = {
 static float f128 = 128.0f;
 static float f64 = 64.0f;
 
-typedef struct {
-    unsigned int lowvalue;
-    unsigned int range;
-    unsigned int value;
-    int count;
-    unsigned int pos;
-    unsigned char *buffer;
-    unsigned int MeasureCost;
-    unsigned int BitCounter;
-} BOOL_CODER;
-
 int VP6_DecodeBool(BOOL_CODER *br, int probability) {
     unsigned int bit = 0;
     unsigned int split;

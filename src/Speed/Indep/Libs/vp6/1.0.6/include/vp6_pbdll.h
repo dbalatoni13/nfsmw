@@ -54,6 +54,17 @@ struct CONFIG_TYPE {
 };
 
 typedef struct {
+    unsigned int lowvalue;
+    unsigned int range;
+    unsigned int value;
+    int count;
+    unsigned int pos;
+    unsigned char *buffer;
+    unsigned int MeasureCost;
+    unsigned int BitCounter;
+} BOOL_CODER;
+
+typedef struct {
     short x;
     short y;
 } MOTION_VECTOR;
@@ -265,30 +276,8 @@ struct PB_INSTANCE {
         int MVectorX : 8; // offset 0x0, size 0x4
         int MVectorY : 8; // offset 0x0, size 0x4
     } * FragInfoAlloc; // offset 0x14C, size 0x4
-    // total size: 0x20
-    struct {
-        // Members
-        unsigned int lowvalue; // offset 0x0, size 0x4
-        unsigned int range; // offset 0x4, size 0x4
-        unsigned int value; // offset 0x8, size 0x4
-        int count; // offset 0xC, size 0x4
-        unsigned int pos; // offset 0x10, size 0x4
-        unsigned char * buffer; // offset 0x14, size 0x4
-        unsigned int MeasureCost; // offset 0x18, size 0x4
-        unsigned int BitCounter; // offset 0x1C, size 0x4
-    } br; // offset 0x150, size 0x20
-    // total size: 0x20
-    struct {
-        // Members
-        unsigned int lowvalue; // offset 0x0, size 0x4
-        unsigned int range; // offset 0x4, size 0x4
-        unsigned int value; // offset 0x8, size 0x4
-        int count; // offset 0xC, size 0x4
-        unsigned int pos; // offset 0x10, size 0x4
-        unsigned char * buffer; // offset 0x14, size 0x4
-        unsigned int MeasureCost; // offset 0x18, size 0x4
-        unsigned int BitCounter; // offset 0x1C, size 0x4
-    } br2; // offset 0x170, size 0x20
+    BOOL_CODER br; // offset 0x150, size 0x20
+    BOOL_CODER br2; // offset 0x170, size 0x20
     struct _BITREADER br3; // offset 0x190, size 0xC
     unsigned char Vp3VersionNo; // offset 0x19C, size 0x1
     unsigned char VpProfile; // offset 0x19D, size 0x1
@@ -377,7 +366,7 @@ struct PB_INSTANCE {
     unsigned char MvHalfPixelProbs[2]; // offset 0x71C, size 0x2
     unsigned char MvLowBitProbs[2]; // offset 0x71E, size 0x2
     unsigned char MvSizeProbs[2][8]; // offset 0x720, size 0x10
-    unsigned char probXmitted[10][2][4]; // offset 0x730, size 0x50
+    unsigned char probXmitted[4][2][10]; // offset 0x730, size 0x50
     unsigned char probModeSame[4][10]; // offset 0x780, size 0x28
     unsigned char probMode[4][10][9]; // offset 0x7A8, size 0x168
     unsigned int maxTimePerFrame; // offset 0x910, size 0x4
