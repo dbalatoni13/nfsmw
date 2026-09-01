@@ -645,122 +645,122 @@ egami/rcmp/dev/source/decoder/cmn/madidct.cpp:
 	.data       start:0x8044F62C end:0x8044F72C
 	.bss        start:0x804BDB04 end:0x804BDD04
 
-Packages/vp6/1.0.6/source/decode/cmn/allocator.cpp:
+Speed/Indep/Libs/vp6/1.0.6/source/decode/cmn/allocator.cpp:
 	.text       start:0x8034C0A4 end:0x8034C160
 	.sdata      start:0x804FF5A0 end:0x804FF5A8
 
-Packages/vp6/1.0.6/source/decode/cmn/pb_globals.c:
+Speed/Indep/Libs/vp6/1.0.6/source/decode/cmn/pb_globals.c:
 	.text       start:0x8034C160 end:0x8034C4E4
 	.data       start:0x8044F72C end:0x8044F754
 	.bss        start:0x804BDD04 end:0x804BDE04
 	.sbss       start:0x804FFC88 end:0x804FFC8C
 
-Packages/vp6/1.0.6/source/decode/cmn/postproc.c:
+Speed/Indep/Libs/vp6/1.0.6/source/decode/cmn/postproc.c:
 	.text       start:0x8034C4E4 end:0x8034D1A8
 	.bss        start:0x804BDE04 end:0x804BE104
 	.sbss       start:0x804FFC8C end:0x804FFCF8
 
-Packages/vp6/1.0.6/source/decode/cmn/quantize.c:
+Speed/Indep/Libs/vp6/1.0.6/source/decode/cmn/quantize.c:
 	.text       start:0x8034D1A8 end:0x8034D528
 	.rodata     start:0x804114A8 end:0x804119D0
 	.sbss       start:0x804FFCF8 end:0x804FFCFC
 
-Packages/vp6/1.0.6/source/decode/cmn/simpledeblocker.c:
+Speed/Indep/Libs/vp6/1.0.6/source/decode/cmn/simpledeblocker.c:
 	.text       start:0x8034D528 end:0x8034D93C
 	.rodata     start:0x804119D0 end:0x80411AF4
 
-Packages/vp6/1.0.6/source/decode/cmn/vfwpbdll_if.c:
+Speed/Indep/Libs/vp6/1.0.6/source/decode/cmn/vfwpbdll_if.c:
 	.text       start:0x8034D93C end:0x8034E180
 	.sdata      start:0x804FF5A8 end:0x804FF5B0
 
-Packages/vp6/1.0.6/source/decode/cmn/vputil.c:
+Speed/Indep/Libs/vp6/1.0.6/source/decode/cmn/vputil.c:
 	.text       start:0x8034E180 end:0x8034E9F4
 	.data       start:0x8044F754 end:0x8044F794
 	.bss        start:0x804BE104 end:0x804BE46C
 	.sbss       start:0x804FFCFC end:0x804FFD2C
 
-Packages/vp6/1.0.6/source/decode/gc/doptsystemdependant.c:
+Speed/Indep/Libs/vp6/1.0.6/source/decode/gc/doptsystemdependant.c:
 	.text       start:0x8034E9F4 end:0x8034EB4C
 
-Packages/vp6/1.0.6/source/decode/gc/DSystemDependant.c:
+Speed/Indep/Libs/vp6/1.0.6/source/decode/gc/DSystemDependant.c:
 	.text       start:0x8034EB4C end:0x8034EB64
 
-Packages/vp6/1.0.6/source/decode/gc/uoptsystemdependant.c:
+Speed/Indep/Libs/vp6/1.0.6/source/decode/gc/uoptsystemdependant.c:
 	.text       start:0x8034EB64 end:0x8034ECD0
 
-Packages/vp6/1.0.6/source/decode/cmn/duck_mem.cpp:
+Speed/Indep/Libs/vp6/1.0.6/source/decode/cmn/duck_mem.cpp:
 	.text       start:0x8034ECD0 end:0x8034ED10
 
-Packages/vp6/1.0.6/source/decode/cmn/boolhuff.c:
+Speed/Indep/Libs/vp6/1.0.6/source/decode/cmn/boolhuff.c:
 	.text       start:0x8034ED10 end:0x8034ED68
 
-Packages/vp6/1.0.6/source/decode/cmn/borders.c:
+Speed/Indep/Libs/vp6/1.0.6/source/decode/cmn/borders.c:
 	.text       start:0x8034ED68 end:0x8034F154
 
-Packages/vp6/1.0.6/source/decode/cmn/clamp.c:
+Speed/Indep/Libs/vp6/1.0.6/source/decode/cmn/clamp.c:
 	.text       start:0x8034F154 end:0x8034F21C
 
-Packages/vp6/1.0.6/source/decode/cmn/deblock.c:
+Speed/Indep/Libs/vp6/1.0.6/source/decode/cmn/deblock.c:
 	.text       start:0x8034F21C end:0x80351AC0
 	.data       start:0x8044F794 end:0x8044FA94
 	.sbss       start:0x804FFD2C end:0x804FFD3C
 
-Packages/vp6/1.0.6/source/decode/cmn/decodembs.c:
+Speed/Indep/Libs/vp6/1.0.6/source/decode/cmn/decodembs.c:
 	.text       start:0x80351AC0 end:0x8035305C
 	.rodata     start:0x80411AF4 end:0x80411CB8
 
-Packages/vp6/1.0.6/source/decode/cmn/decodemode.c:
+Speed/Indep/Libs/vp6/1.0.6/source/decode/cmn/decodemode.c:
 	.text       start:0x8035305C end:0x80353564
 	.rodata     start:0x80411CB8 end:0x804120C8
 
-Packages/vp6/1.0.6/source/decode/cmn/decodemv.c:
+Speed/Indep/Libs/vp6/1.0.6/source/decode/cmn/decodemv.c:
 	.text       start:0x80353564 end:0x80353734
 	.rodata     start:0x804120C8 end:0x80412108
 
-Packages/vp6/1.0.6/source/decode/cmn/DeInterlace.c:
+Speed/Indep/Libs/vp6/1.0.6/source/decode/cmn/DeInterlace.c:
 	.text       start:0x80353734 end:0x803537FC
 
-Packages/vp6/1.0.6/source/decode/cmn/dering.c:
+Speed/Indep/Libs/vp6/1.0.6/source/decode/cmn/dering.c:
 	.text       start:0x803537FC end:0x80354FF0
 	.data       start:0x8044FA94 end:0x8044FD94
 	.bss        start:0x804BE46C end:0x804BE5FC
 
-Packages/vp6/1.0.6/source/decode/cmn/DFrameR.c:
+Speed/Indep/Libs/vp6/1.0.6/source/decode/cmn/DFrameR.c:
 	.text       start:0x80354FF0 end:0x803556B0
 
-Packages/vp6/1.0.6/source/decode/cmn/FrameIni.c:
+Speed/Indep/Libs/vp6/1.0.6/source/decode/cmn/FrameIni.c:
 	.text       start:0x803556B0 end:0x80355CA8
 	.rodata     start:0x80412108 end:0x80412168
 
-Packages/vp6/1.0.6/source/decode/cmn/Huffman.c:
+Speed/Indep/Libs/vp6/1.0.6/source/decode/cmn/Huffman.c:
 	.text       start:0x80355CA8 end:0x80356028
 
-Packages/vp6/1.0.6/source/decode/cmn/idctpart.c:
+Speed/Indep/Libs/vp6/1.0.6/source/decode/cmn/idctpart.c:
 	.text       start:0x80356028 end:0x8035645C
 	.rodata     start:0x80412168 end:0x80412268
 
-Packages/vp6/1.0.6/source/decode/cmn/loopfilter.c:
+Speed/Indep/Libs/vp6/1.0.6/source/decode/cmn/loopfilter.c:
 	.text       start:0x8035645C end:0x80356920
 	.data       start:0x8044FD94 end:0x80450094
 	.sbss       start:0x804FFD3C end:0x804FFD40
 
-Packages/vp6/1.0.6/source/decode/cmn/reconstruct.c:
+Speed/Indep/Libs/vp6/1.0.6/source/decode/cmn/reconstruct.c:
 	.text       start:0x80356920 end:0x80356BB0
 
-Packages/vp6/1.0.6/source/decode/cmn/scale.c:
+Speed/Indep/Libs/vp6/1.0.6/source/decode/cmn/scale.c:
 	.text       start:0x80356BB0 end:0x80357864
 
-Packages/vp6/1.0.6/source/decode/cmn/TokenEntropy.c:
+Speed/Indep/Libs/vp6/1.0.6/source/decode/cmn/TokenEntropy.c:
 	.text       start:0x80357864 end:0x80357928
 	.rodata     start:0x80412268 end:0x804124FC
 
-Packages/vp6/1.0.6/source/decode/gc/criticalpath.c:
+Speed/Indep/Libs/vp6/1.0.6/source/decode/gc/criticalpath.c:
 	.text       start:0x80357928 end:0x8035A830
 	.rodata     start:0x804124FC end:0x80412778
 	.data       start:0x80450094 end:0x80450174
 	.sdata      start:0x804FF5B0 end:0x804FF5B8
 
-Packages/vp6/1.0.6/source/decode/cmn/recon.c:
+Speed/Indep/Libs/vp6/1.0.6/source/decode/cmn/recon.c:
 	.text       start:0x8035A830 end:0x8035A9B0
 
 Speed/Indep/Libs/snd/9/source/library/cmn/s3dlow.c:

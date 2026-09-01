@@ -782,8 +782,3 @@ void IDct1_GC(short *InputData, short *QuantMatrix, short *OutputData) {
         dest += 4;
     }
 }
-
-extern volatile int TestGlobal;
-void TestCGlobal(void) {
-    TestGlobal = 1;
-}
