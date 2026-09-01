@@ -1,5 +1,10 @@
 #include "../../../include/vp6_pbdll.h"
 
+#define VP6_MV_SHORT_PROB(pbi, i, n) \
+    (((unsigned char *)(pbi)) + 0x70c)[(i) * 7 + (n)]
+#define VP6_MV_SIZE_PROB(pbi, i, n) \
+    (((unsigned char *)(pbi)) + 0x720)[(i) * 8 + (n)]
+
 extern int VP6_ModeUsesMC[10];
 extern int VP6_Mode2Frame[16];
 extern void (*ReconIntra)(short *, unsigned char *, unsigned short *, unsigned int);
@@ -7,19 +12,40 @@ extern void (*ReconInter)(short *, unsigned char *, unsigned char *, short *, un
 extern void (*ReconBlock)(short *, short *, unsigned char *, unsigned int);
 extern void VP6_PredictFilteredBlock(struct PB_INSTANCE *pbi, short *OutputPtr,
                                      int bp);
+extern void FilterBlock1d(unsigned char *SrcPtr, unsigned short *OutputPtr,
+                          unsigned int SrcPixelsPerLine, unsigned int PixelStep,
+                          unsigned int OutputHeight, unsigned int OutputWidth,
+                          int *Filter);
+extern void FilterBlock2d(unsigned char *SrcPtr, unsigned short *OutputPtr,
+                          unsigned int SrcPixelsPerLine, int *HFilter, int *VFilter);
+extern void FilterBlock1dBil_GC(unsigned char *SrcPtr, unsigned short *OutputPtr,
+                                unsigned int SrcPixelsPerLine, unsigned int PixelStep,
+                                int *Filter);
+extern void FilterBlock2dBil_GC(unsigned char *SrcPtr, unsigned short *OutputPtr,
+                                unsigned int SrcPixelsPerLine, int *HFilter, int *VFilter);
 
 static unsigned int idctconstants[8] = {
     0x41000000, 0x3f7b14be, 0x3f6c835e, 0x3f54db31,
     0x3f3504f3, 0x3f0e39da, 0x3ec3ef15, 0x3e47c5c2
 };
+static int BicubicFilters[32] = {
+    0, 0x80, 0, 0,
+    -4, 0x76, 0x10, -2,
+    -7, 0x6a, 0x22, -5,
+    -8, 0x5a, 0x35, -7,
+    -8, 0x48, 0x48, -8,
+    -7, 0x35, 0x5a, -8,
+    -5, 0x22, 0x6a, -7,
+    -2, 0x10, 0x76, -4
+};
+static int BilinearFilters[16] = {
+    0x80000000, 0, 0x70000000, 0x10000000,
+    0x60000000, 0x20000000, 0x50000000, 0x30000000,
+    0x40000000, 0x40000000, 0x30000000, 0x50000000,
+    0x20000000, 0x60000000, 0x10000000, 0x70000000
+};
 static float f128 = 128.0f;
 static float f64 = 64.0f;
-extern volatile int gc_asm_keep;
-
-__asm__(".text\n"
-        ".global TestAsm\n"
-        "TestAsm:\n"
-        "nop\n");
 
 typedef struct {
     unsigned int lowvalue;
@@ -227,46 +253,46 @@ void VP6_decodeMotionVector(
     for (i = 0; i < 2; i++) {
         if (!VP6_DecodeBool((BOOL_CODER *)&pbi->br, pbi->IsMvShortProb[i])) {
             if (VP6_DecodeBool((BOOL_CODER *)&pbi->br,
-                               pbi->MvShortProbs[i][0])) {
+                               VP6_MV_SHORT_PROB(pbi, i, 0))) {
                 if (VP6_DecodeBool((BOOL_CODER *)&pbi->br,
-                                   pbi->MvShortProbs[i][4])) {
+                                   VP6_MV_SHORT_PROB(pbi, i, 4))) {
                     if (VP6_DecodeBool((BOOL_CODER *)&pbi->br,
-                                       pbi->MvShortProbs[i][6])) {
+                                       VP6_MV_SHORT_PROB(pbi, i, 6))) {
                         Vector = VP6_DecodeBool((BOOL_CODER *)&pbi->br,
-                                                pbi->MvShortProbs[i][2]) + 6;
+                                                VP6_MV_SHORT_PROB(pbi, i, 2)) + 6;
                     } else {
                         Vector = VP6_DecodeBool((BOOL_CODER *)&pbi->br,
-                                                pbi->MvShortProbs[i][5]) + 4;
+                                                VP6_MV_SHORT_PROB(pbi, i, 5)) + 4;
                     }
                 } else {
                     if (VP6_DecodeBool((BOOL_CODER *)&pbi->br,
-                                       pbi->MvShortProbs[i][3])) {
+                                       VP6_MV_SHORT_PROB(pbi, i, 3))) {
                         Vector = VP6_DecodeBool((BOOL_CODER *)&pbi->br,
-                                                pbi->MvShortProbs[i][1]) + 2;
+                                                VP6_MV_SHORT_PROB(pbi, i, 1)) + 2;
                     } else {
                         Vector = VP6_DecodeBool((BOOL_CODER *)&pbi->br,
-                                                pbi->MvShortProbs[i][0]);
+                                                VP6_MV_SHORT_PROB(pbi, i, 0));
                     }
                 }
             }
         } else {
             Vector = VP6_DecodeBool((BOOL_CODER *)&pbi->br,
-                                    pbi->MvSizeProbs[i][0]);
+                                    VP6_MV_SIZE_PROB(pbi, i, 0));
             Vector += VP6_DecodeBool((BOOL_CODER *)&pbi->br,
-                                     pbi->MvSizeProbs[i][1]) << 1;
+                                     VP6_MV_SIZE_PROB(pbi, i, 1)) << 1;
             Vector += VP6_DecodeBool((BOOL_CODER *)&pbi->br,
-                                     pbi->MvSizeProbs[i][2]) << 2;
+                                     VP6_MV_SIZE_PROB(pbi, i, 2)) << 2;
             Vector += VP6_DecodeBool((BOOL_CODER *)&pbi->br,
-                                     pbi->MvSizeProbs[i][7]) << 7;
+                                     VP6_MV_SIZE_PROB(pbi, i, 7)) << 7;
             Vector += VP6_DecodeBool((BOOL_CODER *)&pbi->br,
-                                     pbi->MvSizeProbs[i][6]) << 6;
+                                     VP6_MV_SIZE_PROB(pbi, i, 6)) << 6;
             Vector += VP6_DecodeBool((BOOL_CODER *)&pbi->br,
-                                     pbi->MvSizeProbs[i][5]) << 5;
+                                     VP6_MV_SIZE_PROB(pbi, i, 5)) << 5;
             Vector += VP6_DecodeBool((BOOL_CODER *)&pbi->br,
-                                     pbi->MvSizeProbs[i][4]) << 4;
+                                     VP6_MV_SIZE_PROB(pbi, i, 4)) << 4;
             if (Vector & 0xf0) {
                 Vector += VP6_DecodeBool((BOOL_CODER *)&pbi->br,
-                                         pbi->MvSizeProbs[i][3]) << 3;
+                                         VP6_MV_SIZE_PROB(pbi, i, 3)) << 3;
             } else {
                 Vector += 8;
             }
@@ -306,11 +332,8 @@ void VP6_FindNearestandNextNearest(struct PB_INSTANCE *pbi,
     i = 0;
     thisMv = pbi->predictionMode[BaseMB + OffsetMB];
     while (1) {
-        unsigned int mb;
-
-        mb = BaseMB + OffsetMB;
         if (VP6_Mode2Frame[(int)thisMv] == Frame) {
-            thisMv = ((unsigned int *)pbi->MBMotionVector)[mb];
+            thisMv = ((unsigned int *)pbi->MBMotionVector)[BaseMB + OffsetMB];
             if (thisMv != 0) {
                 Nearest = (int)thisMv;
                 typet = 2;
@@ -329,13 +352,11 @@ FirstNearestFound:
     nearestIndex = i;
     i = nearestIndex + 1;
     if (i <= 11) {
-        unsigned int mb;
-
-        mb = pbi->mvNearOffset[i] + OffsetMB;
-        thisMv = pbi->predictionMode[mb];
+        BaseMB = pbi->mvNearOffset[i];
+        thisMv = pbi->predictionMode[BaseMB + OffsetMB];
         while (1) {
             if (VP6_Mode2Frame[(int)thisMv] == Frame) {
-                thisMv = ((unsigned int *)pbi->MBMotionVector)[mb];
+                thisMv = ((unsigned int *)pbi->MBMotionVector)[BaseMB + OffsetMB];
                 if (thisMv != (unsigned int)Nearest && thisMv != 0) {
                     NextNearest = (int)thisMv;
                     typet = 0;
@@ -346,8 +367,8 @@ FirstNearestFound:
             if (i > 11) {
                 break;
             }
-            mb = pbi->mvNearOffset[i] + OffsetMB;
-            thisMv = pbi->predictionMode[mb];
+            BaseMB = pbi->mvNearOffset[i];
+            thisMv = pbi->predictionMode[BaseMB + OffsetMB];
         }
     }
 
@@ -478,7 +499,7 @@ void VP6_ReconstructBlock(struct PB_INSTANCE *pbi, BLOCK_POSITION bp) {
                    pbi->ThisFrameRecon + pbi->mbi.Recon,
                    pbi->LastFrameRecon + pbi->mbi.Recon,
                    pbi->ReconDataBuffer, pbi->mbi.CurrentReconStride);
-    } else if (*(VP6_ModeUsesMC + pbi->mbi.Mode)) {
+    } else if (*((int *)VP6_ModeUsesMC + (int)pbi->mbi.Mode)) {
         VP6_PredictFilteredBlock(pbi, pbi->TmpDataBuffer, bp);
         ReconBlock(pbi->TmpDataBuffer, pbi->ReconDataBuffer,
                    pbi->ThisFrameRecon + pbi->mbi.Recon,
@@ -496,9 +517,168 @@ void VP6_ReconstructBlock(struct PB_INSTANCE *pbi, BLOCK_POSITION bp) {
     }
 }
 
-#pragma force_active on
+void FilterBlock_GC(unsigned char *ReconPtr1, unsigned char *ReconPtr2,
+                    unsigned short *ReconRefPtr, unsigned int PixelsPerLine,
+                    int ModX, int ModY, int UseBicubic) {
+    int diff;
 
-void ScalarReconIntra_GC(short *TmpDataBuffer, unsigned char *ReconPtr,
+    diff = ReconPtr2 - ReconPtr1;
+    if (diff < 0) {
+        unsigned char *temp = ReconPtr1;
+        ReconPtr1 = ReconPtr2;
+        ReconPtr2 = temp;
+        diff = ReconPtr2 - ReconPtr1;
+    }
+
+    if (!UseBicubic) {
+        if (diff == 1) {
+            FilterBlock1dBil_GC(ReconPtr1, ReconRefPtr, PixelsPerLine, 1,
+                                 &BilinearFilters[ModX * 2]);
+        } else if (diff == (int)PixelsPerLine) {
+            FilterBlock1dBil_GC(ReconPtr1, ReconRefPtr, PixelsPerLine,
+                                PixelsPerLine, &BilinearFilters[ModY * 2]);
+        } else if (diff == (int)PixelsPerLine - 1) {
+            FilterBlock2dBil_GC(ReconPtr1 - 1, ReconRefPtr, PixelsPerLine,
+                                &BilinearFilters[ModX * 2],
+                                &BilinearFilters[ModY * 2]);
+        } else if (diff == (int)PixelsPerLine + 1) {
+            FilterBlock2dBil_GC(ReconPtr1, ReconRefPtr, PixelsPerLine,
+                                &BilinearFilters[ModX * 2],
+                                &BilinearFilters[ModY * 2]);
+        }
+    } else {
+        if (diff == 1) {
+            FilterBlock1d(ReconPtr1, ReconRefPtr, PixelsPerLine, 1, 8, 8,
+                          &BicubicFilters[ModX * 4]);
+        } else if (diff == (int)PixelsPerLine) {
+            FilterBlock1d(ReconPtr1, ReconRefPtr, PixelsPerLine, PixelsPerLine,
+                          8, 8, &BicubicFilters[ModY * 4]);
+        } else if (diff == (int)PixelsPerLine - 1) {
+            FilterBlock2d(ReconPtr1 - 1, ReconRefPtr, PixelsPerLine,
+                          &BicubicFilters[ModX * 4],
+                          &BicubicFilters[ModY * 4]);
+        } else if (diff == (int)PixelsPerLine + 1) {
+            FilterBlock2d(ReconPtr1, ReconRefPtr, PixelsPerLine,
+                          &BicubicFilters[ModX * 4],
+                          &BicubicFilters[ModY * 4]);
+        }
+    }
+}
+
+void FilterBlock1dBil_GC(unsigned char *SrcPtr, unsigned short *OutputPtr,
+                         unsigned int SrcPixelsPerLine, unsigned int PixelStep,
+                         int *Filter) {
+    __asm__ volatile(
+        "li 9, f64\n"
+        "li 0, 8\n"
+        "lq 8, -24576(7)\n"
+        "psq_l f9, 7(7), 1, 2\n"
+        "lq 10, -32768(9)\n"
+        "mtctr 0\n"
+        "add 6, 3, 6\n"
+        "vmhaddshs v10, v10, v10, v16\n"
+        "1:\n"
+        "lq 0, 8192(3)\n"
+        "psq_l f1, 2(3), 0, 2\n"
+        "lq 2, 8192(3)\n"
+        "psq_l f3, 6(3), 0, 2\n"
+        "add 3, 3, 5\n"
+        "lq 4, 8192(6)\n"
+        "psq_l f5, 2(6), 0, 2\n"
+        "psq_l f6, 4(6), 0, 2\n"
+        "psq_l f7, 6(6), 0, 2\n"
+        "add 6, 6, 5\n"
+        "vextduwvlx v0, v0, v10, 8\n"
+        "vextduwvlx v1, v1, v10, 8\n"
+        "vextduwvlx v2, v2, v10, 8\n"
+        "vextduwvlx v3, v3, v10, 8\n"
+        "vextduwvlx v0, v4, v0, 9\n"
+        "vextduwvlx v1, v5, v1, 9\n"
+        "vextduwvlx v2, v6, v2, 9\n"
+        "vextduwvlx v3, v7, v3, 9\n"
+        "xsaddsp vs0, vs4, vs12\n"
+        "xsaddsp vs1, vs36, vs12\n"
+        "xsmaddasp vs2, vs4, vs12\n"
+        "xsmaddasp vs3, vs36, vs12\n"
+        "addi 4, 4, 16\n"
+        "bdnz 1b\n"
+        : : : "memory");
+}
+
+void FilterBlock2dBil_GC(unsigned char *SrcPtr, unsigned short *OutputPtr,
+                         unsigned int SrcPixelsPerLine, int *HFilter,
+                         int *VFilter) {
+    __asm__ volatile(
+        "lis 9, FData.84_804BE56C\n"
+        "li 11, f64\n"
+        "addi 9, 9, FData.84_804BE56C\n"
+        "li 0, 9\n"
+        "lq 8, -24576(6)\n"
+        "psq_l f9, 7(6), 1, 2\n"
+        "lq 10, -32768(11)\n"
+        "mtctr 0\n"
+        "addi 6, 3, 1\n"
+        "vmhaddshs v10, v10, v10, v16\n"
+        "1:\n"
+        "lq 0, 8192(3)\n"
+        "psq_l f1, 2(3), 0, 2\n"
+        "lq 2, 8192(3)\n"
+        "psq_l f3, 6(3), 0, 2\n"
+        "add 3, 3, 5\n"
+        "lq 4, 8192(6)\n"
+        "psq_l f5, 2(6), 0, 2\n"
+        "psq_l f6, 4(6), 0, 2\n"
+        "psq_l f7, 6(6), 0, 2\n"
+        "add 6, 6, 5\n"
+        "vextduwvlx v0, v0, v10, 8\n"
+        "vextduwvlx v1, v1, v10, 8\n"
+        "vextduwvlx v2, v2, v10, 8\n"
+        "vextduwvlx v3, v3, v10, 8\n"
+        "vextduwvlx v0, v4, v0, 9\n"
+        "vextduwvlx v1, v5, v1, 9\n"
+        "vextduwvlx v2, v6, v2, 9\n"
+        "vextduwvlx v3, v7, v3, 9\n"
+        "xsaddsp vs0, vs9, vs12\n"
+        "xsaddsp vs1, vs41, vs12\n"
+        "xsmaddasp vs2, vs9, vs12\n"
+        "xsmaddasp vs3, vs41, vs12\n"
+        "addi 9, 9, 16\n"
+        "bdnz 1b\n"
+        "li 0, 8\n"
+        "addi 3, 9, -144\n"
+        "lq 8, -24576(7)\n"
+        "psq_l f9, 7(7), 1, 2\n"
+        "mtctr 0\n"
+        "addi 6, 3, 16\n"
+        "2:\n"
+        "lq 0, 12288(3)\n"
+        "psq_l f1, 4(3), 0, 3\n"
+        "lq 2, 12288(3)\n"
+        "psq_l f3, 12(3), 0, 3\n"
+        "addi 3, 3, 16\n"
+        "lq 4, 12288(6)\n"
+        "psq_l f5, 4(6), 0, 3\n"
+        "psq_l f6, 8(6), 0, 3\n"
+        "psq_l f7, 12(6), 0, 3\n"
+        "addi 6, 6, 16\n"
+        "vextduwvlx v0, v0, v10, 8\n"
+        "vextduwvlx v1, v1, v10, 8\n"
+        "vextduwvlx v2, v2, v10, 8\n"
+        "vextduwvlx v3, v3, v10, 8\n"
+        "vextduwvlx v0, v4, v0, 9\n"
+        "vextduwvlx v1, v5, v1, 9\n"
+        "vextduwvlx v2, v6, v2, 9\n"
+        "vextduwvlx v3, v7, v3, 9\n"
+        "xsaddsp vs0, vs4, vs12\n"
+        "xsaddsp vs1, vs36, vs12\n"
+        "xsmaddasp vs2, vs4, vs12\n"
+        "xsmaddasp vs3, vs36, vs12\n"
+        "addi 4, 4, 16\n"
+        "bdnz 2b\n"
+        : : : "memory");
+}
+
+inline void ScalarReconIntra_GC(short *TmpDataBuffer, unsigned char *ReconPtr,
                          unsigned short *ChangePtr, unsigned int LineStep) {
     __asm__ volatile(
         "li 9, f128\n"
@@ -526,7 +706,7 @@ void ScalarReconIntra_GC(short *TmpDataBuffer, unsigned char *ReconPtr,
             "r"(LineStep) : "memory");
 }
 
-void ScalarReconInter_GC(short *TmpDataBuffer, unsigned char *ReconPtr,
+inline void ScalarReconInter_GC(short *TmpDataBuffer, unsigned char *ReconPtr,
                          unsigned char *RefPtr, short *ChangePtr,
                          unsigned int LineStep) {
     __asm__ volatile(
@@ -557,7 +737,7 @@ void ScalarReconInter_GC(short *TmpDataBuffer, unsigned char *ReconPtr,
             "r"(RefPtr), "r"(LineStep) : "memory");
 }
 
-void ReconBlock_GC(short *SrcBlock, short *ReconRefPtr, unsigned char *DestBlock,
+inline void ReconBlock_GC(short *SrcBlock, short *ReconRefPtr, unsigned char *DestBlock,
                    unsigned int LineStep) {
     __asm__ volatile(
         "li 0, 8\n"
@@ -587,8 +767,6 @@ void ReconBlock_GC(short *SrcBlock, short *ReconRefPtr, unsigned char *DestBlock
             "r"(LineStep) : "memory");
 }
 
-#pragma force_active off
-
 void IDct1_GC(short *InputData, short *QuantMatrix, short *OutputData) {
     unsigned int *dest = (unsigned int *)OutputData;
     unsigned int out;
@@ -605,6 +783,7 @@ void IDct1_GC(short *InputData, short *QuantMatrix, short *OutputData) {
     }
 }
 
-void TestCAsm(void) {
-    __asm__ volatile("nop" : "=m"(gc_asm_keep));
+extern volatile int TestGlobal;
+void TestCGlobal(void) {
+    TestGlobal = 1;
 }
