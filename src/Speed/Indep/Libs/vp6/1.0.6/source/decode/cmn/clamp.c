@@ -62,7 +62,8 @@ void ClampLevels_C(POSTPROC_INSTANCE *pbi, int BlackClamp, int WhiteClamp, unsig
     unsigned char clamped[256];
     int width;
     int height;
-    unsigned char *SrcPtr, *DestPtr;
+    unsigned char *SrcPtr;
+    unsigned char *DestPtr;
     unsigned int LineLength;
 
     width = pbi->HFragments << 3;
@@ -84,7 +85,7 @@ void ClampLevels_C(POSTPROC_INSTANCE *pbi, int BlackClamp, int WhiteClamp, unsig
     row = 0;
     while (row < height) {
         for (col = 0; col < width; col++) {
-            *(SrcPtr + col) = clamped[*(DestPtr + col)];
+            SrcPtr[col] = clamped[DestPtr[col]];
         }
         SrcPtr = &SrcPtr[LineLength];
         DestPtr = &DestPtr[LineLength];

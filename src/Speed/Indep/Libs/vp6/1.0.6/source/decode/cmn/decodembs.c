@@ -14,6 +14,18 @@ extern void VP6_CreateCodeArray(struct _huffnode *hn, int node,
 extern int nDecodeBool(void *br, int probability);
 extern unsigned int VP6_bitread(void *br, int bits);
 extern void VP6_ConfigureContexts(struct PB_INSTANCE *pbi);
+extern void VP6_DecodeModeProbs(struct PB_INSTANCE *pbi);
+extern void VP6_ConfigureMvEntropyDecoder(struct PB_INSTANCE *pbi,
+                                           unsigned char FrameType);
+extern void VP6_DecodeMacroBlock(struct PB_INSTANCE *pbi, unsigned int MBrow,
+                                  unsigned int MBcol);
+extern const unsigned char VP6_BaselineXmittedProbs[4][2][10];
+extern const unsigned char DefaultMvShortProbs[14];
+extern const unsigned char DefaultMvLongProbs[16];
+extern const unsigned short DefaultIsShortProbs;
+extern const unsigned short DefaultSignProbs;
+extern const unsigned char DefaultInterlacedScanBands[64];
+extern const unsigned char DefaultNonInterlacedScanBands[64];
 extern unsigned char VP6_DcUpdateProbs[2][11];
 extern unsigned char ScanBandUpdateProbs[64];
 extern unsigned char ZrlUpdateProbs[2][14];
@@ -303,5 +315,84 @@ void VP6_ResetAboveContext(struct PB_INSTANCE *pbi) {
         pbi->fc.LastDcY[i] = 0;
         pbi->fc.LastDcU[i] = 0;
         pbi->fc.LastDcV[i] = 0;
+    }
+}
+
+void VP6_DecodeFrameMbs(struct PB_INSTANCE *pbi) {
+    unsigned int MBrow;
+    unsigned int MBcol;
+    unsigned int MBRows;
+    unsigned int MBCols;
+    unsigned int MB;
+    int i;
+
+    MBRows = pbi->MBRows;
+    MBCols = pbi->MBCols;
+
+    if (pbi->FrameType != 0) {
+        VP6_DecodeModeProbs(pbi);
+        VP6_ConfigureMvEntropyDecoder(pbi, pbi->FrameType);
+        pbi->LastMode = 0;
+    } else {
+        memcpy(pbi->probXmitted, VP6_BaselineXmittedProbs,
+               sizeof(pbi->probXmitted));
+        memcpy(pbi->MvSignProbs, &DefaultSignProbs,
+               sizeof(pbi->MvSignProbs));
+        memcpy(pbi->IsMvShortProb, &DefaultIsShortProbs,
+               sizeof(pbi->IsMvShortProb));
+        memcpy(pbi->MvShortProbs, DefaultMvShortProbs,
+               sizeof(pbi->MvShortProbs));
+        memcpy(pbi->MvSizeProbs, DefaultMvLongProbs,
+               sizeof(pbi->MvSizeProbs));
+        memset(pbi->MBModeProb, 128, sizeof(pbi->MBModeProb));
+        memset(pbi->BModeProb, 128, sizeof(pbi->BModeProb));
+        memset(pbi->predictionMode, 1, pbi->HFragments);
+
+        if (pbi->Configuration.Interlaced == 1) {
+            memcpy(pbi->ScanBands, DefaultInterlacedScanBands,
+                   sizeof(pbi->ScanBands));
+        } else {
+            memcpy(pbi->ScanBands, DefaultNonInterlacedScanBands,
+                   sizeof(pbi->ScanBands));
+        }
+        BuildScanOrder(pbi, pbi->ScanBands);
+    }
+
+    VP6_ConfigureEntropyDecoder(pbi, pbi->FrameType);
+
+    for (MB = 0; MB < 64; MB++) {
+        pbi->MergedScanOrder[MB] =
+            pbi->quantizer->transIndex[pbi->ModifiedScanOrder[MB]];
+    }
+
+    if (pbi->UseHuffman != 0) {
+        ConvertBoolTrees(pbi);
+    }
+
+    if (pbi->Configuration.Interlaced == 1) {
+        pbi->probInterlaced = VP6_bitread(&pbi->br, 8);
+    }
+
+    VP6_ResetAboveContext(pbi);
+    memset(pbi->mbi.Coeffs, 0, 768);
+
+    pbi->CurrentDcRunLen[0] = 0;
+    pbi->CurrentDcRunLen[1] = 0;
+    pbi->CurrentAc1RunLen[0] = 0;
+    pbi->CurrentAc1RunLen[1] = 0;
+
+    MBRows -= 3;
+    MBCols -= 3;
+    MBrow = 3;
+    if (MBrow < MBRows) {
+        do {
+            MBcol = 3;
+            VP6_ResetLeftContext(pbi);
+            do {
+                VP6_DecodeMacroBlock(pbi, MBrow, MBcol);
+                MBcol++;
+            } while (MBcol < MBCols);
+            MBrow++;
+        } while (MBrow < MBRows);
     }
 }

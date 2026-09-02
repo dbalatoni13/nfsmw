@@ -12,6 +12,8 @@ extern void (*ReconInter)(short *, unsigned char *, unsigned char *, short *, un
 extern void (*ReconBlock)(short *, short *, unsigned char *, unsigned int);
 extern void VP6_PredictFilteredBlock(struct PB_INSTANCE *pbi, short *OutputPtr,
                                      int bp);
+extern void VP6_DecodeBlock(struct PB_INSTANCE *pbi, unsigned int MBrow,
+                             unsigned int MBcol, BLOCK_POSITION bp);
 extern void FilterBlock1d(unsigned char *SrcPtr, unsigned short *OutputPtr,
                           unsigned int SrcPixelsPerLine, unsigned int PixelStep,
                           unsigned int OutputHeight, unsigned int OutputWidth,
@@ -482,6 +484,101 @@ void VP6_decodeModeAndMotionVector(struct PB_INSTANCE *pbi,
     }
 }
 
+void VP6_DecodeMacroBlock(struct PB_INSTANCE *pbi, unsigned int MBrow,
+                          unsigned int MBcol) {
+    unsigned int MBPointer;
+    int NextBlock;
+
+    if (pbi->Configuration.Interlaced != 0) {
+        {
+            unsigned char prob;
+
+            prob = pbi->probInterlaced;
+            if (MBcol > 3) {
+                if (pbi->mbi.Interlaced != 0) {
+                    prob -= prob >> 1;
+                } else {
+                    prob += (256 - prob) >> 1;
+                }
+            }
+            pbi->mbi.Interlaced = nDecodeBool(&pbi->br, prob);
+        }
+    } else {
+        pbi->mbi.Interlaced = 0;
+    }
+
+    if (pbi->FrameType == 0) {
+        pbi->mbi.Mode = CODE_INTRA;
+    } else {
+        VP6_decodeModeAndMotionVector(pbi, MBrow, MBcol);
+    }
+
+    if (pbi->mbi.Interlaced == 0) {
+        pbi->mbi.CurrentReconStride = pbi->Configuration.YStride;
+        NextBlock = 8;
+    } else {
+        pbi->mbi.CurrentReconStride = pbi->Configuration.YStride * 2;
+        NextBlock = 1;
+    }
+
+    pbi->mbi.SourceY = MBrow << 4;
+    pbi->mbi.SourceX = MBcol << 4;
+    pbi->mbi.FrameReconStride = pbi->Configuration.YStride;
+    MBPointer = pbi->ReconYDataOffset +
+                pbi->mbi.SourceY * pbi->Configuration.YStride +
+                pbi->mbi.SourceX;
+    pbi->mbi.Recon = MBPointer;
+    pbi->mbi.Above = (void *)(pbi->fc.AboveY + MBcol * 2);
+    pbi->mbi.Left = (void *)pbi->fc.LeftY;
+    pbi->mbi.LastDc = pbi->fc.LastDcY;
+    pbi->mbi.Plane = 0;
+    pbi->mbi.MvShift = 2;
+    pbi->mbi.MvModMask = 3;
+    VP6_DecodeBlock(pbi, MBrow, MBcol, TOP_LEFT_Y_BLOCK);
+
+    pbi->mbi.Recon += 8;
+    pbi->mbi.SourceX += 8;
+    pbi->mbi.Above = (void *)(pbi->fc.AboveY + MBcol * 2 + 1);
+    VP6_DecodeBlock(pbi, MBrow, MBcol, TOP_RIGHT_Y_BLOCK);
+
+    pbi->mbi.SourceX -= 8;
+    pbi->mbi.SourceY += NextBlock;
+    MBPointer += NextBlock * pbi->Configuration.YStride;
+    pbi->mbi.Recon = MBPointer;
+    pbi->mbi.Above = (void *)(pbi->fc.AboveY + MBcol * 2);
+    pbi->mbi.Left = (void *)(pbi->fc.LeftY + 1);
+    VP6_DecodeBlock(pbi, MBrow, MBcol, BOTTOM_LEFT_Y_BLOCK);
+
+    pbi->mbi.Recon += 8;
+    pbi->mbi.SourceX += 8;
+    pbi->mbi.Above = (void *)(pbi->fc.AboveY + MBcol * 2 + 1);
+    VP6_DecodeBlock(pbi, MBrow, MBcol, BOTTOM_RIGHT_Y_BLOCK);
+
+    pbi->mbi.SourceY = MBrow << 3;
+    pbi->mbi.SourceX = MBcol << 3;
+    pbi->mbi.FrameReconStride = pbi->Configuration.UVStride;
+    pbi->mbi.CurrentReconStride = pbi->Configuration.UVStride;
+    pbi->mbi.Recon = pbi->ReconUDataOffset +
+                     pbi->mbi.SourceY * pbi->Configuration.UVStride +
+                     pbi->mbi.SourceX;
+    pbi->mbi.Above = (void *)(pbi->fc.AboveU + MBcol);
+    pbi->mbi.Left = (void *)&pbi->fc.LeftU;
+    pbi->mbi.LastDc = pbi->fc.LastDcU;
+    pbi->mbi.Plane = 1;
+    pbi->mbi.MvShift = 3;
+    pbi->mbi.MvModMask = 7;
+    VP6_DecodeBlock(pbi, MBrow, MBcol, U_BLOCK);
+
+    pbi->mbi.Recon = pbi->ReconVDataOffset +
+                     pbi->mbi.SourceY * pbi->Configuration.UVStride +
+                     pbi->mbi.SourceX;
+    pbi->mbi.Above = (void *)(pbi->fc.AboveV + MBcol);
+    pbi->mbi.Left = (void *)&pbi->fc.LeftV;
+    pbi->mbi.LastDc = pbi->fc.LastDcV;
+    pbi->mbi.Plane = 2;
+    VP6_DecodeBlock(pbi, MBrow, MBcol, V_BLOCK);
+}
+
 void VP6_ReconstructBlock(struct PB_INSTANCE *pbi, BLOCK_POSITION bp) {
     if (pbi->mbi.Mode == 0) {
         ReconInter(pbi->TmpDataBuffer,
@@ -554,6 +651,7 @@ void FilterBlock_GC(unsigned char *ReconPtr1, unsigned char *ReconPtr2,
     }
 }
 
+#if 0
 void FilterBlock1dBil_GC(unsigned char *SrcPtr, unsigned short *OutputPtr,
                          unsigned int SrcPixelsPerLine, unsigned int PixelStep,
                          int *Filter) {
@@ -755,6 +853,8 @@ inline void ReconBlock_GC(short *SrcBlock, short *ReconRefPtr, unsigned char *De
         : "=m"(*DestBlock) : "r"(SrcBlock), "r"(ReconRefPtr),
             "r"(LineStep) : "memory");
 }
+
+#endif
 
 void IDct1_GC(short *InputData, short *QuantMatrix, short *OutputData) {
     unsigned int *dest = (unsigned int *)OutputData;
