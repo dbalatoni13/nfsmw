@@ -92,6 +92,14 @@ typedef enum {
     V_BLOCK = 5
 } BLOCK_POSITION;
 
+typedef struct {
+    unsigned char Token;
+    CODING_MODE Mode;
+    unsigned short Frame;
+    short Dc;
+    unsigned char unused[3];
+} BLOCK_CONTEXT;
+
 struct POSTPROC_INSTANCE;
 
 struct _BITREADER {
@@ -336,7 +344,7 @@ struct PB_INSTANCE {
     int LastMode; // offset 0x3A0, size 0x4
     unsigned char DcProbs[22]; // offset 0x3A4, size 0x16
     unsigned char AcProbs[396]; // offset 0x3BA, size 0x18C
-    unsigned char DcNodeContexts[5][3][2]; // offset 0x546, size 0x1E
+    unsigned char DcNodeContexts[2][3][5]; // offset 0x546, size 0x1E
     unsigned char ZeroRunProbs[2][14]; // offset 0x564, size 0x1C
     unsigned char MergedScanOrder[64]; // offset 0x580, size 0x40
     unsigned char ModifiedScanOrder[64]; // offset 0x5C0, size 0x40

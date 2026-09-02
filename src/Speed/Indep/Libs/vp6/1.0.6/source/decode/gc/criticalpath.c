@@ -585,7 +585,7 @@ void VP6_ReconstructBlock(struct PB_INSTANCE *pbi, BLOCK_POSITION bp) {
                    pbi->ThisFrameRecon + pbi->mbi.Recon,
                    pbi->LastFrameRecon + pbi->mbi.Recon,
                    pbi->ReconDataBuffer, pbi->mbi.CurrentReconStride);
-    } else if (*((int *)VP6_ModeUsesMC + (int)pbi->mbi.Mode)) {
+    } else if (VP6_ModeUsesMC[(int)pbi->mbi.Mode]) {
         VP6_PredictFilteredBlock(pbi, pbi->TmpDataBuffer, bp);
         ReconBlock(pbi->TmpDataBuffer, pbi->ReconDataBuffer,
                    pbi->ThisFrameRecon + pbi->mbi.Recon,
