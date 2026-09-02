@@ -152,9 +152,9 @@ void DeletePostProcBuffers(POSTPROC_INSTANCE *ppi) {
 void DeletePostProcInstance(POSTPROC_INSTANCE **ppi) {
     if (*ppi != 0) {
         DeletePostProcBuffers(*ppi);
+        duck_free(*ppi);
+        *ppi = 0;
     }
-    duck_free(*ppi);
-    *ppi = 0;
 }
 
 int AllocatePostProcBuffers(POSTPROC_INSTANCE *ppi) {
@@ -220,8 +220,8 @@ void UpdateFragQIndex(POSTPROC_INSTANCE *ppi) {
 }
 
 double gaussian(double sigma, double mu, double x) {
-    return (1.0 / (sigma * sqrt(6.28318530717958647692))) *
-           exp((-(x - mu) * (x - mu)) / ((sigma + sigma) * sigma));
+    return 1 / ( sigma * sqrt(2.0*3.14159265)) *
+           (exp(-(x-mu)*(x-mu)/(2*sigma*sigma)));
 }
 
 void PlaneAddNoise_C(unsigned char *Start, unsigned int Width, unsigned int Height,
@@ -235,35 +235,30 @@ void PlaneAddNoise_C(unsigned char *Start, unsigned int Width, unsigned int Heig
     char Rand[2048];
     double sigma;
 
-    sigma = (double)(63 - q) * 0.012698412698412698 + 1.0;
+    sigma = 1 + .8 * (63 - q) / 63.0;
     {
         double i;
         int next;
         int j;
 
-        i = -32.0;
-        j = 0;
-        while (i < 32.0) {
-            next = (int)(gaussian(sigma, 0.0, i) * 32.0 + 0.5);
-            if (next != 0) {
-                int a;
+        next = 0;
+        for (i = -32; i < 32; i++) {
+            int a = (int)(.5 + 256 * gaussian(sigma, 0, i));
 
-                for (a = 0; a < next; a++) {
-                    CharDist[j + a] = (char)i;
+            if (a) {
+                for (j = 0; j < a; j++) {
+                    CharDist[next + j] = (char)i;
                 }
-                j += a;
+                next = next + j;
             }
-            i += 1.0;
         }
 
-        if (j <= 0xff) {
-            for (; j <= 0xff; j++) {
-                CharDist[j] = 0;
-            }
+        for (next = next; next < 256; next++) {
+            CharDist[next] = 0;
         }
     }
 
-    for (i = 0; i <= 0x7ff; i++) {
+    for (i = 0; i < 2048; i++) {
         Rand[i] = CharDist[rand() & 0xff];
     }
 
@@ -279,15 +274,16 @@ void PlaneAddNoise_C(unsigned char *Start, unsigned int Width, unsigned int Heig
 
         for (i = 0; i < Height; i++) {
             Pos = Start + i * Pitch;
-            Ref = (signed char *)Rand + (rand() & 0xff);
+            Ref = (signed char *)(Rand + (rand() & 0xff));
+
             for (j = 0; j < Width; j++) {
-                if (Pos[j] < -CharDist[0]) {
-                    Pos[j] = -CharDist[0];
-                }
-                if (Pos[j] > 255 - CharDist[0]) {
-                    Pos[j] = ~CharDist[0];
-                }
-                Pos[j] += Ref[j];
+            if (Pos[j] < -CharDist[0]) {
+                Pos[j] = -CharDist[0];
+            }
+            if (Pos[j] > 255 - CharDist[0]) {
+                Pos[j] = 255 - CharDist[0];
+            }
+            Pos[j] += Ref[j];
             }
         }
     }
@@ -473,17 +469,20 @@ void PostProcess(POSTPROC_INSTANCE *ppi, int Vp3VersionNo, int FrameType,
 void InitPostProcessing(unsigned int *DCQuantScaleV2p, unsigned int *DCQuantScaleUVp,
                         unsigned int *DCQuantScaleV1p, unsigned int Version) {
     int i;
-    int x;
 
-    for (i = 0; i < 0x300; i++) {
-        x = i - 0x100;
-        if (x >= 0) {
-            if (x > 0xff) {
-                x = 0xff;
+    {
+        int x;
+
+        for (i = 0; i < 0x300; i++) {
+            x = i - 0x100;
+            if (x >= 0) {
+                if (x > 0xff) {
+                    x = 0xff;
+                }
+                *(i + LimitVal_VP31) = x;
+            } else {
+                *(i + LimitVal_VP31) = 0;
             }
-            *(i + LimitVal_VP31) = x;
-        } else {
-            *(i + LimitVal_VP31) = 0;
         }
     }
 

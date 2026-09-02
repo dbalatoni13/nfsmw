@@ -1,12 +1,7 @@
 #define SAT_UNSIGNED8(offset) \
     do { \
-        if (DataBlock[offset] < 0) { \
-            ResultPtr[offset] = 0; \
-        } else if (DataBlock[offset] > 255) { \
-            ResultPtr[offset] = 255; \
-        } else { \
-            ResultPtr[offset] = (unsigned char)DataBlock[offset]; \
-        } \
+        ResultPtr[offset] = (unsigned char)(DataBlock[offset] < 0 ? 0 : \
+            (DataBlock[offset] > 255 ? 255 : DataBlock[offset])); \
     } while (0)
 
 void SatUnsigned8(unsigned char *ResultPtr, short *DataBlock,

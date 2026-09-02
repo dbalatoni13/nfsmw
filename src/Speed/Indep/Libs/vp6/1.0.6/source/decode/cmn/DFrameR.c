@@ -100,7 +100,7 @@ static int LoadFrameHeader(struct PB_INSTANCE *pbi) {
             VFragments = (unsigned char)VP6_bitread((BOOL_CODER *)&pbi->br, 8) << 1;
             HFragments = (unsigned char)VP6_bitread((BOOL_CODER *)&pbi->br, 8) << 1;
             OutputVFragments = (unsigned char)VP6_bitread((BOOL_CODER *)&pbi->br, 8) << 1;
-            OutputHFragments = (unsigned char)VP6_bitread((BOOL_CODER *)&pbi->br, 8) << 1;
+            OutputHFragments = ((unsigned char)VP6_bitread((BOOL_CODER *)&pbi->br, 8)) * 2;
 
             if (pbi->Configuration.HRatio == 0) {
                 pbi->Configuration.HRatio = 1;
@@ -170,15 +170,19 @@ static int LoadFrameHeader(struct PB_INSTANCE *pbi) {
                 pbi->PredictionFilterMvSizeThresh =
                     VP6_bitread((BOOL_CODER *)&pbi->br, 3);
             } else {
-                pbi->PredictionFilterMode =
-                    VP6_DecodeBool((BOOL_CODER *)&pbi->br, 128);
+                if (VP6_DecodeBool((BOOL_CODER *)&pbi->br, 128)) {
+                    pbi->PredictionFilterMode = 1;
+                } else {
+                    pbi->PredictionFilterMode = 0;
+                }
             }
         }
     } else {
         if (pbi->MultiStream || pbi->VpProfile == 0) {
-            VP6_StartDecode((BOOL_CODER *)&pbi->br, Header->buffer + 1);
-        } else {
             VP6_StartDecode((BOOL_CODER *)&pbi->br, Header->buffer + 3);
+            pbi->Buff2Offset = ReadHeaderBits(Header, 16);
+        } else {
+            VP6_StartDecode((BOOL_CODER *)&pbi->br, Header->buffer + 1);
         }
 
         pbi->RefreshGoldenFrame = VP6_DecodeBool((BOOL_CODER *)&pbi->br, 128);
@@ -195,7 +199,7 @@ static int LoadFrameHeader(struct PB_INSTANCE *pbi) {
 
     pbi->UseHuffman = VP6_DecodeBool((BOOL_CODER *)&pbi->br, 128);
     pbi->quantizer->FrameQIndex = DctQMask;
-    pbi->quantizer->LastQuantizerValue =
+    pbi->quantizer->ThisFrameQuantizerValue =
         pbi->quantizer->QThreshTable[DctQMask];
     VP6_UpdateQ((void *)pbi->quantizer, pbi->Vp3VersionNo);
     RetVal = 1;

@@ -34,31 +34,24 @@ extern void FilterBlock_GC(void);
 
 void UtilMachineSpecificConfig(void) {
     int i;
-    void (**idctp)(short *, short *, short *);
-    void (**idctcp)(short *, short *, short *);
-
-    idctp = idct;
     for (i = 0; i < 65; i++) {
-        if (idctp <= idct + 1) {
-            *idctp = IDct1_GC;
-        } else if (idctp <= idct + 10) {
-            *idctp = IDct10;
-        } else {
-            *idctp = IDct64_GC;
-        }
-        idctp++;
-    }
-
-    idctcp = idctc;
-    for (i = 0; i < 65; i++) {
-        if (idctcp <= idctc + 1) {
-            *idctcp = IDct1_GC;
-        } else if (idctcp <= idctc + 10) {
+        if (i <= 1) {
+            idct[i] = IDct1_GC;
+        } else if (i <= 10) {
             idct[i] = IDct10;
         } else {
-            *idctcp = IDct64_GC;
+            idct[i] = IDct64_GC;
         }
-        idctcp++;
+    }
+
+    for (i = 0; i < 65; i++) {
+        if (i <= 1) {
+            idctc[i] = IDct1_GC;
+        } else if (i <= 10) {
+            idct[i] = IDct10;
+        } else {
+            idctc[i] = IDct64_GC;
+        }
     }
 
     ClearSysState = ClearSysState_C;

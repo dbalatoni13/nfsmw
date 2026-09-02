@@ -43,7 +43,7 @@ void BuildScanOrder(struct PB_INSTANCE *pbi, unsigned char *ScanBands) {
             MaxOffset = pbi->ModifiedScanOrder[i];
         }
         pbi->EobOffsetTable[i] = MaxOffset;
-        if (pbi->Vp3VersionNo <= 6) {
+        if (pbi->Vp3VersionNo > 6) {
             pbi->EobOffsetTable[i] = MaxOffset + 1;
         }
     }

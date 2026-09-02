@@ -3,7 +3,8 @@
 extern void *duck_malloc(unsigned int blocksize, int type);
 extern void duck_free(void *block);
 extern void *memset(void *dest, int value, unsigned int size);
-extern void SetPbParam(struct PB_INSTANCE *pbi, int NewFrame);
+extern void VP6_SetPbParam(struct PB_INSTANCE *pbi, int Command,
+                           unsigned int Parameter);
 extern void ChangePostProcConfiguration(struct POSTPROC_INSTANCE *ppi,
                                         struct CONFIG_TYPE *ConfigurationInit);
 
@@ -17,12 +18,11 @@ void VP6_DeleteFragmentInfo(struct PB_INSTANCE *pbi) {
     if (pbi->mbi.CoeffsAlloc != 0) {
         duck_free(pbi->mbi.CoeffsAlloc);
     }
+    pbi->mbi.CoeffsAlloc = 0;
+    pbi->mbi.Coeffs = 0;
     if (pbi->FragInfoAlloc != 0) {
         duck_free(pbi->FragInfoAlloc);
     }
-
-    pbi->mbi.Coeffs = 0;
-    pbi->mbi.CoeffsAlloc = 0;
     pbi->FragInfoAlloc = 0;
     pbi->FragInfo = 0;
     if (pbi->fc.AboveYAlloc != 0) {
@@ -45,16 +45,16 @@ void VP6_DeleteFragmentInfo(struct PB_INSTANCE *pbi) {
     }
     pbi->MBInterlacedAlloc = 0;
     pbi->MBInterlaced = 0;
+    if (pbi->MBMotionVectorAlloc != 0) {
+        duck_free(pbi->MBMotionVectorAlloc);
+    }
+    pbi->MBMotionVectorAlloc = 0;
+    pbi->MBMotionVector = 0;
     if (pbi->predictionModeAlloc != 0) {
         duck_free(pbi->predictionModeAlloc);
     }
     pbi->predictionModeAlloc = 0;
     pbi->predictionMode = 0;
-    if (pbi->MBMotionVectorAlloc != 0) {
-        duck_free(pbi->MBMotionVectorAlloc);
-    }
-    pbi->MBMotionVector = 0;
-    pbi->MBMotionVectorAlloc = 0;
 }
 
 int VP6_AllocateFragmentInfo(struct PB_INSTANCE *pbi) {
@@ -74,14 +74,14 @@ int VP6_AllocateFragmentInfo(struct PB_INSTANCE *pbi) {
     }
     pbi->fc.AboveY = (void *)(((unsigned int)pbi->fc.AboveYAlloc + 0x1f) & ~0x1f);
 
-    pbi->fc.AboveUAlloc = (void *)duck_malloc(pbi->HFragments * 8 + 0xa0, 0);
+    pbi->fc.AboveUAlloc = (void *)duck_malloc((pbi->HFragments >> 1) * 0x10 + 0xa0, 0);
     if (pbi->fc.AboveUAlloc == 0) {
         VP6_DeleteFragmentInfo(pbi);
         return 0;
     }
     pbi->fc.AboveU = (void *)(((unsigned int)pbi->fc.AboveUAlloc + 0x1f) & ~0x1f);
 
-    pbi->fc.AboveVAlloc = (void *)duck_malloc(pbi->HFragments * 8 + 0xa0, 0);
+    pbi->fc.AboveVAlloc = (void *)duck_malloc((pbi->HFragments >> 1) * 0x10 + 0xa0, 0);
     if (pbi->fc.AboveVAlloc == 0) {
         VP6_DeleteFragmentInfo(pbi);
         return 0;
@@ -174,7 +174,7 @@ int VP6_InitFrameDetails(struct PB_INSTANCE *pbi) {
     int FrameSize;
 
     if (pbi->CPUFree != 0) {
-        SetPbParam(pbi, 1);
+        VP6_SetPbParam(pbi, 1, pbi->CPUFree);
     }
 
     pbi->Configuration.YStride = pbi->Configuration.VideoFrameWidth + 96;

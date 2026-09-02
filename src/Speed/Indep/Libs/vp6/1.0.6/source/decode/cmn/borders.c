@@ -3,7 +3,7 @@
 extern void *memcpy(void *dest, const void *source, unsigned int size);
 extern void *memset(void *dest, int value, unsigned int size);
 
-struct POSTPROC_INSTANCE {
+typedef struct {
     int Vp3VersionNo;
     int FrameType;
     int PostProcessingLevel;
@@ -41,9 +41,9 @@ struct POSTPROC_INSTANCE {
     unsigned char *IntermediateBuffer;
     unsigned int DeInterlaceMode;
     unsigned int AddNoiseMode;
-};
+} POSTPROC_INSTANCE;
 
-void UpdateUMVBorder(struct POSTPROC_INSTANCE *pbi, unsigned char *DestReconPtr) {
+void UpdateUMVBorder(POSTPROC_INSTANCE *pbi, unsigned char *DestReconPtr) {
     int i;
     int PlaneHeight;
     unsigned char *SrcPtr1;
@@ -51,104 +51,87 @@ void UpdateUMVBorder(struct POSTPROC_INSTANCE *pbi, unsigned char *DestReconPtr)
     unsigned char *DestPtr1;
     unsigned char *DestPtr2;
     unsigned int Border;
-    unsigned int Border2;
     int PlaneStride;
 
     Border = pbi->MVBorder;
     PlaneStride = pbi->YStride;
+
+    PlaneStride = pbi->YStride;
+    PlaneHeight = pbi->VFragments * 8;
+
     SrcPtr1 = DestReconPtr + pbi->ReconYDataOffset;
-    SrcPtr2 = SrcPtr1 + (pbi->HFragments << 3) - 1;
+    SrcPtr2 = SrcPtr1 + 8 * pbi->HFragments - 1;
     DestPtr1 = SrcPtr1 - Border;
     DestPtr2 = SrcPtr2 + 1;
-    PlaneHeight = pbi->VFragments << 3;
-    if (PlaneHeight > 0) {
-        i = PlaneHeight;
-        do {
+    for (i = 0; i < PlaneHeight; i++) {
             memset(DestPtr1, *SrcPtr1, Border);
-            SrcPtr1 += PlaneStride;
-            DestPtr1 += PlaneStride;
             memset(DestPtr2, *SrcPtr2, Border);
+            SrcPtr1 += PlaneStride;
             SrcPtr2 += PlaneStride;
+            DestPtr1 += PlaneStride;
             DestPtr2 += PlaneStride;
-        } while (--i);
     }
 
-    SrcPtr1 = DestReconPtr + pbi->ReconYDataOffset + Border * PlaneStride;
-    SrcPtr2 = SrcPtr1 + (pbi->VFragments << 3) * PlaneStride - PlaneStride;
+    SrcPtr1 = DestReconPtr + Border * PlaneStride;
+    SrcPtr2 = SrcPtr1 + (pbi->VFragments * 8 * PlaneStride) - PlaneStride;
     DestPtr1 = DestReconPtr;
     DestPtr2 = SrcPtr2 + PlaneStride;
-    if (Border > 0) {
-        i = Border;
-        do {
+    for (i = 0; i < (int)Border; i++) {
             memcpy(DestPtr1, SrcPtr1, PlaneStride);
-            DestPtr1 += PlaneStride;
             memcpy(DestPtr2, SrcPtr2, PlaneStride);
+            DestPtr1 += PlaneStride;
             DestPtr2 += PlaneStride;
-        } while (--i);
     }
 
-    Border2 = Border >> 1;
     PlaneStride = pbi->UVStride;
+    PlaneHeight = pbi->VFragments * 4;
 
     SrcPtr1 = DestReconPtr + pbi->ReconUDataOffset;
-    SrcPtr2 = SrcPtr1 + (pbi->HFragments << 2) - 1;
-    DestPtr1 = SrcPtr1 - Border2;
+    SrcPtr2 = SrcPtr1 + 4 * pbi->HFragments - 1;
+    DestPtr1 = SrcPtr1 - Border / 2;
     DestPtr2 = SrcPtr2 + 1;
-    PlaneHeight = pbi->VFragments << 2;
-    if (PlaneHeight > 0) {
-        i = PlaneHeight;
-        do {
-            memset(DestPtr1, *SrcPtr1, Border2);
+    for (i = 0; i < PlaneHeight; i++) {
+            memset(DestPtr1, *SrcPtr1, Border / 2);
+            memset(DestPtr2, *SrcPtr2, Border / 2);
             SrcPtr1 += PlaneStride;
             DestPtr1 += PlaneStride;
-            memset(DestPtr2, *SrcPtr2, Border2);
             SrcPtr2 += PlaneStride;
             DestPtr2 += PlaneStride;
-        } while (--i);
     }
 
-    SrcPtr1 = DestReconPtr + pbi->ReconUDataOffset - Border2;
-    SrcPtr2 = SrcPtr1 + (pbi->VFragments << 2) * PlaneStride - PlaneStride;
-    DestPtr1 = SrcPtr1 - Border2 * PlaneStride;
+    SrcPtr1 = DestReconPtr + pbi->ReconUDataOffset - Border / 2;
+    SrcPtr2 = SrcPtr1 + (pbi->VFragments * 4 * PlaneStride) - PlaneStride;
+    DestPtr1 = SrcPtr1 - Border / 2 * PlaneStride;
     DestPtr2 = SrcPtr2 + PlaneStride;
-    if (Border2 > 0) {
-        i = Border2;
-        do {
+    for (i = 0; i < (int)(Border / 2); i++) {
             memcpy(DestPtr1, SrcPtr1, PlaneStride);
-            DestPtr1 += PlaneStride;
             memcpy(DestPtr2, SrcPtr2, PlaneStride);
+            DestPtr1 += PlaneStride;
             DestPtr2 += PlaneStride;
-        } while (--i);
     }
 
     SrcPtr1 = DestReconPtr + pbi->ReconVDataOffset;
-    SrcPtr2 = SrcPtr1 + (pbi->HFragments << 2) - 1;
-    DestPtr1 = SrcPtr1 - Border2;
+    SrcPtr2 = SrcPtr1 + 4 * pbi->HFragments - 1;
+    DestPtr1 = SrcPtr1 - Border / 2;
     DestPtr2 = SrcPtr2 + 1;
-    if (PlaneHeight > 0) {
-        i = PlaneHeight;
-        do {
-            memset(DestPtr1, *SrcPtr1, Border2);
+    for (i = 0; i < PlaneHeight; i++) {
+            memset(DestPtr1, *SrcPtr1, Border / 2);
+            memset(DestPtr2, *SrcPtr2, Border / 2);
             SrcPtr1 += PlaneStride;
             DestPtr1 += PlaneStride;
-            memset(DestPtr2, *SrcPtr2, Border2);
             SrcPtr2 += PlaneStride;
             DestPtr2 += PlaneStride;
-        } while (--i);
     }
 
-    SrcPtr1 = DestReconPtr + pbi->ReconVDataOffset - Border2;
-    SrcPtr2 = SrcPtr1 + (pbi->VFragments << 2) * PlaneStride - PlaneStride;
-    DestPtr1 = SrcPtr1 - Border2 * PlaneStride;
+    SrcPtr1 = DestReconPtr + pbi->ReconVDataOffset - Border / 2;
+    SrcPtr2 = SrcPtr1 + (pbi->VFragments * 4 * PlaneStride) - PlaneStride;
+    DestPtr1 = SrcPtr1 - Border / 2 * PlaneStride;
     DestPtr2 = SrcPtr2 + PlaneStride;
-    if (Border2 > 0) {
-        i = Border2;
-        do {
+    for (i = 0; i < (int)(Border / 2); i++) {
             memcpy(DestPtr1, SrcPtr1, PlaneStride);
-            DestPtr1 += PlaneStride;
             memcpy(DestPtr2, SrcPtr2, PlaneStride);
+            DestPtr1 += PlaneStride;
             DestPtr2 += PlaneStride;
-        } while (--i);
     }
 }
 
@@ -164,7 +147,7 @@ typedef struct {
     unsigned char *VBuffer;
 } YUV_BUFFER_CONFIG;
 
-void CopyFrame(struct POSTPROC_INSTANCE *pbi, YUV_BUFFER_CONFIG *src, unsigned char *DestReconPtr) {
+void CopyFrame(POSTPROC_INSTANCE *pbi, YUV_BUFFER_CONFIG *src, unsigned char *DestReconPtr) {
     int i;
     unsigned char *SrcPtr;
     unsigned char *DestPtr;

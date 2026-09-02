@@ -128,20 +128,14 @@ struct PB_INSTANCE *VP6_CreatePBInstance(void) {
 
 void VP6_VPInitLibrary(void) {
     int i;
-    unsigned int *dcScaleP;
-    short *dcQuantP;
 
     CPUFrequency = VP6_GetProcessorFrequency();
     VP6_DMachineSpecificConfig();
 
-    dcScaleP = VP6_DCQuantScaleP;
-    dcQuantP = VP6_DcQuant;
     i = 64;
     do {
-        int dcScale = *dcQuantP / 2 + 2;
-        *dcScaleP = dcScale;
-        dcQuantP++;
-        dcScaleP++;
+        int dcScale = VP6_DcQuant[64 - i] / 2 + 2;
+        VP6_DCQuantScaleP[64 - i] = dcScale;
     } while (--i);
 
     InitPostProcessing(VP6_DCQuantScaleP, VP6_DCQuantScaleP, VP6_DCQuantScaleP, 7);

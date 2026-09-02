@@ -42,150 +42,168 @@ typedef struct {
 
 extern unsigned char LimitVal_VP31[0x300];
 extern unsigned int *DeblockLimitValuesV2;
-extern unsigned int *DeblockLimitValuesV1;
-extern unsigned int *SetupDeblockValueArray(POSTPROC_INSTANCE *ppi, int FLimit);
-extern void FilterHoriz_Simple(POSTPROC_INSTANCE *ppi, unsigned char *PixelPtr,
-                               int LineLength, int *BoundingValuePtr);
-extern void FilterVert_Simple(POSTPROC_INSTANCE *ppi, unsigned char *PixelPtr,
-                              int LineLength, int *BoundingValuePtr);
+extern int *(*SetupDeblockValueArray)(POSTPROC_INSTANCE *ppi, int FLimit);
+extern void (*FilterHoriz_Simple)(POSTPROC_INSTANCE *ppi, unsigned char *PixelPtr,
+                                  int LineLength, int *BoundingValuePtr);
+extern void (*FilterVert_Simple)(POSTPROC_INSTANCE *ppi, unsigned char *PixelPtr,
+                                 int LineLength, int *BoundingValuePtr);
 extern void *memcpy(void *dest, const void *source, unsigned int size);
 extern int abs(int value);
+
+static const unsigned int DeblockLimitValuesV1[64] = {
+    30, 25, 20, 20, 15, 15, 14, 14,
+    13, 13, 12, 12, 11, 11, 10, 10,
+    9, 9, 8, 8, 7, 7, 7, 7,
+    6, 6, 6, 6, 5, 5, 5, 5,
+    4, 4, 4, 4, 3, 3, 3, 3,
+    2, 2, 2, 2, 2, 2, 2, 2,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0
+};
 
 void FilterHoriz_Simple_C(POSTPROC_INSTANCE *ppi, unsigned char *PixelPtr,
                           int LineLength, int *BoundingValuePtr) {
     int j;
     int FiltVal;
-    unsigned char *LimitTable;
-    int UseHighVariance;
+    unsigned char *LimitTable = &LimitVal_VP31[0x100];
 
-    LimitTable = LimitVal_VP31 + 0x100;
-    j = 8;
-    do {
-        UseHighVariance = 0;
-        if (abs(PixelPtr[0] - PixelPtr[1]) > 1) {
-            UseHighVariance = 1;
+    (void)ppi;
+
+    for (j = 0; j < 8; j++) {
+        int UseHighVariance;
+
+        FiltVal = (PixelPtr[2] * 3) - (PixelPtr[1] * 3);
+
+        UseHighVariance = abs(PixelPtr[0] - PixelPtr[1]) > 1 ||
+                          abs(PixelPtr[2] - PixelPtr[3]) > 1;
+
+        if (UseHighVariance) {
+            FiltVal += PixelPtr[0] - PixelPtr[3];
         }
-        if (UseHighVariance == 0 &&
-            abs(PixelPtr[2] - PixelPtr[3]) > 1) {
-            UseHighVariance = 1;
-        }
-        FiltVal = 3 * (PixelPtr[2] - PixelPtr[1]);
-        if (UseHighVariance != 0) {
-            FiltVal += PixelPtr[3] - PixelPtr[0];
-        }
-        FiltVal = (FiltVal + 4) >> 3;
-        FiltVal = BoundingValuePtr[FiltVal];
-        PixelPtr[1] = LimitTable[PixelPtr[1] + FiltVal];
-        PixelPtr[2] = LimitTable[PixelPtr[2] - FiltVal];
-        if (UseHighVariance == 0) {
+
+        FiltVal = BoundingValuePtr[(FiltVal + 4) >> 3];
+
+        PixelPtr[1] = LimitTable[(int)PixelPtr[1] + FiltVal];
+        PixelPtr[2] = LimitTable[(int)PixelPtr[2] - FiltVal];
+
+        if (!UseHighVariance) {
             FiltVal >>= 1;
-            PixelPtr[0] = LimitTable[PixelPtr[0] + FiltVal];
-            PixelPtr[3] = LimitTable[PixelPtr[3] - FiltVal];
+            PixelPtr[0] = LimitTable[(int)PixelPtr[0] + FiltVal];
+            PixelPtr[3] = LimitTable[(int)PixelPtr[3] - FiltVal];
         }
+
         PixelPtr += LineLength;
-    } while (--j);
+    }
 }
 
 void FilterVert_Simple_C(POSTPROC_INSTANCE *ppi, unsigned char *PixelPtr,
                          int LineLength, int *BoundingValuePtr) {
     int j;
     int FiltVal;
-    unsigned char *LimitTable;
-    int UseHighVariance;
+    unsigned char *LimitTable = &LimitVal_VP31[0x100];
 
-    LimitTable = LimitVal_VP31 + 0x100;
-    j = 8;
-    do {
-        UseHighVariance = 0;
-        if (abs(*(PixelPtr - 2 * LineLength) - *(PixelPtr - LineLength)) > 1) {
-            UseHighVariance = 1;
+    (void)ppi;
+
+    for (j = 0; j < 8; j++) {
+        int UseHighVariance;
+
+        FiltVal = (((int)PixelPtr[0] * 3) -
+                    ((int)PixelPtr[-LineLength] * 3));
+
+        UseHighVariance =
+            abs(PixelPtr[-(2 * LineLength)] - PixelPtr[-LineLength]) > 1 ||
+            abs(PixelPtr[0] - PixelPtr[LineLength]) > 1;
+
+        if (UseHighVariance) {
+            FiltVal += ((int)PixelPtr[-(2 * LineLength)]) -
+                       ((int)PixelPtr[LineLength]);
         }
-        if (UseHighVariance == 0 &&
-            abs(*(PixelPtr + LineLength) - PixelPtr[0]) > 1) {
-            UseHighVariance = 1;
-        }
-        FiltVal = 3 * (PixelPtr[0] - *(PixelPtr - LineLength));
-        if (UseHighVariance != 0) {
-            FiltVal += *(PixelPtr + LineLength) - *(PixelPtr - 2 * LineLength);
-        }
-        FiltVal = (FiltVal + 4) >> 3;
-        FiltVal = BoundingValuePtr[FiltVal];
-        *(PixelPtr - LineLength) = LimitTable[*(PixelPtr - LineLength) + FiltVal];
-        PixelPtr[0] = LimitTable[PixelPtr[0] - FiltVal];
-        if (UseHighVariance == 0) {
+
+        FiltVal = BoundingValuePtr[(FiltVal + 4) >> 3];
+
+        PixelPtr[-LineLength] =
+            LimitTable[(int)PixelPtr[-LineLength] + FiltVal];
+        PixelPtr[0] = LimitTable[(int)PixelPtr[0] - FiltVal];
+
+        if (!UseHighVariance) {
             FiltVal >>= 1;
-            *(PixelPtr - 2 * LineLength) =
-                LimitTable[*(PixelPtr - 2 * LineLength) + FiltVal];
-            *(PixelPtr + LineLength) =
-                LimitTable[*(PixelPtr + LineLength) - FiltVal];
+            PixelPtr[-2 * LineLength] =
+                LimitTable[(int)PixelPtr[-2 * LineLength] + FiltVal];
+            PixelPtr[LineLength] =
+                LimitTable[(int)PixelPtr[LineLength] - FiltVal];
         }
+
         PixelPtr++;
-    } while (--j);
+    }
 }
 
 void SimpleDeblockFrame(POSTPROC_INSTANCE *ppi, unsigned char *SrcBuffer,
                         unsigned char *DestBuffer) {
-    int j;
-    int m;
-    int n;
-    int RowStart;
+    int j, m, n;
+    int RowStart = 0;
     int NextRow;
     int FLimit;
     int QIndex;
     int *BoundingValuePtr;
-    int LineLength;
-    int FragsAcross;
-    int FragsDown;
+    int LineLength = 0;
+    int FragsAcross = ppi->HFragments;
+    int FragsDown = ppi->VFragments;
 
     QIndex = ppi->FrameQIndex;
-    if (ppi->Vp3VersionNo > 1) {
+    if (ppi->Vp3VersionNo >= 2) {
         FLimit = DeblockLimitValuesV2[QIndex];
-    } else {
+    }
+    else {
         FLimit = DeblockLimitValuesV1[QIndex];
     }
-    BoundingValuePtr = (int *)SetupDeblockValueArray(ppi, FLimit);
-    LineLength = ppi->YStride;
-    FragsAcross = ppi->HFragments;
-    FragsDown = ppi->VFragments;
-    RowStart = ppi->ReconYDataOffset;
-    j = 0;
-    while (j <= 2) {
-        if (j == 0) {
-            LineLength = ppi->YStride;
+    BoundingValuePtr = SetupDeblockValueArray(ppi, FLimit);
+
+    for (j = 0; j < 3; j++) {
+        switch (j) {
+        case 0:
             FragsAcross = ppi->HFragments;
             FragsDown = ppi->VFragments;
+            LineLength = ppi->YStride;
             RowStart = ppi->ReconYDataOffset;
-        } else if (j == 1) {
-            LineLength = ppi->UVStride;
+            break;
+        case 1:
             FragsAcross = ppi->HFragments >> 1;
             FragsDown = ppi->VFragments >> 1;
+            LineLength = ppi->UVStride;
             RowStart = ppi->ReconUDataOffset;
-        } else if (j == 2) {
-            LineLength = ppi->UVStride;
+            break;
+        case 2:
             FragsAcross = ppi->HFragments >> 1;
             FragsDown = ppi->VFragments >> 1;
+            LineLength = ppi->UVStride;
             RowStart = ppi->ReconVDataOffset;
+            break;
         }
-        if (FragsAcross != 0) {
-            memcpy(DestBuffer + RowStart, SrcBuffer + RowStart,
-                   FragsAcross * 8);
-            for (m = 1; m < FragsAcross; m++) {
-                FilterHoriz_Simple(ppi, DestBuffer + RowStart + m * 8 - 2,
+
+        NextRow = LineLength * 8;
+        memcpy(&DestBuffer[RowStart], &SrcBuffer[RowStart], 8 * LineLength);
+
+        for (n = 1; n < FragsAcross; n++) {
+            FilterHoriz_Simple(ppi, &DestBuffer[RowStart + n * 8 - 2],
+                               LineLength, BoundingValuePtr);
+        }
+
+        RowStart += NextRow;
+
+        for (m = 1; m < FragsDown; m++) {
+            n = 0;
+            memcpy(&DestBuffer[RowStart], &SrcBuffer[RowStart], 8 * LineLength);
+            FilterVert_Simple(ppi, &DestBuffer[RowStart + n * 8],
+                              LineLength, BoundingValuePtr);
+
+            for (n = 1; n < FragsAcross; n++) {
+                FilterHoriz_Simple(ppi, &DestBuffer[RowStart + n * 8 - 2],
                                    LineLength, BoundingValuePtr);
-            }
-            for (n = 1; n < FragsDown; n++) {
-                NextRow = RowStart + n * LineLength * 8;
-                memcpy(DestBuffer + NextRow, SrcBuffer + NextRow, FragsAcross * 8);
-                FilterVert_Simple(ppi, DestBuffer + NextRow - 2 * LineLength,
+                FilterVert_Simple(ppi, &DestBuffer[RowStart + n * 8],
                                   LineLength, BoundingValuePtr);
-                for (m = 1; m < FragsAcross; m++) {
-                    FilterHoriz_Simple(ppi, DestBuffer + NextRow + m * 8 - 2,
-                                       LineLength, BoundingValuePtr);
-                    FilterVert_Simple(ppi, DestBuffer + NextRow + m * 8 - 2,
-                                      LineLength, BoundingValuePtr);
-                }
             }
+
+            RowStart += NextRow;
         }
-        j++;
     }
 }

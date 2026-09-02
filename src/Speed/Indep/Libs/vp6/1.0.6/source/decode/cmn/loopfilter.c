@@ -58,19 +58,54 @@ typedef struct {
 extern unsigned char LimitVal_VP31[0x300];
 extern void *memset(void *dest, int value, unsigned int size);
 
+unsigned int LoopFilterLimitValuesVp4[64] = {
+    30, 25, 20, 20, 15, 15, 14, 14,
+    13, 13, 12, 12, 11, 11, 10, 10,
+    9, 9, 8, 8, 7, 7, 7, 7,
+    6, 6, 6, 6, 5, 5, 5, 5,
+    4, 4, 4, 4, 3, 3, 3, 3,
+    2, 2, 2, 2, 2, 2, 2, 2,
+    2, 2, 2, 2, 2, 2, 2, 2,
+    1, 1, 1, 1, 1, 1, 1, 1
+};
+
+unsigned int LoopFilterLimitValuesVp5[64] = {
+    14, 14, 13, 13, 12, 12, 10, 10,
+    10, 10, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 7, 7, 7, 7,
+    7, 7, 6, 6, 6, 6, 6, 6,
+    5, 5, 5, 5, 4, 4, 4, 4,
+    4, 4, 4, 3, 3, 3, 3, 2
+};
+
+unsigned int LoopFilterLimitValuesVp6[64] = {
+    14, 14, 13, 13, 12, 12, 10, 10,
+    10, 10, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 7, 7, 7, 7,
+    7, 7, 6, 6, 6, 6, 6, 6,
+    5, 5, 5, 5, 4, 4, 4, 4,
+    4, 4, 4, 3, 3, 3, 3, 2
+};
+
+unsigned int *LoopFilterLimitValuesV2 = 0;
+
 int *SetupBoundingValueArray_Generic(POSTPROC_INSTANCE *ppi, int FLimit) {
     int i;
     int *BoundingValuePtr;
 
-    BoundingValuePtr = ppi->FiltBoundingValue;
-    BoundingValuePtr += 256;
-    memset(BoundingValuePtr, 0, 0x800);
+    BoundingValuePtr = &ppi->FiltBoundingValue[256];
+    memset(ppi->FiltBoundingValue, 0,
+           512 * sizeof(*ppi->FiltBoundingValue));
 
     for (i = 0; i < FLimit; i++) {
-        BoundingValuePtr[-FLimit + i] = -FLimit + i;
-        BoundingValuePtr[-i] = 0;
+        BoundingValuePtr[-i - FLimit] = -FLimit + i;
+        BoundingValuePtr[-i] = -i;
         BoundingValuePtr[i] = i;
-        BoundingValuePtr[FLimit - i] = FLimit - i;
+        BoundingValuePtr[i + FLimit] = FLimit - i;
     }
 
     return BoundingValuePtr;
@@ -79,36 +114,139 @@ int *SetupBoundingValueArray_Generic(POSTPROC_INSTANCE *ppi, int FLimit) {
 void FilterHoriz_Generic(POSTPROC_INSTANCE *ppi, unsigned char *PixelPtr, int LineLength, int *BoundingValuePtr) {
     int j;
     int FiltVal;
-    unsigned char *LimitTable;
+    unsigned char *LimitTable = &LimitVal_VP31[0x100];
 
-    LimitTable = LimitVal_VP31 + 0x100;
+    (void)ppi;
 
-    j = 8;
-    do {
-        FiltVal = PixelPtr[0] - 3 * PixelPtr[1] + 3 * PixelPtr[2] - PixelPtr[3];
+    for (j = 0; j < 8; j++) {
+        FiltVal = PixelPtr[0] - (PixelPtr[1] * 3) +
+                  (PixelPtr[2] * 3) - PixelPtr[3];
         FiltVal = (FiltVal + 4) >> 3;
         FiltVal = BoundingValuePtr[FiltVal];
-        PixelPtr[1] = LimitTable[PixelPtr[1] + FiltVal];
-        PixelPtr[2] = LimitTable[PixelPtr[2] - FiltVal];
+        PixelPtr[1] = LimitTable[(int)PixelPtr[1] + FiltVal];
+        PixelPtr[2] = LimitTable[(int)PixelPtr[2] - FiltVal];
         PixelPtr += LineLength;
-    } while (--j);
+    }
 }
 
 void FilterVert_Generic(POSTPROC_INSTANCE *ppi, unsigned char *PixelPtr, int LineLength, int *BoundingValuePtr) {
     int j;
     int FiltVal;
-    unsigned char *LimitTable;
+    unsigned char *LimitTable = &LimitVal_VP31[0x100];
 
-    LimitTable = LimitVal_VP31 + 0x100;
+    (void)ppi;
 
-    j = 8;
-    do {
-        FiltVal = *(PixelPtr - 2 * LineLength) - 3 * *(PixelPtr - LineLength) +
-                  3 * PixelPtr[0] - PixelPtr[LineLength];
+    for (j = 0; j < 8; j++) {
+        FiltVal = (int)PixelPtr[-(2 * LineLength)] -
+                  ((int)PixelPtr[-LineLength] * 3) +
+                  ((int)PixelPtr[0] * 3) -
+                  (int)PixelPtr[LineLength];
         FiltVal = (FiltVal + 4) >> 3;
         FiltVal = BoundingValuePtr[FiltVal];
-        PixelPtr[-LineLength] = LimitTable[PixelPtr[-LineLength] + FiltVal];
-        PixelPtr[0] = LimitTable[PixelPtr[0] - FiltVal];
+        PixelPtr[-LineLength] =
+            LimitTable[(int)PixelPtr[-LineLength] + FiltVal];
+        PixelPtr[0] = LimitTable[(int)PixelPtr[0] - FiltVal];
         PixelPtr++;
-    } while (--j);
+    }
+}
+
+static inline int Bound(unsigned int FLimit, int FiltVal) {
+    int Clamp;
+    int FiltSign;
+    int NewSign;
+
+    Clamp = 2 * FLimit;
+    FiltSign = FiltVal >> 31;
+    FiltVal ^= FiltSign;
+    FiltVal -= FiltSign;
+    FiltVal *= (FiltVal < Clamp);
+    FiltVal -= FLimit;
+    NewSign = FiltVal >> 31;
+    FiltVal ^= NewSign;
+    FiltVal -= NewSign;
+    FiltVal = FLimit - FiltVal;
+    FiltVal += FiltSign;
+    FiltVal ^= FiltSign;
+
+    return FiltVal;
+}
+
+void FilteringHoriz_8_C(unsigned int QValue, unsigned char *Src, int Pitch) {
+    int j;
+    int FiltVal;
+    unsigned int FLimit;
+    unsigned char *LimitTable = &LimitVal_VP31[0x100];
+
+    FLimit = LoopFilterLimitValuesV2[QValue];
+
+    for (j = 0; j < 8; j++) {
+        FiltVal = (Src[-2] -
+                   (Src[-1] * 3) +
+                   (Src[0] * 3) -
+                   Src[1] + 4) >> 3;
+        FiltVal = Bound(FLimit, FiltVal);
+        Src[-1] = LimitTable[(int)Src[-1] + FiltVal];
+        Src[0] = LimitTable[(int)Src[0] - FiltVal];
+        Src += Pitch;
+    }
+}
+
+void FilteringVert_8_C(unsigned int QValue, unsigned char *Src, int Pitch) {
+    int j;
+    int FiltVal;
+    unsigned int FLimit;
+    unsigned char *LimitTable = &LimitVal_VP31[0x100];
+
+    FLimit = LoopFilterLimitValuesV2[QValue];
+
+    for (j = 0; j < 8; j++) {
+        FiltVal = (((int)Src[-(2 * Pitch)] -
+                    ((int)Src[-Pitch] * 3) +
+                    ((int)Src[0] * 3) -
+                    (int)Src[Pitch] + 4) >> 3);
+        FiltVal = Bound(FLimit, FiltVal);
+        Src[-Pitch] = LimitTable[(int)Src[-Pitch] + FiltVal];
+        Src[0] = LimitTable[(int)Src[0] - FiltVal];
+        Src++;
+    }
+}
+
+void FilteringHoriz_12_C(unsigned int QValue, unsigned char *Src, int Pitch) {
+    int j;
+    int FiltVal;
+    unsigned int FLimit;
+    unsigned char *LimitTable = &LimitVal_VP31[0x100];
+
+    FLimit = LoopFilterLimitValuesV2[QValue];
+
+    for (j = 0; j < 12; j++) {
+        FiltVal = (Src[-2] -
+                   (Src[-1] * 3) +
+                   (Src[0] * 3) -
+                   Src[1] + 4) >> 3;
+        FiltVal = Bound(FLimit, FiltVal);
+        Src[-1] = LimitTable[(int)Src[-1] + FiltVal];
+        Src[0] = LimitTable[(int)Src[0] - FiltVal];
+        Src += Pitch;
+    }
+}
+
+void FilteringVert_12_C(unsigned int QValue, unsigned char *Src, int Pitch) {
+    int j;
+    int FiltVal;
+    unsigned int FLimit;
+    unsigned char *LimitTable = &LimitVal_VP31[0x100];
+
+    FLimit = LoopFilterLimitValuesV2[QValue];
+
+    for (j = 0; j < 12; j++) {
+        FiltVal = (((int)Src[-(2 * Pitch)] -
+                    ((int)Src[-Pitch] * 3) +
+                    ((int)Src[0] * 3) -
+                    (int)Src[Pitch] + 4) >> 3);
+        FiltVal = Bound(FLimit, FiltVal);
+        Src[-Pitch] = LimitTable[(int)Src[-Pitch] + FiltVal];
+        Src[0] = LimitTable[(int)Src[0] - FiltVal];
+        Src++;
+    }
 }
